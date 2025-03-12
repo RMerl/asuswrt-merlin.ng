@@ -591,19 +591,19 @@ function redirect_page(flag){
 
 	switch(flag) {
 		case "reboot_schedule_enable_x" :
-			document.location.href = "Advanced_System_Content.asp?af=reboot_schedule_enable_x";
+			top.location.href = "Advanced_System_Content.asp?af=reboot_schedule_enable_x";
 			break;
 		case "wl_radio" :
-			document.location.href = "Advanced_WAdvanced_Content.asp?af=wl_radio";
+			top.location.href = "Advanced_WAdvanced_Content.asp?af=wl_radio";
 			break;
 		case "wl_timesched" :
-			document.location.href = "Advanced_WAdvanced_Content.asp?af=wl_timesched";
+			top.location.href = "Advanced_WAdvanced_Content.asp?af=wl_timesched";
 			break;
 	}
 }
 
 function redirect(){
-	document.location.href = "Feedback_Info.asp";
+	top.location.href = "Feedback_Info.asp";
 }
 
 function applyRule(){
@@ -1217,31 +1217,6 @@ function show_google_auth_status(_status) {
 
 function startLogPrep(){
 	dr_advise();
-}
-
-var redirect_info = 0;
-function CheckFBSize(){
-	$.ajax({
-		url: '/ajax_fb_size.asp',
-		dataType: 'script',
-		timeout: 1500,
-		error: function(xhr){
-				redirect_info++;
-				if(redirect_info < 10){
-					setTimeout("CheckFBSize();", 1000);
-				}
-				else{
-					showLoading(35);
-					setTimeout("redirect()", 35000);
-				}
-		},
-		success: function(){
-				if(fb_state == 0)
-					setTimeout("CheckFBSize()", 3000);
-				else
-					setTimeout("redirect()", 1000);
-		}
-	});
 }
 
 function detect_fb_state(){

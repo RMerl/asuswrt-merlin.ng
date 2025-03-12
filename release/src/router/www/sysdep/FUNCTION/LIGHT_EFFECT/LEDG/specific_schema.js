@@ -56,10 +56,10 @@ var gradient_color_GT10_CB_5 = {
 var gradient_color_GTAX11000_PRO_CB_3 = {
 	"id6": {"color" :[0,128,0,0,50,100,10,0,128],"left":145}
 }
-const gradient_color_GTBESeries = {//GT-BE98/GT-BE98_PRO/GT-BE96/GT-BE19000/GT-BE19000_AI
+const gradient_color_GTBESeries = {//GT-BE98/GT-BE98_PRO/GT-BE96/GT-BE19000/GT-BE19000AI/GT-BE96_AI
 	"id10":{"color" :[100,0,0,120,0,30,100,0,128],"left":261}
 }
-const gradient_color_GTBESeries_night = {//GT-BE98/GT-BE98_PRO/GT-BE96/GT-BE19000/GT-BE19000_AI
+const gradient_color_GTBESeries_night = {//GT-BE98/GT-BE98_PRO/GT-BE96/GT-BE19000/GT-BE19000AI/GT-BE96_AI
 	"id1": {"color" :[12,0,0,12,1,0,12,2,0],"left":0},
 	"id2": {"color" :[12,1,0,12,3,0,12,5,0],"left":29},
 	"id3": {"color" :[12,6,0,12,8,0,10,9,0],"left":58},
@@ -83,12 +83,12 @@ function retune_gradient_color(parm){
 		gradient_color = gradient_color_temp;
 	}
 	else if(parm.ledg_group == 3){
-		if(parm.productid == "GT-AXE16000" || parm.productid == "GT-AX11000_PRO" || parm.productid == "GT-BE98" || parm.productid == "GT-BE98_PRO" || parm.productid == "GT-BE96" || parm.productid == "GT-BE19000" || parm.productid == "GT-BE19000_AI"){
+		if(parm.productid == "GT-AXE16000" || parm.productid == "GT-AX11000_PRO" || parm.productid == "GT-BE98" || parm.productid == "GT-BE98_PRO" || parm.productid == "GT-BE96" || parm.productid == "GT-BE19000" || parm.productid == "GT-BE19000AI" || parm.productid == "GT-BE96_AI"){
 			gradient_color = gradient_color_GTAXE16000;
 			if(parm.productid == "GT-AX11000_PRO" && parm.CoBrand == "3"){
 				gradient_color = $.extend(gradient_color_GTAXE16000 , gradient_color_GTAX11000_PRO_CB_3);
 			}
-			if(parm.productid == "GT-BE98" || parm.productid == "GT-BE98_PRO" || parm.productid == "GT-BE96" || parm.productid == "GT-BE19000" || parm.productid == "GT-BE19000_AI"){
+			if(parm.productid == "GT-BE98" || parm.productid == "GT-BE98_PRO" || parm.productid == "GT-BE96" || parm.productid == "GT-BE19000" || parm.productid == "GT-BE19000AI" || parm.productid == "GT-BE96_AI"){
 				gradient_color = $.extend(gradient_color_GTAXE16000 , gradient_color_GTBESeries);
 			}
 		}
@@ -113,7 +113,7 @@ function retune_gradient_color(parm){
 }
 function retune_gradient_color_night(parm){
 	let gradient_color_night = JSON.parse(JSON.stringify(gradient_color));
-	if(parm.productid == "GT-BE98" || parm.productid == "GT-BE98_PRO" || parm.productid == "GT-BE96" || parm.productid == "GT-BE19000" || parm.productid == "GT-BE19000_AI"){
+	if(parm.productid == "GT-BE98" || parm.productid == "GT-BE98_PRO" || parm.productid == "GT-BE96" || parm.productid == "GT-BE19000" || parm.productid == "GT-BE19000AI" || parm.productid == "GT-BE96_AI"){
 		gradient_color_night = gradient_color_GTBESeries_night
 	}
 	return gradient_color_night
@@ -135,7 +135,7 @@ function retune_wave_color(parm){
 		if(parm.ledg_group == 5)
 			ledg_rgb = "128,70,0,128,70,0,128,70,0,128,70,0,128,70,0";
 	}
-	else if(parm.productid == "TUF-AX6000"){
+	else if(parm.productid == "TUF-AX6000" || parm.productid == "GS7"){
 		if('<% nvram_get("odmpid"); %>' == "TX-AX6000")
 			ledg_rgb = "0,128,45,0,128,45,0,128,45,0,128,45";
 		else
@@ -151,7 +151,7 @@ function retune_wave_color(parm){
 	else if(parm.productid == "GT-AXE16000" || parm.productid == "GT-AX11000_PRO"){
 		ledg_rgb = "20,0,128,110,0,100,128,0,80";
 	}
-	else if(parm.productid == "GT-BE98" || parm.productid == "GT-BE98_PRO" || parm.productid == "GT-BE96" || parm.productid == "GT-BE19000" || parm.productid == "GT-BE19000_AI"){
+	else if(parm.productid == "GT-BE98" || parm.productid == "GT-BE98_PRO" || parm.productid == "GT-BE96" || parm.productid == "GT-BE19000" || parm.productid == "GT-BE19000AI" || parm.productid == "GT-BE96_AI"){
 		ledg_rgb = (parm.night) ? "50,0,0,58,0,32,50,0,64" : "100,0,0,120,0,30,100,0,128";
 	}
 	else if(parm.productid == "GT10"){

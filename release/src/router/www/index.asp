@@ -313,14 +313,8 @@ function initial(){
 
 		show_middle_status(wl_auth_mode, wl_wep_x);
 	}
-	else{
-		if(isSupport("sdn_mainfh")){
-			const mainfh = get_sdn_main_fh_info();
-			show_middle_status(mainfh[0]["auth"], 0);
-		}
-		else
-			show_middle_status(document.form.wl_auth_mode_x.value, parseInt(document.form.wl_wep_x.value));
-	}
+	else
+		show_middle_status(document.form.wl_auth_mode_x.value, parseInt(document.form.wl_wep_x.value));
 
 	if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
 		var html = '<a id="clientStatusLink" href="device-map/amesh.asp" target="statusframe">';
@@ -372,7 +366,7 @@ function initial(){
 			show_USBDevice(tmpDisk);
 		}
 		
-	 	require(['/require/modules/diskList.js'], function(diskList){
+		require(['/require/modules/diskList.js?hash=' + Math.random().toString()], function(diskList){
 	 		var usbDevicesList = diskList.list();
 			for(var i=0; i<usbDevicesList.length; i++){
 			  var new_option = new Option(usbDevicesList[i].deviceName, usbDevicesList[i].deviceIndex);
@@ -1091,9 +1085,7 @@ function showstausframe(page){
 			
 		page = "Internet";
 	}
-	else if(page == "Router"){
-		page = isSupport("sdn_mainfh") ? `${page}_status` : page;
-	}
+	
 	window.open("/device-map/"+page.toLowerCase()+".asp","statusframe");
 }
 
@@ -1714,7 +1706,7 @@ function popupEditBlock(clientObj){
 
 		if(sw_mode != 4){
 			var radioIcon_css = "radioIcon";
-			if(clientObj.isGN != "" && clientObj.isGN != undefined)
+			if((clientObj.isGN != "" && clientObj.isGN != undefined) || (isSupport("mtlancfg") && clientObj.sdn_idx > 0))
 				radioIcon_css += " GN";
 			clientIconHtml += '<div class="' + radioIcon_css + ' radio_' + rssi_t +'" title="' + connectModeTip + '"></div>';
 			if(clientObj.isWL != 0 || (isSupport("mtlancfg") && clientObj.sdn_idx > 0)){
@@ -1756,9 +1748,7 @@ function popupEditBlock(clientObj){
 		}
 		if(clientObj.sdn_idx > 0) {
 			document.getElementById('client_sdnIdx').style.display = "";
-			const sdn_profile = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx == clientObj.sdn_idx) || {};
-			const sdn_ssid = $.isEmptyObject(sdn_profile) ? "" : sdn_profile.apg_rl.ssid;
-			document.getElementById('client_sdnIdx').innerHTML = "SDN " + sdn_ssid;
+			document.getElementById('client_sdnIdx').innerHTML = "SDN " + sdn_rl_for_clientlist[clientObj.sdn_idx].apg_rl.ssid;
             $('#tr_adv_setting').hide();
 		}else{
             $('#tr_adv_setting').show();
@@ -2706,7 +2696,7 @@ function showClientlistModal(){
 				</tr>			
 				<tr>
 					<td align="right" bgcolor="#444f53" class="NM_radius_left" onclick="showstausframe('Router');" style="height:150px">
-						<a id="iconRouterLink" href="device-map/router.asp" target="statusframe"><div id="iconRouter" onclick="clickEvent(this);"></div></a>
+						<a href="device-map/router.asp" target="statusframe"><div id="iconRouter" onclick="clickEvent(this);"></div></a>
 					</td>
 					<td colspan="2" valign="middle" bgcolor="#444f53" class="NM_radius_right" onclick="showstausframe('Router');">
 						<div>
@@ -2791,27 +2781,26 @@ function showClientlistModal(){
 					<td valign="top">
 						<div class="statusTitle" id="statusTitle_NM">
 							<div id="helpname" style="padding-top:10px;font-size:16px;"></div>
-						</div>
+						</div>							
 						<div class="NM_radius_bottom_container">
 							<iframe id="statusframe" class="NM_radius_bottom" style="display:none;margin-left:0px;height:760px;width:320px;\9" name="statusframe" frameborder="0"></iframe>
 						</div>
+
 						<script>
 							(function(){
-								const defaultRouterFrame = `/device-map/router${isSupport("sdn_mainfh")?"_status":""}.asp`;
-								document.getElementById("iconRouterLink").href = defaultRouterFrame;
 								setTimeout(function(){
-									document.getElementById("statusframe").src = defaultRouterFrame;
+									$('#statusframe').attr('src', '/device-map/router.asp').show();
 									const get_header_info = httpApi.hookGet("get_header_info");
 									const domain = `${get_header_info.protocol}://${get_header_info.host}`;
 									const domain_w_port = `${get_header_info.protocol}://${get_header_info.host}:${get_header_info.port}`;
 
 									let messageTimeout;
 									messageTimeout = setTimeout(() => {
-										document.getElementById("statusframe").src = `/device-map/router${isSupport("sdn_mainfh")?"_status":""}.asp`;
+										document.getElementById("statusframe").src = "/device-map/router.asp";
 									}, 5000);
 
 									window.addEventListener('message', function(event){
-										if(event.data == `router${isSupport("sdn_mainfh")?"_status":""}.asp`){
+										if(event.data == `router.asp`){
 											const has_port = /:\d+$/.test(event.origin);
 											if(has_port){
 												if(event.origin !== domain_w_port){
@@ -2837,7 +2826,8 @@ function showClientlistModal(){
 								}, 1);
 							})()
 						</script>
-					</td>
+
+					</td>	
 				</tr>
 			</table>
 			</div>

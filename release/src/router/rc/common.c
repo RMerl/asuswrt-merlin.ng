@@ -836,14 +836,6 @@ void setup_conntrack(void)
 	/* mark only out of window RST segments as INVALID */
 	f_write_string("/proc/sys/net/netfilter/nf_conntrack_tcp_be_liberal", "1", 0, 0);
 #endif
-	modprobe("xt_conntrack");
-	modprobe("xt_mscs");
-	modprobe("xt_scs");
-	modprobe("xt_mac");
-	modprobe("xt_mac_extend");
-	modprobe("xt_mark");
-	modprobe("xt_mark_extend");
-
 }
 
 void setup_pt_conntrack(void)
@@ -1401,6 +1393,9 @@ void time_zone_x_mapping(void)
 	else if (nvram_match("time_zone", "JST")){	/* convert JST to JST-9 */
 		nvram_set("time_zone", "JST-9");
 	}
+	else if (nvram_match("time_zone", "UTC4DST_3")){  /* convert UTC4DST_3 to UTC3_1 */
+        nvram_set("time_zone", "UTC3_1");
+    }
 
 
 	snprintf(tmpstr, sizeof(tmpstr), "%s", nvram_safe_get("time_zone"));

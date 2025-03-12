@@ -115,7 +115,15 @@ function adjust_TM_eula_height(_objID) {
 	}
 }
 function adjust_panel_block_top(_objID, _offsetHeight) {
-	var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+	const getScrollTop = () => {
+		if (parent.webWrapper) {
+			return top.window.pageYOffset || top.document.documentElement.scrollTop || top.document.body.scrollTop || 0
+		}
+		else {
+			return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+		}
+	};
+	const scrollTop = getScrollTop();
 	document.getElementById(_objID).style.top = (scrollTop + _offsetHeight) + "px";
 }
 

@@ -37,7 +37,7 @@
 #include <gsw_device.h>
 #include <gsw.h>
 
-#ifdef GSBE18000
+#if defined(GSBE18000) || defined(GS7_PRO)
 #define PORT_MAX		7
 #else
 #define PORT_MAX		4
@@ -78,6 +78,7 @@ int mxl_read_mactable(int port, mactable *m)
 	int count = 0;
 	int i;
 	char eabuf[18];
+	int lock;
 
 	if ((port < 0))
 		return 0;
@@ -89,7 +90,9 @@ int mxl_read_mactable(int port, mactable *m)
 	gsw_dev = gsw_get_struc(0, 0);
 
 	for (;;) {
+		lock = file_lock("GSW");
 		ret = GSW_MAC_TableEntryRead(gsw_dev, &MAC_tableRead);
+		file_unlock(lock);
 		if (ret < 0)
 			return ret;
 
@@ -138,9 +141,9 @@ int check_mactable()
 	}
 	else
 	{
-#ifdef GSBE18000
+#if defined(GSBE18000) || defined(GS7_PRO)
 		for (port = 0; port <= PORT_MAX; port++) {
-			if ((port == 3) || (port > 4)) continue;
+			if (port <= 3) continue;
 #else
 		for (port = 1; port <= PORT_MAX; port++) {
 #endif
@@ -150,8 +153,8 @@ int check_mactable()
 #ifdef RTBE82M
 			idx--;
 #endif
-#ifdef GSBE18000
-			if (port == 4) idx = 3;
+#if defined(GSBE18000) || defined(GS7_PRO)
+			idx = idx - 4;
 #endif
 			if (memcmp(&Port_mactable_local, &Port_mactable[idx], sizeof(mactable))) {
 				change++;
@@ -223,7 +226,7 @@ mxlmonitor_main(int argc, char *argv[])
 
 	debug = nvram_get_int("mxlmonitor_debug");
 
-#if defined(RTBE82M) || defined(GSBE18000)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO)
 	system("ethswctl -c pause -p 5 -v 2");
 	if (!is_router_mode() && !re_mode()) {
 		system("brctl delif br0 eth0");

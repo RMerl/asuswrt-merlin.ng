@@ -13,17 +13,10 @@
 #include <shared.h>
 #include "shutils.h"
 
-#if defined(RTCONFIG_MULTILAN_MWL)
-#define MTLAN_BH_FH_MAXINUM       ((1+4) * 2)
-#define MTLAN_MWL_MAXINUM         MTLAN_BH_FH_MAXINUM
-#else
-#define MTLAN_BH_FH_MAXINUM       0
-#endif
-
 #ifdef RTCONFIG_MAX_MTLAN
-#define MTLAN_MAXINUM  (RTCONFIG_MAX_MTLAN + MTLAN_BH_FH_MAXINUM + 1)
+#define MTLAN_MAXINUM  (RTCONFIG_MAX_MTLAN+1)
 #else  	//RTCONFIG_MAX_MTLAN
-#define MTLAN_MAXINUM             (16 + MTLAN_BH_FH_MAXINUM + 1) /* 16 + 1(BH) + 4(FH) + 1 (Default) */
+#define MTLAN_MAXINUM             17 /* 1 (Default) + 16 */
 #endif 	//RTCONFIG_MAX_MTLAN
 
 #define MTLAN_VPNS_MAXINUM        16
@@ -34,7 +27,7 @@
 #define VLAN_LIST_MAX_PARAM       3
 #define SUBNET_LIST_BASIC_PARAM   13
 #define SUBNET_LIST_MAX_PARAM     21
-#define CPLAN_MAXINUM             4
+#define CPLAN_MAXINUM             4 
 
 enum {
 	MTLAN_IFUNIT_BASE=50,

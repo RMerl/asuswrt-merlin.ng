@@ -637,6 +637,37 @@ const ASUS_POLICY = {
         .popup_bg.TUF .age-label {
             color: #FFFFFF;            
         }
+        .popup_bg.TS .modal-content {
+            background-color: #000000e6;
+            border: 1px solid #92650F;
+        }
+        .popup_bg.TS .modal-title {
+            color: #ffa523;
+        }
+        .popup_bg.TS .policy-scroll-div,
+        .popup_bg.TS .policy-scroll-div a{
+            color: #FFFFFF;
+        }
+        .popup_bg.TS .btn-primary {
+            background-color: #ffa523;
+            border: 0;
+        }
+        .popup_bg.TS .btn-primary.disabled, .btn-primary:disabled {
+            color: #fff;
+            background-color: #ffa523;
+        }
+        .popup_bg.TS .btn-primary:hover {
+            background-color: #D0982C;
+        }
+        .popup_bg.TS .notice_title {
+            color: #ffa523;
+        }
+        .popup_bg.TS .notice_content {
+            color: #FFFFFF;
+        }
+        .popup_bg.TS .age-label {
+            color: #FFFFFF;
+        }
       </style>`,
 }
 
@@ -670,19 +701,24 @@ let policy_status = {
 
 async function PolicyStatus() {
     let policy_status = {};
+    await httpApi.newEula.get()
+        .then(data => {
+            policy_status.EULA = data.ASUS_NEW_EULA;
+            policy_status.EULA_time = data.ASUS_NEW_EULA_time;
+        });
+
     await httpApi.privateEula.get()
         .then(data => {
             policy_status.PP = data.ASUS_PP;
             policy_status.PP_time = data.ASUS_PP_time;
         })
 
-    const nvram_data = await httpApi.nvramGet(["ASUS_NEW_EULA", "ASUS_NEW_EULA_time", 'TM_EULA', 'TM_EULA_time','preferred_lang','ASUS_PP_AutoWebUpgradeDisable'], true);
-    policy_status.EULA = nvram_data.ASUS_NEW_EULA;
-    policy_status.EULA_time = nvram_data.ASUS_NEW_EULA_time;
-    policy_status.TM = nvram_data.TM_EULA;
-    policy_status.TM_time = nvram_data.TM_EULA_time;
-    policy_status.Policy_lang = nvram_data.preferred_lang;
-    policy_status.ASUS_PP_AutoWebUpgradeDisable = nvram_data.ASUS_PP_AutoWebUpgradeDisable;
+    const TM_EULA = await httpApi.nvramGet(['TM_EULA', 'TM_EULA_time'], true);
+    policy_status.TM = TM_EULA.TM_EULA;
+    policy_status.TM_time = TM_EULA.TM_EULA_time;
+
+    policy_status.Policy_lang = await httpApi.nvramGet(['preferred_lang'], true).preferred_lang;
+    policy_status.ASUS_PP_AutoWebUpgradeDisable = await httpApi.nvramGet(['ASUS_PP_AutoWebUpgradeDisable'], true).ASUS_PP_AutoWebUpgradeDisable;
     return policy_status;
 }
 
@@ -742,10 +778,18 @@ class PolicyScrollDiv {
             background-color: #181818;
             color: #FFFFFF;
         }
-        
+
+        .policy-scroll-div.TS {
+            border: 2px solid #2ED9C3;
+            border-radius: 8px;
+            background-color: #181818;
+            color: #FFFFFF;
+        }
+
         .policy-scroll-div.RT a,
         .policy-scroll-div.ROG a,
-        .policy-scroll-div.TUF a{
+        .policy-scroll-div.TUF a,
+        .policy-scroll-div.TS a{
             color: #FFFFFF;
         }
       </style>
@@ -753,7 +797,6 @@ class PolicyScrollDiv {
     `;
 
         shadowRoot.appendChild(template.content.cloneNode(true));
-        shadowRoot.querySelector('.policy-scroll-div').addEventListener('click', this.handleClick.bind(this));
         shadowRoot.querySelector('.policy-scroll-div').addEventListener('scroll', scrollCallBack.bind(this));
         if (policy) {
             shadowRoot.querySelector('.policy-scroll-div').innerHTML = ASUS_POLICY.Content[policy].HTML;
@@ -768,26 +811,6 @@ class PolicyScrollDiv {
 
     reset() {
         this.element.shadowRoot.querySelector('.policy-scroll-div').scrollTop = 0;
-    }
-
-    handleClick() {
-        const scrollDiv = this.element.shadowRoot.querySelector('.policy-scroll-div');
-        let currentScrollTop = scrollDiv.scrollTop;
-        const targetScrollTop = currentScrollTop + scrollDiv.offsetHeight;
-        const animationDuration = 1000;
-        const frameDuration = 15;
-        const scrollDistancePerFrame = (targetScrollTop - currentScrollTop) / (animationDuration / frameDuration);
-
-        function animateScroll() {
-            currentScrollTop += scrollDistancePerFrame;
-            scrollDiv.scrollTop = currentScrollTop;
-
-            if (currentScrollTop < targetScrollTop) {
-                requestAnimationFrame(animateScroll);
-            }
-        }
-
-        animateScroll();
     }
 }
 
@@ -850,7 +873,6 @@ class PolicyModalComponent {
         this.element = div;
 
         if (this.element.shadowRoot.querySelector('div.policy-scroll-div')) {
-            this.element.shadowRoot.querySelector('div.policy-scroll-div').addEventListener('click', this.handleScrollDivClick.bind(this.element.shadowRoot.querySelector('div.policy-scroll-div')));
             this.element.shadowRoot.querySelector('div.policy-scroll-div').addEventListener('scroll', this.handleScrollCheck.bind(this));
         }
 
@@ -1048,26 +1070,6 @@ class PolicyModalComponent {
                 btn.classList.add("disabled");
             }
         }
-    }
-
-    handleScrollDivClick() {
-        const scrollDiv = this;
-        let currentScrollTop = scrollDiv.scrollTop;
-        const targetScrollTop = currentScrollTop + scrollDiv.offsetHeight;
-        const animationDuration = 1000;
-        const frameDuration = 15;
-        const scrollDistancePerFrame = (targetScrollTop - currentScrollTop) / (animationDuration / frameDuration);
-
-        function animateScroll() {
-            currentScrollTop += scrollDistancePerFrame;
-            scrollDiv.scrollTop = currentScrollTop;
-
-            if (currentScrollTop < targetScrollTop) {
-                requestAnimationFrame(animateScroll);
-            }
-        }
-
-        animateScroll();
     }
 
     handleScrollCheck() {
@@ -1383,6 +1385,7 @@ class QisPolicyPageComponent {
         this.policyStatus = policyStatus;
         httpApi.log('policy_status', JSON.stringify(policyStatus));
         const div = document.createElement('div');
+        div.style.height = '100%';
         const shadowRoot = div.attachShadow({mode: 'open'});
         const template = document.createElement('template');
         let title = `${ASUS_POLICY.Content[policy].Title}`
@@ -1405,19 +1408,20 @@ class QisPolicyPageComponent {
                     --rt-primary: #006CE1;
                     --business-primary: #006CE1;
                     --rog-primary: #FF1929;
-                    --tuf-primary: #FFAA32;                    
+                    --tuf-primary: #FFAA32;
+                    --ts-primary: #2ED9C3;
                     
                     --business-notice: #B42D18;
                     --rt-notice: #E75B4B;
                     --rog-notice: #00D5FF;
                     --tuf-notice: #00D5FF;
+                    --ts-notice: #2ED9C3;
                 }
                 .bg {
                     background-color: #F5F5F5;
                     width: 100%;
-                    height: 100%;
+                    height: -webkit-fill-available;
                     background-size: cover;
-                    min-height: 100vh
                 }
                 .header {
                     height: 60px;
@@ -1725,7 +1729,7 @@ class QisPolicyPageComponent {
                 @media screen and (min-width: 576px){
                     
                     .page {
-                        width: 70%;
+                        width: 95%;
                     }
                     
                     .page-title{
@@ -1783,7 +1787,7 @@ class QisPolicyPageComponent {
                 
                 @media screen and (min-width: 768px){
                     .page {
-                        width: 80%;
+                        width: 90%;
                     }
                 }
                 
@@ -2073,7 +2077,105 @@ class QisPolicyPageComponent {
                         background-size: 1px 4px, 4px 1px, 1px 4px, 4px 1px;
                     }           
                 }
-                
+
+                .bg.TS{
+                    background-color: transparent;
+                }
+                .bg.TS .header{
+                    border: none;
+                    background-color: transparent;
+                    height: 110px;
+                }
+                .bg.TS .header .header-name{
+                    display: none;
+                }
+                .bg.TS .icon-logo{
+                    --logo-svg: unset;
+                    background:url('../images/New_ui/logo_TX.png') no-repeat left bottom;
+                    height: 96px;
+                    width: 450px;
+                    min-width: 450px;
+                    margin-left: 230px;
+                }
+                .bg.TS .page-title{
+                    color: var(--ts-primary);
+                }
+                .bg.TS .page-desc{
+                    color: #FFF;
+                }
+                .bg.TS .scroll-info{
+                    color: var(--ts-notice);
+                }
+                .bg.TS .btn{
+                    color: #FFF;
+                    border-radius: 8px;
+                    border: 2px solid #2ED9C3;
+                }
+                .bg.TS .btn.disabled{
+                    background-color: #222222;
+                    color: #999999;
+                }
+                .bg.TS .btn.disabled::after{
+                    --borderColor: #2ED9C3;
+                    border-radius: 8px;
+                }
+                .bg.TS .btn.agree{
+                    background-color: #141618;
+                    color: #FFF;
+                }
+                .bg.TS .btn.agree.disabled{
+                    background-color: #141618;
+                    color: #FFF;
+                    border: 2px solid #125B51;
+                }
+                .bg.TS .btn.disagree{
+                    background-color: #222222;
+                }
+                .bg.TS .btn.disabled:hover{
+                    box-shadow: none;
+                }
+                .bg.TS .checkbox-wrapper-40 {
+                    --borderColor: var(--ts-primary);
+                    color: #FFF;
+                }
+                .bg.TS .toolbar-btn{
+                    color: #DCDCDC;
+                }
+                .bg.TS .toolbar-btn .lang-icon{
+                    background-color: #DCDCDC;
+                }
+                .bg.TS .dropdown-menu{
+                    background-color: #0A0A0A;
+                    border: 1px solid #4D4D4D;
+                    border-radius: 0;
+                }
+                .bg.TS .dropdown-menu > ul > li{
+                    color: #B3B3B3;
+                }
+                .bg.TS .dropdown-menu > ul > li:hover{
+                    background-color: #262626;
+                    border-radius: 0;rgb(255, 87, 34)
+                    color: var(--tuf-primary);
+                }
+                @media screen and (min-width: 576px){
+                    .bg.TS .btn:hover{
+                        box-shadow: 0 0 8px 0 #2ED9C3;
+                    }
+                    .bg.TS .btn::after{
+                        content: "";
+                        height: 100%;
+                        min-width: 200px;
+                        max-width: 300px;
+                        width: 25%;
+                        position: absolute;
+                        z-index: 3;
+                        border-radius: 8px;
+                        --borderColor: #2ED9C3;
+                        background: linear-gradient(to left, var(--borderColor), var(--borderColor)) left top no-repeat, linear-gradient(to bottom, var(--borderColor), var(--borderColor)) left top no-repeat, linear-gradient(to left, var(--borderColor), var(--borderColor)) right top no-repeat, linear-gradient(to bottom, var(--borderColor), var(--borderColor)) right top no-repeat, linear-gradient(to left, var(--borderColor), var(--borderColor)) left bottom no-repeat, linear-gradient(to bottom, var(--borderColor), var(--borderColor)) left bottom no-repeat, linear-gradient(to left, var(--borderColor), var(--borderColor)) right bottom no-repeat, linear-gradient(to left, var(--borderColor), var(--borderColor)) right bottom no-repeat;
+                        background-size: 1px 4px, 4px 1px, 1px 4px, 4px 1px;
+                    }
+                }
+
             </style>
             <div class="bg ${theme}">
                 <div class="header">
@@ -2297,6 +2399,8 @@ class QisPolicyPageComponent {
             return "TUF";
         } else if (isSupport("BUSINESS")) {
             return "";
+        } else if (isSupport("TS_UI")) {
+            return "TS";
         } else {
             return theme;
         }

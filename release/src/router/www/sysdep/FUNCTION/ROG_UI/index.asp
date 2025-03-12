@@ -373,14 +373,8 @@ function initial(){
 
 		show_middle_status(wl_auth_mode, wl_wep_x);
 	}
-	else{
-		if(isSupport("sdn_mainfh")){
-			const mainfh = get_sdn_main_fh_info();
-			show_middle_status(mainfh[0]["auth"], 0);
-		}
-		else
-			show_middle_status(document.form.wl_auth_mode_x.value, parseInt(document.form.wl_wep_x.value));
-	}
+	else
+		show_middle_status(document.form.wl_auth_mode_x.value, parseInt(document.form.wl_wep_x.value));
 
 	if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
 		var html = '<a id="clientStatusLink" href="device-map/amesh.asp" target="statusframe">';
@@ -432,7 +426,7 @@ function initial(){
 			show_USBDevice(tmpDisk);
 		}
 		
-	 	require(['/require/modules/diskList.js'], function(diskList){
+		require(['/require/modules/diskList.js?hash=' + Math.random().toString()], function(diskList){
 	 		var usbDevicesList = diskList.list();
 			for(var i=0; i<usbDevicesList.length; i++){
 			  var new_option = new Option(usbDevicesList[i].deviceName, usbDevicesList[i].deviceIndex);
@@ -452,7 +446,7 @@ function initial(){
 					document.getElementById("deviceText_" + usbIndex).appendChild(divUsbMountCount);
 
 					$(".usb_count_circle").mouseover(function(){
-						return overlib(this.innerHTML + " usb devices are plugged in <% nvram_get("productid"); %> through this port.");
+						return overlib(this.innerHTML + ` usb devices are plugged in <% nvram_get("productid"); %> through this port.`);
 					});
 
 					$(".usb_count_circle").mouseout(function(){
@@ -974,10 +968,9 @@ function clickEvent(obj){
 		}		
 	}
 	else if(obj.id.indexOf("Router") > 0){
-		var defaultRouterFrame = `/device-map/router${isSupport("sdn_mainfh")?"_status":""}.asp`;
 		icon = "iconRouter";
 		stitle = "<#menu5_7_1#>";
-		document.getElementById("statusframe").src = defaultRouterFrame;
+		document.getElementById("statusframe").src = "/device-map/router.asp";
 	}
 	else if(obj.id.indexOf("Client") > 0){
 		icon = "iconClient";
@@ -1121,9 +1114,7 @@ function showstausframe(page){
 			
 		page = "Internet";
 	}
-	else if(page == "Router"){
-		page = isSupport("sdn_mainfh") ? `${page}_status` : page;
-	}
+	
 	window.open("/device-map/"+page.toLowerCase()+".asp","statusframe");
 }
 
@@ -1197,7 +1188,7 @@ function show_ddns_fail_hint() {
 	var str="";
 	if(sw_mode != 3 && document.getElementById("connect_status").className == "connectstatusoff")
 		str = "<#Disconnected#>";
-	else if(ddns_server = 'WWW.ASUS.COM') {
+	else if(ddns_server == 'WWW.ASUS.COM') {
 		var ddnsHint = getDDNSState(ddns_return_code, "<%nvram_get("ddns_hostname_x");%>", "<%nvram_get("ddns_old_name");%>");
 		if(ddnsHint != "")
 			str = ddnsHint;
@@ -1724,7 +1715,7 @@ function popupEditBlock(clientObj){
 
 		if(sw_mode != 4){
 			var radioIcon_css = "radioIcon";
-			if(clientObj.isGN != "" && clientObj.isGN != undefined)
+			if((clientObj.isGN != "" && clientObj.isGN != undefined) || (isSupport("mtlancfg") && clientObj.sdn_idx > 0))
 				radioIcon_css += " GN";
 			clientIconHtml += '<div class="' + radioIcon_css + ' radio_' + rssi_t +'" title="' + connectModeTip + '"></div>';
 			if(clientObj.isWL != 0 || (isSupport("mtlancfg") && clientObj.sdn_idx > 0)){
@@ -2136,7 +2127,7 @@ function showClientIcon() {
 	}
 	code +='</table>';
 	document.getElementById("usericon_block").innerHTML = code;
-};
+}
 
 function delClientIcon(rowdata) {
 	var delIdx = rowdata.parentNode.parentNode.rowIndex;
@@ -2876,20 +2867,19 @@ function showClientlistModal(){
 						</div>
 						<script>
 							(function(){
-								const defaultRouterFrame = `/device-map/router${isSupport("sdn_mainfh")?"_status":""}.asp`;
 								setTimeout(function(){
-									document.getElementById("statusframe").src = defaultRouterFrame;	
+									$('#statusframe').attr('src', '/device-map/router.asp').show();
 									const get_header_info = httpApi.hookGet("get_header_info");
 									const domain = `${get_header_info.protocol}://${get_header_info.host}`;
 									const domain_w_port = `${get_header_info.protocol}://${get_header_info.host}:${get_header_info.port}`;
 
 									let messageTimeout;
 									messageTimeout = setTimeout(() => {
-										document.getElementById("statusframe").src = `/device-map/router${isSupport("sdn_mainfh")?"_status":""}.asp`;
+										document.getElementById("statusframe").src = "/device-map/router.asp";
 									}, 5000);
 
 									window.addEventListener('message', function(event){
-										if(event.data == `router${isSupport("sdn_mainfh")?"_status":""}.asp`){
+										if(event.data == `router.asp`){
 											const has_port = /:\d+$/.test(event.origin);
 											if(has_port){
 												if(event.origin !== domain_w_port){

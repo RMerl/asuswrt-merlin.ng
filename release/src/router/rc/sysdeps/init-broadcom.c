@@ -1287,7 +1287,6 @@ void generate_switch_para(void)
 		case MODEL_RPAX56:
 		case MODEL_RPAX58:
 		case MODEL_RPBE58:
-		case MODEL_RTBE58_GO:
 		case MODEL_RTAX86U:
 		case MODEL_RTAX68U:
 		case MODEL_RTAC68U_V4:
@@ -1306,14 +1305,16 @@ void generate_switch_para(void)
 		case MODEL_RTBE88U:
 		case MODEL_RTBE86U:
 		case MODEL_RTBE58U:
+		case MODEL_RTBE58U_V2:
 		case MODEL_RTBE92U:
 		case MODEL_RTBE95U:
 		case MODEL_GTBE19000:
 		case MODEL_RTBE82U:
 		case MODEL_RTBE82M:
 		case MODEL_RTBE58U_PRO:
-		case MODEL_GTBE19000_AI:
+		case MODEL_GTBE19000AI:
 		case MODEL_GSBE18000:
+		case MODEL_GTBE96_AI:
 			break;
 
 		case MODEL_RTAC5300:
@@ -1749,13 +1750,16 @@ void enable_jumbo_frame(void)
 			if (!strncmp(word, "eth", 3))
 				doSystem("ifconfig %s mtu 1500", word);
 
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
+	if (is_rtl8372_boardid())
+#endif
 	if (enable)
 		system("rtkswitch 18");
 	else
 		system("rtkswitch 17");
 #endif
-#if defined(RTBE82M) || defined(GSBE18000)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO)
 	if (enable)
 		system("fapi-GSW-CfgSet nMaxPacketLen=10000");
 	else
@@ -1785,6 +1789,7 @@ void enable_jumbo_frame(void)
 	case MODEL_RTAX5400:
 	case MODEL_XD6_V2:
 	case MODEL_RTBE58U:
+	case MODEL_RTBE58U_V2:
 	case MODEL_RTBE92U:
 	case MODEL_RTBE95U:
 	case MODEL_RTBE82U:
@@ -1796,7 +1801,6 @@ void enable_jumbo_frame(void)
 		break;
 	case MODEL_XT8PRO:
 	case MODEL_BM68:
-	case MODEL_RTBE58_GO:
 		eval("ethswctl", "-c", "regaccess", "-v", "0x4005", "-l", "2", "-d", enable ? "0x2600" : "0x7d0", "-n", "0");
 		eval("ethswctl", "-c", "pmdioaccess", "-x", "0x4005", "-l", "2", "-d", enable ? "0x2600" : "0x7d0");
 		break;
@@ -1829,7 +1833,7 @@ void enable_jumbo_frame(void)
 #endif
 }
 
-#if defined(BCM6855) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(BQ16) || defined(BQ16_PRO) || defined(GTBE19000) || defined(BT10) || defined(GTBE19000_AI)
+#if defined(BCM6855) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(BQ16) || defined(BQ16_PRO) || defined(GTBE19000) || defined(BT10) || defined(GTBE19000AI) || defined(GTBE96_AI)
 void config_jumbo_frame()
 {
 	char value[sizeof("10240")];
@@ -1899,7 +1903,7 @@ void config_jumbo_frame()
 
 	}
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(BQ16) || defined(BQ16_PRO) || defined(GTBE19000) || defined(BT10) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(BQ16) || defined(BQ16_PRO) || defined(GTBE19000) || defined(BT10) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	int bufmem = 0;
 	if (f_read_string("/proc/environment/bufmem", value, sizeof(value)) > 0)
 		bufmem = atoi(value);
@@ -2034,8 +2038,11 @@ void reset_ext_phy()
 		eval("ethctl", "eth6", "phy-power", "down");
 		eval("ethctl", "eth6", "phy-power", "up");
 	}
-#elif defined(XT12) || defined(ET12) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
-	if (hnd_boardid_cmp("GT-BE98_BCM") == 0) {
+#elif defined(XT12) || defined(ET12) 
+		eval("ethctl", "eth3", "phy-power", "down");
+		eval("ethctl", "eth3", "phy-power", "up");
+#elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
+	if (!is_rtl8372_boardid()) {
 		eval("ethctl", "eth6", "phy-power", "down");
 		eval("ethctl", "eth6", "phy-power", "up");
 	} else {
@@ -2078,6 +2085,9 @@ void init_switch_pre()
 	
 #endif
 	char *wan_ifeth = NULL;
+#if defined(BT10)
+	int is_re_mode = nvram_get_int("re_mode");
+#endif
 
 #ifdef GT10
 	system("ethswctl -c deleteport -p 5");
@@ -2128,13 +2138,10 @@ void init_switch_pre()
 	system("ethswctl -c pause -p 3 -v 2");
 	system("ethswctl -c pause -p 5 -v 2");
 	system("ethswctl -c pause -p 6 -v 2");
-#elif defined(RTBE58_GO)
-	system("ethswctl -c pause -p 0 -v 2");
-	system("ethswctl -c pause -p 1 -v 2");
 #elif defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RPBE58)
 	system("ethswctl -c pause -p 0 -v 2");
-#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000)
-#if defined(RTBE82M) || defined(GSBE18000)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO)
 	system("ethswctl -c pause -p 6 -v 2");
 #else
 	system("ethswctl -c pause -p 0 -v 2");
@@ -2153,12 +2160,12 @@ void init_switch_pre()
 	system("ethswctl -c pause -p 4 -v 2");
 	system("ethswctl -c pause -p 8 -v 2");
 #endif
-#elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	system("ethswctl -c pause -p 1 -v 2");
 	system("ethswctl -c pause -p 5 -v 2");
 	system("ethswctl -c pause -p 6 -v 2");
 	system("ethswctl -c pause -p 7 -v 2");
-	if(hnd_boardid_cmp("GT-BE98_BCM") == 0) {
+	if(!is_rtl8372_boardid()) {
 		system("ethswctl -c pause -p 8 -v 2");
 		system("ethswctl -c pause -p 9 -v 2");
 		system("ethswctl -c pause -p 10 -v 2");
@@ -2180,20 +2187,20 @@ void init_switch_pre()
 
 	memset(ifnames, 0, sizeof(ifnames));
 	add_to_list("eth0", ifnames, sizeof(ifnames));
-#if !defined(RTAX55) && !defined(RTAX1800) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTAX58U_V2) && !defined(RTAX3000N) && !defined(BR63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000)
+#if !defined(RTAX55) && !defined(RTAX1800) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTAX58U_V2) && !defined(RTAX3000N) && !defined(BR63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000) && !defined(GS7_PRO)
 	add_to_list("eth1", ifnames, sizeof(ifnames));
 #endif
-#if !defined(RTAX56_XD4) && !defined(XD4PRO) && !defined(CTAX56_XD4) && !defined(RTAX55) && !defined(RTAX1800) && !defined(RTAX82_XD6S) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTBE58_GO) && !defined(RTAX58U_V2) && !defined(RTAX3000N) && !defined(BR63) && !defined(EBA63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000)
+#if !defined(RTAX56_XD4) && !defined(XD4PRO) && !defined(CTAX56_XD4) && !defined(RTAX55) && !defined(RTAX1800) && !defined(RTAX82_XD6S) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTAX58U_V2) && !defined(RTAX3000N) && !defined(BR63) && !defined(EBA63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000) && !defined(GS7_PRO)
 	add_to_list("eth2", ifnames, sizeof(ifnames));
 #endif
-#if !defined(RTAX56_XD4) && !defined(XD4PRO) && !defined(CTAX56_XD4) && !defined(RTAX55) && !defined(RTAX1800) && !defined(RTAX82_XD6) && !defined(RTAX82_XD6S) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTBE58_GO) && !defined(RTAX58U_V2) && !defined(RTAX3000N) && !defined(BR63) && !defined(XD6_V2) && !defined(XC5) && !defined(EBA63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000)
+#if !defined(RTAX56_XD4) && !defined(XD4PRO) && !defined(CTAX56_XD4) && !defined(RTAX55) && !defined(RTAX1800) && !defined(RTAX82_XD6) && !defined(RTAX82_XD6S) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTAX58U_V2) && !defined(RTAX3000N) && !defined(BR63) && !defined(XD6_V2) && !defined(XC5) && !defined(EBA63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000) && !defined(GS7_PRO)
 	add_to_list("eth3", ifnames, sizeof(ifnames));
 #endif
-#if !defined(RTAX95Q) && !defined(XT8PRO) && !defined(BT12) && !defined(BT10) && !defined(BQ16) && !defined(BQ16_PRO) && !defined(BM68) && !defined(XT8_V2) && !defined(RTAXE95Q) && !defined(ET8PRO) && !defined(ET8_V2) && !defined(RTAX56_XD4) && !defined(XD4PRO) && !defined(CTAX56_XD4) && !defined(RTAX55) && !defined(RTAX1800) && !defined(RTAX82_XD6S) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTBE58_GO) && !defined(RTAX58U_V2) && !defined(ET12) && !defined(XT12) && !defined(GT10) && !defined(RTAX3000N) && !defined(BR63) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(XC5) && !defined(EBA63) && !defined(GTBE96) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(GTBE19000) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GTBE19000_AI) && !defined(GSBE18000)
+#if !defined(RTAX95Q) && !defined(XT8PRO) && !defined(BT12) && !defined(BT10) && !defined(BQ16) && !defined(BQ16_PRO) && !defined(BM68) && !defined(XT8_V2) && !defined(RTAXE95Q) && !defined(ET8PRO) && !defined(ET8_V2) && !defined(RTAX56_XD4) && !defined(XD4PRO) && !defined(CTAX56_XD4) && !defined(RTAX55) && !defined(RTAX1800) && !defined(RTAX82_XD6S) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTBE58_GO) && !defined(RTAX58U_V2) && !defined(ET12) && !defined(XT12) && !defined(GT10) && !defined(RTAX3000N) && !defined(BR63) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(XC5) && !defined(EBA63) && !defined(GTBE96) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(GTBE19000) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GTBE19000AI) && !defined(GSBE18000) && !defined(GS7_PRO) && !defined(GTBE96_AI)
 	add_to_list("eth4", ifnames, sizeof(ifnames));
 #endif
 #if defined(RTCONFIG_EXT_BCM53134) || defined(RTCONFIG_EXTPHY_BCM84880)
-#if !defined(RTAX95Q) && !defined(XT8PRO) && !defined(BT12) && !defined(BT10) && !defined(BQ16) && !defined(BQ16_PRO) && !defined(BM68) && !defined(XT8_V2) && !defined(RTAXE95Q) && !defined(ET8PRO) && !defined(ET8_V2) && !defined(ET12) && !defined(XT12) && !defined(TUFAX3000_V2) && !defined(RTAXE7800) && !defined(GT10) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(RTBE86U) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(GTBE19000) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(RTBE58_GO) && !defined(GTBE19000_AI) && !defined(GSBE18000)
+#if !defined(RTAX95Q) && !defined(XT8PRO) && !defined(BT12) && !defined(BT10) && !defined(BQ16) && !defined(BQ16_PRO) && !defined(BM68) && !defined(XT8_V2) && !defined(RTAXE95Q) && !defined(ET8PRO) && !defined(ET8_V2) && !defined(ET12) && !defined(XT12) && !defined(TUFAX3000_V2) && !defined(RTAXE7800) && !defined(GT10) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(RTBE86U) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(GTBE19000) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(RTBE58_GO) && !defined(GTBE19000AI) && !defined(GSBE18000) && !defined(GS7_PRO) && !defined(GTBE96_AI)
 #if defined(RTAX86U)
 	if(strcmp(get_productid(), "RT-AX86S"))
 #endif
@@ -2205,8 +2212,8 @@ void init_switch_pre()
 	add_to_list("eth6", ifnames, sizeof(ifnames));
 #endif
 
-#if defined(GTBE98)
-	if (hnd_boardid_cmp("GT-BE98_BCM") == 0) {
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
+	if (!is_rtl8372_boardid()) {
 		add_to_list("eth4", ifnames, sizeof(ifnames));
 		add_to_list("eth5", ifnames, sizeof(ifnames));
 		add_to_list("eth6", ifnames, sizeof(ifnames));
@@ -2246,12 +2253,14 @@ void init_switch_pre()
 #endif
 
 #if defined(RTBE88U)
-	dbg("eth9: SFP port An OFF\n");
-	doSystem("ethctl eth9 media-type auto An off");
+	if (!nvram_match("sfp_an", "on")) {
+		dbg("eth9: SFP port An OFF\n");
+		doSystem("ethctl eth9 media-type auto An off");
+	}
 #endif
 
 	foreach(word, ifnames, next) {
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE86U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE86U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 		if (!strncmp(word, wan_if_eth(), strlen(wan_if_eth()))) {
 			dbg("%s: phy-power ctrl\n", word);
 			doSystem("ethctl %s phy-power down", word);
@@ -2395,7 +2404,7 @@ void init_switch_pre()
 #endif
 	}
   #else
-#if defined(RTBE58U) || defined(TUFBE3600)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 	doSystem("ethswctl -c wan -i %s -o %s", wan_if_eth(), "enable");
 #else
 	doSystem("ethswctl -c wan -i %s -o %s", wan_if_eth(), is_router_mode() ? "enable" : "disable");
@@ -2449,7 +2458,7 @@ void init_switch_pre()
         }
 #endif
 
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
 	doSystem("ethswctl -c softswitch -i eth1 -o enable");
 #endif
 
@@ -2457,10 +2466,10 @@ void init_switch_pre()
 	system("swmdk");
 #endif
 
-#if !defined(RTAX55) && !defined(RTAX1800) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTBE58_GO) && !defined(RTAX58U_V2) && !defined(RTAX3000N) && !defined(BR63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(RTBE58_GO) && !defined(GSBE18000)
+#if !defined(RTAX55) && !defined(RTAX1800) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTAX58U_V2) && !defined(RTAX3000N) && !defined(BR63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000) && !defined(GS7_PRO)
 	foreach(word, ifnames, next){
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
-		if (hnd_boardid_cmp("GT-BE98_BCM") && !strcmp(word, "eth1")) continue;
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
+		if (is_rtl8372_boardid() && !strcmp(word, "eth1")) continue;
 #endif
 #if defined(RTAX86U)
 		if(!strcmp(word, "eth5")){
@@ -2525,8 +2534,8 @@ void init_switch_pre()
 	}
 #endif
 
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
-	if(hnd_boardid_cmp("GT-BE98_BCM")) {
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
+	if(is_rtl8372_boardid()) {
 		system("tmctl porttminit --devtype 0 --if eth1");
 		system("tmctl setqcfg --devtype 0 --if eth1 --qid 7 --priority 0 --weight 1 --schedmode 2 --shapingrate 2500000");
 		system("tmctl setqcfg --devtype 0 --if eth1 --qid 6 --priority 0 --weight 1 --schedmode 2 --shapingrate 2500000");
@@ -2539,10 +2548,10 @@ void init_switch_pre()
 	}
 #endif
 
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
 	if (!nvram_get_int("stop_tmctl_qos"))  {
 	system("tmctl porttminit --devtype 0 --if eth1");
-#if defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || (GSBE18000)
+#if defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || (GSBE18000) || defined(GS7_PRO)
 	system("tmctl setqcfg --devtype 0 --if eth1 --qid 7 --priority 0 --weight 1 --schedmode 2 --shapingrate 2500000");
 	system("tmctl setqcfg --devtype 0 --if eth1 --qid 5 --priority 0 --weight 1 --schedmode 2 --shapingrate 2500000");
 	system("tmctl setqcfg --devtype 0 --if eth1 --qid 3 --priority 0 --weight 1 --schedmode 2 --shapingrate 2500000");
@@ -2564,6 +2573,27 @@ void init_switch_pre()
 	system("tmctl setqcfg --devtype 0 --if eth1 --qid 0 --priority 0 --weight 1 --schedmode 2");
 	}
 #endif
+#if defined(BT10)
+	if (is_router_mode()){
+		if (nvram_match("wans_dualwan", "wan lan") || nvram_match("wans_dualwan", "lan wan")){
+			foreach(word, nvram_safe_get("wan_ifnames"), next) {
+				doSystem("ethswctl -c wan -i %s -o %s", word, "enable");
+			}
+		}
+	}
+	if(is_re_mode == 1){
+		/* skip 6766 internal switch to avoid lan client working abnormal if ETH_BH/WIFI_BH coexisted */
+		foreach(word, nvram_safe_get("eth_ifnames"), next){
+			doSystem("ethswctl -c softswitch -i %s -o enable", word);
+		}
+
+		/* skip 6766 internal switch to avoid lan client working abnormal if ETH_BH/WIFI_BH coexisted */
+		foreach(word, nvram_safe_get("wired_ifnames"), next){
+			doSystem("ethswctl -c softswitch -i %s -o enable", word);
+		}
+	}
+#endif
+
 }
 
 void wl_dis_illegal_160m()
@@ -2884,7 +2914,7 @@ void init_switch()
 		case MODEL_RPBE58:
 		case MODEL_DSLAX82U:
 		case MODEL_RTBE58U:
-		case MODEL_RTBE58_GO:
+		case MODEL_RTBE58U_V2:
 		{
 			/* set wanports in init_nvram for dualwan */
 			/* WAN L1 L2 L3 L4 */
@@ -2932,19 +2962,17 @@ void init_switch()
 			int ports[5] = { 0, 1, 2, 3, 4 };
 #elif defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 			int ports[1] = { 0 };
-#elif defined(RTBE58_GO)
-			int ports[2] = { 0, 1 };
 #elif defined(BR63) && defined(NEW_SWITCH_ORDER)
 			int ports[5] = { 0, 1, 2, 3, 4 };
-#else // RTAX56U, RTAX55, RT-AX58U_V2, RT-AX3000N, BR63, RT-BE58U, TUF-BE3600
+#else // RTAX56U, RTAX55, RT-AX58U_V2, RT-AX3000N, BR63, RT-BE58U, TUF-BE3600, RT-BE58U_V2, TUF-BE3600_V2, RT-BE55
 			int ports[5] = { 0, 4, 3, 2, 1 };
 #endif
 			char buf[64], *ptr;
 			int i, len, wancfg;
 			int tmp_type;
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 			eval("mknod", "/dev/rtkswitch", "c", "206", "0");
-#if defined(RTBE58U) || defined(TUFBE3600)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 			f_write_string("/sys/class/leds/led_gpio_24/brightness", "255", 0, 0);
 			usleep(40*1000);
 			f_write_string("/sys/class/leds/led_gpio_24/brightness", "0", 0, 0);
@@ -2975,11 +3003,11 @@ void init_switch()
 				wancfg = 0;
 #if defined(RTAX1800)
 				nvram_set("lanports", "1 2 3 4");
-#elif defined(RPAX56) || defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
+#elif defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 				nvram_set("lanports", "0");
 #elif defined(BR63) && defined(NEW_SWITCH_ORDER)
 				nvram_set("lanports", "1 2 3 4");
-#elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 				nvram_set("lanports", "4 3 2 1");
 #elif defined(RTAX82_XD6) || defined(XD6_V2)
 				nvram_set("lanports", "2 1 0");
@@ -3267,12 +3295,13 @@ void init_switch()
 
 			break;
 		}
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 		case MODEL_GTBE98:
 		case MODEL_GTBE98_PRO:
 		case MODEL_GTBE96:
 		case MODEL_GTBE19000:
-		case MODEL_GTBE19000_AI:
+		case MODEL_GTBE19000AI:
+		case MODEL_GTBE96_AI:
 		{
 			/* set wanports in init_nvram for dualwan */
 			/* WAN L1 L2 L3 L4 L5 L6 */
@@ -3299,7 +3328,10 @@ void init_switch()
 			}
 			else {
 				wancfg = 0;
-				nvram_set("lanports", "1 1 1 1 2 3");
+				if(is_rtl8372_boardid())
+					nvram_set("lanports", "1 1 1 1 2 3");
+				else
+					nvram_set("lanports", "1 2 3 4 5 6");
 			}
 
 			memset(buf, 0, sizeof(buf));
@@ -3317,9 +3349,9 @@ void init_switch()
 			}
 			nvram_set("wanports", buf);
 
-			if (hnd_boardid_cmp("GT-BE98_BCM")) {
+			if (is_rtl8372_boardid()) {
 				eval("mknod", "/dev/rtkswitch", "c", "206", "0");
-#if defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 				f_write_string("/sys/class/leds/led_gpio_52/brightness", "255", 0, 0);
 				usleep(40*1000);
 				f_write_string("/sys/class/leds/led_gpio_52/brightness", "0", 0, 0);
@@ -3414,7 +3446,7 @@ void init_switch()
 			break;
 		}
 #endif
-#if defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000)
+#if defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
 		case MODEL_RTBE82U:
 		case MODEL_RTBE82M:
 		case MODEL_RTBE58U_PRO:
@@ -3422,8 +3454,8 @@ void init_switch()
 		{
 			/* set wanports in init_nvram for dualwan */
 			/* WAN L1 L2 L3 L4 */
-#if defined(GSBE18000)
-			int ports[8] = { 3, 0, 1, 2, 4, 5, 6, 7 };
+#if defined(GSBE18000) || defined(GS7_PRO)
+			int ports[8] = { 3, 4, 5, 6, 7, 0, 1, 2 };
 #elif defined(RTBE82M)
 			int ports[5] = { 0, 1, 2, 3, 4 };
 #else
@@ -3451,8 +3483,8 @@ void init_switch()
 			}
 			else {
 				wancfg = 0;
-#if defined(GSBE18000)
-				nvram_set("lanports", "0 1 2 4 5 6 7");
+#if defined(GSBE18000) || defined(GS7_PRO)
+				nvram_set("lanports", "4 5 6 7 0 1 2");
 #elif defined(RTBE82M)
 				nvram_set("lanports", "1 2 3 4");
 #else
@@ -3475,30 +3507,26 @@ void init_switch()
 			}
 			nvram_set("wanports", buf);
 
-#if defined(RTBE82M) || defined(GSBE18000)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO)
 			eval("mknod", "/dev/mxlswitch", "c", "207", "0");
 #else
 			eval("mknod", "/dev/rtkswitch", "c", "206", "0");
 #endif
-#ifdef GSBE18000
+#if defined(GSBE18000) || defined(GS7_PRO)
 			f_write_string("/sys/class/leds/led_gpio_28/brightness", "255", 0, 0);
 #else
 			f_write_string("/sys/class/leds/led_gpio_27/brightness", "255", 0, 0);
 #endif
 			usleep(40*1000);
-#ifdef GSBE18000
+#if defined(GSBE18000) || defined(GS7_PRO)
 			f_write_string("/sys/class/leds/led_gpio_28/brightness", "0", 0, 0);
 #else
 			f_write_string("/sys/class/leds/led_gpio_27/brightness", "0", 0, 0);
 #endif
-#if defined(RTBE82M) || defined(GSBE18000)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO)
 			eval("insmod", "mxl");
 #else
-#if defined(RTBE82U) || defined(TUFBE82)
 			eval("insmod", "rtl8372");
-#else
-			eval("insmod", "rtl8366u");
-#endif
 			int count_war = 10;
 			while (((rtkswitch_serdes_status() & 0xff) == 0xe0) && (--count_war >= 0)) {
 				dbg("status NG. reinit...\n");
@@ -3515,7 +3543,7 @@ void init_switch()
 		{
 			/* set wanports in init_nvram for dualwan */
 			/* WAN L1 L2 L3 */
-			int ports[6] = { 0, 1, 2, 3 };
+			int ports[4] = { 0, 1, 2, 3 };
 			char buf[64], *ptr;
 			int i, len, wancfg;
 			int tmp_type;
@@ -3614,7 +3642,7 @@ void init_switch()
 #endif
 
 	hnd_nat_ac_init(1);
-#if !defined(RTBE82M) && !defined(GSBE18000)
+#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GS7_PRO)
 	enable_jumbo_frame();
 #endif
 #if defined(RTCONFIG_EXT_BCM53134) && !defined(RTCONFIG_HND_ROUTER_AX_6756) && !defined(RTCONFIG_HND_ROUTER_BE_4916)
@@ -3955,7 +3983,7 @@ int start_extrtl_vlan()
 
 #endif
 
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 /**
  * Setup a VLAN.
  * @vid:	VLAN ID
@@ -4034,7 +4062,7 @@ void vlan_forwarding(int vid, int prio, int stb, int untag)
 
 	/* same vid case */
 	if(stb == 6) {
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000)
 		mask |= 1 << 7;	// LAN3
 		mask |= 1 << 4;	// LAN4
 #elif defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
@@ -4043,7 +4071,7 @@ void vlan_forwarding(int vid, int prio, int stb, int untag)
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 		mask |= 1 << abs(3 - 4);
 		mask |= 1 << abs(4 - 4);
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 		mask |= 1 << 2;	// LAN3
 		mask |= 1 << 1; // LAN4
 #else
@@ -4052,7 +4080,7 @@ void vlan_forwarding(int vid, int prio, int stb, int untag)
 #endif
 	}
 	else {
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000)
 		if (stb == 1)
 			mask |= 1 << 5;	// LAN1
 		else if (stb == 2)
@@ -4072,7 +4100,7 @@ void vlan_forwarding(int vid, int prio, int stb, int untag)
 			mask |= 1 << 7;	// LAN4
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 		mask |= 1 << abs(stb - 4);
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 		mask |= 1 << abs(5 - stb);
 #else
 		mask |= 1 << (stb - 1);
@@ -4085,13 +4113,13 @@ void vlan_forwarding(int vid, int prio, int stb, int untag)
 	}
 	/* Meo(Bridge Mode) LAN4 leave tag */
 	else if(untag == 2) {
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000)
 		mask |= abs((1 << 4) << 16);	// LAN4
 #elif defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
 		mask |= abs((1 << 7) << 16);	// LAN4
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 		mask |= abs(1 << 16);
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 		mask |= abs((1 << 1) << 16);	// LAN4
 #else
 		mask |= abs((1 << 3) << 16);
@@ -4119,11 +4147,837 @@ void vlan_forwarding(int vid, int prio, int stb, int untag)
 }
 #endif
 
+#if defined(RTBE82M)
 void config_switch(void)
 {
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI) //handle dualwan on rtkswitch
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
-	if (!hnd_boardid_cmp("GT-BE98_BCM"))
+#ifdef RTCONFIG_DUALWAN
+	int unit = 0;
+	char wan_if[10];
+	if (is_router_mode() && nvram_get("wans_dualwan")) {
+		for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
+			if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_LAN) {
+/* The LAN/WAN port mapping:
+    - CPU0: port9/xpcs0
+    - CPU1: port13/xpcs1
+    - WAN: port1
+    - LAN1: port2
+    - LAN2: port3
+    - LAN3: port4
+    - LAN4: port5
+
+    wans_lanport == 1 case:
+	Vlan0-BID0: LAN2/LAN3/LAN4/CPU1 untag BID0 (bp3-5,13)
+	Vlan0-BID1: WAN-CPU0-BID1
+	Vlan2-BID2: LAN1 untag BID2 (ctp2/bp2), CPU1 tagged vid2 BID2 (ctp13/new-BP17)
+*/
+				if (nvram_match("wans_lanport", "1")) {
+// WAN-CPU0 (It is the default settings in start config)
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=1 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x200");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2");
+
+// LAN2/LAN3/LAN4/CPU1, LAN1/CPU1-newBP
+system("fapi-GSW-BridgeAlloc");
+
+// GSW_BRIDGE_portAlloc_t bpnew = {.nBridgePortId = 17};
+system("fapi-GSW-BridgePortAlloc");
+
+//Assign new exVLAN. Must save the returned "blockId"
+//In this case (86252), the blockId=112
+system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
+
+//CTP2 to set exVLAN, discard stag,dtag (port=2, blockId=16*(i-1)=0x10)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x10 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x10 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=7, blockId=16*(i-1)=0x60)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13), filter single tag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=3 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=3 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//xpcs1(CTP13), filter double tag (inner tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=4 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=1 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//new-tag-BP17, treatment untag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=0 \
+	eOuterVlanFilterVlanType=3 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment stag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=1 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment dtag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=2 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=2 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//Bind CTP, EXVLAN, BP together
+
+//new-BP17, portmap=BP2
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=17 \
+	nBridgeId=2 nDestLogicalPortId=13 \
+	bMcDestIpLookupDisable=0 \
+	bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x4 nBridgePortMapIndex[1]=0x0 \
+	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=112");
+
+//CTP2 (port=2, blockId=16*(i-1)=0x10)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=2 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x10");
+
+//xpcs1(CTP13) (port=7, blockId=16*(i-1)=0x60)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=13 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x60");
+
+//On PORT_BPs (2-5,13) to set bridge ID and bridge port member
+
+//BP2, portmap: bit17
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=2 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x2");
+
+//BP3-5&13, portmap: bit3-5,13 exclude itself
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2030");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2028");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=5 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2018");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x38");
+				} else if (nvram_match("wans_lanport", "2")) {
+// WAN-CPU0 (It is the default settings in start config)
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=1 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x200");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2");
+
+// LAN1/LAN3/LAN4/CPU1, LAN2/CPU1-newBP
+system("fapi-GSW-BridgeAlloc");
+
+// GSW_BRIDGE_portAlloc_t bpnew = {.nBridgePortId = 17};
+system("fapi-GSW-BridgePortAlloc");
+
+//Assign new exVLAN. Must save the returned "blockId"
+//In this case (86252), the blockId=112
+system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
+
+//CTP2 to set exVLAN, discard stag,dtag (port=3, blockId=16*(i-1)=0x20)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x20 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x20 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=7, blockId=16*(i-1)=0x60)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13), filter single tag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=3 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=3 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//xpcs1(CTP13), filter double tag (inner tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=4 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=1 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//new-tag-BP17, treatment untag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=0 \
+	eOuterVlanFilterVlanType=3 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment stag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=1 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment dtag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=2 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=2 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//Bind CTP, EXVLAN, BP together
+
+//new-BP17, portmap=BP2
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=17 \
+	nBridgeId=2 nDestLogicalPortId=13 \
+	bMcDestIpLookupDisable=0 \
+	bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x8 nBridgePortMapIndex[1]=0x0 \
+	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=112");
+
+//CTP2 (port=3, blockId=16*(i-1)=0x20)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=3 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x20");
+
+//xpcs1(CTP13) (port=7, blockId=16*(i-1)=0x60)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=13 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x60");
+
+//On PORT_BPs (2-5,13) to set bridge ID and bridge port member
+
+//BP2, portmap: bit17
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=2 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x2");
+
+//BP3-5&13, portmap: bit 2,4,5,13 exclude itself
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2030");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2024");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=5 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2014");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x34");
+				} else if (nvram_match("wans_lanport", "3")) {
+// WAN-CPU0 (It is the default settings in start config)
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=1 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x200");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2");
+
+// LAN1/LAN2/LAN4/CPU1, LAN3/CPU1-newBP
+system("fapi-GSW-BridgeAlloc");
+
+// GSW_BRIDGE_portAlloc_t bpnew = {.nBridgePortId = 17};
+system("fapi-GSW-BridgePortAlloc");
+
+//Assign new exVLAN. Must save the returned "blockId"
+//In this case (86252), the blockId=112
+system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
+
+//CTP2 to set exVLAN, discard stag,dtag (port=4, blockId=16*(i-1)=0x30)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x30 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x30 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=7, blockId=16*(i-1)=0x60)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13), filter single tag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=3 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=3 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//xpcs1(CTP13), filter double tag (inner tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=4 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=1 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//new-tag-BP17, treatment untag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=0 \
+	eOuterVlanFilterVlanType=3 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment stag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=1 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment dtag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=2 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=2 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//Bind CTP, EXVLAN, BP together
+
+//new-BP17, portmap=BP2
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=17 \
+	nBridgeId=2 nDestLogicalPortId=13 \
+	bMcDestIpLookupDisable=0 \
+	bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x10 nBridgePortMapIndex[1]=0x0 \
+	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=112");
+
+//CTP2 (port=4, blockId=16*(i-1)=0x30)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=4 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x30");
+
+//xpcs1(CTP13) (port=7, blockId=16*(i-1)=0x60)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=13 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x60");
+
+//On PORT_BPs (2-5,13) to set bridge ID and bridge port member
+
+//BP2, portmap: bit17
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=2 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x2");
+
+//BP3-5&13, portmap: bit 2,3,5,13 exclude itself
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2028");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2024");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=5 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x200c");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2c");
+				} else if (nvram_match("wans_lanport", "4")) {
+// WAN-CPU0 (It is the default settings in start config)
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=1 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x200");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2");
+
+// LAN1/LAN2/LAN3/CPU1, LAN4/CPU1-newBP
+system("fapi-GSW-BridgeAlloc");
+
+// GSW_BRIDGE_portAlloc_t bpnew = {.nBridgePortId = 17};
+system("fapi-GSW-BridgePortAlloc");
+
+//Assign new exVLAN. Must save the returned "blockId"
+//In this case (86252), the blockId=112
+system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
+
+//CTP2 to set exVLAN, discard stag,dtag (port=5, blockId=16*(i-1)=0x40)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x40 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x40 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=7, blockId=16*(i-1)=0x60)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13), filter single tag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=3 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=3 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//xpcs1(CTP13), filter double tag (inner tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=4 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=1 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//new-tag-BP17, treatment untag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=0 \
+	eOuterVlanFilterVlanType=3 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment stag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=1 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment dtag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=2 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=2 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//Bind CTP, EXVLAN, BP together
+
+//new-BP17, portmap=BP2
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=17 \
+	nBridgeId=2 nDestLogicalPortId=13 \
+	bMcDestIpLookupDisable=0 \
+	bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x20 nBridgePortMapIndex[1]=0x0 \
+	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=112");
+
+//CTP2 (port=5, blockId=16*(i-1)=0x40)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=5 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x40");
+
+//xpcs1(CTP13) (port=7, blockId=16*(i-1)=0x60)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=13 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x60");
+
+//On PORT_BPs (2-5,13) to set bridge ID and bridge port member
+
+//BP2, portmap: bit17
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=5 nBridgeId=2 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x2");
+
+//BP3-5&13, portmap: bit 2,3,4,13 exclude itself
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2018");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2014");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x200c");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x1c");
+				} else return;
+
+				printf("DUAL WAN: Set specific LAN as WAN\n");
+				eval("vconfig", "set_name_type", "VLAN_PLUS_VID_NO_PAD");
+				eval("vconfig", "add", "eth1", "2");
+			}
+		}
+	}
+#endif
+}
+#elif defined(GSBE18000) || defined(GS7_PRO)
+void config_switch(void)
+{
+#ifdef RTCONFIG_DUALWAN
+	int unit = 0;
+	char wan_if[10];
+	if (is_router_mode() && nvram_get("wans_dualwan")) {
+		for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
+			if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_LAN) {
+/* The LAN/WAN port mapping:
+    - CPU0: port9/xpcs0
+    - CPU1: port13/xpcs1
+    - WAN: port4
+    - LAN1: port5
+    - LAN2: port6
+    - LAN3: port7
+    - LAN4: port8
+    - LAN5: port1
+    - LAN6: port2
+    - LAN7: port3
+
+    wans_lanport == 1 case:
+	Vlan0-BID0: LAN2/LAN3/LAN4/CPU1 untag BID0 (bp6-8,1-3,13)
+	Vlan0-BID1: WAN-CPU0-BID1
+	Vlan2-BID2: LAN1 untag BID2 (ctp2/bp2), CPU1 tagged vid2 BID2 (ctp13/new-BP17)
+*/
+				if (nvram_match("wans_lanport", "1")) {
+// WAN-CPU0 (It is the default settings in start config)
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x200");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x10");
+
+// LAN2/LAN3/LAN4/CPU1, LAN1/CPU1-newBP
+system("fapi-GSW-BridgeAlloc");
+
+// GSW_BRIDGE_portAlloc_t bpnew = {.nBridgePortId = 17};
+system("fapi-GSW-BridgePortAlloc");
+
+//Assign new exVLAN. Must save the returned "blockId"
+//In this case (86282), the blockId=160
+system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
+
+//CTP2 to set exVLAN, discard stag,dtag (port=5, blockId=16*(i-1)=0x10)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x40 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x40 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=10, blockId=16*(i-1)=0x90)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x90 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x90 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13), filter single tag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x90 nEntryIndex=3 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=3 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//xpcs1(CTP13), filter double tag (inner tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x90 nEntryIndex=4 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=1 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//new-tag-BP17, treatment untag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=160 nEntryIndex=0 \
+	eOuterVlanFilterVlanType=3 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment stag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=160 nEntryIndex=1 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment dtag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=160 nEntryIndex=2 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=2 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//Bind CTP, EXVLAN, BP together
+
+//new-BP17, portmap=BP2
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=17 \
+	nBridgeId=2 nDestLogicalPortId=13 \
+	bMcDestIpLookupDisable=0 \
+	bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x20 nBridgePortMapIndex[1]=0x0 \
+	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=160");
+
+//CTP2 (port=5, blockId=16*(i-1)=0x40)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=5 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x40");
+
+//xpcs1(CTP13) (port=10, blockId=16*(i-1)=0x90)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=13 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x90");
+
+//On PORT_BPs (6-8,1-3,13) to set bridge ID and bridge port member
+
+//BP2, portmap: bit17
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=5 nBridgeId=2 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x2");
+
+//BP6-8&1-3&13, portmap: bit 6-8,1-3,13 exclude itself
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=6 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x218e");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=7 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x214e");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=8 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x20ce");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=1 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x21cc");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x21ca");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x21c6");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x1ce");
+				} else if (nvram_match("wans_lanport", "2")) {
+// WAN-CPU0 (It is the default settings in start config)
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x200");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x10");
+
+// LAN1/LAN3/LAN4/CPU1, LAN2/CPU1-newBP
+system("fapi-GSW-BridgeAlloc");
+
+// GSW_BRIDGE_portAlloc_t bpnew = {.nBridgePortId = 17};
+system("fapi-GSW-BridgePortAlloc");
+
+//Assign new exVLAN. Must save the returned "blockId"
+//In this case (86282), the blockId=160
+system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
+
+//CTP2 to set exVLAN, discard stag,dtag (port=6, blockId=16*(i-1)=0x10)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x50 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x50 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=10, blockId=16*(i-1)=0x90)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x90 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x90 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13), filter single tag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x90 nEntryIndex=3 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=3 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//xpcs1(CTP13), filter double tag (inner tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x90 nEntryIndex=4 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=1 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//new-tag-BP17, treatment untag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=160 nEntryIndex=0 \
+	eOuterVlanFilterVlanType=3 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment stag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=160 nEntryIndex=1 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment dtag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=160 nEntryIndex=2 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=2 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//Bind CTP, EXVLAN, BP together
+
+//new-BP17, portmap=BP2
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=17 \
+	nBridgeId=2 nDestLogicalPortId=13 \
+	bMcDestIpLookupDisable=0 \
+	bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x40 nBridgePortMapIndex[1]=0x0 \
+	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=160");
+
+//CTP2 (port=6, blockId=16*(i-1)=0x50)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=6 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x50");
+
+//xpcs1(CTP13) (port=10, blockId=16*(i-1)=0x90)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=13 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x90");
+
+//On PORT_BPs (5,7-8,1-3,13) to set bridge ID and bridge port member
+
+//BP2, portmap: bit17
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=6 nBridgeId=2 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x2");
+
+//BP5,7-8&1-3&13, portmap: bit 5,7-8,1-3,13 exclude itself
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=5 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x218e");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=7 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x212e");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=8 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x20ae");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=1 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x21ac");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x21aa");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x21a6");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x1ae");
+				} else if (nvram_match("wans_lanport", "3")) {
+// WAN-CPU0 (It is the default settings in start config)
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x200");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x10");
+
+// LAN1/LAN2/LAN4/CPU1, LAN3/CPU1-newBP
+system("fapi-GSW-BridgeAlloc");
+
+// GSW_BRIDGE_portAlloc_t bpnew = {.nBridgePortId = 17};
+system("fapi-GSW-BridgePortAlloc");
+
+//Assign new exVLAN. Must save the returned "blockId"
+//In this case (86282), the blockId=160
+system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
+
+//CTP2 to set exVLAN, discard stag,dtag (port=7, blockId=16*(i-1)=0x10)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=10, blockId=16*(i-1)=0x90)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x90 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x90 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13), filter single tag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x90 nEntryIndex=3 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=3 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//xpcs1(CTP13), filter double tag (inner tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x90 nEntryIndex=4 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=1 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//new-tag-BP17, treatment untag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=160 nEntryIndex=0 \
+	eOuterVlanFilterVlanType=3 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment stag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=160 nEntryIndex=1 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment dtag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=160 nEntryIndex=2 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=2 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//Bind CTP, EXVLAN, BP together
+
+//new-BP17, portmap=BP2
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=17 \
+	nBridgeId=2 nDestLogicalPortId=13 \
+	bMcDestIpLookupDisable=0 \
+	bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x80 nBridgePortMapIndex[1]=0x0 \
+	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=160");
+
+//CTP2 (port=7, blockId=16*(i-1)=0x60)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=7 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x60");
+
+//xpcs1(CTP13) (port=10, blockId=16*(i-1)=0x90)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=13 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x90");
+
+//On PORT_BPs (5-6,8,1-3,13) to set bridge ID and bridge port member
+
+//BP2, portmap: bit17
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=7 nBridgeId=2 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x2");
+
+//BP5-6,8&1-3&13, portmap: bit 5-6,8,1-3,13 exclude itself
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=5 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x214e");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=6 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x212e");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=8 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x206e");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=1 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x216c");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x216a");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2166");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x16e");
+				} else if (nvram_match("wans_lanport", "4")) {
+// WAN-CPU0 (It is the default settings in start config)
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x200");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x10");
+
+// LAN1/LAN2/LAN3/CPU1, LAN4/CPU1-newBP
+system("fapi-GSW-BridgeAlloc");
+
+// GSW_BRIDGE_portAlloc_t bpnew = {.nBridgePortId = 17};
+system("fapi-GSW-BridgePortAlloc");
+
+//Assign new exVLAN. Must save the returned "blockId"
+//In this case (86282), the blockId=160
+system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
+
+//CTP2 to set exVLAN, discard stag,dtag (port=8, blockId=16*(i-1)=0x10)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x70 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x70 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=10, blockId=16*(i-1)=0x90)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x90 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x90 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13), filter single tag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x90 nEntryIndex=3 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=3 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//xpcs1(CTP13), filter double tag (inner tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x90 nEntryIndex=4 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=1 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//new-tag-BP17, treatment untag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=160 nEntryIndex=0 \
+	eOuterVlanFilterVlanType=3 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment stag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=160 nEntryIndex=1 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment dtag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=160 nEntryIndex=2 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=2 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//Bind CTP, EXVLAN, BP together
+
+//new-BP17, portmap=BP2
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=17 \
+	nBridgeId=2 nDestLogicalPortId=13 \
+	bMcDestIpLookupDisable=0 \
+	bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x100 nBridgePortMapIndex[1]=0x0 \
+	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=160");
+
+//CTP2 (port=8, blockId=16*(i-1)=0x70)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=8 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x70");
+
+//xpcs1(CTP13) (port=10, blockId=16*(i-1)=0x90)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=13 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x90");
+
+//On PORT_BPs (5-7,1-3,13) to set bridge ID and bridge port member
+
+//BP2, portmap: bit17
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=8 nBridgeId=2 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x2");
+
+//BP5-7&1-3&13, portmap: bit 5-7,1-3,13 exclude itself
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=5 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x20ce");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=6 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x20ae");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=7 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x206e");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=1 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x20ec");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x20ea");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x20e6");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0xee");
+				} else return;
+
+				printf("DUAL WAN: Set specific LAN as WAN\n");
+				eval("vconfig", "set_name_type", "VLAN_PLUS_VID_NO_PAD");
+				eval("vconfig", "add", "eth1", "2");
+			}
+		}
+	}
+#endif
+}
+#else
+void config_switch(void)
+{
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) //handle dualwan on rtkswitch
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
+	if (!is_rtl8372_boardid())
 		return;
 #endif
 #ifdef RTCONFIG_DUALWAN
@@ -4135,7 +4989,7 @@ void config_switch(void)
 				if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_LAN) {
 					if (nvram_match("wans_lanport", "1")) {
 						/* add vlan 2 as WAN from rtkswitch */
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 						if (nvram_get_int("wans_extwan")) return;
 						__setup_vlan(2, 0, 0x00200020); //LAN1 as WAN
 						__setup_vlan(0, 0, 0x00D000D0); //no-tag fwd mask except LAN1
@@ -4146,7 +5000,7 @@ void config_switch(void)
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 						__setup_vlan(2, 0, 0x00080008); //LAN1 as WAN
 						__setup_vlan(0, 0, 0x00070007); //no-tag fwd mask except LAN1
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 						if (nvram_get_int("wans_extwan")) return;
 						__setup_vlan(2, 0, 0x00100010); //LAN1 as WAN
 						__setup_vlan(0, 0, 0x000E000E); //no-tag fwd mask except LAN1
@@ -4157,7 +5011,7 @@ void config_switch(void)
 					}
 					else if (nvram_match("wans_lanport", "2")) {
 						/* add vlan 2 as WAN from rtkswitch */
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 						if (nvram_get_int("wans_extwan")) {
 						__setup_vlan(2, 0, 0x00400040);	//LAN2 as WAN
 						__setup_vlan(0, 0, 0x00900090);	//no-tag fwd mask except LAN1/LAN2
@@ -4176,7 +5030,7 @@ void config_switch(void)
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 						__setup_vlan(2, 0, 0x00040004); //LAN2 as WAN
 						__setup_vlan(0, 0, 0x000B000B); //no-tag fwd mask except LAN2
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 						if (nvram_get_int("wans_extwan")) {
 						__setup_vlan(2, 0, 0x00080008);	//LAN2 as WAN
 						__setup_vlan(0, 0, 0x00060006);	//no-tag fwd mask except LAN2
@@ -4191,7 +5045,7 @@ void config_switch(void)
 					}
 					else if (nvram_match("wans_lanport", "3")) {
 						/* add vlan 2 as WAN from rtkswitch */
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 						if (nvram_get_int("wans_extwan")) {
 						__setup_vlan(2, 0, 0x00800080);	//LAN3 as WAN
 						__setup_vlan(0, 0, 0x00500050);	//no-tag fwd mask except LAN1/LAN3
@@ -4210,7 +5064,7 @@ void config_switch(void)
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 						__setup_vlan(2, 0, 0x00020002); //LAN3 as WAN
 						__setup_vlan(0, 0, 0x000D000D); //no-tag fwd mask except LAN3
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 						if (nvram_get_int("wans_extwan")) {
 						__setup_vlan(2, 0, 0x00040004);	//LAN3 as WAN
 						__setup_vlan(0, 0, 0x000A000A);	//no-tag fwd mask except LAN3
@@ -4225,7 +5079,7 @@ void config_switch(void)
 					}
 					else if (nvram_match("wans_lanport", "4")) {
 						/* add vlan 2 as WAN from rtkswitch */
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 						if (nvram_get_int("wans_extwan")) {
 						__setup_vlan(2, 0, 0x00100010); //LAN4 as WAN
 						__setup_vlan(0, 0, 0x00C000C0); //no-tag fwd mask except LAN1/LAN4
@@ -4244,7 +5098,7 @@ void config_switch(void)
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 						__setup_vlan(2, 0, 0x00010001); //LAN4 as WAN
 						__setup_vlan(0, 0, 0x000E000E); //no-tag fwd mask except LAN4
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 						if (nvram_get_int("wans_extwan")) {
 						__setup_vlan(2, 0, 0x00020002);	//LAN4 as WAN
 						__setup_vlan(0, 0, 0x000C000C);	//no-tag fwd mask except LAN4
@@ -4272,10 +5126,15 @@ void config_switch(void)
 #endif
 #endif
 }
+#endif
 
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 int vlan4094_enabled()
 {
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
+	if (!is_rtl8372_boardid())
+		return 0;
+#endif
 	if (re_mode() || is_router_mode() || !nvram_get_int("x_Setting")) {
 		if (is_router_mode() &&
 			(strcmp(nvram_safe_get("switch_wantag"), "none") ||
@@ -4297,10 +5156,14 @@ int vlan4094_enabled()
 
 void config_extwan(void)
 {
-#if !defined(RTCONFIG_BCM_MFG) && !defined(RTBE82M) && !defined(GSBE18000)
+#if !defined(RTCONFIG_BCM_MFG) && !defined(RTBE82M) && !defined(GSBE18000) && !defined(GS7_PRO)
 	if (!hnd_boardid_cmp("GT-BE98_BCM"))
 #endif
 		return;
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
+	if (!is_rtl8372_boardid())
+		return;
+#endif
 
 	/* config_extwan will conflict with IPTV tag feature */
 	if (strcmp(nvram_safe_get("switch_wantag"), "none") || strcmp(nvram_safe_get("switch_stb_x"), "0"))
@@ -4308,7 +5171,7 @@ void config_extwan(void)
 
 	if (re_mode() || is_router_mode() || !nvram_get_int("x_Setting")) {
 		if (nvram_get_int("wans_extwan") && ((get_wans_dualwan() & WANSCAP_LAN) && (nvram_get_int("wans_lanport") >= 2) && (nvram_get_int("wans_lanport") <= 4))) {
-#if defined(RTBE58U) || defined(TUFBE3600)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2)
 			if (nvram_match("wans_lanport", "2")) {
 				__setup_vlan(4094, 0, 0x00100010);	//LAN2 as WAN
 				__setup_vlan(0, 0, 0x00060006);		//no-tag fwd mask except LAN1/LAN2
@@ -4345,7 +5208,7 @@ void config_extwan(void)
 		} else {
 			if (!nvram_get_int("wans_extwan") && (get_wans_dualwan() & WANSCAP_LAN))
 				return;
-#if defined(RTBE58U) || defined(TUFBE3600)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2)
 			__setup_vlan(4094, 0, 0x00100010);	//LAN1 as WAN
 			__setup_vlan(0, 0, 0x000E000E);		//no-tag fwd mask except LAN1
 #elif defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
@@ -4367,7 +5230,7 @@ void config_extwan(void)
 
 void reset_extwan(void)
 {
-#if !defined(RTCONFIG_BCM_MFG) && !defined(RTBE82M) && !defined(GSBE18000)
+#if !defined(RTCONFIG_BCM_MFG) && !defined(RTBE82M) && !defined(GSBE18000) && !defined(GS7_PRO)
 	if (iface_exist("vlan4094")) {
 		system("vconfig rem vlan4094");
 		system("rtkswitch 382");
@@ -4731,12 +5594,14 @@ const unsigned int devpath_idx[4] = {4, 2, 1, 3};    // 5G, 6G-1, 6G-2, 2.4G
 const unsigned int devpath_idx[4] = {3, 4, 1, 2};    // 2.4G, 5G-1, 5G-2
 #elif defined(GT10) || defined(RTAX9000)
 const unsigned int devpath_idx[4] = {1, 2, 0};    // 2.4G, 5G-1, 5G-2
-#elif defined(RTBE96U) || defined(GTBE19000) || defined(GTBE19000_AI)
+#elif defined(RTBE96U) || defined(GTBE19000) || defined(GTBE19000AI)
 const unsigned int devpath_idx[4] = {3, 4, 2, 1};    // 2.4G, 5G, 6G
 #elif defined(GTBE96)
 const unsigned int devpath_idx[4] = {3, 1, 4};	// 2.4G, 5G-1, 5G-2
 #elif defined(RTBE88U)
 const unsigned int devpath_idx[4] = {0, 1};	// 2.4G, 5G
+#elif defined(GTBE96_AI)
+const unsigned int devpath_idx[4] = {3, 2, 4};  // 2.4G, 5G-1, 5G-2
 #endif
 
 	if (unit > (unit_total - 1))
@@ -4833,12 +5698,12 @@ const unsigned int devpath_idx[4] = {0, 1};	// 2.4G, 5G
 			case MODEL_RPAX56:
 			case MODEL_RPAX58:
 			case MODEL_RPBE58:
-			case MODEL_RTBE58_GO:
 			case MODEL_RTAX56U:
 			case MODEL_EBA63:
 				snprintf(macaddr_str, sizeof(macaddr_str), "sb/%d/macaddr", unit);
 				break;
 			case MODEL_RTBE58U:
+			case MODEL_RTBE58U_V2:
 			case MODEL_RTBE82U:
 			case MODEL_RTBE82M:
 			case MODEL_RTBE58U_PRO:
@@ -4866,7 +5731,7 @@ const unsigned int devpath_idx[4] = {0, 1};	// 2.4G, 5G
 			case MODEL_RTAX88U_PRO:
 					 snprintf(macaddr_str, sizeof(macaddr_str), "%d:macaddr", unit + 1);
 				break;
-#if defined(GTAXE16000) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX9000) || defined(GTBE98) || defined(RTBE96U) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE88U) || defined(BQ16) || defined(BQ16_PRO) || defined(BT10)
+#if defined(GTAXE16000) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX9000) || defined(GTBE98) || defined(RTBE96U) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE88U) || defined(BQ16) || defined(BQ16_PRO) || defined(BT10) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 			case MODEL_GTAX11000_PRO:
 			case MODEL_GTAXE16000:
 			case MODEL_GTBE98:
@@ -4880,7 +5745,8 @@ const unsigned int devpath_idx[4] = {0, 1};	// 2.4G, 5G
 			case MODEL_BQ16:
 			case MODEL_BQ16_PRO:
 			case MODEL_GTBE19000:
-			case MODEL_GTBE19000_AI:
+			case MODEL_GTBE19000AI:
+			case MODEL_GTBE96_AI:
 					snprintf(macaddr_str, sizeof(macaddr_str), "%d:macaddr", devpath_idx[unit]);
 				break;
 #endif
@@ -5131,6 +5997,10 @@ reset_psr_hwaddr()
 		case MODEL_RTBE96U:
 		case MODEL_GTBE96:
 		case MODEL_RTBE88U:
+		case MODEL_GTBE19000:
+		case MODEL_GTBE19000AI:
+		case MODEL_GTBE96_AI:
+		
 			unit = WL_2G_BAND;
 			break;
 
@@ -5143,9 +6013,9 @@ reset_psr_hwaddr()
 			break;
 	}
 
-	if (model == MODEL_RTAX56U || model == MODEL_RPAX56 || model == MODEL_RPAX58 || model == MODEL_RPBE58 || model == MODEL_RTBE58_GO || model == MODEL_RTAX55 || model == MODEL_TUFAX3000_V2 || model == MODEL_RTAX3000N || model == MODEL_BR63 || model == MODEL_EBA63 || model == MODEL_RTBE95U)
+	if (model == MODEL_RTAX56U || model == MODEL_RPAX56 || model == MODEL_RPAX58 || model == MODEL_RPBE58 || model == MODEL_RTAX55 || model == MODEL_TUFAX3000_V2 || model == MODEL_RTAX3000N || model == MODEL_BR63 || model == MODEL_EBA63 || model == MODEL_RTBE95U)
 		snprintf(macaddr_name, sizeof(macaddr_name), "sb/%d/macaddr", unit);
-	else if (model == MODEL_RTBE58U || model == MODEL_RTBE82U || model == MODEL_RTBE82M || model == MODEL_RTBE58U_PRO)
+	else if (model == MODEL_RTBE58U || model == MODEL_RTBE58U_V2 || model == MODEL_RTBE82U || model == MODEL_RTBE82M || model == MODEL_RTBE58U_PRO)
 		snprintf(macaddr_name, sizeof(macaddr_name), "sb/%d/macaddr", 1 - unit);
 	else
 		snprintf(macaddr_name, sizeof(macaddr_name), "%d:macaddr", unit);
@@ -5184,7 +6054,7 @@ void load_wl()
 #if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
 	char dconpoll_str[20] = "";
 #endif
-#if defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(RTBE88U) || defined(RTBE96U) || defined(GTBE96) || defined(GTBE98) || defined(GTBE98_PRO) || defined(RTBE86U) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(RTCONFIG_HND_ROUTER_BE_4916)
+#if defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(RTBE88U) || defined(RTBE96U) || defined(GTBE96) || defined(GTBE98) || defined(GTBE98_PRO) || defined(RTBE86U) || defined(GTBE19000) || defined(GTBE19000AI) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 	char dhd_iface_name_str[60] = "iface_name=wl";
 #else
 	char dhd_iface_name_str[20] = "";
@@ -5251,7 +6121,7 @@ _dprintf("load_wl(): starting...\n");
 	reset_mssid_hwaddr(1);
 #endif
 	memset(modules, 0, sizeof(modules));
-#if defined(RTAX92U) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6756) || (defined(RTCONFIG_HND_ROUTER_BE_4916) && !defined(BCM6813)) || defined(RTCONFIG_HND_ROUTER_AX_6710) && !defined(BCM4912) || defined(RTBE86U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO)
+#if defined(RTAX92U) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6756) || (defined(RTCONFIG_HND_ROUTER_BE_4916) && !defined(BCM6813)) || defined(RTCONFIG_HND_ROUTER_AX_6710) && !defined(BCM4912) || defined(RTBE86U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO)
 	add_to_list("wl", modules, sizeof(modules));
 #endif
 #ifdef RTCONFIG_DHDAP
@@ -5280,7 +6150,7 @@ _dprintf("load_wl(): starting...\n");
 	nvram_set("3:avsmargins", "680,300"); // 2.4G
 	nvram_set("4:avsmargins", "680,300"); // 5G
 #endif
-#if defined(BT10) || defined(GT10) || defined(RTAX9000) || defined(RTBE95U) || defined(RTBE86U) || defined(GSBE18000)
+#if defined(BT10) || defined(GT10) || defined(RTAX9000) || defined(RTBE95U) || defined(RTBE86U) || defined(GSBE18000) || defined(GS7_PRO)
 	snprintf(modules, sizeof(modules), "dhd wl");
 #endif
 	foreach(module, modules, next) {
@@ -5412,6 +6282,9 @@ void load_wl()
 #endif
 	char instance_base[64];
 	char instance_base2[64];
+
+	memset(instance_base, 0, sizeof(instance_base));
+	memset(instance_base2, 0, sizeof(instance_base2));
 
 	if (strtoul(nvram_safe_get("wl_msglevel"), NULL, 0))
 		snprintf(instance_base, sizeof(instance_base), "msglevel=%d", (int)strtoul(nvram_safe_get("wl_msglevel"), NULL, 0));
@@ -5649,7 +6522,7 @@ void unload_wl(void)
 {
 #ifndef RTCONFIG_BCMARM
 #if defined(NAS_GTK_PER_STA) && defined(PROXYARP)
-	eval("rmmod", "proxyarp");
+	system("rmmod proxyarp");
 #endif
 #endif
 
@@ -5660,10 +6533,10 @@ void unload_wl(void)
 #endif
 		rp_mode()
 	))
-	eval("rmmod", "wl");
+	system("rmmod wl");
 #endif
 #ifdef RTCONFIG_DHDAP
-	eval("rmmod", "dhd");
+	system("rmmod dhd");
 #endif
 }
 
@@ -5901,6 +6774,7 @@ void init_syspara(void)
 		case MODEL_RTBE88U:
 		case MODEL_RTBE86U:
 		case MODEL_RTBE58U:
+		case MODEL_RTBE58U_V2:
 		case MODEL_RTBE92U:
 		case MODEL_RTBE95U:
 		case MODEL_GTBE19000:
@@ -5908,8 +6782,9 @@ void init_syspara(void)
 		case MODEL_RTBE82M:
 		case MODEL_RTBE58U_PRO:
 		case MODEL_RTBE58_GO:
-		case MODEL_GTBE19000_AI:
+		case MODEL_GTBE19000AI:
 		case MODEL_GSBE18000:
+		case MODEL_GTBE96_AI:
 			if (!nvram_get("lan_hwaddr"))
 				nvram_set("lan_hwaddr", cfe_nvram_safe_get("et0macaddr"));
 			break;
@@ -6355,7 +7230,7 @@ void init_others(void)
 	/* restore USB power */
 	f_write_string("/sys/class/leds/led_gpio_82/brightness", "255", 0, 0);
 #endif
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
 	/* set pinmux of GPIO 67 as 4 to enable GPIO mode */
 	system("sw 0xff800554 0");
 	system("sw 0xff800558 0x4043");
@@ -6374,8 +7249,13 @@ void init_others(void)
 	/* set parallel led register */
 	// system("sw 0xff803018 0x01280010");
 #endif
-#if defined(GTBE19000_AI)
+#if defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI)
 	button_pressed(BTN_WAKE);
+#endif
+#if defined(GSBE18000) || defined(GS7_PRO)	//WAR
+	f_write_string("/sys/class/leds/led_gpio_3/brightness", "255", 0, 0);
+	usleep(25*1000);
+	f_write_string("/sys/class/leds/led_gpio_3/brightness", "0", 0, 0);
 #endif
 #if defined(RTBE92U) || defined(RTBE95U) || defined(RTBE58U_PRO)
 	if (!nvram_get_int("bcmspu_reqd"))
@@ -6534,13 +7414,21 @@ void init_others(void)
 #endif	// HND_ROUTER
 #endif	// RTCONFIG_BCMARM
 
-#if defined(RTBE82M) || defined(GSBE18000)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO)
 void init_others_post(void)
 {
 	enable_jumbo_frame();
 
 	/* enable LLDP pass-through */
 	system("fapi-GSW-PceRuleDisable pattern.nIndex=12");
+
+	/* enable LACP pass-through */
+	system("fapi-GSW-PceRuleDisable pattern.nIndex=13");
+
+	/* Set Serdes0 to XFI mode to workaround possible no Tx issue */
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO)
+	system("fapi-GSW-Sfp-Set nPortId=0 nOption=0 nMode=1 nSpeed=2");
+#endif
 }
 #endif
 
@@ -6688,7 +7576,7 @@ void adjust_txbf_bfe_cap(int unit, char *orig_txbf_bfe_cap)
 #elif defined(RTBE95U)
 	/* wl0 */
 	int band_to_config[] = {0};
-#elif defined(GSBE18000)
+#elif defined(GSBE18000) || defined(GS7_PRO)
 	/* wl0 */
 	int band_to_config[] = {0};
 #else
@@ -6784,10 +7672,9 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 	int wlc_idx_align[3] = {1, 2, 0};    // wl0(wlc1), wl1(wlc2), wl2(wlc0);
 #elif defined(RTBE95U)
 	int wlc_idx_align[3] = {1, 2, 0};    // wl0(wlc1), wl1(wlc2), wl2(wlc0);
-#elif defined(GSBE18000)
+#elif defined(GSBE18000) || defined(GS7_PRO)
 	int wlc_idx_align[3] = {2, 1, 0};    // wl0(wlc1), wl1(wlc2), wl2(wlc0);
 #endif
-	char *p;
 
 	if (subunit == -1)
 	{
@@ -6838,22 +7725,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 		}
 #endif
 		nvram_set("lan_wps_oob", nvram_match("w_Setting", "1") ? "disabled" : "enabled");
-#ifdef RTCONFIG_MULTILAN_MWL
-		if (nvram_get_int("w_Setting") && get_fh_if_prefix_by_unit(unit, prefix2, sizeof(prefix2))) {
-			trim_space(prefix2);
-			strncat(prefix2, "_", 1);
-		} else
-			snprintf(prefix2, sizeof(prefix2), "wl%d_", unit);
-#ifdef RTCONFIG_AMAS
-		if (is_router_mode() && !nvram_get_int("x_Setting") && nvram_get_int("amesh_wps_enr"))
-			p = prefix;
-		else
-#endif
-		p = prefix2;
-#else
-		p = prefix;
-#endif
-		nvram_set(strcat_r(p, "wps_mode", tmp), (nvram_match("wps_enable", "1") && (is_ap(unit)
+		nvram_set(strcat_r(prefix, "wps_mode", tmp), (nvram_match("wps_enable", "1") && (is_ap(unit)
 #ifdef RTCONFIG_PROXYSTA
 			|| (((unit == WL_2G_BAND) || unit == nvram_get_int("wps_band_x")) && (is_dpsr(unit)
 #ifdef RTCONFIG_DPSTA
@@ -6865,11 +7737,6 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 			))
 #endif
 			)) ? "enabled" : "disabled");
-
-#ifdef RTCONFIG_MULTILAN_MWL
-		if (nvram_get_int("w_Setting") && strcmp(prefix, prefix2) && !strcmp(p, prefix2))
-			nvram_set(strcat_r(prefix, "wps_mode", tmp), "disabled");
-#endif
 
 #if defined(RTCONFIG_DPSTA) && defined(RTCONFIG_BRCM_HOSTAPD)
 		if(dpsta_mode() && nvram_get_int("re_mode") == 1) {
@@ -6946,7 +7813,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 			strncpy(interface_list, nvram_safe_get(lan_ifnames), interface_list_size);
 			sprintf(nv_interface, "wl%d.1", unit);
 			sprintf(tmp, "wl%d.1_mode", unit);
-			if (is_psta(unit) || is_psta_mlo(unit)) {
+			if (is_psta(unit)) {
 				/* For Proxy we need to remove our ap interface */
 				remove_from_list(nv_interface, interface_list, interface_list_size);
 				nvram_set(lan_ifnames, interface_list);
@@ -7027,18 +7894,16 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 #endif
 
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
-		if (is_psta(unit) || is_psta_mlo(unit)) {
+		if (is_psta(unit))
 			nvram_set(strcat_r(prefix, "bss_enabled", tmp), "0");
-		} else if (is_psr(unit)) {
+		else if (is_psr(unit)) {
 			if (subunit == 1)
 			{
 #if defined(RTCONFIG_AMAS_OB_DISABLE_DSAP)
 				if (((nvram_get_int("re_mode") == 1 && nvram_get_int("cfg_first_sync") == 0)
 					|| nvram_get_int("re_mode") == 0))
 #endif
-				{
 				nvram_set(strcat_r(prefix, "bss_enabled", tmp), "1");
-				}
 #ifdef RTCONFIG_AMAS
 				if ((unit == WL_2G_BAND) && nvram_match("re_mode", "1") && nvram_match("wps_enable", "1"))
 					nvram_set(strcat_r(prefix, "wps_mode", tmp), "enabled");
@@ -7050,16 +7915,12 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 #elif defined(RTCONFIG_AMAS)
 			if (nvram_get_int("re_mode") == 0)
 #endif
-			{
 				nvram_set(strcat_r(prefix, "bss_enabled", tmp), "0");
-			}
 		}
-#if !defined(RTCONFIG_MULTILAN_MWL)
 		if(nvram_match(strcat_r(prefix2, "prev_mode", tmp), "wet") && nvram_match(strcat_r(prefix2, "mode", tmp), "ap")) {
 			_dprintf("disable guestnetwork(%s) when changing from client mode to ap.\n", prefix);
 			nvram_set(strcat_r(prefix, "bss_enabled", tmp), "0");
 		}
-#endif
 #endif
 #ifdef RTCONFIG_FRONTHAUL_DBG
 		if(unit == WL_2G_BAND && subunit == nvram_get_int("fh_re_dbg_subunit") && nvram_match("re_mode", "1"))
@@ -7109,7 +7970,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 	if (is_psta(unit) || is_psr(unit)) {
 #if defined(RTCONFIG_AMAS)
 		if ((dpsta_mode() || dpsr_mode()) && nvram_get_int("re_mode") == 1)
-#if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(BT10) || defined(GT10) || defined(RTAX9000) || defined(BQ16) || defined(BQ16_PRO) || defined(RTBE95U) || defined(GSBE18000)
+#if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(BT10) || defined(GT10) || defined(RTAX9000) || defined(BQ16) || defined(BQ16_PRO) || defined(RTBE95U) || defined(GSBE18000) || defined(GS7_PRO)
 			snprintf(prefix2, sizeof(prefix2), "wlc%d_", wlc_idx_align[unit]);
 #else
 			snprintf(prefix2, sizeof(prefix2), "wlc%d_", unit);
@@ -7117,7 +7978,6 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 		else
 #endif
 		snprintf(prefix2, sizeof(prefix2), "wlc%d_", unit ? 1 : 0);
-#if !defined(RTCONFIG_MULTILAN_MWL)
 		if (nvram_match("x_Setting", "1") && nvram_match("rpsync", "1") && subunit == -1 && (dpsta_mode()||rp_mode()) && !strlen(nvram_safe_get(strcat_r(prefix2, "ssid", tmp)))) {
 
 			unit2 = find_user_unit("ssid");	
@@ -7133,7 +7993,6 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 			tmp3 = nvram_safe_get(strcat_r(prefix3, "crypto", tmp));
 			nvram_set(strcat_r(prefix2, "crypto", tmp), tmp3);
 		} else
-#endif
 		if (nvram_match("x_Setting", "0") ||
 			((dpsr_mode()
 #ifdef RTCONFIG_DPSTA
@@ -7406,7 +8265,11 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 		int dwds = 0;
 		if (!nvram_get_int("dwds_ctrl")) {
 #if defined(RTCONFIG_BCM4708) || defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_HND_ROUTER)
+#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
+			dwds = !client_mode();
+#else
 			dwds = 1;
+#endif
 #else
 			dwds = !(is_ure(unit) || is_psta(unit));
 #endif
@@ -8177,11 +9040,17 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 				nvram_set(strcat_r(prefix, "maclist", tmp), "");
 
 #ifdef RTCONFIG_BCMARM
-			if (!nvram_get_int("dwds_ctrl"))
+			if (!nvram_get_int("dwds_ctrl")) 
 #ifdef RTCONFIG_HND_ROUTER_AX
-			nvram_set(strcat_r(prefix, "dwds", tmp), "1");
+#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
+			{
+				nvram_set(strcat_r(prefix, "dwds", tmp), client_mode()? "0": "1");
+			}
 #else
-			nvram_set(strcat_r(prefix, "dwds", tmp), is_ure(unit) ? "0" : "1");
+				nvram_set(strcat_r(prefix, "dwds", tmp), "1");
+#endif
+#else
+				nvram_set(strcat_r(prefix, "dwds", tmp), is_ure(unit) ? "0" : "1");
 #endif
 #ifdef RTCONFIG_HND_ROUTER_AX
 			if (nvram_match(strcat_r(prefix, "akm", tmp), "sae"))
@@ -9353,9 +10222,6 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				/* WAN	L1   L2   L3   L4   L5 					*/
 
 	case MODEL_GTAXE16000:
-	case MODEL_GTBE98:
-	case MODEL_GTBE19000:
-	case MODEL_GTBE19000_AI:
 				/* eth0 eth1 eth2 eth3 eth4 eth5 eth6 				*/
 				/* WAN	L1   L2   L3   L4   L5   L6				*/
 	case MODEL_ET12:
@@ -9368,10 +10234,6 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 	case MODEL_RTBE86U:
 				/* eth0 eth1 eth2 eth3 eth4 */
 				/* WAN  L1   L2   L3   L4   */
-#if defined(GTBE98) || defined(GTBE19000) || defined(GTBE19000_AI)
-		if (hnd_boardid_cmp("GT-BE98_BCM"))
-			goto RTK_GTBE98;
-#endif
 		/* GT-AC5300 pairing ports: L1 & L2 and L5 & L6 */
 		if (model == MODEL_GTAC5300) {
 			if (nvram_match("iptv_port_settings", "12")) {
@@ -10428,22 +11290,25 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 #endif
 		break;
 
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	case MODEL_RTAX55:
 	case MODEL_RTAX58U_V2:
 	case MODEL_RTAX3000N:
 	case MODEL_BR63:
-//	case MODEL_GTBE98:
+	case MODEL_GTBE98:
 	case MODEL_GTBE98_PRO:
 	case MODEL_GTBE96:
 	case MODEL_RTBE58U:
+	case MODEL_RTBE58U_V2:
 	case MODEL_RTBE92U:
 	case MODEL_RTBE95U:
 	case MODEL_RTBE82U:
 	case MODEL_RTBE58U_PRO:
-		if(hnd_boardid_cmp("GT-BE98_BCM") == 0)
+	case MODEL_GTBE19000:
+	case MODEL_GTBE19000AI:
+	case MODEL_GTBE96_AI:
+		if(!is_rtl8372_boardid())
 			break;
-RTK_GTBE98:
 				/* eth0 eth1 CPU(LAN)	*/	
 				/* WAN  LAN  P17	*/
 				/*	rtkswitch	*/
@@ -10527,7 +11392,7 @@ RTK_GTBE98:
 		if (nvram_match("switch_stb_x", "1") && nvram_match("switch_wantag", "none")) {
 			/* add vlan 1 to separate LAN and WAN bridge */
 			eval("brctl", "delif", "br0", "eth1");
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 			__setup_vlan(1, 0, 0x00200020); //LAN1
 			__setup_vlan(0, 0, 0x00D000D0); //no-tag fwd mask except LAN1
 #elif defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
@@ -10536,7 +11401,7 @@ RTK_GTBE98:
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 			__setup_vlan(1, 0, 0x00080008); //LAN1
 			__setup_vlan(0, 0, 0x00070007); //no-tag fwd mask except LAN1
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 			__setup_vlan(1, 0, 0x00100010); //LAN1
 			__setup_vlan(0, 0, 0x000E000E); //no-tag fwd mask except LAN1
 #else
@@ -10550,7 +11415,7 @@ RTK_GTBE98:
 		} else if (nvram_match("switch_stb_x", "2") && nvram_match("switch_wantag", "none")) {
 			/* add vlan 1 to separate LAN and WAN bridge */
 			eval("brctl", "delif", "br0", "eth1");
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 			__setup_vlan(1, 0, 0x00400040); //LAN2
 			__setup_vlan(0, 0, 0x00B000B0); //no-tag fwd mask except LAN2
 #elif defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
@@ -10559,7 +11424,7 @@ RTK_GTBE98:
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 			__setup_vlan(1, 0, 0x00040004); //LAN2
 			__setup_vlan(0, 0, 0x000B000B); //no-tag fwd mask except LAN2
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 			__setup_vlan(1, 0, 0x00080008); //LAN2
 			__setup_vlan(0, 0, 0x00160016); //no-tag fwd mask except LAN2
 #else
@@ -10575,13 +11440,13 @@ RTK_GTBE98:
 				eval("brctl", "delif", "br0", "eth1");
 				system("rtkswitch 40 1"); //leave tag case
 				/* handle special case WAN vlan forwarding specific LAN*/
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 				__setup_vlan(100, nvram_get_int("switch_wan0prio"), 0x00000010); //LAN4 leave tag
 #elif defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
 				__setup_vlan(100, nvram_get_int("switch_wan0prio"), 0x00000080); //LAN4 leave tag
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 				__setup_vlan(100, nvram_get_int("switch_wan0prio"), 0x00000001); //LAN4 leave tag
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 				__setup_vlan(100, nvram_get_int("switch_wan0prio"), 0x00000002); //LAN4 leave tag
 #else
 				__setup_vlan(100, nvram_get_int("switch_wan0prio"), 0x00000008); //LAN4 leave tag
@@ -10626,7 +11491,7 @@ RTK_GTBE98:
 				sprintf(vlanDev1, "eth1.%d", voip_vid);
 				eval("ifconfig", vlanDev1, "allmulti", "up");
 				eval("brctl", "addif", br_dev, vlanDev1);
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 				__setup_vlan(voip_vid, 0, 0x00000080); //LAN3 leave tag
 				__setup_vlan(0, 0, 0x00700070); //no-tag fwd mask except LAN3
 #elif defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
@@ -10635,7 +11500,7 @@ RTK_GTBE98:
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 				__setup_vlan(voip_vid, 0, 0x00000002); //LAN3 leave tag
 				__setup_vlan(0, 0, 0x000D000D); //no-tag fwd mask except LAN3
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 				__setup_vlan(voip_vid, 0, 0x00000004); //LAN3 leave tag
 				__setup_vlan(0, 0, 0x001A001A); //no-tag fwd mask except LAN3
 #else
@@ -10687,7 +11552,7 @@ RTK_GTBE98:
 				eval("brctl", "addif", br_dev, vlanDev1);
 
 				system("rtkswitch 40 1"); //leave tag case
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 				__setup_vlan(821, 0, 0x0000080); //LAN3 leave tag
 				__setup_vlan(822, 0, 0x0000080); //LAN3 leave tag
 				__setup_vlan(0, 0, 0x00700070); //no-tag fwd mask except LAN3
@@ -10699,7 +11564,7 @@ RTK_GTBE98:
 				__setup_vlan(821, 0, 0x0000002); //LAN3 leave tag
 				__setup_vlan(822, 0, 0x0000002); //LAN3 leave tag
 				__setup_vlan(0, 0, 0x000D000D); //no-tag fwd mask except LAN3
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 				__setup_vlan(821, 0, 0x0000004); //LAN3 leave tag
 				__setup_vlan(822, 0, 0x0000004); //LAN3 leave tag
 				__setup_vlan(0, 0, 0x001A001A); //no-tag fwd mask except LAN3
@@ -10743,7 +11608,7 @@ RTK_GTBE98:
 				eval("ifconfig", br_dev, "allmulti", "up");
 				eval("brctl", "addif", br_dev, vlanDev1);
 				eval("brctl", "addif", br_dev, wan_dev);
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 				__setup_vlan(400, 0, 0x00800080); //LAN3 untag
 				__setup_vlan(0, 0, 0x00700070); //no-tag fwd mask except LAN3
 #elif defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
@@ -10752,7 +11617,7 @@ RTK_GTBE98:
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 				__setup_vlan(400, 0, 0x00020002); //LAN3 untag
 				__setup_vlan(0, 0, 0x000D000D); //no-tag fwd mask except LAN3
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 				__setup_vlan(400, 0, 0x00040004); //LAN3 untag
 				__setup_vlan(0, 0, 0x001A001A); //no-tag fwd mask except LAN3
 #else
@@ -10764,7 +11629,7 @@ RTK_GTBE98:
 			else if (nvram_match("switch_wantag", "none")) {
 				/* add vlan 1 to separate LAN and WAN bridge */
 				eval("brctl", "delif", "br0", "eth1");
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 				__setup_vlan(1, 0, 0x00800080); //LAN3
 				__setup_vlan(0, 0, 0x00700070); //no-tag fwd mask except LAN3
 #elif defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
@@ -10773,7 +11638,7 @@ RTK_GTBE98:
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 				__setup_vlan(1, 0, 0x00020002); //LAN3
 				__setup_vlan(0, 0, 0x000D000D); //no-tag fwd mask except LAN3
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 				__setup_vlan(1, 0, 0x00040004); //LAN3
 				__setup_vlan(0, 0, 0x001A001A); //no-tag fwd mask except LAN3
 #else
@@ -10792,7 +11657,7 @@ RTK_GTBE98:
 					eval("vlanctl", "--mcast", "--if-create", wan_if, "2");
 					eval("ifconfig", "eth0.v2", "allmulti", "up");
 					eval("vlanctl", "--if", wan_if, "--rx", "--tags", "1", "--filter-vid", vlan_entry, "0", "--set-rxif", "eth0.v2", "--rule-append");
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 					__setup_vlan(voip_vid, voip_prio, 0x00800090); //LAN3 untag LAN4 leave tag
 					__setup_vlan(0, 0, 0x00600060); //no-tag fwd mask except LAN3 and LAN4
 #elif defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
@@ -10801,7 +11666,7 @@ RTK_GTBE98:
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 					__setup_vlan(voip_vid, voip_prio, 0x00020003); //LAN3 untag LAN4 leave tag
 					__setup_vlan(0, 0, 0x000C000C); //no-tag fwd mask except LAN3 and LAN4
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 					__setup_vlan(voip_vid, voip_prio, 0x00040006); //LAN3 untag LAN4 leave tag
 					__setup_vlan(0, 0, 0x00180018); //no-tag fwd mask except LAN3 and LAN4
 #else
@@ -10824,13 +11689,13 @@ RTK_GTBE98:
 					eval("brctl", "delif", "br0", "eth1");
 					/* Forward packets from wan to vlanDev2 (untag) */
 					vlan_forwarding(voip_vid, voip_prio, switch_stb, 1);
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 					__setup_vlan(0, 0, 0x00700070); //no-tag fwd mask except LAN3
 #elif defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
 					__setup_vlan(0, 0, 0x00B000B0); //no-tag fwd mask except LAN3
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 					__setup_vlan(0, 0, 0x000D000D); //no-tag fwd mask except LAN3
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 					__setup_vlan(0, 0, 0x001A001A); //no-tag fwd mask except LAN3
 #else
 					__setup_vlan(0, 0, 0x000B000B); //no-tag fwd mask except LAN3
@@ -10853,7 +11718,7 @@ RTK_GTBE98:
 			if (nvram_match("switch_wantag", "hinet") || nvram_match("switch_wantag", "none")) {
 				/* add vlan 1 to separate LAN and WAN bridge */
 				eval("brctl", "delif", "br0", "eth1");
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 				__setup_vlan(1, 0, 0x00100010); //LAN4
 				__setup_vlan(0, 0, 0x00E000E0); //no-tag fwd mask except LAN4
 #elif defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
@@ -10862,7 +11727,7 @@ RTK_GTBE98:
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 				__setup_vlan(1, 0, 0x00010001); //LAN4
 				__setup_vlan(0, 0, 0x000E000E); //no-tag fwd mask except LAN4
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 				__setup_vlan(1, 0, 0x00020002); //LAN4
 				__setup_vlan(0, 0, 0x001C001C); //no-tag fwd mask except LAN4
 #else
@@ -10889,7 +11754,7 @@ RTK_GTBE98:
 				eval("ifconfig", br_dev, "allmulti", "up");
 				eval("brctl", "addif", br_dev, vlanDev1);
 				eval("brctl", "delif", "br0", "eth1");
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 				__setup_vlan(iptv_vid, 0, 0x00100010); //LAN4
 				__setup_vlan(0, 0, 0x00E000E0); //no-tag fwd mask except LAN4
 #elif defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
@@ -10898,7 +11763,7 @@ RTK_GTBE98:
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 				__setup_vlan(iptv_vid, 0, 0x00010001); //LAN4
 				__setup_vlan(0, 0, 0x000E000E); //no-tag fwd mask except LAN4
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 				__setup_vlan(iptv_vid, 0, 0x00020002); //LAN4
 				__setup_vlan(0, 0, 0x001C001C); //no-tag fwd mask except LAN4
 #else
@@ -10946,7 +11811,7 @@ RTK_GTBE98:
 				eval("ifconfig", br_dev, "allmulti", "up");
 				eval("brctl", "addif", br_dev, vlanDev1);
 				eval("brctl", "addif", br_dev, wan_dev);
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 				__setup_vlan(600, 0, 0x00100010); //LAN4
 				__setup_vlan(0, 0, 0x00E000E0); //no-tag fwd mask except LAN4
 #elif defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
@@ -10955,7 +11820,7 @@ RTK_GTBE98:
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 				__setup_vlan(600, 0, 0x00010001); //LAN4
 				__setup_vlan(0, 0, 0x000E000E); //no-tag fwd mask except LAN4
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 				__setup_vlan(600, 0, 0x00020002); //LAN4
 				__setup_vlan(0, 0, 0x001C001C); //no-tag fwd mask except LAN4
 #else
@@ -10987,7 +11852,7 @@ RTK_GTBE98:
 				eval("ifconfig", br_dev, "allmulti", "up");
 				eval("brctl", "addif", br_dev, vlanDev1);
 				eval("brctl", "delif", "br0", "eth1");
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 				__setup_vlan(iptv_vid, 0, 0x00000010); // LAN4 tag
 				__setup_vlan(0, 0, 0x00E000E0); //no-tag fwd mask except LAN4
 #elif defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
@@ -10996,7 +11861,7 @@ RTK_GTBE98:
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 				__setup_vlan(iptv_vid, 0, 0x00000001); // LAN4 tag
 				__setup_vlan(0, 0, 0x000E000E); //no-tag fwd mask except LAN4
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 				__setup_vlan(iptv_vid, 0, 0x00000002); // LAN4 tag
 				__setup_vlan(0, 0, 0x001C001C); //no-tag fwd mask except LAN4
 #else
@@ -11012,13 +11877,13 @@ RTK_GTBE98:
 				/* config ethPort1 = IPTV */
 				eval("brctl", "delif", "br0", "eth1");
 				vlan_forwarding(iptv_vid, iptv_prio, switch_stb, 1);
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 				__setup_vlan(0, 0, 0x00E000E0); //no-tag fwd mask except LAN4
 #elif defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
 				__setup_vlan(0, 0, 0x00700070); //no-tag fwd mask except LAN4
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 				__setup_vlan(0, 0, 0x000E000E); //no-tag fwd mask except LAN4
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 				__setup_vlan(0, 0, 0x001C001C); //no-tag fwd mask except LAN4
 #else
 				__setup_vlan(0, 0, 0x00070007); //no-tag fwd mask except LAN4
@@ -11039,7 +11904,7 @@ RTK_GTBE98:
 		} else if (nvram_match("switch_stb_x", "5") && nvram_match("switch_wantag", "none")) {
 			/* add vlan 1 to separate LAN and WAN bridge */
 			eval("brctl", "delif", "br0", "eth1");
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 			__setup_vlan(1, 0, 0x00600060); //LAN1 and LAN2
 			__setup_vlan(0, 0, 0x00900090); //no-tag fwd mask except LAN1 and LAN2
 #elif defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
@@ -11048,7 +11913,7 @@ RTK_GTBE98:
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 			__setup_vlan(1, 0, 0x000C000C); //LAN1 and LAN2
 			__setup_vlan(0, 0, 0x00030003); //no-tag fwd mask except LAN1 and LAN2
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 			__setup_vlan(1, 0, 0x00180018); //LAN1 and LAN2
 			__setup_vlan(0, 0, 0x00060006); //no-tag fwd mask except LAN1 and LAN2
 #else
@@ -11081,7 +11946,7 @@ RTK_GTBE98:
 			else if (nvram_match("switch_wantag", "none")) {
 				/* add vlan 1 to separate LAN and WAN bridge */
 				eval("brctl", "delif", "br0", "eth1");
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 				__setup_vlan(1, 0, 0x00900090); //LAN3 and LAN4
 				__setup_vlan(0, 0, 0x00600060); //no-tag fwd mask except LAN3 and LAN4
 #elif defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
@@ -11090,7 +11955,7 @@ RTK_GTBE98:
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 				__setup_vlan(1, 0, 0x00030003); //LAN3 and LAN4
 				__setup_vlan(0, 0, 0x000C000C); //no-tag fwd mask except LAN3 and LAN4
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 				__setup_vlan(1, 0, 0x00060006); //LAN3 and LAN4
 				__setup_vlan(0, 0, 0x00180018); //no-tag fwd mask except LAN3 and LAN4
 #else
@@ -11154,7 +12019,7 @@ RTK_GTBE98:
 				eval("brctl", "addif", br_dev, "vlan12");
 				eval("brctl", "addif", "br0", "eth1");
 
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 				__setup_vlan(12, 0, 0x00100090); // LAN3 tag, LAN4 untag
 				__setup_vlan(0, 0, 0x00600060); //no-tag fwd mask except LAN3 and LAN4
 #elif defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
@@ -11163,7 +12028,7 @@ RTK_GTBE98:
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 				__setup_vlan(12, 0, 0x00010003); // LAN3 tag, LAN4 untag
 				__setup_vlan(0, 0, 0x000C000C); //no-tag fwd mask except LAN3 and LAN4
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 				__setup_vlan(12, 0, 0x00020006); // LAN3 tag, LAN4 untag
 				__setup_vlan(0, 0, 0x00180018); //no-tag fwd mask except LAN3 and LAN4
 #else
@@ -11219,13 +12084,13 @@ RTK_GTBE98:
 					}
 				}
 
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 				__setup_vlan(0, 0, 0x00600060); //no-tag fwd mask except LAN3 and LAN4
 #elif defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
 				__setup_vlan(0, 0, 0x00300030); //no-tag fwd mask except LAN3 and LAN4
 #elif defined(RTAX55) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) && !defined(NEW_SWITCH_ORDER)
 				__setup_vlan(0, 0, 0x000C000C); //no-tag fwd mask except LAN3 and LAN4
-#elif defined(RTBE58U) || defined(TUFBE3600)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 				__setup_vlan(0, 0, 0x00180018); //no-tag fwd mask except LAN3 and LAN4
 #else
 				__setup_vlan(0, 0, 0x00030003); //no-tag fwd mask except LAN3 and LAN4
@@ -12968,7 +13833,11 @@ void set_acs_ifnames()
 	const unsigned int wl_idx[4] = {WL_2G_BAND, WL_5G_BAND, WL_5G_2_BAND, WL_6G_BAND};	// 2.4G, 5G-1, 5G-2, 6G
 #endif
 #else
+#if defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+	const unsigned int wl_idx[3] = {WL_2G_BAND, WL_5G_BAND, WL_6G_BAND};			// 2.4G, 5G, 6G
+#else
 	const unsigned int wl_idx[3] = {WL_2G_BAND, WL_5G_BAND, WL_5G_2_BAND};			// 2.4G, 5G-1, 5G-2(6G)
+#endif
 #endif
 #if defined(XT8PRO) || defined(BT12) || defined(BM68)
         int acs_5g_unit = 2;
@@ -13046,7 +13915,7 @@ void set_acs_ifnames()
 	foreach (word, "eth8 eth6 eth7", next) {
 #elif defined(RTBE95U)
 	foreach (word, "wl2 wl0 wl1", next) {
-#elif defined(GSBE18000)
+#elif defined(GSBE18000) || defined(GS7_PRO)
 	foreach (word, "wl2 wl1 wl0", next) {
 #else
 	foreach (word, nvram_safe_get("wl_ifnames"), next) {
@@ -13087,7 +13956,7 @@ void set_acs_ifnames()
 			if (is_psr(unit)) {
 				snprintf(wlvif, sizeof(wlvif), "wl%d.1", unit);
 #if defined(RTCONFIG_AMAS)
-				if (nvram_get_int("re_mode") == 0 || (nvram_get_int("re_mode") == 1 && (add_interface_for_acsd(unit) || nvram_get_int("channel_plan") == 4/*CHANNEL_PLAN_INDEPENDENT*/)))
+				if (nvram_get_int("re_mode") == 0 || (nvram_get_int("re_mode") == 1 && add_interface_for_acsd(unit)))
 #endif
 				snprintf(acs_ifnames2, sizeof(acs_ifnames2), "%s%s%s", acs_ifnames, strlen(acs_ifnames) ? " " : "", wlvif);
 			}
@@ -13121,14 +13990,20 @@ void set_acs_ifnames()
 #endif
 		)
 #else
+#if defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+		|| (num_of_wl_if() == 3 && (
 #ifdef RTCONFIG_HAS_5G_2
-		|| (num_of_wl_if() == 3 &&
-		    ((wl_get_band(nvram_safe_get(strcat_r(prefix_5g2, "ifname", tmp))) == WLC_BAND_5G &&
+		    (wl_get_band(nvram_safe_get(strcat_r(prefix_5g2, "ifname", tmp))) == WLC_BAND_5G &&
 		     !(nvram_get_hex(strcat_r(prefix_5g2, "band5grp", tmp)) & WL_5G_BAND_4))
+#endif
 #if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
-		     || (wl_get_band(nvram_safe_get(strcat_r(prefix_5g2, "ifname", tmp))) == WLC_BAND_6G &&
-		      wl_get_band(nvram_safe_get(strcat_r(prefix_5g, "ifname", tmp))) == WLC_BAND_5G &&
-		     !(nvram_get_hex(strcat_r(prefix_5g, "band5grp", tmp)) & WL_5G_BAND_4))
+#ifdef RTCONFIG_HAS_5G_2
+		     || (wl_get_band(nvram_safe_get(strcat_r(prefix_5g2, "ifname", tmp))) == WLC_BAND_6G
+#else
+		     (wl_get_band(nvram_safe_get(strcat_r(prefix_6g, "ifname", tmp))) == WLC_BAND_6G
+#endif
+		      && wl_get_band(nvram_safe_get(strcat_r(prefix_5g, "ifname", tmp))) == WLC_BAND_5G
+		      && !(nvram_get_hex(strcat_r(prefix_5g, "band5grp", tmp)) & WL_5G_BAND_4))
 #endif
 		     ))
 #endif
@@ -13246,7 +14121,7 @@ void set_acs_ifnames()
 			nvram_set(strcat_r(prefix_5g, "acs_excl_chans", tmp), nvram_match("acs_dfs", "1") ? (nvram_match("acs_band3", "1") ? "" : list_5g_band3_chans) : list);
 			nvram_set("wl_acs_excl_chans_dfs", nvram_match("acs_dfs", "1") ? (nvram_match("acs_band3", "1") ? "" : list_5g_band3_chans) : list);
 		} else {
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX86U) || defined(TUFAX5400) || defined(TUFAX5400_V2) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(RTAX3000N) || defined(BR63) || defined(RTAX88U_PRO) || defined(RTAX5400) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RTBE58_GO) || defined(GSBE18000)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX86U) || defined(TUFAX5400) || defined(TUFAX5400_V2) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(RTAX3000N) || defined(BR63) || defined(RTAX88U_PRO) || defined(RTAX5400) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
 			if (!strncmp(nvram_safe_get("territory_code"), "JP", 2)
 				|| !strncmp(nvram_safe_get("territory_code"), "KR", 2)) {
 				/* exclude acsd from selecting chanspec 132/80 136/80 140l 140/80 144 144u 144/80 by default */
@@ -13257,7 +14132,7 @@ void set_acs_ifnames()
 				/* exclude acsd from selecting chanspec 52, 52l, 52/80, 52/160, 56, 56u, 56/80, 56/160, 60, 60l, 60/80, 60/160, 64, 64u, 64/80, 64/160, 100, 100l, 100/80, 100/160, 104, 104u, 104/80, 104/160, 108, 108l, 108/80, 108/160, 112, 112u, 112/80, 112/160, 116, 116l, 116/80, 116/160, 120, 120u, 120/80, 120/160, 124, 124l, 124/80, 124/160, 128, 128u, 128/80, 128/160, 132, 132l, 136, 136u, 140 */
 				nvram_set(strcat_r(prefix_5g, "acs_excl_chans", tmp), nvram_match("acs_dfs", "1") ? "" : list);
 				nvram_set("wl_acs_excl_chans_dfs", nvram_match("acs_dfs", "1") ? "" : list);
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX86U) || defined(TUFAX5400) || defined(TUFAX5400_V2) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(RTAX3000N) || defined(BR63) || defined(RTAX88U_PRO) || defined(RTAX5400) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RTBE58_GO) || defined(GSBE18000)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX86U) || defined(TUFAX5400) || defined(TUFAX5400_V2) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(RTAX3000N) || defined(BR63) || defined(RTAX88U_PRO) || defined(RTAX5400) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
 			}
 #endif
 		}
@@ -13962,68 +14837,30 @@ void smart_connect_realign_ifnames() {
 	int idx_6g = 0;
 	int smartconnect_selif = nvram_get_int("smart_connect_selif");
 	int smartconnect_selif_x = nvram_get_int("smart_connect_selif_x");
-	char target_bss[16];
-#endif
-#if defined(RTCONFIG_MULTILAN_MWL)
-	char word[16], *next;
-	char sdn_selif_names[64];
-	char sdn_selif[MAX_RADIO_NUM][8];
-	int sdn_selif_count;
 #endif
 
-#if !defined(RTCONFIG_MULTILAN_MWL)
+//	if (wlif_count < 3)
+//		return;
+
 	if (nvram_match("re_mode", "1"))
 		return;
-#endif
 
 #if defined(RTCONFIG_BCMBSD_V2)
 	if(!nvram_get_int("smart_connect_x"))
 		return;
-#if defined(RTCONFIG_MULTILAN_MWL)
-	memset(sdn_selif_names, 0, sizeof(sdn_selif_names));
-	sdn_selif_count = 0;
-	get_fh_sc_ifnames(&smartconnect_selif_x, &sdn_selif_names, sizeof(sdn_selif_names));
-	if(smartconnect_selif_x != nvram_get_int("smart_connect_selif_x"))
-		nvram_set_int("smart_connect_selif_x", smartconnect_selif_x);
-
-	if(strlen(sdn_selif_names) > 0) {
-		dbg("fh_sc_ifnames[%s], bitmap[%x]\n", sdn_selif_names, smartconnect_selif_x);
-	}
-#endif
 
 	_dprintf("smart_connect_x=[%d]\n", nvram_get_int("smart_connect_x"));
 	_dprintf("smart_connect_selif_x=[%d], smart_connect_selif=[%d] ", smartconnect_selif_x, smartconnect_selif);
-
-	if(smartconnect_selif > 0  && smartconnect_selif_x > 0 && smartconnect_selif != smartconnect_selif_x) {
-		snprintf(bsd_ifnames, sizeof(bsd_ifnames), "%s", nvram_safe_get("bsd_ifnames"));
-		foreach(word, bsd_ifnames, next) {
-			if(strlen(word)) {
-				nvram_unset(strcat_r(word, "_bsd_if_select_policy", tmp));
-				nvram_unset(strcat_r(word, "_bsd_sta_select_policy", tmp));
-				nvram_unset(strcat_r(word, "_bsd_sta_select_policy_def", tmp));
-			}
-                }
-        }
-
 	memset(bsd_ifnames, 0, sizeof(bsd_ifnames));
-#if defined(RTCONFIG_MULTILAN_MWL)
-	foreach(word, sdn_selif_names, next) {
-		snprintf(prefix, sizeof(prefix), "%s_", word);
-		if(sdn_selif_count < MAX_RADIO_NUM) {
-			snprintf(sdn_selif[sdn_selif_count], sizeof(sdn_selif[MAX_RADIO_NUM]), "%s", word);
-			sdn_selif_count++;
-		}
-#else
 	for (i = 0; i < wlif_count; i++) {
 		snprintf(prefix, sizeof(prefix), "wl%d_", i);
-#endif
 		bandtype = nvram_get_int(strcat_r(prefix, "nband", tmp));
 		if((bandtype == WLC_BAND_2G && smartconnect_selif_x & SMRTCONN_SEL_2G))
 			add_to_list(nvram_safe_get(strcat_r(prefix, "ifname", tmp)) , bsd_ifnames, sizeof(bsd_ifnames));
 		if(bandtype == WLC_BAND_5G) {
 			if( idx_5g == 0 && smartconnect_selif_x & SMRTCONN_SEL_5G 
 #if defined(RTCONFIG_HAS_5G_2)
-			 || (idx_5g == 0 || idx_5g == 1) && smartconnect_selif_x & SMRTCONN_SEL_5G2
+			 || idx_5g == 1 && smartconnect_selif_x & SMRTCONN_SEL_5G2
 #endif
 			) {
 				add_to_list(nvram_safe_get(strcat_r(prefix, "ifname", tmp)) , bsd_ifnames, sizeof(bsd_ifnames));
@@ -14034,7 +14871,7 @@ void smart_connect_realign_ifnames() {
 		if(bandtype == WLC_BAND_6G) { 
 			if (idx_6g == 0 && smartconnect_selif_x & SMRTCONN_SEL_6G
 #if defined(RTCONFIG_HAS_6G_2)
-			 || (idx_6g == 0 || idx_6g == 1) && smartconnect_selif_x & SMRTCONN_SEL_6G2
+			 || idx_6g == 1 && smartconnect_selif_x & SMRTCONN_SEL_6G2
 #endif
 			) {
 				add_to_list(nvram_safe_get(strcat_r(prefix, "ifname", tmp)) , bsd_ifnames, sizeof(bsd_ifnames));
@@ -14044,31 +14881,32 @@ void smart_connect_realign_ifnames() {
 #endif
 	}
 	if(strlen(bsd_ifnames)) {
-		if((smartconnect_selif_x & SMRTCONN_SEL_2G) == 0) {
+		if(smartconnect_selif_x & SMRTCONN_SEL_2G) {
+			// smart_connect_x: 1
+			_dprintf("bsd_ifnames=[%s]\n",bsd_ifnames);
+			nvram_set("bsd_ifnames", bsd_ifnames);
+		}
+		else {
 			// smart_connect_x: 2
 			_dprintf("bsd_ifnames_x=[%s]\n",bsd_ifnames);
 			nvram_set("bsd_ifnames_x", bsd_ifnames);
 		}
-
-		// smart_connect_x: 1
-		_dprintf("bsd_ifnames=[%s]\n",bsd_ifnames);
-		nvram_set("bsd_ifnames", bsd_ifnames);
 	}
 
-#if defined(RTCONFIG_MULTILAN_MWL)
-        foreach(word, sdn_selif_names, next) {
-                snprintf(prefix, sizeof(prefix), "%s_", word);
-#else
+
 	for (i = 0; i < wlif_count; i++) {
-		snprintf(prefix, sizeof(prefix), "wl%d_", i);
-#endif
-		snprintf(ifname, sizeof(ifname), "%s", nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
-		if(!find_in_list(bsd_ifnames, ifname))
-			continue;
-		bandtype = nvram_get_int(strcat_r(prefix, "nband", tmp));
 		memset(bsd_if_sel, 0, sizeof(bsd_if_sel));
 		memset(tmp2, 0, sizeof(tmp2));
 		memset(tmp3, 0, sizeof(tmp3));
+		snprintf(prefix, sizeof(prefix), "wl%d_", i);
+		snprintf(ifname, sizeof(ifname), "%s", nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
+		bandtype = nvram_get_int(strcat_r(prefix, "nband", tmp));
+
+		if(smartconnect_selif > 0  && smartconnect_selif_x > 0 && smartconnect_selif != smartconnect_selif_x)
+			nvram_unset(strcat_r(prefix, "bsd_if_select_policy", tmp));
+
+		if(!find_in_list(bsd_ifnames, ifname))
+			continue;
 
 		/* 2.4G */
 		if(bandtype == WLC_BAND_2G && smartconnect_selif_x & SMRTCONN_SEL_2G) { // 2.4G is selected (smart_connect_x: 1)
@@ -14078,7 +14916,7 @@ void smart_connect_realign_ifnames() {
 #if defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
 				// 6G/6G-1 is the first priority
 				if(smartconnect_selif_x & SMRTCONN_SEL_6G) {
-					snprintf(prefix2, sizeof(prefix2), "%s_", smart_connect_get_active_prefix_by_bandid(target_bss, sizeof(target_bss), WL_6G_BAND));
+					snprintf(prefix2, sizeof(prefix2), "wl%d_", WL_6G_BAND);
 					if(find_in_list(bsd_ifnames, (nvram_safe_get(strcat_r(prefix2, "ifname", tmp2))))) {
 						_dprintf("%s: add [%s] into target ifname\n", ifname, nvram_safe_get(strcat_r(prefix2, "ifname", tmp2)));
 						add_to_list(nvram_safe_get(strcat_r(prefix2, "ifname", tmp2)) , bsd_if_sel, sizeof(bsd_if_sel));
@@ -14087,7 +14925,7 @@ void smart_connect_realign_ifnames() {
 #endif
 #if defined(RTCONFIG_HAS_6G_2)
 				if(smartconnect_selif_x & SMRTCONN_SEL_6G2) {
-                                        snprintf(prefix2, sizeof(prefix2), "%s_", smart_connect_get_active_prefix_by_bandid(target_bss, sizeof(target_bss), WL_6G_2_BAND));
+					snprintf(prefix2, sizeof(prefix2), "wl%d_", WL_6G_2_BAND);
 					if(find_in_list(bsd_ifnames, (nvram_safe_get(strcat_r(prefix2, "ifname", tmp2))))) {
 						_dprintf("%s: add [%s] into target ifname\n", ifname, nvram_safe_get(strcat_r(prefix2, "ifname", tmp2)));
 						add_to_list(nvram_safe_get(strcat_r(prefix2, "ifname", tmp2)) , bsd_if_sel, sizeof(bsd_if_sel));
@@ -14096,7 +14934,7 @@ void smart_connect_realign_ifnames() {
 #endif
 #if defined(RTCONFIG_HAS_5G_2)
 				if(smartconnect_selif_x & SMRTCONN_SEL_5G2) {
-                                        snprintf(prefix2, sizeof(prefix2), "%s_", smart_connect_get_active_prefix_by_bandid(target_bss, sizeof(target_bss), WL_5G_2_BAND));
+					snprintf(prefix2, sizeof(prefix2), "wl%d_", WL_5G_2_BAND);
 					if(find_in_list(bsd_ifnames, (nvram_safe_get(strcat_r(prefix2, "ifname", tmp2))))) {
 						_dprintf("%s: add [%s] into target ifname\n", ifname, nvram_safe_get(strcat_r(prefix2, "ifname", tmp2)));
 						add_to_list(nvram_safe_get(strcat_r(prefix2, "ifname", tmp2)) , bsd_if_sel, sizeof(bsd_if_sel));
@@ -14104,7 +14942,7 @@ void smart_connect_realign_ifnames() {
 				}
 #endif
 				if(smartconnect_selif_x & SMRTCONN_SEL_5G) {
-                                        snprintf(prefix2, sizeof(prefix2), "%s_", smart_connect_get_active_prefix_by_bandid(target_bss, sizeof(target_bss), WL_5G_BAND));
+					snprintf(prefix2, sizeof(prefix2), "wl%d_", WL_5G_BAND);
 					if(find_in_list(bsd_ifnames, (nvram_safe_get(strcat_r(prefix2, "ifname", tmp2))))) {
 						_dprintf("%s: add [%s] into target ifname\n", ifname, nvram_safe_get(strcat_r(prefix2, "ifname", tmp2)));
 						add_to_list(nvram_safe_get(strcat_r(prefix2, "ifname", tmp2)) , bsd_if_sel, sizeof(bsd_if_sel));
@@ -14126,22 +14964,15 @@ void smart_connect_realign_ifnames() {
 #endif
 		) {
 			if(!strlen(nvram_safe_get(strcat_r(prefix, "bsd_if_select_policy", tmp)))) {
-#if defined(RTCONFIG_MULTILAN_MWL)
-				for (j = sdn_selif_count - 1; j >= 0; j--) {
-					if(!strncmp(word, sdn_selif[j], strlen(word)))
-						continue;
-					snprintf(prefix2, sizeof(prefix2), "%s_", sdn_selif[j]);
-#else
 				for (j = wlif_count - 1; j >= 0; j--) {
 					if(j == i)
 						continue;
 					snprintf(prefix2, sizeof(prefix2), "wl%d_", j);
-#endif
 					if (find_in_list(bsd_ifnames, (nvram_safe_get(strcat_r(prefix2, "ifname", tmp2)))))
 					{
 						_dprintf("%s: add [%s] into target ifname\n", ifname, nvram_safe_get(strcat_r(prefix2, "ifname", tmp2)));
 						if( nvram_get_int(strcat_r(prefix2, "nband", tmp2)) == WLC_BAND_2G && strlen(bsd_if_sel) > 0) {
-							strncpy(tmp3, bsd_if_sel, strlen(bsd_if_sel));
+							strncpy(tmp3, bsd_if_sel, strlen(tmp3));
 							snprintf(bsd_if_sel, sizeof(bsd_if_sel), "%s %s", nvram_safe_get(strcat_r(prefix2, "ifname", tmp2)), tmp3);
 						}
 						else
@@ -14157,11 +14988,7 @@ void smart_connect_realign_ifnames() {
 		}
 	}
 
-	if(
-#if !defined(RTCONFIG_MULTILAN_MWL)
-		smartconnect_selif > 0  && smartconnect_selif_x > 0 && 
-#endif
-		smartconnect_selif != smartconnect_selif_x) {
+	if(smartconnect_selif > 0  && smartconnect_selif_x > 0 && smartconnect_selif != smartconnect_selif_x) {
 		_dprintf("%s, change selif (%d->%d)\n", __func__, smartconnect_selif, smartconnect_selif_x);
 		nvram_set_int("smart_connect_selif", smartconnect_selif_x);
 		nvram_commit();

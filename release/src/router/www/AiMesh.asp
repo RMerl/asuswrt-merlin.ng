@@ -42,6 +42,10 @@ var theme = getUrlParameter("current_theme").toLocaleUpperCase();
 if(theme == "WHITE"){
 	$('link').filter("[href*='/aimesh/aimesh_topology.css']").after('<link rel="stylesheet" type="text/css" href="/aimesh/aimesh_topology_' + theme + '.css">');
 }
+
+if(isSupport("TS_UI"))
+	$('link').last().after('<link rel="stylesheet" type="text/css" href="css/difference.css">');
+
 function initial(){
 	show_menu();
 	$("#AiMesh_Topology").load("/aimesh/aimesh_topology.html", function(){

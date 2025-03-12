@@ -41,6 +41,9 @@ else{
 	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/adguard_dns.css">');
 }
 
+if(isSupport("TS_UI"))
+	$('link').last().after('<link rel="stylesheet" type="text/css" href="css/difference.css">');
+
 var window_width = $(window).width();
 var applyData = {"action_mode": "apply", "rc_service": "restart_wan_if 0;restart_stubby"};
 var dnsList = [];
@@ -242,7 +245,7 @@ function generate_setting_items(){
 				}
 				else{
 					if(orig_adguard_enable){
-						var hint_msg = "All the existing AdGuard DNS rules will be cleared from router and related SDN profiles. Do you want to proceed?";//untranslated
+						var hint_msg = `<#DDNS_adGuard_disable_hint#> <#AiMesh_confirm_msg0#>`;
 						if(confirm(hint_msg)){
 							var tmp_rulelist_array = [];
 							$("#account_container").fadeOut(100);
@@ -544,7 +547,7 @@ function get_adGuard_DNS_list(){
 
 		if(routerList.length == 0){
 			show_default_add_profile_container();
-			show_general_hint("The router profile you applied has been removed from AdGuard DNS, please add or select another one.");//untranslated
+			show_general_hint(`<#DDNS_adGuard_apply_hint2#>`);
 		}
 	}
 }
@@ -745,7 +748,7 @@ function check_cur_adGuardTLS_exist(){
 		show_general_hint("<#DDNS_adGuard_apply_hint#>");
 	}
 	else if(adguard_used && !tls_exist){
-		show_general_hint("The router profile you applied has been removed from AdGuard DNS, please add or select another one.");//untranslated
+		show_general_hint(`<#DDNS_adGuard_apply_hint2#>`);
 	}
 
 }
@@ -815,7 +818,7 @@ function add_device(server_id){
 		.appendTo($new_device_action_container);
 
 	$("<div>")
-		.html("Discard") //untranslated
+		.html("<#Discard#>")
 		.addClass("discard_btn")
 		.appendTo($action_button_container)
 		.click(function(){
@@ -848,7 +851,10 @@ function add_device(server_id){
 										$("#"+connected_devices_list_id).find(".add_device_button").removeClass("add_device_button_clicked");
 										$("#"+connected_devices_list_id).find(".icon_add").removeClass("add_device_button_clicked_icon");
 										$("#"+connected_devices_list_id).find(".new_device_container").hide();
-										apply_new_device_settings(retData.id, retData.dns_ipaddress, retData.dns_over_tls_url);
+										if(sdn_theme != "SDN_WIZARD" && sdn_theme != "SDN_PROFILE")
+											apply_new_device_settings(retData.id, retData.dns_ipaddress, retData.dns_over_tls_url);
+										else
+											refreshpage();
 									}
 									else{
 										show_device_hint(this_server_id, retData.status);
@@ -1002,13 +1008,13 @@ function apply_settings(){
 			</div>
 			<div style="border-bottom: 1px solid #DCDCDC;">
 				<div class="adGuard_help_title" style="padding-top: 16px;">FAQ</div>
-				<div class="adGuard_help_text"><a target='_blank' href='https://asus.click/AdGuardFAQ'>How to set up ADGUARD DNS on ASUS router?</a></div><!--untranslated-->
+				<div class="adGuard_help_text"><a target='_blank' href='https://asus.click/AdGuardFAQ'><#DDNS_adGuard_help#></a></div>
 			</div>
 		</div>
 	</div>
 </div>
 <div id="advanced_settingGuide_div" class="popup_container">
-	<div class="popup_title_container"><div class="title">Setting Guide</div><div id="settingGuide_close_btn" class="close_btn"></div></div><!--untranslated-->
+	<div class="popup_title_container"><div class="title"><#Manual_Setting_Guide#></div><div id="settingGuide_close_btn" class="close_btn"></div></div>
 		<div class="adGuard_popup_content_container" style="padding-bottom: 0px;">
 			<div style="padding: 16px; border-radius: 10px; border: 1px solid #B3B3B3;">
 				<div style="font-size: 16px;"><#DDNS_adGuard_AdvSetting_desc#></div>
@@ -1052,7 +1058,7 @@ function apply_settings(){
 	<div id="adguard_ad_container_top" class="adGuard_ad_container" onclick="openLink('https://adguard-dns.io/?aid=33478');"><img class="adGuard_ad_pic"></img></div>
 	<div id = "adguard_enable_div" class = "adGuard_enable_div"></div>
 	<div id = "account_container" style="display: none; justify-content: center; align-items: flex-start; height: auto;">
-		<div class="adGuard_account_title">ADGUARD Account</div><!--untranslated-->
+		<div class="adGuard_account_title"><#DDNS_adGuard_Acount#></div>
 		<div id="login_hint_div" class="hint_div">
 			<div class="alert_icon"></div>
 			<div id="login_hint" class="hint_text"></div>
@@ -1067,7 +1073,7 @@ function apply_settings(){
 					<div id= "login_info_div" class="login_info_div"></div>
 					<div id="login_action_container" class="login_action_container"></div>
 				</div>
-				<div class="adGuard_no_account_hint"><div>Don't have an account?</div><a style='color:#248DFF; padding-left: 10px;' target='_blank' href='https://adguard-dns.io/?aid=33478'><#sign_up#></a></div><!--untranslated-->
+				<div class="adGuard_no_account_hint"><div><#create_an_acc_yet#></div><a style='color:#248DFF; padding-left: 10px;' target='_blank' href='https://adguard-dns.io/?aid=33478'><#sign_up#></a></div>
 			</div>
 		</div>
 		<div id = "account_info_container" style="display: none;">

@@ -50,7 +50,7 @@ var enable_ftp_orig = httpApi.nvramGet(["enable_ftp"]).enable_ftp;
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=108";
 
 var passthrough_hint_content="<br>It is recommended to select type of IPv6 Passthrough while WAN connection type is %1$@.";	/* Untranslated */
-var dns_auto_hint_content="<br>It is recommended to enable this setting while WAN connection type is %2$@.";	/* Untranslated */
+var dns_auto_hint_content=`<br><#IPv6_plus_dns_auto_hint#>`;
 if(wan_proto_orig == "v6plus"){
 	passthrough_hint_content = passthrough_hint_content.replace('%1$@', "<#IPv6_plus#>");
 	dns_auto_hint_content = dns_auto_hint_content.replace('%2$@', "<#IPv6_plus#>");

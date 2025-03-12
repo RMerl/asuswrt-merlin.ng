@@ -702,7 +702,8 @@ function validate_format_IPSec(_obj, _validField){
 		const psk_length_trim = str.trim().length;
 		if(psk_length < 8){
 			testResult.isError = true;
-			testResult.errReason = "<#JS_PSK64Hex#>";
+			testResult.errReason = "<#JS_short_password#>";
+			testResult.set_value = "00000000";
 			return testResult;
 		}
 		if(psk_length > 32){

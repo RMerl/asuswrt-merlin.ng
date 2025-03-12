@@ -98,9 +98,6 @@ enum capabilityType {
 
 #ifdef RTCONFIG_MLO
 	MLO_RADIO = 40,
-#ifdef SMARTHAUL
-	SMART_HAUL = 41,
-#endif
 #endif
 	CAPABILITY_MAX
 };
@@ -210,19 +207,6 @@ enum capabilityType {
 #define CHANNEL_PLAN_CAP_ON	BIT(1)
 #define CHANNEL_PLAN_CAP_MANUAL	BIT(2)
 #define CHANNEL_PLAN_CAP_CENTRAL	BIT(3)
-#endif
-
-/* for smarthaul */
-#ifdef SMARTHAUL
-#if defined(CONFIG_BCMWL5)
-#define SMARTHAUL_CAP	BIT(0)	/* for BRCM */
-#elif defined(RTCONFIG_QCA)
-#define SMARTHAUL_CAP	BIT(1)	/* for QCA */
-#elif defined(RTCONFIG_RALINK)
-#define SMARTHAUL_CAP	BIT(2)	/* for MTK */
-#else
-#define SMARTHAUL_CAP	0	/* for nothing */
-#endif
 #endif
 
 /* Capability support on role */

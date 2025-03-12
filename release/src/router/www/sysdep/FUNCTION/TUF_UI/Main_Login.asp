@@ -30,10 +30,12 @@ function tryParseJSON (jsonString){
             return o;
         }
     }
-    catch (e) { }
+    catch (e) {
+		// do something
+	}
 
     return false;
-};
+}
 
 var htmlEnDeCode = (function() {
 	var charToEntityRegex,
@@ -111,6 +113,12 @@ const getQueryString = function(name){
 	var r = window.location.search.substr(1).match(reg);
 	if (r != null) return unescape(r[2]); return null;
 };
+
+function isSupport(_ptn){
+	var ui_support = [<% get_ui_support(); %>][0];
+	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
+}
+
 function loadScript(src, timeout = 2000) {
     return new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -135,10 +143,10 @@ if(ROUTERHOSTNAME !== header_info.host && ROUTERHOSTNAME != "" && isRouterMode){
 	}, 100);
 }
 
-function isSupport(_ptn){
-	var ui_support = [<% get_ui_support(); %>][0];
-	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
-}
+if(isSupport("TS_UI"))
+	$('link').last().after('<link rel="stylesheet" type="text/css" href="css/difference.css">');
+
+var tuf_support = isSupport("tuf");
 var odm_support = isSupport("odm");
 var captcha_support = isSupport("captcha");
 var captcha_enable = htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "captcha_enable"); %>'));
@@ -155,6 +163,13 @@ function initial(){
 
 	if(ATEMODE == "1"){
 		$(".login-title-desc").text("<#Sign_in_title#>" + " (ATE Mode)");
+	}
+
+	if(isSupport("TS_UI") && CoBrand == "12"){
+		$(".model-name").css("display", "none");
+		$(".logo-container").css("margin-left", "unset");
+		$(".logo-container").css("justify-content", "center");
+		document.getElementsByClassName("logo-rog")[0].className = "logo-tx_miku";
 	}
 
 	/*handle sysdep for ROG or ODM product*/

@@ -47,27 +47,7 @@ ifeq ($(RTCONFIG_TRUSTZONE),y)
 LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M))
-LDFLAGS += -L$(TOP)/libhostapi -lhostapi
-endif
-
-ifeq ($(RTCONFIG_HTTPS),y)
-CFLAGS += -I$(TOP)/mssl
-CFLAGS += -I$(TOP)/openssl/include
-LIBS += -L$(TOP)/mssl -lmssl
-LIBS += -L$(TOP)/openssl -lssl -lcrypto -ldl
-endif
-
-ifeq ($(RTCONFIG_USB),y)
-CFLAGS += -I$(TOP)/libdisk
-LIBS += -L$(TOP)/libdisk -ldisk
-ifeq ($(RTCONFIG_USB_SMS_MODEM),y)
-CFLAGS += -I$(TOP)/smspdu
-LIBS += -L$(TOP)/smspdu -lsmspdu
-endif
-endif
-
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS7_PRO))
 LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 
@@ -132,6 +112,10 @@ LIBS +=  -lcurl
 ifeq ($(RTCONFIG_TR069),y)
 CFLAGS += -I$(TOP)/libssh2-1.10.0/include -I$(TOP)/zlib/include
 LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2 -L$(TOP)/zlib -lz
+endif
+
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M))
+LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 
 #Aggregate all include and src directories

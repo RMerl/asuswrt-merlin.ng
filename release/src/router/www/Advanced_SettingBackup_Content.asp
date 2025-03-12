@@ -43,6 +43,7 @@ function initial(){
 		uploadSetting();
 	};
 
+	/*
 	if(!bwdpi_support && !isSupport("dpi_mals") && !isSupport("dpi_cc") && !isSupport("dpi_vp")){
 		$("#factorydefault_hint").attr("onclick", "").unbind("click");
 		$("#factorydefault_hint").attr("onclick", "openHint(19, 1);");
@@ -50,6 +51,7 @@ function initial(){
 		$("#restoreInit").attr("disabled", "disabled");
 		$("#restoreInit").prop("checked", false);
 	}
+	*/
 }
 
 function restoreRule(_flag){

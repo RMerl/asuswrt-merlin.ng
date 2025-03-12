@@ -1,0 +1,142 @@
+cmake_minimum_required(VERSION 3.1)
+project(EthSwBox VERSION 1.0.0
+                  DESCRIPTION "Ethernet SW Toolbox for gphy hostapi on RPI4 Host/MxL86289C EVK"
+                  LANGUAGES C)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
+      ${CMAKE_CURRENT_SOURCE_DIR})
+
+
+
+#####################
+#   OS directory    # 
+#####################
+SET (os_DIR src/os)
+SET (os_SRCS ${os_DIR}/os_linux.c)
+
+add_library (os ${os_SRCS})
+
+
+#####################
+#   SRC directory   # 
+#####################
+SET (src_DIR src)
+
+#####################
+#   APPS library    #
+#####################
+SET (apps_DIR src/apps)
+
+SET (apps_SRCS    ${apps_DIR}/download/smdio_access.c
+                  ${apps_DIR}/download/smdio_ssb.c
+                  #${apps_DIR}/evb/apps_evb.c
+      )              
+add_library (apps ${apps_SRCS})
+
+#####################
+#   CLI directory   #
+#####################
+SET (cli_DIR src/cli)
+SET (cli_SRCS ${cli_DIR}/cmds/cmds.c
+              ${cli_DIR}/cmds/cmds_fapi.c
+              ${cli_DIR}/cmds/cmds_apps_ssb.c
+              #${cli_DIR}/cmds/cmds_cli_common.c
+              )
+add_library (cli ${cli_SRCS})
+
+#SET (ccli_SRCS ${cli_DIR}/cmds/cmds_cli_common.c
+#              )
+#add_library (ccli ${ccli_SRCS})
+
+
+
+
+###########################################
+#   LIF (LInk InterFaces) directory       #
+###########################################
+SET (lif_DIR src/lif)
+SET (lif_mdio_lib_DIR src/lif/mdio/lib)
+
+SET (lif_SRCS ${lif_DIR}/lif_api.c)
+
+
+SET (lif_mdio_lib_SRCS ${lif_mdio_lib_DIR}/bcm2835.c
+                       ${lif_mdio_lib_DIR}/mdio.c)
+
+add_library (lif ${lif_SRCS})
+add_library (lif_mdio ${lif_mdio_lib_SRCS})
+
+
+####################
+#   GPHY directory #
+####################
+#SET (gphy_DIR src/api/gphy)
+
+#SET (gphy_SRCS    ${gphy_DIR}/api_gphy.c
+#                  ${gphy_DIR}/driver/src/gpy2xx_phy.c
+#                  )
+#add_library (gphy ${gphy_SRCS})
+
+#########################
+#   FAPI  directory #
+#########################
+SET (fapi_DIR src/fapi)
+SET (fapi_SRCS ${fapi_DIR}/fapi_gsw_hostapi_mdio_relay.c
+               ${fapi_DIR}/fapi_gsw_hostapi.c)
+
+add_library (fapi ${fapi_SRCS})
+
+####################
+#   GSW HOSTAPI directory #
+####################
+SET (gsw_hostapi_DIR packages/switch_hostapi)
+
+SET (gsw_hostapi_SRCS   ${gsw_hostapi_DIR}/src/gsw_api.c
+                        ${gsw_hostapi_DIR}/src/gsw_cli_common.c
+                        ${gsw_hostapi_DIR}/src/gsw_ss.c
+                        ${gsw_hostapi_DIR}/src/host_adapt.c
+                        ${gsw_hostapi_DIR}/src/host_api_impl.c
+                        ${gsw_hostapi_DIR}/src/host_smdio_ssb.c
+                        ${gsw_hostapi_DIR}/src/mdio_relay.c
+                        ${gsw_hostapi_DIR}/src/sys_misc.c
+            )
+add_library (gsw_hostapi ${gsw_hostapi_SRCS})
+
+
+#########################
+#   Includes path       #
+#########################
+include_directories(    ${src_DIR}
+                        ${os_DIR}
+                        ${lif_DIR}
+                        ${lif_mdio_lib_DIR}
+                        #${gphy_DIR}
+                        ${fapi_DIR}
+                        ${apps_DIR}
+                        ${apps_DIR}/download
+                        ${cli_DIR}
+                        ${cli_DIR}/cmds
+                        ${gsw_hostapi_DIR}/src
+                        ${gsw_hostapi_DIR}/include/gpy
+                        ${gsw_hostapi_DIR}/include/gswip
+                     )
+
+
+#############################   
+#   ethswbox application    # 
+#############################
+add_definitions(-DETHSWBOX=1)
+add_compile_definitions(CONFIG_GSWIP_MAC=1)
+add_compile_definitions(CONFIG_GSWIP_EVLAN=1)
+add_compile_definitions(CONFIG_GSWIP_MCAST=1)
+add_compile_definitions(CONFIG_GSWIP_STP=1)
+add_executable(ethswbox ${cli_DIR}/ethswbox.c)
+
+##
+##                             CLI-CMDS
+##                                |
+##                +-------+-------+-------+-------+    
+##                apps    fapi    lif     gsw_hostapi      
+##  
+
+target_link_libraries(ethswbox cli fapi gsw_hostapi apps lif lif_mdio os)

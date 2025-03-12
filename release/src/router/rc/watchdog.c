@@ -95,7 +95,7 @@
 #include <libasuslog.h>
 #endif
 #endif
-#if defined(GSBE18000) && !defined(RTCONFIG_BCM_MFG)
+#if (defined(GSBE18000) || defined(GS7_PRO)) && !defined(RTCONFIG_BCM_MFG)
 #include <wlioctl.h>
 #include <wlutils.h>
 #endif
@@ -209,7 +209,7 @@ static int top_period = 0;
 static int top = 0;
 static int lsof_period = 0;
 static int lsof = 0;
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
 static int eth1_period = 60;
 static int eth1 = 59;
 static int eth1_count = 0;
@@ -218,7 +218,7 @@ static int eth1_count = 0;
 static int chkusb3_period = 0;
 static int u3_chk_life = 6;
 #endif
-#if !defined(RTCONFIG_BCM_MFG) && (defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(DSL_AX82U) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)) || defined(GSBE18000)
+#if !defined(RTCONFIG_BCM_MFG) && (defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(DSL_AX82U) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)) || defined(GSBE18000) || defined(GS7_PRO)
 static int ledg_count = 0;
 #endif
 static int wanduck_count = 0;
@@ -361,6 +361,11 @@ extern char *bs_desc[];
 #endif
 #endif
 
+#ifdef RTCONFIG_CFGSYNC
+#define CFGSYNC_RESTART_MAX_COUNT	3
+static int cfgsync_restart_count = 0;
+#endif
+
 /* DEBUG DEFINE */
 #define SCHED_DEBUG	"/tmp/SCHED_DEBUG"
 #define WL_SCHED_DBG(fmt,args...) \
@@ -485,7 +490,7 @@ void led_control_normal(void)
 #if !defined(RTCONFIG_CONCURRENTREPEATER)
 	led_control(LED_POWER, LED_ON);
 #endif
-#if defined(RTCONFIG_LOGO_LED) && !defined(GTAX11000) && !defined(GTAXE11000) && !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(GTBE19000) && !defined(GTBE19000_AI)
+#if defined(RTCONFIG_LOGO_LED) && !defined(GTAX11000) && !defined(GTAXE11000) && !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(GTBE19000) && !defined(GTBE19000AI) && !defined(GTBE96_AI)
 	led_control(LED_LOGO, LED_ON);
 #endif
 #if defined(RTN11P) || defined(RTN300) || defined(RTN11P_B1)
@@ -3908,7 +3913,7 @@ void btn_check(void)
 		if (LED_status_on)
 #endif
 		{
-#if defined(RTAX86U_PRO) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE86U) || defined(RTBE58U_PRO) || defined(GSBE18000)
+#if defined(RTAX86U_PRO) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE86U) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
 			setAllLedNormal();
 #else
 			led_control(LED_POWER, LED_ON);
@@ -3916,7 +3921,7 @@ void btn_check(void)
 #if defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
 #ifdef HND_ROUTER
 #ifndef GTAC2900
-#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAX3000N) || defined(BR63) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX5400) || defined(RTAX88U_PRO) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE58U_PRO)
+#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAX3000N) || defined(BR63) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX5400) || defined(RTAX88U_PRO) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE58U_PRO)
 			wan_phy_led_pinmux(0);
 #else
 			led_control(LED_WAN_NORMAL, LED_ON);
@@ -3943,7 +3948,7 @@ void btn_check(void)
 #endif
 #ifdef RTCONFIG_FAKE_ETLAN_LED
 			nvram_set_int("etlan_led_reset", 1);
-#if defined(RTAX9000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RTBE92U) || defined(GSBE18000)
+#if defined(RTAX9000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RTBE92U) || defined(GSBE18000) || defined(GS7_PRO)
 			nvram_set_int("etwan_led_reset", 1);
 #endif
 #endif
@@ -3975,13 +3980,13 @@ void btn_check(void)
 				eval("wl", "-i", "eth7", "ledbh", "13", "7");
 #elif defined(GTBE98) || defined(GTBE98_PRO)
 				eval("wl", "-i", nvram_safe_get("wl3_ifname"), "ledbh", "12", "7");
-#elif defined(RTBE88U) || defined(RTBE96U) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#elif defined(RTBE88U) || defined(RTBE96U) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 				eval("wl", "-i", "wl0", "ledbh", "12", "7");
 #elif defined(RTBE86U) || defined(RTBE92U)
 				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 0, 0)), "ledbh", "7", "7");
 #elif defined(RTBE95U)
 				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 0, 0)), "ledbh", "12", "7");
-#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO)
 				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 0, 0)), "ledbh", "0", "25");
 #elif defined(RTAX92U)
 				eval("wl", "-i", "eth5", "ledbh", "10", "7");
@@ -4071,11 +4076,11 @@ void btn_check(void)
 #elif defined(GTBE98) || defined(GTBE98_PRO)
 				eval("wl", "-i", nvram_safe_get("wl0_ifname"), "ledbh", "12", "7");
 				eval("wl", "-i", nvram_safe_get("wl1_ifname"), "ledbh", "12", "7");
-#elif defined(RTBE88U) || defined(RTBE96U) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#elif defined(RTBE88U) || defined(RTBE96U) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 				eval("wl", "-i", "wl1", "ledbh", "12", "7");
 #elif defined(RTBE86U)
 				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 1, 0)), "ledbh", "12", "7");
-#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO)
 				eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 1, 0)), "ledbh", "0", "25");
 #elif defined(RTAX82_XD6S)
 				eval("wl", "-i", "eth3", "ledbh", "15", "7");
@@ -4108,7 +4113,7 @@ void btn_check(void)
 				eval("wl", "-i", "eth2", "ledbh", "9", "7");
 #endif
 			}
-#if defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2)
+#if defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
 			if (wlonunit == -1 || wlonunit == 2) {
 #if defined(RTAC3200)
 				eval("wl", "-i", "eth3", "ledbh", "10", "7");
@@ -4120,7 +4125,7 @@ void btn_check(void)
 				eval("wl", "-i", "eth7", "ledbh", "15", "7");
 #elif defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2)
 				eval("wl", "-i", "eth6", "ledbh", "15", "7");
-#elif defined(BT12) || defined(RTBE96U) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#elif defined(BT12) || defined(RTBE96U) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 				eval("wl", "-i", "wl2", "ledbh", "15", "7");
 #elif defined(BT10)
 				eval("wl", "-i", WL_6G_IFNAME, "ledbh", "15", "7");
@@ -4164,7 +4169,7 @@ void btn_check(void)
 			led_control(LED_LOGO, LED_ON);
 #endif
 			kill_pidfile_s("/var/run/usbled.pid", SIGTSTP); // inform usbled to reset status
-#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000)
+#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI)
 			kill_pidfile_s("/var/run/ledg.pid", SIGTSTP);
 #endif
 #ifdef GTAX6000
@@ -5430,7 +5435,7 @@ void timecheck_v2(void)
 		
 			subunit++;
 		}
-#endif	// RTCONFIG_MULTILAN_CFG
+#endif	
 
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_QCA)
@@ -5713,7 +5718,7 @@ unsigned long get_etlan_count()
 	char buf[256];
 	char *ifname, *p;
 	unsigned long counter=0;
-#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56U) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U) || defined(RTAX55) || defined(RTAX1800) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(RTAX3000N) || defined(RTAX88U_PRO) || defined(RTBE96U) || defined(XC5) || defined(RTAX9000) || defined(GTBE96) || defined(RTBE88U) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GTBE19000_AI) || defined(GSBE18000)
+#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56U) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U) || defined(RTAX55) || defined(RTAX1800) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(RTAX3000N) || defined(RTAX88U_PRO) || defined(RTBE96U) || defined(XC5) || defined(RTAX9000) || defined(GTBE96) || defined(RTBE88U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI)
 	unsigned long tmpcnt=0;
 #endif
 
@@ -5736,15 +5741,15 @@ unsigned long get_etlan_count()
 		if ((ifname = strrchr(buf, ' ')) == NULL) ifname = buf;
 		else ++ifname;
 
-#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56U) || defined(RTAX68U) || defined(RTAX55) || defined(RTAX1800) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(RTAX3000N) || defined(RTAX88U_PRO) || defined(RTBE96U) || defined(GTBE98_PRO) || defined(RTAX9000) || defined(GTBE96) || defined(RTBE88U) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GTBE19000_AI) || defined(GSBE18000)
+#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56U) || defined(RTAX68U) || defined(RTAX55) || defined(RTAX1800) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(RTAX3000N) || defined(RTAX88U_PRO) || defined(RTBE96U) || defined(GTBE98_PRO) || defined(RTAX9000) || defined(GTBE96) || defined(RTBE88U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI)
 		if (strcmp(ifname, "eth1")
 #if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56U) || defined(RTAX68U) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(RTAX88U_PRO) || defined(RTBE96U) || defined(RTAX9000) || defined(RTBE88U)
 			&& strcmp(ifname, "eth2") && strcmp(ifname, "eth3") && strcmp(ifname, "eth4")
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 			&& strcmp(ifname, "eth2")
 #endif
-#if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(RTBE88U) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(RTBE88U) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 			&& strcmp(ifname, "eth0") && !nvram_match("wan_ifname", ifname)
 #endif
 #if defined(RTBE88U)
@@ -5756,8 +5761,8 @@ unsigned long get_etlan_count()
 			&& (strcmp(ifname, "eth5") && !nvram_get_int("wans_extwan"))
 #endif
 		) continue;
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000)
-#if defined(RTBE82M) || defined(GSBE18000)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO)
 		if (!mxl_lan_phy_status())
 #else
 		if (!rtk_lan_phy_status())
@@ -5766,8 +5771,8 @@ unsigned long get_etlan_count()
 #endif
 		if (sscanf(p+1, "%lu", &tmpcnt) != 1) continue;
 		counter += tmpcnt;
-#elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
-		if (hnd_boardid_cmp("GT-BE98_BCM") == 0) {
+#elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
+		if (!is_rtl8372_boardid()) {
 			if (strcmp(ifname, "eth1") && strcmp(ifname, "eth2") && strcmp(ifname, "eth3") && strcmp(ifname, "eth4") &&
 			    strcmp(ifname, "eth5") &&
 			    strcmp(ifname, "eth0") && !nvram_match("wan_ifname", ifname))
@@ -5897,7 +5902,7 @@ void fake_etlan_led(void)
 
 	if (nvram_get_int("etlan_led_reset")) {
 		nvram_set_int("etlan_led_reset", 0);
-#if !defined(RTAX55) && !defined(RTAX1800) && !defined(RTAX3000N) && !defined(BR63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE58U_PRO)
+#if !defined(RTAX55) && !defined(RTAX1800) && !defined(RTAX3000N) && !defined(BR63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE58U_PRO)
 		lstatus = 1;
 #endif
 		status = -1;
@@ -5911,10 +5916,10 @@ void fake_etlan_led(void)
 	return;
 #endif
 
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000)
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
 	phystatus = rtk_lan_phy_status();
-#elif defined(RTBE82M) || defined(GSBE18000)
+#elif defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO)
 	phystatus = mxl_lan_phy_status();
 #else
 	phystatus = rtkswitch_lanPorts_phyStatus();
@@ -5946,10 +5951,10 @@ void fake_etlan_led(void)
 			|| (nvram_match("wan_ifname", "eth0") && phystatus == 0x1)
 			|| (nvram_match("wan_ifname", "eth5") && phystatus == 0x20 && !hnd_get_phy_status("eth0"))
 			|| (nvram_match("wan_ifname", "eth6") && phystatus == 0x40 && !hnd_get_phy_status("eth0"))
-#elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 			|| (phystatus == 0x40)
 			|| (!nvram_get_int("wans_extwan") && phystatus == 0x1)
-			|| ((hnd_boardid_cmp("GT-BE98_BCM") && nvram_match("wan_ifname", "eth3")) || (!hnd_boardid_cmp("GT-BE98_BCM") && nvram_match("wan_ifname", "eth6")) && phystatus == 0x40 && !hnd_get_phy_status("eth0"))
+			|| ((is_rtl8372_boardid() && nvram_match("wan_ifname", "eth3")) || (!is_rtl8372_boardid() && nvram_match("wan_ifname", "eth6")) && phystatus == 0x40 && !hnd_get_phy_status("eth0"))
 			|| (nvram_match("wan_ifname", "vlan4094") && phystatus == 0x2)
 #elif defined(RTBE88U)
 			|| (nvram_match("wan_ifname", "eth0") && phystatus == 0x1)
@@ -6020,7 +6025,7 @@ void fake_etlan_led(void)
 #endif
 }
 
-#if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(RTBE88U) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(RTBE88U) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 static int lstatus_extra = -1;
 static int allstatus_extra = 0;
 
@@ -6053,7 +6058,7 @@ void fake_etlan_led_extra(void)
 	phystatus = GetPhyStatus(0, NULL);
 #if defined(GTAXE16000) || defined(GTAX11000_PRO)
 	if (!(phystatus & 0x60)) // both 10GE ports(L5 & L6) are not connected
-#elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	if ((nvram_get_int("wans_extwan") && !(phystatus & 0x41)) || 	// configure 2.5G WAN/LAN1 as default WAN and both 10GE ports(W0/L6) are not connected
 	    (!nvram_get_int("wans_extwan") && !(phystatus & 0x40))) 	// configure 10GE(W0) as as default WAN and 10GE port(L6) is not connected
 #elif defined(RTBE88U)
@@ -6075,9 +6080,9 @@ void fake_etlan_led_extra(void)
 
 	// check data per 10 count
 	if ((blink_check%10) == 0) {
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 		if ((phystatus & 0x40) || (nvram_get_int("wans_extwan") && (phystatus & 0x1))) {
-			if (hnd_boardid_cmp("GT-BE98_BCM") == 0)
+			if (!is_rtl8372_boardid())
 				curr_count += get_etlan_count_specific_if("eth6");
 			else {
 				if (phystatus & 0x40)
@@ -6229,7 +6234,7 @@ void fake_sfpp_led(void)
 }
 #endif
 
-#if defined(RTAX9000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RTBE92U) || defined(GSBE18000)
+#if defined(RTAX9000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RTBE92U) || defined(GSBE18000) || defined(GS7_PRO)
 unsigned long get_etwan_count()
 {
 	FILE *f;
@@ -6239,7 +6244,7 @@ unsigned long get_etwan_count()
 	unsigned long counter=0;
 
 	if ((f = fopen("/proc/net/dev", "r")) == NULL) return -1;
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U)
 	if (!nvram_match("wan_ifname", "vlan4094")) return -1;
 #endif
 
@@ -6251,7 +6256,7 @@ unsigned long get_etwan_count()
 		*p = 0;
 		if ((ifname = strrchr(buf, ' ')) == NULL) ifname = buf;
 		else ++ifname;
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U)
 		if (strcmp(ifname, "vlan4094")) continue;
 #else
 		if (strcmp(ifname, "eth0")) continue;
@@ -6278,19 +6283,19 @@ void fake_etwan_led(void)
 	static int status_old;
 	int phystatus = 0;
 
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U)
 	if (!is_router_mode() || !nvram_match("wan_ifname", "vlan4094"))
 		return;
 	else
 		wan_phy_led_pinmux(1);
 #endif
-#if defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
+#if defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTBE55)
 	phystatus = hnd_get_phy_status("eth0");
 #elif defined(RTBE82M)
 	phystatus = mxl_get_phy_status(0);
-#elif defined(GSBE18000)
+#elif defined(GSBE18000) || defined(GS7_PRO)
 	phystatus = mxl_get_phy_status(3);
-#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U)
 	phystatus = nvram_match("wan_ifname", "vlan4094") && rtk_get_phy_status(1);
 #else
 	phystatus = hnd_get_phy_status(0);
@@ -6524,7 +6529,7 @@ void fake_wl_led_5g(void)
 }
 #endif
 
-#if defined(GSBE18000) && !defined(RTCONFIG_BCM_MFG)
+#if (defined(GSBE18000) || defined(GS7_PRO)) && !defined(RTCONFIG_BCM_MFG)
 unsigned long long get_wifi_count()
 {
 	FILE *f;
@@ -6955,7 +6960,7 @@ void led_check(int sig)
 		kill_pidfile_s("/var/run/sw_devled.pid", SIGUSR2);
 #endif
 
-#if (defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))) && !defined(GTAX6000) && !defined(TUFAX3000_V2) && !defined(RTAXE7800) && !defined(GT10) && !defined(RTAX9000) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000)
+#if (defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))) && !defined(GTAX6000) && !defined(TUFAX3000_V2) && !defined(RTAXE7800) && !defined(GT10) && !defined(RTAX9000) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000) && !defined(GS7_PRO)
 	int all_led;
 	int turnoff_counts = swled_alloff_counts?:3;
 
@@ -7011,15 +7016,15 @@ void led_check(int sig)
 	if (nvram_match("bl_version", "1.0.0.0"))
 		fake_wl_led_2g();
 #endif
-#if defined(GSBE18000) && !defined(RTCONFIG_BCM_MFG)
+#if (defined(GSBE18000) || defined(GS7_PRO)) && !defined(RTCONFIG_BCM_MFG)
 	fake_wifi_led();
 #endif
 #ifdef RTCONFIG_FAKE_ETLAN_LED
 	fake_etlan_led();
-#if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(RTBE88U) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(RTBE88U) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	fake_etlan_led_extra();
 #endif
-#if defined(RTAX9000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RTBE92U) || defined(GSBE18000)
+#if defined(RTAX9000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RTBE92U) || defined(GSBE18000) || defined(GS7_PRO)
 	fake_etwan_led();
 #endif
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_SFPP_LED)
@@ -7078,7 +7083,8 @@ void led_check(int sig)
 		case MODEL_RTBE96U:
 		case MODEL_GTBE96:
 		case MODEL_GTBE19000:
-		case MODEL_GTBE19000_AI:
+		case MODEL_GTBE19000AI:
+		case MODEL_GTBE96_AI:
 		default:
 			snprintf(p1_node, sizeof(p1_node), "%s", nvram_safe_get("usb_path1_node"));
 			snprintf(p2_node, sizeof(p2_node), "%s", nvram_safe_get("usb_path2_node"));
@@ -7146,10 +7152,10 @@ void led_table_ctrl(int on_off)
 
 	for(i=0; i < LED_ID_MAX; ++i) {
 		if (led_gpio_table[i] != 0xff && led_gpio_table[i] != -1 && i != PWR_USB
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE19000) || defined(RTBE96U) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE19000) || defined(RTBE96U) || defined(GTBE19000AI) || defined(GTBE96_AI)
 			&& i != LED_AFC
 #endif
-#if defined(GTBE19000_AI)
+#if defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI)
 			&& i != PS_RESET && i != PS_SOP0 && i != PS_SOP1 && i != PS_SOP2 && i != PS_SWITCH
 #endif
 					) {
@@ -7826,7 +7832,7 @@ void dnsqd_check(void)
 {
         if (!pids("dnsqd"))
         {
-                start_dnsqd();
+                notify_rc("start_dnsqd");
         }
 }
 #endif
@@ -8055,6 +8061,8 @@ void dnsmasq_check()
 		get_mtlan(pmtl, &mtl_sz);
 		for (i = 0; i < mtl_sz; i++) {
 			if (pmtl[i].enable) {
+				if (pmtl[i].sdn_t.sdn_idx > 0 && pmtl[i].nw_t.idx == 0)
+					continue;
 				if (pmtl[i].sdn_t.sdn_idx)
 					snprintf(path, sizeof(path), "/var/run/dnsmasq-%d.pid", pmtl[i].sdn_t.sdn_idx);
 				else
@@ -8630,6 +8638,14 @@ static void auto_firmware_check()
 				return;
 			}
 #endif
+#if defined(RTCONFIG_AUTO_FW_UPGRADE) 
+			if(update_enable == 1){
+				FAUPGRADE_DBG("update_enable==1, do webs_update only at bootup");
+				nvram_set("webs_update_trigger", "WDG_BT");
+				eval("/usr/sbin/webs_update.sh");
+				return;
+			}
+#endif
 		}
 
 		period_retry = (period_retry+1) % 3;
@@ -9170,8 +9186,7 @@ static void bt_turn_off_service()
 		return;
 	}
 #endif
-
-	if (!nvram_match("x_Setting", "0") && !nvram_match("w_Setting", "0"))
+	if (!nvram_match("x_Setting", "0"))
 		return;
 
 	memset(buf, '\0', sizeof(buf));
@@ -9187,7 +9202,6 @@ static void bt_turn_off_service()
 			stop_bluetooth_service();
 		}
 		nvram_set("w_Setting", "1");
-		nvram_set("cfg_pause", "0");
 
 		tmp = strtok(buf, delim);
 		while (tmp!=NULL) {
@@ -9224,20 +9238,20 @@ void amas_ctl_check()
 		if (nvram_get_int("obd_prelinking") == 1)
 			return;
 #endif
-		if (nvram_match("amas_bhctrl_service_ready", "1") && !pids("amas_bhctrl"))
+		if (nvram_match("amas_bhctrl_service_ready", "1") && !check_main_pids_exist("amas_bhctrl"))
 			notify_rc("start_amas_bhctrl");
-		if (nvram_match("amas_wlcconnect_service_ready", "1") && !pids("amas_wlcconnect"))
+		if (nvram_match("amas_wlcconnect_service_ready", "1") && !check_main_pids_exist("amas_wlcconnect"))
 			notify_rc("start_amas_wlcconnect");
 #if !defined(RTCONFIG_NOWL)
-		if (nvram_match("amas_lanctrl_service_ready", "1") && !pids("amas_lanctrl"))
+		if (nvram_match("amas_lanctrl_service_ready", "1") && !check_main_pids_exist("amas_lanctrl"))
 			notify_rc("start_amas_lanctrl");
 #endif
 #ifdef RTCONFIG_BHCOST_OPT
-		if (nvram_match("amas_status_service_ready", "1") && !pids("amas_status"))
+		if (nvram_match("amas_status_service_ready", "1") && !check_main_pids_exist("amas_status"))
 			notify_rc("start_amas_status");
-		if (nvram_match("amas_misc_service_ready", "1") && !pids("amas_misc"))
+		if (nvram_match("amas_misc_service_ready", "1") && !check_main_pids_exist("amas_misc"))
 			notify_rc("start_amas_misc");
-		if (nvram_match("amas_ssd_service_ready", "1") && !pids("amas_ssd"))
+		if (nvram_match("amas_ssd_service_ready", "1") && !check_main_pids_exist("amas_ssd"))
 			notify_rc("start_amas_ssd");
 #endif
 	}
@@ -9249,7 +9263,7 @@ void amas_ctl_check()
 		if (IS_ATE_FACTORY_MODE())
 			return;
 #endif
-		if (nvram_match("amas_lanctrl_service_ready", "1") && !pids("amas_lanctrl")) {
+		if (nvram_match("amas_lanctrl_service_ready", "1") && !check_main_pids_exist("amas_lanctrl")) {
 			if (is_router_mode() || access_point_mode())
 				start_amas_lanctrl();
 		}
@@ -9331,6 +9345,8 @@ void cfgsync_check()
 	char reboot[sizeof("255")];
 	char upgrade[sizeof("255")];
 	unsigned int cfg_pause = nvram_get_int("cfg_pause");
+	char value[sizeof("9999999")];
+	int pid_by_file = 0, pid_by_name = 0;
 
 	memset(reboot, 0, sizeof("255"));
 	memset(upgrade, 0, sizeof("255"));
@@ -9363,6 +9379,28 @@ void cfgsync_check()
 	}
 #endif
 
+	/* check and count for restarting cfgsync */
+	if (!nvram_get("dis_cfgsync_rst_chk") && nvram_match("x_Setting", "1") && nvram_match("w_Setting","1")
+		&& nvram_get_int("re_mode") == 1 && nvram_get_int("cfg_first_sync") == 0)
+	{
+		if (pids("cfg_client")) {
+			if (!f_exists("/var/run/cfg_client.pid")) {
+				cfgsync_restart_count++;
+				_dprintf("no pid file for cfg_client (%d)\n", cfgsync_restart_count);
+			}
+			else if (f_read_string("/var/run/cfg_client.pid", value, sizeof(value)) > 0)
+			{
+				pid_by_file = atoi(value);
+				extern pid_t get_pid_by_process_name(char *name);
+				pid_by_name = get_pid_by_process_name("cfg_client");
+				if (pid_by_file > 0 && pid_by_name > 0 && pid_by_file != pid_by_name) {
+					cfgsync_restart_count++;
+					_dprintf("cfg_client's pid mismatch (%d)\n", cfgsync_restart_count);
+				}
+			}
+		}
+	}
+
 	if (nvram_match("x_Setting", "1") && nvram_match("w_Setting","1") &&
 		(
 		(!pids("cfg_client") &&
@@ -9380,7 +9418,7 @@ void cfgsync_check()
 			&& (nvram_get_int("lan_state_t") == LAN_STATE_CONNECTED)
 			)
 #endif
-		) ||
+		) || (nvram_get_int("re_mode") == 1 && cfgsync_restart_count >= CFGSYNC_RESTART_MAX_COUNT) ||
 		(!pids("cfg_server") && (is_router_mode() || access_point_mode())
 #ifdef RTCONFIG_AMAS
 			&& (getAmasSupportMode() & AMAS_CAP)
@@ -9388,6 +9426,13 @@ void cfgsync_check()
 #endif
 	)))
 	{
+		if (nvram_get_int("re_mode") == 1) {
+			if (cfgsync_restart_count >= CFGSYNC_RESTART_MAX_COUNT) {
+				_dprintf("restart cfg_client by count check\n");
+				logmessage("watchdog", "restart cfg_client by count check");
+			}
+			cfgsync_restart_count = 0;
+		}
 		_dprintf("start cfgsync\n");
 		notify_rc_and_wait_2min("start_cfgsync");
 	}
@@ -10561,28 +10606,7 @@ void udhcpc_check(void)
 }
 #endif
 
-#if defined(RPBE58) || defined(RTBE58_GO)
-void wpasupp_hapd_check()
-{
-	int pid_wpasupp = 0, pid_hostapd = 0;
-
-        if (!client_mode() || !nvram_match("x_Setting", "1") || !nvram_match("hapd_enable", "1"))
-                return;
-
-	pid_wpasupp = pids("wpa_supplicant-2.7");
-	pid_hostapd = pids("hostapd");
-
-	if (!pids("wpa_supplicant-2.7") || !pids("hostapd"))
-	{
-		_dprintf("[%s]: (%d)(%d)\n", __func__, pid_wpasupp, pid_hostapd);
-
-		stop_hapd_wpasupp();
-		start_hapd_wpasupp(0);
-	}
-}
-#endif
-
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
 void check_eth1_pause()
 {
 	if (eth1_period) {
@@ -10681,7 +10705,7 @@ void feedback_check(void)
 void watchdog(int sig)
 {
 	int period;
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
 	check_eth1_pause();
 #endif
 #ifdef RTL_WTDOG
@@ -10908,7 +10932,7 @@ void watchdog(int sig)
 			system("lsof | awk '{ print $1 " " $2; }' | sort -rn | uniq -c | sort -rn | head | logger -t lsof");
 	}
 
-#if !defined(RTCONFIG_BCM_MFG) && (defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(DSL_AX82U) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000))
+#if !defined(RTCONFIG_BCM_MFG) && (defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(DSL_AX82U) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI))
 	if (nvram_get_int("x_Setting") && !pids("ledg")) {
 		ledg_count = (ledg_count + 1) % 2 ;
 		if (!ledg_count) {
@@ -10916,9 +10940,8 @@ void watchdog(int sig)
 		}
 	}
 #endif
-#ifdef RTCONFIG_BCMWL6
-	if (!restore_defaults_g && strlen(nvram_safe_get("acs_ifnames")) && nvram_get_int("wlready") &&
-		!mediabridge_mode() &&
+#if defined(RTCONFIG_BCMWL6) && !defined(RTCONFIG_BCM_MFG)
+	if (!no_need_acsd() &&
 #ifdef RTCONFIG_HND_ROUTER_AX
 		!pids("acsd2")
 #else
@@ -11172,9 +11195,6 @@ wdp:
 #ifdef RTCONFIG_MULTIWAN_IF
 	check_mtwan_ipv6_route();
 #endif
-#if defined(RPBE58) || defined(RTBE58_GO)
-	wpasupp_hapd_check();
-#endif
 #ifdef RTCONFIG_FRS_FEEDBACK
 	feedback_check();
 #endif /* RTCONFIG_FRS_FEEDBACK */
@@ -11228,25 +11248,15 @@ watchdog_main(int argc, char *argv[])
                 eval("sw", "0xff803014", "0xd8a0");
 #elif defined(RPBE58)
                 eval("sw", "0xff803014", "0x00110039");
-#elif defined(RTBE58_GO)
-		eval("sw", "0xff80301c", "0x40c00008");
 #else
                 eval("sw", "0xff803014", "0xffffa75f");
 #endif
-#ifdef RPBE58
-		//eval("sw", "0xff803018", "0x00000001");
-#elif defined(RTBE58_GO)
-		//eval("sw", "0xff803018", "0x00000008");
-#else
-		eval("sw", "0xff803018", "0x00001000");
-#endif
+                eval("sw", "0xff803018", "0x00001000");
 		_bcm_cled_ctrl(BCM_CLED_BLUE, BCM_CLED_STEADY_NOBLINK);
 #if defined(RPAX58)
                 eval("sw", "0xFF80301c", "0xd8a0");
 #elif defined(RPBE58)
                 eval("sw", "0xff80301c", "0x00110039");
-#elif defined(RTBE58_GO)
-		eval("sw", "0xff80301c", "0x40c00008");
 #else
                 eval("sw", "0xFF80301c", "0x58a0");
 #endif

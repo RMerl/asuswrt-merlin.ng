@@ -255,7 +255,7 @@ function drawClientList(tab){
 		if(parent.sw_mode != 4) {
 			clientHtmlTd += '<div style="height:28px;width:28px;float:right;margin-right:5px;margin-bottom:-20px;">';
 			var radioIcon_css = "radioIcon";
-			if(clientObj.isGN != "" && clientObj.isGN != undefined)
+			if((clientObj.isGN != "" && clientObj.isGN != undefined) || (isSupport("mtlancfg") && clientObj.sdn_idx > 0))
 				radioIcon_css += " GN";
 			clientHtmlTd += '<div class="' + radioIcon_css + ' radio_' + rssi_t +'" title="' + connectModeTip + '"></div>';
 			if(clientObj.isWL != 0 || (isSupport("mtlancfg") && clientObj.sdn_idx > 0)) {

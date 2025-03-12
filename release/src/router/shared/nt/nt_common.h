@@ -133,7 +133,8 @@
 #define SYS_REBOOT_NOK_EVENT                       0x10025
 #define SYS_LAN_PORT_IN_EVENT                      0x10026
 #define SYS_LAN_PORT_OUT_EVENT                     0x10027
-#define SYS_AFC_COLD_REBOOT_EVENT                  0x10028 /* <-- last */
+#define SYS_AFC_COLD_REBOOT_SILENT_EVENT           0x10028
+#define SYS_AFC_COLD_REBOOT_EVENT                  0x10029 /* <-- last */
 /* ------------------------------
     ### Administration ###
 ---------------------------------*/

@@ -761,11 +761,7 @@ void config_ipv6(int enable, int incl_wan)
 		closedir(dir);
 	}
 
-#if defined(RPBE58)
-	if (enable)
-#else
 	if (is_routing_enabled())
-#endif
 	{
 #ifdef RTCONFIG_MULTIWAN_IF
 		int unit, real_unit;
@@ -800,6 +796,7 @@ void config_ipv6(int enable, int incl_wan)
 			break;
 		}
 #endif
+
 		set_default_forwarding(1);
 	}
 	else set_default_accept_ra(0);
@@ -821,11 +818,7 @@ void start_lan_ipv6(void)
 		return;
 
 	set_intf_ipv6_dad(lan_ifname, 0, 1);
-#ifdef RPBE58
-	config_ipv6(ipv6_enabled(), 0);
-#else
 	config_ipv6(ipv6_enabled() && is_routing_enabled(), 0);
-#endif
 	start_ipv6();
 }
 
@@ -1321,45 +1314,6 @@ void update_subnet_rulelist(void){
 	}
 }
 #endif
-
-void dhcp_war()
-{
-        if (nvram_match("lan_proto", "dhcp")
-#ifdef RTCONFIG_DEFAULT_AP_MODE
-                        && !nvram_match("ate_flag", "1")
-#endif
-#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
-                        && !psr_mode() && !mediabridge_mode()
-#endif
-#ifdef RTCONFIG_DPSTA
-                        && !(dpsta_mode() && nvram_get_int("re_mode") == 0)
-#endif
-                        && !(rp_mode() && nvram_get_int("re_mode") == 0)
-                        && nvram_match("dhcp_war", "1")
-        ) {
-                // only none routing mode need lan_proto=dhcp
-                char *dhcp_argv[] = { "udhcpc",
-                                        "-i", "br0",
-                                        "-p", "/var/run/udhcpc_lan.pid",
-                                        "-s", "/tmp/udhcpc_lan",
-                                        NULL };
-                pid_t pid;
-
-                symlink("/sbin/rc", "/tmp/udhcpc_lan");
-
-#ifdef RTCONFIG_MODEM_BRIDGE
-                if(!(sw_mode() == SW_MODE_AP && nvram_get_int("modem_bridge")))
-#endif
-                        _eval(dhcp_argv, NULL, 0, &pid);
-
-                update_lan_state(LAN_STATE_CONNECTING, 0);
-#if defined(RPBE58)
-                if(ipv6_enabled())
-                        start_dhcp6c();
-#endif
-        }
-}
-
 void start_lan(void)
 {
 	char *lan_ifname;
@@ -1592,6 +1546,7 @@ void start_lan(void)
 	wlconf_pre();
 #endif
 #endif
+
 	check_wps_enable();
 
 	if ((sfd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) < 0) return;
@@ -1720,7 +1675,7 @@ void start_lan(void)
 #ifdef RTAC87U
 		eval("brctl", "stp", lan_ifname, nvram_safe_get("lan_stp"));
 #else
-#if !defined(HND_ROUTER) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RPBE58) || defined(GSBE18000)
+#if !defined(HND_ROUTER) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RPBE58) || defined(GSBE18000) || defined(GS7_PRO)
 		if (is_routing_enabled()
 #if defined(RPBE58)
 		//|| !nvram_match("re_mode", "1")
@@ -2019,9 +1974,9 @@ void start_lan(void)
 #endif
 					if (ifconfig(ifname, IFUP | IFF_ALLMULTI, NULL, NULL) != 0)
 						continue;
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTBE58U) || defined(TUFBE3600)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 					if (!strcmp(ifname, "eth1"))
-#if defined(RTBE58U) || defined(TUFBE3600)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 						system("ethswctl -c pause -p 5 -v 2");
 #else
 						system("ethswctl -c pause -p 1 -v 2");
@@ -2029,7 +1984,7 @@ void start_lan(void)
 #endif
 				}
 
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
                                 if ((re_mode()) && !strcmp(ifname, "vlan4094")) continue;
 #endif
 				/* Set the logical bridge address to that of the first interface */
@@ -2242,9 +2197,8 @@ void start_lan(void)
 
 				if (!match) {
 #ifdef RTCONFIG_CAPTIVE_PORTAL
-					if(is_add_if(ifname)) {
+					if(is_add_if(ifname))
 						eval("brctl", "addif", lan_ifname, ifname);
-					}
 #else
 #ifdef HND_ROUTER
 					memset(bonding_ifnames, 0, sizeof(bonding_ifnames));
@@ -2492,11 +2446,7 @@ gmac3_no_swbr:
 
 #ifdef RTCONFIG_IPV6
 	set_intf_ipv6_dad(lan_ifname, 0, 1);
-#if defined(RPBE58)
-	config_ipv6(ipv6_enabled(), 0);
-#else
 	config_ipv6(ipv6_enabled() && is_routing_enabled(), 0);
-#endif
 	start_ipv6();
 #endif
 
@@ -2556,7 +2506,6 @@ gmac3_no_swbr:
 			&& !(dpsta_mode() && nvram_get_int("re_mode") == 0)
 #endif
 			&& !(rp_mode() && nvram_get_int("re_mode") == 0)
-			&& !(nvram_match("dhcp_war", "1"))
 	) {
 		char *dhcp_argv[] = { "udhcpc",
 					"-i", "br0",
@@ -2574,10 +2523,6 @@ gmac3_no_swbr:
 			_eval(dhcp_argv, NULL, 0, &pid);
 
 		update_lan_state(LAN_STATE_CONNECTING, 0);
-#if defined(RPBE58)
-		if(ipv6_enabled())
-			start_dhcp6c();
-#endif
 	}
 	else {
 		if (is_routing_enabled())
@@ -3417,59 +3362,6 @@ NEITHER_WDS_OR_PSTA:
 			logmessage("hotplug", "add net %s.", interface);
 			_dprintf("hotplug net: add net %s.\n", interface);
 
-#if defined(RTCONFIG_USB_WAN_BACKUP ) && defined (RTCONFIG_DUALWAN)
-			if(nvram_match("wans_usb_bk", "1"))
-			{
-#ifdef RTCONFIG_MULTIWAN_PROFILE
-				char wans_mt_ioport[32] = {0};
-				nvram_safe_get_r("wans_mt_ioport", wans_mt_ioport, sizeof(wans_mt_ioport));
-				if (!nvram_get_int("mtwan1_enable")	//Default Multi-WAN profile disabled and single wan
-				 && !strchr(wans_mt_ioport, ' ')
-				 && !strstr(wans_mt_ioport, "usb")	//not usb wan
-				) {
-					strlcat(wans_mt_ioport, " usb", sizeof(wans_mt_ioport));
-					nvram_set("wans_mt_ioport", wans_mt_ioport);
-					nvram_set("mtwan1_mt_group", "1 2");
-					nvram_set("mtwan1_mt_weight", "1 1");
-					nvram_set_int("mtwan1_enable", 1);
-					nvram_set_int("mtwan1_mode", MTWAN_MODE_ALL);
-					nvram_set_int("mtwan1_fb", 0);
-					nvram_set_int("mtwan1_group", 1);
-					nvram_set("mtwan1_order", "1 2");
-					mtwan_init_nvram();
-					mtwanduck_update_profile();
-					nvram_set_int("wans_usb_bk_act", 1);
-#if defined(RTCONFIG_NOTIFICATION_CENTER)
-					_nc_send_usb_tethering_event();
-#endif
-				}
-#else
-				int wans = get_wans_dualwan();
-				_dprintf("[%s, %d]wans=%x\n", __FUNCTION__, __LINE__, wans);
-				char dualwan[32],  *p;
-				if(get_dualwan_by_unit(WAN_UNIT_SECOND) ==  WANS_DUALWAN_IF_NONE	// must be single wan
-					&&  !(wans & WANSCAP_USB)	//not usb wan
-#ifdef RTCONFIG_MULTIWAN_IF
-					&& !(mtwan_get_wans_type() & WANSCAP_USB)
-#endif
-				) {
-					_dprintf("[%s, %d]\n", __FUNCTION__, __LINE__);
-					get_wans_dualwan_str(dualwan, sizeof(dualwan));
-					p = strstr(dualwan, "none");
-					if(!p)
-						strlcat(dualwan, " usb", sizeof(dualwan));
-					else
-						strlcpy(p, "usb", sizeof(dualwan) - (p - dualwan));
-					nvram_set("wans_dualwan", dualwan);
-					nvram_set_int("wans_usb_bk_act", 1);
-#if defined(RTCONFIG_NOTIFICATION_CENTER)
-					_nc_send_usb_tethering_event();
-#endif
-				}
-#endif	//RTCONFIG_MULTIWAN_PROFILE
-			}
-#endif
-
 			snprintf(device_path, sizeof(device_path), "%s/%s/device", SYS_NET, interface);
 
 			memset(usb_path, 0, PATH_MAX);
@@ -3519,15 +3411,20 @@ NEITHER_WDS_OR_PSTA:
 				nvram_set(strcat_r(prefix2, "act_path", tmp2), usb_node); // needed by find_modem_type.sh.
 
 #ifdef RTCONFIG_MODEM_BRIDGE
-			if(!(sw_mode() == SW_MODE_AP && nvram_get_int("modem_bridge")))
+			if(sw_mode() == SW_MODE_AP && nvram_get_int("modem_bridge"))
+				return;
+#endif
+
+#if defined(RTCONFIG_USB_WAN_BACKUP ) && defined (RTCONFIG_DUALWAN)
+                        if(nvram_get_int("wans_usb_bk") != 1)
 #endif
 			{
-				if((unit = get_wanunit_by_type(get_wantype_by_modemunit(modem_unit))) == WAN_UNIT_NONE){
-					_dprintf("(%s): in the current dual wan mode, didn't support the USB modem.\n", interface);
-					return;
-				}
-				snprintf(prefix, sizeof(prefix), "wan%d_", unit);
+			if((unit = get_wanunit_by_type(get_wantype_by_modemunit(modem_unit))) == WAN_UNIT_NONE){
+				_dprintf("(%s): in the current dual wan mode, didn't support the USB modem.\n", interface);
+				return;
 			}
+			}
+			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 
 			snprintf(buf, sizeof(buf), "unit=%d", modem_unit);
 			putenv(buf);
@@ -3623,6 +3520,59 @@ NEITHER_WDS_OR_PSTA:
 				unsetenv("unit");
 
 				return;
+			}
+#endif
+
+#if defined(RTCONFIG_USB_WAN_BACKUP ) && defined (RTCONFIG_DUALWAN)
+			if(nvram_match("wans_usb_bk", "1"))
+			{
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+				char wans_mt_ioport[32] = {0};
+				nvram_safe_get_r("wans_mt_ioport", wans_mt_ioport, sizeof(wans_mt_ioport));
+				if (!nvram_get_int("mtwan1_enable")	//Default Multi-WAN profile disabled and single wan
+				 && !strchr(wans_mt_ioport, ' ')
+				 && !strstr(wans_mt_ioport, "usb")	//not usb wan
+				) {
+					strlcat(wans_mt_ioport, " usb", sizeof(wans_mt_ioport));
+					nvram_set("wans_mt_ioport", wans_mt_ioport);
+					nvram_set("mtwan1_mt_group", "1 2");
+					nvram_set("mtwan1_mt_weight", "1 1");
+					nvram_set_int("mtwan1_enable", 1);
+					nvram_set_int("mtwan1_mode", MTWAN_MODE_ALL);
+					nvram_set_int("mtwan1_fb", 0);
+					nvram_set_int("mtwan1_group", 1);
+					nvram_set("mtwan1_order", "1 2");
+					mtwan_init_nvram();
+					mtwanduck_update_profile();
+					nvram_set_int("wans_usb_bk_act", 1);
+#if defined(RTCONFIG_NOTIFICATION_CENTER)
+					_nc_send_usb_tethering_event();
+#endif
+				}
+#else
+				int wans = get_wans_dualwan();
+				_dprintf("[%s, %d]wans=%x\n", __FUNCTION__, __LINE__, wans);
+				char dualwan[32],  *p;
+				if(get_dualwan_by_unit(WAN_UNIT_SECOND) ==  WANS_DUALWAN_IF_NONE	// must be single wan
+					&&  !(wans & WANSCAP_USB)	//not usb wan
+#ifdef RTCONFIG_MULTIWAN_IF
+					&& !(mtwan_get_wans_type() & WANSCAP_USB)
+#endif
+				) {
+					_dprintf("[%s, %d]\n", __FUNCTION__, __LINE__);
+					get_wans_dualwan_str(dualwan, sizeof(dualwan));
+					p = strstr(dualwan, "none");
+					if(!p)
+						strlcat(dualwan, " usb", sizeof(dualwan));
+					else
+						strlcpy(p, "usb", sizeof(dualwan) - (p - dualwan));
+					nvram_set("wans_dualwan", dualwan);
+					nvram_set_int("wans_usb_bk_act", 1);
+#if defined(RTCONFIG_NOTIFICATION_CENTER)
+					_nc_send_usb_tethering_event();
+#endif
+				}
+#endif	//RTCONFIG_MULTIWAN_PROFILE
 			}
 #endif
 
@@ -3822,6 +3772,94 @@ NEITHER_WDS_OR_PSTA:
 			logmessage("hotplug", "add net %s.", interface);
 			_dprintf("hotplug net: add net %s.\n", interface);
 
+			snprintf(device_path, sizeof(device_path), "%s/%s/device", SYS_NET, interface);
+
+			i = 0;
+			while(i++ < 3 && !check_if_dir_exist(device_path)){
+				_dprintf("hotplug net INTERFACE=%s ACTION=%s: wait 1 seconds...\n", interface, action);
+				sleep(1);
+			}
+
+			// Beceem dongle.
+			if(!check_if_dir_exist(device_path))
+				return;
+
+			memset(usb_path, 0, PATH_MAX);
+			if(realpath(device_path, usb_path) == NULL){
+				_dprintf("hotplug net(%s): skip 1. device_path %s.\n", interface, device_path);
+				return;
+			}
+
+			if(get_usb_node_by_string(usb_path, usb_node, 32) == NULL){
+				_dprintf("hotplug net(%s): skip 2. usb_path %s.\n", interface, usb_path);
+				return;
+			}
+
+			if(get_path_by_node(usb_node, port_path, 8) == NULL){
+				_dprintf("hotplug net(%s): skip 3. usb_node %s.\n", interface, usb_node);
+				return;
+			}
+
+			for(modem_unit = MODEM_UNIT_FIRST; modem_unit < MODEM_UNIT_MAX; ++modem_unit){
+				usb_modem_prefix(modem_unit, prefix2, sizeof(prefix2));
+
+				snprintf(buf, sizeof(buf), "%s", nvram_safe_get(strcat_r(prefix2, "act_path", tmp2)));
+				if(strlen(buf) > 0 && strcmp(buf, usb_node)){
+					_dprintf("hotplug net(%s): skip 4. port_path %s.\n", interface, port_path);
+					continue;
+				}
+				else
+					break;
+			}
+
+			if(modem_unit == MODEM_UNIT_MAX){
+				_dprintf("hotplug net(%s): Already had %d modem device!\n", interface, MODEM_UNIT_MAX);
+				return;
+			}
+			else if(strlen(buf) <= 0)
+				nvram_set(strcat_r(prefix2, "act_path", tmp2), usb_node); // needed by find_modem_type.sh.
+
+#if defined(RTCONFIG_USB_WAN_BACKUP ) && defined (RTCONFIG_DUALWAN)
+                        if(nvram_get_int("wans_usb_bk") != 1)
+#endif
+			{
+			if((unit = get_wanunit_by_type(get_wantype_by_modemunit(modem_unit))) == WAN_UNIT_NONE){
+				_dprintf("(%s): in the current dual wan mode, didn't support the USB modem.\n", interface);
+				return;
+			}
+			}
+			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
+
+			snprintf(buf, sizeof(buf), "unit=%d", modem_unit);
+			putenv(buf);
+			eval("/usr/sbin/find_modem_type.sh");
+
+			while(!strcmp(nvram_safe_get(strcat_r(prefix2, "act_type", tmp2)), "") && i++ < 3){
+				_dprintf("hotplug net(%s): wait for the modem driver at %d second...\n", interface, i);
+				eval("/usr/sbin/find_modem_type.sh");
+				sleep(1);
+			}
+			unsetenv("unit");
+
+			snprintf(modem_type, sizeof(modem_type), "%s", nvram_safe_get(strcat_r(prefix2, "act_type", tmp2)));
+			_dprintf("hotplug net: %s=%s.\n", tmp2, modem_type);
+
+			if(!nvram_get_int("modem_android")){
+				snprintf(nvram_name, sizeof(nvram_name), "usb_path%s_act", port_path);
+				snprintf(word, sizeof(word), "%s", nvram_safe_get(nvram_name));
+				_dprintf("hotplug net(%s): %s %s.\n", interface, nvram_name, word);
+
+				logmessage("hotplug", "set net %s.", interface);
+				_dprintf("hotplug net: set net %s.\n", interface);
+				nvram_set(nvram_name, interface);
+				nvram_set(strcat_r(prefix2, "act_dev", tmp2), interface);
+				nvram_set(strcat_r(prefix, "ifname", tmp), interface);
+			}
+			else{
+				logmessage("hotplug", "android skip to set net %s.", interface);
+				_dprintf("hotplug net: android skip set net %s.\n", interface);
+			}
+
 #if defined(RTCONFIG_USB_WAN_BACKUP ) && defined (RTCONFIG_DUALWAN)
 			if(nvram_match("wans_usb_bk", "1"))
 			{
@@ -3871,89 +3909,6 @@ NEITHER_WDS_OR_PSTA:
 #endif	//RTCONFIG_MULTIWAN_PROFILE
 			}
 #endif
-
-			snprintf(device_path, sizeof(device_path), "%s/%s/device", SYS_NET, interface);
-
-			i = 0;
-			while(i++ < 3 && !check_if_dir_exist(device_path)){
-				_dprintf("hotplug net INTERFACE=%s ACTION=%s: wait 1 seconds...\n", interface, action);
-				sleep(1);
-			}
-
-			// Beceem dongle.
-			if(!check_if_dir_exist(device_path))
-				return;
-
-			memset(usb_path, 0, PATH_MAX);
-			if(realpath(device_path, usb_path) == NULL){
-				_dprintf("hotplug net(%s): skip 1. device_path %s.\n", interface, device_path);
-				return;
-			}
-
-			if(get_usb_node_by_string(usb_path, usb_node, 32) == NULL){
-				_dprintf("hotplug net(%s): skip 2. usb_path %s.\n", interface, usb_path);
-				return;
-			}
-
-			if(get_path_by_node(usb_node, port_path, 8) == NULL){
-				_dprintf("hotplug net(%s): skip 3. usb_node %s.\n", interface, usb_node);
-				return;
-			}
-
-			for(modem_unit = MODEM_UNIT_FIRST; modem_unit < MODEM_UNIT_MAX; ++modem_unit){
-				usb_modem_prefix(modem_unit, prefix2, sizeof(prefix2));
-
-				snprintf(buf, sizeof(buf), "%s", nvram_safe_get(strcat_r(prefix2, "act_path", tmp2)));
-				if(strlen(buf) > 0 && strcmp(buf, usb_node)){
-					_dprintf("hotplug net(%s): skip 4. port_path %s.\n", interface, port_path);
-					continue;
-				}
-				else
-					break;
-			}
-
-			if(modem_unit == MODEM_UNIT_MAX){
-				_dprintf("hotplug net(%s): Already had %d modem device!\n", interface, MODEM_UNIT_MAX);
-				return;
-			}
-			else if(strlen(buf) <= 0)
-				nvram_set(strcat_r(prefix2, "act_path", tmp2), usb_node); // needed by find_modem_type.sh.
-
-			if((unit = get_wanunit_by_type(get_wantype_by_modemunit(modem_unit))) == WAN_UNIT_NONE){
-				_dprintf("(%s): in the current dual wan mode, didn't support the USB modem.\n", interface);
-				return;
-			}
-			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
-
-			snprintf(buf, sizeof(buf), "unit=%d", modem_unit);
-			putenv(buf);
-			eval("/usr/sbin/find_modem_type.sh");
-
-			while(!strcmp(nvram_safe_get(strcat_r(prefix2, "act_type", tmp2)), "") && i++ < 3){
-				_dprintf("hotplug net(%s): wait for the modem driver at %d second...\n", interface, i);
-				eval("/usr/sbin/find_modem_type.sh");
-				sleep(1);
-			}
-			unsetenv("unit");
-
-			snprintf(modem_type, sizeof(modem_type), "%s", nvram_safe_get(strcat_r(prefix2, "act_type", tmp2)));
-			_dprintf("hotplug net: %s=%s.\n", tmp2, modem_type);
-
-			if(!nvram_get_int("modem_android")){
-				snprintf(nvram_name, sizeof(nvram_name), "usb_path%s_act", port_path);
-				snprintf(word, sizeof(word), "%s", nvram_safe_get(nvram_name));
-				_dprintf("hotplug net(%s): %s %s.\n", interface, nvram_name, word);
-
-				logmessage("hotplug", "set net %s.", interface);
-				_dprintf("hotplug net: set net %s.\n", interface);
-				nvram_set(nvram_name, interface);
-				nvram_set(strcat_r(prefix2, "act_dev", tmp2), interface);
-				nvram_set(strcat_r(prefix, "ifname", tmp), interface);
-			}
-			else{
-				logmessage("hotplug", "android skip to set net %s.", interface);
-				_dprintf("hotplug net: android skip set net %s.\n", interface);
-			}
 
 #if defined(RTCONFIG_DUALWAN) && !defined(RTCONFIG_ALPINE) && !defined(RTCONFIG_LANTIQ)
 			// avoid the busy time of every start_wan when booting.
@@ -5937,6 +5892,8 @@ void restart_wl(void)
 	int is_client = 0;
 	char tmp[100], tmp2[100], prefix[] = "wlXXXXXXXXXXXXXX";
 
+	_dprintf("%s, chkchk\n", __func__);
+
 	if ((wl_ifnames = strdup(nvram_safe_get("lan_ifnames"))) != NULL) {
 		p = wl_ifnames;
 		while ((ifname = strsep(&p, " ")) != NULL) {
@@ -6223,8 +6180,11 @@ void lanaccess_wl(void)
 	/* this rule will flush ebtables broute table, so it must be the first function */
 	add_GN_WBL_EBTbrouteRule();
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
 	start_rtkmonitor();
+#elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
+	if (is_rtl8372_boardid())
+		start_rtkmonitor();
 #elif defined(RTBE82M)
 	start_mxlmonitor();
 #endif
@@ -6467,7 +6427,7 @@ void start_fbwifi_config()
 }
 #endif
 
-#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000)
+#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
 extern int restart_wireless_g;
 #endif
 
@@ -6483,6 +6443,7 @@ void restart_wireless(void)
 	int unit;
 #endif
 
+
 #ifdef RTCONFIG_WIFI_SON
 	if ((sw_mode()!=SW_MODE_REPEATER && (nvram_get_int("sw_mode")==SW_MODE_ROUTER || nvram_match("cfg_master", "1")) && nvram_get_int("x_Setting") && start_cap(1)==0) && nvram_match("wifison_ready", "1")) {
 		file_unlock(lock);
@@ -6494,10 +6455,6 @@ void restart_wireless(void)
 	nvram_set_int("led_status", LED_RESTART_WL);
 #endif
 	nvram_set_int("wlready", 0);
-
-#if defined(RTCONFIG_HND_ROUTER_BE_4916) && defined(RTCONFIG_MLO)
-        mlo_toggle_fb();
-#endif
 
 #if defined(RTCONFIG_RALINK) && defined(RTCONFIG_AMAS_WDS)
 	unit=0;
@@ -6611,7 +6568,7 @@ void restart_wireless(void)
 		wl_defaults_wps();
 	}
 
-#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000)
+#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
 	if (!restart_wireless_g && nvram_get_int("x_Setting") && nvram_get_int("ed_thresh_reload") &&
 		 ((re_mode() && !is_CN_sku()) || (!re_mode() && (!is_CN_sku() || !nvram_match("location_code", "XX"))))) {
 		restart_wireless_g = 1;
@@ -6649,7 +6606,7 @@ void restart_wireless(void)
 	nvram_unset("r_selected5gnctrlsb");
 #endif
 
-#if defined(RTCONFIG_MLO) && !defined(RTCONFIG_MULTILAN_MWL)
+#ifdef RTCONFIG_MLO
 	check_mlo_dwb_profile(nvram_get_int("mlo_dwb_mssid_subunit"),nvram_get_int("re_mode"));
 #endif
 

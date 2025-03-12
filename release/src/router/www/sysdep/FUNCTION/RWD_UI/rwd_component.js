@@ -840,44 +840,6 @@ function Get_Component_Switch_Text(_parm){
 
 	return $container;
 }
-function Get_Component_CheckBoxList(_parm){
-	let $container = $("<div>").addClass("profile_setting_item checkboxlist");
-	if(_parm.container_id != undefined)
-		$container.attr("id", _parm.container_id);
-
-	if(_parm.openHint != undefined){
-		let hint_array = _parm.openHint.split("_");
-		$("<a>").addClass("hintstyle").attr({"href":"javascript:void(0);"}).html(htmlEnDeCode.htmlEncode(_parm.title)).unbind("click").click(function(){
-			openHint(hint_array[0], hint_array[1], "rwd_vpns");
-		}).appendTo($("<div>").addClass("title").appendTo($container));
-	}
-	else
-		$("<div>").addClass("title").html(htmlEnDeCode.htmlEncode(_parm.title)).appendTo($container);
-
-	let $input_container = $("<div>").addClass("input_container").appendTo($container);
-	const set_value = _parm.set_value ? parseInt(_parm.set_value) || 0 : 0;
-	let $cbl_cntr = $("<div>").attr({"id":`checkbox_${_parm.id}`}).attr({"data-container":"checkboxlist"}).addClass("checkboxlist_container").appendTo($input_container);
-	_parm.options.forEach(item => {
-		let $option = $("<div>").attr({"data-container":"checkbox_option"}).addClass("checkbox_option").appendTo($cbl_cntr);
-		const html = `
-			<div data-component='checkbox_val' class='icon_checkbox ${(item.value == set_value)?"clicked":""}' value="${item.value}"></div>
-			<div class='option_text'>${item.text}</div>`;
-		$option.append(html).unbind("click").click(function(e){
-			e = e || event;
-			e.stopPropagation();
-			if($(this).closest("[data-container='checkboxlist']").attr("data-disabled") == "true")
-				return false;
-			if($(this).find("[data-component='checkbox_val']").hasClass("disabled"))
-				return false;
-			$(this).find("[data-component='checkbox_val']").toggleClass("clicked");
-		});
-	});
-	if($cbl_cntr.find("[data-component=checkbox_val].clicked").length == 0){
-		$cbl_cntr.find("[data-component=checkbox_val]:first").addClass("clicked");
-	}
-
-	return $container;
-}
 function Get_Component_AddIcon(_parm){
 	let $container = $("<div>").addClass("profile_setting_item nowrap add_item");
 	if(_parm.container_id != undefined)

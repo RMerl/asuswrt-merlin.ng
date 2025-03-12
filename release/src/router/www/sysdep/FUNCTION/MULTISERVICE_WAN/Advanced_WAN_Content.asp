@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <html xmlns:v>
 <head>
@@ -406,10 +406,13 @@ function save_applyData(wan_unit){
 			autowan_conflict = true;
 	}
 
-	if(autowan_conflict){
-		var hint_str = "To ensure that there are no conflicts, when you enable %1$@, the WAN port will be change to %2$@ only. Please make sure that your WAN cable is correctly plugged into the %2$@. Are you sure to continue?"
+	if(isSupport("autowan") && autowan_conflict){
+		var hint_str = `<#conflict_function_wanport_hint#>`;
 		var msg = "";
-		msg = hint_str.replace("%1$@", "<#WANAggregation#>").replaceAll("%2$@", get_default_wan_name());
+		if(wan_bonding_support && document.form.bond_wan_radio.value == "1")
+			msg = hint_str.replace("%1$@", "<#WANAggregation#>").replaceAll("%2$@", get_default_wan_name());
+		else
+			msg = hint_str.replace("%1$@", document.form.wan_proto.options[document.form.wan_proto.selectedIndex].text).replaceAll("%2$@", get_default_wan_name());
 
 		$("#autowan_hint").html(msg);
 		$("#autowan_hint_div").show();
@@ -1922,9 +1925,12 @@ function applyRule(){
 			document.form.action_script.value += ";restart_dnsmasq";
 
 		if(isSupport("autowan") && autowan_conflict){
-			var hint_str = "To ensure that there are no conflicts, when you enable %1$@, the WAN port will be change to %2$@ only. Please make sure that your WAN cable is correctly plugged into the %2$@. Are you sure to continue?"
+			var hint_str = `<#conflict_function_wanport_hint#>`;
 			var msg = "";
-			msg = hint_str.replace("%1$@", "<#WANAggregation#>").replaceAll("%2$@", get_default_wan_name());
+			if(wan_bonding_support && document.form.bond_wan_radio.value == "1")
+				msg = hint_str.replace("%1$@", "<#WANAggregation#>").replaceAll("%2$@", get_default_wan_name());
+			else
+				msg = hint_str.replace("%1$@", document.form.wan_proto.options[document.form.wan_proto.selectedIndex].text).replaceAll("%2$@", get_default_wan_name());
 
 			$("#autowan_hint").html(msg);
 			$("#autowan_hint_div").show();
@@ -3128,7 +3134,7 @@ function create_DNSlist_view(){
 	document.getElementById("dns_list_Block").onclick = function() {show_DNSList_view_block();}
 
 	var DNSListTableIndex=[array_Ab, array_Fm, array_FD, array_Sf, array_Pr];
-	var DNSListTableCategory=["<#IPConnection_x_DNS_List_adB#>", "<#IPConnection_x_DNS_List_Family#>", "<#IPConnection_x_DNS_List_Fast#>", "Safe", "<#IPConnection_x_DNS_List_Priv-resp#>"];
+	var DNSListTableCategory=["<#IPConnection_x_DNS_List_adB#>", "<#IPConnection_x_DNS_List_Family#>", "<#IPConnection_x_DNS_List_Fast#>", "<#IPConnection_x_DNS_List_Safe#>", "<#IPConnection_x_DNS_List_Priv-resp#>"];
 
 	var code="";
 
@@ -3380,7 +3386,7 @@ function Update_DNS_status(){
 	$("#DNS_status").empty();
 
 	if(document.form.wan_dnsenable_x.value == 1){
-		DSN_status_info="<b>Default status :</b> <#IPConnection_x_DNSServer_auto#>";
+		DSN_status_info="<b> :</b><#IPConnection_x_DefaultStatus#> : <#IPConnection_x_DNSServer_auto#>";
 	}
 	else{
 		DNS_list_index=DNSList_match(document.form.wan_dns1_x.value, document.form.wan_dns2_x.value);

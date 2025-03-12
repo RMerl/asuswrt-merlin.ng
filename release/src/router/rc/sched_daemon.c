@@ -31,6 +31,7 @@
 #define PERIOD_NORMAL			5*TIMER_HZ      /* minisecond */
 #define PERIOD_10_SEC			10*TIMER_HZ
 #define PERIOD_30_SEC			30*TIMER_HZ
+#define PERIOD_120_SEC			120*TIMER_HZ
 #define PERIOD_86400_SEC		86400*TIMER_HZ
 
 #define SCHED_DAEMON_DEBUG		"/tmp/SCHED_DAEMON_DEBUG"
@@ -77,6 +78,13 @@ static void task_mtwan_schedule(struct timer_entry *timer, void *data);
 #ifndef RTCONFIG_AVOID_TZ_ENV
 static void task_timezone_checking(struct timer_entry *timer, void *data);
 #endif
+#ifdef RTCONFIG_HNS
+static void task_hns_history(struct timer_entry *timer, void *data);
+static void task_hns_protection(struct timer_entry *timer, void *data);
+static void task_hns_signature(struct timer_entry *timer, void *data);
+static void task_hns_event_cc(struct timer_entry *timer, void *data);
+static void task_hns_alive(struct timer_entry *timer, void *data);
+#endif
 ///////////////////////////////////// task prototype /////////////////////////////////////
 
 ///////////////////////////////////// signal handler prototype /////////////////////////////////////
@@ -101,6 +109,13 @@ static struct task_table sd_task_t[] =
 #ifdef RTCONFIG_MULTIWAN_PROFILE
         {SIGALRM, 0, task_mtwan_schedule, 0, PERIOD_30_SEC},
 #endif
+#ifdef RTCONFIG_HNS
+        {SIGALRM, 0, task_hns_history, 0, PERIOD_120_SEC},
+        {SIGALRM, 0, task_hns_protection, 0, PERIOD_120_SEC},
+        {SIGALRM, 0, task_hns_signature, 0, PERIOD_86400_SEC},
+        {SIGALRM, 0, task_hns_event_cc, 0, PERIOD_10_SEC},
+        {SIGALRM, 0, task_hns_alive, 0, PERIOD_30_SEC},
+#endif
         {SIGALRM, 0, task_timezone_checking, 0, PERIOD_10_SEC},
         {SIGUSR1, 0, sched_daemon_sigusr1, 0, 0},
         {SIGUSR2, 0, sched_daemon_sigusr2, 0, 0},
@@ -120,6 +135,7 @@ static struct itimerval itv;
 static int period_time_quota_sec = 0;
 #endif
 static int period_30_sec = 0;
+static int period_120_sec = 0;
 static int period_3600_sec = 0;
 static int period_86400_sec = 0;
 ///////////////////////////////////// task prototype /////////////////////////////////////
@@ -139,6 +155,13 @@ static void task_mtwan_schedule(void);
 #endif
 #ifndef RTCONFIG_AVOID_TZ_ENV
 static void task_timezone_checking(void);
+#endif
+#ifdef RTCONFIG_HNS
+static void task_hns_history(void);
+static void task_hns_protection(void);
+static void task_hns_signature(void);
+static void task_hns_event_cc(void);
+static void task_hns_alive(void);
 #endif
 ///////////////////////////////////// task prototype /////////////////////////////////////
 
@@ -239,6 +262,7 @@ static void sched_daemon(int sig)
 	//SCHED_DAEMON_DBG("sig=(%d)", sig);
 	period_10_sec = (period_10_sec + 1) % 10;
 	period_30_sec = (period_30_sec + 1) % 30;
+	period_120_sec = (period_120_sec + 1) % 120;
 	period_3600_sec = (period_3600_sec + 1) % 3600;
 	period_86400_sec = (period_86400_sec + 1) % 86400;
 
@@ -258,6 +282,9 @@ static void sched_daemon(int sig)
 #ifndef RTCONFIG_AVOID_TZ_ENV
 	task_timezone_checking();
 #endif
+#ifdef RTCONFIG_HNS
+	task_hns_event_cc();
+#endif
 
 /*======== The following is for period 30 seconds ========*/
 	if (period_30_sec)
@@ -266,6 +293,18 @@ static void sched_daemon(int sig)
 	task_wireless_schedule();
 #ifdef RTCONFIG_MULTIWAN_PROFILE
 	task_mtwan_schedule();
+#endif
+#ifdef RTCONFIG_HNS
+	task_hns_alive();
+#endif
+
+/*======== The following is for period 120 seconds ========*/
+	if (period_120_sec)
+		return;
+
+#ifdef RTCONFIG_HNS
+	task_hns_history();
+	task_hns_protection();
 #endif
 
 /*======== The following is for period 1 hour ========*/
@@ -282,6 +321,9 @@ static void sched_daemon(int sig)
 #endif
 #ifdef RTCONFIG_PC_REWARD
 	task_pc_reward_cleaner();
+#endif
+#ifdef RTCONFIG_HNS
+	task_hns_signature();
 #endif
 }
 #endif
@@ -448,6 +490,7 @@ void wl_sched_v2(void)
 	int wlX_activeNow = -1;
 #endif
 	int bss_status;
+	int radio_status;
 
 	// Check whether conversion needed.
 	convert_wl_sched_v1_to_sched_v2();
@@ -601,7 +644,7 @@ void wl_sched_v2(void)
 		
 			subunit++;
 		}
-#endif	// RTCONFIG_MULTILAN_CFG
+#endif	
 		
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_QCA)
@@ -655,30 +698,30 @@ void wl_sched_v2(void)
 #endif
 
 			if (activeNow == 0) {
-				bss_status = get_wlan_service_status(atoi(tmp), -1);
-				if (bss_status == 1) { // radio is on
-					set_wlan_service_status(atoi(tmp), -1, 0);
+				radio_status = get_radio(atoi(tmp), -1);
+				if (radio_status == 1) { // radio is on
+					set_radio(0, atoi(tmp), -1);
 					SCHED_DAEMON_DBG(" Turn radio [band_index=%s] off", tmp);
 					logmessage("wifi scheduler", "Turn radio [band_index=%s] off.", tmp);
 				} else {
-					if (bss_status == 0) {
+					if (radio_status == 0) {
 						SCHED_DAEMON_DBG("[wifi-scheduler] Turn radio [band_index=%s] off. Already off, no need to set it again.\n", tmp);
 						//logmessage("wifi scheduler", "Turn radio [band_index=%s, subunit=%s] off. Already off, no need to set it again.\n", tmp, tmp2);
 					} else
-						SCHED_DAEMON_DBG("[wifi-scheduler] Turn radio [band_index=%s] off. Error occur(%d).\n", tmp, bss_status);
+						SCHED_DAEMON_DBG("[wifi-scheduler] Turn radio [band_index=%s] off. Error occur(%d).\n", tmp, radio_status);
 				}
 			} else {
-				bss_status = get_wlan_service_status(atoi(tmp), -1);
-				if (bss_status == 0) { // radio is off
-					set_wlan_service_status(atoi(tmp), -1, 1);
+				radio_status = get_radio(atoi(tmp), -1);
+				if (radio_status == 0) { // radio is off
+					set_radio(1, atoi(tmp), -1);
 					SCHED_DAEMON_DBG(" Turn radio [band_index=%s] on", tmp);
 					logmessage("wifi scheduler", "Turn radio [band_index=%s] on.", tmp);
 				} else {
-					if (bss_status == 1) {
+					if (radio_status == 1) {
 						SCHED_DAEMON_DBG("[wifi-scheduler] Turn radio [band_index=%s] on. Already on, no need to set it again.\n", tmp);
 						//logmessage("wifi scheduler", "Turn radio [band_index=%s, subunit=%s] on. Already on, no need to set it again.\n", tmp, tmp2);
 					} else
-						SCHED_DAEMON_DBG("[wifi-scheduler] Turn radio [band_index=%s] on. Error occur(%d).\n", tmp, bss_status);
+						SCHED_DAEMON_DBG("[wifi-scheduler] Turn radio [band_index=%s] on. Error occur(%d).\n", tmp, radio_status);
 				}
 			}
 		}
@@ -949,6 +992,75 @@ static void task_timezone_checking(void)
 #endif
 }
 #endif	/* RTCONFIG_AVOID_TZ_ENV */
+
+#ifdef RTCONFIG_HNS
+#ifdef USE_TIMERUTIL
+static void task_hns_history(struct timer_entry *timer, void *data)
+#else
+static void task_hns_history(void)
+#endif
+{
+	exe_hns_history();
+
+#ifdef USE_TIMERUTIL
+	mod_timer(timer, PERIOD_120_SEC);
+#endif
+}
+
+#ifdef USE_TIMERUTIL
+static void task_hns_protection(struct timer_entry *timer, void *data)
+#else
+static void task_hns_protection(void)
+#endif
+{
+	exe_hns_protection();
+
+#ifdef USE_TIMERUTIL
+	mod_timer(timer, PERIOD_120_SEC);
+#endif
+}
+
+#ifdef USE_TIMERUTIL
+static void task_hns_signature(struct timer_entry *timer, void *data)
+#else
+static void task_hns_signature(void)
+#endif
+{
+	hns_sig_update_flow();
+
+#ifdef USE_TIMERUTIL
+	mod_timer(timer, PERIOD_86400_SEC);
+#endif
+}
+
+#ifdef USE_TIMERUTIL
+static void task_hns_event_cc(struct timer_entry *timer, void *data)
+#else
+static void task_hns_event_cc(void)
+#endif
+{
+#ifdef RTCONFIG_NOTIFICATION_CENTER
+	hns_protect_event_cc();
+#endif
+
+#ifdef USE_TIMERUTIL
+	mod_timer(timer, PERIOD_10_SEC);
+#endif
+}
+
+#ifdef USE_TIMERUTIL
+static void task_hns_alive(struct timer_entry *timer, void *data)
+#else
+static void task_hns_alive(void)
+#endif
+{
+	check_hns_alive_service();
+
+#ifdef USE_TIMERUTIL
+	mod_timer(timer, PERIOD_30_SEC);
+#endif
+}
+#endif
 
 #ifdef USE_TIMERUTIL
 static void sched_daemon_sigusr1(struct timer_entry *timer, void *data)

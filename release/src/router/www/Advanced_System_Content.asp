@@ -498,7 +498,27 @@ function initial(){
 		showhide("ntpd_redir_tr", 0);
 	}
 
-	$("#https_download_cert").css("display", (le_enable == "0" && orig_http_enable != "0")? "": "none");
+	$("#https_download_cert").css("display", (orig_http_enable != "0")? "": "none");
+	if(orig_http_enable != "0"){
+		if(le_enable == "1"){
+			$("#download_cert_btn").css("display", "");
+			$("#clear_cert_btn").css("display", "none");
+			$("#download_cacert_btn").css("display", "none");
+			$("#clear_cacert_btn").css("display", "none");
+			$("#download_cacert_desc").css("display", "none");
+		}else if(le_enable == "2"){
+			$("#download_cert_btn").css("display", "");
+			if(document.form.casignedcert.value != "1"){
+				$("#clear_cert_btn").css("display", "none");
+				$("#download_cacert_btn").css("display", "none");
+			}else{
+				$("#clear_cert_btn").css("display", "");
+				$("#download_cacert_btn").css("display", "");
+			}
+			$("#clear_cacert_btn").css("display", "none");
+			$("#download_cacert_desc").css("display", "");
+		}
+	}
 
 	$("#login_captcha_tr").css("display", captcha_support? "": "none");
 
@@ -1022,10 +1042,10 @@ var timezones = [
 	["UTC4_1",	"(GMT-04:00) <#TZ18#>"],
 	["UTC4_2",	"(GMT-04:00) <#TZ18_1#>"],
 	["UTC4DST_2",	"(GMT-04:00) <#TZ19#>"],
-	["UTC4DST_3",	"(GMT-04:00) <#TZ19_1#>"],
 	["NST3.30DST",	"(GMT-03:30) <#TZ20#>"],
 	["EBST3",	"(GMT-03:00) <#TZ21#>"],	//EBST3DST_1
 	["UTC3",	"(GMT-03:00) <#TZ22#>"],
+	["UTC3_1",   "(GMT-03:00) <#TZ19_1#>"],		//UTC4DST_3
 	["UTC3DST",     "(GMT-03:00) <#TZ87#>"],        //UTC2DST
 	["UTC2",	"(GMT-02:00) <#TZ24#>"],
 	["UTC2DST_1",  "(GMT-02:00) <#TZ23#>"],    //UTC2_1 //EBST3DST_2
@@ -1212,33 +1232,37 @@ function hide_https_lanport(_value){
 		document.getElementById("https_access_page").style.display = 'none';
 	}
 
-
-	if(le_enable != "1" && _value != "0"){
+	if(_value != "0"){
 		$("#https_download_cert").css("display", "");
-		if(orig_http_enable == "0"){
-			$("#download_cert_btn").css("display", "none");
-			$("#clear_server_cert_btn").css("display", "none");
+		if(le_enable == "1"){
+			$("#download_cert_btn").css("display", "");
 			$("#clear_cert_btn").css("display", "none");
-			$("#download_cert_desc").css("display", "");
-		}
-		else{
-			if (le_enable == "0") {
-				$("#download_cert_btn").css("display", "");
-				$("#clear_server_cert_btn").css("display", "");
-				$("#clear_cert_btn").css("display", "");
-				if(top.webWrapper){
-					$("#clear_server_cert_btn").css({"margin-left":"8px","margin-right":"10px"});
-				}
-				$("#download_cert_desc").css("display", "");
-			} else {
-				$("#download_cert_btn").css("display", "none");
-				$("#clear_server_cert_btn").css("display", "none");
+			$("#download_cacert_btn").css("display", "none");
+			$("#clear_cacert_btn").css("display", "none");
+			$("#download_cacert_desc").css("display", "none");
+		}else if (le_enable == "2"){
+			$("#download_cert_btn").css("display", "");
+			if(document.form.casignedcert.value != "1"){
 				$("#clear_cert_btn").css("display", "none");
-				$("#download_cert_desc").css("display", "none");
+				$("#download_cacert_btn").css("display", "none");
+			}else{
+				$("#clear_cert_btn").css("display", "");
+				$("#download_cacert_btn").css("display", "");
 			}
+			$("#clear_cacert_btn").css("display", "none");
+			$("#download_cacert_desc").css("display", "");
+		}else{
+			$("#download_cert_btn").css("display", "");
+			$("#clear_cert_btn").css("display", "");
+			$("#download_cacert_btn").css("display", "");
+			$("#clear_cacert_btn").css("display", "");
+			$("#download_cacert_desc").css("display", "");
 		}
-	}
-	else{
+		if(orig_http_enable == "0"){
+			$("#clear_cert_btn").css("display", "none");
+			$("#clear_cacert_btn").css("display", "none");
+		}
+	}else{
 		$("#https_download_cert").css("display", "none");
 	}
 }
@@ -1418,7 +1442,6 @@ function pullLANIPList(obj){
 function hideport(flag){
 	document.getElementById("accessfromwan_port").style.display = (flag == 1) ? "" : "none";
 	if(!HTTPS_support){
-		document.getElementById("NSlookup_help_for_WAN_access").style.display = (flag == 1) ? "" : "none";
 		var orig_str = document.getElementById("access_port_title").innerHTML;
 		document.getElementById("access_port_title").innerHTML = orig_str.replace(/HTTPS/, "HTTP");
 		document.getElementById("http_port").style.display = (flag == 1) ? "" : "none";
@@ -1878,8 +1901,12 @@ function myisPortConflict(_val, service){
 }
 
 
-function save_cert_key(){
+function save_cacert_key(){
 	location.href = "cert.crt";
+}
+
+function save_cert_key(){
+	location.href = "cert_key.tar";
 }
 
 function clear_server_cert_key(){
@@ -2368,6 +2395,7 @@ function build_boostkey_options() {
 <input type="hidden" name="reboot_schedule_enable" value="<% nvram_get("reboot_schedule_enable"); %>">
 <input type="hidden" name="usb_idle_exclude" value="<% nvram_get("usb_idle_exclude"); %>">
 <input type="hidden" name="shell_timeout" value="<% nvram_get("shell_timeout"); %>">
+<input type="hidden" name="casignedcert" value="<% nvram_get("casignedcert"); %>" disabled>
 <input type="hidden" name="sw_mode" value="<% nvram_get("sw_mode"); %>">
 <input type="hidden" name="ncb_enable" value="<% nvram_get("ncb_enable"); %>">
 <input type="hidden" name="dns_probe" value="<% nvram_get("dns_probe"); %>">
@@ -2912,12 +2940,15 @@ function build_boostkey_options() {
 				<tr id="https_download_cert" style="display: none;">
 					<th><#Local_access_certificate_download#></th>
 					<td>
-					    <div style="display: flex;">
-                            <input id="download_cert_btn" class="button_gen buttonInTable" onclick="save_cert_key();" type="button" value="<#btn_Export#>" />
-                            <input id="clear_server_cert_btn" class="button_gen buttonInTable" style="margin-left:10px" onclick="clear_server_cert_key();" type="button" value="<#CTL_renew#> <#vpn_openvpn_KC_SA#>" />
-                            <input id="clear_cert_btn" class="button_gen buttonInTable" style="margin-left:10px" onclick="clear_cert_key();" type="button" value="<#CTL_renew#>" />
-                        </div>
-						<span id="download_cert_desc"><#Local_access_certificate_desc#></span><a id="creat_cert_link" href="" style="font-family:Lucida Console;text-decoration:underline;color:#FFCC00; margin-left: 5px;" target="_blank">FAQ</a>
+						<div style="display: flex;">
+							<input id="download_cert_btn" class="button_gen buttonInTable" onclick="save_cert_key();" type="button" value="<#btn_Export#> <#vpn_openvpn_KC_SA#>" />
+							<input id="clear_cert_btn" class="button_gen buttonInTable" style="margin-left:10px" onclick="clear_server_cert_key();" type="button" value="<#CTL_renew#> <#vpn_openvpn_KC_SA#>" /><!-- untranslated -->
+						</div>
+						<div style="display: flex;">
+							<input id="download_cacert_btn" class="button_gen buttonInTable" style="margin-top:10px" onclick="save_cacert_key();" type="button" value="<#btn_Export#> Root Certificate" />
+							<input id="clear_cacert_btn" class="button_gen buttonInTable" style="margin-left:10px;margin-top:10px" onclick="clear_cert_key();" type="button" value="<#CTL_renew#> Root Certificate" /><!-- untranslated -->
+						</div>
+						<span id="download_cacert_desc"><#Local_access_certificate_desc#></span><a id="creat_cert_link" href="" style="font-family:Lucida Console;text-decoration:underline;color:#FFCC00; margin-left: 5px;" target="_blank">FAQ</a>
 					</td>
 				</tr>
 			</table>
@@ -2936,7 +2967,6 @@ function build_boostkey_options() {
 						<span class="formfontdesc" id="WAN_access_hint" style="color:#FFCC00; display:none;"><#FirewallConfig_x_WanWebEnable_HTTPS_only#> 
 							<a id="faq" href="" target="_blank" style="margin-left: 5px; color:#FFCC00; text-decoration: underline;">FAQ</a>
 						</span>
-						<div class="formfontdesc" id="NSlookup_help_for_WAN_access" style="color:#FFCC00; display:none;"><#NSlookup_help#></div>
 					</td>
 				</tr>
 				<tr id="accessfromwan_port">

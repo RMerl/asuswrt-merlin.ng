@@ -36,7 +36,10 @@ if [ "$cfg_trigger" != "1" ]; then # cfg_mnt skip these
 		webs_state_dl_error_count=0
 	fi
 	error_day=`date |awk '{print $1}'`
+else
 
+	record="webs_state_error"
+	nvram set webs_state_error=0
 fi #cfg_trigger!=1
 
 touch /tmp/update_url

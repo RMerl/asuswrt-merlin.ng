@@ -32,6 +32,12 @@ enum reListAction {
 	RELIST_UPDATE
 };
 
+enum obReListStatus {
+	OB_RELIST_ERROR = -1,
+	OB_RELIST_NONEXIST = 0,
+	OB_RELIST_EXIST = 1,
+};
+
 typedef struct _CM_CLIENT_TABLE {
 	char alias[CFG_CLIENT_NUM][ALIAS_LEN];
 	unsigned char ipAddr[CFG_CLIENT_NUM][IP_LEN];
@@ -41,7 +47,6 @@ typedef struct _CM_CLIENT_TABLE {
 	unsigned char pap2g[CFG_CLIENT_NUM][MAC_LEN];
 	unsigned char pap5g[CFG_CLIENT_NUM][MAC_LEN];
 	unsigned char pap6g[CFG_CLIENT_NUM][MAC_LEN];
-	unsigned char papmlo[CFG_CLIENT_NUM][MAC_LEN];
 	char pap2g_ssid[CFG_CLIENT_NUM][SSID_LEN];
 	char pap5g_ssid[CFG_CLIENT_NUM][SSID_LEN];
 	char pap6g_ssid[CFG_CLIENT_NUM][SSID_LEN];
@@ -91,15 +96,11 @@ typedef struct _CM_CLIENT_TABLE {
 	int count;
     char lldp_wlc_stat[CFG_CLIENT_NUM][LLDP_STAT_LEN];
     char lldp_eth_stat[CFG_CLIENT_NUM][LLDP_STAT_LEN];
-#if defined(RTCONFIG_FRONTHAUL_DWB) || (defined(RTCONFIG_MLO) && !defined(RTCONFIG_MULTILAN_MWL))
+#if defined(RTCONFIG_FRONTHAUL_DWB) || defined(RTCONFIG_MLO)
 	int BackhualStatus[CFG_CLIENT_NUM]; // bits 0(update or not) 0(reserved) 0(reserved) 0(used or not)
 #endif
 #ifdef RTCONFIG_BHCOST_OPT
 	unsigned int joinTime[CFG_CLIENT_NUM];
-#ifdef RTCONFIG_PREFERAP_RE_SELFOPT
-	unsigned int prefer_retry_count[CFG_CLIENT_NUM];
-	unsigned int prefer_retry_time[CFG_CLIENT_NUM];
-#endif
 #endif
 	int cost[CFG_CLIENT_NUM];
 	int dwb_band[CFG_CLIENT_NUM];
@@ -134,13 +135,11 @@ extern int cm_getObVifReByNewReMac(char *newReMac, char *obReMac, int macLen);
 extern void cm_updateObVifReList(char *newReMac, char *obReMac, int action);
 #endif
 extern void cm_reorganizeReList();
-#ifdef RTCONFIG_AMAS_CENTRAL_CONTROL
 extern void cm_updateReObList(char *reMac, int action, int commit);
-#endif
+extern int cm_checkReObListByMac(char *reMac);
 extern void cm_updateReInfo(CM_CLIENT_TABLE *clientTbl, char *reMac);
 extern int cm_deleteReInfo(char *reMac);
 extern void cm_updateReInfoToClientTbl(CM_CLIENT_TABLE *clientTbl);
-extern void cm_updateReMloInfo(CM_CLIENT_TABLE *clientTbl, char *reMac, int clientIndex, json_object *mloStatus);
 extern void cm_sortReLevel(json_object *reListObj, json_object *sortedReListObj);
 extern int cm_checkReKeyListExist(char *mac);
 extern void cm_updateReKeyList(char *mac, int action);

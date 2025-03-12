@@ -388,12 +388,7 @@ start_wps_method(void)
 		dbg("wps_band(%d) for wps registrar\n", wps_band);
 	}
 #endif
-#if defined(RTCONFIG_MULTILAN_MWL)
-	if (nvram_get_int("w_Setting") && get_fh_if_prefix_by_unit(wps_band, prefix, sizeof(prefix))) {
-		trim_space(prefix);
-		strncat(prefix, "_", 1);
-	} else
-#elif defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 	if (is_dpsr(wps_band)
 #ifdef RTCONFIG_DPSTA
 		|| is_dpsta(wps_band)

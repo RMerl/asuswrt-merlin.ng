@@ -222,6 +222,7 @@ extern int get_subif_count(char *target, int *count); // TODO: non-Brcm needs to
 extern int get_subif_ssid(char *target, char *output, int outputlen); // TODO: non-Brcm needs to do.
 extern int get_wifi_txop(char *ifname,int *txop, int outputlen);
 extern int get_wifi_glitch(char *ifname,int *glitch, int outputlen);
+extern int get_wifi_knoise(char *ifname,int *knoise, int outputlen);
 extern int get_wifi_chanim(char *ifname, char *output, int outputlen);
 extern int get_wifi_counters_info(char *ifname, char *info_name, int *value);
 #endif

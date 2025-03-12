@@ -42,7 +42,8 @@
 #define MAC_STR_LEN 17
 #ifdef RTCONFIG_11K_RCPI_CHECK
 struct report_entry {
-	uint8 rcpi;
+	uint8_t rcpi;
+	int8_t rssi;
 	char ap_mac[MAC_STR_LEN+1];
 	int channel;
 	struct report_entry *next;
@@ -300,6 +301,9 @@ typedef struct rast_sta_info {
 	struct ether_addr mld_addr;
 	int is_mlo_client;
 #endif
+	int8 support_2g;
+	int8 support_5g;
+	int8 support_6g;
 } rast_sta_info_t;
 
 
@@ -455,11 +459,11 @@ extern void rast_retrieve_bs_data(int bssidx, int vifidx, int interval);
 #define WLC_MACMODE_DENY        2      /* Deny specified (i.e. allow unspecified) */
 #endif
 extern void rast_nonmesh_kv_thread_create(void);
-extern uint8 check_if_follow_spec(int8 rssi,int8 rcpi);
+extern uint8 check_if_follow_spec(int8_t rssi, uint8_t rcpi);
 extern void check_rcpilist_and_translate_to_rssi(struct rcpi_checklist *rcpi_list);
 
 #ifdef RTCONFIG_11K_RCPI_CHECK
-void add_to_rcpi_checklist(char *sta, char *ap_mac, char rcpi,int channel,struct rcpi_checklist **rcpi_list);
+void add_to_rcpi_checklist(char *sta, char *ap_mac, uint8_t rcpi,int channel,struct rcpi_checklist **rcpi_list);
 #endif
 
 #ifdef RTCONFIG_RAST_NONMESH_KVONLY

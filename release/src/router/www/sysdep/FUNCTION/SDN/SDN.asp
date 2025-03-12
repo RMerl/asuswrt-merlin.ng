@@ -12,7 +12,6 @@
 <link rel="stylesheet" type="text/css" href="/index_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <script type="text/javascript" src="/js/jquery.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
@@ -30,10 +29,10 @@ function initial(){
 			curTheme = "WHITE";
 		}
 		else{
-			if(rog_support){
+			if(isSupport("ROG_UI")){
 				curTheme = "ROG";
 			}
-			else if(based_modelid.substr(0,3) == "TUF"){
+			else if(isSupport("TUF_UI")){
 				curTheme = "TUF";
 			}
 		}

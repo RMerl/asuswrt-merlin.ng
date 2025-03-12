@@ -1642,7 +1642,8 @@ var validator = {
 		var psk_length_trim = psk_obj.value.trim().length;
 		
 		if(psk_length < 8){
-			alert("<#JS_PSK64Hex#>");
+			alert("<#JS_passzero#>");
+			psk_obj.value = "00000000";
 			psk_obj.focus();
 			psk_obj.select();
 			

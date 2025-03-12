@@ -3410,12 +3410,12 @@ void write_UrlFilter(char *chain, char *lan_if, char *lan_ip, char *logdrop, FIL
 	}
 
 	if (nvram_match("url_mode_x", "1") && nvram_match("url_enable_x", "1")) {
-		fprintf(fp, "-A %s -i %s -p udp --dport 53 -m string --icase --hex-string \"|04|asus|03|com|00|\" --algo bm -j ACCEPT\n", chain, lan_if);
+		fprintf(fp, "-A %s -i %s -p udp --dport 53 -m string --icase --hex-string \"|0a|asusrouter|03|com|00|\" --algo bm -j ACCEPT\n", chain, lan_if);
 		fprintf(fp, "-A %s -i br0 -p udp --dport 53 -j DROP\n", chain);
 #ifdef RTCONFIG_IPV6
 		if (ipv6_enabled())
 		{
-			fprintf(fp_ipv6, "-A %s -i %s -p udp --dport 53 -m string --icase --hex-string \"|04|asus|03|com|00|\" --algo bm -j ACCEPT\n", chain, lan_if);
+			fprintf(fp_ipv6, "-A %s -i %s -p udp --dport 53 -m string --icase --hex-string \"|0a|asusrouter|03|com|00|\" --algo bm -j ACCEPT\n", chain, lan_if);
 			fprintf(fp_ipv6, "-A %s -i br0 -p udp --dport 53 -j DROP\n", chain);
 		}
 #endif
@@ -4496,6 +4496,9 @@ filter_setting(int wan_unit, char *lan_if, char *lan_ip, char *logaccept, char *
 #ifdef RTCONFIG_GN_WBL
 	add_GN_WBL_ChainRule(fp);
 #endif
+#ifdef RTCONFIG_HNS
+	fprintf(fp, ":%s - [0:0]\n", HNS_UFWD_CHAIN);
+#endif
 
 #ifdef RTCONFIG_IPV6
 	if (ipv6_enabled()) {
@@ -4554,7 +4557,17 @@ filter_setting(int wan_unit, char *lan_if, char *lan_ip, char *logaccept, char *
 			URL_FILTER_INPUT_CHAIN, URL_FILTER_FORWARD_CHAIN);
 		fprintf(fp_ipv6, ":%s - [0:0]\n", NW_SERVICE_FILTER_FORWARD_CHAIN);
 #endif
+#ifdef RTCONFIG_HNS
+		fprintf(fp_ipv6, ":%s - [0:0]\n", HNS_UFWD_CHAIN);
+#endif
 	}
+#endif
+
+#ifdef RTCONFIG_HNS
+	add_hns_ufwd_rules(fp);
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled()) add_hns_ufwd_rules(fp_ipv6);
+#endif
 #endif
 
 #ifdef RTCONFIG_IPSEC
@@ -5248,7 +5261,22 @@ TRACE_PT("writing Parental Control\n");
 			fprintf(fp_ipv6, "-A INPUT -j %s\n", SDN_FILTER_INPUT_CHAIN);
 #endif
 #endif
+#ifdef RTCONFIG_HNS
+		add_hns_ufwd_input_rules(fp);
+#ifdef RTCONFIG_IPV6
+		if (ipv6_enabled()) add_hns_ufwd_input_rules(fp_ipv6);
+#endif
+#endif
 		fprintf(fp, "-A INPUT -j %s\n", logdrop);
+	}
+	else {
+		/* when firewall is disabled */
+#ifdef RTCONFIG_HNS
+		add_hns_ufwd_input_rules(fp);
+#ifdef RTCONFIG_IPV6
+		if (ipv6_enabled()) add_hns_ufwd_input_rules(fp_ipv6);
+#endif
+#endif
 	}
 
 /* apps_dm DHT patch */
@@ -5316,6 +5344,14 @@ TRACE_PT("writing Parental Control\n");
 		fprintf(fp_ipv6, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
 		break;
 	}
+#endif
+
+#ifdef RTCONFIG_HNS
+	/* move hns forward rules after TCPMSS rule, if not, will effect some connections in pppoe */
+	add_hns_ufwd_forward_rules(fp);
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled()) add_hns_ufwd_forward_rules(fp_ipv6);
+#endif
 #endif
 
 	fprintf(fp, "-A FORWARD -m state --state ESTABLISHED,RELATED -j %s\n", logaccept);
@@ -6186,6 +6222,9 @@ filter_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 #ifdef RTCONFIG_GN_WBL
 	add_GN_WBL_ChainRule(fp);
 #endif
+#ifdef RTCONFIG_HNS
+	fprintf(fp, ":%s - [0:0]\n", HNS_UFWD_CHAIN);
+#endif
 
 #ifdef RTCONFIG_IPV6
 	if (ipv6_enabled()) {
@@ -6243,7 +6282,17 @@ filter_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 			URL_FILTER_INPUT_CHAIN, URL_FILTER_FORWARD_CHAIN);
 		fprintf(fp_ipv6, ":%s - [0:0]\n", NW_SERVICE_FILTER_FORWARD_CHAIN);
 #endif
+#ifdef RTCONFIG_HNS
+		fprintf(fp_ipv6, ":%s - [0:0]\n", HNS_UFWD_CHAIN);
+#endif
 	}
+#endif
+
+#ifdef RTCONFIG_HNS
+	add_hns_ufwd_rules(fp);
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled()) add_hns_ufwd_rules(fp_ipv6);
+#endif
 #endif
 
 #ifdef RTCONFIG_IPSEC
@@ -6966,7 +7015,22 @@ TRACE_PT("writing Parental Control\n");
 			fprintf(fp_ipv6, "-A INPUT -j %s\n", SDN_FILTER_INPUT_CHAIN);
 #endif
 #endif
+#ifdef RTCONFIG_HNS
+		add_hns_ufwd_input_rules(fp);
+#ifdef RTCONFIG_IPV6
+		if (ipv6_enabled()) add_hns_ufwd_input_rules(fp_ipv6);
+#endif
+#endif
 		fprintf(fp, "-A INPUT -j %s\n", logdrop);
+	}
+	else {
+		/* when firewall is disabled */
+#ifdef RTCONFIG_HNS
+		add_hns_ufwd_input_rules(fp);
+#ifdef RTCONFIG_IPV6
+		if (ipv6_enabled()) add_hns_ufwd_input_rules(fp_ipv6);
+#endif
+#endif
 	}
 
 /* apps_dm DHT patch */
@@ -7051,6 +7115,14 @@ TRACE_PT("writing Parental Control\n");
 		fprintf(fp_ipv6, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
 		break;
 	}
+#endif
+
+#ifdef RTCONFIG_HNS
+	/* move hns forward rules after TCPMSS rule, if not, will effect some connections in pppoe */
+	add_hns_ufwd_forward_rules(fp);
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled()) add_hns_ufwd_forward_rules(fp_ipv6);
+#endif
 #endif
 
 	fprintf(fp, "-A FORWARD -m state --state ESTABLISHED,RELATED -j %s\n", logaccept);
@@ -7954,9 +8026,9 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
             if(aimesh_re_node() == 0)
 #endif
 #ifdef RTCONFIG_HNS
-		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "2357");
+		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "2357", "--queue-bypass");
 #else
-		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "QUEUE");
+		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "0", "--queue-bypass");
 #endif
         }
 #endif
@@ -7977,9 +8049,9 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 	if(aimesh_re_node() == 0)
 #endif
 #ifdef RTCONFIG_HNS
-		eval("ip6tables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "2357");
+		eval("ip6tables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "2357", "--queue-bypass");
 #else
-		eval("ip6tables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "QUEUE");
+		eval("ip6tables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "0", "--queue-bypass");
 #endif
 	}
 #endif //RTCONFIG_DNSQUERY_INTERCEPT
@@ -8207,8 +8279,8 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 #ifdef RTCONFIG_MULTI_PPP
 	set_mtppp_load_balance();
 #endif
-#ifdef RTCONFIG_IPTABLES1810
-	system("iptables -w -t mangle -N tcp-pureack-eth0; sleep 1; iptables -w -t mangle -A POSTROUTING -o eth0 -p tcp --tcp-pureack -j tcp-pureack-eth0");
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+	eval("iptables", "-t", "mangle", "-I", "PREROUTING", "-i", "br0", "-p", "tcp", "--dport", "80", "-j", "MARK", "--or", "0x1");
 #endif
 }
 
@@ -8263,9 +8335,9 @@ mangle_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
             if(aimesh_re_node() == 0)
 #endif
 #ifdef RTCONFIG_HNS
-		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "2357");
+		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "2357", "--queue-bypass");
 #else
-		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "QUEUE");
+		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "0", "--queue-bypass");
 #endif
         }
 #endif
@@ -8320,9 +8392,9 @@ mangle_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
             if(aimesh_re_node() == 0)
 #endif
 #ifdef RTCONFIG_HNS
-		eval("ip6tables", "-t", "mangle", "-I", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "2357"); /*first rule*/
+		eval("ip6tables", "-t", "mangle", "-I", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "2357", "--queue-bypass"); /*first rule*/
 #else
-		eval("ip6tables", "-t", "mangle", "-I", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "QUEUE"); /*first rule*/
+		eval("ip6tables", "-t", "mangle", "-I", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "0", "--queue-bypass"); /*first rule*/
 #endif
 	}
 #endif //RTCONFIG_DNSQUERY_INTERCEPT

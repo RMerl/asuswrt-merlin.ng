@@ -23,9 +23,6 @@
 .profile_item_container.addnew{
 	margin-top: 10px;
 }
-.profile_item_container.disabled{
-	opacity: 0.75;
-}
 .profile_item_container .item_text_container:before,
 .profile_item_container .item_text_container:after{
 	content: initial;
@@ -149,9 +146,6 @@
 }
 .profile_item_container.Gaming .item_text_container .main_info:before{
 	--svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij4KICA8cGF0aCBmaWxsPSIjRjJGMkYyIiBkPSJtMTguODMgMTgtMi0ySDcuMTdsLTIgMmgtLjM0bC0uNS0uNUw1LjY5NSA2LjYzNWwuNTU1LS41NTVMOC4xNyA4aDcuNjZsMS45Mi0xLjkyLjU1NS41NTVMMTkuNjcgMTcuNWwtLjUuNWgtLjM0WiIgb3BhY2l0eT0iLjEiLz4KICA8cGF0aCBmaWxsPSIjRjJGMkYyIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGQ9Im0xOC41IDQgMS43MDUgMS43MDUgMS41NyAxMi41MkwyMCAyMGgtMmwtMi0ySDhsLTIgMkg0bC0xLjc3NS0xLjc3NSAxLjU3LTEyLjUyTDUuNSA0SDdsMiAyaDZsMi0yaDEuNVpNNy4yOTUgMTcuMjk1bC4yOS0uMjk1SDkuNVY3aC0uOTE1bC0uMjktLjI5NUw2LjU4NSA1aC0uNjdsLTEuMTcgMS4xNy0xLjQ3IDExLjY5TDQuNDE1IDE5aDEuMTdsMS43MS0xLjcwNVpNMTAgMTdoNFY3aC00djEwWm04LjQxNSAyaDEuMTdsMS4xNC0xLjE0LTEuNDctMTEuNjlMMTguMDg1IDVoLS42N2wtMS43MSAxLjcwNS0uMjkuMjk1SDE0LjV2MTBoMS45MTVsLjI5LjI5NUwxOC40MTUgMTlaTTYuNSA5aDF2MWgxdjFoLTF2MWgtMXYtMWgtMXYtMWgxVjlabS41IDQuNXYxaDF2LTFIN1pNMTYuNSA5aDF2MWgtMVY5Wm0wIDJoLTF2LTFoMXYxWm0xIDB2MWgtMXYtMWgxWm0wIDBoMXYtMWgtMXYxWk0xNiAxNC41di0xaDF2MWgtMVoiIGNsaXAtcnVsZT0iZXZlbm9kZCIvPgo8L3N2Zz4K");
-}
-.profile_item_container.MAINFH .item_text_container .main_info:before{
-	--svg: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyLjIgMTQuNUMxMi4yIDEzLjI4NSAxMS4yMTUgMTIuMyAxMCAxMi4zIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxwYXRoIGQ9Ik0xNi42IDE0LjVDMTYuNiAxMC44NTQ5IDEzLjY0NTEgNy45MDAwMiAxMCA3LjkwMDAyIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxwYXRoIGQ9Ik0yMSAxNC41QzIxIDguNDI0ODcgMTYuMDc1MSAzLjUgMTAgMy41IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxwYXRoIGQ9Ik0xNyAxNy43ODU3TDE3IDE4LjVDMTcgMTkuODgwNyAxNS44ODA3IDIxIDE0LjUgMjFMNS41IDIxQzQuMTE5MjkgMjEgMyAxOS44ODA3IDMgMTguNUwzIDEwLjVDMyA5LjExOTI5IDQuMTE5MjkgOCA1LjUgOEw2LjM3NSA4IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=");
 }
 .profile_item_container.feature_desc{
 	width: 100%;
@@ -454,35 +448,11 @@
 .status_info .conn_type.WiFi_5G_lock{
 	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_5g_lock.svg);
 }
-.status_info .conn_type.WiFi_5G1{
-	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_5g1.svg);
-}
-.status_info .conn_type.WiFi_5G1_lock{
-	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_5g1_lock.svg);
-}
-.status_info .conn_type.WiFi_5G2{
-	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_5g2.svg);
-}
-.status_info .conn_type.WiFi_5G2_lock{
-	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_5g2_lock.svg);
-}
 .status_info .conn_type.WiFi_6G{
 	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_6g.svg);
 }
 .status_info .conn_type.WiFi_6G_lock{
 	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_6g_lock.svg);
-}
-.status_info .conn_type.WiFi_6G1{
-	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_6g1.svg);
-}
-.status_info .conn_type.WiFi_6G1_lock{
-	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_6g1_lock.svg);
-}
-.status_info .conn_type.WiFi_6G2{
-	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_6g2.svg);
-}
-.status_info .conn_type.WiFi_6G2_lock{
-	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_6g2_lock.svg);
 }
 .status_info .conn_type.WiFi_mlo{
 	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_mlo.svg);
@@ -615,14 +585,6 @@
 	margin-left: 4%;
 	max-width: 92%;
 	padding: 12px 0;
-}
-.profile_setting_item.checkboxlist, .popup_container .popup_content_container .profile_setting_item.checkboxlist{
-	min-height: 63px;
-	height: auto;
-}
-.profile_setting_item.checkboxlist .icon_checkbox{
-	width: 20px;
-	height: 20px;
 }
 .setting_subtab_container{
 	display: flex;
@@ -2067,21 +2029,6 @@
 }
 .schematic.VPN{
 	background-image: url(/images/New_ui/SDN/gaming/led_schematic_VPN.svg);
-}
-.profile_setting_item .title span.mlo_band{
-	color: #2ED3F1;
-	font-weight: bolder;
-}
-.checkbox_option .option_text{
-	position: relative;
-}
-.checkbox_option.mlo_band .option_text:after{
-	content: "\2605";
-	position: absolute;
-	font-size: 12px;
-	top: -6px;
-	right: -12px;
-	color: #2ED3F1;
 }
 .profile_btn_container .icon_add{
 	background-position: 50% 70%;

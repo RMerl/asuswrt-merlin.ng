@@ -592,9 +592,9 @@
 	padding: 0 4%;
 }
 .profile_setting_item.policy .text_content > a{
-	color: rgb(43, 163, 255);
-	text-decoration: underline;
-	cursor: pointer;
+    color: rgb(43, 163, 255);
+    text-decoration: underline;
+    cursor: pointer;
 }
 .profile_setting_item.nowrap{
 	height: 48px !important;

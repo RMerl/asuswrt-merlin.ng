@@ -18,14 +18,14 @@
 #ifdef RTCONFIG_QCA_PLC_UTILS
 #include <plc_utils.h>
 #endif
-#if defined(RTCONFIG_BCMWL6) && (defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2))
+#if defined(RTCONFIG_BCMWL6) && (defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G)))
 #include <wlioctl.h>
 #endif
 
 #define MULTICAST_BIT  0x0001
 #define UNIQUE_OUI_BIT 0x0002
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI)
 extern int cled_gpio[];
 #endif
 
@@ -656,11 +656,12 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 		break;
 #endif
 
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	case MODEL_GTBE98:
 	case MODEL_GTBE98_PRO:
 	case MODEL_GTBE19000:
-	case MODEL_GTBE19000_AI:
+	case MODEL_GTBE19000AI:
+	case MODEL_GTBE96_AI:
 		{
 			static enum led_id white_led[] = {
 				LED_POWER,
@@ -696,7 +697,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 				eval("wl", "-i", nvram_safe_get("wl0_ifname"), "ledbh", "12", "7"); // wl 5GL
 				eval("wl", "-i", nvram_safe_get("wl1_ifname"), "ledbh", "12", "7"); // wl 5GH
 				eval("wl", "-i", nvram_safe_get("wl2_ifname"), "ledbh", "12", "7"); // wl 6G
-#if !defined(GTBE19000) && !defined(GTBE19000_AI)
+#if !defined(GTBE19000) && !defined(GTBE19000AI) && !defined(GTBE96_AI)
 				eval("wl", "-i", nvram_safe_get("wl3_ifname"), "ledbh", "12", "7"); // wl 2.4G
 #endif
 			}
@@ -705,7 +706,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 				eval("wl", "-i", nvram_safe_get("wl0_ifname"), "ledbh", "12", "0"); // wl 5GL
 				eval("wl", "-i", nvram_safe_get("wl1_ifname"), "ledbh", "12", "0"); // wl 5GH
 				eval("wl", "-i", nvram_safe_get("wl2_ifname"), "ledbh", "12", "0"); // wl 6G
-#if !defined(GTBE19000) && !defined(GTBE19000_AI)
+#if !defined(GTBE19000) && !defined(GTBE19000AI) && !defined(GTBE96_AI)
 				eval("wl", "-i", nvram_safe_get("wl3_ifname"), "ledbh", "12", "0"); // wl 2.4G
 #endif
 			}
@@ -905,8 +906,9 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 	break;
 #endif
 
-#if defined(RTBE58U) || defined(TUFBE3600)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 	case MODEL_RTBE58U:
+	case MODEL_RTBE58U_V2:
 		{
 			static enum led_id white_led[] = {
 				LED_POWER,
@@ -1033,7 +1035,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 		break;
 #endif
 
-#if defined(GSBE18000)
+#if defined(GSBE18000) || defined(GS7_PRO)
 	case MODEL_GSBE18000:
 		{
 			static enum led_id white_led[] = {
@@ -1429,35 +1431,6 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 					break;		
 			} 
 			eval("sw", "0xff80301c", "0xd8a0");
-		}
-		break;
-#endif
-#if defined(RTBE58_GO)
-	case MODEL_RTBE58_GO:
-		{
-			eval("sw", "0xff803010", "0x40c00008");
-
-                        eval("sw", "0xff803050", "0");	// W
-                        eval("sw", "0xff803180", "0");	// R
-                        eval("sw", "0xff803190", "0");	// G
-                        eval("sw", "0xff803200", "0");	// B
-                        eval("sw", "0xFF80301c", "0x40c00008");
-
-			switch(color) {
-				case LED_COLOR_RED:
-					eval("sw", "0xff803180", "0x3e000");
-					break;		
-				case LED_COLOR_GREEN:
-					eval("sw", "0xff803190", "0x3e000");
-					break;		
-				case LED_COLOR_BLUE:
-					eval("sw", "0xff803200", "0x3e000");
-					break;		
-				case LED_COLOR_WHITE:
-					eval("sw", "0xff803050", "0x3e000");	// W
-					break;		
-			} 
-			eval("sw", "0xff80301c", "0x40c00008");
 		}
 		break;
 #endif
@@ -2709,7 +2682,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		return setAllSpecificColorLedOn(LED_COLOR_PURPLE);
 	}
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI)
 	else if (!strcmp(command, "Set_Red1LedOn")) {
 		setAllLedOff();
 		cled_set(cled_gpio[0], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
@@ -2736,7 +2709,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		setAntennaGroupOn();
 		puts("1");
 		return 0;
-#elif !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GT10) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(GSBE18000)
+#elif !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GT10) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(GSBE18000) && !defined(GS7_PRO)
 	} else if (!strcmp(command, "Set_Red4LedOn")) {
 		setAllLedOff();
 		cled_set(cled_gpio[9], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
@@ -2772,7 +2745,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		led_control(LED_GROUP3_GREEN, LED_ON);
 		puts("1");
 		return 0;
-#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(GSBE18000)
+#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(GSBE18000) && !defined(GS7_PRO)
 	} else if (!strcmp(command, "Set_Green4LedOn")) {
 		setAllLedOff();
 		cled_set(cled_gpio[10], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
@@ -2808,7 +2781,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		led_control(LED_GROUP3_BLUE, LED_ON);
 		puts("1");
 		return 0;
-#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(GSBE18000)
+#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(GSBE18000) && !defined(GS7_PRO)
 	} else if (!strcmp(command, "Set_Blue4LedOn")) {
 		setAllLedOff();
 		cled_set(cled_gpio[11], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
@@ -5062,7 +5035,7 @@ int ate_dev_status(void)
 #ifdef RTCONFIG_BT_CONN
 	int have_bt_device = 1;
 #endif
-#if defined(RTCONFIG_BCMWL6) && (defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2))
+#if defined(RTCONFIG_BCMWL6) && (defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G)))
 	int count_5g = 0;
 	int count_6g = 0;
 #ifdef RTCONFIG_QUADBAND
@@ -5105,7 +5078,7 @@ int ate_dev_status(void)
 			ate_wl_band++;
 			continue;
 		}
-#if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(BT10) || defined(GT10) || defined(RTAX9000)
+#if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(BT10) || defined(GT10) || defined(RTAX9000) || defined(GSBE18000) || defined(GS7_PRO)
 		// override ate_wl_band since wifi radio sequence is not habitual
 		if (wl_get_band(word) == WLC_BAND_2G)
 			ate_wl_band = 1;
@@ -5123,7 +5096,7 @@ int ate_dev_status(void)
 			ret = 0;
 		}
 #endif
-#if defined(RTCONFIG_BCMWL6) && (defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2))
+#if defined(RTCONFIG_BCMWL6) && (defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G)))
 		switch(wl_get_band(word)) {
 			case WLC_BAND_2G:
 			    	len = snprintf(p, remain, ",2G=%c", result);
@@ -5237,10 +5210,10 @@ int ate_dev_status(void)
 			ethctl_get_link_status("eth5") == -1
 #elif defined(GTAXE16000)
 			ethctl_get_link_status("eth5") == -1 || ethctl_get_link_status("eth6") == -1
-#elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
-			(hnd_boardid_cmp("GT-BE98_BCM") == 0 && (ethctl_get_link_status("eth6") == -1)) ||
-			(hnd_boardid_cmp("GT-BE98_BCM") != 0 && ethctl_get_link_status("eth3") == -1)
-#elif defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(GT10) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE58U_PRO)
+#elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
+			(is_rtl8372_boardid() && ethctl_get_link_status("eth3") == -1) ||
+			(!is_rtl8372_boardid() && ethctl_get_link_status("eth6") == -1)
+#elif defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(GT10) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE58U_PRO)
 			ethctl_get_link_status("eth0") == -1
 #elif defined(RTAX9000)
 			ethctl_get_link_status("eth0") == -1 || ethctl_get_link_status("eth5") == -1
@@ -5261,7 +5234,15 @@ int ate_dev_status(void)
 		remain -= len;
 	}
 #endif
-
+#if defined(GTBE19000AI) || defined(GTBE96_AI)
+	if (ethctl_get_link_status("eth.ai") == -1)
+		result = 'X';
+	else
+		result = 'O';
+	len = snprintf(p, remain, ",AIBOARD=%c", result);
+	p += len;
+	remain -= len;
+#endif
 	nvram_set("Ate_dev_status", dev_chk_buf);
 
 	return ret;

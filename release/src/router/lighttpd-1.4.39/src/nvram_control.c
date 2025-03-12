@@ -9,13 +9,11 @@
 #if defined APP_IPKG
 #include<stdlib.h> //for system cmd by zero added
 #elif defined USE_TCAPI
-#include <utils.h>
 #include <shutils.h>
 #include <shared.h>
 #include "libtcapi.h"
 #include "tcapi.h"
 #else
-#include <utils.h>
 #include <shutils.h>
 #include <shared.h>
 #endif

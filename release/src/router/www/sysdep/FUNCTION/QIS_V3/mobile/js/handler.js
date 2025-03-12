@@ -28,7 +28,7 @@ apply.welcome = function(){
 	systemVariable.manualWanSetup = false;
 	systemVariable.advSetting = false;
 
-	if(isSupport("amas_bdl"))
+	if(isSupport("prelink") && isSupport("amas_bdl"))
 		goTo.prelink_desc();
 	else if(!systemVariable.forceChangePw){
 		if(isOriginSwMode("RP")){
@@ -213,9 +213,6 @@ apply.login = function(){
 			if(isSupport("SDN_Scenario")){
 				initialize_SDN();
 				setTimeout(goTo.SDN_Scenarios, 50);
-			}
-			else if(isSupport("mainfhSetup") && createSDNCompatibleNetwork()){
-				goTo.SDN_IoT();
 			}
 			else{
 				$(".btn_login_apply").html(Get_Component_btnLoading);
@@ -914,17 +911,6 @@ apply.lanStatic = function(){
 			else if(isSupport("SMARTREP"))
 				copyWLCObj_wlc1ToWlc2();
 
-			if(qisPostData.hasOwnProperty("http_username") || qisPostData.hasOwnProperty("http_passwd")){
-				var postData = {
-					"restart_httpd": "0", 
-					"new_username":qisPostData.http_username, 
-					"new_passwd":qisPostData.http_passwd, 
-					"defpass_enable":qisPostData.defpass_enable
-				};
-	
-				httpApi.chpass(postData);
-			}
-
 			httpApi.nvramSet(setRestartService(qisPostData), goTo.Finish);
 		}
 	}
@@ -1164,17 +1150,9 @@ apply.wireless = function(){
 			if(!validator.psk(document.getElementById("wireless_key_" + band))) return false;
 		}
 
-		if(isSupport("mainfhSetup")){
-			const isValid_pwd = validator.valid_block_chars($("#wireless_key_" + band).val(), ["<", ">"]);
-			if(isValid_pwd.isError){
-				$("#wireless_key_" + band).showTextHint(isValid_pwd.errReason);
-				return false;
-			}
-		}
-
 		if(isWeakString($("#wireless_key_" + band).val(), "wpa_key")){
 			if(!confirm("<#JS_common_passwd#>")){
-				$("#wireless_key_" + band).showTextHint("<#AiProtection_scan_note11#>");
+				$("#wireless_key_" + band).showTextHint("<#AiProtection_scan_note11#>"); 
 				return false;
 			}
 		}
@@ -1190,6 +1168,7 @@ apply.wireless = function(){
 	for(var band=0; band<systemVariable.wirelessBand; band++){
 		if(isSupport("mlo")){
 			if($(`#wireless_ssid_${band}`).length){if(!wirelessValidator(band)) return false;}
+			
 			qisPostData[`wl${band}_ssid`] = ($(`#wireless_ssid_${band}`).length) ? $(`#wireless_ssid_${band}`).val() : scProfile.ssid;
 			qisPostData[`wl${band}_wpa_psk`] = ($(`#wireless_key_${band}`).length) ? $(`#wireless_key_${band}`).val() : scProfile.wpa_psk;
 			qisPostData[`wl${band}_crypto`] = "aes+gcmp256";
@@ -1244,8 +1223,8 @@ apply.wireless = function(){
 	}
 
 	var dwb_mode = httpApi.nvramGet(["dwb_mode"]).dwb_mode;
-	if(dwb_mode == "1" || (isSupport("prelink_mssid") && isSupport("amas_bdl"))){
-		if((isSwMode("RT") || isSwMode("AP")) && !isSupport("mainfhSetup")){
+	if(dwb_mode == "1" || (isSupport("prelink") && isSupport("prelink_mssid") && isSupport("amas_bdl"))){
+		if((isSwMode("RT") || isSwMode("AP")) && !isSupport("mloSetup")){
 			if(check_dwb_ssid()) return false;
 		}
 	}
@@ -1253,7 +1232,7 @@ apply.wireless = function(){
 	if($(`#wireless_ssid_MLO`).is(":visible")){
 		if(!wirelessValidator("MLO")) return false;
 
-		if(createSDNCompatibleNetwork()){
+		if(!isCompatibleNetworkFound()){
 			const post_sdnObj = get_new_sdn_mlo();
 			if(!$.isEmptyObject(post_sdnObj)){
 				Object.assign(qisPostData, post_sdnObj);
@@ -1269,12 +1248,21 @@ apply.wireless = function(){
 		}
 	}
 
-	if(isSupport("SDN_Scenario")){
+	if(isSupport("mloSetup")){
+		postDataModel.insert(mloObj);
+
+		if(systemVariable.isDefault && isSupport("dis_mlo_qis")) postDataModel.remove(mloObj);
+	}
+
+	if(isSupport("11AX") && !isSupport("qis_hide_he_features")){
+		goTo.axMode();
+	}
+	else if(isSupport("boostkey")){
+		goTo.boostKey();
+	}
+	else if(isSupport("SDN_Scenario")){
 		initialize_SDN();
 		setTimeout(goTo.SDN_Scenarios, 50);
-	}
-	else if(isSupport("mainfhSetup") && createSDNCompatibleNetwork()){
-		goTo.SDN_IoT();
 	}
 	else if(systemVariable.forceChangePwInTheEnd){
 		goTo.changePwInTheEnd();
@@ -1296,7 +1284,10 @@ apply.submitQIS = function(){
 		// $.get("http://localhost:55555/connectTo?ssid=" + qisPostData.wl0_ssid + "&password=" + qisPostData.wl0_wpa_psk);
 
 		var nextPage = (function(){
-			if(systemVariable.isNewFw != 0){
+			if(isSupport("yadns") && isSwMode("RT")){
+				return goTo.Yadns;
+			}
+			else if(systemVariable.isNewFw != 0 && !navigator.userAgent.match(/ASUSMultiSiteManager/)){
 				return goTo.Update;
 			}
 			else{
@@ -1326,19 +1317,15 @@ apply.submitQIS = function(){
 		if(!systemVariable.isDefault){
 			if(isSupport("mtlancfg")){
 				if(systemVariable.opMode != systemVariable.originOpMode){
-					if(!isSupport("mainfhSetup")){
+					if(!isSupport("mloSetup")){
 						qisPostData.sdn_rl = (httpApi.nvramDefaultGet(["sdn_rl"]).sdn_rl).replace(/&#60/g, "<").replace(/&#62/g, ">");
+						qisPostData.sdn_access_rl = (httpApi.nvramDefaultGet(["sdn_access_rl"]).sdn_access_rl).replace(/&#60/g, "<").replace(/&#62/g, ">");
 					}
 					qisPostData.vlan_rl = (httpApi.nvramDefaultGet(["vlan_rl"]).vlan_rl).replace(/&#60/g, "<").replace(/&#62/g, ">");
 					qisPostData.subnet_rl = (httpApi.nvramDefaultGet(["subnet_rl"]).subnet_rl).replace(/&#60/g, "<").replace(/&#62/g, ">");
 					qisPostData.radius_list = (httpApi.nvramDefaultGet(["radius_list"]).radius_list).replace(/&#60/g, "<").replace(/&#62/g, ">");
-					qisPostData.sdn_access_rl = (httpApi.nvramDefaultGet(["sdn_access_rl"]).sdn_access_rl).replace(/&#60/g, "<").replace(/&#62/g, ">");
 				}
 			}
-		}
-
-		if(isSupport("mainfhSetup")){
-			configApmVariables();
 		}
 
 		if(nextPage){
@@ -1350,6 +1337,15 @@ apply.submitQIS = function(){
 		}
 		else{
 			setTimeout(function(){
+				if(isSupport("lantiq")){
+					var waveReady = httpApi.nvramGet(["wave_ready"], true).wave_ready;
+					if(waveReady == "0"){
+						httpApi.log("apply.submitQIS", "waveReady == 0", systemVariable.qisSession);
+						setTimeout(arguments.callee, 1000);
+						return false;
+					}
+				}
+
 				httpApi.nvramSet(setRestartService(qisPostData), goTo.Finish);
 			}, 500);
 		}
@@ -1369,7 +1365,7 @@ apply.submitQIS = function(){
 	}
 
 	if(isSupport("FRONTHAUL_NETWORK")){
-		if(systemVariable.wirelessBand == 3){
+		if(isSupport("triband")){
 			if(qisPostData.hasOwnProperty("smart_connect_x")){
 				var smart_connect_x = httpApi.nvramGet(["smart_connect_x"]).smart_connect_x;
 				if(smart_connect_x != "1" && qisPostData.smart_connect_x == "1"){
@@ -1426,6 +1422,31 @@ apply.amasNode = function(){
 	else{
 		goTo.Conncap();
 	}
+};
+
+apply.yadnsEnable = function(){
+	postDataModel.insert(yandexObj);
+	qisPostData.yadns_enable_x = "1";
+	qisPostData.yadns_mode = "0";
+	apply.yadnsSetting();
+};
+
+apply.yadnsSafe = function(){
+	postDataModel.insert(yandexObj);
+	qisPostData.yadns_enable_x = "1";
+	qisPostData.yadns_mode = "1";
+	apply.yadnsSetting();
+};
+
+apply.yadnsDisable = function(){
+	postDataModel.insert(yandexObj);
+	qisPostData.yadns_enable_x = "0";
+	qisPostData.yadns_mode = "0";
+	apply.yadnsSetting();
+};
+
+apply.yadnsSetting = function(){
+	httpApi.nvramSet(setRestartService(qisPostData), ((systemVariable.isNewFw == 0 || isSupport("amas_bdl")) && !navigator.userAgent.match(/ASUSMultiSiteManager/)) ? goTo.Finish : goTo.Update);
 };
 
 apply.WAN1G = function(){
@@ -1540,71 +1561,123 @@ apply.amasonboarding = function(){
 	$("#amasonboarding_page").find("#loading").show();
 	var processCount = 0;
 	$('#amasonboarding_page').find("#loading").find(".processText").html("" + processCount + " %");
+	$('#amasonboarding_page').find("#ob_status").show().html(`Adding the AiMesh node....`);/* untranslated */
 	var onboardingDone = false;
 
+	let cfg_obstart = "";
+	let cfg_obtimeout = "";
+	let extend_obtimeout_flag = false;
 	systemVariable.interval_status = setInterval(function(){
-		var get_onboardingstatus = httpApi.hookGet("get_onboardingstatus", true);
-		if(get_onboardingstatus.cfg_obstatus == "1"){
-			onboardingDone = true;
-			$("#amasonboarding_page").find(".onboarding_unit").hide();
-			$("#amasonboarding_page").find("#controlBtn_result").show();
-			var _model_name = systemVariable.onboardingInfo.name;
-			var _ui_model_name = systemVariable.onboardingInfo.ui_model_name;
-			var _newReMac = systemVariable.onboardingInfo.mac;
-			var labelMac = _newReMac;
-			httpApi.getAiMeshLabelMac(_model_name, _newReMac,
-				function(_callBackMac){
-					labelMac = _callBackMac;
+		const get_onboardingstatus = httpApi.hookGet("get_onboardingstatus", true);
+		const get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist", true);
+		const specific_node = get_cfg_clientlist.find(item => item.mac === systemVariable.onboardingInfo.mac);
+		const cfg_obstatus = get_onboardingstatus.cfg_obstatus;
+		let cfg_obresult = get_onboardingstatus.cfg_obresult;
+		const node_online = specific_node?.online || "0";
+		if(cfg_obstatus == "1"){
+			if(processCount < 100){
+				if(!extend_obtimeout_flag && cfg_obresult === "2" && node_online === "0"){
+					extend_obtimeout_flag = true;
+					cfg_obtimeout = 180;
+					cfg_obstart = get_onboardingstatus.cfg_obcurrent;
 				}
-			);
-			var result_text = "";
-			if(get_onboardingstatus.cfg_obresult == "2"){
-				result_text += "<#AiMesh_Node_AddDescA#>";
-				result_text += "<br>";
-				result_text += "<#AiMesh_Node_AddDescB#>";
-				result_text += "<br>";
-				result_text += "1. <#AiMesh_Node_AddDesc1#>";
-				result_text += "<br>";
-				result_text += "2. <#AiMesh_Node_AddDesc2#>";
-				result_text += "<br><br>";
+				processCount = getProcessPercentage(cfg_obstart, get_onboardingstatus.cfg_obcurrent, cfg_obtimeout , 100);
 			}
-			else{
-				result_text += "<#AiMesh_info_unabled#>";
-				result_text += "<ol>";
-				result_text += "<li><#AiMesh_info_unabled1#></li>";
-				result_text += "<li><#AiMesh_info_unabled2#></li>";
-				result_text += "<li><#AiMesh_OfflineTips1#></li>";
-				result_text += "<li><#AiMesh_info_unabled4#></li>";
-				result_text += "<li><#AiMesh_FindNode_Not_advA3#></li>";
-				result_text += "</ol>";
+			if(cfg_obresult == "2"){
+				if(node_online === "1"){
+					processCount = 100;
+				}
 			}
-			result_text += '<#AiMesh_FindNode_Search_Btn#>';
-			$("#amasonboarding_page").find("#result").html(result_text);
-			$("#amasonboarding_page").find("#result").find(".amesh_device_info").html(handle_ui_model_name(_model_name, _ui_model_name) + " (" + labelMac + ")");
-			$("#amasonboarding_page").find("#result").show();
-			if(get_onboardingstatus.cfg_obresult != "2"){
-				const $feedback = $("<div>").html(`<#menu_feedback#>`)
-						.addClass("text_yellow_italic").css({"cursor":"pointer", "margin-top":"12px", "text-decoration":"underline"})
-						.unbind("click").click(function(e){
-							e = e || event;
-							e.stopPropagation();
-							if(systemVariable.amas_newWindow_addNode){
-								if(window.opener && !window.opener.closed && window.opener.child_window_callback != undefined){
-									window.opener.child_window_callback("feedback");
+			else if(cfg_obresult === "4" || cfg_obresult === "5"){
+				processCount = 100;
+			}
+
+			if(processCount >= 100){
+				onboardingDone = true;
+				$("#amasonboarding_page").find(".onboarding_unit").hide();
+				$("#amasonboarding_page").find("#controlBtn_result").show();
+				var _model_name = systemVariable.onboardingInfo.name;
+				var _ui_model_name = systemVariable.onboardingInfo.ui_model_name;
+				var _newReMac = systemVariable.onboardingInfo.mac;
+				var labelMac = _newReMac;
+				httpApi.getAiMeshLabelMac(_model_name, _newReMac,
+					function(_callBackMac){
+						labelMac = _callBackMac;
+					}
+				);
+				var result_text = "";
+				if(cfg_obresult == "2"){
+					if(node_online === "1"){
+						result_text += "<#AiMesh_Node_AddDescA#>";
+					}
+					else{
+						result_text += `<#AiMesh_Node_WaitReady#>`;
+					}
+					result_text += "<br>";
+					result_text += "<#AiMesh_Node_AddDescB#>";
+					result_text += "<br>";
+					result_text += "1. <#AiMesh_Node_AddDesc1#>";
+					result_text += "<br>";
+					result_text += "2. <#AiMesh_Node_AddDesc2#>";
+					result_text += "<br><br>";
+				}
+				else{
+					result_text += "<#AiMesh_info_unabled#>";
+					result_text += "<ol>";
+					result_text += "<li><#AiMesh_info_unabled1#></li>";
+					result_text += "<li><#AiMesh_info_unabled2#></li>";
+					result_text += "<li><#AiMesh_OfflineTips1#></li>";
+					result_text += "<li><#AiMesh_info_unabled4#></li>";
+					result_text += "<li><#AiMesh_FindNode_Not_advA3#></li>";
+					result_text += "</ol>";
+				}
+				result_text += '<#AiMesh_FindNode_Search_Btn#>';
+				$("#amasonboarding_page").find("#result").html(result_text);
+				$("#amasonboarding_page").find("#result").find(".amesh_device_info").html(handle_ui_model_name(_model_name, _ui_model_name) + " (" + labelMac + ")");
+				$("#amasonboarding_page").find("#result").show();
+				if(cfg_obresult != "2"){
+					const $feedback = $("<div>").html(`<#menu_feedback#>`)
+							.addClass("text_yellow_italic").css({"cursor":"pointer", "margin-top":"12px", "text-decoration":"underline"})
+							.unbind("click").click(function(e){
+								e = e || event;
+								e.stopPropagation();
+								if(systemVariable.amas_newWindow_addNode){
+									if(window.opener && !window.opener.closed && window.opener.child_window_callback != undefined){
+										window.opener.child_window_callback("feedback");
+									}
+									window.close();
 								}
-								window.close();
-							}
-							else{
-								top.location.href = "/Advanced_Feedback.asp?origPage=AiMesh";
-							}
-						});
-				$("#amasonboarding_page").find("#result").append($feedback);
+								else{
+									top.location.href = "/Advanced_Feedback.asp?origPage=AiMesh";
+								}
+							});
+					$("#amasonboarding_page").find("#result").append($feedback);
+				}
 			}
 		}
 		else{
-			processCount = getProcessPercentage(get_onboardingstatus.cfg_obstart, get_onboardingstatus.cfg_obcurrent, get_onboardingstatus.cfg_obtimeout , 100);
-			if(!isNaN(processCount))
-				$('#amasonboarding_page').find("#loading").find(".processText").html("" + processCount + " %");
+			cfg_obstart = get_onboardingstatus.cfg_obstart;
+			cfg_obtimeout = (isNaN(parseInt(get_onboardingstatus.cfg_obtimeout)) ? 0 : parseInt(get_onboardingstatus.cfg_obtimeout));
+			processCount = getProcessPercentage(cfg_obstart, get_onboardingstatus.cfg_obcurrent, cfg_obtimeout , 100);
+			if(processCount >= 100) processCount = 100;
+		}
+
+		if(!isNaN(processCount)){
+			$('#amasonboarding_page').find("#loading").find(".processText").html("" + processCount + " %");
+		}
+		if(processCount > 0 && processCount < 100){
+			const ob_status = (()=>{
+				if(cfg_obresult == "1") return `Adding the AiMesh node....`;/* untranslated */
+				else if(cfg_obresult == "3") return `The node is joining the network....`;/* untranslated */
+				else if(cfg_obresult == "2") return `Activating your mesh network....`;/* untranslated */
+				else return ``;
+			})();
+			if(ob_status === ""){
+				$('#amasonboarding_page').find("#ob_status").hide().html(``);
+			}
+			else{
+				$('#amasonboarding_page').find("#ob_status").show().html(ob_status);
+			}
 		}
 
 		if(onboardingDone || !isPage("amasonboarding_page"))
@@ -1647,46 +1720,6 @@ apply.site2site = function(){
 		goTo.site2site_wlSet();
 	}
 };
-
-apply.SDN_IoT = function(){
-	if($("#wireless_key_IoT").val() != ""){
-		$("#wireless_key_IoT").nextAll(".hint").remove();
-
-		let i, len = systemVariable.wirelessBand;
-		for(i=0; i<len; i++){
-			if($(`#wireless_setting #wlInputField #wireless_ssid_${i}`).length == 0) continue;
-			const ssid = $(`#wireless_setting #wlInputField #wireless_ssid_${i}`).val();
-			if(ssid == $("#wireless_ssid_IoT").val()){
-				$("#wireless_ssid_IoT").showTextHint(`<#qis_wireless_set_done#> <#JS_duplicate#>`);
-			}
-		}
-
-		if(!validator.psk($("#wireless_key_IoT")[0])) return false;
-		if(isSku("KR")){
-			if(!validator.psk_KR($("#wireless_key_IoT")[0])) return false;
-		}
-		const isValid_pwd = validator.valid_block_chars($("#wireless_key_IoT").val(), ["<", ">"]);
-		if(isValid_pwd.isError){
-			$("#wireless_key_IoT").showTextHint(isValid_pwd.errReason);
-			return false;
-		}
-		if(isWeakString($("#wireless_key_IoT").val(), "wpa_key")){
-			if(!confirm("<#JS_common_passwd#>")){
-				$("#wireless_key_IoT").showTextHint("<#AiProtection_scan_note11#>");
-				return false;
-			}
-		}
-		const post_sdnObj = get_new_sdn_mlo();
-		if(!$.isEmptyObject(post_sdnObj)){
-			Object.assign(qisPostData, post_sdnObj);
-			qisPostData[`apg${systemVariable.apg_idx}_ssid`] = $("#wireless_ssid_IoT").val();
-			qisPostData[`apg${systemVariable.apg_idx}_security`] = `<127>psk2>aes>${$("#wireless_key_IoT").val()}>1`;
-		}
-	}
-
-	$(".btn_SDN_apply").html(Get_Component_btnLoading);
-	setTimeout(apply.submitQIS, 1000);
-}
 
 apply.SDN_Scenarios = function(){
 	$(".btn_SDN_apply").html(Get_Component_btnLoading);
@@ -1758,7 +1791,7 @@ abort.login = function(){
 				goTo.loadPage("advanced_setting", true);
 		}
 		else{
-			if(isSupport("amas_bdl") && !systemVariable.advSetting)
+			if(isSupport("prelink") && isSupport("amas_bdl") && !systemVariable.advSetting)
 				goTo.loadPage("prelink_desc", true);
 			else
 				abort.backToStartQIS();
@@ -1979,7 +2012,7 @@ abort.wan = function(){
 abort.nowan = function(){
 	if(systemVariable.forceChangePw)
 		goTo.loadPage("login_name", true);
-	else if(isSupport("amas_bdl"))
+	else if(isSupport("prelink") && isSupport("amas_bdl"))
 		goTo.loadPage("prelink_desc", true);
 	else
 		abort.backToStartQIS();
@@ -2268,7 +2301,7 @@ abort.wireless = function(){
 				goTo.loadPage("amasrole_page", true);
 			else if(systemVariable.forceChangePw)
 				goTo.loadPage("login_name", true);
-			else if(isSupport("amas_bdl"))
+			else if(isSupport("prelink") && isSupport("amas_bdl"))
 				goTo.loadPage("prelink_desc", true);
 			else
 				goTo.loadPage(systemVariable.historyPage[systemVariable.historyPage.length-2], true);
@@ -2301,7 +2334,7 @@ abort.amasbundle = function(){
 		window.close();
 	}
 	else
-		if(systemVariable.isNewFw != 0 && isSupport("amas_bdl") && !navigator.userAgent.match(/ASUSSiteManager/)){
+		if(systemVariable.isNewFw != 0 && isSupport("amas_bdl") && !navigator.userAgent.match(/ASUSMultiSiteManager/)){
 			goTo.Update();
 		}
 		else{
@@ -2563,15 +2596,6 @@ abort.site2site_wlSet = function(){
 		goTo.loadPage("site2site_wlSet", true);
 	}
 };
-
-abort.SDN_IoT = function(){
-	if(systemVariable.forceChangePwInTheEnd){
-		goTo.loadPage("login_name", true);
-	}
-	else{
-		goTo.loadPage("wireless_setting", true);
-	}
-}
 
 abort.SDN_Scenarios = function(){
 	$('link[group="SDN_need_file"]').remove();
@@ -3701,17 +3725,6 @@ goTo.lanDHCP = function(){
 			else if(isSupport("SMARTREP"))
 				copyWLCObj_wlc1ToWlc2();
 
-			if(qisPostData.hasOwnProperty("http_username") || qisPostData.hasOwnProperty("http_passwd")){
-				var postData = {
-					"restart_httpd": "0", 
-					"new_username":qisPostData.http_username, 
-					"new_passwd":qisPostData.http_passwd, 
-					"defpass_enable":qisPostData.defpass_enable
-				};
-	
-				httpApi.chpass(postData);
-			}	
-
 			httpApi.nvramSet(setRestartService(qisPostData), goTo.Finish);
 		}
 	}
@@ -3956,6 +3969,28 @@ goTo.Wireless = function(){
 		for(var idx = 0; idx < __wlArray.length; idx++){
 			$("#wireless_key_" + __wlArray[idx].ifname).showPasswordScore(__wlArray[idx].ifname);
 		}
+
+		if(isSupport("mloSetup") && (!isCompatibleNetworkFound() || systemVariable.isDefault)){
+			let default_ssid = $("#wireless_setting [id^=wireless_ssid]").eq(0).val();
+			let default_psk = $("#wireless_setting [id^=wireless_key]").eq(0).val();
+			default_ssid = (default_ssid == undefined || default_ssid == "") ? "" : default_ssid + "_IoT";
+			if(default_psk == undefined) default_psk = "";
+			$("#wlInputField_MLO")
+				.hide()
+				.html(Get_Component_WirelessInput_MLO({title: '', ifname: 'MLO', ssid: default_ssid, psk: default_psk}))
+				.fadeIn();
+		
+			$(".secureInput")
+				.unbind("click")
+				.click(checkPasswd);
+		
+			$("#wireless_key_MLO").showPasswordScore("MLO");
+			$(".mloSupport").show();
+		}
+		else{
+			$("#wlInputField_MLO").html("");
+			$(".mloSupport").hide();
+		}
 	}
 
 	postDataModel.insert(generalObj);
@@ -4001,7 +4036,7 @@ goTo.Wireless = function(){
 			setupFronthaulNetwork(qisPostData.smart_connect_x);
 		}
 		else{
-			$("#wireless_sync_checkbox").enableCheckBox(true);
+			$("#wireless_sync_checkbox").enableCheckBox((isSupport("dualband") || isSupport("triband") || isSupport('5G') || isSupport("quadband")));
 		}
 
 		if(!$(".wlInput").length){
@@ -4149,9 +4184,14 @@ goTo.Wireless = function(){
 		});
 		var str_HowFindPassword_WiFi = str_HowFindPassword.replace("%@", "<#passwd_WiFi#>");
 		$("#wifi_conn_guideline_desc").html(str_HowFindPassword_WiFi);
-		if(systemVariable.isDefault) $(".wlInput").change();
 	}
 		
+	if(isSupport("mlo")){
+		$("#wireless_checkbox").enableCheckBox(false);
+		$("#wireless_checkbox").change();
+		$(".bandStreeringSupport").hide();
+	}
+
 	if(restore_wl_setting){
 		$.each(restore_wl_data, function(index, item){
 			if($(`#wireless_setting [id=${item.id}]`).length){
@@ -4430,21 +4470,21 @@ goTo.Finish = function(){
 
 	sendMessageToSiteManager();
 
-	if(isSupport("GUNDAM_UI") || isTS()) $("#gdContainer").show()
+	if(isSupport("GUNDAM_UI") || isSupport("TS_UI")) $("#gdContainer").show()
 
 	if(!isSwMode("MB")){
 		$("#wirelessFinishFiled").append($("#wlInputField"));
-		if($("#wlInputField_SDN_IoT").html() != "" && $("#wireless_key_IoT").val() != ""){
-			$("#wirelessFinishFiled").append($("#wlTitleField_SDN_IoT"));
-			$("#wirelessFinishFiled").append($("#wlInputField_SDN_IoT"));
+		if(isSupport("mloSetup") && $("#wlInputField_MLO").html() != ""){
+			$("#wirelessFinishFiled").prepend($("#wlTitleField"));
+			$("#wirelessFinishFiled").append($("#wlTitleField_MLO"));
+			$("#wirelessFinishFiled").append($("#wlInputField_MLO"));
 		}
 		$("#wirelessFinishFiled").find(".scorebarBorder").hide();
 		$(".secureInput").hide();
 		$(".wlInput").attr({
 			"disabled": "true",
 			"type": "text"
-		});
-
+		}).css({opacity: "1"});
 		if(isSwMode("RP"))
 			$("#summary_page").find("#stepText2").html("<#OP_MB_desc9#>");
 		else if(isSupport("apMode_detwan") && isSwMode("AP")){
@@ -4466,65 +4506,85 @@ goTo.Finish = function(){
 		$("#summary_page").find("#stepText2").html("<#OP_MB_desc9#>");
 	}
 
-	setTimeout(function(){
-		var interval_isAlive = setInterval(function(){
-			httpApi.log("goTo.Finish", "!lantiq - updateSubnet", systemVariable.qisSession);
-			httpApi.isAlive("", updateSubnet(systemVariable.lanIpaddr), function(){
-				clearInterval(interval_isAlive);
-				if($("#gdContainer").is(":visible")){
-					if(isEva()){
-						$(".GD-logo").hide();
-						$("#gd-logo").hide();
-						$(".GD-content").css({
-							"margin-top": "-125px",
-							"background-image": "url(../images/eva01_bg.png)",
-							"background-repeat": "no-repeat",
-							"width": "100%",
-							"background-size": "contain",
-							"overflow": "hidden",
-							"height": "2048px"
-						})
-						$("body").css({
-							"overflow": "hidden"
-						})
-					}
+	if(isSupport("lantiq")){
+		/* Make sure BLUECAVE had updated wireless setting. */
+		setTimeout(function(){
+			var waveReady = httpApi.nvramGet(["wave_ready"], true).wave_ready;
+			if(waveReady == "0"){
+				httpApi.log("goTo.Finish", "waveReady == 0", systemVariable.qisSession);
+				setTimeout(arguments.callee, 1000);
+				return false;
+			}
 
-					if(isTS()){
-						$("#gundam_page").empty();
-						$("<div>")
-							.addClass("GD-content TX-bg")
-							.appendTo($("#gundam_page"));
-
-						if($(".TX-title").length == 0){
-							$("<div>")
-								.addClass("TX-title")
-								.appendTo($(".GD-content"));
-							$("<div>")
-								.addClass("TX-logo")
-								.appendTo($(".TX-title"));
-							$("<div>")
-								.html("<#Web_Title2#>")
-								.addClass("TX-modelText")
-								.appendTo($(".TX-title"));
+			setTimeout(function(){
+				var interval_isAlive = setInterval(function(){
+					httpApi.log("goTo.Finish", "lantiq - updateSubnet", systemVariable.qisSession);
+					httpApi.isAlive("", updateSubnet(systemVariable.lanIpaddr), function(){ clearInterval(interval_isAlive); goTo.leaveQIS();});
+				}, 2000);
+			}, 5000);
+		}, 7000);
+	}
+	else{
+		setTimeout(function(){
+			var interval_isAlive = setInterval(function(){
+				httpApi.log("goTo.Finish", "!lantiq - updateSubnet", systemVariable.qisSession);
+				httpApi.isAlive("", updateSubnet(systemVariable.lanIpaddr), function(){
+					clearInterval(interval_isAlive);
+					if($("#gdContainer").is(":visible")){
+						if(isEva()){
+							$(".GD-logo").hide();
+							$("#gd-logo").hide();
+							$(".GD-content").css({
+								"margin-top": "-125px",
+								"background-image": "url(../images/eva01_bg.png)",
+								"background-repeat": "no-repeat",
+								"width": "100%",
+								"background-size": "contain",
+								"overflow": "hidden",
+								"height": "2048px"
+							})
+							$("body").css({
+								"overflow": "hidden"
+							})
 						}
+
+						if(isSupport("TS_UI")){
+							$("#gundam_page").empty();
+							$("<div>")
+								.addClass("GD-content TX-bg")
+								.appendTo($("#gundam_page"));
+
+							if($(".TX-title").length == 0){
+								$("<div>")
+									.addClass("TX-title")
+									.appendTo($(".GD-content"));
+								$("<div>")
+									.addClass("TX-logo")
+									.appendTo($(".TX-title"));
+								$("<div>")
+									.html("<#Web_Title2#>")
+									.addClass("TX-modelText")
+									.appendTo($(".TX-title"));
+							}
+						}
+
+						$("#GD-status").html("<#QKSet_finishpre_rebootnow#>");
+
+						$('#summary_page').find(".tableContainer")
+							.replaceWith($("#gundam_page").children().hide())
+
+						$('#summary_page').find(".GD-content")
+							.fadeIn(1000)
+
+						setTimeout(goTo.leaveQIS, 8000);
 					}
-
-					$("#GD-status").html("<#QKSet_finishpre_rebootnow#>");
-
-					$('#summary_page').find(".tableContainer")
-						.replaceWith($("#gundam_page").children().hide())
-
-					$('#summary_page').find(".GD-content")
-						.fadeIn(1000)
-
-					setTimeout(goTo.leaveQIS, 8000);
-				}
-				else{
-					goTo.leaveQIS();
-				}
-			});
-		}, 2000);
-	}, 8000);
+					else{
+						goTo.leaveQIS();
+					}
+				});
+			}, 2000);
+		}, 8000);
+	}
 
 	if(get_wl_unit_by_band("6G") != "" && qisPostData.smart_connect_x != '0'){
 		$('#wifi6e_legacy_hint_summary').show();
@@ -5206,11 +5266,15 @@ goTo.lanIP_papList = function(){
 	}
 };
 
+goTo.Yadns = function(){
+	goTo.loadPage("yadns_page", false);
+};
+
 systemVariable.eulaRetryCount = 0;
 
 goTo.EULA = function(){
 
-	if(navigator.userAgent.match(/ASUSSiteManager/)){
+	if(navigator.userAgent.match(/ASUSMultiSiteManager/)){
 		apply.Policy();
 		return
 	}
@@ -5232,7 +5296,7 @@ goTo.EULA = function(){
 
 
 goTo.PP = function () {
-	if(navigator.userAgent.match(/ASUSSiteManager/)){
+	if(navigator.userAgent.match(/ASUSMultiSiteManager/)){
 		apply.Policy();
 		return
 	}
@@ -5306,6 +5370,16 @@ goTo.WANOption = function(){
 		second_container.append(narrowContainer_div);
 		first_container.append(second_container);
 	}
+
+	if(isSupport("autowan")){
+		var hint_div = $("<div>")
+						.attr("id", "autowan_disable_hint")
+						.addClass("text_yellow_italic")
+						.css({"color": "#FC0", "font-size": "1.3em", "font-style": "italic", "margin-top": "10px"})
+						.html(`The WAN Auto Detection function will be disabled. Please make sure that your WAN cable is correctly plugged into the selected port.`)//untranslated
+						.appendTo($("#wanOptions"))
+	}
+
 	goTo.loadPage("wanOption_setting", false);
 };
 
@@ -5855,54 +5929,6 @@ goTo.site2site_leave = function(){
 	}
 };
 
-goTo.SDN_IoT = function(){
-	if(!$("#wireless_key_IoT").length){
-		$("#wlInputField_SDN_IoT")
-			.html(Get_Component_WirelessInput_MLO({title: "", ifname: "IoT", ssid: "", psk: ""}))
-			.fadeIn();
-
-		$(".secureInput")
-			.unbind("click")
-			.click(checkPasswd);
-
-
-		$("#sdn_iot_checkbox").change(function(e){
-			var curStatus = $(this).prop("checked");
-		
-			if(curStatus){
-				$("#scorebarBorder_IoT").hide();
-				$("#wlInputField_SDN_IoT").find("input")
-					.val("")
-					.prop('disabled', true)
-					.css({opacity: "0.3"})
-			}
-			else{
-				var scProfile = {};
-				scProfile.baseBand = get_wl_unit_by_band("2G") || 0;
-				scProfile.ssid = $("#wireless_ssid_" + scProfile.baseBand).val();
-				scProfile.wpa_psk = $("#wireless_key_" + scProfile.baseBand).val();
-				$("#wireless_ssid_IoT").val(`${scProfile.ssid}${(scProfile.ssid.length<27?"_IoT":"")}`);
-				$("#wireless_key_IoT").val(scProfile.wpa_psk);
-				$("#wlInputField_SDN_IoT").find("input")
-					.prop('disabled', false)
-					.css({opacity: "1"})
-			}
-		})
-
-		var scProfile = {};
-		scProfile.baseBand = get_wl_unit_by_band("2G") || 0;
-		scProfile.ssid = $("#wireless_ssid_" + scProfile.baseBand).val();
-		scProfile.wpa_psk = $("#wireless_key_" + scProfile.baseBand).val();
-		$("#wireless_ssid_IoT").val(`${scProfile.ssid}${(scProfile.ssid.length<27?"_IoT":"")}`);
-		$("#wireless_key_IoT").val(scProfile.wpa_psk);
-		$("#wireless_key_IoT").showPasswordScore("IoT");
-		$("#sdn_iot_checkbox").enableCheckBox(false);
-		$("#sdn_iot_checkbox").change();
-	}
-
-	goTo.loadPage("SDN_IoT_setting", false);
-};
-
 goTo.SDN_Scenarios = function(){
 	$("#SDN_Scenarios_page .titleMain").html(((isSupport("mtlancfg") && isSupport("BUSINESS")) ? "<#GuestNetwork_SDN_title#>": "<#GuestNetwork_PRO_title#>"));
 	$("#SDN_Scenarios_page #rwd_container").empty().append(Get_Component_Type_Scenarios());
@@ -5910,7 +5936,7 @@ goTo.SDN_Scenarios = function(){
 };
 
 goTo.ConfirmChangeWAN = function(){
-	var hint_str = "To ensure that there are no conflicts, when you enable %1$@, the WAN port will be change to %2$@ only. Please make sure that your WAN cable is correctly plugged into the %2$@. Are you sure to continue?"
+	var hint_str = `<#conflict_function_wanport_hint#>`;
 	var msg = hint_str.replace("%1$@", "<#PPPConnection_x_HostNameForISP_sectionname#>").replaceAll("%2$@", get_default_wan_name());
 	$("#autowan_hint_msg").html(msg);
 	setTimeout(function(){

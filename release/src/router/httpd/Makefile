@@ -130,6 +130,9 @@ endif
 ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20241007)
 CFLAGS += -DWIFI7_SDK_20241007
 endif
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250122)
+CFLAGS += -DWIFI7_SDK_20250122
+endif
 endif
 
 OBJS = httpd.o cgi.o ej.o 
@@ -269,6 +272,13 @@ endif
 CFLAGS += -I$(TOP)/json-c
 LIBS += -L$(TOP)/json-c/.libs -ljson-c
 
+ifeq ($(RTCONFIG_HNS),y)
+CFLAGS += -I$(TOP)/sqlite
+CFLAGS += -I$(TOP)/hns
+LIBS += -L$(TOP)/hns -lhns
+LIBS += -L$(TOP)/sqlite/.libs -lsqlite3
+endif
+
 ifeq ($(RTCONFIG_BWDPI),y)
 LIBS += -L$(TOP)/bwdpi_source/asus -lbwdpi
 LIBS += -L$(TOP)/bwdpi_source/asus_sql -lbwdpi_sql
@@ -376,7 +386,7 @@ endif
 CFLAGS += -I$(TOP)/libwebapi
 LIBS += -L$(TOP)/libwebapi -lwebapi
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS7_PRO))
 LIBS += -L$(TOP)/libhostapi -lhostapi
 endif
 

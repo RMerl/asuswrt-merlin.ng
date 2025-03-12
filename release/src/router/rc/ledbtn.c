@@ -36,7 +36,11 @@
 #include <shutils.h>
 #include <rc.h>
 
+#if defined(GSBE18000) || defined(GS7_PRO)
+#define LEDG_WAIT	30
+#else
 #define LEDG_WAIT	20
+#endif
 
 static struct itimerval itv;
 static int btn_led_pressed = 0;

@@ -165,6 +165,7 @@ if(yadns_support){
 }
 
 if(dnspriv_support){
+	var orig_dnspriv_rulelist = '<% nvram_get("dnspriv_rulelist"); %>';
 	var dot_servers_array = [];
 	var dnspriv_rulelist_array = '<% nvram_get("dnspriv_rulelist"); %>';
 }
@@ -727,16 +728,35 @@ function applyRule(){
 		}
 
 		var autowan_conflict = false;
+		var conflict_functions = "";
 		if(isSupport("autowan")){
 			var orig_autowan_enable = httpApi.nvramGet(["autowan_enable"]).autowan_enable;
 			if(orig_autowan_enable == "1"){
-				if((wan_bonding_support && document.form.bond_wan_radio.value == "1") || document.form.wan_proto.value == "static" || document.form.wan_proto.value == "l2tp" || document.form.wan_proto.value == "pptp")
+				if(document.form.wan_proto.value == "static" || document.form.wan_proto.value == "l2tp" || document.form.wan_proto.value == "pptp"){
 					autowan_conflict = true;
+					conflict_functions = document.form.wan_proto.options[document.form.wan_proto.selectedIndex].text;
+				}
+
+				if(wan_bonding_support && document.form.bond_wan_radio.value == "1"){
+					autowan_conflict = true;
+					if(conflict_functions.length == 0)
+						conflict_functions = `<#WANAggregation#>`;
+					else
+						conflict_functions += `, <#WANAggregation#>`;
+				}
+
+				if(document.form.wan_hwaddr_x.value.length > 0){
+					autowan_conflict = true;
+					if(conflict_functions.length == 0)
+						conflict_functions = `<#BOP_isp_MACclone#>`;
+					else
+						conflict_functions += `, <#BOP_isp_MACclone#>`;
+				}
 			}
 		}
 
 		if(dnspriv_support){
-			if(document.form.dnspriv_enable.value == 1){
+			if(document.getElementById('dnspriv_rulelist_table') != null){
 				var dnspriv_rulelist_value = "";
 				for(k=0; k<document.getElementById('dnspriv_rulelist_table').rows.length; k++){
 					for(j=0; j<document.getElementById('dnspriv_rulelist_table').rows[k].cells.length-1; j++){
@@ -750,8 +770,10 @@ function applyRule(){
 							dnspriv_rulelist_value += document.getElementById('dnspriv_rulelist_table').rows[k].cells[j].title;
 					}
 				}
-				document.form.dnspriv_rulelist.disabled = false;
-				document.form.dnspriv_rulelist.value = dnspriv_rulelist_value;
+				if(orig_dnspriv_rulelist != dnspriv_rulelist_value){
+					document.form.dnspriv_rulelist.disabled = false;
+					document.form.dnspriv_rulelist.value = dnspriv_rulelist_value;
+				}
 			}
 			document.form.action_script.value += ";restart_stubby";
 		}
@@ -768,12 +790,8 @@ function applyRule(){
 			document.form.action_script.value += ";restart_dnsmasq";
 
 		if(isSupport("autowan") && autowan_conflict){
-			var hint_str = "To ensure that there are no conflicts, when you enable %1$@, the WAN port will be change to %2$@ only. Please make sure that your WAN cable is correctly plugged into the %2$@. Are you sure to continue?"
-			var msg = "";
-			if(wan_bonding_support && document.form.bond_wan_radio.value == "1")
-				msg = hint_str.replace("%1$@", "<#WANAggregation#>").replaceAll("%2$@", get_default_wan_name());
-			else
-				msg = hint_str.replace("%1$@", document.form.wan_proto.options[document.form.wan_proto.selectedIndex].text).replaceAll("%2$@", get_default_wan_name());
+			var hint_str = `<#conflict_function_wanport_hint#>`;
+			var msg = hint_str.replace("%1$@", conflict_functions).replaceAll("%2$@", get_default_wan_name());
 
 			$("#autowan_hint").html(msg);
 			$("#autowan_hint_div").show();
@@ -1899,7 +1917,7 @@ function create_DNSlist_view(){
 	document.getElementById("dns_list_Block").onclick = function() {show_DNSList_view_block();}
 
 	var DNSListTableIndex=[array_Ab, array_Fm, array_FD, array_Sf, array_Pr];
-	var DNSListTableCategory=["<#IPConnection_x_DNS_List_adB#>", "<#IPConnection_x_DNS_List_Family#>", "<#IPConnection_x_DNS_List_Fast#>", "Safe", "<#IPConnection_x_DNS_List_Priv-resp#>"];
+	var DNSListTableCategory=["<#IPConnection_x_DNS_List_adB#>", "<#IPConnection_x_DNS_List_Family#>", "<#IPConnection_x_DNS_List_Fast#>", "<#IPConnection_x_DNS_List_Safe#>", "<#IPConnection_x_DNS_List_Priv-resp#>"];
 
 	var code="";
 
@@ -2132,7 +2150,7 @@ function Update_DNS_status(){
 	$("#DNS_status").empty();
 
 	if(document.form.wan_dnsenable_x.value == 1){
-		DSN_status_info="<b>Default status :</b> <#IPConnection_x_DNSServer_auto#>";
+		DSN_status_info=`<b><#IPConnection_x_DefaultStatus#> :</b> <#IPConnection_x_DNSServer_auto#>`;
 	}
 	else{
 		DNS_list_index=DNSList_match(document.form.wan_dns1_x.value, document.form.wan_dns2_x.value);

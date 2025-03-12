@@ -47,10 +47,6 @@
 #define APG_MAXINUM	MTLAN_MAXINUM
 #endif	// MTLAN_MAXINUM > APG_MAXINUM)
 
-#if defined(RTCONFIG_MULTILAN_MWL)
-#define APM_MAXINUM 	MTLAN_MWL_MAXINUM
-#endif	// RTCONFIG_MULTILAN_MWL
-
 typedef struct ap_wifi_rule_t {
     int vid;
     char wlif_set[MAX_WLIF_BUFFER_SIZE+1];
@@ -80,7 +76,7 @@ typedef struct apg_br_info_t {
 #define BIT_XX(x)  ((1 << x))
 #endif
 
-#define VIF_TYPE_ALL		0
+#define VIF_TYPE_ALL       	0
 #define VIF_TYPE_NO_USED	BIT_XX(0)
 #define VIF_TYPE_PRELINK	BIT_XX(1)
 #define VIF_TYPE_FRONTHAUL 	BIT_XX(2)
@@ -100,7 +96,7 @@ typedef struct apg_br_info_t {
 #define MAX_LAN_PORTIDX_STR_LEN 64
 #define MAX_SECURITY_LIST_SIZE  8
 #define MAX_SCHED_LIST_SIZE     64
-#define MAX_MAC_LIST_SIZE       64
+#define MAX_MAC_LIST_SIZE       128
 #define MAX_DUT_LIST_SIZE       32
 
 #define NV_APG_X_ENABLE		    "apg%d_enable"
@@ -117,25 +113,6 @@ typedef struct apg_br_info_t {
 #define NV_APG_X_DUT_LIST	    "apg%d_dut_list"
 #define NV_APG_X_MLO	        "apg%d_mlo"
 #define NV_APG_X_EXPIRETIME     "apg%d_expiretime"
-#define NV_APG_X_11EB           "apg%d_11be"
-#define NV_APG_X_DISABLED       "apg%d_disabled"
-
-#define NV_APX_X_ENABLE         "ap%s%d_enable"
-#define NV_APX_X_SSID           "ap%s%d_ssid"
-#define NV_APX_X_HIDE_SSID      "ap%s%d_hide_ssid"
-#define NV_APX_X_SECURITY       "ap%s%d_security"
-#define NV_APX_X_BW_LIMIT       "ap%s%d_bw_limit"
-#define NV_APX_X_TIMESCHED      "ap%s%d_timesched"
-#define NV_APX_X_SCHED          "ap%s%d_sched"
-#define NV_APX_X_AP_ISOLATE     "ap%s%d_ap_isolate"
-#define NV_APX_X_MACMODE        "ap%s%d_macmode"
-#define NV_APX_X_MACLIST        "ap%s%d_maclist"
-#define NV_APX_X_IOT_MAX_CMPT   "ap%s%d_iot_max_cmpt"
-#define NV_APX_X_DUT_LIST       "ap%s%d_dut_list"
-#define NV_APX_X_MLO            "ap%s%d_mlo"
-#define NV_APX_X_EXPIRETIME     "ap%s%d_expiretime"
-#define NV_APX_X_11BE     		"ap%s%d_11be"
-#define NV_APX_X_DISABLED       "ap%s%d_disabled"
 
 const static char APGx_NVRAM_LIST[] = {
     NV_APG_X_ENABLE","\
@@ -151,43 +128,9 @@ const static char APGx_NVRAM_LIST[] = {
     NV_APG_X_IOT_MAX_CMPT","\
     NV_APG_X_DUT_LIST","\
     NV_APG_X_MLO","\
-    NV_APG_X_EXPIRETIME","\
-	NV_APG_X_11EB","\
-	NV_APG_X_DISABLED\
+    NV_APG_X_EXPIRETIME
 };
 
-#if defined(RTCONFIG_WIFI7)
-const static char NV_APG_X_SUFFIX[] = {
-    "ssid,"\
-    "auth_mode_x,"\
-    "crypto,"\
-    "wpa_psk,"\
-    "radius_ipaddr,"\
-    "radius_key,"\
-    "radius_port,"\
-    "radius_acct_ipaddr,"\
-    "radius_acct_key,"\
-    "radius_acct_port,"\
-    "radius2_ipaddr,"\
-    "radius2_key,"\
-    "radius2_port,"\
-    "radius2_acct_ipaddr,"\
-    "radius2_acct_key,"\
-    "radius2_acct_port,"\
-    "bw_dl,"\
-    "bw_enabled,"\
-    "bw_ul,"\
-    "ap_isolate,"\
-    "closed,"\
-    "timesched,"\
-    "sched_v2,"\
-    "expiretime,"\
-    "macmode,"\
-    "maclist_x,"\
-	"11be,"\
-    "iot_max_cmpt"
-};
-#else
 const static char NV_APG_X_SUFFIX[] = {
 	"ssid,"\
 	"auth_mode_x,"\
@@ -217,7 +160,6 @@ const static char NV_APG_X_SUFFIX[] = {
 	"maclist_x,"\
 	"iot_max_cmpt"
 };
-#endif
 
 struct _security_t {
     unsigned short band_set;
@@ -268,15 +210,13 @@ typedef struct _apg_rule_t {
     struct _dutlist_t dut_list[MAX_DUT_LIST_SIZE];
     int dut_for_all;
     unsigned short mlo_support;
-	unsigned int wifi7_support;
-	unsigned int disabled;
 } apg_rule_st;
 
-extern struct _security_t* get_apg_security(int nvram_idx, struct _security_t* list, int max_list_size, int *ret_list_size, int get_apm);
-extern struct _bwlimit_t* get_apg_bwlimit(int nvram_idx, struct _bwlimit_t* bwlimit, int get_apm);
-extern struct _sched_t* get_apg_sched(int nvram_idx, struct _sched_t* list, int max_list_size, int *ret_list_size, int get_apm);
-extern struct _maclist_t* get_apg_maclist(int nvram_idx, struct _maclist_t* list, int max_list_size, int *ret_list_size, int get_apm);
-extern struct _dutlist_t* get_apg_dutlist(int nvram_idx, struct _dutlist_t* list, int max_list_size, int *ret_list_size, int get_apm);
+extern struct _security_t* get_apg_security(int nvram_idx, struct _security_t* list, int max_list_size, int *ret_list_size);
+extern struct _bwlimit_t* get_apg_bwlimit(int nvram_idx, struct _bwlimit_t* bwlimit);
+extern struct _sched_t* get_apg_sched(int nvram_idx, struct _sched_t* list, int max_list_size, int *ret_list_size);
+extern struct _maclist_t* get_apg_maclist(int nvram_idx, struct _maclist_t* list, int max_list_size, int *ret_list_size);
+extern struct _dutlist_t* get_apg_dutlist(int nvram_idx, struct _dutlist_t* list, int max_list_size, int *ret_list_size);
 
 extern int              get_rm_sdn_vid_by_apg_rule(apg_rule_st* apg_rule);
 extern int              get_sdn_vid_by_apg_rule(apg_rule_st* apg_rule);
@@ -289,11 +229,6 @@ extern char*            get_apg_value(apg_rule_st* apg_rule, unsigned short wifi
 extern int              get_mtlan_enable_by_idx(const unsigned int idx);
 extern int              get_mtlan_enable_by_vid(const unsigned int vid);
 extern int              find_mtvlan(const unsigned int vid);
-
-extern apg_rule_st*     get_apm_rule_by_idx(int idx, apg_rule_st* apg_rule);
-extern apg_rule_st*     get_apm_rule_by_dut(char *dut_mac, unsigned short wifi_band, apg_rule_st* apg_rule);
-extern int 				get_mtlan_enable_by_apm_idx(const unsigned int idx);
-extern char* 			get_dut_all_mac(char *ret_macs, size_t ret_bsize);
 
 #define MAX_IFNAME_STR_LEN		32
 #define MAX_VID_TRUNK_LIST_SIZE    512
@@ -434,20 +369,12 @@ typedef struct vlan_rl_t {
 extern vlan_rl_st* get_vlan_rl_from_buffer(char *buffer, vlan_rl_st *list, int max_list_size, int *ret_list_size);
 extern int sdn_vlan_is_enabled(vlan_rl_st *vlan_rl);
 extern int get_isolation_mode(int vid);
-
 extern void enableSDNRuleForMlo();
-extern char *get_ap_wifi_ifnames_by_sdn(int sdn_idx, int unit, char *ret_ifnames, int ret_bsize);
-extern char *get_compatible_network(int unit, char *ret_ifnames, int ret_bsize);
 extern int get_rm_sdn_index(const unsigned int apg_idx);
 extern int get_sdn_index(const unsigned int apg_idx);
-extern char* get_fh_sc_ifnames(unsigned int *sc_sel_band, char *ret_ifnames, size_t ret_bsize);
-extern char* get_sdn_type_by_apm(apg_rule_st *apg_rule, char *type, size_t type_bsize);
+extern char *get_ap_wifi_ifnames_by_sdn(int sdn_idx, int unit, char *ret_ifnames, int ret_bsize);
+extern char *get_compatible_network(int unit, char *ret_ifnames, int ret_bsize);
+extern char* get_sdn_type_by_sdn_idx(int index, char *type, size_t type_bsize);
 extern char* get_fh_if_prefix(char *ret_prefix, size_t ret_bsize);
 extern char* get_fh_if_prefix_by_unit(int unit, char *ret_prefix, size_t ret_bsize);
-extern char* get_fh_ap_ssid_by_unit(int unit);
-extern int get_sdn_index_by_apm(const unsigned int apg_idx);
-extern char* get_sdn_type_by_sdn_idx(int index, char *type, size_t type_bsize);
-extern char* get_fh_if_prefix_by_apm(int apm_idx, char *ret_prefix, size_t ret_bsize);
-
-extern int get_sdn_new_idx(char *sdn_rl);
 #endif  /* !__APG_SHAREDH__ */

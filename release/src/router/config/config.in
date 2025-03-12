@@ -1523,19 +1523,10 @@ config RTCONFIG_SMART_HOME_MASTER_UI
 	bool "Smart Home Master UI of SDN"
 	default n
 
-config RTCONFIG_SDN_PRIORITY
-	bool "SDN Priority or Gaming UI of SDN"
-	default n
-
 config RTCONFIG_MAX_MTLAN
     int "Support the maximum number of SDN"
     depends on RTCONFIG_MULTILAN_CFG
     default 16
-
-config RTCONFIG_MULTILAN_MWL
-	bool "Support Main BH & BH of SDN"
-	depends on RTCONFIG_MULTILAN_CFG
-	default n
 
 config RTCONFIG_SDN_PRIORITY
 	bool "SDN Priority or Gaming UI of SDN"
@@ -1671,6 +1662,10 @@ config RTCONFIG_WPS_DUALBAND
 
 config RTCONFIG_N18UTXBF
 	bool "enable TXBF for RT-N18U"
+	default n
+
+config RTCONFIG_HNS
+	bool "TrendMicro Home Network Security (HNS)"
 	default n
 
 config RTCONFIG_BWDPI
@@ -2293,6 +2288,10 @@ config RTCONFIG_RAST_NONMESH_KVONLY
 	bool "enable roamast in a nonmesh device"
 	default n
 
+config RTCONFIG_RAST_TEST
+        bool "test rast function"
+        default n
+
 config RTCONFIG_CONN_EVENT_TO_EX_AP
 	bool "enable AP to info the EX-Ap of the connect event of a connected client"
 	default n
@@ -2792,38 +2791,17 @@ config RTCONFIG_WIFI7
 	bool "WiFi 7"
 	default n
 
-config RTCONFIG_DISWIFI7
-	bool "Disable WiFi7"
-	default n
-
-config RTCONFIG_UAWIFI
-	bool "UA WiFi"
-	default n
-
-config RTCONFIG_QOSR1
-        bool "QOSR1"
-        default n
-
-config RTCONFIG_IPTABLES1810
-        bool "iptables-1.8.10"
-        default n
-
 config RTCONFIG_MLO
-    bool "MLO"
-    default n
+        bool "MLO"
+        default n
 
 config RTCONFIG_DIS_MLO_QIS
 	bool "MLO"
 	default n
 
 config RTCONFIG_MLO_FH
-    bool "MLO FRONTHAUL"
-    default n
-
-config RTCONFIG_MLO_BH
-	depends on RTCONFIG_MLO
-    bool "MLO BACKHAUL"
-    default n
+        bool "MLO FRONTHAUL"
+        default n
 
 config RTCONFIG_SYSCLASSGPIO
 	bool "enable sys class gpio"
@@ -3212,6 +3190,10 @@ config RTCONFIG_AUTO_WANPORT
 	bool "Automatically detect where the WAN port is"
 	default n
 
+config RTCONFIG_FU_TEST
+        bool "enable function test"
+        default n
+
 config RTCONFIG_PASS_V2
 	bool "Use PASS V2 for encryption"
 	depends on RTCONFIG_RALINK
@@ -3235,35 +3217,8 @@ config RTCONFIG_PRESSURE_SENSOR
 	bool "Pressure sensor"
 	default n
 
-config RTCONFIG_SMARTHAUL
-        bool "Smart haul"
-        default n
-
-config RTCONFIG_BRCM_SMARTHAUL
-        bool "BRCM Smart haul"
-        default n
-
-config RTCONFIG_MLO_BH_BAND
-	bool "MLO backhaul band"
-	depends on RTCONFIG_MLO
-	default n
-
-config RTCONFIG_DOWNGRADE_CHECK
-	bool "firmware downgrade check"
-	default n
-
 config RTCONFIG_MLO_CONFIG_566
-	bool "MLO default config 566 in 2566 model"
-	depends on RTCONFIG_MLO
-	default n
-
-config RTCONFIG_MLO_CONFIG_556
-	bool "MLO default config 556 in 2556 model"
-	depends on RTCONFIG_MLO
-	default n
-
-config RTCONFIG_MLO_DEFAULT_ACTIVE
-        bool "Enable MLO in default"
+        bool "MLO default config 566 in 2566 model"
         default n
 
 config RTCONFIG_FLASH_TYPE_EMMC
@@ -3274,10 +3229,15 @@ config RTCONFIG_JFFS_PARTITION
 	bool "jffs2 partition support"
 	default n
 
-config RTCONFIG_KNV_BACKUP
-	bool "kernel nvram backup file"
+config RTCONFIG_DIS_HASH_KEY_GEN_CHECK
+	bool "disable hash key generation and check"
 	default n
 
-config RTCONFIG_NV_BACKUP2
-	bool "kernel nvram backup file plan 2"
+config RTCONFIG_BCMLEDG
+	bool "RT And ROG LEDG FUNCTION"
 	default n
+
+config RTCONFIG_BCMLEDG_NIGHT
+        bool "ROG LEDG NIGHT MODE FUNCTION"
+        default n
+

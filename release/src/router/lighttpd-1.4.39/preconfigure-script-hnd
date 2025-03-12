@@ -53,7 +53,8 @@ fi
 
 RTBE82M=`cat ../shared/version.h | grep "RT-BE82M"`
 GSBE18000=`cat ../shared/version.h | grep "GS-BE18000"`
-if [ -n "$RTBE82M" ] || [ -n "$GSBE18000" ]; then
+GS7_PRO=`cat ../shared/version.h | grep "GS7_PRO"`
+if [ -n "$RTBE82M" ] || [ -n "$GSBE18000" ] || [ -n "$GS7_PRO" ]; then
 	LDFLAGS+=" -L$router_dir/libhostapi/ -lhostapi"
 fi
 

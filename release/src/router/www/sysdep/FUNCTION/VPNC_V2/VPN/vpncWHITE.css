@@ -176,6 +176,8 @@
 }
 .profile_setting_item.policy .text_content > a{
 	color: rgb(0, 110, 255);
+	text-decoration: underline;
+	cursor: pointer;
 }
 .profile_setting_item .title{
 	color: rgb(26, 26, 26);
@@ -245,7 +247,7 @@
 	background: rgb(255, 255, 255);
 }
 .popup_title_container .title{
-	color: rgb(24, 24, 24);
+	color: rgb(24, 24, 24) !important;
 }
 .popup_container .popup_content_container{
 	background: rgb(255, 255, 255);

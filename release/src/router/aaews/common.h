@@ -76,10 +76,10 @@ extern char *generate_device_desc(int public, char *tnl_sdk_version, char *out_b
 void start_sip_conn();
 #ifdef RTCONFIG_LIBASUSLOG
 #define AAE_MAX_LOG_LEN 960
-#define AAE_DBG_LOG	"aae.log"
+#define AAE_DBG_LOG	"/jffs/aae.log"
 extern char *__progname;
 #define AAEDBG(fmt,args...) \
-		asusdebuglog(LOG_INFO, AAE_DBG_LOG, LOG_CUSTOM, LOG_SHOWTIME, 50, "[%s][%d]][%s:(%d)] "fmt"\n", __progname, getpid(), __FUNCTION__, __LINE__, ##args);
+		asusdebuglog(LOG_INFO, AAE_DBG_LOG, LOG_CUSTOM, LOG_SHOWTIME, 256, "[%s][%d]][%s:(%d)] "fmt"\n", __progname, getpid(), __FUNCTION__, __LINE__, ##args);
 #else
 #define AAEDBG(fmt,args...)
 #endif

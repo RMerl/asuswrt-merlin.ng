@@ -1920,6 +1920,98 @@ wl_wlif_wpa_supplicant_update_ap_scan(char *ifname, char *nvifname, int val)
 	system(cmd);
 }
 
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+#if defined(WIFI7_SDK_20250122)
+// Helper function to get the band type for wireless interface
+int
+wl_wlif_get_band_type(char *ifname)
+{
+	int band_type = 0;
+
+	wl_ioctl(ifname, WLC_GET_BAND, &band_type, sizeof(band_type));
+
+	// If band type is auto than update band type from band list
+	if (band_type == WLC_BAND_AUTO) {
+		int list[3]; // list[0] is the count, values at index 1 and 2 contain band type
+		int j;
+
+		wl_ioctl(ifname, WLC_GET_BANDLIST, list, sizeof(list));
+		if (list[0] > 2) {
+			list[0] = 2;
+		}
+		band_type = 0;
+		for (j = 1; j <= list[0]; j++) {
+			if (list[j] == WLC_BAND_5G || list[j] == WLC_BAND_2G) {
+				band_type |= list[j];
+			}
+		}
+	} else if (band_type == WLC_BAND_6G) {
+		band_type = 0;
+	}
+
+	dprintf("Info: rc: %d: wps: ifname %s band type %d\n", __LINE__, ifname, band_type);
+
+	return band_type;
+}
+#endif /* WIFI7_SDK_20250122 */
+#endif	/* RTCONFIG_HND_ROUTER_BE_4916 */
+
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+#if defined(WIFI7_SDK_20250122)
+int
+wl_wlif_find_out_mfp_cap_mrsno(int akm, int nv_mfp, int mrsno, bool rsno, bool rsnop,
+		bool is_band_6g, bool mbo)
+{
+	if (mrsno) {
+		if (is_band_6g) {
+			return HAPD_MFP_REQ;
+		} else {
+			/* RSNO IEs */
+			if (rsno || rsnop) {
+				return HAPD_MFP_REQ;
+			/* RSNE IE */
+			} else {
+				/* MFP should be set to capable, when MBO is enabled */
+				if (mbo) {
+					return HAPD_MFP_CAP;
+				} else {
+					return HAPD_MFP_OFF;
+				}
+			}
+		}
+	}
+
+	if (akm & (HAPD_AKM_WPA3_SAE | HAPD_AKM_WPA3_SAE_FT | HAPD_AKM_WPA3_DPP |
+			HAPD_AKM_OWE | HAPD_AKM_WPA3 | HAPD_AKM_WPA3_SUITE_B |
+			HAPD_AKM_WPA3_SAE_EXT)) {
+		if (akm & (HAPD_AKM_WEP | HAPD_AKM_PSK)) {
+			/* Do not allow SAE combination with these modes */
+			dprintf("Err: rc: %d: wrong akm setting\n", __LINE__);
+			return -1;
+		}
+		if ((akm & (HAPD_AKM_PSK2 | HAPD_AKM_WPA2)) && nv_mfp != HAPD_MFP_REQ) {
+			/* In mixed SAE case, set MFP to be capable,
+			 * if MFP is not set to required.
+			 */
+			return HAPD_MFP_CAP;
+		}
+		/* In other cases, MFP should be required */
+		return HAPD_MFP_REQ;
+	}
+	/* In case of pure WPA-PSK/WPA-Enterprise, MFP should be disabled */
+	if ((akm == HAPD_AKM_PSK) || (akm == HAPD_AKM_WPA)) {
+		return HAPD_MFP_OFF;
+	}
+
+	if (akm == HAPD_AKM_OPEN || akm == HAPD_AKM_WEP) {
+		/* wps_cred_add_sae: do not add ieee80211w for open/wep */
+		return -1;
+	}
+	return nv_mfp;
+}
+#endif /* WIFI7_SDK_20250122 */
+#endif	/* RTCONFIG_HND_ROUTER_BE_4916 */
+
 #ifdef MULTIAP
 /* Retrieves the backhaul credentials from the nvram */
 static int
@@ -3153,13 +3245,14 @@ void _set_wl_mlo_config_by_model(char *buf, int buf_size)
 		case MODEL_RTBE96U:
 		case MODEL_RTBE92U:
 		case MODEL_GTBE19000:
-		case MODEL_GTBE19000_AI:
+		case MODEL_GTBE19000AI:
 			// (256) 2G + 5G + 6G
 			strlcpy(buf, "2 1 0 -1", buf_size);
 			break;
 		case MODEL_GTBE96:
+		case MODEL_GTBE96_AI:
 			// (255) 2G + 5G_L + 5G_H
-			strlcpy(buf, "2 0 1 -1", buf_size);
+			strlcpy(buf, "2 1 0 -1", buf_size);
 			break;
 		case MODEL_RTBE95U:
 			// (562) 5G + 6G + 2G, DHD is 5G
@@ -3191,6 +3284,7 @@ void _set_wl_mlo_config_by_model(char *buf, int buf_size)
 		case MODEL_RTBE88U:
 		case MODEL_RTBE86U:
 		case MODEL_RTBE58U:
+		case MODEL_RTBE58U_V2:
 		case MODEL_RTBE82U:
 		case MODEL_RTBE58U_PRO:
 		default:
@@ -3201,40 +3295,7 @@ void _set_wl_mlo_config_by_model(char *buf, int buf_size)
 	nvram_set("wl_mlo_config", buf);
 }
 
-int _mlo_primary_chk_mode()
-{
-        char result[16];
-        char tmp[32] = {0};
-        char *token = NULL;
-        char *saveptr = NULL;
-        char prefix[] = "wlXXXXXXXXXX_";
-        int unit = 0, value = -1;
-
-        strlcpy(result, nvram_safe_get("wl_mlo_config"), sizeof(result));
-
-        if(strlen(result) <= 0) {
-		return -1;
-        }
-        // grab active MLO radio
-        token = strtok_r(result, " ", &saveptr);
-        while (token != NULL) {
-                value = atoi(token);
-
-                if (value != -1) {
-			snprintf(prefix, sizeof(prefix), "wl%d", unit);
-			if(value == 0) {
-				nvram_set("mlo_map", prefix);
-				//if(!*nvram_safe_get("wlc_band"))
-				nvram_set_int("wlc_band", unit);
-			}
-		}
-                token = strtok_r(NULL, " ", &saveptr);
-                unit++;
-        }
-	return 0;
-}
-
-int apply_mlo_rp_settings(int mlo_client_mode)
+int apply_mlo_rp_settings()
 {
 	char mld0_ifnames[128] = {0};
 	char word[32]={0}, *next = NULL;
@@ -3260,40 +3321,18 @@ int apply_mlo_rp_settings(int mlo_client_mode)
 		return -1;
 	}
 
-	//if(!*nvram_safe_get("wlc_band")) {
-	_mlo_primary_chk_mode();
-	//}
-
 	strlcpy(mld0_ifnames, nvram_safe_get("mld0_ifnames"), sizeof(mld0_ifnames));
-	_dprintf("%s, mld0 ifnames : %s, mlo_map=%s, wlc_band=%s \n", __func__, mld0_ifnames, nvram_safe_get("mlo_map"), nvram_safe_get("wlc_band"));
+	_dprintf("%s, mld0 ifnames : %s \n", __func__, mld0_ifnames);
 
 	nvram_set("sw_mode", "3");
 	nvram_set("wlc_psta", "2");
 	nvram_set("wlc_dpsta", "2");
 	nvram_set("re_mode", "0");
 	nvram_set("mld_enable", "1");
-	if(mlo_client_mode == MLO_CLIENT_MB) {
-		nvram_set_int("mlo_rp", 0);
-		nvram_set_int("mlo_mb", 1);
-	} else {	// MLO_CLIENT_RP
-		nvram_set_int("mlo_rp", 1);
-		nvram_set_int("mlo_mb", 0);
-	}
+	nvram_set("mlo_rp", "1");
 	nvram_set("x_Setting", "1");
 	//nvram_set("lan_proto", "dhcp");
 
-#ifdef RPBE58
-	if(*nvram_safe_get("wlc1_ssid"))
-		snprintf(prefix, sizeof(prefix), "wlc1_");
-	else if(*nvram_safe_get("wlc0_ssid"))
-		snprintf(prefix, sizeof(prefix), "wlc0_");
-	else {
-		_dprintf("no valid wlcX settings.\n");
-		return -1;
-	}
-#else
-	snprintf(prefix, sizeof(prefix), "wlc_");
-#endif
 	foreach (word, mld0_ifnames, next) {
 		wl_ioctl(word, WLC_GET_INSTANCE, &unit, sizeof(unit));
 
@@ -3301,6 +3340,7 @@ int apply_mlo_rp_settings(int mlo_client_mode)
 			_dprintf("%s, wlif[%s] get error unit:%d\n", __func__, word, unit);
 			continue;
 		}
+		snprintf(prefix, sizeof(prefix), "wlc_");
 		snprintf(prefix2, sizeof(prefix2), "wlc%d_", unit);
 		
 		val = nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp)));
@@ -3318,27 +3358,7 @@ int apply_mlo_rp_settings(int mlo_client_mode)
 		nvram_set(strlcat_r(prefix2, "11be", tmp, sizeof(tmp)), "1");
 	}
 
-#if DEBUG
-	foreach (word, mld0_ifnames, next) {
-		wl_ioctl(word, WLC_GET_INSTANCE, &unit, sizeof(unit));
-
-		if(unit < 0) {
-			_dprintf("%s, wlif[%s] get error unit:%d\n", __func__, word, unit);
-			continue;
-		}
-		snprintf(prefix2, sizeof(prefix2), "wlc%d_", unit);
-		
-		_dprintf("chk convert %s=[%s]\n", strlcat_r(prefix2, "ssid", tmp, sizeof(tmp)), nvram_safe_get(strlcat_r(prefix2, "ssid", tmp, sizeof(tmp))));
-		_dprintf("chk convert %s=[%s]\n", strlcat_r(prefix2, "auth_mode", tmp, sizeof(tmp)), nvram_safe_get(strlcat_r(prefix2, "auth_mode", tmp, sizeof(tmp))));
-		_dprintf("chk convert %s=[%s]\n", strlcat_r(prefix2, "wpa_psk", tmp, sizeof(tmp)), nvram_safe_get(strlcat_r(prefix2, "wpa_psk", tmp, sizeof(tmp))));
-		_dprintf("chk convert %s=[%s]\n", strlcat_r(prefix2, "crypto", tmp, sizeof(tmp)), nvram_safe_get(strlcat_r(prefix2, "crypto", tmp, sizeof(tmp))));
-		_dprintf("chk convert %s=[%s]\n", strlcat_r(prefix2, "11be", tmp, sizeof(tmp)), nvram_safe_get(strlcat_r(prefix2, "11be", tmp, sizeof(tmp))));
-	}
-
-#endif
 	nvram_commit();
-
-	return 0;
 }
 
 #endif

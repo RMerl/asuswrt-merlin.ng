@@ -393,10 +393,10 @@ function show_information(){
 	
 		document.getElementById('detail_info').innerHTML = code;
 
-		code_suggestion = "<ul>";
-		code_suggestion += "<li><span><#web_redirect_reason_limited_1#></span></li>";
-		code_suggestion += "<li><span><#web_redirect_reason_limited_2#></span></li>";
-		code_suggestion += "</ul>";		
+		code_suggestion = `<ul>`;
+		code_suggestion += `<li><span><#web_redirect_reason_limited_1#></span></li>`;
+		code_suggestion += `<li><span><#web_redirect_reason_limited_2#></span></li>`;
+		code_suggestion += `</ul>`;
 		
 		$("#go_btn").click(function(){
 			location.href = "AdaptiveQoS_TrafficLimiter.asp";

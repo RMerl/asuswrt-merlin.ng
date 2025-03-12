@@ -874,7 +874,7 @@ function applyRule(){
 		}
 
 		if(turn_off_lacp()){
-			var hint_str = "Configure %1$@ as %2$@ will disable \"%3$@\" function, are you sure to continue?";
+			var hint_str = `<#PortConflict_DisableFunc_Check#>`;
 			var msg = "";
 			var port_list = "";
 			var isp_profile = get_isp_settings(document.form.switch_wantag.value);
@@ -914,7 +914,7 @@ function applyRule(){
 
 		if(((isSupport("autowan") && autowan_enable == "1") || !use_single_default_wan()) &&
 			(document.form.switch_stb_x.value != "0" || document.form.switch_wantag.value != "none")){
-			var hint_str = "To ensure that there are no conflicts, when you enable %1$@, the WAN port will be change to %2$@ only. Please make sure that your WAN cable is correctly plugged into the %2$@. Are you sure to continue?"
+			var hint_str = `<#conflict_function_wanport_hint#>`;
 			var msg = "";
 			msg = hint_str.replace("%1$@", "IPTV").replaceAll("%2$@", get_default_wan_name());
 			$("#autowan_hint").html(msg);

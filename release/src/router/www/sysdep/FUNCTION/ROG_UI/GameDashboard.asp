@@ -1320,7 +1320,7 @@ function showClientlistModal() {
 																	.css({"width":"18vw", "background-position-y":"50%"});
 															}
 															const support_night_mode = (()=>{
-																return ((based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000" || based_modelid == "GT-BE19000_AI") ? true : false);
+																return ((based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000" || based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI") ? true : false);
 															})();
 															if(support_night_mode){
 																$ledg_html.find(".light_effect_mask").css({

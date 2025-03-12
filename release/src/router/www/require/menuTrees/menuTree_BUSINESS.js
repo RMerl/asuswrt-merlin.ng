@@ -102,10 +102,10 @@ define(function(){
 				]
 			},
 			{
-				menuName: isSupport("sdn_mwl") ? `<#Network#>` : Guest_Network_naming,
+				menuName: ((isSupport("mtlancfg")) ? ((isSupport("BUSINESS")) ? "<#GuestNetwork_SDN_title#>" : "<#GuestNetwork_PRO_title#>") : "<#Guest_Network#>"),
 				index: "menu_GuestNetwork",
 				tab: [
-					{url: (isSupport("mtlancfg") ? "SDN.asp" : "Guest_network.asp"), tabName: isSupport("sdn_mwl") ? `<#Network#>` : Guest_Network_naming},
+					{url: (isSupport("mtlancfg") ? "SDN.asp" : "Guest_network.asp"), tabName: ((isSupport("mtlancfg")) ? ((isSupport("BUSINESS")) ? "<#GuestNetwork_SDN_title#>" : "<#GuestNetwork_PRO_title#>") : "<#Guest_Network#>")},
 					{url: "Captive_Portal.asp", tabName: "Free WiFi"},
 					{url: "Captive_Portal_Advanced.asp", tabName: "<#Captive_Portal#>"},
 					{url: "Guest_network_fbwifi.asp", tabName: "Facebook WiFi"},
@@ -815,10 +815,6 @@ define(function(){
 
 				if(!isSupport("mtlancfg") || !isSupport("mlo")){
 					retArray.push("MLO.asp");
-				}
-				
-				if(isSupport("sdn_mainfh")){
-					retArray.push("Advanced_ACL_Content.asp");
 				}
 
 				if(isSupport("wifi7")){

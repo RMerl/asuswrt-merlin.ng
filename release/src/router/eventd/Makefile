@@ -16,7 +16,7 @@ endif
 LDFLAGS += $(EXTRA_LDFLAGS)
 
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS7_PRO))
 LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 

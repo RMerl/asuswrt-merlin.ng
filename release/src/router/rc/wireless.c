@@ -255,9 +255,22 @@ int wlcscan_main(void)
 	}
 #endif
 
+#if defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
+	struct stat filestat;
+
+	if (!stat(APSCAN_INFO, &filestat) && filestat.st_size > 0) {
+		nvram_set_int("wlc_scan_state", WLCSCAN_STATE_FINISHED);
+		nvram_set_int("wlcscan", 0);
+		dbg("[wlc] wlcscan fin.(%d)\n", filestat.st_size);
+	} else {
+		dbg("[wlc] invalid scan results, re-scan...\n\n");
+		system("wlcscan");
+	}
+#else
 	nvram_set_int("wlc_scan_state", WLCSCAN_STATE_FINISHED);
 #ifdef CONFIG_BCMWL5
 	nvram_set_int("wlcscan", 0);
+#endif
 #endif
 
 	return 1;

@@ -94,7 +94,7 @@ body{
 }
 /* CPU */
 .bar-container{
-	background-color:#333333;
+	background-color:#000000;
 	width: 150px;
 	height: 8px;
 	border-radius: 6px;

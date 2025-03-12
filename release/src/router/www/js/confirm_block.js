@@ -51,16 +51,34 @@
 	}
 	
 	code += '<div style="display:flex;width:100%;margin-top:10px;justify-content:center;align-items:center;" class="business_confirm_container">';
-	if(content.left_button && content.left_button != "Hidden")
-		code += '<div class="confirm_button_gen_long_left">' + content.left_button + '</div>';	//confirm_button confirm_button_left
-	if(content.right_button)	
-		code += '<div class="confirm_button_gen_long_right">' + content.right_button + '</div>';	//confirm_button confirm_button_right
+	if(content.left_button && content.left_button != "Hidden"){
+		if(rog_support){
+			code += '<div id="confirm_button_gen_long_left" class="confirm_button_gen_long_left_rog">' + content.left_button + '</div>';	//confirm_button confirm_button_left
+		}
+		else if(tuf_support){
+			code += '<div id="confirm_button_gen_long_left" class="confirm_button_gen_long_left_tuf">' + content.left_button + '</div>';	//confirm_button confirm_button_left	
+		}
+		else{
+			code += '<div id="confirm_button_gen_long_left" class="confirm_button_gen_long_left">' + content.left_button + '</div>';	//confirm_button confirm_button_left
+		}
+	}
+	if(content.right_button){
+		if(rog_support){
+			code += '<div id="confirm_button_gen_long_right" class="confirm_button_gen_long_right_rog">' + content.right_button + '</div>';	//confirm_button confirm_button_right
+		}
+		else if(tuf_support){
+			code += '<div id="confirm_button_gen_long_right" class="confirm_button_gen_long_right_tuf">' + content.right_button + '</div>';	//confirm_button confirm_button_right
+		}
+		else{
+			code += '<div id="confirm_button_gen_long_right" class="confirm_button_gen_long_right">' + content.right_button + '</div>';	//confirm_button confirm_button_right
+		}
+	}
 	code += '</div>';		
 	code += '</div></div>';
 	
 	$('body').append(code);	
-	$('.confirm_button_gen_long_left').bind("click", function(){return content.left_button_callback.call(content.left_button_args)});
-	$('.confirm_button_gen_long_right').bind("click", function(){return content.right_button_callback.call(content.right_button_args)});
+	$('#confirm_button_gen_long_left').bind("click", function(){return content.left_button_callback.call(content.left_button_args)});
+	$('#confirm_button_gen_long_right').bind("click", function(){return content.right_button_callback.call(content.right_button_args)});
 }
 
 function confirm_cancel(){

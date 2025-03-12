@@ -187,6 +187,9 @@ endif
 ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20241007)
 CFLAGS += -DWIFI7_SDK_20241007
 endif
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250122)
+CFLAGS += -DWIFI7_SDK_20250122
+endif
 endif
 
 OBJS = shutils.o defaults.o model.o rtstate.o boardapi.o
@@ -202,6 +205,9 @@ OBJS += mac_name_tbl.o
 OBJS += stun.o
 OBJS += scripts.o
 OBJS += llist.o
+ifeq ($(RTCONFIG_HNS),y)
+OBJS += hns_utils.o
+endif
 ifeq ($(RTCONFIG_MULTILAN_CFG),y)
 OBJS += mtlan_utils.o
 endif
@@ -484,11 +490,14 @@ ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
 OBJS += bcmxtlv.o bcmutils.o
 ifeq ($(or $(RTAX55),$(RTAX1800),$(RTAX58U_V2),$(RTAX3000N),$(BR63),$(RTCONFIG_EXT_RTL8367S)),y)
 OBJS += rtkswitch.o
-else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 GT-BE19000 RT-BE92U RT-BE95U RT-BE82U TUF-BE82 RT-BE58U_PRO GT-BE19000_AI))
+else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 RT-BE58U_V2 TUF-BE3600_V2 RT-BE55 GT-BE19000 RT-BE92U RT-BE95U RT-BE82U TUF-BE82 RT-BE58U_PRO GT-BE19000AI GT-BE96_AI))
 OBJS += rtkswitch.o
 endif
 ifeq ($(and $(BR63),$(NEW_SWITCH_ORDER)),y)
 CFLAGS += -DNEW_SWITCH_ORDER
+endif
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS7_PRO))
+OBJS += fid_vlan.o br_vlan.o mxl_port_vlan.o mxl_tag_vlan.o hal_chipid.o
 endif
 endif
 endif
@@ -550,7 +559,7 @@ ifeq ($(or $(RTCONFIG_GEARUPPLUGIN), $(RTCONFIG_UUPLUGIN)), y)
 OBJS += $(if $(wildcard uu_utils.c),uu_utils.o,prebuild/uu_utils.o)
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS7_PRO))
 CFLAGS += -I$(TOP)/libhostapi/switch_hostapi/src \
 	  -I$(TOP)/libhostapi/switch_hostapi/include/gpy \
 	  -I$(TOP)/libhostapi/switch_hostapi/include/gswip
@@ -608,6 +617,33 @@ endif
 aae_ipc.o:
 ifeq ($(wildcard $(SRCBASE)/router/aaews/*.c),)
 	cp -f $(TOP)/aaews/prebuild/$(BUILD_NAME)/aae_ipc.o ./
+endif
+
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS7_PRO))
+br_vlan.o:
+ifneq ($(wildcard ./prebuild/br_vlan.o),)
+        @-cp -f ./prebuild/br_vlan.o .
+endif
+
+fid_vlan.o:
+ifneq ($(wildcard ./prebuild/fid_vlan.o),)
+        @-cp -f ./prebuild/fid_vlan.o .
+endif
+
+hal_chipid.o:
+ifneq ($(wildcard ./prebuild/hal_chipid.o),)
+        @-cp -f ./prebuild/hal_chipid.o .
+endif
+
+mxl_port_vlan.o:
+ifneq ($(wildcard ./prebuild/mxl_port_vlan.o),)
+        @-cp -f ./prebuild/mxl_port_vlan.o .
+endif
+
+mxl_tag_vlan.o:
+ifneq ($(wildcard ./prebuild/mxl_tag_vlan.o),)
+        @-cp -f ./prebuild/mxl_tag_vlan.o .
+endif
 endif
 
 ifeq ($(RTCONFIG_USB),y)

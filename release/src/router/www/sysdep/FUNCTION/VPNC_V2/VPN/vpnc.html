@@ -52,15 +52,15 @@ $(function () {
 	}
 	else{
 		var productid = httpApi.nvramGet(["productid"]).productid;
-		if(rog_support){
+		if(isSupport("ROG_UI")){
 			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpncGT.css">');
 		}
-		else if(tuf_support){
+		else if(isSupport("TUF_UI")){
 			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpncTUF.css">');
 		}
 	}
 
-	if(CoBrand == "8")
+	if(isSupport("TS_UI"))
 		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/difference.css">');
 });
 var surfshark_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=sskVPN&lang="+ui_lang+"&kw=&num=&tcode="+ttc;

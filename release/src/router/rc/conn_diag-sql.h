@@ -3,7 +3,7 @@
 #include <pthread.h>
 #include <conn_diag_log.h>
 
-#define RTCONFIG_UPLOADER
+// #define RTCONFIG_UPLOADER
 
 #define DIAG_TAB_NAME "conn_diag"
 #define DATA_TAB_NAME "diag_data"
@@ -106,6 +106,9 @@ struct stainfo {
 	double rx_rate;
 	int conn_time;
 	int inactive_flag;
+	char conn_if[16];
+	int conn_if_idx;
+	int conn_if_vidx;
 	//time_t last_update;
 	struct stainfo *next;
 };

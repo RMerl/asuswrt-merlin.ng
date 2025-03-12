@@ -48,8 +48,6 @@
 #define CAPTCHA_MAX_LOGIN_NUM   2
 #endif
 
-#define HTTPD_LOCK_VERSION 1
-
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #endif
@@ -374,13 +372,6 @@ extern struct ej_handler ej_handlers[];
 #define LOCK_LOGIN_LAN 	0x01
 #define LOCK_LOGIN_WAN 	0x02
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000)
-enum {
-        LEDG_QIS_RUN = 1,
-        LEDG_QIS_FINISH
-};
-#endif
-
 #ifdef vxworks
 #define fopen(path, mode)	tar_fopen((path), (mode))
 #define fclose(fp)		tar_fclose((fp))
@@ -608,8 +599,8 @@ extern void do_endpoint_request_token_cgi(char *url, FILE *stream);
 #ifdef RTCONFIG_CAPTCHA
 extern int is_captcha_match(char *catpch);
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000)
-extern void switch_ledg(int action);
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
+extern void httpd_switch_ledg(int action);
 #endif
 #ifdef RTCONFIG_SAVE_WL_NVRAM_BOTH
 extern int sync_wl_nvram(char *nvram, int unit, char *value);
@@ -642,8 +633,10 @@ extern void do_save_all_profile_cgi(char *url, FILE *stream);
 extern int get_jffs_cfgs(FILE *stream, int *len);
 #endif
 extern int delete_client_in_group_list(char *del_maclist, int del_idx, char *in_group_list, char *out_group_list, int out_len);
+extern int b64_decode(const char* str, unsigned char* space, int size);
 extern int redirect_service_page(char *next_page, webs_t wp);
 extern void store_file_var(char *login_url, char *file);
+extern int save_changed_param(json_object *cfg_root, char *param, const char *value);
 extern int get_active_wan_unit(void);
 extern int check_lock_status(time_t *dt);
 extern int last_time_lock_warning(void);

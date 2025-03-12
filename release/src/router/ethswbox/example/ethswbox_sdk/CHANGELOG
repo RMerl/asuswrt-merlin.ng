@@ -1,0 +1,31 @@
+
+------------------------------------------------------------------------------------------------
+version  1.1.0.0  |  2024-09-18  |  ethswbox_sdk for RPI4 Host/MxL862xx (MxL86252, MxL86282) EVK 
+------------------------------------------------------------------------------------------------
+
+Improvements
+------------
+- Add "user" and "rpi4evk" option in the ethswbox-prepare.sh file to target customization or run on Raspberry Pi.
+- Basic indentation unification for further files.
+- Add more example to control the switch through host APIs.
+    - Special Tag configuration.
+    - SFP Interface setting.
+    - QoS/RMON enhancement.
+    - CPU port selection.
+    - PCE configuration.
+    - Switch GPC output clock mode.
+    - Switch TOP register access.
+
+------------------------------------------------------------------------------------------------
+version  1.0.0.0  |  2024-03-11  |  ethswbox_sdk for RPI4 Host/MxL862xx (MxL86252, MxL86282) EVK 
+------------------------------------------------------------------------------------------------
+-  Initial - 
+Standalone SW toolbox for demonstration purpose only on RPI4 Host/MxL862xx EVK 
+and as an example for porting, integration and usage of the MxL862xx switch hostapi.
+
+It includes;
+- Command-line-interface example located ion src/cli/cmds folder.
+- Firmware download example located in src/apps/dowload folder.
+
+Please note the following limitations:
+- None.

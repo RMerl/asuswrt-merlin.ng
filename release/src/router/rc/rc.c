@@ -15,6 +15,7 @@
 #include <string.h>
 #include <time.h>
 #include <limits.h>
+#include <sys/un.h>
 
 #ifdef RTCONFIG_RALINK
 #include <ralink.h>
@@ -64,10 +65,6 @@
 #endif
 #ifdef RTCONFIG_MULTIWAN_IF
 #include "multi_wan.h"
-#endif
-
-#if defined(RTCONFIG_KNV_BACKUP) || defined(RTCONFIG_NV_BACKUP2)
-#include <knv.h>
 #endif
 
 #ifndef ARRAYSIZE
@@ -483,43 +480,11 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "apg_stop")==0) {
 		apg_stop();
 	}
-	else if (strcmp(argv[1], "init_apg")==0) {
-		init_apg();
+	else if (strcmp(argv[1], "apg_init_settings")==0) {
+		apg_init_settings();
 	}
 	else if (strcmp(argv[1], "sync_apgx_to_wlunit")==0) {
-		sync_apgx_to_wlunit(NULL);	
-	}
-#ifdef RTCONFIG_MLO
-	else if (strcmp(argv[1], "checkMLOConnSupport")==0) {
-		const struct MLO_Combination *mlo_list = &supportedCombinations[0];
-		if(atoi(argv[2]) < 0)
-		{
-			for (mlo_list = &supportedCombinations[0]; mlo_list->AP_MLO != -1; mlo_list++) {
-				if(isMLOConnectionSupported(mlo_list->AP_MLO, mlo_list->STA_MLO))
-					_dprintf("AP GROUP(%9s)(%2d) with STA GROUP(%9s)(%2d) MLO connection supported(O)\n", mlo_list->AP_GROUP, mlo_list->AP_MLO, mlo_list->STA_GROUP, mlo_list->STA_MLO);
-				else
-					_dprintf("AP GROUP(%9s)(%2d) with STA GROUP(%9s)(%2d) MLO connection supported(X)\n", mlo_list->AP_GROUP, mlo_list->AP_MLO, mlo_list->STA_GROUP, mlo_list->STA_MLO);
-			}
-		}
-		else
-		{
-			for (mlo_list = &supportedCombinations[0]; mlo_list->AP_MLO != -1; mlo_list++) {
-				if(mlo_list->AP_MLO == atoi(argv[2]) && mlo_list->STA_MLO == atoi(argv[3]))
-				{
-					if(isMLOConnectionSupported(mlo_list->AP_MLO, mlo_list->STA_MLO))
-						_dprintf("AP GROUP(%9s)(%2d) with STA GROUP(%9s)(%2d) MLO connection supported(O)\n", mlo_list->AP_GROUP, mlo_list->AP_MLO, mlo_list->STA_GROUP, mlo_list->STA_MLO);
-					else
-						_dprintf("AP GROUP(%9s)(%2d) with STA GROUP(%9s)(%2d) MLO connection supported(X)\n", mlo_list->AP_GROUP, mlo_list->AP_MLO, mlo_list->STA_GROUP, mlo_list->STA_MLO);
-				}
-			}
-		}
-	}
-#endif
-	else if (strcmp(argv[1], "apmx_apgx_to_wlxy") == 0) {
-		apmx_apgx_to_wlxy();
-	}
-	else if (strcmp(argv[1], "sync_apg_ifnames_to_jffs") == 0) {
-		sync_apg_ifnames_to_jffs();
+		sync_apgx_to_wlunit();	
 	}
 	else if (strcmp(argv[1], "check_sdn_ifcap")==0) {
 		create_sdn_ifcap();
@@ -712,13 +677,13 @@ static int rctest_main(int argc, char *argv[])
 		led = atoi(argv[2]);
 		mode = atoi(argv[3]);
 		_dprintf("Set Cled %d as %d\n", led, mode);
-#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
+#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 		rc_bcm_cled_ctrl(led, mode);
 #else
 		bcm_cled_ctrl(led, mode);
 #endif
 	}
-#if defined(ET12) || defined(XT12)
+#if defined(ET12) || defined(XT12) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	else if (strcmp(argv[1], "cled_white")==0) {
 		unsigned int led, mode;
 
@@ -1297,6 +1262,33 @@ static int rctest_main(int argc, char *argv[])
 		}
 		json_object_put(root);
 	}
+#if defined(RTCONFIG_RAST_TEST) || defined(RTCONFIG_FU_TEST)
+	else if (strcmp(argv[1], "11k_req")==0) {
+		if (argv[2]) {
+			char sta_mac[18];
+			snprintf(sta_mac, sizeof(sta_mac), "%s",argv[2]);
+
+			char event_data[1024];
+			snprintf(event_data, sizeof(event_data), "{\"CFG\":{\"EID\": %d, \"mac\": \"%s\"}}", EID_RM_11K_REQ, sta_mac);
+			rc_sendEventToRast(event_data);
+		}
+	}
+	else if (strcmp(argv[1], "11v_req")==0) {
+		if (argv[2] && argv[3] && argv[4]) {
+			char sta_mac[18];
+			snprintf(sta_mac, sizeof(sta_mac), "%s",argv[2]);
+
+			char target_bssid[18];
+			snprintf(target_bssid, sizeof(target_bssid), "%s",argv[3]);
+
+			int target_channel = atoi(argv[4]);
+
+			char event_data[1024];
+			snprintf(event_data, sizeof(event_data), "{\"CFG\":{\"EID\": %d, \"mac\": \"%s\", \"bssid\": \"%s\", \"channel\": %d}}", EID_RM_11V_REQ, sta_mac, target_bssid, target_channel);
+			rc_sendEventToRast(event_data);
+		}
+	}
+#endif
 #ifdef RTCONFIG_NEWSITE_PROVISIONING
 	else if (strcmp(argv[1], "get_provision_pincode")==0) {
 		char event[AAE_MAX_IPC_PACKET_SIZE];
@@ -1963,33 +1955,119 @@ static int rctest_main(int argc, char *argv[])
 			printf("%d\n", get_gpio(atoi(argv[2])));
 		}
 #endif
-		else if (strcmp(argv[1], "get_psta_status") == 0) {
-			printf("ret = %d\n", get_psta_status(atoi(argv[2])));
+#if defined(RTCONFIG_RALINK)
+		else if (strcmp(argv[1], "asuscmd") == 0) {
+			struct iwreq wrq;
+			char data[1024];
+			int i;
+			int text = 1;
+
+			if (argc != 4) {
+				fprintf(stderr, "Usage: rc %s <wlif> <subcmd NO>\n", argv[1]);
+				return -1;
+			}
+			memset(&wrq, 0, sizeof(wrq));
+			memset(&data, 0, sizeof(data));
+			wrq.u.data.length = sizeof(data);
+			wrq.u.data.pointer = (caddr_t) data;
+			wrq.u.data.flags = atoi(argv[3]);
+			if (wl_ioctl(argv[2], RTPRIV_IOCTL_ASUSCMD, &wrq) < 0) {
+				fprintf(stderr, "asuscmd fail wl_ioctl(%s, %s)\n", argv[2], argv[3]);
+				return -1;
+			}
+			if (wrq.u.data.length < 0 || wrq.u.data.length > sizeof(data)) {
+				fprintf(stderr, "asuscmd fail wl_ioctl(%s, %s) length(%d)\n", argv[2], argv[3], wrq.u.data.length);
+				return -1;
+			}
+			if (wrq.u.data.length == 0) {
+				fprintf(stderr, "asuscmd wl_ioctl(%s, %s) length(%d)\n", argv[2], argv[3], wrq.u.data.length);
+				return 0;
+			}
+
+			/* show data */
+			for (i = 0; i < wrq.u.data.length; i++) {
+				if (isprint(data[i]) || data[i] == '\n' || data[i] == '\r' || (data[i] == '\0' && i == wrq.u.data.length-1))
+					continue;
+				text = 0;
+				break;
+			}
+			fprintf(stderr, "asuscmd(%s, %s) reply length(%d / %d) text(%d)\n", argv[2], argv[3], i, wrq.u.data.length, text);
+			if (text) {
+				puts(data);
+			}
+			else { //not text, dump binary in Hex
+				char buf[128], *p = buf;
+				for (i = 0; i < wrq.u.data.length; i++) {
+					if ((i & 0xf) == 0) p += sprintf(p, "%04x: %02x", i, data[i]);
+					else if ((i & 0xf) == 8) p += sprintf(p, " - %02x", data[i]);
+					else p += sprintf(p, " %02x", data[i]);
+					if ((i & 0xf) == 0xf) {
+						printf("%s\n", buf);
+						p = buf;
+					}
+				}
+				if (p != buf)
+					printf("%s\n", buf);
+			}
 		}
-		else if (strcmp(argv[1], "get_pap_bssid") == 0) {
-			char pap_bssid[] = "XX:XX:XX:XX:XX:XX\0";
-			printf("ret = %s\n", get_pap_bssid(atoi(argv[2]), pap_bssid));
+#endif	/* ASUSCMD */
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
+		else if (strcmp(argv[1], "start_wps_pbc") == 0) {
+			if (argc != 3) {
+				fprintf(stderr, "Usage: rc %s <unit>\n", argv[1]);
+				return -1;
+			}
+			start_wps_pbc(safe_atoi(argv[2]));
 		}
-#ifdef RTBE58_GO
-		else if (strcmp(argv[1], "off_pd") == 0) {
-			printf("ret = %lx\n", off_pd());
+		else if (strcmp(argv[1], "setup_timezone") == 0) {
+			if (argc != 2) {
+				fprintf(stderr, "Usage: rc %s \n", argv[1]);
+				return -1;
+			}
+			setup_timezone();
 		}
-#endif
-#if defined(RTCONFIG_KNV_BACKUP) || defined(RTCONFIG_NV_BACKUP2)
-		else if (strcmp(argv[1], "diff_knv") == 0) {
-			if(argc != 4)
-				printf("ret = %d\n", diff_knv(NULL, NULL));
-			else
-				printf("ret = %d\n", diff_knv(argv[2], argv[3]));
+		else if (strcmp(argv[1], "timecheck") == 0) {
+			if (argc != 2) {
+				fprintf(stderr, "Usage: rc %s \n", argv[1]);
+				return -1;
+			}
+			timecheck();
 		}
-		else if (strcmp(argv[1], "chk_knv_san") == 0) {
-			if(argc != 4)
-				printf("chk_knv_san [re_mode] [reset 1/0]");
-			else
-				printf("ret = %d\n", chk_nv_sanity(atoi(argv[2]), atoi(argv[3])));
+#if RTCONFIG_UUPLUGIN
+		else if (strcmp(argv[1], "exec_uu") == 0) {
+			if (argc != 2) {
+				fprintf(stderr, "Usage: rc %s \n", argv[1]);
+				return -1;
+			}
+			exec_uu();
 		}
-		else if (strcmp(argv[1], "chk_nv_err") == 0) {
-			printf("ret = %d\n", check_knv_errors(argv[2]));
+#endif /* RTCONFIG_UUPLUGIN */
+#endif /* RTCONFIG_QCA || RTCONFIG_RALINK */
+#if defined(RTCONFIG_RALINK) && defined(RTCONFIG_NL80211)
+		else if (strcmp(argv[1], "report_check_11k") == 0) {
+			if (argc != 6) {
+				fprintf(stderr, "Usage: rc %s <STA address> <AP address> <Channel> <RCPI>\n", argv[1]);
+				return -1;
+			}
+			
+			json_object *root = NULL;
+			json_object *param = NULL;
+			char json_data[1024],_EID[8];
+			snprintf(_EID, sizeof(_EID), "%d", EID_RM_11K_RSP);
+
+			root = json_object_new_object();
+			param = json_object_new_object();
+			json_object_object_add(param, RAST_EVENT_ID, json_object_new_string(_EID));
+			json_object_object_add(param, RAST_STA, json_object_new_string(argv[2]));
+			json_object_object_add(param, RAST_AP, json_object_new_string(argv[3]));
+			json_object_object_add(param, RAST_RCPI, json_object_new_string(argv[5]));
+			json_object_object_add(param, RAST_AP_TARGET_CH, json_object_new_string(argv[4]));
+			json_object_object_add(root, CFG_PREFIX, param);
+			memset(json_data, 0, sizeof(json_data));
+			snprintf(json_data, sizeof(json_data), "%s", json_object_to_json_string(root));
+			json_object_put(root);
+
+			rc_sendEventToRast(json_data);
 		}
 #endif
 		else {
@@ -2760,7 +2838,7 @@ static const applets_t applets[] = {
 	{ "ocnvcd", 			ocnvcd_main			},
 	{ "dslited", 			dslited_main			},
 #endif
-#if defined(RTCONFIG_RALINK) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
+#if defined(RTCONFIG_RALINK) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	{ "rtkswitch",			config_rtkswitch		},
 #if defined(RTAC53) || defined(RTAC51UP)
 	{ "mtkswitch",			config_mtkswitch		},
@@ -2779,6 +2857,9 @@ static const applets_t applets[] = {
 #if defined(RTCONFIG_CONNDIAG) && defined(RTCONFIG_ADV_RAST)
 	{ "conn_diag",			conn_diag_main			},
 	{ "diag_data",			diag_data_main			},
+#endif
+#ifdef RTCONFIG_FU_TEST
+	{ "futest",                     futest_main                     },
 #endif
 #if defined(CONFIG_BCMWL5) && !defined(HND_ROUTER) && defined(RTCONFIG_DUALWAN)
 	{ "dualwan",			dualwan_control			},
@@ -2815,10 +2896,10 @@ static const applets_t applets[] = {
 	{ "firmware_enc_crc",		firmware_enc_crc_main		},
 	{ "fw_check",			fw_check_main			},
 #endif
-#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000)
+#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
 	{ "ledg",			ledg_main			},
 #endif
-#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GSBE18000)
+#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GSBE18000) || defined(GS7_PRO)
 	{ "ledbtn",			ledbtn_main			},
 #endif
 #if defined(DSL_AX82U)
@@ -2827,7 +2908,7 @@ static const applets_t applets[] = {
 #if defined(GTAX6000)
 	{ "antled",			antled_main			},
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	{ "rtkmonitor",			rtkmonitor_main			},
 #endif
 #if defined(RTBE82M)
@@ -2855,12 +2936,17 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_SPEEDTEST
 	{ "speedtest",			speedtest_main			},
 #endif
+#if defined(RTCONFIG_HNS)
+	{ "hns_debug",			hns_main			},
+#endif
+#if defined(RTCONFIG_BWDPI) || defined(RTCONFIG_HNS)
+	{ "rsasign_sig_check",		rsasign_sig_check_main		},
+#endif
 #if defined(RTCONFIG_BWDPI)
 	{ "bwdpi",			bwdpi_main			},
 	{ "bwdpi_check",		bwdpi_check_main		},
 	{ "bwdpi_wred_alive",		bwdpi_wred_alive_main		},
 	{ "bwdpi_db_10",		bwdpi_db_10_main		},
-	{ "rsasign_sig_check",		rsasign_sig_check_main		},
 	{ "hour_monitor",		hour_monitor_main		},
 #endif
 #if defined(RTCONFIG_DNSQUERY_INTERCEPT)
@@ -3926,13 +4012,13 @@ int main(int argc, char **argv)
 
 		return 0;
 	}
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO)  || defined(GTBE96_AI)
 	else if (!strcmp(base, "config_switch")) {
 		config_switch();
 		return 0;
 	}
 #endif
-#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG) && (defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U)) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
+#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG) && (defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U)) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	else if (!strcmp(base, "config_extwan")) {
 		config_extwan();
 		return 0;
@@ -4515,37 +4601,11 @@ _dprintf("LED_NOMOBILE=%d, LED_2G_YELLOW=%d, LED_3G_BLUE=%d, LED_4G_WHITE=%d.\n"
 		return do_led_ctrl(led_id, atoi(argv[2]));
 	}
 #ifdef HND_ROUTER
-#if defined(RTCONFIG_KNV_BACKUP) || defined(RTCONFIG_NV_BACKUP2)
-	else if (!strcmp(base, "hnd-commit")) {
-		nvram_commit();
-		_dprintf("done commit\n");
-		return 0;
-	} 
-	else if (!strcmp(base, "hnd-restore")) {
-		FILE *config_B;
-
-		if(!argv[1])
-			return -1;
-
-		config_B = fopen(argv[1], "r");
-		if (!config_B) {
-			perror("Error opening the restore-file");
-			return -1;
-		}
-		restore_nvram(config_B);
-		fclose(config_B);
-		_dprintf("done restore\n");
-		return 0;
-	} 
-#endif
 	else if (!strcmp(base, "hnd-erase")) {
 		if (argv[1] && (!strcmp(argv[1], "nvram"))) {
 			nvram_set("restore_defaults", "1");
 			nvram_commit();
 			nvram_set(ASUS_STOP_COMMIT, "1");
-#if defined(RTCONFIG_KNV_BACKUP) || defined(RTCONFIG_NV_BACKUP2)
-			remove(KNV_FILE_BP);
-#endif
 			return hnd_nvram_erase();
 		}
 	}
@@ -5163,9 +5223,7 @@ _dprintf("LED_NOMOBILE=%d, LED_2G_YELLOW=%d, LED_3G_BLUE=%d, LED_4G_WHITE=%d.\n"
 #if defined(RTCONFIG_WIFI7) && defined(RTCONFIG_MLO)
 	else if (!strcmp(base, "mlo_api")) {
 		if(!strcmp(argv[1], "rp")) {
-			apply_mlo_rp_settings(MLO_CLIENT_RP);
-		} else if(!strcmp(argv[1], "mb")) {
-			apply_mlo_rp_settings(MLO_CLIENT_MB);
+			apply_mlo_rp_settings();
 		} else if(argv[1] && argv[2] && argv[3] && argv[4]) {
 			_dprintf("mlo_api: %s %s %s %s\n", argv[1], argv[2], argv[3], argv[4]);
 			mlo_api(argv[1], argv[2], argv[3], argv[4]);
@@ -5277,3 +5335,77 @@ void exe_eu_wa_rr(void){
 	notify_rc("restart_acsd");
 
 }
+
+#if defined(RTCONFIG_RAST_TEST) || defined(RTCONFIG_FU_TEST) || (defined(RTCONFIG_RALINK) && defined(RTCONFIG_NL80211))
+int rc_sendEventToRast(unsigned char *data)
+{
+	printf("rc_sendEventToRast %s\n", data);
+
+	int fd = -1;
+	int length = 0;
+	int ret = 0;
+	struct sockaddr_un addr;
+	int flags;
+	int status;
+	socklen_t statusLen;
+	fd_set writeFds;
+	int selectRet;
+	struct timeval timeout = {2, 0};
+
+	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
+		goto err;
+	}
+
+	/* set NONBLOCK for connect() */
+	if ((flags = fcntl(fd, F_GETFL)) < 0) {
+		goto err;
+	}
+
+	flags |= O_NONBLOCK;
+
+	if (fcntl(fd, F_SETFL, flags) < 0) {
+		goto err;
+	}
+
+	memset(&addr, 0, sizeof(addr));
+	addr.sun_family = AF_UNIX;
+	strncpy(addr.sun_path, RAST_IPC_SOCKET_PATH, sizeof(addr.sun_path)-1);
+	if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+		if (errno == EINPROGRESS) {
+			FD_ZERO(&writeFds);
+			FD_SET(fd, &writeFds);
+
+			selectRet = select(fd + 1, NULL, &writeFds, NULL, &timeout);
+
+			//Check return, -1 is error, 0 is timeout
+			if (selectRet == -1 || selectRet == 0) {
+				goto err;
+			}
+		}
+		else
+		{
+			goto err;
+		}
+	}
+
+	/* check the status of connect() */
+	status = 0;
+	statusLen = sizeof(status);
+	if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &status, &statusLen) == -1) {
+		goto err;
+	}
+
+	length = write(fd, data, strlen((char *)data));
+
+	if (length < 0) {
+		goto err;
+	}
+
+	ret = 1;
+err:
+	if (fd >= 0)
+        	close(fd);
+
+	return ret;
+} /* End of rc_sendEventToRast */
+#endif

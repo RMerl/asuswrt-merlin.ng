@@ -575,7 +575,7 @@ var httpApi ={
 					tcode.search("TW") == -1 && tcode.search("US") == -1 &&
 					tcode.search("U2") == -1 && tcode.search("CA") &&
 					tcode.search("CN") == -1 && tcode.search("CT") == -1 &&
-					tcode.search("GD") == -1 && tcode.search("TC") == -1
+					tcode.search("GD") == -1 && tcode.search("TC") == -1 && !isSupport("noiptv")
 				);
 
 		if(isSupport("gobi") && (sim_state >= 1 && sim_state <= 6)){
@@ -620,7 +620,7 @@ var httpApi ={
 				var choosePPPoE = (
 						iCanUsePPPoE &&
 						wanInfo.x_Setting == "0" &&
-						(tcode.search("JP") != -1 || tcode.search("TW") != -1)
+						tcode.search("JP") != -1
 				)
 
 				var specialISP = (!iCanUsePPPoE && wanInfo.x_Setting == "0" && iptvSupport);

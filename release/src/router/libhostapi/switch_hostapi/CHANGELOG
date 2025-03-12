@@ -1,0 +1,94 @@
+
+--------------------------------------------------------------------------------
+version 1.3.0.0  |  2024-09-18  | Maintenance release
+--------------------------------------------------------------------------------
+Tested with firmware:
+    Mcuboot Version: 1.0.26
+    WSP Kernel Version: 1.0.54
+    WSP App Version: 1.0.54
+    Gphy Version: 003E
+
+Host API Release Notes
+----------------------
+- F48X_SW-1626: GSW API (RMON) - fix counter display issue in debug RMON APIs.
+- F48X_SW-1626: GSW API (RMON) - fix incorrect TX counter in GSW_RMON_Port_Get.
+- F48X_SW-1614: GSW API (GSW_QoS_QueueCfgSet) - fix incorrect bit mask of port ID.
+- F48X_SW-1557: Host API - add SFP host APIs.
+- F48X_SW-1552: Host API - add API to get and set 4-TPID mode.
+- F48X_SW-1549: Host API Misc - enhance sys_misc_sfp_get/sys_misc_sfp_set to support flow control (FC) enable/disable.
+- F48X_SW-1518: Host API - add API to change CPU port.
+- F48X_SW-1480: GPY API - remove unused structure, enum, declaration to fix Doxygen broken links.
+- F48X_SW-1479: GSW API - enhance header file for doxygen comment reference.
+- F48X_SW-1452: Host API - disable EXTRACT for DSA, and only enable the PCE rule when Special Tag is configured for DSA.
+- F48X_SW-1442: Host API - add GSW_PceRuleBlockSize to get block size of PCE rule.
+- F48X_SW-1442: GSW API (PCE) - add GSW_PceRuleMove to move PCE rule from one index to another with minimal overhead.
+- F48X_SW-1442: Host API - add GSW_MAC_TableLoopDetect to support passive loop detection and GSW_MAC_TableClearCond.
+- F48X_SW-1367: GSW API and CLI - get both shaper of queue.
+- F48X_SW-1339: SMDIO - change input check method and add smdio_phy_addr.
+- F48X_SW-1311: Host API - add bridge port loop violation counter read and clear API.
+- F48X_SW-1288: Host API - fix GET DATA (it was SET DATA command).
+- F48X_SW-1288: GSW API & CLI - remove 64-bit flag parameter in RMON API which should be determined by API implementation.
+- F48X_SW-1238: Host API - add GSW SS Special Tag API.
+- F48X_SW-1209: Host API - add CML Clock Output API.
+- F48X_SW-1209: Host API - fix offset calculation bug if the size is on boundary of 94 MMD register.
+- F48X_SW-1109: Host API - add API to enable/disable switch queue.
+
+Known Issues
+------------
+- F48X_SW-1675: GSW_QoS_DSCP_DropPrecedenceCfgSet does't set the correct drop precedence value.
+- F48X_SW-1674: GSW_VlanCounterMap API has wrong wrapper mappings.
+
+--------------------------------------------------------------------------------
+version 1.2.0.0  |  2024-03-01  | General Availability (GA) release
+--------------------------------------------------------------------------------
+Tested with firmware:
+    Mcuboot Version: 1.1.21
+    WSP Kernel Version: 1.1.36
+    WSP App Version: 1.1.35
+    Gphy Version: 0032
+
+Known Issues
+------------
+- F48X_SW-1267: GSW_QoS_PortCfgGet didn't get the correct eClassMode state.
+- F48X_SW-1265: GSW_MulticastRouterPortAdd didn't work.
+- F48X_SW-1260: Unable to swap MAC DA/SA in ingress or egress packets.
+- F48X_SW-1259: Extended VLAN eRemoveTagAction failed to remove the VLAN tag of packet.
+- F48X_SW-1209: Cannot enable reference clock by API.
+- F48X_SW-1109: Rate metering doesn't work against unknown unicast packets if flow control is enabled on the receiving port.
+- F48X_SW-958: Cannot enable special tag function by API.
+- F48X_SW-897: Cannot change Ethernet SerDes interfaces by API.
+- F48X_SW-614: SFP1 Bridge RMON TX counter is incorrect if sending increment/random frame size packets.
+
+--------------------------------------------------------------------------------
+version 1.1.0.0  |  2024-01-18  | Engineering release
+--------------------------------------------------------------------------------
+Mcuboot Version: 1.0.20
+WSP Kernel Version: 1.0.34
+WSP App Version: 1.0.34
+Gphy Version: 0032
+
+Known Issues
+------------
+- F48X_SW-1170: User cannot control GPIO40 and GPIO43 by API.
+- F48X_SW-1128: Binding a rate shaper to one queue will also limit the speed of other queues.
+- F48X_SW-1127: 10BT/100BT half-duplex: short packets exceeding 98% utilization will be dropped.
+- F48X_SW-1111: PCP functions only take effect on QinQ packets.
+- F48X_SW-1110: The first added static MAC entry cannot be queried.
+- F48X_SW-1109: Rate metering doesn't work against unknown unicast packets if flow control is enabled on the receiving port.
+- F48X_SW-1106: The I2C SCL frequency is 107kHz instead of the 100kHz specified in the datasheet.
+- F48X_SW-614: SFP1 Bridge RMON TX counter is incorrect if sending increment/random frame size packets.
+
+--------------------------------------------------------------------------------
+version 1.0.0.0  |  2023-09-28  | Engineering release
+--------------------------------------------------------------------------------
+CHG Requires MxL862xx firmware image: unsigned-unmanaged-V1.0.0.2
+CHG Removed development variant of typedef struct GSW_Device_t.
+FIX Fixed issues reported by static code analysis tool.
+
+--------------------------------------------------------------------------------
+version 0.0.0.1  |  2023-09-20  | Initial release - Engineering drop quality
+--------------------------------------------------------------------------------
+
+NEW Requires MxL862xx firmware image: unsigned-unmanaged-V1.0.0.1
+    Firmware image in .hex and .bin format is located in folder "firmware".
+

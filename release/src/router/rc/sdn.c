@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <stdbool.h>
 
 #include <shared.h>
 #ifdef RTCONFIG_VPN_FUSION
@@ -42,6 +43,7 @@ int handle_sdn_feature(const int sdn_idx, const unsigned long features, const in
 	int i;
 	char logaccept[32], logdrop[32];
 	int restart_all_sdn;
+	bool processed_nw_idx[MTLAN_MAXINUM] = {false};
 
 	//_dprintf("[%s, %d]<%d, %x, %d>\n", __FUNCTION__, __LINE__, sdn_idx, features, action);
 
@@ -88,14 +90,18 @@ int handle_sdn_feature(const int sdn_idx, const unsigned long features, const in
 
 			if (features & SDN_FEATURE_WAN)
 			{
-				_dprintf("[%s][%d]DO: SDN WAN\n", __FUNCTION__, pmtl[i].sdn_t.sdn_idx);
-				_handle_sdn_wan(&pmtl[i], logdrop, logaccept);
-				if (pmtl[i].sdn_t.sdn_idx == 0)	//LAN
-					update_resolvconf();
+				if (client_mode() && !nvram_match("re_mode", "1")) {
+					_dprintf("[%s][%d]SKIP: SDN WAN due client mode\n", __FUNCTION__, pmtl[i].sdn_t.sdn_idx);
+				} else {
+					_dprintf("[%s][%d]DO: SDN WAN\n", __FUNCTION__, pmtl[i].sdn_t.sdn_idx);
+					_handle_sdn_wan(&pmtl[i], logdrop, logaccept);
+					if (pmtl[i].sdn_t.sdn_idx == 0)	//LAN
+						update_resolvconf();
 #ifdef RTCONFIG_MULTIWAN_PROFILE
-				update_sdn_mtwan_iptables(&pmtl[i]);
-				update_sdn_resolvconf();
+					update_sdn_mtwan_iptables(&pmtl[i]);
+					update_sdn_resolvconf();
 #endif
+				}
 			}
 			if(features & SDN_FEATURE_ROUTING)
 			{
@@ -112,8 +118,15 @@ int handle_sdn_feature(const int sdn_idx, const unsigned long features, const in
 			}
 			if (features & SDN_FEATURE_DNSPRIV)
 			{
-				_dprintf("[%s][%d]DO: SDN DNSPRIV(stubby)\n", __FUNCTION__, pmtl[i].sdn_t.sdn_idx);
-				_handle_sdn_stubby(&pmtl[i], action);
+				int nw_idx = pmtl[i].nw_t.idx;
+				bool should_handle = (sdn_idx == ALL_SDN) || (nw_idx != 0);
+				// Ensure that the same nw_t.idx is processed only once
+				if (should_handle && !processed_nw_idx[nw_idx])
+				{
+					processed_nw_idx[nw_idx] = true;
+					_dprintf("[%s][%d]DO: SDN DNSPRIV(stubby)\n", __FUNCTION__, pmtl[i].sdn_t.sdn_idx);
+					_handle_sdn_stubby(&pmtl[i], action);
+				}
 			}
 			if (features & SDN_FEATURE_SDN_IPTABLES)
 			{
@@ -325,19 +338,19 @@ void _start_sdn_stubby(const MTLAN_T *pmtl, char *config_file, const size_t path
 
 	/* Check if enabled */
 	if (!pmtl->nw_t.dot_enable || !is_routing_enabled()) { //dnspriv_enable
-		_dprintf("%s: DoT_%d not enable, return.\n", __FUNCTION__, pmtl->sdn_t.sdn_idx);
+		_dprintf("%s: DoT_%d not enable, return.\n", __FUNCTION__, pmtl->nw_t.idx);
 		return;
 	}
 
 	//stop_stubby(pmtl->sdn_t.sdn_idx);
-	snprintf(buf, sizeof(buf), sdn_stubby_pid_path, pmtl->sdn_t.sdn_idx);
+	snprintf(buf, sizeof(buf), sdn_stubby_pid_path, pmtl->nw_t.idx);
 	kill_pidfile_tk(buf);
 	unlink(buf);
 
 	mkdir_if_none("/etc/stubby");
 
-	// create /etc/stubby/stubby-<sdn_idx>.yml
-	snprintf(config_file, path_len, "/etc/stubby/stubby-%d.yml", pmtl->sdn_t.sdn_idx);
+	// create /etc/stubby/stubby-<subnet_idx>.yml
+	snprintf(config_file, path_len, "/etc/stubby/stubby-%d.yml", pmtl->nw_t.idx);
 	unlink(config_file);
 	if ((fp = fopen(config_file, "w")) == NULL) {
 		_dprintf("%s: cannot create %s.\n", __FUNCTION__, config_file);
@@ -393,10 +406,10 @@ void _start_sdn_stubby(const MTLAN_T *pmtl, char *config_file, const size_t path
 		fprintf(fp, "limit_outstanding_queries: %d\n", max(150, min(max_queries, 10000)));
 
 	/* Listen address */
-	if (pmtl->sdn_t.sdn_idx) {
+	if (pmtl->nw_t.idx) {
 		fprintf(fp,
 			"listen_addresses:\n"
-			"  - %s@53%02d\n", pmtl->nw_t.addr, pmtl->sdn_t.sdn_idx);
+			"  - %s@53%02d\n", pmtl->nw_t.addr, pmtl->nw_t.idx);
 	} else { //br0
 		fprintf(fp,
 			"listen_addresses:\n"
@@ -406,8 +419,8 @@ void _start_sdn_stubby(const MTLAN_T *pmtl, char *config_file, const size_t path
 	/* Upstreams */
 	fprintf(fp,
 		"upstream_recursive_servers:\n");
-	if (pmtl->sdn_t.sdn_idx) {
-		snprintf(buf, sizeof(buf), "dot%d_rl", pmtl->sdn_t.sdn_idx);
+	if (pmtl->nw_t.idx) {
+		snprintf(buf, sizeof(buf), "dot%d_rl", pmtl->nw_t.idx);
 	} else { //br0
 		strlcpy(buf, "dnspriv_rulelist", sizeof(buf));
 	}
@@ -464,14 +477,14 @@ void _start_sdn_stubby(const MTLAN_T *pmtl, char *config_file, const size_t path
 
 	if (nvram_get_int("stubby_debug")) {
 		stubby_argv[index++] = "-l";
-		snprintf(stubby_log, sizeof(stubby_log), ">/tmp/stubby-%d.log", pmtl->sdn_t.sdn_idx);
+		snprintf(stubby_log, sizeof(stubby_log), ">/tmp/stubby-%d.log", pmtl->nw_t.idx);
 	}
 
 	pid_t pid;
 	_eval(stubby_argv, stubby_log, 0, &pid);
 	if (pid > 1) {
-		// write pid in /var/run/stubby-<sdn_idx>.pid
-		snprintf(buf, sizeof(buf), sdn_stubby_pid_path, pmtl->sdn_t.sdn_idx);
+		// write pid in /var/run/stubby-<subnet_idx>.pid
+		snprintf(buf, sizeof(buf), sdn_stubby_pid_path, pmtl->nw_t.idx);
 		unlink(buf);
 		FILE *fp = fopen(buf, "w");
 		if (fp) {
@@ -492,7 +505,8 @@ static int _handle_sdn_stubby(const MTLAN_T *pmtl, const int action)
 
 	if (action & RC_SERVICE_STOP)
 	{
-		snprintf(config_path, sizeof(config_path), sdn_stubby_pid_path, pmtl->sdn_t.sdn_idx);
+		_dprintf("[%s][%d] SDN stubby-%d STOP\n", __FUNCTION__, pmtl->sdn_t.sdn_idx, pmtl->nw_t.idx);
+		snprintf(config_path, sizeof(config_path), sdn_stubby_pid_path, pmtl->nw_t.idx);
 		kill_pidfile_tk(config_path);
 		unlink(config_path);
 	}
@@ -501,11 +515,9 @@ static int _handle_sdn_stubby(const MTLAN_T *pmtl, const int action)
 	{
 		if (pmtl->enable)
 		{
-			if (pmtl->sdn_t.sdn_idx == 0 || pmtl->nw_t.idx != 0) // ignore IoT SDN with main subnet
-			{
-				memset(config_path, 0, sizeof(config_path));
-				_start_sdn_stubby(pmtl, config_path, sizeof(config_path));
-			}
+			_dprintf("[%s][%d] SDN stubby-%d START\n", __FUNCTION__, pmtl->sdn_t.sdn_idx, pmtl->nw_t.idx);
+			memset(config_path, 0, sizeof(config_path));
+			_start_sdn_stubby(pmtl, config_path, sizeof(config_path));
 		}
 	}
 	return 0;
@@ -828,9 +840,13 @@ static int _handle_sdn_dnsmasq(const MTLAN_T *pmtl, const int action)
 		snprintf(config_path, sizeof(config_path), sdn_dnsmasq_pid_path, pmtl->sdn_t.sdn_idx);
 		kill_pidfile_tk(config_path);
 #ifdef RTCONFIG_DNSPRIVACY
-		snprintf(config_path, sizeof(config_path), sdn_stubby_pid_path, pmtl->sdn_t.sdn_idx);
-		kill_pidfile_tk(config_path);
-		unlink(config_path);
+		if (pmtl->sdn_t.sdn_idx && pmtl->nw_t.idx) // ignore main LAN or IoT SDN
+		{
+			_dprintf("[%s][%d] SDN stubby-%d STOP\n", __FUNCTION__, pmtl->sdn_t.sdn_idx, pmtl->nw_t.idx);
+			snprintf(config_path, sizeof(config_path), sdn_stubby_pid_path, pmtl->nw_t.idx);
+			kill_pidfile_tk(config_path);
+			unlink(config_path);
+		}
 #endif
 	}
 
@@ -846,6 +862,7 @@ static int _handle_sdn_dnsmasq(const MTLAN_T *pmtl, const int action)
 					eval("dnsmasq", "-C", config_path, "--log-async");
 				}
 #ifdef RTCONFIG_DNSPRIVACY
+				_dprintf("[%s][%d] SDN stubby-%d START\n", __FUNCTION__, pmtl->sdn_t.sdn_idx, pmtl->nw_t.idx);
 				memset(config_path, 0, sizeof(config_path));
 				_start_sdn_stubby(pmtl, config_path, sizeof(config_path));
 #endif

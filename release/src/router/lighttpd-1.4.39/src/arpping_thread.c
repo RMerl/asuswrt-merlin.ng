@@ -29,7 +29,6 @@
 #if EMBEDDED_EANBLE
 #include "nvram_control.h"
 #ifndef APP_IPKG
-#include <utils.h>
 #include <shared.h>
 #endif
 #endif

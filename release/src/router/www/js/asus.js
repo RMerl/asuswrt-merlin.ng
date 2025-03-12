@@ -32,9 +32,9 @@ httpApi.hookGetMore([
 
 var ui_support = httpApi.hookGet("get_ui_support");
 let timeArray = "";
-function isSupport(_ptn){
-	var ui_support = [<% get_ui_support(); %>][0];
-	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
+function isSupport(_ptn) {
+    var ui_support = [<% get_ui_support(); %>][0];
+    return ui_support[_ptn] ? ui_support[_ptn] : 0;
 }
 
 function territoryCodeCheck(tcode) {
@@ -177,11 +177,13 @@ system.conCurrentRepeaterSupport = isSupport("concurrep");
 system.lightEffectSupoort = isSupport("ledg");
 system.mloSupport = isSupport("mlo");
 system.brcmAfcSupport = isSupport("bcm_afc");
+system.afc_positioningSupport = isSupport("afc_positioning");
 system.isKRSku = territoryCodeCheck("KR");
 system.isEUSku = territoryCodeCheck("EU");
 system.isAASku = territoryCodeCheck("AA");
 system.isAUSku = territoryCodeCheck("AU");
 system.isCNSku = territoryCodeCheck("CN");
+system.isIDSku = territoryCodeCheck("ID");
 system.locationCode = nvram.location_code;
 system.psc6g = nvram.psc6g;
 system.acs_dfs = nvram.acs_dfs;
@@ -306,16 +308,16 @@ system.smartConnect = (() => {
             bandArray.unshift("0");
         }
 
-        return isSupport("sdn_mainfh") ? ["1", "1", "1", "1", "1", "1", "1", "1"] : bandArray;
+        return bandArray;
     })();
 
     object.radioSeqArray = referenceArray;
-    object.smartConnectEnable = isSupport("sdn_mainfh") ? "1" : smart_connect_x !== "0";
-    object.v1Type = isSupport("sdn_mainfh") ? "1" : smart_connect_x;
+    object.smartConnectEnable = smart_connect_x !== "0";
+    object.v1Type = smart_connect_x;
     object.smartConnectReferenceIndex = (() => {
         if (object.version === "v2") {
             let _index = object.v2Band.findLastIndex((element) => element === "1");
-            return referenceArray[_index] || `2g1`;
+            return referenceArray[_index];
         } else {
             if (object.v1Type === "1" || object.v1Type === "3") {
                 return "2g1";
@@ -341,6 +343,7 @@ system.wlBandSeq = (() => {
         isEUSku,
         isAASku,
         isAUSku,
+        isIDSku,
         productId,
         wpa3EnterpriseSupport,
         oweTransSupport,
@@ -350,46 +353,37 @@ system.wlBandSeq = (() => {
         aMesh,
     } = system;
 
-    const _nvram_payload = [];
-    const _nvramCharToAscii_payload = [];
-    for (let i = 0; i < nBandArray.length; i++) {
-        let wlIfIndex = nBandArray[i];
-        let wlFronthaulIndex = system.currentOPMode.id == "RE" && nvram.wlc_band == i ? `${wlIfIndex}.1` : wlIfIndex;
-        _nvram_payload.push(`${wlIfIndex}_nmode_x`);
-        _nvram_payload.push(`${wlIfIndex}_closed`);
-        _nvram_payload.push(`${wlIfIndex}_bw`);
-        _nvram_payload.push(`${wlIfIndex}_chanspec`);
-        _nvram_payload.push(`${wlIfIndex}_channel`);
-        _nvram_payload.push(`${wlIfIndex}_nctrlsb`);
-        _nvram_payload.push(`${wlFronthaulIndex}_auth_mode_x`);
-        _nvram_payload.push(`${wlFronthaulIndex}_crypto`);
-        _nvram_payload.push(`${wlFronthaulIndex}_mfp`);
-        _nvram_payload.push(`${wlIfIndex}_wpa_gtk_rekey`);
-        _nvram_payload.push(`${wlIfIndex}_radius_ipaddr`);
-        _nvram_payload.push(`${wlIfIndex}_radius_port`);
-        _nvram_payload.push(`${wlIfIndex}_radius_key`);
-        _nvram_payload.push(`${wlIfIndex}_bw_160`);
-        _nvram_payload.push(`${wlIfIndex}_bw_240`);
-        _nvram_payload.push(`${wlIfIndex}_wep_x`);
-        _nvram_payload.push(`${wlIfIndex}_key`);
-        _nvram_payload.push(`${wlIfIndex}_key1`);
-        _nvram_payload.push(`${wlIfIndex}_key2`);
-        _nvram_payload.push(`${wlIfIndex}_key3`);
-        _nvram_payload.push(`${wlIfIndex}_key4`);
-        _nvram_payload.push(`${wlIfIndex}_phrase_x`);
-        _nvram_payload.push(`${wlIfIndex}_11be`);
-        _nvramCharToAscii_payload.push(`${wlFronthaulIndex}_ssid`);
-        _nvramCharToAscii_payload.push(`${wlFronthaulIndex}_wpa_psk`);
-    }
-
-    let _nvramAscii = httpApi.nvramCharToAscii(_nvramCharToAscii_payload);
-    let _nvram = httpApi.nvramGet(_nvram_payload);
-
     for (let i = 0; i < nBandArray.length; i++) {
         let wlIfIndex = nBandArray[i];
         let wlFronthaulIndex = system.currentOPMode.id == "RE" && nvram.wlc_band == i ? `${wlIfIndex}.1` : wlIfIndex;
         let postfixIndex = "";
+        let _nvram = httpApi.nvramGet([
+            `${wlIfIndex}_nmode_x`,
+            `${wlIfIndex}_closed`,
+            `${wlIfIndex}_bw`,
+            `${wlIfIndex}_chanspec`,
+            `${wlIfIndex}_channel`,
+            `${wlIfIndex}_nctrlsb`,
+            `${wlFronthaulIndex}_auth_mode_x`,
+            `${wlFronthaulIndex}_crypto`,
+            `${wlFronthaulIndex}_mfp`,
+            `${wlIfIndex}_wpa_gtk_rekey`,
+            `${wlIfIndex}_radius_ipaddr`,
+            `${wlIfIndex}_radius_port`,
+            `${wlIfIndex}_radius_key`,
+            `${wlIfIndex}_bw_160`,
+            `${wlIfIndex}_bw_240`,
+            `${wlIfIndex}_wep_x`,
+            `${wlIfIndex}_key`,
+            `${wlIfIndex}_key1`,
+            `${wlIfIndex}_key2`,
+            `${wlIfIndex}_key3`,
+            `${wlIfIndex}_key4`,
+            `${wlIfIndex}_phrase_x`,
+            `${wlIfIndex}_11be`,
+        ]);
 
+        let _nvramAscii = httpApi.nvramCharToAscii([`${wlFronthaulIndex}_ssid`, `${wlFronthaulIndex}_wpa_psk`]);
         postfixIndex = wlPostfixIndexTransform[wlIfIndex];
         wlObj[wlIfIndex] = new WirelessAttribute();
         wlObj[wlIfIndex].wlUnit = i;
@@ -442,10 +436,31 @@ system.wlBandSeq = (() => {
                 _channel = httpApi.hookGet(`channel_list_${postfixIndex}`) || [];
             }
 
-            if (wlIfIndex === "6g1" || wlIfIndex === "6g2") {
+            if (isIDSku && (wlIfIndex === "5g1" || wlIfIndex === "5g2")) {
                 _channel = _channel.filter((ch) => {
-                    if (parseInt(ch) <= 221) {
+                    if (parseInt(ch) < 165 && (parseInt(ch) < 100 || parseInt(ch) > 144)) {
                         return ch;
+                    }
+                });
+            }
+
+            if (wlIfIndex === "6g1" || wlIfIndex === "6g2") {
+                let { HwId } = httpApi.nvramGet(["HwId"]);
+                _channel = _channel.filter((ch) => {
+                    if (
+                        productId === "GT-AXE11000" ||
+                        productId === "RT-AXE95Q" ||
+                        (productId === "ET12" && HwId === "A") ||
+                        productId === "ET8_V2" ||
+                        productId === "ET8PRO"
+                    ) {
+                        if (parseInt(ch) > 30 && parseInt(ch) <= 221) {
+                            return ch;
+                        }
+                    } else {
+                        if (parseInt(ch) <= 221) {
+                            return ch;
+                        }
                     }
                 });
             }
@@ -506,6 +521,10 @@ system.wlBandSeq = (() => {
                     wlObj[wlIfIndex].ch80MHz[_ch].push(element);
                 } else if (element.indexOf("/160") !== -1) {
                     if (productId === "ET8_V2" && wlIfIndex === "5g1") {
+                        return;
+                    }
+
+                    if (isIDSku && (wlIfIndex === "5g1" || wlIfIndex === "5g2")) {
                         return;
                     }
 
@@ -646,6 +665,10 @@ system.wlBandSeq = (() => {
 
                 // 160 MHz
                 let bw160MHzSupport = isSupport("vht160");
+                if (isIDSku && (wlIfIndex === "5g1" || wlIfIndex === "5g2")) {
+                    bw160MHzSupport = false;
+                }
+
                 if (bw160MHzSupport) {
                     const bw160MaxCount = 8;
                     let bw160count = 0;
@@ -799,6 +822,10 @@ system.wlBandSeq = (() => {
         wlObj[wlIfIndex].bw80_80MHzSupport = isSupport("vht80_80");
         wlObj[wlIfIndex].bw160MHzSupport = (() => {
             if (productId === "ET8_V2" && wlIfIndex === "5g1") {
+                return false;
+            }
+
+            if (isIDSku && (wlIfIndex === "5g1" || wlIfIndex === "5g2")) {
                 return false;
             }
 

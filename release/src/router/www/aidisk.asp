@@ -15,7 +15,6 @@
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
-<script type="text/javaScript" src="/js/jquery.js"></script>
 <script>
 <% get_AiDisk_status(); %>
 var account_num;

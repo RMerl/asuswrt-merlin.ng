@@ -78,7 +78,7 @@ SRCFILE = broadcom_arm_ax_$(BCM_CHIP)_src-rt-5.04axhnd.675x
 else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),EBG19 EBG15))
 SRCFILE = broadcom_arm_ax_62118G
 else ifeq ($(RTCONFIG_HND_ROUTER_BE_4916),y)
-ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126)
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126 WIFI7_SDK_20250122))
 ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-BE58U TUF-BE3600 RT-BE92U RT-BE95U))
 SRCFILE = broadcom_arm_be_6764l
 else
@@ -87,9 +87,7 @@ endif
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
 SRCFILE = broadcom_arm_be_$(BCM_CHIP)_4.19.275
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20241007)
-ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-BE58_GO))
-SRCFILE = broadcom_arm_be_6764
-endif
+SRCFILE = broadcom_arm_be_$(BCM_CHIP)_4.19.294
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20230426)
 SRCFILE = broadcom_arm_be_$(BCM_CHIP)_4.19.275
 else

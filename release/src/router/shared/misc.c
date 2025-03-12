@@ -3177,8 +3177,7 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long long *rx
 	char modelvlan[32];
 	int i, j, model, unit;
 	const struct dummy_ifaces_s *p;
-	char wl_ifnames[512] = { 0 };
-
+	char wl_ifnames[32] = { 0 };
 #if defined(RTCONFIG_SWITCH_RTL8370M_PHY_QCA8033_X2) || \
     defined(RTCONFIG_SWITCH_RTL8370MB_PHY_QCA8033_X2)
 	int wans = get_wans_dualwan();
@@ -3282,30 +3281,8 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long long *rx
 	if (find_word(nv_lan_ifnames, ifname))
 	{
 		// find Wireless interface
-#if defined(RTCONFIG_MULTILAN_CFG) && !defined(RTCONFIG_RALINK)
-{
-	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
-	foreach(word, wl_ifnames, next) {
-		if(strncmp(word, ifname, 3) == 0) {
-			char unit_buf[8], *p1, *p2;
-			int len;
-
-			p1 = strchr(word, '.');
-			p2 = strchr(word, 'l');
-			len = p1 - p2;
-			i = 0;
-			if(len > 0){
-				snprintf(unit_buf, len, "%s", p2+1);
-				i = atoi(unit_buf);
-			}
-			sprintf(ifname_desc, "WIRELESS%d", i);
-			return 1;
-		}
-	}
-}
-#else
+		i=0;
 		strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
-		i = 0;
 		foreach(word, wl_ifnames, next) {
 			SKIP_ABSENT_BAND_AND_INC_UNIT(i);
 			if(strcmp(word, ifname)==0) {
@@ -3331,7 +3308,7 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long long *rx
 
 			i++;
 		}
-#endif
+
 #if defined(RTCONFIG_RALINK) && defined(RTCONFIG_WLMODULE_RT3352_INIC_MII)
 		if(model == MODEL_RTN65U)
 		{
@@ -3798,15 +3775,6 @@ int is_psr(int unit)
 		return 1;
 
 	return 0;
-}
-
-int is_psta_mlo(int unit)
-{
-#ifdef RTCONFIG_MLO
-	return is_psr(unit) && nvram_get_int("mlo_mb") && !nvram_get_int("mlo_rp");
-#else
-	return 0;
-#endif
 }
 
 int psta_exist(void)
@@ -5637,7 +5605,7 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 	char ifname[IFNAMSIZ] = { 0 };
 	int found = 0;
 	char band_prefix[8];
-	char nband = 0, num5g = 0, num6g = 0;
+	char nband = 0;
 
 	if (!strncmp(name, CFG_WL_STR_2G, 2) || !strncmp(name, CFG_WL_STR_5G, 2) ||
 		!strncmp(name, CFG_WL_STR_6G, 2)) {
@@ -5653,23 +5621,36 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 		strlcpy(ifname, nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), sizeof(ifname));
 		subunit = 0;
-		nband = nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp)));
-
-		if (nband == 2)
-			strlcpy(band_prefix, CFG_WL_STR_2G, sizeof(band_prefix));
-		else if (nband == 1)
+		nband = nvram_get_int(strcat_r(prefix, "nband_type", tmp));
+		switch (nband)
 		{
-			num5g++;
+			case 0:	/* 2G */
+				strlcpy(band_prefix, CFG_WL_STR_2G, sizeof(band_prefix));
+				break;
+			case 1:	/* 5G */
+			case 2: /* 5G low */
 #if defined(RTCONFIG_LYRA_5G_SWAP)
-			strlcpy(band_prefix, swap_5g_band(unit) == 2 ? CFG_WL_STR_5G1 : CFG_WL_STR_5G, sizeof(band_prefix));
+				strlcpy(band_prefix, swap_5g_band(unit) == 2 ? CFG_WL_STR_5G1 : CFG_WL_STR_5G, sizeof(band_prefix));
 #else
-			strlcpy(band_prefix, num5g == 1 ? CFG_WL_STR_5G : CFG_WL_STR_5G1, sizeof(band_prefix));
+				strlcpy(band_prefix, CFG_WL_STR_5G, sizeof(band_prefix));
 #endif
-		}
-		else if (nband == 4)
-		{
-			num6g++;
-			strlcpy(band_prefix, num6g == 1 ? CFG_WL_STR_6G : CFG_WL_STR_6G1, sizeof(band_prefix));
+				break;
+			case 3:	/* 5G high */
+#if defined(RTCONFIG_LYRA_5G_SWAP)
+				strlcpy(band_prefix, swap_5g_band(unit) == 2 ? CFG_WL_STR_5G1 : CFG_WL_STR_5G, sizeof(band_prefix));
+#else
+				strlcpy(band_prefix, CFG_WL_STR_5G1, sizeof(band_prefix));
+#endif
+				break;
+			case 4:	/* 6G */
+			case 5: /* 6G low */
+				strlcpy(band_prefix, CFG_WL_STR_6G, sizeof(band_prefix));
+				break;
+			case 6:	/* 6G high */
+				strlcpy(band_prefix, CFG_WL_STR_6G1, sizeof(band_prefix));
+				break;
+			default:
+				break;
 		}
 
 		if (!strcmp(ifname, name)) {
@@ -6287,58 +6268,8 @@ int get_discovery_ssid(char *ssid_g, int size)
 #endif
 	{
 #if defined(RTCONFIG_WIRELESSREPEATER) || defined(RTCONFIG_PROXYSTA)
-#ifdef RTCONFIG_MULTILAN_MWL
-		int nband = 0;
-		int wlunit = 0;
-		char wlword[80], *wlnext;
-		int num5g = 0, num6g = 0;
-		char ssid_2g_fh[32] = {0}, ssid_5g_fh[32] = {0}, ssid_5g1_fh[32] = {0};
-		char ssid_6g_fh[32] = {0}, ssid_6g1_fh[32] = {0};
-
-		/* get ssid of 2g & 5g & 5g1 & 6g & 6g1*/
-		foreach (wlword, nvram_safe_get("wl_ifnames"), wlnext) {
-			SKIP_ABSENT_BAND_AND_INC_UNIT(wlunit);
-			snprintf(prefix, sizeof(prefix), "wl%d_", wlunit);
-			nband = nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp)));
-			if (nband == 2) {
-				strlcpy(ssid_2g_fh, get_fh_ap_ssid_by_unit(wlunit), sizeof(ssid_2g_fh));
-			} else if (nband == 1) {
-				num5g++;
-				if(num5g == 1) {
-					strlcpy(ssid_5g_fh, get_fh_ap_ssid_by_unit(wlunit), sizeof(ssid_5g_fh));
-				} else if (num5g == 2) {
-					strlcpy(ssid_5g1_fh, get_fh_ap_ssid_by_unit(wlunit), sizeof(ssid_5g1_fh));
-				}
-			} else if (nband == 4) {
-				num6g++;
-				if(num6g == 1) {
-					strlcpy(ssid_6g_fh, get_fh_ap_ssid_by_unit(wlunit), sizeof(ssid_6g_fh));
-				} else if (num6g == 2) {
-					strlcpy(ssid_6g1_fh, get_fh_ap_ssid_by_unit(wlunit), sizeof(ssid_6g1_fh));
-				}
-			}
-			wlunit++;
-		}
-
-		// show ssid_fh : priority [ 2g > 5g > 5g1 > 6g > 6g1 > default 2g ]
-		if(strlen(ssid_2g_fh) > 0) {
-			strlcpy(ssid_g, ssid_2g_fh, size);
-		} else if(strlen(ssid_5g_fh) > 0) {
-			strlcpy(ssid_g, ssid_5g_fh, size);
-		} else if(strlen(ssid_5g1_fh) > 0) {
-			strlcpy(ssid_g, ssid_5g1_fh, size);
-		} else if(strlen(ssid_6g_fh) > 0) {
-			strlcpy(ssid_g, ssid_6g_fh, size);
-		} else if(strlen(ssid_6g1_fh) > 0) {
-			strlcpy(ssid_g, ssid_6g1_fh, size);
-		} else {
-			snprintf(prefix, sizeof(prefix), "wl%d_", WL_2G_BAND);
-			strlcpy(ssid_g, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))), size);
-		}
-#else
 		snprintf(prefix, sizeof(prefix), "wl%d_", WL_2G_BAND);
 		strlcpy(ssid_g, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))), size);
-#endif
 #endif
 	}
 
@@ -7598,6 +7529,33 @@ int guest_mark_calc(int guest_mark)
 #endif
 	return mark;
 }
+
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
+int switch_ledg(int action)
+{
+	switch(action) {
+		case LEDG_QIS_RUN:
+#if defined(TUFAX5400) || defined(TUFAX5400_V2)
+			nvram_set_int("ledg_scheme", LEDG_SCHEME_RAINBOW);
+#else
+			nvram_set_int("ledg_scheme", LEDG_SCHEME_COLOR_CYCLE);
+#endif
+			break;
+		case LEDG_QIS_FINISH:
+			if (nvram_match("x_Setting", "1") && !nvram_match("ledg_qis_finish", "1")){
+				nvram_set_int("ledg_qis_finish", 1);
+				nvram_set_int("ledg_scheme_tmp", LEDG_SCHEME_BLINKING);
+				break;
+			}
+		default:
+				return 0;
+	}
+
+	nvram_commit();
+	kill_pidfile_s("/var/run/ledg.pid", SIGTSTP);
+	return 1;
+}
+#endif
 
 char *
 rfctime(const time_t *timep, char *ts_string, int len)

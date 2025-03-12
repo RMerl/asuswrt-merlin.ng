@@ -561,6 +561,9 @@ a{
 .footHeight{
 	height: 100px;
 }
+#wlInputField{
+	margin-bottom: -30px;
+}
 #noWanContainer{
     height: 504px;
 	display: flex;
@@ -864,9 +867,6 @@ a{
 }
 .bandStreeringSupport{
 	display: none;
-}
-.checkboxUnderTextInput{
-	margin-top: -30px;
 }
 .titleMain{
 	font-size: 60px;
@@ -1600,6 +1600,16 @@ a{
 	animation: rotate-loading 1.5s linear 0s infinite normal;
 	transform-origin: 50% 50%;
 }
+#ob_status{
+	font-size: 1.8em;
+	color: #FFF;
+	position: relative;
+	text-align: center;
+	margin: auto;
+	margin-top: 60px;
+	line-height: 140%;
+	width: 90%;
+}
 #prelink_desc{
 	min-height: 750px;
 }
@@ -1958,4 +1968,7 @@ a{
 }
 .moreBold{
 	font-weight: bolder;
+}
+.qisBackground {
+	height: 100%;
 }

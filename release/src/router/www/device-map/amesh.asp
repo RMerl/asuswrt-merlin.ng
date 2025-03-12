@@ -413,6 +413,7 @@ function gen_ready_onboardinglist(_onboardingList) {
 						code += "</div>";
 					code += "</div>";
 					code += "</div>";
+					code += `<div class='amesh_ob_status' style='display:none;'></div>`;
 				code += "</div>";
 				$('#ready_onBoarding_block').append(code);
 
@@ -543,9 +544,6 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 					wireless_band = 2;
 					wireless_rssi = client_convRSSI(rssi6g);
 				}
-				else if(connect_type == "512") {
-					wireless_rssi = mlo_convRSSI(get_mlo_quality(_onboardingList[idx]));
-				}
 				else if(connect_type <= 0) {
 					online = 0;
 					wireless_rssi = "wired";
@@ -597,8 +595,7 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 									code += "<div class='radioIcon radio_" + wireless_rssi + "'></div>";
 									if(connect_type != "1" && connect_type != "16" && connect_type != "32" && connect_type != "64") {
 										var bandClass = (navigator.userAgent.toUpperCase().match(/CHROME\/([\d.]+)/)) ? "band_txt_chrome" : "band_txt";
-										const wl_band_text = (connect_type == "512") ? "MLO" : wireless_band_array[wireless_band];
-										code += `<div class='band_block'><span class=${bandClass}>${wl_band_text}</span></div>`;
+										code += "<div class='band_block'><span class=" + bandClass + ">" + wireless_band_array[wireless_band] + "</span></div>";
 									}
 									code += "</div>";
 								}
@@ -687,10 +684,12 @@ function connectingDevice(_reMac, _newReMac, delay) {
 	$('#ready_onBoarding_block').find("#" + device_id + "").find(".loading-container").css("display", "");
 	$('#ready_onBoarding_block').find("#" + device_id + "").find(".amesh_each_router_icon_bg").css("display", "none");
 	processCount = 0;
+	ajax_extend_obtimeout_flag = false;
 	$('#ready_onBoarding_block').find("#" + device_id + "").find(".processText").html("" + processCount + " %");
 	interval_ajax_get_onboardinglist_status = setInterval(ajax_get_onboardinglist_status, 1000);
 	$('#ready_onBoarding_block').find("#" + device_id + "").find(".amesh_rotate").addClass("connect");
 	$('#ready_onBoarding_block').find("#" + device_id + "").find(".amesh_line_run").addClass("connect");
+	$('#ready_onBoarding_block').find("#" + device_id + "").find(".amesh_ob_status").show().html(`Adding the AiMesh node....`);/* untranslated */
 	$("#searchReadyOnBoarding").css("display", "none");
 	$("#amesh_loadingIcon").css("display", "none");
 	onboarding_flag = true;
@@ -739,6 +738,9 @@ function connectingDevice(_reMac, _newReMac, delay) {
 		document.form.submit();	
 	}
 }
+let ajax_cfg_obstart = "";
+let ajax_cfg_obtimeout = 0;
+let ajax_extend_obtimeout_flag = false;
 function ajax_get_onboardinglist_status() {
 	var accelerate_count = function(_device_id) {
 		if(interval_ajax_get_onboardinglist_status) {
@@ -764,11 +766,19 @@ function ajax_get_onboardinglist_status() {
 		dataType: 'script',
 		success: function() {
 			onboarding_flag = true;
-			var device_id = get_onboardingstatus.cfg_newre.replace(/:/g, "").toUpperCase();
-			var cfg_obresult = get_onboardingstatus.cfg_obresult;
+			const cfg_newre = get_onboardingstatus.cfg_newre;
+			const cfg_obstatus = get_onboardingstatus.cfg_obstatus;
+			const cfg_obstart = get_onboardingstatus.cfg_obstart;
+			const cfg_obtimeout = get_onboardingstatus.cfg_obtimeout;
+			const device_id = cfg_newre.replace(/:/g, "").toUpperCase();
+			let cfg_obresult = get_onboardingstatus.cfg_obresult;
+			const specific_node = get_cfg_clientlist.find(item => item.mac === cfg_newre);
+			const node_online = specific_node?.online || "0";
 			if(Object.keys(get_onboardinglist).length > 0) {
-				if(cfg_obresult != "" && get_onboardingstatus.cfg_newre != "" && get_onboardingstatus.cfg_obstatus == "4" && get_onboardingstatus.cfg_obstart != "" && get_onboardingstatus.cfg_obtimeout != "") {
-					processCount = set_process_percentage(get_onboardingstatus.cfg_obstart, get_onboardingstatus.cfg_obcurrent, get_onboardingstatus.cfg_obtimeout , 100);
+				if(cfg_obresult != "" && cfg_newre != "" && cfg_obstatus == "4" && cfg_obstart != "" && cfg_obtimeout != "") {
+					ajax_cfg_obstart = cfg_obstart;
+					ajax_cfg_obtimeout = (isNaN(parseInt(cfg_obtimeout)) ? 0 : parseInt(cfg_obtimeout));
+					processCount = set_process_percentage(ajax_cfg_obstart, get_onboardingstatus.cfg_obcurrent, ajax_cfg_obtimeout , 100);
 					switch(parseInt(cfg_obresult)) {
 						case 0 : //Init
 						case 1 : //Start
@@ -784,7 +794,7 @@ function ajax_get_onboardinglist_status() {
 							break;
 					}
 				}
-				else if(get_onboardingstatus.cfg_obstatus == "1") {//for onboarding abnormal
+				else if(cfg_obstatus == "1" && cfg_obresult != "2") {//for onboarding abnormal
 					if(processCount < 100) {
 						accelerate_count(device_id);
 						cfg_obresult = 4;
@@ -793,20 +803,48 @@ function ajax_get_onboardinglist_status() {
 			}
 			else {
 				//for onboarding finish
-				if(get_onboardingstatus.cfg_obstatus == "1" && (get_onboardingstatus.cfg_obresult == "2" || get_onboardingstatus.cfg_obresult == "4" || get_onboardingstatus.cfg_obresult == "5") && get_onboardingstatus.cfg_newre != "") {
-					if(processCount < 100)
-						accelerate_count(device_id);
+				if(processCount < 100){
+					if(!ajax_extend_obtimeout_flag && cfg_obresult === "2" && node_online === "0"){
+						ajax_extend_obtimeout_flag = true;
+						ajax_cfg_obtimeout = 180;
+						ajax_cfg_obstart = get_onboardingstatus.cfg_obcurrent;
+					}
+					processCount = set_process_percentage(ajax_cfg_obstart, get_onboardingstatus.cfg_obcurrent, ajax_cfg_obtimeout , 100);
+				}
+				if(cfg_obstatus == "1" && cfg_newre != ""){
+					if(cfg_obresult === "4" || cfg_obresult === "5"){
+						if(processCount < 100)
+							accelerate_count(device_id);
+					}
+					else if(cfg_obresult === "2" && node_online === "1"){
+						if(processCount < 100)
+							accelerate_count(device_id);
+					}
 				}
 			}
 
 			$('#ready_onBoarding_block').find("#" + device_id + "").find(".processText").html("" + processCount + " %");
+			if(processCount > 0 && processCount < 100){
+				const ob_status = (()=>{
+					if(cfg_obresult == "1") return `Adding the AiMesh node....`;/* untranslated */
+					else if(cfg_obresult == "3") return `The node is joining the network....`;/* untranslated */
+					else if(cfg_obresult == "2") return `Activating your mesh network....`;/* untranslated */
+					else return ``;
+				})();
+				if(ob_status === ""){
+					$('#ready_onBoarding_block').find("#" + device_id + "").find(".amesh_ob_status").hide().html(``);
+				}
+				else{
+					$('#ready_onBoarding_block').find("#" + device_id + "").find(".amesh_ob_status").show().html(ob_status);
+				}
+			}
 
 			if(processCount >= 100) {
 				if(interval_ajax_get_onboardinglist_status) {
 					clearInterval(interval_ajax_get_onboardinglist_status);
 					interval_ajax_get_onboardinglist_status = false;
 				}
-				show_connect_result(cfg_obresult, get_onboardingstatus.cfg_newre, get_onboardingstatus.cfg_obmodel, get_onboardingstatus.cfg_ui_obmodel);
+				show_connect_result(cfg_obresult, cfg_newre, get_onboardingstatus.cfg_obmodel, get_onboardingstatus.cfg_ui_obmodel, node_online);
 			}
 		}
 	});
@@ -1240,7 +1278,7 @@ function show_connect_msg(_reMac, _newReMac, _node_info) {
 		}
 	});	
 }
-function show_connect_result(_status, _newReMac, _model_name, _ui_model_name) {
+function show_connect_result(_status, _newReMac, _model_name, _ui_model_name, _node_online) {
 	initial_amesh_obj();
 
 	var labelMac = _newReMac;
@@ -1264,7 +1302,10 @@ function show_connect_result(_status, _newReMac, _model_name, _ui_model_name) {
 		$successResult1.attr({"id" : "amesh_successResult_1"});
 		$connectResultHtml.append($successResult1);
 		result_text = "";
-		result_text += "<#AiMesh_Node_AddDescA#>";
+		if(_node_online === "1")
+			result_text += "<#AiMesh_Node_AddDescA#>";
+		else
+			result_text += "<#AiMesh_Node_WaitReady#>";
 		result_text += "<br>";
 		result_text += "<#AiMesh_Node_AddDescB#>";
 		result_text += "<br>";
@@ -2272,7 +2313,7 @@ function set_process_percentage(_start, _current, _timeout, _percentage) {
 	var percentage = 0;
 	var interval = parseInt(_current) - parseInt(_start);
 	var denominator = parseInt(_timeout) / parseInt(_percentage);
-	percentage = Math.round( interval / denominator );
+	percentage = isNaN(Math.round( interval / denominator )) ? 0 : Math.round( interval / denominator );
 	return percentage;
 }
 function formatMAC(_value) {
@@ -2567,17 +2608,12 @@ function get_connect_type(_node_info) {
 				wireless_band = 2;
 				wireless_rssi = client_convRSSI(_node_info.rssi6g);
 			}
-			else if(_node_info.re_path == "512") {
-				component.text = `MLO`;
-				wireless_rssi = mlo_convRSSI(get_mlo_quality(_node_info));
-			}
 			else {
 				wireless_band = 1;
 				wireless_rssi = client_convRSSI(_node_info.rssi5g);
 			}
 			component.icon = "<div class='radioIcon radio_" + wireless_rssi +"'></div>";
-			const wl_band_text = (_node_info.re_path == "512") ? "MLO" : wireless_band_array[wireless_band];
-			component.icon += `<div class='band_block'><span class=${bandClass}>${wl_band_text}</span></div>`;
+			component.icon += "<div class='band_block'><span class=" + bandClass + ">" + wireless_band_array[wireless_band]  + "</span></div>";
 		}
 	}
 	else{
@@ -2764,66 +2800,6 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 function handle_re_path(_re_path){
 	var result = parseInt(_re_path);
 	return ((isNaN(result)) ? 0 : result);
-}
-function get_mlo_quality(_node_info){
-	const mlo_status = _node_info.mlo_status;
-	const product_id = _node_info.product_id;
-	let mlo_rssi = "";
-	if(product_id == "BQ16_PRO"){
-		if(mlo_status.rssi6gl != undefined && mlo_status.rssi5g != undefined && mlo_status.rssi6gh != undefined){//6G-1 > 5G > 6G-2
-			if(mlo_status.rssi6gl != "") mlo_rssi = mlo_status.rssi6gl;
-			else if(mlo_status.rssi5g != "") mlo_rssi = mlo_status.rssi5g;
-			else if(mlo_status.rssi6gh != "") mlo_rssi = mlo_status.rssi6gh;
-		}
-		else if(mlo_status.rssi5g != undefined && mlo_status.rssi6gl != undefined && mlo_status.rssi2g != undefined){//5G > 6G-1 > 2G
-			if(mlo_status.rssi5g != "") mlo_rssi = mlo_status.rssi5g;
-			else if(mlo_status.rssi6gl != "") mlo_rssi = mlo_status.rssi6gl;
-			else if(mlo_status.rssi2g != "") mlo_rssi = mlo_status.rssi2g;
-		}
-	}
-	else{
-		if(mlo_status.rssi6g != undefined && mlo_status.rssi5gh != undefined && mlo_status.rssi5gl != undefined){//6G > 5G-2 > 5G-1
-			if(mlo_status.rssi6g != "") mlo_rssi = mlo_status.rssi6g;
-			else if(mlo_status.rssi5gh != "") mlo_rssi = mlo_status.rssi5gh;
-			else if(mlo_status.rssi5gl != "") mlo_rssi = mlo_status.rssi5gl;
-		}
-		else if(mlo_status.rssi5gh != undefined && mlo_status.rssi6g != undefined && mlo_status.rssi2g != undefined){//5G-2 > 6G > 2G
-			if(mlo_status.rssi5gh != "") mlo_rssi = mlo_status.rssi5gh;
-			else if(mlo_status.rssi6g != "") mlo_rssi = mlo_status.rssi6g;
-			else if(mlo_status.rssi2g != "") mlo_rssi = mlo_status.rssi2g;
-		}
-		else if(mlo_status.rssi5g != undefined && mlo_status.rssi6gl != undefined && mlo_status.rssi6gh != undefined){//5G > 6G-1 > 6G-2
-			if(mlo_status.rssi5g != "") mlo_rssi = mlo_status.rssi5g;
-			else if(mlo_status.rssi6gl != "") mlo_rssi = mlo_status.rssi6gl;
-			else if(mlo_status.rssi6gh != "") mlo_rssi = mlo_status.rssi6gh;
-		}
-		else if(mlo_status.rssi5g != undefined && mlo_status.rssi6g != undefined && mlo_status.rssi2g != undefined){//5G > 6G > 2G
-			if(mlo_status.rssi5g != "") mlo_rssi = mlo_status.rssi5g;
-			else if(mlo_status.rssi6g != "") mlo_rssi = mlo_status.rssi6g;
-			else if(mlo_status.rssi2g != "") mlo_rssi = mlo_status.rssi2g;
-		}
-		else if(mlo_status.rssi5gh != undefined && mlo_status.rssi5gl != undefined && mlo_status.rssi2g != undefined){//5G-2 > 5G-1 > 2G
-			if(mlo_status.rssi5gh != "") mlo_rssi = mlo_status.rssi5gh;
-			else if(mlo_status.rssi5gl != "") mlo_rssi = mlo_status.rssi5gl;
-			else if(mlo_status.rssi2g != "") mlo_rssi = mlo_status.rssi2g;
-		}
-		else if(mlo_status.rssi5g != undefined && mlo_status.rssi2g != undefined){//5G > 2G
-			if(mlo_status.rssi5g != "") mlo_rssi = mlo_status.rssi5g;
-			else if(mlo_status.rssi2g != "") mlo_rssi = mlo_status.rssi2g;
-		}
-	}
-	return mlo_rssi;
-}
-function mlo_convRSSI(rssi){
-	let result = 3;
-	rssi = parseInt(rssi);
-	if(isNaN(rssi)) return result;
-
-	if(rssi > -70) result = 4;
-	else if(rssi <= -70 && rssi >= -80) result = 3;
-	else if(rssi < -80) result = 3;
-
-	return result;
 }
 </script>
 </head>

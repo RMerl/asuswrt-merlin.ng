@@ -8,7 +8,7 @@
  *
  */
 
-#define MAX_SIZE 0xFFFF
+#define MAX_SIZE 4096
 
 struct btd_gatt_database {
 	struct btd_adapter *adapter;

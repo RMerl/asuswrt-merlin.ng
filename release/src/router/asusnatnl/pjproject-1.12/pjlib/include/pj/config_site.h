@@ -79,6 +79,8 @@
 #define PJSUA_MAX_INSTANCES	1026
 #elif defined(PJ_ANDROID)
 #define PJSUA_MAX_INSTANCES	64
+#elif defined(ROUTER)
+#define PJSUA_MAX_INSTANCES	3
 #else
 #define PJSUA_MAX_INSTANCES	2
 #endif

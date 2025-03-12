@@ -73,28 +73,8 @@ void start_aae_sip_conn(int sdk_init)
 
 void stop_aae_sip_conn(int sdk_deinit)
 {
-#define WAIT_TIMEOUT 5
-	int time_count = 0;
 	if (pids("aaews")) {
-#if defined(RTCONFIG_ACCOUNT_BINDING) && defined(RTCONFIG_AWSIOT)
-		if (is_account_bound()) {
-			killall("aaews", SIGKILL);
-		} else
-#endif
-		{
-			char event[AAE_MAX_IPC_PACKET_SIZE];
-			if (sdk_deinit)
-				snprintf(event, sizeof(event), AAE_AAEWS_GENERIC_MSG, AAE_EID_AAEWS_ACTION_SDK_DEINIT);
-			else
-				snprintf(event, sizeof(event), AAE_AAEWS_GENERIC_MSG, AAE_EID_AAEWS_ACTION_SIP_UNREG);
-			aae_sendIpcMsg(AAEWS_IPC_SOCKET_PATH, event, strlen(event));
-			while(time_count < WAIT_TIMEOUT && nvram_match("aae_sip_connected", "1")) {
-				sleep(1);
-				//_dprintf("%s: wait sip unregister...\n", __FUNCTION__);
-				time_count++;
-			}
-		}
-
+		killall("aaews", SIGKILL);
 	}
 }
 
@@ -150,13 +130,6 @@ void start_mastiff()
 		notify_rc("start_mastiff");
 		return;
 	}
-
-#if defined(RTCONFIG_BT_CONN) && defined(RTCONFIG_NOWL)
-	char *enble_log_argv[] = { "touch", "/tmp/WB_DEBUG_FILE", NULL };
-	pid_t pid;
-	if (nvram_get_int("x_Setting") == 0)
-		_eval(enble_log_argv, NULL, 0, &pid);
-#endif
 
 	if ( !pids("mastiff" )){
 		system("mastiff &");

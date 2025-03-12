@@ -83,6 +83,7 @@ if( lacp_support
 
 var jumbo_frame_enable_ori = '<% nvram_get("jumbo_frame_enable"); %>';
 var ctf_disable_force_ori = '<% nvram_get("ctf_disable"); %>';
+var qca_sfe_ori = '<% nvram_get("qca_sfe"); %>';
 var lacp_enabled_ori = '<% nvram_get("lacp_enabled"); %>';
 var wans_lanport = '<% nvram_get("wans_lanport"); %>';
 var iptv_port_settings_orig = '<%nvram_get("iptv_port_settings"); %>' == ""? "12": '<%nvram_get("iptv_port_settings"); %>';
@@ -485,7 +486,8 @@ function applyRule(){
 	var setting_changed = false;
 	if((jumbo_frame_enable_ori != document.form.jumbo_frame_enable.value)
 	|| (!document.form.ctf_disable_force.disabled && ctf_disable_force_ori != document.form.ctf_disable_force.value)
-	|| (lacp_enabled_ori != document.form.lacp_enabled.value) ){
+	|| (!document.form.qca_sfe.disabled && qca_sfe_ori != document.form.qca_sfe.value)
+	|| (lacp_support && (lacp_enabled_ori != document.form.lacp_enabled.value)) ){
 		setting_changed = true
 	}
 
@@ -506,8 +508,8 @@ function applyRule(){
 	}
 
 	var wan_lacp_conflict = false;
-	if(is_GTBE_series){
-		if(lacp_support && document.form.lacp_enabled.value == "1"){
+	if(lacp_support && document.form.lacp_enabled.value == "1"){
+		if(is_GTBE_series){
 			if(document.form.lacp_port_select[1].checked){
 				if(isSwMode("rt")){
 					if(isSupport("autowan")){
@@ -539,29 +541,23 @@ function applyRule(){
 				}
 			}
 		}
-	}
-	else{
-		if(isSupport("autowan") && autowan_enable == "1" && isSwMode("rt"))
-			wan_lacp_conflict = true;
-	}
-
-	if(!setting_changed){	// only change the bonding policy
-		document.form.action_script.value = "restart_net_and_phy";
-		document.form.action_wait.value = "35";
+		else{
+			if(isSupport("autowan") && autowan_enable == "1" && isSwMode("rt"))
+				wan_lacp_conflict = true;
+		}
 	}
 
 	if(lantiq_support){
 		document.form.action_script.value = "restart_wan_if;restart_firewall";
 		document.form.action_wait.value = "10";
-	
-		if(!setting_changed){	// only change the bonding policy
-			document.form.action_script.value += ";restart_net_and_phy";
-			document.form.action_wait.value = "35";
-		}
+	}
+	else if(!setting_changed){	// only change the bonding policy
+		document.form.action_script.value = "restart_net_and_phy";
+		document.form.action_wait.value = "35";
 	}
 
 	if(wan_lacp_conflict){
-		var hint_str = "To ensure that there are no conflicts, when you enable %1$@, the WAN port will be change to %2$@ only. Please make sure that your WAN cable is correctly plugged into the %2$@. Are you sure to continue?"
+		var hint_str = `<#conflict_function_wanport_hint#>`;
 		var msg = "";
 		var wanport_image_src = "images/wanport_plugin.png";
 

@@ -509,6 +509,16 @@ stop_igmpproxy()
 #endif
 }
 
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
+void udpxy_fc_workaround()
+{
+	if (is_CN_sku()) {
+		_dprintf("[%s(%d)] udpxy fc workaround for CN SKU!\n", __FUNCTION__, __LINE__);
+		eval("fc", "config", "--mcast", "0");
+	}
+}
+#endif
+
 void
 start_igmpproxy(char *wan_ifname)
 {
@@ -552,6 +562,9 @@ start_igmpproxy(char *wan_ifname)
 			"-B", "65536",
 			"-c", nvram_safe_get("udpxy_clients"),
 			"-a", nvram_get("lan_ifname") ? : "br0");
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
+		udpxy_fc_workaround();
+#endif
 	}
 
 #if !defined(HND_ROUTER)
@@ -1362,7 +1375,7 @@ start_wan_if(int unit)
 #endif
 
 	// workaround internal XPHY no Rx issue
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	strlcpy(wan_ifname, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(wan_ifname));
 	if (!strcmp(wan_ifname, "vlan4094") || ((get_wans_dualwan() & WANSCAP_LAN) && !strcmp(wan_ifname, "vlan2"))) {
 		nvram_set("freeze_duck", "5");
@@ -4061,11 +4074,10 @@ wan_up(const char *pwan_ifname)
 #endif
 
 		/* start multicast router on DHCP+VPN physical interface */
-#ifdef RTCONFIG_MULTISERVICE_WAN
-		if (!nvram_match("switch_wantag", "none"))
-#endif
 		if (nvram_match("iptv_ifname", wan_ifname)
+#if !defined(RTCONFIG_MULTISERVICE_WAN)
 		 || wan_unit == wan_primary_ifunit()
+#endif
 		)
 			start_igmpproxy(wan_ifname);
 
@@ -4573,6 +4585,10 @@ NOIP:
 	if (nvram_get_int("ntp_ready") && !first_ntp_sync) {
 		start_ovpn_eas();
 	}
+#endif
+
+#ifdef RTCONFIG_HNS
+	wan_start_hns_engine(wan_unit);
 #endif
 
 #ifdef RTCONFIG_BWDPI

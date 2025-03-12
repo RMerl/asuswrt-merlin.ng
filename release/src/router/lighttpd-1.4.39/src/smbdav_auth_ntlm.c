@@ -235,7 +235,10 @@ handler_t ntlm_authentication_handler(server *srv, connection *con, plugin_data 
 	}
 	else if(con->smb_info->qflag == SMB_HOST_QUERY) {
 		//host_query  do the BASIC authentication
-		Cdbg(DBE, "host_query  do the BASIC authentication");
+		// Cdbg(DBE, "host_query  do the BASIC authentication, con->request.http_method=[%d]", con->request.http_method);
+		Cdbg(DBE, "host_query with authorization NTLM is not allowed!!");
+		con->http_status = 401;
+		return HANDLER_FINISHED;
 	}
 	else  {					
 		if (ds_auth == NULL) {

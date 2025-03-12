@@ -71,13 +71,7 @@
 #define FT_MLO BIT_ULL(40)
 #endif
 #define FT_NEW_EULA	BIT_ULL(41)
-#ifdef RTCONFIG_MLO_BH_BAND
-#define FT_MLO_BH_BAND	 BIT_ULL(42)
-#endif
-#ifdef RTCONFIG_MULTILAN_MWL
-#define	FT_APM_PARAM	BIT_ULL(44)
-#endif
-#if defined(RTCONFIG_MULTILAN_CFG)
+#if defined(RTCONFIG_MLO)
 #define FT_MLD_ENABLE BIT_ULL(45)
 #endif
 
@@ -85,7 +79,6 @@
 #define RESTART_WIRELESS		"restart_wireless"
 #define CHPASS		"chpass"
 #define RESTART_TIME		"restart_time"
-#define RESTART_FANCTRL		"restart_fanctrl"
 #define RESTART_LOGGER		"restart_logger"
 #define RESTART_SENDFEEDBACK		"restart_sendfeedback"
 #define RESTART_DBLOG		"restart_dblog"
@@ -178,9 +171,6 @@ static struct feature_mapping_s feature_mapping_list[] __attribute__ ((unused)) 
 	{ "subnet_rl", FT_SUBNET_RL, NULL },
 	{ "vlan_trunk_rl", FT_VLAN_TRUNK_RL, RESTART_NET_AND_PHY },
 	{ "radius_list", FT_RADIUS_LIST, RESTART_WIRELESS },
-#if defined(RTCONFIG_MULTILAN_MWL)
-    { "apm_param", FT_APM_PARAM, NULL },	
-#endif	// RTCONFIG_MULTILAN_MWL
 #endif
 #ifdef RTCONFIG_AMAS_SYNC_LEDG
 	{ "ledg",       FT_LEDG,        RESTART_LEDG },
@@ -193,9 +183,6 @@ static struct feature_mapping_s feature_mapping_list[] __attribute__ ((unused)) 
 #if defined(RTCONFIG_MLO)
 	{ "mld", FT_MLD_ENABLE, RESTART_MLO },
 	{ "mlo", FT_MLO, RESTART_WIRELESS },
-#endif
-#ifdef RTCONFIG_MLO_BH_BAND
-	{ "mlo_bh_band", FT_MLO_BH_BAND, REBOOT },
 #endif
 	{ "new_eula",	FT_NEW_EULA,	NULL },
 	{ NULL, 0, NULL }
@@ -485,6 +472,22 @@ enum {
 	SUBFT_OFDMA_BAND2,
 	SUBFT_OFDMA_BAND3,
 	SUBFT_OFDMA_BAND4,
+	
+#if defined(RTCONFIG_WIFI7) 
+#if defined(RTCONFIG_BCMWL6) 
+	/* sub feature for be_ofdma */
+	SUBFT_BE_OFDMA_BAND1,
+	SUBFT_BE_OFDMA_BAND2,
+	SUBFT_BE_OFDMA_BAND3,
+	SUBFT_BE_OFDMA_BAND4,
+	
+	/* sub feature for be_mumimo */
+	SUBFT_BE_MUMIMO_BAND1,
+	SUBFT_BE_MUMIMO_BAND2,
+	SUBFT_BE_MUMIMO_BAND3,
+	SUBFT_BE_MUMIMO_BAND4,
+#endif
+#endif
 
 #if defined(RTCONFIG_STA_AP_BAND_BIND)
 	/* sub feature for sta binding ap */
@@ -645,20 +648,6 @@ enum {
 	SUBFT_APGROUP_PARAM_62,
 	SUBFT_APGROUP_PARAM_63,
 	SUBFT_APGROUP_PARAM_64,
-
-#ifdef RTCONFIG_MULTILAN_MWL
-    SUBFT_APM_PARAM_1,
-    SUBFT_APM_PARAM_2,
-    SUBFT_APM_PARAM_3,
-    SUBFT_APM_PARAM_4,
-    SUBFT_APM_PARAM_5,
-    SUBFT_APM_PARAM_6,
-    SUBFT_APM_PARAM_7,
-    SUBFT_APM_PARAM_8,
-    SUBFT_APM_PARAM_9,
-    SUBFT_APM_PARAM_10,
-#endif	// RTCONFIG_MULTILAN_MWL
-
 #endif	// RTCONFIG_MULTILAN_CFG
 
 	/* sub feature for Target Wake Time */
@@ -693,16 +682,14 @@ enum {
 	SUBFT_PRIVACY_POLICY,
 	SUBFT_GENCERT,
 
-#ifdef RTCONFIG_MLO_BH_BAND
-	SUBFT_MLO_BH_BAND,
-#endif	// RTCONFIG_MLO_BH_BAND
-
 #ifdef RTCONFIG_WIFI7
 	/* sub feature for 802.11be/Wi-Fi 7 mode */
 	SUBFT_11_BE_BAND1,
 	SUBFT_11_BE_BAND2,
 	SUBFT_11_BE_BAND3,
 	SUBFT_11_BE_BAND4,
+#endif
+
 #ifdef RTCONFIG_MULTILAN_CFG
     SUBFT_11_BE_BAND1_G1,
     SUBFT_11_BE_BAND2_G1,
@@ -732,9 +719,7 @@ enum {
     SUBFT_11_BE_BAND2_G7,
     SUBFT_11_BE_BAND3_G7,
     SUBFT_11_BE_BAND4_G7,
-#endif	// RTCONFIG_MULTILAN_CFG
-
-#endif
+#endif  // RTCONFIG_MULTILAN_CFG
 
 	SUBFT_NEW_EULA,
 
@@ -970,19 +955,6 @@ static struct subfeature_mapping_s subfeature_mapping_list[] __attribute__ ((unu
 	{ "apg62_param", SUBFT_APGROUP_PARAM_62, FT_APG_PARAM },
 	{ "apg63_param", SUBFT_APGROUP_PARAM_63, FT_APG_PARAM },
 	{ "apg64_param", SUBFT_APGROUP_PARAM_64, FT_APG_PARAM },
-#if defined(RTCONFIG_MULTILAN_MWL)
-    { "apm1_param", SUBFT_APM_PARAM_1, FT_APM_PARAM },
-    { "apm2_param", SUBFT_APM_PARAM_2, FT_APM_PARAM },
-    { "apm3_param", SUBFT_APM_PARAM_3, FT_APM_PARAM },
-    { "apm4_param", SUBFT_APM_PARAM_4, FT_APM_PARAM },
-    { "apm5_param", SUBFT_APM_PARAM_5, FT_APM_PARAM },
-    { "apm6_param", SUBFT_APM_PARAM_6, FT_APM_PARAM },
-    { "apm7_param", SUBFT_APM_PARAM_7, FT_APM_PARAM },
-    { "apm8_param", SUBFT_APM_PARAM_8, FT_APM_PARAM },
-    { "apm9_param", SUBFT_APM_PARAM_9, FT_APM_PARAM },
-    { "apm10_param", SUBFT_APM_PARAM_10, FT_APM_PARAM },	
-#endif	// RTCONFIG_MULTILAN_MWL
-
 #endif	// RTCONFIG_MULTILAN_CFG		
 	{ "guest_misc_2g_g1", SUBFT_GUEST_MISC_BAND1_G1, FT_WIRELESS },
 	{ "guest_misc_2g_g2", SUBFT_GUEST_MISC_BAND1_G2, FT_WIRELESS },
@@ -1043,6 +1015,24 @@ static struct subfeature_mapping_s subfeature_mapping_list[] __attribute__ ((unu
 	{ "ofdma_5g", SUBFT_OFDMA_BAND2, FT_WIRELESS },
 	{ "ofdma_5g1", SUBFT_OFDMA_BAND3, FT_WIRELESS },
 	{ "ofdma_b4", SUBFT_OFDMA_BAND4, FT_WIRELESS },
+
+#if defined(RTCONFIG_WIFI7) 
+#if defined(RTCONFIG_BCMWL6) 
+	/* be_ofdma */
+	{ "be_ofdma_b1", SUBFT_BE_OFDMA_BAND1, FT_WIRELESS },
+	{ "be_ofdma_b2", SUBFT_BE_OFDMA_BAND2, FT_WIRELESS },
+	{ "be_ofdma_b3", SUBFT_BE_OFDMA_BAND3, FT_WIRELESS },
+	{ "be_ofdma_b4", SUBFT_BE_OFDMA_BAND4, FT_WIRELESS },
+	
+	/* be_mumimo */
+	/* be_ofdma */
+	{ "be_mumimo_b1", SUBFT_BE_MUMIMO_BAND1, FT_WIRELESS },
+	{ "be_mumimo_b2", SUBFT_BE_MUMIMO_BAND2, FT_WIRELESS },
+	{ "be_mumimo_b3", SUBFT_BE_MUMIMO_BAND3, FT_WIRELESS },
+	{ "be_mumimo_b4", SUBFT_BE_MUMIMO_BAND4, FT_WIRELESS },
+#endif
+#endif
+
 #if defined(RTCONFIG_BCN_RPT)
 	{ "rssi_method", SUBFT_RSSI_METHOD, FT_WIRELESS },
 #endif
@@ -1174,9 +1164,6 @@ static struct subfeature_mapping_s subfeature_mapping_list[] __attribute__ ((unu
 	{ "mlo", SUBFT_MLO, FT_MLO },
 	{ "mld", SUBFT_MLD_ENABLE, FT_MLO },
 #endif	// RTCONFIG_MLO
-#ifdef RTCONFIG_MLO_BH_BAND
-	{ "mlo_bh_band", SUBFT_MLO_BH_BAND, FT_MLO_BH_BAND },
-#endif	// RTCONFIG_MLO_BH_BAND
 
 #ifdef RTCONFIG_WIFI7
 	/* 802.11be/Wi-Fi 7 mode */
@@ -1213,7 +1200,7 @@ static struct subfeature_mapping_s subfeature_mapping_list[] __attribute__ ((unu
     { "11be_b2_g7", SUBFT_11_BE_BAND2_G7, FT_WIRELESS },
     { "11be_b3_g7", SUBFT_11_BE_BAND3_G7, FT_WIRELESS },
     { "11be_b4_g7", SUBFT_11_BE_BAND4_G7, FT_WIRELESS },
-#endif	// RTCONFIG_MULTILAN_CFG
+#endif  // RTCONFIG_MULTILAN_CFG
 #endif
 
 	/* new eula */
@@ -2108,188 +2095,6 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 	{ "subnet_rl", FT_SUBNET_RL, SUBFT_SUBNET_RL, "" },
 	{ "vlan_trunk_rl", FT_VLAN_TRUNK_RL, SUBFT_VLAN_TRUNK_RL, "" },
 	{ "radius_list", FT_RADIUS_LIST, SUBFT_RADIUS_LIST, "" },
-#if defined(RTCONFIG_MULTILAN_MWL)
-    // APM1
-    { "apm1_enable", FT_APM_PARAM, SUBFT_APM_PARAM_1, "0" },
-    { "apm1_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_1, "" },
-    { "apm1_hide_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_1, "0" },
-    { "apm1_security", FT_APM_PARAM, SUBFT_APM_PARAM_1, "" },
-    { "apm1_bw_limit", FT_APM_PARAM, SUBFT_APM_PARAM_1, "" },
-    { "apm1_timesched", FT_APM_PARAM, SUBFT_APM_PARAM_1, "0" },
-    { "apm1_sched", FT_APM_PARAM, SUBFT_APM_PARAM_1, "" },
-    { "apm1_expiretime", FT_APM_PARAM, SUBFT_APM_PARAM_1, "" },
-    { "apm1_ap_isolate", FT_APM_PARAM, SUBFT_APM_PARAM_1, "0" },
-    { "apm1_macmode", FT_APM_PARAM, SUBFT_APM_PARAM_1, "0" },
-    { "apm1_maclist", FT_APM_PARAM, SUBFT_APM_PARAM_1, "" },
-    { "apm1_iot_max_cmpt", FT_APM_PARAM, SUBFT_APM_PARAM_1, "" },
-    { "apm1_dut_list", FT_APM_PARAM, SUBFT_APM_PARAM_1, "" },
-    { "apm1_mlo", FT_APM_PARAM, SUBFT_APM_PARAM_1, "0" },
-#if RTCONFIG_WIFI7
-    { "apm1_11be", FT_APM_PARAM, SUBFT_APM_PARAM_1, "1" },	
-#endif
-    // APM2
-    { "apm2_enable", FT_APM_PARAM, SUBFT_APM_PARAM_2, "0" },
-    { "apm2_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_2, "" },
-    { "apm2_hide_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_2, "0" },
-    { "apm2_security", FT_APM_PARAM, SUBFT_APM_PARAM_2, "" },
-    { "apm2_bw_limit", FT_APM_PARAM, SUBFT_APM_PARAM_2, "" },
-    { "apm2_timesched", FT_APM_PARAM, SUBFT_APM_PARAM_2, "0" },
-    { "apm2_sched", FT_APM_PARAM, SUBFT_APM_PARAM_2, "" },
-    { "apm2_expiretime", FT_APM_PARAM, SUBFT_APM_PARAM_2, "" },
-    { "apm2_ap_isolate", FT_APM_PARAM, SUBFT_APM_PARAM_2, "0" },
-    { "apm2_macmode", FT_APM_PARAM, SUBFT_APM_PARAM_2, "0" },
-    { "apm2_maclist", FT_APM_PARAM, SUBFT_APM_PARAM_2, "" },
-    { "apm2_iot_max_cmpt", FT_APM_PARAM, SUBFT_APM_PARAM_2, "" },
-    { "apm2_dut_list", FT_APM_PARAM, SUBFT_APM_PARAM_2, "" },
-    { "apm2_mlo", FT_APM_PARAM, SUBFT_APM_PARAM_2, "0" },
-#if RTCONFIG_WIFI7
-    { "apm2_11be", FT_APM_PARAM, SUBFT_APM_PARAM_2, "1" },
-#endif
-    // APM3
-    { "apm3_enable", FT_APM_PARAM, SUBFT_APM_PARAM_3, "0" },
-    { "apm3_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_3, "" },
-    { "apm3_hide_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_3, "0" },
-    { "apm3_security", FT_APM_PARAM, SUBFT_APM_PARAM_3, "" },
-    { "apm3_bw_limit", FT_APM_PARAM, SUBFT_APM_PARAM_3, "" },
-    { "apm3_timesched", FT_APM_PARAM, SUBFT_APM_PARAM_3, "0" },
-    { "apm3_sched", FT_APM_PARAM, SUBFT_APM_PARAM_3, "" },
-    { "apm3_expiretime", FT_APM_PARAM, SUBFT_APM_PARAM_3, "" },
-    { "apm3_ap_isolate", FT_APM_PARAM, SUBFT_APM_PARAM_3, "0" },
-    { "apm3_macmode", FT_APM_PARAM, SUBFT_APM_PARAM_3, "0" },
-    { "apm3_maclist", FT_APM_PARAM, SUBFT_APM_PARAM_3, "" },
-    { "apm3_iot_max_cmpt", FT_APM_PARAM, SUBFT_APM_PARAM_3, "" },
-    { "apm3_dut_list", FT_APM_PARAM, SUBFT_APM_PARAM_3, "" },
-    { "apm3_mlo", FT_APM_PARAM, SUBFT_APM_PARAM_3, "0" },
-#if RTCONFIG_WIFI7
-    { "apm3_11be", FT_APM_PARAM, SUBFT_APM_PARAM_3, "1" },
-#endif
-    // APM4
-    { "apm4_enable", FT_APM_PARAM, SUBFT_APM_PARAM_4, "0" },
-    { "apm4_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_4, "" },
-    { "apm4_hide_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_4, "0" },
-    { "apm4_security", FT_APM_PARAM, SUBFT_APM_PARAM_4, "" },
-    { "apm4_bw_limit", FT_APM_PARAM, SUBFT_APM_PARAM_4, "" },
-    { "apm4_timesched", FT_APM_PARAM, SUBFT_APM_PARAM_4, "0" },
-    { "apm4_sched", FT_APM_PARAM, SUBFT_APM_PARAM_4, "" },
-    { "apm4_expiretime", FT_APM_PARAM, SUBFT_APM_PARAM_4, "" },
-    { "apm4_ap_isolate", FT_APM_PARAM, SUBFT_APM_PARAM_4, "0" },
-    { "apm4_macmode", FT_APM_PARAM, SUBFT_APM_PARAM_4, "0" },
-    { "apm4_maclist", FT_APM_PARAM, SUBFT_APM_PARAM_4, "" },
-    { "apm4_iot_max_cmpt", FT_APM_PARAM, SUBFT_APM_PARAM_4, "" },
-    { "apm4_dut_list", FT_APM_PARAM, SUBFT_APM_PARAM_4, "" },
-    { "apm4_mlo", FT_APM_PARAM, SUBFT_APM_PARAM_4, "0" },
-#if RTCONFIG_WIFI7
-    { "apm4_11be", FT_APM_PARAM, SUBFT_APM_PARAM_4, "1" },
-#endif
-    // APM5
-    { "apm5_enable", FT_APM_PARAM, SUBFT_APM_PARAM_5, "0" },
-    { "apm5_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_5, "" },
-    { "apm5_hide_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_5, "0" },
-    { "apm5_security", FT_APM_PARAM, SUBFT_APM_PARAM_5, "" },
-    { "apm5_bw_limit", FT_APM_PARAM, SUBFT_APM_PARAM_5, "" },
-    { "apm5_timesched", FT_APM_PARAM, SUBFT_APM_PARAM_5, "0" },
-    { "apm5_sched", FT_APM_PARAM, SUBFT_APM_PARAM_5, "" },
-    { "apm5_expiretime", FT_APM_PARAM, SUBFT_APM_PARAM_5, "" },
-    { "apm5_ap_isolate", FT_APM_PARAM, SUBFT_APM_PARAM_5, "0" },
-    { "apm5_macmode", FT_APM_PARAM, SUBFT_APM_PARAM_5, "0" },
-    { "apm5_maclist", FT_APM_PARAM, SUBFT_APM_PARAM_5, "" },
-    { "apm5_iot_max_cmpt", FT_APM_PARAM, SUBFT_APM_PARAM_5, "" },
-    { "apm5_dut_list", FT_APM_PARAM, SUBFT_APM_PARAM_5, "" },
-    { "apm5_mlo", FT_APM_PARAM, SUBFT_APM_PARAM_5, "0" },
-#if RTCONFIG_WIFI7
-    { "apm5_11be", FT_APM_PARAM, SUBFT_APM_PARAM_5, "1" },
-#endif
-    // APM6
-    { "apm6_enable", FT_APM_PARAM, SUBFT_APM_PARAM_6, "0" },
-    { "apm6_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_6, "" },
-    { "apm6_hide_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_6, "0" },
-    { "apm6_security", FT_APM_PARAM, SUBFT_APM_PARAM_6, "" },
-    { "apm6_bw_limit", FT_APM_PARAM, SUBFT_APM_PARAM_6, "" },
-    { "apm6_timesched", FT_APM_PARAM, SUBFT_APM_PARAM_6, "0" },
-    { "apm6_sched", FT_APM_PARAM, SUBFT_APM_PARAM_6, "" },
-    { "apm6_expiretime", FT_APM_PARAM, SUBFT_APM_PARAM_6, "" },
-    { "apm6_ap_isolate", FT_APM_PARAM, SUBFT_APM_PARAM_6, "0" },
-    { "apm6_macmode", FT_APM_PARAM, SUBFT_APM_PARAM_6, "0" },
-    { "apm6_maclist", FT_APM_PARAM, SUBFT_APM_PARAM_6, "" },
-    { "apm6_iot_max_cmpt", FT_APM_PARAM, SUBFT_APM_PARAM_6, "" },
-    { "apm6_dut_list", FT_APM_PARAM, SUBFT_APM_PARAM_6, "" },
-    { "apm6_mlo", FT_APM_PARAM, SUBFT_APM_PARAM_6, "0" },
-#if RTCONFIG_WIFI7
-    { "apm6_11be", FT_APM_PARAM, SUBFT_APM_PARAM_6, "1" },
-#endif
-    // APM7
-    { "apm7_enable", FT_APM_PARAM, SUBFT_APM_PARAM_7, "0" },
-    { "apm7_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_7, "" },
-    { "apm7_hide_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_7, "0" },
-    { "apm7_security", FT_APM_PARAM, SUBFT_APM_PARAM_7, "" },
-    { "apm7_bw_limit", FT_APM_PARAM, SUBFT_APM_PARAM_7, "" },
-    { "apm7_timesched", FT_APM_PARAM, SUBFT_APM_PARAM_7, "0" },
-    { "apm7_sched", FT_APM_PARAM, SUBFT_APM_PARAM_7, "" },
-    { "apm7_expiretime", FT_APM_PARAM, SUBFT_APM_PARAM_7, "" },
-    { "apm7_ap_isolate", FT_APM_PARAM, SUBFT_APM_PARAM_7, "0" },
-    { "apm7_macmode", FT_APM_PARAM, SUBFT_APM_PARAM_7, "0" },
-    { "apm7_maclist", FT_APM_PARAM, SUBFT_APM_PARAM_7, "" },
-    { "apm7_iot_max_cmpt", FT_APM_PARAM, SUBFT_APM_PARAM_7, "" },
-    { "apm7_dut_list", FT_APM_PARAM, SUBFT_APM_PARAM_7, "" },
-    { "apm7_mlo", FT_APM_PARAM, SUBFT_APM_PARAM_7, "0" },
-#if RTCONFIG_WIFI7
-    { "apm7_11be", FT_APM_PARAM, SUBFT_APM_PARAM_7, "1" },
-#endif
-    // APM8
-    { "apm8_enable", FT_APM_PARAM, SUBFT_APM_PARAM_8, "0" },
-    { "apm8_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_8, "" },
-    { "apm8_hide_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_8, "0" },
-    { "apm8_security", FT_APM_PARAM, SUBFT_APM_PARAM_8, "" },
-    { "apm8_bw_limit", FT_APM_PARAM, SUBFT_APM_PARAM_8, "" },
-    { "apm8_timesched", FT_APM_PARAM, SUBFT_APM_PARAM_8, "0" },
-    { "apm8_sched", FT_APM_PARAM, SUBFT_APM_PARAM_8, "" },
-    { "apm8_expiretime", FT_APM_PARAM, SUBFT_APM_PARAM_8, "" },
-    { "apm8_ap_isolate", FT_APM_PARAM, SUBFT_APM_PARAM_8, "0" },
-    { "apm8_macmode", FT_APM_PARAM, SUBFT_APM_PARAM_8, "0" },
-    { "apm8_maclist", FT_APM_PARAM, SUBFT_APM_PARAM_8, "" },
-    { "apm8_iot_max_cmpt", FT_APM_PARAM, SUBFT_APM_PARAM_8, "" },
-    { "apm8_dut_list", FT_APM_PARAM, SUBFT_APM_PARAM_8, "" },
-    { "apm8_mlo", FT_APM_PARAM, SUBFT_APM_PARAM_8, "0" },
-#if RTCONFIG_WIFI7
-    { "apm8_11be", FT_APM_PARAM, SUBFT_APM_PARAM_8, "1" },
-#endif
-    // APM9
-    { "apm9_enable", FT_APM_PARAM, SUBFT_APM_PARAM_9, "0" },
-    { "apm9_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_9, "" },
-    { "apm9_hide_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_9, "0" },
-    { "apm9_security", FT_APM_PARAM, SUBFT_APM_PARAM_9, "" },
-    { "apm9_bw_limit", FT_APM_PARAM, SUBFT_APM_PARAM_9, "" },
-    { "apm9_timesched", FT_APM_PARAM, SUBFT_APM_PARAM_9, "0" },
-    { "apm9_sched", FT_APM_PARAM, SUBFT_APM_PARAM_9, "" },
-    { "apm9_expiretime", FT_APM_PARAM, SUBFT_APM_PARAM_9, "" },
-    { "apm9_ap_isolate", FT_APM_PARAM, SUBFT_APM_PARAM_9, "0" },
-    { "apm9_macmode", FT_APM_PARAM, SUBFT_APM_PARAM_9, "0" },
-    { "apm9_maclist", FT_APM_PARAM, SUBFT_APM_PARAM_9, "" },
-    { "apm9_iot_max_cmpt", FT_APM_PARAM, SUBFT_APM_PARAM_9, "" },
-    { "apm9_dut_list", FT_APM_PARAM, SUBFT_APM_PARAM_9, "" },
-    { "apm9_mlo", FT_APM_PARAM, SUBFT_APM_PARAM_9, "0" },
-#if RTCONFIG_WIFI7
-    { "apm9_11be", FT_APM_PARAM, SUBFT_APM_PARAM_9, "1" },
-#endif
-    // APM10
-    { "apm10_enable", FT_APM_PARAM, SUBFT_APM_PARAM_10, "0" },
-    { "apm10_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_10, "" },
-    { "apm10_hide_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_10, "0" },
-    { "apm10_security", FT_APM_PARAM, SUBFT_APM_PARAM_10, "" },
-    { "apm10_bw_limit", FT_APM_PARAM, SUBFT_APM_PARAM_10, "" },
-    { "apm10_timesched", FT_APM_PARAM, SUBFT_APM_PARAM_10, "0" },
-    { "apm10_sched", FT_APM_PARAM, SUBFT_APM_PARAM_10, "" },
-    { "apm10_expiretime", FT_APM_PARAM, SUBFT_APM_PARAM_10, "" },
-    { "apm10_ap_isolate", FT_APM_PARAM, SUBFT_APM_PARAM_10, "0" },
-    { "apm10_macmode", FT_APM_PARAM, SUBFT_APM_PARAM_10, "0" },
-    { "apm10_maclist", FT_APM_PARAM, SUBFT_APM_PARAM_10, "" },
-    { "apm10_iot_max_cmpt", FT_APM_PARAM, SUBFT_APM_PARAM_10, "" },
-    { "apm10_dut_list", FT_APM_PARAM, SUBFT_APM_PARAM_10, "" },
-    { "apm10_mlo", FT_APM_PARAM, SUBFT_APM_PARAM_10, "0" },
-#if RTCONFIG_WIFI7
-    { "apm10_11be", FT_APM_PARAM, SUBFT_APM_PARAM_10, "1" },
-#endif
-#endif	// RTCONFIG_MULTILAN_MWL
 	// APG0
 	{ "apg0_enable", FT_APG_PARAM, SUBFT_APGROUP_PARAM_0, "0" },
 	{ "apg0_ssid", FT_APG_PARAM, SUBFT_APGROUP_PARAM_0, "" },
@@ -3228,6 +3033,23 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 	{ "wl1_ofdma", FT_WIRELESS, SUBFT_OFDMA_BAND2,		"1"},
 	{ "wl2_ofdma", FT_WIRELESS, SUBFT_OFDMA_BAND3,		"1"},
 	{ "wl3_ofdma", FT_WIRELESS, SUBFT_OFDMA_BAND4,		"1"},
+	
+#if defined(RTCONFIG_WIFI7) 
+#if defined(RTCONFIG_BCMWL6) 
+	/* be_ofdma */
+	{ "wl0_be_ofdma", FT_WIRELESS, SUBFT_BE_OFDMA_BAND1,		"3"},
+	{ "wl1_be_ofdma", FT_WIRELESS, SUBFT_BE_OFDMA_BAND2,		"3"},
+	{ "wl2_be_ofdma", FT_WIRELESS, SUBFT_BE_OFDMA_BAND3,		"3"},
+	{ "wl3_be_ofdma", FT_WIRELESS, SUBFT_BE_OFDMA_BAND4,		"3"},
+	
+	/* be_mumimo */
+	{ "wl0_be_mumimo", FT_WIRELESS, SUBFT_BE_MUMIMO_BAND1,		"3"},
+	{ "wl1_be_mumimo", FT_WIRELESS, SUBFT_BE_MUMIMO_BAND2,		"3"},
+	{ "wl2_be_mumimo", FT_WIRELESS, SUBFT_BE_MUMIMO_BAND3,		"3"},
+	{ "wl3_be_mumimo", FT_WIRELESS, SUBFT_BE_MUMIMO_BAND4,		"3"},
+#endif
+#endif
+
 #if defined(RTCONFIG_BCN_RPT)
 	{ "rssi_method", FT_WIRELESS, SUBFT_RSSI_METHOD,		""},
 #endif
@@ -3656,9 +3478,6 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 	{ "mlo_rl", FT_MLO, SUBFT_MLO, "" },
 	{ "mld_enable", FT_MLO, SUBFT_MLD_ENABLE,		"0"},
 #endif
-#ifdef RTCONFIG_MLO_BH_BAND
-	{ "mlo_bh_band", FT_MLO_BH_BAND, SUBFT_MLO_BH_BAND,		""},
-#endif
 
 #ifdef RTCONFIG_WIFI7
 	/* 802.11be/Wi-Fi 7 mode */
@@ -3668,9 +3487,9 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 	{ "wl3_11be", FT_WIRELESS, SUBFT_11_BE_BAND4,		"1"},
 
 #ifdef RTCONFIG_MULTILAN_CFG
-    { "wl0.1_11be", FT_WIRELESS, SUBFT_11_BE_BAND1_G1,	"1"},
-    { "wl1.1_11be", FT_WIRELESS, SUBFT_11_BE_BAND2_G1, 	"1"},
-    { "wl2.1_11be", FT_WIRELESS, SUBFT_11_BE_BAND3_G1, 	"1"},
+    { "wl0.1_11be", FT_WIRELESS, SUBFT_11_BE_BAND1_G1,  "1"},
+    { "wl1.1_11be", FT_WIRELESS, SUBFT_11_BE_BAND2_G1,  "1"},
+    { "wl2.1_11be", FT_WIRELESS, SUBFT_11_BE_BAND3_G1,  "1"},
     { "wl3.1_11be", FT_WIRELESS, SUBFT_11_BE_BAND4_G1,  "1"},
     { "wl0.2_11be", FT_WIRELESS, SUBFT_11_BE_BAND1_G2,  "1"},
     { "wl1.2_11be", FT_WIRELESS, SUBFT_11_BE_BAND2_G2,  "1"},
@@ -3696,7 +3515,7 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
     { "wl1.7_11be", FT_WIRELESS, SUBFT_11_BE_BAND2_G7,  "1"},
     { "wl2.7_11be", FT_WIRELESS, SUBFT_11_BE_BAND3_G7,  "1"},
     { "wl3.7_11be", FT_WIRELESS, SUBFT_11_BE_BAND4_G7,  "1"},
-#endif	// RTCONFIG_MULTILAN_CFG
+#endif  // RTCONFIG_MULTILAN_CFG
 #endif
 
 	/* new eula */

@@ -19,16 +19,15 @@
 		<script type="text/javascript" src="./mobile/js/qisData.js"></script>
 		<script type="text/javascript" src="./mobile/js/handler.js"></script>
 		<script type="text/javascript" src="./js/https_redirect/https_redirect.js"></script>
-		<script type="text/javascript" src="./md5.js"></script>
 		<script type="text/javascript" src="./js/asus_policy.js"></script>
 		<script>
 			let urlParameter = new URLSearchParams(window.location.search);
 
-			if(httpApi.nvramGet(["CoBrand"]).CoBrand == "8")
+			if(isSupport("TS_UI"))
 				$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/difference.css">');
 
 			$(document).ready(function(){
-				if(httpApi.nvramGet(["CoBrand"]).CoBrand == "8"){
+				if(isSupport("TS_UI")){
 					setTimeout(function() {
 						// preload image
 						new Image().src = "images/New_ui/middown_bg.png";
@@ -76,8 +75,7 @@
 						"ASUS_NEW_EULA",
 						"sw_mode",
 						"wlc_psta", 
-						"wl_ifnames",
-						"wlnband_list", 
+						"wl_ifnames", 
 						"wl_version", 
 						"productid", 
 						"rc_support", 
@@ -166,7 +164,7 @@
 
 					systemVariable.qisSession = "qis"+Date.now();
 					systemVariable.opMode = systemVariable.originOpMode;
-					systemVariable.wirelessBand = initNvram.wlnband_list.split("&#60").length;
+					systemVariable.wirelessBand = initNvram.wl_ifnames.split(" ").length;
 					systemVariable.sdkVersion = initNvram.wl_version.split(".")[0];
 					systemVariable.productid = initNvram.productid;
 					systemVariable.rcSupport = initNvram.rc_support;
@@ -2480,14 +2478,13 @@
 					<div class="table_td">
 						<div class="pageDesc"><#qis_wireless_setting#></div>
 
-						<!--div id="wlTitleField" class="inputTitleContainer mloSupport">
-							<div class="inputTitle ap_ssid_hover moreBold" style="margin-bottom: -30px;">WiFi7 Network</div>
-						</div-->
+						<div id="wlTitleField" class="inputTitleContainer mloSupport"><div class="inputTitle ap_ssid_hover moreBold" style="margin-bottom: -30px;">WiFi7 Network</div></div>
 						<div id="wlInputField"></div>
 
+						<div id="wlTitleField_MLO" class="inputTitleContainer mloSupport"><div class="inputTitle ap_ssid_hover moreBold" style="margin-bottom: -30px;">IoT Network</div></div>
 						<div class="mloSupport" id="wlInputField_MLO"></div>
 
-						<div class="labelContainer dualbandSupport bandStreeringSupport checkboxUnderTextInput">
+						<div class="labelContainer dualbandSupport bandStreeringSupport">
 							<label for="wireless_checkbox" class="labelInput"><#qis_wireless_setting_separate#></label>
 							<input type="checkbox" id="wireless_checkbox" data-mini="true"/>
 						</div>
@@ -3173,72 +3170,6 @@
 										</td>
 									</tr>
 								</table>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<!-- SDN IoT -->
-		<div id="SDN_IoT_setting" data-role="page" class="qisBackground">
-			<div class="qis_container">
-				<div class="headerBar"></div>
-				<div class="tableContainer">
-					<div class="desktop_left_field">
-						<div class="titleMain"><#GuestNetwork_IoT#></div>
-						<div class="titleSub"><#Settings#></div>
-					</div>
-					<div class="table_td">
-						<div class="pageDesc">
-							<#qis_wireless_set_done#>
-							<br><#qis_SDN_IoT_setting_desc1#>
-							<br><#qis_SDN_IoT_setting_desc2#>
-						</div>
-
-						<div id="wlTitleField_SDN_IoT" class="inputTitleContainer mloSupport">
-							<div class="inputTitle ap_ssid_hover moreBold" style="margin-bottom: -30px;"><#GuestNetwork_IoT#></div>
-						</div>
-						<div class="mloSupport" id="wlInputField_SDN_IoT"></div>
-						<div class="labelContainer checkboxUnderTextInput">
-							<label for="sdn_iot_checkbox" class="labelInput"><#Maybe_Later#></label>
-							<input type="checkbox" id="sdn_iot_checkbox" data-mini="true"/>
-						</div>
-
-						<!-- Action Button -->
-						<div class="footer_desktop">
-							<div class="desktop_abortBtn" onclick='abort.SDN_IoT();'><#CTL_prev#></div>
-							<div class="desktop_applyBtn btn_SDN_apply" onclick="apply.SDN_IoT();"><#CTL_apply#></div>
-						</div>
-						<div class="footer_mobile">
-							<table style="width:100%;" cellpadding="0" cellspacing="0">
-								<tr>
-									<td class="mobileAbort" style="width:50%" onclick='abort.SDN_IoT();'>
-										<div class="mobile_abortBtn"><#CTL_prev#></div>
-									</td>
-									<td class="mobileApply" onclick="apply.SDN_IoT();">
-										<div class="mobile_applyBtn btn_SDN_apply"><#CTL_apply#></div>
-									</td>
-								</tr>
-							</table>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="hidden_mask popup_element"></div>
-			<div class="popup_container popup_element defpass qisView">
-				<div>
-					<div class="title_container">
-						<div class="title">WiFi Connection</div><!-- untranslated -->
-						<div id="wifi_conn_guideline_close" class="icon_close_btn"></div>
-					</div>
-					<div class="content_container">
-						<div class="defpass_guideline_container">
-							<div class="image_container">
-								<div class="image_wifi_conn"></div>
-							</div>
-							<div class="desc_container">
-								<div id="wifi_conn_guideline_desc"></div>
 							</div>
 						</div>
 					</div>

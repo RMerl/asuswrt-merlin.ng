@@ -198,7 +198,7 @@ else	#merlinupdate
 ifeq ($(RTCONFIG_AUTOLIVEUPDATE_ZIP),y)
 	cp -f webs_scripts/zip_webs_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_upgrade.sh
 	cp -f webs_scripts/zip_webs_update.sh $(INSTALLDIR)/usr/sbin/webs_update.sh
-ifeq ($(RTCONFIG_BWDPI),y)
+ifeq ($(or $(RTCONFIG_BWDPI),$(RTCONFIG_HNS)),y)
 	cp -f webs_scripts/sig2nd_upgrade.sh $(INSTALLDIR)/usr/sbin/sig_upgrade.sh
 	cp -f webs_scripts/sig2nd_update.sh $(INSTALLDIR)/usr/sbin/sig_update.sh
 endif
@@ -264,7 +264,7 @@ ifeq ($(RTAC68U),y)
 	cp -f webs_scripts/ssl_webs_update_enc.sh $(INSTALLDIR)/usr/sbin/webs_update_enc.sh
 endif
 
-ifeq ($(or $(RTCONFIG_BWDPI),$(RTCONFIG_BWDPI_DEP)),y)
+ifeq ($(or $(RTCONFIG_BWDPI),$(RTCONFIG_HNS)),y)
 	cp -f webs_scripts/sig2nd_upgrade.sh $(INSTALLDIR)/usr/sbin/sig_upgrade.sh
 	cp -f webs_scripts/sig2nd_update.sh $(INSTALLDIR)/usr/sbin/sig_update.sh
 endif
@@ -465,12 +465,6 @@ endif
 
 ifeq ($(RTCONFIG_GEARUPPLUGIN),y)
 	install -m 0755 gearup_script/guplugin_monitor.sh $(INSTALLDIR)/usr/sbin
-endif
-
-ifeq ($(RTCONFIG_AMAS),y)
-ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
-	install -m 0755 apps_scripts/acs_restart.sh $(INSTALLDIR)/usr/sbin
-endif
 endif
 
 .PHONY: dummy

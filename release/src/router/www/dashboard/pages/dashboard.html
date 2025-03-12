@@ -461,7 +461,6 @@
                     setTimeout(getDnsPingData, 1000);
                 } else {
                     let item = Object.keys(data);
-                    const dns_ping_list_array = decodeURIComponent(httpApi.nvramCharToAscii(["dns_ping_list"]).dns_ping_list).split("<");
                     for (let i = 0; i < item.length; i++) {
                         if (item[i] === "status") {
                             continue;
@@ -470,7 +469,8 @@
                             index = item[i];
 
                         function findNameFromNvram(ip){
-                            const matchResult = dns_ping_list_array.filter(function(dns){return dns.split(">")[1] == ip})
+                            var dns_ping_list_array = decodeURIComponent(httpApi.nvramCharToAscii(["dns_ping_list"]).dns_ping_list).split("<");
+                            var matchResult = dns_ping_list_array.filter(function(dns){return dns.split(">")[1] == ip})
                             return matchResult[0] ? matchResult[0].split(">")[0] : "";
                         }
 

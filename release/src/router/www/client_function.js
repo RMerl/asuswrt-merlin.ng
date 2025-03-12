@@ -486,16 +486,9 @@ function genClientList(){
 			clientList[thisClientMacAddr].isWL = parseInt(thisClient.isWL);
 			clientList[thisClientMacAddr].is_wireless = (clientList[thisClientMacAddr].isWL > 0) ? 1 : 0;
 			clientList[thisClientMacAddr].sdn_idx = parseInt(thisClient.sdn_idx);
-			clientList[thisClientMacAddr].sdn_type = (thisClient.sdn_type) || "DEFAULT";
 
-			if(isSupport("amas")){
+			if(isSupport("amas"))
 				clientList[thisClientMacAddr].isGN = ((thisClient.isGN != "") ? parseInt(thisClient.isGN) : "");
-				if(isSupport("sdn_mainfh")){
-					if(clientList[thisClientMacAddr].sdn_type == "MAINFH"){
-						clientList[thisClientMacAddr].isGN = "";
-					}
-				}
-			}
 			if(isSupport("amas") && isSupport("dualband") && clientList[thisClientMacAddr].isWL == 3)
 				clientList[thisClientMacAddr].isWL = 2;
 			if(clientList[thisClientMacAddr].isOnline) {
@@ -1108,7 +1101,7 @@ function popClientListEditTable(event) {
 
 		if(sw_mode != 4){
 			var radioIcon_css = "radioIcon";
-			if(clientInfo.isGN != "" && clientInfo.isGN != undefined){
+			if((clientInfo.isGN != "" && clientInfo.isGN != undefined) || (isSupport("mtlancfg") && clientInfo.sdn_idx > 0)){
 				radioIcon_css += " GN";
 			}
 			clientIconHtml += '<div class="' + radioIcon_css + ' radio_' + rssi_t +'" title="' + connectModeTip + '"></div>';
@@ -1157,9 +1150,7 @@ function popClientListEditTable(event) {
 	}
 	if(clientInfo.sdn_idx > 0) {
 		document.getElementById('card_client_sdnIdx').style.display = "";
-		const sdn_profile = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx == clientInfo.sdn_idx) || {};
-		const sdn_ssid = $.isEmptyObject(sdn_profile) ? "" : sdn_profile.apg_rl.ssid;
-		document.getElementById('card_client_sdnIdx').innerHTML = "SDN " + sdn_ssid;
+		document.getElementById('card_client_sdnIdx').innerHTML = "SDN " + sdn_rl_for_clientlist[clientInfo.sdn_idx].apg_rl.ssid;
 		$('#tr_adv_setting').hide();
 	}else{
 		$('#tr_adv_setting').show();
@@ -2476,7 +2467,7 @@ function init_clientlist_listview_array(){
 			if(isSupport("mtlancfg")){
 				sdn_list = [];
 				$.each(sdn_rl_for_clientlist, function(index, sdn_all_rl){
-						if(sdn_all_rl.sdn_rl.idx == "0" || sdn_all_rl.sdn_rl.sdn_name == "MAINBH")
+						if(sdn_all_rl.sdn_rl.idx == "0")
 							return true;
 						sdn_list["sdn" + sdn_all_rl.sdn_rl.idx + ""] = new Array();
 						sorter["sdn" + sdn_all_rl.sdn_rl.idx + "_index"] = 3;
@@ -2517,22 +2508,15 @@ function init_sdn_all_list_client(){
 			var profile_data = value.split(">");
 			var sdn_rl_profile = set_sdn_profile(profile_data);
 			sdn_all_rl.sdn_rl = sdn_rl_profile;
-			const ap_prefix = (sdn_all_rl.sdn_rl.sdn_name == "MAINFH" || sdn_all_rl.sdn_rl.sdn_name == "MAINBH") ? "apm" : "apg";
-			var apg_rl_list = get_apg_rl_list(sdn_rl_profile.apg_idx, ap_prefix);
-			if(ap_prefix == "apm"){
-				const specific_apg = apg_rl_list.find(item => item.apg_idx == sdn_rl_profile.apg_idx && (sdn_rl_profile.sdn_name == "MAINFH" || sdn_rl_profile.sdn_name == "MAINBH"));
-				if(specific_apg != undefined){
-					sdn_all_rl.apg_rl = specific_apg;
-				}
-				sdn_rl_for_clientlist.push(sdn_all_rl);
+
+			var apg_rl_list = get_apg_rl_list(sdn_rl_profile.apg_idx);
+			var specific_apg = apg_rl_list.filter(function(item, index, array){
+				return (item.apg_idx == sdn_rl_profile.apg_idx);
+			})[0];
+			if(specific_apg != undefined){
+				sdn_all_rl.apg_rl = specific_apg;
 			}
-			else{
-				const specific_apg = apg_rl_list.find(item => item.apg_idx == sdn_rl_profile.apg_idx && (sdn_rl_profile.sdn_name != "MAINFH" && sdn_rl_profile.sdn_name != "MAINBH"));
-				if(specific_apg != undefined){
-					sdn_all_rl.apg_rl = specific_apg;
-				}
-				sdn_rl_for_clientlist.push(sdn_all_rl);
-			}
+			sdn_rl_for_clientlist.push(sdn_all_rl);
 		}
 	});
 
@@ -2543,13 +2527,13 @@ function init_sdn_all_list_client(){
 		sdn_profile.apg_idx = profile_data[5];
 		return sdn_profile;
 	}
-	function get_apg_rl_list(_apg_idx, _ap_prefix){
+	function get_apg_rl_list(_apg_idx){
 		var apg_rl_list = [];
 		if(parseInt(_apg_idx) > 0){
 			var apg_profile = new apg_rl_attr();
-			var apg_info = httpApi.nvramCharToAscii([_ap_prefix + _apg_idx + "_ssid"], true);
+			var apg_info = httpApi.nvramCharToAscii(["apg" + _apg_idx + "_ssid"], true);
 			apg_profile.apg_idx = _apg_idx.toString();
-			apg_profile.ssid = decodeURIComponent(apg_info[_ap_prefix + _apg_idx + "_ssid"]);
+			apg_profile.ssid = decodeURIComponent(apg_info["apg" + _apg_idx + "_ssid"]);
 			apg_rl_list.push(JSON.parse(JSON.stringify(apg_profile)));
 		}
 		return apg_rl_list;
@@ -2598,7 +2582,7 @@ function changeClientListViewMode() {
 	if(isSupport("amas")){
 		if(isSupport("mtlancfg")){
 			$.each(sdn_rl_for_clientlist, function(index, sdn_all_rl){
-					if(sdn_all_rl.sdn_rl.idx == "0" || sdn_all_rl.sdn_rl.sdn_name == "MAINBH")
+					if(sdn_all_rl.sdn_rl.idx == "0")
 						return true;
 					sorter["sdn" + sdn_all_rl.sdn_rl.idx + "_display"] = true;
 			});
@@ -2708,7 +2692,7 @@ function exportClientListLog() {
 			if(isSupport("amas")){
 				if(isSupport("mtlancfg")){
 					$.each(sdn_rl_for_clientlist, function(index, sdn_all_rl){
-							if(sdn_all_rl.sdn_rl.idx == "0" || sdn_all_rl.sdn_rl.sdn_name == "MAINBH")
+							if(sdn_all_rl.sdn_rl.idx == "0")
 								return true;
 							setArray(sdn_list["sdn" + sdn_all_rl.sdn_rl.idx + ""]);
 					});
@@ -2781,7 +2765,7 @@ function sorterClientList() {
 			if(isSupport("amas")){
 				if(isSupport("mtlancfg")){
 					$.each(sdn_rl_for_clientlist, function(index, sdn_all_rl){
-							if(sdn_all_rl.sdn_rl.idx == "0" || sdn_all_rl.sdn_rl.sdn_name == "MAINBH")
+							if(sdn_all_rl.sdn_rl.idx == "0")
 								return true;
 							sorter.doSorter(sorter["sdn"+sdn_all_rl.sdn_rl.idx+"_index"], indexMapType[sorter["sdn"+sdn_all_rl.sdn_rl.idx+"_index"]], 'sdn'+sdn_all_rl.sdn_rl.idx+'_list');
 					});
@@ -2832,7 +2816,7 @@ function create_clientlist_listview() {
 	if(isSupport("amas")){
 		if(isSupport("mtlancfg")){
 			$.each(sdn_rl_for_clientlist, function(index, sdn_all_rl){
-					if(sdn_all_rl.sdn_rl.idx == "0" || sdn_all_rl.sdn_rl.sdn_name == "MAINBH")
+					if(sdn_all_rl.sdn_rl.idx == "0")
 						return true;
 					sdn_list["sdn"+sdn_all_rl.sdn_rl.idx+""] = [];
 			});
@@ -2884,61 +2868,59 @@ function create_clientlist_listview() {
 			var wl_map = {"2.4 GHz": "1",  "5 GHz": "2", "5 GHz-1": "2", "5 GHz-2": "3", "6 GHz": "4", "6 GHz-1": "4", "6 GHz-2": "5"};
 			var smart_connect_x = httpApi.nvramGet(["smart_connect_x"]).smart_connect_x;
 
-			if(!isSupport("sdn_mainfh")){
-				if(!isSupport("noWiFi")){
-					if(smart_connect_version != "" && smart_connect_x == "1"){
-						var wl_ssid_parm = "wl" +  get_wl_unit_by_band("2G") + "_ssid";
-						var tr_title = htmlEnDeCode.htmlEncode(decodeURIComponent(httpApi.nvramCharToAscii([wl_ssid_parm])[wl_ssid_parm]));
-						code += create_clientlist_card(tr_title, "sc");
-					}
-					else{
-						for(var i = 0; i < wl_nband_title.length; i += 1) {
-							var tr_title = wl_nband_title[i];
-							if(isSupport("amas") && isSupport("mtlancfg")){
-								var wl_if = "";
-								switch(wl_map[wl_nband_title[i]]){
-									case "1":
-										wl_if = "2G";
-										break;
-									case "2":
-										wl_if = "5G";
-										break;
-									case "3":
-										wl_if = "5G2";
-										break;
-									case "4":
-										wl_if = "6G";
-										break;
-									case "5":
-										wl_if = "6G2";
-										break;
-								}
-								if(wl_if != ""){
-									const wl_unit = get_wl_unit_by_band(wl_if);
-									const cur_wlc_band = (()=>{
-										if(typeof wlc_band == "undefined")
-											return '<% nvram_get("wlc_band"); %>';
-										else
-											return wlc_band;
-									})();
-									var wl_ssid_parm = `wl${wl_unit}_ssid`;
-									if(isSwMode("re")){
-										if(concurrep_support){
-											wl_ssid_parm = `wl${wl_unit}.1_ssid`;
-										}
-										else{
-											if(cur_wlc_band == wl_unit)
-												wl_ssid_parm = `wl${wl_unit}.1_ssid`;
-										}
-									}
-
-									tr_title = htmlEnDeCode.htmlEncode(decodeURIComponent(httpApi.nvramCharToAscii([wl_ssid_parm])[wl_ssid_parm])) + " (" + tr_title + ")";
-								}
+			if(!isSupport("noWiFi")){
+				if(smart_connect_version != "" && smart_connect_x == "1"){
+					var wl_ssid_parm = "wl" +  get_wl_unit_by_band("2G") + "_ssid";
+					var tr_title = htmlEnDeCode.htmlEncode(decodeURIComponent(httpApi.nvramCharToAscii([wl_ssid_parm])[wl_ssid_parm]));
+					code += create_clientlist_card(tr_title, "sc");
+				}
+				else{
+					for(var i = 0; i < wl_nband_title.length; i += 1) {
+						var tr_title = wl_nband_title[i];
+						if(isSupport("amas") && isSupport("mtlancfg")){
+							var wl_if = "";
+							switch(wl_map[wl_nband_title[i]]){
+								case "1":
+									wl_if = "2G";
+									break;
+								case "2":
+									wl_if = "5G";
+									break;
+								case "3":
+									wl_if = "5G2";
+									break;
+								case "4":
+									wl_if = "6G";
+									break;
+								case "5":
+									wl_if = "6G2";
+									break;
 							}
+							if(wl_if != ""){
+								const wl_unit = get_wl_unit_by_band(wl_if);
+								const cur_wlc_band = (()=>{
+									if(typeof wlc_band == "undefined")
+										return '<% nvram_get("wlc_band"); %>';
+									else
+										return wlc_band;
+								})();
+								var wl_ssid_parm = `wl${wl_unit}_ssid`;
+								if(isSwMode("re")){
+									if(concurrep_support){
+										wl_ssid_parm = `wl${wl_unit}.1_ssid`;
+									}
+									else{
+										if(cur_wlc_band == wl_unit)
+											wl_ssid_parm = `wl${wl_unit}.1_ssid`;
+									}
+								}
 
-							code += create_clientlist_card(tr_title, "wl" + wl_map[wl_nband_title[i]]);
-
+								tr_title = htmlEnDeCode.htmlEncode(decodeURIComponent(httpApi.nvramCharToAscii([wl_ssid_parm])[wl_ssid_parm])) + " (" + tr_title + ")";
+							}
 						}
+
+						code += create_clientlist_card(tr_title, "wl" + wl_map[wl_nband_title[i]]);
+
 					}
 				}
 			}
@@ -2946,7 +2928,7 @@ function create_clientlist_listview() {
 			if(isSupport("amas")){
 				if(isSupport("mtlancfg")){
 					$.each(sdn_rl_for_clientlist, function(index, sdn_all_rl){
-						if(sdn_all_rl.sdn_rl.idx == "0" || sdn_all_rl.sdn_rl.sdn_name == "MAINBH")
+						if(sdn_all_rl.sdn_rl.idx == "0")
 							return true;
 						var sdn_idx = sdn_all_rl.sdn_rl.idx;
 
@@ -3093,7 +3075,7 @@ function create_clientlist_listview() {
 		if(isSupport("amas")){
 			if(isSupport("mtlancfg")){
 				$.each(sdn_rl_for_clientlist, function(index, sdn_all_rl){
-						if(sdn_all_rl.sdn_rl.idx == "0" || sdn_all_rl.sdn_rl.sdn_name == "MAINBH")
+						if(sdn_all_rl.sdn_rl.idx == "0")
 							return true;
 						if(!sorter["sdn"+sdn_all_rl.sdn_rl.idx+"_display"]){
 							document.getElementById("clientlist_sdn"+sdn_all_rl.sdn_rl.idx+"_list_Block").style.display = "none";
@@ -3220,7 +3202,7 @@ function drawClientListBlock(objID) {
 		clientListCode += `
                 <thead class='client-list-sm'>
                     <tr id='tr_${objID}_title' class='table-header'>
-                        <th width=${obj_width[0]} onclick='sorter.addBorder(this);sorter.doSorter(9, "num", "${objID}");' style='cursor:pointer;'><#wan_interface#></th>
+                        ${!(isSwMode('mb') || isSwMode('ew'))?`<th width=${obj_width[0]} onclick='sorter.addBorder(this);sorter.doSorter(9, "num", "${objID}");' style='cursor:pointer;'><#wan_interface#></th>`:``}
                         <th width=${obj_width[1]}><#Client_Icon#></th>
                         <th width=${obj_width[2]} class='client-list-sm text-left' onclick='sorter.addBorder(this);sorter.doSorter(2, "str", "${objID}");' style='cursor:pointer;'><#Client_Name#></th>
                         <th width=${obj_width[3]} class='client-list-xl text-left' onclick='sorter.addBorder(this);sorter.doSorter(3, "num", "${objID}");' style='cursor:pointer;'><#vpn_client_ip#></th>

@@ -27,6 +27,7 @@ a{
 .qisBackgroundIndex{
 	background:url('qis_background.png') #FFF no-repeat;
 	background-size: cover;
+	overflow-x: visible !important;
 }
 .qisBackground{
 	background:url('qis_header.png') #FFF repeat-x;
@@ -214,9 +215,6 @@ a{
 	}
 }
 @media screen and (max-width: 1000px){
-	.welcomeBtnContainer {
-		margin-top: 100px !important;
-	}
 	.tableContainer{
 		width: 100%;
 		margin-top: 48px;
@@ -253,6 +251,9 @@ a{
 }
 .loadingAnimation {
 	border-color: transparent #000 transparent #000;
+}
+#ob_status{
+	color: #000;
 }
 #asusEulaContainer {
 	color: #000;

@@ -382,10 +382,12 @@ function tryParseJSON (jsonString){
             return o;
         }
     }
-    catch (e) { }
+    catch (e) {
+		// do something
+	}
 
     return false;
-};
+}
 
 var htmlEnDeCode = (function() {
 	var charToEntityRegex,

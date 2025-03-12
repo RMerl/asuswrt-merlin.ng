@@ -495,12 +495,12 @@ int update_SDN_iptables(const MTLAN_T *pmtl, const char *logdrop, const char *lo
 		if (pmtl->enable)
 		{
 #ifdef RTCONFIG_DNSPRIVACY
-			if (pmtl->nw_t.idx)	//ignore br0 (main subnet)
+			if (pmtl->nw_t.idx)	//ignore br0
 			{
 				// DoT
 				if (pmtl->nw_t.dot_enable)
 				{
-					fprintf(fp, "-A PREROUTING --src %s/%d -p udp -m udp --dport 53 -j DNAT --to %s:53%02d\n", pmtl->nw_t.subnet, pmtl->nw_t.prefixlen, pmtl->nw_t.addr, pmtl->sdn_t.sdn_idx);
+					fprintf(fp, "-A PREROUTING --src %s/%d -p udp -m udp --dport 53 -j DNAT --to %s:53%02d\n", pmtl->nw_t.subnet, pmtl->nw_t.prefixlen, pmtl->nw_t.addr, pmtl->nw_t.idx);
 				}
 			}
 #endif
@@ -961,12 +961,12 @@ static int _write_UrlFilter(const MTLAN_T *pmtl, const URLF_PF *urlf_pf, const c
 
 			if (urlf_pf->mode == 1)
 			{
-				fprintf(fp, "-A %s -i %s -p udp --dport 53 -m string --icase --hex-string \"|04|asus|03|com|00|\" --algo bm -j ACCEPT\n", sdn_chain, ifname);
+				fprintf(fp, "-A %s -i %s -p udp --dport 53 -m string --icase --hex-string \"|0a|asusrouter|03|com|00|\" --algo bm -j ACCEPT\n", sdn_chain, ifname);
 				fprintf(fp, "-A %s -i %s -p udp --dport 53 -j DROP\n", sdn_chain, ifname);
 #ifdef RTCONFIG_IPV6
 				if (v6_enable && fp_ipv6)
 				{
-					fprintf(fp_ipv6, "-A %s -i %s -p udp --dport 53 -m string --icase --hex-string \"|04|asus|03|com|00|\" --algo bm -j ACCEPT\n", sdn_chain, ifname);
+					fprintf(fp_ipv6, "-A %s -i %s -p udp --dport 53 -m string --icase --hex-string \"|0a|asusrouter|03|com|00|\" --algo bm -j ACCEPT\n", sdn_chain, ifname);
 					fprintf(fp_ipv6, "-A %s -i %s -p udp --dport 53 -j DROP\n", sdn_chain, ifname);
 				}
 #endif

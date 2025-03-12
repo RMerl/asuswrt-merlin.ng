@@ -20,7 +20,6 @@
 #include <net/if.h>
 #include <bcmnvram.h>
 #include <bcmparams.h>
-#include <utils.h>
 #include <shutils.h>
 #include <shared.h>
 #include <rtstate.h>

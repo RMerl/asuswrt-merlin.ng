@@ -38,6 +38,7 @@ struct pnsInfo mapPushInfo[] =
 	{SYS_REBOOT_NOK_EVENT                        ,"Device reboot failed"                                    ,"" },
 	{SYS_LAN_PORT_IN_EVENT                       ,"LAN port plug-in"                                        ,"" },
 	{SYS_LAN_PORT_OUT_EVENT                      ,"LAN port plug-out"                                       ,"" },
+	{SYS_AFC_COLD_REBOOT_SILENT_EVENT            ,"AFC Cold reboot in silent"                               ,"" },
 	{SYS_AFC_COLD_REBOOT_EVENT                   ,"AFC Cold reboot"                                         ,"" },
 	/* ------------------------------
 	   ### Administration ###

@@ -731,6 +731,9 @@ function update_applist(e){
 															<td>
 																<ul style="margin: 0px;padding-left:15px;" >
 																	<li style="margin-top:-5px;">
+																	 <#HTTPS_Redirect_Desc2#>
+																	</li>
+																	<li style="margin-top:-5px;">
 																 	<div id="accessMethod"></div>
 																 	</li>
 																	<li style="margin-top:-5px;">

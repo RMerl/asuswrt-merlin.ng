@@ -17,7 +17,6 @@
 }
 .body_rwd{
 	color: #EBEBEB;
-	background: var(--bg-container)!important;
 }
 .bg_rwd{
 	color: #EBEBEB;
@@ -248,12 +247,10 @@
 		linear-gradient(0deg, rgba(25, 53, 255, 0.05), rgba(25, 53, 255, 0.05)),
 		linear-gradient(0deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08)) !important;
 }
-.customize_alert .action_btn_container .ok,
-.customize_alert.confirm .action_btn_container .ok{
+.customize_alert .action_btn_container .ok{
 	border: initial;
 	box-shadow: 0 0 0 1px #B3B3B3;
 	color: #EBEBEB;
-	border-radius: 0;
 }
 .customize_alert .desc{
 	color: #FFFFFF;
@@ -270,8 +267,7 @@
 	color: #EBEBEB;
 	border-radius: 0;
 }
-.del_profile .action_btn_container .cancel,
-.customize_alert.confirm .action_btn_container .cancel{
+.del_profile .action_btn_container .cancel{
 	border: 1px solid var(--primary-color);
 	background: var(--primary-color);
 	border-radius: 0;

@@ -118,7 +118,7 @@ static int erp_check_wl_stat(int model)
 	if (nvram_get_int("wl0_radio")) ret++;
 	if (nvram_get_int("wl1_radio")) ret++;
 
-#if defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2)
+#if defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
 	if (nvram_get_int("wl2_radio")) ret++;
 #endif
 #ifdef RTCONFIG_QUADBAND
@@ -692,6 +692,7 @@ static int ERP_CHECK_MODEL_LIST()
 		|| model == MODEL_RTBE88U
 		|| model == MODEL_RTBE86U
 		|| model == MODEL_RTBE58U
+		|| model == MODEL_RTBE58U_V2
 		|| model == MODEL_GTBE19000
 		|| model == MODEL_RTBE92U
 		|| model == MODEL_RTBE95U
@@ -699,8 +700,9 @@ static int ERP_CHECK_MODEL_LIST()
 		|| model == MODEL_RTBE82M
 		|| model == MODEL_RTBE58U_PRO
 		|| model == MODEL_RTBE58_GO
-		|| model == MODEL_GTBE19000_AI
+		|| model == MODEL_GTBE19000AI
 		|| model == MODEL_GSBE18000
+		|| model == MODEL_GTBE96_AI
 #endif
 	) {
 		ret = 1;
@@ -759,7 +761,7 @@ static void erp_standby_mode(int model)
 #endif
 
 	// step5. BCM4916 with RGB led and rtkswitch special case
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	// disable RGB LED to save 1.4~1.6W
 	LEDGroupReset(LED_OFF);
 
@@ -900,7 +902,7 @@ static void erp_wakeup_mode(int model)
 	if (is_erp_cled_model() == 1) doSystem("rc cled 0 0"); // recover led behavior
 #endif
 
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	LEDGroupReset(LED_ON);
 	eval("rtkswitch", "5"); // rtkswitch on
 #endif

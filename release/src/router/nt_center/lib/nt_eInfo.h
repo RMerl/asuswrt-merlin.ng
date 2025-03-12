@@ -81,6 +81,7 @@ struct eInfo mapInfo[] =
 	{"SYS_REBOOT_NOK_EVENT"                      ,SYS_REBOOT_NOK_EVENT                        ,TYPE_OF_TIPS       ,ACT(AIHOME)    ,ACT_NOTIFY_APPUSH, 0, PRI_LOW },
 	{"SYS_LAN_PORT_IN_EVENT"                     ,SYS_LAN_PORT_IN_EVENT                       ,TYPE_OF_TIPS       ,ACT(AIHOME)    ,ACT_NOTIFY_DB | ACT_NOTIFY_APPUSH, 1, PRI_LOW },
 	{"SYS_LAN_PORT_OUT_EVENT"                    ,SYS_LAN_PORT_OUT_EVENT                      ,TYPE_OF_TIPS       ,ACT(AIHOME)    ,ACT_NOTIFY_DB | ACT_NOTIFY_APPUSH, 1, PRI_LOW },
+	{"SYS_AFC_COLD_REBOOT_SILENT_EVENT"          ,SYS_AFC_COLD_REBOOT_SILENT_EVENT            ,TYPE_OF_TIPS       ,ACT(AIHOME)    ,ACT_NOTIFY_DB | ACT_NOTIFY_APPUSH, 1, PRI_LOW },
 	{"SYS_AFC_COLD_REBOOT_EVENT"                 ,SYS_AFC_COLD_REBOOT_EVENT                   ,TYPE_OF_TIPS       ,ACT(AIHOME)    ,ACT_NOTIFY_DB | ACT_NOTIFY_APPUSH, 1, PRI_LOW },
 	/* ------------------------------
 	   ### Administration ###

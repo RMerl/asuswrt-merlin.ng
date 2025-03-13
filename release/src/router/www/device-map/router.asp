@@ -235,7 +235,6 @@
                     <div class="info-block">
                         <div class="info-title"><#QIS_finish_wireless_item1#></div>
                         <div>
-                            <input id="${prefix}_ssid" type="text" class="input-size-25" maxlength="32" value="${ssidValue}" onkeypress="validator.isString(this, event)" autocomplete="off" autocapitalize="off" />
                             <div style="display:flex; align:center;">
                                 <input id="${prefix}_ssid" type="text" class="input-size-25" maxlength="32" value="${ssidValue}" onkeypress="validator.isString(this, event)" autocomplete="off" autocapitalize="off" />
                                 <div id="${prefix}_showqrdiv" class="qrcode_btn" onclick="ShowQRCode('${prefix}');"></div>

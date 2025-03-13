@@ -1056,16 +1056,6 @@ int do_led_control(int which, int mode)
 	char *led_gpio = NULL;
 #endif
 
-	// Did the user disable the leds?
-	if ((mode == LED_ON) && (nvram_get_int("led_disable") == 1)
-#ifdef RTCONFIG_QTN
-		&& (which != BTN_QTN_RESET)
-#endif
-	)
-	{
-		return 0;
-	}
-
 	if (which < 0 || which >= LED_ID_MAX || mode < 0 || mode >= LED_FAN_MODE_MAX)
 		return -1;
 

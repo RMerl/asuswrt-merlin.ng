@@ -2789,18 +2789,18 @@ function showClientlistModal(){
 						<script>
 							(function(){
 								setTimeout(function(){
-									$('#statusframe').attr('src', '/device-map/router.asp').show();
+									$('#statusframe').attr('src', '/device-map/router_status.asp').show();
 									const get_header_info = httpApi.hookGet("get_header_info");
 									const domain = `${get_header_info.protocol}://${get_header_info.host}`;
 									const domain_w_port = `${get_header_info.protocol}://${get_header_info.host}:${get_header_info.port}`;
 
 									let messageTimeout;
 									messageTimeout = setTimeout(() => {
-										document.getElementById("statusframe").src = "/device-map/router.asp";
+										document.getElementById("statusframe").src = "/device-map/router_status.asp";
 									}, 5000);
 
 									window.addEventListener('message', function(event){
-										if(event.data == `router.asp`){
+										if(event.data == `router_status.asp`){
 											const has_port = /:\d+$/.test(event.origin);
 											if(has_port){
 												if(event.origin !== domain_w_port){

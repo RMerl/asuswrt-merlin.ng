@@ -24,6 +24,10 @@ fi
 # set the system to power profile for WOL mode
 pwrctl config --all wol
 
+
+# configure the MAC address associated with the interface
+archer mpd_cfg --int $ETH
+
 # put network interface to WOL mode
 echo "entering wol mode for interface $ETH"
 archer wol_enter --int $ETH

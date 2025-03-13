@@ -1,0 +1,123 @@
+.TH I2CDETECT 8 "October 2017"
+.SH NAME
+i2cdetect \- detect I2C chips
+
+.SH SYNOPSIS
+.B i2cdetect
+.RI [ -y ]
+.RI [ -a ]
+.RI [ -q | -r ]
+.I i2cbus
+.RI [ "first last" ]
+.br
+.B i2cdetect
+.I -F
+.I i2cbus
+.br
+.B i2cdetect
+.I -V
+.br
+.B i2cdetect
+.I -l
+
+.SH DESCRIPTION
+i2cdetect is a userspace program to scan an I2C bus for devices. It
+outputs a table with the list of detected devices on the specified bus.
+\fIi2cbus\fR indicates the number or name of the I2C bus to be scanned, and
+should correspond to one of the busses listed by \fIi2cdetect -l\fR.
+The optional parameters \fIfirst\fR and \fIlast\fR restrict the scanning
+range (default: from 0x03 to 0x77).
+.PP
+As there is no standard I2C detection command, i2cdetect uses arbitrary
+SMBus commands (namely SMBus quick write and SMBus receive byte) to probe
+for devices. By default, the command used is the one believed to be the
+safest for each address. See options \fI-q\fR and \fI-r\fR to change this
+behavior.
+.PP
+i2cdetect can also be used to query the functionalities of an I2C bus
+(see option \fB-F\fP.)
+
+.SH WARNING
+This program can confuse your I2C bus, cause data loss and worse!
+
+.SH INTERPRETING THE OUTPUT
+Each cell in the output table will contain one of the following symbols:
+.IP \(bu "\w'\(bu'u+1n"
+"--". The address was probed but no chip answered.
+.IP \(bu
+"UU". Probing was skipped, because this address is currently in use by
+a driver. This strongly suggests that there is a chip at this address.
+.IP \(bu
+An address number in hexadecimal, e.g. "2d" or "4e". A chip
+was found at this address.
+
+.SH OPTIONS
+.TP
+.B "\-y"
+Disable interactive mode. By default, i2cdetect will wait for a confirmation
+from the user before messing with the I2C bus. When this flag is used, it
+will perform the operation directly. This is mainly meant to be used in
+scripts.
+.TP
+.B "\-a"
+Force scanning of non-regular addresses. Not recommended.
+.TP
+.B "\-q"
+Use SMBus "quick write" command for probing.
+Not recommended. This is known to corrupt the Atmel AT24RF08 EEPROM
+found on many IBM Thinkpad laptops.
+.TP
+.B "\-r"
+Use SMBus "receive byte" command for probing.
+Not recommended. This is known to lock SMBus on various write-only
+chips (most notably clock chips at address 0x69).
+.TP
+.B "\-F"
+Display the list of functionalities implemented by the adapter and exit.
+.TP
+.B "\-V"
+Display the version and exit.
+.TP
+.B "\-l"
+Output a list of installed busses.
+
+.SH EXAMPLES
+.PP
+List all available I2C busses:
+.nf
+.RS
+# i2cdetect -l
+.RE
+.fi
+.PP
+Immediately scan the standard addresses on I2C bus 9 (i2c-9), using the
+default method for each address (no user confirmation):
+.nf
+.RS
+# i2cdetect -y 9
+.RE
+.fi
+.PP
+Query the functionalities of I2C bus 1 (i2c-1):
+.nf
+.RS
+# i2cdetect -F 1
+.RE
+.fi
+.PP
+Scan addresses 0x10 to 0x17 on the I2C bus named "SMBus I801 adapter at efa0",
+using the "receive byte" method, after user confirmation:
+.nf
+.RS
+# i2cdetect -r "SMBus I801 adapter at efa0" 0x10 0x17
+.RE
+.fi
+
+.SH SEE ALSO
+i2cdump(8), i2cget(8), i2cset(8), i2ctransfer(8), sensors-detect(8)
+
+.SH AUTHOR
+Frodo Looijaard, Mark D. Studebaker and Jean Delvare
+
+This manual page was originally written by Aurelien Jarno
+<aurel32@debian.org>, for the Debian GNU/Linux system.

@@ -47,7 +47,7 @@ ifeq ($(filter-out 63138 63148 63158 4908 6858 63178 47622,${BRCM_CHIP}),)
 INIT += pwr/switch.sh
 endif
 
-ifeq ($(filter-out 47622 63178 4912,${BRCM_CHIP}),)
+ifeq ($(filter-out 47622 63178 4912 6756,${BRCM_CHIP}),)
 INIT += pwr/wol.sh
 endif
 

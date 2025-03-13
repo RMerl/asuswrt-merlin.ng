@@ -29,6 +29,11 @@ ifeq ($(RTCONFIG_AMAS),y)
 LIBS += -L$(TOP)/json-c/.libs -ljson-c
 endif
 
+ifeq ($(RTCONFIG_TRUSTZONE),y)
+CFLAGS += -I$(TOP)/ateed/
+LIBS += -L$(TOP)/ateed/ -latee
+endif
+
 ifneq ($(strip $(BUILD_RDKWIFI)),)
 rdkwifi_lib:
 	$(MAKE) -C $(BUILD_DIR)/userspace/private/libs/wlcsm BUILD_RDKWIFI_LIB=1
@@ -184,6 +189,7 @@ ifeq ($(strip $(BUILD_BRCM_UNFWLCFG)),)
 	install -m 755 nvram $(INSTALL_DIR)/bin	
 	install -m 755 libnvram.so $(INSTALL_DIR)/lib
 endif
+	install -m 755 ./scripts/chan_pwr.sh $(INSTALL_DIR)/usr/sbin
 	install -m 755 ./scripts/hndnvram.sh $(INSTALL_DIR)/rom/rom/etc/init.d
 	install -m 755 ./scripts/hnddm.sh $(INSTALL_DIR)/usr/sbin
 	sed -e s/KERNEL_NVRAM_FILE_NAME/$(KERNEL_NVRAM_FILE_NAME)/g ./scripts/hndnvram.sh > $(INSTALL_DIR)/rom/rom/etc/init.d/hndnvram.sh

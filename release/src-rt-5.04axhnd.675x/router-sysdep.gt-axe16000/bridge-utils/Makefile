@@ -52,7 +52,7 @@ all: objs/$(PROFILE_ARCH)/config_complete
 	$(MAKE) -C objs/$(PROFILE_ARCH)
 	$(MAKE) -C objs/$(PROFILE_ARCH) install
 	mkdir -p $(INSTALL_DIR)/bin$(BCM_INSTALL_SUFFIX_DIR)
-	cp -d $(BCM_FSBUILD_DIR)/gpl/sbin/brctl $(INSTALL_DIR)/bin$(BCM_INSTALL_SUFFIX_DIR)
+	-cp -d $(BCM_FSBUILD_DIR)/gpl/sbin/brctl $(INSTALL_DIR)/bin$(BCM_INSTALL_SUFFIX_DIR)
 
 install:
 	@echo done

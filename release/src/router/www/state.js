@@ -518,6 +518,11 @@ function isSupport(_ptn){
 	var ui_support = [<% get_ui_support(); %>][0];
 	if (based_modelid == "RT-AX56U" || based_modelid == "RT-AX58U") // Kludge
 		ui_support["ookla"] = 1;
+	if (_ptn == "ROG_UI")
+		_ptn = "rog";
+	if (_ptn == "TUF_UI")
+		_ptn = "tuf";
+
 	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
 }
 

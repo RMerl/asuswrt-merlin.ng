@@ -209,6 +209,7 @@ endif
 else
 all:
 	-cp -f $(TOP_PLATFORM)/wlan/nvram/$(PRBM_DIR)/libnvram.so nvram/
+	-cp -f $(TOP_PLATFORM)/wlan/nvram/$(PRBM_DIR)/nvram nvram/
 	make -C nvram dynamic install
 endif
 install:
@@ -438,8 +439,8 @@ else
 	$(MAKE) -C $@ install
 endif
 	install -d $(INSTALLDIR)/usr/sbin
-	install -m 755 $(APPS_UTILS_DIR)/WlGetDriverCfg.sh $(INSTALLDIR)/usr/sbin
-	install -m 755 $(APPS_UTILS_DIR)/WlGetDriverStats.sh $(INSTALLDIR)/usr/sbin
+	-install -m 755 $(APPS_UTILS_DIR)/WlGetDriverCfg.sh $(INSTALLDIR)/usr/sbin
+	-install -m 755 $(APPS_UTILS_DIR)/WlGetDriverStats.sh $(INSTALLDIR)/usr/sbin
 
 nvram:
 ifneq ($(PREBUILT_BCMBIN),1)

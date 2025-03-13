@@ -1,0 +1,61 @@
+.\"
+.\"  eeprom.8 - manpage for the i2c-tools/eeprom utility
+.\"  Copyright (C) 2013  Jaromir Capik
+.\"
+.\"  This program is free software; you can redistribute it and/or modify
+.\"  it under the terms of the GNU General Public License as published by
+.\"  the Free Software Foundation; either version 2 of the License, or
+.\"  (at your option) any later version.
+.\"
+.\"  This program is distributed in the hope that it will be useful,
+.\"  but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"  GNU General Public License for more details.
+.\"
+.\"  You should have received a copy of the GNU General Public License along
+.\"  with this program; if not, write to the Free Software Foundation, Inc.,
+.\"  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+.\"
+.TH eepromer "8" "Jul 2013" "i2c-tools" "System Administration"
+.SH NAME
+eepromer \- reads and writes 24Cxx EEPROMs connected to I2C serial bus
+.SH SYNOPSIS
+.B eepromer
+[-r|-w|-e|-p] -f <device> <i2c-addr>
+.SH DESCRIPTION
+The EEPROM must be a large EEPROM which uses a 2-byte address
+field (24C32 or larger). It will NOT WORK on small EEPROMs
+(24C01 - 24C16) such as those used on SDRAM DIMMs.
+.SH NOTES
+Don't forget to load your i2c chipset and the i2c-dev drivers.
+.P
+Tested only on 24C256.
+.P
+.SH PARAMETERS
+.TP
+.I Actions
+.TP
+.B \-r
+Read
+.TP
+.B \-w
+Write
+.TP
+.B \-e
+Erase
+.TP
+.B \-p
+Print header
+.TP
+.I Bus
+.TP
+.B \-f device
+Device file representing the I2C bus (eg. /dev/i2c-0)
+.TP
+.B i2c-addr
+I2C bus address of the EEPROM (eg. 0x3A)
+.SH SEE ALSO
+.BR eeprog (8),
+.BR eeprom (8)
+.SH AUTHOR
+Daniel Smolik

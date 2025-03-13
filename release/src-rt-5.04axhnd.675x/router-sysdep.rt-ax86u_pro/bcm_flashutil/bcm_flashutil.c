@@ -839,7 +839,8 @@ int synchLoaderEnv( char * loader_fname )
             /* Overwrite env_boot_magic variable */
             memcpy( in_mem_env+i, in_mem_env+i+len+1, env_size - (i + len + 1));
             /* Zero out the rear of the env */
-            memset( in_mem_env+env_size-(len+1), '\0', len+1);
+            /* WAR for the MXIC known issue(fail to write zero sometimes), use 0xFF instead of '\0' */
+            memset( in_mem_env+env_size-(len+1), 0xFF, len+1);
             break;
         }
         else

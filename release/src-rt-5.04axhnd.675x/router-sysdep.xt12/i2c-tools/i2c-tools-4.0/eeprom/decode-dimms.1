@@ -1,0 +1,67 @@
+.\"
+.\"  decode-dimms.1 - manpage for the i2c-tools/decode-dimms utility
+.\"  Copyright (C) 2013  Jaromir Capik
+.\"
+.\"  This program is free software; you can redistribute it and/or modify
+.\"  it under the terms of the GNU General Public License as published by
+.\"  the Free Software Foundation; either version 2 of the License, or
+.\"  (at your option) any later version.
+.\"
+.\"  This program is distributed in the hope that it will be useful,
+.\"  but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"  GNU General Public License for more details.
+.\"
+.\"  You should have received a copy of the GNU General Public License along
+.\"  with this program; if not, write to the Free Software Foundation, Inc.,
+.\"  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+.\"
+.TH decode-dimms 1 "Oct 2013" "i2c-tools" "User Commands"
+.SH NAME
+decode-dimms \- decode the information found in memory module SPD EEPROMs
+.SH SYNOPSIS
+.B decode-dimms
+[-c] [-f [-b]] [-x|-X file [files..]]
+.br
+.B decode-dimms
+-h
+.SH DESCRIPTION
+
+The purpose of the
+.B decode-dimms
+tool is to decode the information found in memory module SPD EEPROMs.
+The SPD data is read either from the running system or dump files.
+In the former case, the tool requires either the eeprom kernel module
+or the at24 kernel module to be loaded.
+.SH PARAMETERS
+.TP
+.B \-f, --format
+Print nice html output
+.TP
+.B \-b, --bodyonly
+Don't print html header (useful for postprocessing the output)
+.TP
+.B \--side-by-side
+Display all DIMMs side-by-side if possible
+.TP
+.B \--merge-cells
+Merge neighbour cells with identical values (side-by-side output only, default)
+.TP
+.B \--no-merge-cells
+Don't merge neighbour cells with identical values (side-by-side output only)
+.TP
+.B \-c, --checksum
+Decode completely even if checksum fails
+.TP
+.B \-x
+Read data from hexdump files
+.TP
+.B \-X
+Same as -x except treat multibyte hex data as little endian
+.TP
+.B \-h, --help
+Display the usage summary
+.SH SEE ALSO
+.BR decode-vaio (1)
+.SH AUTHORS
+Philip Edelbrock, Christian Zuckschwerdt, Burkart Lingner, Jean Delvare

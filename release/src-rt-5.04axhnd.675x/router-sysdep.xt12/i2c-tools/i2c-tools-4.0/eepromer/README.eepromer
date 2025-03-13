@@ -1,0 +1,29 @@
+Simple program for storing data to I2C EEPROM.
+
+This program is deprecated, please use eeprog instead.
+
+!!!!!!!!!!!!!!!!!!!!!!!!Warning!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+The EEPROM must be a large EEPROM which uses a 2-byte address
+field (24C32 or larger). It will NOT WORK on small EEPROMs
+(24C01 - 24C16) such as those used on SDRAM DIMMs.
+
+Tested only on 24C256.
+
+!!!!!!!!!!!!!!!!!!!!!!!!Warning!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+This program is intended for use on eeproms using external busses such as 
+i2c-pport.
+Do not use this on your SDRAM DIMM EEPROMS, it won't work!!!!!!!!!
+Doing so will render your SDRAM USELESS  and leave your system UNBOOTABLE!!!
+
+!!!!!!!!!!!!!!!!!!!!!!!!Warning!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Options:
+	-r  read
+	-w  write
+	-e  erase
+	-p  print "super block of EEPROM" (date and size stored data)
+
+Daniel Smolik
+marvin@sitour.cz

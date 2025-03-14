@@ -152,13 +152,11 @@ else ifeq ($(BUILD_NAME),RT-AX88U)
 	install icon.rtax88u_gd.ico $(INSTALLDIR)/usr/sbin/icon_gd.ico
 	install icon.large.rtax88u_gd.ico $(INSTALLDIR)/usr/sbin/icon_gd.large.ico
 else ifeq ($(BUILD_NAME), GT-AX11000_PRO)
-#	To be added...
-#	install icon.gtax11000_pro.ico $(INSTALLDIR)/usr/sbin/icon.ico
-#	install icon.large.gtax11000_pro.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+	install icon.gtax11000_pro.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.gtax11000_pro.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), GT-AXE16000)
-#	To be added...
-#	install icon.gtax11000_pro.ico $(INSTALLDIR)/usr/sbin/icon.ico
-#	install icon.large.gtax11000_pro.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+	install icon.gtaxe16000.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.gtaxe16000.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), GT-BE98)
 	install icon.gtbe98.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.gtbe98.ico $(INSTALLDIR)/usr/sbin/icon.large.ico

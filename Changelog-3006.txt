@@ -2,12 +2,29 @@ Asuswrt-Merlin 3006.xxx Changelog
 =================================
 
 3006.102.x (xx-xxx-xxxx)
+  - NOTE: If migrating from a 3004 firmware, only the first Guest
+          Network will be migrated - any additionnal GN must be
+          manually reconfigured.
+  - NOTE: If migrating from a 3004 firmware, the Wireless Scheduler
+          will need to be manually reconfigured if you were using
+          it.
+  - NOTE: As a reminder, the ROG variant of the webui is not
+          supported in the 3006 firmware series, as maintaining
+          two separate interfaces is too much work.
+
+  - NEW: Added RT-AX86U_PRO, RT-AX88U_PRO, ZenWifi Pro XT12,
+         GT-AX6000, GT-AXE16000 and GT-AX11000_PRO to the
+         3006 firmware series.
+
+  - UPDATED: Merged GPL 3006.102_36521 for Wifi 6 models (Wifi 7
+             GPL codebase is unchanged from 3006.102.3).
   - UPDATED: OpenVPN to 2.6.13.
   - UPDATED: miniupnpd to 2.3.7 (20250207 snapshot)
   - UPDATED: amtm to 5.2 (decoderman)
   - FIXED: Missing hostname on Wireless Log for MLO-capable Wifi 7
            clients.
   - FIXED: CVE-2024-9143 in OpenSSL (Debian backport by RSDNTWK)
+  - FIXED: CVE-2024-13176 in OpenSSL (Ubuntu backport by RSDNTWK)
 
 
 3006.102.3 (11-Jan-2025)

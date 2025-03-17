@@ -89,7 +89,10 @@ static const uint wf_chspec_bw_mhz[] = {5, 10, 20, 40, 80, 160, 320};
         (sizeof(wf_chspec_bw_mhz)/sizeof(uint))
 
 #ifdef RTCONFIG_MULTILAN_CFG
+#define MAX_GUEST_SUBUNITS APG_MAXINUM
 #define MERGED_LEASE_FILE "/tmp/dnsmasq-merged.leases"
+#else
+#define MAX_GUEST_SUBUNITS 4
 #endif
 
 /* From web-broadcom.c */
@@ -338,7 +341,7 @@ ej_wl_unit_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	char name_vif[] = "wlX.Y_XXXXXXXXXX";
 	struct maclist *auth;
 	int mac_list_size;
-	int i, ii, val = 0, ret = 0, subunit = 0, maxunit;
+	int i, ii, val = 0, ret = 0;
 	char *arplist = NULL, *arplistptr;
 	char *leaselist = NULL, *leaselistptr;
 	char *ipv6list = NULL, *ipv6listptr;
@@ -509,20 +512,19 @@ sta_list:
 
 /*** Do all subunit client lists - subunit 1 = main interface ***/
 
-	maxunit = wl_max_no_vifs(unit);
-	for (subunit = 1; subunit < maxunit; subunit++) {
+	for (i = 1; i < MAX_NO_MSSID; i++) {
 #ifdef RTCONFIG_WIRELESSREPEATER
 		if ((nvram_get_int("sw_mode") == SW_MODE_REPEATER)
-			&& (unit == nvram_get_int("wlc_band")) && (subunit == 1))
+			&& (unit == nvram_get_int("wlc_band")) && (i == 1))
 			break;
 #endif
-		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, subunit);
+		sprintf(prefix, "wl%d.%d_", unit, i);
 		if (nvram_match(strcat_r(prefix, "bss_enabled", tmp), "1"))
 		{
-			snprintf(name_vif, sizeof(name_vif), "wl%d.%d", unit, subunit);
+			sprintf(name_vif, "wl%d.%d", unit, i);
 
 // Not primary interface - retrieve ssid and VLAN
-			if (subunit != 1) {
+			if (i != 1) {
 				strlcpy(guestssid, nvram_pf_safe_get(prefix, "ssid"), sizeof(guestssid));
 #ifdef RTCONFIG_MULTILAN_CFG
 				guestvlan = get_apg_vid_by_ifname(name_vif);
@@ -695,7 +697,7 @@ sta_list:
 					(sta->flags & WL_STA_AUTHO) ? "U" : "_");
 
 // If not a Guest Network then don't push SSID and VLAN in client list
-				if (subunit == 1)
+				if (i == 1)
 			                ret += websWrite(wp, "\"\",\"\"],");
 				else {
 // SSID (for Guest Networks identification)

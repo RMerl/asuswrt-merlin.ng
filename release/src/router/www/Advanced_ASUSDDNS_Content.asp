@@ -643,7 +643,7 @@ function validForm(){
 					return false;
 				}
 
-				if(document.form.ddns_server_x.value = "CUSTOM")             // If CUSTOM skip other tests
+				if(document.form.ddns_server_x.value == "CUSTOM")             // If CUSTOM skip other tests
 					return true;
 
 				if(document.form.ddns_server_x.value != "WWW.ORAY.COM" && document.form.ddns_hostname_x.value == ""){

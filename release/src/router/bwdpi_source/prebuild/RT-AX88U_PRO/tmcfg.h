@@ -26,7 +26,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Tue Jan 14 13:57:28 2025
+ * Date: Wed May 18 11:54:06 2022
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
@@ -47,7 +47,7 @@
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_GPL_XT12_3.0.0.6.102.36256/release/src-rt-5.04axhnd.675x/kernel/linux-4.19"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_XT12_GPL_386_48892/release/src-rt-5.04axhnd.675x/kernel/linux-4.19"
 #define TMCFG_KERN_ARCH "arm64"
 #define TMCFG_CPU_32BITS 0 // n
 #define TMCFG_CPU_64BITS 1 // y
@@ -93,7 +93,7 @@
 /*
  * Engine
  */
-#define TMCFG_E_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_XT12_3.0.0.6.102.36256/release/src-rt-5.04axhnd.675x/kernel/bcmkernel/include -I/opt/ASUS/asuswrt_GPL_XT12_3.0.0.6.102.36256/src-rt-5.04axhnd.675x/bcmdrivers"
+#define TMCFG_E_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_XT12_GPL_386_48892/release/src-rt-5.04axhnd.675x/kernel/bcmkernel/include -I/opt/ASUS/asuswrt_XT12_GPL_386_48892/release/src-rt-5.04axhnd.675x/bcmdrivers"
 #define TMCFG_E_KMOD_NAME "tdts"
 #define TMCFG_E_KMOD_IOCTL_DEV_NAME "idp"
 #define TMCFG_E_KMOD_IOCTL_DEV_MAJ 190
@@ -227,7 +227,7 @@
 /*
  * Engine shell
  */
-#define TMCFG_E_SHELL_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_XT12_3.0.0.6.102.36256/release/src-rt-5.04axhnd.675x/kernel/bcmkernel/include -I/opt/ASUS/asuswrt_GPL_XT12_3.0.0.6.102.36256/release/src-rt-5.04axhnd.675x/bcmdrivers"
+#define TMCFG_E_SHELL_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_XT12_GPL_386_48892/release/src-rt-5.04axhnd.675x/kernel/bcmkernel/include -I/opt/ASUS/asuswrt_XT12_GPL_386_48892/release/src-rt-5.04axhnd.675x/bcmdrivers"
 #define TMCFG_E_SHELL_ATIMER 1 // y
 #define TMCFG_E_SHELL_DEPRECATED_PROCFS 1 // y
 

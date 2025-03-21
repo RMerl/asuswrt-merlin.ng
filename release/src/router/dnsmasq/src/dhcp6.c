@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -239,7 +239,7 @@ void dhcp6_packet(time_t now)
 	  relay_upstream6(if_index, (size_t)sz, &from.sin6_addr, from.sin6_scope_id, now))
 	return;
       
-      if (!iface_enumerate(AF_INET6, &parm, complete_context6))
+      if (!iface_enumerate(AF_INET6, &parm, (callback_t){.af_inet6=complete_context6}))
 	return;
       
       /* Check for a relay again after iface_enumerate/complete_context has had
@@ -617,7 +617,7 @@ void make_duid(time_t now)
 	newnow = now - 946684800;
 #endif      
       
-      iface_enumerate(AF_LOCAL, &newnow, make_duid1);
+      iface_enumerate(AF_LOCAL, &newnow, (callback_t){.af_local=make_duid1});
       
       if(!daemon->duid)
 	die("Cannot create DHCPv6 server DUID: %s", NULL, EC_MISC);
@@ -667,7 +667,7 @@ struct cparam {
 
 static int construct_worker(struct in6_addr *local, int prefix, 
 			    int scope, int if_index, int flags, 
-			    int preferred, int valid, void *vparam)
+			    unsigned int preferred, unsigned int valid, void *vparam)
 {
   char ifrn_name[IFNAMSIZ];
   struct in6_addr start6, end6;
@@ -801,7 +801,7 @@ void dhcp_construct_contexts(time_t now)
     if (context->flags & CONTEXT_CONSTRUCTED)
       context->flags |= CONTEXT_GC;
    
-  iface_enumerate(AF_INET6, &param, construct_worker);
+  iface_enumerate(AF_INET6, &param, (callback_t){.af_inet6=construct_worker});
 
   for (up = &daemon->dhcp6, context = daemon->dhcp6; context; context = tmp)
     {

@@ -75,11 +75,11 @@ static char *buffer;
 
 static inline void add_attr(struct nlmsghdr *nlh, uint16_t type, size_t len, const void *data)
 {
-  struct my_nlattr *attr = (void *)nlh + NL_ALIGN(nlh->nlmsg_len);
+  struct my_nlattr *attr = (struct my_nlattr *)((u8 *)nlh + NL_ALIGN(nlh->nlmsg_len));
   uint16_t payload_len = NL_ALIGN(sizeof(struct my_nlattr)) + len;
   attr->nla_type = type;
   attr->nla_len = payload_len;
-  memcpy((void *)attr + NL_ALIGN(sizeof(struct my_nlattr)), data, len);
+  memcpy((u8 *)attr + NL_ALIGN(sizeof(struct my_nlattr)), data, len);
   nlh->nlmsg_len += NL_ALIGN(payload_len);
 }
 
@@ -138,8 +138,8 @@ static int new_add_to_ipset(const char *setname, const union all_addr *ipaddr, i
   add_attr(nlh, 
 	   (af == AF_INET ? IPSET_ATTR_IPADDR_IPV4 : IPSET_ATTR_IPADDR_IPV6) | NLA_F_NET_BYTEORDER,
 	   addrsz, ipaddr);
-  nested[1]->nla_len = (void *)buffer + NL_ALIGN(nlh->nlmsg_len) - (void *)nested[1];
-  nested[0]->nla_len = (void *)buffer + NL_ALIGN(nlh->nlmsg_len) - (void *)nested[0];
+  nested[1]->nla_len = (u8 *)buffer + NL_ALIGN(nlh->nlmsg_len) - (u8 *)nested[1];
+  nested[0]->nla_len = (u8 *)buffer + NL_ALIGN(nlh->nlmsg_len) - (u8 *)nested[0];
 	
   while (retry_send(sendto(ipset_sock, buffer, nlh->nlmsg_len, 0,
 			   (struct sockaddr *)&snl, sizeof(snl))));

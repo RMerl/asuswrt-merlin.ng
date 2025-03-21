@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -742,15 +742,16 @@ static void free_transfer(struct tftp_transfer *transfer)
 
 static char *next(char **p, char *end)
 {
-  char *ret = *p;
-  size_t len;
+  char *n, *ret = *p;
+  
+  /* Look for end of string, without running off the end of the packet. */
+  for (n = *p; n < end && *n != 0; n++);
 
-  if (*(end-1) != 0 || 
-      *p == end ||
-      (len = strlen(ret)) == 0)
+  /* ran off the end or zero length string - failed */
+  if (n == end || n == ret)
     return NULL;
-
-  *p += len + 1;
+  
+  *p = n + 1;
   return ret;
 }
 
@@ -845,7 +846,7 @@ static ssize_t get_block(char *packet, struct tftp_transfer *transfer)
       mess->block = htons((unsigned short)(transfer->block));
       
       if (lseek(transfer->file->fd, transfer->offset, SEEK_SET) == (off_t)-1 ||
-	  !read_write(transfer->file->fd, mess->data, size, 1))
+	  !read_write(transfer->file->fd, mess->data, size, RW_READ))
 	return -1;
       
       transfer->expansion = 0;

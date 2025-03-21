@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -151,7 +151,7 @@ static ssize_t netlink_recv(int flags)
    family = AF_LOCAL finds MAC addresses.
    returns 0 on failure, 1 on success, -1 when restart is required
 */
-int iface_enumerate(int family, void *parm, int (*callback)())
+int iface_enumerate(int family, void *parm, callback_t callback)
 {
   struct sockaddr_nl addr;
   struct nlmsghdr *h;
@@ -247,7 +247,7 @@ int iface_enumerate(int family, void *parm, int (*callback)())
 		      }
 		    
 		    if (addr.s_addr && callback_ok)
-		      if (!((*callback)(addr, ifa->ifa_index, label,  netmask, broadcast, parm)))
+		      if (!callback.af_inet(addr, ifa->ifa_index, label,  netmask, broadcast, parm))
 			callback_ok = 0;
 		  }
 		else if (ifa->ifa_family == AF_INET6)
@@ -288,9 +288,9 @@ int iface_enumerate(int family, void *parm, int (*callback)())
 		      flags |= IFACE_PERMANENT;
     		    
 		    if (addrp && callback_ok)
-		      if (!((*callback)(addrp, (int)(ifa->ifa_prefixlen), (int)(ifa->ifa_scope), 
+		      if (!callback.af_inet6(addrp, (int)(ifa->ifa_prefixlen), (int)(ifa->ifa_scope), 
 					(int)(ifa->ifa_index), flags, 
-					(int) preferred, (int)valid, parm)))
+					(unsigned int)preferred, (unsigned int)valid, parm))
 			callback_ok = 0;
 		  }
 	      }
@@ -318,7 +318,7 @@ int iface_enumerate(int family, void *parm, int (*callback)())
 
 	    if (!(neigh->ndm_state & (NUD_NOARP | NUD_INCOMPLETE | NUD_FAILED)) &&
 		inaddr && mac && callback_ok)
-	      if (!((*callback)(neigh->ndm_family, inaddr, mac, maclen, parm)))
+	      if (!callback.af_unspec(neigh->ndm_family, inaddr, mac, maclen, parm))
 		callback_ok = 0;
 	  }
 #ifdef HAVE_DHCP6
@@ -342,7 +342,7 @@ int iface_enumerate(int family, void *parm, int (*callback)())
 	      }
 
 	    if (mac && callback_ok && !((link->ifi_flags & (IFF_LOOPBACK | IFF_POINTOPOINT))) && 
-		!((*callback)((int)link->ifi_index, (unsigned int)link->ifi_type, mac, maclen, parm)))
+		!callback.af_local((int)link->ifi_index, (unsigned int)link->ifi_type, mac, maclen, parm))
 	      callback_ok = 0;
 	  }
 #endif

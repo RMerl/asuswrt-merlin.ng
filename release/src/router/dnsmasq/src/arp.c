@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ struct arp_record {
 static struct arp_record *arps = NULL, *old = NULL, *freelist = NULL;
 static time_t last = 0;
 
-static int filter_mac(int family, char *addrp, char *mac, size_t maclen, void *parmv)
+static int filter_mac(int family, void *addrp, char *mac, size_t maclen, void *parmv)
 {
   struct arp_record *arp;
 
@@ -152,7 +152,7 @@ int find_mac(union mysockaddr *addr, unsigned char *mac, int lazy, time_t now)
 	 if (arp->status != ARP_EMPTY)
 	   arp->status = ARP_MARK;
        
-       iface_enumerate(AF_UNSPEC, NULL, filter_mac);
+       iface_enumerate(AF_UNSPEC, NULL, (callback_t){.af_unspec=filter_mac});
        
        /* Remove all unconfirmed entries to old list. */
        for (arp = arps, up = &arps; arp; arp = tmp)

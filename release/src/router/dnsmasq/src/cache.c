@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -101,6 +101,7 @@ static const struct {
   { 63,  "ZONEMD" }, /* Message Digest Over Zone Data [RFC8976] ZONEMD/zonemd-completed-template 2018-12-12*/
   { 64,  "SVCB" }, /* Service Binding [draft-ietf-dnsop-svcb-https-00] SVCB/svcb-completed-template 2020-06-30*/
   { 65,  "HTTPS" }, /* HTTPS Binding [draft-ietf-dnsop-svcb-https-00] HTTPS/https-completed-template 2020-06-30*/
+  { 66,  "DSYNC" }, /* Endpoint discovery for delegation synchronization [draft-ietf-dnsop-generalized-notify-03] DSYNC/dsync-completed-template 2024-12-10 */
   { 99,  "SPF" }, /* [RFC7208] */
   { 100, "UINFO" }, /* [IANA-Reserved] */
   { 101, "UID" }, /* [IANA-Reserved] */
@@ -112,6 +113,7 @@ static const struct {
   { 107, "LP" }, /* [RFC6742] ILNP/lp-completed-template */
   { 108, "EUI48" }, /* an EUI-48 address [RFC7043] EUI48/eui48-completed-template 2013-03-27*/
   { 109, "EUI64" }, /* an EUI-64 address [RFC7043] EUI64/eui64-completed-template 2013-03-27*/
+  { 128, "NXNAME" }, /* NXDOMAIN indicator for Compact Denial of Existence https://www.iana.org/go/draft-ietf-dnsop-compact-denial-of-existence-04 */
   { 249, "TKEY" }, /* Transaction Key [RFC2930] */
   { 250, "TSIG" }, /* Transaction Signature [RFC8945] */
   { 251, "IXFR" }, /* incremental transfer [RFC1995] */
@@ -125,6 +127,9 @@ static const struct {
   { 259, "DOA" }, /* Digital Object Architecture [draft-durand-doa-over-dns] DOA/doa-completed-template 2017-08-30*/
   { 260, "AMTRELAY" }, /* Automatic Multicast Tunneling Relay [RFC8777] AMTRELAY/amtrelay-completed-template 2019-02-06*/
   { 261, "RESINFO" }, /* Resolver Information as Key/Value Pairs https://datatracker.ietf.org/doc/draft-ietf-add-resolver-info/06/ */
+  { 262, "WALLET" }, /* Public wallet address https://www.iana.org/assignments/dns-parameters/WALLET/wallet-completed-template */
+  { 263, "CLA" }, /*  BP Convergence Layer Adapter https://www.iana.org/go/draft-johnson-dns-ipn-cla-07 */
+  { 264, "IPN" }, /* BP Node Number https://www.iana.org/go/draft-johnson-dns-ipn-cla-07 */
   { 32768,  "TA" }, /* DNSSEC Trust Authorities [Sam_Weiler][http://cameo.library.cmu.edu/][ Deploying DNSSEC Without a Signed Root. Technical Report 1999-19, Information Networking Institute, Carnegie Mellon University, April 2004.] 2005-12-13*/
   { 32769,  "DLV" }, /* DNSSEC Lookaside Validation (OBSOLETE) [RFC8749][RFC4431] */
 };
@@ -474,7 +479,7 @@ static struct crec *cache_scan_free(char *name, union all_addr *addr, unsigned s
 	  if ((crecp->flags & F_FORWARD) && hostname_isequal(cache_get_name(crecp), name))
 	    {
 	      int rrmatch = 0;
-	      if (crecp->flags & flags & F_RR)
+	      if (addr && (crecp->flags & flags & F_RR))
 		{
 		  unsigned short rrc = (crecp->flags & F_KEYTAG) ? crecp->addr.rrblock.rrtype : crecp->addr.rrdata.rrtype;
 		  unsigned short rra = (flags & F_KEYTAG) ? addr->rrblock.rrtype : addr->rrdata.rrtype;
@@ -798,11 +803,11 @@ void cache_end_insert(void)
 	      u16 class = new_chain->uid;
 #endif
 	      
-	      read_write(daemon->pipe_to_parent, (unsigned char *)&m, sizeof(m), 0);
-	      read_write(daemon->pipe_to_parent, (unsigned char *)name, m, 0);
-	      read_write(daemon->pipe_to_parent, (unsigned char *)&new_chain->ttd, sizeof(new_chain->ttd), 0);
-	      read_write(daemon->pipe_to_parent, (unsigned  char *)&flags, sizeof(flags), 0);
-	      read_write(daemon->pipe_to_parent, (unsigned char *)&new_chain->addr, sizeof(new_chain->addr), 0);
+	      read_write(daemon->pipe_to_parent, (unsigned char *)&m, sizeof(m), RW_WRITE);
+	      read_write(daemon->pipe_to_parent, (unsigned char *)name, m, RW_WRITE);
+	      read_write(daemon->pipe_to_parent, (unsigned char *)&new_chain->ttd, sizeof(new_chain->ttd), RW_WRITE);
+	      read_write(daemon->pipe_to_parent, (unsigned  char *)&flags, sizeof(flags), RW_WRITE);
+	      read_write(daemon->pipe_to_parent, (unsigned char *)&new_chain->addr, sizeof(new_chain->addr), RW_WRITE);
 	      
 	      if (flags & F_RR)
 		{
@@ -813,12 +818,12 @@ void cache_end_insert(void)
 #ifdef HAVE_DNSSEC
 	      if (flags & F_DNSKEY)
 		{
-		  read_write(daemon->pipe_to_parent, (unsigned char *)&class, sizeof(class), 0);
+		  read_write(daemon->pipe_to_parent, (unsigned char *)&class, sizeof(class), RW_WRITE);
 		  blockdata_write(new_chain->addr.key.keydata, new_chain->addr.key.keylen, daemon->pipe_to_parent);
 		}
 	      else if (flags & F_DS)
 		{
-		  read_write(daemon->pipe_to_parent, (unsigned char *)&class, sizeof(class), 0);
+		  read_write(daemon->pipe_to_parent, (unsigned char *)&class, sizeof(class), RW_WRITE);
 		  /* A negative DS entry is possible and has no data, obviously. */
 		  if (!(flags & F_NEG))
 		    blockdata_write(new_chain->addr.ds.keydata, new_chain->addr.ds.keylen, daemon->pipe_to_parent);
@@ -835,16 +840,16 @@ void cache_end_insert(void)
     {
       ssize_t m = -1;
 
-      read_write(daemon->pipe_to_parent, (unsigned char *)&m, sizeof(m), 0);
+      read_write(daemon->pipe_to_parent, (unsigned char *)&m, sizeof(m), RW_WRITE);
 
 #ifdef HAVE_DNSSEC
       /* Sneak out possibly updated crypto HWM values. */
       m = daemon->metrics[METRIC_CRYPTO_HWM];
-      read_write(daemon->pipe_to_parent, (unsigned char *)&m, sizeof(m), 0);
+      read_write(daemon->pipe_to_parent, (unsigned char *)&m, sizeof(m), RW_WRITE);
       m = daemon->metrics[METRIC_SIG_FAIL_HWM];
-      read_write(daemon->pipe_to_parent, (unsigned char *)&m, sizeof(m), 0);
+      read_write(daemon->pipe_to_parent, (unsigned char *)&m, sizeof(m), RW_WRITE);
       m = daemon->metrics[METRIC_WORK_HWM];
-      read_write(daemon->pipe_to_parent, (unsigned char *)&m, sizeof(m), 0);
+      read_write(daemon->pipe_to_parent, (unsigned char *)&m, sizeof(m), RW_WRITE);
 #endif
     }
       
@@ -867,22 +872,22 @@ int cache_recv_insert(time_t now, int fd)
   while (1)
     {
  
-      if (!read_write(fd, (unsigned char *)&m, sizeof(m), 1))
+      if (!read_write(fd, (unsigned char *)&m, sizeof(m), RW_READ))
 	return 0;
       
       if (m == -1)
 	{
 #ifdef HAVE_DNSSEC
 	  /* Sneak in possibly updated crypto HWM. */
-	  if (!read_write(fd, (unsigned char *)&m, sizeof(m), 1))
+	  if (!read_write(fd, (unsigned char *)&m, sizeof(m), RW_READ))
 	    return 0;
 	  if (m > daemon->metrics[METRIC_CRYPTO_HWM])
 	    daemon->metrics[METRIC_CRYPTO_HWM] = m;
-	  if (!read_write(fd, (unsigned char *)&m, sizeof(m), 1))
+	  if (!read_write(fd, (unsigned char *)&m, sizeof(m), RW_READ))
 	    return 0;
 	  if (m > daemon->metrics[METRIC_SIG_FAIL_HWM])
 	    daemon->metrics[METRIC_SIG_FAIL_HWM] = m;
-	  if (!read_write(fd, (unsigned char *)&m, sizeof(m), 1))
+	  if (!read_write(fd, (unsigned char *)&m, sizeof(m), RW_READ))
 	    return 0;
 	  if (m > daemon->metrics[METRIC_WORK_HWM])
 	    daemon->metrics[METRIC_WORK_HWM] = m;
@@ -891,10 +896,59 @@ int cache_recv_insert(time_t now, int fd)
 	  return 1;
 	}
 
-      if (!read_write(fd, (unsigned char *)daemon->namebuff, m, 1) ||
-	  !read_write(fd, (unsigned char *)&ttd, sizeof(ttd), 1) ||
-	  !read_write(fd, (unsigned char *)&flags, sizeof(flags), 1) ||
-	  !read_write(fd, (unsigned char *)&addr, sizeof(addr), 1))
+#ifdef HAVE_DNSSEC
+      /* UDP validation moved to TCP to avoid truncation. 
+	 Restart UDP validation process with the returned result. */
+      if (m == -2)
+	{
+	  int status, uid, keycount, validatecount;
+	  int *keycountp, *validatecountp;
+	  size_t ret_len;
+	  
+	  struct frec *forward;
+	  
+	  if (!read_write(fd, (unsigned char *)&status, sizeof(status), RW_READ))
+	    return 0;
+	  if (!read_write(fd, (unsigned char *)&ret_len, sizeof(ret_len), RW_READ))
+	    return 0;
+	  if (!read_write(fd, (unsigned char *)daemon->packet, ret_len, RW_READ))
+	    return 0;
+	  if (!read_write(fd, (unsigned char *)&forward, sizeof(forward), RW_READ))
+	    return 0;
+	  if (!read_write(fd, (unsigned char *)&uid, sizeof(uid), RW_READ))
+	    return 0;
+	  if (!read_write(fd, (unsigned char *)&keycount, sizeof(keycount), RW_READ))
+	    return 0;
+	  if (!read_write(fd, (unsigned char *)&keycountp, sizeof(keycountp), RW_READ))
+	    return 0;
+	  if (!read_write(fd, (unsigned char *)&validatecount, sizeof(validatecount), RW_READ))
+	    return 0;
+	  if (!read_write(fd, (unsigned char *)&validatecountp, sizeof(validatecountp), RW_READ))
+	    return 0;
+	  
+	  /* There's a tiny chance that the frec may have been freed 
+	     and reused before the TCP process returns. Detect that with
+	     the uid field which is unique modulo 2^32 for each use. */
+	  if (uid == forward->uid)
+	    {
+	      /* repatriate the work counters from the child process. */
+	      *keycountp = keycount;
+	      *validatecountp = validatecount;
+	      
+	      if (!forward->dependent)
+		return_reply(now, forward, (struct dns_header *)daemon->packet, ret_len, status);
+	      else
+		pop_and_retry_query(forward, status, now);
+	    }
+	  
+	  return 1;
+	}
+#endif
+       
+      if (!read_write(fd, (unsigned char *)daemon->namebuff, m, RW_READ) ||
+	  !read_write(fd, (unsigned char *)&ttd, sizeof(ttd), RW_READ) ||
+	  !read_write(fd, (unsigned char *)&flags, sizeof(flags), RW_READ) ||
+	  !read_write(fd, (unsigned char *)&addr, sizeof(addr), RW_READ))
 	return 0;
 
       daemon->namebuff[m] = 0;
@@ -931,13 +985,13 @@ int cache_recv_insert(time_t now, int fd)
 #ifdef HAVE_DNSSEC
 	  if (flags & F_DNSKEY)
 	    {
-	      if (!read_write(fd, (unsigned char *)&class, sizeof(class), 1) ||
+	      if (!read_write(fd, (unsigned char *)&class, sizeof(class), RW_READ) ||
 		  !(addr.key.keydata = blockdata_read(fd, addr.key.keylen)))
 		return 0;
 	    }
 	  else  if (flags & F_DS)
 	    {
-	      if (!read_write(fd, (unsigned char *)&class, sizeof(class), 1) ||
+	      if (!read_write(fd, (unsigned char *)&class, sizeof(class), RW_READ) ||
 		  (!(flags & F_NEG) && !(addr.key.keydata = blockdata_read(fd, addr.key.keylen))))
 		return 0;
 	    }
@@ -1798,15 +1852,31 @@ int cache_make_stat(struct txt_record *t)
 #endif
 
 /* There can be names in the cache containing control chars, don't 
-   mess up logging or open security holes. */
+   mess up logging or open security holes. Also convert to all-LC
+   so that 0x20-encoding doesn't make logs look like ransom notes
+   made out of letters cut from a newspaper.
+   Overwrites daemon->workspacename */
 static char *sanitise(char *name)
 {
-  unsigned char *r;
+  unsigned char *r = (unsigned char *)name;
+  
   if (name)
-    for (r = (unsigned char *)name; *r; r++)
-      if (!isprint((int)*r))
-	return "<name unprintable>";
-
+    {
+      char *d = name = daemon->workspacename;
+      
+      for (; *r; r++, d++)
+	if (!isprint((int)*r))
+	  return "<name unprintable>";
+	else
+	  {
+	    unsigned char c = *r;
+	    
+	    *d = (char)((c >= 'A' && c <= 'Z') ? c + 'a' - 'A' : c);
+	  }
+      
+      *d = 0;
+    }
+  
   return name;
 }
 
@@ -2207,12 +2277,12 @@ void log_query(unsigned int flags, char *name, union all_addr *addr, char *arg, 
     }
   else if (flags & F_AUTH)
     source = "auth";
-   else if (flags & F_DNSSEC)
+  else if (flags & F_DNSSEC)
     {
       source = arg;
       verb = "to";
     }
-   else if (flags & F_SERVER)
+  else if (flags & F_SERVER)
     {
       source = "forwarded";
       verb = "to";
@@ -2241,12 +2311,21 @@ void log_query(unsigned int flags, char *name, union all_addr *addr, char *arg, 
   
   if (option_bool(OPT_EXTRALOG))
     {
-      if (flags & F_NOEXTRA)
-	my_syslog(LOG_INFO, "%u %s %s%s%s %s%s", daemon->log_display_id, source, name, gap, verb, dest, extra);
+      int display_id = daemon->log_display_id;
+      char *proto = "";
+
+      if (option_bool(OPT_LOG_PROTO))
+	proto = (display_id < 0) ? "TCP " : "UDP ";
+      
+      if (display_id < 0)
+	display_id = -display_id;
+      
+      if (flags & F_NOEXTRA || !daemon->log_source_addr)
+	my_syslog(LOG_INFO, "%s%u %s %s%s%s %s%s", proto, display_id, source, name, gap, verb, dest, extra);
       else
 	{
 	   int port = prettyprint_addr(daemon->log_source_addr, daemon->addrbuff2);
-	   my_syslog(LOG_INFO, "%u %s/%u %s %s%s%s %s%s", daemon->log_display_id, daemon->addrbuff2, port, source, name, gap, verb, dest, extra);
+	   my_syslog(LOG_INFO, "%s%u %s/%u %s %s%s%s %s%s", proto, display_id, daemon->addrbuff2, port, source, name, gap, verb, dest, extra);
 	}
     }
   else

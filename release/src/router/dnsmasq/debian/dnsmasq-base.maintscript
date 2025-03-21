@@ -1,3 +1,0 @@
-# Due to lintian warning dbus-policy-in-etc this file has been moved to
-# /usr/share/dbus-1/system.d/dnsmasq.conf and thus is not a conffile any more.
-rm_conffile /etc/dbus-1/system.d/dnsmasq.conf 2.89-1.1~ dnsmasq-base

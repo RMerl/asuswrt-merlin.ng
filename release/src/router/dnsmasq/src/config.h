@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,9 +18,9 @@
 #define MAX_PROCS 20 /* default max no children for TCP requests */
 #define CHILD_LIFETIME 150 /* secs 'till terminated (RFC1035 suggests > 120s) */
 #define TCP_MAX_QUERIES 100 /* Maximum number of queries per incoming TCP connection */
+#define TCP_TIMEOUT 5 /* timeout waiting to connect to an upstream server - double this for answer */
 #define TCP_BACKLOG 32  /* kernel backlog limit for TCP connections */
 #define EDNS_PKTSZ 1232 /* default max EDNS.0 UDP packet from from  /dnsflagday.net/2020 */
-#define SAFE_PKTSZ 1232 /* "go anywhere" UDP packet size, see https://dnsflagday.net/2020/ */
 #define KEYBLOCK_LEN 40 /* choose to minimise fragmentation when storing DNSSEC keys */
 #define DNSSEC_LIMIT_WORK 40 /* Max number of queries to validate one question */
 #define DNSSEC_LIMIT_SIG_FAIL 20 /* Number of signature that can fail to validate in one answer */
@@ -135,9 +135,6 @@ HAVE_AUTH
    define this to include the facility to act as an authoritative DNS
    server for one or more zones.
 
-HAVE_CRYPTOHASH
-   include just hash function from crypto library, but no DNSSEC.
-
 HAVE_DNSSEC
    include DNSSEC validator.
 
@@ -207,7 +204,6 @@ RESOLVFILE
 /* #define HAVE_IDN */
 /* #define HAVE_LIBIDN2 */
 /* #define HAVE_CONNTRACK */
-/* #define HAVE_CRYPTOHASH */
 /* #define HAVE_DNSSEC */
 /* #define HAVE_NFTSET */
 
@@ -373,6 +369,11 @@ HAVE_SOCKADDR_SA_LEN
 #define HAVE_INOTIFY
 #endif
 
+/* This never compiles code, it's only used by the makefile to fingerprint builds. */
+#ifdef DNSMASQ_COMPILE_FLAGS
+static char *compile_flags = DNSMASQ_COMPILE_FLAGS;
+#endif
+
 /* Define a string indicating which options are in use.
    DNSMASQ_COMPILE_OPTS is only defined in dnsmasq.c */
 
@@ -445,10 +446,6 @@ static char *compile_opts =
 "no-"
 #endif
 "auth "
-#if !defined(HAVE_CRYPTOHASH) && !defined(HAVE_DNSSEC)
-"no-"
-#endif
-"cryptohash "
 #ifndef HAVE_DNSSEC
 "no-"
 #endif

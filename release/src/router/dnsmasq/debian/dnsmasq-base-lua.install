@@ -1,3 +1,0 @@
-#!/usr/bin/dh-exec
-debian/dbus.conf => /usr/share/dbus-1/system.d/dnsmasq.conf
-trust-anchors.conf /usr/share/dnsmasq-base-lua

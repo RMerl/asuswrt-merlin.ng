@@ -2,7 +2,7 @@
 #
 # This revised version is (C) Copyright by
 # Matthias Andree <matthias.andree@gmx.de>, 2010 - 2021.
-# Conrad Kostecki <conrad@kostecki.com>, 2014 - 2022.
+# Conrad Kostecki <conrad@kostecki.com>, 2014 - 2024.
 # It is subject to the GNU General Public License v2,
 # or at your option, any later version.
 #
@@ -10,10 +10,10 @@
 # Simon Kelley <simon@thekelleys.org.uk>, 2005.
 msgid ""
 msgstr ""
-"Project-Id-Version: dnsmasq 2.88\n"
+"Project-Id-Version: dnsmasq 2.91\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-03-20 00:00+0000\n"
-"PO-Revision-Date: 2022-11-17 20:08+0100\n"
+"PO-Revision-Date: 2024-12-23 22:36+0100\n"
 "Last-Translator: Conrad Kostecki <conrad@kostecki.com>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.2\n"
+"X-Generator: Poedit 3.5\n"
 
 #: cache.c:652
 msgid "Internal error in cache."
@@ -43,9 +43,9 @@ msgid "bad name at %s line %d"
 msgstr "Fehlerhafter Name in %s Zeile %d"
 
 #: cache.c:1265
-#, fuzzy, c-format
+#, c-format
 msgid "read %s - %d names"
-msgstr "%s gelesen - %d Adressen"
+msgstr "%s gelesen - %d Namen"
 
 #: cache.c:1381
 msgid "cleared cache"
@@ -84,7 +84,7 @@ msgstr "weitergeleitete Anfragen %u, lokal beantwortete Anfragen %u"
 #: cache.c:1766
 #, c-format
 msgid "queries answered from stale cache %u"
-msgstr ""
+msgstr "Anfragen beantwortet vom veralteten Cache %u"
 
 #: cache.c:1768
 #, c-format
@@ -92,9 +92,9 @@ msgid "queries for authoritative zones %u"
 msgstr "Anfragen nach autoritativen Zonen %u"
 
 #: cache.c:1796
-#, fuzzy, c-format
+#, c-format
 msgid "server %s#%d: queries sent %u, retried %u, failed %u, nxdomain replies %u, avg. latency %ums"
-msgstr "Server %s#%d: Anfragen gesendet %u, erneut versucht oder fehlgeschlagen %u"
+msgstr "Server %s#%d: Anfragen gesendet %u, erneut versucht %u, fehlgeschlagen %u, nxdomain-Antworten %u, durchschnittliche Latenz %ums"
 
 #: util.c:51
 #, c-format
@@ -120,14 +120,14 @@ msgid "failed to allocate %d bytes"
 msgstr "Konnte %d Bytes nicht belegen"
 
 #: util.c:344
-#, fuzzy, c-format
+#, c-format
 msgid "failed to reallocate %d bytes"
-msgstr "Konnte %d Bytes nicht belegen"
+msgstr "Konnte %d Bytes nicht allozieren"
 
 #: util.c:465
-#, fuzzy, c-format
+#, c-format
 msgid "cannot read monotonic clock: %s"
-msgstr "kann Netlink-Socket nicht erzeugen: %s"
+msgstr "monotone Uhr kann nicht gelesen werden: %s"
 
 # @Simon: not perfect but I cannot get nearer right now.
 #: util.c:579
@@ -188,11 +188,11 @@ msgstr "Unberechtigte DNS-Anfragen von Windows-Rechnern nicht weiterleiten."
 
 #: option.c:404
 msgid "Don't include IPv4 addresses in DNS answers."
-msgstr ""
+msgstr "Keine IPv4-Adressen in DNS-Antworten inkludieren."
 
 #: option.c:405
 msgid "Don't include IPv6 addresses in DNS answers."
-msgstr ""
+msgstr "Keine IPv6-Adressen in DNS-Antworten inkludieren."
 
 #: option.c:406
 msgid "Enable DHCP in the range given with lease duration."
@@ -313,7 +313,7 @@ msgstr "Fehlerhafte Suchergebnisse NICHT zwischenspeichern."
 
 #: option.c:434
 msgid "Use expired cache data for faster reply."
-msgstr ""
+msgstr "Verwende abgelaufene Cachedaten für schnellere Antwort."
 
 #: option.c:435
 #, c-format
@@ -347,7 +347,7 @@ msgstr "Ausgehenden Port für DNS-Anfragen an vorgelagerte Server erzwingen."
 
 #: option.c:442
 msgid "Set maximum number of random originating ports for a query."
-msgstr ""
+msgstr "Setze die maximale Anzahl zufälliger Ursprungsports für eine Abfrage."
 
 #: option.c:443
 msgid "Do NOT read resolv.conf."
@@ -404,7 +404,7 @@ msgstr "Spezifiziere untere Gültigkeitsdauergrenze für Zwischenspeicher."
 
 #: option.c:456
 msgid "Retry DNS queries after this many milliseconds."
-msgstr ""
+msgstr "DNS-Abfragen nach so vielen Millisekunden wiederholen."
 
 #: option.c:457
 #, c-format
@@ -520,7 +520,7 @@ msgstr "Konfiguration aus allen Dateien in diesem Verzeichnis lesen."
 
 #: option.c:484
 msgid "Execute file and read configuration from stdin."
-msgstr ""
+msgstr "Führe Datei aus und lese die Konfiguration aus stdin."
 
 #: option.c:485
 msgid "Log to this syslog facility or file. (defaults to DAEMON)"
@@ -680,7 +680,7 @@ msgstr "Anfragende MAC-Adresse in die weiterleitende DNS-Anfrage einfügen."
 
 #: option.c:523
 msgid "Strip MAC information from queries."
-msgstr ""
+msgstr "Entferne die MAC-Information von Abfragen."
 
 #: option.c:524
 msgid "Add specified IP subnet to forwarded DNS queries."
@@ -688,7 +688,7 @@ msgstr "Füge spezifiziertes IP-Subnetz an weitergeleiteten DNS-Anfragen hinzu."
 
 #: option.c:525
 msgid "Strip ECS information from queries."
-msgstr ""
+msgstr "Entferne die ECS-Information von Abfragen."
 
 #: option.c:526
 msgid "Add client identification to forwarded DNS queries."
@@ -773,9 +773,8 @@ msgid "Specify ipsets to which matching domains should be added"
 msgstr "Spezifiziere IPSets, zu denen passende Domains hinzugefügt werden sollen"
 
 #: option.c:546
-#, fuzzy
 msgid "Specify nftables sets to which matching domains should be added"
-msgstr "Spezifiziere IPSets, zu denen passende Domains hinzugefügt werden sollen"
+msgstr "Geben Sie nftables sets an, zu denen passende Domänen hinzugefügt werden sollen"
 
 #: option.c:547
 msgid "Enable filtering of DNS queries with connection-track marks."
@@ -880,7 +879,7 @@ msgstr "Protokolliere kein Routine-TFTP."
 
 #: option.c:572
 msgid "Suppress round-robin ordering of DNS records."
-msgstr ""
+msgstr "Unterdrückt die Round-Robin-Sortierung von DNS-Einträgen."
 
 #: option.c:802
 #, c-format
@@ -915,11 +914,11 @@ msgstr "Schnittstellenbindung nicht unterstützt"
 
 #: option.c:955
 msgid "Cannot resolve server name"
-msgstr ""
+msgstr "Servername kann nicht aufgelöst werden"
 
 #: option.c:991
 msgid "cannot use IPv4 server address with IPv6 source address"
-msgstr ""
+msgstr "IPv4-Serveradresse kann nicht mit IPv6-Quelladresse verwendet werden"
 
 #: option.c:997 option.c:1043
 msgid "interface can only be specified once"
@@ -931,21 +930,19 @@ msgstr "Fehlerhafter Schnittestellenname"
 
 #: option.c:1037
 msgid "cannot use IPv6 server address with IPv4 source address"
-msgstr ""
+msgstr "IPv6-Serveradresse kann nicht mit IPv4-Quelladresse verwendet werden"
 
 #: option.c:1124
-#, fuzzy
 msgid "bad IPv4 prefix length"
-msgstr "fehlerhafte Präfixlänge"
+msgstr "ungültige IPv4-Präfixlänge"
 
 #: option.c:1155 option.c:1165 option.c:1240 option.c:1250 option.c:5360
 msgid "error"
 msgstr "Fehler"
 
 #: option.c:1207
-#, fuzzy
 msgid "bad IPv6 prefix length"
-msgstr "fehlerhafte Präfixlänge"
+msgstr "ungültige IPv6-Präfixlänge"
 
 #: option.c:1467
 msgid "inappropriate vendor:"
@@ -1034,7 +1031,6 @@ msgid "recompile with HAVE_LUASCRIPT defined to enable Lua scripts"
 msgstr "Neuübersetzung mit HAVE_LUASCRIPT nötig, um benutzerdefinierte Lua-Skripte auszuführen"
 
 #: option.c:2447
-#, fuzzy
 msgid "invalid auth-zone"
 msgstr "unzulässiger Alias-Bereich"
 
@@ -1059,9 +1055,8 @@ msgid "recompile with HAVE_IPSET defined to enable ipset directives"
 msgstr "Neuübersetzung mit HAVE_IPSET nötig, um IPSet-Direktiven zu aktivieren"
 
 #: option.c:3117
-#, fuzzy
 msgid "recompile with HAVE_NFTSET defined to enable nftset directives"
-msgstr "Neuübersetzung mit HAVE_IPSET nötig, um IPSet-Direktiven zu aktivieren"
+msgstr "Neukompilieren mit definiertem HAVE_NFTSET, um NFTSET-Direktiven zu aktivieren"
 
 #: option.c:3192 option.c:3210
 msgid "recompile with HAVE_CONNTRACK defined to enable connmark-allowlist directives"
@@ -1259,7 +1254,7 @@ msgstr "unzulässige Option"
 #: option.c:5363
 #, c-format
 msgid " in output from %s"
-msgstr ""
+msgstr " in der Ausgabe von %s"
 
 #: option.c:5365
 #, c-format
@@ -1272,9 +1267,9 @@ msgid "read %s"
 msgstr "%s gelesen"
 
 #: option.c:5446
-#, fuzzy, c-format
+#, c-format
 msgid "cannot execute %s: %s"
-msgstr "kann %s nicht erstellen: %s"
+msgstr "kann %s nicht ausführen: %s"
 
 #: option.c:5454 option.c:5615 tftp.c:790
 #, c-format
@@ -1282,14 +1277,14 @@ msgid "cannot read %s: %s"
 msgstr "kann %s nicht lesen: %s"
 
 #: option.c:5473
-#, fuzzy, c-format
+#, c-format
 msgid "error executing %s: %s"
-msgstr "konnte %s nicht ausführen: %s"
+msgstr "Fehler bei der Ausführung von %s: %s"
 
 #: option.c:5476
 #, c-format
 msgid "%s returns non-zero error code"
-msgstr ""
+msgstr "%s gibt einen Fehlercode ungleich Null zurück"
 
 #: option.c:5775
 msgid "junk found in command line"
@@ -1399,14 +1394,14 @@ msgid "reducing DNS packet size for nameserver %s to %d"
 msgstr "Reduziere die DNS-Paketgröße für Nameserver %s auf %d"
 
 #: forward.c:1565
-#, fuzzy, c-format
+#, c-format
 msgid "ignoring query from non-local network %s (logged only once)"
-msgstr "Ignoriere Anfrage von auswärtigem Netzwerk"
+msgstr "Ignoriere Abfrage von nicht-lokalen Netzwerk %s (Nur einmal protokolliert)"
 
 #: forward.c:2139
-#, fuzzy, c-format
+#, c-format
 msgid "ignoring query from non-local network %s"
-msgstr "Ignoriere Anfrage von auswärtigem Netzwerk"
+msgstr "Ignoriere Abfrage von nicht-lokalen Netzwerk %s"
 
 #: forward.c:2501
 #, c-format
@@ -1488,7 +1483,7 @@ msgstr "ignoriere Namensserver %s - kann Socket nicht erzeugen/binden: %s"
 
 #: network.c:1643
 msgid "more servers are defined but not logged"
-msgstr ""
+msgstr "mehr Server sind definiert aber nicht protokolliert"
 
 #: network.c:1654
 msgid "(no DNSSEC)"
@@ -1605,7 +1600,7 @@ msgstr "max_port darf nicht kleiner als min_port sein"
 
 #: dnsmasq.c:271
 msgid "port_limit must not be larger than available port range"
-msgstr ""
+msgstr "port_limit darf nicht größer als der verfügbare Portbereich sein"
 
 #: dnsmasq.c:278
 msgid "--auth-server required when an auth zone is defined."
@@ -1810,9 +1805,9 @@ msgid "restricting maximum simultaneous TFTP transfers to %d"
 msgstr "Begrenze gleichzeitige TFTP-Übertragungen auf maximal %d"
 
 #: dnsmasq.c:1095
-#, fuzzy, c-format
+#, c-format
 msgid "error binding DHCP socket to device %s"
-msgstr "Fehler beim Senden des DHCP-Pakets an %s: %s"
+msgstr "Fehler beim Binden des DHCP-Sockets an Gerät %s"
 
 #: dnsmasq.c:1229
 msgid "connected to system DBus"
@@ -1981,19 +1976,19 @@ msgid "read %s - %d addresses"
 msgstr "%s gelesen - %d Adressen"
 
 #: dhcp.c:1136
-#, fuzzy, c-format
+#, c-format
 msgid "Cannot broadcast DHCP relay via interface %s"
-msgstr "Kann nicht zum DHCPv6 Server multicasten ohne korrekte Schnittstelle"
+msgstr "DHCP-Relay kann nicht über die Schnittstelle %s gesendet werden"
 
 #: dhcp.c:1160
 #, c-format
 msgid "broadcast via %s"
-msgstr ""
+msgstr "broadcast via %s"
 
 #: dhcp.c:1163 rfc3315.c:2219
-#, fuzzy, c-format
+#, c-format
 msgid "DHCP relay at %s -> %s"
-msgstr "DHCP Relais %s -> %s"
+msgstr "DHCP-Relay bei %s -> %s"
 
 #: lease.c:64
 #, c-format
@@ -2405,14 +2400,14 @@ msgid "release received"
 msgstr "Freigabe empfangen"
 
 #: rfc3315.c:2200
-#, fuzzy, c-format
+#, c-format
 msgid "Cannot multicast DHCP relay via interface %s"
-msgstr "Kann nicht zum DHCPv6 Server multicasten ohne korrekte Schnittstelle"
+msgstr "Multicast-DHCP-Relay über Schnittstelle %s nicht möglich"
 
 #: rfc3315.c:2216
 #, c-format
 msgid "multicast via %s"
-msgstr ""
+msgstr "multicast via %s"
 
 #: dhcp-common.c:187
 #, c-format
@@ -2484,9 +2479,9 @@ msgid "router advertisement on %s%s"
 msgstr "Router-Advertisment auf %s%s"
 
 #: dhcp-common.c:1043
-#, fuzzy, c-format
+#, c-format
 msgid "DHCP relay from %s via %s"
-msgstr "DHCP Weiterleitung von %s nach %s"
+msgstr "DHCP-Relay von %s über %s"
 
 #: dhcp-common.c:1045
 #, c-format
@@ -2621,9 +2616,9 @@ msgid "Insecure DS reply received for %s, check domain configuration and upstrea
 msgstr "Unsichere DS-Antwort für %s, bitte Domainkonfiguration und Upstream DNS-Server für DNSSEC-Unterstützung überprüfen"
 
 #: blockdata.c:55
-#, fuzzy, c-format
+#, c-format
 msgid "pool memory in use %zu, max %zu, allocated %zu"
-msgstr "Speicherpool in Benutzung %u, Max %u, zugewiesen %u"
+msgstr "Speicherpool in Benutzung %zu, Max %zu, zugewiesen %zu"
 
 #: tables.c:61
 #, c-format
@@ -2695,24 +2690,23 @@ msgid "bad dynamic directory %s: %s"
 msgstr "fehlerhaftes dynamisches Verzeichnis %s: %s"
 
 #: inotify.c:186
-#, fuzzy
 msgid "not a directory"
-msgstr "Kann auf Verzeichnis %s nicht zugreifen: %s"
+msgstr "ist kein Verzeichnis"
 
 #: inotify.c:299
 #, c-format
 msgid "inotify: %s removed"
-msgstr ""
+msgstr "inotify: %s entfernt"
 
 #: inotify.c:301
-#, fuzzy, c-format
+#, c-format
 msgid "inotify: %s new or modified"
-msgstr "inotify, neue oder geänderte Datei %s"
+msgstr "inotify: %s neu oder modifiziert"
 
 #: inotify.c:309
 #, c-format
 msgid "inotify: flushed %u names read from %s"
-msgstr ""
+msgstr "inotify: %u Namen gelöscht, aus %s gelesen"
 
 #: dump.c:68
 #, c-format
@@ -2729,14 +2723,14 @@ msgid "failed to write packet dump"
 msgstr "schreiben des Paketmitschnitts fehlgeschlagen"
 
 #: dump.c:289
-#, fuzzy, c-format
+#, c-format
 msgid "%u dumping packet %u mask 0x%04x"
-msgstr "Lade UDP Paket %u Maske 0x%04x ab"
+msgstr "%u dumpe Paket %u Maske 0x%04x"
 
 #: dump.c:291
-#, fuzzy, c-format
+#, c-format
 msgid "dumping packet %u mask 0x%04x"
-msgstr "Lade UDP Paket %u Maske 0x%04x ab"
+msgstr "Dumpe Packet %u Make 0x%04x"
 
 #: ubus.c:79
 #, c-format
@@ -2770,9 +2764,8 @@ msgid "Failed to create SHA-256 hash object"
 msgstr "Kann SHA-256-Hash-Objekt nicht erstellen"
 
 #: nftset.c:35
-#, fuzzy
 msgid "failed to create nftset context"
-msgstr "konnte IPset-Kontroll-Socket nicht erzeugen: %s"
+msgstr "Fehler beim Erstellen des NFTSET-Kontexts"
 
 #~ msgid "bad IPv4 prefix"
 #~ msgstr "fehlerhaftes IPv4-Präfix"

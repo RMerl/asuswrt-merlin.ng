@@ -71,6 +71,7 @@
 #define MIN_AUTHKEYS_LINE 10 /* "ssh-rsa AB" - short but doesn't matter */
 #define MAX_AUTHKEYS_LINE 4200 /* max length of a line in authkeys */
 
+static char * authorized_keys_filepath(void);
 static int checkpubkey(const char* keyalgo, unsigned int keyalgolen,
 		const unsigned char* keyblob, unsigned int keybloblen);
 static int checkpubkeyperms(void);
@@ -441,6 +442,24 @@ out:
 	return ret;
 }
 
+/* Returns the full path to the user's authorized_keys file in an
+ * allocated string which caller must free. */
+static char *authorized_keys_filepath() {
+	size_t len = 0;
+	char *pathname = NULL, *dir = NULL;
+	const char *filename = "authorized_keys";
+
+	dir = expand_homedir_path_home(svr_opts.authorized_keys_dir,
+				       ses.authstate.pw_dir);
+
+	/* allocate max required pathname storage,
+	 * = dir + "/" + "authorized_keys" + '\0' */;
+	len = strlen(dir) + strlen(filename) + 2;
+	pathname = m_malloc(len);
+	snprintf(pathname, len, "%s/%s", dir, filename);
+	m_free(dir);
+	return pathname;
+}
 
 /* Checks whether a specified publickey (and associated algorithm) is an
  * acceptable key for authentication */
@@ -452,7 +471,6 @@ static int checkpubkey(const char* keyalgo, unsigned int keyalgolen,
 	char * filename = NULL;
 	int ret = DROPBEAR_FAILURE;
 	buffer * line = NULL;
-	unsigned int len;
 	int line_num;
 	uid_t origuid;
 	gid_t origgid;
@@ -474,13 +492,7 @@ static int checkpubkey(const char* keyalgo, unsigned int keyalgolen,
 	} else {
 		/* we don't need to check pw and pw_dir for validity, since
 		 * its been done in checkpubkeyperms. */
-		len = strlen(ses.authstate.pw_dir);
-		/* allocate max required pathname storage,
-		 * = path + "/.ssh/authorized_keys" + '\0' = pathlen + 22 */
-		filename = m_malloc(len + 22);
-		snprintf(filename, len + 22, "%s/.ssh/authorized_keys",
-					ses.authstate.pw_dir);
-
+		filename = authorized_keys_filepath();
 		authfile = fopen(filename, "r");
 		if (!authfile) {
 			TRACE(("checkpubkey: failed opening %s: %s", filename, strerror(errno)))
@@ -534,53 +546,34 @@ out:
 
 /* Returns DROPBEAR_SUCCESS if file permissions for pubkeys are ok,
  * DROPBEAR_FAILURE otherwise.
- * Checks that the user's homedir, ~/.ssh, and
- * ~/.ssh/authorized_keys are all owned by either root or the user, and are
- * g-w, o-w */
+ * Checks that the authorized_keys path permissions are all owned by either
+ * root or the user, and are g-w, o-w.
+ * When this path is inside the user's home dir it checks up to and including
+ * the home dir, otherwise it checks every path component. */
 static int checkpubkeyperms() {
-
-	char* filename = NULL;
-	int ret = DROPBEAR_FAILURE;
-	unsigned int len;
+	char *path = authorized_keys_filepath(), *sep = NULL;
+	int ret = DROPBEAR_SUCCESS;
 
 	TRACE(("enter checkpubkeyperms"))
 
-	if (ses.authstate.pw_dir == NULL) {
-		goto out;
+	/* Walk back up path checking permissions, stopping at either homedir,
+	 * or root if the path is outside of the homedir. */
+	while ((sep = strrchr(path, '/')) != NULL) {
+		if (sep == path) {	/* root directory */
+			sep++;
+		}
+		*sep = '\0';
+		if (checkfileperm(path) != DROPBEAR_SUCCESS) {
+			TRACE(("checkpubkeyperms: bad perm on %s", path))
+			ret = DROPBEAR_FAILURE;
+		}
+		if (strcmp(path, ses.authstate.pw_dir) == 0 || strcmp(path, "/") == 0) {
+			break;
+		}
 	}
 
-	if ((len = strlen(ses.authstate.pw_dir)) == 0) {
-		goto out;
-	}
-
-	/* allocate max required pathname storage,
-	 * = path + "/.ssh/authorized_keys" + '\0' = pathlen + 22 */
-	len += 22;
-	filename = m_malloc(len);
-	strlcpy(filename, ses.authstate.pw_dir, len);
-
-	/* check ~ */
-	if (checkfileperm(filename) != DROPBEAR_SUCCESS) {
-		goto out;
-	}
-
-	/* check ~/.ssh */
-	strlcat(filename, "/.ssh", len);
-	if (checkfileperm(filename) != DROPBEAR_SUCCESS) {
-		goto out;
-	}
-
-	/* now check ~/.ssh/authorized_keys */
-	strlcat(filename, "/authorized_keys", len);
-	if (checkfileperm(filename) != DROPBEAR_SUCCESS) {
-		goto out;
-	}
-
-	/* file looks ok, return success */
-	ret = DROPBEAR_SUCCESS;
-
-out:
-	m_free(filename);
+	/* all looks ok, return success */
+	m_free(path);
 
 	TRACE(("leave checkpubkeyperms"))
 	return ret;

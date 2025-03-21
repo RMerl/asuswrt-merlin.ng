@@ -60,6 +60,7 @@ unsigned char* buf_getwriteptr(const buffer* buf, unsigned int len);
 char* buf_getstring(buffer* buf, unsigned int *retlen);
 buffer * buf_getstringbuf(buffer *buf);
 buffer * buf_getbuf(buffer *buf);
+buffer * buf_getptrcopy(const buffer* buf, unsigned int len);
 void buf_eatstring(buffer *buf);
 void buf_putint(buffer* buf, unsigned int val);
 void buf_putstring(buffer* buf, const char* str, unsigned int len);

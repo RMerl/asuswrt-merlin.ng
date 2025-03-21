@@ -50,11 +50,22 @@ void kexecdh_comb_key(struct kex_ecdh_param *param, buffer *pub_them,
 		sign_key *hostkey);
 #endif
 
-#if DROPBEAR_CURVE25519
+#if DROPBEAR_CURVE25519_DEP
 struct kex_curve25519_param *gen_kexcurve25519_param(void);
 void free_kexcurve25519_param(struct kex_curve25519_param *param);
+void kexcurve25519_derive(const struct kex_curve25519_param *param, const buffer *buf_pub_them,
+    unsigned char *out);
+#endif
+#if DROPBEAR_CURVE25519
 void kexcurve25519_comb_key(const struct kex_curve25519_param *param, const buffer *pub_them,
 		sign_key *hostkey);
+#endif
+
+#if DROPBEAR_PQHYBRID
+struct kex_pqhybrid_param *gen_kexpqhybrid_param(void);
+void free_kexpqhybrid_param(struct kex_pqhybrid_param *param);
+void kexpqhybrid_comb_key(struct kex_pqhybrid_param *param,
+    buffer *buf_pub, sign_key *hostkey);
 #endif
 
 #ifndef DISABLE_ZLIB
@@ -105,11 +116,27 @@ struct kex_ecdh_param {
 };
 #endif
 
-#if DROPBEAR_CURVE25519
+#if DROPBEAR_CURVE25519_DEP
 #define CURVE25519_LEN 32
 struct kex_curve25519_param {
 	unsigned char priv[CURVE25519_LEN];
 	unsigned char pub[CURVE25519_LEN];
+};
+#endif
+
+#if DROPBEAR_PQHYBRID
+struct kex_pqhybrid_param {
+	struct kex_curve25519_param *curve25519;
+
+	/* The public part sent, concatenated PQ and EC parts.
+      Client sets it in gen_kexpqybrid_param().
+        C_INIT = C_PK2 || C_PK1
+      Server sets it in kexpqhybrid_comb().
+        S_REPLY = S_CT2 || S_PK1
+	*/
+	buffer *concat_public;
+	/* pq secret, only used by the client */
+	buffer *kem_cli_secret;
 };
 #endif
 

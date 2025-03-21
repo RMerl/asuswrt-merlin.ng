@@ -1,3 +1,44 @@
+2025.87 - 5 March 2025
+
+Note >> for compatibility/configuration changes
+
+- >> Disable SHA-1 algorithms by default. SHA-1 has known weakness and
+  most implementations support alternatives.
+
+- Add post-quantum key exchange. These avoid the possibility of current
+  stored traffic being decrypted using a possible future quantum
+  computer.
+
+  sntrup761 added by Matt Johnston, using sntrup761 implementation from
+  Daniel J. Bernstein, Chitchanok Chuengsatiansup, Tanja Lange and
+  Christine van Vredendaal, with integration work from OpenSSH.
+
+  ML-KEM added by Loganaden Velvindron, Jaykishan Mutkawoa, Kavish Nadan,
+  using libcrux, also based on OpenSSH work.
+
+  These do increase code size, at least sntrup761 is recommended,
+  see default_options.h
+
+- >> Decompression is disabled on the server, compression
+  is still supported.
+  This avoids attack surface for zlib and saves runtime memory.
+
+- Add -D server flag to specify authorized_keys directory, from Darren Tucker.
+
+- Include remote host in "Login attempt with wrong user" message for fail2ban,
+  patch from MichaIng.
+
+- Workaround writing hostkeys on FUSE filesystem that don't
+  support hardlinks, reported by elijahr.
+
+- Fix truncated error messages such as host key mismatch.
+
+- >> Preference aes256 ahead of aes128 for the client. chacha20-poly1305
+  is still first preference.
+
+- Fix ubsan failure in curve25519 code, reported by Steven Bytnar.
+  Has no effect on execution.
+
 2024.86 - 22 October 2024
 
 - Fix failure on concurrent channel open/close.

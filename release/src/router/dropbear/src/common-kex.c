@@ -29,15 +29,11 @@
 #include "buffer.h"
 #include "session.h"
 #include "kex.h"
-#include "dh_groups.h"
 #include "ssh.h"
 #include "packet.h"
 #include "bignum.h"
 #include "dbrandom.h"
 #include "runopts.h"
-#include "ecc.h"
-#include "curve25519.h"
-#include "crypto_desc.h"
 
 static void kexinitialise(void);
 static void gen_new_keys(void);
@@ -81,10 +77,10 @@ void send_msg_kexinit() {
 
 
 	/* compression_algorithms_client_to_server */
-	buf_put_algolist(ses.writepayload, ses.compress_algos);
+	buf_put_algolist(ses.writepayload, ses.compress_algos_c2s);
 
 	/* compression_algorithms_server_to_client */
-	buf_put_algolist(ses.writepayload, ses.compress_algos);
+	buf_put_algolist(ses.writepayload, ses.compress_algos_s2c);
 
 	/* languages_client_to_server */
 	buf_putstring(ses.writepayload, "", 0);
@@ -205,27 +201,34 @@ void recv_msg_newkeys() {
 	TRACE(("leave recv_msg_newkeys"))
 }
 
+static void kex_setup_compress(void) {
+#ifdef DISABLE_ZLIB
+	ses.compress_algos_c2s = ssh_nocompress;
+	ses.compress_algos_s2c = ssh_nocompress;
+#else
+
+	if (!opts.allow_compress) {
+		ses.compress_algos_c2s = ssh_nocompress;
+		ses.compress_algos_s2c = ssh_nocompress;
+		return;
+	}
+
+	if (IS_DROPBEAR_CLIENT) {
+		/* TODO: should c2s in dbclient be disabled?
+		 * Current Dropbear server disables it. Disabling it also
+		 * lets DROPBEAR_CLI_IMMEDIATE_AUTH work (see comment there) */
+		ses.compress_algos_c2s = ssh_compress;
+		ses.compress_algos_s2c = ssh_compress;
+	} else {
+		ses.compress_algos_c2s = ssh_nocompress;
+		ses.compress_algos_s2c = ssh_compress;
+	}
+#endif
+}
 
 /* Set up the kex for the first time */
 void kexfirstinitialise() {
-#ifdef DISABLE_ZLIB
-	ses.compress_algos = ssh_nocompress;
-#else
-	switch (opts.compress_mode)
-	{
-		case DROPBEAR_COMPRESS_DELAYED:
-			ses.compress_algos = ssh_delaycompress;
-			break;
-
-		case DROPBEAR_COMPRESS_ON:
-			ses.compress_algos = ssh_compress;
-			break;
-
-		case DROPBEAR_COMPRESS_OFF:
-			ses.compress_algos = ssh_nocompress;
-			break;
-	}
-#endif
+	kex_setup_compress();
 	kexinitialise();
 }
 
@@ -310,9 +313,16 @@ static void gen_new_keys() {
 	/* the dh_K and hash are the start of all hashes, we make use of that */
 
 	hash_desc->init(&hs);
-	hash_process_mp(hash_desc, &hs, ses.dh_K);
-	mp_clear(ses.dh_K);
-	m_free(ses.dh_K);
+	if (ses.dh_K) {
+		hash_process_mp(hash_desc, &hs, ses.dh_K);
+		mp_clear(ses.dh_K);
+		m_free(ses.dh_K);
+	}
+	if (ses.dh_K_bytes) {
+	    hash_desc->process(&hs, ses.dh_K_bytes->data, ses.dh_K_bytes->len);
+		buf_burn_free(ses.dh_K_bytes);
+		ses.dh_K_bytes = NULL;
+	}
 	hash_desc->process(&hs, ses.hash->data, ses.hash->len);
 	buf_burn_free(ses.hash);
 	ses.hash = NULL;
@@ -565,235 +575,6 @@ void recv_msg_kexinit() {
 	TRACE(("leave recv_msg_kexinit"))
 }
 
-#if DROPBEAR_NORMAL_DH
-static void load_dh_p(mp_int * dh_p)
-{
-	bytes_to_mp(dh_p, ses.newkeys->algo_kex->dh_p_bytes, 
-		ses.newkeys->algo_kex->dh_p_len);
-}
-
-/* Initialises and generate one side of the diffie-hellman key exchange values.
- * See the transport rfc 4253 section 8 for details */
-/* dh_pub and dh_priv MUST be already initialised */
-struct kex_dh_param *gen_kexdh_param() {
-	struct kex_dh_param *param = NULL;
-
-	DEF_MP_INT(dh_p);
-	DEF_MP_INT(dh_q);
-	DEF_MP_INT(dh_g);
-
-	TRACE(("enter gen_kexdh_vals"))
-
-	param = m_malloc(sizeof(*param));
-	m_mp_init_multi(&param->pub, &param->priv, &dh_g, &dh_p, &dh_q, NULL);
-
-	/* read the prime and generator*/
-	load_dh_p(&dh_p);
-	
-	mp_set_ul(&dh_g, DH_G_VAL);
-
-	/* calculate q = (p-1)/2 */
-	/* dh_priv is just a temp var here */
-	if (mp_sub_d(&dh_p, 1, &param->priv) != MP_OKAY) { 
-		dropbear_exit("Diffie-Hellman error");
-	}
-	if (mp_div_2(&param->priv, &dh_q) != MP_OKAY) {
-		dropbear_exit("Diffie-Hellman error");
-	}
-
-	/* Generate a private portion 0 < dh_priv < dh_q */
-	gen_random_mpint(&dh_q, &param->priv);
-
-	/* f = g^y mod p */
-	if (mp_exptmod(&dh_g, &param->priv, &dh_p, &param->pub) != MP_OKAY) {
-		dropbear_exit("Diffie-Hellman error");
-	}
-	mp_clear_multi(&dh_g, &dh_p, &dh_q, NULL);
-	return param;
-}
-
-void free_kexdh_param(struct kex_dh_param *param)
-{
-	mp_clear_multi(&param->pub, &param->priv, NULL);
-	m_free(param);
-}
-
-/* This function is fairly common between client/server, with some substitution
- * of dh_e/dh_f etc. Hence these arguments:
- * dh_pub_us is 'e' for the client, 'f' for the server. dh_pub_them is 
- * vice-versa. dh_priv is the x/y value corresponding to dh_pub_us */
-void kexdh_comb_key(struct kex_dh_param *param, mp_int *dh_pub_them,
-		sign_key *hostkey) {
-
-	DEF_MP_INT(dh_p);
-	DEF_MP_INT(dh_p_min1);
-	mp_int *dh_e = NULL, *dh_f = NULL;
-
-	m_mp_init_multi(&dh_p, &dh_p_min1, NULL);
-	load_dh_p(&dh_p);
-
-	if (mp_sub_d(&dh_p, 1, &dh_p_min1) != MP_OKAY) { 
-		dropbear_exit("Diffie-Hellman error");
-	}
-
-	/* Check that dh_pub_them (dh_e or dh_f) is in the range [2, p-2] */
-	if (mp_cmp(dh_pub_them, &dh_p_min1) != MP_LT 
-			|| mp_cmp_d(dh_pub_them, 1) != MP_GT) {
-		dropbear_exit("Diffie-Hellman error");
-	}
-	
-	/* K = e^y mod p = f^x mod p */
-	m_mp_alloc_init_multi(&ses.dh_K, NULL);
-	if (mp_exptmod(dh_pub_them, &param->priv, &dh_p, ses.dh_K) != MP_OKAY) {
-		dropbear_exit("Diffie-Hellman error");
-	}
-
-	/* clear no longer needed vars */
-	mp_clear_multi(&dh_p, &dh_p_min1, NULL);
-
-	/* From here on, the code needs to work with the _same_ vars on each side,
-	 * not vice-versaing for client/server */
-	if (IS_DROPBEAR_CLIENT) {
-		dh_e = &param->pub;
-		dh_f = dh_pub_them;
-	} else {
-		dh_e = dh_pub_them;
-		dh_f = &param->pub;
-	} 
-
-	/* Create the remainder of the hash buffer, to generate the exchange hash */
-	/* K_S, the host key */
-	buf_put_pub_key(ses.kexhashbuf, hostkey, ses.newkeys->algo_hostkey);
-	/* e, exchange value sent by the client */
-	buf_putmpint(ses.kexhashbuf, dh_e);
-	/* f, exchange value sent by the server */
-	buf_putmpint(ses.kexhashbuf, dh_f);
-	/* K, the shared secret */
-	buf_putmpint(ses.kexhashbuf, ses.dh_K);
-
-	/* calculate the hash H to sign */
-	finish_kexhashbuf();
-}
-#endif
-
-#if DROPBEAR_ECDH
-struct kex_ecdh_param *gen_kexecdh_param() {
-	struct kex_ecdh_param *param = m_malloc(sizeof(*param));
-	if (ecc_make_key_ex(NULL, dropbear_ltc_prng, 
-		&param->key, ses.newkeys->algo_kex->ecc_curve->dp) != CRYPT_OK) {
-		dropbear_exit("ECC error");
-	}
-	return param;
-}
-
-void free_kexecdh_param(struct kex_ecdh_param *param) {
-	ecc_free(&param->key);
-	m_free(param);
-
-}
-void kexecdh_comb_key(struct kex_ecdh_param *param, buffer *pub_them,
-		sign_key *hostkey) {
-	const struct dropbear_kex *algo_kex = ses.newkeys->algo_kex;
-	/* public keys from client and server */
-	ecc_key *Q_C, *Q_S, *Q_them;
-
-	Q_them = buf_get_ecc_raw_pubkey(pub_them, algo_kex->ecc_curve);
-	if (Q_them == NULL) {
-		dropbear_exit("ECC error");
-	}
-
-	ses.dh_K = dropbear_ecc_shared_secret(Q_them, &param->key);
-
-	/* Create the remainder of the hash buffer, to generate the exchange hash
-	   See RFC5656 section 4 page 7 */
-	if (IS_DROPBEAR_CLIENT) {
-		Q_C = &param->key;
-		Q_S = Q_them;
-	} else {
-		Q_C = Q_them;
-		Q_S = &param->key;
-	} 
-
-	/* K_S, the host key */
-	buf_put_pub_key(ses.kexhashbuf, hostkey, ses.newkeys->algo_hostkey);
-	/* Q_C, client's ephemeral public key octet string */
-	buf_put_ecc_raw_pubkey_string(ses.kexhashbuf, Q_C);
-	/* Q_S, server's ephemeral public key octet string */
-	buf_put_ecc_raw_pubkey_string(ses.kexhashbuf, Q_S);
-	/* K, the shared secret */
-	buf_putmpint(ses.kexhashbuf, ses.dh_K);
-
-	ecc_free(Q_them);
-	m_free(Q_them);
-
-	/* calculate the hash H to sign */
-	finish_kexhashbuf();
-}
-#endif /* DROPBEAR_ECDH */
-
-#if DROPBEAR_CURVE25519
-struct kex_curve25519_param *gen_kexcurve25519_param() {
-	/* Per http://cr.yp.to/ecdh.html */
-	struct kex_curve25519_param *param = m_malloc(sizeof(*param));
-	const unsigned char basepoint[32] = {9};
-
-	genrandom(param->priv, CURVE25519_LEN);
-	dropbear_curve25519_scalarmult(param->pub, param->priv, basepoint);
-
-	return param;
-}
-
-void free_kexcurve25519_param(struct kex_curve25519_param *param) {
-	m_burn(param->priv, CURVE25519_LEN);
-	m_free(param);
-}
-
-void kexcurve25519_comb_key(const struct kex_curve25519_param *param, const buffer *buf_pub_them,
-	sign_key *hostkey) {
-	unsigned char out[CURVE25519_LEN];
-	const unsigned char* Q_C = NULL;
-	const unsigned char* Q_S = NULL;
-	char zeroes[CURVE25519_LEN] = {0};
-
-	if (buf_pub_them->len != CURVE25519_LEN)
-	{
-		dropbear_exit("Bad curve25519");
-	}
-
-	dropbear_curve25519_scalarmult(out, param->priv, buf_pub_them->data);
-
-	if (constant_time_memcmp(zeroes, out, CURVE25519_LEN) == 0) {
-		dropbear_exit("Bad curve25519");
-	}
-
-	m_mp_alloc_init_multi(&ses.dh_K, NULL);
-	bytes_to_mp(ses.dh_K, out, CURVE25519_LEN);
-	m_burn(out, sizeof(out));
-
-	/* Create the remainder of the hash buffer, to generate the exchange hash.
-	   See RFC5656 section 4 page 7 */
-	if (IS_DROPBEAR_CLIENT) {
-		Q_C = param->pub;
-		Q_S = buf_pub_them->data;
-	} else {
-		Q_S = param->pub;
-		Q_C = buf_pub_them->data;
-	}
-
-	/* K_S, the host key */
-	buf_put_pub_key(ses.kexhashbuf, hostkey, ses.newkeys->algo_hostkey);
-	/* Q_C, client's ephemeral public key octet string */
-	buf_putstring(ses.kexhashbuf, (const char*)Q_C, CURVE25519_LEN);
-	/* Q_S, server's ephemeral public key octet string */
-	buf_putstring(ses.kexhashbuf, (const char*)Q_S, CURVE25519_LEN);
-	/* K, the shared secret */
-	buf_putmpint(ses.kexhashbuf, ses.dh_K);
-
-	/* calculate the hash H to sign */
-	finish_kexhashbuf();
-}
-#endif /* DROPBEAR_CURVE25519 */
-
 
 void finish_kexhashbuf(void) {
 	hash_state hs;
@@ -948,7 +729,7 @@ static void read_kex_algos() {
 	DEBUG2(("hmac s2c is %s", s2c_hash_algo ? s2c_hash_algo->name : "<implicit>"))
 
 	/* compression_algorithms_client_to_server */
-	c2s_comp_algo = buf_match_algo(ses.payload, ses.compress_algos, 0, NULL);
+	c2s_comp_algo = buf_match_algo(ses.payload, ses.compress_algos_c2s, 0, NULL);
 	if (c2s_comp_algo == NULL) {
 		erralgo = "comp c->s";
 		goto error;
@@ -956,7 +737,7 @@ static void read_kex_algos() {
 	DEBUG2(("comp c2s is %s", c2s_comp_algo->name))
 
 	/* compression_algorithms_server_to_client */
-	s2c_comp_algo = buf_match_algo(ses.payload, ses.compress_algos, 0, NULL);
+	s2c_comp_algo = buf_match_algo(ses.payload, ses.compress_algos_s2c, 0, NULL);
 	if (s2c_comp_algo == NULL) {
 		erralgo = "comp s->c";
 		goto error;

@@ -92,6 +92,7 @@ time_t monotonic_now(void);
 void gettime_wrapper(struct timespec *now);
 
 char * expand_homedir_path(const char *inpath);
+char * expand_homedir_path_home(const char *inpath, const char *homedir);
 
 void fsync_parent_dir(const char* fn);
 

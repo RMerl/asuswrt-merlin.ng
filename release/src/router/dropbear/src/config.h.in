@@ -81,8 +81,14 @@
 /* Define to 1 if you have the `daemon' function. */
 #undef HAVE_DAEMON
 
+/* htole64 is a macro */
+#undef HAVE_DECL_HTOLE64
+
 /* Use /dev/ptc & /dev/pts */
 #undef HAVE_DEV_PTS_AND_PTC
+
+/* Define to 1 if you have the <endian.h> header file. */
+#undef HAVE_ENDIAN_H
 
 /* Define to 1 if you have the `endutent' function. */
 #undef HAVE_ENDUTENT
@@ -143,6 +149,9 @@
 
 /* Define to 1 if you have the `getutxline' function. */
 #undef HAVE_GETUTXLINE
+
+/* Define to 1 if you have the `htole64' function. */
+#undef HAVE_HTOLE64
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
@@ -320,6 +329,9 @@
 
 /* Define to 1 if `ut_type' is a member of `struct utmp'. */
 #undef HAVE_STRUCT_UTMP_UT_TYPE
+
+/* Define to 1 if you have the <sys/endian.h> header file. */
+#undef HAVE_SYS_ENDIAN_H
 
 /* Define to 1 if you have the <sys/prctl.h> header file. */
 #undef HAVE_SYS_PRCTL_H

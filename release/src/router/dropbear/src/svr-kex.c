@@ -37,7 +37,7 @@
 #include "ecc.h"
 #include "gensignkey.h"
 
-static void send_msg_kexdh_reply(mp_int *dh_e, buffer *ecdh_qs);
+static void send_msg_kexdh_reply(mp_int *dh_e, buffer *q_c);
 #if DROPBEAR_EXT_INFO
 static void send_msg_ext_info(void);
 #endif
@@ -48,7 +48,7 @@ static void send_msg_ext_info(void);
  * that function, then brings the new keys into use */
 void recv_msg_kexdh_init() {
 	DEF_MP_INT(dh_e);
-	buffer *ecdh_qs = NULL;
+	buffer *q_c = NULL;
 
 	TRACE(("enter recv_msg_kexdh_init"))
 	if (!ses.kexstate.recvkexinit) {
@@ -70,8 +70,11 @@ void recv_msg_kexdh_init() {
 #if DROPBEAR_CURVE25519
 		case DROPBEAR_KEX_CURVE25519:
 #endif
-#if DROPBEAR_ECDH || DROPBEAR_CURVE25519
-			ecdh_qs = buf_getstringbuf(ses.payload);
+#if DROPBEAR_PQHYBRID
+		case DROPBEAR_KEX_PQHYBRID:
+#endif
+#if DROPBEAR_ECDH || DROPBEAR_CURVE25519 || DROPBEAR_PQHYBRID
+			q_c = buf_getstringbuf(ses.payload);
 			break;
 #endif
 	}
@@ -79,12 +82,12 @@ void recv_msg_kexdh_init() {
 		dropbear_exit("Bad kex value");
 	}
 
-	send_msg_kexdh_reply(&dh_e, ecdh_qs);
+	send_msg_kexdh_reply(&dh_e, q_c);
 
 	mp_clear(&dh_e);
-	if (ecdh_qs) {
-		buf_free(ecdh_qs);
-		ecdh_qs = NULL;
+	if (q_c) {
+		buf_free(q_c);
+		q_c = NULL;
 	}
 
 	send_msg_newkeys();
@@ -186,7 +189,7 @@ out:
  *
  * See the transport RFC4253 section 8 for details
  * or RFC5656 section 4 for elliptic curve variant. */
-static void send_msg_kexdh_reply(mp_int *dh_e, buffer *ecdh_qs) {
+static void send_msg_kexdh_reply(mp_int *dh_e, buffer *q_c) {
 	TRACE(("enter send_msg_kexdh_reply"))
 
 	/* we can start creating the kexdh_reply packet */
@@ -227,7 +230,7 @@ static void send_msg_kexdh_reply(mp_int *dh_e, buffer *ecdh_qs) {
 		case DROPBEAR_KEX_ECDH:
 			{
 			struct kex_ecdh_param *ecdh_param = gen_kexecdh_param();
-			kexecdh_comb_key(ecdh_param, ecdh_qs, svr_opts.hostkey);
+			kexecdh_comb_key(ecdh_param, q_c, svr_opts.hostkey);
 
 			buf_put_ecc_raw_pubkey_string(ses.writepayload, &ecdh_param->key);
 			free_kexecdh_param(ecdh_param);
@@ -238,10 +241,21 @@ static void send_msg_kexdh_reply(mp_int *dh_e, buffer *ecdh_qs) {
 		case DROPBEAR_KEX_CURVE25519:
 			{
 			struct kex_curve25519_param *param = gen_kexcurve25519_param();
-			kexcurve25519_comb_key(param, ecdh_qs, svr_opts.hostkey);
+			kexcurve25519_comb_key(param, q_c, svr_opts.hostkey);
 
 			buf_putstring(ses.writepayload, param->pub, CURVE25519_LEN);
 			free_kexcurve25519_param(param);
+			}
+			break;
+#endif
+#if DROPBEAR_PQHYBRID
+		case DROPBEAR_KEX_PQHYBRID:
+			{
+			struct kex_pqhybrid_param *param = gen_kexpqhybrid_param();
+			kexpqhybrid_comb_key(param, q_c, svr_opts.hostkey);
+
+			buf_putbufstring(ses.writepayload, param->concat_public);
+			free_kexpqhybrid_param(param);
 			}
 			break;
 #endif

@@ -100,6 +100,9 @@ enum dropbear_kex_mode {
 #if DROPBEAR_CURVE25519
 	DROPBEAR_KEX_CURVE25519,
 #endif
+#if DROPBEAR_PQHYBRID
+	DROPBEAR_KEX_PQHYBRID,
+#endif
 };
 
 struct dropbear_kex {
@@ -109,15 +112,21 @@ struct dropbear_kex {
 	const unsigned char *dh_p_bytes;
 	const int dh_p_len;
 
-	/* elliptic curve DH KEX */
-#if DROPBEAR_ECDH
-	const struct dropbear_ecc_curve *ecc_curve;
-#else
-	const void* dummy;
-#endif
+	/* kex specific, could be ecc_curve or pqhybrid_desc */
+	const void* details;
 
 	/* both */
 	const struct ltc_hash_descriptor *hash_desc;
+};
+
+struct dropbear_kem_desc {
+	unsigned int public_len;
+	unsigned int secret_len;
+	unsigned int ciphertext_len;
+	unsigned int output_len;
+	int (*kem_gen)(unsigned char *pk, unsigned char *sk);
+	int (*kem_enc)(unsigned char *c, unsigned char *k, const unsigned char *pk);
+	int (*kem_dec)(unsigned char *k, const unsigned char *c, const unsigned char *sk);
 };
 
 /* Includes all algorithms is useall is set */

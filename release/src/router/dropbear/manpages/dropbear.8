@@ -116,6 +116,10 @@ Disregard the command provided by the user and always run \fIforced_command\fR. 
 overrides any authorized_keys command= option. The original command is saved in the 
 SSH_ORIGINAL_COMMAND environment variable (see below).
 .TP
+.B \-D \fIauthorized_keys_dir
+Specify the directory to use for authorized_keys files. The default is ~/.ssh , paths with
+a leading ~/ will be home directory expanded.
+.TP
 .B \-V
 Print the version
 

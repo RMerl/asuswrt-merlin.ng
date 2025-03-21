@@ -94,7 +94,7 @@ IMPORTANT: Some options will require "make clean" after changes */
 #define DROPBEAR_USER_ALGO_LIST 1
 
 /* Encryption - at least one required.
- * AES128 should be enabled, some very old implementations might only
+ * AES should be enabled, some very old implementations might only
  * support 3DES.
  * Including both AES keysize variants (128 and 256) will result in
  * a minimal size increase */
@@ -124,7 +124,7 @@ IMPORTANT: Some options will require "make clean" after changes */
 
 /* Message integrity. sha2-256 is recommended as a default,
    sha1 for compatibility */
-#define DROPBEAR_SHA1_HMAC 1
+#define DROPBEAR_SHA1_HMAC 0
 #define DROPBEAR_SHA2_256_HMAC 1
 #define DROPBEAR_SHA2_512_HMAC 0
 #define DROPBEAR_SHA1_96_HMAC 0
@@ -137,9 +137,8 @@ IMPORTANT: Some options will require "make clean" after changes */
 #define DROPBEAR_RSA 1
 /* Newer SSH implementations use SHA256 for RSA signatures. SHA1
  * support is required to communicate with some older implementations.
- * It will be removed in future due to SHA1 insecurity, it can be
- * disabled with DROPBEAR_RSA_SHA1 set to 0 */
-#define DROPBEAR_RSA_SHA1 1
+ * It is disabled by default. */
+#define DROPBEAR_RSA_SHA1 0
 
 /* DSS may be necessary to connect to some systems but is not
  * recommended for new keys (1024 bits is small, and it uses SHA1).
@@ -185,22 +184,29 @@ IMPORTANT: Some options will require "make clean" after changes */
  * group1 - 1024 bit, sha1
  * curve25519 - elliptic curve DH
  * ecdh - NIST elliptic curve DH (256, 384, 521)
+ * sntrup761 - post-quantum hybrid with x25519.
+ * mlkem768 - post-quantum hybrid with x25519.
  *
  * group1 is too small for security though is necessary if you need
-     compatibility with some implementations such as Dropbear versions < 0.53
+ *   compatibility with some implementations such as Dropbear versions < 0.53
  * group14 is supported by most implementations.
  * group16 provides a greater strength level but is slower and increases binary size
  * curve25519 and ecdh algorithms are faster than non-elliptic curve methods
  * curve25519 increases binary size by ~2,5kB on x86-64
  * including either ECDH or ECDSA increases binary size by ~30kB on x86-64
-
- * Small systems should generally include either curve25519 or ecdh for performance.
- * curve25519 is less widely supported but is faster
+ *
+ * sntrup761 and mlkem768 are recommended to avoid possible decryption
+ * by future quantum computers. On systems with sufficient space both
+ * are recommended. sntrup761 is the most widely supported at time of writing,
+ * recommended when space is limited. Both are fast.
+ * sntrup uses ~9kB code size, mlkem uses ~34kB code size (32-bit armv7).
  */
-#define DROPBEAR_DH_GROUP14_SHA1 1
+#define DROPBEAR_DH_GROUP14_SHA1 0
 #define DROPBEAR_DH_GROUP14_SHA256 1
 #define DROPBEAR_DH_GROUP16 0
 #define DROPBEAR_CURVE25519 1
+#define DROPBEAR_SNTRUP761 1
+#define DROPBEAR_MLKEM768 1
 #define DROPBEAR_ECDH 1
 #define DROPBEAR_DH_GROUP1 0
 

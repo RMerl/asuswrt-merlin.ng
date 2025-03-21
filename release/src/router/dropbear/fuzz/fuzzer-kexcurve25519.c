@@ -45,14 +45,14 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 		unsigned int e = buf_getint(fuzz.input);
 		struct kex_curve25519_param *curve25519_param = curve25519_params[e % NUM_PARAMS];
 
-		buffer * ecdh_qs = buf_getstringbuf(fuzz.input);
+		buffer * ecdh_qc = buf_getstringbuf(fuzz.input);
 
 		ses.kexhashbuf = buf_new(KEXHASHBUF_MAX_INTS);
-		kexcurve25519_comb_key(curve25519_param, ecdh_qs, svr_opts.hostkey);
+		kexcurve25519_comb_key(curve25519_param, ecdh_qc, svr_opts.hostkey);
 
 		mp_clear(ses.dh_K);
 		m_free(ses.dh_K);
-		buf_free(ecdh_qs);
+		buf_free(ecdh_qc);
 
 		buf_free(ses.hash);
 		buf_free(ses.session_id);

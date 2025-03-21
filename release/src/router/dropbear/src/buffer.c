@@ -252,6 +252,15 @@ buffer * buf_getbuf(buffer *buf) {
 	return buf_getstringbuf_int(buf, 1);
 }
 
+/* Returns the equivalent of buf_getptr() as a new buffer. */
+buffer * buf_getptrcopy(const buffer* buf, unsigned int len) {
+	unsigned char *src = buf_getptr(buf, len);
+	buffer *ret = buf_new(len);
+	buf_putbytes(ret, src, len);
+	buf_setpos(ret, 0);
+	return ret;
+}
+
 /* Just increment the buffer position the same as if we'd used buf_getstring,
  * but don't bother copying/malloc()ing for it */
 void buf_eatstring(buffer *buf) {

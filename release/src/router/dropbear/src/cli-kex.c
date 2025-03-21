@@ -42,6 +42,33 @@
 static void checkhostkey(const unsigned char* keyblob, unsigned int keybloblen);
 #define MAX_KNOWNHOSTS_LINE 4500
 
+static void cli_kex_free_param(void) {
+#if DROPBEAR_NORMAL_DH
+	if (cli_ses.dh_param) {
+		free_kexdh_param(cli_ses.dh_param);
+		cli_ses.dh_param = NULL;
+	}
+#endif
+#if DROPBEAR_ECDH
+	if (cli_ses.ecdh_param) {
+		free_kexecdh_param(cli_ses.ecdh_param);
+		cli_ses.ecdh_param = NULL;
+	}
+#endif
+#if DROPBEAR_CURVE25519
+	if (cli_ses.curve25519_param) {
+		free_kexcurve25519_param(cli_ses.curve25519_param);
+		cli_ses.curve25519_param = NULL;
+	}
+#endif
+#if DROPBEAR_PQHYBRID
+	if (cli_ses.pqhybrid_param) {
+		free_kexpqhybrid_param(cli_ses.pqhybrid_param);
+		cli_ses.pqhybrid_param = NULL;
+	}
+#endif
+}
+
 void send_msg_kexdh_init() {
 	TRACE(("send_msg_kexdh_init()"))	
 
@@ -53,47 +80,36 @@ void send_msg_kexdh_init() {
 	}
 #endif
 
+	cli_kex_free_param();
+
 	buf_putbyte(ses.writepayload, SSH_MSG_KEXDH_INIT);
 	switch (ses.newkeys->algo_kex->mode) {
 #if DROPBEAR_NORMAL_DH
 		case DROPBEAR_KEX_NORMAL_DH:
-			if (ses.newkeys->algo_kex != cli_ses.param_kex_algo
-				|| !cli_ses.dh_param) {
-				if (cli_ses.dh_param) {
-					free_kexdh_param(cli_ses.dh_param);
-				}
-				cli_ses.dh_param = gen_kexdh_param();
-			}
+			cli_ses.dh_param = gen_kexdh_param();
 			buf_putmpint(ses.writepayload, &cli_ses.dh_param->pub);
 			break;
 #endif
 #if DROPBEAR_ECDH
 		case DROPBEAR_KEX_ECDH:
-			if (ses.newkeys->algo_kex != cli_ses.param_kex_algo
-				|| !cli_ses.ecdh_param) {
-				if (cli_ses.ecdh_param) {
-					free_kexecdh_param(cli_ses.ecdh_param);
-				}
-				cli_ses.ecdh_param = gen_kexecdh_param();
-			}
+			cli_ses.ecdh_param = gen_kexecdh_param();
 			buf_put_ecc_raw_pubkey_string(ses.writepayload, &cli_ses.ecdh_param->key);
 			break;
 #endif
 #if DROPBEAR_CURVE25519
 		case DROPBEAR_KEX_CURVE25519:
-			if (ses.newkeys->algo_kex != cli_ses.param_kex_algo
-				|| !cli_ses.curve25519_param) {
-				if (cli_ses.curve25519_param) {
-					free_kexcurve25519_param(cli_ses.curve25519_param);
-				}
-				cli_ses.curve25519_param = gen_kexcurve25519_param();
-			}
+			cli_ses.curve25519_param = gen_kexcurve25519_param();
 			buf_putstring(ses.writepayload, cli_ses.curve25519_param->pub, CURVE25519_LEN);
+			break;
+#endif
+#if DROPBEAR_PQHYBRID
+		case DROPBEAR_KEX_PQHYBRID:
+			cli_ses.pqhybrid_param = gen_kexpqhybrid_param();
+			buf_putbufstring(ses.writepayload, cli_ses.pqhybrid_param->concat_public);
 			break;
 #endif
 	}
 
-	cli_ses.param_kex_algo = ses.newkeys->algo_kex;
 	encrypt_packet();
 }
 
@@ -132,6 +148,7 @@ void recv_msg_kexdh_reply() {
 		dropbear_exit("Bad KEX packet");
 	}
 
+	/* Derive the shared secret */
 	switch (ses.newkeys->algo_kex->mode) {
 #if DROPBEAR_NORMAL_DH
 		case DROPBEAR_KEX_NORMAL_DH:
@@ -166,28 +183,20 @@ void recv_msg_kexdh_reply() {
 			}
 			break;
 #endif
+#if DROPBEAR_PQHYBRID
+		case DROPBEAR_KEX_PQHYBRID:
+			{
+			buffer *q_s = buf_getstringbuf(ses.payload);
+			kexpqhybrid_comb_key(cli_ses.pqhybrid_param, q_s, hostkey);
+			buf_free(q_s);
+			}
+			break;
+#endif
 	}
 
-#if DROPBEAR_NORMAL_DH
-	if (cli_ses.dh_param) {
-		free_kexdh_param(cli_ses.dh_param);
-		cli_ses.dh_param = NULL;
-	}
-#endif
-#if DROPBEAR_ECDH
-	if (cli_ses.ecdh_param) {
-		free_kexecdh_param(cli_ses.ecdh_param);
-		cli_ses.ecdh_param = NULL;
-	}
-#endif
-#if DROPBEAR_CURVE25519
-	if (cli_ses.curve25519_param) {
-		free_kexcurve25519_param(cli_ses.curve25519_param);
-		cli_ses.curve25519_param = NULL;
-	}
-#endif
+	/* Clear the local parameter */
+	cli_kex_free_param();
 
-	cli_ses.param_kex_algo = NULL;
 	if (buf_verify(ses.payload, hostkey, ses.newkeys->algo_signature, 
 			ses.hash) != DROPBEAR_SUCCESS) {
 		dropbear_exit("Bad hostkey signature");

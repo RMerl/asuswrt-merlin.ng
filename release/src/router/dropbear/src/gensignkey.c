@@ -161,7 +161,7 @@ int signkey_generate(enum signkey_type keytype, int bits, const char* filename, 
 		/* If generating keys on connection (skipexist) it's OK to get EEXIST 
 		- we probably just lost a race with another connection to generate the key */
 		if (!(skip_exist && errno == EEXIST)) {
-			if (errno == EPERM || errno == EACCES) {
+			if (errno == EPERM || errno == EACCES || errno == ENOSYS) {
 				/* Non-atomic fallback when hard-links not allowed or unsupported */
 				buf_setpos(buf, 0);
 				ret = buf_writefile(buf, filename, skip_exist);

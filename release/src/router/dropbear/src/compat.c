@@ -279,3 +279,34 @@ static char **initshells() {
 }
 
 #endif /* HAVE_GETUSERSHELL */
+
+/* libcrux uses glibc's htole64 etc */
+#if !(defined(HAVE_HTOLE64) || defined(HAVE_DECL_HTOLE64))
+
+uint64_t htole64(uint64_t inp) {
+	union {
+		uint64_t v;
+		uint8_t bytes[8];
+	} out;
+	STORE64L(inp, &out.bytes);
+	return out.v;
+}
+
+uint64_t le64toh(uint64_t inp) {
+	return htole64(inp);
+}
+
+uint32_t htole32(uint32_t inp) {
+	union {
+		uint32_t v;
+		uint8_t bytes[4];
+	} out;
+	STORE32L(inp, &out.bytes);
+	return out.v;
+}
+
+uint32_t le32toh(uint32_t inp) {
+	return htole32(inp);
+}
+
+#endif /* HAVE_HTOLE64 */

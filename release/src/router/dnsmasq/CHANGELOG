@@ -1,8 +1,132 @@
 version 2.91
 	Fix spurious "resource limit exceeded messages". Thanks to 
 	Dominik Derigs for the bug report.
-	
 
+	Fix out-of-bounds heap read in order_qsort().
+	We only need to order two server records on the ->serial field.
+	Literal address records are smaller and don't have
+	this field and don't need to be ordered on it.
+	To actually provoke this bug seems to need the same server-literal
+	to be repeated twice, e.g., --address=/a/1.1.1.1 --address-/a/1.1.1.1
+	which is clearly rare in the wild, but if it did exist it could
+	provoke a SIGSEGV. Thanks to Daniel Rhea for fuzzing this one.
+
+	Fix buffer overflow when configured lease-change script name
+	is too long.
+	Thanks to Daniel Rhea for finding this one.
+
+	Improve behaviour in the face of non-responsive upstream TCP DNS
+	servers. Without shorter timeouts, clients are blocked for too long
+	and fail with their own timeouts.
+
+	Set --fast-dns-retries by default when doing DNSSEC. A single
+	downstream query can trigger many upstream queries. On an
+	unreliable network, there may not be enough downstream retries
+	to ensure that all these queries complete.
+
+	Improve behaviour in the face of truncated answers to queries
+	for DNSSEC records. Getting these answers by TCP doesn't now
+	involve a faked truncated answer to the downstream client to
+	force it to move to TCP. This improves performance and robustness
+	in the face of broken clients which can't fall back to TCP.
+
+	No longer remove data from truncated upstream answers. If an
+	upstream replies with a truncated answer, but the answer has some
+	RRs included, return those RRs, rather than returning and
+	empty answer.
+
+	Fix handling of EDNS0 UDP packet sizes.
+	When talking upstream we always add a pseudo header, and set the
+        UDP packet size to --edns-packet-max. Answering queries from
+	downstream, we get the answer (either from upstream or local
+	data) If local data won't fit the advertised size (or 512 if
+	there's not an EDNS0 header) return truncated. If upstream
+        returns truncated, do likewise. If upstream is OK, but the
+	answer is too big for downstream, truncate the answer.
+
+	Modify the behaviour of --synth-domain for IPv6.
+	When deriving a domain name from an IPv6 address, an address
+	such as 1234:: would become 1234--.example.com, which is
+	not legal in IDNA2008. Stop using the :: compression method,
+	so 1234:: becomes
+	1234-0000-0000-0000-0000-0000-0000-0000.example.com
+
+	Fix broken dhcp-relay on *BSD. Thanks to Harold for finding
+	this problem.
+
+	Add --dhcp-option-pxe config. This acts almost exactly like
+	--dhcp-option except that the defined option is only sent when
+	replying to PXE clients. More importantly, these options are sent
+	in reply PXE clients when dnsmasq in acting in PXE proxy mode. In
+	PXE proxy mode, the set of options sent is defined by the PXE standard
+	and the normal set of options is not sent. This config allows arbitrary
+	options in PXE-proxy replies. A typical use-case is to send option
+	175 to iPXE. Thanks to Jason Berry for finding the requirement for
+	this.
+
+	Support PXE proxy-DHCP and DHCP-relay at the same time.
+        When using PXE proxy-DHCP, dnsmasq supplies PXE information to
+        the client, which also talks to another "normal" DHCP server
+        for address allocation and similar. The normal DHCP server may
+        be on the local network, but it may also be remote, and accessed via
+        a DHCP relay. This change allows dnsmasq to act as both a
+        PXE proxy-DHCP server AND a DHCP relay for the same network.
+
+	Fix erroneous "DNSSEC validated" state with non-DNSSEC
+	upstream servers.  Thanks to Dominik Derigs for the bug report.
+
+	Handle queries with EDNS client subnet fields better. If dnsmasq
+	is configured to add an EDNS client subnet to a query, it is careful
+	to suppress use of the cache, since a cached answer may not be valid
+	for a query with a different client subnet. Extend this behaviour
+	to queries which arrive a dnsmasq already carrying an EDNS client
+	subnet.
+
+	Handle DS queries to auth zones. When dnsmasq is configured to
+	act as an authoritative server and has an authoritative zone
+	configured, and receives a query for that zone _as_forwarder_
+	it answers the query directly rather than forwarding it. This
+	doesn't affect the answer, but it saves dnsmasq forwarding the
+	query to the recursor upstream, which then bounces it back to dnsmasq
+	in auth mode. The exception should be when the query is for the root
+	of zone, for a DS RR. The answer to that has to come from the parent,
+	via the recursor, and will typically be a proof-of-non-existence
+	since dnsmasq doesn't support signed zones. This patch suppresses
+	local answers and forces forwarding to the upstream recursor for such
+	queries. It stops breakage when a DNSSEC validating client makes
+	queries to dnsmasq acting as forwarder for a zone for which it is
+	authoritative.
+
+	Implement "DNS-0x20 encoding", for extra protection against
+	reply-spoof attacks. Since DNS queries are case-insensitive,
+	it's possible to randomly flip the case of letters in a query
+	and still get the correct answer back.
+	This adds an extra dimension for a cache-poisoning attacker
+	to guess when sending replies in-the-blind since it's expected
+	that the legitimate answer will have the same  pattern of upper
+	and lower case as the query, so any replies which don't can be
+	ignored as malicious. The amount of extra entropy clearly depends
+	on the number of a-z and A-Z characters in the query, and this
+	implementation puts a hard limit of 32 bits to make resource
+	allocation easy. This about doubles entropy over the standard
+	random ID and random port combination. This technique can interact
+	badly with rare broken DNS servers which don't preserve the case
+	of the query in their reply. The first time a reply is returned
+	which matches the query in all respects except case, a warning
+	will be logged. In this release, 0x020-encoding is default-off
+	and must be explicitly enabled with --do-0x20-encoding. In future
+	releases it may default on. You can avoid a future release
+	changing the behaviour of an installation with --no-x20-encode.
+	
+	Fix a long-standing problem when two queries which are identical
+	in every repect _except_ case, get combined by dnsmasq. If
+	dnsmasq gets eg, two queries for example.com and Example.com
+	in quick succession it will get the answer for example.com from
+	upstream and send that answer to both requestors. This means that
+	the query for Example.com will get an answer for example.com, and
+	in the modern DNS, that answer may not be accepted.
+
+	
 version 2.90
 	Fix reversion in --rev-server introduced in 2.88 which
 	caused breakage if the prefix length is not exactly divisible
@@ -69,6 +193,13 @@ version 2.90
 	Note that the is a security vulnerablity only when DNSSEC validation
 	is enabled.
 	
+	Fix memory-leak when attempting to cache SRV records with zero TTL.
+	Thanks to Damian Sawicki for the bug report.
+
+	Add --max-tcp-connections option to make limit on TCP handling
+	processes configurable.  Also keep stats on how near the limit
+	we're getting, to help with tuning. Patch from Damian Sawicki.
+
 	
 version 2.89
         Fix bug introduced in 2.88 (commit fe91134b) which can result
@@ -1864,7 +1995,7 @@ version 2.61
 
 	Set the environment variable DNSMASQ_LOG_DHCP when running
 	the script id --log-dhcp is in effect, so that script can
-	taylor their logging verbosity. Suggestion from Malte
+	tailor their logging verbosity. Suggestion from Malte
 	Forkel.
 
 	Arrange that addresses specified with --listen-address

@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -51,31 +51,39 @@ void dump_init(void)
 
   packet_count = 0;
   
+  header.magic_number = 0xa1b2c3d4;
+  header.version_major = 2;
+  header.version_minor = 4;
+  header.thiszone = 0;
+  header.sigfigs = 0;
+  header.snaplen = daemon->edns_pktsz + 200; /* slop for IP/UDP headers */
+  header.network = 101; /* DLT_RAW http://www.tcpdump.org/linktypes.html */
+
   if (stat(daemon->dump_file, &buf) == -1)
     {
       /* doesn't exist, create and add header */
-      header.magic_number = 0xa1b2c3d4;
-      header.version_major = 2;
-      header.version_minor = 4;
-      header.thiszone = 0;
-      header.sigfigs = 0;
-      header.snaplen = daemon->edns_pktsz + 200; /* slop for IP/UDP headers */
-      header.network = 101; /* DLT_RAW http://www.tcpdump.org/linktypes.html */
-
       if (errno != ENOENT ||
 	  (daemon->dumpfd = creat(daemon->dump_file, S_IRUSR | S_IWUSR)) == -1 ||
-	  !read_write(daemon->dumpfd, (void *)&header, sizeof(header), 0))
+	  !read_write(daemon->dumpfd, (void *)&header, sizeof(header), RW_WRITE))
 	die(_("cannot create %s: %s"), daemon->dump_file, EC_FILE);
     }
+  else if (S_ISFIFO(buf.st_mode))
+    {
+      /* File is named pipe (with wireshark on the other end, probably.)
+	 Send header. */
+      if  ((daemon->dumpfd = open(daemon->dump_file, O_APPEND | O_RDWR)) == -1 ||
+	   !read_write(daemon->dumpfd, (void *)&header, sizeof(header), RW_WRITE))
+	die(_("cannot open pipe %s: %s"), daemon->dump_file, EC_FILE);
+    }
   else if ((daemon->dumpfd = open(daemon->dump_file, O_APPEND | O_RDWR)) == -1 ||
-	   !read_write(daemon->dumpfd, (void *)&header, sizeof(header), 1))
+	   !read_write(daemon->dumpfd, (void *)&header, sizeof(header), RW_READ))
     die(_("cannot access %s: %s"), daemon->dump_file, EC_FILE);
   else if (header.magic_number != 0xa1b2c3d4)
     die(_("bad header in %s"), daemon->dump_file, EC_FILE);
   else
     {
       /* count existing records */
-      while (read_write(daemon->dumpfd, (void *)&pcap_header, sizeof(pcap_header), 1))
+      while (read_write(daemon->dumpfd, (void *)&pcap_header, sizeof(pcap_header), RW_READ))
 	{
 	  lseek(daemon->dumpfd, pcap_header.incl_len, SEEK_CUR);
 	  packet_count++;
@@ -280,12 +288,12 @@ static void do_dump_packet(int mask, void *packet, size_t len,
   pcap_header.ts_usec = time.tv_usec;
   
   if (rc == -1 ||
-      !read_write(daemon->dumpfd, (void *)&pcap_header, sizeof(pcap_header), 0) ||
-      !read_write(daemon->dumpfd, iphdr, ipsz, 0) ||
-      (proto == IPPROTO_UDP && !read_write(daemon->dumpfd, (void *)&udp, sizeof(udp), 0)) ||
-      !read_write(daemon->dumpfd, (void *)packet, len, 0))
+      !read_write(daemon->dumpfd, (void *)&pcap_header, sizeof(pcap_header), RW_WRITE) ||
+      !read_write(daemon->dumpfd, iphdr, ipsz, RW_WRITE) ||
+      (proto == IPPROTO_UDP && !read_write(daemon->dumpfd, (void *)&udp, sizeof(udp), RW_WRITE)) ||
+      !read_write(daemon->dumpfd, (void *)packet, len, RW_WRITE))
     my_syslog(LOG_ERR, _("failed to write packet dump"));
-  else if (option_bool(OPT_EXTRALOG))
+  else if (option_bool(OPT_EXTRALOG) && (mask & 0x00ff))
     my_syslog(LOG_INFO, _("%u dumping packet %u mask 0x%04x"),  daemon->log_display_id, ++packet_count, mask);
   else
     my_syslog(LOG_INFO, _("dumping packet %u mask 0x%04x"), ++packet_count, mask);

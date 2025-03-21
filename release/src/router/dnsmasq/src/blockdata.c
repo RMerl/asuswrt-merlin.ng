@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -101,7 +101,7 @@ static struct blockdata *blockdata_alloc_real(int fd, char *data, size_t len)
 	      memcpy(block->key, data, blen);
 	      data += blen;
 	    }
-	  else if (!read_write(fd, block->key, blen, 1))
+	  else if (!read_write(fd, block->key, blen, RW_READ))
 	    {
 	      /* failed read free partial chain */
 	      blockdata_free(ret);
@@ -193,7 +193,7 @@ void *blockdata_retrieve(struct blockdata *block, size_t len, void *data)
 {
   size_t blen;
   struct  blockdata *b;
-  void *new, *d;
+  uint8_t *new, *d;
   
   static unsigned int buff_len = 0;
   static unsigned char *buff = NULL;
@@ -228,7 +228,7 @@ void blockdata_write(struct blockdata *block, size_t len, int fd)
   for (; len > 0 && block; block = block->next)
     {
       size_t blen = len > KEYBLOCK_LEN ? KEYBLOCK_LEN : len;
-      read_write(fd, block->key, blen, 0);
+      read_write(fd, block->key, blen, RW_WRITE);
       len -= blen;
     }
 }

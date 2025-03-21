@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ static size_t outpacket_counter;
 
 void end_opt6(int container)
 {
-   void *p = daemon->outpacket.iov_base + container + 2;
+   uint8_t *p = (uint8_t *)daemon->outpacket.iov_base + container + 2;
    u16 len = outpacket_counter - container - 4 ;
    
    PUTSHORT(len, p);
@@ -50,11 +50,11 @@ int save_counter(int newval)
 
 void *expand(size_t headroom)
 {
-  void *ret;
+  uint8_t *ret;
 
   if (expand_buf(&daemon->outpacket, outpacket_counter + headroom))
     {
-      ret = daemon->outpacket.iov_base + outpacket_counter;
+      ret = (uint8_t *)daemon->outpacket.iov_base + outpacket_counter;
       outpacket_counter += headroom;
       return ret;
     }
@@ -65,7 +65,7 @@ void *expand(size_t headroom)
 int new_opt6(int opt)
 {
   int ret = outpacket_counter;
-  void *p;
+  unsigned char *p;
 
   if ((p = expand(4)))
     {
@@ -88,7 +88,7 @@ void *put_opt6(void *data, size_t len)
   
 void put_opt6_long(unsigned int val)
 {
-  void *p;
+  unsigned char *p;
   
   if ((p = expand(4)))  
     PUTLONG(val, p);
@@ -96,7 +96,7 @@ void put_opt6_long(unsigned int val)
 
 void put_opt6_short(unsigned int val)
 {
-  void *p;
+  uint8_t *p;
 
   if ((p = expand(2)))
     PUTSHORT(val, p);   

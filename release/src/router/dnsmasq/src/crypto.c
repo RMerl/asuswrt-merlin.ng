@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 
 #include "dnsmasq.h"
 
-#if defined(HAVE_DNSSEC) || defined(HAVE_CRYPTOHASH)
+#if defined(HAVE_DNSSEC)
 
 /* Minimal version of nettle */
 
@@ -30,9 +30,6 @@
 #define MIN_VERSION(major, minor) ((NETTLE_VERSION_MAJOR == (major) && NETTLE_VERSION_MINOR >= (minor)) || \
 				   (NETTLE_VERSION_MAJOR > (major)))
 
-#endif /* defined(HAVE_DNSSEC) || defined(HAVE_CRYPTOHASH) */
-
-#if defined(HAVE_DNSSEC)
 #include <nettle/rsa.h>
 #include <nettle/ecdsa.h>
 #include <nettle/ecc-curve.h>
@@ -476,9 +473,6 @@ char *nsec3_digest_name(int digest)
     }
 }
 
-#endif /* defined(HAVE_DNSSEC) */
-
-#if defined(HAVE_DNSSEC) || defined(HAVE_CRYPTOHASH)
 /* Find pointer to correct hash function in nettle library */
 const struct nettle_hash *hash_find(char *name)
 {
@@ -509,4 +503,4 @@ const struct nettle_hash *hash_find(char *name)
 #endif
 }
 
-#endif /* defined(HAVE_DNSSEC) || defined(HAVE_CRYPTOHASH) */
+#endif /* defined(HAVE_DNSSEC) */

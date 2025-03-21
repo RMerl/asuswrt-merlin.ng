@@ -11,14 +11,14 @@ LOCAL_SRC_FILES :=  bpf.c cache.c dbus.c dhcp.c dnsmasq.c \
 		    radv.c slaac.c auth.c ipset.c domain.c \
 	            dnssec.c dnssec-openssl.c blockdata.c tables.c \
 		    loop.c inotify.c poll.c rrfilter.c edns0.c arp.c \
-		    crypto.c dump.c ubus.c metrics.c hash-questions.c \
-                    domain-match.c
+		    crypto.c dump.c ubus.c metrics.c \
+                    domain-match.c nftset.c
 
 LOCAL_MODULE := dnsmasq
 
 LOCAL_C_INCLUDES := external/dnsmasq/src
 
-LOCAL_CFLAGS := -O2 -g -W -Wall -D__ANDROID__ -DNO_IPV6 -DNO_TFTP -DNO_SCRIPT
+LOCAL_CFLAGS := -O2 -g -W -Wall -D__ANDROID__ -DNO_TFTP -DNO_SCRIPT
 LOCAL_SYSTEM_SHARED_LIBRARIES := libc libcutils
 
 LOCAL_LDLIBS := -L$(SYSROOT)/usr/lib -llog

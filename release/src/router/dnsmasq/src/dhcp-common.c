@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -128,22 +128,41 @@ struct dhcp_netid *run_tag_if(struct dhcp_netid *tags)
   return tags;
 }
 
+/* pxemode == 0 -> don't include dhcp-option-pxe options.
+   pxemode == 1 -> do include dhcp-option-pxe options.
+   pxemode == 2 -> include ONLY dhcp-option-pxe options. */
+int pxe_ok(struct dhcp_opt *opt, int pxemode)
+{
+  if (opt->flags & DHOPT_PXE_OPT)
+    {
+      if (pxemode != 0)
+	return 1;
+    }
+  else
+    {
+      if (pxemode != 2)
+	return 1;
+    }
+  
+  return 0;
+}
 
-struct dhcp_netid *option_filter(struct dhcp_netid *tags, struct dhcp_netid *context_tags, struct dhcp_opt *opts)
+struct dhcp_netid *option_filter(struct dhcp_netid *tags, struct dhcp_netid *context_tags, struct dhcp_opt *opts, int pxemode)
 {
   struct dhcp_netid *tagif = run_tag_if(tags);
   struct dhcp_opt *opt;
   struct dhcp_opt *tmp;  
-
+  
   /* flag options which are valid with the current tag set (sans context tags) */
   for (opt = opts; opt; opt = opt->next)
     {
       opt->flags &= ~DHOPT_TAGOK;
       if (!(opt->flags & (DHOPT_ENCAPSULATE | DHOPT_VENDOR | DHOPT_RFC3925)) &&
-	  match_netid(opt->netid, tagif, 0))
+	  match_netid(opt->netid, tagif, 0) &&
+	  pxe_ok(opt, pxemode))
 	opt->flags |= DHOPT_TAGOK;
     }
-
+  
   /* now flag options which are valid, including the context tags,
      otherwise valid options are inhibited if we found a higher priority one above */
   if (context_tags)
@@ -163,7 +182,8 @@ struct dhcp_netid *option_filter(struct dhcp_netid *tags, struct dhcp_netid *con
 
       for (opt = opts; opt; opt = opt->next)
 	if (!(opt->flags & (DHOPT_ENCAPSULATE | DHOPT_VENDOR | DHOPT_RFC3925 | DHOPT_TAGOK)) &&
-	    match_netid(opt->netid, tagif, 0))
+	    match_netid(opt->netid, tagif, 0) &&
+	    pxe_ok(opt, pxemode))
 	  {
 	    struct dhcp_opt *tmp;  
 	    for (tmp = opts; tmp; tmp = tmp->next) 
@@ -176,7 +196,9 @@ struct dhcp_netid *option_filter(struct dhcp_netid *tags, struct dhcp_netid *con
   
   /* now flag untagged options which are not overridden by tagged ones */
   for (opt = opts; opt; opt = opt->next)
-    if (!(opt->flags & (DHOPT_ENCAPSULATE | DHOPT_VENDOR | DHOPT_RFC3925 | DHOPT_TAGOK)) && !opt->netid)
+    if (!(opt->flags & (DHOPT_ENCAPSULATE | DHOPT_VENDOR | DHOPT_RFC3925 | DHOPT_TAGOK)) &&
+	!opt->netid &&
+	pxe_ok(opt, pxemode))
       {
 	for (tmp = opts; tmp; tmp = tmp->next) 
 	  if (tmp->opt == opt->opt && (tmp->flags & DHOPT_TAGOK))
@@ -186,7 +208,7 @@ struct dhcp_netid *option_filter(struct dhcp_netid *tags, struct dhcp_netid *con
 	else if (!tmp->netid)
 	  my_syslog(MS_DHCP | LOG_WARNING, _("Ignoring duplicate dhcp-option %d"), tmp->opt); 
       }
-
+  
   /* Finally, eliminate duplicate options later in the chain, and therefore earlier in the config file. */
   for (opt = opts; opt; opt = opt->next)
     if (opt->flags & DHOPT_TAGOK)

@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -40,6 +40,7 @@ static unsigned char *option_find1(unsigned char *p, unsigned char *end, int opt
 static size_t dhcp_packet_size(struct dhcp_packet *mess, unsigned char *agent_id, unsigned char *real_end);
 static void clear_packet(struct dhcp_packet *mess, unsigned char *end);
 static int in_list(unsigned char *list, int opt);
+static unsigned char *free_space(struct dhcp_packet *mess, unsigned char *end, int opt, int len);
 static void do_options(struct dhcp_context *context,
 		       struct dhcp_packet *mess,
 		       unsigned char *end,
@@ -67,6 +68,8 @@ struct dhcp_boot *find_boot(struct dhcp_netid *netid);
 static int pxe_uefi_workaround(int pxe_arch, struct dhcp_netid *netid, struct dhcp_packet *mess, struct in_addr local, time_t now, int pxe);
 static void apply_delay(u32 xid, time_t recvtime, struct dhcp_netid *netid);
 static int is_pxe_client(struct dhcp_packet *mess, size_t sz, const char **pxe_vendor);
+static int do_opt(struct dhcp_opt *opt, unsigned char *p, struct dhcp_context *context, int null_term);
+static void handle_encap(struct dhcp_packet *mess, unsigned char *end, unsigned char *req_options, int null_term, struct dhcp_netid *tagif, int pxemode);
 
 size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 		  size_t sz, time_t now, int unicast_dest, int loopback,
@@ -935,6 +938,7 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 	  opt71.next = daemon->dhcp_opts;
 	  do_encap_opts(&opt71, OPTION_VENDOR_CLASS_OPT, DHOPT_VENDOR_MATCH, mess, end, 0);
 	  
+	  daemon->metrics[METRIC_PXE]++;
 	  log_packet("PXE", &mess->yiaddr, emac, emac_len, iface_name, (char *)mess->file, NULL, mess->xid);
 	  log_tags(tagif_netid, ntohl(mess->xid));
 	  return dhcp_packet_size(mess, agent_id, real_end);	  
@@ -959,13 +963,10 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 		{
 		  struct dhcp_boot *boot;
 		  int redirect4011 = 0;
+		  struct dhcp_opt *option;
 
-		  if (tmp->netid.net)
-		    {
-		      tmp->netid.next = netid;
-		      tagif_netid = run_tag_if(&tmp->netid);
-		    }
-		  
+		  /* OK only dhcp-option-pxe options. */
+		  tagif_netid = option_filter(netid, tmp->netid.net ? &tmp->netid : NULL, daemon->dhcp_opts, 2);
 		  boot = find_boot(tagif_netid);
 		  
 		  mess->yiaddr.s_addr = 0;
@@ -1008,7 +1009,24 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 		  prune_vendor_opts(tagif_netid);
 		  if ((pxe && !workaround) || !redirect4011)
 		    do_encap_opts(pxe_opts(pxearch, tagif_netid, tmp->local, now), OPTION_VENDOR_CLASS_OPT, DHOPT_VENDOR_MATCH, mess, end, 0);
-	    
+
+		  /* dhcp-option-pxe ONLY */
+		  for (option = daemon->dhcp_opts; option; option = option->next)
+		    {
+		      int len;
+		      unsigned char *p;
+		      
+		      if (!(option->flags & DHOPT_TAGOK))
+			continue;
+		      
+		      len = do_opt(option, NULL, tmp, borken_opt);
+
+		      if ((p = free_space(mess, end, option->opt, len)))
+			do_opt(option, p, tmp, borken_opt);
+		    }
+
+		  handle_encap(mess, end, req_options, borken_opt, tagif_netid, 2);
+		  
 		  daemon->metrics[METRIC_PXE]++;
 		  log_packet("PXE", NULL, emac, emac_len, iface_name, ignore ? "proxy-ignored" : "proxy", NULL, mess->xid);
 		  log_tags(tagif_netid, ntohl(mess->xid));
@@ -2413,7 +2431,7 @@ static void do_options(struct dhcp_context *context,
   /* filter options based on tags, those we want get DHOPT_TAGOK bit set */
   if (context)
     context->netid.next = NULL;
-  tagif = option_filter(netid, context && context->netid.net ? &context->netid : NULL, config_opts);
+  tagif = option_filter(netid, context && context->netid.net ? &context->netid : NULL, config_opts, pxe_arch != -1);
 	
   /* logging */
   if (option_bool(OPT_LOG_OPTS) && req_options)
@@ -2703,19 +2721,55 @@ static void do_options(struct dhcp_context *context,
 	}  
     }
 
-  /* Now send options to be encapsulated in arbitrary options, 
+  /* encapsulated options. */
+  handle_encap(mess, end, req_options, null_term, tagif, pxe_arch != 1);
+  
+  force_encap = prune_vendor_opts(tagif);
+  
+  if (context && pxe_arch != -1)
+    {
+      pxe_misc(mess, end, uuid, pxevendor);
+      if (!pxe_uefi_workaround(pxe_arch, tagif, mess, context->local, now, 0))
+	config_opts = pxe_opts(pxe_arch, tagif, context->local, now);
+    }
+
+  if ((force_encap || in_list(req_options, OPTION_VENDOR_CLASS_OPT)) &&
+      do_encap_opts(config_opts, OPTION_VENDOR_CLASS_OPT, DHOPT_VENDOR_MATCH, mess, end, null_term) && 
+      pxe_arch == -1 && !done_vendor_class && vendor_class_len != 0 &&
+      (p = free_space(mess, end, OPTION_VENDOR_ID, vendor_class_len)))
+    /* If we send vendor encapsulated options, and haven't already sent option 60,
+       echo back the value we got from the client. */
+    memcpy(p, daemon->dhcp_buff3, vendor_class_len);	    
+   
+   /* restore BOOTP anti-overload hack */
+  if (!req_options || option_bool(OPT_NO_OVERRIDE))
+    {
+      mess->file[0] = f0;
+      mess->sname[0] = s0;
+    }
+}
+
+static void handle_encap(struct dhcp_packet *mess, unsigned char *end, unsigned char *req_options,
+			 int null_term, struct dhcp_netid *tagif, int pxemode)
+{
+  /* Send options to be encapsulated in arbitrary options, 
      eg dhcp-option=encap:172,17,.......
      Also handle vendor-identifying vendor-encapsulated options,
      dhcp-option = vi-encap:13,17,.......
      The may be more that one "outer" to do, so group
      all the options which match each outer in turn. */
+
+  struct dhcp_opt *opt, *config_opts = daemon->dhcp_opts;
+  unsigned char *p;
+  int len;
+
   for (opt = config_opts; opt; opt = opt->next)
     opt->flags &= ~DHOPT_ENCAP_DONE;
   
   for (opt = config_opts; opt; opt = opt->next)
     {
       int flags;
-      
+
       if ((flags = (opt->flags & (DHOPT_ENCAPSULATE | DHOPT_RFC3925))))
 	{
 	  int found = 0;
@@ -2735,6 +2789,7 @@ static void do_options(struct dhcp_context *context,
 	      
 	      o->flags |= DHOPT_ENCAP_DONE;
 	      if (match_netid(o->netid, tagif, 1) &&
+		  pxe_ok(o, pxemode) &&
 		  ((o->flags & DHOPT_FORCE) || in_list(req_options, outer)))
 		{
 		  o->flags |= DHOPT_ENCAP_MATCH;
@@ -2767,30 +2822,6 @@ static void do_options(struct dhcp_context *context,
 	    }
 	}
     }      
-
-  force_encap = prune_vendor_opts(tagif);
-  
-  if (context && pxe_arch != -1)
-    {
-      pxe_misc(mess, end, uuid, pxevendor);
-      if (!pxe_uefi_workaround(pxe_arch, tagif, mess, context->local, now, 0))
-	config_opts = pxe_opts(pxe_arch, tagif, context->local, now);
-    }
-
-  if ((force_encap || in_list(req_options, OPTION_VENDOR_CLASS_OPT)) &&
-      do_encap_opts(config_opts, OPTION_VENDOR_CLASS_OPT, DHOPT_VENDOR_MATCH, mess, end, null_term) && 
-      pxe_arch == -1 && !done_vendor_class && vendor_class_len != 0 &&
-      (p = free_space(mess, end, OPTION_VENDOR_ID, vendor_class_len)))
-    /* If we send vendor encapsulated options, and haven't already sent option 60,
-       echo back the value we got from the client. */
-    memcpy(p, daemon->dhcp_buff3, vendor_class_len);	    
-   
-   /* restore BOOTP anti-overload hack */
-  if (!req_options || option_bool(OPT_NO_OVERRIDE))
-    {
-      mess->file[0] = f0;
-      mess->sname[0] = s0;
-    }
 }
 
 static void apply_delay(u32 xid, time_t recvtime, struct dhcp_netid *netid)

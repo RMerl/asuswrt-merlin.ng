@@ -1,5 +1,5 @@
 /* dnssec.c is Copyright (c) 2012 Giovanni Bajo <rasky@develer.com>
-           and Copyright (c) 2012-2023 Simon Kelley
+           and Copyright (c) 2012-2025 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -191,7 +191,7 @@ static int get_rdata(struct dns_header *header, size_t plen, struct rdata_state 
 	      /* domain-name, canonicalise */
 	      int len;
 	      
-	      if (!extract_name(header, plen, &state->ip, state->buff, 1, 0) ||
+	      if (!extract_name(header, plen, &state->ip, state->buff, EXTR_NAME_EXTRACT, 0) ||
 		  (len = to_wire(state->buff)) == 0)
 		continue;
 	      
@@ -339,7 +339,7 @@ static int explore_rrset(struct dns_header *header, size_t plen, int class, int 
 
       pstart = p;
       
-      if (!(res = extract_name(header, plen, &p, name, 0, 10)))
+      if (!(res = extract_name(header, plen, &p, name, EXTR_NAME_COMPARE, 10)))
 	return 0; /* bad packet */
       
       GETSHORT(stype, p);
@@ -374,14 +374,14 @@ static int explore_rrset(struct dns_header *header, size_t plen, int class, int 
 	      if (gotkey)
 		{
 		  /* If there's more than one SIG, ensure they all have same keyname */
-		  if (extract_name(header, plen, &p, keyname, 0, 0) != 1)
+		  if (extract_name(header, plen, &p, keyname, EXTR_NAME_COMPARE, 0) != 1)
 		    return 0;
 		}
 	      else
 		{
 		  gotkey = 1;
 		  
-		  if (!extract_name(header, plen, &p, keyname, 1, 0))
+		  if (!extract_name(header, plen, &p, keyname, EXTR_NAME_EXTRACT, 0))
 		    return 0;
 		  
 		  /* RFC 4035 5.3.1 says that the Signer's Name field MUST equal
@@ -503,7 +503,7 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
       GETLONG(sig_inception, p);
       GETSHORT(key_tag, p);
       
-      if (!extract_name(header, plen, &p, keyname, 1, 0))
+      if (!extract_name(header, plen, &p, keyname, EXTR_NAME_EXTRACT, 0))
 	return STAT_BOGUS;
 
       if (!time_check)
@@ -568,7 +568,7 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
 	  
 	  p = rrset[i];
 	  
-	  if (!extract_name(header, plen, &p, name, 1, 10)) 
+	  if (!extract_name(header, plen, &p, name, EXTR_NAME_EXTRACT, 10)) 
 	    return STAT_BOGUS;
 
 	  name_start = name;
@@ -661,7 +661,7 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
       
       /* namebuff used for workspace above, restore to leave unchanged on exit */
       p = (unsigned char*)(rrset[0]);
-      if (!extract_name(header, plen, &p, name, 1, 0))
+      if (!extract_name(header, plen, &p, name, EXTR_NAME_EXTRACT, 0))
 	return STAT_BOGUS;
 
       if (key)
@@ -727,7 +727,7 @@ int dnssec_validate_by_ds(time_t now, struct dns_header *header, size_t plen, ch
   static unsigned char **cached_digest;
   static size_t cached_digest_size = 0;
 
-  if (ntohs(header->qdcount) != 1 || RCODE(header) != NOERROR || !extract_name(header, plen, &p, name, 1, 4))
+  if (ntohs(header->qdcount) != 1 || RCODE(header) != NOERROR || !extract_name(header, plen, &p, name, EXTR_NAME_EXTRACT, 4))
     return STAT_BOGUS | DNSSEC_FAIL_NOKEY;
 
   GETSHORT(qtype, p);
@@ -752,7 +752,7 @@ int dnssec_validate_by_ds(time_t now, struct dns_header *header, size_t plen, ch
   for (j = ntohs(header->ancount); j != 0; j--) 
     {
       /* Ensure we have type, class  TTL and length */
-      if (!(rc = extract_name(header, plen, &p, name, 0, 10)))
+      if (!(rc = extract_name(header, plen, &p, name, EXTR_NAME_COMPARE, 10)))
 	return STAT_BOGUS; /* bad packet */
   
       GETSHORT(qtype, p); 
@@ -904,7 +904,7 @@ int dnssec_validate_by_ds(time_t now, struct dns_header *header, size_t plen, ch
 	      for (j = ntohs(header->ancount); j != 0; j--) 
 		{
 		  /* Ensure we have type, class  TTL and length */
-		  if (!(rc = extract_name(header, plen, &p, name, 0, 10)))
+		  if (!(rc = extract_name(header, plen, &p, name, EXTR_NAME_COMPARE, 10)))
 		    return STAT_BOGUS; /* bad packet */
 		  
 		  GETSHORT(qtype, p); 
@@ -943,8 +943,10 @@ int dnssec_validate_by_ds(time_t now, struct dns_header *header, size_t plen, ch
 			   
 			   if (!cache_insert(name, &a, class, now, ttl, F_FORWARD | F_DNSKEY | F_DNSSECOK))
 			     {
+			       /* cache_insert fails when the cache is too small, so error with STAT_ABANDONED which
+				  will log this as a resource exhaustion problem, which it is. */
 			       blockdata_free(key);
-			       return STAT_BOGUS;
+			       return STAT_ABANDONED;
 			     }
 			   
 			   a.log.keytag = keytag;
@@ -1022,7 +1024,7 @@ int dnssec_validate_ds(time_t now, struct dns_header *header, size_t plen, char 
 	}
       
       p = (unsigned char *)(header+1);
-      if (!extract_name(header, plen, &p, name, 1, 4))
+      if (!extract_name(header, plen, &p, name, EXTR_NAME_EXTRACT, 4))
 	return STAT_BOGUS;
 
       p += 4; /* qtype, qclass */
@@ -1048,7 +1050,7 @@ int dnssec_validate_ds(time_t now, struct dns_header *header, size_t plen, char 
 	{
 	  unsigned char *psave;
 
-	  if (!(rc = extract_name(header, plen, &p, name, 0, 10)))
+	  if (!(rc = extract_name(header, plen, &p, name, EXTR_NAME_COMPARE, 10)))
 	    return STAT_BOGUS; /* bad packet */
 	  
 	  GETSHORT(atype, p);
@@ -1091,8 +1093,10 @@ int dnssec_validate_ds(time_t now, struct dns_header *header, size_t plen, char 
 		  
 		  if (!cache_insert(name, &a, class, now, ttl, F_FORWARD | F_DS | F_DNSSECOK))
 		    {
+		      /* cache_insert fails when the cache is too small, so error with STAT_ABANDONED which
+			 will log this as a resource exhaustion problem, which it is. */
 		      blockdata_free(key);
-		      return STAT_BOGUS;
+		      return STAT_ABANDONED;
 		    }
 		  else
 		    {
@@ -1132,7 +1136,7 @@ int dnssec_validate_ds(time_t now, struct dns_header *header, size_t plen, char 
   
   /* Use TTL from NSEC for negative cache entries */
   if (!cache_insert(name, NULL, class, now, neg_ttl, flags))
-    return STAT_BOGUS;
+    return STAT_ABANDONED;
   
   cache_end_insert();  
   
@@ -1227,12 +1231,12 @@ static int prove_non_existence_nsec(struct dns_header *header, size_t plen, unsi
       int sig_labels, name_labels;
 
       p = nsecs[i];
-      if (!extract_name(header, plen, &p, workspace1, 1, 10))
+      if (!extract_name(header, plen, &p, workspace1, EXTR_NAME_EXTRACT, 10))
 	return DNSSEC_FAIL_BADPACKET;
       p += 8; /* class, type, TTL */
       GETSHORT(rdlen, p);
       psave = p;
-      if (!extract_name(header, plen, &p, workspace2, 1, 0))
+      if (!extract_name(header, plen, &p, workspace2, EXTR_NAME_EXTRACT, 0))
 	return DNSSEC_FAIL_BADPACKET;
 
       /* If NSEC comes from wildcard expansion, use original wildcard
@@ -1396,7 +1400,7 @@ static int check_nsec3_coverage(struct dns_header *header, size_t plen, int dige
   for (i = 0; i < nsec_count; i++)
     if ((p = nsecs[i]))
       {
-       	if (!extract_name(header, plen, &p, workspace1, 1, 10) ||
+       	if (!extract_name(header, plen, &p, workspace1, EXTR_NAME_EXTRACT, 10) ||
 	    !(base32_len = base32_decode(workspace1, (unsigned char *)workspace2)))
 	  return 0;
 	
@@ -1605,7 +1609,7 @@ static int prove_non_existence_nsec3(struct dns_header *header, size_t plen, uns
       for (i = 0; i < nsec_count; i++)
 	if ((p = nsecs[i]))
 	  {
-	    if (!extract_name(header, plen, &p, workspace1, 1, 0))
+	    if (!extract_name(header, plen, &p, workspace1, EXTR_NAME_EXTRACT, 0))
 	      return DNSSEC_FAIL_BADPACKET;
 
 	    if (!(base32_len = base32_decode(workspace1, (unsigned char *)workspace2)))
@@ -1680,7 +1684,7 @@ static int prove_non_existence(struct dns_header *header, size_t plen, char *key
     {
       unsigned char *pstart = p;
       
-      if (!extract_name(header, plen, &p, daemon->workspacename, 1, 10))
+      if (!extract_name(header, plen, &p, daemon->workspacename, EXTR_NAME_EXTRACT, 10))
 	return DNSSEC_FAIL_BADPACKET;
 	  
       GETSHORT(type, p); 
@@ -1731,7 +1735,7 @@ static int prove_non_existence(struct dns_header *header, size_t plen, char *key
 		{
 		  unsigned char *psav;
 
-		  if (!(res = extract_name(header, plen, &p1, daemon->workspacename, 0, 10)))
+		  if (!(res = extract_name(header, plen, &p1, daemon->workspacename, EXTR_NAME_COMPARE, 10)))
 		    return DNSSEC_FAIL_BADPACKET;
 		  
 		   GETSHORT(type1, p1); 
@@ -1961,7 +1965,7 @@ int dnssec_validate_reply(time_t now, struct dns_header *header, size_t plen, ch
   targets[0] = p1;
   targetidx = 1;
    
-  if (!extract_name(header, plen, &p1, name, 1, 4))
+  if (!extract_name(header, plen, &p1, name, EXTR_NAME_EXTRACT, 4))
     return STAT_BOGUS;
   
   GETSHORT(qtype, p1);
@@ -1999,7 +2003,7 @@ int dnssec_validate_reply(time_t now, struct dns_header *header, size_t plen, ch
       if (i != 0 && !ADD_RDLEN(header, p1, plen, rdlen1))
 	return STAT_BOGUS;
       
-      if (!extract_name(header, plen, &p1, name, 1, 10))
+      if (!extract_name(header, plen, &p1, name, EXTR_NAME_EXTRACT, 10))
 	return STAT_BOGUS; /* bad packet */
       
       GETSHORT(type1, p1);
@@ -2014,7 +2018,7 @@ int dnssec_validate_reply(time_t now, struct dns_header *header, size_t plen, ch
       /* Check if we've done this RRset already */
       for (p2 = ans_start, j = 0; j < i; j++)
 	{
-	  if (!(rc = extract_name(header, plen, &p2, name, 0, 10)))
+	  if (!(rc = extract_name(header, plen, &p2, name, EXTR_NAME_COMPARE, 10)))
 	    return STAT_BOGUS; /* bad packet */
 	  
 	  GETSHORT(type2, p2);
@@ -2111,7 +2115,7 @@ int dnssec_validate_reply(time_t now, struct dns_header *header, size_t plen, ch
 		    if ((p2 = targets[j]))
 		      {
 			int rc1;
-			if (!(rc1 = extract_name(header, plen, &p2, name, 0, 10)))
+			if (!(rc1 = extract_name(header, plen, &p2, name, EXTR_NAME_COMPARE, 10)))
 			  return STAT_BOGUS; /* bad packet */
 			
 			if (class1 == qclass && rc1 == 1 && (type1 == T_CNAME || type1 == qtype || qtype == T_ANY ))
@@ -2145,7 +2149,7 @@ int dnssec_validate_reply(time_t now, struct dns_header *header, size_t plen, ch
 	if (neganswer)
 	  *neganswer = 1;
 	
-	if (!extract_name(header, plen, &p2, name, 1, 10))
+	if (!extract_name(header, plen, &p2, name, EXTR_NAME_EXTRACT, 10))
 	  return STAT_BOGUS; /* bad packet */
 	
 	/* NXDOMAIN or NODATA reply, unanswered question is (name, qclass, qtype) */
@@ -2199,24 +2203,22 @@ int dnskey_keytag(int alg, int flags, unsigned char *key, int keylen)
     }
 }
 
-size_t dnssec_generate_query(struct dns_header *header, unsigned char *end, char *name, int class, 
-			     int type, int edns_pktsz)
+size_t dnssec_generate_query(struct dns_header *header, unsigned char *end, char *name,
+			     int class, int id, int type)
 {
   unsigned char *p;
-  size_t ret;
-
+  
   header->qdcount = htons(1);
   header->ancount = htons(0);
   header->nscount = htons(0);
   header->arcount = htons(0);
-
+  header->id = htons(id);
+  
   header->hb3 = HB3_RD; 
   SET_OPCODE(header, QUERY);
   /* For debugging, set Checking Disabled, otherwise, have the upstream check too,
      this allows it to select auth servers when one is returning bad data. */
   header->hb4 = option_bool(OPT_DNSSEC_DEBUG) ? HB4_CD : 0;
-
-  /* ID filled in later */
 
   p = (unsigned char *)(header+1);
 	
@@ -2225,12 +2227,7 @@ size_t dnssec_generate_query(struct dns_header *header, unsigned char *end, char
   PUTSHORT(type, p);
   PUTSHORT(class, p);
 
-  ret = add_do_bit(header, p - (unsigned char *)header, end);
-
-  if (find_pseudoheader(header, ret, NULL, &p, NULL, NULL))
-    PUTSHORT(edns_pktsz, p);
-
-  return ret;
+  return add_do_bit(header, p - (unsigned char *)header, end);
 }
 
 int errflags_to_ede(int status)

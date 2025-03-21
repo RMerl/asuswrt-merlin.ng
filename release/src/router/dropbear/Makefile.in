@@ -63,7 +63,9 @@ CLIOBJS = $(patsubst %,$(OBJ_DIR)/%,$(_CLIOBJS))
 _CLISVROBJS=common-session.o packet.o common-algo.o common-kex.o \
 		common-channel.o common-chansession.o termcodes.o loginrec.o \
 		tcp-accept.o listener.o process-packet.o dh_groups.o \
-		common-runopts.o circbuffer.o list.o netio.o chachapoly.o gcm.o
+		common-runopts.o circbuffer.o list.o netio.o chachapoly.o gcm.o \
+		kex-x25519.o kex-dh.o kex-ecdh.o kex-pqhybrid.o \
+		sntrup761.o mlkem768.o
 CLISVROBJS = $(patsubst %,$(OBJ_DIR)/%,$(_CLISVROBJS))
 
 _KEYOBJS=dropbearkey.o
@@ -295,7 +297,9 @@ check: lint
 # list of fuzz targets
 FUZZ_TARGETS=fuzzer-preauth fuzzer-pubkey fuzzer-verify fuzzer-preauth_nomaths \
 	fuzzer-kexdh fuzzer-kexecdh fuzzer-kexcurve25519 fuzzer-client fuzzer-client_nomaths \
-	fuzzer-postauth_nomaths fuzzer-cliconf
+	fuzzer-postauth_nomaths fuzzer-cliconf \
+	fuzzer-kexsntrup-srv fuzzer-kexsntrup-cli \
+	fuzzer-kexmlkem-srv fuzzer-kexmlkem-cli
 
 FUZZER_OPTIONS = $(addsuffix .options, $(FUZZ_TARGETS))
 FUZZ_OBJS = $(addprefix fuzz/,$(addsuffix .o,$(FUZZ_TARGETS))) \

@@ -546,6 +546,15 @@ AC_CHECK_FUNCS(endutxent getutxent getutxid getutxline pututxline )
 AC_CHECK_FUNCS(setutxent utmpxname)
 AC_CHECK_FUNCS(logout updwtmp logwtmp)
 
+# Might be a macro. Might be sys/endian.h on BSDs
+AC_CHECK_HEADERS([endian.h])
+AC_CHECK_HEADERS([sys/endian.h])
+AC_CHECK_FUNCS(htole64)
+AC_CHECK_DECL(htole64,
+	[
+	AC_DEFINE(HAVE_DECL_HTOLE64,1,htole64 is a macro)
+	],,)
+
 # POSIX monotonic time
 AC_CHECK_FUNCS(clock_gettime)
 

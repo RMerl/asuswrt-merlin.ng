@@ -3,6 +3,7 @@
 name: Out of tree build
 on:
   pull_request:
+  workflow_dispatch:
   push:
     branches:
       - master

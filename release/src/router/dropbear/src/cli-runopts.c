@@ -182,7 +182,7 @@ void cli_getopts(int argc, char ** argv) {
 	cli_opts.bind_port = NULL;
 	cli_opts.keepalive_arg = NULL;
 #ifndef DISABLE_ZLIB
-	opts.compress_mode = DROPBEAR_COMPRESS_ON;
+	opts.allow_compress = 1;
 #endif
 #if DROPBEAR_USER_ALGO_LIST
 	opts.cipher_list = NULL;
@@ -681,7 +681,7 @@ static void parse_multihop_hostname(const char* orighostarg, const char* argv0) 
 				passthrough_args, remainder);
 #ifndef DISABLE_ZLIB
 		/* The stream will be incompressible since it's encrypted. */
-		opts.compress_mode = DROPBEAR_COMPRESS_OFF;
+		opts.allow_compress = 0;
 #endif
 		m_free(passthrough_args);
 	}

@@ -434,7 +434,11 @@ void buf_put_pub_key(buffer* buf, sign_key *key, enum signkey_type type) {
 	}
 #endif
 #if DROPBEAR_ECDSA
-	if (signkey_is_ecdsa(type)) {
+	if (signkey_is_ecdsa(type)
+#if DROPBEAR_SK_ECDSA
+		|| type == DROPBEAR_SIGNKEY_SK_ECDSA_NISTP256
+#endif
+		) {
 		ecc_key **eck = (ecc_key**)signkey_key_ptr(key, type);
 		if (eck && *eck) {
 			buf_put_ecdsa_pub_key(pubkeys, *eck);

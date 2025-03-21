@@ -189,14 +189,19 @@ struct sshsession {
 	struct key_context *newkeys;
 	buffer *session_id; /* this is the hash from the first kex */
 	/* The below are used temporarily during kex, are freed after use */
+	/* Either dh_K or dh_K_bytes is set, depending on kex type */
 	mp_int * dh_K; /* SSH_MSG_KEXDH_REPLY and sending SSH_MSH_NEWKEYS */
+	/* dh_K_bytes holds a SSH string, including length prefix */
+	buffer * dh_K_bytes; /* SSH_MSG_KEXDH_REPLY and sending SSH_MSH_NEWKEYS */
+
 	buffer *hash; /* the session hash */
 	buffer* kexhashbuf; /* session hash buffer calculated from various packets*/
 	buffer* transkexinit; /* the kexinit packet we send should be kept so we
 							 can add it to the hash when generating keys */
 
 	/* Enables/disables compression */
-	algo_type *compress_algos;
+	algo_type *compress_algos_c2s;
+	algo_type *compress_algos_s2c;
 
 	/* Other side allows SSH_MSG_EXT_INFO. Currently only set for server */
 	int allow_ext_info;
@@ -296,11 +301,10 @@ typedef enum {
 
 struct clientsession {
 
-	/* XXX - move these to kexstate? */
 	struct kex_dh_param *dh_param;
 	struct kex_ecdh_param *ecdh_param;
 	struct kex_curve25519_param *curve25519_param;
-	const struct dropbear_kex *param_kex_algo; /* KEX algorithm corresponding to current dh_e and dh_x */
+	struct kex_pqhybrid_param *pqhybrid_param;
 
 	cli_kex_state kex_state; /* Used for progressing KEX */
 	cli_state state; /* Used to progress auth/channelsession etc */

@@ -431,8 +431,8 @@ static void recv_msg_global_request_cli(void) {
 }
 
 void cli_dropbear_exit(int exitcode, const char* format, va_list param) {
-	char exitmsg[150];
-	char fullmsg[300];
+	char exitmsg[400];
+	char fullmsg[550];
 
 	/* Note that exit message must be rendered before session cleanup */
 

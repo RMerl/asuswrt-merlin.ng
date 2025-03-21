@@ -53,4 +53,13 @@ void endusershell(void);
 #define DROPBEAR_PATH_DEVNULL "/dev/null"
 #endif
 
+#if !(defined(HAVE_HTOLE64) || defined(HAVE_DECL_HTOLE64))
+
+uint64_t htole64(uint64_t inp);
+uint64_t le64toh(uint64_t inp);
+uint32_t htole32(uint32_t inp);
+uint32_t le32toh(uint32_t inp);
+
+#endif /* HAVE_HTOLE64 */
+
 #endif /* DROPBEAR_COMPAT_H_ */

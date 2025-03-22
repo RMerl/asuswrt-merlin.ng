@@ -61,6 +61,9 @@ static void printhelp(const char * progname) {
 #if DROPBEAR_ED25519
 					"		- ed25519 %s\n"
 #endif
+#if DROPBEAR_SVR_PUBKEY_AUTH
+					"-D		Directory containing authorized_keys file\n"
+#endif
 #if DROPBEAR_DELAY_HOSTKEY
 					"-R		Create hostkeys as required\n" 
 #endif
@@ -173,6 +176,7 @@ void svr_getopts(int argc, char ** argv) {
 	svr_opts.hostkey = NULL;
 	svr_opts.delay_hostkey = 0;
 	svr_opts.pidfile = expand_homedir_path(DROPBEAR_PIDFILE);
+	svr_opts.authorized_keys_dir = "~/.ssh";
 #if DROPBEAR_SVR_LOCALANYFWD
 	svr_opts.nolocaltcp = 0;
 #endif
@@ -187,7 +191,7 @@ void svr_getopts(int argc, char ** argv) {
 	svr_opts.reexec_childpipe = -1;
 
 #ifndef DISABLE_ZLIB
-	opts.compress_mode = DROPBEAR_COMPRESS_DELAYED;
+	opts.allow_compress = 1;
 #endif 
 
 	/* not yet
@@ -225,6 +229,11 @@ void svr_getopts(int argc, char ** argv) {
 				case 'r':
 					next = &keyfile;
 					break;
+#if DROPBEAR_SVR_PUBKEY_AUTH
+				case 'D':
+					next = &svr_opts.authorized_keys_dir;
+					break;
+#endif
 				case 'R':
 					svr_opts.delay_hostkey = 1;
 					break;
@@ -445,6 +454,10 @@ void svr_getopts(int argc, char ** argv) {
 
 	if (svr_opts.multiauthmethod && svr_opts.noauthpass) {
 		dropbear_exit("-t and -s are incompatible");
+	}
+
+	if (strlen(svr_opts.authorized_keys_dir) == 0) {
+		dropbear_exit("Bad -D");
 	}
 
 #if DROPBEAR_PLUGIN

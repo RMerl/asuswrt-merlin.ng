@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -142,15 +142,15 @@ struct dns_header {
 #define RCODE(x)           ((x)->hb4 & HB4_RCODE)
 #define SET_RCODE(x, code) (x)->hb4 = ((x)->hb4 & ~HB4_RCODE) | code
   
-#define GETSHORT(s, cp) { \
+#define GETSHORT(s, cp) do { \
 	unsigned char *t_cp = (unsigned char *)(cp); \
 	(s) = ((u16)t_cp[0] << 8) \
 	    | ((u16)t_cp[1]) \
 	    ; \
 	(cp) += 2; \
-}
+  } while(0)
 
-#define GETLONG(l, cp) { \
+#define GETLONG(l, cp) do { \
 	unsigned char *t_cp = (unsigned char *)(cp); \
 	(l) = ((u32)t_cp[0] << 24) \
 	    | ((u32)t_cp[1] << 16) \
@@ -158,17 +158,17 @@ struct dns_header {
 	    | ((u32)t_cp[3]) \
 	    ; \
 	(cp) += 4; \
-}
+  } while (0)
 
-#define PUTSHORT(s, cp) { \
+#define PUTSHORT(s, cp) do { \
 	u16 t_s = (u16)(s); \
 	unsigned char *t_cp = (unsigned char *)(cp); \
 	*t_cp++ = t_s >> 8; \
 	*t_cp   = t_s; \
 	(cp) += 2; \
-}
+  } while(0)
 
-#define PUTLONG(l, cp) { \
+#define PUTLONG(l, cp) do { \
 	u32 t_l = (u32)(l); \
 	unsigned char *t_cp = (unsigned char *)(cp); \
 	*t_cp++ = t_l >> 24; \
@@ -176,7 +176,7 @@ struct dns_header {
 	*t_cp++ = t_l >> 8; \
 	*t_cp   = t_l; \
 	(cp) += 4; \
-}
+  } while (0)
 
 #define CHECK_LEN(header, pp, plen, len) \
     ((size_t)((pp) - (unsigned char *)(header) + (len)) <= (plen))

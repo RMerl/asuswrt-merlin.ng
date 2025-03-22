@@ -7598,6 +7598,38 @@ then :
 fi
 
 
+# Might be a macro. Might be sys/endian.h on BSDs
+ac_fn_c_check_header_compile "$LINENO" "endian.h" "ac_cv_header_endian_h" "$ac_includes_default"
+if test "x$ac_cv_header_endian_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_ENDIAN_H 1" >>confdefs.h
+
+fi
+
+ac_fn_c_check_header_compile "$LINENO" "sys/endian.h" "ac_cv_header_sys_endian_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_endian_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_SYS_ENDIAN_H 1" >>confdefs.h
+
+fi
+
+ac_fn_c_check_func "$LINENO" "htole64" "ac_cv_func_htole64"
+if test "x$ac_cv_func_htole64" = xyes
+then :
+  printf "%s\n" "#define HAVE_HTOLE64 1" >>confdefs.h
+
+fi
+
+ac_fn_check_decl "$LINENO" "htole64" "ac_cv_have_decl_htole64" "$ac_includes_default" "$ac_c_undeclared_builtin_options" "CFLAGS"
+if test "x$ac_cv_have_decl_htole64" = xyes
+then :
+
+
+printf "%s\n" "#define HAVE_DECL_HTOLE64 1" >>confdefs.h
+
+
+fi
+
 # POSIX monotonic time
 ac_fn_c_check_func "$LINENO" "clock_gettime" "ac_cv_func_clock_gettime"
 if test "x$ac_cv_func_clock_gettime" = xyes

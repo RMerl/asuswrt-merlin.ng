@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ static union all_addr del_addr;
 
 #if defined(HAVE_BSD_NETWORK) && !defined(__APPLE__)
 
-int arp_enumerate(void *parm, int (*callback)())
+int arp_enumerate(void *parm, callback_t callback)
 {
   int mib[6];
   size_t needed;
@@ -91,7 +91,7 @@ int arp_enumerate(void *parm, int (*callback)())
       rtm = (struct rt_msghdr *)next;
       sin2 = (struct sockaddr_inarp *)(rtm + 1);
       sdl = (struct sockaddr_dl *)((char *)sin2 + SA_SIZE(sin2));
-      if (!(*callback)(AF_INET, &sin2->sin_addr, LLADDR(sdl), sdl->sdl_alen, parm))
+      if (!callback.af_unspec(AF_INET, &sin2->sin_addr, LLADDR(sdl), sdl->sdl_alen, parm))
 	return 0;
     }
 
@@ -100,7 +100,7 @@ int arp_enumerate(void *parm, int (*callback)())
 #endif /* defined(HAVE_BSD_NETWORK) && !defined(__APPLE__) */
 
 
-int iface_enumerate(int family, void *parm, int (*callback)())
+int iface_enumerate(int family, void *parm, callback_t callback)
 {
   struct ifaddrs *head, *addrs;
   int errsave, fd = -1, ret = 0;
@@ -126,112 +126,110 @@ int iface_enumerate(int family, void *parm, int (*callback)())
   
   for (addrs = head; addrs; addrs = addrs->ifa_next)
     {
-      if (addrs->ifa_addr->sa_family == family)
+      int iface_index = if_nametoindex(addrs->ifa_name);
+      
+      if (iface_index == 0 || !addrs->ifa_addr || 
+	  addrs->ifa_addr->sa_family != family ||
+	  (!addrs->ifa_netmask && family != AF_LINK))
+	continue;
+      
+      if (family == AF_INET)
 	{
-	  int iface_index = if_nametoindex(addrs->ifa_name);
-
-	  if (iface_index == 0 || !addrs->ifa_addr || 
-	      (!addrs->ifa_netmask && family != AF_LINK))
+	  struct in_addr addr, netmask, broadcast;
+	  addr = ((struct sockaddr_in *) addrs->ifa_addr)->sin_addr;
+#ifdef HAVE_BSD_NETWORK
+	  if (del_family == AF_INET && del_addr.addr4.s_addr == addr.s_addr)
 	    continue;
-
-	  if (family == AF_INET)
-	    {
-	      struct in_addr addr, netmask, broadcast;
-	      addr = ((struct sockaddr_in *) addrs->ifa_addr)->sin_addr;
-#ifdef HAVE_BSD_NETWORK
-	      if (del_family == AF_INET && del_addr.addr4.s_addr == addr.s_addr)
-		continue;
 #endif
-	      netmask = ((struct sockaddr_in *) addrs->ifa_netmask)->sin_addr;
-	      if (addrs->ifa_broadaddr)
-		broadcast = ((struct sockaddr_in *) addrs->ifa_broadaddr)->sin_addr; 
-	      else 
-		broadcast.s_addr = 0;	      
-	      if (!((*callback)(addr, iface_index, NULL, netmask, broadcast, parm)))
-		goto err;
-	    }
-	  else if (family == AF_INET6)
-	    {
-	      struct in6_addr *addr = &((struct sockaddr_in6 *) addrs->ifa_addr)->sin6_addr;
-	      unsigned char *netmask = (unsigned char *) &((struct sockaddr_in6 *) addrs->ifa_netmask)->sin6_addr;
-	      int scope_id = ((struct sockaddr_in6 *) addrs->ifa_addr)->sin6_scope_id;
-	      int i, j, prefix = 0;
-	      u32 valid = 0xffffffff, preferred = 0xffffffff;
-	      int flags = 0;
+	  netmask = ((struct sockaddr_in *) addrs->ifa_netmask)->sin_addr;
+	  if (addrs->ifa_broadaddr)
+	    broadcast = ((struct sockaddr_in *) addrs->ifa_broadaddr)->sin_addr; 
+	  else 
+	    broadcast.s_addr = 0;	      
+	  if (!callback.af_inet(addr, iface_index, NULL, netmask, broadcast, parm))
+	    goto err;
+	}
+      else if (family == AF_INET6)
+	{
+	  struct in6_addr *addr = &((struct sockaddr_in6 *) addrs->ifa_addr)->sin6_addr;
+	  unsigned char *netmask = (unsigned char *) &((struct sockaddr_in6 *) addrs->ifa_netmask)->sin6_addr;
+	  int scope_id = ((struct sockaddr_in6 *) addrs->ifa_addr)->sin6_scope_id;
+	  int i, j, prefix = 0;
+	  u32 valid = 0xffffffff, preferred = 0xffffffff;
+	  int flags = 0;
 #ifdef HAVE_BSD_NETWORK
-	      if (del_family == AF_INET6 && IN6_ARE_ADDR_EQUAL(&del_addr.addr6, addr))
-		continue;
+	  if (del_family == AF_INET6 && IN6_ARE_ADDR_EQUAL(&del_addr.addr6, addr))
+	    continue;
 #endif
 #if defined(HAVE_BSD_NETWORK) && !defined(__APPLE__)
-	      struct in6_ifreq ifr6;
-
-	      memset(&ifr6, 0, sizeof(ifr6));
-	      safe_strncpy(ifr6.ifr_name, addrs->ifa_name, sizeof(ifr6.ifr_name));
+	  struct in6_ifreq ifr6;
+	  
+	  memset(&ifr6, 0, sizeof(ifr6));
+	  safe_strncpy(ifr6.ifr_name, addrs->ifa_name, sizeof(ifr6.ifr_name));
+	  
+	  ifr6.ifr_addr = *((struct sockaddr_in6 *) addrs->ifa_addr);
+	  if (fd != -1 && ioctl(fd, SIOCGIFAFLAG_IN6, &ifr6) != -1)
+	    {
+	      if (ifr6.ifr_ifru.ifru_flags6 & IN6_IFF_TENTATIVE)
+		flags |= IFACE_TENTATIVE;
 	      
-	      ifr6.ifr_addr = *((struct sockaddr_in6 *) addrs->ifa_addr);
-	      if (fd != -1 && ioctl(fd, SIOCGIFAFLAG_IN6, &ifr6) != -1)
-		{
-		  if (ifr6.ifr_ifru.ifru_flags6 & IN6_IFF_TENTATIVE)
-		    flags |= IFACE_TENTATIVE;
-		  
-		  if (ifr6.ifr_ifru.ifru_flags6 & IN6_IFF_DEPRECATED)
-		    flags |= IFACE_DEPRECATED;
-
+	      if (ifr6.ifr_ifru.ifru_flags6 & IN6_IFF_DEPRECATED)
+		flags |= IFACE_DEPRECATED;
+	      
 #ifdef IN6_IFF_TEMPORARY
-		  if (!(ifr6.ifr_ifru.ifru_flags6 & (IN6_IFF_AUTOCONF | IN6_IFF_TEMPORARY)))
-		    flags |= IFACE_PERMANENT;
+	      if (!(ifr6.ifr_ifru.ifru_flags6 & (IN6_IFF_AUTOCONF | IN6_IFF_TEMPORARY)))
+		flags |= IFACE_PERMANENT;
 #endif
-
+	      
 #ifdef IN6_IFF_PRIVACY
-		  if (!(ifr6.ifr_ifru.ifru_flags6 & (IN6_IFF_AUTOCONF | IN6_IFF_PRIVACY)))
-		    flags |= IFACE_PERMANENT;
+	      if (!(ifr6.ifr_ifru.ifru_flags6 & (IN6_IFF_AUTOCONF | IN6_IFF_PRIVACY)))
+		flags |= IFACE_PERMANENT;
 #endif
-		}
-	      
-	      ifr6.ifr_addr = *((struct sockaddr_in6 *) addrs->ifa_addr);
-	      if (fd != -1 && ioctl(fd, SIOCGIFALIFETIME_IN6, &ifr6) != -1)
-		{
-		  valid = ifr6.ifr_ifru.ifru_lifetime.ia6t_vltime;
-		  preferred = ifr6.ifr_ifru.ifru_lifetime.ia6t_pltime;
-		}
+	    }
+	  
+	  ifr6.ifr_addr = *((struct sockaddr_in6 *) addrs->ifa_addr);
+	  if (fd != -1 && ioctl(fd, SIOCGIFALIFETIME_IN6, &ifr6) != -1)
+	    {
+	      valid = ifr6.ifr_ifru.ifru_lifetime.ia6t_vltime;
+	      preferred = ifr6.ifr_ifru.ifru_lifetime.ia6t_pltime;
+	    }
 #endif
-	      	      
-	      for (i = 0; i < IN6ADDRSZ; i++, prefix += 8) 
-                if (netmask[i] != 0xff)
-		  break;
-	      
-	      if (i != IN6ADDRSZ && netmask[i]) 
-                for (j = 7; j > 0; j--, prefix++) 
-		  if ((netmask[i] & (1 << j)) == 0)
-		    break;
-	      
-	      /* voodoo to clear interface field in address */
-	      if (!option_bool(OPT_NOWILD) && IN6_IS_ADDR_LINKLOCAL(addr))
-		{
-		  addr->s6_addr[2] = 0;
-		  addr->s6_addr[3] = 0;
-		} 
-	     
-	      if (!((*callback)(addr, prefix, scope_id, iface_index, flags,
-				(int) preferred, (int)valid, parm)))
-		goto err;	      
-	    }
-
-#ifdef HAVE_DHCP6      
-	  else if (family == AF_LINK)
-	    { 
-	      /* Assume ethernet again here */
-	      struct sockaddr_dl *sdl = (struct sockaddr_dl *) addrs->ifa_addr;
-	      if (sdl->sdl_alen != 0 && 
-		  !((*callback)(iface_index, ARPHRD_ETHER, LLADDR(sdl), sdl->sdl_alen, parm)))
-		goto err;
-	    }
-#endif 
+	  
+	  for (i = 0; i < IN6ADDRSZ; i++, prefix += 8) 
+	    if (netmask[i] != 0xff)
+	      break;
+	  
+	  if (i != IN6ADDRSZ && netmask[i]) 
+	    for (j = 7; j > 0; j--, prefix++) 
+	      if ((netmask[i] & (1 << j)) == 0)
+		break;
+	  
+	  /* voodoo to clear interface field in address */
+	  if (!option_bool(OPT_NOWILD) && IN6_IS_ADDR_LINKLOCAL(addr))
+	    {
+	      addr->s6_addr[2] = 0;
+	      addr->s6_addr[3] = 0;
+	    } 
+	  
+	  if (!callback.af_inet6(addr, prefix, scope_id, iface_index, flags,
+				 (unsigned int) preferred, (unsigned int)valid, parm))
+	    goto err;	      
 	}
+      
+#ifdef HAVE_DHCP6      
+      else if (family == AF_LINK)
+	{ 
+	  /* Assume ethernet again here */
+	  struct sockaddr_dl *sdl = (struct sockaddr_dl *) addrs->ifa_addr;
+	  if (sdl->sdl_alen != 0 && 
+	      !callback.af_local(iface_index, ARPHRD_ETHER, LLADDR(sdl), sdl->sdl_alen, parm))
+	    goto err;
+	}
+#endif 
     }
   
   ret = 1;
-
+  
  err:
   errsave = errno;
   freeifaddrs(head); 

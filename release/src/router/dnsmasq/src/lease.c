@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -152,6 +152,10 @@ void lease_init(time_t now)
 #ifdef HAVE_SCRIPT
       if (daemon->lease_change_command)
 	{
+	  /* 6 == strlen(" init") plus terminator */
+	  if (strlen(daemon->lease_change_command) + 6 > DHCP_BUFF_SZ)
+	    die(_("lease-change script name is too long"), NULL, EC_FILE);
+	  
 	  strcpy(daemon->dhcp_buff, daemon->lease_change_command);
 	  strcat(daemon->dhcp_buff, " init");
 	  leasestream = popen(daemon->dhcp_buff, "r");
@@ -441,7 +445,7 @@ static int find_interface_v4(struct in_addr local, int if_index, char *label,
 #ifdef HAVE_DHCP6
 static int find_interface_v6(struct in6_addr *local,  int prefix,
 			     int scope, int if_index, int flags, 
-			     int preferred, int valid, void *vparam)
+			     unsigned int preferred, unsigned int valid, void *vparam)
 {
   struct dhcp_lease *lease;
 
@@ -498,9 +502,9 @@ void lease_find_interfaces(time_t now)
   for (lease = leases; lease; lease = lease->next)
     lease->new_prefixlen = lease->new_interface = 0;
 
-  iface_enumerate(AF_INET, &now, find_interface_v4);
+  iface_enumerate(AF_INET, &now, (callback_t){.af_inet=find_interface_v4});
 #ifdef HAVE_DHCP6
-  iface_enumerate(AF_INET6, &now, find_interface_v6);
+  iface_enumerate(AF_INET6, &now, (callback_t){.af_inet6=find_interface_v6});
 #endif
 
   for (lease = leases; lease; lease = lease->next)

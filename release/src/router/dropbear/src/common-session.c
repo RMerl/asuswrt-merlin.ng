@@ -332,6 +332,12 @@ void session_cleanup() {
 		}
 		m_free(ses.keys->recv.zstream);
 	}
+	if (ses.keys->trans.zstream != NULL) {
+		if (deflateEnd(ses.keys->trans.zstream) == Z_STREAM_ERROR) {
+			dropbear_exit("Crypto error");
+		}
+		m_free(ses.keys->trans.zstream);
+	}
 #endif
 
 	m_free(ses.remoteident);
@@ -353,6 +359,9 @@ void session_cleanup() {
 		mp_clear(ses.dh_K);
 	}
 	m_free(ses.dh_K);
+	if (ses.dh_K_bytes) {
+		buf_burn_free(ses.dh_K_bytes);
+	}
 
 	m_burn(ses.keys, sizeof(struct key_context));
 	m_free(ses.keys);

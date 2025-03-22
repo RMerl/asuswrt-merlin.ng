@@ -637,30 +637,32 @@ int m_str_to_uint(const char* str, unsigned int *val) {
 	}
 }
 
-/* Returns malloced path. inpath beginning with '~/' expanded,
-   otherwise returned as-is */
-char * expand_homedir_path(const char *inpath) {
-	struct passwd *pw = NULL;
-	if (strncmp(inpath, "~/", 2) == 0) {
-		char *homedir = getenv("HOME");
-
-		if (!homedir) {
-			pw = getpwuid(getuid());
-			if (pw) {
-				homedir = pw->pw_dir;
-			}
-		}
-
-		if (homedir) {
-			int len = strlen(inpath)-2 + strlen(homedir) + 2;
-			char *buf = m_malloc(len);
-			snprintf(buf, len, "%s/%s", homedir, inpath+2);
-			return buf;
-		}
+/* Returns malloced path from inpath, possibly expanding '~/'
+   into the specified home directory.*/
+char * expand_homedir_path_home(const char *inpath, const char *homedir) {
+	if (strncmp(inpath, "~/", 2) == 0 && homedir) {
+		size_t len = strlen(inpath)-2 + strlen(homedir) + 2;
+		char *buf = m_malloc(len);
+		snprintf(buf, len, "%s/%s", homedir, inpath+2);
+		return buf;
 	}
-
 	/* Fallback */
 	return m_strdup(inpath);
+}
+
+/* Returns malloced path from inpath, possibly expanding '~/'
+   into the current user's home directory.*/
+char * expand_homedir_path(const char *inpath) {
+	struct passwd *pw = NULL;
+	char *homedir = getenv("HOME");
+
+	if (!homedir) {
+		pw = getpwuid(getuid());
+		if (pw) {
+			homedir = pw->pw_dir;
+		}
+	}
+	return expand_homedir_path_home(inpath, homedir);
 }
 
 int constant_time_memcmp(const void* a, const void *b, size_t n)

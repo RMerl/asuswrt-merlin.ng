@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -344,9 +344,6 @@ int expand_workspace(unsigned char ***wkspc, int *szp, int new)
 
   if (old >= new+1)
     return 1;
-
-  if (new >= 100)
-    return 0;
 
   new += 5;
 

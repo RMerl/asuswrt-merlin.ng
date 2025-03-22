@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2025 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ static int complete_context(struct in_addr local, int if_index, char *label,
 			    struct in_addr netmask, struct in_addr broadcast, void *vparam);
 static int check_listen_addrs(struct in_addr local, int if_index, char *label,
 			      struct in_addr netmask, struct in_addr broadcast, void *vparam);
-static int relay_upstream4(int iface_index, struct dhcp_packet *mess, size_t sz);
+static void relay_upstream4(int iface_index, struct dhcp_packet *mess, size_t sz);
 static struct dhcp_relay *relay_reply4(struct dhcp_packet *mess, char *arrival_interface);
 
 static int make_fd(int port)
@@ -317,7 +317,7 @@ void dhcp_packet(time_t now, int pxe_fd)
 	  match.ind = iface_index;
 	  
 	  if (!daemon->if_addrs ||
-	      !iface_enumerate(AF_INET, &match, check_listen_addrs) ||
+	      !iface_enumerate(AF_INET, &match, (callback_t){.af_inet=check_listen_addrs}) ||
 	      !match.matched)
 	    return;
 	  
@@ -327,17 +327,10 @@ void dhcp_packet(time_t now, int pxe_fd)
 	  complete_context(match.addr, iface_index, NULL, match.netmask, match.broadcast, &parm);
 	}    
             
-      if (relay_upstream4(iface_index, mess, (size_t)sz))
-	return;
-      
-      if (!iface_enumerate(AF_INET, &parm, complete_context))
+      if (!iface_enumerate(AF_INET, &parm, (callback_t){.af_inet=complete_context}))
 	return;
 
-      /* Check for a relay again after iface_enumerate/complete_context has had
-	 chance to fill in relay->iface_index fields. This handles first time through
-	 and any changes in interface config. */
-       if (relay_upstream4(iface_index, mess, (size_t)sz))
-	return;
+      relay_upstream4(iface_index, mess, (size_t)sz);
        
       /* May have configured relay, but not DHCP server */
       if (!daemon->dhcp)
@@ -398,6 +391,10 @@ void dhcp_packet(time_t now, int pxe_fd)
       struct in_pktinfo *pkt;
       msg.msg_control = control_u.control;
       msg.msg_controllen = sizeof(control_u);
+
+      /* alignment padding passed to the kernel should not be uninitialised. */
+      memset(&control_u, 0, sizeof(control_u));
+
       cmptr = CMSG_FIRSTHDR(&msg);
       pkt = (struct in_pktinfo *)CMSG_DATA(cmptr);
       pkt->ipi_ifindex = rcvd_iface_index;
@@ -1073,14 +1070,14 @@ char *host_from_dns(struct in_addr addr)
   return NULL;
 }
 
-static int relay_upstream4(int iface_index, struct dhcp_packet *mess, size_t sz)
+static void relay_upstream4(int iface_index, struct dhcp_packet *mess, size_t sz)
 {
   struct in_addr giaddr = mess->giaddr;
   u8 hops = mess->hops;
   struct dhcp_relay *relay;
 
   if (mess->op != BOOTREQUEST)
-    return 0;
+    return;
 
   for (relay = daemon->relay4; relay; relay = relay->next)
     if (relay->iface_index != 0 && relay->iface_index == iface_index)
@@ -1088,7 +1085,7 @@ static int relay_upstream4(int iface_index, struct dhcp_packet *mess, size_t sz)
 
   /* No relay config. */
   if (!relay)
-    return 0;
+    return;
   
   for (; relay; relay = relay->next)
     if (relay->iface_index != 0 && relay->iface_index == iface_index)
@@ -1121,6 +1118,9 @@ static int relay_upstream4(int iface_index, struct dhcp_packet *mess, size_t sz)
 	to.sa.sa_family = AF_INET;
 	to.in.sin_addr = relay->server.addr4;
 	to.in.sin_port = htons(relay->port);
+#ifdef HAVE_SOCKADDR_SA_LEN
+	to.in.sin_len = sizeof(struct sockaddr_in);
+#endif
 	
 	/* Broadcasting to server. */
 	if (relay->server.addr4.s_addr == 0)
@@ -1164,7 +1164,8 @@ static int relay_upstream4(int iface_index, struct dhcp_packet *mess, size_t sz)
 	   }
       }
   
-  return 1;
+  /* restore in case of a local reply. */
+  mess->giaddr = giaddr;
 }
 
 

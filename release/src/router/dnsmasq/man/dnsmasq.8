@@ -1,4 +1,4 @@
-.TH DNSMASQ 8 2021-08-16
+.TH DNSMASQ 8 2025-02-05
 .SH NAME
 dnsmasq \- A lightweight DHCP and caching DNS server.
 .SH SYNOPSIS
@@ -114,7 +114,8 @@ which defaults to 1000ms. If the second parameter is given this controls
 how long the retries will continue for
 otherwise this defaults to 10000ms. Retries are repeated with exponential
 backoff. Using this option increases memory usage and
-network bandwidth.
+network bandwidth. If not otherwise configured, this option is activated
+with the default parameters when \fB--dnssec\fP is set.
 .TP
 .B \-k, --keep-in-foreground
 Do not go into the background at startup but otherwise run as
@@ -133,7 +134,7 @@ only, to stop dnsmasq daemonising in production, use
 Log the results of DNS queries handled by dnsmasq. Enable a full cache dump on receipt of SIGUSR1. If the argument "extra" is supplied, ie
 .B --log-queries=extra
 then the log has extra information at the start of each line.
-This consists of a serial number which ties together the log lines associated with an individual query, and the IP address of the requestor.
+This consists of a serial number which ties together the log lines associated with an individual query, and the IP address of the requestor. If the argument "proto" is supplied, this shows everything that "extra" does and also the network protocol used to communicate the queries.
 .TP
 .B \-8, --log-facility=<facility>
 Set the facility to which dnsmasq will send syslog entries, this
@@ -768,19 +769,18 @@ results in the name internal-0.thekelleys.org.uk. returning 192.168.0.50, intern
 Second, 
 .B --synth-domain=thekelleys.org.uk,192.168.0.0/24,internal- (no *)
 will result in a query for internal-192-168-0-56.thekelleys.org.uk returning
-192.168.0.56 and a reverse query vice versa. The same applies to IPv6,
-but IPv6 addresses may start with '::'
-but DNS labels may not start with '-' so in this case if no prefix is
-configured a zero is added in front of the label. ::1 becomes 0--1.
-
-V4 mapped IPv6 addresses, which have a representation like ::ffff:1.2.3.4 are handled specially, and become like 0--ffff-1-2-3-4
+192.168.0.56 and a reverse query vice versa. The same applies to IPv6;
+the representation doesn't use the :: compression feature or
+the special representation of V4 mapped IPv6 addresses as these
+can generate illegal domain names, so all domains are of the form
+internal-1000-0000-0000-0000-0000-0000-0000-0008.example.com
 
 The address range can be of the form
 <start address>,<end address> or <ip address>/<prefix-length> in both forms of the option. For IPv6 the start and end addresses
 must fall in the same /64 network, or prefix-length must be greater than or equal to 64 except that shorter prefix lengths than 64 are allowed only if non-sequential names are in use.
 .TP
 .B --dumpfile=<path/to/file>
-Specify the location of a pcap-format file which dnsmasq uses to dump copies of network packets for debugging purposes. If the file exists when dnsmasq starts, it is not deleted; new packets are added to the end.
+Specify the location of a pcap-format file which dnsmasq uses to dump copies of network packets for debugging purposes. If the file exists when dnsmasq starts, it is not deleted; new packets are added to the end. The file may be a named-pipe which Wireshark is listening to.
 .TP
 .B --dumpmask=<mask>
 Specify which types of packets should be added to the dumpfile. The argument should be the OR of the bitmasks for each type of packet to be dumped: it can be specified in hex by preceding the number with 0x in  the normal way. Each time a packet is written to the dumpfile, dnsmasq logs the packet sequence and the mask
@@ -852,6 +852,18 @@ name on successive queries, for load-balancing. This turns off that
 behaviour, so that the records are always returned in the order
 that they are received from upstream.
 .TP
+.B --do-0x20-encode, --no-0x20-encode
+Dnsmasq can scramble the case of letters in DNS queries it sends upstream as a security feature.
+This technique can interact badly with rare broken DNS servers which don't preserve the case
+of the query in their reply. The first time a reply is returned
+which matches the query in all respects except case, a warning
+will be logged. If this coincides with DNS not functioning, it
+is necessary to disable the feature. As at version 2.91, 0x20 encoding
+is disabled by default, and must be enabled with --do-0x20-encode. The default
+may change in the future, so to be sure of its status after an upgrade, set --do-0x20-encode
+or --no-0x20-encode in your config. --no-0x20-encode overrides --do-x20-encode or a future default
+0x20-encode enable.
+.TP
 .B --use-stale-cache[=<max TTL excess in s>]
 When set, if a DNS name exists in the cache, but its time-to-live has expired, dnsmasq will return the data anyway. (It attempts to refresh the
 data with an upstream query after returning the stale data.) This can improve speed and reliability. It comes at the expense
@@ -882,7 +894,7 @@ ie capable of returning DNSSEC records with data. If they are not,
 then dnsmasq will not be able to determine the trusted status of
 answers and this means that DNS service will be entirely broken.
 .TP
-.B --trust-anchor=[<class>],<domain>,<key-tag>,<algorithm>,<digest-type>,<digest>
+.B --trust-anchor=<domain>,[<class>,]<key-tag>,<algorithm>,<digest-type>,<digest>
 Provide DS records to act a trust anchors for DNSSEC
 validation. Typically these will be the DS record(s) for Key Signing
 key(s) (KSK) of the root zone,
@@ -1188,7 +1200,7 @@ available, though it normally is for direct-connected clients, or
 clients using DHCP relays which support RFC 6939.
 
 
-For DHCPv4, the  special option id:* means "ignore any client-id 
+For DHCPv4, the special option \fBid:*\fP means "ignore any client-id 
 and use MAC addresses only." This is useful when a client presents a client-id sometimes 
 but not others.
 
@@ -1216,36 +1228,34 @@ the result is undefined. A corollary to this is that the name associated with a 
 does not appear in the DNS until the host obtains a DHCP lease.
 
 
-The special keyword "ignore"
-tells dnsmasq to never offer a DHCP lease to a machine. The machine
-can be specified by hardware address, client ID or hostname, for
-instance
-.B --dhcp-host=00:20:e0:3b:13:af,ignore
-This is
-useful when there is another DHCP server on the network which should
+The special keyword \fBignore\fP tells dnsmasq never to offer a DHCP lease
+to a machine. The machine
+can be specified by hardware address, client ID or hostname. For
+example: \fB--dhcp-host=00:20:e0:3b:13:af,ignore\fP. 
+This can be useful when there is another DHCP server on the network which should
 be used by some machines.
 
-The set:<tag> construct sets the tag
+The \fBset:<tag>\fP construct sets the tag
 whenever this \fB--dhcp-host\fP directive is in use. This can be used to
 selectively send DHCP options just for this host. More than one tag
 can be set in a \fB--dhcp-host\fP directive (but not in other places where
-"set:<tag>" is allowed). When a host matches any
+\fBset:<tag>\fP is allowed). When a host matches any
 \fB--dhcp-host\fP directive (or one implied by /etc/ethers) then the special
-tag "known" is set. This allows dnsmasq to be configured to
+tag \fBknown\fP is set. This allows dnsmasq to be configured to
 ignore requests from unknown machines using
-.B --dhcp-ignore=tag:!known
+\fB--dhcp-ignore=tag:!known\fP.
 If the host matches only a \fB--dhcp-host\fP directive which cannot
-be used because it specifies an address on different subnet, the tag "known-othernet" is set.
+be used because it specifies an address on a different subnet, the tag \fBknown-othernet\fP is set.
 
-The tag:<tag> construct filters which dhcp-host directives are used; more than
-one can be provided, in this case the request must match all of them. Tagged
+The \fBtag:<tag>\fP construct filters which dhcp-host directives are used. More than
+one tag can be provided. In this case, the request must match all tags. Tagged
 directives are used in preference to untagged ones. Note that one of <hwaddr>,
-<client_id> or <hostname> still needs to be specified (can be a wildcard).
+<client_id> or <hostname> still must be specified (can be a wildcard).
 
 Ethernet addresses (but not client-ids) may have
 wildcard bytes, so for example 
 .B --dhcp-host=00:20:e0:3b:13:*,ignore 
-will cause dnsmasq to ignore a range of hardware addresses. Note that
+will cause dnsmasq to ignore the given range of hardware addresses. Note that
 the "*" will need to be escaped or quoted on a command line, but not
 in the configuration file.
 
@@ -1259,11 +1269,11 @@ is 6.
 
 As a special case, in DHCPv4, it is possible to include more than one
 hardware address. eg:
-.B --dhcp-host=11:22:33:44:55:66,12:34:56:78:90:12,192.168.0.2
+\fB--dhcp-host=11:22:33:44:55:66,12:34:56:78:90:12,192.168.0.2\fP.
 This allows an IP address to be associated with
 multiple hardware addresses, and gives dnsmasq permission to abandon a
 DHCP lease to one of the hardware addresses when another one asks for
-a lease. Beware that this is a dangerous thing to do, it will only
+a lease. Beware that this is a dangerous thing to do: it will only
 work reliably if only one of the hardware addresses is active at any
 time and there is no way for dnsmasq to enforce this. It is, for instance,
 useful to allocate a stable IP address to a laptop which
@@ -1310,27 +1320,25 @@ options containing the same information. /etc/ethers is re-read when
 dnsmasq receives SIGHUP. IPv6 addresses are NOT read from /etc/ethers.
 .TP
 .B \-O, --dhcp-option=[tag:<tag>,[tag:<tag>,]][encap:<opt>,][vi-encap:<enterprise>,][vendor:[<vendor-class>],][<opt>|option:<opt-name>|option6:<opt>|option6:<opt-name>],[<value>[,<value>]]
-Specify different or extra options to DHCP clients. By default,
+Send various extra options to DHCP clients. By default,
 dnsmasq sends some standard options to DHCP clients, the netmask and
 broadcast address are set to the same as the host running dnsmasq, and
 the DNS server and default route are set to the address of the machine
 running dnsmasq. (Equivalent rules apply for IPv6.) If the domain name option has been set, that is sent.
 This configuration allows these defaults to be overridden,
-or other options specified. The option, to be sent may be given as a
-decimal number or as "option:<option-name>" The option numbers are
+or other options specified. The option to be sent may be given as a
+decimal number or as \fBoption:<option-name>\fP. 
+
+Option numbers are
 specified in RFC2132 and subsequent RFCs. The set of option-names
-known by dnsmasq can be discovered by running "dnsmasq --help dhcp".
-For example, to set the default route option to 
-192.168.4.4, do 
-.B --dhcp-option=3,192.168.4.4 
-or
-.B --dhcp-option = option:router, 192.168.4.4
-and to set the time-server address to 192.168.0.4, do
-.B --dhcp-option = 42,192.168.0.4 
-or 
-.B --dhcp-option = option:ntp-server, 192.168.0.4
-The special address 0.0.0.0 is taken to mean "the address of the
-machine running dnsmasq".
+known by dnsmasq can be discovered by running \fBdnsmasq --help dhcp\fP.
+For example, to set the default route option to 192.168.4.4, use 
+\fB--dhcp-option=3,192.168.4.4\fP or 
+\fB--dhcp-option=option:router,192.168.4.4\fP 
+and to set the time-server address to 192.168.0.4, use
+\fB--dhcp-option=42,192.168.0.4\fP or
+\fB--dhcp-option=option:ntp-server,192.168.0.4\fP.
+The special address 0.0.0.0 means "the address of the system running dnsmasq".
 
 An option without data is valid, and includes just the option without data.
 (There is only one option with a zero length data field currently defined for DHCPv4, 80:rapid commit, so this feature is not very useful in practice). Options for which dnsmasq normally
@@ -1351,30 +1359,29 @@ to option 120 are handled as per RFC 3361. Dotted-quad IP addresses
 which are followed by a slash and then a netmask size are encoded as
 described in RFC 3442.
 
-IPv6 options are specified using the 
-.B option6:
+IPv6 options are specified using the \fBoption6:\fP
 keyword, followed by the option number or option name. The IPv6 option
 name space is disjoint from the IPv4 option name space. IPv6 addresses
 in options must be bracketed with square brackets, eg. 
-.B --dhcp-option=option6:ntp-server,[1234::56]
+\fB --dhcp-option=option6:ntp-server,[1234::56]\fP. 
 For IPv6, [::] means "the global address of
 the machine running dnsmasq", whilst [fd00::] is replaced with the
 ULA, if it exists, and [fe80::] with the link-local address.
 
-Be careful: no checking is done that the correct type of data for the
-option number is sent, it is quite possible to
-persuade dnsmasq to generate illegal DHCP packets with injudicious use
-of this flag. When the value is a decimal number, dnsmasq must determine how 
+Be careful: data-type suitability for the option number sent is not checked.
+It is quite possible to persuade dnsmasq to generate illegal DHCP packets with
+injudicious use of this flag. 
+When the value is a decimal number, dnsmasq must determine how 
 large the data item is. It does this by examining the option number and/or the
 value, but can be overridden by appending a single letter flag as follows:
 b = one byte, s = two bytes, i = four bytes. This is mainly useful with 
 encapsulated vendor class options (see below) where dnsmasq cannot
-determine data size from the  option number. Option data which
+determine data size from the option number. Option data which
 consists solely of periods and digits will be interpreted by dnsmasq
 as an IP address, and inserted into an option as such. To force a
 literal string, use quotes. For instance when using option 66 to send
-a literal IP address as TFTP server name, it is necessary to do
-.B --dhcp-option=66,"1.2.3.4"
+a literal IP address as TFTP server name, it is necessary to do 
+\fB--dhcp-option=66,"1.2.3.4"\fP.
 
 Encapsulated Vendor-class options may also be specified (IPv4 only) using
 \fB--dhcp-option\fP: for instance
@@ -1395,7 +1402,7 @@ Options may be encapsulated (IPv4 only) within other options: for instance
 will send option 175, within which is the option 190. If multiple
 options are given which are encapsulated with the same option number
 then they will be correctly combined into one encapsulated option.
-encap: and vendor: are may not both be set in the same \fB--dhcp-option\fP.
+encap: and vendor: may not both be set in the same \fB--dhcp-option\fP.
 
 The final variant on encapsulated options is "Vendor-Identifying
 Vendor Options" as specified by RFC3925. These are denoted like this: 
@@ -1403,7 +1410,7 @@ Vendor Options" as specified by RFC3925. These are denoted like this:
 The number in the vi-encap: section is the IANA enterprise number
 used to identify this option. This form of encapsulation is supported
 in IPv6.
- 
+
 The address 0.0.0.0 is not treated specially in
 encapsulated options.
 .TP
@@ -1413,6 +1420,10 @@ This works in exactly the same way as
 except that the option will always be sent, even if the client does
 not ask for it in the parameter request list. This is sometimes
 needed, for example when sending options to PXELinux.
+.TP
+.B --dhcp-option-pxe=[tag:<tag>,[tag:<tag>,]][encap:<opt>,][vi-encap:<enterprise>,]<opt>,[<value>[,<value>]]
+A variant of --dhcp-option which defines options only sent in reply to PXE clients. In addition, such options are
+sent in reply to PXE clients when dnsmasq is acting as a PXE proxy, unlike other options. A typical use-case is option 175, sent to iPXE.
 .TP
 .B --dhcp-no-override
 (IPv4 only) Disable re-use of the DHCP servername and filename fields as extra
@@ -1425,7 +1436,7 @@ forces "simple and safe" behaviour to avoid problems in such a case.
 .B --dhcp-relay=<local address>[,<server address>[#<server port>]][,<interface]
 Configure dnsmasq to do DHCP relay. The local address is an address
 allocated to an interface on the host running dnsmasq. All DHCP
-requests arriving on that interface will we relayed to a remote DHCP
+requests arriving on that interface will be relayed to a remote DHCP
 server at the server address. It is possible to relay from a single local
 address to multiple remote servers by using multiple \fB--dhcp-relay\fP
 configs with the same local address and different server
@@ -1525,45 +1536,47 @@ via relays. If a list of IP addresses is given, only interactions via
 relays at those addresses are affected.
 .TP
 .B --dhcp-match=set:<tag>,<option number>|option:<option name>|vi-encap:<enterprise>[,<value>]
-Without a value, set the tag if the client sends a DHCP
-option of the given number or name. When a value is given, set the tag only if
-the option is sent and matches the value. The value may be of the form
+Without \fB<value>\fP, set \fB<tag>\fP if the client sends a DHCP
+\fBoption\fP of the given number or name. With \fB<value>\fP, set \fB<tag>\fP only if
+the client sends the \fBoption\fP matching or containing \fB<value>\fP. 
+
+The value may be of the form
 "01:ff:*:02" in which case the value must match (apart from wildcards)
 but the option sent may have unmatched data past the end of the
 value. The value may also be of the same form as in 
 .B --dhcp-option
 in which case the option sent is treated as an array, and one element
-must match, so
+must match.
 .B --dhcp-match=set:efi-ia32,option:client-arch,6
-will set the tag "efi-ia32" if the the number 6 appears in the list of
+sets the tag \fBefi-ia32\fP if the number \fB6\fP appears in the list of
 architectures sent by the client in option 93. (See RFC 4578 for
-details.)  If the value is a string, substring matching is used.
+details.) If the value is a string, substring matching is used.
 
 The special form with vi-encap:<enterprise number> matches against
 vendor-identifying vendor classes for the specified enterprise. Please
 see RFC 3925 for more details of these rare and interesting beasts.
 .TP
 .B --dhcp-name-match=set:<tag>,<name>[*]
-Set the tag if the given name is supplied by a DHCP client. There may be a single trailing wildcard *, which has the usual meaning. Combined with dhcp-ignore or dhcp-ignore-names this gives the ability to ignore certain clients by name, or disallow certain hostnames from being claimed by a client.
+Set a \fB<tag>\fP if the given \fB<name>\fP is supplied by a DHCP client. There may be a single trailing wildcard *, with a glob meaning. Combined with \fBdhcp-ignore\fP or \fBdhcp-ignore-names\fP this gives the ability to ignore certain clients by name, or disallow certain hostnames from being claimed by a client.
 .TP
 .B --tag-if=set:<tag>[,set:<tag>[,tag:<tag>[,tag:<tag>]]]
-Perform boolean operations on tags. Any tag appearing as set:<tag> is set if
-all the tags which appear as tag:<tag> are set, (or unset when tag:!<tag> is used)
-If no tag:<tag> appears set:<tag> tags are set unconditionally.
-Any number of set: and tag: forms may appear, in any order. 
-\fB--tag-if\fP lines are executed in order, so if the tag in tag:<tag> is a
+Perform boolean operations on tags. All \fBset:<tag>\fP tags are set if
+all \fBtag:<tag>\fP are already set, (or unset when \fBtag:!<tag>\fP is used).
+If no \fBtag:<tag>\fP appears, \fBset:<tag>\fP tags are set unconditionally.
+Any number of \fBset:\fP and \fBtag:\fP forms may appear, in any order. 
+\fB--tag-if\fP lines are executed in order, so if the tag in \fBtag:<tag>\fP is a
 tag set by another
 .B --tag-if,
-the line which sets the tag must precede the one which tests it.
+the line which sets the tag must precede the line which tests it.
 
-As an extension, the tag:<tag> clauses support limited wildcard matching,
-similar to the matching in the \fB--interface\fP directive.  This allows, for
-example, using \fB--tag-if=set:ppp,tag:ppp*\fP to set the tag 'ppp' for all requests
-received on any matching interface (ppp0, ppp1, etc).  This can be used in conjunction
-with the tag:!<tag> format meaning that no tag matching the wildcard may be set.
+As an extension, the \fBtag:<tag>\fP clauses support limited wildcard matching,
+similar to the matching in the \fB--interface\fP directive. This allows the
+example \fB--tag-if=set:ppp,tag:ppp*\fP to set the tag 'ppp' for all requests
+received on any matching interface (ppp0, ppp1, etc). This can be used in conjunction
+with the \fBtag:!<tag>\fP format meaning that no tag matching the wildcard may be set.
 .TP
 .B \-J, --dhcp-ignore=tag:<tag>[,tag:<tag>]
-When all the given tags appear in the tag set ignore the host and do
+When all the given tags appear in the tag set, ignore the host and do
 not allocate it a DHCP lease.
 .TP
 .B --dhcp-ignore-names[=tag:<tag>[,tag:<tag>]]
@@ -1676,6 +1689,11 @@ to allow netbooting. This mode is enabled using the
 .B proxy
 keyword in
 .B --dhcp-range.
+If the "other" DHCP server is on a remote network, it is
+possible, and useful, to configure dnsmasq as both a PXE proxy-DHCP server
+and a DHCP relay to the remote DHCP server. See
+.B --dhcp-relay
+for details. PXE is only supported over IPv4 at this time.
 .TP
 .B --dhcp-pxe-vendor=<vendor>[,...]
 According to UEFI and PXE specifications, DHCP packets between PXE clients and
@@ -2407,48 +2425,67 @@ the CNAME. To work around this, add the CNAME to /etc/hosts so that
 the CNAME is shadowed too.
 
 .PP
-The tag system works as follows: For each DHCP request, dnsmasq
-collects a set of valid tags from active configuration lines which
-include set:<tag>, including one from the 
-.B --dhcp-range
-used to allocate the address, one from any matching 
-.B --dhcp-host
-(and "known" or "known-othernet" if a \fB--dhcp-host\fP matches)
-The tag "bootp" is set for BOOTP requests, and a tag whose name is the 
-name of the interface on which the request arrived is also set.
+The tag system works as follows: dnsmasq tags each DHCP request
+with tags from applicable configuration lines containing \fBset:<tag>\fP i.e. 
 
-Any configuration lines which include one or more tag:<tag> constructs
-will only be valid if all that tags are matched in the set derived
-above. Typically this is \fB--dhcp-option\fP.
-.B --dhcp-option
-which has tags will be used in preference  to an untagged 
-.B --dhcp-option,
-provided that _all_ the tags match somewhere in the
-set collected as described above. The prefix '!' on a tag means 'not'
-so \fB--dhcp-option=tag:!purple,3,1.2.3.4\fP sends the option when the
-tag purple is not in the set of valid tags. (If using this in a
-command line rather than a configuration file, be sure to escape !,
-which is a shell metacharacter)
+\fBset:<tag>\fP from the \fB--dhcp-range\fP used to allocate the address;
 
-When selecting \fB--dhcp-options\fP, a tag from \fB--dhcp-range\fP is second class
-relative to other tags, to make it easy to override options for
-individual hosts, so 
+\fBset:<tag>\fP from any matching \fB--dhcp-host\fP (plus the tag \fBknown\fP or 
+\fBknown-othernet\fP).
+
+BOOTP requests are tagged \fBbootp\fP. Each request is also tagged with the name of  
+the interface on which the request arrived.
+
+Each configuration line containing one or more \fBtag:<tag>\fP constructs
+applies when all its tags exist on the request. That is:
+
+Configuration tag:A applies to a request set:tagged A.
+
+Configuration tag:B applies to a request set:tagged B.
+
+Configuration tag:A+B doesn't apply to a request set:tagged A.
+
+Configuration tag:A+B doesn't apply to a request set:tagged B.
+
+Configurations tag:A+B, tag:A, tag:B apply to a request set:tagged A+B.
+
+\fBset:<tag>\fP constructs in \fB--dhcp-range\fP and \fB--dhcp-host\fP tag requests.
+
+Use \fBtag:<tag>\fPs in \fB--dhcp-option\fPs to match \fBset:<tag>\fP and apply configurations.
+
+A \fB--dhcp-option\fP with \fBtag:<tag>\fP is preferred over an untagged 
+\fB--dhcp-option\fP, provided that \fBall\fP its tags match somewhere in the
+set gathered above. 
+
+The tag prefix '!' means 'not'.
+\fB--dhcp-option=tag:!purple,3,1.2.3.4\fP sends the option when the request 
+is not tagged with purple. (The shell metacharacter '!' must be escaped on the
+command line but not in a configuration file).
+
+When selecting \fB--dhcp-option\fPs, a \fB--dhcp-range\fP tag is second class 
+to other tags, to make it easy to override options for
+individual hosts, so:
+
 .B --dhcp-range=set:interface1,......
+
 .B --dhcp-host=set:myhost,.....
+
 .B --dhcp-option=tag:interface1,option:nis-domain,"domain1"
+
 .B --dhcp-option=tag:myhost,option:nis-domain,"domain2"
-will set the NIS-domain to domain1 for hosts in the range, but
-override that to domain2 for a particular host.
+
+sets the NIS-domain to domain1 for hosts in the range, but
+to domain2 for a particular host that may or may not fall in the range.
 
 .PP
-Note that for 
-.B --dhcp-range
-both tag:<tag> and set:<tag> are allowed, to both select the range in
+Note that for \fB--dhcp-range\fP both 
+\fBtag:<tag>\fP and 
+\fBset:<tag>\fP are possible, in order to both select the range in
 use based on (eg) \fB--dhcp-host\fP, and to affect the options sent, based on
 the range selected.
 
-This system evolved from an earlier, more limited one and for backward
-compatibility "net:" may be used instead of "tag:" and "set:" may be
+The tag system evolved from an earlier, more limited system. For backward
+compatibility, "net:" may be used instead of "tag:" and "set:" may be
 omitted. (Except in 
 .B --dhcp-host,
 where "net:" may be used instead of "set:".) For the same reason, '#'
@@ -2466,7 +2503,7 @@ configuration option is present to activate the DHCP server
 on a particular network. (Setting \fB--bootp-dynamic\fP removes the need for
 static address mappings.) The filename
 parameter in a BOOTP request is used as a tag,
-as is the tag "bootp", allowing some control over the options returned to
+as is the tag \fBbootp\fP, allowing some control over the options returned to
 different classes of hosts.
 
 .SH AUTHORITATIVE CONFIGURATION

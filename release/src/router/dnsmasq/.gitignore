@@ -7,15 +7,4 @@ src/.copts_*
 contrib/lease-tools/dhcp_lease_time
 contrib/lease-tools/dhcp_release
 contrib/lease-tools/dhcp_release6
-debian/.debhelper
-debian/auto-build
-debian/debhelper-build-stamp
-debian/files
-debian/*.substvars
-debian/*.debhelper
-debian/*.log
-debian/dnsmasq-base-lua/
-debian/dnsmasq-base/
-debian/dnsmasq-utils/
-debian/dnsmasq/
-debian/tmp
+

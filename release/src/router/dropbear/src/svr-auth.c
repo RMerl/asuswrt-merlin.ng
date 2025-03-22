@@ -296,8 +296,9 @@ static int checkusername(const char *username, unsigned int userlen) {
 	if (!(DROPBEAR_SVR_MULTIUSER && uid == 0) && uid != ses.authstate.pw_uid) {
 		TRACE(("running as nonroot, only server uid is allowed"))
 		dropbear_log(LOG_WARNING,
-				"Login attempt with wrong user %s",
-				ses.authstate.pw_name);
+				"Login attempt with wrong user %s from %s",
+				ses.authstate.pw_name,
+				svr_ses.addrstring);
 		ses.authstate.checkusername_failed = 1;
 		return DROPBEAR_FAILURE;
 	}
@@ -408,7 +409,7 @@ void send_msg_userauth_failure(int partial, int incrfail) {
 
 		/* Desired total delay 300ms +-50ms (in nanoseconds).
 		Beware of integer overflow if increasing these values */
-		const unsigned int mindelay = 250000000;
+		const int mindelay = 250000000;
 		const unsigned int vardelay = 100000000;
 		suseconds_t rand_delay;
 		struct timespec delay;

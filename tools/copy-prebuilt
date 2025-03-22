@@ -218,6 +218,7 @@ echo "*** Copying USB-related files..."
 if [ "$BUILD_NAME" != "XT12" ]
 then
 	cp -ar release/src/router/tuxera/broadcom* $REPO/release/src/router/tuxera/
+	rm -rf $REPO/release/src/router/tuxera/broadcom_arm $REPO/release/src/router/tuxera/broadcom_arm_7114
 	cp release/src/router/lighttpd-1.4.39/prebuild/* $REPO/release/src/router/lighttpd-1.4.39/prebuild/$BUILD_NAME/
 	cp release/src/router/dropbox_client/prebuild/* $REPO/release/src/router/dropbox_client/prebuild/$BUILD_NAME/
 	cp release/src/router/ftpclient/prebuild/* $REPO/release/src/router/ftpclient/prebuild/$BUILD_NAME/
@@ -263,6 +264,7 @@ cp release/src/router/dblog/daemon/prebuild/* $REPO/release/src/router/dblog/dae
 cp release/src/router/dblog/commands/prebuild/* $REPO/release/src/router/dblog/commands/prebuild/$BUILD_NAME/
 cp release/src/router/ahs/prebuild/* $REPO/release/src/router/ahs/prebuild/$BUILD_NAME/
 cp release/src/router/asd/prebuild/* $REPO/release/src/router/asd/prebuild/$BUILD_NAME/
+cp release/src/router/asd2.1/prebuild/* $REPO/release/src/router/asd2.1/prebuild/$BUILD_NAME/
 cp release/src/router/libasc/prebuild/* $REPO/release/src/router/libasc/prebuild/$BUILD_NAME/
 cp release/src/router/amas-utils/prebuild/* $REPO/release/src/router/amas-utils/prebuild/$BUILD_NAME/
 cp release/src/router/cfg_mnt/prebuild/* $REPO/release/src/router/cfg_mnt/prebuild/$BUILD_NAME/
@@ -275,6 +277,7 @@ cp release/src/router/wb/prebuild/* $REPO/release/src/router/wb/prebuild/$BUILD_
 cp release/src/router/eventd/prebuilt/* $REPO/release/src/router/eventd/prebuilt/$BUILD_NAME/
 cp release/src/router/dnsspoof/prebuilt/* $REPO/release/src/router/dnsspoof/prebuilt/$BUILD_NAME/
 cp release/src/router/vpmstats/prebuilt/* $REPO/release/src/router/vpmstats/prebuilt/$BUILD_NAME/
+cp release/src/router/asus_rbd/prebuild/* $REPO/release/src/router/asus_rbd/prebuild/$BUILD_NAME/
 
 
 echo "*** Copying exceptions and special cases..."

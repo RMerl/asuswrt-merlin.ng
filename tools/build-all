@@ -25,23 +25,23 @@ RSYNC_TREE=y
 COMBINED=y
 
 # Build ROG UI image for GT models in addition to regular image
-BUILD_ROGUI=n
+BUILD_ROGUI=y
 
 ### Uncomment the models you wish to build.
 
-BAC68=y
+#BAC68=y
 
-BAC88=y
-BAC3100=y
-BAC5300=y
-BAC86=y
-BGTAC2900=y
-BAC68V4=y
+#BAC88=y
+#BAC3100=y
+#BAC5300=y
+#BAC86=y
+#BGTAC2900=y
+#BAC68V4=y
 
 BAX88=y
 BGTAX11000=y
 
-BAX56=y
+#BAX56=y
 BAX58=y
 
 BAX86=y
@@ -82,12 +82,12 @@ BRANCH_AX68=3004.388
 BRANCH_GTAXE11000=3004.388
 BRANCH_AC68V4=386_x
 
-BRANCH_GTAX6000=3004.388
-BRANCH_XT12=3004.388
-BRANCH_GTAXE16000=3004.388
-BRANCH_GTAX11000_PRO=3004.388
-BRANCH_AX86_PRO=3004.388
-BRANCH_AX88_PRO=3004.388
+BRANCH_GTAX6000=3006.102-wifi6
+BRANCH_XT12=3006.102-wifi6
+BRANCH_GTAXE16000=3006.102-wifi6
+BRANCH_GTAX11000_PRO=3006.102-wifi6
+BRANCH_AX86_PRO=3006.102-wifi6
+BRANCH_AX88_PRO=3006.102-wifi6
 
 BRANCH_BE96=3006.102
 BRANCH_GTBE98_PRO=3006.102
@@ -161,7 +161,7 @@ build_fw()
 		zip -qj "$STAGE_LOC/$ZIPNAME" "$FWNAME" "$STAGE_LOC/README-merlin.txt" "$STAGE_LOC/$CHANGELOG" "sha256sum.sha256" 2>/dev/null
 		echo "*** $(date +%R) - Done building $FWMODEL!"
 
-		if [ "$BUILD_ROGUI" = "y" ] && ([ "$FWMODEL" = "gt-axe16000" ] || [ "$FWMODEL" = "gt-ax6000" ] || [ "$FWMODEL" = "gt-ax11000_pro" ] || [ "$FWMODEL" = "gt-ac2900" ] || [ "$FWMODEL" = "gt-ax11000" ] || [ "$FWMODEL" = "gt-axe11000" ]) ; then
+		if [ "$BUILD_ROGUI" = "y" ] && ([ "$FWMODEL" = "gt-ac2900" ] || [ "$FWMODEL" = "gt-ax11000" ] || [ "$FWMODEL" = "gt-axe11000" ]) ; then
 			echo "--- $(date +%R) - Building ROG UI for $FWMODEL"
 			cd ..
 			sed -i 's/ROG_UI=n/ROG_UI=y/' target.mak

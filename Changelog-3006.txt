@@ -21,6 +21,8 @@ Asuswrt-Merlin 3006.xxx Changelog
   - UPDATED: OpenVPN to 2.6.13.
   - UPDATED: miniupnpd to 2.3.7 (20250207 snapshot)
   - UPDATED: amtm to 5.2 (decoderman)
+  - UPDATED: dnsmasq to 2.91.
+  - UPDATED: dropbear to 2025.87.
   - FIXED: Missing hostname on Wireless Log for MLO-capable Wifi 7
            clients.
   - FIXED: CVE-2024-9143 in OpenSSL (Debian backport by RSDNTWK)

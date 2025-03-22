@@ -147,7 +147,7 @@ function redraw(){
 			bandname_array.push("6 GHz");
 		} else if (wl_info.band5g_2_support) {
 			apinfo_array.push(dataarray2);
-			client_array,push(wificlients2);
+			client_array.push(wificlients2);
 			dfs_array.push(dfs_statusarray2);
 			bandname_array.push("5 GHz-2");
 		}

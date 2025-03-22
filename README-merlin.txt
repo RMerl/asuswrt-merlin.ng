@@ -38,18 +38,18 @@ Fully supported devices:
  * GT-AX11000
  * RT-AX68U
  * GT-AXE11000
- * GT-AX6000
- * ZenWifi Pro XT12
- * GT-AX11000 Pro
- * GT-AXE16000
- * RT-AX86U Pro
- * RT-AX88U Pro
 
 3006.102.x:
  * RT-BE96U 
  * GT-BE98_PRO
  * RT-BE88U
  * RT-BE86U
+ * GT-AX6000
+ * ZenWifi Pro XT12
+ * GT-AX11000 Pro
+ * GT-AXE16000
+ * RT-AX86U Pro
+ * RT-AX88U Pro
 
 No longer supported:
  * RT-N16

@@ -2,11 +2,17 @@ Asuswrt-Merlin Changelog
 ========================
 
 3004.388.9 (xx-xxx-2025)
+  - NOTE: BCM4912 models such as the GT-AX6000 have now been
+         migrated to the 3006 firmware series.
+
   - NEW: (re-added) VPN interface selector on the Speedtest page,
          to test a VPN tunnel's throughput.
   - UPDATED: Merged GPL 388_25373.
-  - UPDATED: dropbear to 2024.86.
+  - UPDATED: dropbear to 2025.87.
   - UPDATED: OpenVPN to 2.6.13.
+  - UPDATED: dnsmasq to 2.91.
+  - UPDATED: miniupnpd to 2.3.7 (20250207 snapshot)
+  - UPDATED: amtm to 5.2 (decoderman)
   - CHANGED: VPN public IP retrieval now uses HTTP instead of STUN,
              which should be more reliable through a VPN tunnel.
   - CHANGED: Model name will be inserted in the filename of JFFS

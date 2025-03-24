@@ -16,6 +16,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 typedef enum
 {
+	AMAS_RESULT_VERIFY_HASH_GROUP_ID_FAILED		= -29,
+	AMAS_RESULT_VERIFY_HASH_ID_NO_INDEX		= -28,
+	AMAS_RESULT_GEN_HASH_GROUP_ID_FAILED		= -27,
+	AMAS_RESULT_GEN_HASH_ID_NO_INDEX		= -26,
 	AMAS_RESULT_SET_MISC_INFO_FAILED		= -25,
 	AMAS_RESULT_GET_MISC_INFO_FAILED          = -24,
 #ifdef RTCONFIG_VIF_ONBOARDING
@@ -204,4 +208,7 @@ AMAS_FUNC AMAS_RESULT AMAS_API amas_get_dest_eth_role(char *ifname, int *eth_rol
 AMAS_FUNC AMAS_RESULT AMAS_API amas_set_misc_info(int index, char *value);
 AMAS_FUNC AMAS_RESULT AMAS_API amas_get_misc_info(unsigned char *misc_info, int *misc_info_len);
 extern char *get_rcSupport_count(char *count, int countBufSize);
+AMAS_FUNC AMAS_RESULT AMAS_API amas_gen_hash_group_id(unsigned char *key);
+AMAS_FUNC AMAS_RESULT AMAS_API amas_gen_hash_id(int index, unsigned char *key);
+AMAS_FUNC AMAS_RESULT AMAS_API  amas_verify_hash_id(int index, unsigned char *key);
 #endif /* !__AMASUTILSH__ */

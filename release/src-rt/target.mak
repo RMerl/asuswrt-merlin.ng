@@ -1,4 +1,4 @@
-export GENERAL_BASE :=  DISAPPCAPT=n
+export GENERAL_BASE :=
 
 #
 # Broadcom HND ARM platform

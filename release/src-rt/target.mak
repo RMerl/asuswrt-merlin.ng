@@ -1,4 +1,4 @@
-export GENERAL_BASE :=  DISAPPCAPT=n
+export GENERAL_BASE := MTLANCFG_MWL=y
 
 #
 # Broadcom HND ARM platform

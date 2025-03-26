@@ -27,6 +27,8 @@ Asuswrt-Merlin 3006.xxx Changelog
            clients.
   - FIXED: CVE-2024-9143 in OpenSSL (Debian backport by RSDNTWK)
   - FIXED: CVE-2024-13176 in OpenSSL (Ubuntu backport by RSDNTWK)
+  - FIXED: Guest Networks on an isolated VLAN with DNSDirector set
+           to "Router" would fail to do any name resolution.
 
 
 3006.102.3 (11-Jan-2025)

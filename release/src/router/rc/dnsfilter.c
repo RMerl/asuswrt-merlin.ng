@@ -189,11 +189,11 @@ void dnsfilter_settings(FILE *fp) {
 #ifdef RTCONFIG_OPENVPN
 //		if (nvram_get_int("VPNServer_enable")) {
 			char word[8] = {0};
-			char buf[32] = {0};
+			char nvservers[32] = {0};
 			char *next = NULL;
 			int unit;
-			nvram_safe_get_r("vpn_serverx_eas", buf, sizeof(buf));
-			foreach_44(word, buf, next) {
+			nvram_safe_get_r("vpn_serverx_start", nvservers, sizeof(nvservers));
+			foreach_44(word, nvservers, next) {
 				unit = atoi(word);
 				fprintf(fp, "-A PREROUTING -i tun%d -p udp -m udp --dport 53 -j DNSFILTER\n"
 					"-A PREROUTING -i tun%d -p tcp -m tcp --dport 53 -j DNSFILTER\n"

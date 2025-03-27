@@ -1,0 +1,236 @@
+
+# Automatically generated file -- do not modify manually
+
+
+menu "PHY_DIAG"
+source "../../bcmdrivers/broadcom/char/bcmphydiag/Kconfig.autodetect"
+endmenu 
+
+menu "LASER"
+source "../../bcmdrivers/broadcom/char/laser/Kconfig.autodetect"
+endmenu 
+
+menu "PON_DRV"
+source "../../bcmdrivers/broadcom/char/pon_drv/Kconfig.autodetect"
+endmenu 
+
+menu "BUZZZ"
+source "../../bcmdrivers/broadcom/char/buzzz/Kconfig.autodetect"
+endmenu 
+
+menu "OTP_DRV"
+source "../../bcmdrivers/opensource/misc/otp/Kconfig.autodetect"
+endmenu 
+
+menu "UBUS"
+source "../../bcmdrivers/opensource/misc/ubus/Kconfig.autodetect"
+endmenu 
+
+menu "SMCLOG_DRV "
+source "../../bcmdrivers/opensource/misc/smclog/Kconfig.autodetect"
+endmenu 
+
+menu "BCA_VREG_SYNC"
+source "../../bcmdrivers/opensource/misc/vregsync/Kconfig.autodetect"
+endmenu 
+
+menu "MEMC"
+source "../../bcmdrivers/opensource/misc/memc/Kconfig.autodetect"
+endmenu 
+
+menu "BCA_EXTINTR"
+source "../../bcmdrivers/opensource/misc/bca_extintr/Kconfig.autodetect"
+endmenu 
+
+menu "BUTTON"
+source "../../bcmdrivers/opensource/misc/button/Kconfig.autodetect"
+endmenu 
+
+menu "BCA_LEGACY_LED_API"
+source "../../bcmdrivers/opensource/misc/bca_legacy_led/Kconfig.autodetect"
+endmenu 
+
+menu "BCA_PINCTRL"
+source "../../bcmdrivers/opensource/misc/bca_pinctrl/Kconfig.autodetect"
+endmenu 
+
+menu "THERMAL "
+source "../../bcmdrivers/opensource/misc/thermal/Kconfig.autodetect"
+endmenu 
+
+menu "DGASP_DRV"
+source "../../bcmdrivers/opensource/misc/dgasp/Kconfig.autodetect"
+endmenu 
+
+menu "VOICE_RELAY"
+source "../../bcmdrivers/opensource/misc/voice/relay/Kconfig.autodetect"
+endmenu 
+
+menu "VOICE_DECT_RESET"
+source "../../bcmdrivers/opensource/misc/voice/dect/Kconfig.autodetect"
+endmenu 
+
+menu "VOICE_PARAMS"
+source "../../bcmdrivers/opensource/misc/voice/board_params/Kconfig.autodetect"
+endmenu 
+
+menu "SFP"
+source "../../bcmdrivers/opensource/misc/bcmsfp/Kconfig.autodetect"
+endmenu 
+
+menu "PON_WAN_TYPE_AUTO_DETECT"
+source "../../bcmdrivers/opensource/misc/wantypedet/Kconfig.autodetect"
+endmenu 
+
+menu "ITC_RPC_DRV "
+source "../../bcmdrivers/opensource/misc/itc_rpc/Kconfig.autodetect"
+endmenu 
+
+menu "RESET_BUTTON"
+source "../../bcmdrivers/opensource/misc/reset_button/Kconfig.autodetect"
+endmenu 
+
+menu "COMMON_CLK"
+source "../../bcmdrivers/opensource/misc/clk/Kconfig.autodetect"
+endmenu 
+
+menu "FPM_DRV"
+source "../../bcmdrivers/opensource/misc/fpm/Kconfig.autodetect"
+endmenu 
+
+menu "SOUND"
+source "../../bcmdrivers/opensource/misc/sound/asoc/Kconfig.autodetect"
+endmenu 
+
+menu "SOUND"
+source "../../bcmdrivers/opensource/misc/sound/codecs/Kconfig.autodetect"
+endmenu 
+
+menu "CPUFREQ"
+source "../../bcmdrivers/opensource/misc/cpufreq/Kconfig.autodetect"
+endmenu 
+
+menu "RPC_SERVICES_DRV "
+source "../../bcmdrivers/opensource/misc/rpc_services/Kconfig.autodetect"
+endmenu 
+
+menu "BCA_LED"
+source "../../bcmdrivers/opensource/misc/bca_led_ctrl/Kconfig.autodetect"
+endmenu 
+
+menu "DQM_DRV "
+source "../../bcmdrivers/opensource/misc/dqm/Kconfig.autodetect"
+endmenu 
+
+menu "ARM_CPUIDLE"
+source "../../bcmdrivers/opensource/misc/cpuidle/Kconfig.autodetect"
+endmenu 
+
+menu "DSL_DT"
+source "../../bcmdrivers/opensource/misc/bcmdsl/Kconfig.autodetect"
+endmenu 
+
+menu "SOTP"
+source "../../bcmdrivers/opensource/misc/sotp/Kconfig.autodetect"
+endmenu 
+
+menu "STRAP "
+source "../../bcmdrivers/opensource/misc/strap/Kconfig.autodetect"
+endmenu 
+
+menu "BMU"
+source "../../bcmdrivers/opensource/misc/bmu/Kconfig.autodetect"
+endmenu 
+
+menu "VFBIO_DRV "
+source "../../bcmdrivers/opensource/misc/vfbio/Kconfig.autodetect"
+endmenu 
+
+menu "GPS"
+source "../../bcmdrivers/opensource/misc/bcmgps/Kconfig.autodetect"
+endmenu 
+
+menu "BCA_GPIO"
+source "../../bcmdrivers/opensource/misc/bca_gpio/Kconfig.autodetect"
+endmenu 
+
+menu "PMC "
+source "../../bcmdrivers/opensource/misc/pmc/Kconfig.autodetect"
+endmenu 
+
+menu "PCAP"
+source "../../bcmdrivers/opensource/char/pcap/Kconfig.autodetect"
+endmenu 
+
+menu "PCM"
+source "../../bcmdrivers/opensource/char/pcm/Kconfig.autodetect"
+endmenu 
+
+menu "NDI"
+source "../../bcmdrivers/opensource/char/ndi/Kconfig.autodetect"
+endmenu 
+
+menu "LIBS"
+source "../../bcmdrivers/opensource/char/bcmlibs/Kconfig.autodetect"
+endmenu 
+
+menu "SMTC"
+source "../../bcmdrivers/opensource/char/smtc/Kconfig.autodetect"
+endmenu 
+
+menu "SYNCE_HOLDOVER"
+source "../../bcmdrivers/opensource/char/synce_holdover/Kconfig.autodetect"
+endmenu 
+
+menu "SPIDEV_REV2"
+source "../../bcmdrivers/opensource/char/bcmspidev/Kconfig.autodetect"
+endmenu 
+
+menu "OPTICALDET"
+source "../../bcmdrivers/opensource/char/opticaldet/Kconfig.autodetect"
+endmenu 
+
+menu "MCAST"
+source "../../bcmdrivers/opensource/char/mcast/Kconfig.autodetect"
+endmenu 
+
+menu "BOOTSTATE"
+source "../../bcmdrivers/opensource/char/bcm_bootstate/Kconfig.autodetect"
+endmenu 
+
+menu "CRYPTODEV"
+source "../../bcmdrivers/opensource/char/cryptodev/Kconfig.autodetect"
+endmenu 
+
+menu "FPI"
+source "../../bcmdrivers/opensource/char/fpi/Kconfig.autodetect"
+endmenu 
+
+menu "SPIDEV_VOICE"
+source "../../bcmdrivers/opensource/char/bcmspivoice/Kconfig.autodetect"
+endmenu 
+
+menu "BCA_USB"
+source "../../bcmdrivers/opensource/bus/usb/Kconfig.autodetect"
+endmenu 
+
+menu "PCIE_HCD"
+source "../../bcmdrivers/opensource/bus/pci/host/Kconfig.autodetect"
+endmenu 
+
+menu "PCIE_GEPD"
+source "../../bcmdrivers/opensource/bus/pci/endpoint/gepd/Kconfig.autodetect"
+endmenu 
+
+menu "BCA_SATA"
+source "../../bcmdrivers/opensource/bus/sata/Kconfig.autodetect"
+endmenu 
+
+menu "ENET"
+source "../../bcmdrivers/opensource/net/enet/Kconfig.autodetect"
+endmenu 
+
+menu "HW_FIREWALL"
+source "../../bcmdrivers/opensource/net/hwf/Kconfig.autodetect"
+endmenu 
+

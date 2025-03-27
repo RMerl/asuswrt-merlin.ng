@@ -3,6 +3,10 @@
 # (C) Copyright 2019 Broadcom Ltd
 #
 
+PROFILE  = $(shell cat ../../../.last_profile)
+ifneq ($(findstring BUILD_HND_MFG=, $(shell cat ../../../targets/$(PROFILE)/$(PROFILE))),)
+EXTRA_CFLAGS += -DHND_MFG
+endif
 
 # ccflags-y += -save-temps
 ifdef CONFIG_BCMBCA_PMC

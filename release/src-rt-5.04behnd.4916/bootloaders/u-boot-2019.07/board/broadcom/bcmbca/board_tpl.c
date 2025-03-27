@@ -61,7 +61,7 @@ static struct bcasdk_ctx sdk_ctx = {};
 
 int bcm_sec_fit(void * fit);
 void save_boot_params_ret(void);
-int get_fit_load_vol_id(bcaspl_part_info *info);
+int get_fit_load_vol_id(bcaspl_part_info *info, int try_another);
 
 #if !defined(CONFIG_BCMBCA_IKOS)
 static void update_uboot_fdt_sdk(void *fdt_addr)
@@ -181,7 +181,7 @@ int spl_boot_partition(const u32 boot_device)
 	int fit_part_id = 0;
 	bcaspl_part_info info;
 
-	fit_part_id = get_fit_load_vol_id(&info);
+	fit_part_id = get_fit_load_vol_id(&info, 0);
 
 	return fit_part_id;
 }
@@ -484,7 +484,7 @@ __weak int get_raw_metadata(void *buffer, bcaspl_part_info *info, int n)
 #define BOOT_PARMS_ACTIVE_IMG_MASK     0x00000010
 #define BOOT_PARMS_BOOT_BY_NAME_MASK   0x00000200
 #define BOOT_PARMS_IMG_INVERT_MASK     0x00000400
-int get_fit_load_vol_id(bcaspl_part_info *dummy)
+int get_fit_load_vol_id(bcaspl_part_info *dummy, int try_another)
 {
 	int fit_vol_id, image;
 	
@@ -548,7 +548,7 @@ static int check_image_fallback_needed(void)
  *   set_reboot_volatile_flags()
  *   get_fit_load_id() -- combine above to return volid or partid
  */
-int get_fit_load_vol_id(bcaspl_part_info *info)
+int get_fit_load_vol_id(bcaspl_part_info *info, int try_another)
 {
 	int fit_vol_id = IMAGE_VOL_ID_1;
 	/* Default image to load is '1' */
@@ -667,6 +667,10 @@ int get_fit_load_vol_id(bcaspl_part_info *info)
 		selected_img_idx = 3 - committed;
 	}
 
+	if (valid[0] && valid[1] && try_another) {
+		selected_img_idx = 3 - selected_img_idx;
+	}
+
 	/* now look up volume ID for the selected image */
 	fit_vol_id = imgmap[selected_img_idx];
 	if( boot_strap_detected ) {
@@ -773,7 +777,7 @@ __weak int tpl_vflash_load_image(struct spl_image_info *spl_image,
 		memcpy(fit, bootfs, size);
 	}
 	else {
-		id = get_fit_load_vol_id(NULL);
+		id = get_fit_load_vol_id(NULL, 0);
 		ret = vfbio_lun_read(id, 0, UINT_MAX, fit);
 	}
 
@@ -933,6 +937,7 @@ __weak int tpl_load_image(struct spl_image_info *spl_image,
 	bcaspl_part_info info;
 	struct ubispl_load volume;
 	void *fit = spl_get_load_buffer(0, 0);
+	int try_another = 0;
 
 #if defined(CONFIG_BCM_BOOTSTATE_FALLBACK_SUPPORT)
 	const char *fallback_ptr=NULL;
@@ -941,37 +946,35 @@ __weak int tpl_load_image(struct spl_image_info *spl_image,
 #ifdef CONFIG_SPL_NAND_SUPPORT
 	nand_init();
 #endif
-	
 	/* Get current ubi info */
 	tpl_get_ubi_info(&info);
-	volume.vol_id = get_fit_load_vol_id(&info);
-	volume.load_addr = fit;
 
-	ret = ubispl_load_volumes(&(info.ubi_info), &volume, 1);
-
-	if (!ret && (image_get_magic(fit) == FDT_MAGIC)) {
-		struct spl_load_info load;
-		debug("Found FIT format U-Boot\n");
-
-		memset(&load, '\0', sizeof(struct spl_load_info));
-		load.bl_len = 1;
-		load.read = tpl_load_read;
-		ret = spl_load_simple_fit(spl_image, &load, (long)fit, fit);
+	for (try_another = 0;ret && try_another < 2;try_another++) {
+		volume.vol_id = get_fit_load_vol_id(&info, try_another);
+		volume.load_addr = fit;
+		ret = ubispl_load_volumes(&(info.ubi_info), &volume, 1);
+		if (!ret && (image_get_magic(fit) == FDT_MAGIC)) {
+			struct spl_load_info load;
+			debug("Found FIT format U-Boot\n");
+			memset(&load, '\0', sizeof(struct spl_load_info));
+			load.bl_len = 1;
+			load.read = tpl_load_read;
+			ret = spl_load_simple_fit(spl_image, &load, (long)fit, fit);
 #if defined(CONFIG_BCM_BOOTSTATE_FALLBACK_SUPPORT)
-		if(ret != 0)
-		{
-			if(!fallback_needed)
+			if(ret != 0)
 			{
-				printf("Loading U-boot failed, setting reset reason to BCM_BOOT_REASON_WATCHDOG | BCM_BOOT_PHASE_TPL\n");  
-				bcmbca_set_boot_reason((sdk_ctx.last_reset_reason << BCM_RESET_REASON_BITS) | BCM_BOOT_REASON_WATCHDOG | BCM_BOOT_PHASE_TPL);
+				if(!fallback_needed)
+				{
+					printf("Loading U-boot failed, setting reset reason to BCM_BOOT_REASON_WATCHDOG | BCM_BOOT_PHASE_TPL\n");  
+					bcmbca_set_boot_reason((sdk_ctx.last_reset_reason << BCM_RESET_REASON_BITS) | BCM_BOOT_REASON_WATCHDOG | BCM_BOOT_PHASE_TPL);
+				}
+				else
+				{
+					printf("Loading fallback u-boot failed, current reset reason %x\n", bcmbca_get_boot_reason());
+				}
 			}
 			else
 			{
-				printf("Loading fallback u-boot failed, current reset reason %x\n", bcmbca_get_boot_reason());
-			}
-		}
-		else
-		{
 
 				fallback_ptr=fdt_getprop(fit, 0, "support_fallback", NULL);
 				if(fallback_ptr == NULL)
@@ -987,8 +990,12 @@ __weak int tpl_load_image(struct spl_image_info *spl_image,
 						bcmbca_set_boot_reason((sdk_ctx.last_reset_reason << BCM_RESET_REASON_BITS));
 					}
 				}
-		}
+			}
 #endif
+		}
+		if (ret && !try_another) {
+			printf("Boot failed on vol_id %d, try another \n", volume.vol_id);
+		}
 	}
 
 #ifdef CONFIG_SPL_NAND_SUPPORT

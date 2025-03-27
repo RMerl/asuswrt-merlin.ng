@@ -1,0 +1,17 @@
+#ifndef RTVERSION
+#define RT_MAJOR_VERSION "3.0"
+#define RT_MINOR_VERSION "0.6"
+#define RT_VERSION "3.0.0.6"
+#define RT_SERIALNO "102"
+#define RT_RCNO "2"
+#define RT_EXTENDNO "37435-gdd27f25_1059-g807f7_BB0B"
+#define RT_SWPJVERNO ""
+#define RT_BUILD_NAME "RT-BE92U"
+#define RT_BUILD_NAME_SEC "RT-BE92U_sec"
+#define RT_BUILD_INFO "Fri Feb 14 00:25:33 UTC 2025 root@dd27f25"
+#define RT_CUSTOM_MODEL ""
+#endif
+#ifdef RTCONFIG_NVRAM_ENCRYPT
+#define ENC_SP_EXTENDNO "39937"
+#endif
+#define LIVE_UPDATE_RSA_VERSION ""

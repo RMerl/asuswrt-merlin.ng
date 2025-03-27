@@ -15,6 +15,12 @@
 <script type="text/javascript" src="/SDN/sdn.js"></script>
 <script type="text/javascript" src="/SDN/mlo.js"></script>
 </head>
+<style>
+.sdn_popup_bg #loadingBlock {
+	margin-left: 25% !important;
+	margin-top: 0px !important;
+}
+</style>
 <script>
 const PAGE_CONTAINER = "mlo";
 var getUrlParameter = function getUrlParameter(param){
@@ -397,6 +403,9 @@ function initial(){
 		$('<script />', { type : 'text/javascript', src : "/js/qrcode/jquery.qrcode.min.js"}).appendTo('head');
 		if(!is_Web_iframe)
 			showLoading = showLoading_RWD;//overwrite function
+		else{
+			$("#Loading").addClass("sdn_popup_bg");
+		}
 
 		if(isSwMode("rt")){
 			Get_VPNC_Profile();

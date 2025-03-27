@@ -261,6 +261,7 @@ function getPAPList(siteSurveyAPList, filterType, filterValue) {
 		this.thekey = "";
 		this.thekeyindex = "";
 		this.thekeyauthmode = "";
+		this.mlomacaddr = (_profile[10] && typeof _profile[10] === "string" && _profile[10].length > 2) ? _profile[10] : "";
 	}
 
 	for(var i=0; i<siteSurveyAPList.length; i++){
@@ -841,8 +842,7 @@ var Get_Component_SiteSurvey_List = function(papList, filterBand) {
 			$(this).removeClass("ap_ssid_hover")
 		})
 
-		
-		var ap_band =  $("<div>").addClass("ap_band").html(AP.band);
+		var ap_band = $("<div>").addClass("ap_band").html((AP.mlomacaddr == "" || !isSupport("MLO_CLIENT")) ? AP.band : "MLO");
 		apListDiv.append(ap_band);
 
 		var ap_narrow_container = $("<div>").addClass("ap_narrow_container");
@@ -971,42 +971,7 @@ var Get_Component_WirelessInput = function(wlArray){
 				wpa_psk_tmp = qisPostData["wlc" + wl.ifname + "_wpa_psk"];
 			}
 
-			switch(parseInt(wl.ifname)){
-				
-				case 0 :				
-					if(isSupport('quadband')){
-						ssid_tmp = ssid_tmp.slice(0,26) + "_RPT5G";
-					}
-					else{
-						ssid_tmp = ssid_tmp.slice(0,28) + "_RPT";
-					}
-
-					break;
-				case 1 :
-					
-					if(isSupport('quadband')){
-						ssid_tmp = ssid_tmp.slice(0,26) + "_RPT5G2";
-					}
-					else{
-						ssid_tmp = ssid_tmp.slice(0,26) + "_RPT5G";
-					}
-
-					break;
-				case 2 :
-					
-					if(isSupport('quadband')
-					|| isSupport('triband') && (isSupport('wifi6e') || isSupport('wifi7'))){
-						ssid_tmp = ssid_tmp.slice(0,26) + "_RP6G";
-					}
-					else{
-						ssid_tmp = ssid_tmp.slice(0,25) + "_RPT5G2";
-					}	
-					
-					break;
-				case 3 :
-					ssid_tmp = ssid_tmp.slice(0,25) + "_RPT";
-					break;	
-			}
+			ssid_tmp = `${ssid_tmp.slice(0,26)}_RPT${get_band_by_wl_unit(wl.ifname).replace("2g", "").replace("1", "").toUpperCase()}`;
 			wirelessAP["wl" + wl.ifname + "_ssid"] = encodeURIComponent(ssid_tmp);
 
 			if(wpa_psk_tmp != "")
@@ -1423,6 +1388,31 @@ function handleSysDep(){
 	if(isSupport("mlo")){
 		$('#wifi6e_legacy_hint').remove();
 		$('#wifi6e_legacy_hint_summary').remove();
+
+		$("#mlo_enable_checkbox").change(function(e){
+			var curStatus = $(this).prop("checked");
+	
+			if(curStatus){
+				if(isSwMode("RP")){
+					qisPostData["mlo_rp"] = "1";
+					qisPostData["mlo_mb"] = "0";
+				}
+				else if(isSwMode("MB")){
+					qisPostData["mlo_rp"] = "0";
+					qisPostData["mlo_mb"] = "1";
+				}
+
+				qisPostData["mld_enable"] = "1";
+				qisPostData["wlc_dpsta"] = "2";
+				qisPostData["wlc_band"] = httpApi.nvramGet(["mlo_map"]).mlo_map.replace("wl", "");
+			}
+			else{
+				qisPostData["mlo_rp"] = "0";
+				qisPostData["mlo_mb"] = "0";
+				qisPostData["mld_enable"] = "0";
+				qisPostData["wlc_dpsta"] = "0";
+			}
+		});	
 	}
 }
 
@@ -1558,6 +1548,16 @@ var getTimeZoneOffset = function(tz){
 function setupWLCNvram(apProfileID) {
 	systemVariable.selectedAP = systemVariable.papList[apProfileID];
 	var unit = systemVariable.selectedAP.unit;
+
+	if(systemVariable.selectedAP.mlomacaddr != "" && isSupport("MLO_CLIENT")){
+		$("#mlo_enable_checkbox").enableCheckBox(true);
+		$("#mlo_enable_checkbox").change();
+	}
+	else{
+		$("#mlo_enable_checkbox").enableCheckBox(false);
+		$("#mlo_enable_checkbox").change();	
+	}
+
 	postDataModel.insert(wlcMultiObj["wlc" + unit]);
 
 	var encryption = systemVariable.selectedAP.encryption;
@@ -2038,7 +2038,7 @@ var isSupport = function(_ptn){
 			matchingResult = (isSku("US") || isSku("CA") || isSku("TW") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC")) ? false : true;
 			break;
 		case "IPTV":
-			matchingResult = (isSku("US") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC") || isSku("CA")|| isSku("U2") || isSku("TW")) ? false : true;
+			matchingResult = (isSupport("noiptv") || isSku("US") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC") || isSku("CA")|| isSku("U2") || isSku("TW")) ? false : true;
 			break;
 		case "ENABLE_IPv6":
 			matchingResult = (isSku("CN") || isSku("GD") || isSku("TC")) ? true : false;
@@ -2063,6 +2063,12 @@ var isSupport = function(_ptn){
 				matchingResult = true;
 			else
 				matchingResult = false;
+			break;
+		case "MLO_CLIENT":
+			matchingResult = (ui_support["mloclient"]) ? true : false;
+			break;						
+		case "concurrep":
+			matchingResult = ui_support["concurrep"] && qisPostData.mlo_rp != 1 && qisPostData.mlo_mb != 1;
 			break;
 		case "defpsk":
 			matchingResult = (ui_support["defpsk"] >= 1 && (httpApi.nvram_match_x("wifi_psk","","1").wifi_psk != "1")) ? true : false;
@@ -2395,54 +2401,18 @@ var transformWLToGuest = function(){
 		});
 		postDataModel.remove(wirelessObj["wl" + _wlcUnit]);
 	};
-	if(systemVariable.multiPAP.wlcOrder.length == 1){//single pap
-		var wlcUnit = systemVariable.multiPAP.wlcOrder[0];
-		transformWLIdx(wlcUnit);
-	}
-	else{//multi pap
-		var allWlArray =  getAllWlArray();
+
+	if(systemVariable.multiPAP.wlcOrder.length > 1 || qisPostData["mlo_rp"] == "1"){
+		var allWlArray = getAllWlArray();
 		for(var i = 0; i < allWlArray.length; i += 1){
 			var wlcUnit = allWlArray[i].ifname;
 			transformWLIdx(wlcUnit);
 		}
 	}
-};
-
-var handleWirelessClientSSID = function(_wlArray, _autoStr){
-	_wlArray.forEach(function(wl, idx){
-		var ssid_tmp = "";
-		var wpa_psk_tmp = "";
-		if(qisPostData["wlc" + wl.ifname + "_ssid"] == undefined || qisPostData["wlc" + wl.ifname + "_ssid"] == ""){
-			for(var i = 0; i < systemVariable.multiPAP.wlcOrder.length; i += 1){
-				ssid_tmp = qisPostData["wlc" + systemVariable.multiPAP.wlcOrder[i] + "_ssid"];
-				wpa_psk_tmp = qisPostData["wlc" + systemVariable.multiPAP.wlcOrder[i] + "_wpa_psk"];
-				break;
-			}
-		}
-		else{
-			ssid_tmp = qisPostData["wlc" + wl.ifname + "_ssid"];
-			wpa_psk_tmp = qisPostData["wlc" + wl.ifname + "_wpa_psk"];
-		}
-		if(!_autoStr){
-			switch(parseInt(wl.ifname)){
-				case 0 :
-					ssid_tmp = ssid_tmp.slice(0,28) + "_RPT";
-					break;
-				case 1 :
-					ssid_tmp = ssid_tmp.slice(0,26) + "_RPT5G";
-					break;
-				case 2 :
-					ssid_tmp = ssid_tmp.slice(0,25) + "_RPT5G2";
-					break;
-			}
-		}
-
-		$("#wireless_ssid_" + wl.ifname).val(ssid_tmp);
-		if(wpa_psk_tmp != "")
-			$("#wireless_key_" + wl.ifname).val(wpa_psk_tmp);
-		else
-			$("#wireless_key_" + wl.ifname).val("");
-	});
+	else{
+		var wlcUnit = systemVariable.multiPAP.wlcOrder[0];
+		transformWLIdx(wlcUnit);
+	}
 };
 
 var isAllPAPSet = function(){
@@ -2532,6 +2502,11 @@ var handleWLAuthModeItem = function(){
 	$("#manual_pap_setup-key-index").hide();
 	$("#manual_pap_setup-key").hide();
 	$("#manual_pap_setup-nmode_hint").hide();
+
+	$("#wlc_crypto_manual option[value='aes']").hide();
+	$("#wlc_crypto_manual option[value='tkip']").hide();
+	$("#wlc_crypto_manual option[value='aes+gcmp256']").hide();
+
 	if(auth_mode == "open" && wep == "0"){
 		$("#manual_pap_setup-wep").show();
 	}
@@ -2546,11 +2521,19 @@ var handleWLAuthModeItem = function(){
 		$("#manual_pap_setup-key").show();
 		if(crypto == "tkip")
 			$("#manual_pap_setup-nmode_hint").show();
+
+		$("#wlc_crypto_manual option[value='aes']").show();
+		$("#wlc_crypto_manual option[value='tkip']").show();
+		$("#wlc_crypto_manual option[value='aes+gcmp256']").hide();
 	}
 	else if(auth_mode == "sae"){
 		$("#manual_pap_setup-crypto").show();
 		$("#manual_pap_setup-key").show();
-		$("#wlc_crypto_manual option[value='tkip']").remove();
+		$("#wlc_crypto_manual option[value='aes']").show();
+		$("#wlc_crypto_manual option[value='tkip']").hide();
+		if(isSupport("wifi7")){
+			$("#wlc_crypto_manual option[value='aes+gcmp256']").show();
+		}
 	}
 };
 
@@ -2796,7 +2779,7 @@ function get_new_sdn_mlo(){
 	let sdn_idx_arr = Array.from({length: sdn_maximum}, (num, i) => (i+1));
 	let apg_idx_arr = sdn_idx_arr.concat();
 	const sdn_rl = (()=>{
-		if(systemVariable.opMode != systemVariable.originOpMode || systemVariable.isDefault)
+		if(isSwModeChanged() || systemVariable.isDefault)
 			return (httpApi.nvramDefaultGet(["sdn_rl"]).sdn_rl).replace(/&#60/g, "<").replace(/&#62/g, ">")
 		else
 			return decodeURIComponent(httpApi.nvramCharToAscii(["sdn_rl"]).sdn_rl);
@@ -2834,7 +2817,7 @@ function get_new_sdn_mlo(){
 }
 
 function createSDNCompatibleNetwork(){
-	if(systemVariable.opMode != systemVariable.originOpMode){
+	if(isSwModeChanged()){
 		return true;
 	}
 	if(!systemVariable.isDefault){
@@ -2911,7 +2894,7 @@ function findNextSdnIndex(sdnRulelist){
 	let apm_idx_arr = sdn_idx_arr.concat();
  
 	if(sdnRulelist == ""){
-		if(systemVariable.opMode != systemVariable.originOpMode || systemVariable.isDefault)
+		if(isSwModeChanged() || systemVariable.isDefault)
 			sdnRulelist = (httpApi.nvramDefaultGet(["sdn_rl"]).sdn_rl).replace(/&#60/g, "<").replace(/&#62/g, ">");
 		else
 			sdnRulelist = decodeURIComponent(httpApi.nvramCharToAscii(["sdn_rl"]).sdn_rl);
@@ -2937,7 +2920,7 @@ function findNextSdnIndex(sdnRulelist){
 function configApmVariables(){
 	// initial sdn_rl
 	if(!qisPostData.hasOwnProperty("sdn_rl")){
-		if(systemVariable.opMode != systemVariable.originOpMode || systemVariable.isDefault)
+		if(isSwModeChanged() || systemVariable.isDefault)
 			qisPostData.sdn_rl = (httpApi.nvramDefaultGet(["sdn_rl"]).sdn_rl).replace(/&#60/g, "<").replace(/&#62/g, ">");
 		else
 			qisPostData.sdn_rl = decodeURIComponent(httpApi.nvramCharToAscii(["sdn_rl"]).sdn_rl);

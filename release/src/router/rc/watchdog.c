@@ -361,6 +361,11 @@ extern char *bs_desc[];
 #endif
 #endif
 
+#ifdef RTCONFIG_CFGSYNC
+#define CFGSYNC_RESTART_MAX_COUNT	3
+static int cfgsync_restart_count = 0;
+#endif
+
 /* DEBUG DEFINE */
 #define SCHED_DEBUG	"/tmp/SCHED_DEBUG"
 #define WL_SCHED_DBG(fmt,args...) \
@@ -4108,7 +4113,7 @@ void btn_check(void)
 				eval("wl", "-i", "eth2", "ledbh", "9", "7");
 #endif
 			}
-#if defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2)
+#if defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
 			if (wlonunit == -1 || wlonunit == 2) {
 #if defined(RTAC3200)
 				eval("wl", "-i", "eth3", "ledbh", "10", "7");
@@ -7149,7 +7154,7 @@ void led_table_ctrl(int on_off)
 #if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE19000) || defined(RTBE96U) || defined(GTBE19000_AI)
 			&& i != LED_AFC
 #endif
-#if defined(GTBE19000_AI)
+#if defined(GTBE19000_AI) || defined(GSBE18000)
 			&& i != PS_RESET && i != PS_SOP0 && i != PS_SOP1 && i != PS_SOP2 && i != PS_SWITCH
 #endif
 					) {
@@ -9331,6 +9336,8 @@ void cfgsync_check()
 	char reboot[sizeof("255")];
 	char upgrade[sizeof("255")];
 	unsigned int cfg_pause = nvram_get_int("cfg_pause");
+	char value[sizeof("9999999")];
+	int pid_by_file = 0, pid_by_name = 0;
 
 	memset(reboot, 0, sizeof("255"));
 	memset(upgrade, 0, sizeof("255"));
@@ -9363,6 +9370,28 @@ void cfgsync_check()
 	}
 #endif
 
+	/* check and count for restarting cfgsync */
+	if (!nvram_get("dis_cfgsync_rst_chk") && nvram_match("x_Setting", "1") && nvram_match("w_Setting","1")
+		&& nvram_get_int("re_mode") == 1 && nvram_get_int("cfg_first_sync") == 0)
+	{
+		if (pids("cfg_client")) {
+			if (!f_exists("/var/run/cfg_client.pid")) {
+				cfgsync_restart_count++;
+				_dprintf("no pid file for cfg_client (%d)\n", cfgsync_restart_count);
+			}
+			else if (f_read_string("/var/run/cfg_client.pid", value, sizeof(value)) > 0)
+			{
+				pid_by_file = atoi(value);
+				extern pid_t get_pid_by_process_name(char *name);
+				pid_by_name = get_pid_by_process_name("cfg_client");
+				if (pid_by_file > 0 && pid_by_name > 0 && pid_by_file != pid_by_name) {
+					cfgsync_restart_count++;
+					_dprintf("cfg_client's pid mismatch (%d)\n", cfgsync_restart_count);
+				}
+			}
+		}
+	}
+
 	if (nvram_match("x_Setting", "1") && nvram_match("w_Setting","1") &&
 		(
 		(!pids("cfg_client") &&
@@ -9380,7 +9409,7 @@ void cfgsync_check()
 			&& (nvram_get_int("lan_state_t") == LAN_STATE_CONNECTED)
 			)
 #endif
-		) ||
+		) || (nvram_get_int("re_mode") == 1 && cfgsync_restart_count >= CFGSYNC_RESTART_MAX_COUNT) ||
 		(!pids("cfg_server") && (is_router_mode() || access_point_mode())
 #ifdef RTCONFIG_AMAS
 			&& (getAmasSupportMode() & AMAS_CAP)
@@ -9388,6 +9417,13 @@ void cfgsync_check()
 #endif
 	)))
 	{
+		if (nvram_get_int("re_mode") == 1) {
+			if (cfgsync_restart_count >= CFGSYNC_RESTART_MAX_COUNT) {
+				_dprintf("restart cfg_client by count check\n");
+				logmessage("watchdog", "restart cfg_client by count check");
+			}
+			cfgsync_restart_count = 0;
+		}
 		_dprintf("start cfgsync\n");
 		notify_rc_and_wait_2min("start_cfgsync");
 	}

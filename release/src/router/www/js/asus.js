@@ -152,6 +152,8 @@ let nvram = httpApi.nvramGet([
     "wps_enable",
     "location_code",
     "wlc_band",
+    "mlo_rp",
+    "mlo_mb",
     "mld_enable",
 ]);
 
@@ -255,7 +257,7 @@ system.currentOPMode = (() => {
     const opModeObject = {
         rt: { id: "RT", desc: "<#wireless_router#>" },
         ap: { id: "AP", desc: "<#OP_AP_item#>" },
-        re: { id: "RE", desc: "<#OP_RE_item#>" },
+        rp: { id: "RE", desc: "<#OP_RE_item#>" },
         mb: { id: "MB", desc: "<#OP_MB_item#>" },
         ew2: { id: "EW2", desc: "<#OP_RE2G_item#>" },
         ew5: { id: "EW5", desc: "<#OP_RE5G_item#>" },
@@ -263,31 +265,7 @@ system.currentOPMode = (() => {
     };
 
     let { sw_mode, wlc_psta, wlc_express } = nvram;
-    let _index = "";
-    if (sw_mode === "1") {
-        _index = "rt";
-    } else if (sw_mode === "3" && wlc_psta === "0") {
-        _index = "ap";
-    } else if ((sw_mode === "2" && wlc_psta === "0") || (sw_mode === "3" && wlc_psta === "2")) {
-        _index = "re";
-    } else if (
-        (sw_mode === "3" && wlc_psta === "1" && wlc_express === "0") ||
-        (sw_mode === "3" && wlc_psta === "3" && wlc_express === "0") ||
-        (sw_mode === "2" && wlc_psta === "1" && wlc_express === "0")
-    ) {
-        /*	Media Bridge
-            Broadcom: sw_mode = 3 & wlc_psta = 1, sw_mode = 3 & wlc_psta = 3
-            MTK/QCA: sw_mode = 2 & wlc_psta = 1
-        */
-        _index = "mb";
-    } else if (sw_mode === "2" && wlc_psta === "0" && wlc_express === "1") {
-        _index = "ew2";
-    } else if (sw_mode === "2" && wlc_psta === "0" && wlc_express === "2") {
-        _index = "ew5";
-    } else if (sw_mode === "5") {
-        _index = "hs";
-    }
-
+    let _index = httpApi.hookGet("get_operation_mode") || "rt";
     return opModeObject[_index];
 })();
 
@@ -354,7 +332,7 @@ system.wlBandSeq = (() => {
     const _nvramCharToAscii_payload = [];
     for (let i = 0; i < nBandArray.length; i++) {
         let wlIfIndex = nBandArray[i];
-        let wlFronthaulIndex = system.currentOPMode.id == "RE" && nvram.wlc_band == i ? `${wlIfIndex}.1` : wlIfIndex;
+        let wlFronthaulIndex = system.currentOPMode.id == "RE" && (nvram.wlc_band == i || nvram.mlo_rp == "1" || isSupport("concurrep")) ? `${wlIfIndex}.1` : wlIfIndex;
         _nvram_payload.push(`${wlIfIndex}_nmode_x`);
         _nvram_payload.push(`${wlIfIndex}_closed`);
         _nvram_payload.push(`${wlIfIndex}_bw`);
@@ -387,7 +365,7 @@ system.wlBandSeq = (() => {
 
     for (let i = 0; i < nBandArray.length; i++) {
         let wlIfIndex = nBandArray[i];
-        let wlFronthaulIndex = system.currentOPMode.id == "RE" && nvram.wlc_band == i ? `${wlIfIndex}.1` : wlIfIndex;
+        let wlFronthaulIndex = system.currentOPMode.id == "RE" && (nvram.wlc_band == i || nvram.mlo_rp == "1" || isSupport("concurrep")) ? `${wlIfIndex}.1` : wlIfIndex;
         let postfixIndex = "";
 
         postfixIndex = wlPostfixIndexTransform[wlIfIndex];

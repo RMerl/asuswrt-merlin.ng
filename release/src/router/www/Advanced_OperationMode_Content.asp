@@ -94,15 +94,6 @@ $(function () {
 		addNewScript('/require/modules/amesh.js');
 	}
 });
-var sw_mode_orig = '<% nvram_get("sw_mode"); %>';
-var wlc_express_orig = '<% nvram_get("wlc_express"); %>';
-var wlc_psta_orig = '<% nvram_get("wlc_psta"); %>';
-if( ((sw_mode_orig == 2 || sw_mode_orig == 3) && '<% nvram_get("wlc_psta"); %>' == 1)
-   || sw_mode_orig == 3 && wlc_psta_orig == 3){	
-	sw_mode_orig = 4;
-}
-
-var tcode = '<% nvram_get("territory_code"); %>';
 
 window.onresize = function() {
 	if(document.getElementById("routerSSID") != null){
@@ -111,7 +102,16 @@ window.onresize = function() {
 		}
 	}
 } 
-if(sw_mode_orig == 3 && '<% nvram_get("wlc_psta"); %>' == 2)
+
+var sw_mode_orig = '<% nvram_get("sw_mode"); %>';
+var wlc_express_orig = '<% nvram_get("wlc_express"); %>';
+var tcode = '<% nvram_get("territory_code"); %>';
+
+if(isSwMode("MB"))
+	sw_mode_orig = 4;
+else if(isSwMode("AP"))
+	sw_mode_orig = 3;
+else if(isSwMode("RP"))
 	sw_mode_orig = 2;
 
 var current_page = window.location.pathname.split("/").pop();

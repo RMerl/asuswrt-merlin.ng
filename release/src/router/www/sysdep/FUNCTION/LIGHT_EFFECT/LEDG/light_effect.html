@@ -110,7 +110,7 @@ var hue_bar_color = 360;
 const support_night_mode = (()=>{
 	let ledg_night_mode = httpApi.nvramGet(["ledg_night_mode"])["ledg_night_mode"];
 	let nv_support = (ledg_night_mode != "" && ledg_night_mode != undefined) ? true : false;
-	let model_support = (model_info.productid == "GT-BE98" || model_info.productid == "GT-BE98_PRO" || model_info.productid == "GT-BE96" || model_info.productid == "GT-BE19000" || model_info.productid == "GT-BE19000_AI") ? true : false;
+	let model_support = isSupport("ledg_night_mode") == 0 ? false : true;
 	return (nv_support && model_support) ? true : false;
 })();
 if(support_night_mode){

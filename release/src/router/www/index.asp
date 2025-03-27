@@ -194,7 +194,7 @@ if(location.pathname == "/"){
 			location.href = '/QIS_wizard.htm?flag=welcome';
 		}
 	}	
-	else if('<% nvram_get("w_Setting"); %>' == '0' && sw_mode != 2)
+	else if('<% nvram_get("w_Setting"); %>' == '0' && !isSwMode("RP"))
 		location.href = '/QIS_wizard.htm?flag=wireless';
 }
 
@@ -277,7 +277,7 @@ function initial(){
 	if(isIE6)
 		alert("<#ALERT_TO_CHANGE_BROWSER#>");
 
-	if(dualWAN_support && sw_mode == 1){
+	if(dualWAN_support && isSwMode("RT")){
 		check_dualwan(wans_flag);
 	}
 
@@ -289,7 +289,7 @@ function initial(){
 		document.getElementById("secondary_pap_concurrent").style.display = "";		
 	}
 
-	if(sw_mode == 4){
+	if(isSwMode("MB")){
 		var wlc_auth_mode = '<% nvram_get("wlc_auth_mode"); %>';
 		if(wlc_auth_mode == "") wlc_auth_mode = '<% nvram_get("wlc0_auth_mode"); %>';
 		if(wlc_auth_mode == "") wlc_auth_mode = '<% nvram_get("wlc1_auth_mode"); %>';
@@ -297,7 +297,7 @@ function initial(){
 
 		show_middle_status(wlc_auth_mode, 0);
 	}
-	else if(sw_mode == 2){		
+	else if(isSwMode("RP")){		
 		if(wlc_band == '1'){
 			var wl_auth_mode = '<% nvram_get("wl1.1_auth_mode_x"); %>';
 			var wl_wep_x = '<% nvram_get("wl1.1_wep_x"); %>';
@@ -421,20 +421,42 @@ function initial(){
 		check_usb3();
 	}
 
-	showMapWANStatus(sw_mode);
+	showMapWANStatus();
 
-	if(sw_mode != "1"){
+	if(!isSwMode("RT")){
 		document.getElementById("wanIP_div").style.display = "none";
 		document.getElementById("ddnsHostName_div").style.display = "none";
 		document.getElementById("NM_connect_title").style.fontSize = "14px";
 		document.getElementById("NM_connect_status").style.fontSize = "20px";
-		if(sw_mode == 2 || sw_mode == 4){
+
+		if(isSwMode("RP") || isSwMode("MB")){
 			document.getElementById('wlc_band_div').style.display = "";
 			document.getElementById('dataRate_div').style.display = "";
-			if(Rawifi_support || Qcawifi_support)
+			if(Rawifi_support || Qcawifi_support){
 				document.getElementById('rssi_div').style.display = "none";
-			else
-				document.getElementById('rssi_div').style.display = "";
+			}
+			else{
+				if(`<% nvram_get("mlo_rp"); %>` == "1" || `<% nvram_get("mlo_mb"); %>` == "1"){
+					document.getElementById('rssi_mlo_div').innerHTML = "";
+					
+					var mlo_bands = `<% nvram_get("mld0_ifnames"); %>`.replace(/wl/g, "").trim().split(/\s+/);
+					for(var i=0; i<mlo_bands.length; i++){
+						var mlo_band = mlo_bands[i];
+						document.getElementById('rssi_mlo_div').innerHTML += `
+							<div>
+								<span style="font-size:14px;font-family: Verdana, Arial, Helvetica, sans-serif;">${wl_nband_title[mlo_band]} RSSI:</span>
+								<strong id="rssi_mlo_${mlo_band}_status" class="index_status" style="font-size:14px;"></strong>
+							<\div>
+						`;
+					}
+
+					document.getElementById('rssi_div').style.display = "none";
+					document.getElementById('rssi_mlo_div').style.display = "";
+				}
+				else{
+					document.getElementById('rssi_div').style.display = "";
+				}
+			}
 
 			if(wlc_band == 0){
 				document.getElementById('wlc_band_status').innerHTML = "2.4 GHz";
@@ -447,7 +469,13 @@ function initial(){
 					document.getElementById('wlc_band_status').innerHTML = "5 GHz";
 				}
 			}
+
+			if(`<% nvram_get("mlo_rp"); %>` == "1" || `<% nvram_get("mlo_mb"); %>` == "1"){
+				document.getElementById('NM_connect_title').style.display = "none";
+				document.getElementById('wlc_band_status').innerHTML = "MLO";
+			}
 		}
+
 		document.getElementById('NM_connect_title').innerHTML = "<#parent_AP_status#> :";
 	}
 	else{
@@ -678,10 +706,10 @@ function set_default_choice(){
 }
 
 function showMapWANStatus(flag){
-	if(sw_mode == "3"){
+	if(isSwMode("AP")){
 		showtext(document.getElementById("NM_connect_status"), "<div style='margin-top:10px;'><#WLANConfig11b_x_APMode_itemname#></div>");
 	}
-	else if(sw_mode == "2"){
+	else if(isSwMode("RP")){
 		showtext(document.getElementById("NM_connect_title"), "<div style='margin-top:10px;'><#statusTitle_AP#>:</div><br>");
 	}
 	else
@@ -1092,7 +1120,7 @@ function showstausframe(page){
 		page = "Internet";
 	}
 	else if(page == "Router"){
-		page = isSupport("sdn_mainfh") ? `${page}_status` : page;
+		page = isSupport("sdn_mainfh") || isSwMode("MB") ? `${page}_status` : page;
 	}
 	window.open("/device-map/"+page.toLowerCase()+".asp","statusframe");
 }
@@ -1162,7 +1190,7 @@ function change_wan_unit(wan_unit_flag){
 
 function show_ddns_fail_hint() {
 	var str="";
-	if(sw_mode != 3 && document.getElementById("connect_status").className == "connectstatusoff")
+	if(!isSwMode("AP") && document.getElementById("connect_status").className == "connectstatusoff")
 		str = "<#Disconnected#>";
 	else if(ddns_server == 'WWW.ASUS.COM') {
 		var ddnsHint = getDDNSState(ddns_return_code, `<%nvram_get("ddns_hostname_x");%>`, `<%nvram_get("ddns_old_name");%>`);
@@ -1361,7 +1389,7 @@ function edit_confirm(){
 				}
 			})
 		}
-		if(document.list_form.dhcp_staticlist.value == dhcp_staticlist_orig || sw_mode != "1"){
+		if(document.list_form.dhcp_staticlist.value == dhcp_staticlist_orig || !isSwMode("RT")){
 			document.list_form.action_script.value = "saveNvram";
 			document.list_form.action_wait.value = "1";
 			document.list_form.flag.value = "background";
@@ -1378,7 +1406,7 @@ function edit_confirm(){
 			document.list_form.dhcp_static_x.disabled = false;
 		}
 
-		if(sw_mode == "1" && !clientList[document.getElementById("macaddr_field").value].amesh_isRe)
+		if(isSwMode("RT") && !clientList[document.getElementById("macaddr_field").value].amesh_isRe)
 			addToBlockMacList(document.getElementById("macaddr_field").value);
 
 		//  block Mac list
@@ -1389,7 +1417,7 @@ function edit_confirm(){
 		if((document.list_form.MULTIFILTER_MAC.value == MULTIFILTER_MAC_orig && 
 			document.list_form.MULTIFILTER_ENABLE.value == MULTIFILTER_ENABLE_orig) && 
 			!turnOnTimeScheduling ||
-			sw_mode != "1"){
+			!isSwMode("RT")){
 			document.list_form.MULTIFILTER_ALL.disabled = true;
 			document.list_form.MULTIFILTER_ENABLE.disabled = true;
 			document.list_form.MULTIFILTER_MAC.disabled = true;
@@ -1671,7 +1699,7 @@ function popupEditBlock(clientObj){
 			document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value = MULTIFILTER_MACFILTER_DAYTIME_orig;
 		document.getElementById("divDropClientImage").ondrop = null;
 		document.getElementById("internetTimeScheduling").style.display = "none";
-		if(sw_mode == "1" && !clientObj.amesh_isRe) {
+		if(isSwMode("RT") && !clientObj.amesh_isRe) {
 			document.getElementById('tr_adv_setting').style.display = "";
 		}
 		else {
@@ -1712,7 +1740,7 @@ function popupEditBlock(clientObj){
 			}
 		}
 
-		if(sw_mode != 4){
+		if(!isSwMode("MB")){
 			var radioIcon_css = "radioIcon";
 			if(clientObj.isGN != "" && clientObj.isGN != undefined)
 				radioIcon_css += " GN";
@@ -1736,7 +1764,7 @@ function popupEditBlock(clientObj){
 		document.getElementById('client_iTunes').style.display = "none";
 		document.getElementById('client_opMode').style.display = "none";
 		document.getElementById('client_sdnIdx').style.display = "none";
-		if(sw_mode == "1") {
+		if(isSwMode("RT")) {
 			document.getElementById('client_ipMethod').style.display = "";
 			document.getElementById('client_ipMethod').innerHTML = clientObj.ipMethod;
 			document.getElementById('client_ipMethod').onmouseover = function() {return overlib(ipState[clientObj.ipMethod]);};
@@ -1778,7 +1806,7 @@ function popupEditBlock(clientObj){
 
 		document.getElementById('ipaddr_field').disabled = true;
 		$("#ipaddr_field").addClass("client_input_text_disabled");
-		if(sw_mode == "1" && !clientObj.amesh_isRe) {
+		if(isSwMode("RT") && !clientObj.amesh_isRe) {
 			$("#ipaddr_field").removeClass("client_input_text_disabled");
 			document.getElementById('ipaddr_field').disabled = false;
 			document.getElementById("ipaddr_field").onkeypress = function() {
@@ -2650,9 +2678,8 @@ function showClientlistModal(){
 					</td>
 					<td id="single_wan_status" colspan="2" valign="middle" bgcolor="#444f53" class="NM_radius_right" onclick="" style="padding:5px;cursor:auto;width:180px;height:130px">
 						<div>
-							<span id="NM_connect_title" style="font-size:12px;font-family: Verdana, Arial, Helvetica, sans-serif;"><#statusTitle_Internet#>:</span>
-							<br>
-							<strong id="NM_connect_status" class="index_status" style="font-size:14px;"><#QIS_step2#>...</strong>
+							<div id="NM_connect_title" style="font-size:12px;font-family: Verdana, Arial, Helvetica, sans-serif;"><#statusTitle_Internet#>:</div>
+							<div id="NM_connect_status" class="index_status" style="font-size:14px;"><#QIS_step2#>...</div>
 						</div>
 						<div id="wanIP_div" style="margin-top:5px;">
 							<span style="font-size:12px;font-family: Verdana, Arial, Helvetica, sans-serif;">WAN IP:</span>
@@ -2684,6 +2711,9 @@ function showClientlistModal(){
 							<span style="font-size:14px;font-family: Verdana, Arial, Helvetica, sans-serif;">RSSI:</span>
 							<strong id="rssi_status" class="index_status" style="font-size:14px;"></strong>
 						</div>
+						<div id="rssi_mlo_div" style="margin-top:5px;display:none">
+						</div>
+
 						<div id="wanAggr_div" style="margin-top:5px;display:none;">
 							<span style="font-size:14px;font-family: Verdana, Arial, Helvetica, sans-serif; color: #FFCC00;">WAN Aggregation:</span>
 							<strong id="wan_bonding_status" class="index_status" style="font-size:14px;"></strong>

@@ -141,29 +141,17 @@
 							}
 							systemVariable.wanDnsenable = initNvram.dsl0_dnsenable;
 						}
-						systemVariable.originOpMode = "RT";
 					}
 					else{
-
 						systemVariable.originWanType = initWanNvram.wan_proto;
 						if(systemVariable.originWanType == "pppoe" || systemVariable.originWanType == "pptp" || systemVariable.originWanType == "l2tp"){
 							systemVariable.originPppAccount.username = initWanNvram.wan_pppoe_username;
 							systemVariable.originPppAccount.password = initWanNvram.wan_pppoe_passwd;
 						}
 						systemVariable.wanDnsenable = initWanNvram.wan_dnsenable_x;
-						systemVariable.originOpMode = (function(){
-							if(initNvram.sw_mode == "2" && (initNvram.wlc_psta == "0" || initNvram.wlc_psta == "") && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "RP";
-							else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "RP";
-							else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && initNvram.wlc_dpsta == "1") return "RP";
-							else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && initNvram.wlc_dpsta == "2") return "RP";
-							else if(initNvram.sw_mode == "3" && (initNvram.wlc_psta == "0" || initNvram.wlc_psta == "") && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "AP";
-							else if(initNvram.sw_mode == "2" && initNvram.wlc_psta == "1" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "MB";
-							else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "1" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "MB";
-							else if(initNvram.sw_mode == "1" && isSupport("noRouter")) return "AP";
-							else return "RT";
-						})();
 					}
-
+					
+					systemVariable.originOpMode = (httpApi.hookGet("get_operation_mode") || "RT").toUpperCase();
 					systemVariable.qisSession = "qis"+Date.now();
 					systemVariable.opMode = systemVariable.originOpMode;
 					systemVariable.wirelessBand = initNvram.wlnband_list.split("&#60").length;
@@ -2405,6 +2393,7 @@
 								<select id="wlc_crypto_manual" class="optionInput">
 									<option value="aes">AES</option>
 									<option value="tkip">TKIP</option>
+									<option value="aes+gcmp256">AES+GCMP256</option>
 								</select>
 							</div>
 						</div>
@@ -2445,6 +2434,11 @@
 								<input id="wlc_wifiKey" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="64" class="textInput wlcInput" data-role="none" value="" data-clear-btn="true" />
 							</div>
 						</div>
+					</div>
+
+					<div class="labelContainer mloSupport">
+						<label for="mlo_enable_checkbox" class="labelInput"><#WiFi_mlo_title#></label>
+						<input type="checkbox" id="mlo_enable_checkbox" data-mini="true"/>
 					</div>
 
 					<!-- Action Button -->

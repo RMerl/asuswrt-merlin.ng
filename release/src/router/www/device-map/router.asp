@@ -1155,7 +1155,7 @@
             }
 
             function gotoSiteSurvey() {
-                if (sw_mode == 2) parent.location.href = "/QIS_wizard.htm?flag=sitesurvey_rep&band=" + wl_unit;
+		if (isSwMode("RP")) parent.location.href = "/QIS_wizard.htm?flag=sitesurvey_rep";
                 else parent.location.href = "/QIS_wizard.htm?flag=sitesurvey_mb";
             }
 

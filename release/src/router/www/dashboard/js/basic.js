@@ -124,11 +124,6 @@ function genLanguageList() {
     return code;
 }
 
-function isMultisiteApp() {
-    let urlParameter = new URLSearchParams(window.location.search);
-    return urlParameter.get("mapp") == "true";
-}
-
 var menuList = [
 /*
 	{
@@ -310,7 +305,7 @@ if(system.currentOPMode.id != "RT"){
 	}
 }
 
-if (isMultisiteApp()) {
+if (navigator.userAgent.match(/ASUSMultiSiteManager/)) {
     menuList = menuList.filter(item => item.url !== "QIS_wizard.htm");
 }
 
@@ -323,7 +318,7 @@ function genNavMenu() {
             clicked: [boolean] ,
             divide: [boolean] 分隔線,
         },
-    
+
     */
 	var menuListClicked = location.search.split("url=")[1].split("&")[0];
 	for(var i=0; i<menuList.length; i++){
@@ -525,9 +520,6 @@ function pageRedirect(target) {
     }
     else if (target == "QIS_wizard.htm") {
         location.href = "/QIS_wizard.htm";
-    }
-    else if (urlParameter.get("mapp") === "true") {
-        location.href = `/index.html?url=${target}&current_theme=${theme}&mapp=true`;
     }
     else {
         location.href = "/index.html?url=" + target + "&current_theme=" + theme;

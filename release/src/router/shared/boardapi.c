@@ -376,7 +376,7 @@ static const struct led_btn_table_s {
 #if defined(RTBE96U) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE19000) || defined(GTBE19000_AI)
 	{ "led_afc_gpio",		&led_gpio_table[LED_AFC] },
 #endif
-#if defined(GTBE19000_AI)
+#if defined(GTBE19000_AI) || defined(GSBE18000)
 	{ "ps_rst_gpio",		&led_gpio_table[PS_RESET] },
 	{ "ps_sop0_gpio",		&led_gpio_table[PS_SOP0] },
 	{ "ps_sop1_gpio",		&led_gpio_table[PS_SOP1] },

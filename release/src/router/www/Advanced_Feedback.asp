@@ -591,19 +591,19 @@ function redirect_page(flag){
 
 	switch(flag) {
 		case "reboot_schedule_enable_x" :
-			document.location.href = "Advanced_System_Content.asp?af=reboot_schedule_enable_x";
+			top.location.href = "Advanced_System_Content.asp?af=reboot_schedule_enable_x";
 			break;
 		case "wl_radio" :
-			document.location.href = "Advanced_WAdvanced_Content.asp?af=wl_radio";
+			top.location.href = "Advanced_WAdvanced_Content.asp?af=wl_radio";
 			break;
 		case "wl_timesched" :
-			document.location.href = "Advanced_WAdvanced_Content.asp?af=wl_timesched";
+			top.location.href = "Advanced_WAdvanced_Content.asp?af=wl_timesched";
 			break;
 	}
 }
 
 function redirect(){
-	document.location.href = "Feedback_Info.asp";
+	top.location.href = "Feedback_Info.asp";
 }
 
 function applyRule(){

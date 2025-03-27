@@ -19420,6 +19420,7 @@ retry_wps_enr:
                 		stop_hapd_wpasupp();
 			}
 		}
+		sleep(1);
 		if (action & RC_SERVICE_START) 
 		{
 			if (!nvram_match("hapd_enable", "0")) {

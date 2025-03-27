@@ -3282,25 +3282,43 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long long *rx
 	if (find_word(nv_lan_ifnames, ifname))
 	{
 		// find Wireless interface
-#if defined(RTCONFIG_MULTILAN_CFG) && !defined(RTCONFIG_RALINK)
+#if defined(RTCONFIG_MULTILAN_CFG)
 {
 	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+	i = 0;
 	foreach(word, wl_ifnames, next) {
-		if(strncmp(word, ifname, 3) == 0) {
-			char unit_buf[8], *p1, *p2;
-			int len;
+		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
+		if(strcmp(word, ifname) == 0) {
+			if(strncmp(ifname, "wl", 2) == 0){
+				char unit_buf[8], *p1, *p2;
+				int len, idx;
 
-			p1 = strchr(word, '.');
-			p2 = strchr(word, 'l');
-			len = p1 - p2;
-			i = 0;
-			if(len > 0){
-				snprintf(unit_buf, len, "%s", p2+1);
-				i = atoi(unit_buf);
+				p1 = strchr(word, '.');
+				p2 = strchr(word, 'l');
+				len = p1 - p2;
+				if(len > 0){
+					snprintf(unit_buf, len, "%s", p2+1);
+					idx = atoi(unit_buf);
+				}
+				sprintf(ifname_desc, "WIRELESS%d", idx);
 			}
-			sprintf(ifname_desc, "WIRELESS%d", i);
+			else{
+				sprintf(ifname_desc, "WIRELESS%d", i);
+			}
+
 			return 1;
 		}
+
+		snprintf(tmp, sizeof(tmp), "wl%d_vifs", i);
+		foreach(word1, nvram_safe_get(tmp), next1) {
+			if(strcmp(word1, ifname) == 0)
+			{
+				sprintf(ifname_desc, "WIRELESS%d", i);
+				return 1;
+			}
+		}
+
+		i++;
 	}
 }
 #else

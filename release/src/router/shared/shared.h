@@ -1319,7 +1319,7 @@ enum btn_id {
 	BTN_EJUSB1,
 	BTN_EJUSB2,	/* If two USB LED and two EJECT USB button are true, map USB3 port to this button. */
 #endif
-#if defined(GTBE19000_AI)
+#if defined(GTBE19000_AI) || defined(GSBE18000)
 	BTN_WAKE,
 #endif
 	BTN_ID_MAX,	/* last item */
@@ -1645,7 +1645,7 @@ enum led_id {
 #if defined(RTBE96U) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE19000) || defined(GTBE19000_AI)
 	LED_AFC,
 #endif
-#if defined(GTBE19000_AI)
+#if defined(GTBE19000_AI) || defined(GSBE18000)
 	PS_RESET,
 	PS_SOP0,
 	PS_SOP1,
@@ -3064,8 +3064,9 @@ extern void sync_control_channel(int unit, int channel, int bw, int nctrlsb);
 extern void get_control_channel(int unit, int *channel, int *bw, int *nctrlsb);
 
 #if defined(RTCONFIG_MLO)
-extern char *get_mld_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int mld_mac_len);
-extern char *get_mlo_link_stats(char *ap_ifname, char *sta_mac, char *link_stats);
+extern char *get_scb_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int sta_mac_len, int *mlo_active);
+extern char *get_mld_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int mld_mac_len, int *mlo_active);
+extern char *get_mlo_link_stats(char *ap_ifname, char *sta_mac, char *link_stats, int *mlo_active);
 extern int is_mlo_if(char *vif);
 extern int is_mlo_map(char *vif);
 #endif	/* RTCONFIG_MLO */

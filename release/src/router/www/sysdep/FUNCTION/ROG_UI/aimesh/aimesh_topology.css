@@ -1636,13 +1636,10 @@
 	color: #A4B7C3;
 	cursor: pointer;
 	position: relative;
-	width: 33%;
+	flex: 1;
 	display: flex;
 	justify-content: center;
 	align-items: center;
-}
-.client_tab_bg div:nth-child(2){
-	width: 34%;
 }
 .client_tab_bg div.clicked{
 	color: #FFFFFF;

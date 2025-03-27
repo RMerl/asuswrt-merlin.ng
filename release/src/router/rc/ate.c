@@ -18,7 +18,7 @@
 #ifdef RTCONFIG_QCA_PLC_UTILS
 #include <plc_utils.h>
 #endif
-#if defined(RTCONFIG_BCMWL6) && (defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2))
+#if defined(RTCONFIG_BCMWL6) && (defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G)))
 #include <wlioctl.h>
 #endif
 
@@ -5062,7 +5062,7 @@ int ate_dev_status(void)
 #ifdef RTCONFIG_BT_CONN
 	int have_bt_device = 1;
 #endif
-#if defined(RTCONFIG_BCMWL6) && (defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2))
+#if defined(RTCONFIG_BCMWL6) && (defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G)))
 	int count_5g = 0;
 	int count_6g = 0;
 #ifdef RTCONFIG_QUADBAND
@@ -5123,7 +5123,7 @@ int ate_dev_status(void)
 			ret = 0;
 		}
 #endif
-#if defined(RTCONFIG_BCMWL6) && (defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2))
+#if defined(RTCONFIG_BCMWL6) && (defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G)))
 		switch(wl_get_band(word)) {
 			case WLC_BAND_2G:
 			    	len = snprintf(p, remain, ",2G=%c", result);

@@ -2898,6 +2898,16 @@ static int console_init(void)
 {
 	int fd;
 	struct winsize win = { 0 };
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
+	char value[sizeof("255")];
+	int noconsole = 1;
+
+	if (f_read_string("/proc/environment/noconsole", value, sizeof(value)) > 0)
+		noconsole = atoi(value);
+
+	if (!noconsole)
+		nvram_set("noconsole", "0");
+#endif
 
 	if(nvram_match("noconsole", "1")) {
 		printf("!! no use console(init)\n");
@@ -17657,6 +17667,9 @@ int init_nvram(void)
 #ifdef RTCONFIG_BRCM_HOSTAPD
 		add_rc_support("wpa3");
 #endif
+#if defined(RPBE58)
+		add_rc_support("mloclient");
+#endif
 		break;
 
 	case MODEL_RPAX56:
@@ -20192,6 +20205,12 @@ int init_nvram(void)
 		nvram_set_int("btn_wps_gpio", 18|GPIO_ACTIVE_LOW);
 		nvram_set_int("btn_rst_gpio", 6|GPIO_ACTIVE_LOW);
 		nvram_set_int("pwr_usb_gpio", 67|GPIO_ACTIVE_LOW);
+
+		nvram_set_int("ps_rst_gpio", 3|GPIO_ACTIVE_LOW);
+		nvram_set_int("ps_sop0_gpio", 22);
+		nvram_set_int("ps_sop1_gpio", 23);
+		nvram_set_int("ps_sop2_gpio", 24);
+		nvram_set_int("btn_wake_gpio", 4);
 
                 nvram_set_int("led_group1_red_gpio", 19);
                 nvram_set_int("led_group1_green_gpio", 21);
@@ -24239,6 +24258,10 @@ static void sysinit(void)
 	int model;
 #endif
 
+#if defined(RTCONFIG_MULTILAN_MWL)
+	unsigned int init_apg_result = 0;
+#endif
+
 #ifdef HND_ROUTER
 	_dprintf("\nLaunch boot...\n");
 
@@ -24837,7 +24860,7 @@ def_boot_reinit:
 #endif
 
 #if defined(RTCONFIG_MULTILAN_CFG) && !defined(RTCONFIG_BCM_MFG)
-	(void)init_apg();
+	init_apg_result = init_apg();
 #endif	// RTCONFIG_MULTILAN_CFG
 
 #if defined(RTCONFIG_MLO)
@@ -24979,6 +25002,13 @@ def_boot_reinit:
 	mkdir("/tmp/media", 0777);
 	symlink("/jffs", "/tmp/media/nand");
 #endif
+
+#if defined(RTCONFIG_MULTILAN_MWL)
+	if ((init_apg_result & INIT_APG_CHK_MWL_CONV) == INIT_APG_CHK_MWL_CONV) {
+		check_SDN_MAX_VIF();
+	}
+#endif	// RTCONFIG_MULTILAN_MWL
+
 #if defined(RTCONFIG_HND_ROUTER_BE_4916) && defined(RTCONFIG_WIFI7)
 	init_mlo();
 #endif
@@ -25449,7 +25479,11 @@ int init_main(int argc, char *argv[])
 
 #if defined(RTCONFIG_BCM_HND_CRASHLOG)
 #if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
+#if defined(CONFIG_MMC_OOPS)
+	mmc_export_crashlog();
+#else
 	mtd_export_crashlog();
+#endif	/* CONFIG_MMC_OOPS */
 #else
 	struct stat crashlog_stat;
 	char clogpath[32];
@@ -25743,7 +25777,7 @@ logmessage("ATE", "boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),
 #else
 #if !defined(HND_ROUTER) && !defined(BLUECAVE)
 			start_vlan();
-#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)//handle dualwan on rtkswitch
+#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI) || defined(RTBE82M) //handle dualwan on rtkswitch/mxlswitch
 			config_switch();
 #endif
 #if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)

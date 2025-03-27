@@ -254,46 +254,22 @@ var htmlEnDeCode = (function() {
 var sw_mode = '<% nvram_get("sw_mode"); %>';
 var wlc_band = '<% nvram_get("wlc_band"); %>';
 var wlc_triBand = '<% nvram_get("wlc_triBand"); %>';
-/*Media Bridge mode
-Broadcom: sw_mode = 3 & wlc_psta = 1, sw_mode = 3 & wlc_psta = 3
-MTK/QCA: sw_mode = 2 & wlc_psta = 1
-*/ 
-if(((sw_mode == 2 || sw_mode == 3) && '<% nvram_get("wlc_psta"); %>' == 1) || (sw_mode == 3 && '<% nvram_get("wlc_psta"); %>' == 3))
-	sw_mode = 4;
-//for Broadcom New Repeater mode reference by Media Bridge mode
-var new_repeater = false;	
-if(sw_mode == 3 && '<% nvram_get("wlc_psta"); %>' == 2){
-	sw_mode = 2;
-	new_repeater = true;
-}
 var wlc_express = '<% nvram_get("wlc_express"); %>';
+var new_repeater = false;
+
+if(((sw_mode == 2 || sw_mode == 3) && '<% nvram_get("wlc_psta"); %>' == 1) || (sw_mode == 3 && '<% nvram_get("wlc_psta"); %>' == 3)){
+	sw_mode = 4;
+}
+else if(sw_mode == 3 && '<% nvram_get("wlc_psta"); %>' == 2){
+        sw_mode = 2;
+        new_repeater = true;
+}
+
 var isSwMode = function(mode){
-	var ui_sw_mode = "rt";
-	var sw_mode = '<% nvram_get("sw_mode"); %>';
-	var wlc_psta = '<% nvram_get("wlc_psta"); %>' == '' ? 0 : '<% nvram_get("wlc_psta"); %>';
-	var wlc_express = '<% nvram_get("wlc_express"); %>' == '' ? 0 : '<% nvram_get("wlc_express"); %>';
-
-	if(((sw_mode == '2' && wlc_psta == '0') || (sw_mode == '3' && wlc_psta == '2')) && wlc_express == '0'){	// Repeater
-		ui_sw_mode = "re";
-	} 
-	else if((sw_mode == '3' && wlc_psta == '0') || (sw_mode == '3' && wlc_psta == '')){	// Access Point
-		ui_sw_mode = "ap";
-	}
-	else if((sw_mode == '3' && wlc_psta == '1' && wlc_express == '0') || (sw_mode == '3' && wlc_psta == '3' && wlc_express == '0') || (sw_mode == '2' && wlc_psta == '1' && wlc_express == '0')){	// MediaBridge
-		ui_sw_mode = "mb";
-	}
-	else if(sw_mode == '2' && wlc_psta == '0' && wlc_express == '1'){	// Express Way 2G
-		ui_sw_mode = "ew2";
-	}
-	else if(sw_mode == '2' && wlc_psta == '0' && wlc_express == '2'){	// Express Way 5G
-		ui_sw_mode = "ew5";
-	}
-	else if(sw_mode == '5'){	// Hotspot
-		ui_sw_mode = 'hs'; 
-	}
-	else ui_sw_mode = "rt"; // Router
-
-	return (ui_sw_mode.search(mode) !== -1);
+	var ui_sw_mode = [<% get_operation_mode(); %>][0];
+	mode = mode.toLowerCase();
+	if(mode == "re") mode = "rp";
+	return ui_sw_mode == mode;
 }
 
 var INDEXPAGE = "<% rel_index_page(); %>";
@@ -574,7 +550,7 @@ var rbkfw_support = isSupport("rbkfw");
 var cooler_support = isSupport("fanctrl");
 var power_support = isSupport("pwrctrl");
 var repeater_support = isSupport("repeater");
-var concurrep_support = isSupport("concurrep");
+var concurrep_support = isSupport("concurrep") && `<% nvram_get("mlo_rp"); %>` != `1` && `<% nvram_get("mlo_mb"); %>` != `1`;
 var psta_support = isSupport("psta");
 var wisp_support = isSupport("wisp");
 var wl6_support = isSupport("wl6");
@@ -877,24 +853,12 @@ var tencent_qmacc_support = isSupport("tencent_qmacc");
 var tencent_game_acc_support = isSupport("tc_game_acc");
 var outfox_support = isSupport("outfox");
 var wtfast_v2_support = isSupport("wtfast_v2");
-
 var amazon_wss_support = isSupport("amazon_wss");
 
 if(nt_center_support)
 	document.write('<script type="text/javascript" src="/client_function.js"></script>');
 
-// Todo: Support repeater mode
-/*if(isMobile() && sw_mode != 2 && !dsl_support)
-	QISWIZARD = "MobileQIS_Login.asp";*/
-
-//T-Mobile, force redirect to Mobile QIS page if client is mobile devices
-if(tmo_support && isMobile()){	
-	if(location.pathname != "/MobileQIS_Login.asp")
-		location.href = "MobileQIS_Login.asp";
-}
-
-var stopFlag = parent.webWrapper ? 0 : 0;
-
+var stopFlag = parent.webWrapper ? 1 : 0;
 var gn_array_2g = <% wl_get_guestnetwork("0"); %>;
 var gn_array_5g = <% wl_get_guestnetwork("1"); %>;
 var gn_array_5g_2 = <% wl_get_guestnetwork("2"); %>;
@@ -916,7 +880,7 @@ if(navigator.userAgent.search("asusrouter") == -1){
 	var notice_pw_is_default = '<% check_pw(); %>';
 	if(notice_pw_is_default == 1 && window.location.pathname.toUpperCase().search("QIS_") < 0) //force to change http_passwd / http_username & except QIS settings
 		location.href = 'Main_Password.asp?nextPage=' + window.location.pathname.substring(1 ,window.location.pathname.length);
-	else if('<% nvram_get("w_Setting"); %>' == '0' && sw_mode != 2 && window.location.pathname.toUpperCase().search("QIS_") < 0)
+	else if('<% nvram_get("w_Setting"); %>' == '0' && !isSwMode("RP") && window.location.pathname.toUpperCase().search("QIS_") < 0)
 		location.href = '/QIS_wizard.htm?flag=wireless';
 }
 
@@ -954,7 +918,7 @@ function change_wl_unit_status(unit){
 	document.titleForm.wl_unit.disabled = false;
 	document.titleForm.wl_unit.value = unit;
 
-	if(sw_mode == 2 && concurrep_support){
+	if(isSwMode("RP") && concurrep_support){
 		document.titleForm.wl_subunit.disabled = false;
 		document.titleForm.wl_subunit.value = 1;
 	}
@@ -1282,7 +1246,7 @@ function show_banner(L3){// L3 = The third Level of Menu
 	banner_code += `<span>Firmware:</span><a href="/Advanced_FirmwareUpgrade_Content.asp" style="color:white;"><span id="firmver" class="title_link"></span></a>`;
 	banner_code += `</div>`;
 	if (!isSwMode('mb')) {
-		banner_code += `<div id="${isSupport('sdn_mainfh')?'mainfhTitle':'ssidTitle'}" class="titledown" style="display:${isSupport('sdn_mainfh')?'none':''}">SSID:`;
+		banner_code += `<div id="${isSupport('sdn_mainfh')?'mainfhTitle':'ssidTitle'}" class="titledown" style="display:${isSupport('sdn_mwl')?'none':''}">SSID:`;
 		/* HANDLE SSID */
 		for (var i = 0; i < bandName.length; i++) {
 			var wlunit = get_wl_unit_by_band(bandName[i]);
@@ -1392,7 +1356,7 @@ function show_banner(L3){// L3 = The third Level of Menu
 	if (dsl_support)
 		banner_code += '<div id="adsl_line_status" class="linestatusdown"></div>';
 
-	if (sw_mode != 3)
+	if (!isSwMode("AP"))
 		banner_code += '<div id="connect_status" class="connectstatusoff"></div>';
 
 	if (usb_support)
@@ -2511,9 +2475,9 @@ function show_top_status(){
 	// no_op_mode
 	if ((!dsl_support || support_site_modelid=="DSL-AX82U") && !lyra_hide_support){
 
-		if(sw_mode == "1")  // Show operation mode in banner, Viz 2011.11
+		if(isSwMode("RT"))  // Show operation mode in banner, Viz 2011.11
 			document.getElementById("sw_mode_span").innerHTML = "<#wireless_router#>";
-		else if(sw_mode == "2"){
+		else if(isSwMode("RP")){
 			if(wlc_express == 1)
 				document.getElementById("sw_mode_span").innerHTML = "<#OP_RE2G_item#>";
 			else if(wlc_express == 2)
@@ -2521,9 +2485,9 @@ function show_top_status(){
 			else
 				document.getElementById("sw_mode_span").innerHTML = "<#OP_RE_item#>";
 		}
-		else if(sw_mode == "3")
+		else if(isSwMode("AP"))
 			document.getElementById("sw_mode_span").innerHTML = "<#OP_AP_item#>";
-		else if(sw_mode == "4")
+		else if(isSwMode("MB"))
 			document.getElementById("sw_mode_span").innerHTML = "<#OP_MB_item#>";
 		else
 			document.getElementById("sw_mode_span").innerHTML = "Unknown";	
@@ -3034,7 +2998,7 @@ var wlc1_ssid = htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_asc
 var concurrent_pap = false;
 var pap_flag = 0;
 var pap_click_flag = 0;
-if((sw_mode == "2" && wlc_express == "0")|| sw_mode == "4"){
+if(isSwMode("RP") || isSwMode("MB")){
 	if(productid == "RP-AC1900") {
 		if(isSwMode("re")) {
 			concurrent_pap = true;
@@ -3095,6 +3059,7 @@ function refreshStatus(xhr){
 	rssi_2g = wanStatus[29].firstChild.nodeValue.replace("rssi_2g=", "");
 	rssi_5g = wanStatus[30].firstChild.nodeValue.replace("rssi_5g=", "");
 	rssi_5g_2 = wanStatus[31].firstChild.nodeValue.replace("rssi_5g_2=", "");
+	rssi_6g = wanStatus[35].firstChild.nodeValue.replace("rssi_6g=", "");
 	link_internet = wanStatus[32].firstChild.nodeValue.replace("link_internet=", "");
 	le_restart_httpd = wanStatus[34].firstChild.nodeValue.replace("le_restart_httpd=", "");
 
@@ -3241,7 +3206,7 @@ function refreshStatus(xhr){
 	}
 
 	// internet
-	if(sw_mode == 1){
+	if(isSwMode("RT")){
 		//Viz add 2013.04 for dsl sync status
 		if(dsl_support){
 				if(wan_diag_state == "1" && allUsbStatus.search("storage") >= 0){
@@ -3485,8 +3450,8 @@ function refreshStatus(xhr){
 				document.getElementById('secondary_line').className = "secondary_wan_connected";
 		}
 	}
-	else if(sw_mode == 2 || sw_mode == 4){
-		if(sw_mode == 4 || (sw_mode == 2 && new_repeater)){
+	else if(isSwMode("RP") || isSwMode("MB")){
+		if(isSwMode("MB") || (isSwMode("RP") && '<% nvram_get("wlc_psta"); %>' == 2)){
 			if(_wlc_auth.search("wlc_state=1") != -1 && _wlc_auth.search("wlc_state_auth=0") != -1)
 				_wlc_state = "wlc_state=2";
 			else
@@ -3541,6 +3506,12 @@ function refreshStatus(xhr){
 				var rssi_info = "";				
 			}
 
+			if(`<% nvram_get("mlo_rp"); %>` == "1" || `<% nvram_get("mlo_mb"); %>` == "1"){
+				if(rssi_2g != "") speed_info = data_rate_info_2g;
+				if(rssi_5g != "") speed_info = data_rate_info_5g;
+				if(rssi_5g_2 != "") speed_info = data_rate_info_5g_2;
+			}
+
 			if(concurrent_pap){
 				// connected or not
 				if (_wlc0_state == "wlc0_state=2") {
@@ -3576,12 +3547,34 @@ function refreshStatus(xhr){
 			}
 			else{
 				document.getElementById('speed_status').innerHTML = speed_info;
-				if(!Rawifi_support && !Qcawifi_support)
-					document.getElementById('rssi_status').innerHTML = rssi_info;
+
+				if(!Rawifi_support && !Qcawifi_support){
+					if(`<% nvram_get("mlo_rp"); %>` == "1" || `<% nvram_get("mlo_mb"); %>` == "1"){
+						var mlo_bands = `<% nvram_get("mld0_ifnames"); %>`.replace(/wl/g, "").trim().split(/\s+/);
+
+						var rssi_info_array = [];
+						rssi_info_array[0] = rssi_2g || "-";
+						rssi_info_array[1] = rssi_5g || "-";
+						rssi_info_array[2] = rssi_5g_2 || "-";
+						rssi_info_array[3] = rssi_6g || "-";
+
+						for(var i=0; i<mlo_bands.length; i++){
+							var mlo_band = mlo_bands[i];
+							var elementId = `rssi_mlo_${mlo_band}_status`;
+							if (document.getElementById(elementId)) {
+								document.getElementById(elementId).innerHTML = rssi_info_array[mlo_band];
+							}
+						}
+
+					}
+					else{
+						document.getElementById('rssi_status').innerHTML = rssi_info;
+					}
+				}
 			}	
 		}	
 	}
-	else if(sw_mode == 3){
+	else if(isSwMode("AP")){
 		if(dhcp_override_support && document.getElementById("single_wan")){
 			if(dnsqmode == "1")
 				document.getElementById('single_wan').className = "single_wan_connected";

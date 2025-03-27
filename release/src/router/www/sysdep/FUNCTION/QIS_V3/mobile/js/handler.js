@@ -937,12 +937,13 @@ apply.wlcKey = function(){
 	var unit = "";
 	var isManual = $("#wlc_ssid_manual").is(":visible");
 	var isWepAuthMode = false;
+
 	if(isManual){
 		unit = $("#wlc_band_manual").val().toString();
 		if(hasBlank([$("#wlc_ssid_manual")])) return false;
 		if(!validator.stringSSID(document.getElementById("wlc_ssid_manual"))) return false;
 
-		qisPostData["wlc" + unit + "_band"] = $("#wlc_band_manual").val();
+		qisPostData["wlc" + unit + "_band"] = (qisPostData.mlo_rp == 1) ? httpApi.nvramGet(["mlo_map"]).mlo_map.replace("wl", "") : $("#wlc_band_manual").val();
 		qisPostData["wlc" + unit + "_ssid"] = $("#wlc_ssid_manual").val();
 
 		qisPostData["wlc" + unit + "_auth_mode"] = "";
@@ -1002,7 +1003,7 @@ apply.wlcKey = function(){
 		systemVariable.multiPAP.wlcStatus["wlc" + unit + "_manual"] = true;
 
 	if(isSupport("concurrep") && isSupport("pre_auth_PAP")){
-		if(systemVariable.originOpMode == 'AP'){
+		if(isOriginSwMode("AP")){
 			goTo.lanIP_papList();
 		}
 		
@@ -2301,7 +2302,7 @@ abort.amasbundle = function(){
 		window.close();
 	}
 	else
-		if(systemVariable.isNewFw != 0 && isSupport("amas_bdl") && !navigator.userAgent.match(/ASUSSiteManager/)){
+		if(systemVariable.isNewFw != 0 && isSupport("amas_bdl") && !navigator.userAgent.match(/ASUSMultiSiteManager/)){
 			goTo.Update();
 		}
 		else{
@@ -3005,6 +3006,9 @@ goTo.rtMode = function(){
 	qisPostData.sw_mode = 1;
 	qisPostData.wlc_psta = 0;
 	qisPostData.wlc_dpsta = 0;
+	qisPostData.mlo_rp = 0;
+	qisPostData.mlo_mb = 0;
+	
 	systemVariable.opMode = "RT";
 	if(isSupport("amas")){
 		postDataModel.insert(aimeshObj);
@@ -3059,6 +3063,9 @@ goTo.apMode = function(){
 	qisPostData.sw_mode = 3;
 	qisPostData.wlc_psta = 0;
 	qisPostData.wlc_dpsta = 0;
+	qisPostData.mlo_rp = 0;
+	qisPostData.mlo_mb = 0;
+	
 	systemVariable.opMode = "AP";
 	if(isSupport("amas")){
 		postDataModel.insert(aimeshObj);
@@ -3833,9 +3840,16 @@ goTo.papList = function() {
 	else
 		$("#papList_page").find(".titleSub").html("<#WLANConfig11b_RBRList_groupitemdesc#>");
 
+	if(!isSupport("MLO_CLIENT")){
+		$("#mlo_enable_checkbox").enableCheckBox(false);
+		$("#mlo_enable_checkbox").change();	
+		$(".mloSupport").hide();
+	}
+
 	genPAPList(systemVariable.papList, systemVariable.multiPAP.wlcOrder);
 	goTo.loadPage("papList_page", false);
 };
+
 goTo.papSet = function() {
 	var unit = systemVariable.selectedAP.unit.toString();
 	var isOpenAuthMode = (qisPostData["wlc" + unit + "_auth_mode"] == "open" && qisPostData["wlc" + unit + "_wep"] == "0");
@@ -3856,6 +3870,7 @@ goTo.wlcKey = function(){
 
 	goTo.loadPage("wlcKey_setting", false);
 };
+
 goTo.wlcManual = function(){
 	if(isSupport('wpa3')){
 		$("#wlc_auth_mode_manual").append($('<option>', {
@@ -3867,6 +3882,7 @@ goTo.wlcManual = function(){
 	systemVariable.selectedAP = [];
 	$(".manual_pap_setup").show();
 	genWLBandOption();
+	handleWLAuthModeItem();
 	$("#wlc_ssid_manual").val("");
 	$("#wlc_band_manual option:first").prop("selected", true).change();
 	$("#wlc_auth_mode_manual").val("psk2").change();
@@ -3896,6 +3912,8 @@ goTo.wlcManual = function(){
 			handleWLAuthModeItem();
 		});
 
+	$("#mlo_enable_checkbox").enableCheckBox(false);
+	$("#mlo_enable_checkbox").change();	
 	goTo.loadPage("wlcKey_setting", false);
 };
 
@@ -5210,7 +5228,7 @@ systemVariable.eulaRetryCount = 0;
 
 goTo.EULA = function(){
 
-	if(navigator.userAgent.match(/ASUSSiteManager/)){
+	if(navigator.userAgent.match(/ASUSMultiSiteManager/)){
 		apply.Policy();
 		return
 	}
@@ -5232,7 +5250,7 @@ goTo.EULA = function(){
 
 
 goTo.PP = function () {
-	if(navigator.userAgent.match(/ASUSSiteManager/)){
+	if(navigator.userAgent.match(/ASUSMultiSiteManager/)){
 		apply.Policy();
 		return
 	}

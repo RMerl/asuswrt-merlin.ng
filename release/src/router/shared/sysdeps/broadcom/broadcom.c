@@ -288,6 +288,7 @@ int get_psta_status(int unit)
 	int mlsize;
 	int isup, subunit = 0;
 	char buf[16] = {0};
+	int mlo_active = 0;
 
 	if (unit == -1) return 0;
 
@@ -341,8 +342,8 @@ int get_psta_status(int unit)
 #ifdef RTCONFIG_MLO
 	/* Return link_map info */
 	ether_etoa((const unsigned char *) &bssid, macaddr);
-	get_mlo_link_stats(wl, macaddr, link_stats);
-	if (debug) dbg("[link status] bssid = %s, link_stats = %s \n", macaddr, link_stats);
+	get_mlo_link_stats(wl, macaddr, link_stats, &mlo_active);
+	if (debug) dbg("[link status] bssid : %s, link_stats : %s , link_active : %d\n", macaddr, link_stats, mlo_active);
 #endif
 	/* buffers and length */
 	mac_list_size = sizeof(mac_list->count) + MAX_STA_COUNT * sizeof(struct ether_addr);
@@ -602,16 +603,25 @@ void add_beacon_vsie_by_unit(int unit, int subunit, char *hexdata)
 #define MLO_MINBUFFER			16
 #define MLO_MEDBUFFER			64
 #define ARRAYSIZE(a)	(sizeof(a)/sizeof(a[0]))
+enum {
+        GET_SCB_MAC = 0,
+	GET_MLD_MAC,
+	GET_LINK_STATS
+};
 
 static char *mlo_client_mode[] = {"STR", "NSTR", "EMLSR"};
 
+/*
+   input	: MLD mac
+   output	: STA mac
+*/
 static int
-wl_mlo_cmd_info(void *wl, char *cmd, char *link, char *scb_client, char *mld_client)
+wl_mlo_info_get_scb_mac(void *wl, char *cmd, char *link, char *scb_client, char *mld_client, int *mlo_active)
 {
 	int iter, i, idx;
 	int ret = BCME_OK;
 	char link_stats[MLO_MINBUFFER] = {0};
-	char scb_macaddr[MLO_MEDBUFFER] = {0};
+	char mld_macaddr[MLO_MEDBUFFER] = {0};
 	uint8 mybuf[MLO_MEDBUFFER];
 	uint8 *rem = mybuf;
 	uint16 rem_len = sizeof(mybuf);
@@ -656,9 +666,114 @@ wl_mlo_cmd_info(void *wl, char *cmd, char *link, char *scb_client, char *mld_cli
 		MLO_API_DBG("MLO_ACTIVE:%s mlc_wlc_up_bm:%x\n", mlo_info->mlo_active ? "TRUE" : "FALSE",
 			mlo_info->linkup_mlc_wlc_up_bm);
 
-		/* Do not return MLD BSSID if wlx or wlx.y MLO is inacitve */
-		if(!mlo_info->mlo_active)
+		*mlo_active = mlo_info->mlo_active;
+
+		MLO_API_DBG("MLD%d:: nlink %d MLD %s ENAB: %d\n",
+			mlo_info->mld_unit, mlo_info->num_links,
+			wl_ether_etoa(&mlo_info->self_mld_addr), mlo_info->enab);
+
+		MLO_API_DBG("SCB count : %d\n", mlo_info->no_of_mlo_scb);
+
+		for (iter = 0; iter < mlo_info->no_of_mlo_scb; iter++) {
+			MLO_API_DBG("MLO SCB: %s\n", wl_ether_etoa(&mlo_info->msi[iter].ea));
+			MLO_API_DBG("/MLD-%s aid %d amt_idx %d"
+				" associated to link%d active_link_map 0x%x\n",
+				wl_ether_etoa(&mlo_info->msi[iter].peer_mld_addr),
+				dtoh16(mlo_info->msi[iter].aid),
+				dtoh16(mlo_info->msi[iter].amt_idx),
+				mlo_info->msi[iter].scb_link_id,
+				mlo_info->msi[iter].active_link_map);
+			MLO_API_DBG("\tTid Map: 0x%x \n", mlo_info->msi[iter].tid_map);
+			snprintf(link_stats, sizeof(link_stats), "%x", mlo_info->msi[iter].active_link_map);
+
+			// MLD mac
+			snprintf(mld_macaddr, sizeof(mld_macaddr), "%s", wl_ether_etoa(&mlo_info->msi[iter].peer_mld_addr));
+			MLO_API_DBG("Get MLD by IOVAR : %s\n", mld_macaddr);
+
+			// Compare input MLD mac with Driver MLD mac
+			if(!strcmp(mld_client, mld_macaddr)) {
+				// Rerturn SCB mac address
+				snprintf(scb_client, MLO_MEDBUFFER, "%s", wl_ether_etoa(&mlo_info->msi[iter].ea));
+				MLO_API_DBG("Match MLD MAC, return SCB MAC : %s \n", scb_client);
+
+				// Return MLO client link status
+				snprintf(link, sizeof(link), "%x", mlo_info->msi[iter].active_link_map);
+				MLO_API_DBG("Match MLD MAC, retun link status : %s\n", link);
+			}
+
+			if (mlo_info->msi[iter].mode < ARRAYSIZE(mlo_client_mode)) {
+				MLO_API_DBG("Client Mode : %s\n",
+					mlo_client_mode[mlo_info->msi[iter].mode]);
+			} else {
+				MLO_API_DBG("Client Mode : %d (UNKNOWN)\n",
+					mlo_info->msi[iter].mode);
+			}
+		}
+	}
+	else {
+		MLO_API_DBG("WL IOCTL response empty.\n");
+	}
+END:
+	if(resp)	free(resp);
+	return ret;
+}
+
+/*
+   input	: STA mac
+   output	: MLD mac
+*/
+static int
+wl_mlo_info_get_mld_mac(void *wl, char *cmd, char *link, char *scb_client, char *mld_client, int *mlo_active)
+{
+	int iter, i, idx;
+	int ret = BCME_OK;
+	char link_stats[MLO_MINBUFFER] = {0};
+	char scb_macaddr[MLO_MEDBUFFER] = {0};
+	uint8 mybuf[MLO_MEDBUFFER];
+	uint8 *rem = mybuf;
+	uint16 rem_len = sizeof(mybuf);
+	uint16 in_len = BCM_XTLV_HDR_SIZE;
+	wl_mlo_info_v1_t *mlo_info = NULL;
+	uint8 *resp = NULL;
+
+	resp = (uint8 *)malloc(WLC_IOCTL_MAXLEN);
+	MLO_API_DBG("wl : %s\n", wl);
+
+	ret = bcm_pack_xtlv_entry(&rem, &rem_len, WL_MLO_CMD_INFO,
+		in_len, (uint8 *)&mlo_info, BCM_XTLV_OPTION_ALIGN32);
+	if (ret != BCME_OK) {
+		MLO_API_DBG("bcm_pack_xtlv_entry() Fail!!\n");
+		goto END;
+	}
+
+	ret = wl_iovar_getbuf(wl, cmd, &mybuf, sizeof(mybuf), resp, WLC_IOCTL_MAXLEN);
+	if (ret != BCME_OK) {
+		MLO_API_DBG("wl_iovar_getbuf() Fail!!\n");
+		goto END;
+	}
+
+	if (resp != NULL) {
+		mlo_info = (wl_mlo_info_v1_t *)resp;
+		mlo_info->len = dtoh16(mlo_info->len);
+
+		if (mlo_info->ver > WL_MLO_INFO_VER) {
+			printf("Supported mlo_info version: %d but received version: %d\n", WL_MLO_INFO_VER, mlo_info->ver);
 			goto END;
+		}
+
+		if (mlo_info->len > WLC_IOCTL_MAXLEN || (mlo_info->len < (sizeof(*mlo_info) + mlo_info->no_of_mlo_scb * sizeof(*(mlo_info->msi))))) {
+			printf("size 1 mlo_info->len : %d\n", mlo_info->len);
+			printf("size 2 mybuf : %d\n", sizeof(mybuf));
+			printf("size 3 *mlo_info : %d\n", sizeof(*mlo_info));
+			printf("BCME_BUFTOOSHORT\n");
+			goto END;
+		}
+
+		MLO_API_DBG("VER: %d\n", mlo_info->ver);
+		MLO_API_DBG("MLO_ACTIVE:%s mlc_wlc_up_bm:%x\n", mlo_info->mlo_active ? "TRUE" : "FALSE",
+			mlo_info->linkup_mlc_wlc_up_bm);
+
+		*mlo_active = mlo_info->mlo_active;
 
 		MLO_API_DBG("MLD%d:: nlink %d MLD %s ENAB: %d\n",
 			mlo_info->mld_unit, mlo_info->num_links,
@@ -710,41 +825,66 @@ END:
 	return ret;
 }
 
-/* API for getting MLO info
- * (input SCB MAC and return MLD MAC address & link_map status)
- */
-int mlo_info_get(void *wl, char *link, char *scb, char *mld)
+/* API for getting MLO info */
+int mlo_info_get(void *wl, char *link, char *scb, char *mld, int *mlo_active, int event)
 {
-	return wl_mlo_cmd_info(wl, "mlo", link, scb, mld);
+	switch(event) {
+		case GET_SCB_MAC:
+			return wl_mlo_info_get_scb_mac(wl, "mlo", link, scb, mld, mlo_active);
+		case GET_LINK_STATS:
+		case GET_MLD_MAC:
+			return wl_mlo_info_get_mld_mac(wl, "mlo", link, scb, mld, mlo_active);
+	}
 }
 
-char *get_mld_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int mld_mac_len)
+char *get_scb_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int sta_mac_len, int *mlo_active)
+{
+	int ret = 0;
+	char link_stats[MLO_MINBUFFER] = {0};
+
+	memset(sta_mac, 0, sta_mac_len);
+	ret = mlo_info_get(ap_ifname, link_stats, sta_mac, mld_mac, mlo_active, GET_SCB_MAC);
+
+	if(ret)
+		MLO_API_DBG("API error.\n");
+
+	if(!strcmp(sta_mac, "")) {
+		MLO_API_DBG("SCB MAC mismatch.\n");
+	}
+	else {
+		MLO_API_DBG("Get SCB MAC is %s\n", sta_mac);
+	}
+
+	return sta_mac;
+}
+
+char *get_mld_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int mld_mac_len, int *mlo_active)
 {
 	int ret = 0;
 	char link_stats[MLO_MINBUFFER] = {0};
 
 	memset(mld_mac, 0, mld_mac_len);
-	ret = mlo_info_get(ap_ifname, link_stats, sta_mac, mld_mac);
+	ret = mlo_info_get(ap_ifname, link_stats, sta_mac, mld_mac, mlo_active, GET_MLD_MAC);
 
 	if(ret)
 		MLO_API_DBG("API error.\n");
 
 	if(!strcmp(mld_mac, "")) {
-		MLO_API_DBG("No match MLD MAC address.\n");
+		MLO_API_DBG("MLD MAC mismatch.\n");
 	}
 	else {
-		MLO_API_DBG("API get MLD MAC is %s\n", mld_mac);
+		MLO_API_DBG("Get MLD MAC is %s\n", mld_mac);
 	}
 
 	return mld_mac;
 }
 
-char *get_mlo_link_stats(char *ap_ifname, char *sta_mac, char *link_stats)
+char *get_mlo_link_stats(char *ap_ifname, char *sta_mac, char *link_stats, int *mlo_active)
 {
 	int ret = 0;
 	char mld_mac[MLO_MEDBUFFER] = {0};
 
-	ret = mlo_info_get(ap_ifname, link_stats, sta_mac, mld_mac);
+	ret = mlo_info_get(ap_ifname, link_stats, sta_mac, mld_mac, mlo_active, GET_LINK_STATS);
 
 	if(ret)
 		MLO_API_DBG("API error.\n");
@@ -758,6 +898,7 @@ char *get_mlo_link_stats(char *ap_ifname, char *sta_mac, char *link_stats)
 
 	return link_stats;
 }
+
 int is_mlo_if(char *vif)
 {
 	char word[256]={0}, *next = NULL;
@@ -1206,6 +1347,7 @@ void set_wlan_service_status(int bssidx, int vifidx, int enabled)
 	struct ether_addr addr = {{255, 255, 255, 255, 255, 255}};
 	struct {int bsscfg_idx; int enable;} setbuf;
 	char wl_radio[] = "wlXXXX_radio";
+	int keep_ap_up = -1;
 
 #ifdef RTCONFIG_BRCM_HOSTAPD
 	int hapd_is_ready = 0;
@@ -1227,6 +1369,16 @@ void set_wlan_service_status(int bssidx, int vifidx, int enabled)
 	if (ifname == NULL || strlen(ifname) == 0) {
 		_dprintf("Getting bssidx(%d) vifidx(%d) ifname fail.\n", bssidx, vifidx);
 		return;
+	}
+
+	/* Avoid doing bss up when keep_ap_up is 0 */
+	if(enabled) {
+		if(!wl_iovar_getint(ifname, "keep_ap_up", &keep_ap_up)) {
+			if(keep_ap_up == 0)
+				return;
+		}
+		else
+			_dprintf("%s(%d) %s iovar get keep_ap_up fail\n", __func__, __LINE__, ifname);
 	}
 
 #ifdef RTCONFIG_BRCM_HOSTAPD

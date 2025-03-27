@@ -203,7 +203,7 @@ function get_debug_log_info(){
 function redirect(){
 	if(fb_state == "1" || fb_state == "2")
 		httpApi.nvramSet({"action_mode": "apply", "fb_state" : ""});
-	document.location.href = "Advanced_Feedback.asp";
+	setTimeout("top.location.href='Advanced_Feedback.asp';", 500);
 }
 
 function reset_diag_state(){	

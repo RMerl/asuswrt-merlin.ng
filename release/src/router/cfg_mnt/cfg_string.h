@@ -297,6 +297,7 @@
 #define CFG_STR_SECURITY_MODE	"security_mode"
 #define CFG_STR_MOCA_STATUS "moca_status"
 #define CFG_STR_MLD_MAC "mld_mac"
+#define CFG_STR_MLO_ACTIVE "mlo_active"
 #define CFG_STR_MLO_STATUS		"mlo_status"
 #define CFG_STR_MLO_MSTA		"msta"
 #define CFG_STR_MAP_UNIT	 "map_unit"

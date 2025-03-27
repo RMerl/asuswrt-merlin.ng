@@ -9270,7 +9270,7 @@ function validate_isBlank(_obj){
 		if($(_obj).find("[data-category-cntr=aimesh]").length > 0){
 			if($(_obj).find("[data-category-cntr=aimesh]").css("display") != "none"){
 				if($(_obj).find("[data-container=AiMesh_List] .node_container .icon_checkbox").length > 0){
-					if(!$(_obj).find("[data-container=AiMesh_List] .node_container .icon_checkbox:not(.disabled)").hasClass("clicked")){
+					if(!$(_obj).find("[data-container=AiMesh_List] .node_container .icon_checkbox").hasClass("clicked")){
 						isBlank = true;
 					}
 				}
@@ -9279,7 +9279,7 @@ function validate_isBlank(_obj){
 		if($(_obj).find("[data-container='wizard_aimesh_cntr']").length > 0){
 			if($(_obj).find("[data-container='wizard_aimesh_cntr']").css("display") != "none"){
 				if($(_obj).find("[data-container=AiMesh_List] .node_container .icon_checkbox").length > 0){
-					if(!$(_obj).find("[data-container=AiMesh_List] .node_container .icon_checkbox:not(.disabled)").hasClass("clicked")){
+					if(!$(_obj).find("[data-container=AiMesh_List] .node_container .icon_checkbox").hasClass("clicked")){
 						isBlank = true;
 					}
 				}
@@ -12288,6 +12288,7 @@ function Set_AiMesh_List_CB(_obj, _sel_wifi_bnad){
 		let support_WPA3E = aimesh_wifi_band_full.node[dut_mac].support_WPA3E;
 		let support_6G = aimesh_wifi_band_full.node[dut_mac].support_6G;
 		let support_wifi_band = aimesh_wifi_band_full.node[dut_mac].support_wifi_band;
+		let show_388_limit = false;
 		var $node_cntr = $(_obj).find("[data-node-mac='" + dut_mac + "']");
 		if(aimesh_wifi_band_info[dut_mac].length > 0){//node support capability wifi_band
 			$node_cntr.find(".node_hint").remove();
@@ -12296,6 +12297,9 @@ function Set_AiMesh_List_CB(_obj, _sel_wifi_bnad){
 			let select_band_is_support = {"status": true, "reason": ""};
 			if(_sel_wifi_bnad == "3"){
 				select_band_is_enough = (!band_2G_is_full && !band_5G_is_full) ? true : false;
+				if(select_band_is_enough && !support_wifi_band){
+					show_388_limit = true;
+				}
 			}
 			else if(_sel_wifi_bnad == "1"){
 				select_band_is_enough = (!band_2G_is_full) ? true : false;
@@ -12343,13 +12347,21 @@ function Set_AiMesh_List_CB(_obj, _sel_wifi_bnad){
 			if(select_band_is_support.status){
 				if(select_band_is_enough){
 					if(wifi_radius_is_WPA3E){
-						if(support_WPA3E)
+						if(support_WPA3E){
 							$node_cntr.find(".icon_checkbox").addClass("clicked");
+							if(show_388_limit){
+								show_388_limit_hint();
+							}
+						}
 						else
 							set_node_cb_closed_WPA3E();
 					}
-					else
+					else{
 						$node_cntr.find(".icon_checkbox").addClass("clicked");
+						if(show_388_limit){
+							show_388_limit_hint();
+						}
+					}
 				}
 				else{
 					set_node_cb_closed();
@@ -12388,6 +12400,11 @@ function Set_AiMesh_List_CB(_obj, _sel_wifi_bnad){
 			$node_cntr.find(".icon_checkbox").addClass("closed");
 			$("<div>").addClass("node_hint")
 				.html(htmlEnDeCode.htmlEncode(reason))
+				.appendTo($node_cntr);
+		}
+		function show_388_limit_hint(){
+			$("<div>").addClass("node_hint")
+				.html(htmlEnDeCode.htmlEncode(`* For older AiMesh nodes, there are limitations on syncing all bands.`))/* untranslated */
 				.appendTo($node_cntr);
 		}
 	});

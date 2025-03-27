@@ -3377,9 +3377,18 @@ extern int	 	apg_destory_wl_vlan(char *vlan_ifnames);
 extern int	 	apg_create_eth_vlan(int vid, char *ifnames, char *ret_ifnames, size_t ret_ifnames_bsize);
 extern int	 	apg_destory_eth_vlan(char *vlan_ifnames);
 extern void 	init_apg_subunit(void);
-extern void init_apg(void);
 extern void apg_create_vlan_for_lan(void);
 extern void apg_destory_vlan_for_lan(void);
+#ifdef RTCONFIG_MULTILAN_MWL
+#define INIT_APG_CHK_SDN_MLO        0x0001
+#define INIT_APG_CHK_MWL_CONV       0x0002
+#define INIT_APG_CHK_MWL_AUTH       0x0004
+#define INIT_APG_CHK_MWL_SECURITY   0x0008
+#define INIT_APG_CHK_MAX_MTLAN      0x0010
+#define INIT_APG_FIX_MLO_DWB_BHFH   0x0020
+extern unsigned int init_apg(void);
+extern int check_SDN_MAX_VIF(void);
+#endif
 #endif
 #ifdef RTCONFIG_MLO
 extern int check_SDN_MLO();

@@ -216,7 +216,7 @@ a{
 }
 </style>	
 <script type="text/javascript">
-var isRouterMode = ('<% nvram_get("sw_mode"); %>' == '1') ? true : false;
+var isRouterMode = ('<% get_operation_mode(); %>' == 'rt') ? true : false;
 var header_info = [<% get_header_info(); %>][0];
 var ROUTERHOSTNAME = '<#Web_DOMAIN_NAME#>';
 var domainNameUrl = header_info.protocol+"://"+ROUTERHOSTNAME+":"+header_info.port;

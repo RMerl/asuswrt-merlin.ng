@@ -142,32 +142,10 @@ function inet_network(ip_str) {
 }
 if(typeof isSwMode != "function"){
 	var isSwMode = function(mode){
-		var ui_sw_mode = "rt";
-		var sw_mode = '<% nvram_get("sw_mode"); %>';
-		var wlc_psta = '<% nvram_get("wlc_psta"); %>' == '' ? 0 : '<% nvram_get("wlc_psta"); %>';
-		var wlc_express = '<% nvram_get("wlc_express"); %>' == '' ? 0 : '<% nvram_get("wlc_express"); %>';
-
-		if(((sw_mode == '2' && wlc_psta == '0') || (sw_mode == '3' && wlc_psta == '2')) && wlc_express == '0'){	// Repeater
-			ui_sw_mode = "re";
-		}
-		else if((sw_mode == '3' && wlc_psta == '0') || (sw_mode == '3' && wlc_psta == '')){	// Access Point
-			ui_sw_mode = "ap";
-		}
-		else if((sw_mode == '3' && wlc_psta == '1' && wlc_express == '0') || (sw_mode == '3' && wlc_psta == '3' && wlc_express == '0') || (sw_mode == '2' && wlc_psta == '1' && wlc_express == '0')){	// MediaBridge
-			ui_sw_mode = "mb";
-		}
-		else if(sw_mode == '2' && wlc_psta == '0' && wlc_express == '1'){	// Express Way 2G
-			ui_sw_mode = "ew2";
-		}
-		else if(sw_mode == '2' && wlc_psta == '0' && wlc_express == '2'){	// Express Way 5G
-			ui_sw_mode = "ew5";
-		}
-		else if(sw_mode == '5'){	// Hotspot
-			ui_sw_mode = 'hs';
-		}
-		else ui_sw_mode = "rt"; // Router
-
-		return (ui_sw_mode.search(mode) !== -1);
+		mode = mode.toLowerCase();
+		var ui_sw_mode = httpApi.hookGet("get_operation_mode");
+		if(mode == "re") mode = "rp";
+		return ui_sw_mode == mode;
 	}
 }
 
@@ -3373,7 +3351,7 @@ function drawClientListBlock(objID) {
 						<div style="font-size: 0.75em;" title="<#IPv6_wan_addr#>">${clientlist_sort[j].ip6_prefix}</div>
 						<div style="font-size: 0.75em;" title="WAN IPv6 Link-Local">${clientlist_sort[j].ip6}</div>
 					</div>`;
-				if ('<% nvram_get("sw_mode"); %>' == "1") {
+				if (isSwMode("RT")) {
 					clientListCode += `<span class="ipMethodTag" onmouseover="return overlib('${ipState[clientList[clientlist_sort[j].mac].ipMethod]}')" onmouseout="nd();">${clientList[clientlist_sort[j].mac].ipMethod}</span>`
 				}
 				clientListCode += `</div>`;
@@ -3425,7 +3403,7 @@ function drawClientListBlock(objID) {
 						<div style="font-size: 0.75em;" title="<#IPv6_wan_addr#>">${clientlist_sort[j].ip6_prefix}</div>
 						<div style="font-size: 0.75em;" title="WAN IPv6 Link-Local">${clientlist_sort[j].ip6}</div>
 					</div>`;
-				if ('<% nvram_get("sw_mode"); %>' == "1") {
+				if (isSwMode("RT")) {
 					clientListCode += `<span class="ipMethodTag" onmouseover="return overlib('${ipState[clientList[clientlist_sort[j].mac].ipMethod]}')" onmouseout="nd();">${clientList[clientlist_sort[j].mac].ipMethod}</span>`
 				}
 

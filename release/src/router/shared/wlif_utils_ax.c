@@ -3245,17 +3245,17 @@ int apply_mlo_rp_settings(int mlo_client_mode)
 	char *val = NULL;
 	char buf[20];
 
-	if(!*nvram_safe_get("wl_mlo_config") || nvram_match("wl_mlo_config", "-1 -1 -1 -1")) {
+	if (!*nvram_safe_get("wl_mlo_config") || nvram_match("wl_mlo_config", "-1 -1 -1 -1")) {
 		_dprintf("init mlo_config...\n");
 		_set_wl_mlo_config_by_model(buf, sizeof(buf));
 	}
 
-	if(!*nvram_safe_get("mld0_ifnames")) {
+	if (!*nvram_safe_get("mld0_ifnames")) {
 		_dprintf("init mld ifnames...\n");
 		wl_mlo_config_sort("0", "0");
 	}
 
-	if(!*nvram_safe_get("mld0_ifnames")) {
+	if (!*nvram_safe_get("mld0_ifnames")) {
 		_dprintf("%s, mld0 ifnames err.\n", __func__);
 		return -1;
 	}
@@ -3272,7 +3272,7 @@ int apply_mlo_rp_settings(int mlo_client_mode)
 	nvram_set("wlc_dpsta", "2");
 	nvram_set("re_mode", "0");
 	nvram_set("mld_enable", "1");
-	if(mlo_client_mode == MLO_CLIENT_MB) {
+	if (mlo_client_mode == MLO_CLIENT_MB) {
 		nvram_set_int("mlo_rp", 0);
 		nvram_set_int("mlo_mb", 1);
 	} else {	// MLO_CLIENT_RP
@@ -3283,9 +3283,11 @@ int apply_mlo_rp_settings(int mlo_client_mode)
 	//nvram_set("lan_proto", "dhcp");
 
 #ifdef RPBE58
-	if(*nvram_safe_get("wlc1_ssid"))
+	if (*nvram_safe_get("wlc_ssid"))
+		snprintf(prefix, sizeof(prefix), "wlc_");
+	else if (*nvram_safe_get("wlc1_ssid"))
 		snprintf(prefix, sizeof(prefix), "wlc1_");
-	else if(*nvram_safe_get("wlc0_ssid"))
+	else if (*nvram_safe_get("wlc0_ssid"))
 		snprintf(prefix, sizeof(prefix), "wlc0_");
 	else {
 		_dprintf("no valid wlcX settings.\n");
@@ -3297,7 +3299,7 @@ int apply_mlo_rp_settings(int mlo_client_mode)
 	foreach (word, mld0_ifnames, next) {
 		wl_ioctl(word, WLC_GET_INSTANCE, &unit, sizeof(unit));
 
-		if(unit < 0) {
+		if (unit < 0) {
 			_dprintf("%s, wlif[%s] get error unit:%d\n", __func__, word, unit);
 			continue;
 		}
@@ -3318,7 +3320,7 @@ int apply_mlo_rp_settings(int mlo_client_mode)
 		nvram_set(strlcat_r(prefix2, "11be", tmp, sizeof(tmp)), "1");
 	}
 
-#if DEBUG
+//#if DEBUG
 	foreach (word, mld0_ifnames, next) {
 		wl_ioctl(word, WLC_GET_INSTANCE, &unit, sizeof(unit));
 
@@ -3335,7 +3337,7 @@ int apply_mlo_rp_settings(int mlo_client_mode)
 		_dprintf("chk convert %s=[%s]\n", strlcat_r(prefix2, "11be", tmp, sizeof(tmp)), nvram_safe_get(strlcat_r(prefix2, "11be", tmp, sizeof(tmp))));
 	}
 
-#endif
+//#endif
 	nvram_commit();
 
 	return 0;

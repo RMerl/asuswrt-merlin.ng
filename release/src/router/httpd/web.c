@@ -316,6 +316,9 @@ extern int ej_wl_chanspecs_6g_2(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_wl_rssi_2g(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_wl_rssi_5g(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_wl_rssi_5g_2(int eid, webs_t wp, int argc, char_t **argv);
+#if defined(RTCONFIG_QUADBAND)
+extern int ej_wl_rssi_6g(int eid, webs_t wp, int argc, char_t **argv);
+#endif
 #endif
 #if defined(CONFIG_BCMWL5) \
 		|| (defined(RTCONFIG_RALINK) && defined(RTCONFIG_WIRELESSREPEATER)) \
@@ -5021,6 +5024,21 @@ int validate_apply(webs_t wp, json_object *root)
 	{
 		update_dsl_iptv_variables();
 		nvram_modified = 1;
+	}
+#endif
+
+#if defined(RTCONFIG_WIFI7) && defined(RTCONFIG_MLO) && defined(RTCONFIG_HND_ROUTER_AX)
+	char *mlo_rp =  safe_get_cgi_json("mlo_rp", root);
+	char *mlo_mb =  safe_get_cgi_json("mlo_mb", root);
+	if(!strcmp(mlo_rp, "1"))
+	{
+		_dprintf("validate_apply: apply mlo_rp! \n");
+		apply_mlo_rp_settings(1);
+	}
+	else if(!strcmp(mlo_mb, "1"))
+	{
+		_dprintf("validate_apply: apply mlo_mb! \n");
+		apply_mlo_rp_settings(2);
 	}
 #endif
 
@@ -40809,7 +40827,69 @@ static int ej_get_rwd_mapping_table(int eid, webs_t wp, int argc, char **argv)
 static int ej_get_ddns_macaddr(int eid, webs_t wp, int argc, char **argv)
 {
 	websWrite(wp, "\"%s\"", get_ddns_macaddr());
+	return 0;
+}
 
+static int ej_get_operation_mode(int eid, webs_t wp, int argc, char **argv)
+{
+	int sw_mode, wlc_express, wlc_psta;
+	int mlo_rp, mlo_mb;
+	char ui_sw_mode[8];
+
+	sw_mode = nvram_get_int("sw_mode");
+	wlc_express = nvram_get_int("wlc_express");
+	wlc_psta = nvram_get_int("wlc_psta");
+	mlo_rp = nvram_get_int("mlo_rp");
+	mlo_mb = nvram_get_int("mlo_mb");
+
+	if (
+		sw_mode == 2 && wlc_psta == 2 && mlo_rp == 1
+	){
+		strlcpy(ui_sw_mode, "rp", sizeof(ui_sw_mode));
+	} 
+	else if (
+		sw_mode == 3 && wlc_psta == 2 && mlo_mb == 1
+        ){
+                strlcpy(ui_sw_mode, "mb", sizeof(ui_sw_mode));
+        }
+	else if (
+		((sw_mode == 2 && wlc_psta == 0) || (sw_mode == 3 && wlc_psta == 2)) && wlc_express == 0 ||
+		(mlo_rp == 1)
+	){
+		strlcpy(ui_sw_mode, "rp", sizeof(ui_sw_mode));
+	}
+	else if (
+		(sw_mode == 3 && wlc_psta == 1 && wlc_express == 0) ||
+		(sw_mode == 3 && wlc_psta == 3 && wlc_express == 0) ||
+		(sw_mode == 2 && wlc_psta == 1 && wlc_express == 0) 
+	){
+		strlcpy(ui_sw_mode, "mb", sizeof(ui_sw_mode));
+	}
+	else if (
+		sw_mode == 3 && wlc_psta == 0
+	){
+		strlcpy(ui_sw_mode, "ap", sizeof(ui_sw_mode));
+	}
+	else if (
+		sw_mode == 2 && wlc_psta == 0 && wlc_express == 1
+	){
+		strlcpy(ui_sw_mode, "ew2", sizeof(ui_sw_mode)); // Express Way 2G
+	}
+	else if (
+		sw_mode == '2' && wlc_psta == '0' && wlc_express == '2'
+	){
+		strlcpy(ui_sw_mode, "ew5", sizeof(ui_sw_mode)); // Express Way 5G
+	}
+	else if (
+		sw_mode == '5'
+	){
+		strlcpy(ui_sw_mode, "hs", sizeof(ui_sw_mode)); // Hotspot
+	}
+	else {
+		strlcpy(ui_sw_mode, "rt", sizeof(ui_sw_mode));
+	}
+
+	websWrite(wp, "\"%s\"", ui_sw_mode);
 	return 0;
 }
 
@@ -41113,6 +41193,9 @@ struct ej_handler ej_handlers[] = {
 	{ "wl_rssi_2g", ej_wl_rssi_2g},
 	{ "wl_rssi_5g", ej_wl_rssi_5g},
 	{ "wl_rssi_5g_2", ej_wl_rssi_5g_2},
+#if defined(RTCONFIG_QUADBAND)
+	{ "wl_rssi_6g", ej_wl_rssi_6g},
+#endif
 #endif
 #if defined(CONFIG_BCMWL5) \
 		|| (defined(RTCONFIG_RALINK) && defined(RTCONFIG_WIRELESSREPEATER)) \
@@ -41405,6 +41488,7 @@ struct ej_handler ej_handlers[] = {
 #endif
 	{ "get_ddns_macaddr", ej_get_ddns_macaddr },
 	{ "wan_ipv6_network", ej_wan_ipv6_network },
+	{ "get_operation_mode", ej_get_operation_mode },
 	{ NULL, NULL }
 };
 

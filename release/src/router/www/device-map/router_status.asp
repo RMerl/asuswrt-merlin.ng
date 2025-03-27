@@ -87,7 +87,7 @@ $(document).ready(function(){
 		$("#yadns_field").hide()
 	}
 
-	if(isSupport("sdn_mainfh")){
+	if(isSupport("sdn_mainfh") || isSwMode("MB")){
 		$("#wireless_tab").hide();
 	}
 

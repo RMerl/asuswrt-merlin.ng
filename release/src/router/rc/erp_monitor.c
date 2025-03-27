@@ -118,7 +118,7 @@ static int erp_check_wl_stat(int model)
 	if (nvram_get_int("wl0_radio")) ret++;
 	if (nvram_get_int("wl1_radio")) ret++;
 
-#if defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2)
+#if defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
 	if (nvram_get_int("wl2_radio")) ret++;
 #endif
 #ifdef RTCONFIG_QUADBAND

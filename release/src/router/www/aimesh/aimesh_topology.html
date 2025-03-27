@@ -477,17 +477,17 @@ function client_get_client_date(){
 	aimesh_data.sta_binding_list_json = gen_sta_binding_list_json();
 }
 function client_set_tab(_type){
-	current_client_click_type = _type;
+	const specific_node_data = aimesh_data.cfg_clientlist.find(item => item.mac == current_click_mac) || {};
+	const is_no_wifi = specific_node_data.band_num === "0";
+	$("#client_block").find(".client_tab_bg div.wireless").toggle(!is_no_wifi);
+	current_client_click_type = (is_no_wifi && _type === "wireless") ? "all" : _type;
 	$("#client_block").find(".client_tab_bg div").removeClass("clicked");
-	$("#client_block").find(".client_tab_bg div." + _type + "").addClass("clicked");
-	var node_client_list = ciient_get_specific_client_list(_type, current_click_mac);
-	var specific_node_data = aimesh_data.cfg_clientlist.filter(function(item, index, _array){
-		return (item.mac == current_click_mac);
-	})[0];
+	$("#client_block").find(".client_tab_bg div." + current_client_click_type + "").addClass("clicked");
+	var node_client_list = ciient_get_specific_client_list(current_client_click_type, current_click_mac);
 	var $component = client_gen_client_component(node_client_list, specific_node_data);
 	$(".card_block_bg .client_list_bg").empty();
 	$(".card_block_bg .client_list_bg").append($component);
-	if(_type == "all")
+	if(current_client_click_type == "all")
 		online_client = $(".card_block_bg .client_list_bg .each_client_bg").length - node_client_list.offline;
 	else
 		online_client = $(".card_block_bg .client_list_bg .each_client_bg").length;

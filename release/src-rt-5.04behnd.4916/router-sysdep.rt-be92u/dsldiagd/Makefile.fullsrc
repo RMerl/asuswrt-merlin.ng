@@ -1,0 +1,146 @@
+#
+# In most cases, you only need to modify this first section.
+#
+EXE = dsldiagd
+OBJS = dsldiagd.o adslctlapi.o DiagSock.o
+
+PACKAGE_NAME = dsldiagd
+BEEPPKG_INFO = $(PACKAGE_NAME)$(BEEP_PKT_INFO_SUFIX)
+BEEP_TAR_GZ = $(BEEP_TAR_GZ_PREFIX)$(PACKAGE_NAME)$(BEEP_TAR_GZ_SUFIX)
+BEEP_MANIFEST_SUFIX=.manifest
+BEEPPKG_MANIFEST=$(PACKAGE_NAME)$(BEEP_MANIFEST_SUFIX)
+EEDIRS = $(sort $(dir $(wildcard */)))
+
+all dynamic install: conditional_build
+
+#
+# Set our CommEngine directory (by splitting the pwd into two words
+# at /userspace and taking the first word only).
+# Then include the common defines under CommEngine.
+#
+CURR_DIR := $(shell pwd)
+BUILD_DIR:=$(HND_SRC)
+
+include $(BUILD_DIR)/make.common
+
+ifeq ($(strip $(PROFILE_ARCH)),aarch64)
+LIBDIR_NAME = lib64
+else
+LIBDIR_NAME = lib
+endif
+
+LIBS = -lxdslctl
+
+# when build for module software, don't link to cms libs
+ifneq ($(strip $(BUILD_BRCM_CMS)),)
+ifneq ($(strip $(CMS_ACTION_LOG)),)
+#ifeq ($(strip $(BUILD_BEEP_DSLDIAGD)),) 
+LIBS += -lcms_msg $(CMS_COMMON_LIBS)
+#endif
+endif
+endif
+
+clean: generic_clean
+	rm -f $(INSTALL_DIR)/bin/$(EXE)
+	rm -f $(USERSPACE_DL_MODULES_BEEP_DIR)/$(BEEP_TAR_GZ_PREFIX)*$(PACKAGE_NAME)*$(BEEP_TAR_GZ_SUFIX) $(USERSPACE_DL_MODULES_BEEP_DIR)/Packages
+
+binaryonly_dist_clean: clean generic_binaryonly_dist_clean
+	rm -f Makefile.fullsrc
+
+
+ifneq ($(strip $(BUILD_BEEP_DSLDIAGD)),)
+conditional_build: $(BEEP_TAR_GZ)
+else
+ifneq ($(strip $(BUILD_DSLDIAGD)),)
+conditional_build: $(EXE) generic_exe_install
+else
+conditional_build:
+	@echo "skipping dsldiagd (not configured)"
+endif
+endif
+
+$(BEEP_TAR_GZ): $(EXE)
+	mkdir -p ./pkg/bin
+	mkdir -p ./pkg/lib
+	mkdir -p ./pkg/$(LIBDIR_NAME)
+	ln -sf busybox route 
+	mv route ./pkg/bin 
+	install -m 755 $(EXE) ./pkg/bin
+	$(STRIP) ./pkg/bin/$(EXE)
+	cp -f $(INSTALL_DIR)/lib/libxdslctl.so ./pkg/$(LIBDIR_NAME)
+	tar zcf $(EXE)$(BEEP_TAR_GZ_SUFIX) -C ./pkg .
+	rm -rf ./pkg
+	mkdir -p $(USERSPACE_DL_MODULES_BEEP_DIR)
+
+	for d in ${EEDIRS}; do \
+	   #echo "Working on ee dir $$d ...";\
+	   if [ -a $$d/$(BEEPPKG_INFO) ]; then \
+	     echo "pkginfo.txt file: $$d/$(BEEPPKG_INFO)";\
+		 if [ -a $$d/$(BEEPPKG_MANIFEST) ]; then \
+           echo "pkg manifest file: $$d/$(BEEPPKG_MANIFEST)";\
+           cp -fav $$d/$(BEEPPKG_MANIFEST) .;\
+           $(HOSTTOOLS_DIR)/beep/beepPkgBuilder -f $$d/$(BEEPPKG_INFO);\
+           rm -f $(BEEPPKG_MANIFEST);\
+         fi;\
+	   fi;\
+    done
+    
+	mv -f  $(BEEP_TAR_GZ_PREFIX)*$(PACKAGE_NAME)*$(BEEP_TAR_GZ_SUFIX) $(USERSPACE_DL_MODULES_BEEP_DIR)
+	rm -f $(EXE)$(BEEP_TAR_GZ_SUFIX)
+#
+# Private apps and libs are allowed to include header files from the
+# private and public directories.
+#
+# WARNING: Do not modify this section unless you understand the
+# license implications of what you are doing.
+#
+ALLOWED_INCLUDE_PATHS := -I.\
+                         -I$(BUILD_DIR)/userspace/public/include  \
+                         -I$(BUILD_DIR)/userspace/public/include/$(OALDIR) \
+                         -I$(BUILD_DIR)/userspace/private/include  \
+                         -I$(BUILD_DIR)/userspace/private/include/$(OALDIR)
+
+
+
+#
+# Private apps and libs are allowed to link with libraries from the
+# private and public directories.
+#
+# WARNING: Do not modify this section unless you understand the
+# license implications of what you are doing.
+#
+ALLOWED_LIB_DIRS := /lib:/lib/private:/lib/public
+
+
+
+# ssk.c needs cms_boardioctl.h, which needs these headers
+CFLAGS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)  \
+          -I$(INC_BRCMDRIVER_PRIV_PATH)/$(BRCM_BOARD) \
+          -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)
+
+CFLAGS += -DSUPPORT_DSL
+
+
+#
+# Implicit rule will make the .c into a .o
+# Implicit rule is $(CC) -c $(CPPFLAGS) $(CFLAGS)
+# See Section 10.2 of Gnu Make manual
+# 
+$(EXE): $(OBJS)
+	$(CC) -o $@ $(OBJS) $(BCM_LD_FLAGS) -Wl,-rpath,$(CMS_LIB_RPATH) $(CMS_LIB_PATH) $(LIBS)
+
+
+
+#
+# Include the rule for making dependency files.
+# The '-' in front of the second include suppresses
+# error messages when make cannot find the .d files.
+# It will just regenerate them.
+# See Section 4.14 of Gnu Make.
+#
+
+include $(BUILD_DIR)/make.deprules
+
+-include $(OBJS:.o=.d)
+
+

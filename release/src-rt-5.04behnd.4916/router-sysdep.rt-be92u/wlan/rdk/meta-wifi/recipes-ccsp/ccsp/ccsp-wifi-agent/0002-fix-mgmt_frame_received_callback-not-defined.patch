@@ -1,0 +1,13 @@
+diff --git a/source/TR-181/sbapi/wifi_data_plane.c b/source/TR-181/sbapi/wifi_data_plane.c
+index 543ed53..c51649f 100644
+--- a/source/TR-181/sbapi/wifi_data_plane.c
++++ b/source/TR-181/sbapi/wifi_data_plane.c
+@@ -383,7 +383,7 @@ int init_wifi_data_plane()
+         wifi_dbg_print(1,"CosaWifiInitialize Error - WiFi failed to Initialize Passpoint.\n");
+     }
+ 
+-    wifi_mgmt_frame_callbacks_register(mgmt_frame_received_callback);
++    //wifi_mgmt_frame_callbacks_register(mgmt_frame_received_callback);
+     wifi_dbg_print(1, "%s:%d: init_wifi_data_plane completed ### \n", __func__, __LINE__);
+ #endif
+ 

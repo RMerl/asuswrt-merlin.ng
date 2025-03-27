@@ -1877,7 +1877,7 @@ function showMenuTree(menuList, menuExclude){
 					tab_code += (j == 0 || j == 3) ? 'tabClicked' : 'tab';	// Show fist tab css as class 'tabClicked'
 				}
 				else if(current_url.indexOf("Advanced_VLAN_Profile_Content") == 0){
-					tab_code += (j == 6) ? 'tabClicked' : 'tab';	// Show 6th tab css as class 'tabClicked'
+					tab_code += (j == 7) ? 'tabClicked' : 'tab';	// Show 7th tab css as class 'tabClicked'
 				}
 				else{
 					tab_code += (j == clickedItem.tab) ? 'tabClicked' : 'tab';

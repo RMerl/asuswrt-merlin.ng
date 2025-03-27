@@ -1,0 +1,33 @@
+diff --git a/source/TR-181/lib/common/Makefile.am b/source/TR-181/lib/common/Makefile.am
+index e8c93c2..71a900e 100644
+--- a/source/TR-181/lib/common/Makefile.am
++++ b/source/TR-181/lib/common/Makefile.am
+@@ -34,4 +34,5 @@ libCcspWifiAgent_common_la_CPPFLAGS = -I$(top_srcdir)/source/TR-181/lib/const \
+                                       -I$(top_srcdir)/source/TR-181/lib/schema \
+                                       -I$(top_srcdir)/source/TR-181/sbapi
+ 
+-libCcspWifiAgent_common_la_LDFLAGS = -rdynamic -ldl -ljansson -lrt -lev
++#libCcspWifiAgent_common_la_LDFLAGS = -rdynamic -ldl -ljansson -lrt -lev
++libCcspWifiAgent_common_la_LDFLAGS = -rdynamic -ldl -ljson-c -lrt -lev
+diff --git a/source/TR-181/lib/json_util/Makefile.am b/source/TR-181/lib/json_util/Makefile.am
+index e3308e8..2e915a5 100644
+--- a/source/TR-181/lib/json_util/Makefile.am
++++ b/source/TR-181/lib/json_util/Makefile.am
+@@ -33,4 +33,5 @@ libCcspWifiAgent_jsutil_la_CPPFLAGS = -I$(top_srcdir)/source/TR-181/lib/common \
+                                       -I$(top_srcdir)/source/TR-181/lib/qm \
+                                       -I$(top_srcdir)/source/TR-181/lib/schema
+ 
+-libCcspWifiAgent_jsutil_la_LDFLAGS = -ljansson
++#libCcspWifiAgent_jsutil_la_LDFLAGS = -ljansson
++libCcspWifiAgent_jsutil_la_LDFLAGS = -ljson-c
+diff --git a/source/TR-181/lib/pjs/Makefile.am b/source/TR-181/lib/pjs/Makefile.am
+index 28e5919..3baa9a6 100644
+--- a/source/TR-181/lib/pjs/Makefile.am
++++ b/source/TR-181/lib/pjs/Makefile.am
+@@ -33,4 +33,5 @@ libCcspWifiAgent_pjs_la_CPPFLAGS = -I$(top_srcdir)/source/TR-181/lib/common \
+                                    -I$(top_srcdir)/source/TR-181/lib/qm \
+                                    -I$(top_srcdir)/source/TR-181/lib/schema
+ 
+-libCcspWifiAgent_pjs_la_LDFLAGS = -ljansson
++#libCcspWifiAgent_pjs_la_LDFLAGS = -ljansson
++libCcspWifiAgent_pjs_la_LDFLAGS = -ljson-c

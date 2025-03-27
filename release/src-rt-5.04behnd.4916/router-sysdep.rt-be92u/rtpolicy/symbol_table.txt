@@ -1,0 +1,4 @@
+ BCM_RTPRIO_HIGH               75
+ BCM_RTPRIO_VOIPDSP            35
+ BCM_RTPRIO_DATA                 5
+ BCM_RTPRIO_DATA_CONTROL         10

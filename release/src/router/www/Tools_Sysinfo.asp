@@ -442,11 +442,11 @@ function hwaccel_state(){
 	var qos_type = '<% nvram_get("qos_type"); %>';
 
 	if (hnd_support) {
-		var machine_name = "<% get_machine_name(); %>";
-		if (machine_name.search("aarch64") != -1)
-			code = "<span>Runner:</span> ";
-		else
+		var cpu_model = "<% sysinfo("cpu.model"); %>";
+		if (cpu_model.search("BCM67") != -1)
 			code = "<span>Archer:</span> ";
+		else
+			code = "<span>Runner:</span> ";
 
 		var state = "<% sysinfo("hwaccel.runner"); %>";
 

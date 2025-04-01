@@ -531,7 +531,7 @@ define platformKernelConfig
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/archer.o $(HND_SRC)/bcmdrivers/broadcom/char/archer/impl1/archer$(PRBM_EXT).o ; \
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcmlibs.o $(HND_SRC)/bcmdrivers/broadcom/char/bcmlibs/impl1/bcmlibs$(PRBM_EXT).o ; \
 				fi; \
-				if [ "$(HND_ROUTER_AX_6756)" = "y" ]; then \
+				if [ "$(HND_ROUTER_AX_6756)" = "y" ] || [ $(CUR_CHIP_PROFILE) = "6765" ] ; then \
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcmlibs.o $(HND_SRC)/bcmdrivers/broadcom/char/bcmlibs/impl1/ ; \
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcm_bpm.o $(HND_SRC)/bcmdrivers/broadcom/char/bpm/impl1/ ; \
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/chipinfo.o $(HND_SRC)/bcmdrivers/broadcom/char/chipinfo/impl1/ ; \

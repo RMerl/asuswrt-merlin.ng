@@ -6436,7 +6436,6 @@ void lanaccess_wl(void)
 #ifdef RTCONFIG_CAPTIVE_PORTAL
 	CP_lanaccess_wl();
 #endif
-	setup_leds();   // Refresh LED state if in Stealth Mode
 }
 
 #ifdef RTCONFIG_FBWIFI

@@ -9,7 +9,7 @@ Asuswrt-Merlin Changelog
          to test a VPN tunnel's throughput.
   - UPDATED: Merged GPL 388_25373.
   - UPDATED: dropbear to 2025.87.
-  - UPDATED: OpenVPN to 2.6.13.
+  - UPDATED: OpenVPN to 2.6.14.
   - UPDATED: dnsmasq to 2.91.
   - UPDATED: miniupnpd to 2.3.7 (20250207 snapshot)
   - UPDATED: amtm to 5.2 (decoderman)

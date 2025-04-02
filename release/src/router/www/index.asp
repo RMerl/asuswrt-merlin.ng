@@ -2444,6 +2444,7 @@ function copyDdnsName(e) {
                         </div>
                         <div>
                             <input id="client_name" name="client_name" type="text" value="" class="input_32_table" maxlength="32" style="width:290px;" autocorrect="off" autocapitalize="off">
+                            <input id="hostname_field" type="hidden" value="">
                         </div>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center;">

@@ -18,7 +18,7 @@ Asuswrt-Merlin 3006.xxx Changelog
 
   - UPDATED: Merged GPL 3006.102_36521 for Wifi 6 models (Wifi 7
              GPL codebase is unchanged from 3006.102.3).
-  - UPDATED: OpenVPN to 2.6.13.
+  - UPDATED: OpenVPN to 2.6.14.
   - UPDATED: miniupnpd to 2.3.7 (20250207 snapshot)
   - UPDATED: amtm to 5.2 (decoderman)
   - UPDATED: dnsmasq to 2.91.

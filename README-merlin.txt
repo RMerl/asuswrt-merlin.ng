@@ -50,6 +50,7 @@ Fully supported devices:
  * GT-AXE16000
  * RT-AX86U Pro
  * RT-AX88U Pro
+ * RT-BE92U
 
 No longer supported:
  * RT-N16

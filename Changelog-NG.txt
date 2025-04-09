@@ -1,7 +1,7 @@
 Asuswrt-Merlin Changelog
 ========================
 
-3004.388.9 (xx-xxx-2025)
+3004.388.9 (9-Apr-2025)
   - NOTE: BCM4912 models such as the GT-AX6000 have now been
          migrated to the 3006 firmware series.
 

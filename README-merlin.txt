@@ -31,7 +31,34 @@ Supported Devices
 
 Fully supported devices:
 
-386.x:
+3004.388.x:
+ * RT-AX88U
+ * RT-AX58U & RT-AX3000 (V1 only)
+ * RT-AX86U & RT-AX86S
+ * GT-AX11000
+ * RT-AX68U
+ * GT-AXE11000
+
+3006.102.x:
+ * RT-BE96U 
+ * GT-BE98_PRO
+ * RT-BE88U and RT-BE7200
+ * RT-BE86U
+ * GT-AX6000
+ * ZenWifi Pro XT12
+ * GT-AX11000 Pro
+ * GT-AXE16000
+ * RT-AX86U Pro
+ * RT-AX88U Pro
+ * RT-BE92U
+
+No longer supported:
+ * RT-N16
+ * RT-N66U
+ * RT-AC66U
+ * RT-AC56U
+ * RT-AC87U
+ * RT-AC3200
  * RT-AC66U_B1 (use the RT-AC68U firmware)
  * RT-AC68U, RT-AC68P, RT-AC68UF (including HW revision C1 and E1)
  * RT-AC68U V3 (use the RT-AC68U firmware)
@@ -43,38 +70,7 @@ Fully supported devices:
  * RT-AC86U
  * RT-AC2900 (use the RT-AC86U firmware)
  * GT-AC2900
-
-3004.388.x:
- * RT-AX88U
- * RT-AX58U & RT-AX3000 (V1 only)
- * RT-AX86U & RT-AX86S
- * GT-AX11000
- * RT-AX68U
- * GT-AXE11000
- * GT-AX6000
- * ZenWifi Pro XT12
- * GT-AX11000 Pro
- * GT-AXE16000
- * RT-AX86U Pro
- * RT-AX88U Pro
-
-3006.102.x:
- * RT-BE96U 
- * GT-BE98_PRO
-
-No longer supported:
- * RT-N16
- * RT-N66U
- * RT-AC66U
- * RT-AC56U
- * RT-AC87U
- * RT-AC3200
  * RT-AX56U
-
-NOTE: all the "R" versions (for example RT-N66R) are the same as their 
-"U" counterparts, they are just different packages aimed at large 
-retailers.  The firmware is 100% compatible with both U and R versions 
-of the routers.  Same with the "W" variants that are simply white.
 
 
 
@@ -82,8 +78,6 @@ Features
 --------
 Here is a list of features that Asuswrt-merlin adds over the original 
 firmware.
-
-(Note: HND platform = newer Broadcom models starting with RT-AC86U):
 
 
 System:
@@ -102,7 +96,7 @@ System:
 
 Disk sharing:
    - Optionally use shorter share names (folder name only)
-   - NFS exporting of USB drives
+   - NFS exporting of USB drives (some models)
 
 
 Networking:
@@ -117,16 +111,14 @@ Networking:
    - Custom DDNS (through a user script)
    - TOR support, individual client access control
    - VPN Director - Policy-based routing for OpenVPN and WireGUard clients (based on source or destination IPs)
-   - Detailed wireless troubleshooting information (on some models)
    - Redirect NTP client queries to the router's own NTP daemon
-   - Cake SQM QoS (on newer HND models)
- 
+   - Cake SQM QoS
+
 
 Web interface:
    - Performance improvements
    - Optionally save traffic stats to disk (USB or JFFS partition)
    - Enhanced traffic monitoring: adding graphical charts, and traffic monitoring per client IP
-   - Hostname field on the DHCP reservation list and Wireless ACL list
    - System info summary page
    - Wifi icon reports the state of both radios
    - Advanced wireless client list display, including automated refresh
@@ -146,11 +138,20 @@ reset to factory defaults (see note below for exceptions).
 You can revert back to an original Asus firmware at any time just
 by flashing a firmware downloaded from Asus's website.
 
-Note that the archive for ROG models (like the GT-AX6000) may
-contain two different firmware images.  The one with _rog in
-the filename uses the original ROG themed user interface, while
-the other one uses the traditionnal blue/grey visuals used by
-non-ROG models.
+If upgrading from Asus firmware 3.0.0.6.102_37000 or newer,
+the webui may refuse flashing Asuswrt-Merlin.  In that case,
+connect to your router over SSH, and issue the following command:
+
+    nvram set DOWNGRADE_CHECK_PASS=1
+
+After that, you can upload Asuswrt-Merlin through the webui like
+any regular firmware upgrade.  This is only required when flashing
+Asuswrt-Merlin for the first time.
+
+Note that the archive for some ROG models may contain two different
+firmware images.  The one with _rog in the filename uses the original
+ROG themed user interface, while the other one uses the traditionnal
+blue/grey visuals used by non-ROG models.
 
 If the firmware upgrade fails, try rebooting your router to free 
 up sufficient memory, without any USB disk plugged in,
@@ -159,8 +160,9 @@ then try flashing it again.
 NOTE: resetting to factory default after flashing is 
 strongly recommended for the following cases:
 
-- Updating from a firmware version that is more than 3 releases older
-- Switching from a Tomato/DD-WRT/OpenWRT firmware
+- Updating from a firmware version that is more than a few releases older
+- Switching from another third party firmware
+- Switching from Asus' original firmware, and you were using VPN features
 
 If you run into any issue after an upgrade and you haven't done so,
 try doing a factory default reset as well.
@@ -195,8 +197,6 @@ The source code can be found on Github:
 
 https://github.com/RMerl/asuswrt-merlin.ng
 
-Original pre-382.xx legacy code (now archived):
-https://github.com/RMerl/asuswrt-merlin
 
    
 Contact information
@@ -205,18 +205,20 @@ SmallNetBuilder forums (preferred method: https://www.snbforums.com/forums/asusw
 Website: https://www.asuswrt-merlin.net/
 Github: https://github.com/RMerl
 Email: merlin@asuswrt-merlin.net
-MAstodon: https://fosstodon.org/@RMerlin
+Mastodon: https://fosstodon.org/@RMerlin
+Bluesky: @asuswrt-merlin.net
 IRC: RMerlin in channel #asuswrt on Libera
+
 Download: https://www.asuswrt-merlin.net/download
 
-Development news will be posted on Mastodon, and the support forums.
+Development news will be posted on Mastodon and Bluesky, 
+and the support forums.
 You can also keep a closer eye on development as it happens,
 through the Github code repository.
 
-For support questions, please use the SmallNetBuilder forums whenever 
-possible.  There's a dedicated Asuswrt-Merlin sub-forum there, under 
-the Asus Wireless section.  The community there is the primary source 
-of technical support.
+For support questions, please use the SmallNetBuilder forums.  There's a 
+dedicated Asuswrt-Merlin sub-forum there, under the Asus Wireless section.
+The community there is the primary source of technical support.
 
 I want to give my special thanks to Asus for showing an interest in 
 this project, and also providing me with support and development 

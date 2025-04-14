@@ -36,6 +36,8 @@ Asuswrt-Merlin 3006.xxx Changelog
            to "Router" would fail to do any name resolution.
   - FIXED: Wrong tab selected when clicking on "Profile" on the VLAN
            page (dave14305)
+  - FIXED: Missing button to remove entries in the Offline Client
+           List (dave14305)
 
 
 3006.102.3 (11-Jan-2025)

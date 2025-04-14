@@ -42,7 +42,7 @@ Fully supported devices:
 3006.102.x:
  * RT-BE96U 
  * GT-BE98_PRO
- * RT-BE88U
+ * RT-BE88U and RT-BE7200
  * RT-BE86U
  * GT-AX6000
  * ZenWifi Pro XT12
@@ -50,6 +50,7 @@ Fully supported devices:
  * GT-AXE16000
  * RT-AX86U Pro
  * RT-AX88U Pro
+ * RT-BE92U
 
 No longer supported:
  * RT-N16
@@ -147,11 +148,10 @@ After that, you can upload Asuswrt-Merlin through the webui like
 any regular firmware upgrade.  This is only required when flashing
 Asuswrt-Merlin for the first time.
 
-Note that the archive for some ROG models (like the GT-AX6000) may
-contain two different firmware images.  The one with _rog in
-the filename uses the original ROG themed user interface, while
-the other one uses the traditionnal blue/grey visuals used by
-non-ROG models.
+Note that the archive for some ROG models may contain two different
+firmware images.  The one with _rog in the filename uses the original
+ROG themed user interface, while the other one uses the traditionnal
+blue/grey visuals used by non-ROG models.
 
 If the firmware upgrade fails, try rebooting your router to free 
 up sufficient memory, without any USB disk plugged in,

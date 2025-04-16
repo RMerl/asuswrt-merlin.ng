@@ -861,7 +861,6 @@ function validForm(){
 				}
 
 				if(document.form.ddns_server_x.value != "CUSTOM"){             // Not CUSTOM
-
 					if(document.form.ddns_server_x.value != "DNS.HE.NET" && document.form.ddns_username_x.value == ""){
 						alert(`<#QKSet_account_nameblank#>`);
 						document.form.ddns_username_x.focus();
@@ -886,9 +885,8 @@ function validForm(){
 						document.form.ddns_regular_period.select();
 						return false;
 					}
-
-					return true;
 				}
+				return true;
 			}
 		}
 	}

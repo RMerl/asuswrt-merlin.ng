@@ -2381,7 +2381,7 @@ function create_clientlist_listview() {
 	var divObj = document.createElement("div");
 	divObj.setAttribute("id","clientlist_viewlist_block");
 
-	var obj_width_map = [["15%", "20%", "25%", "20%", "20%"],["10%", "10%", "30%", "20%", "20%", "10%"],["6%", "6%", "17%", "30%", "15%", "6%", "6%", "6%", "8%"]];
+	var obj_width_map = [["15%", "20%", "25%", "20%", "20%"],["10%", "10%", "30%", "20%", "20%", "10%"],["6%", "6%", "27%", "20%", "15%", "6%", "6%", "6%", "8%"]];
 	if(top.isIE8) obj_width_map = [["", "", "40%", "40%", "20%"],["", "", "40%", "30%", "20%", "10%"],["", "", "33%", "26%", "15%", "6%", "6%", "6%", "8%"]];
 	var obj_width = stainfo_support ? obj_width_map[2] : obj_width_map[1];
 	var wl_colspan = stainfo_support ? 9 : 6;
@@ -2642,7 +2642,7 @@ function drawClientListBlock(objID) {
 		if(document.getElementById("tb_" + objID) != null) {
 			removeElement(document.getElementById("tb_" + objID));
 		}
-		var obj_width_map = [["15%", "20%", "25%", "20%", "20%"],["10%", "10%", "30%", "20%", "20%", "10%"],["6%", "6%", "17%", "30%", "15%", "6%", "6%", "6%", "8%"]];
+		var obj_width_map = [["15%", "20%", "25%", "20%", "20%"],["10%", "10%", "30%", "20%", "20%", "10%"],["6%", "6%", "27%", "20%", "15%", "6%", "6%", "6%", "8%"]];
 		if(top.isIE8) obj_width_map = [["", "", "40%", "40%", "20%"],["", "", "40%", "30%", "20%", "10%"],["", "", "33%", "26%", "15%", "6%", "6%", "6%", "8%"]];
 		//var obj_width = (objID == "wired_list") ? obj_width_map[0] : ((stainfo_support) ? obj_width_map[2] : obj_width_map[1]);
 		var obj_width = (stainfo_support) ? obj_width_map[2] : obj_width_map[1];

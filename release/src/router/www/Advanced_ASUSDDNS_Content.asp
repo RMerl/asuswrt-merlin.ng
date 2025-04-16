@@ -1060,6 +1060,9 @@ function change_ddns_setting(v){
 				document.getElementById("ddns_status").innerHTML = "<#Status_Inactive#>";
 	}
 	else if (v == "CUSTOM"){
+			document.getElementById("ddns_hostname_info_tr").style.display = "none";
+			document.getElementById("ddns_hostname_tr").style.display="";
+			document.form.ddns_hostname_x.parentNode.parentNode.parentNode.style.display = "";
 			document.form.ddns_hostname_x.parentNode.style.display = "";
 			document.form.DDNSName.parentNode.style.display = "none";
 			inputCtrl(document.form.ddns_username_x, 0);

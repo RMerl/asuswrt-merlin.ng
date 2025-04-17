@@ -2,6 +2,7 @@
 
 #include <syslog.h>
 #include <signal.h>
+#include <stdio.h>
 
 #include "ifacewatcher.h"
 #include "miniupnpdtypes.h"

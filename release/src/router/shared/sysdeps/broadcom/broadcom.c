@@ -289,6 +289,10 @@ int get_psta_status(int unit)
 	int isup, subunit = 0;
 	char buf[16] = {0};
 	int mlo_active = 0;
+#ifdef RTCONFIG_BRCM_HOSTAPD
+	char cmd[128];
+	FILE *pfp = NULL;
+#endif
 
 	if (unit == -1) return 0;
 
@@ -345,6 +349,24 @@ int get_psta_status(int unit)
 	get_mlo_link_stats(wl, macaddr, link_stats, &mlo_active);
 	if (debug) dbg("[link status] bssid : %s, link_stats : %s , link_active : %d\n", macaddr, link_stats, mlo_active);
 #endif
+
+#ifdef RTCONFIG_BRCM_HOSTAPD
+	snprintf(cmd, sizeof(cmd), "wpa_cli-2.7 -i %s -p /var/run/%swpa_supplicant/ status | grep wpa_state | cut -d\"=\" -f2", ifname, prefix);
+	memset(buf, 0, sizeof(buf));
+
+	pfp = popen(cmd, "r");
+	if (pfp != NULL) {
+		if (fgets(buf, sizeof(buf), pfp) != NULL) {
+			buf[strlen(buf) - 1] = '\0';
+			if (!strcmp(buf, "COMPLETED"))
+				ret = 2;
+			else if (!strcmp(buf, "4WAY_HANDSHAKE"))
+				ret = 1;
+		}
+
+		pclose(pfp);
+	}
+#else
 	/* buffers and length */
 	mac_list_size = sizeof(mac_list->count) + MAX_STA_COUNT * sizeof(struct ether_addr);
 	mac_list = malloc(mac_list_size);
@@ -371,7 +393,7 @@ int get_psta_status(int unit)
 		if (mac_list->count)
 			ret = 2;
 	}
-
+#endif
 PSTA_ERR:
 	if (mlist) free(mlist);
 	if (mac_list) free(mac_list);
@@ -3273,5 +3295,44 @@ void process_affinity(pid_t pid, unsigned int cpumask)
 	} while (cpumask != 0);
 
 	sched_setaffinity(pid, sizeof(cpu_set_t), &cpuset);
+}
+#endif
+
+// nmp
+#ifdef RTCONFIG_MULTILAN_CFG
+void check_wireless_auth_from_sdn(char *mac, char *ifname, char *wl_auth, int auth_len)
+{
+	FILE *fp;
+	char cmd[128] = {0}, tmp[8] = {0}, auth[32] = {0};
+
+	snprintf(cmd, sizeof(cmd), "wl -i %s sta_info %s | grep auth 2>/dev/null", ifname, mac);
+	if ((fp = popen(cmd, "r")) != NULL) {
+		if (fscanf(fp, "%5s %s", tmp, auth) == 2) {
+			strlcpy(wl_auth, auth, auth_len);
+		}
+		pclose(fp);
+	}
+}
+#else
+void check_wireless_auth(char *mac, char *wl_auth, int auth_len)
+{
+	FILE *fp;
+	char word[256], *next;
+	char cmd[128] = {0}, tmp[8] = {0}, auth[32] = {0};
+	int ret = 0;
+
+	foreach (word, nvram_safe_get("wl_ifnames"), next)
+	{
+		snprintf(cmd, sizeof(cmd), "wl -i %s sta_info %s | grep auth 2>/dev/null", word, mac);
+		if ((fp = popen(cmd, "r")) != NULL) {
+			if (fscanf(fp, "%5s %s", tmp, auth) == 2) {
+				strlcpy(wl_auth, auth, auth_len);
+				ret = 1;
+			}
+			pclose(fp);
+			if(ret)
+				break;
+		}
+	}
 }
 #endif

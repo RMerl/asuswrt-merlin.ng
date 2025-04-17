@@ -7954,9 +7954,9 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
             if(aimesh_re_node() == 0)
 #endif
 #ifdef RTCONFIG_HNS
-		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "2357");
+		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "2357", "--queue-bypass");
 #else
-		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "QUEUE");
+		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "0", "--queue-bypass");
 #endif
         }
 #endif
@@ -7977,9 +7977,9 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 	if(aimesh_re_node() == 0)
 #endif
 #ifdef RTCONFIG_HNS
-		eval("ip6tables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "2357");
+		eval("ip6tables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "2357", "--queue-bypass");
 #else
-		eval("ip6tables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "QUEUE");
+		eval("ip6tables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "0", "--queue-bypass");
 #endif
 	}
 #endif //RTCONFIG_DNSQUERY_INTERCEPT
@@ -8210,6 +8210,21 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 #ifdef RTCONFIG_IPTABLES1810
 	system("iptables -w -t mangle -N tcp-pureack-eth0; sleep 1; iptables -w -t mangle -A POSTROUTING -o eth0 -p tcp --tcp-pureack -j tcp-pureack-eth0");
 #endif
+
+#if defined(RTCONFIG_HND_ROUTER_BE_4916) || defined(RTCONFIG_MT798X) || defined(RTCONFIG_MT799X)
+#if defined(RTCONFIG_BWDPI) && defined(RTCONFIG_IPSEC)
+	if ( check_bwdpi_nvram_setting() &&
+		(nvram_get_int("ipsec_server_enable") || nvram_get_int("ipsec_client_enable")
+#ifdef RTCONFIG_INSTANT_GUARD
+		 || nvram_get_int("ipsec_ig_enable")
+#endif
+		)
+	) {
+		eval("iptables", "-t", "mangle", "-A", "PREROUTING", "-i", wan_if, "-p", "udp", "--dport", "53", "!", "-d", lan_ip, "-j", "DROP");
+	}
+#endif
+#endif
+
 }
 
 #if defined(RTCONFIG_DUALWAN) || defined(RTCONFIG_MULTICAST_IPTV) // RTCONFIG_DUALWAN || RTCONFIG_MULTICAST_IPTV
@@ -8263,9 +8278,9 @@ mangle_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
             if(aimesh_re_node() == 0)
 #endif
 #ifdef RTCONFIG_HNS
-		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "2357");
+		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "2357", "--queue-bypass");
 #else
-		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "QUEUE");
+		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "0", "--queue-bypass");
 #endif
         }
 #endif
@@ -8320,9 +8335,9 @@ mangle_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
             if(aimesh_re_node() == 0)
 #endif
 #ifdef RTCONFIG_HNS
-		eval("ip6tables", "-t", "mangle", "-I", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "2357"); /*first rule*/
+		eval("ip6tables", "-t", "mangle", "-I", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "2357", "--queue-bypass"); /*first rule*/
 #else
-		eval("ip6tables", "-t", "mangle", "-I", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "QUEUE"); /*first rule*/
+		eval("ip6tables", "-t", "mangle", "-I", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "NFQUEUE", "--queue-num", "0", "--queue-bypass"); /*first rule*/
 #endif
 	}
 #endif //RTCONFIG_DNSQUERY_INTERCEPT

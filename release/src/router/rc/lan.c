@@ -6664,6 +6664,7 @@ void restart_wireless(void)
 	restart_wl();
 	lanaccess_wl();
 #endif
+	start_acsd();
 #if defined(RTCONFIG_QCA) || \
 		(defined(RTCONFIG_RALINK) && !defined(RTCONFIG_DSL) && !defined(RTN13U))
 	reinit_hwnat(-1);
@@ -6699,7 +6700,6 @@ void restart_wireless(void)
 #ifdef BCM_EVENTD
 	start_eventd();
 #endif
-	start_acsd();
 #if defined(RTCONFIG_DHDAP) || defined(RTCONFIG_HND_ROUTER_AX)
 	start_dhd_monitor();
 #endif

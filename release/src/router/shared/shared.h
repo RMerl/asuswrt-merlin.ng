@@ -507,7 +507,7 @@ struct mlo_band_mapping_s {
 
 static struct mlo_band_mapping_s mlo_band_mapping_list[] __attribute__ ((unused)) = {
 #if defined(RTCONFIG_MLO_CONFIG_556)
-	{ WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_2G | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_5GL | WIFI_BAND_5GH | WIFI_BAND_6G}, //2556, mlo:5-1/5-2/6
+	{ WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_5GL | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_2G | WIFI_BAND_5GH | WIFI_BAND_6G}, //2556, mlo:5-1/5-2/6
 #else
 	{ WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_2G | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_2G | WIFI_BAND_5GH | WIFI_BAND_6G}, //2556, mlo:2/5-2/6
 #endif
@@ -2989,6 +2989,7 @@ extern void check_mlo_config();
 extern int is_mlo_dwb_mssid(char *ifname);
 extern int is_compatible_network(char *ifname);
 extern int isMloConnectionMode();
+extern int checkMatchMloCondition();
 extern int checkMloConnectionChange();
 extern int isMLOConnectionSupported(int ap_mlo, int sta_mlo);
 #if defined(RTCONFIG_HND_ROUTER_BE_4916)
@@ -4317,6 +4318,8 @@ static inline void swap_wanlan(phy_port_mapping *port_mapping)
 	char *tmp_label_name;
 	//int tmp_max_rate;
 	int i, j;
+
+	return;
 
 	// Don't swap when default mode.
 	if (nvram_get_int("x_Setting") == 0)

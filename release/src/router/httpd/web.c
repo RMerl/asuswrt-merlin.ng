@@ -7570,7 +7570,18 @@ static int get_cpu_temperature(int eid, webs_t wp, int argc, char_t **argv)
 #ifdef HND_ROUTER
 	FILE *fp;
 	int temperature = 0;
+#ifdef RTCONFIG_HND_ROUTER_BE_4916
+	char buffer[32] = { 0 };
+	double cpu_temp = 0.0;
 
+	if ((fp = fopen("/sys/power/bpcm/cpu_temp", "r")) != NULL) {
+		if (fgets(buffer, sizeof(buffer), fp)) {
+			sscanf(buffer, "cpu_temp: %lf C", &cpu_temp);
+			temperature = cpu_temp;
+		}
+		fclose(fp);
+	} else
+#endif
 	if ((fp = fopen("/sys/class/thermal/thermal_zone0/temp", "r")) != NULL) {
 		fscanf(fp, "%d", &temperature);
 		fclose(fp);
@@ -16215,7 +16226,7 @@ do_upgrade_cgi(char *url, FILE *stream)
 		websApply(stream, "Updating.asp");
 		shutdown(fileno(stream), SHUT_RDWR);
 #ifndef RTCONFIG_SINGLEIMG_B
-		while(etry-- && (err = upgrade_rc("start", autoreboot, reset, bootnew, 60)))
+		while(etry-- && (err = upgrade_rc("start", autoreboot, reset, bootnew, 120)))
 		{
 			printf("%s, try agn upgrade...%d/3, err=%d\n", __FUNCTION__, etry, err);
 			upgrade_rc("stop", autoreboot, reset, bootnew, 10);
@@ -32184,6 +32195,38 @@ ej_check_acorpw(int eid, webs_t wp, int argc, char_t **argv)
 
 #if defined(RTCONFIG_BWDPI)
 static int
+do_sqlite_Stat_hook(int type, webs_t wp)
+{
+	int retval = 0;
+	char *client = NULL, *mode = NULL, *dura = NULL, *date = NULL;
+
+	client = websGetVar(wp, "client", "");
+	mode = websGetVar(wp, "mode", "");
+	dura = websGetVar(wp, "dura", "");
+	date = websGetVar(wp, "date", "");
+
+	if(type < 0 || type > 2)
+		return 0;
+
+	if(strcmp(client, "all") && !isValidMacAddress(client) && check_cmd_injection_blacklist(client))
+		return 0;
+
+	if(strcmp(mode, "day") && strcmp(mode, "hour") && strcmp(mode, "detail"))
+		return 0;
+
+	if(strcmp(dura, "7") && strcmp(dura, "24") && strcmp(dura, "31"))
+		return 0;
+
+	if(!isValidtimestamp_noletter(date))
+		return 0;
+
+	// 0: app, 1: mac
+	sqlite_Stat_hook(type, client, mode, dura, date, &retval, wp);
+
+	return retval;
+}
+
+static int
 ej_bwdpi_history(int eid, webs_t wp, int argc, char_t **argv)
 {
 	int retval = 0;
@@ -32269,16 +32312,7 @@ ej_bwdpi_redirect_page_status(int eid, webs_t wp, int argc, char_t **argv)
 static int
 ej_bwdpi_appStat(int eid, webs_t wp, int argc, char_t **argv)
 {
-	char *client, *mode, *dura, *date;
-	int retval = 0;
-
-	client = websGetVar(wp, "client", "");
-	mode = websGetVar(wp, "mode", "");
-	dura = websGetVar(wp, "dura", "");
-	date = websGetVar(wp, "date", "");
-
-	// 0: app, 1: mac
-	sqlite_Stat_hook(0, client, mode, dura, date, &retval, wp);
+	int retval = do_sqlite_Stat_hook(0, wp);
 
 	return retval;
 }
@@ -32286,16 +32320,7 @@ ej_bwdpi_appStat(int eid, webs_t wp, int argc, char_t **argv)
 static int
 ej_bwdpi_wanStat(int eid, webs_t wp, int argc, char_t **argv)
 {
-	char *client, *mode, *dura, *date;
-	int retval = 0;
-
-	client = websGetVar(wp, "client", "");
-	mode = websGetVar(wp, "mode", "");
-	dura = websGetVar(wp, "dura", "");
-	date = websGetVar(wp, "date", "");
-
-	// 0: app, 1: mac
-	sqlite_Stat_hook(1, client, mode, dura, date, &retval, wp);
+	int retval = do_sqlite_Stat_hook(1, wp);
 
 	return retval;
 }
@@ -32303,16 +32328,7 @@ ej_bwdpi_wanStat(int eid, webs_t wp, int argc, char_t **argv)
 static int
 ej_bwdpi_wanStat_detail(int eid, webs_t wp, int argc, char_t **argv)
 {
-	char *client, *mode, *dura, *date;
-	int retval = 0;
-
-	client = websGetVar(wp, "client", "");
-	mode = websGetVar(wp, "mode", "");
-	dura = websGetVar(wp, "dura", "");
-	date = websGetVar(wp, "date", "");
-
-	// 0: app, 1: mac
-	sqlite_Stat_hook(2, client, mode, dura, date, &retval, wp);
+	int retval = do_sqlite_Stat_hook(2, wp);
 
 	return retval;
 }

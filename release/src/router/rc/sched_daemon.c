@@ -448,6 +448,7 @@ void wl_sched_v2(void)
 	int wlX_activeNow = -1;
 #endif
 	int bss_status;
+	int radio_status;
 
 	// Check whether conversion needed.
 	convert_wl_sched_v1_to_sched_v2();
@@ -655,30 +656,30 @@ void wl_sched_v2(void)
 #endif
 
 			if (activeNow == 0) {
-				bss_status = get_wlan_service_status(atoi(tmp), -1);
-				if (bss_status == 1) { // radio is on
-					set_wlan_service_status(atoi(tmp), -1, 0);
+				radio_status = get_radio(atoi(tmp), -1);
+				if (radio_status == 1) { // radio is on
+					set_radio(0, atoi(tmp), -1);
 					SCHED_DAEMON_DBG(" Turn radio [band_index=%s] off", tmp);
 					logmessage("wifi scheduler", "Turn radio [band_index=%s] off.", tmp);
 				} else {
-					if (bss_status == 0) {
+					if (radio_status == 0) {
 						SCHED_DAEMON_DBG("[wifi-scheduler] Turn radio [band_index=%s] off. Already off, no need to set it again.\n", tmp);
 						//logmessage("wifi scheduler", "Turn radio [band_index=%s, subunit=%s] off. Already off, no need to set it again.\n", tmp, tmp2);
 					} else
-						SCHED_DAEMON_DBG("[wifi-scheduler] Turn radio [band_index=%s] off. Error occur(%d).\n", tmp, bss_status);
+						SCHED_DAEMON_DBG("[wifi-scheduler] Turn radio [band_index=%s] off. Error occur(%d).\n", tmp, radio_status);
 				}
 			} else {
-				bss_status = get_wlan_service_status(atoi(tmp), -1);
-				if (bss_status == 0) { // radio is off
-					set_wlan_service_status(atoi(tmp), -1, 1);
+				radio_status = get_radio(atoi(tmp), -1);
+				if (radio_status == 0) { // radio is off
+					set_radio(1, atoi(tmp), -1);
 					SCHED_DAEMON_DBG(" Turn radio [band_index=%s] on", tmp);
 					logmessage("wifi scheduler", "Turn radio [band_index=%s] on.", tmp);
 				} else {
-					if (bss_status == 1) {
+					if (radio_status == 1) {
 						SCHED_DAEMON_DBG("[wifi-scheduler] Turn radio [band_index=%s] on. Already on, no need to set it again.\n", tmp);
 						//logmessage("wifi scheduler", "Turn radio [band_index=%s, subunit=%s] on. Already on, no need to set it again.\n", tmp, tmp2);
 					} else
-						SCHED_DAEMON_DBG("[wifi-scheduler] Turn radio [band_index=%s] on. Error occur(%d).\n", tmp, bss_status);
+						SCHED_DAEMON_DBG("[wifi-scheduler] Turn radio [band_index=%s] on. Error occur(%d).\n", tmp, radio_status);
 				}
 			}
 		}

@@ -509,6 +509,16 @@ stop_igmpproxy()
 #endif
 }
 
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
+void udpxy_fc_workaround()
+{
+	if (is_CN_sku()) {
+		_dprintf("[%s(%d)] udpxy fc workaround for CN SKU!\n", __FUNCTION__, __LINE__);
+		eval("fc", "config", "--mcast", "0");
+	}
+}
+#endif
+
 void
 start_igmpproxy(char *wan_ifname)
 {
@@ -552,6 +562,9 @@ start_igmpproxy(char *wan_ifname)
 			"-B", "65536",
 			"-c", nvram_safe_get("udpxy_clients"),
 			"-a", nvram_get("lan_ifname") ? : "br0");
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
+		udpxy_fc_workaround();
+#endif
 	}
 
 #if !defined(HND_ROUTER)
@@ -4061,11 +4074,10 @@ wan_up(const char *pwan_ifname)
 #endif
 
 		/* start multicast router on DHCP+VPN physical interface */
-#ifdef RTCONFIG_MULTISERVICE_WAN
-		if (!nvram_match("switch_wantag", "none"))
-#endif
 		if (nvram_match("iptv_ifname", wan_ifname)
+#if !defined(RTCONFIG_MULTISERVICE_WAN)
 		 || wan_unit == wan_primary_ifunit()
+#endif
 		)
 			start_igmpproxy(wan_ifname);
 

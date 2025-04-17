@@ -165,6 +165,7 @@ if(yadns_support){
 }
 
 if(dnspriv_support){
+	var orig_dnspriv_rulelist = '<% nvram_get("dnspriv_rulelist"); %>';
 	var dot_servers_array = [];
 	var dnspriv_rulelist_array = '<% nvram_get("dnspriv_rulelist"); %>';
 }
@@ -736,7 +737,7 @@ function applyRule(){
 		}
 
 		if(dnspriv_support){
-			if(document.form.dnspriv_enable.value == 1){
+			if(document.getElementById('dnspriv_rulelist_table') != null){
 				var dnspriv_rulelist_value = "";
 				for(k=0; k<document.getElementById('dnspriv_rulelist_table').rows.length; k++){
 					for(j=0; j<document.getElementById('dnspriv_rulelist_table').rows[k].cells.length-1; j++){
@@ -750,8 +751,10 @@ function applyRule(){
 							dnspriv_rulelist_value += document.getElementById('dnspriv_rulelist_table').rows[k].cells[j].title;
 					}
 				}
-				document.form.dnspriv_rulelist.disabled = false;
-				document.form.dnspriv_rulelist.value = dnspriv_rulelist_value;
+				if(orig_dnspriv_rulelist != dnspriv_rulelist_value){
+					document.form.dnspriv_rulelist.disabled = false;
+					document.form.dnspriv_rulelist.value = dnspriv_rulelist_value;
+				}
 			}
 			document.form.action_script.value += ";restart_stubby";
 		}

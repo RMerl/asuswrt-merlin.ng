@@ -848,7 +848,10 @@ function add_device(server_id){
 										$("#"+connected_devices_list_id).find(".add_device_button").removeClass("add_device_button_clicked");
 										$("#"+connected_devices_list_id).find(".icon_add").removeClass("add_device_button_clicked_icon");
 										$("#"+connected_devices_list_id).find(".new_device_container").hide();
-										apply_new_device_settings(retData.id, retData.dns_ipaddress, retData.dns_over_tls_url);
+										if(sdn_theme != "SDN_WIZARD" && sdn_theme != "SDN_PROFILE")
+											apply_new_device_settings(retData.id, retData.dns_ipaddress, retData.dns_over_tls_url);
+										else
+											refreshpage();
 									}
 									else{
 										show_device_hint(this_server_id, retData.status);

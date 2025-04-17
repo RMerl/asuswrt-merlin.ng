@@ -723,6 +723,41 @@ static int bootstate_v2_probe(struct platform_device *pdev)
 	return ret;
 }
 
+char *print_boot_reason(void)
+{
+	uint32_t bootReason = bcmbca_get_boot_reason();
+
+	switch ( (bootReason >> BCM_RESET_REASON_BITS) & BCM_BOOT_REASON_MASK )
+	{
+		case BCM_BOOT_REASON_ACTIVATE:
+			return "ACTIVATE ";
+		case BCM_BOOT_REASON_PANIC:
+			return "PANIC ";
+		case BCM_BOOT_REASON_WATCHDOG:
+			return "WATCHDOG ";
+		default:
+			return (bootReason != -1) ? "REBOOT " : "";
+	}
+}
+
+char *print_reset_status(void)
+{
+	uint32_t resetStatus = bcmbca_get_reset_status();
+
+	switch ( resetStatus )
+	{
+		case PCIE_RESET_STATUS:
+			return "PCIE reset";
+		case SW_RESET_STATUS:
+			return "SW reset";
+		case HW_RESET_STATUS:
+			return "HW reset";
+		case POR_RESET_STATUS:
+			return "POR reset";
+		default:
+			return "Unknown";
+	}
+}
 
 int bcm_bootstate_probe(struct platform_device *pdev)
 {
@@ -850,9 +885,9 @@ int bcm_bootstate_probe(struct platform_device *pdev)
 	}
 
 #if !defined(CONFIG_BRCM_SMC_BOOT)
-	printk("BOOT REASON 0x%x\n", bcmbca_get_boot_reason());
+	printk("BOOT REASON %s0x%x\n", print_boot_reason(), bcmbca_get_boot_reason());
 #endif
-	printk("RESET STATUS 0x%x\n", bcmbca_get_reset_status());
+	printk("RESET STATUS %s 0x%x\n", print_reset_status(), bcmbca_get_reset_status());
 	return rc;
 }
 

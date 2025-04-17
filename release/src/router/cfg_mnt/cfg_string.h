@@ -309,6 +309,8 @@
 #define CFG_STR_PREFER_RETRY_COUNT		"prefer_retry_count"
 #define CFG_STR_PREFER_RETRY_TIME		"prefer_retry_time"
 
+#define CFG_STR_MODEL_WIFI7	"support_wifi7"
+
 static char *papIndex[] __attribute__ ((unused)) = {CFG_STR_PAP2G, CFG_STR_PAP5G, CFG_STR_PAP5GL, CFG_STR_PAP5GH,
 			CFG_STR_PAP6G, CFG_STR_PAP6GL, CFG_STR_PAP6GH};
 static char *rssiIndex[] __attribute__ ((unused)) = {CFG_STR_RSSI2G, CFG_STR_RSSI5G, CFG_STR_RSSI5GL, CFG_STR_RSSI5GH,

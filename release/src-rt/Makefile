@@ -2572,6 +2572,8 @@ define RouterOptions
 		echo "RTCONFIG_OCNVC=y" >>$(1); \
 		sed -i "/RTCONFIG_DSLITE/d" $(1); \
 		echo "RTCONFIG_DSLITE=y" >>$(1); \
+		sed -i "/RTCONFIG_V6OPTION/d" $(1); \
+		echo "RTCONFIG_V6OPTION=y" >>$(1); \
 		if [ "$(OCNVC)" = "n" ]; then \
 			sed -i "/RTCONFIG_OCNVC/d" $(1); \
 			echo "# RTCONFIG_OCNVC is not set" >>$(1); \
@@ -2580,10 +2582,7 @@ define RouterOptions
 			sed -i "/RTCONFIG_DSLITE/d" $(1); \
 			echo "# RTCONFIG_DSLITE is not set" >>$(1); \
 		fi; \
-		if [ "$(V6OPTION)" = "y" ]; then \
-			sed -i "/RTCONFIG_V6OPTION/d" $(1); \
-			echo "RTCONFIG_V6OPTION=y" >>$(1); \
-		elif [ "$(V6OPTION)" = "n" ]; then \
+		if [ "$(V6OPTION)" = "n" ]; then \
 			sed -i "/RTCONFIG_V6OPTION/d" $(1); \
 			echo "# RTCONFIG_V6OPTION is not set" >>$(1); \
 		fi; \

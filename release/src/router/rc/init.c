@@ -119,6 +119,10 @@
 #include <openvpn_config.h>
 #endif
 
+#ifdef RTCONFIG_TCODE
+extern int noasusddns(void);
+#endif
+
 #if defined(RTCONFIG_HND_ROUTER_BE_4916)
 int stime(const time_t *t)
 {
@@ -2389,7 +2393,7 @@ misc_defaults(int restore_defaults)
 #endif
 #endif
 	nvram_unset("wlc_scan_state");
-#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000) || defined(GSBE18000)
+#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000)
 	nvram_unset("ledg_scheme_tmp");
 	if (nvram_get_int("ledg_scheme") >= LEDG_SCHEME_BLINKING)
 		nvram_set("ledg_scheme", nvram_default_get("ledg_scheme"));
@@ -22899,6 +22903,10 @@ NO_USB_CAP:
 
 #if defined(RTCONFIG_TURBO_BTN)
 	add_rc_support("boostkey");
+#endif
+
+#if defined(RTCONFIG_SW_HW_AUTH) && defined(RTCONFIG_AMAS)
+	nvram_set("amas_support", "");
 #endif
 
 #ifdef RTCONFIG_TCODE

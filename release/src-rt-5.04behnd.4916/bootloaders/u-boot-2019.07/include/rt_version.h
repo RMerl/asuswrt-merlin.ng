@@ -4,11 +4,11 @@
 #define RT_VERSION "3.0.0.6"
 #define RT_SERIALNO "102"
 #define RT_RCNO "2"
-#define RT_EXTENDNO "37435-gdd27f25_1059-g807f7_BB0B"
+#define RT_EXTENDNO "37526-g5772bd6_1099-ga930e_BB0B"
 #define RT_SWPJVERNO ""
 #define RT_BUILD_NAME "RT-BE92U"
 #define RT_BUILD_NAME_SEC "RT-BE92U_sec"
-#define RT_BUILD_INFO "Fri Feb 14 00:25:33 UTC 2025 root@dd27f25"
+#define RT_BUILD_INFO "Mon Apr 14 03:32:52 UTC 2025 root@5772bd6"
 #define RT_CUSTOM_MODEL ""
 #endif
 #ifdef RTCONFIG_NVRAM_ENCRYPT

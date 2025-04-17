@@ -32,6 +32,12 @@ enum reListAction {
 	RELIST_UPDATE
 };
 
+enum obReListStatus {
+	OB_RELIST_ERROR = -1,
+	OB_RELIST_NONEXIST = 0,
+	OB_RELIST_EXIST = 1,
+};
+
 typedef struct _CM_CLIENT_TABLE {
 	char alias[CFG_CLIENT_NUM][ALIAS_LEN];
 	unsigned char ipAddr[CFG_CLIENT_NUM][IP_LEN];
@@ -134,9 +140,8 @@ extern int cm_getObVifReByNewReMac(char *newReMac, char *obReMac, int macLen);
 extern void cm_updateObVifReList(char *newReMac, char *obReMac, int action);
 #endif
 extern void cm_reorganizeReList();
-#ifdef RTCONFIG_AMAS_CENTRAL_CONTROL
 extern void cm_updateReObList(char *reMac, int action, int commit);
-#endif
+extern int cm_checkReObListByMac(char *reMac);
 extern void cm_updateReInfo(CM_CLIENT_TABLE *clientTbl, char *reMac);
 extern int cm_deleteReInfo(char *reMac);
 extern void cm_updateReInfoToClientTbl(CM_CLIENT_TABLE *clientTbl);

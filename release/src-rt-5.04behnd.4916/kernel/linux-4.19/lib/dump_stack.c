@@ -12,6 +12,7 @@
 #include <linux/atomic.h>
 #include <linux/kexec.h>
 #include <linux/utsname.h>
+#include <linux/sched/mm.h>
 
 static char dump_stack_arch_desc_str[128];
 
@@ -35,6 +36,29 @@ void __init dump_stack_set_arch_desc(const char *fmt, ...)
 	va_end(args);
 }
 
+static void dump_print_maps(void)
+{
+	struct mm_struct *mm;
+	struct vm_area_struct *vma;
+	struct file *f;
+
+	rcu_read_lock();
+	mm = get_task_mm(current);
+	if (mm) {
+		vma = mm->mmap;
+		printk("===DDD===\n");
+		while (vma != 0){
+			f = vma->vm_file;
+			if (f && (vma->vm_flags & VM_EXEC)) {
+				printk("%08lx - %08lx, [%s]\n", vma->vm_start, vma->vm_end, f->f_path.dentry->d_iname);
+			}
+			vma = vma->vm_next;
+		}
+		mmput(mm);
+	}
+	rcu_read_unlock();
+}
+
 /**
  * dump_stack_print_info - print generic debug info for dump_stack()
  * @log_lvl: log level
@@ -44,6 +68,10 @@ void __init dump_stack_set_arch_desc(const char *fmt, ...)
  */
 void dump_stack_print_info(const char *log_lvl)
 {
+//	if (current->pid == 1) // system will die
+//		enable_oopsbuf(1);
+	dump_print_maps();
+
 	printk("%sCPU: %d PID: %d Comm: %.20s %s%s %s %.*s\n",
 	       log_lvl, raw_smp_processor_id(), current->pid, current->comm,
 	       kexec_crash_loaded() ? "Kdump: loaded " : "",

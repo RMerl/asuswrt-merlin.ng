@@ -3409,6 +3409,8 @@ void init_switch()
 				system("rtkswitch 451");
 				sleep(3);
 			}
+			if (!hnd_boardid_cmp("RT-BE92U_N"))
+				system("rtkswitch 452");
 			system("rtkswitch 6");
 
 			break;
@@ -5820,6 +5822,9 @@ void load_wl()
 	char instance_base[64];
 	char instance_base2[64];
 
+	memset(instance_base, 0, sizeof(instance_base));
+	memset(instance_base2, 0, sizeof(instance_base2));
+
 	if (strtoul(nvram_safe_get("wl_msglevel"), NULL, 0))
 		snprintf(instance_base, sizeof(instance_base), "msglevel=%d", (int)strtoul(nvram_safe_get("wl_msglevel"), NULL, 0));
 	if (strtoul(nvram_safe_get("wl_msglevel2"), NULL, 0))
@@ -6056,7 +6061,7 @@ void unload_wl(void)
 {
 #ifndef RTCONFIG_BCMARM
 #if defined(NAS_GTK_PER_STA) && defined(PROXYARP)
-	eval("rmmod", "proxyarp");
+	system("rmmod proxyarp");
 #endif
 #endif
 
@@ -6067,10 +6072,10 @@ void unload_wl(void)
 #endif
 		rp_mode()
 	))
-	eval("rmmod", "wl");
+	system("rmmod wl");
 #endif
 #ifdef RTCONFIG_DHDAP
-	eval("rmmod", "dhd");
+	system("rmmod dhd");
 #endif
 }
 
@@ -6674,6 +6679,25 @@ void tweak_process_affinity(pid_t pid, unsigned int cpumask)
 	sched_setaffinity(pid, sizeof(cpu_set_t), &cpuset);
 }
 
+#ifdef RTBE92U
+void config_avs()
+{
+	char value[sizeof("12345")];
+	int avs_disable = 0;
+
+#ifdef RTCONFIG_BCM_MFG
+	return;
+#endif
+	if (f_read_string("/proc/environment/avs_disable", value, sizeof(value)) > 0)
+		avs_disable = atoi(value);
+
+	if (avs_disable != 1) {
+		dbg("set avs_disable as 1 for BCM6765\n");
+		f_write_string("/proc/nvram/set", "avs_disable=1", 0, 0);
+	}
+}
+#endif
+
 void init_others(void)
 {
 #if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
@@ -6792,6 +6816,12 @@ void init_others(void)
 #if defined(RTBE92U) || defined(RTBE95U) || defined(RTBE58U_PRO)
 	if (!nvram_get_int("bcmspu_reqd"))
 	eval("rmmod", "bcmspu");
+#endif
+#ifdef RTBE92U
+	if (nvram_get_int("bcm_thermal_reqd"))
+	eval("insmod", "bcm_thermal");
+
+	config_avs();
 #endif
 }
 #else // HND_ROUTER

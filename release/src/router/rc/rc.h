@@ -40,7 +40,6 @@
 #include "sysdeps.h"
 #include <linux/version.h>
 #ifdef HND_ROUTER
-#include <cms_image.h>
 #include <bcm_imgif.h>
 #endif
 #if !defined(__GLIBC__) && !defined(__UCLIBC__) /* musl */

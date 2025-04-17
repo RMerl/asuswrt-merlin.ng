@@ -7831,7 +7831,7 @@ void dnsqd_check(void)
 {
         if (!pids("dnsqd"))
         {
-                start_dnsqd();
+                notify_rc("start_dnsqd");
         }
 }
 #endif
@@ -8060,6 +8060,8 @@ void dnsmasq_check()
 		get_mtlan(pmtl, &mtl_sz);
 		for (i = 0; i < mtl_sz; i++) {
 			if (pmtl[i].enable) {
+				if (pmtl[i].sdn_t.sdn_idx > 0 && pmtl[i].nw_t.idx == 0)
+					continue;
 				if (pmtl[i].sdn_t.sdn_idx)
 					snprintf(path, sizeof(path), "/var/run/dnsmasq-%d.pid", pmtl[i].sdn_t.sdn_idx);
 				else
@@ -8631,6 +8633,14 @@ static void auto_firmware_check()
 			{
 				FAUPGRADE_DBG("do RE webs_update at bootup");
 				nvram_set("webs_update_trigger", "WDG_RE_BT");
+				eval("/usr/sbin/webs_update.sh");
+				return;
+			}
+#endif
+#if defined(RTCONFIG_AUTO_FW_UPGRADE) 
+			if(update_enable == 1){
+				FAUPGRADE_DBG("update_enable==1, do webs_update only at bootup");
+				nvram_set("webs_update_trigger", "WDG_BT");
 				eval("/usr/sbin/webs_update.sh");
 				return;
 			}
@@ -10952,9 +10962,8 @@ void watchdog(int sig)
 		}
 	}
 #endif
-#ifdef RTCONFIG_BCMWL6
-	if (!restore_defaults_g && strlen(nvram_safe_get("acs_ifnames")) && nvram_get_int("wlready") &&
-		!mediabridge_mode() &&
+#if defined(RTCONFIG_BCMWL6) && !defined(RTCONFIG_BCM_MFG)
+	if (!no_need_acsd() &&
 #ifdef RTCONFIG_HND_ROUTER_AX
 		!pids("acsd2")
 #else

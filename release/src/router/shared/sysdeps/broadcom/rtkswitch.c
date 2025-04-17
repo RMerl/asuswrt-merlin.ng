@@ -169,6 +169,7 @@ int rtkswitch_ioctl(int val, int val2, int val3)
 	case 44:	/* hardware reset */
 	case 45:	/* software reset */
 	case 451:	/* workaround serdes port link down */
+	case 452:	/* workaround switch ports link down */
 	case 49:	/* disable l2 learning */
 	case 491:	/* dump drop reason register pre */
 	case 492:	/* dump drop reason register post */

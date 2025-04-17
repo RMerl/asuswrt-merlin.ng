@@ -2260,6 +2260,7 @@ void start_dnsmasq(void)
 
 #ifdef RTCONFIG_DNSPRIVACY
 #ifdef RTCONFIG_MULTILAN_CFG
+	_dprintf("%s: Do start_stubby(%d)\n", __FUNCTION__, sdn_idx);
 	start_stubby(sdn_idx);
 #else
 	start_stubby();
@@ -2313,6 +2314,7 @@ void stop_dnsmasq(void)
 
 #ifdef RTCONFIG_DNSPRIVACY
 #ifdef RTCONFIG_MULTILAN_CFG
+	_dprintf("%s: Do stop_stubby(%d)\n", __FUNCTION__, sdn_idx);
 	stop_stubby(sdn_idx);
 #else
 	stop_stubby();
@@ -5254,6 +5256,8 @@ start_ddns(char *caller, int isAidisk)
 	}
 	else if (strcmp(server, "DOMAINS.GOOGLE.COM") == 0)
 		service = "default@domains.google.com";
+	else if (strcmp(server, "DYNU.COM") == 0)
+		service = "default@dynu.com";
 #endif
 	else if (strcmp(server, "WWW.ORAY.COM") == 0) {
 		service = "peanuthull", asus_ddns = 2;
@@ -6299,6 +6303,33 @@ stop_acsd(void)
 	killall_tk("acsd");
 }
 
+int no_need_acsd()
+{
+#ifdef RTAC68U
+	if (is_dpsta_repeater() && !nvram_get_int("x_Setting"))
+		return 1;
+#endif
+
+#ifdef RTCONFIG_PROXYSTA
+	if (psta_exist())
+		return 1;
+#endif
+
+#ifdef RTCONFIG_AMAS
+	if (nvram_match("re_mode", "1") && nvram_match("channel_plan", "4") &&
+	   (!nvram_match("amas_bhctrl_service_ready", "1") || !nvram_match("amas_lanctrl_service_ready", "1") || !nvram_match("amas_misc_service_ready", "1"))
+	) {
+		_dprintf("skip run acsd due not ready:%d/%d/%d\n", nvram_get_int("amas_bhctrl_service_ready"), nvram_get_int("amas_lanctrl_service_ready"), nvram_get_int("amas_misc_service_ready"));
+		return 1;
+	}
+#endif
+
+	if (restore_defaults_g || !strlen(nvram_safe_get("acs_ifnames")))
+		return 1;
+
+	return 0;
+}
+
 int
 start_acsd()
 {
@@ -6312,26 +6343,12 @@ start_acsd()
 	int pid;
 #endif
 
-#ifdef RTAC68U
-	if (is_dpsta_repeater() && !nvram_get_int("x_Setting"))
+	if (no_need_acsd())
 		return 0;
-#endif
-
-#ifdef RTCONFIG_PROXYSTA
-	if (psta_exist())
-		return 0;
-#endif
-
-	if (nvram_match("re_mode", "1") && nvram_match("channel_plan", "4") &&
-	   (!nvram_match("amas_bhctrl_service_ready", "1") || !nvram_match("amas_lanctrl_service_ready", "1") || !nvram_match("amas_misc_service_ready", "1"))
-) {
-		_dprintf("skip run acsd due not ready:%d/%d/%d\n", nvram_get_int("amas_bhctrl_service_ready"), nvram_get_int("amas_lanctrl_service_ready"), nvram_get_int("amas_misc_service_ready"));
-		return 0;
-	}
 
 	stop_acsd();
 
-	if (!restore_defaults_g && strlen(nvram_safe_get("acs_ifnames"))) {
+	{
 #ifdef RTCONFIG_AVBLCHAN
 		reset_exclvalid();
 #endif

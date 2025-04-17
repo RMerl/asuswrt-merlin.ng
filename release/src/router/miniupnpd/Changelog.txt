@@ -1,4 +1,12 @@
-$Id: Changelog.txt,v 1.523 2025/01/10 22:10:49 nanard Exp $
+$Id: Changelog.txt,v 1.527 2025/04/03 21:24:39 nanard Exp $
+
+VERSION 2.3.8 : released on 2025/04/03
+
+2025/04/03:
+  Add doxygen documentation to some of the functions
+
+2025/03/31:
+  Clean bsd/ subdirectory. Build testifacewatcher
 
 2025/01/25:
   Send byebye messages also to FF05::C (and eventually FF0E::C)

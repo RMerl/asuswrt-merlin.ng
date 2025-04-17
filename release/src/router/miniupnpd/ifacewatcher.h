@@ -1,15 +1,16 @@
-/* $Id: ifacewatcher.h,v 1.2 2011/05/20 09:42:49 nanard Exp $ */
+/* $Id: ifacewatcher.h,v 1.5 2025/04/03 21:11:35 nanard Exp $ */
 /* MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2009 Thomas Bernard
- *
- * ifacewatcher.h
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
+ * (c) 2006-2025 Thomas Bernard
+ */
+/*! \file ifacewatcher.h
+ * \brief network interface watcher
  *
  * This file implements dynamic serving of new network interfaces
  * which weren't available during daemon start. It also takes care
  * of interfaces which become unavailable.
- *
- * Copyright (c) 2011, Alexey Osipov <simba@lerlan.ru>
+ */
+/* Copyright (c) 2011, Alexey Osipov <simba@lerlan.ru>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,7 +42,13 @@
 #include "config.h"
 
 #ifdef USE_IFACEWATCHER
+/*! \brief open the socket for watching network interfaces
+ * \return a file descriptor or -1 on error
+ */
 int OpenAndConfInterfaceWatchSocket(void);
+/*! \brief process available data
+ * \param[in] s socket opened with OpenAndConfInterfaceWatchSocket()
+ */
 void ProcessInterfaceWatchNotify(int s);
 #endif
 

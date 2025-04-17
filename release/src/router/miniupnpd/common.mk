@@ -20,6 +20,8 @@ testasyncsendto:	testasyncsendto.o asyncsendto.o upnputils.o \
 testminissdp:	testminissdp.o minissdp.o upnputils.o upnpglobalvars.o \
 	asyncsendto.o getroute.o
 
+testifacewatcher:	testifacewatcher.o ifacewatcher.o
+
 miniupnpdctl:	miniupnpdctl.o
 
 dox:	$(SRCDIR)/miniupnpd.doxyconf

@@ -7612,6 +7612,7 @@ static int get_cpu_temperature(int eid, webs_t wp, int argc, char_t **argv)
 			temperature = cpu_temp;
 		}
 		fclose(fp);
+		return websWrite(wp, "%d", temperature);
 	} else
 #endif
 	if ((fp = fopen("/sys/class/thermal/thermal_zone0/temp", "r")) != NULL) {

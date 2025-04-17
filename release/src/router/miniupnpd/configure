@@ -866,7 +866,11 @@ if [ $DYNAMIC_OS_VERSION -ne 0 ] ; then
   echo "#define DYNAMIC_OS_VERSION 1" >> ${CONFIGFILE}
 fi
 echo "#define OS_NAME		\"$OS_NAME\"" >> ${CONFIGFILE}
-echo "#define OS_VERSION	\"$OS_NAME/$OS_VERSION\"" >> ${CONFIGFILE}
+if [ -z "$OS_VERSION" ] ; then
+  echo "#define OS_VERSION	\"$OS_NAME\"" >> ${CONFIGFILE}
+else
+  echo "#define OS_VERSION	\"$OS_NAME/$OS_VERSION\"" >> ${CONFIGFILE}
+fi
 echo "#define OS_URL		\"${OS_URL}\"" >> ${CONFIGFILE}
 echo "" >> ${CONFIGFILE}
 

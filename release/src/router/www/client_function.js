@@ -2381,7 +2381,7 @@ function create_clientlist_listview() {
 	var divObj = document.createElement("div");
 	divObj.setAttribute("id","clientlist_viewlist_block");
 
-	var obj_width_map = [["15%", "20%", "25%", "20%", "20%"],["10%", "10%", "30%", "20%", "20%", "10%"],["6%", "6%", "17%", "30%", "15%", "6%", "6%", "6%", "8%"]];
+	var obj_width_map = [["15%", "20%", "25%", "20%", "20%"],["10%", "10%", "30%", "20%", "20%", "10%"],["6%", "6%", "20%", "27%", "15%", "6%", "6%", "6%", "8%"]];
 	if(top.isIE8) obj_width_map = [["", "", "40%", "40%", "20%"],["", "", "40%", "30%", "20%", "10%"],["", "", "33%", "26%", "15%", "6%", "6%", "6%", "8%"]];
 	var obj_width = stainfo_support ? obj_width_map[2] : obj_width_map[1];
 	var wl_colspan = stainfo_support ? 9 : 6;
@@ -2642,7 +2642,7 @@ function drawClientListBlock(objID) {
 		if(document.getElementById("tb_" + objID) != null) {
 			removeElement(document.getElementById("tb_" + objID));
 		}
-		var obj_width_map = [["15%", "20%", "25%", "20%", "20%"],["10%", "10%", "30%", "20%", "20%", "10%"],["6%", "6%", "17%", "30%", "15%", "6%", "6%", "6%", "8%"]];
+		var obj_width_map = [["15%", "20%", "25%", "20%", "20%"],["10%", "10%", "30%", "20%", "20%", "10%"],["6%", "6%", "20%", "27%", "15%", "6%", "6%", "6%", "8%"]];
 		if(top.isIE8) obj_width_map = [["", "", "40%", "40%", "20%"],["", "", "40%", "30%", "20%", "10%"],["", "", "33%", "26%", "15%", "6%", "6%", "6%", "8%"]];
 		//var obj_width = (objID == "wired_list") ? obj_width_map[0] : ((stainfo_support) ? obj_width_map[2] : obj_width_map[1]);
 		var obj_width = (stainfo_support) ? obj_width_map[2] : obj_width_map[1];
@@ -2725,7 +2725,7 @@ function drawClientListBlock(objID) {
 				}
 				clientListCode += "</td>";
 
-				clientListCode += "<td style='word-wrap:break-word; word-break:break-all;' width='" + obj_width[2] + "'>";
+				clientListCode += "<td style='word-wrap:break-word; word-break:break-all;overflow: hidden;' width='" + obj_width[2] + "'>";
 				var clientNameEnCode = htmlEnDeCode.htmlEncode(clientlist_sort[j].name);
 				clientListCode += "<div id='div_clientName_"+objID+"_"+j+"' class='viewclientlist_clientName_edit' onclick='editClientName(\""+objID+"_"+j+"\");'>"+clientNameEnCode+"</div>";
 				clientListCode += "<input id='client_name_"+objID+"_"+j+"' type='text' value='"+clientNameEnCode+"' class='input_25_table' maxlength='32' style='width:95%;margin-left:0px;display:none;' onblur='saveClientName(\""+objID+"_"+j+"\", "+clientlist_sort[j].type+", \"" + clientlist_sort[j].mac + "\");'>";
@@ -2871,12 +2871,12 @@ function cal_panel_block_clientList(obj, multiple) {
 		winWidth = document.documentElement.clientWidth;
 	}
 
-	if(winWidth > 1050) {
-		winPadding = (winWidth - 1050) / 2;
-		winWidth = 1105;
+	if(winWidth > 1250) {
+		winPadding = (winWidth - 1250) / 2;
+		winWidth = 1305;
 		blockmarginLeft = (winWidth * multiple) + winPadding;
 	}
-	else if(winWidth <= 1050) {
+	else if(winWidth <= 1250) {
 		if(isMobile()) {
 			if(document.body.scrollLeft < 50) {
 				blockmarginLeft= (winWidth) * multiple + document.body.scrollLeft;

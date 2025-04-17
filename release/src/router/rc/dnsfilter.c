@@ -126,9 +126,7 @@ int get_dns_filter(int proto, int mode, dnsf_srv_entry_t *dnsfsrv)
 				dnsfsrv->server2[0] = '\0';
 				break;
 			case DNSF_SRV_ROUTER:
-				strlcpy(dnsfsrv->server1, nvram_safe_get("dhcp_dns1_x"), 46);
-				if (!*dnsfsrv->server1)	// Empty, default to router's IP
-					strlcpy(dnsfsrv->server1, nvram_safe_get("lan_ipaddr"), 46);
+				strlcpy(dnsfsrv->server1, nvram_safe_get("lan_ipaddr"), 46);
 				dnsfsrv->server2[0] = '\0';
 				break;
 			default:
@@ -250,9 +248,12 @@ void dnsfilter_settings(FILE *fp) {
 			if (dnsmode == DNSF_SRV_UNFILTERED) {
 				fprintf(fp, "-A DNSFILTER -m mac --mac-source %s -j RETURN\n",
 					mac);
+			} else if (dnsmode == DNSF_SRV_ROUTER) {
+				fprintf(fp, "-A DNSFILTER -m mac --mac-source %s -j REDIRECT\n",
+					mac);
 			} else if (get_dns_filter(AF_INET, dnsmode, &dnsfsrv)) {
-					fprintf(fp,"-A DNSFILTER -m mac --mac-source %s -j DNAT --to-destination %s\n",
-						mac, dnsfsrv.server1);
+				fprintf(fp,"-A DNSFILTER -m mac --mac-source %s -j DNAT --to-destination %s\n",
+					mac, dnsfsrv.server1);
 			}
 		}
 
@@ -275,11 +276,14 @@ void dnsfilter_settings(FILE *fp) {
 						else if (pmtl[i].sdn_t.dnsf_idx == DNSF_SRV_ROUTER)
 						{
 							strlcpy(lan_ipaddr, pmtl[i].nw_t.addr, sizeof(lan_ipaddr));
-							if (*lan_ipaddr == '\0')	// Fallback
+							if (*lan_ipaddr)
 							{
-								strlcpy(lan_ipaddr, nvram_safe_get("lan_ipaddr"), sizeof(lan_ipaddr));
+								fprintf(fp, "-A DNSFILTER -i %s -j DNAT --to-destination %s\n", pmtl[i].nw_t.ifname, lan_ipaddr);
 							}
-							fprintf(fp, "-A DNSFILTER -i %s -j DNAT --to-destination %s\n", pmtl[i].nw_t.ifname, lan_ipaddr);
+							else
+							{
+								fprintf(fp, "-A DNSFILTER -i %s -j REDIRECT\n", pmtl[i].nw_t.ifname);
+							}
 						}
 						else if (get_dns_filter(AF_INET, pmtl[i].sdn_t.dnsf_idx, &dnsfsrv))
 						{

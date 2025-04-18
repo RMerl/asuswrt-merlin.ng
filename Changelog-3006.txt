@@ -15,27 +15,36 @@ Asuswrt-Merlin 3006.xxx Changelog
   - NEW: Moved RT-AX86U_PRO, RT-AX88U_PRO, ZenWifi Pro XT12,
          GT-AX6000, GT-AXE16000 and GT-AX11000_PRO to the
          3006 firmware series.
-
-  - NEW: Added RT-BE92U support, based on GPL 102_37435.  This GPL
-         seems to have some stability issues, so consider support
-         for this model to remain Beta, until a fix is provided
-         for it.
-
+  - NEW: Added RT-BE92U support, based on GPL 102_37526.
   - UPDATED: Merged GPL 3006.102_36521 for Wifi 6 models (Wifi 7
-             GPL codebase is unchanged from 3006.102.3).
+             devices other than the RT-BE92U are still on
+             102_37346).
+  - UPDATED: RT-BE96U and GT-BE98_PRO wifi driver to the build
+             from 102_37812.
   - UPDATED: OpenVPN to 2.6.14.
-  - UPDATED: miniupnpd to 2.3.7 (20250207 snapshot)
+  - UPDATED: miniupnpd to 2.3.8.
   - UPDATED: amtm to 5.2 (decoderman)
   - UPDATED: dnsmasq to 2.91.
   - UPDATED: dropbear to 2025.87.
+  - CHANGED: Setting DNS Director to "Router" will now always
+             redirect to the router's own IP.  Previously it
+             would redirect to the first DNS server configured
+             on the DHCP page (which defaults to the router
+             itself).
+             If you need DNS Director to redirect to an IP
+             configured in your DHCP settings, use a Custom DNS
+             entry in DNS Director.  This makes it more consistant
+             with what the name implies, and was also necessary
+             for improved Guest Network support.
   - FIXED: Missing hostname on Wireless Log for MLO-capable Wifi 7
            clients.
   - FIXED: CVE-2024-9143 in OpenSSL (Debian backport by RSDNTWK)
   - FIXED: CVE-2024-13176 in OpenSSL (Ubuntu backport by RSDNTWK)
-  - FIXED: Guest Networks on an isolated VLAN with DNSDirector set
-           to "Router" would fail to do any name resolution.
-  - FIXED: Wrong tab selected when clicking on "Profile" on the VLAN
-           page (dave14305)
+  - FIXED: Guest Networks on an isolated VLAN with DNS Director set
+           to "Router" would fail to do any name resolution (both
+           for whole network and for specific clients).
+  - FIXED: Wrong tab selected when clicking on "Profile" on the
+           VLAN page (dave14305)
   - FIXED: Missing button to remove entries in the Offline Client
            List (dave14305)
 

@@ -1,4 +1,4 @@
-# $Id: Makefile.bsd,v 1.109 2024/07/27 13:36:50 nanard Exp $
+# $Id: Makefile.bsd,v 1.111 2025/03/30 22:36:04 nanard Exp $
 # MiniUPnP project
 # http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
 # Author: Thomas Bernard
@@ -102,11 +102,13 @@ TESTASYNCSENDTOOBJS = testasyncsendto.o asyncsendto.o upnputils.o getroute.o
 TESTPORTINUSEOBJS = testportinuse.o portinuse.o getifaddr.o
 TESTMINISSDPOBJS = testminissdp.o minissdp.o upnputils.o upnpglobalvars.o \
                    asyncsendto.o getroute.o
+TESTIFACEWATCHEROBJS = testifacewatcher.o ifacewatcher.o upnputils.o
 
 EXECUTABLES = miniupnpd testupnpdescgen testgetifstats \
               testupnppermissions miniupnpdctl \
               testgetifaddr testgetroute testasyncsendto \
-              testportinuse testssdppktgen testminissdp
+              testportinuse testssdppktgen testminissdp \
+              testifacewatcher
 
 .if $(OSNAME) != "Darwin"
 LIBS += -lkvm
@@ -138,6 +140,7 @@ clean:
 	$(RM) $(TESTASYNCSENDTOOBJS)
 	$(RM) $(TESTPORTINUSEOBJS)
 	$(RM) $(TESTMINISSDPOBJS)
+	$(RM) $(TESTIFACEWATCHEROBJS)
 	$(RM) $(TESTGETROUTEOBJS)
 	$(RM) testssdppktgen.o
 	$(RM) validateupnppermissions validategetifaddr validatessdppktgen
@@ -204,6 +207,9 @@ testportinuse:	config.h $(TESTPORTINUSEOBJS)
 
 testminissdp:	config.h $(TESTMINISSDPOBJS)
 	$(CC) $(LDFLAGS) -o $@ $(TESTMINISSDPOBJS) $(LIBS)
+
+testifacewatcher:	config.h $(TESTIFACEWATCHEROBJS)
+	$(CC) $(LDFLAGS) -o $@ $(TESTIFACEWATCHEROBJS)
 
 testssdppktgen:	testssdppktgen.o
 	$(CC) $(LDFLAGS) -o $@ $(.ALLSRC) $(LIBS)

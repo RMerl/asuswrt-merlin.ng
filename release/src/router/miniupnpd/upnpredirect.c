@@ -1,8 +1,8 @@
-/* $Id: upnpredirect.c,v 1.100 2024/03/19 23:34:58 nanard Exp $ */
+/* $Id: upnpredirect.c,v 1.101 2025/03/22 22:19:33 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2024 Thomas Bernard
+ * (c) 2006-2025 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -191,7 +191,7 @@ lease_file_remove(unsigned short eport, int proto)
 /* reload_from_lease_file()
  * read lease_file and add the rules contained
  */
-int reload_from_lease_file()
+int reload_from_lease_file(void)
 {
 	FILE * fd;
 	char * p;
@@ -206,7 +206,7 @@ int reload_from_lease_file()
 #ifndef LEASEFILE_USE_REMAINING_TIME
 	time_t current_unix_time;
 #endif
-	char line[128];
+	char line[320];
 	int r;
 
 	if(!lease_file) return -1;
@@ -275,7 +275,8 @@ int reload_from_lease_file()
 			timestamp += current_time;	/* convert to our time */
 #else
 			if(timestamp <= (unsigned int)current_unix_time) {
-				syslog(LOG_NOTICE, "already expired lease in lease file");
+				syslog(LOG_NOTICE, "already expired lease in lease file (%hu=>%s:%hu %s)",
+				       eport, iaddr, iport, proto);
 				continue;
 			} else {
 				leaseduration = timestamp - current_unix_time;

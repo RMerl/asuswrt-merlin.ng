@@ -548,7 +548,7 @@ function save_sdn_rules() {
 			   different custom servers to use.</p>
 			<br>
 			<p>A few special System options are available in the presets.  "No Redirection" will bypass a global redirection,
-			   and "Router" will force clients to use the DNS provided by the router's DHCP server (or, the router itself if it's not defined).
+			   and "Router" will force clients to use the router itself as their resolver.
 		</div>
 
 			<!--=====Beginning of Main Content=====-->

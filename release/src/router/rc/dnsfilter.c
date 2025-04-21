@@ -326,7 +326,9 @@ void dnsfilter_settings(FILE *fp) {
 
 		/* Send other queries to the default server */
 		dnsmode = nvram_get_int("dnsfilter_mode");
-		if ((dnsmode != DNSF_SRV_UNFILTERED) && get_dns_filter(AF_INET, dnsmode, &dnsfsrv)) {
+		if (dnsmode == DNSF_SRV_ROUTER) {
+			fprintf(fp, "-A DNSFILTER -j REDIRECT\n");
+		} else if ((dnsmode != DNSF_SRV_UNFILTERED) && get_dns_filter(AF_INET, dnsmode, &dnsfsrv)) {
 			fprintf(fp, "-A DNSFILTER -j DNAT --to-destination %s\n", dnsfsrv.server1);
 		}
 	}

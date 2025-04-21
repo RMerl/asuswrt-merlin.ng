@@ -37520,6 +37520,7 @@ ej_get_header_info(int eid, webs_t wp, int argc, char **argv)
 		host_name_temp[strlen(host_name) - port_len] = '\0';
 	}
 	else{
+		host_name_copy = host_name_copy_t;
 		host_name_copy_temp = strtok((char *)host_name_copy,":");
 		snprintf(host_name_temp, sizeof(host_name_temp), "%s", host_name_copy_temp);
 	}

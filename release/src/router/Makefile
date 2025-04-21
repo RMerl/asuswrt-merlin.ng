@@ -3502,8 +3502,9 @@ libmnl-1.0.4-configure:
 
 libmnl-1.0.4-install:
 	install -D libmnl-1.0.4/src/.libs/libmnl.so $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0
-	ln -sf $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0 $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so
-	ln -sf $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0 $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0.2.0
+	cd $(INSTALLDIR)/libmnl-1.0.4/usr/lib/ && \
+		ln -sf libmnl.so.0 libmnl.so && \
+		ln -sf libmnl.so.0 libmnl.so.0.2.0
 	$(STRIP) $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0
 
 libmnl-1.0.4-clean:

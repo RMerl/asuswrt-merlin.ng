@@ -144,8 +144,6 @@ background-color:#E3E2E2;
 				<li id='sharelink'><a href="#tab2">分享清單</a></li>
 				<li id='version'><a href="#tab3">版本</a></li>
                 <li id='settings'><a href="#tab4">憑證</a></li>
-                <li id='community'><a href="#tab5">社群網路</a></li>
-                <li id='account'><a href="#tab6">帳號管理</a></li>
 			</ul>
 			<div class="tab_container">
 				<div id="tab1" class="tab_content">
@@ -253,123 +251,6 @@ background-color:#E3E2E2;
                     </fieldset>
                     
                 </div>
-                
-                <div id="tab5" class="tab_content">
-                	<span style="padding:10px 0 10px 0">在此登入社群網路來取得更多服務</span>
-                	<fieldset style="width: 700px;">
-                    	<legend>
-                        	<span id="label_community">FaceBook</span>
-                        </legend>
-                        <div>
-                        	<div class="x-panel-bwrap">
-			            		<div class="x-panel-community" id="facebook">
-			                       	<div class="user_image"></div>
-			            			<img id="user_pic" border="0">
-			            			<img class="loading-img" src="/smb/css/load.gif" style="visibility: hidden;">
-			            			<span id="user_authorize" class="user_login_option">Login</span>
-			            			<span id="user_deletetoken" style="visibility: hidden;">Logout</span>
-			            		</div>
-			                </div>
-                        </div>
-                    </fieldset>
-                    <fieldset style="width: 700px;">
-                    	<legend>
-                        	<span id="label_community">Google</span>
-                        </legend>
-                        <div>
-                        	<div class="x-panel-bwrap">
-			            		<div class="x-panel-community" id="google">
-			                       	<div class="user_image"></div>
-			            			<img id="user_pic" border="0">
-			            			<img class="loading-img" src="/smb/css/load.gif" style="visibility: hidden;">
-			            			<span id="user_authorize" class="user_login_option">Login</span>
-			            			<span id="user_deletetoken" style="visibility: hidden;">Logout</span>
-			            		</div>
-			            	</div>
-                        </div>
-                    </fieldset>
-                </div>	
-                
-                <!-- account manager-->
-                <div id="tab6" class="tab_content" style="padding:0">
-                	
-                	<fieldset>
-                    	<legend>
-                        	<span id="label_create_account">建立帳號</span>
-                        </legend>
-                        <div>
-                        	<div style="width:100%;">
-                            	<div>
-                                	<div id="desc_create_account" style="margin-left:0px;">您可以建立AiCloud帳號，可以指定資料夾存取權限以及設定Smart Access。</div>
-                                </div>
-                                <div style="width:100%;">
-                                	<table cellspacing="0" style="width: auto;">
-                                    	<tbody>
-                                        	<tr>
-                                            	<td><i>&nbsp;</i></td>
-                                                <td></td>
-                                                <td><i>&nbsp;</i></td>
-                                            </tr>
-                                        	<tr>
-                                            	<td><i>&nbsp;</i></td>
-                                                <td>
-                                                	<button id="btn_create_account" name="btn_create_account">建立帳號</button>
-                                                </td>
-                                                <td><i>&nbsp; OR &nbsp;</i></td>
-                                                <td>
-                                                	<button id="btn_create_invite" name="btn_create_invite">產生邀請函</button>
-												</td>
-                                            </tr>
-                                            <tr>
-                                            	<td><i>&nbsp;</i></td>
-                                                <td></td>
-                                                <td><i>&nbsp;</i></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </fieldset>
-                    
-                    <fieldset>
-                    	<legend>
-                        	<span id="label_account_list">帳號列表</span>
-                        </legend>
-                        <div>
-                        	<table id="table_account_list" style="width:100%;table-layout:fixed">
-                        		<thead>
-	  								<td field="username" style="text-align:center">帳號</td>
-	  								<!--<td field="name" style="text-align:center">姓名</td>-->
-	  								<td field="type" style="text-align:center">類型</td>
-	  								<td field="edit" style="text-align:center;width:80px">編輯</td>
-	  								<td field="delete" style="text-align:center;width:80px">刪除</td>
-	  							</thead>
-	  							<tbody>
-	  							</tbody>
-                            </table>
-                        </div>
-                    </fieldset>
-                    
-                    <fieldset>
-                    	<legend>
-                        	<span id="label_account_invite_list">邀請函列表</span>
-                        </legend>
-                        <div>
-                        	<table id="table_account_invite_list" style="width:100%;table-layout:fixed">
-                        		<thead>
-	  								<td field="invite" style="text-align:center">invite</td>
-	  								<td field="createtime" style="text-align:center">createtime</td>
-	  								<td field="edit" style="text-align:center;width:80px">編輯</td>
-	  								<td field="delete" style="text-align:center;width:80px">刪除</td>
-	  							</thead>
-	  							<tbody>
-	  							</tbody>
-                            </table>
-                        </div>
-                    </fieldset>
-                    
-				</div>
 			</div>
 		</div>
 	</td>    
@@ -424,67 +305,6 @@ background-color:#E3E2E2;
 		  	</tr>
   		</table>
 	</div>
-</div>
-
-<div id="dialog_create_account" title="建立帳號" style="overflow:hidden">
-	<table style="width:100%;padding:10px;font-size:14px;overflow:hidden">
-  		<tr id="tr_username" class="option_account">
-  			<td id="label_username" class="label_create_account">帳號:</td>
-  			<td class="content_create_account">
-  				<input type="text" id="input_username" maxlength="20">
-  			</td>
-  		</tr>
-  		<tr id="tr_password" class="option_account">
-  			<td id="label_password" class="label_create_account">密碼:</td>
-  			<td class="content_create_account">
-  				<input type="text" id="input_password" maxlength="20">
-  			</td>
-  		</tr>
-  		<tr id="tr_password_confirm" class="option_account">
-  			<td id="label_password_confirm" class="label_create_account">密碼確認:</td>
-  			<td class="content_create_account">
-  				<input type="text" id="input_password_confirm" maxlength="20">
-  			</td>
-  		</tr>
-  		<!--
-  		<tr>
-  			<td id="label_size_limit" class="label_create_account">存取空間大小:</td>
-  			<td class="content_create_account">
-  				<input id="input_size_limit" class="text">
-  			</td>
-  		</tr>
-  		-->
-  		<tr id="tr_permission">
-  			<td id="label_access_permission" class="label_create_account">存取權限:</td>
-  			<td class="content_create_account">
-  				<div id="table_share_folder" style="overflow-y:auto;height:200px;border:1px solid #cccccc"></div>
-  			</td>
-  		</tr>
-  		<tr id="tr_smart_access">
-  			<td id="label_smart_access" class="label_create_account">智慧遠端連線:</td>
-  			<td class="content_create_account">
-  				<input type="checkbox" id="input_smart_access"><span id="span_smart_access">Enable</span>
-  			</td>
-  		</tr>
-  		<tr id="tr_security_code" class="option_invite">
-  			<td id="label_security_code" class="label_create_account">安全碼:</td>
-  			<td class="content_create_account">
-  				<select id="select_security_code">
-  					<option value="0">無</option>
-  					<option value="1">手動指定</option>
-  					<option value="2">自動產生</option>
-  				</select>
-  				<input type="text" id="input_security_code" maxlength="4" style="display:none;width:35px">
-  			</td>
-  		</tr>
-	</table>
-</div>
-
-<div id="dialog_account_info" title="Invitation" style="overflow:hidden">
-	<div>
-		<div id="account_info"></div>
-		<p style="position:absolute;bottom:0px;right:30px;"><a id="mail_invitation" href="#">Mail to my friend</a></p>
-	<div>
 </div>
 
 </body>

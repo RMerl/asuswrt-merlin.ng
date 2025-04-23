@@ -35,3 +35,4 @@ netfilter_nft/testnftnlrdr
 netfilter_nft/testnftpinhole
 netfilter_nft/test_nfct_get
 .configure.cache
+doxygen/

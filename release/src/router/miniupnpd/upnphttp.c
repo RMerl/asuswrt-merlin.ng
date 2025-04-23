@@ -1,9 +1,9 @@
-/* $Id: upnphttp.c,v 1.114 2024/01/15 00:13:22 nanard Exp $ */
+/* $Id: upnphttp.c,v 1.116 2025/03/23 23:25:42 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * Project :  miniupnp
  * Website :  http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * Author :   Thomas Bernard
- * Copyright (c) 2005-2024 Thomas Bernard
+ * Copyright (c) 2005-2025 Thomas Bernard
  * This software is subject to the conditions detailed in the
  * LICENCE file included in this distribution.
  * */
@@ -29,7 +29,7 @@
 #include "upnpsoap.h"
 #include "upnpevents.h"
 #include "upnputils.h"
-#if defined(RANDOMIZE_URLS) || defined(DYNAMIC_OS_VERSION)
+#if defined(RANDOMIZE_URLS) || defined(DYNAMIC_OS_VERSION) || defined(IGD_V2)
 #include "upnpglobalvars.h"
 #endif /* RANDOMIZE_URLS */
 

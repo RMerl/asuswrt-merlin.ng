@@ -1,5 +1,6 @@
+# $Id: Makefile.linux_nft,v 1.19 2025/03/30 22:36:05 nanard Exp $
 # MiniUPnP project
-# (c) 2018-2024 Thomas Bernard
+# (c) 2018-2025 Thomas Bernard
 # (c) 2015 Tomofumi Hayashi
 # http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
 # Author : Tomofumi Hayashi
@@ -79,7 +80,7 @@ ifeq ($(TESTS), 1)
 EXECUTABLES += testupnpdescgen testgetifstats \
                testupnppermissions testgetifaddr \
                testgetroute testasyncsendto testportinuse \
-               testssdppktgen testminissdp
+               testssdppktgen testminissdp testifacewatcher
 endif
 
 .PHONY:	all clean install dox

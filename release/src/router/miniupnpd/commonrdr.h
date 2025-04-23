@@ -1,35 +1,44 @@
-/* $Id: commonrdr.h,v 1.16 2024/03/11 23:28:19 nanard Exp $ */
+/* $Id: commonrdr.h,v 1.17 2025/04/03 21:11:34 nanard Exp $ */
 /* MiniUPnP project
- * (c) 2006-2024 Thomas Bernard
+ * (c) 2006-2025 Thomas Bernard
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 #ifndef COMMONRDR_H_INCLUDED
 #define COMMONRDR_H_INCLUDED
 
+/*! \file commonrdr.h
+ * \brief common API for all backends
+ */
+
 #include "config.h"
 
 /* init and shutdown functions */
-/* init_redirect() return values :
- *  0 : OK
- * -1 : error */
+
+/*! \brief init the backend
+ * \return 0=OK, -1=error
+ */
 int
 init_redirect(void);
 
+/*! \brief shutdown the backend */
 void
 shutdown_redirect(void);
 
-/* get_redirect_rule_count()
- * return value : -1 for error or the number of redirection rules */
+/*!
+ * \param[in] ifname external interface name
+ * \return -1 for error or the number of redirection rules
+ */
 int
 get_redirect_rule_count(const char * ifname);
 
-/* get_redirect_rule() gets internal IP and port from
- * interface, external port and protocol
- * return value :
- *  0 success (rule found)
- * -1 error or rule not found
- */
+
+
+/*! \brief get port mapping by external port and protocol
+ * \param[in] ifname WAN interface name
+ * \param[in] eport external port
+ * \param[in] proto IPPROTO_TCP/IPPROTO_UDP/etc.
+ * \return 0 on success, -1 on error or rule not found */
 int
 get_redirect_rule(const char * ifname, unsigned short eport, int proto,
                   char * iaddr, int iaddrlen, unsigned short * iport,
@@ -38,10 +47,9 @@ get_redirect_rule(const char * ifname, unsigned short eport, int proto,
                   unsigned int * timestamp,
                   u_int64_t * packets, u_int64_t * bytes);
 
-/* get_redirect_rule_by_index()
- * return values :
- *  0 success (rule found)
- * -1 error or rule not found */
+/*! \brief get port mapping by index
+ * \param[in] index
+ * \return 0 on success, -1 on error or rule not found */
 int
 get_redirect_rule_by_index(int index,
                            char * ifname, unsigned short * eport,
@@ -51,19 +59,36 @@ get_redirect_rule_by_index(int index,
                            unsigned int * timestamp,
                            u_int64_t * packets, u_int64_t * bytes);
 
-/* return an (malloc'ed) array of "external" port for which there is
- * a port mapping. number is the size of the array */
+/*! \brief get "external" ports for which there is a mapping
+ * \param[in] startport start of port range
+ * \param[in] endport end of port range
+ * \param[in] proto IPPROTO_TCP/IPPROTO_UDP/etc.
+ * \param[out] size of the returned array
+ * \return an (malloc'ed) array */
 unsigned short *
 get_portmappings_in_range(unsigned short startport, unsigned short endport,
                           int proto, unsigned int * number);
 
-/* update the port mapping internal port, description and timestamp */
+/*! \brief update the port mapping internal port, description and timestamp
+ * \param[in] ifname WAN interface name
+ * \param[in] eport external port
+ * \param[in] proto IPPROTO_TCP/IPPROTO_UDP/etc.
+ * \param[in] iport internal port to set
+ * \param[in] desc new description to set
+ * \param[in] timestamp new end of port mapping timestamp to set
+ * \return 0 on success, -1 on failure */
 int
 update_portmapping(const char * ifname, unsigned short eport, int proto,
                    unsigned short iport, const char * desc,
                    unsigned int timestamp);
 
-/* update the port mapping description and timestamp */
+/*! \brief update the port mapping description and timestamp
+ * \param[in] ifname WAN interface name
+ * \param[in] eport external port
+ * \param[in] proto IPPROTO_TCP/IPPROTO_UDP/etc.
+ * \param[in] desc new description to set
+ * \param[in] timestamp new end of port mapping timestamp to set
+ * \return 0 on success, -1 on failure */
 int
 update_portmapping_desc_timestamp(const char * ifname,
                    unsigned short eport, int proto,

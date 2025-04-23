@@ -1609,6 +1609,7 @@ function initial(){
 					$("#dot_presets_tr").hide();
 			};
 			gen_dotPresets(local_data);
+/*
 			$.getJSON("https://nw-dlcdnet.asus.com/plugin/js/dot-servers.json",
 				function(cloud_data){
 					if(JSON.stringify(local_data) != JSON.stringify(cloud_data)){
@@ -1618,6 +1619,7 @@ function initial(){
 					}
 				}
 			);
+*/
 		});
 	}
 

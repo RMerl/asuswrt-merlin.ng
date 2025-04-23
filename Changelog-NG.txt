@@ -1,6 +1,16 @@
 Asuswrt-Merlin Changelog
 ========================
 
+3004.388.9_2 (xx-xxx-2025)
+  - UPDATED: miniupnpd to 2.3.8.
+  - FIXED: CVE-2025-2492 in AiCloud (backport from upstream)
+  - FIXED: Networkmap system status frame failing to load when
+           accessing the router with some particular hostnames.
+  - FIXED: Networkmap client list wordwrapping long hostnames.
+  - FIXED: webui issue when DDNS set to Custom.
+
+
+
 3004.388.9 (9-Apr-2025)
   - NOTE: BCM4912 models such as the GT-AX6000 have now been
          migrated to the 3006 firmware series.

@@ -47,6 +47,9 @@ Asuswrt-Merlin 3006.xxx Changelog
            VLAN page (dave14305)
   - FIXED: Missing button to remove entries in the Offline Client
            List (dave14305)
+  - FIXED: CVE-2025-2492 in AiCloud (backport from upstream)
+  - FIXED: DoT access wasn't properly blocked when appropriate
+           for Guest Networks.
 
 
 3006.102.3 (11-Jan-2025)

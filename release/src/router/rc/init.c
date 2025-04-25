@@ -948,8 +948,8 @@ wl_defaults(void)
 #if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 			nvram_set(strcat_r(prefix, "owe_groups", tmp), "19 20 21");
 			nvram_set(strcat_r(prefix, "owe_ptk_workaround", tmp), "1");
-			if (strstr(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), "sae") != NULL ||
-                            strstr(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), "wpa3") != NULL)
+			if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae") && 
+			    nvram_match(strcat_r(prefix, "nband", tmp), "4"))
 				nvram_set(strcat_r(prefix, "sae_pwe", tmp), "1");
 			else
 				nvram_set(strcat_r(prefix, "sae_pwe", tmp), "0");

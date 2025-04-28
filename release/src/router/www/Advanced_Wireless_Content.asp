@@ -1566,6 +1566,7 @@
                 let { smartConnectEnable, v2Band, smartConnectReferenceIndex, radioSeqArray, version, v1Type } = smartConnect;
                 let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
                 let { ssidValue, hideSSIDValue } = wlBandSeq[prefixNvram];
+                ssidValue = ssidValue.replace('"', "&quot;").replace("'", "&apos;");
                 let displayFlag = (() => {
                     let { dwbMode, dwbBand } = aMesh;
                     if (dwbMode === "1" && dwbBand === prefix) {
@@ -2392,6 +2393,7 @@
                 let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
                 let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
                 let { authMethodValue, wpaKeyValue, joinSmartConnect } = wlBandSeq[prefixNvram];
+                wpaKeyValue = wpaKeyValue.replace('"', "&quot;").replace("'", "&apos;");
                 let displayFlag = (() => {
                     if (
                         authMethodValue === "psk" ||

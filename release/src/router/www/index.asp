@@ -1162,9 +1162,10 @@ function change_wan_unit(wan_unit_flag){
 
 function show_ddns_fail_hint() {
 	var str="";
+	var ddns_server_x = '<% nvram_get("ddns_server_x"); %>';
 	if(sw_mode != 3 && document.getElementById("connect_status").className == "connectstatusoff")
 		str = "<#Disconnected#>";
-	else if(ddns_server == 'WWW.ASUS.COM') {
+	else if(ddns_server_x == 'WWW.ASUS.COM') {
 		var ddnsHint = getDDNSState(ddns_return_code, `<%nvram_get("ddns_hostname_x");%>`, `<%nvram_get("ddns_old_name");%>`);
 		if(ddnsHint != "")
 			str = ddnsHint;

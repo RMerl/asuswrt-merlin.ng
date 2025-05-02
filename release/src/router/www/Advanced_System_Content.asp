@@ -24,6 +24,7 @@
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/md5.js"></script>
 <script type="text/javascript" src="/form.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
 <style>
 .cancel{
 	border: 2px solid #898989;
@@ -198,10 +199,12 @@ function change_boostkey(_id){
 		return false;
 	}
 
-	var tm_status = httpApi.nvramGet(["TM_EULA", "TM_EULA_time"], true);
-	if(_id == '3' && (tm_status.TM_EULA == "0" || tm_status.TM_EULA_time == "")){
-		ASUS_EULA.check("tm");
-		document.getElementById("boostkey_modes").value = _nvram.turbo_mode;
+
+	if(_id == '3' && (policy_status.TM == "0" || policy_status.TM_time == "")){
+		const policyModal = new PolicyModalComponent({
+			policy: "TM"
+		});
+		policyModal.show();
 		return false;
 	}
 
@@ -1706,11 +1709,6 @@ function show_cert_details(){
 	document.getElementById("expireOn").innerHTML = httpd_cert_info.expire;
 }
 
-function warn_jffs_format(){
-	alert("WARNING: Erasing the JFFS partition will also wipe out some configuration elements such as OpenVPN certificates, " +
-	      "and various router settings.\n\nMake sure you are certain you wish to proceed with this operation.");
-}
-
 function show_network_monitoring(){
 	var orig_dns_probe = httpApi.nvramGet(["dns_probe"]).dns_probe;
 	var orig_wandog_enable = httpApi.nvramGet(["wandog_enable"]).wandog_enable;
@@ -2244,13 +2242,8 @@ function build_boostkey_options() {
 	var obj = document.form.boostkey_modes;
 	var current = "<% nvram_get("turbo_mode"); %>";
 
-	if(based_modelid == "GT-AC2900"){
-		add_option(obj, "<#BoostKey_AURA_Shuffle#>", 4, (current == "4" ? 1 : 0));
-		add_option(obj, "<#BoostKey_GeForce#>", 5, (current == "5" ? 1 : 0));
-	} else {
-		add_option(obj, "<#BoostKey_LED#>", 0, (current == "0" ? 1 : 0));
-		add_option(obj, "<#BoostKey_Aura_RGB#>", 2, (current == "2" ? 1 : 0));
-	}
+	add_option(obj, "<#BoostKey_LED#>", 0, (current == "0" ? 1 : 0));
+	add_option(obj, "<#BoostKey_Aura_RGB#>", 2, (current == "2" ? 1 : 0));
 
 	var wl1_reg_mode = '<% nvram_get("wl1_reg_mode"); %>';
 
@@ -2429,34 +2422,6 @@ function build_boostkey_options() {
 					</td>
 				</tr>
 			</table>
-			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
-				<thead>
-					<tr>
-						<td colspan="2">Persistent JFFS2 partition</td>
-					</tr>
-				</thead>
-				<tr id="jffs_format_tr" style="display:none;">
-					<th>Format JFFS partition at next boot</th>
-					<td>
-						<input type="radio" name="jffs2_format" value="1" onclick="warn_jffs_format();" <% nvram_match("jffs2_format", "1", "checked"); %>><#checkbox_Yes#>
-						<input type="radio" name="jffs2_format" value="0" <% nvram_match("jffs2_format", "0", "checked"); %>><#checkbox_No#>
-					</td>
-				</tr>
-				<tr id="ubifs_format_tr" style="display:none;">
-					<th>Format JFFS partition at next boot</th>
-					<td>
-						<input type="radio" name="ubifs_format" value="1" onclick="warn_jffs_format();" <% nvram_match("ubifs_format", "1", "checked"); %>><#checkbox_Yes#>
-						<input type="radio" name="ubifs_format" value="0" <% nvram_match("ubifs_format", "0", "checked"); %>><#checkbox_No#>
-					</td>
-				</tr>
-				<tr>
-					<th>Enable JFFS custom scripts and configs</th>
-					<td>
-						<input type="radio" name="jffs2_scripts" value="1" <% nvram_match("jffs2_scripts", "1", "checked"); %>><#checkbox_Yes#>
-						<input type="radio" name="jffs2_scripts" value="0" <% nvram_match("jffs2_scripts", "0", "checked"); %>><#checkbox_No#>
-					</td>
-				</tr>
-			</table>
 
 			<table id="hdd_spindown_table" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:8px;display:none;">
 				<thead>
@@ -2537,6 +2502,13 @@ function build_boostkey_options() {
 					<td><div id="pincode"></div></td>
 				</tr>
 
+				<tr>
+					<th>Enable JFFS custom scripts and configs</th>
+					<td>
+						<input type="radio" name="jffs2_scripts" value="1" <% nvram_match("jffs2_scripts", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="jffs2_scripts" value="0" <% nvram_match("jffs2_scripts", "0", "checked"); %>><#checkbox_No#>
+					</td>
+				</tr>
 				<tr id="ntpd_server_tr">
 					<th>Enable local NTP server</th>
 					<td>
@@ -2676,14 +2648,6 @@ function build_boostkey_options() {
 						<input type="radio" name="nat_redirect_enable" value="0" <% nvram_match_x("","nat_redirect_enable","0", "checked"); %> ><#checkbox_No#>
 					</td>
 				</tr>
-				<tr>
-					<th>Redirect webui access to www.asusrouter.com</th>
-					<td>
-						<input type="radio" name="http_dut_redir" value="1" <% nvram_match_x("","http_dut_redir","1", "checked"); %> ><#checkbox_Yes#>
-						<input type="radio" name="http_dut_redir" value="0" <% nvram_match_x("","http_dut_redir","0", "checked"); %> ><#checkbox_No#>
-					</td>
-				</tr>
-
 				<tr id="btn_ez_radiotoggle_tr" style="display: none;">
 					<th><#WPS_btn_behavior#></th>
 					<td>

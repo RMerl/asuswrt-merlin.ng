@@ -326,7 +326,9 @@ void dnsfilter_settings(FILE *fp) {
 
 		/* Send other queries to the default server */
 		dnsmode = nvram_get_int("dnsfilter_mode");
-		if ((dnsmode != DNSF_SRV_UNFILTERED) && get_dns_filter(AF_INET, dnsmode, &dnsfsrv)) {
+		if (dnsmode == DNSF_SRV_ROUTER) {
+			fprintf(fp, "-A DNSFILTER -j REDIRECT\n");
+		} else if ((dnsmode != DNSF_SRV_UNFILTERED) && get_dns_filter(AF_INET, dnsmode, &dnsfsrv)) {
 			fprintf(fp, "-A DNSFILTER -j DNAT --to-destination %s\n", dnsfsrv.server1);
 		}
 	}
@@ -604,6 +606,11 @@ void dnsfilter_dot_rules(FILE *fp)
 	char *nv, *nvp, *rule;
 	int dnsmode;
 	dnsf_srv_entry_t dnsfsrv;
+#ifdef RTCONFIG_MULTILAN_CFG
+	int i;
+	MTLAN_T *pmtl = NULL;
+	size_t  mtl_sz = 0;
+#endif
 
 	if (nvram_get_int("dnsfilter_enable_x") == 0) return;
 
@@ -629,6 +636,35 @@ void dnsfilter_dot_rules(FILE *fp)
 			fprintf(fp, "-A DNSFILTER_DOT -m mac --mac-source %s -j REJECT\n", mac);
 	}
 	free(nv);
+
+#ifdef RTCONFIG_MULTILAN_CFG
+	pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
+	if(pmtl)
+	{
+		if(get_mtlan(pmtl, &mtl_sz))
+		{
+			for(i = 1; i < mtl_sz; ++i)
+			{
+				if(pmtl[i].enable)
+				{
+					if(pmtl[i].sdn_t.dnsf_idx != DNSF_SRV_UNFILTERED)
+					{
+						if (dnsfilter_support_dot(pmtl[i].sdn_t.dnsf_idx) && get_dns_filter(AF_INET, pmtl[i].sdn_t.dnsf_idx, &dnsfsrv) > 0 )
+						{
+							if (pmtl[i].sdn_t.dnsf_idx == DNSF_SRV_ROUTER && *pmtl[i].nw_t.addr)
+								fprintf(fp, "-A DNSFILTER_DOT -i %s ! -d %s -j REJECT\n", pmtl[i].nw_t.ifname, pmtl[i].nw_t.addr);
+							else
+								fprintf(fp, "-A DNSFILTER_DOT -i %s ! -d %s -j REJECT\n", pmtl[i].nw_t.ifname, dnsfsrv.server1);
+						}
+						else
+							fprintf(fp, "-A DNSFILTER_DOT -i %s -j REJECT\n", pmtl[i].nw_t.ifname);
+					}
+				}
+			}
+		}
+		FREE_MTLAN((void *)pmtl);
+	}
+#endif
 
 	/* Global filtering */
 	dnsmode = nvram_get_int("dnsfilter_mode");

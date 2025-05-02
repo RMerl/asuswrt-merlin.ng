@@ -36,6 +36,15 @@ Asuswrt-Merlin 3006.xxx Changelog
              entry in DNS Director.  This makes it more consistant
              with what the name implies, and was also necessary
              for improved Guest Network support.
+  - CHANGED: Added Control-D servers to DNS-over-TLS
+             presets (dave14305)
+  - CHANGED: Tools category renamed System Info.
+  - CHANGED: Tools -> Other Settings were moved to new tabs
+             (Administration -> Tweaks, and
+             Traffic Analyzer -> Settings).
+  - CHANGED: Moved "Redirect to asusrouter.com " to the new
+             Tweaks tab, and moved "Enable JFFS Custom Scripts"
+             to the Basic Config section on the System page.
   - FIXED: Missing hostname on Wireless Log for MLO-capable Wifi 7
            clients.
   - FIXED: CVE-2024-9143 in OpenSSL (Debian backport by RSDNTWK)
@@ -47,6 +56,13 @@ Asuswrt-Merlin 3006.xxx Changelog
            VLAN page (dave14305)
   - FIXED: Missing button to remove entries in the Offline Client
            List (dave14305)
+  - FIXED: CVE-2025-2492 in AiCloud (backport from upstream)
+  - FIXED: DoT access wasn't properly blocked when appropriate
+           for Guest Networks.
+  - FIXED: DNS-over-TLS presets overwritten by Asus' own (dave14305)
+  - FIXED: Networkmap system status frame failing to load when
+           accessing the router with some particular hostnames.
+  - FIXED: Missing option to disable logging of DHCP/RA queries.
 
 
 3006.102.3 (11-Jan-2025)
@@ -87,8 +103,8 @@ Asuswrt-Merlin 3006.xxx Changelog
   - FIXED: Site Survey page not loading properly
   - FIXED: Wireless Log would sometimes display the wrong hostnames
   - FIXED: Refresh link not working on OpenVPN/Wireguard client pages.
-  - FIXED: WireGuard client randomly failing to retrieve public IP for
-           display on the webui.
+  - FIXED: WireGuard client randomly failing to retrieve public IP
+           for display on the webui.
   - FIXED: Some Guest Networks wouldn't properly list their
            connected clients on the Wireless Log page.
 

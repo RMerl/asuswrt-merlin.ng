@@ -87,7 +87,6 @@ function draw_mem_charts(){
 			},
 			options: {
 				responsive: false,
-				animation: false,
 				segmentShowStroke : false,
 				segmentStrokeColor : "#000",
 				plugins: {
@@ -138,7 +137,6 @@ function draw_mem_charts(){
 			},
 			options: {
 				responsive: false,
-				animation: false,
 				segmentShowStroke : false,
 				segmentStrokeColor : "#000",
 				plugins: {
@@ -284,7 +282,7 @@ function draw_temps_charts(){
 		type: "line",
 		data: {datasets: datasets},
 		options: {
-			responsive: false,
+			responsive: true,
 			animation: false,
 			segmentShowStroke : false,
 			segmentStrokeColor : "#000",
@@ -318,7 +316,7 @@ function draw_temps_charts(){
 					grace: "5%",
 					ticks: {
 						color: "#CCC",
-						callback: function(value, index, ticks) {return value + "°C";}
+						callback: function(value, index, ticks) {return (Number.isInteger(value) ? value : value.toFixed(1)) + "°C";}
 					}
 				},
 			}
@@ -740,7 +738,7 @@ function show_wifi_version() {
 						</tr>
 					</thead>
 					<tr>
-						<td colspan="2"><canvas style="background-color:#2f3e44;border-radius:10px;"id="tempchartId" height="250" width="700"></canvas></td>
+						<td colspan="2" style="padding:14px;" width="100%"><canvas style="background-color:#2f3e44;border-radius:10px;width: 100% !important; height:275px;"id="tempchartId" ></canvas></td>
 					</tr>
 					<tr>
 						<th>Temperatures</th>

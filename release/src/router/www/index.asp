@@ -1190,8 +1190,8 @@ function change_wan_unit(wan_unit_flag){
 
 function show_ddns_fail_hint() {
 	var str="";
-	if(!isSwMode("AP") && document.getElementById("connect_status").className == "connectstatusoff")
 	var ddns_server_x = '<% nvram_get("ddns_server_x"); %>';
+	if(!isSwMode("AP") && document.getElementById("connect_status").className == "connectstatusoff")
 		str = "<#Disconnected#>";
 	else if(ddns_server_x == 'WWW.ASUS.COM') {
 		var ddnsHint = getDDNSState(ddns_return_code, `<%nvram_get("ddns_hostname_x");%>`, `<%nvram_get("ddns_old_name");%>`);

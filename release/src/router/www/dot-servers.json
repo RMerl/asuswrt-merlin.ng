@@ -156,28 +156,28 @@
 		},
 		{
 			"dnspriv_label" : "Control D 1 (Network Security)",
-			"dnspriv_server" : "2606:1a40::1",
+			"dnspriv_server" : "76.76.2.1",
 			"dnspriv_port" : "",
 			"dnspriv_hostname" : "p1.freedns.controld.com",
 			"dnspriv_spkipin" : ""
 		},
 		{
 			"dnspriv_label" : "Control D 2 (Network Security)",
-			"dnspriv_server" : "2606:1a40:1::1",
+			"dnspriv_server" : "76.76.10.1",
 			"dnspriv_port" : "",
 			"dnspriv_hostname" : "p1.freedns.controld.com",
 			"dnspriv_spkipin" : ""
 		},
 		{
 			"dnspriv_label" : "Control D 1 (Privacy Protection)",
-			"dnspriv_server" : "2606:1a40::2",
+			"dnspriv_server" : "76.76.2.2",
 			"dnspriv_port" : "",
 			"dnspriv_hostname" : "p2.freedns.controld.com",
 			"dnspriv_spkipin" : ""
 		},
 		{
 			"dnspriv_label" : "Control D 2 (Privacy Protection)",
-			"dnspriv_server" : "2606:1a40:1::2",
+			"dnspriv_server" : "76.76.10.2",
 			"dnspriv_port" : "",
 			"dnspriv_hostname" : "p2.freedns.controld.com",
 			"dnspriv_spkipin" : ""

@@ -11,11 +11,16 @@ Asuswrt-Merlin 3006.xxx Changelog
   - NOTE: As a reminder, the ROG variant of the webui is not
           supported in the 3006 firmware series, as maintaining
           two separate interfaces is too much extra work.
+  - NOTE: Due to numerous webui changes, it's recommended to
+          force refresh the page after first login, or clear
+          your browser cache.
 
   - NEW: Moved RT-AX86U_PRO, RT-AX88U_PRO, ZenWifi Pro XT12,
          GT-AX6000, GT-AXE16000 and GT-AX11000_PRO to the
          3006 firmware series.
   - NEW: Added RT-BE92U support, based on GPL 102_37526.
+  - NEW: Added Control-D servers to DNS-over-TLS
+         presets (dave14305)
   - UPDATED: Merged GPL 3006.102_36521 for Wifi 6 models (Wifi 7
              devices other than the RT-BE92U are still on
              102_37346).
@@ -36,8 +41,6 @@ Asuswrt-Merlin 3006.xxx Changelog
              entry in DNS Director.  This makes it more consistant
              with what the name implies, and was also necessary
              for improved Guest Network support.
-  - CHANGED: Added Control-D servers to DNS-over-TLS
-             presets (dave14305)
   - CHANGED: Tools category renamed System Info.
   - CHANGED: Tools -> Other Settings were moved to new tabs
              (Administration -> Tweaks, and

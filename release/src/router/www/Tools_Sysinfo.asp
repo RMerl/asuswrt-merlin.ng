@@ -603,7 +603,7 @@ function show_wifi_version() {
                 <tr bgcolor="#4D595D">
                         <td valign="top">
                         <div>&nbsp;</div>
-                        <div class="formfonttitle">Tools - System Information</div>
+                        <div class="formfonttitle">System Information</div>
                         <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">

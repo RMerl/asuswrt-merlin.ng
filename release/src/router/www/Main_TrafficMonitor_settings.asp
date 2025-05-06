@@ -8,7 +8,7 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<title><#Web_Title#> - Traffic Monitoring Settings</title>
+<title><#Web_Title#> - Traffic Monitor Settings</title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
 
@@ -548,12 +548,12 @@ function applyRule(){
                 <tr bgcolor="#4D595D">
                 <td valign="top">
 			<div>&nbsp;</div>
-			<div class="formfonttitle">Tools - Other Settings</div>
+			<div class="formfonttitle"><#Menu_TrafficManager#> - Settings</div>
 			<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
-							<td colspan="2">Traffic Monitoring</td>
+							<td colspan="2">Traffic Monitor</td>
 						</tr>
 					</thead>
 					<tr>

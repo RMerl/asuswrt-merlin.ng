@@ -3415,7 +3415,7 @@ function Update_DNS_status(){
 	$("#DNS_status").empty();
 
 	if(document.form.wan_dnsenable_x.value == 1){
-		DSN_status_info="<b> :</b><#IPConnection_x_DefaultStatus#> : <#IPConnection_x_DNSServer_auto#>";
+		DSN_status_info="<b><#IPConnection_x_DefaultStatus#> :</b> <#IPConnection_x_DNSServer_auto#>";
 	}
 	else{
 		DNS_list_index=DNSList_match(document.form.wan_dns1_x.value, document.form.wan_dns2_x.value);

@@ -1,7 +1,7 @@
 Asuswrt-Merlin 3006.xxx Changelog
 =================================
 
-3006.102.x (10-May-2025)
+3006.102.4 (10-May-2025)
   - NOTE: If migrating from a 3004 firmware, only the first Guest
           Network will be migrated - any additionnal GN must be
           manually reconfigured.

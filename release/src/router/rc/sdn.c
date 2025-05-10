@@ -792,7 +792,6 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 			fprintf(fp,"quiet-dhcp\n");
 #ifdef RTCONFIG_IPV6
 			fprintf(fp,"quiet-dhcp6\n");
-			fprintf(fp,"quiet-ra\n");
 #endif
 		}
 

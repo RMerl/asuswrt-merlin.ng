@@ -7620,7 +7620,15 @@ then :
 
 fi
 
-ac_fn_check_decl "$LINENO" "htole64" "ac_cv_have_decl_htole64" "$ac_includes_default" "$ac_c_undeclared_builtin_options" "CFLAGS"
+ac_fn_check_decl "$LINENO" "htole64" "ac_cv_have_decl_htole64" "
+	#ifdef HAVE_ENDIAN_H
+		#include <endian.h>
+	#endif
+	#ifdef HAVE_SYS_ENDIAN_H
+		#include <sys/endian.h>
+	#endif
+
+" "$ac_c_undeclared_builtin_options" "CFLAGS"
 if test "x$ac_cv_have_decl_htole64" = xyes
 then :
 
@@ -8719,6 +8727,84 @@ printf "%s\n" "#define HAVE_DEV_PTS_AND_PTC 1" >>confdefs.h
 		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Not checking for /dev/ptc & /dev/pts since we're cross-compiling" >&5
 printf "%s\n" "$as_me: Not checking for /dev/ptc & /dev/pts since we're cross-compiling" >&6;}
 	fi
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for static_assert" >&5
+printf %s "checking for static_assert... " >&6; }
+if test ${ac_cv_have_static_assert+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <assert.h>
+
+int
+main (void)
+{
+ static_assert(1 == 1, "bad ram?");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+   ac_cv_have_static_assert="yes"
+else $as_nop
+   ac_cv_have_static_assert="no"
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_have_static_assert" >&5
+printf "%s\n" "$ac_cv_have_static_assert" >&6; }
+if test "$ac_cv_have_static_assert" = "yes" ; then
+
+printf "%s\n" "#define HAVE_STATIC_ASSERT 1" >>confdefs.h
+
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for _Static_assert" >&5
+printf %s "checking for _Static_assert... " >&6; }
+if test ${ac_cv_have_underscore_static_assert+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <assert.h>
+
+int
+main (void)
+{
+ _Static_assert(1 == 1, "cosmic rays?");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+   ac_cv_have_underscore_static_assert="yes"
+else $as_nop
+   ac_cv_have_underscore_static_assert="no"
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_have_underscore_static_assert" >&5
+printf "%s\n" "$ac_cv_have_underscore_static_assert" >&6; }
+if test "$ac_cv_have_underscore_static_assert" = "yes" ; then
+
+printf "%s\n" "#define HAVE_UNDERSCORE_STATIC_ASSERT 1" >>confdefs.h
+
 fi
 
 

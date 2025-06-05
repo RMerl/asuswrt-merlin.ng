@@ -1,3 +1,30 @@
+2025.88 - 7 May 2025
+
+- Security: Don't allow dbclient hostname arguments to be interpreted
+  by the shell.
+
+  dbclient hostname arguments with a comma (for multihop) would be
+  passed to the shell which could result in running arbitrary shell
+  commands locally. That could be a security issue in situations
+  where dbclient is passed untrusted hostname arguments.
+
+  Now the multihop command is executed directly, no shell is involved.
+  Thanks to Marcin Nowak for the report, tracked as CVE-2025-47203
+
+- Fix compatibility for htole64 and htole32, regression in 2025.87
+  Patch from Peter Fichtner to work with old GCC versions, and
+  patch from Matt Robinson to check different header files.
+
+- Fix building on older compilers or libc that don't support
+  static_assert(). Regression in 2025.87
+
+- Support ~R in the client to force a key re-exchange.
+
+- Improve strict KEX handling. Dropbear previously would allow other
+  packets at the end of key exchange prior to receiving the remote
+  peer's NEWKEYS message, which should be forbidden by strict KEX.
+  Reported by Fabian Bäumer.
+
 2025.87 - 5 March 2025
 
 Note >> for compatibility/configuration changes

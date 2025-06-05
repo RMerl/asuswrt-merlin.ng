@@ -194,7 +194,12 @@ typedef struct cli_runopts {
 	unsigned int netcat_port;
 #endif
 #if DROPBEAR_CLI_PROXYCMD
+	/* A proxy command to run via the user's shell */
 	char *proxycmd;
+#endif
+#if DROPBEAR_CLI_MULTIHOP
+	/* Similar to proxycmd, but is arguments for execve(), not shell */
+	char **proxyexec;
 #endif
 	const char *bind_arg;
 	char *bind_address;

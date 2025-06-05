@@ -197,6 +197,7 @@ void recv_msg_newkeys() {
 	if (ses.kexstate.strict_kex) {
 		ses.recvseq = 0;
 	}
+	ses.kexstate.recvfirstnewkeys = 1;
 
 	TRACE(("leave recv_msg_newkeys"))
 }

@@ -288,7 +288,7 @@ uint64_t htole64(uint64_t inp) {
 		uint64_t v;
 		uint8_t bytes[8];
 	} out;
-	STORE64L(inp, &out.bytes);
+	STORE64L(inp, out.bytes);
 	return out.v;
 }
 
@@ -301,7 +301,7 @@ uint32_t htole32(uint32_t inp) {
 		uint32_t v;
 		uint8_t bytes[4];
 	} out;
-	STORE32L(inp, &out.bytes);
+	STORE32L(inp, out.bytes);
 	return out.v;
 }
 

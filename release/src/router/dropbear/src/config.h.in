@@ -240,6 +240,9 @@
 /* Define to 1 if you have the <shadow.h> header file. */
 #undef HAVE_SHADOW_H
 
+/* Have static_assert */
+#undef HAVE_STATIC_ASSERT
+
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
@@ -365,6 +368,9 @@
 
 /* Define to 1 if the system has the type `uint8_t'. */
 #undef HAVE_UINT8_T
+
+/* Have _Static_assert */
+#undef HAVE_UNDERSCORE_STATIC_ASSERT
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H

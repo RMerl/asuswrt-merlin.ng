@@ -556,61 +556,87 @@ void loadidentityfile(const char* filename, int warnfail) {
 
 /* Fill out -i, -y, -W options that make sense for all
  * the intermediate processes */
-static char* multihop_passthrough_args(void) {
-	char *args = NULL;
-	unsigned int len, total;
+static char** multihop_args(const char* argv0, const char* prior_hops) {
+	/* null terminated array */
+	char **args = NULL;
+	size_t max_args = 14, pos = 0, len;
 #if DROPBEAR_CLI_PUBKEY_AUTH
 	m_list_elem *iter;
 #endif
-	/* Sufficient space for non-string args */
-	len = 100;
 
-	/* String arguments have arbitrary length, so determine space required */
-	if (cli_opts.proxycmd) {
-		len += strlen(cli_opts.proxycmd);
-	}
 #if DROPBEAR_CLI_PUBKEY_AUTH
 	for (iter = cli_opts.privkeys->first; iter; iter = iter->next)
 	{
-		sign_key * key = (sign_key*)iter->item;
-		len += 4 + strlen(key->filename);
+		/* "-i file" for each */
+		max_args += 2;
 	}
 #endif
 
-	args = m_malloc(len);
-	total = 0;
+	args = m_malloc(sizeof(char*) * max_args);
+	pos = 0;
 
-	/* Create new argument string */
+	args[pos] = m_strdup(argv0);
+	pos++;
 
 	if (cli_opts.quiet) {
-		total += m_snprintf(args+total, len-total, "-q ");
+		args[pos] = m_strdup("-q");
+		pos++;
 	}
 
 	if (cli_opts.no_hostkey_check) {
-		total += m_snprintf(args+total, len-total, "-y -y ");
+		args[pos] = m_strdup("-y");
+		pos++;
+		args[pos] = m_strdup("-y");
+		pos++;
 	} else if (cli_opts.always_accept_key) {
-		total += m_snprintf(args+total, len-total, "-y ");
+		args[pos] = m_strdup("-y");
+		pos++;
 	}
 
 	if (cli_opts.batch_mode) {
-		total += m_snprintf(args+total, len-total, "-o BatchMode=yes ");
+		args[pos] = m_strdup("-o");
+		pos++;
+		args[pos] = m_strdup("BatchMode=yes");
+		pos++;
 	}
 
 	if (cli_opts.proxycmd) {
-		total += m_snprintf(args+total, len-total, "-J '%s' ", cli_opts.proxycmd);
+		args[pos] = m_strdup("-J");
+		pos++;
+		args[pos] = m_strdup(cli_opts.proxycmd);
+		pos++;
 	}
 
 	if (opts.recv_window != DEFAULT_RECV_WINDOW) {
-		total += m_snprintf(args+total, len-total, "-W %u ", opts.recv_window);
+		args[pos] = m_strdup("-W");
+		pos++;
+		args[pos] = m_malloc(11);
+		m_snprintf(args[pos], 11, "%u", opts.recv_window);
+		pos++;
 	}
 
 #if DROPBEAR_CLI_PUBKEY_AUTH
 	for (iter = cli_opts.privkeys->first; iter; iter = iter->next)
 	{
 		sign_key * key = (sign_key*)iter->item;
-		total += m_snprintf(args+total, len-total, "-i %s ", key->filename);
+		args[pos] = m_strdup("-i");
+		pos++;
+		args[pos] = m_strdup(key->filename);
+		pos++;
 	}
 #endif /* DROPBEAR_CLI_PUBKEY_AUTH */
+
+	/* last hop */
+	args[pos] = m_strdup("-B");
+	pos++;
+	len = strlen(cli_opts.remotehost) + strlen(cli_opts.remoteport) + 2;
+	args[pos] = m_malloc(len);
+	snprintf(args[pos], len, "%s:%s", cli_opts.remotehost, cli_opts.remoteport);
+	pos++;
+
+	/* hostnames of prior hops */
+	args[pos] = m_strdup(prior_hops);
+	pos++;
 
 	return args;
 }
@@ -626,7 +652,7 @@ static char* multihop_passthrough_args(void) {
  * etc for as many hosts as we want.
  *
  * Note that "-J" arguments aren't actually used, instead
- * below sets cli_opts.proxycmd directly.
+ * below sets cli_opts.proxyexec directly.
  *
  * Ports for hosts can be specified as host/port.
  */
@@ -634,7 +660,7 @@ static void parse_multihop_hostname(const char* orighostarg, const char* argv0) 
 	char *userhostarg = NULL;
 	char *hostbuf = NULL;
 	char *last_hop = NULL;
-	char *remainder = NULL;
+	char *prior_hops = NULL;
 
 	/* both scp and rsync parse a user@host argument
 	 * and turn it into "-l user host". This breaks
@@ -652,6 +678,8 @@ static void parse_multihop_hostname(const char* orighostarg, const char* argv0) 
 	}
 	userhostarg = hostbuf;
 
+	/* Split off any last hostname and use that as remotehost/remoteport.
+	 * That is used for authorized_keys checking etc */
 	last_hop = strrchr(userhostarg, ',');
 	if (last_hop) {
 		if (last_hop == userhostarg) {
@@ -659,32 +687,28 @@ static void parse_multihop_hostname(const char* orighostarg, const char* argv0) 
 		}
 		*last_hop = '\0';
 		last_hop++;
-		remainder = userhostarg;
+		prior_hops = userhostarg;
 		userhostarg = last_hop;
 	}
 
+	/* Update cli_opts.remotehost and cli_opts.remoteport */
 	parse_hostname(userhostarg);
 
-	if (last_hop) {
-		/* Set up the proxycmd */
-		unsigned int cmd_len = 0;
-		char *passthrough_args = multihop_passthrough_args();
-		cmd_len = strlen(argv0) + strlen(remainder)
-			+ strlen(cli_opts.remotehost) + strlen(cli_opts.remoteport)
-			+ strlen(passthrough_args)
-			+ 30;
-		/* replace proxycmd. old -J arguments have been copied
-		   to passthrough_args */
-		cli_opts.proxycmd = m_realloc(cli_opts.proxycmd, cmd_len);
-		m_snprintf(cli_opts.proxycmd, cmd_len, "%s -B %s:%s %s %s",
-				argv0, cli_opts.remotehost, cli_opts.remoteport,
-				passthrough_args, remainder);
+	/* Construct any multihop proxy command. Use proxyexec to
+	 * avoid worrying about shell escaping. */
+	if (prior_hops) {
+		cli_opts.proxyexec = multihop_args(argv0, prior_hops);
+		/* Any -J argument has been copied to proxyexec */
+		if (cli_opts.proxycmd) {
+			m_free(cli_opts.proxycmd);
+		}
+
 #ifndef DISABLE_ZLIB
-		/* The stream will be incompressible since it's encrypted. */
+		/* This outer stream will be incompressible since it's encrypted. */
 		opts.allow_compress = 0;
 #endif
-		m_free(passthrough_args);
 	}
+
 	m_free(hostbuf);
 }
 #endif /* DROPBEAR_CLI_MULTIHOP */

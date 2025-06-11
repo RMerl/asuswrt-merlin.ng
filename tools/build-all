@@ -12,14 +12,14 @@
 
 ### Manual/hardcoded
 # Append git revision
-export BUILDREV=1
+#export BUILDREV=1
 
 # Enable update server support (don't use if you build a fork!)
 #export MERLINUPDATE=y
 
 # rsync tree from central source tree before build.
 # If set to "btrfs", then "cp --reflink" is used instead of rsync.
-RSYNC_TREE=y
+#RSYNC_TREE=y
 
 # Combined RT-AC68U image?
 COMBINED=y
@@ -59,7 +59,7 @@ BBE96=y
 BGTBE98PRO=y
 BBE88=y
 BBE86=y
-
+BBE92=y
 
 ### Branches for each model
 BRANCH_AC68=386_x
@@ -89,10 +89,11 @@ BRANCH_GTAX11000_PRO=3006.102-wifi6
 BRANCH_AX86_PRO=3006.102-wifi6
 BRANCH_AX88_PRO=3006.102-wifi6
 
-BRANCH_BE96=3006.102
-BRANCH_GTBE98_PRO=3006.102
-BRANCH_BE88=3006.102
-BRANCH_BE86=3006.102
+BRANCH_BE96=main
+BRANCH_GTBE98_PRO=main
+BRANCH_BE88=main
+BRANCH_BE86=main
+BRANCH_BE92=3006.102_37526
 
 ### Paths
 # Store built images there
@@ -139,7 +140,7 @@ build_fw()
 		elif [ "$FWMODEL" = "gt-ax6000" ] || [ "$FWMODEL" = "xt12" ] || [ "$FWMODEL" = "gt-axe16000" ] || [ "$FWMODEL" = "gt-ax11000_pro" ] || [ "$FWMODEL" = "rt-ax86u_pro" ] || [ "$FWMODEL" = "rt-ax88u_pro" ] ; then
 			FWNAME="$(find -- *_nand_squashfs.pkgtb | head -n 1)"
 			ZIPNAME="$(echo "$FWNAME" | sed 's~_nand_squashfs.pkgtb~~g').zip"
-		elif [ "$FWMODEL" = "gt-be98_pro" ] || [ "$FWMODEL" = "gt-be98" ] || [ "$FWMODEL" = "rt-be96u" ] || [ "$FWMODEL" = "rt-be88u" ] || [ "$FWMODEL" = "rt-be86u" ] ; then
+		elif [ "$FWMODEL" = "gt-be98_pro" ] || [ "$FWMODEL" = "gt-be98" ] || [ "$FWMODEL" = "rt-be96u" ] || [ "$FWMODEL" = "rt-be88u" ] || [ "$FWMODEL" = "rt-be86u" ] || [ "$FWMODEL" = "rt-be92u" ] ; then
 			FWNAME="$(find -- *_nand_squashfs.pkgtb | head -n 1)"
 			ZIPNAME="$(echo "$FWNAME" | sed 's~_nand_squashfs.pkgtb~~g').zip"
 		else
@@ -304,12 +305,19 @@ fi
 if [ "$BBE86" = "y" ]; then
 	clean_tree amng.be86 amng.be86/release/src-rt-5.04behnd.4916 rt-be86u $BRANCH_BE86
 fi
+if [ "$BBE92" = "y" ]; then
+	clean_tree amng.be92 amng.be92/release/src-rt-5.04behnd.4916 rt-be92u $BRANCH_BE92
+fi
 
 echo "--- $(date +%R) - All trees ready!"
 
 # Launch parallel builds
 
 echo "--- $(date +%R) - Launching all builds"
+if [ "$BBE92" = "y" ]; then
+	build_fw amng.be92 release/src-rt-5.04behnd.4916 rt-be92u &
+fi
+
 if [ "$BBE88" = "y" ]; then
 	build_fw amng.be88 release/src-rt-5.04behnd.4916 rt-be88u &
 fi

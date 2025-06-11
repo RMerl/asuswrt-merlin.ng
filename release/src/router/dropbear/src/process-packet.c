@@ -44,7 +44,7 @@ void process_packet() {
 
 	unsigned char type;
 	unsigned int i;
-	unsigned int first_strict_kex = ses.kexstate.strict_kex && !ses.kexstate.donefirstkex;
+	unsigned int first_strict_kex = ses.kexstate.strict_kex && !ses.kexstate.recvfirstnewkeys;
 	time_t now;
 
 	TRACE2(("enter process_packet"))

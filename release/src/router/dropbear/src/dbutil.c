@@ -371,7 +371,6 @@ int spawn_command(void(*exec_fn)(const void *user_data), const void *exec_data,
 void run_shell_command(const char* cmd, unsigned int maxfd, char* usershell) {
 	char * argv[4];
 	char * baseshell = NULL;
-	unsigned int i;
 
 	baseshell = basename(usershell);
 
@@ -393,6 +392,12 @@ void run_shell_command(const char* cmd, unsigned int maxfd, char* usershell) {
 		argv[1] = NULL;
 	}
 
+	run_command(usershell, argv, maxfd);
+}
+
+void run_command(const char* argv0, char** args, unsigned int maxfd) {
+	unsigned int i;
+
 	/* Re-enable SIGPIPE for the executed process */
 	if (signal(SIGPIPE, SIG_DFL) == SIG_ERR) {
 		dropbear_exit("signal() error");
@@ -404,7 +409,7 @@ void run_shell_command(const char* cmd, unsigned int maxfd, char* usershell) {
 		m_close(i);
 	}
 
-	execv(usershell, argv);
+	execv(argv0, args);
 }
 
 #if DEBUG_TRACE

@@ -1,105 +1,98 @@
-$Id: README,v 1.16 2007/11/24 13:18:48 danny Exp $
-
-
 Description:
 -------------------------------------------------------------------------------
-Netstat-nat is a small program written in C. It displays NAT connections, 
-managed by netfilter/iptables which comes with the > 2.4.x linux kernels. The 
-program reads its information from '/proc/net/ip_conntrack' or 
-'/proc/net/nf_conntrack', which is the temporary conntrack-storage of 
-netfilter. (http://www.netfilter.org/)
-For any program options see sector 'Usage' section below.
+netstat-nat is a small program written in C. It displays connections,
+accounted by netfilter which comes with ≥2.6.15 linux kernels.
+The program reads its information from '/proc/net/nf_conntrack',
+which is the temporary conntrack-storage of netfilter.
+(http://www.netfilter.org/)
 
+This is most useful for NAT gateways/copies of the aforementioned therefrom,
+but connections made to/from the current host can be examined as well (-LR).
 -------------------------------------------------------------------------------
 
 
-Compiling:
+-ng:
 -------------------------------------------------------------------------------
-See the INSTALL file
+https://sr.ht/~nabijaczleweli/netstat-nat-ng
+https://todo.sr.ht/~nabijaczleweli/netstat-nat-ng
+(report at <mailto:~nabijaczleweli/netstat-nat-ng@todo.sr.ht>)
+https://lists.sr.ht/~nabijaczleweli/netstat-nat-ng
+            <mailto:~nabijaczleweli/netstat-nat-ng@lists.sr.ht>
 
--------------------------------------------------------------------------------
+The git history includes imports of all historical tarballs
+(https://web.archive.org/web/20180104143740/http://www.tweegy.nl/projects/netstat-nat/),
+with the changelog distributed in the tags.
+The tags also have contributors added, if credited in the 1.4.10 README
+(they were not credited contemporaneously).
 
-
-Changelog:
--------------------------------------------------------------------------------
-See the CHANGELOG file
-
+Release tarballs are signed with nabijaczleweli@nabijaczleweli.xyz
+  (pull with WKD, but 7D69 474E 8402 8C5C C0C4  4163 BCFD 0B01 8D26 58F1).
+аnd stored in git notes as-if via the example program provided at
+  https://man.sr.ht/git.sr.ht/#signing-tags-tarballs
+and are thus available on the refs listing/tag page as .tar.gz.asc.
 -------------------------------------------------------------------------------
 
 
 Usage:
 -------------------------------------------------------------------------------
-netstat-nat -h			: displays help
-netstat-nat -n			: displays NAT connections without 
-				  host/portname-resolving.
-netstat-nat -p <protocol>       : diplays NAT connections with protocol 
-				  selection. (see /etc/protocols)
-netstat-nat -s <source-host>	: display connections by source IP/hostname
-netstat-nat -d <dest-host>	: display connections by destination IP/hostname
-netstat-nat -S			: display SNAT connections
-netstat-nat -D			: display DNAT connections
-				  (default: both) 
-netstat-nat -L			: display only connections to NAT box self 
-				  (doesn't show SNAT & DNAT connections) 
-netstat-nat -R			: display only connections routed through NAT box self 
-				  (doesn't show SNAT & DNAT connections) 
-netstat-nat -x 			: extend the view of the hostnames
-netstat-nat -r src|dst|src-port|dst-port|state : sort connections 
-netstat-nat -o			: strip output header
-netstat-nat -N 			: display NAT box connection information 
-				  (IP and port) for NATing iface 
-				  (only valid with SNAT & DNAT)
-netstat-nat -v     		: prints version
+netstat-nat [-no] [-x|-X[width]] {[-G] [-S|-D]}|[-L|-R]
+            [-s ource]... [-d estination]... [-g ateway]... [-p rotocol]...
+            [-r src|dst|src-port|dst-port|state|gate|gate-port] [nf_conntrack]
 
+Consult the manual for specifics.
+https://ra.ws.co.ls/~nabijaczleweli/netstat-nat-ng/blob/man/netstat-nat-ng.pdf
 -------------------------------------------------------------------------------
 
 
-Homepage:
+Examples:
 -------------------------------------------------------------------------------
-http://www.tweegy.nl/projects/netstat-nat/
+On a gateway:
 
+# netstat-nat
+Proto NATed Address                  Destination Address            State
+icmp  10.179.163.88                  tarta.nabijaczleweli.xyz
+icmp  10.200.233.12                  tarta.nabijaczleweli.xyz
+tcp   10.32.144.39.host.securi:63770 tarta.nabijaczleweli.xyz:https TIME_WAIT
+tcp   10.32.144.39.host.securi:64361 tarta.nabijaczleweli.xyz:http  TIME_WAIT
+tcp   10.72.217.111:33864            tarta.nabijaczleweli.xyz:5900  TIME_WAIT
+tcp   10.72.217.111:39074            tarta.nabijaczleweli.xyz:5900  TIME_WAIT
+tcp   nabijaczleweli.nabijaczl:20985 lb-10-268-216-78-iad.git:https ESTABLISHED
+tcp   nabijaczleweli.nabijaczl:21047 waw07s05-in-f4.1e100.net:http  TIME_WAIT
+tcp   nabijaczleweli.nabijaczl:20751 waw07s05-in-f14.1e100.ne:https ESTABLISHED
+tcp   nabijaczleweli.nabijaczl:17906 101010.pl:https                ESTABLISHED
+tcp   192.168.1.136:38216            lt-in-f188.1e100.net:5228      ESTABLISHED
+tcp   192.168.1.136:38330            lt-in-f188.1e100.net:5228      ESTABLISHED
+tcp   192.168.1.136:39972            lt-in-f188.1e100.net:5228      ESTABLISHED
+tcp   192.168.1.136:40092            lt-in-f188.1e100.net:5228      ESTABLISHED
+udp   rozbian.nabijaczleweli.x:46115 10.158.103.58:https            ASSURED
+udp   rozbian.nabijaczleweli.x:42560 10.69.17.108:https             ASSURED
+udp   rozbian.nabijaczleweli.x:44786 10.140.3.34:https              ASSURED
+udp   rozbian.nabijaczleweli.x:47079 10.140.3.34:https              UNREPLIED
+udp   192.168.1.185:3076             ec2-10-213-30-29.eu-cent:https ASSURED
+udp   tarta.nabijaczleweli.xyz:39517 ns-153.awsdns-19.com:domain
+udp   tarta.nabijaczleweli.xyz:16829 ns-1007.awsdns-61.net:domain
+udp   tarta.nabijaczleweli.xyz:46874 ns-1411.awsdns-48.org:domain
+
+
+On a client:
+
+# netstat-nat -LnX21
+Proto Source Address        Destination Address   State
+tcp   [::1]:49118           [::1]:9928            TIME_WAIT
+tcp   [::1]:50624           [::1]:80              ESTABLISHED
+tcp   10.221.132.191:35862  192.168.1.250:5900    TIME_WAIT
+tcp   127.0.0.1:34030       127.0.0.1:8213        TIME_WAIT
+tcp   127.0.0.1:52476       127.0.1.1:3493        ESTABLISHED
+tcp   10.176.163.40:51167   192.168.1.250:443     TIME_WAIT
+tcp   10.62.134.22:23178    192.168.1.250:80      SYN_RECV
+tcp   10.62.134.22:47444    192.168.1.250:80      SYN_RECV
+udp   127.0.0.1:42738       127.0.0.1:323
+udp   127.0.0.1:44850       127.0.0.1:5353
+udp   127.0.0.1:46444       127.0.0.1:53          ASSURED
+udp   192.168.1.144:20407   192.168.1.250:53
+udp   192.168.1.146:59266   192.168.1.250:53
+udp   192.168.1.204:35989   192.168.1.250:53
+udp   192.168.1.250:23225   10.46.8.231:53
+udp   192.168.1.250:11300   10.11.28.69:53
+udp   192.168.1.250:51413   10.116.123.52:6881    ASSURED
 -------------------------------------------------------------------------------
-
-
-Files:
--------------------------------------------------------------------------------
-netstat-nat.c
-netstat-nat.h
-netstat-nat.1
-netstat-nat.spec
-COPYING
-README
-INSTALL
-AUTHORS
-CHANGELOG
-Makefile
-
--------------------------------------------------------------------------------
-
-
-Thanks:
--------------------------------------------------------------------------------
-Marceln for writing the man-page and making the v1.2 .rpm and src.rpm, which can 
-be downloaded at his page. http://http://www.xs4all.nl/~marceln/rpm/
-and for submitting a patch for v1.4.1 which removes unused variables, included 
-a more understandable memory allocate error and making netstat-nat compatible
-with uLibC.
-
-Jose Pedro Oliveira <jpo@di.uminho.pt> for submitting a patch for the .spec file
-which fixes some rpmlint warnings.
-
-Gumundur D. Haraldsson <gdh@binhex.EU.org> for submitting a patch which does a
-more properly memory allocation and saver copies of variables. (merged in v1.4.3) 
-
-Supaflyster for submitting patch for proper read-in on some systems and 
-pointing out dnat over snat connections problem, which weren't shown in output.
-(v1.4.7)
--------------------------------------------------------------------------------
-
-
-Contact:
--------------------------------------------------------------------------------
-D.Wijsman danny@tweegy.nl
-
--------------------------------------------------------------------------------
-

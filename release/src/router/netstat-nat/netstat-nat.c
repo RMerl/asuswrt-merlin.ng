@@ -257,8 +257,10 @@ int main(int argc, char * argv[]) {
 		else {
 			struct ifaddrs * addrs;
 			if(!getifaddrs(&addrs)) {
-				for(struct ifaddrs * itr = addrs; itr; itr = itr->ifa_next)
-					local_ip_addresses_add(itr->ifa_addr);
+				for(struct ifaddrs * itr = addrs; itr; itr = itr->ifa_next) {
+					if (itr->ifa_addr)
+						local_ip_addresses_add(itr->ifa_addr);
+				}
 				freeifaddrs(addrs);
 			}
 		}

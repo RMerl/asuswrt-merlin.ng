@@ -1,0 +1,105 @@
+ipv4     2 tcp      6 431814 ESTABLISHED src=192.168.1.250 dst=10.41.247.153 sport=50616 dport=443 src=34.107.243.93 dst=192.168.1.250 sport=443 dport=50616 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 431995 ESTABLISHED src=192.168.1.109 dst=192.168.1.250 sport=53968 dport=445 src=192.168.1.250 dst=192.168.1.109 sport=445 dport=53968 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 60 TIME_WAIT src=127.0.0.1 dst=127.0.0.1 sport=49040 dport=8209 src=127.0.0.1 dst=127.0.0.1 sport=8209 dport=49040 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 26 src=127.0.0.1 dst=127.0.0.1 sport=52010 dport=323 src=127.0.0.1 dst=127.0.0.1 sport=323 dport=52010 mark=0 zone=0 use=2
+ipv4     2 udp      17 108 src=192.168.1.250 dst=10.183.125.164 sport=51413 dport=1337 src=186.10.181.37 dst=192.168.1.250 sport=1337 dport=51413 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 33 TIME_WAIT src=10.62.35.175 dst=192.168.1.250 sport=55229 dport=22 src=192.168.1.250 dst=117.247.181.220 sport=22 dport=55229 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 431999 ESTABLISHED src=127.0.0.1 dst=127.0.0.1 sport=54068 dport=19999 src=127.0.0.1 dst=127.0.0.1 sport=19999 dport=54068 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 97 TIME_WAIT src=10.103.54.126 dst=192.168.1.250 sport=57288 dport=5900 src=192.168.1.250 dst=45.55.70.6 sport=5900 dport=57288 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 101 TIME_WAIT src=10.103.54.126 dst=192.168.1.250 sport=38714 dport=5900 src=192.168.1.250 dst=45.55.70.6 sport=5900 dport=38714 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 42 TIME_WAIT src=10.101.213.166 dst=192.168.1.250 sport=36672 dport=5900 src=192.168.1.250 dst=165.22.181.167 sport=5900 dport=36672 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 41 TIME_WAIT src=10.101.213.166 dst=192.168.1.250 sport=60324 dport=5900 src=192.168.1.250 dst=165.22.181.167 sport=5900 dport=60324 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 30 TIME_WAIT src=10.101.213.166 dst=192.168.1.250 sport=54608 dport=5900 src=192.168.1.250 dst=165.22.181.167 sport=5900 dport=54608 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 105 TIME_WAIT src=10.153.205.11 dst=192.168.1.250 sport=57958 dport=5900 src=192.168.1.250 dst=137.184.185.50 sport=5900 dport=57958 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 16 src=192.168.1.204 dst=192.168.1.250 sport=42135 dport=53 src=192.168.1.250 dst=192.168.1.204 sport=53 dport=42135 mark=0 zone=0 use=2
+ipv4     2 udp      17 19 src=192.168.1.250 dst=192.168.1.255 sport=138 dport=138 [UNREPLIED] src=192.168.1.255 dst=192.168.1.250 sport=138 dport=138 mark=0 zone=0 use=2
+ipv4     2 tcp      6 73 TIME_WAIT src=10.153.205.11 dst=192.168.1.250 sport=46132 dport=5900 src=192.168.1.250 dst=137.184.185.50 sport=5900 dport=46132 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 27 src=192.168.1.250 dst=10.47.169.24 sport=12337 dport=53 src=108.162.192.220 dst=192.168.1.250 sport=53 dport=12337 mark=0 zone=0 use=2
+ipv4     2 tcp      6 68 TIME_WAIT src=10.153.205.11 dst=192.168.1.250 sport=33678 dport=5900 src=192.168.1.250 dst=137.184.185.50 sport=5900 dport=33678 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 2 TIME_WAIT src=10.153.205.11 dst=192.168.1.250 sport=59206 dport=5900 src=192.168.1.250 dst=137.184.185.50 sport=5900 dport=59206 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 431999 ESTABLISHED src=192.168.1.1 dst=192.168.1.250 sport=853 dport=2049 src=192.168.1.250 dst=192.168.1.1 sport=2049 dport=853 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 64 TIME_WAIT src=192.168.1.250 dst=192.168.1.146 sport=43044 dport=22 src=192.168.1.146 dst=192.168.1.250 sport=22 dport=43044 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 27 TIME_WAIT src=10.103.54.126 dst=192.168.1.250 sport=43728 dport=5900 src=192.168.1.250 dst=45.55.70.6 sport=5900 dport=43728 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 28 TIME_WAIT src=10.103.54.126 dst=192.168.1.250 sport=48134 dport=5900 src=192.168.1.250 dst=45.55.70.6 sport=5900 dport=48134 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 178481 ESTABLISHED src=192.168.1.1 dst=192.168.1.250 sport=792 dport=2049 src=192.168.1.250 dst=192.168.1.1 sport=2049 dport=792 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 85 TIME_WAIT src=10.101.213.166 dst=192.168.1.250 sport=54742 dport=5900 src=192.168.1.250 dst=165.22.181.167 sport=5900 dport=54742 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 38 TIME_WAIT src=10.214.244.189 dst=192.168.1.250 sport=10359 dport=443 src=192.168.1.250 dst=37.99.41.218 sport=443 dport=10359 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 96 TIME_WAIT src=10.101.213.166 dst=192.168.1.250 sport=57480 dport=5900 src=192.168.1.250 dst=165.22.181.167 sport=5900 dport=57480 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 431999 ESTABLISHED src=192.168.1.146 dst=192.168.1.250 sport=38428 dport=445 src=192.168.1.250 dst=192.168.1.146 sport=445 dport=38428 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 431999 ESTABLISHED src=192.168.1.250 dst=192.168.1.109 sport=34906 dport=6000 src=192.168.1.109 dst=192.168.1.250 sport=6000 dport=34906 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 426485 ESTABLISHED src=192.168.1.109 dst=192.168.1.250 sport=62345 dport=22 src=192.168.1.250 dst=192.168.1.109 sport=22 dport=62345 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 45 TIME_WAIT src=10.103.54.126 dst=192.168.1.250 sport=36996 dport=5900 src=192.168.1.250 dst=45.55.70.6 sport=5900 dport=36996 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 431999 ESTABLISHED src=192.168.1.250 dst=10.112.54.226 sport=45660 dport=2016 src=142.132.234.132 dst=192.168.1.250 sport=2016 dport=45660 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 6 TIME_WAIT src=127.0.0.1 dst=127.0.0.1 sport=36298 dport=8207 src=127.0.0.1 dst=127.0.0.1 sport=8207 dport=36298 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 27 src=127.0.0.1 dst=127.0.0.1 sport=46595 dport=5353 src=127.0.0.1 dst=127.0.0.1 sport=5353 dport=46595 mark=0 zone=0 use=2
+ipv4     2 udp      17 21 src=192.168.1.250 dst=192.168.1.255 sport=123 dport=123 [UNREPLIED] src=192.168.1.255 dst=192.168.1.250 sport=123 dport=123 mark=0 zone=0 use=2
+ipv4     2 tcp      6 111 TIME_WAIT src=10.101.213.166 dst=192.168.1.250 sport=47440 dport=5900 src=192.168.1.250 dst=165.22.181.167 sport=5900 dport=47440 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 27 src=127.0.0.1 dst=127.0.0.1 sport=39150 dport=53 src=127.0.0.1 dst=127.0.0.1 sport=53 dport=39150 mark=0 zone=0 use=2
+ipv4     2 tcp      6 61 TIME_WAIT src=10.34.90.253 dst=192.168.1.250 sport=59136 dport=443 src=192.168.1.250 dst=50.31.197.99 sport=443 dport=59136 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 27 src=192.168.1.250 dst=10.166.16.182 sport=11044 dport=53 src=173.245.58.220 dst=192.168.1.250 sport=53 dport=11044 mark=0 zone=0 use=2
+ipv4     2 tcp      6 431997 ESTABLISHED src=192.168.1.250 dst=192.168.1.250 sport=44762 dport=993 src=192.168.1.250 dst=192.168.1.250 sport=993 dport=44762 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 7 src=192.168.1.250 dst=192.168.1.248 sport=137 dport=137 [UNREPLIED] src=192.168.1.248 dst=192.168.1.250 sport=137 dport=137 mark=0 zone=0 use=2
+ipv4     2 tcp      6 431993 ESTABLISHED src=192.168.1.250 dst=192.168.1.1 sport=1016 dport=2049 src=192.168.1.1 dst=192.168.1.250 sport=2049 dport=1016 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 431998 ESTABLISHED src=192.168.1.250 dst=192.168.1.109 sport=37594 dport=6000 src=192.168.1.109 dst=192.168.1.250 sport=6000 dport=37594 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 111 src=192.168.1.250 dst=10.30.209.161 sport=51413 dport=6882 src=54.194.124.68 dst=192.168.1.250 sport=6882 dport=51413 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 22 src=192.168.1.2 dst=192.168.1.255 sport=60373 dport=20002 [UNREPLIED] src=192.168.1.255 dst=192.168.1.2 sport=20002 dport=60373 mark=0 zone=0 use=2
+ipv4     2 udp      17 1 src=192.168.1.250 dst=10.119.155.75 sport=45830 dport=53 src=216.239.36.10 dst=192.168.1.250 sport=53 dport=45830 mark=0 zone=0 use=2
+ipv4     2 tcp      6 27 TIME_WAIT src=10.153.205.11 dst=192.168.1.250 sport=48640 dport=5900 src=192.168.1.250 dst=137.184.185.50 sport=5900 dport=48640 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 22 TIME_WAIT src=10.103.54.126 dst=192.168.1.250 sport=54528 dport=5900 src=192.168.1.250 dst=45.55.70.6 sport=5900 dport=54528 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 16 src=127.0.0.1 dst=127.0.0.1 sport=48780 dport=323 src=127.0.0.1 dst=127.0.0.1 sport=323 dport=48780 mark=0 zone=0 use=2
+ipv4     2 udp      17 75 src=192.168.1.250 dst=192.168.1.253 sport=36290 dport=161 src=192.168.1.253 dst=192.168.1.250 sport=161 dport=36290 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 59 TIME_WAIT src=10.103.54.126 dst=192.168.1.250 sport=42354 dport=5900 src=192.168.1.250 dst=45.55.70.6 sport=5900 dport=42354 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 76 src=192.168.1.250 dst=10.130.8.170 sport=51413 dport=6881 src=18.190.61.127 dst=192.168.1.250 sport=6881 dport=51413 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 22 src=192.168.1.3 dst=192.168.1.255 sport=58215 dport=20002 [UNREPLIED] src=192.168.1.255 dst=192.168.1.3 sport=20002 dport=58215 mark=0 zone=0 use=2
+ipv4     2 tcp      6 35 TIME_WAIT src=10.153.205.11 dst=192.168.1.250 sport=46058 dport=5900 src=192.168.1.250 dst=137.184.185.50 sport=5900 dport=46058 [ASSURED] mark=0 zone=0 use=2
+ipv6     10 tcp      6 15 TIME_WAIT src=0000:0000:0000:0000:0000:0000:0000:0001 dst=0000:0000:0000:0000:0000:0000:0000:0001 sport=49864 dport=9928 src=0000:0000:0000:0000:0000:0000:0000:0001 dst=0000:0000:0000:0000:0000:0000:0000:0001 sport=9928 dport=49864 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 98 src=192.168.1.250 dst=10.1.139.64 sport=51413 dport=1337 src=23.168.232.9 dst=192.168.1.250 sport=1337 dport=51413 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 1 src=127.0.0.1 dst=127.0.0.1 sport=35056 dport=323 src=127.0.0.1 dst=127.0.0.1 sport=323 dport=35056 mark=0 zone=0 use=2
+ipv4     2 tcp      6 0 TIME_WAIT src=127.0.0.1 dst=127.0.0.1 sport=33494 dport=19999 src=127.0.0.1 dst=127.0.0.1 sport=19999 dport=33494 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 96 src=192.168.1.250 dst=10.203.18.93 sport=51413 dport=57264 src=95.82.96.230 dst=192.168.1.250 sport=57264 dport=51413 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 48 TIME_WAIT src=192.168.1.250 dst=192.168.1.1 sport=55322 dport=19999 src=192.168.1.1 dst=192.168.1.250 sport=19999 dport=55322 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 178222 ESTABLISHED src=192.168.1.250 dst=10.41.247.153 sport=39862 dport=443 src=34.107.243.93 dst=192.168.1.250 sport=443 dport=39862 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 27 src=127.0.0.1 dst=127.0.0.1 sport=42899 dport=53 src=127.0.0.1 dst=127.0.0.1 sport=53 dport=42899 mark=0 zone=0 use=2
+ipv4     2 udp      17 18 src=127.0.0.1 dst=127.0.0.1 sport=58496 dport=53 src=127.0.0.1 dst=127.0.0.1 sport=53 dport=58496 mark=0 zone=0 use=2
+ipv4     2 udp      17 19 src=192.168.1.200 dst=192.168.1.255 sport=138 dport=138 [UNREPLIED] src=192.168.1.255 dst=192.168.1.200 sport=138 dport=138 mark=0 zone=0 use=2
+ipv4     2 udp      17 3 src=127.0.0.1 dst=127.0.0.1 sport=52026 dport=5353 src=127.0.0.1 dst=127.0.0.1 sport=5353 dport=52026 mark=0 zone=0 use=2
+ipv4     2 tcp      6 14 TIME_WAIT src=10.101.213.166 dst=192.168.1.250 sport=60462 dport=5900 src=192.168.1.250 dst=165.22.181.167 sport=5900 dport=60462 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 1 src=192.168.1.250 dst=10.28.138.116 sport=59949 dport=53 src=216.239.38.10 dst=192.168.1.250 sport=53 dport=59949 mark=0 zone=0 use=2
+ipv4     2 tcp      6 431988 ESTABLISHED src=127.0.0.1 dst=127.0.0.1 sport=51416 dport=9199 src=127.0.0.1 dst=127.0.0.1 sport=9199 dport=51416 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 21 src=127.0.0.1 dst=127.0.0.1 sport=45464 dport=323 src=127.0.0.1 dst=127.0.0.1 sport=323 dport=45464 mark=0 zone=0 use=2
+ipv4     2 tcp      6 62 TIME_WAIT src=10.103.54.126 dst=192.168.1.250 sport=50652 dport=5900 src=192.168.1.250 dst=45.55.70.6 sport=5900 dport=50652 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 63 TIME_WAIT src=10.103.54.126 dst=192.168.1.250 sport=54304 dport=5900 src=192.168.1.250 dst=45.55.70.6 sport=5900 dport=54304 [ASSURED] mark=0 zone=0 use=2
+ipv6     10 tcp      6 75 TIME_WAIT src=0000:0000:0000:0000:0000:0000:0000:0001 dst=0000:0000:0000:0000:0000:0000:0000:0001 sport=50488 dport=9928 src=0000:0000:0000:0000:0000:0000:0000:0001 dst=0000:0000:0000:0000:0000:0000:0000:0001 sport=9928 dport=50488 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 181 ESTABLISHED src=10.75.217.91 dst=192.168.1.250 sport=36848 dport=22 src=192.168.1.250 dst=120.78.238.79 sport=22 dport=36848 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 52 TIME_WAIT src=10.153.205.11 dst=192.168.1.250 sport=39622 dport=5900 src=192.168.1.250 dst=137.184.185.50 sport=5900 dport=39622 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 1 src=127.0.0.1 dst=127.0.0.1 sport=55086 dport=5353 src=127.0.0.1 dst=127.0.0.1 sport=5353 dport=55086 mark=0 zone=0 use=2
+ipv4     2 tcp      6 108 TIME_WAIT src=127.0.0.1 dst=127.0.0.1 sport=33882 dport=9927 src=127.0.0.1 dst=127.0.0.1 sport=9927 dport=33882 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 62 TIME_WAIT src=10.101.213.166 dst=192.168.1.250 sport=44056 dport=5900 src=192.168.1.250 dst=165.22.181.167 sport=5900 dport=44056 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 15 TIME_WAIT src=10.153.205.11 dst=192.168.1.250 sport=46050 dport=5900 src=192.168.1.250 dst=137.184.185.50 sport=5900 dport=46050 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 80 TIME_WAIT src=10.153.205.11 dst=192.168.1.250 sport=38358 dport=5900 src=192.168.1.250 dst=137.184.185.50 sport=5900 dport=38358 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 108 TIME_WAIT src=10.153.205.11 dst=192.168.1.250 sport=36668 dport=5900 src=192.168.1.250 dst=137.184.185.50 sport=5900 dport=36668 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 1 src=192.168.1.250 dst=10.54.138.227 sport=22504 dport=53 src=216.239.32.10 dst=192.168.1.250 sport=53 dport=22504 mark=0 zone=0 use=2
+ipv4     2 tcp      6 31 TIME_WAIT src=10.101.213.166 dst=192.168.1.250 sport=58086 dport=5900 src=192.168.1.250 dst=165.22.181.167 sport=5900 dport=58086 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 1 src=127.0.0.1 dst=127.0.0.1 sport=58523 dport=5353 src=127.0.0.1 dst=127.0.0.1 sport=5353 dport=58523 mark=0 zone=0 use=2
+ipv4     2 tcp      6 76 TIME_WAIT src=10.101.213.166 dst=192.168.1.250 sport=50542 dport=5900 src=192.168.1.250 dst=165.22.181.167 sport=5900 dport=50542 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 97 TIME_WAIT src=10.101.213.166 dst=192.168.1.250 sport=34746 dport=5900 src=192.168.1.250 dst=165.22.181.167 sport=5900 dport=34746 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 108 TIME_WAIT src=127.0.0.1 dst=127.0.0.1 sport=36832 dport=3493 src=127.0.0.1 dst=127.0.0.1 sport=3493 dport=36832 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 11 src=127.0.0.1 dst=127.0.0.1 sport=58905 dport=323 src=127.0.0.1 dst=127.0.0.1 sport=323 dport=58905 mark=0 zone=0 use=2
+ipv4     2 tcp      6 91 TIME_WAIT src=10.153.205.11 dst=192.168.1.250 sport=41514 dport=5900 src=192.168.1.250 dst=137.184.185.50 sport=5900 dport=41514 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 57 TIME_WAIT src=10.153.205.11 dst=192.168.1.250 sport=53370 dport=5900 src=192.168.1.250 dst=137.184.185.50 sport=5900 dport=53370 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 55 TIME_WAIT src=10.115.213.166 dst=192.168.1.250 sport=36980 dport=22 src=192.168.1.250 dst=49.235.88.245 sport=22 dport=36980 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 299 ESTABLISHED src=10.10.90.125 dst=192.168.1.250 sport=38464 dport=22 src=192.168.1.250 dst=182.61.10.212 sport=22 dport=38464 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 1 src=192.168.1.109 dst=192.168.1.250 sport=61216 dport=53 src=192.168.1.250 dst=192.168.1.109 sport=53 dport=61216 mark=0 zone=0 use=2
+ipv4     2 tcp      6 431997 ESTABLISHED src=192.168.1.250 dst=192.168.1.109 sport=57438 dport=6000 src=192.168.1.109 dst=192.168.1.250 sport=6000 dport=57438 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 66 TIME_WAIT src=10.101.213.166 dst=192.168.1.250 sport=54720 dport=5900 src=192.168.1.250 dst=165.22.181.167 sport=5900 dport=54720 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 104 TIME_WAIT src=192.168.1.250 dst=10.205.123.175 sport=53462 dport=443 src=142.250.186.196 dst=192.168.1.250 sport=443 dport=53462 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 27 src=127.0.0.1 dst=127.0.0.1 sport=33533 dport=5353 src=127.0.0.1 dst=127.0.0.1 sport=5353 dport=33533 mark=0 zone=0 use=2
+ipv4     2 udp      17 1 src=192.168.1.109 dst=192.168.1.250 sport=56916 dport=53 src=192.168.1.250 dst=192.168.1.109 sport=53 dport=56916 mark=0 zone=0 use=2
+ipv4     2 tcp      6 431999 ESTABLISHED src=192.168.1.250 dst=10.174.192.164 sport=43860 dport=443 src=162.159.135.234 dst=192.168.1.250 sport=443 dport=43860 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 38 TIME_WAIT src=10.153.205.11 dst=192.168.1.250 sport=52476 dport=5900 src=192.168.1.250 dst=137.184.185.50 sport=5900 dport=52476 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 1 src=192.168.1.250 dst=10.54.138.227 sport=17210 dport=53 src=216.239.32.10 dst=192.168.1.250 sport=53 dport=17210 mark=0 zone=0 use=2
+ipv4     2 tcp      6 108 TIME_WAIT src=127.0.0.1 dst=127.0.0.1 sport=40788 dport=3493 src=127.0.0.1 dst=127.0.0.1 sport=3493 dport=40788 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 89 TIME_WAIT src=10.153.205.11 dst=192.168.1.250 sport=36872 dport=5900 src=192.168.1.250 dst=137.184.185.50 sport=5900 dport=36872 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 udp      17 27 src=192.168.1.147 dst=10.55.16.176 sport=49361 dport=6667 [UNREPLIED] src=255.255.255.255 dst=192.168.1.147 sport=6667 dport=49361 mark=0 zone=0 use=2
+ipv4     2 udp      17 3 src=192.168.1.2 dst=192.168.1.250 sport=32856 dport=53 src=192.168.1.250 dst=192.168.1.2 sport=53 dport=32856 mark=0 zone=0 use=2
+ipv4     2 udp      17 27 src=192.168.1.250 dst=10.153.120.56 sport=52464 dport=53 src=108.162.193.176 dst=192.168.1.250 sport=53 dport=52464 mark=0 zone=0 use=2

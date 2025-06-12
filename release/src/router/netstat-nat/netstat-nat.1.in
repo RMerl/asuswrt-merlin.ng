@@ -1,0 +1,293 @@
+.\" SPDX-License-Identifier: 0BSD
+.\"
+.Dd
+.Dt NETSTAT-NAT 1
+.Os
+.
+.Sh NAME
+.Nm netstat-nat
+.Nd extract and filter NAT/firewall connection data
+.Sh SYNOPSIS
+.Nm
+.Op Fl no
+.Op Fl x Ns \&| Ns Fl X Ns Op Ar width
+.Bro Oo Fl G Oc Oo Fl S Ns \&| Ns Fl D Oc Brc Ns \&| Ns Op Fl L Ns \&| Ns Fl R
+.Oo Fl s Ns \  Ns Ar ource Oc Ns …
+.Oo Fl d Ns \  Ns Ar estination Oc Ns …
+.Oo Fl g Ns \  Ns Ar ateway Oc Ns …
+.Oo Fl p Ns \  Ns Ar rotocol Oc Ns …
+.Op Fl r Bro Cm src Ns \&, Ns Cm dst Ns \&, Ns Cm gate Brc Ns Bro , Ns Cm -port Brc Ns \&| Ns Cm state
+.Op Ar nf_conntrack
+.
+.Sh DESCRIPTION
+All network-enabled hosts track ongoing network connections,
+but this is especially true of stateful firewalls and gateways (routers) which perform network address translation.
+Under Linux, this information is accounted by the netfilter framework,
+tracking connectionless protocols
+.Pq like Xr udp 7 , Xr icmp 7
+in addition to the connection-based ones
+.Pq like Xr tcp 7 .
+.Pp
+.Nm
+parses
+.Ar nf_conntrack
+.Pq Pa /proc/net/nf_conntrack Ns \& by default, or the standard input stream if Qq Sy - ,
+filters it so it only has NAT connections
+.Pq by default, cf.\& Fl LR ,
+looks up the canonical names for the hosts and ports
+.Pq unless Fl n ,
+and presents it in a table:
+.Bd -literal -compact -offset 4n
+.if t \{ .in -8n
+.sp -1 \}
+Proto NATed Address                  Destination Address            State
+icmp  10.179.163.88                  tarta.nabijaczleweli.xyz
+icmp  10.200.233.12                  tarta.nabijaczleweli.xyz
+tcp   10.32.144.39.host.securi:63770 tarta.nabijaczleweli.xyz:https TIME_WAIT
+tcp   10.32.144.39.host.securi:64361 tarta.nabijaczleweli.xyz:http  TIME_WAIT
+tcp   10.72.217.111:33864            tarta.nabijaczleweli.xyz:5900  TIME_WAIT
+tcp   10.72.217.111:39074            tarta.nabijaczleweli.xyz:5900  TIME_WAIT
+tcp   nabijaczleweli.nabijaczl:20985 lb-10-268-216-78-iad.git:https ESTABLISHED
+tcp   nabijaczleweli.nabijaczl:21047 waw07s05-in-f4.1e100.net:http  TIME_WAIT
+tcp   nabijaczleweli.nabijaczl:20751 waw07s05-in-f14.1e100.ne:https ESTABLISHED
+tcp   nabijaczleweli.nabijaczl:17906 101010.pl:https                ESTABLISHED
+tcp   192.168.1.136:38216            lt-in-f188.1e100.net:5228      ESTABLISHED
+tcp   192.168.1.136:38330            lt-in-f188.1e100.net:5228      ESTABLISHED
+tcp   192.168.1.136:39972            lt-in-f188.1e100.net:5228      ESTABLISHED
+tcp   192.168.1.136:40092            lt-in-f188.1e100.net:5228      ESTABLISHED
+udp   rozbian.nabijaczleweli.x:46115 10.158.103.58:https            ASSURED
+udp   rozbian.nabijaczleweli.x:42560 10.69.17.108:https             ASSURED
+udp   rozbian.nabijaczleweli.x:44786 10.140.3.34:https              ASSURED
+udp   rozbian.nabijaczleweli.x:47079 10.140.3.34:https              UNREPLIED
+udp   192.168.1.185:3076             ec2-10-213-30-29.eu-cent:https ASSURED
+udp   tarta.nabijaczleweli.xyz:39517 ns-153.awsdns-19.com:domain
+udp   tarta.nabijaczleweli.xyz:16829 ns-1007.awsdns-61.net:domain
+udp   tarta.nabijaczleweli.xyz:46874 ns-1411.awsdns-48.org:domain
+.if t .in +8n
+.Ed
+herein we can see:
+two ongoing incoming ICMP queries (no state available);
+many remote hosts are calling
+.Em tarta
+(and it is the one to hang up);
+local hosts
+.Em nabijaczleweli
+and
+.Em 192.168.1.136
+are generally calling google;
+that the HTTP/3 revolution is real;
+and that
+.Em tarta
+is querying some DNS servers (they didn't reply yet).
+.Pp
+The state column can be any of
+.Bl -tag -compact -width ".Sy ESTABLISHED"
+.It Sy ESTABLISHED
+a functional ongoing connection
+.It Sy ASSURED
+similar, but for connectionless protocols
+.It (blank)
+either no connection state is tracked (like in ICMP), or waiting for remote reply (like in UDP)
+.It Sy UNREPLIED
+remote didn't reply for longer than the expected time-out
+.Pp
+.It Sy TIME_WAIT
+the local side of the connection was closed, delayed remote packets are being collected before recycling
+.It Sy FIN_WAIT
+the remote side of the connection was closed, waiting for acknowledgement (\(->FIN, ACK\(->, waiting for \(->FIN)
+.It Sy SYN_RECV
+a remote client started opening a connection, but didn't acknowledge the local response (\(->SYN, SYN,ACK\(->, waiting for \(->ACK)
+.It Sy SYN_SENT
+a local client started opening a connection, but remote didn't yet accept it (SYN\(->, waiting for \(->SYN,ACK)
+.It Sy CLOSE
+.Sy TIME_WAIT
+because connection was closed forcibly (\(->RST)
+.El
+the last 5 only really apply to TCP-like protocols.
+.Pp
+With
+.Fl L Ns \& or Pq R
+on
+.Em tarta
+the table looks very similar
+.Pq Fl nX Ns Ar 21 Ns \& added as well ,
+but loopback connections also appear:
+.Bd -literal -compact -offset 4n
+Proto Source Address        Destination Address   State
+tcp   [::1]:49118           [::1]:9928            TIME_WAIT
+tcp   [::1]:50624           [::1]:80              ESTABLISHED
+tcp   10.221.132.191:35862  192.168.1.250:5900    TIME_WAIT
+tcp   127.0.0.1:34030       127.0.0.1:8213        TIME_WAIT
+tcp   127.0.0.1:52476       127.0.1.1:3493        ESTABLISHED
+tcp   10.176.163.40:51167   192.168.1.250:443     TIME_WAIT
+tcp   10.62.134.22:23178    192.168.1.250:80      SYN_RECV
+tcp   10.62.134.22:47444    192.168.1.250:80      SYN_RECV
+udp   127.0.0.1:42738       127.0.0.1:323
+udp   127.0.0.1:44850       127.0.0.1:5353
+udp   127.0.0.1:46444       127.0.0.1:53          ASSURED
+udp   192.168.1.144:20407   192.168.1.250:53
+udp   192.168.1.146:59266   192.168.1.250:53
+udp   192.168.1.204:35989   192.168.1.250:53
+udp   192.168.1.250:23225   10.46.8.231:53
+udp   192.168.1.250:11300   10.11.28.69:53
+udp   192.168.1.250:51413   10.116.123.52:6881    ASSURED
+.Ed
+(Public addresses were anonymised as 10/8 in both tables; both tables heavily abridged.)
+.
+.Sh OPTIONS
+.Bl -tag -compact -width ".Fl d Ar destination Ns Cm \&, Ns …"
+.It Fl n
+Don't try to resolve IP addresses to hostnames nor port numbers to service names
+.Pq Xr hosts 5 , Xr services 5
+\(em just normalise them.
+.
+.It Fl o
+Don't output the table header line.
+.
+.It Fl x
+Widen the table: addresses are
+.Sy 40
+instead of
+.Sy 30
+columns wide.
+.
+.It Fl X
+Widen the table: address columns are the width of a fully-specified
+.Xr ipv6 7
+address\ +\ port
+.Pq like Ns \  Ns Li "[fc00:e355:e73f:b463:a28e:529d:7838:65be]:34012" .
+.
+.It Fl X Ns Ar width
+Widen the table: address columns use the given
+.Ar width .
+.Pp
+.
+.It Fl G Pq also Fl N
+Add a
+.Em "Gateway Address"
+column between the source and destination columns \(em
+this is the outside-facing address of the node performing NAT.
+.Pp
+.
+.It Fl S
+Only show connections this node facilitates
+.Em from
+its local network
+.Em to
+the outside world
+(SNAT \(em source NAT).
+Overrides
+.Fl D .
+.
+.It Fl D
+Only show connections this node facilitates
+.Em to
+its local network
+.Em from
+the outside world
+(DNAT \(em destination NAT).
+Overrides
+.Fl S .
+.It Xo
+By default, the table is filtered as-if
+.Fl S
+and
+.Fl D
+were used additively instead of subtractively.
+.Xc
+.
+.It Fl L
+Only show direct connections made by this node
+(and any of its configured addresses).
+This still includes hosts outside the local network.
+Disables
+.Fl SDG .
+Overrides
+.Fl R .
+.
+.It Fl R
+Only show non-NAT connections that don't involve this node('s addresses) at all
+(This is most likely because their destinations are broadcast addresses.)
+Disables
+.Fl SDG .
+Overrides
+.Fl L .
+.Pp
+.
+.It Fl s Ar source Ns Cm \&, Ns …
+Hide connections that don't originate from
+.Ar source Ns s
+(parsed as an address or looked up in DNS
+.Pq Xr getaddrinfo 3 ;
+comma- or whitespace-separated, or specify multiple times).
+.
+.It Fl d Ar destination Ns Cm \&, Ns …
+Hide connections that aren't targeting
+.Ar destination Ns s
+(likewise).
+.
+.It Fl g Ar gateway Ns Cm \&, Ns …
+Hide connections that aren't going through
+.Ar gateway Ns s
+(likewise).
+.
+.It Fl p Ar protocol Ns Cm \&, Ns …
+Hide connections that aren't formed by these layer 4 protocols
+(like UDP, TCP, or ICMP)
+(case-insensitive; likewise).
+.Pp
+.
+.It Fl r Bro Cm src Ns \&, Ns Cm dst Ns \&, Ns Cm gate Brc Ns Bro , Ns Cm -port Brc Ns \&| Ns Cm state
+Sort the output by the given column (after partitioning by L4 protocol):
+.Bl -tag -compact -offset 4n -width ".Cm gate-port"
+.It Cm src
+source address (this is the default)
+.It Cm dst
+destination address
+.It Cm src-port
+source port
+.It Cm dst-port
+destination port
+.It Cm state
+connection state
+.It Cm gate
+gateway address
+.It Cm gate-port
+gateway port
+.El
+ties are then broken in this order.
+Everything is sorted lexicographically (as a string), before address/port\(->name lookup (unless disabled by
+.Fl n ) .
+.El
+.
+.Sh FILES
+.Pa /proc/net/nf_conntrack :
+Contains the current netfilter connections.
+This is usually only readable by root.
+.
+.Sh ENVIRONMENT VARIABLES
+.Ev NETSTAT_NAT_LOCAL_ADDRS :
+If set, contains a comma- or whitespace-separated list of addresses to be considered local.
+This supersedes any real sysem state
+.Pq for use with Pa nf_conntrack Ns \& backups .
+.
+.Sh EXIT STATUS
+.Sy 1
+if
+.Ar nf_conntrack
+couldn't be opened or a
+.Ar source ,
+.Ar destination ,
+or
+.Ar gateway
+didn't exist.
+.
+.Sh SEE ALSO
+.Xr conntrack 8
+provides a read-write interface to this table.
+.Pp
+.Xr getaddrinfo 3 ,
+.Xr getifaddrs 3 ,
+.Xr getnameinfo 3 ,
+.Xr hosts 5 ,
+.Xr services 5

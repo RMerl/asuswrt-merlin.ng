@@ -7504,20 +7504,12 @@ tuxera-install:
 netstat-nat-clean:
 	-@$(MAKE) -C netstat-nat clean
 	@rm -f netstat-nat/Makefile
-	@rm -f netstat-nat/stamp-h1
 
 netstat-nat-install: netstat-nat
 	install -D netstat-nat/netstat-nat $(INSTALLDIR)/netstat-nat/usr/sbin/netstat-nat
 	$(STRIP) -s $(INSTALLDIR)/netstat-nat/usr/sbin/netstat-nat
 
-netstat-nat/stamp-h1:
-	cd netstat-nat && autoreconf -fi && \
-	CC=$(CC) CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
-		LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections -fPIC" \
-		$(CONFIGURE)
-	@touch $@
-
-netstat-nat: netstat-nat/stamp-h1
+netstat-nat:
 	$(MAKE) -C netstat-nat
 
 sd-idle: sd-idle/sd-idle-2.6

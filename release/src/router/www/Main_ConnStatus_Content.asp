@@ -22,17 +22,30 @@
 <script language="JavaScript" type="text/javascript" src="/js/table/table.js"></script>
 <script>
 
+var connarray = Array();
+var connarray_route = Array();
+
 <% get_connlist_array(); %>
 <% get_ipv6clients_array(); %>
 
-var sortdir = 0;
-var sortfield = 0;
-var filter = Array(6);
+var sortdir_nat = 0;
+var sortfield_nat = 0;
+var sortdir_route = 0;
+var sortfield_route = 0;
+var filter = [];
+filter["nat"] = Array(6);
+filter["route"] = Array(6);
+var sortfield_global = 0;
 
 function initial() {
 	show_menu();
-	connarray.pop();	// Remove last empty element
-	draw_conntrack_table()
+
+// Remove last empty elements of each array
+	connarray.pop();
+	connarray_route.pop();
+
+	draw_table("nat");
+	draw_table("route");
 }
 
 function compIPV6(input) {
@@ -40,103 +53,125 @@ function compIPV6(input) {
 	return input.replace(/(^|:)0{1,4}/g, ':');
 }
 
-function set_filter(field, o) {
-	filter[field] = o.value.toLowerCase();
-	draw_conntrack_table()
+function set_filter(field, o, type) {
+	filter[type][field] = o.value.toLowerCase();
+	draw_table(type);
 }
 
-function draw_conntrack_table(){
-	var i, j, qosclass, label;
+function draw_table(type){
+	var i, j;
 	var tracklen, shownlen = 0;
 	var code;
 	var clientObj, clientName;
-	var srchost, srctitle, dsthost, dsttitle;
-	var index, colindex, i;
+	var srchost, dsthost;
 
-	tracklen = connarray.length
-	if (tracklen == 0) {
-		showhide("tracked_filters", 0);
-		document.getElementById('tracked_connections').innerHTML = "";
-		document.getElementById("connblock").innerHTML = '<span style="color:#FFCC00;">No active connections.</span>';
+	if (type == "nat") {
+		dataarray = connarray;
+		sortfield_global = sortfield_nat;
+		sortdir_global = sortdir_nat;
+	} else if (type == "route") {
+		dataarray = connarray_route;
+		sortfield_global = sortfield_route;
+		sortdir_global = sortdir_route;
+	} else
 		return;
+
+	tracklen = dataarray.length
+
+	if (type == "nat") {
+		if (tracklen == 0) {
+			document.getElementById("connblock_nat").innerHTML = '<div class="hint-color" style="font-size: 125%;padding-top:50px;">No active NAT connections.</div>';
+			return;
+		}
+		document.getElementById('tracked_filters').style.display = "";
+		document.getElementById('connblock_header').style.display = "";
+		document.getElementById('connblock_nat').innerHTML = "";
+		code = '<table width="100%" cellpadding="4" class="FormTable_table"><thead><tr><td colspan="6">NAT Connections</td></tr></thead>' +
+		       '<tr><th width="8%" id="track_header_0" style="cursor: pointer;" onclick="setsort(0,\'nat\'); draw_table(\'nat\')">Proto</th>' +
+		       '<th width="25%" id="track_header_1" style="cursor: pointer;" onclick="setsort(1, \'nat\'); draw_table(\'nat\')">NAT IP</th>' +
+		       '<th width="11%" id="track_header_2" style="cursor: pointer;" onclick="setsort(2, \'nat\'); draw_table(\'nat\')">NAT Port</th>' +
+		       '<th width="25%" id="track_header_3" style="cursor: pointer;" onclick="setsort(3, \'nat\'); draw_table(\'nat\')">Destination IP</th>' +
+		       '<th width="11%" id="track_header_4" style="cursor: pointer;" onclick="setsort(4, \'nat\'); draw_table(\'nat\')">Port</th>' +
+		       '<th width="20%" id="track_header_5" style="cursor: pointer;" onclick="setsort(5, \'nat\'); draw_table(\'nat\')">State</th></tr>';
+	} else if (type == "route") {
+		if (tracklen == 0) {
+			document.getElementById("connblock_route").innerHTML = '<div class="hint-color" style="font-size: 125%;padding-top:50px;">No active IPv6 connections.</div>';
+			return;
+		}
+		document.getElementById('tracked_filters_route').style.display = "";
+		document.getElementById('connblock_route_header').style.display = "";
+		document.getElementById('connblock_route').innerHTML = "";
+		code = '<table width="100%" cellpadding="4" class="FormTable_table"><thead><tr><td colspan="6">Connections</td></tr></thead>' +
+		       '<tr><th width="8%" id="track_header_route_0" style="cursor: pointer;" onclick="setsort(0, \'route\'); draw_table(\'route\')">Proto</th>' +
+		       '<th width="25%" id="track_header_route_1" style="cursor: pointer;" onclick="setsort(1, \'route\'); draw_table(\'route\')">Local IP</th>' +
+		       '<th width="11%" id="track_header_route_2" style="cursor: pointer;" onclick="setsort(2, \'route\'); draw_table(\'route\')">Port</th>' +
+		       '<th width="25%" id="track_header_route_3" style="cursor: pointer;" onclick="setsort(3, \'route\'); draw_table(\'route\')">Destination IP</th>' +
+		       '<th width="11%" id="track_header_route_4" style="cursor: pointer;" onclick="setsort(4, \'route\'); draw_table(\'route\')">Port</th>' +
+		       '<th width="20%" id="track_header_route_5" style="cursor: pointer;" onclick="setsort(5, \'route\'); draw_table(\'route\')">State</th></tr>';
 	}
 
-	showhide("tracked_filters", 1);
+	dataarray.sort(table_sort);
 
-	code = '<table width="100%" cellpadding="4" class="FormTable_table"><thead><tr><td colspan="6">Connections</td></tr></thead>' +
-		'<tr><th width="10%" id="track_header_0" style="cursor: pointer;" onclick="setsort(0); draw_conntrack_table()">Proto</th>' +
-		'<th width="23%" id="track_header_1" style="cursor: pointer;" onclick="setsort(1); draw_conntrack_table()">NAT IP</th>' +
-		'<th width="12%" id="track_header_2" style="cursor: pointer;" onclick="setsort(2); draw_conntrack_table()">NAT Port</th>' +
-		'<th width="23%" id="track_header_3" style="cursor: pointer;" onclick="setsort(3); draw_conntrack_table()">Destination IP</th>' +
-		'<th width="12%" id="track_header_4" style="cursor: pointer;" onclick="setsort(4); draw_conntrack_table()">Port</th>' +
-		'<th width="20%" id="track_header_5" style="cursor: pointer;" onclick="setsort(5); draw_conntrack_table()">State</th></tr>';
-
-	connarray.sort(table_sort);
 	// Generate table
-	for (i = 0; (i < tracklen); i++){
-
+	for (i = 0; (i < tracklen); i++) {
 		// Compress IPv6
-		if (connarray[i][1].indexOf(":") >= 0)
-			connarray[i][1] = compIPV6(connarray[i][1]);
+		if (dataarray[i][1].indexOf(":") >= 0)
+			dataarray[i][1] = compIPV6(dataarray[i][1]);
 		else
-			connarray[i][1] = connarray[i][1];
+			dataarray[i][1] = dataarray[i][1];
 
-		if (connarray[i][3].indexOf(":") >= 0)
-			connarray[i][3] = compIPV6(connarray[i][3]);
+		if (dataarray[i][3].indexOf(":") >= 0)
+			dataarray[i][3] = compIPV6(dataarray[i][3]);
 		else
-			connarray[i][3] = connarray[i][3];
+			dataarray[i][3] = dataarray[i][3];
 
 		// Retrieve IPv6 hostname from objects pushed by httpd
-		if (connarray[i][1].indexOf(":") >= 0 && ipv6clientarray[connarray[i][1]] != undefined) {
-			clientName = ipv6clientarray[connarray[i][1]];
+		if (dataarray[i][1].indexOf(":") >= 0 && ipv6clientarray[dataarray[i][1]] != undefined) {
+			clientName = ipv6clientarray[dataarray[i][1]];
 		} else {
 			// Retrieve hostname from networkmap
-			clientObj = clientFromIP(connarray[i][1]);
+			clientObj = clientFromIP(dataarray[i][1]);
 			if (clientObj) {
 				clientName = (clientObj.nickName == "") ? clientObj.name : clientObj.nickName;
 			} else {
-				srchost = connarray[i][1];
+				srchost = dataarray[i][1];
 				clientName = "";
 			}
 		}
-		srchost = (clientName == "") ? connarray[i][1] : clientName;
-		srctitle = connarray[i][1];
+		srchost = (clientName == "") ? dataarray[i][1] : clientName;
 
-                if (connarray[i][3].indexOf(":") >= 0 && ipv6clientarray[connarray[i][3]] != undefined) {
-                        clientName = ipv6clientarray[connarray[i][3]];
+		if (dataarray[i][3].indexOf(":") >= 0 && ipv6clientarray[dataarray[i][3]] != undefined) {
+			clientName = ipv6clientarray[dataarray[i][3]];
 		} else {
-			clientObj = clientFromIP(connarray[i][3]);
+			clientObj = clientFromIP(dataarray[i][3]);
 			if (clientObj) {
 				clientName = (clientObj.nickName == "") ? clientObj.name : clientObj.nickName;
 			} else {
 				clientName = "";
 			}
 		}
-		dsthost = (clientName == "") ? connarray[i][3] : clientName;
-		dsttitle = connarray[i][3];
-
+		dsthost = (clientName == "") ? dataarray[i][3] : clientName;
 
 		// Filter in place?
 		var filtered = 0;
-		for (j = 0; j < 6; j++) {
-			if (filter[j]) {
+		for (j = 0; (j < 6 && !filtered); j++) {
+			if (filter[type][j]) {
 				switch (j) {
 					case 1:
-						if (srchost.toLowerCase().indexOf(filter[1].toLowerCase()) < 0 &&
-						    connarray[i][1].toLowerCase().indexOf(filter[1]) < 0)
+						if (srchost.toLowerCase().indexOf(filter[type][1].toLowerCase()) < 0 &&
+						    dataarray[i][1].toLowerCase().indexOf(filter[type][1]) < 0)
 							filtered = 1;
 						break;
 					case 3:
-						if (dsthost.toLowerCase().indexOf(filter[3].toLowerCase()) < 0 &&
-						    connarray[i][3].toLowerCase().indexOf(filter[3]) < 0)
+						if (dsthost.toLowerCase().indexOf(filter[type][3].toLowerCase()) < 0 &&
+						    dataarray[i][3].toLowerCase().indexOf(filter[type][3]) < 0)
 							filtered = 1;
 						break;
 					default:
-						if (connarray[i][j].toLowerCase().indexOf(filter[j]) < 0) {
+						if (dataarray[i][j].toLowerCase().indexOf(filter[type][j]) < 0) {
 						filtered = 1;
 					}
 				}
-				if (filtered) break;
 			}
 		}
 		if (filtered) continue;
@@ -144,29 +179,44 @@ function draw_conntrack_table(){
 		shownlen++;
 
 		// Output row
-		code += "<tr><td>" + connarray[i][0] + "</td>";
-		code += "<td title=\"" + srctitle + "\"" + (srchost.length > 36 ? "style=\"font-size: 80%;\"" : "") +">" +
-	                  srchost + "</td>";
-		code += "<td>" + connarray[i][2] + "</td>";
-		code += "<td title=\"" + dsttitle + "\"" + (dsthost.length > 36 ? "style=\"font-size: 80%;\"" : "") + ">" +
-		          dsthost + "</td>";
-		code += "<td>" + connarray[i][4] + "</td>";
-		code += "<td>" + connarray[i][5] + "</td>";
+		code += "<tr><td>" + dataarray[i][0] + "</td>" +
+		        "<td title=\"" + dataarray[i][1] + "\"" + (srchost.length > 36 ? "style=\"font-size: 80%;\"" : "") +">" + srchost + "</td>" +
+		        "<td>" + dataarray[i][2] + "</td>" +
+		        "<td title=\"" + dataarray[i][3] + "\"" + (dsthost.length > 36 ? "style=\"font-size: 80%;\"" : "") + ">" + dsthost + "</td>" +
+		        "<td>" + dataarray[i][4] + "</td>" +
+		        "<td>" + dataarray[i][5] + "</td>";
 	}
 
+	if (shownlen == 0) {
+		code += '<tr><td colspan="6" class="hint-color" style="text-align:center;">No results.</td></tr>';
+	}
 	code += "</tbody></table>";
 
-	document.getElementById('connblock').innerHTML = code;
-	document.getElementById('track_header_' + sortfield).style.boxShadow = "rgb(255, 204, 0) 0px " + (sortdir == 1 ? "1" : "-1") + "px 0px 0px inset";
+	if (type == "nat") {
+		document.getElementById('connblock_nat').innerHTML = code;
+		document.getElementById('track_header_' + sortfield_nat).style.boxShadow = "rgb(255, 204, 0) 0px " + (sortdir_nat == 1 ? "1" : "-1") + "px 0px 0px inset";
+	} else if (type == "route") {
+		document.getElementById('connblock_route').innerHTML = code;
+		document.getElementById('track_header_route_' + sortfield_route).style.boxShadow = "rgb(255, 204, 0) 0px " + (sortdir_route == 1 ? "1" : "-1") + "px 0px 0px inset";
+	}
 }
 
 
-function setsort(newfield) {
-	if (newfield != sortfield) {
-		sortdir = 0;
-		sortfield = newfield;
-	 } else {
-		sortdir = (sortdir ? 0 : 1);
+function setsort(newfield, type) {
+	if (type == "nat") {
+		if (newfield != sortfield_nat) {
+			sortdir_nat = 0;
+			sortfield_nat = newfield;
+		 } else {
+			sortdir_nat = (sortdir_nat ? 0 : 1);
+		}
+	} else if (type == "route") {
+		if (newfield != sortfield_route) {
+			sortdir_route = 0;
+			sortfield_route = newfield;
+		 } else {
+			sortdir_route = (sortdir_route ? 0 : 1);
+		}
 	}
 }
 
@@ -174,19 +224,19 @@ function setsort(newfield) {
 function table_sort(a, b){
 	var aa, bb;
 
-	switch (sortfield) {
+	switch (sortfield_global) {
 		case 0:		// Proto
 		case 1:		// Source IP
 		case 3:		// Destination IP
-			if (sortdir) {
-				aa = full_IPv6(a[sortfield].toString());
-				bb = full_IPv6(b[sortfield].toString());
+			if (sortdir_global) {
+				aa = full_IPv6(a[sortfield_global].toString());
+				bb = full_IPv6(b[sortfield_global].toString());
 				if (aa == bb) return 0;
 				else if (aa > bb) return -1;
 				else return 1;
 			} else {
-				aa = full_IPv6(a[sortfield].toString());
-				bb = full_IPv6(b[sortfield].toString());
+				aa = full_IPv6(a[sortfield_global].toString());
+				bb = full_IPv6(b[sortfield_global].toString());
 				if (aa == bb) return 0;
 				else if (aa > bb) return 1;
 				else return -1;
@@ -194,21 +244,21 @@ function table_sort(a, b){
 			break;
 		case 2:		// Local Port
 		case 4:		// Remote Port
-			if (sortdir)
-				return parseInt(b[sortfield]) - parseInt(a[sortfield]);
+			if (sortdir_global)
+				return parseInt(b[sortfield_global]) - parseInt(a[sortfield_global]);
 			else
-				return parseInt(a[sortfield]) - parseInt(b[sortfield]);
+				return parseInt(a[sortfield_global]) - parseInt(b[sortfield_global]);
 			break;
 		case 5:		// Label
-			if (sortdir) {
-		                aa = a[sortfield];
-			        bb = b[sortfield];
+			if (sortdir_global) {
+				aa = a[sortfield_global];
+				bb = b[sortfield_global];
 				if(aa == bb) return 0;
 				else if(aa > bb) return -1;
 				else return 1;
 			} else {
-				aa = a[sortfield];
-				bb = b[sortfield];
+				aa = a[sortfield_global];
+				bb = b[sortfield_global];
 				if(aa == bb) return 0;
 				else if(aa > bb) return 1;
 				else return -1;
@@ -261,26 +311,27 @@ function table_sort(a, b){
 										<div class="formfontdesc"><#System_log_connections#></div>
 										<div class="formfontdesc">Click on a column header to sort by that field.</div>
 
-										<table cellpadding="4" width="100%" class="FormTable_table" id="tracked_filters" style="display:none;"><thead><tr><td colspan="6">Filter connections</td></tr></thead>
+										<div id="connblock_header" style="display:none;"><span style="color:#FFCC00; font-size:larger;">NAT connections</span></div>
+										<table cellpadding="4" width="100%" class="FormTable_table" id="tracked_filters" style="display:none;"><thead><tr><td colspan="6">Filter NAT connections</td></tr></thead>
 											<tr>
-												<th width="10%">Proto</th>
-												<th width="23%">NAT IP</th>
-												<th width="12%">NAT Port</th>
-												<th width="23%">Destination IP</th>
-												<th width="12%">Port</th>
+												<th width="8%">Proto</th>
+												<th width="25%">NAT IP</th>
+												<th width="11%">NAT Port</th>
+												<th width="25%">Destination IP</th>
+												<th width="11%">Port</th>
 												<th width="20%">State</th>
 											</tr>
 											<tr>
-												<td><select class="input_option" onchange="set_filter(0, this);">
+												<td><select class="input_option" onchange="set_filter(0, this, 'nat');">
 														<option value="">any</option>
 														<option value="tcp">tcp</option>
 														<option value="udp">udp</option>
 												</select></td>
-												<td><input type="text" class="input_15_table" maxlength="39" oninput="set_filter(1, this);"></input></td>
-												<td><input type="text" class="input_6_table" maxlength="5" oninput="set_filter(2, this);"></input></td>
-												<td><input type="text" class="input_15_table" maxlength="39" oninput="set_filter(3, this);"></input></td>
-												<td><input type="text" class="input_6_table" maxlength="5" oninput="set_filter(4, this);"></input></td>
-												<td><select class="input_option" onchange="set_filter(5, this);">
+												<td><input type="text" class="input_15_table" maxlength="39" oninput="set_filter(1, this, 'nat');"></input></td>
+												<td><input type="text" class="input_6_table" maxlength="5" oninput="set_filter(2, this, 'nat');"></input></td>
+												<td><input type="text" class="input_15_table" maxlength="39" oninput="set_filter(3, this, 'nat');"></input></td>
+												<td><input type="text" class="input_6_table" maxlength="5" oninput="set_filter(4, this, 'nat');"></input></td>
+												<td><select class="input_option" onchange="set_filter(5, this, 'nat');">
 														<option value="">any</option>
 														<option value="ASSURED">Assured</option>
 														<option value="ESTABLISHED">Established</option>
@@ -290,13 +341,46 @@ function table_sort(a, b){
 														<option value="SYN_">SYN Recv/Sent</option>
 														<option value="UNREPLIED">Unreplied</option
 													</select></td>
-												<!-- <td><input type="text" class="input_18_table" maxlength="48" oninput="set_filter(5, this);"></input></td> -->
 											</tr>
 										</table>
 
-										<div style="margin-top:8px">
-											<div id="connblock"></div>
-										</div>
+										<div id="connblock_nat"></div>
+
+										<div id="connblock_route_header" style="display:none; margin-top:50px;"><span style="color:#FFCC00; font-size:larger;">Routed IPv6 connections</span></div>
+										<table cellpadding="4" width="100%" class="FormTable_table" id="tracked_filters_route" style="display:none;"><thead><tr><td colspan="6">Filter routed connections</td></tr></thead>
+											<tr>
+												<th width="8%">Proto</th>
+												<th width="25%">Local IP</th>
+												<th width="11%">Port</th>
+												<th width="25%">Destination IP</th>
+												<th width="11%">Port</th>
+												<th width="20%">State</th>
+											</tr>
+											<tr>
+												<td><select class="input_option" onchange="set_filter(0, this, 'route');">
+														<option value="">any</option>
+														<option value="tcp">tcp</option>
+														<option value="udp">udp</option>
+												</select></td>
+												<td><input type="text" class="input_15_table" maxlength="39" oninput="set_filter(1, this, 'route');"></input></td>
+												<td><input type="text" class="input_6_table" maxlength="5" oninput="set_filter(2, this, 'route');"></input></td>
+												<td><input type="text" class="input_15_table" maxlength="39" oninput="set_filter(3, this, 'route');"></input></td>
+												<td><input type="text" class="input_6_table" maxlength="5" oninput="set_filter(4, this, 'route');"></input></td>
+												<td><select class="input_option" onchange="set_filter(5, this, 'route');">
+														<option value="">any</option>
+														<option value="ASSURED">Assured</option>
+														<option value="ESTABLISHED">Established</option>
+														<option value="CLOSE">Close</option>
+														<option value="TIME_WAIT">Time Wait</option>
+														<option value="FIN_WAIT">FIN Wait</option>
+														<option value="SYN_">SYN Recv/Sent</option>
+														<option value="UNREPLIED">Unreplied</option
+													</select></td>
+											</tr>
+										</table>
+
+										<div id="connblock_route"></div>
+
 										<br>
 										<div class="apply_gen">
 											<input type="button" onClick="location.reload();" value="<#CTL_refresh#>" class="button_gen">

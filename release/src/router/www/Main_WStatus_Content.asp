@@ -387,7 +387,7 @@ function getRefresh() {
 
 function setRefresh(obj) {
 	refreshRate = obj.value;
-	cookie.set('awrtm_wlrefresh', refreshRate, 300);
+	cookie.set('awrtm_wlrefresh', refreshRate, 365);
 	get_wlclient_list();
 }
 
@@ -439,7 +439,7 @@ function hide_details_window(){
 
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 										<tr>
-											<th>Automatically refresh list every</th>
+											<th>Refresh frequency</th>
 											<td>
 												<select name="refreshrate" class="input_option" onchange="setRefresh(this);" id="refreshrate">
 													<option value="0">No refresh</option>

@@ -36,9 +36,15 @@ var filter = [];
 filter["nat"] = Array(6);
 filter["route"] = Array(6);
 var sortfield_global = 0;
+var showNames;
+var refreshRate;
+var timedEvent = 0;
 
 function initial() {
 	show_menu();
+
+	refreshRate = getRefresh();
+	showNames = getShowNames();
 
 // Remove last empty elements of each array
 	connarray.pop();
@@ -46,6 +52,9 @@ function initial() {
 
 	draw_table("nat");
 	draw_table("route");
+
+	if (refreshRate > 0)
+		timedEvent = setTimeout("get_connection_list();", refreshRate * 1000);
 }
 
 function compIPV6(input) {
@@ -63,7 +72,7 @@ function draw_table(type){
 	var tracklen, shownlen = 0;
 	var code;
 	var clientObj, clientName;
-	var srchost, dsthost;
+	var srchost, dsthost, srctitle, dsttitle;
 
 	if (type == "nat") {
 		dataarray = connarray;
@@ -77,12 +86,12 @@ function draw_table(type){
 		return;
 
 	tracklen = dataarray.length
+	if (tracklen == 0) {
+		document.getElementById("connblock_" + type).innerHTML = '<div class="hint-color" style="font-size: 125%;padding-top:50px;">No active connections.</div>';
+		return;
+	}
 
 	if (type == "nat") {
-		if (tracklen == 0) {
-			document.getElementById("connblock_nat").innerHTML = '<div class="hint-color" style="font-size: 125%;padding-top:50px;">No active NAT connections.</div>';
-			return;
-		}
 		document.getElementById('tracked_filters').style.display = "";
 		document.getElementById('connblock_header').style.display = "";
 		document.getElementById('connblock_nat').innerHTML = "";
@@ -94,10 +103,6 @@ function draw_table(type){
 		       '<th width="11%" id="track_header_4" style="cursor: pointer;" onclick="setsort(4, \'nat\'); draw_table(\'nat\')">Port</th>' +
 		       '<th width="20%" id="track_header_5" style="cursor: pointer;" onclick="setsort(5, \'nat\'); draw_table(\'nat\')">State</th></tr>';
 	} else if (type == "route") {
-		if (tracklen == 0) {
-			document.getElementById("connblock_route").innerHTML = '<div class="hint-color" style="font-size: 125%;padding-top:50px;">No active IPv6 connections.</div>';
-			return;
-		}
 		document.getElementById('tracked_filters_route').style.display = "";
 		document.getElementById('connblock_route_header').style.display = "";
 		document.getElementById('connblock_route').innerHTML = "";
@@ -138,7 +143,13 @@ function draw_table(type){
 				clientName = "";
 			}
 		}
-		srchost = (clientName == "") ? dataarray[i][1] : clientName;
+		if (showNames == 1) {
+			srchost = (clientName == "") ? dataarray[i][1] : clientName;
+			srctitle = dataarray[i][1];
+		} else {
+			srchost = dataarray[i][1];
+			srctitle = (clientName == "") ? dataarray[i][1] : clientName;
+		}
 
 		if (dataarray[i][3].indexOf(":") >= 0 && ipv6clientarray[dataarray[i][3]] != undefined) {
 			clientName = ipv6clientarray[dataarray[i][3]];
@@ -150,7 +161,13 @@ function draw_table(type){
 				clientName = "";
 			}
 		}
-		dsthost = (clientName == "") ? dataarray[i][3] : clientName;
+		if (showNames == 1) {
+			dsthost = (clientName == "") ? dataarray[i][3] : clientName;
+			dsttitle = dataarray[i][3];
+		} else {
+			dsttitle = (clientName == "") ? dataarray[i][3] : clientName;
+			dsthost = dataarray[i][3];
+		}
 
 		// Filter in place?
 		var filtered = 0;
@@ -180,15 +197,17 @@ function draw_table(type){
 
 		// Output row
 		code += "<tr><td>" + dataarray[i][0] + "</td>" +
-		        "<td title=\"" + dataarray[i][1] + "\"" + (srchost.length > 36 ? "style=\"font-size: 80%;\"" : "") +">" + srchost + "</td>" +
+		        "<td title=\"" + srctitle + "\"" + (srchost.length > 36 ? "style=\"font-size: 80%;\"" : "") +">" + srchost + "</td>" +
 		        "<td>" + dataarray[i][2] + "</td>" +
-		        "<td title=\"" + dataarray[i][3] + "\"" + (dsthost.length > 36 ? "style=\"font-size: 80%;\"" : "") + ">" + dsthost + "</td>" +
+		        "<td title=\"" + dsttitle + "\"" + (dsthost.length > 36 ? "style=\"font-size: 80%;\"" : "") + ">" + dsthost + "</td>" +
 		        "<td>" + dataarray[i][4] + "</td>" +
 		        "<td>" + dataarray[i][5] + "</td>";
 	}
 
 	if (shownlen == 0) {
 		code += '<tr><td colspan="6" class="hint-color" style="text-align:center;">No results.</td></tr>';
+	} else {
+		code += '<tr><td colspan="6" class="hint-color" style="text-align:center;">' + shownlen + ' / ' + tracklen +' connections shown.</td></tr>';
 	}
 	code += "</tbody></table>";
 
@@ -249,7 +268,7 @@ function table_sort(a, b){
 			else
 				return parseInt(a[sortfield_global]) - parseInt(b[sortfield_global]);
 			break;
-		case 5:		// Label
+		case 5:		// State
 			if (sortdir_global) {
 				aa = a[sortfield_global];
 				bb = b[sortfield_global];
@@ -267,6 +286,64 @@ function table_sort(a, b){
 	}
 }
 
+function get_connection_list() {
+	if (timedEvent) {
+		clearTimeout(timedEvent);
+		timedEvent = 0;
+	}
+
+	$.ajax({
+		url: '/ajax_conntrack.asp',
+		dataType: 'script',
+		error: function(xhr){
+				get_connection_list();
+				},
+		success: function(response){
+			connarray.pop();
+			connarray_route.pop();
+			draw_table("nat");
+			draw_table("route");
+			if (refreshRate > 0)
+				timedEvent = setTimeout("get_connection_list();", refreshRate * 1000);
+		}
+	});
+
+}
+
+function getRefresh() {
+	val  = parseInt(cookie.get('awrtm_connrefresh'));
+
+	if ((val != 0) && (val != 1) && (val != 3) && (val != 5) && (val != 10))
+		val = 0;
+
+	document.getElementById('refreshrate').value = val;
+
+	return val;
+}
+
+function setRefresh(obj) {
+	refreshRate = obj.value;
+	cookie.set('awrtm_connrefresh', refreshRate, 365);
+	get_connection_list();
+}
+
+function getShowNames() {
+	val = parseInt(cookie.get('awrtm_connnames'));
+
+	if ((val != 0) && (val != 1))
+		val = 1;
+
+	setRadioValue(document.getElementsByName('show_names'), val);
+
+	return val;
+}
+
+function setShowNames(obj) {
+	showNames = obj.value;
+	cookie.set('awrtm_connnames', showNames, 365);
+	draw_table("nat");
+	draw_table("route");
+}
 </script>
 </head>
 
@@ -310,6 +387,29 @@ function table_sort(a, b){
 										<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 										<div class="formfontdesc"><#System_log_connections#></div>
 										<div class="formfontdesc">Click on a column header to sort by that field.</div>
+										<table cellpadding="4" width="100%" class="FormTable_table"><thead><tr><td colspan="2">Display options</td></tr></thead>
+										<tr>
+											<th>Refresh frequency</th>
+											<td>
+												<select name="refreshrate" class="input_option" onchange="setRefresh(this);" id="refreshrate">
+													<option value="0" selected>No refresh</option>
+													<option value="1">1 second</option>
+													<option value="3">3 seconds</option>
+													<option value="5">5 seconds</option>
+													<option value="10">10 seconds</option>
+												</select>
+											</td>
+										</tr>
+										<tr>
+											<th>Display client names</th>
+											<td>
+												<input type="radio" name="show_names" class="input" value="1" checked onchange="setShowNames(this)"><#checkbox_Yes#>
+												<input type="radio" name="show_names" class="input" value="0" onchange="setShowNames(this)"><#checkbox_No#>
+											</td>
+										</table>
+										<div class="apply_gen">
+											<input type="button" onClick="location.reload();" value="<#CTL_refresh#>" class="button_gen">
+										</div>
 
 										<div id="connblock_header" style="display:none;"><span style="color:#FFCC00; font-size:larger;">NAT connections</span></div>
 										<table cellpadding="4" width="100%" class="FormTable_table" id="tracked_filters" style="display:none;"><thead><tr><td colspan="6">Filter NAT connections</td></tr></thead>
@@ -378,13 +478,8 @@ function table_sort(a, b){
 													</select></td>
 											</tr>
 										</table>
-
-										<div id="connblock_route"></div>
-
 										<br>
-										<div class="apply_gen">
-											<input type="button" onClick="location.reload();" value="<#CTL_refresh#>" class="button_gen">
-										</div>
+										<div id="connblock_route"></div>
 									</td>
 								</tr>
 								</tbody>

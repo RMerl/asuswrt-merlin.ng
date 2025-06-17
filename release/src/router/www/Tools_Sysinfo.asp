@@ -537,7 +537,7 @@ function show_memcpu(){
 	document.getElementById("mem_buffer_div").innerHTML = mem_stats_arr[2] + " MB";
 	document.getElementById("mem_cache_div").innerHTML = mem_stats_arr[3] + " MB";
 	if (parseInt(mem_stats_arr[5]) == 0) {
-		document.getElementById("mem_swap_total_div").innerHTML = "<span>No swap configured</span>";
+		document.getElementById("mem_swap_total_div").innerHTML = "<span>No swap</span>";
 		document.getElementById("swap_div").style.display="none";
 	} else {
 		document.getElementById("mem_swap_total_div").innerHTML = mem_stats_arr[5] + " MB";
@@ -691,39 +691,39 @@ function show_wifi_version() {
 						<td>
 							<div style="display: flex;">
 								<div class="hint-color" style="width:20%;"> Total :</div>
-								<div style="width:76%;padding-left: 10px;" id="mem_total_div"></div>
+								<div style="width:25%;padding-left: 10px;text-align:right;" id="mem_total_div"></div>
 							</div>
 							<div style="display: flex;">
-								<div class="hint-color" style="width:20%;">Used</div>
-								<div style="width:76%;padding-left: 10px;" id="mem_used_div"></div>
+								<div class="hint-color" style="width:20%;">Used :</div>
+								<div style="width:25%;padding-left: 10px;text-align:right;" id="mem_used_div"></div>
 							</div>
 
 							<div style="display: flex;">
 								<div class="hint-color" style="width:20%;">Available :</div>
-								<div style="width:76%;padding-left: 10px;" id="mem_available_div"></div>
+								<div style="width:25%;padding-left: 10px;text-align:right;" id="mem_available_div"></div>
 							</div>
 							<div style="display: flex;">
 								<div class="hint-color" style="width:20%;">Free :</div>
-								<div style="width:76%;padding-left: 10px;" id="mem_free_div"></div>
+								<div style="width:25%;padding-left: 10px;text-align:right;" id="mem_free_div"></div>
 							</div>
 							<div style="display: flex;">
 								<div class="hint-color" style="width:20%;">Buffers :</div>
-								<div style="width:76%;padding-left: 10px;" id="mem_buffer_div"></div>
+								<div style="width:25%;padding-left: 10px;text-align:right;" id="mem_buffer_div"></div>
 							</div>
 							<div style="display: flex;">
 								<div class="hint-color" style="width:20%;">Cache :</div>
-								<div style="width:76%;padding-left: 10px;" id="mem_cache_div"></div>
+								<div style="width:25%;padding-left: 10px;text-align:right;" id="mem_cache_div"></div>
 							</div>
 						</td>
 
 						<td style="vertical-align:top;">
 							<div style="display: flex;">
 								<div class="hint-color" style="width:20%;"<th>Total Swap :</div>
-								<div style="width:76%; padding-left: 10px;" id="mem_swap_total_div"></div>
+								<div style="width:25%; padding-left: 10px;text-align:right;" id="mem_swap_total_div"></div>
 							</div>
 							<div id="swap_div" style="display: flex;">
 								<div class="hint-color" style="width:20%;"<th>Used Swap :</div>
-								<div style="width:76%; padding-left: 10px;" id="mem_swap_used_div"></div>
+								<div style="width:25%; padding-left: 10px;text-align:right;" id="mem_swap_used_div"></div>
 							</div>
 						</td>
 

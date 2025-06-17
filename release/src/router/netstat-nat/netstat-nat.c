@@ -1,1021 +1,704 @@
-/*
-#-------------------------------------------------------------------------------
-#                                                                                                                         
-# $Id: netstat-nat.c,v 1.33 2010/01/09 19:34:24 danny Exp $     
-#       
-# $Log: netstat-nat.c,v $
-# Revision 1.33  2010/01/09 19:34:24  danny
-# fix for properly display DNAT over SNAT connection
-#
-# Revision 1.32  2007/11/24 13:18:48  danny
-# - Added '-R' option to show routed connections instead of showing them with '-L'
-# - Some allocation & free bugs were squashed
-#
-# Revision 1.31  2007/05/26 11:48:08  danny
-# Added 'nf_conntrack' support
-# Added NAT host connection information (Used IP and port for NAT)
-#
-# Revision 1.30  2006/08/17 17:43:25  danny
-# - fix for read-in (ip_conntrack), previous versions could sometimes hang or
-#   segfault on some systems.
-# - fix for displaying dnat over snat connections.
-# - changed my email to danny@tweegy.nl and changed homepage url
-#
-# Revision 1.29  2005/07/20 19:50:43  mardan
-# gcc 2.96 compatability fix
-# enlarged readin of ip_conntrack line
-#
-# Revision 1.28  2005/01/29 15:24:37  mardan
-# Some cleanups, bumped to version 1.4.5
-#
-# Revision 1.27  2005/01/23 16:33:09  mardan
-# Added protocol resolving
-#
-# Revision 1.26  2005/01/21 22:54:14  mardan
-# Added some forgotten states
-#
-# Revision 1.25  2005/01/01 17:02:24  mardan
-# Extraction of IPs and ports more dynamicly so it can be used with layer7 and
-# maybe others when layout of ip_conntrack changes
-# Added autoconf
-#
-# Revision 1.24  2003/09/01 20:36:52  mardan
-# Fixed small bug which didn't allow to display hostnames in expanded mode,
-# not enough bytes where allocated.
-#
-# Revision 1.23  2003/08/31 10:59:15  mardan
-# Merged patch from Guomundur D. Haraldsson <gdh@binhex.EU.org> which does a
-# more properly memory alloction and saver copies of variables.
-# Changed versions to v1.4.3. Ready to release if found stable.
-# Changed my e-mail to danny@tweegy.demon.nl
-#
-# Revision 1.22  2003/02/08 17:41:44  mardan
-# made some last minor changes.
-# ready to release v1.4.2
-#
-# Revision 1.21  2003/01/24 21:24:34  mardan
-# Added unknown protocol, display as 'raw'
-# Fixed hussle up in states when sorting connections
-#
-# Revision 1.20  2003/01/02 15:40:48  mardan
-# Merged patch from Marceln, which removes unused variables, more understandable
-# memory allocation error message, check to exit when there are no NAT connections
-# and making netstat-nat compatible with uLibC.
-# Updated files to v1.4.2
-#
-# Revision 1.19  2002/09/22 20:10:19  mardan
-# Added '-v: print version'
-# Added 'uninstall' to Makefile
-# Updated all other files.
-#
-# Revision 1.18  2002/09/22 17:16:08  mardan
-# Rewritten connection_table to allocate memory dynamicly.
-#
-# Revision 1.17  2002/09/12 19:32:12  mardan
-# Added display local connections to NAT box self
-# Updated README
-# Small changes in Makefile
-#
-# Revision 1.16  2002/09/08 20:23:48  mardan
-# Added sort by connection option. (source/destination IP/port)
-# Updated README and man-page.
-#
-# Revision 1.15  2002/08/07 19:25:59  mardan
-# Fixed bug, displayed wrong icmp connection in state REPLIED (dest was gateway).
-#
-# Revision 1.14  2002/08/07 19:02:54  mardan
-# Fixed 'icmp' bug. Segmentation fault occured when displaying NATed icmp connections.
-#
-# Revision 1.13  2002/08/06 19:32:54  mardan
-# Added small feature: no header output.
-# Lots of code cleanup.
-#
-# Revision 1.12  2002/08/03 00:22:22  mardan
-# Added portname resolving based on the listed names in 'services'.
-# Re-arranged the layout.
-# Added a Makefile and a header file.
-# Updated the README.
-#
-# Revision 1.11  2002/07/12 20:05:54  mardan
-# Added argument for extended view of hostnames.
-# Moved display-code into one function.
-# Removed most unnessacery code.
-# Updated README
-#
-# Revision 1.10  2002/07/10 19:58:33  mardan
-# Added filtering by destination-host, re-arranged some code to work properly.
-# Tested DNAT icmp and udp.(pls report if any bugs occur)
-# Fixed a few declaration bugs.
-#
-# Revision 1.9  2002/07/09 20:00:36  mardan
-# Added fully DNAT support (udp & icmp not fully tested yet, but should work),
-# including argument support for (S)(D)NAT selection.
-# Re-arranged layout code, can possible merged into one function.
-# Some few minor changes.
-# Started to work on destination-host selection.
-#
-# Revision 1.8  2002/07/07 20:27:47  mardan
-# Added display by source host/IP.
-# Made a few fixes/changes.
-# Updated the REAMDE.
-#
-# Revision 1.7  2002/06/30 19:55:41  mardan
-# Added README and COPYING (license) FILES.
-#
-# Revision 1.6  2002/06/23 16:27:26  mardan
-# Finished udp.
-# Maybe some layout changes in future? therwise tool is finished.
-#
-# Revision 1.5  2002/06/23 14:07:46  mardan
-# Added protocol arg option.
-# Todo: udp protocol
-#
-# Revision 1.4  2002/06/23 12:57:35  mardan
-# Added ident strings for test :-)
-#
-# Revision 1.3  2002/06/23 12:47:08  mardan
-# Fixed resolved hostname hussle-up/layout
-# Moved all source code into netstat-nat.c
-#
-# Revision 1.2  2002/06/23 11:56:09  mardan
-# Added NAT icmp display.
-# Still need to do udp (more states possible)
-# Really need to fix resolved hostnames display, still hussled up.
-#
-# Revision 1.1.1.1  2002/05/04 01:08:06  mardan
-# Initial import of netstat-nat, the C version.
-# Array pointers really needs to be fixed, still lots of other bugs..
-# So far only TCP displayed.
-# No commandline args for e.g. no_nameresolving, protocol.
-#
-#
-#                                                                                                                  
-# Copyright (c) 2006 by D.Wijsman (danny@tweegy.nl). 
-# All rights reserved.
-#
-# This program is free software; you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by the Free
-# Software Foundation; either version 2 of the License, or (at your option)
-# any later version.
-# 
-# This program is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-# more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; see the file COPYING.  If not, write to
-# the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-#	       
-#                                                                                                                         
-#-------------------------------------------------------------------------------
-*/
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (c) 2006 by D.Wijsman (danny@tweegy.nl).
 
 
-typedef struct _ip_addresses
-{
-    char ip[16];
-    char dev[16];
-    struct _ip_addresses *prev;
-    struct _ip_addresses *next;
-} sIpAddresses;
-#include "netstat-nat.h"
+#include <arpa/inet.h>
+#include <ctype.h>
+#include <err.h>
+#include <errno.h>
+#include <ifaddrs.h>
+#include <net/if.h>
+#include <netdb.h>
+#include <search.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-static char const rcsid[] = "$Id: netstat-nat.c,v 1.33 2010/01/09 19:34:24 danny Exp $";
-char SRC_IP[50];
-char DST_IP[50];
-int SNAT = 1;
-int DNAT = 1;
-int LOCAL = 0;
-int ROUTED = 0;
-static char PROTOCOL[4];
-int connection_index = 0;
-char ***connection_table;
-struct _ip_addresses *IpAddresses = NULL;
+#define NF_CONNTRACK_LOCATION "/proc/net/nf_conntrack"
+
+#define USAGE                                                                                                              \
+	"usage: %s [-no] [-x|-X[width]] {[-G] [-S|-D]}|[-L|-R] [-s ource]... [-d estination]... [-g ateway]... [-p rotocol]... " \
+	"[-r src|dst|src-port|dst-port|state|gate|gate-port] [nf_conntrack]\n"
 
 
-int main(int argc, char *argv[])
-    {
-    const char *args = "hnp:s:d:SDxor:L?vNR";
-    static int SORT_ROW = 1;
-    static int EXT_VIEW = 0;
-    static int RESOLVE = 1;
-    static int no_hdr = 0;
-    static int NAT_HOP = 0;
-    FILE *f;
-    char line[350];
-    char src[50];
-    char dst[50];
-    char host[50];
-    char buf[100];
-    char buf2[100];
-    char from[50] = "NATed Address";
-    char nathost[50] = "NAT-host Address";
-    char dest[50] = "Destination Address";
-    char *ret;
-    
-    char ***pa;
-    char *store;
-    int index, a, b, c, j, r;
+static void process_entry(char * line);
+static bool check_src_dst(const char * protocol, const char * src_ip, const char * dst_ip, const char * src_port, const char * dst_port, const char * gate_ip,
+                          const char * gate_port, const char * state);
+static void lookup_hostport(char ** host, char ** port, const char * protocol);
+static void nolookup_normalise(char ** host);
+static void push_ip_filters(char * arg, struct addrinfo ** ips);
+static bool match_ip_filter(const char * ip, const struct addrinfo * ips);
+static void * xrealloc(void * oldbuf, size_t newbufsize);
+static char * xstrdup(const char * oldstr);
+static void local_ip_addresses_add(struct sockaddr * addr);
+static void local_ip_addresses_add_forced(char * envvar);
+static bool local_ip_address(const char * ip);
 
-    /* variables to display routed and/or local connections */
-    struct ifconf ifc;
-    struct ifreq *req;
-    struct sockaddr_in *ipaddr;
-    char *ifbuf, *facename,  *ptr;
-    int facefound, lastlen, len, sock;
-    //IpAddresses = NULL;
 
-    // check parameters
-    while ((c = getopt(argc, argv, args)) != -1) {
-	switch (c) {
-	case 'h':
-	    display_help();
-	    return 1;
-	case '?':
-	    display_help();
-	    return 1;
-	case 'v':
-	    printf("Version %s\n", VERSION);
-	    return(0);
-	case 'n':
-	    RESOLVE = 0;
-	    break;
-	case 'p':
-	    strcopy(PROTOCOL, sizeof(PROTOCOL), optarg);
-	    break;
-	case 's':
-	    strcopy(SRC_IP, sizeof(SRC_IP), optarg);
-	    lookup_ip(SRC_IP, sizeof(SRC_IP));
-	    break;
-	case 'd':
-	    strcopy(DST_IP, sizeof(DST_IP), optarg);
-	    lookup_ip(DST_IP, sizeof(DST_IP));
-	    break;    
-	case 'S':
-	    DNAT = 0;
-	    break;
-	case 'D':
-	    SNAT = 0;
-	    break;
-	case 'L':
-	    SNAT = 0;
-	    DNAT = 0;
-	    LOCAL = 1;
-	    ROUTED = 0;
-	    break;
-	case 'R':
-	    SNAT = 0;
-	    DNAT = 0;
-	    LOCAL = 0;
-	    ROUTED = 1;	    
-	    break;
-	case 'x':
-	    EXT_VIEW = 1;
-	    break;
-	case 'o':
-	    no_hdr = 1;
-	    break;
-	case 'N':
-	    NAT_HOP = 1;
-	    break;
-	case 'r':
-	    if (optarg == NULL || optarg == '\0') {
-		display_help();
-		return 1;
-		}
-	    if (strcmp(optarg, "scr") == 0) SORT_ROW = 1; //default
-	    if (strcmp(optarg, "dst") == 0) SORT_ROW = 2;
-	    if (strcmp(optarg, "src-port") == 0) SORT_ROW = 3; 
-	    if (strcmp(optarg, "dst-port") == 0) SORT_ROW = 4; 
-	    if (strcmp(optarg, "state") == 0) SORT_ROW = 5;
-	    break; 
+static struct {
+	struct addrinfo * src_ip;
+	struct addrinfo * dst_ip;
+	struct addrinfo * gate_ip;
+	void * protocol;
+
+	bool snat;
+	bool dnat;
+	bool local;
+	bool routed;
+} filter = {.snat = true, .dnat = true};
+
+enum connection_row {
+	CONN_PROTOCOL,
+	CONN_SRC_IP,
+	CONN_DST_IP,
+	CONN_SRC_PORT,
+	CONN_DST_PORT,
+	CONN_STATE,
+	CONN_GATE_IP,
+	CONN_GATE_PORT,
+	CONN_ROWCNT,
+};
+static const char * const connection_row_names[CONN_ROWCNT] = {
+    [CONN_PROTOCOL]  = NULL,         // unpickable, we always partition by protocol
+    [CONN_SRC_IP]    = "src",        //
+    [CONN_DST_IP]    = "dst",        //
+    [CONN_SRC_PORT]  = "src-port",   //
+    [CONN_DST_PORT]  = "dst-port",   //
+    [CONN_STATE]     = "state",      //
+    [CONN_GATE_IP]   = "gate",       //
+    [CONN_GATE_PORT] = "gate-port",  //
+};
+struct connection {
+	union {
+		struct {
+			char * protocol;
+			char * src_ip;
+			char * dst_ip;
+			char * src_port;
+			char * dst_port;
+			char * state;
+			char * gate_ip;
+			char * gate_port;
+		};
+		char * by_row[CONN_ROWCNT];
+	};
+};
+_Static_assert(offsetof(struct connection, by_row[CONN_PROTOCOL]) /***/ == offsetof(struct connection, protocol), /***/ "");
+_Static_assert(offsetof(struct connection, by_row[CONN_SRC_IP]) /*****/ == offsetof(struct connection, src_ip), /*****/ "");
+_Static_assert(offsetof(struct connection, by_row[CONN_DST_IP]) /*****/ == offsetof(struct connection, dst_ip), /*****/ "");
+_Static_assert(offsetof(struct connection, by_row[CONN_SRC_PORT]) /***/ == offsetof(struct connection, src_port), /***/ "");
+_Static_assert(offsetof(struct connection, by_row[CONN_DST_PORT]) /***/ == offsetof(struct connection, dst_port), /***/ "");
+_Static_assert(offsetof(struct connection, by_row[CONN_STATE]) /******/ == offsetof(struct connection, state), /******/ "");
+_Static_assert(offsetof(struct connection, by_row[CONN_GATE_IP]) /****/ == offsetof(struct connection, gate_ip), /****/ "");
+_Static_assert(offsetof(struct connection, by_row[CONN_GATE_PORT]) /**/ == offsetof(struct connection, gate_port), /**/ "");
+static size_t connection_table_len;
+static struct connection * connection_table;
+
+enum connection_row sort_row = CONN_SRC_IP;
+int connection_table_cmp(const void * lhs_r, const void * rhs_r) {
+	const struct connection * lhs = lhs_r;
+	const struct connection * rhs = rhs_r;
+	int ret;
+
+	if((ret = strcmp(lhs->protocol, rhs->protocol)))
+		return ret;
+
+	if((ret = strcmp(lhs->by_row[sort_row], rhs->by_row[sort_row])))
+		return ret;
+
+	for(enum connection_row i = CONN_PROTOCOL + 1; i < CONN_ROWCNT; ++i) {
+		if(i == sort_row)
+			continue;
+
+		if((ret = strcmp(lhs->by_row[i], rhs->by_row[i])))
+			return ret;
 	}
-    }
-    // some param checks
-    if (LOCAL == 1 || ROUTED == 1) {
-	SNAT = 0;
-	DNAT = 0;
-	NAT_HOP = 0;
-    }
-    // get local IP addresses 
-    if (ROUTED || LOCAL) {
-	// find all interfaces
-
-	sock = socket(PF_INET, SOCK_DGRAM, 0);
-	lastlen = 0;
-	len = 100 * sizeof(struct ifreq);
-	for(;;) {
-	    if((ifbuf = malloc(len)) == NULL) {
-    		perror("malloc");
-    		exit(EXIT_FAILURE);
-	    }
-	    ifc.ifc_buf = ifbuf;
-	    ifc.ifc_len = len;
-
-	    if(ioctl(sock, SIOCGIFCONF, &ifc) < 0) {
-    		if(errno != EINVAL || lastlen != 0) {
-    		    perror("ioctl:SIOCGIFCONF");
-    		    exit(EXIT_FAILURE);
-    		}
-	    } else {
-		if(ifc.ifc_len == lastlen)
-		// success //
-    		    break;
-    		lastlen = ifc.ifc_len;
-	    }
-	    // increment buffer //
-	    len += 10 * sizeof(struct ifreq);
-	    free(ifbuf);
-	}
-	// store all local addresses in memory //
-        for(ptr = ifbuf; ptr < ifbuf + ifc.ifc_len; ) {
-	    req = (struct ifreq *)ptr;
-	    ipaddr = (struct sockaddr_in *) &req->ifr_addr;
-//	    printf("The IP address associated with %s is %s\n", req->ifr_name, inet_ntoa(ipaddr->sin_addr));
-	    ip_addresses_add(&IpAddresses, req->ifr_name, inet_ntoa(ipaddr->sin_addr));
-	    ptr += sizeof(struct ifreq);
-	}
-	if (ifbuf) {
-	    free(ifbuf);
-	}
-    }
-
-    connection_table = (char ***) xcalloc((1) * sizeof(char **));
-    // some checking for IPTables and read file
-    if ((f = fopen(NF_CONNTRACK_LOCATION, "r")) == NULL) {
-	if ((f = fopen(IP_CONNTRACK_LOCATION, "r")) == NULL) {
-	    printf("Could not read info about connections from the kernel, make sure netfilter is enabled in kernel or by modules.\n");
-	    return 1;
-	}
-    }
-    
-    // process conntrack table
-    if (!no_hdr) {
-	if (LOCAL || ROUTED) {
-	    strcopy(from, sizeof(from), "Source Address");
-	    strcopy(dest, sizeof(dest), "Destination Address");
-	    }
-	if (!EXT_VIEW) {
-	    printf("%-6s%-36s", "Proto", from);
-	    if (NAT_HOP && !LOCAL) {
-		printf("%-36s", nathost);
-	    }
-	    printf("%-36s%-6s" ,dest, "State");
-	    printf("\n");
-	} else {
-	    printf("%-6s%-41s", "Proto", from);
-	    if (NAT_HOP && !LOCAL) {
-		printf("%-41s", nathost);
-	    }
-	    printf("%-41s%-6s" ,dest, "State");
-	    printf("\n");
-	    } 
-	}
-
-    // bugfix for proper read-in on some systems, provided by Supaflyster
-    while (!feof(f)) 
-    {
-	ret = fgets(line, sizeof(line), f);
-	if (strlen(line) > 0) {
-    	    process_entry(line);
-	}
-	memset(line, 0, sizeof(line));
-    }
-    fclose(f);
-        
-    // create index of arrays pointed to main connection array
-    if (connection_index == 0) {
-	// There are no connections at this moment! free mem and exit
-	free(connection_table);
-        ip_addresses_free(&IpAddresses);
-	return (0);
-    }
-    
-    pa = (char ***) xcalloc((connection_index) * sizeof(char **));
-
-    for (index = 0; index < connection_index; index++) {
-	pa[index] = (char **) xcalloc((ROWS) * sizeof(char *));
-
-	for (j = 0; j < ROWS; j++) {
-	    pa[index][j] = &connection_table[index][j][0];
-	    }
-	}
-    // sort by protocol and defined row
-    for (a = 0; a < connection_index - 1; a++) {
-	for (b = a + 1; b < connection_index; b++) {
-	    r = strcmp(pa[a][0], pa[b][0]);
-	    if (r > 0) {
-		for (j = 0; j < ROWS; j++) {
-		    store = pa[a][j];
-		    pa[a][j] = pa[b][j];
-		    pa[b][j] = store;
-		    }
-		}
-	    if (r == 0) {
-		if (strcmp(pa[a][SORT_ROW], pa[b][SORT_ROW]) > 0) {
-		    for (j = 0; j < ROWS; j++) {
-			store = pa[a][j];
-			pa[a][j] = pa[b][j];
-			pa[b][j] = store;
-			}
-		    }
-		}
-	    }
-	}
-
-    // print connections
-    for (index = 0; index < connection_index; index++) {  
-	if (RESOLVE) {
-	    lookup_hostname(&pa[index][1]);
-	    lookup_hostname(&pa[index][2]);
-	    lookup_hostname(&pa[index][6]);
-	    if (strlen(pa[index][3]) > 0 || strlen(pa[index][4]) > 0 || strlen(pa[index][7]) > 0) {
-		lookup_portname(&pa[index][3], pa[index][0]);
-		lookup_portname(&pa[index][4], pa[index][0]);
-		lookup_portname(&pa[index][7], pa[index][0]);
-	    	}
-	    }
-	if (!EXT_VIEW) {
-	    strcopy(buf, sizeof(buf), ""); 
-	    strncat(buf, pa[index][1], 34 - strlen(pa[index][3]));    
-	    if (!strcmp(pa[index][0], "tcp") || !strcmp(pa[index][0], "udp")) {
-                snprintf(buf2, sizeof(buf2), "%s:%s", buf, pa[index][3]);            
-	    }
-            else {
-                snprintf(buf2, sizeof(buf2), "%s", buf);
-            }
-            snprintf(src, sizeof(src),  "%-36s", buf2);
-	    strcopy(buf, sizeof(buf), ""); 
-	    strncat(buf, pa[index][2], 34 - strlen(pa[index][4]));    
-	    if (!strcmp(pa[index][0], "tcp") || !strcmp(pa[index][0], "udp")) {
-                snprintf(buf2, sizeof(buf2), "%s:%s", buf, pa[index][4]);            
-	    }
-            else {
-	        snprintf(buf2, sizeof(buf2), "%s", buf);
-            }
-	    snprintf(dst, sizeof(dst), "%-36s", buf2);
-	    if (NAT_HOP) {
-		strcopy(buf, sizeof(buf), ""); 
-		strncat(buf, pa[index][6], 34 - strlen(pa[index][7]));    
-		if (!strcmp(pa[index][0], "tcp") || !strcmp(pa[index][0], "udp")) {
-            	    snprintf(buf2, sizeof(buf2), "%s:%s", buf, pa[index][7]);            
-		}
-        	else {
-	    	    snprintf(buf2, sizeof(buf2), "%s", buf);
-        	}
-		snprintf(host, sizeof(dst), "%-36s", buf2);
-	    }
-	} else {
-	    strcopy(buf, sizeof(buf), ""); 
-	    strncat(buf, pa[index][1], 39 - strlen(pa[index][3]));    
-	    if (!strcmp(pa[index][0], "tcp") || !strcmp(pa[index][0], "udp")) {
-	        snprintf(buf2, sizeof(buf2), "%s:%s", buf, pa[index][3]);
-	    }
-            else {
-	        snprintf(buf2, sizeof(buf2), "%s", buf);
-	    }
-            snprintf(src , sizeof(src), "%-41s", buf2);
-	    strcopy(buf, sizeof(buf), ""); 
-	    strncat(buf, pa[index][2], 39 - strlen(pa[index][4]));    
-	    if (!strcmp(pa[index][0], "tcp") || !strcmp(pa[index][0], "udp")) {
-	        snprintf(buf2, sizeof(buf2), "%s:%s", buf, pa[index][4]);
-	    }
-            else {
-	        snprintf(buf2, sizeof(buf2), "%s", buf);
-	    }
-            snprintf(dst, sizeof(dst), "%-41s", buf2);
-	    if (NAT_HOP) {
-		strcopy(buf, sizeof(buf), ""); 
-		strncat(buf, pa[index][6], 39 - strlen(pa[index][7]));    
-		if (!strcmp(pa[index][0], "tcp") || !strcmp(pa[index][0], "udp")) {
-            	    snprintf(buf2, sizeof(buf2), "%s:%s", buf, pa[index][7]);            
-		}
-        	else {
-	    	    snprintf(buf2, sizeof(buf2), "%s", buf);
-        	}
-		snprintf(host, sizeof(dst), "%-41s", buf2);
-	    }
-	}
-	printf("%-6s%s", pa[index][0], src);
-	if (NAT_HOP) {
-	    printf("%s", host);
-	}
-	printf("%s%-11s", dst, pa[index][5]);
-	printf("\n");
-
-    }
-
-    ip_addresses_free(&IpAddresses);
-
-    for (a = 0; a < connection_index; a++) {
-	for (j = 0; j < ROWS; j++) {
-	    if (connection_table[a][j] != NULL) free(connection_table[a][j]);
-	}
-	free(connection_table[a]);
-	free(pa[a]);
-    }
-    free(connection_table);
-    free(pa);
-    return(0);
-}
-
-// get protocol
-int get_protocol(char *line, char *protocol)
-{
-    int i,j, protocol_nr;
-    char protocol_name[11] = "";
-    char protocol_raw[6] = "";
-    
-    if (string_search(line, "tcp")) {
-        memcpy(protocol, "tcp", 3);
-    }
-    else if (string_search(line, "udp")) {
-        memcpy(protocol, "udp", 3);
-    }
-    else if (string_search(line, "icmp")) {
-        memcpy(protocol, "icmp", 4);
-    }
-    else {
-        // here we search for protocol number and give it a name (get_protocol_name)
-        for (i = 0; i < strlen(line); i++ ) {
-            if(!strncmp(&line[i], "unknown  ", 9)) {
-                i += 9;
-                for (j = i; j < strlen(line); j++) {
-                    if (line[j] == ' ') {
-                        break;
-                    }
-                    strncat(protocol_raw, &line[j], 1);
-                }
-                protocol_nr = atoi(protocol_raw);
-                get_protocol_name(protocol_name, protocol_nr);
-                memcpy(protocol, protocol_name, 5);
-                break;
-            }
-        }
-        //memcpy(protocol, "raw", 3);
-    }
-//    printf("PROTO: %s\n", protocol);
-    return(0);
-}
-
-// get connection status
-int get_connection_state(char *line, char *state)
-{
-    if (string_search(line, "ESTABLISHED")) {
-        memcpy(state, "ESTABLISHED", 11);
-    }
-    else if (string_search(line, "TIME_WAIT")) {
-        memcpy(state, "TIME_WAIT", 9);
-    }    
-    else if (string_search(line, "FIN_WAIT")) {
-        memcpy(state, "FIN_WAIT", 8);
-    }    
-    else if (string_search(line, "SYN_RECV")) {
-        memcpy(state, "SYN_RECV", 8);
-    }    
-    else if (string_search(line, "SYN_SENT")) {
-        memcpy(state, "SYN_SENT", 8);
-    }    
-    else if (string_search(line, "UNREPLIED")) {
-        memcpy(state, "UNREPLIED", 9);
-    }    
-    else if (string_search(line, "CLOSE")) {
-        memcpy(state, "CLOSE", 5);
-    }    
-    else if (string_search(line, "ASSURED")) {
-        memcpy(state, "ASSURED", 7);
-    }
-    else {
-        if (string_search(line, "udp")) {
-            memcpy(state, "UNREPLIED", 9);
-        }
-        else {
-            memcpy(state, " ", 1);
-        }
-    }    
-//    printf("STATE: %s\n", state);
-    return(0);
-}
-
-void process_entry(char *line)
-{
-    int count = 0;
-    char srcip_f[16] = "";
-    char dstip_f[16] = "";
-    char srcip_s[16] = "";
-    char dstip_s[16] = "";
-    char srcport[6] = "";
-    char dstport[6] = "";
-    char srcport_s[6] = "";
-    char dstport_s[6] = "";
-    char protocol[5] = "";
-    char state[12] = "";
-
-    search_first_hit("src=", line, srcip_f);    
-    search_first_hit("dst=", line, dstip_f);    
-    search_sec_hit("src=", line, srcip_s);    
-    search_sec_hit("dst=", line, dstip_s);    
-    search_first_hit("sport=", line, srcport);    
-    search_first_hit("dport=", line, dstport);    
-    search_sec_hit("sport=", line, srcport_s);
-    search_sec_hit("dport=", line, dstport_s);
-
-    get_protocol(line, protocol);
-    if (strcmp(PROTOCOL, "")) {
-        if (strncmp(PROTOCOL, protocol, 3)) {
-//            printf("RETURN\n");
-            return;
-        }
-    }
-    get_connection_state(line, state);
-    if (SNAT) {
-	if ((!strcmp(srcip_f, dstip_s) == 0) && (strcmp(dstip_f, srcip_s) == 0)) {		
-  	    check_src_dst(protocol, srcip_f, dstip_f, srcport, dstport, dstip_s, dstport_s, state);
-	    }
-    }
-    if (DNAT) {
-	if ((strcmp(srcip_f, dstip_s) == 0) && (!strcmp(dstip_f, srcip_s) == 0)) {		
-	    check_src_dst(protocol, srcip_f, srcip_s, srcport, srcport_s, dstip_f, dstport_s, state);
-	}
-    }
-    // bugfix for displaying dnat over snat connections, submitted by Supaflyster (intercepted traffic to DNAT) (2 interfaces)
-    if (DNAT || SNAT) {
-	if ((!strcmp(srcip_f, srcip_s) == 0) && (!strcmp(srcip_f, dstip_s) == 0) && (!strcmp(dstip_f, srcip_s) == 0) && (!strcmp(dstip_f, dstip_s) == 0) ) {
-	    check_src_dst(protocol, srcip_f, srcip_s, srcport, srcport_s, dstip_s, dstport_s, state);
-	}    
-    }
-    // (DNAT) (1 interface)
-    if (DNAT) {
-	if ((!strcmp(srcip_f, srcip_s) == 0) && (!strcmp(srcip_f, dstip_s) == 0) && (!strcmp(dstip_f, srcip_s) == 0) && (strcmp(dstip_f, dstip_s) == 0) ) {
-	    check_src_dst(protocol, srcip_f, srcip_s, srcport, srcport_s, dstip_s, dstport_s, state);
-	}    
-    }
-    if (LOCAL) {
-        if ((strcmp(srcip_f, dstip_s) == 0) && (strcmp(dstip_f, srcip_s) == 0)
-	    && ((ip_addresses_search(IpAddresses, srcip_f) == 1) || (ip_addresses_search(IpAddresses, srcip_s) == 1) 
-	    || (ip_addresses_search(IpAddresses, dstip_f) == 1) || (ip_addresses_search(IpAddresses, dstip_s) == 1))) {		
-            check_src_dst(protocol, srcip_f, srcip_s, srcport, dstport, "", "", state);
-	}
-    }
-    if (ROUTED) {
-        if ((strcmp(srcip_f, dstip_s) == 0) && (strcmp(dstip_f, srcip_s) == 0)
-	    && (ip_addresses_search(IpAddresses, srcip_f) == 0) && (ip_addresses_search(IpAddresses, srcip_s) == 0) 
-	    && (ip_addresses_search(IpAddresses, dstip_f) == 0) && (ip_addresses_search(IpAddresses, dstip_s) == 0)) {		
-            check_src_dst(protocol, srcip_f, srcip_s, srcport, dstport, "", "", state);
-	}
-    }
-//    printf("%s %s %s %s %s %s\n", protocol, srcip_f, dstip_f, srcip_s, dstip_s, state);
-}
-
-
-// -- Internal used functions
-// Check filtering by source and destination IP
-void check_src_dst(char *protocol, char *src_ip, char *dst_ip, char *src_port, char *dst_port, char *nathostip, char *nathostport, char *status) 
-    {
-    if ((check_if_source(src_ip)) && (strcmp(DST_IP, "") == 0)) {
-	store_data(protocol, src_ip, dst_ip, src_port, dst_port, nathostip, nathostport, status);
-	}
-    else if ((check_if_destination(dst_ip)) && (strcmp(SRC_IP, "") == 0)) {
-	store_data(protocol, src_ip, dst_ip, src_port, dst_port, nathostip, nathostport, status);
-	}
-    else if ((check_if_destination(dst_ip)) && (check_if_source(src_ip))) {
-	store_data(protocol, src_ip, dst_ip, src_port, dst_port, nathostip, nathostport, status);
-	}
-    }
-
-void store_data(char *protocol, char *src_ip, char *dst_ip, char *src_port, char *dst_port, char *nathostip, char *nathostport, char *status)  
-    {
-    
-    connection_table = (char ***) xrealloc(connection_table, (connection_index +1) * sizeof(char **));
-    connection_table[connection_index] = (char **) xcalloc(200 * sizeof(char *));
-    connection_table[connection_index][0] = (char *) xcalloc(10);
-    connection_table[connection_index][1] = (char *) xcalloc(60);
-    connection_table[connection_index][2] = (char *) xcalloc(60); 
-    connection_table[connection_index][3] = (char *) xcalloc(20);
-    connection_table[connection_index][4] = (char *) xcalloc(20);
-    connection_table[connection_index][5] = (char *) xcalloc(15);
-    connection_table[connection_index][6] = (char *) xcalloc(60); 
-    connection_table[connection_index][7] = (char *) xcalloc(20);
-    
-    strcopy(connection_table[connection_index][3], 20, src_port);
-    strcopy(connection_table[connection_index][4], 20, dst_port);
-    strcopy(connection_table[connection_index][1], 60, src_ip);
-    strcopy(connection_table[connection_index][2], 60, dst_ip);
-    strcopy(connection_table[connection_index][0], 10, protocol);
-    strcopy(connection_table[connection_index][5], 15, status);
-    strcopy(connection_table[connection_index][6], 60, nathostip);
-    strcopy(connection_table[connection_index][7], 20, nathostport);
-    connection_index++;
-    }
-
-void lookup_portname(char **port, char *proto)
-    {
-    char buf_port[10];
-    int portnr;
-    struct servent *service;
-    size_t port_size;
-    
-    strcopy(buf_port, sizeof(buf_port), *port);
-    portnr = htons(atoi(buf_port));
-    
-    if ((service = getservbyport(portnr, proto))) {
-	//port_size = strlen(service->s_name) + 8;
-        //*port = xrealloc(*port, port_size); hmm double alloction
-	strcopy(*port, 20, service->s_name);
-	}
-    }
-
-void extract_ip(char *gen_buffer) 
-    {
-    char *split;
-    split = strtok(gen_buffer, "=");
-    split = strtok(NULL, "=");
-    strcpy(gen_buffer, split);
-    }
-
-int lookup_hostname(char **r_host) 
-    {
-    int addr;
-    struct hostent *hp;
-    char **p;
-    size_t r_host_size;
-
-    addr = inet_addr(*r_host);
-    if ((hp = gethostbyaddr((char *) &addr, sizeof(addr), AF_INET)) == NULL)
 	return 0;
+}
 
-    for (p = hp->h_addr_list; *p != 0; p++){
-	struct in_addr in;
-	(void)memcpy(&in.s_addr, *p, sizeof(in.s_addr));
-	//r_host_size = strlen(*r_host) + 25;
-	//*r_host = xrealloc(*r_host, r_host_size); hmm double allocation
-	strcopy(*r_host, 60, hp->h_name);
+
+#if TEST
+#include <assert.h>
+int main() {
+	struct addrinfo * set = NULL;
+	push_ip_filters(strdup("127.000.000.001 0:0:0:0:0:0:0:1"), &set);
+	assert(match_ip_filter("127.0.0.1", set));
+	assert(match_ip_filter("::1", set));
+
+
+	local_ip_addresses_add((struct sockaddr *)&(struct sockaddr_in){.sin_family = AF_INET, .sin_addr = {0xFFFFFFFF}});
+	local_ip_addresses_add((struct sockaddr *)&(struct sockaddr_in6){
+	    .sin6_family = AF_INET6, .sin6_addr = {{{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}}}});
+	local_ip_addresses_add_forced(strdup("127.000.000.001 192.168.001.250 0:0:0:0:0:0:0:1"));
+	assert(local_ip_address("255.255.255.255"));
+	assert(local_ip_address("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"));
+	assert(local_ip_address("127.0.0.1"));
+	assert(local_ip_address("192.168.1.250"));
+	assert(local_ip_address("::1"));
+
+
+	char * ip = strdup("127.000.000.001");
+	nolookup_normalise(&ip);
+	assert(!strcmp(ip, "127.0.0.1"));
+
+	ip = strdup("0:0:0:0:0:0:0:1");
+	nolookup_normalise(&ip);
+	assert(!strcmp(ip, "::1"));
+
+	char * staticlocal = (char *)"localhost";
+	ip                 = staticlocal;
+	nolookup_normalise(&ip);
+	assert(ip == staticlocal);
+
+
+	char *host = (char *)"", *port = (char *)"512";
+	lookup_hostport(&host, &port, "udplite");
+	assert(!*host);
+	if(!strcmp(port, "comsat"))
+		fprintf(stderr, "netstat-nat test: running under musl, can't test the biff/exec split for port 512\n");
+	else
+		assert(!strcmp(port, "biff"));
+
+	host = (char *)"127.0.0.1", port = (char *)"512";
+	lookup_hostport(&host, &port, "tcp");
+	if(strcmp(host, "localhost") && strcmp(host, "localhost.localdomain"))
+		fprintf(stderr, "netstat-nat test: looking up 127.0.0.1 yielded %s\n", host);
+	assert(!strcmp(port, "exec"));
+}
+#else
+int main(int argc, char * argv[]) {
+	int colwidth = 30;
+	bool resolve = true;
+	bool no_hdr  = false;
+	bool nat_hop = false;
+	char buf[64 * 1024];
+	for(int c; (c = getopt(argc, argv, "np:s:d:g:SDxX::or:LNGR")) != -1;) {
+		switch(c) {
+			case 'n':
+				resolve = false;
+				break;
+			case 'p':
+				tsearch(optarg, &filter.protocol, (int (*)(const void *, const void *))strcasecmp);
+				break;
+			case 's':
+				push_ip_filters(optarg, &filter.src_ip);
+				break;
+			case 'd':
+				push_ip_filters(optarg, &filter.dst_ip);
+				break;
+			case 'g':
+				push_ip_filters(optarg, &filter.gate_ip);
+				break;
+			case 'S':
+				filter.dnat = false;
+				filter.snat = true;
+				break;
+			case 'D':
+				filter.dnat = true;
+				filter.snat = false;
+				break;
+			case 'L':
+				filter.local  = true;
+				filter.routed = false;
+				break;
+			case 'R':
+				filter.local  = false;
+				filter.routed = true;
+				break;
+			case 'x':
+				colwidth = 40;
+				break;
+			case 'X': {
+				char * next;
+				errno    = 0;
+				colwidth = strtol(optarg ?: "", &next, 0);
+				if(*next) {
+					errno = errno ?: EINVAL;
+					err(1, "-X%s", optarg);
+				}
+				colwidth = colwidth <= 0 ? (int)(sizeof("[0000:0000:0000:0000:0000:0000:0000:0000]:65536") - 1) : colwidth;
+			} break;
+			case 'o':
+				no_hdr = true;
+				break;
+			case 'N':
+			case 'G':
+				nat_hop = true;
+				break;
+			case 'r':
+				for(sort_row = 0; sort_row < CONN_ROWCNT; ++sort_row)
+					if(connection_row_names[sort_row] && !strcmp(optarg, connection_row_names[sort_row]))
+						break;
+				if(sort_row == CONN_ROWCNT)
+					return fprintf(stderr, USAGE, argv[0]), 1;
+				break;
+			default:
+				return fprintf(stderr, USAGE, argv[0]), 1;
+		}
 	}
-    return 0;
-    }
-
-
-int lookup_ip(char *hostname, size_t hostname_size)
-    {
-    char *ip;
-    struct hostent *hp;
-    struct in_addr ip_addr;
-    
-    if ((hp = gethostbyname(hostname)) == NULL) {
-	printf("Unknown host: %s\n", hostname);
-	exit(-1);
+	const char * file_override = *(argv + optind);
+	if(file_override && *(argv + optind + 1))
+		return fprintf(stderr, USAGE, argv[0]), 1;
+	// -L|-R naturally excludes all NATs
+	if(filter.local || filter.routed) {
+		filter.snat = false;
+		filter.dnat = false;
+		nat_hop     = false;
 	}
 
-    ip_addr = *(struct in_addr *)(hp->h_addr);
-    ip = inet_ntoa(*(struct in_addr *)(hp->h_addr));
-    strcopy(hostname, hostname_size, ip);
-    return 1;
-    }
-/*
-int match(char *string, char *pattern) 
-    {
-    int i;
-    regex_t re;
-    char buf[200];
-    
-    i = regcomp(&re, pattern, REG_EXTENDED|REG_NOSUB);
-
-    if (i != 0) {
-	(void)regerror(i, &re, buf, sizeof(buf));
-	return 0;                       
-	}
-    
-    i = regexec(&re, string, (size_t) 0, NULL, 0);
-    regfree(&re);
-
-    if (i != 0) {
-	(void)regerror(i, &re, buf, sizeof(buf));
-	return 0;                       
+	// get local IP addresses for all interfaces
+	if(filter.routed || filter.local) {
+		char * forced_local_addresses = getenv("NETSTAT_NAT_LOCAL_ADDRS");
+		if(forced_local_addresses)
+			local_ip_addresses_add_forced(forced_local_addresses);
+		else {
+			struct ifaddrs * addrs;
+			if(!getifaddrs(&addrs)) {
+				for(struct ifaddrs * itr = addrs; itr; itr = itr->ifa_next) {
+					if (itr->ifa_addr)
+						local_ip_addresses_add(itr->ifa_addr);
+				}
+				freeifaddrs(addrs);
+			}
+		}
 	}
 
-    return 1;
-    }
-*/
-int check_if_source(char *host) 
-    {
-    if ((strcmp(host, SRC_IP) == 0) || (strcmp(SRC_IP, "") == 0)) {
-	return 1;
+	if((!file_override || strcmp(file_override, "-")) && !freopen(file_override ?: NF_CONNTRACK_LOCATION, "r", stdin)) {
+		warn("%s", file_override ?: NF_CONNTRACK_LOCATION);
+		if(!file_override && errno == ENOENT)
+			warnx("Make sure the kernel is configured with CONFIG_NF_CONNTRACK=y or the nf_conntrack module is loaded, and that /proc is mounted.");
+		return 1;
 	}
-    return 0;
-    }
+	setvbuf(stdin, buf, _IOFBF, sizeof(buf));
 
-int check_if_destination(char *host) 
-    {
-    if ((strcmp(host, DST_IP) == 0) || (strcmp(DST_IP, "") == 0)) {
-	return 1;
+	if(!no_hdr) {
+		printf("%-6s%-*s", "Proto", colwidth, (filter.local || filter.routed) ? "Source Address" : "NATed Address");
+		if(nat_hop)
+			printf(" %-*s", colwidth, "Gateway Address");
+		printf(" %-*s %s\n", colwidth, "Destination Address", "State");
 	}
-    return 0;
-    }
+
+	char * line = NULL;
+	for(size_t linelen = 0; getline(&line, &linelen, stdin) != -1;)
+		process_entry(line);
+	if(connection_table_len == 0)  // There are no connections at this moment! We can exit.
+		return 0;
+	free(line);
+	fclose(stdin);
 
 
-static void *xcalloc(size_t bufsize) 
-    {
-    void *buf;
-	
-    if ((buf = calloc(1, bufsize)) != NULL) {
-	return buf;
-    } else {
-	printf("Could not allocate memory (%i bytes); %s.\n -- Exiting.\n", bufsize, strerror(errno));
-	exit(1);
+	qsort(connection_table, connection_table_len, sizeof(*connection_table), connection_table_cmp);
+
+#define pa connection_table
+	for(size_t i = 0; i < connection_table_len; i++) {
+		if(resolve) {
+			lookup_hostport(&pa[i].src_ip, &pa[i].src_port, pa[i].protocol);
+			lookup_hostport(&pa[i].dst_ip, &pa[i].dst_port, pa[i].protocol);
+			lookup_hostport(&pa[i].gate_ip, &pa[i].gate_port, pa[i].protocol);
+		} else {
+			nolookup_normalise(&pa[i].src_ip);
+			nolookup_normalise(&pa[i].dst_ip);
+			nolookup_normalise(&pa[i].gate_ip);
+		}
+
+#define ADDRESS(ip, port)                    \
+	{                                          \
+		*buf              = '\0';                \
+		size_t extrawidth = 0;                   \
+		bool bracket      = false;               \
+		if(*port) {                              \
+			if(strchr(ip, ':')) {                  \
+				strcat(buf, "["), extrawidth += 2;   \
+				bracket = true;                      \
+			}                                      \
+			extrawidth += 1 + strlen(port);        \
+		}                                        \
+		strncat(buf, ip, colwidth - extrawidth); \
+		if(*port) {                              \
+			strcat(buf, "]:" + !bracket);          \
+			strcat(buf, port);                     \
+		}                                        \
 	}
-    }
+		ADDRESS(pa[i].src_ip, pa[i].src_port)
+		printf("%-5s %-*s", pa[i].protocol, colwidth, buf);
+
+		if(nat_hop) {
+			ADDRESS(pa[i].gate_ip, pa[i].gate_port)
+			printf(" %-*s", colwidth, buf);
+		}
+
+		ADDRESS(pa[i].dst_ip, pa[i].dst_port)
+		printf(" %-*s %s\n", colwidth, buf, pa[i].state);
+	}
+}
+#endif
 
 
-static void *xrealloc(void *oldbuf, size_t newbufsize) 
-    {
-    void *newbuf;
-	
-    if ((newbuf = realloc(oldbuf, newbufsize)) != NULL) {
+struct get_protocol_name_map {
+	int proto;
+	char str[];
+};
+static void * get_protocol_name_map;
+static int get_protocol_name_cmp(const void * lhs_r, const void * rhs_r) {
+	const struct get_protocol_name_map * lhs = lhs_r;
+	const struct get_protocol_name_map * rhs = rhs_r;
+
+	return lhs->proto - rhs->proto;
+}
+static const char * get_protocol_name(int protocol_nr) {
+	struct get_protocol_name_map k = {.proto = protocol_nr}, **v = tfind(&k, &get_protocol_name_map, get_protocol_name_cmp);
+	if(v)
+		return (*v)->str;
+
+	char buf[11 + 1], *nm = buf;  // -2147483648
+	struct protoent * proto_struct = getprotobynumber(protocol_nr);
+	if(proto_struct != NULL)
+		nm = proto_struct->p_name;
+	else
+		sprintf(nm, "%d", protocol_nr);
+
+	struct get_protocol_name_map * kv = xrealloc(NULL, sizeof(struct get_protocol_name_map) + strlen(nm) + 1);
+	kv->proto                         = protocol_nr;
+	memcpy(kv->str, nm, strlen(nm) + 1);
+	tsearch(kv, &get_protocol_name_map, get_protocol_name_cmp);
+	return kv->str;
+}
+
+static bool an_ok_connection_state(const char * tok, const char ** ret) {
+#define EXT(known)                                                     \
+	else if(*tok == *known && !strncmp(tok, known, sizeof(known) - 1)) { \
+		*ret = known;                                                      \
+		return true;                                                       \
+	}
+	if(!(tok = strpbrk(tok, "ACEFSTU")))
+		return false;
+	EXT("ESTABLISHED")
+	EXT("TIME_WAIT")
+	EXT("FIN_WAIT")
+	EXT("SYN_RECV")
+	EXT("SYN_SENT")
+	EXT("UNREPLIED")
+	EXT("CLOSE")
+	EXT("ASSURED")
+	else return false;
+}
+
+#if 0
+ipv4     2 udp      17 19 src=139.12.34.56 dst=194.0.0.53 sport=55569 dport=53 src=194.0.0.53 dst=139.12.34.56 sport=53 dport=55569 mark=0 zone=0 use=2
+ipv4     2 udp      17 1 src=192.168.1.250 dst=185.89.218.12 sport=25718 dport=53 src=185.89.218.12 dst=139.12.34.56 sport=53 dport=25718 mark=0 zone=0 use=2
+ipv4     2 tcp      6 431938 ESTABLISHED src=192.168.1.2 dst=34.241.17.166 sport=36486 dport=443 src=34.241.17.166 dst=139.12.34.56 sport=443 dport=36486 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 431960 ESTABLISHED src=165.232.32.235 dst=139.12.34.56 sport=33200 dport=443 src=192.168.1.250 dst=165.232.32.235 sport=443 dport=33200 [ASSURED] mark=0 zone=0 use=2
+ipv4     2 tcp      6 41 SYN_SENT src=46.29.161.212 dst=139.12.34.56 sport=56618 dport=22 [UNREPLIED] src=192.168.1.250 dst=46.29.161.212 sport=22 dport=56618 mark=0 zone=0 use=2
+ipv4     2 tcp      6 50 TIME_WAIT src=118.45.205.44 dst=139.12.34.56 sport=33946 dport=22 src=192.168.1.250 dst=118.45.205.44 sport=22 dport=33946 [ASSURED] mark=0 zone=0 use=2
+l3str  num l4str  num
+#endif
+static void process_entry(char * line) {
+	const char * srcip_f   = NULL;  // first src=
+	const char * dstip_f   = NULL;  // first dst=
+	const char * srcip_s   = NULL;  // second src=
+	const char * dstip_s   = NULL;  // second dst=
+	const char * srcport   = NULL;  // first sport=
+	const char * dstport   = NULL;  // first dport=
+	const char * srcport_s = NULL;  // second sport=
+	const char * dstport_s = NULL;  // second dport=
+	const char * state     = NULL;  // normalised connection state
+	const char *protocol, *protocol_num;
+
+
+	char * sav = NULL;
+	strtok_r(line, " \n", &sav);  // L3 str
+	strtok_r(NULL, " \n", &sav);  // L3 num
+
+	protocol     = strtok_r(NULL, " \n", &sav);  // L4 str
+	protocol_num = strtok_r(NULL, " \n", &sav);  // L4 num
+	if(!strcmp(protocol, "unknown"))
+		protocol = get_protocol_name(atoi(protocol_num));
+	if(filter.protocol && !tfind(protocol, &filter.protocol, (int (*)(const void *, const void *))strcasecmp))
+		return;
+
+
+#define strstarts(what, with) !strncmp(what, with, sizeof(with) - 1)
+	for(char * tok; (tok = strtok_r(NULL, " \n", &sav));) {
+		if(!state && an_ok_connection_state(tok, &state))
+			;
+		else if((!srcip_f || !srcip_s) && strstarts(tok, "src="))
+			*(srcip_f ? &srcip_s : &srcip_f) = tok + sizeof("src=") - 1;
+		else if((!dstip_f || !dstip_s) && strstarts(tok, "dst="))
+			*(dstip_f ? &dstip_s : &dstip_f) = tok + sizeof("src=") - 1;
+		else if((!srcport || !srcport_s) && strstarts(tok, "sport="))
+			*(srcport ? &srcport_s : &srcport) = tok + sizeof("sport=") - 1;
+		else if((!dstport || !dstport_s) && strstarts(tok, "dport="))
+			*(dstport ? &dstport_s : &dstport) = tok + sizeof("dport=") - 1;
+
+		if(srcip_f && dstip_f && srcip_s && dstip_s && srcport && dstport && srcport_s && dstport_s && state)
+			break;
+	}
+
+
+	if(filter.snat)
+		if((strcmp(srcip_f, dstip_s) != 0) && (strcmp(dstip_f, srcip_s) == 0))
+			check_src_dst(protocol, srcip_f, dstip_f, srcport, dstport, dstip_s, dstport_s, state);
+
+	if(filter.dnat)
+		if((strcmp(srcip_f, dstip_s) == 0) && (strcmp(dstip_f, srcip_s) != 0))
+			check_src_dst(protocol, srcip_f, srcip_s, srcport, srcport_s, dstip_f, dstport_s, state);
+
+	// bugfix for displaying DNAT over SNAT connections, submitted by Supaflyster (intercepted traffic to DNAT) (2 interfaces)
+	if(filter.dnat || filter.snat)
+		if((strcmp(srcip_f, srcip_s) != 0) && (strcmp(srcip_f, dstip_s) != 0) && (strcmp(dstip_f, srcip_s) != 0) && (strcmp(dstip_f, dstip_s) != 0))
+			check_src_dst(protocol, srcip_f, srcip_s, srcport, srcport_s, dstip_s, dstport_s, state);
+
+	// (DNAT) (1 interface)
+	if(filter.dnat)
+		if((strcmp(srcip_f, srcip_s) != 0) && (strcmp(srcip_f, dstip_s) != 0) && (strcmp(dstip_f, srcip_s) != 0) && (strcmp(dstip_f, dstip_s) == 0))
+			check_src_dst(protocol, srcip_f, srcip_s, srcport, srcport_s, dstip_s, dstport_s, state);
+
+	if(filter.local)
+		if((strcmp(srcip_f, dstip_s) == 0) && (strcmp(dstip_f, srcip_s) == 0) &&
+		   (local_ip_address(srcip_f) || local_ip_address(srcip_s) || local_ip_address(dstip_f) || local_ip_address(dstip_s)))
+			check_src_dst(protocol, srcip_f, srcip_s, srcport, dstport, NULL, NULL, state);
+
+	if(filter.routed)
+		if((strcmp(srcip_f, dstip_s) == 0) && (strcmp(dstip_f, srcip_s) == 0) &&  //
+		   !local_ip_address(srcip_f) && !local_ip_address(srcip_s) && !local_ip_address(dstip_f) && !local_ip_address(dstip_s))
+			check_src_dst(protocol, srcip_f, srcip_s, srcport, dstport, NULL, NULL, state);
+
+	// printf("protocol='%s' srcip_f='%s' dstip_f='%s' srcip_s='%s' dstip_s='%s' srcport='%s' dstport='%s' srcport_s='%s' dstport_s='%s' state='%s'\n",  //
+	//        protocol, srcip_f, dstip_f, srcip_s, dstip_s, srcport, dstport, srcport_s, dstport_s, state);
+}
+
+
+static bool check_src_dst(const char * protocol, const char * src_ip, const char * dst_ip, const char * src_port, const char * dst_port, const char * gate_ip,
+                          const char * gate_port, const char * state) {
+	if(match_ip_filter(dst_ip, filter.dst_ip) && match_ip_filter(src_ip, filter.src_ip) && match_ip_filter(gate_ip, filter.gate_ip)) {
+		connection_table                                 = xrealloc(connection_table, (connection_table_len + 1) * sizeof(*connection_table));
+		connection_table[connection_table_len].src_port  = xstrdup(src_port ?: "");
+		connection_table[connection_table_len].dst_port  = xstrdup(dst_port ?: "");
+		connection_table[connection_table_len].src_ip    = xstrdup(src_ip ?: "");
+		connection_table[connection_table_len].dst_ip    = xstrdup(dst_ip ?: "");
+		connection_table[connection_table_len].protocol  = xstrdup(protocol ?: "");
+		connection_table[connection_table_len].state     = (char *)(state ?: "");  // always static data
+		connection_table[connection_table_len].gate_ip   = xstrdup(gate_ip ?: "");
+		connection_table[connection_table_len].gate_port = xstrdup(gate_port ?: "");
+		++connection_table_len;
+		return true;
+	} else
+		return false;
+}
+
+
+struct hostport_map {
+	char *key, value[];
+};
+static int hostport_cmp(const void * lhs_r, const void * rhs_r) {
+	const struct hostport_map * lhs = lhs_r;
+	const struct hostport_map * rhs = rhs_r;
+
+	return strcmp(lhs->key, rhs->key);
+}
+static void *hostport_host_, *hostport_port_dgram, *hostport_port_stream;
+static void lookup_hostport(char ** host, char ** port, const char * protocol) {
+	void ** hostport_host = &hostport_host_;
+	void ** hostport_port = strstr(protocol, "udp") ? &hostport_port_dgram : &hostport_port_stream;
+
+#define SANITISE_LOOKUP(field)                                                                \
+	if(!**field)                                                                                \
+		field = NULL;                                                                             \
+	if(field) {                                                                                 \
+		struct hostport_map k = {.key = *field}, **v = tfind(&k, hostport_##field, hostport_cmp); \
+		if(v) {                                                                                   \
+			*field = (*v)->value;                                                                   \
+			field  = NULL;                                                                          \
+		}                                                                                         \
+	}
+	SANITISE_LOOKUP(host)
+	SANITISE_LOOKUP(port)
+
+	if(!host && !port)
+		return;
+
+
+	struct addrinfo *res, flags = {.ai_flags = AI_NUMERICHOST};
+	if(getaddrinfo(host ? *host : NULL, port ? *port : NULL, &flags, &res))
+		return;
+
+	char hostbuf[NI_MAXHOST], portbuf[NI_MAXSERV];
+	if(getnameinfo(res->ai_addr, res->ai_addrlen, host ? hostbuf : NULL, host ? sizeof(hostbuf) : 0, port ? portbuf : NULL, port ? sizeof(portbuf) : 0,
+	               strstr(protocol, "udp") ? NI_DGRAM : 0)) {
+		freeaddrinfo(res);
+		return;
+	}
+	freeaddrinfo(res);
+
+#define SAVE(field)                                                                                  \
+	if(field) {                                                                                        \
+		struct hostport_map * kv = xrealloc(NULL, sizeof(struct hostport_map) + strlen(field##buf) + 1); \
+		kv->key                  = *field;                                                               \
+		memcpy(kv->value, field##buf, strlen(field##buf) + 1);                                           \
+		*field = kv->value;                                                                              \
+		tsearch(kv, hostport_##field, hostport_cmp);                                                     \
+	}
+	SAVE(host)
+	SAVE(port)
+}
+
+static void nolookup_normalise(char ** host) {
+	if(!**host)
+		return;
+
+	struct addrinfo *res, flags = {.ai_flags = AI_NUMERICHOST};
+	int error;
+	if((error = getaddrinfo(*host, NULL, &flags, &res)))
+		return;
+
+	char newhost[INET6_ADDRSTRLEN];
+	if(!inet_ntop(res->ai_addr->sa_family,
+	              res->ai_addr->sa_family == AF_INET ? (void *)&((struct sockaddr_in *)res->ai_addr)->sin_addr
+	                                                 : (void *)&((struct sockaddr_in6 *)res->ai_addr)->sin6_addr /*AF_INET6*/,
+	              newhost, sizeof(newhost))) {
+		freeaddrinfo(res);
+		return;
+	}
+	freeaddrinfo(res);
+
+	*host = xrealloc(*host, strlen(newhost) + 1);
+	memcpy(*host, newhost, strlen(newhost) + 1);
+}
+
+static void push_ip_filter(const char * hostname, struct addrinfo ** ips) {
+	struct addrinfo *res, *itr, *prev = NULL, flags = {};
+	int error;
+	if((error = getaddrinfo(hostname, NULL, &flags, &res)))
+		errx(1, "%s: %s", hostname, gai_strerror(error));
+
+	for(itr = res; itr; itr = itr->ai_next)
+		prev = itr;
+	prev->ai_next = *ips;
+	*ips          = res;
+}
+static void push_ip_filters(char * arg, struct addrinfo ** ips) {
+	char * sav = NULL;
+	for(char * addr = strtok_r(arg, ", \t\n", &sav); addr; addr = strtok_r(NULL, ", \t\n", &sav))
+		push_ip_filter(addr, ips);
+}
+static bool match_ip_filter(const char * ip, const struct addrinfo * ips) {
+	if(!ips)  // no filters set
+		return true;
+	if(!ip)  // ip (src=/dst=) not given
+		return true;
+
+	struct addrinfo *res, flags = {.ai_flags = AI_NUMERICHOST};
+	int error;
+	if((error = getaddrinfo(ip, NULL, &flags, &res)))
+		return false;
+
+	for(; ips; ips = ips->ai_next)
+		if(res->ai_family == ips->ai_family)
+			switch(res->ai_family) {
+				case AF_INET:
+					if(((struct sockaddr_in *)res->ai_addr)->sin_addr.s_addr == ((struct sockaddr_in *)ips->ai_addr)->sin_addr.s_addr)
+						goto found;
+					break;
+				case AF_INET6:
+					if(!memcmp(((struct sockaddr_in6 *)res->ai_addr)->sin6_addr.s6_addr, ((struct sockaddr_in6 *)ips->ai_addr)->sin6_addr.s6_addr,
+					           sizeof(struct in6_addr)))
+						goto found;
+					break;
+			}
+
+	freeaddrinfo(res);
+	return false;
+found:
+	freeaddrinfo(res);
+	return true;
+}
+
+
+static void * xrealloc(void * oldbuf, size_t newbufsize) {
+	void * newbuf = realloc(oldbuf, newbufsize);
+	if(!newbuf)
+		err(1, NULL);
 	return newbuf;
-    } else {
-	printf("Could not allocate memory (%i bytes); %s.\n -- Exiting.\n", newbufsize, strerror(errno));
-	exit(1);
+}
+
+static char * xstrdup(const char * oldstr) {
+	if(!*oldstr)
+		return "";
+	char * newstr = strdup(oldstr);
+	if(!newstr)
+		err(1, NULL);
+	return newstr;
+}
+
+struct local_ip_addresses_data {
+	sa_family_t family;
+	union {
+		struct in_addr sin_addr;
+		struct in6_addr sin6_addr;
+	};
+};
+static void local_ip_addresses_data_init(struct local_ip_addresses_data * this, struct sockaddr * addr) {
+	switch(this->family = addr->sa_family) {
+		case AF_INET:
+			this->sin_addr = ((struct sockaddr_in *)addr)->sin_addr;
+			return;
+		case AF_INET6:
+			this->sin6_addr = ((struct sockaddr_in6 *)addr)->sin6_addr;
+			return;
+		default:
+			__builtin_unreachable();
 	}
-    }
-
-char *xstrdup (const char *dup)
-{
-    char *ret;
-    if ((ret = strdup(dup)) == NULL) {
-	printf("Could not set value into struct (%s); %s.\n -- Exiting.\n", dup, strerror(errno));
-	exit(EXIT_FAILURE);
-    }	
-    return ret;
 }
+static int local_ip_addresses_cmp(const void * lhs_r, const void * rhs_r) {
+	const struct local_ip_addresses_data * lhs = lhs_r;
+	const struct local_ip_addresses_data * rhs = rhs_r;
 
-void ip_addresses_add(struct _ip_addresses **list, const char *dev, const char *ip)
-{
-    struct _ip_addresses *new = malloc(sizeof * new);
-    if (new != NULL) {
-	strncpy(new->ip, ip, 15);
-	strncpy(new->dev, dev, 15);
-	new->next = NULL;
-	if (*list == NULL) {
-	    *list = new;
+	if(lhs->family != rhs->family)
+		return lhs->family - rhs->family;
+	switch(lhs->family) {
+		case AF_INET:
+			return memcmp(&lhs->sin_addr, &rhs->sin_addr, sizeof(rhs->sin_addr));
+		case AF_INET6:
+			return memcmp(&lhs->sin6_addr, &rhs->sin6_addr, sizeof(rhs->sin6_addr));
+		default:
+			__builtin_unreachable();
 	}
-	else {
-	    struct _ip_addresses *tail = *list;
-	    while (tail->next != NULL) 
-	    {
-		tail = tail->next;
-	    }
-	    tail->next = new;
+}
+static void * local_ip_addresses;
+static void local_ip_addresses_add(struct sockaddr * addr) {
+	if(!(addr->sa_family == AF_INET || addr->sa_family == AF_INET6))
+		return;
+
+	struct local_ip_addresses_data * entry = xrealloc(NULL, sizeof(*entry));
+	local_ip_addresses_data_init(entry, addr);
+	struct local_ip_addresses_data ** sought = tsearch(entry, &local_ip_addresses, local_ip_addresses_cmp);
+	if(sought && *sought != entry)
+		free(entry);
+}
+static void local_ip_addresses_add_forced(char * envvar) {
+	char * sav = NULL;
+	for(char * addr = strtok_r(envvar, ", \t\n", &sav); addr; addr = strtok_r(NULL, ", \t\n", &sav)) {
+		struct addrinfo *res, flags = {.ai_flags = AI_NUMERICHOST};
+		int error;
+		if((error = getaddrinfo(addr, NULL, &flags, &res)))
+			errx(1, "%s: %s", addr, gai_strerror(error));
+
+		local_ip_addresses_add(res->ai_addr);
+
+		freeaddrinfo(res);
 	}
-    }
 }
+static bool local_ip_address(const char * ip) {
+	struct addrinfo *res, flags = {.ai_flags = AI_NUMERICHOST};
+	if(getaddrinfo(ip, NULL, &flags, &res))
+		return false;
 
-int ip_addresses_search(struct _ip_addresses *list, const char *ip)
-{
-    struct _ip_addresses *akt = list;
-    if (list == NULL) return 0;
-    while (akt != NULL) 
-    {
-	if (strcmp (akt->ip, ip) == 0) {
-	    return 1;
-	}
-	akt = akt->next;
-    }
-    return 0;
+	struct local_ip_addresses_data entry;
+	local_ip_addresses_data_init(&entry, res->ai_addr);
+	freeaddrinfo(res);
+
+	return tfind(&entry, &local_ip_addresses, local_ip_addresses_cmp);
 }
-
-void ip_addresses_free(struct _ip_addresses **node)
-{
-    struct _ip_addresses *this = *node;
-    struct _ip_addresses *temp;
-    while (this != NULL) 
-    {
-	temp = this->next;
-	free(this);
-	this = temp;
-    }
-    *node = NULL;
-}
-
-int string_search(char *string, char *search)
-{
-    int searchLen;
-    int i;
-    searchLen = strlen(search);
-    if (searchLen > strlen(string)) {
-	return(0); // this can't match 
-    }
-    for (i = 0; i < strlen(string) - searchLen + 1; i++) {
-	if (!strncasecmp((char *)&string[i], search, searchLen)) {
-	    return(1); // we got hit
-	}
-    }
-    return(0);
-}
-
-
-int search_first_hit(char *search, char *line, char *ret)
-{
-    unsigned int searchLen;
-    unsigned int i;
-    unsigned int j;
-    unsigned int lineLen;
-    
-    lineLen = strlen(line);
-    searchLen = strlen(search);
-
-    if (searchLen > lineLen) {
-	return(1); // this can't match, invalid data?
-    }
-    for (i = 0; i < lineLen - searchLen + 1; i++) {
-	if (!strncasecmp((char *)&line[i], search, searchLen)) {
-	    break; // we got hit
-	}
-    }
-    for (j = i + searchLen; j < i + 15 + searchLen; j++) {
-        if (j > lineLen) {
-            return(1); // incomplete data
-        }
-        if (line[j] == ' ') {
-            break; // we reach _space_ delimiter
-        }
-    } 
-    memcpy(ret, &line[i + searchLen], j - i - searchLen);
-    return(0);
-}
-
-
-int search_sec_hit(char *search, char *line, char *ret)
-{
-    unsigned int searchLen;
-    unsigned int i;
-    unsigned int j;
-    unsigned int got_first = 0;
-    unsigned int lineLen;
-    
-    lineLen = strlen(line);
-    searchLen = strlen(search);
-
-    if (searchLen > lineLen) {
-	return(1); // this can't match, invalid data?
-    }
-    for (i = 0; i < lineLen - searchLen + 1; i++) {
-	if (!strncasecmp((char *)&line[i], search, searchLen)) {
-	    if (got_first) {
-                break; // we got hit (second)
-            }
-            got_first = 1;
-	}
-    }
-    for (j = i + searchLen; j < i + 15 + searchLen; j++) {
-        if (j > lineLen) {
-            return(1); // incomplete data
-        }
-        if (line[j] == ' ') {
-            break; // we reach _space_ delimiter
-        }
-    } 
-    memcpy(ret, &line[i + searchLen], j - i - searchLen);
-    return(0);
-}
-
-
-void get_protocol_name(char *protocol_name, int protocol_nr)
-{
-    struct protoent *proto_struct;
-    char strconvers[10] = "";
-    proto_struct = getprotobynumber(protocol_nr);
-    if (proto_struct != NULL) {
-        memcpy(protocol_name, proto_struct->p_name, 5);
-    }
-    else {
-        snprintf(strconvers, 6, "%d", protocol_nr);
-        memcpy(protocol_name, strconvers, 5);
-    }
-}
-
-
-void display_help()
-{
-    printf("args: -h: displays this help\n");
-    printf("      -n: don't resolve host/portnames\n");
-    printf("      -p <protocol>        : display connections by protocol\n");
-    printf("      -s <source-host>     : display connections by source\n");
-    printf("      -d <destination-host>: display connections by destination\n");
-    printf("      -S: display SNAT connections\n");
-    printf("      -D: display DNAT connections (default: SNAT & DNAT)\n");
-    printf("      -L: display only connections to NAT box itself (doesn't show SNAT & DNAT)\n"); 
-    printf("      -R: display only connections routed through the NAT box (doesn't show SNAT & DNAT)\n"); 
-    printf("      -x: extended hostnames view\n");
-    printf("      -r src | dst | src-port | dst-port | state : sort connections\n");
-    printf("      -o: strip output header\n");
-    printf("      -N: display NAT box connection information (only valid with SNAT & DNAT)\n");
-    printf("      -v: print version\n");
-    printf("\n");
-    printf("      netstat-nat [-S|-D|-L|-R] [-no]\n");
-    printf("      netstat-nat [-nxo]\n");
-}
-
-// -- End of internal used functions
-
-// -- The End --

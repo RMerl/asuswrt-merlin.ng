@@ -154,7 +154,7 @@ then
 	cp release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/pktrunner/impl2/pktrunner.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
 	cp release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/wlcsm_ext/impl1/wlcsm.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
 
-elif [ "$BUILD_NAME" == "RT-BE96U" ] || [ "$BUILD_NAME" == "GT-BE98_PRO" ] || [ "$BUILD_NAME" == "RT-BE88U" ] || [ "$BUILD_NAME" == "RT-BE86U" ]
+elif [ "$BUILD_NAME" == "RT-BE96U" ] || [ "$BUILD_NAME" == "GT-BE98_PRO" ] || [ "$BUILD_NAME" == "RT-BE88U" ] || [ "$BUILD_NAME" == "RT-BE86U" ] || [ "$BUILD_NAME" == "RT-BE92U" ]
 then
         SDK="_4916hnd"
         ARCH="_arm"
@@ -198,13 +198,19 @@ then
 
         aarch64-buildroot-linux-gnu-strip --strip-debug $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/*.o
 
-# Found in bcmdrivers - do we have to copy/sort into prebuild?  They don't show anywhere else in a compiled tree, so might not be used.
-#	release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/cmdlist/impl1/cmdlist.o
-#	release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/pktflow/impl1/pktflow.o
+	if [ "$BUILD_NAME" == "RT-BE92U" ]
+	then
+		cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/archer/impl1/archer.o $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+		cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/cmdlist/impl1/cmdlist.o $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+		cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/vlan/impl1/bcmvlan.o $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+		cp release/src-rt-5.04behnd.4916/bcmdrivers/opensource/net/enet/impl7/bcm_enet.o  $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+		cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/bpm/impl1/bcm_bpm.o  $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+		cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/pktflow/impl1/pktflow.o  $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+# Unused?
 #	release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/pon_drv/impl2/bcm_pondrv.o
-#	release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/vlan/impl2/bcmvlan.o
-
 #	release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/gdx/impl1/prebuilt/gdx_hw.o
+
+	fi
 
 else
 	echo "Unrecognized BUILD_NAME!"

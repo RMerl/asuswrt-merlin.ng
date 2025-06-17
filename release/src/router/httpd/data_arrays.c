@@ -736,7 +736,10 @@ ej_lan_ipv6_clients_array(int eid, webs_t wp, int argc, char_t **argv)
 	char buf[64+32+8192+1];
 	char addrbuf[64];
 	char *hostname, *macaddr;
-	int ret = 0, len;
+	int ret = 0;
+#if 0
+	int len;
+#endif
 
 	ret += websWrite(wp, "var ipv6clientarray = {};\n");
 
@@ -775,11 +778,13 @@ ej_lan_ipv6_clients_array(int eid, webs_t wp, int argc, char_t **argv)
 			if (next && *next) {
 				/* Workaround - TrendMicro truncates last two bytes, and we pad them with "00" to generate a valid IP  */
 				strlcpy(addrbuf, next, sizeof(addrbuf));
+#if 0	// Disable workaround
 				len = strlen(addrbuf);
 				if (len > 2) {
 					addrbuf[len-1] = '0';
 					addrbuf[len-2] = '0';
 				}
+#endif
 				ret += websWrite(wp, "ipv6clientarray[\"%s\"] = \"%s\";\n", addrbuf, hostname);
 			}
 		}
@@ -958,13 +963,13 @@ int tcclass_dump(FILE *fp, webs_t wp) {
 
 int ej_connlist_array(int eid, webs_t wp, int argc, char **argv) {
 	FILE *fp;
-	char line[100];
-	char proto[6], address[16], dest[16], state[15], port1[6], port2[6];
-	int ret = 0;
+	char line[150];
+	char proto[6], address[INET6_ADDRSTRLEN], dest[INET6_ADDRSTRLEN], state[15];
+	int ret = 0, parsed, port1, port2;
 
 	ret += websWrite(wp, "var connarray = [");
 
-	system("/usr/sbin/netstat-nat -xno > /tmp/connect.log 2>&1");
+	system("/usr/sbin/netstat-nat -no -X50 > /tmp/connect.log 2>&1");
 
 	fp = fopen("/tmp/connect.log", "r");
 	if (fp == NULL) {
@@ -980,26 +985,82 @@ int ej_connlist_array(int eid, webs_t wp, int argc, char **argv) {
 			    "%15[0-9.]%*[ \t]",
 			    proto, address, dest) != 3) continue;
 			state[0] = '\0';
-			port2[0] = '\0';
-			port1[0] = '\0';
+			port2 = 0;
+			port1 = 0;
 		} else {
-			if (sscanf(line,
-			    "%5s%*[ \t]"
-			    "%15[0-9.]%*[:]"
-			    "%5s%*[ \t]"
-			    "%15[0-9.]%*[:]"
-			    "%5s%*[ \t]"
-			    "%14s%*[ \t]",
-			    proto, address, port1, dest, port2, state) != 6) continue;
+			// Clear it as it might be absent
+			state[0] = '\0';
+
+			// Try IPv6 format (brackets present)
+			if (strchr(line, '[')) {
+				parsed = sscanf(line,
+				         "%3s "
+                                         "[%47[^]]]:%d "
+				         "[%47[^]]]:%d"
+				         "%14s%*[ \t]",
+				         proto, address, &port1, dest, &port2, state);
+			} else {
+				parsed = sscanf(line,
+				         "%3s "
+					 "%47[^:]:%d "
+			                 "%47[^:]:%d"
+				         "%14s%*[ \t]",
+				         proto, address, &port1, dest, &port2, state);
+			}
+
+			// 5 + optional state
+			if (parsed < 5) continue;
+
 		}
 
-		ret += websWrite(wp, "[\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\"],\n",
+		ret += websWrite(wp, "[\"%s\", \"%s\", \"%d\", \"%s\", \"%d\", \"%s\"],\n",
 		                      proto, address, port1, dest, port2, state);
 	}
 	fclose(fp);
 	unlink("/tmp/connect.log");
 
 	ret += websWrite(wp, "[]];\n");
+
+#ifdef RTCONFIG_IPV6
+	ret += websWrite(wp, "var connarray_route = [");
+
+	system("/usr/sbin/netstat-nat -Rno -X50 > /tmp/connect.log 2>&1");
+
+	fp = fopen("/tmp/connect.log", "r");
+	if (fp == NULL) {
+		websWrite(wp, "[]];\n");
+		return ret;
+	}
+
+	while (fgets(line, sizeof(line), fp)) {
+		if (strncmp(line,"udp",3) && strncmp(line,"tcp",3))
+			continue;
+
+		// Clear it as it might be absent
+		state[0] = '\0';
+
+		// Try IPv6 format (brackets present)
+		if (strchr(line, '[')) {
+			parsed = sscanf(line,
+			         "%3s "
+                     "[%47[^]]]:%d "
+			         "[%47[^]]]:%d"
+			         "%14s%*[ \t]",
+			         proto, address, &port1, dest, &port2, state);
+		} else {
+			continue;
+		}
+		// 5 + optional state
+		if (parsed < 5) continue;
+
+		ret += websWrite(wp, "[\"%s\", \"%s\", \"%d\", \"%s\", \"%d\", \"%s\"],\n",
+		                      proto, address, port1, dest, port2, state);
+	}
+	fclose(fp);
+	unlink("/tmp/connect.log");
+
+	ret += websWrite(wp, "[]];\n");
+#endif
 
 	return ret;
 }

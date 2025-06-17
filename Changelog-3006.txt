@@ -1,6 +1,24 @@
 Asuswrt-Merlin 3006.xxx Changelog
 =================================
 
+3006.102.5 (xx-xxx-2025)
+  - NOTE: For developers, please note that the new default branch
+          is now called "main" - it's what was previously the
+          3006.102 branch.
+          The "master" branch has been renamed "master-old", and
+          is no longer actively used.  Due to how the 3006.102
+          branch diverged, it was easier to do it this way than
+          to fold back 3006.102 on top of master.
+
+  - UPDATED: dropbear to 2025.88.
+  - CHANGED: Reworked System Log -> Connections page.  You can
+             now filter the list, local hostnames are resolved,
+             and IPv6 is supported.
+  - CHANGED: Replaced netstat-nat by a fork called netstat-nat-ng.
+             This fork fixes a number of issues with IPv6 and
+             field size.
+
+
 3006.102.4 (10-May-2025)
   - NOTE: If migrating from a 3004 firmware, only the first Guest
           Network will be migrated - any additionnal GN must be

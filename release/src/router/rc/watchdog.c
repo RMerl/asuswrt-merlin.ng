@@ -9018,14 +9018,6 @@ static void auto_firmware_check()
 				return;
 			}
 #endif
-#if defined(RTCONFIG_AUTO_FW_UPGRADE) 
-			if(update_enable == 1){
-				FAUPGRADE_DBG("update_enable==1, do webs_update only at bootup");
-				nvram_set("webs_update_trigger", "WDG_BT");
-				eval("/usr/sbin/webs_update.sh");
-				return;
-			}
-#endif
 		}
 
 		period_retry = (period_retry+1) % 3;
@@ -11860,20 +11852,28 @@ int wdg_monitor_main(int argc, char *argv[])
 void auto_firmware_check_merlin()
 {
 	int periodic_check = 0;
+	static time_t periodic_check_timestamp = 0;
 	static int period_retry = 0;
 	static int bootup_check_period = 3;	//wait 3 times(90s) to check
 	static int bootup_check = 1;
+	int live_update_pause = nvram_get_int("live_update_pause");
 	int initial_state;
 	time_t now;
 	struct tm local;
 	static int rand_hr, rand_min;
 
-#if 0		//defined(RTAX58U) || defined(RTAX56U)
-	if (!strncmp(nvram_safe_get("territory_code"), "CX", 2))
-		return;
-#endif
 	if (!nvram_get_int("ntp_ready")){
 		return;
+	}
+
+	if(live_update_pause > 120)
+		live_update_pause = 120;
+
+	if (live_update_pause > 0) {
+		//dbg("live update check (%d) return\n", live_update_pause);
+		nvram_set_int("live_update_pause", --live_update_pause);
+		if (live_update_pause > 0)
+			return;
 	}
 
 	if(bootup_check_period > 0){	//bootup wait 90s to check
@@ -11884,15 +11884,17 @@ void auto_firmware_check_merlin()
 	time(&now);
 	localtime_r(&now, &local);
 
-	if(local.tm_hour == (2 + rand_hr) && local.tm_min == rand_min) //at 2 am + random offset to check
+	if(local.tm_hour == (2 + rand_hr) && local.tm_min == rand_min) { //at 2 am + random offset to check
 		periodic_check = 1;
-
+		period_retry = 0;
+	}
 	if (bootup_check || periodic_check || period_retry!=0)
 	{
 #if defined(RTCONFIG_ASUSCTRL) && defined(GTAC5300)
 		if (periodic_check)
 			asus_ctrl_sku_update();
 #endif
+
 #ifdef RTCONFIG_ASD
 		//notify asd to download version file
 		if (pids("asd"))
@@ -11906,15 +11908,22 @@ void auto_firmware_check_merlin()
 			bootup_check = 0;
 			rand_hr = rand_seed_by_time() % 4;
 			rand_min = rand_seed_by_time() % 60;
+
+			if (!nvram_get_int("firmware_check_enable") ||
+			    nvram_contains_word("rc_support", "noupdate"))
+				return;
+
+			FAUPGRADE_DBG("periodic_check AM %d:%d", 2 + rand_hr, rand_min);
 #ifdef RTCONFIG_AMAS
 			if(nvram_match("re_mode", "1"))
+			{
+				FAUPGRADE_DBG("do RE webs_update at bootup");
+				nvram_set("webs_update_trigger", "WDG_RE_BT");
+				eval("/usr/sbin/webs_update.sh");
 				return;
+			}
 #endif
 		}
-
-		if (!nvram_get_int("firmware_check_enable") ||
-		    nvram_contains_word("rc_support", "noupdate"))
-			return;
 
 		period_retry = (period_retry+1) % 3;
 		initial_state = nvram_get_int("webs_state_flag");
@@ -11922,20 +11931,27 @@ void auto_firmware_check_merlin()
 #if defined(RTL_WTDOG)
 		stop_rtl_watchdog();
 #endif
+		FAUPGRADE_DBG("do webs_update");
+		nvram_set("webs_update_trigger", "WDG");
 		eval("/usr/sbin/webs_update.sh");
 #if defined(RTL_WTDOG)
 		start_rtl_watchdog();
 #endif
 
-		if (nvram_get_int("webs_state_update") &&
-		    !nvram_get_int("webs_state_error") &&
-		    strlen(nvram_safe_get("webs_state_info")))
+		if (nvram_get_int("webs_state_update")
+		    && !nvram_get_int("webs_state_error")
+		    && strlen(nvram_safe_get("webs_state_info")))
 		{
 			period_retry = 0;	// We got a response from server, no need to retry
 			if ((initial_state == 0) && (nvram_get_int("webs_state_flag") == 1))		// New update
 			{
 				char base[5], version[4], revision[3], build[16];
 
+#ifdef RTCONFIG_CFGSYNC
+				if (nvram_get_int("webs_state_flag") == 1 ||
+					nvram_get_int("webs_state_flag") == 2)
+					f_write_string("/tmp/new_fw_version", nvram_safe_get("webs_state_flag"), 0, 0);
+#endif
 				memset(base, 0, sizeof(base));
 				memset(version, 0, sizeof(version));
 				memset(revision, 0, sizeof(revision));
@@ -11945,7 +11961,6 @@ void auto_firmware_check_merlin()
 				logmessage("watchdog", "New firmware version %s.%s.%s_%s is available.", base, version, revision, build);
 				run_custom_script("update-notification", 0, NULL, NULL);
 			}
-
 		}
 	}
 }

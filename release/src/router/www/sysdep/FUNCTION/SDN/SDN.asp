@@ -12,6 +12,7 @@
 <link rel="stylesheet" type="text/css" href="/index_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
@@ -50,8 +51,8 @@ function initial(){
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
 <form method="post" name="form" id="ruleForm" action="/start_apply.htm" target="hidden_frame" autocomplete="off">
 <input type="hidden" name="productid" value="<% nvram_get("productid"); %>">
-<input type="hidden" name="current_page" value="vpnc.asp">
-<input type="hidden" name="next_page" value="vpnc.asp">
+<input type="hidden" name="current_page" value="SDN.asp">
+<input type="hidden" name="next_page" value="SDN.asp">
 <input type="hidden" name="modified" value="0">
 <input type="hidden" name="action_mode" value="apply">
 <input type="hidden" name="action_script" value="">

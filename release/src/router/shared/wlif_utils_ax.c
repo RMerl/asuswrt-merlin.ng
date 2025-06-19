@@ -2996,7 +2996,7 @@ double get_wifi_5GH_maxpower()
 
 double get_wifi_6G_maxpower()
 {
-#if defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 #if defined(BT12)
 	return 0;
 #else
@@ -3260,6 +3260,7 @@ void _set_wl_mlo_config_by_model(char *buf, int buf_size)
 			break;
 		case MODEL_BT10:
 		case MODEL_GSBE18000:
+		case MODEL_GT7:
 			// (652) 6G + 5G + 2G, DHD is 6G
 			// TODO : NIC + dongle mixed, need to check more
 			snprintf(buf, buf_size, "%d %d %d -1", WLIF_6G, WLIF_5G1, WLIF_2G);

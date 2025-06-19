@@ -20,7 +20,7 @@
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js?v=4"></script>
 <style>
 .weakness{
 	width:650px;
@@ -154,8 +154,8 @@ var theme = getUrlParameter("current_theme").toUpperCase();
 function eventBind() {
 document.querySelectorAll(".alert_preference").forEach((element) => {
 
-    let confirm_content_dark = `<span class="alert_confirm_title_dark">Download App to receive security alert.</span><br>`; //Untranslated
-    let confirm_content_light = `<span class="alert_confirm_title_light">Download App to receive security alert.</span><br>`;   //Untranslated
+    let confirm_content_dark = `<span class="alert_confirm_title_dark"><#AiProtection_alert_via_APP#></span><br>`;
+    let confirm_content_light = `<span class="alert_confirm_title_light"><#AiProtection_alert_via_APP#></span><br>`;
     let confirm_content = (theme == "WHITE")?confirm_content_light:confirm_content_dark;
 
     let confirm_content2 = `
@@ -163,7 +163,7 @@ document.querySelectorAll(".alert_preference").forEach((element) => {
                             </div>
                             <div style="margin-left:45px;margin-top:-22px;">
                                 <span style="color:#FFFFFF;"><b><#GB_mobile_desc_short#></b></span><br>
-                                Install app to receive push notification when a suspicious connection between your client devices and malicious destination has been detected and blocked.
+                                <#AiProtection_alert_show#>
                             </div>
 
                             <!-- QR Codes -->

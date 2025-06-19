@@ -26,7 +26,7 @@ endif
 LD_BINARY  += $(LDFLAGS) $(EXTRACC)
 LD_LIBRARY += $(LDFLAGS) $(EXTRALD)
 
-OBJS = nt_share.o nt_utility.o linklist.o hashtable.o nt_db_stat.o
+OBJS = nt_share.o nt_utility.o linklist.o nt_db_stat.o
 ifeq ($(RT4GAC86U),y)
 OBJS += $(LIBDIR)/libc_nonshared.a
 endif
@@ -87,7 +87,7 @@ CFLAGS += -I$(APP_SQLITE_DIR)
 LDFLAGS += -lm
 LDFLAGS += -L$(APP_SQLITE_DIR)/.libs -lsqlite3
 
-OBJS = nt_share.o nt_utility.o linklist.o hashtable.o nt_db_stat.o
+OBJS = nt_share.o nt_utility.o linklist.o nt_db_stat.o
 
 all: libnt.so libnt.a nt_db
 

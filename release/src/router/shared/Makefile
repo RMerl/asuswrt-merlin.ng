@@ -162,6 +162,10 @@ ifeq ($(BUILD_NAME), 4G-AX56)
 CFLAGS += -DRT4GAX56
 endif
 
+ifeq ($(BUILD_NAME), GT7)
+CFLAGS += -DCONFIG_GT7
+endif
+
 ifeq ($(RTCONFIG_RGBLED),y)
 CFLAGS += -I$(TOP)/i2c-tools-3.1.2/include/linux
 endif
@@ -496,7 +500,7 @@ endif
 ifeq ($(and $(BR63),$(NEW_SWITCH_ORDER)),y)
 CFLAGS += -DNEW_SWITCH_ORDER
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS7_PRO))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 OBJS += fid_vlan.o br_vlan.o mxl_port_vlan.o mxl_tag_vlan.o hal_chipid.o
 endif
 endif
@@ -559,7 +563,7 @@ ifeq ($(or $(RTCONFIG_GEARUPPLUGIN), $(RTCONFIG_UUPLUGIN)), y)
 OBJS += $(if $(wildcard uu_utils.c),uu_utils.o,prebuild/uu_utils.o)
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS7_PRO))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 CFLAGS += -I$(TOP)/libhostapi/switch_hostapi/src \
 	  -I$(TOP)/libhostapi/switch_hostapi/include/gpy \
 	  -I$(TOP)/libhostapi/switch_hostapi/include/gswip
@@ -619,30 +623,30 @@ ifeq ($(wildcard $(SRCBASE)/router/aaews/*.c),)
 	cp -f $(TOP)/aaews/prebuild/$(BUILD_NAME)/aae_ipc.o ./
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS7_PRO))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 br_vlan.o:
 ifneq ($(wildcard ./prebuild/br_vlan.o),)
-        @-cp -f ./prebuild/br_vlan.o .
+	@-cp -f ./prebuild/br_vlan.o .
 endif
 
 fid_vlan.o:
 ifneq ($(wildcard ./prebuild/fid_vlan.o),)
-        @-cp -f ./prebuild/fid_vlan.o .
+	@-cp -f ./prebuild/fid_vlan.o .
 endif
 
 hal_chipid.o:
 ifneq ($(wildcard ./prebuild/hal_chipid.o),)
-        @-cp -f ./prebuild/hal_chipid.o .
+	@-cp -f ./prebuild/hal_chipid.o .
 endif
 
 mxl_port_vlan.o:
 ifneq ($(wildcard ./prebuild/mxl_port_vlan.o),)
-        @-cp -f ./prebuild/mxl_port_vlan.o .
+	@-cp -f ./prebuild/mxl_port_vlan.o .
 endif
 
 mxl_tag_vlan.o:
 ifneq ($(wildcard ./prebuild/mxl_tag_vlan.o),)
-        @-cp -f ./prebuild/mxl_tag_vlan.o .
+	@-cp -f ./prebuild/mxl_tag_vlan.o .
 endif
 endif
 

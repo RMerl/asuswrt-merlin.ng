@@ -183,6 +183,8 @@ var pppoe_password = decodeURIComponent('<% nvram_char_to_ascii("", "wan_pppoe_p
 var faq_href1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=125";
 var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=126";
 var faq_href3 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=127";
+var orig_mtu = '<% nvram_get("wan_mtu"); %>';
+var default_wan_mtu = httpApi.nvramDefaultGet(["wan_mtu"]).wan_mtu;
 
 const eth_wan_list = httpApi.hookGet("get_ethernet_wan_list", true);
 
@@ -476,6 +478,9 @@ function initial(){
 			update_info(1);
 		}
 	}
+
+	if(isSupport("TELIA"))
+		inputCtrl(document.form.wan_vendorid, 0);
 }
 
 function change_notusb_unit(){
@@ -1003,10 +1008,23 @@ function validForm(){
 	}
 	
 	if(wan_type == "pppoe"){
-		if(!validator.numberRange(document.form.wan_pppoe_mtu, 576, 1500)
-				|| !validator.numberRange(document.form.wan_pppoe_mru, 576, 1500))
+		if(!validator.numberRange(document.form.wan_pppoe_mtu, 128, 1492)
+				|| !validator.numberRange(document.form.wan_pppoe_mru, 128, 1492))
 			return false;
-		
+
+		/* reset wan_mtu to default value */
+		if($("#wan_mtu_tr").css("display") != "none"){
+			if(document.form.wan_mtu.value != "") {
+				if(parseInt(document.form.wan_pppoe_mtu.value) + 8 > parseInt(document.form.wan_mtu.value)){
+					document.form.wan_pppoe_mtu.value = parseInt(document.form.wan_mtu.value) - 8;
+				}
+			}
+		}
+		else if(document.form.wan_mtu.value != default_wan_mtu){
+			document.form.wan_mtu.value = default_wan_mtu;
+			document.form.wan_mtu.disabled = false;
+		}
+
 		if(!validator.string(document.form.wan_pppoe_service)
 				|| !validator.string(document.form.wan_pppoe_ac))
 			return false;
@@ -1087,11 +1105,18 @@ function validForm(){
 		 if(!validator.string(document.form.wan_heartbeat_x))
 		 	return false;
 
+	if($("#wan_mtu_tr").css("display") != "none" && (orig_mtu != "" || document.form.wan_mtu.value.length > 0)) {
+		if(!validator.numberRange(document.form.wan_mtu, 1280, 1500)) {
+			document.form.wan_mtu.focus();
+			document.form.wan_mtu.select();
+			return false;
+		}
+	}
 
 	if(wan_bonding_support){
 		var msg_dualwan = "<#WANAggregation_disable_dualwan#>";
 		var msg_both = "<#WANAggregation_disable_IPTVDualWAN#>";
-		if(based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000" || based_modelid == "XT12"){
+		if(based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000" || based_modelid == "XT12" || wbmenu_support){
 			var cur_wanports_bond = $("#wanports_bond_menu").val();
 			var msg_iptv = "<#WANAggregation_PortConflict_hint2#>".replace(/LAN-*\D* 4/, wanAggr_p2_name(cur_wanports_bond));
 		}
@@ -1100,7 +1125,7 @@ function validForm(){
 			var msg_iptv = "<#WANAggregation_PortConflict_hint2#>";
 		}
 
-		if((orig_bond_wan != document.form.bond_wan_radio.value || ((based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000") && orig_wanports_bond != cur_wanports_bond))
+		if((orig_bond_wan != document.form.bond_wan_radio.value || ((based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000" || wbmenu_support) && orig_wanports_bond != cur_wanports_bond))
 		&& document.form.bond_wan_radio.value == "1"){
 			if(wans_dualwan.indexOf("none") == -1 && wanAggr_p2_conflicts_w_stb_port(original_switch_stb_x, wanAggr_p2_num(cur_wanports_bond))){
 				if(!confirm(msg_both)){
@@ -1199,6 +1224,8 @@ function change_wan_type(wan_type, flag){
 			inputCtrl(document.form.bond_wan_radio[1], 0);
 			document.form.bond_wan_radio.value = "0";
 		}
+
+		inputCtrl(document.form.wan_mtu, 0);
 	}
 	else if(wan_type == "pptp"){
 		showhide("wan_DHCP_opt",0);
@@ -1237,6 +1264,8 @@ function change_wan_type(wan_type, flag){
 			inputCtrl(document.form.bond_wan_radio[1], 0);
 			document.form.bond_wan_radio.value = "0";
 		}
+
+		inputCtrl(document.form.wan_mtu, 1);
 	}
 	else if(wan_type == "l2tp"){
 		showhide("wan_DHCP_opt",0);
@@ -1275,6 +1304,8 @@ function change_wan_type(wan_type, flag){
 			inputCtrl(document.form.bond_wan_radio[1], 0);
 			document.form.bond_wan_radio.value = "0";
 		}
+
+		inputCtrl(document.form.wan_mtu, 1);
 	}
 	else if(wan_type == "static"){
 		showhide("wan_DHCP_opt",0);
@@ -1330,6 +1361,8 @@ function change_wan_type(wan_type, flag){
 				document.form.bond_wan_radio.value = orig_bond_wan;
 			}
 		}
+
+		inputCtrl(document.form.wan_mtu, 1);
 	}
 	else if(Softwire46_support && (wan_type == "lw4o6" || wan_type == "map-e" || wan_type == "v6plus" || wan_type == "ocnvc" || wan_type == "dslite" || wan_type == "v6opt")){
 		showhide("wan_DHCP_opt",0);
@@ -1373,10 +1406,15 @@ function change_wan_type(wan_type, flag){
 			inputCtrl(document.form.bond_wan_radio[1], 0);
 			document.form.bond_wan_radio.value = orig_bond_wan;
 		}
+
+		inputCtrl(document.form.wan_mtu, 1);
 	}
 	else{	// Automatic IP or 802.11 MD or ""		
 		showhide("wan_DHCP_opt",1);
-		inputCtrl(document.form.wan_vendorid, 1);
+		if(isSupport("TELIA"))
+			inputCtrl(document.form.wan_vendorid, 0);
+		else
+			inputCtrl(document.form.wan_vendorid, 1);
 		inputCtrl(document.form.wan_clientid, 1);
 		document.form.wan_clientid_type.disabled = false;
 		showDiableDHCPclientID(document.form.tmp_dhcp_clientid_type);
@@ -1429,6 +1467,8 @@ function change_wan_type(wan_type, flag){
 				document.form.bond_wan_radio.value = orig_bond_wan;
 			}
 		}
+
+		inputCtrl(document.form.wan_mtu, 1);
 	}
 }
 
@@ -3071,7 +3111,15 @@ function get_default_wan_name(){
 					<input type="radio" name="ttl_spoof_enable" class="input" value="1" <% nvram_match("ttl_spoof_enable", "1", "checked"); %>><#checkbox_Yes#>
 					<input type="radio" name="ttl_spoof_enable" class="input" value="0" <% nvram_match("ttl_spoof_enable", "0", "checked"); %>><#checkbox_No#>
 				</td>
-		</tr>	
+		</tr>
+		<tr id="wan_mtu_tr" >
+			<th>
+				<#PPPConnection_x_PPPoEMTU_itemname#>
+			</th>
+			<td>
+				<input type="text" maxlength="5" name="wan_mtu" class="input_6_table" value="<% nvram_get("wan_mtu"); %>" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"/>&nbsp;1280 - 1500
+			</td>
+		</tr>
 		</table>
 		<div class="apply_gen" style="height:auto">
 			<input class="button_gen" id="apply_btn" onclick="applyRule();" type="button" value="<#CTL_apply#>"/>

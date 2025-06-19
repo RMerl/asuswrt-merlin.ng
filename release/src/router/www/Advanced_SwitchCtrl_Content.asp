@@ -65,7 +65,7 @@
 
 <script>
 $(document).ready(function(){
-	if(isSupport("BUSINESS") && parent.webWrapper == undefined){
+	if(isSupport("UI4") && parent.webWrapper == undefined){
 		$('td[bgcolor="#4D595D"]').css("background", "transparent");
 		$('div[class="formfontdesc"]').css({"background-color": "#ececec", "color": "#262626", "font-weight": "bolder", "padding": "15px"});
 		$('input[class="button_gen"]').css({"background-color": "#FFF", "color": "#006ce1", "border": "1px solid #CCC", "border-radius": "8px", "height":"50px"});

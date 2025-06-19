@@ -46,7 +46,6 @@
 #include "shared.h"
 #include "wlif_utils.h"
 #include "iboxcom.h"
-#include <regex.h>
 
 #ifndef ETHER_ADDR_LEN
 #define	ETHER_ADDR_LEN		6
@@ -6145,47 +6144,6 @@ int is_valid_domainname(const char *name)
 	return p - name;
 }
 
-int is_valid_oauth_code(char *code)
-{
-	int len;
-
-	len = strlen(code);
-	if (len > 2048) return 0;
-
-	while(*code) {
-		if (isalnum(*code) != 0 || *code == '-' || *code == '.' || *code == '_' || *code == '~' || *code == '+' || *code == '/' || isspace(*code) != 0)
-			code++;
-		else
-			return 0;
-	}
-	return 1;
-}
-int is_valid_email_address(char *address)
-{
-	int status=1, ret=0, rc=0;
-	regex_t preg;
-	const char *reg_exp = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*.\\w+([-.]\\w+)*$";
-
-	rc = regcomp(&preg, reg_exp, REG_EXTENDED);
-
-	if (rc != 0)
-	{
-		dbg("%s: Failed to compile the regular expression:%d\n", __func__, rc);
-		return 4000;
-	}
-
-	status=regexec(&preg,address,0, NULL, 0);
-	if (status == REG_NOMATCH) {
-		dbg("No Match\n");
-	}
-	else if (status == 0) {
-		dbg("Match\n");
-		ret = 1;
-	}
-	regfree(&preg);
-	return ret;
-}
-
 int get_discovery_ssid(char *ssid_g, int size)
 {
 #if defined(RTCONFIG_WIRELESSREPEATER) || defined(RTCONFIG_PROXYSTA)
@@ -6666,6 +6624,7 @@ void update_wlx_psr_mbss(void)
 {
 	int unit = 0, subunit = 0, wlx_psr_mbss = 0;
 	char nv[64];
+	int changed = 0;
 
 	if (nvram_get_int("re_mode") == 0)
 		return;
@@ -6685,9 +6644,12 @@ void update_wlx_psr_mbss(void)
 		snprintf(nv, sizeof(nv), "wl%d_psr_mbss", unit);
 		if (nvram_get_int(nv) != wlx_psr_mbss) {
 			nvram_set_int(nv, wlx_psr_mbss);
-			nvram_commit();
+			changed = 1;
 		}
 	}
+
+	if(changed)
+		nvram_commit();
 
 	return;
 }
@@ -7530,7 +7492,7 @@ int guest_mark_calc(int guest_mark)
 	return mark;
 }
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
 int switch_ledg(int action)
 {
 	switch(action) {

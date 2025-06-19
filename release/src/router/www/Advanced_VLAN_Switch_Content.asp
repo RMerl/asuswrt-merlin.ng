@@ -976,22 +976,10 @@ function gen_VLAN_port_table(port_profile) {
 
 							port_profile[mesh_mac[i]].port[key].wans_lanport = '1';
 							wanlan_tag = parseInt(key)+1;
-							if(aggressive_tag != 1){
-								aggressive_tag = 1;
-								$port_status_note = $("<div>").appendTo($port_status_icon);
-								if(top.webWrapper){
-									if($port_status_idx.html() != "")
-										$port_status_note.html("Aggregation").addClass("status_note_white");
-									else
-										$port_status_note.html("Aggregation").addClass("status_note_white_status_idx_null");
-								}
-								else{
-									if($port_status_idx.html() != "")
-										$port_status_note.html("Aggregation").addClass("status_note");
-									else
-										$port_status_note.html("Aggregation").addClass("status_note_status_idx_null");
-								}
-							}
+							aggressive_tag = 4;
+							wan_array.push(lanport_idx);
+							if(port_ui_display_txt!="")
+								wan_ui_display.push(port_ui_display_txt);
 						}
 
 						$port_table_td_mode.empty();
@@ -1195,21 +1183,10 @@ function gen_VLAN_port_table(port_profile) {
 
 								wanlan_tag = parseInt(key)+1;
 								$port_status_note = $("<div>").appendTo($port_status_icon);
-								if(aggressive_tag != 1){
-									aggressive_tag = 1;
-									if(top.webWrapper){
-										if($port_status_idx.html() != "")
-											$port_status_note.html("Aggregation").addClass("status_note_white");
-										else
-											$port_status_note.html("Aggregation").addClass("status_note_white_status_idx_null");
-									}
-									else{
-										if($port_status_idx.html() != "")
-											$port_status_note.html("Aggregation").addClass("status_note");
-										else
-											$port_status_note.html("Aggregation").addClass("status_note_status_idx_null");
-									}
-								}
+								aggressive_tag = 4;
+								wan_array.push(lanport_idx);
+								if(port_ui_display_txt!="")
+									wan_ui_display.push(port_ui_display_txt);
 							}
 
 							$port_table_td_mode.empty();
@@ -1375,7 +1352,10 @@ function gen_VLAN_port_table(port_profile) {
 					note_WAN_port += "</b>";
 				}
 				note_WAN_port += ": ";
-				str_port_binding_note_tmp = str_port_binding_note.replace("%@", "<#Ethernet_wan#>");
+				if(i == 0)	//CAP
+					str_port_binding_note_tmp = str_port_binding_note.replace("%@", "<#Ethernet_wan#>");
+				else		//RE
+					str_port_binding_note_tmp = str_port_binding_note.replace("%@", "Ethernet Backhaul");	/* Untranslated */
 				note_WAN_port += str_port_binding_note_tmp;
 				$("<div>").html(note_WAN_port).appendTo($target_div).css('text-align','left');
 			}

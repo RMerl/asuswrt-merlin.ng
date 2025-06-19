@@ -1298,7 +1298,13 @@ start_wan_if(int unit)
 #endif
 
 #if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
-	if(!nvram_get_int("stopwar_correct_wan_if") && is_auto_wanport_enabled() == 2 && strcmp(nvram_safe_get("autowan_detected_ifname"), nvram_safe_get("wan0_ifname"))){
+	if( !nvram_get_int("stopwar_correct_wan_if")
+	 && is_auto_wanport_enabled() == 2
+	 && strcmp(nvram_safe_get("autowan_detected_ifname"), nvram_safe_get("wan0_ifname"))
+#if defined(RTCONFIG_MULTISERVICE_WAN)
+	 && unit == WAN_UNIT_FIRST
+#endif
+	){
 		TRACE_PT("AUTO_WANPORT: set the incorrect wan_ifname to be %s.\n", nvram_safe_get("autowan_detected_ifname"));
 		nvram_set("wan0_ifname", nvram_safe_get("autowan_detected_ifname"));
 	}
@@ -3390,10 +3396,16 @@ void wan6_up(const char *pwan_ifname)
 		ipv6_sysconf(wan_ifname, "accept_ra", 1);
 		ipv6_sysconf(wan_ifname, "accept_ra_defrtr", accept_defrtr);
 		ipv6_sysconf(wan_ifname, "forwarding", 0);
+#ifdef RTCONFIG_IPV6_PRIVACY
+		ipv6_sysconf(wan_ifname, "use_tempaddr", 2);
+#endif
 		break;
 	case IPV6_MANUAL:
 		ipv6_sysconf(wan_ifname, "accept_ra", 0);
 		ipv6_sysconf(wan_ifname, "forwarding", 1);
+#ifdef RTCONFIG_IPV6_PRIVACY
+		ipv6_sysconf(wan_ifname, "use_tempaddr", 0);
+#endif
 		break;
 	case IPV6_6RD:
 		update_6rd_info_by_unit(wan_unit);
@@ -3473,88 +3485,6 @@ void wan6_up(const char *pwan_ifname)
 			set_sdn_ipv6_mtu(wan_unit, mtu);
 #endif
 		}
-
-#ifdef RTCONFIG_SOFTWIRE46
-		int wan_proto = -1;
-		long rsp_code = 0;
-		switch (wan_proto = get_wan_proto(prefix)) {
-			char peerbuf[INET6_ADDRSTRLEN];
-			char addr6buf[INET6_ADDRSTRLEN];
-			char addr4buf[INET_ADDRSTRLEN + sizeof("/32")];
-			char *rules, *type;
-			char tmp[100];
-			int prefix4len, ealen, offset, psidlen, psid, draft;
-		case WAN_LW4O6:
-			if (nvram_get_int(strcat_r(prefix, "dhcpenble_x", tmp)))
-				break;
-			type = "lw4o6";
-			prefix4len = 32;
-			ealen = -1;
-			draft = 0;
-			goto s46_maprules;
-		case WAN_MAPE:
-			if (nvram_get_int(strcat_r(prefix, "dhcpenble_x", tmp)))
-				break;
-			type = "map-e";
-			prefix4len = nvram_get_int(strcat_r(prefix, "s46_prefix4len_x", tmp));
-			ealen = nvram_get_int(strcat_r(prefix, "s46_ealen_x", tmp));
-			draft = 0;
-			goto s46_maprules;
-		case WAN_V6PLUS:
-		case WAN_V6OPTION:
-			draft = 1;
-			if (nvram_get_int(strcat_r(prefix, "dhcpenble_x", tmp))) {
-				rules = get_jpix_map(wan_unit, NULL, NULL, 0, &rsp_code);
-				goto s46_mapcalc;
-			}
-			type = "map-e";
-			prefix4len = nvram_get_int(strcat_r(prefix, "s46_prefix4len_x", tmp));
-			ealen = nvram_get_int(strcat_r(prefix, "s46_ealen_x", tmp));
-			goto s46_maprules;
-		case WAN_OCNVC:
-			draft = 1;
-			if (nvram_get_int(strcat_r(prefix, "dhcpenble_x", tmp))) {
-				rules = get_ocn_map(wan_unit, nvram_safe_get("ipv6_ra_addr"), nvram_get_int("ipv6_ra_length"), &rsp_code);
-				goto s46_mapcalc;
-			}
-			type = "map-e";
-			prefix4len = nvram_get_int(strcat_r(prefix, "s46_prefix4len_x", tmp));
-			ealen = nvram_get_int(strcat_r(prefix, "s46_ealen_x", tmp));
-			goto s46_maprules;
-		s46_maprules:
-			if (asprintf(&rules,
-				     "type=%s,ipv6prefix=%s,prefix6len=%d,ipv4prefix=%s,prefix4len=%d,"
-				     "ealen=%d,offset=%d,psidlen=%d,psid=%d,br=%s",
-				     type,
-				     nvram_safe_get(strcat_r(prefix, "s46_prefix6_x", tmp)),
-				     nvram_get_int(strcat_r(prefix, "s46_prefix6len_x", tmp)),
-				     nvram_safe_get(strcat_r(prefix, "s46_prefix4_x", tmp)),
-				     prefix4len, ealen,
-				     nvram_get_int(strcat_r(prefix, "s46_offset_x", tmp)),
-				     nvram_get_int(strcat_r(prefix, "s46_psidlen_x", tmp)),
-				     nvram_get_int(strcat_r(prefix, "s46_psid_x", tmp)),
-				     nvram_safe_get(strcat_r(prefix, "s46_peer_x", tmp))) < 0) {
-				rules = NULL;
-			}
-		s46_mapcalc:
-			if (s46_mapcalc(wan_unit, wan_proto, rules, peerbuf, sizeof(peerbuf), addr6buf, sizeof(addr6buf),
-					addr4buf, sizeof(addr4buf), &offset, &psidlen, &psid, NULL, draft) <= 0) {
-				peerbuf[0] = addr6buf[0] = addr4buf[0] = '\0';
-				offset = 0, psidlen = 0, psid = 0;
-			}
-			free(rules);
-			nvram_set(ipv6_nvname_by_unit("ipv6_s46_peer", wan_unit), peerbuf);
-			nvram_set(ipv6_nvname_by_unit("ipv6_s46_addr6", wan_unit), addr6buf);
-			nvram_set(ipv6_nvname_by_unit("ipv6_s46_addr4", wan_unit), addr4buf);
-			nvram_set(ipv6_nvname_by_unit("ipv6_s46_fmrs", wan_unit), "");
-			nvram_set_int(ipv6_nvname_by_unit("ipv6_s46_offset", wan_unit), offset);
-			nvram_set_int(ipv6_nvname_by_unit("ipv6_s46_psidlen", wan_unit), psidlen);
-			nvram_set_int(ipv6_nvname_by_unit("ipv6_s46_psid", wan_unit), psid);
-			stop_s46_tunnel(wan_unit, 0);
-			start_s46_tunnel(wan_unit);
-			break;
-		}
-#endif
 
 		/* workaround to update ndp entry for now */
 		char *ping6_argv[] = {"ping6", "-c", "2", "-I", (char *)wan_ifname, "ff02::1", NULL};
@@ -5738,6 +5668,11 @@ void init_wan46(void) {
 			else
 				snprintf(prefix, sizeof(prefix), "wan46det%d_", unit);
 			nvram_unset(strcat_r(prefix, "state", tmp));
+			nvram_unset(ipv6_nvname_by_unit("ipv6_s46_perfer", unit));
+			nvram_unset(ipv6_nvname_by_unit("ipv6_ra_addr", unit));
+			nvram_unset(ipv6_nvname_by_unit("ipv6_ra_length", unit));
+			nvram_unset(ipv6_nvname_by_unit("ipv6_prefix", unit));
+			nvram_unset(ipv6_nvname_by_unit("ipv6_prefix_length", unit));
 		}
 	}
 	return;
@@ -5798,12 +5733,6 @@ int auto46det_main(int argc, char *argv[]) {
 
 			if (nvram_get_int(strcat_r(prefix, "state", tmp)) >= WAN46DET_STATE_UNKNOW)
 				continue;
-
-			if (!pids("odhcp6c")) {
-				nvram_set("ipv6_service", "ipv6pt");
-				wan6_up(get_wan6face());
-				sleep(5);
-			}
 
 			if (debug) _dprintf("\n[%s(%d)] ### Start Detect... ###\n\n", __FUNCTION__, __LINE__);
 			nvram_set_int(strcat_r(prefix, "state", tmp), WAN46DET_STATE_INITIALIZING);

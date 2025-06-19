@@ -647,6 +647,7 @@ enum conndiagEvent {
 	EID_CD_PS_USB_CHANGE,
 	EID_CD_PS_MOCA_CHANGE,
 	EID_CD_PRINT_STA_INFO,
+	EID_CD_REINIT_BSSINFO,
 	EID_CD_MAX
 };
 #define RAST_IPC_MAX_CONNECTION		5
@@ -1214,7 +1215,7 @@ enum btn_id {
 	BTN_EJUSB1,
 	BTN_EJUSB2,	/* If two USB LED and two EJECT USB button are true, map USB3 port to this button. */
 #endif
-#if defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI)
+#if defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GTBE96_AI)
 	BTN_WAKE,
 #endif
 	BTN_ID_MAX,	/* last item */
@@ -1454,7 +1455,7 @@ enum led_id {
 	LED_SIDE2_WHITE,
 	LED_SIDE3_WHITE,
 #endif
-#ifdef GT10
+#if defined(GT10) || defined(GT7)
 	LED_RGB1_RED,
 	LED_RGB1_GREEN,
 	LED_RGB1_BLUE,
@@ -1471,7 +1472,7 @@ enum led_id {
 	IND_BT,
 	IND_PA,
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
 	LED_GROUP1_RED,
 	LED_GROUP1_GREEN,
 	LED_GROUP1_BLUE,
@@ -1482,7 +1483,7 @@ enum led_id {
 	LED_GROUP3_RED,
 	LED_GROUP3_GREEN,
 	LED_GROUP3_BLUE,
-#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE96) && !defined(GSBE18000) || defined(GS7_PRO)
+#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE96) && !defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	LED_GROUP4_RED,
 	LED_GROUP4_GREEN,
 	LED_GROUP4_BLUE,
@@ -1500,7 +1501,7 @@ enum led_id {
 #endif
 #endif
 #endif
-#if defined(DSL_AX82U) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(DSL_AX82U) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	LED_WIFI,
 #endif
 #if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
@@ -1686,7 +1687,7 @@ enum wl_band_id {
 	WL_2G_BAND = 0,
 	WL_5G_BAND = 1,
 	WL_5G_2_BAND = 2,
-#elif defined(BT10) || defined(GSBE18000)
+#elif defined(BT10) || defined(GSBE18000) || defined(GSBE12000) || defined(GT7)
 	WL_5G_2_BAND = 0,
 	WL_6G_BAND = 0,
 	WL_5G_BAND = 1,
@@ -1705,7 +1706,7 @@ enum wl_band_id {
 	WL_2G_BAND = 0,
 	WL_5G_BAND = 1,
 	WL_5G_2_BAND = 2,
-#if defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 #if defined(RTCONFIG_BCMWL6)
 	WL_6G_BAND = 2,
 #else
@@ -1720,8 +1721,8 @@ enum wl_band_id {
 	WL_NR_BANDS                             /* Maximum number of Wireless bands of all models. */
 };
 
-#if defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
-#if defined(BT10) || defined(GSBE18000)
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
+#if defined(BT10) || defined(GSBE18000) || defined(GSBE12000) || defined(GT7)
 #define WL_UNIT_6G	0
 #elif defined(GTBE98_PRO) || defined(BQ16_PRO) || defined(RTBE95U)
 #define WL_UNIT_6G	1
@@ -1758,7 +1759,7 @@ static inline int is_6g(int unit)
 {
 	char prefix[] = "wlXXXXXXXXXXXX_";
 
-#if !defined(BT12) && !defined(RTCONFIG_WIFI7_NO_6G)
+#if !defined(BT12) && defined(RTCONFIG_HAS_6G)
 	if (unit == WL_6G_BAND)
 		return 1;
 #endif
@@ -3374,7 +3375,7 @@ extern uint32_t hnd_get_phy_speed(int port, int offs, unsigned int regv, unsigne
 extern uint32_t hnd_get_phy_duplex(int port, int offs, unsigned int regv, unsigned int pmdv);
 extern uint64_t hnd_get_phy_mib(int port, int offs, char *type);
 #endif
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 extern uint32_t mxl_get_phy_status(int port);
 extern uint32_t mxl_get_phy_speed(int port);
 extern uint32_t mxl_get_phy_duplex(int port);
@@ -3382,6 +3383,7 @@ extern uint64_t mxl_get_phy_mib(int port, char *type);
 extern int mxl_lan_phy_status();
 extern int mxlswitch_LanPort_linkUp(void);
 extern int mxlswitch_LanPort_linkDown(void);
+void mxl_fw_check();
 #endif
 #ifdef RTCONFIG_SW_SPDLED
 extern uint32_t hnd_get_phy_speed_rc(char *ifname);
@@ -3393,6 +3395,9 @@ extern int extphy_bit_op(unsigned int reg, unsigned int val, int wr, unsigned in
 #endif
 #if !defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_EXTPHY_BCM84880)
 extern int ethctl_get_link_status(char *ifname);
+#endif
+#ifdef GT7
+extern int ethctl_ext84991_speed(void);
 #endif
 #endif // HND_ROUTER
 extern int fw_check(void);
@@ -4686,6 +4691,7 @@ extern void set_rgbled(unsigned int mode);
 
 /* add nt_center 2nd stage event */
 #define CC_EVENT_JSON   "/jffs/ccevent.json"
+#define CC_EVENT_LOCK   "ccevent_lock"
 
 /* hns_utils.c */
 #if defined(RTCONFIG_HNS)
@@ -5186,6 +5192,7 @@ enum {
 	BCM_CLED_STEADY_BLINK,
 	BCM_CLED_PULSATING,
 	BCM_CLED_SLOW_BLINK,
+	BCM_CLED_STEADY_NOBLINK_NIGHT,
 	BCM_CLED_MODE_END
 };
 #endif
@@ -5199,7 +5206,7 @@ extern void firmware_downgrade_check(uint32_t sf);
 #define ANTLED_SCHEME_RSSI              2
 #endif
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
 enum {
 	LEDG_QIS_RUN = 1,
 	LEDG_QIS_FINISH
@@ -5341,7 +5348,7 @@ enum {
 	WLIF_5G2 = 0,
 	WLIF_6G	 = 1,
 	WLIF_6G2 = 2,
-#elif defined(BT10) || defined(GSBE18000) || defined(GS7_PRO)
+#elif defined(BT10) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	WLIF_5G2 = 0,
 	WLIF_6G	 = 0,
 	WLIF_5G1 = 1,

@@ -321,11 +321,7 @@ input[type="checkbox"]:checked + label{
 }
 
 .hidden_mask{
-	background: rgba(58, 65, 71, 0.1);
-}
-
-.popup_container .popup_content_container{
-	background: #3A4147;
+	background: rgba(0, 0, 0, 0.98);
 }
 
 .feature_desc .title{
@@ -409,14 +405,6 @@ input[type="checkbox"]:checked + label{
 }
 
 .dropdown_select option{
-	background: #3A4147;
-}
-
-.hidden_mask{
-	background: rgba(58, 65, 71, 0.1);
-}
-
-.popup_container .popup_content_container{
 	background: #3A4147;
 }
 

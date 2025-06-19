@@ -168,7 +168,7 @@ function initial(){
 		document.getElementById("iTunes_div").style.display = "none";		
 	}
 
-	if(isSupport("BUSINESS")){
+	if(isSupport("UI4")){
 		document.getElementById("returnBtn").style.display = "none";
 	}
 

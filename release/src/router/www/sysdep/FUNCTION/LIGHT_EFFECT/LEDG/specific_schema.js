@@ -154,7 +154,7 @@ function retune_wave_color(parm){
 	else if(parm.productid == "GT-BE98" || parm.productid == "GT-BE98_PRO" || parm.productid == "GT-BE96" || parm.productid == "GT-BE19000" || parm.productid == "GT-BE19000AI" || parm.productid == "GT-BE96_AI"){
 		ledg_rgb = (parm.night) ? "50,0,0,58,0,32,50,0,64" : "100,0,0,120,0,30,100,0,128";
 	}
-	else if(parm.productid == "GT10"){
+	else if(parm.productid == "GT10" || parm.productid == "GS-BE18000" || parm.productid == "GS-BE12000" || parm.productid == "GS7_PRO"){
 		ledg_rgb = "128,0,10,128,0,40,128,0,100";
 		if(parm.CoBrand == "5")
 			ledg_rgb = "0,5,120,0,48,70,0,110,50";

@@ -202,7 +202,7 @@ void tm_recycle_stuck_process()
 	struct TM_RECYCLE_PS_T *t_recycle = s_tm_recycle_ps_tuple;
 	char buf[40] = {0};
 	static int period = 0;
-	int cycle = 40; // 40*30 = 1200 sec
+	int cycle = 120; // 120*10 = 1200 sec
 	int debug = nvram_get_int("tm_recycle_debug");
 
 	// step1. check ntp sync

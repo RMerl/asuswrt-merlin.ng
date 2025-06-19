@@ -1,5 +1,9 @@
 function genArchitecture() {
-    genHeader();
+    if(navigator.userAgent.match(/ASUSMultiSiteManager/) || navigator.userAgent.match(/ASUSExpertSiteManager/) || (/^aae-sgrst001-\w+\.asuscomm\.com$/.test(window.location.hostname))) {
+        genHeader(["logo","model-name"]);
+    }else{
+        genHeader();
+    }
     genNavMenu();
     genMidHeader();
 }
@@ -223,7 +227,7 @@ let theme = (function () {
             return "rog";
         else if(isSupport("tuf")) 
             return "tuf";
-        else if(isSupport("BUSINESS")) 
+        else if(isSupport("UI4"))
             return "white";
         else
             return "dark";
@@ -242,11 +246,11 @@ if (!urlParameter.get("url")){
     location.href = "/index.html?url=dashboard&current_theme=" + theme;
 }
 
-if (isSupport("BUSINESS") && theme != "white"){
+if (isSupport("UI4") && theme != "white"){
     location.href = "/index.html?url=dashboard&current_theme=white";
 }
 
-if(!isSupport("BUSINESS") || theme != "white"){
+if(!isSupport("UI4") || theme != "white"){
     menuList = menuList.filter(function(item, index, array){
         return (item.url != "settings") && (item.url != "QIS_wizard.htm");
     });
@@ -305,7 +309,7 @@ if(system.currentOPMode.id != "RT"){
 	}
 }
 
-if (navigator.userAgent.match(/ASUSMultiSiteManager/)) {
+if (navigator.userAgent.match(/ASUSMultiSiteManager/) || navigator.userAgent.match(/ASUSExpertSiteManager/) || (/^aae-sgrst001-\w+\.asuscomm\.com$/.test(window.location.hostname))) {
     menuList = menuList.filter(item => item.url !== "QIS_wizard.htm");
 }
 

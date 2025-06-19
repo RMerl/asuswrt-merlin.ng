@@ -59,7 +59,7 @@ function initial(){
 		checkWLReady();
 	}	
 
-	if(!band5g_support)
+	if(isSupport("noWiFi"))
 		document.getElementById("wl_unit_field").style.display = "none";
 
 	var wl_maclist_x_row = wl_maclist_x_array.split('&#60');
@@ -298,8 +298,24 @@ function applyRule(){
 	
 	if(prevent_lock(tmp_value)){
 		document.form.wl_maclist_x.value = tmp_value;
-		showLoading();
-		document.form.submit();	
+		showLoading(3);
+
+		let nvramSetObj = {'action_mode': 'apply', 'rc_service': 'restart_wireless;'};
+		const wl_macmode = document.form.wl_macmode.value;
+		if (isSupport("noWiFi")) {
+			const wl_ifname_count = 4;
+			for (let i = 0; i < wl_ifname_count; i++) {
+				nvramSetObj[`wl${i}_maclist_x`] = tmp_value;
+				nvramSetObj[`wl${i}_macmode`] = wl_macmode;
+			}
+		}
+		else {
+			nvramSetObj[`wl_maclist_x`] = tmp_value;
+			nvramSetObj[`wl_macmode`] = wl_macmode;
+			nvramSetObj['wl_unit'] = document.form.wl_unit.value;
+			nvramSetObj['wl_subunit'] = document.form.wl_subunit.value;
+		}
+		httpApi.nvramSet(nvramSetObj);
 	}
 }
 

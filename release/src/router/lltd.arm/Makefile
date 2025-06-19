@@ -170,9 +170,8 @@ else ifeq ($(BUILD_NAME), GT-BE19000)
 	install icon.gtbe19000.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.gtbe19000.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), ET12)
-#	To be added...
-#	install icon.gtax11000_pro.ico $(INSTALLDIR)/usr/sbin/icon.ico
-#	install icon.large.gtax11000_pro.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+	install icon.et12.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.et12.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), XT12)
 	install icon.xt12.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.xt12.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
@@ -235,9 +234,15 @@ else ifeq ($(BUILD_NAME), GT-BE19000AI)
 else ifeq ($(BUILD_NAME), GS-BE18000)
 	install icon.gsbe18000.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.gsbe18000.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), GS-BE12000)
+	install icon.gsbe12000.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.gsbe12000.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), GS7_PRO)
 	install icon.gs7_pro.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.gs7_pro.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), GT7)
+	install icon.gt7.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.gt7.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), GT-BE96_AI)
 	install icon.gtbe96_ai.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.gtbe96_ai.ico $(INSTALLDIR)/usr/sbin/icon.large.ico

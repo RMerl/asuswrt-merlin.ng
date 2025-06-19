@@ -1667,6 +1667,7 @@ var httpApi ={
 				{type:"MOCA", bit:10},
 				{type:"POE", bit:11},
 				{type:"WANAUTO", bit:12},
+				{type:"INTRAMODULE", bit:13},
 				{type:"IPTV_BRIDGE", bit:26},
 				{type:"IPTV_VOIP", bit:27},
 				{type:"IPTV_STB", bit:28},
@@ -1930,7 +1931,9 @@ var httpApi ={
 					"lp55xx_led" : {"bit" : 1},
 					"led_on_off" : {"bit" : 2},
 					"led_brightness" : {"bit" : 3},
-					"led_aura" : {"bit" : 4}
+					"led_aura" : {"bit" : 4},
+					"led_night_mode" : {"bit" : 5},
+					"central_led_on_off" : {"bit" : 6}
 				}
 			},
 			"reboot_ctl" : {

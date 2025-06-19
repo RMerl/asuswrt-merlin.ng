@@ -693,6 +693,17 @@ static int rctest_main(int argc, char *argv[])
 		bcm_cled_ctrl_single_white(led, mode);
 	}
 #endif
+#if defined(GTBE19000AI) || defined(GTBE96_AI)
+	else if (strcmp(argv[1], "cled_single")==0) {
+		unsigned int led, mode, bright;
+
+		led = atoi(argv[2]);
+		mode = atoi(argv[3]);
+		bright = atoi(argv[4]);
+		_dprintf("set Cled_SINGLE %d as %d with bright %d\n", led, mode, bright);
+		bcm_cled_ctrl_single_led(led, mode, bright);
+	}
+#endif
 #endif
 #ifdef HND_ROUTER
 	else if (strcmp(argv[1], "dump_defaults")==0) {
@@ -1446,6 +1457,9 @@ static int rctest_main(int argc, char *argv[])
 		extern int amas_cd_ipc_send_event(const char *ipc_path, char *data);
 		amas_cd_ipc_send_event(CONNDIAG_IPC_SOCKET_PATH,value);
 	}
+	else if (strcmp(argv[1], "diag_reinit_bssinfo")==0) {
+		send_reinit_bssinfo_to_conn_diag();
+	}
 #endif
 #if defined(RTCONFIG_TRUSTZONE)
 	else if (strcmp(argv[1], "atee")==0) {
@@ -2068,6 +2082,15 @@ static int rctest_main(int argc, char *argv[])
 			json_object_put(root);
 
 			rc_sendEventToRast(json_data);
+		}
+#endif
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+		else if (strcmp(argv[1], "mxl_fw_check") == 0) {
+			stop_mxlmonitor();
+			mxl_fw_check();
+		}
+		else if (strcmp(argv[1], "mem_leak_dbg") == 0) {
+			memleakdbg();
 		}
 #endif
 		else {
@@ -2721,6 +2744,9 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_NORDVPN
 	{ "nordvpn",			nordvpn_main				},
 #endif
+#ifdef RTCONFIG_SURFSHARK
+	{ "surfshark",			surfshark_main				},
+#endif
 #endif
 #ifdef RTCONFIG_EAPOL
 	{ "wpa_cli",			wpacli_main			},
@@ -2889,6 +2915,9 @@ static const applets_t applets[] = {
 #if defined(RTCONFIG_FRS_LIVE_UPDATE)
 	{ "firmware_check_update",	firmware_check_update_main	},
 #endif
+#ifdef RTCONFIG_CFGSYNC
+	{ "firmware_webs_update",	firmware_webs_update_main	},
+#endif
 #ifdef RTCONFIG_FRS_FEEDBACK
 	{ "sendfeedback",	start_sendfeedback },
 #endif
@@ -2896,10 +2925,10 @@ static const applets_t applets[] = {
 	{ "firmware_enc_crc",		firmware_enc_crc_main		},
 	{ "fw_check",			fw_check_main			},
 #endif
-#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
+#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
 	{ "ledg",			ledg_main			},
 #endif
-#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	{ "ledbtn",			ledbtn_main			},
 #endif
 #if defined(DSL_AX82U)
@@ -2911,8 +2940,14 @@ static const applets_t applets[] = {
 #if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	{ "rtkmonitor",			rtkmonitor_main			},
 #endif
-#if defined(RTBE82M)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	{ "mxlmonitor",			mxlmonitor_main			},
+#endif
+#if defined(GT7)
+	{ "ext84991",			ext84991_main			},
+#endif
+#if defined(RTBE92U)
+	{ "tempsense",			tempsense_main			},
 #endif
 #ifdef BUILD_READMEM
 	{ "readmem",			readmem_main			},
@@ -4012,13 +4047,13 @@ int main(int argc, char **argv)
 
 		return 0;
 	}
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO)  || defined(GTBE96_AI)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI)
 	else if (!strcmp(base, "config_switch")) {
 		config_switch();
 		return 0;
 	}
 #endif
-#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG) && (defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U)) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
+#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG) && (defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U)) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7)
 	else if (!strcmp(base, "config_extwan")) {
 		config_extwan();
 		return 0;

@@ -156,7 +156,6 @@ i.icon-clone {
   border-style: solid;
   border-color: black transparent transparent transparent;
 }
-
 </style>
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/md5.js"></script>
@@ -477,7 +476,6 @@ function initial(){
 		}
 	}
 
-
 	document.list_form.dhcp_staticlist.value = dhcp_staticlist_orig;
 	document.list_form.MULTIFILTER_ENABLE.value = MULTIFILTER_ENABLE_orig;
 	document.list_form.MULTIFILTER_MAC.value = MULTIFILTER_MAC_orig;
@@ -558,8 +556,6 @@ function initial(){
 		});
 	}
 }
-
-
 
 function show_smart_connect_status(){
 	document.getElementById("SmartConnectName").style.display = "";
@@ -693,7 +689,7 @@ function show_middle_status(auth_mode, wl_wep_x){
 				break;
 		case "owe":
 				security_mode = "Enhanced Open";
-				break;				
+				break;
 		case "shared":
 				security_mode = "Shared Key";
 				break;
@@ -725,7 +721,7 @@ function show_middle_status(auth_mode, wl_wep_x){
 		case "suite-b":
 				security_mode = "WPA3-Enterprise 192-bit";
 				document.getElementById("wl_securitylevel_span").style.fontSize = "16px";
-				break;			
+				break;
 		case "wpawpa2":
 				security_mode = "WPA-Auto-Enterprise";
 				document.getElementById("wl_securitylevel_span").style.fontSize = "16px";
@@ -733,14 +729,14 @@ function show_middle_status(auth_mode, wl_wep_x){
 		case "wpa2wpa3":
 				security_mode = "WPA2/WPA3-Enterprise";
 				document.getElementById("wl_securitylevel_span").style.fontSize = "16px";
-				break;		
+				break;
 		case "radius":
 				security_mode = "Radius with 802.1x";
 				document.getElementById("wl_securitylevel_span").style.fontSize = "16px";
 				break;
 		case "unknown":
 				security_mode = "<#CTL_Disconnect#>";
-				break;				
+				break;
 		default:
 				security_mode = "Unknown Auth";	
 	}
@@ -1196,15 +1192,7 @@ function validForm(){
 	var validateIpRange = function(ip_obj){
 		var retFlag = 1
 		var ip_num = inet_network(ip_obj.value);
-		
 		if(ip_num <= 0){
-			alert(ip_obj.value+" <#JS_validip#>");
-			ip_obj.value = document.getElementById("ipaddr_field_orig").value;
-			ip_obj.focus();
-			retFlag = 0;
-		}
-		else if(ipBindingFlag && (ip_num <= getSubnet('<% nvram_get("lan_ipaddr"); %>', '<% nvram_get("lan_netmask"); %>', "head") ||
-			 ip_num >= getSubnet('<% nvram_get("lan_ipaddr"); %>', '<% nvram_get("lan_netmask"); %>', "end"))){
 			alert(ip_obj.value+" <#JS_validip#>");
 			ip_obj.value = document.getElementById("ipaddr_field_orig").value;
 			ip_obj.focus();
@@ -1215,20 +1203,40 @@ function validForm(){
 			ip_obj.focus();
 			retFlag = 0;
 		}
-
-		document.list_form.dhcp_staticlist.value.split("<").forEach(function(element, index){
-			var existMac = element.split(">")[0];
-			var existIP = element.split(">")[1];
-			if(existIP == document.getElementById("ipaddr_field").value) {
-				if(existMac != document.getElementById("macaddr_field").value) {
-					alert("<#JS_duplicate#>");
-					ip_obj.value = document.getElementById("ipaddr_field_orig").value;
-					ip_obj.focus();
-					retFlag = 0;
-				}
+		else if (ipBindingFlag) {
+			const clientMac = document.getElementById('macaddr_field').value.toUpperCase();
+			const client_sdn_idx = document.getElementById('client_sdnIdx').getAttribute('client_sdn_idx');
+			const specific_sdn = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx.toString() === client_sdn_idx.toString());
+			const lan_ipaddr = specific_sdn ? specific_sdn.subnet_rl.addr : `<% nvram_get("lan_ipaddr"); %>`;
+			const lan_netmask = specific_sdn ? specific_sdn.subnet_rl.netmask : `<% nvram_get("lan_netmask"); %>`;
+			if (ip_num <= getSubnet(lan_ipaddr, lan_netmask, "head") || ip_num >= getSubnet(lan_ipaddr, lan_netmask, "end")) {
+				alert(ip_obj.value+" <#JS_validip#>");
+				ip_obj.value = document.getElementById("ipaddr_field_orig").value;
+				ip_obj.focus();
+				retFlag = 0;
 			}
-		});
-		
+
+			const manually_dhcp_list = (()=>{
+				const subnet_idx = specific_sdn && specific_sdn.sdn_rl.subnet_idx !== "0" && specific_sdn.sdn_rl.subnet_idx !== "" 
+					? specific_sdn.sdn_rl.subnet_idx 
+					: "0";
+				return subnet_idx === "0"
+					? dhcp_staticlist_orig
+					: decodeURIComponent(httpApi.nvramCharToAscii([`dhcpres${subnet_idx}_rl`])[`dhcpres${subnet_idx}_rl`]);
+			})();
+			manually_dhcp_list.split("<").forEach(function(element, index){
+				var existMac = element.split(">")[0];
+				var existIP = element.split(">")[1];
+				if(existIP == document.getElementById("ipaddr_field").value) {
+					if(existMac.toUpperCase() != clientMac.toUpperCase()) {
+						alert("<#JS_duplicate#>");
+						ip_obj.value = document.getElementById("ipaddr_field_orig").value;
+						ip_obj.focus();
+						retFlag = 0;
+					}
+				}
+			});
+		}
 		return retFlag;
 	}
 
@@ -1313,62 +1321,88 @@ function edit_confirm(){
 		document.list_form.custom_clientlist.value = custom_name;
 
 		// static IP list
+		const client_sdn_idx = document.getElementById('client_sdnIdx').getAttribute('client_sdn_idx');
+		const specific_sdn = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx.toString() === client_sdn_idx.toString());
+		const subnet_idx = specific_sdn && specific_sdn.sdn_rl.subnet_idx !== "0" && specific_sdn.sdn_rl.subnet_idx !== ""
+			? specific_sdn.sdn_rl.subnet_idx
+			: "0";
+		const isMainNetwork = subnet_idx === "0";
+		const manually_dhcp_list = isMainNetwork
+			? document.list_form.dhcp_staticlist.value
+			: decodeURIComponent(httpApi.nvramCharToAscii([`dhcpres${subnet_idx}_rl`])[`dhcpres${subnet_idx}_rl`]);
+		let final_manually_dhcp_list = "";
 		if(ipBindingFlag) {
-			if(document.list_form.dhcp_staticlist.value.indexOf(clientMac) == -1){//new
-				document.list_form.dhcp_staticlist.value += "<";
-				document.list_form.dhcp_staticlist.value += clientMac;
-				document.list_form.dhcp_staticlist.value += ">";
-				document.list_form.dhcp_staticlist.value += document.getElementById("ipaddr_field").value;
-				document.list_form.dhcp_staticlist.value += ">";
-				document.list_form.dhcp_staticlist.value += "";//ddns
-				document.list_form.dhcp_staticlist.value += ">";
-				document.list_form.dhcp_staticlist.value += "";//hostname
+			if(manually_dhcp_list.indexOf(clientMac) == -1){//new
+					final_manually_dhcp_list = manually_dhcp_list;
+					final_manually_dhcp_list += `<${clientMac}>${document.getElementById("ipaddr_field").value}>>`;
 			}
 			else{//update
-				var dhcp_staticlist_temp = "";
-				document.list_form.dhcp_staticlist.value.split("<").forEach(function(element, index){
+				manually_dhcp_list.split("<").forEach(function(element, index){
 					if(element != ""){
 						if(element.indexOf(clientMac) != -1){
 							var client_array = element.split(">");
 							var mac = client_array[0];
 							if(mac == clientMac){
-								var ip = document.getElementById("ipaddr_field").value;
-								var dns = (client_array[2] == undefined) ? "" : client_array[2];
-								var hostname = (client_array[3] == undefined) ? "" : client_array[3];
-								dhcp_staticlist_temp += "<" + mac + ">" + ip + ">" + dns + ">" + hostname;
+								const ip = document.getElementById("ipaddr_field").value;
+								const dns = (client_array[2] == undefined) ? "" : client_array[2];
+								const hostname = (client_array[3] == undefined) ? "" : client_array[3];
+								final_manually_dhcp_list += "<" + mac + ">" + ip + ">" + dns + ">" + hostname;
 							}
 						}
 						else
-							dhcp_staticlist_temp += "<" + element;
+							final_manually_dhcp_list += "<" + element;
 					}
 				});
-				document.list_form.dhcp_staticlist.value = dhcp_staticlist_temp;
 			}
 		}
 		else{
-			document.list_form.dhcp_staticlist.value.split("<").forEach(function(element, index){
-				if(element.indexOf(document.getElementById('macaddr_field').value.toUpperCase()) != -1){
-					var tmpArray = document.list_form.dhcp_staticlist.value.split("<")
-					tmpArray.splice(index, 1);
-					document.list_form.dhcp_staticlist.value = tmpArray.join("<");
-				}
-			})
+			final_manually_dhcp_list = manually_dhcp_list.split('<').filter(function(element) {
+			 return element.indexOf(clientMac) === -1;
+			}).join('<');
 		}
-		if(document.list_form.dhcp_staticlist.value == dhcp_staticlist_orig || sw_mode != "1"){
+
+		if(final_manually_dhcp_list === manually_dhcp_list || sw_mode != "1"){
 			document.list_form.action_script.value = "saveNvram";
 			document.list_form.action_wait.value = "1";
 			document.list_form.flag.value = "background";
 			document.list_form.dhcp_staticlist.disabled = true;
 			document.list_form.dhcp_static_x.disabled = true;
-			dhcp_staticlist_orig = document.list_form.dhcp_staticlist.value;
+			if (isMainNetwork) {
+				dhcp_staticlist_orig = document.list_form.dhcp_staticlist.value = final_manually_dhcp_list;
+			}
 		}
 		else {
 			document.list_form.action_script.value = "restart_dnsmasq";
 			document.list_form.action_wait.value = "5";
 			document.list_form.flag.value = "";
-			document.list_form.dhcp_staticlist.disabled = false;
 			document.list_form.dhcp_static_x.value = 1;
 			document.list_form.dhcp_static_x.disabled = false;
+			if (isMainNetwork) {
+				dhcp_staticlist_orig = document.list_form.dhcp_staticlist.value = final_manually_dhcp_list;
+				document.list_form.dhcp_staticlist.disabled = false;
+			}
+			else {
+				document.list_form.dhcp_staticlist.disabled = true;
+				const dhcp_static = final_manually_dhcp_list === '' ? "0" : "1";
+				const dhcp_unit = dhcp_static === '1' ? subnet_idx : "";
+				let subnet_rl = decodeURIComponent(httpApi.nvramCharToAscii(["subnet_rl"]).subnet_rl);
+				let subnetArray = subnet_rl.split('<').filter(part => part !== '');
+				for (let i = 0; i < subnetArray.length; i++) {
+					let parts = subnetArray[i].split('>');
+					if (parts[0] === subnet_idx) {
+						parts[11] = dhcp_static;
+						parts[12] = dhcp_unit;
+						subnetArray[i] = parts.join('>');
+					}
+				}
+				subnet_rl = '<' + subnetArray.join('<');
+				let nvramSet_obj = {"action_mode": "apply"};
+				nvramSet_obj[`dhcpres${subnet_idx}_rl`] = final_manually_dhcp_list;
+				nvramSet_obj[`subnet_rl`] = subnet_rl;
+				httpApi.nvramSet(nvramSet_obj, () => {
+					httpApi.nvramGet([`dhcpres${subnet_idx}_rl`, `subnet_rl`], true);
+				});
+			}
 		}
 
 		if(sw_mode == "1" && !clientList[document.getElementById("macaddr_field").value].amesh_isRe)
@@ -1396,7 +1430,7 @@ function edit_confirm(){
 			document.list_form.flag.value = "";
 			if(document.list_form.action_script.value == "restart_net_and_phy") {
 				document.list_form.action_script.value += ";restart_firewall";
-				document.list_form.action_wait.value = "35";
+				document.list_form.action_wait.value = httpApi.hookGet("get_default_reboot_time");
 			}
 			else {
 				document.list_form.action_script.value = "restart_firewall";
@@ -1749,10 +1783,13 @@ function popupEditBlock(clientObj){
 		}
 		if(clientObj.sdn_idx > 0) {
 			document.getElementById('client_sdnIdx').style.display = "";
-			document.getElementById('client_sdnIdx').innerHTML = "SDN " + sdn_rl_for_clientlist[clientObj.sdn_idx].apg_rl.ssid;
-            $('#tr_adv_setting').hide();
-		}else{
-            $('#tr_adv_setting').show();
+			const sdn_profile = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx == clientObj.sdn_idx) || {};
+			const sdn_ssid = $.isEmptyObject(sdn_profile) ? "" : sdn_profile.apg_rl.ssid;
+			document.getElementById('client_sdnIdx').innerHTML = "SDN " + sdn_ssid;
+			document.getElementById('client_sdnIdx').setAttribute('client_sdn_idx', clientObj.sdn_idx);
+		}
+		else {
+			document.getElementById('client_sdnIdx').setAttribute('client_sdn_idx', '0');
 		}
 
 		if(clientObj.opMode != 0) {
@@ -1804,17 +1841,30 @@ function popupEditBlock(clientObj){
 			}
 		}
 	
+		const specific_sdn = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx.toString() === clientObj.sdn_idx.toString());
+		const subnet_idx = specific_sdn && specific_sdn.sdn_rl.subnet_idx !== "0" && specific_sdn.sdn_rl.subnet_idx !== "" 
+			? specific_sdn.sdn_rl.subnet_idx 
+			: "0";
+		const isMainNetwork = subnet_idx === "0";
+		const manually_dhcp_list = isMainNetwork
+			? dhcp_staticlist_orig
+			: decodeURIComponent(httpApi.nvramCharToAscii([`dhcpres${subnet_idx}_rl`])[`dhcpres${subnet_idx}_rl`]);
 		var setRadioIPBinding = function (state, mode, mac) {
-			const manually_dhcp_maximum  = (isSupport("MaxRule_extend_limit") == 0) ? 64: isSupport("MaxRule_extend_limit");
+			const manually_dhcp_maximum = (()=>{
+				const maxRuleLimit = isSupport("MaxRule_extend_limit") == 0 ? 64 : isSupport("MaxRule_extend_limit");
+				return isMainNetwork ? maxRuleLimit : 32;
+			})();
+
+			const manually_dhcp_list_num = manually_dhcp_list.split("<").length - 1;
 			const parentctrl_maximum = (isSupport("MaxRule_parentctrl") == 0) ? 16 : isSupport("MaxRule_parentctrl");
 			switch (mode) {
 				case "ipBinding" :
 					$('#radio_IPBinding_enable').iphoneSwitch(state,
 						function(){
-							if(dhcp_staticlist_orig.search(mac) == -1) {
-								if(dhcp_staticlist_num >= manually_dhcp_maximum) {
+							if(manually_dhcp_list.search(mac) == -1) {
+								if(manually_dhcp_list_num >= manually_dhcp_maximum) {
 									if(confirm(stringSafeGet("<#Clientlist_IPMAC_Binding_max#>".replace("64", manually_dhcp_maximum)))) {
-										location.href = "Advanced_DHCP_Content.asp" ;
+										location.href = isMainNetwork ? "Advanced_DHCP_Content.asp" : "SDN.asp";
 									}
 									else {
 										document.getElementById("ipaddr_field").value = document.getElementById("ipaddr_field_orig").value;
@@ -1883,7 +1933,7 @@ function popupEditBlock(clientObj){
 			}
 		};
 
-		if(dhcp_staticlist_orig.search(clientObj.mac + ">" + clientObj.ip) != -1) { //check mac>ip is combination the the radio_IPBinding_enable is manual
+		if(manually_dhcp_list.search(clientObj.mac + ">" + clientObj.ip) != -1) { //check mac>ip is combination the the radio_IPBinding_enable is manual
 			setRadioIPBinding(1, "ipBinding", clientObj.mac);
 			ipBindingFlag = true;
 		}
@@ -2680,8 +2730,7 @@ function showClientlistModal(){
 							<strong id="wan_bonding_status" class="index_status" style="font-size:14px;"></strong>
 						</div>
 					</td>
-						
-				</tr>			
+				</tr>
 				<tr>
 					<!--==line of dual wan==-->
 					<td id="primary_wan_line"  height="35px" style="display:none;">
@@ -2697,7 +2746,7 @@ function showClientlistModal(){
 				</tr>			
 				<tr>
 					<td align="right" bgcolor="#444f53" class="NM_radius_left" onclick="showstausframe('Router');" style="height:150px">
-						<a href="device-map/router.asp" target="statusframe"><div id="iconRouter" onclick="clickEvent(this);"></div></a>
+						<a id="iconRouterLink" href="device-map/router.asp" target="statusframe"><div id="iconRouter" onclick="clickEvent(this);"></div></a>
 					</td>
 					<td colspan="2" valign="middle" bgcolor="#444f53" class="NM_radius_right" onclick="showstausframe('Router');">
 						<div>
@@ -2722,7 +2771,6 @@ function showClientlistModal(){
 							<strong class="index_status"><#OP_MB_item#></strong>
 						</div>
 					</td>
-
 				</tr>			
 				<tr>
 					<td id="line3_td" colspan="3" align="center" height="35px">
@@ -2782,26 +2830,30 @@ function showClientlistModal(){
 					<td valign="top">
 						<div class="statusTitle" id="statusTitle_NM">
 							<div id="helpname" style="padding-top:10px;font-size:16px;"></div>
-						</div>							
+						</div>
 						<div class="NM_radius_bottom_container">
 							<iframe id="statusframe" class="NM_radius_bottom" style="display:none;margin-left:0px;height:760px;width:320px;\9" name="statusframe" frameborder="0"></iframe>
 						</div>
-
 						<script>
 							(function(){
+								const defaultRouterFrame = "/device-map/router_status.asp";
+								document.getElementById("iconRouterLink").href = defaultRouterFrame;
 								setTimeout(function(){
-									$('#statusframe').attr('src', '/device-map/router_status.asp').show();
+									const statusframe_src = isSwMode("re") ? "/device-map/internet.asp" : defaultRouterFrame;
+									$('#statusframe').attr('src', statusframe_src).show();
 									const get_header_info = httpApi.hookGet("get_header_info");
 									const domain = `${get_header_info.protocol}://${get_header_info.host}`;
 									const domain_w_port = `${get_header_info.protocol}://${get_header_info.host}:${get_header_info.port}`;
 
 									let messageTimeout;
 									messageTimeout = setTimeout(() => {
-										document.getElementById("statusframe").src = "/device-map/router_status.asp";
+										if($('#statusframe').attr('src') === statusframe_src)
+											$('#statusframe').attr('src', statusframe_src);
 									}, 5000);
 
 									window.addEventListener('message', function(event){
-										if(event.data == `router_status.asp`){
+										const msg_page = isSwMode("re") ? "internet.asp" : "router_status.asp";
+										if(event.data == msg_page){
 											const has_port = /:\d+$/.test(event.origin);
 											if(has_port){
 												if(event.origin !== domain_w_port){
@@ -2814,21 +2866,21 @@ function showClientlistModal(){
 												}
 											}
 											clearTimeout(messageTimeout);
-											$("#statusframe").show()
-												.off('load').on("load", function(){
-													const $statusframe = $(this);
-													$statusframe.show();
-													$statusframe[0].contentWindow.onbeforeunload = function(){
-														$statusframe.hide();
-													};
-												});
 										}
 									});
 								}, 1);
+
+								$("#statusframe").show()
+									.off('load').on("load", function(){
+										const $statusframe = $(this);
+										$statusframe.show();
+										$statusframe[0].contentWindow.onbeforeunload = function(){
+											$statusframe.hide();
+										};
+									});
 							})()
 						</script>
-
-					</td>	
+					</td>
 				</tr>
 			</table>
 			</div>

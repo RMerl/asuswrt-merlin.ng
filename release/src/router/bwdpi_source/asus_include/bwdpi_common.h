@@ -132,6 +132,7 @@
 #define BWDPI_MON_VP    BWDPI_MON_DIR"/AiProtectionMonitorVPevent.txt"
 #define BWDPI_MON_MALS  BWDPI_MON_DIR"/AiProtectionMonitorMALSevent.txt"
 #define BWDPI_CC_EVENT  BWDPI_MON_DIR"/CCevent.log"
+#define BWDPI_MALS_EVENT  BWDPI_MON_DIR"/MALSevent.log"
 
 // Avoid the trigger event loop issue, add a copy file for nt_center usage
 #define NT_MON_CC    BWDPI_MON_DIR"/NT-AiMonitorCCevent.txt"

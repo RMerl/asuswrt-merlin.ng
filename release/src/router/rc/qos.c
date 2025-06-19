@@ -110,6 +110,7 @@ static void add_iptables_AMAS_WGN(FILE *fn, const char *action)
 			if(nvram_get_int(strcat_r(wlv, "_bss_enabled", tmp)) && 
 			   nvram_get_int(strcat_r(wlv, "_bw_enabled" , tmp))) {
 				wl_vif_to_subnet(wlv, net, sizeof(net)); // shared/misc.c
+				g_mark = guest_mark_calc(guest_mark);
 				snprintf(mssid_mark, sizeof(mssid_mark), "%d", g_mark);
 				if (!strcmp(net, "")) continue;
 				fprintf(fn, "-A PREROUTING -s %s -j %s %s\n", net, action, mssid_mark);
@@ -367,8 +368,8 @@ static unsigned calc(unsigned bw, unsigned pct)
 void del_EbtablesRules(void)
 {
 	/* Flush all rules in nat table of ebtable*/
-	if (module_loaded("ebtable_nat"))
-		eval("ebtables", "-t", "nat", "-F");
+	eval("ebtables", "-t", "nat", "-F");
+
 	etable_flag = 0;
 }
 
@@ -479,6 +480,7 @@ void add_EbtablesRules_BW()
 			   nvram_get_int(strcat_r(wlv, "_bw_enabled" , tmp))) {
 				WGN_ifname(i, j, wl_if);
 				if (!strcmp(wl_if, "")) continue;
+				g_mark = guest_mark_calc(guest_mark);
 				snprintf(mssid_mark, sizeof(mssid_mark), "%d", g_mark);
 				eval("ebtables", "-t", "nat", "-D", "PREROUTING",  "-i", wl_if, "-j", "mark", "--set-mark", mssid_mark, "--mark-target", "ACCEPT");
 				eval("ebtables", "-t", "nat", "-D", "POSTROUTING", "-o", wl_if, "-j", "mark", "--set-mark", mssid_mark, "--mark-target", "ACCEPT");
@@ -1708,6 +1710,7 @@ static int start_bandwidth_limiter(void)
 
 				QOSDBG("[BWLIT_GUEST] Processor [%s] Interface \n", wl_if);
 
+				g_mark = guest_mark_calc(guest_mark);
 				fprintf(f,
 					"\n"
 					"\ttc qdisc del dev %s root 2>/dev/null\n"
@@ -1857,6 +1860,7 @@ static int start_bandwidth_limiter_AMAS_WGN(void)
 			QOSDBG("[BWLIT_GUEST] Processor [%s] Interface \n", wl_if);
 			if (!strcmp(wl_if, "")) continue;
 
+			g_mark = guest_mark_calc(guest_mark);
 			fprintf(f, "\n"
 				   "\ttc qdisc del dev %s root 2>/dev/null\n", wl_if);
 			fprintf(f, "\tGUEST%d%d=%s\n", i, j, wl_if);

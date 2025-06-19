@@ -209,9 +209,9 @@ function get_lanport_list(){
 					else{
 						if(port_info[index].max_rate == "2500"){
 							if(parseInt(label_idx) > 0)
-								lanport_list.text_arr.push("2.5G/1G LAN" + label_idx);
+								lanport_list.text_arr.push("2.5G LAN" + label_idx);
 							else
-								lanport_list.text_arr.push("2.5G/1G LAN");
+								lanport_list.text_arr.push("2.5G LAN");
 						}
 						else if(port_info[index].max_rate == "10000"){
 							if(parseInt(label_idx) > 0)
@@ -1097,16 +1097,15 @@ function applyRule(){
 		}
 	}
 
-	/* Port Conflict Check */
-	if(document.form.wans_dualwan.value.indexOf("lan") != -1 ){
-		// Check Bonding port conflict
+	/* LACP Port Conflict Check */
+	if(lacp_support && lacp_enabled == "1" && document.form.wans_dualwan.value.indexOf("lan") != -1)
+	{
+		let lan_port_num = document.form.wans_lanport.value;
 		conflict_ports = "";
-		if(lacp_support && lacp_enabled == "1"){
-			for(let i = 0; i < bonding_port_settings.length; i++){
-				if((document.form.wans_dualwan.value.indexOf("lan") != -1 && lan_port_num == bonding_port_settings[i].val) || (wan_lanport_num == bonding_port_settings[i].val)){
-					conflict_func = "<#NAT_lacp#>";
-					conflict_ports = bonding_port_settings[i].text.toUpperCase();
-				}
+		for(let i = 0; i < bonding_port_settings.length; i++){
+			if(lan_port_num == bonding_port_settings[i].val){
+				conflict_func = "<#NAT_lacp#>";
+				conflict_ports = bonding_port_settings[i].text.toUpperCase();
 			}
 		}
 	}

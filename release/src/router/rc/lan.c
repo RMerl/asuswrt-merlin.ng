@@ -1675,7 +1675,7 @@ void start_lan(void)
 #ifdef RTAC87U
 		eval("brctl", "stp", lan_ifname, nvram_safe_get("lan_stp"));
 #else
-#if !defined(HND_ROUTER) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RPBE58) || defined(GSBE18000) || defined(GS7_PRO)
+#if !defined(HND_ROUTER) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RPBE58) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 		if (is_routing_enabled()
 #if defined(RPBE58)
 		//|| !nvram_match("re_mode", "1")
@@ -6185,7 +6185,7 @@ void lanaccess_wl(void)
 #elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	if (is_rtl8372_boardid())
 		start_rtkmonitor();
-#elif defined(RTBE82M)
+#elif defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	start_mxlmonitor();
 #endif
 
@@ -6426,10 +6426,6 @@ void start_fbwifi_config()
 }
 #endif
 
-#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
-extern int restart_wireless_g;
-#endif
-
 void restart_wireless(void)
 {
 #ifdef RTCONFIG_WIRELESSREPEATER
@@ -6440,6 +6436,11 @@ void restart_wireless(void)
 #if defined(RTCONFIG_RALINK) && defined(RTCONFIG_AMAS_WDS)
 	char vif[64],prefix[sizeof("wlX_XXX")],word[16], *next, tmp[64];
 	int unit;
+#endif
+
+#if defined(RTCONFIG_AMAS)
+	char amas_wlc_last_pap[] = "amas_wlcXXX_last_pap", amas_wlc_pap[] = "amas_wlcXXX_pap", amas_wlc_try_target_bssid[] = "amas_wlcXXX_try_target_bssid";
+	int len_of_target_bssid = 0, k = 0;
 #endif
 
 
@@ -6480,6 +6481,16 @@ void restart_wireless(void)
 
 #ifdef RTCONFIG_AMAS
 	if (nvram_get_int("re_mode") == 1) {
+		len_of_target_bssid = strlen(nvram_safe_get("amas_wlc_target_bssid"));
+		for(k=0; k<num_of_wl_if(); k++)
+		{
+			snprintf(amas_wlc_last_pap, sizeof(amas_wlc_last_pap), "amas_wlc%d_last_pap", k);
+			snprintf(amas_wlc_pap, sizeof(amas_wlc_pap), "amas_wlc%d_pap", k);
+			snprintf(amas_wlc_try_target_bssid, sizeof(amas_wlc_try_target_bssid), "amas_wlc%d_try_target_bssid", k);
+			nvram_set(amas_wlc_last_pap, nvram_safe_get(amas_wlc_pap));
+			if(len_of_target_bssid > 0) // has prefer AP
+				nvram_set_int(amas_wlc_try_target_bssid, 1);
+		}
 		stop_amas_wlcconnect();
 		stop_amas_bhctrl();
 #ifdef RTCONFIG_BHCOST_OPT
@@ -6567,14 +6578,8 @@ void restart_wireless(void)
 		wl_defaults_wps();
 	}
 
-#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
-	if (!restart_wireless_g && nvram_get_int("x_Setting") && nvram_get_int("ed_thresh_reload") &&
-		 ((re_mode() && !is_CN_sku()) || (!re_mode() && (!is_CN_sku() || !nvram_match("location_code", "XX"))))) {
-		restart_wireless_g = 1;
-
-		unload_wl();
-		load_wl();
-	}
+#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+	reload_wl_check();
 #endif
 
 #ifndef CONFIG_BCMWL5
@@ -6799,6 +6804,9 @@ void restart_wireless(void)
 #endif
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
 	start_roamast();
+#endif
+#ifdef RTCONFIG_CONNDIAG
+	send_reinit_bssinfo_to_conn_diag();
 #endif
 #if defined(RTCONFIG_RALINK_MT7621) || defined(RTCONFIG_RALINK_MT7629) || defined(RTCONFIG_RALINK_MT7622) || defined(RTCONFIG_MT798X)
 	setup_smp(0);	/* for adjust smp_affinity of cpu */

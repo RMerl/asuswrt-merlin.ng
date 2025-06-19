@@ -363,7 +363,7 @@ start_wps_method(void)
 	char ifname[NVRAM_MAX_PARAM_LEN];
 	char word[256], *next;
 	int unit;
-#if (defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 	int band;
 #endif
 
@@ -451,7 +451,7 @@ start_wps_method(void)
 				start_wps_pbcd();
 
 			foreach (word, nvram_safe_get("wl_ifnames"), next) {
-#if (defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 				wl_ioctl(word, WLC_GET_BAND, &band, sizeof(band));
 				if (band == WLC_BAND_6G)
 					continue;

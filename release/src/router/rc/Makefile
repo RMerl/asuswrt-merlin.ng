@@ -179,6 +179,9 @@ CFLAGS += -I$(SRCBASE)/common/include
 ifneq ($(findstring CONFIG_DUMP_PREV_OOPS_MSG=, $(shell cat $(LINUXDIR)/.config)),)
 CFLAGS += -DDUMP_PREV_OOPS_MSG
 endif
+ifneq ($(findstring CONFIG_DEBUG_KMEMLEAK=, $(shell cat $(LINUXDIR)/.config)),)
+CFLAGS += -DDEBUG_KMEMLEAK
+endif
 LDFLAGS += -L$(TOP)/libbcm -lbcm
 LDFLAGS += -lgcc_s
 ifeq ($(RTCONFIG_QTN),y)
@@ -276,6 +279,7 @@ CFLAGS  += -I$(TOP)/sqlite
 CFLAGS  += -I$(TOP)/nt_center/lib
 CFLAGS  += -I$(TOP)/nt_center/actMail
 CFLAGS  += -DASUSWRT_SDK
+LDFLAGS += -L$(TOP)/sqlite/.libs -lsqlite3 -L$(TOP)/nt_center/lib -lnt
 endif
 
 ifeq ($(RTCONFIG_ASD),y)
@@ -822,8 +826,8 @@ ifeq ($(or $(RTCONFIG_FRS_LIVE_UPDATE),$(RTCONFIG_FRS_FEEDBACK),$(RTCONFIG_URLFW
 CFLAGS += -I$(TOP)/curl-7.21.7/include
 LDFLAGS += -L$(TOP)/curl-7.21.7/lib/.libs -lcurl
 ifeq ($(RTCONFIG_TR069),y)
-CFLAGS += -I$(TOP)/libssh2-1.10.0/include -I$(TOP)/zlib/include
-LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2 -L$(TOP)/zlib -lz
+CFLAGS += -I$(TOP)/libssh2/include -I$(TOP)/zlib/include
+LDFLAGS += -L$(TOP)/libssh2/src/.libs -lssh2 -L$(TOP)/zlib -lz
 endif
 endif
 
@@ -1156,15 +1160,18 @@ endif
 DIAG_OBJS += conn_diag-sql.o
 DIAG_OBJS += conn_diag_log.o
 endif
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE92U))
+OBJS += tempsense.o
+endif
 
 ifeq ($(BUILD_NAME), GT10)
 export GT10=y
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-AX6000 GT10 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GS-BE18000 GS7_PRO GT-BE96_AI))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-AX6000 GT10 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GS-BE18000 GS-BE12000 GS7_PRO GT7 GT-BE96_AI))
 LDFLAGS += -lm
 OBJS += ledg.o
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-AX6000 GT10 GS-BE18000 GS7_PRO))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-AX6000 GT10 GS-BE18000 GS-BE12000 GS7_PRO GT7))
 OBJS += ledbtn.o
 endif
 endif
@@ -1181,8 +1188,11 @@ endif
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 RT-BE58U TUF-BE3600 RT-BE58U_V2 TUF-BE3600_V2 RT-BE55 RT-BE92U RT-BE95U RT-BE82U TUF-BE82 RT-BE58U_PRO GT-BE19000AI GT-BE96_AI))
 OBJS += rtkmonitor.o
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS7_PRO))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 OBJS += mxlmonitor.o
+endif
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT7))
+OBJS += ext84991.o
 endif
 
 OBJS += dhcpc_vc_query.o
@@ -1231,7 +1241,7 @@ CFLAGS += -I$(TOP)/ateed/
 LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS7_PRO))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 CFLAGS += -I$(TOP)/libhostapi/switch_hostapi/src \
 	  -I$(TOP)/libhostapi/switch_hostapi/include/gpy \
 	  -I$(TOP)/libhostapi/switch_hostapi/include/gswip
@@ -1468,8 +1478,14 @@ endif
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 RT-BE58U TUF-BE3600 RT-BE58U_V2 TUF-BE3600_V2 RT-BE55 RT-BE92U RT-BE95U RT-BE82U TUF-BE82 RT-BE58U_PRO GT-BE19000AI GT-BE96_AI))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rtkmonitor
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS7_PRO))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc mxlmonitor
+endif
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT7))
+	@cd $(INSTALLDIR)/sbin && ln -sf rc ext84991
+endif
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE92U))
+	@cd $(INSTALLDIR)/sbin && ln -sf rc tempsense
 endif
 ifeq ($(RTCONFIG_QCA),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rtkswitch
@@ -1525,10 +1541,10 @@ endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc restart_wireless
 	@cd $(INSTALLDIR)/sbin && ln -sf rc wpasupp
 	@cd $(INSTALLDIR)/sbin && ln -sf rc wlconf_pre
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX55 RT-AX1800 RT-AX58U_V2 RT-AX3000N BR63 GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 RT-BE58U_V2 TUF-BE3600_V2 RT-BE55 GT-BE19000 RT-BE92U RT-BE95U RT-BE82U TUF-BE82 RT-BE58U_PRO GT-BE19000AI RT-BE82M GS-BE18000 GS7_PRO GT-BE96_AI))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX55 RT-AX1800 RT-AX58U_V2 RT-AX3000N BR63 GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 RT-BE58U_V2 TUF-BE3600_V2 RT-BE55 GT-BE19000 RT-BE92U RT-BE95U RT-BE82U TUF-BE82 RT-BE58U_PRO GT-BE19000AI RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7 GT-BE96_AI))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc config_switch
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 RT-BE58U_V2 TUF-BE3600_V2 GT-BE19000 RT-BE92U RT-BE95U RT-BE82U TUF-BE82 RT-BE58U_PRO GT-BE19000AI GT-BE96_AI))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 RT-BE58U_V2 TUF-BE3600_V2 GT-BE19000 RT-BE92U RT-BE95U RT-BE82U TUF-BE82 RT-BE58U_PRO GT-BE19000AI GT-BE96_AI GT7))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc config_extwan
 	@cd $(INSTALLDIR)/sbin && ln -sf rc reset_extwan
 endif
@@ -1770,6 +1786,7 @@ ifeq ($(RTCONFIG_CONNDIAG),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc amas_portstatus
 endif
 ifeq ($(RTCONFIG_CFGSYNC),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc firmware_webs_update
 ifeq ($(HND_ROUTER_AX),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rmd
 endif
@@ -1814,9 +1831,9 @@ ifeq ($(RTCONFIG_EXTPHY_BCM84880),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc get_ext_phy_id
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-AX6000 GT10 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GS-BE18000 GS7_PRO GT-BE96_AI))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-AX6000 GT10 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GS-BE18000 GS-BE12000 GS7_PRO GT7 GT-BE96_AI))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ledg
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-AX6000 GT10 GS-BE18000 GS7_PRO))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-AX6000 GT10 GS-BE18000 GS-BE12000 GS7_PRO GT7))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ledbtn
 endif
 endif
@@ -1862,6 +1879,9 @@ ifeq ($(RTCONFIG_HMA),y)
 endif
 ifeq ($(RTCONFIG_NORDVPN),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc nordvpn
+endif
+ifeq ($(RTCONFIG_SURFSHARK),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc surfshark
 endif
 endif
 
@@ -2371,7 +2391,7 @@ endif
 endif
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-AX6000 GT10 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GS-BE18000 GS7_PRO GT-BE96_AI))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-AX6000 GT10 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GS-BE18000 GS-BE12000 GS7_PRO GT7 GT-BE96_AI))
 ifneq ($(wildcard ./prebuild/ledg.o),)
 ledg.o:
 	@-cp -f ./prebuild/ledg.o .
@@ -2389,10 +2409,22 @@ rtkmonitor.o:
 	@-cp -f ./prebuild/rtkmonitor.o .
 endif
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS7_PRO))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 ifneq ($(wildcard ./prebuild/mxlmonitor.o),)
 mxlmonitor.o:
 	@-cp -f ./prebuild/mxlmonitor.o .
+endif
+endif
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT7))
+ifneq ($(wildcard ./prebuild/ext84991.o),)
+ext84991.o:
+	@-cp -f ./prebuild/ext84991.o .
+endif
+endif
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE92U))
+ifneq ($(wildcard ./prebuild/tempsense.o),)
+tempsense.o:
+	@-cp -f ./prebuild/tempsense.o .
 endif
 endif
 ifeq ($(RTCONFIG_SOFTWIRE46),y)

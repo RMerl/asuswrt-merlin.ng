@@ -423,7 +423,10 @@ system.wlBandSeq = (() => {
         wlObj[wlIfIndex].channel = (() => {
             let _channel = [];
             let { channel } = aMesh;
-            if (dwb_mode === "1" && system.aMesh.channel[wlIfIndex]?.auto?.chanlist?.length > 1) {
+
+            // BRCM platform, it is to check the validation of return value of get_wl_channel_list_xx()
+            // MTK, QCA needs to refine get_wl_channel_list_xx()
+            if (dwb_mode === "1" && channel[wlIfIndex]?.chan_20m?.chanlist?.length > 1) {
                 _channel = (() => {
                     let chanlist = (() => (channel[wlIfIndex].chan_20m ? channel[wlIfIndex].chan_20m.chanlist : []))();
                     if (chanlist[0] === "0") {
@@ -778,10 +781,11 @@ system.wlBandSeq = (() => {
             });
 
             let pscRestrictedByModel = (() => {
+                let { HwId } = httpApi.nvramGet(["HwId"]);
                 return (
                     productId === "GT-AXE11000" ||
                     productId === "RT-AXE95Q" ||
-                    productId === "ET12" ||
+                    (productId === "ET12" && HwId === "A") ||
                     productId === "ET8_V2" ||
                     productId === "ET8PRO"
                 );

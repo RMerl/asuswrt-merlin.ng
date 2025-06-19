@@ -42,6 +42,7 @@
 #define HNS_MON_DIR      "/jffs/.sys/AiProtectionMonitor"
 #define HNS_MON_DB       "/jffs/.sys/AiProtectionMonitor/AiProtectionMonitor.db"
 #define HNS_INFECTED_CC  "/jffs/.sys/AiProtectionMonitor/CCevent.log"
+#define HNS_MALS_EVENT   "/jffs/.sys/AiProtectionMonitor/MALSevent.log"
 #define HNS_HIS_DB_SIZE  3072
 #define HNS_MON_DB_SIZE  3072
 #define HNS_DOMAIN_LOG   "/tmp/hns_domain_log"

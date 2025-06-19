@@ -56,6 +56,11 @@ for(var i=0; i<accounts.length; i++){
 		accounts[i] = decodeURIComponent(accounts[i]);	
 }
 
+var secure_default = (function(){
+	var rc_support = '<% nvram_get("rc_support"); %>';
+	return (rc_support.search("secure_default") == -1) ? false : true;
+})();
+
 function QKinternettype_load_body(){
         if(parent.based_modelid == "RT-AC58U" || parent.based_modelid == "RT-AC82U")
 		waninfo();
@@ -237,7 +242,7 @@ function submitForm(){
 		return false;
 	}
 
-	if(is_KR_sku || is_SG_sku || is_AA_sku){		/* MODELDEP by Territory Code */
+	if(is_KR_sku || is_SG_sku || is_AA_sku || secure_default){		/* MODELDEP by Territory Code */
 		if(!validator.string_KR(document.form.http_passwd)){
 			document.form.http_passwd.focus();
 			document.form.http_passwd.select();

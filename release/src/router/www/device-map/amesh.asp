@@ -197,6 +197,7 @@ function ajax_onboarding() {
 			/* Update ready_onBoarding_block end */
 
 			/* Update onBoarding_block */
+			update_node_ui_model_name(get_cfg_clientlist);
 			var list_status = get_cfg_clientlist.length;
 			if(list_status > 1) {
 				if($("#onBoarding_block").children(".amesh_no_data").length > 0)
@@ -348,6 +349,7 @@ function gen_ready_onboardinglist(_onboardingList) {
 		var newReMacArray = _onboardingList[reMac];
 		Object.keys(newReMacArray).forEach(function(key) {
 			var newReMac = key;
+			update_node_ui_model_name([newReMacArray[newReMac]]);
 			var model_name = newReMacArray[newReMac].model_name;
 			var ui_model_name = newReMacArray[newReMac].ui_model_name;
 			var icon_model_name = "";
@@ -2427,6 +2429,7 @@ function ajax_AiMesh_node_clients(_nodeMac){
 					}
 					return result;
 				};
+				update_node_ui_model_name(get_cfg_clientlist);
 				var node_info = getNodeInfo(get_cfg_clientlist, ["mac", _nodeMac]);
 				var wired_client = get_wiredclientlist[_nodeMac];
 				var wl_client = get_wclientlist[_nodeMac];
@@ -2801,6 +2804,79 @@ function handle_re_path(_re_path){
 	var result = parseInt(_re_path);
 	return ((isNaN(result)) ? 0 : result);
 }
+let uiModelNameCloud = (()=>{
+	const storedData = window.localStorage.getItem('uiModelNameJson');
+	if (storedData) {
+		return JSON.parse(storedData);
+	}
+	else {
+		return {};
+	}
+})();
+function update_node_ui_model_name(nodeList){
+	if (!Array.isArray(nodeList)) return;
+	let lang = httpApi.nvramGet(["preferred_lang"]).preferred_lang;
+	for (let node of nodeList){
+		let model_name = node["model_name"];
+		let cobrand = httpApi.aimesh_get_misc_info(node).cobrand;
+		const uiModelName = findUIModelName({
+			"model": model_name,
+			"lang": lang,
+			"coBrand": cobrand,
+		});
+		if (uiModelName) {
+			node["ui_model_name"] = uiModelName;
+		}
+	}
+
+	function findUIModelName(params) {
+		if (!params) {
+			return "";
+		}
+		const { model, lang, coBrand } = params;
+		if (!model) {
+			return "";
+		}
+		if (!uiModelNameCloud[model]) return "";
+
+		let defaultLang = null;
+		let defaultCoBrand = null;
+
+		for (let item of uiModelNameCloud[model]) {
+			if (item.lang === lang && item.CoBrand === coBrand) {
+				return item.uiModelName;
+			}
+			if (item.lang === "*" && item.CoBrand === coBrand) {
+				defaultLang = item.uiModelName;
+			}
+			if (item.lang === lang && item.CoBrand === "*") {
+				defaultCoBrand = item.uiModelName;
+			}
+			if (item.lang === "*" && item.CoBrand === "*") {
+				defaultLang = item.uiModelName;
+			}
+		}
+
+		if (defaultCoBrand) {
+			return defaultCoBrand;
+		}
+
+		if (defaultLang) {
+			return defaultLang;
+		}
+
+		return "";
+	}
+}
+</script>
+<script type="module">
+	import { initializeUIModelName, uiModelNameJson } from '/js/uiModelName.module.js';
+	if (Object.keys(uiModelNameCloud).length === 0) {
+		(async () => {
+			const data = await initializeUIModelName();
+			uiModelNameCloud = data;
+		})();
+	}
 </script>
 </head>
 
@@ -2845,7 +2921,7 @@ function handle_re_path(_re_path){
 	</tr>
 	<tr>
 </table>
-<table  width="95%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="table1px" style="margin-bottom:5px;display:;">
+<table  width="95%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="table1px" style="margin-bottom:5px;">
 	<tr>
 		<td colspan="2">
 			<div class="amesh_title"><#AiMesh_FindNode#></div>

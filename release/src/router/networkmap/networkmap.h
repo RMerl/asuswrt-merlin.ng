@@ -46,7 +46,7 @@
 #ifdef RTCONFIG_BONJOUR
 #define SHMKEY_BONJOUR	1002
 #endif
-#ifdef RTCONFIG_TAGGED_BASED_VLAN
+#if defined(RTCONFIG_TAGGED_BASED_VLAN) && !defined(FLAG_FUNCTION_TEMPORARILY_CANCELED)
 #define SHMKEY_VLAN1	1003
 #define SHMKEY_VLAN2	1004
 #define SHMKEY_VLAN3	1005
@@ -56,7 +56,7 @@
 #define SHMKEY_VLAN7	1009
 #define SHMKEY_VLAN8	1010
 #endif
-#ifdef RTCONFIG_CAPTIVE_PORTAL
+#if defined(RTCONFIG_CAPTIVE_PORTAL) && !defined(FLAG_FUNCTION_TEMPORARILY_CANCELED)
 #define SHMKEY_FREEWIFI	1011
 #define SHMKEY_CP	1012
 #endif
@@ -185,7 +185,11 @@ typedef unsigned long ULONG;
 #if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074)
 #define MAX_NR_CLIENT_LIST	1024	/* occupies 436252 bytes. */
 #else
+#if defined(RTCONFIG_BUSINESS)
+#define MAX_NR_CLIENT_LIST	1021
+#else
 #define MAX_NR_CLIENT_LIST	255	/* occupies 108656 bytes. */
+#endif
 #endif
 
 enum
@@ -213,6 +217,11 @@ enum
 	BASE_TYPE_ASUS,
 	BASE_TYPE_APPLE
 };
+
+#ifdef RTCONFIG_MULTILAN_CFG
+#define IS_STAINFO          1
+#define IS_ALLWCLIENTLIST   0
+#endif
 
 //Device service info data structure
 typedef struct {
@@ -325,12 +334,14 @@ void QueryDevType(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int i);
 void check_manual_dhcp(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int i, const int subnet_idx);
 void get_subnet_ifname(const int subnet_idx, char * subnet_ifname, int ifname_len);
 void get_ip_from_arp_table(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, const int i, const char *subnet);
-int get_sdn_type(const int sdn_idx, char *sdn_type, int sdn_type_len, unsigned char *vlan_id);
+int get_sdn_type(const int sdn_idx, char *sdn_type, int sdn_type_len, unsigned char *vlan_id, int *apg_idx);
 int get_vlan_id(const int vlan_idx);
-int get_sdn_idx_form_apg(char *papMac, char *ifname);
+int get_sdn_idx_form_apg(const char *papMac, const char *ifname, const int ifname_type);
 #endif
 
 int get_brctl_macs(char * mac);
+
+int check_allwclientlist_json(const char *client_mac, const int opMode);
 
 int check_wrieless_info(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, const int i, const int is_file, struct json_object *clients);
 
@@ -369,5 +380,11 @@ int check_ip6_mac(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const char
 
 int check_clientlist_json(char *mac);
 #endif
+
+int get_clientlist_rssi(const char *mac);
+
+void add_client_info(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const char *mac, const char *ip_addr, const int ipv6);
+
+void arp_compare_clientlist(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
 
 #endif  /*__NETWORKMAP_H__*/

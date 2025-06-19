@@ -319,6 +319,11 @@ config RTCONFIG_IPV6
 	bool "IPv6 Support"
 	default n
 
+config RTCONFIG_IPV6_PRIVACY
+	bool "IPv6 Privacy Extensions support for WAN"
+	depends on RTCONFIG_IPV6
+	default n
+
 config RTCONFIG_IMPROXY
 	bool "IGMP 1,2,3 & MLD 1,2 Proxy Support"
 
@@ -1519,6 +1524,10 @@ config RTCONFIG_BUSINESS
 	bool "BUSINESS Model Support"
 	default n
 
+config RTCONFIG_UI4
+	bool "UI4 Support"
+	default n
+
 config RTCONFIG_SMART_HOME_MASTER_UI
 	bool "Smart Home Master UI of SDN"
 	default n
@@ -1876,6 +1885,10 @@ config RTCONFIG_ERP_TEST
 
 config RTCONFIG_REBOOT_SCHEDULE
 	bool "Reboot_schedule"
+	default n
+
+config RTCONFIG_REBOOT_SCHEDULE_V2
+	bool "Reboot_schedule_V2"
 	default n
 
 config RTCONFIG_IPSEC
@@ -2939,6 +2952,10 @@ config RTCONFIG_NORDVPN
 	bool "3rd party VPN NordVPN support"
 	default n
 
+config RTCONFIG_SURFSHARK
+	bool "3rd party VPN Surfshark VPN support account login"
+	default n
+
 config RTCONFIG_SPECIFIC_PPPOE
 	bool "Support specific PPPoE features"
 	default n
@@ -3168,6 +3185,10 @@ config RTCONFIG_AMAS_UPLOAD_FILE
 	bool "AiMesh upload file"
 	default n
 
+config RTCONFIG_HAS_6G
+	bool "has 6G band"
+	default n
+
 config RTCONFIG_HAS_6G_2
 	bool "has 2-nd 6G band"
 	default n
@@ -3197,11 +3218,6 @@ config RTCONFIG_FU_TEST
 config RTCONFIG_PASS_V2
 	bool "Use PASS V2 for encryption"
 	depends on RTCONFIG_RALINK
-	default n
-
-config RTCONFIG_WIFI7_NO_6G
-	bool "no 6G band support in WiFi7"
-	depends on RTCONFIG_WIFI7
 	default n
 
 config RTCONFIG_AMAS_OB_DISABLE_DSAP
@@ -3241,3 +3257,14 @@ config RTCONFIG_BCMLEDG_NIGHT
         bool "ROG LEDG NIGHT MODE FUNCTION"
         default n
 
+config RTCONFIG_SINGLE_LED_NIGHT_MODE
+	bool "SINGLE LED NIGHT MODE FUNCTION"
+	default n
+
+config RTCONFIG_NO_AIDISK
+	bool "No AiDisk support"
+	default n
+
+config RTCONFIG_SECURE_BY_DEFAULT
+	bool "secure setting in default"
+	default y

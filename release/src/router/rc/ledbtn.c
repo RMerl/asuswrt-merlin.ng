@@ -36,7 +36,7 @@
 #include <shutils.h>
 #include <rc.h>
 
-#if defined(GSBE18000) || defined(GS7_PRO)
+#if defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 #define LEDG_WAIT	30
 #else
 #define LEDG_WAIT	20

@@ -109,6 +109,9 @@ endif
 #Tencent download
 CFLAGS += -D _FILE_OFFSET_BITS=64
 
+#Client data is not used : Temporarily disable the shared memory for RTCONFIG_TAGGED_BASED_VLAN and CAPTIVE_PORTAL to reduce memory usage.
+CFLAGS += -DFLAG_FUNCTION_TEMPORARILY_CANCELED
+
 ifneq ($(findstring CONFIG_BCM_KF_NETFILTER=, $(shell cat $(LINUXDIR)/.config)),)
 ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_6756),$(RTCONFIG_HND_ROUTER_BE_4916)),y)
 else
@@ -386,7 +389,7 @@ endif
 CFLAGS += -I$(TOP)/libwebapi
 LIBS += -L$(TOP)/libwebapi -lwebapi
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS7_PRO))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 LIBS += -L$(TOP)/libhostapi -lhostapi
 endif
 

@@ -168,6 +168,7 @@ typedef unsigned long long u64;
 #endif
 
 #ifdef RTCONFIG_CFGSYNC
+#include <cfg_capability.h>
 #include <cfg_param.h>
 #include <cfg_slavelist.h>
 #include <cfg_wevent.h>
@@ -175,7 +176,6 @@ typedef unsigned long long u64;
 #include <cfg_lib.h>
 #include <cfg_clientlist.h>
 #include <cfg_onboarding.h>
-#include <cfg_capability.h>
 #ifdef RTCONFIG_MULTILAN_CFG
 #include <cfg_mtlan.h>
 #endif	// RTCONFIG_MULTILAN_CFG
@@ -621,6 +621,7 @@ static int get_clientlist_ex(struct json_object **clients);
 
 static int get_client_detail_info(struct json_object *clients, struct json_object *macArray, key_t shmkey);
 static int get_custom_clientlist_info(struct json_object *json_object_ptr);
+static int get_client_name(char *ipaddr, char *name, size_t name_len);
 #define CLIENTAPILEVEL "7"
 
 #ifdef RTCONFIG_AUPNPC
@@ -1222,7 +1223,7 @@ ej_wl_nvram_get(int eid, webs_t wp, int argc, char_t **argv)
 		    *c != '"' && *c != '&' && *c != '<' && *c != '>' && *c != '\\')
 			ret += websWrite(wp, "%c", *c);
 		else if(*c == '\\'){
-			if(check_user_agent(user_agent) != FROM_BROWSER)
+			if(check_user_agent(user_agent) != FROM_BROWSER && check_user_agent(user_agent) != FROM_WebView)
 				ret += websWrite(wp, "\\\\");
 			else
 				ret += websWrite(wp, "%c", *c);
@@ -5149,7 +5150,7 @@ static int ej_set_variables(int eid, webs_t wp, int argc, char_t **argv) {
 	int retStatus = 0;
 	char retList[65536]={0};
 	char *buf, *g, *p;
-	char nvramTmp[4096]={0}, strTmp[4096]={0};
+	char nvramTmp[65536]={0}, strTmp[4096]={0};
 	int iCurrentListNum = 0;
 
 	apiName = websGetVar(wp, "apiname", "");
@@ -10054,7 +10055,6 @@ static int get_client_bind_info(char *client_mac, char *node_mac, int node_mac_s
 
 			stalist_len = strlen(stalist);
 			stalist_idx = 0;
-			allowband_str_len = 0;
 
 			while(1)// break when stalist len = 0
 			{
@@ -10072,10 +10072,11 @@ static int get_client_bind_info(char *client_mac, char *node_mac, int node_mac_s
 				}
 				stalist_idx++;
 
+				allowband_str_len = 0;
 				while(1){
 					if(stalist_idx+allowband_str_len >= stalist_len)
 						break;
-					if(stalist[stalist_idx+allowband_str_len] == '|')
+					if (stalist[stalist_idx + allowband_str_len] == '|' || stalist[stalist_idx + allowband_str_len] == ',')
 						break;
 					allowband_str_len++;
 				}
@@ -10655,15 +10656,6 @@ static int ej_get_clientlist(int eid, webs_t wp, int argc, char_t **argv)
 	clients = json_object_new_object();
 
 	struct json_object *macArray = json_object_new_array();
-
-#ifdef RTCONFIG_TAGGED_BASED_VLAN
-	int i, vlan_flag;
-	int shmkeys[8], shmkey = 1003;
-	for(i = 0; i < 8; i++){
-		shmkeys[i] = shmkey;
-		shmkey++;
-	}
-#endif
 	/*
 	shmkey	index
 	1001	LAN
@@ -10680,7 +10672,13 @@ static int ej_get_clientlist(int eid, webs_t wp, int argc, char_t **argv)
 	*/
 	get_client_detail_info(clients, macArray, SHMKEY_LAN);
 
-#ifdef RTCONFIG_TAGGED_BASED_VLAN
+#if defined(RTCONFIG_TAGGED_BASED_VLAN) && !defined(FLAG_FUNCTION_TEMPORARILY_CANCELED)
+	int i, vlan_flag;
+	int shmkeys[8], shmkey = 1003;
+	for(i = 0; i < 8; i++){
+		shmkeys[i] = shmkey;
+		shmkey++;
+	}
 	vlan_flag = nvram_get_int("vlan_flag");
 	if(vlan_flag){
 		for(i = 0; i < 8; i++){
@@ -10691,7 +10689,7 @@ static int ej_get_clientlist(int eid, webs_t wp, int argc, char_t **argv)
 		}
 	}
 #endif
-#ifdef RTCONFIG_CAPTIVE_PORTAL
+#if defined(RTCONFIG_CAPTIVE_PORTAL) && !defined(FLAG_FUNCTION_TEMPORARILY_CANCELED)
 	if (nvram_match("captive_portal_enable", "on")){
 		get_client_detail_info(clients, macArray, SHMKEY_FREEWIFI);
 	}
@@ -13456,6 +13454,21 @@ wps_finish:
 			nvram_set("refresh_networkmap", "1");
 
 			doSystem("killall -%d networkmap", SIGUSR1);
+#ifdef RTCONFIG_JFFS2USERICON
+			notify_rc("start_lltdc");
+#endif
+#ifdef RTCONFIG_UPNPC
+			notify_rc("start_miniupnpc");
+#endif
+			websRedirect(wp, current_url);
+		}
+	}
+	else if (!strcmp(action_mode, "cleanShm_networkmap"))
+	{
+		if(pids("networkmap")) {
+			nvram_set("refresh_networkmap", "1");
+
+			doSystem("killall -%d networkmap", SIGALRM);
 #ifdef RTCONFIG_JFFS2USERICON
 			notify_rc("start_lltdc");
 #endif
@@ -16781,7 +16794,7 @@ do_upload_server_ovpn_cert_cgi(char *url, FILE *stream)
 {
 	int ret = upload_server_ovpn_cert_cgi();
 
-	if(check_user_agent(user_agent) == FROM_BROWSER)
+	if(check_user_agent(user_agent) == FROM_BROWSER || check_user_agent(user_agent) == FROM_WebView)
 		websWrite(stream, "<script>parent.callback_upload_cert(%d);</script>\n", (ret==HTTP_OK)?1:0);
 	else
 		websWrite(stream, "{\"statusCode\":\"%d\"}", ret);
@@ -18469,7 +18482,7 @@ do_upload_server_ipsec_cert_cgi(char *url, FILE *stream)
 {
 	int ret = upload_server_ipsec_cert_cgi();
 
-	if(check_user_agent(user_agent) != FROM_BROWSER)
+	if(check_user_agent(user_agent) != FROM_BROWSER|| check_user_agent(user_agent) != FROM_WebView)
 		websWrite(stream, "{\"statusCode\":\"%d\"}", ret);
 }
 
@@ -19158,7 +19171,49 @@ FINISH:
 }
 #endif
 
+static void
+del_custom_clientlist(char *delete_mac)
+{
+	int retStatus = -1;
+	char nvramTmp[65536]={0};
+	char *buf, *g, *p;
+	char *name, *mac, *group, *type, *callback, *keeparp;
 
+	if(!strcmp(delete_mac, "")) {
+		retStatus = 3;
+	} else {
+		retStatus = 2;
+		g = buf = strdup(nvram_safe_get("custom_clientlist"));
+		while (buf) {
+			if ((p = strsep(&g, "<")) == NULL) break;
+			if((vstrsep(p, ">", &name, &mac, &group, &type, &callback, &keeparp)) != 6) continue;
+
+			if(!strcmp(delete_mac, mac)){
+				retStatus = 0;
+				continue;
+			}
+			else{
+				strlcat(nvramTmp, "<", sizeof(nvramTmp));
+				strlcat(nvramTmp, name, sizeof(nvramTmp));
+				strlcat(nvramTmp, ">", sizeof(nvramTmp));
+				strlcat(nvramTmp, mac, sizeof(nvramTmp));
+				strlcat(nvramTmp, ">", sizeof(nvramTmp));
+				strlcat(nvramTmp, group, sizeof(nvramTmp));
+				strlcat(nvramTmp, ">", sizeof(nvramTmp));
+				strlcat(nvramTmp, type, sizeof(nvramTmp));
+				strlcat(nvramTmp, ">", sizeof(nvramTmp));
+				strlcat(nvramTmp, callback, sizeof(nvramTmp));
+				strlcat(nvramTmp, ">", sizeof(nvramTmp));
+				strlcat(nvramTmp, keeparp, sizeof(nvramTmp));
+			}
+		}
+		free(buf);
+		if(retStatus == 0){
+			nvram_set("custom_clientlist", nvramTmp);
+			httpd_nvram_commit();
+		}
+	}
+}
 
 static void
 deleteOfflineClient(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg, char_t *url, char_t *path, char_t *query)
@@ -19177,6 +19232,10 @@ deleteOfflineClient(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg, char_
 		ret = HTTP_INVALID_MAC;
 		goto FINISH;
 	}
+
+	// Remove MAC addresses that were set in the custom_clientlist
+	toUpperCase(mac);
+	del_custom_clientlist(mac);
 
 	int i, shm_client_info_id;
 	void *shared_client_info=(void *) 0;
@@ -20165,7 +20224,7 @@ do_blocking_request_cgi(char *url, FILE *stream)
 	}
 
 	memset(filename, 0, 128);
-	snprintf(filename, sizeof(filename), "blocking.asp?mac=%s", block_mac);
+	snprintf(filename, sizeof(filename), "blocking.asp");
 	websRedirect(stream, filename);
 
 FINISH:
@@ -20359,7 +20418,9 @@ do_get_nt_db_cgi(char *url, FILE *stream)
 						first_row = 1;
 					else
 						websWrite(stream,",");
-					websWrite(stream, "{\"tstamp\":\"%ld\", \"event_id\":\"%8X\", \"group_type\":\"%x\", \"msg\":%s, \"eName\":\"%s\", \"status\":\"%d\", \"event_type\":\"%d\"}\n", listevent->tstamp, listevent->event, type, msg, eInfo_get_eName(listevent->event), read_status_bit, eInfo_get_eType(listevent->event));
+					snprintf(eventid, sizeof(eventid), "%8X", listevent->event);
+					trim_char(eventid, ' ');
+					websWrite(stream, "{\"tstamp\":\"%ld\", \"event_id\":\"%s\", \"group_type\":\"%x\", \"msg\":%s, \"eName\":\"%s\", \"status\":\"%d\", \"event_type\":\"%d\"}\n", listevent->tstamp, eventid, type, msg, eInfo_get_eName(listevent->event), read_status_bit, eInfo_get_eType(listevent->event));
 				}
 			}
 		}
@@ -21829,7 +21890,7 @@ login_cgi(webs_t wp, char_t *url, int auth_version)
 {
 	int l = 0, fromapp_flag = 0, lock_status = 0, ret = 0;
 	int auth_pass = 0;
-	char authinfo[500] = {0}, asus_token[32]={0}, filename[128] = {0}, timebuf[100] = {0}, token_cookie[128] = {0};
+	char authinfo[500] = {0}, asus_token[32]={0}, filename[128] = {0}, timebuf[100] = {0}, token_cookie[128] = {0}, client_name[64] = {0};
 	char *authorization_t = NULL, *authpass = NULL, *temp_ip_str = NULL, *next_page = NULL, *id = NULL, *cnonce = NULL;
 	struct in_addr temp_ip_addr;
 	time_t now = 0, dt = 0;
@@ -21969,7 +22030,7 @@ login_cgi(webs_t wp, char_t *url, int auth_version)
 			}
 		}
 #endif
-		if (fromapp_flag == FROM_BROWSER){
+		if (fromapp_flag == FROM_BROWSER || fromapp_flag == FROM_WebView){
 			if(!cur_login_ip_type)
 			{
 				nvram_set_int(HTTPD_LOGIN_FAIL_LAN, 0);
@@ -22051,15 +22112,20 @@ login_cgi(webs_t wp, char_t *url, int auth_version)
 			temp_ip_str = inet_ntoa(temp_ip_addr);
 			logmessage("httpd login lock", "Detect abnormal logins at %d times. The newest one was from %s in login.", (cur_login_ip_type? nvram_get_int(HTTPD_LOGIN_FAIL_WAN): nvram_get_int(HTTPD_LOGIN_FAIL_LAN)), temp_ip_str);
 #ifdef RTCONFIG_NOTIFICATION_CENTER
-			json_object *nt_root = NULL;
-			nt_root = json_object_new_object();
+			json_object *nt_root = json_object_new_object();
+
+			if(strlen(temp_ip_str) != 0)
+				get_client_name(temp_ip_str, client_name, sizeof(client_name));
+
 			if (nt_root == NULL) {
 				_dprintf("[%s(%d)]new json object error", __FUNCTION__, __LINE__);
 				char nt_tmp[MAX_EVENT_INFO_LEN];
-				snprintf(nt_tmp, sizeof(nt_tmp), "{\"IP\":\"%s\"}", temp_ip_str);
+				snprintf(nt_tmp, sizeof(nt_tmp), "{\"cname\":\"%s\", \"ip\":\"%s\", \"dut\":\"%s\"}", client_name, temp_ip_str, get_productid());
 				SEND_NT_EVENT(ADMIN_LOGIN_FAIL_LAN_WEB_EVENT, nt_tmp);
 			} else {
-				json_object_object_add(root, "IP", json_object_new_string(temp_ip_str));
+				json_object_object_add(root, "cname", json_object_new_string(client_name));
+				json_object_object_add(root, "ip", json_object_new_string(temp_ip_str));
+				json_object_object_add(root, "dut", json_object_new_string(get_productid()));
 				SEND_NT_EVENT(ADMIN_LOGIN_FAIL_LAN_WEB_EVENT, json_object_to_json_string(root));
 			}
 			if(nt_root)
@@ -23617,7 +23683,7 @@ do_upload_cfg_cntrl_cgi(char *url, FILE *stream)
 	do_rc = safe_get_cgi_json("do_rc", root);
 	int ret = upload_jffs_profile("amascntrl", safe_atoi(do_rc));
 
-	if(check_user_agent(user_agent) != FROM_BROWSER)
+	if(check_user_agent(user_agent) != FROM_BROWSER && check_user_agent(user_agent) != FROM_WebView)
 		websWrite(stream, "{\"statusCode\":\"%d\"}", ret);
 
 	if(root)
@@ -24753,7 +24819,7 @@ static void do_sms_send_draft_cgi(char *url, FILE *stream);
 #ifdef RTCONFIG_AUPNPC
 static void get_upnpc_redirection_list_cgi(char *url, FILE *stream);
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GS7) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GS7) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
 static void
 do_set_ledg_cgi(char *url, FILE *stream) {
 
@@ -25226,7 +25292,7 @@ do_upload_all_usericon_cgi(char *url, FILE *stream)
 	do_rc = safe_get_cgi_json("do_rc", root);
 	int ret = upload_jffs_profile("usericon", safe_atoi(do_rc));
 
-	if(check_user_agent(user_agent) != FROM_BROWSER)
+	if(check_user_agent(user_agent) != FROM_BROWSER && check_user_agent(user_agent) != FROM_WebView)
 		websWrite(stream, "{\"statusCode\":\"%d\"}", ret);
 
 	if(root)
@@ -26967,7 +27033,9 @@ static void do_ModelProduct_png(char *url, FILE *stream)
     }
     *p = '\0';
 
-    if(strlen(odmpid) > 0 && strcmp(odmpid, productid))
+    if(!strcmp(productid, "TUF-BE9400") || !strcmp(productid, "TUF-BE6500"))
+        snprintf(default_image_name, sizeof(default_image_name), "Model_product_%s", productid);
+    else if(strlen(odmpid) > 0 && strcmp(odmpid, productid))
         snprintf(default_image_name, sizeof(default_image_name), "Model_product_%s", lowercase_pid);
     else
         snprintf(default_image_name, sizeof(default_image_name), "Model_product");
@@ -27061,7 +27129,7 @@ static void do_CoBrand_img(char *url, FILE *stream)
 		!strcmp(nvram_safe_get("preferred_lang"), "CN")){
 		snprintf(path, sizeof(path), "%s_cn%s", url, file_extension);
 	}
-	else if(!strcmp(get_productid(), "GS7") &&
+	else if((!strcmp(get_productid(), "GS7") || !strcmp(get_productid(), "GS7_Pro")) &&
 		!strcmp(nvram_safe_get("preferred_lang"), "CN")){
 		snprintf(path, sizeof(path), "%s_cn%s", url, file_extension);
 	}
@@ -27475,7 +27543,7 @@ struct mime_handler mime_handlers[] =
 	{ "gotoHomePage.htm", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
 	{ "ure_success.htm", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
 	{ "ureip.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "remote.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
+	//{ "remote.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
 	{ "md5.js", "text/javascript", cache_object, NULL, do_file, NULL },
 	{ "js/jquery.js", "text/javascript", cache_object, NULL, do_file, NULL },
 	{ "js/jquery-ui.js", "text/javascript", cache_object, NULL, do_file, NULL },
@@ -27515,9 +27583,9 @@ struct mime_handler mime_handlers[] =
 	{ "help_content.js", "text/javascript", cache_object, do_html_post_and_get, do_ej, do_auth },
 	{ "httpd_check.htm", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
 	{ "manifest.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "update_cloudstatus.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "update_applist.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "update_appstate.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
+	{ "update_cloudstatus.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
+	{ "update_applist.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
+	{ "update_appstate.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
 	{ "WAN_info.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
 	{ "detwan.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_detwan_cgi, do_auth },
 	{ "message.htm", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
@@ -27811,7 +27879,7 @@ struct mime_handler mime_handlers[] =
 	{ "set_ookla_speedtest_start_time.cgi", "text/html", no_cache_IE7, do_html_post_and_get, set_ookla_speedtest_start_time_cgi, do_auth },
 #endif
 	{ "del_client_data.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_del_client_data_cgi, do_auth },
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GS7) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GS7) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI)
 	{ "set_ledg.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ledg_cgi, do_auth },
 #endif
 #if defined(GTAX6000)
@@ -32054,6 +32122,21 @@ ej_sysinfo(int eid, webs_t wp, int argc, char_t **argv)
 	return retval;
 }
 
+unsigned long next_power_of_two(unsigned long n) {
+	if (n == 0) return 1;
+	n--;
+	n |= n >> 1;
+	n |= n >> 2;
+	n |= n >> 4;
+	n |= n >> 8;
+	n |= n >> 16;
+#if ULONG_MAX > 0xFFFFFFFF
+	n |= n >> 32;  //for 64-bit unsigned long
+#endif
+	return n + 1;
+}
+
+
 static int
 ej_memory_usage(int eid, webs_t wp, int argc, char_t **argv){
 	unsigned long total, used, mfree  /*, shared, buffers, cached, driver occupied*/;
@@ -32073,13 +32156,7 @@ ej_memory_usage(int eid, webs_t wp, int argc, char_t **argv){
 	mfree = mem[MI_MemFree];
 	sfree = meminfo_compute_simple_free(&mem);
 
-	for(i=0;i<length;i++){
-		currentSize = memSize[i]*1024;
-		if(currentSize > total){
-			maxSize = currentSize;
-			break;
-		}
-	}
+	maxSize = next_power_of_two(total);
 
 	used = maxSize - mfree;	// (maxSize - total) + (total -mfree)
 	sused = maxSize - sfree;
@@ -32094,7 +32171,7 @@ ej_memory_usage(int eid, webs_t wp, int argc, char_t **argv){
 
 static int
 ej_cpu_usage(int eid, webs_t wp, int argc, char_t **argv){
-	unsigned long total, user, nice, system, idle, io, irq, softirq;
+	unsigned long long total, user, nice, system, idle, io, irq, softirq;
 	char name[10];
 	int from_app = 0;
 
@@ -32110,7 +32187,7 @@ ej_cpu_usage(int eid, webs_t wp, int argc, char_t **argv){
 		websWrite(wp, "{");
 	}
 
-	while(fscanf(fp, "%s %lu %lu %lu %lu %lu %lu %lu \n", name, &user, &nice, &system, &idle, &io, &irq, &softirq) != EOF){
+	while(fscanf(fp, "%s %llu %llu %llu %llu %llu %llu %llu \n", name, &user, &nice, &system, &idle, &io, &irq, &softirq) != EOF){
 		if(strncmp(name, "cpu", 3) == 0){
 			if(i == 0){
 				i++;
@@ -32124,10 +32201,10 @@ ej_cpu_usage(int eid, webs_t wp, int argc, char_t **argv){
 				websWrite(wp, ",");
 
 			if(from_app == 0){
-				websWrite(wp, "\"cpu%d\":{\"total\":\"%lu\",\"usage\":\"%lu\"}", i-1, total, total - idle);
+				websWrite(wp, "\"cpu%d\":{\"total\":\"%llu\",\"usage\":\"%llu\"}", i-1, total, total - idle);
 			}
 			else{
-				websWrite(wp, "\"cpu%d_total\":\"%lu\",\"cpu%d_usage\":\"%lu\"", i, total, i, total - idle);
+				websWrite(wp, "\"cpu%d_total\":\"%llu\",\"cpu%d_usage\":\"%llu\"", i, total, i, total - idle);
 			}
 			i++;
 		}
@@ -37629,7 +37706,7 @@ ej_login_error_info(int eid, webs_t wp, int argc, char **argv)
 static int
 ej_get_new_vpnc_index(int eid, webs_t wp, int argc, char **argv)
 {
-	if(check_user_agent(user_agent) == FROM_BROWSER)
+	if(check_user_agent(user_agent) == FROM_BROWSER || check_user_agent(user_agent) == FROM_WebView)
 		return websWrite(wp, "%d", _get_new_vpnc_index());
 	else
 		return websWrite(wp, "\"%d\"", _get_new_vpnc_index());
@@ -37645,7 +37722,7 @@ ej_get_vpnc_status(int eid, webs_t wp, int argc, char **argv)
 		
 	prof_cnt = vpnc_load_profile(prof, MAX_VPNC_PROFILE, VPNC_LOAD_CLIENT_LIST);
 
-	if(check_user_agent(user_agent) != FROM_BROWSER || hook_get_json == 1)
+	if((check_user_agent(user_agent) != FROM_BROWSER && check_user_agent(user_agent) != FROM_WebView ) || hook_get_json == 1)
 		websWrite(wp, "\"");
 
 	for(i = 0; i < prof_cnt; ++i)
@@ -37727,7 +37804,7 @@ ej_get_vpnc_status(int eid, webs_t wp, int argc, char **argv)
 #endif
 		}
 	}
-	if(check_user_agent(user_agent) != FROM_BROWSER || hook_get_json == 1)
+	if((check_user_agent(user_agent) != FROM_BROWSER && check_user_agent(user_agent) != FROM_WebView) || hook_get_json == 1)
 		websWrite(wp, "\"");
 	return 0;
 	
@@ -37755,7 +37832,7 @@ ej_get_vpnc_nondef_wan_prof_list(int eid, webs_t wp, int argc, char **argv)
 		}
 		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), i? "<%d>%d":"%d>%d", prof[i].vpnc_idx, flag);	
 	}
-	if(check_user_agent(user_agent) == FROM_BROWSER && hook_get_json == 0)
+	if((check_user_agent(user_agent) == FROM_BROWSER || check_user_agent(user_agent) == FROM_WebView) && hook_get_json == 0)
 		websWrite(wp, "%s", buf);
 	else
 		websWrite(wp, "\"%s\"", buf);
@@ -38068,7 +38145,7 @@ static int ej_get_label_mac(int eid, webs_t wp, int argc, char **argv){
 
 static int ej_get_lan_hwaddr(int eid, webs_t wp, int argc, char **argv){
 
-	if(check_user_agent(user_agent) == FROM_BROWSER && hook_get_json == 0)
+	if((check_user_agent(user_agent) == FROM_BROWSER || check_user_agent(user_agent) == FROM_WebView) && hook_get_json == 0)
 		websWrite(wp, "%s", get_lan_hwaddr());
 	else
 		websWrite(wp, "\"%s\"", get_lan_hwaddr());
@@ -38339,7 +38416,10 @@ ej_get_wl_bandwidth(int eid, webs_t wp, int argc, char **argv) {
 					ch_ptr2 = endptr+1;
 					ch = strtol(ch_ptr2, &endptr2, 10);
 
-					if(ch == 80){
+					if(ch == 40){
+						snprintf(band_id, sizeof(band_id), "%d", WL_BW_40);
+						json_object_object_add(band_info, "40", json_object_new_string(band_id));
+					}else if(ch == 80){
 						snprintf(band_id, sizeof(band_id), "%d", WL_BW_80);
 						json_object_object_add(band_info, "80", json_object_new_string(band_id));
 					}
@@ -38464,8 +38544,14 @@ ej_get_wl_channel_list(int eid, webs_t wp, int argc, char **argv, int unit) {
 			if(!strcmp(wl_nband, "4")){
 				avlbl_bw = avbl_chanspec.bw6g;
 				for (i = 0; i < MAX_6G_CHANNEL_LIST_NUM && avbl_chanspec.channelList6g[i] != 0; i++) {
-#if defined(GTAXE11000) || defined(RTAXE7800) || defined(RTAXE95Q) || defined(ET8_V2) || defined(ET8PRO) || defined(ET12)
+#if defined(GTAXE11000) || defined(RTAXE7800) || defined(RTAXE95Q) || defined(ET8_V2) || defined(ET8PRO)
 					if(avbl_chanspec.channelList6g[i] >= 30 && avbl_chanspec.channelList6g[i] <= 221)
+#endif
+#if defined(ET12)
+					if(
+						avbl_chanspec.channelList6g[i] >= 30 && avbl_chanspec.channelList6g[i] <= 221 ||
+						strcmp(nvram_safe_get("HwId"), "A") != 0
+					)
 #endif
 					{
 						snprintf(buf, sizeof(buf), "%d", avbl_chanspec.channelList6g[i]);
@@ -38532,8 +38618,12 @@ ej_get_wl_channel_list(int eid, webs_t wp, int argc, char **argv, int unit) {
 			}else
 #endif
 			{
-#if defined(GTAXE11000) || defined(RTAXE7800) || defined(RTAXE95Q) || defined(ET8_V2) || defined(ET8PRO) || defined(ET12)
+#if defined(GTAXE11000) || defined(RTAXE7800) || defined(RTAXE95Q) || defined(ET8_V2) || defined(ET8PRO)
 				if(!strcmp(wl_nband, "4") && (atoi(tmp) < 30 || atoi(tmp) > 221))
+						continue;
+#endif
+#if defined(ET12)
+				if(!strncmp(wl_nband, "4", 1) && strncmp(nvram_safe_get("HwId"), "A", 1) == 0 && (safe_atoi(tmp) < 30 || safe_atoi(tmp) > 221))
 						continue;
 #endif
 				json_object_array_add(chan_20m_array, json_object_new_string(tmp));
@@ -38929,7 +39019,7 @@ ej_get_wl_channel_list_5g_2(int eid, webs_t wp, int argc, char **argv) {
 static int
 ej_get_wl_channel_list_6g(int eid, webs_t wp, int argc, char **argv) {
 #ifdef CONFIG_BCMWL5
-#if defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 	char prefix[16], tmp[32];
 	int unit;
 	for(unit = 0; unit < num_of_wl_if(); unit++) {
@@ -38963,7 +39053,7 @@ ej_get_wl_channel_list_6g(int eid, webs_t wp, int argc, char **argv) {
 static int
 ej_get_wl_channel_list_6g_2(int eid, webs_t wp, int argc, char **argv) {
 #ifdef CONFIG_BCMWL5
-#if defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 	char prefix[16], tmp[32];
 	int unit, count = 0;
 	for(unit = 0; unit < num_of_wl_if(); unit++) {
@@ -39008,7 +39098,7 @@ static int ej_get_sw_mode(int eid, webs_t wp, int argc, char **argv) {
 #ifdef RTCONFIG_BONDING_WAN
 static int ej_wan_bonding_speed(int eid, webs_t wp, int argc, char **argv)
 {
-	if(check_user_agent(user_agent) == FROM_BROWSER)
+	if(check_user_agent(user_agent) == FROM_BROWSER || check_user_agent(user_agent) == FROM_WebView)
 		websWrite(wp, "%d", get_bonding_speed("bond1"));//bond0: LAN aggregation bond1: WAN aggregation
 	else
 		websWrite(wp, "\"%d\"", get_bonding_speed("bond1"));
@@ -39026,7 +39116,7 @@ static int ej_wan_bonding_p1_status(int eid, webs_t wp, int argc, char **argv)
 	else
 		speed = 0;
 
-	if(check_user_agent(user_agent) == FROM_BROWSER)
+	if(check_user_agent(user_agent) == FROM_BROWSER || check_user_agent(user_agent) == FROM_WebView)
 		websWrite(wp, "%d", speed);
 	else
 		websWrite(wp, "\"%d\"", speed);
@@ -39048,7 +39138,7 @@ static int ej_wan_bonding_p1_status(int eid, webs_t wp, int argc, char **argv)
 		}
 	}
 
-	if(check_user_agent(user_agent) == FROM_BROWSER)
+	if(check_user_agent(user_agent) == FROM_BROWSER || check_user_agent(user_agent) == FROM_WebView)
 		websWrite(wp, "%d", get_bonding_port_status(p1_port));
 	else
 		websWrite(wp, "\"%d\"", get_bonding_port_status(p1_port));
@@ -39067,7 +39157,7 @@ static int ej_wan_bonding_p2_status(int eid, webs_t wp, int argc, char **argv)
 	else
 		speed = 0;
 
-	if(check_user_agent(user_agent) == FROM_BROWSER)
+	if(check_user_agent(user_agent) == FROM_BROWSER || check_user_agent(user_agent) == FROM_WebView)
 		websWrite(wp, "%d", speed);
 	else
 		websWrite(wp, "\"%d\"", speed);
@@ -39095,7 +39185,7 @@ static int ej_wan_bonding_p2_status(int eid, webs_t wp, int argc, char **argv)
 		}
 	}
 
-	if(check_user_agent(user_agent) == FROM_BROWSER)
+	if(check_user_agent(user_agent) == FROM_BROWSER || check_user_agent(user_agent) == FROM_WebView)
 		websWrite(wp, "%d", get_bonding_port_status(p2_port));
 	else
 		websWrite(wp, "\"%d\"", get_bonding_port_status(p2_port));
@@ -41499,15 +41589,6 @@ static int get_clientlist_ex(struct json_object **clients)
 	*clients = json_object_new_object();
 
 	struct json_object *macArray = json_object_new_array();
-
-#ifdef RTCONFIG_TAGGED_BASED_VLAN
-	int i, vlan_flag;
-	int shmkeys[8], shmkey = 1003;
-	for(i = 0; i < 8; i++){
-		shmkeys[i] = shmkey;
-		shmkey++;
-	}
-#endif
 	/*
 	shmkey	index
 	1001	LAN
@@ -41524,7 +41605,13 @@ static int get_clientlist_ex(struct json_object **clients)
 	*/
 	get_client_detail_info(*clients, macArray, SHMKEY_LAN);
 
-#ifdef RTCONFIG_TAGGED_BASED_VLAN
+#if defined(RTCONFIG_TAGGED_BASED_VLAN) && !defined(FLAG_FUNCTION_TEMPORARILY_CANCELED)
+	int i, vlan_flag;
+	int shmkeys[8], shmkey = 1003;
+	for(i = 0; i < 8; i++){
+		shmkeys[i] = shmkey;
+		shmkey++;
+	}
 	vlan_flag = nvram_get_int("vlan_flag");
 	if(vlan_flag){
 		for(i = 0; i < 8; i++){
@@ -41536,7 +41623,7 @@ static int get_clientlist_ex(struct json_object **clients)
 	}
 #endif
 
-#ifdef RTCONFIG_CAPTIVE_PORTAL
+#if defined(RTCONFIG_CAPTIVE_PORTAL) && !defined(FLAG_FUNCTION_TEMPORARILY_CANCELED)
 	if (nvram_match("captive_portal_enable", "on")){
 		get_client_detail_info(*clients, macArray, SHMKEY_FREEWIFI);
 	}
@@ -41764,7 +41851,7 @@ struct log_pass_url_list log_pass_handlers[] = {
 	{ NULL, NULL }
 };	/* */
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
 void httpd_switch_ledg(int action)
 {
 	if(switch_ledg(action))

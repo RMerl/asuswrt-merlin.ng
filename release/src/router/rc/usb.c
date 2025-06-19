@@ -293,7 +293,7 @@ void add_usb_host_modules(void)
 
 #ifdef RTCONFIG_HND_ROUTER_AX
 	eval("insmod",
-#if defined(BCM4912) || defined(BCM6756) || defined(BCM6855) || defined(BCM6813) || defined(BCM6765) || defined(BCM6766)
+#if defined(BCM4912) || defined(BCM6756) || defined(BCM6855) || defined(BCM6813) || defined(BCM6765) || defined(BCM6766) || defined(RTBE58U_V2) || defined(TUFBE3600_V2)
 		"bcm_bca_usb"
 #else
 		"bcm_usb"

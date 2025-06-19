@@ -1314,6 +1314,7 @@ void generate_switch_para(void)
 		case MODEL_RTBE58U_PRO:
 		case MODEL_GTBE19000AI:
 		case MODEL_GSBE18000:
+		case MODEL_GT7:
 		case MODEL_GTBE96_AI:
 			break;
 
@@ -1759,7 +1760,7 @@ void enable_jumbo_frame(void)
 	else
 		system("rtkswitch 17");
 #endif
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	if (enable)
 		system("fapi-GSW-CfgSet nMaxPacketLen=10000");
 	else
@@ -1796,6 +1797,7 @@ void enable_jumbo_frame(void)
 	case MODEL_RTBE82M:
 	case MODEL_RTBE58U_PRO:
 	case MODEL_GSBE18000:
+	case MODEL_GT7:
 		/* BCM6750 / BCM6756 SF2 */
 		eval("ethswctl", "-c", "regaccess", "-v", "0x4005", "-l", "2", "-d", enable ? "0x2600" : "0x5f4", "-n", "0");
 		break;
@@ -1833,7 +1835,7 @@ void enable_jumbo_frame(void)
 #endif
 }
 
-#if defined(BCM6855) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(BQ16) || defined(BQ16_PRO) || defined(GTBE19000) || defined(BT10) || defined(GTBE19000AI) || defined(GTBE96_AI)
+#if defined(BCM6855) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(BQ16) || defined(BQ16_PRO) || defined(GTBE19000) || defined(BT10) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(RTBE88U)
 void config_jumbo_frame()
 {
 	char value[sizeof("10240")];
@@ -1903,7 +1905,7 @@ void config_jumbo_frame()
 
 	}
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(BQ16) || defined(BQ16_PRO) || defined(GTBE19000) || defined(BT10) || defined(GTBE19000AI) || defined(GTBE96_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(BQ16) || defined(BQ16_PRO) || defined(GTBE19000) || defined(BT10) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(RTBE88U)
 	int bufmem = 0;
 	if (f_read_string("/proc/environment/bufmem", value, sizeof(value)) > 0)
 		bufmem = atoi(value);
@@ -2140,8 +2142,8 @@ void init_switch_pre()
 	system("ethswctl -c pause -p 6 -v 2");
 #elif defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RPBE58)
 	system("ethswctl -c pause -p 0 -v 2");
-#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 	system("ethswctl -c pause -p 6 -v 2");
 #else
 	system("ethswctl -c pause -p 0 -v 2");
@@ -2150,6 +2152,8 @@ void init_switch_pre()
 	system("ethswctl -c pause -p 8 -v 2");
 #elif defined(TUFAX3000_V2) || defined(RTAXE7800)
 	system("ethswctl -c pause -p 0 -v 2");
+	system("ethswctl -c pause -p 1 -v 2");
+	system("ethswctl -c pause -p 5 -v 2");
 	system("ethswctl -c pause -p 8 -v 2");
 #elif defined(BCM6750) || defined(BCM63178)
 	system("ethswctl -c pause -p 0 -v 2");
@@ -2187,20 +2191,20 @@ void init_switch_pre()
 
 	memset(ifnames, 0, sizeof(ifnames));
 	add_to_list("eth0", ifnames, sizeof(ifnames));
-#if !defined(RTAX55) && !defined(RTAX1800) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTAX58U_V2) && !defined(RTAX3000N) && !defined(BR63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000) && !defined(GS7_PRO)
+#if !defined(RTAX55) && !defined(RTAX1800) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTAX58U_V2) && !defined(RTAX3000N) && !defined(BR63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7)
 	add_to_list("eth1", ifnames, sizeof(ifnames));
 #endif
-#if !defined(RTAX56_XD4) && !defined(XD4PRO) && !defined(CTAX56_XD4) && !defined(RTAX55) && !defined(RTAX1800) && !defined(RTAX82_XD6S) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTAX58U_V2) && !defined(RTAX3000N) && !defined(BR63) && !defined(EBA63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000) && !defined(GS7_PRO)
+#if !defined(RTAX56_XD4) && !defined(XD4PRO) && !defined(CTAX56_XD4) && !defined(RTAX55) && !defined(RTAX1800) && !defined(RTAX82_XD6S) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTAX58U_V2) && !defined(RTAX3000N) && !defined(BR63) && !defined(EBA63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7)
 	add_to_list("eth2", ifnames, sizeof(ifnames));
 #endif
-#if !defined(RTAX56_XD4) && !defined(XD4PRO) && !defined(CTAX56_XD4) && !defined(RTAX55) && !defined(RTAX1800) && !defined(RTAX82_XD6) && !defined(RTAX82_XD6S) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTAX58U_V2) && !defined(RTAX3000N) && !defined(BR63) && !defined(XD6_V2) && !defined(XC5) && !defined(EBA63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000) && !defined(GS7_PRO)
+#if !defined(RTAX56_XD4) && !defined(XD4PRO) && !defined(CTAX56_XD4) && !defined(RTAX55) && !defined(RTAX1800) && !defined(RTAX82_XD6) && !defined(RTAX82_XD6S) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTAX58U_V2) && !defined(RTAX3000N) && !defined(BR63) && !defined(XD6_V2) && !defined(XC5) && !defined(EBA63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7)
 	add_to_list("eth3", ifnames, sizeof(ifnames));
 #endif
-#if !defined(RTAX95Q) && !defined(XT8PRO) && !defined(BT12) && !defined(BT10) && !defined(BQ16) && !defined(BQ16_PRO) && !defined(BM68) && !defined(XT8_V2) && !defined(RTAXE95Q) && !defined(ET8PRO) && !defined(ET8_V2) && !defined(RTAX56_XD4) && !defined(XD4PRO) && !defined(CTAX56_XD4) && !defined(RTAX55) && !defined(RTAX1800) && !defined(RTAX82_XD6S) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTBE58_GO) && !defined(RTAX58U_V2) && !defined(ET12) && !defined(XT12) && !defined(GT10) && !defined(RTAX3000N) && !defined(BR63) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(XC5) && !defined(EBA63) && !defined(GTBE96) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(GTBE19000) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GTBE19000AI) && !defined(GSBE18000) && !defined(GS7_PRO) && !defined(GTBE96_AI)
+#if !defined(RTAX95Q) && !defined(XT8PRO) && !defined(BT12) && !defined(BT10) && !defined(BQ16) && !defined(BQ16_PRO) && !defined(BM68) && !defined(XT8_V2) && !defined(RTAXE95Q) && !defined(ET8PRO) && !defined(ET8_V2) && !defined(RTAX56_XD4) && !defined(XD4PRO) && !defined(CTAX56_XD4) && !defined(RTAX55) && !defined(RTAX1800) && !defined(RTAX82_XD6S) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTBE58_GO) && !defined(RTAX58U_V2) && !defined(ET12) && !defined(XT12) && !defined(GT10) && !defined(RTAX3000N) && !defined(BR63) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(XC5) && !defined(EBA63) && !defined(GTBE96) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(GTBE19000) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GTBE19000AI) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7) && !defined(GTBE96_AI)
 	add_to_list("eth4", ifnames, sizeof(ifnames));
 #endif
 #if defined(RTCONFIG_EXT_BCM53134) || defined(RTCONFIG_EXTPHY_BCM84880)
-#if !defined(RTAX95Q) && !defined(XT8PRO) && !defined(BT12) && !defined(BT10) && !defined(BQ16) && !defined(BQ16_PRO) && !defined(BM68) && !defined(XT8_V2) && !defined(RTAXE95Q) && !defined(ET8PRO) && !defined(ET8_V2) && !defined(ET12) && !defined(XT12) && !defined(TUFAX3000_V2) && !defined(RTAXE7800) && !defined(GT10) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(RTBE86U) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(GTBE19000) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(RTBE58_GO) && !defined(GTBE19000AI) && !defined(GSBE18000) && !defined(GS7_PRO) && !defined(GTBE96_AI)
+#if !defined(RTAX95Q) && !defined(XT8PRO) && !defined(BT12) && !defined(BT10) && !defined(BQ16) && !defined(BQ16_PRO) && !defined(BM68) && !defined(XT8_V2) && !defined(RTAXE95Q) && !defined(ET8PRO) && !defined(ET8_V2) && !defined(ET12) && !defined(XT12) && !defined(TUFAX3000_V2) && !defined(RTAXE7800) && !defined(GT10) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(RTBE86U) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(GTBE19000) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(RTBE58_GO) && !defined(GTBE19000AI) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7) && !defined(GTBE96_AI)
 #if defined(RTAX86U)
 	if(strcmp(get_productid(), "RT-AX86S"))
 #endif
@@ -2260,7 +2264,7 @@ void init_switch_pre()
 #endif
 
 	foreach(word, ifnames, next) {
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE86U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE86U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 		if (!strncmp(word, wan_if_eth(), strlen(wan_if_eth()))) {
 			dbg("%s: phy-power ctrl\n", word);
 			doSystem("ethctl %s phy-power down", word);
@@ -2458,7 +2462,7 @@ void init_switch_pre()
         }
 #endif
 
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	doSystem("ethswctl -c softswitch -i eth1 -o enable");
 #endif
 
@@ -2466,7 +2470,7 @@ void init_switch_pre()
 	system("swmdk");
 #endif
 
-#if !defined(RTAX55) && !defined(RTAX1800) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTAX58U_V2) && !defined(RTAX3000N) && !defined(BR63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000) && !defined(GS7_PRO)
+#if !defined(RTAX55) && !defined(RTAX1800) && !defined(RPAX56) && !defined(RPAX58) && !defined(RPBE58) && !defined(RTAX58U_V2) && !defined(RTAX3000N) && !defined(BR63) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7)
 	foreach(word, ifnames, next){
 #if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 		if (is_rtl8372_boardid() && !strcmp(word, "eth1")) continue;
@@ -2548,10 +2552,10 @@ void init_switch_pre()
 	}
 #endif
 
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	if (!nvram_get_int("stop_tmctl_qos"))  {
 	system("tmctl porttminit --devtype 0 --if eth1");
-#if defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || (GSBE18000) || defined(GS7_PRO)
+#if defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || (GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	system("tmctl setqcfg --devtype 0 --if eth1 --qid 7 --priority 0 --weight 1 --schedmode 2 --shapingrate 2500000");
 	system("tmctl setqcfg --devtype 0 --if eth1 --qid 5 --priority 0 --weight 1 --schedmode 2 --shapingrate 2500000");
 	system("tmctl setqcfg --devtype 0 --if eth1 --qid 3 --priority 0 --weight 1 --schedmode 2 --shapingrate 2500000");
@@ -3154,7 +3158,7 @@ void init_switch()
 		{
 			/* set wanports in init_nvram for dualwan */
 			/* WAN L1 L2 L3 L4 L5 L6 L7 L8 SFP+*/
-			int ports[6] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+			int ports[10] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 			char buf[64], *ptr;
 			int i, len, wancfg;
 			int tmp_type;
@@ -3441,23 +3445,28 @@ void init_switch()
 				system("rtkswitch 451");
 				sleep(3);
 			}
+			if (!hnd_boardid_cmp("RT-BE92U_N"))
+				system("rtkswitch 452");
 			system("rtkswitch 6");
 
 			break;
 		}
 #endif
-#if defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 		case MODEL_RTBE82U:
 		case MODEL_RTBE82M:
 		case MODEL_RTBE58U_PRO:
 		case MODEL_GSBE18000:
+		case MODEL_GT7:
 		{
 			/* set wanports in init_nvram for dualwan */
 			/* WAN L1 L2 L3 L4 */
-#if defined(GSBE18000) || defined(GS7_PRO)
+#if defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 			int ports[8] = { 3, 4, 5, 6, 7, 0, 1, 2 };
 #elif defined(RTBE82M)
 			int ports[5] = { 0, 1, 2, 3, 4 };
+#elif defined(GT7)
+			int ports[6] = { 0, 0, 1, 2, 3, 8 };
 #else
 			int ports[5] = { 0, 1, 1, 1, 1 };
 #endif
@@ -3483,10 +3492,12 @@ void init_switch()
 			}
 			else {
 				wancfg = 0;
-#if defined(GSBE18000) || defined(GS7_PRO)
+#if defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 				nvram_set("lanports", "4 5 6 7 0 1 2");
 #elif defined(RTBE82M)
 				nvram_set("lanports", "1 2 3 4");
+#elif defined(GT7)
+				nvram_set("lanports", "0 1 2 3 8");
 #else
 				nvram_set("lanports", "1 1 1 1");
 #endif
@@ -3507,23 +3518,23 @@ void init_switch()
 			}
 			nvram_set("wanports", buf);
 
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 			eval("mknod", "/dev/mxlswitch", "c", "207", "0");
 #else
 			eval("mknod", "/dev/rtkswitch", "c", "206", "0");
 #endif
-#if defined(GSBE18000) || defined(GS7_PRO)
+#if defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 			f_write_string("/sys/class/leds/led_gpio_28/brightness", "255", 0, 0);
 #else
 			f_write_string("/sys/class/leds/led_gpio_27/brightness", "255", 0, 0);
 #endif
 			usleep(40*1000);
-#if defined(GSBE18000) || defined(GS7_PRO)
+#if defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 			f_write_string("/sys/class/leds/led_gpio_28/brightness", "0", 0, 0);
 #else
 			f_write_string("/sys/class/leds/led_gpio_27/brightness", "0", 0, 0);
 #endif
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 			eval("insmod", "mxl");
 #else
 			eval("insmod", "rtl8372");
@@ -3642,7 +3653,7 @@ void init_switch()
 #endif
 
 	hnd_nat_ac_init(1);
-#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GS7_PRO)
+#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7)
 	enable_jumbo_frame();
 #endif
 #if defined(RTCONFIG_EXT_BCM53134) && !defined(RTCONFIG_HND_ROUTER_AX_6756) && !defined(RTCONFIG_HND_ROUTER_BE_4916)
@@ -4552,7 +4563,7 @@ system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMap
 	}
 #endif
 }
-#elif defined(GSBE18000) || defined(GS7_PRO)
+#elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 void config_switch(void)
 {
 #ifdef RTCONFIG_DUALWAN
@@ -4972,6 +4983,425 @@ system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMap
 	}
 #endif
 }
+#elif defined(GT7)
+void config_switch(void)
+{
+#ifdef RTCONFIG_DUALWAN
+	int unit = 0;
+	char wan_if[10];
+
+	_dprintf("%s, chkchk wans_lanport=%d\n", __func__, nvram_get_int("wans_lanport"));
+
+	if (is_router_mode() && nvram_get("wans_dualwan")) {
+		for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
+			_dprintf("%s, chkchk, get dualwan by unit(%d)=%d\n", __func__, unit, get_dualwan_by_unit(unit));
+			if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_LAN) {
+/* The LAN/WAN port mapping:
+    - CPU: port13/xpcs1
+    - LAN1: port1
+    - LAN2: port2
+    - LAN3: port3
+    - LAN4: port4
+    - LAN5: port9
+
+    wans_lanport == 1 case:
+	Vlan0-BID0: LAN2/LAN3/LAN4/LAN5/CPU untag BID0 (bp2-4,9,13)
+	Vlan2-BID1: LAN1 untag BID1 (ctp1/bp1), CPU tagged vid2 BID1 (ctp13/new-BP17)
+*/
+				if (nvram_match("wans_lanport", "1")) {
+					if (nvram_get_int("wans_extwan")) return;
+// LAN2/LAN3/LAN4/LAN5/CPU, LAN1/CPU-newBP
+system("fapi-GSW-BridgeAlloc");
+
+// GSW_BRIDGE_portAlloc_t bpnew = {.nBridgePortId = 17};
+system("fapi-GSW-BridgePortAlloc");
+
+//Assign new exVLAN. Must save the returned "blockId"
+//In this case (86252), the blockId=112
+system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
+
+//CTP2 to set exVLAN, discard stag,dtag (port=1, blockId=16*(i-1)=0x0)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x0 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x0 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=7, blockId=16*(i-1)=0x60)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13), filter single tag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=3 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=3 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//xpcs1(CTP13), filter double tag (inner tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=4 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=1 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//new-tag-BP17, treatment untag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=0 \
+	eOuterVlanFilterVlanType=3 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment stag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=1 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment dtag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=2 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=2 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//Bind CTP, EXVLAN, BP together
+
+//new-BP17, portmap=BP2
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=17 \
+	nBridgeId=1 nDestLogicalPortId=13 \
+	bMcDestIpLookupDisable=0 \
+	bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2 nBridgePortMapIndex[1]=0x0 \
+	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=112");
+
+//CTP2 (port=1, blockId=16*(i-1)=0x0)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=1 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x0");
+
+//xpcs1(CTP13) (port=7, blockId=16*(i-1)=0x60)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=13 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x60");
+
+//On PORT_BPs (1-4,9,13) to set bridge ID and bridge port member
+
+//BP2, portmap: bit17
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=1 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x2");
+
+//BP2-4&9&13, portmap: bit2-4,9,13 exclude itself
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2218");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2214");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x220c");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x201c");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x21c");
+				} else if (nvram_match("wans_lanport", "2")) {
+// LAN1/LAN3/LAN4/LAN5/CPU, LAN2/CPU-newBP
+system("fapi-GSW-BridgeAlloc");
+
+// GSW_BRIDGE_portAlloc_t bpnew = {.nBridgePortId = 17};
+system("fapi-GSW-BridgePortAlloc");
+
+//Assign new exVLAN. Must save the returned "blockId"
+//In this case (86252), the blockId=112
+system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
+
+//CTP2 to set exVLAN, discard stag,dtag (port=2, blockId=16*(i-1)=0x10)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x10 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x10 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=7, blockId=16*(i-1)=0x60)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13), filter single tag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=3 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=3 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//xpcs1(CTP13), filter double tag (inner tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=4 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=1 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//new-tag-BP17, treatment untag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=0 \
+	eOuterVlanFilterVlanType=3 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment stag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=1 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment dtag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=2 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=2 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//Bind CTP, EXVLAN, BP together
+
+//new-BP17, portmap=BP2
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=17 \
+	nBridgeId=1 nDestLogicalPortId=13 \
+	bMcDestIpLookupDisable=0 \
+	bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x4 nBridgePortMapIndex[1]=0x0 \
+	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=112");
+
+//CTP2 (port=2, blockId=16*(i-1)=0x10)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=2 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x10");
+
+//xpcs1(CTP13) (port=7, blockId=16*(i-1)=0x60)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=13 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x60");
+
+//On PORT_BPs (1-4,9,13) to set bridge ID and bridge port member
+
+//BP2, portmap: bit17
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x2");
+
+//BP1&3&4&9&13, portmap: bit1,3,4,9,13 exclude itself
+if (nvram_get_int("wans_extwan")) {
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2210");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2208");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2018");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x218");
+} else {
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=1 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2218");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2212");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x220a");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x201a");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x21a");
+}
+				} else if (nvram_match("wans_lanport", "3")) {
+// LAN1/LAN2/LAN4/LAN5/CPU, LAN3/CPU-newBP
+system("fapi-GSW-BridgeAlloc");
+
+// GSW_BRIDGE_portAlloc_t bpnew = {.nBridgePortId = 17};
+system("fapi-GSW-BridgePortAlloc");
+
+//Assign new exVLAN. Must save the returned "blockId"
+//In this case (86252), the blockId=112
+system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
+
+//CTP2 to set exVLAN, discard stag,dtag (port=3, blockId=16*(i-1)=0x20)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x20 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x20 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=7, blockId=16*(i-1)=0x60)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13), filter single tag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=3 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=3 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//xpcs1(CTP13), filter double tag (inner tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=4 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=1 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//new-tag-BP17, treatment untag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=0 \
+	eOuterVlanFilterVlanType=3 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment stag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=1 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment dtag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=2 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=2 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//Bind CTP, EXVLAN, BP together
+
+//new-BP17, portmap=BP2
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=17 \
+	nBridgeId=1 nDestLogicalPortId=13 \
+	bMcDestIpLookupDisable=0 \
+	bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x8 nBridgePortMapIndex[1]=0x0 \
+	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=112");
+
+//CTP2 (port=3, blockId=16*(i-1)=0x20)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=3 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x20");
+
+//xpcs1(CTP13) (port=7, blockId=16*(i-1)=0x60)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=13 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x60");
+
+//On PORT_BPs (1-4,9,13) to set bridge ID and bridge port member
+
+//BP2, portmap: bit17
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x2");
+
+//BP1&2&4&9&13, portmap: bit1,2,4,9,13 exclude itself
+if (nvram_get_int("wans_extwan")) {
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2210");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2204");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2014");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x214");
+} else {
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=1 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2214");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2212");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2206");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2016");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x216");
+}
+				} else if (nvram_match("wans_lanport", "4")) {
+// LAN1/LAN2/LAN3/LAN5/CPU, LAN4/CPU-newBP
+system("fapi-GSW-BridgeAlloc");
+
+// GSW_BRIDGE_portAlloc_t bpnew = {.nBridgePortId = 17};
+system("fapi-GSW-BridgePortAlloc");
+
+//Assign new exVLAN. Must save the returned "blockId"
+//In this case (86252), the blockId=112
+system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
+
+//CTP2 to set exVLAN, discard stag,dtag (port=4, blockId=16*(i-1)=0x30)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x30 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x30 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=7, blockId=16*(i-1)=0x60)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13), filter single tag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=3 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=3 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//xpcs1(CTP13), filter double tag (inner tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=4 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=1 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//new-tag-BP17, treatment untag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=0 \
+	eOuterVlanFilterVlanType=3 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment stag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=1 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment dtag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=2 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=2 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//Bind CTP, EXVLAN, BP together
+
+//new-BP17, portmap=BP2
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=17 \
+	nBridgeId=1 nDestLogicalPortId=13 \
+	bMcDestIpLookupDisable=0 \
+	bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x10 nBridgePortMapIndex[1]=0x0 \
+	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=112");
+
+//CTP2 (port=4, blockId=16*(i-1)=0x30)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=4 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x30");
+
+//xpcs1(CTP13) (port=7, blockId=16*(i-1)=0x60)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=13 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x60");
+
+//On PORT_BPs (1-4,9,13) to set bridge ID and bridge port member
+
+//BP2, portmap: bit17
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x2");
+
+//BP1&3&4&9&13, portmap: bit1,3,4,9,13 exclude itself
+if (nvram_get_int("wans_extwan")) {
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2208");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2204");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x200c");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x20c");
+} else {
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=1 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x220c");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x220a");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2206");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x200e");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x20e");
+}
+				} else return;
+
+				printf("DUAL WAN: Set specific LAN as WAN\n");
+				eval("vconfig", "set_name_type", "VLAN_PLUS_VID_NO_PAD");
+				eval("vconfig", "add", "eth1", "2");
+			}
+		}
+	}
+#endif
+	_dprintf("%s, chkchk end\n", __func__);
+
+}
 #else
 void config_switch(void)
 {
@@ -5128,7 +5558,7 @@ void config_switch(void)
 }
 #endif
 
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7)
 int vlan4094_enabled()
 {
 #if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
@@ -5154,9 +5584,154 @@ int vlan4094_enabled()
 	return 0;
 }
 
+#ifdef GT7
+void config_extwan_gt7(void)
+{
+	int lan_port_excl = 0;
+
+	if (nvram_get_int("wans_extwan") && ((get_wans_dualwan() & WANSCAP_LAN) && (nvram_get_int("wans_lanport") >= 2) && (nvram_get_int("wans_lanport") <= 4))) {
+		if (nvram_match("wans_lanport", "2")) {
+				//LAN2 as WAN
+				//no-tag fwd mask except LAN1/LAN2
+				lan_port_excl = 2;
+		} else if (nvram_match("wans_lanport", "3")) {
+				//LAN3 as WAN
+				//no-tag fwd mask except LAN1/LAN3
+				lan_port_excl = 3;
+		} else if (nvram_match("wans_lanport", "4")) {
+				//LAN4 as WAN
+				//no-tag fwd mask except LAN1/LAN4
+				lan_port_excl = 4;
+		}
+	} else {
+		if (!nvram_get_int("wans_extwan") && (get_wans_dualwan() & WANSCAP_LAN))
+			return;
+	}
+/* The LAN/WAN port mapping:
+    - CPU: port13/xpcs1
+    - LAN1: port1
+    - LAN2: port2
+    - LAN3: port3
+    - LAN4: port4
+    - LAN5: port9
+
+    wans_lanport == 1 case:
+	Vlan0-BID0: LAN2/LAN3/LAN4/LAN5/CPU untag BID0 (bp2-4,9,13)
+	Vlan2-BID1: LAN1 untag BID1 (ctp1/bp1), CPU tagged vid2 BID1 (ctp13/new-BP17)
+*/
+
+// LAN2/LAN3/LAN4/LAN5/CPU, LAN1/CPU-newBP
+system("fapi-GSW-BridgeAlloc");
+
+// GSW_BRIDGE_portAlloc_t bpnew = {.nBridgePortId = 17};
+system("fapi-GSW-BridgePortAlloc");
+
+//Assign new exVLAN. Must save the returned "blockId"
+//In this case (86252), the blockId=112
+system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
+
+//CTP2 to set exVLAN, discard stag,dtag (port=1, blockId=16*(i-1)=0x0)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x0 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x0 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=7, blockId=16*(i-1)=0x60)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
+
+//xpcs1(CTP13), filter single tag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=3 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=4094 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=3 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//xpcs1(CTP13), filter double tag (inner tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=4 \
+	eOuterVlanFilterVlanType=0 \
+	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=4094 \
+	eOuterVlanFilterTpid=1 \
+	eInnerVlanFilterVlanType=1 \
+	eRemoveTagAction=1 \
+	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+
+//new-tag-BP17, treatment untag
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=0 \
+	eOuterVlanFilterVlanType=3 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=4094 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment stag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=1 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=3 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=4094 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//new-tag-BP17, treatment dtag (tag transparent)
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=2 \
+	eOuterVlanFilterVlanType=2 \
+	eInnerVlanFilterVlanType=2 \
+	bOuterVlanActionEnable=1 \
+	eOuterVlanActionTpid=3 \
+	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=4094 \
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+
+//Bind CTP, EXVLAN, BP together
+
+//new-BP17, portmap=BP2
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=17 \
+	nBridgeId=1 nDestLogicalPortId=13 \
+	bMcDestIpLookupDisable=0 \
+	bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2 nBridgePortMapIndex[1]=0x0 \
+	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=112");
+
+//CTP2 (port=1, blockId=16*(i-1)=0x0)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=1 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x0");
+
+//xpcs1(CTP13) (port=7, blockId=16*(i-1)=0x60)
+system("fapi-GSW-CtpPortConfigSet nLogicalPortId=13 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x60");
+
+//On PORT_BPs (1-4,9,13) to set bridge ID and bridge port member
+
+//BP2, portmap: bit17
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=1 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x2");
+
+//BP2-4&9&13, portmap: bit2-4,9,13 exclude itself
+	if (lan_port_excl == 2) {
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2210");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2208");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2018");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x218");
+	} else if (lan_port_excl == 3) {
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2210");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2204");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2014");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x214");
+	} else if (lan_port_excl == 4) {
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2208");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2204");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x200c");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x20c");
+	} else {
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2218");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2214");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x220c");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=9 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x201c");
+system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x21c");
+	}
+}
+#endif
+
 void config_extwan(void)
 {
-#if !defined(RTCONFIG_BCM_MFG) && !defined(RTBE82M) && !defined(GSBE18000) && !defined(GS7_PRO)
+#if !defined(RTCONFIG_BCM_MFG) && !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO)
 	if (!hnd_boardid_cmp("GT-BE98_BCM"))
 #endif
 		return;
@@ -5170,6 +5745,9 @@ void config_extwan(void)
 		return;
 
 	if (re_mode() || is_router_mode() || !nvram_get_int("x_Setting")) {
+#ifdef GT7
+		config_extwan_gt7();
+#else
 		if (nvram_get_int("wans_extwan") && ((get_wans_dualwan() & WANSCAP_LAN) && (nvram_get_int("wans_lanport") >= 2) && (nvram_get_int("wans_lanport") <= 4))) {
 #if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2)
 			if (nvram_match("wans_lanport", "2")) {
@@ -5219,7 +5797,7 @@ void config_extwan(void)
 			__setup_vlan(0, 0, 0x00D000D0);		//no-tag fwd mask except LAN1
 #endif
 		}
-
+#endif
 		eval("vconfig", "set_name_type", "VLAN_PLUS_VID_NO_PAD");
 		eval("vconfig", "add", "eth1", "4094");
 
@@ -5230,10 +5808,12 @@ void config_extwan(void)
 
 void reset_extwan(void)
 {
-#if !defined(RTCONFIG_BCM_MFG) && !defined(RTBE82M) && !defined(GSBE18000) && !defined(GS7_PRO)
+#if !defined(RTCONFIG_BCM_MFG) && !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO)
 	if (iface_exist("vlan4094")) {
 		system("vconfig rem vlan4094");
+#ifndef GT7
 		system("rtkswitch 382");
+#endif
 	}
 #endif
 }
@@ -5534,10 +6114,15 @@ unsigned char gen_mssid_hwaddr_mac0(unsigned char mac_binary[], int unit)
 {
 	char vif_addr[WLC_IOCTL_SMLEN];
 	int max_wl_cap_mbss = 16 ; /* to meet all model, always using mbss16 to generate mac0 */
+	int adjustment = 0 ;
 
 	memcpy(vif_addr, mac_binary, ETHER_ADDR_LEN);
 
-	vif_addr[0] = 96 + (vif_addr[5]%(max_wl_cap_mbss -1) * 8);
+	if(vif_addr[0] == 96){
+		if(vif_addr[5]%(max_wl_cap_mbss -1) == 0) adjustment = 1;
+		else adjustment = 0;
+	}
+	vif_addr[0] = 96 + ((vif_addr[5]+adjustment)%(max_wl_cap_mbss -1) * 8);
 
 	ETHER_SET_LOCALADDR(vif_addr);
 
@@ -5758,6 +6343,7 @@ const unsigned int devpath_idx[4] = {3, 2, 4};  // 2.4G, 5G-1, 5G-2
 					snprintf(macaddr_str, sizeof(macaddr_str), "sb/1/macaddr");
 				break;
 			case MODEL_GSBE18000:
+			case MODEL_GT7:
 				snprintf(macaddr_str, sizeof(macaddr_str), "%d:macaddr", 2 - unit);
 				break;
 			default:
@@ -6150,7 +6736,7 @@ _dprintf("load_wl(): starting...\n");
 	nvram_set("3:avsmargins", "680,300"); // 2.4G
 	nvram_set("4:avsmargins", "680,300"); // 5G
 #endif
-#if defined(BT10) || defined(GT10) || defined(RTAX9000) || defined(RTBE95U) || defined(RTBE86U) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(BT10) || defined(GT10) || defined(RTAX9000) || defined(RTBE95U) || defined(RTBE86U) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	snprintf(modules, sizeof(modules), "dhd wl");
 #endif
 	foreach(module, modules, next) {
@@ -6784,6 +7370,7 @@ void init_syspara(void)
 		case MODEL_RTBE58_GO:
 		case MODEL_GTBE19000AI:
 		case MODEL_GSBE18000:
+		case MODEL_GT7:
 		case MODEL_GTBE96_AI:
 			if (!nvram_get("lan_hwaddr"))
 				nvram_set("lan_hwaddr", cfe_nvram_safe_get("et0macaddr"));
@@ -7149,6 +7736,10 @@ void init_others(void)
 	eval("insmod", "hnd");
 #endif
 
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+	eval("insmod", "xt_SKIPLOG");
+#endif
+
 	//tweak UDP socket buffer
 	f_write_string("/proc/sys/net/core/wmem_default", "524288", 0, 0);
 	f_write_string("/proc/sys/net/core/wmem_max", "524288", 0, 0);
@@ -7230,7 +7821,7 @@ void init_others(void)
 	/* restore USB power */
 	f_write_string("/sys/class/leds/led_gpio_82/brightness", "255", 0, 0);
 #endif
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	/* set pinmux of GPIO 67 as 4 to enable GPIO mode */
 	system("sw 0xff800554 0");
 	system("sw 0xff800558 0x4043");
@@ -7249,10 +7840,10 @@ void init_others(void)
 	/* set parallel led register */
 	// system("sw 0xff803018 0x01280010");
 #endif
-#if defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI)
+#if defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GTBE96_AI)
 	button_pressed(BTN_WAKE);
 #endif
-#if defined(GSBE18000) || defined(GS7_PRO)	//WAR
+#if defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)	//WAR
 	f_write_string("/sys/class/leds/led_gpio_3/brightness", "255", 0, 0);
 	usleep(25*1000);
 	f_write_string("/sys/class/leds/led_gpio_3/brightness", "0", 0, 0);
@@ -7260,6 +7851,9 @@ void init_others(void)
 #if defined(RTBE92U) || defined(RTBE95U) || defined(RTBE58U_PRO)
 	if (!nvram_get_int("bcmspu_reqd"))
 	eval("rmmod", "bcmspu");
+#endif
+#ifdef RTBE92U
+	config_avs();
 #endif
 }
 #else // HND_ROUTER
@@ -7414,9 +8008,11 @@ void init_others(void)
 #endif	// HND_ROUTER
 #endif	// RTCONFIG_BCMARM
 
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 void init_others_post(void)
 {
+	mxl_fw_check();
+
 	enable_jumbo_frame();
 
 	/* enable LLDP pass-through */
@@ -7426,8 +8022,9 @@ void init_others_post(void)
 	system("fapi-GSW-PceRuleDisable pattern.nIndex=13");
 
 	/* Set Serdes0 to XFI mode to workaround possible no Tx issue */
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	system("fapi-GSW-Sfp-Set nPortId=0 nOption=0 nMode=1 nSpeed=2");
+	system("fapi-GSW-Sfp-Set nPortId=1 nOption=0 nMode=1 nSpeed=2");
 #endif
 }
 #endif
@@ -7576,7 +8173,7 @@ void adjust_txbf_bfe_cap(int unit, char *orig_txbf_bfe_cap)
 #elif defined(RTBE95U)
 	/* wl0 */
 	int band_to_config[] = {0};
-#elif defined(GSBE18000) || defined(GS7_PRO)
+#elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	/* wl0 */
 	int band_to_config[] = {0};
 #else
@@ -7651,6 +8248,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 #endif
 #if defined(RTCONFIG_HND_ROUTER_AX)
 	int cap_11ax = wl_cap(unit, "11ax");
+	int ax_en = 0;
 #endif
 #if defined(RTCONFIG_WIFI7)
 	int cap_11be = wl_cap(unit, "11be");
@@ -7672,7 +8270,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 	int wlc_idx_align[3] = {1, 2, 0};    // wl0(wlc1), wl1(wlc2), wl2(wlc0);
 #elif defined(RTBE95U)
 	int wlc_idx_align[3] = {1, 2, 0};    // wl0(wlc1), wl1(wlc2), wl2(wlc0);
-#elif defined(GSBE18000) || defined(GS7_PRO)
+#elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	int wlc_idx_align[3] = {2, 1, 0};    // wl0(wlc1), wl1(wlc2), wl2(wlc0);
 #endif
 
@@ -7690,7 +8288,6 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 
 #if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
 		if (nvram_get_int(strcat_r(prefix, "nband", tmp)) == 4) { // 6G band
-			nvram_set(strcat_r(prefix, "sae_pwe", tmp), "1");
 			nvram_set(strcat_r(prefix, "wps_mode", tmp), "disabled");
 			if (!strcmp(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), "open")) {
 				nvram_set(strcat_r(prefix, "auth_mode_x", tmp), "owe");
@@ -7709,18 +8306,6 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 			}
 		}
 		else {	// for 2.4G & 5G band, enable oob discovery
-#if defined(RTCONFIG_WIFI7)
-			if(!strcmp(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), "sae")
-				|| !strcmp(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), "psk2sae")
-#ifdef RTCONFIG_WPA3_ENTERPRISE
-				|| !strcmp(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), "wpa3")
-				|| !strcmp(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), "suite-b")
-#endif
-			)
-				nvram_set(strcat_r(prefix, "sae_pwe", tmp), "2"); // HnP + H2E
-#else //!defined(RTCONFIG_WIFI7)
-			nvram_set(strcat_r(prefix, "sae_pwe", tmp), "0");
-#endif
 			nvram_set(strcat_r(prefix, "nbr_discovery_cap", tmp), "1");
 		}
 #endif
@@ -7877,20 +8462,6 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 				nvram_set(strcat_r(prefix, "crypto", tmp), "aes");
 			}
 		}
-		else { // 2.4G/5G
-#if defined(RTCONFIG_WIFI7)
-			if(!strcmp(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), "sae")
-				|| !strcmp(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), "psk2sae")
-#ifdef RTCONFIG_WPA3_ENTERPRISE
-				|| !strcmp(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), "wpa3")
-				|| !strcmp(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), "suite-b")
-#endif
-			)
-                                nvram_set(strcat_r(prefix, "sae_pwe", tmp), "2"); // HnP + H2E
-#else //!defined(RTCONFIG_WIFI7)
-				nvram_set(strcat_r(prefix, "sae_pwe", tmp), "0");
-#endif
-		}
 #endif
 
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
@@ -7970,7 +8541,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 	if (is_psta(unit) || is_psr(unit)) {
 #if defined(RTCONFIG_AMAS)
 		if ((dpsta_mode() || dpsr_mode()) && nvram_get_int("re_mode") == 1)
-#if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(BT10) || defined(GT10) || defined(RTAX9000) || defined(BQ16) || defined(BQ16_PRO) || defined(RTBE95U) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(BT10) || defined(GT10) || defined(RTAX9000) || defined(BQ16) || defined(BQ16_PRO) || defined(RTBE95U) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 			snprintf(prefix2, sizeof(prefix2), "wlc%d_", wlc_idx_align[unit]);
 #else
 			snprintf(prefix2, sizeof(prefix2), "wlc%d_", unit);
@@ -8583,14 +9154,14 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 					if (nvram_match(strcat_r(prefix, "bw_320", tmp), "1"))
 						nvram_set(strcat_r(prefix, "bw_cap", tmp), "31");    // 320M
 					else if (nvram_match(strcat_r(prefix, "bw_160", tmp), "1"))
-						nvram_set(strcat_r(prefix, "bw_cap", tmp), hw_vht_cap() ? (hw_he_cap() ? "15" : "7") : "3");	// 160M
+						nvram_set(strcat_r(prefix, "bw_cap", tmp), hw_vht_cap() ? (hw_he_cap(unit) ? "15" : "7") : "3");	// 160M
 					else if (is_psta(unit) || is_psr(unit)) {
 #if defined(RTCONFIG_BW320M)
 						if(cap_320m)
-							nvram_set(strcat_r(prefix, "bw_cap", tmp), hw_vht_cap() ? (hw_he_cap() ? "31" : "7") : "3");    // 320M
+							nvram_set(strcat_r(prefix, "bw_cap", tmp), hw_vht_cap() ? (hw_he_cap(unit) ? "31" : "7") : "3");// 320M
 						else
 #endif
-							nvram_set(strcat_r(prefix, "bw_cap", tmp), hw_vht_cap() ? (hw_he_cap() ? "15" : "7") : "3");    // 160M
+							nvram_set(strcat_r(prefix, "bw_cap", tmp), hw_vht_cap() ? (hw_he_cap(unit) ? "15" : "7") : "3");// 160M
 					}
 					else
 #endif
@@ -8648,7 +9219,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 			if (nvram_match(strcat_r(prefix, "nband", tmp), "2"))	// 2.4G
 				nvram_set(strcat_r(prefix, "bw_cap", tmp), "3");
 			else
-				nvram_set(strcat_r(prefix, "bw_cap", tmp), hw_vht_cap() ? (hw_he_cap() ? "15" : "7") : "3");
+				nvram_set(strcat_r(prefix, "bw_cap", tmp), hw_vht_cap() ? (hw_he_cap(unit) ? "15" : "7") : "3");
 			nvram_set(strcat_r(prefix, "obss_coex", tmp), "0");
 		}
 #endif
@@ -8656,7 +9227,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 		else if (nvram_match(strcat_r(prefix, "bw", tmp), "6") &&	// 320M
 			 nvram_match(strcat_r(prefix, "nband", tmp), "4"))	// 6GHz
 		{
-			nvram_set(strcat_r(prefix, "bw_cap", tmp), hw_vht_cap() ? (hw_he_cap() ? "31" : "7") : "3");
+			nvram_set(strcat_r(prefix, "bw_cap", tmp), hw_vht_cap() ? (hw_he_cap(unit) ? "31" : "7") : "3");
 			nvram_set(strcat_r(prefix, "obss_coex", tmp), "0");
 		}
 #endif
@@ -8730,20 +9301,30 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 		if (cap_11be && nvram_match(strcat_r(prefix, "11be", tmp), "1"))
 		{
 			eht_feats = 0x7;	// Enable EHT upon 6G/5G/2.4G
-			if (nvram_match(strcat_r(prefix, "be_ofdma", tmp), "1"))		// Enable EHT DL OFDMA
-				eht_feats |= 0x8;
-			else if (nvram_match(strcat_r(prefix, "be_ofdma", tmp), "2"))		// Enable EHT UL OFDMA
-				eht_feats |= 0x10;
-			else if (nvram_match(strcat_r(prefix, "be_ofdma", tmp), "3"))		// Enable EHT DL+UL OFDMA
-				eht_feats |= 0x18;
+			if (strlen(nvram_safe_get(strcat_r(prefix, "be_ofdma", tmp))) != 0 ||
+			    strlen(nvram_safe_get(strcat_r(prefix, "be_mumimo", tmp))) != 0) {
+				if (nvram_match(strcat_r(prefix, "be_ofdma", tmp), "1"))		// Enable EHT DL OFDMA
+					eht_feats |= 0x8;
+				else if (nvram_match(strcat_r(prefix, "be_ofdma", tmp), "2"))		// Enable EHT UL OFDMA
+					eht_feats |= 0x10;
+				else if (nvram_match(strcat_r(prefix, "be_ofdma", tmp), "3"))		// Enable EHT DL+UL OFDMA
+					eht_feats |= 0x18;
 
-			if (nvram_match(strcat_r(prefix, "be_mumimo", tmp), "1"))		// Enable EHT DL MU-MIMO
-				eht_feats |= 0x20;
-			else if (nvram_match(strcat_r(prefix, "be_mumimo", tmp), "2"))		// Enable EHT UL MU-MIMO
-				eht_feats |= 0x40;
-			else if (nvram_match(strcat_r(prefix, "be_mumimo", tmp), "3"))		// Enable EHT DL+UL MU-MIMO
-				eht_feats |= 0x60;
-
+				if (nvram_match(strcat_r(prefix, "be_mumimo", tmp), "1"))		// Enable EHT DL MU-MIMO
+					eht_feats |= 0x20;
+				else if (nvram_match(strcat_r(prefix, "be_mumimo", tmp), "2"))		// Enable EHT UL MU-MIMO
+					eht_feats |= 0x40;
+				else if (nvram_match(strcat_r(prefix, "be_mumimo", tmp), "3"))		// Enable EHT DL+UL MU-MIMO
+					eht_feats |= 0x60;
+			}
+			else {
+				if (nvram_match(strcat_r(prefix, "ofdma", tmp), "1"))		// Enable EHT DL OFDMA
+					eht_feats |= 0x8;
+				else if (nvram_match(strcat_r(prefix, "ofdma", tmp), "2"))	// Enable EHT DL/UL OFDMA
+					eht_feats |= 0x18;
+				else if (nvram_match(strcat_r(prefix, "ofdma", tmp), "3"))	// Enable EHT DL/UL OFDMA+MU-MIMO
+					eht_feats |= 0x78;
+			}
 			nvram_set_int(strcat_r(prefix, "eht_features", tmp), eht_feats);
 		}
 		else
@@ -8769,17 +9350,14 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 		if (nvram_match(strcat_r(prefix, "txbf", tmp), "1"))
 		{
 #ifdef RTCONFIG_HND_ROUTER_AX
-			int ax_en = nvram_match(strcat_r(prefix, "11ax", tmp), "1") && cap_11ax;
-#endif
-#ifdef RTCONFIG_WIFI7
-			int be_en = nvram_match(strcat_r(prefix, "11be", tmp), "1") && cap_11be;
+			ax_en = nvram_match(strcat_r(prefix, "11ax", tmp), "1") && cap_11ax;
 #endif
 #ifdef RTCONFIG_MUMIMO
 			if (nvram_match(strcat_r(prefix, "mumimo", tmp), "1"))
 			{
 #ifdef RTCONFIG_WIFI7
-				nvram_set(strcat_r(prefix, "txbf_bfr_cap", tmp), be_en ? "63" : (ax_en ? "31" : "3"));
-				nvram_set(strcat_r(prefix, "txbf_bfe_cap", tmp), be_en ? "111" : (ax_en ? "15" : "3"));
+				nvram_set(strcat_r(prefix, "txbf_bfr_cap", tmp), "255");
+				nvram_set(strcat_r(prefix, "txbf_bfe_cap", tmp), "111");
 #elif defined(RTCONFIG_HND_ROUTER_AX)
 				nvram_set(strcat_r(prefix, "txbf_bfr_cap", tmp), ax_en ? "31" : "3");
 				nvram_set(strcat_r(prefix, "txbf_bfe_cap", tmp), ax_en ? "15" : "3");
@@ -8793,8 +9371,8 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 #endif // RTCONFIG_MUMIMO
 
 #ifdef RTCONFIG_WIFI7
-				nvram_set(strcat_r(prefix, "txbf_bfr_cap", tmp), be_en ? "37" : (ax_en ? "5" : "1"));
-				nvram_set(strcat_r(prefix, "txbf_bfe_cap", tmp), be_en ? "37" : (ax_en ? "5" : "1"));
+				nvram_set(strcat_r(prefix, "txbf_bfr_cap", tmp), "37");
+				nvram_set(strcat_r(prefix, "txbf_bfe_cap", tmp), "37");
 #elif defined(RTCONFIG_HND_ROUTER_AX)
 				nvram_set(strcat_r(prefix, "txbf_bfr_cap", tmp), ax_en ? "21" : "1");
 				nvram_set(strcat_r(prefix, "txbf_bfe_cap", tmp), ax_en ? "5" : "1");
@@ -9066,6 +9644,8 @@ void generate_wl_para(char *ifname, int unit, int subunit)
                                 nvram_set_int(strcat_r(prefix, "mfp", tmp), 1);
 #endif
 #ifdef RTCONFIG_WIFI7
+			else if (nvram_match(strcat_r(prefix, "akm", tmp), "psk2 sae sae-ext"))
+				nvram_set_int(strcat_r(prefix, "mfp", tmp), 1);
 			else if (nvram_match(strcat_r(prefix, "akm", tmp), "sae sae-ext"))
 				nvram_set_int(strcat_r(prefix, "mfp", tmp), 2);
 #endif
@@ -9079,6 +9659,18 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 			nvram_set(strcat_r(prefix, "macmode", tmp), "disabled");
 			nvram_set(strcat_r(prefix, "maclist", tmp), "");
 		}
+#ifdef RTCONFIG_WIFI7
+		if (nvram_match(strcat_r(prefix2, "txbf", tmp), "1"))
+		{
+			nvram_set(strcat_r(prefix, "txbf_bfr_cap", tmp), "255");
+			nvram_set(strcat_r(prefix, "txbf_bfe_cap", tmp), "111");
+		}
+		else
+		{
+			nvram_set(strcat_r(prefix, "txbf_bfr_cap", tmp), "0");
+			nvram_set(strcat_r(prefix, "txbf_bfe_cap", tmp), "0");
+		}
+#endif
 	}
 
 	/* Disable nmode for WEP and TKIP for TGN spec */
@@ -13787,11 +14379,14 @@ void set_acs_ifnames()
 	char tmp[128], tmp2[128], prefix[] = "wlXXXXXXXXXX_";
 	int unit = 0;
 	char wlvif[] = "wlxxxx";
-	char list[1024], list2[1024], list_5g_band1_chans[1024], list_5g_band2_chans[1024], list_5g_band3_chans[1024];
+	char list[2048], list2[2048], list_5g_band1_chans[1024], list_5g_band2_chans[1024], list_5g_band3_chans[1024];
 	char list_5g_unii4_chans[1024];
 	char list_5g_band4_bw160_chans[256];
+#ifdef RTCONFIG_WIFI7
+	char list_5g_band4_bw80_chans[256];
+#endif
 #ifdef RTCONFIG_HND_ROUTER_AX
-	char list3[1024];
+	char list3[2048];
 #endif
 #ifdef RTCONFIG_AVBLCHAN
 	char *cfg_excl = NULL;
@@ -13807,21 +14402,21 @@ void set_acs_ifnames()
 #ifdef RTCONFIG_HAS_5G_2
 	char prefix_5g2[] = "wlXXXXXXXXXX_";
 #endif
-#if defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 	char prefix_6g[] = "wlXXXXXXXXXX_";
 #endif
 #ifdef RTCONFIG_HAS_6G_2
 	char prefix_6g2[] = "wlXXXXXXXXXX_";
 #endif
 	const char list_ch165[] = "0xd0a5,0xd8a7,0xe0ab,0xeca3"; // chanspecs 165, 165l, 165/80, 165/160
-#if defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 	char list6g[1200];
 	/* exclude acsd from selecting chanspec 6g1, 6g5, 6g9, 6g13, 6g17, 6g21, 6g25, 6g29 bw20/40/80/160 and 6g33-6g61 bw320, also 6g225, 6g229 bw20/40, 6g233 bw20, prevent 5G adjacent interference */
 	const char list_6g_unii5_skip_non_eu[] = "0x5001,0x5002,0x5005,0x5009,0x500d,0x5011,0x5015,0x5019,0x501d,0x5803,0x5903,0x580b,0x590b,0x5813,0x5913,0x581b,0x591b,0x6007,0x6107,0x6207,0x6307,0x6017,0x6117,0x6217,0x6317,0x680f,0x690f,0x6a0f,0x6b0f,0x6c0f,0x6d0f,0x6e0f,0x6f0f";
 	/* exclude acsd from selecting chanspec 6g225, 6g229 bw20/40, 6g233 bw20 */
 	const char list_6g_unii8_skip_non_eu[] = "0x50e9,0x50e1,0x50e5,0x58e3,0x59e3";
 #endif
-#if defined(RTCONFIG_WIFI7) && defined(RTCONFIG_BW320M) && !defined(RTCONFIG_WIFI7_NO_6G)
+#if defined(RTCONFIG_WIFI7) && defined(RTCONFIG_BW320M) && defined(RTCONFIG_HAS_6G)
 	/* workaround for interoperation and interference issue, exclude influenced chanspec from auto channel selection */
 	const char list_6g_unii5_10g_phy_affect_skip[] = "0x5059,0x585b,0x595b,0x6057,0x6157,0x6257,0x6357,0x684f,0x694f,0x6a4f,0x6b4f,0x6c4f,0x6d4f,0x6e4f,0x6f4f,0x7002,0x7042,0x7082,0x70c2,0x7102,0x7142,0x7182,0x71c2,0x7001,0x7041,0x7081,0x70c1,0x7101,0x7141,0x7181,0x71c1,0x7201,0x7241,0x7281,0x72c1,0x7301,0x7341,0x7381,0x73c1";
 	const char list_6g_unii6_10g_phy_affect_skip[] = "0x7202,0x7242,0x7282,0x72c2,0x7302,0x7342,0x7382,0x73c2";
@@ -13833,7 +14428,7 @@ void set_acs_ifnames()
 	const unsigned int wl_idx[4] = {WL_2G_BAND, WL_5G_BAND, WL_5G_2_BAND, WL_6G_BAND};	// 2.4G, 5G-1, 5G-2, 6G
 #endif
 #else
-#if defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 	const unsigned int wl_idx[3] = {WL_2G_BAND, WL_5G_BAND, WL_6G_BAND};			// 2.4G, 5G, 6G
 #else
 	const unsigned int wl_idx[3] = {WL_2G_BAND, WL_5G_BAND, WL_5G_2_BAND};			// 2.4G, 5G-1, 5G-2(6G)
@@ -13856,7 +14451,7 @@ void set_acs_ifnames()
 #ifdef RTCONFIG_HAS_5G_2
 	snprintf(prefix_5g2, sizeof(prefix_5g2), "wl%d_", WL_5G_2_BAND);
 #endif
-#if defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 	snprintf(prefix_6g, sizeof(prefix_6g), "wl%d_", WL_6G_BAND);
 #endif
 #ifdef RTCONFIG_HAS_6G_2
@@ -13877,28 +14472,32 @@ void set_acs_ifnames()
 
 	wl_list_5g_chans(wl_idx[1], 1, 0, list_5g_band1_chans, sizeof(list_5g_band1_chans), 0);
 	wl_list_5g_chans(wl_idx[1], 2, war, list_5g_band2_chans, sizeof(list_5g_band2_chans), 0);
-#if (defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)) && defined(RTCONFIG_HAS_5G_2)
-#ifdef RTCONFIG_QUADBAND
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
+#if defined(RTCONFIG_HAS_5G_2)  //255 or 2556
 	wl_list_5g_chans(wl_idx[2], 3, 0, list_5g_band3_chans, sizeof(list_5g_band3_chans), 0);
 	wl_list_5g_chans(wl_idx[2], 5, 0, list_5g_unii4_chans, sizeof(list_5g_unii4_chans), 0);
-#else
+#else	// 256 or 2566
 	wl_list_5g_chans(wl_idx[1], 3, 0, list_5g_band3_chans, sizeof(list_5g_band3_chans), 0);
 	wl_list_5g_chans(wl_idx[1], 5, 0, list_5g_unii4_chans, sizeof(list_5g_unii4_chans), 0);
 #endif
-#else
+#else // 25 or 255
 	wl_list_5g_chans((num_of_wl_if() == 3) ? wl_idx[2] : wl_idx[1], 3, 0, list_5g_band3_chans, sizeof(list_5g_band3_chans), 0);
 	wl_list_5g_chans((num_of_wl_if() == 3) ? wl_idx[2] : wl_idx[1], 5, 0, list_5g_unii4_chans, sizeof(list_5g_unii4_chans), 0);
 #endif
 
 #ifdef RTCONFIG_AMAS
-#if (defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)) && defined(RTCONFIG_HAS_5G_2)
-#ifdef RTCONFIG_QUADBAND
+#if (defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7))
+#if defined(RTCONFIG_HAS_5G_2) // 255 or 2556
 	wl_list_5g_chans(wl_idx[2], 5, 0, list_5g_band4_bw160_chans, sizeof(list_5g_band4_bw160_chans), 4);
-#else
+#else	//25 or 256 or 2566
 	wl_list_5g_chans(wl_idx[1], 5, 0, list_5g_band4_bw160_chans, sizeof(list_5g_band4_bw160_chans), 4);
 #endif
 #else
 	wl_list_5g_chans((num_of_wl_if() == 3) ? wl_idx[2] : wl_idx[1], 4, 0, list_5g_band4_bw160_chans, sizeof(list_5g_band4_bw160_chans), 4);
+#endif
+#if defined(RTCONFIG_WIFI7) // only apply for single 5G models
+	memset(list_5g_band4_bw80_chans, 0, sizeof(list_5g_band4_bw80_chans));
+	wl_list_5g_chans(wl_idx[1], 4, 0, list_5g_band4_bw80_chans, sizeof(list_5g_band4_bw80_chans), 3);
 #endif
 	char *p = strstr(list_5g_band4_bw160_chans, "0xeca3"); // drop chanspec 165/160
 	if (p) *(p-1) = '\0';
@@ -13915,7 +14514,7 @@ void set_acs_ifnames()
 	foreach (word, "eth8 eth6 eth7", next) {
 #elif defined(RTBE95U)
 	foreach (word, "wl2 wl0 wl1", next) {
-#elif defined(GSBE18000) || defined(GS7_PRO)
+#elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	foreach (word, "wl2 wl1 wl0", next) {
 #else
 	foreach (word, nvram_safe_get("wl_ifnames"), next) {
@@ -13948,11 +14547,6 @@ void set_acs_ifnames()
 #endif
 			|| rp_mode()
 		)) {
-#if 0
-			if (nvram_match(strcat_r(prefix, "bw", tmp), "0"))
-				nvram_set(strcat_r(prefix, "chanspec", tmp), "0");
-#endif
-
 			if (is_psr(unit)) {
 				snprintf(wlvif, sizeof(wlvif), "wl%d.1", unit);
 #if defined(RTCONFIG_AMAS)
@@ -13979,35 +14573,18 @@ void set_acs_ifnames()
 	}
 
 	nvram_set("acs_ifnames", acs_ifnames);
-
+	/* default activate acs_band3 when exist 5G band support band3 but not support band4 */
 	if ( (num_of_wl_if() == 2 && !(nvram_get_hex(strcat_r(prefix_5g, "band5grp", tmp)) & WL_5G_BAND_4) && !nvram_match("location_code", "RU"))
 		|| nvram_match("acs_dfs", "1")
-#ifdef RTCONFIG_QUADBAND
-		|| (num_of_wl_if() > 3
-#ifdef RTCONFIG_HAS_5G_2
-		   && wl_get_band(nvram_safe_get(strcat_r(prefix_5g2, "ifname", tmp))) == WLC_BAND_5G
-		   && !(nvram_get_hex(strcat_r(prefix_5g2, "band5grp", tmp)) & WL_5G_BAND_4)
+		|| (num_of_wl_if() >= 3 && 
+			((wl_get_band(nvram_safe_get(strcat_r(prefix_5g, "ifname", tmp))) == WLC_BAND_5G
+			 && !(nvram_get_hex(strcat_r(prefix_5g, "band5grp", tmp)) & WL_5G_BAND_4))
+#if defined(RTCONFIG_HAS_5G_2)
+		      && (wl_get_band(nvram_safe_get(strcat_r(prefix_5g2, "ifname", tmp))) == WLC_BAND_5G
+			 && !(nvram_get_hex(strcat_r(prefix_5g2, "band5grp", tmp)) & WL_5G_BAND_4))
 #endif
-		)
-#else
-#if defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
-		|| (num_of_wl_if() == 3 && (
-#ifdef RTCONFIG_HAS_5G_2
-		    (wl_get_band(nvram_safe_get(strcat_r(prefix_5g2, "ifname", tmp))) == WLC_BAND_5G &&
-		     !(nvram_get_hex(strcat_r(prefix_5g2, "band5grp", tmp)) & WL_5G_BAND_4))
-#endif
-#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
-#ifdef RTCONFIG_HAS_5G_2
-		     || (wl_get_band(nvram_safe_get(strcat_r(prefix_5g2, "ifname", tmp))) == WLC_BAND_6G
-#else
-		     (wl_get_band(nvram_safe_get(strcat_r(prefix_6g, "ifname", tmp))) == WLC_BAND_6G
-#endif
-		      && wl_get_band(nvram_safe_get(strcat_r(prefix_5g, "ifname", tmp))) == WLC_BAND_5G
-		      && !(nvram_get_hex(strcat_r(prefix_5g, "band5grp", tmp)) & WL_5G_BAND_4))
-#endif
-		     ))
-#endif
-#endif
+			)
+		   )
 	)
 		nvram_set("acs_band3", "1");
 
@@ -14053,21 +14630,35 @@ void set_acs_ifnames()
 		}
 #endif
 	}
-
-	/* band 3 */
-	snprintf(list2, sizeof(list2), strlen(list_5g_band3_chans) ? "%s,%s" : "%s", list, list_5g_band3_chans);
-	/* band 2 */
-	snprintf(list3, sizeof(list3), strlen(list_5g_band2_chans) ? "%s,%s" : "%s", list2, list_5g_band2_chans);
-#ifdef RTCONFIG_QUADBAND
-	nvram_set(strcat_r(prefix_5g, "acs_excl_chans", tmp), nvram_match("acs_dfs", "1") ? "" : list3);
-#ifdef RTCONFIG_HAS_5G_2
-	nvram_set(strcat_r(prefix_5g2, "acs_excl_chans", tmp), nvram_match("acs_band3", "1") ? list : list2);
+#if defined(RTCONFIG_WIFI7)
+	/* special requirement from RF to exclude band4 chanspec to prevent interference from 6G AFC */
+	if (!strncmp(nvram_safe_get("territory_code"), "US", 2) &&
+	    nvram_match(strcat_r(prefix_5g, "bw_cap", tmp), "15") &&
+	    nvram_match(strcat_r(prefix_5g, "bw", tmp), "0") &&
+	    strlen(list_5g_band4_bw80_chans)) {
+		if (strlen(list)) {
+			strlcat(list, ",", sizeof(list));
+			strlcat(list, list_5g_band4_bw80_chans, sizeof(list)); // band4
+		}
+		else {
+			snprintf(list, sizeof(list), strlen(list_5g_unii4_chans) ? "%s,%s,%s" : "%s,%s", list_ch165, list_5g_band4_bw80_chans, list_5g_unii4_chans); // band4
+		}
+	}
 #endif
+	/* band 3 */
+	snprintf(list2, sizeof(list2), strlen(list_5g_band3_chans) ? "%s,%s" : "%s", list, list_5g_band3_chans); // band4 + band3
+	/* band 2 */
+	snprintf(list3, sizeof(list3), strlen(list_5g_band2_chans) ? "%s,%s" : "%s", list2, list_5g_band2_chans); // band4 + band3 + band2
+#ifdef RTCONFIG_HAS_5G_2
+	nvram_set(strcat_r(prefix_5g, "acs_excl_chans", tmp), nvram_match("acs_dfs", "1") ? "" : list3);        // 5GL
+	nvram_set(strcat_r(prefix_5g2, "acs_excl_chans", tmp), nvram_match("acs_band3", "1") ? list : list2);   // 5GH
 #else
-	nvram_set(strcat_r(prefix_5g, "acs_excl_chans", tmp), nvram_match("acs_dfs", "1") ? (nvram_match("acs_band3", "1") ? list : list2) : list3);
+	nvram_set(strcat_r(prefix_5g, "acs_excl_chans", tmp), nvram_match("acs_dfs", "1") ? list : list3);      // 5G full band
 #endif
 	nvram_set("wl_acs_excl_chans_dfs", nvram_match("acs_dfs", "1") ? (nvram_match("acs_band3", "1") ? list : list2) : list3);
-#ifndef RTCONFIG_WIFI7_NO_6G
+
+
+#ifdef RTCONFIG_HAS_6G
 #if defined(RTCONFIG_WIFI7) && defined(RTCONFIG_BW320M)
 	if (!strncmp(nvram_safe_get("territory_code"), "EU", 2) || !strncmp(nvram_safe_get("territory_code"), "AU", 2) || !strncmp(nvram_safe_get("territory_code"), "JP", 2) || \
 	    !strncmp(nvram_safe_get("territory_code"), "AA", 2) || !strncmp(nvram_safe_get("territory_code"), "TW", 2) || !strncmp(nvram_safe_get("territory_code"), "KR", 2)) {
@@ -14087,9 +14678,13 @@ void set_acs_ifnames()
 		}
 		else 
 		{
-			snprintf(list6g, sizeof(list6g), "%s,%s",
-				list_6g_unii5_skip_non_eu,              // 6g1-6g29 bw20/40/80/160
-				list_6g_unii8_skip_non_eu);		// 6g225, 6g229 bw20/40, 6g233
+			if (!strncmp(nvram_safe_get("territory_code"), "US", 2))
+				snprintf(list6g, sizeof(list6g), "%s",
+					list_6g_unii8_skip_non_eu);		// 6g225, 6g229 bw20/40, 6g233
+			else
+				snprintf(list6g, sizeof(list6g), "%s,%s",
+					list_6g_unii5_skip_non_eu,              // 6g1-6g29 bw20/40/80/160
+					list_6g_unii8_skip_non_eu);		// 6g225, 6g229 bw20/40, 6g233
 		}
 
 		nvram_set(strcat_r(prefix_6g, "acs_excl_chans", tmp), list6g);
@@ -14108,7 +14703,7 @@ void set_acs_ifnames()
 		nvram_set("wl_acs_excl_chans_dfs_2", list6g);
 #endif //defined(RTCONFIG_WIFI7) && defined(RTCONFIG_BW320M)
 	}
-#endif //!RTCONFIG_WIFI7_NO_6G
+#endif //RTCONFIG_HAS_6G
 #else
 	if (nvram_match(strcat_r(prefix_5g, "band5grp", tmp), "7")) {		// EU, JP, UA
 #ifdef RTAC66U
@@ -14121,7 +14716,7 @@ void set_acs_ifnames()
 			nvram_set(strcat_r(prefix_5g, "acs_excl_chans", tmp), nvram_match("acs_dfs", "1") ? (nvram_match("acs_band3", "1") ? "" : list_5g_band3_chans) : list);
 			nvram_set("wl_acs_excl_chans_dfs", nvram_match("acs_dfs", "1") ? (nvram_match("acs_band3", "1") ? "" : list_5g_band3_chans) : list);
 		} else {
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX86U) || defined(TUFAX5400) || defined(TUFAX5400_V2) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(RTAX3000N) || defined(BR63) || defined(RTAX88U_PRO) || defined(RTAX5400) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX86U) || defined(TUFAX5400) || defined(TUFAX5400_V2) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(RTAX3000N) || defined(BR63) || defined(RTAX88U_PRO) || defined(RTAX5400) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 			if (!strncmp(nvram_safe_get("territory_code"), "JP", 2)
 				|| !strncmp(nvram_safe_get("territory_code"), "KR", 2)) {
 				/* exclude acsd from selecting chanspec 132/80 136/80 140l 140/80 144 144u 144/80 by default */
@@ -14132,7 +14727,7 @@ void set_acs_ifnames()
 				/* exclude acsd from selecting chanspec 52, 52l, 52/80, 52/160, 56, 56u, 56/80, 56/160, 60, 60l, 60/80, 60/160, 64, 64u, 64/80, 64/160, 100, 100l, 100/80, 100/160, 104, 104u, 104/80, 104/160, 108, 108l, 108/80, 108/160, 112, 112u, 112/80, 112/160, 116, 116l, 116/80, 116/160, 120, 120u, 120/80, 120/160, 124, 124l, 124/80, 124/160, 128, 128u, 128/80, 128/160, 132, 132l, 136, 136u, 140 */
 				nvram_set(strcat_r(prefix_5g, "acs_excl_chans", tmp), nvram_match("acs_dfs", "1") ? "" : list);
 				nvram_set("wl_acs_excl_chans_dfs", nvram_match("acs_dfs", "1") ? "" : list);
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX86U) || defined(TUFAX5400) || defined(TUFAX5400_V2) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(RTAX3000N) || defined(BR63) || defined(RTAX88U_PRO) || defined(RTAX5400) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX86U) || defined(TUFAX5400) || defined(TUFAX5400_V2) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(RTAX3000N) || defined(BR63) || defined(RTAX88U_PRO) || defined(RTAX5400) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 			}
 #endif
 		}
@@ -14867,7 +15462,7 @@ void smart_connect_realign_ifnames() {
 				idx_5g++;
 			}
 		}
-#if defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 		if(bandtype == WLC_BAND_6G) { 
 			if (idx_6g == 0 && smartconnect_selif_x & SMRTCONN_SEL_6G
 #if defined(RTCONFIG_HAS_6G_2)
@@ -14913,7 +15508,7 @@ void smart_connect_realign_ifnames() {
 
 			if(!strlen(nvram_safe_get(strcat_r(prefix, "bsd_if_select_policy", tmp)))) {
 //WL_2G_BAND, WL_5G_BAND, WL_6G_BAND, WL_6G_2_BAND
-#if defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 				// 6G/6G-1 is the first priority
 				if(smartconnect_selif_x & SMRTCONN_SEL_6G) {
 					snprintf(prefix2, sizeof(prefix2), "wl%d_", WL_6G_BAND);
@@ -14959,7 +15554,7 @@ void smart_connect_realign_ifnames() {
 
 		/* 5G/6G/6G2 */
 		if ((bandtype == WLC_BAND_5G && ((smartconnect_selif_x & SMRTCONN_SEL_5G) || (smartconnect_selif_x & SMRTCONN_SEL_5G2)))  // 5G or 5G-2 is selected
-#if defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 		|| (bandtype == WLC_BAND_6G && ((smartconnect_selif_x & SMRTCONN_SEL_6G) || (smartconnect_selif_x & SMRTCONN_SEL_6G2))) // 6G or 6G-2 is selected
 #endif
 		) {

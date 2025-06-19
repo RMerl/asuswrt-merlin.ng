@@ -190,7 +190,7 @@
 
 </style>
 <script>
-if(isSupport("BUSINESS")){
+if(isSupport("UI4")){
 	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_WHITE.css">');
 }
 else if(isSupport("ROG_UI")){
@@ -225,6 +225,7 @@ var original_dnsenable = parseInt('<% nvram_get("wan_dnsenable_x"); %>');
 var original_ppp_echo = parseInt('<% nvram_get("wan_ppp_echo"); %>');
 var default_ppp_echo = parseInt('<% nvram_default_get("wan_ppp_echo"); %>');
 var orig_mtu = '<% nvram_get("wan_mtu"); %>';
+var default_wan_mtu = httpApi.nvramDefaultGet(["wan_mtu"]).wan_mtu;
 
 var chg_pvc_unit_flag = '<% get_parameter("chg_pvc"); %>';
 
@@ -377,9 +378,19 @@ function save_applyData(wan_unit){
 	if($("#wan_enable").is(":visible") == false)//user_defined wan1xx_eanble is default "1"
 		applyData["wan_enable"] = "1";
 
+	if(applyData["wan_proto"] == "pppoe"){
+		if($("#wan_mtu_container").is(":visible")){
+			if(parseInt($("#wan_pppoe_mtu").val()) + 8 > parseInt($("#wan_mtu").val())){
+				applyData["wan_pppoe_mtu"] = parseInt($("#wan_mtu").val()) - 8;
+			}
+		}
+		else{
+			applyData["wan_mtu"] = default_wan_mtu;
+		}
+	}
+
 	if (Softwire46_support && ipv6_service_orig != "ipv6pt" &&
 			(applyData["wan_proto"] == "v6plus" || applyData["wan_proto"] == "ocnvc" || applyData["wan_proto"] == "dslite" || applyData["wan_proto"] == "v6opt")){
-				
 				applyData["ipv6_service"] = "ipv6pt";
 				applyData["rc_service"] += ";restart_net";
 	}
@@ -469,6 +480,7 @@ function change_popup_settingsItem(wan_proto){
 		$("#account_settings_container").hide();
 		$("#vpndhcp_container").hide();
 		$("#vpn_container").hide();
+		$("#wan_mtu_container").show();
 		$("#special_isp_container").show();
 	}
 	else if(wan_proto == "dhcp"){
@@ -481,6 +493,7 @@ function change_popup_settingsItem(wan_proto){
 		$("#account_settings_container").hide();
 		$("#vpndhcp_container").hide();
 		$("#vpn_container").hide();
+		$("#wan_mtu_container").show();
 		$("#special_isp_container").show();
 	}
 	else if(wan_proto == "static"){
@@ -497,6 +510,7 @@ function change_popup_settingsItem(wan_proto){
 		$("#account_settings_container").hide();
 		$("#vpndhcp_container").hide();
 		$("#vpn_container").hide();
+		$("#wan_mtu_container").show();
 		$("#special_isp_container").show();
 	}
 	else if(wan_proto == "pppoe"){
@@ -513,6 +527,7 @@ function change_popup_settingsItem(wan_proto){
 		$("#account_settings_container").show();
 		$("#vpndhcp_container").show();
 		$("#vpn_container").hide();
+		$("#wan_mtu_container").hide();
 		$("#special_isp_container").show();
 	}
 	else if(wan_proto == "pptp"){
@@ -529,6 +544,7 @@ function change_popup_settingsItem(wan_proto){
 		$("#account_settings_container").show();
 		$("#vpndhcp_container").hide();
 		$("#vpn_container").show();
+		$("#wan_mtu_container").show();
 		$("#special_isp_container").show();
 	}
 	else if(wan_proto == "l2tp"){
@@ -545,6 +561,7 @@ function change_popup_settingsItem(wan_proto){
 		$("#account_settings_container").show();
 		$("#vpndhcp_container").hide();
 		$("#vpn_container").show();
+		$("#wan_mtu_container").show();
 		$("#special_isp_container").show();
 	}
 
@@ -876,12 +893,16 @@ function Get_Component_Setting_Profile(type){//internet, user_defined
 	var $dhcp_option_container = $("<div>").attr({"data-sec-option-id":"dhcp-only"});
 	$dhcp_option_container.appendTo($content_container);
 	$dhcp_option_container.append($("<div>").addClass("profile_title_item").append($("<span>").html("<#ipv6_6rd_dhcp_option#>")));
-	var wan_vendorid_parm = {"title":"<#DHCPoption_Class#> (<#NetworkTools_option#> 60)", "type":"text", "id":"wan_vendorid", "need_check":true, "maxlength":126};
-	Get_Component_Input(wan_vendorid_parm).appendTo($dhcp_option_container)
-		.find("#" + wan_vendorid_parm.id)
-		.unbind("keypress").keypress(function(){
-			return validator.isString(this,event);
-		});
+
+	/* Class-identifier */
+	if(!isSupport("TELIA")){
+		var wan_vendorid_parm = {"title":"<#DHCPoption_Class#> (<#NetworkTools_option#> 60)", "type":"text", "id":"wan_vendorid", "need_check":true, "maxlength":126};
+		Get_Component_Input(wan_vendorid_parm).appendTo($dhcp_option_container)
+			.find("#" + wan_vendorid_parm.id)
+			.unbind("keypress").keypress(function(){
+				return validator.isString(this,event);
+			});
+	}
 
 	/* Client-identifier */
 	var $client_id_container = $("<div>").addClass("profile_setting_item").css({"height": "100px"});
@@ -1125,7 +1146,7 @@ function Get_Component_Setting_Profile(type){//internet, user_defined
 			});
 	}
 
-	var wan_mtu_parm = {"title":"<#PPPConnection_x_PPPoEMTU_itemname#> (1280-1500)", "type":"text", "id":"wan_mtu", "need_check":true, "maxlength":4};
+	var wan_mtu_parm = {"title":"<#PPPConnection_x_PPPoEMTU_itemname#> (1280-1500)", "type":"text", "id":"wan_mtu", "need_check":true, "maxlength":4, "container_id":"wan_mtu_container"};
 	Get_Component_Input(wan_mtu_parm).appendTo($special_isp_container)
 		.find("#" + wan_mtu_parm.id + "")
 		.unbind("keypress").keypress(function(){
@@ -1633,6 +1654,9 @@ function initial(){
 
 	display_upnp_options();
 
+	if(isSupport("TELIA"))
+		inputCtrl(document.form.wan_vendorid, 0);
+
 	if(parent.webWrapper){
 		$("#DNS_Assign_splitLine").addClass("splitLine_dns_bussiness");
 		$("#DNS_Assign_desc").addClass("assign_dns_bussiness");
@@ -2106,10 +2130,17 @@ function validForm(){
 			|| !validator.numberRange(document.form.wan_pppoe_mru, 128, 1492))
 			return false;
 
-		if(document.form.wan_mtu.value != "") {
-			if(parseInt(document.form.wan_pppoe_mtu.value) + 8 > parseInt(document.form.wan_mtu.value)){
-				document.form.wan_pppoe_mtu.value = parseInt(document.form.wan_mtu.value) - 8;
+		/* reset wan_mtu to default value */
+		if($("#wan_mtu_tr").css("display") != "none"){
+			if(document.form.wan_mtu.value != "") {
+				if(parseInt(document.form.wan_pppoe_mtu.value) + 8 > parseInt(document.form.wan_mtu.value)){
+					document.form.wan_pppoe_mtu.value = parseInt(document.form.wan_mtu.value) - 8;
+				}
 			}
+		}
+		else if(document.form.wan_mtu.value != default_wan_mtu){
+			document.form.wan_mtu.value = default_wan_mtu;
+			document.form.wan_mtu.disabled = false;
 		}
 
 		if(!validator.string(document.form.wan_pppoe_service)
@@ -2132,7 +2163,7 @@ function validForm(){
 				return false;
 		}
 
-	if(orig_mtu != "" || document.form.wan_mtu.value.length > 0) {
+	if($("#wan_mtu_tr").css("display") != "none" && (orig_mtu != "" || document.form.wan_mtu.value.length > 0)) {
 		if(!validator.numberRange(document.form.wan_mtu, 1280, 1500)) {
 			document.form.wan_mtu.focus();
 			document.form.wan_mtu.select();
@@ -2325,6 +2356,8 @@ function change_wan_proto_type(proto_type){
 			inputCtrl(document.form.bond_wan_radio[1], 0);
 			document.form.bond_wan_radio.value = "0";
 		}
+
+		inputCtrl(document.form.wan_mtu, 0);
 	}
 	else if(proto_type == "pptp"){
 		showhide("wan_DHCP_opt",0);
@@ -2367,6 +2400,8 @@ function change_wan_proto_type(proto_type){
 			inputCtrl(document.form.bond_wan_radio[1], 0);
 			document.form.bond_wan_radio.value = "0";
 		}
+
+		inputCtrl(document.form.wan_mtu, 1);
 	}
 	else if(proto_type == "l2tp"){
 		showhide("wan_DHCP_opt",0);
@@ -2409,6 +2444,8 @@ function change_wan_proto_type(proto_type){
 			inputCtrl(document.form.bond_wan_radio[1], 0);
 			document.form.bond_wan_radio.value = "0";
 		}
+
+		inputCtrl(document.form.wan_mtu, 1);
 	}
 	else if(proto_type == "static"){
 		showhide("wan_DHCP_opt",0);
@@ -2467,6 +2504,8 @@ function change_wan_proto_type(proto_type){
 				document.form.bond_wan_radio.value = orig_bond_wan;
 			}
 		}
+
+		inputCtrl(document.form.wan_mtu, 1);
 	}
 	else if(Softwire46_support && (proto_type == "lw4o6" || proto_type == "map-e" || proto_type == "v6plus" || proto_type == "ocnvc" || proto_type == "dslite" || proto_type == "v6opt")){
 
@@ -2512,10 +2551,15 @@ function change_wan_proto_type(proto_type){
 			inputCtrl(document.form.bond_wan_radio[1], 0);
 			document.form.bond_wan_radio.value = orig_bond_wan;
 		}
+
+		inputCtrl(document.form.wan_mtu, 1);
 	}
 	else if(proto_type == "dhcp"){
 		showhide("wan_DHCP_opt",1);
-		inputCtrl(document.form.wan_vendorid, 1);
+		if(isSupport("TELIA"))
+			inputCtrl(document.form.wan_vendorid, 0);
+		else
+			inputCtrl(document.form.wan_vendorid, 1);
 		inputCtrl(document.form.wan_clientid, 1);
 		document.form.wan_clientid_type.disabled = false;
 		showDiableDHCPclientID(document.form.tmp_dhcp_clientid_type);
@@ -2572,6 +2616,8 @@ function change_wan_proto_type(proto_type){
 				document.form.bond_wan_radio.value = orig_bond_wan;
 			}
 		}
+
+		inputCtrl(document.form.wan_mtu, 1);
 	}
 	else if(proto_type == "bridge") {
 		showhide("wan_DHCP_opt",0);
@@ -2611,6 +2657,8 @@ function change_wan_proto_type(proto_type){
 			inputCtrl(document.form.wan_dhcpfilter_enable[0], 0);
 			inputCtrl(document.form.wan_dhcpfilter_enable[1], 0);
 		}
+
+		inputCtrl(document.form.wan_mtu, 1);
 	}
 	else {
 		alert("error");
@@ -4067,11 +4115,11 @@ function change_wizard(o, id){
 											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,29);"><#PPPConnection_Authentication_itemname#></a>
 											</th>
 											<td align="left">
-							    				<select class="input_option" name="wan_auth_x" onChange="change_wan_type(document.form.wan_proto.value);">
-							    				<option value="" <% nvram_match("wan_auth_x", "", "selected"); %>><#wl_securitylevel_0#></option>
-							    				<option value="8021x-md5" <% nvram_match("wan_auth_x", "8021x-md5", "selected"); %>>802.1x MD5</option>
-							    				</select>
-							    			</td>
+												<select class="input_option" name="wan_auth_x" onChange="change_wan_proto_type(document.form.wan_proto.value);">
+													<option value="" <% nvram_match("wan_auth_x", "", "selected"); %>><#wl_securitylevel_0#></option>
+													<option value="8021x-md5" <% nvram_match("wan_auth_x", "8021x-md5", "selected"); %>>802.1x MD5</option>
+												</select>
+											</td>
 										</tr>
 
 										<tr>
@@ -4266,7 +4314,7 @@ function change_wizard(o, id){
 											<input type="radio" name="ttl_spoof_enable" class="input" value="0" <% nvram_match("ttl_spoof_enable", "0", "checked"); %>><#checkbox_No#>
 										</td>
 									</tr>	
-									<tr>
+									<tr id="wan_mtu_tr">
 										<th>
 											<#PPPConnection_x_PPPoEMTU_itemname#>
 										</th>

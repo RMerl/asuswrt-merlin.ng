@@ -1,6 +1,6 @@
 ﻿.system_settings_bg{
 	height: 50px;
-	margin: 10px;
+	margin: 0px 10px;
 	padding: 10px 0px;
 	position: relative;
 	cursor: pointer;
@@ -33,7 +33,8 @@
 .system_settings_bg.eap > .system_icon{
 	background-position: 3px 3px;
 }
-.system_settings_bg.led > .system_icon{
+.system_settings_bg.led > .system_icon,
+.system_settings_bg.led_night_mode > .system_icon{
 	background-position: 3px -64px;
 }
 .system_settings_bg.roaming_block > .system_icon{
@@ -190,6 +191,17 @@
 }
 .system_settings_bg .bubble_icon.info:hover + .hover_pop_hint_bg{
 	display: block;
+}
+.system_settings_bg .icon_loading{
+	background-image: url(/images/InternetScan.gif);
+	width: 30px;
+	height: 30px;
+	background-repeat: no-repeat;
+	background-size: contain;
+	position: relative;
+	right: 30px;
+	top: 10px;
+	float: right;
 }
 .popup_hint_bg .divide_line{
 	background: #616E79;

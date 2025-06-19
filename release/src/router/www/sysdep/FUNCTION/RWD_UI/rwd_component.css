@@ -262,6 +262,10 @@
 	box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 1px 4px 0px rgba(60, 60, 60, 0.3);
 	border-radius: 8px;
 }
+.profile_setting_container .no_action_container,
+.popup_container .no_action_container .popup_content_container{
+	padding-bottom: 12px !important;
+}
 .profile_setting_title{
 	width: 100%;
 	height: 76px;
@@ -396,6 +400,10 @@
 .profile_setting_item.textarea{
 	height: auto !important;
 }
+.profile_setting_item.checkboxlist{
+	min-height: 63px;
+	height: auto;
+}
 .profile_setting_two_item{
 	background-color: rgb(35, 52, 62);
 	min-width: 360px;
@@ -452,7 +460,9 @@
 	line-height: 160%;
 }
 .profile_title_item{
-	height: 60px;
+	min-height: 60px;
+	height: auto;
+	line-height: 140%;
 	color: rgba(186, 192, 206, 0.87);
 	font-size: 14px;
 	font-weight: 500;
@@ -695,6 +705,7 @@
 	-ms-user-select: none;
 	user-select: none;
 	font-size: 14px;
+	color: #FFFFFF;
 }
 .popup_container.fit_width{
 	max-width: 90%;
@@ -1032,6 +1043,25 @@
 }
 .custom_select_container.temp_disable:before{
 	content: none;
+}
+.checkboxlist_container{
+	display: flex;
+	width: 100%;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+.checkboxlist_container .checkbox_option{
+	display: flex;
+	align-items: center;
+	flex-wrap: nowrap;
+	flex-basis: 25%;
+	min-width: 119px;
+	height: 40px;
+}
+.checkboxlist_container .checkbox_option .option_text{
+	margin-left: 6px;
+	font-weight: 400;
+	font-size: 16px;
 }
 .icon_add,
 .icon_del{
@@ -1387,6 +1417,31 @@
 	top: 10px;
 	left: 12px;
 }
+.icon_info{
+	position: relative;
+	width: 20px;
+	height: 20px;
+	box-sizing: border-box;
+	display: block;
+	border: 1px solid;
+	border-radius: 100%;
+	color: var(--icon-color);
+	cursor: pointer;
+}
+.icon_info:before{
+	content: "i";
+	position: absolute;
+	font-size: 14px;
+	font-family: cursive;
+	font-weight: bolder;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	color: var(--icon-color);
+	line-height: 100%;
+}
 .icon_more{
 	position: relative;
 	display: flex;
@@ -1464,6 +1519,7 @@
 	border: 1px solid rgba(127, 143, 164, 0.4);
 	padding: 0 6px;
 	border-right-style: none;
+	font-size: 13px;
 }
 .switch_text_container > .switch_text_item:first-child{
 	border-radius: 8px 0 0 8px;
@@ -1476,7 +1532,7 @@
 	color: rgb(255, 255, 255);
 	background-color: rgb(37 151 255);
 	border-color: rgb(37 151 255 / 20%);
-	font-size: 16px;
+	font-size: 14px;
 }
 .cb_text_container{
 	display: flex;

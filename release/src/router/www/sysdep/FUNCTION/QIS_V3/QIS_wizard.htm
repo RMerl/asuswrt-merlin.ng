@@ -19,7 +19,7 @@
 		<script type="text/javascript" src="./mobile/js/qisData.js"></script>
 		<script type="text/javascript" src="./mobile/js/handler.js"></script>
 		<script type="text/javascript" src="./js/https_redirect/https_redirect.js"></script>
-		<script type="text/javascript" src="./js/asus_policy.js"></script>
+		<script type="text/javascript" src="./js/asus_policy.js?v=4"></script>
 		<script>
 			let urlParameter = new URLSearchParams(window.location.search);
 
@@ -352,6 +352,24 @@
 				}
 			});
 		</script>
+		<script type="module">
+			import { initializeUIModelName, uiModelNameJson } from '/js/uiModelName.module.js';
+			systemVariable.uiModelNameCloud = (()=>{
+				const storedData = window.localStorage.getItem('uiModelNameJson');
+				if (storedData) {
+					return JSON.parse(storedData);
+				}
+				else {
+					return {};
+				}
+			})();
+			if (Object.keys(systemVariable.uiModelNameCloud).length === 0) {
+				(async () => {
+					const data = await initializeUIModelName();
+					systemVariable.uiModelNameCloud = data;
+				})();
+			}
+		</script>
 	</head>
 	<body>
 		<!-- Policy -->
@@ -396,9 +414,9 @@
 					<div id="welcome_button" onclick="apply.welcome();"></div>
 				</div>
 
-				<!--div style="text-align:center;margin:50px 0" class="amasSupport">
-					<div id="aimesh_welcome_button" onclick="goTo.amasIntro();">Start</div>
-				</div-->
+				<!--div style="text-align:center;margin:50px 0" class="amasSupport"
+					div id="aimesh_welcome_button" onclick="goTo.amasIntro();" Start /div
+				/div-->
 	
 				<div style="margin:auto;width:600px;text-align:center;">
 					<a href="#"  class="advSetting" onclick="goTo.advSetting()"><#menu5#></a>
@@ -624,7 +642,7 @@
 						</div>
 					</div>
 					<div class="table_td">
-						<div id="login_desc" class="pageDesc"><#QIS_pass_desc1#></div>
+						<div id="login_desc" class="pageDesc"><#Local_login_desc#></div>
 						<div id="login_passwd_KR" class="pageDesc_passwd_KR" style="display:none;"><#JS_validLoginPWD#></div>
 						<div id="login_field">
 							<div>
@@ -637,7 +655,7 @@
 							</div>
 							<div>
 								<div class="inputTitleContainer">
-									<div class="inputTitle"><#PASS_new#></div>
+									<div class="inputTitle"><#HSDPAConfig_Password_itemname#></div>
 									<div class="secureInput icon_eye_close" for="http_passwd http_passwd_confirm"></div>
 								</div>
 								<div class="inputContainer">
@@ -646,7 +664,7 @@
 							</div>
 							<div id="http_passwd_confirm_container">
 								<div class="inputTitleContainer">
-									<div class="inputTitle"><#PASS_retype#></div>
+									<div class="inputTitle"><#PM_Confirm_Pwd#></div>
 								</div>
 								<div class="inputContainer">
 									<input id="http_passwd_confirm" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="33" class="textInput" data-role="none" value="" data-clear-btn="true" />
@@ -1395,11 +1413,11 @@
 					</div>
 				</div>
 				<div class="table_td">
-					<div id="pppoe_desc" class="pageDesc"><#QIS_SmartConn_ISPDesc2#></div>
+					<div id="pppoe_desc" class="pageDesc"><#QIS_SmartConn_ISPDesc3#></div>
 					<div id="pppoe_field">
 						<div>
 							<div class="inputTitleContainer">
-								<div class="inputTitle"><#Username#></div>
+								<div class="inputTitle"><#HSDPAConfig_pppoeUsername_itemname#></div>
 							</div>
 							<div class="inputContainer">
 								<input id="wan_pppoe_username" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="64" class="textInput pppInput" data-role="none" value="" data-clear-btn="true" />
@@ -1407,7 +1425,7 @@
 						</div>
 						<div>
 							<div class="inputTitleContainer">
-								<div class="inputTitle"><#PPPConnection_Password_itemname#></div>
+								<div class="inputTitle"><#HSDPAConfig_pppoePassword_itemname#></div>
 								<div class="secureInput icon_eye_close" for="wan_pppoe_passwd"></div>
 							</div>
 							<div class="inputContainer">
@@ -2436,7 +2454,7 @@
 
 						<div id="manual_pap_setup-key">
 							<div class="inputTitleContainer">
-								<div class="inputTitle"><#QIS_finish_wireless_item2#></div>
+								<div class="inputTitle"><#QIS_finish_wireless_item3#></div>
 								<div class="secureInput icon_eye_close" for="wlc_wifiKey"></div>
 							</div>
 							<div class="inputContainer">
@@ -2489,7 +2507,7 @@
 							<input type="checkbox" id="wireless_checkbox" data-mini="true"/>
 						</div>
 
-						<div id="wifi6e_legacy_hint" class="hint_yellow" style="padding:30px;margin-top:6px;display:none"><#Wireless_SSID_hint2#> <#Wireless_SSID_hint3#></div>
+						<div id="wifi6e_legacy_hint" class="hint_yellow" style="padding:30px;margin-top:6px;display:none"></div>
 						<div class="labelContainer" id="syncSSID" style="display:none;">
 							<label for="wireless_sync_checkbox" class="labelInput"><#qis_ssid_desc#></label>
 							<input type="checkbox" id="wireless_sync_checkbox" data-mini="true"/>
@@ -2991,7 +3009,7 @@
 						</div>
 						<div>
 							<div class="inputTitleContainer">
-								<div class="inputTitle"><#QIS_finish_wireless_item2#></div>
+								<div class="inputTitle"><#QIS_finish_wireless_item3#></div>
 								<div class="secureInput icon_eye_close" for="s2s_wireless_key"></div>
 							</div>
 							<div class="inputContainer">

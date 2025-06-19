@@ -337,7 +337,64 @@ function getAiMeshOnboardinglist(_onboardingList){
 		});
 	});
 
+	update_node_ui_model_name(jsonArray);
 	return jsonArray;
+
+	function update_node_ui_model_name(nodeList){
+		if (!Array.isArray(nodeList)) return;
+		let lang = httpApi.nvramGet(["preferred_lang"]).preferred_lang;
+		for (let node of nodeList){
+			let model_name = node["name"];
+			let cobrand = httpApi.aimesh_get_misc_info(node).cobrand;
+			const uiModelName = findUIModelName({
+				"model": model_name,
+				"lang": lang,
+				"coBrand": cobrand,
+			});
+			if (uiModelName) {
+				node["ui_model_name"] = uiModelName;
+			}
+		}
+
+		function findUIModelName(params) {
+			if (!params) {
+				return "";
+			}
+			const { model, lang, coBrand } = params;
+			if (!model) {
+				return "";
+			}
+			if (!systemVariable.uiModelNameCloud[model]) return "";
+
+			let defaultLang = null;
+			let defaultCoBrand = null;
+
+			for (let item of systemVariable.uiModelNameCloud[model]) {
+				if (item.lang === lang && item.CoBrand === coBrand) {
+					return item.uiModelName;
+				}
+				if (item.lang === "*" && item.CoBrand === coBrand) {
+					defaultLang = item.uiModelName;
+				}
+				if (item.lang === lang && item.CoBrand === "*") {
+					defaultCoBrand = item.uiModelName;
+				}
+				if (item.lang === "*" && item.CoBrand === "*") {
+					defaultLang = item.uiModelName;
+				}
+			}
+
+			if (defaultCoBrand) {
+				return defaultCoBrand;
+			}
+
+			if (defaultLang) {
+				return defaultLang;
+			}
+
+			return "";
+		}
+	}
 }
 
 function getProcessPercentage(_start, _current, _timeout, _percentage){
@@ -351,50 +408,25 @@ function getProcessPercentage(_start, _current, _timeout, _percentage){
 }
 
 function get_wl_unit_by_band(_band){
-	if(_band == undefined)
-		return "";
+	if(_band == undefined) return "";
 
 	_band = (_band).toString().toUpperCase();
-	var wl_nband = "";
-	switch(_band){
-		case "2G":
-		case "2G1":
-			wl_nband = "2";
-			break;
-		case "5G":
-		case "5G1":
-		case "5G2":
-			wl_nband = "1";
-			break;
-		case "6G":
-		case "6G1":
-		case "6G2":
-			wl_nband = "4";
-			break;			
-		case "60G":
-			wl_nband = "6";
-			break;
-	}
-	if(wl_nband == "")
-		return "";
+	const wlnband_list = `<% nvram_get("wlnband_list"); %>`.toUpperCase().split("&#60");
 
-	var wl_unit = "";
-	var suffix_num = _band.substr(_band.indexOf("G") + 1);
-	var ordinal_num = (suffix_num == "") ? 1 : parseInt(suffix_num);
-	var count = 1;
-	var wl_nband_array = httpApi.hookGet("wl_nband_info");
-	$.each(wl_nband_array, function(wlx, value){
-		if(value == wl_nband){
-			if(count == ordinal_num){
-				wl_unit = wlx;
-				return false;
-			}
-			else{
-				count+=1;
-			}
-		}
-	});
-	return wl_unit.toString();
+	const bandMap = {
+		"2G": "2G1",
+		"5G": "5G1",
+		"6G": "6G1"
+	};
+
+	_band = bandMap[_band] || _band;
+
+	return findWLUnit(wlnband_list, _band).toString();
+
+	function findWLUnit(array, band) {
+		const idx = $.inArray(band, array);
+		return idx !== -1 ? idx : '';
+	}
 }
 
 function checkPasswd($obj){
@@ -431,7 +463,7 @@ function chkPass(pwd, flag, obj, id) {
 		oScore =$(obj).find(".strength_text")[0];
 	}
 
-	if(flag == "http_passwd" && (isSku("KR") || isSku("SG") || isSku("AA"))){
+	if(flag == "http_passwd" && (isSku("KR") || isSku("SG") || isSku("AA") || isSupport("secure_default"))){
 		oScorebar.style.display = "none";
 		return;
 	}
@@ -641,7 +673,7 @@ function check_password_length(obj){
 	var password = obj.value;
 	var httpPassInput = $("#http_passwd");
 
-        if(isSku("KR") || isSku("SG") || isSku("AA")){     /* MODELDEP by Territory Code */
+        if(isSku("KR") || isSku("SG") || isSku("AA") || isSupport("secure_default")){     /* MODELDEP by Territory Code */
 		httpPassInput.showTextHint("");
 		return;
 	}
@@ -1039,7 +1071,7 @@ var Get_Component_WirelessInput = function(wlArray){
 
 		$("<div>")
 			.addClass("inputTitleContainer")
-			.append($("<div>").addClass("inputTitle").html(wl.title + " <#QIS_finish_wireless_item2#>"))
+			.append($("<div>").addClass("inputTitle").html(wl.title + " <#QIS_finish_wireless_item3#>"))
 			.append($("<div>").addClass("secureInput icon_eye_close").attr({"for":"wireless_key_" + wl.ifname}))
 			.appendTo(__container)
 
@@ -1120,7 +1152,7 @@ var Get_Component_WirelessInput_MLO = function(wlArray){
 
 	$("<div>")
 		.addClass("inputTitleContainer")
-		.append($("<div>").addClass("inputTitle").html(wlArray.title + " <#QIS_finish_wireless_item2#>"))
+		.append($("<div>").addClass("inputTitle").html(wlArray.title + " <#QIS_finish_wireless_item3#>"))
 		.append($("<div>").addClass("secureInput icon_eye_close").attr({"for":"wireless_key_" + wlArray.ifname}))
 		.appendTo(__container)
 
@@ -2062,6 +2094,9 @@ var isSupport = function(_ptn){
 		case "mloSetup":
 			matchingResult = (systemVariable.mloSetup && (isSwMode("RT") || isSwMode("AP"))) ? true : false;
 			break;
+		case "SiteManager":
+			matchingResult = (navigator.userAgent.match(/ASUSMultiSiteManager/) || navigator.userAgent.match(/ASUSExpertSiteManager/)) ? true : false;
+			break;
 		default:
 			matchingResult = ((ui_support[_ptn] > 0) || (systemVariable.productid.search(_ptn) !== -1)) ? true : false;
 			break;
@@ -2585,7 +2620,6 @@ function adjust_popup_container_top(_obj, _offsetHeight){
 function stringSafeGet(str){
 	return str.replace(new RegExp("&#39;", 'g'), "'");
 }
-var str_local_login_desc = stringSafeGet("<#Local_login_desc#>");
 var str_find_st = stringSafeGet("<#HowFindST#>");
 var str_HowFindPassword = stringSafeGet("<#HowFindPassword#>");
 function initialize_SDN(){
@@ -2775,13 +2809,25 @@ function get_new_sdn_mlo(){
 }
 
 function isCompatibleNetworkFound(){
-	if(systemVariable.opMode != systemVariable.originOpMode){
+	if(isSwModeChanged()){
 		return false;
 	}
+	const sdn_rl = decodeURIComponent(httpApi.nvramCharToAscii(["sdn_rl"]).sdn_rl);
+	const sdn_rl_default = (httpApi.nvramDefaultGet(["sdn_rl"]).sdn_rl).replace(/&#60/g, "<").replace(/&#62/g, ">");
+	if (sdn_rl === sdn_rl_default) {
+		return false;
+	}
+
 	const sdn_maximum = ((isSupport("MaxRule_SDN") == "0") ? 6 : (parseInt(isSupport("MaxRule_SDN")) - 1));//default is sdn 0
 	let legacy_exist = false;
 	let sdn_rl_count = 0;
-	const each_sdn_rl = decodeURIComponent(httpApi.nvramCharToAscii(["sdn_rl"]).sdn_rl).split("<");
+	const each_sdn_rl = (()=>{
+		if(systemVariable.isDefault)
+			return sdn_rl_default.split("<");
+		else
+			return sdn_rl.split("<");
+	})();
+
 	$.each(each_sdn_rl, function(index, value){
 		if(value != ""){
 			let profile_data = value.split(">");

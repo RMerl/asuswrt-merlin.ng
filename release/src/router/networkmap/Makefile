@@ -12,8 +12,8 @@ CFLAGS  += -I$(TOP)/libasc
 CFLAGS  += -I$(TOP)/curl/include
 
 ifeq ($(RTCONFIG_TR069),y)
-CFLAGS += -I$(TOP)/libssh2-1.10.0/include -I$(TOP)/zlib/include
-LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2 -L$(TOP)/zlib -lz
+CFLAGS += -I$(TOP)/libssh2/include -I$(TOP)/zlib/include
+LDFLAGS += -L$(TOP)/libssh2/src/.libs -lssh2 -L$(TOP)/zlib -lz
 endif
 
 ifeq ($(RTCONFIG_RALINK),y)
@@ -147,6 +147,9 @@ ifeq ($(HND_ROUTER),y)
 CFLAGS += -DHND_ROUTER
 endif
 
+#Client data is not used : Temporarily disable the shared memory for RTCONFIG_TAGGED_BASED_VLAN and CAPTIVE_PORTAL to reduce memory usage.
+CFLAGS += -DFLAG_FUNCTION_TEMPORARILY_CANCELED
+
 ifeq ($(RTCONFIG_AMAS),y)
 ifeq ($(RTCONFIG_LLDPD_1_0_11),y)
 LLDPD_DIR = $(TOP)/lldpd-1.0.11
@@ -162,7 +165,7 @@ ifeq ($(RTCONFIG_TRUSTZONE),y)
 LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS7_PRO))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 

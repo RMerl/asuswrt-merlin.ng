@@ -70,6 +70,9 @@ function change_tab(_index){
 	$(".aimesh_tab span").eq(_index - 1).addClass("clicked");
 	$(".aimesh_tab_content").hide();
 	$(".aimesh_tab_content.idx" + _index + "").show();
+	if(_index.toString() === "2"){
+		initial_system_settings();
+	}
 }
 </script>
 </head>

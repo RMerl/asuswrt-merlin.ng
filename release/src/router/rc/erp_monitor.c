@@ -118,7 +118,7 @@ static int erp_check_wl_stat(int model)
 	if (nvram_get_int("wl0_radio")) ret++;
 	if (nvram_get_int("wl1_radio")) ret++;
 
-#if defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2) || defined(RTCONFIG_HAS_6G)
 	if (nvram_get_int("wl2_radio")) ret++;
 #endif
 #ifdef RTCONFIG_QUADBAND
@@ -434,8 +434,14 @@ int Parse_GPhyStats(char *buf, int model)
 			ERP_DBG("key=%s, value=%s\n", key, value);
 		}
 
+		/* skip ' ' or '\n' */
+		if (!strcmp(key, "") || *key == '\n') goto LOOP;
+
 		/* ignore DSL wan connection */
 		if (model == MODEL_DSLAC68U && (!strcmp(key, "W0"))) goto LOOP;
+
+		/* skip AI this tag */
+		if (!strcmp(key, "AI")) goto LOOP;
 
 		/* WAN has connection */
 		if ((!strcmp(key, "W0") || !strcmp(key, "W1")) && (strcmp(value, "X") != 0)) {
@@ -444,6 +450,7 @@ int Parse_GPhyStats(char *buf, int model)
 
 		/* WAN or LAN has connection */
 		if (strcmp(value, "X") != 0) {
+			ERP_DBG("key=%s, value=%s\n", key, value);
 			no_link = 0;
 		}
 
@@ -702,6 +709,7 @@ static int ERP_CHECK_MODEL_LIST()
 		|| model == MODEL_RTBE58_GO
 		|| model == MODEL_GTBE19000AI
 		|| model == MODEL_GSBE18000
+		|| model == MODEL_GT7
 		|| model == MODEL_GTBE96_AI
 #endif
 	) {
@@ -767,6 +775,12 @@ static void erp_standby_mode(int model)
 
 	// disable rtkswitch to save 0.2W
 	eval("rtkswitch", "6"); // rtkswitch off
+#endif
+
+#if defined(RTCONFIG_AI_SERVICE)
+	char buf[128] = {0};
+	snprintf(buf, sizeof(buf), "echo 0 > /sys/class/leds/led_gpio_6/brightness");
+	system(buf);
 #endif
 
 	/* update status */
@@ -903,8 +917,15 @@ static void erp_wakeup_mode(int model)
 #endif
 
 #if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
-	LEDGroupReset(LED_ON);
+	//LEDGroupReset(LED_ON); // this function will make RGB LED white, we use restart_ledg to replace and make it back to normal light
+	notify_rc("restart_ledg");
 	eval("rtkswitch", "5"); // rtkswitch on
+#endif
+
+#if defined(RTCONFIG_AI_SERVICE)
+	char buf[128] = {0};
+	snprintf(buf, sizeof(buf), "echo 255 > /sys/class/leds/led_gpio_6/brightness");
+	system(buf);
 #endif
 
 	/* update status */
@@ -1171,6 +1192,7 @@ int erp_monitor_main(int argc, char **argv)
 
 	signal(SIGTERM, catch_sig);
 	signal(SIGALRM, catch_sig);
+	signal(SIGCHLD, chld_reap); // To avoid the child process turn to zombie state
 
 	while(1)
 	{

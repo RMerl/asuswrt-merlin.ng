@@ -366,35 +366,50 @@ var is_RU_sku = (function(){
 })();
 
 //wireless
-var wl_nband_title = [];
 var wl_nband_array = "<% wl_nband_info(); %>".toArray();
 var band2g_count = 0;
 var band5g_count = 0;
 var band6g_count = 0;
 var band60g_count = 0;
-for (var j=0; j<wl_nband_array.length; j++) {
-	if(wl_nband_array[j] == '2'){
-		band2g_count++;
-		wl_nband_title.push("2.4 GHz" + ((band2g_count > 1) ? ("-" + band2g_count) : ""));
+var wl_nband_title = (()=>{
+	const wlnband_list = `<% nvram_get("wlnband_list"); %>`.split("&#60");
+	const titleArr = [];
+	const bandCounts = {};
+	for (const band of wlnband_list) {
+		let bandType = band.substring(0, 2);
+		if (band.startsWith('60g')) {
+			bandType = '60g';
+		}
+		bandCounts[bandType] = (bandCounts[bandType] || 0) + 1;
+		if (bandType === '2g') {
+			band2g_count++;
+		} else if (bandType === '5g') {
+			band5g_count++;
+		} else if (bandType === '6g') {
+			band6g_count++;
+		} else if (bandType === '60g') {
+			band60g_count++;
+		}
 	}
-	else if(wl_nband_array[j] == '1'){
-		band5g_count++;
-		wl_nband_title.push("5 GHz" + ((band5g_count > 1) ? ("-" + band5g_count) : ""));
+	for (const band of wlnband_list) {
+		let bandType = band.substring(0, 2);
+		if (band.startsWith('60g')) {
+			bandType = '60g';
+		}
+		const bandNumber = band.substring(bandType.length);
+		let frequency = '';
+		let unit = 'GHz';
+		if (bandType === '2g') {
+			frequency = '2.4 ';
+		} else if (bandType === '5g' || bandType === '6g' || bandType === '60g') {
+			frequency = bandType.substring(0, bandType.length - 1) + ' ';
+		}
+		if (frequency !== '') {
+			titleArr.push(bandCounts[bandType] > 1 ? `${frequency}${unit}-${bandNumber}` : `${frequency}${unit}`);
+		}
 	}
-	else if(wl_nband_array[j] == '4'){
-		band6g_count++;
-		wl_nband_title.push("6 GHz" + ((band6g_count > 1) ? ("-" + band6g_count) : ""));
-	}
-	else if(wl_nband_array[j] == '6'){
-		band60g_count++;
-		wl_nband_title.push("60 GHz" + ((band60g_count > 1) ? ("-" + band60g_count) : ""));
-	}
-}
-
-if(wl_nband_title.indexOf("2.4 GHz-2") > 0) wl_nband_title[wl_nband_title.indexOf("2.4 GHz")] = "2.4 GHz-1";
-if(wl_nband_title.indexOf("5 GHz-2") > 0) wl_nband_title[wl_nband_title.indexOf("5 GHz")] = "5 GHz-1";
-if(wl_nband_title.indexOf("6 GHz-2") > 0) wl_nband_title[wl_nband_title.indexOf("6 GHz")] = "6 GHz-1";
-if(wl_nband_title.indexOf("60 GHz-2") > 0) wl_nband_title[wl_nband_title.indexOf("60 GHz")] = "60 GHz-1";
+	return titleArr;
+})();
 
 var wl_info = {
 	band2g_support:(function(){
@@ -469,48 +484,22 @@ function get_wl_unit_by_band(_band){
 	if(_band == undefined) return "";
 
 	_band = (_band).toString().toUpperCase();
-	var wl_nband = "";
+	const wlnband_list = `<% nvram_get("wlnband_list"); %>`.toUpperCase().split("&#60");
 
-	switch(_band){
-		case "2G":
-		case "2G1":
-			wl_nband = "2";
-			break;
-		case "5G":
-		case "5G1":
-		case "5G2":
-			wl_nband = "1";
-			break;
-		case "6G":
-		case "6G1":
-		case "6G2":
-			wl_nband = "4";
-			break;			
-		case "60G":
-			wl_nband = "6";
-			break;
+	const bandMap = {
+		"2G": "2G1",
+		"5G": "5G1",
+		"6G": "6G1"
+	};
+
+	_band = bandMap[_band] || _band;
+
+	return findWLUnit(wlnband_list, _band).toString();
+
+	function findWLUnit(array, band) {
+		const idx = $.inArray(band, array);
+		return idx !== -1 ? idx : '';
 	}
-
-	if(wl_nband == "") return "";
-
-	var wl_unit = "";
-	var suffix_num = _band.substr(_band.indexOf("G") + 1);
-	var ordinal_num = (suffix_num == "") ? 1 : parseInt(suffix_num);
-	var count = 1;
-
-	for(var wlx = 0; wlx < wl_nband_array.length; wlx++){
-		if(wl_nband_array[wlx] == wl_nband){
-			if(count == ordinal_num){
-				wl_unit = wlx;
-				break;
-			}
-			else{
-				count+=1;
-			}
-		}
-	}
-
-	return wl_unit.toString();
 }
 
 //wireless end
@@ -526,7 +515,7 @@ function isSupport(_ptn){
 	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
 }
 
-if(isSupport("BUSINESS") && !parent.webWrapper){
+if(isSupport("UI4") && !parent.webWrapper){
 	var noWrapper = (location.search.indexOf("noWrapper") != -1 || CoBrand == "99");
 	var rwdPageSupport = [<% get_rwd_mapping_table(); %>][0];
 	var currentPath = location.pathname.replace("/", "");

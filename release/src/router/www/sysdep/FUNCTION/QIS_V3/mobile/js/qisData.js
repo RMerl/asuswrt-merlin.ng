@@ -340,6 +340,7 @@ var systemVariable = {
 	"onboardingInfo": {},
 	"skipAiMeshOptionPage": false,
 	"amas_newWindow_addNode": false,
+	"uiModelNameCloud": {},
 	"authModePostData": {},
 	"eth_wan_list":{},
 	"ispProfiles": [],

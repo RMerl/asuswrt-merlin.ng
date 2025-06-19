@@ -458,6 +458,19 @@ ifeq ($(BUILD_NAME), GT10)
 	install -m 0755 apps_scripts/$(BUILD_NAME)/ingress_filter_config_bridging.sh $(INSTALLDIR)/usr/sbin
 endif
 
+ifeq ($(BUILD_NAME), RT-BE82M)
+	mkdir -p $(INSTALLDIR)/rom/mxl
+	install -m 0644 mxl/asus252.bin $(INSTALLDIR)/rom/mxl/mxl.bin
+endif
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GS-BE18000 GS-BE12000 GS7_PRO))
+	mkdir -p $(INSTALLDIR)/rom/mxl
+	install -m 0644 mxl/asus282.bin $(INSTALLDIR)/rom/mxl/mxl.bin
+endif
+ifeq ($(BUILD_NAME), GT7)
+	mkdir -p $(INSTALLDIR)/rom/mxl
+	install -m 0644 mxl/asus252_gt7.bin $(INSTALLDIR)/rom/mxl/mxl.bin
+endif
+
 ifeq ($(RTCONFIG_BCMARM),y)
 	install -m 0755 apps_scripts/brcmsysinfo.sh $(INSTALLDIR)/usr/sbin
 	install -m 0755 apps_scripts/bcmspu.sh $(INSTALLDIR)/usr/sbin

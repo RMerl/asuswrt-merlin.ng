@@ -6579,6 +6579,8 @@ TRACE_PT("writing Parental Control\n");
 #endif
 					continue;
 				wan_if = get_wan_ifname(unit);
+				/* fix multiwan wan_if is empty issue */
+				if (!strcmp(wan_if, "") || wan_if == NULL) continue;
 				fprintf(fp, "-A %s -i %s -p icmp -j %s\n", "INPUT_PING", wan_if, logdrop);
 			}
 		}
@@ -8010,6 +8012,10 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 	ip2class(lan_ip, nvram_safe_get("lan_netmask"), lan_class);
 #endif
 
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+	char wan_ifname[32] = {0};
+#endif
+
 	if(IS_NON_AQOS() || IS_ROG_QOS()){
 			add_iQosRules(wan_if);
 	}
@@ -8280,8 +8286,30 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 	set_mtppp_load_balance();
 #endif
 #if defined(RTCONFIG_HND_ROUTER_BE_4916)
-	eval("iptables", "-t", "mangle", "-I", "PREROUTING", "-i", "br0", "-p", "tcp", "--dport", "80", "-j", "MARK", "--or", "0x1");
+	strlcpy(wan_ifname, get_wan_ifname(wan_primary_ifunit()), sizeof(wan_ifname));
+	eval("iptables", "-t", "mangle", "-I", "PREROUTING", "-i", "br0", "-p", "tcp", "--dport", "80", "-j", "SKIPLOG");
+	if(nvram_get_int("http_enable"))
+		eval("iptables", "-t", "mangle", "-I", "PREROUTING", "-i", "br0", "-p", "tcp", "--dport", nvram_safe_get("https_lanport"), "-j", "SKIPLOG");
+	if(nvram_get_int("misc_http_x"))
+		eval("iptables", "-t", "mangle", "-I", "PREROUTING", "-i", wan_ifname, "-p", "tcp", "--dport", nvram_safe_get("misc_httpsport_x"), "-j", "SKIPLOG");
+	if (nvram_get_int("webdav_aidisk"))
+		eval("iptables", "-t", "mangle", "-I", "PREROUTING", "-i", wan_ifname, "-p", "tcp", "--dport", nvram_safe_get("webdav_https_port"), "-j", "SKIPLOG");
 #endif
+
+#if defined(RTCONFIG_HND_ROUTER_BE_4916) || defined(RTCONFIG_MT798X) || defined(RTCONFIG_MT799X)
+#if defined(RTCONFIG_BWDPI) && defined(RTCONFIG_IPSEC)
+	if ( check_bwdpi_nvram_setting() &&
+		(nvram_get_int("ipsec_server_enable") || nvram_get_int("ipsec_client_enable")
+#ifdef RTCONFIG_INSTANT_GUARD
+		 || nvram_get_int("ipsec_ig_enable")
+#endif
+		)
+	) {
+		eval("iptables", "-t", "mangle", "-A", "PREROUTING", "-i", wan_if, "-p", "udp", "--dport", "53", "!", "-d", lan_ip, "-j", "DROP");
+	}
+#endif
+#endif
+
 }
 
 #if defined(RTCONFIG_DUALWAN) || defined(RTCONFIG_MULTICAST_IPTV) // RTCONFIG_DUALWAN || RTCONFIG_MULTICAST_IPTV

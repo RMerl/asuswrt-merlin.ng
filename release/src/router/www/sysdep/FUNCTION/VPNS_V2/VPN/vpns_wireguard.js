@@ -127,8 +127,11 @@ function Get_Component_Setup_Client_WGS(_wgsc_unit){
 						var wgs_c_aips = "wgs" + wgs_unit + "_c" + _wgsc_unit + "_aips";
 						var wgs_c_caips = "wgs" + wgs_unit + "_c" + _wgsc_unit + "_caips";
 						httpApi.nvramGet([wgs_c_enable, wgs_c_name, wgs_c_addr, wgs_c_aips, wgs_c_caips, wgs_c_caips], true);
-						Update_Profile_Data_WGS($(".profile_setting"));
-						set_apply_btn_status_WGS($(".profile_setting"));
+						setTimeout(()=>{
+							httpApi.hookGet("get_wgs_parameter", true);
+							Update_Profile_Data_WGS($(".profile_setting"));
+							set_apply_btn_status_WGS($(".profile_setting"));
+						}, 2000);
 						if(show_config){
 							httpApi.hookGet("get_wgsc_parameter", true);
 							$(_profileObj).find(".action_container, .action_container_hint").hide();
@@ -842,7 +845,7 @@ function set_apply_btn_status_WGS(_obj){
 	}
 }
 function Update_Profile_Data_WGS(_obj){
-	var settings = httpApi.nvramGet(["wgs_lanaccess","wgs_addr", "wgs_port", "wgs_dns", "wgs_nat6", "wgs_psk", "wgs_alive", "wgs_priv", "wgs_pub"]);
+	const settings = httpApi.nvramGet(["wgs_lanaccess","wgs_addr", "wgs_port", "wgs_dns", "wgs_nat6", "wgs_psk", "wgs_alive", "wgs_priv", "wgs_pub"], true);
 
 	$(_obj).find("#wgs_lanaccess").removeClass("off on").addClass((function(){
 		return ((settings.wgs_lanaccess == "1") ? "on" : "off");

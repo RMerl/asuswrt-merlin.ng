@@ -17,6 +17,7 @@
 #include <httpd.h>
 #endif
 #ifdef RTCONFIG_CFGSYNC
+#include <cfg_capability.h>
 #include <cfg_param.h>
 #include <cfg_slavelist.h>
 #endif
@@ -354,7 +355,7 @@ static int get_sdn_rwd_cap_array(struct json_object *sdn_rwd_cap_array){
 
 struct RWD_MAPPING_TABLE rwd_mapping_t[] =
 {
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GTAXE11000) || defined(GTAC2900) || defined(GTAX11000) || defined(GSAX3000) || defined(GSAX5400) || defined(GTAX11000_PRO) || defined(TUFAX5400) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GTAXE11000) || defined(GTAC2900) || defined(GTAX11000) || defined(GSAX3000) || defined(GSAX5400) || defined(GTAX11000_PRO) || defined(TUFAX5400) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 	{"AuraRGB", "light_effect/light_effect.html", "<rt><white>light_effect/light_effect_white.css"},
 	{"AuraRGB_preview", "light_effect/light_effect_pre.html", "<rt>"},
 #endif
@@ -787,13 +788,16 @@ struct REPLACE_PRODUCTID_S replace_productid_t[] =
 	{"TX-AX6000", "天选游戏路由", "CN"},
 	{"TUF-AX6000",  "TUF GAMING AX6000", "global"},
 	{"GT-BE96",  "ROG 八爪鱼7", "CN"},
-	{"TUF-BE3600", "TUF GAMING 小旋风", "CN"},
-	{"TUF-BE6500", "TUF GAMING 小旋风 Pro", "CN"},
-	{"TUF_3600", "TUF GAMING 小旋风", "CN"},
-	{"TUF_6500", "TUF GAMING 小旋风 Pro", "CN"},
+	{"TUF-BE3600", "TUF GAMING 小旋风 WiFi7", "CN"},
+	{"TUF-BE6500", "TUF GAMING 小旋风 Pro WiFi7", "CN"},
+	{"TUF_3600", "TUF GAMING 小旋风 WiFi7", "CN"},
+	{"TUF_6500", "TUF GAMING 小旋风 Pro WiFi7", "CN"},
 	{"ZenWiFi_BD4", "灵耀魔方 WiFi7 BE3600", "CN"},
 	{"ZenWiFi_BD4_Outdoor", "灵耀魔方 无界", "CN"},
 	{"GS7", "ROG 魔盒", "CN"},
+	{"RP-BE58", "小飞侠组网超人 WiFi7", "CN"},
+	{"GS7_Pro", "ROG 魔盒 Pro", "CN"},
+	{"TUF_3600_V2", "TUF GAMING 小旋风 V2 WiFi7", "CN"},
 	{NULL, NULL, NULL}
 };
 
@@ -812,25 +816,38 @@ void replace_productid(char *GET_PID_STR, char *RP_PID_STR, int len){
 		}
 	}
 
-	if(strlen(RP_PID_STR))
-		return;
-
-	if ((p_temp = strstr(GET_PID_STR, "ZenWiFi_")) && !strncmp(nvram_safe_get("preferred_lang"), "CN", 2)) {
-		p_temp += strlen("ZenWiFi_");
-		snprintf(RP_PID_STR, len, "灵耀%s", p_temp);
+	if(!strcmp(GET_PID_STR,"RT-AX57M") && !strcmp(nvram_safe_get("preferred_lang"), "CN")){
+		if(!strcmp(nvram_safe_get("CoBrand"), "5"))
+			strlcpy(RP_PID_STR, "RT-AX57 青春版", len);
+		else
+			strlcpy(RP_PID_STR, "RT-AX57 热血版", len);
 	}
-	else if (!strcmp(GET_PID_STR, "RT-BE57") && !strncmp(nvram_safe_get("preferred_lang"), "CN", 2) && nvram_get_int("CoBrand") == 12) {
+	else if(!strcmp(GET_PID_STR, "RT-BE57") && !strncmp(nvram_safe_get("preferred_lang"), "CN", 2) && nvram_get_int("CoBrand") == 12){
 		strlcpy(RP_PID_STR, "天选游戏路由2 初音未来版", len);
 	}
-	else{
-		strlcpy(RP_PID_STR, GET_PID_STR, len);
+	else if(!strcmp(GET_PID_STR, "RT-BE57") && !strncmp(nvram_safe_get("preferred_lang"), "CN", 2) && nvram_get_int("CoBrand") == 11){
+		strlcpy(RP_PID_STR, "天选游戏路由2", len);
 	}
+	else if(!strcmp(GET_PID_STR, "GS7") && !strncmp(nvram_safe_get("preferred_lang"), "CN", 2) && nvram_get_int("CoBrand") == 18){
+		strlcpy(RP_PID_STR, "ROG 魔盒 初音未来版", len);
+	}
+	else if(!strcmp(GET_PID_STR, "GS7") && !strncmp(nvram_safe_get("preferred_lang"), "CN", 2) && nvram_get_int("CoBrand") == 17){
+		strlcpy(RP_PID_STR, "ROG 魔盒 透视版", len);
+	}
+	else if(!strlen(RP_PID_STR)){
+		if((p_temp = strstr(GET_PID_STR, "ZenWiFi_")) && !strncmp(nvram_safe_get("preferred_lang"), "CN", 2)){
+			p_temp += strlen("ZenWiFi_");
+			snprintf(RP_PID_STR, len, "灵耀%s", p_temp);
+		}
+		else
+			strlcpy(RP_PID_STR, GET_PID_STR, len);
 
-	/* general  replace underscore with space */
-	for (; *RP_PID_STR; ++RP_PID_STR)
-	{
-		if (*RP_PID_STR == '_')
-			*RP_PID_STR = ' ';
+		/* general replace underscore with space */
+		for (; *RP_PID_STR; ++RP_PID_STR)
+		{
+			if (*RP_PID_STR == '_')
+				*RP_PID_STR = ' ';
+		}
 	}
 }
 

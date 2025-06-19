@@ -209,7 +209,7 @@ function initial_system_settings() {
 
 							$("<div>")
 								.addClass("inputTitleContainer")
-								.append($("<div>").addClass("inputTitle").html(wl.title + " <#QIS_finish_wireless_item2#>"))
+								.append($("<div>").addClass("inputTitle").html(wl.title + " <#QIS_finish_wireless_item3#>"))
 								.append(
 									$("<div>").addClass("secureInput icon_eye close").attr({"for":"wireless_key_" + wl.ifname}).unbind("click").click(function(){
 										var targetObj = $(this);
@@ -517,7 +517,136 @@ function initial_system_settings() {
 	else
 		$(".system_settings_bg.eap").hide();
 
-	$(".system_settings_bg.led").hide();
+	const system_settings_led = (()=>{
+		let result = {"led": false, "led_night_mode": false};
+		if(typeof support_system_settings === "object"){
+			return {
+				led: support_system_settings?.led || false,
+				led_night_mode: support_system_settings?.led_night_mode || false
+			};
+		}
+		return result;
+	})();
+	if(system_settings_led.led){
+		const node_led_count = (()=>{
+			let result = {"led_on": 0, "led_off": 0, "led_night_mode_on": 0, "led_night_mode_off": 0, "not_support_list": []};
+			const get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist");
+			get_cfg_clientlist.forEach(node => {
+				if(node.config?.ctrl_led?.led_val !== undefined){
+					if(node.config.ctrl_led.led_val === "1")
+						result.led_on++;
+					else
+						result.led_off++;
+				}
+				if(node.config?.misc?.single_led_night_mode !== undefined){
+					if(node.config.misc.single_led_night_mode === "1")
+						result.led_night_mode_on++;
+					else
+						result.led_night_mode_off++;
+				}
+				const node_capability = httpApi.aimesh_get_node_capability(node);
+				if(node_capability.central_led_on_off === false){
+					const node_led_status = {
+						"mac": node.mac,
+						"led_on_off": node_capability.led_on_off && node?.config?.ctrl_led?.led_val !== undefined,
+						"led_night_mode": node_capability.led_night_mode && node?.config?.misc?.single_led_night_mode !== undefined
+					};
+					result.not_support_list.push(node_led_status);
+				}
+			});
+			return result;
+		})();
+		$(".system_settings_bg.led .switch").removeClass('off on').addClass((()=>{
+			return node_led_count.led_on > 0 ? "on" : "off";
+		})()).unbind("click").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			const $switch = $(this);
+			$switch.toggleClass('off on').hide().after(`<div class='icon_loading'></div>`);
+			const switch_status = $switch.hasClass("on") ? "1" : "0";
+			node_led_count.not_support_list.forEach((node)=>{
+				if(node.led_on_off){
+					if(node.mac != "" && validator.mac_addr(node.mac)){
+						httpApi.nvramSet({
+							"config" : JSON.stringify({"led_val": switch_status}),
+							"re_mac" : node.mac,
+							"action_mode": "config_changed"
+						});
+					}
+				}
+			});
+			setTimeout(() => {
+				const postData = {
+					"led_val": switch_status,
+					"rc_service": "no_service",
+					"action_mode": "apply"
+				};
+				httpApi.nvramSet(postData, function(){
+					setTimeout(() => {
+						$switch.show().next('.icon_loading').remove();
+					}, 3000);
+					if(system_settings_led.led_night_mode){
+						if(switch_status === "0" && $(".system_settings_bg.led_night_mode .switch").hasClass("on")){
+							$(".system_settings_bg.led_night_mode .switch").click();
+						}
+					}
+					if(typeof jstree_refresh == "function")
+						jstree_refresh();
+				});
+			}, 500);
+			if(system_settings_led.led_night_mode){
+				$(".system_settings_bg.led_night_mode").toggle(switch_status === "1");
+			}
+		});
+		if(system_settings_led.led_night_mode){
+			$(".system_settings_bg.led_night_mode .switch").removeClass('off on').addClass((()=>{
+				return node_led_count.led_night_mode_on > 0 ? "on" : "off";
+			})()).unbind("click").click(function(e){
+				e = e || event;
+				e.stopPropagation();
+				const $switch = $(this);
+				$switch.toggleClass('off on').hide().after(`<div class='icon_loading'></div>`);
+				const switch_status = $switch.hasClass("on") ? "1" : "0";
+				node_led_count.not_support_list.forEach((node)=>{
+					if(node.led_night_mode){
+						if(node.mac != "" && validator.mac_addr(node.mac)){
+							httpApi.nvramSet({
+								"config" : JSON.stringify({"single_led_night_mode": switch_status}),
+								"re_mac" : node.mac,
+								"action_mode": "config_changed"
+							});
+						}
+					}
+				});
+				setTimeout(() => {
+					const postData = {
+						"single_led_night_mode": switch_status,
+						"rc_service": "no_service",
+						"action_mode": "apply"
+					};
+					httpApi.nvramSet(postData, function(){
+						setTimeout(() => {
+							$switch.show().next('.icon_loading').remove();
+						}, 3000);
+						if(typeof jstree_refresh == "function")
+							jstree_refresh();
+					});
+				}, 500);
+			});
+			if(node_led_count.led_on >= 1){
+				$(".system_settings_bg.led_night_mode").show();
+			}
+			else{
+				$(".system_settings_bg.led_night_mode").hide();
+			}
+		}
+		else{
+			$(".system_settings_bg.led_night_mode").hide();
+		}
+	}
+	else{
+		$(".system_settings_bg.led, .system_settings_bg.led_night_mode").hide();
+	}
 
 	$(".system_settings_bg.roaming_block").unbind("click");
 	$(".system_settings_bg.roaming_block").click(function(e){
@@ -546,7 +675,7 @@ function initial_system_settings() {
 			hint += "<br>";
 			hint += "<#Setting_factorydefault_hint2#>";
 			hint += "<br><br>";
-			var model_list_hint = "* <#AiMesh_System_Not_Support_Feature_Nodes#> <#AiMesh_System_Manually_Reset_Node#> #MODELLIST".replace("#MODELLIST", not_support_list);
+			var model_list_hint = "* <#AiMesh_System_Not_Support_Feature_Nodes#><br><#AiMesh_System_Manually_Reset_Node#> #MODELLIST".replace("#MODELLIST", not_support_list);
 			hint += $("<span>").addClass("text_emphasize").html(model_list_hint)[0].outerHTML;
 		}
 		var lan_ipaddr = httpApi.nvramGet(["lan_ipaddr"]).lan_ipaddr;
@@ -585,7 +714,7 @@ function initial_system_settings() {
 			hint += "<br>";
 			hint += "<#Setting_factorydefault_hint2#>";
 			hint += "<br><br>";
-			var model_list_hint = "* <#AiMesh_System_Not_Support_Feature_Nodes#> <#AiMesh_System_Manually_Reboot_Node#> #MODELLIST".replace("#MODELLIST", not_support_list);
+			var model_list_hint = "* <#AiMesh_System_Not_Support_Feature_Nodes#><br><#AiMesh_System_Manually_Reboot_Node#> #MODELLIST".replace("#MODELLIST", not_support_list);
 			hint += $("<span>").addClass("text_emphasize").html(model_list_hint)[0].outerHTML;
 		}
 		popupHint.set_text(hint);
@@ -604,6 +733,7 @@ function initial_system_settings() {
 }
 var popupHint = {
 	"init" : function(){
+		$(".popup_hint_component").empty();
 		var $popupHint = $("<div>");
 		$popupHint.appendTo($(".popup_hint_component"));
 		$("#popup_hint_component").after($popupHint);
@@ -665,15 +795,18 @@ function check_not_support_nodes(_feature) {
 		var isReNode = (index == 0) ? false : true;
 		var node_capability = httpApi.aimesh_get_node_capability(item);
 		const feature_support = (()=>{
-			if(_feature == "ethernet_backhaul_mode"){
-				const is_no_wifi = (item.band_num != undefined) ? (item.band_num == "0" ? true : false) : false;
-				return (node_capability[_feature] || is_no_wifi);
+			if (_feature === "ethernet_backhaul_mode") {
+				const is_no_wifi = item.band_num === "0";
+				return node_capability[_feature] || is_no_wifi;
 			}
-			else{
+			else if (_feature === "manual_reset_default" || _feature === "manual_reboot") {
+				return node_capability[_feature] && item.online === "1";
+			}
+			else {
 				return node_capability[_feature];
 			}
 		})();
-		if(item.online == "0" || (!feature_support && _feature != "manual_reset_default")) {
+		if (!feature_support) {
 			if(not_support_list != "")
 				not_support_list += ", ";
 			if(item.ui_model_name == undefined || item.ui_model_name == "")
@@ -771,6 +904,12 @@ $(document).ready(initial_system_settings);
 <div class="system_settings_bg led">
 	<div class="system_icon"></div>
 	<div class="system_text"><span><#AiMesh_System_LED_Control#></span></div>
+	<div class="switch"></div>
+</div>
+
+<div class="system_settings_bg led_night_mode">
+	<div class="system_icon"></div>
+	<div class="system_text"><span><#AiMesh_System_LED_NM_Control#></span></div>
 	<div class="switch"></div>
 </div>
 

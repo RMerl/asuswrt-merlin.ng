@@ -105,6 +105,7 @@
 #define CFG_STR_APLIST "aplist"
 #define CFG_STR_DUAL_BAND_LIST	"db_list"
 #define CFG_STR_DUAL_BAND_CAP		"db_cap"
+#define CFG_STR_IS_CAP	"is_cap"
 #define CFG_STR_IS_RE	"is_re"
 #define CFG_STR_TRIBAND_RE	"triband_re"
 #define CFG_STR_DUAL_5G_RE	"dual_5g_re"
@@ -284,6 +285,7 @@
 #define CFG_STR_SECURITY_MODE	"security_mode"
 #define CFG_STR_MOCA_STATUS "moca_status"
 #define CFG_STR_MLD_MAC "mld_mac"
+#define CFG_STR_VERSION		"version"
 
 #define CFG_STR_MODEL_WIFI7	"support_wifi7"
 

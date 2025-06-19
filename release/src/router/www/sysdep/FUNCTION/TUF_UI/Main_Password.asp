@@ -111,10 +111,16 @@ var is_SG_sku = (function(){
 var isIE8 = navigator.userAgent.search("MSIE 8") > -1; 
 var isIE9 = navigator.userAgent.search("MSIE 9") > -1; 
 
+
 if(isSupport("TS_UI")){
 	$('link').last().after('<link rel="stylesheet" type="text/css" href="css/difference.css">');
 	$(".form-input").css("")
 }
+
+var secure_default = (function(){
+	var rc_support = '<% nvram_get("rc_support"); %>';
+	return (rc_support.search("secure_default") == -1) ? false : true;
+})();
 
 function initial(){
 	top.name = "";/* reset cache of state.js win.name */
@@ -124,7 +130,7 @@ function initial(){
 		$(".main-field-bg").css("width", "980px");
 	}
 
-	if(is_KR_sku || is_SG_sku || is_AA_sku)
+	if(is_KR_sku || is_SG_sku || is_AA_sku || secure_default)
 		document.getElementById("KRHint").style.display = "";
 
 	if(isIE8 || isIE9){
@@ -225,7 +231,15 @@ function validForm(){
 			return false;                   
 	}
 
-	if(is_KR_sku || is_SG_sku || is_AA_sku){		/* MODELDEP by Territory Code */
+	if(document.form.http_passwd_x.value == document.form.http_username_x.value){
+			showError("<#JS_validLoginPWD_same#>");
+			document.form.http_passwd_x.value = "";
+			document.form.http_passwd_x.focus();
+			document.form.http_passwd_x.select();
+			return false;                   
+	}
+
+	if(is_KR_sku || is_SG_sku || is_AA_sku || secure_default){		/* MODELDEP by Territory Code */
 		if(!validator.chkLoginPw_KR(document.form.http_passwd_x)){
 			return false;
 		}
@@ -329,15 +343,15 @@ var validator = {
 		
 		if(obj.value.length > 0 && obj.value.length < 5){
 			showError("<#JS_short_password#>");
-			obj.value = "";
 			obj.focus();
 			obj.select();
 			return false;
 		}		
 
+		var str_valid_max_password = `<#JS_max_password_var#>`;
+		str_valid_max_password = str_valid_max_password.replace("%1$@", "5");
 		if(obj.value.length > 32){
-			showError("<#JS_max_password#>");
-			obj.value = "";
+			showError(str_valid_max_password);
 			obj.focus();
 			obj.select();
 			return false;
@@ -345,7 +359,6 @@ var validator = {
 
 		if(obj.value.charAt(0) == '"'){
 			showError('<#JS_validstr1#> ["]');
-			obj.value = "";
 			obj.focus();
 			obj.select();
 			return false;
@@ -360,7 +373,6 @@ var validator = {
 
 			if(invalid_char != ""){
 				showError("<#JS_validstr2#> '"+invalid_char+"' !");
-				obj.value = "";
 				obj.focus();
 				obj.select();
 				return false;
@@ -381,15 +393,15 @@ var validator = {
 		){
 				
 				showError("<#JS_validLoginPWD#>");
-				obj.value = "";
 				obj.focus();
 				obj.select();
 				return false;	
 		}
 
+		var str_valid_max_password = `<#JS_max_password_var#>`;
+		str_valid_max_password = str_valid_max_password.replace("%1$@", "10");
 		if(obj.value.length > 32){
-            showError("<#JS_max_password#>");
-            obj.value = "";
+            showError(str_valid_max_password);
             obj.focus();
             obj.select();
             return false;
@@ -404,7 +416,6 @@ var validator = {
 
 		if(invalid_char != ""){
 			showError("<#JS_validstr2#> '"+invalid_char+"' !");
-			obj.value = "";
 			obj.focus();
 			obj.select();
 			return false;

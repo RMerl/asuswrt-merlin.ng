@@ -74,6 +74,8 @@
 #include <rtk_switch.h>
 #endif
 
+#include <json.h>
+
 #if defined(RTCONFIG_NOTIFICATION_CENTER)
 #include <libnt.h>
 #endif
@@ -95,7 +97,7 @@
 #include <libasuslog.h>
 #endif
 #endif
-#if (defined(GSBE18000) || defined(GS7_PRO)) && !defined(RTCONFIG_BCM_MFG)
+#if (defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)) && !defined(RTCONFIG_BCM_MFG)
 #include <wlioctl.h>
 #include <wlutils.h>
 #endif
@@ -209,7 +211,9 @@ static int top_period = 0;
 static int top = 0;
 static int lsof_period = 0;
 static int lsof = 0;
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
+static int mem_chk_period = 0;
+static int mem_chk = 0;
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 static int eth1_period = 60;
 static int eth1 = 59;
 static int eth1_count = 0;
@@ -218,10 +222,13 @@ static int eth1_count = 0;
 static int chkusb3_period = 0;
 static int u3_chk_life = 6;
 #endif
-#if !defined(RTCONFIG_BCM_MFG) && (defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(DSL_AX82U) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)) || defined(GSBE18000) || defined(GS7_PRO)
+#if !defined(RTCONFIG_BCM_MFG) && (defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(DSL_AX82U) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 static int ledg_count = 0;
 #endif
 static int wanduck_count = 0;
+#ifdef RTCONFIG_HND_ROUTER_BE_4916
+static int dm_count = 0;
+#endif
 static int btn_pressed = 0;
 static int btn_count = 0;
 #ifdef BTN_SETUP
@@ -368,9 +375,17 @@ static int cfgsync_restart_count = 0;
 
 /* DEBUG DEFINE */
 #define SCHED_DEBUG	"/tmp/SCHED_DEBUG"
+extern char *__progname;
 #define WL_SCHED_DBG(fmt,args...) \
-	if(nvram_get_int("sched_dbg") || f_exists(SCHED_DEBUG) > 0) { \
-	printf("[SCHED][%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \
+	if(nvram_get_int("sched_dbg") || f_exists(SCHED_DEBUG) > 0 || f_exists(SCHED_DAEMON_DEBUG) > 0) { \
+	_dprintf("[%s][%d][%s:(%d)]"fmt, __progname, getpid(), __FUNCTION__, __LINE__, ##args); \
+	}
+
+#define RB_SCHED_DEBUG	"/tmp/RB_SCHED_DEBUG"
+#define SCHED_DAEMON_DEBUG		"/tmp/SCHED_DAEMON_DEBUG"
+#define RB_SCHED_DBG(fmt,args...) \
+	if(nvram_get_int("rb_sched_dbg") || f_exists(RB_SCHED_DEBUG) > 0 || f_exists(SCHED_DAEMON_DEBUG) > 0) { \
+	_dprintf("[%s][%d][%s:(%d)]"fmt, __progname, getpid(), __FUNCTION__, __LINE__, ##args); \
 	}
 
 void watchdog(int sig);
@@ -3913,7 +3928,7 @@ void btn_check(void)
 		if (LED_status_on)
 #endif
 		{
-#if defined(RTAX86U_PRO) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE86U) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTAX86U_PRO) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE86U) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 			setAllLedNormal();
 #else
 			led_control(LED_POWER, LED_ON);
@@ -3948,7 +3963,7 @@ void btn_check(void)
 #endif
 #ifdef RTCONFIG_FAKE_ETLAN_LED
 			nvram_set_int("etlan_led_reset", 1);
-#if defined(RTAX9000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RTBE92U) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTAX9000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RTBE92U) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 			nvram_set_int("etwan_led_reset", 1);
 #endif
 #endif
@@ -4113,7 +4128,7 @@ void btn_check(void)
 				eval("wl", "-i", "eth2", "ledbh", "9", "7");
 #endif
 			}
-#if defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2) || defined(RTCONFIG_HAS_6G)
 			if (wlonunit == -1 || wlonunit == 2) {
 #if defined(RTAC3200)
 				eval("wl", "-i", "eth3", "ledbh", "10", "7");
@@ -4169,7 +4184,7 @@ void btn_check(void)
 			led_control(LED_LOGO, LED_ON);
 #endif
 			kill_pidfile_s("/var/run/usbled.pid", SIGTSTP); // inform usbled to reset status
-#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI)
+#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI)
 			kill_pidfile_s("/var/run/ledg.pid", SIGTSTP);
 #endif
 #ifdef GTAX6000
@@ -4794,7 +4809,7 @@ int timecheck_item(char *activeTime)
 		/* Counting variables quantity*/
 		x=0;
 		int schedCount = 1; // how many variables in activeTime	111014<222024<331214 count will be 3
-		for(;x<strlen(activeTime);x++)
+		for(;activeTime && x<strnlen(activeTime, CKN_STR2048);x++)
 		{
 			if (activeTime[x] == '<')
 			schedCount++;
@@ -4818,7 +4833,7 @@ int timecheck_item(char *activeTime)
 				else
 				{
 					endTime[loopCount - (4+7*x)] = activeTime[loopCount];
-					if ((loopCount - (4+7*x)) == 1&& atoi(endTime) == 0)
+					if ((loopCount - (4+7*x)) == 1&& safe_atoi(endTime) == 0)
 					{
 						endTime[0] = '2';
 						endTime[1] = '4';
@@ -4830,7 +4845,7 @@ int timecheck_item(char *activeTime)
 					}
 				}
 				loopCount++;
-			} while(activeTime[loopCount] != '<' && loopCount < strlen(activeTime));
+			} while(activeTime && activeTime[loopCount] != '<' && loopCount < strnlen(activeTime, CKN_STR2048));
 
 			loopCount++;
 
@@ -4839,16 +4854,16 @@ int timecheck_item(char *activeTime)
 			if (Date[0] == Date[1])
 			{
 				z=0;
-				for(;z<(atoi(endTime) - atoi(startTime));z++)
-					schedTable[Date[0]-'0'][atoi(startTime)+z] = 1;
+				for(;z<(safe_atoi(endTime) - safe_atoi(startTime));z++)
+					schedTable[Date[0]-'0'][safe_atoi(startTime)+z] = 1;
 			}
 			else
 			{
 				z=0;
-				for(;z<((atoi(endTime) - atoi(startTime))+24*(Date[1] - Date[0]));z++)
+				for(;z<((safe_atoi(endTime) - safe_atoi(startTime))+24*(Date[1] - Date[0]));z++)
 				{
-					schedTable[Date[0]-'0'+offSet][(atoi(startTime)+z)%24] = 1;
-					if ((atoi(startTime)+z)%24 == 23)
+					schedTable[Date[0]-'0'+offSet][(safe_atoi(startTime)+z)%24] = 1;
+					if ((safe_atoi(startTime)+z)%24 == 23)
 					{
 						offSet++;
 					}
@@ -4868,8 +4883,7 @@ int timecheck_item(char *activeTime)
 	return active;
 }
 
-
-int timecheck_reboot(char *activeSchedule)
+int timecheck_reboot(int sched_type, char *activeSchedule)
 {
 	int active, current_time, current_date, Time2Active, Date2Active;
 	time_t now;
@@ -4883,18 +4897,46 @@ int timecheck_reboot(char *activeSchedule)
 	time(&now);
 	tm = localtime(&now);
 	current_time = tm->tm_hour * 60 + tm->tm_min;
-	current_date = 1 << (6-tm->tm_wday);
 	active = 0;
 	Time2Active = 0;
 	Date2Active = 0;
 
-	Time2Active = ((activeSchedule[7]-'0')*10 + (activeSchedule[8]-'0'))*60 + ((activeSchedule[9]-'0')*10 + (activeSchedule[10]-'0'));
+	if (sched_type == REBOOT_SCHED_TYPE_WEEKLY && activeSchedule && strnlen(activeSchedule, CKN_STR16) == 11) {
+		Time2Active = ((activeSchedule[7]-'0')*10 + (activeSchedule[8]-'0'))*60 + ((activeSchedule[9]-'0')*10 + (activeSchedule[10]-'0'));
 
-	for(i=0;i<=6;i++) {
-		Date2Active += (activeSchedule[i]-'0') << (6-i);
+		for(i=0;i<=6;i++) {
+			Date2Active += (activeSchedule[i]-'0') << (6-i);
+		}
+		current_date = 1 << (6-tm->tm_wday);
+		if ((current_time == Time2Active) && (Date2Active & current_date))	active = 1;
 	}
+#ifdef RTCONFIG_REBOOT_SCHEDULE_V2
+	else if (sched_type == REBOOT_SCHED_TYPE_MONTHLY) {
+		char rule_tmp[8];
+		char rules_tmp[256], *next_word;
+		snprintf(rules_tmp, sizeof(rules_tmp), "%s", activeSchedule);
 
-	if ((current_time == Time2Active) && (Date2Active & current_date))	active = 1;
+		current_date = tm->tm_mday;
+		foreach_60(rule_tmp, rules_tmp, next_word) {
+			Time2Active = 0;
+			Date2Active = 0;
+
+			RB_SCHED_DBG("[reboot-scheduler] rule_tmp=%s\n", rule_tmp);
+			if (strlen(rule_tmp) != 6)
+				continue;
+
+			Time2Active = ((rule_tmp[2]-'0')*10 + (rule_tmp[3]-'0'))*60 + ((rule_tmp[4]-'0')*10 + (rule_tmp[5]-'0'));
+			Date2Active = ((rule_tmp[0]-'0')*10 + (rule_tmp[1]-'0'));
+			RB_SCHED_DBG("[reboot-scheduler] current_time=%d, Time2Active=%d, current_date=%d, Date2Active=%d\n", 
+				current_time, Time2Active, current_date, Date2Active);
+			if ((current_time == Time2Active) && (current_date == Date2Active)) {
+				active = 1;
+				break;
+			}
+		}
+	}
+#endif
+
 
 	//dbG("[watchdog] current_time=%d, ActiveTime=%d, current_date=%d, ActiveDate=%d, active=%d\n",
 	//	current_time, Time2Active, current_date, Date2Active, active);
@@ -4902,7 +4944,8 @@ int timecheck_reboot(char *activeSchedule)
 	return active;
 }
 
-int svcStatus[12] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+#define MAX_SVC_STATUS 12
+int svcStatus[MAX_SVC_STATUS] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
 /* Check for time-reated service 	*/
 /* 1. Wireless Radio			*/
@@ -4952,7 +4995,9 @@ void timecheck(void)
 
 		foreach (word, nvram_safe_get("wl_ifnames"), next) {
 			SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
-			svcStatus[item] = -1;
+			if (item < MAX_SVC_STATUS) {
+				svcStatus[item] = -1;
+			}
 			item++;
 			unit++;
 		}
@@ -5019,11 +5064,11 @@ void timecheck(void)
 #endif
 
 			if (activeNow == 0) {
-				set_wlan_service_status(atoi(tmp), -1, 0);
+				set_wlan_service_status(safe_atoi(tmp), -1, 0);
 				WL_SCHED_DBG("[wifi-scheduler] Turn radio [band_index=%s] off\n", tmp);
 				logmessage("wifi scheduler", "Turn radio [band_index=%s] off.", tmp);
 			} else {
-				set_wlan_service_status(atoi(tmp), -1, 1);
+				set_wlan_service_status(safe_atoi(tmp), -1, 1);
 				WL_SCHED_DBG("[wifi-scheduler] Turn radio [band_index=%s] on\n", tmp);
 				logmessage("wifi scheduler", "Turn radio [band_index=%s] on.", tmp);
 			}
@@ -5123,19 +5168,35 @@ end_of_wl_sched:
 	}
 #endif //!defined(RTCONFIG_MULTILAN_CFG)
 
-#ifdef RTCONFIG_REBOOT_SCHEDULE
+#if !defined(RTCONFIG_SCHED_DAEMON) && defined(RTCONFIG_REBOOT_SCHEDULE)
 	/* Reboot Schedule */
 	char reboot_schedule[PATH_MAX];
-	if (nvram_match("reboot_schedule_enable", "1"))
+	int reboot_schedule_type = 0;
+	RB_SCHED_DBG("[reboot-scheduler] checking...\n");
+	// don't need to check reboot schedule when the system is booting up.
+	if (uptime() > 300 && nvram_match("reboot_schedule_enable", "1"))
 	{
 		if (nvram_match("ntp_ready", "1"))
 		{
 			//SMTWTFSHHMM
 			//XXXXXXXXXXX
-			snprintf(reboot_schedule, sizeof(reboot_schedule), "%s", nvram_safe_get("reboot_schedule"));
-			if (strlen(reboot_schedule) == 11)
+#ifdef RTCONFIG_REBOOT_SCHEDULE_V2
+			reboot_schedule_type = nvram_get_int("reboot_schedule_type");
+#endif
+			if (reboot_schedule_type == REBOOT_SCHED_TYPE_WEEKLY)
+				snprintf(reboot_schedule, sizeof(reboot_schedule), "%s", nvram_safe_get("reboot_schedule"));
+#ifdef RTCONFIG_REBOOT_SCHEDULE_V2
+			else if (reboot_schedule_type == REBOOT_SCHED_TYPE_MONTHLY)
+				snprintf(reboot_schedule, sizeof(reboot_schedule), "%s", nvram_safe_get("reboot_schedule_month"));
+#endif
+			RB_SCHED_DBG("[reboot-scheduler] reboot_schedule_type=%d, reboot_schedule=%s\n", reboot_schedule_type, reboot_schedule);
+			if (strlen(reboot_schedule) == 11 
+#ifdef RTCONFIG_REBOOT_SCHEDULE_V2
+					|| reboot_schedule_type == REBOOT_SCHED_TYPE_MONTHLY
+#endif
+				)
 			{
-				if (timecheck_reboot(reboot_schedule))
+				if (timecheck_reboot(reboot_schedule_type, reboot_schedule))
 				{
 					char reboot[sizeof("255")];
 					char upgrade[sizeof("255")];
@@ -5264,6 +5325,7 @@ void timecheck_v2(void)
 	int wlX_activeNow = -1;
 #endif
 	int bss_status;
+	int radio_status;
 
 	// Check whether conversion needed.
 	convert_wl_sched_v1_to_sched_v2();
@@ -5338,6 +5400,12 @@ void timecheck_v2(void)
 				continue;
 			}
 
+			// On RE node, the amas_lanctl should be the radio controler if RE is disconnected from CAP.
+			if (nvram_get_int("re_mode") == 1 && nvram_get_int("cfg_alive") ==0 ) {
+				subunit++;
+				continue;
+			}
+
 			/*transfer wl_sched NULL value to "" value, because
 			of old version firmware with wrong default value*/
 			if (!nvram_get(strcat_r(prefix2, "sched_v2", tmp)))
@@ -5356,7 +5424,6 @@ void timecheck_v2(void)
 						// if access time is enabled and not in expire time preiod, 
 						// we need to check if schedule is enabled too (consider both of access time and schedule are enabled).
 						if ((timesched & TIMESCHED_SCHEDULE) > 0) {
-							memset(schedTime2, 0, sizeof(schedTime2));
 							snprintf(schedTime2, sizeof(schedTime2), "%s", nvram_safe_get(strcat_r(prefix2, "sched_v2", tmp)));
 							activeNow2 = check_sched_v2_on_off(schedTime2);
 						} else {
@@ -5366,7 +5433,6 @@ void timecheck_v2(void)
 						activeNow2 = expireNow;
 					}
 				} else if ((timesched & TIMESCHED_SCHEDULE) > 0) {
-					memset(schedTime2, 0, sizeof(schedTime2));
 					snprintf(schedTime2, sizeof(schedTime2), "%s", nvram_safe_get(strcat_r(prefix2, "sched_v2", tmp)));
 					activeNow2 = check_sched_v2_on_off(schedTime2);
 				} else {
@@ -5405,9 +5471,9 @@ void timecheck_v2(void)
 #endif
 
 				if (activeNow2 == 0) {
-					bss_status = get_wlan_service_status(atoi(tmp), atoi(tmp2));
+					bss_status = get_wlan_service_status(safe_atoi(tmp), safe_atoi(tmp2));
 					if (bss_status == 1) { // radio is on
-						set_wlan_service_status(atoi(tmp), atoi(tmp2), 0);
+						set_wlan_service_status(safe_atoi(tmp), safe_atoi(tmp2), 0);
 						WL_SCHED_DBG("[wifi-scheduler] Turn radio [band_index=%s, subunit=%s] off\n", tmp, tmp2);
 						logmessage("wifi scheduler", "Turn radio [band_index=%s, subunit=%s] off.", tmp, tmp2);
 					} else {
@@ -5418,9 +5484,18 @@ void timecheck_v2(void)
 							WL_SCHED_DBG("[wifi-scheduler] Turn radio [band_index=%s, subunit=%s] off. Error occur(%d).\n", tmp, tmp2, bss_status);
 					}
 				} else {
-					bss_status = get_wlan_service_status(atoi(tmp), atoi(tmp2));
+					// We must check if radio is on, otherwsie the set set_wlan_service_status will failed.
+					if (wlX_activeNow == 1) {
+						radio_status = get_radio(safe_atoi(tmp), -1);
+						if (radio_status == 0) {
+							set_radio(1, safe_atoi(tmp), -1);
+							WL_SCHED_DBG(" Turn radio [band_index=%s] on", tmp);
+							logmessage("wifi scheduler", "Turn radio [band_index=%s] on.", tmp);
+						}
+					}
+					bss_status = get_wlan_service_status(safe_atoi(tmp), safe_atoi(tmp2));
 					if (bss_status == 0) { // radio is off
-						set_wlan_service_status(atoi(tmp), atoi(tmp2), 1);
+						set_wlan_service_status(safe_atoi(tmp), safe_atoi(tmp2), 1);
 						WL_SCHED_DBG("[wifi-scheduler] Turn radio [band_index=%s, subunit=%s] on\n", tmp, tmp2);
 						logmessage("wifi scheduler", "Turn radio [band_index=%s, subunit=%s] on.", tmp, tmp2);
 					} else {
@@ -5489,26 +5564,26 @@ void timecheck_v2(void)
 #endif
 
 			if (activeNow == 0) {
-				bss_status = get_wlan_service_status(atoi(tmp), -1);
-				if (bss_status == 1) { // radio is on
-					set_wlan_service_status(atoi(tmp), -1, 0);
+				radio_status = get_radio(safe_atoi(tmp), -1);
+				if (radio_status == 1) { // radio is on
+					set_radio(0, safe_atoi(tmp), -1);
 					WL_SCHED_DBG("[wifi-scheduler] Turn radio [band_index=%s] off\n", tmp);
 					logmessage("wifi scheduler", "Turn radio [band_index=%s] off.", tmp);
 				} else {
-					if (bss_status == 0) {
+					if (radio_status == 0) {
 						WL_SCHED_DBG("[wifi-scheduler] Turn radio [band_index=%s] off. Already off, no need to set it again.\n", tmp);
 						//logmessage("[wifi-scheduler] Turn radio [band_index=%s, subunit=%s] off. Already off, no need to set it again.\n", tmp, tmp2);
 					} else
 						WL_SCHED_DBG("[wifi-scheduler] Turn radio [band_index=%s] off. Error occur(%d).\n", tmp, bss_status);
 				}
 			} else {
-				bss_status = get_wlan_service_status(atoi(tmp), -1);
-				if (bss_status == 0) { // radio is off
-					set_wlan_service_status(atoi(tmp), -1, 1);
+				radio_status = get_radio(safe_atoi(tmp), -1);
+				if (radio_status == 0) { // radio is off
+					set_radio(1, safe_atoi(tmp), -1);
 					WL_SCHED_DBG("[wifi-scheduler] Turn radio [band_index=%s] on\n", tmp);
 					logmessage("wifi scheduler", "Turn radio [band_index=%s] on.", tmp);
 				} else {
-					if (bss_status == 1) {
+					if (radio_status == 1) {
 						WL_SCHED_DBG("[wifi-scheduler] Turn radio [band_index=%s] on. Already on, no need to set it again.\n", tmp);
 						//logmessage("[wifi-scheduler] Turn radio [band_index=%s, subunit=%s] on. Already on, no need to set it again.\n", tmp, tmp2);
 					} else
@@ -5718,7 +5793,7 @@ unsigned long get_etlan_count()
 	char buf[256];
 	char *ifname, *p;
 	unsigned long counter=0;
-#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56U) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U) || defined(RTAX55) || defined(RTAX1800) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(RTAX3000N) || defined(RTAX88U_PRO) || defined(RTBE96U) || defined(XC5) || defined(RTAX9000) || defined(GTBE96) || defined(RTBE88U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI)
+#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56U) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U) || defined(RTAX55) || defined(RTAX1800) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(RTAX3000N) || defined(RTAX88U_PRO) || defined(RTBE96U) || defined(XC5) || defined(RTAX9000) || defined(GTBE96) || defined(RTBE88U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GTBE96_AI)
 	unsigned long tmpcnt=0;
 #endif
 
@@ -5741,7 +5816,7 @@ unsigned long get_etlan_count()
 		if ((ifname = strrchr(buf, ' ')) == NULL) ifname = buf;
 		else ++ifname;
 
-#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56U) || defined(RTAX68U) || defined(RTAX55) || defined(RTAX1800) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(RTAX3000N) || defined(RTAX88U_PRO) || defined(RTBE96U) || defined(GTBE98_PRO) || defined(RTAX9000) || defined(GTBE96) || defined(RTBE88U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI)
+#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56U) || defined(RTAX68U) || defined(RTAX55) || defined(RTAX1800) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(RTAX3000N) || defined(RTAX88U_PRO) || defined(RTBE96U) || defined(GTBE98_PRO) || defined(RTAX9000) || defined(GTBE96) || defined(RTBE88U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GTBE96_AI)
 		if (strcmp(ifname, "eth1")
 #if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56U) || defined(RTAX68U) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(RTAX88U_PRO) || defined(RTBE96U) || defined(RTAX9000) || defined(RTBE88U)
 			&& strcmp(ifname, "eth2") && strcmp(ifname, "eth3") && strcmp(ifname, "eth4")
@@ -5761,8 +5836,8 @@ unsigned long get_etlan_count()
 			&& (strcmp(ifname, "eth5") && !nvram_get_int("wans_extwan"))
 #endif
 		) continue;
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 		if (!mxl_lan_phy_status())
 #else
 		if (!rtk_lan_phy_status())
@@ -5916,10 +5991,10 @@ void fake_etlan_led(void)
 	return;
 #endif
 
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 #if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
 	phystatus = rtk_lan_phy_status();
-#elif defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO)
+#elif defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 	phystatus = mxl_lan_phy_status();
 #else
 	phystatus = rtkswitch_lanPorts_phyStatus();
@@ -6234,7 +6309,7 @@ void fake_sfpp_led(void)
 }
 #endif
 
-#if defined(RTAX9000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RTBE92U) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTAX9000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RTBE92U) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 unsigned long get_etwan_count()
 {
 	FILE *f;
@@ -6244,7 +6319,7 @@ unsigned long get_etwan_count()
 	unsigned long counter=0;
 
 	if ((f = fopen("/proc/net/dev", "r")) == NULL) return -1;
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U) || defined(GT7)
 	if (!nvram_match("wan_ifname", "vlan4094")) return -1;
 #endif
 
@@ -6256,7 +6331,7 @@ unsigned long get_etwan_count()
 		*p = 0;
 		if ((ifname = strrchr(buf, ' ')) == NULL) ifname = buf;
 		else ++ifname;
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U) || defined(GT7)
 		if (strcmp(ifname, "vlan4094")) continue;
 #else
 		if (strcmp(ifname, "eth0")) continue;
@@ -6289,11 +6364,11 @@ void fake_etwan_led(void)
 	else
 		wan_phy_led_pinmux(1);
 #endif
-#if defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTBE55)
+#if defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTBE55) || defined(GT7)
 	phystatus = hnd_get_phy_status("eth0");
 #elif defined(RTBE82M)
 	phystatus = mxl_get_phy_status(0);
-#elif defined(GSBE18000) || defined(GS7_PRO)
+#elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 	phystatus = mxl_get_phy_status(3);
 #elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U)
 	phystatus = nvram_match("wan_ifname", "vlan4094") && rtk_get_phy_status(1);
@@ -6529,7 +6604,7 @@ void fake_wl_led_5g(void)
 }
 #endif
 
-#if (defined(GSBE18000) || defined(GS7_PRO)) && !defined(RTCONFIG_BCM_MFG)
+#if (defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)) && !defined(RTCONFIG_BCM_MFG)
 unsigned long long get_wifi_count()
 {
 	FILE *f;
@@ -6960,7 +7035,7 @@ void led_check(int sig)
 		kill_pidfile_s("/var/run/sw_devled.pid", SIGUSR2);
 #endif
 
-#if (defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))) && !defined(GTAX6000) && !defined(TUFAX3000_V2) && !defined(RTAXE7800) && !defined(GT10) && !defined(RTAX9000) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000) && !defined(GS7_PRO)
+#if (defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))) && !defined(GTAX6000) && !defined(TUFAX3000_V2) && !defined(RTAXE7800) && !defined(GT10) && !defined(RTAX9000) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7)
 	int all_led;
 	int turnoff_counts = swled_alloff_counts?:3;
 
@@ -7016,7 +7091,7 @@ void led_check(int sig)
 	if (nvram_match("bl_version", "1.0.0.0"))
 		fake_wl_led_2g();
 #endif
-#if (defined(GSBE18000) || defined(GS7_PRO)) && !defined(RTCONFIG_BCM_MFG)
+#if (defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)) && !defined(RTCONFIG_BCM_MFG)
 	fake_wifi_led();
 #endif
 #ifdef RTCONFIG_FAKE_ETLAN_LED
@@ -7024,7 +7099,7 @@ void led_check(int sig)
 #if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(RTBE88U) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	fake_etlan_led_extra();
 #endif
-#if defined(RTAX9000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RTBE92U) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTAX9000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RTBE92U) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 	fake_etwan_led();
 #endif
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_SFPP_LED)
@@ -8518,7 +8593,6 @@ int is_cfg_server_ready()
 #define FAUPGRADE_DEBUG             "/tmp/FAUPGRADE_DEBUG"
 
 /* DEBUG FUNCTION */
-
 #define FAUPGRADE_DBG(fmt,args...) \
     { \
         char msg[1024]; \
@@ -8531,6 +8605,304 @@ int is_cfg_server_ready()
                 system(info); \
         } \
     }
+
+
+#ifdef RTCONFIG_NOTIFICATION_CENTER
+/* DEBUG DEFINE */
+#define NOTI_NEW_FW_AVAIL_DEBUG             "/tmp/NOTI_NEW_FW_AVAIL_DEBUG"
+
+/* DEBUG FUNCTION */
+#define NOTI_NEW_FW_AVAIL_DBG(fmt,args...) \
+{ \
+	char msg[1024]; \
+	snprintf(msg, sizeof(msg), "[NOTI_NEW_FW_AVAIL][%s:(%d)]"fmt"", __FUNCTION__, __LINE__, ##args); \
+	logmessage("WATCHDOG", "%s",msg); \
+	dbg("%s\n",msg); \
+	if(f_exists(NOTI_NEW_FW_AVAIL_DEBUG) > 0) { \
+		char info[1024]; \
+		snprintf(info, sizeof(info), "echo \"%s\" >> /tmp/NOTI_NEW_FW_AVAIL_DEBUG.log", msg); \
+		system(info); \
+	} \
+}
+static void SEND_NEW_FW_AVAIL_EVENT(int e, char *ip)
+{
+        char msg[100];
+        snprintf(msg, sizeof(msg), "{\"IP\":\"%s\",\"msg\":\"\"}", ip);
+        SEND_NT_EVENT(e, msg);
+}
+void transform_string(const char *input, char *output) {
+    int i = 0, j = 0;
+
+    // Insert '.' between prefix 4 char
+    for (i = 0; i < 4; i++) {
+        if (i > 0) {
+            output[j++] = '.';
+        }
+        output[j++] = input[i];
+    }
+
+    // Replace the 1st '_' to '.'
+    while (input[i] != '\0') {
+        if (input[i] == '_') {
+            output[j++] = '.';
+            i++;
+            break;
+        }
+        output[j++] = input[i++];
+    }
+
+    // cp the rest dtr
+    while (input[i] != '\0') {
+        output[j++] = input[i++];
+    }
+
+    // confirm str postfix
+    output[j] = '\0';
+}
+
+static void noti_new_fw_available()
+{
+	//initial
+	int periodic_check = 0;
+	int no_need_send = 0;
+	int found_mac = 0;
+	int fw_avail_flag = 0;
+	static time_t periodic_check_timestamp = 0;
+	static int bootup_init_period = 3;	//wait 3 times(90s) to check
+	static int bootup_init = 1;
+
+	time_t now;
+	struct tm local;
+	static int rand_hr, rand_min;
+
+	char fw_ver_str[50]={0}, model_tmp[30]={0}, newfever_tmp1[50]={0};
+
+	//case processes
+	if (!nvram_get_int("ntp_ready")){
+		return;
+	}
+	if(bootup_init_period > 0){	//bootup wait 90s to check
+		bootup_init_period--;
+		return;
+	}
+
+	if (bootup_init)
+	{
+		bootup_init = 0;
+		rand_hr = rand_seed_by_time() % 2;
+		rand_min = rand_seed_by_time() % 60;
+		NOTI_NEW_FW_AVAIL_DBG("noti_new_fw_avail_check PM %d:%d", 6 + rand_hr, rand_min);
+	}
+
+	time(&now);
+	localtime_r(&now, &local);
+
+	//periodic_check trigger
+	if( local.tm_hour == (18 + rand_hr) && local.tm_min == rand_min ){ //at 6 pm + random offset to check
+		periodic_check = 1;
+	}
+
+	if(periodic_check){
+
+		//parse & check fw_version start
+		struct json_object *fw_ver_obj = NULL, *final_fw_ver_obj = NULL, *final_tmp_fw_ver_obj = NULL;
+		struct json_object *tmp_obj = NULL, *tmp1_obj = NULL, *tmp2_obj = NULL, *tmp3_obj = NULL, *tmp_val = NULL, *tmp1_val = NULL, *tmp2_val = NULL, *tmp3_val = NULL;
+		struct json_object *notice_fw_ver_obj = NULL, *event_fw_ver_obj = NULL;
+
+		const char *input_path = "/tmp/fw_version";
+		const char *final_fw_ver_path = "/tmp/parse_fw_version";
+		const char *event_newfw_path = "/jffs/event_newfw_version";		//save it for next time comparison
+		
+		if((fw_ver_obj = json_object_from_file(input_path)) != NULL && json_object_get_type(fw_ver_obj) == json_type_object){
+
+			//NOTI_NEW_FW_AVAIL_DBG("fw_ver_obj = [%s]\n", json_object_to_json_string(fw_ver_obj));
+			final_fw_ver_obj = json_object_new_object();
+			json_object_object_foreach(fw_ver_obj, key, val){
+				tmp_obj = json_object_new_object();
+				if(json_object_object_get_ex(val, "model_name", &tmp_val))
+					json_object_object_add(tmp_obj, "model_name", json_object_new_string(json_object_get_string(tmp_val)));
+				if(json_object_object_get_ex(val, "newfwver", &tmp_val))
+					json_object_object_add(tmp_obj, "newfwver", json_object_new_string(json_object_get_string(tmp_val)));
+				json_object_object_add(final_fw_ver_obj, key, tmp_obj);
+			}
+			json_object_to_file(final_fw_ver_path, final_fw_ver_obj);	//save
+
+			if(fw_ver_obj)
+				json_object_put(fw_ver_obj);
+
+		}
+		else{
+
+			dbg("fw_version report is not exist.");
+			NOTI_NEW_FW_AVAIL_DBG("fw_version report is not exist.");
+			char newfever_tmp[50] = {0};
+			//parse CAP nvrams only
+			if(nvram_get_int("webs_state_flag") == 2 || nvram_get_int("webs_state_flag") == 1){
+
+				NOTI_NEW_FW_AVAIL_DBG("noti_new_fw_avail_check, webs_flag = %d", nvram_get_int("webs_state_flag"));
+				tmp_obj = json_object_new_object();
+				snprintf(fw_ver_str, sizeof(fw_ver_str), "%s", nvram_safe_get("webs_state_info"));
+    			transform_string(fw_ver_str, newfever_tmp);
+
+				json_object_object_add(tmp_obj, "model_name", json_object_new_string(get_productid()));
+				json_object_object_add(tmp_obj, "newfwver", json_object_new_string(newfever_tmp));
+
+				final_fw_ver_obj = json_object_new_object();
+				json_object_object_add(final_fw_ver_obj, nvram_safe_get("label_mac"), tmp_obj);
+				json_object_to_file(final_fw_ver_path, final_fw_ver_obj);	//save final
+			}
+		}
+		NOTI_NEW_FW_AVAIL_DBG("final_fw_ver_obj = [%s]\n", json_object_to_json_string(final_fw_ver_obj));
+		//parse & check fw_version End
+
+		//generate notice_fw_ver_obj
+		if(json_object_from_file(final_fw_ver_path) != NULL){	//Yes, exist new fw report
+			// duplicate as below : final_tmp_fw_ver_obj = json_object_new_object();
+			notice_fw_ver_obj = json_object_new_object();
+
+			if((event_fw_ver_obj = json_object_from_file(event_newfw_path)) != NULL && json_object_get_type(event_fw_ver_obj) == json_type_object){	//already send it before
+				
+				dbg("event_fw_ver_obj = [%s]\n", json_object_to_json_string(event_fw_ver_obj));
+				NOTI_NEW_FW_AVAIL_DBG("event_fw_ver_obj = [%s]\n", json_object_to_json_string(event_fw_ver_obj));
+
+				//notice 
+				if((final_tmp_fw_ver_obj = json_object_from_file(final_fw_ver_path)) != NULL && json_object_get_type(final_tmp_fw_ver_obj) == json_type_object){
+					json_object_object_foreach(final_tmp_fw_ver_obj, key_f, val_f){
+						found_mac = 0;
+						tmp1_obj = json_object_new_object();	//new fw report
+						if(json_object_object_get_ex(val_f, "model_name", &tmp1_val)){
+							json_object_object_add(tmp1_obj, "model_name", json_object_new_string(json_object_get_string(tmp1_val)));
+							snprintf(model_tmp, sizeof(model_tmp), "%s", json_object_get_string(tmp1_val));
+						}
+						if(json_object_object_get_ex(val_f, "newfwver", &tmp1_val)){
+							json_object_object_add(tmp1_obj, "newfwver", json_object_new_string(json_object_get_string(tmp1_val)));
+							snprintf(newfever_tmp1, sizeof(newfever_tmp1), "%s", json_object_get_string(tmp1_val));
+							NOTI_NEW_FW_AVAIL_DBG("newfever_tmp1 = [%s]\n", newfever_tmp1);
+						}
+						NOTI_NEW_FW_AVAIL_DBG("tmp1_obj = [%s]\n", json_object_to_json_string(tmp1_obj));
+
+						json_object_object_foreach(event_fw_ver_obj, key_e, val_e){
+
+							if(!strcmp(key_f, key_e)){	//same MAC
+								NOTI_NEW_FW_AVAIL_DBG("key matched in, key_f = [%s]\n", key_f);
+								found_mac = 1;
+								tmp2_obj = json_object_new_object();	//new fw & never send it before
+
+								if(strcmp(json_object_get_string(val_f), json_object_get_string(val_e))){	//different value
+									fw_avail_flag = 1;
+
+									if(json_object_object_get_ex(val_e, "newfwver", &tmp2_val)){
+										NOTI_NEW_FW_AVAIL_DBG("update fw ver from [%s] to [%s]\n", json_object_get_string(tmp2_val), newfever_tmp1);
+									}
+
+									json_object_object_add(tmp2_obj, "model_name", json_object_new_string(model_tmp));
+									json_object_object_add(tmp2_obj, "newfwver", json_object_new_string(newfever_tmp1));
+
+									//add much newfwver in notice_fw_ver_obj
+									json_object_object_add(notice_fw_ver_obj, key_f, tmp2_obj);
+
+								}
+								break;	//found_mac = 1;
+							}
+						}
+						if(found_mac == 0){
+							NOTI_NEW_FW_AVAIL_DBG("not found, New MAC with new fw = [%s]\n", key_f);
+							fw_avail_flag = 1;
+
+							json_object_object_add(notice_fw_ver_obj, key_f, tmp1_obj);
+						}
+					}
+				}
+
+			}
+			else{
+				//Never Send it
+				NOTI_NEW_FW_AVAIL_DBG("Never send new fw event");
+				if((final_tmp_fw_ver_obj = json_object_from_file(final_fw_ver_path)) != NULL && json_object_get_type(final_tmp_fw_ver_obj) == json_type_object){
+					fw_avail_flag = 1;
+					//json_object_to_file(event_newfw_path, final_tmp_fw_ver_obj);	//save
+					json_object_object_foreach(final_tmp_fw_ver_obj, key_f, val_f){
+
+						tmp1_obj = json_object_new_object();	//new fw report
+						if(json_object_object_get_ex(val_f, "model_name", &tmp1_val)){
+							json_object_object_add(tmp1_obj, "model_name", json_object_new_string(json_object_get_string(tmp1_val)));
+						}
+						if(json_object_object_get_ex(val_f, "newfwver", &tmp1_val)){
+							json_object_object_add(tmp1_obj, "newfwver", json_object_new_string(json_object_get_string(tmp1_val)));
+							snprintf(newfever_tmp1, sizeof(newfever_tmp1), "%s", json_object_get_string(tmp1_val));
+							//NOTI_NEW_FW_AVAIL_DBG("newfever_tmp1 = [%s]", newfever_tmp1);
+						}
+						//NOTI_NEW_FW_AVAIL_DBG("tmp1_obj = [%s]\n", json_object_to_json_string(tmp1_obj));
+
+						json_object_object_add(notice_fw_ver_obj, key_f, tmp1_obj);
+					}
+
+				}
+			}
+		}
+		
+		//Yes, send it
+		if(fw_avail_flag == 1){
+			
+			NOTI_NEW_FW_AVAIL_DBG("eid= [%X]\n", SYS_FW_NEW_VERSION_AVAILABLE_EVENT);
+			NOTI_NEW_FW_AVAIL_DBG("notice_fw_ver_obj = [%s]\n", json_object_to_json_string(notice_fw_ver_obj));
+
+			//SEND_NT_EVENT(eid, json string)
+			SEND_NT_EVENT(SYS_FW_NEW_VERSION_AVAILABLE_EVENT, json_object_to_json_string(notice_fw_ver_obj));
+
+			//save
+			if(event_fw_ver_obj == NULL)
+					event_fw_ver_obj = json_object_new_object();
+				
+			json_object_object_foreach(final_fw_ver_obj, key_u, val_u){
+				tmp3_obj = json_object_new_object();	//just noticed this time
+
+				if(json_object_object_get_ex(val_u, "model_name", &tmp3_val)){
+					json_object_object_add(tmp3_obj, "model_name", json_object_new_string(json_object_get_string(tmp3_val)));
+				}
+				if(json_object_object_get_ex(val_u, "newfwver", &tmp3_val)){
+					json_object_object_add(tmp3_obj, "newfwver", json_object_new_string(json_object_get_string(tmp3_val)));
+				}
+				json_object_object_add(event_fw_ver_obj, key_u, tmp3_obj);
+			}
+			json_object_to_file(event_newfw_path, event_fw_ver_obj);	//save whole fw ver that noticed
+		}
+		else{
+			NOTI_NEW_FW_AVAIL_DBG("No need to send new fw event");
+		}
+
+		if(final_fw_ver_obj)
+			json_object_put(final_fw_ver_obj);
+		if(event_fw_ver_obj)
+			json_object_put(event_fw_ver_obj);
+		if(notice_fw_ver_obj)
+			json_object_put(notice_fw_ver_obj);
+		if(final_tmp_fw_ver_obj)
+			json_object_put(final_tmp_fw_ver_obj);
+
+#if 0
+		if(tmp_obj)
+			json_object_put(tmp_obj);
+		if(tmp1_obj)
+			json_object_put(tmp1_obj);
+		if(tmp2_obj)
+			json_object_put(tmp2_obj);
+		if(tmp3_obj)
+			json_object_put(tmp3_obj);
+		if(tmp_val)
+			json_object_put(tmp_val);
+		if(tmp1_val)
+			json_object_put(tmp1_val);
+		if(tmp2_val)
+			json_object_put(tmp2_val);
+		if(tmp3_val)
+			json_object_put(tmp3_val);
+#endif			
+
+	}
+}
+#endif
+
 
 #ifdef RTCONFIG_FORCE_AUTO_UPGRADE
 static void auto_firmware_check()
@@ -8646,6 +9018,14 @@ static void auto_firmware_check()
 				return;
 			}
 #endif
+#if defined(RTCONFIG_AUTO_FW_UPGRADE) 
+			if(update_enable == 1){
+				FAUPGRADE_DBG("update_enable==1, do webs_update only at bootup");
+				nvram_set("webs_update_trigger", "WDG_BT");
+				eval("/usr/sbin/webs_update.sh");
+				return;
+			}
+#endif
 		}
 
 		period_retry = (period_retry+1) % 3;
@@ -8675,7 +9055,7 @@ static void auto_firmware_check()
 				}
 
 				FAUPGRADE_DBG("notify_rc firmware_webs_update");
-				notify_rc("firmware_webs_update");
+				notify_rc("start_firmware_webs_update");
 				return;
 			}
 		}
@@ -8744,10 +9124,20 @@ static void auto_firmware_check()
 				}
 			}
 #endif
+
+#ifdef RTCONFIG_CFGSYNC
+			if (nvram_get_int("webs_state_flag") == 1 ||
+				nvram_get_int("webs_state_flag") == 2)
+				f_write_string("/tmp/new_fw_version", nvram_safe_get("webs_state_flag"), 0, 0);
+#endif
+
 			FAUPGRADE_DBG("no need to upgrade firmware");
 			return;
 		}
 		else{
+#ifdef RTCONFIG_CFGSYNC
+			f_write_string("/tmp/new_fw_version", nvram_safe_get("webs_state_flag"), 0, 0);
+#endif
 			FAUPGRADE_DBG("could not retrieve firmware information: webs_state_update = %d, webs_state_error = %d, webs_state_dl_error = %d, webs_state_info.len = %d", nvram_get_int("webs_state_update"), nvram_get_int("webs_state_error"), nvram_get_int("webs_state_dl_error"), (unsigned int)strlen(nvram_safe_get("webs_state_info")));
 		}		
 
@@ -10606,7 +10996,7 @@ void udhcpc_check(void)
 }
 #endif
 
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 void check_eth1_pause()
 {
 	if (eth1_period) {
@@ -10693,6 +11083,12 @@ void feedback_check(void)
 }
 #endif /* RTCONFIG_FRS_FEEDBACK */
 
+void infosvr_check(void)
+{
+	if (!pids("infosvr"))
+		start_infosvr();
+}
+
 /* wathchdog is runned in NORMAL_PERIOD, 1 seconds
  * check in each NORMAL_PERIOD
  *	1. button
@@ -10705,7 +11101,7 @@ void feedback_check(void)
 void watchdog(int sig)
 {
 	int period;
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GS7_PRO)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	check_eth1_pause();
 #endif
 #ifdef RTL_WTDOG
@@ -10928,11 +11324,18 @@ void watchdog(int sig)
 	lsof_period = nvram_get_int("lsof_period");
 	if (lsof_period) {
 		lsof = (lsof + 1) % lsof_period ;
-		if (!top)
+		if (!lsof)
 			system("lsof | awk '{ print $1 " " $2; }' | sort -rn | uniq -c | sort -rn | head | logger -t lsof");
 	}
 
-#if !defined(RTCONFIG_BCM_MFG) && (defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(DSL_AX82U) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI))
+	mem_chk_period = nvram_get_int("mem_chk_period");
+	if (mem_chk_period) {
+		mem_chk = (mem_chk + 1) % mem_chk_period ;
+		if (!mem_chk)
+			memleakdbg();
+	}
+
+#if !defined(RTCONFIG_BCM_MFG) && (defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(DSL_AX82U) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI))
 	if (nvram_get_int("x_Setting") && !pids("ledg")) {
 		ledg_count = (ledg_count + 1) % 2 ;
 		if (!ledg_count) {
@@ -10960,6 +11363,17 @@ void watchdog(int sig)
 			start_wanduck();
 		}
 	}
+
+#ifdef RTCONFIG_HND_ROUTER_BE_4916
+	if (nvram_get_int("wlready") && !pids("debug_monitor")) {
+		dm_count = (dm_count + 1) % 2;
+		if (!dm_count) {
+			start_dhd_monitor();
+			sleep(5);
+			killall("hostapd", SIGUSR2);
+		}
+	}
+#endif
 
 	if(nvram_match("ntp_ready", "1")) {
 #ifndef RTCONFIG_AVOID_TZ_ENV
@@ -11074,6 +11488,9 @@ wdp:
 	auto_firmware_check();
 #elif RTCONFIG_MERLINUPDATE
 	auto_firmware_check_merlin();
+#endif
+#ifdef RTCONFIG_NOTIFICATION_CENTER
+	noti_new_fw_available();
 #endif
 #if defined(RTCONFIG_LANTIQ) && defined(RTCONFIG_GN_WBL)
 	GN_WBL_restart();
@@ -11198,6 +11615,7 @@ wdp:
 #ifdef RTCONFIG_FRS_FEEDBACK
 	feedback_check();
 #endif /* RTCONFIG_FRS_FEEDBACK */
+	infosvr_check();
 }
 
 #if ! (defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK))

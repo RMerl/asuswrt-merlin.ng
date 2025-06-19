@@ -755,9 +755,14 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 				if (share_subnet) {
 					sdn_prefix_length = mtlan_extend_prefix_by_subnet_idx(
 						v6_prefix, v6_prefix_length, pmtl->sdn_t.sdn_idx, 8, sdn_prefix, sizeof(sdn_prefix));
+					if (sdn_prefix_length < 64)
+						sdn_prefix_length = 64;
 				}
 				else {
-					sdn_prefix_length = v6_prefix_length;
+					if (v6_prefix_length < 64)
+						sdn_prefix_length = 64;
+					else
+						sdn_prefix_length = v6_prefix_length;
 					strlcpy(sdn_prefix, v6_prefix, sizeof(sdn_prefix));
 				}
 			}

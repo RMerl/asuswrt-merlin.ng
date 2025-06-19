@@ -84,11 +84,35 @@
 .status_info .conn_type.WiFi_5G_lock{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_5g_lock.svg);
 }
+.status_info .conn_type.WiFi_5G1{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_5g1.svg);
+}
+.status_info .conn_type.WiFi_5G1_lock{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_5g1_lock.svg);
+}
+.status_info .conn_type.WiFi_5G2{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_5g2.svg);
+}
+.status_info .conn_type.WiFi_5G2_lock{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_5g2_lock.svg);
+}
 .status_info .conn_type.WiFi_6G{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_6g.svg);
 }
 .status_info .conn_type.WiFi_6G_lock{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_6g_lock.svg);
+}
+.status_info .conn_type.WiFi_6G1{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_6g1.svg);
+}
+.status_info .conn_type.WiFi_6G1_lock{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_6g1_lock.svg);
+}
+.status_info .conn_type.WiFi_6G2{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_6g2.svg);
+}
+.status_info .conn_type.WiFi_6G2_lock{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_6g2_lock.svg);
 }
 .status_info .conn_type.WiFi_mlo{
 	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_mlo.svg);
@@ -178,6 +202,9 @@
 }
 .node_content_container  > .node_info > .node_sub_info{
 	color: #006CE1;
+}
+.node_sub_info span::after {
+	background-color: #006CE1;
 }
 .node_content_container > .icon_wifi_band{
 	background-image: url(/images/New_ui/amesh/white_theme/client_control.svg);
@@ -371,6 +398,12 @@
 }
 .gaming_profile_list_cntr .profile_info .profile_text{
 	color: #181818;
+}
+.profile_setting_item .title span.mlo_band{
+	color: #007B91;
+}
+.checkbox_option.mlo_band .option_text:after{
+	color: #007B91;
 }
 @media (max-width: 575px) {
 	.popup_container .setting_subtab_container{

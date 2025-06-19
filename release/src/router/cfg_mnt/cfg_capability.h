@@ -27,6 +27,7 @@ extern int cm_getCapabilityIntValue(char *mac, int capType);
 #ifdef RTCONFIG_AMAS_CENTRAL_ADS
 extern int cm_getAdsDsCapByUnit(int unit);
 #endif
+extern int cm_isSupportedParamByCapability(char *mac, unsigned int capability, unsigned int version);
 
 /* type */
 enum capabilityType {
@@ -98,6 +99,9 @@ enum capabilityType {
 
 #ifdef RTCONFIG_MLO
 	MLO_RADIO = 40,
+#endif
+#ifdef RTCONFIG_REBOOT_SCHEDULE_V2
+	REBOOT_SCHEDULE_V2 = 42,
 #endif
 	CAPABILITY_MAX
 };

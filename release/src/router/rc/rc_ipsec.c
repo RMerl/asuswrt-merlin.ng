@@ -1486,7 +1486,7 @@ char *get_wan_dns_add_comma(char *buf, size_t len)
 #else /* RTCONFIG_HND_ROUTER_BE_4916 */
 		snprintf(buf, len, "%s", nvram_safe_get("lan_ipaddr"));
 #endif /* RTCONFIG_HND_ROUTER_BE_4916 */
-		logmessage("get_wan_dns_add_comma", "WAN DNS[%s]\n", buf);
+//		logmessage("get_wan_dns_add_comma", "WAN DNS[%s]\n", buf);
 		if(strlen(buf) > 0)
 		{
 			return buf;
@@ -1499,7 +1499,7 @@ char *get_wan_dns_add_comma(char *buf, size_t len)
 	else
 	{
 		_dprintf("[%s]Failed to get WAN DNS.\n", __FUNCTION__);
-		logmessage("get_wan_dns_add_comma", "Failed to get WAN DNS.\n");
+//		logmessage("get_wan_dns_add_comma", "Failed to get WAN DNS.\n");
 		return NULL;
 	}
 }

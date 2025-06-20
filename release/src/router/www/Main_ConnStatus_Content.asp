@@ -87,7 +87,6 @@ function draw_table(type){
 
 	tracklen = dataarray.length
 	if (tracklen == 0) {
-		document.getElementById("connblock_" + type).innerHTML = '<div class="hint-color" style="font-size: 125%;padding-top:50px;">No active connections.</div>';
 		return;
 	}
 

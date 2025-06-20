@@ -8597,7 +8597,7 @@ int is_cfg_server_ready()
     { \
         char msg[1024]; \
         snprintf(msg, sizeof(msg), "[FAUPGRADE][%s:(%d)]"fmt"", __FUNCTION__, __LINE__, ##args); \
-        logmessage("WATCHDOG", "%s",msg); \
+        /* logmessage("WATCHDOG", "%s",msg); */ \
         dbg("%s\n",msg); \
         if(f_exists(FAUPGRADE_DEBUG) > 0) { \
                 char info[1024]; \
@@ -8616,7 +8616,7 @@ int is_cfg_server_ready()
 { \
 	char msg[1024]; \
 	snprintf(msg, sizeof(msg), "[NOTI_NEW_FW_AVAIL][%s:(%d)]"fmt"", __FUNCTION__, __LINE__, ##args); \
-	logmessage("WATCHDOG", "%s",msg); \
+	/* logmessage("WATCHDOG", "%s",msg); */\
 	dbg("%s\n",msg); \
 	if(f_exists(NOTI_NEW_FW_AVAIL_DEBUG) > 0) { \
 		char info[1024]; \

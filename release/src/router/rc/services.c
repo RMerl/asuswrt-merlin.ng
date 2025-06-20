@@ -24707,7 +24707,7 @@ void start_fw_check(void)
 void stop_fw_check(void)
 {
 	system("killall -SIGKILL firmware_check_update");
-	killall("wget", SIGTERM);
+//	killall("wget", SIGTERM);
 	killall("webs_update.sh", SIGTERM);
 }
 

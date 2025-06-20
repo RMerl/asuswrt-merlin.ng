@@ -1851,7 +1851,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	write_port_forwarding(fp, "game_vts_rulelist", lan_ip, lan_if);
 #endif
 
-	if (is_nat_enabled() && nvram_get_int("upnp_enable"))
+	if (is_nat_enabled() && nvram_get_int("upnp_enable") && *wan_if)
 	{
 		/* call UPNP chain */
 		fprintf(fp, "-A VSERVER -j VUPNP\n");
@@ -1859,7 +1859,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	}
 
 	/* Trigger port setting */
-	if (is_nat_enabled() && nvram_match("autofw_enable_x", "1"))
+	if (is_nat_enabled() && nvram_match("autofw_enable_x", "1") && *wan_if)
 		write_porttrigger(fp, wan_if, 1);
 
 #if 0
@@ -2365,7 +2365,8 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 				continue;
 
 			wan_if = get_wan_ifname(unit);
-			fprintf(fp, "-A POSTROUTING -o %s -j PUPNP\n", wan_if);
+			if (*wan_if)
+				fprintf(fp, "-A POSTROUTING -o %s -j PUPNP\n", wan_if);
 		}
 	}
 

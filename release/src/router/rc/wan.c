@@ -2796,11 +2796,8 @@ int update_resolvconf(void)
 	}
 #endif
 #ifdef RTCONFIG_DNSPRIVACY
-	if (dnspriv_enable) {
-		if (!nvram_get_int("dns_local_cache"))
-			fprintf(fp, "nameserver %s\n", "127.0.1.1");
+	if (dnspriv_enable)
 		fprintf(fp_servers, "server=%s\n", "127.0.1.1");
-	}
 #endif
 
 #if (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2) || defined(ET12))

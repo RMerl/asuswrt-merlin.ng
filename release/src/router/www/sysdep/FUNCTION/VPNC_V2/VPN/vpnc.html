@@ -51,7 +51,7 @@ $(function () {
 		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpnc' + theme + '.css">');
 	}
 	else{
-		if(isSupport("ROG_UI")){
+		if(rog_support){
 			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpncGT.css">');
 		}
 		else if(isSupport("TUF_UI")){

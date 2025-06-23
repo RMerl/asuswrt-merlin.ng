@@ -21,7 +21,7 @@ for(var i = 1; i <= ledg_group; i += 1){
 	$.extend(true, scheme_item_post.LED_Set, led_group);
 }
 $(function(){
-	if(isSupport("ROG_UI")){
+	if(rog_support){
 		$("#light_effect_bg .light_effect_mask").addClass("rog");
 	}
 });

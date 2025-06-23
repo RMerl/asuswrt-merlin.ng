@@ -193,7 +193,7 @@
 if(isSupport("UI4")){
 	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_WHITE.css">');
 }
-else if(isSupport("ROG_UI")){
+else if(rog_support){
 	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_ROG.css">');
 }
 

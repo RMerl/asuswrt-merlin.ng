@@ -30,7 +30,7 @@ function initial(){
 			curTheme = "WHITE";
 		}
 		else{
-			if(isSupport("ROG_UI")){
+			if(rog_support){
 				curTheme = "ROG";
 			}
 			else if(isSupport("TUF_UI")){

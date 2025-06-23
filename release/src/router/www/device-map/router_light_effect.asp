@@ -58,7 +58,7 @@ function switchTab(id){
 					const support_night_mode = (()=>{
 						return ((based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000" || based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI") ? true : false);
 					})();
-					return (support_night_mode ? "530px" : $(this).css("height"));
+					return (support_night_mode ? "530px" : "490px");
 				})
 		</script>
 	</div>

@@ -492,6 +492,21 @@ static int spu_offload_parm_us(struct spu_offload_parm_args *a)
 	} else {
 		spi = (TX_ESPoUDP(blog_p)) ? blog_p->esp_over_udp_spi : _read32_align16((uint16_t *)&blog_p->esptx_tuple_p->esp_spi);
 	}
+	/* confirm there is no modification to the inner IP header */
+	if (blog_p->rx.info.bmap.PLD_IPv4 && blog_p->tx.info.bmap.PLD_IPv4) {
+		if((blog_p->rx.tuple.saddr != blog_p->tx.tuple.saddr) ||
+                   (blog_p->rx.tuple.daddr != blog_p->tx.tuple.daddr) ||
+                   (blog_p->rx.tuple.ports != blog_p->tx.tuple.ports) ||
+                   (blog_p->rx.tuple.tos != blog_p->tx.tuple.tos)) {
+			/* inner header packet modification required, not supported */
+			return -1;
+		}
+	} else if (blog_p->rx.info.bmap.PLD_IPv6 && blog_p->tx.info.bmap.PLD_IPv6) {
+		if(blog_p->rx.info.bmap.NPT6) {
+			/* inner header packet modification required, not supported */
+			return -1;
+		}
+	}
 
 	session_id = spu_offload_get_us_session_id(spi, blog_p->esptx.dst_p);
 	if (session_id >= 0) {
@@ -591,6 +606,15 @@ static int spu_offload_us_prepend_hdr(struct spu_offload_prephdr_args *a)
 		spi = (TX_ESPoUDP(blog_p)) ? blog_p->esp_over_udp_spi : _read32_align16((uint16_t *)&blog_p->esp6tx_tuple_p->esp_spi);
 	} else {
 		spi = (TX_ESPoUDP(blog_p)) ? blog_p->esp_over_udp_spi : _read32_align16((uint16_t *)&blog_p->esptx_tuple_p->esp_spi);
+	}
+
+	/* confirm there is no modification to the inner IP header */
+	if (blog_p->rx.info.bmap.PLD_IPv4 && blog_p->tx.info.bmap.PLD_IPv4) {
+		if((blog_p->rx.tuple.saddr != blog_p->tx.tuple.saddr) ||
+                   (blog_p->rx.tuple.daddr != blog_p->tx.tuple.daddr)) {
+			/* inner header packet modification required, not supported */
+			return -1;
+		}
 	}
 
 	ret = spu_offload_get_us_session_id(spi, blog_p->esptx.dst_p);

@@ -383,26 +383,65 @@ static int dev_get_i2c_bus(struct net_device *dev)
 static int enet_ethtool_get_module_info(struct net_device *dev, struct ethtool_modinfo *modinfo)
 {
     int bus = dev_get_i2c_bus(dev);
+    uint8_t sff8472_compliance;
+    uint8_t diag_mon_type;
+
     if (bus < 0)
         return -ENODEV;
 
-    return trxbus_module_info(bus, modinfo);
+    trxbus_module_read_raw(bus, SFP_I2C_A0_ADDR, 92, &diag_mon_type, 1);
+    trxbus_module_read_raw(bus, SFP_I2C_A0_ADDR, 94, &sff8472_compliance, 1);
+    if (sff8472_compliance & !(diag_mon_type & SFP_DIAGMON_ADDRMODE))
+    {
+        modinfo->type = ETH_MODULE_SFF_8472;
+        modinfo->eeprom_len = ETH_MODULE_SFF_8472_LEN;
+    }
+    else
+    {
+        modinfo->type = ETH_MODULE_SFF_8079;
+        modinfo->eeprom_len = ETH_MODULE_SFF_8079_LEN;
+    }
+    return 0;
 }
 
-static int enet_ethtool_get_module_eeprom(struct net_device *dev, struct ethtool_eeprom *ee, u8 *data)
+static int enet_ethtool_get_module_eeprom(struct net_device *dev, struct ethtool_eeprom *ee, uint8_t *data)
 {
-    int bus = dev_get_i2c_bus(dev);	
+    int len, offset;
+    int ret = 0;
+    int bus = dev_get_i2c_bus(dev);
+    int section_len = ETH_MODULE_SFF_8472_LEN/2;
+#define MIN(a,b) (a<b? a: b)
+	
     if (bus < 0)
         return -ENODEV;
 
-    if (trxbus_module_eeprom(bus, ee, data) != 0)
-        return -EINVAL;
+    offset = ee->offset;
+    if (offset < section_len)
+    {
+        len = MIN((section_len - offset), ee->len);
+        ret |= trxbus_module_read_raw(bus, SFP_I2C_A0_ADDR, offset, data, len);
 
-    // some SFP module don't specify phy dev ID, set to SFP so ethtool will parse correctly
-    if (ee->offset == 0 && data[0] == 0)
-        data[0] = 3;
+        /* some SFP module don't specify phy dev ID, set to SFP so ethtool will parse correctly */
+        if (ee->offset == 0 && data[0] == 0)
+            data[0] = 3;
 
-    return 0;
+        offset = offset + len - section_len;
+        data += len;
+        len = ee->len - len;
+    }
+    else
+    {
+        offset -= section_len;
+        len = ee->len;
+    }
+
+    if (offset >= 0)
+    {
+        len = MIN((section_len - offset), len);
+        ret |= trxbus_module_read_raw(bus, SFP_I2C_A2_ADDR, offset, data, len);
+    }
+
+    return ret < 0? -ENODEV: 0;
 }
 #endif
 

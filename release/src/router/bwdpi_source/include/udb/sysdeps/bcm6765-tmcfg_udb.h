@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Thu Feb 15 18:04:03 2024
+ * Date: Fri Jan 17 14:43:36 2025
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -109,7 +109,7 @@
 #define TMCFG_CPU_64BITS 1 // y
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_GPL_TUF-BE3600_3.0.0.6.102.33710/release/src-rt-5.04behnd.4916/kernel/linux-4.19"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_GPL_RT-BE92U_3.0.0.6.102.37576/release/src-rt-5.04behnd.4916/kernel/linux-4.19"
 #define TMCFG_KERN_ARCH "arm64"
 
 /*
@@ -155,7 +155,7 @@
 #define TMCFG_E_UDB_CORE_REV_VER 20
 #define TMCFG_E_UDB_CORE_SHN_REV_NUM 0
 #define TMCFG_E_UDB_CORE_USE_KBUILD 1 // y
-#define TMCFG_E_UDB_CORE_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_TUF-BE3600_3.0.0.6.102.33710/release/src-rt-5.04behnd.4916/kernel/bcmkernel/include -Wno-incompatible-pointer-types -I/opt/ASUS/asuswrt_GPL_TUF-BE3600_3.0.0.6.102.33710/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/include/bcm963xx -mno-outline-atomics"
+#define TMCFG_E_UDB_CORE_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_RT-BE92U_3.0.0.6.102.37576/release/src-rt-5.04behnd.4916/kernel/bcmkernel/include -Wno-incompatible-pointer-types -I/opt/ASUS/asuswrt_GPL_RT-BE92U_3.0.0.6.102.37576/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/include/bcm963xx -mno-outline-atomics"
 #define TMCFG_E_UDB_CORE_CONN_EXTRA 1 // y
 #define TMCFG_E_UDB_CORE_RULE_FORMAT_V2 0 // n
 #define TMCFG_E_UDB_CORE_MESH 1 // y
@@ -213,10 +213,10 @@
 #define TMCFG_E_UDB_SHELL_CT_MARK_RSV 1 // y
 #define TMCFG_E_UDB_SHELL_CT_MARK_RSV_BITS 3
 #define TMCFG_E_UDB_SHELL_PROCFS 1 // y
-#define TMCFG_E_REL_PKG_MAJ_VER 1
+#define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
-#define TMCFG_E_REL_PKG_REV_VER 1
-#define TMCFG_E_REL_PKG_LOCAL_VER "tuf-be3600_rc01_2024-02-15"
+#define TMCFG_E_REL_PKG_REV_VER 8
+#define TMCFG_E_REL_PKG_LOCAL_VER "2025-01-17-NOGPL-FIXDCD1024"
 
 /*
  * Accompany applications or modules
@@ -225,7 +225,7 @@
 /*
  * Kernel
  */
-#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_TUF-BE3600_3.0.0.6.102.33710/release/src-rt-5.04behnd.4916/kernel/bcmkernel/include -I/opt/ASUS/asuswrt_GPL_TUF-BE3600_3.0.0.6.102.33710/release/src-rt-5.04behnd.4916/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswrt_GPL_TUF-BE3600_3.0.0.6.102.33710/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswrt_GPL_TUF-BE3600_3.0.0.6.102.33710/release/src-rt-5.04behnd.4916/bcmdrivers/opensource/include/bcm963xx"
+#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_RT-BE92U_3.0.0.6.102.37576/release/src-rt-5.04behnd.4916/kernel/bcmkernel/include -I/opt/ASUS/asuswrt_GPL_RT-BE92U_3.0.0.6.102.37576/release/src-rt-5.04behnd.4916/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswrt_GPL_RT-BE92U_3.0.0.6.102.37576/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswrt_GPL_RT-BE92U_3.0.0.6.102.37576/release/src-rt-5.04behnd.4916/bcmdrivers/opensource/include/bcm963xx"
 #define TMCFG_APP_K_TDTS_NFFW 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW 1 // y
 #define TMCFG_APP_K_TDTS_UDBFW_EXTRA_SYMBOLS ""

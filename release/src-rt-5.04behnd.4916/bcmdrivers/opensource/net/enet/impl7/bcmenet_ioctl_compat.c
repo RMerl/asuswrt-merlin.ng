@@ -66,7 +66,9 @@ void extlh_link_change_handler(enetx_port_t *port, int linkstatus, int speed, in
 #include "phy_drv_brcm.h"
 #include "phy_macsec_common.h"
 #include "clk_rst.h"
-
+#if defined(CONFIG_GT7)
+#include "bcmenet_ioctl_phyext84991.h"
+#endif
 
 extern int apd_enabled;
 extern int eee_enabled;
@@ -1971,7 +1973,7 @@ cd_end:
                 [PHY_TYPE_158CLASS_SERDES] = "PHY_TYPE_158CLASS_SERDES",
             };
 
-            if (ethctl->flags & ETHCTL_FLAG_ACCESS_I2C_PHY)
+            if (ethctl->flags & (ETHCTL_FLAG_ACCESS_I2C_PHY | ETHCTL_FLAG_ACCESS_I2C_PHY_EEPROM))
                 phy_type = PHY_TYPE_I2C_PHY;
             else if (ethctl->flags & (ETHCTL_FLAG_ACCESS_10GSERDES|ETHCTL_FLAG_ACCESS_10GPCS))
                 phy_type = PHY_TYPE_158CLASS_SERDES;
@@ -2041,6 +2043,18 @@ cd_end:
                         ethctl->long_tmr_ms, ethctl->long_tmr_weight, ethctl->val);
                 }
             } 
+            else if (ethctl->flags & ETHCTL_FLAG_ACCESS_I2C_PHY_EEPROM)
+            {
+                void *buf;
+
+                phy_dev = cascade_phy_get_prev(phy_dev);
+                if (!(buf = kzalloc(ethctl->buf_size, GFP_KERNEL)))
+                    return -EFAULT;
+                ret = phy_priv_fun(phy_dev, SERDES_OP_DUMP_EEPROM, ethctl->val/2, ethctl->phy_reg, buf, ethctl->buf_size);
+                if (ret == 0)
+                    copy_to_user(ethctl->buf, buf, ethctl->buf_size);
+                kfree(buf);
+            }
             else
             {
                 uint16_t val = ethctl->val;
@@ -2356,6 +2370,96 @@ cd_end:
 
         return ret;
     }
+#if defined(CONFIG_GT7)
+    case ETHGETEXT84991MIIREG: /* Read MII PHY indirectly connected BCM84991 register */
+    case ETHSETEXT84991MIIREG: /* Write MII PHY indirectly connected BCM84991 register */
+	{
+		int ret = 0;
+		uint32_t phy_addr, phy_devad;
+		uint16_t phy_reg;
+
+		phy_addr = ethctl->phy_addr;
+		phy_devad = ethctl->phy_reg >> 16;
+		phy_reg = (uint16_t)ethctl->phy_reg;
+
+		down(&root_sw->s.conf_sem);
+
+		if (ethctl->op == ETHGETEXT84991MIIREG)
+			ret = mdio_read_c45_register(phy_addr, phy_devad, phy_reg, (uint16_t*)&ethctl->val);
+		else
+			ret = mdio_write_c45_register(phy_addr, phy_devad, phy_reg, ethctl->val);
+
+		up(&root_sw->s.conf_sem);
+
+		if (ret)
+			return -EFAULT;
+
+		if (copy_to_user(rq->ifr_data, ethctl, sizeof(struct ethctl_data)))
+			return -EFAULT;
+
+		return 0;
+	}
+
+    case ETHGETEXT84991PHYPWR:
+		if (phyext84991_power_get(ethctl->phy_addr, &ethctl->val))
+			return -EFAULT;
+
+		if (copy_to_user(rq->ifr_data, ethctl, sizeof(struct ethctl_data)))
+			return -EFAULT;
+
+        return 0;
+
+    case ETHSETEXT84991PHYPWRON:
+    case ETHSETEXT84991PHYPWROFF:
+        return phyext84991_power_set(ethctl->phy_addr, ethctl->op == ETHSETEXT84991PHYPWRON) ? -EFAULT : 0;
+
+    case ETHSETEXT84991PHYRESET:
+        return phyext84991_phy_reset(ethctl->phy_addr) ? -EFAULT : 0;
+
+    case ETHGETEXT84991MEDIATYPE:
+    case ETHSETEXT84991MEDIATYPE:
+		if (phyext84991_mediatype(ethctl))
+			return -EFAULT;
+
+		if (copy_to_user(rq->ifr_data, ethctl, sizeof(struct ethctl_data)))
+			return -EFAULT;
+
+        return 0;
+
+    case ETHSETEXT84991EEEON:
+    case ETHSETEXT84991EEEOFF:
+        if (phyext84991_phy_eee_autogreeen_read(ethctl->phy_addr, &ethctl->ret_val2))
+			return -EFAULT;
+
+		if (phyext84991_phy_eee_set(ethctl->phy_addr, ethctl->op == ETHSETEXT84991EEEON ? 1 : 0))
+			return -EFAULT;
+        ethctl->ret_val = (ethctl->op == ETHSETEXT84991EEEON ? 1 : 0);
+
+        if (ethctl->val2 & ETHCTL_VAL_SET_FLAG) {
+            if (phyext84991_phy_eee_mode_set(ethctl->phy_addr, ethctl->val2 & ~(ETHCTL_VAL_SET_FLAG))) {
+                ethctl->ret_val2 = -1;
+                return -EFAULT;
+            }
+            ethctl->ret_val2 = ethctl->val2 & ~(ETHCTL_VAL_SET_FLAG);
+        }
+
+        if (copy_to_user(rq->ifr_data, ethctl, sizeof(struct ethctl_data)))
+            return -EFAULT;
+
+        return 0;
+
+    case ETHGETEXT84991EEE:
+		if (phyext84991_phy_eee_get(ethctl->phy_addr, &ethctl->ret_val))
+			return -EFAULT;
+
+        if (phyext84991_phy_eee_autogreeen_read(ethctl->phy_addr, &ethctl->ret_val2))
+			return -EFAULT;
+
+		if (copy_to_user(rq->ifr_data, ethctl, sizeof(struct ethctl_data)))
+			return -EFAULT;
+
+        return 0;
+#endif
     default:
         return -EOPNOTSUPP;
     }

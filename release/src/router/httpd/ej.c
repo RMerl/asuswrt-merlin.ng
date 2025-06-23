@@ -145,14 +145,14 @@ struct REPLACE_TAG_S replace_tag_string_t[] =
 static char *replace_tag_string(char *desc, char *pattern, int pattern_len){
 
 	int pid_len = 0, get_pid_len = 0;
-	char target_string[64] = {0}, replace_string[64] = {0}, pattern_tmp[2048] = {0};
+	char target_string[256] = {0}, replace_string[256] = {0}, pattern_tmp[2048] = {0};
 	char *p_PID_STR = NULL;
 	struct REPLACE_TAG_S *p;
 
 	for(p = &replace_tag_string_t[0]; p->org_name; p++){
 
 		if(!strcmp("BASIC_MODEL_NAME", p->org_name)){
-			char PID_STR[32] = {0}, GET_PID_STR[32]={0}, RP_PID_STR[32] = {0};
+			char PID_STR[32] = {0}, GET_PID_STR[32]={0}, RP_PID_STR[128] = {0};
 			strlcpy(PID_STR, nvram_safe_get("productid"), sizeof(PID_STR));
 			strlcpy(GET_PID_STR, get_productid(), sizeof(GET_PID_STR));
 			replace_productid(GET_PID_STR, RP_PID_STR, sizeof(RP_PID_STR));

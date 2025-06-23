@@ -83,7 +83,7 @@
 var sdn_with_vid_json = [];
 var cfg_clientlist = httpApi.hookGet("get_cfg_clientlist");
 
-var str_descContent = "VLAN profile here refers to create a VLAN only network. If you want to create VLAN with DHCP, please go to $feature$";
+var str_descContent = `<#VALN_Profile_desc#>`;	//$feature$ in #VALN_Profile_desc
 str_descContent = str_descContent.replace("$feature$", Guest_Network_naming);
 
 

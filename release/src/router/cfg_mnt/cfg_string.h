@@ -13,6 +13,7 @@
 #define CFG_STR_MAC			"mac"
 #define CFG_STR_PARENT_MAC			"parent_mac"
 #define CFG_STR_CHILD_MAC			"child_mac"
+#define CFG_STR_PAP_MAC		"pap_mac"
 #define CFG_STR_ALIAS		"alias"
 #define CFG_STR_PAP2G		"pap2g"
 #define CFG_STR_PAP5G		"pap5g"
@@ -115,6 +116,7 @@
 #define CFG_STR_APLIST "aplist"
 #define CFG_STR_DUAL_BAND_LIST	"db_list"
 #define CFG_STR_DUAL_BAND_CAP		"db_cap"
+#define CFG_STR_IS_CAP	"is_cap"
 #define CFG_STR_IS_RE	"is_re"
 #define CFG_STR_TRIBAND_RE	"triband_re"
 #define CFG_STR_DUAL_5G_RE	"dual_5g_re"
@@ -242,6 +244,7 @@
 #define CFG_STR_6G_CTRL_SIDEBAND	"6g_ctrlsb"
 #define CFG_STR_6G1_CTRL_SIDEBAND	"6g1_ctrlsb"
 #define CFG_STR_PLC_STATUS		"plc_status"
+#define CFG_STR_FINDCAP_STATUS		"findcap_status"
 #define CFG_STR_MODE			"mode"
 #define CFG_BAND_INDEX_VERSION		"bandindex_version"
 #define CFG_BAND_TYPE		"BAND_TYPE"
@@ -251,6 +254,7 @@
 #ifdef RTCONFIG_MULTILAN_CFG
 #define CFG_STR_SDN_INDEX       "sdn_idx"
 #define CFG_STR_IFNAME      "ifname"
+#define CFG_STR_WIFI_AUTH      "wifi_auth"
 #define CFG_STR_SDN_SUPPORT     "sdn_support"
 #ifdef RTCONFIG_MULTILAN_MWL
 #define CFG_STR_MWL_SUPPORT		"mwl_support"
@@ -297,6 +301,7 @@
 #define CFG_STR_SECURITY_MODE	"security_mode"
 #define CFG_STR_MOCA_STATUS "moca_status"
 #define CFG_STR_MLD_MAC "mld_mac"
+#define CFG_STR_MLO_ACTIVE "mlo_active"
 #define CFG_STR_MLO_STATUS		"mlo_status"
 #define CFG_STR_MLO_MSTA		"msta"
 #define CFG_STR_MAP_UNIT	 "map_unit"
@@ -307,6 +312,20 @@
 #define CFG_STR_DEVICE_INFO		"device_info"
 #define CFG_STR_PREFER_RETRY_COUNT		"prefer_retry_count"
 #define CFG_STR_PREFER_RETRY_TIME		"prefer_retry_time"
+#define CFG_STR_VERSION		"version"
+
+#define CFG_STR_MODEL_WIFI7	"support_wifi7"
+#define CFG_STR_AFC_INFO	"afc_info"
+#define CFG_STR_POSITION_ENABLE		"afc_read_raw_loc"
+#define CFG_STR_LATITUDE	"geo_latitude"
+#define CFG_STR_LONGITUDE	"geo_longitude"
+#define CFG_STR_HEIGHT	"afc_loc_height"
+#define CFG_STR_HEIGHT_TYPE	"afc_loc_height_type"
+#define CFG_STR_HEIGHT_UNCERT	"afc_loc_vert_uncert"
+#define CFG_STR_HORIZ_MAJOR_UNCERT	"afc_major_axis"
+#define CFG_STR_HORIZ_MINOR_UNCERT	"afc_minor_axis"
+#define CFG_STR_ORIENTATION	"afc_orientation"
+#define CFG_STR_PATH_LOSS	"path_loss"
 
 static char *papIndex[] __attribute__ ((unused)) = {CFG_STR_PAP2G, CFG_STR_PAP5G, CFG_STR_PAP5GL, CFG_STR_PAP5GH,
 			CFG_STR_PAP6G, CFG_STR_PAP6GL, CFG_STR_PAP6GH};

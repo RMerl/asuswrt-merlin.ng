@@ -8,7 +8,7 @@ extern int igr_wlioctl;
 #define MAX_2G_CHANNEL_LIST_NUM	16
 #define MAX_5G_CHANNEL_LIST_NUM	32
 #if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
-#define MAX_6G_CHANNEL_LIST_NUM	128
+#define MAX_6G_CHANNEL_LIST_NUM	64
 #endif
 
 typedef struct _avbl_chanspec_t
@@ -56,6 +56,12 @@ static struct wlcsuffix_mapping_s wlcsuffix_mapping_list[] __attribute__ ((unuse
 	{ NULL, 		NULL, 0 }
 };
 
+const static char WL_SKIP_SUFFIX[] = {
+	"ssid,"\
+	"auth_mode_x,"\
+	"closed"
+};
+
 extern int send_cfgmnt_event(char *msg);
 extern int get_chanspec_info(AVBL_CHANSPEC_T *avblChannel);
 extern int send_event_to_roamast(char *data);
@@ -78,6 +84,6 @@ extern int fix_mlo_dwb_for_bhfh(int dwb_subunit,int profile_type);
 #endif
 
 extern int check_suffix_type(char *suffix);
-
+extern int check_skip_param(char *input_param);
 #endif /* __CFG_LIB_H__ */
 /* End of cfg_lib.h */

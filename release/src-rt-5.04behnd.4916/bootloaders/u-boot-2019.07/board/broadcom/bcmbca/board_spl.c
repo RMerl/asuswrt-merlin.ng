@@ -394,6 +394,112 @@ void PowerCLEDOn(void)
 }
 #endif
 
+#if defined(RTBE96U) || defined(GTBE96) || defined(GTBE98) || defined(GTBE98PRO) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(RTBE82M) || defined(RTBE86U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE88U) || defined(GT7)
+void PowerLEDOn(void)
+{
+    volatile uint32_t *GPIO_DIR = (void *)(0xff800500);
+    volatile uint32_t *GPIO_DATA = (void *)(0xff800520);
+    volatile uint32_t *GPIO_DIR_063_032 = (void *)(0xff800504);
+    volatile uint32_t *GPIO_DATA_063_032 = (void *)(0xff800524);
+    volatile uint32_t *reg_gpio_dir;
+    volatile uint32_t *reg_gpio_data;
+    uint32_t val32;
+#if defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+    int gpio = 10;
+#elif defined(RTBE82M)
+    int gpio = 7;
+#elif defined(RTBE86U)
+    int gpio = 2;
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
+    int gpio = 3;
+#elif defined(RTBE92U)
+    int gpio = 28;
+#elif defined(GT7)
+    int gpio = 13;
+#else
+    int gpio = 50;
+#endif
+
+    if (gpio > 31) {
+        reg_gpio_dir = GPIO_DIR_063_032;
+        reg_gpio_data = GPIO_DATA_063_032;
+    } else {
+        reg_gpio_dir = GPIO_DIR;
+        reg_gpio_data = GPIO_DATA;
+    }
+
+    /* Set GPIO_X to output */
+    val32 = *reg_gpio_dir;
+    if (gpio > 31)
+    	val32 |= (1 << (gpio - 32));
+    else
+	val32 |= (1 << (gpio));
+    *reg_gpio_dir = val32;
+
+    /* Turn on LED/GPIO_X */
+    /* example, active low, 0: ON, 1: OFF */
+    val32 = *reg_gpio_data;
+#if defined(RTBE82M) || defined(RTBE86U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U)
+    if (gpio > 31)
+	val32 |= (1 << (gpio - 32));	// active high
+    else
+	val32 |= (1 << (gpio));		// active high
+#else
+    if (gpio > 31)
+	val32 &= ~(1 << (gpio - 32));	// active low
+    else
+	val32 &= ~(1 << (gpio));	// active low
+#endif
+    *reg_gpio_data = val32;
+
+    return;
+}
+#endif
+
+#if defined(GTBE19000AI) || defined(GTBE96_AI)
+void SOPOff(void)
+{
+	volatile uint32_t *GPIO_DIR = (void *)(0xff800500);
+	volatile uint32_t *GPIO_DATA = (void *)(0xff800520);
+	volatile uint32_t *GPIO_DIR_063_032 = (void *)(0xff800504);
+	volatile uint32_t *GPIO_DATA_063_032 = (void *)(0xff800524);
+	volatile uint32_t *GPIO_DIR_095_064 = (void *)(0xff800508);
+    volatile uint32_t *GPIO_DATA_095_064 = (void *)(0xff800528);
+	volatile uint32_t *reg_gpio_dir;
+	volatile uint32_t *reg_gpio_data;
+	uint32_t val32;
+	int sop_gpio[] = { 71, 72, 73 };
+	int i;
+
+	for (i = 0; i < 3; i++) {
+		if (0 <= sop_gpio[i] && sop_gpio[i] <= 31) {
+			reg_gpio_dir = GPIO_DIR;
+			reg_gpio_data = GPIO_DATA;
+		} else if (32 <= sop_gpio[i] && sop_gpio[i] <= 63) {
+			reg_gpio_dir = GPIO_DIR_063_032;
+			reg_gpio_data = GPIO_DATA_063_032;
+		} else if (64 <= sop_gpio[i] && sop_gpio[i] <= 95) {
+			reg_gpio_dir = GPIO_DIR_095_064;
+			reg_gpio_data = GPIO_DATA_095_064;
+		} else {
+			continue;
+		}
+
+		/* Set Output Mode */
+		val32 = *reg_gpio_dir;
+		val32 |= (1 << (sop_gpio[i]));
+		*reg_gpio_dir = val32;
+
+		/* Set Low */
+		val32 = *reg_gpio_data;
+		val32 &= ~(1 << (sop_gpio[i]));
+		*reg_gpio_data = val32;
+	}
+
+	return;
+}
+#endif
+
 void board_init_f(ulong dummy)
 {
 #if defined(CONFIG_ARCH_CPU_INIT)
@@ -458,6 +564,12 @@ void board_init_f(ulong dummy)
 #endif
 #if defined(XD4PRO) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(ET8PRO) || defined(ET8_V2)
 	PowerCLEDOn();
+#endif
+#if defined(RTBE96U) || defined(GTBE96) || defined(GTBE98) || defined(GTBE98PRO) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(RTBE82M) || defined(RTBE86U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE88U) || defined(GT7)
+	PowerLEDOn();
+#endif
+#if defined(GTBE19000AI) || defined(GTBE96_AI)
+	SOPOff();
 #endif
 }
 

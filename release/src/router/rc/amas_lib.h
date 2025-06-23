@@ -40,6 +40,7 @@
 #ifdef RTCONFIG_LIBASUSLOG
 #include "libasuslog.h"
 #endif
+#include <sys/syscall.h>
 
 typedef enum __amaslib_dhcp_flag_t_
 {
@@ -75,7 +76,7 @@ extern char *__progname;
 	}*/
 #define AMASLIB_DBG_SYSLOG(fmt,args...) \
 	if (nvram_get_int("amaslib_syslog")) { \
-		asusdebuglog(LOG_INFO, AMAS_LIB_DBG_LOG, LOG_CUSTOM, LOG_SHOWTIME, 0, "[%s][%d]][%s:(%d)] "fmt, __progname, getpid(), __FUNCTION__, __LINE__, ##args); \
+		asusdebuglog(LOG_INFO, AMAS_LIB_DBG_LOG, LOG_CUSTOM, LOG_SHOWTIME, 0, "[%s][%d][%d][%s:(%d)] "fmt, __progname, getpid(), syscall(SYS_gettid), __FUNCTION__, __LINE__, ##args); \
 	}
 #else
 #define AMASLIB_DBG_SYSLOG(fmt,args...) {}
@@ -83,7 +84,7 @@ extern char *__progname;
 
 #define AMASLIB_DBG(fmt,args...) do { \
 	if(f_exists(AMASLIB_DEBUG) > 0) { \
-		_dprintf("[AMASLIB][%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \
+		_dprintf("[%s][%d][%d][%s:(%d)] "fmt, __progname, getpid(), syscall(SYS_gettid), __FUNCTION__, __LINE__, ##args); \
 	} \
 	AMASLIB_DBG_SYSLOG(fmt,##args) \
 } while(0)

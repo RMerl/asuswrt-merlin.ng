@@ -4,6 +4,19 @@ ifeq ($(RTCONFIG_SOC_IPQ53XX),y)
 SUBLEVEL := $(shell grep '^SUBLEVEL =' $(LINUXDIR)/Makefile | awk '{print $$3}')
 endif
 
+# IPQ5322 kernel version or 32/64 bits
+ifeq ($(RTCONFIG_SOC_IPQ53XX),y)
+ifeq ($(MUSL64),y)
+ifeq ($(SUBLEVEL),277)
+export BWDPI_IPQ5322_64_277 := y
+else
+export BWDPI_IPQ5322_64 := y
+endif
+else
+export BWDPI_IPQ5322_32 := y
+endif
+endif
+
 ifeq ($(wildcard $(TOP)/bwdpi_source/prebuild/$(BUILD_NAME)/*),)
 
 ifeq ($(RTCONFIG_LIBASUSLOG),y)
@@ -58,19 +71,6 @@ endif
 # MTK7621A + RTCONFIG_WLMODULE_MT7915D_AP
 ifeq ($(RTCONFIG_WLMODULE_MT7915D_AP),y)
 export BWDPI_MTK7621_NEW := y
-endif
-
-# IPQ5322 kernel version or 32/64 bits
-ifeq ($(RTCONFIG_SOC_IPQ53XX),y)
-ifeq ($(MUSL64),y)
-ifeq ($(SUBLEVEL),277)
-export BWDPI_IPQ5322_64_277 := y
-else
-export BWDPI_IPQ5322_64 := y
-endif
-else
-export BWDPI_IPQ5322_32 := y
-endif
 endif
 
 # signature version

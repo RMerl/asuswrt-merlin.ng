@@ -18,7 +18,7 @@
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script type="text/javascript" src="/js/asus_policy.js"></script>
+<script type="text/javascript" src="/js/asus_policy.js?v=4"></script>
 <style>
 
 .eula_withdraw{

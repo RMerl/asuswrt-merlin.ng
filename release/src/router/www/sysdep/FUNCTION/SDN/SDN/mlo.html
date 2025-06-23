@@ -15,6 +15,12 @@
 <script type="text/javascript" src="/SDN/sdn.js"></script>
 <script type="text/javascript" src="/SDN/mlo.js"></script>
 </head>
+<style>
+.sdn_popup_bg #loadingBlock {
+	margin-left: 25% !important;
+	margin-top: 0px !important;
+}
+</style>
 <script>
 const PAGE_CONTAINER = "mlo";
 var getUrlParameter = function getUrlParameter(param){
@@ -266,7 +272,7 @@ function initial(){
 		$("[data-container=mlo_config] [data-component=mlo_help]").unbind("click").click(function(e){
 			e = e || event;
 			e.stopPropagation();
-			show_customize_alert(`This master switch controls the MLO (Multi-Link Operation) functionality, including both MLO backhaul for AiMesh connections and MLO fronthaul for clients.`);/* untranslated */
+			show_customize_alert(`<#WiFi_mlo_switch_Hint#>`);
 		});
 
 		if(isSupport("mlo_bh_band")){
@@ -276,7 +282,7 @@ function initial(){
 					const sdn_mlo_enable = sdn_all_rl_json.filter((item)=>{
 						return (item.sdn_rl.sdn_enable == "1" && item.apg_rl.mlo == "2")
 					});
-					const dis_mlo_text = `Due to changes in the MLO configuration, all of your MLO networks will be disabled to avoid any conflict.<br>Please reconfigure your settings to enable MLO fronthaul for clients`
+					const dis_mlo_text = `<#WiFi_mlo_config_change_Hint1#><br><#WiFi_mlo_config_change_Hint2#>`;
 					let mlo_hint = `
 						${(sdn_mlo_enable.length > 0) ? `${dis_mlo_text}<br>` : ""}
 						${isSupport("bcmwifi") ? `<#AiMesh_System_Reboot_Hint#>` : `<#WiFi_change_settings#><br><#AiMesh_Are_U_Sure_Proceed#>`}
@@ -397,8 +403,11 @@ function initial(){
 		$('<script />', { type : 'text/javascript', src : "/js/qrcode/jquery.qrcode.min.js"}).appendTo('head');
 		if(!is_Web_iframe)
 			showLoading = showLoading_RWD;//overwrite function
+		else{
+			$("#Loading").addClass("sdn_popup_bg");
+		}
 
-		if(isSwMode("rt")){
+		if((isSwMode("RT") || isSwMode("WISP"))){
 			Get_VPNC_Profile();
 		}
 
@@ -421,7 +430,7 @@ function initial(){
 
 		postMessageToApp({"web_init": "1"});
 
-		if(isSwMode("rt")){
+		if((isSwMode("RT") || isSwMode("WISP"))){
 			Get_DNS_List_DB();
 		}
 	}, delay_load);

@@ -842,13 +842,13 @@ function apply_alert_preference(){
 		}
 		
 		if(document.form.PM_MY_EMAIL.value == "" || document.form.PM_MY_EMAIL.value != address_temp)
-			document.form.action_script.value += ";reset_tl_count;email_conf;send_confirm_mail";
+			document.form.action_script.value += ";reset_tl_count;email_conf;";
 				
 		document.form.PM_MY_EMAIL.value = address_temp;	
 	}
 	else{	
 		if(document.form.PM_MY_EMAIL.value == "" || document.form.PM_MY_EMAIL.value != address_temp)
-			document.form.action_script.value += ";reset_tl_count;email_conf;send_confirm_mail";
+			document.form.action_script.value += ";reset_tl_count;email_conf;";
 			
 		document.form.PM_MY_EMAIL.value = account_temp[0] + "@" +smtpList[server_index].smtpDomain;
 	}

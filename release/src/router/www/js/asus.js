@@ -32,9 +32,9 @@ httpApi.hookGetMore([
 
 var ui_support = httpApi.hookGet("get_ui_support");
 let timeArray = "";
-function isSupport(_ptn){
-	var ui_support = [<% get_ui_support(); %>][0];
-	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
+function isSupport(_ptn) {
+    var ui_support = [<% get_ui_support(); %>][0];
+    return ui_support[_ptn] ? ui_support[_ptn] : 0;
 }
 
 function territoryCodeCheck(tcode) {
@@ -152,6 +152,8 @@ let nvram = httpApi.nvramGet([
     "wps_enable",
     "location_code",
     "wlc_band",
+    "mlo_rp",
+    "mlo_mb",
     "mld_enable",
 ]);
 
@@ -177,11 +179,13 @@ system.conCurrentRepeaterSupport = isSupport("concurrep");
 system.lightEffectSupoort = isSupport("ledg");
 system.mloSupport = isSupport("mlo");
 system.brcmAfcSupport = isSupport("bcm_afc");
+system.afc_positioningSupport = isSupport("afc_positioning");
 system.isKRSku = territoryCodeCheck("KR");
 system.isEUSku = territoryCodeCheck("EU");
 system.isAASku = territoryCodeCheck("AA");
 system.isAUSku = territoryCodeCheck("AU");
 system.isCNSku = territoryCodeCheck("CN");
+system.isIDSku = territoryCodeCheck("ID");
 system.locationCode = nvram.location_code;
 system.psc6g = nvram.psc6g;
 system.acs_dfs = nvram.acs_dfs;
@@ -255,7 +259,7 @@ system.currentOPMode = (() => {
     const opModeObject = {
         rt: { id: "RT", desc: "<#wireless_router#>" },
         ap: { id: "AP", desc: "<#OP_AP_item#>" },
-        re: { id: "RE", desc: "<#OP_RE_item#>" },
+        rp: { id: "RE", desc: "<#OP_RE_item#>" },
         mb: { id: "MB", desc: "<#OP_MB_item#>" },
         ew2: { id: "EW2", desc: "<#OP_RE2G_item#>" },
         ew5: { id: "EW5", desc: "<#OP_RE5G_item#>" },
@@ -263,31 +267,7 @@ system.currentOPMode = (() => {
     };
 
     let { sw_mode, wlc_psta, wlc_express } = nvram;
-    let _index = "";
-    if (sw_mode === "1") {
-        _index = "rt";
-    } else if (sw_mode === "3" && wlc_psta === "0") {
-        _index = "ap";
-    } else if ((sw_mode === "2" && wlc_psta === "0") || (sw_mode === "3" && wlc_psta === "2")) {
-        _index = "re";
-    } else if (
-        (sw_mode === "3" && wlc_psta === "1" && wlc_express === "0") ||
-        (sw_mode === "3" && wlc_psta === "3" && wlc_express === "0") ||
-        (sw_mode === "2" && wlc_psta === "1" && wlc_express === "0")
-    ) {
-        /*	Media Bridge
-            Broadcom: sw_mode = 3 & wlc_psta = 1, sw_mode = 3 & wlc_psta = 3
-            MTK/QCA: sw_mode = 2 & wlc_psta = 1
-        */
-        _index = "mb";
-    } else if (sw_mode === "2" && wlc_psta === "0" && wlc_express === "1") {
-        _index = "ew2";
-    } else if (sw_mode === "2" && wlc_psta === "0" && wlc_express === "2") {
-        _index = "ew5";
-    } else if (sw_mode === "5") {
-        _index = "hs";
-    }
-
+    let _index = httpApi.hookGet("get_operation_mode") || "rt";
     return opModeObject[_index];
 })();
 
@@ -341,6 +321,7 @@ system.wlBandSeq = (() => {
         isEUSku,
         isAASku,
         isAUSku,
+        isIDSku,
         productId,
         wpa3EnterpriseSupport,
         oweTransSupport,
@@ -354,7 +335,10 @@ system.wlBandSeq = (() => {
     const _nvramCharToAscii_payload = [];
     for (let i = 0; i < nBandArray.length; i++) {
         let wlIfIndex = nBandArray[i];
-        let wlFronthaulIndex = system.currentOPMode.id == "RE" && nvram.wlc_band == i ? `${wlIfIndex}.1` : wlIfIndex;
+        let wlFronthaulIndex =
+            system.currentOPMode.id == "RE" && (nvram.wlc_band == i || nvram.mlo_rp == "1" || isSupport("concurrep"))
+                ? `${wlIfIndex}.1`
+                : wlIfIndex;
         _nvram_payload.push(`${wlIfIndex}_nmode_x`);
         _nvram_payload.push(`${wlIfIndex}_closed`);
         _nvram_payload.push(`${wlIfIndex}_bw`);
@@ -387,9 +371,38 @@ system.wlBandSeq = (() => {
 
     for (let i = 0; i < nBandArray.length; i++) {
         let wlIfIndex = nBandArray[i];
-        let wlFronthaulIndex = system.currentOPMode.id == "RE" && nvram.wlc_band == i ? `${wlIfIndex}.1` : wlIfIndex;
+        let wlFronthaulIndex =
+            system.currentOPMode.id == "RE" && (nvram.wlc_band == i || nvram.mlo_rp == "1" || isSupport("concurrep"))
+                ? `${wlIfIndex}.1`
+                : wlIfIndex;
         let postfixIndex = "";
+        let _nvram = httpApi.nvramGet([
+            `${wlIfIndex}_nmode_x`,
+            `${wlIfIndex}_closed`,
+            `${wlIfIndex}_bw`,
+            `${wlIfIndex}_chanspec`,
+            `${wlIfIndex}_channel`,
+            `${wlIfIndex}_nctrlsb`,
+            `${wlFronthaulIndex}_auth_mode_x`,
+            `${wlFronthaulIndex}_crypto`,
+            `${wlFronthaulIndex}_mfp`,
+            `${wlIfIndex}_wpa_gtk_rekey`,
+            `${wlIfIndex}_radius_ipaddr`,
+            `${wlIfIndex}_radius_port`,
+            `${wlIfIndex}_radius_key`,
+            `${wlIfIndex}_bw_160`,
+            `${wlIfIndex}_bw_240`,
+            `${wlIfIndex}_wep_x`,
+            `${wlIfIndex}_key`,
+            `${wlIfIndex}_key1`,
+            `${wlIfIndex}_key2`,
+            `${wlIfIndex}_key3`,
+            `${wlIfIndex}_key4`,
+            `${wlIfIndex}_phrase_x`,
+            `${wlIfIndex}_11be`,
+        ]);
 
+        let _nvramAscii = httpApi.nvramCharToAscii([`${wlFronthaulIndex}_ssid`, `${wlFronthaulIndex}_wpa_psk`]);
         postfixIndex = wlPostfixIndexTransform[wlIfIndex];
         wlObj[wlIfIndex] = new WirelessAttribute();
         wlObj[wlIfIndex].wlUnit = i;
@@ -429,7 +442,10 @@ system.wlBandSeq = (() => {
         wlObj[wlIfIndex].channel = (() => {
             let _channel = [];
             let { channel } = aMesh;
-            if (dwb_mode === "1" && system.aMesh.channel[wlIfIndex]?.auto?.chanlist?.length > 1) {
+
+            // BRCM platform, it is to check the validation of return value of get_wl_channel_list_xx()
+            // MTK, QCA needs to refine get_wl_channel_list_xx()
+            if (dwb_mode === "1" && channel[wlIfIndex]?.chan_20m?.chanlist?.length > 1) {
                 _channel = (() => {
                     let chanlist = (() => (channel[wlIfIndex].chan_20m ? channel[wlIfIndex].chan_20m.chanlist : []))();
                     if (chanlist[0] === "0") {
@@ -442,10 +458,31 @@ system.wlBandSeq = (() => {
                 _channel = httpApi.hookGet(`channel_list_${postfixIndex}`) || [];
             }
 
-            if (wlIfIndex === "6g1" || wlIfIndex === "6g2") {
+            if (isIDSku && (wlIfIndex === "5g1" || wlIfIndex === "5g2")) {
                 _channel = _channel.filter((ch) => {
-                    if (parseInt(ch) <= 221) {
+                    if (parseInt(ch) < 165 && (parseInt(ch) < 100 || parseInt(ch) > 144)) {
                         return ch;
+                    }
+                });
+            }
+
+            if (wlIfIndex === "6g1" || wlIfIndex === "6g2") {
+                let { HwId } = httpApi.nvramGet(["HwId"]);
+                _channel = _channel.filter((ch) => {
+                    if (
+                        productId === "GT-AXE11000" ||
+                        productId === "RT-AXE95Q" ||
+                        (productId === "ET12" && HwId === "A") ||
+                        productId === "ET8_V2" ||
+                        productId === "ET8PRO"
+                    ) {
+                        if (parseInt(ch) > 30 && parseInt(ch) <= 221) {
+                            return ch;
+                        }
+                    } else {
+                        if (parseInt(ch) <= 221) {
+                            return ch;
+                        }
                     }
                 });
             }
@@ -509,6 +546,10 @@ system.wlBandSeq = (() => {
                         return;
                     }
 
+                    if (isIDSku && (wlIfIndex === "5g1" || wlIfIndex === "5g2")) {
+                        return;
+                    }
+
                     if (wlObj[wlIfIndex].ch160MHz[_ch] === undefined) {
                         wlObj[wlIfIndex].ch160MHz[_ch] = [];
                     }
@@ -529,6 +570,10 @@ system.wlBandSeq = (() => {
                 }
             });
         } else {
+            wlObj[wlIfIndex].chanspecs = (() => {               
+                return httpApi.hookGet(`chanspecs_${postfixIndex}`);
+            })();
+            
             let wlChannels = wlObj[wlIfIndex].channel;
             for (let element of wlChannels) {
                 // 20 MHz
@@ -646,6 +691,10 @@ system.wlBandSeq = (() => {
 
                 // 160 MHz
                 let bw160MHzSupport = isSupport("vht160");
+                if (isIDSku && (wlIfIndex === "5g1" || wlIfIndex === "5g2")) {
+                    bw160MHzSupport = false;
+                }
+
                 if (bw160MHzSupport) {
                     const bw160MaxCount = 8;
                     let bw160count = 0;
@@ -755,10 +804,11 @@ system.wlBandSeq = (() => {
             });
 
             let pscRestrictedByModel = (() => {
+                let { HwId } = httpApi.nvramGet(["HwId"]);
                 return (
                     productId === "GT-AXE11000" ||
                     productId === "RT-AXE95Q" ||
-                    productId === "ET12" ||
+                    (productId === "ET12" && HwId === "A") ||
                     productId === "ET8_V2" ||
                     productId === "ET8PRO"
                 );
@@ -799,6 +849,10 @@ system.wlBandSeq = (() => {
         wlObj[wlIfIndex].bw80_80MHzSupport = isSupport("vht80_80");
         wlObj[wlIfIndex].bw160MHzSupport = (() => {
             if (productId === "ET8_V2" && wlIfIndex === "5g1") {
+                return false;
+            }
+
+            if (isIDSku && (wlIfIndex === "5g1" || wlIfIndex === "5g2")) {
                 return false;
             }
 
@@ -1051,12 +1105,17 @@ system.channelBandwidthObject = (() => {
     return bandwidthObject;
 })();
 
+system.bw320ChannelRangeObject = {
+    0: "<#Auto#>",
+    "320-1": "320-1",
+    "320-2": "320-2",
+    lower: "320-1",
+    upper: "320-2",
+};
 system.extensionChannelObject = {
     0: "<#Auto#>",
     l: "<#WLANConfig11b_EChannelAbove#>",
     u: "<#WLANConfig11b_EChannelBelow#>",
-    "320-1": "<#WLANConfig11b_EChannelAbove#>",
-    "320-2": "<#WLANConfig11b_EChannelBelow#>",
     lower: "<#WLANConfig11b_EChannelAbove#>",
     upper: "<#WLANConfig11b_EChannelBelow#>",
 };

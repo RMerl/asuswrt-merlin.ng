@@ -1,7 +1,7 @@
 /*
  * Common utility functions across router code
  *
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2024, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -24,10 +24,13 @@
 #ifndef _COMMON_UTILS_H_
 #define _COMMON_UTILS_H_
 
+#include <stdio.h>
+#include <stdlib.h>
+
 /* --------------------------------- Constatnts & Macros  --------------------------------- */
 #ifndef min
 #define min(a, b)	(((a) < (b)) ? (a) : (b))
-#endif // endif
+#endif
 
 /* General Strings */
 #define EMPTY_STR			""
@@ -128,4 +131,30 @@ extern char* strncpy_n(char *destination, const char *source, size_t num);
 extern void dm_register_app_restart_info(int pid, int argc, char **argv,
 		char *dependent_services);
 extern void dm_unregister_app_restart_info(int pid);
+
+/*
+ * Checking for process_cmd numbers in /proc
+ * @param	process_name	process name
+ * @return	process instance_count
+ */
+extern int proc_get_instance_count(char *process_name);
+
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+typedef struct {
+	FILE *out;
+	FILE *err;
+} std_out_err_t;
+
+/*
+ * Redirects stdout and stderr to syslog.
+ * pSOE: if not null, saves original file pointers to help restore later
+ */
+extern void redirect_std_out_err_to_syslog(std_out_err_t *pSOE);
+
+/*
+ * restore stdout and stderr from saved file pointers in pSOE and clear the entries in pSOE
+ */
+extern void restore_std_out_err(std_out_err_t *pSOE);
+#endif
+
 #endif /* _COMMON_UTILS_H_ */

@@ -32,12 +32,20 @@ enum reListAction {
 	RELIST_UPDATE
 };
 
+enum obReListStatus {
+	OB_RELIST_ERROR = -1,
+	OB_RELIST_NONEXIST = 0,
+	OB_RELIST_EXIST = 1,
+};
+
 typedef struct _CM_CLIENT_TABLE {
 	char alias[CFG_CLIENT_NUM][ALIAS_LEN];
 	unsigned char ipAddr[CFG_CLIENT_NUM][IP_LEN];
 	unsigned char macAddr[CFG_CLIENT_NUM][MAC_LEN];
 	unsigned char realMacAddr[CFG_CLIENT_NUM][MAC_LEN];
 	time_t reportStartTime[CFG_CLIENT_NUM];
+	unsigned char papmac[CFG_CLIENT_NUM][MAC_LEN];
+	int papUpdate[CFG_CLIENT_NUM];
 	unsigned char pap2g[CFG_CLIENT_NUM][MAC_LEN];
 	unsigned char pap5g[CFG_CLIENT_NUM][MAC_LEN];
 	unsigned char pap6g[CFG_CLIENT_NUM][MAC_LEN];
@@ -114,6 +122,7 @@ extern int cm_prepareReListMsg(char *msg, int msgLen);
 extern void cm_generateReList();
 extern void cm_updateReListTimestamp(unsigned char *decodeMsg);
 extern int cm_isSlaveOnline(time_t startTime);
+extern int cm_isReOnlineByMac(CM_CLIENT_TABLE *clientTbl, char *mac);
 #ifdef RTCONFIG_BCN_RPT
 extern void cm_handleAPListUpdate(unsigned char *decodeMsg);
 extern int cm_prepareAPListMsg(char *msg, int msgLen);
@@ -134,9 +143,8 @@ extern int cm_getObVifReByNewReMac(char *newReMac, char *obReMac, int macLen);
 extern void cm_updateObVifReList(char *newReMac, char *obReMac, int action);
 #endif
 extern void cm_reorganizeReList();
-#ifdef RTCONFIG_AMAS_CENTRAL_CONTROL
 extern void cm_updateReObList(char *reMac, int action, int commit);
-#endif
+extern int cm_checkReObListByMac(char *reMac);
 extern void cm_updateReInfo(CM_CLIENT_TABLE *clientTbl, char *reMac);
 extern int cm_deleteReInfo(char *reMac);
 extern void cm_updateReInfoToClientTbl(CM_CLIENT_TABLE *clientTbl);
@@ -147,6 +155,9 @@ extern void cm_updateReKeyList(char *mac, int action);
 extern int cm_checkJoinData(unsigned char *msg, int role);
 extern int cm_checkKeyData(unsigned char *msg, char *key);
 extern int cm_checkIdData(unsigned char *msg, int index);
+#ifdef AFC_ENABLED
+extern json_object *cm_getConnectedChildReList(CM_CLIENT_TABLE *clientTbl, char *reMac);
+#endif
 
 #endif /* __CFG_SLAVELIST_H__ */
 /* End of cfg_slavelist.h */

@@ -51,12 +51,17 @@ ifeq ($(RTCONFIG_SW_HW_AUTH),y)
 CFLAGS  += -I$(TOP)/sw-hw-auth
 endif
 
+ifeq ($(RTCONFIG_DMALLOC),y)
+CFLAGS += -DDMALLOC -DDMALLOC_FUNC_CHECK -I$(STAGEDIR)/usr/include
+LDFLAGS += -L$(STAGEDIR)/usr/lib -ldmalloc
+endif
+
 ifeq ($(RTCONFIG_TRUSTZONE),y)
 CFLAGS += -I$(TOP)/ateed/
 LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 
@@ -73,7 +78,7 @@ all: wlc_nt wlc_monitor libwlc_nt_client.so
 endif
 
 # this command is for debug only
-wlc_debug: main.o wlc_nt_lib.o
+wlc_debug: main.o wlc_nt_lib.o wlc_nt_client.o
 	@echo " [wlc_debug] CC $@"
 	@$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 	@$(STRIP) wlc_debug
@@ -106,6 +111,7 @@ install: all
 	@install -m 755 wlc_monitor $(INSTALLDIR)/usr/sbin
 	@install -d $(INSTALLDIR)/usr/lib
 	@install -m 755 libwlc_nt_client.so $(INSTALLDIR)/usr/lib
+	-@install -m 755 wlc_debug $(INSTALLDIR)/usr/sbin
 
 %.o: %.c
 	@echo " [wlc_nt] CC $@"

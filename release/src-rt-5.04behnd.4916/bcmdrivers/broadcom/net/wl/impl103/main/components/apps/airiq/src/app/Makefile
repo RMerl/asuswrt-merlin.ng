@@ -65,9 +65,14 @@ endif
 CCFLAGS += -DWLENT_AIRIQ
 CCFLAGS +=  -static -pthread $(INCDIR)
 LDFLAGS = -L$(AIRIQ_COMPONENTDIR)/prebuilt/$(PLATFORM) -lpthread
-ROUTER_LDFLAGS = -L$(TOP)/shared -lshared -L$(TOP)/nvram -L$(INSTALLDIR)/nvram/usr/lib  -lnvram
+ROUTER_LDFLAGS = -L$(TOP)/shared -lshared
+LDFLAGS += -L$(TOP_PLATFORM)/nvram -L$(INSTALLDIR)/nvram/usr/lib -lnvram
 LDFLAGS += $(ROUTER_LDFLAGS) -lgcc_s
 LDFLAGS += $(USR_LDFLAGS)
+
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
+LDFLAGS += -L$(TOP)/libhostapi -lhostapi
+endif
 
 ifeq ($(AIRIQ_APP_LOCAL),)
 AIRIQLIB = -lairiq_sirp

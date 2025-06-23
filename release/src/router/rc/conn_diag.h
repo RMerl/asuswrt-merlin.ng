@@ -104,6 +104,7 @@ enum {
 	DIAGMODE_EVENT_WLC 	                    = DIAGMODE_EVENT+6,
 	DIAGMODE_WIFI_CBP 	                    = DIAGMODE_EVENT+7,
 	DIAGMODE_EVENT_PORT_STATUS_MOCA_CHANGE  = DIAGMODE_EVENT+8,
+	DIAGMODE_EVENT_ACSD 	                = DIAGMODE_EVENT+10,
 	//DIAGMODE_EVENT
 	//DIAGMODE_SITE_SURVEY_2G = 0x800, //need modify
 	//DIAGMODE_SITE_SURVEY_5G1 = 0x1000, //need modify
@@ -222,6 +223,7 @@ extern int get_subif_count(char *target, int *count); // TODO: non-Brcm needs to
 extern int get_subif_ssid(char *target, char *output, int outputlen); // TODO: non-Brcm needs to do.
 extern int get_wifi_txop(char *ifname,int *txop, int outputlen);
 extern int get_wifi_glitch(char *ifname,int *glitch, int outputlen);
+extern int get_wifi_knoise(char *ifname,int *knoise, int outputlen);
 extern int get_wifi_chanim(char *ifname, char *output, int outputlen);
 extern int get_wifi_counters_info(char *ifname, char *info_name, int *value);
 #endif
@@ -298,3 +300,5 @@ extern int check_iperf_server_resp(char *in);
 
 #define CD_CBP_EVENT_PATH "/jffs/cbp_event_file"
 #define CD_CBP_EVENT_LOCK	"cd_cbp_event_lock"
+#define ACSD_EVENT_FILE_PATH "/jffs/acsd_event_file"
+#define ACSD_EVENT_FILE_LOCK "acsd_event_file_lock"

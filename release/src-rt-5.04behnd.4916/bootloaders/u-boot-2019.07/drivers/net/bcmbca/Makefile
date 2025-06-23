@@ -3,6 +3,11 @@
 # (C) Copyright 2019 Broadcom Ltd
 #
 
+PROFILE  = $(shell cat ../../../.last_profile)
+ifneq ($(findstring BUILD_HND_MFG=, $(shell cat ../../../targets/$(PROFILE)/$(PROFILE))),)
+EXTRA_CFLAGS += -DHND_MFG
+endif
+
 BRCM_CHIP := $(patsubst "bcm%",%,$(CONFIG_SYS_SOC))
 
 ifdef CONFIG_BCMBCA_XRDP_ETH
@@ -99,16 +104,12 @@ ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_4908_63178_47622_6756_63146_4912_68
 EXTRA_CFLAGS += -DDSL_DEVICES
 endif
 
-ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-AX58U_V2 RT-AX3000N BR63 RT-BE58U TUF-BE3600))
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-AX58U_V2 RT-AX3000N BR63 RT-BE58U TUF-BE3600 RT-BE58U_V2 TUF-BE3600_V2 RT-BE55))
 obj-y += rtk/
 endif
 
-ifeq ($(or $(GTBE98),$(GTBE98_PRO),$(GTBE96),$(GTBE19000),$(RTBE92U),$(RTBE95U),$(RTBE82U),$(TUFBE82),$(GTBE19000_AI)),y)
+ifeq ($(or $(GTBE98),$(GTBE98_PRO),$(GTBE96),$(GTBE19000),$(RTBE92U),$(RTBE95U),$(RTBE82U),$(TUFBE82),$(RTBE58U_PRO),$(GTBE19000AI),$(GTBE96_AI)),y)
 obj-y += rtl8372/
-endif
-
-ifeq ($(or $(RTBE58U_PRO)),y)
-obj-y += rtl8366u/
 endif
 
 ifdef CONFIG_BCMBCA_PHY

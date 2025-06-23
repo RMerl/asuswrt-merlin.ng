@@ -91,6 +91,7 @@ ref.refresh = function(text) {
 		loadData();
 	}
 	catch (ex) {
+		// do something
 	}
 	
 	--updating;

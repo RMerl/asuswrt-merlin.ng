@@ -90,6 +90,7 @@ struct pj_mutex_t
     char		owner_name[PJ_MAX_OBJ_NAME];
 #endif
 	int         inst_id;
+	int			use_pool;
 };
 
 #if defined(PJ_HAS_SEMAPHORE) && PJ_HAS_SEMAPHORE != 0
@@ -1146,6 +1147,7 @@ static pj_status_t init_mutex(int inst_id, pj_mutex_t *mutex, const char *name, 
     PJ_CHECK_STACK();
 
 	mutex->inst_id = inst_id;
+    mutex->use_pool = 1;
 
     rc = pthread_mutexattr_init(&attr);
     if (rc != 0)
@@ -1236,29 +1238,47 @@ static pj_status_t init_mutex(int inst_id, pj_mutex_t *mutex, const char *name, 
 /*
  * pj_mutex_create()
  */
-PJ_DEF(pj_status_t) pj_mutex_create(pj_pool_t *pool, 
-				    const char *name, 
-				    int type,
-				    pj_mutex_t **ptr_mutex)
+PJ_DEF(pj_status_t) pj_mutex_create2(pj_pool_t *pool,
+                    const char *name,
+                    int type,
+                    pj_mutex_t **ptr_mutex,
+                    int inst_id)
 {
 #if PJ_HAS_THREADS
     pj_status_t rc;
     pj_mutex_t *mutex;
 
-    PJ_ASSERT_RETURN(pool && ptr_mutex, PJ_EINVAL);
+    //PJ_ASSERT_RETURN(pool && ptr_mutex, PJ_EINVAL);
 
-    mutex = PJ_POOL_ALLOC_T(pool, pj_mutex_t);
+    if (pool)
+        mutex = PJ_POOL_ALLOC_T(pool, pj_mutex_t);
+    else
+        mutex = (pj_mutex_t *)malloc(sizeof(pj_mutex_t));
     PJ_ASSERT_RETURN(mutex, PJ_ENOMEM);
-	
-    if ((rc=init_mutex(pool->factory->inst_id, mutex, name, type)) != PJ_SUCCESS)
-	return rc;
-    
+
+    if ((rc=init_mutex(inst_id, mutex, name, type)) != PJ_SUCCESS)
+    return rc;
+
+	mutex->use_pool = pool ? 1 : 0;
+
     *ptr_mutex = mutex;
     return PJ_SUCCESS;
 #else /* PJ_HAS_THREADS */
     *ptr_mutex = (pj_mutex_t*)1;
     return PJ_SUCCESS;
 #endif
+}
+
+/*
+ * pj_mutex_create()
+ */
+PJ_DEF(pj_status_t) pj_mutex_create(pj_pool_t *pool, 
+				    const char *name, 
+				    int type,
+				    pj_mutex_t **ptr_mutex)
+{
+    int inst_id = pool ? pool->factory->inst_id : 1;
+    return pj_mutex_create2(NULL, name, type, ptr_mutex, inst_id);
 }
 
 /*
@@ -1439,6 +1459,9 @@ PJ_DEF(pj_status_t) pj_mutex_destroy(pj_mutex_t *mutex)
 	    pthread_mutex_unlock(&mutex->mutex);
     }
 
+	if(!mutex->use_pool)
+		free(mutex);
+
     if (status == 0)
 	return PJ_SUCCESS;
     else {
@@ -1466,6 +1489,20 @@ PJ_DEF(int) pj_get_mutex_inst_id(pj_mutex_t *mutex)
 {
 	PJ_ASSERT_RETURN(mutex, -1);
 	return mutex->inst_id;
+}
+
+PJ_DEF(void) pj_mutex_dump(char *prefix, pj_mutex_t *mutex)
+{
+	PJ_LOG(6,(mutex->obj_name, "\n prefix=[%s]\n mutexp=[%p]\n mutexd=[%llu]\n mutex_size=[%llu]\n obj_name=[%s]\n nesting_level=[%d]\n owner=[%p]\n owner_name=[%s]\n inst_id=[%d]",
+              prefix,
+		mutex,
+				  mutex->mutex,
+              sizeof(mutex->mutex),
+              mutex->obj_name,
+                  mutex->nesting_level,
+                  mutex->owner,
+                  mutex->owner_name,
+                  mutex->inst_id));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

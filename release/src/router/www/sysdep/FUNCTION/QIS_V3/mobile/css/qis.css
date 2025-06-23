@@ -313,7 +313,7 @@ a{
 	background-color:rgba(79,79,79,62);
 	padding-left:11px;
 }
-#welcome_button{
+.welcome_button{
 	cursor:pointer;
 	width:600px;
 	max-width:600px;
@@ -1600,6 +1600,16 @@ a{
 	animation: rotate-loading 1.5s linear 0s infinite normal;
 	transform-origin: 50% 50%;
 }
+#ob_status{
+	font-size: 1.8em;
+	color: #FFF;
+	position: relative;
+	text-align: center;
+	margin: auto;
+	margin-top: 60px;
+	line-height: 140%;
+	width: 90%;
+}
 #prelink_desc{
 	min-height: 750px;
 }
@@ -1958,4 +1968,7 @@ a{
 }
 .moreBold{
 	font-weight: bolder;
+}
+.qisBackground {
+	height: 100%;
 }

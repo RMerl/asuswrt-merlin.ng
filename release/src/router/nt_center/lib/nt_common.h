@@ -17,22 +17,18 @@
 /* SOCKET SERVER DEFINE SETTING 
 ---------------------------------*/
 #define NOTIFY_CENTER_SOCKET_PATH               "/var/run/nt_center_socket"
-#define NOTIFY_MAIL_SERVICE_SOCKET_PATH         "/var/run/nt_actMail_socket"
 
 #define MAX_NOTIFY_SOCKET_CLIENT    5
 #define PTHREAD_STACK_SIZE          0x100000
 
 #define NOTIFY_CENTER_PID_PATH                  "/var/run/nt_center.pid"
 #define NOTIFY_CENTER_MONITOR_PID_PATH          "/var/run/nt_monitor.pid"
-#define NOTIFY_ACTION_MAIL_PID_PATH             "/var/run/nt_actMail.pid"
 
 #define NOTIFY_CENTER_LOG_FILE                  "/tmp/NTC.log"
 #define NOTIFY_CENTER_MONITOR_LOG_FILE          "/tmp/NTM.log"
-#define NOTIFY_ACTION_MAIL_LOG_FILE             "/tmp/NAM.log"
 
 #define NOTIFY_CENTER_DEBUG                     "/tmp/NTC_DEBUG"
 #define NOTIFY_CENTER_MONITOR_DEBUG             "/tmp/NTM_DEBUG"
-#define NOTIFY_ACTION_MAIL_DEBUG                "/tmp/NAM_DEBUG"
 
 #define NOTIFY_CENTER_TEMP_DIR                  "/tmp/nc"
 #define NOTIFY_SETTING_CONF                     "/tmp/nc/nc.conf"
@@ -105,8 +101,6 @@
 ---------------------------------*/
 /* RESERVATION EVENT */
 #define RESERVATION_EVENT_PREFIX                   0xF000
-#define RESERVATION_MAIL_REPORT_EVENT              0xF001           /* Used in email daemon status report */
-#define RESERVATION_MAIL_CONFIRM_EVENT             0xF002
 /* ------------------------------
     ### System ###
 ---------------------------------*/
@@ -114,7 +108,6 @@
 #define SYS_WAN_BLOCK_EVENT                        0x10002
 #define SYS_NEW_DEVICE_WIFI_CONNECTED_EVENT        0x10010
 #define SYS_NEW_DEVICE_ETH_CONNECTED_EVENT         0x10011
-#define SYS_FW_NWE_VERSION_AVAILABLE_EVENT         0x10012
 #define SYS_EXISTED_DEVICE_WIFI_CONNECTED_EVENT    0x10014
 #define SYS_WAN_CABLE_UNPLUGGED_EVENT              0x10015
 #define SYS_WAN_PPPOE_AUTH_FAILURE_EVENT           0x10016
@@ -133,16 +126,18 @@
 #define SYS_REBOOT_NOK_EVENT                       0x10025
 #define SYS_LAN_PORT_IN_EVENT                      0x10026
 #define SYS_LAN_PORT_OUT_EVENT                     0x10027
-#define SYS_AFC_COLD_REBOOT_EVENT                  0x10028 /* <-- last */
+#define SYS_AFC_COLD_REBOOT_SILENT_EVENT           0x10028
+#define SYS_AFC_COLD_REBOOT_EVENT                  0x10029
+#define SYS_FW_NEW_VERSION_AVAILABLE_EVENT         0x10031 /* <-- last */
 /* ------------------------------
     ### Administration ###
 ---------------------------------*/
-#define ADMIN_LOGIN_FAIL_LAN_WEB_EVENT             0x20001
-#define ADMIN_LOGIN_FAIL_SSH_EVENT                 0x20003
-#define ADMIN_LOGIN_FAIL_TELNET_EVENT              0x20004
 #define ADMIN_REMOTE_LOGIN_EVENT                   0x20005
 #define ADMIN_BOUND_DEV_EVENT                      0x20006
 #define ADMIN_UNBOUND_DEV_EVENT                    0x20007
+#define ADMIN_LOGIN_FAIL_SSH_EVENT                 0x20008
+#define ADMIN_LOGIN_FAIL_TELNET_EVENT              0x20009
+#define ADMIN_LOGIN_FAIL_LAN_WEB_EVENT             0x2000A
 /* ------------------------------
     ### Security ###
 ---------------------------------*/
@@ -187,26 +182,6 @@ typedef enum {
 	PRI_LOW    = 90,
 }EVENT_PRI_T;
 
-/* SEND MAIL STATUS
----------------------------------*/
-typedef enum {
-	MAIL_WAIT = 0,
-	MAIL_SENDING,
-	MAIL_SUCCESS,
-	MAIL_FAILED,
-	MAIL_FATAL_ERROR                /* E-Mail Config error */
-}MAIL_STATUS_T;
-
-/* ACTION MAIL EVENT STRUCTURE
----------------------------------*/
-typedef struct __act_mail_event__t_
-{
-	int             MsendId;        /* Random ID to record send mail index */
-	int             Mretry;         /* Record retry times when send mail fail */
-	time_t          MsendTime;      /* Record send time */
-	MAIL_STATUS_T   MsendStatus;    /* Record send mail status */
-}ACTMAIL_EVENT_T;
-
 /* NOTIFY CLIENT EVENT STRUCTURE
 ---------------------------------*/
 typedef struct __notify_event__t_
@@ -219,7 +194,6 @@ typedef struct __notify_event__t_
 	int             action;
 	int             period;         /* Period time(sec) */
 	int             gntee;          /* Action Guarantee */
-	ACTMAIL_EVENT_T mail_t;         /* Action Mail Data Info*/
 
 }NOTIFY_EVENT_T;
 
@@ -233,5 +207,12 @@ typedef struct __notify_database__t_
 
 }NOTIFY_DATABASE_T;
 
+/* NC FORCE OFF STRUCTURE (via FRS)
+---------------------------------*/
+typedef struct __force_off_t_
+{
+	int    event;
+	int    action;
+}NT_FORCE_OFF_T;
 #endif
 

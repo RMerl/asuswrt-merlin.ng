@@ -52,9 +52,14 @@ CCFLAGS += -DBRCM_WL_IOCTL -DLINUX
 CCFLAGS += -DWLENT_AIRIQ
 CCFLAGS +=  -static -pthread $(INCDIR)
 LDFLAGS =  -lpthread -lm
-ROUTER_LDFLAGS = -L$(TOP)/shared -lshared -L$(TOP)/nvram -L$(INSTALLDIR)/nvram/usr/lib  -lnvram
+ROUTER_LDFLAGS = -L$(TOP)/shared -lshared
+LDFLAGS += -L$(TOP_PLATFORM)/nvram -L$(INSTALLDIR)/nvram/usr/lib -lnvram
 LDFLAGS += $(ROUTER_LDFLAGS) -lgcc_s
 LDFLAGS += $(USR_LDFLAGS)
+
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
+LDFLAGS += -L$(TOP)/libhostapi -lhostapi
+endif
 
 ALL_OBJS := fft_capture_app.o kiss_fft.o
 

@@ -46,7 +46,6 @@
 #include "shared.h"
 #include "wlif_utils.h"
 #include "iboxcom.h"
-#include <regex.h>
 
 #ifndef ETHER_ADDR_LEN
 #define	ETHER_ADDR_LEN		6
@@ -3282,25 +3281,43 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long long *rx
 	if (find_word(nv_lan_ifnames, ifname))
 	{
 		// find Wireless interface
-#if defined(RTCONFIG_MULTILAN_CFG) && !defined(RTCONFIG_RALINK)
+#if defined(RTCONFIG_MULTILAN_CFG)
 {
 	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+	i = 0;
 	foreach(word, wl_ifnames, next) {
-		if(strncmp(word, ifname, 3) == 0) {
-			char unit_buf[8], *p1, *p2;
-			int len;
+		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
+		if(strcmp(word, ifname) == 0) {
+			if(strncmp(ifname, "wl", 2) == 0){
+				char unit_buf[8], *p1, *p2;
+				int len, idx;
 
-			p1 = strchr(word, '.');
-			p2 = strchr(word, 'l');
-			len = p1 - p2;
-			i = 0;
-			if(len > 0){
-				snprintf(unit_buf, len, "%s", p2+1);
-				i = atoi(unit_buf);
+				p1 = strchr(word, '.');
+				p2 = strchr(word, 'l');
+				len = p1 - p2;
+				if(len > 0){
+					snprintf(unit_buf, len, "%s", p2+1);
+					idx = atoi(unit_buf);
+				}
+				sprintf(ifname_desc, "WIRELESS%d", idx);
 			}
-			sprintf(ifname_desc, "WIRELESS%d", i);
+			else{
+				sprintf(ifname_desc, "WIRELESS%d", i);
+			}
+
 			return 1;
 		}
+
+		snprintf(tmp, sizeof(tmp), "wl%d_vifs", i);
+		foreach(word1, nvram_safe_get(tmp), next1) {
+			if(strcmp(word1, ifname) == 0)
+			{
+				sprintf(ifname_desc, "WIRELESS%d", i);
+				return 1;
+			}
+		}
+
+		i++;
 	}
 }
 #else
@@ -5637,7 +5654,7 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 	char ifname[IFNAMSIZ] = { 0 };
 	int found = 0;
 	char band_prefix[8];
-	char nband = 0, num5g = 0, num6g = 0;
+	char nband = 0;
 
 	if (!strncmp(name, CFG_WL_STR_2G, 2) || !strncmp(name, CFG_WL_STR_5G, 2) ||
 		!strncmp(name, CFG_WL_STR_6G, 2)) {
@@ -5653,23 +5670,36 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 		strlcpy(ifname, nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), sizeof(ifname));
 		subunit = 0;
-		nband = nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp)));
-
-		if (nband == 2)
-			strlcpy(band_prefix, CFG_WL_STR_2G, sizeof(band_prefix));
-		else if (nband == 1)
+		nband = nvram_get_int(strcat_r(prefix, "nband_type", tmp));
+		switch (nband)
 		{
-			num5g++;
+			case 0:	/* 2G */
+				strlcpy(band_prefix, CFG_WL_STR_2G, sizeof(band_prefix));
+				break;
+			case 1:	/* 5G */
+			case 2: /* 5G low */
 #if defined(RTCONFIG_LYRA_5G_SWAP)
-			strlcpy(band_prefix, swap_5g_band(unit) == 2 ? CFG_WL_STR_5G1 : CFG_WL_STR_5G, sizeof(band_prefix));
+				strlcpy(band_prefix, swap_5g_band(unit) == 2 ? CFG_WL_STR_5G1 : CFG_WL_STR_5G, sizeof(band_prefix));
 #else
-			strlcpy(band_prefix, num5g == 1 ? CFG_WL_STR_5G : CFG_WL_STR_5G1, sizeof(band_prefix));
+				strlcpy(band_prefix, CFG_WL_STR_5G, sizeof(band_prefix));
 #endif
-		}
-		else if (nband == 4)
-		{
-			num6g++;
-			strlcpy(band_prefix, num6g == 1 ? CFG_WL_STR_6G : CFG_WL_STR_6G1, sizeof(band_prefix));
+				break;
+			case 3:	/* 5G high */
+#if defined(RTCONFIG_LYRA_5G_SWAP)
+				strlcpy(band_prefix, swap_5g_band(unit) == 2 ? CFG_WL_STR_5G1 : CFG_WL_STR_5G, sizeof(band_prefix));
+#else
+				strlcpy(band_prefix, CFG_WL_STR_5G1, sizeof(band_prefix));
+#endif
+				break;
+			case 4:	/* 6G */
+			case 5: /* 6G low */
+				strlcpy(band_prefix, CFG_WL_STR_6G, sizeof(band_prefix));
+				break;
+			case 6:	/* 6G high */
+				strlcpy(band_prefix, CFG_WL_STR_6G1, sizeof(band_prefix));
+				break;
+			default:
+				break;
 		}
 
 		if (!strcmp(ifname, name)) {
@@ -6162,47 +6192,6 @@ int is_valid_domainname(const char *name)
 	}
 
 	return p - name;
-}
-
-int is_valid_oauth_code(char *code)
-{
-	int len;
-
-	len = strlen(code);
-	if (len > 2048) return 0;
-
-	while(*code) {
-		if (isalnum(*code) != 0 || *code == '-' || *code == '.' || *code == '_' || *code == '~' || *code == '+' || *code == '/' || isspace(*code) != 0)
-			code++;
-		else
-			return 0;
-	}
-	return 1;
-}
-int is_valid_email_address(char *address)
-{
-	int status=1, ret=0, rc=0;
-	regex_t preg;
-	const char *reg_exp = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*.\\w+([-.]\\w+)*$";
-
-	rc = regcomp(&preg, reg_exp, REG_EXTENDED);
-
-	if (rc != 0)
-	{
-		dbg("%s: Failed to compile the regular expression:%d\n", __func__, rc);
-		return 4000;
-	}
-
-	status=regexec(&preg,address,0, NULL, 0);
-	if (status == REG_NOMATCH) {
-		dbg("No Match\n");
-	}
-	else if (status == 0) {
-		dbg("Match\n");
-		ret = 1;
-	}
-	regfree(&preg);
-	return ret;
 }
 
 int get_discovery_ssid(char *ssid_g, int size)
@@ -6735,6 +6724,7 @@ void update_wlx_psr_mbss(void)
 {
 	int unit = 0, subunit = 0, wlx_psr_mbss = 0;
 	char nv[64];
+	int changed = 0;
 
 	if (nvram_get_int("re_mode") == 0)
 		return;
@@ -6754,9 +6744,12 @@ void update_wlx_psr_mbss(void)
 		snprintf(nv, sizeof(nv), "wl%d_psr_mbss", unit);
 		if (nvram_get_int(nv) != wlx_psr_mbss) {
 			nvram_set_int(nv, wlx_psr_mbss);
-			nvram_commit();
+			changed = 1;
 		}
 	}
+
+	if(changed)
+		nvram_commit();
 
 	return;
 }
@@ -7598,6 +7591,33 @@ int guest_mark_calc(int guest_mark)
 #endif
 	return mark;
 }
+
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
+int switch_ledg(int action)
+{
+	switch(action) {
+		case LEDG_QIS_RUN:
+#if defined(TUFAX5400) || defined(TUFAX5400_V2)
+			nvram_set_int("ledg_scheme", LEDG_SCHEME_RAINBOW);
+#else
+			nvram_set_int("ledg_scheme", LEDG_SCHEME_COLOR_CYCLE);
+#endif
+			break;
+		case LEDG_QIS_FINISH:
+			if (nvram_match("x_Setting", "1") && !nvram_match("ledg_qis_finish", "1")){
+				nvram_set_int("ledg_qis_finish", 1);
+				nvram_set_int("ledg_scheme_tmp", LEDG_SCHEME_BLINKING);
+				break;
+			}
+		default:
+				return 0;
+	}
+
+	nvram_commit();
+	kill_pidfile_s("/var/run/ledg.pid", SIGTSTP);
+	return 1;
+}
+#endif
 
 char *
 rfctime(const time_t *timep, char *ts_string, int len)

@@ -102,14 +102,14 @@ OPTIONS
               choosing a good value will reduce fragmentation. Valid values
               are 1, 2, 3 and 4. The values have the following meaning:
 
-              ┌────────────────────────────────┐
-              │MFT zone     MFT zone size      │
-              │multiplier   (% of volume size) │
-              │    1        12.5% (default)    │
-              │    2        25.0%              │
-              │    3        37.5%              │
-              │    4        50.0%              │
-              └────────────────────────────────┘
+              +--------------------------------+
+              |MFT zone     MFT zone size      |
+              |multiplier   (% of volume size) |
+              |    1        12.5% (default)    |
+              |    2        25.0%              |
+              |    3        37.5%              |
+              |    4        50.0%              |
+              +--------------------------------+
 
        -T, --zero-time
               Fake the time to be 00:00:00 UTC, Jan 1, 1970 instead of the

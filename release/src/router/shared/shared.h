@@ -507,7 +507,7 @@ struct mlo_band_mapping_s {
 
 static struct mlo_band_mapping_s mlo_band_mapping_list[] __attribute__ ((unused)) = {
 #if defined(RTCONFIG_MLO_CONFIG_556)
-	{ WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_2G | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_5GL | WIFI_BAND_5GH | WIFI_BAND_6G}, //2556, mlo:5-1/5-2/6
+	{ WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_5GL | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_2G | WIFI_BAND_5GH | WIFI_BAND_6G}, //2556, mlo:5-1/5-2/6
 #else
 	{ WIFI_BAND_2G | WIFI_BAND_5GL | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_2G | WIFI_BAND_5GH | WIFI_BAND_6G,	WIFI_BAND_2G | WIFI_BAND_5GH | WIFI_BAND_6G}, //2556, mlo:2/5-2/6
 #endif
@@ -734,6 +734,9 @@ enum romaingEvent {
 	EID_RM_STA_EX_AP_CHECK = 6,
 	EID_RM_STA_FORCE_ROAMING = 7,
 	EID_RM_STA_BINDING_UPDATE = 8,
+	EID_RM_11K_REQ = 9,
+	EID_RM_11V_REQ = 10,
+	EID_RM_11K_RSP = 11,
 	EID_RM_MAX
 };
 enum conndiagEvent {
@@ -748,6 +751,7 @@ enum conndiagEvent {
 	EID_CD_PS_USB_CHANGE,
 	EID_CD_PS_MOCA_CHANGE,
 	EID_CD_PRINT_STA_INFO,
+	EID_CD_REINIT_BSSINFO,
 	EID_CD_MAX
 };
 #define RAST_IPC_MAX_CONNECTION		5
@@ -841,6 +845,7 @@ enum conndiagEvent {
 #define BTM_CMD_FAIL	3
 #define BTM_TIMEOUT		4
 #define BTM_OTHER		5
+#define BTM_FAIL_MIN    29
 #endif
 
 #ifdef RTCONFIG_AMAS
@@ -1230,6 +1235,7 @@ extern int supports(unsigned long attr);
 // pids.c
 extern int pids(char *appname);
 extern pid_t* find_pid_by_name(const char *);
+extern int check_main_pids_exist(char *appname);
 
 // process.c
 extern char *psname(int pid, char *buffer, int maxlen);
@@ -1319,8 +1325,11 @@ enum btn_id {
 	BTN_EJUSB1,
 	BTN_EJUSB2,	/* If two USB LED and two EJECT USB button are true, map USB3 port to this button. */
 #endif
-#if defined(GTBE19000_AI)
+#if defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GTBE96_AI)
 	BTN_WAKE,
+#endif
+#if defined(PRTAX57_GO) || defined(RTBE58_GO)
+        BTN_SWITCH,
 #endif
 	BTN_ID_MAX,	/* last item */
 };
@@ -1559,7 +1568,7 @@ enum led_id {
 	LED_SIDE2_WHITE,
 	LED_SIDE3_WHITE,
 #endif
-#ifdef GT10
+#if defined(GT10) || defined(GT7)
 	LED_RGB1_RED,
 	LED_RGB1_GREEN,
 	LED_RGB1_BLUE,
@@ -1576,7 +1585,7 @@ enum led_id {
 	IND_BT,
 	IND_PA,
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
 	LED_GROUP1_RED,
 	LED_GROUP1_GREEN,
 	LED_GROUP1_BLUE,
@@ -1587,7 +1596,7 @@ enum led_id {
 	LED_GROUP3_RED,
 	LED_GROUP3_GREEN,
 	LED_GROUP3_BLUE,
-#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE96) && !defined(GSBE18000)
+#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE96) && !defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	LED_GROUP4_RED,
 	LED_GROUP4_GREEN,
 	LED_GROUP4_BLUE,
@@ -1605,10 +1614,10 @@ enum led_id {
 #endif
 #endif
 #endif
-#if defined(DSL_AX82U) || defined(GSBE18000)
+#if defined(DSL_AX82U) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	LED_WIFI,
 #endif
-#if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	LED_WAN_RGB_RED,
 	LED_WAN_RGB_GREEN,
 	LED_WAN_RGB_BLUE,
@@ -1642,15 +1651,15 @@ enum led_id {
         LED_AR3012_RST,
         LED_ETHALL,
 #endif
-#if defined(RTBE96U) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE19000) || defined(GTBE19000_AI)
+#if defined(RTBE96U) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	LED_AFC,
 #endif
-#if defined(GTBE19000_AI)
-	PS_RESET,
-	PS_SOP0,
-	PS_SOP1,
-	PS_SOP2,
-	PS_SWITCH,
+#if defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI)
+	ES_RESET,
+	ES_SOP0,
+	ES_SOP1,
+	ES_SOP2,
+	PWR_SWITCH,
 #endif
 	LED_ID_MAX,	/* last item */
 };
@@ -1783,11 +1792,15 @@ enum wl_band_id {
 	WL_5G_BAND = 0,
 	WL_5G_2_BAND = 1,
 	WL_2G_BAND = 2,
+#elif defined(GS7_PRO)
+	WL_5G_BAND = 1,
+	WL_5G_2_BAND = 0,
+	WL_2G_BAND = 2,
 #elif defined(BT12)
 	WL_2G_BAND = 0,
 	WL_5G_BAND = 1,
 	WL_5G_2_BAND = 2,
-#elif defined(BT10) || defined(GSBE18000)
+#elif defined(BT10) || defined(GSBE18000) || defined(GSBE12000) || defined(GT7)
 	WL_5G_2_BAND = 0,
 	WL_6G_BAND = 0,
 	WL_5G_BAND = 1,
@@ -1806,7 +1819,7 @@ enum wl_band_id {
 	WL_2G_BAND = 0,
 	WL_5G_BAND = 1,
 	WL_5G_2_BAND = 2,
-#if defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 #if defined(RTCONFIG_BCMWL6)
 	WL_6G_BAND = 2,
 #else
@@ -1821,8 +1834,8 @@ enum wl_band_id {
 	WL_NR_BANDS                             /* Maximum number of Wireless bands of all models. */
 };
 
-#if defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
-#if defined(BT10) || defined(GSBE18000)
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
+#if defined(BT10) || defined(GSBE18000) || defined(GSBE12000) || defined(GT7)
 #define WL_UNIT_6G	0
 #elif defined(GTBE98_PRO) || defined(BQ16_PRO) || defined(RTBE95U)
 #define WL_UNIT_6G	1
@@ -1859,7 +1872,7 @@ static inline int is_6g(int unit)
 {
 	char prefix[] = "wlXXXXXXXXXXXX_";
 
-#if !defined(BT12) && !defined(RTCONFIG_WIFI7_NO_6G)
+#if !defined(BT12) && defined(RTCONFIG_HAS_6G)
 	if (unit == WL_6G_BAND)
 		return 1;
 #endif
@@ -2196,7 +2209,11 @@ static inline int repeater_mode(void) { return 0; }
 #ifdef RTCONFIG_PROXYSTA
 static inline int __mediabridge_mode(int sw_mode)
 {
-	return (sw_mode == SW_MODE_AP && nvram_get_int("wlc_psta") == 1);
+	return (sw_mode == SW_MODE_AP && nvram_get_int("wlc_psta") == 1) 
+#if defined(RTCONFIG_MLO) && defined(RTCONFIG_HND_ROUTER_BE_4916)
+	       | (sw_mode == SW_MODE_AP && nvram_get_int("wlc_psta") == 2 && nvram_get_int("wlc_dpsta") == 2 && nvram_get_int("mlo_mb") == 1)
+#endif
+	;
 }
 static inline int mediabridge_mode(void)
 {
@@ -2636,7 +2653,8 @@ extern int get_switch_model(void);
 #define PHY_PORT_CAP_WANLAN					(1U << 9)
 #define PHY_PORT_CAP_MOCA					(1U << 10)
 #define PHY_PORT_CAP_POE					(1U << 11)
-#define PHY_PORT_CAP_WANAUTO				(1U << 12)
+#define PHY_PORT_CAP_WANAUTO					(1U << 12)
+#define PHY_PORT_CAP_INTRAMODULE				(1U << 13)
 
 // Software capability
 #define PHY_PORT_CAP_IPTV_BRIDGE			(1U << 26)
@@ -2989,6 +3007,7 @@ extern void check_mlo_config();
 extern int is_mlo_dwb_mssid(char *ifname);
 extern int is_compatible_network(char *ifname);
 extern int isMloConnectionMode();
+extern int checkMatchMloCondition();
 extern int checkMloConnectionChange();
 extern int isMLOConnectionSupported(int ap_mlo, int sta_mlo);
 #if defined(RTCONFIG_HND_ROUTER_BE_4916)
@@ -3064,8 +3083,9 @@ extern void sync_control_channel(int unit, int channel, int bw, int nctrlsb);
 extern void get_control_channel(int unit, int *channel, int *bw, int *nctrlsb);
 
 #if defined(RTCONFIG_MLO)
-extern char *get_mld_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int mld_mac_len);
-extern char *get_mlo_link_stats(char *ap_ifname, char *sta_mac, char *link_stats);
+extern char *get_scb_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int sta_mac_len, int *mlo_active);
+extern char *get_mld_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int mld_mac_len, int *mlo_active);
+extern char *get_mlo_link_stats(char *ap_ifname, char *sta_mac, char *link_stats, int *mlo_active);
 extern int is_mlo_if(char *vif);
 extern int is_mlo_map(char *vif);
 #endif	/* RTCONFIG_MLO */
@@ -3235,6 +3255,13 @@ extern void set_power_save_mode(void);
 static inline void set_power_save_mode(void) { }
 #endif
 
+/* nmp */
+#ifdef RTCONFIG_MULTILAN_CFG
+extern void check_wireless_auth_from_sdn(char *mac, char *ifname, char *wl_auth, int auth_len);
+#else
+extern void check_wireless_auth(char *mac, char *wl_auth, int auth_len);
+#endif
+
 /* sysdeps/broadcom/ *.c */
 #ifdef CONFIG_BCMWL5
 /* The following PAGE and REG definitions are for BCM53134 and BCM5301x */
@@ -3263,9 +3290,9 @@ static inline void set_power_save_mode(void) { }
 extern int get_fa_rev(void);
 extern int get_fa_dump(void);
 #endif
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 /* port statistic counter structure */
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 unsigned int rtkswitch_serdes_status(void);
 typedef struct rtk_stat_port_cntr_s
 {
@@ -3444,14 +3471,17 @@ typedef struct rtk_stat_port_cntr_s
 #endif
 #endif
 #ifdef HND_ROUTER
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 extern uint32_t rtk_get_phy_status(int port);
 extern uint32_t rtk_get_phy_speed(int port);
 extern uint32_t rtk_get_phy_duplex(int port);
 extern uint64_t rtk_get_phy_mib(int port, char *type);
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 extern int rtk_lan_phy_status();
+#endif
+#if defined(GTBE96) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
+extern int is_rtl8372_boardid(void);
 #endif
 #if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63)
 extern uint32_t hnd_get_phy_status(int port);
@@ -3463,25 +3493,28 @@ extern uint32_t hnd_get_phy_status(char *ifname);
 extern uint32_t hnd_get_phy_speed(char *ifname);
 extern uint32_t hnd_get_phy_duplex(char *ifname);
 extern uint64_t hnd_get_phy_mib(char *ifname, char *type);
+extern int ethctl_set_phy(char *ifname, int ctrl);
+extern int ethctl_get_phy(const char *ifname);
 #elif defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6855) || defined(BCM6750)
 extern uint32_t hnd_get_phy_status(int port);
 extern uint32_t hnd_get_phy_speed(int port);
 extern uint32_t hnd_get_phy_duplex(int port);
 extern uint64_t hnd_get_phy_mib(int port, char *type);
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO)
 extern int rtkswitch_port_speed(int port);
 extern int rtkswitch_port_duplex(int port);
 extern int rtkswitch_port_stat(int port);
 extern int rtkswitch_port_mactable(int port);
 #endif
 extern int ethctl_set_phy(char *ifname, int ctrl);
+extern int ethctl_get_phy(const char *ifname);
 #else
 extern uint32_t hnd_get_phy_status(int port, int offs, unsigned int regv, unsigned int pmdv);
 extern uint32_t hnd_get_phy_speed(int port, int offs, unsigned int regv, unsigned int pmdv);
 extern uint32_t hnd_get_phy_duplex(int port, int offs, unsigned int regv, unsigned int pmdv);
 extern uint64_t hnd_get_phy_mib(int port, int offs, char *type);
 #endif
-#if defined(RTBE82M) || defined(GSBE18000)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 extern uint32_t mxl_get_phy_status(int port);
 extern uint32_t mxl_get_phy_speed(int port);
 extern uint32_t mxl_get_phy_duplex(int port);
@@ -3489,6 +3522,7 @@ extern uint64_t mxl_get_phy_mib(int port, char *type);
 extern int mxl_lan_phy_status();
 extern int mxlswitch_LanPort_linkUp(void);
 extern int mxlswitch_LanPort_linkDown(void);
+void mxl_fw_check();
 #endif
 #ifdef RTCONFIG_SW_SPDLED
 extern uint32_t hnd_get_phy_speed_rc(char *ifname);
@@ -3500,6 +3534,9 @@ extern int extphy_bit_op(unsigned int reg, unsigned int val, int wr, unsigned in
 #endif
 #if !defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_EXTPHY_BCM84880)
 extern int ethctl_get_link_status(char *ifname);
+#endif
+#ifdef GT7
+extern int ethctl_ext84991_speed(void);
 #endif
 #endif // HND_ROUTER
 extern int fw_check(void);
@@ -4297,8 +4334,12 @@ static inline void add_sw_cap(phy_port_mapping *port_mapping)
 		}
 	}
 #else
-	if (!strcmp(nvram_safe_get("wans_cap"), "wan"))
-		add_sw_wan_cap(port_mapping, WANS_DUALWAN_IF_WAN, PHY_PORT_CAP_DUALWAN_PRIMARY_WAN);
+	if (!is_router_mode())
+		add_default_primary_wan(port_mapping);
+	else {
+		if (!strcmp(nvram_safe_get("wans_cap"), "wan"))
+			add_sw_wan_cap(port_mapping, WANS_DUALWAN_IF_WAN, PHY_PORT_CAP_DUALWAN_PRIMARY_WAN);
+	}
 #endif
 #if defined(RTCONFIG_MULTICAST_IPTV)
 	add_sw_iptv_cap(port_mapping, nvram_safe_get("iptv_stb_port"), PHY_PORT_CAP_IPTV_STB);
@@ -4316,6 +4357,8 @@ static inline void swap_wanlan(phy_port_mapping *port_mapping)
 	char *tmp_label_name;
 	//int tmp_max_rate;
 	int i, j;
+
+	return;
 
 	// Don't swap when default mode.
 	if (nvram_get_int("x_Setting") == 0)
@@ -4786,8 +4829,70 @@ extern void set_rgbled(unsigned int mode);
 extern void set_rgbled(unsigned int mode);
 #endif
 
+#ifdef RTCONFIG_HND_ROUTER_AX
+extern int hnd_boardid_cmp(const char *boardid);
+#endif
+#ifdef RTCONFIG_BCM_AFC
+/* DEBUG DEFINE */
+#define AFC_DBG(level, fmt,args...) \
+        { \
+		if (strcmp(level, "INFO") == 0) { \
+			afc_dumplog("[INFO][%s:(%d)] "fmt, __FUNCTION__, __LINE__, ##args); \
+		} \
+		else if (strcmp(level, "DEBUG") == 0) { \
+			if (nvram_get_int("afc_debug")) { \
+				afc_dumplog("[DEBUG][%s:(%d)] "fmt, __FUNCTION__, __LINE__, ##args); \
+	        	} \
+		} \
+        } \
+
+#define AFC_LOG_FILE_SIZE          512 * 1024
+#define AFC_LOG_FILE_PATH          "/jffs/afc_debug.log"
+#define AFC_LOG_FILE_PATH_TMP      "/jffs/afc_debug.log-1"
+#define AFC_RESPONSE_FILE          "/tmp/afc_response.json"
+#define AFC_REQUEST_FILE           "/tmp/afc_request.json"
+#define AFC_SOURCE_FROM_APP        "source_app"
+#define AFC_SOURCE_FROM_WIFI       "source_wifi"
+#define AFC_SOURCE_FROM_MESH       "source_mesh"
+#define AFC_SOURCE_FROM_EXISTED    "source_existed"
+#define AFC_COLD_APP_GEO_TIMEOUT   90
+#define AFC_COLD_WIFI_GEO_TIMEOUT  120
+#define AFC_MTLS_CACERT            "/jffs/.sys/afc/afc_mtls_cacert.pem"
+#define IS_AFC_ENABLED()           (nvram_get_int("afcd_mode"))
+#define IS_AFC_PP()                get_ASUS_privacy_policy_state(ASUS_PP_AFC)
+#define IS_ICP_DEVICE_READY()      (f_exists("/dev/iio:device0") && d_exists("/sys/bus/iio/devices/iio:device0"))
+extern char *afc_get_fccid();
+extern char *afc_get_serial();
+extern char *afc_get_mtls_url(int mode);
+extern void gen_afc_cert();
+extern int IS_ICP_MODELS();
+extern int IS_AFC_ALLOW_SWMODE();
+extern int IS_AFC_SKU();
+extern void trigger_afc_positioning();
+extern void send_afc_slient_notify();
+extern void send_afc_notify();
+extern int calc_afc_cold_reboot();
+extern int wl_get_afc_info(char *ifname, char *chanspec);
+extern int wl_afc_status();
+extern void afc_dumplog(const char *fmt, ...);
+extern double AFC_MeshPathLoss(int rssi, int tx, int channel, int band, int is_wired);
+extern void clean_afc_geolaction();         // sysdeps
+extern int check_afc_nvram();               // sysdeps
+extern void clean_wifi_afc_geolaction();    // sysdpes
+extern int check_wifi_afc_nvram();          // sysdeps
+extern int check_afc_cold_condition();      // sysdeps
+extern void gen_afc_request();              // sysdeps
+extern void afcd_harness_config(int mode);  // sysdeps
+#endif
+
 /* add nt_center 2nd stage event */
 #define CC_EVENT_JSON   "/jffs/ccevent.json"
+#define CC_EVENT_LOCK   "ccevent_lock"
+
+/* hns_utils.c */
+#if defined(RTCONFIG_HNS)
+#include <hns_common.h>
+#endif
 
 /* bwdpi_utils.c */
 #if defined(RTCONFIG_BWDPI)
@@ -5283,6 +5388,7 @@ enum {
 	BCM_CLED_STEADY_BLINK,
 	BCM_CLED_PULSATING,
 	BCM_CLED_SLOW_BLINK,
+        BCM_CLED_STEADY_NOBLINK_NIGHT,
 	BCM_CLED_MODE_OFF,
 	BCM_CLED_MODE_END
 };
@@ -5297,7 +5403,13 @@ extern void firmware_downgrade_check(uint32_t sf);
 #define ANTLED_SCHEME_RSSI              2
 #endif
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
+enum {
+	LEDG_QIS_RUN = 1,
+	LEDG_QIS_FINISH
+};
+extern int switch_ledg(int action);
+
 #define LEDG_OFF			0
 #define LEDG_STEADY_MODE		1
 #define LEDG_FADING_REVERSE_MODE	2
@@ -5438,7 +5550,7 @@ enum {
 	WLIF_5G2 = 0,
 	WLIF_6G	 = 1,
 	WLIF_6G2 = 2,
-#elif defined(BT10) || defined(GSBE18000)
+#elif defined(BT10) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	WLIF_5G2 = 0,
 	WLIF_6G	 = 0,
 	WLIF_5G1 = 1,
@@ -5605,26 +5717,27 @@ extern int asus_openssl_crypt(char *key, char *salt, char *out, int out_len);
 
 enum{
 	ASUS_NV_PP_1 = 1,
-	ASUS_NV_PP_2,
-	ASUS_NV_PP_3,
-	ASUS_NV_PP_4,
-	ASUS_NV_PP_5,
-	ASUS_NV_PP_6,
-	ASUS_NV_PP_7,
-	ASUS_NV_PP_8,
-	ASUS_NV_PP_9,
-	ASUS_NV_PP_10,
-	ASUS_NV_PP_11,
+	ASUS_NV_PP_2 = 2,
+	ASUS_NV_PP_3 = 3,
+	ASUS_NV_PP_4 = 4,
+	ASUS_NV_PP_5 = 5,
+	ASUS_NV_PP_6 = 6,
+	ASUS_NV_PP_7 = 7,
+	ASUS_NV_PP_8 = 8,
+	ASUS_NV_PP_9 = 9,
+	ASUS_NV_PP_10 = 10,
+	ASUS_NV_PP_11 = 11,
 	ASUS_NV_PP_MAX
 };
 
 enum{
-	ASUS_PP_AUTOUPGRADE,
-	ASUS_PP_ASD,
-	ASUS_PP_AHS,
-	ASUS_PP_ACCOUNT_BINDING,
-	ASUS_PP_CONFIG_TRANSFER,
-	ASUS_PP_DDNS,
+	ASUS_PP_AUTOUPGRADE = 1,
+	ASUS_PP_ASD = 2,
+	ASUS_PP_AHS = 3,
+	ASUS_PP_ACCOUNT_BINDING = 4,
+	ASUS_PP_CONFIG_TRANSFER = 5,
+	ASUS_PP_DDNS = 6,
+	ASUS_PP_AFC = 7,
 	ASUS_PP_MAX
 };
 

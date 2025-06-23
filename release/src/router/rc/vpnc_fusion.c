@@ -2784,3 +2784,98 @@ void vpnc_set_iptables_rule_by_sdn_remove(MTLAN_T *pmtl, size_t mtl_sz)
 	}
 }
 #endif
+
+#if defined(RTCONFIG_SW_BTN)
+int find_vpnc_unit_by_idx(int idx)
+{
+	int unit=-1;
+        VPNC_PROFILE *prof;
+	if(idx < 0 || idx >= (VPNC_UNIT_BASIC + MAX_VPNC_PROFILE))
+		return -1;
+ 	vpnc_init();
+	if (!vpnc_profile_num) 
+		return -1;
+	for(unit=0;unit<vpnc_profile_num;unit++)
+	{
+		prof =vpnc_profile + unit;
+		if((prof->vpnc_idx < (VPNC_UNIT_BASIC + MAX_VPNC_PROFILE)) && prof->vpnc_idx == idx )
+			return unit;
+	}	
+	return -1;
+}
+
+int find_vpnc_idx_by_unit(int unit)
+{
+        VPNC_PROFILE *prof;
+ 	vpnc_init();
+	if (unit >= vpnc_profile_num || !vpnc_profile_num) 
+		return -1;
+	prof =vpnc_profile + unit;
+	if(prof->vpnc_idx < (VPNC_UNIT_BASIC + MAX_VPNC_PROFILE))
+		return prof->vpnc_idx;
+
+	return -1;
+}
+
+int set_vpnc_active_by_unit(int unit,char *onoff)
+{
+	char *desc, *proto, *server, *username, *passwd, *active, *vpnc_idx;
+        char *region, *conntype;
+        char *wan_idx, *caller, *tunnel;
+        int i;
+	char buf[1024], *nv = NULL, *nvp = NULL, *b = NULL;
+	 
+	nv = nvp = strdup(nvram_safe_get("vpnc_clientlist"));
+	i = 0;
+	memset(buf, 0, sizeof(buf));
+
+	while (nv && (b = strsep(&nvp, "<")) != NULL && i <= MAX_VPNC_PROFILE) {
+		if (vstrsep(b, ">", &desc, &proto, &server, &username, &passwd, &active, &vpnc_idx, &region, &conntype, &tunnel, &wan_idx, &caller) < 4)
+			 continue;
+			
+		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
+	       			i? "<%s>%s>%s>%s>%s>%s>%s>%s>%s>%s>%s>%s": "%s>%s>%s>%s>%s>%s>%s>%s>%s>%s>%s>%s",
+       				desc? desc: "",
+				proto? proto: "",
+				server? server: "",
+			       	username? username: "",
+	       			passwd? passwd: "",
+				(i!=unit)? active:onoff,
+				vpnc_idx? vpnc_idx: "",
+				region? region: "",
+		       		conntype? conntype: "",
+       				tunnel? tunnel: "0",
+				wan_idx? wan_idx: "0",
+				caller? caller: "");
+		 ++i;
+	 }
+	
+	 if(nv) free(nv);
+	 nvram_set("vpnc_clientlist", buf);
+
+	 //init
+	 vpnc_init();
+	 if(atoi(onoff))
+	 {
+		// _dprintf("[%s]restart vpnc %d\n", __FUNCTION__, unit);
+	   	 stop_vpnc_by_unit(unit);
+	   	 start_vpnc_by_unit(unit);
+	 }
+	 else
+	 {
+		 //_dprintf("[%s]stop vpnc %d\n", __FUNCTION__, unit);
+	   	 stop_vpnc_by_unit(unit);
+	 }
+#if defined(RTCONFIG_MT798X) || defined(RTCONFIG_MT799X)
+	 reinit_hwnat(-1);
+#endif
+#if defined(RTCONFIG_BWDPI) && (defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK))
+                /* It's a workaround for QCA / MTK platform due to accelerator / module / vpn can't work together */
+	 start_dpi_engine_service();
+#endif
+	return 0;
+}	
+
+
+
+#endif

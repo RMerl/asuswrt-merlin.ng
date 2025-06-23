@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <bcmnvram.h>
 #include <shutils.h>
-#include <utils.h>
 
 #include <dirent.h>
 #include <sys/types.h>

@@ -254,6 +254,9 @@ a{
 .loadingAnimation {
 	border-color: transparent #000 transparent #000;
 }
+#ob_status{
+	color: #000;
+}
 #asusEulaContainer {
 	color: #000;
 }

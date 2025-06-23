@@ -575,7 +575,7 @@ var httpApi ={
 					tcode.search("TW") == -1 && tcode.search("US") == -1 &&
 					tcode.search("U2") == -1 && tcode.search("CA") &&
 					tcode.search("CN") == -1 && tcode.search("CT") == -1 &&
-					tcode.search("GD") == -1 && tcode.search("TC") == -1
+					tcode.search("GD") == -1 && tcode.search("TC") == -1 && !isSupport("noiptv")
 				);
 
 		if(isSupport("gobi") && (sim_state >= 1 && sim_state <= 6)){
@@ -620,7 +620,7 @@ var httpApi ={
 				var choosePPPoE = (
 						iCanUsePPPoE &&
 						wanInfo.x_Setting == "0" &&
-						(tcode.search("JP") != -1 || tcode.search("TW") != -1)
+						tcode.search("JP") != -1
 				)
 
 				var specialISP = (!iCanUsePPPoE && wanInfo.x_Setting == "0" && iptvSupport);
@@ -1472,7 +1472,7 @@ var httpApi ={
 
 	"hasAiMeshNode": function(){
 		var status = false;
-		if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
+		if(amesh_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
 			var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist");
 			if(get_cfg_clientlist != undefined && get_cfg_clientlist.length > 1) {
 				var cfg_clientlist_tmp = JSON.parse(JSON.stringify(get_cfg_clientlist));
@@ -1554,7 +1554,7 @@ var httpApi ={
 		},
 		port_forwarding : {
 			enabled : function(){
-				if(isSwMode("rt")){
+				if((isSwMode("RT") || isSwMode("WISP"))){
 					var vts_enable_x = httpApi.nvramGet(["vts_enable_x"], true).vts_enable_x;
 					if(vts_enable_x == "0")
 						return 0;
@@ -1667,6 +1667,7 @@ var httpApi ={
 				{type:"MOCA", bit:10},
 				{type:"POE", bit:11},
 				{type:"WANAUTO", bit:12},
+				{type:"INTRAMODULE", bit:13},
 				{type:"IPTV_BRIDGE", bit:26},
 				{type:"IPTV_VOIP", bit:27},
 				{type:"IPTV_STB", bit:28},
@@ -1930,7 +1931,9 @@ var httpApi ={
 					"lp55xx_led" : {"bit" : 1},
 					"led_on_off" : {"bit" : 2},
 					"led_brightness" : {"bit" : 3},
-					"led_aura" : {"bit" : 4}
+					"led_aura" : {"bit" : 4},
+					"led_night_mode" : {"bit" : 5},
+					"central_led_on_off" : {"bit" : 6}
 				}
 			},
 			"reboot_ctl" : {

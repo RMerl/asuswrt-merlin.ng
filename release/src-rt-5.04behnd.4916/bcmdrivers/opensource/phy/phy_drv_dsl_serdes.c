@@ -645,7 +645,10 @@ int dsl_serdes_priv_fun(phy_dev_t *phy_dev, int op_code, va_list ap)
     spd_dtc_tmr_t *tmr = &phy_serdes->tmr;
     int32_t *stmr_p, *stmr_wt_p, *ltmr_p, *ltmr_wt_p;
     int32_t stmr, stmr_wt, ltmr, ltmr_wt;
-    int val;
+    int val, rc = 0;
+    uint32_t i2c_addr, reg, len;
+    void *buf;
+    phy_dev_t *phy_i2c = cascade_phy_get_next(phy_dev);
 
     switch(op_code)
     {
@@ -670,11 +673,19 @@ int dsl_serdes_priv_fun(phy_dev_t *phy_dev, int op_code, va_list ap)
             else
                 dsl_serdes_poll_timer_config(phy_dev, stmr, stmr_wt, ltmr, ltmr_wt);
             break;
+        case SERDES_OP_DUMP_EEPROM:
+            i2c_addr = va_arg(ap, int32_t);
+            reg = va_arg(ap, int32_t);
+            buf = va_arg(ap, void *);
+            len = va_arg(ap, int32_t);
+            if (trxbus_module_read_raw(phy_i2c->addr, i2c_addr, reg, buf, len) < 0)
+                rc = -1;
+            break;
         default:
             return -1;
     }
 
-    return 0;
+    return rc;
 }
 
 static int dsl_speed_mpbs_to_txfir_idx(int speed_mbps)
@@ -1264,8 +1275,7 @@ static int dsl_serdes_cfg_single_speed_mode_set(phy_dev_t *phy_dev, phy_speed_t 
 
         if (phy_dev->configured_an_enable == PHY_CFG_AN_AUTO)
         {
-            if (((1 << phy_dev->current_inter_phy_type) & INTER_PHY_TYPE_MULTI_SPEED_AN_MASK_M) &&
-                    phy_dev->current_inter_phy_type != INTER_PHY_TYPE_SGMII)
+            if ((1 << phy_dev->current_inter_phy_type) & INTER_PHY_TYPE_MULTI_SPEED_AN_MASK_M)
                 phy_dev->an_enabled = 1;
             else
                 phy_dev->an_enabled = 0;
@@ -1446,6 +1456,32 @@ static int dsl_sfp_module_detected(phy_dev_t *phy_dev)
     return rc;
 }
 
+static int dsl_sfp_is_fiber_sfp(phy_dev_t *phy_dev)
+{
+    int max_len = 0;
+    uint8_t laser_bias_current;
+    uint8_t cable_length[6];
+    phy_dev_t *phy_i2c = phy_dev->cascade_next;
+    int length_unit[] = {1000, 100, 10, 10, 1, 10};
+    int i;
+
+    trxbus_module_read_raw(phy_i2c->addr, SFP_I2C_A0_ADDR, 14, cable_length, 6);
+    
+    for (i=0; i<6; i++)
+    {
+        if (cable_length[i]*length_unit[i] > max_len)
+            max_len = cable_length[i]*length_unit[i];
+    }
+        
+    if (max_len <= SFP_COPPER_MODULE_MAX_LENGTH_METER)
+        return 0;
+
+    if (trxbus_module_read_raw(phy_i2c->addr, SFP_I2C_A2_ADDR, 100, &laser_bias_current, 1) == 0)
+        return 0;
+
+    return laser_bias_current > 0;
+}
+
 /*
    Module detection is not going through SGMII,
    so it can be done even under SGMII power down.
@@ -1456,6 +1492,7 @@ static int dsl_sfp_module_detect(phy_dev_t *phy_dev)
     TRX_TYPE trx_type = TRX_TYPE_ETHERNET;
     phy_speed_t max_spd;
     phy_dev_t *phy_i2c = phy_dev->cascade_next;
+    long sfp_id;    /* The function of trbus_mon_read() defines long *, so we have to use long * here too to match different size of the kernel */
 
     /* Don't do module detection for fixed connection desgin */
     if (phy_serdes->sfp_module_type == SFP_FIXED_PHY)
@@ -1495,19 +1532,37 @@ static int dsl_sfp_module_detect(phy_dev_t *phy_dev)
         trxbus_mon_write(phy_i2c->addr, bcmsfp_mon_tx_enable, 0, 0);
     }
     else
-        phy_serdes->sfp_module_type = SFP_AE_MODULE;
+    {
+        trxbus_mon_read(phy_i2c->addr, bcmsfp_mon_id_connector, 0, &sfp_id);
+        if (sfp_id == SFF8024_CONNECTOR_COPPER_PIGTAIL)
+            phy_serdes->sfp_module_type = SFP_DAC_CABLE;
+        else 
+            phy_serdes->sfp_module_type = dsl_sfp_is_fiber_sfp(phy_dev)? SFP_AE_OPTICAL_MODULE: SFP_AE_COPPER_MODULE;
+    }
 
     phy_i2c->flag &= ~PHY_FLAG_NOT_PRESENTED;
     max_spd = phy_max_speed_get(phy_i2c);
 
-    if (phy_serdes->sfp_module_type == SFP_GPON_MODULE)
-        printk("GPON Module ");
-    else if (phy_i2c->flag & PHY_FLAG_COPPER_CONFIGURABLE_SFP_TYPE) // SGMII SFP_COPPER
-        printk("%s SGMII Copper SFP Module ", phy_dev_speed_to_str(max_spd));
-    else if (phy_i2c->flag & PHY_FLAG_COPPER_SFP_TYPE) //SFP_COPPER
-        printk("%s Copper SFP Module ", phy_dev_speed_to_str(max_spd));
-    else
-        printk("SFP Module ");
+    switch (phy_serdes->sfp_module_type)
+    {
+        case SFP_GPON_MODULE:
+            printk("GPON Module ");
+            break;
+        case SFP_AE_OPTICAL_MODULE:
+            printk ("Fiber SFP Module ");
+            break;
+        case SFP_AE_COPPER_MODULE:
+            if (phy_dev->flag & PHY_FLAG_COPPER_CONFIGURABLE_SFP_TYPE)
+                printk("%s SGMII Copper SFP Module ", phy_dev_speed_to_str(max_spd));
+            else
+                printk("Copper SFP Module ");
+            break;
+        case SFP_DAC_CABLE:
+            printk("DAC Cable ");
+            break;
+        default:
+            printk("SFP Module ");
+    }
     printk(KERN_CONT "is Plugged in at Serdes address %d core %d lane %d\n", phy_dev->addr,
         phy_dev->core_index, phy_dev->lane_index);
 
@@ -1606,7 +1661,7 @@ sfp_module_in:
                 goto sfp_module_out;
             }
 
-            if(phy_serdes->sfp_module_type != SFP_AE_MODULE)    /* PON module */
+            if(phy_serdes->sfp_module_type == SFP_GPON_MODULE)    /* PON module */
             {
                 phy_serdes->sfp_status = SFP_MODULE_IN;
                 goto sfp_end;
@@ -1815,17 +1870,15 @@ int dsl_serdes_power_mode_get(phy_dev_t *phy_dev, int *mode)
     return 0;
 }
 
-int dsl_serdes_speed_get_lock(phy_dev_t *phy_dev, phy_speed_t *speed, phy_duplex_t *duplex)
+int dsl_serdes_speed_get(phy_dev_t *phy_dev, phy_speed_t *speed, phy_duplex_t *duplex)
 {
     phy_serdes_t *phy_serdes = phy_dev->priv;
 
     if (!phy_serdes || !phy_serdes->inited)
         return -1;
 
-    mutex_lock(&serdes_mutex);
     *speed = phy_serdes->config_speed;
     *duplex = PHY_DUPLEX_FULL;
-    mutex_unlock(&serdes_mutex);
     return 0;
 }
 

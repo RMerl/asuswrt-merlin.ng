@@ -126,8 +126,10 @@ static void merlin_load_firmware (phy_dev_t *phy_dev)
 
 #if !defined(CONFIG_BCM96765) && !defined(CONFIG_BCM96766) && !defined(CONFIG_BCM96764)
     ret |= wrc_merlin16_shortfin_mdio_multi_prts_en(phy_dev, 0);
-    ret |= wrc_merlin16_shortfin_mdio_brcst_port_addr(phy_dev, phy_dev->addr);
 #endif
+
+    /* Set multicast address to its own unicast address to avoid collision with other PHYs */
+    ret |= wrc_merlin16_shortfin_mdio_brcst_port_addr(phy_dev, phy_dev->addr);
 
     ret |= merlin16_shortfin_uc_reset(phy_dev, 1); 
     ret |= merlin16_shortfin_ucode_mdio_load(phy_dev, merlin16_shortfin_ucode_image, MERLIN16_SHORTFIN_UCODE_IMAGE_SIZE);
@@ -773,6 +775,7 @@ void merlin_cfg_lane_ram_var (phy_dev_t *phy_dev, uint16_t an_enabled)
     uint16_t   lane_dfe_on       = 0x0;
     uint32 CoreNum = phy_dev->core_index;
     uint32 PortNum = phy_dev->usxgmii_m_index;
+    phy_serdes_t *phy_serdes = phy_dev->priv;
 
     lane_var_ram_base = 0x20000000 + 0x300; //merlin16_shortfin_internal.h:#define LANE_VAR_RAM_BASE (0x300)
     //--------------   Merlin16_Programmers_Guide.docx (RAM field)  --------------------
@@ -782,7 +785,10 @@ void merlin_cfg_lane_ram_var (phy_dev_t *phy_dev, uint16_t an_enabled)
     //an_enabled: 1: CL73 or CL37 AN is enabled. 0: AN is not enabled (HW CL72 would operate in forced mode, This would cause PMD micro to restart the linnk automatically upon PMD link failure)
     //dfe_on: 1: DFE enabled; 0 DFE is not used
     //force_brdfe_on: Please use 0
-    //media_type[1:0]: 00-pcb trace; 01-copper; 10-optics
+    //media_type[1:0]: 
+    //  00-pcb trace: XGPHY or Copper SFP module; 
+    //  01-copper: DAC Cable; 
+    //  10-optics: Optical SFP module
     //unreliable_los: This field is used only when media_type is 'optical'; 1: assume that LOS cannot be trusted; 0: Assume that LOS is reliable
     //scramblings_dis: Currently RX adaptation is disabled, please request if required.
     //cl72_auto_polarity_en: 1: During CL72 if framelock is not achieved within 1ms it will toggle the "rx_pmd_dp_invert" register. It will continue to toggle until lock; 0: no auto polarity selection (default)
@@ -817,12 +823,33 @@ nPPI or SFI optical: dfe_on = 0; media_type = "optical", unrealiable_los based o
     if (phy_dev->usxgmii_m_type != USXGMII_S)
     {
         print_log("USXGMII-M Step5: Set Ram variable\n");
-        lane_config_word  = 0x14;
+        lane_config_word  = 0x04;
     }
     else
         lane_config_word = cl72_auto_polarity_en + lane_dfe_on + lane_an_enabled + lane_cfg_from_pcs;
 
     print_log("MerlinSupport::%s():  program lane_config_word 0x%x to ram address 0x%x ...\n", __func__, lane_config_word, lane_var_ram_base);
+
+    //media_type[1:0]: 
+    //  00-pcb trace: XGPHY or Copper SFP module; 
+    //  01-copper: DAC Cable; 
+    //  10-optics: Optical SFP module
+    switch (phy_serdes->sfp_module_type)
+    {
+        case SFP_FIXED_PHY:
+        case SFP_AE_COPPER_MODULE:
+            lane_config_word |= 0x00;
+            break;
+        case SFP_DAC_CABLE:
+            lane_config_word |= 0x10;
+            break;
+        case SFP_AE_OPTICAL_MODULE:
+            lane_config_word |= 0x20;
+            break;
+        default:
+            break;
+    }
+
     merlin_pmi_write16(CoreNum, 0x0, 0x1, 0xd205,((lane_var_ram_base >> 16) & 0xffff), 0x0000);  //[15:0]: lsw data address  /* Upper 16bits of start address of data ram
     merlin_pmi_write16(CoreNum, 0x0, 0x1, 0xd204,((lane_var_ram_base >>  0) & 0xffff), 0x0000);  //[15:0]: msw data address  /* lower 16bits of start address of data ram
     merlin_pmi_write16(CoreNum, 0x0, 0x1, 0xd206, lane_config_word, 0x0000);
@@ -1070,6 +1097,7 @@ static int phy_speed_to_merlin_speed(phy_dev_t *phy_dev)
 {
     phy_serdes_t *phy_serdes = phy_dev->priv;
     int CoreNum = phy_serdes->core_num;
+    phy_dev_t *phy_next = cascade_phy_get_next(phy_dev);
 
     switch(phy_dev->current_inter_phy_type) {
         case INTER_PHY_TYPE_USXGMII:
@@ -1097,9 +1125,13 @@ static int phy_speed_to_merlin_speed(phy_dev_t *phy_dev)
                 phy_serdes->serdes_speed_mode = MLN_SPD_AN_ALL_SPEEDS_IEEE_CL73;
             break;
         case INTER_PHY_TYPE_SGMII:
-            if (phy_serdes->sfp_module_type != SFP_FIXED_PHY) 
+            if (phy_dev->an_enabled == 0)
+                return -1;
+
+            if (phy_serdes->sfp_module_type != SFP_FIXED_PHY || !phy_dev_is_broadcom_phy(phy_next))
+                /* SFP module or Non Broadcom PHYs */
                 phy_serdes->serdes_speed_mode = MLN_SPD_AN_SGMII_SLAVE;
-            else    /* Copper PHY, no AN support */
+            else    /* Broadcom Copper PHY, no AN support */
             {
                 switch ( phy_serdes->config_speed)
                 {

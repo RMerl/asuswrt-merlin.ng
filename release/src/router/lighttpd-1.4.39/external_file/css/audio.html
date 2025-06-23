@@ -34,15 +34,14 @@ var g_current_index = 0;
 
 $(document).ready(function(){
 	
-	var vars = getUrlVars();
 	var loc_lan = String(window.navigator.userLanguage || window.navigator.language).toLowerCase();		
 	var lan = ( g_storage.get('lan') == undefined ) ? loc_lan : g_storage.get('lan');
 	m.setLanguage(lan);
 	
-	var this_audio = vars["a"];
-	var audio_list = vars["alist"];
-	g_current_index = vars["index"];
-	var generate_sharelink = vars["s"];	
+	var this_audio = getUrlVar("a");
+	var audio_list = getUrlVar("alist");
+	g_current_index = getUrlVar("index");
+	var generate_sharelink = getUrlVar("s");
 	
 	if(audio_list==undefined)
 		return;

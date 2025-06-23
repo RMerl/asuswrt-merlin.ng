@@ -1,4 +1,22 @@
-﻿2023-03-16: 2.1.1.3
+﻿2024-05-09: 2.1.1.9
+==> SDK : 1. [bug fix] ANT : Try to fix assert issue in function pj_thread_this() for all pj_mutex_t using when tunnel_destroy.
+
+2024-04-16: 2.1.1.8
+==> SDK : 1. [bug fix] ANT : Try to fix assert issue in function pj_thread_this() for all pj_mutex_t using.
+
+2023-12-29: 2.1.1.7
+==> SDK : 1. [bug fix] ANT : Fix crash issue in function im_destroy.
+
+2023-12-25: 2.1.1.6
+==> SDK : 1. [bug fix] ANT : Try to fix assert issue in function pj_thread_this() or pj_mutex_destroy.
+
+2023-11-16: 2.1.1.5
+==> SDK : 1. [bug fix] ANT : Try to fix assert issue in function pj_thread_this().
+
+2023-07-28: 2.1.1.4
+==> SDK : 1. [bug fix] ANT : crash issue of multi session application like RWD page in Router APP.
+
+2023-03-17: 2.1.1.3
 ==> SDK : 1. [Adding] ANT : natnl_make_call_with_inst_id3 (Class CallInfo for Android). Add parameter use_dtls is to enable secure data for tunnel.
 
 2023-03-01: 2.1.1.2

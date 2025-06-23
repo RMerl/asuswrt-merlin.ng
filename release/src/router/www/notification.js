@@ -10,7 +10,7 @@ var noti_auth_mode_5g2 = "";
 var noti_auth_mode_6g = "";
 var noti_auth_mode_6g2 = "";
 
-if(isSwMode('rt') || isSwMode('ap') || '<% nvram_get("wlc_band"); %>' == ''){
+if((isSwMode("RT") || isSwMode("WISP")) || isSwMode('ap') || '<% nvram_get("wlc_band"); %>' == ''){
 	const wl_auth_mode = httpApi.nvramGet(["2g1_auth_mode_x", "5g1_auth_mode_x", "5g2_auth_mode_x", "6g1_auth_mode_x", "6g2_auth_mode_x"]);
 	noti_auth_mode_2g = wl_auth_mode["2g1_auth_mode_x"];
 	noti_auth_mode_5g = wl_auth_mode["5g1_auth_mode_x"];

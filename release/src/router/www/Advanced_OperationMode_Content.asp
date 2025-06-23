@@ -94,15 +94,6 @@ $(function () {
 		addNewScript('/require/modules/amesh.js');
 	}
 });
-var sw_mode_orig = '<% nvram_get("sw_mode"); %>';
-var wlc_express_orig = '<% nvram_get("wlc_express"); %>';
-var wlc_psta_orig = '<% nvram_get("wlc_psta"); %>';
-if( ((sw_mode_orig == 2 || sw_mode_orig == 3) && '<% nvram_get("wlc_psta"); %>' == 1)
-   || sw_mode_orig == 3 && wlc_psta_orig == 3){	
-	sw_mode_orig = 4;
-}
-
-var tcode = '<% nvram_get("territory_code"); %>';
 
 window.onresize = function() {
 	if(document.getElementById("routerSSID") != null){
@@ -111,8 +102,19 @@ window.onresize = function() {
 		}
 	}
 } 
-if(sw_mode_orig == 3 && '<% nvram_get("wlc_psta"); %>' == 2)
+
+var sw_mode_orig = '<% nvram_get("sw_mode"); %>';
+var wlc_express_orig = '<% nvram_get("wlc_express"); %>';
+var tcode = '<% nvram_get("territory_code"); %>';
+
+if(isSwMode("MB"))
+	sw_mode_orig = 4;
+else if(isSwMode("AP"))
+	sw_mode_orig = 3;
+else if(isSwMode("RP"))
 	sw_mode_orig = 2;
+else if(isSwMode("WISP"))
+	sw_mode_orig = 6;
 
 var current_page = window.location.pathname.split("/").pop();
 var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
@@ -155,6 +157,22 @@ function initial(){
 				"text" : (amesh_support && ameshRouter_support) ? "<#AiMesh_GW_item#>" : "<#OP_GW_item#>"
 			},
 			"mode" : "1",
+			"express" : "0",
+			"css_list" : {"margin":"0px 10px 5px 0px", "display":"block"}
+		},
+		"wispMode" : {
+			"span" : {
+				"id" : "wispMode"
+			},
+			"input" : {
+				"id" : "sw_mode6_radio",
+				"name" : "sw_mode_radio",
+				"value" : "6"
+			},
+			"label" : {
+				"text" : "<#OP_WISP_item#>"
+			},
+			"mode" : "6",
 			"express" : "0",
 			"css_list" : {"margin":"0px 10px 5px 0px", "display":"block"}
 		},
@@ -262,8 +280,12 @@ function initial(){
 	$("#operation_mode_bg").append(gen_operation_mode(operation_array["rp_express_2g"], sw_mode_orig));
 	$("#operation_mode_bg").append(gen_operation_mode(operation_array["rp_express_5g"], sw_mode_orig));
 	$("#operation_mode_bg").append(gen_operation_mode(operation_array["mbMode"], sw_mode_orig));
+
 	if(amesh_support && ameshNode_support)
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["AiMeshMode"], sw_mode_orig));
+
+	if(isSupport("wisp"))
+		$("#operation_mode_bg").append(gen_operation_mode(operation_array["wispMode"], sw_mode_orig));
 
 	setScenerion(sw_mode_orig, document.form.wlc_express.value);
 
@@ -399,6 +421,10 @@ function saveMode(){
 	}
 	else if(document.form.sw_mode.value == 5){
 		parent.location.href = '/QIS_wizard.htm?flag=amasnode_page';
+		return false;
+	}
+	else if(document.form.sw_mode.value == 6){
+		parent.location.href = '/QIS_wizard.htm?flag=wispMode';
 		return false;
 	}
 	else{ // default router
@@ -621,6 +647,23 @@ function setScenerion(mode, express){
 		desc += "2. <#AiMesh_Node_desc2#>";
 		$("#mode_desc").html(desc);
 		$("input[name=sw_mode_radio][value=5]").prop('checked', true);
+	}
+	else if(mode == '6') {
+		document.form.sw_mode.value = 6;
+		
+		$("#Senario").css({
+			"height": "305px", 
+			"background": "url(/images/New_ui/re.jpg) center no-repeat", 
+			"margin": "auto", 
+			"margin-bottom": "0px"
+		});
+
+		var desc = "<#OP_WISP_desc1#>";
+		desc += "<br>";
+		desc += "<#OP_WISP_desc2#>";
+
+		$("#mode_desc").html(desc);
+		$("input[name=sw_mode_radio][value=6]").prop('checked', true);
 	}
 	else{ // Default: Router
 		document.form.sw_mode.value = 1;

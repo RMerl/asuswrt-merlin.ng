@@ -253,7 +253,7 @@ LINUX_KERNEL=2.6.36
 endif
 
 ifeq ($(HND_ROUTER_BE_4916),y)
-ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126)
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126 WIFI7_SDK_20250122))
 export LINUX_KERNEL=4.19.294
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
 export LINUX_KERNEL=4.19.275
@@ -335,6 +335,8 @@ endif
 ifeq ($(HND_ROUTER_BE_4916),y)
 ifeq ($(RPBE58),y)
 export JFFS2_UBI_VOLUME_SIZE := 6
+else ifeq ($(RTBE55),y)
+export JFFS2_UBI_VOLUME_SIZE := 20
 else
 export JFFS2_UBI_VOLUME_SIZE := 50
 endif
@@ -475,6 +477,8 @@ export DHDAP_BUILD_TYPE := ram
 export CONFIG_MBO_AP=y
 ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126)
 include Makefile.fw.be
+else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250122)
+include Makefile.fw.be_369_39041
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
 include Makefile.fw.be_369_1808
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20241007)
@@ -564,6 +568,10 @@ endif
 
 ifeq ($(HND_ROUTER_BE_4916),y)
 QOSMGMT_DIR := $(BASEDIR)/components/apps/qosmgmt
+ifeq ($(RTCONFIG_AIRIQ),y)
+AIRIQ_DIR := $(BASEDIR)/components/apps/airiq
+export CONFIG_AIRIQ := y
+endif
 endif
 
 ifeq ($(HND_ROUTER_AX),y)
@@ -588,6 +596,10 @@ HOSTAPD_DIR := $(BASEDIR)/components/opensource/router_tools/hostapd
 export WPA_SUPPLICANT_DIR := $(BASEDIR)/components/opensource/router_tools/wpa_supplicant
 IW_DIR := $(BASEDIR)/components/opensource/router_tools/iw
 endif
+endif
+ifeq ($(RTCONFIG_BCM_AFC),y)
+AFCDSOURCE_DIR := $(BASEDIR)/components/apps/afcd
+LOCPOLDSOURCE_DIR := $(BASEDIR)/components/apps/locpold
 endif
 
 ifeq ($(RTCONFIG_WLEXE),y)
@@ -805,7 +817,7 @@ obj-$(RTCONFIG_TRUSTZONE) += openssl
 obj-$(RTCONFIG_TRUSTZONE) += ateed
 endif
 
-ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-BE82M GS-BE18000))
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 obj-y += libhostapi
 obj-y += ethswbox
 endif
@@ -1092,6 +1104,8 @@ obj-$(RTCONFIG_PERMISSION_MANAGEMENT) += PMS_DBapis
 
 obj-$(RTCONFIG_SPEEDTEST) += curl
 
+obj-$(RTCONFIG_HNS) += hns
+
 obj-$(RTCONFIG_BWDPI) += sqlite
 obj-$(RTCONFIG_BWDPI) += bwdpi_source
 obj-$(RTCONFIG_TRAFFIC_LIMITER) += sqlite
@@ -1127,6 +1141,7 @@ obj-y += rom
 obj-y += others
 obj-y += libpasswd
 obj-y += httpd json-c libwebapi
+obj-$(RTCONFIG_BCM_AFC) += libcbor-0.11 libjwt jansson-2.7
 obj-$(RTCONFIG_CALC_NVRAM) += calc_nvram
 obj-$(RTCONFIG_VISUALIZATION) += sqlite3 json-c libxml2 visdcoll visdcon
 obj-y += www
@@ -1264,6 +1279,9 @@ endif
 
 ifeq ($(HND_ROUTER_BE_4916),y)
 obj-y += qosmgmt
+ifeq ($(RTCONFIG_AIRIQ),y)
+obj-y += airiq
+endif
 endif
 
 ifeq ($(RTCONFIG_AMAS),y)
@@ -1311,6 +1329,7 @@ obj-$(RTCONFIG_WLCLMLOAD) += clmb
 obj-$(RTCONFIG_HTTPS) += mssl
 obj-$(RTCONFIG_TFTP) += tftp
 obj-$(RTCONFIG_TFTP_SERVER) += tftp-hpa
+obj-$(RTCONFIG_AI_SERVICE) += tftp-hpa
 
 define CMAKE_CrossOptions
 	( \
@@ -1445,7 +1464,7 @@ endif
 endif
 
 # install before samba3 for not overwriting some binaries
-obj-$(RTCONFIG_WEBDAV) += samba-3.5.8
+obj-$(RTCONFIG_SAMBACLIENT) += samba-3.5.8
 ifeq ($(RTCONFIG_SAMBA4),y)
 obj-$(RTCONFIG_SAMBA4) += samba-4.0.24
 else
@@ -1698,6 +1717,7 @@ endif
 ifeq ($(RTCONFIG_HAPDEVENT),y)
 obj-$(RTCONFIG_HAPDEVENT) += hapdevent
 endif
+obj-y += nmp-api
 obj-y += networkmap
 ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), EBG19))
 obj-y += rtkswitch
@@ -1931,6 +1951,12 @@ ifeq ($(or $(RTCONFIG_SECUREBOOT),$(RTCONFIG_FSCRYPTCTL)),y)
 obj-y += fscryptctl
 endif
 endif
+ifeq ($(HND_ROUTER_BE_4916),y)
+obj-$(HND_ROUTER) += bp3hal
+obj-$(HND_ROUTER) += civetweb
+obj-$(HND_ROUTER) += cjson
+obj-$(HND_ROUTER) += bp3
+endif
 obj-$(HND_ROUTER) += ethctl
 obj-$(HND_ROUTER) += ethctl_lib
 obj-$(HND_ROUTER) += fcctl
@@ -1997,6 +2023,11 @@ obj-$(HND_ROUTER) += popt
 obj-$(HND_ROUTER) += gptdfisk
 endif
 
+# BCM AFC features
+ifeq ($(RTCONFIG_BCM_AFC),y)
+obj-y += locpold
+obj-y += afcd
+endif
 
 # ALPINE compile package
 obj-$(RTCONFIG_ALPINE) += qsr10g_image
@@ -3397,7 +3428,7 @@ infosvr: shared $(if $(BCM_502L07P2),ethctl_lib) nvram${BCMEX}$(EX7)
 infosvr-install:
 	$(MAKE) -C infosvr INSTALLDIR=$(INSTALLDIR)/infosvr install
 
-httpd: shared $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) rc libdisk $(if $(RTCONFIG_HTTPS),mssl) $(if $(RTCONFIG_BWDPI),bwdpi_source) json-c $(if $(RTCONFIG_CFGSYNC), $(CFGSYNC_PKG)) libpasswd libwebapi $(if $(RTCONFIG_DNSQUERY_INTERCEPT), dnsqd)
+httpd: shared $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) rc libdisk $(if $(RTCONFIG_HTTPS),mssl) $(if $(RTCONFIG_BWDPI),bwdpi_source) json-c $(if $(RTCONFIG_CFGSYNC), $(CFGSYNC_PKG)) libpasswd libwebapi $(if $(RTCONFIG_DNSQUERY_INTERCEPT), dnsqd) $(if $(RTCONFIG_BCM_AFC), libcbor-0.11 libjwt)
 	@$(SEP)
 ifeq ($(HND_ROUTER),y)
 ifeq ($(HND_ROUTER_AX),y)
@@ -3411,6 +3442,48 @@ endif
 
 httpd-install:
 	$(MAKE) -C httpd INSTALLDIR=$(INSTALLDIR)/httpd install
+
+libcbor-0.11/Makefile: libcbor-0.11/src/CMakeLists.txt
+	cd libcbor-0.11 && cmake -DCMAKE_INSTALL_PREFIX=/usr \
+	-DCMAKE_BUILD_TYPE=release \
+	-DBUILD_SHARED_LIBS=ON
+
+libcbor-0.11: libcbor-0.11/Makefile
+	$(MAKE) -C $@ && $(MAKE) $@-stage
+ifeq ($(MUSL64),y)
+	@install -d $(STAGEDIR)/usr/lib
+	-@cp -af $(STAGEDIR)/usr/lib64/* $(STAGEDIR)/usr/lib
+endif
+
+libcbor-0.11-install:
+	install -D libcbor-0.11/src/libcbor.so.0.11.0 $(INSTALLDIR)/libcbor-0.11/usr/lib/libcbor.so.0.11.0
+	$(STRIP) $(INSTALLDIR)/libcbor-0.11/usr/lib/libcbor.so.0.11.0
+	cd $(INSTALLDIR)/libcbor-0.11/usr/lib && \
+		ln -sf libcbor.so.0.11.0 libcbor.so.0.11 && \
+		ln -sf libcbor.so.0.11.0 libcbor.so
+
+libcbor-0.11-clean:
+	[ ! -f libcbor-0.11/Makefile ] || $(MAKE) -C libcbor-0.11 clean
+	@rm -f libcbor-0.11/Makefile
+
+libjwt/Makefile:
+	@cd libjwt && autoreconf -i -f && $(CONFIGURE) CC=$(CC) --prefix=/usr \
+	LDFLAGS="-L$(TOP)/openssl -lssl -lcrypto -L$(TOP)/jansson-2.7/src/.libs -ljansson" \
+	CFLAGS="-Wall -g -O0 -DDEBUG -I$(STAGEDIR)/usr/local/include -I$(TOP)/openssl/include -I$(TOP)/jansson-2.7/src"
+
+libjwt:jansson-2.7 libjwt/Makefile
+	$(MAKE) -C $@ && $(MAKE) $@-stage
+
+libjwt-install:
+	install -D libjwt/libjwt/.libs/libjwt.so.2.10.2 $(INSTALLDIR)/libjwt/usr/lib/libjwt.so.2.10.2
+	cd $(INSTALLDIR)/libjwt/usr/lib && \
+	ln -sf libjwt.so.2.10.2 libjwt.so && \
+	ln -sf libjwt.so.2.10.2 libjwt.so.2
+	$(STRIP) $(INSTALLDIR)/libjwt/usr/lib/libjwt.so.2.10.2
+
+libjwt-clean:
+	[ ! -f libjwt/Makefile ] || $(MAKE) -C libjwt clean
+	@rm -f libjwt/Makefile
 
 libwebapi-dep:json-c $(if $(RTCONFIG_BWDPI),bwdpi_source)
 
@@ -3515,6 +3588,8 @@ libmnl-1.0.4-configure:
 
 libmnl-1.0.4-install:
 	install -D libmnl-1.0.4/src/.libs/libmnl.so $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0
+	ln -sf $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0 $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so
+	ln -sf $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0 $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0.2.0
 	$(STRIP) $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0
 
 libmnl-1.0.4-clean:
@@ -3746,6 +3821,10 @@ ifeq ($(RTCONFIG_OPENSSL11),y)
 	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl)
 	chmod 0500 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
 endif
+ifeq ($(RTCONFIG_HNS),y)
+	[ ! -f $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.1.1 ] || \
+		cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && ln -sf libssl.so.1.1 libssl.so.1.0.0
+endif
 endif
 
 openssl-1.1-stage:
@@ -3886,10 +3965,21 @@ rc: shared libev-4.33 $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) libdi
 rc-install:
 	$(MAKE) -C rc INSTALLDIR=$(INSTALLDIR)/rc install
 
-networkmap: shared json-c libasc libletsencrypt $(if $(BCM_502L07P2),ethctl_lib) $(if $(RTCONFIG_BWDPI),bwdpi_source) 
+networkmap: nmp-api shared json-c libasc libletsencrypt $(if $(BCM_502L07P2),ethctl_lib) $(if $(RTCONFIG_BWDPI),bwdpi_source)
 
-networkmap-install:
+networkmap-install: nmp-api-install
 	$(MAKE) -C networkmap INSTALLDIR=$(INSTALLDIR)/networkmap install
+
+networkmap-clean: nmp-api-clean
+
+nmp-api:
+	$(MAKE) -C networkmap/api
+
+nmp-api-install:
+	$(MAKE) -C networkmap/api install
+
+nmp-api-clean:
+	$(MAKE) -C networkmap/api clean
 
 ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), EBG19))
 rtkswitch:
@@ -5304,7 +5394,7 @@ inadyn/Makefile: inadyn/configure
 			-I$(STAGEDIR)/usr/include  -ffunction-sections -fdata-sections $(EXTRACFLAGS)" \
 		LDFLAGS="-L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -L$(TOP)/shared $(EXTRA_NV_LDFLAGS) $(if $(BCM_502L07P2),-L$(TOP_PLATFORM)/ethctl_lib) \
 			$(if $(RTCONFIG_TRUSTZONE),-L$(TOP)/ateed/ -latee) \
-			$(if $(filter $(BUILD_NAME),RT-BE82M GS-BE18000),-L$(TOP)/libhostapi -lhostapi,) \
+			$(if $(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7),-L$(TOP)/libhostapi -lhostapi,) \
 			 -L$(STAGEDIR)/usr/lib -Wl,--gc-sections $(LDFLAGS) $(EXTRALDFLAGS)" \
 		LIBS="-lnvram -lshared $(if $(BCM_502L07P2),-lethctl) $(if $(RTCONFIG_QTN),-L$(TOP)/libqcsapi_client -lqcsapi_client) -ldl"
 
@@ -5461,14 +5551,12 @@ nt_center-install: nt_center
 	install -D nt_center/lib/libnt.so $(INSTALLDIR)/nt_center/usr/lib/libnt.so
 	install -D nt_center/nt_center $(INSTALLDIR)/nt_center/usr/sbin/nt_center
 	install -D nt_center/nt_monitor $(INSTALLDIR)/nt_center/usr/sbin/nt_monitor
-	install -D nt_center/actMail/nt_actMail $(INSTALLDIR)/nt_center/usr/sbin/nt_actMail
 	install -D nt_center/Notify_Event2NC $(INSTALLDIR)/nt_center/usr/sbin/Notify_Event2NC
 	install -D nt_center/lib/nt_db $(INSTALLDIR)/nt_center/usr/sbin/nt_db
 	#install -D nt_center/lib/nt_db_test $(INSTALLDIR)/nt_center/usr/sbin/nt_db_test
 	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/nt_center/usr/lib/libnt.so)
 	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/nt_center/usr/sbin/nt_center)
 	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/nt_center/usr/sbin/nt_monitor)
-	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/nt_center/usr/sbin/nt_actMail)
 	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/nt_center/usr/sbin/Notify_Event2NC)
 	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/nt_center/usr/sbin/nt_db)
 	#$(STRIP) $(INSTALLDIR)/nt_center/usr/sbin/nt_db_test
@@ -6272,7 +6360,7 @@ dropbear/config.h: dropbear/config.h.in
 		LDFLAGS="-Wl,--gc-sections -L$(STAGEDIR)/usr/lib" \
 		LIBS="$(if $(RTCONFIG_PROTECTION_SERVER),-lptcsrv) \
 			$(if $(RTCONFIG_TRUSTZONE),-L$(TOP)/ateed -latee) \
-			$(if $(filter $(BUILD_NAME),RT-BE82M GS-BE18000),-L$(TOP)/libhostapi -lhostapi,) \
+			$(if $(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7),-L$(TOP)/libhostapi -lhostapi,) \
 			-L$(TOP_PLATFORM)/nvram${BCMEX}$(EX7) -lnvram -L$(TOP)/shared -lshared $(EXTRA_NV_LDFLAGS)" \
 		$(CONFIGURE) --disable-harden --disable-zlib --disable-pam \
 		--enable-openpty --enable-syslog --enable-shadow --enable-bundled-libtom \
@@ -7364,7 +7452,7 @@ EBK_INC=$(TOP)/kernel_header/include
 endif
 
 ifeq ($(HND_ROUTER_BE_4916),y)
-ifeq ($(BRCM_CHIP),6766)
+ifeq ($(BRCM_CHIP),$(filter $(BRCM_CHIP),6764 6766))
 EBTABLES_HOST := --host=mips-linux-uclibc
 EBTABLES_TARGET := --target=mips-linux-uclibc
 EBTABLES_INCLUDE := -Iinclude -I$(HND_SRC)/kernel/bcmkernel/ -I$(HND_SRC)/kernel/linux-4.19/
@@ -7694,7 +7782,7 @@ else
 endif
 	@touch $@
 
-lighttpd-1.4.39: shared $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) libpasswd libdisk samba-3.5.8 pcre-8.31 libxml2 sqlite libexif openssl curl $(if $(RTCONFIG_PERMISSION_MANAGEMENT),PMS_DBapis) $(if $(filter $(BUILD_NAME),RT-BE82M GS-BE18000),libhostapi,) lighttpd-1.4.39/stamp-h1
+lighttpd-1.4.39: shared $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) libpasswd libdisk samba-3.5.8 pcre-8.31 libxml2 sqlite libexif openssl curl $(if $(RTCONFIG_PERMISSION_MANAGEMENT),PMS_DBapis) $(if $(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7),libhostapi,) lighttpd-1.4.39/stamp-h1
 	$(MAKE) -C lighttpd-1.4.39 $(PARALLEL_BUILD)
 
 lighttpd-1.4.39-install:
@@ -7876,7 +7964,7 @@ ftpclient-clean:
 sambaclient/stamp-h1:
 	touch $@
 
-sambaclient: sambaclient/stamp-h1
+sambaclient: sambaclient/stamp-h1 samba-3.5.8
 	@$(MAKE) -C sambaclient
 
 sambaclient-install:
@@ -8045,14 +8133,9 @@ fb_wifi-clean:
 	-@$(MAKE) -C fb_wifi clean
 	rm -rf fb_wifi/stamp-h1
 
-#libssh2
-libssh2-stage:
+libssh2/Makefile:
 	@$(SEP)
-	@$(MAKE) libssh2-1.10.0-stage
-
-libssh2-1.10.0/Makefile:
-	@$(SEP)
-	cd libssh2-1.10.0 && autoreconf -fi && $(CONFIGURE) --prefix=/usr CC=$(CC) CXX=$(CXX) AR=$(AR) RANLIB=$(RANLIB) --enable-shared --enable-static \
+	cd libssh2 && $(CONFIGURE) --prefix=/usr CC=$(CC) CXX=$(CXX) AR=$(AR) RANLIB=$(RANLIB) --enable-shared --enable-static \
 	$(if $(RTCONFIG_OPENSSL11)$(RTCONFIG_OPENSSL10),--with-libssl-prefix=$(STAGEDIR)/usr,--without-openssl) \
 	--with-libz-prefix=$(STAGEDIR)/usr \
 	--with-libgcrypt-prefix=$(TOP)/libgcrypt-1.5.1 \
@@ -8061,20 +8144,20 @@ libssh2-1.10.0/Makefile:
 	LDFLAGS="-ldl -Wl,-rpath=$(STAGEDIR)/usr/lib,--gc-sections $(LDFLAGS) -L$(STAGEDIR)/usr/lib -lz -L$(SRCBASE)/router/openssl -lcrypto -L$(TOP)/libgcrypt-1.5.1/src/.libs" && \
 	LIBS="-lcrypto (if $(RTCONFIG_OPENSSL11),-lpthread,) -fPIC" 
 
-libssh2: libgcrypt-1.5.1 zlib libssh2-1.10.0/Makefile
+libssh2: libgcrypt-1.5.1 zlib libssh2/Makefile
 	@$(SEP)
-	$(MAKE) -j 8 -C libssh2-1.10.0 && $(MAKE) $@-stage
+	$(MAKE) -j 8 -C libssh2 && $(MAKE) $@-stage
 
 libssh2-install:
 	@$(SEP)
-	pwd & install -D libssh2-1.10.0/src/.libs/libssh2.so.1.0.1 $(INSTALLDIR)/libssh2/usr/lib/libssh2.so.1.0.1
+	pwd & install -D libssh2/src/.libs/libssh2.so.1.0.1 $(INSTALLDIR)/libssh2/usr/lib/libssh2.so.1.0.1
 	$(STRIP) $(INSTALLDIR)/libssh2/usr/lib/libssh2.so.1.0.1
 	cd $(INSTALLDIR)/libssh2/usr/lib &&\
 	rm -f libssh2.so && ln -sf libssh2.so.1.0.1 libssh2.so && \
 	rm -f libssh2.so.1 && ln -sf libssh2.so.1.0.1 libssh2.so.1
 
 libssh2-clean:
-	cd libssh2-1.10.0 && make distclean
+	$(MAKE) -C libssh2 distclean
 
 #libcurl
 curl/configure:
@@ -8579,7 +8662,11 @@ tftp-install:
 
 tftp-hpa:
 	@$(SEP)
+ifeq ($(RTCONFIG_AI_SERVICE),y)
+	$(MAKE) -C $@ AI_SERVICE=1
+else
 	$(MAKE) -C $@
+endif
 
 tftp-hpa-install: tftp-hpa
 	install -D -m 755 tftp-hpa/tftpd/tftpd $(INSTALLDIR)/tftp-hpa/usr/sbin/in.tftpd
@@ -8616,6 +8703,15 @@ bwdpi_source-clean:
 
 bwdpi_source-install: bwdpi_source
 	cd bwdpi_source && CC=$(CC) && $(MAKE) install
+
+hns:
+	cd hns && CC=$(CC) && $(MAKE) all
+
+hns-clean:
+	cd hns && $(MAKE) clean
+
+hns-install: hns
+	cd hns && CC=$(CC) && $(MAKE) install
 
 traffic_limiter: sqlite
 	cd traffic_limiter && CC=$(CC) && $(MAKE)
@@ -8737,7 +8833,7 @@ ifeq ($(RTCONFIG_NOTIFICATION_CENTER),y)
 email-3.1.3/Makefile: openssl
 	cd $(TOP)/email-3.1.3 && \
 	$(CONFIGURE) --with-ssl --sysconfdir=/etc \
-		CFLAGS="-Os -Wall -I$(STAGEDIR)/usr/include -I$(TOP)/nt_center/lib -I$(TOP)/sqlite -DRTCONFIG_NOTIFICATION_CENTER $(EMAIL_CFLAGS_EXT)" \
+		CFLAGS="-Os -Wall -I$(STAGEDIR)/usr/include -I$(TOP)/nt_center/lib -I$(TOP)/sqlite $(EMAIL_CFLAGS_EXT)" \
 		LDFLAGS="-L$(SRCBASE)/router/openssl -L$(TOP)/nt_center/lib -L$(TOP)/sqlite/.libs" \
 		LIBS="-lnt -lsqlite3 -lpthread -lcrypto -lssl $(if $(or $(RTCONFIG_QCA),$(RTCONFIG_RALINK_MT7622)),-ldl,)"
 else
@@ -8860,7 +8956,7 @@ wget-install:
 rtk_wifi_eventd: $(if $(RTCONFIG_CFGSYNC), cfg_mnt)
 
 cfg_mnt: $(if $(RTCONFIG_NOTIFICATION_CENTER),nt_center sqlite wlc_nt) $(if $(RTCONFIG_AMAS),$(LLDPD) amas-utils) $(if $(RTCONFIG_LANTIQ),libfapi-0.1) libasuslog \
-	$(if $(RTCONFIG_DMALLOC),dmalloc)
+	$(if $(RTCONFIG_DMALLOC),dmalloc) nmp-api
 
 batctl-2016.0: libnl-bf
 	CFLAGS="-Os -ffunction-sections -fdata-sections $(CFLAGS)" \
@@ -9998,7 +10094,7 @@ ifeq ($(HND_ROUTER),y)
 		LDFLAGS="-L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -L$(TOP_PLATFORM)/wlcsm \
 			-L$(TOP)/shared $(if $(BCM_502L07P2),-L$(TOP_PLATFORM)/ethctl_lib) \
 			$(if $(RTCONFIG_TRUSTZONE),-L$(TOP)/ateed/ -latee) \
-			$(if $(filter $(BUILD_NAME),RT-BE82M GS-BE18000),-L$(TOP)/libhostapi -lhostapi,) \
+			$(if $(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7),-L$(TOP)/libhostapi -lhostapi,) \
 			$(if $(RTCONFIG_QTN),-L$(TOP)/libqcsapi_client) $(EXTRALDFLAGS)" \
 		LIBS="-lnvram -lwlcsm -lshared $(if $(BCM_502L07P2),-lethctl) $(if $(RTCONFIG_QTN),-lqcsapi_client)"
 	@touch $@
@@ -10147,7 +10243,7 @@ endif
 ifeq ($(HND_ROUTER_BE_4916),y)
 qosmgmt:
 	@true
-ifeq ($(wildcard $(QOSMGMT_DIR)/prebuilt/acsd2),)
+ifeq ($(wildcard $(QOSMGMT_DIR)/prebuilt/qosmgmtd),)
 	+$(MAKE) -C $(QOSMGMT_DIR) EXTRA_LDFLAGS=$(EXTRA_LDFLAGS) all
 endif
 qosmgmt-install: qosmgmt
@@ -10158,6 +10254,21 @@ endif
 	+$(MAKE) -C $(QOSMGMT_DIR) INSTALLDIR=$(INSTALLDIR)/qosmgmt install
 qosmgmt-clean:
 	+$(MAKE) -C $(QOSMGMT_DIR) EXTRA_LDFLAGS=$(EXTRA_LDFLAGS) clean
+
+ifneq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20241007)
+ifeq ($(RTCONFIG_AIRIQ),y)
+airiq:
+	@true
+ifneq ($(wildcard $(AIRIQ_DIR)/src/app/*.c),)
+	+$(MAKE) -C $(AIRIQ_DIR) EXTRA_LDFLAGS=$(EXTRA_LDFLAGS) all
+endif
+airiq-install: airiq
+	+$(MAKE) -C $(AIRIQ_DIR) install
+airiq-clean:
+	+$(MAKE) -C $(AIRIQ_DIR) EXTRA_LDFLAGS=$(EXTRA_LDFLAGS) clean
+
+endif
+endif
 endif
 
 ifeq ($(HND_ROUTER_AX),y)
@@ -10218,6 +10329,46 @@ endif
 endif
 
 .PHONY: appeventd appeventd-install appeventd-clean
+
+# BCM AFC features
+ifeq ($(RTCONFIG_BCM_AFC),y)
+afcd:
+	@true
+ifeq ($(wildcard $(AFCDSOURCE_DIR)/prebuilt/afcd),)
+	+$(MAKE) -C $(AFCDSOURCE_DIR) EXTRA_LDFLAGS=$(EXTRA_LDFLAGS) all
+endif
+
+afcd-install:
+ifneq ($(wildcard $(AFCDSOURCE_DIR)/prebuilt/afcd),)
+	cp -f $(AFCDSOURCE_DIR)/prebuilt/afcd $(AFCDSOURCE_DIR)/
+	cp -f $(AFCDSOURCE_DIR)/prebuilt/afc_cli $(AFCDSOURCE_DIR)/
+	cp -f $(AFCDSOURCE_DIR)/prebuilt/libafc.so $(AFCDSOURCE_DIR)/
+endif
+	+$(MAKE) -C $(AFCDSOURCE_DIR) INSTALLDIR=$(INSTALLDIR) install
+
+afcd-clean:
+	+$(MAKE) -C $(AFCDSOURCE_DIR) EXTRA_LDFLAGS=$(EXTRA_LDFLAGS) clean
+.PHONY: afcd afcd-install afcd-clean
+
+locpold:
+	@true
+ifeq ($(wildcard $(LOCPOLDSOURCE_DIR)/prebuilt/bin/locpold),)
+	+$(MAKE) -C $(LOCPOLDSOURCE_DIR) EXTRA_LDFLAGS="$(EXTRA_LDFLAGS)" all
+endif
+
+locpold-install:
+ifneq ($(wildcard $(LOCPOLDSOURCE_DIR)/prebuilt/bin/locpold),)
+	mkdir -p $(LOCPOLDSOURCE_DIR)/bin
+	cp -f $(LOCPOLDSOURCE_DIR)/prebuilt/bin/locpold $(LOCPOLDSOURCE_DIR)/bin
+	cp -f $(LOCPOLDSOURCE_DIR)/prebuilt/bin/liblocpol.so $(LOCPOLDSOURCE_DIR)/bin
+endif
+	+$(MAKE) -C $(LOCPOLDSOURCE_DIR) INSTALLDIR=$(INSTALLDIR) install
+
+locpold-clean:
+	+$(MAKE) -C $(LOCPOLDSOURCE_DIR) clean
+.PHONY: locpold locpold-install locpold-clean
+
+endif  # RTCONFIG_BCM_AFC
 
 ##### hnd_router apps/libs #####
 wlcsm:
@@ -10289,7 +10440,7 @@ ifeq ($(HND_ROUTER_AX_6756),y)
 DTC_VER := -1.5.1
 else
 ifeq ($(HND_ROUTER_BE_4916),y)
-ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126)
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126 WIFI7_SDK_20250122))
 DTC_VER := -1.7.0
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
 DTC_VER := -1.7.0
@@ -10919,6 +11070,58 @@ blogctl-install:
 
 blogctl-clean:
 	$(MAKE) -C $(TOP_PLATFORM)/blogctl clean
+
+bp3hal:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	-$(MAKE) -C $(TOPX_DIR)
+
+bp3hal-install:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/bp3hal) $(wildcard bp3hal)))
+	-$(MAKE) -C $(TOPX_DIR) INSTALLDIR=$(INSTALLDIR)/bp3hal install
+
+bp3hal-clean:
+	-$(MAKE) -C $(TOP_PLATFORM)/bp3hal clean
+
+.PHONY : bp3hal
+
+civetweb:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	-$(MAKE) -C $(TOPX_DIR) -f Bcmbuild.mk
+
+civetweb-install:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/civetweb) $(wildcard civetweb)))
+	-$(MAKE) -C $(TOPX_DIR) INSTALLDIR=$(INSTALLDIR)/civetweb install
+
+civetweb-clean:
+	-cd $(TOP_PLATFORM)/civetweb; $(MAKE) clean
+
+.PHONY : civetweb
+
+cjson:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	-$(MAKE) -C $(TOPX_DIR) -f Bcmbuild.mk
+
+cjson-install:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/cjson) $(wildcard cjson)))
+	-$(MAKE) -C $(TOPX_DIR) INSTALLDIR=$(INSTALLDIR)/cjson install
+
+cjson-clean:
+	-$(MAKE) -C $(TOP_PLATFORM)/cjson clean
+
+.PHONY : cjson
+
+bp3:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	-$(MAKE) -C $(TOPX_DIR)
+
+bp3-install:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/bp3) $(wildcard bp3)))
+	-$(MAKE) -C $(TOPX_DIR) INSTALLDIR=$(INSTALLDIR)/bp3 install
+
+bp3-clean:
+	-$(MAKE) -C $(TOP_PLATFORM)/bp3 clean
+
+.PHONY : bp3
 
 iqctl: iqctl_lib
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))

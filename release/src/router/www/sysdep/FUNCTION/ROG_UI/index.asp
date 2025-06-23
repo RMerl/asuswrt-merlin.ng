@@ -68,51 +68,42 @@
 	-moz-border-radius: 10px;
 	border-radius: 10px;
 }
-.wl_icon{
-	display:inline-block;width:36px;height:36px;background:url('images/New_ui/icon_signal.png') ;
-	background-size: 80px;
+.icon-wl2g {
+	--svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBpZD0iR3JvdXAiPjxnIGlkPSJ3aWZpXzJnIj48ZyBpZD0iVmVjdG9yX19fX18wXzBfVUtEVUZZU0ZNVCI+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik03LjUwMDIgNC45MDAzVjYuMDk5NTFIMy41OTk4VjIyLjQwMDNIMjAuNDAwNlY2LjA5OTUxSDE3LjUwMDJWNC45MDAzSDIxLjU5OThWMjMuNTk5NUgyLjQwMDU5VjQuOTAwM0g3LjUwMDJaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik0xNS45NjMxIDExLjU2MjVDMTUuOTYzMSA3LjgyNjkzIDEzLjA0NzUgNC43OTUzIDkuMzU5NTcgNC42MDkzOEw5LjAwMDIgNC41OTk2MUg4LjQwMDU5VjMuNDAwMzlIOS4wMDAyTDkuNDIxMDkgMy40MTAxNkMxMy43NDMyIDMuNjI4MDkgMTcuMTYyMyA3LjE4NDggMTcuMTYyMyAxMS41NjI1VjEyLjE2MjFIMTUuOTYzMVYxMS41NjI1WiIvPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMTIuNDYzMSAxMS4xODc1QzEyLjQ2MzEgOS41MTA0MiAxMS4xMzEgOC4xMjY3NyA5LjQ3MzgzIDguMDQyMDFMOS4zMTI3IDguMDM3MTJIOC43MTMwOVY2LjgzNzkxSDkuMzEyN0w5LjUzNTM1IDYuODQyNzlDMTEuODI2NyA2Ljk1OTU2IDEzLjY2MjMgOC44NjgzIDEzLjY2MjMgMTEuMTg3NVYxMS43ODcxSDEyLjQ2MzFWMTEuMTg3NVoiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTEzLjA3NDMgMTguODM3NVYxOC4yTDE3LjEyNDMgMTUuMDVIMTguNjk5M1YyMEgxNy41NzQzVjE4LjgzNzVIMTMuMDc0M1pNMTQuNTM2OCAxOC4ySDE3LjU3NDNWMTUuODM3NUwxNC41MzY4IDE4LjJaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik0xMC45MzgyIDIwVjE5LjFIMTIuMDYzMlYyMEgxMC45MzgyWiIvPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNNC4yOTk4NSAyMFYxNy45Mzc1QzQuMjk5ODUgMTYuOTI1IDUuMTk5ODUgMTYuOTI1IDYuMDk5ODUgMTYuOTI1SDguMzQ5ODVDOC41NzQ4NSAxNi45MjUgOC43OTk4NSAxNi45MjUgOC43OTk4NSAxNi42NjI1VjE1Ljk1QzguNzk5ODUgMTUuNjg3NSA4LjU3NDg1IDE1LjY4NzUgOC4zNDk4NSAxNS42ODc1SDQuNjc0ODVWMTUuMDVIOC4xMjQ4NUM5LjAyNDg1IDE1LjA1IDkuOTI0ODUgMTUuMDUgOS45MjQ4NSAxNi4wNjI1VjE2LjU1QzkuOTI0ODUgMTcuNTYyNSA5LjAyNDg1IDE3LjU2MjUgOC4xMjQ4NSAxNy41NjI1SDUuODc0ODVDNS42NDk4NSAxNy41NjI1IDUuNDI0ODUgMTcuNTYyNSA1LjQyNDg1IDE3LjgyNVYxOS4zNjI1SDkuOTI0ODVWMjBINC4yOTk4NVoiLz48L2c+PC9nPjwvZz48L3N2Zz4=");
 }
-.wl0_icon_on{
-	background-position: 0px 0px;
+.icon-wl5g {
+	--svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBpZD0iR3JvdXAiPjxnIGlkPSJEZXZpY2VzIC8gd2lmaV81ZyI+PGcgaWQ9IlZlY3Rvcl9fX19fMF8wX1NJT1hJREZNRk0iPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNNy41MDAyIDQuOTAwM1Y2LjA5OTUxSDMuNTk5OFYyMi40MDAzSDIwLjQwMDZWNi4wOTk1MUgxNy41MDAyVjQuOTAwM0gyMS41OTk4VjIzLjU5OTVIMi40MDA1OVY0LjkwMDNINy41MDAyWiIvPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMTUuOTYzMSAxMS41NjI1QzE1Ljk2MzEgNy44MjY5MyAxMy4wNDc1IDQuNzk1MyA5LjM1OTU3IDQuNjA5MzhMOS4wMDAyIDQuNTk5NjFIOC40MDA1OVYzLjQwMDM5SDkuMDAwMkw5LjQyMTA5IDMuNDEwMTZDMTMuNzQzMiAzLjYyODA5IDE3LjE2MjMgNy4xODQ4IDE3LjE2MjMgMTEuNTYyNVYxMi4xNjIxSDE1Ljk2MzFWMTEuNTYyNVoiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTEyLjQ2MzEgMTEuMTg3NUMxMi40NjMxIDkuNTEwNDIgMTEuMTMxIDguMTI2NzcgOS40NzM4MyA4LjA0MjAxTDkuMzEyNyA4LjAzNzEySDguNzEzMDlWNi44Mzc5MUg5LjMxMjdMOS41MzUzNSA2Ljg0Mjc5QzExLjgyNjcgNi45NTk1NiAxMy42NjIzIDguODY4MyAxMy42NjIzIDExLjE4NzVWMTEuNzg3MUgxMi40NjMxVjExLjE4NzVaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik04LjgxMiAyMFYxOS4yNzc1SDEzLjQwMkMxMy42NTcgMTkuMjc3NSAxMy45MTIgMTkuMjc3NSAxMy45MTIgMTguOThWMTcuNTM1QzEzLjkxMiAxNy4yMzc1IDEzLjY1NyAxNy4yMzc1IDEzLjQwMiAxNy4yMzc1SDguODEyVjE0LjM5SDE0Ljc2MlYxNS4xMTI1SDEwLjA4N1YxNi41MTVIMTMuMTQ3QzE0LjE2NyAxNi41MTUgMTUuMTg3IDE2LjUxNSAxNS4xODcgMTcuNjYyNVYxOC44NTI1QzE1LjE4NyAyMCAxNC4xNjcgMjAgMTMuMTQ3IDIwSDguODEyWiIvPjwvZz48L2c+PC9nPjwvc3ZnPg==");
 }
-.wl1_icon_on{
-	background-position: 0px -40px;
+.icon-wl5g1 {
+	--svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBpZD0iR3JvdXAiPjxnIGlkPSJEZXZpY2VzIC8gd2lmaV81ZyI+PGcgaWQ9IlZlY3Rvcl9fX19fMF8wX0lNSVJOVklQRkkiPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNNy41MDAyIDQuOTAwM1Y2LjA5OTUxSDMuNTk5OFYyMi40MDAzSDIwLjQwMDZWNi4wOTk1MUgxNy41MDAyVjQuOTAwM0gyMS41OTk4VjIzLjU5OTVIMi40MDA1OVY0LjkwMDNINy41MDAyWiIvPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMTUuOTYzMSAxMS41NjI1QzE1Ljk2MzEgNy44MjY5MyAxMy4wNDc1IDQuNzk1MyA5LjM1OTU3IDQuNjA5MzhMOS4wMDAyIDQuNTk5NjFIOC40MDA1OVYzLjQwMDM5SDkuMDAwMkw5LjQyMTA5IDMuNDEwMTZDMTMuNzQzMiAzLjYyODA5IDE3LjE2MjMgNy4xODQ4IDE3LjE2MjMgMTEuNTYyNVYxMi4xNjIxSDE1Ljk2MzFWMTEuNTYyNVoiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTEyLjQ2MzEgMTEuMTg3NUMxMi40NjMxIDkuNTEwNDIgMTEuMTMxIDguMTI2NzcgOS40NzM4MyA4LjA0MjAxTDkuMzEyNyA4LjAzNzEySDguNzEzMDlWNi44Mzc5MUg5LjMxMjdMOS41MzUzNSA2Ljg0Mjc5QzExLjgyNjcgNi45NTk1NiAxMy42NjIzIDguODY4MyAxMy42NjIzIDExLjE4NzVWMTEuNzg3MUgxMi40NjMxVjExLjE4NzVaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik0xOC44MjMyIDE1LjA1VjIwSDE3LjY5ODJWMTUuNjg3NUgxNi4wNDgyVjE1LjA1SDE4LjgyMzJaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik0xMC41MDE4IDE4LjU3NVYxNy44MjVIMTMuNTAxOFYxOC41NzVIMTAuNTAxOFoiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTMuOTc1ODggMjBWMTkuMzYyNUg4LjAyNTg4QzguMjUwODggMTkuMzYyNSA4LjQ3NTg4IDE5LjM2MjUgOC40NzU4OCAxOS4xVjE3LjgyNUM4LjQ3NTg4IDE3LjU2MjUgOC4yNTA4OCAxNy41NjI1IDguMDI1ODggMTcuNTYyNUgzLjk3NTg4VjE1LjA1SDkuMjI1ODhWMTUuNjg3NUg1LjEwMDg4VjE2LjkyNUg3LjgwMDg4QzguNzAwODggMTYuOTI1IDkuNjAwODggMTYuOTI1IDkuNjAwODggMTcuOTM3NVYxOC45ODc1QzkuNjAwODggMjAgOC43MDA4OCAyMCA3LjgwMDg4IDIwSDMuOTc1ODhaIi8+PC9nPjwvZz48L2c+PC9zdmc+");
 }
-.wl1_1_icon_on{
-	background-position: 0px -79px;
+.icon-wl5g2 {
+	--svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBpZD0iR3JvdXAiPjxnIGlkPSJEZXZpY2VzIC8gd2lmaV81ZyI+PGcgaWQ9IlZlY3Rvcl9fX19fMF8wX09SUElaSFdYUkUiPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNNy41MDAyIDQuOTAwM1Y2LjA5OTUxSDMuNTk5ODFWMjIuNDAwM0gyMC40MDA2VjYuMDk5NTFIMTcuNTAwMlY0LjkwMDNIMjEuNTk5OFYyMy41OTk1SDIuNDAwNTlWNC45MDAzSDcuNTAwMloiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTE1Ljk2MzEgMTEuNTYyNUMxNS45NjMxIDcuODI2OTMgMTMuMDQ3NSA0Ljc5NTMgOS4zNTk1NyA0LjYwOTM4TDkuMDAwMiA0LjU5OTYxSDguNDAwNTlWMy40MDAzOUg5LjAwMDJMOS40MjExIDMuNDEwMTZDMTMuNzQzMiAzLjYyODA5IDE3LjE2MjMgNy4xODQ4IDE3LjE2MjMgMTEuNTYyNVYxMi4xNjIxSDE1Ljk2MzFWMTEuNTYyNVoiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTEyLjQ2MzEgMTEuMTg3NUMxMi40NjMxIDkuNTEwNDIgMTEuMTMxIDguMTI2NzcgOS40NzM4MyA4LjA0MjAxTDkuMzEyNyA4LjAzNzEySDguNzEzMDlWNi44Mzc5MUg5LjMxMjdMOS41MzUzNSA2Ljg0Mjc5QzExLjgyNjcgNi45NTk1NiAxMy42NjIzIDguODY4MyAxMy42NjIzIDExLjE4NzVWMTEuNzg3MUgxMi40NjMxVjExLjE4NzVaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik0xNC4zOTgyIDIwVjE3LjkzNzVDMTQuMzk4MiAxNi45MjUgMTUuMjk4MiAxNi45MjUgMTYuMTk4MiAxNi45MjVIMTguNDQ4MkMxOC42NzMyIDE2LjkyNSAxOC44OTgyIDE2LjkyNSAxOC44OTgyIDE2LjY2MjVWMTUuOTVDMTguODk4MiAxNS42ODc1IDE4LjY3MzIgMTUuNjg3NSAxOC40NDgyIDE1LjY4NzVIMTQuNzczMlYxNS4wNUgxOC4yMjMyQzE5LjEyMzIgMTUuMDUgMjAuMDIzMiAxNS4wNSAyMC4wMjMyIDE2LjA2MjVWMTYuNTVDMjAuMDIzMiAxNy41NjI1IDE5LjEyMzIgMTcuNTYyNSAxOC4yMjMyIDE3LjU2MjVIMTUuOTczMkMxNS43NDgyIDE3LjU2MjUgMTUuNTIzMiAxNy41NjI1IDE1LjUyMzIgMTcuODI1VjE5LjM2MjVIMjAuMDIzMlYyMEgxNC4zOTgyWiIvPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMTAuNTAxOCAxOC41NzVWMTcuODI1SDEzLjUwMThWMTguNTc1SDEwLjUwMThaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik0zLjk3NTg4IDIwVjE5LjM2MjVIOC4wMjU4OEM4LjI1MDg4IDE5LjM2MjUgOC40NzU4OCAxOS4zNjI1IDguNDc1ODggMTkuMVYxNy44MjVDOC40NzU4OCAxNy41NjI1IDguMjUwODggMTcuNTYyNSA4LjAyNTg4IDE3LjU2MjVIMy45NzU4OFYxNS4wNUg5LjIyNTg4VjE1LjY4NzVINS4xMDA4OFYxNi45MjVINy44MDA4OEM4LjcwMDg4IDE2LjkyNSA5LjYwMDg4IDE2LjkyNSA5LjYwMDg4IDE3LjkzNzVWMTguOTg3NUM5LjYwMDg4IDIwIDguNzAwODggMjAgNy44MDA4OCAyMEgzLjk3NTg4WiIvPjwvZz48L2c+PC9nPjwvc3ZnPg==");
 }
-.wl2_icon_on{
-	background-position: 0px -119px;
+.icon-wl6g {
+	--svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBpZD0iR3JvdXAiPjxnIGlkPSJEZXZpY2VzIC8gd2lmaV82ZyI+PGcgaWQ9IlZlY3Rvcl9fX19fMF8wX1lST1RYSFBGTVoiPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNNy41MDAyIDQuOTAwM1Y2LjA5OTUxSDMuNTk5OFYyMi40MDAzSDIwLjQwMDZWNi4wOTk1MUgxNy41MDAyVjQuOTAwM0gyMS41OTk4VjIzLjU5OTVIMi40MDA1OVY0LjkwMDNINy41MDAyWiIvPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMTUuOTYzMSAxMS41NjI1QzE1Ljk2MzEgNy44MjY5MyAxMy4wNDc1IDQuNzk1MyA5LjM1OTU3IDQuNjA5MzhMOS4wMDAyIDQuNTk5NjFIOC40MDA1OVYzLjQwMDM5SDkuMDAwMkw5LjQyMTA5IDMuNDEwMTZDMTMuNzQzMiAzLjYyODA5IDE3LjE2MjMgNy4xODQ4IDE3LjE2MjMgMTEuNTYyNVYxMi4xNjIxSDE1Ljk2MzFWMTEuNTYyNVoiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTEyLjQ2MzEgMTEuMTg3NUMxMi40NjMxIDkuNTEwNDIgMTEuMTMxIDguMTI2NzcgOS40NzM4MyA4LjA0MjAxTDkuMzEyNyA4LjAzNzEySDguNzEzMDlWNi44Mzc5MUg5LjMxMjdMOS41MzUzNSA2Ljg0Mjc5QzExLjgyNjcgNi45NTk1NiAxMy42NjIzIDguODY4MyAxMy42NjIzIDExLjE4NzVWMTEuNzg3MUgxMi40NjMxVjExLjE4NzVaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik04LjgxMjIgMTguODUyNVYxNS43NUM4LjgxMjIgMTQuMzkgMTAuMDAyMiAxNC4zOSAxMS4xOTIyIDE0LjM5SDE0Ljc2MjJWMTUuMTEyNUgxMS4yNzcyQzEwLjY4MjIgMTUuMTEyNSAxMC4wODcyIDE1LjExMjUgMTAuMDg3MiAxNS43OTI1VjE2LjUxNUgxMy4xNDcyQzE0LjE2NzIgMTYuNTE1IDE1LjE4NzIgMTYuNTE1IDE1LjE4NzIgMTcuNjYyNVYxOC44NTI1QzE1LjE4NzIgMjAgMTQuMTY3MiAyMCAxMy4xNDcyIDIwSDEwLjg1MjJDOS44MzIyIDIwIDguODEyMiAyMCA4LjgxMjIgMTguODUyNVpNMTAuMDg3MiAxOC45OEMxMC4wODcyIDE5LjI3NzUgMTAuMzQyMiAxOS4yNzc1IDEwLjU5NzIgMTkuMjc3NUgxMy40MDIyQzEzLjY1NzIgMTkuMjc3NSAxMy45MTIyIDE5LjI3NzUgMTMuOTEyMiAxOC45OFYxNy41MzVDMTMuOTEyMiAxNy4yMzc1IDEzLjY1NzIgMTcuMjM3NSAxMy40MDIyIDE3LjIzNzVIMTAuNTk3MkMxMC4zNDIyIDE3LjIzNzUgMTAuMDg3MiAxNy4yMzc1IDEwLjA4NzIgMTcuNTM1VjE4Ljk4WiIvPjwvZz48L2c+PC9nPjwvc3ZnPg==");
 }
-.wl6_icon_on{
-	background-position: 0px -158px;
+.icon-wl6g1 {
+	--svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBpZD0iR3JvdXAiPjxnIGlkPSJEZXZpY2VzIC8gd2lmaV82ZyI+PGcgaWQ9IlZlY3Rvcl9fX19fMF8wX05OQVBWT0hETUYiPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNNy41MDAyIDQuOTAwM1Y2LjA5OTUxSDMuNTk5OFYyMi40MDAzSDIwLjQwMDZWNi4wOTk1MUgxNy41MDAyVjQuOTAwM0gyMS41OTk4VjIzLjU5OTVIMi40MDA1OVY0LjkwMDNINy41MDAyWiIvPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMTUuOTYzMSAxMS41NjI1QzE1Ljk2MzEgNy44MjY5MyAxMy4wNDc1IDQuNzk1MyA5LjM1OTU3IDQuNjA5MzhMOS4wMDAyIDQuNTk5NjFIOC40MDA1OVYzLjQwMDM5SDkuMDAwMkw5LjQyMTA5IDMuNDEwMTZDMTMuNzQzMiAzLjYyODA5IDE3LjE2MjMgNy4xODQ4IDE3LjE2MjMgMTEuNTYyNVYxMi4xNjIxSDE1Ljk2MzFWMTEuNTYyNVoiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTEyLjQ2MzEgMTEuMTg3NUMxMi40NjMxIDkuNTEwNDIgMTEuMTMxIDguMTI2NzcgOS40NzM4MyA4LjA0MjAxTDkuMzEyNyA4LjAzNzEySDguNzEzMDlWNi44Mzc5MUg5LjMxMjdMOS41MzUzNSA2Ljg0Mjc5QzExLjgyNjcgNi45NTk1NiAxMy42NjIzIDguODY4MyAxMy42NjIzIDExLjE4NzVWMTEuNzg3MUgxMi40NjMxVjExLjE4NzVaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik0xOC44MjMyIDE1LjA1VjIwSDE3LjY5ODJWMTUuNjg3NUgxNi4wNDgyVjE1LjA1SDE4LjgyMzJaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik0xMC41MDE4IDE4LjU3NVYxNy44MjVIMTMuNTAxOFYxOC41NzVIMTAuNTAxOFoiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTMuOTc1ODggMTguOTg3NVYxNi4yNUMzLjk3NTg4IDE1LjA1IDUuMDI1ODggMTUuMDUgNi4wNzU4OCAxNS4wNUg5LjIyNTg4VjE1LjY4NzVINi4xNTA4OEM1LjYyNTg4IDE1LjY4NzUgNS4xMDA4OCAxNS42ODc1IDUuMTAwODggMTYuMjg3NVYxNi45MjVINy44MDA4OEM4LjcwMDg4IDE2LjkyNSA5LjYwMDg4IDE2LjkyNSA5LjYwMDg4IDE3LjkzNzVWMTguOTg3NUM5LjYwMDg4IDIwIDguNzAwODggMjAgNy44MDA4OCAyMEg1Ljc3NTg4QzQuODc1ODggMjAgMy45NzU4OCAyMCAzLjk3NTg4IDE4Ljk4NzVaTTUuMTAwODggMTkuMUM1LjEwMDg4IDE5LjM2MjUgNS4zMjU4OCAxOS4zNjI1IDUuNTUwODggMTkuMzYyNUg4LjAyNTg4QzguMjUwODggMTkuMzYyNSA4LjQ3NTg4IDE5LjM2MjUgOC40NzU4OCAxOS4xVjE3LjgyNUM4LjQ3NTg4IDE3LjU2MjUgOC4yNTA4OCAxNy41NjI1IDguMDI1ODggMTcuNTYyNUg1LjU1MDg4QzUuMzI1ODggMTcuNTYyNSA1LjEwMDg4IDE3LjU2MjUgNS4xMDA4OCAxNy44MjVWMTkuMVoiLz48L2c+PC9nPjwvZz48L3N2Zz4=");
 }
-.wl6_1_icon_on{
-	background-position: 0px -198px;
+.icon-wl6g2 {
+	--svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBpZD0iR3JvdXAiPjxnIGlkPSJEZXZpY2VzIC8gd2lmaV82ZyI+PGcgaWQ9IlZlY3Rvcl9fX19fMF8wX0tESUZNQU5RT1QiPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNNy41MDAyIDQuOTAwM1Y2LjA5OTUxSDMuNTk5ODFWMjIuNDAwM0gyMC40MDA2VjYuMDk5NTFIMTcuNTAwMlY0LjkwMDNIMjEuNTk5OFYyMy41OTk1SDIuNDAwNTlWNC45MDAzSDcuNTAwMloiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTE1Ljk2MzEgMTEuNTYyNUMxNS45NjMxIDcuODI2OTMgMTMuMDQ3NSA0Ljc5NTMgOS4zNTk1NyA0LjYwOTM4TDkuMDAwMiA0LjU5OTYxSDguNDAwNTlWMy40MDAzOUg5LjAwMDJMOS40MjExIDMuNDEwMTZDMTMuNzQzMiAzLjYyODA5IDE3LjE2MjMgNy4xODQ4IDE3LjE2MjMgMTEuNTYyNVYxMi4xNjIxSDE1Ljk2MzFWMTEuNTYyNVoiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTEyLjQ2MzEgMTEuMTg3NUMxMi40NjMxIDkuNTEwNDIgMTEuMTMxIDguMTI2NzcgOS40NzM4MyA4LjA0MjAxTDkuMzEyNyA4LjAzNzEySDguNzEzMDlWNi44Mzc5MUg5LjMxMjdMOS41MzUzNSA2Ljg0Mjc5QzExLjgyNjcgNi45NTk1NiAxMy42NjIzIDguODY4MyAxMy42NjIzIDExLjE4NzVWMTEuNzg3MUgxMi40NjMxVjExLjE4NzVaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik0xNC4zOTgyIDIwVjE3LjkzNzVDMTQuMzk4MiAxNi45MjUgMTUuMjk4MiAxNi45MjUgMTYuMTk4MiAxNi45MjVIMTguNDQ4MkMxOC42NzMyIDE2LjkyNSAxOC44OTgyIDE2LjkyNSAxOC44OTgyIDE2LjY2MjVWMTUuOTVDMTguODk4MiAxNS42ODc1IDE4LjY3MzIgMTUuNjg3NSAxOC40NDgyIDE1LjY4NzVIMTQuNzczMlYxNS4wNUgxOC4yMjMyQzE5LjEyMzIgMTUuMDUgMjAuMDIzMiAxNS4wNSAyMC4wMjMyIDE2LjA2MjVWMTYuNTVDMjAuMDIzMiAxNy41NjI1IDE5LjEyMzIgMTcuNTYyNSAxOC4yMjMyIDE3LjU2MjVIMTUuOTczMkMxNS43NDgyIDE3LjU2MjUgMTUuNTIzMiAxNy41NjI1IDE1LjUyMzIgMTcuODI1VjE5LjM2MjVIMjAuMDIzMlYyMEgxNC4zOTgyWiIvPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMTAuNTAxOCAxOC41NzVWMTcuODI1SDEzLjUwMThWMTguNTc1SDEwLjUwMThaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik0zLjk3NTg4IDE4Ljk4NzVWMTYuMjVDMy45NzU4OCAxNS4wNSA1LjAyNTg4IDE1LjA1IDYuMDc1ODggMTUuMDVIOS4yMjU4OFYxNS42ODc1SDYuMTUwODhDNS42MjU4OCAxNS42ODc1IDUuMTAwODggMTUuNjg3NSA1LjEwMDg4IDE2LjI4NzVWMTYuOTI1SDcuODAwODhDOC43MDA4OCAxNi45MjUgOS42MDA4OCAxNi45MjUgOS42MDA4OCAxNy45Mzc1VjE4Ljk4NzVDOS42MDA4OCAyMCA4LjcwMDg4IDIwIDcuODAwODggMjBINS43NzU4OEM0Ljg3NTg4IDIwIDMuOTc1ODggMjAgMy45NzU4OCAxOC45ODc1Wk01LjEwMDg4IDE5LjFDNS4xMDA4OCAxOS4zNjI1IDUuMzI1ODggMTkuMzYyNSA1LjU1MDg4IDE5LjM2MjVIOC4wMjU4OEM4LjI1MDg4IDE5LjM2MjUgOC40NzU4OCAxOS4zNjI1IDguNDc1ODggMTkuMVYxNy44MjVDOC40NzU4OCAxNy41NjI1IDguMjUwODggMTcuNTYyNSA4LjAyNTg4IDE3LjU2MjVINS41NTA4OEM1LjMyNTg4IDE3LjU2MjUgNS4xMDA4OCAxNy41NjI1IDUuMTAwODggMTcuODI1VjE5LjFaIi8+PC9nPjwvZz48L2c+PC9zdmc+");
 }
-.wl6_2_icon_on{
-	background-position: 0px -238px;
+.ic-signal{
+	-webkit-mask-image: var(--svg);
+	mask-image: var(--svg);
+	-webkit-mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	-webkit-mask-size: contain;
+	display:inline-block;
+	width:36px;
+	height:36px;
 }
-.wl0_icon_off{
-	background-position: 40px 0px;
+.ic-signal.active{
+	background-color: #53CECB
 }
-.wl1_icon_off{
-	background-position: 40px -40px;
-}
-.wl1_1_icon_off{
-	background-position: 40px -79px;
-}
-.wl2_icon_off{
-	background-position: 40px -119px;
-}
-.wl6_icon_off{
-	background-position: 40px -158px;
-}
-.wl6_1_icon_off{
-	background-position: 40px -198px;
-}
-.wl6_2_icon_off{
-	background-position: 40px -238px;
+.ic-signal.resting{
+	background-color: #53514f;
 }
 .block_all_icon{
 	position: absolute;
@@ -238,7 +229,7 @@ if(location.pathname == "/"){
 			location.href = '/QIS_wizard.htm?flag=welcome';
 		}
 	}	
-	else if('<% nvram_get("w_Setting"); %>' == '0' && sw_mode != 2)
+	else if('<% nvram_get("w_Setting"); %>' == '0' && !isSwMode("RP"))
 		location.href = '/QIS_wizard.htm?flag=wireless';
 }
 
@@ -308,23 +299,7 @@ window.onresize = function() {
 		}
 	}
 } 
-var wl0_radio = '<% nvram_get("wl0_radio"); %>';
-var wl1_radio = '<% nvram_get("wl1_radio"); %>';
-var wl2_radio = '<% nvram_get("wl2_radio"); %>';
-var wl3_radio = '<% nvram_get("wl3_radio"); %>';
-if(based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98' || based_modelid === 'GT-BE98_PRO'){
-	var t = wl3_radio;
-	wl3_radio = wl2_radio;
-	wl2_radio = wl1_radio;
-	wl1_radio = wl0_radio;
-	wl0_radio = t;
-}
-else if(odmpid === 'GT6'){
-	var t = wl2_radio;
-	wl2_radio = wl1_radio;
-	wl1_radio = wl0_radio;
-	wl0_radio = t;
-}
+
 var orig_NM_container_height;
 function initial(){
 	var autodet_state = '<% nvram_get("autodet_state"); %>';
@@ -336,7 +311,7 @@ function initial(){
 	if(isIE6)
 		alert("<#ALERT_TO_CHANGE_BROWSER#>");
 
-	if(dualWAN_support && sw_mode == 1){
+	if(dualWAN_support && isSwMode("RT")){
 		check_dualwan(wans_flag);
 	}
 
@@ -349,7 +324,7 @@ function initial(){
 		document.getElementById("secondary_pap_concurrent").style.display = "";		
 	}
 
-	if(sw_mode == 4){
+	if(isSwMode("MB")){
 		var wlc_auth_mode = '<% nvram_get("wlc_auth_mode"); %>';
 		if(wlc_auth_mode == "") wlc_auth_mode = '<% nvram_get("wlc0_auth_mode"); %>';
 		if(wlc_auth_mode == "") wlc_auth_mode = '<% nvram_get("wlc1_auth_mode"); %>';
@@ -357,7 +332,7 @@ function initial(){
 
 		show_middle_status(wlc_auth_mode, 0);
 	}
-	else if(sw_mode == 2){		
+	else if(isSwMode("RP")){		
 		if(wlc_band == '1'){
 			var wl_auth_mode = '<% nvram_get("wl1.1_auth_mode_x"); %>';
 			var wl_wep_x = '<% nvram_get("wl1.1_wep_x"); %>';
@@ -382,7 +357,7 @@ function initial(){
 			show_middle_status(document.form.wl_auth_mode_x.value, parseInt(document.form.wl_wep_x.value));
 	}
 
-	if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
+	if(amesh_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
 		var html = '<a id="clientStatusLink" href="device-map/amesh.asp" target="statusframe">';
 		html += '<div id="iconAMesh" class="iconAMesh_dis" style="margin-top:20px;" onclick="clickEvent(this);"></div>';
 		html += '</a>';
@@ -432,7 +407,7 @@ function initial(){
 			show_USBDevice(tmpDisk);
 		}
 		
-	 	require(['/require/modules/diskList.js'], function(diskList){
+		require(['/require/modules/diskList.js?hash=' + Math.random().toString()], function(diskList){
 	 		var usbDevicesList = diskList.list();
 			for(var i=0; i<usbDevicesList.length; i++){
 			  var new_option = new Option(usbDevicesList[i].deviceName, usbDevicesList[i].deviceIndex);
@@ -452,7 +427,7 @@ function initial(){
 					document.getElementById("deviceText_" + usbIndex).appendChild(divUsbMountCount);
 
 					$(".usb_count_circle").mouseover(function(){
-						return overlib(this.innerHTML + " usb devices are plugged in <% nvram_get("productid"); %> through this port.");
+						return overlib(`${this.innerHTML} usb devices are plugged in <% nvram_get("productid"); %> through this port.`);
 					});
 
 					$(".usb_count_circle").mouseout(function(){
@@ -481,14 +456,15 @@ function initial(){
 		check_usb3();
 	}
 
-	showMapWANStatus(sw_mode);
+	showMapWANStatus();
 
-	if(sw_mode != "1"){
+	if(!isSwMode("RT")){
 		document.getElementById("wanIP_div").style.display = "none";
 		document.getElementById("ddnsHostName_div").style.display = "none";
 		document.getElementById("NM_connect_title").style.fontSize = "14px";
 		document.getElementById("NM_connect_status").style.fontSize = "20px";
-		if(sw_mode == 2 || sw_mode == 4){
+
+		if(isSwMode("RP") || isSwMode("MB") || isSwMode("WISP")){
 			document.getElementById('wlc_band_div').style.display = "";
 			document.getElementById('dataRate_div').style.display = "";
 			if(Rawifi_support || Qcawifi_support)
@@ -496,7 +472,7 @@ function initial(){
 			else
 				document.getElementById('rssi_div').style.display = "";
 			
-			document.getElementById('wlc_band_status').innerHTML = wl_nband_title[wlc_band];	
+			document.getElementById('wlc_band_status').innerHTML = wl_nband_title[wlc_band];
 		}
 		document.getElementById('NM_connect_title').innerHTML = "<#parent_AP_status#> :";
 	}
@@ -517,12 +493,11 @@ function initial(){
 	}
 
 	if(smart_connect_support){
-		if(localAP_support && (isSwMode("rt") || isSwMode("ap"))){
+		if(localAP_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap"))){
 			if((based_modelid == "RT-AC5300") && '<% nvram_get("smart_connect_x"); %>' !=0)
 			show_smart_connect_status();
 		}
 	}
-
 
 	document.list_form.dhcp_staticlist.value = dhcp_staticlist_orig;
 	document.list_form.MULTIFILTER_ENABLE.value = MULTIFILTER_ENABLE_orig;
@@ -696,10 +671,10 @@ function set_default_choice(){
 }
 
 function showMapWANStatus(flag){
-	if(sw_mode == "3"){
+	if(isSwMode("AP")){
 		showtext(document.getElementById("NM_connect_status"), "<div style='margin-top:10px;'><#WLANConfig11b_x_APMode_itemname#></div>");
 	}
-	else if(sw_mode == "2"){
+	else if(isSwMode("RP")){
 		showtext(document.getElementById("NM_connect_title"), "<div style='margin-top:10px;'><#statusTitle_AP#>:</div><br>");
 	}
 	else
@@ -717,7 +692,7 @@ function show_middle_status(auth_mode, wl_wep_x){
 				break;
 		case "owe":
 				security_mode = "Enhanced Open";
-				break;				
+				break;
 		case "shared":
 				security_mode = "Shared Key";
 				break;
@@ -749,7 +724,7 @@ function show_middle_status(auth_mode, wl_wep_x){
 		case "suite-b":
 				security_mode = "WPA3-Enterprise 192-bit";
 				document.getElementById("wl_securitylevel_span").style.fontSize = "16px";
-				break;				
+				break;
 		case "wpawpa2":
 				security_mode = "WPA-Auto-Enterprise";
 				document.getElementById("wl_securitylevel_span").style.fontSize = "16px";
@@ -757,7 +732,7 @@ function show_middle_status(auth_mode, wl_wep_x){
 		case "wpa2wpa3":
 				security_mode = "WPA2/WPA3-Enterprise";
 				document.getElementById("wl_securitylevel_span").style.fontSize = "16px";
-				break;				
+				break;
 		case "radius":
 				security_mode = "Radius with 802.1x";
 				document.getElementById("wl_securitylevel_span").style.fontSize = "16px";
@@ -765,7 +740,6 @@ function show_middle_status(auth_mode, wl_wep_x){
 		case "unknown":
 				security_mode = "<#CTL_Disconnect#>";
 				break;
-				
 		default:
 				security_mode = "Unknown Auth";	
 	}
@@ -906,7 +880,7 @@ function get_clicked_device_order(){
 }
 
 function clickEvent(obj){
-	if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
+	if(amesh_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
 		require(['/require/modules/amesh.js'], function(){
 			if(typeof initial_amesh_obj == "function")
 				initial_amesh_obj();
@@ -1195,9 +1169,9 @@ function change_wan_unit(wan_unit_flag){
 function show_ddns_fail_hint() {
 	var ddns_return_code = '<% nvram_get_ddns("LANHostConfig","ddns_return_code"); %>';
 	var str="";
-	if(sw_mode != 3 && document.getElementById("connect_status").className == "connectstatusoff")
+	if(!isSwMode("AP") && document.getElementById("connect_status").className == "connectstatusoff")
 		str = "<#Disconnected#>";
-	else if(ddns_server = 'WWW.ASUS.COM') {
+	else if(ddns_server == 'WWW.ASUS.COM') {
 		var ddnsHint = getDDNSState(ddns_return_code, "<%nvram_get("ddns_hostname_x");%>", "<%nvram_get("ddns_old_name");%>");
 		if(ddnsHint != "")
 			str = ddnsHint;
@@ -1238,15 +1212,7 @@ function validForm(){
 	var validateIpRange = function(ip_obj){
 		var retFlag = 1
 		var ip_num = inet_network(ip_obj.value);
-		
 		if(ip_num <= 0){
-			alert(ip_obj.value+" <#JS_validip#>");
-			ip_obj.value = document.getElementById("ipaddr_field_orig").value;
-			ip_obj.focus();
-			retFlag = 0;
-		}
-		else if(ipBindingFlag && (ip_num <= getSubnet('<% nvram_get("lan_ipaddr"); %>', '<% nvram_get("lan_netmask"); %>', "head") ||
-			 ip_num >= getSubnet('<% nvram_get("lan_ipaddr"); %>', '<% nvram_get("lan_netmask"); %>', "end"))){
 			alert(ip_obj.value+" <#JS_validip#>");
 			ip_obj.value = document.getElementById("ipaddr_field_orig").value;
 			ip_obj.focus();
@@ -1257,20 +1223,40 @@ function validForm(){
 			ip_obj.focus();
 			retFlag = 0;
 		}
-
-		document.list_form.dhcp_staticlist.value.split("<").forEach(function(element, index){
-			var existMac = element.split(">")[0];
-			var existIP = element.split(">")[1];
-			if(existIP == document.getElementById("ipaddr_field").value) {
-				if(existMac != document.getElementById("macaddr_field").value) {
-					alert("<#JS_duplicate#>");
-					ip_obj.value = document.getElementById("ipaddr_field_orig").value;
-					ip_obj.focus();
-					retFlag = 0;
-				}
+		else if (ipBindingFlag) {
+			const clientMac = document.getElementById('macaddr_field').value.toUpperCase();
+			const client_sdn_idx = document.getElementById('client_sdnIdx').getAttribute('client_sdn_idx');
+			const specific_sdn = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx.toString() === client_sdn_idx.toString());
+			const lan_ipaddr = specific_sdn ? specific_sdn.subnet_rl.addr : `<% nvram_get("lan_ipaddr"); %>`;
+			const lan_netmask = specific_sdn ? specific_sdn.subnet_rl.netmask : `<% nvram_get("lan_netmask"); %>`;
+			if (ip_num <= getSubnet(lan_ipaddr, lan_netmask, "head") || ip_num >= getSubnet(lan_ipaddr, lan_netmask, "end")) {
+				alert(ip_obj.value+" <#JS_validip#>");
+				ip_obj.value = document.getElementById("ipaddr_field_orig").value;
+				ip_obj.focus();
+				retFlag = 0;
 			}
-		});
-		
+
+			const manually_dhcp_list = (()=>{
+				const subnet_idx = specific_sdn && specific_sdn.sdn_rl.subnet_idx !== "0" && specific_sdn.sdn_rl.subnet_idx !== "" 
+					? specific_sdn.sdn_rl.subnet_idx 
+					: "0";
+				return subnet_idx === "0"
+					? dhcp_staticlist_orig
+					: decodeURIComponent(httpApi.nvramCharToAscii([`dhcpres${subnet_idx}_rl`])[`dhcpres${subnet_idx}_rl`]);
+			})();
+			manually_dhcp_list.split("<").forEach(function(element, index){
+				var existMac = element.split(">")[0];
+				var existIP = element.split(">")[1];
+				if(existIP == document.getElementById("ipaddr_field").value) {
+					if(existMac.toUpperCase() != clientMac.toUpperCase()) {
+						alert("<#JS_duplicate#>");
+						ip_obj.value = document.getElementById("ipaddr_field_orig").value;
+						ip_obj.focus();
+						retFlag = 0;
+					}
+				}
+			});
+		}
 		return retFlag;
 	}
 	if(validateIpRange(document.getElementById("ipaddr_field")) == 0)
@@ -1361,62 +1347,91 @@ function edit_confirm(){
 		document.list_form.custom_clientlist.value = custom_name;
 
 		// static IP list
+		const client_sdn_idx = document.getElementById('client_sdnIdx').getAttribute('client_sdn_idx');
+		const specific_sdn = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx.toString() === client_sdn_idx.toString());
+		const subnet_idx = specific_sdn && specific_sdn.sdn_rl.subnet_idx !== "0" && specific_sdn.sdn_rl.subnet_idx !== ""
+			? specific_sdn.sdn_rl.subnet_idx
+			: "0";
+		const isMainNetwork = subnet_idx === "0";
+		const manually_dhcp_list = isMainNetwork
+			? document.list_form.dhcp_staticlist.value
+			: decodeURIComponent(httpApi.nvramCharToAscii([`dhcpres${subnet_idx}_rl`])[`dhcpres${subnet_idx}_rl`]);
+		let final_manually_dhcp_list = "";
 		if(ipBindingFlag) {
-			if(document.list_form.dhcp_staticlist.value.indexOf(clientMac) == -1){//new
-				document.list_form.dhcp_staticlist.value += "<";
-				document.list_form.dhcp_staticlist.value += clientMac;
-				document.list_form.dhcp_staticlist.value += ">";
-				document.list_form.dhcp_staticlist.value += document.getElementById("ipaddr_field").value;
-				document.list_form.dhcp_staticlist.value += ">";
-				document.list_form.dhcp_staticlist.value += "";//ddns
+			if(manually_dhcp_list.indexOf(clientMac) == -1){//new
+					final_manually_dhcp_list = manually_dhcp_list;
+					final_manually_dhcp_list += `<${clientMac}>${document.getElementById("ipaddr_field").value}>>`;
 			}
 			else{//update
-				var dhcp_staticlist_temp = "";
-				document.list_form.dhcp_staticlist.value.split("<").forEach(function(element, index){
+				manually_dhcp_list.split("<").forEach(function(element, index){
 					if(element != ""){
 						if(element.indexOf(clientMac) != -1){
 							var client_array = element.split(">");
 							var mac = client_array[0];
 							if(mac == clientMac){
-								var ip = document.getElementById("ipaddr_field").value;
-								var dns = (client_array[2] == undefined) ? "" : client_array[2];
-								dhcp_staticlist_temp += "<" + mac + ">" + ip + ">" + dns;
+								const ip = document.getElementById("ipaddr_field").value;
+								const dns = (client_array[2] == undefined) ? "" : client_array[2];
+								const hostname = (client_array[3] == undefined) ? "" : client_array[3];
+								final_manually_dhcp_list += "<" + mac + ">" + ip + ">" + dns + ">" + hostname;
 							}
 						}
 						else
-							dhcp_staticlist_temp += "<" + element;
+							final_manually_dhcp_list += "<" + element;
 					}
 				});
-				document.list_form.dhcp_staticlist.value = dhcp_staticlist_temp;
 			}
 		}
 		else{
-			document.list_form.dhcp_staticlist.value.split("<").forEach(function(element, index){
-				if(element.indexOf(document.getElementById('macaddr_field').value.toUpperCase()) != -1){
-					var tmpArray = document.list_form.dhcp_staticlist.value.split("<")
-					tmpArray.splice(index, 1);
-					document.list_form.dhcp_staticlist.value = tmpArray.join("<");
-				}
-			})
+			final_manually_dhcp_list = manually_dhcp_list.split('<').filter(function(element) {
+			 return element.indexOf(clientMac) === -1;
+			}).join('<');
 		}
-		if(document.list_form.dhcp_staticlist.value == dhcp_staticlist_orig || sw_mode != "1"){
+
+		if(final_manually_dhcp_list === manually_dhcp_list || (!isSwMode("RT") && !isSwMode("WISP"))){
 			document.list_form.action_script.value = "saveNvram";
 			document.list_form.action_wait.value = "1";
 			document.list_form.flag.value = "background";
 			document.list_form.dhcp_staticlist.disabled = true;
 			document.list_form.dhcp_static_x.disabled = true;
-			dhcp_staticlist_orig = document.list_form.dhcp_staticlist.value;
+			if (isMainNetwork) {
+				dhcp_staticlist_orig = document.list_form.dhcp_staticlist.value = final_manually_dhcp_list;
+			}
 		}
 		else {
 			document.list_form.action_script.value = "restart_net_and_phy";
-			document.list_form.action_wait.value = "35";
+			document.list_form.action_wait.value = httpApi.hookGet("get_default_reboot_time");
 			document.list_form.flag.value = "";
-			document.list_form.dhcp_staticlist.disabled = false;
 			document.list_form.dhcp_static_x.value = 1;
 			document.list_form.dhcp_static_x.disabled = false;
+			if (isMainNetwork) {
+				dhcp_staticlist_orig = document.list_form.dhcp_staticlist.value = final_manually_dhcp_list;
+				document.list_form.dhcp_staticlist.disabled = false;
+			}
+			else {
+				document.list_form.dhcp_staticlist.disabled = true;
+				const dhcp_static = final_manually_dhcp_list === '' ? "0" : "1";
+				const dhcp_unit = dhcp_static === '1' ? subnet_idx : "";
+				let subnet_rl = decodeURIComponent(httpApi.nvramCharToAscii(["subnet_rl"]).subnet_rl);
+				let subnetArray = subnet_rl.split('<').filter(part => part !== '');
+				for (let i = 0; i < subnetArray.length; i++) {
+					let parts = subnetArray[i].split('>');
+					if (parts[0] === subnet_idx) {
+						parts[11] = dhcp_static;
+						parts[12] = dhcp_unit;
+						subnetArray[i] = parts.join('>');
+					}
+				}
+				subnet_rl = '<' + subnetArray.join('<');
+				let nvramSet_obj = {"action_mode": "apply"};
+				nvramSet_obj[`dhcpres${subnet_idx}_rl`] = final_manually_dhcp_list;
+				nvramSet_obj[`subnet_rl`] = subnet_rl;
+				httpApi.nvramSet(nvramSet_obj, () => {
+					httpApi.nvramGet([`dhcpres${subnet_idx}_rl`, `subnet_rl`], true);
+				});
+			}
 		}
 
-		if(sw_mode == "1" && !clientList[document.getElementById("macaddr_field").value].amesh_isRe)
+		if((isSwMode("RT") || isSwMode("WISP")) && !clientList[document.getElementById("macaddr_field").value].amesh_isRe)
 			addToBlockMacList(document.getElementById("macaddr_field").value);
 
 		//  block Mac list
@@ -1427,7 +1442,7 @@ function edit_confirm(){
 		if((document.list_form.MULTIFILTER_MAC.value == MULTIFILTER_MAC_orig && 
 			document.list_form.MULTIFILTER_ENABLE.value == MULTIFILTER_ENABLE_orig) && 
 			!turnOnTimeScheduling ||
-			sw_mode != "1"){
+			(!isSwMode("RT") && !isSwMode("WISP"))){
 			document.list_form.MULTIFILTER_ALL.disabled = true;
 			document.list_form.MULTIFILTER_ENABLE.disabled = true;
 			document.list_form.MULTIFILTER_MAC.disabled = true;
@@ -1441,7 +1456,7 @@ function edit_confirm(){
 			document.list_form.flag.value = "";
 			if(document.list_form.action_script.value == "restart_net_and_phy") {
 				document.list_form.action_script.value += ";restart_firewall";
-				document.list_form.action_wait.value = "35";
+				document.list_form.action_wait.value = httpApi.hookGet("get_default_reboot_time");
 			}
 			else {
 				document.list_form.action_script.value = "restart_firewall";
@@ -1681,7 +1696,7 @@ function popupEditBlock(clientObj){
 			document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value = MULTIFILTER_MACFILTER_DAYTIME_orig;
 		document.getElementById("divDropClientImage").ondrop = null;
 		document.getElementById("internetTimeScheduling").style.display = "none";
-		if(sw_mode == "1" && !clientObj.amesh_isRe) {
+		if((isSwMode("RT") || isSwMode("WISP")) && !clientObj.amesh_isRe) {
 			document.getElementById('tr_adv_setting').style.display = "";
 		}
 		else {
@@ -1722,7 +1737,7 @@ function popupEditBlock(clientObj){
 			}
 		}
 
-		if(sw_mode != 4){
+		if(!isSwMode("MB")){
 			var radioIcon_css = "radioIcon";
 			if(clientObj.isGN != "" && clientObj.isGN != undefined)
 				radioIcon_css += " GN";
@@ -1745,7 +1760,8 @@ function popupEditBlock(clientObj){
 		document.getElementById('client_printer').style.display = "none";
 		document.getElementById('client_iTunes').style.display = "none";
 		document.getElementById('client_opMode').style.display = "none";
-		if(sw_mode == "1") {
+		document.getElementById('client_sdnIdx').style.display = "none";
+		if((isSwMode("RT") || isSwMode("WISP"))) {
 			document.getElementById('client_ipMethod').style.display = "";
 			document.getElementById('client_ipMethod').innerHTML = clientObj.ipMethod;
 			document.getElementById('client_ipMethod').onmouseover = function() {return overlib(ipState[clientObj.ipMethod]);};
@@ -1763,6 +1779,16 @@ function popupEditBlock(clientObj){
 			document.getElementById('client_iTunes').style.display = "";
 			document.getElementById('client_iTunes').innerHTML = "iTunes";
 		}
+		if(clientObj.sdn_idx > 0) {
+			document.getElementById('client_sdnIdx').style.display = "";
+			const sdn_profile = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx == clientObj.sdn_idx) || {};
+			const sdn_ssid = $.isEmptyObject(sdn_profile) ? "" : sdn_profile.apg_rl.ssid;
+			document.getElementById('client_sdnIdx').innerHTML = "SDN " + sdn_ssid;
+			document.getElementById('client_sdnIdx').setAttribute('client_sdn_idx', clientObj.sdn_idx);
+		}
+		else {
+			document.getElementById('client_sdnIdx').setAttribute('client_sdn_idx', '0');
+		}
 
 		if(clientObj.opMode != 0) {
 			var opModeDes = ["none", "<#wireless_router#>", "<#OP_RE_item#>", "<#OP_AP_item#>", "<#OP_MB_item#>"];
@@ -1776,7 +1802,7 @@ function popupEditBlock(clientObj){
 
 		document.getElementById('ipaddr_field').disabled = true;
 		$("#ipaddr_field").addClass("client_input_text_disabled");
-		if(sw_mode == "1" && !clientObj.amesh_isRe) {
+		if((isSwMode("RT") || isSwMode("WISP")) && !clientObj.amesh_isRe) {
 			$("#ipaddr_field").removeClass("client_input_text_disabled");
 			document.getElementById('ipaddr_field').disabled = false;
 			document.getElementById("ipaddr_field").onkeypress = function() {
@@ -1811,17 +1837,30 @@ function popupEditBlock(clientObj){
 			}
 		}
 	
+		const specific_sdn = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx.toString() === clientObj.sdn_idx.toString());
+		const subnet_idx = specific_sdn && specific_sdn.sdn_rl.subnet_idx !== "0" && specific_sdn.sdn_rl.subnet_idx !== "" 
+			? specific_sdn.sdn_rl.subnet_idx 
+			: "0";
+		const isMainNetwork = subnet_idx === "0";
+		const manually_dhcp_list = isMainNetwork
+			? dhcp_staticlist_orig
+			: decodeURIComponent(httpApi.nvramCharToAscii([`dhcpres${subnet_idx}_rl`])[`dhcpres${subnet_idx}_rl`]);
 		var setRadioIPBinding = function (state, mode, mac) {
-			const manually_dhcp_maximum  = (isSupport("MaxRule_extend_limit") == 0) ? 64: isSupport("MaxRule_extend_limit");
+			const manually_dhcp_maximum = (()=>{
+				const maxRuleLimit = isSupport("MaxRule_extend_limit") == 0 ? 64 : isSupport("MaxRule_extend_limit");
+				return isMainNetwork ? maxRuleLimit : 32;
+			})();
+
+			const manually_dhcp_list_num = manually_dhcp_list.split("<").length - 1;
 			const parentctrl_maximum = (isSupport("MaxRule_parentctrl") == 0) ? 16 : isSupport("MaxRule_parentctrl");
 			switch (mode) {
 				case "ipBinding" :
 					$('#radio_IPBinding_enable').iphoneSwitch(state,
 						function(){
-							if(dhcp_staticlist_orig.search(mac) == -1) {
-								if(dhcp_staticlist_num >= manually_dhcp_maximum) {
+							if(manually_dhcp_list.search(mac) == -1) {
+								if(manually_dhcp_list_num >= manually_dhcp_maximum) {
 									if(confirm(stringSafeGet("<#Clientlist_IPMAC_Binding_max#>".replace("64", manually_dhcp_maximum)))) {
-										location.href = "Advanced_DHCP_Content.asp" ;
+										location.href = isMainNetwork ? "Advanced_DHCP_Content.asp" : "SDN.asp";
 									}
 									else {
 										document.getElementById("ipaddr_field").value = document.getElementById("ipaddr_field_orig").value;
@@ -1890,7 +1929,7 @@ function popupEditBlock(clientObj){
 			}
 		};
 
-		if(dhcp_staticlist_orig.search(clientObj.mac + ">" + clientObj.ip) != -1) { //check mac>ip is combination the the radio_IPBinding_enable is manual
+		if(manually_dhcp_list.search(clientObj.mac + ">" + clientObj.ip) != -1) { //check mac>ip is combination the the radio_IPBinding_enable is manual
 			setRadioIPBinding(1, "ipBinding", clientObj.mac);
 			ipBindingFlag = true;
 		}
@@ -2136,7 +2175,7 @@ function showClientIcon() {
 	}
 	code +='</table>';
 	document.getElementById("usericon_block").innerHTML = code;
-};
+}
 
 function delClientIcon(rowdata) {
 	var delIdx = rowdata.parentNode.parentNode.rowIndex;
@@ -2240,78 +2279,76 @@ function closeClientDetailView() {
 	edit_cancel();
 }
 function check_wireless(){
-	var temp = "";
-	//check 2.4 GHz
-	if (isSwMode('mb')) {
-		wl0_radio = '0';
-	}
-	temp = (wl0_radio == "1") ? "wl0_icon_on" : "wl0_icon_off";
-	$("#wl0_icon").addClass(temp);
+	const options = [
+		{ "band": "2g", "dut_list_bit": "1", "unit": "", "radio": "0" },
+		{ "band": "5g", "dut_list_bit": "2", "unit": "", "radio": "0" },
+		{ "band": "5g1", "dut_list_bit": "4", "unit": "", "radio": "0" },
+		{ "band": "5g2", "dut_list_bit": "8", "unit": "", "radio": "0" },
+		{ "band": "6g", "dut_list_bit": "16", "unit": "", "radio": "0" },
+		{ "band": "6g1", "dut_list_bit": "32", "unit": "", "radio": "0" },
+		{ "band": "6g2", "dut_list_bit": "64", "unit": "", "radio": "0" },
+	];
 
-	//check 5 GHz-1
-	if(band5g_support){
+	const wifi_band_info = (() => {
+		if (isSupport("noWiFi")) {
+			return [];
+		}
+		let result = [];
+		if (get_wl_unit_by_band("2G") !== "") {
+			const option = options.find(el => el.dut_list_bit === "1");
+			if (option) result = result.concat(option);
+		}
+		if (get_wl_unit_by_band("5G2") !== "") {
+			result = result.concat(options.filter(el => ["4", "8"].includes(el.dut_list_bit)));
+		}
+		else if (get_wl_unit_by_band("5G") !== "") {
+			const option = options.find(el => el.dut_list_bit === "2");
+			if (option) result = result.concat(option);
+		}
+		if (get_wl_unit_by_band("6G2") !== "") {
+			result = result.concat(options.filter(el => ["32", "64"].includes(el.dut_list_bit)));
+		}
+		else if (get_wl_unit_by_band("6G") !== "") {
+			const option = options.find(el => el.dut_list_bit === "16");
+			if (option) result = result.concat(option);
+		}
+		return result;
+	})();
+	for (const item of wifi_band_info) {
+		item.unit = get_wl_unit_by_band(item.band) || "";
+	}
+
+	if (isSupport('sdn_mainfh')) {
+		let mainFHNum = 0;
+		const mainFH = decodeURIComponent(httpApi.nvramCharToAscii(["sdn_rl"]).sdn_rl).split("<").filter(item => item.includes("MAINFH"));
+		mainFH.forEach(item => {
+			if (item !== "") {
+				const apmIdx = item.split(">")[5];
+				const apm_dut_list = decodeURIComponent(httpApi.nvramCharToAscii([`apm${apmIdx}_dut_list`])[`apm${apmIdx}_dut_list`]);
+				const first_dut_list = apm_dut_list.split("<").find(dut_info => dut_info !== "");
+				const wifi_band = first_dut_list ? parseInt(first_dut_list.split(">")[1], 10) || 0 : 0;
+				mainFHNum += wifi_band;
+			}
+		});
+		wifi_band_info.forEach(item => {
+			item.radio = (parseInt(item.dut_list_bit, 10) & mainFHNum) ? "1" : "0";
+		});
+	}
+	else {
+		const wl_radio = httpApi.nvramGet(['wl0_radio', 'wl1_radio', 'wl2_radio', 'wl3_radio']);
+		wifi_band_info.forEach(item => {
+			item.radio = wl_radio[`wl${item.unit}_radio`] || "0";
+		});
+	}
+	wifi_band_info.forEach((item, idx) => {
+		let wifiClass = `icon-wl${item.band} resting`;
 		if (isSwMode('mb')) {
-			wl1_radio = '0';
+			wifiClass = `icon-wl${item.band} resting`;
+		} else if (item.radio === '1') {
+			wifiClass = `icon-wl${item.band} active`;
 		}
-
-		if(based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98' || based_modelid == "BQ16"){
-			temp = (wl1_radio == "1") ? "wl1_1_icon_on" : "wl1_1_icon_off";
-		}
-		else if(based_modelid == "GT-BE98_PRO" || based_modelid == "BQ16_PRO"){
-			temp = (wl1_radio == "1") ? "wl1_icon_on" : "wl1_icon_off";
-		}
-		else{
-			temp = (wl1_radio == "1") ? "wl1_icon_on" : "wl1_icon_off";
-			if(band5g2_support){
-				if(band6g_support){
-					temp = (wl1_radio == "1") ? "wl1_icon_on" : "wl1_icon_off";
-				}
-				else{
-					temp = (wl1_radio == "1") ? "wl1_1_icon_on" : "wl1_1_icon_off";
-				}	
-			}
-		}		
-
-		$("#wl1_icon").show();
-		$("#wl1_icon").addClass(temp);
-	}
-	
-	//check 5 GHz-2
-	if(band5g2_support){
-		if (isSwMode('mb')) {
-			wl2_radio = '0';
-		}
-
-		if(based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98' || based_modelid == "BQ16"){
-			temp = (wl2_radio == "1") ? "wl2_icon_on" : "wl2_icon_off";
-			$("#wl2_icon").show();
-			$("#wl2_icon").addClass(temp);
-
-			temp = (wl3_radio == "1") ? "wl6_icon_on" : "wl6_icon_off";
-			$("#wl3_icon").show();
-			$("#wl3_icon").addClass(temp);
-		}
-		else if(based_modelid == "GT-BE98_PRO" ||  based_modelid == "BQ16_PRO"){
-			temp = (wl2_radio == "1") ? "wl6_1_icon_on" : "wl6_1_icon_off";
-			$("#wl2_icon").show();
-			$("#wl2_icon").addClass(temp);
-
-			temp = (wl3_radio == "1") ? "wl6_2_icon_on" : "wl6_2_icon_on";
-			$("#wl3_icon").show();
-			$("#wl3_icon").addClass(temp);
-		}
-		else{
-			if(band6g_support){
-				temp = (wl2_radio == "1") ? "wl6_icon_on" : "wl6_icon_off";
-			}
-			else{
-				temp = (wl2_radio == "1") ? "wl2_icon_on" : "wl2_icon_off";
-			}
-			
-			$("#wl2_icon").show();
-			$("#wl2_icon").addClass(temp);
-		}		
-	}
+		$(`#wl${idx}_icon`).addClass(wifiClass).show();
+	});
 }
 
 function cal_panel_block(obj){
@@ -2548,6 +2585,7 @@ function showClientlistModal(){
 					<span id="client_printer" class="ipMethodTag " ></span>
 					<span id="client_iTunes" class="ipMethodTag " ></span>
 					<span id="client_opMode" class="ipMethodTag "></span>
+					<span id="client_sdnIdx" class="ipMethodTag "></span>
 				</div>
 				<div id="client_interface" style="height:28px;width:28px;float:right;"></div>
 			</td>
@@ -2582,14 +2620,14 @@ function showClientlistModal(){
 				</div>
 			</td>
 			<td style="vertical-align:top;width:280px;">
-				<div>	
+				<div>
 					<input id="client_name" name="client_name" type="text" value="" class="input_32_table" maxlength="32" style="width:275px;" autocorrect="off" autocapitalize="off">
 				</div>
-				<div style="margin-top:10px;">				
+				<div style="margin-top:10px;">
 					<input id="ipaddr_field_orig" type="hidden" value="" disabled="">
 					<input id="ipaddr_field" type="text" value="" class="input_32_table" style="width:275px;" onkeypress="return validator.isIPAddr(this,event)" autocorrect="off" autocapitalize="off">
 				</div>
-					
+
 				<div style="margin-top:10px;">
 					<input id="macaddr_field" type="text" value="" class="input_32_table client_input_text_disabled" disabled autocorrect="off" autocapitalize="off">
 				</div>
@@ -2616,7 +2654,7 @@ function showClientlistModal(){
 				<div class="clientList_line"></div>
 				<div style="height:32px;width:100%;margin:5px 0;">
 					<div style="width:65%;float:left;line-height:32px;">
-						<span id="time_scheduling_title" onmouseover='return overlib("<#ParentalCtrl_Desc_TS#>");' onmouseout="return nd();"><#Parental_Control#></span><!--untranslated-->
+						<span id="time_scheduling_title" onmouseover='return overlib("<#ParentalCtrl_Desc_TS#>");' onmouseout="return nd();"><#Parental_Control#></span>
 					</div>
 					<div align="center" class="left" style="cursor:pointer;float:right;" id="radio_TimeScheduling_enable"></div>
 					<div id="internetTimeScheduling" class="internetTimeEdit" style="float:right;margin-right:10px;" title="<#Time_Scheduling#>" onclick="redirectTimeScheduling(document.getElementById('macaddr_field').value);" ></div>
@@ -2735,7 +2773,7 @@ function showClientlistModal(){
                                 <div id="copyDdns" class="tooltip"><a onClick="copyDdnsName(this)" data-toggle="tooltip" data-title="Copied!"><i class="icon-clone"></i></a></div>
                                 <span id="ddns_fail_hint" class="notificationoff" onClick="show_ddns_fail_hint();" onMouseOut="nd();"></span>
                                 <span><img id="le_icon" title="Let's Encrypt" src="images/New_ui/networkmap/LE_badge_color.svg" style="width:25px; height:25px;"></span>
-                            </div>
+							</div>
 						</div>
 						<div id="wlc_band_div" style="margin-top:5px;display:none">
 							<span style="font-size:14px;font-family: Verdana, Arial, Helvetica, sans-serif;"><#Interface#>:</span>
@@ -2775,10 +2813,10 @@ function showClientlistModal(){
 							<div>
 								<div style="visibility:hidden;width:100px;font-size:14px;font-family: Verdana, Arial, Helvetica, sans-serif;margin: 15px 0"><#menu5_1#>: </div>
 								<div style="margin-top:10px;">
-								<div id="wl0_icon" class="wl_icon wl0_icon_on"></div>
-								<div id="wl1_icon" class="wl_icon wl1_icon_on" style="display:none"></div>
-								<div id="wl2_icon" class="wl_icon wl2_icon_on" style="display:none"></div>
-								<div id="wl3_icon" class="wl_icon wl3_icon_on" style="display:none"></div>
+								<div id="wl0_icon" class="ic-signal" style="display:none"></div>
+								<div id="wl1_icon" class="ic-signal" style="display:none"></div>
+								<div id="wl2_icon" class="ic-signal" style="display:none"></div>
+								<div id="wl3_icon" class="ic-signal" style="display:none"></div>
 								</div>
 							</div>
 						</div>
@@ -2853,7 +2891,6 @@ function showClientlistModal(){
 								</script>			
 							</div>
 						</div>
-
 						<div id="ameshContainer" onclick="showstausframe('AMesh');"></div>
 					</td>
 
@@ -2878,18 +2915,21 @@ function showClientlistModal(){
 							(function(){
 								const defaultRouterFrame = `/device-map/router${isSupport("sdn_mainfh")?"_status":""}.asp`;
 								setTimeout(function(){
-									document.getElementById("statusframe").src = defaultRouterFrame;	
+									const statusframe_src = isSwMode("RP") ? `/device-map/internet.asp` : defaultRouterFrame;
+									$('#statusframe').attr('src', statusframe_src).show();
 									const get_header_info = httpApi.hookGet("get_header_info");
 									const domain = `${get_header_info.protocol}://${get_header_info.host}`;
 									const domain_w_port = `${get_header_info.protocol}://${get_header_info.host}:${get_header_info.port}`;
 
 									let messageTimeout;
 									messageTimeout = setTimeout(() => {
-										document.getElementById("statusframe").src = `/device-map/router${isSupport("sdn_mainfh")?"_status":""}.asp`;
+										if($('#statusframe').attr('src') === statusframe_src)
+											$('#statusframe').attr('src', statusframe_src);
 									}, 5000);
 
 									window.addEventListener('message', function(event){
-										if(event.data == `router${isSupport("sdn_mainfh")?"_status":""}.asp`){
+										const msg_page = isSwMode("RP") ? `internet.asp` : `router${isSupport("sdn_mainfh")?"_status":""}.asp`;
+										if(event.data == msg_page){
 											const has_port = /:\d+$/.test(event.origin);
 											if(has_port){
 												if(event.origin !== domain_w_port){
@@ -2902,17 +2942,18 @@ function showClientlistModal(){
 												}
 											}
 											clearTimeout(messageTimeout);
-											$("#statusframe").show()
-												.off('load').on("load", function(){
-													const $statusframe = $(this);
-													$statusframe.show();
-													$statusframe[0].contentWindow.onbeforeunload = function(){
-														$statusframe.hide();
-													};
-												});
 										}
 									});
 								}, 1);
+
+								$("#statusframe").show()
+									.off('load').on("load", function(){
+										const $statusframe = $(this);
+										$statusframe.show();
+										$statusframe[0].contentWindow.onbeforeunload = function(){
+											$statusframe.hide();
+										};
+									});
 							})()
 						</script>
 					</td>
@@ -2930,7 +2971,6 @@ function showClientlistModal(){
 <script>
 	if(flag == "Internet" || flag == "Client")
 		document.getElementById("statusframe").src = "";
-
 	initial();
 </script>
 </body>

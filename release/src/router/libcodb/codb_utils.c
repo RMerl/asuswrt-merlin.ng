@@ -96,128 +96,155 @@ static int get_backup_db_path_by_datetime(const char* db_name, const char* db_ve
 
 static sql_column_match_t* parse_match_columns_data(char* data, int data_count) {
     
-    if (data==NULL || data_count<=0) {
+    if (data == NULL || data_count <= 0) {
         return NULL;
     }
 
     //- ex. data
     //- name>type(txt/int)>value>operation
 
-    sql_column_match_t* match_columns = NULL;
-
-    char *saveptr1=NULL, *saveptr2=NULL;
-    match_columns = malloc(sizeof(sql_column_match_t)*data_count);
+    sql_column_match_t* match_columns = malloc(sizeof(sql_column_match_t) * data_count);
+    if (match_columns == NULL) {
+        return NULL;
+    }
     sql_column_match_t* query_match_columns_idx = match_columns;
     
-    char* pch = strdup(data);
-    pch = strtok_r(pch, ";", &saveptr1);
-    while(pch!=NULL){
+    char* data_copy = strdup(data);
+    if (data_copy == NULL) {
+        free(match_columns);
+        return NULL;
+    }
 
-        // fprintf(stderr, "pch=%s\n", pch);
+    char *saveptr1 = NULL, *saveptr2 = NULL;
+    char* pch = strtok_r(data_copy, ";", &saveptr1);
+    while (pch != NULL) {
 
         int idx = 0;
-        char* pch2 = strdup(pch);
-        pch2 = strtok_r(pch2, ">", &saveptr2);
-        while (pch2!=NULL) {
+        char* pch2 = strtok_r(pch, ">", &saveptr2);
+        while (pch2 != NULL) {
 
             int len = strlen(pch2);
 
-            if (idx==0) {
+            if (idx == 0) {
                 //- column name
-                query_match_columns_idx->name = (char *)malloc(sizeof(char)*len);
-                memset(query_match_columns_idx->name, 0, len);
+                query_match_columns_idx->name = (char *)malloc(sizeof(char) * (len + 1));
+                if (query_match_columns_idx->name == NULL) {
+                    // Free previously allocated memory
+                    for (sql_column_match_t* ptr = match_columns; ptr < query_match_columns_idx; ++ptr) {
+                        free(ptr->name);
+                        if (ptr->type == COLUMN_TYPE_TEXT) {
+                            free(ptr->value.t);
+                        }
+                    }
+                    free(match_columns);
+                    free(data_copy);
+                    return NULL;
+                }
+                memset(query_match_columns_idx->name, 0, len + 1);
                 strncpy(query_match_columns_idx->name, pch2, len);
+                query_match_columns_idx->name[len] = '\0'; // Ensure null-termination
             }
-            else if (idx==1) {
+            else if (idx == 1) {
                 //- column type
-                if (strncmp(pch2, "txt", 3)==0) {
+                if (strncmp(pch2, "txt", 3) == 0) {
                     query_match_columns_idx->type = COLUMN_TYPE_TEXT;
                 }
-                else if (strncmp(pch2, "int", 3)==0) {
+                else if (strncmp(pch2, "int", 3) == 0) {
                     query_match_columns_idx->type = COLUMN_TYPE_INT;
                 }
             }
-            else if (idx==2) {
+            else if (idx == 2) {
                 //- column value
-                if (query_match_columns_idx->type==COLUMN_TYPE_TEXT ||
-                    query_match_columns_idx->type==COLUMN_TYPE_TEXT_MAC ||
-                    query_match_columns_idx->type==COLUMN_TYPE_TEXT_IP ||
-                    query_match_columns_idx->type==COLUMN_TYPE_TEXT_JSON) {
-                    query_match_columns_idx->value.t = (char *)malloc(sizeof(char)*len);
-                    memset(query_match_columns_idx->value.t, 0, len);
+                if (query_match_columns_idx->type == COLUMN_TYPE_TEXT ||
+                    query_match_columns_idx->type == COLUMN_TYPE_TEXT_MAC ||
+                    query_match_columns_idx->type == COLUMN_TYPE_TEXT_IP ||
+                    query_match_columns_idx->type == COLUMN_TYPE_TEXT_JSON) {
+                    query_match_columns_idx->value.t = (char *)malloc(sizeof(char) * (len + 1));
+                    if (query_match_columns_idx->value.t == NULL) {
+                        // Free previously allocated memory
+                        for (sql_column_match_t* ptr = match_columns; ptr < query_match_columns_idx; ++ptr) {
+                            free(ptr->name);
+                            if (ptr->type == COLUMN_TYPE_TEXT) {
+                                free(ptr->value.t);
+                            }
+                        }
+                        free(query_match_columns_idx->name);
+                        free(match_columns);
+                        free(data_copy);
+                        return NULL;
+                    }
+                    memset(query_match_columns_idx->value.t, 0, len + 1);
                     strncpy(query_match_columns_idx->value.t, pch2, len);
+                    query_match_columns_idx->value.t[len] = '\0'; // Ensure null-termination
                 }
-                else if (query_match_columns_idx->type==COLUMN_TYPE_INT) {
+                else if (query_match_columns_idx->type == COLUMN_TYPE_INT) {
                     query_match_columns_idx->value.i = atoi(pch2);
                 }
             }
-            else if (idx==3) {
+            else if (idx == 3) {
                 query_match_columns_idx->operation = atoi(pch2);
             }
 
             pch2 = strtok_r(NULL, ">", &saveptr2);
-
             idx++;
         }
 
-        if (pch2!=NULL) {
-            free(pch2);
-        }
-
         pch = strtok_r(NULL, ";", &saveptr1);
-
-        // fprintf(stderr, "query_match_columns_idx->name=%s\n", query_match_columns_idx->name);
-        // fprintf(stderr, "query_match_columns_idx->value.t=%s\n", query_match_columns_idx->value.t);
-
         query_match_columns_idx++;
     }
 
-    if (pch!=NULL) {
-        free(pch);
-    }
+    free(data_copy);
 
     return match_columns;   
 }
 
 static sql_column_prototype_t* parse_query_columns_data(char* data, int data_count) {
-
-    if (data==NULL || data_count<=0) {
+ 
+    if (data == NULL || data_count <= 0) {
         return NULL;
     }
-
-    //- ex. data
-    //- name
-
-    sql_column_prototype_t* query_columns = NULL;
-
-    query_columns = malloc(sizeof(sql_column_prototype_t)*data_count);
+ 
+    sql_column_prototype_t* query_columns = malloc(sizeof(sql_column_prototype_t) * data_count);
+    if (query_columns == NULL) {
+        return NULL;
+    }
+ 
     sql_column_prototype_t* query_columns_idx = query_columns;
-
-    char* pch = strdup(data);
-    pch = strtok(pch, ";");
-    while (pch!=NULL) {
-
+ 
+    char* data_copy = strdup(data);
+    if (data_copy == NULL) {
+        free(query_columns);
+        return NULL;
+    }
+ 
+    char* pch = strtok(data_copy, ";");
+    while (pch != NULL) {
         int len = strlen(pch);
-
-        //- column name
-        query_columns_idx->name = (char *)malloc(sizeof(char)*len);
-        memset(query_columns_idx->name, 0, len);
+ 
+        query_columns_idx->name = (char *)malloc(sizeof(char) * (len + 1));
+        if (query_columns_idx->name == NULL) {
+            // Free previously allocated memory
+            for (sql_column_prototype_t* ptr = query_columns; ptr < query_columns_idx; ++ptr) {
+                free(ptr->name);
+            }
+            free(query_columns);
+            free(data_copy);
+            return NULL;
+        }
+ 
+        memset(query_columns_idx->name, 0, len + 1);
         strncpy(query_columns_idx->name, pch, len);
-
-        //- column type
+        query_columns_idx->name[len] = '\0'; // Ensure null-termination
+ 
         query_columns_idx->type = COLUMN_TYPE_TEXT;
-        
+ 
         pch = strtok(NULL, ";");
-
-        // fprintf(stderr, "query_columns->name=%s\n", query_columns->name);
-
+ 
         query_columns_idx++;
     }
-
-    if (pch!=NULL) {
-        free(pch);
-    }
-
+ 
+    free(data_copy);
+ 
     return query_columns;
 }
 

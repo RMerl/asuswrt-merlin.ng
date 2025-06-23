@@ -40,7 +40,9 @@ endif
 
 ifeq ($(RTCONFIG_CFGSYNC),y)
 ROUTER_LIBS += -lcfgmnt
+ROUTER_LIBS += -lnmpapi
 ROUTER_LDFLAGS += -L$(CFGMNT_DIR)
+ROUTER_LDFLAGS += -L$(TOP)/networkmap/api/
 endif
 
 LDFLAGS = $(ROUTER_LDFLAGS) $(ROUTER_LIBS)  
@@ -125,6 +127,7 @@ endif
 ifeq ($(RTCONFIG_CFGSYNC),y)
 CFLAGS += -I$(SHARED_DIR)/sysdeps/amas
 CFLAGS += -I$(CFGMNT_DIR)
+CFLAGS += -I$(TOP)/networkmap/api
 endif
 
 

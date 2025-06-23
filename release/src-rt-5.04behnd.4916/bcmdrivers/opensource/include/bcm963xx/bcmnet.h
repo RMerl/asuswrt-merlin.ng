@@ -124,6 +124,19 @@ enum {
     ETHWIRESPEEDGET,
     ETHWIRESPEEDSET,
     ETHCTLTXFIR,
+#if defined(CONFIG_GT7)
+    ETHGETEXT84991MIIREG,
+    ETHSETEXT84991MIIREG,
+    ETHGETEXT84991PHYPWR,
+    ETHSETEXT84991PHYPWRON,
+    ETHSETEXT84991PHYPWROFF,
+    ETHSETEXT84991PHYRESET,
+    ETHGETEXT84991MEDIATYPE,
+    ETHSETEXT84991MEDIATYPE,
+    ETHGETEXT84991EEE,
+    ETHSETEXT84991EEEON,
+    ETHSETEXT84991EEEOFF,
+#endif
 };
 
 #pragma pack(push, 4)
@@ -248,6 +261,16 @@ struct ethctl_data {
     int rep;
     int spd;
     txfir_t txfir;
+#if defined(CONFIG_GT7)
+    int speed;
+    int duplex;
+    int cfgSpeed;
+    int cfgDuplex;
+    int phyCap;
+    int advPhyCaps;
+    int config_speed_mode;
+    int config_an_enable;
+#endif
 };
 
 #define ETHCTL_VAL_SET_FLAG ((~(-1))|1<<31)
@@ -276,15 +299,29 @@ enum {
     ETHCTL_FLAG_ACCESS_EXT_PHY              = (1<<0),
     ETHCTL_FLAG_ACCESS_EXTSW_PHY            = (1<<1),
     ETHCTL_FLAG_ACCESS_I2C_PHY              = (1<<2),
-    ETHCTL_FLAG_ACCESS_SERDES               = (1<<3),
-    ETHCTL_FLAG_ACCESS_SERDES_POWER_MODE    = (1<<4),
-    ETHCTL_FLAG_ACCESS_32BIT                = (1<<5),
-    ETHCTL_FLAG_ACCESS_10GSERDES            = (1<<6),
-    ETHCTL_FLAG_ACCESS_10GPCS               = (1<<7),
-    ETHCTL_FLAG_ACCESS_SILENT_START         = (1<<8),
-    ETHCTL_FLAG_ACCESS_SERDES_TIMER         = (1<<9),
+    ETHCTL_FLAG_ACCESS_I2C_PHY_EEPROM       = (1<<3),
+
+    ETHCTL_FLAG_ACCESS_SERDES               = (1<<4),
+    ETHCTL_FLAG_ACCESS_SERDES_POWER_MODE    = (1<<5),
+    ETHCTL_FLAG_ACCESS_32BIT                = (1<<6),
+    ETHCTL_FLAG_ACCESS_10GSERDES            = (1<<7),
+
+    ETHCTL_FLAG_ACCESS_10GPCS               = (1<<8),
+    ETHCTL_FLAG_ACCESS_SILENT_START         = (1<<9),
+    ETHCTL_FLAG_ACCESS_SERDES_TIMER         = (1<<10),
 };
 #define ETHCTL_FLAG_ANY_SERDES  (ETHCTL_FLAG_ACCESS_SERDES|ETHCTL_FLAG_ACCESS_10GSERDES)
+
+#if defined(CONFIG_GT7)
+/* PHY indirectly connected BCM84991 Access */
+enum {
+    ETHCTL_FLAG_ACCESS_PHYEXT84991_EXT          = 0,
+    ETHCTL_FLAG_ACCESS_PHYEXT84991_MEDIA_TYPE   = (1<<0),
+    ETHCTL_FLAG_ACCESS_PHYEXT84991_RESET        = (1<<1),
+    ETHCTL_FLAG_ACCESS_PHYEXT84991_POWER        = (1<<2),
+    ETHCTL_FLAG_ACCESS_PHYEXT84991_EEE          = (1<<3),
+};
+#endif
 
 enum {
     ETHCTL_SET          = (1<<0),

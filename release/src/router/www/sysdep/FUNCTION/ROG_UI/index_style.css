@@ -1016,6 +1016,11 @@ width:122px;
 	background-image: url(images/New_ui/icon_Gamecenter.png);
 	background-position: -0px -90px;
 }
+.menu_UU{
+	background-image: url(images/New_ui/icon_UU.png);
+	background-position: 0 0;
+	background-size: contain;
+}
 .menu_AiMesh{
 	background: url(images/New_ui/icon_AiMesh.png);
 	background-size: cover;

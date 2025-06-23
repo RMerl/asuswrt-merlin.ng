@@ -164,7 +164,7 @@ extern int pktpool_fill(osl_t *osh, pktpool_t *pktp, bool minimal);
 extern int pktpool_empty(osl_t *osh, pktpool_t *pktp);
 extern uint16 pktpool_reclaim(osl_t *osh, pktpool_t *pktp, uint16 free_cnt);
 extern void* pktpool_get_ext(pktpool_t *pktp, uint8 type, void *bufp);
-extern void pktpool_free(pktpool_t *pktp, void *p);
+extern void pktpool_free(osl_t *osh, pktpool_t *pktp, void *p);
 extern int pktpool_add(pktpool_t *pktp, void *p);
 extern int pktpool_avail_notify_normal(osl_t *osh, pktpool_t *pktp);
 extern int pktpool_avail_notify_exclusive(osl_t *osh, pktpool_t *pktp, pktpool_cb_t cb);

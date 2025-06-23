@@ -10,8 +10,6 @@ struct pnsInfo
 struct pnsInfo mapPushInfo[] =
 {
 	/* RESERVATION EVENT */
-	{RESERVATION_MAIL_REPORT_EVENT               ,"" ,""},
-	{RESERVATION_MAIL_CONFIRM_EVENT              ,"" ,""},
 	/* ------------------------------
 	   ### System ###
 	---------------------------------*/
@@ -19,7 +17,6 @@ struct pnsInfo mapPushInfo[] =
 	{SYS_WAN_BLOCK_EVENT                         ,"WAN Connection is paused"                                ,"" },
 	{SYS_NEW_DEVICE_WIFI_CONNECTED_EVENT         ,"New Device Connected(wifi)"                              ,"" },
 	{SYS_NEW_DEVICE_ETH_CONNECTED_EVENT          ,"New Device Connected(eth)"                               ,"" },
-	{SYS_FW_NWE_VERSION_AVAILABLE_EVENT          ,"New Firmware Available"                                  ,"" },
 	{SYS_EXISTED_DEVICE_WIFI_CONNECTED_EVENT     ,"Manage Your Wireless Client"                             ,"" },
 	{SYS_WAN_CABLE_UNPLUGGED_EVENT               ,"The network cable is unplugged"                          ,"" },
 	{SYS_WAN_PPPOE_AUTH_FAILURE_EVENT            ,"PPPoE Authentication Failure"                            ,"" },
@@ -38,16 +35,18 @@ struct pnsInfo mapPushInfo[] =
 	{SYS_REBOOT_NOK_EVENT                        ,"Device reboot failed"                                    ,"" },
 	{SYS_LAN_PORT_IN_EVENT                       ,"LAN port plug-in"                                        ,"" },
 	{SYS_LAN_PORT_OUT_EVENT                      ,"LAN port plug-out"                                       ,"" },
+	{SYS_AFC_COLD_REBOOT_SILENT_EVENT            ,"AFC Cold reboot in silent"                               ,"" },
 	{SYS_AFC_COLD_REBOOT_EVENT                   ,"AFC Cold reboot"                                         ,"" },
+	{SYS_FW_NEW_VERSION_AVAILABLE_EVENT          ,"New Firmware Available"                                  ,"" },
 	/* ------------------------------
 	   ### Administration ###
 	---------------------------------*/
-	{ADMIN_LOGIN_FAIL_LAN_WEB_EVENT              ,"Unusual Router Sign-In"                                  ,"" },
-	{ADMIN_LOGIN_FAIL_SSH_EVENT                  ,"Unusual Router Sign-In"                                  ,"" },
-	{ADMIN_LOGIN_FAIL_TELNET_EVENT               ,"Unusual Router Sign-In"                                  ,"" },
 	{ADMIN_REMOTE_LOGIN_EVENT                    ,"Login successed"                                         ,"" },
 	{ADMIN_BOUND_DEV_EVENT                       ,"Device Bound"                                            ,"" },
 	{ADMIN_UNBOUND_DEV_EVENT                     ,"Device Unbound"                                          ,"" },
+	{ADMIN_LOGIN_FAIL_SSH_EVENT                  ,"Unusual Router Sign-In"                                  ,"" },
+	{ADMIN_LOGIN_FAIL_TELNET_EVENT               ,"Unusual Router Sign-In"                                  ,"" },
+	{ADMIN_LOGIN_FAIL_LAN_WEB_EVENT              ,"Unusual Router Sign-In"                                  ,"" },
 	/* ------------------------------
 	   ### Security ###
 	---------------------------------*/

@@ -1474,8 +1474,9 @@ function getMouseXY(e) {
 }
 
 function getSafeLocation() {
-    var url = new URL(window.location.href);
-    return url.origin;
+    var url = new URL(window.location.href); //- Safely parsing URLs using the URL API
+	var sanitizedUrl = encodeURIComponent(url.origin); //- Encode the URL to prevent XSS
+	return sanitizedUrl;
 }
 
 $(document).ready(function(){
@@ -1488,7 +1489,7 @@ $(document).ready(function(){
 		
 		if(option.indexOf("desktop=1")!=0){
 			var url = getSafeLocation();
-			window.location = url + '?mobile=1';
+			window.location = decodeURIComponent(url) + '?mobile=1';
 			return;
 		}
 	}

@@ -8,7 +8,7 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <link rel="icon" href="images/favicon.png">
-<title><#Web_Title#> - <#errormessage_title#></title>
+<title><#errormessage_title#></title>
 <script type="text/JavaScript" src="/js/jquery.js"></script>
 <style>
 body{
@@ -247,6 +247,9 @@ var casenum = '<% get_parameter("flag"); %>';
 var sw_mode = '<% nvram_get("sw_mode"); %>';
 var wlc_psta = '<% nvram_get("wlc_psta"); %>';
 var wlc_express = '<% nvram_get("wlc_express"); %>';
+var wlc_band = '<% nvram_get("wlc_band"); %>';
+if(wlc_band != "" && casenum == "1") casenum = "8"; 
+
 if( ((sw_mode == 2 || sw_mode == 3) && wlc_psta == 1) || (sw_mode == 3 && wlc_psta == 3))
 	sw_mode = 4;
 	
@@ -610,7 +613,7 @@ function show_phone_as_modem_hints(){
 			</div>
 			<div id="page_title" class="div_td title_text"><#web_redirect_message#></div>
 		</div>		
-		<div class="prod_madelName"><#Web_Title2#></div>
+		<div class="prod_madelName"></div>
 		
 		<div id="reason_title" class="p1 title_gap"><#web_redirect_fail_reason0#></div>	
 		<div id="reason_field">

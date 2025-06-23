@@ -1,5 +1,6 @@
 #!/bin/sh
 WLNANDMFG_FILE=/proc/nvram/wl_nand_manufacturer
+AVS_DISABLE_FILE=/proc/environment/avs_disable
 if [ -e $WLNANDMFG_FILE ]; then
 SYSTEM_INFO_INDICATOR=$(cat  $WLNANDMFG_FILE )
 else
@@ -16,6 +17,7 @@ if  [ -e $MFG_NVRAM_MODE_FILEPATH ]; then
 else
 	mfg_nvram_mode=0
 fi
+avs_disable=$(cat $AVS_DISABLE_FILE)
 
 trap "" 2
 

@@ -46,6 +46,8 @@ wpas_dpp_tx_pkex_status(struct wpa_supplicant *wpa_s,
 			const u8 *src, const u8 *bssid,
 			const u8 *data, size_t data_len,
 			enum offchannel_send_action_result result);
+static void wpas_dpp_conf_req_rx_wait_timeout(void *eloop_ctx, 
+			void *timeout_ctx);
 #ifdef CONFIG_DPP2
 static void wpas_dpp_reconfig_reply_wait_timeout(void *eloop_ctx,
 						 void *timeout_ctx);
@@ -648,6 +650,24 @@ static void wpas_dpp_init_timeout(void *eloop_ctx, void *timeout_ctx)
 	wpa_printf(MSG_DEBUG, "DPP: Retry initiation after timeout");
 	wpas_dpp_auth_init_next(wpa_s);
 }
+
+static void wpas_dpp_conf_req_rx_wait_timeout(void *eloop_ctx, 
+			void *timeout_ctx)
+{
+	struct wpa_supplicant *wpa_s = eloop_ctx;
+
+	if (!wpa_s->dpp_auth || !wpa_s->dpp_auth->auth_success)
+		return;
+
+	wpa_printf(MSG_DEBUG, 
+		"DPP: terminate exchange due to Configuration Request rx timeout");
+	wpa_msg(wpa_s, MSG_INFO, DPP_EVENT_CONF_FAILED 
+		"No Configuration Request received");
+
+	dpp_auth_deinit(wpa_s->dpp_auth);
+	wpa_s->dpp_auth = NULL;
+}
+
 
 static int wpas_dpp_auth_init_next(struct wpa_supplicant *wpa_s)
 {
@@ -1793,8 +1813,12 @@ static void wpas_dpp_auth_success(struct wpa_supplicant *wpa_s, int initiator)
 	}
 #endif /* CONFIG_TESTING_OPTIONS */
 
-	if (wpa_s->dpp_auth->configurator)
+	if (wpa_s->dpp_auth->configurator) {
 		wpas_dpp_start_gas_server(wpa_s);
+		eloop_register_timeout(10, 0,
+				       wpas_dpp_conf_req_rx_wait_timeout,
+				       wpa_s, NULL);
+	}
 	else
 		wpas_dpp_start_gas_client(wpa_s);
 }
@@ -2982,6 +3006,8 @@ wpas_dpp_gas_req_handler(void *ctx, void *resp_ctx, const u8 *sa,
 		    query, query_len);
 	wpa_msg(wpa_s, MSG_INFO, DPP_EVENT_CONF_REQ_RX "src=" MACSTR,
 		MAC2STR(sa));
+	if (auth->configurator)
+		eloop_cancel_timeout(wpas_dpp_conf_req_rx_wait_timeout, wpa_s, NULL);
 	resp = dpp_conf_req_rx(auth, query, query_len);
 
 #ifdef CONFIG_DPP2

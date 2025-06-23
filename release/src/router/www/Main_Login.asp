@@ -290,6 +290,9 @@ body{
 }
 </style>
 <script>
+if('<% nvram_get("productid"); %>' == 'PRT-AX57_GO')
+	$('link').last().after('<link rel="stylesheet" type="text/css" href="/main_login.css">');
+
 /* add Array.prototype.forEach() in IE8 */
 if(typeof Array.prototype.forEach != 'function'){
 	Array.prototype.forEach = function(callback){

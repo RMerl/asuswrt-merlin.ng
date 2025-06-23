@@ -245,7 +245,7 @@
 	background: rgb(255, 255, 255);
 }
 .popup_title_container .title{
-	color: rgb(24, 24, 24);
+	color: rgb(24, 24, 24) !important;
 }
 .popup_container .popup_content_container{
 	background: rgb(255, 255, 255);

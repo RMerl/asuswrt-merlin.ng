@@ -135,7 +135,6 @@ static int mod_alias_patch_connection(server *srv, connection *con, plugin_data 
 		/* merge config */
 		for (j = 0; j < dc->value->used; j++) {
 			data_unset *du = dc->value->data[j];
-
 			if (buffer_is_equal_string(du->key, CONST_STR_LEN("alias.url"))) {
 				PATCH(alias);
 			}
@@ -153,7 +152,7 @@ PHYSICALPATH_FUNC(mod_alias_physical_handler) {
 	size_t k;
 	
 	if (buffer_is_empty(con->physical.path)) return HANDLER_GO_ON;
-
+	
 	mod_alias_patch_connection(srv, con, p);
 
 	/* not to include the tailing slash */
@@ -161,11 +160,11 @@ PHYSICALPATH_FUNC(mod_alias_physical_handler) {
 	if ('/' == con->physical.basedir->ptr[basedir_len-1]) --basedir_len;
 	uri_len = buffer_string_length(con->physical.path) - basedir_len;
 	uri_ptr = con->physical.path->ptr + basedir_len;
-
+	
 	for (k = 0; k < p->conf.alias->used; k++) {
 		data_string *ds = (data_string *)p->conf.alias->data[k];
 		int alias_len = buffer_string_length(ds->key);
-
+		
 		if (alias_len > uri_len) continue;
 		if (buffer_is_empty(ds->key)) continue;
 
@@ -173,11 +172,12 @@ PHYSICALPATH_FUNC(mod_alias_physical_handler) {
 					strncasecmp(uri_ptr, ds->key->ptr, alias_len) :
 					strncmp(uri_ptr, ds->key->ptr, alias_len))) {
 			/* matched */
-
+			
 			/* check for path traversal in url-path following alias if key
 			 * does not end in slash, but replacement value ends in slash */
 			if (uri_ptr[alias_len] == '.') {
 				char *s = uri_ptr + alias_len + 1;
+				
 				if (*s == '.') ++s;
 				if (*s == '/' || *s == '\0') {
 					size_t vlen = buffer_string_length(ds->value);

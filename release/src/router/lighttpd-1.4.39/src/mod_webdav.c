@@ -2045,9 +2045,13 @@ URIHANDLER_FUNC(mod_webdav_subrequest_handler) {
 	
 	UNUSED(srv);
 
-	if (!p->conf.enabled) return HANDLER_GO_ON;
 	/* physical path is setup */
 	if (buffer_is_empty(con->physical.path)) return HANDLER_GO_ON;
+
+	if (!p->conf.enabled) {
+		Cdbg(DBE, "webdav disable, path=%s", con->physical.path->ptr);
+		return HANDLER_GO_ON;
+	}
 
 	/* PROPFIND need them */
 	if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "Depth"))) {
@@ -2069,7 +2073,6 @@ URIHANDLER_FUNC(mod_webdav_subrequest_handler) {
 		return HANDLER_FINISHED;
 	}
 #endif
-
 
 	data_string *ds_referrer = (data_string *)array_get_element(con->request.headers, "Referer");
 	if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "Referer"))) {

@@ -201,6 +201,12 @@ void set_rgbled(unsigned int mode)
 	unsigned int c = mode & cmask;
 	unsigned int b = mode & bmask;
 	int pidx = 0;
+#if defined(RTCONFIG_SW_BTN)
+	int btn_mode=-1;
+	btn_mode=nvram_get_int("btnsw_onoff");
+	if((btn_mode == 2) && nvram_match("AllLED", "0"))
+		c=0; //OFF
+#endif
 
 	if ((c == RGBLED_CONNECTED || c == RGBLED_ETH_BACKHAUL)
 	  && b == 0

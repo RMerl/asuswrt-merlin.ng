@@ -960,7 +960,7 @@ var faq_data = {
 		"link": "Advanced_System_Content.asp",
 		"menu": "<#menu5_6#>",
 		"mode": ["RT"],
-		"support": (() => isSwMode("rt"))(),
+		"support": (() => (isSwMode("RT") || isSwMode("WISP")))(),
 	},
 	"accessRedirections": {
 		"index": "accessRedirections",

@@ -675,7 +675,8 @@ ssize_t hexport_r(struct hsearch_data *htab, const char sep, int flag,
 	if (*resp) {
 		/* yes; clear it */
 		res = *resp;
-		memset(res, '\0', size);
+		/* WAR for the MXIC known issue(fail to write zero sometimes), use 0xFF instead of '\0' */
+		memset(res, 0xff, size);
 	} else {
 		/* no, allocate and clear one */
 		*resp = res = calloc(1, size);

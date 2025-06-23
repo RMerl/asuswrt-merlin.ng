@@ -18,17 +18,18 @@
 		<script type="text/javascript" src="./mobile/js/plugins.js"></script>
 		<script type="text/javascript" src="./mobile/js/qisData.js"></script>
 		<script type="text/javascript" src="./mobile/js/handler.js"></script>
+		<script type="text/javascript" src="./mobile/js/login_state.js"></script>
 		<script type="text/javascript" src="./js/https_redirect/https_redirect.js"></script>
 		<script type="text/javascript" src="./md5.js"></script>
-		<script type="text/javascript" src="./js/asus_policy.js"></script>
+		<script type="text/javascript" src="./js/asus_policy.js?v=4"></script>
 		<script>
 			let urlParameter = new URLSearchParams(window.location.search);
 
-			if(httpApi.nvramGet(["CoBrand"]).CoBrand == "8")
+			if(isSupport("TS_UI"))
 				$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/difference.css">');
 
 			$(document).ready(function(){
-				if(httpApi.nvramGet(["CoBrand"]).CoBrand == "8"){
+				if(isSupport("TS_UI")){
 					setTimeout(function() {
 						// preload image
 						new Image().src = "images/New_ui/middown_bg.png";
@@ -88,8 +89,10 @@
 						"reboot_time", 
 						"lan_ipaddr", 
 						"wlc_dpsta", 
+						"wlc_band", 
 						"CoBrand",
 						"wans_dualwan",
+						"wans_extwan",
 						"wans_mode",
 						"dslx_transmode", 
 						"dsl0_proto", 
@@ -141,29 +144,17 @@
 							}
 							systemVariable.wanDnsenable = initNvram.dsl0_dnsenable;
 						}
-						systemVariable.originOpMode = "RT";
 					}
 					else{
-
 						systemVariable.originWanType = initWanNvram.wan_proto;
 						if(systemVariable.originWanType == "pppoe" || systemVariable.originWanType == "pptp" || systemVariable.originWanType == "l2tp"){
 							systemVariable.originPppAccount.username = initWanNvram.wan_pppoe_username;
 							systemVariable.originPppAccount.password = initWanNvram.wan_pppoe_passwd;
 						}
 						systemVariable.wanDnsenable = initWanNvram.wan_dnsenable_x;
-						systemVariable.originOpMode = (function(){
-							if(initNvram.sw_mode == "2" && (initNvram.wlc_psta == "0" || initNvram.wlc_psta == "") && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "RP";
-							else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "RP";
-							else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && initNvram.wlc_dpsta == "1") return "RP";
-							else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && initNvram.wlc_dpsta == "2") return "RP";
-							else if(initNvram.sw_mode == "3" && (initNvram.wlc_psta == "0" || initNvram.wlc_psta == "") && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "AP";
-							else if(initNvram.sw_mode == "2" && initNvram.wlc_psta == "1" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "MB";
-							else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "1" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "MB";
-							else if(initNvram.sw_mode == "1" && isSupport("noRouter")) return "AP";
-							else return "RT";
-						})();
 					}
 
+					systemVariable.originOpMode = (httpApi.hookGet("get_operation_mode") || "RT").toUpperCase();
 					systemVariable.qisSession = "qis"+Date.now();
 					systemVariable.opMode = systemVariable.originOpMode;
 					systemVariable.wirelessBand = initNvram.wlnband_list.split("&#60").length;
@@ -186,6 +177,7 @@
 					httpApi.privateEula.get().then(data=>{
 						systemVariable.ppStatus = data
 					});
+					systemVariable.macClone = false;
 
 					httpApi.log("tcode", systemVariable.territoryCode, systemVariable.qisSession)
 
@@ -308,6 +300,10 @@
                                         systemVariable.advSetting = true;
                                         goTo.rtMode();
                                         break;
+                                    case "wispMode":
+                                        systemVariable.advSetting = true;
+                                        goTo.wispMode();
+                                        break;
                                     case "mlo":
                                         goTo.Wireless();
                                         break;
@@ -354,6 +350,24 @@
 				}
 			});
 		</script>
+		<script type="module">
+			import { initializeUIModelName, uiModelNameJson } from '/js/uiModelName.module.js';
+			systemVariable.uiModelNameCloud = (()=>{
+				const storedData = window.localStorage.getItem('uiModelNameJson');
+				if (storedData) {
+					return JSON.parse(storedData);
+				}
+				else {
+					return {};
+				}
+			})();
+			if (Object.keys(systemVariable.uiModelNameCloud).length === 0) {
+				(async () => {
+					const data = await initializeUIModelName();
+					systemVariable.uiModelNameCloud = data;
+				})();
+			}
+		</script>
 	</head>
 	<body>
 		<!-- Policy -->
@@ -395,12 +409,20 @@
 				</div>
 
 				<div style="text-align:center;margin:50px 0;" class="welcomeBtnContainer">
-					<div id="welcome_button" onclick="apply.welcome();"></div>
+					<div id="welcome_button" class="welcome_button" onclick="apply.welcome();"></div>
 				</div>
 
-				<!--div style="text-align:center;margin:50px 0" class="amasSupport">
-					<div id="aimesh_welcome_button" onclick="goTo.amasIntro();">Start</div>
-				</div-->
+				<div style="text-align:center;margin:50px 0;" class="welcomeBtnContainer wispMode">
+					<div id="welcome_rt_button" class="welcome_button" onclick="apply.welcome_rt();"><#wireless_router#></div>
+				</div>
+
+				<div style="text-align:center;margin:50px 0;" class="welcomeBtnContainer wispMode">
+					<div id="welcome_wisp_button" class="welcome_button" onclick="apply.welcome_wisp();"><#OP_WISP_item#></div>
+				</div>
+
+				<!--div style="text-align:center;margin:50px 0" class="amasSupport"
+					div id="aimesh_welcome_button" onclick="goTo.amasIntro();" Start /div
+				/div-->
 	
 				<div style="margin:auto;width:600px;text-align:center;">
 					<a href="#"  class="advSetting" onclick="goTo.advSetting()"><#menu5#></a>
@@ -414,6 +436,17 @@
 					<a href="#" onclick="goTo.TMToS()">Trend Micro End User License Agreement</a>.
 				</div>
 			</div>
+			<script>
+				(()=>{
+					let isDefault = (()=>{
+						let x_Setting = httpApi.nvramGet(["x_Setting"]).x_Setting;
+						return (x_Setting == '0' || x_Setting == '') ? true : false;
+					})();
+					if(isSupport("wisp") && !isDefault){
+						$("#welcome_button, .wispMode").addClass("is_not_default");
+					}
+				})();
+			</script>
 		</div>
 		
 		<!-- Prelink description -->
@@ -626,7 +659,7 @@
 						</div>
 					</div>
 					<div class="table_td">
-						<div id="login_desc" class="pageDesc"><#QIS_pass_desc1#></div>
+						<div id="login_desc" class="pageDesc"><#Local_login_desc#></div>
 						<div id="login_passwd_KR" class="pageDesc_passwd_KR" style="display:none;"><#JS_validLoginPWD#></div>
 						<div id="login_field">
 							<div>
@@ -639,7 +672,7 @@
 							</div>
 							<div>
 								<div class="inputTitleContainer">
-									<div class="inputTitle"><#PASS_new#></div>
+									<div class="inputTitle"><#HSDPAConfig_Password_itemname#></div>
 									<div class="secureInput icon_eye_close" for="http_passwd http_passwd_confirm"></div>
 								</div>
 								<div class="inputContainer">
@@ -648,7 +681,7 @@
 							</div>
 							<div id="http_passwd_confirm_container">
 								<div class="inputTitleContainer">
-									<div class="inputTitle"><#PASS_retype#></div>
+									<div class="inputTitle"><#PM_Confirm_Pwd#></div>
 								</div>
 								<div class="inputContainer">
 									<input id="http_passwd_confirm" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="33" class="textInput" data-role="none" value="" data-clear-btn="true" />
@@ -914,6 +947,15 @@
 									<div class="selectBar" onclick="goTo.amasIntro()">
 										AiMesh
 									</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
+
+							<div class="selectorContainer wispSupport">
+								<div class="selectorContainerDiv">
+									<div class="selectBar" onclick="goTo.wispMode()"><#OP_WISP_item#></div>
 									<div class="narrowContainer">
 										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
 									</div>
@@ -1397,11 +1439,11 @@
 					</div>
 				</div>
 				<div class="table_td">
-					<div id="pppoe_desc" class="pageDesc"><#QIS_SmartConn_ISPDesc2#></div>
+					<div id="pppoe_desc" class="pageDesc"><#QIS_SmartConn_ISPDesc3#></div>
 					<div id="pppoe_field">
 						<div>
 							<div class="inputTitleContainer">
-								<div class="inputTitle"><#Username#></div>
+								<div class="inputTitle"><#HSDPAConfig_pppoeUsername_itemname#></div>
 							</div>
 							<div class="inputContainer">
 								<input id="wan_pppoe_username" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="64" class="textInput pppInput" data-role="none" value="" data-clear-btn="true" />
@@ -1409,7 +1451,7 @@
 						</div>
 						<div>
 							<div class="inputTitleContainer">
-								<div class="inputTitle"><#PPPConnection_Password_itemname#></div>
+								<div class="inputTitle"><#HSDPAConfig_pppoePassword_itemname#></div>
 								<div class="secureInput icon_eye_close" for="wan_pppoe_passwd"></div>
 							</div>
 							<div class="inputContainer">
@@ -1778,7 +1820,7 @@
 							</div>
 							<div class="inputContainer">
 								<input id="sim_pincode" class="textInput" data-role="none" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-clear-btn="true" />
-								<span id="verify_pincode_status" class="inputTitle hint_yellow" style="display:none;"></span>
+								<span id="verify_pincode_status" class="hint_yellow" style="display:none;"></span>
 							</div>
 						</div>
 
@@ -1877,7 +1919,7 @@
 							</div>
 							<div class="inputContainer">
 								<input id="sim_puk" class="textInput" data-role="none" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-clear-btn="true" />
-								<span id="verify_puk_status" class="inputTitle hint_yellow" style="display:none;"></span>
+								<span id="verify_puk_status" class="hint_yellow" style="display:none;"></span>
 							</div>
 						</div>
 
@@ -1888,7 +1930,7 @@
 							</div>
 							<div class="inputContainer">
 								<input id="new_pincode" class="textInput" data-role="none" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-clear-btn="true" />
-								<span id="new_pincode_status" class="inputTitle hint_yellow" style="display:none;"></span>
+								<span id="new_pincode_status" class="hint_yellow" style="display:none;"></span>
 							</div>
 						</div>
 
@@ -2391,7 +2433,7 @@
 									<option value="psk">WPA-Personal</option>
 									<option value="psk2" selected>WPA2-Personal</option>
 								</select>
-								<div class="inputTitle hint_yellow" id="manual_pap_setup-nmode_hint">
+								<div class="hint_yellow" id="manual_pap_setup-nmode_hint">
 									<#WLANConfig11n_automode_limition_hint#>
 								</div>
 							</div>
@@ -2405,6 +2447,7 @@
 								<select id="wlc_crypto_manual" class="optionInput">
 									<option value="aes">AES</option>
 									<option value="tkip">TKIP</option>
+									<option value="aes+gcmp256">AES+GCMP256</option>
 								</select>
 							</div>
 						</div>
@@ -2438,7 +2481,7 @@
 
 						<div id="manual_pap_setup-key">
 							<div class="inputTitleContainer">
-								<div class="inputTitle"><#QIS_finish_wireless_item2#></div>
+								<div class="inputTitle"><#QIS_finish_wireless_item3#></div>
 								<div class="secureInput icon_eye_close" for="wlc_wifiKey"></div>
 							</div>
 							<div class="inputContainer">
@@ -2447,10 +2490,15 @@
 						</div>
 					</div>
 
+					<div class="labelContainer mloSupport">
+						<label for="mlo_enable_checkbox" class="labelInput"><#WiFi_mlo_title#></label>
+						<input type="checkbox" id="mlo_enable_checkbox" data-mini="true"/>
+					</div>
+
 					<!-- Action Button -->
 					<div class="footer_desktop">
 						<div class="desktop_abortBtn" onclick='abort.wlcKey();'><#CTL_prev#></div>
-						<div class="desktop_applyBtn" onclick="apply.wlcKey();"><#CTL_next#></div>
+						<div class="desktop_applyBtn wlcKeyApply" onclick="apply.wlcKey();"><#CTL_next#></div>
 					</div>
 					<div class="footer_mobile">
 						<table style="width:100%;" cellpadding="0" cellspacing="0">
@@ -2459,7 +2507,7 @@
 									<div class="mobile_abortBtn"><#CTL_prev#></div>
 								</td>
 								<td class="mobileApply" onclick="apply.wlcKey();">
-									<div class="mobile_applyBtn"><#CTL_next#></div>
+									<div class="mobile_applyBtn wlcKeyApply"><#CTL_next#></div>
 								</td>
 							</tr>
 						</table>
@@ -2492,7 +2540,7 @@
 							<input type="checkbox" id="wireless_checkbox" data-mini="true"/>
 						</div>
 
-						<div id="wifi6e_legacy_hint" class="hint_yellow" style="padding:30px;margin-top:6px;display:none"><#Wireless_SSID_hint2#> <#Wireless_SSID_hint3#></div>
+						<div id="wifi6e_legacy_hint" class="hint_yellow" style="padding:30px;margin-top:6px;display:none"></div>
 						<div class="labelContainer" id="syncSSID" style="display:none;">
 							<label for="wireless_sync_checkbox" class="labelInput"><#qis_ssid_desc#></label>
 							<input type="checkbox" id="wireless_sync_checkbox" data-mini="true"/>
@@ -2994,7 +3042,7 @@
 						</div>
 						<div>
 							<div class="inputTitleContainer">
-								<div class="inputTitle"><#QIS_finish_wireless_item2#></div>
+								<div class="inputTitle"><#QIS_finish_wireless_item3#></div>
 								<div class="secureInput icon_eye_close" for="s2s_wireless_key"></div>
 							</div>
 							<div class="inputContainer">
@@ -3192,8 +3240,9 @@
 					<div class="table_td">
 						<div class="pageDesc">
 							<#qis_wireless_set_done#>
-							<br><#qis_SDN_IoT_setting_desc1#>
-							<br><#qis_SDN_IoT_setting_desc2#>
+							<br><#qis_SDN_IoT_setting_desc2_new#>
+							<!-- br qis_SDN_IoT_setting_desc1
+							br qis_SDN_IoT_setting_desc2 -->
 						</div>
 
 						<div id="wlTitleField_SDN_IoT" class="inputTitleContainer mloSupport">

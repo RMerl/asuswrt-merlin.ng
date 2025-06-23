@@ -22,7 +22,7 @@ archer-objs += crossbow/crossbow_sq.o crossbow/crossbow_spdsvc.o
 archer-objs += crossbow/crossbow_classifier.o crossbow/crossbow_queue.o
 archer-objs += crossbow/crossbow_natc.o crossbow/fw/crossbow_print.o
 archer-objs += crossbow/crossbow_socket.o crossbow/crossbow_wlan.o
-archer-objs += crossbow/crossbow_gdx.o
+archer-objs += crossbow/crossbow_gdx.o crossbow/crossbow_iq.o
 ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6765_),)
 archer-objs += crossbow/crossbow_fpi.o archer_fpi.o
 archer-objs += crossbow/crossbow_cspu.o

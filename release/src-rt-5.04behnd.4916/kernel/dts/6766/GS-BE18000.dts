@@ -40,6 +40,17 @@
 */
 };
 
+// For ICP-20100 pressure sensor
+&i2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c_2_scl_pin_8 &i2c_2_sda_pin_9>;
+	status = "okay";
+	icp201xx@63{
+		compatible = "invensense,icp201xx";
+		reg = <0x63>;
+	};
+};
+
 &led_ctrl {
     /* Power_LED: GPIO LED */
     led0: led_gpio_10 {
@@ -144,26 +155,45 @@
         status = "okay";
     };
 
+    /* CC3220R nRESET */
+    led90: led_gpio_3 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <3>;
+        active_low;
+        init_high;
+    };
+    /* CC3220R SOP0 */
+    led91: led_gpio_22 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <22>;
+        active_high;
+        init_low;
+    };
+    /* CC3220R SOP1 */
+    led92: led_gpio_23 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <23>;
+        active_high;
+        init_low;
+    };
+    /* CC3220R SOP2 */
+    led93: led_gpio_24 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <24>;
+        active_high;
+        init_low;
+    };
+
 	/* USB Power */
 	led97:led_gpio_67 {
 		compatible = "brcm,gpio-led";
 		software_led;
 		pin = <67>;
 	};
-        /* CC3220R reset */
-        led98: led_gpio_3 {
-                compatible = "brcm,gpio-led";
-                software_led;
-                pin = <3>;
-                active_high;
-        };
-        /* CC3220R GPIO 7 */
-        led99: led_gpio_4 {
-                compatible = "brcm,gpio-led";
-                software_led;
-                pin = <4>;
-                active_low;
-        };
 	/* MxL86282C reset */
 	led100: led_gpio_28 {
 		compatible = "brcm,gpio-led";
@@ -195,12 +225,6 @@
 };
 &usb0_xhci {
     status = "okay";
-};
-
-&i2c1 {
-    pinctrl-names = "default";
-    pinctrl-0 = <&i2c_2_scl_pin_8 &i2c_2_sda_pin_9>;
-    status = "disabled";
 };
 
 &mdio_sf2 {

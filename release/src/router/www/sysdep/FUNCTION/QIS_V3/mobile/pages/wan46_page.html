@@ -137,7 +137,9 @@ else{	//0 and else
 		if(isWANChanged()){
 			httpApi.nvramSet((function(){
 				qisPostData.wan_unit = "0";
-				qisPostData.ipv6_service = "ipv6pt";
+				/* Viz tmp 
+					qisPostData.ipv6_service = "ipv6pt";
+				*/
 				qisPostData.action_mode = "apply";
 				qisPostData.rc_service = "restart_wan_if 0";
 				return qisPostData;

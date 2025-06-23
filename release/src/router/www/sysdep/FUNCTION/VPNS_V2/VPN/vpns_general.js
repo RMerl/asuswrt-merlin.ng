@@ -515,11 +515,13 @@ function resize_iframe_height(_preheight){
 		$(parent.document).find(".rwd_iframe").css("height", (Math.max(menu_height, container_height, pop_height) + margin_bottom));
 	}
 }
-function showLoading(seconds, flag){
-	$("#Loading").css({"width":"", "height":""});
-	progress = 100/seconds;
-	y = 0;
-	LoadingTime(seconds, flag);
+if(!isSupport("UI4")) {
+	function showLoading(seconds, flag) {
+		$("#Loading").css({"width": "", "height": ""});
+		progress = 100 / seconds;
+		y = 0;
+		LoadingTime(seconds, flag);
+	}
 }
 function show_customize_alert(_text){
 	$(".popup_customize_alert").css("display", "flex");

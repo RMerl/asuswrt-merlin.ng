@@ -376,10 +376,12 @@ function tryParseJSON (jsonString){
             return o;
         }
     }
-    catch (e) { }
+    catch (e) {
+		// do something
+	}
 
     return false;
-};
+}
 
 var login_info =  tryParseJSON('<% login_error_info(); %>');
 var isIE8 = navigator.userAgent.search("MSIE 8") > -1; 

@@ -89,33 +89,10 @@ var htmlEnDeCode = (function() {
 })();
 
 if(typeof isSwMode != "function"){
-	function isSwMode(mode){
-		let ui_sw_mode = "rt";
-		let sw_mode = '<% nvram_get("sw_mode"); %>';
-		let wlc_psta = '<% nvram_get("wlc_psta"); %>' == '' ? 0 : '<% nvram_get("wlc_psta"); %>';
-		let wlc_express = '<% nvram_get("wlc_express"); %>' == '' ? 0 : '<% nvram_get("wlc_express"); %>';
-
-		if(((sw_mode == '2' && wlc_psta == '0') || (sw_mode == '3' && wlc_psta == '2')) && wlc_express == '0'){	// Repeater
-			ui_sw_mode = "re";
-		}
-		else if((sw_mode == '3' && wlc_psta == '0') || (sw_mode == '3' && wlc_psta == '')){	// Access Point
-			ui_sw_mode = "ap";
-		}
-		else if((sw_mode == '3' && wlc_psta == '1' && wlc_express == '0') || (sw_mode == '3' && wlc_psta == '3' && wlc_express == '0') || (sw_mode == '2' && wlc_psta == '1' && wlc_express == '0')){	// MediaBridge
-			ui_sw_mode = "mb";
-		}
-		else if(sw_mode == '2' && wlc_psta == '0' && wlc_express == '1'){	// Express Way 2G
-			ui_sw_mode = "ew2";
-		}
-		else if(sw_mode == '2' && wlc_psta == '0' && wlc_express == '2'){	// Express Way 5G
-			ui_sw_mode = "ew5";
-		}
-		else if(sw_mode == '5'){	// Hotspot
-			ui_sw_mode = 'hs';
-		}
-		else ui_sw_mode = "rt"; // Router
-
-		return (ui_sw_mode.search(mode) !== -1);
+	var isSwMode = function(mode){
+		var ui_sw_mode = [<% get_operation_mode(); %>][0];
+		mode = mode.toLowerCase();
+		return ui_sw_mode == mode;
 	}
 }
 if(typeof isSupport != "function"){
@@ -175,50 +152,23 @@ if(typeof get_wl_unit_by_band != "function"){
 	function get_wl_unit_by_band(_band){
 		if(_band == undefined) return "";
 
-		const wl_nband_array = "<% wl_nband_info(); %>".toArray();
 		_band = (_band).toString().toUpperCase();
-		let wl_nband = "";
+		const wlnband_list = `<% nvram_get("wlnband_list"); %>`.toUpperCase().split("&#60");
 
-		switch(_band){
-			case "2G":
-			case "2G1":
-				wl_nband = "2";
-				break;
-			case "5G":
-			case "5G1":
-			case "5G2":
-				wl_nband = "1";
-				break;
-			case "6G":
-			case "6G1":
-			case "6G2":
-				wl_nband = "4";
-				break;
-			case "60G":
-				wl_nband = "6";
-				break;
+		const bandMap = {
+			"2G": "2G1",
+			"5G": "5G1",
+			"6G": "6G1"
+		};
+
+		_band = bandMap[_band] || _band;
+
+		return findWLUnit(wlnband_list, _band).toString();
+
+		function findWLUnit(array, band) {
+			const idx = $.inArray(band, array);
+			return idx !== -1 ? idx : '';
 		}
-
-		if(wl_nband == "") return "";
-
-		let wl_unit = "";
-		let suffix_num = _band.substr(_band.indexOf("G") + 1);
-		let ordinal_num = (suffix_num == "") ? 1 : parseInt(suffix_num);
-		let count = 1;
-
-		for(let wlx = 0; wlx < wl_nband_array.length; wlx++){
-			if(wl_nband_array[wlx] == wl_nband){
-				if(count == ordinal_num){
-					wl_unit = wlx;
-					break;
-				}
-				else{
-					count+=1;
-				}
-			}
-		}
-
-		return wl_unit.toString();
 	}
 }
 
@@ -292,47 +242,37 @@ var makeRequest = {
 };
 
 function showWlHint(updateFlag){
-	if(!isSwMode('rt') && !isSwMode('ap')) return false;
+	if(!isSwMode("RT") && !isSwMode('ap')) return false;
 
 	var wl_nband_title = (function(){
-		String.prototype.toArray = function(){
-			var ret = eval(this.toString());
-			if(Object.prototype.toString.apply(ret) === '[object Array]')
-				return ret;
-			return [];
+		const wlnband_list = `<% nvram_get("wlnband_list"); %>`.split("&#60");
+		const titleArr = [];
+		const bandCounts = {};
+		for (const band of wlnband_list) {
+			let bandType = band.substring(0, 2);
+			if (band.startsWith('60g')) {
+				bandType = '60g';
+			}
+			bandCounts[bandType] = (bandCounts[bandType] || 0) + 1;
 		}
-
-		var wl_nband_title = [];
-		var wl_nband_array = "<% wl_nband_info(); %>".toArray();
-		var band2g_count = 0;
-		var band5g_count = 0;
-		var band6g_count = 0;
-		var band60g_count = 0;
-		for (var j=0; j<wl_nband_array.length; j++) {
-			if(wl_nband_array[j] == '2'){
-				band2g_count++;
-				wl_nband_title.push("2.4 GHz" + ((band2g_count > 1) ? ("-" + band2g_count) : ""));
+		for (const band of wlnband_list) {
+			let bandType = band.substring(0, 2);
+			if (band.startsWith('60g')) {
+				bandType = '60g';
 			}
-			else if(wl_nband_array[j] == '1'){
-				band5g_count++;
-				wl_nband_title.push("5 GHz" + ((band5g_count > 1) ? ("-" + band5g_count) : ""));
+			const bandNumber = band.substring(bandType.length);
+			let frequency = '';
+			let unit = 'GHz';
+			if (bandType === '2g') {
+				frequency = '2.4 ';
+			} else if (bandType === '5g' || bandType === '6g' || bandType === '60g') {
+				frequency = bandType.substring(0, bandType.length - 1) + ' ';
 			}
-			else if(wl_nband_array[j] == '4'){
-				band6g_count++;
-				wl_nband_title.push("6 GHz" + ((band6g_count > 1) ? ("-" + band6g_count) : ""));
-			}
-			else if(wl_nband_array[j] == '6'){
-				band60g_count++;
-				wl_nband_title.push("60 GHz" + ((band60g_count > 1) ? ("-" + band60g_count) : ""));
+			if (frequency !== '') {
+				titleArr.push(bandCounts[bandType] > 1 ? `${frequency}${unit}-${bandNumber}` : `${frequency}${unit}`);
 			}
 		}
-
-		if(wl_nband_title.indexOf("2.4 GHz-2") > 0) wl_nband_title[wl_nband_title.indexOf("2.4 GHz")] = "2.4 GHz-1";
-		if(wl_nband_title.indexOf("5 GHz-2") > 0) wl_nband_title[wl_nband_title.indexOf("5 GHz")] = "5 GHz-1";
-		if(wl_nband_title.indexOf("6 GHz-2") > 0) wl_nband_title[wl_nband_title.indexOf("6 GHz")] = "6 GHz-1";
-		if(wl_nband_title.indexOf("60 GHz-2") > 0) wl_nband_title[wl_nband_title.indexOf("60 GHz")] = "60 GHz-1";
-
-		return wl_nband_title;
+		return titleArr;
 	})();
 
 	var genWlObj = (function(){

@@ -262,6 +262,10 @@
 	box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 1px 4px 0px rgba(60, 60, 60, 0.3);
 	border-radius: 8px;
 }
+.profile_setting_container .no_action_container,
+.popup_container .no_action_container .popup_content_container{
+	padding-bottom: 12px !important;
+}
 .profile_setting_title{
 	width: 100%;
 	height: 76px;
@@ -456,7 +460,9 @@
 	line-height: 160%;
 }
 .profile_title_item{
-	height: 60px;
+	min-height: 60px;
+	height: auto;
+	line-height: 140%;
 	color: rgba(186, 192, 206, 0.87);
 	font-size: 14px;
 	font-weight: 500;
@@ -699,6 +705,7 @@
 	-ms-user-select: none;
 	user-select: none;
 	font-size: 14px;
+	color: #FFFFFF;
 }
 .popup_container.fit_width{
 	max-width: 90%;

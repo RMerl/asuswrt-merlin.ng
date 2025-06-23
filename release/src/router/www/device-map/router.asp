@@ -60,7 +60,7 @@
                 var dynamic_include_js = function (_src) {
                     $("<script>").attr("type", "text/javascript").attr("src", _src).appendTo("head");
                 };
-                if (parent.amesh_support && (parent.isSwMode("rt") || parent.isSwMode("ap")))
+                if (parent.amesh_support && ((parent.isSwMode("RT") || parent.isSwMode("WISP")) || parent.isSwMode("ap")))
                     dynamic_include_js("/require/modules/amesh.js");
                 if (parent.lantiq_support) dynamic_include_js("/calendar/jquery-ui.js");
             })();
@@ -820,7 +820,7 @@
                     sameSsidString: `<#wireless_JS_dup_SSID#>`,
                 };
 
-                if (dwbMode === "1") {
+                if (!isSupport("sdn_mwl") && dwbMode === "1") {
                     dwbInfo.ssid = document.getElementById(`${dwbBand}_ssid`).value;
                     dwbInfo.targetObject = document.getElementById(`${dwbBand}_ssid`);
                 }
@@ -1155,7 +1155,8 @@
             }
 
             function gotoSiteSurvey() {
-                if (sw_mode == 2) parent.location.href = "/QIS_wizard.htm?flag=sitesurvey_rep&band=" + wl_unit;
+                if (isSwMode("RP")) parent.location.href = '/QIS_wizard.htm?flag=sitesurvey_rep';
+                else if(isSwMode("WISP")) parent.location.href = '/QIS_wizard.htm?flag=wispMode';
                 else parent.location.href = "/QIS_wizard.htm?flag=sitesurvey_mb";
             }
 

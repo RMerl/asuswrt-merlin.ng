@@ -15,6 +15,13 @@
 #include <string.h>
 #include <time.h>
 #include <limits.h>
+#include <sys/un.h>
+
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+#include <gsw_device.h>
+#include <host_adapt_user.h>
+#include <host_adapt.h>
+#endif
 
 #ifdef RTCONFIG_RALINK
 #include <ralink.h>
@@ -463,6 +470,50 @@ int pt_main(int loops)
 }
 #endif  /* HND_ROUTER */
 
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+int __setup_vlan(int vid, int prio, unsigned int mask);
+int mxls_init();
+
+void mxl_vlan_bp_test(void)
+
+{
+
+    uint8_t port, portnum = get_chip_port_num();
+        int bp_wait = nvram_get_int("bp_wait");
+        int skip_port = nvram_get_int("skip_port");
+
+        printf("%s: test will be started after %d seconds, .... (skip %d)\n", __func__, nvram_get_int("bp_wait"), skip_port);
+        sleep(bp_wait);
+        printf("%s, start bp_test..\n\n", __func__);
+
+    for (int j=1; j <= 10; j++) {
+
+        printf("cycle:%d\n", j);
+
+        for (port=1; port <= portnum; port++) {
+
+                if (port == skip_port)
+                        printf("skip reset port %d\n", port);
+                else
+                        set_port_based_vlan_cfg(port, 1, false, true);
+
+        }
+
+        for (port=1; port <= portnum; port++) {
+
+                if (port == skip_port)
+                        printf("skip reset port %d\n", port);
+                else
+                        set_port_based_vlan_cfg(port, 0, false, true);
+        }
+        fflush(stdout);
+    }
+
+        printf("%s: test end.\n", __func__);
+
+}
+#endif
+
 #ifdef DEBUG_RCTEST
 int test_mknode(int id);
 // used for various testing
@@ -489,6 +540,47 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "sync_apgx_to_wlunit")==0) {
 		sync_apgx_to_wlunit(NULL);	
 	}
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+	else if (strcmp(argv[1], "apg_test_vlan")==0) {
+		int vid = atoi(nvram_safe_get("apg_test_vid"));
+		unsigned int default_portmask, trunk_portmask, access_portmask, rm_portmask;
+
+		default_portmask = nvram_get_hex("apg_test_default_mask");
+		access_portmask = nvram_get_hex("apg_test_access_mask");
+		trunk_portmask = nvram_get_hex("apg_test_trunk_mask");
+		rm_portmask = nvram_get_hex("apg_test_rm_mask");
+
+		mxls_init();
+
+		printf("apg_test create vlan(%d): default:0x%x, access:0x%x, trunk:0x%x\n", vid, default_portmask, access_portmask, trunk_portmask);
+		apg_switch_vlan_set(vid, default_portmask, trunk_portmask, access_portmask);
+
+		if (nvram_match("rm_vlan", "2")) {
+                	sleep(1);
+                	printf("\ntest to remove vlan:%d (ports:0x%x)\n", vid, default_portmask);
+                	__remove_vlan(vid, rm_portmask);
+		}
+
+	}
+	else if (strcmp(argv[1], "apg_test_rmvlan")==0) {
+		int vid = atoi(nvram_safe_get("apg_test_vid"));
+		__remove_vlan(vid, 0xff);
+	}
+	else if (strcmp(argv[1], "apg_test_iso")==0) {
+		int vid = atoi(nvram_safe_get("apg_test_vid"));
+		int enable = nvram_get_int("apg_test_enable");
+		unsigned int iso_portmask;
+
+		iso_portmask = nvram_get_hex("apg_test_iso_mask");
+
+		//mxls_init();
+
+		printf("apg_test iso vlan(%d): iso:0x%x (en:%d)\n", vid, iso_portmask, enable);	fflush(stdout);
+		apg_switch_isolation(vid, enable, iso_portmask);
+
+		printf("test iso fin.\n");	fflush(stdout);
+	}
+#endif
 #ifdef RTCONFIG_MLO
 	else if (strcmp(argv[1], "checkMLOConnSupport")==0) {
 		const struct MLO_Combination *mlo_list = &supportedCombinations[0];
@@ -718,7 +810,7 @@ static int rctest_main(int argc, char *argv[])
 		bcm_cled_ctrl(led, mode);
 #endif
 	}
-#if defined(ET12) || defined(XT12)
+#if defined(ET12) || defined(XT12) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	else if (strcmp(argv[1], "cled_white")==0) {
 		unsigned int led, mode;
 
@@ -726,6 +818,17 @@ static int rctest_main(int argc, char *argv[])
 		mode = atoi(argv[3]);
 		_dprintf("set Cled_WHITE %d as %d\n", led, mode);
 		bcm_cled_ctrl_single_white(led, mode);
+	}
+#endif
+#if defined(GTBE19000AI) || defined(GTBE96_AI)
+	else if (strcmp(argv[1], "cled_single")==0) {
+		unsigned int led, mode, bright;
+
+		led = atoi(argv[2]);
+		mode = atoi(argv[3]);
+		bright = atoi(argv[4]);
+		_dprintf("set Cled_SINGLE %d as %d with bright %d\n", led, mode, bright);
+		bcm_cled_ctrl_single_led(led, mode, bright);
 	}
 #endif
 #endif
@@ -849,12 +952,27 @@ static int rctest_main(int argc, char *argv[])
 		gen_bcmbsd_def_policy(selif_val);
 	}
 #endif
-#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
+#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
+	else if (strcmp(argv[1], "gen_wl") == 0) {
+		char *ifname = argv[2];
+		int unit = atoi(argv[3]);
+		int subunit = -1;
+		if (argv[4])
+			subunit = atoi(argv[4]);
+
+		if (ifname) {
+			printf("generate_wl_para, ifname=%s, unit=%d, subunit=%d\n", ifname, unit, subunit);
+			generate_wl_para(ifname, unit, subunit);
+		}
+	}
 	else if (strcmp(argv[1], "is_client") == 0) {
 		printf("client_mode=%d\n", client_mode());
 	}
 	else if (strcmp(argv[1], "is_psr") == 0) {
-		printf("is_psr(0:%d)(1:%d)\n", is_psr(0), is_psr(1));
+		printf("is_psr(0:%d)(1:%d), psr_mode=%d\n", is_psr(0), is_psr(1), psr_mode());
+	}
+	else if (strcmp(argv[1], "is_dpsr") == 0) {
+		printf("is_dpsr(0:%d)(1:%d), dpsr_mode=%d\n", is_dpsr(0), is_dpsr(1), dpsr_mode());
 	}
 	else if (strcmp(argv[1], "is_dpsta") == 0) {
 		printf("dpsta_mode=%d\n", dpsta_mode());
@@ -865,6 +983,12 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "is_rp") == 0) {
 		printf("rp_mode=%d(0:%d, 1:%d)\n", rp_mode(), is_rp_unit(0), is_rp_unit(1));
 	}
+	else if (strcmp(argv[1], "is_mb") == 0) {
+		printf("mb_mode=%d\n", mediabridge_mode());
+	}
+	else if (strcmp(argv[1], "is_wisp") == 0) {
+		printf("wisp_mode=%d\n", wisp_mode());
+	}
 #endif
         else if (strcmp(argv[1], "getbw") == 0) {
                 int unit = atoi(argv[2]);
@@ -872,6 +996,9 @@ static int rctest_main(int argc, char *argv[])
                 printf("get wl_bw of unit_%d=%d\n", unit, bw);
         }
 #ifdef HND_ROUTER
+	else if (strcmp(argv[1], "no_need_obd") == 0) {
+		printf("no_need_obd return %d\n", no_need_obd());
+	}
 	else if (strcmp(argv[1], "ptest")==0) {
 		pt_main(atoi(argv[2]));
 		return 0;
@@ -945,6 +1072,57 @@ static int rctest_main(int argc, char *argv[])
 			printf("wrong fork.\n");
 		}
 
+		printf("%s exit\n", pid?"parent":"child");
+		fflush(stdout);
+	}
+	else if (strcmp(argv[1], "filelock_test")==0) {
+		pid_t pid = 0;
+		FILE *fp;
+		int i, j, err=0;
+		clock_t begin, end;
+		int lockfd;
+		int loops = atoi(argv[2])?:10;
+		char *file = "/tmp/ftest.log";
+
+		fp = fopen(file, "a+");
+		
+		if (!fp) {
+			printf("%s, flock test file:%s failed\n", __func__, file);
+			return -1;
+		}
+		printf("%s, flock test file:%s created, loops: %d\n", __func__, file, loops);
+
+		pid = fork();
+		if (pid == 0) {
+			printf("child start\n");
+
+			for(i=0; i<loops; ++i) {
+				lockfd  = file_lock("testf");
+				_dprintf("child[%d] lockfd=%d.\n", i, lockfd);
+				for (j=0; j<60; ++j) {
+					fprintf(fp, "child[%d]: %d\n", i, j);
+				}
+				fflush(fp);
+				file_unlock(lockfd);	
+			}
+		} 
+		else if(pid > 0) {
+			printf("parent start\n");
+			for(i=0; i<loops; ++i) {
+				lockfd  = file_lock("testf");
+				_dprintf("parent[%d] lockfd=%d.\n", i, lockfd);
+				for(j=0; j<60; ++j) {
+					fprintf(fp, "parent[%d]: %d\n", i, j);
+				}
+				fflush(fp);
+				file_unlock(lockfd);	
+			}
+
+			wait(NULL);
+			fclose(fp);
+		} else {
+			printf("wrong fork.\n");
+		}
 		printf("%s exit\n", pid?"parent":"child");
 		fflush(stdout);
 	}
@@ -1297,6 +1475,33 @@ static int rctest_main(int argc, char *argv[])
 		}
 		json_object_put(root);
 	}
+#if defined(RTCONFIG_RAST_TEST) || defined(RTCONFIG_FU_TEST)
+	else if (strcmp(argv[1], "11k_req")==0) {
+		if (argv[2]) {
+			char sta_mac[18];
+			snprintf(sta_mac, sizeof(sta_mac), "%s",argv[2]);
+
+			char event_data[1024];
+			snprintf(event_data, sizeof(event_data), "{\"CFG\":{\"EID\": %d, \"mac\": \"%s\"}}", EID_RM_11K_REQ, sta_mac);
+			rc_sendEventToRast(event_data);
+		}
+	}
+	else if (strcmp(argv[1], "11v_req")==0) {
+		if (argv[2] && argv[3] && argv[4]) {
+			char sta_mac[18];
+			snprintf(sta_mac, sizeof(sta_mac), "%s",argv[2]);
+
+			char target_bssid[18];
+			snprintf(target_bssid, sizeof(target_bssid), "%s",argv[3]);
+
+			int target_channel = atoi(argv[4]);
+
+			char event_data[1024];
+			snprintf(event_data, sizeof(event_data), "{\"CFG\":{\"EID\": %d, \"mac\": \"%s\", \"bssid\": \"%s\", \"channel\": %d}}", EID_RM_11V_REQ, sta_mac, target_bssid, target_channel);
+			rc_sendEventToRast(event_data);
+		}
+	}
+#endif
 #ifdef RTCONFIG_NEWSITE_PROVISIONING
 	else if (strcmp(argv[1], "get_provision_pincode")==0) {
 		char event[AAE_MAX_IPC_PACKET_SIZE];
@@ -1328,7 +1533,11 @@ static int rctest_main(int argc, char *argv[])
 #endif
 	else if (strcmp(argv[1], "aae_tunnel_test")==0) {
 		char event[AAE_MAX_IPC_PACKET_SIZE];
-		snprintf(event, sizeof(event), AAE_AWSIOT_TNL_TEST_MSG, EID_AWSIOT_TUNNEL_TEST, (argv[2] ? : "204f0a0bde0b06a1f6fa261f729b2862"));
+		snprintf(event, sizeof(event), AAE_AWSIOT_TNL_TEST_MSG, EID_AWSIOT_TUNNEL_TEST, 
+			(argv[2] ? : "f61dd198a1fe6e40289a48b7c04a45a8"),
+			(argc > 3 ? (argv[3] ? : "0") : "0"),
+			(argc > 4 ? (argv[4] ? : "0") : "0"),
+			(argc > 5 ? (argv[5] ? : "8443") : "8443"));
 		aae_sendIpcMsg(MASTIFF_IPC_SOCKET_PATH, event, strlen(event));
 	}
 	else if (strcmp(argv[1], "mastiff_rc_on")==0) {
@@ -1365,6 +1574,15 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "access_time")==0) {
 		if (argv[2]) {
 			fprintf(stderr, "on_off=%d\n", check_expire_on_off(argv[2]));
+		}
+	}
+	else if (strcmp(argv[1], "check_sched_mode")==0) {
+		if (argv[2]) {
+			int count = 0;
+			while(count++ < 1000) {
+				fprintf(stderr, "mode=%d\n", check_sched_v2_mode(argv[2]));
+				sleep(1);
+			}
 		}
 	}
 #ifdef RTCONFIG_GRE
@@ -1453,6 +1671,22 @@ static int rctest_main(int argc, char *argv[])
 			CONNDIAG_PREFIX, RAST_EVENT_ID, EID_CD_PRINT_STA_INFO);
 		extern int amas_cd_ipc_send_event(const char *ipc_path, char *data);
 		amas_cd_ipc_send_event(CONNDIAG_IPC_SOCKET_PATH,value);
+	}
+	else if (strcmp(argv[1], "diag_reinit_bssinfo")==0) {
+		send_reinit_bssinfo_to_conn_diag();
+	}
+	else if (strcmp(argv[1], "sta_support_band")==0) {
+		json_object *res = get_sta_list_by_support_band(argv[2], argv[3]);
+		if (res) {
+			fprintf(stderr, "%s\n", json_object_to_json_string(res));
+			json_object_put(res);
+		}
+		else
+			fprintf(stderr, "Fail to get sta list\n");
+	}
+	else if (strcmp(argv[1], "sta_is_active")==0) {
+		int active = is_sta_active(argv[2], argv[3]);
+		fprintf(stderr, "active=%d\n", active);
 	}
 #endif
 #if defined(RTCONFIG_TRUSTZONE)
@@ -1592,6 +1826,12 @@ static int rctest_main(int argc, char *argv[])
 			printf("go rc applt: fwupg_flashing\n");
 			start_fwupg_flashing();
 		}
+#ifdef RTCONFIG_AI_SERVICE
+		else if (strcmp(argv[1], "ai_response_check") == 0) {
+			if (on) start_ai_response_check();
+			else stop_ai_response_check();
+		}
+#endif
 #ifdef RTAC87U
 		else if (strcmp(argv[1], "watchdog02") == 0) {
 			if (on) start_watchdog02();
@@ -1974,6 +2214,31 @@ static int rctest_main(int argc, char *argv[])
 		else if (strcmp(argv[1], "off_pd") == 0) {
 			printf("ret = %lx\n", off_pd());
 		}
+		else if (strcmp(argv[1], "rd_pd") == 0) {
+			unsigned long pd_val = 0;
+			if (argv[2]) {
+				pd_val = pd_read(argv[2]);
+				printf("ret = 0x%lx(%lu)\n", pd_val, pd_val);
+			}
+		}
+		else if (strcmp(argv[1], "rdpd_prot_volt") == 0) {
+			printf("ret = %lu\n", pd_read_protocol_volt());
+		}
+		else if (strcmp(argv[1], "rdpd_prot_curr") == 0) {
+			printf("ret = %lu\n", pd_read_protocol_curr());
+		}
+		else if (strcmp(argv[1], "rdpd_vbus_pwr") == 0) {
+			printf("ret = %lu\n", pd_read_vbus_pwr());
+		}
+		else if (strcmp(argv[1], "rdpd_vbus_mon") == 0) {
+			printf("ret = %lu\n", pd_read_vbus_mon());
+		}
+		else if (strcmp(argv[1], "rdpd_typec_curr") == 0) {
+			printf("ret = %lu\n", pd_read_typec_curr());
+		}
+		else if (strcmp(argv[1], "rdpd_loading") == 0) {
+			printf("ret = %d\n", pd_loading_test());
+		}
 #endif
 #if defined(RTCONFIG_KNV_BACKUP) || defined(RTCONFIG_NV_BACKUP2)
 		else if (strcmp(argv[1], "diff_knv") == 0) {
@@ -1990,6 +2255,145 @@ static int rctest_main(int argc, char *argv[])
 		}
 		else if (strcmp(argv[1], "chk_nv_err") == 0) {
 			printf("ret = %d\n", check_knv_errors(argv[2]));
+		}
+#endif
+#if defined(RTCONFIG_RALINK) && defined(RTCONFIG_NL80211)
+		else if (strcmp(argv[1], "report_check_11k") == 0) {
+			if (argc != 6) {
+				fprintf(stderr, "Usage: rc %s <STA address> <AP address> <Channel> <RCPI>\n", argv[1]);
+				return -1;
+			}
+			
+			json_object *root = NULL;
+			json_object *param = NULL;
+			char json_data[1024],_EID[8];
+			snprintf(_EID, sizeof(_EID), "%d", EID_RM_11K_RSP);
+
+			root = json_object_new_object();
+			param = json_object_new_object();
+			json_object_object_add(param, RAST_EVENT_ID, json_object_new_string(_EID));
+			json_object_object_add(param, RAST_STA, json_object_new_string(argv[2]));
+			json_object_object_add(param, RAST_AP, json_object_new_string(argv[3]));
+			json_object_object_add(param, RAST_RCPI, json_object_new_string(argv[5]));
+			json_object_object_add(param, RAST_AP_TARGET_CH, json_object_new_string(argv[4]));
+			json_object_object_add(root, CFG_PREFIX, param);
+			memset(json_data, 0, sizeof(json_data));
+			snprintf(json_data, sizeof(json_data), "%s", json_object_to_json_string(root));
+			json_object_put(root);
+
+			rc_sendEventToRast(json_data);
+		}
+#endif
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+		else if (strcmp(argv[1], "mxl_init") == 0) {
+                        printf("do mxl init..\n");
+                        //api_gsw_get_links("");        // move to the api
+
+                        int i, ret;
+                        for (i=0; i<4; ++i) {
+                                if (ret = mxls_init()) {
+                                        printf("%s: mxls_init failed(%d)...%d, reinit again.\n", __func__, ret, i);
+                                        sleep(1);
+                                } else {
+                                        printf("%s: mxls_init ok...%d\n", __func__, i);
+                                        break;
+                                }
+                        }
+
+                        printf("mxl_init fin.\n");
+                        fflush(stdout);
+                        mxl_vlan_bp_test();
+		}
+		else if (strcmp(argv[1], "mxl_reset") == 0) {
+			printf("do mxl reset\n"); 
+			system("echo 255 > /sys/class/leds/led_gpio_28/brightness && echo 0 > /sys/class/leds/led_gpio_28/brightness");
+			if (nvram_get_int("mxl_wait_time1")) {
+				printf("wait trigger time %d\n", nvram_get_int("mxl_wait_time1"));
+				sleep(nvram_get_int("mxl_wait_time1"));
+			} else {
+				printf("wait trigger time 5.\n");
+				sleep(5);
+			}
+
+			init_others_post();
+			config_switch();
+
+			if (nvram_get_int("mxl_wait_time2")) {
+				printf("wait post time %d\n", nvram_get_int("mxl_wait_time2"));
+				sleep(nvram_get_int("mxl_wait_time2"));
+			} else {
+				printf("wait post time 2.\n");
+				sleep(2);
+			}
+			mxls_init();
+
+			printf("\n\n....reset Done....\n");
+		}
+		else if (strcmp(argv[1], "mxl_link_down") == 0) {
+			mxlswitch_LanPort_linkDown();
+		}
+		else if (strcmp(argv[1], "mxl_link_up") == 0) {
+			mxlswitch_LanPort_linkUp();
+		}
+		else if (strcmp(argv[1], "mxl_get_cpu_port") == 0) {
+        		GSW_Device_t *gsw_dev;
+        		GSW_return_t ret;
+			GSW_CPU_Port_t parm;
+
+			api_gsw_get_links("");
+			gsw_dev = gsw_get_struc(0, 0);
+			ret = GSW_PortLinkCfgGet(gsw_dev, &parm);
+		}
+		else if (strcmp(argv[1], "mxl_get_port_link") == 0) {
+        		GSW_Device_t *gsw_dev;
+        		GSW_return_t ret;
+			GSW_portLinkCfg_t Param;
+			int port;
+
+			if (port = atoi(argv[2]) < 0) {
+				return -1;
+			}
+
+			api_gsw_get_links("");
+			gsw_dev = gsw_get_struc(0, 0);
+			Param.nPortId = port + 1;
+			ret = GSW_PortLinkCfgGet(gsw_dev, &Param);
+		}
+		else if (strcmp(argv[1], "mxl_get_port_link_2") == 0) {	// oops
+        		GSW_Device_t *gsw_dev;
+        		GSW_return_t ret;
+			GSW_portLinkCfg_t Param;
+			int port;
+
+			if (port = atoi(argv[2]) < 0) {
+				return -1;
+			}
+
+			//api_gsw_get_links("");
+			gsw_dev = gsw_get_struc(0, 0);
+			Param.nPortId = port + 1;
+			ret = GSW_PortLinkCfgGet(gsw_dev, &Param);
+		}
+		else if (strcmp(argv[1], "setup_vlan") == 0) {
+			_dprintf("%s: arg2=%s, arg3=%s\n", __func__, argv[2], argv[3]);
+
+			int vid = atoi(argv[2]);
+			unsigned long mask = strtol(argv[3], (char**)NULL, 16);
+
+			if (nvram_match("do_mxl_init", "1"))
+				mxls_init();
+			//api_gsw_get_links("");	// move to the api
+			_dprintf("chk vid=%d, mask=0x%x\n", vid, mask);
+			printf("ret = %d\n", __setup_vlan(vid, 0, mask));
+		}
+#endif
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+		else if (strcmp(argv[1], "mxl_fw_check") == 0) {
+			stop_mxlmonitor();
+			mxl_fw_check();
+		}
+		else if (strcmp(argv[1], "mem_leak_dbg") == 0) {
+			memleakdbg();
 		}
 #endif
 		else {
@@ -2643,6 +3047,9 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_NORDVPN
 	{ "nordvpn",			nordvpn_main				},
 #endif
+#ifdef RTCONFIG_SURFSHARK
+	{ "surfshark",			surfshark_main				},
+#endif
 #endif
 #ifdef RTCONFIG_EAPOL
 	{ "wpa_cli",			wpacli_main			},
@@ -2668,6 +3075,9 @@ static const applets_t applets[] = {
 	{ "watchdog",			watchdog_main			},
 	{ "check_watchdog",		check_watchdog_main		},
 	{ "fwupg_flashing",		fwupg_flashing_main		},
+#ifdef RTCONFIG_AI_SERVICE
+	{ "ai_response_check",		ai_response_check_main		},
+#endif
 #ifdef RTCONFIG_CONNTRACK
 	{ "pctime",			pctime_main			},
 #endif
@@ -2760,7 +3170,7 @@ static const applets_t applets[] = {
 	{ "ocnvcd", 			ocnvcd_main			},
 	{ "dslited", 			dslited_main			},
 #endif
-#if defined(RTCONFIG_RALINK) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
+#if defined(RTCONFIG_RALINK) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	{ "rtkswitch",			config_rtkswitch		},
 #if defined(RTAC53) || defined(RTAC51UP)
 	{ "mtkswitch",			config_mtkswitch		},
@@ -2779,6 +3189,9 @@ static const applets_t applets[] = {
 #if defined(RTCONFIG_CONNDIAG) && defined(RTCONFIG_ADV_RAST)
 	{ "conn_diag",			conn_diag_main			},
 	{ "diag_data",			diag_data_main			},
+#endif
+#ifdef RTCONFIG_FU_TEST
+	{ "futest",                     futest_main                     },
 #endif
 #if defined(CONFIG_BCMWL5) && !defined(HND_ROUTER) && defined(RTCONFIG_DUALWAN)
 	{ "dualwan",			dualwan_control			},
@@ -2808,6 +3221,9 @@ static const applets_t applets[] = {
 #if defined(RTCONFIG_FRS_LIVE_UPDATE)
 	{ "firmware_check_update",	firmware_check_update_main	},
 #endif
+#ifdef RTCONFIG_CFGSYNC
+	{ "firmware_webs_update",	firmware_webs_update_main	},
+#endif
 #ifdef RTCONFIG_FRS_FEEDBACK
 	{ "sendfeedback",	start_sendfeedback },
 #endif
@@ -2815,10 +3231,10 @@ static const applets_t applets[] = {
 	{ "firmware_enc_crc",		firmware_enc_crc_main		},
 	{ "fw_check",			fw_check_main			},
 #endif
-#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000)
+#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
 	{ "ledg",			ledg_main			},
 #endif
-#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GSBE18000)
+#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	{ "ledbtn",			ledbtn_main			},
 #endif
 #if defined(DSL_AX82U)
@@ -2827,11 +3243,17 @@ static const applets_t applets[] = {
 #if defined(GTAX6000)
 	{ "antled",			antled_main			},
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	{ "rtkmonitor",			rtkmonitor_main			},
 #endif
-#if defined(RTBE82M)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	{ "mxlmonitor",			mxlmonitor_main			},
+#endif
+#if defined(GT7)
+	{ "ext84991",			ext84991_main			},
+#endif
+#if defined(RTBE92U)
+	{ "tempsense",			tempsense_main			},
 #endif
 #ifdef BUILD_READMEM
 	{ "readmem",			readmem_main			},
@@ -2855,12 +3277,17 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_SPEEDTEST
 	{ "speedtest",			speedtest_main			},
 #endif
+#if defined(RTCONFIG_HNS)
+	{ "hns_debug",			hns_main			},
+#endif
+#if defined(RTCONFIG_BWDPI) || defined(RTCONFIG_HNS)
+	{ "rsasign_sig_check",		rsasign_sig_check_main		},
+#endif
 #if defined(RTCONFIG_BWDPI)
 	{ "bwdpi",			bwdpi_main			},
 	{ "bwdpi_check",		bwdpi_check_main		},
 	{ "bwdpi_wred_alive",		bwdpi_wred_alive_main		},
 	{ "bwdpi_db_10",		bwdpi_db_10_main		},
-	{ "rsasign_sig_check",		rsasign_sig_check_main		},
 	{ "hour_monitor",		hour_monitor_main		},
 #endif
 #if defined(RTCONFIG_DNSQUERY_INTERCEPT)
@@ -2947,8 +3374,26 @@ static const applets_t applets[] = {
 	{ "pressure",			pressure_main		},
 #endif
 
+#ifdef RTCONFIG_SMARTHAUL
+	{ "smarthaul",                   smarthaul_main           },
+#endif
+
 #if defined(BQ16) || defined(BQ16_PRO)
 	{ "wl_defer_conf",		wl_defer_conf_main		},
+#endif
+#ifdef RTCONFIG_AFC_POSITIONING
+	{ "afc_positioning",			afc_pos_main			},
+#endif
+#ifdef RTCONFIG_BCM_AFC
+	{ "afc_coldreboot_monitor",	afc_coldreboot_monitor_main	},
+	{ "afc_heartbeat",		afc_heartbeat_main		},
+#endif
+#ifdef RTCONFIG_ENERGY_SAVE
+	{ "esd",				esd_main		},
+	{ "esr",				esr_main		},
+#ifdef RTCONFIG_CC3220
+	{ "esrt",				esrt_main		},
+#endif
 #endif
 	{NULL, NULL}
 };
@@ -3525,9 +3970,22 @@ int main(int argc, char **argv)
 	}
 #endif
 
+#ifdef RTCONFIG_SMARTHAUL
+	if(!strcmp(base, "smarthaul")) {
+                return smarthaul_main();
+        }
+#endif
+
 #if defined(RTCONFIG_PTHSAFE_POPEN)
 	if(!strcmp(base, "PS_pod")){
 		PS_pod_main();
+		return 0;
+	}
+#endif
+
+#if defined(RTCONFIG_SW_BTN)
+	if(!strcmp(base, "sw_btnd")){
+		btn_switch_main();
 		return 0;
 	}
 #endif
@@ -3926,13 +4384,13 @@ int main(int argc, char **argv)
 
 		return 0;
 	}
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI)
 	else if (!strcmp(base, "config_switch")) {
 		config_switch();
 		return 0;
 	}
 #endif
-#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG) && (defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(GTBE19000) || defined(RTBE92U)) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000_AI)
+#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG) && (defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U)) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7)
 	else if (!strcmp(base, "config_extwan")) {
 		config_extwan();
 		return 0;
@@ -4227,6 +4685,11 @@ int main(int argc, char **argv)
 		return 0;
 	}
 #endif	/* RTCONFIG_RALINK || RTCONFIG_QCA */
+#if defined(RTCONFIG_NVSW_IN_JFFS)
+        else if (!strcmp(base, "nvsw")) {
+                return nvsw_cmd(argc-1, &argv[1]);
+        }
+#endif
 #if defined(RTCONFIG_RALINK)
 #if defined(RTCONFIG_HAS_5G)
 	else if (!strcmp(base, "asuscfe_5g")) {
@@ -5277,3 +5740,77 @@ void exe_eu_wa_rr(void){
 	notify_rc("restart_acsd");
 
 }
+
+#if defined(RTCONFIG_RAST_TEST) || defined(RTCONFIG_FU_TEST) || (defined(RTCONFIG_RALINK) && defined(RTCONFIG_NL80211))
+int rc_sendEventToRast(unsigned char *data)
+{
+	printf("rc_sendEventToRast %s\n", data);
+
+	int fd = -1;
+	int length = 0;
+	int ret = 0;
+	struct sockaddr_un addr;
+	int flags;
+	int status;
+	socklen_t statusLen;
+	fd_set writeFds;
+	int selectRet;
+	struct timeval timeout = {2, 0};
+
+	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
+		goto err;
+	}
+
+	/* set NONBLOCK for connect() */
+	if ((flags = fcntl(fd, F_GETFL)) < 0) {
+		goto err;
+	}
+
+	flags |= O_NONBLOCK;
+
+	if (fcntl(fd, F_SETFL, flags) < 0) {
+		goto err;
+	}
+
+	memset(&addr, 0, sizeof(addr));
+	addr.sun_family = AF_UNIX;
+	strncpy(addr.sun_path, RAST_IPC_SOCKET_PATH, sizeof(addr.sun_path)-1);
+	if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+		if (errno == EINPROGRESS) {
+			FD_ZERO(&writeFds);
+			FD_SET(fd, &writeFds);
+
+			selectRet = select(fd + 1, NULL, &writeFds, NULL, &timeout);
+
+			//Check return, -1 is error, 0 is timeout
+			if (selectRet == -1 || selectRet == 0) {
+				goto err;
+			}
+		}
+		else
+		{
+			goto err;
+		}
+	}
+
+	/* check the status of connect() */
+	status = 0;
+	statusLen = sizeof(status);
+	if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &status, &statusLen) == -1) {
+		goto err;
+	}
+
+	length = write(fd, data, strlen((char *)data));
+
+	if (length < 0) {
+		goto err;
+	}
+
+	ret = 1;
+err:
+	if (fd >= 0)
+        	close(fd);
+
+	return ret;
+} /* End of rc_sendEventToRast */
+#endif

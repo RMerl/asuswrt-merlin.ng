@@ -9,5 +9,7 @@
 #define LED_ON_OFF		BIT(2)
 #define LED_BRIGHTNESS		BIT(3)
 #define LED_AURA		BIT(4)
+#define LED_NIGHT_MODE		BIT(5)
+#define CENTRAL_LED_ON_OFF		BIT(6)
 
 #endif // __AMAS_CAP_H__

@@ -9,6 +9,8 @@
 <title><#Web_Title#> - <#AiProtection_Home#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
+<link rel="stylesheet" type="text/css" href="css/confirm_block.css">
+<script type="text/javascript" src="/js/confirm_block.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
@@ -17,7 +19,7 @@
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script type="text/javascript" src="/js/asus_policy.js"></script>
+<script type="text/javascript" src="/js/asus_policy.js?v=4"></script>
 <style>
 *{
 	box-sizing: content-box;
@@ -138,6 +140,16 @@
 .shadow_m{
 	margin-top: -9px;
 }
+
+.alert_confirm_title_dark{
+	color:#FFCC00;
+	margin-left:15px;
+	font-size:10pt;
+}
+.alert_confirm_title_light{
+	color: blue;
+	font-size:10pt;
+}
 </style>
 <script>
 if(usb_support) addNewScript("/disk_functions.js");
@@ -156,6 +168,98 @@ var risk_count = 0;
 var safe_count = 0;
 
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=139";
+
+var getUrlParameter = function getUrlParameter(param){
+    var url_parm = window.location.search.substring(1);
+    var parm_array = url_parm.split("&");
+    var key_value;
+
+    for(var i = 0; i < parm_array.length; i += 1){
+        key_value = parm_array[i].split("=");
+        if (key_value[0] == param) {
+            return typeof key_value[1] == "undefined" ? "" : decodeURIComponent(key_value[1]);
+        }
+    }
+    return "";
+};
+var theme = getUrlParameter("current_theme").toUpperCase();
+
+function eventBind() {
+document.querySelectorAll(".alert_preference").forEach((element) => {
+
+	let confirm_content_dark = `<span class="alert_confirm_title_dark"><#AiProtection_alert_via_APP#></span><br>`;
+	let confirm_content_light = `<span class="alert_confirm_title_light"><#AiProtection_alert_via_APP#></span><br>`;
+	let confirm_content = (theme == "WHITE")?confirm_content_light:confirm_content_dark;
+
+	let confirm_content2 = `
+                            <div class="title_num_div">
+                            </div>
+                            <div style="margin-left:45px;margin-top:-22px;">
+                                <span style="color:#FFFFFF;"><b><#GB_mobile_desc_short#></b></span><br>
+                                <#AiProtection_alert_show#>
+                            </div>
+
+                            <!-- QR Codes -->
+                            <div style="padding:20px 0;">
+                                <div style="display:table-cell;vertical-align:middle;padding-left:80px;">
+                                    <img src="${Android_QR}" style="width:75px;height:75px;">
+                                </div>
+                                <div style="display:table-cell;vertical-align:middle;padding-left:110px;">
+                                    <img src="${IOS_QR}" style="width:75px;height:75px;">
+                                </div>
+                            </div>
+
+                            <!-- App Download Links -->
+                            <div style="padding:0;">
+                                <div style="display:table-cell;vertical-align:middle;padding-left:40px;">
+                                    <a href="${Android_app_link}" target="_blank">
+                                        <div style="width:160px; ${is_CN || ui_lang === "CN" ? 'font-size:24px;border:1px solid #BDBDBD;padding:10px 4px;border-radius:6px;' : 'height:46px;background:url(images/googleplay.png) no-repeat;background-size:100%;'} margin:auto;">
+                                            ${is_CN || ui_lang === "CN" ? 'Android App' : ''}
+                                        </div>
+                                    </a>
+                                </div>
+                                <div style="display:table-cell;vertical-align:middle;padding-left:20px;">
+                                    <a href="${IOS_app_link}" target="_blank">
+                                        <div style="width:160px;height:46px;background:url(images/AppStore.png) no-repeat;background-size:100%;margin:auto;"></div>
+                                    </a>
+                                </div>
+                            </div>          
+                        `;	//Untranslated
+                            
+                        // Click event handler
+                        element.addEventListener("click", function () {
+                            let confirm_flag = 1;
+                            if (confirm_flag === 1) {
+                                if ($(".confirm_block").length > 0) $(".confirm_block").remove();
+                                window.scrollTo && window.scrollTo(0, 0);
+                                
+                                $("#Loading").css("visibility", "visible");
+								$(".popup_bg").css("height", "1850px");
+                                $("#loadingBlock").css("visibility", "hidden");
+
+                                confirm_asus({
+                                    title: "",
+                                    contentA: confirm_content,
+                                    contentD: confirm_content2,
+                                    left_button: "Hidden",
+                                    left_button_callback: () => {},
+                                    right_button: "<#CTL_ok#>",
+                                    right_button_callback: () => {
+                                        confirm_cancel();
+                                        document.documentElement.style.overflow = "";
+                                        $("#Loading").css("visibility", "hidden");
+                                        return false;
+                                    },
+                                    iframe: "AFC",
+                                    margin: "0px",
+                                    note_display_flag: 0,
+                                });
+
+                                $(".confirm_block").css("zIndex", 10001);
+                            }
+                        });
+});
+}
 
 function initial(){
 	show_menu();
@@ -186,6 +290,7 @@ function initial(){
 	getEventTime();
 	getEventData();
 	check_weakness();
+	eventBind();
 
 	$("#all_security_btn").hide();
 }
@@ -954,6 +1059,7 @@ function shadeHandle(flag){
 	}
 
 }
+
 </script>
 </head>
 
@@ -1399,6 +1505,10 @@ function shadeHandle(flag){
 											</tr>
 										</table>
 									</div>
+									<div style="width:20%;margin:10px 0 10px 600px;border-radius:0px 10px 10px 0px;cursor:pointer;">
+                            			<input class="button_gen alert_preference" type="button" value="<#AiProtection_alert_pref#>">
+									</div>
+
 									<div style="width:96px;height:44px;margin: 10px 0 0 600px;background-image:url('images/New_ui/TrendMirco_logo.svg');background-size: 100%;"></div>
 								</td>
 							</tr>

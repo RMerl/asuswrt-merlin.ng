@@ -8,7 +8,7 @@ endif
 
 CFLAGS += $(if $(KPATH_37_OR_ABOVE),$(if $(and $(RTCONFIG_QCA),$(RTCONFIG_MUSL_LIBC)),,-I$(KDIR)/include),-I$(LINUX_INC_DIR)/include)
 CFLAGS += -Wall $(if $(RTCONFIG_DEBUG),-g,-Os) $(EXTRACFLAGS) -ffunction-sections -fdata-sections
-CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE) -I$(SRCBASE)/include -I./include -I$(TOP)/networkmap
+CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE) -I$(SRCBASE)/include -I./include -I$(TOP)/networkmap -I$(TOP)/networkmap/api
 CFLAGS += -I./sysdeps
 CFLAGS += -I$(TOP)/openssl/include
 CFLAGS += -I$(TOP)/json-c
@@ -23,8 +23,10 @@ LDFLAGS += -lpthread
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 LDFLAGS += -lm
 LDFLAGS += -L./ -lcfgmnt
+LDFLAGS += -L$(TOP)/networkmap/api/ -lnmpapi
 
 LDFLAGS_LIB += -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared -L$(TOP)/json-c/.libs -ljson-c
+LDFLAGS_LIB += -L$(TOP)/networkmap/api/ -lnmpapi
 
 ifeq ($(RTCONFIG_DMALLOC),y)
 CFLAGS += -DDMALLOC -DDMALLOC_FUNC_CHECK -I$(STAGEDIR)/usr/include
@@ -211,7 +213,7 @@ endif
 
 ifeq ($(or $(RTCONFIG_HAS_5G_2),$(RTCONFIG_HAS_6G_2)), y)
 CFLAGS += -DSUPPORT_TRI_BAND
-else ifdef $(filter $(BUILD_NAME), RT-AC5300 GT-AC5300 RT-AC92U RT-AX92U GT-AX11000 RT-AX95Q XT8PRO BT12 BT10 BQ16 BQ16_PRO BM68 XT8_V2 RT-AXE95Q ET8PRO ET8_V2 RP-AC92 GT-AXE11000 GT-AX11000PRO)
+else ifdef $(filter $(BUILD_NAME), RT-AC5300 GT-AC5300 RT-AC92U RT-AX92U GT-AX11000 RT-AX95Q XT8PRO BT12 BT10 BQ16 BQ16_PRO BM68 XT8_V2 RT-AXE95Q ET8PRO ET8_V2 RP-AC92 GT-AXE11000 GT-AX11000PRO RT-BE92U GS-BE18000 GS-BE12000 GS7_PRO GT7)
 CFLAGS += -DSUPPORT_TRI_BAND
 endif
 
@@ -261,12 +263,17 @@ CFLAGS += -I$(TOP)/ateed/
 LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
-ifeq ($(or $(RTCONFIG_SMARTHAUL),$(RTCONFIG_BRCM_SMARTHAUL)),y))
+ifeq ($(or $(RTCONFIG_SMARTHAUL),$(RTCONFIG_BRCM_SMARTHAUL)),y)
 CFLAGS += -DSMARTHAUL
 COMMON_OBJS += cfg_smarthaul.o
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+ifeq ($(RTCONFIG_BCM_AFC),y)
+CFLAGS += -DAFC_ENABLED
+SERVER_OBJS += cfg_afc.o
+endif
+
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 

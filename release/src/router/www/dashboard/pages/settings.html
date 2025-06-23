@@ -10,7 +10,7 @@
 				var store = (win.name ? JSON.parse(win.name) : {});
 				function Save() {
 					win.name = JSON.stringify(store);
-				};
+				}
 
 				if (window.addEventListener) window.addEventListener("unload", Save, false);
 				else if (window.attachEvent) window.attachEvent("onunload", Save);
@@ -170,21 +170,19 @@
 
 			$("#settingsWindow").contents().find("body").addClass("scaleBody")
 		}
-
-		setInterval(function () {
-			const iframe = document.getElementById('settingsWindow');
-			const iframeContent = iframe.contentWindow.document.querySelector('.content');
-			if (iframeContent) {
-				const iframeHeight = Math.ceil(iframeContent.getBoundingClientRect().height);
-				const headerHeight = document.querySelector('header').scrollHeight;
-				const windowHeight = top.window.innerHeight;
-				const nav = document.querySelector('nav');
-				if (iframeHeight < windowHeight) {
-					iframe.style.height = `${windowHeight - headerHeight}px`;
-					nav.style.height = `${windowHeight}px`;
-				} else {
-					iframe.style.height = `${iframeHeight}px`;
-					nav.style.height = `${iframeHeight + headerHeight}px`;
+		
+		window.addEventListener('message', event => {
+			if (event.data.type === 'resize') {
+				const iframe = document.getElementById('settingsWindow');
+				if (iframe) {
+                    const footer = (navigator.userAgent.match(/ASUSMultiSiteManager/) || navigator.userAgent.match(/ASUSExpertSiteManager/)) ? 100 : 20;
+                    const iframeHeight = event.data.height + footer;
+                    let headerHeight = 0;
+                    if (document.querySelector('header')) {
+                        headerHeight = document.querySelector('header').scrollHeight;
+                    }
+                    const windowHeight = top.window.innerHeight - headerHeight * 2 - footer;
+                    iframe.style.height = `${Math.max(iframeHeight, windowHeight * 1.13)}px`
 				}
 			}
 		}, 1000);

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE cross-domain-policy SYSTEM "/xml/dtds/cross-domain-policy.dtd">
+
+<!-- Policy file for xmlsocket://socks.example.com -->
+<cross-domain-policy> 
+   <!-- This is a master socket policy file -->
+   <!-- No other socket policies on the host will be permitted -->
+   <site-control permitted-cross-domain-policies="master-only"/>
+
+   <!-- Instead of setting to-ports="*", administrator's can use ranges and commas -->
+   <!-- This will allow access to ports 123, 456, 457 and 458 -->
+   <allow-access-from domain="*" to-ports="38182" />
+</cross-domain-policy>
+
+
+

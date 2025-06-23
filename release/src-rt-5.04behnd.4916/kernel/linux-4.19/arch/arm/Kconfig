@@ -671,6 +671,11 @@ config BUZZZ_KEVT
 	default n
 	help
 	  Enable Kernel Event Tracing tool
+
+config BCM6766_2G
+	bool "BCM6766 2G memory"
+	default n
+
 endif
 
 
@@ -1458,6 +1463,9 @@ choice
 		bool "3G/1G user/kernel split (for full 1G low memory)"
 	config VMSPLIT_2G
 		bool "2G/2G user/kernel split"
+	config VMSPLIT_2G_OPT
+		depends on BCM6766_2G
+		bool "2G/2G user/kernel split (for BCM6766 2G memory)"
 	config VMSPLIT_1G
 		bool "1G/3G user/kernel split"
 endchoice
@@ -1468,6 +1476,7 @@ config KASAN_SHADOW_OFFSET
 	depends on KASAN
 	default 0x1f000000 if PAGE_OFFSET=0x40000000
 	default 0x5f000000 if PAGE_OFFSET=0x80000000
+	default 0x6f000000 if PAGE_OFFSET=0x90000000
 	default 0x9f000000 if PAGE_OFFSET=0xC0000000
 	default 0x8f000000 if PAGE_OFFSET=0xB0000000
 	default 0xffffffff
@@ -1478,6 +1487,7 @@ config PAGE_OFFSET
 	default PHYS_OFFSET if !MMU
 	default 0x40000000 if VMSPLIT_1G
 	default 0x80000000 if VMSPLIT_2G
+	default 0x90000000 if VMSPLIT_2G_OPT
 	default 0xB0000000 if VMSPLIT_3G_OPT
 	default 0xC0000000
 

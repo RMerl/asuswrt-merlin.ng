@@ -1,3 +1,12 @@
+:root{
+	--primary-color: #2ED9C3;
+}
+
+html::-webkit-scrollbar-thumb{
+    background-color: #2ED9C3 !important;
+    border-radius: 50px;
+}
+
 /* aimesh/aimesh_topology.css */
 .info_right{
 	background-color: rgba(0,0,0,0.16);
@@ -56,8 +65,16 @@
 	box-shadow: -3px 0 0 0 #27EED5, 0 2px 0 0 rgba(0,0,0,0.10);
 }
 
+.jstree-default .jstree-wholerow-clicked:before{
+	background: transparent;
+}
+
 .aimesh_tab > span.clicked:before{
 	border-bottom: 2px solid #2ED9C3;
+}
+
+.client_list_bg .client_icon_bg.default_icon, .client_list_bg .client_icon_bg.user_icon{
+	background-color: unset !important;
 }
 /*-- aimesh/aimesh_topology.css --*/
 
@@ -129,7 +146,16 @@ input[type="checkbox"]:checked + label{
 
 /* css/internetSpeed.css */
 .bg_internetSpeed{
-	background-color: #24272A;
+	background: rgba(0, 0, 0, 0.8);
+	border: solid 1px rgba(255,255,255,.1);
+}
+
+::-webkit-scrollbar-thumb {
+	background: #2ED9C3;
+}
+
+.speedTest_div{
+	background: unset;
 }
 /*-- css/internetSpeed.css --*/
 
@@ -233,11 +259,6 @@ input[type="checkbox"]:checked + label{
 	border-color: rgba(58, 65, 71, 0.5);
 }
 
-.svr_item_container.selected{
-	background: #3A4147;
-	border-color:#2ED9C3;
-}
-
 .svr_item_container.internet{
 	color:#2ED9C3;
 }
@@ -280,7 +301,15 @@ input[type="checkbox"]:checked + label{
 }
 
 .action_container .btn_container, .get_start_container .main_info_container .add_btn{
-	background: #29F4DA;
+	color: #ffffff;
+	border: solid 1px #2ED9C3;
+	background:rgba(0,0,0,0.2);
+}
+
+.action_container .btn_container:hover, .get_start_container .main_info_container .add_btn:hover{
+	background:#27EED5;
+	color: #000000;
+	filter: drop-shadow(0px 3px 1px rgba(0, 0, 0, 0.24)) drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.45));
 }
 
 .dropdown_select option{
@@ -292,11 +321,7 @@ input[type="checkbox"]:checked + label{
 }
 
 .hidden_mask{
-	background: rgba(58, 65, 71, 0.1);
-}
-
-.popup_container .popup_content_container{
-	background: #3A4147;
+	background: rgba(0, 0, 0, 0.98);
 }
 
 .feature_desc .title{
@@ -304,7 +329,15 @@ input[type="checkbox"]:checked + label{
 }
 
 .del_profile .action_btn_container .del, .customize_alert .action_btn_container .ok{
-	background:#2ED9C3;
+	color: #ffffff;
+	border: solid 1px #2ED9C3;
+	background:rgba(0,0,0,0.2);
+}
+
+.del_profile .action_btn_container .del:hover, .customize_alert .action_btn_container .ok:hover{
+	background:#27EED5;
+	color: #000000;
+	filter: drop-shadow(0px 3px 1px rgba(0, 0, 0, 0.24)) drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.45));
 }
 
 .client_list_content_container .client_container{
@@ -343,13 +376,8 @@ input[type="checkbox"]:checked + label{
 	background: #3A4147;
 }
 
-.svr_item_container{
-	background: #3A4147;
-	border-color: rgba(58, 65, 71, 0.5);
-}
-
 .svr_item_container.selected{
-	background: #3A4147;
+	background: linear-gradient(0deg, #1C1C1D, #1C1C1D);
 	border-color: #2ED9C3;
 }
 
@@ -376,28 +404,12 @@ input[type="checkbox"]:checked + label{
 	border-right: 2px solid #2ED9C3;
 }
 
-.action_container .btn_container{
-	background: #29F4DA;
-}
-
 .dropdown_select option{
-	background: #3A4147;
-}
-
-.hidden_mask{
-	background: rgba(58, 65, 71, 0.1);
-}
-
-.popup_container .popup_content_container{
 	background: #3A4147;
 }
 
 .feature_desc .title{
 	color: #2ED9C3;
-}
-
-.customize_alert .action_btn_container .ok{
-	background: #2ED9C3;
 }
 
 .client_list_content_container .client_container{
@@ -590,9 +602,9 @@ input[type="checkbox"]:checked + label{
 /* index_style.css */
 .bg{
 	background-image: url(/images/New_ui/midup_bg.png), url(/images/New_ui/middown_bg.png);
-	background-repeat: no-repeat, no-repeat, repeat;
-	background-position: top center, top left, left;
-	background-size: auto, auto 100vh, auto;
+	background-repeat: no-repeat, repeat;
+	background-position: top center, top left;
+	background-size: auto 100vh, auto;
 }
 
 .banner1{
@@ -710,19 +722,25 @@ input[type="checkbox"]:checked + label{
 
 /*-- app_installation.css --*/
 
-/*  Main_Login.asp */
+/*  main_login.css */
 .logo-container{
 	margin-left: 140px;
 	margin-top: 25%;
 }
 
 .logo-rog{
-	background:url('../images/New_ui/TUF-logo.png') no-repeat left bottom;
+	background:url('../images/New_ui/TX-logo.png') no-repeat left bottom;
 }
 
 .logo-rog, .logo-odm{
 	width: 100px;
 	height: 84px;
+}
+
+.logo-tx_miku{
+	background:url('../images/New_ui/TX-logo.png') no-repeat center;
+	width: 533px;
+	height: 120px;
 }
 
 .model-name{
@@ -909,7 +927,7 @@ input[type="checkbox"]:checked + label{
 }
 
 .advSetting{
-	color: #2ED9C3;
+	color: #2ED9C3 !important;
 }
 
 .descSteps{
@@ -944,7 +962,8 @@ input[type="checkbox"]:checked + label{
 
 .icon_logo{
 	background-image: url("/images/New_ui/logo_TX.png");
-	margin-left: -20px;
+	margin-top: -30px;
+	margin-left: 200px;
 }
 
 .cssload-circle .cssload-inner{
@@ -1136,6 +1155,90 @@ input[type="checkbox"]:checked + label{
     margin: 40px 0 0 60px;
 }
 /*-- QIS --*/
+
+/* AdGuard DNS */
+.icon_switch.on {
+	background: #2ED9C3 !important;
+}
+
+.adGuard_account_title {
+	border-left: 6px solid #2ED9C3;
+}
+
+.applyBtn_adGuard {
+	background-color: #2ED9C3;
+}
+
+#adguard_privacy_policy{
+	color: #2ED9C3
+}
+
+.dns_server_list_title{
+	border-left: 6px solid #2ED9C3;
+}
+
+.save_btn{
+	border: 1px solid #2ED9C3;
+	color: #2ED9C3;
+}
+/*-- AdGuard DNS --*/
+
+/* SDN */
+.setting_subtab_container > .subtab_item.selected:before{
+	border-bottom: 3px solid var(--primary-color);
+}
+
+.profile_btn_container{
+	border: 1px solid var(--primary-color);
+}
+
+.profile_btn_container:hover{
+	background: var(--primary-color);
+	border: 1px solid var(--primary-color);
+	color: #000;
+}
+
+.profile_item_container.selected{
+	background: linear-gradient(0deg, #1C1C1D, #1C1C1D);
+	border-color: var(--primary-color);
+	color: #000;
+}
+
+.profile_setting.Get_Start > .title{
+	color: var(--primary-color);
+}
+
+.icon_checkbox.clicked{
+	background-color: var(--primary-color);
+	border: var(--primary-color);
+}
+
+.rwd_icon_radio.clicked{
+	border: 2px solid var(--primary-color);
+}
+
+.rwd_icon_radio.clicked:before, .rwd_icon_radio.disabled:before{
+	background-color: var(--primary-color);
+}
+
+.icon_radio.clicked {
+	border: 2px solid var(--primary-color) !important;
+}
+
+.icon_radio.clicked:before {
+	background-color: var(--primary-color);
+}
+
+.switch_text_container > .switch_text_item.selected{
+	background-color: var(--primary-color);
+}
+
+.quickset_component > div.clicked{
+	background:  var(--primary-color);
+	border: 1px solid var(--primary-color);
+}
+/*-- SDN --*/
+
 @media screen and (max-width: 1000px){
 	/*  Main_Login.asp */
 	.bg_mainLogin{

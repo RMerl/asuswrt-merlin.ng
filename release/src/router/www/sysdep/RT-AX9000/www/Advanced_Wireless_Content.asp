@@ -51,7 +51,7 @@
 <script>
 <% wl_get_parameter(); %>
 $(function () {
-	if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
+	if(amesh_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
 		addNewScript('/require/modules/amesh.js');
 	}
 });
@@ -372,7 +372,7 @@ function initial(){
 	}
 	
 	var smart_connect_flag_t = '';
-	if(smart_connect_support && (isSwMode("rt") || isSwMode("ap"))){	//get select before and control setting
+	if(smart_connect_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap"))){	//get select before and control setting
 		var flag = '<% get_parameter("flag"); %>';
 		smart_connect_flag_t = (flag=='')?document.form.smart_connect_x.value:flag;
 
@@ -836,7 +836,7 @@ function applyRule(){
 	}
 
 	if(validForm()){
-		if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
+		if(amesh_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
 			if(!check_wl_auth_support($("select[name=wl_auth_mode_x] option:selected"), wl_unit))
 				return false;
 			else {
@@ -873,7 +873,7 @@ function applyRule(){
 			}
 		}
 		else {
-			if(document.form.wl_closed[0].checked && document.form.wps_enable.value == 1 && (isSwMode("rt") || isSwMode("ap"))){
+			if(document.form.wl_closed[0].checked && document.form.wps_enable.value == 1 && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap"))){
 				confirm_flag=1;
 				confirm_content="<#wireless_JS_Hide_SSID#>";
 			}
@@ -987,7 +987,7 @@ function applyRule(){
 				document.form.wl1_80211h.value = "1";	
 		}
 
-		if(smart_connect_support && (isSwMode("rt") || isSwMode("ap")) && document.form.smart_connect_x.value != 0){ //apply smart connect setting
+		if(smart_connect_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && document.form.smart_connect_x.value != 0){ //apply smart connect setting
 			document.form.smart_connect_x.value = document.form.smart_connect_t.value;
 			if(document.form.smart_connect_x.value == '1') {
 				if(isSupport("triband") && dwb_info.mode && (dwb_info.band == wl_unit))
@@ -1624,7 +1624,7 @@ function _change_wl_unit(val){
 			document.form.wl_subunit.value = (val == '<% nvram_get("wlc_band"); %>') ? 1 : -1;
 	}
 
-	if(smart_connect_support && (isSwMode("rt") || isSwMode("ap")))
+	if(smart_connect_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")))
 		document.form.current_page.value = "Advanced_Wireless_Content.asp?flag=" + document.form.smart_connect_x.value;
 
 	change_wl_unit();
@@ -3689,7 +3689,7 @@ function gen_fronthaul_ap(_value){
 (function() {
 	// special case after modifing GuestNetwork
 	// case 1 is after enable GuestNetwork, case 2 is after disable GuestNetwork
-	if(isSwMode("rt") || isSwMode("ap")) {
+	if((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) {
 		if('<% nvram_get("wl_unit"); %>' == "-1" || '<% nvram_get("wl_subunit"); %>' != "-1") {
 			change_wl_unit();
 		}

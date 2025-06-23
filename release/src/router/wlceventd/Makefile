@@ -58,8 +58,10 @@ endif
 endif
 
 ifeq ($(RTCONFIG_CFGSYNC),y)
-CFLAGS  += -I$(TOP)/cfg_mnt
+CFLAGS += -I$(TOP)/cfg_mnt
+CFLAGS += -I$(TOP)/networkmap/api
 LDFLAGS += -L$(TOP)/cfg_mnt -lcfgmnt
+LDFLAGS += -L$(TOP)/networkmap/api/ -lnmpapi
 endif
 
 ifeq ($(RTCONFIG_SW_HW_AUTH), y)
@@ -75,7 +77,7 @@ ifeq ($(RTCONFIG_TRUSTZONE),y)
 LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 

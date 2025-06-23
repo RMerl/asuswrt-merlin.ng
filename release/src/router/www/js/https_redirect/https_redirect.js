@@ -125,11 +125,16 @@ function Get_Component_Https_Desc(){
 	var $illustration_bg = $("<div>").addClass("illustration_bg").appendTo($content_container);
 	var $desc_text_bg = $("<div>").addClass("desc_text_bg").appendTo($content_container);
 	$("<div>")
+		.html("<#HTTPS_Protocol_Desc1_AAsku#>")
+		.appendTo($desc_text_bg);
+	/*
+	$("<div>")
 		.html("<#HTTPS_Protocol_Desc1#>")
 		.appendTo($desc_text_bg);
 	$("<div>")
 		.html("<#HTTPS_Protocol_Desc2#>")
 		.appendTo($desc_text_bg);
+	*/
 	var $action_bg = $("<div>").addClass("action_bg").appendTo($content_container);
 	var $cb_text_bg = $("<div>").addClass("cb_text_bg").appendTo($action_bg);
 	$("<input>").attr({"type":"checkbox", "id":"https_redirect_hint"}).appendTo($cb_text_bg);

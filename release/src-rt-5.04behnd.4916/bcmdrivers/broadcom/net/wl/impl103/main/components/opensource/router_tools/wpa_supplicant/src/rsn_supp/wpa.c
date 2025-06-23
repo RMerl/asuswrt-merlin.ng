@@ -3901,12 +3901,7 @@ void wpa_sm_set_mlo_mld(struct wpa_sm *sm, int mld_unit) {
 void wpa_sm_set_has_ML(struct wpa_sm *sm) {
 	if (sm == NULL)
 		return;
-	if ((sm->mld_unit != -1) && (sm->mld_unit != 255) &&
-			(sm->link_id != -1) && (sm->link_id != 255)) {
-		sm->has_ML = 1;
-	} else {
-		sm->has_ML = 0;
-	}
+	sm->has_ML = 1;
 }
 void wpa_sm_save_multi_link(struct wpa_sm *sm, u8* ie, uint len) {
 	if (sm == NULL)

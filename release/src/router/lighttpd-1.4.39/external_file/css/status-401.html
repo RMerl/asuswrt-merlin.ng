@@ -151,9 +151,6 @@ $("document").ready(function() {
 		return;
 	}
 	
-	// $(".captcha").css("display","none");
-	// generateCaptcha();
-	
 	adjustUI();
 	
 	$(window).resize(adjustUI);
@@ -172,51 +169,6 @@ function sanitize(input) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#x27;")
         .replace(/\//g, "&#x2F;");
-}
-
-function generateCaptcha(){
-	
-	if(this_url!="/")
-		return;
-		
-	$.ajax({
-		url: 'GetCaptchaImage',
-		data: '',
-		type: 'GET',
-		dataType: 'xml',
-		timeout: 20000,
-		error: function(){
-			//alert('Error loading XML document');
-		},
-		success: function(xml){		
-				
-			var data = parseXml(xml);
-			var captcha_enable = sanitize($(data).find('enable').text());
-			if(captcha_enable==1){
-				var image_data1 = sanitize($(data).find('img1').text());
-				var image_data1 = sanitize($(data).find('img1').text());
-				var image_data2 = sanitize($(data).find('img2').text());
-				var image_data3 = sanitize($(data).find('img3').text());
-				var image_data4 = sanitize($(data).find('img4').text());
-				g_captcha = sanitize($(data).find('code').text());
-				
-				var captcha_pattern = "";
-				$("#captcha_pattern").empty();
-				
-				captcha_pattern += "<div class='cap_num' style='background-image: url(" + image_data4 + ")'></div>";
-				captcha_pattern += "<div class='cap_num' style='background-image: url(" + image_data3 + ")'></div>";
-				captcha_pattern += "<div class='cap_num' style='background-image: url(" + image_data2 + ")'></div>";
-				captcha_pattern += "<div class='cap_num' style='background-image: url(" + image_data1 + ")'></div>";
-				
-				$(captcha_pattern).appendTo("#captcha_pattern");
-				
-				$(".captcha").css("display","block");
-				
-				$("#main").css("height",420);
-			}
-			
-		}
-	});
 }
 
 function adjustUI(){
@@ -381,28 +333,6 @@ function onKeyHandler(e){
 					            		</td>
 					          		</tr>
 									<tr style="height:10px"></tr>
-									<!--
-					          		<tr class="captcha" style="display:none">
-										<td>
-											<font color="white" size="4">
-												<label id="captcha">Random no. :</label>
-											</font>
-										</td>
-									</tr>
-									<tr class="captcha" height="5px" style="display:none"></tr>
-									<tr class="captcha" style="display:none">
-					          			<td>
-					          				<input id="captcha" name="captcha" type="text" autocapitalize="off" maxlength="4" style="font-size:20px;width:220px;height:36px" onkeydown="return onKeyHandler(event)">
-					          			</td>
-					          		</tr>
-					          		<tr class="captcha" height="5px" style="display:none"></tr>
-					          		 <tr class="captcha" style="display:none">
-					          			<td>
-					          				<div id="captcha_pattern" class="unselectable" name="captcha_pattern" style="width:220px;height:40px;float:left" onclick="generateCaptcha()"></div>
-					          			</td>
-					          		</tr> 
-									<tr style="height:10px"></tr>
-									-->
 					          		<tr> 
 					          			<td colspan="2" align="center"><div id="ok" onClick="doOK();"></div></td>
 					        		</tr>

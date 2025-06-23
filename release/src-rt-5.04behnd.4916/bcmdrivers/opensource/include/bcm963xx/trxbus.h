@@ -61,20 +61,12 @@ __attribute__((unused)) static int wan_i2c_bus_get(void)
     return bus;
 }
 
-#if defined(CONFIG_BCM_ETHTOOL)
-struct ethtool_eeprom;
-struct ethtool_modinfo;
-#endif
-
 struct bcmsfp_ops {
     int (*mon_read_buf)(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, char **buf, int *len);
     int (*mon_read)(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, long *value);
     int (*mon_write)(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, long value);
     int (*mon_write_buf)(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, char *buf, int count);
-#if defined(CONFIG_BCM_ETHTOOL)
-    int (*module_info)(struct sfp_data *psfp, struct ethtool_modinfo *modinfo);
-    int (*module_eeprom)(struct sfp_data *psfp, struct ethtool_eeprom *ee, u8 *data);
-#endif
+    int (*mon_read_raw) (struct sfp_data *psfp, int addr, int reg, uint8_t *buf, int len);
 };
 
 int trxbus_module_init(int bus, struct sfp_data *psfp, struct bcmsfp_ops *ops, int is_pmd);
@@ -92,8 +84,7 @@ void trxbus_transmitter_control(int bus, int mode);
 void trxbus_mac_transmit_ready_set(int bus);
 int trxbus_is_pmd(int bus);
 void *trxbus_opticaldet_desc_get(int bus);
-int trxbus_module_eeprom(int bus, struct ethtool_eeprom *ee, u8 *data);
-int trxbus_module_info(int bus, struct ethtool_modinfo *modinfo);
+int trxbus_module_read_raw(int bus, int addr, int offset, u8 *data, int len);
 int trxbus_mon_read(int bus, enum bcmsfp_mon_attr attr, int channel, long *value);
 int trxbus_mon_read_buf(int bus, enum bcmsfp_mon_attr attr, int channel, char **buf, int *len);
 int trxbus_mon_write(int bus, enum bcmsfp_mon_attr attr, int channel, long value);

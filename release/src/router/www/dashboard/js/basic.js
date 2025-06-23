@@ -1,5 +1,9 @@
 function genArchitecture() {
-    genHeader();
+    if(navigator.userAgent.match(/ASUSMultiSiteManager/) || navigator.userAgent.match(/ASUSExpertSiteManager/) || (/^aae-sgrst001-\w+\.asuscomm\.com$/.test(window.location.hostname))) {
+        genHeader(["logo","model-name"]);
+    }else{
+        genHeader();
+    }
     genNavMenu();
     genMidHeader();
 }
@@ -124,11 +128,6 @@ function genLanguageList() {
     return code;
 }
 
-function isMultisiteApp() {
-    let urlParameter = new URLSearchParams(window.location.search);
-    return urlParameter.get("mapp") == "true";
-}
-
 var menuList = [
 /*
 	{
@@ -228,7 +227,7 @@ let theme = (function () {
             return "rog";
         else if(isSupport("tuf")) 
             return "tuf";
-        else if(isSupport("BUSINESS")) 
+        else if(isSupport("UI4"))
             return "white";
         else
             return "dark";
@@ -247,11 +246,11 @@ if (!urlParameter.get("url")){
     location.href = "/index.html?url=dashboard&current_theme=" + theme;
 }
 
-if (isSupport("BUSINESS") && theme != "white"){
+if (isSupport("UI4") && theme != "white"){
     location.href = "/index.html?url=dashboard&current_theme=white";
 }
 
-if(!isSupport("BUSINESS") || theme != "white"){
+if(!isSupport("UI4") || theme != "white"){
     menuList = menuList.filter(function(item, index, array){
         return (item.url != "settings") && (item.url != "QIS_wizard.htm");
     });
@@ -310,7 +309,7 @@ if(system.currentOPMode.id != "RT"){
 	}
 }
 
-if (isMultisiteApp()) {
+if (navigator.userAgent.match(/ASUSMultiSiteManager/) || navigator.userAgent.match(/ASUSExpertSiteManager/) || (/^aae-sgrst001-\w+\.asuscomm\.com$/.test(window.location.hostname))) {
     menuList = menuList.filter(item => item.url !== "QIS_wizard.htm");
 }
 
@@ -323,7 +322,7 @@ function genNavMenu() {
             clicked: [boolean] ,
             divide: [boolean] 分隔線,
         },
-    
+
     */
 	var menuListClicked = location.search.split("url=")[1].split("&")[0];
 	for(var i=0; i<menuList.length; i++){
@@ -525,9 +524,6 @@ function pageRedirect(target) {
     }
     else if (target == "QIS_wizard.htm") {
         location.href = "/QIS_wizard.htm";
-    }
-    else if (urlParameter.get("mapp") === "true") {
-        location.href = `/index.html?url=${target}&current_theme=${theme}&mapp=true`;
     }
     else {
         location.href = "/index.html?url=" + target + "&current_theme=" + theme;

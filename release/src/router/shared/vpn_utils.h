@@ -128,10 +128,23 @@ extern int vpnc_set_iif_routing_rule(const int vpnc_idx, const char* br_ifname);
 #ifdef RTCONFIG_TPVPN
 #define TPVPN_PSZ_HMA       "hma"
 #define TPVPN_PSZ_NORDVPN   "nordvpn"
+#define TPVPN_PSZ_SUFRSHARK PROTO_SURFSHARK
 #define TPVPN_FILE_LOCK     "tpvpn"
+
+#define TPVPN_STS_ERROR    -1
+#define TPVPN_STS_STOP      0
+#define TPVPN_STS_INIT      1
+#define TPVPN_STS_DONE      2
+#define TPVPN_STS_2FA       3
+#define TPVPN_ERRNO_NONE    0
+#define TPVPN_ERRNO_AUTH    1
+#define TPVPN_ERRNO_SERVER  2
+#define TPVPN_ERRNO_KEYFULL 3
+#define TPVPN_ERRNO_CONFIG  4
+#define TPVPN_ERRNO_NET     5
 #endif
 
-#if defined(RTCONFIG_VPN_FUSION) || defined(RTCONFIG_WIREGUARD)
+#if defined(RTCONFIG_VPN_FUSION) || defined(RTCONFIG_WIREGUARD) || defined(RTCONFIG_NORDVPN) || defined(RTCONFIG_SURFSHARK)
 #define WG_SERVER_MAX  2
 #define WG_SERVER_CLIENT_MAX   10
 #define WG_CLIENT_MAX  5

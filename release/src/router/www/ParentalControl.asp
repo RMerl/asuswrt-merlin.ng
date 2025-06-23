@@ -673,7 +673,7 @@ function show_inner_tab(){
 			<table width="700px" style="margin-left:25px;">
 				<tr>
 					<td>
-						<div id="guest_image" style="background: url(images/New_ui/parental-control.png);width: 130px;height: 87px;"></div>
+						<div id="guest_image" style="background: url(images/New_ui/parental-control.png) no-repeat;width: 130px;height: 87px;"></div>
 					</td>
 					<td>&nbsp;&nbsp;</td>
 					<td style="font-size: 14px;">

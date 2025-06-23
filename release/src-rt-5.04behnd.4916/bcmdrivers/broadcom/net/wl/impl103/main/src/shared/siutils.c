@@ -615,6 +615,9 @@ static const char BCMATTACHDATA(rstr_devpathD)[] = "devpath%d";
 static const char BCMATTACHDATA(rstr_D_S)[] = "%d:%s";
 static const char BCMATTACHDATA(rstr_lpflags)[] = "lpflags";
 static const char BCMATTACHDATA(rstr_fuart_pup_rx_cts)[] = "fuart_pup_rx_cts";
+#ifdef RTBE92U
+static const char BCMATTACHDATA(rstr_6711war)[] = "6711war";
+#endif
 
 static void
 BCMATTACHFN(si_nvram_process)(si_info_t *sii, char *pvars)
@@ -2803,6 +2806,15 @@ BCMATTACHFN(si_doattach)(si_info_t *sii, uint devid, osl_t *osh, volatile void *
 	    !BCM6711_TWO_PLUS_ONE_PKG(sih->otpflag)) {
 		bcm6711a0_war(sih);
 	}
+SI_PRINT(("%s:%d chipid 0x%x !!\n ", __FUNCTION__, __LINE__, CHIPID(sih->chip)));
+#if defined(RTBE92U) /*&& !defined(DONGLEBUILD)*/
+if ((w = getintvar(pvars, rstr_6711war)) != 0) {
+if (BCM6711_CHIP(sih->chip)) {
+	SI_PRINT(("Set 6711 to 0.85v !!! "));
+	si_cnfrm_voltage_and_reset_otp_ctrl(sih, osh, devid, regs);
+}
+}
+#endif
 #endif /* !BCMDONGLEHOST && !DONGLEBUILD */
 
 	return (sii);
@@ -7260,7 +7272,177 @@ si_reset_otp_ctrl(si_t *sih, osl_t *osh, uint devid, volatile void *regs)
 	OSL_DELAY(1000);
 	return;
 }
-#endif /* DONGLEBUILD */
+
+#define BCHP_AVS_PVT_MNTR_CONFIG_PVT_MNTR_CTRL_DAC_ENABLE		0x1000
+#define BCHP_AVS_PVT_MNTR_CONFIG_PVT_MNTR_CTRL_MODE_VTMON		0x0
+#define BCHP_AVS_PVT_MNTR_CONFIG_PVT_MNTR_CTRL_MODE_VTMON_DAC		0x1
+#define BCHP_AVS_PVT_MNTR_CONFIG_PVT_MNTR_CTRL_MODE_DAC_DRIVE		0x3
+#define BCHP_AVS_PVT_MNTR_CONFIG_PVT_MNTR_CTRL_MODE_MEASURE_PAD_ADC	0x4
+#define BCHP_AVS_PVT_MNTR_CONFIG_PVT_MNTR_CTRL_MODE_MASK		0x380
+#define BCHP_AVS_PVT_MNTR_CONFIG_PVT_MNTR_CTRL_MODE_SHIFT		7
+#define BCHP_AVS_PVT_MNTR_CONFIG_PVT_MNTR_CTRL				0x28022100
+#define BCHP_AVS_HW_MNTR_MEASUREMENTS_INIT_PVT_MNTR			0x28022008
+#define BCHP_AVS_HW_MNTR_MEASUREMENTS_INIT_PVT_MNTR_m_init_pvt_mntr_MASK 0x000000ff
+#define BCHP_AVS_PVT_MNTR_CONFIG_DAC_CODE_PROGRAMMING_ENABLE		0x28022110
+#define BCHP_AVS_PVT_MNTR_CONFIG_DAC_CODE				0x28022114
+#define BCHP_AVS_PVT_MNTR_CONFIG_DAC_CODE_dac_code_MASK			0x000003ff
+#define BCHP_AVS_RO_REGISTERS_0_PVT_1V_0_MNTR_STATUS			0x2802220c
+#define BCHP_AVS_RO_REGISTERS_0_PVT_TESTMODE_MNTR_STATUS_done_MASK	0x00010000
+#define BCHP_AVS_RO_REGISTERS_0_PVT_TESTMODE_MNTR_STATUS_data_MASK	0x000003ff
+#define PVT_REGISTER_REREAD_COUNT					32
+#define PVT_REGISTER_REREAD_DELAY_US					2000
+#define ADC_FULL_SCALE_VOLTAGE_16NM					944
+#define BISR_CONFIRM_VOLTAGE						850
+#define DAC_RAISE_STEP							10
+#define MAX_DAC_CODE							0x3ff
+#define INVALID_PVT_VALUE						0x7fffffff
+#define SCALING_FACTOR							10000
+
+static void
+set_function_mode(si_t *sih, uint32 mode)
+{
+	uint rval, val, mask, addr;
+
+	addr = BCHP_AVS_PVT_MNTR_CONFIG_PVT_MNTR_CTRL;
+	val  = mode << BCHP_AVS_PVT_MNTR_CONFIG_PVT_MNTR_CTRL_MODE_SHIFT;
+	mask = BCHP_AVS_PVT_MNTR_CONFIG_PVT_MNTR_CTRL_MODE_MASK;
+	si_backplane_access(sih, addr, sizeof(uint), (uint*)&rval, TRUE);
+	rval = ((rval & ~mask) | (val & mask));
+	si_backplane_access(sih, addr, sizeof(uint), (uint*)&rval, FALSE);
+}
+
+static uint32
+read_pvt_register(si_t *sih)
+{
+	int i = PVT_REGISTER_REREAD_COUNT;
+	uint addr, rval;
+
+	addr = BCHP_AVS_RO_REGISTERS_0_PVT_1V_0_MNTR_STATUS;
+	while (i--) {
+		si_backplane_access(sih, addr, sizeof(uint), (uint*)&rval, TRUE);
+		/* Check if we got a valid reading */
+		if (rval & BCHP_AVS_RO_REGISTERS_0_PVT_TESTMODE_MNTR_STATUS_done_MASK) {
+			return (rval & BCHP_AVS_RO_REGISTERS_0_PVT_TESTMODE_MNTR_STATUS_data_MASK);
+		}
+
+		OSL_DELAY(PVT_REGISTER_REREAD_DELAY_US);
+	}
+
+	return INVALID_PVT_VALUE;
+}
+
+void
+si_cnfrm_voltage_and_reset_otp_ctrl(si_t *sih, osl_t *osh, uint devid, volatile void *regs)
+{
+	uint rval, val, mask, addr, voltage_ori = 0, voltage = 0, dac_code, i = 20;
+
+	/* enable AVS VTmon */
+	set_function_mode(sih, BCHP_AVS_PVT_MNTR_CONFIG_PVT_MNTR_CTRL_MODE_VTMON);
+
+	/* read voltage */
+	rval = read_pvt_register(sih);
+	if (rval != INVALID_PVT_VALUE) {
+		voltage_ori = (rval * ADC_FULL_SCALE_VOLTAGE_16NM * 10) / 8192;
+		SI_MSG(("%s: Original voltage %dmV\n", __FUNCTION__, voltage_ori));
+	} else {
+		SI_ERROR(("%s: AVS VTmon read failed!", __FUNCTION__));
+		return;
+	}
+
+	/* read board DAC code */
+	set_function_mode(sih, BCHP_AVS_PVT_MNTR_CONFIG_PVT_MNTR_CTRL_MODE_MEASURE_PAD_ADC);
+	OSL_DELAY(100);
+	addr = BCHP_AVS_HW_MNTR_MEASUREMENTS_INIT_PVT_MNTR;
+	rval = BCHP_AVS_HW_MNTR_MEASUREMENTS_INIT_PVT_MNTR_m_init_pvt_mntr_MASK;
+	si_backplane_access(sih, addr, sizeof(uint), (uint*)&rval, FALSE);
+
+	addr = BCHP_AVS_HW_MNTR_MEASUREMENTS_INIT_PVT_MNTR;
+	rval = 0x0;
+	si_backplane_access(sih, addr, sizeof(uint), (uint*)&rval, FALSE);
+	OSL_DELAY(100);
+
+	rval = read_pvt_register(sih);
+	if (rval != INVALID_PVT_VALUE) {
+		val = ((1536 * SCALING_FACTOR) - (rval * SCALING_FACTOR) + SCALING_FACTOR) /
+			(13026);
+		SI_MSG(("%s: Original DAC code %d\n", __FUNCTION__, val));
+	} else {
+		SI_ERROR(("%s: AVS VTmon read failed!", __FUNCTION__));
+		return;
+	}
+
+	if (voltage_ori >= BISR_CONFIRM_VOLTAGE) {
+		goto reset_otp_ctrl;
+	} else {
+		dac_code = val + (BISR_CONFIRM_VOLTAGE - voltage_ori) / 2;
+	}
+
+	/* write DAC code */
+	addr = BCHP_AVS_PVT_MNTR_CONFIG_PVT_MNTR_CTRL;
+	val  = BCHP_AVS_PVT_MNTR_CONFIG_PVT_MNTR_CTRL_DAC_ENABLE;
+	mask = BCHP_AVS_PVT_MNTR_CONFIG_PVT_MNTR_CTRL_DAC_ENABLE;
+	si_backplane_access(sih, addr, sizeof(uint), (uint*)&rval, TRUE);
+	rval = ((rval & ~mask) | (val & mask));
+	si_backplane_access(sih, addr, sizeof(uint), (uint*)&rval, FALSE);
+
+	while (i--)  {
+		SI_MSG(("%s: Write DAC code %d\n", __FUNCTION__, dac_code));
+		addr = BCHP_AVS_PVT_MNTR_CONFIG_DAC_CODE;
+		rval = dac_code & BCHP_AVS_PVT_MNTR_CONFIG_DAC_CODE_dac_code_MASK;
+		si_backplane_access(sih, addr, sizeof(uint), (uint*)&rval, FALSE);
+
+		addr = BCHP_AVS_PVT_MNTR_CONFIG_DAC_CODE_PROGRAMMING_ENABLE;
+		rval = 1;
+		si_backplane_access(sih, addr, sizeof(uint), (uint*)&rval, FALSE);
+
+		set_function_mode(sih, BCHP_AVS_PVT_MNTR_CONFIG_PVT_MNTR_CTRL_MODE_VTMON_DAC);
+		OSL_DELAY(200);
+
+		set_function_mode(sih, BCHP_AVS_PVT_MNTR_CONFIG_PVT_MNTR_CTRL_MODE_DAC_DRIVE);
+		OSL_DELAY(100);
+
+		addr = BCHP_AVS_HW_MNTR_MEASUREMENTS_INIT_PVT_MNTR;
+		rval = BCHP_AVS_HW_MNTR_MEASUREMENTS_INIT_PVT_MNTR_m_init_pvt_mntr_MASK;
+		si_backplane_access(sih, addr, sizeof(uint), (uint*)&rval, FALSE);
+
+		addr = BCHP_AVS_HW_MNTR_MEASUREMENTS_INIT_PVT_MNTR;
+		rval = 0x0;
+		si_backplane_access(sih, addr, sizeof(uint), (uint*)&rval, FALSE);
+		OSL_DELAY(100);
+
+		/* read voltage */
+		rval = read_pvt_register(sih);
+		if (rval != INVALID_PVT_VALUE) {
+			voltage = (rval * ADC_FULL_SCALE_VOLTAGE_16NM * 10) / 8192;
+			SI_MSG(("%s: New voltage %dmV\n", __FUNCTION__, voltage));
+		} else {
+			SI_ERROR(("%s: AVS VTmon read failed!", __FUNCTION__));
+			return;
+		}
+
+		if (voltage >= BISR_CONFIRM_VOLTAGE) {
+			break;
+		} else {
+			if (dac_code == MAX_DAC_CODE) {
+				break;
+			} else {
+				dac_code += DAC_RAISE_STEP;
+				if (dac_code > MAX_DAC_CODE) {
+					dac_code = MAX_DAC_CODE;
+				}
+			}
+		}
+	}
+
+reset_otp_ctrl:
+	/* reset otp control */
+	SI_PRINT(("%s: Raise from %dmV to %dmV and reset otp control\n",
+		__FUNCTION__, voltage_ori, voltage));
+#ifndef RTBE92U
+	si_reset_otp_ctrl(sih, osh, devid, regs);
+#endif
+}
+#endif /* !DONGLEBUILD */
 
 #if !defined(BCMDONGLEHOST) && !defined(DONGLEBUILD)
 void

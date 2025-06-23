@@ -278,3 +278,35 @@ dm_unregister_app_restart_info(int pid)
 		printf("Unable to remove file %s. %s\n", buf, strerror(errno));
 	}
 }
+
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+/*
+ * restore stdout and stderr from saved file pointers in pSOE and clear the entries in pSOE
+ */
+void
+restore_std_out_err(std_out_err_t *pSOE)
+{
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) && !defined(WL_EAP_AP)
+	if (!pSOE) {
+		fprintf(stderr, "%s failed null pSOE\n", __FUNCTION__);
+		return;
+	}
+	if (pSOE->out) {
+		stdout = pSOE->out;
+		fprintf(stderr, "%s restored STDOUT\n", __FUNCTION__);
+		pSOE->out = NULL;
+	} else {
+		fprintf(stderr, "%s failed to restore STDOUT\n", __FUNCTION__);
+	}
+	if (pSOE->err) {
+		stderr = pSOE->err;
+		fprintf(stderr, "%s restored STDERR\n", __FUNCTION__);
+		pSOE->err = NULL;
+	} else {
+		fprintf(stderr, "%s failed to restore STDERR\n", __FUNCTION__);
+	}
+#else
+	((void)0);
+#endif /* __STDC_VERSION, WL_EAP_AP */
+}
+#endif

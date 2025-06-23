@@ -113,11 +113,19 @@
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/replaceisp.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js?v=4"></script>
 <!-- script language="JavaScript" type="text/javascript" src="/ajax/get_rbk_info.asp"></script -->
 <script>
+
+const isSiteManager = (
+		/^aae-sgrst001-\w+\.asuscomm\.com$/.test(window.location.hostname)
+) || (
+		/ASUSMultiSiteManager/.test(navigator.userAgent) ||
+		/ASUSExpertSiteManager/.test(navigator.userAgent)
+);
+
 $(function () {
-	if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
+	if(amesh_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
 		addNewCSS('/device-map/amesh.css');
 	}
 });
@@ -380,7 +388,7 @@ function initial(){
 	}
 	
 	var exist_update = 0;
-	if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
+	if(amesh_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
 		
 		var have_node = false;
 		var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist");		
@@ -494,10 +502,12 @@ function initial(){
 				html += "<span class='aimesh_fw_revert_node'></span>";
 				html += "<span class='aimesh_fw_rbk_node'></span>";
 				html += "</div>";
-				html += "<div id='manual_firmware_update'>";
-				var support_manual_fw = check_AiMesh_fw_version(fwver);
-				html += gen_AiMesh_fw_status(support_manual_fw, get_cfg_clientlist[idx]);
-				html += "</div>";
+				if (!(capability_value & 4096) && !isSiteManager) {     //no_fw_manual_support
+					html += "<div id='manual_firmware_update'>";
+					var support_manual_fw = check_AiMesh_fw_version(fwver);
+					html += gen_AiMesh_fw_status(support_manual_fw, get_cfg_clientlist[idx]);
+					html += "</div>";
+				}
 				html += "<div id='checkNewFW' class='checkNewFW' style='display:none;'><#ADSL_FW_item3#> : <span class='checkFWResult'></span>";
 				html += "</div>";
 				html += "</td>";
@@ -529,7 +539,7 @@ function initial(){
 							$("#amas_" + mac_id + "").children().find(".aimesh_fw_revert_node").remove();
 					}
 
-					if(capability_value & 4096){     //no_fw_manual_support
+					if((capability_value & 4096) || isSiteManager){     //no_fw_manual_support
 						$("#amas_" + mac_id + "").children("#manual_firmware_update").empty();
 					}
 					if(capability_value & 8192){     //live_update_support
@@ -610,7 +620,7 @@ function initial(){
 				do_show_confirm(webs_state_flag);
 			}
 			else if((confirm_show.length > 0 && confirm_show == 0) || nt_flag == "openReleaseNote"){
-				if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
+				if(amesh_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
 					var interval = setInterval(function() {
 						if(link_status != undefined) {
 							clearInterval(interval);
@@ -645,7 +655,7 @@ function initial(){
 		inputCtrl(document.form.upload, 1);
 	}
 
-	if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
+	if(amesh_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
 		$(".aimesh_manual_fw_update_hint").css("display", "block");
 		$("#manually_upgrade_tr").css("display", "none");
 		$("#productid_tr").css("display", "none");
@@ -668,7 +678,7 @@ function initial(){
 		$("div").remove("#check_beta_div");
 	}
 
-	if(no_fw_manual_support){	//No manual
+	if(no_fw_manual_support || isSiteManager){	//No manual
 		$("#fw_note3").hide();
 		$("div").remove("#amesh_manual_upload_fw");
 		$("tr").remove("#manually_upgrade_tr");
@@ -748,7 +758,7 @@ function detect_firmware(flag){
 						var check_webs_state_info = webs_state_info;						
 						note_display=0;
 												
-						if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support)
+						if(amesh_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support)
 							show_amas_fw_result();
 						else
 							do_show_confirm(webs_state_flag);
@@ -1090,7 +1100,7 @@ function submitForm(){
 				return;
 		else {
 			var status = onSubmitCtrlOnly(document.form.upload, 'Upload1');
-			if(amesh_support && status && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
+			if(amesh_support && status && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
 				if(interval_update_AiMesh_fw_status) {
 					clearInterval(interval_update_AiMesh_fw_status);
 					interval_update_AiMesh_fw_status = false;
@@ -1810,7 +1820,7 @@ function update_AiMesh_fw() {
 						$("#amas_" + mac_id + "").children("#manual_firmware_update").empty();
 						$("#amas_" + mac_id + "").children("#manual_firmware_update").append(gen_AiMesh_fw_status(support_manual_fw, get_cfg_clientlist[idx]));
 					}
-					if(capability_value & 4096){     //no_fw_manual_support
+					if((capability_value & 4096) || isSiteManager){     //no_fw_manual_support
 						$("#amas_" + mac_id + "").children("#manual_firmware_update").empty();
 					}
 

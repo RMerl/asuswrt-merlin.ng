@@ -8,6 +8,7 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <link rel="icon" href="images/favicon.png">
+<link rel="stylesheet" type="text/css" href="css/main_login.css">
 <title><#Web_Title#></title>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/https_redirect/https_redirect.js"></script>
@@ -20,21 +21,13 @@ body{
 	font-family: Roboto, STHeiti, Microsoft JhengHei, sans-serif, Arial;
 	background-color: rgb(31, 31, 31) !important;
 }
-.bg{
-	background: url(/images/New_ui/login_bg.png) no-repeat center center fixed;
-	-webkit-background-size: cover;
-	-moz-background-size: cover;
-	-o-background-size: cover;
-	background-size: cover;
-	background:#283437\9;
-}
 .main-field-bg{
 	margin:20px auto 0;
 	width: 887px;
 	height: 849px;
 }
 .main-field-padding{
-	width: 887px;
+	width: 100%;
 	margin: 0 auto;	
 }
 .logo-container{
@@ -42,23 +35,13 @@ body{
 	align-items: center;
 	margin-left: 90px;
 }
-.logo-rog{
-	background:url('./images/New_ui/TUF-logo.png') no-repeat;
-}
-.logo-rog{
-	width: 290px;
-	height: 191px;
-}
 .login-title{
-	width: 420px;
-	height: 100%;
 	font-size: 48px;
-	margin-left: 25px;
 	color: #93d2d9;
 }
 .login-title-desc{
-	font-size: 16pt;
 	margin: 15px 30px 36px 120px;
+	text-align: left;
 }
 .desc{
 	margin: 12px 0;
@@ -68,121 +51,22 @@ body{
 	justify-content: center;
 	margin: 0 0 20px 0;
 }
-
-.login-btn-bg{
-	height: 60px;
-	line-height: 60px;
-	border: 2px solid #92650F;
-	float: right;
-	margin: 20px 230px 0 0;
-	width: 250px;
-	background: #141618;
-	border-radius: 8px;
-	text-align: center;
-	font-size: 28px;
-	cursor: pointer;
-}
-.login-btn-bg:hover{
-	border: 2px solid #D0982C;
-}
-.error-text, 
-.logout-text{
-	color: #45FFF0;
-}
-.form-input{
-	width: 380px;
-	height: 30px;
-	font-size: 28px;
-	padding: 18px 22px;
-	border: none;
-	outline: none;
-	border-bottom: 2px solid #92650F;
-	border-radius: 4px;
-	background-color: rgba(0,0,0,0.5);
-	background-color: #576D73\9;
-}
-.form-input:focus{
-	border-bottom: 2px solid #D0982C;
-}
-.p1{
-	font-size: 16pt;
-	width: 480px;
-	margin: 10px 0 5px 240px;
-}
-.error-hint-bg{
-	width: 537px;
-	height: 70px;
-	display:flex;
-	align-items: center;
-	margin: 40px auto;
-	background: url('./images/New_ui/icon_Sec_hint.png') no-repeat;
-}
 .loading-icon{
 	margin: 50px 290px 0px 0px;
 	float: right;
 }
-.error-text{
-	margin: 0 30px 0 112px;
-	font-size: 20px;
-}
+
 /*for mobile device*/
 @media screen and (max-width: 1000px){
-.main-field-bg{
-	width: 100%;
-	margin: 0;
-	background-size: 200%;
-	background-position: 50% 20%;
-}
-.main-field-padding{
-	width: 100%;
-}
-.logo-container{
-	margin-left: 0;
-}
-.logo-rog{
-	margin: 0 auto;
-}
-.login-title{
-	display: none;
-}
-.login-btn-bg, .input-container{
-	margin: 0 10px 20px 10px;
-}
-.login-btn-bg{
-	width: 95%;
-	background-size: 100%;
-	line-height: 58px;
-}
-.form-input{	
-	padding:10px 11px;
-	width: 100%;
-	font-size: 16px
-}
-.p1{
-	font-size: 12pt;
-	width:100%;
-	margin: 0 0 5px 10px;
-}
-.error-hint-bg{
-	width: 100%;
-	height: 52px;
-	background-size: 100%;
-}
-.loading-icon{
-	margin: 0;
-	float: none;
-	text-align: center;
-}
-.error-text{
-	line-height: 20px;
-}
-.error-text{
-	margin: 0 10px 0 90px ;
-}
-.login-title-desc{
-	font-size: 14pt;
-	margin: auto 15px;
-}
+	.loading-icon{
+		margin: 0;
+		float: none;
+		text-align: center;
+	}
+	.login-title-desc{
+		font-size: 14pt;
+		margin: auto 15px;
+	}
 }
 </style>
 <script>
@@ -206,6 +90,12 @@ String.prototype.strReverse = function() {
 	//strReversed = strOrig.revstring();
 };
 
+function isSupport(_ptn){
+	var ui_support = [<% get_ui_support(); %>][0];
+	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
+}
+var CoBrand = '<% nvram_get("CoBrand"); %>';
+
 var is_AA_sku = (function(){
 	var ttc = '<% nvram_get("territory_code"); %>';
 	return (ttc.search("AA") == -1) ? false : true;
@@ -221,11 +111,26 @@ var is_SG_sku = (function(){
 var isIE8 = navigator.userAgent.search("MSIE 8") > -1; 
 var isIE9 = navigator.userAgent.search("MSIE 9") > -1; 
 
+var secure_default = (function(){
+	var rc_support = '<% nvram_get("rc_support"); %>';
+	return (rc_support.search("secure_default") == -1) ? false : true;
+})();
+
+if(isSupport("TS_UI")){
+	$('link').last().after('<link rel="stylesheet" type="text/css" href="css/difference.css">');
+	$(".form-input").css("")
+}
+
 function initial(){
 	top.name = "";/* reset cache of state.js win.name */
 
-	if(is_KR_sku || is_SG_sku || is_AA_sku)
+	if(is_KR_sku || is_SG_sku || is_AA_sku || secure_default)
 		document.getElementById("KRHint").style.display = "";
+
+	if(isSupport("TS_UI") && CoBrand == "12"){
+		document.getElementsByClassName("logo-rog")[0].className = "logo-tx_miku";
+		$(".main-field-bg").css("width", "980px");
+	}
 
 	if(isIE8 || isIE9){
 		document.getElementById("router_name_tr").style.display = "";
@@ -325,7 +230,15 @@ function validForm(){
 			return false;                   
 	}
 
-	if(is_KR_sku || is_SG_sku || is_AA_sku){		/* MODELDEP by Territory Code */
+	if(document.form.http_passwd_x.value == document.form.http_username_x.value){
+			showError("<#JS_validLoginPWD_same#>");
+			document.form.http_passwd_x.value = "";
+			document.form.http_passwd_x.focus();
+			document.form.http_passwd_x.select();
+			return false;                   
+	}
+
+	if(is_KR_sku || is_SG_sku || is_AA_sku || secure_default){		/* MODELDEP by Territory Code */
 		if(!validator.chkLoginPw_KR(document.form.http_passwd_x)){
 			return false;
 		}
@@ -429,15 +342,15 @@ var validator = {
 		
 		if(obj.value.length > 0 && obj.value.length < 5){
 			showError("<#JS_short_password#>");
-			obj.value = "";
 			obj.focus();
 			obj.select();
 			return false;
 		}		
 
+		var str_valid_max_password = `<#JS_max_password_var#>`;
+		str_valid_max_password = str_valid_max_password.replace("%1$@", "5");
 		if(obj.value.length > 32){
-			showError("<#JS_max_password#>");
-			obj.value = "";
+			showError(str_valid_max_password);
 			obj.focus();
 			obj.select();
 			return false;
@@ -445,7 +358,6 @@ var validator = {
 
 		if(obj.value.charAt(0) == '"'){
 			showError('<#JS_validstr1#> ["]');
-			obj.value = "";
 			obj.focus();
 			obj.select();
 			return false;
@@ -460,7 +372,6 @@ var validator = {
 
 			if(invalid_char != ""){
 				showError("<#JS_validstr2#> '"+invalid_char+"' !");
-				obj.value = "";
 				obj.focus();
 				obj.select();
 				return false;
@@ -481,15 +392,15 @@ var validator = {
 		){
 				
 				showError("<#JS_validLoginPWD#>");
-				obj.value = "";
 				obj.focus();
 				obj.select();
 				return false;	
 		}
 
+		var str_valid_max_password = `<#JS_max_password_var#>`;
+		str_valid_max_password = str_valid_max_password.replace("%1$@", "10");
 		if(obj.value.length > 32){
-            showError("<#JS_max_password#>");
-            obj.value = "";
+            showError(str_valid_max_password);
             obj.focus();
             obj.select();
             return false;
@@ -504,7 +415,6 @@ var validator = {
 
 		if(invalid_char != ""){
 			showError("<#JS_validstr2#> '"+invalid_char+"' !");
-			obj.value = "";
 			obj.focus();
 			obj.select();
 			return false;
@@ -520,7 +430,7 @@ function showError(str){
 }
 </script>
 </head>
-<body class="bg" onload="initial();">
+<body class="bg_mainLogin" onload="initial();">
 <iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0"></iframe>
 
 <form method="post" name="form" action="/start_apply.htm" target="hidden_frame">

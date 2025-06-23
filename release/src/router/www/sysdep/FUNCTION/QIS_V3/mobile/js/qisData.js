@@ -3,7 +3,8 @@ var qisPostData = {};
 var opModeObj = {
 	"sw_mode": "",
 	"wlc_psta": "",
-	"wlc_dpsta": ""
+	"wlc_dpsta": "",
+	"wlc_band": ""
 }
 
 var generalObj = {
@@ -41,25 +42,25 @@ var wanObj = {
 	},
 
 	"v6plus": {
-		"ipv6_service": "ipv6pt"
+		/* Viz tmp "ipv6_service": "ipv6pt"*/
 	},
 
 	"ocnvc": {
-		"ipv6_service": "ipv6pt"
+		/* Viz tmp "ipv6_service": "ipv6pt"*/
 	},
 
 	"dslite": {
-		"ipv6_service": "ipv6pt",
+		/* Viz tmp "ipv6_service": "ipv6pt",*/
 		"wan_s46_dslite_mode": "0"
 	},
 
 	"v6opt": {
-		"ipv6_service": "ipv6pt"
+		/* Viz tmp "ipv6_service": "ipv6pt"*/
 	},
 
 	"wan46": {
 		"wan_proto": "",
-		"ipv6_service": "ipv6pt"
+		/* Viz tmp "ipv6_service": "ipv6pt"*/
 	},
 	
 	"vpn": {
@@ -95,6 +96,13 @@ var lanObj = {
 	"general":{
 		"lan_proto": "",
 		"lan_dnsenable_x": ""
+	},
+
+	"changeSubnet": {
+		"lan_ipaddr": "",
+		"lan_ipaddr_rt": "",
+		"dhcp_start": "",
+		"dhcp_end": ""
 	},
 
 	"staticIp": {
@@ -171,6 +179,16 @@ var wlcObj = {
 	"wlc_key": "",
 	"wlc_ap_mac": ""
 }
+
+var wispObj = {
+	"sw_mode": "1",
+	"wlc_psta": "0",
+	"wlc_dpsta": "0",
+	"wans_dualwan": "wan none",
+	"wan_unit": "0",
+	"wan_hwaddr_x": ""
+}
+
 var wlcMultiObj = {
 	"wlc0" : {
 		"wlc0_band": "",
@@ -340,6 +358,7 @@ var systemVariable = {
 	"onboardingInfo": {},
 	"skipAiMeshOptionPage": false,
 	"amas_newWindow_addNode": false,
+	"uiModelNameCloud": {},
 	"authModePostData": {},
 	"eth_wan_list":{},
 	"ispProfiles": [],

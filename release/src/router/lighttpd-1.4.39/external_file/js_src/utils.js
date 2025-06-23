@@ -170,22 +170,27 @@ function isValidKey(key) {
     return regex.test(key);
 }
 
-function getUrlVars() {
-	var query = window.location.href.slice(window.location.href.indexOf('?') + 1);
+function isUnsafeKey(key) {
+    return key === '__proto__' || key === 'constructor' || key === 'prototype';
+}
+
+function getUrlVar(key_name) {
+	var url = new URL(window.location.href); //- Safely parsing URLs using the URL API
+	var query = url.searchParams.toString(); // Get the query string
 	var hashes = query.split('&');
-	var vars = {};
+	var key_value = "";
 
 	for (var i = 0; i < hashes.length; i++) {
 		var hash = hashes[i].split('=');
 		var key = sanitizeInput(decodeURIComponent(hash[0]));
 		var value = sanitizeInput(decodeURIComponent(hash[1] || ''));
 
-		if (isValidKey(key)) {
-			vars[key] = encodeSafeString(value);
+		if (isValidKey(key) && !isUnsafeKey(key) && key==key_name) {
+			key_value = encodeSafeString(value);
 		}
 	}
 
-	return vars;
+	return key_value;
 }
 
 function parseXml(xml) {

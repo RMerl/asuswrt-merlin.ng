@@ -363,7 +363,7 @@ start_wps_method(void)
 	char ifname[NVRAM_MAX_PARAM_LEN];
 	char word[256], *next;
 	int unit;
-#if (defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 	int band;
 #endif
 
@@ -456,7 +456,7 @@ start_wps_method(void)
 				start_wps_pbcd();
 
 			foreach (word, nvram_safe_get("wl_ifnames"), next) {
-#if (defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 				wl_ioctl(word, WLC_GET_BAND, &band, sizeof(band));
 				if (band == WLC_BAND_6G)
 					continue;
@@ -830,9 +830,11 @@ int is_wps_stopped(void)
 			dbg("WPS Success\n");
 			break;
 		case 3: /* WPS_MSG_ERR */
+			nvram_set("btn_wps", "0");
 			dbg("WPS Fail due to message exchange error!\n");
 			break;
 		case 4: /* WPS_TIMEOUT */
+			nvram_set("btn_wps", "0");
 			dbg("WPS Fail due to time out!\n");
 			break;
 		case 5: /* WPS_UI_SENDM2 */
@@ -844,6 +846,7 @@ int is_wps_stopped(void)
 			dbg("Send M7\n");
 			break;
 		case 8: /* WPS_OVERLAP */
+			nvram_set("btn_wps", "0");
 			dbg("WPS Fail due to PBC session overlap!\n");
 			break;
 		case 9: /* WPS_UI_FIND_PBC_AP */
@@ -858,6 +861,15 @@ int is_wps_stopped(void)
 			ret = 0;
 			break;
 	}
+
+#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
+	if (nvram_match("btn_wps", "0") && nvram_match("x_Setting", "0") && !pids("obd")) {
+		_dprintf("%s, recover obd/amas_ssd_cd.\n", __func__);
+		nvram_set("no_obd", "0");
+		start_obd();
+		start_conn_diag_ss();
+	}
+#endif
 
 #if defined(RTCONFIG_QTN) && defined(RTCONFIG_WPS_DUALBAND)
 	if (ret == 1 || ret_qtn == 1) {

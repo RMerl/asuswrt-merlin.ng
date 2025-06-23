@@ -323,6 +323,7 @@ define(function(){
 					{url: "Advanced_OAM_Content.asp", tabName: "OAM"},
 					{url: "Advanced_Notification_Content.asp", tabName: "Notification"},
 					{url: "Advanced_Privacy.asp", tabName: "<#menu_privacy#>"},
+					{url: "Advanced_MultiFuncBtn.asp", tabName: "Multi-Function Button"},
 					{url: "Tools_OtherSettings.asp", tabName: "Tweaks"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
@@ -426,7 +427,8 @@ define(function(){
 				}
 
 				if(!gameMode_support) {
-					retArray.push("menu_GameBoost");
+					if(!isSupport("gu_accel"))
+						retArray.push("menu_GameBoost");
 					retArray.push("menu_OpenNAT");
 				}
 
@@ -438,7 +440,7 @@ define(function(){
 					}
 				}
 
-				if(!tencent_qmacc_support || !isSwMode("rt"))
+				if(!tencent_qmacc_support || (!isSwMode("RT") && !isSwMode("WISP")))
 					retArray.push("menu_TencentAcceleration");
 
 				if(!uu_support){
@@ -449,7 +451,7 @@ define(function(){
 					retArray.push("menu_AiMesh");
 				else{
 					if(ameshRouter_support){
-						if(!isSwMode("rt") && !isSwMode("ap"))
+						if((!isSwMode("RT") && !isSwMode("WISP")) && !isSwMode("ap"))
 							retArray.push("menu_AiMesh");
 					}
 					else if(ameshNode_support)
@@ -457,7 +459,7 @@ define(function(){
 				}
 
 				/* Operation Mode */
-				if(isSwMode("re")){
+				if(isSwMode("RP")){
 					retArray.push("menu_GuestNetwork");
 					retArray.push("menu_AccessControl");
 					retArray.push("menu_TrafficAnalyzer");
@@ -740,7 +742,7 @@ define(function(){
 					retArray.push("AdaptiveQoS_ROG.asp");
 				}
 
-				if(!wtfast_support && !gameMode_support){
+				if(!wtfast_support && !gameMode_support && !isSupport('gu_accel')){
 					retArray.push("GameBoost.asp");
 				}
 
@@ -775,7 +777,7 @@ define(function(){
 				else
 					retArray.push("Advanced_DHCP_Content.asp");
 
-				if((!Rawifi_support && ! Rtkwifi_support) || !concurrep_support || !isSwMode("re")){
+				if((!Rawifi_support && ! Rtkwifi_support) || !concurrep_support || !isSwMode("RP")){
 					retArray.push("Advanced_WProxy_Content.asp");
 				}
 				
@@ -801,7 +803,7 @@ define(function(){
 					retArray.push("Advanced_Roaming_Block_Content.asp");
 				else{
 					if(ameshRouter_support){
-						if(!isSwMode("rt") && !isSwMode("ap"))
+						if((!isSwMode("RT") && !isSwMode("WISP")) && !isSwMode("ap"))
 							retArray.push("Advanced_Roaming_Block_Content.asp");
 					}
 					else if(ameshNode_support)
@@ -832,6 +834,7 @@ define(function(){
 								
 				if(isSupport("sdn_mainfh")){
 					retArray.push("Advanced_ACL_Content.asp");
+					retArray.push("Advanced_WSecurity_Content.asp");
 				}
 
 				if(isSupport("BUSINESS")){
@@ -844,6 +847,10 @@ define(function(){
 					retArray.push("fileflex.asp");
 				}
 
+				if(!isSupport("sw_btn")){
+					retArray.push("Advanced_MultiFuncBtn.asp");
+				}
+
 				if(isSupport("wifi7")){
 					retArray.push("cloud_sync.asp");
 					retArray.push("cloud_router_sync.asp");
@@ -851,7 +858,7 @@ define(function(){
 				}
 
 				/* Operation Mode */
-				if(isSwMode("re")){
+				if(isSwMode("RP")){
 					retArray.push("GameBoost.asp");
 					retArray.push("TrafficAnalyzer_Statistic.asp");
 					retArray.push("Advanced_DHCP_Content.asp");

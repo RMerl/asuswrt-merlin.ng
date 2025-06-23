@@ -48,6 +48,7 @@ written consent.
 #include <linux/blog.h>
 #endif
 
+#include <ingqos_types.h>
 
 #define IQ_VERSION		"v1.0"
 
@@ -60,62 +61,6 @@ written consent.
 #define IQ_HASHTBL_SIZE		512
 #define IQ_HASH_BIN_SIZE	4
 #define IQ_HASHTBL_IDX(_idx)	((_idx) & (IQ_HASHTBL_SIZE - 1))
-
-/* the key field is sorted from port -> L2 -> L3 -> L4 -> MISC.
- * This is done for the sake of sorting the key mask table
- * where L4 result should have higher priority than L3 and on.
- */
-typedef enum {
-	IQ_KEY_FIELD_INGRESS_DEVICE,
-	IQ_KEY_FIELD_SRC_MAC,
-	IQ_KEY_FIELD_DST_MAC,
-	IQ_KEY_FIELD_ETHER_TYPE,
-	IQ_KEY_FIELD_OUTER_VID,
-	IQ_KEY_FIELD_OUTER_PBIT,
-	IQ_KEY_FIELD_INNER_VID,
-	IQ_KEY_FIELD_INNER_PBIT,
-	IQ_KEY_FIELD_L2_PROTO,		/* This will be the outermost L2 Proto other than VLAN */
-	IQ_KEY_FIELD_L3_PROTO,		/* The first L3 protocol, i.e., usually IPv4, IPv6 */
-	IQ_KEY_FIELD_IP_PROTO,
-	IQ_KEY_FIELD_SRC_IP,
-	IQ_KEY_FIELD_DST_IP,
-	IQ_KEY_FIELD_DSCP,
-	IQ_KEY_FIELD_IPV6_FLOW_LABEL,
-	IQ_KEY_FIELD_SRC_PORT,
-	IQ_KEY_FIELD_DST_PORT,
-	IQ_KEY_FIELD_OFFSET_0,
-	IQ_KEY_FIELD_OFFSET_1,
-	IQ_KEY_FIELD_MAX,
-} iq_key_field_t;
-
-typedef enum {
-	IQ_KEY_MASK_INGRESS_DEVICE = (1 << IQ_KEY_FIELD_INGRESS_DEVICE),
-	IQ_KEY_MASK_SRC_MAC = (1 << IQ_KEY_FIELD_SRC_MAC),
-	IQ_KEY_MASK_DST_MAC = (1 << IQ_KEY_FIELD_DST_MAC),
-	IQ_KEY_MASK_ETHER_TYPE = (1 << IQ_KEY_FIELD_ETHER_TYPE),
-	IQ_KEY_MASK_OUTER_VID = (1 << IQ_KEY_FIELD_OUTER_VID),
-	IQ_KEY_MASK_OUTER_PBIT = (1 << IQ_KEY_FIELD_OUTER_PBIT),
-	IQ_KEY_MASK_INNER_VID = (1 << IQ_KEY_FIELD_INNER_VID),
-	IQ_KEY_MASK_INNER_PBIT = (1 << IQ_KEY_FIELD_INNER_PBIT),
-	IQ_KEY_MASK_L2_PROTO = (1 << IQ_KEY_FIELD_L2_PROTO),
-	IQ_KEY_MASK_L3_PROTO = (1<< IQ_KEY_FIELD_L3_PROTO),
-	IQ_KEY_MASK_IP_PROTO = (1 << IQ_KEY_FIELD_IP_PROTO),
-	IQ_KEY_MASK_SRC_IP = (1 << IQ_KEY_FIELD_SRC_IP),
-	IQ_KEY_MASK_DST_IP = (1 << IQ_KEY_FIELD_DST_IP),
-	IQ_KEY_MASK_DSCP = (1 << IQ_KEY_FIELD_DSCP),
-	IQ_KEY_MASK_IPV6_FLOW_LABEL = (1 << IQ_KEY_FIELD_IPV6_FLOW_LABEL),
-	IQ_KEY_MASK_SRC_PORT = (1 << IQ_KEY_FIELD_SRC_PORT),
-	IQ_KEY_MASK_DST_PORT = (1 << IQ_KEY_FIELD_DST_PORT),
-	IQ_KEY_MASK_OFFSET_0 = (1 << IQ_KEY_FIELD_OFFSET_0),
-	IQ_KEY_MASK_OFFSET_1 = (1 << IQ_KEY_FIELD_OFFSET_1),
-} iq_key_mask_t;
-
-typedef enum {
-	IQ_KEY_OFFSET_L2,
-	IQ_KEY_OFFSET_L3,
-	IQ_KEY_OFFSET_L4,
-	IQ_KEY_OFFSET_MAX
-} iq_key_offset_type_t;
 
 typedef struct {
 	union {

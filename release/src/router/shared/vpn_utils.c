@@ -4,7 +4,9 @@
 #include <syslog.h>
 #include <shared.h>
 #include <vpn_utils.h>
+#ifdef RTCONFIG_OPENVPN
 #include <openvpn_config.h>
+#endif
 
 #if defined(RTCONFIG_VPN_FUSION) || defined(RTCONFIG_TPVPN) || defined(RTCONFIG_IG_SITE2SITE) || defined(RTCONFIG_WIREGUARD)
 /*******************************************************************
@@ -35,6 +37,7 @@ vpnc_set_basic_conf(const char *server, const char *username, const char *passwd
 	return 0;
 }
 
+#ifdef RTCONFIG_OPENVPN
 static void _update_ovpn_client_enable(int unit, int enable)
 {
 	char buf[32] = {0};
@@ -63,6 +66,7 @@ static void _update_ovpn_client_enable(int unit, int enable)
 		nvram_set("vpn_clientx_eas", buf);
 	}
 }
+#endif
 
 /*******************************************************************
  * NAME: vpnc_load_profile
@@ -128,12 +132,14 @@ int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ve
 			{
 				list[cnt].protocol = VPNC_PROTO_L2TP;
 			}
+#ifdef RTCONFIG_OPENVPN
 			else if (!strcmp(proto, PROTO_OVPN) || !strcmp(proto, PROTO_CYBERGHOST))
 			{
 				list[cnt].protocol = VPNC_PROTO_OVPN;
 				list[cnt].config.ovpn.ovpn_idx = (int)strtol(server, NULL, 0);
 				_update_ovpn_client_enable(list[cnt].config.ovpn.ovpn_idx, list[cnt].active);
 			}
+#endif
 #ifdef RTCONFIG_WIREGUARD
 			else if (!strcmp(proto, PROTO_WG) || !strcmp(proto, PROTO_SURFSHARK))
 			{
@@ -145,6 +151,7 @@ int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ve
 			}
 #endif
 #ifdef RTCONFIG_TPVPN
+#ifdef RTCONFIG_HMA
 			else if (!strcmp(proto, PROTO_HMA))
 			{
 				if (is_tpvpn_configured(TPVPN_HMA, region, conntype, (int)strtol(server, NULL, 0)))
@@ -166,6 +173,8 @@ int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ve
 						logmessage_normal("VPN", "no data for HMA\n");
 				}
 			}
+#endif
+#ifdef RTCONFIG_NORDVPN
 			else if (!strcmp(proto, PROTO_NORDVPN))
 			{
 				if (is_tpvpn_configured(TPVPN_NORDVPN, region, conntype, (int)strtol(server, NULL, 0)))
@@ -186,6 +195,7 @@ int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ve
 						logmessage_normal("VPN", "no data for NordVPN\n");
 				}
 			}
+#endif
 #endif
 			else if (!strcmp(proto, PROTO_IPSec))
 			{
@@ -283,7 +293,7 @@ int is_tpvpn_configured(int provider, const char* region, const char* conntype, 
 }
 #endif
 
-#if defined(RTCONFIG_VPN_FUSION) || defined(RTCONFIG_WIREGUARD)
+#if defined(RTCONFIG_VPN_FUSION) || defined(RTCONFIG_WIREGUARD) || defined(RTCONFIG_NORDVPN)
 static char* _get_wgconf_val(char* buf)
 {
 	char *p = buf;

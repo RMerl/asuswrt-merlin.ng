@@ -1426,7 +1426,7 @@ done:
 }
 
 void
-pktpool_free(pktpool_t *pktp, void *p)
+pktpool_free(osl_t *osh, pktpool_t *pktp, void *p)
 {
 	/* protect shared resource */
 	if (HND_PKTPOOL_MUTEX_ACQUIRE(&pktp->mutex, OSL_EXT_TIME_FOREVER) != OSL_EXT_SUCCESS)
@@ -1436,6 +1436,11 @@ pktpool_free(pktpool_t *pktp, void *p)
 #ifdef BCMDBG_POOL
 	/* pktpool_stop_trigger(pktp, p); */
 #endif
+
+#ifdef	PKTRESET
+	/* reset packet if defined e.g. skb header clean up before reuse */
+	PKTRESET(osh, p, pktp->max_pkt_bytes);
+#endif /* PKTRESET */
 
 	pktpool_enq(pktp, p);
 

@@ -306,6 +306,8 @@ deconfig(int zcip)
 	if (!(unit < 0))
 		update_wan_state(prefix, WAN_STATE_STOPPED, end_wan_sbstate);
 
+	logmessage(zcip ? "zcip client" : "dhcp client", "deconfig");
+
 	_dprintf("udhcpc:: %s done\n", __FUNCTION__);
 	return 0;
 }
@@ -1173,11 +1175,11 @@ expires_lan(char *lan_ifname, unsigned int in)
 	return 0;
 }
 
-#ifdef RTCONFIG_AMAS_WGN
+#if defined(RTCONFIG_AMAS_WGN) || defined(RTCONFIG_MULTILAN_CFG)
 static void restart_re_qos()
 {
-       // AMAS RE mode
-       if (nvram_get_int("re_mode") == 1) start_iQos();
+	// AMAS RE mode
+	if (nvram_get_int("re_mode") == 1) start_iQos();
 }
 #endif
 
@@ -1299,7 +1301,7 @@ bound_lan(void)
 
 _dprintf("%s: IFUP.\n", __FUNCTION__);
 
-#ifdef RTCONFIG_AMAS_WGN
+#if defined(RTCONFIG_AMAS_WGN) || defined(RTCONFIG_MULTILAN_CFG)
 	/* move qos restart here to trigger early */
 	restart_re_qos();
 #endif

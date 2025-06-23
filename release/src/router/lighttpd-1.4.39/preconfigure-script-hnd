@@ -43,7 +43,7 @@ fi
 
 TR069=`cat ../.config |grep "RTCONFIG_TR069=y"`
 if [ -n "$TR069" ]; then
-        LDFLAGS+=" -L$router_dir/libssh2-1.10.0/src/.libs -lssh2 -L$router_dir/zlib -lz"
+        LDFLAGS+=" -L$router_dir/libssh2/src/.libs -lssh2 -L$router_dir/zlib -lz"
 fi
 
 TRUSTZONE=`cat ../.config |grep "RTCONFIG_TRUSTZONE=y"`
@@ -53,7 +53,10 @@ fi
 
 RTBE82M=`cat ../shared/version.h | grep "RT-BE82M"`
 GSBE18000=`cat ../shared/version.h | grep "GS-BE18000"`
-if [ -n "$RTBE82M" ] || [ -n "$GSBE18000" ]; then
+GSBE12000=`cat ../shared/version.h | grep "GS-BE12000"`
+GS7_PRO=`cat ../shared/version.h | grep "GS7_PRO"`
+GT7=`cat ../shared/version.h | grep "GT7"`
+if [ -n "$RTBE82M" ] || [ -n "$GSBE18000" ] || [ -n "$GSBE12000" ] || [ -n "$GS7_PRO" ] || [ -n "$GT7" ]; then
 	LDFLAGS+=" -L$router_dir/libhostapi/ -lhostapi"
 fi
 

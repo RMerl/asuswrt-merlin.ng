@@ -931,6 +931,106 @@
 					]
 				},
 				{
+					"name": "DNS DPI",
+					"rtconfig": "RTCONFIG_DNSQUERY_INTERCEPT",
+					"data": [
+						{
+							"name": "The database files of dns query",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 2097152,
+							"min_size": 2097152,
+							"type": "file",
+							"path": "/jffs/dns_query.db"
+						},
+						{
+							"name": "The database files of app client",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 4194304,
+							"min_size": 4194304,
+							"type": "file",
+							"path": "/jffs/app_client.db"
+						},
+						{
+							"name": "The database files of app sum",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 8388608,
+							"min_size": 8388608,
+							"type": "file",
+							"path": "/jffs/app_sum.db"
+						}
+
+					]
+				},
+				{
+					"name": "HNS",
+					"rtconfig": "RTCONFIG_HNS",
+					"data": [
+						{
+							"name": "TrendMicro HNS Signature",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 1572864,
+							"min_size": 1572864,
+							"type": "file",
+							"path": "/jffs/signature/rule.zip"
+						},
+						{
+							"name": "AiProtectionMonitor & Mails Log",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 3145728,
+							"min_size": 3145728,
+							"type": "dir",
+							"path": "/jffs/.sys/AiProtectionMonitor"
+						},
+						{
+							"name": "Web History",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 3145728,
+							"min_size": 3145728,
+							"type": "dir",
+							"path": "/jffs/.sys/WebHistory"
+						}
+					]
+				},
+				{
+					"name": "AFC",
+					"rtconfig": "RTCONFIG_BCM_AFC",
+					"data": [
+						{
+							"name": "AFC log",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 524288,
+							"min_size": 524288,
+							"type": "file",
+							"path": "/jffs/afc_debug.log"
+						},
+						{
+							"name": "AFC log - 2",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 524288,
+							"min_size": 524288,
+							"type": "file",
+							"path": "/jffs/afc_debug.log-1"
+						},
+						{
+							"name": "AFC certficate",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 10240,
+							"min_size": 10240,
+							"type": "dir",
+							"path": "/jffs/.sys/afc"
+						}
+					]
+				},
+				{
 					"name": "last",
 					"rtconfig": null,
 					"data": null

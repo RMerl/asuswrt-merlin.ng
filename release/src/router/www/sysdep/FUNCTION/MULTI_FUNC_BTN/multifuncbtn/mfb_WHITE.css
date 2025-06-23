@@ -1,0 +1,83 @@
+﻿.item_tag_container > .item_tag.link:before{
+	background-image: url(/images/New_ui/SDN/white_theme/Content/link.svg);
+}
+.feature_profiles_container{
+	background: #F5F5F5;
+}
+.feature_profiles_container:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.feature_profiles_container .profile_group:not(:first-child):before{
+	border-top: 1px solid #DCDCDC;
+}
+.feature_profiles_container .title{
+	color: #006CE1;
+}
+.feature_profiles_container .profile_container{
+	background: #FFF;
+}
+.feature_profiles_container .profile_item:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.feature_profiles_container .default_conn .default_conn_text{
+	border: 1px solid #006CE1;
+	color: #006CE1;
+}
+.schematic_container{
+	border: 1px solid rgb(204, 204, 204);
+}
+.schematic_container .img_item{
+	background-image: url(/images/New_ui/multifuncbtn/white_theme/img_multi_func_btn.svg);
+}
+.schematic_container .img_item.btnsw_1{
+	background-image: url(/images/New_ui/multifuncbtn/white_theme/img_multi_func_btnsw_1.svg);
+}
+.schematic_container .notice_item{
+	color: #E75B4B;
+}
+.schematic_container .fun_desc_item{
+	color: #000000;
+}
+.mode_config_container{
+	background: #FFF;
+}
+.mode_config_container .mode_profile_container{
+	border: 1px solid rgb(204, 204, 204);
+	background-color: #FFF;
+}
+.mode_profile_container .icon_component{
+	background-color: rgb(255 255 255 / 10%);
+	border: 1px solid rgb(204, 204, 204);
+}
+.nvsw_active .icon_component > i{
+	background-color: #006CE1;
+}
+.detail_component .text_component:not(:first-child):before{
+	border-top: 1px solid #DCDCDC;
+}
+.text_component .main_text{
+	color: #4D4D4D;
+}
+.nvsw_active .text_component .main_text{
+	color: #006CE1;
+}
+.text_component .sub_text{
+	color: #4D4D4D;
+}
+.mode_config_container .notice_container{
+	border: 1px solid rgb(204, 204, 204);
+	background-color: #FFF;
+}
+.notice_container .title{
+	color :#006CE1;
+}
+.notice_container .desc{
+	color: #E75B4B;
+}
+.notice_container .icon_notice{
+	color: #006CE1 !important;
+	border: 1px solid #006CE1;
+}
+.icon_notice{
+	border: 1px solid #FFF;
+}

@@ -1,7 +1,7 @@
 AM_CFLAGS = $(FAM_CFLAGS) $(LIBUNWIND_CFLAGS)
 
 noinst_PROGRAMS=proc_open lemon # simple-fcgi #graphic evalo bench ajp ssl error_test adserver gen-license
-sbin_PROGRAMS=lighttpd lighttpd-angel lighttpd-monitor lighttpd-arpping
+sbin_PROGRAMS=lighttpd lighttpd-monitor lighttpd-arpping
 LEMON=$(top_builddir)/src/lemon$(EXEEXT)
 
 lemon_SOURCES=lemon.c

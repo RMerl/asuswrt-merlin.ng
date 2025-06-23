@@ -24,7 +24,7 @@
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/md5.js"></script>
 <script type="text/javascript" src="/form.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js?v=4"></script>
 <style>
 .cancel{
 	border: 2px solid #898989;
@@ -199,7 +199,6 @@ function change_boostkey(_id){
 		return false;
 	}
 
-
 	if(_id == '3' && (policy_status.TM == "0" || policy_status.TM_time == "")){
 		const policyModal = new PolicyModalComponent({
 			policy: "TM"
@@ -238,6 +237,8 @@ function show_boostkey_desc(id) {
 var current_page = window.location.pathname.split("/").pop();
 var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
 
+var secure_default = isSupport("secure_default");
+
 function initial(){	
 	//parse nvram to array
 	var parseNvramToArray = function(oriNvram) {
@@ -266,27 +267,66 @@ function initial(){
 	showNTPList();
 	display_spec_IP(document.form.http_client.value);
 
+	$('#reboot_schedule_enable_tr, #reboot_schedule_date_tr, #reboot_schedule_time_tr').hide();
 	if(reboot_schedule_support){
-		document.form.reboot_date_x_Sun.checked = getDateCheck(document.form.reboot_schedule.value, 0);
-		document.form.reboot_date_x_Mon.checked = getDateCheck(document.form.reboot_schedule.value, 1);
-		document.form.reboot_date_x_Tue.checked = getDateCheck(document.form.reboot_schedule.value, 2);
-		document.form.reboot_date_x_Wed.checked = getDateCheck(document.form.reboot_schedule.value, 3);
-		document.form.reboot_date_x_Thu.checked = getDateCheck(document.form.reboot_schedule.value, 4);
-		document.form.reboot_date_x_Fri.checked = getDateCheck(document.form.reboot_schedule.value, 5);
-		document.form.reboot_date_x_Sat.checked = getDateCheck(document.form.reboot_schedule.value, 6);
-		document.form.reboot_time_x_hour.value = getrebootTimeRange(document.form.reboot_schedule.value, 0);
-		document.form.reboot_time_x_min.value = getrebootTimeRange(document.form.reboot_schedule.value, 1);
-		document.getElementById('reboot_schedule_enable_tr').style.display = "";
-		hide_reboot_option('<% nvram_get("reboot_schedule_enable"); %>');
+		let nv_arr = ["reboot_schedule_enable", "reboot_schedule"];
+		if(isSupport("REBOOT_SCHED_V2") >= 1){
+			nv_arr = [...nv_arr, ...["reboot_schedule_type", "reboot_schedule_month"]];
+		}
+		const nv_config = httpApi.nvramGet(nv_arr);
+		let $reboot_schedule_ui = $("#reboot_schedule_date_tr [data-container='reboot_schedule_date']").append(Get_Component_reboot_schedule_ui(nv_config));
+		["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].forEach((day, index) => {
+			$reboot_schedule_ui.find(`[name="reboot_date_x_${day}"]`).prop('checked', getDateCheck(nv_config.reboot_schedule, index));
+		});
+		["hour", "min"].forEach((time, index) => {
+			$(`[name="reboot_time_x_${time}"]`).val(()=>{
+				const type = nv_config.reboot_schedule_type || "0";
+				if(type == "0"){//reboot_schedule=10000000300
+					if(index == "0") return nv_config.reboot_schedule.substring(7,9);
+					else if(index == "1") return nv_config.reboot_schedule.substring(9,11);
+					return "00";
+				}
+				else if(type == "1"){//reboot_schedule_month=010300
+					if(index == "0") return nv_config.reboot_schedule_month.substring(2,4);
+					else if(index == "1") return nv_config.reboot_schedule_month.substring(4,6);
+					return "00";
+				}
+				else
+					return "00";
+			});
+		});
+		inputCtrl(document.form.reboot_time_x_hour,0);
+		inputCtrl(document.form.reboot_time_x_min,0);
+		if(isSupport("REBOOT_SCHED_V2") >= 1){
+			if(nv_config.reboot_schedule_type == "1"){
+				inputCtrl(document.form.reboot_time_x_hour,1);
+				inputCtrl(document.form.reboot_time_x_min,1);
+			}
+			$reboot_schedule_ui.find("#reboot_schedule_month").val(()=>{
+				const day = parseInt(nv_config.reboot_schedule_month.substring(0,2));
+				if(day >= 1 && day <= 31) return day.toString().padStart(2, "0");
+				else return "01";
+			});
+		}
+		else{
+			if($reboot_schedule_ui.find('[reboot-type="0"] input[type="checkbox"]:checked').length > 0){
+				inputCtrl(document.form.reboot_time_x_hour,1);
+				inputCtrl(document.form.reboot_time_x_min,1);
+			}
+		}
+
+		if(nv_config.reboot_schedule_type){
+			$reboot_schedule_ui.find(`input[name="reboot_schedule_type"][value="${nv_config.reboot_schedule_type}"]`).prop("checked", true).click();
+		}
+
+		$("#reboot_schedule_enable_tr").show();
+		if(nv_config.reboot_schedule_enable == "1"){
+			$('#reboot_schedule_date_tr, #reboot_schedule_time_tr').show();
+		}
 		
 		if("<% get_parameter("af"); %>" == "reboot_schedule_enable_x"){
 			autoFocus("reboot_schedule_enable_x");
 		}
-	}
-	else{
-		document.getElementById('reboot_schedule_enable_tr').style.display = "none";
-		document.getElementById('reboot_schedule_date_tr').style.display = "none";
-		document.getElementById('reboot_schedule_time_tr').style.display = "none";
 	}
 
 	setInterval("corrected_timezone();", 5000);
@@ -317,7 +357,7 @@ function initial(){
 	change_url(lanport, 'http_lan')
 
 	var WPSArray = ['WPS'];
-	var ez_mode = httpApi.nvramGet (['btn_ez_mode']).btn_ez_mode;
+	var ez_mode = httpApi.nvramGet(['btn_ez_mode']).btn_ez_mode;
 	var ez_radiotoggle = httpApi.nvramGet (['btn_ez_radiotoggle']).btn_ez_radiotoggle;
 	if(!wifi_tog_btn_support && !wifi_hw_sw_support && sw_mode != 2 && sw_mode != 4){
 		WPSArray.push('WiFi');
@@ -501,7 +541,27 @@ function initial(){
 		showhide("ntpd_redir_tr", 0);
 	}
 
-	$("#https_download_cert").css("display", (le_enable == "0" && orig_http_enable != "0")? "": "none");
+	$("#https_download_cert").css("display", (orig_http_enable != "0")? "": "none");
+	if(orig_http_enable != "0"){
+		if(le_enable == "1"){
+			$("#download_cert_btn").css("display", "");
+			$("#clear_cert_btn").css("display", "none");
+			$("#download_cacert_btn").css("display", "none");
+			$("#clear_cacert_btn").css("display", "none");
+			$("#download_cacert_desc").css("display", "none");
+		}else if(le_enable == "2"){
+			$("#download_cert_btn").css("display", "");
+			if(document.form.casignedcert.value != "1"){
+				$("#clear_cert_btn").css("display", "none");
+				$("#download_cacert_btn").css("display", "none");
+			}else{
+				$("#clear_cert_btn").css("display", "");
+				$("#download_cacert_btn").css("display", "");
+			}
+			$("#clear_cacert_btn").css("display", "none");
+			$("#download_cacert_desc").css("display", "");
+		}
+	}
 
 	$("#login_captcha_tr").css("display", captcha_support? "": "none");
 
@@ -524,7 +584,7 @@ function initial(){
 		document.getElementById("boostkey_tr").style.display = "";
 
 		build_boostkey_options();
-		if (!ASUS_EULA.status("tm") &&
+		if ((policy_status.TM == "0" || policy_status.TM_time == "") &&
 		    ("<% nvram_get("turbo_mode"); %>" == "3")) {
 			httpApi.nvramSet({
 				"turbo_mode": '0',
@@ -701,7 +761,49 @@ function applyRule(){
 		}
 		
 		if(reboot_schedule_support){
-			updateDateTime();
+			let postData = {};
+			postData.reboot_schedule_enable = $('input[name="reboot_schedule_enable_x"]:checked').val();
+			if(postData.reboot_schedule_enable == "1"){
+				const type = $('input[name="reboot_schedule_type"]:checked').val() || "0";
+				if(isSupport("REBOOT_SCHED_V2") >= 1){
+					const ori_type = httpApi.nvramGet(["reboot_schedule_type"]).reboot_schedule_type || "0";
+					postData.reboot_schedule_type = type;
+					if(type != ori_type){
+						switch(type){
+							case "0":
+								postData.reboot_schedule_month = "000300";
+								break;
+							case "1":
+								postData.reboot_schedule = "00000000300";
+								break;
+						}
+					}
+				}
+				let hour = $('#reboot_schedule_time_tr [name="reboot_time_x_hour"]').val();
+				hour = (isNaN(hour) || hour.length !== 2) ? "03" : hour;
+				let min = $('#reboot_schedule_time_tr [name="reboot_time_x_min"]').val();
+				min = (isNaN(min) || min.length !== 2) ? "00" : min;
+				if(type == "0"){
+					let days = "";
+					$('#reboot_schedule_date_tr [reboot-type="0"] input[type="checkbox"]').each((idx, item)=>{
+						days += $(item).prop("checked") ? "1" : "0";
+					});
+					postData.reboot_schedule = days + hour + min;
+				}
+				else if(isSupport("REBOOT_SCHED_V2") >= 1 && type == "1"){
+					let month = $("#reboot_schedule_month").val() || "03";
+					month = (isNaN(month) || month.length !== 2) ? "03" : month;
+					postData.reboot_schedule_month = month + hour + min;
+				}
+			}
+			$.each(postData, function(key, value) {
+				const hiddenInput = $('<input>', {
+					type: 'hidden',
+					name: key,
+					value: value
+				});
+				$("form[name='form']").append(hiddenInput);
+			});
 		}
 
 		if(document.form.wandog_enable_chk.checked)
@@ -947,10 +1049,15 @@ function validForm(){
 	}
 
 	if(reboot_schedule_support){
-		if(!document.form.reboot_date_x_Sun.checked && !document.form.reboot_date_x_Mon.checked &&
-		!document.form.reboot_date_x_Tue.checked && !document.form.reboot_date_x_Wed.checked &&
-		!document.form.reboot_date_x_Thu.checked && !document.form.reboot_date_x_Fri.checked &&
-		!document.form.reboot_date_x_Sat.checked && document.form.reboot_schedule_enable_x[0].checked)
+		let show_hint = false;
+		const enable = $('input[name="reboot_schedule_enable_x"]:checked').val();
+		const type = $('input[name="reboot_schedule_type"]:checked').val() || "0";
+		if(enable == "1" && type == "0"){
+			if($('#reboot_schedule_date_tr [reboot-type="0"] input[type="checkbox"]:checked').length == 0){
+				show_hint = true;
+			}
+		}
+		if(show_hint)
 		{
 			alert("<#FirewallConfig_LanWan_SelectOne#>");
 			document.form.reboot_date_x_Sun.focus();
@@ -1025,10 +1132,10 @@ var timezones = [
 	["UTC4_1",	"(GMT-04:00) <#TZ18#>"],
 	["UTC4_2",	"(GMT-04:00) <#TZ18_1#>"],
 	["UTC4DST_2",	"(GMT-04:00) <#TZ19#>"],
-	["UTC4DST_3",	"(GMT-04:00) <#TZ19_1#>"],
 	["NST3.30DST",	"(GMT-03:30) <#TZ20#>"],
 	["EBST3",	"(GMT-03:00) <#TZ21#>"],	//EBST3DST_1
 	["UTC3",	"(GMT-03:00) <#TZ22#>"],
+	["UTC3_1",   "(GMT-03:00) <#TZ19_1#>"],		//UTC4DST_3
 	["UTC3DST",     "(GMT-03:00) <#TZ87#>"],        //UTC2DST
 	["UTC2",	"(GMT-02:00) <#TZ24#>"],
 	["UTC2DST_1",  "(GMT-02:00) <#TZ23#>"],    //UTC2_1 //EBST3DST_2
@@ -1215,33 +1322,37 @@ function hide_https_lanport(_value){
 		document.getElementById("https_access_page").style.display = 'none';
 	}
 
-
-	if(le_enable != "1" && _value != "0"){
+	if(_value != "0"){
 		$("#https_download_cert").css("display", "");
-		if(orig_http_enable == "0"){
-			$("#download_cert_btn").css("display", "none");
-			$("#clear_server_cert_btn").css("display", "none");
+		if(le_enable == "1"){
+			$("#download_cert_btn").css("display", "");
 			$("#clear_cert_btn").css("display", "none");
-			$("#download_cert_desc").css("display", "");
-		}
-		else{
-			if (le_enable == "0") {
-				$("#download_cert_btn").css("display", "");
-				$("#clear_server_cert_btn").css("display", "");
-				$("#clear_cert_btn").css("display", "");
-				if(top.webWrapper){
-					$("#clear_server_cert_btn").css({"margin-left":"8px","margin-right":"10px"});
-				}
-				$("#download_cert_desc").css("display", "");
-			} else {
-				$("#download_cert_btn").css("display", "none");
-				$("#clear_server_cert_btn").css("display", "none");
+			$("#download_cacert_btn").css("display", "none");
+			$("#clear_cacert_btn").css("display", "none");
+			$("#download_cacert_desc").css("display", "none");
+		}else if (le_enable == "2"){
+			$("#download_cert_btn").css("display", "");
+			if(document.form.casignedcert.value != "1"){
 				$("#clear_cert_btn").css("display", "none");
-				$("#download_cert_desc").css("display", "none");
+				$("#download_cacert_btn").css("display", "none");
+			}else{
+				$("#clear_cert_btn").css("display", "");
+				$("#download_cacert_btn").css("display", "");
 			}
+			$("#clear_cacert_btn").css("display", "none");
+			$("#download_cacert_desc").css("display", "");
+		}else{
+			$("#download_cert_btn").css("display", "");
+			$("#clear_cert_btn").css("display", "");
+			$("#download_cacert_btn").css("display", "");
+			$("#clear_cacert_btn").css("display", "");
+			$("#download_cacert_desc").css("display", "");
 		}
-	}
-	else{
+		if(orig_http_enable == "0"){
+			$("#clear_cert_btn").css("display", "none");
+			$("#clear_cacert_btn").css("display", "none");
+		}
+	}else{
 		$("#https_download_cert").css("display", "none");
 	}
 }
@@ -1305,12 +1416,10 @@ function check_Timefield_checkbox(){	// To check Date checkbox checked or not an
 		|| document.form.reboot_date_x_Sat.checked == true	){
 			inputCtrl(document.form.reboot_time_x_hour,1);
 			inputCtrl(document.form.reboot_time_x_min,1);
-			document.form.reboot_schedule.disabled = false;
 	}
 	else{
 			inputCtrl(document.form.reboot_time_x_hour,0);
 			inputCtrl(document.form.reboot_time_x_min,0);
-			document.form.reboot_schedule.disabled = true;
 			document.getElementById('reboot_schedule_time_tr').style.display ="";
 	}
 }
@@ -1421,7 +1530,6 @@ function pullLANIPList(obj){
 function hideport(flag){
 	document.getElementById("accessfromwan_port").style.display = (flag == 1) ? "" : "none";
 	if(!HTTPS_support){
-		document.getElementById("NSlookup_help_for_WAN_access").style.display = (flag == 1) ? "" : "none";
 		var orig_str = document.getElementById("access_port_title").innerHTML;
 		document.getElementById("access_port_title").innerHTML = orig_str.replace(/HTTPS/, "HTTP");
 		document.getElementById("http_port").style.display = (flag == 1) ? "" : "none";
@@ -1595,44 +1703,16 @@ function display_spec_IP(flag){
 function hide_reboot_option(flag){
 	document.getElementById("reboot_schedule_date_tr").style.display = (flag == 1) ? "" : "none";
 	document.getElementById("reboot_schedule_time_tr").style.display = (flag == 1) ? "" : "none";
-	if(flag==1)
-		check_Timefield_checkbox();
-}
-
-
-function getrebootTimeRange(str, pos)
-{
-	if (pos == 0)
-		return str.substring(7,9);
-	else if (pos == 1)
-		return str.substring(9,11);
-}
-
-function setrebootTimeRange(rd, rh, rm)
-{
-	return(rd.value+rh.value+rm.value);
-}
-
-function updateDateTime()
-{
-	if(document.form.reboot_schedule_enable_x[0].checked){
-		document.form.reboot_schedule_enable.value = "1";
-		document.form.reboot_schedule.disabled = false;
-		document.form.reboot_schedule.value = setDateCheck(
-		document.form.reboot_date_x_Sun,
-		document.form.reboot_date_x_Mon,
-		document.form.reboot_date_x_Tue,
-		document.form.reboot_date_x_Wed,
-		document.form.reboot_date_x_Thu,
-		document.form.reboot_date_x_Fri,
-		document.form.reboot_date_x_Sat);
-		document.form.reboot_schedule.value = setrebootTimeRange(
-		document.form.reboot_schedule,
-		document.form.reboot_time_x_hour,
-		document.form.reboot_time_x_min);
+	if(flag==1){
+		const type = $('input[name="reboot_schedule_type"]:checked').val() || "0";
+		if(type == "0"){
+			check_Timefield_checkbox();
+		}
+		else{
+			inputCtrl(document.form.reboot_time_x_hour,1);
+			inputCtrl(document.form.reboot_time_x_min,1);
+		}
 	}
-	else
-		document.form.reboot_schedule_enable.value = "0";
 }
 
 function paste_password(){
@@ -1876,8 +1956,12 @@ function myisPortConflict(_val, service){
 }
 
 
-function save_cert_key(){
+function save_cacert_key(){
 	location.href = "cert.crt";
+}
+
+function save_cert_key(){
+	location.href = "cert_key.tar";
 }
 
 function clear_server_cert_key(){
@@ -2062,6 +2146,13 @@ function change_username(){
 
 		$("#http_username_new").val($("#http_username_new").val().trim());
 
+		if($("#http_username_new").val() == $("#http_passwd_cur").val()){
+			showtext(document.getElementById("alert_msg"),"* <#JS_validLoginPWD_same#>");
+			$("#http_username_new").focus();
+			$("#http_username_new").select();
+			return false;
+		}
+
 		if($("#http_username_new").val() == "root"
 				|| $("#http_username_new").val() == "guest"
 				|| $("#http_username_new").val() == "anonymous"
@@ -2126,8 +2217,15 @@ function change_passwd(){
 		return false;
 	}
 
+	var str_valid_max_password = `<#JS_max_password_var#>`;
+	if(is_KR_sku || is_SG_sku || is_AA_sku || secure_default){  /* MODELDEP by Territory Code */
+		str_valid_max_password = `* `+str_valid_max_password.replace("%1$@", "10");
+	}
+	else{
+		str_valid_max_password = `* `+str_valid_max_password.replace("%1$@", "5");
+	}
 	if($("#http_passwd_new").val().length > max_pwd_length){
-		showtext(document.getElementById("new_pwd_msg"),"* <#JS_max_password#>");
+		showtext(document.getElementById("new_pwd_msg"), str_valid_max_password);
 		$("#http_passwd_new").focus();
 		$("#http_passwd_new").select();
 		return false;
@@ -2145,7 +2243,14 @@ function change_passwd(){
 		return false;
 	}
 
-	if(is_KR_sku || is_SG_sku || is_AA_sku){	/* MODELDEP by Territory Code */
+	if($("#http_passwd_new").val() == httpApi.nvramGet(["http_username"]).http_username){
+        showtext(document.getElementById("alert_msg"),"* <#JS_validLoginPWD_same#>");
+        $("#http_passwd_new").focus();
+        $("#http_passwd_new").select();
+        return false;
+	}
+
+	if(is_KR_sku || is_SG_sku || is_AA_sku || secure_default){	/* MODELDEP by Territory Code */
 		if($("#http_passwd_new").val().length > 0){
 			if(!validator.string_KR(document.getElementById("http_passwd_new"))){
 				$("#http_passwd_new").focus();
@@ -2218,7 +2323,7 @@ function change_passwd(){
 
 function check_password_length(obj){
 
-	if(is_KR_sku || is_SG_sku || is_AA_sku){     /* MODELDEP by Territory Code */
+	if(is_KR_sku || is_SG_sku || is_AA_sku || secure_default){     /* MODELDEP by Territory Code */
 		showtext(document.getElementById("new_pwd_msg"),"<#JS_validLoginPWD#>");
 		return;
 	}
@@ -2257,6 +2362,102 @@ function build_boostkey_options() {
 
 	if (isSwMode("rt"))
 		add_option(obj, "<#Game_Boost#>", 3, (current == "3" ? 1 : 0));
+}
+
+function Get_Component_reboot_schedule_ui(config){
+	const reboot_schedule_style = `<style>
+		.reboot_schedule_date .reboot_schedul_type_cntr{
+			margin-bottom: 3px;
+		}
+		.reboot_schedul_type_cntr .day_week_set{
+			margin-left: 16px;
+		}
+		.reboot_schedul_type_cntr .day_month_set{
+			margin-left: 20px;
+		}
+		.day_month_set label{
+			margin-right: 6px;
+		}
+	</style>`;
+
+	const $reboot_schedule_ui = $("<div>").append(reboot_schedule_style);
+
+	if(isSupport("REBOOT_SCHED_V2") >= 1){
+		const $days_of_week_cntr = $("<div>").addClass("reboot_schedul_type_cntr").appendTo($reboot_schedule_ui);
+		$("<div>").append(`<label><input type="radio" value="0" name="reboot_schedule_type"><#Reboot_Day_Week#> (Can select multiple dates)</label>`).appendTo($days_of_week_cntr);
+		Get_Component_Day_Of_Week().appendTo($days_of_week_cntr);
+
+		const $day_of_month_cntr = $("<div>").addClass("reboot_schedul_type_cntr").appendTo($reboot_schedule_ui);
+		$("<div>").append(`<label><input type="radio" value="1" name="reboot_schedule_type"><#Reboot_Day_Month#></label>`).appendTo($day_of_month_cntr);
+		Get_Component_Select_Day_Month().appendTo($day_of_month_cntr);
+
+		$reboot_schedule_ui.find(`input[name="reboot_schedule_type"]`).on("click", function(){
+			const type = $(this).val();
+			const $cntr = $(this).closest("[data-container='reboot_schedule_date']");
+			$cntr.find("[reboot-type]").hide().filter(`[reboot-type="${type}"]`).show();
+			inputCtrl(document.form.reboot_time_x_hour,0);
+			inputCtrl(document.form.reboot_time_x_min,0);
+			if(type == "0"){
+				if($cntr.find('[reboot-type="0"] input[type="checkbox"]:checked').length > 0){
+					inputCtrl(document.form.reboot_time_x_hour,1);
+					inputCtrl(document.form.reboot_time_x_min,1);
+				}
+			}
+			else if(type == "1"){
+				inputCtrl(document.form.reboot_time_x_hour,1);
+				inputCtrl(document.form.reboot_time_x_min,1);
+			}
+			["hour", "min"].forEach((time, index) => {
+				$(`[name="reboot_time_x_${time}"]`).val(()=>{
+					if(type == "0"){
+						if(index == "0") return config.reboot_schedule.substring(7,9);
+						else if(index == "1") return config.reboot_schedule.substring(9,11);
+						return "00";
+					}
+					else if(type == "1"){//reboot_schedule_month=010300
+						if(index == "0") return config.reboot_schedule_month.substring(2,4);
+						else if(index == "1") return config.reboot_schedule_month.substring(4,6);
+						return "00";
+					}
+					else
+						return "00";
+				});
+			});
+		});
+	}
+	else{
+		 Get_Component_Day_Of_Week().appendTo($reboot_schedule_ui);
+	}
+
+	return $reboot_schedule_ui;
+
+	function Get_Component_Day_Of_Week(){
+		const days = [
+			{"value":"Sun", "text":`<#date_Sun_itemdesc#>`}, {"value":"Mon", "text":`<#date_Mon_itemdesc#>`},
+			{"value":"Tue", "text":`<#date_Tue_itemdesc#>`}, {"value":"Wed", "text":`<#date_Wed_itemdesc#>`},
+			{"value":"Thu", "text":`<#date_Thu_itemdesc#>`}, {"value":"Fri", "text":`<#date_Fri_itemdesc#>`},
+			{"value":"Sat", "text":`<#date_Sat_itemdesc#>`}
+		];
+		const $container = $("<div>").attr({"reboot-type":"0"}).addClass("day_week_set");
+		days.forEach(day => {
+			$container.append(`
+				<label style="margin-right:3px;">
+					<input type="checkbox" name="reboot_date_x_${day.value}" class="input" onclick="check_Timefield_checkbox();">${day.text}
+				</label>
+			`);
+		});
+		return $container;
+	}
+	function Get_Component_Select_Day_Month(){
+		const $container = $("<div>").attr({"reboot-type":"1"}).addClass("day_month_set");
+		$("<label>").html(`<#Reboot_Select_Day#>: `).appendTo($container);
+		const $select = $("<select id='reboot_schedule_month' class='input_option'></select>").appendTo($container);
+		for(let i = 1; i <= 31; i++){
+			const value = i.toString().padStart(2, "0");
+			$select.append(`<option value="${value}">${i}</option>`);
+		}
+		return $container;
+	}
 }
 
 </script>
@@ -2357,10 +2558,9 @@ function build_boostkey_options() {
 <input type="hidden" name="enable_acc_restriction" value="<% nvram_get("enable_acc_restriction"); %>">
 <input type="hidden" name="restrict_rulelist" value="<% nvram_get("restrict_rulelist"); %>">
 <input type="hidden" name="btn_ez_mode" value="<% nvram_get("btn_ez_mode"); %>">
-<input type="hidden" name="reboot_schedule" value="<% nvram_get("reboot_schedule"); %>" disabled>
-<input type="hidden" name="reboot_schedule_enable" value="<% nvram_get("reboot_schedule_enable"); %>">
 <input type="hidden" name="usb_idle_exclude" value="<% nvram_get("usb_idle_exclude"); %>">
 <input type="hidden" name="shell_timeout" value="<% nvram_get("shell_timeout"); %>">
+<input type="hidden" name="casignedcert" value="<% nvram_get("casignedcert"); %>" disabled>
 <input type="hidden" name="sw_mode" value="<% nvram_get("sw_mode"); %>">
 <input type="hidden" name="ncb_enable" value="<% nvram_get("ncb_enable"); %>">
 <input type="hidden" name="dns_probe" value="<% nvram_get("dns_probe"); %>">
@@ -2706,17 +2906,11 @@ function build_boostkey_options() {
 				<tr id="reboot_schedule_date_tr">
 					<th><#Reboot_Date#></th>
 					<td>
-						<input type="checkbox" name="reboot_date_x_Sun" class="input" onclick="check_Timefield_checkbox();"><#date_Sun_itemdesc#>
-						<input type="checkbox" name="reboot_date_x_Mon" class="input" onclick="check_Timefield_checkbox();"><#date_Mon_itemdesc#>
-						<input type="checkbox" name="reboot_date_x_Tue" class="input" onclick="check_Timefield_checkbox();"><#date_Tue_itemdesc#>
-						<input type="checkbox" name="reboot_date_x_Wed" class="input" onclick="check_Timefield_checkbox();"><#date_Wed_itemdesc#>
-						<input type="checkbox" name="reboot_date_x_Thu" class="input" onclick="check_Timefield_checkbox();"><#date_Thu_itemdesc#>
-						<input type="checkbox" name="reboot_date_x_Fri" class="input" onclick="check_Timefield_checkbox();"><#date_Fri_itemdesc#>
-						<input type="checkbox" name="reboot_date_x_Sat" class="input" onclick="check_Timefield_checkbox();"><#date_Sat_itemdesc#>
+						<div data-container='reboot_schedule_date' class='reboot_schedule_date'></div>
 					</td>
 				</tr>
 				<tr id="reboot_schedule_time_tr">
-					<th><#Reboot_Time#></th>
+					<th><#Reboot_Time_1#></th>
 					<td>
 						<input type="text" maxlength="2" class="input_3_table" name="reboot_time_x_hour" onKeyPress="return validator.isNumber(this,event);" onblur="validator.timeRange(this, 0);" autocorrect="off" autocapitalize="off"> :
 						<input type="text" maxlength="2" class="input_3_table" name="reboot_time_x_min" onKeyPress="return validator.isNumber(this,event);" onblur="validator.timeRange(this, 1);" autocorrect="off" autocapitalize="off">
@@ -2876,12 +3070,15 @@ function build_boostkey_options() {
 				<tr id="https_download_cert" style="display: none;">
 					<th><#Local_access_certificate_download#></th>
 					<td>
-					    <div style="display: flex;">
-                            <input id="download_cert_btn" class="button_gen buttonInTable" onclick="save_cert_key();" type="button" value="<#btn_Export#>" />
-                            <input id="clear_server_cert_btn" class="button_gen buttonInTable" style="margin-left:10px" onclick="clear_server_cert_key();" type="button" value="<#CTL_renew#> <#vpn_openvpn_KC_SA#>" />
-                            <input id="clear_cert_btn" class="button_gen buttonInTable" style="margin-left:10px" onclick="clear_cert_key();" type="button" value="<#CTL_renew#>" />
-                        </div>
-						<span id="download_cert_desc"><#Local_access_certificate_desc#></span><a id="creat_cert_link" href="" style="font-family:Lucida Console;text-decoration:underline;color:#FFCC00; margin-left: 5px;" target="_blank">FAQ</a>
+						<div style="display: flex;">
+							<input id="download_cert_btn" class="button_gen buttonInTable" onclick="save_cert_key();" type="button" value="<#btn_Export#> <#vpn_openvpn_KC_SA#>" />
+							<input id="clear_cert_btn" class="button_gen buttonInTable" style="margin-left:10px" onclick="clear_server_cert_key();" type="button" value="<#CTL_renew#> <#vpn_openvpn_KC_SA#>" /><!-- untranslated -->
+						</div>
+						<div style="display: flex;">
+							<input id="download_cacert_btn" class="button_gen buttonInTable" style="margin-top:10px" onclick="save_cacert_key();" type="button" value="<#btn_Export#> Root Certificate" />
+							<input id="clear_cacert_btn" class="button_gen buttonInTable" style="margin-left:10px;margin-top:10px" onclick="clear_cert_key();" type="button" value="<#CTL_renew#> Root Certificate" /><!-- untranslated -->
+						</div>
+						<span id="download_cacert_desc"><#Local_access_certificate_desc#></span><a id="creat_cert_link" href="" style="font-family:Lucida Console;text-decoration:underline;color:#FFCC00; margin-left: 5px;" target="_blank">FAQ</a>
 					</td>
 				</tr>
 			</table>
@@ -2900,7 +3097,6 @@ function build_boostkey_options() {
 						<span class="formfontdesc" id="WAN_access_hint" style="color:#FFCC00; display:none;"><#FirewallConfig_x_WanWebEnable_HTTPS_only#> 
 							<a id="faq" href="" target="_blank" style="margin-left: 5px; color:#FFCC00; text-decoration: underline;">FAQ</a>
 						</span>
-						<div class="formfontdesc" id="NSlookup_help_for_WAN_access" style="color:#FFCC00; display:none;"><#NSlookup_help#></div>
 					</td>
 				</tr>
 				<tr id="accessfromwan_port">

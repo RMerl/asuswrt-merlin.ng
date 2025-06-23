@@ -441,8 +441,9 @@ function refreshShareLinkList() {
 
 // Function to safely get the origin part of the URL
 function getSafeLocation() {
-    var url = new URL(window.location.href);
-    return url.origin;
+    var url = new URL(window.location.href); //- Safely parsing URLs using the URL API
+	var sanitizedUrl = encodeURIComponent(url.origin); //- Encode the URL to prevent XSS
+	return sanitizedUrl;
 }
 
 function openSettingWindow() {
@@ -520,7 +521,7 @@ function openSettingWindow() {
 
 	$("#desktop_view").click(function () {
 		var url = getSafeLocation();
-		window.location = url + '?desktop=1';
+		window.location = decodeURIComponent(url) + '?desktop=1';
 	});
 
 	$("#back").click(function () {

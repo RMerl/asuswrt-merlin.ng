@@ -3,6 +3,7 @@
 #define __UPLOADER_IPC_H__
 
 #include <shared.h>
+#include <aae_ipc.h>
 
 #define LAN_IFNAME  "br0"
 
@@ -10,17 +11,19 @@
 #define MASTIFF_IPC_SOCKET_PATH  "/var/run/mastiff_ipc_socket"
 #define MASTIFF_IPC_MAX_CONNECTION       10
 
-#define MAX_IPC_PACKET_SIZE   1024
+// #define MAX_IPC_PACKET_SIZE   2048
 
 #ifndef IsNULL_PTR 
 #define IsNULL_PTR(__PTR) ((__PTR == NULL))
 #endif  /* !IsNULL_PTR */
 
 /* for ipc packet handler */
-struct ipcArgStruct {
-    unsigned char data[MAX_IPC_PACKET_SIZE];
-    size_t dataLen;
-}ipcArgs;
+// struct ipcArgStruct {
+//     unsigned char data[MAX_IPC_PACKET_SIZE];
+//     size_t dataLen;
+//     char waitResp;
+//     int sock;
+// }ipcArgs;
 
 typedef struct _CM_CTRL {
     int flagIsTerminated;           /* if terminate CM daemon */

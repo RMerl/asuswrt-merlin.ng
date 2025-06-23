@@ -9,6 +9,9 @@
 #include <linux/pm_runtime.h>
 #include <linux/spi/spi.h>
 #include <linux/spi/spi-mem.h>
+#ifdef CONFIG_BCM_KF_SPI
+#include <linux/delay.h>
+#endif
 
 #include "internals.h"
 
@@ -292,6 +295,11 @@ int spi_mem_exec_op(struct spi_mem *mem, const struct spi_mem_op *op)
 	 * we're guaranteed that this buffer is DMA-able, as required by the
 	 * SPI layer.
 	 */
+#ifdef CONFIG_BCM_KF_SPI
+	if (oops_in_progress)
+	  	tmpbuf = kzalloc(tmpbufsize, GFP_KERNEL | GFP_DMA | GFP_ATOMIC);
+	else
+#endif
 	tmpbuf = kzalloc(tmpbufsize, GFP_KERNEL | GFP_DMA);
 	if (!tmpbuf)
 		return -ENOMEM;
@@ -346,6 +354,42 @@ int spi_mem_exec_op(struct spi_mem *mem, const struct spi_mem_op *op)
 		totalxferlen += op->data.nbytes;
 	}
 
+#ifdef CONFIG_BCM_KF_SPI
+	if (oops_in_progress) {
+		msg.spi = mem->spi;
+		msg.actual_length = 0;
+
+		if (spi_validate(mem->spi, &msg) == 0) {
+			static int wait = 0;
+			int locked = 0;
+			unsigned long flags;
+
+			/*
+			 * Wait 500ms in hope that interrupted spi transaction(if any) will 
+			 * finish in the controller level. Then force the panic write even
+			 * queue lock can not be abtained. It does not matter in panic mode
+			 * as the other cpus are already stopped and no other spi transacton
+			 * is possible.
+			 */
+			for(; wait < 500; wait++) {
+				locked = spin_trylock_irqsave(&ctlr->queue_lock, flags);
+				if (locked)
+					break;
+				mdelay(1);
+			}
+			ctlr->cur_msg = &msg;
+			ctlr->busy = true;
+			if (locked)
+				spin_unlock_irqrestore(&ctlr->queue_lock, flags);
+
+			ret = ctlr->transfer_one_message(ctlr, &msg);
+
+			ctlr->busy = false;
+			ret = msg.status;
+		}
+	}
+	else
+#endif
 	ret = spi_sync(mem->spi, &msg);
 
 	kfree(tmpbuf);

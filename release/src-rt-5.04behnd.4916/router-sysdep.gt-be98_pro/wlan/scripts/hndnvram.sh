@@ -8,6 +8,8 @@ FILE_MFG_NVRAM=nvram.nvm
 build_rdk=BUILD_RDKWIFI_HOLDER
 original_kernel_nvram_file="/rom/etc/wlan/KERNEL_NVRAM_FILE_NAME"
 kernel_nvram_file="/data/.KERNEL_NVRAM_FILE_NAME"
+kernel_nvram_file_new="/data/.KERNEL_NVRAM_FILE_NAME_new"
+kernel_nvram_file_old="/data/.KERNEL_NVRAM_FILE_NAME_old"
 wl_srom_nm=".wlsromcustomerfile.nvm"    #wl calibration file name
 SYSTEM_INFO_INDICATOR=$(cat /proc/nvram/wl_nand_manufacturer)
 SYSTEM_UBOOT=$(($SYSTEM_INFO_INDICATOR & 8))
@@ -388,9 +390,17 @@ case "$1" in
 	insmod /lib/modules/*/extra/bcm_knvram.ko
 	
 	if  [ ! -e $kernel_nvram_file ]; then
-	    # If kernel nvram does not exist, trying to restore
-	    # it from default manufacturing NVRAM file.
-		cp $original_kernel_nvram_file $kernel_nvram_file
+		if  [ -e $kernel_nvram_file_new ]; then
+			echo "*** The last commit seems to be failed. Apply the new file ***"
+			cp -f $kernel_nvram_file_new $kernel_nvram_file
+		elif  [ -e $kernel_nvram_file_old ]; then
+			echo "*** The last commit seems to be failed. Apply the old file ***"
+			cp -f $kernel_nvram_file_old $kernel_nvram_file
+		else
+			# If kernel nvram does not exist, trying to restore
+			# it from default manufacturing NVRAM file.
+			cp $original_kernel_nvram_file $kernel_nvram_file
+		fi
 		sync
 
 		if [ "$NEEDMOUNT" == "1" ]

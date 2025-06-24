@@ -888,7 +888,8 @@ void _update_ovpn_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn, wg_t
 					if (pmtl[i].sdn_t.vpns_idx_rl[j]
 						&& get_vpnx_by_vpns_idx(&vpnx, pmtl[i].sdn_t.vpns_idx_rl[j])
 						&& vpnx.proto == VPN_PROTO_OVPN
-						&& vpnx.unit == unit) {
+						&& vpnx.unit == unit
+						&& nvram_pf_get_int(prefix, "client_access") != OVPN_CLT_ACCESS_WAN ) {
 						fp = fopen(fpath, "w");
 						if (fp) {
 							fprintf(fp, "#!/bin/sh\n\n");
@@ -929,14 +930,14 @@ void _update_ovpn_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn, wg_t
 				fp = fopen(fpath, "w");
 				if (fp) {
 					fprintf(fp, "#!/bin/sh\n\n");
+#if 0
 					if (!client)
 						_ovpn_server_nf_bind_sdn(fp, ovpn_ifname, NULL);
+#endif
 					fclose(fp);
 					chmod(fpath, S_IRUSR|S_IWUSR|S_IXUSR);
 					eval(fpath);
 				}
-//				if (!client)
-//					_ovpn_server_nf_bind_wan(ovpn_ifname, WG_NF_DEL);
 			}
 			else if (restart_all_sdn) {
 				eval(fpath);
@@ -1001,8 +1002,10 @@ void _update_ovpn_by_sdn_remove(MTLAN_T *pmtl, size_t mtl_sz, wg_type_t client)
 				fp = fopen(fpath, "w");
 				if (fp) {
 					fprintf(fp, "#!/bin/sh\n\n");
+#if 0
 					if (!client)
 						_ovpn_server_nf_bind_sdn(fp, ovpn_ifname, NULL);
+#endif
 					fclose(fp);
 					chmod(fpath, S_IRUSR|S_IWUSR|S_IXUSR);
 					eval(fpath);
@@ -1067,12 +1070,13 @@ void _ovpn_server_nf_bind_sdn(FILE* fp, const char* ovpn_ifname, const char* sdn
 			fprintf(fp, "ip6tables -I OVPNSF -i %s -o %s -j ACCEPT\n", ovpn_ifname, sdn_ifname);
 			fprintf(fp, "ip6tables -I OVPNSF -o %s -i %s -j ACCEPT\n", ovpn_ifname, sdn_ifname);
 		}
-		else {
+/*		else {
 			fprintf(fp, "iptables -I OVPNSF -i %s -j ACCEPT\n", ovpn_ifname);
 			fprintf(fp, "iptables -I OVPNSF -o %s -j ACCEPT\n", ovpn_ifname);
 			fprintf(fp, "ip6tables -I OVPNSF -i %s -j ACCEPT\n", ovpn_ifname);
 			fprintf(fp, "ip6tables -I OVPNSF -o %s -j ACCEPT\n", ovpn_ifname);
 		}
+*/
 	}
 }
 #endif

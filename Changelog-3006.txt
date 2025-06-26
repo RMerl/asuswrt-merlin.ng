@@ -11,6 +11,8 @@ Asuswrt-Merlin 3006.xxx Changelog
           to fold back 3006.102 on top of master.
 
   - UPDATED: Merged GPL 3006.102_37957 for Wifi 6 devices.
+  - UPDATED: Merged GPL 3006.102_38757 for WIfi 7 devices
+             (except RT-BE92U).
   - UPDATED: dropbear to 2025.88.
   - CHANGED: Reworked System Log -> Connections page.  You can
              now filter the list, local hostnames are resolved,
@@ -18,6 +20,10 @@ Asuswrt-Merlin 3006.xxx Changelog
   - CHANGED: Replaced netstat-nat by a fork called netstat-nat-ng.
              This fork fixes a number of issues with IPv6 and
              field size.
+  - CHANGED: Updated Control-D DoT server entries (dave14305).
+  - FIXED: OpenVPN server set to "Internet only" would fail to
+           block LAN access (invalid firewall rule from SDN was
+           bypassing it).
 
 
 3006.102.4 (10-May-2025)

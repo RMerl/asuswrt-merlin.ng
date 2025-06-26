@@ -1401,6 +1401,9 @@ void time_zone_x_mapping(void)
 	else if (nvram_match("time_zone", "JST")){	/* convert JST to JST-9 */
 		nvram_set("time_zone", "JST-9");
 	}
+	else if (nvram_match("time_zone", "UTC4DST_3")){  /* convert UTC4DST_3 to UTC3_1 */
+        nvram_set("time_zone", "UTC3_1");
+    }
 
 
 	snprintf(tmpstr, sizeof(tmpstr), "%s", nvram_safe_get("time_zone"));

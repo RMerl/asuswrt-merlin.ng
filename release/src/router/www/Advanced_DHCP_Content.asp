@@ -41,7 +41,7 @@
 </style>
 <script>
 $(function () {
-	if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
+	if(amesh_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
 		addNewScript('/require/modules/amesh.js');
 	}
 });
@@ -433,7 +433,7 @@ function applyRule(){
 		if(based_modelid == "MAP-AC1300" || based_modelid == "MAP-AC2200" || based_modelid == "VZW-AC1300" || based_modelid == "MAP-AC1750")
 			alert("By applying new LAN settings, please reboot all Lyras connected to main Lyra manually.");
 
-		if(amesh_support && isSwMode("rt") && ameshRouter_support) {
+		if(amesh_support && (isSwMode("RT") || isSwMode("WISP")) && ameshRouter_support) {
 			var radio_value = (document.form.dhcp_enable_x[0].checked) ? 1 : 0;
 			if(!AiMesh_confirm_msg("DHCP_Server", radio_value))
 				return false;

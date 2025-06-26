@@ -74,6 +74,7 @@ if(wan_bonding_support)
 <% wan_get_parameter(); %>
 
 var wan_unit = '<% nvram_get("wan_unit"); %>' || 0;
+var wlc_band = '<% nvram_get("wlc_band"); %>';
 var wan_ipv6_network_json =('<% wan_ipv6_network(); %>' != '{}')? JSON.parse('<% wan_ipv6_network(); %>'):{};
 
 if(yadns_support){
@@ -206,28 +207,42 @@ function initial(){
 	}
  
 	if(sw_mode == 1){
-		setTimeout("update_wanip();", 1);
-		document.getElementById('goSetting').style.display = "";
-		
-		if(dualWAN_support){
-			if(dsl_support && wans_dualwan.split(" ")[0] == "usb" && parent.document.form.dual_wan_flag.value == 0){
-				document.getElementById("goDualWANSetting").style.display = "none";
-				document.getElementById("dualwan_enable_button").style.display = "none";
-			}			
-			else if(parent.document.form.dual_wan_flag.value == 0 && wans_caps != "wan lan"){
-				document.getElementById("goDualWANSetting").style.display = "none";
-				document.getElementById("dualwan_enable_button").style.display = "";
+		if(wlc_band == ""){
+			setTimeout("update_wanip();", 1);
+			document.getElementById('goSetting').style.display = "";
+			
+			if(dualWAN_support){
+				if(dsl_support && wans_dualwan.split(" ")[0] == "usb" && parent.document.form.dual_wan_flag.value == 0){
+					document.getElementById("goDualWANSetting").style.display = "none";
+					document.getElementById("dualwan_enable_button").style.display = "none";
+				}			
+				else if(parent.document.form.dual_wan_flag.value == 0 && wans_caps != "wan lan"){
+					document.getElementById("goDualWANSetting").style.display = "none";
+					document.getElementById("dualwan_enable_button").style.display = "";
+				}
+				else{
+					document.getElementById("goDualWANSetting").style.display = "";
+					document.getElementById("dualwan_enable_button").style.display = "none";	
+				}
 			}
 			else{
-				document.getElementById("goDualWANSetting").style.display = "";
+				document.getElementById("goDualWANSetting").style.display = "none";
 				document.getElementById("dualwan_enable_button").style.display = "none";	
 			}
 		}
 		else{
+			showtext(document.getElementById("RemoteAP_WISP"), httpApi.getPAPStatus());
+			document.getElementById("dualwan_enable_button").style.display = "none";
 			document.getElementById("goDualWANSetting").style.display = "none";
-			document.getElementById("dualwan_enable_button").style.display = "none";	
+			document.getElementById('RemoteAP_Item_WISP').style.display = "";
+			document.getElementById('sitesurvey_tr_WISP').style.display = "";
+
+			var currWanType = wans_dualwan.split(" ")[parent.document.form.dual_wan_flag.value];
+			if(currWanType == "usb"){
+				document.getElementById('RemoteAP_Item_WISP').style.display = "none";
+				document.getElementById('sitesurvey_tr_WISP').style.display = "none";				
+			}
 		}
-		
 	}
 	else{
 		document.getElementById("rt_table").style.display = "none";
@@ -249,7 +264,7 @@ function initial(){
 		else
 			showtext(document.getElementById("LanProto"), "<#BOP_ctype_title1#>");
 
-		if(sw_mode == 2 || sw_mode == 4)
+		if(sw_mode == 2 || sw_mode == 4 || wlc_band != "")
 			document.getElementById('sitesurvey_tr').style.display = "";
 	}
 
@@ -759,7 +774,7 @@ function goToDualWAN(){
 }
 
 function gotoSiteSurvey(){
-	if(sw_mode == 2){
+	if(isSwMode("RP")){
 		if(wlc_express == "1"){
 			parent.location.href = '/QIS_wizard.htm?flag=sitesurvey_exp2';
 		}
@@ -767,8 +782,11 @@ function gotoSiteSurvey(){
 			parent.location.href = '/QIS_wizard.htm?flag=sitesurvey_exp5';
 		}
 		else{	
-			parent.location.href = '/QIS_wizard.htm?flag=sitesurvey_rep&band='+'<% nvram_get("wl_unit"); %>';
+			parent.location.href = '/QIS_wizard.htm?flag=sitesurvey_rep';
 		}	
+	}
+	else if(isSwMode("WISP")){
+		parent.location.href = '/QIS_wizard.htm?flag=wispMode';
 	}
 	else{
 		parent.location.href = '/QIS_wizard.htm?flag=sitesurvey_mb';
@@ -937,6 +955,14 @@ function manualSetup(){
 				</script>
 		</div>
 		<div style="margin-top:5px;" class="line_horizontal"></div>
+    </td>
+</tr>
+
+<tr id="RemoteAP_Item_WISP" style="display:none">
+    <td style="padding:5px 10px 5px 15px;">
+    		<p class="formfonttitle_nwm"><#statusTitle_AP#></p>
+    		<p class="tab_info_bg" style="padding-left:10px; margin-top:3px;line-height:20px;" id="RemoteAP_WISP"></p>
+      	<div style="margin-top:5px;" class="line_horizontal"></div>
     </td>
 </tr>
 
@@ -1127,7 +1153,14 @@ function manualSetup(){
 		<p class="formfonttitle_nwm" style="float:left;width:116px;"><#btn_to_WAN#></p>
 		<input type="button" class="button_gen" onclick="goToWAN();" value="<#btn_go#>" style="position:absolute;right:25px;margin-top:-10px;margin-left:115px;">
 	</td>
-</tr> 
+</tr>
+
+<tr id="sitesurvey_tr_WISP" style="display:none">
+	<td height="50" style="padding:10px 15px 0px 15px;">
+		<p class="formfonttitle_nwm" style="float:left;"><#APSurvey_action_search_again_hint2#></p>  
+		<input type="button" class="button_gen" onclick="gotoSiteSurvey();" value="<#QIS_rescan#>" style="float:right;margin: 5px 0;">
+	</td>
+</tr>
 </table>
 
 <table width="95%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="table1px" id="ap_table" style="display:none">
@@ -1179,7 +1212,6 @@ function manualSetup(){
 <tr id="sitesurvey_tr" style="display:none">
   <td height="50" style="padding:10px 15px 0px 15px;">
   	<p class="formfonttitle_nwm" style="float:left;"><#APSurvey_action_search_again_hint2#></p>
-	<div class="line_horizontal"></div>     
 	<input type="button" class="button_gen" onclick="gotoSiteSurvey();" value="<#QIS_rescan#>" style="float:right;margin: 5px 0;">
   </td>
 </tr>

@@ -163,7 +163,9 @@ sed -i "s|^KERNELVER=_set_by_buildFS_$|KERNELVER=$LINUX_VER_STR|" $ROOTFS/rom/et
 if [ "$BRCM_KERNEL_OPROFILE" == "y" ] ; then
    mkdir -p $ROOTFS/dev/oprofile
 fi
-
+if [ "$BUILD_NAME" == "GT-BE19000AI" ] || [ "$BUILD_NAME" == "GT-BE96_AI" ] ; then
+   mkdir $ROOTFS/ai
+fi
 
 # This hint file (init_enable_core) tells busybox to set the core rlimit to
 # unlimited on all apps, thus allowing them to dump their core when they crash.
@@ -232,7 +234,7 @@ ln -s /var/iproute2/rt_tables $ROOTFS/etc/iproute2/rt_tables
 #ln -s /var/tmp $ROOTFS/tmp
 ln -s /var/samba $ROOTFS/etc/samba
 
-date > $ROOTFS/etc/build_time
+date > $ROOTFS/rom/etc/build_time
 
 echo "Setting $ROOTFS permissions ...."
 chmod 755 $ROOTFS
@@ -599,36 +601,86 @@ if [ "$BUILD_NAME" == "BR63" ]; then
         rm -rf $TARGETS_DIR/$ROOTFS/usr/sbin/dhd
 fi
 
-if [ "$BUILD_NAME" == "RT-BE58U" ] || [ "$BUILD_NAME" == "TUF-BE3600" ] || [ "$BUILD_NAME" == "RT-BE92U" ] || [ "$BUILD_NAME" == "RT-BE95U" ]; then
+if [ "$BUILD_NAME" == "RT-BE55" ]; then
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/cdrom
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/hid
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/net/phy
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/net/usb
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/scsi
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/usb
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/net/bonding
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/fs
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/extra/bcm_bca_usb.ko
+	rm -rf $TARGETS_DIR/$ROOTFS/usr/lib/libusb*
+	rm -rf $TARGETS_DIR/$ROOTFS/usr/sbin/mk*
+	rm -rf $TARGETS_DIR/$ROOTFS/usr/sbin/*fsck*
+fi
+
+if [ "$BUILD_NAME" == "RT-BE58U" ] || [ "$BUILD_NAME" == "TUF-BE3600" ] || [ "$BUILD_NAME" == "RT-BE58U_V2" ] || [ "$BUILD_NAME" == "TUF-BE3600_V2" ] || [ "$BUILD_NAME" == "RT-BE55" ] || [ "$BUILD_NAME" == "RT-BE92U" ] || [ "$BUILD_NAME" == "RT-BE95U" ] || [ "$BUILD_NAME" == "RT-BE58U_PRO" ]; then
 if [ "$BUILD_NAME" != "RT-BE95U" ]; then
 	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/extra/dhd.ko
 fi
 	mkdir -p $TARGETS_DIR/$ROOTFS/rom/etc/licenses
 	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/licenses/*.bin
-	cp $TARGETS_DIR/pakl/*$BUILD_NAME.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
-	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/fw/*a0*.bin
-	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/fw/*b0*.bin
+	if [ "$BUILD_NAME" != "RT-BE58U_V2" ] && [ "$BUILD_NAME" != "TUF-BE3600_V2" ] && [ "$BUILD_NAME" != "RT-BE55" ]; then
+		cp $TARGETS_DIR/pakl/*$BUILD_NAME.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+	fi
+fi
+
+if [ "$BCM_CHIP" == "6813" ] || [ "$BCM_CHIP" == "6764" ] || [ "$BCM_CHIP" == "6765" ] || [ "$BCM_CHIP" == "6766" ]; then
+	if [ "$CONFIG_BCM_PHY_MAKO_A0" != "y" ]; then
+		rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/fw/mako_a0_firmware.bin
+	fi
+	if [ "$CONFIG_BCM_PHY_ORCA_A0" != "y" ]; then
+		rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/fw/orca_a0_firmware.bin
+	fi
+	if [ "$CONFIG_BCM_PHY_ORCA_B0" != "y" ]; then
+		rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/fw/orca_b0_firmware.bin
+	fi
+	if [ "$CONFIG_BCM_PHY_BLACKFIN_A0" != "y" ]; then
+		rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/fw/blackfin_a0_firmware.bin
+	fi
+	if [ "$CONFIG_BCM_PHY_BLACKFIN_B0" != "y" ]; then
+		rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/fw/blackfin_b0_firmware.bin
+	fi
+	if [ "$CONFIG_BCM_PHY_SHORTFIN_B0" != "y" ]; then
+		rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/fw/shortfin_b0_firmware.bin
+	fi
+	if [ "$CONFIG_BCM_PHY_KAUAI_A0" != "y" ]; then
+		rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/fw/kauai_a0_firmware.bin
+	fi
+	if [ "$CONFIG_BCM_PHY_LANAI_A0" != "y" ]; then
+		rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/fw/lanai_a0_firmware.bin
+	fi
+	if [ "$CONFIG_BCM_PHY_LONGFIN_A0" != "y" ] && [ "$CONFIG_BCM_PHY_LONGFIN_B0" != "y" ]; then
+		rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/fw/longfin_a0_firmware.bin
+	fi
+	if [ "$CONFIG_BCM_PHY_XPHY" != "y" ]; then
+		rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/fw/xphy_firmware.bin
+	fi
 fi
 
 if [ "$BCM_CHIP" == "6813" ]; then
 	mkdir -p $TARGETS_DIR/$ROOTFS/rom/etc/licenses
-	cp $TARGETS_DIR/pakl/*921*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
-	cp $TARGETS_DIR/pakl/*922*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
-	cp $TARGETS_DIR/pakl/*923*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+	cp $TARGETS_DIR/pakl/*1077*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+	cp $TARGETS_DIR/pakl/*1079*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+	cp $TARGETS_DIR/pakl/*1080*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
 fi
 
 if [ "$BCM_CHIP" == "6765" ]; then
 	mkdir -p $TARGETS_DIR/$ROOTFS/rom/etc/licenses
 	if [ "$BRCM_CHIP_COMPAT_NAME" == "6764L" ]; then
-		cp $TARGETS_DIR/pakl/*924*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+		cp $TARGETS_DIR/pakl/*1111*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
 	else
 		cp $TARGETS_DIR/pakl/*936*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+		cp $TARGETS_DIR/pakl/*1058*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
 	fi
 fi
 
 if [ "$BCM_CHIP" == "6766" ]; then
 	mkdir -p $TARGETS_DIR/$ROOTFS/rom/etc/licenses
 	cp $TARGETS_DIR/pakl/*926*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+	cp $TARGETS_DIR/pakl/*BT10*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
 fi
 
 # strip userspace binaries is sstrip is "enabled"

@@ -23,6 +23,9 @@ struct aaeIpcArgStruct {
 //#ifdef RTCONFIG_AWSIOT
 #define AAE_AWSIOT_PREFIX "awsiot"
 #define AAE_AWSIOT_CALLEE_ID_PREFIX "callee_id"
+#define AAE_AWSIOT_KEEP_RUN_PREFIX "keep_run"
+#define AAE_AWSIOT_LPORT_PREFIX "lport"
+#define AAE_AWSIOT_RPORT_PREFIX "rport"
 enum awsiotEventType {
 	EID_AWSIOT_NONE = 0,
 	EID_AWSIOT_TUNNEL_ENABLE = 1,
@@ -34,7 +37,7 @@ enum awsiotEventType {
 };
 #define AAE_AWSIOT_GENERIC_MSG	 "{\""AAE_AWSIOT_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d}}"
 #define AAE_AWSIOT_GENERIC_RESP_MSG	 "{\""AAE_AWSIOT_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d, \""AAE_IPC_STATUS"\":\"%s\"}}"
-#define AAE_AWSIOT_TNL_TEST_MSG	 "{\""AAE_AWSIOT_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d, \""AAE_AWSIOT_CALLEE_ID_PREFIX"\":\"%s\"}}"
+#define AAE_AWSIOT_TNL_TEST_MSG	 "{\""AAE_AWSIOT_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d, \""AAE_AWSIOT_CALLEE_ID_PREFIX"\":\"%s\", \""AAE_AWSIOT_KEEP_RUN_PREFIX"\":\"%s\", \""AAE_AWSIOT_LPORT_PREFIX"\":\"%s\", \""AAE_AWSIOT_RPORT_PREFIX"\":\"%s\"}}"
 #define AAE_AWSIOT_GET_SHADOW_MSG	 "{\""AAE_AWSIOT_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d}}"
 #define AAE_AWSIOT_GET_SHADOW_MSG_RESP_MSG	 "{\""AAE_AWSIOT_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d, \""AAE_IPC_STATUS"\":\"%s\", \""SHADOW_REPORTED"\":%s}}"
 #define AAE_AWSIOT_UPDATE_DB_WIREGUARD_MSG	 "{\""AAE_AWSIOT_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d, \"group_name\":\"%s\", \"role\":\"%s\", \"content\":%s}}"

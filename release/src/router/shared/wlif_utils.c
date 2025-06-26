@@ -2748,6 +2748,11 @@ double get_wifi_maxpower(int target_unit)
 	}
 }
 
+double get_wifi_2G_maxpower()
+{
+	return get_wifi_maxpower(WL_2G_BAND);
+}
+
 double get_wifi_5G_maxpower()
 {
 	return get_wifi_maxpower(WL_5G_BAND);

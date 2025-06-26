@@ -117,7 +117,6 @@ int do_account_authentication(const char *username, const char *password)
 		memset(output, 0, sizeof(output));
 		pw_dec(pass, output, sizeof(output), 1);
 		buffer_copy_string(buffer_acc_pass, output);
-		Cdbg(DBE, "aaa buffer_acc_pass=%s", buffer_acc_pass->ptr);
 #endif
 
 		buffer_urldecode_path(buffer_acc_pass);

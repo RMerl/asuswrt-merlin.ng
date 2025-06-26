@@ -13,7 +13,6 @@
 
 #ifdef EMBEDDED_EANBLE 
 #ifndef APP_IPKG
-#include <utils.h>
 #include <shutils.h>
 #include <shared.h>
 #endif

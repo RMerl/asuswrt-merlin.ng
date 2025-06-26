@@ -18,6 +18,9 @@
 #include <linux/slab.h>
 #include <linux/spi/spi.h>
 #include <linux/spi/spi-mem.h>
+#ifdef CONFIG_BCM_KF_MTD_BCMNAND
+#include <linux/delay.h>
+#endif
 
 static void spinand_cache_op_adjust_colum(struct spinand_device *spinand,
 					  const struct nand_page_io_req *req,
@@ -516,7 +519,11 @@ static int spinand_read_page(struct spinand_device *spinand,
 }
 
 static int spinand_write_page(struct spinand_device *spinand,
+#ifdef CONFIG_BCM_KF_MTD_BCMNAND
+			      const struct nand_page_io_req *req, int panic)
+#else
 			      const struct nand_page_io_req *req)
+#endif
 {
 	u8 status;
 	int ret;
@@ -533,7 +540,16 @@ static int spinand_write_page(struct spinand_device *spinand,
 	if (ret)
 		return ret;
 
+#ifdef CONFIG_BCM_KF_MTD_BCMNAND
+	if (!panic)
+		ret = spinand_wait(spinand, &status);
+	else
+		do {
+			ret = spinand_read_status(spinand, &status);
+		} while (status & STATUS_BUSY);
+#else
 	ret = spinand_wait(spinand, &status);
+#endif
 	if (!ret && (status & STATUS_PROG_FAILED))
 		ret = -EIO;
 
@@ -613,7 +629,11 @@ static int spinand_mtd_write(struct mtd_info *mtd, loff_t to,
 		if (ret)
 			break;
 
+#ifdef CONFIG_BCM_KF_MTD_BCMNAND
+		ret = spinand_write_page(spinand, &iter.req, 0);
+#else
 		ret = spinand_write_page(spinand, &iter.req);
+#endif
 		if (ret)
 			break;
 
@@ -649,6 +669,87 @@ static bool spinand_isbad(struct nand_device *nand, const struct nand_pos *pos)
 
 	return false;
 }
+
+#ifdef CONFIG_BCM_KF_MTD_BCMNAND
+/**
+ * panic_spinand_wait - [GENERIC] wait until the command is done
+ * @spinand: NAND chip structure
+ * @timeo: timeout
+ *
+ * Wait for command done. This is a helper wait function used when
+ * we are in interrupt context. May happen when in panic and trying to write
+ * an oops through mtdoops.
+ */
+void panic_spinand_wait(struct spinand_device *spinand, unsigned long timeo)
+{
+	int i;
+	struct device *dev = &spinand->spimem->spi->dev;
+
+	for (i = 0; i < timeo; i++) {
+		int ret;
+		u8 status;
+
+		ret = spinand_read_status(spinand, &status);
+
+		if (ret)
+			return;
+
+		if (!(status & STATUS_BUSY))
+			break;
+
+		mdelay(1);
+	}
+
+	if (i == timeo)
+		dev_err(dev, "Error, panic wait timed out(%dms)\n", i);
+}
+
+/**
+ * panic_spinand_write - [MTD Interface] SPINAND write with ECC
+ * @mtd: MTD device structure
+ * @to: offset to write to
+ * @len: number of bytes to write
+ * @retlen: pointer to variable to store the number of written bytes
+ * @buf: the data to write
+ *
+ * SPINAND write with ECC. Used when performing writes in interrupt context, this
+ * may for example be called by mtdoops when writing an oops while in panic.
+ */
+static int panic_spinand_write(struct mtd_info *mtd, loff_t to, size_t len,
+			       size_t *retlen, const uint8_t *buf)
+{
+	struct spinand_device *spinand = mtd_to_spinand(mtd);
+	struct nand_device *nand = mtd_to_nanddev(mtd);
+	struct nand_io_iter iter;
+	int ret = 0;
+	struct mtd_oob_ops ops;
+	*retlen = 0;
+
+	memset(&ops, 0, sizeof(ops));
+	ops.mode = MTD_OPS_AUTO_OOB;
+	ops.datbuf = (uint8_t *)buf;
+	ops.len = len;
+	nanddev_io_for_each_page(nand, to, &ops, &iter) {
+		ret = spinand_select_target(spinand, iter.req.pos.target);
+		if (ret)
+			break;
+
+		/* Wait for the device to get ready */
+		panic_spinand_wait(spinand, 400);
+
+		ret = spinand_ecc_enable(spinand, true);
+		if (ret)
+			break;
+
+		ret = spinand_write_page(spinand, &iter.req, 1);
+		if (ret)
+			break;
+
+		*retlen += iter.req.datalen;
+	}
+	return ret;
+}
+#endif
 
 static int spinand_mtd_block_isbad(struct mtd_info *mtd, loff_t offs)
 {
@@ -686,7 +787,11 @@ static int spinand_markbad(struct nand_device *nand, const struct nand_pos *pos)
 	if (ret)
 		return ret;
 
+#ifdef CONFIG_BCM_KF_MTD_BCMNAND
+	return spinand_write_page(spinand, &req, 0);
+#else
 	return spinand_write_page(spinand, &req);
+#endif
 }
 
 static int spinand_mtd_block_markbad(struct mtd_info *mtd, loff_t offs)
@@ -1056,6 +1161,9 @@ static int spinand_init(struct spinand_device *spinand)
 	mtd->ecc_strength = nand->eccreq.strength;
 	mtd->ecc_step_size = nand->eccreq.step_size;
 
+#ifdef CONFIG_BCM_KF_MTD_BCMNAND
+	mtd->_panic_write = panic_spinand_write;
+#endif
 	return 0;
 
 err_cleanup_nanddev:

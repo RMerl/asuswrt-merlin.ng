@@ -366,8 +366,10 @@ int _file_lock(const char *dir, const char *tag)
 	}
 #endif
 
-	if ((lockfd = open(path, O_CREAT | O_RDWR, 0666)) < 0)
+	if ((lockfd = open(path, O_CREAT | O_RDWR, 0666)) < 0) {
+		_dprintf("_file_lock err: create path %s fail\n", path);
 		goto error;
+	}
 
 #ifdef LET_FD_LEAK
 	pid = getpid();
@@ -377,6 +379,7 @@ int _file_lock(const char *dir, const char *tag)
 	    lockpid == pid) {
 		/* don't close the file here as that will release all locks */
 		syslog(LOG_DEBUG, "Error locking %s: %d %s", path, 0, "Already locked");
+		_dprintf("_file_lock err: locking %s fail, already locked\n", path);
 		return -1;
 	}
 #endif
@@ -385,13 +388,17 @@ int _file_lock(const char *dir, const char *tag)
 	lock.l_type = F_WRLCK;
 	lock.l_pid = pid;
 	while (fcntl(lockfd, F_SETLKW, &lock) < 0) {
-		if (errno != EINTR)
+		if (errno != EINTR) {
+			_dprintf("_file_lock err: [%s] fcntl fail, errno=%d\n", path, errno);
 			goto close;
+		}
 	}
 
 	if (lseek(lockfd, 0, SEEK_SET) < 0 ||
-	    write(lockfd, &pid, sizeof(pid_t)) < 0)
+	    write(lockfd, &pid, sizeof(pid_t)) < 0) {
+		_dprintf("_file_lock err: [%s]: lseek/write fail\n", path);
 		goto close;
+	}
 
 	return lockfd;
 
@@ -407,6 +414,24 @@ error:
 int file_lock(const char *tag)
 {
 	return _file_lock("/var/lock", tag);
+}
+
+int file_lock_retry(const char *tag)
+{
+	int i, ret = 0;
+
+	for (i=0; i<10; ++i) {
+		ret = _file_lock("/var/lock", tag);
+
+		if (ret > 0)
+			return ret;
+		else {
+			_dprintf("%s: [%s]-lock fail...%d.\n", __func__, tag, i);
+			usleep(500);
+		}
+	}
+
+	return -1;
 }
 
 int _file_unlock(int lockfd)

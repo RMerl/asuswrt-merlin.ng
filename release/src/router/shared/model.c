@@ -246,8 +246,15 @@ static const struct model_s model_list[] = {
 	{ "RT-BE82M",		MODEL_RTBE82M		},
 	{ "RT-BE58U_PRO",	MODEL_RTBE58U_PRO	},
 	{ "RT-BE58_GO",		MODEL_RTBE58_GO	},
-	{ "GT-BE19000_AI",         MODEL_GTBE19000_AI   },
+	{ "GT-BE19000AI",       MODEL_GTBE19000AI	},
 	{ "GS-BE18000",		MODEL_GSBE18000		},
+	{ "GS-BE12000",		MODEL_GSBE18000		},
+	{ "GS7_PRO",		MODEL_GSBE18000         },
+	{ "GT7",		MODEL_GT7		},
+	{ "GT-BE96_AI",         MODEL_GTBE96_AI   	},
+	{ "RT-BE58U_V2",	MODEL_RTBE58U_V2	},
+	{ "TUF-BE3600_V2",	MODEL_RTBE58U_V2	},
+	{ "RT-BE55",		MODEL_RTBE58U_V2	},
 #endif	/* !RTCONFIG_RALINK */
 	{ NULL, 0 },
 };
@@ -504,8 +511,9 @@ void dump_cfid_from_modellist()
 
 	_dprintf("%s:", __func__);
         for (p = &model_list[0]; p->pid; ++p) {
-		_dprintf("[%d].[%s]-[%d]:cfid=%d\n", i, p->pid, p->model, get_cf_id(p->model, p->pid));
+		printf("[%d].[%s]-[%d]:cfid=%d\n", i, p->pid, p->model, get_cf_id(p->model, p->pid));
 		i++;
+		fflush(stdout);
         }
 
 	_dprintf("\n");

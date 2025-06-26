@@ -1,0 +1,75 @@
+// ip owner, bit position, width," bitwise flag(0: false, 1: true)", name
+// if width > 1, id=value pairs follow. Don't add comment between the pairs. Add it at the end to terminate if not all values are present
+1,19,1,0,H265 (HEVC)
+1,65,1,0,Dolby Vision HDR Activation ($)
+1,66,1,0,Technicolor HDR Activation ($)
+1,67,1,0,Technicolor ITM Activation ($)
+1,68,1,0,FE-CATV QAM Activation ($)
+1,69,1,0,FE-DBS EchoStar Activation ($)
+1,70,1,0,FE-DBS DIRECTV Activation ($)
+1,71,1,0,FE-DBS DVB-S2X Activation ($)
+1,81,1,0,CA Multi2
+1,82,1,0,CA DVB-CSA3
+1,99,1,0,AC4 Activation ($)
+1,100,1,0,TrueHD Activation ($)
+1,103,1,0,MS12v2 Activation ($)
+1,111,1,0,DDCE Activation
+1,112,1,0,MS12v1 Config C Activation
+1,113,1,0,MS12v1 Config D Activation
+1,114,1,0,MS12v1 Config B Activation ($)
+1,115,1,0,MS12v1 Config A Activation ($)
+1,116,1,0,DAP Content Processing Activation ($)
+1,117,1,0,DAP Virtualizer Activation ($)
+1,118,1,0,DAP Device Processing Activation ($)
+1,119,1,0,Adv Output Ch Activation ($)
+1,35,1,0,HDR 10+ ($)
+1,39,1,0,Clovis Mode
+1,164,11,1,Astra TA Customer ID
+2=CommScope
+3=Novel-Super TV
+4=Verimatrix
+5=NexGuard
+6=Nagra
+7=Irdeto
+// end of Astra TA Customer ID. Not needed if all values are present
+1,72,1,0,BAS-D
+1,73,1,0,BVoice
+1,74,1,0,FFV Input
+1,75,4,0,FE
+F=tuner x demod unused
+0=tuner x demod 1x1
+1=tuner x demod 2x2
+// end of FE. Not needed if all values are present
+1,20,1,0,VP9
+1,21,1,0,AVS2
+1,22,1,0,AV1
+1,84,1,0,IB0 Activation
+1,85,1,0,IB1 Activation
+1,86,1,0,IB2 Activation
+1,89,1,0,ARC
+1,90,1,0,eARC
+1,120,1,0,DTS-X Activation
+1,176,1,0,Enable BNE
+1,192,1,0,URSR Version
+1,33,1,0,4K Activation
+1,212,4,0,FE Chip ID
+F=Not Used
+0=Not used
+1=Bcm 45401
+2=Bcm 45304
+3=Bcm 45308
+4=Bcm 45316
+5=Bcm 45302
+// end of FE Chip ID
+2,0,1,0,Post Proc: DAP
+2,1,1,0,Decode Dolby Digital
+2,2,1,0,Decode Dolby Digital Plus
+2,3,1,0,Decode AC4
+2,4,1,0,Decode TrueHD
+2,5,1,0,MS10/11
+2,6,1,0,MS12 v1
+2,7,1,0,MS12 v2
+2,15,1,0,DDCE
+2,33,1,0,Decode Dolby Vision
+3,0,1,0,(ACP) Macrovision
+5,24,1,0,DTS-X

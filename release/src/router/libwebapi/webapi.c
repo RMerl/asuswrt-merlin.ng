@@ -17,6 +17,7 @@
 #include <httpd.h>
 #endif
 #ifdef RTCONFIG_CFGSYNC
+#include <cfg_capability.h>
 #include <cfg_param.h>
 #include <cfg_slavelist.h>
 #endif
@@ -24,6 +25,9 @@
 #include <cfg_event.h>
 #include <cfg_onboarding.h>
 #include <cfg_lib.h>
+#endif
+#ifdef RTCONFIG_HND_ROUTER_AX
+#include <wlioctl.h>
 #endif
 
 #ifdef RTCONFIG_CFGSYNC
@@ -494,6 +498,7 @@ int get_wl_nband_list()
 {
 	int unit = 0, ret = 0;
 	int band = 0, count2g = 0, count5g = 0, count6g = 0;
+	char nv[64] = {0};
 	char band_str[8] = {0}, word[256] = {0}, *next = NULL;
 	char tmp[128] = {0}, prefix[] = "wlXXXXXXXXXX_";
 	char wlnband_list[64] = {0};
@@ -501,27 +506,81 @@ int get_wl_nband_list()
 	char wlnband_list_conv[64] = {0}, band_str_conv[8] = {0};
 	int count2g_conv = 0, count5g_conv = 0, count6g_conv = 0;
 #endif
+#ifdef RTCONFIG_HND_ROUTER_AX
+	int unit_real;
+#endif
 
 	foreach (word, nvram_safe_get("wl_ifnames"), next) {
 
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		snprintf(nv, sizeof(nv), "wl%d_nband_type", unit);
 		band = nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp)));
 
 		switch (band){
 			case 1:
-				snprintf(band_str, sizeof(band_str), "5g%d", ++count5g);
+#if defined(RTCONFIG_AMAS_WGN) || defined(RTCONFIG_MULTILAN_CFG)
+				if(nvram_get_int(nv) == 1 || nvram_get_int(nv) == 2)
+					snprintf(band_str, sizeof(band_str), "5g1");
+				else if(nvram_get_int(nv) == 3)
+					snprintf(band_str, sizeof(band_str), "5g2");
+				else
+#endif
+				{
+#ifdef RTCONFIG_HND_ROUTER_AX
+					if (!wl_ioctl(word, WLC_GET_INSTANCE, &unit_real, sizeof(unit_real))) {
+						if (unit_real == WL_5G_BAND) {
+							snprintf(band_str, sizeof(band_str), "5g1");
+							count5g++;
+						} else if (unit_real == WL_5G_2_BAND) {
+							snprintf(band_str, sizeof(band_str), "5g2");
+							count5g++;
+						} else
+							snprintf(band_str, sizeof(band_str), "5g%d", ++count5g);
+					} else
+#endif
+					snprintf(band_str, sizeof(band_str), "5g%d", ++count5g);
+				}
 #ifdef RTCONFIG_UAWIFI
 				snprintf(band_str_conv, sizeof(band_str_conv), "5g%d", ++count5g_conv);
 #endif
 				break;
 			case 2:
-				snprintf(band_str, sizeof(band_str), "2g%d", ++count2g);
+#if defined(RTCONFIG_AMAS_WGN) || defined(RTCONFIG_MULTILAN_CFG)
+				if(nvram_get_int(nv) == 0)
+					snprintf(band_str, sizeof(band_str), "2g1");
+				else
+#endif
+					snprintf(band_str, sizeof(band_str), "2g%d", ++count2g);
 #ifdef RTCONFIG_UAWIFI
 				snprintf(band_str_conv, sizeof(band_str_conv), "2g%d", ++count2g_conv);
 #endif
 				break;
 			case 4:
-				snprintf(band_str, sizeof(band_str), "6g%d", ++count6g);
+#if defined(RTCONFIG_AMAS_WGN) || defined(RTCONFIG_MULTILAN_CFG)
+				if(nvram_get_int(nv) == 4 || nvram_get_int(nv) == 5)
+					snprintf(band_str, sizeof(band_str), "6g1");
+				else if(nvram_get_int(nv) == 6)
+					snprintf(band_str, sizeof(band_str), "6g2", ++count6g);
+				else
+#endif
+				{
+#if defined(RTCONFIG_HND_ROUTER_AX) && (defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G))
+					if (!wl_ioctl(word, WLC_GET_INSTANCE, &unit_real, sizeof(unit_real))) {
+						if (unit_real == WL_6G_BAND) {
+							snprintf(band_str, sizeof(band_str), "6g1");
+							count6g++;
+#ifdef WL_6G_2_BAND
+						} else if (unit_real == WL_6G_2_BAND) {
+							snprintf(band_str, sizeof(band_str), "6g2");
+							count6g++;
+#endif
+						} else
+							snprintf(band_str, sizeof(band_str), "6g%d", ++count6g);
+					} else
+#endif
+
+					snprintf(band_str, sizeof(band_str), "6g%d", ++count6g);
+				}
 #ifdef RTCONFIG_UAWIFI
 				snprintf(band_str_conv, sizeof(band_str_conv), "6g%d", ++count6g_conv);
 #endif
@@ -627,7 +686,11 @@ static int get_sdn_rwd_cap_array(struct json_object *sdn_rwd_cap_array){
 
 struct RWD_MAPPING_TABLE rwd_mapping_t[] =
 {
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GTAXE11000) || defined(GTAC2900) || defined(GTAX11000) || defined(GSAX3000) || defined(GSAX5400) || defined(GTAX11000_PRO) || defined(TUFAX5400) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
+#if defined(GTAXE11000) || defined(GTAC2900) || defined(GTAX11000) \
+	|| defined(RTCONFIG_BCMLEDG) \
+	|| defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) \
+	|| defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) \
+	|| defined(GS7) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GTBE96_AI)
 	{"AuraRGB", "light_effect/light_effect.html", "<rt><white>light_effect/light_effect_white.css"},
 	{"AuraRGB_preview", "light_effect/light_effect_pre.html", "<rt>"},
 #endif
@@ -1093,12 +1156,16 @@ struct REPLACE_PRODUCTID_S replace_productid_t[] =
 	{"TX-AX6000", "天选游戏路由", "CN"},
 	{"TUF-AX6000",  "TUF GAMING AX6000", "global"},
 	{"GT-BE96",  "ROG 八爪鱼7", "CN"},
-	{"TUF-BE3600", "TUF GAMING 小旋风", "CN"},
-	{"TUF-BE6500", "TUF GAMING 小旋风 Pro", "CN"},
-	{"TUF_3600", "TUF GAMING 小旋风", "CN"},
-	{"TUF_6500", "TUF GAMING 小旋风 Pro", "CN"},
+	{"TUF-BE3600", "TUF GAMING 小旋风 WiFi7", "CN"},
+	{"TUF-BE6500", "TUF GAMING 小旋风 Pro WiFi7", "CN"},
+	{"TUF_3600", "TUF GAMING 小旋风 WiFi7", "CN"},
+	{"TUF_6500", "TUF GAMING 小旋风 Pro WiFi7", "CN"},
 	{"ZenWiFi_BD4", "灵耀魔方 WiFi7 BE3600", "CN"},
 	{"ZenWiFi_BD4_Outdoor", "灵耀魔方 无界", "CN"},
+	{"GS7", "ROG 魔盒", "CN"},
+	{"GS7_Pro", "ROG 魔盒 Pro", "CN"},
+	{"RP-BE58", "小飞侠组网超人 WiFi7", "CN"},
+	{"TUF_3600_V2", "TUF GAMING 小旋风 V2 WiFi7", "CN"},
 	{NULL, NULL, NULL}
 };
 
@@ -1117,22 +1184,38 @@ void replace_productid(char *GET_PID_STR, char *RP_PID_STR, int len){
 		}
 	}
 
-	if(strlen(RP_PID_STR))
-		return;
-
-	if ((p_temp = strstr(GET_PID_STR, "ZenWiFi_")) && !strncmp(nvram_safe_get("preferred_lang"), "CN", 2)) {
-		p_temp += strlen("ZenWiFi_");
-		snprintf(RP_PID_STR, len, "灵耀%s", p_temp);
+	if(!strcmp(GET_PID_STR,"RT-AX57M") && !strcmp(nvram_safe_get("preferred_lang"), "CN")){
+		if(!strcmp(nvram_safe_get("CoBrand"), "5"))
+			strlcpy(RP_PID_STR, "RT-AX57 青春版", len);
+		else
+			strlcpy(RP_PID_STR, "RT-AX57 热血版", len);
 	}
-	else{
-		strlcpy(RP_PID_STR, GET_PID_STR, len);
+	else if(!strcmp(GET_PID_STR, "RT-BE57") && !strncmp(nvram_safe_get("preferred_lang"), "CN", 2) && nvram_get_int("CoBrand") == 12){
+		strlcpy(RP_PID_STR, "天选游戏路由2 初音未来版", len);
 	}
+	else if(!strcmp(GET_PID_STR, "RT-BE57") && !strncmp(nvram_safe_get("preferred_lang"), "CN", 2) && nvram_get_int("CoBrand") == 11){
+		strlcpy(RP_PID_STR, "天选游戏路由2", len);
+	}
+	else if(!strcmp(GET_PID_STR, "GS7") && !strncmp(nvram_safe_get("preferred_lang"), "CN", 2) && nvram_get_int("CoBrand") == 18){
+		strlcpy(RP_PID_STR, "ROG 魔盒 初音未来版", len);
+	}
+	else if(!strcmp(GET_PID_STR, "GS7") && !strncmp(nvram_safe_get("preferred_lang"), "CN", 2) && nvram_get_int("CoBrand") == 17){
+		strlcpy(RP_PID_STR, "ROG 魔盒 透视版", len);
+	}
+	else if(!strlen(RP_PID_STR)){
+		if((p_temp = strstr(GET_PID_STR, "ZenWiFi_")) && !strncmp(nvram_safe_get("preferred_lang"), "CN", 2)){
+			p_temp += strlen("ZenWiFi_");
+			snprintf(RP_PID_STR, len, "灵耀%s", p_temp);
+		}
+		else
+			strlcpy(RP_PID_STR, GET_PID_STR, len);
 
-	/* general  replace underscore with space */
-	for (; *RP_PID_STR; ++RP_PID_STR)
-	{
-		if (*RP_PID_STR == '_')
-			*RP_PID_STR = ' ';
+		/* general replace underscore with space */
+		for (; *RP_PID_STR; ++RP_PID_STR)
+		{
+			if (*RP_PID_STR == '_')
+				*RP_PID_STR = ' ';
+		}
 	}
 }
 
@@ -1289,11 +1372,12 @@ int do_upload_config(void)
 #ifdef RTCONFIG_LANTIQ
 	system("rm -f /jffs/db_*.tgz");
 #endif
-	httpd_nvram_commit();
 
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 	start_enc_nvram();
 #endif
+	httpd_nvram_commit();
+
 	sys_reboot();
 
 	return ret;

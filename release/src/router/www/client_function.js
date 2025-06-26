@@ -47,81 +47,71 @@ String.prototype.toArray = function(){
 	return [];
 }
 
-var wl_nband_title = [];
 var wl_nband_array = "<% wl_nband_info(); %>".toArray();
 var band2g_count = 0;
 var band5g_count = 0;
 var band6g_count = 0;
 var band60g_count = 0;
-for (var j=0; j<wl_nband_array.length; j++) {
-	if(wl_nband_array[j] == '2'){
-		band2g_count++;
-		wl_nband_title.push("2.4 GHz" + ((band2g_count > 1) ? ("-" + band2g_count) : ""));
+var wl_nband_title = (()=>{
+	const wlnband_list = `<% nvram_get("wlnband_list"); %>`.split("&#60");
+	const titleArr = [];
+	const bandCounts = {};
+	for (const band of wlnband_list) {
+		let bandType = band.substring(0, 2);
+		if (band.startsWith('60g')) {
+			bandType = '60g';
+		}
+		bandCounts[bandType] = (bandCounts[bandType] || 0) + 1;
+		if (bandType === '2g') {
+			band2g_count++;
+		} else if (bandType === '5g') {
+			band5g_count++;
+		} else if (bandType === '6g') {
+			band6g_count++;
+		} else if (bandType === '60g') {
+			band60g_count++;
+		}
 	}
-	else if(wl_nband_array[j] == '1'){
-		band5g_count++;
-		wl_nband_title.push("5 GHz" + ((band5g_count > 1) ? ("-" + band5g_count) : ""));
+	for (const band of wlnband_list) {
+		let bandType = band.substring(0, 2);
+		if (band.startsWith('60g')) {
+			bandType = '60g';
+		}
+		const bandNumber = band.substring(bandType.length);
+		let frequency = '';
+		let unit = 'GHz';
+		if (bandType === '2g') {
+			frequency = '2.4 ';
+		} else if (bandType === '5g' || bandType === '6g' || bandType === '60g') {
+			frequency = bandType.substring(0, bandType.length - 1) + ' ';
+		}
+		if (frequency !== '') {
+			titleArr.push(bandCounts[bandType] > 1 ? `${frequency}${unit}-${bandNumber}` : `${frequency}${unit}`);
+		}
 	}
-	else if(wl_nband_array[j] == '4'){
-		band6g_count++;
-		wl_nband_title.push("6 GHz" + ((band6g_count > 1) ? ("-" + band6g_count) : ""));
-	}
-	else if(wl_nband_array[j] == '6'){
-		band60g_count++;
-		wl_nband_title.push("60 GHz" + ((band60g_count > 1) ? ("-" + band60g_count) : ""));
-	}
-}
-
-if(wl_nband_title.indexOf("2.4 GHz-2") > 0) wl_nband_title[wl_nband_title.indexOf("2.4 GHz")] = "2.4 GHz-1";
-if(wl_nband_title.indexOf("5 GHz-2") > 0) wl_nband_title[wl_nband_title.indexOf("5 GHz")] = "5 GHz-1";
-if(wl_nband_title.indexOf("6 GHz-2") > 0) wl_nband_title[wl_nband_title.indexOf("6 GHz")] = "6 GHz-1";
-if(wl_nband_title.indexOf("60 GHz-2") > 0) wl_nband_title[wl_nband_title.indexOf("60 GHz")] = "60 GHz-1";
+	return titleArr;
+})();
 
 function get_wl_unit_by_band(_band){
-	if(_band == undefined)
-		return "";
+	if(_band == undefined) return "";
 
 	_band = (_band).toString().toUpperCase();
-	var wl_nband = "";
-	switch(_band){
-		case "2G":
-		case "2G1":
-			wl_nband = "2";
-			break;
-		case "5G":
-		case "5G1":
-		case "5G2":
-			wl_nband = "1";
-			break;
-		case "6G":
-		case "6G1":
-		case "6G2":
-			wl_nband = "4";
-			break;
-		case "60G":
-			wl_nband = "6";
-			break;
-	}
-	if(wl_nband == "")
-		return "";
+	const wlnband_list = `<% nvram_get("wlnband_list"); %>`.toUpperCase().split("&#60");
 
-	var wl_unit = "";
-	var suffix_num = _band.substr(_band.indexOf("G") + 1);
-	var ordinal_num = (suffix_num == "") ? 1 : parseInt(suffix_num);
-	var count = 1;
-	var wl_nband_array = httpApi.hookGet("wl_nband_info");
-	$.each(wl_nband_array, function(wlx, value){
-		if(value == wl_nband){
-			if(count == ordinal_num){
-				wl_unit = wlx;
-				return false;
-			}
-			else{
-				count+=1;
-			}
-		}
-	});
-	return wl_unit.toString();
+	const bandMap = {
+		"2G": "2G1",
+		"5G": "5G1",
+		"6G": "6G1"
+	};
+
+	_band = bandMap[_band] || _band;
+
+	return findWLUnit(wlnband_list, _band).toString();
+
+	function findWLUnit(array, band) {
+		const idx = $.inArray(band, array);
+		return idx !== -1 ? idx : '';
+	}
 }
 
 function inet_network(ip_str) {
@@ -142,32 +132,9 @@ function inet_network(ip_str) {
 }
 if(typeof isSwMode != "function"){
 	var isSwMode = function(mode){
-		var ui_sw_mode = "rt";
-		var sw_mode = '<% nvram_get("sw_mode"); %>';
-		var wlc_psta = '<% nvram_get("wlc_psta"); %>' == '' ? 0 : '<% nvram_get("wlc_psta"); %>';
-		var wlc_express = '<% nvram_get("wlc_express"); %>' == '' ? 0 : '<% nvram_get("wlc_express"); %>';
-
-		if(((sw_mode == '2' && wlc_psta == '0') || (sw_mode == '3' && wlc_psta == '2')) && wlc_express == '0'){	// Repeater
-			ui_sw_mode = "re";
-		}
-		else if((sw_mode == '3' && wlc_psta == '0') || (sw_mode == '3' && wlc_psta == '')){	// Access Point
-			ui_sw_mode = "ap";
-		}
-		else if((sw_mode == '3' && wlc_psta == '1' && wlc_express == '0') || (sw_mode == '3' && wlc_psta == '3' && wlc_express == '0') || (sw_mode == '2' && wlc_psta == '1' && wlc_express == '0')){	// MediaBridge
-			ui_sw_mode = "mb";
-		}
-		else if(sw_mode == '2' && wlc_psta == '0' && wlc_express == '1'){	// Express Way 2G
-			ui_sw_mode = "ew2";
-		}
-		else if(sw_mode == '2' && wlc_psta == '0' && wlc_express == '2'){	// Express Way 5G
-			ui_sw_mode = "ew5";
-		}
-		else if(sw_mode == '5'){	// Hotspot
-			ui_sw_mode = 'hs';
-		}
-		else ui_sw_mode = "rt"; // Router
-
-		return (ui_sw_mode.search(mode) !== -1);
+		mode = mode.toLowerCase();
+		var ui_sw_mode = httpApi.hookGet("get_operation_mode");
+		return ui_sw_mode == mode;
 	}
 }
 
@@ -779,11 +746,12 @@ var card_client_variable = {
 		var manual_dhcp_list_row = manual_dhcp_list.split("<");
 		for(var dhcpIndex = 0; dhcpIndex < manual_dhcp_list_row.length; dhcpIndex += 1) {
 			if(manual_dhcp_list_row[dhcpIndex] != "") {
-				var manual_dhcp_list_col = manual_dhcp_list_row[dhcpIndex].split(">");
-				var mac = manual_dhcp_list_col[0].toUpperCase();
-				var ip = manual_dhcp_list_col[1];
-				var dns = (manual_dhcp_list_col[2] == undefined) ? "" : manual_dhcp_list_col[2];
-				var item_para = {"ip" : ip, "dns" : dns};
+				const manual_dhcp_list_col = manual_dhcp_list_row[dhcpIndex].split(">");
+				const mac = manual_dhcp_list_col[0].toUpperCase();
+				const ip = manual_dhcp_list_col[1];
+				const dns = (manual_dhcp_list_col[2] == undefined) ? "" : manual_dhcp_list_col[2];
+				const hostname = (manual_dhcp_list_col[3] == undefined) ? "" : manual_dhcp_list_col[3];
+				const item_para = {"ip" : ip, "dns" : dns, "hostname" : hostname};
 				manual_dhcp_list_array[mac] = item_para;
 			}
 		}
@@ -1160,9 +1128,9 @@ function popClientListEditTable(event) {
 		const sdn_profile = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx == clientInfo.sdn_idx) || {};
 		const sdn_ssid = $.isEmptyObject(sdn_profile) ? "" : sdn_profile.apg_rl.ssid;
 		document.getElementById('card_client_sdnIdx').innerHTML = "SDN " + sdn_ssid;
-		$('#tr_adv_setting').hide();
+		document.getElementById('card_client_sdnIdx').setAttribute('client_sdn_idx', clientInfo.sdn_idx);
 	}else{
-		$('#tr_adv_setting').show();
+		document.getElementById('card_client_sdnIdx').setAttribute('client_sdn_idx', '0');
 	}
 	//device title info. end
 
@@ -1205,7 +1173,6 @@ function popClientListEditTable(event) {
 
 	//adv setting start
 	if(adv_setting) {
-		var manual_dhcp_list_num = Object.keys(card_client_variable.manual_dhcp_list).length;
 		var client_MULTIFILTER_num = (card_client_variable.MULTIFILTER_MAC == "") ? 0 : card_client_variable.MULTIFILTER_ENABLE.split(">").length;
 		$("#edit_client_block #card_client_ipaddr_field").prop("disabled", false);
 		$("#edit_client_block #card_client_ipaddr_field").removeClass("client_input_text_disabled");
@@ -1225,17 +1192,30 @@ function popClientListEditTable(event) {
 			}
 		});
 
+		const specific_sdn = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx.toString() === clientInfo.sdn_idx.toString());
+		const subnet_idx = specific_sdn && specific_sdn.sdn_rl.subnet_idx !== "0" && specific_sdn.sdn_rl.subnet_idx !== "" 
+			? specific_sdn.sdn_rl.subnet_idx 
+			: "0";
+		const isMainNetwork = subnet_idx === "0";
+		const manually_dhcp_list = isMainNetwork
+			? card_client_variable.manual_dhcp_list
+			: sdn_parse_StrToArr_dhcpres_rl(subnet_idx);
 		var setRadioControl = function (state, mode, mac) {
-			const manually_dhcp_maximum  = (isSupport("MaxRule_extend_limit") == 0) ? 64: isSupport("MaxRule_extend_limit");
+			const manually_dhcp_maximum = (()=>{
+				const maxRuleLimit = isSupport("MaxRule_extend_limit") == 0 ? 64 : isSupport("MaxRule_extend_limit");
+				return isMainNetwork ? maxRuleLimit : 32;
+			})();
+
+			const manually_dhcp_list_num = Object.keys(manually_dhcp_list).length;
 			const parentctrl_maximum = (isSupport("MaxRule_parentctrl") == 0) ? 16 : isSupport("MaxRule_parentctrl");
 			switch (mode) {
 				case "ipBinding" :
 					$('#edit_client_block #card_radio_IPBinding_enable').iphoneSwitch(state,
 						function(){
-							if(card_client_variable.manual_dhcp_list[mac] == undefined) {
-								if(manual_dhcp_list_num >= manually_dhcp_maximum) {
+							if(manually_dhcp_list[mac] == undefined) {
+								if(manually_dhcp_list_num >= manually_dhcp_maximum) {
 									if(confirm(stringSafeGet("<#Clientlist_IPMAC_Binding_max#>".replace("64", manually_dhcp_maximum)))) {
-										location.href = "/Advanced_DHCP_Content.asp" ;
+										location.href = isMainNetwork ? "/Advanced_DHCP_Content.asp" : "/SDN.asp";
 									}
 									else {
 										$('#edit_client_block #card_client_ipaddr_field').val($('#edit_client_block #card_client_ipaddr_field_orig').val());
@@ -1309,7 +1289,7 @@ function popClientListEditTable(event) {
 			redirectTimeScheduling($("#edit_client_block #card_client_macaddr_field").val());
 		});
 
-		if(card_client_variable.manual_dhcp_list[clientInfo.mac] != undefined) { //check mac>ip is combination the the ipLockIcon is manual
+		if(manually_dhcp_list[clientInfo.mac] != undefined) { //check mac>ip is combination the the ipLockIcon is manual
 			setRadioControl(1, "ipBinding", clientInfo.mac);
 			card_client_variable.ipBindingFlag = true;
 		}
@@ -1505,31 +1485,45 @@ function card_confirm(event) {
 					ip_obj.focus();
 					retFlag = 0;
 				}
-				else if(card_client_variable.ipBindingFlag && (ip_num <= getSubnet('<% nvram_get("lan_ipaddr"); %>', '<% nvram_get("lan_netmask"); %>', "head") ||
-					 ip_num >= getSubnet('<% nvram_get("lan_ipaddr"); %>', '<% nvram_get("lan_netmask"); %>', "end"))){
-					alert(ip_obj.value+" <#JS_validip#>");
-					ip_obj.value = $('#edit_client_block #card_client_ipaddr_field_orig').val();
-					ip_obj.focus();
-					retFlag = 0;
-				}
 				else if(!validator.validIPForm($('#edit_client_block #card_client_ipaddr_field')[0], 0)){
 					ip_obj.value = $('#edit_client_block #card_client_ipaddr_field_orig').val();
 					ip_obj.focus();
 					retFlag = 0;
 				}
-
-				Object.keys(card_client_variable.manual_dhcp_list).forEach(function(key) {
-					var existMac = key;
-					var existIP = card_client_variable.manual_dhcp_list[existMac].ip;
-					if(existIP == $('#edit_client_block #card_client_ipaddr_field').val()) {
-						if(existMac != $('#edit_client_block #card_client_macaddr_field').val()) {
-							alert("<#JS_duplicate#>");
-							ip_obj.value = $('#edit_client_block #card_client_ipaddr_field_orig').val();
-							ip_obj.focus();
-							retFlag = 0;
-						}
+				else if (card_client_variable.ipBindingFlag) {
+					const clientMac = $('#edit_client_block #card_client_macaddr_field').val().toUpperCase();
+					const client_sdn_idx = $('#edit_client_block #card_client_sdnIdx').attr('client_sdn_idx');
+					const specific_sdn = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx.toString() === client_sdn_idx.toString());
+					const lan_ipaddr = specific_sdn ? specific_sdn.subnet_rl.addr : `<% nvram_get("lan_ipaddr"); %>`;
+					const lan_netmask = specific_sdn ? specific_sdn.subnet_rl.netmask : `<% nvram_get("lan_netmask"); %>`;
+					if (ip_num <= getSubnet(lan_ipaddr, lan_netmask, "head") || ip_num >= getSubnet(lan_ipaddr, lan_netmask, "end")){
+						alert(ip_obj.value+" <#JS_validip#>");
+						ip_obj.value = $('#edit_client_block #card_client_ipaddr_field_orig').val();
+						ip_obj.focus();
+						retFlag = 0;
 					}
-				});
+
+					const manually_dhcp_list = (()=>{
+						const subnet_idx = specific_sdn && specific_sdn.sdn_rl.subnet_idx !== "0" && specific_sdn.sdn_rl.subnet_idx !== "" 
+							? specific_sdn.sdn_rl.subnet_idx 
+							: "0";
+						return subnet_idx === "0"
+							? card_client_variable.manual_dhcp_list
+							: sdn_parse_StrToArr_dhcpres_rl(subnet_idx);
+					})();
+					Object.keys(manually_dhcp_list).forEach(function(key) {
+						var existMac = key;
+						var existIP = manually_dhcp_list[existMac].ip;
+						if(existIP == $('#edit_client_block #card_client_ipaddr_field').val()) {
+							if(existMac.toUpperCase() != clientMac.toUpperCase()) {
+								alert("<#JS_duplicate#>");
+								ip_obj.value = $('#edit_client_block #card_client_ipaddr_field_orig').val();
+								ip_obj.focus();
+								retFlag = 0;
+							}
+						}
+					});
+				}
 				return retFlag;
 			};
 			if(validateIpRange($("#edit_client_block #card_client_ipaddr_field")[0]) == 0)
@@ -1618,29 +1612,45 @@ function card_confirm(event) {
 
 		if(adv_setting){
 			// IP Binding
-			var dhcp_staticlist_ori = "";
-			var dhcp_staticlist = "";
-			Object.keys(card_client_variable.manual_dhcp_list).forEach(function(key) {
-				dhcp_staticlist_ori += "<" + key + ">"  + card_client_variable.manual_dhcp_list[key].ip + ">" + card_client_variable.manual_dhcp_list[key].dns;
+			const client_sdn_idx = $('#edit_client_block #card_client_sdnIdx').attr('client_sdn_idx');
+			const specific_sdn = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx.toString() === client_sdn_idx.toString());
+			const subnet_idx = specific_sdn && specific_sdn.sdn_rl.subnet_idx !== "0" && specific_sdn.sdn_rl.subnet_idx !== ""
+				? specific_sdn.sdn_rl.subnet_idx
+				: "0";
+			const isMainNetwork = subnet_idx === "0";
+			const manually_dhcp_list = isMainNetwork
+				? card_client_variable.manual_dhcp_list
+				: sdn_parse_StrToArr_dhcpres_rl(subnet_idx);
+			let final_manually_dhcp_list = [];
+			Object.keys(manually_dhcp_list).forEach(function(key) {
+				final_manually_dhcp_list[key] = JSON.parse(JSON.stringify(manually_dhcp_list[key]));
 			});
-
 			if(card_client_variable.ipBindingFlag) {
-				if(card_client_variable.manual_dhcp_list[clientMac] == undefined){//new
-					var ip = $('#edit_client_block #card_client_ipaddr_field').val();
-					var dns = "";
-					var item_para = {"ip" : ip, "dns" : dns};
-					card_client_variable.manual_dhcp_list[clientMac] = item_para;
+				if(final_manually_dhcp_list[clientMac] == undefined){//new
+					const ip = $('#edit_client_block #card_client_ipaddr_field').val();
+					const dns = "";
+					const hostname = "";
+					const item_para = {"ip" : ip, "dns" : dns, "hostname" : hostname};
+					final_manually_dhcp_list[clientMac] = item_para;
 				}
 				else
-					card_client_variable.manual_dhcp_list[clientMac].ip = $('#edit_client_block #card_client_ipaddr_field').val();
+					final_manually_dhcp_list[clientMac].ip = $('#edit_client_block #card_client_ipaddr_field').val();
 			}
-			else
-				delete card_client_variable.manual_dhcp_list[clientMac];
+			else{
+				delete final_manually_dhcp_list[clientMac];
+			}
 
-			Object.keys(card_client_variable.manual_dhcp_list).forEach(function(key) {
-				dhcp_staticlist += "<" + key + ">"  + card_client_variable.manual_dhcp_list[key].ip + ">" + card_client_variable.manual_dhcp_list[key].dns;
+			let manually_dhcp_list_str = "";
+			let final_manually_dhcp_list_str = "";
+			Object.keys(manually_dhcp_list).forEach(key => {
+				const { ip, dns, hostname } = manually_dhcp_list[key];
+				manually_dhcp_list_str += `<${key}>${ip}>${dns}>${hostname}`;
 			});
-			if(dhcp_staticlist == dhcp_staticlist_ori || sw_mode != "1"){
+			Object.keys(final_manually_dhcp_list).forEach(key => {
+				const { ip, dns, hostname } = final_manually_dhcp_list[key];
+				final_manually_dhcp_list_str += `<${key}>${ip}>${dns}>${hostname}`;
+			});
+			if(manually_dhcp_list_str === final_manually_dhcp_list_str || sw_mode != "1"){
 				document.card_clientlist_form.action_script.value = "saveNvram";
 				document.card_clientlist_form.action_wait.value = "1";
 				document.card_clientlist_form.flag.value = "background";
@@ -1649,12 +1659,40 @@ function card_confirm(event) {
 			}
 			else {
 				document.card_clientlist_form.action_script.value = "restart_net_and_phy";
-				document.card_clientlist_form.action_wait.value = "35";
+				document.card_clientlist_form.action_wait.value = httpApi.hookGet("get_default_reboot_time");
 				document.card_clientlist_form.flag.value = "";
-				document.card_clientlist_form.dhcp_staticlist.disabled = false;
-				document.card_clientlist_form.dhcp_staticlist.value = dhcp_staticlist;
 				document.card_clientlist_form.dhcp_static_x.value = 1;
 				document.card_clientlist_form.dhcp_static_x.disabled = false;
+				if (isMainNetwork) {
+					card_client_variable.manual_dhcp_list = [];
+					Object.keys(final_manually_dhcp_list).forEach(function(key) {
+						card_client_variable.manual_dhcp_list[key] = JSON.parse(JSON.stringify(final_manually_dhcp_list[key]));
+					});
+					document.card_clientlist_form.dhcp_staticlist.disabled = false;
+					document.card_clientlist_form.dhcp_staticlist.value = final_manually_dhcp_list_str;
+				}
+				else {
+					document.card_clientlist_form.dhcp_staticlist.disabled = true;
+					const dhcp_static = final_manually_dhcp_list_str === '' ? "0" : "1";
+					const dhcp_unit = dhcp_static === '1' ? subnet_idx : "";
+					let subnet_rl = decodeURIComponent(httpApi.nvramCharToAscii(["subnet_rl"]).subnet_rl);
+					let subnetArray = subnet_rl.split('<').filter(part => part !== '');
+					for (let i = 0; i < subnetArray.length; i++) {
+						let parts = subnetArray[i].split('>');
+						if (parts[0] === subnet_idx) {
+							parts[11] = dhcp_static;
+							parts[12] = dhcp_unit;
+							subnetArray[i] = parts.join('>');
+						}
+					}
+					subnet_rl = '<' + subnetArray.join('<');
+					let nvramSet_obj = {"action_mode": "apply"};
+					nvramSet_obj[`dhcpres${subnet_idx}_rl`] = final_manually_dhcp_list_str;
+					nvramSet_obj[`subnet_rl`] = subnet_rl;
+					httpApi.nvramSet(nvramSet_obj, () => {
+						httpApi.nvramGet([`dhcpres${subnet_idx}_rl`, `subnet_rl`], true);
+					});
+				}
 			}
 
 			//Time Scheduling
@@ -1732,7 +1770,7 @@ function card_confirm(event) {
 				document.card_clientlist_form.flag.value = "";
 				if(document.card_clientlist_form.action_script.value == "restart_net_and_phy") {
 					document.card_clientlist_form.action_script.value += ";restart_firewall";
-					document.card_clientlist_form.action_wait.value = "35";
+					document.card_clientlist_form.action_wait.value = httpApi.hookGet("get_default_reboot_time");
 				}
 				else {
 					document.card_clientlist_form.action_script.value = "restart_firewall";
@@ -2497,26 +2535,62 @@ function init_clientlist_listview_array(){
 }
 
 function init_sdn_all_list_client(){
-	var sdn_rl_attr = function(){
+	const sdn_rl_attr = function(){
 		this.idx = "0";
 		this.sdn_name = "";
 		this.apg_idx = "0";
 	};
-	var apg_rl_attr = function(){
+	const apg_rl_attr = function(){
 		this.apg_idx = "";
 		this.ssid = "";
 	};
+	const subnet_rl_attr = function(){
+		this.subnet_idx = "";
+		this.addr = "";
+		this.netmask = "";
+	};
 	sdn_rl_for_clientlist = [];
 
-	var sdn_all_rl_info = httpApi.nvramCharToAscii(["sdn_rl"], true);
-	var sdn_rl = decodeURIComponent(sdn_all_rl_info.sdn_rl);
+	const sdn_all_rl_info = httpApi.nvramCharToAscii(["sdn_rl", "subnet_rl"], true);
+	const sdn_rl = decodeURIComponent(sdn_all_rl_info.sdn_rl);
+	const subnet_rl_json = (()=>{
+		let json_arr = [];
+		const subnet_rl = decodeURIComponent(sdn_all_rl_info.subnet_rl);
+		const each_subnet_rl = subnet_rl.split("<");
+		$.each(each_subnet_rl, function(index, value){
+			if(value != ""){
+				const profile_data = value.split(">");
+				let subnet_profile = new subnet_rl_attr();
+				subnet_profile.subnet_idx = profile_data[0];
+				subnet_profile.addr = profile_data[2];
+				subnet_profile.netmask = profile_data[3];
+				json_arr.push(JSON.parse(JSON.stringify(subnet_profile)));
+			}
+		});
+		json_arr.sort(function(a, b) {
+			return parseInt(a.subnet_idx) - parseInt(b.subnet_idx);
+		});
+		return json_arr;
+	})();
 	var each_sdn_rl = sdn_rl.split("<");
 	$.each(each_sdn_rl, function(index, value){
 		if(value != ""){
-			var sdn_all_rl = {sdn_rl:{}, apg_rl:{}};
+			let sdn_all_rl = {sdn_rl:{}, apg_rl:{}, subnet_rl:{}};
 			var profile_data = value.split(">");
 			var sdn_rl_profile = set_sdn_profile(profile_data);
 			sdn_all_rl.sdn_rl = sdn_rl_profile;
+			const specific_subnet_rl = subnet_rl_json.find(item => item.subnet_idx === sdn_rl_profile.subnet_idx);
+			if(specific_subnet_rl != undefined){
+				sdn_all_rl.subnet_rl = specific_subnet_rl;
+			}
+			else{
+				let subnet_rl_profile = new subnet_rl_attr();
+				const lan_info = httpApi.nvramCharToAscii(["lan_ipaddr", "lan_netmask"]);
+				subnet_rl_profile.subnet_idx = "0";
+				subnet_rl_profile.addr = decodeURIComponent(lan_info["lan_ipaddr"]);
+				subnet_rl_profile.netmask = decodeURIComponent(lan_info["lan_netmask"]);
+				sdn_all_rl.subnet_rl = JSON.parse(JSON.stringify(subnet_rl_profile));
+			}
 			const ap_prefix = (sdn_all_rl.sdn_rl.sdn_name == "MAINFH" || sdn_all_rl.sdn_rl.sdn_name == "MAINBH") ? "apm" : "apg";
 			var apg_rl_list = get_apg_rl_list(sdn_rl_profile.apg_idx, ap_prefix);
 			if(ap_prefix == "apm"){
@@ -2540,6 +2614,7 @@ function init_sdn_all_list_client(){
 		var sdn_profile = JSON.parse(JSON.stringify(new sdn_rl_attr()));
 		sdn_profile.idx = profile_data[0];
 		sdn_profile.sdn_name = profile_data[1];
+		sdn_profile.subnet_idx = profile_data[4];
 		sdn_profile.apg_idx = profile_data[5];
 		return sdn_profile;
 	}
@@ -2696,7 +2771,34 @@ function exportClientListLog() {
 	};
 	switch (clienlistViewMode) {
 		case "All" :
-			setArray(all_list);
+			var all_list_merge_offline = [];
+			
+			for(let i = 0; i < clientList.length; i += 1) {
+				all_list_merge_offline.push([
+					clientList[clientList[i]].internetState,
+					clientList[clientList[i]].vendor || clientList[clientList[i]].vendor || `Loading manufacturer..`,
+					clientList[clientList[i]].nickName || clientList[clientList[i]].name,
+					clientList[clientList[i]].ip,
+					clientList[clientList[i]].mac,
+					clientList[clientList[i]].rssi,
+					clientList[clientList[i]].curTx,
+					clientList[clientList[i]].curRx,
+					clientList[clientList[i]].wlConnectTime,
+					clientList[clientList[i]].isWL,
+					clientList[clientList[i]].vendor,
+					clientList[clientList[i]].type,
+					clientList[clientList[i]].macRepeat,
+					clientList[clientList[i]].isGN,
+					clientList[clientList[i]].sdn_idx,
+					clientList[clientList[i]].isUserUplaodImg,
+					clientList[clientList[i]].ip6,
+					clientList[clientList[i]].ip6_prefix,
+					clientList[clientList[i]].mlo,
+					clientList[clientList[i]].isASUS
+				]);
+			}
+
+			setArray(all_list_merge_offline);
 			break;
 		case "ByInterface" :
 			$.each(isWL_map, function(index, value){
@@ -2922,7 +3024,7 @@ function create_clientlist_listview() {
 											return wlc_band;
 									})();
 									var wl_ssid_parm = `wl${wl_unit}_ssid`;
-									if(isSwMode("re")){
+									if(isSwMode("RP")){
 										if(concurrep_support){
 											wl_ssid_parm = `wl${wl_unit}.1_ssid`;
 										}
@@ -3220,7 +3322,7 @@ function drawClientListBlock(objID) {
 		clientListCode += `
                 <thead class='client-list-sm'>
                     <tr id='tr_${objID}_title' class='table-header'>
-                        <th width=${obj_width[0]} onclick='sorter.addBorder(this);sorter.doSorter(9, "num", "${objID}");' style='cursor:pointer;'><#wan_interface#></th>
+                        ${!(isSwMode('mb') || isSwMode('ew'))?`<th width=${obj_width[0]} onclick='sorter.addBorder(this);sorter.doSorter(9, "num", "${objID}");' style='cursor:pointer;'><#wan_interface#></th>`:``}
                         <th width=${obj_width[1]}><#Client_Icon#></th>
                         <th width=${obj_width[2]} class='client-list-sm text-left' onclick='sorter.addBorder(this);sorter.doSorter(2, "str", "${objID}");' style='cursor:pointer;'><#Client_Name#></th>
                         <th width=${obj_width[3]} class='client-list-xl text-left' onclick='sorter.addBorder(this);sorter.doSorter(3, "num", "${objID}");' style='cursor:pointer;'><#vpn_client_ip#></th>
@@ -3373,7 +3475,7 @@ function drawClientListBlock(objID) {
 						<div style="font-size: 0.75em;" title="<#IPv6_wan_addr#>">${clientlist_sort[j].ip6_prefix}</div>
 						<div style="font-size: 0.75em;" title="WAN IPv6 Link-Local">${clientlist_sort[j].ip6}</div>
 					</div>`;
-				if ('<% nvram_get("sw_mode"); %>' == "1") {
+				if ((isSwMode("RT") || isSwMode("WISP"))) {
 					clientListCode += `<span class="ipMethodTag" onmouseover="return overlib('${ipState[clientList[clientlist_sort[j].mac].ipMethod]}')" onmouseout="nd();">${clientList[clientlist_sort[j].mac].ipMethod}</span>`
 				}
 				clientListCode += `</div>`;
@@ -3425,7 +3527,7 @@ function drawClientListBlock(objID) {
 						<div style="font-size: 0.75em;" title="<#IPv6_wan_addr#>">${clientlist_sort[j].ip6_prefix}</div>
 						<div style="font-size: 0.75em;" title="WAN IPv6 Link-Local">${clientlist_sort[j].ip6}</div>
 					</div>`;
-				if ('<% nvram_get("sw_mode"); %>' == "1") {
+				if ((isSwMode("RT") || isSwMode("WISP"))) {
 					clientListCode += `<span class="ipMethodTag" onmouseover="return overlib('${ipState[clientList[clientlist_sort[j].mac].ipMethod]}')" onmouseout="nd();">${clientList[clientlist_sort[j].mac].ipMethod}</span>`
 				}
 
@@ -4464,6 +4566,22 @@ var custom_icon_list_api = {
 	}
 }
 
+function sdn_parse_StrToArr_dhcpres_rl(subnet_idx){
+	let arr = [];
+	const dhcpres_rl = decodeURIComponent(httpApi.nvramCharToAscii([`dhcpres${subnet_idx}_rl`])[`dhcpres${subnet_idx}_rl`]);
+	const dhcpres_rl_arr = dhcpres_rl.split('<').filter(part => part !== '');
+	$.each(dhcpres_rl_arr, function(idx, item){
+		const dhcpres_item = item.split(">");
+		const mac = dhcpres_item[0].toUpperCase();
+		const ip = dhcpres_item[1];
+		const dns = (dhcpres_item[2] == undefined) ? "" : dhcpres_item[2];
+		const hostname = (dhcpres_item[3] == undefined) ? "" : dhcpres_item[3];
+		const item_para = {"ip" : ip, "dns" : dns, "hostname" : hostname};
+		arr[mac] = item_para;
+	});
+	return arr;
+}
+
 /* Exported from device-map/clients.asp */
 
 function retOverLibStr(client){
@@ -4537,4 +4655,3 @@ function clientFromIP(ip) {
 }
 
 /* End exported functions */
-

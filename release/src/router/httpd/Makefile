@@ -109,6 +109,9 @@ endif
 #Tencent download
 CFLAGS += -D _FILE_OFFSET_BITS=64
 
+#Client data is not used : Temporarily disable the shared memory for RTCONFIG_TAGGED_BASED_VLAN and CAPTIVE_PORTAL to reduce memory usage.
+CFLAGS += -DFLAG_FUNCTION_TEMPORARILY_CANCELED
+
 ifneq ($(findstring CONFIG_BCM_KF_NETFILTER=, $(shell cat $(LINUXDIR)/.config)),)
 ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_6756),$(RTCONFIG_HND_ROUTER_BE_4916)),y)
 else
@@ -129,6 +132,9 @@ CFLAGS += -DWIFI7_SDK_20240103
 endif
 ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20241007)
 CFLAGS += -DWIFI7_SDK_20241007
+endif
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250122)
+CFLAGS += -DWIFI7_SDK_20250122
 endif
 endif
 
@@ -186,6 +192,10 @@ OBJS += libcaptcha.o
 endif
 
 OBJS += $(if $(wildcard web_hook.c), web_hook.o, prebuild/web_hook.o)
+
+ifeq ($(RTCONFIG_BCM_AFC),y)
+OBJS += $(if $(wildcard asus_afc.c), asus_afc.o, prebuild/asus_afc.o)
+endif
 
 LIBS = -L$(TOP_PLATFORM)/nvram${BCMEX}$(EX7) -lnvram -L$(TOP)/shared -lshared
 ifeq ($(RTCONFIG_BCM_502L07P2),y)
@@ -269,6 +279,13 @@ endif
 CFLAGS += -I$(TOP)/json-c
 LIBS += -L$(TOP)/json-c/.libs -ljson-c
 
+ifeq ($(RTCONFIG_HNS),y)
+CFLAGS += -I$(TOP)/sqlite
+CFLAGS += -I$(TOP)/hns
+LIBS += -L$(TOP)/hns -lhns
+LIBS += -L$(TOP)/sqlite/.libs -lsqlite3
+endif
+
 ifeq ($(RTCONFIG_BWDPI),y)
 LIBS += -L$(TOP)/bwdpi_source/asus -lbwdpi
 LIBS += -L$(TOP)/bwdpi_source/asus_sql -lbwdpi_sql
@@ -329,7 +346,9 @@ endif
 ifeq ($(RTCONFIG_CFGSYNC),y)
 CFLAGS += -I$(TOP)/shared/sysdeps/amas
 CFLAGS += -I$(TOP)/cfg_mnt
+CFLAGS += -I$(TOP)/networkmap/api
 LIBS += -L$(TOP)/cfg_mnt -lcfgmnt
+LIBS += -L$(TOP)/networkmap/api/ -lnmpapi
 endif
 
 ifeq ($(RTCONFIG_QSR10G),y)
@@ -344,6 +363,11 @@ LIBS += -L$(TOP)/libcodb -lcodb
 endif
 CFLAGS += -I$(TOP)/rc
 LIBS += -L$(TOP)/rc -lconn_diag
+endif
+
+ifeq ($(RTCONFIG_BCM_AFC),y)
+CFLAGS += -I$(TOP)/rc
+LIBS += -L$(TOP)/rc -lbcm_afc
 endif
 
 ifeq ($(RTCONFIG_DNSQUERY_INTERCEPT),y)
@@ -373,11 +397,21 @@ CFLAGS += -I$(TOP)/ateed/
 LIBS += -L$(TOP)/ateed/ -latee
 endif
 
+ifeq ($(RTCONFIG_ENERGY_SAVE), y)
+CFLAGS += -I$(TOP)/rc
+LIBS += -L$(TOP)/rc -les
+endif
+
 CFLAGS += -I$(TOP)/libwebapi
 LIBS += -L$(TOP)/libwebapi -lwebapi
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 LIBS += -L$(TOP)/libhostapi -lhostapi
+endif
+
+ifeq ($(RTCONFIG_BCM_AFC),y)
+CFLAGS += -I$(TOP)/libcbor-0.11/src -I$(TOP)/libcbor-0.11 -I$(TOP)/jansson-2.7/src -I$(TOP)/libjwt/include -I$(TOP)/curl-7.21.7/include
+LIBS += -L$(TOP)/libcbor-0.11/src -lcbor -L$(TOP)/jansson-2.7/src/.libs -ljansson -L$(TOP)/libjwt/libjwt/.libs -ljwt -L$(TOP)/curl-7.21.7/lib/.libs -lcurl
 endif
 
 all: httpd #test_apps
@@ -416,6 +450,10 @@ pwenc.o:
 endif
 web_hook.o:
 	@-cp -f ./prebuild/web_hook.o .
+ifeq ($(RTCONFIG_BCM_AFC),y)
+asus_afc.o:
+	@-cp -f ./prebuild/asus_afc.o .
+endif
 endif
 
 %.o: %.c .%.depend

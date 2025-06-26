@@ -89,6 +89,7 @@ struct pj_mutex_t
     pj_thread_t	       *owner;
 #endif
 	int                 inst_id;
+	int                 use_pool;
 };
 
 /*
@@ -907,6 +908,7 @@ static pj_status_t init_mutex(int inst_id, pj_mutex_t *mutex, const char *name)
     PJ_CHECK_STACK();
 
 	mutex->inst_id = inst_id;
+    mutex->use_pool = 1;
 
 #if PJ_WIN32_WINNT >= 0x0400
     InitializeCriticalSection(&mutex->crit);
@@ -940,28 +942,47 @@ static pj_status_t init_mutex(int inst_id, pj_mutex_t *mutex, const char *name)
 /*
  * pj_mutex_create()
  */
+PJ_DEF(pj_status_t) pj_mutex_create2(pj_pool_t *pool,
+                    const char *name,
+                    int type,
+                    pj_mutex_t **ptr_mutex,
+                    int inst_id)
+{
+#if PJ_HAS_THREADS
+    pj_status_t rc;
+    pj_mutex_t *mutex;
+
+    //PJ_ASSERT_RETURN(pool && ptr_mutex, PJ_EINVAL);
+
+    if (pool)
+        mutex = PJ_POOL_ALLOC_T(pool, pj_mutex_t);
+    else
+        mutex = (pj_mutex_t *)malloc(sizeof(pj_mutex_t));
+    PJ_ASSERT_RETURN(mutex, PJ_ENOMEM);
+
+    if ((rc=init_mutex(inst_id, mutex, name, type)) != PJ_SUCCESS)
+    return rc;
+
+	mutex->use_pool = pool ? 1 : 0;
+
+    *ptr_mutex = mutex;
+    return PJ_SUCCESS;
+#else /* PJ_HAS_THREADS */
+    *ptr_mutex = (pj_mutex_t*)1;
+    return PJ_SUCCESS;
+#endif
+}
+
+/*
+ * pj_mutex_create()
+ */
 PJ_DEF(pj_status_t) pj_mutex_create(pj_pool_t *pool, 
                                     const char *name, 
                                     int type,
                                     pj_mutex_t **mutex_ptr)
 {
-    pj_status_t rc;
-    pj_mutex_t *mutex;
-
-    PJ_UNUSED_ARG(type);
-    PJ_ASSERT_RETURN(pool && mutex_ptr, PJ_EINVAL);
-
-    mutex = pj_pool_alloc(pool, sizeof(*mutex));
-    if (!mutex)
-        return PJ_ENOMEM;
-
-    rc = init_mutex(pool->factory->inst_id, mutex, name);
-    if (rc != PJ_SUCCESS)
-        return rc;
-
-    *mutex_ptr = mutex;
-
-    return PJ_SUCCESS;
+	int inst_id = pool ? pool->factory->inst_id : 1;
+	return pj_mutex_create2(NULL, name, type, mutex_ptr, inst_id);
 }
 
 /*
@@ -1098,6 +1119,9 @@ PJ_DEF(pj_status_t) pj_mutex_destroy(pj_mutex_t *mutex)
 
 #if PJ_WIN32_WINNT >= 0x0400
     DeleteCriticalSection(&mutex->crit);
+
+	if(!mutex->use_pool)
+		free(mutex);
     return PJ_SUCCESS;
 #else
     return CloseHandle(mutex->hMutex) ? PJ_SUCCESS : 
@@ -1123,6 +1147,37 @@ PJ_DEF(int) pj_get_mutex_inst_id(pj_mutex_t *mutex)
 {
 	PJ_ASSERT_RETURN(mutex, -1);
 	return mutex->inst_id;
+}
+
+/*
+
+struct pj_mutex_t
+{
+#if PJ_WIN32_WINNT >= 0x0400
+CRITICAL_SECTION	crit;
+#else
+HANDLE		hMutex;
+#endif
+char		obj_name[PJ_MAX_OBJ_NAME];
+#if PJ_DEBUG
+int		        nesting_level;
+pj_thread_t	       *owner;
+#endif
+int                 inst_id;
+};
+*/
+
+PJ_DEF(void) pj_mutex_dump(char *prefix, pj_mutex_t *mutex)
+{
+	PJ_LOG(6,(mutex->obj_name, "\n prefix=[%s]\n mutexp=[%p]\n crit=[%llu]\n mutex_size=[%llu]\n obj_name=[%s]\n nesting_level=[%d]\n owner=[%p]\n inst_id=[%d]",
+		prefix,
+		mutex,
+		mutex->crit,
+		sizeof(mutex->crit),
+		mutex->obj_name,
+		mutex->nesting_level,
+		mutex->owner,
+		mutex->inst_id));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -46,50 +46,42 @@
 	-o-transition: all 2s ease-in-out;
 	transition: all 2s ease-in-out;
 }
-.wl_icon{
-	display:inline-block;width:48px;height:48px;background:url('images/New_ui/icon_signal.png');
+.icon-wl2g {
+	--svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBpZD0iR3JvdXAiPjxnIGlkPSJ3aWZpXzJnIj48ZyBpZD0iVmVjdG9yX19fX18wXzBfVUtEVUZZU0ZNVCI+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik03LjUwMDIgNC45MDAzVjYuMDk5NTFIMy41OTk4VjIyLjQwMDNIMjAuNDAwNlY2LjA5OTUxSDE3LjUwMDJWNC45MDAzSDIxLjU5OThWMjMuNTk5NUgyLjQwMDU5VjQuOTAwM0g3LjUwMDJaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik0xNS45NjMxIDExLjU2MjVDMTUuOTYzMSA3LjgyNjkzIDEzLjA0NzUgNC43OTUzIDkuMzU5NTcgNC42MDkzOEw5LjAwMDIgNC41OTk2MUg4LjQwMDU5VjMuNDAwMzlIOS4wMDAyTDkuNDIxMDkgMy40MTAxNkMxMy43NDMyIDMuNjI4MDkgMTcuMTYyMyA3LjE4NDggMTcuMTYyMyAxMS41NjI1VjEyLjE2MjFIMTUuOTYzMVYxMS41NjI1WiIvPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMTIuNDYzMSAxMS4xODc1QzEyLjQ2MzEgOS41MTA0MiAxMS4xMzEgOC4xMjY3NyA5LjQ3MzgzIDguMDQyMDFMOS4zMTI3IDguMDM3MTJIOC43MTMwOVY2LjgzNzkxSDkuMzEyN0w5LjUzNTM1IDYuODQyNzlDMTEuODI2NyA2Ljk1OTU2IDEzLjY2MjMgOC44NjgzIDEzLjY2MjMgMTEuMTg3NVYxMS43ODcxSDEyLjQ2MzFWMTEuMTg3NVoiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTEzLjA3NDMgMTguODM3NVYxOC4yTDE3LjEyNDMgMTUuMDVIMTguNjk5M1YyMEgxNy41NzQzVjE4LjgzNzVIMTMuMDc0M1pNMTQuNTM2OCAxOC4ySDE3LjU3NDNWMTUuODM3NUwxNC41MzY4IDE4LjJaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik0xMC45MzgyIDIwVjE5LjFIMTIuMDYzMlYyMEgxMC45MzgyWiIvPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNNC4yOTk4NSAyMFYxNy45Mzc1QzQuMjk5ODUgMTYuOTI1IDUuMTk5ODUgMTYuOTI1IDYuMDk5ODUgMTYuOTI1SDguMzQ5ODVDOC41NzQ4NSAxNi45MjUgOC43OTk4NSAxNi45MjUgOC43OTk4NSAxNi42NjI1VjE1Ljk1QzguNzk5ODUgMTUuNjg3NSA4LjU3NDg1IDE1LjY4NzUgOC4zNDk4NSAxNS42ODc1SDQuNjc0ODVWMTUuMDVIOC4xMjQ4NUM5LjAyNDg1IDE1LjA1IDkuOTI0ODUgMTUuMDUgOS45MjQ4NSAxNi4wNjI1VjE2LjU1QzkuOTI0ODUgMTcuNTYyNSA5LjAyNDg1IDE3LjU2MjUgOC4xMjQ4NSAxNy41NjI1SDUuODc0ODVDNS42NDk4NSAxNy41NjI1IDUuNDI0ODUgMTcuNTYyNSA1LjQyNDg1IDE3LjgyNVYxOS4zNjI1SDkuOTI0ODVWMjBINC4yOTk4NVoiLz48L2c+PC9nPjwvZz48L3N2Zz4=");
 }
-.wl0_icon_on{
-	background-position: 0px 0px;
+.icon-wl5g {
+	--svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBpZD0iR3JvdXAiPjxnIGlkPSJEZXZpY2VzIC8gd2lmaV81ZyI+PGcgaWQ9IlZlY3Rvcl9fX19fMF8wX1NJT1hJREZNRk0iPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNNy41MDAyIDQuOTAwM1Y2LjA5OTUxSDMuNTk5OFYyMi40MDAzSDIwLjQwMDZWNi4wOTk1MUgxNy41MDAyVjQuOTAwM0gyMS41OTk4VjIzLjU5OTVIMi40MDA1OVY0LjkwMDNINy41MDAyWiIvPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMTUuOTYzMSAxMS41NjI1QzE1Ljk2MzEgNy44MjY5MyAxMy4wNDc1IDQuNzk1MyA5LjM1OTU3IDQuNjA5MzhMOS4wMDAyIDQuNTk5NjFIOC40MDA1OVYzLjQwMDM5SDkuMDAwMkw5LjQyMTA5IDMuNDEwMTZDMTMuNzQzMiAzLjYyODA5IDE3LjE2MjMgNy4xODQ4IDE3LjE2MjMgMTEuNTYyNVYxMi4xNjIxSDE1Ljk2MzFWMTEuNTYyNVoiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTEyLjQ2MzEgMTEuMTg3NUMxMi40NjMxIDkuNTEwNDIgMTEuMTMxIDguMTI2NzcgOS40NzM4MyA4LjA0MjAxTDkuMzEyNyA4LjAzNzEySDguNzEzMDlWNi44Mzc5MUg5LjMxMjdMOS41MzUzNSA2Ljg0Mjc5QzExLjgyNjcgNi45NTk1NiAxMy42NjIzIDguODY4MyAxMy42NjIzIDExLjE4NzVWMTEuNzg3MUgxMi40NjMxVjExLjE4NzVaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik04LjgxMiAyMFYxOS4yNzc1SDEzLjQwMkMxMy42NTcgMTkuMjc3NSAxMy45MTIgMTkuMjc3NSAxMy45MTIgMTguOThWMTcuNTM1QzEzLjkxMiAxNy4yMzc1IDEzLjY1NyAxNy4yMzc1IDEzLjQwMiAxNy4yMzc1SDguODEyVjE0LjM5SDE0Ljc2MlYxNS4xMTI1SDEwLjA4N1YxNi41MTVIMTMuMTQ3QzE0LjE2NyAxNi41MTUgMTUuMTg3IDE2LjUxNSAxNS4xODcgMTcuNjYyNVYxOC44NTI1QzE1LjE4NyAyMCAxNC4xNjcgMjAgMTMuMTQ3IDIwSDguODEyWiIvPjwvZz48L2c+PC9nPjwvc3ZnPg==");
 }
-.wl1_icon_on{
-	background-position: 0px -48px;
+.icon-wl5g1 {
+	--svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBpZD0iR3JvdXAiPjxnIGlkPSJEZXZpY2VzIC8gd2lmaV81ZyI+PGcgaWQ9IlZlY3Rvcl9fX19fMF8wX0lNSVJOVklQRkkiPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNNy41MDAyIDQuOTAwM1Y2LjA5OTUxSDMuNTk5OFYyMi40MDAzSDIwLjQwMDZWNi4wOTk1MUgxNy41MDAyVjQuOTAwM0gyMS41OTk4VjIzLjU5OTVIMi40MDA1OVY0LjkwMDNINy41MDAyWiIvPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMTUuOTYzMSAxMS41NjI1QzE1Ljk2MzEgNy44MjY5MyAxMy4wNDc1IDQuNzk1MyA5LjM1OTU3IDQuNjA5MzhMOS4wMDAyIDQuNTk5NjFIOC40MDA1OVYzLjQwMDM5SDkuMDAwMkw5LjQyMTA5IDMuNDEwMTZDMTMuNzQzMiAzLjYyODA5IDE3LjE2MjMgNy4xODQ4IDE3LjE2MjMgMTEuNTYyNVYxMi4xNjIxSDE1Ljk2MzFWMTEuNTYyNVoiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTEyLjQ2MzEgMTEuMTg3NUMxMi40NjMxIDkuNTEwNDIgMTEuMTMxIDguMTI2NzcgOS40NzM4MyA4LjA0MjAxTDkuMzEyNyA4LjAzNzEySDguNzEzMDlWNi44Mzc5MUg5LjMxMjdMOS41MzUzNSA2Ljg0Mjc5QzExLjgyNjcgNi45NTk1NiAxMy42NjIzIDguODY4MyAxMy42NjIzIDExLjE4NzVWMTEuNzg3MUgxMi40NjMxVjExLjE4NzVaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik0xOC44MjMyIDE1LjA1VjIwSDE3LjY5ODJWMTUuNjg3NUgxNi4wNDgyVjE1LjA1SDE4LjgyMzJaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik0xMC41MDE4IDE4LjU3NVYxNy44MjVIMTMuNTAxOFYxOC41NzVIMTAuNTAxOFoiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTMuOTc1ODggMjBWMTkuMzYyNUg4LjAyNTg4QzguMjUwODggMTkuMzYyNSA4LjQ3NTg4IDE5LjM2MjUgOC40NzU4OCAxOS4xVjE3LjgyNUM4LjQ3NTg4IDE3LjU2MjUgOC4yNTA4OCAxNy41NjI1IDguMDI1ODggMTcuNTYyNUgzLjk3NTg4VjE1LjA1SDkuMjI1ODhWMTUuNjg3NUg1LjEwMDg4VjE2LjkyNUg3LjgwMDg4QzguNzAwODggMTYuOTI1IDkuNjAwODggMTYuOTI1IDkuNjAwODggMTcuOTM3NVYxOC45ODc1QzkuNjAwODggMjAgOC43MDA4OCAyMCA3LjgwMDg4IDIwSDMuOTc1ODhaIi8+PC9nPjwvZz48L2c+PC9zdmc+");
 }
-.wl1_1_icon_on{
-	background-position: 0px -96px;
+.icon-wl5g2 {
+	--svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBpZD0iR3JvdXAiPjxnIGlkPSJEZXZpY2VzIC8gd2lmaV81ZyI+PGcgaWQ9IlZlY3Rvcl9fX19fMF8wX09SUElaSFdYUkUiPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNNy41MDAyIDQuOTAwM1Y2LjA5OTUxSDMuNTk5ODFWMjIuNDAwM0gyMC40MDA2VjYuMDk5NTFIMTcuNTAwMlY0LjkwMDNIMjEuNTk5OFYyMy41OTk1SDIuNDAwNTlWNC45MDAzSDcuNTAwMloiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTE1Ljk2MzEgMTEuNTYyNUMxNS45NjMxIDcuODI2OTMgMTMuMDQ3NSA0Ljc5NTMgOS4zNTk1NyA0LjYwOTM4TDkuMDAwMiA0LjU5OTYxSDguNDAwNTlWMy40MDAzOUg5LjAwMDJMOS40MjExIDMuNDEwMTZDMTMuNzQzMiAzLjYyODA5IDE3LjE2MjMgNy4xODQ4IDE3LjE2MjMgMTEuNTYyNVYxMi4xNjIxSDE1Ljk2MzFWMTEuNTYyNVoiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTEyLjQ2MzEgMTEuMTg3NUMxMi40NjMxIDkuNTEwNDIgMTEuMTMxIDguMTI2NzcgOS40NzM4MyA4LjA0MjAxTDkuMzEyNyA4LjAzNzEySDguNzEzMDlWNi44Mzc5MUg5LjMxMjdMOS41MzUzNSA2Ljg0Mjc5QzExLjgyNjcgNi45NTk1NiAxMy42NjIzIDguODY4MyAxMy42NjIzIDExLjE4NzVWMTEuNzg3MUgxMi40NjMxVjExLjE4NzVaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik0xNC4zOTgyIDIwVjE3LjkzNzVDMTQuMzk4MiAxNi45MjUgMTUuMjk4MiAxNi45MjUgMTYuMTk4MiAxNi45MjVIMTguNDQ4MkMxOC42NzMyIDE2LjkyNSAxOC44OTgyIDE2LjkyNSAxOC44OTgyIDE2LjY2MjVWMTUuOTVDMTguODk4MiAxNS42ODc1IDE4LjY3MzIgMTUuNjg3NSAxOC40NDgyIDE1LjY4NzVIMTQuNzczMlYxNS4wNUgxOC4yMjMyQzE5LjEyMzIgMTUuMDUgMjAuMDIzMiAxNS4wNSAyMC4wMjMyIDE2LjA2MjVWMTYuNTVDMjAuMDIzMiAxNy41NjI1IDE5LjEyMzIgMTcuNTYyNSAxOC4yMjMyIDE3LjU2MjVIMTUuOTczMkMxNS43NDgyIDE3LjU2MjUgMTUuNTIzMiAxNy41NjI1IDE1LjUyMzIgMTcuODI1VjE5LjM2MjVIMjAuMDIzMlYyMEgxNC4zOTgyWiIvPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMTAuNTAxOCAxOC41NzVWMTcuODI1SDEzLjUwMThWMTguNTc1SDEwLjUwMThaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik0zLjk3NTg4IDIwVjE5LjM2MjVIOC4wMjU4OEM4LjI1MDg4IDE5LjM2MjUgOC40NzU4OCAxOS4zNjI1IDguNDc1ODggMTkuMVYxNy44MjVDOC40NzU4OCAxNy41NjI1IDguMjUwODggMTcuNTYyNSA4LjAyNTg4IDE3LjU2MjVIMy45NzU4OFYxNS4wNUg5LjIyNTg4VjE1LjY4NzVINS4xMDA4OFYxNi45MjVINy44MDA4OEM4LjcwMDg4IDE2LjkyNSA5LjYwMDg4IDE2LjkyNSA5LjYwMDg4IDE3LjkzNzVWMTguOTg3NUM5LjYwMDg4IDIwIDguNzAwODggMjAgNy44MDA4OCAyMEgzLjk3NTg4WiIvPjwvZz48L2c+PC9nPjwvc3ZnPg==");
 }
-.wl2_icon_on{
-	background-position: 0px -144px;
+.icon-wl6g {
+	--svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBpZD0iR3JvdXAiPjxnIGlkPSJEZXZpY2VzIC8gd2lmaV82ZyI+PGcgaWQ9IlZlY3Rvcl9fX19fMF8wX1lST1RYSFBGTVoiPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNNy41MDAyIDQuOTAwM1Y2LjA5OTUxSDMuNTk5OFYyMi40MDAzSDIwLjQwMDZWNi4wOTk1MUgxNy41MDAyVjQuOTAwM0gyMS41OTk4VjIzLjU5OTVIMi40MDA1OVY0LjkwMDNINy41MDAyWiIvPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMTUuOTYzMSAxMS41NjI1QzE1Ljk2MzEgNy44MjY5MyAxMy4wNDc1IDQuNzk1MyA5LjM1OTU3IDQuNjA5MzhMOS4wMDAyIDQuNTk5NjFIOC40MDA1OVYzLjQwMDM5SDkuMDAwMkw5LjQyMTA5IDMuNDEwMTZDMTMuNzQzMiAzLjYyODA5IDE3LjE2MjMgNy4xODQ4IDE3LjE2MjMgMTEuNTYyNVYxMi4xNjIxSDE1Ljk2MzFWMTEuNTYyNVoiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTEyLjQ2MzEgMTEuMTg3NUMxMi40NjMxIDkuNTEwNDIgMTEuMTMxIDguMTI2NzcgOS40NzM4MyA4LjA0MjAxTDkuMzEyNyA4LjAzNzEySDguNzEzMDlWNi44Mzc5MUg5LjMxMjdMOS41MzUzNSA2Ljg0Mjc5QzExLjgyNjcgNi45NTk1NiAxMy42NjIzIDguODY4MyAxMy42NjIzIDExLjE4NzVWMTEuNzg3MUgxMi40NjMxVjExLjE4NzVaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik04LjgxMjIgMTguODUyNVYxNS43NUM4LjgxMjIgMTQuMzkgMTAuMDAyMiAxNC4zOSAxMS4xOTIyIDE0LjM5SDE0Ljc2MjJWMTUuMTEyNUgxMS4yNzcyQzEwLjY4MjIgMTUuMTEyNSAxMC4wODcyIDE1LjExMjUgMTAuMDg3MiAxNS43OTI1VjE2LjUxNUgxMy4xNDcyQzE0LjE2NzIgMTYuNTE1IDE1LjE4NzIgMTYuNTE1IDE1LjE4NzIgMTcuNjYyNVYxOC44NTI1QzE1LjE4NzIgMjAgMTQuMTY3MiAyMCAxMy4xNDcyIDIwSDEwLjg1MjJDOS44MzIyIDIwIDguODEyMiAyMCA4LjgxMjIgMTguODUyNVpNMTAuMDg3MiAxOC45OEMxMC4wODcyIDE5LjI3NzUgMTAuMzQyMiAxOS4yNzc1IDEwLjU5NzIgMTkuMjc3NUgxMy40MDIyQzEzLjY1NzIgMTkuMjc3NSAxMy45MTIyIDE5LjI3NzUgMTMuOTEyMiAxOC45OFYxNy41MzVDMTMuOTEyMiAxNy4yMzc1IDEzLjY1NzIgMTcuMjM3NSAxMy40MDIyIDE3LjIzNzVIMTAuNTk3MkMxMC4zNDIyIDE3LjIzNzUgMTAuMDg3MiAxNy4yMzc1IDEwLjA4NzIgMTcuNTM1VjE4Ljk4WiIvPjwvZz48L2c+PC9nPjwvc3ZnPg==");
 }
-.wl6_icon_on{
-	background-position: 0px -192px;
+.icon-wl6g1 {
+	--svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBpZD0iR3JvdXAiPjxnIGlkPSJEZXZpY2VzIC8gd2lmaV82ZyI+PGcgaWQ9IlZlY3Rvcl9fX19fMF8wX05OQVBWT0hETUYiPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNNy41MDAyIDQuOTAwM1Y2LjA5OTUxSDMuNTk5OFYyMi40MDAzSDIwLjQwMDZWNi4wOTk1MUgxNy41MDAyVjQuOTAwM0gyMS41OTk4VjIzLjU5OTVIMi40MDA1OVY0LjkwMDNINy41MDAyWiIvPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMTUuOTYzMSAxMS41NjI1QzE1Ljk2MzEgNy44MjY5MyAxMy4wNDc1IDQuNzk1MyA5LjM1OTU3IDQuNjA5MzhMOS4wMDAyIDQuNTk5NjFIOC40MDA1OVYzLjQwMDM5SDkuMDAwMkw5LjQyMTA5IDMuNDEwMTZDMTMuNzQzMiAzLjYyODA5IDE3LjE2MjMgNy4xODQ4IDE3LjE2MjMgMTEuNTYyNVYxMi4xNjIxSDE1Ljk2MzFWMTEuNTYyNVoiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTEyLjQ2MzEgMTEuMTg3NUMxMi40NjMxIDkuNTEwNDIgMTEuMTMxIDguMTI2NzcgOS40NzM4MyA4LjA0MjAxTDkuMzEyNyA4LjAzNzEySDguNzEzMDlWNi44Mzc5MUg5LjMxMjdMOS41MzUzNSA2Ljg0Mjc5QzExLjgyNjcgNi45NTk1NiAxMy42NjIzIDguODY4MyAxMy42NjIzIDExLjE4NzVWMTEuNzg3MUgxMi40NjMxVjExLjE4NzVaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik0xOC44MjMyIDE1LjA1VjIwSDE3LjY5ODJWMTUuNjg3NUgxNi4wNDgyVjE1LjA1SDE4LjgyMzJaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik0xMC41MDE4IDE4LjU3NVYxNy44MjVIMTMuNTAxOFYxOC41NzVIMTAuNTAxOFoiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTMuOTc1ODggMTguOTg3NVYxNi4yNUMzLjk3NTg4IDE1LjA1IDUuMDI1ODggMTUuMDUgNi4wNzU4OCAxNS4wNUg5LjIyNTg4VjE1LjY4NzVINi4xNTA4OEM1LjYyNTg4IDE1LjY4NzUgNS4xMDA4OCAxNS42ODc1IDUuMTAwODggMTYuMjg3NVYxNi45MjVINy44MDA4OEM4LjcwMDg4IDE2LjkyNSA5LjYwMDg4IDE2LjkyNSA5LjYwMDg4IDE3LjkzNzVWMTguOTg3NUM5LjYwMDg4IDIwIDguNzAwODggMjAgNy44MDA4OCAyMEg1Ljc3NTg4QzQuODc1ODggMjAgMy45NzU4OCAyMCAzLjk3NTg4IDE4Ljk4NzVaTTUuMTAwODggMTkuMUM1LjEwMDg4IDE5LjM2MjUgNS4zMjU4OCAxOS4zNjI1IDUuNTUwODggMTkuMzYyNUg4LjAyNTg4QzguMjUwODggMTkuMzYyNSA4LjQ3NTg4IDE5LjM2MjUgOC40NzU4OCAxOS4xVjE3LjgyNUM4LjQ3NTg4IDE3LjU2MjUgOC4yNTA4OCAxNy41NjI1IDguMDI1ODggMTcuNTYyNUg1LjU1MDg4QzUuMzI1ODggMTcuNTYyNSA1LjEwMDg4IDE3LjU2MjUgNS4xMDA4OCAxNy44MjVWMTkuMVoiLz48L2c+PC9nPjwvZz48L3N2Zz4=");
 }
-.wl6_1_icon_on{
-	background-position: 0px -240px;
+.icon-wl6g2 {
+	--svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBpZD0iR3JvdXAiPjxnIGlkPSJEZXZpY2VzIC8gd2lmaV82ZyI+PGcgaWQ9IlZlY3Rvcl9fX19fMF8wX0tESUZNQU5RT1QiPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNNy41MDAyIDQuOTAwM1Y2LjA5OTUxSDMuNTk5ODFWMjIuNDAwM0gyMC40MDA2VjYuMDk5NTFIMTcuNTAwMlY0LjkwMDNIMjEuNTk5OFYyMy41OTk1SDIuNDAwNTlWNC45MDAzSDcuNTAwMloiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTE1Ljk2MzEgMTEuNTYyNUMxNS45NjMxIDcuODI2OTMgMTMuMDQ3NSA0Ljc5NTMgOS4zNTk1NyA0LjYwOTM4TDkuMDAwMiA0LjU5OTYxSDguNDAwNTlWMy40MDAzOUg5LjAwMDJMOS40MjExIDMuNDEwMTZDMTMuNzQzMiAzLjYyODA5IDE3LjE2MjMgNy4xODQ4IDE3LjE2MjMgMTEuNTYyNVYxMi4xNjIxSDE1Ljk2MzFWMTEuNTYyNVoiLz48cGF0aCBmaWxsPSJibGFjayIgZD0iTTEyLjQ2MzEgMTEuMTg3NUMxMi40NjMxIDkuNTEwNDIgMTEuMTMxIDguMTI2NzcgOS40NzM4MyA4LjA0MjAxTDkuMzEyNyA4LjAzNzEySDguNzEzMDlWNi44Mzc5MUg5LjMxMjdMOS41MzUzNSA2Ljg0Mjc5QzExLjgyNjcgNi45NTk1NiAxMy42NjIzIDguODY4MyAxMy42NjIzIDExLjE4NzVWMTEuNzg3MUgxMi40NjMxVjExLjE4NzVaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik0xNC4zOTgyIDIwVjE3LjkzNzVDMTQuMzk4MiAxNi45MjUgMTUuMjk4MiAxNi45MjUgMTYuMTk4MiAxNi45MjVIMTguNDQ4MkMxOC42NzMyIDE2LjkyNSAxOC44OTgyIDE2LjkyNSAxOC44OTgyIDE2LjY2MjVWMTUuOTVDMTguODk4MiAxNS42ODc1IDE4LjY3MzIgMTUuNjg3NSAxOC40NDgyIDE1LjY4NzVIMTQuNzczMlYxNS4wNUgxOC4yMjMyQzE5LjEyMzIgMTUuMDUgMjAuMDIzMiAxNS4wNSAyMC4wMjMyIDE2LjA2MjVWMTYuNTVDMjAuMDIzMiAxNy41NjI1IDE5LjEyMzIgMTcuNTYyNSAxOC4yMjMyIDE3LjU2MjVIMTUuOTczMkMxNS43NDgyIDE3LjU2MjUgMTUuNTIzMiAxNy41NjI1IDE1LjUyMzIgMTcuODI1VjE5LjM2MjVIMjAuMDIzMlYyMEgxNC4zOTgyWiIvPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMTAuNTAxOCAxOC41NzVWMTcuODI1SDEzLjUwMThWMTguNTc1SDEwLjUwMThaIi8+PHBhdGggZmlsbD0iYmxhY2siIGQ9Ik0zLjk3NTg4IDE4Ljk4NzVWMTYuMjVDMy45NzU4OCAxNS4wNSA1LjAyNTg4IDE1LjA1IDYuMDc1ODggMTUuMDVIOS4yMjU4OFYxNS42ODc1SDYuMTUwODhDNS42MjU4OCAxNS42ODc1IDUuMTAwODggMTUuNjg3NSA1LjEwMDg4IDE2LjI4NzVWMTYuOTI1SDcuODAwODhDOC43MDA4OCAxNi45MjUgOS42MDA4OCAxNi45MjUgOS42MDA4OCAxNy45Mzc1VjE4Ljk4NzVDOS42MDA4OCAyMCA4LjcwMDg4IDIwIDcuODAwODggMjBINS43NzU4OEM0Ljg3NTg4IDIwIDMuOTc1ODggMjAgMy45NzU4OCAxOC45ODc1Wk01LjEwMDg4IDE5LjFDNS4xMDA4OCAxOS4zNjI1IDUuMzI1ODggMTkuMzYyNSA1LjU1MDg4IDE5LjM2MjVIOC4wMjU4OEM4LjI1MDg4IDE5LjM2MjUgOC40NzU4OCAxOS4zNjI1IDguNDc1ODggMTkuMVYxNy44MjVDOC40NzU4OCAxNy41NjI1IDguMjUwODggMTcuNTYyNSA4LjAyNTg4IDE3LjU2MjVINS41NTA4OEM1LjMyNTg4IDE3LjU2MjUgNS4xMDA4OCAxNy41NjI1IDUuMTAwODggMTcuODI1VjE5LjFaIi8+PC9nPjwvZz48L2c+PC9zdmc+");
 }
-.wl6_2_icon_on{
-	background-position: 0px -288px;
+.ic-signal{
+	-webkit-mask-image: var(--svg);
+	mask-image: var(--svg);
+	-webkit-mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	-webkit-mask-size: contain;
+	display:inline-block;
+	width:48px;
+	height:48px;
 }
-.wl0_icon_off{
-	background-position: 48px 0px;
+.ic-signal.active{
+	background-color: #53CECB
 }
-.wl1_icon_off{
-	background-position: 48px -48px;
-}
-.wl1_1_icon_off{
-	background-position: 48px -96px;
-}
-.wl2_icon_off{
-	background-position: 48px -144px;
-}
-.wl6_icon_off{
-	background-position: 48px -192px;
-}
-.wl6_1_icon_off{
-	background-position: 48px -240px;
-}
-.wl6_2_icon_off{
-	background-position: 48px -288px;
+.ic-signal.resting{
+	background-color: #53514f;
 }
 .wan_state_icon{
 	width: 136px;
@@ -307,23 +299,6 @@ var t_date = time.getDate();
 var t_hour = time.getHours();
 var t_min = time.getMinutes();
 var t_sec = time.getSeconds();
-var wl0_radio = '<% nvram_get("wl0_radio"); %>';
-var wl1_radio = '<% nvram_get("wl1_radio"); %>';
-var wl2_radio = '<% nvram_get("wl2_radio"); %>';
-var wl3_radio = '<% nvram_get("wl3_radio"); %>';
-if(based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98' || based_modelid === 'GT-BE98_PRO'){
-	var t = wl3_radio;
-	wl3_radio = wl2_radio;
-	wl2_radio = wl1_radio;
-	wl1_radio = wl0_radio;
-	wl0_radio = t;
-}
-else if(odmpid == 'GT6'){
-	var t = wl2_radio;
-	wl2_radio = wl1_radio;
-	wl1_radio = wl0_radio;
-	wl0_radio = t;
-}
 
 var label_mac = <% get_label_mac(); %>;
 var CNSku = in_territory_code("CN");
@@ -400,7 +375,7 @@ function initial(){
 	check_wireless();
 	updateClientsCount();
 
-	if(isSwMode('rt')){
+	if((isSwMode("RT") || isSwMode("WISP"))){
 		if (ddns_enable == '0' || ddnsName == '' || ddnsName == isMD5DDNSName()) {
 			$('#wan_ip_title').html('WAN IP');
 			updateWANIP();
@@ -429,7 +404,7 @@ function initial(){
 		}
 	}
 
-	if(isSwMode("rt") || isSwMode("ap")){
+	if((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")){
 		if(Qcawifi_support){
 			var ch = eval('<% channel_list_5g(); %>').toString().split(",");
 			if(isSupport("triband"))
@@ -449,7 +424,7 @@ function initial(){
 		}
 	}
 
-	if (isSwMode("rt"))
+	if ((isSwMode("RT") || isSwMode("WISP")))
 		document.getElementById("boost_qos").style.display = "";
 
 	
@@ -548,80 +523,76 @@ function check_sw_mode(){
 }
 
 function check_wireless(){
-	var temp = "";
-	//check 2.4 GHz
-	if(isSwMode('mb')){
-		wl0_radio = '0';
-	}
-	temp = (wl0_radio == "1") ? "wl0_icon_on" : "wl0_icon_off"
-	$("#wl0_icon").addClass(temp);
+	const options = [
+		{ "band": "2g", "dut_list_bit": "1", "unit": "", "radio": "0" },
+		{ "band": "5g", "dut_list_bit": "2", "unit": "", "radio": "0" },
+		{ "band": "5g1", "dut_list_bit": "4", "unit": "", "radio": "0" },
+		{ "band": "5g2", "dut_list_bit": "8", "unit": "", "radio": "0" },
+		{ "band": "6g", "dut_list_bit": "16", "unit": "", "radio": "0" },
+		{ "band": "6g1", "dut_list_bit": "32", "unit": "", "radio": "0" },
+		{ "band": "6g2", "dut_list_bit": "64", "unit": "", "radio": "0" },
+	];
 
-	//check 5 GHz-1
-	if(band5g_support){
+	const wifi_band_info = (() => {
+		if (isSupport("noWiFi")) {
+			return [];
+		}
+		let result = [];
+		if (get_wl_unit_by_band("2G") !== "") {
+			const option = options.find(el => el.dut_list_bit === "1");
+			if (option) result = result.concat(option);
+		}
+		if (get_wl_unit_by_band("5G2") !== "") {
+			result = result.concat(options.filter(el => ["4", "8"].includes(el.dut_list_bit)));
+		}
+		else if (get_wl_unit_by_band("5G") !== "") {
+			const option = options.find(el => el.dut_list_bit === "2");
+			if (option) result = result.concat(option);
+		}
+		if (get_wl_unit_by_band("6G2") !== "") {
+			result = result.concat(options.filter(el => ["32", "64"].includes(el.dut_list_bit)));
+		}
+		else if (get_wl_unit_by_band("6G") !== "") {
+			const option = options.find(el => el.dut_list_bit === "16");
+			if (option) result = result.concat(option);
+		}
+		return result;
+	})();
+	for (const item of wifi_band_info) {
+		item.unit = get_wl_unit_by_band(item.band) || "";
+	}
+
+	if (isSupport('sdn_mainfh')) {
+		let mainFHNum = 0;
+		const mainFH = decodeURIComponent(httpApi.nvramCharToAscii(["sdn_rl"]).sdn_rl).split("<").filter(item => item.includes("MAINFH"));
+		mainFH.forEach(item => {
+			if (item !== "") {
+				const apmIdx = item.split(">")[5];
+				const apm_dut_list = decodeURIComponent(httpApi.nvramCharToAscii([`apm${apmIdx}_dut_list`])[`apm${apmIdx}_dut_list`]);
+				const first_dut_list = apm_dut_list.split("<").find(dut_info => dut_info !== "");
+				const wifi_band = first_dut_list ? parseInt(first_dut_list.split(">")[1], 10) || 0 : 0;
+				mainFHNum += wifi_band;
+			}
+		});
+		wifi_band_info.forEach(item => {
+			item.radio = (parseInt(item.dut_list_bit, 10) & mainFHNum) ? "1" : "0";
+		});
+	}
+	else {
+		const wl_radio = httpApi.nvramGet(['wl0_radio', 'wl1_radio', 'wl2_radio', 'wl3_radio']);
+		wifi_band_info.forEach(item => {
+			item.radio = wl_radio[`wl${item.unit}_radio`] || "0";
+		});
+	}
+	wifi_band_info.forEach((item, idx) => {
+		let wifiClass = `icon-wl${item.band} resting`;
 		if (isSwMode('mb')) {
-			wl1_radio = '0';
+			wifiClass = `icon-wl${item.band} resting`;
+		} else if (item.radio === '1') {
+			wifiClass = `icon-wl${item.band} active`;
 		}
-
-		if(based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98'){
-			temp = (wl1_radio == "1") ? "wl1_1_icon_on" : "wl1_1_icon_off";
-		}
-		else if(based_modelid === 'GT-BE98_PRO'){
-			temp = (wl1_radio == "1") ? "wl1_icon_on" : "wl1_icon_off";
-		}
-		else{
-			temp = (wl1_radio == "1") ? "wl1_icon_on" : "wl1_icon_off"
-			if(band5g2_support || band6g_support){
-				if(band6g_support){
-					temp = (wl1_radio == "1") ? "wl1_icon_on" : "wl1_icon_off";
-				}
-				else{
-					temp = (wl1_radio == "1") ? "wl1_1_icon_on" : "wl1_1_icon_off";
-				}			
-			}
-		}
-		
-
-		$("#wl1_icon").show();
-		$("#wl1_icon").addClass(temp);
-	}
-
-	//check 5 GHz-2
-	if(band5g2_support || band6g_support){
-		if (isSwMode('mb')) {
-			wl2_radio = '0';
-		}
-
-		if(based_modelid === 'GT-AXE16000' || based_modelid === 'GT-BE98' ){
-			temp = (wl2_radio == "1") ? "wl2_icon_on" : "wl2_icon_off";
-			$("#wl2_icon").show();
-			$("#wl2_icon").addClass(temp);
-
-			temp = (wl3_radio == "1") ? "wl6_icon_on" : "wl6_icon_off";
-			$("#wl3_icon").show();
-			$("#wl3_icon").addClass(temp);
-		}
-		else if(based_modelid === 'GT-BE98_PRO'){
-			temp = (wl2_radio == "1") ? "wl6_1_icon_on" : "wl6_1_icon_off";
-			$("#wl2_icon").show();
-			$("#wl2_icon").addClass(temp);
-
-			temp = (wl3_radio == "1") ? "wl6_2_icon_on" : "wl6_2_icon_off";
-			$("#wl3_icon").show();
-			$("#wl3_icon").addClass(temp);
-		}
-		else{
-			if(band6g_support){
-				temp = (wl2_radio == "1") ? "wl6_icon_on" : "wl6_icon_off";
-			}
-			else{
-				temp = (wl2_radio == "1") ? "wl2_icon_on" : "wl2_icon_off";
-			}
-			
-			$("#wl2_icon").show();
-			$("#wl2_icon").addClass(temp);
-		}
-		
-	}
+		$(`#wl${idx}_icon`).addClass(wifiClass).show();
+	});
 }
 
 function drawChart(data){
@@ -1184,10 +1155,10 @@ function showClientlistModal() {
 											<div style="margin: 0 0 0 30px;">
 												<div class="rog-title"><#ROG_WIRELESS_STATE#></div>
 												<div style="text-align: right;margin:15px 0 0 0;">
-													<div id="wl0_icon" class="wl_icon"></div>
-													<div id="wl1_icon" class="wl_icon" style="display:none"></div>
-													<div id="wl2_icon" class="wl_icon" style="display:none"></div>
-													<div id="wl3_icon" class="wl_icon" style="display:none"></div>
+													<div id="wl0_icon" class="ic-signal" style="display:none"></div>
+													<div id="wl1_icon" class="ic-signal" style="display:none"></div>
+													<div id="wl2_icon" class="ic-signal" style="display:none"></div>
+													<div id="wl3_icon" class="ic-signal" style="display:none"></div>
 												</div>
 											</div>
 											<div style="margin: 15px 0 0 10px;text-align: center;">
@@ -1320,7 +1291,7 @@ function showClientlistModal() {
 																	.css({"width":"18vw", "background-position-y":"50%"});
 															}
 															const support_night_mode = (()=>{
-																return ((based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000" || based_modelid == "GT-BE19000_AI") ? true : false);
+																return ((based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000" || based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI") ? true : false);
 															})();
 															if(support_night_mode){
 																$ledg_html.find(".light_effect_mask").css({

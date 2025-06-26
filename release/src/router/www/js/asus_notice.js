@@ -639,7 +639,7 @@ class NoticePopupModalComponent {
                             </div>
                             <div class="modal-footer">
                                 <div class="d-flex flex-column gap-1 w-100">
-                                    ${(readCheck.show) ? `<div class="checkbox-wrapper-40 m-2 w-100"><label><input id="readCheckbox" type="checkbox"/><span class="checkbox">I have read it, do not show it again</span></label></div>` : ``}
+                                    ${(readCheck.show) ? `<div class="checkbox-wrapper-40 m-2 w-100"><label><input id="readCheckbox" type="checkbox"/><span class="checkbox"><#Notice_Message_3#></span></label></div>` : ``}
                                     ${(applyBtn?.show) ? `<button type="button" class="btn btn-primary" data-dismiss="modal">${applyBtn.text}</button>` : ``}
                                 </div>
                             </div>
@@ -676,7 +676,7 @@ class NoticePopupModalComponent {
             return "ROG";
         } else if (isSupport("tuf")) {
             return "TUF";
-        } else if (isSupport("BUSINESS")) {
+        } else if (isSupport("UI4")) {
             return "";
         } else {
             return theme;
@@ -819,13 +819,13 @@ const showAsusNotice = () => {
     }
 
     if (apgInfo.length > 0) {
-        const noticeTemplate = `Due to system optimization, the %@ network(s) have to be reconfigured. You can create new ones on Network settings.`;
+        const noticeTemplate = `<#Notice_Message_1#>`;
         const noticeText = noticeTemplate.replace("%@", `<b>${apgInfo.join(', ')}</b>`);
         noticeContents.push(noticeText);
     }
 
     if (macInfo.length > 0) {
-        const noticeText = `Due to system optimization, please help to add existing MAC filter again on Network settings.`;
+        const noticeText = `<#Notice_Message_2#>`;
         noticeContents.push(noticeText);
     }
 

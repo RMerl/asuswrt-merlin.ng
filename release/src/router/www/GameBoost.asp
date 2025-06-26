@@ -21,7 +21,7 @@
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/form.js"></script>
-<script type="text/javascript" src="/js/asus_policy.js"></script>
+<script type="text/javascript" src="/js/asus_policy.js?v=4"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/md5.js"></script>
 <style>
@@ -32,6 +32,64 @@ body{
 	margin: 0;
 	color:#FFF;
 }
+
+.GB_background{
+	background: url('images/New_ui/mainimage_img_Game.jpg');
+	background-repeat: no-repeat
+	margin-top: -15px;
+	border-radius: 3px;
+	background-size: cover;
+	height: auto;
+}
+
+.GB_background_rt{
+	background-color: rgb(255, 255, 255, 0.12);
+	margin-top: -15px;
+	border-radius: 3px;
+	height: 1025px !important;
+}
+
+.function_name{
+	padding: 5px 10px;
+	font-size: 20px;
+	color: #FFCC66;
+}
+
+.function_desc{
+	font-size: 16px;
+	color: #949393;
+	padding-left:10px;
+	margin: 15px 0;
+}
+
+.GameBoost_gamePriority_icon{
+	width: 85px;
+	height: 85px;
+	background-image: url('images/New_ui/GameBoost_gamePriority.svg');
+	background-size: 100%;
+}
+
+.GameBoost_mobileGame_icon{
+	width: 85px;
+	height: 85px;
+	background-image: url('images/New_ui/GameBoost_mobileGame.svg');
+	background-size: 100%;
+}
+
+.GameBoost_openNAT_icon{
+	width: 85px;
+	height: 85px;
+	background-image: url('images/New_ui/GameBoost_openNAT.svg');
+	background-size: 100%;
+}
+
+.splitLine_Game{
+	width: 100%;
+	height: 1px;
+	background-color: #D30606;
+}
+
+
 .switch{
 	position: relative;
 	width: 200px;
@@ -77,11 +135,17 @@ body{
 .switch input:checked~.container{
 	background: #D30606;
 }
+
 .switch input:checked~.container::after{
 	left: 50px;
 	border-top-right-radius:5px;
 	border-bottom-right-radius:5px;
 }
+
+.switch2 input:checked~.container{
+	background: #248DFF;
+}
+
 @media all and (-ms-high-contrast:none)
 {
     *::-ms-backdrop, .container::after { margin-top: 0px} /* IE11 */
@@ -149,6 +213,23 @@ const gu_url = "https://router.booster.gearupportal.com/h5/acce?gwSn="+label_mac
 
 function initial(){
 	show_menu();
+	if(!rog_support && !tuf_support){
+		$("#FormTitle").addClass("GB_background_rt");
+		$("#FormTitle").find(".splitLine_Game").removeClass("splitLine_Game").addClass("splitLine");
+		$("#FormTitle").find(".switch").addClass("switch2");
+		$(".function_name").css("color", "#00FCFF");
+		$(".function_desc").css("color", "#FFFFFF");
+		$(".btn").css("background-color", "#248DFF");
+		$(".GameBoost_gamePriority_icon").css("background-image", "url('images/New_ui/RT/icon_gamePriority.svg')");
+		$(".GameBoost_mobileGame_icon").css("background-image", "url('images/New_ui/RT/icon_mobileGame.svg')");
+		$(".GameBoost_openNAT_icon").css("background-image", "url('images/New_ui/RT/icon_openNAT.svg')");
+		if(!gameMode_support && isSupport("gu_accel")){
+			$("#gearup_action").css("width", "250px");
+			$("#gearup_go_mask").css("left", "75px");
+		}
+	}
+	else
+		$("#FormTitle").addClass("GB_background");
 
 	if (adaptiveqos_support) {
         if (nvram_get_param.qos_enable == '1' && nvram_get_param.qos_type == '1') {
@@ -180,22 +261,22 @@ function initial(){
 		$('#android_cn_link').show();
 	}
 
+	if(gameMode_support){
+		$("#FormTitle").find(".gearaccel").show();
+		$("#FormTitle").find(".mgamemode").show();
+		$("#FormTitle").find(".opennat").show();
+	}
+
 	if(wtfast_support || wtfast_v2_support){
-		$('#wtfast_1').show();
-		$('#wtfast_2').show();
-		$('#wtfast_3').show();
+		$("#FormTitle").find(".wtfast").show();
 	}
 
 	if(tencent_qmacc_support){
-		$('#qmacc_1').show();
-		$('#qmacc_2').show();
-		$('#qmacc_3').show();
+		$("#FormTitle").find(".qmacc").show();
 	}
 
 	if(outfox_support){
-		$('#outfox_1').show();
-		$('#outfox_2').show();
-		$('#outfox_3').show();
+		$("#FormTitle").find(".outfox").show();
 	}
 
 	if(isSupport("gu_accel")){
@@ -690,7 +771,7 @@ function showThirdPartyPolicy(party){
 				<div id="tabMenu" style="*margin-top: -160px;"></div>
 				<br>
 		<!--=====Beginning of Main Content=====-->
-				<div id="FormTitle" style="background:url('images/New_ui/mainimage_img_Game.jpg');background-repeat: no-repeat;margin-top:-15px;border-radius:3px;background-size: cover;">
+				<div id="FormTitle">
 					<table style="padding-left:10px;">
 						<tr>
 							<td class="formfonttitle">
@@ -714,25 +795,25 @@ function showThirdPartyPolicy(party){
 									<table style="border-collapse:collapse;width:100%">
 										<tbody>
 											<!-- Gear Accelerator -->
-											<tr>
+											<tr style="display:none;" class="gearaccel">
 												<td style="width:200px">
 													<div style="padding: 5px 0;font-size:20px;"><#Gear_Accelerator#></div>
 												</td>
 												<td colspan="2">
-													<div style="padding: 5px 10px;font-size:20px;color:#FFCC66"><#Gear_Accelerator_desc#></div>
+													<div class="function_name"><#Gear_Accelerator_desc#></div>
 												</td>
 											</tr>
-											<tr>
+											<tr style="display:none;" class="gearaccel">
 												<td colspan="3">
-													<div style="width:100%;height:1px;background-color:#D30606"></div>
+													<div class="splitLine_Game"></div>
 												</td>
 											</tr>
-											<tr>
+											<tr style="display:none;" class="gearaccel">
 												<td align="center">
-													<div style="width:85px;height: 85px;background-image: url('images/New_ui/GameBoost_gamePriority.svg');background-size: 100%;"></div>													
+													<div class="GameBoost_gamePriority_icon"></div>
 												</td>
 												<td style="width:400px;height:120px;">
-													<div style="font-size:16px;color:#949393;padding-left:10px;"><#Gear_Accelerator_desc1#></div>
+													<div class="function_desc"><#Gear_Accelerator_desc1#></div>
 													<div onclick="showGameListField();" class="btn" style="margin: 12px 0;width:100px;height:40px;line-height: 40px;text-align: center;border-radius: 5px;font-size:18px;"><#CTL_add#></div>
 												</td>
 												<td>
@@ -749,31 +830,31 @@ function showThirdPartyPolicy(party){
 													</div>
 												</td>
 											</tr>
+											<tr style="height:50px; display: none;" class="gearaccel"></tr>
+
 											<!-- Mobile Game Mode -->
-											<tr style="height:50px;"></tr>
-											<tr>
+											<tr style="display:none;" class="mgamemode">
 												<td style="width:200px">
 													<div style="padding: 5px 0;font-size:20px;"><#GB_mobile#></div>
 												</td>
 												<td colspan="2">
-													<div style="padding: 5px 10px;font-size:20px;color:#FFCC66"><#GB_mobile_desc#></div>
+													<div class="function_name"><#GB_mobile_desc#></div>
 												</td>
 											</tr>
-											<tr>
+											<tr style="display:none;" class="mgamemode">
 												<td colspan="3">
-													<div style="width:100%;height:1px;background-color:#D30606"></div>
+													<div class="splitLine_Game"></div>
 												</td>
 											</tr>
-											<tr>
+											<tr style="display:none;" class="mgamemode">
 												<td align="center">
-													<div style="width:85px;height: 85px;background-image: url('images/New_ui/GameBoost_mobileGame.svg');background-size: 100%;"></div>
-													<!-- <img style="padding-right:10px;" src="/images/New_ui/GameBoost_WTFast.png" > -->
+													<div class="GameBoost_mobileGame_icon"></div>
 												</td>
 												<td style="width:400px;height:120px;">
-													<div style="font-size:16px;color:#949393;padding-left:10px;"><#GB_mobile_desc1#></div>
+													<div class="function_desc"><#GB_mobile_desc1#></div>
 												</td>
 												<td>
-													<div style="display:flex;align-items: center;">
+													<div style="width: 296px; display:flex;align-items: center;">
 														<div style="margin: 0 12px">
 															<div id="android_qr" class="qr_code qr_android"></div>	
 															<a id="android_link" href="https://play.google.com/store/apps/details?id=com.asus.aihome" target="_blank">
@@ -793,132 +874,137 @@ function showThirdPartyPolicy(party){
 													</div>
 												</td>
 											</tr>
-											
+											<tr style="height:50px; display:none;" class="mgamemode"></tr>
 
 											<!-- OPEN NAT -->
-											<tr style="height:50px;"></tr>
-											<tr>
+											<tr style="display:none;" class="opennat">
 												<td style="width:200px">
 													<div style="padding: 5px 0;font-size:20px;">Open NAT</div>
 												</td>
 												<td colspan="2">
-													<div style="padding: 5px 10px;font-size:20px;color:#FFCC66"><#GB_OpenNAT_desc#></div>
+													<div class="function_name"><#GB_OpenNAT_desc#></div>
 												</td>
 											</tr>
-											<tr>
+											<tr style="display:none;" class="opennat">
 												<td colspan="3">
-													<div style="width:100%;height:1px;background-color:#D30606"></div>
+													<div class="splitLine_Game"></div>
 												</td>
 											</tr>
-											<tr>
+											<tr style="display:none;" class="opennat">
 												<td align="center">
-													<div style="width:85px;height: 85px;background-image: url('images/New_ui/GameBoost_openNAT.svg');background-size: 100%;"></div>
+													<div class="GameBoost_openNAT_icon"></div>
 												</td>
 												<td style="width:400px;height:120px;">
-													<div style="font-size:16px;color:#949393;padding-left:10px;"><#GB_OpenNAT_desc1#></div>
+													<div class="function_desc"><#GB_OpenNAT_desc1#></div>
 												</td>
 												<td>
 													<div class="btn" style="margin:auto;width:100px;height:40px;text-align:center;line-height:40px;font-size:18px;cursor:pointer;border-radius:5px;" onclick="location.href='GameProfile.asp';"><#btn_go#></div>
 												</td>
 											</tr>
+											<tr style="height:50px; display:none;" class="opennat"></tr>
 
 											<!-- WTFast -->
-											<tr style="height:50px;"></tr>
-											<tr id='wtfast_1' style="display:none">
+											<tr style="display:none;" class="wtfast">
 												<td style="width:200px">
 													<div style="padding: 5px 0;font-size:20px;"><#Game_Boost_internet#></div>
 												</td>
 												<td colspan="2">
-													<div style="padding: 5px 10px;font-size:20px;color:#FFCC66">WTFast GPN</div>
+													<div class="function_name">WTFast GPN</div>
 												</td>
 											</tr>
-											<tr id='wtfast_2' style="display:none">
+											<tr style="display:none;" class="wtfast">
 												<td colspan="3">
-													<div style="width:100%;height:1px;background-color:#D30606"></div>
+													<div class="splitLine_Game"></div>
 												</td>
 											</tr>
-											<tr id='wtfast_3' style="display:none">
+											<tr style="display:none;" class="wtfast">
 												<td align="center" style="width:85px">
 													<img style="padding-right:10px;" src="/images/New_ui/triLv3_wtfast.png" >
 												</td>
 												<td style="width:400px;height:120px;">
-													<div style="font-size:16px;color:#949393;padding-left:10px; margin-top: 10px;"><#Game_WTFast_desc#></div>
-													<div id="thirdparty_pp" style="font-size:16px;color:#949393;padding-left:10px; margin-top: 15px; margin-bottom: 10px;"></div>
+													<div class="function_desc"><#Game_WTFast_desc#></div>
+													<div id="thirdparty_pp" class="function_desc"></div>
 												</td>
 												<td>
 													<div class="btn" style="margin:auto;width:100px;height:40px;text-align:center;line-height:40px;font-size:18px;cursor:pointer;border-radius:5px;" onclick="redirectSite('wtfast');"><#btn_go#></div>
 												</td>
 											</tr>
+											<tr style="height:50px; display:none;" class="wtfast"></tr>
+
 											<!-- Tencent -->
-											<tr id="qmacc_1" style="margin-top: 50px; display: none;">
+											<tr style="display: none;" class="qmacc">
 												<td style="width:200px">
 													<div style="padding: 5px 0;font-size:20px;"><#Game_Boost_internet#></div>
 												</td>
 												<td colspan="2">
-													<div style="padding: 5px 10px;font-size:20px;color:#FFCC66">腾讯网游加速器</div>
+													<div class="function_name">腾讯网游加速器</div>
 												</td>
 											</tr>
-											<tr id="qmacc_2" style="display: none;">
+											<tr style="display: none;" class="qmacc">
 												<td colspan="3">
-													<div style="width:100%;height:1px;background-color:#D30606"></div>
+													<div class="splitLine_Game"></div>
 												</td>
 											</tr>
-											<tr id="qmacc_3" style="display: none;">
+											<tr style="display: none;" class="qmacc">
 												<td align="center">
 													<div style="height: 85px;background-image: url('images/tencent/logo_tencent-2_line.png');background-size: 90%;background-repeat: no-repeat; background-position: center;"></div>
 												</td>
 												<td style="width:400px;height:120px;">
-													<div style="font-size:16px;color:#949393;padding-left:10px; padding-top: 5px; padding-bottom: 10px;">腾讯网游加速器——腾讯官方出品的海外网络加速工具。一机畅玩全平台游戏（PC、手游和主机），独享金融级专线，节点全球覆盖，有效解决游戏中出现的延迟、卡顿、丢包等问题，全方位满足用户在各种网络情况下的游戏体验。让你随时开黑，游戏快人一步。</div>
+													<div  class="function_desc">腾讯网游加速器——腾讯官方出品的海外网络加速工具。一机畅玩全平台游戏（PC、手游和主机），独享金融级专线，节点全球覆盖，有效解决游戏中出现的延迟、卡顿、丢包等问题，全方位满足用户在各种网络情况下的游戏体验。让你随时开黑，游戏快人一步。</div>
 												</td>
 												<td>
 													<div class="btn" style="margin:auto;width:100px;height:40px;text-align:center;line-height:40px;font-size:18px;cursor:pointer;border-radius:5px;" onclick="location.href='GameBoost_Tencent.asp';"><#btn_go#></div>
 												</td>
 											</tr>
+											<tr style="height:50px; display:none;" class="qmacc"></tr>
+
 											<!-- Outfox -->
-											<tr id="outfox_1" style="margin-top: 50px; display: none;">
+											<tr style="display: none;" class="outfox">
 												<td style="width:200px">
 													<div style="padding: 5px 0;font-size:20px;"><#Game_Boost_internet#></div>
 												</td>
 												<td colspan="2">
-													<div style="padding: 5px 10px;font-size:20px;color:#FFCC66">Outfox</div>
+													<div class="function_name">Outfox</div>
 												</td>
 											</tr>
-											<tr id="outfox_2" style="display: none;">
+											<tr style="display: none;" class="outfox">
 												<td colspan="3">
-													<div style="width:100%;height:1px;background-color:#D30606"></div>
+													<div class="splitLine_Game"></div>
 												</td>
 											</tr>
-											<tr id="outfox_3" style="display: none;">
+											<tr style="display: none;" class="outfox">
 												<td align="center">
 													<div style="height: 85px;background-image: url('images/outfox_dark.png');background-size: 90%;background-repeat: no-repeat; background-position: center;"></div>
 												</td>
 												<td style="width:400px;height:120px;">
-													<div style="font-size:16px;color:#949393;padding-left:10px; padding-top: 5px; padding-bottom: 10px;">An optimized gaming network that improves performance by routing your traffic to provide a faster, more stable path to your game’s server. To get an exclusive, free 90-day trial simply register for Outfox and download the application to your PC.</div>
+													<div class="function_desc">An optimized gaming network that improves performance by routing your traffic to provide a faster, more stable path to your game’s server. To get an exclusive, free 90-day trial simply register for Outfox and download the application to your PC.</div>
 												</td>
 												<td>
 													<div class="btn" style="margin:auto;width:100px;height:40px;text-align:center;line-height:40px;font-size:18px;cursor:pointer;border-radius:5px;" onclick="redirectSite(outfox_site)"><#btn_go#></div>
 												</td>
 											</tr>
+											<tr style="height:50px; display:none;" class="outfox"></tr>
+
 											<!-- GearUp Accerlation-->
 											<tr style="display: none;" class="gearup">
 												<td style="width:200px">
 													<div style="padding: 5px 0;font-size:20px; text-transform:uppercase;"><#Game_Boost_internet#></div>
 												</td>
 												<td colspan="2">
-													<div style="padding: 5px 10px;font-size:20px;color:#FFCC66; text-transform:uppercase;"><#GearUP_Console_Booster#></div>
+													<div class="function_name" style="text-transform: uppercase;"><#GearUP_Console_Booster#></div>
 												</td>
 											</tr>
 											<tr style="display: none;" class="gearup">
 												<td colspan="3">
-													<div style="width:100%;height:1px;background-color:#D30606"></div>
+													<div class="splitLine_Game"></div>
 												</td>
 											</tr>
 											<tr style="display: none;" class="gearup">
 												<td align="center">
-													<div style="width:158px;height: 78px;background-image: url('images/logo_GearUp_console@1x.png');background-size: 100%;"></div>
+													<div style="width:158px;height: 78px; background-image: url('images/logo_GearUp_console@1x.png');background-size: 100%;"></div>
 												</td>
 												<td style="width:400px;height:120px;">
-													<div style="font-size:16px;color:#949393;padding-left:10px; margin: 15px 0;"><#GearUP_Desc#></div>
+													<div class="function_desc"><#GearUP_Desc#></div>
 												</td>
 												<td>
 													<div class="switch" style="margin:auto;width:100px;height:40px;text-align:center;line-height:40px;font-size:18px">
@@ -932,8 +1018,10 @@ function showThirdPartyPolicy(party){
 															</div>
 														</div>
 													</div>
+                                                    <div id="gearup_action" style="width: 296px;">
 													<div class="btn" style="margin:10px auto auto auto; width:100px;height:40px;text-align:center;line-height:40px;font-size:18px;cursor:pointer;border-radius:5px;" onclick="redirectSite('gearup');"><#btn_go#></div>
 													<div id="gearup_go_mask" style="background-color: #000000; opacity: 0.5; position: relative; z-index: 999; width: 100px; height: 40px; border-radius: 5px; left: 98px; top: -40px;"></div>
+													</div>
 												</td>
 											</tr>
 											<tr style="display: none;" class="gearup">

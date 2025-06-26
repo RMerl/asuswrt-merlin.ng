@@ -346,7 +346,7 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 			var unit_subunit = unit + "." + subunit;
 
 			//short term solution for only router mode support Captive Portal
-			if(isSwMode("rt")) {
+			if((isSwMode("RT") || isSwMode("WISP"))) {
 				//captive portal used wl if
 				if(captivePortal_support) {
 					var parse_wl_list = function(_profile, _wl_list_idx, _item, _cpa_used_array) {
@@ -1477,7 +1477,7 @@ function dis_qos_enable(_wl_idx, _form_obj, _control_item){
 	if(!(all_gn_status.some(function(item, index, array){return (item.enable == true && item.bw_enabled == true)})))//if all gn bw disabled, not need disable qos
 		return;
 
-	var sw_mode_support = isSwMode("rt");
+	var sw_mode_support = (isSwMode("RT") || isSwMode("WISP"));
 	var cp_wifi_not_used = (captive_portal_used_wl_array["wl" + _wl_idx] == undefined) ? true : false;
 	if(sw_mode_support && cp_wifi_not_used){
 		var specific_gn = all_gn_status.filter(function(item, index, array){

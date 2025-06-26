@@ -388,8 +388,7 @@ function initPlayer(){
 		return;
 	}
 	
-	var vars = getUrlVars();
-	var this_subtitle = (typeof vars["s"]=="undefined") ? "" : vars["s"];
+	var this_subtitle = (typeof getUrlVar("s")=="undefined") ? "" : getUrlVar("s");
 	
 	//- Build subtitle select ui	
 	if(this_subtitle!=""){
@@ -598,7 +597,7 @@ function initPlayer(){
 }
 
 function createPlayer() {
-	var vars = getUrlVars();
+	
 	var loc_lan = String(window.navigator.userLanguage || window.navigator.language).toLowerCase();		
 	var lan = ( g_storage.get('lan') == undefined ) ? loc_lan : g_storage.get('lan');
 	m.setLanguage(lan);
@@ -606,8 +605,8 @@ function createPlayer() {
 	$('button#btnClose').text(m.getString("btn_close"));
 	$('#label_subtitle').text(m.getString("title_subtitle_file") + ": ");
 	
-	var this_url = (typeof vars["u"]=="undefined") ? "" : vars["u"];
-	var this_video = vars["v"];
+	var this_url = (typeof getUrlVar("u")=="undefined") ? "" : getUrlVar("u");
+	var this_video = getUrlVar("v");
 	var vlc_width = "655px";
 	var vlc_height = "470px";
 	var player_html = "";

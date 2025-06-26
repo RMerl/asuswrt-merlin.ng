@@ -52,6 +52,8 @@ extern int sync_apm_mbh_to_wlunit(void);
 extern int apmx_apgx_to_wlxy(void);
 extern void sync_apg_ifnames_to_jffs(void);
 extern void unlink_apg_ifnames_in_tmp(void);
+extern void get_apg_ifnames_used_filename(char *b, int bsize);
+extern char* get_unused_ifname_by_dut_2(char *dut_mac, unsigned short wifi_band, char *ret_ifname, size_t ret_ifname_bsize);
 extern char* get_unused_ifname_by_dut(char *dut_mac, unsigned short wifi_band, char *ret_ifname, size_t ret_ifname_bsize);
 extern unsigned short get_wifi_band_by_ifname(char *dut_mac, char *ifname);
 extern char* get_ifname_used_by_band(char *dut_mac, int sdn_vid, int sdn_idx, unsigned short wifi_band, char *ret_ifname, size_t ret_ifname_bsize); 
@@ -59,9 +61,11 @@ extern void check_apg_ifnames_used_dir(char *path);
 extern char* get_wificap_all_ifnames(char *dut_mac, unsigned long type, char *ret_ifnames, size_t ifnames_bsize, int get_prefix);
 extern int get_max_mtlan(char *mac);
 extern int is_sdn_supported(char *mac);
+extern int is_sdn_supported_2(char *mac);
 extern int is_wifi7_supported(char *mac);
 #if defined(RTCONFIG_MLO)
 extern int is_mlo_supported(char *mac);
+extern int is_mlo_bh_fh_supported_2(char *mac);
 extern int is_mlo_bh_fh_supported(char *mac);
 extern int gen_mlo_band();
 extern int get_mlo_band(char *mac);
@@ -88,10 +92,15 @@ extern void chk_vlan_trunk_rl(char *dut_mac, char *src_rl, char *ret_rl_sb, size
 extern void chk_ap_lanif_rl(char *dut_mac, char *src_rl, char *ret_rl_sb, size_t ret_rl_sbsize);
 extern void chk_ap_wifi_rl(char *dut_mac, char *src_rl, char *ret_rl_sb, size_t ret_rl_sbsize, char *ret_rm_vif_sb, size_t ret_rm_vif_sbsize);
 extern int get_unused_subunit_by_band(char* dut_mac, int mlo_band);
+extern int get_unused_subunit_by_band_2(char* dut_mac, int mlo_band);
 extern int check_unused_ifname_match_subunit(char* dut_mac, unsigned short wifi_band, int subunit);
+extern int check_unused_ifname_match_subunit_2(char* dut_mac, unsigned short wifi_band, int subunit);
 extern char* get_unused_ifname_by_dut_sunit(char *dut_mac, unsigned short wifi_band, char *ret_ifname, size_t ret_ifname_bsize, int subunit);
+extern char* get_unused_ifname_by_dut_sunit_2(char *dut_mac, unsigned short wifi_band, char *ret_ifname, size_t ret_ifname_bsize, int subunit);
 extern char* get_unused_ifnames_by_dut(char *dut_mac, unsigned short wifi_band, char *ret_ifnames, size_t ret_ifname_bsize);
 extern char* get_unused_ifnames_by_dut_2(char *dut_mac, unsigned short wifi_band, char *ret_ifnames, size_t ret_ifname_bsize);
 extern int update_fh_smart_connect_x(int *retval);
 extern int save_cfg_param_to_json(json_object *in, char *param);
+extern char* get_mlo_mac_for_client(unsigned short wifi_band, char *client_mac, char *ret_mlo_mac, size_t ret_bsize);
+extern char* get_apg_value(apg_rule_st* apg_rule, unsigned short wifi_band, char *item, char *ret_value, int ret_value_bsize);
 #endif

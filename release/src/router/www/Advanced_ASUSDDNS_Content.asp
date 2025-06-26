@@ -19,8 +19,7 @@
 <script type="text/javascript" language="JavaScript" src="/validator.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script type="text/javascript" src="/form.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js?v=4"></script>
 <script type="text/javascript" src="/form.js"></script>
 <style type="text/css">
     * {
@@ -313,6 +312,10 @@ function init(){
     else if(isSupport("tuf")){
         document.querySelector('#ddns_copy').classList.add('tuf');
     }
+
+    if(isSupport("noasusddns")){
+        $("#ddns_server_x option[value='WWW.ASUS.COM']").remove();
+    }
 }
 
 function update_ddns_wan_unit_option(){
@@ -338,7 +341,7 @@ function show_warning_message(){
 			else
 				setTimeout("get_real_ip();", 3000);
 		}
-		else if(realip_state != "2"){
+		/*else if(realip_state != "2"){
 			if(cur_wan_ipaddr == "0.0.0.0" || validator.isPrivateIP(cur_wan_ipaddr))
 				showhide("wan_ip_hide2", 1);
 			else
@@ -349,10 +352,10 @@ function show_warning_message(){
 				showhide("wan_ip_hide2", 1);
 			else
 				showhide("wan_ip_hide2", 0);
-		}
+		}*/
 	}
-	else if(cur_wan_ipaddr == "0.0.0.0" || validator.isPrivateIP(cur_wan_ipaddr))
-		showhide("wan_ip_hide2", 1);
+	/*else if(cur_wan_ipaddr == "0.0.0.0" || validator.isPrivateIP(cur_wan_ipaddr))
+		showhide("wan_ip_hide2", 1);*/
 }
 
 function get_real_ip(){
@@ -596,47 +599,61 @@ function applyRule(){
 
 function validForm(){
 	if(document.form.ddns_enable_x.value == "1"){		//ddns enable
-		if(document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1){		//WWW.ASUS.COM	or WWW.ASUS.COM.CN
-			if(document.form.DDNSName.value == ""){
-				alert("<#LANHostConfig_x_DDNS_alarm_14#>");
-				document.form.DDNSName.focus();
-				document.form.DDNSName.select();
-				return false;
-			}else{
-				if(!validate_ddns_hostname(document.form.DDNSName)){
+		if(document.form.ddns_server_x.value === ""){
+			alert(`<#LANHostConfig_x_DDNS_alarm_server#>`);
+			return false;
+		}
+		else{
+			if(document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1){		//WWW.ASUS.COM	or WWW.ASUS.COM.CN
+				if(document.form.DDNSName.value == ""){
+					alert(`<#LANHostConfig_x_DDNS_alarm_14#>`);
 					document.form.DDNSName.focus();
 					document.form.DDNSName.select();
 					return false;
-				}
+				}else{
+					if(!validate_ddns_hostname(document.form.DDNSName)){
+						document.form.DDNSName.focus();
+						document.form.DDNSName.select();
+						return false;
+					}
 
-				if(letsencrypt_support){
-					if( document.form.le_enable[0].checked == true && document.form.letsEncryptTerm_check.checked != true){
-						if(!confirm("<#LANHostConfig_x_DDNSLetsEncrypt_Disagree#>")){
-							document.form.letsEncryptTerm_check.focus();
-							return false;
-						}
-						else{
-							document.form.le_enable[2].checked = true;
+					if(letsencrypt_support){
+						if( document.form.le_enable[0].checked == true && document.form.letsEncryptTerm_check.checked != true){
+							if(!confirm("<#LANHostConfig_x_DDNSLetsEncrypt_Disagree#>")){
+								document.form.letsEncryptTerm_check.focus();
+								return false;
+							}
+							else{
+								document.form.le_enable[2].checked = true;
+							}
 						}
 					}
+
+					return true;
+				}
+			}else{
+				if(!validator.numberRange(document.form.ddns_refresh_x, 0, 365))
+					return false;
+
+				if(document.form.ddns_regular_period.value < 30){
+					alert("<#period_time_validation#> : 30");
+					document.form.ddns_regular_period.focus();
+					document.form.ddns_regular_period.select();
+					return false;
 				}
 
-				return true;
-			}
-		}else{
-			if(!validator.numberRange(document.form.ddns_refresh_x, 0, 365))
-				return false;
+				if(document.form.ddns_server_x.value == "CUSTOM")             // If CUSTOM skip other tests
+					return true;
 
-			if(document.form.ddns_server_x.value != "WWW.ORAY.COM" && document.form.ddns_hostname_x.value == ""){
-				alert("<#LANHostConfig_x_DDNS_alarm_14#>");
-				document.form.ddns_hostname_x.focus();
-				document.form.ddns_hostname_x.select();
-				return false;
-			}else if(!validator.string(document.form.ddns_hostname_x)){
-				return false;
-			}
+				if(document.form.ddns_server_x.value != "WWW.ORAY.COM" && document.form.ddns_hostname_x.value == ""){
+					alert("<#LANHostConfig_x_DDNS_alarm_14#>");
+					document.form.ddns_hostname_x.focus();
+					document.form.ddns_hostname_x.select();
+					return false;
+				}else if(!validator.string(document.form.ddns_hostname_x)){
+					return false;
+				}
 
-			if(document.form.ddns_server_x.value != "CUSTOM"){             // Not CUSTOM
 				if(document.form.ddns_server_x.value != "DNS.HE.NET" && document.form.ddns_username_x.value == ""){
 					alert("<#QKSet_account_nameblank#>");
 					document.form.ddns_username_x.focus();
@@ -654,16 +671,9 @@ function validForm(){
 				}else if(!validator.string(document.form.ddns_passwd_x)){
 					return false;
 				}
+
+				return true;
 			}
-			
-			if(document.form.ddns_regular_period.value < 30){
-				alert("<#period_time_validation#> : 30");
-				document.form.ddns_regular_period.focus();
-				document.form.ddns_regular_period.select();
-				return false;
-			}
-		
-			return true;
 		}
 	}
 	else
@@ -797,6 +807,7 @@ function change_ddns_setting(v){
 			document.getElementById("ddns_hostname_info_tr").style.display = "none";
 			document.getElementById("ddns_hostname_tr").style.display="";
 			document.form.ddns_hostname_x.parentNode.style.display = "none";
+			document.form.ddns_hostname_x.parentNode.parentNode.parentNode.style.display = "";
 			document.form.DDNSName.parentNode.style.display = "";
 			if(v.indexOf(".CN") != -1)
 				$("#domain_text").text(".asuscomm.cn");
@@ -861,9 +872,27 @@ function change_ddns_setting(v){
 		showhide("check_ddns_field", 0);
 		inputCtrl(document.form.ddns_regular_period, 0);
 	}
+	else if(v === ""){
+		document.getElementById("ddns_hostname_info_tr").style.display = "none";
+		document.getElementById("ddns_hostname_tr").style.display = "none";
+		inputCtrl(document.form.ddns_username_x, 0);
+		inputCtrl(document.form.ddns_passwd_x, 0);
+		document.form.ddns_wildcard_x[0].disabled= 1;
+		document.form.ddns_wildcard_x[1].disabled= 1;
+		showhide("wildcard_field",0);
+		document.form.ddns_regular_check.value = 0;
+		showhide("check_ddns_field", 0);
+		inputCtrl(document.form.ddns_regular_period, 0);
+		showhide("ddns_ipv6update_tr", 0);
+		document.getElementById("ddns_status_tr").style.display = "none";
+		document.getElementById("ddns_result_tr").style.display = "none";
+		showhide("link", 0);
+		showhide("linkToHome", 0);
+	}
 	else{
 			document.getElementById("ddns_hostname_info_tr").style.display = "none";
 			document.getElementById("ddns_hostname_tr").style.display="";
+		document.form.ddns_hostname_x.parentNode.parentNode.parentNode.style.display = "";
 			document.form.ddns_hostname_x.parentNode.style.display = "";
 			document.form.DDNSName.parentNode.style.display = "none";
 			if(v == "DNS.HE.NET")
@@ -872,7 +901,7 @@ function change_ddns_setting(v){
 				inputCtrl(document.form.ddns_username_x, 1);
 			inputCtrl(document.form.ddns_passwd_x, 1);
 			var disable_wild = 0;
-			if(v == "WWW.TUNNELBROKER.NET" || v == "DNS.HE.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM")
+			if(v == "WWW.TUNNELBROKER.NET" || v == "DNS.HE.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM" || v == "DYNU.COM")
 				var disable_wild = 1;
 			else
 				var disable_wild = 0;
@@ -983,7 +1012,10 @@ function change_cert_method(cert_method){
 				html_code += '<div style="display:table-cell"><input class="btn_subusage button_gen" onclick="open_upload_window();" type="button" value="<#CTL_upload#>"/><img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif"></div>';
 				document.getElementById("cert_act").innerHTML = html_code;
 				document.getElementById("cert_act").style.display = "";
-				document.getElementById("CAcert_details").style.display = "";
+				if(document.form.casignedcert.value != "1")
+					document.getElementById("CAcert_details").style.display = "none";
+				else
+					document.getElementById("CAcert_details").style.display = "";
 				document.getElementById("cert_details").style.display = "";
 
 				break;
@@ -1061,6 +1093,10 @@ function upload_cert_key(){
 		show_cert_details();
 		httpd_restart = 1;
 	}
+}
+
+function save_cacert_key(){
+	location.href = "cacert_key.tar";
 }
 
 function save_cert_key(){
@@ -1201,6 +1237,7 @@ function clear_cert_key(){
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="ddns_enable_x" value="<% nvram_get("ddns_enable_x"); %>">
+<input type="hidden" name="casignedcert" value="<% nvram_get("casignedcert"); %>" disabled>
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
@@ -1286,8 +1323,8 @@ function clear_cert_key(){
 				<th><#LANHostConfig_x_DDNSServer_itemname#></th>
 				<td>
 					<select id="ddns_server_x" name="ddns_server_x" class="input_option" onchange="change_ddns_setting(this.value); change_cert_method();">
+                        <option value="" selected><#Select_menu_default#></option>
 						<option value="WWW.ASUS.COM" <% nvram_match("ddns_server_x", "WWW.ASUS.COM","selected"); %>>WWW.ASUS.COM</option>
-						<option value="WWW.ASUS.COM.CN" <% nvram_match("ddns_server_x", "WWW.ASUS.COM.CN","selected"); %>>WWW.ASUS.COM.CN</option>
 						<option value="DOMAINS.GOOGLE.COM" <% nvram_match("ddns_server_x", "DOMAINS.GOOGLE.COM","selected"); %>>DOMAINS.GOOGLE.COM</option>
 						<option value="WWW.DYNDNS.ORG" <% nvram_match("ddns_server_x", "WWW.DYNDNS.ORG","selected"); %>>WWW.DYNDNS.ORG</option>
 						<option value="WWW.DYNDNS.ORG(CUSTOM)" <% nvram_match("ddns_server_x", "WWW.DYNDNS.ORG(CUSTOM)","selected"); %>>WWW.DYNDNS.ORG(CUSTOM)</option>
@@ -1296,6 +1333,7 @@ function clear_cert_key(){
 						<option value="WWW.ZONEEDIT.COM" <% nvram_match("ddns_server_x", "WWW.ZONEEDIT.COM","selected"); %>>WWW.ZONEEDIT.COM</option>
 						<option value="WWW.DNSOMATIC.COM" <% nvram_match("ddns_server_x", "WWW.DNSOMATIC.COM","selected"); %>>WWW.DNSOMATIC.COM</option>
 						<option value="DNS.HE.NET" <% nvram_match("ddns_server_x", "DNS.HE.NET","selected"); %>>HE.NET</option>
+						<option value="DYNU.COM" <% nvram_match("ddns_server_x", "DYNU.COM","selected"); %>>DYNU.COM</option>
 						<option value="WWW.TUNNELBROKER.NET" <% nvram_match("ddns_server_x", "WWW.TUNNELBROKER.NET","selected"); %>>WWW.TUNNELBROKER.NET</option>
 						<option value="WWW.NO-IP.COM" <% nvram_match("ddns_server_x", "WWW.NO-IP.COM","selected"); %>>WWW.NO-IP.COM</option>
 						<option value="WWW.ORAY.COM" <% nvram_match("ddns_server_x", "WWW.ORAY.COM","selected"); %>>WWW.ORAY.COM(花生壳)</option>
@@ -1414,6 +1452,9 @@ function clear_cert_key(){
 					<div style="display: flex;">
 						<div class="cert_status_title"><#vpn_openvpn_KC_expire#> :</div>
 						<div id="CAexpireOn" class="cert_status_val"></div>
+					</div>
+					<div>
+						<input class="button_gen" onclick="save_cacert_key();" type="button" value="<#btn_Export#>" />
 					</div>
 				</td>
 			</tr>

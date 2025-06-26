@@ -203,7 +203,7 @@ function get_debug_log_info(){
 function redirect(){
 	if(fb_state == "1" || fb_state == "2")
 		httpApi.nvramSet({"action_mode": "apply", "fb_state" : ""});
-	document.location.href = "Advanced_Feedback.asp";
+	setTimeout("top.location.href='Advanced_Feedback.asp';", 500);
 }
 
 function reset_diag_state(){	
@@ -239,24 +239,24 @@ function get_split_feedback(seg){
 	}
 }
 
-
+var redirect_count=0;
 function CheckFBState(){
 	$.ajax({
 		url: '/ajax_fb_size.asp',
 		dataType: 'script',
 		timeout: 1500,
 		error: function(xhr){
-				redirect_info++;
-				if(redirect_info < 10){
-					setTimeout("CheckFBSize();", 1000);
+				redirect_count++;
+				if(redirect_count < 30){
+					setTimeout("CheckFBState();", 2000);
 				}
 				else{
-					showLoading(35);
-					setTimeout("redirect()", 35000);
+					setTimeout("redirect()", 5000);
 				}
 		},
 		success: function(){
-
+				
+				redirect_count=0;
 				if(fb_state == "0"){
 					$("#fb_success_router_0_title").hide();
 					$("#fb_success_router_0_proceed").show();

@@ -9,7 +9,7 @@ fetch("https://nw-dlcdnet.asus.com/plugin/js/opennat_pf.json")
 
 function updatePfList(pfList){
     asusGameProfile = pfList;
-    
+
     $("#new_profile_name")
         .attr({"placeholder": "Search for games"})
         .keyup(function(){
@@ -19,11 +19,11 @@ function updatePfList(pfList){
             if(this.value.length < 3) return false;
 
             for(var i=0; i<asusGameProfile.length; i++){
-                if(asusGameProfile[i].title.toUpperCase().indexOf(this.value.toUpperCase()) != -1) searchResult.push(i) 
+                if(asusGameProfile[i].title.toUpperCase().indexOf(this.value.toUpperCase()) != -1) searchResult.push(i)
             }
-        
+
             if(searchResult.length == 0) return false;
-        
+
             var listContainer = $("<div>")
                 .addClass("listContainer")
                 .css({
@@ -39,7 +39,7 @@ function updatePfList(pfList){
                     "color": "#FFF",
                     "overflow-y": "scroll"
                 })
-                
+
             for(var j=0; j<searchResult.length; j++){
                 $("<div>")
                     .hover(function(){
@@ -62,13 +62,13 @@ function updatePfList(pfList){
                         asusGameProfile[resultIdx].id = e.target.id;
                         gameProfile.profile.push(asusGameProfile[resultIdx]);
                         $('.game-selected').attr({"id": e.target.id})
-        
+
                         quickAddRule(e.target.id);
                         $(".listContainer").remove();
                     })
                     .appendTo(listContainer)
             }
-        
+
             $(this).after(listContainer)
         })
         .after(

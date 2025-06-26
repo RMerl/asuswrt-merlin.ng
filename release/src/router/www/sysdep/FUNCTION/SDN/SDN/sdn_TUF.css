@@ -234,6 +234,9 @@
 .node_content_container  > .node_info > .node_sub_info{
 	color: #999999;
 }
+.node_sub_info span::after {
+	background-color: #999999;
+}
 .node_content_container > .icon_wifi_band{
 	background-image: url(/images/New_ui/amesh/client_control.svg);
 }

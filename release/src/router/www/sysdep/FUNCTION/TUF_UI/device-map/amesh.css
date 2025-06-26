@@ -425,6 +425,15 @@
 	bottom: 0;
 	margin: auto;
 }
+.amesh_ob_status{
+	margin: auto;
+	margin-bottom: 18px;
+	width: 270px;
+	margin-top: -6px;
+	font-size: 12px;
+	color: #FFF;
+	line-height: 140%;
+}
 .amesh_pairing_bg {
 	font-family: monospace, Courier New, Courier;
 	margin: 10px auto;

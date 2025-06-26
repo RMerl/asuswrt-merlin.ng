@@ -26,11 +26,11 @@ $(function(){
 	if(theme == "white"){
 		$('link').last().after('<link rel="stylesheet" type="text/css" href="css/internetSpeed_' + theme + '_theme.css">');
 	}
-	else if(rog_support || tuf_support){
+	else if(rog_support || tuf_support || isSupport("TS_UI")){
 		$('link').last().after('<link rel="stylesheet" type="text/css" href="css/internetSpeed_customize.css">');
 	}
 
-	if(CoBrand == "8")
+	if(isSupport("TS_UI"))
 		$('link').last().after('<link rel="stylesheet" type="text/css" href="css/difference.css">');
 
 	if(top.webWrapper || theme == "white"){

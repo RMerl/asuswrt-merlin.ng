@@ -36,6 +36,10 @@ if [ "$cfg_trigger" != "1" ]; then # cfg_mnt skip these
 	fi
 	error_day=`date |awk '{print $1}'`
 
+else
+
+	record="webs_state_error"
+	nvram set webs_state_error=0
 fi #cfg_trigger!=1
 
 
@@ -108,6 +112,109 @@ fi
 if [ "$cfg_trigger" == "1" ]; then	# cfg_mnt need it
 	nvram set cfg_fwstatus=6
 fi #cfg_trigger==1
+
+# ===== ai board upgrade =====
+
+ai_support=`nvram get rc_support | grep -i ai_support`
+
+if [ "$ai_support" != "" ]; then
+	echo "---- Start to download AI fw/rsa ----" > /ai/log/webs_ai_upgrade.log
+	logger -t AI_AUTO_UPGRADE "Start to download AI fw/rsa"
+	nvram set webs_state_ai_upgrade=0
+	nvram set webs_state_ai_error=0
+	
+	ai_productid=`nvram get ai_productid`
+
+	ai_firmware_path="/ai/firmware/aisom.swu"
+	ai_rsa_path="/tmp/ai_rsasign.bin"
+	
+	#kill old files
+	rm -f $ai_firmware_path
+	rm -f $ai_rsa_path
+	
+	ai_wget_result=0
+	ai_wget_result2=0
+	
+	ai_firmware_file=`echo $ai_productid`_`nvram get webs_state_ai_info`.zip
+	ai_firmware_rsasign=`echo $ai_productid`_`nvram get webs_state_ai_info`_rsa`nvram get ai_live_update_rsa_ver`.zip
+	#ai_firmware_file=SL1680_1_0_2_51-g264fc65_1_5_0-gec2d4cb.zip
+	#ai_firmware_rsasign=SL1680_1_0_2_51-g264fc65_1_5_0-gec2d4cb_rsa.zip
+	
+	if [ "$update_url" != "" ]; then
+		ai_dl_url=${update_url}
+	elif [ "$betaupg_support" != "" ] && [ "$forbeta" == "1" ]; then
+		ai_dl_url=${dl_path_SQ}
+	elif [ "$forsq" -ge 2 ] && [ "$forsq" -le 9 ]; then
+		ai_dl_url=${dl_path_SQ_beta}${forsq}
+	elif [ "$forsq" == "1" ]; then
+		ai_dl_url=${dl_path_SQ}
+	elif [ "$urlpath" == "" ]; then
+		ai_dl_url=${dl_path_file}
+	else
+		ai_dl_url=${urlpath}
+	fi
+	
+	echo "---- wget fw nvram ai_webs_state_url ${ai_dl_url}/$ai_firmware_file ----" >> /ai/log/webs_ai_upgrade.log
+	logger -t AI_AUTO_UPGRADE "wget fw nvram ai_webs_state_url $ai_firmware_file"
+	wget --ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -t 2 -T 30 --no-check-certificate --output-file=/tmp/fwget_log ${ai_dl_url}/$ai_firmware_file -O $ai_firmware_path
+	ai_wget_result=$?
+	echo "---- wget fw nvram ai_webs_state_url, exit code: ${ai_wget_result} ----" >> /ai/log/webs_ai_upgrade.log
+	logger -t AI_AUTO_UPGRADE "exit code: ${ai_wget_result}"
+	
+	echo "---- wget rsa nvram ai_webs_state_url ${ai_dl_url}/$ai_firmware_rsasign ----" >> /ai/log/webs_ai_upgrade.log
+	logger -t AI_AUTO_UPGRADE "wget rsa nvram ai_webs_state_url $ai_firmware_rsasign"
+	wget --ciphers='DEFAULT:@SECLEVEL=1:!CAMELLIA:!3DES' -t 2 -T 30 --no-check-certificate ${ai_dl_url}/$ai_firmware_rsasign -O $ai_rsa_path
+	ai_wget_result2=$?
+	echo "---- wget rsa nvram ai_webs_state_url, exit code: ${ai_wget_result2} ----" >> /ai/log/webs_ai_upgrade.log
+	logger -t AI_AUTO_UPGRADE "exit code: ${ai_wget_result2}"
+	
+	if [ "$ai_wget_result" != "0" ]; then
+		echo "---- download fw failure, End ----" >> /ai/log/webs_ai_upgrade.log
+		logger -t AI_AUTO_UPGRADE "download fw failure, End"
+		rm -f $ai_firmware_path
+		nvram set webs_state_ai_error=2
+		sleep 1
+	elif [ "$ai_wget_result2" != "0" ]; then
+		echo "---- download rsa failure, End ----" >> /ai/log/webs_ai_upgrade.log
+		logger -t AI_AUTO_UPGRADE "download rsa failure, End"
+		rm -f $ai_firmware_path
+		nvram set webs_state_ai_error=3
+		sleep 1
+	else
+		nvram set firmware_check=0
+		nvram set rsasign_check=0
+		echo "---- Download AI FW OK ----" >> /ai/log/webs_ai_upgrade.log
+		logger -t AI_AUTO_UPGRADE "Download AI FW OK"
+		nvram set ai_firmware_check=0
+		firmware_check $ai_firmware_path
+		sleep 1
+	
+		nvram set ai_rsasign_check=0
+		rsasign_check $ai_firmware_path $ai_rsa_path
+		sleep 1
+	
+		ai_firmware_check_ret=`nvram get firmware_check`
+		ai_rsasign_check_ret=`nvram get ai_rsasign_check`
+	
+		if [ "$ai_firmware_check_ret" == "1" ] && [ "$ai_rsasign_check_ret" == "1" ]; then
+			echo "---- AI fw check OK ----" >> /ai/log/webs_ai_upgrade.log
+			logger -t AI_AUTO_UPGRADE "AI fw check OK"
+			nvram set webs_state_ai_upgrade=1
+			echo "---- Download AI fw/rsa, End ----" >> /ai/log/webs_ai_upgrade.log
+			logger -t AI_AUTO_UPGRADE "Downoad AI fw/rsa, End"
+			sleep 
+		else
+			echo "---- fw check error, CRC: ${ai_firmware_check_ret}  rsa: ${ai_rsasign_check_ret} ----" >> /ai/log/webs_ai_upgrade.log
+			logger -t AI_AUTO_UPGRADE "fw check error, CRC: ${ai_firmware_check_ret}  rsa: ${ai_rsasign_check_ret}"
+			rm -f $ai_firmware_path
+			nvram set webs_state_ai_error=4
+			echo "---- Download AI fw/rsa, End ----" >> /ai/log/webs_ai_upgrade.log
+			logger -t AI_AUTO_UPGRADE "Download AI fw/rsa, End"
+			sleep 1
+		fi
+	fi
+fi
+# ===== End of download ai board firmware from server to router =====
 
 wget_result=0
 wget_result2=0

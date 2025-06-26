@@ -531,7 +531,7 @@ static void set_reserved_memory(void *dtb_ptr, bd_t *bd)
 	use_max_from_env_and_dt = 1;
 #endif
 	
-#if defined(BQ16) || defined(BQ16_PRO) || defined(BT10) || defined(RTBE82U) || defined(RTBE82M) || defined(GSBE18000)
+#if defined(BQ16) || defined(BQ16_PRO) || defined(BT10) || defined(RTBE82U) || defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	char cma_str[30] = {0};
 #endif
 	struct mem_reserv_prm {
@@ -628,7 +628,7 @@ static void set_reserved_memory(void *dtb_ptr, bd_t *bd)
 	}
 #endif
 
-#if defined(GSBE18000)
+#if defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	// GS-BE18000 is BCM6766 and has CMA
 	snprintf(cma_str, sizeof(cma_str), "%s", env_get("bootargs_append"));
 	if(strcmp(cma_str, "cma=64M vmalloc=384") == 0){
@@ -642,10 +642,10 @@ static void set_reserved_memory(void *dtb_ptr, bd_t *bd)
 #ifdef RTBE86U
 	env_set_ulong("dhd0", 0);
 #endif
-#ifdef GSBE18000
+#if defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	env_set_ulong("dhd0", 11);
 #endif
-#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO)
+#if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 	env_set_ulong("dhd0", 0);
 	env_set_ulong("dhd1", 0);
 #endif

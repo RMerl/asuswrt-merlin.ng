@@ -1,0 +1,82 @@
+Summary:            JSON Web Token (C implementation)
+Name:               libjwt
+Version:            @VERSION@
+Release:            0%{?dist}
+License:            MPLv2.0
+Group:              Development/Tools
+Source:             https://github.com/benmcollins/libjwt/archive/v%{version}.tar.gz
+URL:                https://github.com/benmcollins/libjwt
+BuildRequires:      make libtool automake
+BuildRequires:      gcc doxygen
+BuildRequires:      pkgconfig(openssl) >= 0.9.8
+BuildRequires:      pkgconfig(jansson)
+%if 0%{?rhel} >= 8
+BuildRequires:      check
+%endif
+
+
+%description
+JSON Web Tokens are an open, industry standard RFC 7519 method for representing
+claims securely between two parties. This package is a C library implementing
+JWT functionality. It supports HS256/384/512, RS256/384/512 and ES256/384/512 
+digest algorithms.
+
+
+%package devel
+Summary:            JSON Web Token (C implementation) development kit
+Group:              Development/Libraries
+Requires:           %{name}%{?_isa} = %{version}-%{release}
+
+%description devel
+Development files for the JWT C library.
+
+
+%package devel-docs
+Summary:            JSON Web Token (C implementation) development kit documentation
+Group:              Development/Libraries
+
+%description devel-docs
+Development documentation files for the JWT C library.
+
+%prep
+%autosetup -n %{name}-%{version}
+
+%build
+autoreconf -i
+%configure
+make all doxygen-doc
+
+
+%install
+make install DESTDIR=%{buildroot}
+mkdir -p %{buildroot}%{_datadir}/%{name}
+cp -r doxygen-doc/html %{buildroot}%{_datadir}/%{name}
+
+%if 0%{?rhel} >= 8
+%check
+make check
+%endif
+
+%post
+/sbin/ldconfig
+
+%postun
+/sbin/ldconfig
+
+%files
+%{_libdir}/*.so.*
+%{_bindir}/*
+
+%files devel
+%{_libdir}/*.so
+%{_libdir}/*.la
+%{_libdir}/*.a
+%{_libdir}/pkgconfig/*.pc
+%{_includedir}/*
+
+%files devel-docs
+%{_datadir}/*
+
+%changelog
+* Tue Nov 12 2019 Julien Courtat <julien.courtat@aqsacom.com> - 1.11.0-0
+- Initial packaging

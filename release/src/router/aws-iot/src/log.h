@@ -20,14 +20,14 @@
 #define FILE_TYPE	4
 #define CONSOLE_TYPE	8
 
-#define APP_LOG_PATH	"/tmp/awsiot_log"
+#define APP_LOG_PATH	"/jffs/awsiot_log"
 #define AWS_DEBUG_TO_FILE "/tmp/AWSIOT_DEBUG_FILE"
 #define AWS_DEBUG_TO_CONSOLE "/tmp/AWSIOT_DEBUG_CONSOLE"
 #define AWS_DEBUG_TO_SYSLOG "/tmp/AWSIOT_DEBUG_SYSLOG"
 
 
-#define DBG_LOG_PATH                       "/tmp/awsiot_log"
-#define DBG_LOG_TMP_PATH                   "/tmp/awsiot_log_tmp"
+#define DBG_LOG_PATH                       "/jffs/awsiot_log"
+#define DBG_LOG_TMP_PATH                   "/jffs/awsiot_log_tmp"
 
 
 void dprintf_impl(const char* file,const char* func, size_t line, int enable, const char* fmt, ...);

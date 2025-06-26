@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: @PACKAGE_NAME@
+Description: JWT C Library
+Version: @PACKAGE_VERSION@
+
+Cflags: -I${includedir}
+Libs: -L${libdir} -ljwt
+Libs.private: @JANSSON_LIBS@ @OPENSSL_LIBS@

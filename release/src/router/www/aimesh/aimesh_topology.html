@@ -471,23 +471,24 @@ function display_client_block(){
 }
 function client_get_client_date(){
 	aimesh_data.cfg_clientlist = httpApi.hookGet("get_cfg_clientlist", true);
+	update_node_ui_model_name(aimesh_data.cfg_clientlist);
 	originData.fromNetworkmapd[0] = httpApi.hookGet("get_clientlist", true);
 	originData.nmpClient[0] = httpApi.hookGet("get_clientlist_from_json_database", true);
 	genClientList();
 	aimesh_data.sta_binding_list_json = gen_sta_binding_list_json();
 }
 function client_set_tab(_type){
-	current_client_click_type = _type;
+	const specific_node_data = aimesh_data.cfg_clientlist.find(item => item.mac == current_click_mac) || {};
+	const is_no_wifi = specific_node_data.band_num === "0";
+	$("#client_block").find(".client_tab_bg div.wireless").toggle(!is_no_wifi);
+	current_client_click_type = (is_no_wifi && _type === "wireless") ? "all" : _type;
 	$("#client_block").find(".client_tab_bg div").removeClass("clicked");
-	$("#client_block").find(".client_tab_bg div." + _type + "").addClass("clicked");
-	var node_client_list = ciient_get_specific_client_list(_type, current_click_mac);
-	var specific_node_data = aimesh_data.cfg_clientlist.filter(function(item, index, _array){
-		return (item.mac == current_click_mac);
-	})[0];
+	$("#client_block").find(".client_tab_bg div." + current_client_click_type + "").addClass("clicked");
+	var node_client_list = ciient_get_specific_client_list(current_client_click_type, current_click_mac);
 	var $component = client_gen_client_component(node_client_list, specific_node_data);
 	$(".card_block_bg .client_list_bg").empty();
 	$(".card_block_bg .client_list_bg").append($component);
-	if(_type == "all")
+	if(current_client_click_type == "all")
 		online_client = $(".card_block_bg .client_list_bg .each_client_bg").length - node_client_list.offline;
 	else
 		online_client = $(".card_block_bg .client_list_bg .each_client_bg").length;
@@ -742,8 +743,7 @@ function client_gen_client_component(_dataArray, _node_info){
 						})[0];
 						var hint = "";
 						if(specific_node_data != undefined){
-							var node_location_info = transform_location(specific_node_data.mac, specific_node_data);
-							var node_name_location = handle_ui_model_name(specific_node_data.model_name, specific_node_data.ui_model_name) + "(" + node_location_info.location_text + ")";
+							const node_name_location = get_node_name_w_location(specific_node_data);
 							hint += "<#AiMesh_Device_Bound_To_Specific_Node01#>".replace("#MODELNAME", node_name_location);
 							parm_node = specific_node_data;
 						}
@@ -1219,7 +1219,7 @@ function client_bind(parm){
 		if(isSupport("acl96") && rule_status.client_bind_count >= rule_status.client_bind_allow_maximum){
 			$("#aimesh_hint_msg .hint_text").append($("<div>").html("<#AiMesh_Binding_Rule_Maxi#>"));
 			$("#aimesh_hint_msg .hint_text").append($("<div>").html("<#AiMesh_Delete_Unused_Rule#>"));
-			$("#aimesh_hint_msg .hint_text").append($("<div>").addClass("text_emphasize").html("- AiMesh client binding rule"));/* untranslated */
+			$("#aimesh_hint_msg .hint_text").append($("<div>").addClass("text_emphasize").html("- AiMesh <#AiMesh_Binding_Rule_Client#>"));
 			$("#aimesh_hint_msg #action_canacl").hide();
 			$("#aimesh_hint_msg #action_ok").show();
 			$("#aimesh_hint_msg #action_ok").click(function(e){
@@ -1233,7 +1233,7 @@ function client_bind(parm){
 			$("#aimesh_hint_msg .hint_text").append($("<div>").html("<#AiMesh_Binding_Rule_Maxi#>"));
 			$("#aimesh_hint_msg .hint_text").append($("<div>").html("<#AiMesh_Delete_Unused_Rule#>"));
 			if(rule_status.client_bind_count != 0)
-				$("#aimesh_hint_msg .hint_text").append($("<div>").addClass("text_emphasize").html("- AiMesh client binding rule"));
+				$("#aimesh_hint_msg .hint_text").append($("<div>").addClass("text_emphasize").html("- AiMesh <#AiMesh_Binding_Rule_Client#>"));
 			if(rule_status.acl_max_count != 0)
 				$("#aimesh_hint_msg .hint_text").append($("<div>").addClass("text_emphasize").html("- <#FirewallConfig_MFList_groupitemname#>"));
 			$("#aimesh_hint_msg #action_canacl").hide();
@@ -1343,6 +1343,18 @@ function display_network_block(){
 						var error_port_list = [];
 						$.each(port_info, function(label, label_array){
 							$.each(port_info[label], function(index, port_item){
+								const { cap_support } = port_item;
+								if (cap_support.INTRAMODULE) return true;
+
+								let allCapFalse = true;
+								$.each(cap_support, function(key, value) {
+									if (value) {
+										allCapFalse = false;
+										return false;
+									}
+								});
+								if (allCapFalse) return true;
+
 								var $port_bg = $("<div>").attr({"title":port_item.link_rate_text});
 								if(label == "WAN")
 									$port_bg.appendTo($label_W_bg);
@@ -1358,7 +1370,7 @@ function display_network_block(){
 										$port_icon.addClass("warn");
 								}
 								else if(port_item.is_on == "0"){
-									if(port_item.cap_support.USB){
+									if(cap_support.USB){
 										if(port_item.hasOwnProperty("devices")){
 											$port_icon.addClass("conn");
 										}
@@ -1369,7 +1381,7 @@ function display_network_block(){
 										$port_icon.addClass("unplug");
 								}
 
-								if(port_item.cap_support.WAN || port_item.cap_support.WANAUTO){
+								if(cap_support.WAN || cap_support.WANAUTO){
 									$("<div>").addClass("wan_icon").appendTo($port_icon);
 									let port_text = "";
 									if(port_item.ui_display != undefined && port_item.ui_display != ""){
@@ -1383,7 +1395,7 @@ function display_network_block(){
 									if(port_text != "")
 										$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_text)).appendTo($port_bg);
 								}
-								else if(port_item.cap_support.LAN){
+								else if(cap_support.LAN){
 									let port_text = "";
 									let port_idx = "";
 									if(port_item.ui_display != undefined && port_item.ui_display != ""){
@@ -1400,7 +1412,7 @@ function display_network_block(){
 									if(port_idx != "")
 										$("<div>").addClass("lan_idx").html(htmlEnDeCode.htmlEncode(port_idx)).appendTo($port_icon);
 								}
-								else if(port_item.cap_support.USB){
+								else if(cap_support.USB){
 									$port_icon.addClass("USB");
 									let port_text = "";
 									if(port_item.ui_display != undefined && port_item.ui_display != ""){
@@ -1414,10 +1426,15 @@ function display_network_block(){
 									if(port_text != "")
 										$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_text)).appendTo($port_bg);
 								}
-								else if(port_item.cap_support.MOCA){
+								else if(cap_support.MOCA){
 									$port_icon.addClass("MoCA");
 									if(port_item.special_port_name != "")
 										$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_item.special_port_name)).appendTo($port_bg);
+								}
+								else {
+									let port_text = port_item.ui_display || "";
+									if(port_text)
+										$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_text)).appendTo($port_bg);
 								}
 
 								if(port_item.link_rate_status != "1"){
@@ -1496,8 +1513,7 @@ function display_network_block(){
 								return (item.mac == mac);
 							})[0];
 							if(specific_node_data != undefined){
-								var node_location_info = transform_location(specific_node_data.mac, specific_node_data);
-								AiMesh_node.name = handle_ui_model_name(specific_node_data.model_name, specific_node_data.ui_model_name) + " (" + node_location_info.location_text + ")";
+								AiMesh_node.name = get_node_name_w_location(specific_node_data);
 							}
 							$.each(port_info, function(index, data){
 								var label = index.substr(0,1);
@@ -1600,7 +1616,7 @@ function network_set_wan_info(){
 		$wan_info_bg.find("#wan_connect_type").html(_connect_info.proto_title);
 	}
 
-	if(isSwMode("rt")){
+	if((isSwMode("RT") || isSwMode("WISP"))){
 		var wan_array = [0];
 		if(dualwan_enabled){
 			wan_array.push(1);
@@ -2323,7 +2339,10 @@ function network_set_fronthaul_info(_node_info){
 					ssid = ssid_fh;
 					if(isSupport("sdn_mainfh")){
 						if(_node_info["apdwb"] == ap_info["mac"]){//for 388 FW, not show dwb band
-							ssid = "";
+							const cap_ssid_fh = aimesh_data.cfg_clientlist?.[0]?.[`${ap_info["name"]}_ssid_fh`];
+							if (ssid_fh !== cap_ssid_fh) {
+								ssid = "";
+							}
 						}
 					}
 				}
@@ -2624,11 +2643,29 @@ function display_manage_block(){
 					if($conn_priority_select_obj.val() == null)//avoiding some value do not exist at select option
 						$conn_priority_select_obj.val(3);
 
-					$conn_priority_select_obj.unbind("change");
-					$conn_priority_select_obj.change(function() {
-						var data = new Object();
+					$conn_priority_select_obj.unbind("change").change(function() {
+						let data = new Object();
 						data.amas_ethernet = $conn_priority_select_obj.val();
 						manage_set_config(data, specific_node_data.mac);
+						setTimeout(function(){
+							let $aimesh_hint_msg = $("#aimesh_hint_msg");
+							$aimesh_hint_msg
+								.empty()
+								.append(popup_hint_api.get_component_text())
+								.append(popup_hint_api.get_component_action());
+							$aimesh_hint_msg.find(".hint_text").append($("<div>").html("<#Main_alert_proceeding_desc3#>!"));
+							const node_name_location = get_node_name_w_location(specific_node_data);
+							const hint = `<#AiMesh_PB_Lose_Conn_Hint#> <#AiMesh_PB_Apply_Rule01#>`.replace(/%@/g, node_name_location);
+							$aimesh_hint_msg.find(".hint_text").append($("<div>").html(hint));
+							$aimesh_hint_msg.find("#action_canacl").hide();
+							$aimesh_hint_msg.find("#action_ok").show().unbind("click").click(function(e){
+								e = e || event;
+								e.stopPropagation();
+								$aimesh_hint_msg.hide();
+							});
+							$aimesh_hint_msg.show();
+							adjust_panel_block_top("aimesh_hint_msg", 100);
+						},200);
 					});
 					if(!select_node_capability.wans_cap_wan){
 						$conn_priority_select_obj.children("option[conn_type='eth']").remove();
@@ -2868,36 +2905,150 @@ function display_manage_block(){
 						$("#manage_block").find(".manage_switch_led .switch").removeClass().addClass("switch");
 						$("#manage_block").find(".manage_switch_led .switch").addClass(led_status);
 						$("#manage_block").find(".manage_switch_led .switch").unbind("click");
-						$("#manage_block").find(".manage_switch_led .switch").click(function(){
-							$("#manage_block").find(".manage_switch_led .switch").toggleClass('off  on');
-							var switch_status = $("#manage_block").find(".manage_switch_led .switch").hasClass("on");
-							if(switch_status){
-								var data = new Object();
-								if(led_control.support == "lp55xx_led"){
-									data.lp55xx_lp5523_user_enable = 0;
-									data.lp55xx_lp5523_user_col = 0;
-									data.lp55xx_lp5523_user_beh = 0;
+						$("#manage_block").find(".manage_switch_led .switch").click(function(e){
+							closeAllPopup();
+							e = e || event;
+							e.stopPropagation();
+							const $switch = $(this);
+							const postData = {};
+							const switchStatus = $switch.hasClass("on") ? "0" : "1" // on->off
+							if (led_control.support === "lp55xx_led") {
+								if (switchStatus === "1") {
+									Object.assign(postData, {
+										lp55xx_lp5523_user_enable: 0,
+										lp55xx_lp5523_user_col: 0,
+										lp55xx_lp5523_user_beh: 0
+									});
+								} else {
+									Object.assign(postData, {
+										lp55xx_lp5523_user_enable: 1,
+										lp55xx_lp5523_user_col: 101,
+										lp55xx_lp5523_user_beh: 300
+									});
 								}
-								else if(led_control.support == "ctrl_led")
-									data.led_val = 1;
-
-								manage_set_config(data, specific_node_data.mac);
+								manage_set_config(postData, specific_node_data.mac);
 							}
-							else{
-								var data = new Object();
-								if(led_control.support == "lp55xx_led"){
-									data.lp55xx_lp5523_user_enable = 1;
-									data.lp55xx_lp5523_user_col = 101;
-									data.lp55xx_lp5523_user_beh = 300;
+							else if (led_control.support === "ctrl_led") {
+								const led_night_mode_control = manage_get_led_night_mode(specific_node_data, select_node_capability);
+								postData.led_val = switchStatus;
+								if (support_system_settings.led) {
+									handleLedSupport(postData, $switch);
+								} else {
+									applyRule(postData, $switch);
 								}
-								else if(led_control.support == "ctrl_led")
-									data.led_val = 0;
 
-								manage_set_config(data, specific_node_data.mac);
+								function handleLedSupport(postData, $switch) {
+									const nodeLedCount = get_node_led_count();
+									if ((nodeLedCount.led_on === 0 && postData.led_val === "1") ||
+									(nodeLedCount.led_on === 1 && postData.led_val === "0")) {
+										showHintMsg(() => applyRule(postData, $switch));
+									} else {
+										applyRule(postData, $switch);
+									}
+								}
+								function showHintMsg(onConfirm) {
+									$("#aimesh_hint_msg").empty().show()
+										.append(popup_hint_api.get_component_text())
+										.append(popup_hint_api.get_component_action());
+									let hintText = led_night_mode_control.support ? `<#AiMesh_System_LED_NM_Hint#>` : `The main switch System LED control will also be toggled.`;/* untranslated */
+									hintText += `<br><#Setting_factorydefault_hint2#>`;
+									$("#aimesh_hint_msg .hint_text").html(hintText);
+									$("#aimesh_hint_msg #action_canacl").show().unbind("click").click(function(e) {
+										e = e || event;
+										e.stopPropagation();
+										$("#aimesh_hint_msg").hide();
+									});
+									$("#aimesh_hint_msg #action_ok").show().unbind("click").click(function(e) {
+										e = e || event;
+										e.stopPropagation();
+										onConfirm();
+										$("#aimesh_hint_msg").hide();
+									});
+									adjust_panel_block_top("aimesh_hint_msg", 100);
+								}
+								function applyRule(postData, $switch) {
+									$switch.hide().toggleClass('off on').after(`<div class='icon_loading'></div>`);
+									setTimeout(function() {
+										$switch.show().next('.icon_loading').remove();
+									}, 1000);
+									manage_set_config(postData, specific_node_data.mac);
+									if (support_system_settings.led_night_mode) {
+										const $manage_switch_led_night_mode = $("#manage_block").find(".manage_switch_led_night_mode");
+										if ($manage_switch_led_night_mode.attr("support_led_night_mode") === "true") {
+											$manage_switch_led_night_mode.toggle(postData.led_val.toString() === "1");
+											if (postData.led_val.toString() === "0" && $manage_switch_led_night_mode.find(".switch").hasClass("on")) {
+												setTimeout(function(){
+													manage_set_config({single_led_night_mode: "0"}, specific_node_data.mac);
+												}, 500);
+											}
+										}
+									}
+								}
 							}
 						});
 						$("#manage_block").find(".manage_switch_led").show();
 						break;
+				}
+
+				const $manage_switch_led_night_mode = $("#manage_block").find(".manage_switch_led_night_mode").hide().removeAttr("support_led_night_mode");
+				if(led_control.support === "ctrl_led"){
+					const led_night_mode_control = manage_get_led_night_mode(specific_node_data, select_node_capability);
+					if(led_night_mode_control.support){
+						const switchClass = led_night_mode_control.value === "1" ? "on" : "off";
+						$manage_switch_led_night_mode.attr({"support_led_night_mode": "true"}).find(".switch").removeClass().addClass(`switch ${switchClass}`)
+							.unbind("click").click(function(e){
+								closeAllPopup();
+								e = e || event;
+								e.stopPropagation();
+								const $switch = $(this);
+								const postData = {
+									single_led_night_mode: $switch.hasClass("on") ? "0" : "1" // on->off
+								};
+								if (support_system_settings.led_night_mode) {
+									handleLedNightModeSupport(postData, $switch);
+								} else {
+									applyRule(postData, $switch);
+								}
+							});
+						if(led_control.value.toString() === "1"){
+							$manage_switch_led_night_mode.show();
+						}
+
+						function handleLedNightModeSupport(postData, $switch) {
+							const nodeLedCount = get_node_led_count();
+							if ((nodeLedCount.led_night_mode_on === 0 && postData.single_led_night_mode === "1") ||
+								(nodeLedCount.led_night_mode_on === 1 && postData.single_led_night_mode === "0")) {
+								showHintMsg(() => applyRule(postData, $switch));
+							} else {
+								applyRule(postData, $switch);
+							}
+						}
+						function showHintMsg(onConfirm) {
+							$("#aimesh_hint_msg").empty().show()
+								.append(popup_hint_api.get_component_text())
+								.append(popup_hint_api.get_component_action());
+							$("#aimesh_hint_msg .hint_text").html(`<#AiMesh_System_LED_NM_Hint#><br><#Setting_factorydefault_hint2#>`);
+							$("#aimesh_hint_msg #action_canacl").show().unbind("click").click(function(e) {
+								e = e || event;
+								e.stopPropagation();
+								$("#aimesh_hint_msg").hide();
+							});
+							$("#aimesh_hint_msg #action_ok").show().unbind("click").click(function(e) {
+								e = e || event;
+								e.stopPropagation();
+								onConfirm();
+								$("#aimesh_hint_msg").hide();
+							});
+							adjust_panel_block_top("aimesh_hint_msg", 100);
+						}
+						function applyRule(postData, $switch) {
+							$switch.hide().toggleClass('off on').after(`<div class='icon_loading'></div>`);
+							setTimeout(function() {
+								$switch.show().next('.icon_loading').remove();
+							}, 1000);
+							manage_set_config(postData, specific_node_data.mac);
+						}
+					}
 				}
 
 				var wifi_radio_control = manage_get_wifi_radio_control(specific_node_data, select_node_capability);
@@ -2993,21 +3144,151 @@ function display_manage_block(){
 		}
 		else{
 			$("#manage_block").find(".manage_disconnected, .manage_function_item").hide();
-			if(isSupport("led_ctrl_cap")){
-				$("#manage_block").find(".manage_switch_led").show();
-				var led_status = (httpApi.nvramGet(["led_val"]).led_val == 1) ? "on" : "off";
-				$("#manage_block").find(".manage_switch_led .switch").removeClass().addClass("switch " + led_status + "")
-					.unbind("click").click(function(){
-						$("#manage_block").find(".manage_switch_led .switch").toggleClass('off  on');
-						var switch_status = ($(this).hasClass("on")) ? "1" : "0";
-						httpApi.nvramSet({
-							"led_val": switch_status,
-							"rc_service": "ctrl_led",
-							"action_mode": "apply"
-						}, function(){
+			const led_control = manage_get_led_control(specific_node_data, select_node_capability);
+			const $manage_switch_led = $("#manage_block").find(".manage_switch_led").hide();
+			if(led_control.support === "ctrl_led"){
+				const led_night_mode_control = manage_get_led_night_mode(specific_node_data, select_node_capability);
+				const switchClass = led_control.value === "1" ? "on" : "off";
+				$manage_switch_led.show().find(".switch").removeClass().addClass(`switch ${switchClass}`)
+					.unbind("click").click(function(e) {
+						closeAllPopup();
+						e = e || event;
+						e.stopPropagation();
+						const $switch = $(this);
+						const postData = {
+							led_val: $switch.hasClass("on") ? "0" : "1" // on->off
+						};
+						if (support_system_settings.led) {
+							handleLedSupport(postData, $switch);
+						} else {
+							applyRule(postData, $switch);
+						}
+					});
+
+				function handleLedSupport(postData, $switch) {
+					const nodeLedCount = get_node_led_count();
+					if ((nodeLedCount.led_on === 0 && postData.led_val === "1") ||
+					(nodeLedCount.led_on === 1 && postData.led_val === "0")) {
+						showHintMsg(() => applyRule(postData, $switch));
+					} else {
+						applyRule(postData, $switch);
+					}
+				}
+				function showHintMsg(onConfirm) {
+					$("#aimesh_hint_msg").empty().show()
+						.append(popup_hint_api.get_component_text())
+						.append(popup_hint_api.get_component_action());
+					let hintText = led_night_mode_control.support ? `<#AiMesh_System_LED_NM_Hint#>` : `The main switch System LED control will also be toggled.`;/* untranslated */
+					hintText += `<br><#Setting_factorydefault_hint2#>`;
+					$("#aimesh_hint_msg .hint_text").html(hintText);
+					$("#aimesh_hint_msg #action_canacl").show().unbind("click").click(function(e) {
+						e = e || event;
+						e.stopPropagation();
+						$("#aimesh_hint_msg").hide();
+					});
+					$("#aimesh_hint_msg #action_ok").show().unbind("click").click(function(e) {
+						e = e || event;
+						e.stopPropagation();
+						onConfirm();
+						$("#aimesh_hint_msg").hide();
+					});
+					adjust_panel_block_top("aimesh_hint_msg", 100);
+				}
+				function applyRule(postData, $switch) {
+					$switch.hide().toggleClass('off on').after(`<div class='icon_loading'></div>`);
+					setTimeout(function() {
+						$switch.show().next('.icon_loading').remove();
+					}, 1000);
+					if (support_system_settings.led) {
+						manage_set_config(postData, specific_node_data.mac);
+					} else {
+						postData.rc_service = "ctrl_led";
+						postData.action_mode = "apply";
+						httpApi.nvramSet(postData, function() {
 							httpApi.nvramGet(["led_val"], true);
 						});
-				});
+					}
+					if (support_system_settings.led_night_mode) {
+						const $manage_switch_led_night_mode = $("#manage_block").find(".manage_switch_led_night_mode");
+						if ($manage_switch_led_night_mode.attr("support_led_night_mode") === "true") {
+							$manage_switch_led_night_mode.toggle(postData.led_val.toString() === "1");
+							if (postData.led_val.toString() === "0" && $manage_switch_led_night_mode.find(".switch").hasClass("on")) {
+								setTimeout(function(){
+									manage_set_config({single_led_night_mode: "0"}, specific_node_data.mac);
+								}, 500);
+							}
+						}
+					}
+				}
+			}
+
+			const $manage_switch_led_night_mode = $("#manage_block").find(".manage_switch_led_night_mode").hide().removeAttr("support_led_night_mode");
+			if(led_control.support === "ctrl_led"){
+				const led_night_mode_control = manage_get_led_night_mode(specific_node_data, select_node_capability);
+				if(led_night_mode_control.support){
+					const switchClass = led_night_mode_control.value === "1" ? "on" : "off";
+					$manage_switch_led_night_mode.attr({"support_led_night_mode": "true"}).find(".switch").removeClass().addClass(`switch ${switchClass}`)
+						.unbind("click").click(function(e) {
+							closeAllPopup();
+							e = e || event;
+							e.stopPropagation();
+							const $switch = $(this);
+							const postData = {
+								single_led_night_mode: $switch.hasClass("on") ? "0" : "1" // on->off
+							};
+							if (support_system_settings.led_night_mode) {
+								handleLedNightModeSupport(postData, $switch);
+							} else {
+								applyRule(postData, $switch);
+							}
+						});
+					if(led_control.value.toString() === "1"){
+						$manage_switch_led_night_mode.show();
+					}
+
+					function handleLedNightModeSupport(postData, $switch) {
+						const nodeLedCount = get_node_led_count();
+						if ((nodeLedCount.led_night_mode_on === 0 && postData.single_led_night_mode === "1") ||
+							(nodeLedCount.led_night_mode_on === 1 && postData.single_led_night_mode === "0")) {
+							showHintMsg(() => applyRule(postData, $switch));
+						} else {
+							applyRule(postData, $switch);
+						}
+					}
+					function showHintMsg(onConfirm) {
+						$("#aimesh_hint_msg").empty().show()
+							.append(popup_hint_api.get_component_text())
+							.append(popup_hint_api.get_component_action());
+						$("#aimesh_hint_msg .hint_text").html(`<#AiMesh_System_LED_NM_Hint#><br><#Setting_factorydefault_hint2#>`);
+						$("#aimesh_hint_msg #action_canacl").show().unbind("click").click(function(e) {
+							e = e || event;
+							e.stopPropagation();
+							$("#aimesh_hint_msg").hide();
+						});
+						$("#aimesh_hint_msg #action_ok").show().unbind("click").click(function(e) {
+							e = e || event;
+							e.stopPropagation();
+							onConfirm();
+							$("#aimesh_hint_msg").hide();
+						});
+						adjust_panel_block_top("aimesh_hint_msg", 100);
+					}
+					function applyRule(postData, $switch) {
+						$switch.hide().toggleClass('off on').after(`<div class='icon_loading'></div>`);
+						setTimeout(function() {
+							$switch.show().next('.icon_loading').remove();
+						}, 1000);
+
+						if (support_system_settings.led) {
+							manage_set_config(postData, specific_node_data.mac);
+						} else {
+							postData.action_mode = "apply";
+							httpApi.nvramSet(postData, function() {
+								httpApi.nvramGet(["single_led_night_mode"], true);
+							});
+						}
+					}
+				}
 			}
 		}
 	}
@@ -3015,33 +3296,68 @@ function display_manage_block(){
 		$("#manage_block").hide();
 }
 function manage_get_led_control(_node_info, _node_capability){
-	var result = {"support": 0, "value": 0};
-	if(_node_capability.central_led) {
-		result.support = "central_led";
-		if("config" in _node_info) {//led value
-			if("central_led" in _node_info.config) {
-				if("bc_ledLv" in _node_info.config.central_led)
-					result.value = parseInt(_node_info.config.central_led.bc_ledLv);
+	const isReNode = (current_click_mac != cap_mac) ? true : false;
+	let result = {"support": "0", "value": "0"};
+	if(isReNode){
+		if(_node_capability.central_led) {
+			result.support = "central_led";
+			if("config" in _node_info) {//led value
+				if("central_led" in _node_info.config) {
+					if("bc_ledLv" in _node_info.config.central_led)
+						result.value = parseInt(_node_info.config.central_led.bc_ledLv);
+				}
+			}
+		}
+		else if(_node_capability.lp55xx_led) {
+			result.support = "lp55xx_led";
+			if("lp55xx_led" in _node_info.config) {
+				if("lp55xx_lp5523_user_enable" in _node_info.config.lp55xx_led)
+					result.value = parseInt(_node_info.config.lp55xx_led.lp55xx_lp5523_user_enable);
+			}
+		}
+		else if(_node_capability.led_on_off) {
+			result.support = "ctrl_led";
+			if("ctrl_led" in _node_info.config) {
+				if("led_val" in _node_info.config.ctrl_led)
+					result.value = parseInt(_node_info.config.ctrl_led.led_val);
 			}
 		}
 	}
-	else if(_node_capability.lp55xx_led) {
-		result.support = "lp55xx_led";
-		if("lp55xx_led" in _node_info.config) {
-			if("lp55xx_lp5523_user_enable" in _node_info.config.lp55xx_led)
-				result.value = parseInt(_node_info.config.lp55xx_led.lp55xx_lp5523_user_enable);
+	else{
+		if(isSupport("led_ctrl_cap")){
+			result.support = "ctrl_led";
+			if(support_system_settings.led){
+				result.value = _node_info.config.ctrl_led.led_val;
+			}
+			else{
+				result.value = httpApi.nvramGet(["led_val"]).led_val;
+			}
 		}
 	}
-	else if(_node_capability.led_on_off) {
-		result.support = "ctrl_led";
-		if("ctrl_led" in _node_info.config) {
-			if("led_val" in _node_info.config.ctrl_led)
-				result.value = parseInt(_node_info.config.ctrl_led.led_val);
+	result.value = result.value === "" || isNaN(result.value) ? "0" : result.value;
+	return result;
+}
+function manage_get_led_night_mode(_node_info, _node_capability){
+	const isReNode = (current_click_mac != cap_mac) ? true : false;
+	let result = {"support": false, "value": "0"};
+	if(isReNode){
+		if(_node_capability.led_night_mode && _node_info.config?.misc?.single_led_night_mode){
+			result.support = true;
+			result.value = _node_info.config.misc.single_led_night_mode;
 		}
 	}
-	if(isNaN(result.value))
-		result.value = 0;
-
+	else{
+		if(isSupport("led_night_mode")){
+			result.support = true;
+			if(support_system_settings.led_night_mode){
+				result.value = _node_info.config.misc.single_led_night_mode;
+			}
+			else{
+				result.value = httpApi.nvramGet(["single_led_night_mode"]).single_led_night_mode;
+			}
+		}
+	}
+	result.value = result.value === "" || isNaN(result.value) ? "0" : result.value;
 	return result;
 }
 function manage_get_connection_priority(_node_info){
@@ -3411,8 +3727,7 @@ function manage_get_preferable_backhaul(_node_info){
 					return (item.mac == result.pref_mac);
 				})[0];
 				if(specific_node_data != undefined){
-					const node_location_info = transform_location(specific_node_data.mac, specific_node_data);
-					result.text = handle_ui_model_name(specific_node_data.model_name, specific_node_data.ui_model_name) + " (" + node_location_info.location_text + ")";
+					result.text = get_node_name_w_location(specific_node_data);
 					result.pref_node_exist = true;
 				}
 			}
@@ -3426,8 +3741,7 @@ function manage_set_preferable_backhaul(_node_info, _pref_info){
 	$("#aimesh_hint_msg").append(popup_hint_api.get_component_text());
 	$("#aimesh_hint_msg").append(popup_hint_api.get_component_action());
 
-	var node_location_info = transform_location(_node_info.mac, _node_info);
-	var node_name_location = handle_ui_model_name(_node_info.model_name, _node_info.ui_model_name) + " (" + node_location_info.location_text + ")";
+	const node_name_location = get_node_name_w_location(_node_info);
 
 	if(isSupport("amas_eap")){
 		var amas_eap_bhmode = httpApi.nvramGet(["amas_eap_bhmode"]).amas_eap_bhmode;
@@ -3580,9 +3894,8 @@ function manage_set_preferable_backhaul(_node_info, _pref_info){
 			if(target_mac == "")
 				$("#aimesh_hint_msg .hint_text").append($("<div>").html("<#AiMesh_PB_AP_Auto#>"));
 			else{
-				var re = /#MODELNAME/g;
-				var str = "Your #MODELNAME and its end devices will lose connection temporarily. <#AiMesh_PB_Apply_Rule01#> <#AiMesh_PB_Apply_Rule02#>";/* untranslated */
-				var hint = str.replace(re, node_name_location);
+				const node_name_location = get_node_name_w_location(_node_info);
+				const hint = `<#AiMesh_PB_Lose_Conn_Hint#> <#AiMesh_PB_Apply_Rule01#> <#AiMesh_PB_Apply_Rule02#>`.replace(/%@/g, node_name_location).replace(/#MODELNAME/g, node_name_location);
 				$("#aimesh_hint_msg .hint_text").append($("<div>").html(hint));
 			}
 			$("#aimesh_hint_msg #action_canacl").hide();
@@ -3889,7 +4202,7 @@ function update_model_icon(_node_info){
 	set_change_model_icon(_node_info);
 }
 var transform_band_index = function(_bandNum){
-	return ((Math.pow(2,_bandNum)) - 1).toString();
+	return "15";
 }
 var transform_sta_bind_json_to_string = function(_sta_bind_json){
 	var result = "";
@@ -3907,7 +4220,7 @@ var transform_sta_bind_json_to_string = function(_sta_bind_json){
 					result += "|";
 				result += client;
 				result += ",";
-				result += client_bind_list[client]["band_index"];
+				result += "15";
 				count++;
 			}
 		}
@@ -4110,16 +4423,86 @@ var select_node_capability = {};
 var node_not_support_feature = [];
 var all_node_is_eth_backhaul = true;
 var jstree_load_ready = false;
+const support_system_settings = {"led": false, "led_night_mode": false};
+let uiModelNameCloud = (()=>{
+	const storedData = window.localStorage.getItem('uiModelNameJson');
+	if (storedData) {
+		return JSON.parse(storedData);
+	}
+	else {
+		return {};
+	}
+})();
+function update_node_ui_model_name(nodeList){
+	if (!Array.isArray(nodeList)) return;
+	let lang = httpApi.nvramGet(["preferred_lang"]).preferred_lang;
+	for (let node of nodeList){
+		let model_name = node["model_name"];
+		let cobrand = httpApi.aimesh_get_misc_info(node).cobrand;
+		const uiModelName = findUIModelName({
+			"model": model_name,
+			"lang": lang,
+			"coBrand": cobrand,
+		});
+		if (uiModelName) {
+			node["ui_model_name"] = uiModelName;
+		}
+	}
 
+	function findUIModelName(params) {
+		if (!params) {
+			return "";
+		}
+		const { model, lang, coBrand } = params;
+		if (!model) {
+			return "";
+		}
+		if (!uiModelNameCloud[model]) return "";
+
+		let defaultLang = null;
+		let defaultCoBrand = null;
+
+		for (let item of uiModelNameCloud[model]) {
+			if (item.lang === lang && item.CoBrand === coBrand) {
+				return item.uiModelName;
+			}
+			if (item.lang === "*" && item.CoBrand === coBrand) {
+				defaultLang = item.uiModelName;
+			}
+			if (item.lang === lang && item.CoBrand === "*") {
+				defaultCoBrand = item.uiModelName;
+			}
+			if (item.lang === "*" && item.CoBrand === "*") {
+				defaultLang = item.uiModelName;
+			}
+		}
+
+		if (defaultCoBrand) {
+			return defaultCoBrand;
+		}
+
+		if (defaultLang) {
+			return defaultLang;
+		}
+
+		return "";
+	}
+}
 function initial_AiMesh(){
 	$("#opt_ADS_status_container").hide();
 	clearInterval(interval_tree_update);
 	aimesh_data.cfg_clientlist = httpApi.hookGet("get_cfg_clientlist");
+	update_node_ui_model_name(aimesh_data.cfg_clientlist);
 	var cap_obj = aimesh_data.cfg_clientlist[0];//cap
 	if(cap_obj != undefined){
 		gen_custom_select("Home");
 		current_click_mac = cap_obj.mac;
 		cap_mac = cap_obj.mac;
+		const node_capability = httpApi.aimesh_get_node_capability(cap_obj);
+		if(node_capability?.central_led_on_off){
+			support_system_settings.led = cap_obj?.config?.ctrl_led?.led_val !== undefined;
+			support_system_settings.led_night_mode = cap_obj?.config?.misc?.single_led_night_mode !== undefined;
+		}
 	}
 	else
 		$(".aimesh_bg").hide();
@@ -4498,9 +4881,15 @@ function add_node(){
 			if(based_modelid == "DSL-AC68U" || based_modelid == "DSL-AX82U")
 				location.href = "/cfg_onboarding.cgi?flag=AMesh";
 			else{
-				pop_win = window.open("/QIS_wizard.htm?flag=amas_addNode", "_new", "toolbar=no,location=no,menubar=no,status=no,scrollbars=yes,resizable=yes");
-				pop_win.moveTo(0, 0);
-				pop_win.resizeTo(screen.width, screen.height);
+				const isSiteManager = (navigator.userAgent.match(/ASUSMultiSiteManager/) || navigator.userAgent.match(/ASUSExpertSiteManager/)) ? true : false;
+				if (isSiteManager) {
+					top.location.href = '/QIS_wizard.htm?flag=amas_addNode';
+				}
+				else {
+					pop_win = window.open("/QIS_wizard.htm?flag=amas_addNode", "_new", "toolbar=no,location=no,menubar=no,status=no,scrollbars=yes,resizable=yes");
+					pop_win.moveTo(0, 0);
+					pop_win.resizeTo(screen.width, screen.height);
+				}
 			}
 		}
 	};
@@ -4531,6 +4920,10 @@ function gen_hint_component(_parm){
 	$hint_bg.addClass(_parm.css);
 	$hint_bg.html(_parm.text);
 	return $hint_bg ;
+}
+function get_node_name_w_location(_node_info){
+	const location_info = transform_location(_node_info.mac, _node_info);
+	return handle_ui_model_name(_node_info.model_name, _node_info.ui_model_name) + " (" + location_info.location_text + ")";
 }
 function handle_ui_model_name(_model_name, _ui_model_name){
 	var result = "";
@@ -4942,7 +5335,34 @@ function get_opt_status(){
 	}
 	return result;
 }
+function get_node_led_count(){
+	let result = {"led_on": 0, "led_off": 0, "led_night_mode_on": 0, "led_night_mode_off": 0};
+	aimesh_data.cfg_clientlist.forEach(node => {
+		if(node.config?.ctrl_led?.led_val !== undefined){
+			if(node.config.ctrl_led.led_val === "1")
+				result.led_on++;
+			else
+				result.led_off++;
+		}
+		if(node.config?.misc?.single_led_night_mode !== undefined){
+			if(node.config.misc.single_led_night_mode === "1")
+				result.led_night_mode_on++;
+			else
+				result.led_night_mode_off++;
+		}
+	});
+	return result;
+}
 $(document).ready(initial_AiMesh);
+</script>
+<script type="module">
+	import { initializeUIModelName, uiModelNameJson } from '/js/uiModelName.module.js';
+	if (Object.keys(uiModelNameCloud).length === 0) {
+		(async () => {
+			const data = await initializeUIModelName();
+			uiModelNameCloud = data;
+		})();
+	}
 </script>
 <div class="aimesh_bg info_left">
 	<div class="node_btn_control">
@@ -5145,7 +5565,7 @@ $(document).ready(initial_AiMesh);
 		<div class="port_status_info">
 			<div class="separation_line">
 				<i></i>
-				<p>PORT INFORMATION</p><!-- untranslated -->
+				<p><#Port_Info#></p>
 			</div>
 			<div class="card_block_bg connect_type_status_bg port_status">
 				<div>
@@ -5188,6 +5608,13 @@ $(document).ready(initial_AiMesh);
 				<div class="manage_disconnected"><#AiMesh_Features_Disabled_When_Offline#></div>
 				<div class="manage_switch_led horizontal_line manage_function_item">
 					<div class="manage_common_title manage_common_separate_bg left">LED</div>
+					<div class="manage_common_separate_bg right">
+						<div class="switch"></div>
+					</div>
+				</div>
+
+				<div class="manage_switch_led_night_mode horizontal_line manage_function_item">
+					<div class="manage_common_title manage_common_separate_bg left">LED <#BoostKey_Aura_NightMode#></div>
 					<div class="manage_common_separate_bg right">
 						<div class="switch"></div>
 					</div>

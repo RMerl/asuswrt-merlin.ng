@@ -30,8 +30,8 @@ function load_page(){
 function initial(){
 	show_menu();
 
-	if(CoBrand == "8"){
-		$("#FormTitle").css("background", "#24272A");
+	if(isSupport("TS_UI")){
+		$("#FormTitle").css("background", "transparent");
 	}
 	else if(rog_support){
 		$("#FormTitle").css("background-color", "transparent");
@@ -44,7 +44,7 @@ function initial(){
 }
 </script>
 </head>
-<body>
+<body class="bg">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>

@@ -2293,7 +2293,7 @@ dma_rxreclaim(hnddma_t *dmah)
 
 #if defined(BCMRX_PCN) && defined(BCMRX_PCN_PKTPOOL)
 			if (di->bcmrx_pcn_fifo) {
-				pktpool_free(OSH_GET_PCNPKTPOOL(di->osh), p);
+				pktpool_free(di->osh, OSH_GET_PCNPKTPOOL(di->osh), p);
 			}
 			else
 #endif /* BCMRX_PCN && BCMRX_PCN_PKTPOOL */

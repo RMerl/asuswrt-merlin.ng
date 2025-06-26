@@ -12,7 +12,6 @@
 #include <nt_db.h>
 #include <nt_common.h>
 #include <linklist.h>
-#include <hashtable.h>
 
 #ifndef __libnt_h__
 #define __libnt_h__
@@ -64,6 +63,7 @@ extern size_t filesize(const char *file);
 extern void rmEndhar(char *str);
 extern int _xvstrsep(char *buf, const char *sep, ...);
 extern int x_get_mac(unsigned char *mac_address);
+extern size_t safe_strlen(const char *str);
 
 /* nt_db_stat.c */
 

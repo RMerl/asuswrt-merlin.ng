@@ -30,7 +30,14 @@ enum _sched_v2_type {
 	SCHED_V2_TYPE_DAY,
 	SCHED_V2_TYPE_WEEK,
 	SCHED_V2_TYPE_WEEK_ONLINE,
-	SCHED_V2_TYPE_TIMESTAMP
+	SCHED_V2_TYPE_TIMESTAMP,
+	SCHED_V2_TYPE_WEEK_EXTEND
+};
+
+typedef enum _sched_v2_ext_type sched_v2_ext_type;
+enum _sched_v2_ext_type {
+	SCHED_V2_EXT_TYPE_UNKNOWN = 0,
+	SCHED_V2_EXT_TYPE_INT,
 };
 
 typedef enum _sched_v2_d_index sched_v2_d_index;
@@ -54,6 +61,20 @@ enum _sched_v2_w_index {
 	SCHED_V2_W_IDX_END_HOUR = 8,
 	SCHED_V2_W_IDX_END_MINUTE = 10,
 	SCHED_V2_W_IDX_NULL = 12,
+};
+
+typedef enum _sched_v2_e_index sched_v2_e_index;
+enum _sched_v2_e_index {
+	SCHED_V2_E_IDX_TYPE = 0,
+	SCHED_V2_E_IDX_ENABLE = 1,
+	SCHED_V2_E_IDX_DAY_OF_WEEK = 2,
+	SCHED_V2_E_IDX_START_HOUR = 4,
+	SCHED_V2_E_IDX_START_MINUTE = 6,
+	SCHED_V2_E_IDX_END_HOUR = 8,
+	SCHED_V2_E_IDX_END_MINUTE = 10,
+	SCHED_V2_E_IDX_EXT_TYPE = 12,
+	SCHED_V2_E_IDX_EXT_VALUE = 13,
+	SCHED_V2_E_IDX_NULL = 21,
 };
 
 typedef enum _sched_v2_t_index sched_v2_t_index;
@@ -90,6 +111,18 @@ struct _sched_v2_w {
 	unsigned int rule_to_number;
 };
 
+typedef struct _sched_v2_e sched_v2_e_t;
+struct _sched_v2_e {
+	int enable;
+	int day_of_week;
+	int start_hour;
+	int start_minute;
+	int end_hour;
+	int end_minute;
+	int int_value;
+	unsigned int rule_to_number;
+};
+
 typedef struct _sched_v2_t sched_v2_t_t;
 struct _sched_v2_t {
 	int s_flag;
@@ -106,6 +139,7 @@ struct _sched_v2 {
 	sched_v2_d_t value_d;
 	sched_v2_w_t value_w;
 	sched_v2_t_t value_t;
+	sched_v2_e_t value_e;
 	sched_v2_t *prev;
 	sched_v2_t *next;
 };
@@ -126,6 +160,7 @@ extern int parse_str_v2_to_sched_v2_list(const char *str_sched_v2, sched_v2_t **
 
 extern int check_sched_v2_on_off(const char *sched_str);
 extern int check_expire_on_off(const char *sched_str);
+extern int check_sched_v2_mode(const char *sched_str);
 extern int check_timesched_is_set(int unit, int subunit);
 extern void convert_wl_sched_v1_to_sched_v2();
 extern void convert_pc_sched_v1_to_sched_v2();

@@ -1298,7 +1298,9 @@
 	height: 0% !important;
 	float: initial !important;
 }
-.manage_switch_led .switch, .manage_switch_wifi .switch{
+.manage_switch_led .switch,
+.manage_switch_wifi .switch,
+.manage_switch_led_night_mode .switch{
 	box-shadow: inset 0 1px 0 0 rgba(0,0,0,0.10);
 	border-radius: 83px;
 	width: 40px;
@@ -1309,13 +1311,19 @@
 	transition: all 0.6s;
 	cursor: pointer;
 }
-.manage_switch_led .switch.off, .manage_switch_wifi .switch.off{
+.manage_switch_led .switch.off,
+.manage_switch_wifi .switch.off,
+.manage_switch_led_night_mode .switch.off{
 	background: rgb(255 255 255 / 0.3);
 }
-.manage_switch_led .switch.on, .manage_switch_wifi .switch.on{
+.manage_switch_led .switch.on,
+.manage_switch_wifi .switch.on,
+.manage_switch_led_night_mode .switch.on{
 	background: #91071f;
 }
-.manage_switch_led .switch:before, .manage_switch_wifi .switch:before{
+.manage_switch_led .switch:before,
+.manage_switch_wifi .switch:before,
+.manage_switch_led_night_mode .switch:before{
 	border-radius: 83px;
 	display: block;
 	position: absolute;
@@ -1330,12 +1338,14 @@
 	transition-delay: 0.01s;
 	background: #f7f7f7;
 }
-.manage_switch_led .switch.on:before, .manage_switch_wifi .switch.on:before{
+.manage_switch_led .switch.on:before,
+.manage_switch_wifi .switch.on:before,
+.manage_switch_led_night_mode .switch.on:before{
 	-webkit-transform: translateX(16px);
 	-ms-transform: translateX(16px);
 	transform: translateX(16px);
 }
-.manage_switch_led, .manage_remove_node, .manage_slider_led, .manage_reboot_node{
+.manage_switch_led, .manage_remove_node, .manage_slider_led, .manage_reboot_node, .manage_switch_led_night_mode{
 	height: 56px !important
 }
 .manage_common_title{
@@ -1358,6 +1368,16 @@
 .manage_common_separate_bg.right{
 	margin-right: 22px;
 	right: 0;
+}
+.manage_common_separate_bg.right .icon_loading{
+	background-image: url(/images/InternetScan.gif);
+	width: 24px;
+	height: 24px;
+	background-repeat: no-repeat;
+	background-size: contain;
+	position: relative;
+	right: 6px;
+	top: 1px;
 }
 .manage_settings_bg .dropdown_item_bg, .manage_settings_bg .two_text_item_bg{
 	min-height: 92px;
@@ -1636,13 +1656,10 @@
 	color: #A4B7C3;
 	cursor: pointer;
 	position: relative;
-	width: 33%;
+	flex: 1;
 	display: flex;
 	justify-content: center;
 	align-items: center;
-}
-.client_tab_bg div:nth-child(2){
-	width: 34%;
 }
 .client_tab_bg div.clicked{
 	color: #FFFFFF;

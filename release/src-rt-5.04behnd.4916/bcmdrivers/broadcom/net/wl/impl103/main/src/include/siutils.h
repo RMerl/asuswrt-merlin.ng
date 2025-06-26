@@ -888,4 +888,8 @@ extern bool si_check_enable_backplane_log(si_t *sih);
 
 uint32 si_enum_base_pa(uint devid); /* returns a physical address */
 
+#if !defined(DONGLEBUILD) || defined(RTBE92U)
+extern void si_cnfrm_voltage_and_reset_otp_ctrl(si_t *sih, osl_t *osh, uint devid,
+	volatile void *regs);
+#endif /* DONGLEBUILD */
 #endif	/* _siutils_h_ */

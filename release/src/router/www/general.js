@@ -337,18 +337,18 @@ function change_common_radio(o, s, v, r){
 				}
 				showhide("wildcard_field",0);
 			}else{
-				if(is_CN && ddns_server_x == ""){
-					$("#ddns_server_x").val("WWW.ASUS.COM.CN");
-				}
-				else if(document.form.ddns_server_x.value == "WWW.ORAY.COM"){
+				if(document.form.ddns_server_x.value == "WWW.ORAY.COM"){
 					if(ddns_updated == "1")
 						document.getElementById("ddns_hostname_info_tr").style.display = "";
 				}
 				else
 					document.form.ddns_hostname_x.parentNode.parentNode.parentNode.style.display = "";
-				inputCtrl(document.form.ddns_username_x, 1);
-				inputCtrl(document.form.ddns_passwd_x, 1);
-				showhide("wildcard_field",1);
+
+				if(document.form.ddns_server_x.value !== ""){
+					inputCtrl(document.form.ddns_username_x, 1);
+					inputCtrl(document.form.ddns_passwd_x, 1);
+					showhide("wildcard_field",1);
+				}
 			}
 
 			change_ddns_setting(document.form.ddns_server_x.value);
@@ -397,7 +397,7 @@ function change_common_radio(o, s, v, r){
 	else if(v=="fw_enable_x"){
 		change_firewall(r);
 	}else if(v=="wl_closed"){
-			if((isSwMode("rt") || isSwMode("ap"))) {
+			if(((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap"))) {
 				if(r==1)
 						showhide("WPS_hideSSID_hint",1);
 				else
@@ -474,6 +474,8 @@ function openLink(s){
 			tourl = "https://dnsomatic.com/create/";
 		else if (document.form.ddns_server_x.value == 'DNS.HE.NET')
 			tourl = "https://ipv6.he.net/certification/register.php";
+		else if (document.form.ddns_server_x.value == 'DYNU.COM')
+			tourl = "https://www.dynu.com/ControlPanel/CreateAccount";
 		else if (document.form.ddns_server_x.value == 'WWW.TUNNELBROKER.NET')
 			tourl = "https://www.tunnelbroker.net/register.php";
 		else if (document.form.ddns_server_x.value == 'WWW.ASUS.COM')
@@ -1993,7 +1995,7 @@ function limit_auth_method(g_unit){
 		auth_array = auth_array.filter(subArr => subArr[1] !== 'open');
 	}
 
-	if(isSupport("amas") && isSupport("amasRouter") && (isSwMode("rt") || isSwMode("ap"))){
+	if(isSupport("amas") && isSupport("amasRouter") && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap"))){
 		var re_count = httpApi.hookGet("get_cfg_clientlist").length;
 		if(re_count > 1){
 			auth_array = auth_array.filter(function(item){

@@ -251,6 +251,42 @@ fill_smbpasswd_input_file(const char *passwd)
 }
 #endif
 
+#ifdef RTBE88U
+int is_usb3_device(char *device_name)
+{
+	char path[256];
+    char buffer[256];
+    FILE *fp;
+
+    snprintf(path, sizeof(path), "/sys/bus/usb/devices/%s/version", device_name);
+
+    fp = fopen(path, "r");
+    if (fp == NULL) {
+        _dprintf("failed to open file: %s\n", path);
+        return -1;
+    }
+
+    if (fgets(buffer, sizeof(buffer), fp) == NULL) {
+        fclose(fp);
+        return -1;
+    }
+
+    fclose(fp);
+
+    float version = atof(buffer);
+
+    return (version >= 3.0) ? 1 : 0;
+}
+
+void modify_rxchain(char *action)
+{
+	if (!strncmp(action, "add", 3))
+		eval("wl", "-i", "wl0", "rxchain", "0xb");
+	else if (!strncmp(action, "remove", 6))
+		eval("wl", "-i", "wl0", "rxchain", "0xf");
+}
+#endif
+
 void add_usb_host_modules(void)
 {
 #if defined(RTCONFIG_USB_XHCI)
@@ -265,6 +301,12 @@ void add_usb_host_modules(void)
 	char param[32];
 	int i;
 #else
+#if defined(RTBE58_GO)
+	if (!nvram_get_int("usb_enable")) {
+		_dprintf("Usb disabled.\n");
+		return;
+	}
+#endif
 	tweak_usb_affinity(1);
 #endif
 
@@ -293,7 +335,7 @@ void add_usb_host_modules(void)
 
 #ifdef RTCONFIG_HND_ROUTER_AX
 	eval("insmod",
-#if defined(BCM4912) || defined(BCM6756) || defined(BCM6855) || defined(BCM6813) || defined(BCM6765) || defined(BCM6766) || defined(RTBE58_GO)
+#if defined(BCM4912) || defined(BCM6756) || defined(BCM6855) || defined(BCM6813) || defined(BCM6765) || defined(BCM6766) || defined(RTBE58_GO) || defined(RTBE58U_V2) || defined(TUFBE3600_V2)
 		"bcm_bca_usb"
 #else
 		"bcm_usb"
@@ -729,7 +771,7 @@ void start_usb(int mode)
 	char param[32];
 	int i;
 
-	_dprintf("%s\n", __func__);
+	_dprintf("%s: usb_enable=%d\n", __func__, nvram_get_int("usb_enable"));
 
 #ifdef RTAC68U
 	if (!hw_usb_cap())
@@ -2682,6 +2724,14 @@ void hotplug_usb(void)
 
 	_dprintf("%s hotplug INTERFACE=%s ACTION=%s USBPORT=%s HOST=%s DEVICE=%s\n",
 		subsystem ? : "USB", interface, action, usbport, scsi_host, device);
+
+#ifdef RTBE88U
+	if (nvram_get_int("usb_usb3") == 1 && is_usb3_device(usbport) == 1)
+		modify_rxchain(action);
+	else if (nvram_get_int("usb_usb3") == 1 && !strncmp(action, "remove", 6)
+		&& is_usb3_device(usbport) == -1 ) //port will be null when removing devices and cause failed to open file
+		modify_rxchain(action);
+#endif
 
 	if (!nvram_get_int("usb_enable")) return;
 #if defined(LINUX26) && !defined(BCM4906_504)

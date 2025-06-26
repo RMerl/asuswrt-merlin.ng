@@ -111,8 +111,9 @@ static int connection_del(server *srv, connection *con) {
 
 	/* not last element */
 
-	if (i >= 0 && i < conns->used && conns->used > 0) {
+	if (conns != NULL && conns->ptr != NULL && i >= 0 && i < conns->used && conns->used > 0) {
 		temp = conns->ptr[i];
+
 		conns->ptr[i] = conns->ptr[conns->used - 1];
 		conns->ptr[conns->used - 1] = temp;
 
@@ -688,7 +689,16 @@ static int connection_handle_write(server *srv, connection *con) {
 static int parser_share_link(server *srv, connection *con){	
 	int result=0;
 
-	if(strncmp(con->request.uri->ptr, "/AICLOUD", 8)==0){
+	if (srv==NULL || con==NULL) {
+		return result;
+	}
+	
+	if (con->request.uri == NULL|| con->request.uri->ptr == NULL) {
+		return result;
+	}
+
+	size_t uri_length = strlen(con->request.uri->ptr);
+	if(uri_length >= 8 && strncmp(con->request.uri->ptr, "/AICLOUD", 8)==0){
 		int is_illegal = 0;
 		int y = strstr (con->request.uri->ptr+1,"/") - (con->request.uri->ptr);
 		
@@ -731,15 +741,24 @@ static int parser_share_link(server *srv, connection *con){
 				buffer* filename2 = buffer_init();
 				buffer_copy_buffer(filename2,c->filename);
 				
-				int com_result = strncmp( filename->ptr, filename2->ptr, filename2->used-1) ;
+				if (filename != NULL && filename->ptr != NULL &&
+					filename2 != NULL && filename2->ptr != NULL &&
+					filename2->used > 0) {
 
-				buffer_free(filename2);
+					int com_result = strncmp( filename->ptr, filename2->ptr, filename2->used-1) ;
+					buffer_free(filename2);	
 
-				if( com_result!= 0 ){					
+					if( com_result!= 0 ){					
+						is_illegal = 1;					
+						break;
+					}
+				}
+				else {
+					buffer_free(filename2);
 					is_illegal = 1;					
 					break;
 				}
-
+				
 				buffer_copy_string( con->share_link_basic_auth, "Basic " );
 				buffer_append_string_buffer( con->share_link_basic_auth, c->auth );
 

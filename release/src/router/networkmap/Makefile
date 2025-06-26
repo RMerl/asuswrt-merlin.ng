@@ -12,8 +12,8 @@ CFLAGS  += -I$(TOP)/libasc
 CFLAGS  += -I$(TOP)/curl/include
 
 ifeq ($(RTCONFIG_TR069),y)
-CFLAGS += -I$(TOP)/libssh2-1.10.0/include -I$(TOP)/zlib/include
-LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2 -L$(TOP)/zlib -lz
+CFLAGS += -I$(TOP)/libssh2/include -I$(TOP)/zlib/include
+LDFLAGS += -L$(TOP)/libssh2/src/.libs -lssh2 -L$(TOP)/zlib -lz
 endif
 
 ifeq ($(RTCONFIG_RALINK),y)
@@ -147,6 +147,9 @@ ifeq ($(HND_ROUTER),y)
 CFLAGS += -DHND_ROUTER
 endif
 
+#Client data is not used : Temporarily disable the shared memory for RTCONFIG_TAGGED_BASED_VLAN and CAPTIVE_PORTAL to reduce memory usage.
+CFLAGS += -DFLAG_FUNCTION_TEMPORARILY_CANCELED
+
 ifeq ($(RTCONFIG_AMAS),y)
 ifeq ($(RTCONFIG_LLDPD_1_0_11),y)
 LLDPD_DIR = $(TOP)/lldpd-1.0.11
@@ -162,7 +165,7 @@ ifeq ($(RTCONFIG_TRUSTZONE),y)
 LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 
@@ -193,6 +196,17 @@ endif
 
 $(EXEC): $(OBJS)
 	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
+
+# start : nmp share api
+CFLAGS_SO = -fPIC -I$(TOP)/json-c
+LDFLAGS_SO = -shared -L$(TOP)/json-c/.libs -ljson-c
+OBJS_SO = nmp_api.o
+NMP_API_SO = libnmpapi.so
+
+libnmpapi:
+	$(CC) -fPIC -c nmp_api.c $(CFLAGS_SO) -o $(OBJS_SO)
+	$(CC) -shared $(OBJS_SO) -o $(NMP_API_SO) $(LDFLAGS_SO)
+# end : nmp share api
 
 arpstorm: arpstorm.o
 	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
@@ -227,6 +241,8 @@ endif
 	cp -f db/nmp_conv_type.js $(INSTALLDIR)/usr/networkmap/nmp_conv_type.js
 	cp -f db/nmp_vendor_type.js $(INSTALLDIR)/usr/networkmap/nmp_vendor_type.js
 	cp -f db/nmp_bwdpi_type.js $(INSTALLDIR)/usr/networkmap/nmp_bwdpi_type.js
+	install -D api/$(NMP_API_SO) $(INSTALLDIR)/usr/lib/$(NMP_API_SO)
+	$(STRIP) $(INSTALLDIR)/usr/lib/*.so
 
 clean:
 ifneq ($(AC2900),y)

@@ -690,7 +690,8 @@
 .node_container > .node_content_container,
 .cb_item_container > .cb_item_content_container{
 	position: relative;
-	height: 68px;
+	min-height: 68px;
+	height: auto;
 	display: flex;
 	align-items: center;
 	width: 90%;
@@ -714,6 +715,7 @@
 	flex-direction: column;
 	height: 100%;
 	flex-grow: 1;
+	box-sizing: border-box;
 }
 .cb_item_content_container > .cb_item_text{
 	display: flex;
@@ -731,12 +733,12 @@
 	font-size: 16px;
 	letter-spacing: 0.4px;
 	color: rgb(255 255 255);
-	flex-basis: 56%;
 	display: grid;
 	align-items: end;
+	margin-top: 6px;
 }
-.node_content_container > .node_info > .node_main_info > span,
-.node_content_container > .node_info > .node_sub_info > span{
+.node_content_container > .node_info > .node_main_info span,
+.node_content_container > .node_info > .node_sub_info span{
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -746,9 +748,32 @@
 	font-size: 12px;
 	letter-spacing: 0.8px;
 	color: rgb(164 183 195);
-	top: -4px;
-	display: grid;
 	position: relative;
+	display: flex;
+	flex-wrap: wrap;
+	box-sizing: border-box;
+	line-height: 140%;
+	margin-bottom: 6px;
+}
+.node_sub_info span {
+	flex: 1 1 auto;
+	min-width: 120px;
+	margin-right: 6px;
+	white-space: nowrap;
+	position: relative;
+}
+.node_sub_info span::after {
+	content: "";
+	position: absolute;
+	right: -5px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 1px;
+	height: 100%;
+	background-color: rgb(164 183 195);
+}
+.node_sub_info span:last-child::after {
+	content: none;
 }
 .node_content_container  > .icon_location{
 	background-image: url(/images/New_ui/amesh/location_dropdown.svg);

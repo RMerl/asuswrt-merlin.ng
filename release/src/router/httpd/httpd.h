@@ -374,13 +374,6 @@ extern struct ej_handler ej_handlers[];
 #define LOCK_LOGIN_LAN 	0x01
 #define LOCK_LOGIN_WAN 	0x02
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000)
-enum {
-        LEDG_QIS_RUN = 1,
-        LEDG_QIS_FINISH
-};
-#endif
-
 #ifdef vxworks
 #define fopen(path, mode)	tar_fopen((path), (mode))
 #define fclose(fp)		tar_fclose((fp))
@@ -608,8 +601,11 @@ extern void do_endpoint_request_token_cgi(char *url, FILE *stream);
 #ifdef RTCONFIG_CAPTCHA
 extern int is_captcha_match(char *catpch);
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000_AI) || defined(GSBE18000)
-extern void switch_ledg(int action);
+#if defined(RTCONFIG_BCMLEDG) \
+        || defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) \
+        || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) \
+        || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI)
+extern void httpd_switch_ledg(int action);
 #endif
 #ifdef RTCONFIG_SAVE_WL_NVRAM_BOTH
 extern int sync_wl_nvram(char *nvram, int unit, char *value);
@@ -651,4 +647,8 @@ extern int check_lock_status(time_t *dt);
 extern void check_lock_state();
 extern int gen_asus_token_cookie(char *asus_token, int asus_token_len, char *token_cookie, int cookie_len);
 extern void gen_random_string_v2(char *out, size_t len);
+extern int json_object_get_string_to_double(json_object *source_obj, char *target, char *output, int len);
+#ifdef RTCONFIG_BCM_AFC
+extern int find_afc_challenge(char *id, char *challenge);
+#endif
 #endif /* _httpd_h_ */

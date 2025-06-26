@@ -30,6 +30,8 @@ enum bandAttribute {
 extern void cm_addBandIndex(json_object *outRoot);
 extern void cm_updateBandInfoByMac(char *mac, json_object *chanspecObj);
 extern int cm_findBandAttrByMac(char *mac, int unit);
+extern int cm_findUnitByBandAttrIndex(char *mac, int index);
+extern int cm_findDwbBandAttrByMac(char *mac, int bandNum);
 
 #endif /* __CFG_BANDINDEX_H__ */
 /* End of cfg_bandindex.h */

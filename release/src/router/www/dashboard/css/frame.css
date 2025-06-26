@@ -3,6 +3,7 @@
     font-size: 24px;
     font-weight: bold;
     color: var(--text-page-title-color);
+    padding-left: 24px;
 }
 .card {
     background: linear-gradient(var(--gradient-card-color)) var(--bg-card-color);
@@ -24,4 +25,10 @@
 }
 .bg-img{
     background-color: rgba(var(--color-gradient-card-2));
+}
+
+@media (min-width: 768px) {
+    .page-title {
+        padding-left: 15px;
+    }
 }

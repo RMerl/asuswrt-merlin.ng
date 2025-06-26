@@ -132,6 +132,8 @@ struct bcm63xx_hsspi {
 };
 
 #if defined(CONFIG_BCM_KF_SPI)
+#define BCMBCA_MUTEX_LOCK(m) do{if(!oops_in_progress)mutex_lock(m);}while(0)
+#define BCMBCA_MUTEX_UNLOCK(m) do{if(!oops_in_progress)mutex_unlock(m);}while(0)
 
 static void bcm63xx_hsspi_set_clk(struct bcm63xx_hsspi *bs,
 				  struct spi_device *spi, int hz);
@@ -161,11 +163,11 @@ static void bcm63xx_hsspi_set_clk_gate(struct bcm63xx_hsspi *bs,
 	u32 reg = 0;
 
 	if (bcm63xx_hsspi_dev_no_clk_gate(spi)) {
-		mutex_lock(&bs->bus_mutex);
+		BCMBCA_MUTEX_LOCK(&bs->bus_mutex);
 		reg = __raw_readl(bs->regs + HSSPI_GLOBAL_CTRL_REG);
 		reg |= GLOBAL_CTRL_CLK_GATE_SSOFF;
 		__raw_writel(reg, bs->regs + HSSPI_GLOBAL_CTRL_REG);
-		mutex_unlock(&bs->bus_mutex);
+		BCMBCA_MUTEX_UNLOCK(&bs->bus_mutex);
 	}
 }
 
@@ -327,7 +329,11 @@ static void bcm63xx_hsspi_set_cs(struct bcm63xx_hsspi *bs, unsigned int cs,
 {
 	u32 reg;
 
+#if defined(CONFIG_BCM_KF_SPI)
+	BCMBCA_MUTEX_LOCK(&bs->bus_mutex);
+#else
 	mutex_lock(&bs->bus_mutex);
+#endif
 	reg = __raw_readl(bs->regs + HSSPI_GLOBAL_CTRL_REG);
 
 	reg &= ~BIT(cs);
@@ -335,7 +341,11 @@ static void bcm63xx_hsspi_set_cs(struct bcm63xx_hsspi *bs, unsigned int cs,
 		reg |= BIT(cs);
 
 	__raw_writel(reg, bs->regs + HSSPI_GLOBAL_CTRL_REG);
+#if defined(CONFIG_BCM_KF_SPI)
+	BCMBCA_MUTEX_UNLOCK(&bs->bus_mutex);
+#else
 	mutex_unlock(&bs->bus_mutex);
+#endif
 }
 
 static void bcm63xx_hsspi_set_clk(struct bcm63xx_hsspi *bs,
@@ -355,7 +365,11 @@ static void bcm63xx_hsspi_set_clk(struct bcm63xx_hsspi *bs,
 		reg &= ~SIGNAL_CTRL_ASYNC_INPUT_PATH;
 	__raw_writel(reg, bs->regs + HSSPI_PROFILE_SIGNAL_CTRL_REG(profile));
 
+#if defined(CONFIG_BCM_KF_SPI)
+	BCMBCA_MUTEX_LOCK(&bs->bus_mutex);
+#else
 	mutex_lock(&bs->bus_mutex);
+#endif
 	/* setup clock polarity */
 	reg = __raw_readl(bs->regs + HSSPI_GLOBAL_CTRL_REG);
 	reg &= ~GLOBAL_CTRL_CLK_POLARITY;
@@ -369,7 +383,11 @@ static void bcm63xx_hsspi_set_clk(struct bcm63xx_hsspi *bs,
 		reg |= GLOBAL_CTRL_CLK_GATE_SSOFF;
 #endif
 	__raw_writel(reg, bs->regs + HSSPI_GLOBAL_CTRL_REG);
+#if defined(CONFIG_BCM_KF_SPI)
+	BCMBCA_MUTEX_UNLOCK(&bs->bus_mutex);
+#else
 	mutex_unlock(&bs->bus_mutex);
+#endif
 }
 
 static int bcm63xx_hsspi_do_txrx(struct spi_device *spi, struct spi_transfer *t)
@@ -493,7 +511,11 @@ static int bcm63xx_hsspi_setup(struct spi_device *spi)
 	__raw_writel(reg, bs->regs +
 		     HSSPI_PROFILE_SIGNAL_CTRL_REG(spi->chip_select));
 
+#if defined(CONFIG_BCM_KF_SPI)
+	BCMBCA_MUTEX_LOCK(&bs->bus_mutex);
+#else
 	mutex_lock(&bs->bus_mutex);
+#endif
 	reg = __raw_readl(bs->regs + HSSPI_GLOBAL_CTRL_REG);
 
 	/* only change actual polarities if there is no transfer */
@@ -510,7 +532,11 @@ static int bcm63xx_hsspi_setup(struct spi_device *spi)
 	else
 		bs->cs_polarity &= ~BIT(spi->chip_select);
 
+#if defined(CONFIG_BCM_KF_SPI)
+	BCMBCA_MUTEX_UNLOCK(&bs->bus_mutex);
+#else
 	mutex_unlock(&bs->bus_mutex);
+#endif
 
 	return 0;
 }
@@ -602,12 +628,12 @@ static int bcm63xx_hsspi_transfer_one(struct spi_master *master,
 
 #if defined(CONFIG_BCM_KF_SPI)
 	if (restore_polarity && bs->use_cswar) {
-		mutex_lock(&bs->bus_mutex);
+		BCMBCA_MUTEX_LOCK(&bs->bus_mutex);
 		reg = __raw_readl(bs->regs + HSSPI_GLOBAL_CTRL_REG);
 		reg &= ~GLOBAL_CTRL_CS_POLARITY_MASK;
 		reg |= bs->cs_polarity;
 		__raw_writel(reg, bs->regs + HSSPI_GLOBAL_CTRL_REG);
-		mutex_unlock(&bs->bus_mutex);
+		BCMBCA_MUTEX_UNLOCK(&bs->bus_mutex);
 	}
 
 	/* restore the default clk gate setting in case some

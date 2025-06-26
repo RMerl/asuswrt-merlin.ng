@@ -30,8 +30,10 @@ endif
 
 ifeq ($(RTCONFIG_CFGSYNC),y)
 ROUTER_LIBS += -lcfgmnt
+ROUTER_LIBS += -lnmpapi
 
 ROUTER_LDFLAGS += -L$(CFGMNT_DIR)
+ROUTER_LDFLAGS += -L$(TOP)/networkmap/api/
 endif
 
 LDFLAGS = $(ROUTER_LDFLAGS) $(ROUTER_LIBS) 
@@ -67,7 +69,7 @@ LIBS += -L$(TOP)/smspdu -lsmspdu
 endif
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 
@@ -130,8 +132,8 @@ LIBS +=  $(OPENSSL_LIBS) -ljson-c
 LIBS +=  -lcurl
 
 ifeq ($(RTCONFIG_TR069),y)
-CFLAGS += -I$(TOP)/libssh2-1.10.0/include -I$(TOP)/zlib/include
-LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2 -L$(TOP)/zlib -lz
+LDFLAGS += -L$(TOP)/libssh2/src/.libs -lssh2
+LDFLAGS += -L$(TOP)/zlib -lz
 endif
 
 #Aggregate all include and src directories
@@ -157,6 +159,7 @@ endif
 ifeq ($(RTCONFIG_CFGSYNC),y)
 CFLAGS += -I$(SHARED_DIR)/sysdeps/amas
 CFLAGS += -I$(CFGMNT_DIR)
+CFLAGS += -I$(TOP)/networkmap/api
 endif
 
 ifeq ($(RTCONFIG_BCMARM),y)

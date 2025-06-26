@@ -37,7 +37,7 @@
 #include "proto/ethernet.h"
 #endif
 #include <wlioctl.h>
-#ifdef RTCONFIG_HND_ROUTER_AX
+#if defined(RTCONFIG_HND_ROUTER_AX) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 #include <wpsdefs.h>
 #endif
 
@@ -193,6 +193,38 @@ extern unsigned char *get_wlmacstr_by_unit(char *unit);
 #define PSK_SAE_AKM	"psk+sae"
 #define DPP_SAE_AKM	"dpp+sae"
 #define DPP_PSK_SAE_AKM	"dpp+psk+sae"
+
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+#if defined(WIFI7_SDK_20250122)
+// Internal akm value bitflags
+#define HAPD_AKM_OPEN			0x0u
+#define HAPD_AKM_WEP			0x1u
+#define HAPD_AKM_PSK			0x2u
+#define HAPD_AKM_PSK2			0x4u
+#define HAPD_AKM_WPA3_SAE		0x8u
+#define HAPD_AKM_WPA3_SAE_FT		0x10u
+#define HAPD_AKM_WPA3_DPP		0x20u
+#define HAPD_AKM_PSK2_FT		0x40u
+#define HAPD_AKM_OWE			0x80u
+
+#define HAPD_AKM_PSK2_SHA256		0x100u
+#define HAPD_AKM_WPA3_SAE_EXT           0x200u
+#define HAPD_AKM_WPA3_SAE_FT_EXT        0x400u
+/* Start of Enterprise akm */
+#define HAPD_AKM_WPA			0x800u
+#define HAPD_AKM_WPA2			0x1000u
+#define HAPD_AKM_WPA2_OSEN		0x2000u
+#define HAPD_AKM_WPA3_SUITE_B           0x4000u
+#define HAPD_AKM_WPA3			0x8000u
+#ifdef CONFIG_PASN
+#define HAPD_AKM_PASN			0x10000u
+#endif /* CONFIG_PASN */
+
+#define HAPD_MFP_OFF			0	// PMF Off
+#define HAPD_MFP_CAP			1	// PMF Capable
+#define HAPD_MFP_REQ			2	// PMF Required
+#endif /* WIFI7_SDK_20250122 */
+#endif	/* RTCONFIG_HND_ROUTER_BE_4916 */
 
 // WPS states to update the UI
 typedef enum wlif_wps_ui_status_code_id {
@@ -384,6 +416,10 @@ double wl_get_txpwr_target_max(char *name);
 double get_wifi_maxpower(int target_unit);
 #endif
 #endif
+
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+extern int wl_wlif_get_wlan_ifnames(char *ret_buf, size_t ret_buf_len, int band_needle);
+#endif	/* RTCONFIG_HND_ROUTER_BE_4916 */
 
 #if defined(RTCONFIG_HND_ROUTER_BE_4916)
 #define QOSMGMT_LSA_API_VER 3u

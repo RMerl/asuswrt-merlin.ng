@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <utils.h>
 #include <bcmnvram.h>
 #include <shutils.h>
 #include <syslog.h>

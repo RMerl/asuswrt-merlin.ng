@@ -14,7 +14,7 @@
         <script src="./js/asus.js"></script>
         <script src="./js/basic.js"></script>
         <script src="./js/wireless.js"></script>
-        <script src="./js/asus_policy.js"></script>
+        <script src="./js/asus_policy.js?v=4"></script>
 
         <link rel="stylesheet" href="./css/bootstrap.min.css" />
         <link rel="stylesheet" href="./css/bootstrap-customize.css" />
@@ -126,8 +126,17 @@
                 document.querySelector("nav").classList.add("d-none");
             }
 
-            if(urlParameter.get("mapp")==="true"){ // for Multisite App
-                document.querySelector("header").classList.add("d-none");
+            if(navigator.userAgent.match(/ASUSMultiSiteManager/) || navigator.userAgent.match(/ASUSExpertSiteManager/)){ // for Multisite App
+                const mapp_div = document.createElement("div");
+                mapp_div.style.position = "absolute";
+                mapp_div.style.top="22px";
+                mapp_div.style.left="10px";
+                const mobile_menu = document.getElementById("mobile_menu");
+                mobile_menu.classList.remove("d-none");
+                mapp_div.append(mobile_menu);
+                document.querySelector('article').prepend(mapp_div);
+                document.querySelector("section").classList.add("mt-3");
+                document.querySelector("header").remove();
             }
 
             checkPolicy();

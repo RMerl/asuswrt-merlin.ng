@@ -355,6 +355,15 @@
 	behavior: url(/PIE.htc);
 	min-height: 810px;
 }
+
+.NM_bg{
+	width: 51%;
+	float: left;
+	background: url('images/New_ui/networkmap/networkmap_bg.png') no-repeat rgba(0,0,0,.5);
+	background-position-x: 4px;
+	height: 805px;
+}
+
 [bgcolor="#444F53"]{
 	background: transparent;
 }

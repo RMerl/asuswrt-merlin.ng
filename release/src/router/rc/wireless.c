@@ -33,6 +33,12 @@
 #include "call_qcsapi.h"
 #endif
 
+#if defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
+#include <dirent.h>
+#include <sys/stat.h>
+#include <time.h>
+#endif
+
 //	ref: http://wiki.openwrt.org/OpenWrtDocs/nas
 
 //	#define DEBUG_TIMING
@@ -164,6 +170,131 @@ static void wlcscan_safeleave(int signo) {
 	exit(0);
 }
 
+#if defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
+
+#define MAX_LINE_LENGTH 1024
+#define MAX_AP_LIST	250
+#define MAX_FRESH_TIME	300
+
+long parse_suffix(const char *filepath) {
+	const char *last_dot = strrchr(filepath, '.');
+	if (!last_dot) {
+		fprintf(stderr, "Error: No '.' found in filepath: %s\n", filepath);
+		return -1;
+	}
+
+	char *endptr;
+	long suffix = strtol(last_dot + 1, &endptr, 10);
+
+	if (*endptr != '\0' && *endptr != 'e') {
+		fprintf(stderr, "Error: Invalid numeric suffix in filepath: %s\n", filepath);
+		return -1;
+	}
+
+	return suffix;
+}
+
+int is_file_old(const char *filename) {
+	long max_fresh_time = nvram_get_int("wlcscan_fresh_time")?:MAX_FRESH_TIME;
+	long current_time = uptime();
+	long file_time = parse_suffix(filename);
+
+	dbg("%s, cur[%ld] - ft[%ld] = %ld\n", __func__, current_time, file_time, (current_time - file_time));
+	return (current_time - file_time) > max_fresh_time;
+}
+
+void merge_file(const char *filename, FILE *output_file, char **line_set, size_t *line_count, int max_list) {
+	int is_duplicate = 0;
+	FILE *input_file = fopen(filename, "r");
+	if (!input_file) {
+		perror("fopen");
+		return;
+	}
+
+	char line[MAX_LINE_LENGTH];
+	while (fgets(line, sizeof(line), input_file)) {
+		// Remove newline character at the end
+		line[strcspn(line, "\n")] = 0;
+
+		// Check for duplicates
+		is_duplicate = 0;
+		for (size_t i = 0; i < *line_count; i++) {
+			if (i<max_list && strcmp(line_set[i], line) == 0) {
+				is_duplicate = 1;
+				break;
+			}
+		}
+
+		// If not a duplicate, add it to the output file and set
+		if (!is_duplicate) {
+			fprintf(output_file, "%s\n", line);
+			line_set[*line_count] = strdup(line);
+			(*line_count)++;
+		}
+		if (*line_count >= max_list-1) {
+			dbg("[wlc] : apscan_info file is full.\n");
+			break;
+		}
+	}
+
+	fclose(input_file);
+}
+
+int apscan_merge() {
+	const char *pattern = "apscan_info.txt.";
+	char apinfo_file[32];
+	int max_ap_list = nvram_get_int("wlcscan_max_aplist")?:MAX_AP_LIST;
+	DIR *dir = opendir("/tmp");
+	if (!dir) {
+		perror("opendir");
+		return 1;
+	}
+
+	char **line_set = malloc(MAX_AP_LIST * sizeof(char *));
+	size_t line_count = 0;
+
+	FILE *output_file = fopen(APSCAN_INFO, "w");
+	if (!output_file) {
+		perror("fopen");
+		closedir(dir);
+		free(line_set);
+		return 1;
+	}
+
+	struct dirent *entry;
+	while ((entry = readdir(dir)) != NULL) {
+		if (strncmp(entry->d_name, pattern, strlen(pattern)) == 0) {
+			snprintf(apinfo_file, sizeof(apinfo_file), "/tmp/%s", entry->d_name);
+			if (is_file_old(apinfo_file)) {
+				dbg("Skipping old file: %s\n", apinfo_file);
+				remove(apinfo_file);
+			} else {
+				if (line_count < max_ap_list - 1) {
+					dbg("Merging file: %s\n", apinfo_file);
+					merge_file(apinfo_file, output_file, line_set, &line_count, max_ap_list);
+				} else {
+					dbg("Skip merging file: %s due full.\n", apinfo_file);
+					break;
+				}
+			}
+		}
+	}
+
+	closedir(dir);
+	fclose(output_file);
+
+	for (size_t i = 0; i < line_count; i++) {
+		free(line_set[i]);
+	}
+	free(line_set);
+
+	dbg("[wlc] Merge complete. Output written to %s\n", APSCAN_INFO);
+	return 0;
+}
+
+
+#endif
+
 // TODO: wlcscan_main
 // 	- scan and save result into files for httpd hook
 //	- handlling stop signal
@@ -187,6 +318,28 @@ int wlcscan_main(void)
 	int is_dhd = 0;
 #endif
 
+#if defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
+	int apscan_counts = nvram_get_int("apscan_counts");
+	char apscan_file[32];
+	int wlcscan_wait = nvram_get_int("wlcscan_wait")?:4;
+
+	if (nvram_match("wlescan", "1"))
+		snprintf(apscan_file, sizeof(apscan_file), "%s.%d.%ld.e", APSCAN_INFO, apscan_counts, uptime());
+	else 
+		snprintf(apscan_file, sizeof(apscan_file), "%s.%d.%ld", APSCAN_INFO, apscan_counts, uptime());
+
+	if (nvram_match("x_Setting", "0")) {
+		if (pids("obd")) {
+			_dprintf("%s, disable obd/amas_ssd_cd due ss, wait %d for wlcscan\n", __func__, wlcscan_wait);
+			nvram_set("no_obd", "1");
+			killall_tk("obd");
+			stop_conn_diag_ss();
+			sleep(wlcscan_wait);
+		} else
+			sleep(2);
+	}
+#endif
+
 	signal(SIGTERM, wlcscan_safeleave);
 
 #ifdef RTCONFIG_QSR10G
@@ -201,7 +354,11 @@ int wlcscan_main(void)
 
 	/* clean APSCAN_INFO */
 	lock = file_lock("sitesurvey");
+#if defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
+	if ((fp = fopen(apscan_file, "w")) != NULL) {
+#else
 	if ((fp = fopen(APSCAN_INFO, "w")) != NULL) {
+#endif
 		fclose(fp);
 	}
 	file_unlock(lock);
@@ -238,14 +395,26 @@ int wlcscan_main(void)
 			wlcscan_core_escan(APSCAN_INFO, word);
 		else
 #endif
+		{
+#if defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
+			wlcscan_core(apscan_file, word);
+#else
 			wlcscan_core(APSCAN_INFO, word);
-
+#endif
+		}
 		// suppose only two or less interface handled
 		nvram_set_int("wlc_scan_state", WLCSCAN_STATE_2G+i);
 
 		i++;
 	}
 
+#if defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
+	apscan_merge();
+
+	nvram_set_int("apscan_counts", ++apscan_counts);
+	nvram_set("wlescan", "0");
+	dbg("[wlc] fin.(%d)\n", nvram_get_int("apscan_counts"));
+#endif
 #ifdef RTCONFIG_QTN
 	wlcscan_core_qtn(APSCAN_INFO, "wifi0");
 #endif
@@ -255,9 +424,24 @@ int wlcscan_main(void)
 	}
 #endif
 
+#if defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
+	struct stat filestat;
+
+	if (!stat(APSCAN_INFO, &filestat) && filestat.st_size > 0) {
+		nvram_set_int("wlc_scan_state", WLCSCAN_STATE_FINISHED);
+		nvram_set_int("wlcscan", 0);
+		dbg("[wlc] wlcscan fin.(%d)\n", filestat.st_size);
+	} else {
+		dbg("[wlc] invalid scan results, re-scan...\n\n");
+		if (nvram_match("escan_ref", "1"))
+			nvram_set("wlescan", "1");
+		system("wlcscan");
+	}
+#else
 	nvram_set_int("wlc_scan_state", WLCSCAN_STATE_FINISHED);
 #ifdef CONFIG_BCMWL5
 	nvram_set_int("wlcscan", 0);
+#endif
 #endif
 
 	return 1;

@@ -42,7 +42,7 @@ LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 LDFLAGS += -L$(TOP)/libasc -lasc
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 ifeq ($(RTCONFIG_TR069),y)
-LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2
+LDFLAGS += -L$(TOP)/libssh2/src/.libs -lssh2
 LDFLAGS += -L$(TOP)/zlib -lz
 endif
 
@@ -50,7 +50,7 @@ ifeq ($(RTCONFIG_TRUSTZONE),y)
 LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 

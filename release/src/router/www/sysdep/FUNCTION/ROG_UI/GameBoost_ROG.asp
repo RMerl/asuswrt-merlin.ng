@@ -23,7 +23,7 @@
 <script type="text/javascript" src="/calendar/jquery-ui.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js?v=4"></script>
 <style type="text/css">
 .appIcons{
 	width:36px;

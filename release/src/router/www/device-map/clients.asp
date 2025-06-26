@@ -454,7 +454,7 @@ function updateClientList(e){
 <body class="statusbody" onload="initial();">
 <iframe name="applyFrame" id="applyFrame" src="" width="0" height="0" frameborder="0" scrolling="no"></iframe>
 <form method="post" name="form" id="refreshForm" action="/apply.cgi" target="applyFrame">
-<input type="hidden" name="action_mode" value="refresh_networkmap">
+<input type="hidden" name="action_mode" value="cleanShm_networkmap">
 <input type="hidden" name="action_script" value="">
 <input type="hidden" name="action_wait" value="5">
 <input type="hidden" name="current_page" value="device-map/clients.asp">

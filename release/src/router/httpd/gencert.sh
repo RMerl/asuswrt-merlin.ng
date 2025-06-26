@@ -14,9 +14,12 @@ UPLOAD_CACERT="/jffs/.cert/cacert.pem"
 UPLOAD_CAKEY="/jffs/.cert/cakey.pem"
 UPLOAD_GEN_CERT="/jffs/.cert/cert_gen.pem"
 UPLOAD_GEN_KEY="/jffs/.cert/key_gen.pem"
+UPLOAD_CERT="/jffs/.cert/cert.pem"
+UPLOAD_KEY="/jffs/.cert/key.pem"
 
 le_enable=`nvram get le_enable`
-if [ "${le_enable}" == "1" ] ; then
+ddns_enable=`nvram get ddns_enable`
+if [ "${le_enable}" == "1" ] && [ "${ddns_enable}" == "1" ] ; then
 	# Let's encrypt, nothing to do
 	exit 0
 elif [ "${le_enable}" == "2" -a -e ${UPLOAD_CACERT} -a -e ${UPLOAD_CAKEY} ] ; then
@@ -272,11 +275,11 @@ fi
 if [ ! -e ${HTTPD_ROOTCA_GEN_CERT} -o ! -e ${HTTPD_ROOTCA_GEN_KEY} ] ; then
 	echo "Generate new Root certificate"
 	if [ "${ECC256}" == "1" ] ; then
-		OPENSSL_CONF=/etc/openssl.config RANDFILE=/dev/urandom openssl ecparam -name prime256v1 -genkey -noout -out ${HTTPD_ROOTCA_GEN_KEY}
+		OPENSSL_CONF=/etc/openssl.config openssl ecparam -name prime256v1 -genkey -noout -out ${HTTPD_ROOTCA_GEN_KEY}
 	else
-		OPENSSL_CONF=/etc/openssl.config RANDFILE=/dev/urandom openssl genrsa -out ${HTTPD_ROOTCA_GEN_KEY}
+		OPENSSL_CONF=/etc/openssl.config openssl genrsa -out ${HTTPD_ROOTCA_GEN_KEY}
 	fi
-	OPENSSL_CONF=/etc/openssl.config RANDFILE=/dev/urandom openssl req -x509 \
+	OPENSSL_CONF=/etc/openssl.config openssl req -x509 \
 		-new -nodes -in /tmp/cert.csr -key ${HTTPD_ROOTCA_GEN_KEY} -days 7306 -sha256 -out ${HTTPD_ROOTCA_GEN_CERT}
 fi
 
@@ -328,23 +331,28 @@ fi
 # Create certificate, sign with ${HTTPD_ROOTCA_CERT}, for HTTPS/FTP-TLS/WebDav/Captive Portal/Free WiFi
 echo "Generate new server certificate"
 if [ "${ECC256}" == "1" ] ; then
-	OPENSSL_CONF=/etc/openssl.config RANDFILE=/dev/urandom openssl ecparam -name prime256v1 -genkey -noout -out ${HTTPD_GEN_KEY}
+	OPENSSL_CONF=/etc/openssl.config openssl ecparam -name prime256v1 -genkey -noout -out ${HTTPD_GEN_KEY}
 else
-	OPENSSL_CONF=/etc/openssl.config RANDFILE=/dev/urandom openssl genrsa -out ${HTTPD_GEN_KEY}
+	OPENSSL_CONF=/etc/openssl.config openssl genrsa -out ${HTTPD_GEN_KEY}
 fi
-OPENSSL_CONF=/etc/openssl.config RANDFILE=/dev/urandom openssl req -new \
+OPENSSL_CONF=/etc/openssl.config openssl req -new \
 	-subj "/C=US/CN=${ONAME} Server Certificate/O=${ONAME}" \
 	-batch -out /tmp/https_srv.csr -key ${HTTPD_GEN_KEY}
-OPENSSL_CONF=/etc/openssl.config RANDFILE=/dev/urandom openssl x509 -req \
+OPENSSL_CONF=/etc/openssl.config openssl x509 -req \
 	-extensions server_req_extensions -extfile ssl_server.ext -in /tmp/https_srv.csr \
 	-CA ${HTTPD_ROOTCA_CERT} -CAkey ${HTTPD_ROOTCA_KEY} -CAserial serial.txt -CAcreateserial -days 7306 -out ${HTTPD_GEN_CERT}
 
-if [ "${le_enable}" == "2" ] ; then
+if [ "${le_enable}" == "2" -a -e "${UPLOAD_CACERT}" -a -e "${UPLOAD_CAKEY}" ] ; then
 	# If uploaded certificate are chosen and it's root/intermediate certificate,
 	# overwrite cert.pem and key.pem with cert_gen.pem and key_gen.pem respectively.
 	cp -f ${HTTPD_GEN_CERT} ${HTTPD_CERT}
 	cp -f ${HTTPD_GEN_KEY} ${HTTPD_KEY}
 	echo "Overwrite uploaded certificate with generated server certificate."
+elif [ "${le_enable}" == "2" -a -e "${UPLOAD_CERT}" -a -e "${UPLOAD_KEY}" ] ; then
+	# Restore uploaded server certificate.
+	cp -f ${UPLOAD_CERT} ${HTTPD_CERT}
+	cp -f ${UPLOAD_KEY} ${HTTPD_KEY}
+	echo "Restore with uploaded server certificate."
 else
 	cp -f ${HTTPD_GEN_CERT} ${HTTPD_CERT}
 	cp -f ${HTTPD_GEN_KEY} ${HTTPD_KEY}

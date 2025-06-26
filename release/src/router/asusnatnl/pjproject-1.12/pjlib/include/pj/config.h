@@ -525,6 +525,17 @@
 
 
 /**
+ * If enabled, when calling pj_pool_release(), the memory pool content
+ * will be wiped out first before released.
+ *
+ * Default: 0
+ */
+#ifndef PJ_POOL_RELEASE_WIPE_DATA
+#  define PJ_POOL_RELEASE_WIPE_DATA     0
+#endif
+
+
+/**
  * Enable timer heap debugging facility. When this is enabled, application
  * can call pj_timer_heap_dump() to show the contents of the timer heap
  * along with the source location where the timer entries were scheduled.
@@ -534,6 +545,39 @@
  */
 #ifndef PJ_TIMER_DEBUG
 #  define PJ_TIMER_DEBUG	    0
+#endif
+
+
+/**
+ * If enabled, the timer will keep internal copies of the timer entries.
+ * This will increase the robustness and stability of the timer (against
+ * accidental modification or premature deallocation of the timer entries) and
+ * makes it easier to troubleshoot any timer related issues, with the overhead
+ * of additional memory space required.
+ *
+ * Note that the detection against premature deallocation only works if the
+ * freed memory content has changed (such as if it's been reallocated and
+ * overwritten by another data. Alternatively, you can enable
+ * PJ_POOL_RELEASE_WIPE_DATA which will erase the data first before releasing
+ * the memory).
+ *
+ * Default: 1 (enabled)
+ */
+#ifndef PJ_TIMER_USE_COPY
+#  define PJ_TIMER_USE_COPY    1
+#endif
+
+
+/**
+ * If enabled, the timer use sorted linked list instead of binary heap tree
+ * structure. Note that using sorted linked list is intended for debugging
+ * purposes and will hamper performance significantly when scheduling large
+ * number of entries.
+ *
+ * Default: 0 (Use binary heap tree)
+ */
+#ifndef PJ_TIMER_USE_LINKED_LIST
+#  define PJ_TIMER_USE_LINKED_LIST    0
 #endif
 
 

@@ -24,8 +24,6 @@
         <script src="/switcherplugin/jquery.iphone-switch.js"></script>
         <style>
             .setup_help_icon {
-                width: 40px;
-                height: 40px;
                 border-radius: 24px;
                 background-color: rgba(164, 183, 195, 0.2);
                 background-image: url(images/New_ui/vpn_icon_all_collect.svg);
@@ -38,8 +36,6 @@
                 cursor: pointer;
             }
             .setup_afc_help_icon {
-                width: 40px;
-                height: 40px;
                 border-radius: 24px;
                 background-color: rgba(164, 183, 195, 0.2);
                 background-image: url(images/New_ui/vpn_icon_all_collect.svg);
@@ -49,6 +45,29 @@
                 height: 24px;
                 cursor: pointer;
             }
+            .setup_bandwidth_help_icon {
+                margin-top: -24px;
+                margin-left: 200px;
+                border-radius: 24px;
+                background-color: rgba(164, 183, 195, 0.2);
+                background-image: url(images/New_ui/vpn_icon_all_collect.svg);
+                background-repeat: no-repeat;
+                background-position: -324px 0px;
+                width: 24px;
+                height: 24px;
+                cursor: pointer;
+            }
+            .shadow {
+                position: absolute;
+                width: 75px;
+                height: 35px;
+                background-color: #6b7071;
+                opacity: 0.6;
+                z-index: 5;
+                margin-top: 0px;
+                border-radius: 10px;
+            }
+
             .a-hint-text {
                 color: #fc0 !important;
                 text-decoration: underline !important;
@@ -71,9 +90,10 @@
             let nbandListArray = nvram["wlnband_list"].split("&#60");
             let systemManipulable = objectDeepCopy(system);
             let brcmAfcSupport = false;
+            let afc_positioningSupport = false;
 
             document.addEventListener("DOMContentLoaded", function () {
-                if(!systemManipulable.smartConnect.support){
+                if (!systemManipulable.smartConnect.support) {
                     document.getElementById("smartcon_enable_field").style.display = "none";
                 }
                 let { isBRCMplatform } = systemManipulable;
@@ -90,7 +110,35 @@
                         element.style.display = "none";
                     });
                 }
+
+                if (systemManipulable.brcmAfcSupport) {
+                    let afcRet = httpApi.get_afc_enable();
+                    let afc_enable = afcRet.retValue;
+                    if (afc_enable == "1") {
+                        setTimeout(function () {
+                            update_afc_status();
+                        }, 5000);
+                    }
+                }
             });
+
+            var afc_count = 0;
+            function update_afc_status() {
+                let afcReturn = httpApi.get_afc_enable();
+                let afc_status = afcReturn.retStatus;
+                const { status = "", message = "" } = afcTable[afc_status] || {};
+                let str_message = message.replace(`%1$@`, maxbw_6g1);
+
+                document.getElementById("afc_status").innerText = status;
+                document.getElementById("afc_err_message").innerText = str_message;
+                afc_count++;
+                if (afc_count < 60) {
+                    setTimeout(function () {
+                        update_afc_status();
+                    }, 5000);
+                }
+            }
+
             function eventBind() {
                 document.querySelectorAll(".setup_help_icon").forEach((element) => {
                     let confirm_content = "<b>WPA3-Personal</b><br>";
@@ -111,7 +159,7 @@
                             htmlbodyforIE = document.getElementsByTagName("html");
 
                             $("#Loading").css("visibility", "visible");
-							$(".popup_bg").css("height", "1850px");
+                            $(".popup_bg").css("height", "1850px");
                             $("#loadingBlock").css("visibility", "hidden");
 
                             confirm_asus({
@@ -141,17 +189,39 @@
                 });
 
                 if (systemManipulable.brcmAfcSupport) {
-					let afcRet = httpApi.get_afc_enable();
-					let afc_enable = afcRet.retValue;
+                    const applyRule = function () {
+                        httpApi.set_afc_enable("1");
+                        let restartTime = 10;
+                        showLoading(restartTime);
+                        setTimeout(function () {
+                            location.reload();
+                        }, restartTime * 1000);
+                    };
+
+                    let afcRet = httpApi.get_afc_enable();
+                    let afc_enable = afcRet.retValue;
                     $("#radio_afc_enable").iphoneSwitch(
                         afc_enable,
                         function () {
-                            httpApi.set_afc_enable("1");
-                            let restartTime = 10;
-                            showLoading(restartTime);
-                            setTimeout(function () {
-                                location.reload();
-                            }, restartTime * 1000);
+                            const policyStatus = PolicyStatus().then((data) => {
+                                if (data.PP <= 2 || data.PP_time == "") {
+                                    const policyModal = new PolicyModalComponent({
+                                        policy: "PP",
+                                        policyStatus: data,
+                                        singPPVersion: 4,
+                                        agreeCallback: () => {
+                                            applyRule();
+                                        },
+                                        knowRiskCallback: () => {
+                                            alert(`<#ASUS_POLICY_Function_Confirm#>`);
+                                            location.reload();
+                                        },
+                                    });
+                                    policyModal.show();
+                                } else {
+                                    applyRule();
+                                }
+                            });
                         },
                         function () {
                             httpApi.set_afc_enable("0");
@@ -191,8 +261,12 @@
                             <div style="padding:0;">
                                 <div style="display:table-cell;vertical-align:middle;padding-left:40px;">
                                     <a href="${Android_app_link}" target="_blank">
-                                        <div style="width:160px; ${is_CN || ui_lang === "CN" ? 'font-size:24px;border:1px solid #BDBDBD;padding:10px 4px;border-radius:6px;' : 'height:46px;background:url(images/googleplay.png) no-repeat;background-size:100%;'} margin:auto;">
-                                            ${is_CN || ui_lang === "CN" ? 'Android App' : ''}
+                                        <div style="width:160px; ${
+                                            is_CN || ui_lang === "CN"
+                                                ? "font-size:24px;border:1px solid #BDBDBD;padding:10px 4px;border-radius:6px;"
+                                                : "height:46px;background:url(images/googleplay.png) no-repeat;background-size:100%;"
+                                        } margin:auto;">
+                                            ${is_CN || ui_lang === "CN" ? "Android App" : ""}
                                         </div>
                                     </a>
                                 </div>
@@ -220,16 +294,15 @@
                                 </div>
                             </div>
                         `;
-                            
+
                         // Click event handler
                         element.addEventListener("click", function () {
                             let confirm_flag = 1;
                             if (confirm_flag === 1) {
                                 if ($(".confirm_block").length > 0) $(".confirm_block").remove();
                                 window.scrollTo && window.scrollTo(0, 0);
-                                
                                 $("#Loading").css("visibility", "visible");
-								$(".popup_bg").css("height", "1850px");
+                                $(".popup_bg").css("height", "1850px");
                                 $("#loadingBlock").css("visibility", "hidden");
 
                                 confirm_asus({
@@ -259,7 +332,7 @@
 
             function generateMainField() {
                 let code = "";
-                let { wlBandSeq, smartConnect, brcmAfcSupport } = systemManipulable;
+                let { wlBandSeq, smartConnect, brcmAfcSupport, afc_positioningSupport } = systemManipulable;
                 let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
 
                 // GENERATE SMART CONNECT
@@ -329,9 +402,14 @@
                     // Extension Channel
                     code += generateExtensionChannel(prefixNvram);
 
+                    // BW320 Channel Range
+                    if (prefixNvram === "6g1" || prefixNvram === "6g2") {
+                        code += generateBW320ChannelRange(prefixNvram);
+                    }
+
                     // AFC
                     code += generateAFC(prefixNvram);
-                    
+
                     // Authentication Method
                     code += generateAuthenticationMethod(prefixNvram);
 
@@ -521,7 +599,17 @@
                     }
                 });
 
-                extensionChannelHandler(prefix);
+                if (no_zero_wait_dfs_support && (prefix === "5g1" || prefix === "5g2")) {
+                    let displayFlag = parseInt(channel) >= 52 && parseInt(channel) <= 144 ? "" : "none";
+                    let target = document.getElementById(`${prefix}_zero_dfs_field`);
+                    target.style.display = displayFlag;
+                }
+
+                if (prefix === "6g1" || prefix === "6g2") {
+                    bw320ChannelRangeHandler(prefix);
+                } else {
+                    extensionChannelHandler(prefix);
+                }
             }
 
             function pscChannelEnable(check, prefix) {
@@ -591,6 +679,12 @@
                     }
                 }
 
+                if (no_zero_wait_dfs_support && (prefix === "5g1" || prefix === "5g2")) {
+                    let displayFlag = parseInt(newChannelValue) >= 52 && parseInt(newChannelValue) <= 144 ? "" : "none";
+                    let target = document.getElementById(`${prefix}_zero_dfs_field`);
+                    target.style.display = displayFlag;
+                }
+
                 channelBandwidthChange(bandwidthValue, prefix);
             }
 
@@ -655,108 +749,99 @@
                 channelBandwidthChange(bandwidthValue, prefix);
             }
 
+            function bw320ChannelRangeHandler(prefix) {
+                let { wlBandSeq, smartConnect, isBRCMplatform, isMTKplatform, bw320ChannelRangeObject } = systemManipulable;
+                let { smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { channelValue, chanspecs, bandwidthValue, extChannelValue, bw320MHzSupport } = wlBandSeq[prefixNvram];
+                let bw320ChannelRangeString = get320ChannelRangeValue(prefix);
+                let postfix = "0";
+
+                // BRCM platforms
+                if (channelValue.indexOf("/320-1") !== -1 || channelValue.indexOf("/320-2") !== -1) {
+                    postfix = channelValue.slice(-5);
+                } else {
+                    // MTK, QCA platforms
+                    postfix = extChannelValue;
+                }
+
+                let bw320ChannelRangeSnippet = "";
+                for (let [value, desc] of Object.entries(bw320ChannelRangeString)) {
+                    bw320ChannelRangeSnippet += `<option value="${value}" ${postfix === value ? "selected" : ""}>${desc}</option>`;
+                }
+
+                document.getElementById(`${prefix}_bw320_channel_range`).innerHTML = bw320ChannelRangeSnippet;
+                let displayFlag = (() => {
+                    if (prefix === "6g1" || prefix === "6g2") {
+                        if (bw320MHzSupport) {
+                            if (bandwidthValue === "6") {
+                                return "";
+                            }
+
+                            if (isBRCMplatform && bandwidthValue === "0") {
+                                return "";
+                            } else if (!isBRCMplatform && bandwidthValue === "1") {
+                                return "";
+                            }
+                        }
+                    }
+
+                    return "none";
+                })();
+
+                document.getElementById(`${prefix}_bw320_channel_range_field`).style.display = displayFlag;
+            }
+
             function extensionChannelHandler(prefix) {
                 let { isBRCMplatform, wlBandSeq, smartConnect, extensionChannelObject } = systemManipulable;
                 let { smartConnectReferenceIndex } = smartConnect;
                 let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
-                let { bandwidthValue, channelValue, chanspecs, ch320MHz, channel, extChannelValue } = wlBandSeq[prefixNvram];
+                let { bandwidthValue, channelValue, chanspecs, channel, extChannelValue } = wlBandSeq[prefixNvram];
                 let extensionChannelString = objectDeepCopy(extensionChannelObject);
                 let postfixChannelValue = "0";
                 if (isBRCMplatform) {
                     delete extensionChannelString["lower"];
                     delete extensionChannelString["upper"];
-                    if (prefix !== "6g1" && prefix !== "6g2") {
-                        delete extensionChannelString["320-1"];
-                        delete extensionChannelString["320-2"];
-                    }
                 } else {
                     delete extensionChannelString["l"];
                     delete extensionChannelString["u"];
-                    delete extensionChannelString["320-1"];
-                    delete extensionChannelString["320-2"];
                     if (prefix === "5g1" || prefix === "5g2") {
                         delete extensionChannelString["lower"];
                         delete extensionChannelString["upper"];
                     }
                 }
 
-                if (channelValue === "0" || prefix === "5g1" || prefix === "5g2") {
+                if (channelValue === "0" || prefix === "5g1" || prefix === "5g2" || prefix === "6g1" || prefix === "6g1") {
                     // Control Channel is Auto or radio is 5 GHz, the Extension Channel is only Auto
                     delete extensionChannelString["l"];
                     delete extensionChannelString["u"];
-                    delete extensionChannelString["320-1"];
-                    delete extensionChannelString["320-2"];
                     delete extensionChannelString["lower"];
                     delete extensionChannelString["upper"];
                 } else {
-                    if (prefix === "2g1") {
-                        delete extensionChannelString["0"];
-                        delete extensionChannelString["320-1"];
-                        delete extensionChannelString["320-2"];
-                        let chNumber = channelValue.split("u")[0].split("l")[0];
-                        if (isBRCMplatform) {
-                            if (channelValue.indexOf("l") !== -1 || channelValue.indexOf("u") !== -1) {
-                                postfixChannelValue = channelValue.slice(-1);
-                            }
-
-                            if (chanspecs.indexOf(`${chNumber}u`) === -1) {
-                                delete extensionChannelString["u"];
-                            }
-
-                            if (chanspecs.indexOf(`${chNumber}l`) === -1) {
-                                delete extensionChannelString["l"];
-                            }
-                        } else {
-                            if (parseInt(chNumber) - 4 <= 0) {
-                                delete extensionChannelString["upper"];
-                            }
-
-                            if (parseInt(chNumber) + 4 > channel.length) {
-                                delete extensionChannelString["lower"];
-                            }
-
-                            postfixChannelValue = extChannelValue;
+                    delete extensionChannelString["0"];
+                    let chNumber = channelValue.split("u")[0].split("l")[0];
+                    if (isBRCMplatform) {
+                        if (channelValue.indexOf("l") !== -1 || channelValue.indexOf("u") !== -1) {
+                            postfixChannelValue = channelValue.slice(-1);
                         }
-                    } else if (prefix === "6g1" || prefix === "6g2") {
-                        delete extensionChannelString["l"];
-                        delete extensionChannelString["u"];
-                        if (
-                            ((isBRCMplatform && bandwidthValue !== "0") || (!isBRCMplatform && bandwidthValue !== "1")) &&
-                            bandwidthValue !== "6"
-                        ) {
-                            // for 20 MHz, 40 MHz, 80 MHz, 160 MHz
-                            delete extensionChannelString["lower"];
+
+                        if (chanspecs.indexOf(`${chNumber}u`) === -1) {
+                            delete extensionChannelString["u"];
+                        }
+
+                        if (chanspecs.indexOf(`${chNumber}l`) === -1) {
+                            delete extensionChannelString["l"];
+                        }
+                    } else {
+                        if (parseInt(chNumber) - 4 <= 0) {
                             delete extensionChannelString["upper"];
-                        } else {
-                            let chNumber = channelValue.split("/320")[0];
-                            if (isBRCMplatform) {
-                                chNumber = chNumber.slice(2);
-                            }
-
-                            postfixChannelValue = channelValue.split("/")[1];
-                            if (ch320MHz[chNumber]) {
-                                delete extensionChannelString["0"];
-                                if (ch320MHz[chNumber].indexOf(`6g${chNumber}/320-1`) === -1) {
-                                    if (isBRCMplatform) {
-                                        delete extensionChannelString["320-1"];
-                                    } else {
-                                        delete extensionChannelString["lower"];
-                                    }
-                                }
-
-                                if (ch320MHz[chNumber].indexOf(`6g${chNumber}/320-2`) === -1) {
-                                    if (isBRCMplatform) {
-                                        delete extensionChannelString["320-2"];
-                                    } else {
-                                        delete extensionChannelString["upper"];
-                                    }
-                                }
-                            } else {
-                                // for bandwidth is Auto and does not support 320 MHz
-                                delete extensionChannelString["lower"];
-                                delete extensionChannelString["upper"];
-                            }
                         }
+
+                        if (parseInt(chNumber) + 4 > channel.length) {
+                            delete extensionChannelString["lower"];
+                        }
+
+                        postfixChannelValue = extChannelValue;
                     }
                 }
 
@@ -769,6 +854,10 @@
 
                 document.getElementById(`${prefix}_extension_channel`).innerHTML = extensionChannelSnippet;
                 let displayFlag = (() => {
+                    if (prefix === "6g1" || prefix === "6g2") {
+                        return "none";
+                    }
+
                     if (prefix === "2g1" && channelValue === "14" && postfixChannelValue === "0") {
                         return "none";
                     }
@@ -959,10 +1048,12 @@
                     }
                 } else if (prefix === "6g1" || prefix === "6g2") {
                     if (bandwidthValue === "0" || bandwidthValue === "6") {
-                        if (chanspecs.indexOf(`6g${newChannelValue}/320-1`) !== -1) {
-                            newChannelValue = `6g${newChannelValue}/320-1`;
-                        } else if (chanspecs.indexOf(`6g${newChannelValue}/320-2`) !== -1) {
-                            newChannelValue = `6g${newChannelValue}/320-2`;
+                        if (isBRCMplatform) {
+                            if (chanspecs.indexOf(`6g${newChannelValue}/320-1`) !== -1) {
+                                newChannelValue = `6g${newChannelValue}/320-1`;
+                            } else if (chanspecs.indexOf(`6g${newChannelValue}/320-2`) !== -1) {
+                                newChannelValue = `6g${newChannelValue}/320-2`;
+                            }
                         }
                     }
                 }
@@ -976,7 +1067,11 @@
                     }
                 });
 
-                extensionChannelHandler(prefix);
+                if (prefix === "6g1" || prefix === "6g2") {
+                    bw320ChannelRangeHandler(prefix);
+                } else {
+                    extensionChannelHandler(prefix);
+                }
             }
 
             function channelBandwidthChange(bandwidthValue, prefix) {
@@ -996,6 +1091,10 @@
 
                 // let displayFlag =
                 let displayFlag = (() => {
+                    if (prefix === "6g1" || prefix === "6g2") {
+                        return "none";
+                    }
+
                     if (isBRCMplatform) {
                         return bandwidthValue === "1" ? "none" : "";
                     }
@@ -1519,6 +1618,7 @@
                 let { smartConnectEnable, v2Band, smartConnectReferenceIndex, radioSeqArray, version, v1Type } = smartConnect;
                 let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
                 let { ssidValue, hideSSIDValue } = wlBandSeq[prefixNvram];
+                ssidValue = ssidValue.replace(/"/g, "&quot;").replace(/'/g, "&apos;");
                 let displayFlag = (() => {
                     let { dwbMode, dwbBand } = aMesh;
                     if (dwbMode === "1" && dwbBand === prefix) {
@@ -1621,7 +1721,7 @@
             }
 
             function generateChannelBandwidth(prefix) {
-                let { wlBandSeq, smartConnect, channelBandwidthObject, brcmAfcSupport } = systemManipulable;
+                let { wlBandSeq, smartConnect, channelBandwidthObject, brcmAfcSupport, afc_positioningSupport } = systemManipulable;
                 let { smartConnectReferenceIndex } = smartConnect;
                 let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
                 let {
@@ -1688,17 +1788,23 @@
                     `;
                 }
 
+                let bwHintAFC = "";
+                if (brcmAfcSupport && prefixNvram === "6g1") {
+                    //afc support
+
+                    bwHintAFC += `
+                        <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 28);"><div class="setup_bandwidth_help_icon"></div></a>
+                    `;
+                }
+
                 return `
-                    <tr>          
-                        ${
-                            brcmAfcSupport && prefixNvram === "6g1"
-                                ? `<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 28);"><#WLANConfig11b_ChannelBW_itemname#></a></th>`
-                                : "<th><#WLANConfig11b_ChannelBW_itemname#></th>"
-                        }                                      
+                    <tr>
+                        <th><#WLANConfig11b_ChannelBW_itemname#></th>
                         <td>
                             <select id="${prefix}_channel_bandwidth" class="input_option" onChange="channelBandwidthChange(this.value, '${prefix}')">${channelBandwidthSnippet}</select>
                             ${bw160Snippet}
                             ${bw240Snippet}
+                            ${bwHintAFC}
                         </td>
                     </tr>
                 `;
@@ -1922,6 +2028,28 @@
                     `;
                 }
 
+                let outdoorChannelHintSnippet = "";
+                if (prefix === "5g1" && system.modelName === "ZenWiFi_BD4_Outdoor") {                              
+                    outdoorChannelHintSnippet = `
+                        <div id="${prefix}_outdoor_channel_hint">
+                            * <#WLANConfig11b_EChannel_od_restrict_hint#>
+                        </div>
+                    `;
+                }
+
+                let noZeroWaitDfsSnippet = "";
+                if (no_zero_wait_dfs_support) {
+                    noZeroWaitDfsSnippet += `
+                        <div id="${prefix}_zero_dfs_field" style="display:${
+                        parseInt(channelValue) >= 52 && parseInt(channelValue) <= 144 ? "" : "none"
+                    }">
+                            <span>        
+                            <#WLANConfig11b_EChannelMixedLonger#>
+                            </span>
+                        </div>
+                    `;
+                }
+
                 let uNII4Snippet = "";
                 if (uNII4Support) {
                     uNII4Snippet += `
@@ -1942,8 +2070,10 @@
                             ${currentChannelSnippet}
                             ${acsCh13Snippet}
                             ${acsDfsSnippet}
+                            ${noZeroWaitDfsSnippet}
                             ${uNII4Snippet}
                             ${psc6gSnippet}
+                            ${outdoorChannelHintSnippet}
                         </td>
                     </tr>
                 `;
@@ -1953,11 +2083,15 @@
                 let { wlBandSeq, smartConnect, isBRCMplatform, extensionChannelObject } = systemManipulable;
                 let { smartConnectReferenceIndex } = smartConnect;
                 let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
-                let { channelValue, chanspecs, ch320MHz, bandwidthValue, extChannelValue } = wlBandSeq[prefixNvram];
+                let { channelValue, chanspecs, bandwidthValue, extChannelValue } = wlBandSeq[prefixNvram];
                 let extensionChannelString = objectDeepCopy(extensionChannelObject);
 
                 // if channel bandwidth is 20 MHz then not to display extension channel
                 let displayFlag = (() => {
+                    if (prefix === "6g1" || prefix === "6g2") {
+                        return "none";
+                    }
+
                     if (isBRCMplatform) {
                         if (bandwidthValue === "1" || channelValue === "14") {
                             return "none";
@@ -1975,15 +2109,9 @@
                 if (isBRCMplatform) {
                     delete extensionChannelString["lower"];
                     delete extensionChannelString["upper"];
-                    if (prefix !== "6g1" && prefix !== "6g2") {
-                        delete extensionChannelString["320-1"];
-                        delete extensionChannelString["320-2"];
-                    }
                 } else {
                     delete extensionChannelString["l"];
                     delete extensionChannelString["u"];
-                    delete extensionChannelString["320-1"];
-                    delete extensionChannelString["320-2"];
                     if (prefix === "5g1" || prefix === "5g2") {
                         delete extensionChannelString["lower"];
                         delete extensionChannelString["upper"];
@@ -1993,67 +2121,23 @@
                 if (channelValue === "0" || prefix === "5g1" || prefix === "5g2") {
                     delete extensionChannelString["l"];
                     delete extensionChannelString["u"];
-                    delete extensionChannelString["320-1"];
-                    delete extensionChannelString["320-2"];
                     delete extensionChannelString["lower"];
                     delete extensionChannelString["upper"];
                 } else {
                     let ch = channelValue.slice(0, -1);
-                    if (prefix === "2g1") {
-                        delete extensionChannelString["0"];
-                        if (chanspecs.indexOf(`${ch}u`) === -1) {
-                            delete extensionChannelString["u"];
-                        }
-
-                        if (chanspecs.indexOf(`${ch}l`) === -1) {
-                            delete extensionChannelString["l"];
-                        }
-                    } else if (prefix === "6g1" || prefix === "6g2") {
-                        delete extensionChannelString["l"];
+                    delete extensionChannelString["0"];
+                    if (chanspecs.indexOf(`${ch}u`) === -1) {
                         delete extensionChannelString["u"];
-                        if (
-                            ((isBRCMplatform && bandwidthValue !== "0") || (!isBRCMplatform && bandwidthValue !== "1")) &&
-                            bandwidthValue !== "6"
-                        ) {
-                            delete extensionChannelString["lower"];
-                            delete extensionChannelString["upper"];
-                        } else {
-                            let ch = channelValue.split("/320")[0];
-                            if (isBRCMplatform) {
-                                ch = ch.slice(2);
-                            }
+                    }
 
-                            if (ch320MHz[ch]) {
-                                delete extensionChannelString["0"];
-                                if (ch320MHz[ch].indexOf(`6g${ch}/320-1`) === -1) {
-                                    if (isBRCMplatform) {
-                                        delete extensionChannelString["320-1"];
-                                    } else {
-                                        delete extensionChannelString["lower"];
-                                    }
-                                }
-
-                                if (ch320MHz[ch].indexOf(`6g${ch}/320-2`) === -1) {
-                                    if (isBRCMplatform) {
-                                        delete extensionChannelString["320-2"];
-                                    } else {
-                                        delete extensionChannelString["upper"];
-                                    }
-                                }
-                            } else {
-                                // for channel that not support 320 MHz
-                                delete extensionChannelString["lower"];
-                                delete extensionChannelString["upper"];
-                            }
-                        }
+                    if (chanspecs.indexOf(`${ch}l`) === -1) {
+                        delete extensionChannelString["l"];
                     }
                 }
 
                 let postfix = "0";
                 if (channelValue.indexOf("u") !== -1 || channelValue.indexOf("l") !== -1) {
                     postfix = channelValue.slice(-1);
-                } else if (channelValue.indexOf("320-1") !== -1 || channelValue.indexOf("320-2") !== -1) {
-                    postfix = channelValue.split("/")[1];
                 } else {
                     // MTK, QCA platforms
                     postfix = extChannelValue;
@@ -2074,58 +2158,221 @@
                 `;
             }
 
+            function generateBW320ChannelRange(prefix) {
+                let { wlBandSeq, smartConnect, isBRCMplatform, bw320ChannelRangeObject } = systemManipulable;
+                let { smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { channelValue, chanspecs, bandwidthValue, extChannelValue, bw320MHzSupport } = wlBandSeq[prefixNvram];
+                let displayFlag = (() => {
+                    if (prefix === "6g1" || prefix === "6g2") {
+                        if (bw320MHzSupport) {
+                            if (bandwidthValue === "6") {
+                                return "";
+                            }
+
+                            if (isBRCMplatform && bandwidthValue === "0") {
+                                return "";
+                            } else if (!isBRCMplatform && bandwidthValue === "1") {
+                                return "";
+                            }
+                        }
+                    }
+
+                    return "none";
+                })();
+
+                let bw320ChannelRangeString = get320ChannelRangeValue(prefix);
+                let postfix = "0";
+
+                //BRCM platforms
+                if (channelValue.indexOf("/320-1") !== -1 || channelValue.indexOf("/320-2") !== -1) {
+                    postfix = channelValue.slice(-5);
+                } else {
+                    // MTK, QCA platforms
+                    postfix = extChannelValue;
+                }
+
+                let bw320ChannelRangeSnippet = "";
+                for (let [value, desc] of Object.entries(bw320ChannelRangeString)) {
+                    bw320ChannelRangeSnippet += `<option value="${value}" ${postfix === value ? "selected" : ""}>${desc}</option>`;
+                }
+
+                return `
+                    <tr id="${prefix}_bw320_channel_range_field" style="display:${displayFlag}">
+                        <th><#WLANConfig_BW320_Channel_Range#></th>
+                        <td>
+                            <select id="${prefix}_bw320_channel_range" class="input_option">${bw320ChannelRangeSnippet}</select>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            function get320ChannelRangeValue(prefix) {
+                let { wlBandSeq, smartConnect, isBRCMplatform, isMTKplatform, bw320ChannelRangeObject } = systemManipulable;
+                let { smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { channelValue, chanspecs, bandwidthValue, extChannelValue, bw320MHzSupport } = wlBandSeq[prefixNvram];
+                let bw320ChannelRangeString = objectDeepCopy(bw320ChannelRangeObject);
+                if (isBRCMplatform) {
+                    delete bw320ChannelRangeString["lower"];
+                    delete bw320ChannelRangeString["upper"];
+                } else {
+                    delete bw320ChannelRangeString["320-1"];
+                    delete bw320ChannelRangeString["320-2"];
+                }
+
+                if (channelValue === "0") {
+                    delete bw320ChannelRangeString["320-1"];
+                    delete bw320ChannelRangeString["320-2"];
+                    delete bw320ChannelRangeString["lower"];
+                    delete bw320ChannelRangeString["upper"];
+                } else {
+                    // for QCA plarform, put BW320 channel range always Auto temporarily
+                    if (isBRCMplatform || isMTKplatform) {
+                        delete bw320ChannelRangeString["0"];
+                    }
+
+                    if (isBRCMplatform) {
+                        let ch = channelValue.slice(0, -5);
+                        if (chanspecs.indexOf(`${ch}320-1`) === -1) {
+                            delete bw320ChannelRangeString["320-1"];
+                        }
+
+                        if (chanspecs.indexOf(`${ch}320-2`) === -1) {
+                            delete bw320ChannelRangeString["320-2"];
+                        }
+                    } else {
+                        let ch = `6g${channelValue}`;
+                        if (isMTKplatform) {
+                            // need to regen the BW320 channel range, due to the 320-1/320-2 and lower/uppder mapping is alternatively
+                            delete bw320ChannelRangeString["lower"];
+                            delete bw320ChannelRangeString["upper"];
+                            const bw320ChannelBound = [63, 127, 191];
+                            let getChannelRangeDirection = (() => {
+                                let channelValueNum = parseInt(channelValue);
+                                let centerChannel = 0;
+                                for (let i = 0; i < bw320ChannelBound.length; i++) {
+                                    if (channelValueNum > bw320ChannelBound[i]) {
+                                        continue;
+                                    }
+
+                                    centerChannel = (() => {
+                                        if (i === 0) {
+                                            return Math.floor(bw320ChannelBound[i] / 2);
+                                        }
+
+                                        return Math.floor((bw320ChannelBound[i] + bw320ChannelBound[i - 1]) / 2);
+                                    })();
+
+                                    if (channelValueNum < centerChannel) {
+                                        return "lower";
+                                    }
+
+                                    return "upper";
+                                }
+                            })();
+
+                            if (chanspecs.includes(`${ch}/320-1`)) {
+                                bw320ChannelRangeString[getChannelRangeDirection] = "320-1";
+                            }
+
+                            if (chanspecs.includes(`${ch}/320-2`)) {
+                                let oppositeDirection = getChannelRangeDirection === "lower" ? "upper" : "lower";
+                                bw320ChannelRangeString[oppositeDirection] = "320-2";
+                            }
+                        } else {
+                            // QCA platforms
+                            // for QCA plarform, put BW320 channel range always Auto temporarily
+                            delete bw320ChannelRangeString["lower"];
+                            delete bw320ChannelRangeString["upper"];
+                        }
+                    }
+                }
+
+                return bw320ChannelRangeString;
+            }
+
+            function get_max_6g1_bw() {
+                let getWlBandwidthData = httpApi.hookGet("get_wl_bandwidth", true);
+                let currentValue = getWlBandwidthData.current_band["6g1"];
+                if (currentValue === "auto") {
+                    // get max key from bandwidth list
+                    let maxKey = Math.max(
+                        ...Object.keys(getWlBandwidthData["6g1"])
+                            .filter((key) => key !== "auto")
+                            .map(Number)
+                    );
+                    return maxKey.toString();
+                }
+
+                return currentValue;
+            }
+
+			const afcTable = [
+					{
+						status: "",
+						message: "",
+					},
+					{
+						status: "<#WiFi_AFC_SPmode#>",
+						message: `<#WiFi_AFC_Status_desc1#>`,
+					},
+					{
+						status: "<#WiFi_AFC_LPImode#>",
+						message: `<#WiFi_AFC_Status_desc2#>`,
+					},
+					{
+						status: "<#WiFi_AFC_LPImode#>",
+						message: `<#WiFi_AFC_Status_desc3#>`,
+					},
+					{
+						status: "<#WiFi_AFC_LPImode#>",
+						message: `<#WiFi_AFC_Status_desc4#>`,
+					},
+					{
+						status: "<#WiFi_AFC_LPImode#>",
+						message: `<#WiFi_AFC_Status_desc5#>`,
+					},
+					{
+						status: "<#WiFi_AFC_LPImode#>",
+						message: `<#WiFi_AFC_Status_desc6#>`,
+					},
+			];
+
+			let maxbw_6g1 = get_max_6g1_bw();
+
             function generateAFC(prefix) {
                 if (prefix !== "6g1" || !systemManipulable.brcmAfcSupport) {
                     return "";
                 }
 
-                const afcTable = [
-                    {
-                        status: "",
-                        message: "",
-                    },
-                    {
-                        status: "Standard Power mode",
-                        message: "",
-                    },
-                    {
-                        status: "Low Power Indoor mode",
-                        message: `The available channels approved by AFC can't form a maximum bandwidth of 320MHz.`,
-                    },
-                    {
-                        status: "Low Power Indoor mode",
-                        message: `No channels available in your location are authorized for use in the standard power mode.`,
-                    },
-                    {
-                        status: "Low Power Indoor mode",
-                        message: `AFC server is busy now, please try later.`,
-                    },
-                    {
-                        status: "Low Power Indoor mode",
-                        message: "",
-                    },
-                    {
-                        status: "Low Power Indoor mode",
-                        message: `The configured control channel is not authorized for use in the standard power mode. `,
-                    },
-                ];
-
-				let afcReturn = httpApi.get_afc_enable();
-				let afc_status = afcReturn.retStatus;
+                let afcReturn = httpApi.get_afc_enable();
+                let afc_status = afcReturn.retStatus;
                 const { status = "", message = "" } = afcTable[afc_status] || {};
+
+                let str_message = message.replace(`%@`, maxbw_6g1);
 
                 let afc_html = `
                     <tr>
-                        <th width="30%">
-                            <a class="hintstyle" href="javascript:void(0);">AFC</a>
-                        </th>
-                        <td style="display:flex;align-items:center;border:0;">
+                        <th width="30%">AFC</th>
+						${status === "" ? `<td style="display:flex;align-items:center;border:0;">` : `<td style="align-items:center;border:0;">`}
+							${
+                                !systemManipulable.afc_positioningSupport
+                                    ? `<div id="loc_press_shade" class="shadow"></div>`
+                                    : `<div id="loc_press_shade" class="shadow" style="display:none;"></div>`
+                            }
                             <div id="radio_afc_enable" class="left radio-smartcon-enable"></div>
-                            <div id="afc_status" class="smart-connect-rule-link" style="line-height:16px;color:#fc0">
+							${
+                                status === ""
+                                    ? `<div class="setup_afc_help_icon"></div>`
+                                    : `<div class="setup_afc_help_icon" style="margin-top:-26px;margin-left:92px;"></div>`
+                            }
+                            <div id="afc_status" style="line-height:28px;margin-left:125px;margin-top:-25px;color:#fc0">
                                 ${status}
-                                <div id="afc_err_message" style="color:#fc0;">${message}</div>
+                                
                             </div>
-                            ${status === "" ? `<div class="setup_afc_help_icon"></div>` : ""}
+
+                            <span id="afc_err_message" style="margin-top:25px;color:#fc0;">${str_message}</span>
                         </td>
                     </tr>
                 `;
@@ -2300,6 +2547,7 @@
                 let { smartConnectEnable, smartConnectReferenceIndex } = smartConnect;
                 let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
                 let { authMethodValue, wpaKeyValue, joinSmartConnect } = wlBandSeq[prefixNvram];
+                wpaKeyValue = wpaKeyValue.replace(/"/g, "&quot;").replace(/'/g, "&apos;");
                 let displayFlag = (() => {
                     if (
                         authMethodValue === "psk" ||
@@ -2741,13 +2989,13 @@
                     sameSsidString: `<#wireless_JS_dup_SSID#>`,
                 };
 
-                if (dwbMode === "1") {
+                if (!isSupport("sdn_mwl") && dwbMode === "1") {
                     dwbInfo.ssid = document.getElementById(`${dwbBand}_ssid`).value;
                     dwbInfo.targetObject = document.getElementById(`${dwbBand}_ssid`);
                 }
 
                 for (let [key, value] of Object.entries(wlBandSeq)) {
-                    let { joinSmartConnect, beSupport, wifi7ModeEnabled } = value;
+                    let { joinSmartConnect, beSupport, wifi7ModeEnabled, bw320MHzSupport } = value;
 
                     // WiFi 7 mode
                     if (beSupport) {
@@ -2807,6 +3055,7 @@
                             let channelBandwidth = document.getElementById(`${key}_channel_bandwidth`).value;
                             let controlChannel = document.getElementById(`${key}_control_channel`).value;
                             let extensionChannel = document.getElementById(`${key}_extension_channel`).value;
+                            let bw320ChannelRange = document.getElementById(`${key}_bw320_channel_range`).value;
                             if (controlChannel === "0") {
                                 return "0";
                             }
@@ -2824,10 +3073,10 @@
                                     ) {
                                         return controlChannel;
                                     } else {
-                                        return `6g${controlChannel}/${extensionChannel}`;
+                                        return `6g${controlChannel}/${bw320ChannelRange}`;
                                     }
                                 } else if (channelBandwidth === "6") {
-                                    return `6g${controlChannel}/${extensionChannel}`;
+                                    return `6g${controlChannel}/${bw320ChannelRange}`;
                                 }
                             }
 
@@ -2836,7 +3085,15 @@
                     } else {
                         let channelBandwidth = document.getElementById(`${key}_channel_bandwidth`).value;
                         let controlChannel = document.getElementById(`${key}_control_channel`).value;
-                        let extensionChannel = document.getElementById(`${key}_extension_channel`).value;
+                        let extensionChannel = "0";
+                        if (`${key}` === "6g1" || `${key}` === "6g2") {
+                            if (bw320MHzSupport && (channelBandwidth === "1" || channelBandwidth === "6")) {
+                                extensionChannel = document.getElementById(`${key}_bw320_channel_range`).value;
+                            }
+                        } else {
+                            extensionChannel = document.getElementById(`${key}_extension_channel`).value;
+                        }
+
                         postObject[`${key}_channel`] = controlChannel;
                         if (channelBandwidth !== "0" && controlChannel !== "0") {
                             if (extensionChannel !== "0") {
@@ -3123,7 +3380,7 @@
                     }
 
                     // Enable 160 MHz, ACS DFS, ACS U-NII-4
-                    if (key === "5g1" || key === "5g2") {
+                    if (key === "5g1" || key === "5g2" || key === "6g1" || key === "6g2") {
                         let enable240MHzElement = document.getElementById(`${key}_bw240_enable`);
                         if (enable240MHzElement && enable240MHzElement.style.display === "") {
                             postObject[`${key}_bw_240`] = enable240MHzElement.checked ? "1" : "0";

@@ -8,7 +8,7 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<title><#Web_Title#> - Blocking Page</title>  
+<title>Blocking Page</title>
 <script type="text/JavaScript" src="/js/jquery.js"></script>                       
 <style>
 body{
@@ -216,7 +216,7 @@ a{
 }
 </style>	
 <script type="text/javascript">
-var isRouterMode = ('<% nvram_get("sw_mode"); %>' == '1') ? true : false;
+var isRouterMode = ('<% get_operation_mode(); %>' == 'rt') ? true : false;
 var header_info = [<% get_header_info(); %>][0];
 var ROUTERHOSTNAME = '<#Web_DOMAIN_NAME#>';
 var domainNameUrl = header_info.protocol+"://"+ROUTERHOSTNAME+":"+header_info.port;
@@ -393,10 +393,10 @@ function show_information(){
 	
 		document.getElementById('detail_info').innerHTML = code;
 
-		code_suggestion = "<ul>";
-		code_suggestion += "<li><span><#web_redirect_reason_limited_1#></span></li>";
-		code_suggestion += "<li><span><#web_redirect_reason_limited_2#></span></li>";
-		code_suggestion += "</ul>";		
+		code_suggestion = `<ul>`;
+		code_suggestion += `<li><span><#web_redirect_reason_limited_1#></span></li>`;
+		code_suggestion += `<li><span><#web_redirect_reason_limited_2#></span></li>`;
+		code_suggestion += `</ul>`;
 		
 		$("#go_btn").click(function(){
 			location.href = "AdaptiveQoS_TrafficLimiter.asp";
@@ -444,7 +444,7 @@ function show_information(){
 			</div>
 			<div id="page_title" class="div_td title_text"></div>
 		</div>		
-		<div class="prod_madelName"><#Web_Title2#></div>
+		<div class="prod_madelName"></div>
 		
 		<div id="main_reason" class="p1 title_gap"><#block_DetailInfo#></div>
 		<div ></div>	

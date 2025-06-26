@@ -11,7 +11,7 @@
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/client_function.js"></script>
-<script type="text/javascript" src="/js/asus_policy.js"></script>
+<script type="text/javascript" src="/js/asus_policy.js?v=4"></script>
 <script>
 if ( !Element.prototype.scrollIntoViewIfNeeded ) {
 	Element.prototype.scrollIntoViewIfNeeded = function ( centerIfNeeded = true ) {
@@ -51,16 +51,15 @@ $(function () {
 		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpnc' + theme + '.css">');
 	}
 	else{
-		var productid = httpApi.nvramGet(["productid"]).productid;
 		if(rog_support){
 			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpncGT.css">');
 		}
-		else if(tuf_support){
+		else if(isSupport("TUF_UI")){
 			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpncTUF.css">');
 		}
 	}
 
-	if(CoBrand == "8")
+	if(isSupport("TS_UI"))
 		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/difference.css">');
 });
 var surfshark_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=sskVPN&lang="+ui_lang+"&kw=&num=&tcode="+ttc;
@@ -854,7 +853,7 @@ function Get_Component_Internet_Info(_type){
 		return $wan_status_container;
 	};
 
-	if(isSwMode("rt")){
+	if((isSwMode("RT") || isSwMode("WISP"))){
 		var $wan_status_container = $("<div>").appendTo($content_container);
 		var wans_dualwan = httpApi.nvramGet(["wans_dualwan"]).wans_dualwan;
 		var dualwan_enabled = (isSupport("dualwan") && wans_dualwan.search("none") == -1) ? 1 : 0;
@@ -4152,50 +4151,25 @@ function adjust_popup_container_top(_obj, _offsetHeight){
 	}
 }
 function get_wl_unit_by_band(_band){
-	if(_band == undefined)
-		return "";
+	if(_band == undefined) return "";
 
 	_band = (_band).toString().toUpperCase();
-	var wl_nband = "";
-	switch(_band){
-		case "2G":
-		case "2G1":
-			wl_nband = "2";
-			break;
-		case "5G":
-		case "5G1":
-		case "5G2":
-			wl_nband = "1";
-			break;
-		case "6G":
-		case "6G1":
-		case "6G2":
-			wl_nband = "4";
-			break;
-		case "60G":
-			wl_nband = "6";
-			break;
-	}
-	if(wl_nband == "")
-		return "";
+	const wlnband_list = `<% nvram_get("wlnband_list"); %>`.toUpperCase().split("&#60");
 
-	var wl_unit = "";
-	var suffix_num = _band.substr(_band.indexOf("G") + 1);
-	var ordinal_num = (suffix_num == "") ? 1 : parseInt(suffix_num);
-	var count = 1;
-	var wl_nband_array = httpApi.hookGet("wl_nband_info");
-	$.each(wl_nband_array, function(wlx, value){
-		if(value == wl_nband){
-			if(count == ordinal_num){
-				wl_unit = wlx;
-				return false;
-			}
-			else{
-				count+=1;
-			}
-		}
-	});
-	return wl_unit.toString();
+	const bandMap = {
+		"2G": "2G1",
+		"5G": "5G1",
+		"6G": "6G1"
+	};
+
+	_band = bandMap[_band] || _band;
+
+	return findWLUnit(wlnband_list, _band).toString();
+
+	function findWLUnit(array, band) {
+		const idx = $.inArray(band, array);
+		return idx !== -1 ? idx : '';
+	}
 }
 function initial(){
 	show_loading_obj();

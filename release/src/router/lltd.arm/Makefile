@@ -152,13 +152,11 @@ else ifeq ($(BUILD_NAME),RT-AX88U)
 	install icon.rtax88u_gd.ico $(INSTALLDIR)/usr/sbin/icon_gd.ico
 	install icon.large.rtax88u_gd.ico $(INSTALLDIR)/usr/sbin/icon_gd.large.ico
 else ifeq ($(BUILD_NAME), GT-AX11000_PRO)
-#	To be added...
-#	install icon.gtax11000_pro.ico $(INSTALLDIR)/usr/sbin/icon.ico
-#	install icon.large.gtax11000_pro.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+	install icon.gtax11000_pro.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.gtax11000_pro.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), GT-AXE16000)
-#	To be added...
-#	install icon.gtax11000_pro.ico $(INSTALLDIR)/usr/sbin/icon.ico
-#	install icon.large.gtax11000_pro.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+	install icon.gtaxe16000.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.gtaxe16000.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), GT-BE98)
 	install icon.gtbe98.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.gtbe98.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
@@ -172,9 +170,8 @@ else ifeq ($(BUILD_NAME), GT-BE19000)
 	install icon.gtbe19000.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.gtbe19000.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), ET12)
-#	To be added...
-#	install icon.gtax11000_pro.ico $(INSTALLDIR)/usr/sbin/icon.ico
-#	install icon.large.gtax11000_pro.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+	install icon.et12.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.et12.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), XT12)
 	install icon.xt12.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.xt12.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
@@ -204,6 +201,15 @@ else ifeq ($(BUILD_NAME), RT-BE58U)
 else ifeq ($(BUILD_NAME), TUF-BE3600)
 	install icon.tufbe3600.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.tufbe3600.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), RT-BE58U_V2)
+	install icon.rtbe58u_v2.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.rtbe58u_v2.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), TUF-BE3600_V2)
+	install icon.tufbe3600_v2.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.tufbe3600_v2.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), RT-BE55)
+	install icon.rtbe55.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.rtbe55.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), RT-BE92U)
 	install icon.rtbe92u.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.rtbe92u.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
@@ -222,12 +228,24 @@ else ifeq ($(BUILD_NAME), RT-BE58U_PRO)
 else ifeq ($(BUILD_NAME), RT-BE58_GO)
 	install icon.rtbe58_go.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.rtbe58_go.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
-else ifeq ($(BUILD_NAME), GT-BE19000_AI)
-	install icon.gtbe19000_ai.ico $(INSTALLDIR)/usr/sbin/icon.ico
-	install icon.large.gtbe19000_ai.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), GT-BE19000AI)
+	install icon.gtbe19000ai.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.gtbe19000ai.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), GS-BE18000)
 	install icon.gsbe18000.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.gsbe18000.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), GS-BE12000)
+	install icon.gsbe12000.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.gsbe12000.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), GS7_PRO)
+	install icon.gs7_pro.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.gs7_pro.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), GT7)
+	install icon.gt7.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.gt7.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), GT-BE96_AI)
+	install icon.gtbe96_ai.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.gtbe96_ai.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else
 	install icon.$(modelstr).ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.$(modelstr).ico $(INSTALLDIR)/usr/sbin/icon.large.ico

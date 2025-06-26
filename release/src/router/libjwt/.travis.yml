@@ -1,0 +1,29 @@
+dist: jammy
+language: c
+
+os:
+ - linux
+arch:
+ - amd64
+ 
+compiler:
+  - gcc
+addons:
+  apt:
+    packages:
+    - libjansson-dev
+    - check
+    - libssl-dev
+    - lcov
+    - gnutls-dev
+before_install:
+  - sudo pip install codecov
+  - autoreconf -fi
+script:
+  - ./configure --without-openssl
+  - make check
+  - make distclean
+  - ./configure --enable-code-coverage
+  - make check-code-coverage
+after_success:
+  - codecov

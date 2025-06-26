@@ -1362,6 +1362,9 @@ spi_transfer_is_last(struct spi_controller *ctlr, struct spi_transfer *xfer)
 	return list_is_last(&xfer->transfer_list, &ctlr->cur_msg->transfers);
 }
 
+#if defined(CONFIG_BCM_KF_SPI)
+int spi_validate(struct spi_device *spi, struct spi_message *message);
+#endif
 
 /* Compatibility layer */
 #define spi_master			spi_controller

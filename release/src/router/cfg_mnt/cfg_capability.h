@@ -27,6 +27,7 @@ extern int cm_getCapabilityIntValue(char *mac, int capType);
 #ifdef RTCONFIG_AMAS_CENTRAL_ADS
 extern int cm_getAdsDsCapByUnit(int unit);
 #endif
+extern int cm_isSupportedParamByCapability(char *mac, unsigned int capability, unsigned int version);
 
 /* type */
 enum capabilityType {
@@ -102,6 +103,9 @@ enum capabilityType {
 	SMART_HAUL = 41,
 #endif
 #endif
+#ifdef RTCONFIG_REBOOT_SCHEDULE_V2
+	REBOOT_SCHEDULE_V2 = 42,
+#endif
 	CAPABILITY_MAX
 };
 
@@ -155,6 +159,10 @@ enum capabilityType {
 #define WIFI7_SUPPORT  BIT(23)
 
 #define MULTILAN_MWL BIT(24)
+
+#ifdef AFC_ENABLED
+#define AFC BIT(25)
+#endif
 
 /* for LINK_AGGREGATION */
 #define LACP_ENABLE                    BIT(0)

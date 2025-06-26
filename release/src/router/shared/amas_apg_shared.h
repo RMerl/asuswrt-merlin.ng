@@ -100,7 +100,7 @@ typedef struct apg_br_info_t {
 #define MAX_LAN_PORTIDX_STR_LEN 64
 #define MAX_SECURITY_LIST_SIZE  8
 #define MAX_SCHED_LIST_SIZE     64
-#define MAX_MAC_LIST_SIZE       64
+#define MAX_MAC_LIST_SIZE       128
 #define MAX_DUT_LIST_SIZE       32
 
 #define NV_APG_X_ENABLE		    "apg%d_enable"
@@ -285,7 +285,6 @@ extern apg_rule_st*     get_apg_rule_by_idx(int idx, apg_rule_st* apg_rule);
 extern apg_rule_st*     get_apg_rule_by_vid(int vid, apg_rule_st* apg_rule);
 extern apg_rule_st*     get_apg_rule_by_dut(char *dut_mac, unsigned short wifi_band, apg_rule_st* apg_rule);
 extern unsigned short 	get_wifi_band_by_dut_mac(char *dut_mac, apg_rule_st *apg_rule);
-extern char*            get_apg_value(apg_rule_st* apg_rule, unsigned short wifi_band, char *item, char *ret_value, int ret_value_bsize);
 extern int              get_mtlan_enable_by_idx(const unsigned int idx);
 extern int              get_mtlan_enable_by_vid(const unsigned int vid);
 extern int              find_mtvlan(const unsigned int vid);

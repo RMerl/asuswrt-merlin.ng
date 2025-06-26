@@ -218,6 +218,7 @@ BRCM_PHY_SHORTFIN_B0=y
 # BRCM_PHY_LONGFIN_B0 is not set
 BRCM_PHY_KAUAI_A0=y
 # BRCM_PHY_LANAI_A0 is not set
+# BRCM_PHY_NIIHAU_A0 is not set
 BRCM_PHY_XPHY=y
 
 #
@@ -413,8 +414,8 @@ BUILD_ZEBRA=dynamic
 BUILD_MCAST_PROXY=dynamic
 BUILD_MCAST_SNOOP=y
 # BUILD_PCP is not set
-# BCM_JUMBO_FRAME is not set
-# BCM_MAX_MTU_SIZE is not set
+BCM_JUMBO_FRAME=y
+BCM_MAX_MTU_SIZE=10240
 #
 # Traffic Control selection
 #

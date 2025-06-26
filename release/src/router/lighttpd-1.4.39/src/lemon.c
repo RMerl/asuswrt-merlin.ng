@@ -3807,8 +3807,9 @@ void Strsafe_init(){
   if( x1a ){
     x1a->size = 1024;
     x1a->count = 0;
-    x1a->tbl = (x1node*)malloc(
-      (sizeof(x1node) + sizeof(x1node*))*1024 );
+    // x1a->tbl = (x1node*)malloc(
+    //   (sizeof(x1node) + sizeof(x1node*))*1024 );
+    x1a->tbl = (x1node*)calloc(1024, sizeof(x1node) + sizeof(x1node*));
     if( x1a->tbl==0 ){
       free(x1a);
       x1a = 0;
@@ -3969,8 +3970,9 @@ void Symbol_init(){
   if( x2a ){
     x2a->size = 128;
     x2a->count = 0;
-    x2a->tbl = (x2node*)malloc(
-      (sizeof(x2node) + sizeof(x2node*))*128 );
+    // x2a->tbl = (x2node*)malloc(
+    //   (sizeof(x2node) + sizeof(x2node*))*128 );
+    x2a->tbl = (x2node*)calloc(128, sizeof(x2node) + sizeof(x2node*));
     if( x2a->tbl==0 ){
       free(x2a);
       x2a = 0;
@@ -4175,8 +4177,9 @@ void State_init(){
   if( x3a ){
     x3a->size = 128;
     x3a->count = 0;
-    x3a->tbl = (x3node*)malloc(
-      (sizeof(x3node) + sizeof(x3node*))*128 );
+    // x3a->tbl = (x3node*)malloc(
+    //   (sizeof(x3node) + sizeof(x3node*))*128 );
+    x3a->tbl = (x3node*)calloc(128, sizeof(x3node) + sizeof(x3node*));
     if( x3a->tbl==0 ){
       free(x3a);
       x3a = 0;
@@ -4321,8 +4324,9 @@ void Configtable_init(){
   if( x4a ){
     x4a->size = 64;
     x4a->count = 0;
-    x4a->tbl = (x4node*)malloc(
-      (sizeof(x4node) + sizeof(x4node*))*64 );
+    // x4a->tbl = (x4node*)malloc(
+    //   (sizeof(x4node) + sizeof(x4node*))*64 );
+    x4a->tbl = (x4node*)calloc(64, sizeof(x4node) + sizeof(x4node*));
     if( x4a->tbl==0 ){
       free(x4a);
       x4a = 0;

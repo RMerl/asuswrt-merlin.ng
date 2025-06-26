@@ -398,11 +398,11 @@ void handle_req(int sockfd, char *buf, char *mac)
 			"Server: pc_block\r\n"
 			"Date: %s\r\n"
 			"Connection: close\r\n"
-			"Location: %s://%s:%d/blocking.asp?mac=%s\r\n"
+			"Location: %s://%s:%d/blocking.asp\r\n"
 			"Content-Type: text/plain\r\n"
 			"\r\n"
 			"<html></html>\r\n",
-			timebuf, proto, nvram_safe_get("lan_ipaddr"), port, mac);
+			timebuf, proto, nvram_safe_get("lan_ipaddr"), port);
 		write(sockfd, page, strlen(page));
 	}
 

@@ -13,6 +13,21 @@
 				$("#settingsWindow").contents().find("body").hide().css({"visibility":"visible", "overflow-x":"auto"}).fadeIn();
 				document.getElementById('settingsWindow').style.height = `${document.body.clientHeight - 70}px`;
 			})
-			.parent().css({"padding-right":"initial","padding-left":"initial"});
+			
+			window.addEventListener('message', event => {
+				if (event.data.type === 'resize') {
+					const iframe = document.getElementById('settingsWindow');
+					if (iframe) {
+                        const footer = (navigator.userAgent.match(/ASUSMultiSiteManager/) || navigator.userAgent.match(/ASUSExpertSiteManager/)) ? 100 : 20;
+                        const iframeHeight = event.data.height + footer;
+                        let headerHeight = 0;
+                        if (document.querySelector('header')) {
+                            headerHeight = document.querySelector('header').scrollHeight;
+                        }
+                        const windowHeight = top.window.innerHeight - headerHeight * 2 - footer;
+                        iframe.style.height = `${Math.max(iframeHeight, windowHeight * 1.13)}px`
+					}
+				}
+			});
 	</script>
 </html>

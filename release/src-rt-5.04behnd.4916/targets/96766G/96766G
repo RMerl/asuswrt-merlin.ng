@@ -219,6 +219,7 @@ BRCM_PHY_BLACKFIN_B0=y
 # BRCM_PHY_LONGFIN_B0 is not set
 # BRCM_PHY_KAUAI_A0 is not set
 BRCM_PHY_LANAI_A0=y
+BRCM_PHY_NIIHAU_A0=y
 # BRCM_PHY_XPHY is not set
 
 #
@@ -459,7 +460,8 @@ BUILD_MPMCTL=y
 #
 # Ingress QoS
 #
-# BRCM_DRIVER_INGQOS is not set
+BRCM_DRIVER_INGQOS=m
+BUILD_IQCTL=dynamic
 
 #
 # Misc datapath configuration
@@ -650,7 +652,7 @@ BCM_MAGIC_SYSRQ=y
 # BCM_QEMU_SIM is not set
 BUILD_DEBUG_TOOLS=y
 # BUILD_GDBSERVER is not set
-# ENABLE_APP_COREDUMPS is not set
+ENABLE_APP_COREDUMPS=y
 # BUILD_BREAKPAD is not set
 # BUILD_MINICOREDUMPER is not set
 # CMS_SECURITY_LOG is not set

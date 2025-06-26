@@ -409,8 +409,8 @@ static unsigned calc(unsigned bw, unsigned pct)
 void del_EbtablesRules(void)
 {
 	/* Flush all rules in nat table of ebtable*/
-	if (module_loaded("ebtable_nat"))
-		eval("ebtables", "-t", "nat", "-F");
+	eval("ebtables", "-t", "nat", "-F");
+
 	etable_flag = 0;
 }
 
@@ -736,6 +736,9 @@ static int add_qos_rules(char *pcWANIF)
 #endif
 		get_qos_prefix(unit, prefix);
 
+		// move chain buffer here to avoid mangle_rule broken issue
+		snprintf(chain, sizeof(chain), "QOSO%d", unit);	// chain name
+
 		inuse = sticky_enable = 0;
 		if (nvram_pf_match(prefix, "sticky", "0"))
 			sticky_enable = 1;
@@ -783,7 +786,6 @@ static int add_qos_rules(char *pcWANIF)
 			class_num |= gum;
 			down_class_num |= gum;	// for download
 
-			snprintf(chain, sizeof(chain), "QOSO%d", unit);	// chain name
 			snprintf(end , sizeof(end), " -j CONNMARK %s 0x%x/0x%x\n", action, class_num, QOS_MASK);	// CONNMARK string
 			snprintf(end2, sizeof(end2), " -j RETURN\n");
 

@@ -126,6 +126,8 @@ struct bcmbca_hsspi {
 	int polling;
 };
 
+#define BCMBCA_MUTEX_LOCK(m) do{if(!oops_in_progress)mutex_lock(m);}while(0)
+#define BCMBCA_MUTEX_UNLOCK(m) do{if(!oops_in_progress)mutex_unlock(m);}while(0)
 
 static void bcmbca_hsspi_set_clk(struct bcmbca_hsspi *bs,
 				  struct spi_device *spi, int hz);
@@ -150,11 +152,11 @@ static void bcmbca_hsspi_set_clk_gate(struct bcmbca_hsspi *bs,
 	u32 reg = 0;
 
 	if (bcmbca_hsspi_dev_no_clk_gate(spi)) {
-		mutex_lock(&bs->bus_mutex);
+		BCMBCA_MUTEX_LOCK(&bs->bus_mutex);
 		reg = __raw_readl(bs->regs + HSSPI_GLOBAL_CTRL_REG);
 		reg |= GLOBAL_CTRL_CLK_GATE_SSOFF;
 		__raw_writel(reg, bs->regs + HSSPI_GLOBAL_CTRL_REG);
-		mutex_unlock(&bs->bus_mutex);
+		BCMBCA_MUTEX_UNLOCK(&bs->bus_mutex);
 	}
 }
 
@@ -167,7 +169,7 @@ static void bcmbca_hsspi_set_cs(struct bcmbca_hsspi *bs, unsigned int cs,
 	if (cs == 7)
 		return;
 
-	mutex_lock(&bs->bus_mutex);
+	BCMBCA_MUTEX_LOCK(&bs->bus_mutex);
 
 	if (active) {
 		/* activate cs by setting the override bit and active value bit*/
@@ -184,7 +186,7 @@ static void bcmbca_hsspi_set_cs(struct bcmbca_hsspi *bs, unsigned int cs,
 		__raw_writel(reg, bs->spim_ctrl);	  
 	}
 
-	mutex_unlock(&bs->bus_mutex);
+	BCMBCA_MUTEX_UNLOCK(&bs->bus_mutex);
 }
 
 static void bcmbca_hsspi_set_clk(struct bcmbca_hsspi *bs,
@@ -204,7 +206,7 @@ static void bcmbca_hsspi_set_clk(struct bcmbca_hsspi *bs,
 		reg &= ~SIGNAL_CTRL_ASYNC_INPUT_PATH;
 	__raw_writel(reg, bs->regs + HSSPI_PROFILE_SIGNAL_CTRL_REG(profile));
 
-	mutex_lock(&bs->bus_mutex);
+	BCMBCA_MUTEX_LOCK(&bs->bus_mutex);
 	/* setup clock polarity */
 	reg = __raw_readl(bs->regs + HSSPI_GLOBAL_CTRL_REG);
 	reg &= ~GLOBAL_CTRL_CLK_POLARITY;
@@ -220,7 +222,7 @@ static void bcmbca_hsspi_set_clk(struct bcmbca_hsspi *bs,
 
 	__raw_writel(reg, bs->regs + HSSPI_GLOBAL_CTRL_REG);
 
-	mutex_unlock(&bs->bus_mutex);
+	BCMBCA_MUTEX_UNLOCK(&bs->bus_mutex);
 }
 
 static int bcmbca_hsspi_do_txrx(struct spi_device *spi, struct spi_transfer *t,
@@ -335,7 +337,7 @@ static int bcmbca_hsspi_setup(struct spi_device *spi)
 	__raw_writel(reg, bs->regs +
 		     HSSPI_PROFILE_SIGNAL_CTRL_REG(spi->chip_select));
 
-	mutex_lock(&bs->bus_mutex);
+	BCMBCA_MUTEX_LOCK(&bs->bus_mutex);
 	reg = __raw_readl(bs->regs + HSSPI_GLOBAL_CTRL_REG);
 
 	if (spi->mode & SPI_CS_HIGH)
@@ -349,7 +351,7 @@ static int bcmbca_hsspi_setup(struct spi_device *spi)
 	else
 		bs->cs_polarity &= ~BIT(spi->chip_select);
 
-	mutex_unlock(&bs->bus_mutex);
+	BCMBCA_MUTEX_UNLOCK(&bs->bus_mutex);
 
 	return 0;
 }
@@ -373,7 +375,7 @@ static int bcmbca_hsspi_transfer_one(struct spi_master *master,
 
 		if (t->delay_usecs) {
 			u16 us = t->delay_usecs;
-			if (us <= 10)
+			if (us <= 10 || oops_in_progress)
 				udelay(us);
 			else
 				usleep_range(us, us + DIV_ROUND_UP(us, 10));

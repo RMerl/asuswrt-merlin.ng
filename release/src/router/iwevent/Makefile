@@ -33,7 +33,9 @@ endif
 
 ifeq ($(RTCONFIG_CFGSYNC),y)
 CFLAGS  += -I$(TOP)/cfg_mnt
+CFLAGS  += -I$(TOP)/networkmap/api
 LDFLAGS += -L$(TOP)/cfg_mnt -lcfgmnt
+LDFLAGS += -L$(TOP)/networkmap/api/ -lnmpapi
 endif 
 
 LDFLAGS +=  -L. -liw

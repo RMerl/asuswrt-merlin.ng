@@ -49,7 +49,7 @@ function initial(){
 	if(!band5g_support || based_modelid == "RT-AC87U")
 		document.getElementById("wl_unit_field").style.display = "none";
 
-	if(smart_connect_support && '<% nvram_get("smart_connect_x"); %>' == '1' && (isSwMode("rt") || isSwMode("ap")))
+	if(smart_connect_support && '<% nvram_get("smart_connect_x"); %>' == '1' && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")))
 		document.getElementById("wl_unit_field").style.display = "none";
 
 	if(((sw_mode == 2 || sw_mode == 4) && '<% nvram_get("wl_unit"); %>' == '<% nvram_get("wlc_band"); %>') ||

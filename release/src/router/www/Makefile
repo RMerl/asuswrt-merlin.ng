@@ -47,6 +47,13 @@ else
 	cp $(TOP)/www/sysdep/FUNCTION/QIS_V3/QIS_wizard.htm $(INSTALLDIR)/www/QIS_wizard.htm
 	cp $(TOP)/www/sysdep/FUNCTION/QIS_V3/images $(INSTALLDIR)/www/ -rf
 	cp $(TOP)/www/sysdep/FUNCTION/QIS_V3/mobile $(INSTALLDIR)/www/ -rf
+
+	# append wisp class to qis.css
+ifeq ($(RTCONFIG_WISP), y)
+ifneq ($(BUILD_NAME),PRT-AX57_GO)
+	echo "" | cat - $(TOP)/www/sysdep/PRT-AX57_GO/www/mobile.customize/customize.css >> $(INSTALLDIR)/www/mobile/css/qis.css
+endif
+endif
 endif
 
 	# INSTALL MODEL DEPENDENT files
@@ -70,6 +77,10 @@ ifeq ($(RTCONFIG_ROG_UI), y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/white_04.gif
 endif
 
+ifeq ($(RTCONFIG_GS_UI), y)
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/GS_UI/* $(INSTALLDIR)/www/
+endif
+
 ifeq ($(RTCONFIG_TUF_UI), y)
 	cp -rfL $(TOP)/www/sysdep/FUNCTION/TUF_UI/* $(INSTALLDIR)/www/
 	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/white_04.gif
@@ -77,6 +88,10 @@ endif
 
 ifeq ($(RTCONFIG_BUSINESS), y)
 	cp -rfL $(TOP)/www/sysdep/FUNCTION/BUSINESS_UI/* $(INSTALLDIR)/www/
+endif
+
+ifeq ($(RTCONFIG_UI4), y)
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/UI4/* $(INSTALLDIR)/www/
 	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/white_04.gif
 endif
 
@@ -108,6 +123,30 @@ ifneq ($(or $(RTCONFIG_WL_SCHED_V2),$(RTCONFIG_PC_SCHED_V3)),y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/weekSchedule
 endif
 
+ifeq ($(RTCONFIG_ADGUARDDNS),y)
+	cp $(TOP)/www/sysdep/FUNCTION/RWD_UI $(INSTALLDIR)/www/ -rf
+	cp $(TOP)/www/sysdep/FUNCTION/SDN/images/New_ui/SDN $(INSTALLDIR)/www/images/New_ui/ -rf
+	cp -r $(TOP)/www/sysdep/FUNCTION/ADGUARDDNS_UI/* $(INSTALLDIR)/www/
+ifneq ($(RTCONFIG_UI4), y)
+	rm -rf $(INSTALLDIR)/www/images/New_ui/SDN/scenarios
+endif
+ifneq ($(RTCONFIG_MLO), y)
+	rm -rf $(INSTALLDIR)/www/images/New_ui/SDN/dark_theme/Image/mlo_desc.svg
+	rm -rf $(INSTALLDIR)/www/images/New_ui/SDN/dark_theme/Notification/wifi_mlo.svg
+	rm -rf $(INSTALLDIR)/www/images/New_ui/SDN/dark_theme/Notification/wifi_mlo_lock.svg
+	rm -rf $(INSTALLDIR)/www/images/New_ui/SDN/white_theme/Image/mlo_desc.svg
+	rm -rf $(INSTALLDIR)/www/images/New_ui/SDN/white_theme/Notification/wifi_mlo.svg
+	rm -rf $(INSTALLDIR)/www/images/New_ui/SDN/white_theme/Notification/wifi_mlo_lock.svg
+endif
+ifneq ($(and $(RTCONFIG_OPEN_NAT),$(RTCONFIG_SDN_PRIORITY)),y)
+	rm -rf $(INSTALLDIR)/www/images/New_ui/SDN/gaming
+endif
+else
+	rm -rf $(INSTALLDIR)/www/images/adGuard
+	rm -rf $(INSTALLDIR)/www/RWD_UI
+	rm -rf $(INSTALLDIR)/www/images/New_ui/SDN
+endif
+
 ifeq ($(RTCONFIG_MULTILAN_CFG), y)
 	cp $(TOP)/www/sysdep/FUNCTION/RWD_UI $(INSTALLDIR)/www/ -rf
 	cp $(TOP)/www/sysdep/FUNCTION/SDN/images/New_ui/SDN $(INSTALLDIR)/www/images/New_ui/ -rf
@@ -115,14 +154,20 @@ ifeq ($(RTCONFIG_MULTILAN_CFG), y)
 	cp $(TOP)/www/sysdep/FUNCTION/SDN/SDN.asp $(INSTALLDIR)/www/SDN.asp
 	cp $(TOP)/www/sysdep/FUNCTION/SDN/ajax/freewifi_tos.json $(INSTALLDIR)/www/ajax/freewifi_tos.json
 	rm -rf $(INSTALLDIR)/www/js/qrcode/MIT-LICENSE.txt
-ifeq ($(RTCONFIG_BUSINESS), y)
+ifneq ($(RTCONFIG_CAPTIVE_PORTAL), y)
+	rm -rf $(INSTALLDIR)/www/SDN/Captive_Portal
+	rm -rf $(INSTALLDIR)/www/ajax/freewifi_tos.json
+endif
+ifeq ($(RTCONFIG_UI4), y)
 	rm -rf $(INSTALLDIR)/www/SDN/Captive_Portal/MessageBoard_template.json
+else
+	rm -rf $(INSTALLDIR)/www/images/New_ui/SDN/scenarios
 endif
 ifeq ($(RTCONFIG_SMART_HOME_MASTER_UI), y)
 	rm -rf $(INSTALLDIR)/www/Advanced_VLAN_Profile_Content.asp
 	rm -rf $(INSTALLDIR)/www/Advanced_VLAN_Switch_Content.asp
 endif
-ifeq ($(RTCONFIG_WIFI7), y)
+ifeq ($(RTCONFIG_MLO), y)
 	cp $(TOP)/www/sysdep/FUNCTION/SDN/MLO.asp $(INSTALLDIR)/www/MLO.asp
 else
 	rm -rf $(INSTALLDIR)/www/SDN/mlo*
@@ -144,12 +189,10 @@ else
 #	rm -rf $(INSTALLDIR)/www/js/qrcode
 endif
 
-ifeq ($(RTCONFIG_ADGUARDDNS),y)
-	cp $(TOP)/www/sysdep/FUNCTION/RWD_UI $(INSTALLDIR)/www/ -rf
-	cp $(TOP)/www/sysdep/FUNCTION/SDN/images/New_ui/SDN $(INSTALLDIR)/www/images/New_ui/ -rf
-	cp -r $(TOP)/www/sysdep/FUNCTION/ADGUARDDNS_UI/* $(INSTALLDIR)/www/
-else
-	rm -rf $(INSTALLDIR)/www/images/adGuard
+ifeq ($(RTCONFIG_SW_BTN), y)
+	cp $(TOP)/www/sysdep/FUNCTION/MULTI_FUNC_BTN/multifuncbtn $(INSTALLDIR)/www/ -rf
+	cp $(TOP)/www/sysdep/FUNCTION/MULTI_FUNC_BTN/images/New_ui/multifuncbtn $(INSTALLDIR)/www/images/New_ui/ -rf
+	cp $(TOP)/www/sysdep/FUNCTION/MULTI_FUNC_BTN/Advanced_MultiFuncBtn.asp $(INSTALLDIR)/www/Advanced_MultiFuncBtn.asp
 endif
 
 	rm -rf $(INSTALLDIR)/www/images/vpn_illustration.png
@@ -192,7 +235,9 @@ ifneq ($(or $(RTCONFIG_PPTPD),$(RTCONFIG_ACCEL_PPTPD),$(RTCONFIG_OPENVPN),$(RTCO
 	rm -rf $(INSTALLDIR)/www/images/New_ui/VPN
 endif
 
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AX82U RT-AX82U_V2 DSL-AX82U GT-AXE11000 GT-AC2900 GT-AX11000 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GS-AX6000 GT-AX6000 GT10 TUF-AX6000 GT-BE96 GT-BE19000 GT-BE19000_AI))
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AX82U RT-AX82U_V2 DSL-AX82U GT-AXE11000 GT-AC2900 GT-AX11000 GS-AX3000 GS-AX5400 \
+	TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GS-AX6000 GT-AX6000 GT10 TUF-AX6000 GS7 GS-BE7200X GS-BE18000 GS-BE12000 GS7_PRO \
+	GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI))
 	rm -rf $(INSTALLDIR)/www/images/New_ui/light_effect
 	rm -rf $(INSTALLDIR)/www/device-map/router_light_effect.asp
 else
@@ -206,10 +251,10 @@ endif
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AXE16000 GT-AX11000_PRO))
 	cd $(INSTALLDIR)/www/light_effect && mv sysdep_css/light_effect_GT-AXE16000.css light_effect_sysdep.css
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000_AI))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI))
 	cd $(INSTALLDIR)/www/light_effect && mv sysdep_css/light_effect_GT-BESeries.css light_effect_sysdep.css
 endif
-ifeq ($(BUILD_NAME),GT10)
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT10 GS-BE18000))
 	cd $(INSTALLDIR)/www/light_effect && mv sysdep_css/light_effect_GT10.css light_effect_sysdep.css
 endif
 	rm -rf $(INSTALLDIR)/www/light_effect/sysdep_css
@@ -218,6 +263,17 @@ endif
 
 ifeq ($(RTCONFIG_MULTISERVICE_WAN),y)
 	cp $(TOP)/www/sysdep/FUNCTION/MULTISERVICE_WAN/Advanced_WAN_Content.asp $(INSTALLDIR)/www/Advanced_WAN_Content.asp
+endif
+
+ifeq ($(RTCONFIG_TS_UI),y)
+	rm -rf $(INSTALLDIR)/TS_UI
+ifneq ($(RTCONFIG_TUF_UI),y)
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/TUF_UI $(INSTALLDIR)/
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/TS_UI/* $(INSTALLDIR)/TUF_UI
+	mv $(INSTALLDIR)/TUF_UI $(INSTALLDIR)/TS_UI
+else
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/TS_UI $(INSTALLDIR)/
+endif
 endif
 
 	chmod -x `find $(INSTALLDIR)/www/ -name "*.asp"`
@@ -247,7 +303,7 @@ ifeq ($(RTCONFIG_AUTODICT), y)
 	$(ASUSWRTTOOLSDIR)/LnxDictPrep $(ASUSWRTTOOLSDIR) dictctrl.txt $(BUILD_NAME) HdrMapping.txt . $(INSTALLDIR)/www $(SRCBASE)/image/dictenum.txt $(SRCBASE)/image/dict_prep.txt
 	# generate sh file for clear up html and dict auto enum
 	# this is for compression
-	$(ASUSWRTTOOLSDIR2)/genshfile.pl $(ASUSWRTTOOLSDIR2) $(INSTALLDIR)/www $(SRCBASE)/image/compress.sh $(SRCBASE)/image/dictenum.txt $(SRCBASE)/image/output2.txt $(BUILD_NAME) $(SRCBASE)/image/output3.txt
+	$(ASUSWRTTOOLSDIR2)/genshfile.pl $(ASUSWRTTOOLSDIR2) $(INSTALLDIR) $(SRCBASE)/image/compress.sh $(SRCBASE)/image/dictenum.txt $(SRCBASE)/image/output2.txt $(BUILD_NAME) $(SRCBASE)/image/output3.txt
 	chmod 777 $(SRCBASE)/image/compress.sh
 	sh $(SRCBASE)/image/compress.sh
 else
@@ -781,13 +837,18 @@ endif
 
 ifeq ($(RTCONFIG_ROG_UI),y)
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_ROG.js modules/menuTree.js
-else ifeq ($(RTCONFIG_BUSINESS),y)
+else ifeq ($(RTCONFIG_UI4),y)
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_BUSINESS.js modules/menuTree.js
 else ifeq ($(RTCONFIG_TUF_UI),y)
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_TUF.js modules/menuTree.js	
 else
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree.js modules/menuTree.js
 endif
+
+ifeq ($(RTCONFIG_GS_UI),y)
+	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_GS.js modules/menuTree.js
+endif
+
 	rm -rf $(INSTALLDIR)/www/require/menuTrees
 
 ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), BRT-AC828))
@@ -846,11 +907,11 @@ ifeq ($(and $(RTCONFIG_AMAS),$(RTCONFIG_WIFI_SON)),y)
 endif
 	mkdir -p $(INSTALLDIR)/www
 
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AC9600 GT-AXY16000 GT-AX11000 GT-AXE11000 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000_AI))
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AC9600 GT-AXY16000 GT-AX11000 GT-AXE11000 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI))
 	rm -rf $(INSTALLDIR)/www/qis/QIS_tge_setting.htm
 endif
 
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AX11000 GT-AC2900 GT-AXY16000 GT-AXE11000 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000_AI))
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AX11000 GT-AC2900 GT-AXY16000 GT-AXE11000 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI))
 	rm -rf $(INSTALLDIR)/www/images/New_ui/img-aurasync-logo.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/img-aurasync-rog-logo-mask.png
 	rm -rf $(INSTALLDIR)/www/images/aura
@@ -974,13 +1035,13 @@ endif
 	rm -rf $(INSTALLDIR)/www/images/New_ui/new_qis
 endif
 
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AC2900 GT-AC5300 GT-AX11000 GT-AXE11000 GT-AXY16000 RT-AX82U RT-AX82U_V2 DSL-AX82U GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GT-AX6000 GT10 GT-BE96 GT-BE19000 GT-BE19000_AI))
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AC2900 GT-AC5300 GT-AX11000 GT-AXE11000 GT-AXY16000 RT-AX82U RT-AX82U_V2 DSL-AX82U GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GT-AX6000 GT10 GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI))
 ifneq ($(RTCONFIG_AMAS),y)
 	rm -rf $(INSTALLDIR)/www/fonts
 endif
 endif
 
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AX82U RT-AX82U_V2 RT-AX86U RT-AX88U GT-AX11000 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000_AI))
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AX82U RT-AX82U_V2 RT-AX86U RT-AX88U GT-AX11000 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI))
 	rm -rf $(INSTALLDIR)/www/css/gundam.css
 endif
 ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AX82U RT-AX82U_V2 RT-AX86U))
@@ -992,6 +1053,7 @@ endif
 ifeq ($(RTCONFIG_ROG_UI),y)
 	cp -rf $(INSTALLDIR)/www/css/ROG/* $(INSTALLDIR)/www/css/
 	rm -rf $(INSTALLDIR)/www/css/ROG
+	rm -rf $(INSTALLDIR)/www/images/New_ui/RT
 endif
 
 ifneq ($(RTCONFIG_BCM_OAM), y)
@@ -1044,4 +1106,15 @@ ifeq ($(BUILD_NAME),TUF-AX6000)
 		rm -rf $(INSTALLDIR)/TX-AX6000; \
 		mv $(INSTALLDIR)/www/images/TX-AX6000 $(INSTALLDIR)/TX-AX6000; \
 	fi
+endif
+
+ifeq ($(RTCONFIG_NO_AIDISK), y)
+	rm -rf $(INSTALLDIR)/www/aidisk/aidisk.css
+	rm -rf $(INSTALLDIR)/www/aidisk/Aidisk-1.asp
+	rm -rf $(INSTALLDIR)/www/aidisk/Aidisk-2.asp
+	rm -rf $(INSTALLDIR)/www/aidisk/Aidisk-3.asp
+	rm -rf $(INSTALLDIR)/www/aidisk/Aidisk-4.asp
+	rm -rf $(INSTALLDIR)/www/aidisk/Aidisk-1_help.asp
+	rm -rf $(INSTALLDIR)/www/images/New_ui/aidisk
+	rm -rf $(INSTALLDIR)/www/aidisk.asp
 endif

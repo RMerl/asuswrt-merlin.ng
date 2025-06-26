@@ -173,6 +173,37 @@
 #define NT_TREAD_MASK			0x0000000f
 #define NT_TREAD_SHIFT			0
 
+#ifdef CONFIG_TPL_BUILD
+#define BBT_BLOCK_GOOD		0x00
+#define BBT_BLOCK_BAD		0x01
+#define BBT_BLOCK_RESERVED	0x02
+#define BBT_BLOCK_FACTORY_BAD	0x03
+
+#define BBT_ENTRY_MASK		0x03
+#define BBT_ENTRY_SHIFT		2
+static char *bbt;
+
+static inline char bbt_get_entry(int block)
+{
+	char entry = bbt[block >> BBT_ENTRY_SHIFT];
+
+	entry >>= (block & BBT_ENTRY_MASK) * 2;
+	return entry & BBT_ENTRY_MASK;
+}
+
+static inline void bbt_mark_entry(int block, char mark)
+{
+	int shift = (block & BBT_ENTRY_MASK) * 2;
+	char msk = (mark & BBT_ENTRY_MASK) << shift;
+
+	bbt[block >> BBT_ENTRY_SHIFT] &= ~(BBT_ENTRY_MASK << shift);
+	bbt[block >> BBT_ENTRY_SHIFT] |= msk;
+}
+#else
+// single bit signifies good block
+static int gbt = 1; // set block 0 as always good
+#endif
+
 struct cfg_decode_map {
 	uint16_t dev_size_reg;
 	uint16_t dev_size_shift;
@@ -827,7 +858,9 @@ void brcmnand_init(void)
 {
 	struct brcmnand_chip *chip = &nand_chip;
 	struct brcmnand_controller *ctrl = &nand_ctrl;
-
+#ifdef CONFIG_TPL_BUILD
+	int blocks, blk;
+#endif
 	ctrl->flash_cache = memalign(sizeof(uint32_t), CTRLR_CACHE_SIZE);
 	if (ctrl->flash_cache == NULL) {
 		printf("nand_flash_init failed to allocate flash buffer!\n");
@@ -852,6 +885,19 @@ void brcmnand_init(void)
 	brcmnand_adjust_cfg(chip);
 	brcmnand_adjust_timing(chip);
 
+#ifdef CONFIG_TPL_BUILD
+	blocks = chip->chip_total_size / chip->chip_block_size;
+	bbt = malloc(blocks >> BBT_ENTRY_SHIFT);
+	if (bbt) {
+		for (blk = 1; blk < blocks; blk++)
+			bbt_mark_entry(blk, BBT_BLOCK_RESERVED);
+
+		bbt_mark_entry(0, BBT_BLOCK_GOOD);
+	} else {
+		printf("ERROR! unable to allocate block table memory\n");
+	}
+#endif
+
 	printf("nand flash device id 0x%x, total size %dMB\n", chip->chip_device_id, (uint32_t) (chip->chip_total_size >> 20));
 	printf("block size %dKB, page size %d bytes, spare area %d bytes required\n",
 	       chip->chip_block_size >> 10, chip->chip_page_size, chip->chip_spare_size);
@@ -872,32 +918,53 @@ int brcmnand_is_bad_block(int blk)
 	unsigned char spare[16];
 	uint32_t page_addr = (blk * chip->chip_block_size) & ~(chip->chip_page_size - 1);
 	int i, size;
-
-	// always return good for block 0, because if it's a bad chip quite possibly the board is useless
-	if (blk == 0)
+#ifdef CONFIG_TPL_BUILD
+	if (bbt) {
+		if (bbt_get_entry(blk) == BBT_BLOCK_GOOD)
+			return 0;
+		else if (bbt_get_entry(blk) == BBT_BLOCK_BAD)
+			return 1;
+	}
+#else
+	// check if block was already determined to be good
+	if (blk < 32 && (gbt & (1 << blk)))
 		return 0;
-
+#endif
 	/* bad block markers are always within first spare area step size. only need to read this many bytes */
 	size = max(chip->chip_bi_index_1, chip->chip_bi_index_2) + 1;
 	if (size > chip->chip_spare_step_size || size > 16) {
 		printf("bad block marker invalid location %d %d\n",
 			chip->chip_bi_index_1, chip->chip_bi_index_2);
-		return 1;
+		goto BAD_BLK;
 	}
-	    
+
 	/* Read the spare area of first and second page and check for bad block indicator */
 	for (i = 0; i < 2; i += 1, page_addr += chip->chip_page_size) {
 		if (brcmnand_read_spare_area(chip, page_addr, spare, size) == 0) {
 			if ((spare[chip->chip_bi_index_1] != SPARE_GOOD_MARKER)
 			    || (spare[chip->chip_bi_index_2] != SPARE_GOOD_MARKER)) {
-				return 1;	// bad block
+				goto BAD_BLK;
 			}
 		} else {
-			return 1;	//bad block
+			goto BAD_BLK;
 		}
 	}
+#ifdef CONFIG_TPL_BUILD
+	if (bbt)
+		bbt_mark_entry(blk, BBT_BLOCK_GOOD);
+#else
+	if (blk < 32)
+		gbt |= (1 << blk); // mark block good
+#endif
 
 	return 0;		// good block
+
+BAD_BLK:
+#ifdef CONFIG_TPL_BUILD
+	if (bbt)
+		bbt_mark_entry(blk, BBT_BLOCK_BAD);
+#endif
+	return 1;	//bad block
 }
 
 int brcmnand_read_buf(int blk, int offset, u8 *buffer, u32 len)

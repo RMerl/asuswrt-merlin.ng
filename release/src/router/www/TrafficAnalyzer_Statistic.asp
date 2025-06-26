@@ -24,7 +24,7 @@
 <script type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js?v=4"></script>
 <style>
 *{
 	box-sizing: content-box;
@@ -227,17 +227,37 @@ function get_client_used_apps_info(client_index, used_data_array, top5_info, typ
 			}
 		}
 		else{
-			var _temp = client_index.replaceAll('%20', ' ');
-			document.getElementById('top_client_name').innerHTML = total_clients_array[_temp].name;
-			if(document.getElementById('traffic_option').value == "both"){
-				total_traffic = total_clients_array[_temp].rx + total_clients_array[_temp].tx;
-			}
-			else if(document.getElementById('traffic_option').value == "down"){
-				total_traffic = total_clients_array[_temp].rx;
+			if(type == "router"){
+				var _temp = client_index.replaceAll('%20', ' ');		
+				document.getElementById('top_client_name').innerHTML = total_clients_array[_temp].name;
+				if(document.getElementById('traffic_option').value == "both"){
+					total_traffic = total_clients_array[_temp].rx + total_clients_array[_temp].tx;
+				}
+				else if(document.getElementById('traffic_option').value == "down"){
+					total_traffic = total_clients_array[_temp].rx;
+				}
+				else{
+					total_traffic = total_clients_array[_temp].tx;
+				}
 			}
 			else{
-				total_traffic = total_clients_array[_temp].tx;
+				if(client_index == undefined){
+					client_index = "0";
+				}
+
+				var _temp = client_index.replaceAll('%20', ' ');		
+				document.getElementById('top_client_name').innerHTML = total_apps_array[_temp].name;
+				if(document.getElementById('traffic_option').value == "both"){
+					total_traffic = total_apps_array[_temp].rx + total_apps_array[_temp].tx;
+				}
+				else if(document.getElementById('traffic_option').value == "down"){
+					total_traffic = total_apps_array[_temp].rx;
+				}
+				else{
+					total_traffic = total_apps_array[_temp].tx;
+				}
 			}
+			
 		}
 
 		traffic_unit = translate_traffic(total_traffic);

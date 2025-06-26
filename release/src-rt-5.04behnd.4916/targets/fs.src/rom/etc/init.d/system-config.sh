@@ -36,38 +36,56 @@ kernel_oops_config()
 	OOPSLOG_MAX_SIZE=131072
 
 	# NAND
-	if [ -e $MTDOOPS_PART ]; then
-		mtdoops=$(cat $MTDOOPS_PART)
-		rec_size=65536
-		log_shift=$(gunzip -c /proc/config.gz | grep CONFIG_LOG_BUF_SHIFT | cut -d '=' -f 2)
-		rec_size=$((2**$log_shift))
-		mtdsize=$(cat /proc/mtd  | grep $mtdoops | cut -d ' ' -f2)
-		mtdnum=$(cat /proc/mtd  | grep $mtdoops | cut -d ':' -f1)
-		if [ "$mtdsize" != "" ]; then   
-			mtdsize=$((0x${mtdsize}))
-			if [ $rec_size -gt $mtdsize ]; then
-				rec_size=$mtdsize
-			fi
-
-			# Header check
-			# linux kernel v4.19, #define MTDOOPS_KERNMSG_MAGIC 0x5d005d00
-			# linux kernel v6.5.3, #define MTDOOPS_KERNMSG_MAGIC_v1 0x5d005d00, #define MTDOOPS_KERNMSG_MAGIC_v2 0x5d005e00
-			mtd_debug read /dev/$mtdnum 0x0 8 /tmp/kernel_crash_log.header >& /dev/null
-			mtdoops_kernmsg_magic=$(xxd -g4 -s4 -p /tmp/kernel_crash_log.header)
-			if [ "$mtdoops_kernmsg_magic" == "005d005d" -o "$mtdoops_kernmsg_magic" == "005e005d" ]; then
-				mtd_debug read /dev/$mtdnum 0x0 $rec_size /tmp/kernel_crash_log.bin >& /dev/null
-				# Erase mtdoops partition with 0xff
-				mtd_debug erase /dev/$mtdnum 0x0 $mtdsize >& /dev/null
-			fi
-
-			# Note: please load mtdoops driver after reading/erasing old oops in above.
-			# This ensures mtdoops driver always writes new oops starting at offset 0x0.
-			echo "load mtdoops driver: mtd partition $mtdoops record size $rec_size"
-			insmod /lib/modules/$KERNELVER/kernel/drivers/mtd/mtdoops.ko mtddev=$mtdoops record_size=$rec_size
-		fi
+#	if [ -e $MTDOOPS_PART ]; then
+#		mtdoops=$(cat $MTDOOPS_PART)
+#		rec_size=65536
+#		log_shift=$(gunzip -c /proc/config.gz | grep CONFIG_LOG_BUF_SHIFT | cut -d '=' -f 2)
+#		rec_size=$((2**$log_shift))
+#		mtdsize=$(cat /proc/mtd  | grep $mtdoops | cut -d ' ' -f2)
+#		mtdnum=$(cat /proc/mtd  | grep $mtdoops | cut -d ':' -f1)
+#		if [ "$mtdsize" != "" ]; then
+#			mtdsize=$((0x${mtdsize}))
+#			if [ $rec_size -gt $mtdsize ]; then
+#				rec_size=$mtdsize
+#			fi
+#
+#			# Header check
+#			# linux kernel v4.19, #define MTDOOPS_KERNMSG_MAGIC 0x5d005d00
+#			# linux kernel v6.5.3, #define MTDOOPS_KERNMSG_MAGIC_v1 0x5d005d00, #define MTDOOPS_KERNMSG_MAGIC_v2 0x5d005e00
+#			mtd_debug read /dev/$mtdnum 0x0 8 /tmp/kernel_crash_log.header >& /dev/null
+#			mtdoops_kernmsg_magic=$(xxd -g4 -s4 -p /tmp/kernel_crash_log.header)
+#			if [ "$mtdoops_kernmsg_magic" == "005d005d" -o "$mtdoops_kernmsg_magic" == "005e005d" ]; then
+#				mtd_debug read /dev/$mtdnum 0x0 $rec_size /tmp/kernel_crash_log.bin >& /dev/null
+#				# Erase mtdoops partition with 0xff
+#				mtd_debug erase /dev/$mtdnum 0x0 $mtdsize >& /dev/null
+#			fi
+#
+#			# Note: please load mtdoops driver after reading/erasing old oops in above.
+#			# This ensures mtdoops driver always writes new oops starting at offset 0x0.
+#			echo "load mtdoops driver: mtd partition $mtdoops record size $rec_size"
+#
+#			# upstream kernel commit 1114e3d00f539ecb7a8415663f2a47a80e00a537
+#			# doesn't allow mtdoops partition to be bigger than 8MB
+#			# so check if mtdoops partition is bigger than that,
+#			# if yes, reduce it to 8MB
+#			mtd_parts_format_check=$(cat /proc/environment/mtdparts|grep @)
+#			if [ ! "x${mtd_parts_format_check}" == "x" ]; then
+#				part_start_addr=$(cat /proc/environment/mtdparts | sed -e 's/,/\n/g' | grep ${mtdoops} | sed -e 's/.*@//' -e 's/(.*//' )
+#				mtd_part_num=$(echo ${mtdnum} | sed -e 's/mtd//')
+#				boot_part_name=$(cat /proc/environment/mtdparts | sed 's/:.*//')
+#				boot_part_num=$(cat /proc/mtd | grep $boot_part_name | sed -e 's/:.*//' | sed -e 's/mtd//')
+#				if [ "${mtdsize}" -gt "8388608" ]; then
+#					echo "mtdoops partition is too big at ${mtdsize}, limiting it to 8MB"
+#					mtdpart del /dev/mtd${boot_part_num} ${mtd_part_num}
+#					mtdpart add /dev/mtd${boot_part_num} ${mtdoops} ${part_start_addr} 8388608
+#				fi
+#			fi
+#			insmod /lib/modules/$KERNELVER/kernel/drivers/mtd/mtdoops.ko mtddev=$mtdoops record_size=$rec_size
+#		fi
 
 	# MMC
-	elif TEMP=`echo $ROOTFS_DEV | grep mmcblk`; then
+#	el
+	if TEMP=`echo $ROOTFS_DEV | grep mmcblk`; then
 #		mmcoops_offset=$(xxd -g4 /proc/device-tree/periph/mmcoops/start-offset | cut -d ' ' -f2)
 #		mmcoops_size=$(xxd -g4 /proc/device-tree/periph/mmcoops/size | cut -d ' ' -f2)
 		mmcoops_offset=$(hexdump -ve '/1 "%02x"' /proc/device-tree/periph/mmcoops/start-offset)

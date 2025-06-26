@@ -41,7 +41,7 @@ SYSTEMD_UNITS:=
 RC3_PUBLIC:=
 INIT_PUBLIC:=
 ifneq ($(strip $(BRCM_PARTITION_CFG_FILE)),)
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE19000_AI))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE19000AI GT-BE96_AI))
 RC3_PUBLIC += S30defaults S29partitioncfg
 INIT_PUBLIC += init/defaults init/partitioncfg
 endif

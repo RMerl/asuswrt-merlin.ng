@@ -227,7 +227,7 @@ function generateBarTable(){
 			code += '<div class="list-margin">';
 			code += '<div>'+ targetObj.name +'</div>';
 			code += '<div class="flexbox flex-a-center">';
-			code += '<div class="bar-container"><div class="bar-cal" style="width:'+ percent +'%;"></div></div>';
+			code += '<div class="bar-container" style="background-color:#FC0;"><div class="bar-cal" style="width:'+ percent +'%;"></div></div>';
 			code += '<div class="list-count">'+ targetObj.hit +'</div>';
 			code += '</div></div>';
 		}
@@ -244,7 +244,10 @@ function getIPSChart(type, date){
 			setTimeout("getIPSChart('mals', date);", 1000);
 		},
 		success: function(response){
-			collectChart(data, date);
+			if(data != ""){
+				data = JSON.parse(data);
+				collectChart(data, date);
+			}
 		}
 	});
 }

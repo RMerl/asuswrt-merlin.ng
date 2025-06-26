@@ -1368,6 +1368,11 @@ void spi_finalize_current_message(struct spi_controller *ctlr)
 	unsigned long flags;
 	int ret;
 
+#ifdef CONFIG_BCM_KF_SPI
+	if (oops_in_progress)
+		return;
+#endif
+
 	spin_lock_irqsave(&ctlr->queue_lock, flags);
 	mesg = ctlr->cur_msg;
 	spin_unlock_irqrestore(&ctlr->queue_lock, flags);
@@ -3360,6 +3365,12 @@ int spi_bus_unlock(struct spi_controller *ctlr)
 }
 EXPORT_SYMBOL_GPL(spi_bus_unlock);
 
+#ifdef CONFIG_BCM_KF_SPI
+int spi_validate(struct spi_device *spi, struct spi_message *message)
+{
+	return __spi_validate(spi, message);
+}
+#endif
 /* portable code must never pass more than 32 bytes */
 #define	SPI_BUFSIZ	max(32, SMP_CACHE_BYTES)
 

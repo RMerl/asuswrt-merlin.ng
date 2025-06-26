@@ -28,7 +28,7 @@ ifeq ($(RTCONFIG_AMAS),y)
 LIBS += -L$(TOP)/json-c/.libs -ljson-c
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 LIBS += -L$(TOP)/libhostapi -lhostapi
 endif
 

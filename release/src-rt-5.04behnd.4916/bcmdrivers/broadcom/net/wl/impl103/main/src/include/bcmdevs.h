@@ -885,6 +885,10 @@
 #define BCM6726_HW_CFG0_ID		(0x1)	/* otpflag bit[0] */
 #define BCM6726_HW_CFG0_ID_MASK		(0x1)	/* OTP bit[730:724] map to otpflag bit[6:0] */
 #define BCM6726_HW_CFG0(otpflag)	((otpflag & BCM6726_HW_CFG0_ID_MASK) == BCM6726_HW_CFG0_ID)
+#if defined(RTBE88U) || defined(RTBE86U)
+#define BCM6726_HI_VOLT_DIS_BIT    (1<<2)   /* OTP bit[726], bit 2 in otpflag */
+#define BCM6726_HI_VOLT(otpflag)	((otpflag & BCM6726_HI_VOLT_DIS_BIT) == 0)
+#endif
 
 /* 6711 HW config options: OTP bit[730:724] map to otpflag bit[6:0] */
 #define BCM6711_HW_CFG1_MASK	(0x2)

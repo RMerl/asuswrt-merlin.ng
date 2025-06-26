@@ -27,6 +27,8 @@ static void hostapd_dpp_auth_conf_wait_timeout(void *eloop_ctx,
 static void hostapd_dpp_auth_success(struct hostapd_data *hapd, int initiator);
 static void hostapd_dpp_init_timeout(void *eloop_ctx, void *timeout_ctx);
 static int hostapd_dpp_auth_init_next(struct hostapd_data *hapd);
+static void hostapd_dpp_conf_req_rx_wait_timeout(void *eloop_ctx, 
+							void *timeout_ctx);
 #ifdef CONFIG_DPP2
 static void hostapd_dpp_reconfig_reply_wait_timeout(void *eloop_ctx,
 						    void *timeout_ctx);
@@ -458,6 +460,24 @@ static void hostapd_dpp_init_timeout(void *eloop_ctx, void *timeout_ctx)
 	wpa_printf(MSG_DEBUG, "DPP: Retry initiation after timeout");
 	hostapd_dpp_auth_init_next(hapd);
 }
+
+static void hostapd_dpp_conf_req_rx_wait_timeout(void *eloop_ctx, 
+							void *timeout_ctx)
+{
+	struct hostapd_data *hapd = eloop_ctx;
+
+	if (!hapd->dpp_auth || !hapd->dpp_auth->auth_success)
+		return;
+
+	wpa_printf(MSG_DEBUG, 
+		"DPP: terminate exchange due to Configuration Request rx timeout");
+	wpa_msg(hapd->msg_ctx, MSG_INFO, DPP_EVENT_CONF_FAILED 
+		"No Configuration Request received");
+
+	dpp_auth_deinit(hapd->dpp_auth);
+	hapd->dpp_auth = NULL;
+}
+
 
 static int hostapd_dpp_auth_init_next(struct hostapd_data *hapd)
 {
@@ -1056,6 +1076,10 @@ static void hostapd_dpp_auth_success(struct hostapd_data *hapd, int initiator)
 
 	if (!hapd->dpp_auth->configurator)
 		hostapd_dpp_start_gas_client(hapd);
+	else
+		eloop_register_timeout(10, 0,
+				       hostapd_dpp_conf_req_rx_wait_timeout,
+				       hapd, NULL);
 }
 
 static void hostapd_dpp_rx_auth_resp(struct hostapd_data *hapd, const u8 *src,
@@ -2082,6 +2106,8 @@ hostapd_dpp_gas_req_handler(struct hostapd_data *hapd, const u8 *sa,
 		    query, query_len);
 	wpa_msg(hapd->msg_ctx, MSG_INFO, DPP_EVENT_CONF_REQ_RX "src=" MACSTR,
 		MAC2STR(sa));
+	if (auth->configurator)
+		eloop_cancel_timeout(hostapd_dpp_conf_req_rx_wait_timeout, hapd, NULL);
 	resp = dpp_conf_req_rx(auth, query, query_len);
 	if (!resp)
 		wpa_msg(hapd->msg_ctx, MSG_INFO, DPP_EVENT_CONF_FAILED);

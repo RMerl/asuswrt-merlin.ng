@@ -1326,7 +1326,7 @@ char *get_default_ssid(int unit, int subunit)
 	char ssidbase[16], *macp = NULL;
 	unsigned char mac_binary[6];
 	const char *post_5g __attribute__((unused)) = "-1", *post_5g2 __attribute__((unused))= "-2", *post_guest = "_Guest";	/* postfix for RTCONFIG_NEWSSID_REV2 case */
-#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G)
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 	const char *post_6g __attribute__((unused)) = "6G";
 #endif
 #if defined(RTCONFIG_NEWSSID_REV2) || defined(RTCONFIG_NEWSSID_REV4) || defined(RTCONFIG_NEWSSID_REV5)
@@ -1344,7 +1344,7 @@ char *get_default_ssid(int unit, int subunit)
 #elif defined(RTCONFIG_NEWSSID_REV4)
 	post_5g = "";
 	post_5g2 = "";
-#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G)
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 	post_6g = "";
 #endif
 #elif !defined(RTCONFIG_NEWSSID_REV2) && !defined(RTCONFIG_NEWSSID_REV4) && !defined(RTCONFIG_SINGLE_SSID)
@@ -1474,7 +1474,13 @@ char *get_default_ssid(int unit, int subunit)
 #elif defined(BT12)
 		strlcat(ssid, "_BT12", sizeof(ssid));
 #elif defined(BT10)
-		strlcat(ssid, "_BT10", sizeof(ssid));
+		if(nvram_match("odmpid", "ZenWiFi_BT10")){
+			strlcat(ssid, "_BT10", sizeof(ssid));
+		}else if(nvram_match("odmpid", "RT-BE18000")){
+			strlcat(ssid, "_RT-BE18000", sizeof(ssid));
+		}else{
+			strlcat(ssid, "_BT10", sizeof(ssid));
+		}
 #elif defined(BQ16)
 		strlcat(ssid, "_BQ16", sizeof(ssid));
 #elif defined(BQ16_PRO)
@@ -1541,7 +1547,7 @@ char *get_default_ssid(int unit, int subunit)
 		strlcat(ssid, post_5g2, sizeof(ssid));
 		break;
 #endif
-#if (defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)) && defined(RTCONFIG_QUADBAND)
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 	case WL_6G_BAND:
 		strlcat(ssid, post_6g, sizeof(ssid));
 		break;
@@ -1576,7 +1582,7 @@ char *get_default_ssid(int unit, int subunit)
 			strlcat(ssid, "_2G", sizeof(ssid));
 			break;
 		case WL_5G_BAND:
-#if defined(RTCONFIG_QUADBAND) || defined(RTCONFIG_HAS_5G_2) && ((!defined(RTCONFIG_WIFI6E) && !defined(RTCONFIG_WIFI7)) || (defined(RTCONFIG_WIFI7) && defined(RTCONFIG_WIFI7_NO_6G)))
+#if defined(RTCONFIG_QUADBAND) || defined(RTCONFIG_HAS_5G_2) && ((!defined(RTCONFIG_WIFI6E) && !defined(RTCONFIG_WIFI7)) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_HAS_6G)))
 			strlcat(ssid, "_5G-1", sizeof(ssid));
 #else
 			strlcat(ssid, "_5G", sizeof(ssid));
@@ -1584,7 +1590,7 @@ char *get_default_ssid(int unit, int subunit)
 			break;
 #if defined(RTCONFIG_HAS_5G_2)
 		case WL_5G_2_BAND:
-#if defined(RTCONFIG_QUADBAND) || (!defined(RTCONFIG_WIFI6E) && !defined(RTCONFIG_WIFI7)) || (defined(RTCONFIG_WIFI7) && defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(RTCONFIG_QUADBAND) || (!defined(RTCONFIG_WIFI6E) && !defined(RTCONFIG_WIFI7)) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_HAS_6G))
 			strlcat(ssid, "_5G-2", sizeof(ssid));
 #else
 #if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
@@ -1595,7 +1601,7 @@ char *get_default_ssid(int unit, int subunit)
 #endif
 			break;
 #endif
-#if defined(RTCONFIG_QUADBAND) && (defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7))
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 		case WL_6G_BAND:
 #if defined(RTCONFIG_HAS_6G_2)
 			strlcat(ssid, "_6G-1", sizeof(ssid));

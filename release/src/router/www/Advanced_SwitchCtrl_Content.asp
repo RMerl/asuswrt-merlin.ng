@@ -65,7 +65,7 @@
 
 <script>
 $(document).ready(function(){
-	if(isSupport("BUSINESS") && parent.webWrapper == undefined){
+	if(isSupport("UI4") && parent.webWrapper == undefined){
 		$('td[bgcolor="#4D595D"]').css("background", "transparent");
 		$('div[class="formfontdesc"]').css({"background-color": "#ececec", "color": "#262626", "font-weight": "bolder", "padding": "15px"});
 		$('input[class="button_gen"]').css({"background-color": "#FFF", "color": "#006ce1", "border": "1px solid #CCC", "border-radius": "8px", "height":"50px"});
@@ -83,6 +83,7 @@ if( lacp_support
 
 var jumbo_frame_enable_ori = '<% nvram_get("jumbo_frame_enable"); %>';
 var ctf_disable_force_ori = '<% nvram_get("ctf_disable"); %>';
+var qca_sfe_ori = '<% nvram_get("qca_sfe"); %>';
 var lacp_enabled_ori = '<% nvram_get("lacp_enabled"); %>';
 var wans_lanport = '<% nvram_get("wans_lanport"); %>';
 var iptv_port_settings_orig = '<%nvram_get("iptv_port_settings"); %>' == ""? "12": '<%nvram_get("iptv_port_settings"); %>';
@@ -443,13 +444,13 @@ function initial(){
 	}
 
 	if(lacp_support){
-		if(isSwMode("rt"))
+		if((isSwMode("RT") || isSwMode("WISP")))
 			disable_lacp_if_conflicts_with_dualwan();
 
-		if(!is_GTBE_series && isSwMode("rt"))
+		if(!is_GTBE_series && (isSwMode("RT") || isSwMode("WISP")))
 			disable_lacp_if_conflicts_with_iptv();
 
-		if(based_modelid == "RT-AXE7800" && wan_bonding_support && isSwMode("rt")){
+		if(based_modelid == "RT-AXE7800" && wan_bonding_support && (isSwMode("RT") || isSwMode("WISP"))){
 			var bond_wan = httpApi.nvramGet(["bond_wan"], true).bond_wan;
 			if(bond_wan == "1"){
 				document.form.lacp_enabled.style.display = "none";
@@ -485,7 +486,8 @@ function applyRule(){
 	var setting_changed = false;
 	if((jumbo_frame_enable_ori != document.form.jumbo_frame_enable.value)
 	|| (!document.form.ctf_disable_force.disabled && ctf_disable_force_ori != document.form.ctf_disable_force.value)
-	|| (lacp_enabled_ori != document.form.lacp_enabled.value) ){
+	|| (!document.form.qca_sfe.disabled && qca_sfe_ori != document.form.qca_sfe.value)
+	|| (lacp_support && (lacp_enabled_ori != document.form.lacp_enabled.value)) ){
 		setting_changed = true
 	}
 
@@ -506,10 +508,10 @@ function applyRule(){
 	}
 
 	var wan_lacp_conflict = false;
-	if(is_GTBE_series){
-		if(lacp_support && document.form.lacp_enabled.value == "1"){
+	if(lacp_support && document.form.lacp_enabled.value == "1"){
+		if(is_GTBE_series){
 			if(document.form.lacp_port_select[1].checked){
-				if(isSwMode("rt")){
+				if((isSwMode("RT") || isSwMode("WISP"))){
 					if(isSupport("autowan")){
 						if(autowan_enable == "1" || (autowan_enable == "0" && wans_dualwan_array.indexOf("wan") != -1 && wans_extwan == "0"))
 							wan_lacp_conflict = true;
@@ -539,29 +541,23 @@ function applyRule(){
 				}
 			}
 		}
-	}
-	else{
-		if(isSupport("autowan") && autowan_enable == "1" && isSwMode("rt"))
-			wan_lacp_conflict = true;
-	}
-
-	if(!setting_changed){	// only change the bonding policy
-		document.form.action_script.value = "restart_net_and_phy";
-		document.form.action_wait.value = "35";
+		else{
+			if(isSupport("autowan") && autowan_enable == "1" && (isSwMode("RT") || isSwMode("WISP")))
+				wan_lacp_conflict = true;
+		}
 	}
 
 	if(lantiq_support){
 		document.form.action_script.value = "restart_wan_if;restart_firewall";
 		document.form.action_wait.value = "10";
-	
-		if(!setting_changed){	// only change the bonding policy
-			document.form.action_script.value += ";restart_net_and_phy";
-			document.form.action_wait.value = "35";
-		}
+	}
+	else if(!setting_changed){	// only change the bonding policy
+		document.form.action_script.value = "restart_net_and_phy";
+		document.form.action_wait.value = "35";
 	}
 
 	if(wan_lacp_conflict){
-		var hint_str = "To ensure that there are no conflicts, when you enable %1$@, the WAN port will be change to %2$@ only. Please make sure that your WAN cable is correctly plugged into the %2$@. Are you sure to continue?"
+		var hint_str = `<#conflict_function_wanport_hint#>`;
 		var msg = "";
 		var wanport_image_src = "images/wanport_plugin.png";
 

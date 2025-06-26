@@ -239,12 +239,20 @@ function showTab(name)
 
 	if(multi_wireless){
 		if(ifname.indexOf("WIRELESS") != -1){
-			document.getElementById("wireless_tabs").style.background = "url(/images/svg_th_hover.png) repeat-x";
+			if(isSupport("TUF_UI"))
+				document.getElementById("wireless_tabs").style.background = "rgb(255,165,35)";
+			else if(isSupport("ROG_UI"))
+				document.getElementById("wireless_tabs").style.background = "#1E0505";
+			else
+				document.getElementById("wireless_tabs").style.background = "url(/images/svg_th_hover.png) repeat-x";
 			document.getElementById("wireless_tabs").style.color = "#FFFFFF";
 		}
 		else{
 			document.getElementById("wireless_tabs").style.background = "";
-			document.getElementById("wireless_tabs").style.color = "#000000";
+			if(isSupport("TUF_UI") || isSupport("ROG_UI"))
+				document.getElementById("wireless_tabs").style.color = "#FFFFFF";
+			else
+				document.getElementById("wireless_tabs").style.color = "#000000";
 		}
 	}
 

@@ -267,6 +267,7 @@ osl_pkt_reset(osl_t *osh, void *p, int max_pkt_bytes)
 	struct sk_buff *skb = (struct sk_buff *)p;
 
 	ASSERT(skb != NULL);
+	ASSERT(osh != NULL);
 
 	/* SKB header recycle */
 	skb->data = skb->head + PKT_HEADROOM_DEFAULT;

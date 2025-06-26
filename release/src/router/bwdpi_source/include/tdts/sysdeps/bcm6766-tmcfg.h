@@ -26,7 +26,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Tue May  7 09:23:22 2024
+ * Date: Tue Jan 14 15:09:23 2025
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
@@ -47,7 +47,7 @@
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_GPL_BT10_3.0.0.6.102.34634/release/src-rt-5.04behnd.4916/kernel/linux-4.19"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_GPL_BT10_3.0.0.6.102.37576/release/src-rt-5.04behnd.4916/kernel/linux-4.19"
 #define TMCFG_KERN_ARCH "arm"
 #define TMCFG_CPU_32BITS 1 // y
 #define TMCFG_CPU_64BITS 0 // n
@@ -93,7 +93,7 @@
 /*
  * Engine
  */
-#define TMCFG_E_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_BT10_3.0.0.6.102.34634/release/src-rt-5.04behnd.4916/kernel/bcmkernel/include -I/opt/ASUS/asuswrt_GPL_BT10_3.0.0.6.102.34634/release/src-rt-5.04behnd.4916/bcmdrivers"
+#define TMCFG_E_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_BT10_3.0.0.6.102.37576/release/src-rt-5.04behnd.4916/kernel/bcmkernel/include -I/opt/ASUS/asuswrt_GPL_BT10_3.0.0.6.102.37576/release/src-rt-5.04behnd.4916/bcmdrivers"
 #define TMCFG_E_KMOD_NAME "tdts"
 #define TMCFG_E_KMOD_IOCTL_DEV_NAME "idp"
 #define TMCFG_E_KMOD_IOCTL_DEV_MAJ 190
@@ -227,7 +227,7 @@
 /*
  * Engine shell
  */
-#define TMCFG_E_SHELL_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_BT10_3.0.0.6.102.34634/release/src-rt-5.04behnd.4916/kernel/bcmkernel/include -I/opt/ASUS/asuswrt_GPL_BT10_3.0.0.6.102.34634/release/src-rt-5.04behnd.4916/bcmdrivers"
+#define TMCFG_E_SHELL_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_BT10_3.0.0.6.102.37576/release/src-rt-5.04behnd.4916/kernel/bcmkernel/include -I/opt/ASUS/asuswrt_GPL_BT10_3.0.0.6.102.37576/release/src-rt-5.04behnd.4916/bcmdrivers"
 #define TMCFG_E_SHELL_ATIMER 1 // y
 #define TMCFG_E_SHELL_DEPRECATED_PROCFS 1 // y
 

@@ -209,9 +209,9 @@ function get_lanport_list(){
 					else{
 						if(port_info[index].max_rate == "2500"){
 							if(parseInt(label_idx) > 0)
-								lanport_list.text_arr.push("2.5G/1G LAN" + label_idx);
+								lanport_list.text_arr.push("2.5G LAN" + label_idx);
 							else
-								lanport_list.text_arr.push("2.5G/1G LAN");
+								lanport_list.text_arr.push("2.5G LAN");
 						}
 						else if(port_info[index].max_rate == "10000"){
 							if(parseInt(label_idx) > 0)
@@ -732,7 +732,7 @@ function applyRule(){
 	if(wans_flag == 1){//Dual WAN
 		/* DualWAN/IPTV Conflict Check */
 		if(switch_stb_x != "0" || orig_switch_wantag != "none"){
-			var hint_str = "To ensure that there are no conflicts, when you enable %1$@, the %2$@ will be disabled. Are you sure to continue?"; //untranslated
+			var hint_str = `<#conflict_function_hint#>`;
 			var msg = hint_str.replace("%1$@", `<#dualwan#>`).replace("%2$@", "IPTV");
 
 			if(confirm(msg)){
@@ -959,7 +959,7 @@ function applyRule(){
 
 		/* Only default WAN can be configured when IPTV is enabled */
 		if(!is_default_wan(document.form.wans_primary.value) && (switch_stb_x != "0" || orig_switch_wantag != "none")){
-			let hint_str = "<#PortConflict_DisableFunc_Check#>";
+			let hint_str = `<#PortConflict_DisableFunc_Check#>`;
 			let confirm_str = hint_str.replace("%1$@", `"`+document.form.wans_primary[document.form.wans_primary.selectedIndex].text+`"`).replace("%2$@", "<#menu5_3#>").replace("%3$@", "IPTV");
 			if(confirm(confirm_str)){
 				document.form.switch_stb_x.disabled = false;
@@ -1066,7 +1066,7 @@ function applyRule(){
 		}
 
 		if(conflict_func.length > 0){
-			var hint_str = "To ensure that there are no conflicts, when you enable %1$@, the %2$@ will be disabled. Are you sure to continue?";//untranslated
+			var hint_str = `<#conflict_function_hint#>`;
 			var msg = hint_str.replace("%1$@", `<#WAN_auto_detected#>`).replace("%2$@", conflict_func);
 
 			if(confirm(msg)){
@@ -1097,16 +1097,15 @@ function applyRule(){
 		}
 	}
 
-	/* Port Conflict Check */
-	if(document.form.wans_dualwan.value.indexOf("lan") != -1 ){
-		// Check Bonding port conflict
+	/* LACP Port Conflict Check */
+	if(lacp_support && lacp_enabled == "1" && document.form.wans_dualwan.value.indexOf("lan") != -1)
+	{
+		let lan_port_num = document.form.wans_lanport.value;
 		conflict_ports = "";
-		if(lacp_support && lacp_enabled == "1"){
-			for(let i = 0; i < bonding_port_settings.length; i++){
-				if((document.form.wans_dualwan.value.indexOf("lan") != -1 && lan_port_num == bonding_port_settings[i].val) || (wan_lanport_num == bonding_port_settings[i].val)){
-					conflict_func = "<#NAT_lacp#>";
-					conflict_ports = bonding_port_settings[i].text.toUpperCase();
-				}
+		for(let i = 0; i < bonding_port_settings.length; i++){
+			if(lan_port_num == bonding_port_settings[i].val){
+				conflict_func = "<#NAT_lacp#>";
+				conflict_ports = bonding_port_settings[i].text.toUpperCase();
 			}
 		}
 	}
@@ -1143,7 +1142,7 @@ function applyRule(){
 	}
 
 	if(conflict_func != "" && conflict_ports != ""){
-		let hint_str = "<#PortConflict_DisableFunc_Check#>";
+		let hint_str = `<#PortConflict_DisableFunc_Check#>`;
 		let confirm_str = hint_str.replace("%1$@", conflict_ports).replace("%2$@", "<#menu5_3#>").replace("%3$@", conflict_func);
 		if(confirm(confirm_str)){
 			if(conflict_func.indexOf("<#NAT_lacp#>") != -1){
@@ -1201,7 +1200,7 @@ function applyRule(){
 			}
 
 			if(vlan_port_conflict){
-				let hint_str1 = "<#PortConflict_SamePort_Hint#>";
+				let hint_str1 = `<#PortConflict_SamePort_Hint#>`;
 				let note_str = "";
 				note_str = hint_str1.replace("%1$@", "WAN").replace("%2$@", "VLAN");
 				alert(note_str);
@@ -2162,7 +2161,8 @@ function remain_origins(){
 																if(special_lan != "")
 																	cur_parimary_wan = eth_wan_list[special_lan].wan_name;
 
-																var confirm_str = "The current primary wan is \"" + cur_parimary_wan + "\". Disable dual wan will change primary wan to \""+ eth_wan_list[default_wan].wan_name + "\", are you sure to do it?"; //untranslated
+																var hint_str = `<#dualwan_disable_hint#>`;
+																var confirm_str = hint_str.replace("%1$@", cur_parimary_wan).replaceAll("%2$@", eth_wan_list[default_wan].wan_name);
 
 																if(!confirm(confirm_str)){
 																	curState = "1";

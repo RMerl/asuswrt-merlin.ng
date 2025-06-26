@@ -1920,6 +1920,98 @@ wl_wlif_wpa_supplicant_update_ap_scan(char *ifname, char *nvifname, int val)
 	system(cmd);
 }
 
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+#if defined(WIFI7_SDK_20250122)
+// Helper function to get the band type for wireless interface
+int
+wl_wlif_get_band_type(char *ifname)
+{
+	int band_type = 0;
+
+	wl_ioctl(ifname, WLC_GET_BAND, &band_type, sizeof(band_type));
+
+	// If band type is auto than update band type from band list
+	if (band_type == WLC_BAND_AUTO) {
+		int list[3]; // list[0] is the count, values at index 1 and 2 contain band type
+		int j;
+
+		wl_ioctl(ifname, WLC_GET_BANDLIST, list, sizeof(list));
+		if (list[0] > 2) {
+			list[0] = 2;
+		}
+		band_type = 0;
+		for (j = 1; j <= list[0]; j++) {
+			if (list[j] == WLC_BAND_5G || list[j] == WLC_BAND_2G) {
+				band_type |= list[j];
+			}
+		}
+	} else if (band_type == WLC_BAND_6G) {
+		band_type = 0;
+	}
+
+	dprintf("Info: rc: %d: wps: ifname %s band type %d\n", __LINE__, ifname, band_type);
+
+	return band_type;
+}
+#endif /* WIFI7_SDK_20250122 */
+#endif	/* RTCONFIG_HND_ROUTER_BE_4916 */
+
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+#if defined(WIFI7_SDK_20250122)
+int
+wl_wlif_find_out_mfp_cap_mrsno(int akm, int nv_mfp, int mrsno, bool rsno, bool rsnop,
+		bool is_band_6g, bool mbo)
+{
+	if (mrsno) {
+		if (is_band_6g) {
+			return HAPD_MFP_REQ;
+		} else {
+			/* RSNO IEs */
+			if (rsno || rsnop) {
+				return HAPD_MFP_REQ;
+			/* RSNE IE */
+			} else {
+				/* MFP should be set to capable, when MBO is enabled */
+				if (mbo) {
+					return HAPD_MFP_CAP;
+				} else {
+					return HAPD_MFP_OFF;
+				}
+			}
+		}
+	}
+
+	if (akm & (HAPD_AKM_WPA3_SAE | HAPD_AKM_WPA3_SAE_FT | HAPD_AKM_WPA3_DPP |
+			HAPD_AKM_OWE | HAPD_AKM_WPA3 | HAPD_AKM_WPA3_SUITE_B |
+			HAPD_AKM_WPA3_SAE_EXT)) {
+		if (akm & (HAPD_AKM_WEP | HAPD_AKM_PSK)) {
+			/* Do not allow SAE combination with these modes */
+			dprintf("Err: rc: %d: wrong akm setting\n", __LINE__);
+			return -1;
+		}
+		if ((akm & (HAPD_AKM_PSK2 | HAPD_AKM_WPA2)) && nv_mfp != HAPD_MFP_REQ) {
+			/* In mixed SAE case, set MFP to be capable,
+			 * if MFP is not set to required.
+			 */
+			return HAPD_MFP_CAP;
+		}
+		/* In other cases, MFP should be required */
+		return HAPD_MFP_REQ;
+	}
+	/* In case of pure WPA-PSK/WPA-Enterprise, MFP should be disabled */
+	if ((akm == HAPD_AKM_PSK) || (akm == HAPD_AKM_WPA)) {
+		return HAPD_MFP_OFF;
+	}
+
+	if (akm == HAPD_AKM_OPEN || akm == HAPD_AKM_WEP) {
+		/* wps_cred_add_sae: do not add ieee80211w for open/wep */
+		return -1;
+	}
+	return nv_mfp;
+}
+#endif /* WIFI7_SDK_20250122 */
+#endif	/* RTCONFIG_HND_ROUTER_BE_4916 */
+
 #ifdef MULTIAP
 /* Retrieves the backhaul credentials from the nvram */
 static int
@@ -2888,6 +2980,11 @@ double get_wifi_maxpower(int target_unit)
 	}
 }
 
+double get_wifi_2G_maxpower()
+{
+	return get_wifi_maxpower(WL_2G_BAND);
+}
+
 double get_wifi_5G_maxpower()
 {
 	return get_wifi_maxpower(WL_5G_BAND);
@@ -2904,7 +3001,7 @@ double get_wifi_5GH_maxpower()
 
 double get_wifi_6G_maxpower()
 {
-#if defined(RTCONFIG_WIFI6E) || (defined(RTCONFIG_WIFI7) && !defined(RTCONFIG_WIFI7_NO_6G))
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 #if defined(BT12)
 	return 0;
 #else
@@ -2927,6 +3024,63 @@ double get_wifi_6GH_maxpower()
 #endif
 
 #if defined(RTCONFIG_HND_ROUTER_BE_4916)
+/* Utility function to get a space separated string listing primary WLAN radio interface OS names
+ * matching the band_needle.
+ * For available band_needle types, see macros around WLC_BAND_2G, WLC_BAND_5G, WLC_BAND_6G.
+ * Pass WLC_BAND_ALL to get all WLAN interface names.
+ *
+ * Return value is the number of WLAN radio interfaces meeting the criteria.
+ *
+ * If ret_buf is NULL or ret_buf_len is zero, the returned number is still valid.
+ * If ret_buf_len is insufficient, the list may be incomplete.
+ */
+int
+wl_wlif_get_wlan_ifnames(char *ret_buf, size_t ret_buf_len, int band_needle)
+{
+	int ret = 0;
+	size_t remaining_len = ret_buf_len;
+	char nv_ifname[80], *next, *lan_ifnames = nvram_safe_get("lan_ifnames");
+
+	if (ret_buf && ret_buf_len) {
+		bzero(ret_buf, ret_buf_len);
+	}
+	foreach(nv_ifname, lan_ifnames, next) {
+		char os_ifname[80];
+		size_t os_ifname_len;
+
+		nvifname_to_osifname(nv_ifname, os_ifname, sizeof(os_ifname));
+		if (wl_probe(os_ifname) != 0) {
+			/* not a WLAN interface */
+			continue;
+		}
+		if (band_needle == WLC_BAND_2G || band_needle == WLC_BAND_5G ||
+				band_needle == WLC_BAND_6G) {
+			int ifname_band = WLC_BAND_INVALID;
+			if (wl_ioctl(os_ifname, WLC_GET_BAND, &ifname_band, sizeof(ifname_band))) {
+				ifname_band = dtoh32(ifname_band);
+			}
+			if (ifname_band != band_needle) {
+				/* band type mismatch */
+				continue;
+			}
+		}
+		ret++;	/* increment count of matching WLAN interface */
+		os_ifname_len = strnlen(os_ifname, sizeof(os_ifname));
+		if (!ret_buf || (remaining_len < (os_ifname_len + 2))) {
+			/* no buffer to write the ifname into */
+			continue;
+		}
+		if (ret > 1) {
+			strncat(ret_buf, " ", ret_buf_len);
+			remaining_len -= 1;
+		}
+		strncat(ret_buf, os_ifname, ret_buf_len);
+		remaining_len -= os_ifname_len;
+	}
+
+	return ret;
+}
+
 /*
  * Set eht subcommand to int value
  */
@@ -3153,11 +3307,12 @@ void _set_wl_mlo_config_by_model(char *buf, int buf_size)
 		case MODEL_RTBE96U:
 		case MODEL_RTBE92U:
 		case MODEL_GTBE19000:
-		case MODEL_GTBE19000_AI:
+		case MODEL_GTBE19000AI:
 			// (256) 2G + 5G + 6G
 			strlcpy(buf, "2 1 0 -1", buf_size);
 			break;
 		case MODEL_GTBE96:
+		case MODEL_GTBE96_AI:
 			// (255) 2G + 5G_L + 5G_H
 			strlcpy(buf, "2 0 1 -1", buf_size);
 			break;
@@ -3167,6 +3322,7 @@ void _set_wl_mlo_config_by_model(char *buf, int buf_size)
 			break;
 		case MODEL_BT10:
 		case MODEL_GSBE18000:
+		case MODEL_GT7:
 			// (652) 6G + 5G + 2G, DHD is 6G
 			// TODO : NIC + dongle mixed, need to check more
 			snprintf(buf, buf_size, "%d %d %d -1", WLIF_6G, WLIF_5G1, WLIF_2G);
@@ -3191,6 +3347,7 @@ void _set_wl_mlo_config_by_model(char *buf, int buf_size)
 		case MODEL_RTBE88U:
 		case MODEL_RTBE86U:
 		case MODEL_RTBE58U:
+		case MODEL_RTBE58U_V2:
 		case MODEL_RTBE82U:
 		case MODEL_RTBE58U_PRO:
 		default:
@@ -3245,17 +3402,17 @@ int apply_mlo_rp_settings(int mlo_client_mode)
 	char *val = NULL;
 	char buf[20];
 
-	if(!*nvram_safe_get("wl_mlo_config") || nvram_match("wl_mlo_config", "-1 -1 -1 -1")) {
+	if (!*nvram_safe_get("wl_mlo_config") || nvram_match("wl_mlo_config", "-1 -1 -1 -1")) {
 		_dprintf("init mlo_config...\n");
 		_set_wl_mlo_config_by_model(buf, sizeof(buf));
 	}
 
-	if(!*nvram_safe_get("mld0_ifnames")) {
+	if (!*nvram_safe_get("mld0_ifnames")) {
 		_dprintf("init mld ifnames...\n");
 		wl_mlo_config_sort("0", "0");
 	}
 
-	if(!*nvram_safe_get("mld0_ifnames")) {
+	if (!*nvram_safe_get("mld0_ifnames")) {
 		_dprintf("%s, mld0 ifnames err.\n", __func__);
 		return -1;
 	}
@@ -3271,8 +3428,8 @@ int apply_mlo_rp_settings(int mlo_client_mode)
 	nvram_set("wlc_psta", "2");
 	nvram_set("wlc_dpsta", "2");
 	nvram_set("re_mode", "0");
-	nvram_set("mld_enable", "1");
-	if(mlo_client_mode == MLO_CLIENT_MB) {
+	//nvram_set("mld_enable", "1");
+	if (mlo_client_mode == MLO_CLIENT_MB) {
 		nvram_set_int("mlo_rp", 0);
 		nvram_set_int("mlo_mb", 1);
 	} else {	// MLO_CLIENT_RP
@@ -3283,9 +3440,11 @@ int apply_mlo_rp_settings(int mlo_client_mode)
 	//nvram_set("lan_proto", "dhcp");
 
 #ifdef RPBE58
-	if(*nvram_safe_get("wlc1_ssid"))
+	if (*nvram_safe_get("wlc_ssid"))
+		snprintf(prefix, sizeof(prefix), "wlc_");
+	else if (*nvram_safe_get("wlc1_ssid"))
 		snprintf(prefix, sizeof(prefix), "wlc1_");
-	else if(*nvram_safe_get("wlc0_ssid"))
+	else if (*nvram_safe_get("wlc0_ssid"))
 		snprintf(prefix, sizeof(prefix), "wlc0_");
 	else {
 		_dprintf("no valid wlcX settings.\n");
@@ -3297,7 +3456,7 @@ int apply_mlo_rp_settings(int mlo_client_mode)
 	foreach (word, mld0_ifnames, next) {
 		wl_ioctl(word, WLC_GET_INSTANCE, &unit, sizeof(unit));
 
-		if(unit < 0) {
+		if (unit < 0) {
 			_dprintf("%s, wlif[%s] get error unit:%d\n", __func__, word, unit);
 			continue;
 		}
@@ -3318,7 +3477,7 @@ int apply_mlo_rp_settings(int mlo_client_mode)
 		nvram_set(strlcat_r(prefix2, "11be", tmp, sizeof(tmp)), "1");
 	}
 
-#if DEBUG
+//#if DEBUG
 	foreach (word, mld0_ifnames, next) {
 		wl_ioctl(word, WLC_GET_INSTANCE, &unit, sizeof(unit));
 
@@ -3335,7 +3494,7 @@ int apply_mlo_rp_settings(int mlo_client_mode)
 		_dprintf("chk convert %s=[%s]\n", strlcat_r(prefix2, "11be", tmp, sizeof(tmp)), nvram_safe_get(strlcat_r(prefix2, "11be", tmp, sizeof(tmp))));
 	}
 
-#endif
+//#endif
 	nvram_commit();
 
 	return 0;

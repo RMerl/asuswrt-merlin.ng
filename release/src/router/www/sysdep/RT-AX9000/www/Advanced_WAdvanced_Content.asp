@@ -91,7 +91,7 @@
 </style>
 <script>
 $(function () {
-	if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
+	if(amesh_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
 		addNewScript('/require/modules/amesh.js');
 	}
 });
@@ -281,7 +281,7 @@ function initial(){
 		changeRSSI(wl_user_rssi_onload);
 	else{
 		document.getElementById("rssiTr").style.display = "none";
-		$("#wl_unit_field").toggle(!(isSwMode("re") || isSwMode("ew")))
+		$("#wl_unit_field").toggle(!(isSwMode("RP") || isSwMode("ew")))
 	}
 
 	if(!band5g_support)
@@ -664,7 +664,7 @@ function initial(){
 
 	control_TimeField();
 
-	if(isSwMode("re")){
+	if(isSwMode("RP")){
 		var _rows = document.getElementById("WAdvTable").rows;
 		for(var i=0; i<_rows.length; i++){
 			if(_rows[i].className.search("rept") == -1){
@@ -909,7 +909,7 @@ function applyRule(){
 		if(location_list_support && !cfg_ui_region_disable){
 			if((orig_region.length > 0 && orig_region != document.form.location_code.value)
 			|| (orig_region == "" && document.form.location_code.value != tcode)){
-				if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
+				if(amesh_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
 					if(!AiMesh_confirm_msg("Wireless_CountryCode"))
 						return;
 				}
@@ -934,7 +934,7 @@ function applyRule(){
 			document.form.group_id.value = "mumimo"
 		}
 		
-		if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
+		if(amesh_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
 			var radio_value = (document.form.wl_radio[0].checked) ? 1 : 0;
 			if(!AiMesh_confirm_msg("Wireless_Radio",radio_value))
 				return;

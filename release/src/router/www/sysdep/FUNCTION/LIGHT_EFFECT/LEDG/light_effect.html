@@ -55,7 +55,7 @@ $(function(){
 	if(isSupport("antled")){
 		$('<script />', { type : 'text/javascript', src : "/light_effect/antenna.js"}).appendTo('head');
 	}
-	if(model_info.productid.substr(0,2) == "GT"){
+	if(rog_support){
 		$("#light_effect_bg .light_effect_mask").addClass("rog");
 	}
 
@@ -110,7 +110,7 @@ var hue_bar_color = 360;
 const support_night_mode = (()=>{
 	let ledg_night_mode = httpApi.nvramGet(["ledg_night_mode"])["ledg_night_mode"];
 	let nv_support = (ledg_night_mode != "" && ledg_night_mode != undefined) ? true : false;
-	let model_support = (model_info.productid == "GT-BE98" || model_info.productid == "GT-BE98_PRO" || model_info.productid == "GT-BE96" || model_info.productid == "GT-BE19000" || model_info.productid == "GT-BE19000_AI") ? true : false;
+	let model_support = isSupport("ledg_night_mode") == 0 ? false : true;
 	return (nv_support && model_support) ? true : false;
 })();
 if(support_night_mode){
@@ -144,8 +144,17 @@ function initial_led_control() {
 		}
 	};
 
-	if(model_info.productid == "TUF-AX5400" || model_info.productid == "TUF-AX6000")
+	if (
+		model_info.productid == "TUF-AX5400" ||
+		model_info.productid == "TUF-AX6000" ||
+		model_info.productid == "GS7" ||
+		model_info.productid == "GS-BE7200X" ||
+		model_info.productid == "GS-BE18000" ||
+		model_info.productid == "GS-BE12000" ||
+		model_info.productid == "GS7_PRO"
+	) {
 		$("#light_effect_setting .scheme_bg:not(#static, #breathing, #wave, #rainbow)").remove();
+	}
 
 	$light_effect_bg = $("#light_effect_bg");
 	$hue_bar = $("#hue_bar");
@@ -795,7 +804,7 @@ function rgbToLeft(_rgb) {
 }
 const support_gradient_effect = (()=>{
 	if(model_info.productid == "GT-AXE16000" || model_info.productid == "GT-AX11000_PRO" || model_info.productid == "GT10" ||
-		model_info.productid == "GT-BE98" || model_info.productid == "GT-BE98_PRO" || model_info.productid == "GT-BE96" || model_info.productid == "GT-BE19000" || model_info.productid == "GT-BE19000_AI"){
+		model_info.productid == "GT-BE98" || model_info.productid == "GT-BE98_PRO" || model_info.productid == "GT-BE96" || model_info.productid == "GT-BE19000" || model_info.productid == "GT-BE19000AI"){
 		return true;
 	}
 	else{
@@ -945,7 +954,7 @@ $(document).ready(initial_led_control);
 <div class="light_effect_setting_bg" id="light_effect_setting" mode_group="panel">
 	<div class="settings_container">
 		<div id="ledg_scheme_switch" class="setting_enable_bg">
-			<div class="text"><span>Aura RGB <#WLANConfig11b_WirelessCtrl_button1name#></span></div>
+			<div class="text"><span>Aura RGB</span></div>
 			<div class="switch"></div>
 			<div class="schedule"></div>
 		</div>

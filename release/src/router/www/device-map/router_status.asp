@@ -87,7 +87,7 @@ $(document).ready(function(){
 		$("#yadns_field").hide()
 	}
 
-	if(isSupport("sdn_mainfh")){
+	if(isSupport("sdn_mainfh") || isSwMode("MB")){
 		$("#wireless_tab").hide();
 	}
 
@@ -604,6 +604,18 @@ function get_ethernet_ports() {
 				var error_port_list = [];
 				$.each(port_info, function(label, label_array){
 					$.each(port_info[label], function(index, port_item){
+						const { cap_support } = port_item;
+						if (cap_support.INTRAMODULE) return true;
+
+						let allCapFalse = true;
+						$.each(cap_support, function(key, value) {
+							if (value) {
+								allCapFalse = false;
+								return false;
+							}
+						});
+						if (allCapFalse) return true;
+
 						var $port_bg = $("<div>").attr({"title":port_item.link_rate_text});
 						if(label == "WAN")
 							$port_bg.appendTo($label_W_bg);
@@ -619,7 +631,7 @@ function get_ethernet_ports() {
 								$port_icon.addClass("warn");
 						}
 						else if(port_item.is_on == "0"){
-							if(port_item.cap_support.USB){
+							if(cap_support.USB){
 								if(port_item.hasOwnProperty("devices")){
 									$port_icon.addClass("conn");
 								}
@@ -630,7 +642,7 @@ function get_ethernet_ports() {
 								$port_icon.addClass("unplug");
 						}
 
-						if(port_item.cap_support.WAN || port_item.cap_support.WANAUTO){
+						if(cap_support.WAN || cap_support.WANAUTO){
 							$("<div>").addClass("wan_icon").appendTo($port_icon);
 							let port_text = "";
 							if(port_item.ui_display != undefined && port_item.ui_display != ""){
@@ -644,7 +656,7 @@ function get_ethernet_ports() {
 							if(port_text != "")
 								$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_text)).appendTo($port_bg);
 						}
-						else if(port_item.cap_support.LAN){
+						else if(cap_support.LAN){
 							let port_text = "";
 							let port_idx = "";
 							if(port_item.ui_display != undefined && port_item.ui_display != ""){
@@ -661,7 +673,7 @@ function get_ethernet_ports() {
 							if(port_idx != "")
 								$("<div>").addClass("lan_idx").html(htmlEnDeCode.htmlEncode(port_idx)).appendTo($port_icon);
 						}
-						else if(port_item.cap_support.USB){
+						else if(cap_support.USB){
 							$port_icon.addClass("USB");
 							let port_text = "";
 							if(port_item.ui_display != undefined && port_item.ui_display != ""){
@@ -675,10 +687,15 @@ function get_ethernet_ports() {
 							if(port_text != "")
 								$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_text)).appendTo($port_bg);
 						}
-						else if(port_item.cap_support.MOCA){
+						else if(cap_support.MOCA){
 							$port_icon.addClass("MoCa");
 							if(port_item.special_port_name != "")
 								$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_item.special_port_name)).appendTo($port_bg);
+						}
+						else {
+							let port_text = port_item.ui_display || "";
+							if(port_text)
+								$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_text)).appendTo($port_bg);
 						}
 
 						if(port_item.link_rate_status != "1"){

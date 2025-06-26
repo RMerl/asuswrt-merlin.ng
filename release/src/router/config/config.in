@@ -319,6 +319,11 @@ config RTCONFIG_IPV6
 	bool "IPv6 Support"
 	default n
 
+config RTCONFIG_IPV6_PRIVACY
+	bool "IPv6 Privacy Extensions support for WAN"
+	depends on RTCONFIG_IPV6
+	default n
+
 config RTCONFIG_IMPROXY
 	bool "IGMP 1,2,3 & MLD 1,2 Proxy Support"
 
@@ -1519,6 +1524,10 @@ config RTCONFIG_BUSINESS
 	bool "BUSINESS Model Support"
 	default n
 
+config RTCONFIG_UI4
+	bool "UI4 Support"
+	default n
+
 config RTCONFIG_SMART_HOME_MASTER_UI
 	bool "Smart Home Master UI of SDN"
 	default n
@@ -1543,6 +1552,10 @@ config RTCONFIG_SDN_PRIORITY
 
 config RTCONFIG_TFTP_SERVER
 	bool "TFTP daemon"
+	default n
+
+config RTCONFIG_AI_SERVICE
+	bool "AI service"
 	default n
 
 config RTCONFIG_ETRON_XHCI
@@ -1673,6 +1686,10 @@ config RTCONFIG_N18UTXBF
 	bool "enable TXBF for RT-N18U"
 	default n
 
+config RTCONFIG_HNS
+	bool "TrendMicro Home Network Security (HNS)"
+	default n
+
 config RTCONFIG_BWDPI
 	bool "TrendMicro DPI engine and iQoS and Partenl Control"
 	default n
@@ -1721,6 +1738,10 @@ config RTCONFIG_ROG
 config RTCONFIG_ROG_UI
 	bool "ROG theme support"
 	default n
+
+config RTCONFIG_GS_UI
+        bool "GS themme support"
+        default n
 
 config RTCONFIG_TUF_UI
         bool "TUF theme support"
@@ -1881,6 +1902,10 @@ config RTCONFIG_ERP_TEST
 
 config RTCONFIG_REBOOT_SCHEDULE
 	bool "Reboot_schedule"
+	default n
+
+config RTCONFIG_REBOOT_SCHEDULE_V2
+	bool "Reboot_schedule_V2"
 	default n
 
 config RTCONFIG_IPSEC
@@ -2293,6 +2318,10 @@ config RTCONFIG_RAST_NONMESH_KVONLY
 	bool "enable roamast in a nonmesh device"
 	default n
 
+config RTCONFIG_RAST_TEST
+        bool "test rast function"
+        default n
+
 config RTCONFIG_CONN_EVENT_TO_EX_AP
 	bool "enable AP to info the EX-Ap of the connect event of a connected client"
 	default n
@@ -2515,6 +2544,10 @@ config RTCONFIG_AMAS_MTK_EZWDS
 
 config RTCONFIG_MTK_BSD
 	bool "mtk smart-connect support"
+	default n
+
+config RTCONFIG_SW_BTN
+	bool "switch button"
 	default n
 
 config RTCONFIG_COBRAND
@@ -2961,6 +2994,10 @@ config RTCONFIG_NORDVPN
 	bool "3rd party VPN NordVPN support"
 	default n
 
+config RTCONFIG_SURFSHARK
+	bool "3rd party VPN Surfshark VPN support account login"
+	default n
+
 config RTCONFIG_SPECIFIC_PPPOE
 	bool "Support specific PPPoE features"
 	default n
@@ -3190,6 +3227,10 @@ config RTCONFIG_AMAS_UPLOAD_FILE
 	bool "AiMesh upload file"
 	default n
 
+config RTCONFIG_HAS_6G
+	bool "has 6G band"
+	default n
+
 config RTCONFIG_HAS_6G_2
 	bool "has 2-nd 6G band"
 	default n
@@ -3212,15 +3253,18 @@ config RTCONFIG_AUTO_WANPORT
 	bool "Automatically detect where the WAN port is"
 	default n
 
+config RTCONFIG_FU_TEST
+        bool "enable function test"
+        default n
+
 config RTCONFIG_PASS_V2
 	bool "Use PASS V2 for encryption"
 	depends on RTCONFIG_RALINK
 	default n
 
-config RTCONFIG_WIFI7_NO_6G
-	bool "no 6G band support in WiFi7"
-	depends on RTCONFIG_WIFI7
-	default n
+config RTCONFIG_NVSW_IN_JFFS
+        bool "multiple profile in JFFS, nvram switching mechainsm"
+        default n
 
 config RTCONFIG_AMAS_OB_DISABLE_DSAP
 	bool "disable downstream ap when onboarding"
@@ -3233,6 +3277,14 @@ config RTCONFIG_HND_GPIO
 
 config RTCONFIG_PRESSURE_SENSOR
 	bool "Pressure sensor"
+	default n
+
+config RTCONFIG_BCM_AFC
+	bool "BCM AFC features : afcd / afcmd / locpold"
+	default n
+
+config RTCONFIG_AFC_POSITIONING
+	bool "AFC positioning"
 	default n
 
 config RTCONFIG_SMARTHAUL
@@ -3266,6 +3318,10 @@ config RTCONFIG_MLO_DEFAULT_ACTIVE
         bool "Enable MLO in default"
         default n
 
+config RTCONFIG_NO_AIDISK
+	bool "No AiDisk support"
+	default n
+
 config RTCONFIG_FLASH_TYPE_EMMC
 	bool "eMMC flash type"
 	default n
@@ -3281,3 +3337,32 @@ config RTCONFIG_KNV_BACKUP
 config RTCONFIG_NV_BACKUP2
 	bool "kernel nvram backup file plan 2"
 	default n
+
+config RTCONFIG_DIS_HASH_KEY_GEN_CHECK
+	bool "disable hash key generation and check"
+	default n
+
+config RTCONFIG_ENERGY_SAVE
+	bool "Energy Saving"
+	default n
+
+config RTCONFIG_CC3220
+	bool "TI CC3220 flag"
+	default n
+
+config RTCONFIG_SECURE_BY_DEFAULT
+	bool "secure setting in default"
+	default y
+
+config RTCONFIG_BCMLEDG
+	bool "RT And ROG LEDG FUNCTION"
+	default n
+
+config RTCONFIG_BCMLEDG_NIGHT
+        bool "ROG LEDG NIGHT MODE FUNCTION"
+        default n
+
+config RTCONFIG_SINGLE_LED_NIGHT_MODE
+	bool "SINGLE LED NIGHT MODE FUNCTION"
+	default n
+

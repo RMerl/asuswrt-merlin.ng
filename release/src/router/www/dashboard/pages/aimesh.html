@@ -96,7 +96,7 @@
 			// footer
 			iframe.find("#footer").hide()
 		}
-	
+
 		function setupBusinessUI(){
 			findColorAndReplace("color", "FFFFFF", "006CE1");
 			findColorAndReplace("color", "FFCC00", "006CE1");
@@ -114,20 +114,25 @@
 			}, 100);
 		}
 
-		setInterval(function () {
-			const iframe = document.getElementById('settingsWindow');
-			const iframeContent = iframe.contentWindow.document.querySelector('.content');
-			if (iframeContent) {
-				const iframeHeight = Math.ceil(iframeContent.getBoundingClientRect().height);
-				const headerHeight = document.querySelector('header').scrollHeight;
-				const windowHeight = top.window.innerHeight;
-				const nav = document.querySelector('nav');
-				if (iframeHeight < windowHeight) {
-					iframe.style.height = `${windowHeight - headerHeight}px`;
-					nav.style.height = `${windowHeight}px`;
-				} else {
-					iframe.style.height = `${iframeHeight}px`;
-					nav.style.height = `${iframeHeight + headerHeight}px`;
+		document.getElementById('settingsWindow').onload = function () {
+			if (top.loader) {
+				top.loader.hide();
+				top.loader = null;
+			}
+		}
+		
+		window.addEventListener('message', event => {
+			if (event.data.type === 'resize') {
+				const iframe = document.getElementById('settingsWindow');
+				if (iframe) {
+                    const footer = (navigator.userAgent.match(/ASUSMultiSiteManager/) || navigator.userAgent.match(/ASUSExpertSiteManager/)) ? 100 : 20;
+                    const iframeHeight = event.data.height + footer;
+                    let headerHeight = 0;
+                    if (document.querySelector('header')) {
+                        headerHeight = document.querySelector('header').scrollHeight;
+                    }
+                    const windowHeight = top.window.innerHeight - headerHeight * 2 - footer;
+                    iframe.style.height = `${Math.max(iframeHeight, windowHeight * 1.13)}px`
 				}
 			}
 		}, 1000);

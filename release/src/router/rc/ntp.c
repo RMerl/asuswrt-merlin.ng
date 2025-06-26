@@ -87,6 +87,10 @@ static void ntp_service()
 #ifdef RTCONFIG_UUPLUGIN
 		exec_uu();
 #endif
+#ifdef RTCONFIG_BCM_AFC
+		if (IS_AFC_ENABLED())
+			kill_pidfile_s("/var/run/afc_coldreboot_monitor.pid", SIGUSR1);
+#endif
 	}
 }
 

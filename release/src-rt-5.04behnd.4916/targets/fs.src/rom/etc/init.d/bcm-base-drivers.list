@@ -189,7 +189,13 @@ extra/spudd.ko
 
 extra/sim_card.ko
 extra/i2s.ko
+#KP:if [[ -z "$(cat /proc/environment/boardid|grep RT-BE92U)" ]]; then
+#KP:if ! [ $avs_disable -eq 1 ]; then
 extra/bcm_thermal.ko
+#KP:fi
+#KP:else
+extra/bcm_thermal.ko
+#KP:fi
 
 # FPI Control Dataplane
 extra/bcm_fpi_blog.ko

@@ -134,6 +134,78 @@
  	hlbr:expression(this.onFocus=this.blur()); /* for IE */
  	white-space:normal;
 }
+.confirm_button_gen_long_left_rog{
+	font-weight: bolder;
+	text-shadow: 1px 1px 0px black;
+	background: rgb(145,7,31);
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	border-radius: 8px;
+  border:0;
+  color: #FFFFFF;
+  width:155px;
+	height:34px;
+	text-align:center;
+	line-height:34px;
+	margin:10px;
+	font-family:Verdana;
+	font-size:12px; 	
+  overflow:visible;
+	cursor:pointer;
+	outline: none; /* for Firefox */
+ 	hlbr:expression(this.onFocus=this.blur()); /* for IE */
+ 	white-space:normal;
+}
+.confirm_button_gen_long_left_rog:hover	/*, .button:active*/{
+	background: rgba(207,10,44,1);
+  border:0;
+  color: #FFFFFF;
+	height:34px;
+	font-family:Verdana;
+	font-size:12px;
+ 	width:155px;
+  overflow:visible;
+	cursor:pointer;
+	outline: none; /* for Firefox */
+ 	hlbr:expression(this.onFocus=this.blur()); /* for IE */
+ 	white-space:normal;
+}
+.confirm_button_gen_long_left_tuf{
+	font-weight: bolder;
+	text-shadow: 1px 1px 0px black;
+	background: rgb(255,165,35);
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	border-radius: 8px;
+  border:0;
+  color: #FFFFFF;
+  width:155px;
+	height:34px;
+	text-align:center;
+	line-height:34px;
+	margin:10px;
+	font-family:Verdana;
+	font-size:12px; 	
+  overflow:visible;
+	cursor:pointer;
+	outline: none; /* for Firefox */
+ 	hlbr:expression(this.onFocus=this.blur()); /* for IE */
+ 	white-space:normal;
+}
+.confirm_button_gen_long_left_tuf:hover	/*, .button:active*/{
+	background: #D0982C;
+  border:0;
+  color: #FFFFFF;
+	height:34px;
+	font-family:Verdana;
+	font-size:12px;
+ 	width:155px;
+  overflow:visible;
+	cursor:pointer;
+	outline: none; /* for Firefox */
+ 	hlbr:expression(this.onFocus=this.blur()); /* for IE */
+ 	white-space:normal;
+}
 
 .confirm_button_gen_long_right{
 	font-weight: bolder;
@@ -177,7 +249,78 @@
  	hlbr:expression(this.onFocus=this.blur()); /* for IE */
  	white-space:normal;
 }
-
+.confirm_button_gen_long_right_rog{
+	font-weight: bolder;
+	text-shadow: 1px 1px 0px black;
+	background: rgb(145,7,31);
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	border-radius: 8px;
+  border:0;
+  color: #FFFFFF;
+  width:155px;
+	height:34px;
+	text-align:center;
+	line-height:34px;
+	margin:10px;
+	font-family:Verdana;
+	font-size:12px; 	
+  overflow:visible;
+	cursor:pointer;
+	outline: none; /* for Firefox */
+ 	hlbr:expression(this.onFocus=this.blur()); /* for IE */
+ 	white-space:normal;
+}
+.confirm_button_gen_long_right_rog:hover	/*, .button:active*/{
+	background: rgba(207,10,44,1);
+  border:0;
+  color: #FFFFFF;
+	height:34px;
+	font-family:Verdana;
+	font-size:12px;
+ 	width:155px;
+  overflow:visible;
+	cursor:pointer;
+	outline: none; /* for Firefox */
+ 	hlbr:expression(this.onFocus=this.blur()); /* for IE */
+ 	white-space:normal;
+}
+.confirm_button_gen_long_right_tuf{
+	font-weight: bolder;
+	text-shadow: 1px 1px 0px black;
+	background: rgb(255,165,35);
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	border-radius: 8px;
+  border:0;
+  color: #FFFFFF;
+  width:155px;
+	height:34px;
+	text-align:center;
+	line-height:34px;
+	margin:10px;
+	font-family:Verdana;
+	font-size:12px; 	
+  overflow:visible;
+	cursor:pointer;
+	outline: none; /* for Firefox */
+ 	hlbr:expression(this.onFocus=this.blur()); /* for IE */
+ 	white-space:normal;
+}
+.confirm_button_gen_long_right_tuf:hover	/*, .button:active*/{
+	background: #D0982C;
+  border:0;
+  color: #FFFFFF;
+	height:34px;
+	font-family:Verdana;
+	font-size:12px;
+ 	width:155px;
+  overflow:visible;
+	cursor:pointer;
+	outline: none; /* for Firefox */
+ 	hlbr:expression(this.onFocus=this.blur()); /* for IE */
+ 	white-space:normal;
+}
 .ribbon-wrapper-red {
   width: 85px;
   height: 88px;

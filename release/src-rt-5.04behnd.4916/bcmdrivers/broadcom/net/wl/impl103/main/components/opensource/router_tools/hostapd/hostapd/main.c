@@ -49,6 +49,10 @@ struct hapd_global {
 
 static struct hapd_global global;
 
+static int argc_g;
+static char **argv_g;
+static int daemonize_g;
+
 #ifndef CONFIG_NO_HOSTAPD_LOGGER
 static void hostapd_logger_cb(void *ctx, const u8 *addr, unsigned int module,
 			      int level, const char *txt, size_t len)
@@ -335,6 +339,12 @@ static void handle_dump_state(int sig, void *signal_ctx)
 {
 	/* Not used anymore - ignore signal */
 }
+
+static void handle_reg(int sig, void *signal_ctx)
+{
+	if (daemonize_g)
+		dm_register_app_restart_info(getpid(), argc_g, argv_g, NULL);
+}
 #endif /* CONFIG_NATIVE_WINDOWS */
 
 static int hostapd_global_init(struct hapd_interfaces *interfaces,
@@ -362,6 +372,7 @@ static int hostapd_global_init(struct hapd_interfaces *interfaces,
 #ifndef CONFIG_NATIVE_WINDOWS
 	eloop_register_signal(SIGHUP, handle_reload, interfaces);
 	eloop_register_signal(SIGUSR1, handle_dump_state, interfaces);
+	eloop_register_signal(SIGUSR2, handle_reg, interfaces);
 #endif /* CONFIG_NATIVE_WINDOWS */
 	eloop_register_signal_terminate(handle_term, interfaces);
 
@@ -925,6 +936,10 @@ int main(int argc, char *argv[])
 #ifdef CONFIG_DRIVER_BRCM_RDKB_RADIUS_GREYLIST
 	greylist_load(&interfaces);
 #endif /* CONFIG_DRIVER_BRCM_RDKB_RADIUS_GREYLIST */
+
+	argc_g = argc;
+	argv_g = argv;
+	daemonize_g = daemonize;
 
 	if (hostapd_global_run(&interfaces, daemonize, pid_file, argc, argv)) {
 		wpa_printf(MSG_ERROR, "Failed to start eloop");

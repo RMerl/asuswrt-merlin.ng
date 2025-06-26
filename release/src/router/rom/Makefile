@@ -198,7 +198,7 @@ else	#merlinupdate
 ifeq ($(RTCONFIG_AUTOLIVEUPDATE_ZIP),y)
 	cp -f webs_scripts/zip_webs_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_upgrade.sh
 	cp -f webs_scripts/zip_webs_update.sh $(INSTALLDIR)/usr/sbin/webs_update.sh
-ifeq ($(RTCONFIG_BWDPI),y)
+ifeq ($(or $(RTCONFIG_BWDPI),$(RTCONFIG_HNS)),y)
 	cp -f webs_scripts/sig2nd_upgrade.sh $(INSTALLDIR)/usr/sbin/sig_upgrade.sh
 	cp -f webs_scripts/sig2nd_update.sh $(INSTALLDIR)/usr/sbin/sig_update.sh
 endif
@@ -221,6 +221,11 @@ endif
 else # autoliveupdate_zip
 ifeq ($(RTCONFIG_HTTPS),y)
 	cp -f webs_scripts/ssl_webs_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_upgrade.sh
+ifeq ($(RTCONFIG_AI_SERVICE),y)
+	cp -f webs_scripts/ssl_webs_ai_rescue.sh $(INSTALLDIR)/usr/sbin/webs_ai_rescue.sh
+	install -m 0755 apps_scripts/ai_upgrade.sh $(INSTALLDIR)/usr/sbin/ai_upgrade
+	install -m 0755 apps_scripts/ai_request.sh $(INSTALLDIR)/usr/sbin/ai_request
+endif
 ifeq ($(RTAC68A),y)
 	cp -f webs_scripts/force_webs_update.sh $(INSTALLDIR)/usr/sbin/webs_update.sh
 else ifeq ($(RTCONFIG_FRS_LIVE_UPDATE),y)
@@ -264,7 +269,7 @@ ifeq ($(RTAC68U),y)
 	cp -f webs_scripts/ssl_webs_update_enc.sh $(INSTALLDIR)/usr/sbin/webs_update_enc.sh
 endif
 
-ifeq ($(or $(RTCONFIG_BWDPI),$(RTCONFIG_BWDPI_DEP)),y)
+ifeq ($(or $(RTCONFIG_BWDPI),$(RTCONFIG_HNS)),y)
 	cp -f webs_scripts/sig2nd_upgrade.sh $(INSTALLDIR)/usr/sbin/sig_upgrade.sh
 	cp -f webs_scripts/sig2nd_update.sh $(INSTALLDIR)/usr/sbin/sig_update.sh
 endif
@@ -438,6 +443,15 @@ ifeq ($(RTCONFIG_FSMD),y)
 	sed '/#/d' ../.config > $(INSTALLDIR)/rom/rtconfig
 endif
 
+ifeq ($(RTCONFIG_BCM_AFC),y)
+	install -m 0755 afc_pem/afc_ca.pem $(INSTALLDIR)/rom
+	install -m 0755 afc_pem/Apple_App_Attestation_Root_CA.pem $(INSTALLDIR)/rom
+	install -m 0755 afc_pem/gen_afc_cert.sh $(INSTALLDIR)/usr/sbin
+	install -m 0755 afc_pem/afc_openssl.config $(INSTALLDIR)/rom
+	install -m 0755 afc_pem/cakey.pem $(INSTALLDIR)/rom
+	install -m 0755 afc_pem/cacert.pem $(INSTALLDIR)/rom
+endif
+
 ifeq ($(RTAX86U), y)
 	install -m 0755 9873w_b0-b4.bin $(INSTALLDIR)/rom
 endif
@@ -458,6 +472,19 @@ ifeq ($(BUILD_NAME), GT10)
 	install -m 0755 apps_scripts/$(BUILD_NAME)/ingress_filter_config_bridging.sh $(INSTALLDIR)/usr/sbin
 endif
 
+ifeq ($(BUILD_NAME), RT-BE82M)
+	mkdir -p $(INSTALLDIR)/rom/mxl
+	install -m 0644 mxl/asus252.bin $(INSTALLDIR)/rom/mxl/mxl.bin
+endif
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GS-BE18000 GS-BE12000 GS7_PRO))
+	mkdir -p $(INSTALLDIR)/rom/mxl
+	install -m 0644 mxl/asus282.bin $(INSTALLDIR)/rom/mxl/mxl.bin
+endif
+ifeq ($(BUILD_NAME), GT7)
+	mkdir -p $(INSTALLDIR)/rom/mxl
+	install -m 0644 mxl/asus252_gt7.bin $(INSTALLDIR)/rom/mxl/mxl.bin
+endif
+
 ifeq ($(RTCONFIG_BCMARM),y)
 	install -m 0755 apps_scripts/brcmsysinfo.sh $(INSTALLDIR)/usr/sbin
 	install -m 0755 apps_scripts/bcmspu.sh $(INSTALLDIR)/usr/sbin
@@ -470,6 +497,17 @@ endif
 ifeq ($(RTCONFIG_AMAS),y)
 ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
 	install -m 0755 apps_scripts/acs_restart.sh $(INSTALLDIR)/usr/sbin
+endif
+endif
+
+ifeq ($(RTCONFIG_ENERGY_SAVE),y)
+	mkdir -p $(INSTALLDIR)/rom/es
+ifeq ($(RTCONFIG_CC3220),y)
+	install -m 0644 es/BTL_ram.ptc $(INSTALLDIR)/rom/es/BTL_ram.ptc
+	install -m 0644 es/BTL_sflash.ptc $(INSTALLDIR)/rom/es/BTL_sflash.ptc
+	install -m 0644 es/radio.ucf $(INSTALLDIR)/rom/es/radio.ucf
+	install -m 0644 es/$(BUILD_NAME)/fw.ucf $(INSTALLDIR)/rom/es/fw.ucf
+	install -m 0644 es/$(BUILD_NAME)/fw.ver $(INSTALLDIR)/rom/es/fw.ver
 endif
 endif
 

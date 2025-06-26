@@ -14,6 +14,10 @@ export CFLAGS += -DBCM_KF_NETFILTER
 endif
 endif
 
+ifeq ($(HND_ROUTER_AX), y)
+CFLAGS  += -I$(SRCBASE)/../components/math/include -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/../components/wlioctl/include
+endif
+
 OBJS = webapi.o
 
 #OBJS += $(if $(wildcard priv_webapi.c), priv_webapi.o, prebuild/priv_webapi.o)
@@ -53,7 +57,9 @@ endif
 ifeq ($(RTCONFIG_CFGSYNC),y)
 CFLAGS += -I$(TOP)/shared/sysdeps/amas
 CFLAGS += -I$(TOP)/cfg_mnt
+CFLAGS += -I$(TOP)/networkmap/api
 LIBS += -L$(TOP)/cfg_mnt -lcfgmnt
+LIBS += -L$(TOP)/networkmap/api/ -lnmpapi
 endif
 
 ifeq ($(RTCONFIG_TRUSTZONE), y)

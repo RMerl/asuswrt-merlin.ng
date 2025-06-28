@@ -64,6 +64,7 @@ endif
 KERNEL_VERSION_GT_390 := $(shell expr $(LINUX_KERNEL_VERSION) \> 198909)
 ifneq ($(KERNEL_VERSION_GT_390), 1)
 pf6_build_mod := $(filter-out DNAT, ${pf6_build_mod})
+pf6_build_mod := $(filter-out REDIRECT, ${pf6_build_mod})
 endif
 
 pf4_build_mod := $(filter-out webmon, ${pf4_build_mod})

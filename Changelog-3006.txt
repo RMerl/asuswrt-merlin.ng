@@ -24,6 +24,9 @@ Asuswrt-Merlin 3006.xxx Changelog
   - FIXED: OpenVPN server set to "Internet only" would fail to
            block LAN access (invalid firewall rule from SDN was
            bypassing it).
+  - FIXED: DNSDirector "Router" mode would not always work properly
+           with IPv6 (now uses REDIRECT instead of DNAT, which was
+           backported from iptables 1.4.19).
 
 
 3006.102.4 (10-May-2025)

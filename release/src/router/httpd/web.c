@@ -7609,10 +7609,9 @@ static int get_cpu_temperature(int eid, webs_t wp, int argc, char_t **argv)
 	if ((fp = fopen("/sys/power/bpcm/cpu_temp", "r")) != NULL) {
 		if (fgets(buffer, sizeof(buffer), fp)) {
 			sscanf(buffer, "cpu_temp: %lf C", &cpu_temp);
-			temperature = cpu_temp;
 		}
 		fclose(fp);
-		return websWrite(wp, "%d", temperature);
+		return websWrite(wp, "%3.3f", cpu_temp);
 	} else
 #endif
 	if ((fp = fopen("/sys/class/thermal/thermal_zone0/temp", "r")) != NULL) {

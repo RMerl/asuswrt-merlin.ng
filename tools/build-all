@@ -93,7 +93,7 @@ BRANCH_BE96=main
 BRANCH_GTBE98_PRO=main
 BRANCH_BE88=main
 BRANCH_BE86=main
-BRANCH_BE92=3006.102_37526
+BRANCH_BE92=main
 
 ### Paths
 # Store built images there

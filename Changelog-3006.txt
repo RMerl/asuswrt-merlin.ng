@@ -11,8 +11,7 @@ Asuswrt-Merlin 3006.xxx Changelog
           to fold back 3006.102 on top of master.
 
   - UPDATED: Merged GPL 3006.102_37957 for Wifi 6 devices.
-  - UPDATED: Merged GPL 3006.102_38757 for WIfi 7 devices
-             (except RT-BE92U).
+  - UPDATED: Merged GPL 3006.102_38757 for WIfi 7 devices.
   - UPDATED: dropbear to 2025.88.
   - CHANGED: Reworked System Log -> Connections page.  You can
              now filter the list, local hostnames are resolved,

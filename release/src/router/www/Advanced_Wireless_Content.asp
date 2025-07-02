@@ -3067,6 +3067,7 @@
                                     return `${controlChannel}${extensionChannel}`;
                                 }
                             } else if (key === "6g1" || key === "6g2") {
+                                let bw320ChannelRange = document.getElementById(`${key}_bw320_channel_range`).value;
                                 if (channelBandwidth === "0") {
                                     if (
                                         controlChannel.indexOf("/40") !== -1 ||

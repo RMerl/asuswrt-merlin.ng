@@ -477,7 +477,6 @@ function setShowNames(obj) {
 													</select></td>
 											</tr>
 										</table>
-										<br>
 										<div id="connblock_route"></div>
 									</td>
 								</tr>

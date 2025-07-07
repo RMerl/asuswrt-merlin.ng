@@ -388,18 +388,23 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				fclose(fp);
 			}
 		} else if(strcmp(type,"conn.active") == 0) {
-			char buf[256];
+			char buf[256], proto[20];
 			FILE* fp;
 			unsigned int established = 0;
 
-			fp = fopen("/proc/net/nf_conntrack", "r");
+			eval("cp", "/proc/net/nf_conntrack", "/tmp/conntrack.tmp");
+
+			fp = fopen("/tmp/conntrack.tmp", "r");
 			if (fp) {
 				while (fgets(buf, sizeof(buf), fp) != NULL) {
-				if (strstr(buf,"ESTABLISHED") || ((strstr(buf,"udp")) && (strstr(buf,"ASSURED"))))
-					established++;
+					strlcpy(proto, buf, sizeof(proto));
+					if ((strstr(proto, "tcp") && strstr(buf, "ESTABLISHED")) ||
+					    (strstr(proto, "udp") && strstr(buf, "ASSURED")))
+						established++;
 				}
 				fclose(fp);
 			}
+			unlink("/tmp/conntrack.tmp");
 			sprintf(result,"%u",established);
 
 		} else if(strcmp(type,"conn.max") == 0) {

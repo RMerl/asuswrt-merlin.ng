@@ -3481,6 +3481,7 @@
 
                 httpApi.nvramSet(postObject, function () {
                     showLoading(restartTime);
+                    window.scrollTo && window.scrollTo({top: 0, left: 0, behavior: 'smooth'});
                     setTimeout(function () {
                         location.reload();
                     }, restartTime * 1000);

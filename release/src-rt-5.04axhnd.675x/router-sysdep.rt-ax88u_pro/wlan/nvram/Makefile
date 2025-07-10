@@ -29,6 +29,11 @@ ifeq ($(RTCONFIG_AMAS),y)
 LIBS += -L$(TOP)/json-c/.libs -ljson-c
 endif
 
+ifeq ($(RTCONFIG_TRUSTZONE),y)
+CFLAGS += -I$(TOP)/ateed/
+LIBS += -L$(TOP)/ateed/ -latee
+endif
+
 ifneq ($(strip $(BUILD_RDKWIFI)),)
 rdkwifi_lib:
 	$(MAKE) -C $(BUILD_DIR)/userspace/private/libs/wlcsm BUILD_RDKWIFI_LIB=1

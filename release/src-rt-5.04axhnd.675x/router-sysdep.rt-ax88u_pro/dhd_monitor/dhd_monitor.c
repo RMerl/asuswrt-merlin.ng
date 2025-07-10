@@ -85,15 +85,24 @@
 #define rc_restart()		kill(1, SIGHUP)
 #define rc_reboot()		kill(1, SIGTERM)
 
+#if defined(RTAXE7800) || defined(TUFAX5400_V2) || defined(RTAX5400) || defined(RTAX82U_V2) || defined(XD6_V2) || defined(RTAX86U_PRO) || defined(XC5)
+int instance_base = 1;
+#elif defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(ET8PRO) || defined(ET8_V2)
+int instance_base = 2;
+#else
+int instance_base = 0;
+#endif
 #define unload_driver(nic)	eval("rmmod", (nic ? "wl" : "dhd"))
 #define load_driver(nic)	{					\
 	struct utsname name;						\
 	char buf[PATH_MAX];						\
+	char buf2[64];							\
 	uname(&name);							\
 	snprintf(buf, sizeof(buf),					\
 	(nic ? "/lib/modules/%s/extra/wl.ko" : "/lib/modules/%s/extra/dhd.ko"),	\
 		name.release);						\
-	eval("insmod", buf, (!nic && nvram_match("build_name", "RT-AXE7800")) ? "instance_base=1 dhd_msg_level=0" : "dhd_msg_level=0"); \
+	snprintf(buf2, sizeof(buf2), "instance_base=%d dhd_msg_level=0", instance_base); \
+	eval("insmod", buf, nic ? NULL : buf2); \
 }
 
 

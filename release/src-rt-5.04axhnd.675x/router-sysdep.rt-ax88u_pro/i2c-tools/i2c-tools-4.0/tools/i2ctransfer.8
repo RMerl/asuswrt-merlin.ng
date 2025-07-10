@@ -1,0 +1,159 @@
+.TH i2ctransfer 8 "February 2017"
+.SH "NAME"
+i2ctransfer \- send user-defined I2C messages in one transfer
+
+.SH SYNOPSIS
+.B i2ctransfer
+.RB [ -f ]
+.RB [ -y ]
+.RB [ -v ]
+.I i2cbus desc
+.RI [ data ]
+.RI [ desc
+.RI [ data ]]
+.RI ...
+.br
+.B i2ctransfer
+.B -V
+
+.SH DESCRIPTION
+.B i2ctransfer
+is a program to create I2C messages and send them combined as one transfer.
+For read messages, the contents of the received buffers are printed to stdout, one line per read message.
+.br
+Please note the difference between a
+.I transfer
+and a
+.I message
+here.
+A transfer may consist of multiple messages and is started with a START condition and ends with a STOP condition as described in the I2C specification.
+Messages within the transfer are concatenated using the REPEATED START condition which is described there as well.
+There are some advantages of having multiple messages in one transfer.
+First, some devices keep their internal states for REPEATED START but reset them after a STOP.
+Second, you cannot get interrupted during one transfer, but it might happen between multiple transfers.
+Interruption could happen on hardware level by another I2C master on the bus, or at software level by another I2C user who got its transfer scheduled between yours.
+This program helps you to create proper transfers for your needs.
+
+.SH OPTIONS
+.TP
+.B -f
+Force access to the device even if it is already busy.
+By default,
+.B i2ctransfer
+will refuse to access addresses marked as reserved by the I2C standard or to a device which is already under the control of a kernel driver.
+Using this flag is dangerous, it can seriously confuse the kernel driver in question.
+It can also cause
+.B i2ctransfer
+to silently write to the wrong register.
+So use at your own risk and only if you know what you're doing.
+.TP
+.B -y
+Disable interactive mode.
+By default,
+.B i2ctransfer
+will wait for a confirmation from the user before messing with the I2C bus.
+When this flag is used, it will perform the operation directly.
+This is mainly meant to be used in scripts.
+.TP
+.B -v
+Enable verbose output.
+It will print infos about all messages sent, i.e. not only for read messages but also for write messages.
+.TP
+.B -V
+Display the version and exit.
+
+.SH ARGUMENTS
+.PP
+The first parameter
+.I i2cbus
+indicates the number or name of the I2C bus to be used.
+This number should correspond to one of the busses listed by
+.B i2cdetect -l.
+
+.PP
+The next parameter is one or multiple
+.I desc
+blocks.
+The number of blocks is limited by the Linux Kernel and defined by I2C_RDWR_IOCTL_MAX_MSGS (42 as of v4.10).
+.I desc
+blocks are composed like this:
+
+.I {r|w}<length_of_message>[@address]
+
+.TP
+.B {r|w}
+specifies if the message is read or write
+.TP
+.B <length_of_message>
+specifies the number of bytes read or written in this message.
+It is parsed as an unsigned 16 bit integer, but note that the Linux Kernel applies an additional upper limit (8192 as of v4.10).
+.TP
+.B [@address]
+specifies the 7-bit address of the chip to be accessed for this message, and is an integer.
+If omitted, reuse the previous address.
+Normally, addresses outside the range of 0x03-0x77 and addresses with a kernel driver attached to them will be blocked.
+With
+.I -f
+(force), all addresses can be used.
+Be very careful when using that!
+10-bit addresses are currently not supported at all.
+
+.PP
+If the I2C message is a write, then a
+.I data
+block with the data to be written follows.
+It consists of
+.I <length_of_message>
+bytes which can be marked with the usual prefixes for hexadecimal, octal, etc.
+To make it easier to create larger data blocks easily, the data byte can have a suffix.
+
+.TP
+=
+keep value constant until end of message (i.e. 0= means 0, 0, 0, ...)
+.TP
++
+increase value by 1 until end of message (i.e. 0+ means 0, 1, 2, ...)
+.TP
+-
+decrease value by 1 until end of message (i.e. 0xff- means 0xff, 0xfe, 0xfd, ...)
+.TP
+p
+use value as seed for an 8 bit pseudo random sequence (i.e. 0p means 0x00, 0x50, 0xb0, ...)
+
+.SH EXAMPLES
+.PP
+On bus 0, from an EEPROM at address 0x50, read 8 byte from offset 0x64
+(first message writes one byte to set the memory pointer to 0x64, second message reads from the same chip):
+.nf
+.RS
+# i2ctransfer 0 w1@0x50 0x64 r8
+.RE
+.fi
+.PP
+For the same EEPROM, at offset 0x42 write 0xff 0xfe ... 0xf0
+(one write message; first byte sets the memory pointer to 0x42, 0xff is the first data byte, all following data bytes are decreased by one):
+.nf
+.RS
+# i2ctransfer 0 w17@0x50 0x42 0xff-
+.RE
+.fi
+
+.SH WARNING
+.B i2ctransfer
+can be extremely dangerous if used improperly.
+It can confuse your I2C bus, cause data loss, or have more serious side effects.
+Writing to a serial EEPROM on a memory DIMM (chip addresses between 0x50 and 0x57) may DESTROY your memory, leaving your system unbootable!
+Be extremely careful using this program.
+
+.SH AUTHORS
+Wolfram Sang, based on
+.B i2cget
+by Jean Delvare
+
+This manual page was originally written by Wolfram Sang based on the manual
+for
+.B i2cset
+by David Z Maze <dmaze@debian.org>.
+
+.SH SEE ALSO
+.BR i2cdetect (8), i2cdump (8), i2cget (8), i2cset (8)

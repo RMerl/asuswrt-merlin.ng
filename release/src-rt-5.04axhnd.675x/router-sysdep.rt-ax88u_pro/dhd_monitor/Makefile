@@ -34,6 +34,9 @@ LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm
 LDFLAGS += -L$(TOP_PLATFORM)/nvram -L$(PLATFORMDIR)/install/nvram/usr/lib -lnvram -lpthread
 LDFLAGS += -L$(TOP)/shared -L$(PLATFORMDIR)/install/shared/usr/lib -lshared
 LDFLAGS += $(EXTRA_LDFLAGS)
+ifeq ($(RTCONFIG_TRUSTZONE),y)
+LDFLAGS += -L$(TOP)/ateed/ -latee
+endif
 
 OBJS := dhd_monitor.o
 

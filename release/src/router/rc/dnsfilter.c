@@ -267,7 +267,7 @@ void dnsfilter_settings(FILE *fp) {
 			{
 				for(i = 1; i < mtl_sz; ++i)
 				{
-					if(pmtl[i].enable)
+					if(pmtl[i].enable && strcmp(pmtl[i].name, "MAINFH") && strcmp(pmtl[i].name, "MAINBH"))
 					{
 						if(pmtl[i].sdn_t.dnsf_idx == DNSF_SRV_UNFILTERED)
 						{
@@ -442,7 +442,7 @@ void dnsfilter6_settings_mangle(FILE *fp) {
 			{
 				for(i = 1; i < mtl_sz; ++i)
 				{
-					if(pmtl[i].enable)
+					if(pmtl[i].enable && strcmp(pmtl[i].name, "MAINFH") && strcmp(pmtl[i].name, "MAINBH"))
 					{
 						if(pmtl[i].sdn_t.dnsf_idx == DNSF_SRV_UNFILTERED)
 						{

@@ -28,7 +28,6 @@ endif # HND_ROUTER && RTCONFIG_VISUALIZATION
 
 update:
 	wget https://nw-dlcdnet.asus.com/plugin/js/tz_db.json -O ajax/tz_db.json
-	wget https://nw-dlcdnet.asus.com/plugin/js/dns_db.json -O ajax/dns_db.json
 	wget https://nw-dlcdnet.asus.com/plugin/js/gameList.json -O ajax/gameList.json
 	wget https://nw-dlcdnet.asus.com/plugin/js/logFilter.json -O ajax/logFilter.json
 	wget https://nw-dlcdnet.asus.com/plugin/js/extend_custom_icon.json -O ajax/extend_custom_icon.json
@@ -1068,15 +1067,6 @@ ifneq ($(RTCONFIG_DNSQUERY_INTERCEPT),y)
 	rm -rf $(INSTALLDIR)/www/getWanTraffic_Dns.asp
 	rm -rf $(INSTALLDIR)/www/getAppTraffic_Dns.asp
 endif
-
-update:
-	wget http://nw-dlcdnet.asus.com/plugin/js/tz_db.json -O ajax/tz_db.json
-	wget http://nw-dlcdnet.asus.com/plugin/js/dns_db.json -O ajax/dns_db.json
-	wget http://nw-dlcdnet.asus.com/plugin/js/gameList.json -O ajax/gameList.json
-	wget http://nw-dlcdnet.asus.com/plugin/js/logFilter.json -O ajax/logFilter.json
-	wget http://nw-dlcdnet.asus.com/plugin/js/extend_custom_icon.json -O ajax/extend_custom_icon.json
-	wget http://nw-dlcdnet.asus.com/plugin/js/pppIspList_V2.json -O ajax/pppIspList_V2.json
-	wget http://nw-dlcdnet.asus.com/plugin/js/DNS_List.json -O ajax/DNS_List.json
 
 ifeq ($(RTCONFIG_TS_UI),y)
 	rm -rf $(INSTALLDIR)/TS_UI

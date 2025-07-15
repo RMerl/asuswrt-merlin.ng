@@ -446,7 +446,7 @@ function show_sdn_list() {
 
 	$.each(sdn_rl_json, function(index, entry){
 		if(!$.isEmptyObject(entry)) {
-			if (entry.idx != 0 && entry.sdn_name != "MAINBH" && entry.sdn_name != "MAINFH") {	// Skip default and hauls
+			if (entry.idx != 0 && entry.subnet_idx != 0) {	// Skip default LAN
 				i++;
 				sdn_name = decodeURIComponent(httpApi.nvramCharToAscii(["apg" + entry.apg_idx + "_ssid"])["apg" + entry.apg_idx + "_ssid"])
 				code +='<tr id="row'+i+'">';
@@ -456,6 +456,10 @@ function show_sdn_list() {
 			}
 		}
 	});
+
+	if (i == 0)
+		code +='<tr><td colspan="2" class="hint-color">No supported network.</td></tr>';
+
 	code += '</table>';
 
 	document.getElementById("sdnTable_Block").innerHTML = code;
@@ -468,7 +472,7 @@ function save_sdn_rules() {
 
 	$.each(sdn_rl_json, function(index, entry){
 		if(!$.isEmptyObject(entry)) {
-			if (entry.idx != 0 && entry.sdn_name != "MAINBH" && entry.sdn_name != "MAINFH") {	// Skip default and hauls
+			if (entry.idx != 0 && entry.subnet_idx != 0) {	// Skip default LAN}
 				entry.dns_filter_idx = document.getElementById("sdn_dns_filter_idx"+entry.idx).value;
 			}
 		}
@@ -633,8 +637,8 @@ function save_sdn_rules() {
 			<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" style="margin-top:8px; display:none;" id="sdnTable_Table">
 			<thead><tr><td colspan="2">Guest Network Pro profiles</td></tr></thead>
 				<tr>
-					<th>Network</th>
-					<th>Redirection</th>
+					<th width="50%">Network</th>
+					<th width="50%">Redirection</th>
 				</tr>
 			</table>
 

@@ -20,12 +20,19 @@ Asuswrt-Merlin 3006.xxx Changelog
              This fork fixes a number of issues with IPv6 and
              field size.
   - CHANGED: Updated Control-D DoT server entries (dave14305).
+  - CHANGED: Optimized performance when refreshing the Sysinfo
+             page on a network with thousands of tracked
+             connections.
   - FIXED: OpenVPN server set to "Internet only" would fail to
            block LAN access (invalid firewall rule from SDN was
            bypassing it).
   - FIXED: DNSDirector "Router" mode would not always work properly
            with IPv6 (now uses REDIRECT instead of DNAT, which was
            backported from iptables 1.4.19).
+  - FIXED: DNSDirector would try to create iptables rules even
+           when that SDN should not allow DNSDirector if it shares
+           the main LAN interface.  This could break DNSDirector
+           on the main network.
 
 
 3006.102.4 (10-May-2025)

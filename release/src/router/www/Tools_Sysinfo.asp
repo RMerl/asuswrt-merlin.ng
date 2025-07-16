@@ -11,7 +11,25 @@
 <title><#Web_Title#> - System Information</title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
-<link rel="stylesheet" type="text/css" href="/css/networkMap.css">
+<style>
+.bar-container{
+	background-color:#000000;
+	width: 150px;
+	height: 8px;
+	border-radius: 6px;
+	padding: 2px 1px;
+}
+.core-color-container{
+	width: 35%;
+	height: 8px;
+	border-radius: 4px;
+	-webkit-transition: all 0.5s ease-in-out;
+	-moz-transition: all 0.5s ease-in-out;
+	-o-transition: all 0.5s ease-in-out;
+	transition: all 0.5s ease-in-out;
+}
+</style>
+
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/chart.min.js"></script>

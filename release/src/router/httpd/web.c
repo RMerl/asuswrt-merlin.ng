@@ -35444,7 +35444,7 @@ ej_get_realip(int eid, webs_t wp, int argc, char **argv)
 static int
 ej_get_header_info(int eid, webs_t wp, int argc, char **argv)
 {
-	int bIsIPv6 = 0, nPort = 0, port_len = 0;
+	int bIsIPv6 = 0, nPort = 0, port_len = 0, d1, d2, d3, d4;
 	unsigned char abyAddr[16] = {0};
 	char port_t[8] = {0}, current_page_name_temp[128] = {0};
 	char host_name_temp[64] = {0}, host_name_copy_t[256] = {0};
@@ -35467,7 +35467,9 @@ ej_get_header_info(int eid, webs_t wp, int argc, char **argv)
 		strlcpy(host_name_temp, "repeater.asus.com", sizeof(host_name_temp));
 	}
 #endif
-	else if(ParseIPv4OrIPv6(&host_name_copy, abyAddr, &nPort, &bIsIPv6)){
+	else if ((sscanf(host_name_copy, "%d.%d.%d.%d", &d1, &d2, &d3, &d4) == 4 || strstr(host_name_copy, "["))
+		&& ParseIPv4OrIPv6(&host_name_copy, abyAddr, &nPort, &bIsIPv6)) {
+
 		if(nPort != 0)
 			port_len = snprintf(port_t, sizeof(port_t), "%d", htons(nPort)) + 1;
 

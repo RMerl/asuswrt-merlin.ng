@@ -4301,6 +4301,15 @@ goTo.Update = function(){
 	$("#newVersion").val(systemVariable.newFwVersion);
 	$("#desktop_applyBtn_update").html(applyBtn);
 	$("#mobile_applyBtn_update").html(applyBtn);
+
+// Merlin-specific changes
+	$("#newVersion").val(systemVariable.newFwVersion.replace(/^(\d+)_+(\d+)_+(\d+)(_+\d+)$/, '$1.$2.$3$4'));
+	$("#currentVersion").val(httpApi.nvramGet(["firmver"]).firmver.replace(/\./g, '') + "." + httpApi.nvramGet(["buildno"]).buildno + "_" + httpApi.nvramGet(["extendno"]).extendno);
+	abortBtn = "<#CTL_next#>";
+	$("#desktop_applyBtn_update").remove();
+	$("#mobile_applyBtn_update").remove();
+//
+
 	if(systemVariable.isNewFw == 2 && systemVariable.forceLevel == 1){
 		$("#desktop_abortBtn_update").remove();
 		$("#mobile_abortBtn_update").remove();

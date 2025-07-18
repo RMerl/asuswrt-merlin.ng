@@ -1605,7 +1605,7 @@ function handle_ipv6_submit_settings(){
 												<input type="radio" name="vpn_server_client_access" class="input" value="0" <% nvram_match_x("", "vpn_server_client_access", "0", "checked"); %>>
 												<label for="vpn_server_client_access_local">LAN only</label>
 												<input type="radio" name="vpn_server_client_access" class="input" value="1" <% nvram_match_x("", "vpn_server_client_access", "1", "checked"); %>>
-												<label for="vpn_server_client_access_local">Internet only</label>
+												<label for="vpn_server_client_access_internet">Internet only</label>
 												<input type="radio" name="vpn_server_client_access" class="input" value="2" <% nvram_match_x("", "vpn_server_client_access", "2", "checked"); %>>
 												<label for="vpn_server_client_access_both">Both</label>
 											</td>

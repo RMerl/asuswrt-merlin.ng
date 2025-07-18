@@ -178,7 +178,6 @@ function initial(){
 
 	updateCRTValue();
 	enable_server_igncrt(current_server_igncrt);
-	//update_visibility();
 	update_cipher();
 	update_digest();
 	/*Advanced Setting end */
@@ -307,9 +306,6 @@ function formShowAndHide(server_enable, server_type) {
 		if(service_state == false || service_state != '2')
 			document.getElementById('export_div').style.display = "none";
 
-		if(!email_support)
-			document.getElementById('exportViaEmail').style.display = "none";
-					
 		update_vpn_client_state();
 		openvpnd_connected_status();
 		check_vpn_server_state();
@@ -427,7 +423,6 @@ function applyRule(){
 			}
 			
 			//check subnet/netmask combination whether it invalid or not
-			
 			if(!validator.subnetAndMaskCombination(vpnSubnet.value, netmask_obj.value)) {
 				alert(vpnSubnet.value + " / " + netmask_obj.value + " combination is invalid");
 				vpnSubnet.focus();
@@ -629,7 +624,7 @@ function applyRule(){
 		if(document.form.VPNServer_enable.value == "1") {
 			document.form.action_script.value = "restart_chpass;restart_vpnserver" + openvpn_unit;
 		} else {
-	                document.form.action_script.value = "stop_vpnserver" + openvpn_unit;
+			document.form.action_script.value = "stop_vpnserver" + openvpn_unit;
 		}
 
 		document.form.vpn_serverx_clientlist.value = get_group_value();
@@ -885,24 +880,6 @@ function update_vpn_server_state() {
 	});	
 }
 
-function showMailPanel(){
-	var checker = {
-		server: document.mailConfigForm.PM_SMTP_SERVER.value,
-		mailPort: document.mailConfigForm.PM_SMTP_PORT.value,
-		user: document.mailConfigForm.PM_SMTP_AUTH_USER.value,
-		pass: document.mailConfigForm.PM_SMTP_AUTH_PASS.value,
-		end: 0
-	}
-
-	if(checker.server == "" || checker.mailPort == "" || checker.user == "" || checker.pass == ""){
-		$("#mailConfigPanelContainer").fadeIn(300);
-		$("#mailSendPanelContainer").fadeOut(300);
-	}
-	else{
-		$("#mailConfigPanelContainer").fadeOut(300);
-		$("#mailSendPanelContainer").fadeIn(300);
-	}
-}
 
 function switchMode(mode){
 	if(mode == "1"){		//general setting
@@ -1615,14 +1592,10 @@ function handle_ipv6_submit_settings(){
 											<td>
 												<div id="export_div">
 													<input id="exportToLocal" class="button_gen" type="button" value="<#btn_Export#>" />
-													<input id="exportViaEmail" class="button_gen" type="button" value="via Email" style="display:none;"/><!-- Viz hide it temp 2014.06 -->
 												</div>
 												<script type="text/javascript">
 													document.getElementById("exportToLocal").onclick = function(){
 													location.href = 'client<% nvram_get("vpn_server_unit"); %>.ovpn';
-													}
-													document.getElementById("exportViaEmail").onclick = function(){
-														showMailPanel();
 													}
 												</script>
 												<div id="openvpn_initial" style="display:none;margin-left:5px;">
@@ -1661,7 +1634,7 @@ function handle_ipv6_submit_settings(){
 											<tr id="openvpn_import_cert" style="display:none;" data-group="cert_btn">
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,28);"><#vpn_import_cert#></a></th>
 												<td>
-												<input class="button_gen" type="button" value="<#CTL_upload#>" onClick="selectImportFile();"/>
+													<input class="button_gen" type="button" value="<#CTL_upload#>" onClick="selectImportFile();"/>
 												</td>
 											</tr>
 										</table>
@@ -1711,8 +1684,6 @@ function handle_ipv6_submit_settings(){
 
 									<div id="divAdvanced" style="display:none;margin-top:8px;">
 										<div class="formfontdesc">
-											<!-- <p><#vpn_openvpn_desc3#><br /> -->
-											<!-- <p><#vpn_openvpn_hint1#><br /> -->
 											<p><#vpn_openvpn_hint2#><br />
 											<p><#vpn_openvpn_hint3#>
 										</div>
@@ -2015,162 +1986,6 @@ function handle_ipv6_submit_settings(){
 </table>
 </form>
 
-<div id="mailSendPanelContainer" class="hiddenPanelContainer">
-	<div class="hiddenPanel">
-		<form method="post" name="mailSendForm" action="/start_apply.htm" target="hidden_frame">
-			<input type="hidden" name="action_mode" value="apply">
-			<input type="hidden" name="action_script" value="restart_sendmail">
-			<input type="hidden" name="action_wait" value="5">
-			<input type="hidden" name="flag" value="background">
-			<input type="hidden" name="PM_MAIL_SUBJECT" value="My ovpn file">
-			<input type="hidden" name="PM_MAIL_FILE" value="/www/client<% nvram_get("vpn_server_unit"); %>.ovpn">
-			<input type="hidden" name="PM_LETTER_CONTENT" value="Here is the ovpn file.">
-			<div class="panelTableTitle">
-				<div>Send</div>
-				<div style="margin:10px 0 10px 5px;height: 2px;width: 100%;padding:0;" class="splitLine"></div>
-			</div>
-
-			<table border=0 align="center" cellpadding="5" cellspacing="0" class="FormTable panelTable">
-				<tr>
-					<th>PM_MAIL_TARGET</th>
-					<td valign="top">
-						<input type="text" class="input_32_table" name="PM_MAIL_TARGET" value="" autocorrect="off" autocapitalize="off">
-					</td>
-				</tr>
-			</table>
-
-			<div class="panelSubmiter">
-				<input id="mailSendPannelCancel" class="button_gen" type="button" value="<#CTL_Cancel#>">
-				<input id="mailSendPannelSubmiter" class="button_gen" type="button" value="Send">
-				<img id="mailSendLoadingIcon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif">
-				<script>
-					document.getElementById("mailSendPannelCancel").onclick = function(){
-						$("#mailSendPanelContainer").fadeOut(300);
-					}
-					document.getElementById("mailSendPannelSubmiter").onclick = function(){
-						// ToDo: validator.
-						$("#mailSendLoadingIcon").fadeIn(200);
-						document.mailSendForm.submit();
-						setTimeout(function(){
-							document.mailSendForm.PM_MAIL_TARGET.value = "";
-							$("#mailSendLoadingIcon").fadeOut(200);
-							$("#mailSendPanelContainer").fadeOut(300);
-						}, document.mailSendForm.action_wait.value*1000);
-					}
-				</script>
-			</div>
-		</form>
-	</div>
-</div>
-
-<div id="mailConfigPanelContainer" class="hiddenPanelContainer">
-	<div class="hiddenPanel">
-		<form method="post" name="mailConfigForm" action="/start_apply.htm" target="hidden_frame">
-			<input type="hidden" name="action_mode" value="apply">
-			<input type="hidden" name="action_script" value="saveNvram">
-			<input type="hidden" name="action_wait" value="3">
-			<input type="hidden" name="PM_SMTP_SERVER" value="<% nvram_get("PM_SMTP_SERVER"); %>">
-			<input type="hidden" name="PM_SMTP_PORT" value="<% nvram_get("PM_SMTP_PORT"); %>">
-			<input type="hidden" name="PM_SMTP_AUTH_USER" value="<% nvram_get("PM_SMTP_AUTH_USER"); %>">
-			<input type="hidden" name="PM_SMTP_AUTH_PASS" value="<% nvram_get("PM_SMTP_AUTH_PASS"); %>">
-			<input type="hidden" name="PM_MY_NAME" value="<% nvram_get("PM_MY_NAME"); %>">
-			<input type="hidden" name="PM_MY_EMAIL" value="<% nvram_get("PM_MY_EMAIL"); %>">
-	
-			<div class="panelTableTitle">
-				<div>Setup mail server</div>
-				<div style="margin:10px 0 10px 5px;height: 2px;width: 100%;padding:0;" class="splitLine"></div>
-			</div>
-
-			<table border=0 align="center" cellpadding="5" cellspacing="0" class="FormTable panelTable">
-				<tr>
-					<th>PM_SMTP_SERVER</th>
-					<td valign="top">
-				    <select style="width:350px;" name="PM_SMTP_SERVER_TMP" class="input_option">
-							<option value="smtp.gmail.com" <% nvram_match( "PM_SMTP_SERVER", "smtp.gmail.com", "selected"); %>>Google Gmail</option>
-				    </select>
-						<script>
-							var smtpList = new Array()
-							smtpList = [
-								{smtpServer: "smtp.gmail.com", smtpPort: "587", smtpDomain: "gmail.com"},
-								{end: 0}
-							];
-
-							document.mailConfigForm.PM_SMTP_SERVER_TMP.onchange = function(){
-								document.mailConfigForm.PM_SMTP_PORT_TMP.value = smtpList[this.selectedIndex].smtpPort;
-								document.mailConfigForm.PM_SMTP_AUTH_USER_TMP.value = "";		
-								document.mailConfigForm.PM_SMTP_AUTH_PASS_TMP.value = "";		
-								document.mailConfigForm.PM_MY_NAME_TMP.value = "";		
-								document.mailConfigForm.PM_MY_EMAIL_TMP.value = "";		
-							}
-						</script>
-					</td>
-				</tr>
-				<input type="hidden" name="PM_SMTP_PORT_TMP" value="<% nvram_get("PM_SMTP_PORT"); %>">
-				<tr>
-					<th>PM_SMTP_AUTH_USER</th>
-					<td valign="top">
-						<input type="text" class="input_32_table" name="PM_SMTP_AUTH_USER_TMP" value="<% nvram_get("PM_SMTP_AUTH_USER"); %>" autocorrect="off" autocapitalize="off">
-						<script>
-							document.mailConfigForm.PM_SMTP_AUTH_USER_TMP.onkeyup = function(){
-								document.mailConfigForm.PM_MY_NAME_TMP.value = this.value;
-								document.mailConfigForm.PM_MY_EMAIL_TMP.value = this.value + "@" + smtpList[document.mailConfigForm.PM_SMTP_SERVER_TMP.selectedIndex].smtpDomain;
-							}
-						</script>
-					</td>
-				</tr>
-				<tr>
-					<th>PM_SMTP_AUTH_PASS</th>
-					<td valign="top">
-						<input type="password" class="input_32_table" name="PM_SMTP_AUTH_PASS_TMP" maxlength="100" value="" autocorrect="off" autocapitalize="off">
-					</td>
-				</tr>
-				<tr>
-					<th>PM_MY_NAME (Optional)</th>
-					<td valign="top">
-						<input type="text" class="input_32_table" name="PM_MY_NAME_TMP" value="<% nvram_get("PM_MY_NAME"); %>" autocorrect="off" autocapitalize="off">
-					</td>
-				</tr>
-				<tr>
-					<th>PM_MY_EMAIL (Optional)</th>
-					<td valign="top">
-						<input type="text" class="input_32_table" name="PM_MY_EMAIL_TMP" value="<% nvram_get("PM_MY_EMAIL"); %>" autocorrect="off" autocapitalize="off">
-					</td>
-				</tr>
-			</table>
-
-			<div class="panelSubmiter">
-				<input id="mailConfigPannelCancel" class="button_gen" type="button" value="<#CTL_Cancel#>">
-				<input id="mailConfigPannelSubmiter" class="button_gen" type="button" value="<#CTL_onlysave#>">
-				<img id="mailConfigLoadingIcon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif">
-				<script>
-					document.getElementById("mailConfigPannelCancel").onclick = function(){
-						$("#mailConfigPanelContainer").fadeOut(300);
-					}
-					document.getElementById("mailConfigPannelSubmiter").onclick = function(){
-						// ToDo: validator.
-
-						document.mailConfigForm.PM_SMTP_SERVER.value = document.mailConfigForm.PM_SMTP_SERVER_TMP.value;
-						if (document.mailConfigForm.PM_SMTP_PORT_TMP.value == "")
-							document.mailConfigForm.PM_SMTP_PORT.value = smtpList[0].smtpPort;
-						else
-							document.mailConfigForm.PM_SMTP_PORT.value = document.mailConfigForm.PM_SMTP_PORT_TMP.value;
-						document.mailConfigForm.PM_SMTP_AUTH_USER.value = document.mailConfigForm.PM_SMTP_AUTH_USER_TMP.value;
-						document.mailConfigForm.PM_SMTP_AUTH_PASS.value = document.mailConfigForm.PM_SMTP_AUTH_PASS_TMP.value;
-						document.mailConfigForm.PM_MY_NAME.value = document.mailConfigForm.PM_MY_NAME_TMP.value;
-						document.mailConfigForm.PM_MY_EMAIL.value = document.mailConfigForm.PM_MY_EMAIL_TMP.value;
-
-						$("#mailConfigLoadingIcon").fadeIn(200);
-						document.mailConfigForm.submit();
-						setTimeout(function(){
-							$("#mailConfigLoadingIcon").fadeOut(200);
-							showMailPanel();
-						}, document.mailConfigForm.action_wait.value*1000);
-					}
-				</script>
-			</div>
-		</form>
-	</div>
-</div>
 <iframe name="hidden_import_cert_frame" id="hidden_import_cert_frame" src="" width="0" height="0" frameborder="0"></iframe>
 <form method="post" name="import_cert_form" action="upload_server_ovpn_cert.cgi" target="hidden_import_cert_frame" enctype="multipart/form-data">
 <input type="file" name="import_cert_file" style="display:none;" onchange="importCert();"/>

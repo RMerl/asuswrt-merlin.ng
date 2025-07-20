@@ -23,6 +23,9 @@ Asuswrt-Merlin 3006.xxx Changelog
   - CHANGED: Optimized performance when refreshing the Sysinfo
              page on a network with thousands of tracked
              connections.
+  - CHANGED: Modified the Quick Internet Setup wizard so not
+             to attempt downloading firmware updates from Asus
+             (which would fail anyway).
   - FIXED: OpenVPN server set to "Internet only" would fail to
            block LAN access (invalid firewall rule from SDN was
            bypassing it).
@@ -33,6 +36,10 @@ Asuswrt-Merlin 3006.xxx Changelog
            when that SDN should not allow DNSDirector if it shares
            the main LAN interface.  This could break DNSDirector
            on the main network.
+  - FIXED: Status frame missing from Network Map when accessing
+           the router under certain hostnames.
+  - FIXED: Wireless Settings page failing to save on some models
+           when in an AiMesh setup.
 
 
 3006.102.4 (10-May-2025)

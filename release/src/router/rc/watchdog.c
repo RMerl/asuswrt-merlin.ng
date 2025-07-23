@@ -12081,6 +12081,11 @@ void auto_firmware_check_merlin()
 		}
 
 		period_retry = (period_retry+1) % 3;
+
+		if (!nvram_get_int("firmware_check_enable") ||
+		    nvram_contains_word("rc_support", "noupdate"))
+			return;
+
 		initial_state = nvram_get_int("webs_state_flag");
 
 #if defined(RTL_WTDOG)

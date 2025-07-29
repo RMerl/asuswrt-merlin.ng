@@ -7168,16 +7168,11 @@ ifeq ($(REALTEK),y)
 	fi;
 endif
 	$(call save_src_config, $@)
-
-ifeq ($(HND_ROUTER),y)
-ifeq ($(or $(HND_ROUTER_AX_675x),$(HND_ROUTER_AX)),y)
-	@echo "Copy router-sysdep.$(lowercase_B) content"
-	@rm -fr router-sysdep
-	@cp -ar router-sysdep.$(lowercase_B)/ router-sysdep
-else	# RT-AC86U or GT-AC2900
-	@cp -ar $(TOP_PLATFORM)/hnd_extra/prebuilt/$(BUILD_NAME)/* $(TOP_PLATFORM)/hnd_extra/prebuilt/
-endif
-endif
+	if [ -d router-sysdep.$(lowercase_B)/ ]; then
+		@echo "Copy router-sysdep.$(lowercase_B) content"
+		@rm -fr router-sysdep
+		@cp -ar router-sysdep.$(lowercase_B)/ router-sysdep
+	fi
 	$(MAKE) bin
 
 Bluecave bluecave:

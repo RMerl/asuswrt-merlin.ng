@@ -7168,10 +7168,10 @@ ifeq ($(REALTEK),y)
 	fi;
 endif
 	$(call save_src_config, $@)
-	if [ -d router-sysdep.$(lowercase_B)/ ]; then
-		@echo "Copy router-sysdep.$(lowercase_B) content"
-		@rm -fr router-sysdep
-		@cp -ar router-sysdep.$(lowercase_B)/ router-sysdep
+	if [ -d router-sysdep.$(lowercase_B)/ ]; then \
+		echo "Copy router-sysdep.$(lowercase_B) content"; \
+		rm -fr router-sysdep; \
+		cp -ar router-sysdep.$(lowercase_B)/ router-sysdep; \
 	fi
 	$(MAKE) bin
 

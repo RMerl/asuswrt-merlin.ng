@@ -1140,10 +1140,10 @@ int main (int argc, char **argv) {
 			else if (optarg != NULL && strncmp(optarg, UAM_SRV_CONF, strlen(UAM_SRV_CONF)) == 0) {
 				write_uamsrv_conf(optarg);
 			}
-			else {
-				server_free(srv);
-				return -1;
-			}
+//			else {
+//				server_free(srv);
+//				return -1;
+//			}
 
 			if (config_read(srv, optarg)) {
 				server_free(srv);

@@ -8700,7 +8700,7 @@ void start_uam_srv()
 	eval("cp", UAM_JS, UAM_WEB_DIR);
 	eval("cp", BYPASS_PAGE, UAM_WEB_DIR);
 
-	if (gen_uam_srv_conf()) return;
+	// if (gen_uam_srv_conf()) return;
 	//_dprintf("%s %d\n", __FUNCTION__, __LINE__);	// tmp test;
 	if (!pids("uamsrv"))
 		_eval(lighttpd_argv, NULL, 0, &pid);

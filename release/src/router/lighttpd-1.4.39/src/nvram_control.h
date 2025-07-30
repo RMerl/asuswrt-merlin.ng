@@ -98,6 +98,8 @@ char* nvram_get_uamsecret(const char *str);
 
 char* nvram_get_https_intermediate_crt_save();
 
+char* nvram_get_usb_UI_path();
+
 
 
 

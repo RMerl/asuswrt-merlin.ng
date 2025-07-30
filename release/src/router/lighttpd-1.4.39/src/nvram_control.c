@@ -1775,4 +1775,14 @@ char* nvram_get_https_intermediate_crt_save()
 	return nvram_safe_get(HTTPS_INTERMEDIATE_CRT_SAVE);
 #endif
 }
+
+char* nvram_get_usb_UI_path()
+{
+#ifdef USE_TCAPI
+	// Todo
+	return NULL;
+#else
+	return nvram_safe_get("usbUIpath");
+#endif
+}
 #endif

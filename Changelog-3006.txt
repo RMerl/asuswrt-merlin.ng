@@ -10,12 +10,17 @@ Asuswrt-Merlin 3006.xxx Changelog
           branch diverged, it was easier to do it this way than
           to fold back 3006.102 on top of master.
 
+  - NEW: Completely redesigned System Log -> Connections page.
+           - You can now filter the list
+           - You can set the page to auto-refresh itself
+           - Public IP addresses can be looked up on
+             WhatismyIP.com
+           - Local hostnames will be resolved and shown
+           - Routed IPv6 connections will be shown
+
   - UPDATED: Merged GPL 3006.102_37957 for Wifi 6 devices.
   - UPDATED: Merged GPL 3006.102_38757 for WIfi 7 devices.
   - UPDATED: dropbear to 2025.88.
-  - CHANGED: Reworked System Log -> Connections page.  You can
-             now filter the list, local hostnames are resolved,
-             automatically refresh the page, and IPv6 is supported.
   - CHANGED: Replaced netstat-nat by a fork called netstat-nat-ng.
              This fork fixes a number of issues with IPv6 and
              field size.

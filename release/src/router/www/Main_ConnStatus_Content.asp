@@ -20,6 +20,7 @@
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/table/table.js"></script>
+<script type="text/javascript" src="/validator.js"></script>
 <script>
 
 var connarray = Array();
@@ -95,23 +96,23 @@ function draw_table(type){
 		document.getElementById('connblock_header').style.display = "";
 		document.getElementById('connblock_nat').innerHTML = "";
 		code = '<table width="100%" cellpadding="4" class="FormTable_table"><thead><tr><td colspan="6">NAT Connections</td></tr></thead>' +
-		       '<tr><th width="8%" id="track_header_0" style="cursor: pointer;" onclick="setsort(0,\'nat\'); draw_table(\'nat\')">Proto</th>' +
-		       '<th width="25%" id="track_header_1" style="cursor: pointer;" onclick="setsort(1, \'nat\'); draw_table(\'nat\')">NAT IP</th>' +
-		       '<th width="11%" id="track_header_2" style="cursor: pointer;" onclick="setsort(2, \'nat\'); draw_table(\'nat\')">NAT Port</th>' +
-		       '<th width="25%" id="track_header_3" style="cursor: pointer;" onclick="setsort(3, \'nat\'); draw_table(\'nat\')">Destination IP</th>' +
-		       '<th width="11%" id="track_header_4" style="cursor: pointer;" onclick="setsort(4, \'nat\'); draw_table(\'nat\')">Port</th>' +
-		       '<th width="20%" id="track_header_5" style="cursor: pointer;" onclick="setsort(5, \'nat\'); draw_table(\'nat\')">State</th></tr>';
+		       '<tr><th width="8%" id="track_header_0" style="cursor: pointer; text-align:left;" onclick="setsort(0,\'nat\'); draw_table(\'nat\')">Proto</th>' +
+		       '<th width="28%" id="track_header_1" style="cursor: pointer;" onclick="setsort(1, \'nat\'); draw_table(\'nat\')">NAT IP</th>' +
+		       '<th width="9%" id="track_header_2" style="cursor: pointer;" onclick="setsort(2, \'nat\'); draw_table(\'nat\')">NAT Port</th>' +
+		       '<th width="28%" id="track_header_3" style="cursor: pointer;" onclick="setsort(3, \'nat\'); draw_table(\'nat\')">Destination IP</th>' +
+		       '<th width="9%" id="track_header_4" style="cursor: pointer;" onclick="setsort(4, \'nat\'); draw_table(\'nat\')">Port</th>' +
+		       '<th width="18%" id="track_header_5" style="cursor: pointer;" onclick="setsort(5, \'nat\'); draw_table(\'nat\')">State</th></tr>';
 	} else if (type == "route") {
 		document.getElementById('tracked_filters_route').style.display = "";
 		document.getElementById('connblock_route_header').style.display = "";
 		document.getElementById('connblock_route').innerHTML = "";
 		code = '<table width="100%" cellpadding="4" class="FormTable_table"><thead><tr><td colspan="6">Connections</td></tr></thead>' +
 		       '<tr><th width="8%" id="track_header_route_0" style="cursor: pointer;" onclick="setsort(0, \'route\'); draw_table(\'route\')">Proto</th>' +
-		       '<th width="25%" id="track_header_route_1" style="cursor: pointer;" onclick="setsort(1, \'route\'); draw_table(\'route\')">Local IP</th>' +
-		       '<th width="11%" id="track_header_route_2" style="cursor: pointer;" onclick="setsort(2, \'route\'); draw_table(\'route\')">Port</th>' +
-		       '<th width="25%" id="track_header_route_3" style="cursor: pointer;" onclick="setsort(3, \'route\'); draw_table(\'route\')">Destination IP</th>' +
-		       '<th width="11%" id="track_header_route_4" style="cursor: pointer;" onclick="setsort(4, \'route\'); draw_table(\'route\')">Port</th>' +
-		       '<th width="20%" id="track_header_route_5" style="cursor: pointer;" onclick="setsort(5, \'route\'); draw_table(\'route\')">State</th></tr>';
+		       '<th width="28%" id="track_header_route_1" style="cursor: pointer;" onclick="setsort(1, \'route\'); draw_table(\'route\')">Local IP</th>' +
+		       '<th width="9%" id="track_header_route_2" style="cursor: pointer;" onclick="setsort(2, \'route\'); draw_table(\'route\')">Port</th>' +
+		       '<th width="28%" id="track_header_route_3" style="cursor: pointer;" onclick="setsort(3, \'route\'); draw_table(\'route\')">Destination IP</th>' +
+		       '<th width="9%" id="track_header_route_4" style="cursor: pointer;" onclick="setsort(4, \'route\'); draw_table(\'route\')">Port</th>' +
+		       '<th width="18%" id="track_header_route_5" style="cursor: pointer; onclick="setsort(5, \'route\'); draw_table(\'route\')">State</th></tr>';
 	}
 
 	dataarray.sort(table_sort);
@@ -195,12 +196,28 @@ function draw_table(type){
 		shownlen++;
 
 		// Output row
-		code += "<tr><td>" + dataarray[i][0] + "</td>" +
-		        "<td title=\"" + srctitle + "\"" + (srchost.length > 36 ? "style=\"font-size: 80%;\"" : "") +">" + srchost + "</td>" +
-		        "<td>" + dataarray[i][2] + "</td>" +
-		        "<td title=\"" + dsttitle + "\"" + (dsthost.length > 36 ? "style=\"font-size: 80%;\"" : "") + ">" + dsthost + "</td>" +
-		        "<td>" + dataarray[i][4] + "</td>" +
-		        "<td>" + dataarray[i][5] + "</td>";
+		code += "<tr><td style=\"text-align:left;\">" + dataarray[i][0] + "</td>" +
+		        "<td title=\"" + srctitle + "\"" + (srchost.length > 37 ? "style=\"font-size: 80%;text-align:left;white-space: nowrap;\"" : "style=\"text-align:left;white-space: nowrap;\"") +">";
+
+		if (!validator.isPrivateIP(dataarray[i][1])) {
+			code += "<a style=\"cursor:pointer; text-decoration:underline;\" href=\"https://whatismyipaddress.com/ip/" + dataarray[i][1] + "\" target=\"_blank\">" + srchost + "</a>"
+		} else {
+			code += srchost;
+		}
+
+		code += "</td>" +
+			    "<td style=\"text-align:left;\">" + dataarray[i][2] + "</td>" +
+		        "<td title=\"" + dsttitle + "\"" + (dsthost.length > 37 ? "style=\"font-size: 80%;text-align:left;white-space: nowrap;\"" : "style=\"text-align:left;white-space: nowrap;\"") +">";
+
+		if (!validator.isPrivateIP(dataarray[i][3])) {
+			code +="<a style=\"cursor:pointer; text-decoration:underline;\" href=\"https://whatismyipaddress.com/ip/" + dataarray[i][3] + "\" target=\"_blank\">" + dsthost + "</a>";
+		} else {
+			code += dsthost;
+		}
+
+		code += "</td>" +
+		        "<td style=\"text-align:left;\">" + dataarray[i][4] + "</td>" +
+		        "<td style=\"text-align:left;\">" + dataarray[i][5] + "</td>";
 	}
 
 	if (shownlen == 0) {
@@ -386,6 +403,7 @@ function setShowNames(obj) {
 										<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 										<div class="formfontdesc"><#System_log_connections#></div>
 										<div class="formfontdesc">Click on a column header to sort by that field.</div>
+										<div class="formfontdesc">Public IP addresses can be clicked on to launch a lookup on <a href="https://whatismyipaddress.com/" target="_blank" style="cursor:pointer; text-decoration:underline;">https://whatismyipaddress.com/</a>.</div>
 										<table cellpadding="4" width="100%" class="FormTable_table"><thead><tr><td colspan="2">Display options</td></tr></thead>
 										<tr>
 											<th>Refresh frequency</th>
@@ -414,11 +432,11 @@ function setShowNames(obj) {
 										<table cellpadding="4" width="100%" class="FormTable_table" id="tracked_filters" style="display:none;"><thead><tr><td colspan="6">Filter NAT connections</td></tr></thead>
 											<tr>
 												<th width="8%">Proto</th>
-												<th width="25%">NAT IP</th>
-												<th width="11%">NAT Port</th>
-												<th width="25%">Destination IP</th>
-												<th width="11%">Port</th>
-												<th width="20%">State</th>
+												<th width="28%">NAT IP</th>
+												<th width="9%">NAT Port</th>
+												<th width="28%">Destination IP</th>
+												<th width="9%">Port</th>
+												<th width="18%">State</th>
 											</tr>
 											<tr>
 												<td><select class="input_option" onchange="set_filter(0, this, 'nat');">
@@ -449,11 +467,11 @@ function setShowNames(obj) {
 										<table cellpadding="4" width="100%" class="FormTable_table" id="tracked_filters_route" style="display:none;"><thead><tr><td colspan="6">Filter routed connections</td></tr></thead>
 											<tr>
 												<th width="8%">Proto</th>
-												<th width="25%">Local IP</th>
-												<th width="11%">Port</th>
-												<th width="25%">Destination IP</th>
-												<th width="11%">Port</th>
-												<th width="20%">State</th>
+												<th width="28%">Local IP</th>
+												<th width="9%">Port</th>
+												<th width="28%">Destination IP</th>
+												<th width="9%">Port</th>
+												<th width="18%">State</th>
 											</tr>
 											<tr>
 												<td><select class="input_option" onchange="set_filter(0, this, 'route');">

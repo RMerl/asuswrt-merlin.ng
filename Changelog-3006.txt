@@ -1,7 +1,7 @@
 Asuswrt-Merlin 3006.xxx Changelog
 =================================
 
-3006.102.5 (xx-xxx-2025)
+3006.102.5 (3-Aug-2025)
   - NOTE: For developers, please note that the new default branch
           is now called "main" - it's what was previously the
           3006.102 branch.
@@ -14,7 +14,7 @@ Asuswrt-Merlin 3006.xxx Changelog
            - You can now filter the list
            - You can set the page to auto-refresh itself
            - Public IP addresses can be looked up on
-             WhatismyIP.com
+             WhatismyIPaddress.com
            - Local hostnames will be resolved and shown
            - Routed IPv6 connections will be shown
 

@@ -9,7 +9,7 @@ PREFIX ?= /usr/local
 
 
 CPPFLAGS += -D_GNU_SOURCE
-CFLAGS   += -O3 -g -Wall -Wextra -std=c17 -Wno-string-plus-int
+CFLAGS   += -O3 -g -Wall -Wextra -Wno-string-plus-int
 
 
 .PHONY: all check clean install

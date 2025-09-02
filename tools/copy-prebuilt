@@ -1,15 +1,22 @@
 #!/bin/bash
 
-# Copy BUILD_NAME/SDK specific binary blobs from new GPL to development repo
+# Copy BUILD_NAME/SDK specific binary blobs from new GPL to development repo.
 
-#
-# Usage: enter the new GPL directory then run this script.
-#        Then run by specifying the BUILD_NAME number as argument.
-#        REPO will contain the location of your local repository
+if [ $# -lt 3 ]; then
+	echo "Copy the BLOBS from the GPL directory to the repository."
+	echo "Usage:"
+	echo -e "\t$0 [Build name] [GPL directory] [Repository root]"
+	echo "Note: GPL directory can be downloaded from ASUS web site for the specific router model (the same as build name). It is located in \"Drivers and tools\" section for the operation system \"Others\". It is packed inside tarball in the the zip file. Directory must contain the \"release\" sub folder."
+	echo "Example:"
+	echo -e "\t$0 RT-AC68U ~/asuswrt ~/asuswrt-merlin.ng"
+	exit 1 
+fi
 
 BUILD_NAME=$(echo $1 | tr "[:lower:]" "[:upper:]")
 BUILD_NAME_LC=$(echo $BUILD_NAME | tr "[:upper:]" "[:lower:]")
-REPO=/home/merlin/amng
+GPL_ROOT="$2"
+REPO="$3"
+
 
 echo "*** Copying platform-specific files..."
 if [ "$BUILD_NAME" == "RT-AC88U" ] || [ "$BUILD_NAME" == "RT-AC3100" ] || [ "$BUILD_NAME" == "RT-AC5300" ]
@@ -18,10 +25,10 @@ then
 	ARCH="_arm"
 	HND=""
 
-	cp release/src/router/ctf_arm/bcm_7114_gmac3/* $REPO/release/src/router/ctf_arm/bcm_7114_gmac3/
-	cp release/src/router/wl_arm_7114/prebuilt/* $REPO/release/src/router/wl_arm_7114/prebuilt/$BUILD_NAME/
-	cp release/src/router/envram_bin/envram$ARCH$SDK/* $REPO/release/src/router/envram_bin/envram$ARCH$SDK/
-	cp release/src-rt-7.14.114.x/src/wl/exe/prebuilt/* $REPO/release/src-rt-7.14.114.x/src/wl/exe/prebuilt/$BUILD_NAME/
+	cp $GPL_ROOT/release/src/router/ctf_arm/bcm_7114_gmac3/* $REPO/release/src/router/ctf_arm/bcm_7114_gmac3/
+	cp $GPL_ROOT/release/src/router/wl_arm_7114/prebuilt/* $REPO/release/src/router/wl_arm_7114/prebuilt/$BUILD_NAME/
+	cp $GPL_ROOT/release/src/router/envram_bin/envram$ARCH$SDK/* $REPO/release/src/router/envram_bin/envram$ARCH$SDK/
+	cp $GPL_ROOT/release/src-rt-7.14.114.x/src/wl/exe/prebuilt/* $REPO/release/src-rt-7.14.114.x/src/wl/exe/prebuilt/$BUILD_NAME/
 
 elif [ "$BUILD_NAME" == "RT-AC68U" ]
 then
@@ -29,10 +36,10 @@ then
 	ARCH="_arm"
 	HND=""
 
-	cp release/src/router/ctf_arm/bcm6/* $REPO/release/src/router/ctf_arm/bcm6/
-	cp release/src/router/wl_arm/prebuilt/* $REPO/release/src/router/wl_arm/prebuilt/$BUILD_NAME/
-	cp release/src-rt-6.x.4708/wl/exe/prebuilt/* $REPO/release/src-rt-6.x.4708/wl/exe/prebuilt/
-	cp -a release/src/router/tuxera/broadcom$ARCH$SDK/* $REPO/release/src/router/tuxera/broadcom$ARCH$SDK/
+	cp $GPL_ROOT/release/src/router/ctf_arm/bcm6/* $REPO/release/src/router/ctf_arm/bcm6/
+	cp $GPL_ROOT/release/src/router/wl_arm/prebuilt/* $REPO/release/src/router/wl_arm/prebuilt/$BUILD_NAME/
+	cp $GPL_ROOT/release/src-rt-6.x.4708/wl/exe/prebuilt/* $REPO/release/src-rt-6.x.4708/wl/exe/prebuilt/
+	cp -a $GPL_ROOT/release/src/router/tuxera/broadcom$ARCH$SDK/* $REPO/release/src/router/tuxera/broadcom$ARCH$SDK/
 
 elif [ "$BUILD_NAME" == "RT-AC86U" ] || [ "$BUILD_NAME" == "GT-AC2900" ]
 then
@@ -40,7 +47,7 @@ then
 	ARCH="_arm"
 	HND="_hnd"
 
-	rsync -a --del release/src/router/hnd_extra/prebuilt/ $REPO/release/src/router/hnd_extra/prebuilt/$BUILD_NAME
+	rsync -a --del $GPL_ROOT/release/src/router/hnd_extra/prebuilt/ $REPO/release/src/router/hnd_extra/prebuilt/$BUILD_NAME
 	if [ "$BUILD_NAME" == "RT-AC86U" ]
 	then
 		ln -s ../GT-AC2900/vis-dcon $REPO/release/src/router/hnd_extra/prebuilt/RT-AC86U/vis-dcon
@@ -48,44 +55,44 @@ then
 	fi
 	aarch64-buildroot-linux-gnu-strip --strip-unneeded $REPO/release/src/router/hnd_extra/prebuilt/$BUILD_NAME/*.o
 	arm-brcm-linux-uclibcgnueabi-strip $REPO/release/src/router/hnd_extra/prebuilt/$BUILD_NAME/wl
-	cp release/src/router/envram_bin/envram$ARCH$SDK/* $REPO/release/src/router/envram_bin/envram$ARCH$SDK/
-	cp release/src-rt-5.02hnd/wl/exe/prebuilt/* $REPO/release/src-rt-5.02hnd/wl/exe/prebuilt/
-	cp release/src-rt-5.02hnd/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02hnd/hostTools/prebuilt/$BUILD_NAME/
-	cp release/src/router/rdpactl/prebuilt/* $REPO/release/src/router/rdpactl/prebuilt/
-	cp release/src/router/pwrctl_lib/prebuilt/* $REPO/release/src/router/pwrctl_lib/prebuilt/
-	cp release/src/router/bcm_flasher/prebuilt/* $REPO/release/src/router/bcm_flasher/prebuilt/
-	cp release/src/router/bcmmcastctl/prebuilt/* $REPO/release/src/router/bcmmcastctl/prebuilt/
-	cp release/src/router/bcmtm_lib/prebuilt/* $REPO/release/src/router/bcmtm_lib/prebuilt/
-	cp release/src/router/pwrctl/prebuilt/* $REPO/release/src/router/pwrctl/prebuilt/
-	cp release/src/router/ethswctl/prebuilt/* $REPO/release/src/router/ethswctl/prebuilt/
-	cp release/src/router/wlcsm/prebuilt/* $REPO/release/src/router/wlcsm/prebuilt/
-	cp release/src/router/fcctl_lib/prebuilt/* $REPO/release/src/router/fcctl_lib/prebuilt/
-	cp release/src/router/swmdk/prebuilt/* $REPO/release/src/router/swmdk/prebuilt/
-	cp release/src/router/vlanctl_lib/prebuilt/* $REPO/release/src/router/vlanctl_lib/prebuilt/
-	cp release/src/router/mcpctl/prebuilt/* $REPO/release/src/router/mcpctl/prebuilt/
-	cp release/src/router/dnsspoof/prebuilt/* $REPO/release/src/router/dnsspoof/prebuilt/
-	cp release/src/router/stlport/prebuilt/* $REPO/release/src/router/stlport/prebuilt/
-	cp release/src/router/tmctl/prebuilt/* $REPO/release/src/router/tmctl/prebuilt/
-	cp release/src/router/mdk/prebuilt/* $REPO/release/src/router/mdk/prebuilt/
-	cp release/src/router/ethctl/prebuilt/* $REPO/release/src/router/ethctl/prebuilt/
-	cp release/src/router/appeventd/prebuilt/* $REPO/release/src/router/appeventd/prebuilt/
-	cp release/src/router/bcm_boardctl/prebuilt/* $REPO/release/src/router/bcm_boardctl/prebuilt/
-	cp release/src/router/mcpd/prebuilt/* $REPO/release/src/router/mcpd/prebuilt/
-	cp release/src/router/prebuilt/* $REPO/release/src/router/prebuilt/
-	cp release/src/router/ethswctl_lib/prebuilt/* $REPO/release/src/router/ethswctl_lib/prebuilt/
-	cp release/src/router/bcmtm/prebuilt/* $REPO/release/src/router/bcmtm/prebuilt/
-	cp release/src/router/bcm_flashutil/prebuilt/* $REPO/release/src/router/bcm_flashutil/prebuilt/
-	cp release/src/router/ethctl_lib/prebuilt/* $REPO/release/src/router/ethctl_lib/prebuilt/
-	cp release/src/router/bcm_boot_launcher/prebuilt/* $REPO/release/src/router/bcm_boot_launcher/prebuilt/
-	cp release/src/router/bpmctl/prebuilt/* $REPO/release/src/router/bpmctl/prebuilt/
-	cp release/src/router/vpmstats/prebuilt/* $REPO/release/src/router/vpmstats/prebuilt/
-	cp release/src/router/wlan/util/prebuilt/* $REPO/release/src/router/wlan/util/prebuilt/
-	cp release/src/router/wlan/nvram/prebuilt/* $REPO/release/src/router/wlan/nvram/prebuilt/
-	cp release/src/router/bcmmcast/prebuilt/* $REPO/release/src/router/bcmmcast/prebuilt/
-	cp release/src/router/vlanctl/prebuilt/* $REPO/release/src/router/vlanctl/prebuilt/
-	cp release/src/router/fcctl/prebuilt/* $REPO/release/src/router/fcctl/prebuilt/
-	cp release/src/router/tmctl_lib/prebuilt/* $REPO/release/src/router/tmctl_lib/prebuilt/
-	cp release/src/router/bridgeutil/prebuilt/* $REPO/release/src/router/bridgeutil/prebuilt/
+	cp $GPL_ROOT/release/src/router/envram_bin/envram$ARCH$SDK/* $REPO/release/src/router/envram_bin/envram$ARCH$SDK/
+	cp $GPL_ROOT/release/src-rt-5.02hnd/wl/exe/prebuilt/* $REPO/release/src-rt-5.02hnd/wl/exe/prebuilt/
+	cp $GPL_ROOT/release/src-rt-5.02hnd/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02hnd/hostTools/prebuilt/$BUILD_NAME/
+	cp $GPL_ROOT/release/src/router/rdpactl/prebuilt/* $REPO/release/src/router/rdpactl/prebuilt/
+	cp $GPL_ROOT/release/src/router/pwrctl_lib/prebuilt/* $REPO/release/src/router/pwrctl_lib/prebuilt/
+	cp $GPL_ROOT/release/src/router/bcm_flasher/prebuilt/* $REPO/release/src/router/bcm_flasher/prebuilt/
+	cp $GPL_ROOT/release/src/router/bcmmcastctl/prebuilt/* $REPO/release/src/router/bcmmcastctl/prebuilt/
+	cp $GPL_ROOT/release/src/router/bcmtm_lib/prebuilt/* $REPO/release/src/router/bcmtm_lib/prebuilt/
+	cp $GPL_ROOT/release/src/router/pwrctl/prebuilt/* $REPO/release/src/router/pwrctl/prebuilt/
+	cp $GPL_ROOT/release/src/router/ethswctl/prebuilt/* $REPO/release/src/router/ethswctl/prebuilt/
+	cp $GPL_ROOT/release/src/router/wlcsm/prebuilt/* $REPO/release/src/router/wlcsm/prebuilt/
+	cp $GPL_ROOT/release/src/router/fcctl_lib/prebuilt/* $REPO/release/src/router/fcctl_lib/prebuilt/
+	cp $GPL_ROOT/release/src/router/swmdk/prebuilt/* $REPO/release/src/router/swmdk/prebuilt/
+	cp $GPL_ROOT/release/src/router/vlanctl_lib/prebuilt/* $REPO/release/src/router/vlanctl_lib/prebuilt/
+	cp $GPL_ROOT/release/src/router/mcpctl/prebuilt/* $REPO/release/src/router/mcpctl/prebuilt/
+	cp $GPL_ROOT/release/src/router/dnsspoof/prebuilt/* $REPO/release/src/router/dnsspoof/prebuilt/
+	cp $GPL_ROOT/release/src/router/stlport/prebuilt/* $REPO/release/src/router/stlport/prebuilt/
+	cp $GPL_ROOT/release/src/router/tmctl/prebuilt/* $REPO/release/src/router/tmctl/prebuilt/
+	cp $GPL_ROOT/release/src/router/mdk/prebuilt/* $REPO/release/src/router/mdk/prebuilt/
+	cp $GPL_ROOT/release/src/router/ethctl/prebuilt/* $REPO/release/src/router/ethctl/prebuilt/
+	cp $GPL_ROOT/release/src/router/appeventd/prebuilt/* $REPO/release/src/router/appeventd/prebuilt/
+	cp $GPL_ROOT/release/src/router/bcm_boardctl/prebuilt/* $REPO/release/src/router/bcm_boardctl/prebuilt/
+	cp $GPL_ROOT/release/src/router/mcpd/prebuilt/* $REPO/release/src/router/mcpd/prebuilt/
+	cp $GPL_ROOT/release/src/router/prebuilt/* $REPO/release/src/router/prebuilt/
+	cp $GPL_ROOT/release/src/router/ethswctl_lib/prebuilt/* $REPO/release/src/router/ethswctl_lib/prebuilt/
+	cp $GPL_ROOT/release/src/router/bcmtm/prebuilt/* $REPO/release/src/router/bcmtm/prebuilt/
+	cp $GPL_ROOT/release/src/router/bcm_flashutil/prebuilt/* $REPO/release/src/router/bcm_flashutil/prebuilt/
+	cp $GPL_ROOT/release/src/router/ethctl_lib/prebuilt/* $REPO/release/src/router/ethctl_lib/prebuilt/
+	cp $GPL_ROOT/release/src/router/bcm_boot_launcher/prebuilt/* $REPO/release/src/router/bcm_boot_launcher/prebuilt/
+	cp $GPL_ROOT/release/src/router/bpmctl/prebuilt/* $REPO/release/src/router/bpmctl/prebuilt/
+	cp $GPL_ROOT/release/src/router/vpmstats/prebuilt/* $REPO/release/src/router/vpmstats/prebuilt/
+	cp $GPL_ROOT/release/src/router/wlan/util/prebuilt/* $REPO/release/src/router/wlan/util/prebuilt/
+	cp $GPL_ROOT/release/src/router/wlan/nvram/prebuilt/* $REPO/release/src/router/wlan/nvram/prebuilt/
+	cp $GPL_ROOT/release/src/router/bcmmcast/prebuilt/* $REPO/release/src/router/bcmmcast/prebuilt/
+	cp $GPL_ROOT/release/src/router/vlanctl/prebuilt/* $REPO/release/src/router/vlanctl/prebuilt/
+	cp $GPL_ROOT/release/src/router/fcctl/prebuilt/* $REPO/release/src/router/fcctl/prebuilt/
+	cp $GPL_ROOT/release/src/router/tmctl_lib/prebuilt/* $REPO/release/src/router/tmctl_lib/prebuilt/
+	cp $GPL_ROOT/release/src/router/bridgeutil/prebuilt/* $REPO/release/src/router/bridgeutil/prebuilt/
 
 elif [ "$BUILD_NAME" == "RT-AX88U" ] || [ "$BUILD_NAME" == "RT-AX92U" ] || [ "$BUILD_NAME" == "GT-AX11000" ]
 then
@@ -93,12 +100,12 @@ then
 	ARCH="_arm"
 	HND="_axhnd"
 
-	cp release/src-rt-5.02axhnd/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02axhnd/hostTools/prebuilt/$BUILD_NAME/
-	cp release/src-rt-5.02axhnd/wl/exe/prebuilt/* $REPO/release/src-rt-5.02axhnd/wl/exe/prebuilt/
-	cp release/src-rt-5.02axhnd/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.02axhnd/hostTools/prebuilt/
-	cp release/src-rt-5.02axhnd/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.02axhnd/hostTools/prebuilt/
-	cp release/src-rt-5.02axhnd/bcmdrivers/broadcom/net/wl/impl51/main/components/apps/acsdv2/prebuilt/* $REPO/release/src-rt-5.02axhnd/bcmdrivers/broadcom/net/wl/impl51/main/components/apps/acsdv2/prebuilt/$BUILD_NAME/
-	rsync -a --del release/src-rt-5.02axhnd/router-sysdep/ $REPO/release/src-rt-5.02axhnd/router-sysdep.$BUILD_NAME_LC
+	cp $GPL_ROOT/release/src-rt-5.02axhnd/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02axhnd/hostTools/prebuilt/$BUILD_NAME/
+	cp $GPL_ROOT/release/src-rt-5.02axhnd/wl/exe/prebuilt/* $REPO/release/src-rt-5.02axhnd/wl/exe/prebuilt/
+	cp $GPL_ROOT/release/src-rt-5.02axhnd/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.02axhnd/hostTools/prebuilt/
+	cp $GPL_ROOT/release/src-rt-5.02axhnd/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.02axhnd/hostTools/prebuilt/
+	cp $GPL_ROOT/release/src-rt-5.02axhnd/bcmdrivers/broadcom/net/wl/impl51/main/components/apps/acsdv2/prebuilt/* $REPO/release/src-rt-5.02axhnd/bcmdrivers/broadcom/net/wl/impl51/main/components/apps/acsdv2/prebuilt/$BUILD_NAME/
+	rsync -a --del $GPL_ROOT/release/src-rt-5.02axhnd/router-sysdep/ $REPO/release/src-rt-5.02axhnd/router-sysdep.$BUILD_NAME_LC
 
 elif [ "$BUILD_NAME" == "RT-AX56U" ] || [ "$BUILD_NAME" == "RT-AX58U" ]
 then
@@ -106,12 +113,12 @@ then
 	ARCH="_arm"
 	HND="_6750hnd"
 
-	cp release/src-rt-5.02axhnd.675x/wl/exe/prebuilt/* $REPO/release/src-rt-5.02axhnd.675x/wl/exe/prebuilt/
-	cp release/src-rt-5.02axhnd.675x/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02axhnd.675x/hostTools/prebuilt/$BUILD_NAME/
-	cp release/src-rt-5.02axhnd.675x/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.02axhnd.675x/hostTools/prebuilt/
-	cp release/src-rt-5.02axhnd.675x/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.02axhnd.675x/hostTools/prebuilt/
-	cp release/src-rt-5.02axhnd.675x/bcmdrivers/broadcom/net/wl/impl69/main/components/apps/acsdv2/prebuilt/* $REPO/release/src-rt-5.02axhnd.675x/bcmdrivers/broadcom/net/wl/impl69/main/components/apps/acsdv2/prebuilt/$BUILD_NAME/
-	rsync -a --del release/src-rt-5.02axhnd.675x/router-sysdep/ $REPO/release/src-rt-5.02axhnd.675x/router-sysdep.$BUILD_NAME_LC
+	cp $GPL_ROOT/release/src-rt-5.02axhnd.675x/wl/exe/prebuilt/* $REPO/release/src-rt-5.02axhnd.675x/wl/exe/prebuilt/
+	cp $GPL_ROOT/release/src-rt-5.02axhnd.675x/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02axhnd.675x/hostTools/prebuilt/$BUILD_NAME/
+	cp $GPL_ROOT/release/src-rt-5.02axhnd.675x/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.02axhnd.675x/hostTools/prebuilt/
+	cp $GPL_ROOT/release/src-rt-5.02axhnd.675x/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.02axhnd.675x/hostTools/prebuilt/
+	cp $GPL_ROOT/release/src-rt-5.02axhnd.675x/bcmdrivers/broadcom/net/wl/impl69/main/components/apps/acsdv2/prebuilt/* $REPO/release/src-rt-5.02axhnd.675x/bcmdrivers/broadcom/net/wl/impl69/main/components/apps/acsdv2/prebuilt/$BUILD_NAME/
+	rsync -a --del $GPL_ROOT/release/src-rt-5.02axhnd.675x/router-sysdep/ $REPO/release/src-rt-5.02axhnd.675x/router-sysdep.$BUILD_NAME_LC
 
 elif [ "$BUILD_NAME" == "RT-AX86U" ] || [ "$BUILD_NAME" == "RT-AX68U" ] || [ "$BUILD_NAME" == "RT-AC68U_V4" ] || [ "$BUILD_NAME" == "GT-AXE11000" ]
 then
@@ -119,13 +126,13 @@ then
 	ARCH="_arm"
 	HND="_axhnd"
 
-	cp release/src-rt-5.02L.07p2axhnd/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02L.07p2axhnd/hostTools/prebuilt/$BUILD_NAME/
-	cp release/src-rt-5.02L.07p2axhnd/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.02L.07p2axhnd/hostTools/prebuilt/
-	cp release/src-rt-5.02L.07p2axhnd/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.02L.07p2axhnd/hostTools/prebuilt/
-	cp release/src-rt-5.02L.07p2axhnd/bcmdrivers/broadcom/net/wl/impl69/main/components/apps/acsdv2/prebuilt/* $REPO/release/src-rt-5.02L.07p2axhnd/bcmdrivers/broadcom/net/wl/impl69/main/components/apps/acsdv2/prebuilt/$BUILD_NAME/
+	cp $GPL_ROOT/release/src-rt-5.02L.07p2axhnd/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02L.07p2axhnd/hostTools/prebuilt/$BUILD_NAME/
+	cp $GPL_ROOT/release/src-rt-5.02L.07p2axhnd/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.02L.07p2axhnd/hostTools/prebuilt/
+	cp $GPL_ROOT/release/src-rt-5.02L.07p2axhnd/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.02L.07p2axhnd/hostTools/prebuilt/
+	cp $GPL_ROOT/release/src-rt-5.02L.07p2axhnd/bcmdrivers/broadcom/net/wl/impl69/main/components/apps/acsdv2/prebuilt/* $REPO/release/src-rt-5.02L.07p2axhnd/bcmdrivers/broadcom/net/wl/impl69/main/components/apps/acsdv2/prebuilt/$BUILD_NAME/
 	cp -ar release/src-rt-5.02L.07p2axhnd/bcmdrivers/broadcom/net/wl/impl69/sys/src/dongle/sysdeps/default/* $REPO/release/src-rt-5.02L.07p2axhnd/bcmdrivers/broadcom/net/wl/impl69/sys/src/dongle/sysdeps/$BUILD_NAME/
-	cp release/src-rt-5.02L.07p2axhnd/targets/cfe/prebuilt/* $REPO/release/src-rt-5.02L.07p2axhnd/targets/cfe/sysdeps/$BUILD_NAME/
-	rsync -a --del release/src-rt-5.02L.07p2axhnd/router-sysdep/ $REPO/release/src-rt-5.02L.07p2axhnd/router-sysdep.$BUILD_NAME_LC
+	cp $GPL_ROOT/release/src-rt-5.02L.07p2axhnd/targets/cfe/prebuilt/* $REPO/release/src-rt-5.02L.07p2axhnd/targets/cfe/sysdeps/$BUILD_NAME/
+	rsync -a --del $GPL_ROOT/release/src-rt-5.02L.07p2axhnd/router-sysdep/ $REPO/release/src-rt-5.02L.07p2axhnd/router-sysdep.$BUILD_NAME_LC
 
 elif [ "$BUILD_NAME" == "GT-AX6000" ] || [ "$BUILD_NAME" == "XT12" ] || [ "$BUILD_NAME" == "GT-AXE16000" ] || [ "$BUILD_NAME" == "GT-AX11000_PRO" ] || [ "$BUILD_NAME" == "RT-AX86U_PRO" ] || [ "$BUILD_NAME" == "RT-AX88U_PRO" ]
 then
@@ -133,23 +140,23 @@ then
         ARCH="_arm"
         HND="_axhnd"
 
-	rsync -a --del release/src-rt-5.04axhnd.675x/bootloaders/obj/ $REPO/release/src-rt-5.04axhnd.675x/bootloaders/obj.$BUILD_NAME_LC
-	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/$BUILD_NAME/
-	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt/lzop $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/$BUILD_NAME/
-	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
-	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
-	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt//cmplzma $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
-	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt/mkfs.ubifs $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
-	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt/mksquashfs $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
-	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt/ubinize $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
-	cp release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/net/wl/impl87/main/components/apps/acsdv2/prebuilt/* $REPO/release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/net/wl/impl87/main/components/apps/acsdv2/prebuilt/$BUILD_NAME/
+	rsync -a --del $GPL_ROOT/release/src-rt-5.04axhnd.675x/bootloaders/obj/ $REPO/release/src-rt-5.04axhnd.675x/bootloaders/obj.$BUILD_NAME_LC
+	cp $GPL_ROOT/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/$BUILD_NAME/
+	cp $GPL_ROOT/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/lzop $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/$BUILD_NAME/
+	cp $GPL_ROOT/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
+	cp $GPL_ROOT/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
+	cp $GPL_ROOT/release/src-rt-5.04axhnd.675x/hostTools/prebuilt//cmplzma $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
+	cp $GPL_ROOT/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/mkfs.ubifs $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
+	cp $GPL_ROOT/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/mksquashfs $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
+	cp $GPL_ROOT/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/ubinize $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
+	cp $GPL_ROOT/release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/net/wl/impl87/main/components/apps/acsdv2/prebuilt/* $REPO/release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/net/wl/impl87/main/components/apps/acsdv2/prebuilt/$BUILD_NAME/
 
 	cp -ar release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/net/wl/impl87/sys/src/dongle/sysdeps/default/* $REPO/release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/net/wl/impl87/sys/src/dongle/sysdeps/$BUILD_NAME/
-	cp release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/chipinfo/impl1/chipinfo.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
-	cp release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/mpm/impl1/bcm_mpm.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
-	cp release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/otp/impl1/otp.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
-	cp release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/pktrunner/impl2/pktrunner.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
-	cp release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/wlcsm_ext/impl1/wlcsm.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+	cp $GPL_ROOT/release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/chipinfo/impl1/chipinfo.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+	cp $GPL_ROOT/release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/mpm/impl1/bcm_mpm.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+	cp $GPL_ROOT/release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/otp/impl1/otp.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+	cp $GPL_ROOT/release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/pktrunner/impl2/pktrunner.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+	cp $GPL_ROOT/release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/wlcsm_ext/impl1/wlcsm.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
 
 	echo "Manually sync router-sysdep (since hnd_extra cannot be rsync'ed)"
 #	rsync -a --del release/src-rt-5.04axhnd.675x/router-sysdep/ $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC
@@ -165,102 +172,102 @@ fi
 echo "*** Copying USB-related files..."
 if [ "$BUILD_NAME" != "XT12" ]
 then
-	cp -ar release/src/router/tuxera/broadcom* $REPO/release/src/router/tuxera/
-	cp release/src/router/lighttpd-1.4.39/prebuild/* $REPO/release/src/router/lighttpd-1.4.39/prebuild/$BUILD_NAME/
-	cp release/src/router/dropbox_client/prebuild/* $REPO/release/src/router/dropbox_client/prebuild/$BUILD_NAME/
-	cp release/src/router/ftpclient/prebuild/* $REPO/release/src/router/ftpclient/prebuild/$BUILD_NAME/
-	cp release/src/router/sambaclient/prebuild/* $REPO/release/src/router/sambaclient/prebuild/$BUILD_NAME/
-	cp release/src/router/u2ec/prebuild/* $REPO/release/src/router/u2ec/prebuild/$BUILD_NAME/
-	cp release/src/router/webdav_client/prebuild/* $REPO/release/src/router/webdav_client/prebuild/$BUILD_NAME/
-	cp release/src/router/usbclient/prebuild/* $REPO/release/src/router/usbclient/prebuild/$BUILD_NAME/
-	cp release/src/router/asuswebstorage/prebuild/* $REPO/release/src/router/asuswebstorage/prebuild/$BUILD_NAME/
-	cp release/src/router/inotify/prebuild/* $REPO/release/src/router/inotify/prebuild/$BUILD_NAME/
+	cp -ar $GPL_ROOT/release/src/router/tuxera/broadcom* $REPO/release/src/router/tuxera/
+	cp $GPL_ROOT/release/src/router/lighttpd-1.4.39/prebuild/* $REPO/release/src/router/lighttpd-1.4.39/prebuild/$BUILD_NAME/
+	cp $GPL_ROOT/release/src/router/dropbox_client/prebuild/* $REPO/release/src/router/dropbox_client/prebuild/$BUILD_NAME/
+	cp $GPL_ROOT/release/src/router/ftpclient/prebuild/* $REPO/release/src/router/ftpclient/prebuild/$BUILD_NAME/
+	cp $GPL_ROOT/release/src/router/sambaclient/prebuild/* $REPO/release/src/router/sambaclient/prebuild/$BUILD_NAME/
+	cp $GPL_ROOT/release/src/router/u2ec/prebuild/* $REPO/release/src/router/u2ec/prebuild/$BUILD_NAME/
+	cp $GPL_ROOT/release/src/router/webdav_client/prebuild/* $REPO/release/src/router/webdav_client/prebuild/$BUILD_NAME/
+	cp $GPL_ROOT/release/src/router/usbclient/prebuild/* $REPO/release/src/router/usbclient/prebuild/$BUILD_NAME/
+	cp $GPL_ROOT/release/src/router/asuswebstorage/prebuild/* $REPO/release/src/router/asuswebstorage/prebuild/$BUILD_NAME/
+	cp $GPL_ROOT/release/src/router/inotify/prebuild/* $REPO/release/src/router/inotify/prebuild/$BUILD_NAME/
 fi;
 
 # Common to all
 
 # NOTE: these are new in 388, need to determine which platform uses them
-cp release/src/router/dns_ping/prebuild/* $REPO/release/src/router/dns_ping/prebuild/$BUILD_NAME
-cp release/src/router/fsmd/prebuild/* $REPO/release/src/router/fsmd/prebuild/$BUILD_NAME
+cp $GPL_ROOT/release/src/router/dns_ping/prebuild/* $REPO/release/src/router/dns_ping/prebuild/$BUILD_NAME
+cp $GPL_ROOT/release/src/router/fsmd/prebuild/* $REPO/release/src/router/fsmd/prebuild/$BUILD_NAME
 
 echo "*** Copying common files..."
-rsync -a --del release/src/router/httpd/prebuild/ $REPO/release/src/router/httpd/prebuild/$BUILD_NAME
-rsync -a --del release/src/router/rc/prebuild/ $REPO/release/src/router/rc/prebuild/$BUILD_NAME
-rsync -a --del release/src/router/shared/prebuild/ $REPO/release/src/router/shared/prebuild/$BUILD_NAME
-cp release/src/router/sw-hw-auth/prebuild/* $REPO/release/src/router/sw-hw-auth/prebuild/$BUILD_NAME/
-cp release/src/router/bwdpi_source/asus/prebuild/* $REPO/release/src/router/bwdpi_source/asus/prebuild/$BUILD_NAME/
-cp release/src/router/bwdpi_source/asus_sql/prebuild/* $REPO/release/src/router/bwdpi_source/asus_sql/prebuild/$BUILD_NAME/
-cp release/src/router/bwdpi_source/prebuild/* $REPO/release/src/router/bwdpi_source/prebuild/$BUILD_NAME/
-cp release/src/router/protect_srv/prebuild/* $REPO/release/src/router/protect_srv/prebuild/$BUILD_NAME/
-cp release/src/router/protect_srv/lib/prebuild/* $REPO/release/src/router/protect_srv/lib/prebuild/$BUILD_NAME/
-cp release/src/router/wlc_nt/prebuild/* $REPO/release/src/router/wlc_nt/prebuild/$BUILD_NAME/
-cp release/src/router/networkmap/prebuild/* $REPO/release/src/router/networkmap/prebuild/$BUILD_NAME/
-cp release/src/router/nt_center/prebuild/* $REPO/release/src/router/nt_center/prebuild/$BUILD_NAME/
-cp release/src/router/nt_center/actMail/prebuild/* $REPO/release/src/router/nt_center/actMail/prebuild/$BUILD_NAME/
-cp release/src/router/nt_center/lib/prebuild/* $REPO/release/src/router/nt_center/lib/prebuild/$BUILD_NAME/
-cp release/src/router/libletsencrypt/prebuild/* $REPO/release/src/router/libletsencrypt/prebuild/$BUILD_NAME/
-cp release/src/router/libbcm/prebuilt/* $REPO/release/src/router/libbcm/prebuilt/$BUILD_NAME/
-cp release/src/router/infosvr/prebuild/* $REPO/release/src/router/infosvr/prebuild/$BUILD_NAME/
-cp -ar release/src/router/ookla_speedtest/OOKLA-* $REPO/release/src/router/ookla_speedtest/
-cp release/src/router/libwebapi/prebuild/* $REPO/release/src/router/libwebapi/prebuild/$BUILD_NAME/
-cp release/src/router/wlceventd/prebuilt/* $REPO/release/src/router/wlceventd/prebuilt/$BUILD_NAME/
+rsync -a --del $GPL_ROOT/release/src/router/httpd/prebuild/ $REPO/release/src/router/httpd/prebuild/$BUILD_NAME
+rsync -a --del $GPL_ROOT/release/src/router/rc/prebuild/ $REPO/release/src/router/rc/prebuild/$BUILD_NAME
+rsync -a --del $GPL_ROOT/release/src/router/shared/prebuild/ $REPO/release/src/router/shared/prebuild/$BUILD_NAME
+cp $GPL_ROOT/release/src/router/sw-hw-auth/prebuild/* $REPO/release/src/router/sw-hw-auth/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/bwdpi_source/asus/prebuild/* $REPO/release/src/router/bwdpi_source/asus/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/bwdpi_source/asus_sql/prebuild/* $REPO/release/src/router/bwdpi_source/asus_sql/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/bwdpi_source/prebuild/* $REPO/release/src/router/bwdpi_source/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/protect_srv/prebuild/* $REPO/release/src/router/protect_srv/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/protect_srv/lib/prebuild/* $REPO/release/src/router/protect_srv/lib/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/wlc_nt/prebuild/* $REPO/release/src/router/wlc_nt/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/networkmap/prebuild/* $REPO/release/src/router/networkmap/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/nt_center/prebuild/* $REPO/release/src/router/nt_center/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/nt_center/actMail/prebuild/* $REPO/release/src/router/nt_center/actMail/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/nt_center/lib/prebuild/* $REPO/release/src/router/nt_center/lib/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/libletsencrypt/prebuild/* $REPO/release/src/router/libletsencrypt/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/libbcm/prebuilt/* $REPO/release/src/router/libbcm/prebuilt/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/infosvr/prebuild/* $REPO/release/src/router/infosvr/prebuild/$BUILD_NAME/
+cp -ar $GPL_ROOT/release/src/router/ookla_speedtest/OOKLA-* $REPO/release/src/router/ookla_speedtest/
+cp $GPL_ROOT/release/src/router/libwebapi/prebuild/* $REPO/release/src/router/libwebapi/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/wlceventd/prebuilt/* $REPO/release/src/router/wlceventd/prebuilt/$BUILD_NAME/
 
 # Common to most
 echo "*** Copying optional files - ignore errors"
-cp release/src/router/dblog/daemon/prebuild/* $REPO/release/src/router/dblog/daemon/prebuild/$BUILD_NAME/
-cp release/src/router/dblog/commands/prebuild/* $REPO/release/src/router/dblog/commands/prebuild/$BUILD_NAME/
-cp release/src/router/ahs/prebuild/* $REPO/release/src/router/ahs/prebuild/$BUILD_NAME/
-cp release/src/router/asd/prebuild/* $REPO/release/src/router/asd/prebuild/$BUILD_NAME/
-cp release/src/router/libasc/prebuild/* $REPO/release/src/router/libasc/prebuild/$BUILD_NAME/
-cp release/src/router/amas-utils/prebuild/* $REPO/release/src/router/amas-utils/prebuild/$BUILD_NAME/
-cp release/src/router/cfg_mnt/prebuild/* $REPO/release/src/router/cfg_mnt/prebuild/$BUILD_NAME/
-cp release/src/router/aaews/prebuild/* $REPO/release/src/router/aaews/prebuild/$BUILD_NAME/
-cp release/src/router/asusnatnl/natnl/prebuild/* $REPO/release/src/router/asusnatnl/natnl/prebuild/$BUILD_NAME/
-cp release/src/router/libasuslog/prebuild/* $REPO/release/src/router/libasuslog/prebuild/$BUILD_NAME/
-cp release/src/router/sysstate/log_daemon/prebuild/* $REPO/release/src/router/sysstate/log_daemon/prebuild/$BUILD_NAME/
-cp release/src/router/sysstate/commands/prebuild/* $REPO/release/src/router/sysstate/commands/prebuild/$BUILD_NAME/
-cp release/src/router/wb/prebuild/* $REPO/release/src/router/wb/prebuild/$BUILD_NAME/
-cp release/src/router/eventd/prebuilt/* $REPO/release/src/router/eventd/prebuilt/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/dblog/daemon/prebuild/* $REPO/release/src/router/dblog/daemon/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/dblog/commands/prebuild/* $REPO/release/src/router/dblog/commands/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/ahs/prebuild/* $REPO/release/src/router/ahs/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/asd/prebuild/* $REPO/release/src/router/asd/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/libasc/prebuild/* $REPO/release/src/router/libasc/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/amas-utils/prebuild/* $REPO/release/src/router/amas-utils/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/cfg_mnt/prebuild/* $REPO/release/src/router/cfg_mnt/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/aaews/prebuild/* $REPO/release/src/router/aaews/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/asusnatnl/natnl/prebuild/* $REPO/release/src/router/asusnatnl/natnl/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/libasuslog/prebuild/* $REPO/release/src/router/libasuslog/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/sysstate/log_daemon/prebuild/* $REPO/release/src/router/sysstate/log_daemon/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/sysstate/commands/prebuild/* $REPO/release/src/router/sysstate/commands/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/wb/prebuild/* $REPO/release/src/router/wb/prebuild/$BUILD_NAME/
+cp $GPL_ROOT/release/src/router/eventd/prebuilt/* $REPO/release/src/router/eventd/prebuilt/$BUILD_NAME/
 
 echo "*** Copying exceptions and special cases..."
 
 # Pre-HND
 if [ "$HND" == "" ]
 then
-	cp release/src/router/et$ARCH$SDK/prebuilt/* $REPO/release/src/router/et$ARCH$SDK/prebuilt/
-	cp release/src/router/emf$ARCH$SDK/*.o $REPO/release/src/router/emf$ARCH$SDK/
-	cp release/src/router/emf$ARCH$SDK/emfconf/prebuilt/* $REPO/release/src/router/emf$ARCH$SDK/emfconf/prebuilt/
-	cp release/src/router/emf$ARCH$SDK/igsconf/prebuilt/* $REPO/release/src/router/emf$ARCH$SDK/igsconf/prebuilt/
+	cp $GPL_ROOT/release/src/router/et$ARCH$SDK/prebuilt/* $REPO/release/src/router/et$ARCH$SDK/prebuilt/
+	cp $GPL_ROOT/release/src/router/emf$ARCH$SDK/*.o $REPO/release/src/router/emf$ARCH$SDK/
+	cp $GPL_ROOT/release/src/router/emf$ARCH$SDK/emfconf/prebuilt/* $REPO/release/src/router/emf$ARCH$SDK/emfconf/prebuilt/
+	cp $GPL_ROOT/release/src/router/emf$ARCH$SDK/igsconf/prebuilt/* $REPO/release/src/router/emf$ARCH$SDK/igsconf/prebuilt/
 fi
 
 # On AX these are in router-sysdep
 if [ "$HND" == "" ] || [ "$HND" == "_hnd" ]
 then
-	cp release/src/router/acsd$ARCH$SDK/prebuilt/* $REPO/release/src/router/acsd$ARCH$SDK/prebuilt/
-	cp release/src/router/eapd$ARCH$SDK/linux/prebuilt/* $REPO/release/src/router/eapd$ARCH$SDK/linux/prebuilt/
-	cp -a release/src/router/libupnp$ARCH$SDK/* $REPO/release/src/router/libupnp$ARCH$SDK/
-	cp release/src/router/nas$ARCH$SDK/nas/prebuilt/* $REPO/release/src/router/nas$ARCH$SDK/nas/prebuilt/
-	cp release/src/router/wlconf$ARCH$SDK/prebuilt/* $REPO/release/src/router/wlconf$ARCH$SDK/prebuilt/
-	cp release/src/router/wps$ARCH$SDK/prebuilt/* $REPO/release/src/router/wps$ARCH$SDK/prebuilt/
-	cp release/src/router/dhd_monitor/prebuilt/* $REPO/release/src/router/dhd_monitor/prebuilt/$BUILD_NAME/
+	cp $GPL_ROOT/release/src/router/acsd$ARCH$SDK/prebuilt/* $REPO/release/src/router/acsd$ARCH$SDK/prebuilt/
+	cp $GPL_ROOT/release/src/router/eapd$ARCH$SDK/linux/prebuilt/* $REPO/release/src/router/eapd$ARCH$SDK/linux/prebuilt/
+	cp -a $GPL_ROOT/release/src/router/libupnp$ARCH$SDK/* $REPO/release/src/router/libupnp$ARCH$SDK/
+	cp $GPL_ROOT/release/src/router/nas$ARCH$SDK/nas/prebuilt/* $REPO/release/src/router/nas$ARCH$SDK/nas/prebuilt/
+	cp $GPL_ROOT/release/src/router/wlconf$ARCH$SDK/prebuilt/* $REPO/release/src/router/wlconf$ARCH$SDK/prebuilt/
+	cp $GPL_ROOT/release/src/router/wps$ARCH$SDK/prebuilt/* $REPO/release/src/router/wps$ARCH$SDK/prebuilt/
+	cp $GPL_ROOT/release/src/router/dhd_monitor/prebuilt/* $REPO/release/src/router/dhd_monitor/prebuilt/$BUILD_NAME/
 fi
 
 
 # Model-specific
 if [ "$BUILD_NAME" == "RT-AC88U" ]
 then
-	cp release/src/router/rtl_bin/prebuilt/* $REPO/release/src/router/rtl_bin/prebuilt/
+	cp $GPL_ROOT/release/src/router/rtl_bin/prebuilt/* $REPO/release/src/router/rtl_bin/prebuilt/
 fi
 if [ "$BUILD_NAME" == "GT-AC2900" ] || [ "$BUILD_NAME" == "GT-AX11000" ] || [ "$BUILD_NAME" == "GT-AXE11000" ] || [ "$BUILD_NAME" == "GT-AX6000" ] || [ "$BUILD_NAME" == "GT-AXE16000" ] || [ "$BUILD_NAME" == "GT-AX11000_PRO" ]
 then
-        cp release/src/router/aura_sw/prebuild/* $REPO/release/src/router/aura_sw/prebuild/$BUILD_NAME/
+        cp $GPL_ROOT/release/src/router/aura_sw/prebuild/* $REPO/release/src/router/aura_sw/prebuild/$BUILD_NAME/
 fi
 
 # Anything newer than SDK6
 if [ "$SDK" != "" ]
 then
-	cp release/src/router/bsd/prebuilt/* $REPO/release/src/router/bsd/prebuilt/$BUILD_NAME/
-	cp release/src/router/dhd/prebuilt/* $REPO/release/src/router/dhd/prebuilt/$BUILD_NAME/
+	cp $GPL_ROOT/release/src/router/bsd/prebuilt/* $REPO/release/src/router/bsd/prebuilt/$BUILD_NAME/
+	cp $GPL_ROOT/release/src/router/dhd/prebuilt/* $REPO/release/src/router/dhd/prebuilt/$BUILD_NAME/
 fi
 
 # Cleanup

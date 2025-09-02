@@ -1,4 +1,4 @@
-CC	= gcc
+CC	= arm-brcm-linux-uclibcgnueabi-gcc
 COPTS	= -O2 -g
 CFLAGS	= $(COPTS) -I.. -I../../include -fPIC
 LDFLAGS	= -shared

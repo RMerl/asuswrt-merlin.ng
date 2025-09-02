@@ -1,8 +1,10 @@
-# host-cpu-c-abi.m4 serial 17
+# host-cpu-c-abi.m4
+# serial 18
 dnl Copyright (C) 2002-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl From Bruno Haible and Sam Steingold.
 
@@ -35,7 +37,7 @@ dnl * The same canonical name is used for different endiannesses. You can
 dnl   determine the endianness through preprocessor symbols:
 dnl   - 'arm': test __ARMEL__.
 dnl   - 'mips', 'mipsn32', 'mips64': test _MIPSEB vs. _MIPSEL.
-dnl   - 'powerpc64': test _BIG_ENDIAN vs. _LITTLE_ENDIAN.
+dnl   - 'powerpc64': test __BIG_ENDIAN__ vs. __LITTLE_ENDIAN__.
 dnl * The same name 'i386' is used for CPUs of type i386, i486, i586
 dnl   (Pentium), AMD K7, Pentium II, Pentium IV, etc., because
 dnl   - Instructions that do not exist on all of these CPUs (cmpxchg,

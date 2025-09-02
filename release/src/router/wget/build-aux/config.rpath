@@ -1,29 +1,96 @@
 #! /bin/sh
 # Output a system dependent set of variables, describing how to set the
-# run time search path of shared libraries in an executable.
+# run time search path of shared libraries in a binary (executable or
+# shared library).
 #
-#   Copyright 1996-2023 Free Software Foundation, Inc.
+#   Copyright 1996-2024 Free Software Foundation, Inc.
 #   Taken from GNU libtool, 2001
 #   Originally by Gordon Matzigkeit <gord@gnu.ai.mit.edu>, 1996
 #
 #   This file is free software; the Free Software Foundation gives
 #   unlimited permission to copy and/or distribute it, with or without
 #   modifications, as long as this notice is preserved.
-#
-# The first argument passed to this file is the canonical host specification,
-#    CPU_TYPE-MANUFACTURER-OPERATING_SYSTEM
-# or
-#    CPU_TYPE-MANUFACTURER-KERNEL-OPERATING_SYSTEM
-# The environment variables CC, GCC, LDFLAGS, LD, with_gnu_ld
-# should be set by the caller.
-#
-# The set of defined variables is at the end of this script.
 
 # Known limitations:
 # - On IRIX 6.5 with CC="cc", the run time search patch must not be longer
 #   than 256 bytes, otherwise the compiler driver will dump core. The only
 #   known workaround is to choose shorter directory names for the build
 #   directory and/or the installation directory.
+
+# func_usage
+# outputs to stdout the --help usage message.
+func_usage ()
+{
+  echo "\
+Usage: config.rpath [OPTION] HOST
+
+Prints shell variable assignments that describe how to hardcode a directory
+for the lookup of shared libraries into a binary (executable or shared library).
+
+The first argument passed to this file is the canonical host specification,
+   CPU_TYPE-MANUFACTURER-OPERATING_SYSTEM
+or
+   CPU_TYPE-MANUFACTURER-KERNEL-OPERATING_SYSTEM
+
+The environment variables CC, GCC, LDFLAGS, LD, with_gnu_ld
+should be set by the caller.
+
+The set of defined variables is at the end of this script.
+
+Options:
+      --help           print this help and exit
+      --version        print version information and exit
+
+Send patches and bug reports to <bug-gnulib@gnu.org>."
+}
+
+# func_version
+# outputs to stdout the --version message.
+func_version ()
+{
+  echo "config.rpath (GNU gnulib, module havelib)"
+  echo "Copyright (C) 2024 Free Software Foundation, Inc.
+License: All-Permissive.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law."
+  echo
+  printf 'Written by %s.\n' "Bruno Haible"
+}
+
+# func_fatal_error message
+# outputs to stderr a fatal error message, and terminates the program.
+func_fatal_error ()
+{
+  echo "config.rpath: *** $1" 1>&2
+  echo "config.rpath: *** Stop." 1>&2
+  exit 1
+}
+
+# Command-line option processing.
+while test $# -gt 0; do
+  case "$1" in
+    --help | --hel | --he | --h )
+      func_usage
+      exit 0 ;;
+   --version | --versio | --versi | --vers | --ver | --ve | --v )
+      func_version
+      exit 0 ;;
+    -- )      # Stop option processing
+      shift; break ;;
+    -* )
+      func_fatal_error "unrecognized option: $1"
+      ;;
+    * )
+      break ;;
+  esac
+done
+
+if test $# -gt 1; then
+  func_fatal_error "too many arguments"
+fi
+if test $# -lt 1; then
+  func_fatal_error "too few arguments"
+fi
 
 # All known linkers require a '.a' archive for static linking (except MSVC,
 # which needs '.lib').

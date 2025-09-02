@@ -1,14 +1,14 @@
 # Makefile for PO directory in any package using GNU gettext.
 # Copyright (C) 1995-2000 Ulrich Drepper <drepper@gnu.ai.mit.edu>
-# Copyright (C) 2000-2023 Free Software Foundation, Inc.
+# Copyright (C) 2000-2024 Free Software Foundation, Inc.
 #
 # Copying and distribution of this file, with or without modification,
 # are permitted in any medium without royalty provided the copyright
 # notice and this notice are preserved.  This file is offered as-is,
 # without any warranty.
 #
-# Origin: gettext-0.22
-GETTEXT_MACRO_VERSION = 0.20
+# Origin: gettext-0.23
+GETTEXT_MACRO_VERSION = 0.22
 
 PACKAGE = @PACKAGE@
 VERSION = @VERSION@
@@ -68,7 +68,7 @@ POFILES = @POFILES@
 GMOFILES = @GMOFILES@
 UPDATEPOFILES = @UPDATEPOFILES@
 DUMMYPOFILES = @DUMMYPOFILES@
-DISTFILES.common = Makefile.in.in remove-potcdate.sin \
+DISTFILES.common = Makefile.in.in remove-potcdate.sed \
 $(DISTFILES.common.extra1) $(DISTFILES.common.extra2) $(DISTFILES.common.extra3)
 DISTFILES = $(DISTFILES.common) Makevars POTFILES.in \
 $(POFILES) $(GMOFILES) \
@@ -94,7 +94,7 @@ all: all-@USE_NLS@
 
 
 .SUFFIXES:
-.SUFFIXES: .po .gmo .sed .sin .nop .po-create .po-update
+.SUFFIXES: .po .gmo .sed .nop .po-create .po-update
 
 # The .pot file, stamp-po, .po files, and .gmo files appear in release tarballs.
 # The GNU Coding Standards say in
@@ -113,6 +113,7 @@ all: all-@USE_NLS@
 $(GMOFILES): $(srcdir)/$(DOMAIN).pot
 .po.gmo:
 	@lang=`echo $* | sed -e 's,.*/,,'`; \
+	if test "$(PACKAGE)" = "gettext-tools" && test "$(CROSS_COMPILING)" != "yes"; then PATH=`pwd`/../src:$$PATH; fi; \
 	test "$(srcdir)" = . && cdcmd="" || cdcmd="cd $(srcdir) && "; \
 	echo "$${cdcmd}rm -f $${lang}.gmo && $(MSGMERGE) $(MSGMERGE_FOR_MSGFMT_OPTION) -o $${lang}.1po $${lang}.po $(DOMAIN).pot && $(GMSGFMT) -c --statistics --verbose -o $${lang}.gmo $${lang}.1po && rm -f $${lang}.1po"; \
 	cd $(srcdir) && \
@@ -121,10 +122,6 @@ $(GMOFILES): $(srcdir)/$(DOMAIN).pot
 	$(GMSGFMT) -c --statistics --verbose -o t-$${lang}.gmo $${lang}.1po && \
 	mv t-$${lang}.gmo $${lang}.gmo && \
 	rm -f $${lang}.1po
-
-.sin.sed:
-	sed -e '/^#/d' $< > t-$@
-	mv t-$@ $@
 
 
 all-yes: $(srcdir)/stamp-po
@@ -170,7 +167,7 @@ $(srcdir)/stamp-po: $(srcdir)/$(DOMAIN).pot
 # The determination of whether the package xyz is a GNU one is based on the
 # heuristic whether some file in the top level directory mentions "GNU xyz".
 # If GNU 'find' is available, we avoid grepping through monster files.
-$(DOMAIN).pot-update: $(POTFILES) $(srcdir)/POTFILES.in remove-potcdate.sed
+$(DOMAIN).pot-update: $(POTFILES) $(srcdir)/POTFILES.in
 	package_gnu="$(PACKAGE_GNU)"; \
 	test -n "$$package_gnu" || { \
 	  if { if (LC_ALL=C find --version) 2>/dev/null | grep GNU >/dev/null; then \
@@ -222,8 +219,8 @@ $(DOMAIN).pot-update: $(POTFILES) $(srcdir)/POTFILES.in remove-potcdate.sed
 	    || exit 1; \
 	  fi; \
 	  if test -f $(srcdir)/$(DOMAIN).pot; then \
-	    sed -f remove-potcdate.sed < $(srcdir)/$(DOMAIN).pot > $(DOMAIN).1po && \
-	    sed -f remove-potcdate.sed < $(DOMAIN).po > $(DOMAIN).2po && \
+	    sed -f $(srcdir)/remove-potcdate.sed < $(srcdir)/$(DOMAIN).pot > $(DOMAIN).1po && \
+	    sed -f $(srcdir)/remove-potcdate.sed < $(DOMAIN).po > $(DOMAIN).2po && \
 	    if cmp $(DOMAIN).1po $(DOMAIN).2po >/dev/null 2>&1; then \
 	      rm -f $(DOMAIN).1po $(DOMAIN).2po $(DOMAIN).po; \
 	    else \
@@ -247,6 +244,7 @@ $(POFILES): $(POFILESDEPS)
 	@test -f $(srcdir)/$(DOMAIN).pot || $(MAKE) $(srcdir)/$(DOMAIN).pot
 	@lang=`echo $@ | sed -e 's,.*/,,' -e 's/\.po$$//'`; \
 	if test -f "$(srcdir)/$${lang}.po"; then \
+	  if test "$(PACKAGE)" = "gettext-tools" && test "$(CROSS_COMPILING)" != "yes"; then PATH=`pwd`/../src:$$PATH; fi; \
 	  test "$(srcdir)" = . && cdcmd="" || cdcmd="cd $(srcdir) && "; \
 	  echo "$${cdcmd}$(MSGMERGE_UPDATE) --quiet $(MSGMERGE_OPTIONS) --lang=$${lang} --previous $${lang}.po $(DOMAIN).pot"; \
 	  cd $(srcdir) \
@@ -396,7 +394,6 @@ info dvi ps pdf html tags TAGS ctags CTAGS ID:
 install-dvi install-ps install-pdf install-html:
 
 mostlyclean:
-	rm -f remove-potcdate.sed
 	rm -f $(srcdir)/stamp-poT
 	rm -f core core.* $(DOMAIN).po $(DOMAIN).1po $(DOMAIN).2po *.new.po
 	rm -fr *.o
@@ -512,3 +509,9 @@ force:
 # Tell versions [3.59,3.63) of GNU make not to export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
+
+# This Makefile contains rules which don't work with parallel make,
+# namely dist2.
+# See <https://lists.gnu.org/archive/html/bug-gettext/2022-06/msg00022.html>.
+# So, turn off parallel execution in this Makefile.
+.NOTPARALLEL:

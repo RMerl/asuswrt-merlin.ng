@@ -1,7 +1,7 @@
 /* lt_error.h -- error propagation interface
 
-   Copyright (C) 1999-2001, 2004, 2007, 2011-2015 Free Software
-   Foundation, Inc.
+   Copyright (C) 1999-2001, 2004, 2007, 2011-2019, 2021-2024 Free
+   Software Foundation, Inc.
    Written by Thomas Tanner, 1999
 
    NOTE: The canonical source of this file is maintained with the
@@ -23,10 +23,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public
-License along with GNU Libltdl; see the file COPYING.LIB.  If not, a
-copy can be downloaded from  http://www.gnu.org/licenses/lgpl.html,
-or obtained by writing to the Free Software Foundation, Inc.,
-51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+License along with GNU Libltdl.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 /* Only include this header file once. */
@@ -41,7 +38,7 @@ LT_BEGIN_C_DECLS
    this way allows us to expand the macro in different contexts with
    confidence that the enumeration of symbolic names will map correctly
    onto the table of error strings.  \0 is appended to the strings to
-   expilicitely initialize the string terminator. */
+   explicitly initialize the string terminator. */
 #define lt_dlerror_table						\
     LT_ERROR(UNKNOWN,		    "unknown error\0")			\
     LT_ERROR(DLOPEN_NOT_SUPPORTED,  "dlopen support not available\0")	\

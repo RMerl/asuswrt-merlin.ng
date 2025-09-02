@@ -1,4 +1,4 @@
-This is wget.info, produced by makeinfo version 7.1 from wget.texi.
+This is wget.info, produced by makeinfo version 7.2 from wget.texi.
 
 This file documents the GNU Wget utility for downloading network data.
 
@@ -4742,12 +4742,12 @@ Concept Index
  [index ]
 * Menu:
 
+* #wget:                                 Internet Relay Chat. (line   6)
 * .css extension:                        HTTP Options.        (line  10)
 * .html extension:                       HTTP Options.        (line  10)
 * .listing files, removing:              FTP Options.         (line  21)
 * .netrc:                                Startup File.        (line   6)
 * .wgetrc:                               Startup File.        (line   6)
-* #wget:                                 Internet Relay Chat. (line   6)
 * accept directories:                    Directory-Based Limits.
                                                               (line  17)
 * accept suffixes:                       Types of Files.      (line  15)
@@ -5030,7 +5030,6 @@ Concept Index
 * Windows file names:                    Download Options.    (line 434)
 * xattr:                                 Logging and Input File Options.
                                                               (line  97)
-
 
 
 Tag Table:

@@ -30,9 +30,9 @@ FindVarMethod var_wl5gMacFilterTable;
     WriteMethod write_passphraseWl2g;
     WriteMethod write_wpaEncryptionWl2g;
     WriteMethod write_wpaPreSharedKeyWl2g;
-//#if 0/*For Protected Management Frames, only enable for WPA2-Personal and WPA2-Enterprise, ARM platform.*/
+#if 0/*For Protected Management Frames, only enable for WPA2-Personal and WPA2-Enterprise, ARM platform.*/
     WriteMethod write_protectedManagementFrameWl2g;
-//#endif
+#endif
     WriteMethod write_keyRotationIntervalWl2g;
     WriteMethod write_enableWPSWl2g;
     WriteMethod write_switchFrequencyTo5g;
@@ -84,9 +84,9 @@ FindVarMethod var_wl5gMacFilterTable;
     WriteMethod write_passphraseWl5g;
     WriteMethod write_wpaEncryptionWl5g;
     WriteMethod write_wpaPreSharedKeyWl5g;
-//#if 0/*For Protected Management Frames, only enable for WPA2-Personal and WPA2-Enterprise, ARM platform.*/
+#if 0/*For Protected Management Frames, only enable for WPA2-Personal and WPA2-Enterprise, ARM platform.*/
     WriteMethod write_protectedManagementFrameWl5g;
-//#endif
+#endif
     WriteMethod write_keyRotationIntervalWl5g;
     WriteMethod write_enableWPSWl5g;
     WriteMethod write_switchFrequencyTo2g;

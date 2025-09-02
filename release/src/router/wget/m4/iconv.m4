@@ -1,9 +1,11 @@
-# iconv.m4 serial 27
+# iconv.m4
+# serial 28
 dnl Copyright (C) 2000-2002, 2007-2014, 2016-2024 Free Software Foundation,
 dnl Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl From Bruno Haible.
 
@@ -74,7 +76,7 @@ AC_DEFUN([AM_ICONV_LINK],
   if test "$am_cv_func_iconv" = yes; then
     AC_CACHE_CHECK([for working iconv], [am_cv_func_iconv_works], [
       dnl This tests against bugs in AIX 5.1, AIX 6.1..7.1, HP-UX 11.11,
-      dnl Solaris 10.
+      dnl Solaris 10, macOS 14.4.
       gl_saved_LIBS="$LIBS"
       if test $am_cv_lib_iconv = yes; then
         LIBS="$LIBS $LIBICONV"
@@ -113,6 +115,35 @@ AC_DEFUN([AM_ICONV_LINK],
         iconv_close (cd_utf8_to_88591);
       }
   }
+  /* Test against macOS 14.4 bug: Failures are not distinguishable from
+     successful returns.
+     POSIX:2018 says: "The iconv() function shall ... return the number of
+     non-identical conversions performed."
+     But here, the conversion always does transliteration (the suffixes
+     "//TRANSLIT" and "//IGNORE" have no effect, nor does iconvctl()) and
+     does not report when it does a non-identical conversion.  */
+  {
+    iconv_t cd_utf8_to_88591 = iconv_open ("ISO-8859-1", "UTF-8");
+    if (cd_utf8_to_88591 != (iconv_t)(-1))
+      {
+        static ICONV_CONST char input[] = "\305\202"; /* LATIN SMALL LETTER L WITH STROKE */
+        char buf[10];
+        ICONV_CONST char *inptr = input;
+        size_t inbytesleft = strlen (input);
+        char *outptr = buf;
+        size_t outbytesleft = sizeof (buf);
+        size_t res = iconv (cd_utf8_to_88591,
+                            &inptr, &inbytesleft,
+                            &outptr, &outbytesleft);
+        /* Here:
+           With glibc, GNU libiconv (including macOS up to 13): res == (size_t)-1, errno == EILSEQ.
+           With musl libc, NetBSD 10, Solaris 11: res == 1.
+           With macOS 14.4: res == 0, output is "l".  */
+        if (res == 0)
+          result |= 2;
+        iconv_close (cd_utf8_to_88591);
+      }
+  }
   /* Test against Solaris 10 bug: Failures are not distinguishable from
      successful returns.  */
   {
@@ -129,7 +160,7 @@ AC_DEFUN([AM_ICONV_LINK],
                             &inptr, &inbytesleft,
                             &outptr, &outbytesleft);
         if (res == 0)
-          result |= 2;
+          result |= 4;
         iconv_close (cd_ascii_to_88591);
       }
   }
@@ -148,7 +179,7 @@ AC_DEFUN([AM_ICONV_LINK],
                             &inptr, &inbytesleft,
                             &outptr, &outbytesleft);
         if (res != (size_t)(-1) || outptr - buf > 1 || buf[1] != (char)0xAD)
-          result |= 4;
+          result |= 8;
         iconv_close (cd_88591_to_utf8);
       }
   }
@@ -168,7 +199,7 @@ AC_DEFUN([AM_ICONV_LINK],
                             &inptr, &inbytesleft,
                             &outptr, &outbytesleft);
         if ((int)res > 0)
-          result |= 8;
+          result |= 16;
         iconv_close (cd_88591_to_utf8);
       }
   }
@@ -186,7 +217,7 @@ AC_DEFUN([AM_ICONV_LINK],
     iconv_t cd4 = iconv_open ("utf8", "eucJP");
     if (cd1 == (iconv_t)(-1) && cd2 == (iconv_t)(-1)
         && cd3 == (iconv_t)(-1) && cd4 == (iconv_t)(-1))
-      result |= 16;
+      result |= 32;
     if (cd1 != (iconv_t)(-1))
       iconv_close (cd1);
     if (cd2 != (iconv_t)(-1))

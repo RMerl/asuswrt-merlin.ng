@@ -1,8 +1,10 @@
-# lib-ld.m4 serial 13
+# lib-ld.m4
+# serial 13
 dnl Copyright (C) 1996-2003, 2009-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl Subroutines of libtool.m4,
 dnl with replacements s/_*LT_PATH/AC_LIB_PROG/ and s/lt_/acl_/ to avoid

@@ -1,7 +1,7 @@
 ## ltdl.mk -- includable Makefile snippet
 ##
-##   Copyright (C) 2003-2005, 2007, 2011-2015 Free Software Foundation,
-##   Inc.
+##   Copyright (C) 2003-2005, 2007, 2011-2019, 2021-2024 Free Software
+##   Foundation, Inc.
 ##   Written by Gary V. Vaughan, 2003
 ##
 ##   NOTE: The canonical source of this file is maintained with the
@@ -23,10 +23,7 @@
 ## GNU Lesser General Public License for more details.
 ##
 ## You should have received a copy of the GNU LesserGeneral Public
-## License along with GNU Libltdl; see the file COPYING.LIB.  If not, a
-## copy can be downloaded from http://www.gnu.org/licenses/lgpl.html,
-## or obtained by writing to the Free Software Foundation, Inc.,
-## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+## License along with GNU Libltdl.  If not, see <https://www.gnu.org/licenses/>.
 #####
 
 ## DO NOT REMOVE THIS LINE -- make depends on it
@@ -38,7 +35,7 @@ AM_CPPFLAGS	       += -DLT_CONFIG_H='<$(LT_CONFIG_H)>' \
 			  -I$(srcdir)/libltdl -Ilibltdl/libltdl \
 			  -I$(srcdir)/libltdl/libltdl
 AM_LDFLAGS	       += -no-undefined
-LTDL_VERSION_INFO	= -version-info 10:1:3
+LTDL_VERSION_INFO	= -version-info 10:3:3
 
 noinst_LTLIBRARIES	+= $(LT_DLLOADERS)
 
@@ -134,7 +131,9 @@ EXTRA_DIST	       += libltdl/COPYING.LIB \
 ## Gnulib Makefile.am snippets ##
 ## --------------------------- ##
 
+if LTARGZH_EXISTS
 BUILT_SOURCES	+= libltdl/libltdl/$(LT_ARGZ_H)
+endif
 EXTRA_DIST	+= libltdl/libltdl/lt__argz_.h \
 		   libltdl/lt__argz.c
 

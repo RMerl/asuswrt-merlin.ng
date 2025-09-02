@@ -1,8 +1,10 @@
-# lib-prefix.m4 serial 22
+# lib-prefix.m4
+# serial 23
 dnl Copyright (C) 2001-2005, 2008-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl From Bruno Haible.
 
@@ -174,7 +176,7 @@ AC_DEFUN([AC_LIB_PREPARE_MULTILIB],
 
   AC_CACHE_CHECK([for ELF binary format], [gl_cv_elf],
     [AC_EGREP_CPP([Extensible Linking Format],
-       [#if defined __ELF__ || (defined __linux__ && defined __EDG__)
+       [#if defined __ELF__ || (defined __linux__ && (defined __EDG__ || defined __SUNPRO_C))
         Extensible Linking Format
         #endif
        ],

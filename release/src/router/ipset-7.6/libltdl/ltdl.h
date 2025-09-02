@@ -1,7 +1,7 @@
 /* ltdl.h -- generic dlopen functions
 
-   Copyright (C) 1998-2000, 2004-2005, 2007-2008, 2011-2015 Free
-   Software Foundation, Inc.
+   Copyright (C) 1998-2000, 2004-2005, 2007-2008, 2011-2019, 2021-2024
+   Free Software Foundation, Inc.
    Written by Thomas Tanner, 1998
 
    NOTE: The canonical source of this file is maintained with the
@@ -23,10 +23,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public
-License along with GNU Libltdl; see the file COPYING.LIB.  If not, a
-copy can be downloaded from  http://www.gnu.org/licenses/lgpl.html,
-or obtained by writing to the Free Software Foundation, Inc.,
-51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+License along with GNU Libltdl.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 /* Only include this header file once. */
@@ -43,7 +40,6 @@ LT_BEGIN_C_DECLS
 /* LT_STRLEN can be used safely on NULL pointers.  */
 #define LT_STRLEN(s)	(((s) && (s)[0]) ? strlen (s) : 0)
 
-
 /* --- DYNAMIC MODULE LOADING API --- */
 
 
@@ -110,7 +106,6 @@ extern LT_DLSYM_CONST lt_dlsymlist lt__PROGRAM__LTX_preloaded_symbols[];
 
 
 
-
 /* --- MODULE INFORMATION --- */
 
 

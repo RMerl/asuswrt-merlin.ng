@@ -547,12 +547,12 @@ var_wireless(struct variable *vp,
 			return ( u_char * ) tmpstr;	
         }
         return NULL;
-//#if 0/*For Protected Management Frames, only enable for WPA2-Personal and WPA2-Enterprise, ARM platform.*/
+#if 0/*For Protected Management Frames, only enable for WPA2-Personal and WPA2-Enterprise, ARM platform.*/
     case PROTECTEDMANAGEMENTFRAMEWL2G:
         *write_method = write_protectedManagementFrameWl2g;
 
         return NULL;
-//#endif
+#endif
     case KEYROTATIONINTERVALWL2G:
         *write_method = write_keyRotationIntervalWl2g;
 		if(nmp_safe_get("wl0_wpa_gtk_rekey") != NULL)
@@ -1036,7 +1036,7 @@ var_wireless(struct variable *vp,
         *write_method = write_wirelessModeWl5g;
         if(nmp_safe_get("wl1_nmode_x") != NULL)
       	{
-			tmpval = nmp_get_int("wl1_nmode_x");/* 0: Auto 1: N Only  2: Legacy*/
+			tmpval = nmp_get_int("wl1_nmode_x");/* 0: Auto  1: N Only  2: Legacy  8:N/AC mixed */
 			*var_len = sizeof( long );
 			return ( u_char * ) &tmpval;
       	}	
@@ -1174,12 +1174,12 @@ var_wireless(struct variable *vp,
 			return ( u_char * ) tmpstr;	
         }
         return NULL;
-//#if 0 /*For Protected Management Frames, only enable for WPA2-Personal and WPA2-Enterprise, ARM platform.*/
+#if 0 /*For Protected Management Frames, only enable for WPA2-Personal and WPA2-Enterprise, ARM platform.*/
     case PROTECTEDMANAGEMENTFRAMEWL5G:
         *write_method = write_protectedManagementFrameWl5g;
 
         return NULL;
-//#endif
+#endif
     case KEYROTATIONINTERVALWL5G:
         *write_method = write_keyRotationIntervalWl5g;
 		if(nmp_safe_get("wl1_wpa_gtk_rekey") != NULL)
@@ -3055,7 +3055,7 @@ write_passphraseWl2g(int      action,
              strncpy(string, (u_char *)var_val, var_val_len); 
              string[var_val_len] = '\0';
              nmp_set("wl0_phrase_x", string);
-             generateWepKey(0, string);	
+             generateWepKey("0", string);	
           break;
 
         case UNDO:
@@ -3214,7 +3214,7 @@ write_wpaPreSharedKeyWl2g(int      action,
     return SNMP_ERR_NOERROR;
 }
 
-//#if 0 /*For Protected Management Frames, only enable for WPA2-Personal and WPA2-Enterprise, ARM platform.*/
+#if 0 /*For Protected Management Frames, only enable for WPA2-Personal and WPA2-Enterprise, ARM platform.*/
 int
 write_protectedManagementFrameWl2g(int      action,
             u_char   *var_val,
@@ -3270,7 +3270,7 @@ write_protectedManagementFrameWl2g(int      action,
     }
     return SNMP_ERR_NOERROR;
 }
-//#endif
+#endif
 
 
 int
@@ -6055,7 +6055,7 @@ write_wirelessModeWl5g(int      action,
               * and you have just been asked to do something with it.
               * Note that anything done here must be reversable in the UNDO case
               */
-             if(value >= 0 && value <= 2){
+             if(value >= 0 && value <= 2 || value == 8){
 				nmp_set_int("wl1_nmode_x", value);
              }
           break;
@@ -6563,7 +6563,7 @@ write_passphraseWl5g(int      action,
              strncpy(string, (u_char *)var_val, var_val_len); 
              string[var_val_len] = '\0';
              nmp_set("wl1_phrase_x", string);
-             generateWepKey(1, string);	
+             generateWepKey("1", string);	
           break;
 
         case UNDO:
@@ -6722,7 +6722,7 @@ write_wpaPreSharedKeyWl5g(int      action,
     return SNMP_ERR_NOERROR;
 }
 
-//#if 0 /*For Protected Management Frames, only enable for WPA2-Personal and WPA2-Enterprise, ARM platform.*/
+#if 0 /*For Protected Management Frames, only enable for WPA2-Personal and WPA2-Enterprise, ARM platform.*/
 int
 write_protectedManagementFrameWl5g(int      action,
             u_char   *var_val,
@@ -6778,7 +6778,7 @@ write_protectedManagementFrameWl5g(int      action,
     }
     return SNMP_ERR_NOERROR;
 }
-//#endif
+#endif
 
 
 int

@@ -1,9 +1,9 @@
 #!/bin/sh
 # Get modification time of a file or directory and pretty-print it.
 
-scriptversion=2018-03-07.03; # UTC
+scriptversion=2024-06-19.01; # UTC
 
-# Copyright (C) 1995-2021 Free Software Foundation, Inc.
+# Copyright (C) 1995-2024 Free Software Foundation, Inc.
 # written by Ulrich Drepper <drepper@gnu.ai.mit.edu>, June 1995
 #
 # This program is free software; you can redistribute it and/or modify
@@ -50,11 +50,13 @@ Pretty-print the modification day of FILE, in the format:
 1 January 1970
 
 Report bugs to <bug-automake@gnu.org>.
+GNU Automake home page: <https://www.gnu.org/software/automake/>.
+General help using GNU software: <https://www.gnu.org/gethelp/>.
 EOF
     exit $?
     ;;
   -v | --v*)
-    echo "mdate-sh $scriptversion"
+    echo "mdate-sh (GNU Automake) $scriptversion"
     exit $?
     ;;
 esac

@@ -1,3 +1,13 @@
+%% A header that gets inserted into message catalogs named en@boldquot.po.
+%%
+%% Copyright (C) 2001 Free Software Foundation, Inc.
+%% This file is free software; the Free Software Foundation
+%% gives unlimited permission to copy and/or distribute it,
+%% with or without modifications, as long as this notice is preserved.
+%% This file is offered as-is, without any warranty.
+%%
+%% Written by Bruno Haible <bruno@clisp.org>, 2001.
+%%
 # All this catalog "translates" are quotation characters.
 # The msgids must be ASCII and therefore cannot contain real quotation
 # characters, only substitutes like grave accent (0x60), apostrophe (0x27)

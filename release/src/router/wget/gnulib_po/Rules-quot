@@ -1,11 +1,14 @@
 # Special Makefile rules for English message catalogs with quotation marks.
 #
-# Copyright (C) 2001-2017 Free Software Foundation, Inc.
-# This file, Rules-quot, and its auxiliary files (listed under
-# DISTFILES.common.extra1) are free software; the Free Software Foundation
-# gives unlimited permission to use, copy, distribute, and modify them.
+# Copyright (C) 2001-2024 Free Software Foundation, Inc.
+# This file is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+# This file is offered as-is, without any warranty.
+#
+# Written by Bruno Haible <bruno@clisp.org>, 2001.
 
-DISTFILES.common.extra1 = quot.sed boldquot.sed en@quot.header en@boldquot.header insert-header.sin Rules-quot
+DISTFILES.common.extra1 = quot.sed boldquot.sed en@quot.header en@boldquot.header insert-header.sed Rules-quot
 
 .SUFFIXES: .insert-header .po-update-en
 
@@ -26,7 +29,8 @@ en@boldquot.po-update: en@boldquot.po-update-en
 	LC_ALL=C; export LC_ALL; \
 	cd $(srcdir); \
 	if $(MSGINIT) $(MSGINIT_OPTIONS) -i $(DOMAIN).pot --no-translator -l $$lang -o - 2>/dev/null \
-	   | $(SED) -f $$tmpdir/$$lang.insert-header | $(MSGCONV) -t UTF-8 | \
+	   | $(SED) -f $$tmpdir/$$lang.insert-header | $(SED) -e '/^%%/d' \
+	   | $(MSGCONV) -t UTF-8 | \
 	   { case `$(MSGFILTER) --version | sed 1q | sed -e 's,^[^0-9]*,,'` in \
 	     '' | 0.[0-9] | 0.[0-9].* | 0.1[0-8] | 0.1[0-8].*) \
 	       $(MSGFILTER) $(SED) -f `echo $$lang | sed -e 's/.*@//'`.sed \
@@ -51,11 +55,11 @@ en@boldquot.po-update: en@boldquot.po-update-en
 	  rm -f $$tmpdir/$$lang.new.po; \
 	fi
 
-en@quot.insert-header: insert-header.sin
-	sed -e '/^#/d' -e 's/HEADER/en@quot.header/g' $(srcdir)/insert-header.sin > en@quot.insert-header
+en@quot.insert-header: insert-header.sed
+	sed -e 's/HEADER/en@quot.header/g' $(srcdir)/insert-header.sed > en@quot.insert-header
 
-en@boldquot.insert-header: insert-header.sin
-	sed -e '/^#/d' -e 's/HEADER/en@boldquot.header/g' $(srcdir)/insert-header.sin > en@boldquot.insert-header
+en@boldquot.insert-header: insert-header.sed
+	sed -e 's/HEADER/en@boldquot.header/g' $(srcdir)/insert-header.sed > en@boldquot.insert-header
 
 mostlyclean: mostlyclean-quot
 mostlyclean-quot:

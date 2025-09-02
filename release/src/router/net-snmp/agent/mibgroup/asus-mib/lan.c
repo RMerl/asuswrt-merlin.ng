@@ -679,10 +679,20 @@ var_lan(struct variable *vp,
 			if(nmp_safe_get("ctf_disable_force") != NULL)
 			{
 				tmpval = nmp_get_int("ctf_disable_force");
-				if(tmpval == 1) /* disable */
-					tmpval = 2;
-				else if(tmpval == 0) /* enable */
-					tmpval = 1;
+				if(tmpval == 0) {	/* enable */
+					if(!nmp_safe_get("ctf_fa_mode"))	// chip not support ctf-L2
+						tmpval = 2;
+					else {
+						tmpval = nmp_get_int("ctf_fa_mode");
+						if(tmpval == 0)
+							tmpval = 2;		// ctf-L1
+						else if(tmpval == 2)
+							tmpval = 3;		// ctf-L2
+						else
+							return NULL;
+					}
+				}	
+				/* tmpval=1 ==> disable(1) */
 		      		*var_len = sizeof( long );
 				return ( u_char * ) &tmpval;
 			}
@@ -3171,11 +3181,21 @@ write_enableNATAccelerator(int      action,
               * and you have just been asked to do something with it.
               * Note that anything done here must be reversable in the UNDO case
               */
-             if(value >= 1 && value <= 2) {
-             	if(value == 1)
-			nmp_set("ctf_disable_force", "0");
-             	else if(value == 2)
+             if(value >= 1 && value <= 3) {
+             	if(value == 1) {	// disable ctf
 			nmp_set("ctf_disable_force", "1");
+			if(nmp_safe_get("ctf_fa_mode"))
+				nmp_set("ctf_fa_mode", "0");
+             	} else if(value == 2) {	// ctf-L1
+			nmp_set("ctf_disable_force", "0");
+			if(nmp_safe_get("ctf_fa_mode"))
+				nmp_set("ctf_fa_mode", "0");
+             	} else if(value == 3) {	// ctf-L2
+			if(!nmp_safe_get("ctf_fa_mode"))	// chip not support ctf-L2
+              			return SNMP_ERR_WRONGVALUE;
+			nmp_set("ctf_disable_force", "0");
+			nmp_set("ctf_fa_mode", "2");
+		}
              }
           break;
 

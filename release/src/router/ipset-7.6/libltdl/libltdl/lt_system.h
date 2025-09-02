@@ -1,6 +1,7 @@
 /* lt_system.h -- system portability abstraction layer
 
-   Copyright (C) 2004, 2007, 2010-2015 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2007, 2010-2019, 2021-2024 Free Software
+   Foundation, Inc.
    Written by Gary V. Vaughan, 2004
 
    NOTE: The canonical source of this file is maintained with the
@@ -22,10 +23,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public
-License along with GNU Libltdl; see the file COPYING.LIB.  If not, a
-copy can be downloaded from  http://www.gnu.org/licenses/lgpl.html,
-or obtained by writing to the Free Software Foundation, Inc.,
-51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+License along with GNU Libltdl.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #if !defined LT_SYSTEM_H

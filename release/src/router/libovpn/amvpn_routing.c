@@ -775,7 +775,7 @@ void wgc_set_exclusive_dns(int unit) {
 
 void amvpn_clear_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifname) {
 	int prio, verb = 3;
-	char buffer[256], prio_str[6];
+	char buffer[256];
 
 	if (proto == VPNDIR_PROTO_OPENVPN) {
 		prio = VPNDIR_PRIO_KS_OPENVPN + unit - 1;

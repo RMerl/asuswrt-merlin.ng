@@ -8,7 +8,7 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<title><#Web_Title#> - Blocking Page</title>  
+<title>Blocking Page</title>
 <script type="text/JavaScript" src="/js/jquery.js"></script>                       
 <style>
 body{
@@ -436,7 +436,7 @@ function show_information(){
 			</div>
 			<div id="page_title" class="div_td title_text"></div>
 		</div>		
-		<div class="prod_madelName"><#Web_Title2#></div>
+		<div class="prod_madelName"></div>
 		
 		<div id="main_reason" class="p1 title_gap"><#block_DetailInfo#></div>
 		<div ></div>	

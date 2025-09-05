@@ -8,7 +8,6 @@
 #include <bcmendian.h>
 #include <bcmnvram.h>
 #include <wlutils.h>
-#include "utils.h"
 #include "shutils.h"
 #include "shared.h"
 #ifdef RTCONFIG_HND_ROUTER_AX

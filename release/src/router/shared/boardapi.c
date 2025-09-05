@@ -9,7 +9,6 @@
 #include <linux/mii.h>
 #include <bcmnvram.h>
 
-#include "utils.h"
 #include "shutils.h"
 
 #include "shared.h"
@@ -1151,8 +1150,10 @@ int ethctl_set_phy(char *ifname, int ctrl)
 	ret = ioctl(skfd, SIOCETHCTLOPS, &ifr);
 	if (ret) {
 		fprintf(stderr, "command error, op=%d ret=%d\n", ethctl.op, ret);
+		close(skfd);
 		return ret;
 	}
+	close(skfd);
 
 	return 0;
 }

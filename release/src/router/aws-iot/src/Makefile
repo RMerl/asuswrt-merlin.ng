@@ -98,7 +98,7 @@ LIBS +=  $(OPENSSL_LIBS) -ljson-c
 LIBS +=  -lcurl
 
 ifeq ($(RTCONFIG_TR069),y)
-LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2
+LDFLAGS += -L$(TOP)/libssh2/src/.libs -lssh2
 LDFLAGS += -L$(TOP)/zlib -lz
 endif
 

@@ -310,24 +310,29 @@ static server *server_init(void) {
 	CLEAN(status);
 #undef CLEAN
 
-	for (i = 0; i < FILE_CACHE_MAX; i++) {
-		srv->mtime_cache[i].mtime = (time_t)-1;
-		srv->mtime_cache[i].str = buffer_init();
+	if (srv->mtime_cache!=NULL) {
+		for (i = 0; i < FILE_CACHE_MAX; i++) {
+			srv->mtime_cache[i].mtime = (time_t)-1;
+			srv->mtime_cache[i].str = buffer_init();
+		}
 	}
 
-	if ((NULL != (frandom = fopen("/dev/urandom", "rb")) || NULL != (frandom = fopen("/dev/random", "rb")))
-	            && 1 == fread(srv->entropy, sizeof(srv->entropy), 1, frandom)) {
-		unsigned int e;
-		memcpy(&e, srv->entropy, sizeof(e) < sizeof(srv->entropy) ? sizeof(e) : sizeof(srv->entropy));
-		srand(e);
-		srv->is_real_entropy = 1;
-	} else {
-		unsigned int j;
-		srand(time(NULL) ^ getpid());
-		srv->is_real_entropy = 0;
-		for (j = 0; j < sizeof(srv->entropy); j++)
-			srv->entropy[j] = rand();
+	if (srv->entropy!=NULL) {
+		if ((NULL != (frandom = fopen("/dev/urandom", "rb")) || NULL != (frandom = fopen("/dev/random", "rb")))
+					&& 1 == fread(srv->entropy, sizeof(srv->entropy), 1, frandom)) {
+			unsigned int e;
+			memcpy(&e, srv->entropy, sizeof(e) < sizeof(srv->entropy) ? sizeof(e) : sizeof(srv->entropy));
+			srand(e);
+			srv->is_real_entropy = 1;
+		} else {
+			unsigned int j;
+			srand(time(NULL) ^ getpid());
+			srv->is_real_entropy = 0;
+			for (j = 0; j < sizeof(srv->entropy); j++)
+				srv->entropy[j] = rand();
+		}
 	}
+	
 	if (frandom) fclose(frandom);
 
 	srv->cur_ts = time(NULL);
@@ -360,8 +365,13 @@ static server *server_init(void) {
 static void server_free(server *srv) {
 	size_t i;
 
-	for (i = 0; i < FILE_CACHE_MAX; i++) {
-		buffer_free(srv->mtime_cache[i].str);
+	if (srv->mtime_cache != NULL) {
+		for (i = 0; i < FILE_CACHE_MAX; i++) {
+			if (srv->mtime_cache[i].str != NULL) {
+				buffer_free(srv->mtime_cache[i].str);
+				srv->mtime_cache[i].str = NULL;
+			}
+		}
 	}
 
 #define CLEAN(x) \
@@ -667,6 +677,393 @@ static void show_help (void) {
 	write_all(STDOUT_FILENO, b, strlen(b));
 }
 
+#define WEBDAV_CONF "/tmp/lighttpd.conf"
+int write_webdav_conf(const char *fn) {
+	FILE *fp;
+	
+	/* write /tmp/lighttpd.conf */
+	if ((fp=fopen(fn, "r"))) {
+		fclose(fp);
+		unlink(fn);
+	}
+
+	fp = fopen(fn, "w");
+	if (fp==NULL) return -1;
+
+	/* Load modules */
+	// fprintf(fp, "server.modules+=(\"mod_aicloud_invite\")\n");
+	fprintf(fp, "server.modules+=(\"mod_aicloud_auth\")\n");
+// #ifndef APP_IPKG
+	fprintf(fp, "server.modules+=(\"mod_alias\")\n");
+	fprintf(fp, "server.modules+=(\"mod_aidisk_access\")\n");
+	fprintf(fp, "server.modules+=(\"mod_aicloud_sharelink\")\n");
+	//fprintf(fp, "server.modules+=(\"mod_create_captcha_image\")\n");
+	fprintf(fp, "server.modules+=(\"mod_query_field_json\")\n");
+	fprintf(fp, "server.modules+=(\"mod_webdav\")\n");
+	fprintf(fp, "server.modules+=(\"mod_smbdav\")\n");
+	fprintf(fp, "server.modules+=(\"mod_compress\")\n");
+
+	if (strncmp(nvram_get_st_webdav_mode(), "2", 1) == 0){
+		fprintf(fp, "server.modules+=(\"mod_access\")\n");
+		fprintf(fp, "server.modules+=(\"mod_auth\")\n");
+	}
+// #else
+// 	fprintf(fp, "server.modules+=(\"aicloud_mod_alias\")\n");
+//     //fprintf(fp, "server.modules+=(\"aicloud_mod_userdir\")\n");
+//     fprintf(fp, "server.modules+=(\"aicloud_mod_aidisk_access\")\n");
+//     fprintf(fp, "server.modules+=(\"aicloud_mod_aicloud_sharelink\")\n");
+//     //fprintf(fp, "server.modules+=(\"aicloud_mod_create_captcha_image\")\n");
+//     fprintf(fp, "server.modules+=(\"aicloud_mod_query_field_json\")\n");
+// 	fprintf(fp, "server.modules+=(\"aicloud_mod_webdav\")\n");
+//     fprintf(fp, "server.modules+=(\"aicloud_mod_smbdav\")\n");
+//     //fprintf(fp, "server.modules+=(\"aicloud_mod_redirect\")\n");
+//     fprintf(fp, "server.modules+=(\"aicloud_mod_compress\")\n");
+//     //fprintf(fp, "server.modules+=(\"aicloud_mod_usertrack\")\n");
+//     //fprintf(fp, "server.modules+=(\"aicloud_mod_rewrite\")\n");
+	
+//     if (webdav_match("st_webdav_mode", 2)){
+//         fprintf(fp, "server.modules+=(\"aicloud_mod_access\")\n");
+//         fprintf(fp, "server.modules+=(\"aicloud_mod_auth\")\n");
+// 	}
+// #endif
+
+	/* Basic setting */
+	fprintf(fp, "server.port=%s\n",nvram_get_webdav_http_port()); // defult setting, but no use
+//	fprintf(fp, "server.port=8999\n"); // defult setting, but no use
+//	fprintf(fp, "server.document-root=\"/mnt/\"\n");
+	
+#ifdef APP_IPKG
+	fprintf(fp, "server.event-handler = \"poll\"\n");
+#endif
+	fprintf(fp, "server.document-root=\"/tmp/lighttpd/www\"\n");
+	fprintf(fp, "server.upload-dirs=(\"/tmp/lighttpd/uploads\")\n");
+	fprintf(fp, "server.errorlog=\"/tmp/lighttpd/err.log\"\n");
+	fprintf(fp, "server.pid-file=\"/tmp/lighttpd/lighttpd.pid\"\n");
+#if (defined APP_IPKG) && (defined I686)
+    fprintf(fp, "server.arpping-interface=\"br2\"\n");
+#else
+	fprintf(fp, "server.arpping-interface=\"br0\"\n");
+#endif
+#ifndef APP_IPKG
+	fprintf(fp, "server.errorfile-prefix=\"/usr/lighttpd/css/status-\"\n");
+#else
+	fprintf(fp, "server.errorfile-prefix=\"/opt/etc/aicloud_UI/css/status-\"\n");
+#endif
+	fprintf(fp, "dir-listing.activate=\"disable\"\n");
+    fprintf(fp, "server.syslog=\"/tmp/lighttpd/syslog.log\"\n");
+
+	//	**** Minetype setting **** //	
+	fprintf(fp, "mimetype.assign = (\n");
+	fprintf(fp, "\".html\" => \"text/html\",\n");
+	fprintf(fp, "\".htm\" => \"text/html\",\n");
+	fprintf(fp, "\".css\" => \"text/css\",\n");
+	fprintf(fp, "\".js\" => \"text/javascript\",\n");
+	
+	fprintf(fp, "\".swf\" => \"application/x-shockwave-flash\",\n");
+	//fprintf(fp, "\".txt\" => \"text/plain\",\n");
+	//fprintf(fp, "\".jpg\" => \"image/jpeg\",\n");
+	//fprintf(fp, "\".gif\" => \"image/gif\",\n");
+	//fprintf(fp, "\".png\" => \"image/png\",\n");
+	//fprintf(fp, "\".pdf\" => \"application/pdf\",\n");
+	//fprintf(fp, "\".mp4\" => \"video/mp4\",\n");
+	//fprintf(fp, "\".m4v\" => \"video/mp4\",\n");
+	//fprintf(fp, "\".wmv\" => \"video/wmv\",\n");
+	//fprintf(fp, "\".mp3\" => \"audio/mpeg\",\n");
+	//fprintf(fp, "\".avi\" => \"video/avi\",\n");
+	//fprintf(fp, "\".mov\" => \"video/mov\"");
+	fprintf(fp, "\"\" => \"application/x-octet-stream\"");
+	fprintf(fp, ")\n");
+
+	// **** Index file names **** //
+	fprintf(fp, "index-file.names = ( \"index.php\", \"index.html\",\n");
+	fprintf(fp, "\"index.htm\", \"default.htm\",\n");
+	fprintf(fp, " \" index.lighttpd.html\" )\n");
+
+	// **** url access deny
+	fprintf(fp, " url.access-deny             = ( \"~\", \".inc\" )\n");
+
+	// **** static-file.exclude extensions
+	fprintf(fp," static-file.exclude-extensions = ( \".php\", \".pl\", \".fcgi\" )\n");
+
+	// ****
+	fprintf(fp, "compress.cache-dir          = \"/tmp/lighttpd/compress/\"\n");
+	fprintf(fp, "compress.filetype           = ( \"application/x-javascript\", \"text/css\", \"text/html\", \"text/plain\" )\n");
+
+	fprintf(fp, "aicloud.max-sharelink             = 15\n");
+
+	// **** SambaDav setting
+	fprintf(fp, "$SERVER[\"socket\"]==\":%s\"{\n", nvram_get_webdav_http_port());
+//	fprintf(fp, "$SERVER[\"socket\"]==\":8999\"{\n");
+//	fprintf(fp, "	alias.url=(\"/webdav\"=>\"/mnt/\")\n");
+//	fprintf(fp, "   $HTTP[\"url\"]=~\"^/usbdisk($|/)\"{\n");
+
+	fprintf(fp, "	url.aicloud-auth-deny = (\"query_field.json\", \".html\")\n");
+
+	fprintf(fp, "	$HTTP[\"url\"]=~\"^/%s($|/)\"{\n",nvram_get_productid());
+    fprintf(fp, "		server.document-root = \"/\"\n");
+//	fprintf(fp, "		alias.url=(\"/usbdisk\"=>\"/mnt\")\n");
+	fprintf(fp, "		alias.url=(\"/%s\"=>\"/mnt\")\n", nvram_get_productid());
+    fprintf(fp, "		webdav.activate=\"enable\"\n");
+    fprintf(fp, "		webdav.is-readonly=\"disable\"\n");
+#if (defined APP_IPKG) && (defined I686)
+    fprintf(fp, "		webdav.sqlite-db-name=\"/opt/etc/webdav.db\"\n");
+#else
+    fprintf(fp, "		webdav.sqlite-db-name=\"/tmp/lighttpd/webdav.db\"\n");
+#endif
+    fprintf(fp, "	}\n");
+	fprintf(fp, "	else $HTTP[\"url\"]=~\"^/smb($|/)\"{\n");
+	fprintf(fp, "		server.document-root = \"/\"\n");
+#ifndef APP_IPKG
+	fprintf(fp, "		alias.url=(\"/smb\"=>\"/usr/lighttpd\")\n");
+#else
+	fprintf(fp, "		alias.url=(\"/smb\"=>\"/opt/etc/aicloud_UI\")\n");
+#endif
+	// fprintf(fp, "		smbdav.auth_ntlm = (\"Microsoft-WebDAV\",\"xxBitKinex\",\"WebDrive\")\n");
+	fprintf(fp, "		webdav.activate=\"disable\"\n");
+	fprintf(fp, "		webdav.is-readonly=\"disable\"\n");
+//	fprintf(fp, "		webdav.sqlite-db-name=\"/tmp/lighttpd/webdav.db\"\n");
+	fprintf(fp, "	}\n");
+	fprintf(fp, "	else $HTTP[\"url\"] =~ \"^/favicon.ico\"{\n");
+    fprintf(fp, "		server.document-root = \"/\"\n");
+#ifndef APP_IPKG
+    fprintf(fp, "		alias.url = ( \"/favicon.ico\" => \"/usr/lighttpd/css/favicon.ico\" ) \n");
+#else
+	fprintf(fp, "		alias.url = ( \"/favicon.ico\" => \"/opt/etc/aicloud_UI/css/favicon.ico\" ) \n");
+#endif
+    fprintf(fp, "		webdav.activate = \"disable\" \n");
+    fprintf(fp, "		webdav.is-readonly = \"enable\"\n");
+	fprintf(fp, "	}\n");
+	fprintf(fp, "	else $HTTP[\"url\"] !~ \"^/smb($|/|.)\" { \n");
+	fprintf(fp, "		server.document-root = \"smb://\" \n");
+   	fprintf(fp, "		smbdav.activate = \"enable\" \n");
+    fprintf(fp, "		smbdav.is-readonly = \"disable\" \n");
+    fprintf(fp, "		smbdav.always-auth = \"enable\" \n");
+#if (defined APP_IPKG) && (defined I686)
+    fprintf(fp, "		smbdav.sqlite-db-name = \"/opt/etc/smbdav.db\" \n");
+#else
+    fprintf(fp, "		smbdav.sqlite-db-name = \"/tmp/lighttpd/smbdav.db\" \n");
+#endif
+    fprintf(fp, "		usertrack.cookie-name = \"SMBSESSID\" \n");
+	fprintf(fp, "	}\n");
+	fprintf(fp, "}\n");
+
+	/*** Webdav_SSL ***/
+	/* default : https://192.168.1.1:443/webdav */
+	fprintf(fp, "$SERVER[\"socket\"]==\":%s\"{\n",nvram_get_webdav_https_port());
+	fprintf(fp, "	ssl.pemfile=\"/etc/server.pem\"\n");
+
+	if (strncmp(nvram_get_https_intermediate_crt_save(), "1", 1) == 0){
+		fprintf(fp, "	ssl.ca-file=\"/etc/intermediate_cert.pem\"\n");
+		//fclose(fd);
+	}
+
+	fprintf(fp, "	ssl.engine=\"enable\"\n");
+	fprintf(fp, "	ssl.use-compression=\"disable\"\n");
+	fprintf(fp, "	ssl.use-sslv2=\"disable\"\n");
+	fprintf(fp, "	ssl.use-sslv3=\"disable\"\n");
+	fprintf(fp, "	ssl.honor-cipher-order=\"enable\"\n");
+	//fprintf(fp, "	ssl.cipher-list=\"ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4\"\n");
+	fprintf(fp, "	ssl.cipher-list=\"ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:AES256-GCM-SHA384:AES256-SHA256:AES256-SHA:AES128-GCM-SHA256:AES128-SHA256:AES128-SHA:ECDHE-RSA-DES-CBC3-SHA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!CAMELLIA:!DES:!MD5:!PSK:!RC4;\"\n");
+	fprintf(fp, "	url.aicloud-auth-deny = (\"query_field.json\", \".html\")\n");
+	//fprintf(fp, "	alias.url=(\"/webdav\"=>\"/mnt/\")\n"); 
+//	fprintf(fp, "	$HTTP[\"url\"]=~\"^/usbdisk($|/)\"{\n");
+	fprintf(fp, "	$HTTP[\"url\"]=~\"^/%s($|/)\"{\n", nvram_get_productid());
+    fprintf(fp, "		server.document-root = \"/\"\n");
+//	fprintf(fp, "		alias.url=(\"/usbdisk\"=>\"/mnt\")\n");	
+	fprintf(fp, "		alias.url=(\"/%s\"=>\"/mnt\")\n", nvram_get_productid());	
+	fprintf(fp, "		webdav.activate=\"enable\"\n");
+	fprintf(fp, "		webdav.is-readonly=\"disable\"\n");
+#if (defined APP_IPKG) && (defined I686)
+	fprintf(fp, "		webdav.sqlite-db-name=\"/opt/etc/webdav.db\"\n");
+#else
+	fprintf(fp, "		webdav.sqlite-db-name=\"/tmp/lighttpd/webdav.db\"\n");
+#endif
+	fprintf(fp, "	}\n");
+	fprintf(fp, "	else $HTTP[\"url\"]=~\"^/smb($|/)\"{\n");
+	fprintf(fp, "		server.document-root = \"/\"\n");
+#ifndef APP_IPKG
+	fprintf(fp, "		alias.url=(\"/smb\"=>\"/usr/lighttpd\")\n");
+#else
+	fprintf(fp, "		alias.url=(\"/smb\"=>\"/opt/etc/aicloud_UI\")\n");
+#endif
+	// fprintf(fp, "		smbdav.auth_ntlm = (\"Microsoft-WebDAV\",\"xxBitKinex\",\"WebDrive\")\n");
+	fprintf(fp, "		webdav.activate=\"disable\"\n");
+	fprintf(fp, "		webdav.is-readonly=\"disable\"\n");
+//	fprintf(fp, "	webdav.sqlite-db-name=\"/tmp/lighttpd/webdav.db\"\n");
+	fprintf(fp, "	}\n");
+	fprintf(fp, "	else $HTTP[\"url\"] =~ \"^/favicon.ico\"{\n");
+    fprintf(fp, "		server.document-root = \"/\"\n");
+#ifndef APP_IPKG
+    fprintf(fp, "		alias.url = ( \"/favicon.ico\" => \"/usr/lighttpd/css/favicon.ico\" ) \n");
+#else
+	 fprintf(fp, "		alias.url = ( \"/favicon.ico\" => \"/opt/etc/aicloud_UI/css/favicon.ico\" ) \n");
+#endif
+    fprintf(fp, "		webdav.activate = \"disable\" \n");
+    fprintf(fp, "		webdav.is-readonly = \"enable\"\n");
+	fprintf(fp, "	}\n");
+	fprintf(fp, "	else $HTTP[\"url\"] =~ \"^/aicloud.crt\"{\n");
+	fprintf(fp, "		server.document-root = \"/\"\n");
+	fprintf(fp, "		alias.url = ( \"/aicloud.crt\" => \"/etc/cert.pem\" ) \n");
+	fprintf(fp, "		webdav.activate = \"disable\" \n");
+	fprintf(fp, "		webdav.is-readonly = \"enable\"\n");
+	fprintf(fp, "	}\n");
+	fprintf(fp, "	else $HTTP[\"url\"] !~ \"^/smb($|/|.)\" { \n");
+	fprintf(fp, "		server.document-root = \"smb://\" \n");
+   	fprintf(fp, "		smbdav.activate = \"enable\" \n");
+    fprintf(fp, "		smbdav.is-readonly = \"disable\" \n");
+    fprintf(fp, "		smbdav.always-auth = \"enable\" \n");
+#if (defined APP_IPKG) && (defined I686)
+	fprintf(fp, "		smbdav.sqlite-db-name = \"/opt/etc/smbdav.db\" \n");
+#else
+    fprintf(fp, "		smbdav.sqlite-db-name = \"/tmp/lighttpd/smbdav.db\" \n");
+#endif
+    fprintf(fp, "		usertrack.cookie-name = \"SMBSESSID\" \n");
+	fprintf(fp, "	}\n");
+
+	fprintf(fp, "}\n"); /*** Webdav_SSL ***/
+
+	/* debugging */
+	fprintf(fp, "debug.log-request-header=\"disable\"\n");
+	fprintf(fp, "debug.log-response-header=\"disable\"\n");
+	fprintf(fp, "debug.log-request-handling=\"disable\"\n");
+	fprintf(fp, "debug.log-file-not-found=\"disable\"\n");
+	fprintf(fp, "debug.log-condition-handling=\"disable\"\n");
+
+	fclose(fp);
+	
+	return 0;
+}
+
+#define UAM_WEB_PAGE	"/usr/lighttpd/css/uam.html"
+#define UAM_JS_SCRIPT	"/usr/lighttpd/js/jquery.js"
+#define UAM_JS	"/usr/lighttpd/css/uam.js"
+#define BYPASS_PAGE	"/usr/lighttpd/css/Bypass.html"
+#define	UAM_SRV_CONF	"/tmp/uamsrv.conf"
+#define UAM_WEB_DIR	"/tmp/uamsrv/www"
+int write_uamsrv_conf(const char *fn) {
+	FILE *fp;
+
+	/* write /tmp/uamsrv.conf */
+	if ((fp=fopen(fn, "r"))) {
+		fclose(fp);
+		unlink(fn);
+	}
+
+	fp = fopen(fn, "w");
+	if (fp==NULL) return -1;
+
+	/* Load modules */
+	fprintf(fp, "server.modules+=(\"mod_alias\")\n");
+	fprintf(fp, "server.modules+=(\"mod_userdir\")\n");
+	fprintf(fp, "server.modules+=(\"mod_redirect\")\n");
+	fprintf(fp, "server.modules+=(\"mod_compress\")\n");
+	fprintf(fp, "server.modules+=(\"mod_usertrack\")\n");
+	fprintf(fp, "server.modules+=(\"mod_rewrite\")\n");
+	fprintf(fp, "server.modules+=(\"mod_captive_portal_uam\")\n");
+
+	/* Basic setting */
+	//fprintf(fp, "server.port=%s\n",get_webdav_http_port()); // defult setting, but no use
+	fprintf(fp, "server.port=8083\n"); // defult setting, but no use
+	if(strlen(nvram_get_usb_UI_path()) > 0)
+		fprintf(fp, "server.document-root=\"%s/%s\"\n", UAM_WEB_DIR, "USB");
+	else
+		fprintf(fp, "server.document-root=\"%s\"\n", UAM_WEB_DIR);
+	//fprintf(fp, "server.upload-dirs=(\"/tmp/lighttpd/uploads\")\n");
+	fprintf(fp, "server.errorlog=\"/tmp/uamsrv/err.log\"\n");
+	fprintf(fp, "server.pid-file=\"/tmp/uamsrv/uamsrv.pid\"\n");
+	//fprintf(fp, "server.errorfile-prefix=\"/usr/lighttpd/css/status-\"\n");
+	fprintf(fp, "server.syslog=\"/tmp/uamsrv/syslog.log\"\n");
+	fprintf(fp, "server.error-handler-404=\"/index.html\"\n");
+
+	//	**** Minetype setting **** //
+	fprintf(fp, "mimetype.assign = (\n");
+	fprintf(fp, "\".html\" => \"text/html\",\n");
+	fprintf(fp, "\".htm\" => \"text/html\",\n");
+	fprintf(fp, "\".css\" => \"text/css\",\n");
+	fprintf(fp, "\".js\" => \"text/javascript\",\n");
+/*
+	fprintf(fp, "\".swf\" => \"application/x-shockwave-flash\",\n");
+	fprintf(fp, "\".txt\" => \"text/plain\",\n");
+	fprintf(fp, "\".jpg\" => \"image/jpeg\",\n");
+	fprintf(fp, "\".gif\" => \"image/gif\",\n");
+	fprintf(fp, "\".png\" => \"image/png\",\n");
+	fprintf(fp, "\".pdf\" => \"application/pdf\",\n");
+	fprintf(fp, "\".mp4\" => \"video/mp4\",\n");
+	fprintf(fp, "\".m4v\" => \"video/mp4\",\n");
+	fprintf(fp, "\".wmv\" => \"video/wmv\",\n");
+	fprintf(fp, "\".mp3\" => \"audio/mpeg\",\n");
+	fprintf(fp, "\".avi\" => \"video/avi\",\n");
+	fprintf(fp, "\".mov\" => \"video/mov\"");
+	fprintf(fp, "\"\" => \"application/x-octet-stream\"");
+*/
+	fprintf(fp, ")\n");
+
+	// **** Index file names **** //
+	fprintf(fp, "index-file.names = ( \"index.php\", \"index.html\",\n");
+	fprintf(fp, "\"index.htm\", \"default.htm\",\n");
+	fprintf(fp, " \" index.lighttpd.html\" )\n");
+
+	// **** url access deny
+	//fprintf(fp, " url.access-deny             = ( \"~\", \".inc\" )\n");
+
+	// **** static-file.exclude extensions
+	//fprintf(fp," static-file.exclude-extensions = ( \".php\", \".pl\", \".fcgi\" )\n");
+
+	// ****
+	//fprintf(fp, "compress.cache-dir          = \"/tmp/lighttpd/compress/\"\n");
+	fprintf(fp, "compress.filetype           = ( \"application/x-javascript\", \"text/css\", \"text/html\", \"text/plain\" )\n");
+
+	/*** SSL ***/
+	/* default : https://192.168.1.1:443/webdav */
+	//fprintf(fp, "$SERVER[\"socket\"]==\":%s\"{\n",get_webdav_https_port());
+	fprintf(fp, "$SERVER[\"socket\"]==\":8083\"{\n");
+	fprintf(fp, "   server.document-root=\"%s\"\n", UAM_WEB_DIR);
+//	fprintf(fp, "	ssl.pemfile=\"/etc/server.pem\"\n");
+//	fprintf(fp, "	ssl.engine=\"enable\"\n");
+	//fprintf(fp, "   ssl.use-compression=\"disable\"\n");
+//	fprintf(fp, "   ssl.use-sslv2=\"disable\"\n");
+//	fprintf(fp, "   ssl.use-sslv3=\"disable\"\n");
+	//fprintf(fp, "   ssl.honor-cipher-order=\"enable\"\n");
+	//fprintf(fp, "   ssl.cipher-list=\"ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4\"\n");
+//	fprintf(fp, "   ssl.cipher-list=\"ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:AES256-GCM-SHA384:AES256-SHA256:AES256-SHA:AES128-GCM-SHA256:AES128-SHA256:AES128-SHA:ECDHE-RSA-DES-CBC3-SHA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!CAMELLIA:!DES:!MD5:!PSK:!RC4;\"\n");
+	
+	fprintf(fp, "   $HTTP[\"url\"] =~ \"^/Uam($|/)\"{\n");
+	fprintf(fp, "       alias.url = ( \"/Uam\" => \"%s/Uam.html\" ) \n", UAM_WEB_DIR);
+	fprintf(fp, "   }\n");
+	fprintf(fp, "   $HTTP[\"url\"] =~ \"^/FreeUam($|/)\"{\n");
+	fprintf(fp, "       alias.url = ( \"/FreeUam\" => \"%s/FreeUam.html\" ) \n", UAM_WEB_DIR);
+	fprintf(fp, "   }\n");
+	fprintf(fp, "   $HTTP[\"url\"] =~ \"^/uam.js($|/)\"{\n");
+	fprintf(fp, "       alias.url = ( \"/uam.js\" => \"%s/uam.js\" ) \n", UAM_WEB_DIR);
+	fprintf(fp, "   }\n");
+	fprintf(fp, "   $HTTP[\"url\"] =~ \"^/jquery.js($|/)\"{\n");
+	fprintf(fp, "       alias.url = ( \"/jquery.js\" => \"%s/jquery.js\" ) \n", UAM_WEB_DIR);
+	fprintf(fp, "   }\n");
+	fprintf(fp, "   $HTTP[\"url\"] =~ \"^/Bypass.html($|/)\"{\n");
+	fprintf(fp, "       alias.url = ( \"/Bypass.html\" => \"%s/Bypass.html\" ) \n", UAM_WEB_DIR);
+	fprintf(fp, "   }\n");
+	fprintf(fp, "   $HTTP[\"url\"] =~ \"^/uam.html($|/)\"{\n");
+	fprintf(fp, "       alias.url = ( \"/uam.html\" => \"%s/uam.html\" ) \n", UAM_WEB_DIR);
+	fprintf(fp, "   }\n");
+	fprintf(fp, "   $HTTP[\"url\"] =~ \"^/Uam.css($|/)\"{\n");
+	fprintf(fp, "       alias.url = ( \"/Uam.css\" => \"%s/Uam.css\" ) \n", UAM_WEB_DIR);
+	fprintf(fp, "   }\n");
+	fprintf(fp, "   $HTTP[\"url\"] =~ \"^/FreeUam.css($|/)\"{\n");
+	fprintf(fp, "       alias.url = ( \"/FreeUam.css\" => \"%s/FreeUam.css\" ) \n", UAM_WEB_DIR);
+	fprintf(fp, "   }\n");
+	fprintf(fp, "}\n"); /*** SSL ***/
+
+	/* debugging */
+	fprintf(fp, "debug.log-request-header=\"disable\"\n");
+	fprintf(fp, "debug.log-response-header=\"disable\"\n");
+	fprintf(fp, "debug.log-request-handling=\"disable\"\n");
+	fprintf(fp, "debug.log-file-not-found=\"disable\"\n");
+	fprintf(fp, "debug.log-condition-handling=\"disable\"\n");
+
+	fclose(fp);
+
+	return 0;
+}
 int main (int argc, char **argv) {
 	
 	server *srv = NULL;
@@ -736,6 +1133,18 @@ int main (int argc, char **argv) {
 				server_free(srv);
 				return -1;
 			}
+
+			if (optarg != NULL && strncmp(optarg, WEBDAV_CONF, strlen(WEBDAV_CONF)) == 0) {
+				write_webdav_conf(optarg);
+			}
+			else if (optarg != NULL && strncmp(optarg, UAM_SRV_CONF, strlen(UAM_SRV_CONF)) == 0) {
+				write_uamsrv_conf(optarg);
+			}
+			else {
+				server_free(srv);
+				return -1;
+			}
+
 			if (config_read(srv, optarg)) {
 				server_free(srv);
 				return -1;

@@ -394,7 +394,6 @@ a{
 	display: table-cell;
 	width: 100%;
 	padding-left: 12px;
-	cursor: pointer;
 }
 .selectBar > label{
 	font-family: HelveticaNeueW10-45Ligh,Helvetica,Arial;

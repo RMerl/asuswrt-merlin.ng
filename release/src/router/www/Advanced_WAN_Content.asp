@@ -1779,7 +1779,7 @@ function create_DNSlist_view(){
 	document.getElementById("dns_list_Block").onclick = function() {show_DNSList_view_block();}
 
 	var DNSListTableIndex=[array_Ab, array_Fm, array_FD, array_Sf, array_Pr];
-	var DNSListTableCategory=["<#IPConnection_x_DNS_List_adB#>", "<#IPConnection_x_DNS_List_Family#>", "<#IPConnection_x_DNS_List_Fast#>", "Safe", "<#IPConnection_x_DNS_List_Priv-resp#>"];
+	var DNSListTableCategory=["<#IPConnection_x_DNS_List_adB#>", "<#IPConnection_x_DNS_List_Family#>", "<#IPConnection_x_DNS_List_Fast#>", "<#IPConnection_x_DNS_List_Safe#>", "<#IPConnection_x_DNS_List_Priv-resp#>"];
 
 	var code="";
 
@@ -2012,7 +2012,7 @@ function Update_DNS_status(){
 	$("#DNS_status").empty();
 
 	if(document.form.wan_dnsenable_x.value == 1){
-		DSN_status_info="<b>Default status :</b> <#IPConnection_x_DNSServer_auto#>";
+		DSN_status_info=`<b>Default status :</b> <#IPConnection_x_DNSServer_auto#>`;
 	}
 	else{
 		DNS_list_index=DNSList_match(document.form.wan_dns1_x.value, document.form.wan_dns2_x.value);

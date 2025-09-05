@@ -2762,7 +2762,7 @@ function copyDdnsName(e) {
 						<script>
 							(function(){
 								setTimeout(function(){
-									document.getElementById("statusframe").src = "/device-map/router_status.asp";
+									$('#statusframe').attr('src', '/device-map/router_status.asp').show();
 									const get_header_info = httpApi.hookGet("get_header_info");
 									const domain = `${get_header_info.protocol}://${get_header_info.host}`;
 									const domain_w_port = `${get_header_info.protocol}://${get_header_info.host}:${get_header_info.port}`;

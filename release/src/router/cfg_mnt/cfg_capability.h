@@ -158,6 +158,7 @@ enum capabilityType {
 #define WIFI_RADIO_5G		BIT(1)
 #define WIFI_RADIO_5GH		BIT(2)
 #define WIFI_RADIO_6G		BIT(3)
+#define WIFI_RADIO_6GH		BIT(4)
 
 /* Capability support on role */
 #define CAP_SUPPORT		BIT(0)

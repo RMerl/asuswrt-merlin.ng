@@ -2216,6 +2216,9 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_NORDVPN
 	{ "nordvpn",			nordvpn_main				},
 #endif
+#ifdef RTCONFIG_SURFSHARK
+	{ "surfshark",			surfshark_main				},
+#endif
 #endif
 #ifdef RTCONFIG_EAPOL
 	{ "wpa_cli",			wpacli_main			},
@@ -2373,6 +2376,9 @@ static const applets_t applets[] = {
 	{ "firmware_check",		firmware_check_main		},
 #if defined(RTCONFIG_FRS_LIVE_UPDATE)
 	{ "firmware_check_update",	firmware_check_update_main	},
+#endif
+#ifdef RTCONFIG_CFGSYNC
+	{ "firmware_webs_update",	firmware_webs_update_main	},
 #endif
 #ifdef RTCONFIG_FRS_FEEDBACK
 	{ "sendfeedback",	start_sendfeedback },

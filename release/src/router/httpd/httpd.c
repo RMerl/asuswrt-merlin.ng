@@ -1525,6 +1525,8 @@ handle_request(void)
 			}
 
 			if(!strcmp(file, "Logout.asp")){
+				time_t now_log = time(NULL);
+				HTTPD_FB_DEBUG("handle_request: Logout.asp @ %s\n", ctime(&now_log));
 				http_logout(&login_uip_tmp, cookies, fromapp);
 				send_login_page(fromapp, ISLOGOUT, NULL, NULL, 0, NOLOGINTRY);
 				return;
@@ -2767,6 +2769,7 @@ void start_ssl(int http_port)
 			if (save)
 				save_cert();
 
+			prn_cert_info(HTTPD_CERT);
 			/* Unset reload flag if set */
 #if defined(RTCONFIG_IPV6)
 			if (!http_ipv6_only && nvram_get("httpds_reload_cert"))

@@ -1072,6 +1072,7 @@ extern int supports(unsigned long attr);
 extern int pids(char *appname);
 extern int pids_count(char *appname);
 extern pid_t* find_pid_by_name(const char *);
+extern int check_main_pids_exist(char *appname);
 
 // process.c
 extern char *psname(int pid, char *buffer, int maxlen);
@@ -3835,6 +3836,20 @@ static inline void swap_wanlan(phy_port_mapping *port_mapping)
 
 extern void get_phy_port_mapping(phy_port_mapping *port_mapping); // for capability use
 extern void get_usb_modem_tatus(phy_info_list *list); // for usb modem status
+
+static inline int ext_switch_exist(void)
+{
+	phy_port_mapping port_mapping;
+	int i;
+
+	get_phy_port_mapping(&port_mapping);
+	for (i = 0; i < port_mapping.count; i++) {
+		if (port_mapping.port[i].ext_port_id != -1)
+			return 1;
+	}
+
+	return 0;
+}
 #endif //RTCONFIG_NEW_PHYMAP
 
 static inline int iptv_enabled(void)

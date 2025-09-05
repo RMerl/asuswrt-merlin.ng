@@ -42,7 +42,7 @@ LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 LDFLAGS += -L$(TOP)/libasc -lasc
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 ifeq ($(RTCONFIG_TR069),y)
-LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2
+LDFLAGS += -L$(TOP)/libssh2/src/.libs -lssh2
 LDFLAGS += -L$(TOP)/zlib -lz
 endif
 

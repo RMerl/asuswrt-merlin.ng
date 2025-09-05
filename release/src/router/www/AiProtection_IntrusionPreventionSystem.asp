@@ -262,9 +262,10 @@ function getIPSChart(type, date){
 			setTimeout("getIPSChart('vp', date);", 1000);
 		},
 		success: function(response){
-            if(data != ""){
-			    collectChart(data, date);
-            }
+			if(data != ""){
+				data = JSON.parse(data);
+				collectChart(data, date);
+			}
 		}
 	});
 }

@@ -1,6 +1,7 @@
 #ifndef __WEBAPI_H__
 #define __WEBAPI_H__
 
+#include <json.h>
 #ifdef RTCONFIG_CFGSYNC
 #include <cfg_capability.h>
 #endif
@@ -131,4 +132,8 @@ extern void reset_accpw();
 extern int b64_decode(const char *str, unsigned char *space, int size);
 extern int do_chpass(char *cur_username, char *cur_passwd, char *new_username, char *new_passwd, char *restart_httpd, char *defpass_enable, int from_service_id);
 extern int is_noFwManual(void);
+extern int check_cmd_injection_blacklist(char *para);
+extern int check_xss_blacklist(char* para, int check_www);
+extern int validate_apply_input_value(char *name, char *value);
+extern int detect_vul_scan(void);
 #endif /* !__WEBAPI_H__ */

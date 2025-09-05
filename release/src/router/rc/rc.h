@@ -32,7 +32,6 @@
 
 #include <bcmnvram.h>
 #include <bcmparams.h>
-#include <utils.h>
 #include <shutils.h>
 #include <shared.h>
 
@@ -2172,6 +2171,9 @@ extern int hmavpn_main(int argc, char **argv);
 #ifdef RTCONFIG_NORDVPN
 extern int nordvpn_main(int argc, char **argv);
 #endif
+#ifdef RTCONFIG_SURFSHARK
+extern int surfshark_main(int argc, char **argv);
+#endif
 
 // wanduck.c
 #if defined(RTCONFIG_LANWAN_LED) || defined(RTCONFIG_HND_ROUTER) || defined(RTCONFIG_HND_ROUTER_AX)
@@ -2630,6 +2632,9 @@ extern int getPid_fromFile(char *file_name);
 #ifdef RTCONFIG_FRS_LIVE_UPDATE
 extern int firmware_check_update_main(int argc, char *argv[]);
 #endif
+#ifdef RTCONFIG_CFGSYNC
+extern int firmware_webs_update_main(int argc, char *argv[]);
+#endif
 #ifdef RTCONFIG_FRS_FEEDBACK
 extern void start_sendfeedback(void);
 #ifdef RTCONFIG_DBLOG
@@ -2859,6 +2864,10 @@ extern int string_remove(char *string, const char *match);
 #ifdef RTCONFIG_CFGSYNC
 extern void stop_cfgsync(void);
 extern int start_cfgsync(void);
+extern void start_fw_check(void);
+extern void stop_fw_check(void);
+extern void start_firmware_webs_update(void);
+extern void stop_firmware_webs_update(void);
 extern void send_event_to_cfgmnt(int event_id);
 #ifdef RTCONFIG_CONNDIAG
 extern int conn_diag_main(int argc, char *argv[]);
@@ -3417,14 +3426,6 @@ extern void asm1042_upgrade(int);
 #endif
 
 // private.c
-#if defined(RTCONFIG_NOTIFICATION_CENTER)
-extern void oauth_google_gen_token_email(void);
-extern void oauth_google_drive_gen_token(void);
-extern void oauth_google_update_token(void);
-extern int oauth_google_send_message(const char* receiver, const char* subject, const char* message, const char* attached_files[], int attached_files_count);
-extern void oauth_google_check_token_status(void);
-extern void oauth_google_drive_check_token_status(void);
-#endif
 extern void dump_mactable();
 
 #if defined(RTCONFIG_QCA_LBD)

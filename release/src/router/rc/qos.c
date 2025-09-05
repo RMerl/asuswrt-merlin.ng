@@ -30,6 +30,7 @@
 #ifdef RTCONFIG_BWDPI
 #include <bwdpi.h>
 #endif
+#include <webapi.h>
 
 /*
 	DEBUG DEFINE
@@ -1482,6 +1483,9 @@ static int add_bandwidth_limiter_rules(char *pcWANIF)
 	}
 
 	g = buf = strdup(nvram_safe_get("qos_bw_rulelist"));
+	if(!validate_apply_input_value(g, "qos_bw_rulelist"))
+		goto QOS_BW_END;
+
 	while (g) {
 		if ((p = strsep(&g, "<")) == NULL) break;
 		if ((vstrsep(p, ">", &enable, &addr, &dlc, &upc, &prio)) != 5) continue;
@@ -1533,6 +1537,7 @@ static int add_bandwidth_limiter_rules(char *pcWANIF)
 			}
 		}
 	}
+QOS_BW_END:
 	free(buf);
 
 #ifdef RTCONFIG_AMAS_WGN
@@ -1625,6 +1630,8 @@ static int start_bandwidth_limiter(void)
 	*/
 
 	g = buf = strdup(nvram_safe_get("qos_bw_rulelist"));
+	if(!validate_apply_input_value(g, "qos_bw_rulelist"))
+		goto QOS_BW_END;
 
 	while (g) {
 		if ((p = strsep(&g, "<")) == NULL) break;
@@ -1674,6 +1681,7 @@ static int start_bandwidth_limiter(void)
 		}
 	}
 
+QOS_BW_END:
 	if (buf) free(buf);
 
 	// init guest 3: ~ 14: (12 guestnetwork), start number = 3

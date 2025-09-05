@@ -477,22 +477,22 @@ extern void get_ipv6_client_list(void);
 extern int inet_raddr6_pton(const char *src, void *dst, void *buf);
 extern int delete_logout_from_list(char *cookies);
 extern void set_referer_host(void);
-extern int check_xss_blacklist(char* para, int check_www);
 extern int check_cmd_whitelist(char* para);
 extern int useful_redirect_page(char *next_page);
 extern char* reverse_str( char *str );
+#ifdef RTCONFIG_HTTPS
+extern int prn_cert_info(const char *fn);
+#endif
 #ifdef RTCONFIG_AMAS
 extern int check_AiMesh_whitelist(char *page);
 #endif
 #ifdef RTCONFIG_DNSPRIVACY
 extern int ej_get_dnsprivacy_presets(int eid, webs_t wp, int argc, char_t **argv);
 #endif
-extern int check_cmd_injection_blacklist(char *para);
 extern void __validate_apply_set_wl_var(char *nv, char *val) __attribute__((weak));
 #ifdef RTCONFIG_BWDPI
 extern int check_bwdpi_status_app_name(char *name);
 #endif
-extern int validate_apply_input_value(char *name, char *value);
 
 /* web-*.c */
 extern int ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit);

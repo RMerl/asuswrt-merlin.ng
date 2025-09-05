@@ -457,3 +457,35 @@ int pids_count(char *appname)
 
 	return count;
 }
+
+int check_main_pids_exist(char *appname)
+{
+	pid_t *pidList = NULL;
+	pid_t *pl;
+	FILE *fp = NULL;
+	char buf[1024]={0}, path[128]={0};
+	int pid_num = -1, found = 0;
+	snprintf(path, sizeof(path), "/var/run/%s.pid", appname);
+
+	if ((fp = fopen(path, "r")) != NULL)
+	{
+		if(fread(buf, 1, sizeof(buf), fp))
+		{
+			pid_num = atoi(buf);
+			fprintf(stderr, "%s's main pid %d\n", appname, pid_num);
+		}
+		fclose(fp);
+	}
+	pidList = find_pid_by_name(appname);
+	if(pidList && pid_num != -1)
+	{
+		for (pl = pidList; *pl; pl++) {
+			if((unsigned)*pl == pid_num)
+				found++;
+		}
+	}
+	if(pidList)
+		free(pidList);
+	fprintf(stderr, "find %s's main pid %d %d\n", appname, pid_num, found);
+	return found;
+}

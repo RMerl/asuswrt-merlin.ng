@@ -114,7 +114,7 @@ function showInstallJAVAUI(){
 }
 
 $("document").ready(function() {
-	var vars = getUrlVars();
+	
 	var loc_lan = String(window.navigator.userLanguage || window.navigator.language).toLowerCase();		
 	var lan = ( g_storage.get('lan') == undefined ) ? loc_lan : g_storage.get('lan');
 	m.setLanguage(lan);
@@ -139,17 +139,9 @@ $("document").ready(function() {
 		return;
 	}
 
-	if(vars["p"]){
-		storage_key_map["port"] = vars["p"];
-	}
-	
-	if(vars["a"]){
-		storage_key_map["agent"] = vars["a"];
-	}
-	
-	if(vars["u"]){
-		g_open_url = vars["u"];
-	}
+	storage_key_map["port"] = getUrlVar("p");
+	storage_key_map["agent"] = getUrlVar("a");
+	g_open_url = getUrlVar("u");
 	
 	var media_hostName = window.location.host;
 	if(media_hostName.indexOf(":")!=-1)
@@ -165,8 +157,8 @@ $("document").ready(function() {
 	applet_html += '</applet>';
 	$(applet_html).appendTo($("#save"));
 	
-	this_url = vars["v"];
-	
+	this_url = getUrlVar("v");
+
 	var select_folder = this_url.split(";");
 	
 	array_download_folder = [];

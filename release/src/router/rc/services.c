@@ -1661,6 +1661,8 @@ void start_dnsmasq(void)
 		    "min-port=%u\n",		// min port used for random src port
 		dmservers, 1500, nvram_get_int("dns_minport") ? : 4096);
 
+	fprintf(fp, "addn-hosts=/etc/hosts\n");
+
 	/* limit number of outstanding requests */
 	{
 		int max_queries = nvram_get_int("max_dns_queries");
@@ -5809,6 +5811,24 @@ stop_acsd(void)
 	return ret;	// called by dm_watchdog or not
 }
 
+int no_need_acsd()
+{
+#ifdef RTAC68U
+	if (is_dpsta_repeater() && !nvram_get_int("x_Setting"))
+		return 1;
+#endif
+
+#ifdef RTCONFIG_PROXYSTA
+	if (psta_exist())
+		return 1;
+#endif
+
+	if (restore_defaults_g || !strlen(nvram_safe_get("acs_ifnames")))
+		return 1;
+
+	return 0;
+}
+
 int
 start_acsd()
 {
@@ -5822,19 +5842,12 @@ start_acsd()
 	int pid;
 #endif
 
-#ifdef RTAC68U
-	if (is_dpsta_repeater() && !nvram_get_int("x_Setting"))
+	if (no_need_acsd())
 		return 0;
-#endif
-
-#ifdef RTCONFIG_PROXYSTA
-	if (psta_exist())
-		return 0;
-#endif
 
 	stop_acsd();
 
-	if (!restore_defaults_g && strlen(nvram_safe_get("acs_ifnames"))) {
+	{
 #ifdef RTCONFIG_AVBLCHAN
 		reset_exclvalid();
 #endif
@@ -8025,7 +8038,7 @@ void start_uam_srv()
 		eval("cp", UAM_JS, UAM_WEB_DIR);
 		eval("cp", BYPASS_PAGE, UAM_WEB_DIR);
 
-		if (gen_uam_srv_conf()) return;
+		// if (gen_uam_srv_conf()) return;
 		//_dprintf("%s %d\n", __FUNCTION__, __LINE__);	// tmp test;
 		if (!pids("uamsrv"))
 			_eval(lighttpd_argv, NULL, 0, &pid);
@@ -16973,54 +16986,6 @@ check_ddr_done:
 	{
 		update_nc_setting_conf();
 	}
-	else if (strcmp(script, "oauth_google_gen_token_email") == 0)
-	{
-		oauth_google_gen_token_email();
-#ifdef RTCONFIG_CFGSYNC
-		// trigger cfg_server do sync
-		const char config[] =
-		{
-			"{"\
-			"\"oauth_google_refresh_token\":\"\","\
-			"\"oauth_google_user_email\":\"\","\
-			"\"fb_email_provider\":\"\""\
-			"}\0"
-		};
-		char event_msg[133] = {0};
-		memset(event_msg, 0, sizeof(event_msg));
-		snprintf(event_msg, sizeof(event_msg)-1, RC_CONFIG_CHANGED_MSG, EID_RC_CONFIG_CHANGED, config);
-		(void)send_cfgmnt_event(event_msg);
-		//  WEVENT_GENERIC_MSG	 "{\""WEVENT_PREFIX"\":{\""EVENT_ID"\":\"%d\"}}"
-#endif	// RTCONFIG_CFGSYNC
-	}
-	else if (strcmp(script, "oauth_google_drive_gen_token") == 0)
-	{
-		oauth_google_drive_gen_token();
-#ifdef RTCONFIG_CFGSYNC
-		// trigger cfg_server do sync
-		const char config[] =
-		{
-			"{"\
-			"\"oauth_google_drive_refresh_token\":\"\","\
-			"\"oauth_google_user_email\":\"\","\
-			"\"fb_email_provider\":\"\""\
-			"}\0"
-		};
-		char event_msg[133] = {0};
-		memset(event_msg, 0, sizeof(event_msg));
-		snprintf(event_msg, sizeof(event_msg)-1, RC_CONFIG_CHANGED_MSG, EID_RC_CONFIG_CHANGED, config);
-		(void)send_cfgmnt_event(event_msg);
-		//  WEVENT_GENERIC_MSG	 "{\""WEVENT_PREFIX"\":{\""EVENT_ID"\":\"%d\"}}"
-#endif	// RTCONFIG_CFGSYNC
-	}
-	else if (strcmp(script, "oauth_google_drive_check_token_status") == 0)
-	{
-		oauth_google_drive_check_token_status();
-	}
-	else if (strcmp(script, "oauth_google_check_token_status") == 0)
-	{
-		oauth_google_check_token_status();
-	}
 #endif
 	else if (strcmp(script, "logger") == 0)
 	{
@@ -18554,6 +18519,11 @@ start_write_smb_conf();
 		cmd[0] = nvtmp;
 		start_script(count, cmd);
 	}
+	else if (strcmp(script, "fw_check")==0)
+	{
+		if(action&RC_SERVICE_STOP) stop_fw_check();
+		if(action&RC_SERVICE_START) start_fw_check();
+	}
 #endif
 #ifdef RTCONFIG_REVERTFW
 	else if (strcmp(script, "revertfw_release_note")==0)
@@ -18588,7 +18558,15 @@ start_write_smb_conf();
 #endif
 	else if (strcmp(script,"amas_bhctrl") == 0)
 	{
+		int amas_wlc_action_state = nvram_get_int("amas_wlc_action_state");
+		nvram_unset("cp_restart");
 		if (action & RC_SERVICE_STOP) {
+			if(amas_wlc_action_state == 2)
+				nvram_set_int("cp_restart", 1);
+			if(amas_wlc_action_state != 2) // 2 = AMAS_WLCCONNECT_STATUS_FINISHED
+			{
+				stop_amas_wlcconnect();
+			}
 #ifdef RTCONFIG_BHCOST_OPT
 			stop_amas_status(); // reload amas_bhmode
 #endif
@@ -18599,6 +18577,10 @@ start_write_smb_conf();
 #ifdef RTCONFIG_BHCOST_OPT
 			start_amas_status(); // reload amas_bhmode
 #endif
+			if(amas_wlc_action_state != 2) // 2 = AMAS_WLCCONNECT_STATUS_FINISHED
+			{
+				start_amas_wlcconnect();
+			}
 			start_amas_bhctrl();
 		}
     }
@@ -18932,34 +18914,8 @@ start_write_smb_conf();
 #ifdef RTCONFIG_CFGSYNC
 	else if (strcmp(script, "firmware_webs_update") == 0)
 	{
-		FWUPDATE_DBG("rc triger firmware_webs_update");
-		int webs_cfg_check = 0, webs_retry = 0;
-		nvram_set("webs_update_trigger", "WDG_CFG");
-		nvram_unset("cfg_check");
-		char event_msg[64] = {0};
-		snprintf(event_msg, sizeof(event_msg), HTTPD_GENERIC_MSG, EID_HTTPD_FW_CHECK);
-		if (strlen(event_msg))
-			send_cfgmnt_event(event_msg);
-
-		while(webs_retry < 30){
-			webs_cfg_check = nvram_get_int("cfg_check");
-			FWUPDATE_DBG("webs_cfg_check(retry %d): %d", webs_retry, webs_cfg_check);
-			if(webs_cfg_check == 7){
-				snprintf(event_msg, sizeof(event_msg), HTTPD_GENERIC_MSG, EID_HTTPD_FW_UPGRADE);
-				if (strlen(event_msg))
-					send_cfgmnt_event(event_msg);
-				break;
-			}
-			else if(webs_cfg_check == 2 || webs_cfg_check == 3){
-				FWUPDATE_DBG("can not link frs");
-				break;
-			}else{	//(webs_cfg_check == 0 || webs_cfg_check == 1 || webs_cfg_check == 5)
-				webs_retry++;
-				sleep(1);
-			}
-		}
-
-
+		if (action & RC_SERVICE_STOP) stop_firmware_webs_update();
+		if (action & RC_SERVICE_START) start_firmware_webs_update();
 	}
 #endif
 #ifdef RTCONFIG_QCA_PLC2
@@ -19677,6 +19633,11 @@ void start_amas_lldpd(void)
 		else
 		{
 			strlcpy(ifnames, nvram_safe_get("wired_ifnames"), sizeof(ifnames));
+			if(access_point_mode())
+			{
+				strlcat(ifnames, " ", sizeof(ifnames));
+				strlcat(ifnames, nvram_safe_get("eth_ifnames"), sizeof(ifnames));
+			}
 		}
 		foreach(word, ifnames, next)
 		{
@@ -22560,6 +22521,38 @@ void stop_cfgsync(void)
 		killall_tk("cfg_server");
 	if (pids("cfg_client"))
 		killall_tk("cfg_client");
+}
+
+void start_fw_check(void)
+{
+	char *cmd[] = {"/usr/sbin/webs_update.sh", NULL};
+	pid_t pid;
+
+	stop_fw_check();
+
+	_eval(cmd, NULL, 0, &pid);
+}
+
+void stop_fw_check(void)
+{
+	system("killall -SIGKILL firmware_check_update");
+	killall("wget", SIGTERM);
+	killall("webs_update.sh", SIGTERM);
+}
+
+void start_firmware_webs_update(void)
+{
+	char *cmd[] = {"/sbin/firmware_webs_update", NULL};
+	pid_t pid;
+
+	stop_firmware_webs_update();
+
+	_eval(cmd, NULL, 0, &pid);
+}
+
+void stop_firmware_webs_update(void)
+{
+	killall("firmware_webs_update", SIGTERM);
 }
 
 void send_event_to_cfgmnt(int event_id)

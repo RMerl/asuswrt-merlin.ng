@@ -579,44 +579,6 @@ function check_port_conflicts(){
 	var autowan_detected_ifname = httpApi.nvramGet(["autowan_detected_ifname"], true).autowan_detected_ifname;
 	var autowan_detected_label = httpApi.nvramGet(["autowan_detected_label"], true).autowan_detected_label;
 
-	if(dualWAN_support){	// dualwan LAN port should not be equal to IPTV port
-		var tmp_pri_if = wans_dualwan_orig.split(" ")[0].toUpperCase();
-		var tmp_sec_if = wans_dualwan_orig.split(" ")[1].toUpperCase();
-
-		if (tmp_pri_if == 'LAN' || tmp_sec_if == 'LAN'){
-			if(based_modelid == "GT-AC5300"){
-				/* Dual WAN: "LAN Port 1" (wans_lanport: 2), "LAN Port 2" (wans_lanport:1), "LAN Port 5" (wans_lanport:4), "LAN Port 6" (wans_lanport:3) */
-				if(iptv_port_settings == "56"){// LAN Port 5 (switch_stb_x: 3)  LAN Port 6 (switch_stb_x: 4)
-					if((wans_lanport == "4" && iptv_port == "3") || (wans_lanport == "3" && iptv_port == "4"))
-						wan_port_conflict = true;
-					else if((iptv_port == "6" || iptv_port == "8") && (wans_lanport == '4' || wans_lanport == "3"))
-						wan_port_conflict = true;
-				}
-				else{// LAN Port 1 (switch_stb_x: 3)  LAN Port 2 (switch_stb_x: 4)
-					if((wans_lanport == "2" && iptv_port == "3") || (wans_lanport == "1" && iptv_port == "4")) //LAN 1, LAN2
-						wan_port_conflict = true;
-					else if((iptv_port == "6" || iptv_port == "8") && (wans_lanport == "2" || wans_lanport == "1"))
-						wan_port_conflict = true;
-				}
-			}
-			else{
-				if(iptv_port == wans_lanport)
-					wan_port_conflict = true;
-				else{
-					for(var i = 0; i < stbPortMappings.length; i++){
-						if(iptv_port == stbPortMappings[i].value && stbPortMappings[i].comboport_value_list.length != 0){
-							var value_list = stbPortMappings[i].comboport_value_list.split(" ");
-							for(var j = 0; j < value_list.length; j++){
-								if(wans_lanport == value_list[j])
-									wan_port_conflict = true;
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
 	if(autowan_enable != "1" && (based_modelid == "GT10" || based_modelid == "RT-AXE7800") && wans_extwan == "1"){//Ethernet LAN1
 		if(iptv_port == "1")
 			wan_port_conflict = true;
@@ -812,6 +774,20 @@ function applyRule(){
 			else
 				return false;
 		}
+
+		/* DualWAN/IPTV Conflict Check */
+		if(wans_dualwan_orig.indexOf("none") == -1 && (document.form.switch_stb_x.value != "0" || document.form.switch_wantag.value != "none")){
+			var hint_str = `<#conflict_function_hint#>`;
+			var msg = hint_str.replace("%1$@", `IPTV`).replace("%2$@", "<#dualwan#>");
+
+			if(confirm(msg)){
+				document.form.wans_dualwan.disabled = false;
+				document.form.wans_dualwan.value = "wan none";
+			}
+			else
+				return false;
+		}
+
 
 		if(reboot_confirm==1){
 			if(confirm("<#AiMesh_Node_Reboot#>")){

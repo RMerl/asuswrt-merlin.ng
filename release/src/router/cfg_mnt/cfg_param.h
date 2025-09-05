@@ -351,6 +351,22 @@ enum {
 	SUBFT_OFDMA_BAND2,
 	SUBFT_OFDMA_BAND3,
 	SUBFT_OFDMA_BAND4,
+	
+#if defined(RTCONFIG_WIFI7) 
+#if defined(RTCONFIG_BCMWL6) 
+	/* sub feature for be_ofdma */
+	SUBFT_BE_OFDMA_BAND1,
+	SUBFT_BE_OFDMA_BAND2,
+	SUBFT_BE_OFDMA_BAND3,
+	SUBFT_BE_OFDMA_BAND4,
+	
+	/* sub feature for be_mumimo */
+	SUBFT_BE_MUMIMO_BAND1,
+	SUBFT_BE_MUMIMO_BAND2,
+	SUBFT_BE_MUMIMO_BAND3,
+	SUBFT_BE_MUMIMO_BAND4,
+#endif
+#endif
 
 #if defined(RTCONFIG_STA_AP_BAND_BIND)
 	/* sub feature for sta binding ap */
@@ -603,6 +619,24 @@ static struct subfeature_mapping_s subfeature_mapping_list[] __attribute__ ((unu
 	{ "ofdma_5g", SUBFT_OFDMA_BAND2, FT_WIRELESS },
 	{ "ofdma_5g1", SUBFT_OFDMA_BAND3, FT_WIRELESS },
 	{ "ofdma_b4", SUBFT_OFDMA_BAND4, FT_WIRELESS },
+
+#if defined(RTCONFIG_WIFI7) 
+#if defined(RTCONFIG_BCMWL6) 
+	/* be_ofdma */
+	{ "be_ofdma_b1", SUBFT_BE_OFDMA_BAND1, FT_WIRELESS },
+	{ "be_ofdma_b2", SUBFT_BE_OFDMA_BAND2, FT_WIRELESS },
+	{ "be_ofdma_b3", SUBFT_BE_OFDMA_BAND3, FT_WIRELESS },
+	{ "be_ofdma_b4", SUBFT_BE_OFDMA_BAND4, FT_WIRELESS },
+	
+	/* be_mumimo */
+	/* be_ofdma */
+	{ "be_mumimo_b1", SUBFT_BE_MUMIMO_BAND1, FT_WIRELESS },
+	{ "be_mumimo_b2", SUBFT_BE_MUMIMO_BAND2, FT_WIRELESS },
+	{ "be_mumimo_b3", SUBFT_BE_MUMIMO_BAND3, FT_WIRELESS },
+	{ "be_mumimo_b4", SUBFT_BE_MUMIMO_BAND4, FT_WIRELESS },
+#endif
+#endif
+
 #if defined(RTCONFIG_BCN_RPT)
 	{ "rssi_method", SUBFT_RSSI_METHOD, FT_WIRELESS },
 #endif
@@ -1051,8 +1085,6 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 	{ "fb_Subscribed_Info", 	FT_FEEDBACK,		SUBFT_FEEDBACK,		""},
 	{ "fb_attach_iptables", 		FT_FEEDBACK,		SUBFT_FEEDBACK,		""},
 #endif
-	{ "oauth_google_refresh_token", FT_FEEDBACK, SUBFT_FEEDBACK,		""},
-	{ "oauth_google_user_email", FT_FEEDBACK, SUBFT_FEEDBACK,		""},
 	{ "fb_email_provider", FT_FEEDBACK, SUBFT_FEEDBACK,		""},
 	/* diagnostic */
 	{ "dblog_enable", 		FT_FEEDBACK,		SUBFT_FEEDBACK,		"0"},
@@ -1239,6 +1271,23 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 	{ "wl1_ofdma", FT_WIRELESS, SUBFT_OFDMA_BAND2,		"1"},
 	{ "wl2_ofdma", FT_WIRELESS, SUBFT_OFDMA_BAND3,		"1"},
 	{ "wl3_ofdma", FT_WIRELESS, SUBFT_OFDMA_BAND4,		"1"},
+	
+#if defined(RTCONFIG_WIFI7) 
+#if defined(RTCONFIG_BCMWL6) 
+	/* be_ofdma */
+	{ "wl0_be_ofdma", FT_WIRELESS, SUBFT_BE_OFDMA_BAND1,		"3"},
+	{ "wl1_be_ofdma", FT_WIRELESS, SUBFT_BE_OFDMA_BAND2,		"3"},
+	{ "wl2_be_ofdma", FT_WIRELESS, SUBFT_BE_OFDMA_BAND3,		"3"},
+	{ "wl3_be_ofdma", FT_WIRELESS, SUBFT_BE_OFDMA_BAND4,		"3"},
+	
+	/* be_mumimo */
+	{ "wl0_be_mumimo", FT_WIRELESS, SUBFT_BE_MUMIMO_BAND1,		"3"},
+	{ "wl1_be_mumimo", FT_WIRELESS, SUBFT_BE_MUMIMO_BAND2,		"3"},
+	{ "wl2_be_mumimo", FT_WIRELESS, SUBFT_BE_MUMIMO_BAND3,		"3"},
+	{ "wl3_be_mumimo", FT_WIRELESS, SUBFT_BE_MUMIMO_BAND4,		"3"},
+#endif
+#endif
+
 #if defined(RTCONFIG_BCN_RPT)
 	{ "rssi_method", FT_WIRELESS, SUBFT_RSSI_METHOD,		""},
 #endif

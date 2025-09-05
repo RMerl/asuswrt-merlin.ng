@@ -3660,6 +3660,10 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 			snprintf(prefix, sizeof(prefix), "wan%d_", i++);
 			value = get_cgi_json(strlcat_r(prefix, name+4, tmp, sizeof(tmp)),root);
 			if(value && strcmp(nvram_safe_get(tmp), value)) {
+				if(!validate_apply_input_value(tmp, value)){
+					dbg("validate(wanX) %s=%s is illegal\n", tmp, value);
+					continue;
+				}
 				dbG("nvram set %s = %s\n", tmp, value);
 				nvram_check_and_set_for_prefix(name, tmp, value);
 				//nvram_set(tmp, value);
@@ -4213,6 +4217,10 @@ int validate_apply(webs_t wp, json_object *root)
 				(void)strlcat_r(prefix, name+4, tmp, sizeof(tmp));
 
 				if(strcmp(nvram_safe_get(tmp), value)) {
+					if(!validate_apply_input_value(tmp, value)){
+						dbg("validate(wan) %s=%s is illegal\n", tmp, value);
+						continue;
+					}
 					nvram_set(tmp, value);
 					nvram_modified = 1;
 					_dprintf("wan_ set %s=%s\n", tmp, value);
@@ -4818,7 +4826,7 @@ static int ej_set_variables(int eid, webs_t wp, int argc, char_t **argv) {
 	int retStatus = 0;
 	char retList[65536]={0};
 	char *buf, *g, *p;
-	char nvramTmp[4096]={0}, strTmp[4096]={0};
+	char nvramTmp[65536]={0}, strTmp[4096]={0};
 	int iCurrentListNum = 0;
 
 	apiName = websGetVar(wp, "apiname", "");
@@ -9656,7 +9664,6 @@ static int get_client_bind_info(char *client_mac, char *node_mac, int node_mac_s
 
 			stalist_len = strlen(stalist);
 			stalist_idx = 0;
-			allowband_str_len = 0;
 
 			while(1)// break when stalist len = 0
 			{
@@ -9674,10 +9681,11 @@ static int get_client_bind_info(char *client_mac, char *node_mac, int node_mac_s
 				}
 				stalist_idx++;
 
+				allowband_str_len = 0;
 				while(1){
 					if(stalist_idx+allowband_str_len >= stalist_len)
 						break;
-					if(stalist[stalist_idx+allowband_str_len] == '|')
+					if (stalist[stalist_idx + allowband_str_len] == '|' || stalist[stalist_idx + allowband_str_len] == ',')
 						break;
 					allowband_str_len++;
 				}
@@ -12962,6 +12970,8 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 	}
 	else if (!strcmp(action_mode, "logout")) // but, every one can reset it by this call
 	{
+		time_t now_log = time(NULL);
+		HTTPD_FB_DEBUG("apply_cgi: action_mode==logout @ %s\n", ctime(&now_log));
 		websRedirect(wp, "Logout.asp");
 	}
 	else if (!strcmp(action_mode, "change_wl_unit"))
@@ -15718,7 +15728,7 @@ do_upgrade_cgi(char *url, FILE *stream)
 		websApply(stream, "Updating.asp");
 		shutdown(fileno(stream), SHUT_RDWR);
 #ifndef RTCONFIG_SINGLEIMG_B
-		while(etry-- && (err = upgrade_rc("start", autoreboot, reset, bootnew, 60)))
+		while(etry-- && (err = upgrade_rc("start", autoreboot, reset, bootnew, 120)))
 		{
 			printf("%s, try agn upgrade...%d/3, err=%d\n", __FUNCTION__, etry, err);
 			upgrade_rc("stop", autoreboot, reset, bootnew, 10);
@@ -17771,6 +17781,47 @@ do_ipsec_cert_info_cgi(char *url, FILE *stream)
 		X509_free(x509data);
 }
 
+int prn_cert_info(const char *fn)
+{
+	FILE *fp;
+	char buf[256] = "", subject[64] = "", issuer[64] = "";
+	char notBefore[64] = "", notAfter[64] = "";
+	X509 *x509data = NULL;
+	struct tm tm;
+
+	if (!fn || !f_exists(fn))
+		return -1;
+
+	if (!(fp = fopen(fn, "r")))
+		return -2;
+
+	if (!PEM_read_X509(fp, &x509data, NULL, NULL)) {
+		fseek(fp, 0, SEEK_SET);
+		d2i_X509_fp(fp, &x509data);
+	}
+	fclose(fp);
+	if (!x509data) {
+		return -3;
+	}
+
+	X509_NAME_oneline(X509_get_issuer_name(x509data), buf, sizeof(buf));
+	if (strstr(buf, "Let's Encrypt")) {
+		snprintf(issuer, sizeof(issuer), "Let's Encrypt");
+	} else {
+		_get_common_name(buf, issuer, sizeof(issuer));
+	}
+	X509_NAME_oneline(X509_get_subject_name(x509data), buf, sizeof(buf));
+	_get_common_name(buf, subject, sizeof(subject));
+	ASN1_TimeToTM(X509_getm_notBefore(x509data), &tm);
+	snprintf(notBefore, sizeof(notBefore), "%d/%d/%d", tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday);
+	ASN1_TimeToTM(X509_getm_notAfter(x509data), &tm);
+	snprintf(notAfter, sizeof(notAfter), "%d/%d/%d", tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday);
+	_dprintf("S:%s, I:%s, %s ~ %s\n", subject, issuer, notBefore, notAfter);
+	logmessage("httpd", "S:%s, I:%s, %s ~ %s", subject, issuer, notBefore, notAfter);
+
+	return 0;
+}
+
 static void
 do_get_ipsec_profile_cgi(char *url, FILE *stream)
 {
@@ -18619,6 +18670,49 @@ FINISH:
 }
 #endif
 
+static void
+del_custom_clientlist(char *delete_mac)
+{
+	int retStatus = -1;
+	char nvramTmp[65536]={0};
+	char *buf, *g, *p;
+	char *name, *mac, *group, *type, *callback, *keeparp;
+
+	if(!strcmp(delete_mac, "")) {
+		retStatus = 3;
+	} else {
+		retStatus = 2;
+		g = buf = strdup(nvram_safe_get("custom_clientlist"));
+		while (buf) {
+			if ((p = strsep(&g, "<")) == NULL) break;
+			if((vstrsep(p, ">", &name, &mac, &group, &type, &callback, &keeparp)) != 6) continue;
+
+			if(!strcmp(delete_mac, mac)){
+				retStatus = 0;
+				continue;
+			}
+			else{
+				strlcat(nvramTmp, "<", sizeof(nvramTmp));
+				strlcat(nvramTmp, name, sizeof(nvramTmp));
+				strlcat(nvramTmp, ">", sizeof(nvramTmp));
+				strlcat(nvramTmp, mac, sizeof(nvramTmp));
+				strlcat(nvramTmp, ">", sizeof(nvramTmp));
+				strlcat(nvramTmp, group, sizeof(nvramTmp));
+				strlcat(nvramTmp, ">", sizeof(nvramTmp));
+				strlcat(nvramTmp, type, sizeof(nvramTmp));
+				strlcat(nvramTmp, ">", sizeof(nvramTmp));
+				strlcat(nvramTmp, callback, sizeof(nvramTmp));
+				strlcat(nvramTmp, ">", sizeof(nvramTmp));
+				strlcat(nvramTmp, keeparp, sizeof(nvramTmp));
+			}
+		}
+		free(buf);
+		if(retStatus == 0){
+			nvram_set("custom_clientlist", nvramTmp);
+			httpd_nvram_commit();
+		}
+	}
+}
 
 static void
 deleteOfflineClient(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg, char_t *url, char_t *path, char_t *query)
@@ -18637,6 +18731,10 @@ deleteOfflineClient(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg, char_
 		ret = HTTP_INVALID_MAC;
 		goto FINISH;
 	}
+
+	// Remove MAC addresses that were set in the custom_clientlist
+	toUpperCase(mac);
+	del_custom_clientlist(mac);
 
 	int i, shm_client_info_id;
 	void *shared_client_info=(void *) 0;
@@ -19625,7 +19723,7 @@ do_blocking_request_cgi(char *url, FILE *stream)
 	}
 
 	memset(filename, 0, 128);
-	snprintf(filename, sizeof(filename), "blocking.asp?mac=%s", block_mac);
+	snprintf(filename, sizeof(filename), "blocking.asp");
 	websRedirect(stream, filename);
 
 FINISH:
@@ -21014,6 +21112,9 @@ login_cgi(webs_t wp, char_t *url, int auth_version)
 	fromapp_flag = check_user_agent(user_agent);
 	lock_status = check_lock_status(&dt);
 
+	temp_ip_addr.s_addr = login_ip_tmp;
+	temp_ip_str = inet_ntoa(temp_ip_addr);
+
 	if(lock_status == FORCELOCK){
 		send_login_page(fromapp_flag, lock_status, NULL, NULL, 0, NOLOGINTRY);
 		ret = FORCELOCK;
@@ -21065,6 +21166,7 @@ login_cgi(webs_t wp, char_t *url, int auth_version)
 			websWrite(wp,"Connection: close\r\n" );
 			websWrite(wp,"\r\n" );
 			login_error_status = WRONGCAPTCHA;
+			logmessage("HTTPD", "[LOGIN][%s][%s] captcha error (%s)\n", (do_ssl)?"https":"http", (fromapp_flag)?"APP":"Web", temp_ip_str);
 			if(fromapp_flag != 0){
 					websWrite(wp, "{\n\"error_status\":\"%d\", \"captcha_on\":\"%d\", \"last_time_lock_warning\":\"%d\"\n}\n", login_error_status, captcha_on(), last_time_lock_warning());
 			}else{
@@ -21119,6 +21221,7 @@ login_cgi(webs_t wp, char_t *url, int auth_version)
 		)
 	{
 		HTTPD_DBG("authpass!\n");
+		logmessage("HTTPD", "[LOGIN][%s][%s] success (%s)\n", (do_ssl)?"https":"http",(fromapp_flag)?"APP":"Web", temp_ip_str);
 #ifdef RTCONFIG_CAPTCHA
 		nvram_set_int(CAPTCHA_FAIL_NUM, 0);
 		HTTPD_DBG("authpass: captcha_fail_num = %d\n", nvram_get_int(CAPTCHA_FAIL_NUM));
@@ -21168,7 +21271,7 @@ login_cgi(webs_t wp, char_t *url, int auth_version)
 
 			websWrite(wp,"<HTML><HEAD>\n" );
 #ifndef RTCONFIG_BCM_MFG
-			if(is_passwd_default() && !nvram_match(ATE_FACTORY_MODE_STR(), "1"))
+			if((is_passwd_default() && !nvram_match(ATE_FACTORY_MODE_STR(), "1")) || nvram_get_int("force_chgpass"))
 				websWrite(wp, T("<meta http-equiv=\"refresh\" content=\"0; url=Main_Password.asp\">\r\n"));
 			else
 #endif
@@ -21215,8 +21318,6 @@ login_cgi(webs_t wp, char_t *url, int auth_version)
 		}
 		if((cur_login_ip_type? nvram_get_int(HTTPD_LOGIN_FAIL_WAN): nvram_get_int(HTTPD_LOGIN_FAIL_LAN)) >= DEFAULT_LOGIN_MAX_NUM){
 			lock_flag |= (cur_login_ip_type? LOCK_LOGIN_WAN: LOCK_LOGIN_LAN);
-			temp_ip_addr.s_addr = login_ip_tmp;
-			temp_ip_str = inet_ntoa(temp_ip_addr);
 			logmessage("httpd login lock", "Detect abnormal logins at %d times. The newest one was from %s in login.", (cur_login_ip_type? nvram_get_int(HTTPD_LOGIN_FAIL_WAN): nvram_get_int(HTTPD_LOGIN_FAIL_LAN)), temp_ip_str);
 #ifdef RTCONFIG_NOTIFICATION_CENTER
 			json_object *nt_root = NULL;
@@ -21262,6 +21363,7 @@ login_cgi(webs_t wp, char_t *url, int auth_version)
 #if defined(RTCONFIG_RGBLED) && defined(GTAC2900)
 		send_aura_event("LoginFail");
 #endif
+		logmessage("HTTPD", "[LOGIN][%s][%s] fail (%s)\n", (do_ssl)?"https":"http", (fromapp_flag)?"APP":"Web", temp_ip_str);
 		HTTPD_DBG("authfail: login_error_status = %d\n", login_error_status);
 		if(fromapp_flag != 0){
 			if(login_error_status == LOGINLOCK)
@@ -25700,7 +25802,7 @@ struct mime_handler mime_handlers[] =
 	{ "gotoHomePage.htm", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
 	{ "ure_success.htm", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
 	{ "ureip.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "remote.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
+	//{ "remote.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
 	{ "js/jquery.js", "text/javascript", cache_object, NULL, do_file, NULL },
 	{ "js/bootstrap.bundle.min.js", "text/javascript", cache_object, NULL, do_file, NULL },
 	{ "js/chart.min.js", "text/javascript", cache_object, NULL, do_file, NULL },
@@ -25737,9 +25839,9 @@ struct mime_handler mime_handlers[] =
 	{ "help_content.js", "text/javascript", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
 	{ "httpd_check.htm", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
 	{ "manifest.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "update_cloudstatus.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "update_applist.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "update_appstate.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
+	{ "update_cloudstatus.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
+	{ "update_applist.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
+	{ "update_appstate.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
 	{ "WAN_info.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
 	{ "detwan.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_detwan_cgi, do_auth },
 	{ "message.htm", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
@@ -30366,6 +30468,38 @@ ej_check_acorpw(int eid, webs_t wp, int argc, char_t **argv)
 
 #if defined(RTCONFIG_BWDPI)
 static int
+do_sqlite_Stat_hook(int type, webs_t wp)
+{
+	int retval = 0;
+	char *client = NULL, *mode = NULL, *dura = NULL, *date = NULL;
+
+	client = websGetVar(wp, "client", "");
+	mode = websGetVar(wp, "mode", "");
+	dura = websGetVar(wp, "dura", "");
+	date = websGetVar(wp, "date", "");
+
+	if(type < 0 || type > 2)
+		return 0;
+
+	if(strcmp(client, "all") && !isValidMacAddress(client) && check_cmd_injection_blacklist(client))
+		return 0;
+
+	if(strcmp(mode, "day") && strcmp(mode, "hour") && strcmp(mode, "detail"))
+		return 0;
+
+	if(strcmp(dura, "7") && strcmp(dura, "24") && strcmp(dura, "31"))
+		return 0;
+
+	if(!isValidtimestamp_noletter(date))
+		return 0;
+
+	// 0: app, 1: mac
+	sqlite_Stat_hook(type, client, mode, dura, date, &retval, wp);
+
+	return retval;
+}
+
+static int
 ej_bwdpi_history(int eid, webs_t wp, int argc, char_t **argv)
 {
 	int retval = 0;
@@ -30452,16 +30586,7 @@ ej_bwdpi_redirect_page_status(int eid, webs_t wp, int argc, char_t **argv)
 static int
 ej_bwdpi_appStat(int eid, webs_t wp, int argc, char_t **argv)
 {
-	char *client, *mode, *dura, *date;
-	int retval = 0;
-
-	client = websGetVar(wp, "client", "");
-	mode = websGetVar(wp, "mode", "");
-	dura = websGetVar(wp, "dura", "");
-	date = websGetVar(wp, "date", "");
-
-	// 0: app, 1: mac
-	sqlite_Stat_hook(0, client, mode, dura, date, &retval, wp);
+	int retval = do_sqlite_Stat_hook(0, wp);
 
 	return retval;
 }
@@ -30469,16 +30594,7 @@ ej_bwdpi_appStat(int eid, webs_t wp, int argc, char_t **argv)
 static int
 ej_bwdpi_wanStat(int eid, webs_t wp, int argc, char_t **argv)
 {
-	char *client, *mode, *dura, *date;
-	int retval = 0;
-
-	client = websGetVar(wp, "client", "");
-	mode = websGetVar(wp, "mode", "");
-	dura = websGetVar(wp, "dura", "");
-	date = websGetVar(wp, "date", "");
-
-	// 0: app, 1: mac
-	sqlite_Stat_hook(1, client, mode, dura, date, &retval, wp);
+	int retval = do_sqlite_Stat_hook(1, wp);
 
 	return retval;
 }
@@ -30486,16 +30602,7 @@ ej_bwdpi_wanStat(int eid, webs_t wp, int argc, char_t **argv)
 static int
 ej_bwdpi_wanStat_detail(int eid, webs_t wp, int argc, char_t **argv)
 {
-	char *client, *mode, *dura, *date;
-	int retval = 0;
-
-	client = websGetVar(wp, "client", "");
-	mode = websGetVar(wp, "mode", "");
-	dura = websGetVar(wp, "dura", "");
-	date = websGetVar(wp, "date", "");
-
-	// 0: app, 1: mac
-	sqlite_Stat_hook(2, client, mode, dura, date, &retval, wp);
+	int retval = do_sqlite_Stat_hook(2, wp);
 
 	return retval;
 }
@@ -33622,7 +33729,7 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 	json_object *allBrMacListObj = NULL;
 	json_object *macEntryObj = NULL;
 	json_object *reMacFileObj = NULL, *reMac_misc_obj = NULL, *reMac_misc_cfg_alias = NULL;
-	json_object *capabilityObj = NULL, *wiredPortObj = NULL, *plcStatusObj = NULL, *mocaStatusObj = NULL;
+	json_object *capabilityObj = NULL, *wiredPortObj = NULL, *plcStatusObj = NULL, *mocaStatusObj = NULL, *findcapStatusObj = NULL;
 	json_object *miscInfoObj = NULL, *bandInfoObj = NULL;
 	int online = 0;
 	int level = 0;
@@ -33640,7 +33747,7 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 	char pap2g_ssid_conv_buf[65], pap5g_ssid_conv_buf[65], pap6g_ssid_conv_buf[65];
 	char word[256], *next = NULL, prefix[16], tmp[64];
 	int unit = 0, bandNum = 0;
-	char file_name[64] = {0}, wired_port_buf[512] = {0}, plc_status_buf[256] = {0}, moca_status_buf[256] = {0};
+	char file_name[64] = {0}, wired_port_buf[512] = {0}, plc_status_buf[256] = {0}, moca_status_buf[256] = {0}, findcap_status_buf[256] = {0};
 	char tcode_buf[16] = {0};
 	int nband = 0;
 	char misc_info_buf[256] = {0};
@@ -34001,6 +34108,15 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 			json_object_put(mocaStatusObj);
 		}
 
+		/* findcap status */
+		memset(findcap_status_buf, 0, sizeof(findcap_status_buf));
+		snprintf(file_name, sizeof(file_name), "/tmp/%s.findcap", rmac_buf);
+		findcapStatusObj = json_object_from_file(file_name);
+		if (findcapStatusObj) {
+			snprintf(findcap_status_buf, sizeof(findcap_status_buf), "%s", json_object_to_json_string_ext(findcapStatusObj, 0));
+			json_object_put(findcapStatusObj);
+		}
+
 		/* get misc info */
 		memset(misc_info_buf, 0, sizeof(misc_info_buf));
 		if (i == 0)
@@ -34117,6 +34233,7 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 		websWrite(wp, "\"plc_status\":%s,", strlen(plc_status_buf) ? plc_status_buf : "{}");
 		websWrite(wp, "\"moca_status\":%s,", strlen(moca_status_buf) ? moca_status_buf : "{}");
 		websWrite(wp, "\"band_num\":\"%d\",", bandNum);
+		websWrite(wp, "\"findcap_status\":%s,", strlen(findcap_status_buf) ? findcap_status_buf : "{}");
 		websWrite(wp, "\"tcode\":\"%s\",", strlen(tcode_buf) ? tcode_buf : "");
 		websWrite(wp, "\"misc_info\":%s,", strlen(misc_info_buf) ? misc_info_buf : "{}");
 		websWrite(wp, "\"ap2g_fh\":\"%s\",", strcmp(ap2g_fh_buf, "00:00:00:00:00:00") ? ap2g_fh_buf : "");

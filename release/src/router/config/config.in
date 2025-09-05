@@ -310,6 +310,11 @@ config RTCONFIG_IPV6
 	bool "IPv6 Support"
 	default n
 
+config RTCONFIG_IPV6_PRIVACY
+	bool "IPv6 Privacy Extensions support for WAN"
+	depends on RTCONFIG_IPV6
+	default n
+
 config RTCONFIG_IMPROXY
 	bool "IGMP 1,2,3 & MLD 1,2 Proxy Support"
 
@@ -2720,6 +2725,10 @@ config RTCONFIG_NORDVPN
 	bool "3rd party VPN NordVPN support"
 	default n
 
+config RTCONFIG_SURFSHARK
+	bool "3rd party VPN Surfshark VPN support account login"
+	default n
+
 config RTCONFIG_SPECIFIC_PPPOE
 	bool "Support specific PPPoE features"
 	default n
@@ -2886,3 +2895,7 @@ config RTCONFIG_RTL_UMGMT
 config RTCONFIG_DIS_HASH_KEY_GEN_CHECK
 	bool "disable hash key generation and check"
 	default n
+
+config RTCONFIG_SECURE_BY_DEFAULT
+	bool "secure setting in default"
+	default y

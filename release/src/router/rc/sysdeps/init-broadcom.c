@@ -2042,6 +2042,8 @@ void init_switch_pre()
 	system("ethswctl -c pause -p 0 -v 2");
 #elif defined(TUFAX3000_V2) || defined(RTAXE7800)
 	system("ethswctl -c pause -p 0 -v 2");
+	system("ethswctl -c pause -p 1 -v 2");
+	system("ethswctl -c pause -p 5 -v 2");
 	system("ethswctl -c pause -p 8 -v 2");
 #elif defined(BCM6750) || defined(BCM63178)
 	system("ethswctl -c pause -p 0 -v 2");
@@ -2263,6 +2265,11 @@ void init_switch_pre()
 
 		doSystem("ethswctl -c softswitch -i %s -o %s", wired_ifnames[i], dualwan_lanif ? "enable" : "disable");
         }
+#endif
+
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63)
+	doSystem("ethswctl -c softswitch -i %s -o %s", wan_if_eth(), is_router_mode() ? "disable" : "enable");
+	doSystem("ethswctl -c softswitch -i eth1 -o enable");
 #endif
 
 #if (defined(BCM6750) || defined(BCM63178)) && !defined(RTCONFIG_HND_ROUTER_AX_6756)
@@ -2982,7 +2989,7 @@ void init_switch()
 		}
 	}
 
-#ifdef RTCONFIG_EMF
+#if defined(RTCONFIG_EMF) && !defined(RTCONFIG_HND_ROUTER_AX_6756) && !defined(RTCONFIG_HND_ROUTER_BE_4916)
 	eval("insmod", "emf");
 	eval("insmod", "igs");
 #endif
@@ -3698,7 +3705,7 @@ void init_switch()
 	if (nvram_get_int("ctf_disable") == 0)
 		eval("insmod", "ctf");
 
-#ifdef RTCONFIG_EMF
+#if defined(RTCONFIG_EMF) && !defined(RTCONFIG_HND_ROUTER_AX_6756) && !defined(RTCONFIG_HND_ROUTER_BE_4916)
 	eval("insmod", "emf");
 	eval("insmod", "igs");
 #endif
@@ -3817,11 +3824,16 @@ set_bcm4360ac_vars(void)
 unsigned char gen_mssid_hwaddr_mac0(unsigned char mac_binary[])
 {
 	char vif_addr[WLC_IOCTL_SMLEN];
+	int max_wl_cap_mbss = 16 ; /* to meet all model, always using mbss16 to generate mac0 */
+	int adjustment = 0 ;
 
 	memcpy(vif_addr, mac_binary, ETHER_ADDR_LEN);
 
-	vif_addr[5] = (vif_addr[5] & ~(16 /* max_no_vifs */ - 1)) | (mac_binary[5] & (16 /* max_no_vifs */ - 1));
-	vif_addr[0] = 96 + (vif_addr[5]%( 16 /* max_no_vifs */ -1) * 8);
+	if(vif_addr[0] == 96){
+		if(vif_addr[5]%(max_wl_cap_mbss -1) == 0) adjustment = 1;
+		else adjustment = 0;
+	}
+	vif_addr[0] = 96 + ((vif_addr[5]+adjustment)%(max_wl_cap_mbss -1) * 8);
 
 	ETHER_SET_LOCALADDR(vif_addr);
 

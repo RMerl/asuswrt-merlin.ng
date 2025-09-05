@@ -202,6 +202,13 @@ static int top_period = 0;
 static int top = 0;
 static int lsof_period = 0;
 static int lsof = 0;
+static int mem_chk_period = 0;
+static int mem_chk = 0;
+#if defined(TUFAX3000_V2) || defined(RTAXE7800)
+static int eth1_period = 60;
+static int eth1 = 59;
+static int eth1_count = 0;
+#endif
 #ifdef RTCONFIG_BCMARM
 static int chkusb3_period = 0;
 static int u3_chk_life = 6;
@@ -2504,6 +2511,20 @@ void rtkl_check()
 			rtkswitch_ioctl(SET_EXT_RXDELAY, 4, 0);
 		
 			rtl_fail = 0;
+		}
+	}
+}
+#endif
+
+#if defined(TUFAX3000_V2) || defined(RTAXE7800)
+void check_eth1_pause()
+{
+	if (eth1_period) {
+		eth1 = (eth1 + 1) % eth1_period ;
+		if (!eth1) {
+			set_eth1_pause();
+			if (++eth1_count == 2)
+				eth1_period = 0;
 		}
 	}
 }
@@ -8021,7 +8042,7 @@ static void auto_firmware_check()
 				}
 
 				FAUPGRADE_DBG("notify_rc firmware_webs_update");
-				notify_rc("firmware_webs_update");
+				notify_rc("start_firmware_webs_update");
 				return;
 			}
 		}
@@ -8580,25 +8601,25 @@ void amas_ctl_check()
 		if (nvram_get_int("obd_prelinking") == 1)
 			return;
 #endif
-		if (nvram_match("amas_bhctrl_service_ready", "1") && !pids("amas_bhctrl"))
+		if (nvram_match("amas_bhctrl_service_ready", "1") && !check_main_pids_exist("amas_bhctrl"))
 			notify_rc("start_amas_bhctrl");
-		if (nvram_match("amas_wlcconnect_service_ready", "1") && !pids("amas_wlcconnect"))
+		if (nvram_match("amas_wlcconnect_service_ready", "1") && !check_main_pids_exist("amas_wlcconnect"))
 			notify_rc("start_amas_wlcconnect");
-		if (nvram_match("amas_lanctrl_service_ready", "1") && !pids("amas_lanctrl"))
+		if (nvram_match("amas_lanctrl_service_ready", "1") && !check_main_pids_exist("amas_lanctrl"))
 			notify_rc("start_amas_lanctrl");
 #ifdef RTCONFIG_BHCOST_OPT
-		if (nvram_match("amas_status_service_ready", "1") && !pids("amas_status"))
+		if (nvram_match("amas_status_service_ready", "1") && !check_main_pids_exist("amas_status"))
 			notify_rc("start_amas_status");
-		if (nvram_match("amas_misc_service_ready", "1") && !pids("amas_misc"))
+		if (nvram_match("amas_misc_service_ready", "1") && !check_main_pids_exist("amas_misc"))
 			notify_rc("start_amas_misc");
-		if (nvram_match("amas_ssd_service_ready", "1") && !pids("amas_ssd"))
+		if (nvram_match("amas_ssd_service_ready", "1") && !check_main_pids_exist("amas_ssd"))
 			notify_rc("start_amas_ssd");
 #endif
 	}
 	else
 	{
 #if defined(RTCONFIG_FRONTHAUL_DWB) || defined(RTCONFIG_VIF_ONBOARDING)
-		if (nvram_match("amas_lanctrl_service_ready", "1") && !pids("amas_lanctrl")) {
+		if (nvram_match("amas_lanctrl_service_ready", "1") && !check_main_pids_exist("amas_lanctrl")) {
 			if (is_router_mode() || access_point_mode())
 				start_amas_lanctrl();
 		}
@@ -9963,6 +9984,10 @@ void watchdog(int sig)
 	rtkl_check();
 #endif
 
+#if defined(TUFAX3000_V2) || defined(RTAXE7800)
+	check_eth1_pause();
+#endif
+
 #if defined(RTCONFIG_QCA) && defined(RTCONFIG_WIGIG)
 	wigig_temperatore_check();
 #endif
@@ -10136,8 +10161,7 @@ void watchdog(int sig)
 	}
 #endif
 #ifdef RTCONFIG_BCMWL6
-	if (!restore_defaults_g && strlen(nvram_safe_get("acs_ifnames")) && nvram_get_int("wlready") &&
-		!mediabridge_mode() &&
+	if (!no_need_acsd() &&
 #ifdef RTCONFIG_HND_ROUTER_AX
 		!pids("acsd2")
 #else
@@ -10159,8 +10183,15 @@ void watchdog(int sig)
 	lsof_period = nvram_get_int("lsof_period");
 	if (lsof_period) {
 		lsof = (lsof + 1) % lsof_period ;
-		if (!top)
+		if (!lsof)
 			system("lsof | awk '{ print $1 " " $2; }' | sort -rn | uniq -c | sort -rn | head | logger -t lsof");
+	}
+
+	mem_chk_period = nvram_get_int("mem_chk_period");
+	if (mem_chk_period) {
+		mem_chk = (mem_chk + 1) % mem_chk_period ;
+		if (!mem_chk)
+			memleakdbg();
 	}
 
 #if !defined(RTCONFIG_BCM_MFG) && (defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(DSL_AX82U))

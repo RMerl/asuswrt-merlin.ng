@@ -136,6 +136,9 @@ CFLAGS += -I$(SRCBASE)/common/include
 ifneq ($(findstring CONFIG_DUMP_PREV_OOPS_MSG=, $(shell cat $(LINUXDIR)/.config)),)
 CFLAGS += -DDUMP_PREV_OOPS_MSG
 endif
+ifneq ($(findstring CONFIG_DEBUG_KMEMLEAK=, $(shell cat $(LINUXDIR)/.config)),)
+CFLAGS += -DDEBUG_KMEMLEAK
+endif
 LDFLAGS += -L$(TOP)/libbcm -lbcm
 LDFLAGS += -lgcc_s
 ifeq ($(RTCONFIG_QTN),y)
@@ -237,6 +240,9 @@ endif
 ifeq ($(RTCONFIG_BT_CONN),y)
 CFLAGS  += -I$(TOP)/bluez-5.56/lib
 endif
+
+CFLAGS += -I$(TOP)/libwebapi
+LDFLAGS += -L$(TOP)/libwebapi -lwebapi
 
 #CFLAGS += -DRC_BUILDTIME=$(shell date -d "now" +"%s")
 
@@ -702,8 +708,8 @@ ifeq ($(or $(RTCONFIG_FRS_LIVE_UPDATE),$(RTCONFIG_FRS_FEEDBACK),$(RTCONFIG_URLFW
 CFLAGS += -I$(TOP)/curl-7.21.7/include
 LDFLAGS += -L$(TOP)/curl-7.21.7/lib/.libs -lcurl
 ifeq ($(RTCONFIG_TR069),y)
-CFLAGS += -I$(TOP)/libssh2-1.10.0/include -I$(TOP)/zlib/include
-LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2 -L$(TOP)/zlib -lz
+CFLAGS += -I$(TOP)/libssh2/include -I$(TOP)/zlib/include
+LDFLAGS += -L$(TOP)/libssh2/src/.libs -lssh2 -L$(TOP)/zlib -lz
 endif
 endif
 
@@ -1477,6 +1483,7 @@ ifeq ($(RTCONFIG_CONNDIAG),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc amas_portstatus
 endif
 ifeq ($(RTCONFIG_CFGSYNC),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc firmware_webs_update
 ifeq ($(HND_ROUTER_AX),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rmd
 endif
@@ -1563,6 +1570,9 @@ ifeq ($(RTCONFIG_HMA),y)
 endif
 ifeq ($(RTCONFIG_NORDVPN),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc nordvpn
+endif
+ifeq ($(RTCONFIG_SURFSHARK),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc surfshark
 endif
 endif
 

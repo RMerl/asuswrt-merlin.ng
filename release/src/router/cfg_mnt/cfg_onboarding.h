@@ -18,6 +18,7 @@
 #define UNDEF_RE_MAC	"FF:FF:FF:FF:FF:FF"
 #define PRELINK_FILE_LOCK	"prelink"
 #define PRELINK_LIST_JSON_PATH	"/tmp/prelink.json"
+#define UNKNOWN_MODEL_NAME	"Unknown"
 #ifdef ONBOARDING_VIA_VIF
 #define TIMEOUT_FOR_VIF_CHECK		60	//sec
 #define TIMEOUT_CONFIG_SYNC		60	//sec
@@ -141,6 +142,7 @@ extern void cm_computeVifDownTimeout(int rTime, int cTimeout, int tTimeout);
 extern void cm_updateVifUpStatus(int status);
 extern int cm_obVifDownUp(int action);
 #endif
+extern char *cm_getNewReModelName(char *reMac, char *newReMac, char *modelName, int modelNameLen);
 
 #endif /* __CFG_ONBOARDING_H__ */
 /* End of cfg_onboarding.h */

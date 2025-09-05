@@ -26,7 +26,6 @@
 #include <bcmnvram.h>
 #include <ethernet.h>
 
-#include <utils.h>
 #include <shutils.h>
 #include <shared.h>
 

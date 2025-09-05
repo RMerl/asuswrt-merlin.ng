@@ -3342,7 +3342,7 @@ wb: json-c openssl libxml2 curl
 wb-install:
 	$(MAKE) -C wb INSTALLDIR=$(INSTALLDIR)/wb install
 
-rc: shared libev-4.33 $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) libdisk $(if $(RTCONFIG_LIB_CODB),libcodb) $(if $(RTCONFIG_FBWIFI),fb_wifi) $(if $(RTCONFIG_QTN),libqcsapi_client) $(if $(CONFIG_LIBBCM),libbcm) $(if $(RTCONFIG_BWDPI),bwdpi_source) $(if $(RTCONFIG_USB_SMS_MODEM),smspdu) $(if $(RTCONFIG_HND_ROUTER),bcm_flashutil bcm_util bcm_boardctl) $(if $(RTCONFIG_OPENVPN),libovpn) $(if $(RTCONFIG_LANTIQ),libfapi-0.1) $(if $(RTCONFIG_CFGSYNC), $(CFGSYNC_PKG) $(if $(RTCONFIG_AMAS), amas-utils) $(if $(RTCONFIG_LANTIQ),hostapd-2.6)) json-c $(if $(or $(RTCONFIG_FRS_LIVE_UPDATE),$(RTCONFIG_FRS_FEEDBACK),$(RTCONFIG_URLFW),$(RTCONFIG_SOFTWIRE46)), curl) $(if $(and $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_BRCM_HOSTAPD)),sys_util gen_util) $(if $(and $(RTCONFIG_HND_ROUTER_AX_6756),$(RTCONFIG_BRCM_HOSTAPD)),sys_util gen_util) $(if $(and $(RTCONFIG_HND_ROUTER_AX_6710),$(RTCONFIG_BRCM_HOSTAPD)),sys_util gen_util) $(if $(and $(RTCONFIG_BCM_502L07P2),$(RTCONFIG_BRCM_HOSTAPD)),sys_util gen_util) $(if $(RTCONFIG_BRCM_HOSTAPD),wpa_supplicant-2.7) $(if $(RTCONFIG_MXL371X),mxl371x_sdk)
+rc: shared libev-4.33 $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) libdisk $(if $(RTCONFIG_LIB_CODB),libcodb) $(if $(RTCONFIG_FBWIFI),fb_wifi) $(if $(RTCONFIG_QTN),libqcsapi_client) $(if $(CONFIG_LIBBCM),libbcm) $(if $(RTCONFIG_BWDPI),bwdpi_source) $(if $(RTCONFIG_USB_SMS_MODEM),smspdu) $(if $(RTCONFIG_HND_ROUTER),bcm_flashutil bcm_util bcm_boardctl) $(if $(RTCONFIG_OPENVPN),libovpn) $(if $(RTCONFIG_LANTIQ),libfapi-0.1) $(if $(RTCONFIG_CFGSYNC), $(CFGSYNC_PKG) $(if $(RTCONFIG_AMAS), amas-utils) $(if $(RTCONFIG_LANTIQ),hostapd-2.6)) json-c $(if $(or $(RTCONFIG_FRS_LIVE_UPDATE),$(RTCONFIG_FRS_FEEDBACK),$(RTCONFIG_URLFW),$(RTCONFIG_SOFTWIRE46)), curl) $(if $(and $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_BRCM_HOSTAPD)),sys_util gen_util) $(if $(and $(RTCONFIG_HND_ROUTER_AX_6756),$(RTCONFIG_BRCM_HOSTAPD)),sys_util gen_util) $(if $(and $(RTCONFIG_HND_ROUTER_AX_6710),$(RTCONFIG_BRCM_HOSTAPD)),sys_util gen_util) $(if $(and $(RTCONFIG_BCM_502L07P2),$(RTCONFIG_BRCM_HOSTAPD)),sys_util gen_util) $(if $(RTCONFIG_BRCM_HOSTAPD),wpa_supplicant-2.7) $(if $(RTCONFIG_MXL371X),mxl371x_sdk) libwebapi
 	@$(SEP)
 # Dig into our collection of prebuilt objects based on model
 	@-rm -f rc/prebuild/*.o || true
@@ -7012,13 +7012,9 @@ fb_wifi-clean:
 	rm -rf fb_wifi/stamp-h1
 
 #libssh2
-libssh2-stage:
+libssh2/Makefile:
 	@$(SEP)
-	@$(MAKE) libssh2-1.10.0-stage
-
-libssh2-1.10.0/Makefile:
-	@$(SEP)
-	cd libssh2-1.10.0 && autoreconf -fi && $(CONFIGURE) --prefix=/usr CC=$(CC) CXX=$(CXX) AR=$(AR) RANLIB=$(RANLIB) --enable-shared --enable-static \
+	cd libssh2 && $(CONFIGURE) --prefix=/usr CC=$(CC) CXX=$(CXX) AR=$(AR) RANLIB=$(RANLIB) --enable-shared --enable-static \
 	$(if $(RTCONFIG_OPENSSL11)$(RTCONFIG_OPENSSL10),--with-libssl-prefix=$(STAGEDIR)/usr,--without-openssl) \
 	--with-libz-prefix=$(STAGEDIR)/usr \
 	--with-libgcrypt-prefix=$(TOP)/libgcrypt-1.10.2 \
@@ -7027,20 +7023,20 @@ libssh2-1.10.0/Makefile:
 	LDFLAGS="-ldl -Wl,-rpath=$(STAGEDIR)/usr/lib,--gc-sections $(LDFLAGS) -L$(STAGEDIR)/usr/lib -lz -L$(SRCBASE)/router/openssl -lcrypto -L$(TOP)/libgcrypt-1.10.2/src/.libs" && \
 	LIBS="-lcrypto (if $(RTCONFIG_OPENSSL11),-lpthread,) -fPIC" 
 
-libssh2: libgcrypt-1.10.2 zlib libssh2-1.10.0/Makefile
+libssh2: libgcrypt-1.10.2 zlib libssh2/Makefile
 	@$(SEP)
-	$(MAKE) -j 8 -C libssh2-1.10.0 && $(MAKE) $@-stage
+	$(MAKE) -j 8 -C libssh2 && $(MAKE) $@-stage
 
 libssh2-install:
 	@$(SEP)
-	pwd & install -D libssh2-1.10.0/src/.libs/libssh2.so.1.0.1 $(INSTALLDIR)/libssh2/usr/lib/libssh2.so.1.0.1
+	pwd & install -D libssh2/src/.libs/libssh2.so.1.0.1 $(INSTALLDIR)/libssh2/usr/lib/libssh2.so.1.0.1
 	$(STRIP) $(INSTALLDIR)/libssh2/usr/lib/libssh2.so.1.0.1
 	cd $(INSTALLDIR)/libssh2/usr/lib &&\
 	rm -f libssh2.so && ln -sf libssh2.so.1.0.1 libssh2.so && \
 	rm -f libssh2.so.1 && ln -sf libssh2.so.1.0.1 libssh2.so.1
 
 libssh2-clean:
-	cd libssh2-1.10.0 && make distclean
+	$(MAKE) -C libssh2 distclean
 
 #libcurl
 curl/configure:

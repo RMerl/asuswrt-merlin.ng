@@ -265,13 +265,13 @@ function webdav_sharelink_callbackfunction(error, content, statusstring){
 }
 
 $("document").ready(function() {
-	var vars = getUrlVars();
+	
 	var loc_lan = String(window.navigator.userLanguage || window.navigator.language).toLowerCase();		
 	var lan = ( g_storage.get('lan') == undefined ) ? loc_lan : g_storage.get('lan');
 	m.setLanguage(lan);
 	
-	g_service = vars["s"];
-	var files = vars["f"];
+	g_service = getUrlVar("s");
+	var files = getUrlVar("f");
 	
 	var the_array = files.split(";");
 	

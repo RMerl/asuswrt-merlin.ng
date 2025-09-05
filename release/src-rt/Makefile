@@ -2374,6 +2374,12 @@ define RouterOptions
 			sed -i "/RTCONFIG_V6OPTION/d" $(1); \
 			echo "# RTCONFIG_V6OPTION is not set" >>$(1); \
 		fi; \
+		sed -i "/RTCONFIG_IPV6_PRIVACY/d" $(1); \
+		if [ "$(IPV6_PRIVACY)" = "y" ]; then \
+			echo "RTCONFIG_IPV6_PRIVACY=y" >>$(1); \
+		else\
+			echo "# RTCONFIG_IPV6_PRIVACY is not set" >>$(1); \
+		fi; \
 	fi;
 	if [ "$(IPSEC)" = "y" ] || \
 	   [ "$(IPSEC)" = "QUICKSEC" ] || \
@@ -3511,7 +3517,16 @@ define RouterOptions
 		sed -i "/RTCONFIG_VPN_FUSION_SUPPORT_INTERFACE/d" $(1); \
 		echo "RTCONFIG_VPN_FUSION_SUPPORT_INTERFACE=y" >>$(1); \
 	fi;
-	if [ "$(TPVPN)" != "" ]; then \
+	if [ "$(TPVPN)" = "n" ]; then \
+		sed -i "/RTCONFIG_TPVPN/d" $(1); \
+		echo "# RTCONFIG_TPVPN is not set" >>$(1); \
+		sed -i "/RTCONFIG_HMA/d" $(1); \
+		echo "# RTCONFIG_HMA is not set" >>$(1); \
+		sed -i "/RTCONFIG_NORDVPN/d" $(1); \
+		echo "# RTCONFIG_NORDVPN is not set" >>$(1); \
+		sed -i "/RTCONFIG_SURFSHARK/d" $(1); \
+		echo "# RTCONFIG_SURFSHARK is not set" >>$(1); \
+	elif [ "$(TPVPN)" != "" ]; then \
 		sed -i "/RTCONFIG_TPVPN/d" $(1); \
 		echo "RTCONFIG_TPVPN=y" >>$(1); \
 		if [ "$(findstring hma, $(TPVPN))" = "hma" ]; then \
@@ -3521,6 +3536,10 @@ define RouterOptions
 		if [ "$(findstring nordvpn, $(TPVPN))" = "nordvpn" ]; then \
 			sed -i "/RTCONFIG_NORDVPN/d" $(1); \
 			echo "RTCONFIG_NORDVPN=y" >>$(1); \
+		fi; \
+		if [ "$(findstring surfshark, $(TPVPN))" = "surfshark" ]; then \
+			sed -i "/RTCONFIG_SURFSHARK/d" $(1); \
+			echo "RTCONFIG_SURFSHARK=y" >>$(1); \
 		fi; \
 	fi;
 	if [ "$(MTK_8021X3000)" = "y" ]; then \
@@ -4293,6 +4312,10 @@ define RouterOptions
 		sed -i "/RTCONFIG_AUTO_WANPORT/d" $(1); \
 		echo "RTCONFIG_AUTO_WANPORT=y" >>$(1); \
 	fi;
+	if [ "$(SECURE_BY_DEFAULT)" = "y" ]; then \
+		sed -i "/RTCONFIG_SECURE_BY_DEFAULT\>/d" $(1); \
+		echo "RTCONFIG_SECURE_BY_DEFAULT=y" >>$(1); \
+	fi;
 	$(call platformRouterOptions, $(1))
 endef
 
@@ -4687,6 +4710,8 @@ define BusyboxOptions
 		echo "CONFIG_UNIQ=y" >>$(1); \
 		sed -i "/CONFIG_LSOF/d" $(1); \
 		echo "CONFIG_LSOF=y" >>$(1); \
+		sed -i "/CONFIG_FEATURE_PS_LONG/d" $(1); \
+		echo "CONFIG_FEATURE_PS_LONG=y" >>$(1); \
 	fi;
 	if [ "$(HND_ROUTER_AX_6756)" = "y" ]; then \
 		sed -i "/CONFIG_SHA256SUM/d" $(1); \
@@ -5784,6 +5809,12 @@ fi;
 	if [ "$(IPV6SUPP)" = "y" -o "$(IPV6FULL)" = "y" ]; then \
 		sed -i "/CONFIG_IPV6_TUNNEL/d" $(1); \
 		echo "CONFIG_IPV6_TUNNEL=m" >>$(1); \
+		sed -i "/CONFIG_IPV6_PRIVACY/d" $(1); \
+		if [ "$(IPV6_PRIVACY)" = "y" ]; then \
+			echo "CONFIG_IPV6_PRIVACY=y" >>$(1); \
+		else \
+			echo "# CONFIG_IPV6_PRIVACY is not set" >>$(1); \
+		fi; \
 	fi;
 	if [ "$(IPSEC)" = "y" ] || \
 	   [ "$(IPSEC)" = "QUICKSEC" ] || \

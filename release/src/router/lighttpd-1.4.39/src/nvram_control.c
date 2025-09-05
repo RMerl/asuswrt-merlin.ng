@@ -1,5 +1,5 @@
 /*
-	nvram control 
+	nvram control
  */
 
 #if EMBEDDED_EANBLE
@@ -7,42 +7,40 @@
 #include "log.h"
 
 #if defined APP_IPKG
-#include<stdlib.h> //for system cmd by zero added
+#include <stdlib.h> //for system cmd by zero added
 #elif defined USE_TCAPI
-#include <utils.h>
 #include <shutils.h>
 #include <shared.h>
 #include "libtcapi.h"
 #include "tcapi.h"
 #else
-#include <utils.h>
 #include <shutils.h>
 #include <shared.h>
 #endif
 
 #ifdef USE_TCAPI
 #if (defined APP_IPKG) && (defined I686)
-#define SECOND_SYSTEM	"Second_System"
-#define FIRST_SYSTEM	"First_System"
-#define LAN_IP_S	"lan_ipaddr"
+#define SECOND_SYSTEM "Second_System"
+#define FIRST_SYSTEM "First_System"
+#define LAN_IP_S "lan_ipaddr"
 #endif
-#define WEBDAV	"AiCloud_Entry"
-#define APPS	"Apps_Entry"
-#define DDNS	"Ddns_Entry"
-#define SAMBA	"Samba_Entry"
+#define WEBDAV "AiCloud_Entry"
+#define APPS "Apps_Entry"
+#define DDNS "Ddns_Entry"
+#define SAMBA "Samba_Entry"
 #define ACCOUNT "Account_Entry0"
 #define SYSINFO "SysInfo_Entry"
-#define INFOETH	"Info_Ether"
+#define INFOETH "Info_Ether"
 #define DEVICEINFO "DeviceInfo"
 #define TIMEZONE "Timezone_Entry"
 #define FIREWALL "Firewall_Entry"
-#define WANDUCK	"Wanduck_Common"
+#define WANDUCK "Wanduck_Common"
 #define DUALWAN "Dualwan_Entry"
 #define WAN_COMMON "Wan_Common"
-#define DDNS_ENANBLE_X	"Active"	// #define DDNS_ENANBLE_X	"ddns_enable_x"
-#define DDNS_SERVER_X	"SERVERNAME"	// #define DDNS_SERVER_X	"ddns_server_x"
-#define DDNS_HOST_NAME_X	"MYHOST"	// #define DDNS_HOST_NAME_X	"ddns_hostname_x"
-#define WEBDAV_SMB_PC	"webdav_smb_pc"
+#define DDNS_ENANBLE_X "Active"	   // #define DDNS_ENANBLE_X	"ddns_enable_x"
+#define DDNS_SERVER_X "SERVERNAME" // #define DDNS_SERVER_X	"ddns_server_x"
+#define DDNS_HOST_NAME_X "MYHOST"  // #define DDNS_HOST_NAME_X	"ddns_hostname_x"
+#define WEBDAV_SMB_PC "webdav_smb_pc"
 #define PRODUCT_ID "productid"
 #define COMPUTER_NAME "NetBiosName"
 #define ACC_LIST "acc_list"
@@ -51,13 +49,13 @@
 #define ACC_WEBDAVPROXY "acc_webdavproxy"
 #define ST_SAMBA_MODE "st_samba_mode"
 #define ST_SAMBA_FORCE_MODE "st_samba_force_mode"
-#define HTTP_USERNAME "username"	// #define HTTP_USERNAME "http_username"
-#define HTTP_PASSWD "web_passwd"	// #define HTTP_PASSWD "http_passwd"
+#define HTTP_USERNAME "username" // #define HTTP_USERNAME "http_username"
+#define HTTP_PASSWD "web_passwd" // #define HTTP_PASSWD "http_passwd"
 #define WEBDAVAIDISK "webdav_aidisk"
 #define WEBDAVPROXY "webdav_proxy"
 #define SHARELINK "share_link"
-#define ETHMACADDR "mac"	// #define ETHMACADDR "et0macaddr"
-#define FIRMVER "FwVer"	// #define FIRMVER "firmver"
+#define ETHMACADDR "mac" // #define ETHMACADDR "et0macaddr"
+#define FIRMVER "FwVer"	 // #define FIRMVER "firmver"
 #define BUILDNO "buildno"
 #define ST_WEBDAV_MODE "st_webdav_mode"
 #define WEBDAV_HTTP_PORT "webdav_http_port"
@@ -87,16 +85,17 @@
 #define HTTPS_CRT_CN "https_crt_cn"
 #define ODMPID "odmpid"
 #define APPS_SQ "apps_sq"
+#define HTTPS_INTERMEDIATE_CRT_SAVE "https_intermediate_crt_save"
 #else
 #if (defined APP_IPKG) && (defined I686)
-#define SECOND_SYSTEM	"Second_System"
-#define FIRST_SYSTEM	"First_System"
-#define LAN_IP_S	"lan_ipaddr"
+#define SECOND_SYSTEM "Second_System"
+#define FIRST_SYSTEM "First_System"
+#define LAN_IP_S "lan_ipaddr"
 #endif
-#define DDNS_ENANBLE_X	"ddns_enable_x"
-#define DDNS_SERVER_X	"ddns_server_x"
-#define DDNS_HOST_NAME_X	"ddns_hostname_x"
-#define WEBDAV_SMB_PC	"webdav_smb_pc"
+#define DDNS_ENANBLE_X "ddns_enable_x"
+#define DDNS_SERVER_X "ddns_server_x"
+#define DDNS_HOST_NAME_X "ddns_hostname_x"
+#define WEBDAV_SMB_PC "webdav_smb_pc"
 #define PRODUCT_ID "productid"
 #define COMPUTER_NAME "computer_name"
 #define ACC_LIST "acc_list"
@@ -145,6 +144,7 @@
 #define HTTPS_CRT_FILE "https_crt_file"
 #define ODMPID "odmpid"
 #define APPS_SQ "apps_sq"
+#define HTTPS_INTERMEDIATE_CRT_SAVE "https_intermediate_crt_save"
 #endif
 
 #define DBE 0
@@ -155,118 +155,134 @@ static const char base64_xlat[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrs
 
 int base64_encode(const unsigned char *in, char *out, int inlen)
 {
-        char *o;
-		
-        o = out;
-        while (inlen >= 3) {
-                *out++ = base64_xlat[*in >> 2];
-                *out++ = base64_xlat[((*in << 4) & 0x3F) | (*(in + 1) >> 4)];
-                ++in;	// note: gcc complains if *(++in)
-                *out++ = base64_xlat[((*in << 2) & 0x3F) | (*(in + 1) >> 6)];
-                ++in;
-                *out++ = base64_xlat[*in++ & 0x3F];
-                inlen -= 3;
-        }
-        if (inlen > 0) {
-                *out++ = base64_xlat[*in >> 2];
-                if (inlen == 2) {
-                        *out++ = base64_xlat[((*in << 4) & 0x3F) | (*(in + 1) >> 4)];
-                        ++in;
-                        *out++ = base64_xlat[((*in << 2) & 0x3F)];
-                }
-                else {
-                        *out++ = base64_xlat[(*in << 4) & 0x3F];
-                        *out++ = '=';
-                }
-                *out++ = '=';
-        }
-        return out - o;
+	char *o;
+
+	o = out;
+	while (inlen >= 3)
+	{
+		*out++ = base64_xlat[*in >> 2];
+		*out++ = base64_xlat[((*in << 4) & 0x3F) | (*(in + 1) >> 4)];
+		++in; // note: gcc complains if *(++in)
+		*out++ = base64_xlat[((*in << 2) & 0x3F) | (*(in + 1) >> 6)];
+		++in;
+		*out++ = base64_xlat[*in++ & 0x3F];
+		inlen -= 3;
+	}
+	if (inlen > 0)
+	{
+		*out++ = base64_xlat[*in >> 2];
+		if (inlen == 2)
+		{
+			*out++ = base64_xlat[((*in << 4) & 0x3F) | (*(in + 1) >> 4)];
+			++in;
+			*out++ = base64_xlat[((*in << 2) & 0x3F)];
+		}
+		else
+		{
+			*out++ = base64_xlat[(*in << 4) & 0x3F];
+			*out++ = '=';
+		}
+		*out++ = '=';
+	}
+	return out - o;
 }
 
 int base64_decode(const char *in, unsigned char *out, int inlen)
 {
-        char *p;
-        int n;
-        unsigned long x;
-        unsigned char *o;
-        char c;
+	char *p;
+	int n;
+	unsigned long x;
+	unsigned char *o;
+	char c;
 
-        o = out;
-        n = 0;
-        x = 0;
-        while (inlen-- > 0) {
-                if (*in == '=') break;
-                if ((p = strchr(base64_xlat, c = *in++)) == NULL) {
-//			printf("ignored - %x %c\n", c, c);
-                        continue;	// note: invalid characters are just ignored
-                }
-                x = (x << 6) | (p - base64_xlat);
-                if (++n == 4) {
-                        *out++ = x >> 16;
-                        *out++ = (x >> 8) & 0xFF;
-                        *out++ = x & 0xFF;
-                        n = 0;
-                        x = 0;
-                }
-        }
-        if (n == 3) {
-                *out++ = x >> 10;
-                *out++ = (x >> 2) & 0xFF;
-        }
-        else if (n == 2) {
-                *out++ = x >> 4;
-        }
-        return out - o;
+	o = out;
+	n = 0;
+	x = 0;
+	while (inlen-- > 0)
+	{
+		if (*in == '=')
+			break;
+		if ((p = strchr(base64_xlat, c = *in++)) == NULL)
+		{
+			//			printf("ignored - %x %c\n", c, c);
+			continue; // note: invalid characters are just ignored
+		}
+		x = (x << 6) | (p - base64_xlat);
+		if (++n == 4)
+		{
+			*out++ = x >> 16;
+			*out++ = (x >> 8) & 0xFF;
+			*out++ = x & 0xFF;
+			n = 0;
+			x = 0;
+		}
+	}
+	if (n == 3)
+	{
+		*out++ = x >> 10;
+		*out++ = (x >> 2) & 0xFF;
+	}
+	else if (n == 2)
+	{
+		*out++ = x >> 4;
+	}
+	return out - o;
 }
 
 int base64_encoded_len(int len)
 {
-        return ((len + 2) / 3) * 4;
+	return ((len + 2) / 3) * 4;
 }
 
 int base64_decoded_len(int len)
 {
-        return ((len + 3) / 4) * 3;
+	return ((len + 3) / 4) * 3;
 }
 
-static inline char * strcat_r(const char *s1, const char *s2, char *buf)
+static inline char *strcat_r(const char *s1, const char *s2, char *buf)
 {
-        strcpy(buf, s1);
-        strcat(buf, s2);
-        return buf;
+	strcpy(buf, s1);
+	strcat(buf, s2);
+	return buf;
 }
 
 char *nvram_get(char *name);
-#define FW_CREATE	0
-#define FW_APPEND	1
-#define FW_NEWLINE	2
+#define FW_CREATE 0
+#define FW_APPEND 1
+#define FW_NEWLINE 2
 
-unsigned long f_size(const char *path)	// 4GB-1	-1 = error
+unsigned long f_size(const char *path) // 4GB-1	-1 = error
 {
-        struct stat st;
-        if (stat(path, &st) == 0) return st.st_size;
-        return (unsigned long)-1;
+	struct stat st;
+	if (stat(path, &st) == 0)
+		return st.st_size;
+	return (unsigned long)-1;
 }
 
 int f_write(const char *path, const void *buffer, int len, unsigned flags, unsigned cmode)
 {
-        static const char nl = '\n';
-        int f;
-        int r = -1;
-        mode_t m;
+	static const char nl = '\n';
+	int f;
+	int r = -1;
+	mode_t m;
 
-        m = umask(0);
-        if (cmode == 0) cmode = 0666;
-        if ((f = open(path, (flags & FW_APPEND) ? (O_WRONLY|O_CREAT|O_APPEND) : (O_WRONLY|O_CREAT|O_TRUNC), cmode)) >= 0) {
-                if ((buffer == NULL) || ((r = write(f, buffer, len)) == len)) {
-                        if (flags & FW_NEWLINE) {
-                                if (write(f, &nl, 1) == 1) ++r;
-                        }
-                }
-                close(f);
-        }
-        umask(m);
-        return r;
+	m = umask(0);
+	if (cmode == 0)
+		cmode = 0666;
+	if ((f = open(path, (flags & FW_APPEND) ? (O_WRONLY | O_CREAT | O_APPEND) : (O_WRONLY | O_CREAT | O_TRUNC), cmode)) >= 0)
+	{
+		if ((buffer == NULL) || ((r = write(f, buffer, len)) == len))
+		{
+			if (flags & FW_NEWLINE)
+			{
+				if (write(f, &nl, 1) == 1)
+					++r;
+			}
+		}
+		close(f);
+	}
+	umask(m);
+	return r;
 }
 
 int f_read(const char *path, void *buffer, int max)
@@ -274,10 +290,11 @@ int f_read(const char *path, void *buffer, int max)
 	int f;
 	int n;
 
-    if ((f = open(path, O_RDONLY)) < 0) return -1;
-    n = read(f, buffer, max);
-    close(f);
-    return n;
+	if ((f = open(path, O_RDONLY)) < 0)
+		return -1;
+	n = read(f, buffer, max);
+	close(f);
+	return n;
 }
 
 static int _f_read_alloc(const char *path, char **buffer, int max, int z)
@@ -285,13 +302,20 @@ static int _f_read_alloc(const char *path, char **buffer, int max, int z)
 	unsigned long n;
 
 	*buffer = NULL;
-	if (max >= 0) {
-		if ((n = f_size(path)) != (unsigned long)-1) {
-			if (n < max) max = n;
-			if ((!z) && (max == 0)) return 0;
-			if ((*buffer = malloc(max + z)) != NULL) {
-				if ((max = f_read(path, *buffer, max)) >= 0) {
-					if (z) *(*buffer + max) = 0;
+	if (max >= 0)
+	{
+		if ((n = f_size(path)) != (unsigned long)-1)
+		{
+			if (n < max)
+				max = n;
+			if ((!z) && (max == 0))
+				return 0;
+			if ((*buffer = malloc(max + z)) != NULL)
+			{
+				if ((max = f_read(path, *buffer, max)) >= 0)
+				{
+					if (z)
+						*(*buffer + max) = 0;
 					return max;
 				}
 				free(buffer);
@@ -310,14 +334,14 @@ int f_read_alloc(const char *path, char **buffer, int max)
 /* copy from libshared, is it possible to avoid copy? */
 char *get_productid(void)
 {
-        char *productid = nvram_get("productid");
-        char *odmpid = nvram_get("odmpid");
-        if(odmpid != NULL)
-        {
-        	if (*odmpid)
-                productid = odmpid;
-        }
-        return productid;
+	char *productid = nvram_get("productid");
+	char *odmpid = nvram_get("odmpid");
+	if (odmpid != NULL)
+	{
+		if (*odmpid)
+			productid = odmpid;
+	}
+	return productid;
 }
 
 /* copy from libshared, is it possible to avoid copy?
@@ -332,16 +356,16 @@ char *get_lan_hostname(void)
 	return get_productid();
 }
 
-//test{
+// test{
 
 #include <fcntl.h>
 #include <sys/mman.h>
-//#include <utils.h>
+// #include <utils.h>
 #include <errno.h>
 
-#define NVRAM_SPACE		0x8000
+#define NVRAM_SPACE 0x8000
 /* For CFE builds this gets passed in thru the makefile */
-#define MAX_NVRAM_SPACE		NVRAM_SPACE
+#define MAX_NVRAM_SPACE NVRAM_SPACE
 
 #define PATH_DEV_NVRAM "/dev/nvram"
 
@@ -349,30 +373,30 @@ char *get_lan_hostname(void)
 static int nvram_fd = -1;
 static char *nvram_buf = NULL;
 
-int
-nvram_init(void *unused)
+int nvram_init(void *unused)
 {
-        if (nvram_fd >= 0)
-                return 0;
+	if (nvram_fd >= 0)
+		return 0;
 
-        if ((nvram_fd = open(PATH_DEV_NVRAM, O_RDWR)) < 0)
-                goto err;
+	if ((nvram_fd = open(PATH_DEV_NVRAM, O_RDWR)) < 0)
+		goto err;
 
-        /* Map kernel string buffer into user space */
-        nvram_buf = mmap(NULL, MAX_NVRAM_SPACE, PROT_READ, MAP_SHARED, nvram_fd, 0);
-        if (nvram_buf == MAP_FAILED) {
-                close(nvram_fd);
-                nvram_fd = -1;
-                goto err;
-        }
+	/* Map kernel string buffer into user space */
+	nvram_buf = mmap(NULL, MAX_NVRAM_SPACE, PROT_READ, MAP_SHARED, nvram_fd, 0);
+	if (nvram_buf == MAP_FAILED)
+	{
+		close(nvram_fd);
+		nvram_fd = -1;
+		goto err;
+	}
 
-        fcntl(nvram_fd, F_SETFD, FD_CLOEXEC);
+	fcntl(nvram_fd, F_SETFD, FD_CLOEXEC);
 
-        return 0;
+	return 0;
 
 err:
-        perror(PATH_DEV_NVRAM);
-        return errno;
+	perror(PATH_DEV_NVRAM);
+	return errno;
 }
 
 #if defined I686
@@ -381,52 +405,59 @@ err:
 char *nvram_get_original(char *name);
 char *nvram_get(char *name)
 {
-        char tmp[100];
-        char *value;
-        char *out;
-        size_t count = strlen(name) + 1;
-        unsigned long *off = (unsigned long *)tmp;
+	char tmp[100];
+	char *value;
+	char *out;
+	size_t count = strlen(name) + 1;
+	unsigned long *off = (unsigned long *)tmp;
 
-        if (nvram_fd < 0) {
-                if (nvram_init(NULL) != 0) //return NULL;
-                {
-                    return nvram_get_original(name);
-                }
-        }
+	if (nvram_fd < 0)
+	{
+		if (nvram_init(NULL) != 0) // return NULL;
+		{
+			return nvram_get_original(name);
+		}
+	}
 
-        if (count > sizeof(tmp)) {
-                if ((off = malloc(count)) == NULL) return NULL;
-        }
+	if (count > sizeof(tmp))
+	{
+		if ((off = malloc(count)) == NULL)
+			return NULL;
+	}
 
-        /* Get offset into mmap() space */
-        strcpy((char *) off, name);
-        count = read(nvram_fd, off, count);
+	/* Get offset into mmap() space */
+	strcpy((char *)off, name);
+	count = read(nvram_fd, off, count);
 
-        if (count == sizeof(*off)) {
-                value = &nvram_buf[*off];
-                out = malloc(strlen(value)+1);
-                memset(out,0,strlen(value)+1);
-                sprintf(out,"%s",value);
-        }
-        else {
-                value = NULL;
-                out = NULL;
-                if (count < 0) perror(PATH_DEV_NVRAM);
-        }
+	if (count == sizeof(*off))
+	{
+		value = &nvram_buf[*off];
+		out = malloc(strlen(value) + 1);
+		memset(out, 0, strlen(value) + 1);
+		sprintf(out, "%s", value);
+	}
+	else
+	{
+		value = NULL;
+		out = NULL;
+		if (count < 0)
+			perror(PATH_DEV_NVRAM);
+	}
 
-        if (off != (unsigned long *)tmp) free(off);
-        //fprintf(stderr,"value = %s\n",out);
-         return out;
+	if (off != (unsigned long *)tmp)
+		free(off);
+	// fprintf(stderr,"value = %s\n",out);
+	return out;
 }
-//end test}
+// end test}
 #endif
 
 #if defined I686
-	char *nvram_get(char *name)
+char *nvram_get(char *name)
 #else
-	char *nvram_get_original(char *name)
+char *nvram_get_original(char *name)
 #endif
-//char *nvram_get(char *name)
+// char *nvram_get(char *name)
 {
 #if 0
 
@@ -439,98 +470,102 @@ char *nvram_get(char *name)
        ||strcmp(name,"swpjverno")==0||strcmp(name,"extendno")==0)
     {
 #endif
-        char tmp_name[256]="/opt/etc/apps_asus_script/aicloud_nvram_check.sh";
-        //char tmp_name[256]="/tmp/aicloud_nvram_check.sh";
-        char *cmd_name;
-        cmd_name=(char *)malloc(sizeof(char)*(strlen(tmp_name)+strlen(name)+2));
-        memset(cmd_name,0,sizeof(cmd_name));
-        sprintf(cmd_name,"%s %s",tmp_name,name);
-        system(cmd_name);
-        free(cmd_name);
+	char tmp_name[256] = "/opt/etc/apps_asus_script/aicloud_nvram_check.sh";
+	// char tmp_name[256]="/tmp/aicloud_nvram_check.sh";
+	// char *cmd_name;
+	// cmd_name = (char *)malloc(sizeof(char) * (strlen(tmp_name) + strlen(name) + 2));
+	// memset(cmd_name, 0, sizeof(cmd_name));
+	// sprintf(cmd_name, "%s %s", tmp_name, name);
+	// system(cmd_name);
+	eval(tmp_name, name);
+	// free(cmd_name);
 
-        while(-1!=access("/tmp/aicloud_check.control",F_OK))
-            usleep(50);
- //   }
-//#endif
+	while (-1 != access("/tmp/aicloud_check.control", F_OK))
+		usleep(50);
+	//   }
+	// #endif
 
-    FILE *fp;
-    if((fp=fopen("/tmp/webDAV.conf","r+"))==NULL)
-    {
-        return NULL;
-    }
-    char *value = NULL;
-    //value=(char *)malloc(256);
-    //memset(value,'\0',sizeof(value));
-    int file_size = f_size("/tmp/webDAV.conf");
-    char *tmp = (char *)malloc(sizeof(char)*(file_size+1));
-    while(!feof(fp)){
-        memset(tmp, '\0', sizeof(tmp));
-        fgets(tmp, file_size+1, fp);
-        if(strncmp(tmp,name,strlen(name))==0)
-        {
-            if(tmp[strlen(tmp)-1] == 10)
-            {
-                tmp[strlen(tmp)-1]='\0';
-            }
-            char *p=NULL;
-            p=strchr(tmp,'=');
-            p++;
-            if(p == NULL || strlen(p) == 0)
-            {
-                fclose(fp);
-                free(tmp);
-                return NULL;
-            }
-            else
-            {
-            value=(char *)malloc(strlen(p)+1);
-            memset(value,'\0',sizeof(value));
-            strcpy(value,p);
-            if(value[strlen(value)-1]=='\n')
-                value[strlen(value)-1]='\0';
-        }
-
-    }
-    fclose(fp);
-    free(tmp);
-    return value;
-}
+	FILE *fp;
+	if ((fp = fopen("/tmp/webDAV.conf", "r+")) == NULL)
+	{
+		return NULL;
+	}
+	char *value = NULL;
+	// value=(char *)malloc(256);
+	// memset(value,'\0',sizeof(value));
+	int file_size = f_size("/tmp/webDAV.conf");
+	char *tmp = (char *)malloc(sizeof(char) * (file_size + 1));
+	while (!feof(fp))
+	{
+		memset(tmp, '\0', sizeof(tmp));
+		fgets(tmp, file_size + 1, fp);
+		if (strncmp(tmp, name, strlen(name)) == 0)
+		{
+			if (tmp[strlen(tmp) - 1] == 10)
+			{
+				tmp[strlen(tmp) - 1] = '\0';
+			}
+			char *p = NULL;
+			p = strchr(tmp, '=');
+			p++;
+			if (p == NULL || strlen(p) == 0)
+			{
+				fclose(fp);
+				free(tmp);
+				return NULL;
+			}
+			else
+			{
+				value = (char *)malloc(strlen(p) + 1);
+				memset(value, '\0', sizeof(value));
+				strcpy(value, p);
+				if (value[strlen(value) - 1] == '\n')
+					value[strlen(value) - 1] = '\0';
+			}
+		}
+		fclose(fp);
+		free(tmp);
+		return value;
+	}
 }
 char *nvram_safe_get(char *name)
 {
-    char *p = nvram_get(name);
+	char *p = nvram_get(name);
 	return p ? p : "";
 }
 int nvram_set(const char *name, const char *value)
 {
-    if(name==NULL||value==NULL){
-        return 0;
-    }
+	if (name == NULL || value == NULL)
+	{
+		return 0;
+	}
 
-    if (strstr((char*)name, ";") != NULL || strstr((char*)name, "\"") != NULL) {
-        return 0;
-    } 
+	if (strstr((char *)name, ";") != NULL || strstr((char *)name, "\"") != NULL)
+	{
+		return 0;
+	}
 
-    if (strstr((char*)value, ";") != NULL || strstr((char*)value, "\"") != NULL) {
-        return 0;
-    }
-    
-    char *cmd;
+	if (strstr((char *)value, ";") != NULL || strstr((char *)value, "\"") != NULL)
+	{
+		return 0;
+	}
 
-    if(value == NULL)
-        cmd=(char *)malloc(sizeof(char)*(64+strlen(name)));
-    else
-        cmd=(char *)malloc(sizeof(char)*(64+strlen(name)+strlen(value)));
+	char *cmd;
 
-    memset(cmd,0,sizeof(cmd));
+	if (value == NULL)
+		cmd = (char *)malloc(sizeof(char) * (64 + strlen(name)));
+	else
+		cmd = (char *)malloc(sizeof(char) * (64 + strlen(name) + strlen(value)));
 
-    sprintf(cmd,"nvram set \"%s=%s\"",name,value);
+	memset(cmd, 0, sizeof(cmd));
 
-    system(cmd);
+	sprintf(cmd, "\"%s=%s\"", name, value);
 
-    free(cmd);
-    return 0;
-# if 0
+	eval("nvram", "set", cmd);
+
+	free(cmd);
+	return 0;
+#if 0
     size_t count = strlen(name) + 1;
     char tmp[100];
     char *buf = tmp;
@@ -579,7 +614,6 @@ int nvram_set(const char *name, const char *value)
                 //fprintf(stderr,"cmd_name_1=%s\n",cmd_name_1);
                 free(cmd_name_1);
 
-
 #if 0
                 char value_tmp[256]={0};
                 FILE *fp_1=fopen("/tmp/aicloud_nvram.txt","r+");
@@ -620,28 +654,30 @@ int nvram_commit(void)
         fp = fopen("/var/log/commit_ret", "w");
         fclose(fp);
 #endif
-        char cmd[]="nvram commit";
-        system(cmd);
-        return 1;
+	eval("nvram", "commit");
+	return 1;
 }
 int nvram_get_file(const char *key, const char *fname, int max)
 {
-        int n;
-        char *p;
-        char *b;
-        int r;
+	int n;
+	char *p;
+	char *b;
+	int r;
 
-        r = 0;
-        p = nvram_safe_get(key);
-        n = strlen(p);
-        if (n <= max) {
-                if ((b = malloc(base64_decoded_len(n) + 128)) != NULL) {
-                        n = base64_decode(p, b, n);
-                        if (n > 0) r = (f_write(fname, b, n, 0, 0644) == n);
-                        free(b);
-                }
-        }
-        return r;
+	r = 0;
+	p = nvram_safe_get(key);
+	n = strlen(p);
+	if (n <= max)
+	{
+		if ((b = malloc(base64_decoded_len(n) + 128)) != NULL)
+		{
+			n = base64_decode(p, b, n);
+			if (n > 0)
+				r = (f_write(fname, b, n, 0, 0644) == n);
+			free(b);
+		}
+	}
+	return r;
 }
 
 int nvram_set_file(const char *key, const char *fname, int max)
@@ -652,11 +688,14 @@ int nvram_set_file(const char *key, const char *fname, int max)
 	int n;
 	int r;
 
-	if ((len = f_size(fname)) > max) return 0;
+	if ((len = f_size(fname)) > max)
+		return 0;
 	max = (int)len;
 	r = 0;
-	if (f_read_alloc(fname, &in, max) == max) {
-		if ((out = malloc(base64_encoded_len(max) + 128)) != NULL) {
+	if (f_read_alloc(fname, &in, max) == max)
+	{
+		if ((out = malloc(base64_encoded_len(max) + 128)) != NULL)
+		{
 			n = base64_encode(in, out, max);
 			out[n] = 0;
 			nvram_set(key, out);
@@ -670,80 +709,82 @@ int nvram_set_file(const char *key, const char *fname, int max)
 
 void start_ssl()
 {
-    int ok;
-    int save;
-    int retry;
-    unsigned long long sn;
-    char t[32];
+	int ok;
+	int save;
+	int retry;
+	unsigned long long sn;
+	char t[32];
 
-    retry = 1;
-    while (retry) {
-        char *https_crt_save = nvram_get("https_crt_save");
-        if(https_crt_save != NULL)
-        {
-            if(atoi(https_crt_save) == 1)
-                save = 1; //pem nvram is exit
-            else
-                save = 0;
-        }
-        else
-            save = 0;
-        free(https_crt_save);
-        //save = nvram_match("https_crt_save", "1");
+	retry = 1;
+	while (retry)
+	{
+		char *https_crt_save = nvram_get("https_crt_save");
+		if (https_crt_save != NULL)
+		{
+			if (atoi(https_crt_save) == 1)
+				save = 1; // pem nvram is exit
+			else
+				save = 0;
+		}
+		else
+			save = 0;
+		free(https_crt_save);
+		// save = nvram_match("https_crt_save", "1");
 
-        if (1) {
-            ok = 0;
-            if (save) {
-                fprintf(stderr, "Save SSL certificate...\n"); // tmp test
-                if (nvram_get_file("https_crt_file", "/tmp/cert.tgz", 8192)) {
-                        system("tar -xzf /tmp/cert.tgz -C / " HTTPD_CERTS_KEYS_STR);
-                        usleep(1000*100);
-			system("cat " HTTPD_KEY " " HTTPD_CERT " > " LIGHTTPD_CERTKEY);
-                        ok = 1;
-                    unlink("/tmp/cert.tgz");
-                }
-            }
-            if (!ok) {
-                fprintf(stderr, "Generating SSL certificate...\n"); // tmp test
-                // browsers seems to like this when the ip address moves...	-- zzz
-                f_read("/dev/urandom", &sn, sizeof(sn));
+		if (1)
+		{
+			ok = 0;
+			if (save)
+			{
+				fprintf(stderr, "Save SSL certificate...\n"); // tmp test
+				if (nvram_get_file("https_crt_file", "/tmp/cert.tgz", 8192))
+				{
+					eval("tar", "-xzf", "/tmp/cert.tgz", "-C", "/", HTTPD_CERTS_KEYS_STR);
+					usleep(1000 * 100);
+					eval("cat", HTTPD_KEY, HTTPD_CERT, ">", LIGHTTPD_CERTKEY);
+					ok = 1;
+					unlink("/tmp/cert.tgz");
+				}
+			}
+			if (!ok)
+			{
+				fprintf(stderr, "Generating SSL certificate...\n"); // tmp test
+				// browsers seems to like this when the ip address moves...	-- zzz
+				f_read("/dev/urandom", &sn, sizeof(sn));
 
-                sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
-                char *cmd_app=NULL;
-                cmd_app=(char *)malloc(sizeof(char)*(strlen(t)+64));
-                memset(cmd_app,'\0',sizeof(cmd_app));
-                sprintf(cmd_app,"%s %s","/opt/etc/apps_asus_script/gencert.sh",t);
-                system(cmd_app);
-                while(-1==access("/etc/cert.pem",F_OK)||-1==access("/etc/key.pem",F_OK))
-                {
-                    usleep(1000*100);
-                }
-                free(cmd_app);
+				sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
+				eval("/opt/etc/apps_asus_script/gencert.sh", t);
+				while (-1 == access("/etc/cert.pem", F_OK) || -1 == access("/etc/key.pem", F_OK))
+				{
+					usleep(1000 * 100);
+				}
 
-                system("tar -C / -czf /tmp/cert.tgz " HTTPD_CERTS_KEYS_STR);
-                while(-1==access("/tmp/cert.tgz",F_OK))
-                {
-                    usleep(1000*100);
-                }
+				eval("tar", "-C", "/", "-czf", "/tmp/cert.tgz", HTTPD_CERTS_KEYS_STR);
+				while (-1 == access("/tmp/cert.tgz", F_OK))
+				{
+					usleep(1000 * 100);
+				}
 
-                save = 1;
-            }
-        }
-        fprintf(stderr,"\n nvram get https_crt_file\n");
-        if ((save) && (*nvram_safe_get("https_crt_file")) == 0) {
+				save = 1;
+			}
+		}
+		fprintf(stderr, "\n nvram get https_crt_file\n");
+		if ((save) && (*nvram_safe_get("https_crt_file")) == 0)
+		{
 
-            if (nvram_setfile_https_crt_file("/tmp/cert.tgz", 8192)) {
-                Cdbg(DBE, "complete nvram_setfile_https_crt_file");
-                nvram_set_https_crt_save("1");
-                nvram_do_commit();
-                Cdbg(DBE, "end nvram_setfile_https_crt_file");
-            }
+			if (nvram_setfile_https_crt_file("/tmp/cert.tgz", 8192))
+			{
+				Cdbg(DBE, "complete nvram_setfile_https_crt_file");
+				nvram_set_https_crt_save("1");
+				nvram_do_commit();
+				Cdbg(DBE, "end nvram_setfile_https_crt_file");
+			}
 
-            unlink("/tmp/cert.tgz");
-        }
-        fprintf(stderr,"\n over ssl \n");
-        retry = 0;
-    }
+			unlink("/tmp/cert.tgz");
+		}
+		fprintf(stderr, "\n over ssl \n");
+		retry = 0;
+	}
 }
 #elif defined USE_TCAPI
 
@@ -753,23 +794,25 @@ extern int nvram_set(const char *name, const char *value);
 extern int nvram_commit(void);
 #endif
 
-int nvram_smbdav_pc_append(const char* ap_str)
+int nvram_smbdav_pc_append(const char *ap_str)
 {
 #ifdef USE_TCAPI
 	char nv_var_val[MAXLEN_TCAPI_MSG] = {0};
-	if( tcapi_get(WEBDAV, WEBDAV_SMB_PC, nv_var_val) ){
+	if (tcapi_get(WEBDAV, WEBDAV_SMB_PC, nv_var_val))
+	{
 		return -1;
 	}
-	char tmp_nv_var_val[120]={0};
+	char tmp_nv_var_val[120] = {0};
 	strcpy(tmp_nv_var_val, nv_var_val);
 	strcat(tmp_nv_var_val, ap_str);
 	tcapi_set(WEBDAV, WEBDAV_SMB_PC, tmp_nv_var_val);
 #else
-	char* nv_var_val=NULL;
-	if( !( nv_var_val = nvram_get(WEBDAV_SMB_PC)) ){
-	   return -1;
+	char *nv_var_val = NULL;
+	if (!(nv_var_val = nvram_get(WEBDAV_SMB_PC)))
+	{
+		return -1;
 	}
-	char tmp_nv_var_val[120]={0};
+	char tmp_nv_var_val[120] = {0};
 	strcpy(tmp_nv_var_val, nv_var_val);
 	strcat(tmp_nv_var_val, ap_str);
 #ifdef APP_IPKG
@@ -781,8 +824,8 @@ int nvram_smbdav_pc_append(const char* ap_str)
 	return 0;
 }
 
-char* nvram_get_smbdav_str(void)
-{	
+char *nvram_get_smbdav_str(void)
+{
 #ifdef USE_TCAPI
 	static char smbdav_str[MAXLEN_TCAPI_MSG] = {0};
 	tcapi_get(WEBDAV, WEBDAV_SMB_PC, smbdav_str);
@@ -792,7 +835,7 @@ char* nvram_get_smbdav_str(void)
 #endif
 }
 
-int nvram_set_smbdav_str(const char* pc_info)
+int nvram_set_smbdav_str(const char *pc_info)
 {
 #ifdef USE_TCAPI
 	return tcapi_set(WEBDAV, WEBDAV_SMB_PC, pc_info);
@@ -801,7 +844,7 @@ int nvram_set_smbdav_str(const char* pc_info)
 #endif
 }
 
-char* nvram_get_sharelink_str(void)
+char *nvram_get_sharelink_str(void)
 {
 #ifdef USE_TCAPI
 	static char sharelink_str[MAXLEN_TCAPI_MSG] = {0};
@@ -812,10 +855,10 @@ char* nvram_get_sharelink_str(void)
 #endif
 }
 
-int nvram_set_sharelink_str(const char* share_info)
+int nvram_set_sharelink_str(const char *share_info)
 {
 #ifdef USE_TCAPI
-	if(strlen(share_info)>576)
+	if (strlen(share_info) > 576)
 		return 0;
 	return tcapi_set(WEBDAV, SHARELINK, share_info);
 #else
@@ -823,7 +866,8 @@ int nvram_set_sharelink_str(const char* share_info)
 #endif
 }
 
-int nvram_do_commit(void){
+int nvram_do_commit(void)
+{
 #ifdef USE_TCAPI
 	tcapi_commit(WEBDAV);
 #else
@@ -835,32 +879,36 @@ int nvram_do_commit(void){
 int nvram_is_ddns_enable(void)
 {
 #ifdef USE_TCAPI
-	char	ddns_e[4] = {0};
-	int	ddns_enable_x=0;
-	if( tcapi_get(DDNS, DDNS_ENANBLE_X, ddns_e) ) {
+	char ddns_e[4] = {0};
+	int ddns_enable_x = 0;
+	if (tcapi_get(DDNS, DDNS_ENANBLE_X, ddns_e))
+	{
 		ddns_enable_x = atoi(ddns_e);
-		//Cdbg(DBE," ddns_e = %s", ddns_e);
+		// Cdbg(DBE," ddns_e = %s", ddns_e);
 	}
-	if(ddns_enable_x)
+	if (ddns_enable_x)
 		return 1;
-	else	
+	else
 		return 0;
 #else
-	char*	ddns_e = NULL;
-	int		ddns_enable_x = 0;
-	if( (ddns_e = nvram_get(DDNS_ENANBLE_X))!=NULL ){
+	char *ddns_e = NULL;
+	int ddns_enable_x = 0;
+	if ((ddns_e = nvram_get(DDNS_ENANBLE_X)) != NULL)
+	{
 		ddns_enable_x = atoi(ddns_e);
-		//Cdbg(DBE," ddns_e = %s", ddns_e);
-		#ifdef APP_IPKG
+// Cdbg(DBE," ddns_e = %s", ddns_e);
+#ifdef APP_IPKG
 		free(ddns_e);
-		#endif
+#endif
 	}
-	if(ddns_enable_x)	return 1;
-	else				return 0;
+	if (ddns_enable_x)
+		return 1;
+	else
+		return 0;
 #endif
 }
 
-char* nvram_get_ddns_server_name(void)
+char *nvram_get_ddns_server_name(void)
 {
 #ifdef USE_TCAPI
 	static char ddns_server_name[64] = {0};
@@ -871,12 +919,13 @@ char* nvram_get_ddns_server_name(void)
 #endif
 }
 
-char* nvram_get_ddns_host_name(void)
+char *nvram_get_ddns_host_name(void)
 {
 #ifdef USE_TCAPI
 	static char ddns_host_name_x[MAXLEN_TCAPI_MSG] = {0};
-	if(tcapi_get(DDNS, DDNS_HOST_NAME_X, ddns_host_name_x)) {
-		//Cdbg(DBE,"ddns_hostname_x = %s", ddns_host_name_x);
+	if (tcapi_get(DDNS, DDNS_HOST_NAME_X, ddns_host_name_x))
+	{
+		// Cdbg(DBE,"ddns_hostname_x = %s", ddns_host_name_x);
 		return NULL;
 	}
 	else
@@ -889,38 +938,38 @@ char* nvram_get_ddns_host_name(void)
 	nvram get/set ddns_hostname_x (RT-N66U-00E012112233.asuscomm.com)
 	rc rc_service restart_ddns or notify_rc, restart_ddns through libshared
 	 */
-	char* ddns_host_name_x=NULL;
-	if(!nvram_is_ddns_enable())
-	   goto nvram_get_ddns_host_name_EXIT;
-	if(!nvram_get_ddns_server_name())
-	   goto nvram_get_ddns_host_name_EXIT;
-	 ddns_host_name_x= nvram_get (DDNS_HOST_NAME_X);  
-	
+	char *ddns_host_name_x = NULL;
+	if (!nvram_is_ddns_enable())
+		goto nvram_get_ddns_host_name_EXIT;
+	if (!nvram_get_ddns_server_name())
+		goto nvram_get_ddns_host_name_EXIT;
+	ddns_host_name_x = nvram_get(DDNS_HOST_NAME_X);
+
 nvram_get_ddns_host_name_EXIT:
-	//Cdbg(DBE,"ddns_hostname_x = %s", ddns_host_name_x);
+	// Cdbg(DBE,"ddns_hostname_x = %s", ddns_host_name_x);
 	return ddns_host_name_x;
 #endif
 }
 
-char* nvram_get_ddns_host_name2(void)
+char *nvram_get_ddns_host_name2(void)
 {
 #ifdef USE_TCAPI
 	static char ddns_host_name_x[MAXLEN_TCAPI_MSG] = {0};
 	tcapi_get(DDNS, DDNS_HOST_NAME_X, ddns_host_name_x);
 	return ddns_host_name_x;
 #else
-	char* ddns_host_name_x = NULL;
+	char *ddns_host_name_x = NULL;
 	ddns_host_name_x = nvram_get(DDNS_HOST_NAME_X);
 	return ddns_host_name_x;
 #endif
 }
 
-char* nvram_get_productid(void)
+char *nvram_get_productid(void)
 {
 	return get_productid();
 }
 
-char* nvram_get_acc_list(void)
+char *nvram_get_acc_list(void)
 {
 #ifdef USE_TCAPI
 	static char acc_list[MAXLEN_TCAPI_MSG] = {0};
@@ -931,7 +980,7 @@ char* nvram_get_acc_list(void)
 #endif
 }
 
-char* nvram_get_aicloud_acc_list(void)
+char *nvram_get_aicloud_acc_list(void)
 {
 #ifdef USE_TCAPI
 	static char aicloud_acc_list[MAXLEN_TCAPI_MSG] = {0};
@@ -942,16 +991,16 @@ char* nvram_get_aicloud_acc_list(void)
 #endif
 }
 
-int nvram_set_aicloud_acc_list(const char* aicloud_acc_list)
+int nvram_set_aicloud_acc_list(const char *aicloud_acc_list)
 {
-#ifdef USE_TCAPI	
+#ifdef USE_TCAPI
 	return tcapi_set(WEBDAV, AICLOUD_ACC_LIST, aicloud_acc_list);
 #else
 	return nvram_set(AICLOUD_ACC_LIST, aicloud_acc_list);
 #endif
 }
 
-char* nvram_get_aicloud_acc_invite_list(void)
+char *nvram_get_aicloud_acc_invite_list(void)
 {
 #ifdef USE_TCAPI
 	static char aicloud_acc_invite_list[MAXLEN_TCAPI_MSG] = {0};
@@ -962,16 +1011,16 @@ char* nvram_get_aicloud_acc_invite_list(void)
 #endif
 }
 
-int nvram_set_aicloud_acc_invite_list(const char* aicloud_acc_invite_list)
+int nvram_set_aicloud_acc_invite_list(const char *aicloud_acc_invite_list)
 {
-#ifdef USE_TCAPI	
+#ifdef USE_TCAPI
 	return tcapi_set(WEBDAV, AICLOUD_ACC_INVITE_LIST, aicloud_acc_invite_list);
 #else
 	return nvram_set(AICLOUD_ACC_INVITE_LIST, aicloud_acc_invite_list);
 #endif
 }
 
-char* nvram_get_webdavaidisk(void)
+char *nvram_get_webdavaidisk(void)
 {
 #ifdef USE_TCAPI
 	static char webdavaidisk[4] = {0};
@@ -982,7 +1031,7 @@ char* nvram_get_webdavaidisk(void)
 #endif
 }
 
-int nvram_set_webdavaidisk(const char* enable)
+int nvram_set_webdavaidisk(const char *enable)
 {
 #ifdef USE_TCAPI
 	tcapi_set(WEBDAV, WEBDAVAIDISK, enable);
@@ -992,7 +1041,7 @@ int nvram_set_webdavaidisk(const char* enable)
 	return 1;
 }
 
-char* nvram_get_webdavproxy(void)
+char *nvram_get_webdavproxy(void)
 {
 #ifdef USE_TCAPI
 	static char webdavproxy[4] = {0};
@@ -1003,7 +1052,7 @@ char* nvram_get_webdavproxy(void)
 #endif
 }
 
-int nvram_set_webdavproxy(const char* enable)
+int nvram_set_webdavproxy(const char *enable)
 {
 #ifdef USE_TCAPI
 	tcapi_set(WEBDAV, WEBDAVPROXY, enable);
@@ -1013,7 +1062,7 @@ int nvram_set_webdavproxy(const char* enable)
 	return 1;
 }
 
-char* nvram_get_acc_webdavproxy(void)
+char *nvram_get_acc_webdavproxy(void)
 {
 #ifdef USE_TCAPI
 	static char acc_webdavproxy[MAXLEN_TCAPI_MSG] = {0};
@@ -1027,21 +1076,21 @@ char* nvram_get_acc_webdavproxy(void)
 int nvram_get_st_samba_mode(void)
 {
 #ifdef USE_TCAPI
-	char st_samba_mode[4] ={0};
+	char st_samba_mode[4] = {0};
 	int a = 0;
 	tcapi_get(SAMBA, ST_SAMBA_FORCE_MODE, st_samba_mode);
 
-	if(strcmp(st_samba_mode,"")==0)
+	if (strcmp(st_samba_mode, "") == 0)
 		tcapi_get(SAMBA, ST_SAMBA_MODE, st_samba_mode);
-	
+
 	a = atoi(st_samba_mode);
 	return a;
 #else
-	char* res = nvram_get(ST_SAMBA_FORCE_MODE);
+	char *res = nvram_get(ST_SAMBA_FORCE_MODE);
 
-	if(res==NULL)
+	if (res == NULL)
 		res = nvram_get(ST_SAMBA_MODE);
-	
+
 	int a = atoi(res);
 #ifdef APP_IPKG
 	free(res);
@@ -1050,29 +1099,29 @@ int nvram_get_st_samba_mode(void)
 #endif
 }
 
-char* nvram_get_http_username(void)
+char *nvram_get_http_username(void)
 {
 #ifdef USE_TCAPI
 	static char http_username[32] = {0};
 	tcapi_get(ACCOUNT, HTTP_USERNAME, http_username);
 	return http_username;
 #else
-	return nvram_get(HTTP_USERNAME) ? : "";
+	return nvram_get(HTTP_USERNAME) ?: "";
 #endif
 }
 
-char* nvram_get_http_passwd(void)
+char *nvram_get_http_passwd(void)
 {
 #ifdef USE_TCAPI
 	static char http_passwd[32] = {0};
 	tcapi_get(ACCOUNT, HTTP_PASSWD, http_passwd);
 	return http_passwd;
 #else
-	return nvram_get(HTTP_PASSWD) ? : "";
+	return nvram_get(HTTP_PASSWD) ?: "";
 #endif
 }
 
-char* nvram_get_computer_name(void)
+char *nvram_get_computer_name(void)
 {
 #ifdef USE_TCAPI
 	static char computer_name[16] = {0};
@@ -1086,36 +1135,36 @@ char* nvram_get_computer_name(void)
 #endif
 }
 
-char* nvram_get_router_mac(void)
+char *nvram_get_router_mac(void)
 {
 #ifdef USE_TCAPI
 	static char router_mac[32] = {0};
 	tcapi_get(INFOETH, ETHMACADDR, router_mac);
 	return router_mac;
 #else
-	char* mac = nvram_get(ETHMACADDR);
+	char *mac = nvram_get(ETHMACADDR);
 	return mac;
 #endif
 }
 
-char* nvram_get_firmware_version(void)
+char *nvram_get_firmware_version(void)
 {
 #ifdef USE_TCAPI
-        static char firmware_version[16] = {0};
-        tcapi_get(DEVICEINFO, FIRMVER, firmware_version);
+	static char firmware_version[16] = {0};
+	tcapi_get(DEVICEINFO, FIRMVER, firmware_version);
 
-        fprintf(stderr, "firmware_version=%s\n", firmware_version);
+	fprintf(stderr, "firmware_version=%s\n", firmware_version);
 
-        static char fw[12] = {0};
-        snprintf(fw, sizeof(fw), "%s", firmware_version);
-        fprintf(stderr, "fw=%s\n", fw);
-        return fw;
+	static char fw[12] = {0};
+	snprintf(fw, sizeof(fw), "%s", firmware_version);
+	fprintf(stderr, "fw=%s\n", fw);
+	return fw;
 #else
-        return nvram_get(FIRMVER);
+	return nvram_get(FIRMVER);
 #endif
 }
 
-char* nvram_get_build_no(void)
+char *nvram_get_build_no(void)
 {
 #ifdef USE_TCAPI
 	return 0;
@@ -1124,7 +1173,7 @@ char* nvram_get_build_no(void)
 #endif
 }
 
-char* nvram_get_st_webdav_mode(void)
+char *nvram_get_st_webdav_mode(void)
 {
 #ifdef USE_TCAPI
 	static char st_webdav_mode[4] = {0};
@@ -1135,7 +1184,7 @@ char* nvram_get_st_webdav_mode(void)
 #endif
 }
 
-char* nvram_get_webdav_http_port(void)
+char *nvram_get_webdav_http_port(void)
 {
 #ifdef USE_TCAPI
 	static char webdav_http_port[8] = {0};
@@ -1146,7 +1195,7 @@ char* nvram_get_webdav_http_port(void)
 #endif
 }
 
-char* nvram_get_webdav_https_port(void)
+char *nvram_get_webdav_https_port(void)
 {
 #ifdef USE_TCAPI
 	static char webdav_https_port[8] = {0};
@@ -1158,34 +1207,34 @@ char* nvram_get_webdav_https_port(void)
 }
 
 #if (defined APP_IPKG) && (defined I686)
-char* nvram_get_second_system(void)
+char *nvram_get_second_system(void)
 {
-    return nvram_get(SECOND_SYSTEM);
+	return nvram_get(SECOND_SYSTEM);
 }
-char* nvram_get_first_system(void)
+char *nvram_get_first_system(void)
 {
-    return nvram_get(FIRST_SYSTEM);
+	return nvram_get(FIRST_SYSTEM);
 }
-char* nvram_get_lan_ip(void)
+char *nvram_get_lan_ip(void)
 {
-    char lan_ip[20];
-    memset(lan_ip,0,sizeof(lan_ip));
-    char *first_system = nvram_get(FIRST_SYSTEM);
-    sprintf(lan_ip,"%slan_ipaddr",first_system);
-    free(first_system);
-    return nvram_get(lan_ip);
+	char lan_ip[20];
+	memset(lan_ip, 0, sizeof(lan_ip));
+	char *first_system = nvram_get(FIRST_SYSTEM);
+	sprintf(lan_ip, "%slan_ipaddr", first_system);
+	free(first_system);
+	return nvram_get(lan_ip);
 }
-char* nvram_get_lan_ip_s(void)
+char *nvram_get_lan_ip_s(void)
 {
-    return nvram_get(LAN_IP_S);
+	return nvram_get(LAN_IP_S);
 }
 #endif
 
-char* nvram_get_http_enable(void)
+char *nvram_get_http_enable(void)
 {
 	// 0 --> http
-    // 1 --> https
-    // 2 --> both
+	// 1 --> https
+	// 2 --> both
 #ifdef USE_TCAPI
 	return 0;
 #else
@@ -1193,7 +1242,8 @@ char* nvram_get_http_enable(void)
 #endif
 }
 
-char* nvram_get_lan_http_port(void){
+char *nvram_get_lan_http_port(void)
+{
 #ifdef USE_TCAPI
 	return "80";
 #else
@@ -1201,7 +1251,8 @@ char* nvram_get_lan_http_port(void){
 #endif
 }
 
-char* nvram_get_lan_https_port(void){
+char *nvram_get_lan_https_port(void)
+{
 #ifdef USE_TCAPI
 	return 0;
 #else
@@ -1209,7 +1260,7 @@ char* nvram_get_lan_https_port(void){
 #endif
 }
 
-char* nvram_get_misc_http_x(void)
+char *nvram_get_misc_http_x(void)
 {
 #ifdef USE_TCAPI
 	static char misc_http_x[4] = {0};
@@ -1220,7 +1271,7 @@ char* nvram_get_misc_http_x(void)
 #endif
 }
 
-char* nvram_get_misc_http_port(void)
+char *nvram_get_misc_http_port(void)
 {
 #ifdef USE_TCAPI
 	static char misc_http_port[8] = {0};
@@ -1231,7 +1282,7 @@ char* nvram_get_misc_http_port(void)
 #endif
 }
 
-char* nvram_get_misc_https_port(void)
+char *nvram_get_misc_https_port(void)
 {
 #ifdef USE_TCAPI
 	static char misc_https_port[8] = {0};
@@ -1242,7 +1293,7 @@ char* nvram_get_misc_https_port(void)
 #endif
 }
 
-char* nvram_get_enable_webdav_captcha(void)
+char *nvram_get_enable_webdav_captcha(void)
 {
 #ifdef USE_TCAPI
 	static char enable_webdav_captcha[4] = {0};
@@ -1253,7 +1304,7 @@ char* nvram_get_enable_webdav_captcha(void)
 #endif
 }
 
-char* nvram_get_enable_webdav_lock(void)
+char *nvram_get_enable_webdav_lock(void)
 {
 #ifdef USE_TCAPI
 	static char enable_webdav_lock[4] = {0};
@@ -1264,7 +1315,7 @@ char* nvram_get_enable_webdav_lock(void)
 #endif
 }
 
-char* nvram_get_webdav_acc_lock(void)
+char *nvram_get_webdav_acc_lock(void)
 {
 #ifdef USE_TCAPI
 	static char webdav_acc_lock[4] = {0};
@@ -1275,7 +1326,7 @@ char* nvram_get_webdav_acc_lock(void)
 #endif
 }
 
-int nvram_set_webdav_acc_lock(const char* acc_lock)
+int nvram_set_webdav_acc_lock(const char *acc_lock)
 {
 #ifdef USE_TCAPI
 	tcapi_set(WEBDAV, WEBDAV_ACC_LOCK, acc_lock);
@@ -1285,7 +1336,7 @@ int nvram_set_webdav_acc_lock(const char* acc_lock)
 	return 1;
 }
 
-char* nvram_get_webdav_lock_interval(void)
+char *nvram_get_webdav_lock_interval(void)
 {
 #ifdef USE_TCAPI
 	static char webdav_lock_interval[4] = {0};
@@ -1296,7 +1347,7 @@ char* nvram_get_webdav_lock_interval(void)
 #endif
 }
 
-char* nvram_get_webdav_lock_times(void)
+char *nvram_get_webdav_lock_times(void)
 {
 #ifdef USE_TCAPI
 	static char webdav_lock_times[4] = {0};
@@ -1307,7 +1358,7 @@ char* nvram_get_webdav_lock_times(void)
 #endif
 }
 
-char* nvram_get_webdav_last_login_info(void)
+char *nvram_get_webdav_last_login_info(void)
 {
 #ifdef USE_TCAPI
 	static char webdav_last_login_info[MAXLEN_TCAPI_MSG] = {0};
@@ -1318,7 +1369,7 @@ char* nvram_get_webdav_last_login_info(void)
 #endif
 }
 
-int nvram_set_webdav_last_login_info(const char* last_login_info)
+int nvram_set_webdav_last_login_info(const char *last_login_info)
 {
 #ifdef USE_TCAPI
 	return tcapi_set(WEBDAV, WEBDAV_LAST_LOGININFO, last_login_info);
@@ -1327,7 +1378,7 @@ int nvram_set_webdav_last_login_info(const char* last_login_info)
 #endif
 }
 
-char* nvram_get_latest_version(void)
+char *nvram_get_latest_version(void)
 {
 #ifdef USE_TCAPI
 	static char latest_version[16] = {0};
@@ -1347,7 +1398,7 @@ int nvram_get_webs_state_error(void)
 	a = atoi(webs_state_error);
 	return a;
 #else
-	char* res = nvram_get(WEBS_STATE_ERROR);
+	char *res = nvram_get(WEBS_STATE_ERROR);
 	int a = atoi(res);
 #ifdef APP_IPKG
 	free(res);
@@ -1356,7 +1407,7 @@ int nvram_get_webs_state_error(void)
 #endif
 }
 
-char* nvram_get_apps_sq(void)
+char *nvram_get_apps_sq(void)
 {
 #ifdef USE_TCAPI
 	char apps_sq[2] = {0};
@@ -1367,7 +1418,7 @@ char* nvram_get_apps_sq(void)
 #endif
 }
 
-char* nvram_get_share_link_param(void)
+char *nvram_get_share_link_param(void)
 {
 #ifdef USE_TCAPI
 	static char share_link_param[MAXLEN_TCAPI_MSG] = {0};
@@ -1378,7 +1429,7 @@ char* nvram_get_share_link_param(void)
 #endif
 }
 
-char* nvram_get_time_zone(void)
+char *nvram_get_time_zone(void)
 {
 #ifdef USE_TCAPI
 	static char time_zone[MAXLEN_TCAPI_MSG] = {0};
@@ -1389,8 +1440,7 @@ char* nvram_get_time_zone(void)
 #endif
 }
 
-
-int nvram_set_share_link_result(const char* result)
+int nvram_set_share_link_result(const char *result)
 {
 #ifdef USE_TCAPI
 	tcapi_set(WEBDAV, SHARE_LINK_RESULT, result);
@@ -1401,36 +1451,38 @@ int nvram_set_share_link_result(const char* result)
 }
 
 int nvram_wan_primary_ifunit(void)
-{	
+{
 #ifdef USE_TCAPI
 	char tmp[4], prefix[16] = {0};
-	int unit;	
-	for (unit = 0; unit < 13; unit ++) {		
-		if( unit > 0 && unit < 8 )	//ignore nas1~7 which should be bridge mode for ADSL
-			continue;	
+	int unit;
+	for (unit = 0; unit < 13; unit++)
+	{
+		if (unit > 0 && unit < 8) // ignore nas1~7 which should be bridge mode for ADSL
+			continue;
 		snprintf(prefix, sizeof(prefix), "Wan_PVC%d", unit);
 		tcapi_get(prefix, "Active", tmp);
 		if (!strcmp(tmp, "Yes"))
 			return unit;
 	}
 #else
-	int unit;	
-	for (unit = 0; unit < 10; unit ++) {		
-		char tmp[100], prefix[] = "wanXXXXXXXXXX_";		
+	int unit;
+	for (unit = 0; unit < 10; unit++)
+	{
+		char tmp[100], prefix[] = "wanXXXXXXXXXX_";
 		snprintf(prefix, sizeof(prefix), "wan%d_", unit);
-		char* res = strcat_r(prefix, "primary", tmp);		
-		if (strncmp(res, "1", 1)==0)			
-			return unit;	
+		char *res = strcat_r(prefix, "primary", tmp);
+		if (strncmp(res, "1", 1) == 0)
+			return unit;
 	}
 #endif
 	return 0;
 }
 
-char* nvram_get_wan_ip(void)
+char *nvram_get_wan_ip(void)
 {
 #ifdef USE_TCAPI
 	/*
-    static char wan_ip[16]= {0};
+	static char wan_ip[16]= {0};
 	char prefix[32] = {0};
 	int unit = nvram_wan_primary_ifunit();
 	snprintf(prefix, sizeof(prefix), "wan%d_ipaddr", unit);
@@ -1438,41 +1490,49 @@ char* nvram_get_wan_ip(void)
 	return wan_ip;
 	*/
 
-    int unit = 0;
-	static char wan_ip[16]= {0};
+	int unit = 0;
+	static char wan_ip[16] = {0};
 	char prefix[32] = {0};
-	static char wans_dualwan[16]= {0};
+	static char wans_dualwan[16] = {0};
 	tcapi_get(DUALWAN, "wans_dualwan", wans_dualwan);
 
-	if(strstr(wans_dualwan, "none")){
+	if (strstr(wans_dualwan, "none"))
+	{
 		unit = nvram_wan_primary_ifunit();
 		snprintf(prefix, sizeof(prefix), "wan%d_ipaddr", unit);
 		tcapi_get(WANDUCK, prefix, wan_ip);
 	}
-	else{
-		char * pch;
+	else
+	{
+		char *pch;
 		pch = strtok(wans_dualwan, " ");
-		while(pch!=NULL){
-			if(strncmp(pch, "lan", 3)==0){
+		while (pch != NULL)
+		{
+			if (strncmp(pch, "lan", 3) == 0)
+			{
 				unit = 12;
 				snprintf(prefix, sizeof(prefix), "wan%d_ipaddr", unit);
 				tcapi_get(WANDUCK, prefix, wan_ip);
 			}
-			else if(strncmp(pch, "usb", 3)==0){
+			else if (strncmp(pch, "usb", 3) == 0)
+			{
 				unit = 11;
-			   	snprintf(prefix, sizeof(prefix), "wan%d_ipaddr", unit);
-			   	tcapi_get(WANDUCK, prefix, wan_ip);
+				snprintf(prefix, sizeof(prefix), "wan%d_ipaddr", unit);
+				tcapi_get(WANDUCK, prefix, wan_ip);
 			}
-			else if(strncmp(pch, "wan", 3)==0){
+			else if (strncmp(pch, "wan", 3) == 0)
+			{
 				unit = 10;
 				snprintf(prefix, sizeof(prefix), "wan%d_ipaddr", unit);
 				tcapi_get(WANDUCK, prefix, wan_ip);
 			}
-			else if(strncmp(pch, "dsl", 3)==0){
+			else if (strncmp(pch, "dsl", 3) == 0)
+			{
 				char dsl_mode[32] = {0};
 				tcapi_get(WAN_COMMON, "DSLMode", dsl_mode);
-				
-				if(strncmp(dsl_mode, "VDSL", 4)==0){
+
+				if (strncmp(dsl_mode, "VDSL", 4) == 0)
+				{
 					unit = 8;
 				}
 				else
@@ -1482,11 +1542,11 @@ char* nvram_get_wan_ip(void)
 				tcapi_get(WANDUCK, prefix, wan_ip);
 			}
 
-			if((strcmp(wan_ip, "")!=0) && (strcmp(wan_ip, "0.0.0.0")!=0))
+			if ((strcmp(wan_ip, "") != 0) && (strcmp(wan_ip, "0.0.0.0") != 0))
 				break;
 
 			//- Next
-			pch = strtok(NULL," ");
+			pch = strtok(NULL, " ");
 		}
 	}
 
@@ -1502,7 +1562,7 @@ char* nvram_get_wan_ip(void)
 #endif
 }
 
-char* nvram_get_swpjverno(void)
+char *nvram_get_swpjverno(void)
 {
 #ifdef USE_TCAPI
 	static char swpjverno[MAXLEN_TCAPI_MSG] = {0};
@@ -1513,21 +1573,21 @@ char* nvram_get_swpjverno(void)
 #endif
 }
 
-char* nvram_get_extendno(void)
+char *nvram_get_extendno(void)
 {
 #ifdef USE_TCAPI
 	static char extendno[MAXLEN_TCAPI_MSG] = {0};
 	tcapi_get(WEBDAV, EXTENDNO, extendno);
 	return extendno;
-#else	
+#else
 	return nvram_get(EXTENDNO);
 #endif
 }
 
-char* nvram_get_dms_enable(void)
+char *nvram_get_dms_enable(void)
 {
 	// 0 --> off
-    // 1 --> on
+	// 1 --> on
 #ifdef USE_TCAPI
 	static char dms_enable[MAXLEN_TCAPI_MSG] = {0};
 	tcapi_get(WEBDAV, DMS_ENABLE, dms_enable);
@@ -1537,7 +1597,7 @@ char* nvram_get_dms_enable(void)
 #endif
 }
 
-char* nvram_get_dms_dbcwd(void)
+char *nvram_get_dms_dbcwd(void)
 {
 #ifdef USE_TCAPI
 	/*
@@ -1548,15 +1608,15 @@ char* nvram_get_dms_dbcwd(void)
 	*/
 	return NULL;
 #else
-    char* dir = nvram_get(DMS_DBCWD);
-    if (dir==NULL || (dir!=NULL && strcmp(dir, "")==0))
-        dir = nvram_get(DMS_DBDIR);
+	char *dir = nvram_get(DMS_DBCWD);
+	if (dir == NULL || (dir != NULL && strcmp(dir, "") == 0))
+		dir = nvram_get(DMS_DBDIR);
 
 	return dir;
 #endif
 }
 
-char* nvram_get_dms_dir(void)
+char *nvram_get_dms_dir(void)
 {
 #ifdef USE_TCAPI
 	/*
@@ -1570,7 +1630,7 @@ char* nvram_get_dms_dir(void)
 #endif
 }
 
-char* nvram_get_ms_enable(void)
+char *nvram_get_ms_enable(void)
 {
 #if EMBEDDED_EANBLE
 
@@ -1587,7 +1647,7 @@ char* nvram_get_ms_enable(void)
 #endif
 }
 
-int nvram_set_https_crt_cn(const char* cn)
+int nvram_set_https_crt_cn(const char *cn)
 {
 #ifdef USE_TCAPI
 	tcapi_set(WEBDAV, HTTPS_CRT_CN, cn);
@@ -1597,8 +1657,9 @@ int nvram_set_https_crt_cn(const char* cn)
 	return 1;
 }
 
-char* nvram_get_https_crt_cn(){
-#ifdef USE_TCAPI		
+char *nvram_get_https_crt_cn()
+{
+#ifdef USE_TCAPI
 	static char https_crt_cn[MAXLEN_TCAPI_MSG] = {0};
 	tcapi_get(WEBDAV, HTTPS_CRT_CN, https_crt_cn);
 	return https_crt_cn;
@@ -1607,36 +1668,36 @@ char* nvram_get_https_crt_cn(){
 #endif
 }
 
-int nvram_setfile_https_crt_file(const char* file, int size)
+int nvram_setfile_https_crt_file(const char *file, int size)
 {
 #ifdef USE_TCAPI
-	
+
 #else
 	nvram_set_file(HTTPS_CRT_FILE, file, size);
 #endif
 	return 1;
 }
 
-int nvram_getfile_https_crt_file(const char* file, int size)
+int nvram_getfile_https_crt_file(const char *file, int size)
 {
 #ifdef USE_TCAPI
-	
+
 #else
 	nvram_get_file(HTTPS_CRT_FILE, file, size);
 #endif
 	return 1;
 }
 
-char* nvram_get_https_crt_file()
+char *nvram_get_https_crt_file()
 {
 #ifdef USE_TCAPI
-	
+
 #else
 	return nvram_get("https_crt_file");
 #endif
 }
 
-char* nvram_get_odmpid()
+char *nvram_get_odmpid()
 {
 #ifdef USE_TCAPI
 	return NULL;
@@ -1645,36 +1706,41 @@ char* nvram_get_odmpid()
 #endif
 }
 
-int nvram_set_https_crt_save(const char* enable)
+int nvram_set_https_crt_save(const char *enable)
 {
 #ifdef USE_TCAPI
-	
+
 #else
 	nvram_set(HTTPS_CRT_SAVE, enable);
 #endif
 	return 1;
 }
 
-int nvram_set_value(const char* key, const char* value){
+int nvram_set_value(const char *key, const char *value)
+{
 #ifdef USE_TCAPI
-		
+
 #else
 	nvram_set(key, value);
 #endif
 	return 1;
 }
 
-char* nvram_get_value(const char* key){
+char *nvram_get_value(const char *key)
+{
 #ifdef USE_TCAPI
 	static char value[MAXLEN_TCAPI_MSG] = {0};
 
-	if(!strcmp(key, "webs_state_update")) {
+	if (!strcmp(key, "webs_state_update"))
+	{
 		tcapi_get("WebCustom_Entry", "webs_state_update", value);
 	}
-	else if(!strcmp(key, "webs_state_error")) {
+	else if (!strcmp(key, "webs_state_error"))
+	{
 		tcapi_get("WebCustom_Entry", "webs_state_error", value);
 	}
-	else if(!strcmp(key, "webs_state_upgrade")) {
+	else if (!strcmp(key, "webs_state_upgrade"))
+	{
 		tcapi_get("WebCustom_Entry", "webs_state_upgrade", value);
 	}
 
@@ -1684,18 +1750,39 @@ char* nvram_get_value(const char* key){
 #endif
 }
 
-
 /* for hostspot module */
-char* nvram_get_uamsecret(const char *str)
+char *nvram_get_uamsecret(const char *str)
 {
 #ifdef USE_TCAPI
-        //Todo
+	// Todo
 #else
-    	if(!strncmp(str, nvram_get("chilli_net"), 11)){ 
-	   return nvram_get("chilli_uamsecret");
-	}else{
-	   return nvram_get("cp_uamsecret");
+	if (!strncmp(str, nvram_get("chilli_net"), 11))
+	{
+		return nvram_get("chilli_uamsecret");
 	}
+	else
+	{
+		return nvram_get("cp_uamsecret");
+	}
+#endif
+}
+
+char* nvram_get_https_intermediate_crt_save()
+{
+#ifdef USE_TCAPI
+	// Todo
+#else
+	return nvram_safe_get(HTTPS_INTERMEDIATE_CRT_SAVE);
+#endif
+}
+
+char* nvram_get_usb_UI_path()
+{
+#ifdef USE_TCAPI
+	// Todo
+	return NULL;
+#else
+	return nvram_safe_get("usbUIpath");
 #endif
 }
 #endif

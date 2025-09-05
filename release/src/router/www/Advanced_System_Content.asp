@@ -233,6 +233,8 @@ function show_boostkey_desc(id) {
 		document.getElementById("boostkey_desc").innerHTML = "<span>" + desc[id] + "</span>";
 }
 
+var secure_default = isSupport("secure_default");
+
 function initial(){	
 	//parse nvram to array
 	var parseNvramToArray = function(oriNvram) {
@@ -1423,7 +1425,6 @@ function pullLANIPList(obj){
 function hideport(flag){
 	document.getElementById("accessfromwan_port").style.display = (flag == 1) ? "" : "none";
 	if(!HTTPS_support){
-		document.getElementById("NSlookup_help_for_WAN_access").style.display = (flag == 1) ? "" : "none";
 		var orig_str = document.getElementById("access_port_title").innerHTML;
 		document.getElementById("access_port_title").innerHTML = orig_str.replace(/HTTPS/, "HTTP");
 		document.getElementById("http_port").style.display = (flag == 1) ? "" : "none";
@@ -2062,6 +2063,13 @@ function change_username(){
 
 		$("#http_username_new").val($("#http_username_new").val().trim());
 
+		if($("#http_username_new").val() == $("#http_passwd_cur").val()){
+			showtext(document.getElementById("alert_msg"),"* <#JS_validLoginPWD_same#>");
+			$("#http_username_new").focus();
+			$("#http_username_new").select();
+			return false;
+		}
+
 		if($("#http_username_new").val() == "root"
 				|| $("#http_username_new").val() == "guest"
 				|| $("#http_username_new").val() == "anonymous"
@@ -2126,8 +2134,15 @@ function change_passwd(){
 		return false;
 	}
 
+	var str_valid_max_password = `<#JS_max_password_var#>`;
+	if(is_KR_sku || is_SG_sku || is_AA_sku || secure_default){  /* MODELDEP by Territory Code */
+		str_valid_max_password = `* `+str_valid_max_password.replace("%1$@", "10");
+	}
+	else{
+		str_valid_max_password = `* `+str_valid_max_password.replace("%1$@", "5");
+	}
 	if($("#http_passwd_new").val().length > max_pwd_length){
-		showtext(document.getElementById("new_pwd_msg"),"* <#JS_max_password#>");
+		showtext(document.getElementById("new_pwd_msg"), str_valid_max_password);
 		$("#http_passwd_new").focus();
 		$("#http_passwd_new").select();
 		return false;
@@ -2145,7 +2160,14 @@ function change_passwd(){
 		return false;
 	}
 
-	if(is_KR_sku || is_SG_sku || is_AA_sku){	/* MODELDEP by Territory Code */
+	if($("#http_passwd_new").val() == httpApi.nvramGet(["http_username"]).http_username){
+        showtext(document.getElementById("alert_msg"),"* <#JS_validLoginPWD_same#>");
+        $("#http_passwd_new").focus();
+        $("#http_passwd_new").select();
+        return false;
+	}
+
+	if(is_KR_sku || is_SG_sku || is_AA_sku || secure_default){	/* MODELDEP by Territory Code */
 		if($("#http_passwd_new").val().length > 0){
 			if(!validator.string_KR(document.getElementById("http_passwd_new"))){
 				$("#http_passwd_new").focus();
@@ -2218,7 +2240,7 @@ function change_passwd(){
 
 function check_password_length(obj){
 
-	if(is_KR_sku || is_SG_sku || is_AA_sku){     /* MODELDEP by Territory Code */
+	if(is_KR_sku || is_SG_sku || is_AA_sku || secure_default){     /* MODELDEP by Territory Code */
 		showtext(document.getElementById("new_pwd_msg"),"<#JS_validLoginPWD#>");
 		return;
 	}
@@ -2886,7 +2908,6 @@ function build_boostkey_options() {
 						<span class="formfontdesc" id="WAN_access_hint" style="color:#FFCC00; display:none;"><#FirewallConfig_x_WanWebEnable_HTTPS_only#> 
 							<a id="faq" href="" target="_blank" style="margin-left: 5px; color:#FFCC00; text-decoration: underline;">FAQ</a>
 						</span>
-						<div class="formfontdesc" id="NSlookup_help_for_WAN_access" style="color:#FFCC00; display:none;"><#NSlookup_help#></div>
 					</td>
 				</tr>
 				<tr id="accessfromwan_port">

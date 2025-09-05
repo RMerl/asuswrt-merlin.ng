@@ -560,7 +560,7 @@ function show_warning_message(){
 			else
 				setTimeout("get_real_ip();", 3000);
 		}
-		else if(realip_state != "2"){
+		/*else if(realip_state != "2"){
 			if(cur_wan_ipaddr == "0.0.0.0" || validator.isPrivateIP(cur_wan_ipaddr))
 				showhide("wan_ip_hide2", 1);
 			else
@@ -571,10 +571,10 @@ function show_warning_message(){
 				showhide("wan_ip_hide2", 1);
 			else
 				showhide("wan_ip_hide2", 0);
-		}
+		}*/
 	}
-	else if(cur_wan_ipaddr == "0.0.0.0" || validator.isPrivateIP(cur_wan_ipaddr))
-		showhide("wan_ip_hide2", 1);
+	/*else if(cur_wan_ipaddr == "0.0.0.0" || validator.isPrivateIP(cur_wan_ipaddr))
+		showhide("wan_ip_hide2", 1);*/
 }
 
 function get_real_ip(){
@@ -1526,13 +1526,10 @@ function clear_cert_key(){
                     <div class="formfonttitle_help" style="position: absolute;right: 5px;top: 5px;"><i id="ddns_help" onclick="show_feature_desc()" class="icon_help"></i></div>
 		  		</div>
 		  		<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-
-		 		<div class="formfontdesc formfontdesc_help_left">
-					<div><#LANHostConfig_x_DDNSEnable_sectiondesc#></div>
-				</div>
-
-				<div class="formfontdesc hint-color" id="wan_ip_hide2" style="color:#FC0; display:none;"><#LANHostConfig_x_DDNSEnable_sectiondesc4#><#LANHostConfig_x_DDNSEnable_sectiondesc2#></div>
-				<div class="formfontdesc hint-color" id="lb_note" style="color:#FC0; display:none;"><#lb_note_ddns#></div>
+		 		<div class="formfontdesc"><#LANHostConfig_x_DDNSEnable_sectiondesc#></div>
+				<div class="formfontdesc" id="wan_ip_hide2" style="color:#FFCC00; display:none;"><#LANHostConfig_x_DDNSEnable_sectiondesc2#></div>
+				<div class="formfontdesc" id="wan_ip_hide3" style="color:#FFCC00; display:none;"><#LANHostConfig_x_DDNSEnable_sectiondesc3#></div>
+				<div class="formfontdesc" id="lb_note" style="color:#FFCC00; display:none;"><#lb_note_ddns#></div>
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 				<input type="hidden" name="wl_gmode_protection_x" value="<% nvram_get("wl_gmode_protection_x"); %>">
 			<tr>

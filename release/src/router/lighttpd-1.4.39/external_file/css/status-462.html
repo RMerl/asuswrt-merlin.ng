@@ -34,12 +34,12 @@ $("document").ready(function() {
 // Function to safely get the origin part of the URL
 function getSafeLocation() {
     var url = new URL(window.location.href);
-    return url.origin;
+    return encodeURIComponent(url.origin); // 對輸出進行編碼，防止 XSS
 }
 
 function doLogin(){
 	var window_location = getSafeLocation();
-	window.location = window_location;
+	window.location = decodeURIComponent(window_location);
 }
 
 </script>

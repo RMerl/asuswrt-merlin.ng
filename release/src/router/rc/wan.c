@@ -2968,10 +2968,16 @@ void wan6_up(const char *pwan_ifname)
 		ipv6_sysconf(wan_ifname, "accept_ra", 1);
 		ipv6_sysconf(wan_ifname, "accept_ra_defrtr", accept_defrtr);
 		ipv6_sysconf(wan_ifname, "forwarding", 0);
+#ifdef RTCONFIG_IPV6_PRIVACY
+		ipv6_sysconf(wan_ifname, "use_tempaddr", 2);
+#endif
 		break;
 	case IPV6_MANUAL:
 		ipv6_sysconf(wan_ifname, "accept_ra", 0);
 		ipv6_sysconf(wan_ifname, "forwarding", 1);
+#ifdef RTCONFIG_IPV6_PRIVACY
+		ipv6_sysconf(wan_ifname, "use_tempaddr", 0);
+#endif
 		break;
 	case IPV6_6RD:
 		update_6rd_info_by_unit(wan_unit);

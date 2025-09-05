@@ -9,6 +9,7 @@
 
 var rc_support = '<% nvram_get("rc_support"); %>';
 var gobi_support = (rc_support.search("gobi") == -1) ? false : true;
+var secure_default = (rc_support.search("secure_default") == -1) ? false : true;
 
 /* convert some special character for shown string */
 function handle_show_str(show_str)
@@ -2682,7 +2683,7 @@ function chkPass(pwd, flag, obj, id) {
 		oScore =$(obj).find(".strength_text")[0];
 	}
 
-	if(flag == "http_passwd" && (isSku("KR") || isSku("SG") || isSku("AA"))){
+	if(flag == "http_passwd" && (isSku("KR") || isSku("SG") || isSku("AA") || secure_default)){
 		oScorebar.style.display = "none";
 		return;
 	}

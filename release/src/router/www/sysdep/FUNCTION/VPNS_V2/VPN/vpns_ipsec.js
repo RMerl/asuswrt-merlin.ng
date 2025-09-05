@@ -1077,6 +1077,7 @@ function set_apply_btn_status_IPSec(_obj){
 					showLoading(time);
 					setTimeout(function(){
 						httpApi.nvramGet(["ipsec_profile_1"], true);
+						httpApi.nvramCharToAscii(["ipsec_profile_1"], true);
 						if(!window.matchMedia('(max-width: 575px)').matches)
 							$("#srv_profile_list").children("[type='" + select_vpn_type + "']").addClass("selected").find(".svr_item_text_container").click();
 					}, time*1000);

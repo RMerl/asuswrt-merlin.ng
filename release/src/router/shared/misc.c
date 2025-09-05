@@ -42,7 +42,6 @@
 #include "shared.h"
 #include "wlif_utils.h"
 #include "iboxcom.h"
-#include <regex.h>
 
 #ifndef ETHER_ADDR_LEN
 #define	ETHER_ADDR_LEN		6
@@ -5831,7 +5830,7 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 	char ifname[IFNAMSIZ] = { 0 };
 	int found = 0;
 	char band_prefix[8];
-	char nband = 0, num5g = 0, num6g = 0;
+	char nband = 0;
 
 	if (!strncmp(name, CFG_WL_STR_2G, 2) || !strncmp(name, CFG_WL_STR_5G, 2) ||
 		!strncmp(name, CFG_WL_STR_6G, 2)) {
@@ -5847,23 +5846,36 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 		strlcpy(ifname, nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), sizeof(ifname));
 		subunit = 0;
-		nband = nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp)));
-
-		if (nband == 2)
-			strlcpy(band_prefix, CFG_WL_STR_2G, sizeof(band_prefix));
-		else if (nband == 1)
+		nband = nvram_get_int(strcat_r(prefix, "nband_type", tmp));
+		switch (nband)
 		{
-			num5g++;
+			case 0:	/* 2G */
+				strlcpy(band_prefix, CFG_WL_STR_2G, sizeof(band_prefix));
+				break;
+			case 1:	/* 5G */
+			case 2: /* 5G low */
 #if defined(RTCONFIG_LYRA_5G_SWAP)
-			strlcpy(band_prefix, swap_5g_band(unit) == 2 ? CFG_WL_STR_5G1 : CFG_WL_STR_5G, sizeof(band_prefix));
+				strlcpy(band_prefix, swap_5g_band(unit) == 2 ? CFG_WL_STR_5G1 : CFG_WL_STR_5G, sizeof(band_prefix));
 #else
-			strlcpy(band_prefix, num5g == 1 ? CFG_WL_STR_5G : CFG_WL_STR_5G1, sizeof(band_prefix));
+				strlcpy(band_prefix, CFG_WL_STR_5G, sizeof(band_prefix));
 #endif
-		}
-		else if (nband == 4)
-		{
-			num6g++;
-			strlcpy(band_prefix, num6g == 1 ? CFG_WL_STR_6G : CFG_WL_STR_6G1, sizeof(band_prefix));
+				break;
+			case 3:	/* 5G high */
+#if defined(RTCONFIG_LYRA_5G_SWAP)
+				strlcpy(band_prefix, swap_5g_band(unit) == 2 ? CFG_WL_STR_5G1 : CFG_WL_STR_5G, sizeof(band_prefix));
+#else
+				strlcpy(band_prefix, CFG_WL_STR_5G1, sizeof(band_prefix));
+#endif
+				break;
+			case 4:	/* 6G */
+			case 5: /* 6G low */
+				strlcpy(band_prefix, CFG_WL_STR_6G, sizeof(band_prefix));
+				break;
+			case 6:	/* 6G high */
+				strlcpy(band_prefix, CFG_WL_STR_6G1, sizeof(band_prefix));
+				break;
+			default:
+				break;
 		}
 
 		if (!strcmp(ifname, name)) {
@@ -6356,47 +6368,6 @@ int is_valid_domainname(const char *name)
 	}
 
 	return p - name;
-}
-
-int is_valid_oauth_code(char *code)
-{
-	int len;
-
-	len = strlen(code);
-	if (len > 2048) return 0;
-
-	while(*code) {
-		if (isalnum(*code) != 0 || *code == '-' || *code == '.' || *code == '_' || *code == '~' || *code == '+' || *code == '/' || isspace(*code) != 0)
-			code++;
-		else
-			return 0;
-	}
-	return 1;
-}
-int is_valid_email_address(char *address)
-{
-	int status=1, ret=0, rc=0;
-	regex_t preg;
-	const char *reg_exp = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*.\\w+([-.]\\w+)*$";
-
-	rc = regcomp(&preg, reg_exp, REG_EXTENDED);
-
-	if (rc != 0)
-	{
-		dbg("%s: Failed to compile the regular expression:%d\n", __func__, rc);
-		return 4000;
-	}
-
-	status=regexec(&preg,address,0, NULL, 0);
-	if (status == REG_NOMATCH) {
-		dbg("No Match\n");
-	}
-	else if (status == 0) {
-		dbg("Match\n");
-		ret = 1;
-	}
-	regfree(&preg);
-	return ret;
 }
 
 int get_discovery_ssid(char *ssid_g, int size)

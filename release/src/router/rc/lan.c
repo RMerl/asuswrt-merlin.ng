@@ -1616,11 +1616,13 @@ void start_lan(void)
 #ifdef RTAC87U
 		eval("brctl", "stp", lan_ifname, nvram_safe_get("lan_stp"));
 #else
-#if !defined(HND_ROUTER) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63)
-		if (is_routing_enabled())
+		if (is_routing_enabled()
+#if defined(HND_ROUTER) && defined(RTCONFIG_NEW_PHYMAP)
+			&& ext_switch_exist()
+#endif
+		)
 			eval("brctl", "stp", lan_ifname, nvram_safe_get("lan_stp"));
 		else
-#endif
 			eval("brctl", "stp", lan_ifname, "0");
 #endif
 
@@ -4546,6 +4548,13 @@ wait_lan_port_to_forward_state(void)
 		if (nvram_match(lan_stp, "0"))
 			continue;
 
+		if (!is_routing_enabled()
+#ifdef RTCONFIG_NEW_PHYMAP
+			|| !ext_switch_exist()
+#endif
+		)
+			continue;
+
 		timeout = 5;
 		state = BR_STATE_DISABLED;
 
@@ -6009,6 +6018,10 @@ void restart_wireless(void)
 	char domain_mapping[64];
 #endif
 	int lock = file_lock("wireless");
+#if defined(RTCONFIG_AMAS)
+	char amas_wlc_last_pap[] = "amas_wlcXXX_last_pap", amas_wlc_pap[] = "amas_wlcXXX_pap", amas_wlc_try_target_bssid[] = "amas_wlcXXX_try_target_bssid";
+	int len_of_target_bssid = 0, k = 0;
+#endif
 #ifdef RTCONFIG_WIFI_SON
 	if ((sw_mode()!=SW_MODE_REPEATER && (nvram_get_int("sw_mode")==SW_MODE_ROUTER || nvram_match("cfg_master", "1")) && nvram_get_int("x_Setting") && start_cap(1)==0) && nvram_match("wifison_ready", "1")) {
 		file_unlock(lock);
@@ -6022,6 +6035,16 @@ void restart_wireless(void)
 	nvram_set_int("wlready", 0);
 #ifdef RTCONFIG_AMAS
 	if (nvram_get_int("re_mode") == 1) {
+		len_of_target_bssid = strlen(nvram_safe_get("amas_wlc_target_bssid"));
+		for(k=0; k<num_of_wl_if(); k++)
+		{
+			snprintf(amas_wlc_last_pap, sizeof(amas_wlc_last_pap), "amas_wlc%d_last_pap", k);
+			snprintf(amas_wlc_pap, sizeof(amas_wlc_pap), "amas_wlc%d_pap", k);
+			snprintf(amas_wlc_try_target_bssid, sizeof(amas_wlc_try_target_bssid), "amas_wlc%d_try_target_bssid", k);
+			nvram_set(amas_wlc_last_pap, nvram_safe_get(amas_wlc_pap));
+			if(len_of_target_bssid > 0) // has prefer AP
+				nvram_set_int(amas_wlc_try_target_bssid, 1);
+		}
 		stop_amas_wlcconnect();
 		stop_amas_bhctrl();
 #ifdef RTCONFIG_BHCOST_OPT

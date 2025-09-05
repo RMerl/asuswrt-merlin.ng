@@ -96,6 +96,10 @@ int check_aicloud_db(const char* username, const char* password);
 /* for hostspot module */
 char* nvram_get_uamsecret(const char *str);
 
+char* nvram_get_https_intermediate_crt_save();
+
+char* nvram_get_usb_UI_path();
+
 
 
 

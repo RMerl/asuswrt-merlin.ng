@@ -38,8 +38,8 @@ LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 LDFLAGS += -L$(TOP)/libasc -lasc
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 ifeq ($(RTCONFIG_TR069),y)
-CFLAGS += -I$(TOP)/libssh2-1.10.0/include -I$(TOP)/zlib/include
-LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2 -L$(TOP)/zlib -lz
+CFLAGS += -I$(TOP)/libssh2/include -I$(TOP)/zlib/include
+LDFLAGS += -L$(TOP)/libssh2/src/.libs -lssh2 -L$(TOP)/zlib -lz
 endif
 
 ifeq ($(RTCONFIG_TRUSTZONE),y)

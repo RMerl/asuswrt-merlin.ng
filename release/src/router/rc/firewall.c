@@ -4224,6 +4224,20 @@ TRACE_PT("writing Parental Control\n");
 #endif
 	    wan_proto == WAN_PPPOE || wan_proto == WAN_PPTP || wan_proto == WAN_L2TP) {
 		fprintf(fp, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
+
+		/*
+		  To fix the parantal control online mode issue that the client is in the period which can access internet cannot reach some web site.
+		  We insert the rule of TCPMSS to top of chain PControls if need.
+		*/
+#ifdef RTCONFIG_PARENTALCTRL
+		if (pc_count > 0 || 
+#ifdef RTCONFIG_PC_REWARD
+			pc_reward_count > 0
+#endif
+		) {
+			fprintf(fp, "-I PControls -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
+		}
+#endif // RTCONFIG_PARENTALCTRL
 	}
 #ifdef RTCONFIG_IPV6
 	switch (get_ipv6_service()) {
@@ -4244,6 +4258,20 @@ TRACE_PT("writing Parental Control\n");
 	case IPV6_6TO4:
 	case IPV6_6RD:
 		fprintf(fp_ipv6, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
+
+		/*
+		  To fix the parantal control online mode issue that the client is in the period which can access internet cannot reach some web site.
+		  We insert the rule of TCPMSS to top of chain PControls if need.
+		*/
+#ifdef RTCONFIG_PARENTALCTRL
+		if (pc_count > 0 || 
+#ifdef RTCONFIG_PC_REWARD
+			pc_reward_count > 0
+#endif
+		) {
+			fprintf(fp_ipv6, "-I PControls -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
+		}
+#endif // RTCONFIG_PARENTALCTRL
 		break;
 	}
 #endif
@@ -5748,6 +5776,20 @@ TRACE_PT("writing Parental Control\n");
 		    wan_proto == WAN_PPPOE || wan_proto == WAN_PPTP || wan_proto == WAN_L2TP) {
 		clamp_mss:
 			fprintf(fp, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
+
+			/*
+			  To fix the parantal control online mode issue that the client is in the period which can access internet cannot reach some web site.
+			  We insert the rule of TCPMSS to top of chain PControls if need.
+			*/
+#ifdef RTCONFIG_PARENTALCTRL
+			if (pc_count > 0 || 
+#ifdef RTCONFIG_PC_REWARD
+				pc_reward_count > 0
+#endif
+			) {
+				fprintf(fp, "-I PControls -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
+			}
+#endif // RTCONFIG_PARENTALCTRL
 			break; // set one time
 		}
 	}
@@ -5771,6 +5813,20 @@ TRACE_PT("writing Parental Control\n");
 	case IPV6_6TO4:
 	case IPV6_6RD:
 		fprintf(fp_ipv6, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
+
+		/*
+		  To fix the parantal control online mode issue that the client is in the period which can access internet cannot reach some web site.
+		  We insert the rule of TCPMSS to top of chain PControls if need.
+		*/
+#ifdef RTCONFIG_PARENTALCTRL
+		if (pc_count > 0 || 
+#ifdef RTCONFIG_PC_REWARD
+			pc_reward_count > 0
+#endif
+		) {
+			fprintf(fp_ipv6, "-I PControls -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
+		}
+#endif // RTCONFIG_PARENTALCTRL
 		break;
 	}
 #endif

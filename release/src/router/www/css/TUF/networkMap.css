@@ -108,19 +108,19 @@ body{
 	transition: all 0.5s ease-in-out;
 }
 .core-color-0{
-	background: linear-gradient(to right, #0bc8ff 0%, #0039ff 100%);
+	background-color: #FF9000;
 }
 .core-color-1{
-	background: linear-gradient(to right, #0bc8ff 0%, #0039ff 100%);
+	background-color: #33FF00;
 }
 .core-color-2{
-	background: linear-gradient(to right, #0bc8ff 0%, #0039ff 100%);
+	background-color: #FF44FF;
 }
 .core-color-3{
-	background: linear-gradient(to right, #0bc8ff 0%, #0039ff 100%);
+	background-color: #0096FF;
 }
 .ram-color{
-	background: linear-gradient(to right, #0bc8ff 0%, #0039ff 100%);
+	background: linear-gradient(to right, #0096FF 0%, #0039ff 100%);
 }
 .bar-text-width{
 	width: 50px;
@@ -136,12 +136,21 @@ body{
 .svg-block{
 	background-color:#000000;
 }
-.core-fill-color-0, .core-fill-color-1, .core-fill-color-2, .core-fill-color-3{
-	stroke:#0bc8ff;
+.core-fill-color-0{
+    stroke:#FF9000;
+}
+.core-fill-color-1{
+    stroke:#33FF00;
+}
+.core-fill-color-2{
+    stroke:#FF44FF;
+}
+.core-fill-color-3{
+    stroke:#0096FF;
 }
 /* RAM */
 .ram-fill-color{
-	stroke:#0bc8ff;
+	stroke:#0096FF;
 }
 .ram-text-width{
 	width: 90px;

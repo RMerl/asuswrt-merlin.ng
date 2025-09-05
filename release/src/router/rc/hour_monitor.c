@@ -22,6 +22,7 @@ static int value = 0;
 static int is_first = 1;
 static int hm_alarm_status = 0;
 static struct itimerval itv;
+#define ANALYZER_TIMEOUT       30
 
 static void alarmtimer(unsigned long sec, unsigned long usec)
 {
@@ -36,7 +37,7 @@ void hm_traffic_analyzer_save()
 	char *analyzer_exe_argv[] = {"TrafficAnalyzer", "-e", NULL};
 	char *analyzer_size_argv[] = {"TrafficAnalyzer", "-d", BWDPI_ANA_DB_SIZE, NULL};
 
-	_eval(analyzer_size_argv, NULL, 5, NULL);
+	_eval(analyzer_size_argv, NULL, ANALYZER_TIMEOUT, NULL);
 
 	if (!f_exists(DEVNODE) || !f_exists("/dev/idpfw")) {
 		_dprintf("%s : dpi engine doesn't exist, not to save any database\n", __FUNCTION__);
@@ -44,7 +45,7 @@ void hm_traffic_analyzer_save()
 		return;
 	}
 
-	_eval(analyzer_exe_argv, NULL, 5, NULL);
+	_eval(analyzer_exe_argv, NULL, ANALYZER_TIMEOUT, NULL);
 	//logmessage("hour monitor", "store traffic analyzer data"); // DEBUG
 }
 

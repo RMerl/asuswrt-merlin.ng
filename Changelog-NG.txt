@@ -25,6 +25,7 @@ Asuswrt-Merlin Changelog
 
   - NEW: Added Control-D servers to DNS-over-TLS
          presets (dave14305)
+  - UPDATED: Merged GPL 388_25523.
   - UPDATED: dropbear to 2025.88.
   - CHANGED: Setting DNS Director to "Router" will now always
              redirect to the router's own IP.  Previously it
@@ -39,7 +40,6 @@ Asuswrt-Merlin Changelog
   - CHANGED: Replaced netstat-nat by a fork called netstat-nat-ng.
              This fork fixes a number of issues with IPv6 and
              field size.
-  - CHANGED: Updated Control-D DoT server entries (dave14305).
   - CHANGED: Optimized performance when refreshing the Sysinfo
              page on a network with thousands of tracked
              connections.

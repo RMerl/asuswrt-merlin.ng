@@ -364,7 +364,7 @@ function validForm(){
 			return false;
 		}
 		if(document.form.http_passwd_x.value == document.form.http_username_x.value){
-			alert("<#JS_validLoginPWD#>");
+			alert("Password must contain at least 10 characters in length, including 1 letter, 1 special character, and 1 numeric character.");
 			document.form.http_passwd_x.focus();
 			document.form.http_passwd_x.select();
 			return false;	
@@ -539,10 +539,10 @@ var validator = {
 		
 		if(!/[A-Za-z]/.test(obj.value) || !/[0-9]/.test(obj.value) || string_length < 10
 				|| !/[\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\}\~]/.test(obj.value)
-				|| /([A-Za-z0-9\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\}\~])\1/.test(obj.value)
+//				|| /([A-Za-z0-9\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\}\~])\1/.test(obj.value)
 		){
 				
-			showError("<#JS_validLoginPWD#>");
+			showError("Password must contain at least 10 characters in length, including 1 letter, 1 special character, and 1 numeric character.");
 			obj.focus();
 			obj.select();
 			return false;	
@@ -620,7 +620,7 @@ function showError(str){
 						<#QIS_pass_desc1#>
 					</div>
 					<div id="KRHint" style="display:none">
-						<#JS_validLoginPWD#>
+						Password must contain at least 10 characters in length, including 1 letter, 1 special character, and 1 numeric character.
 					</div>
 				</div>
 				<div id="router_name_tr" class="ie_title">

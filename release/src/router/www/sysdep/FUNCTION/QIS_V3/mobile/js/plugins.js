@@ -2387,7 +2387,7 @@ validator.KRSkuPwd = function(str){
 
 	if( !/[A-Za-z]/.test(str) || !/[0-9]/.test(str) || str.length < 10
 		|| !/[\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\}\~]/.test(str)
-		|| /([A-Za-z0-9\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\}\~])\1/.test(str)
+//		|| /([A-Za-z0-9\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\}\~])\1/.test(str)
 	){
 		testResult.isError = true;
 		testResult.errReason = "<#JS_validLoginPWD#>";

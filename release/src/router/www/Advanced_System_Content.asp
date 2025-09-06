@@ -2260,7 +2260,7 @@ function change_passwd(){
 		}
 
 		if($("#http_passwd_new").val() == accounts[0]){
-			alert("<#JS_validLoginPWD#>");
+			alert("Password must contain at least 10 characters in length, including 1 letter, 1 special character, and 1 numeric character.");
 			document.form.http_passwd_new.focus();
 			document.form.http_passwd_new.select();
 			return false;
@@ -2324,7 +2324,7 @@ function change_passwd(){
 function check_password_length(obj){
 
 	if(is_KR_sku || is_SG_sku || is_AA_sku || secure_default){     /* MODELDEP by Territory Code */
-		showtext(document.getElementById("new_pwd_msg"),"<#JS_validLoginPWD#>");
+		showtext(document.getElementById("new_pwd_msg"),"Password must contain at least 10 characters in length, including 1 letter, 1 special character, and 1 numeric character.");
 		return;
 	}
 	

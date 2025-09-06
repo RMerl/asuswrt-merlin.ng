@@ -1893,10 +1893,10 @@ var validator = {
 		var string_length = string_obj.value.length;
 		if(!/[A-Za-z]/.test(string_obj.value) || !/[0-9]/.test(string_obj.value) || string_length < 10
 				|| !/[\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\}\~]/.test(string_obj.value)
-				|| /([A-Za-z0-9\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\}\~])\1/.test(string_obj.value) 
+//				|| /([A-Za-z0-9\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\}\~])\1/.test(string_obj.value) 
 		){
 				
-				alert("<#JS_validLoginPWD#>");
+				alert("Password must contain at least 10 characters in length, including 1 letter, 1 special character, and 1 numeric character.");
 				string_obj.focus();
 				return false;
 		}

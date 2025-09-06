@@ -1,4 +1,4 @@
-export GENERAL_BASE :=  DISAPPCAPT=n
+export GENERAL_BASE :=  DISAPPCAPT=n TPVPN=n
 
 #
 # Broadcom HND ARM platform

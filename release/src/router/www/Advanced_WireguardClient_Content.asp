@@ -307,8 +307,8 @@ function validForm(){
 				return false;
 		}
 		else{
-			isvalid_wgc_aips.isError = true;
-			isvalid_wgc_aips.errReason = "Invalid IP address!";
+			isValid_wgc_aips.isError = true;
+			isValid_wgc_aips.errReason = "Invalid IP address!";
 			return false;
 		}
 	});

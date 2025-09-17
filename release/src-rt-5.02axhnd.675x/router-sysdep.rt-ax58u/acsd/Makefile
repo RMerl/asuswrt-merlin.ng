@@ -1,3 +1,4 @@
+WLAN_ComponentsInUse += bcmwifi math
 include $(SRCBASE)/makefiles/WLAN_Common.mk
 export SRCBASE := $(WLAN_SrcBaseA)
 export BASEDIR := $(WLAN_TreeBaseA)

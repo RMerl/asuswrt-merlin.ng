@@ -986,6 +986,15 @@ static void eloop_process_pending_signals(void)
 	}
 }
 
+static void eloop_unblock_signal(int sig)
+{
+	sigset_t set;
+
+	sigemptyset(&set);
+	sigaddset(&set, sig);
+	sigprocmask(SIG_UNBLOCK, &set, NULL);
+}
+
 int eloop_register_signal(int sig, eloop_signal_handler handler,
 			  void *user_data)
 {
@@ -1002,6 +1011,7 @@ int eloop_register_signal(int sig, eloop_signal_handler handler,
 	tmp[eloop.signal_count].signaled = 0;
 	eloop.signal_count++;
 	eloop.signals = tmp;
+	eloop_unblock_signal(sig);
 	signal(sig, eloop_handle_signal);
 
 	return 0;

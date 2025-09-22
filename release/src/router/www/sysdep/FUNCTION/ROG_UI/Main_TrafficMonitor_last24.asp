@@ -226,12 +226,10 @@ function setUnit(unit){
 							<td>
      						<div align="right">
 			    				<select onchange="switchPage(this.options[this.selectedIndex].value)" class="input_option" style="margin-top:8px;">
-									<!--option><#switchpage#></option-->
-									<option value="1"><#menu4_2_1#></option>
-									<option value="2" selected><#menu4_2_2#></option>
-									<option value="3"><#menu4_2_3#></option>
-									<option value="4">Monthly</option>
-								</select>	
+								<option value="1"><#menu4_2_1#></option>
+								<option value="2" selected><#menu4_2_2#></option>
+								<option value="3"><#menu4_2_3#></option>
+								<option value="4">Monthly</option>
 							</div>
 							</td></tr></table>
 						</td>

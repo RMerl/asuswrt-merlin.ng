@@ -74,17 +74,6 @@ function applyRule(){
 
 	document.form.ct_udp_timeout.value = document.form.udp_unreplied.value + " "+document.form.udp_assured.value;
 
-	if (based_modelid != "RT-AC86U") {
-		if (getRadioValue(document.form.cstats_enable) != "<% nvram_get("cstats_enable"); %>") {
-			if ( (getRadioValue(document.form.cstats_enable) == 1) && ("<% nvram_get("ctf_disable"); %>" == 0) )
-				FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
-			else
-				document.form.action_script.value += ";restart_firewall;restart_cstats";
-		} else {
-			document.form.action_script.value += ";restart_cstats";
-		}
-	}
-
 	if (getRadioValue(document.form.dns_local_cache) != "<% nvram_get("dns_local_cache"); %>")
 		document.form.action_script.value += ";restart_dnsmasq";
 

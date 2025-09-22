@@ -204,15 +204,14 @@ function setUnit(unit){
 										<div id="content_title" style="margin-top:5px;"><#Menu_TrafficManager#> - <#traffic_monitor#></div>
 									</td>
 							<td>
-     						<div align="right">
-     		   					<select onchange="switchPage(this.options[this.selectedIndex].value)" class="input_option">
-									<!--option><#switchpage#></option-->
-									<option value="1" selected><#menu4_2_1#></option>
-									<option value="2"><#menu4_2_2#></option>
-									<option value="3"><#menu4_2_3#></option>
-									<option value="4">Monthly</option>
-								</select>	    
-							</div>
+     								<div align="right">
+     		   							<select onchange="switchPage(this.options[this.selectedIndex].value)" class="input_option">
+										<option value="1" selected><#menu4_2_1#></option>
+										<option value="2"><#menu4_2_2#></option>
+										<option value="3"><#menu4_2_3#></option>
+										<option value="4">Monthly</option>
+									</select>	    
+								</div>
 							</td></tr></table>
 						</td>
         			</tr>

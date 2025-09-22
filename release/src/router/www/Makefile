@@ -438,12 +438,6 @@ ifeq ($(BUILD_NAME),DSL-N55U-B)
 endif
 endif
 
-ifeq ($(HND_ROUTER),y)
-	rm -rf $(INSTALLDIR)/www/Main_TrafficMonitor_devdaily.asp
-	rm -rf $(INSTALLDIR)/www/Main_TrafficMonitor_devmonthly.asp
-	rm -rf $(INSTALLDIR)/www/Main_TrafficMonitor_devrealtime.asp
-endif
-
 ifneq ($(BUILD_NAME),DSL-N55U)
 ifneq ($(BUILD_NAME),DSL-N55U-B)
 ifneq ($(BUILD_NAME),RT-N56U)

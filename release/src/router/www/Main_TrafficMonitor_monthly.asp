@@ -23,7 +23,7 @@
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 
 <script type='text/javascript'>
-var nvram = httpApi.nvramGet(["wan_ifname", "lan_ifname", "rstats_enable", "http_id", "cstats_enable"])
+var nvram = httpApi.nvramGet(["wan_ifname", "lan_ifname", "rstats_enable", "http_id"])
 
 try {
 	<% bandwidth("monthly"); %>
@@ -114,28 +114,6 @@ function init()
 {
 	var s;
 
-	if (nvram.cstats_enable == '1') {
-		selGroup = E('page_select');
-
-		optGroup = document.createElement('OPTGROUP');
-		optGroup.label = "Per device";
-
-		opt = document.createElement('option');
-		opt.innerHTML = "<#menu4_2_1#>";
-		opt.value = "5";
-		optGroup.appendChild(opt);
-		opt = document.createElement('option');
-		opt.innerHTML = "<#menu4_2_3#>";
-		opt.value = "6";
-		optGroup.appendChild(opt);
-		opt = document.createElement('option');
-		opt.innerHTML = "Monthly";
-		opt.value = "7";
-		optGroup.appendChild(opt);
-
-		selGroup.appendChild(optGroup);
-	}
-
 	if (nvram.rstats_enable != '1') return;
 
 	if ((s = cookie.get('monthly')) != null) {
@@ -159,12 +137,6 @@ function switchPage(page){
 		location.href = "/Main_TrafficMonitor_last24.asp";
 	else if(page == "3")
 		location.href = "/Main_TrafficMonitor_daily.asp";
-	else if(page == "5")
-		location.href = "/Main_TrafficMonitor_devrealtime.asp";
-	else if(page == "6")
-		location.href = "/Main_TrafficMonitor_devdaily.asp";
-	else if(page == "7")
-		location.href = "/Main_TrafficMonitor_devmonthly.asp";
 	else
 		return false;
 }
@@ -280,13 +252,10 @@ function draw_chart(){
 							<td>
 								<div align="right">
 									<select id="page_select" class="input_option" style="width:120px" onchange="switchPage(this.options[this.selectedIndex].value)">
-										<!--option><#switchpage#></option-->
-										<optgroup label="Global">
-											<option value="1"><#menu4_2_1#></option>
-											<option value="2"><#menu4_2_2#></option>
-											<option value="3"><#menu4_2_3#></option>
-											<option value="4" selected>Monthly</option>
-										</optgroup>
+										<option value="1"><#menu4_2_1#></option>
+										<option value="2"><#menu4_2_2#></option>
+										<option value="3"><#menu4_2_3#></option>
+										<option value="4" selected>Monthly</option>
 									</select>
 								</div>
 							</td>

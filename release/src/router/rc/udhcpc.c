@@ -2477,7 +2477,7 @@ int start_mtwan_dhcp6c(int unit)
 	struct duid duid;
 	char duid_arg[sizeof(duid)*2+1];
 	char prefix_arg[sizeof("128:xxxxxxxx")];
-	int service;
+	int service, i;
 #ifdef RTCONFIG_SOFTWIRE46
 	int wan_proto;
 #endif
@@ -2514,7 +2514,10 @@ int start_mtwan_dhcp6c(int unit)
 			((unsigned long)(duid.ea[3] & 0x0f) << 16) |
 			((unsigned long)(duid.ea[4]) << 8) |
 			((unsigned long)(duid.ea[5])) : 1;
-		snprintf(prefix_arg, sizeof(prefix_arg), "%d:%lx", 0, iaid);
+		i = (nvram_get_int(ipv6_nvname("ipv6_prefix_len_wan")) ? : 0);
+		if ((i < 48) || (i > 64))
+			i = 0;
+		snprintf(prefix_arg, sizeof(prefix_arg), "%d:%lx", i, iaid);
 		dhcp6c_argv[index++] = "-P";
 		dhcp6c_argv[index++] = prefix_arg;
 	}

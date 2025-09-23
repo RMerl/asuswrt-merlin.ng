@@ -15,6 +15,12 @@ Asuswrt-Merlin Changelog
           force refresh the page after first login, or clear
           your browser cache.
 
+  - NOTE: Asus has made some security related changes.  Password
+          requirements are stricter, and UPNP is no longer
+          enabled by default.  New password rules were
+          slightly loosened for Asuswrt-Merlin, repeating
+          characters are still allowed.
+
   - NEW: Completely redesigned System Log -> Connections page.
            - You can now filter the list
            - You can set the page to auto-refresh itself

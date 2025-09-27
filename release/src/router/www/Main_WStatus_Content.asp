@@ -218,7 +218,7 @@ function generate_clients(clientsarray) {
 				nmapentry = true;
 
 			hostname = client[2];	// Name
-			if (nmapentry && (hostname == "*" || hostname == "<unknown>")) {
+			if (nmapentry && (hostname == "*" || hostname == "")) {
 				if (clientList[mac].nickName != "")
 					hostname = clientList[mac].nickName;
 				else if (clientList[mac].name != "")

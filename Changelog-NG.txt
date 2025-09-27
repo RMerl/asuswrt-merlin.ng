@@ -59,6 +59,8 @@ Asuswrt-Merlin Changelog
   - CHANGED: Moved "Redirect to asusrouter.com" to the new
              Tweaks tab, and moved "Enable JFFS Custom Scripts"
              to the Basic Config section on the System page.
+  - CHANGED: Backported Wireless Log hostname retrieval code
+             from 3006 (based on IP instead of MAC)
   - FIXED: DNSDirector "Router" mode would not always work properly
            with IPv6 (now uses REDIRECT instead of DNAT, which was
            backported from iptables 1.4.19).

@@ -1,7 +1,7 @@
 Asuswrt-Merlin Changelog
 ========================
 
-3004.388.10 (xx-xxx-2025)
+3004.388.10 (4-Oct-2025)
   - NOTE: For developers, please note that the new default branch
           is now called "main" - it's what was previously the
           3006.102 branch.
@@ -66,6 +66,8 @@ Asuswrt-Merlin Changelog
            backported from iptables 1.4.19).
   - FIXED: Additionnal fix for the status frame missing from
            Network Map under certain hostnames.
+  - FIXED: CVE-2025-9230 in OpenSSL (backport by RSDNTWK).
+
 
 
 3004.388.9_2 (28-Apr-2025)

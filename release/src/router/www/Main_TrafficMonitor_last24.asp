@@ -90,7 +90,7 @@ function init_data_object(){
 		var htmldata = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">';
 		htmldata += '<thead><tr><td>' + speed_history[ifname].friendly + '</td></tr></thead>';
 		htmldata += '<tr>';
-		htmldata += '<td style="padding:14px;" width="100%"><canvas style="background-color:#2f3e44;border-radius:10px;width: 100% !important; height:270px;" id="' + ifname + '_Chart"></canvas>';
+		htmldata += '<td style="padding:14px;" width="100%"><canvas style="cursor:crosshair; background-color:#2f3e44;border-radius:10px;width: 100% !important; height:270px;" id="' + ifname + '_Chart"></canvas>';
 		htmldata += '<div style="padding-top: 14px; display: flex; justify-content: space-between;">';
 		htmldata += '<div class="hint-color">Current In: <span style="color: white;" id="' + ifname + '_RX_current"></span></div><div class="hint-color">Avg In: <span style="color: white;" id="'+ ifname + '_RX_avg"></span></div><div class="hint-color">Max In: <span style="color: white;" id="' + ifname + '_RX_max"></div><div class="hint-color">Total In: <span style="color: white;" id="' + ifname + '_RX_total"></div></div>';
 		htmldata += '<div style="display: flex; justify-content: space-between;">';

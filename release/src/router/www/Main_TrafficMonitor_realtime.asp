@@ -81,10 +81,10 @@ function init_data_object(){
 
 /* Canvas */
 		var htmldata = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">';
-		htmldata += '<thead><tr><td colspan="2">' + speed_data[ifname].friendly + '</td></tr></thead>';
+		htmldata += '<thead><tr><td>' + speed_data[ifname].friendly + '</td></tr></thead>';
 		htmldata += '<tr>';
 		htmldata += '<td style="padding:14px;" width="100%"><canvas style="background-color:#2f3e44;border-radius:10px;width: 100% !important; height:220px;" id="' + ifname + '_Chart"></canvas>';
-		htmldata += '<div style="display: flex; justify-content: space-between;">';
+		htmldata += '<div style="padding-top: 14px; display: flex; justify-content: space-between;">';
 		htmldata += '<div class="hint-color">Current In: <span style="color: white;" id="' + ifname + '_RX_current"></span></div><div class="hint-color">Max In: <span style="color: white;" id="'+ ifname + '_RX_max"></span></div>';
 		htmldata += '<div class="hint-color">Current Out: <span style="color: white;" id="' + ifname + '_TX_current"></span></div><div class="hint-color">Max Out: <span style="color: white;"id="'+ ifname + '_TX_max"></span></div>';
 		htmldata += '</div></td>'
@@ -98,77 +98,6 @@ function init_data_object(){
 /* Chart objects */
 		chartObj[ifname] = {};
 	}
-}
-
-
-function update_traffic() {
-	$.ajax({
-		url: '/update.cgi',
-		dataType: 'script',
-		data: {'output': 'netdev'},
-		error: function(xhr) {
-				setTimeout("update_traffic();", 1000);
-		},
-		success: function(response){
-			 if (Object.keys(speed_data).length === 0) {
-				init_data_object();
-			}
-
-			for (var ifname in netdev) {
-				var diff_rx = 0;
-				var diff_tx = 0;
-
-				var current_rx = netdev[ifname].rx;
-				var current_tx = netdev[ifname].tx;
-
-				if(last_speed_data[ifname].rx != 0){
-					if((current_rx - last_speed_data[ifname].rx) < 0){
-						diff_rx = 1;
-					}
-					else{
-						diff_rx = (current_rx - last_speed_data[ifname].rx)/2;
-					}
-				}
-
-				if(last_speed_data[ifname].tx != 0){
-					if((current_tx - last_speed_data[ifname].tx) < 0){
-						diff_tx = 1;
-					}
-					else{
-						diff_tx = (current_tx - last_speed_data[ifname].tx)/2;
-					}
-				}
-
-				last_speed_data[ifname].rx = current_rx;
-				last_speed_data[ifname].tx = current_tx;
-
-				speed_data[ifname].rx.push(diff_rx);
-				speed_data[ifname].tx.push(diff_tx);
-
-				if(diff_rx > speed_data[ifname].max_rx){
-					speed_data[ifname].max_rx = diff_rx;
-				}
-				if(diff_tx > speed_data[ifname].max_tx){
-					speed_data[ifname].max_tx = diff_tx;
-				}
-
-				if(speed_data[ifname].rx.length > 29){
-					speed_data[ifname].rx.shift();
-				}
-				if(speed_data[ifname].tx.length > 29){
-					speed_data[ifname].tx.shift();
-				}
-				if(refresh_toggle == 1) {
-					drawGraph(ifname);
-					document.getElementById(ifname + "_RX_current").innerHTML = format_rate(diff_rx);
-					document.getElementById(ifname + "_TX_current").innerHTML = format_rate(diff_tx);
-					document.getElementById(ifname + "_RX_max").innerHTML = format_rate(speed_data[ifname].max_rx);
-					document.getElementById(ifname + "_TX_max").innerHTML = format_rate(speed_data[ifname].max_tx);
-				}
-			}
-			setTimeout("update_traffic();", 2000);
-		}
-	});
 }
 
 
@@ -295,6 +224,7 @@ function get_friendly_name(ifname){
 	return ifname;
 }
 
+
 function format_rate(value){
 	var unit = " KB/s";
 	value = value / 1024;
@@ -313,6 +243,77 @@ function format_rate(value){
 }
 
 
+function update_traffic() {
+	$.ajax({
+		url: '/update.cgi',
+		dataType: 'script',
+		data: {'output': 'netdev'},
+		error: function(xhr) {
+				setTimeout("update_traffic();", 1000);
+		},
+		success: function(response){
+			 if (Object.keys(speed_data).length === 0) {
+				init_data_object();
+			}
+
+			for (var ifname in netdev) {
+				var diff_rx = 0;
+				var diff_tx = 0;
+
+				var current_rx = netdev[ifname].rx;
+				var current_tx = netdev[ifname].tx;
+
+				if(last_speed_data[ifname].rx != 0){
+					if((current_rx - last_speed_data[ifname].rx) < 0){
+						diff_rx = 1;
+					}
+					else{
+						diff_rx = (current_rx - last_speed_data[ifname].rx)/2;
+					}
+				}
+
+				if(last_speed_data[ifname].tx != 0){
+					if((current_tx - last_speed_data[ifname].tx) < 0){
+						diff_tx = 1;
+					}
+					else{
+						diff_tx = (current_tx - last_speed_data[ifname].tx)/2;
+					}
+				}
+
+				last_speed_data[ifname].rx = current_rx;
+				last_speed_data[ifname].tx = current_tx;
+
+				speed_data[ifname].rx.push(diff_rx);
+				speed_data[ifname].tx.push(diff_tx);
+
+				if(diff_rx > speed_data[ifname].max_rx){
+					speed_data[ifname].max_rx = diff_rx;
+				}
+				if(diff_tx > speed_data[ifname].max_tx){
+					speed_data[ifname].max_tx = diff_tx;
+				}
+
+				if(speed_data[ifname].rx.length > 30){
+					speed_data[ifname].rx.shift();
+				}
+				if(speed_data[ifname].tx.length > 30){
+					speed_data[ifname].tx.shift();
+				}
+				if(refresh_toggle == 1) {
+					drawGraph(ifname);
+					document.getElementById(ifname + "_RX_current").innerHTML = format_rate(diff_rx);
+					document.getElementById(ifname + "_TX_current").innerHTML = format_rate(diff_tx);
+					document.getElementById(ifname + "_RX_max").innerHTML = format_rate(speed_data[ifname].max_rx);
+					document.getElementById(ifname + "_TX_max").innerHTML = format_rate(speed_data[ifname].max_tx);
+				}
+			}
+			setTimeout("update_traffic();", 2000);
+		}
+	});
+}
+
+
 function drawGraph(ifname){
 	var displayed_data_rx = speed_data[ifname].rx;
 	var displayed_data_tx = speed_data[ifname].tx;
@@ -324,7 +325,6 @@ function drawGraph(ifname){
 	}
 
 	var speedChart = document.getElementById(ifname + '_Chart').getContext("2d");
-
 	var datasets = [];
 
 	datasets.push({
@@ -357,8 +357,15 @@ function drawGraph(ifname){
 			animation: false,
 			segmentShowStroke : false,
 			segmentStrokeColor : "#000",
+			interaction: {
+				mode: 'index',
+				intersect: false
+			},
 			plugins: {
 				tooltip: {
+					position: 'nearest',
+					intersect: false,
+					mode: 'index',
 					displayColors: false,
 					bodySpacing: 6,
 					callbacks: {
@@ -378,7 +385,7 @@ function drawGraph(ifname){
 			},
 			scales: {
 				x: {
-					labels: [0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,32,34,36,38,40,42,44,46,48,50,52,54,56,58],
+					labels: [0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58],
 					display: false,
 					ticks: {
 						color: "#CCC",
@@ -387,6 +394,7 @@ function drawGraph(ifname){
 				y: {
 					grace: "5%",
 					min: 0,
+					grid: { color: "#282828" },
 					ticks: {
 						color: "#CCC",
 						callback: function(value, index, ticks) {return format_rate(value);}
@@ -395,10 +403,7 @@ function drawGraph(ifname){
 			}
 		}
 	});
-
-
 }
-
 
 
 </script>

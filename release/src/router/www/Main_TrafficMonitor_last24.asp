@@ -8,131 +8,65 @@
 <title><#Web_Title#> - <#traffic_monitor#> : <#menu4_2_2#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
-<link rel="stylesheet" type="text/css" href="tmmenu.css">
-<link rel="stylesheet" type="text/css" href="menu_style.css">  <!--  Viz 2010.09 -->
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<script type="text/javascript" src="/js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
+<script language="JavaScript" type="text/javascript" src="client_function.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/chart.min.js"></script>
 <script language="JavaScript" type="text/javascript" src="help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
-<script language="JavaScript" type="text/javascript" src="/tmmenu.js"></script>
-<script language="JavaScript" type="text/javascript" src="/tmcal.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
+
+<style>
+	.statcell { width:25% !important; text-align:left !important; }
+	.wgsheader:first-letter { text-transform: capitalize; }
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+</style>
 
 <script type='text/javascript'>
-var nvram = httpApi.nvramGet(["wan_ifname", "lan_ifname", "wl_ifname", "wan_proto", "web_svg", "rstats_enable", "rstats_colors", "bond_wan", "rc_support", "http_id", "wans_lanport"])
-var cprefix = 'bw_24';
-var updateInt = 30;
-var updateDiv = updateInt;
-var updateMaxL = 2880;
-var updateReTotal = 1;
-var hours = 24;
-var lastHours = 0;
-var debugTime = 0;
+var nvram = httpApi.nvramGet(["bond_wan", "rc_support", "wans_lanport", "rstats_enable"])
+
+var speed_history = {};
+var chartObj = {};
+
+const samplesPerHour = 120;
+const samplesMax = 2880;
+const updateInt = 30;
 
 // disable auto log out
 AUTOLOGOUT_MAX_MINUTE = 0;
-
-function showHours()
-{
-	if (hours == lastHours) return;
-	showSelectedOption('hr', lastHours, hours);
-	lastHours = hours;
-}
-
-function switchHours(h)
-{
-	if ((!svgReady) || (updating)) return;
-
-	hours = h;
-	updateMaxL = (updateMaxL / 24) * hours;
-	showHours();
-	loadData();
-	cookie.set(cprefix + 'hrs', hours);
-}
-
-var ref = new TomatoRefresh('update.cgi', 'output=bandwidth&arg0=speed');
-
-ref.refresh = function(text)
-{
-	++updating;
-	try {
-		this.refreshTime = 1500;
-		speed_history = {};
-		try {
-			eval(text);
-			if (rstats_busy) {
-				E('rbusy').style.display = 'none';
-				rstats_busy = 0;
-			}
-			this.refreshTime = (fixInt(speed_history._next, 1, 120, 60) + 2) * 1000;
-		}
-		catch (ex) {
-			speed_history = {};
-		}
-		if (debugTime) E('dtime').innerHTML = (new Date()) + ' ' + (this.refreshTime / 1000);
-		loadData();
-	}
-	catch (ex) {
-//		alert('ex=' + ex);
-	}
-	--updating;
-}
-
-ref.showState = function()
-{
-//	E('refresh-button').value = this.running ? 'Stop' : 'Start';
-}
-
-ref.toggleX = function()
-{
-	this.toggle();
-	this.showState();
-	cookie.set(cprefix + 'refresh', this.running ? 1 : 0);
-}
-
-ref.initX = function()
-{
-	var a;
-
-	a = fixInt(cookie.get(cprefix + 'refresh'), 0, 1, 1);
-	if (a) {
-		ref.refreshTime = 100;
-		ref.toggleX();
-	}
-}
 
 function init()
 {
 	if (nvram.rstats_enable != '1') return;
 
-	try {
-		<% bandwidth("speed"); %>
-	}
-	catch (ex) {
-	//	speed_history = {};
-	}
-	rstats_busy = 0;
-	if (typeof(speed_history) == 'undefined') {
-		speed_history = {};
-		rstats_busy = 1;
-//		E('rbusy').style.display = '';
-	}
-
-	hours = fixInt(cookie.get(cprefix + 'hrs'), 1, 24, 24);
-	updateMaxL = (updateMaxL / 24) * hours;
-	showHours();
-	initCommon(1, 0, 0, 1);	   //Viz 2010.09
-	ref.initX();
-	var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=158";
-	document.getElementById("faq0").href = faq_href;
 	if(bwdpi_support){
 		document.getElementById('content_title').innerHTML = "<#traffic_monitor#>";
 	}
 
-	document.getElementById('traffic_unit').value = getTrafficUnit();
+	update_traffic();
 }
 
 function switchPage(page){
@@ -146,34 +80,351 @@ function switchPage(page){
 		location.href = "/Main_TrafficMonitor_daily.asp";
 }
 
-function Zoom(func){
-	if (func == "in")
-		document.form.zoom.value = parseInt(document.form.zoom.value) - 1;
-	else
-		document.form.zoom.value = parseInt(document.form.zoom.value) + 1;
+function init_data_object(){
+	for (var ifname in speed_history) {
+		if (ifname == "_next") continue;
 
-	if(document.form.zoom.value == 1)
-		switchHours("4");
-	else if(document.form.zoom.value == 2)
-		switchHours("6");
-	else if(document.form.zoom.value == 3)
-		switchHours("12");
-	else if(document.form.zoom.value == 4)
-		switchHours("18");
-	else if(document.form.zoom.value == 5)
-		switchHours("24");
-	else if(document.form.zoom.value > 5)
-		document.form.zoom.value = 5;
-	else if(document.form.zoom.value < 1)
-		document.form.zoom.value = 1;
-	else
-		return false;
+		speed_history[ifname].friendly = get_friendly_name(ifname);
+
+/* Canvas */
+		var htmldata = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">';
+		htmldata += '<thead><tr><td>' + speed_history[ifname].friendly + '</td></tr></thead>';
+		htmldata += '<tr>';
+		htmldata += '<td style="padding:14px;" width="100%"><canvas style="background-color:#2f3e44;border-radius:10px;width: 100% !important; height:270px;" id="' + ifname + '_Chart"></canvas>';
+		htmldata += '<div style="padding-top: 14px; display: flex; justify-content: space-between;">';
+		htmldata += '<div class="hint-color">Current In: <span style="color: white;" id="' + ifname + '_RX_current"></span></div><div class="hint-color">Avg In: <span style="color: white;" id="'+ ifname + '_RX_avg"></span></div><div class="hint-color">Max In: <span style="color: white;" id="' + ifname + '_RX_max"></div><div class="hint-color">Total In: <span style="color: white;" id="' + ifname + '_RX_total"></div></div>';
+		htmldata += '<div style="display: flex; justify-content: space-between;">';
+		htmldata += '<div class="hint-color">Current Out: <span style="color: white;" id="' + ifname + '_TX_current"></span></div><div class="hint-color">Avg Out: <span style="color: white;"id="'+ ifname + '_TX_avg"></span></div><div class="hint-color">Max Out: <span style="color: white;" id="' + ifname + '_TX_max"></div><div class="hint-color">Total Out: <span style="color: white;" id="' + ifname + '_TX_total"></div>';
+		htmldata += '</div></td>'
+		htmldata += '</tr></table>';
+
+		if (ifname == "INTERNET")	// Always insert at the top
+			document.getElementById("graph_content").insertAdjacentHTML("afterbegin", htmldata);
+		else
+			document.getElementById("graph_content").insertAdjacentHTML("beforeend", htmldata);
+
+/* Chart objects */
+		chartObj[ifname] = {};
+	}
 }
 
-function setUnit(unit){
-	cookie.set('ASUS_TrafficMonitor_unit', unit);
-	initCommon(1, 0, 0, 1);
+function get_friendly_name(ifname){
+	var title;
+
+	switch(ifname){
+		case "INTERNET":
+		case "INTERNET0":
+			if(dualWAN_support){
+				if(wans_dualwan_array[0] == "usb"){
+					if(gobi_support)
+						title = "<#Mobile_title#>";
+					else
+						title = "USB Modem";
+				}
+				else if(wans_dualwan_array[0] == "wan"){
+					title = "WAN";
+					if (based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000")
+						title = "2.5G WAN";
+					if (based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U" || based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000") {
+						if (nvram.bond_wan == '1' && nvram.rc_support.indexOf("wanbonding") != -1)
+							title = "Bond";
+					}
+				}
+				else if(wans_dualwan_array[0] == "wan2"){
+					if (based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U")
+						title = "10G base-T";
+					else
+						title = "WAN2";
+				}
+				else if(wans_dualwan_array[0] == "lan") {
+					title = "LAN Port " + nvram.wans_lanport;
+					if (based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000") {
+						if (nvram.wans_lanport == '5')
+							title = "2.5G LAN";
+					}
+				}
+				else if(wans_dualwan_array[0] == "dsl")
+					title = "DSL WAN";
+				else if(wans_dualwan_array[0] == "sfp+")
+					title = "10G SFP+";
+				else
+					title = "<#dualwan_primary#>";
+			}
+			else
+				title = "<#Internet#>";
+
+			return title;
+
+		case "INTERNET1":
+			if(wans_dualwan_array[1] == "usb"){
+				if(gobi_support)
+					title = "<#Mobile_title#>";
+				else
+					title = "USB Modem";
+			}
+			else if(wans_dualwan_array[1] == "wan"){
+				title = "WAN";
+				if (based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000")
+					title = "2.5G WAN";
+				if (based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U" || based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000") {
+					if (nvram.bond_wan == '1' && nvram.rc_support.indexOf("wanbonding") != -1)
+						title = "Bond";
+				}
+			}
+			else if(wans_dualwan_array[1] == "wan2"){
+				if (based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U")
+					title = "10G base-T";
+				else
+					title = "WAN2";
+			}
+			else if(wans_dualwan_array[1] == "lan") {
+				title = "LAN Port " + nvram.wans_lanport;
+				if (based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000") {
+					if (nvram.wans_lanport == '5')
+						title = "2.5G LAN";
+				}
+			}
+			else if(wans_dualwan_array[1] == "sfp+")
+				title = "10G SFP+";
+			else
+				title = "<#dualwan_secondary#>";
+
+			return title;
+
+		case "BRIDGE":
+			return "LAN";
+		case "WIRED":
+			return "<#tm_wired#>";
+
+		case "WIRELESS0":
+		case "WIRELESS1":
+		case "WIRELESS2":
+		case "WIRELESS3":
+			var num = ifname.substr(8);
+			return "Wireless " + wl_nband_title[num];
+	}
+
+/* Handle multi-instanced interfaces */
+	if (ifname.search(/WAGGR/) > -1){
+		var bs_port_id = ifname.substr(5);
+		if (bs_port_id == 0)
+			return "bond-slave (WAN)";
+		else if (bs_port_id >= 1 && bs_port_id <= 8)
+			return "bond-slave (LAN Port "+bs_port_id+")";
+		else if (bs_port_id == 30)
+			return "bond-slave (10G base-T)";
+		else if (bs_port_id == 31)
+			return "bond-slave (10G SFP+)";
+		else
+			return "NotUsed";
+	}
+	else if (ifname.search(/LACPW/) > -1){
+		var num = ifname.substr(5);
+		return "bond-slave (WAN"+num+")";
+	}
+	else if (ifname.search("LACP") > -1){
+		var num = ifname.substr(4);
+		return "bond-slave (LAN Port "+num+")";
+	}
+
+	/* No friendly name, return as-is */
+	return ifname;
 }
+
+function format_rate(value, isspeed = 0){
+	var unit = " KB";
+	value = value / 1024;
+
+	if (value > 1024) {
+		value = value / 1024;
+		unit = " MB";
+	}
+
+	if (value > 1024) {
+		value = value / 1024;
+		unit = " GB";
+	}
+
+	if (isspeed == 1)
+		unit += "/s";
+
+	return parseInt(value) + unit;
+}
+
+function update_traffic(){
+	$.ajax({
+		url: '/update.cgi',
+		dataType: 'script',
+		data: {'output': 'bandwidth', 'arg0': 'speed'},
+		error: function(xhr) {
+			setTimeout("update_traffic()", 1000);
+		},
+		success: function(response){
+			if (typeof(speed_history) == 'undefined') {
+				setTimeout("update_traffic()", 1000);
+				return;
+			}
+
+			if (Object.keys(chartObj).length === 0) {
+				document.getElementById("pageloading").style.display = "none";
+				init_data_object();
+			}
+
+			for (var ifname in speed_history) {
+				var ifdata = speed_history[ifname];
+				var index, value;
+
+				if ((ifname == "_next") || (typeof(ifdata.rx) == 'undefined') || (typeof(ifdata.tx) == 'undefined')) {
+					continue;
+				}
+
+/* Update total/avg/max values */
+				ifdata.rx_total = ifdata.rx_max = 0;
+				ifdata.tx_total = ifdata.tx_max = 0;
+				for (index = (ifdata.rx.length - samplesMax); index < ifdata.rx.length; ++index) {
+					value = ifdata.rx[index];
+					if (value > ifdata.rx_max) ifdata.rx_max = value;
+							ifdata.rx_total += value;
+					value = ifdata.tx[index];
+					if (value > ifdata.tx_max) ifdata.tx_max = value;
+							ifdata.tx_total += value;
+				}
+				ifdata.rx_avg = ifdata.rx_total / (ifdata.count ? ifdata.count : samplesMax) / updateInt;
+				ifdata.tx_avg = ifdata.tx_total / (ifdata.count ? ifdata.count : samplesMax) / updateInt;
+				ifdata.rx_max /= updateInt;
+				ifdata.tx_max /= updateInt;
+
+/* Output */
+				drawGraph(ifname);
+				document.getElementById(ifname + "_RX_current").innerHTML = format_rate(speed_history[ifname].rx[speed_history[ifname].rx.length-1] / updateInt, 1);
+				document.getElementById(ifname + "_TX_current").innerHTML = format_rate(speed_history[ifname].tx[speed_history[ifname].tx.length-1] / updateInt, 1);
+				document.getElementById(ifname + "_RX_avg").innerHTML = format_rate(ifdata.rx_avg ,1);
+				document.getElementById(ifname + "_TX_avg").innerHTML = format_rate(ifdata.tx_avg ,1);
+				document.getElementById(ifname + "_RX_max").innerHTML = format_rate(ifdata.rx_max ,1);
+				document.getElementById(ifname + "_TX_max").innerHTML = format_rate(ifdata.tx_max ,1);
+				document.getElementById(ifname + "_RX_total").innerHTML = format_rate(ifdata.rx_total, 0);
+				document.getElementById(ifname + "_TX_total").innerHTML = format_rate(ifdata.tx_total, 0);
+			}
+			setTimeout("update_traffic()", updateInt * 1000);
+		}
+	});
+}
+
+
+function drawGraph(ifname){
+	var now = new Date();
+	var currentHour = now.getHours();
+
+	if (chartObj[ifname].obj != undefined) {
+		chartObj[ifname].obj.update();
+		return;
+	}
+
+	var speedChart = document.getElementById(ifname + '_Chart').getContext("2d");
+	var datasets = [];
+
+	datasets.push({
+		label: speed_history[ifname].friendly + " In",
+		data: speed_history[ifname].rx,
+		backgroundColor: "rgba(76, 143, 192, 0.3)",
+		borderColor: "rgba(76, 143, 192, 1)",
+		borderWidth: "1",
+		pointStyle: "line",
+		lineTension: "0",
+		fill: { target: "origin"}
+	});
+	datasets.push({
+		label: speed_history[ifname].friendly + " Out",
+		data: speed_history[ifname].tx,
+		backgroundColor: "rgba(76, 192, 143, 0.3)",
+		borderColor: "rgba(76, 192, 143, 1)",
+		borderWidth: "1",
+		pointStyle: "line",
+		lineTension: "0",
+		fill: { target: "origin"}
+	});
+
+/* Chart */
+	chartObj[ifname].obj = new Chart(speedChart, {
+		type: "line",
+		data: {labels: Array.from({ length: samplesMax }, (_, i) => i), datasets: datasets},
+		options: {
+			responsive: true,
+			animation: false,
+			segmentShowStroke : false,
+			segmentStrokeColor : "#000",
+			pointRadius : 0,
+			interaction: {
+				mode: 'index',
+				intersect: false
+			},
+			plugins: {
+				tooltip: {
+					position: 'nearest',
+					intersect: false,
+					mode: 'index',
+					displayColors: false,
+					bodySpacing: 6,
+					callbacks: {
+						title: function(tooltipItems) {
+						// tooltipItems is an array, take the first item
+							var item = tooltipItems[0];
+							var sampleIndex = item.dataIndex;
+
+						// Calculate hours and minutes
+							const totalMinutesAgo = (samplesMax - sampleIndex - 1) * (updateInt / 60);
+							const tooltipTime = new Date();
+							tooltipTime.setHours(now.getHours() - Math.floor(totalMinutesAgo / 60));
+							tooltipTime.setMinutes(now.getMinutes() - (totalMinutesAgo % 60));
+
+						// Format HH:MM
+							const hh = tooltipTime.getHours().toString().padStart(2, '0');
+							const mm = tooltipTime.getMinutes().toString().padStart(2, '0');
+							return "Time: " + hh + ":" + mm;
+						},
+						label: function(context) {
+							var label = context.dataset.label || '';
+							var value = context.parsed.y;
+							return label + " - " + format_rate(value / updateInt, 1);
+						}
+					}
+				},
+				legend: {
+					display: true,
+					position: "top",
+					labels: {color: "#CCC"}
+				},
+			},
+			scales: {
+				x: {
+					type: 'linear',
+					min: 0,
+					max: samplesMax,
+					grid: { color: "#282828" },
+					ticks: {
+						color: "#CCC",
+						stepSize: samplesPerHour,
+						callback: function(value) {
+							var hourOffset = Math.floor(value / samplesPerHour);
+							var labelHour = (currentHour - (24 - hourOffset)) % 24;
+							return (labelHour < 0 ? labelHour + 24 : labelHour) + ":00";
+						}
+					}
+				},
+				y: {
+					grace: "5%",
+					min: 0,
+					grid: { color: "#282828" },
+					ticks: {
+						color: "#CCC",
+						callback: function(value, index, ticks) {return format_rate(value / updateInt, 1);}
+					}
+				},
+			}
+		}
+	});
+}
+
 </script>
 </head>
 
@@ -204,186 +455,54 @@ function setUnit(unit){
 	  <div id="subMenu"></div>
 	</td>
 
-    <td valign="top">
-	<div id="tabMenu" class="submenuBlock"></div>
-<!--===================================Beginning of Main Content===========================================-->
-      <table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
-      	<tr>
-          		<td align="left"  valign="top" >
-            		<table width="100%" border="0" cellpadding="4" cellspacing="0" class="FormTitle" id="FormTitle">
-            		<tbody>
-            		<!--===================================Beginning of graph Content===========================================-->
-	      		<tr>
-					<td bgcolor="#4D595D" valign="top"  >
-		  				<table width="740px" border="0" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="TMTable">
-        			<tr>
-						<td>
-						<table width="100%" >
+	<td valign="top">
+		<div id="tabMenu" class="submenuBlock"></div>
+		<!--===================================Beginning of Main Content===========================================-->
+		<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="left"  valign="top">
+					<table width="100%" border="0" cellpadding="4" cellspacing="0" class="FormTitle" id="FormTitle">
+						<tbody>
 							<tr>
-							<td  class="formfonttitle" align="left">
-										<div id="content_title" style="margin-top:5px;"><#Menu_TrafficManager#> - <#traffic_monitor#></div>
-									</td>
-							<td>
-     						<div align="right">
-			    				<select id="page_select" onchange="switchPage(this.options[this.selectedIndex].value)" class="input_option" style="margin-top:8px;">
-										<option value="1"><#menu4_2_1#></option>
-										<option value="2" selected><#menu4_2_2#></option>
-										<option value="3"><#menu4_2_3#></option>
-										<option value="4">Monthly</option>
-								</select>
-							</div>
-							</td></tr></table>
-						</td>
-        			</tr>
-        			<tr>
-          				<td height="5"><div class="splitLine"></div></td>
-        			</tr>
-        			<tr>
-          				<td height="30" align="left" valign="middle" >
-							<div class="formfontcontent"><p class="formfontcontent"><#traffic_monitor_desc1#></p></div>
-          				</td>
-        			</tr>
-        			<tr>
-          				<td align="left" valign="middle">
-							<!-- add some hard code of style attributes to wordkaround for IE 11-->
-							<table width="95%" border="1" align="left" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="DescTable" style="font-size:12px; border: 1px solid #000000; border-collapse: collapse;">
-								<tr><th class="tm_title_bg" style="color:#FFFFFF; font-weight:normal; line-height:15px; height: 30px; text-align:left; font-size:12px;padding-left: 10px;	border-collapse: collapse;" width="16%"></th><th class="tm_title_bg" style="color:#FFFFFF; font-weight:normal; line-height:15px; height: 30px; text-align:left; font-size:12px;	padding-left: 10px;border-collapse: collapse;" width="26%"><#Internet#></th><th class="tm_title_bg" style="color:#FFFFFF; font-weight:normal; line-height:15px; height: 30px; text-align:left; font-size:12px;	padding-left: 10px;border-collapse: collapse;" width="29%"><#tm_wired#></th><th class="tm_title_bg" style="color:#FFFFFF; font-weight:normal; line-height:15px; height: 30px; text-align:left; font-size:12px;	padding-left: 10px;border-collapse: collapse;" width="29%"><#tm_wireless#></th></tr>
-								<tr><th class="tm_title_bg" style="color:#FFFFFF; font-weight:normal; line-height:15px; height: 30px; text-align:left; font-size:12px;	padding-left: 10px;	border-collapse: collapse;"><#tm_reception#></th><td style="color:#FF9000;padding-left: 10px;border-collapse: collapse;"><#tm_recp_int#></td><td style="color:#3CF;padding-left: 10px;border-collapse: collapse;"><#tm_recp_wired#></td><td style="color:#3CF;padding-left: 10px;border-collapse: collapse;"><#tm_recp_wireless#></td></tr>
-								<tr><th class="tm_title_bg" style="color:#FFFFFF; font-weight:normal; line-height:15px; height: 30px; text-align:left; font-size:12px;	padding-left: 10px;border-collapse: collapse;"><#tm_transmission#></th><td style="color:#3CF;padding-left: 10px;border-collapse: collapse;"><#tm_trans_int#></td><td style="color:#FF9000;padding-left: 10px;	border-collapse: collapse;"><#tm_trans_wired#></td><td style="color:#FF9000;padding-left: 10px;border-collapse: collapse;"><#tm_trans_wireless#></td></tr>
-							</table>
-							<!--End-->
-          				</td>
-					</tr>
-					<tr>
-						<td>
-							<div style="display:flex;align-items: center;margin: 4px 0;">
-								<div><#Scale#></div>
-								<div style="margin-left: 24px;">
-									<select class="input_option" id="traffic_unit" onchange="setUnit(this.value);">
-										<option value="0">KB</option>
-										<option value="1">MB</option>
-										<option value="2">GB</option>
-										<option value="3">TB</option>
-									</select>
-								</div>
-							</div>
-							
-						</td>
-					</tr>
-        			<tr>
-          				<td height="30" align="left" valign="middle" >
-							<div class="formfontcontent"><p><#traffic_monitor_desc2#></p></div>
-							<div class="formfontcontent"><p><a id="faq0" href="" target="_blank" style="font-weight: bolder;text-decoration:underline;"><#traffic_monitor#> FAQ</a></p></div>
-          				</td>
-        			</tr>
-
-        			<tr>
-						<td>
-							<span id="tab-area"></span>
-							<span style="display:none;">
-								<input title="Zoom in" type="button" onclick="Zoom('in');" class="zoomin_btn" name="button">
-         						<input title="Zoom out" type="button" onclick="Zoom('out');" class="zoomout_btn" name="button">
-							</span>
-							<span id="iftitle" style="font-weight: bold; color: #A0B06B; position: absolute; top: 380px; left: 45%; min-width: 180px;"></span>
-							<!--========= svg =========-->
-							<!--[if IE]>
-								<div id="svg-table" align="left" class="IE8HACK">
-									<object id="graph" src="tm.svg" classid="image/svg+xml" width="730" height="350">
-								</div>
-							<![endif]-->
-							<!--[if !IE]>-->
-								<object id="graph" data="tm.svg" type="image/svg+xml" width="730" height="350">
-							<!--<![endif]-->
-								</object>
-							<!--========= svg =========-->
-                    	</td>
-        	    	</tr>
-
-  		     		<tr>
-						<td>
-				    	 	<table width="730px" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_NWM" style="margin-top:0px;margin-left:-1px;*margin-left:-10px;margin-left:-12px \9;">
-						  		<tr>
-						  			<th style="text-align:center;width:160px;"><#Current#></th>
-						  			<th style="text-align:center;width:160px;"><#Average#></th>
-						  			<th style="text-align:center;width:160px;"><#Maximum#></th>
-						  			<th style="text-align:center;width:160px;"><#Total#></th>
-						  		</tr>
-						  		<tr>
-						  			<td style="text-align:center;font-weight: bold; background-color:#111;"><div id="rx-current"></div></td>
-						  			<td style="text-align:center; background-color:#111;" id='rx-avg'></td>
-						  			<td style="text-align:center; background-color:#111;" id='rx-max'></td>
-						  			<td style="text-align:center; background-color:#111;" id='rx-total'></td>
-						    	</tr>
-							<tr>
-						    			<td style="text-align:center;font-weight: bold; background-color:#111;"><div id="tx-current"></div></td>
-									<td style="text-align:center; background-color:#111;" id='tx-avg'></td>
-									<td style="text-align:center; background-color:#111;" id='tx-max'></td>
-									<td style="text-align:center; background-color:#111;" id='tx-total'></td>
-								</tr>
-							</table>
-						</td>
-					</tr>
-						</table>
-					</td>
-				</tr>
-				<tr style="display:none">
-					<td bgcolor="#FFFFFF">
-		  				<table width="100%"  border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
-		    				<thead>
-								<tr>
-									<td colspan="5" id="TriggerList">Display Options</td>
-								</tr>
-		    				</thead>
-							<div id='bwm-controls'>
-								<tr>
-									<th width='50%'>:&nbsp;</th>
-									<td>
-										<a href='javascript:switchHours(4);' id='hr4'>4</a>,
-										<a href='javascript:switchHours(6);' id='hr6'>6</a>,
-										<a href='javascript:switchHours(12);' id='hr12'>12</a>,
-										<a href='javascript:switchHours(18);' id='hr18'>18</a>,
-										<a href='javascript:switchHours(24);' id='hr24'>24</a>
-									</td>
-								</tr>
-								<tr>
-									<th>:&nbsp;</th>
-									<td>
-										<a href='javascript:switchAvg(1)' id='avg1'>Off</a>,
-										<a href='javascript:switchAvg(2)' id='avg2'>2x</a>,
-										<a href='javascript:switchAvg(4)' id='avg4'>4x</a>,
-										<a href='javascript:switchAvg(6)' id='avg6'>6x</a>,
-										<a href='javascript:switchAvg(8)' id='avg8'>8x</a>
-									</td>
-								</tr>
-								<tr>
-									<th>:&nbsp; </th>
-									<td>
-										<a href='javascript:switchScale(0)' id='scale0'>Uniform</a>,
-										<a href='javascript:switchScale(1)' id='scale1'>Per IF</a>
-									</td>
-								</tr>
-								<tr>
-									<th>:&nbsp; </th>
-									<td>
-										<a href='javascript:switchDraw(0)' id='draw0'>Solid</a>,
-										<a href='javascript:switchDraw(1)' id='draw1'>Line</a>
-									</td>
-								</tr>
-								<tr>
-									<th>:&nbsp; </th>
-									<td>
-										<a href='javascript:switchColor()' id='drawcolor'> </a><small><a href='javascript:switchColor(1)' id='drawrev'></a></small>
-									</td>
-								</tr>
-							</div>
-						</table>
-					</td>
-				</tr>
-			</tbody>
-			</table>
-		</td>
-	</tr>
-	</table>
+								<td bgcolor="#4D595D" valign="top">
+									<table width="740px" border="0" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="TMTable">
+										<tr>
+											<td>
+												<table width="100%">
+													<tr>
+														<td  class="formfonttitle" align="left">
+															<div id="content_title" style="margin-top:5px;"><#Menu_TrafficManager#> - <#traffic_monitor#></div>
+														</td>
+														<td>
+															<div align="right">
+																<select id="page_select" onchange="switchPage(this.options[this.selectedIndex].value)" class="input_option" style="margin-top:8px;">
+																	<option value="1"><#menu4_2_1#></option>
+																	<option value="2" selected><#menu4_2_2#></option>
+																	<option value="3"><#menu4_2_3#></option>
+																	<option value="4">Monthly</option>
+																</select>
+															</div>
+												</td></tr></table>
+											</td>
+										</tr>
+										<tr>
+											<td height="5"><div class="splitLine"></div></td>
+										</tr>
+										<tr>
+											<td id="graph_content">
+												<div class="spinner-container">
+													<div id="pageloading" class="spinner"></div>
+												</div>
+											</td>
+										</tr>
+									</table>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</td>
+			</tr>
+		</table>
 	</td>
 	</tr>
 </table>

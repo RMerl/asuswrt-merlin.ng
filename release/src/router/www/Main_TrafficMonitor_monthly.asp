@@ -6,125 +6,48 @@
 <meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 
-<title><#Web_Title#> - <#menu5_8_3#></title>
+<title><#Web_Title#> - Monthly</title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
-<link rel="stylesheet" type="text/css" href="tmmenu.css">
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<script type="text/javascript" src="/js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/chart.min.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
-<script language="JavaScript" type="text/javascript" src="/tmmenu.js"></script>
-<script language="JavaScript" type="text/javascript" src="/tmhist.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 
 <script type='text/javascript'>
-var nvram = httpApi.nvramGet(["wan_ifname", "lan_ifname", "rstats_enable", "http_id"])
+var nvram = httpApi.nvramGet(["rstats_enable"]);
 
-try {
-	<% bandwidth("monthly"); %>
-}
-catch (ex) {
-	monthly_history = [];
-}
-rstats_busy = 0;
-if (typeof(monthly_history) == 'undefined') {
-	monthly_history = [];
-	rstats_busy = 1;
-}
-
+var monthly_history = [];
 var barDataUl, barDataDl, barLabels;
-var myBarChart;
+var chartObj;
 
-Chart.defaults.color = "#CCC";
+var scale = 2;
+var months = [];
+const snames = ['KB', 'MB', 'GB'];
+const scaleFactors = [1, 1024, 1048576];
+const ui_locale = ui_lang.toLowerCase();
 
-function save()
-{
-	cookie.set('monthly', scale, 31);
-}
-
-function genData()
-{
-	var w, i, h;
-
-	w = window.open('', 'tomato_data_d');
-	w.document.writeln('<pre>');
-	for (i = 0; i < monthly_history.length-1; ++i) {
-		h = monthly_history[i];
-		h = monthly_history[i];
-		w.document.writeln([(((h[0] >> 16) & 0xFF) + 1900), (((h[0] >>> 8) & 0xFF) + 1), h[1], h[2]].join(','));
-	}
-	w.document.writeln('</pre>');
-	w.document.close();
-}
-
-function getYMD(n)
-{
-	// [y,m,d]
-	return [(((n >> 16) & 0xFF) + 1900), ((n >>> 8) & 0xFF), (n & 0xFF)];
-}
-
-function redraw()
-{
-	var h;
-	var grid;
-	var rows;
-	var yr, mo, da;
-
-	rows = 0;
-	block = '';
-	gn = 0;
-
-	barDataUl = [];
-	barDataDl = [];
-	barLabels = [];
-
-	grid = '<table width="730px" class="FormTable_NWM">';
-	grid += "<tr><th style=\"height:30px;\"><#Date#></th>";
-	grid += "<th><#tm_reception#></th>";
-	grid += "<th><#tm_transmission#></th>";
-	grid += "<th><#Total#></th></tr>";
-
-	for (i = 0; i < monthly_history.length-1; ++i) {
-		h = monthly_history[i];
-		yr = (((h[0] >> 16) & 0xFF) + 1900);
-		mo = ((h[0] >>> 8) & 0xFF);
-
-		grid += makeRow(((rows & 1) ? 'odd' : 'even'), ymText(yr, mo), rescale(h[1]), rescale(h[2]), rescale(h[1] + h[2]));
-		++rows;
-
-		barDataDl.unshift(h[1] / ((scale == 2) ?  1048576 : ((scale == 1) ? 1024 : 1)));
-		barDataUl.unshift(h[2] / ((scale == 2) ?  1048576 : ((scale == 1) ? 1024 : 1)));
-		barLabels.unshift(months[mo] + ' ' + yr);
-	}
-
-	if(rows == 0)
-		grid +='<tr><td style="color:#FFCC00;" colspan="4"><#IPConnection_VSList_Norule#></td></tr>';
-
-	E('bwm-monthly-grid').innerHTML = grid + '</table>';
-
-	draw_chart();
-}
-
-function init()
-{
-	var s;
+function init(){
+	var scaleCookie;
 
 	if (nvram.rstats_enable != '1') return;
 
-	if ((s = cookie.get('monthly')) != null) {
-		if (s.match(/^([0-2])$/)) {
-			E('scale').value = scale = RegExp.$1 * 1;
-		}
-	}
+	months = generateMonthsLabels();
 
-	initDate('ym');
-	monthly_history.sort(cmpHist);
-	redraw();
+	if ((scaleCookie = cookie.get('monthly')) != null) {
+		var parsedScale = parseInt(scaleCookie);
+		if (!isNaN(parsedScale) && parsedScale >= 0 && parsedScale <= 2)
+			scale = parsedScale;
+	}
+	document.getElementById('scale').value = scale;
+
+	update_traffic();
+
 	if(bwdpi_support){
 		document.getElementById('content_title').innerHTML = "<#traffic_monitor#>";
 	}
@@ -141,62 +64,161 @@ function switchPage(page){
 		return false;
 }
 
-function draw_chart(){
+function generateMonthsLabels() {
+	for (let i = 0; i < 12; i++) {
+		months.push(
+			new Date(2000, i, 1).toLocaleString(ui_locale, { month: 'short' })
+		);
+	}
+	return months;
+}
+
+function rescale(n){
+	return (Number(n / scaleFactors[scale]).toLocaleString(ui_locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })) + " " + snames[scale];
+}
+
+function ymdText(yr, mo){
+	return yr + '-' + (mo + 1).toString().padStart(2, '0');
+}
+
+function changeScale(newscale){
+	scale = parseInt(newscale);
+	cookie.set('monthly', scale, 366);
+	display_data();
+}
+
+function update_traffic(){
+	$.ajax({
+		url: '/update.cgi',
+		dataType: 'script',
+		data: {'output': 'bandwidth', 'arg0': 'monthly'},
+		error: function(xhr) {
+			setTimeout("update_traffic()", 1000);
+		},
+		success: function(response){
+			if (typeof(monthly_history) == 'undefined') {
+				setTimeout("update_traffic()", 1000);
+				return;
+			}
+			monthly_history.sort(function(a, b){return parseInt(b) - parseInt(a);});
+			display_data();
+		}
+	});
+}
+
+function display_data(){
+	var htmldata;
+	var rows = 0;
+	var ymd;
+	var now;
+	var lastt, lastu = 0, lastd = 0;
+	var getYMD = function(n){
+		return [(((n >> 16) & 0xFF) + 1900), ((n >>> 8) & 0xFF), (n & 0xFF)];
+	}
+
+	barDataUl = [];
+	barDataDl = [];
+	barLabels = [];
+
+	htmldata = '<table width="730px" class="FormTable_NWM">' +
+	           "<tr><th style=\"height:30px;\"><#Date#></th>" +
+	           "<th><#tm_reception#></th>" +
+	           "<th><#tm_transmission#></th>" +
+	           "<th><#Total#></th></tr>";
+
+	for (i = 0; i < monthly_history.length-1; ++i) {
+		var entry = monthly_history[i];
+		ymd = getYMD(entry[0]);
+		year = (((entry[0] >> 16) & 0xFF) + 1900);
+		month = ((entry[0] >>> 8) & 0xFF);
+
+		++rows;
+
+		htmldata += '<tr><td>' + ymdText(ymd[0], ymd[1]) + '</td>' +
+		            '<td class="dl">' + rescale(entry[1]) + '</td>' +
+		            '<td class="ul">' + rescale(entry[2]) + '</td>' +
+		            '<td class="total">' + rescale(entry[1] + entry[2]) + '</td></tr>';
+
+		barDataDl.unshift(entry[1] / scaleFactors[scale]);
+		barDataUl.unshift(entry[2] / scaleFactors[scale]);
+		barLabels.unshift(months[month] + ' ' + year);
+	}
+
+	if(rows == 0)
+		htmldata +='<tr><td class="hint-color" colspan="4"><#IPConnection_VSList_Norule#></td></tr>';
+
+	document.getElementById('bwm-monthly-grid').innerHTML = htmldata + '</table>';
+	drawChart();
+}
+
+function drawChart(){
 	if (barLabels.length == 0) return;
 
-	if (myBarChart != undefined) myBarChart.destroy();
-
+	if (chartObj != undefined) chartObj.destroy();
 	var ctx = document.getElementById("chart").getContext("2d");
 
-	var barOptions = {
-		segmentShowStroke : false,
-		segmentStrokeColor : "#000",
-		animationEasing : "easeOutQuart",
-		animationSteps : 100,
-		animateScale : true,
-		plugins: {
-			tooltip: {
-				callbacks: {
-					label: function (context) { return comma(context.parsed.y.toFixed(2)) + " " + snames[scale]; },
+	chartObj = new Chart(ctx, {
+		type: 'bar',
+		data:  {
+			labels: barLabels,
+			datasets: [
+				{
+					data: barDataDl,
+					label: "<#tm_reception#> (" + snames[scale] + ")",
+					borderWidth: 1,
+					backgroundColor: "#4C8FC0",
+					borderColor: "#000000"
+				},
+				{
+					data: barDataUl,
+					label: "<#tm_transmission#> (" + snames[scale] +")",
+					borderWidth: 1,
+					backgroundColor: "#4CC08F",
+					borderColor: "#000000"
 				}
-			},
+			]
 		},
-		scales: {
-			x: {
-				grid: { display: false },
+		options: {
+			segmentShowStroke : false,
+			segmentStrokeColor : "#000",
+			animationEasing : "easeOutQuart",
+			animationSteps : 100,
+			animateScale : true,
+			interaction: {
+				mode: 'index',
+				intersect: false
 			},
-			y: {
-				grid: { color: "#282828" },
-				ticks: {
-					callback: function(value, index, values) {
-						return comma(value);
+			plugins: {
+				tooltip: {
+					position: 'nearest',
+					intersect: false,
+					mode: 'index',
+					callbacks: {
+						label: function (context) { return context.parsed.y.toLocaleString(ui_locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " " + snames[scale]; },
+					}
+				},
+				legend: {
+					display: true,
+					position: "top",
+					labels: {color: "#CCC"}
+				},
+			},
+			scales: {
+				x: {
+					grid: { display: false },
+					ticks: {color: "#CCC" },
+				},
+				y: {
+					grid: { color: "#282828" },
+					ticks: {
+						color: "#CCC",
+						callback: function(value, index, values) {
+							return value.toLocaleString(ui_locale);
+						}
 					}
 				}
 			}
-		}
-	};
-
-	var barDataset = {
-		labels: barLabels,
-		datasets: [
-			{data: barDataDl,
-			label: "<#tm_reception#> (" + snames[scale].trim() + ")",
-			borderWidth: 1,
-			backgroundColor: "#4C8FC0",
-			borderColor: "#000000"
 		},
-			{data: barDataUl,
-			label: "<#tm_transmission#> (" + snames[scale].trim() +")",
-			borderWidth: 1,
-			backgroundColor: "#2B6692",
-			borderColor: "#000000"
-		}]
-	};
-
-	myBarChart = new Chart(ctx, {
-		type: 'bar',
-		options: barOptions,
-		data: barDataset
 	});
 }
 
@@ -232,99 +254,84 @@ function draw_chart(){
 		<div id="subMenu"></div>
 	</td>
 
-	<td valign="top">
+    <td valign="top">
 		<div id="tabMenu" class="submenuBlock"></div>
 <!--===================================Beginning of Main Content===========================================-->
-	<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
+		<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
 		<tr>
-		<td align="left"  valign="top">
-			<table width="100%" border="0" cellpadding="4" cellspacing="0" class="FormTitle" id="FormTitle">
+			<td align="left"  valign="top">
+				<table width="100%" border="0" cellpadding="4" cellspacing="0" class="FormTitle" id="FormTitle">
 				<tbody>
-				<!--===================================Beginning of QoS Content===========================================-->
-			<tr>
-				<td bgcolor="#4D595D" valign="top">
-					<table width="740px" border="0" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3">
-						<tr><td><table width="100%" >
-						<tr>
-							<td  class="formfonttitle" align="left">
-								<div id="content_title" style="margin-top:5px;"><#Menu_TrafficManager#> - <#traffic_monitor#></div>
-							</td>
-							<td>
-								<div align="right">
-									<select id="page_select" class="input_option" style="width:120px" onchange="switchPage(this.options[this.selectedIndex].value)">
-										<option value="1"><#menu4_2_1#></option>
-										<option value="2"><#menu4_2_2#></option>
-										<option value="3"><#menu4_2_3#></option>
-										<option value="4" selected>Monthly</option>
-									</select>
-								</div>
-							</td>
-						</tr>
-					</table></td></tr>
-
+					<tr>
+						<td bgcolor="#4D595D" valign="top">
+							<table width="740px" border="0" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3">
+								<tr><td><table width="100%">
+									<tr>
+										<td  class="formfonttitle" align="left">
+											<div id="content_title" style="margin-top:5px;"><#Menu_TrafficManager#> - <#traffic_monitor#></div>
+										</td>
+										<td>
+											<div align="right">
+												<select id="page_select" class="input_option" style="width:120px" onchange="switchPage(this.options[this.selectedIndex].value)">
+													<option value="1"><#menu4_2_1#></option>
+													<option value="2"><#menu4_2_2#></option>
+													<option value="3"><#menu4_2_3#></option>
+													<option value="4" selected>Monthly</option>
+												</select>
+											</div>
+										</td>
+									</tr>
+							</table></td></tr>
 					<tr>
 						<td height="5"><div class="splitLine"></div></td>
 					</tr>
-						<tr>
-							<td bgcolor="#4D595D">
-								<table width="730"  border="1" align="left" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
-									<thead>
-										<tr>
-											<td colspan="2"><#t2BC#></td>
-										</tr>
-									</thead>
-									<tbody>
-										<tr class='even'>
-											<th width="40%"><#Date#></th>
-											<td>
-												<select class="input_option" style="width:130px" onchange='changeDate(this, "ymd")' id='dafm'>
-													<option value=0>yyyy-mm-dd</option>
-													<option value=1>mm-dd-yyyy</option>
-													<option value=2>mm, dd, yyyy</option>
-													<option value=3>dd.mm.yyyy</option>
-												</select>
-											</td>
-										</tr>
-										<tr class='even'>
-											<th width="40%"><#Scale#></th>
-											<td>
-												<select style="width:70px" class="input_option" onchange='changeScale(this)' id='scale'>
-													<option value=0>KB</option>
-													<option value=1>MB</option>
-													<option value=2 selected>GB</option>
-												</select>
-											</td>
-										</tr>
-									</tbody>
-								</table>
-							</td>
-						</tr>
-						<tr>
-							<td>
-								<div style="background-color:#2f3e44;border-radius:10px;width:730px;padding-left:5px;"><canvas id="chart" height="120"></div>
-							</td>
-						</tr>
-						<tr>
-							<td>
-								<div id='bwm-monthly-grid' style='float:left'></div>
-							</td>
-						</tr>
+					<tr>
+						<td bgcolor="#4D595D">
+							<table width="730"  border="1" align="left" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
+							<thead>
+								<tr>
+									<td colspan="2"><#t2BC#></td>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<th width="40%"><#Scale#></th>
+									<td>
+										<select style="width:70px" class="input_option" onchange='changeScale(this.value)' id='scale'>
+											<option value="0">KB</option>
+											<option value="1">MB</option>
+											<option value="2" selected>GB</option>
+										</select>
+									</td>
+								</tr>
+							</tbody>
+							</table>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<div style="background-color:#2f3e44;border-radius:10px;width:730px;"><canvas id="chart" style="cursor:crosshair;" height="140"></div>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<div id="bwm-monthly-grid"></div>
+						</td>
+					</tr>
 					</table>
-     				</td>
-	     		</tr>
-				</tbody>
-				</table>
+					</td>
+					</tr>
+			</tbody>
+			</table>
 			</td>
 		</tr>
 		</table>
 		</div>
 	</td>
 
-    	<td width="10" align="center" valign="top">&nbsp;</td>
+	<td width="10" align="center" valign="top">&nbsp;</td>
 </tr>
 </table>
 <div id="footer"></div>
 </body>
 </html>
-
-

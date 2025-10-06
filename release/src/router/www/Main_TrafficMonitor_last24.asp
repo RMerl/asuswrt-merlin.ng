@@ -14,6 +14,8 @@
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/chart.min.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/hammer.min.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/chartjs-plugin-zoom.min.js"></script>
 <script language="JavaScript" type="text/javascript" src="help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
@@ -320,34 +322,35 @@ function drawGraph(ifname){
 		return;
 	}
 
-	var speedChart = document.getElementById(ifname + '_Chart').getContext("2d");
-	var datasets = [];
+	var ctx = document.getElementById(ifname + '_Chart').getContext("2d");
 
-	datasets.push({
-		label: speed_history[ifname].friendly + " In",
-		data: speed_history[ifname].rx,
-		backgroundColor: "rgba(76, 143, 192, 0.3)",
-		borderColor: "rgba(76, 143, 192, 1)",
-		borderWidth: "1",
-		pointStyle: "line",
-		lineTension: "0",
-		fill: { target: "origin"}
-	});
-	datasets.push({
-		label: speed_history[ifname].friendly + " Out",
-		data: speed_history[ifname].tx,
-		backgroundColor: "rgba(76, 192, 143, 0.3)",
-		borderColor: "rgba(76, 192, 143, 1)",
-		borderWidth: "1",
-		pointStyle: "line",
-		lineTension: "0",
-		fill: { target: "origin"}
-	});
-
-/* Chart */
-	chartObj[ifname].obj = new Chart(speedChart, {
+	chartObj[ifname].obj = new Chart(ctx, {
 		type: "line",
-		data: {labels: Array.from({ length: samplesMax }, (_, i) => i), datasets: datasets},
+		data: {
+			labels: Array.from({ length: samplesMax }, (v, i) => i),
+			datasets: [
+				{
+					label: speed_history[ifname].friendly + " In",
+					data: speed_history[ifname].rx,
+					backgroundColor: "rgba(76, 143, 192, 0.3)",
+					borderColor: "rgba(76, 143, 192, 1)",
+					borderWidth: "1",
+					pointStyle: "line",
+					lineTension: "0",
+					fill: { target: "origin"}
+				},
+				{
+					label: speed_history[ifname].friendly + " Out",
+					data: speed_history[ifname].tx,
+					backgroundColor: "rgba(76, 192, 143, 0.3)",
+					borderColor: "rgba(76, 192, 143, 1)",
+					borderWidth: "1",
+					pointStyle: "line",
+					lineTension: "0",
+					fill: { target: "origin"}
+				}
+			]
+		},
 		options: {
 			responsive: true,
 			animation: false,
@@ -394,12 +397,30 @@ function drawGraph(ifname){
 					position: "top",
 					labels: {color: "#CCC"}
 				},
+				zoom: {
+					limits: {
+						x: {
+							min: 0,
+							max: samplesMax - 1,
+							minRange: samplesPerHour
+						}
+					},
+					zoom: {
+						wheel: { enabled: true },
+						pinch: { enabled: true },
+						mode: "x",
+					},
+					pan: {
+						enabled: true,
+						mode: "x",
+					}
+				}
 			},
 			scales: {
 				x: {
 					type: 'linear',
 					min: 0,
-					max: samplesMax,
+					max: samplesMax - 1,
 					grid: { color: "#282828" },
 					ticks: {
 						color: "#CCC",
@@ -419,7 +440,7 @@ function drawGraph(ifname){
 						color: "#CCC",
 						callback: function(value, index, ticks) {return format_rate(value / updateInt, 1);}
 					}
-				},
+				}
 			}
 		}
 	});

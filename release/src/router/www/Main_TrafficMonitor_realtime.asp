@@ -20,7 +20,7 @@
 <script language="JavaScript" type="text/javascript" src="popup.js"></script>
 
 <script type='text/javascript'>
-var nvram = httpApi.nvramGet(["bond_wan", "rc_support", "wans_lanport"])
+var nvram = httpApi.nvramGet(["wans_lanport"]);
 
 var speed_data = {};
 var last_speed_data = {};
@@ -31,16 +31,15 @@ var refresh_toggle = 1;
 AUTOLOGOUT_MAX_MINUTE = 0;
 
 
-function init() {
+function init(){
 	if(bwdpi_support){
 		document.getElementById('content_title').innerHTML = "<#traffic_monitor#>";
 	}
-
 	update_traffic();
 }
 
 
-function switchPage(page) {
+function switchPage(page){
 	if(page == "1")
 		return false;
 	else if(page == "2")
@@ -119,7 +118,7 @@ function get_friendly_name(ifname){
 					if (based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000")
 						title = "2.5G WAN";
 					if (based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U" || based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000") {
-						if (nvram.bond_wan == '1' && nvram.rc_support.indexOf("wanbonding") != -1)
+						if (wan_bonding_support && nvram.bond_wan == '1')
 							title = "Bond";
 					}
 				}
@@ -160,7 +159,7 @@ function get_friendly_name(ifname){
 				if (based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000")
 					title = "2.5G WAN";
 				if (based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U" || based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000") {
-					if (nvram.bond_wan == '1' && nvram.rc_support.indexOf("wanbonding") != -1)
+					if (wan_bonding_support && nvram.bond_wan == '1')
 						title = "Bond";
 				}
 			}
@@ -225,7 +224,7 @@ function get_friendly_name(ifname){
 }
 
 
-function format_rate(value){
+function rescale_auto(value){
 	var unit = " KB/s";
 	value = value / 1024;
 
@@ -302,10 +301,10 @@ function update_traffic() {
 				}
 				if(refresh_toggle == 1) {
 					drawGraph(ifname);
-					document.getElementById(ifname + "_RX_current").innerHTML = format_rate(diff_rx);
-					document.getElementById(ifname + "_TX_current").innerHTML = format_rate(diff_tx);
-					document.getElementById(ifname + "_RX_max").innerHTML = format_rate(speed_data[ifname].max_rx);
-					document.getElementById(ifname + "_TX_max").innerHTML = format_rate(speed_data[ifname].max_tx);
+					document.getElementById(ifname + "_RX_current").innerHTML = rescale_auto(diff_rx);
+					document.getElementById(ifname + "_TX_current").innerHTML = rescale_auto(diff_tx);
+					document.getElementById(ifname + "_RX_max").innerHTML = rescale_auto(speed_data[ifname].max_rx);
+					document.getElementById(ifname + "_TX_max").innerHTML = rescale_auto(speed_data[ifname].max_tx);
 				}
 			}
 			setTimeout("update_traffic();", 2000);
@@ -318,40 +317,40 @@ function drawGraph(ifname){
 	var displayed_data_rx = speed_data[ifname].rx;
 	var displayed_data_tx = speed_data[ifname].tx;
 
-/* Redraw */
 	if (chartObj[ifname].obj != undefined) {
 		chartObj[ifname].obj.update();
 		return;
 	}
 
-	var speedChart = document.getElementById(ifname + '_Chart').getContext("2d");
-	var datasets = [];
+	var ctx = document.getElementById(ifname + '_Chart').getContext("2d");
 
-	datasets.push({
-		label: speed_data[ifname].friendly + " In",
-		data: displayed_data_rx,
-		backgroundColor: "rgba(76, 143, 192, 0.3)",
-		borderColor: "rgba(76, 143, 192, 1)",
-		borderWidth: "2",
-		pointStyle: "line",
-		lineTension: "0.1",
-		fill: { target: "origin"}
-	});
-	datasets.push({
-		label: speed_data[ifname].friendly + " Out",
-		data: displayed_data_tx,
-		backgroundColor: "rgba(76, 192, 143, 0.3)",
-		borderColor: "rgba(76, 192, 143, 1)",
-		borderWidth: "2",
-		pointStyle: "line",
-		lineTension: "0.1",
-		fill: { target: "origin"}
-	});
-
-/* Chart */
-	chartObj[ifname].obj = new Chart(speedChart, {
+	chartObj[ifname].obj = new Chart(ctx, {
 		type: "line",
-		data: {datasets: datasets},
+		data: {
+			labels: Array.from({length: 30}, (v, i) => i),
+			datasets: [
+				{
+					label: speed_data[ifname].friendly + " In",
+					data: displayed_data_rx,
+					backgroundColor: "rgba(76, 143, 192, 0.3)",
+					borderColor: "rgba(76, 143, 192, 1)",
+					borderWidth: "2",
+					pointStyle: "line",
+					lineTension: "0.1",
+					fill: { target: "origin"}
+				},
+				{
+					label: speed_data[ifname].friendly + " Out",
+					data: displayed_data_tx,
+					backgroundColor: "rgba(76, 192, 143, 0.3)",
+					borderColor: "rgba(76, 192, 143, 1)",
+					borderWidth: "2",
+					pointStyle: "line",
+					lineTension: "0.1",
+					fill: { target: "origin"}
+				}
+			]
+		},
 		options: {
 			responsive: true,
 			animation: false,
@@ -373,7 +372,7 @@ function drawGraph(ifname){
 						label: function (context) {
 							var label = context.dataset.label || '';
 							var value = context.parsed.y;
-							return label + " - " + format_rate(value);
+							return label + " - " + rescale_auto(value);
 						}
 					}
 				},
@@ -385,7 +384,6 @@ function drawGraph(ifname){
 			},
 			scales: {
 				x: {
-					labels: [0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58],
 					display: false,
 					ticks: {
 						color: "#CCC",
@@ -397,7 +395,7 @@ function drawGraph(ifname){
 					grid: { color: "#282828" },
 					ticks: {
 						color: "#CCC",
-						callback: function(value, index, ticks) {return format_rate(value);}
+						callback: function(value, index, ticks) {return rescale_auto(value);}
 					}
 				},
 			}

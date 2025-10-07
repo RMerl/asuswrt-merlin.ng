@@ -125,7 +125,7 @@ define(function(){
 					{url: "Main_TrafficMonitor_last24.asp", tabName: "__INHERIT__"},
 					{url: "Main_TrafficMonitor_daily.asp", tabName: "__INHERIT__"},
 					{url: "Main_TrafficMonitor_monthly.asp", tabName: "__INHERIT__"},
-					{url: "Main_TrafficMonitor_settings.asp", tabName: "Monitoring Settings"},
+					{url: "Main_TrafficMonitor_settings.asp", tabName: "__INHERIT__"},
 					{url: "TrafficAnalyzer_Statistic.asp", tabName: "<#Statistic#>"},
 					{url: "AdaptiveQoS_TrafficLimiter.asp", tabName: "Traffic Limiter"},
                                         {url: "NULL", tabName: "__INHERIT__"}

@@ -109,15 +109,28 @@ function init(){
 	update_traffic();
 }
 
-function switchPage(page){
-	if(page == "1")
-		location.href = "/Main_TrafficMonitor_realtime.asp";
-	else if(page == "2")
+function switchPage(page, current){
+	if (current == page) {
 		return false;
-	else if(page == "4")
-		location.href = "/Main_TrafficMonitor_monthly.asp";
-	else if(page == "3")
-		location.href = "/Main_TrafficMonitor_daily.asp";
+	}
+
+	switch (page) {
+		case "1":
+			location.href = "/Main_TrafficMonitor_realtime.asp";
+			break;
+		case "2":
+			location.href = "/Main_TrafficMonitor_last24.asp";
+			break;
+		case "3":
+			location.href = "/Main_TrafficMonitor_daily.asp";
+			break;
+		case "4":
+			location.href = "/Main_TrafficMonitor_monthly.asp";
+			break;
+		case "5":
+			location.href = "/Main_TrafficMonitor_settings.asp";
+			break;
+	}
 }
 
 function init_data_object(){
@@ -538,11 +551,12 @@ function drawGraph(ifname){
 														</td>
 														<td>
 															<div align="right">
-																<select id="page_select" onchange="switchPage(this.options[this.selectedIndex].value)" class="input_option" style="margin-top:8px;">
+																<select id="page_select" onchange="switchPage(this.options[this.selectedIndex].value, '2')" class="input_option" style="margin-top:8px;">
 																	<option value="1"><#menu4_2_1#></option>
 																	<option value="2" selected><#menu4_2_2#></option>
 																	<option value="3"><#menu4_2_3#></option>
 																	<option value="4">Monthly</option>
+																	<option value="5">Settings</option>
 																</select>
 															</div>
 												</td></tr></table>

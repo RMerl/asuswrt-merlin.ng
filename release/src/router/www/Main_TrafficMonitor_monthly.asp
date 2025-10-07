@@ -72,15 +72,28 @@ function init(){
 	}
 }
 
-function switchPage(page){
-	if(page == "1")
-		location.href = "/Main_TrafficMonitor_realtime.asp";
-	else if(page == "2")
-		location.href = "/Main_TrafficMonitor_last24.asp";
-	else if(page == "3")
-		location.href = "/Main_TrafficMonitor_daily.asp";
-	else
+function switchPage(page, current){
+	if (current == page) {
 		return false;
+	}
+
+	switch (page) {
+		case "1":
+			location.href = "/Main_TrafficMonitor_realtime.asp";
+			break;
+		case "2":
+			location.href = "/Main_TrafficMonitor_last24.asp";
+			break;
+		case "3":
+			location.href = "/Main_TrafficMonitor_daily.asp";
+			break;
+		case "4":
+			location.href = "/Main_TrafficMonitor_monthly.asp";
+			break;
+		case "5":
+			location.href = "/Main_TrafficMonitor_settings.asp";
+			break;
+	}
 }
 
 function generateMonthsLabels() {
@@ -291,11 +304,12 @@ function drawChart(){
 										</td>
 										<td>
 											<div align="right">
-												<select id="page_select" class="input_option" style="width:120px" onchange="switchPage(this.options[this.selectedIndex].value)">
+												<select id="page_select" onchange="switchPage(this.options[this.selectedIndex].value, '4')" class="input_option">
 													<option value="1"><#menu4_2_1#></option>
 													<option value="2"><#menu4_2_2#></option>
 													<option value="3"><#menu4_2_3#></option>
 													<option value="4" selected>Monthly</option>
+													<option value="5">Settings</option>
 												</select>
 											</div>
 										</td>

@@ -22,8 +22,39 @@
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 
 <style>
-	.statcell { width:25% !important; text-align:left !important; }
-	.wgsheader:first-letter { text-transform: capitalize; }
+
+.chartCanvas {
+	cursor: crosshair;
+	background-color: #2f3e44;
+	border-radius: 10px;
+	width: 100% !important;
+	height: 270px;
+	display: block;
+}
+
+.rategrid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	column-gap: 8px;
+	row-gap: 4px;
+	padding-top: 14px;
+}
+
+.ratepair {
+	display: inline-flex;
+	align-items: center;
+}
+
+.ratelabel {
+	text-align: right;
+	margin-right: 4px;
+	flex-shrink: 0;
+}
+
+.ratevalue {
+	color: white !important;
+}
+
 
 @keyframes spin {
     from { transform: rotate(0deg); }
@@ -57,11 +88,18 @@ const samplesPerHour = 120;
 const samplesMax = 2880;
 const updateInt = 30;
 
+const labelsColor = "#CCC";
+const gridColor = "#282828";
+const ticksColor = "#CCC";
+const rxBorderColor = "rgba(76, 143, 192, 1)";
+const rxBackgroundColor = "rgba(76, 143, 192, 0.3)";
+const txBorderColor = "rgba(76, 192, 143, 1)";
+const txBackgroundColor = "rgba(76, 192, 143, 0.3)";
+
 // disable auto log out
 AUTOLOGOUT_MAX_MINUTE = 0;
 
-function init()
-{
+function init(){
 	if (nvram.rstats_enable != '1') return;
 
 	if(bwdpi_support){
@@ -90,15 +128,20 @@ function init_data_object(){
 
 /* Canvas */
 		var htmldata = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">';
-		htmldata += '<thead><tr><td>' + speed_history[ifname].friendly + '</td></tr></thead>';
-		htmldata += '<tr>';
-		htmldata += '<td style="padding:14px;" width="100%"><canvas style="cursor:crosshair; background-color:#2f3e44;border-radius:10px;width: 100% !important; height:270px;" id="' + ifname + '_Chart"></canvas>';
-		htmldata += '<div style="padding-top: 14px; display: flex; justify-content: space-between;">';
-		htmldata += '<div class="hint-color">Current In: <span style="color: white;" id="' + ifname + '_RX_current"></span></div><div class="hint-color">Avg In: <span style="color: white;" id="'+ ifname + '_RX_avg"></span></div><div class="hint-color">Max In: <span style="color: white;" id="' + ifname + '_RX_max"></div><div class="hint-color">Total In: <span style="color: white;" id="' + ifname + '_RX_total"></div></div>';
-		htmldata += '<div style="display: flex; justify-content: space-between;">';
-		htmldata += '<div class="hint-color">Current Out: <span style="color: white;" id="' + ifname + '_TX_current"></span></div><div class="hint-color">Avg Out: <span style="color: white;"id="'+ ifname + '_TX_avg"></span></div><div class="hint-color">Max Out: <span style="color: white;" id="' + ifname + '_TX_max"></div><div class="hint-color">Total Out: <span style="color: white;" id="' + ifname + '_TX_total"></div>';
-		htmldata += '</div></td>'
-		htmldata += '</tr></table>';
+		htmldata += '<thead><tr><td>' + speed_history[ifname].friendly + '</td></tr></thead>' +
+		            '<tr>' +
+		            '<td style="padding:14px;" width="100%"><canvas class="chartCanvas" id="' + ifname + '_Chart"></canvas>' +
+		            '<div class="rategrid">' +
+		            '<div class="ratepair"><span class="ratelabel hint-color">Current In: </span><span class="ratevalue" id="' + ifname + '_RX_current"></span></div>' +
+		            '<div class="ratepair"><span class="ratelabel hint-color">Avg In: </span><span class="ratevalue" id="'+ ifname + '_RX_avg"></span></div>' +
+		            '<div class="ratepair"><span class="ratelabel hint-color">Max In: </span><span class="ratevalue" id="' + ifname + '_RX_max"></span></div>' +
+		            '<div class="ratepair"><span class="ratelabel hint-color">Total In: </span><span class="ratevalue" id="' + ifname + '_RX_total"></span></div>' +
+		            '<div class="ratepair"><span class="ratelabel hint-color">Current Out: </span><span class="ratevalue" id="' + ifname + '_TX_current"></span></div>' +
+		            '<div class="ratepair"><span class="ratelabel hint-color">Avg Out: </span><span class="ratevalue" id="'+ ifname + '_TX_avg"></span></div>' +
+		            '<div class="ratepair"><span class="ratelabel hint-color">Max Out: </span><span class="ratevalue" id="' + ifname + '_TX_max"></span></div>' +
+		            '<div class="ratepair"><span class="ratelabel hint-color">Total Out: </span><span class="ratevalue" id="' + ifname + '_TX_total"></span></div>' +
+		            '</div>' +
+		            '</td></tr></table>';
 
 		if (ifname == "INTERNET")	// Always insert at the top
 			document.getElementById("graph_content").insertAdjacentHTML("afterbegin", htmldata);
@@ -332,8 +375,8 @@ function drawGraph(ifname){
 				{
 					label: speed_history[ifname].friendly + " In",
 					data: speed_history[ifname].rx,
-					backgroundColor: "rgba(76, 143, 192, 0.3)",
-					borderColor: "rgba(76, 143, 192, 1)",
+					backgroundColor: rxBackgroundColor,
+					borderColor: rxBorderColor,
 					borderWidth: "1",
 					pointStyle: "line",
 					lineTension: "0",
@@ -342,8 +385,8 @@ function drawGraph(ifname){
 				{
 					label: speed_history[ifname].friendly + " Out",
 					data: speed_history[ifname].tx,
-					backgroundColor: "rgba(76, 192, 143, 0.3)",
-					borderColor: "rgba(76, 192, 143, 1)",
+					backgroundColor: txBackgroundColor,
+					borderColor: txBorderColor,
 					borderWidth: "1",
 					pointStyle: "line",
 					lineTension: "0",
@@ -355,7 +398,6 @@ function drawGraph(ifname){
 			responsive: true,
 			animation: false,
 			segmentShowStroke : false,
-			segmentStrokeColor : "#000",
 			pointRadius : 0,
 			interaction: {
 				mode: 'index',
@@ -395,13 +437,13 @@ function drawGraph(ifname){
 				legend: {
 					display: true,
 					position: "top",
-					labels: {color: "#CCC"}
+					labels: {color: labelsColor}
 				},
 				zoom: {
 					limits: {
 						x: {
 							min: 0,
-							max: samplesMax - 1,
+							max: samplesMax,
 							minRange: samplesPerHour
 						}
 					},
@@ -420,10 +462,10 @@ function drawGraph(ifname){
 				x: {
 					type: 'linear',
 					min: 0,
-					max: samplesMax - 1,
-					grid: { color: "#282828" },
+					max: samplesMax,
+					grid: { color: gridColor },
 					ticks: {
-						color: "#CCC",
+						color: ticksColor,
 						stepSize: samplesPerHour,
 						callback: function(value) {
 							var hourOffset = Math.floor(value / samplesPerHour);
@@ -435,9 +477,9 @@ function drawGraph(ifname){
 				y: {
 					grace: "5%",
 					min: 0,
-					grid: { color: "#282828" },
+					grid: { color: gridColor },
 					ticks: {
-						color: "#CCC",
+						color: ticksColor,
 						callback: function(value, index, ticks) {return format_rate(value / updateInt, 1);}
 					}
 				}
@@ -531,5 +573,3 @@ function drawGraph(ifname){
 <div id="footer"></div>
 </body>
 </html>
-
-

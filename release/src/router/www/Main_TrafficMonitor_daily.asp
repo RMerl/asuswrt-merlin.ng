@@ -19,6 +19,17 @@
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 
+<style>
+.chartCanvas {
+	cursor: crosshair;
+	background-color: #2f3e44;
+	border-radius: 10px;
+	width: 100% !important;
+	height: 370px;
+	display: block;
+}
+</style>
+
 <script type='text/javascript'>
 var nvram = httpApi.nvramGet(["rstats_enable"]);
 
@@ -31,6 +42,14 @@ var months = [];
 const snames = ['KB', 'MB', 'GB'];
 const scaleFactors = [1, 1024, 1048576];
 const ui_locale = ui_lang.toLowerCase();
+
+const labelsColor = "#CCC";
+const gridColor = "#282828";
+const ticksColor = "#CCC";
+const rxBackgroundColor = "#4C8FC0";
+const rxBorderColor = "#000000";
+const txBackgroundColor = "#4CC08F";
+const txBorderColor = "#000000";
 
 function init(){
 	var scaleCookie;
@@ -183,24 +202,24 @@ function drawChart(){
 					data: barDataDl,
 					label: "<#tm_reception#> (" + snames[scale] + ")",
 					borderWidth: border,
-					backgroundColor: "#4C8FC0",
-					borderColor: "#000000"
+					backgroundColor: rxBackgroundColor,
+					borderColor: rxBorderColor
 				},
 				{
 					data: barDataUl,
 					label: "<#tm_transmission#> (" + snames[scale] +")",
 					borderWidth: border,
-					backgroundColor: "#4CC08F",
-					borderColor: "#000000"
+					backgroundColor: txBackgroundColor,
+					borderColor: txBorderColor
 				}
 			]
 		},
 		options: {
-			segmentShowStroke : false,
-			segmentStrokeColor : "#000",
-			animationEasing : "easeOutQuart",
-			animationSteps : 100,
-			animateScale : true,
+			segmentShowStroke: false,
+			animationEasing: "easeOutQuart",
+			animationSteps: 100,
+			animateScale: true,
+			responsive: true,
 			interaction: {
 				mode: 'index',
 				intersect: false
@@ -217,18 +236,18 @@ function drawChart(){
 				legend: {
 					display: true,
 					position: "top",
-					labels: {color: "#CCC"}
+					labels: {color: labelsColor}
 				},
 			},
 			scales: {
 				x: {
 					grid: { display: false },
-					ticks: {color: "#CCC" },
+					ticks: {color: ticksColor },
 				},
 				y: {
-					grid: { color: "#282828" },
+					grid: { color: gridColor },
 					ticks: {
-						color: "#CCC",
+						color: ticksColor,
 						callback: function(value, index, values) {
 							return value.toLocaleString(ui_locale);
 						}
@@ -327,7 +346,7 @@ function drawChart(){
 					</tr>
 					<tr>
 						<td>
-							<div style="background-color:#2f3e44;border-radius:10px;width:730px;"><canvas id="chart" style="cursor:crosshair;" height="140"></div>
+							<canvas id="chart" class="chartCanvas"></canvas>
 						</td>
 					</tr>
 					<tr>

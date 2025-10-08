@@ -391,8 +391,7 @@ function drawGraph(ifname){
 					backgroundColor: rxBackgroundColor,
 					borderColor: rxBorderColor,
 					borderWidth: "1",
-					pointStyle: "line",
-					lineTension: "0",
+					pointRadius: "0",
 					fill: { target: "origin"}
 				},
 				{
@@ -401,8 +400,7 @@ function drawGraph(ifname){
 					backgroundColor: txBackgroundColor,
 					borderColor: txBorderColor,
 					borderWidth: "1",
-					pointStyle: "line",
-					lineTension: "0",
+					pointRadius: "0",
 					fill: { target: "origin"}
 				}
 			]

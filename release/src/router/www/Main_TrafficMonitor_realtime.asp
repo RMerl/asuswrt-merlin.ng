@@ -36,6 +36,9 @@ var last_speed_data = {};
 var chartObj = {};
 var refresh_toggle = 1;
 
+const updateFrequency = 1000;
+const maxSamples = 60;
+
 const labelsColor = "#CCC";
 const gridColor = "#282828";
 const ticksColor = "#CCC";
@@ -323,10 +326,10 @@ function update_traffic() {
 					speed_data[ifname].max_tx = diff_tx;
 				}
 
-				if(speed_data[ifname].rx.length > 30){
+				if(speed_data[ifname].rx.length > maxSamples){
 					speed_data[ifname].rx.shift();
 				}
-				if(speed_data[ifname].tx.length > 30){
+				if(speed_data[ifname].tx.length > maxSamples){
 					speed_data[ifname].tx.shift();
 				}
 				if(refresh_toggle == 1) {
@@ -337,7 +340,7 @@ function update_traffic() {
 					document.getElementById(ifname + "_TX_max").innerHTML = rescale_auto(speed_data[ifname].max_tx);
 				}
 			}
-			setTimeout("update_traffic();", 2000);
+			setTimeout("update_traffic();", updateFrequency);
 		}
 	});
 }
@@ -357,7 +360,7 @@ function drawGraph(ifname){
 	chartObj[ifname].obj = new Chart(ctx, {
 		type: "line",
 		data: {
-			labels: Array.from({length: 30}, (v, i) => i),
+			labels: Array.from({length: maxSamples}, (v, i) => i),
 			datasets: [
 				{
 					label: speed_data[ifname].friendly + " In",
@@ -365,8 +368,7 @@ function drawGraph(ifname){
 					backgroundColor: rxBackgroundColor,
 					borderColor: rxBorderColor,
 					borderWidth: "2",
-					pointStyle: "line",
-					lineTension: "0.1",
+					pointRadius: "0",
 					fill: { target: "origin"}
 				},
 				{
@@ -375,8 +377,7 @@ function drawGraph(ifname){
 					backgroundColor: txBackgroundColor,
 					borderColor: txBorderColor,
 					borderWidth: "2",
-					pointStyle: "line",
-					lineTension: "0.1",
+					pointRadius: "0",
 					fill: { target: "origin"}
 				}
 			]
@@ -414,9 +415,14 @@ function drawGraph(ifname){
 			},
 			scales: {
 				x: {
-					display: false,
+					display: true,
+					type: 'linear',
+					min: 0,
+					max: maxSamples,
+					grid: { color: gridColor },
 					ticks: {
-						color: ticksColor,
+						display: false,
+						stepSize: 10 / (updateFrequency/1000),
 					}
 				},
 				y: {

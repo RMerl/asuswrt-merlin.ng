@@ -245,7 +245,7 @@ function drawChart(){
 					ticks: {
 						color: ticksColor,
 						callback: function(value, index, values) {
-							return value.toLocaleString(ui_locale);
+							return value.toLocaleString(ui_locale) + " " + scaleNames[scale];
 						}
 					}
 				}

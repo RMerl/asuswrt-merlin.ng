@@ -1111,3 +1111,12 @@ ifeq ($(RTCONFIG_NO_AIDISK), y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/aidisk
 	rm -rf $(INSTALLDIR)/www/aidisk.asp
 endif
+
+# Legacy files no longer used by Asuswrt-Merlin
+	rm -rf $(INSTALLDIR)/www/tm.svg
+	rm -rf $(INSTALLDIR)/www/tmcal.js
+	rm -rf $(INSTALLDIR)/www/tmhist.js
+	rm -rf $(INSTALLDIR)/www/tmmenu.css
+	rm -rf $(INSTALLDIR)/www/tmmenu.js
+# End legacy files
+

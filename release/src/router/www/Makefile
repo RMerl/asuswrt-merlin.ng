@@ -1018,3 +1018,10 @@ update:
 	wget http://nw-dlcdnet.asus.com/plugin/js/pppIspList_V2.json -O ajax/pppIspList_V2.json
 	wget http://nw-dlcdnet.asus.com/plugin/js/DNS_List.json -O ajax/DNS_List.json
 
+# Legacy files no longer used by Asuswrt-Merlin
+	rm -rf $(INSTALLDIR)/www/tm.svg
+	rm -rf $(INSTALLDIR)/www/tmcal.js
+	rm -rf $(INSTALLDIR)/www/tmhist.js
+	rm -rf $(INSTALLDIR)/www/tmmenu.css
+	rm -rf $(INSTALLDIR)/www/tmmenu.js
+# End legacy files

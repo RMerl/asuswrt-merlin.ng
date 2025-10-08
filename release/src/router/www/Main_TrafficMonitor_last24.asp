@@ -20,7 +20,7 @@
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
-
+<script language="JavaScript" type="text/javascript" src="/js/trafmon.js"></script>
 <style>
 
 .chartCanvas {
@@ -75,11 +75,10 @@
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
-
 </style>
 
 <script type='text/javascript'>
-var nvram = httpApi.nvramGet(["bond_wan", "rc_support", "wans_lanport", "rstats_enable"])
+var nvram = httpApi.nvramGet(["rstats_enable"])
 
 var speed_history = {};
 var chartObj = {};
@@ -109,35 +108,11 @@ function init(){
 	update_traffic();
 }
 
-function switchPage(page, current){
-	if (current == page) {
-		return false;
-	}
-
-	switch (page) {
-		case "1":
-			location.href = "/Main_TrafficMonitor_realtime.asp";
-			break;
-		case "2":
-			location.href = "/Main_TrafficMonitor_last24.asp";
-			break;
-		case "3":
-			location.href = "/Main_TrafficMonitor_daily.asp";
-			break;
-		case "4":
-			location.href = "/Main_TrafficMonitor_monthly.asp";
-			break;
-		case "5":
-			location.href = "/Main_TrafficMonitor_settings.asp";
-			break;
-	}
-}
-
 function init_data_object(){
 	for (var ifname in speed_history) {
 		if (ifname == "_next") continue;
 
-		speed_history[ifname].friendly = get_friendly_name(ifname);
+		speed_history[ifname].friendly = get_friendly_ifname(ifname);
 
 /* Canvas */
 		var htmldata = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">';
@@ -166,148 +141,6 @@ function init_data_object(){
 	}
 }
 
-function get_friendly_name(ifname){
-	var title;
-
-	switch(ifname){
-		case "INTERNET":
-		case "INTERNET0":
-			if(dualWAN_support){
-				if(wans_dualwan_array[0] == "usb"){
-					if(gobi_support)
-						title = "<#Mobile_title#>";
-					else
-						title = "USB Modem";
-				}
-				else if(wans_dualwan_array[0] == "wan"){
-					title = "WAN";
-					if (based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000")
-						title = "2.5G WAN";
-					if (based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U" || based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000") {
-						if (nvram.bond_wan == '1' && nvram.rc_support.indexOf("wanbonding") != -1)
-							title = "Bond";
-					}
-				}
-				else if(wans_dualwan_array[0] == "wan2"){
-					if (based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U")
-						title = "10G base-T";
-					else
-						title = "WAN2";
-				}
-				else if(wans_dualwan_array[0] == "lan") {
-					title = "LAN Port " + nvram.wans_lanport;
-					if (based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000") {
-						if (nvram.wans_lanport == '5')
-							title = "2.5G LAN";
-					}
-				}
-				else if(wans_dualwan_array[0] == "dsl")
-					title = "DSL WAN";
-				else if(wans_dualwan_array[0] == "sfp+")
-					title = "10G SFP+";
-				else
-					title = "<#dualwan_primary#>";
-			}
-			else
-				title = "<#Internet#>";
-
-			return title;
-
-		case "INTERNET1":
-			if(wans_dualwan_array[1] == "usb"){
-				if(gobi_support)
-					title = "<#Mobile_title#>";
-				else
-					title = "USB Modem";
-			}
-			else if(wans_dualwan_array[1] == "wan"){
-				title = "WAN";
-				if (based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000")
-					title = "2.5G WAN";
-				if (based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U" || based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000") {
-					if (nvram.bond_wan == '1' && nvram.rc_support.indexOf("wanbonding") != -1)
-						title = "Bond";
-				}
-			}
-			else if(wans_dualwan_array[1] == "wan2"){
-				if (based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U")
-					title = "10G base-T";
-				else
-					title = "WAN2";
-			}
-			else if(wans_dualwan_array[1] == "lan") {
-				title = "LAN Port " + nvram.wans_lanport;
-				if (based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000") {
-					if (nvram.wans_lanport == '5')
-						title = "2.5G LAN";
-				}
-			}
-			else if(wans_dualwan_array[1] == "sfp+")
-				title = "10G SFP+";
-			else
-				title = "<#dualwan_secondary#>";
-
-			return title;
-
-		case "BRIDGE":
-			return "LAN";
-		case "WIRED":
-			return "<#tm_wired#>";
-
-		case "WIRELESS0":
-		case "WIRELESS1":
-		case "WIRELESS2":
-		case "WIRELESS3":
-			var num = ifname.substr(8);
-			return "Wireless " + wl_nband_title[num];
-	}
-
-/* Handle multi-instanced interfaces */
-	if (ifname.search(/WAGGR/) > -1){
-		var bs_port_id = ifname.substr(5);
-		if (bs_port_id == 0)
-			return "bond-slave (WAN)";
-		else if (bs_port_id >= 1 && bs_port_id <= 8)
-			return "bond-slave (LAN Port "+bs_port_id+")";
-		else if (bs_port_id == 30)
-			return "bond-slave (10G base-T)";
-		else if (bs_port_id == 31)
-			return "bond-slave (10G SFP+)";
-		else
-			return "NotUsed";
-	}
-	else if (ifname.search(/LACPW/) > -1){
-		var num = ifname.substr(5);
-		return "bond-slave (WAN"+num+")";
-	}
-	else if (ifname.search("LACP") > -1){
-		var num = ifname.substr(4);
-		return "bond-slave (LAN Port "+num+")";
-	}
-
-	/* No friendly name, return as-is */
-	return ifname;
-}
-
-function format_rate(value, isspeed = 0){
-	var unit = " KB";
-	value = value / 1024;
-
-	if (value > 1024) {
-		value = value / 1024;
-		unit = " MB";
-	}
-
-	if (value > 1024) {
-		value = value / 1024;
-		unit = " GB";
-	}
-
-	if (isspeed == 1)
-		unit += "/s";
-
-	return parseInt(value) + unit;
-}
 
 function update_traffic(){
 	$.ajax({
@@ -354,14 +187,14 @@ function update_traffic(){
 
 /* Output */
 				drawGraph(ifname);
-				document.getElementById(ifname + "_RX_current").innerHTML = format_rate(speed_history[ifname].rx[speed_history[ifname].rx.length-1] / updateInt, 1);
-				document.getElementById(ifname + "_TX_current").innerHTML = format_rate(speed_history[ifname].tx[speed_history[ifname].tx.length-1] / updateInt, 1);
-				document.getElementById(ifname + "_RX_avg").innerHTML = format_rate(ifdata.rx_avg ,1);
-				document.getElementById(ifname + "_TX_avg").innerHTML = format_rate(ifdata.tx_avg ,1);
-				document.getElementById(ifname + "_RX_max").innerHTML = format_rate(ifdata.rx_max ,1);
-				document.getElementById(ifname + "_TX_max").innerHTML = format_rate(ifdata.tx_max ,1);
-				document.getElementById(ifname + "_RX_total").innerHTML = format_rate(ifdata.rx_total, 0);
-				document.getElementById(ifname + "_TX_total").innerHTML = format_rate(ifdata.tx_total, 0);
+				document.getElementById(ifname + "_RX_current").innerHTML = rescale_data_rate(speed_history[ifname].rx[speed_history[ifname].rx.length-1] / updateInt, 1);
+				document.getElementById(ifname + "_TX_current").innerHTML = rescale_data_rate(speed_history[ifname].tx[speed_history[ifname].tx.length-1] / updateInt, 1);
+				document.getElementById(ifname + "_RX_avg").innerHTML = rescale_data_rate(ifdata.rx_avg ,1);
+				document.getElementById(ifname + "_TX_avg").innerHTML = rescale_data_rate(ifdata.tx_avg ,1);
+				document.getElementById(ifname + "_RX_max").innerHTML = rescale_data_rate(ifdata.rx_max ,1);
+				document.getElementById(ifname + "_TX_max").innerHTML = rescale_data_rate(ifdata.tx_max ,1);
+				document.getElementById(ifname + "_RX_total").innerHTML = rescale_data_rate(ifdata.rx_total, 0);
+				document.getElementById(ifname + "_TX_total").innerHTML = rescale_data_rate(ifdata.tx_total, 0);
 			}
 			setTimeout("update_traffic()", updateInt * 1000);
 		}
@@ -441,7 +274,7 @@ function drawGraph(ifname){
 						label: function(context) {
 							var label = context.dataset.label || '';
 							var value = context.parsed.y;
-							return label + " - " + format_rate(value / updateInt, 1);
+							return label + " - " + rescale_data_rate(value / updateInt, 1);
 						}
 					}
 				},
@@ -491,7 +324,7 @@ function drawGraph(ifname){
 					grid: { color: gridColor },
 					ticks: {
 						color: ticksColor,
-						callback: function(value, index, ticks) {return format_rate(value / updateInt, 1);}
+						callback: function(value, index, ticks) {return rescale_data_rate(value / updateInt, 1);}
 					}
 				}
 			}
@@ -517,7 +350,6 @@ function drawGraph(ifname){
 <input type="hidden" name="first_time" value="">
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
-<input type="hidden" name="zoom" value="3">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>
@@ -549,7 +381,7 @@ function drawGraph(ifname){
 														</td>
 														<td>
 															<div align="right">
-																<select id="page_select" onchange="switchPage(this.options[this.selectedIndex].value, '2')" class="input_option" style="margin-top:8px;">
+																<select id="page_select" onchange="tm_switchPage(this.options[this.selectedIndex].value, '2')" class="input_option" style="margin-top:8px;">
 																	<option value="1"><#menu4_2_1#></option>
 																	<option value="2" selected><#menu4_2_2#></option>
 																	<option value="3"><#menu4_2_3#></option>

@@ -18,7 +18,7 @@
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
-
+<script language="JavaScript" type="text/javascript" src="/js/trafmon.js"></script>
 <style>
 .chartCanvas {
 	cursor: crosshair;
@@ -39,9 +39,6 @@ var chartObj;
 
 var scale = 2;
 var months = [];
-const snames = ['KB', 'MB', 'GB'];
-const scaleFactors = [1, 1024, 1048576];
-const ui_locale = ui_lang.toLowerCase();
 
 const labelsColor = "#CCC";
 const gridColor = "#282828";
@@ -70,43 +67,6 @@ function init(){
 	if(bwdpi_support){
 		document.getElementById('content_title').innerHTML = "<#traffic_monitor#>";
 	}
-}
-
-function switchPage(page, current){
-	if (current == page) {
-		return false;
-	}
-
-	switch (page) {
-		case "1":
-			location.href = "/Main_TrafficMonitor_realtime.asp";
-			break;
-		case "2":
-			location.href = "/Main_TrafficMonitor_last24.asp";
-			break;
-		case "3":
-			location.href = "/Main_TrafficMonitor_daily.asp";
-			break;
-		case "4":
-			location.href = "/Main_TrafficMonitor_monthly.asp";
-			break;
-		case "5":
-			location.href = "/Main_TrafficMonitor_settings.asp";
-			break;
-	}
-}
-
-function generateMonthsLabels() {
-	for (let i = 0; i < 12; i++) {
-		months.push(
-			new Date(2000, i, 1).toLocaleString(ui_locale, { month: 'short' })
-		);
-	}
-	return months;
-}
-
-function rescale(n){
-	return (Number(n / scaleFactors[scale]).toLocaleString(ui_locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })) + " " + snames[scale];
 }
 
 function ymdText(yr, mo){
@@ -167,9 +127,9 @@ function display_data(){
 		++rows;
 
 		htmldata += '<tr><td>' + ymdText(ymd[0], ymd[1]) + '</td>' +
-		            '<td class="dl">' + rescale(entry[1]) + '</td>' +
-		            '<td class="ul">' + rescale(entry[2]) + '</td>' +
-		            '<td class="total">' + rescale(entry[1] + entry[2]) + '</td></tr>';
+		            '<td class="dl">' + rescale_value(entry[1], scale) + '</td>' +
+		            '<td class="ul">' + rescale_value(entry[2], scale) + '</td>' +
+		            '<td class="total">' + rescale_value(entry[1] + entry[2], scale) + '</td></tr>';
 
 		barDataDl.unshift(entry[1] / scaleFactors[scale]);
 		barDataUl.unshift(entry[2] / scaleFactors[scale]);
@@ -196,14 +156,14 @@ function drawChart(){
 			datasets: [
 				{
 					data: barDataDl,
-					label: "<#tm_reception#> (" + snames[scale] + ")",
+					label: "<#tm_reception#> (" + scaleNames[scale] + ")",
 					borderWidth: 1,
 					backgroundColor: rxBackgroundColor,
 					borderColor: rxBorderColor
 				},
 				{
 					data: barDataUl,
-					label: "<#tm_transmission#> (" + snames[scale] +")",
+					label: "<#tm_transmission#> (" + scaleNames[scale] +")",
 					borderWidth: 1,
 					backgroundColor: txBackgroundColor,
 					borderColor: txBorderColor
@@ -226,7 +186,7 @@ function drawChart(){
 					intersect: false,
 					mode: 'index',
 					callbacks: {
-						label: function (context) { return context.parsed.y.toLocaleString(ui_locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " " + snames[scale]; },
+						label: function (context) { return context.parsed.y.toLocaleString(ui_locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " " + scaleNames[scale]; },
 					}
 				},
 				legend: {
@@ -304,7 +264,7 @@ function drawChart(){
 										</td>
 										<td>
 											<div align="right">
-												<select id="page_select" onchange="switchPage(this.options[this.selectedIndex].value, '4')" class="input_option">
+												<select id="page_select" onchange="tm_switchPage(this.options[this.selectedIndex].value, '4')" class="input_option">
 													<option value="1"><#menu4_2_1#></option>
 													<option value="2"><#menu4_2_2#></option>
 													<option value="3"><#menu4_2_3#></option>

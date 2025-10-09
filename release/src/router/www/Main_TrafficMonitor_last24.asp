@@ -86,6 +86,7 @@ var chartObj = {};
 const samplesPerHour = 120;
 const samplesMax = 2880;
 const updateInt = 30;
+const showBitrate = 1;
 
 const labelsColor = "#CCC";
 const gridColor = "#282828";
@@ -187,12 +188,12 @@ function update_traffic(){
 
 /* Output */
 				drawGraph(ifname);
-				document.getElementById(ifname + "_RX_current").innerHTML = rescale_data_rate(speed_history[ifname].rx[speed_history[ifname].rx.length-1] / updateInt, 1);
-				document.getElementById(ifname + "_TX_current").innerHTML = rescale_data_rate(speed_history[ifname].tx[speed_history[ifname].tx.length-1] / updateInt, 1);
-				document.getElementById(ifname + "_RX_avg").innerHTML = rescale_data_rate(ifdata.rx_avg ,1);
-				document.getElementById(ifname + "_TX_avg").innerHTML = rescale_data_rate(ifdata.tx_avg ,1);
-				document.getElementById(ifname + "_RX_max").innerHTML = rescale_data_rate(ifdata.rx_max ,1);
-				document.getElementById(ifname + "_TX_max").innerHTML = rescale_data_rate(ifdata.tx_max ,1);
+				document.getElementById(ifname + "_RX_current").innerHTML = rescale_data_rate(speed_history[ifname].rx[speed_history[ifname].rx.length-1] / updateInt, (showBitrate ? 2 : 1));
+				document.getElementById(ifname + "_TX_current").innerHTML = rescale_data_rate(speed_history[ifname].tx[speed_history[ifname].tx.length-1] / updateInt, (showBitrate ? 2 : 1));
+				document.getElementById(ifname + "_RX_avg").innerHTML = rescale_data_rate(ifdata.rx_avg ,(showBitrate ? 2 : 1));
+				document.getElementById(ifname + "_TX_avg").innerHTML = rescale_data_rate(ifdata.tx_avg ,(showBitrate ? 2 : 1));
+				document.getElementById(ifname + "_RX_max").innerHTML = rescale_data_rate(ifdata.rx_max ,(showBitrate ? 2 : 1));
+				document.getElementById(ifname + "_TX_max").innerHTML = rescale_data_rate(ifdata.tx_max ,(showBitrate ? 2 : 1));
 				document.getElementById(ifname + "_RX_total").innerHTML = rescale_data_rate(ifdata.rx_total, 0);
 				document.getElementById(ifname + "_TX_total").innerHTML = rescale_data_rate(ifdata.tx_total, 0);
 			}
@@ -274,7 +275,7 @@ function drawGraph(ifname){
 						label: function(context) {
 							var label = context.dataset.label || '';
 							var value = context.parsed.y;
-							return label + " - " + rescale_data_rate(value / updateInt, 1);
+							return label + " - " + rescale_data_rate(value / updateInt, (showBitrate ? 2 : 1));
 						}
 					}
 				},
@@ -324,7 +325,7 @@ function drawGraph(ifname){
 					grid: { color: gridColor },
 					ticks: {
 						color: ticksColor,
-						callback: function(value, index, ticks) {return rescale_data_rate(value / updateInt, 1);}
+						callback: function(value, index, ticks) {return rescale_data_rate(value / updateInt, (showBitrate ? 2 : 1));}
 					}
 				}
 			}

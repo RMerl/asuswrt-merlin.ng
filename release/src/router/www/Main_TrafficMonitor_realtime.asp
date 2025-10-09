@@ -38,6 +38,7 @@ var refresh_toggle = 1;
 
 const updateFrequency = 1000;
 const maxSamples = 60;
+const showBitrate = 1;
 
 const labelsColor = "#CCC";
 const gridColor = "#282828";
@@ -167,10 +168,10 @@ function update_traffic() {
 				}
 				if(refresh_toggle == 1) {
 					drawGraph(ifname);
-					document.getElementById(ifname + "_RX_current").innerHTML = rescale_data_rate(diff_rx, 1);
-					document.getElementById(ifname + "_TX_current").innerHTML = rescale_data_rate(diff_tx, 1);
-					document.getElementById(ifname + "_RX_max").innerHTML = rescale_data_rate(speed_data[ifname].max_rx, 1);
-					document.getElementById(ifname + "_TX_max").innerHTML = rescale_data_rate(speed_data[ifname].max_tx, 1);
+					document.getElementById(ifname + "_RX_current").innerHTML = rescale_data_rate(diff_rx, (showBitrate ? 2 : 1));
+					document.getElementById(ifname + "_TX_current").innerHTML = rescale_data_rate(diff_tx, (showBitrate ? 2 : 1));
+					document.getElementById(ifname + "_RX_max").innerHTML = rescale_data_rate(speed_data[ifname].max_rx, (showBitrate ? 2 : 1));
+					document.getElementById(ifname + "_TX_max").innerHTML = rescale_data_rate(speed_data[ifname].max_tx, (showBitrate ? 2 : 1));
 				}
 			}
 			setTimeout("update_traffic();", updateFrequency);
@@ -236,7 +237,7 @@ function drawGraph(ifname){
 						label: function (context) {
 							var label = context.dataset.label || '';
 							var value = context.parsed.y;
-							return label + " - " + rescale_data_rate(value, 1);
+							return label + " - " + rescale_data_rate(value, (showBitrate ? 2 : 1));
 						}
 					}
 				},
@@ -264,7 +265,7 @@ function drawGraph(ifname){
 					grid: { color: gridColor },
 					ticks: {
 						color: ticksColor,
-						callback: function(value, index, ticks) {return rescale_data_rate(value, 1);}
+						callback: function(value, index, ticks) {return rescale_data_rate(value, (showBitrate ? 2 : 1));}
 					}
 				},
 			}

@@ -46,6 +46,7 @@
 #include "win32.h"
 #include "block_dns.h"
 #include "networking.h"
+#include "domain_helper.h"
 
 #include "memdbg.h"
 
@@ -383,17 +384,28 @@ out:
 }
 
 static void
-do_dns_domain_wmic(bool add, const struct tuntap *tt)
+do_dns_domain_pwsh(bool add, const struct tuntap *tt)
 {
     if (!tt->options.domain)
     {
         return;
     }
 
+    if (add && !validate_domain(tt->options.domain))
+    {
+        msg(M_WARN, "Failed to set DNS domain '%s' because it contains invalid characters", tt->options.domain);
+        return;
+    }
+
     struct argv argv = argv_new();
-    argv_printf(&argv, "%s%s nicconfig where (InterfaceIndex=%ld) call SetDNSDomain '%s'",
-                get_win_sys_path(), WMIC_PATH_SUFFIX, tt->adapter_index, add ? tt->options.domain : "");
-    exec_command("WMIC", &argv, 1, M_WARN);
+    argv_printf(&argv,
+                "%s%s -NoProfile -NonInteractive -Command Set-DnsClient -InterfaceIndex %lu -ConnectionSpecificSuffix '%s'",
+                get_win_sys_path(),
+                POWERSHELL_PATH_SUFFIX,
+                tt->adapter_index,
+                add ? tt->options.domain : ""
+                );
+    exec_command("PowerShell", &argv, 1, M_WARN);
 
     argv_free(&argv);
 }
@@ -1269,7 +1281,7 @@ do_ifconfig_ipv6(struct tuntap *tt, const char *ifname, int tun_mtu,
 
         if (!tt->did_ifconfig_setup)
         {
-            do_dns_domain_wmic(true, tt);
+            do_dns_domain_pwsh(true, tt);
         }
     }
 #else /* platforms we have no IPv6 code for */
@@ -1625,7 +1637,7 @@ do_ifconfig_ipv4(struct tuntap *tt, const char *ifname, int tun_mtu,
                            tt->adapter_netmask, NI_IP_NETMASK | NI_OPTIONS);
         }
 
-        do_dns_domain_wmic(true, tt);
+        do_dns_domain_pwsh(true, tt);
     }
 
 
@@ -2530,7 +2542,7 @@ open_tun(const char *dev, const char *dev_type, const char *dev_node, struct tun
     {
         if (ioctl(if_fd, SIOCGLIFFLAGS, &ifr) < 0)
         {
-            msg(M_ERR, "Can't get flags\n");
+            msg(M_ERR, "Can't get flags");
         }
         strncpynt(ifr.lifr_name, tt->actual_name, sizeof(ifr.lifr_name));
         ifr.lifr_ppa = ppa;
@@ -2541,7 +2553,7 @@ open_tun(const char *dev, const char *dev_type, const char *dev_node, struct tun
         }
         if (ioctl(if_fd, SIOCGLIFFLAGS, &ifr) <0)
         {
-            msg(M_ERR, "Can't get flags\n");
+            msg(M_ERR, "Can't get flags");
         }
         /* Push arp module to if_fd */
         if (ioctl(if_fd, I_PUSH, "arp") < 0)
@@ -2560,18 +2572,18 @@ open_tun(const char *dev, const char *dev_type, const char *dev_node, struct tun
         /* Push arp module to ip_fd */
         if (ioctl(tt->ip_fd, I_PUSH, "arp") < 0)
         {
-            msg(M_ERR, "Can't push ARP module\n");
+            msg(M_ERR, "Can't push ARP module");
         }
 
         /* Open arp_fd */
         if ((arp_fd = open(arp_node, O_RDWR, 0)) < 0)
         {
-            msg(M_ERR, "Can't open %s\n", arp_node);
+            msg(M_ERR, "Can't open %s", arp_node);
         }
         /* Push arp module to arp_fd */
         if (ioctl(arp_fd, I_PUSH, "arp") < 0)
         {
-            msg(M_ERR, "Can't push ARP module\n");
+            msg(M_ERR, "Can't push ARP module");
         }
 
         /* Set ifname to arp */
@@ -2581,7 +2593,7 @@ open_tun(const char *dev, const char *dev_type, const char *dev_node, struct tun
         strioc_if.ic_dp = (char *)&ifr;
         if (ioctl(arp_fd, I_STR, &strioc_if) < 0)
         {
-            msg(M_ERR, "Can't set ifname to arp\n");
+            msg(M_ERR, "Can't set ifname to arp");
         }
     }
 
@@ -7024,7 +7036,7 @@ close_tun(struct tuntap *tt, openvpn_net_ctx_t *ctx)
         {
             if (!tt->did_ifconfig_setup)
             {
-                do_dns_domain_wmic(false, tt);
+                do_dns_domain_pwsh(false, tt);
             }
 
             netsh_delete_address_dns(tt, true, &gc);
@@ -7050,7 +7062,7 @@ close_tun(struct tuntap *tt, openvpn_net_ctx_t *ctx)
         }
         else
         {
-            do_dns_domain_wmic(false, tt);
+            do_dns_domain_pwsh(false, tt);
 
             if (tt->options.ip_win32_type == IPW32_SET_NETSH)
             {

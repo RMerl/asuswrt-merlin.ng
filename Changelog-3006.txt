@@ -2,8 +2,24 @@ Asuswrt-Merlin 3006.xxx Changelog
 =================================
 
 3006.102.6 (xx-xx-xxxx)
+  - NEW: Redesigned Traffic Monitor pages.
+         - Uses Chart.js for Realtime and Last24 pages
+         - Removes legacy Tomato code
+         - Last 24 can be zoomed in and panned (mouse wheel
+           and pinch-to-zoom gestures are both supported)
+         - Realtime and Last 24 now show as bits/s instead
+           of bytes/s
+         - Settings moved from the tab to the dropdown menu
+         - Number formatting is automatically localized
+           by the webui language
+
+  - UPDATED: OpenVPN to 2.6.15.
   - FIXED: IPv6 requests for prefix lengths other than 64 for
            routers with Multiwan support.
+  - FIXED: CVE-2025-9230 in OpenSSL (backport by RSDNTWK).
+  - FIXED: Client name would be missing on the Wireless Log
+           page if the MAC was missing in the DHCP lease list
+           (for static clients for example)
 
 
 3006.102.5 (3-Aug-2025)

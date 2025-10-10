@@ -1041,7 +1041,7 @@ multi_print_status(struct multi_context *m, struct status_output *so, const int 
 #ifdef ENABLE_ASYNC_PUSH
     if (m->inotify_watchers)
     {
-        msg(D_MULTI_DEBUG, "inotify watchers count: %d\n", hash_n_elements(m->inotify_watchers));
+        msg(D_MULTI_DEBUG, "inotify watchers count: %d", hash_n_elements(m->inotify_watchers));
     }
 #endif
 }
@@ -3169,6 +3169,18 @@ multi_process_float(struct multi_context *m, struct multi_instance *mi)
             goto done;
         }
 
+        /* It doesn't make sense to let a peer float to the address it already
+         * has, so we disallow it. This can happen if a DCO netlink notification
+         * gets lost and we miss a floating step.
+         */
+        if (m1->peer_id == m2->peer_id)
+        {
+            msg(M_WARN, "disallowing peer %" PRIu32 " (%s) from floating to "
+                "its own address (%s)",
+                m1->peer_id, tls_common_name(mi->context.c2.tls_multi, false),
+                mroute_addr_print(&mi->real, &gc));
+            goto done;
+        }
         msg(D_MULTI_MEDIUM, "closing instance %s", multi_instance_string(ex_mi, false, &gc));
         multi_close_instance(m, ex_mi, false);
     }
@@ -3297,14 +3309,27 @@ multi_process_incoming_dco(struct multi_context *m)
     if ((peer_id < m->max_clients) && (m->instances[peer_id]))
     {
         mi = m->instances[peer_id];
+        set_prefix(mi);
         if (dco->dco_message_type == OVPN_CMD_DEL_PEER)
         {
             process_incoming_del_peer(m, mi, dco);
         }
+#if defined(TARGET_FREEBSD)
+        else if (dco->dco_message_type == OVPN_CMD_FLOAT_PEER)
+        {
+            ASSERT(mi->context.c2.link_socket);
+            extract_dco_float_peer_addr(mi->context.c2.link_socket->info.af,
+                                        &m->top.c2.from.dest,
+                                        (struct sockaddr *)&dco->dco_float_peer_ss);
+            multi_process_float(m, mi);
+            CLEAR(dco->dco_float_peer_ss);
+        }
+#endif /* if defined(TARGET_LINUX) || defined(TARGET_WIN32) */
         else if (dco->dco_message_type == OVPN_CMD_SWAP_KEYS)
         {
             tls_session_soft_reset(mi->context.c2.tls_multi);
         }
+        clear_prefix();
     }
     else
     {

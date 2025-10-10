@@ -40,6 +40,7 @@
 #include "validate.h"
 #include "block_dns.h"
 #include "ring_buffer.h"
+#include "domain_helper.h"
 
 #define IO_TIMEOUT  2000 /*ms*/
 
@@ -1150,45 +1151,31 @@ out:
 }
 
 /**
- * Run command: wmic nicconfig (InterfaceIndex=$if_index) call $action ($data)
+ * Run command: powershell -NoProfile -NonInteractive -Command Set-DnsClient -InterfaceIndex %ld -ConnectionSpecificSuffix '%s'
  * @param  if_index    "index of interface"
- * @param  action      e.g., "SetDNSDomain"
  * @param  data        data if required for action
  *                     - a single word for SetDNSDomain, empty or NULL to delete
- *                     - comma separated values for a list
  */
 static DWORD
-wmic_nicconfig_cmd(const wchar_t *action, const NET_IFINDEX if_index,
-                   const wchar_t *data)
+pwsh_setdns_cmd(const NET_IFINDEX if_index, const wchar_t *data)
 {
     DWORD err = 0;
     wchar_t argv0[MAX_PATH];
     wchar_t *cmdline = NULL;
     int timeout = 10000; /* in msec */
 
-    openvpn_swprintf(argv0, _countof(argv0), L"%ls\\%ls", get_win_sys_path(), L"wbem\\wmic.exe");
+    openvpn_swprintf(argv0, _countof(argv0), L"%ls\\%ls", get_win_sys_path(), L"WindowsPowerShell\\v1.0\\powershell.exe");
 
-    const wchar_t *fmt;
-    /* comma separated list must be enclosed in parenthesis */
-    if (data && wcschr(data, L','))
-    {
-        fmt = L"wmic nicconfig where (InterfaceIndex=%ld) call %ls (%ls)";
-    }
-    else
-    {
-        fmt = L"wmic nicconfig where (InterfaceIndex=%ld) call %ls \"%ls\"";
-    }
+    const wchar_t *fmt = L"-NoProfile -NonInteractive -Command Set-DnsClient -InterfaceIndex %lu -ConnectionSpecificSuffix '%s'";
 
-    size_t ncmdline = wcslen(fmt) + 20 + wcslen(action) /* max 20 for ifindex */
-                      + (data ? wcslen(data) + 1 : 1);
+    size_t ncmdline = wcslen(fmt) + 20 + /* max 20 for ifindex */ (data ? wcslen(data) + 1 : 1);
     cmdline = malloc(ncmdline*sizeof(wchar_t));
     if (!cmdline)
     {
         return ERROR_OUTOFMEMORY;
     }
 
-    openvpn_swprintf(cmdline, ncmdline, fmt, if_index, action,
-                     data ? data : L"");
+    openvpn_swprintf(cmdline, ncmdline, fmt, if_index, data ? data : L"");
     err = ExecCommand(argv0, cmdline, timeout);
 
     free(cmdline);
@@ -1230,6 +1217,12 @@ SetDNSDomain(const wchar_t *if_name, const char *domain, undo_lists_t *lists)
 {
     NET_IFINDEX if_index;
 
+    if (!validate_domain(domain))
+    {
+        MsgToEventLog(MSG_FLAGS_ERROR, TEXT("Failed to set DNS domain '%hs' because it contains invalid characters"), domain);
+        return ERROR_INVALID_DATA;
+    }
+
     DWORD err  = ConvertInterfaceNameToIndex(if_name, &if_index);
     if (err != ERROR_SUCCESS)
     {
@@ -1248,7 +1241,7 @@ SetDNSDomain(const wchar_t *if_name, const char *domain, undo_lists_t *lists)
         free(RemoveListItem(&(*lists)[undo_domain], CmpWString, (void *)if_name));
     }
 
-    err = wmic_nicconfig_cmd(L"SetDNSDomain", if_index, wdomain);
+    err = pwsh_setdns_cmd(if_index, wdomain);
 
     /* Add to undo list if domain is non-empty */
     if (err == 0 && wdomain[0] && lists)

@@ -1,0 +1,32 @@
+diff --git a/tdkb_lib/Makefile.am b/tdkb_lib/Makefile.am
+index 21d881a..43f952e 100644
+--- a/tdkb_lib/Makefile.am
++++ b/tdkb_lib/Makefile.am
+@@ -41,10 +41,10 @@ if PLATFORM_ENABLED
+ if NON_CM
+ libtdkagentssp_la_SOURCES = src/ssp_messagebus_interface.c src/ssp_tdk_mbus_wrp.c src/ssp_tdk_mbus_lib.c src/ssp_action.c src/ssp_main.c src/ssp_tdk_wrp.c src/ssp_pam_bridge.c src/ssp_tdk_Ethsw_wrp.c src/ssp_tdk_dhcp_hal_wrp.c src/ssp_tdk_platform_hal_wrp.c src/ssp_tdk_eponhal_wrp.c src/ssp_tdk_mso_mgmt_hal_wrp.c src/ssp_tdk_blehal_wrp.c src/ssp_tdk_rbus_wrp.c src/ssp_tdk_fwupgradehal_wrp.c
+ else
+-libtdkagentssp_la_SOURCES = src/ssp_messagebus_interface.c src/ssp_tdk_mbus_wrp.c src/ssp_tdk_mbus_lib.c src/ssp_action.c src/ssp_main.c src/ssp_tdk_CosaCM_wrp.c src/ssp_tdk_wrp.c src/ssp_tdk_CosaMTA_wrp.c src/ssp_pam_bridge.c src/ssp_tdk_cmhal_wrp.c src/ssp_tdk_Ethsw_wrp.c src/ssp_tdk_dhcp_hal_wrp.c src/ssp_tdk_platform_hal_wrp.c src/ssp_tdk_mocahal_wrp.c src/ssp_tdk_mtahal_wrp.c src/ssp_tdk_eponhal_wrp.c src/ssp_tdk_mso_mgmt_hal_wrp.c src/ssp_tdk_blehal_wrp.c src/ssp_tdk_rbus_wrp.c src/ssp_tdk_fwupgradehal_wrp.c
++libtdkagentssp_la_SOURCES = src/ssp_messagebus_interface.c src/ssp_tdk_mbus_wrp.c src/ssp_tdk_mbus_lib.c src/ssp_action.c src/ssp_main.c src/ssp_tdk_CosaCM_wrp.c src/ssp_tdk_wrp.c src/ssp_pam_bridge.c src/ssp_tdk_cmhal_wrp.c src/ssp_tdk_Ethsw_wrp.c src/ssp_tdk_dhcp_hal_wrp.c src/ssp_tdk_platform_hal_wrp.c src/ssp_tdk_mocahal_wrp.c src/ssp_tdk_eponhal_wrp.c src/ssp_tdk_mso_mgmt_hal_wrp.c src/ssp_tdk_blehal_wrp.c src/ssp_tdk_rbus_wrp.c src/ssp_tdk_fwupgradehal_wrp.c
+ endif
+ else
+-libtdkagentssp_la_SOURCES = src/ssp_messagebus_interface.c src/ssp_tdk_mbus_wrp.c src/ssp_tdk_mbus_lib.c src/ssp_action.c src/ssp_main.c src/ssp_tdk_CosaCM_wrp.c src/ssp_tdk_wrp.c src/ssp_tdk_CosaMTA_wrp.c src/ssp_tdk_cmhal_wrp.c src/ssp_tdk_Ethsw_wrp.c src/ssp_tdk_dhcp_hal_wrp.c src/ssp_tdk_platform_hal_wrp.c src/ssp_tdk_mocahal_wrp.c src/ssp_tdk_mtahal_wrp.c src/ssp_tdk_eponhal_wrp.c src/ssp_tdk_mso_mgmt_hal_wrp.c src/ssp_tdk_blehal_wrp.c src/ssp_tdk_rbus_wrp.c src/ssp_tdk_fwupgradehal_wrp.c
++libtdkagentssp_la_SOURCES = src/ssp_messagebus_interface.c src/ssp_tdk_mbus_wrp.c src/ssp_tdk_mbus_lib.c src/ssp_action.c src/ssp_main.c src/ssp_tdk_CosaCM_wrp.c src/ssp_tdk_wrp.c src/ssp_tdk_cmhal_wrp.c src/ssp_tdk_Ethsw_wrp.c src/ssp_tdk_dhcp_hal_wrp.c src/ssp_tdk_platform_hal_wrp.c src/ssp_tdk_mocahal_wrp.c src/ssp_tdk_eponhal_wrp.c src/ssp_tdk_mso_mgmt_hal_wrp.c src/ssp_tdk_blehal_wrp.c src/ssp_tdk_rbus_wrp.c src/ssp_tdk_fwupgradehal_wrp.c
+ endif
+ if PLATFORM_ENABLED
+ libtdkagentssp_la_LDFLAGS =  -lccsp_common -ltr181 -ldmltad -lhal_wifi -lrbus
+
+diff --git a/Makefile.am b/Makefile.am
+index 6a73fef..01cc3b2 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -19,7 +19,7 @@
+ if NON_CM
+ SUBDIRS = agent tdkb_lib RDKLogger_stub WIFIAgent_stub MBUS_Stub WECB_Stub TR069Pa_Stub AdvancedConfig_stub pam_stub SysUtil_stub TAD_stub LMLite_Stub WIFIHAL_stub ethsw_hal_stub dhcp_hal_stub tdkb_e2e_stub platform_hal_stub tdkb_tr181_stub XUPNP_Stub EPONHAL_Stub mso_mgmt_hal_stub BLEHAL_Stub RBUS_Stub FWUpgradeHAL_Stub $(SUBDIR_WANMANAGER)
+ else
+-SUBDIRS = agent tdkb_lib RDKLogger_stub WIFIAgent_stub MBUS_Stub WECB_Stub TR069Pa_Stub AdvancedConfig_stub pam_stub SysUtil_stub TAD_stub LMLite_Stub WIFIHAL_stub ethsw_hal_stub dhcp_hal_stub tdkb_e2e_stub platform_hal_stub tdkb_tr181_stub XUPNP_Stub EPONHAL_Stub mso_mgmt_hal_stub BLEHAL_Stub RBUS_Stub CMAgent_stub CosaCM_Stub SNMP_PA_Stub Mta_agent_Stub CosaMTA_Stub Moca_Stub CMHAL_Stub MoCAHAL_Stub MTAHAL_Stub FWUpgradeHAL_Stub $(SUBDIR_WANMANAGER)
++SUBDIRS = agent tdkb_lib RDKLogger_stub WIFIAgent_stub MBUS_Stub WECB_Stub TR069Pa_Stub AdvancedConfig_stub pam_stub SysUtil_stub TAD_stub LMLite_Stub WIFIHAL_stub ethsw_hal_stub dhcp_hal_stub tdkb_e2e_stub platform_hal_stub tdkb_tr181_stub XUPNP_Stub EPONHAL_Stub mso_mgmt_hal_stub BLEHAL_Stub RBUS_Stub CMAgent_stub CosaCM_Stub SNMP_PA_Stub Mta_agent_Stub Moca_Stub CMHAL_Stub MoCAHAL_Stub FWUpgradeHAL_Stub $(SUBDIR_WANMANAGER)
+ endif
+
+ DIST_SUBDIRS = @SUBDIRS@
+

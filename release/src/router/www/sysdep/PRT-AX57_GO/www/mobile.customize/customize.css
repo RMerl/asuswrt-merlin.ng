@@ -1,0 +1,12 @@
+.wispMode {
+	display: block !important;
+}
+#welcome_button {
+	display: none !important;
+}
+.wispMode.is_not_default {
+	display: none !important;
+}
+#welcome_button.is_not_default{
+	display: block !important;
+}

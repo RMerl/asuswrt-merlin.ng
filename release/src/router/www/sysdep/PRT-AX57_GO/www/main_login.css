@@ -1,0 +1,29 @@
+﻿.wrapper{
+	background: url(/images/New_ui/login_bg.png) no-repeat center center fixed !important;
+	-webkit-background-size: cover !important;
+	-moz-background-size: cover !important;
+	-o-background-size: cover !important;
+	background-size: cover !important;
+}
+:root {
+  --placeholder-color: #B9C5D4
+}
+::placeholder{
+  color: var(--placeholder-color) !important;
+}
+::-webkit-input-placeholder{
+  color: var(--placeholder-color) !important;
+}
+:-ms-input-placeholder{
+  color: var(--placeholder-color) !important;
+}
+::-moz-placeholder{
+  color: var(--placeholder-color) !important;
+  opacity: 1 !important;
+}
+.form_input{
+	background: rgba(0, 0, 0, 0.60) !important;
+	backdrop-filter: blur(5.5px) !important;
+	border-radius: 8px !important;
+	border: 1px solid #5B697C !important;
+}

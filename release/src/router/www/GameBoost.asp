@@ -168,6 +168,8 @@ body{
 	padding: 12px 18px;
 	overflow-y: auto;
 	margin-top: -40px;
+	overflow-x: hidden;
+	border-radius: 4px;
 }
 
 .qr_code{
@@ -228,8 +230,12 @@ function initial(){
 			$("#gearup_go_mask").css("left", "75px");
 		}
 	}
-	else
+	else {
 		$("#FormTitle").addClass("GB_background");
+		if (rog_support) {
+			$('#gameList_block').css({'background-color': 'rgb(0 0 0 / 90%)'});
+		}
+	}
 
 	if (adaptiveqos_support) {
         if (nvram_get_param.qos_enable == '1' && nvram_get_param.qos_type == '1') {

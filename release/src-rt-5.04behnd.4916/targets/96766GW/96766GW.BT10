@@ -219,7 +219,6 @@ BRCM_PHY_BLACKFIN_B0=y
 # BRCM_PHY_LONGFIN_B0 is not set
 # BRCM_PHY_KAUAI_A0 is not set
 BRCM_PHY_LANAI_A0=y
-# BRCM_PHY_NIIHAU_A0 is not set
 # BRCM_PHY_XPHY is not set
 
 #
@@ -275,7 +274,7 @@ BUILD_WIFIWAN=
 # BRCM_WLMEDIA is not set
 WLBRAND_none=y
 BRCM_WLBRAND=
-BCM_WLIMPL=103
+BCM_WLIMPL=105
 BUILD_WLCTL=dynamic
 BUILD_DHDCTL=dynamic
 BUILD_WLHSPOT=y
@@ -499,8 +498,7 @@ BUILD_MPMCTL=y
 #
 # Ingress QoS
 #
-BRCM_DRIVER_INGQOS=m
-BUILD_IQCTL=dynamic
+# BRCM_DRIVER_INGQOS is not set
 
 #
 # Misc datapath configuration

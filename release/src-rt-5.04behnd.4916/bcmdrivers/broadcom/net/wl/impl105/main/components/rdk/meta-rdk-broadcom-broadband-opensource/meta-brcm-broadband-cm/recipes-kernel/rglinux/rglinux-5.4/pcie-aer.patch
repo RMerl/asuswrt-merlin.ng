@@ -1,0 +1,39 @@
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -742,11 +742,16 @@
+	pci_dev_aer_stats_incr(dev, info);
+ }
+
++#define BCM6710_CHIP_ID(x)	((x->vendor == PCI_VENDOR_ID_BROADCOM) && ((x->device == 0x4493) || (x->device == 0x6710)))
+ void aer_print_error(struct pci_dev *dev, struct aer_err_info *info)
+ {
+	int layer, agent;
+	int id = ((dev->bus->number << 8) | dev->devfn);
+
++	if (BCM6710_CHIP_ID(dev)) {
++		return;
++	}
++
+	if (!info->status) {
+		pci_err(dev, "PCIe Bus Error: severity=%s, type=Inaccessible, (Unregistered Agent ID)\n",
+			aer_error_severity_string[info->severity]);
+@@ -1195,7 +1198,8 @@ static void aer_isr_one_error(struct aer_rpc *rpc,
+ 		else
+ 			e_info.multi_error_valid = 0;
+ 
+-		aer_print_port_info(pdev, &e_info);
++		if (pdev->vendor != PCI_VENDOR_ID_BROADCOM)
++			aer_print_port_info(pdev, &e_info);
+ 
+ 		if (find_source_device(pdev, &e_info))
+ 			aer_process_err_devices(&e_info);
+--- a/drivers/pci/pcie/err.c
++++ b/drivers/pci/pcie/err.c
+@@ -240,5 +240,6 @@ failed:
+ 	pci_uevent_ers(dev, PCI_ERS_RESULT_DISCONNECT);
+ 
+ 	/* TODO: Should kernel panic here? */
+-	pci_info(dev, "AER: Device recovery failed\n");
++	if (dev->vendor != PCI_VENDOR_ID_BROADCOM)
++		pci_info(dev, "AER: Device recovery failed\n");
+ }

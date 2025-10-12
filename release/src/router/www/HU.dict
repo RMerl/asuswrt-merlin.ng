@@ -4905,3 +4905,6 @@ Notice_Message_1=A rendszer optimalizálása miatt a %@ hálózatokat újra kell
 Notice_Message_2=A rendszer optimalizálása miatt kérjük, adja hozzá újra a meglévő MAC-szűrőt a hálózati beállításokban.
 Notice_Message_3=Elolvastam, ne jelenjen meg újra.
 CTL_Decline=Elutasít
+Outdoor_desc_title=Warning
+Outdoor_desc1=By enabling mode 1, AiMesh will be limited and might cause mesh node disconnect.
+Outdoor_desc2=In compliance with regulations, the system will scan channels for about 1 minute to avoid weather radar interference. If radar signals are detected, it will switch to 2.4GHz, causing brief disconnection. The affected channel will be blocked for 30 minutes.

@@ -90,6 +90,19 @@ endif
 ifeq ($(BRCM_CHIP),6813)
 CFLAGS += -DCHIP_BCM4916
 endif
+ifeq ($(BRCM_CHIP),6764)
+CFLAGS += -DCHIP_BCM6764
+endif
+
+# BUILD_NAME
+ifneq ($(findstring 4G-,$(BUILD_NAME)),)
+TARGET_MODEL = RT$(subst -,,$(BUILD_NAME))
+else ifneq ($(findstring DSL,$(BUILD_NAME)),)
+TARGET_MODEL = $(subst -,_,$(BUILD_NAME))
+else
+TARGET_MODEL = $(subst -,,$(subst +,P,$(BUILD_NAME)))
+endif
+CFLAGS  += -D$(TARGET_MODEL)
 
 all: clean libwebapi.so
 

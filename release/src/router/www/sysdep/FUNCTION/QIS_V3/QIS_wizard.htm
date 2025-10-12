@@ -179,7 +179,8 @@
 					});
 					systemVariable.macClone = false;
 
-					httpApi.log("tcode", systemVariable.territoryCode, systemVariable.qisSession)
+					httpApi.log(systemVariable.qisSession, `Entering ${location.href}`);
+					httpApi.log(systemVariable.qisSession, `Tcode is ${systemVariable.territoryCode}, ${systemVariable.isDefault ? "Default Setup, " : ""}rc_support: ${systemVariable.rcSupport}`);
 
 					if(isSupport("2p5G_LWAN"))
 						systemVariable.originWansExtwan = httpApi.nvramGet(["wans_extwan"]).wans_extwan;
@@ -242,6 +243,15 @@
 							}
 						});
 					}
+
+					const dut_mac = (httpApi.hookGet('get_lan_hwaddr')) ? httpApi.hookGet('get_lan_hwaddr') : '';
+					httpApi.get_port_status_array(dut_mac, function(response){
+						let count = 0;
+						if(response?.WAN?.length > 0) count += response?.WAN?.length;
+						if(response?.LAN?.length > 0) count += response?.LAN?.length;
+						systemVariable.eth_port_num = count;
+					});
+
 					handleSysDep();
 					if(systemVariable.isDefault){
 						set_cfg_pause();
@@ -313,6 +323,13 @@
                                 }
                             }
                         });
+
+					if(isOriginSwMode("RP")){
+						$("#welcome_button").html(`Extend A Network`);/* untranslated */
+					}
+					else if(isOriginSwMode("WISP")){
+						$("#welcome_button").html(`<#OP_WISP_item#>`);
+					}
 
 					if(initNvram.isError) setTimeout(arguments.callee, 1000);
 				}, 500);
@@ -413,7 +430,7 @@
 				</div>
 
 				<div style="text-align:center;margin:50px 0;" class="welcomeBtnContainer wispMode">
-					<div id="welcome_rt_button" class="welcome_button" onclick="apply.welcome_rt();"><#wireless_router#></div>
+					<div id="welcome_rt_button" class="welcome_button" onclick="apply.welcome();"><#wireless_router#></div>
 				</div>
 
 				<div style="text-align:center;margin:50px 0;" class="welcomeBtnContainer wispMode">
@@ -2490,21 +2507,21 @@
 						</div>
 					</div>
 
-					<div class="labelContainer mloSupport">
+					<div class="labelContainer hiddenUI">
 						<label for="mlo_enable_checkbox" class="labelInput"><#WiFi_mlo_title#></label>
 						<input type="checkbox" id="mlo_enable_checkbox" data-mini="true"/>
 					</div>
 
 					<!-- Action Button -->
 					<div class="footer_desktop">
-						<div class="desktop_abortBtn" onclick='abort.wlcKey();'><#CTL_prev#></div>
+						<div class="desktop_abortBtn wlcKeyAbort" onclick='abort.wlcKey();'><#CTL_prev#></div>
 						<div class="desktop_applyBtn wlcKeyApply" onclick="apply.wlcKey();"><#CTL_next#></div>
 					</div>
 					<div class="footer_mobile">
 						<table style="width:100%;" cellpadding="0" cellspacing="0">
 							<tr>
 								<td class="mobileAbort" style="width:50%" onclick='abort.wlcKey();'>
-									<div class="mobile_abortBtn"><#CTL_prev#></div>
+									<div class="mobile_abortBtn wlcKeyAbort"><#CTL_prev#></div>
 								</td>
 								<td class="mobileApply" onclick="apply.wlcKey();">
 									<div class="mobile_applyBtn wlcKeyApply"><#CTL_next#></div>
@@ -2742,7 +2759,7 @@
 				<div class="table_td">
 					<div class="pageDesc"><#QKSet_finish_desc#></div>
 					<div class="pageDesc">
-						<div class="descSteps">Step 1</div>
+						<div class="descSteps" data-component="descSteps1">Step 1</div>
 						<div id="stepText1"><#DrSurf_sweet_advise1#></div>
 					</div>
 

@@ -466,6 +466,13 @@ static void pmc_boot(void)
 	printf("waiting for PMC finish booting\n");
 	WaitPmc(PMC_IN_MAIN_LOOP, pmc_log_start);
 #if defined(PMC_IMPL_3_X)
+#ifdef PMC_LOG_IN_DTCM
+	pmc->ctrl.hostMboxOut = 0; // ignore dtcm log
+	pmc_show_boot_log();
+#endif
+#if IS_BCMCHIP(6813)
+	boost_cpu_clock();
+#endif
 	{
 		uint32_t change;
 		uint32_t revision;
@@ -474,13 +481,6 @@ static void pmc_boot(void)
 			       (revision >> 28) & 0xf, (revision >> 20) & 0xff,
 			       (revision & 0xfffff), change);
 		}
-#ifdef PMC_LOG_IN_DTCM
-		pmc->ctrl.hostMboxOut = 0; // ignore dtcm log
-		pmc_show_boot_log();
-#endif
-#if IS_BCMCHIP(6813)
-		boost_cpu_clock();
-#endif
 	}
 #endif
 }

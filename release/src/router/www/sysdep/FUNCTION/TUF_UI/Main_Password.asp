@@ -124,6 +124,9 @@ if(isSupport("TS_UI")){
 function initial(){
 	top.name = "";/* reset cache of state.js win.name */
 
+	if(`<% nvram_get("force_chgpass"); %>` == 1)
+		document.getElementById("QIS_pass_desc1").innerHTML ="To enhance security, a new password policy has been implemented.";
+
 	if(is_KR_sku || is_SG_sku || is_AA_sku || secure_default)
 		document.getElementById("KRHint").style.display = "";
 
@@ -454,7 +457,7 @@ function showError(str){
 		</div>
 		<div class="login-title-desc">
 			<div class="desc"><#Web_Title2#> is currently not protected and uses an unsafe default username and password.</div>
-			<div class="desc"><#QIS_pass_desc1#></div>
+			<div class="desc" id="QIS_pass_desc1"><#QIS_pass_desc1#></div>
 			<div id="KRHint" class="desc" style="display: none;"><#JS_validLoginPWD#></div>
 		</div>
 		<div>

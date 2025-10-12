@@ -101,6 +101,5 @@ extern char* get_unused_ifnames_by_dut(char *dut_mac, unsigned short wifi_band, 
 extern char* get_unused_ifnames_by_dut_2(char *dut_mac, unsigned short wifi_band, char *ret_ifnames, size_t ret_ifname_bsize);
 extern int update_fh_smart_connect_x(int *retval);
 extern int save_cfg_param_to_json(json_object *in, char *param);
-extern char* get_mlo_mac_for_client(unsigned short wifi_band, char *client_mac, char *ret_mlo_mac, size_t ret_bsize);
 extern char* get_apg_value(apg_rule_st* apg_rule, unsigned short wifi_band, char *item, char *ret_value, int ret_value_bsize);
 #endif

@@ -799,10 +799,10 @@ int write_webdav_conf(const char *fn) {
 
 	fprintf(fp, "	url.aicloud-auth-deny = (\"query_field.json\", \".html\")\n");
 
-	fprintf(fp, "	$HTTP[\"url\"]=~\"^/%s($|/)\"{\n",get_productid());
+	fprintf(fp, "	$HTTP[\"url\"]=~\"^/%s($|/)\"{\n",nvram_get_productid());
     fprintf(fp, "		server.document-root = \"/\"\n");
 //	fprintf(fp, "		alias.url=(\"/usbdisk\"=>\"/mnt\")\n");
-	fprintf(fp, "		alias.url=(\"/%s\"=>\"/mnt\")\n", get_productid());
+	fprintf(fp, "		alias.url=(\"/%s\"=>\"/mnt\")\n", nvram_get_productid());
     fprintf(fp, "		webdav.activate=\"enable\"\n");
     fprintf(fp, "		webdav.is-readonly=\"disable\"\n");
 #if (defined APP_IPKG) && (defined I686)
@@ -867,10 +867,10 @@ int write_webdav_conf(const char *fn) {
 	fprintf(fp, "	url.aicloud-auth-deny = (\"query_field.json\", \".html\")\n");
 	//fprintf(fp, "	alias.url=(\"/webdav\"=>\"/mnt/\")\n"); 
 //	fprintf(fp, "	$HTTP[\"url\"]=~\"^/usbdisk($|/)\"{\n");
-	fprintf(fp, "	$HTTP[\"url\"]=~\"^/%s($|/)\"{\n", get_productid());
+	fprintf(fp, "	$HTTP[\"url\"]=~\"^/%s($|/)\"{\n", nvram_get_productid());
     fprintf(fp, "		server.document-root = \"/\"\n");
 //	fprintf(fp, "		alias.url=(\"/usbdisk\"=>\"/mnt\")\n");	
-	fprintf(fp, "		alias.url=(\"/%s\"=>\"/mnt\")\n", get_productid());	
+	fprintf(fp, "		alias.url=(\"/%s\"=>\"/mnt\")\n", nvram_get_productid());	
 	fprintf(fp, "		webdav.activate=\"enable\"\n");
 	fprintf(fp, "		webdav.is-readonly=\"disable\"\n");
 #if (defined APP_IPKG) && (defined I686)

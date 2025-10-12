@@ -1,0 +1,210 @@
+#!/usr/bin/perl
+#
+# This script reprocesses <file.S> which contains assembly text (gcc compiler output).
+# It searches for labeled, read-only .ascii strings in the .rodata.str1.1 section, and
+# places each string in a unique mergeable string section.
+#
+# By default, all anonymous strings for an object file are co-located in a single
+# section: .rodata.str1.1. Therefore, if any string in this section is referenced, then
+# all strings for the object file are included in the final linked binary. Even if some of
+# the strings are unused/unreferenced!
+#
+# Placing each string in a unique section prevents unreferenced strings from being included
+# in the final linked binary.
+#
+# Usage: See 'usage' subroutine below.
+
+use strict;
+use warnings;
+use File::Basename;
+
+# Name of this script.
+my $script = basename($0);
+
+# Display usage info.
+sub usage {
+	print STDERR "\nUsage: $script <file.S> <exclude_syms.txt>\n";
+	exit 1;
+}
+
+# Parse command line arguments.
+my ($fname, $base_fname);
+($fname = shift @ARGV) || &usage;
+my ($fname_exclude);
+($fname_exclude = shift @ARGV) || &usage;
+shift @ARGV && &usage;
+$base_fname = basename($fname);
+
+# Error check input filename.
+if ($fname !~ /\.S$/) {
+	die("$script: Input is not a .S file ($fname)\n");
+}
+
+
+# Open input file.
+my $fh;
+open($fh, $fname) or
+	die("$script: Could not open '$fname' for reading: $!\n");
+
+my $fh_exclude;
+open($fh_exclude, $fname_exclude) or
+	die("$script: Could not open '$fname_exclude' for reading: $!\n");
+
+# Debug utility print.
+my $debug = 0;
+sub dprint {
+	print ("$script ($base_fname): " . shift) if $debug;
+}
+
+my $line;
+my %exclude_syms;
+while ($line = <$fh_exclude>) {
+	chomp($line);
+	# Add the symbol to the exclude_syms hash table.
+	$line =~ /(\w+)/;
+	$exclude_syms{$1} = 1;
+}
+
+# Locate the string section (.rodata.str1.1), which contains labeled, read-only .ascii strings  e.g.
+#
+#            .section   .rodata.str1.1,"aMS",%progbits,1
+#    .LC0:
+#            .ascii     "pkt_filter\000"
+#    .LC1:
+#            .ascii     "pkt_filter_add\000"
+#
+# Rename each labeled string in a unique mergeable string section, e.g.
+#
+#            .section	.rodatastr.str1.1.LC0,"aMS",%progbits,1
+#    .LC0:
+#            .ascii     "pkt_filter\000"
+#
+#            .section	.rodatastr.str1.1.LC1,"aMS",%progbits,1
+#    .LC1:
+#            .ascii     "pkt_filter_add\000"
+#
+# Don't rename strings for functions that exist in exclude_syms.
+# Locate functions using %function, e.g.
+#	.type	wlc_wnm_bsscfg_init, %function
+# Renamed labeled strings are temporarily stored in $rodatastr_buf and original lines are stored in $rodata_buf.
+# When %function is encountered, the function name is compared to the exclude_syms.
+# If the function is in the exclude syms $rodata_buf is used, else $rodatastr_buf is used.
+#
+my $asm_out = '';
+my $changed = 0;
+my $rodatastr_buf = "";
+my $rodata_buf = "";
+my $update_buffers = 0;
+while ($line = <$fh>) {
+	# Locate the string section.
+	if ($line =~ /^\t\.section\t\.rodata(\.*.*)\.str/) {
+		my $rodata_label = $1;
+
+		# Do not rename strings if the label contained a function name that is in the exclude list.
+		if ($rodata_label =~ /\.(\w*)/ and exists $exclude_syms{$1}) {
+			$asm_out .= $line;
+			next;
+		}
+
+		$rodata_buf .= $line;
+		$update_buffers = 1;
+		# Process labeled .ascii strings as long as we're in the string section.
+		while ($line = <$fh>) {
+			if ($line =~ /^\t\.section\t/) {
+				last;
+			}
+
+			if ($line =~ /^\t\.text/) {
+				# Strings cannot be linked to a function, do not rename strings.
+				$asm_out .= $rodata_buf;
+				$update_buffers = 0;
+				$rodata_buf = "";
+				$rodatastr_buf = "";
+				last;
+			}
+
+			# Place each labeled string in a unique mergeable string section.
+			if ($line =~ /^(\.LC\d+):/) {
+				# Store .LC line
+				my $lc_line = $line;
+				my $label = $1;
+
+				# Read next line to determine length of .ascii.
+				if (not ($line = <$fh>)) {
+					last;
+				}
+
+				# Only rename section to rodatastr if .ascii > 8.
+				if ($line =~ /^\t\.ascii\t(.*)/ and (length($1) > 8)) {
+					$rodatastr_buf .= "\t.section\t.rodatastr$rodata_label.str1.1$label,\"aMS\",\%progbits,1\n";
+					$changed = 1;
+
+					# Debug.
+					dprint("Place '$label' in unique string section\n");
+				} else {
+					$rodatastr_buf .= "\t.section\t.rodata$rodata_label.str1.1$label,\"aMS\",\%progbits,1\n";
+				}
+
+				# Add .LC to both buffers, $line contains .ascii.
+				$rodata_buf .= $lc_line;
+				$rodatastr_buf .= $lc_line;
+			}
+
+			$rodata_buf .= $line;
+			$rodatastr_buf .= $line;
+		}
+		redo;
+	}
+
+	if ($update_buffers) {
+		if ($line =~ /.*\t\.text_fastpath.*/) {
+			# Function is part of fastpath, do not rename strings.
+			$asm_out .= $rodata_buf;
+			$update_buffers = 0;
+			$rodata_buf = "";
+			$rodatastr_buf = "";
+		}
+
+		# If the function name is found and rodata.str has been encountered, update the output file.
+		if ($line =~ /^\t\.type\t(.*?)[\,\.].*%function/) {
+
+			my $cur_function = $1;
+			if (exists $exclude_syms{$cur_function}) {
+				# Function is in the exclude list, do not rename strings.
+				$asm_out .= $rodata_buf;
+			} else {
+				# Function is not in the exclude list, rename strings.
+				$asm_out .= $rodatastr_buf;
+			}
+			$update_buffers = 0;
+			$rodata_buf = "";
+			$rodatastr_buf = "";
+		}
+	}
+
+	# Update the buffers while searching for the function name.
+	if ($update_buffers) {
+		$rodata_buf .= $line;
+		$rodatastr_buf .= $line;
+	} else {
+		$asm_out .= $line;
+	}
+}
+
+# If the file ended with a buffer, do not rename strings as these could not be linked to a function.
+if ($update_buffers) {
+	$asm_out .= $rodata_buf;
+}
+
+# Cleanup.
+close $fh;
+close $fh_exclude;
+
+# Overwrite the input file with the output.
+if ($changed) {
+	open($fh, ">$fname") or
+		die("$script: Could not open '$fname' for writing: $!\n");
+	print $fh $asm_out;
+	close $fh;
+}
+

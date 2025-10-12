@@ -210,7 +210,11 @@ typedef struct apinfo apinf_t;
 //int apinfo_count=0;
 #endif
 #define WIF "eth1"
+#if defined(RTBE58_GO)
+#define WLC_SCAN_RESULT_BUF_LEN	64 * 1024 * 3
+#else
 #define WLC_SCAN_RESULT_BUF_LEN	64 * 1024
+#endif
 extern char buf[WLC_IOCTL_MAXLEN];
 
 #endif

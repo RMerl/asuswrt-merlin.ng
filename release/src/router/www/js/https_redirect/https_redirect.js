@@ -15,14 +15,14 @@ var cookie = {
 function Check_Https_Redirect_Status(){
 	var result = false;
 
-	var http_enable_default = '<% nvram_default_get("http_enable"); %>';
-	var http_enable = '<% nvram_get("http_enable"); %>';
-	var is_SG_AA_sku = (function(){
-		var ttc = '<% nvram_get("territory_code"); %>';
-		return ((ttc.search("SG") == -1) && (ttc.search("AA") == -1))  ? false : true;
+	const isTargetRegionSku = (function(){
+		const ttc = '<% nvram_get("territory_code"); %>' || '';
+		const targetRegions = ['SG', 'AA', 'EU'];
+		return targetRegions.some(region => ttc.startsWith(region));
 	})();
-	if(is_SG_AA_sku &&
-		(http_enable_default == "2") && (http_enable == "2") &&
+
+	var http_enable = '<% nvram_get("http_enable"); %>';
+	if(isTargetRegionSku && isSupport("secure_default") && (http_enable == "2") &&
 		(location.protocol != 'https:') &&
 		((cookie.get("not_show_https_redirect") != "1") && (cookie.get("from_https_redirect") != "1")) ){
 		 result = true;
@@ -65,8 +65,6 @@ function Get_Component_Https_Redirect(){
 	var $qr_code_and_icon_block = $("<div>").addClass("qr_code_and_icon_block").appendTo($content_container);
 	var $scan_qr_code_block = $("<div>").addClass("scan_qr_code_block").appendTo($qr_code_and_icon_block);
 	var $qr_code_icon = $("<div>").addClass("qr_code_icon").appendTo($scan_qr_code_block);
-	var preferred_lang = '<% nvram_get("preferred_lang"); %>';
-	$qr_code_icon.addClass(preferred_lang);
 	var $scan_title = $("<div>").addClass("scan_title").appendTo($scan_qr_code_block).html("<#Scan_QR_Code_For_Details#>");
 	var $illustration_block = $("<div>").addClass("illustration_block").appendTo($qr_code_and_icon_block);
 	var $illustration = $("<div>").addClass("illustration").appendTo($illustration_block);
@@ -159,9 +157,35 @@ function Get_Component_Https_Desc(){
 
 		// cookie.set("from_https_redirect", "1", 1);
 		if(location.protocol != 'https:'){
-			var https_lanport = '<% nvram_get("https_lanport"); %>';
-			var https_lanip = '<% nvram_get("lan_ipaddr"); %>';
-			window.location.href = 'https://' + https_lanip + ':' + https_lanport + window.location.pathname;
+			const https_lanport = '<% nvram_get("https_lanport"); %>';
+			const https_lanip = '<% nvram_get("lan_ipaddr"); %>';
+			let redirect_page = window.location.pathname;
+			if(redirect_page.indexOf("Main_Login.asp"))
+				redirect_page = "/";
+			const isAMeshRE = ('<% nvram_get("re_mode"); %>' === '1');
+			if (isAMeshRE) {
+				const parseLoginInfo = (typeof tryParseJSON === "function") ? tryParseJSON : function(jsonString) {
+					try {
+						const o = JSON.parse(jsonString);
+
+						if (o && typeof o === "object") {
+							return o;
+						}
+					}
+					catch (e) {
+						// do something
+					}
+
+					return false;
+				};
+
+				const loginInfo = parseLoginInfo('<% login_error_info(); %>');
+				if (loginInfo && loginInfo.page) {
+					redirect_page = loginInfo.page.indexOf('/') === 0 ? loginInfo.page : '/' + loginInfo.page;
+				}
+			}
+			const redirectUrl = `https://${https_lanip}:${https_lanport}${redirect_page}`;
+			window.location.href = redirectUrl;
 		}
 		else
 			location.reload();

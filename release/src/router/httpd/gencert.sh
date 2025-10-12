@@ -18,7 +18,7 @@ UPLOAD_CERT="/jffs/.cert/cert.pem"
 UPLOAD_KEY="/jffs/.cert/key.pem"
 
 le_enable=`nvram get le_enable`
-ddns_enable=`nvram get ddns_enable`
+ddns_enable=`nvram get ddns_enable_x`
 if [ "${le_enable}" == "1" ] && [ "${ddns_enable}" == "1" ] ; then
 	# Let's encrypt, nothing to do
 	exit 0

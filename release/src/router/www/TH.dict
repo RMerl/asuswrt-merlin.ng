@@ -4905,3 +4905,6 @@ Notice_Message_1=เนื่องจากการปรับปรุงร
 Notice_Message_2=เนื่องจากการปรับปรุงระบบ กรุณาเพิ่มตัวกรอง MAC ที่มีอยู่ใหม่ในการตั้งค่าเครือข่าย
 Notice_Message_3=ฉันได้อ่านแล้ว อย่าแสดงอีก
 CTL_Decline=ปฏิเสธ
+Outdoor_desc_title=Warning
+Outdoor_desc1=By enabling mode 1, AiMesh will be limited and might cause mesh node disconnect.
+Outdoor_desc2=In compliance with regulations, the system will scan channels for about 1 minute to avoid weather radar interference. If radar signals are detected, it will switch to 2.4GHz, causing brief disconnection. The affected channel will be blocked for 30 minutes.

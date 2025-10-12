@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <network_utility.h>
 #include "rc_ipsec.h"
+#include <webapi.h>
 
 /* for struct utsname */
 #include <sys/utsname.h>
@@ -1060,9 +1061,9 @@ void rc_ipsec_gen_cert(int skip_checking)
 
     if(strlen(ddns_name) == 0 )
     {
-        snprintf(prefix, sizeof(prefix), "wan%d_", get_active_wan_unit());
-        snprintf(remote_id, sizeof(remote_id), "%s", nvram_pf_safe_get(prefix, "ipaddr"));
-        if(strlen(remote_id) == 0){
+        snprintf(prefix, sizeof(prefix), "wan%d_ipaddr", get_active_wan_unit());
+        snprintf(remote_id, sizeof(remote_id), "%s", nvram_safe_get(prefix));
+        if(strlen(remote_id) == 0 || !validate_apply_input_value(remote_id, prefix)){
             DBG(("[Error]wan ip is not set yet, no any CAs will be created.\n"));
             return;
         }

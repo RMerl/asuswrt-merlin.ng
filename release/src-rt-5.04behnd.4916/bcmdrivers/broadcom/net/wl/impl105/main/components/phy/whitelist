@@ -1,0 +1,58 @@
+# Whitelist for PHY_TWIG_17_100_369
+#
+# PLEASE ADD NEW ITEMS AT THE BOTTOM
+#
+# Gain approval from your manager before editing this file.
+#
+# format:
+# JIRA:BCAWLAN-xxxxxx <description>
+# Example: JIRA:BCAWLAN-223535 Adding DTPC capability annoucement into sta_info
+#
+JIRA:BCAWLAN-262756 [6765][6766][2x2][6764] pdated bias settings for the PAD GM and CAS devices, in order to relax reliability stress
+JIRA:BCAWLAN-262757 [6764] TCL2DRV 20715_upd_prfd_values: Add afediv_ldo_vbuck_adj=4 and afediv_ldo_adj=10
+JIRA:BCAWLAN-261727 [6766A0][6766REF1][PVT] FS split , SN608/SN605 , -40C Low Voltage , 5G TX, RX test are unable to run
+JIRA:BCAWLAN-262299 [47722/6765][11mc] PSM WD on initiator in BW20
+JIRA:BCAWLAN-263254 [6764][6765][6766] NVRAM variable to activate ePAPD protection
+JIRA:BCAWLAN-262998 PHY part of V3 Ilna protection
+JIRA:BCAWLAN-261656 [6764REF1] Tuning required for DPD on 5G ch100
+JIRA:BCAWLAN-261256 [FTM/11mc] k-values tuning for 6765A1
+JIRA:BCAWLAN-263619 [FTM/11mc] 43720 FTM PSMWD due to core2core sync setup
+JIRA:BCAWLAN-264072 [6711] Add logen setting for 2+1 mode
+JIRA:BCAWLAN-264145 [physw] Added more debug info in case of papd cal assert triggering
+JIRA:BCAWLAN-264164 [ilna protection] Update print message with channel number
+JIRA:BCAWLAN-264300 [6711] Fixed logen setting for 2+1 mode (II)
+JIRA:BCAWLAN-263324 SVT:AP: 11az: 47722_43730 : Kernel Panic seen with phy_ac_az_process_tx.constprop.0+0xe18/0x11b0
+JIRA:BCAWLAN-263618 [FTM/11mc] 43730 FTM exchange does not go through
+JIRA:BCAWLAN-261359 [6765][6764] 5G channel 36 FIFEM TCL to DRV difference
+JIRA:BCAWLAN-264301 [6711] Fix spread in residual DC offset to Reduce DSSS 1M Sensitivity Spread
+JIRA:BCAWLAN-262749 [6716] Disable TxFDIQ for lower BWs to improves SIFS time
+JIRA:BCAWLAN-264247 Add IOVAR for PA droop compensation
+JIRA:BCAWLAN-264482 [FTM/11mc] 43730 main core k-value tuning
+JIRA:BCAWLAN-264460 [DTAG | RDK-F | F5387 | Orion 7.2] TX shaper gets disabled during test with Mtool (MCS0, channel 140)
+JIRA:BCAWLAN-262150 New SROM fields for RSSI midgain correction range
+JIRA:BCAWLAN-263928 Using SROM field for dcfiltbypass
+JIRA:BCAWLAN-264296 Set the default value for NVRAM params related to DCFILTBYP
+JIRA:BCAWLAN-264653 [6764 wareng] porting phasetrack war for tbppdu frames
+JIRA:BCAWLAN-263021 [6726B1] Fine tune WBCAL extra epsilon offset for WSD A4B HP lower BWs
+JIRA:BCAWLAN-264953 [wifi7][regression] wrxh->rssi is set to 0 starting from ucode tag_32730
+JIRA:BCAWLAN-263655 17.10.369.50 : 47722 / 730 mclx : roaming : 6g : assertion "len <= ui32_array->n_els" failed: file "phy_ac_papdcal.c"
+JIRA:BCAWLAN-263028 [6715 B0] 6715MCH2_SD 2L chip+4912REF1D PVT: OBT Rx test see random FW trap issue at -40C.
+JIRA:BCAWLAN-265103 43720 improve FCC type5 radar detction at BW160 band-edge
+JIRA:BCAWLAN-264914 CLONE [PHY] CS00012350895 PHY ilna_protect messages flood on 47722
+JIRA:BCAWLAN-265160 [6765/6764/6766 2x2] remove dac_attn radioreg write in rxiqcal setup for 20713/20715 radios
+JIRA:BCAWLAN-265218 UTF:6726B1/6765ref1_P210/6766REF1_P111/6764REF1_P104 + 4390 nonMLO test phy_rssi_ant returns bogus rssi
+JIRA:BCAWLAN-264603 SVT:AP:Torture:96764REF1-2G-5G-A1:5G:Observed "wl0: wlc_bmac_suspend_mac_and_wait: waited 83000 uS and MI_MACSSPNDD is still not on.",PSM stuck at "INTP_CHKGPT3+0x4" ~ 5th hour of test, PHY reg 0x1f0 = 0xeb3
+JIRA:BCAWLAN-265254 [47722] EAP TxIQcal tcl vs drv difference in 'a' coeff
+JIRA:BCAWLAN-262442 CID 62827 UNINIT
+JIRA:BCAWLAN-265171 [FTM/11mc] k-values from calibration
+JIRA:BCAWLAN-265321 43720 FCC type5 radar detection improvement at BW80 and BW160 band-edge
+JIRA:BCAWLAN-264288 [6726B1] Add phy_ac_papdcal_save_cache for epsilon offset re-adjustment
+JIRA:BCAWLAN-265342 [6716B1] Add SROM for LESI offset [phy part]
+JIRA:BCAWLAN-264715 [6766 5G] Enable DSSF via nvram param dssf_enable for 5840MHz spur, disabled by default
+JIRA:BCAWLAN-265479 [6766 5G] Add channel 165/40, 169/40 in DSSF, for 5840MHz spur
+JIRA:BCAWLAN-265392 [6764][6765][6766][47722] TCL to DRV difference wlpmu_afetxldo_LPF_short_en
+JIRA:BCAWLAN-264485 SVT: AP: UTF: EAP: 47722EAP+43730: KASAN: Observing "UBSAN: Undefined behaviour in ../../../components/math/src/bcm_math.c:411:15"
+JIRA:BCAWLAN-263632 6765REF1_6g320 RX performance in Butler channel: no e13s2 out-of-box, need improvement by ~ 1 MCS tick // analog gain change in DC fix corr
+JIRA:BCAWLAN-265524 [47722] [BTCX] EAP 2G RxPER rate1 sliceA lagging sliceB
+JIRA:BCAWLAN-264898 Measure Tx-Tx SIFS for 6764
+JIRA:BCAWLAN-266053 6711 fix incorrect core2 radioreg access in 2x2 mode

@@ -740,6 +740,16 @@ function detect_firmware(flag){
 		},
 
 		success: function(){
+			httpApi.log("check_update", `webs_state_update: ${webs_state_update}, webs_state_error: ${webs_state_error}, webs_state_info: ${webs_state_info}, webs_state_REQinfo: ${webs_state_REQinfo}, webs_state_flag: ${webs_state_flag}, webs_state_upgrade: ${webs_state_upgrade}, webs_state_level: ${webs_state_level}`);
+			
+			if(cfg_sync_support){
+				httpApi.log("check_update", `cfg_check: ${cfg_check}, cfg_upgrade: ${cfg_upgrade}`);
+			}
+
+			if(pipefw_support || urlfw_support){
+				httpApi.log("check_update", `hndwr_status: ${hndwr_status}`);
+			}
+
 			if(cfg_sync_support){
 				if(cfg_check == "" || cfg_check == "0" || cfg_check == "1" || cfg_check == "5"){
 					setTimeout("detect_firmware();", 1000);
@@ -1100,6 +1110,7 @@ function submitForm(){
 				return;
 		else {
 			var status = onSubmitCtrlOnly(document.form.upload, 'Upload1');
+httpApi.log("FirmwareUpgrade", `upload ${document.form.file.value} and got status: ${status}`);			
 			if(amesh_support && status && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
 				if(interval_update_AiMesh_fw_status) {
 					clearInterval(interval_update_AiMesh_fw_status);

@@ -4008,7 +4008,7 @@ int start_extrtl_vlan()
 
 #endif
 
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 /*
 #if defined(RTBE82M)
 #define WAN_PORT 1
@@ -4165,7 +4165,7 @@ int isolate_ports(int enable, unsigned int mask)
 
 #endif
 
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 /**
  * Setup a VLAN.
  * @vid:	VLAN ID
@@ -4187,7 +4187,7 @@ int isolate_ports(int enable, unsigned int mask)
 int __setup_vlan(int vid, int prio, unsigned int mask)
 {
 // MXL switch
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	int ret = 0, ret1 = 0, ret2 = 0;
 	uint16_t _vid = (uint16_t)vid;
 	uint8_t outer_pri = prio;
@@ -4327,7 +4327,7 @@ int __setup_vlan(int vid, int prio, unsigned int mask)
 #endif
 }
 
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 int
 __setup_vlan_sdn(int vid, int prio, unsigned int mask)
 {
@@ -4457,6 +4457,9 @@ void vlan_forwarding(int vid, int prio, int stb, int untag)
 #elif defined(RTBE82M)
 		mask |= 1 << 4;	// LAN3
 		mask |= 1 << 5; // LAN4
+#elif defined(GT7)
+		mask |= 1 << 4;	// LAN3
+		mask |= 1 << 5; // LAN4
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 		mask |= 1 << 7;	// LAN3
 		mask |= 1 << 8; // LAN4
@@ -4497,6 +4500,15 @@ void vlan_forwarding(int vid, int prio, int stb, int untag)
 			mask |= 1 << 4;	// LAN3
 		else if (stb == 4)
 			mask |= 1 << 5;	// LAN4
+#elif defined(GT7)
+		if (stb == 1)
+			mask |= 1 << 1;	// LAN1
+		else if (stb == 2)
+			mask |= 1 << 2;	// LAN2
+		else if (stb == 3)
+			mask |= 1 << 3;	// LAN3
+		else if (stb == 4)
+			mask |= 1 << 4;	// LAN4
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 		if (stb == 1)
 			mask |= 1 << 5;	// LAN1
@@ -4527,6 +4539,8 @@ void vlan_forwarding(int vid, int prio, int stb, int untag)
 		mask |= abs((1 << 1) << 16);	// LAN4
 #elif defined(RTBE82M)
 		mask |= abs((1 << 5) << 16);	// LAN4
+#elif defined(GT7)
+		mask |= abs((1 << 4) << 16);	// LAN4
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 		mask |= abs((1 << 8) << 16);	// LAN4
 #else
@@ -4956,8 +4970,8 @@ system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMap
 				} else return;
 
 				printf("DUAL WAN: Set specific LAN as WAN\n");
-				eval("vconfig", "set_name_type", "VLAN_PLUS_VID_NO_PAD");
-				eval("vconfig", "add", "eth1", "2");
+				system("vconfig set_name_type VLAN_PLUS_VID_NO_PAD");
+				system("vconfig add eth1 2");
 			}
 		}
 	}
@@ -5378,8 +5392,8 @@ system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMap
 				} else return;
 
 				printf("DUAL WAN: Set specific LAN as WAN\n");
-				eval("vconfig", "set_name_type", "VLAN_PLUS_VID_NO_PAD");
-				eval("vconfig", "add", "eth1", "2");
+				system("vconfig set_name_type VLAN_PLUS_VID_NO_PAD");
+				system("vconfig add eth1 2");
 			}
 		}
 	}
@@ -5393,6 +5407,17 @@ void config_switch(void)
 #ifdef RTCONFIG_DUALWAN
 	int unit = 0;
 	char wan_if[10];
+	int bridge_id = 1;
+	int bridge_port_id = 17;
+	int block_id = 112;
+	int entry_index_offset = 0;
+
+	if (nvram_get_int("wans_extwan")) {
+		bridge_id = 2;
+		bridge_port_id = 18;
+		block_id = 115;
+		entry_index_offset = 2;
+	}
 
 	if (is_router_mode() && nvram_get("wans_dualwan")) {
 		for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
@@ -5430,58 +5455,58 @@ system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=1 eOuterV
 system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
 
 //xpcs1(CTP13), filter single tag
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=3 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=%d \
 	eOuterVlanFilterVlanType=0 \
 	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
 	eOuterVlanFilterTpid=1 \
 	eInnerVlanFilterVlanType=3 \
 	eRemoveTagAction=1 \
-	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+	bReassignBridgePortEnable=1 nNewBridgePortId=%d", 3 + entry_index_offset, bridge_port_id);
 
 //xpcs1(CTP13), filter double tag (inner tag transparent)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=4 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=%d \
 	eOuterVlanFilterVlanType=0 \
 	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
 	eOuterVlanFilterTpid=1 \
 	eInnerVlanFilterVlanType=1 \
 	eRemoveTagAction=1 \
-	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+	bReassignBridgePortEnable=1 nNewBridgePortId=%d", 4 + entry_index_offset, bridge_port_id);
 
 //new-tag-BP17, treatment untag
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=0 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=%d nEntryIndex=0 \
 	eOuterVlanFilterVlanType=3 \
 	eInnerVlanFilterVlanType=3 \
 	bOuterVlanActionEnable=1 \
 	eOuterVlanActionTpid=3 \
 	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
-	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2", block_id);
 
 //new-tag-BP17, treatment stag (tag transparent)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=1 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=%d nEntryIndex=1 \
 	eOuterVlanFilterVlanType=2 \
 	eInnerVlanFilterVlanType=3 \
 	bOuterVlanActionEnable=1 \
 	eOuterVlanActionTpid=3 \
 	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
-	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2", block_id);
 
 //new-tag-BP17, treatment dtag (tag transparent)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=2 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=%d nEntryIndex=2 \
 	eOuterVlanFilterVlanType=2 \
 	eInnerVlanFilterVlanType=2 \
 	bOuterVlanActionEnable=1 \
 	eOuterVlanActionTpid=3 \
 	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
-	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2", block_id);
 
 //Bind CTP, EXVLAN, BP together
 
 //new-BP17, portmap=BP2
-system("fapi-GSW-BridgePortConfigSet nBridgePortId=17 \
-	nBridgeId=1 nDestLogicalPortId=13 \
+doSystem("fapi-GSW-BridgePortConfigSet nBridgePortId=%d \
+	nBridgeId=%d nDestLogicalPortId=13 \
 	bMcDestIpLookupDisable=0 \
 	bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2 nBridgePortMapIndex[1]=0x0 \
-	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=112");
+	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=%d", bridge_port_id, bridge_id, block_id);
 
 //CTP2 (port=1, blockId=16*(i-1)=0x0)
 system("fapi-GSW-CtpPortConfigSet nLogicalPortId=1 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x0");
@@ -5492,7 +5517,7 @@ system("fapi-GSW-CtpPortConfigSet nLogicalPortId=13 bIngressExtendedVlanEnable=1
 //On PORT_BPs (1-4,9,13) to set bridge ID and bridge port member
 
 //BP2, portmap: bit17
-system("fapi-GSW-BridgePortConfigSet nBridgePortId=1 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x2");
+doSystem("fapi-GSW-BridgePortConfigSet nBridgePortId=1 nBridgeId=%d bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x%x", bridge_id, 1 << (bridge_port_id - 16));
 
 //BP2-4&9&13, portmap: bit2-4,9,13 exclude itself
 system("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=0 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2218");
@@ -5520,58 +5545,58 @@ system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=1 eOuterV
 system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
 
 //xpcs1(CTP13), filter single tag
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=3 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=%d \
 	eOuterVlanFilterVlanType=0 \
 	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
 	eOuterVlanFilterTpid=1 \
 	eInnerVlanFilterVlanType=3 \
 	eRemoveTagAction=1 \
-	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+	bReassignBridgePortEnable=1 nNewBridgePortId=%d", 3 + entry_index_offset, bridge_port_id);
 
 //xpcs1(CTP13), filter double tag (inner tag transparent)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=4 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=%d \
 	eOuterVlanFilterVlanType=0 \
 	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
 	eOuterVlanFilterTpid=1 \
 	eInnerVlanFilterVlanType=1 \
 	eRemoveTagAction=1 \
-	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+	bReassignBridgePortEnable=1 nNewBridgePortId=%d", 4 + entry_index_offset, bridge_port_id);
 
 //new-tag-BP17, treatment untag
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=0 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=%d nEntryIndex=0 \
 	eOuterVlanFilterVlanType=3 \
 	eInnerVlanFilterVlanType=3 \
 	bOuterVlanActionEnable=1 \
 	eOuterVlanActionTpid=3 \
 	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
-	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2", block_id);
 
 //new-tag-BP17, treatment stag (tag transparent)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=1 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=%d nEntryIndex=1 \
 	eOuterVlanFilterVlanType=2 \
 	eInnerVlanFilterVlanType=3 \
 	bOuterVlanActionEnable=1 \
 	eOuterVlanActionTpid=3 \
 	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
-	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2", block_id);
 
 //new-tag-BP17, treatment dtag (tag transparent)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=2 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=%d nEntryIndex=2 \
 	eOuterVlanFilterVlanType=2 \
 	eInnerVlanFilterVlanType=2 \
 	bOuterVlanActionEnable=1 \
 	eOuterVlanActionTpid=3 \
 	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
-	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2", block_id);
 
 //Bind CTP, EXVLAN, BP together
 
 //new-BP17, portmap=BP2
-system("fapi-GSW-BridgePortConfigSet nBridgePortId=17 \
-	nBridgeId=1 nDestLogicalPortId=13 \
+doSystem("fapi-GSW-BridgePortConfigSet nBridgePortId=%d \
+	nBridgeId=%d nDestLogicalPortId=13 \
 	bMcDestIpLookupDisable=0 \
 	bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x4 nBridgePortMapIndex[1]=0x0 \
-	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=112");
+	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=%d", bridge_port_id, bridge_id, block_id);
 
 //CTP2 (port=2, blockId=16*(i-1)=0x10)
 system("fapi-GSW-CtpPortConfigSet nLogicalPortId=2 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x10");
@@ -5582,7 +5607,7 @@ system("fapi-GSW-CtpPortConfigSet nLogicalPortId=13 bIngressExtendedVlanEnable=1
 //On PORT_BPs (1-4,9,13) to set bridge ID and bridge port member
 
 //BP2, portmap: bit17
-system("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x2");
+doSystem("fapi-GSW-BridgePortConfigSet nBridgePortId=2 nBridgeId=%d bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x%x", bridge_id, 1 << (bridge_port_id - 16));
 
 //BP1&3&4&9&13, portmap: bit1,3,4,9,13 exclude itself
 if (nvram_get_int("wans_extwan")) {
@@ -5617,58 +5642,58 @@ system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=1 eOuterV
 system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
 
 //xpcs1(CTP13), filter single tag
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=3 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=%d \
 	eOuterVlanFilterVlanType=0 \
 	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
 	eOuterVlanFilterTpid=1 \
 	eInnerVlanFilterVlanType=3 \
 	eRemoveTagAction=1 \
-	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+	bReassignBridgePortEnable=1 nNewBridgePortId=%d", 3 + entry_index_offset, bridge_port_id);
 
 //xpcs1(CTP13), filter double tag (inner tag transparent)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=4 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=%d \
 	eOuterVlanFilterVlanType=0 \
 	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
 	eOuterVlanFilterTpid=1 \
 	eInnerVlanFilterVlanType=1 \
 	eRemoveTagAction=1 \
-	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+	bReassignBridgePortEnable=1 nNewBridgePortId=%d", 4 + entry_index_offset, bridge_port_id);
 
 //new-tag-BP17, treatment untag
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=0 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=%d nEntryIndex=0 \
 	eOuterVlanFilterVlanType=3 \
 	eInnerVlanFilterVlanType=3 \
 	bOuterVlanActionEnable=1 \
 	eOuterVlanActionTpid=3 \
 	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
-	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2", block_id);
 
 //new-tag-BP17, treatment stag (tag transparent)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=1 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=%d nEntryIndex=1 \
 	eOuterVlanFilterVlanType=2 \
 	eInnerVlanFilterVlanType=3 \
 	bOuterVlanActionEnable=1 \
 	eOuterVlanActionTpid=3 \
 	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
-	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2", block_id);
 
 //new-tag-BP17, treatment dtag (tag transparent)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=2 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=%d nEntryIndex=2 \
 	eOuterVlanFilterVlanType=2 \
 	eInnerVlanFilterVlanType=2 \
 	bOuterVlanActionEnable=1 \
 	eOuterVlanActionTpid=3 \
 	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
-	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2", block_id);
 
 //Bind CTP, EXVLAN, BP together
 
 //new-BP17, portmap=BP2
-system("fapi-GSW-BridgePortConfigSet nBridgePortId=17 \
-	nBridgeId=1 nDestLogicalPortId=13 \
+doSystem("fapi-GSW-BridgePortConfigSet nBridgePortId=%d \
+	nBridgeId=%d nDestLogicalPortId=13 \
 	bMcDestIpLookupDisable=0 \
 	bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x8 nBridgePortMapIndex[1]=0x0 \
-	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=112");
+	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=%d", bridge_port_id, bridge_id, block_id);
 
 //CTP2 (port=3, blockId=16*(i-1)=0x20)
 system("fapi-GSW-CtpPortConfigSet nLogicalPortId=3 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x20");
@@ -5679,7 +5704,7 @@ system("fapi-GSW-CtpPortConfigSet nLogicalPortId=13 bIngressExtendedVlanEnable=1
 //On PORT_BPs (1-4,9,13) to set bridge ID and bridge port member
 
 //BP2, portmap: bit17
-system("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x2");
+doSystem("fapi-GSW-BridgePortConfigSet nBridgePortId=3 nBridgeId=%d bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x%x", bridge_id, 1 << (bridge_port_id - 16));
 
 //BP1&2&4&9&13, portmap: bit1,2,4,9,13 exclude itself
 if (nvram_get_int("wans_extwan")) {
@@ -5714,58 +5739,58 @@ system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=1 eOuterV
 system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
 
 //xpcs1(CTP13), filter single tag
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=3 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=%d \
 	eOuterVlanFilterVlanType=0 \
 	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
 	eOuterVlanFilterTpid=1 \
 	eInnerVlanFilterVlanType=3 \
 	eRemoveTagAction=1 \
-	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+	bReassignBridgePortEnable=1 nNewBridgePortId=%d", 3 + entry_index_offset, bridge_port_id);
 
 //xpcs1(CTP13), filter double tag (inner tag transparent)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=4 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=%d \
 	eOuterVlanFilterVlanType=0 \
 	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=2 \
 	eOuterVlanFilterTpid=1 \
 	eInnerVlanFilterVlanType=1 \
 	eRemoveTagAction=1 \
-	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+	bReassignBridgePortEnable=1 nNewBridgePortId=%d", 4 + entry_index_offset, bridge_port_id);
 
 //new-tag-BP17, treatment untag
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=0 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=%d nEntryIndex=0 \
 	eOuterVlanFilterVlanType=3 \
 	eInnerVlanFilterVlanType=3 \
 	bOuterVlanActionEnable=1 \
 	eOuterVlanActionTpid=3 \
 	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
-	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2", block_id);
 
 //new-tag-BP17, treatment stag (tag transparent)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=1 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=%d nEntryIndex=1 \
 	eOuterVlanFilterVlanType=2 \
 	eInnerVlanFilterVlanType=3 \
 	bOuterVlanActionEnable=1 \
 	eOuterVlanActionTpid=3 \
 	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
-	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2", block_id);
 
 //new-tag-BP17, treatment dtag (tag transparent)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=2 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=%d nEntryIndex=2 \
 	eOuterVlanFilterVlanType=2 \
 	eInnerVlanFilterVlanType=2 \
 	bOuterVlanActionEnable=1 \
 	eOuterVlanActionTpid=3 \
 	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=2 \
-	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2", block_id);
 
 //Bind CTP, EXVLAN, BP together
 
 //new-BP17, portmap=BP2
-system("fapi-GSW-BridgePortConfigSet nBridgePortId=17 \
-	nBridgeId=1 nDestLogicalPortId=13 \
+doSystem("fapi-GSW-BridgePortConfigSet nBridgePortId=%d \
+	nBridgeId=%d nDestLogicalPortId=13 \
 	bMcDestIpLookupDisable=0 \
 	bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x10 nBridgePortMapIndex[1]=0x0 \
-	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=112");
+	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=%d", bridge_port_id, bridge_id, block_id);
 
 //CTP2 (port=4, blockId=16*(i-1)=0x30)
 system("fapi-GSW-CtpPortConfigSet nLogicalPortId=4 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x30");
@@ -5776,7 +5801,7 @@ system("fapi-GSW-CtpPortConfigSet nLogicalPortId=13 bIngressExtendedVlanEnable=1
 //On PORT_BPs (1-4,9,13) to set bridge ID and bridge port member
 
 //BP2, portmap: bit17
-system("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x2");
+doSystem("fapi-GSW-BridgePortConfigSet nBridgePortId=4 nBridgeId=%d bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x%x", bridge_id, 1 << (bridge_port_id - 16));
 
 //BP1&3&4&9&13, portmap: bit1,3,4,9,13 exclude itself
 if (nvram_get_int("wans_extwan")) {
@@ -5794,8 +5819,8 @@ system("fapi-GSW-BridgePortConfigSet nBridgePortId=13 nBridgeId=0 bBridgePortMap
 				} else return;
 
 				printf("DUAL WAN: Set specific LAN as WAN\n");
-				eval("vconfig", "set_name_type", "VLAN_PLUS_VID_NO_PAD");
-				eval("vconfig", "add", "eth1", "2");
+				system("vconfig set_name_type VLAN_PLUS_VID_NO_PAD");
+				system("vconfig add eth1 2");
 			}
 		}
 	}
@@ -5943,8 +5968,8 @@ void config_switch(void)
 					else return;
 					
 					printf("DUAL WAN: Set specific LAN as WAN\n");
-					eval("vconfig", "set_name_type", "VLAN_PLUS_VID_NO_PAD");
-					eval("vconfig", "add", "eth1", "2");
+					system("vconfig set_name_type VLAN_PLUS_VID_NO_PAD");
+					system("vconfig add eth1 2");
 					//sprintf(wan_if, "vlan2");
 					//eval("ifconfig", wan_if, "allmulti", "up");
 					//add_wan_phy(wan_if);
@@ -5987,6 +6012,10 @@ int vlan4094_enabled()
 void config_extwan_gt7(void)
 {
 	int lan_port_excl = 0;
+	int bridge_id = 1;
+	int bridge_port_id = 17;
+	int block_id = 112;
+	int entry_index_offset = 0;
 
 	if (nvram_get_int("wans_extwan") && ((get_wans_dualwan() & WANSCAP_LAN) && (nvram_get_int("wans_lanport") >= 2) && (nvram_get_int("wans_lanport") <= 4))) {
 		if (nvram_match("wans_lanport", "2")) {
@@ -6006,6 +6035,16 @@ void config_extwan_gt7(void)
 		if (!nvram_get_int("wans_extwan") && (get_wans_dualwan() & WANSCAP_LAN))
 			return;
 	}
+
+/*
+	if (nvram_get_int("wans_extwan") && ((get_wans_dualwan() & WANSCAP_LAN) && (nvram_get_int("wans_lanport") >= 2) && (nvram_get_int("wans_lanport") <= 4))) {
+		bridge_id = 3;
+		bridge_port_id = 18;
+		block_id = 115;
+		entry_index_offset = 2;
+	}
+*/
+
 /* The LAN/WAN port mapping:
     - CPU: port13/xpcs1
     - LAN1: port1
@@ -6038,58 +6077,58 @@ system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=1 eOuterV
 system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
 
 //xpcs1(CTP13), filter single tag
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=3 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=%d \
 	eOuterVlanFilterVlanType=0 \
 	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=4094 \
 	eOuterVlanFilterTpid=1 \
 	eInnerVlanFilterVlanType=3 \
 	eRemoveTagAction=1 \
-	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+	bReassignBridgePortEnable=1 nNewBridgePortId=%d", 3 + entry_index_offset, bridge_port_id);
 
 //xpcs1(CTP13), filter double tag (inner tag transparent)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=4 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=%d \
 	eOuterVlanFilterVlanType=0 \
 	bOuterVlanFilterVidEnable=1 nOuterVlanFilterVidVal=4094 \
 	eOuterVlanFilterTpid=1 \
 	eInnerVlanFilterVlanType=1 \
 	eRemoveTagAction=1 \
-	bReassignBridgePortEnable=1 nNewBridgePortId=17");
+	bReassignBridgePortEnable=1 nNewBridgePortId=%d", 4 + entry_index_offset, bridge_port_id);
 
 //new-tag-BP17, treatment untag
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=0 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=%d nEntryIndex=0 \
 	eOuterVlanFilterVlanType=3 \
 	eInnerVlanFilterVlanType=3 \
 	bOuterVlanActionEnable=1 \
 	eOuterVlanActionTpid=3 \
 	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=4094 \
-	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2", block_id);
 
 //new-tag-BP17, treatment stag (tag transparent)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=1 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=%d nEntryIndex=1 \
 	eOuterVlanFilterVlanType=2 \
 	eInnerVlanFilterVlanType=3 \
 	bOuterVlanActionEnable=1 \
 	eOuterVlanActionTpid=3 \
 	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=4094 \
-	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2", block_id);
 
 //new-tag-BP17, treatment dtag (tag transparent)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=112 nEntryIndex=2 \
+doSystem("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=%d nEntryIndex=2 \
 	eOuterVlanFilterVlanType=2 \
 	eInnerVlanFilterVlanType=2 \
 	bOuterVlanActionEnable=1 \
 	eOuterVlanActionTpid=3 \
 	eOuterVlanActionVidMode=0 eOuterVlanActionVidVal=4094 \
-	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2");
+	eOuterVlanActionPriorityMode=2 eOuterVlanActioneDei=2", block_id);
 
 //Bind CTP, EXVLAN, BP together
 
 //new-BP17, portmap=BP2
-system("fapi-GSW-BridgePortConfigSet nBridgePortId=17 \
-	nBridgeId=1 nDestLogicalPortId=13 \
+doSystem("fapi-GSW-BridgePortConfigSet nBridgePortId=%d \
+	nBridgeId=%d nDestLogicalPortId=13 \
 	bMcDestIpLookupDisable=0 \
 	bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x2 nBridgePortMapIndex[1]=0x0 \
-	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=112");
+	bEgressExtendedVlanEnable=1 nEgressExtendedVlanBlockId=%d", bridge_port_id, bridge_id, block_id);
 
 //CTP2 (port=1, blockId=16*(i-1)=0x0)
 system("fapi-GSW-CtpPortConfigSet nLogicalPortId=1 bIngressExtendedVlanEnable=1 nIngressExtendedVlanBlockId=0x0");
@@ -6100,7 +6139,7 @@ system("fapi-GSW-CtpPortConfigSet nLogicalPortId=13 bIngressExtendedVlanEnable=1
 //On PORT_BPs (1-4,9,13) to set bridge ID and bridge port member
 
 //BP2, portmap: bit17
-system("fapi-GSW-BridgePortConfigSet nBridgePortId=1 nBridgeId=1 bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x2");
+doSystem("fapi-GSW-BridgePortConfigSet nBridgePortId=1 nBridgeId=%d bBridgePortMapEnable=1 nBridgePortMapIndex[0]=0x0 nBridgePortMapIndex[1]=0x%x", bridge_id, 1 << (bridge_port_id - 16));
 
 //BP2-4&9&13, portmap: bit2-4,9,13 exclude itself
 	if (lan_port_excl == 2) {
@@ -6197,8 +6236,8 @@ void config_extwan(void)
 #endif
 		}
 #endif
-		eval("vconfig", "set_name_type", "VLAN_PLUS_VID_NO_PAD");
-		eval("vconfig", "add", "eth1", "4094");
+		system("vconfig set_name_type VLAN_PLUS_VID_NO_PAD");
+		system("vconfig add eth1 4094");
 
 		if (re_mode() || !nvram_get_int("x_Setting"))
 			ifconfig("vlan4094", IFUP | IFF_ALLMULTI, NULL, NULL);
@@ -9322,8 +9361,10 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 		int dwds = 0;
 		if (!nvram_get_int("dwds_ctrl")) {
 #if defined(RTCONFIG_BCM4708) || defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_HND_ROUTER)
-#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
+#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 			dwds = !client_mode();
+#elif defined(RTBE58_GO)
+			dwds = !(client_mode() && !nvram_get_int("re_mode")) && !wisp_mode();
 #else
 			dwds = 1;
 #endif
@@ -10106,10 +10147,12 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 #ifdef RTCONFIG_BCMARM
 			if (!nvram_get_int("dwds_ctrl")) 
 #ifdef RTCONFIG_HND_ROUTER_AX
-#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
+#if defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
 			{
-				nvram_set(strcat_r(prefix, "dwds", tmp), client_mode()? "0": "1");
+				nvram_set(strcat_r(prefix, "dwds", tmp), client_mode() ? "0": "1");
 			}
+#elif defined(RTBE58_GO)
+				nvram_set(strcat_r(prefix, "dwds", tmp), (client_mode() && !nvram_get_int("re_mode")) || wisp_mode() ? "0": "1");
 #else
 				nvram_set(strcat_r(prefix, "dwds", tmp), "1");
 #endif
@@ -10245,7 +10288,7 @@ set_wan_tag(char *interface) {
 	int mang_vid = nvram_get_int("switch_wan3tagid") & 0x0fff;
 	int mang_prio = nvram_get_int("switch_wan3prio") & 0x7;
 #endif
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	int i, ret;
 #endif
 
@@ -11316,6 +11359,9 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 	case MODEL_RTBE86U:
 				/* eth0 eth1 eth2 eth3 eth4 */
 				/* WAN  L1   L2   L3   L4   */
+	case MODEL_RTBE58_GO:
+				/* eth1 eth0 */
+				/* WAN  L1   */
 		/* GT-AC5300 pairing ports: L1 & L2 and L5 & L6 */
 		if (model == MODEL_GTAC5300) {
 			if (nvram_match("iptv_port_settings", "12")) {
@@ -11483,6 +11529,11 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 		else if (model == MODEL_EBA63) {
 			sprintf(ethPort1, "eth1");
 			sprintf(vlanDev1, "eth1.v0");
+		}
+		/* Spefici net devices order for RTBE58_GO */
+		else if (model == MODEL_RTBE58_GO) {
+			sprintf(ethPort1, "eth0");
+			sprintf(vlanDev1, "eth0.v0");
 		}
 		/* Spefici net devices order for TUF-AX3000_V2 / RT-AXE7800 */
 		else if (model == MODEL_TUFAX3000_V2 || model == MODEL_RTAXE7800) {
@@ -11683,6 +11734,8 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 		/* write default WAN net device to handle vlanctl commands */
 		sprintf(wan_if, wan_if_eth());
 		sprintf(wanVlanDev, "%s.v0", wan_if_eth());
+
+		_dprintf("%s:: wan_if=%s, wanVlanDev=%s\n", __func__, wan_if, wanVlanDev);
 
 		/* Using vlanctl to handle vlan forwarding */
 		if ((!nvram_match("switch_wantag", "") && (wan_vid || switch_stb > 0))
@@ -12372,8 +12425,8 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 #endif
 		break;
 
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	case MODEL_RTBE82M:
 	case MODEL_GSBE18000:
 		for (i=0; i<4; ++i) {
@@ -12403,7 +12456,7 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 	case MODEL_GTBE19000:
 	case MODEL_GTBE19000AI:
 	case MODEL_GTBE96_AI:
-#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO)
+#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7)
 		if(!is_rtl8372_boardid())
 			break;
 #endif
@@ -12424,7 +12477,7 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 		 && !nvram_match("switch_wantag", "m1_fiber") && !nvram_match("switch_wantag", "maxis_fiber")
 		 && !nvram_match("switch_wantag", "maxis_fiber_sp") && !nvram_match("switch_wantag", "hinet_mesh")
 		 && !nvram_match("switch_wantag", "maxis_cts") && !nvram_match("switch_wantag", "maxis_sacofa") && !nvram_match("switch_wantag", "maxis_tnb")
-#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO)
+#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7)
 		 && !nvram_match("switch_wantag", "free")
 		 && !nvram_match("switch_wantag", "meo_br")
 #endif
@@ -12511,6 +12564,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 #elif defined(RTBE82M)
 			__setup_vlan(0, 0, 0x00380038); //no-tag fwd mask except LAN1
 			__setup_vlan(1, 0, 0x00040004); //LAN1
+#elif defined(GT7)
+			__setup_vlan(0, 0, 0x001C001C); //no-tag fwd mask except LAN1
+			__setup_vlan(1, 0, 0x00020002); //LAN1
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 			__setup_vlan(0, 0, 0x01CE01CE); //no-tag fwd mask except LAN1
 			__setup_vlan(1, 0, 0x00200020); //LAN1
@@ -12540,6 +12596,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 #elif defined(RTBE82M)
 			__setup_vlan(0, 0, 0x00340034); //no-tag fwd mask except LAN2
 			__setup_vlan(1, 0, 0x00080008); //LAN2
+#elif defined(GT7)
+			__setup_vlan(0, 0, 0x001A001A); //no-tag fwd mask except LAN2
+			__setup_vlan(1, 0, 0x00040004); //LAN2
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 			__setup_vlan(0, 0, 0x01AE01AE); //no-tag fwd mask except LAN2
 			__setup_vlan(1, 0, 0x00400040); //LAN2
@@ -12552,7 +12611,7 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 			eval("brctl", "addif", br_dev, "vlan1");
 			eval("brctl", "addif", "br0", "eth1");
 		} else if (nvram_match("switch_stb_x", "3")) {
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 			if (nvram_match("switch_wantag", "vodafone")) {	// mxl vodfone
 				if (nvram_match("switch_wantag", "vodafone")) {
 					wan_vid = 100;
@@ -12586,6 +12645,19 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
                                        		__setup_vlan(voip_vid, 0, 0x00100072); // LAN3 untag, LAN4 tag
 					}
 				}
+#elif defined(GT7)
+				__setup_vlan(0, 0, 0x00060006); //no-tag fwd mask except LAN3 and LAN4
+				if (nvram_match("voip_untag", "1") || nvram_match("switch_wantag", "vodafone")) {
+                                       	__setup_vlan(100, 0, 0x00000010); // LAN4 tag, wan-port-cpu mbr, need to br vlan.wan
+
+					if (iptv_vid) {	// 101
+                                       		__setup_vlan(iptv_vid, 0, 0x00000010); // LAN4 tag, wan-port-cpu mbr, need to br vlan.wan
+					}
+
+					if (voip_vid && voip_vid != iptv_vid) {	// 105
+                                       		__setup_vlan(voip_vid, 0, 0x00080018); // LAN3 untag, LAN4 tag, need to br vlan.wan
+					}
+				}
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 				__setup_vlan(0, 0, 0x006E006E); //no-tag fwd mask except LAN3 and LAN4
 				if (nvram_match("voip_untag", "1") || nvram_match("switch_wantag", "vodafone")) {
@@ -12617,6 +12689,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 #elif defined(RTBE82M)
 				__setup_vlan(0, 0, 0x000C000C); //no-tag fwd mask except LAN3 and LAN4
 				__setup_vlan(100, nvram_get_int("switch_wan0prio"), 0x00000020); //LAN4 leave tag
+#elif defined(GT7)
+				__setup_vlan(0, 0, 0x00060006); //no-tag fwd mask except LAN3 and LAN4
+				__setup_vlan(100, nvram_get_int("switch_wan0prio"), 0x00000010); //LAN4 leave tag
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 				__setup_vlan(0, 0, 0x006E006E); //no-tag fwd mask except LAN3 and LAN4
 				__setup_vlan(100, nvram_get_int("switch_wan0prio"), 0x00000100); //LAN4 leave tag
@@ -12683,6 +12758,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 #elif defined(RTBE82M)
 				__setup_vlan(0, 0, 0x002C002C); //no-tag fwd mask except LAN3
 				__setup_vlan(voip_vid, 0, 0x00000052); //LAN3 leave tag
+#elif defined(GT7)
+				__setup_vlan(0, 0, 0x00160016); //no-tag fwd mask except LAN3
+				__setup_vlan(voip_vid, 0, 0x00000008); //LAN3 leave tag, need to br vlan.wan
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 				__setup_vlan(0, 0, 0x016E016E); //no-tag fwd mask except LAN3
 				__setup_vlan(voip_vid, 0, 0x00000290); //LAN3 leave tag
@@ -12690,7 +12768,7 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				__setup_vlan(voip_vid, 0, 0x00000004); //LAN3 leave tag
 				__setup_vlan(0, 0, 0x000B000B); //no-tag fwd mask except LAN3
 #endif
-#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO)
+#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7)
 				eval("brctl", "addif", "br0", "eth1");
 #endif
 			} else if (nvram_match("switch_wantag", "maxis_fiber")) {
@@ -12706,7 +12784,7 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				add_wan_phy(wan_dev);
 				nvram_set("wan0_ifname", wan_dev);
 				nvram_set("wan0_gw_ifname", wan_dev);
-#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO)
+#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7)
 				eval("brctl", "delif", "br0", "eth1");
 				/* handle VoIP VLAN */
 				sprintf(port_id, "%d", 821);
@@ -12757,6 +12835,10 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				__setup_vlan(0,   0, 0x002C002C); //no-tag fwd mask except LAN3
 				__setup_vlan(821, 0, 0x00000052); //LAN3 leave tag
 				__setup_vlan(822, 0, 0x00000052); //LAN3 leave tag
+#elif defined(GT7)
+				__setup_vlan(0,   0, 0x00160016); //no-tag fwd mask except LAN3
+				__setup_vlan(821, 0, 0x00000008); //LAN3 leave tag, need to br vlan.wan
+				__setup_vlan(822, 0, 0x00000008); //LAN3 leave tag, need to br vlan.wan
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 				__setup_vlan(0,   0, 0x016E016E); //no-tag fwd mask except LAN3
 				__setup_vlan(821, 0, 0x00000290); //LAN3 leave tag
@@ -12766,7 +12848,7 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				__setup_vlan(822, 0, 0x00000004); //LAN3 leave tag
 				__setup_vlan(0, 0, 0x000B000B); //no-tag fwd mask except LAN3
 #endif
-#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO)
+#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7)
 				eval("brctl", "addif", "br0", "eth1");
 #endif
 			}
@@ -12784,7 +12866,7 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				add_wan_phy(wan_dev);
 				nvram_set("wan0_ifname", wan_dev);
 				nvram_set("wan0_gw_ifname", wan_dev);
-#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO)
+#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7)
 				sprintf(port_id, "%d", voip_vid);
 				/* set WAN STB VLAN */
 				eval("vconfig", "add", wan_if, port_id);
@@ -12820,6 +12902,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 #elif defined(RTBE82M)
 				__setup_vlan(0, 0, 0x002C002C); //no-tag fwd mask except LAN3
 				__setup_vlan(400, 0, 0x00100052); //LAN3 untag
+#elif defined(GT7)
+				__setup_vlan(0, 0, 0x00160016); //no-tag fwd mask except LAN3
+				__setup_vlan(400, 0, 0x00080008); //LAN3 untag
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 				__setup_vlan(0, 0, 0x016E016E); //no-tag fwd mask except LAN3
 				__setup_vlan(400, 0, 0x00800290); //LAN3 untag
@@ -12827,7 +12912,7 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				__setup_vlan(400, 0, 0x00040004); //LAN3 untag
 				__setup_vlan(0, 0, 0x000B000B); //no-tag fwd mask except LAN3
 #endif
-#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO)
+#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7)
 				eval("brctl", "addif", "br0", "eth1");
 #endif
 			}
@@ -12849,6 +12934,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 #elif defined(RTBE82M)
 				__setup_vlan(0, 0, 0x002C002C); //no-tag fwd mask except LAN3
 				__setup_vlan(1, 0, 0x00100010); //LAN3
+#elif defined(GT7)
+				__setup_vlan(0, 0, 0x00160016); //no-tag fwd mask except LAN3
+				__setup_vlan(1, 0, 0x00080008); //LAN3
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 				__setup_vlan(0, 0, 0x016E016E); //no-tag fwd mask except LAN3
 				__setup_vlan(1, 0, 0x00800080); //LAN3
@@ -12862,7 +12950,7 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				eval("brctl", "addif", "br0", "eth1");
 			}
 			else {  /* Nomo case. */
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 				if (!nvram_match("switch_wantag", "vodafone")) 		// except vodafone
 				{	// mxl norm/manual cases
 					eval("vconfig", "set_name_type", "DEV_PLUS_VID_NO_PAD");
@@ -12881,6 +12969,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 #if defined(RTBE82M)
 					__setup_vlan(0, 0, 0x002C002C); //no-tag fwd mask except LAN3
 					__setup_vlan(voip_vid, 0, 0x00100052); //LAN3 untag
+#elif defined(GT7)
+					__setup_vlan(0, 0, 0x00160016); //no-tag fwd mask except LAN3
+					__setup_vlan(voip_vid, 0, 0x00080008); //LAN3 untag, need to br vlan.wan
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 					__setup_vlan(0, 0, 0x016E016E); //no-tag fwd mask except LAN3
 					__setup_vlan(voip_vid, 0, 0x00800290); //LAN3 untag
@@ -12970,6 +13061,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 #elif defined(RTBE82M)
 				__setup_vlan(0, 0, 0x001C001C); //no-tag fwd mask except LAN4
 				__setup_vlan(1, 0, 0x00200020); //LAN4
+#elif defined(GT7)
+				__setup_vlan(0, 0, 0x000E000E); //no-tag fwd mask except LAN4
+				__setup_vlan(1, 0, 0x00100010); //LAN4
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 				__setup_vlan(0, 0, 0x00EE00EE); //no-tag fwd mask except LAN4
 				__setup_vlan(1, 0, 0x01000100); //LAN4
@@ -12985,7 +13079,7 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 			else if (nvram_match("switch_wantag", "superonline")) {
 				eval("vconfig", "set_name_type", "DEV_PLUS_VID_NO_PAD");
 #if 0
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
                                 /* wan0 is br101 */
                                 set_wan_phy("");
                                 add_wan_phy(br_dev);
@@ -12993,7 +13087,7 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
                                 nvram_set("wan0_gw_ifname", br_dev);
 #endif
 #endif
-#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO)
+#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7)
 
 				sprintf(port_id, "%d", iptv_vid);
 				eval("vconfig", "add", wan_if, port_id);
@@ -13024,6 +13118,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				__setup_vlan(iptv_vid, 0, 0x00020002); //LAN4
 				__setup_vlan(0, 0, 0x001C001C); //no-tag fwd mask except LAN4
 #elif defined(RTBE82M)
+				__setup_vlan(0, 0, 0x000E000E); //no-tag fwd mask except LAN4
+				__setup_vlan(iptv_vid, 0, 0x00100010); //LAN4 untag, need to br vlan.wan
+#elif defined(GT7)
 				__setup_vlan(0, 0, 0x001C001C); //no-tag fwd mask except LAN4
 				__setup_vlan(iptv_vid, 0, 0x00200062); //LAN4 untag
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
@@ -13033,7 +13130,7 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				__setup_vlan(iptv_vid, 0, 0x00080008); //LAN4
 				__setup_vlan(0, 0, 0x00070007); //no-tag fwd mask except LAN4
 #endif
-#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO)				
+#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7)		
 				eval("vconfig", "add", "eth1", port_id);
 				eval("ifconfig", "eth1.103", "allmulti", "up");
 				eval("brctl", "addif", br_dev, "eth1.103");
@@ -13055,7 +13152,7 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				nvram_set("wan0_ifname", wan_dev);
 				nvram_set("wan0_gw_ifname", wan_dev);
 
-#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO)
+#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7)
 				sprintf(br_dev, "br%d", IPTV_BR_INDEX);
 				eval("brctl", "addbr", br_dev);
 				eval("bcmmcastctl", "mode", "-i", br_dev, "-p", "1", "-m", "0");
@@ -13095,6 +13192,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 #elif defined(RTBE82M)
 				__setup_vlan(0, 0, 0x001C001C); //no-tag fwd mask except LAN4
 				__setup_vlan(600, 0, 0x00200062); //LAN4 untag
+#elif defined(GT7)
+				__setup_vlan(0, 0, 0x000E000E); //no-tag fwd mask except LAN4
+				__setup_vlan(600, 0, 0x00100010); //LAN4 untag, need to br vlan.wan
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 				__setup_vlan(0, 0, 0x00EE00EE); //no-tag fwd mask except LAN4
 				__setup_vlan(600, 0, 0x01000310); //LAN4 untag
@@ -13102,11 +13202,11 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				__setup_vlan(600, 0, 0x00080008); //LAN4
 				__setup_vlan(0, 0, 0x00070007); //no-tag fwd mask except LAN4
 #endif
-#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO)
+#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7)
 				eval("brctl", "addif", "br0", "eth1");
 #endif
 			}
-#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GS7_PRO)
+#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GS7_PRO) && !defined(GT7)
 			else if (nvram_match("switch_wantag", "free")) {
 				system("rtkswitch 40 1"); //leave tag case
 				eval("vconfig", "set_name_type", "DEV_PLUS_VID_NO_PAD");
@@ -13145,6 +13245,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 #elif defined(RTBE82M)
 				__setup_vlan(0, 0, 0x001C001C); //no-tag fwd mask except LAN4
 				__setup_vlan(iptv_vid, 0, 0x00000020); // LAN4 tag
+#elif defined(GT7)
+				__setup_vlan(0, 0, 0x000E000E); //no-tag fwd mask except LAN4
+				__setup_vlan(iptv_vid, 0, 0x00000010); // LAN4 tag
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 				__setup_vlan(0, 0, 0x00EE00EE); //no-tag fwd mask except LAN4
 				__setup_vlan(iptv_vid, 0, 0x00000100); // LAN4 tag
@@ -13158,7 +13261,7 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				eval("brctl", "addif", "br0", "eth1");
 			}
 #endif
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 			//else if (nvram_match("mxl_test", "1")) {
 			else {	// mxl norm/manual case 
 				eval("vconfig", "set_name_type", "DEV_PLUS_VID_NO_PAD");
@@ -13181,6 +13284,13 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				} else {
 					__setup_vlan(iptv_vid, 0, 0x00200062); // LAN4 untag
 				}
+#elif defined(GT7)
+				__setup_vlan(0, 0, 0x000E000E); //no-tag fwd mask except LAN4
+				if (nvram_match("switch_wantag", "free")) {
+					__setup_vlan(iptv_vid, 0, 0x00000010); // LAN4 tag, need to br vlan.wan
+				} else {
+					__setup_vlan(iptv_vid, 0, 0x00100010); // LAN4 untag, need to br vlan.wan
+				}
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 				__setup_vlan(0, 0, 0x00EE00EE); //no-tag fwd mask except LAN4
 				if (nvram_match("switch_wantag", "free")) {
@@ -13196,6 +13306,8 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				eval("brctl", "delif", "br0", "eth1");
 #if defined(RTBE82M)
 				__setup_vlan(0, 0, 0x001C001C); //no-tag fwd mask except LAN4
+#elif defined(GT7)
+				__setup_vlan(0, 0, 0x000E000E); //no-tag fwd mask except LAN4
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 				__setup_vlan(0, 0, 0x00EE00EE); //no-tag fwd mask except LAN4
 #endif
@@ -13245,6 +13357,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 #elif defined(RTBE82M)
 			__setup_vlan(0, 0, 0x00300030); //no-tag fwd mask except LAN1 and LAN2
 			__setup_vlan(1, 0, 0x000C000C); //LAN1 and LAN2
+#elif defined(GT7)
+			__setup_vlan(0, 0, 0x00180018); //no-tag fwd mask except LAN1 and LAN2
+			__setup_vlan(1, 0, 0x00060006); //LAN1 and LAN2
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 			__setup_vlan(0, 0, 0x018E018E); //no-tag fwd mask except LAN1 and LAN2
 			__setup_vlan(1, 0, 0x00600060); //LAN1 and LAN2
@@ -13261,7 +13376,7 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 			if (nvram_match("switch_wantag", "ooxx")) {
 				_dprintf("%s, ooxx\n", __func__);
 			} 
-#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO)
+#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7)
 			else if (nvram_match("switch_wantag", "singtel_mio")) {
 				/* Just forward packets between WAN & vlanDev2, without untag */
 				eval("brctl", "delif", "br0", "eth1");
@@ -13298,6 +13413,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 #elif defined(RTBE82M)
 				__setup_vlan(0, 0, 0x000C000C); //no-tag fwd mask except LAN3 and LAN4
 				__setup_vlan(1, 0, 0x00300030); //LAN3 and LAN4
+#elif defined(GT7)
+				__setup_vlan(0, 0, 0x00060006); //no-tag fwd mask except LAN3 and LAN4
+				__setup_vlan(1, 0, 0x00180018); //LAN3 and LAN4
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 				__setup_vlan(0, 0, 0x006E006E); //no-tag fwd mask except LAN3 and LAN4
 				__setup_vlan(1, 0, 0x01800180); //LAN3 and LAN4
@@ -13311,7 +13429,7 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				eval("brctl", "addif", "br0", "eth1");
 			}
 			else if (nvram_match("switch_wantag", "meo_br")) 
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 			{
 				eval("vconfig", "set_name_type", "DEV_PLUS_VID_NO_PAD");
 				sprintf(port_id, "%d", iptv_vid);
@@ -13338,6 +13456,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 #if defined(RTBE82M)
 				__setup_vlan(0,  0, 0x000C000C); //no-tag fwd mask except LAN3 and LAN4
 				__setup_vlan(12, 0, 0x00100030); // LAN3 untag, LAN4 tag
+#elif defined(GT7) 
+				__setup_vlan(0,  0, 0x00060006); //no-tag fwd mask except LAN3 and LAN4
+				__setup_vlan(12, 0, 0x00080018); // LAN3 untag, LAN4 tag
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 				__setup_vlan(0,  0, 0x006E006E); //no-tag fwd mask except LAN3 and LAN4
 				__setup_vlan(12, 0, 0x00800180); // LAN3 untag, LAN4 tag
@@ -13417,6 +13538,9 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 #elif defined(RTBE82M)
 				__setup_vlan(0,  0, 0x000C000C); //no-tag fwd mask except LAN3 and LAN4
 				__setup_vlan(12, 0, 0x00200030); // LAN3 tag, LAN4 untag
+#elif defined(GT7) 
+				__setup_vlan(0,  0, 0x00060006); //no-tag fwd mask except LAN3 and LAN4
+				__setup_vlan(12, 0, 0x00100018); // LAN3 tag, LAN4 untag
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 				__setup_vlan(0,  0, 0x006E006E); //no-tag fwd mask except LAN3 and LAN4
 				__setup_vlan(12, 0, 0x01000180); // LAN3 tag, LAN4 untag
@@ -13426,7 +13550,7 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 #endif
 			}
 #endif
-#if defined(RTBE82M) || defined(GSBE18000) ||defined(GSBE12000) || defined(GS7_PRO)
+#if defined(RTBE82M) || defined(GSBE18000) ||defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 			else {	// norm case
 				eval("vconfig", "set_name_type", "DEV_PLUS_VID_NO_PAD");
 				sprintf(br_dev, "br%d", IPTV_BR_INDEX);
@@ -13469,6 +13593,35 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				} else {
 					__setup_vlan(0, 0, 0x000C000C); //no-tag fwd mask except LAN3 and LAN4
 					__setup_vlan(iptv_vid, 0, 0x00300072); // LAN3, LAN4 are same vid(iptv)
+				}
+#elif defined(GT7)
+				if (nvram_match("switch_wantag", "singtel_mio")) {
+					__setup_vlan(0, 0, 0x00060006); //no-tag fwd mask except LAN3 and LAN4
+					__setup_vlan(iptv_vid, 0, 0x00100010); // LAN4 untag, need to br vlan.wan
+					__setup_vlan(voip_vid, 0, 0x00000008); // LAN3 tag, need to br vlan.wan
+
+				} else if (nvram_match("switch_wantag", "singtel_mstb")) {
+					__setup_vlan(0, 0, 0x00060006); //no-tag fwd mask except LAN3 and LAN4, need to br vlan.wan
+					__setup_vlan(iptv_vid, 0, 0x00180018); // LAN3 & LAN4 untag, need to br vlan.wan
+
+				} else if (nvram_match("switch_wantag", "manual")) {
+					__setup_vlan(0, 0, 0x00060006); //no-tag fwd mask except LAN3 and LAN4
+
+					// iptv
+					if (iptv_vid) {
+						if (voip_vid && iptv_vid == voip_vid)
+							__setup_vlan(iptv_vid, 0, 0x00180018); // LAN3, LAN4 untag, need to br vlan.wan
+						else
+							__setup_vlan(iptv_vid, 0, 0x00100010); // LAN4 untag, need to br vlan.wan
+					}
+
+					// voip
+					if (voip_vid && voip_vid != iptv_vid)
+						__setup_vlan(voip_vid, 0, 0x00080008); // LAN3 untag, need to br vlan.wan
+
+				} else {
+					__setup_vlan(0, 0, 0x00060006); //no-tag fwd mask except LAN3 and LAN4
+					__setup_vlan(iptv_vid, 0, 0x00180018); // LAN3, LAN4 are same vid(iptv), need to br vlan.wan
 				}
 #elif defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 				if (nvram_match("switch_wantag", "singtel_mio")) {
@@ -13590,7 +13743,7 @@ _dprintf("*** Multicast IPTV: config VOIP on wan port ***\n");
 				char macaddr[32];
 				int iptv_unit = WAN_UNIT_IPTV;
 				char prefix[] = "wanXXX_";
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 				if (!nvram_match("v0_mcast", "1")) {
 					_dprintf("%s, create vif[%s/%s] w/o mcast\n", __func__, wan_if, wanVlanDev);
 					eval("vlanctl", "--if", wan_if, "--if-create-name", wan_if, wanVlanDev, "--set-if-mode-rg");

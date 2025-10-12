@@ -1,0 +1,51 @@
+.TH nl\-classid\-lookup 8 "19 October 2010" "libnl"
+.SH NAME
+nl\-classid\-lookup - Lookup classid definitions
+.SH SYNOPSIS
+.B nl\-classid\-lookup
+.RB [ \-hv ]
+.RB [ \-r ]
+.RB [ \-\-raw ]
+.I name
+
+.SH DESCRIPTION
+.PP
+nl\-classid\-lookup searches the classid database for a matching entry. It is used
+to resolve qdisc/class names to classid values and vice versa.
+
+.SH OPTIONS
+.TP
+.BR \-\^h " or " \-\-help
+Print help text to console and exit.
+.TP
+.BR \-\^v " or " \-\-version
+Print versioning information to console and exit.
+.TP
+.BR \-\^r " or " \-\-reverse
+Do a reverse lookup. Lookup a classid and print its name.
+.TP
+.B \-\-raw
+Print the raw classid in hexadecimal format, do not pretty print it.
+
+.SH USAGE
+.PP
+Resolve the qdisc/class name "interactive":
+.PP
+.RS
+# nl\-classid\-lookup interactive
+.RE
+.PP
+Lookup the name of classid 1:2:
+.PP
+.RS
+# nl\-classid\-lookup -r 1:2
+.RE
+
+.SH FILES
+.PP
+/etc/libnl/classid
+
+.SH AUTHOR
+.PP
+Thomas Graf is the original author and current maintainer of libnl and
+libnl tools. Many people have contributed to it since.

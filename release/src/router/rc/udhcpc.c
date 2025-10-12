@@ -381,7 +381,7 @@ _dprintf("%s(%d): ifunit=%d, if=%s.\n", __func__, getpid(), ifunit, wan_ifname);
 			memset(gateway_mac, 0, sizeof(gateway_mac));
 			get_mac_from_ip(gateway, gateway_mac, sizeof(gateway_mac));
 			if(!gateway_mac[0]){
-				_dprintf("%s(%lu): auto_wanport: Fail to get gateway_mac & restore the LAN IP of router.\n", __func__, getpid());
+				_dprintf("%s(%lu): auto_wanport: Fail to get gateway_mac.\n", __func__, getpid());
 				ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
 				ifconfig(lan_ifname, IFUP, lan_ip, lan_net);
 
@@ -393,7 +393,7 @@ _dprintf("%s(%d): ifunit=%d, if=%s.\n", __func__, getpid(), ifunit, wan_ifname);
 
 			br_no = get_br_port_no_from_mac(gateway_mac);
 			if(br_no < 0){
-				_dprintf("%s(%lu): auto_wanport: Canot get gateway's br_no.\n", __func__, getpid());
+				_dprintf("%s(%lu): auto_wanport: Cannot get gateway's br_no.\n", __func__, getpid());
 				ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
 				ifconfig(lan_ifname, IFUP, lan_ip, lan_net);
 
@@ -401,10 +401,22 @@ _dprintf("%s(%d): ifunit=%d, if=%s.\n", __func__, getpid(), ifunit, wan_ifname);
 
 				return -1;
 			}
-
 			_dprintf("%s(%lu): auto_wanport: Got gateway's br_no %d.\n", __func__, getpid(), br_no);
-			get_if_from_br_port_no(br_no, if_name, sizeof(if_name));
+
+			if(get_autoif_from_br_port_no(br_no, if_name, sizeof(if_name)) < 0){
+				ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
+				ifconfig(lan_ifname, IFUP, lan_ip, lan_net);
+
+				add_lan_routes(lan_ifname);
+
+				if(get_if_from_br_port_no(br_no, if_name, sizeof(if_name)) == NULL)
+					return -1;
+				_dprintf("%s(%lu): auto_wanport: The port(%s) of the DHCP source isn't AUTO_WANPORT...\n", __func__, getpid(), if_name);
+
+				return -1;
+			}
 			_dprintf("%s(%lu): auto_wanport: Got gateway's if %s.\n", __func__, getpid(), if_name);
+
 			wan_ifname = if_name;
 
 			_dprintf("%s(%lu): auto_wanport: restore the LAN IP of router.\n", __func__, getpid());
@@ -416,7 +428,7 @@ _dprintf("%s(%d): ifunit=%d, if=%s.\n", __func__, getpid(), ifunit, wan_ifname);
 			_dprintf("%s(%lu): auto_wanport: Choose the WAN interface %s because of DHCP.\n", __func__, getpid(), wan_ifname);
 			set_auto_wanport(wan_ifname, 1);
 
-			return -1;
+			return 0;
 		}
 
 		ifunit = nvram_get_int("autowan_live_wanunit");

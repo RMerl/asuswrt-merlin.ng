@@ -1,0 +1,125 @@
+/*
+ * CSS implementation for wbd demo page
+ *
+ * $ Copyright Open Broadcom Corporation $
+ *
+ *
+ * <<Broadcom-WL-IPTag/Open:>>
+ *
+ * $Id: wbd_demo.css 670363 2016-11-15 13:59:21Z pankajj $
+ */
+
+*{
+	margin:0em;
+	padding:0em;
+	font-family:arial, sans-serif;
+}
+.edge {
+	background-image:url(repeat_edge_new.gif);
+	line-height:0px;
+}
+.logotable{
+	border:0px;
+	border-collapse:collapse;
+	border-spacing:0px;
+	padding:0;
+	margin:0;
+	width:100%;
+}
+
+.logotable td{
+	padding:0px;
+}
+
+#main_div{
+	width:99.9%;
+	margin-bottom:1em;
+	text-align:left;
+}
+
+
+.commonbdr {
+	border: 0.2em solid #006699;
+}
+
+.outerdivcommon {
+	margin-left:1em;
+	padding-top:1em;
+	float:left;
+}
+
+.maindiv {
+	width:98%;
+}
+
+.innerdivcommonforlogs {
+	height:35em;
+	padding-top:1em;
+	margin-top:1em;
+	min-width:35em;
+	overflow:auto;
+}
+
+.innerdivcommon {
+	min-height:10em;
+	padding-top:1em;
+	margin-top:1em;
+}
+
+.tablestylecommon {
+	table-layout:fixed;
+	color:black;
+	text-align:left;
+	margin-top:0.5em;
+}
+
+.tablestylecommon th {
+	color:white;
+	background-color:#006699;
+}
+
+.tablestylecommon tr:nth-child(odd) {
+	background-color:#f2f2f2;
+}
+
+.tablestylecommon tr:nth-child(even) {
+	background-color:#e2e2e2;
+}
+
+.tablestylecommon td:nth-child(3):not(:empty) {
+	color:red;
+}
+
+.txtstyle {
+	text-align:left;
+	white-space:pre;
+}
+
+.stamsgstyle {
+	margin-left:1em;
+}
+
+.logstyle {
+	margin-left:2em;
+}
+
+.weakstacolor {
+	color:red;
+}
+
+#steerlogs {
+	margin-top:1em;
+}
+
+.nodisplay {
+	display:none;
+}
+
+.logsbtn {
+	margin-top:1em;
+	float:right;
+	color:white;
+	background-color:#006699;
+	font-weight: bold;
+	padding:0.5em;
+}

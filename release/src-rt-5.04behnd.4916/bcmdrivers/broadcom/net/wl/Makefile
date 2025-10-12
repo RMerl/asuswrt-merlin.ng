@@ -29,6 +29,10 @@ SUPPORTED_NVRAMVARS := bcmcmn bcm4360 bcm43602 bcm4352 bcm4365 bcm4366 bcm43664 
 
 EXT_CPU_ARCH_NAME := $(subst \",,$(CONFIG_BCM_CPU_ARCH_NAME))
 export EXT_CPU_ARCH_NAME
+
+ifneq ($(CONFIG_BRCM_CHIP_COMPAT_NAME),"")
+BRCM_CHIP := $(subst $\",,$(CONFIG_BRCM_CHIP_COMPAT_NAME))
+endif
 prebuilt_files_set1 = $(shell find . -name *_saved-$(PROFILE_ARCH) -print)
 prebuilt_files_set2 = $(shell find . -name *_saved-$(BRCM_CHIP)-$(PROFILE_KARCH) -print)
 

@@ -38,7 +38,7 @@ wl -i wl0 up
 wl -i wl0 phy_forcecal 1
 wl -i wl0 phy_watchdog 0
 wl -i wl0 2g_rate -e 11 -s 1 -i 0 --ldpc -b 20
-wl -i wl0 txpwr1 -q -o 88
+wl -i wl0 txpwr1 -q 88
 wl -i wl0 phy_forcecal 1
 wl -i wl0 pkteng_start 00:11:22:33:44:55 tx 100 179 0 00:22:44:66:88:00
 
@@ -69,7 +69,7 @@ wl -i wl1 up
 wl -i wl1 phy_forcecal 1
 wl -i wl1 phy_watchdog 0
 wl -i wl1 5g_rate -e 11 -s 1 -i 0 --ldpc -b 80
-wl -i wl1 txpwr1 -q -o 88
+wl -i wl1 txpwr1 -q 88
 wl -i wl1 phy_forcecal 1
 wl -i wl1 pkteng_start 00:11:22:33:44:55 tx 100 907 0 00:22:44:66:88:04
 
@@ -100,7 +100,7 @@ wl -i wl2 up
 wl -i wl2 phy_forcecal 1
 wl -i wl2 phy_watchdog 0
 wl -i wl2 6g_rate -t 11 -s 1 -i 1 --ldpc -b 20
-wl -i wl2 txpwr1 -q -o 88
+wl -i wl2 txpwr1 -q 88
 wl -i wl2 phy_forcecal 1
 wl -i wl2 pkteng_start 00:11:22:33:44:55 tx 100 907 0 00:22:44:66:88:04
 

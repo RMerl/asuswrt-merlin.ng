@@ -1,0 +1,20 @@
+# $ Copyright Broadcom $
+#
+#
+# <<Broadcom-WL-IPTag/Proprietary>>
+
+# This is a list of regular expressions matching error messages
+# from the cmwifi build which don't indicate real errors.
+# NOTE: the preferred solution is always to avoid printing
+# bogus error messages in the first place. Swallowing or
+# modifying them is a fallback option for cases we cannot
+# otherwise fix, especially in third-party code.
+# If a RE contains a () capture group, only those captured
+# parts will be modified unless the entire line is dropped.
+
+arm-linux-gnueabihf/bin/gcc: Command not found$
+(fatal): not a git repository
+(ERROR): Kernel configuration is invalid
+gpl/apps/busybox': No such file or directory$
+(fatal error): cms_image.h: (No such file or directory)
+cp: cannot stat .\.\./lighttpd-1.4.64-patch/newfiles

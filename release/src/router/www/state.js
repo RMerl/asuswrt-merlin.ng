@@ -316,7 +316,7 @@ var is_CH_sku = in_territory_code("CH");
 var is_SG_sku = in_territory_code("SG");
 var is_EU_sku = in_territory_code("EU");
 var SG_mode = ('<% nvram_get("SG_mode"); %>' == 1);
-
+var od_mode_support = isSupport('jp_od');
 var isGundam = in_territory_code("GD") || CoBrand_flag == 1;
 var isKimetsu = (CoBrand_flag == '2');
 var isEva = (CoBrand_flag == '3');
@@ -539,7 +539,7 @@ var rbkfw_support = isSupport("rbkfw");
 var cooler_support = isSupport("fanctrl");
 var power_support = isSupport("pwrctrl");
 var repeater_support = isSupport("repeater");
-var concurrep_support = isSupport("concurrep") && `<% nvram_get("mlo_rp"); %>` != `1` && `<% nvram_get("mlo_mb"); %>` != `1`;
+var concurrep_support = isSupport("concurrep") && !isSupport("mloclient");
 var psta_support = isSupport("psta");
 var wisp_support = isSupport("wisp");
 var wl6_support = isSupport("wl6");
@@ -697,6 +697,9 @@ var hdspindown_support = isSupport("hdspindown");
 var amesh_support = isSupport("amas");
 var ameshRouter_support = isSupport("amasRouter");
 var ameshNode_support = isSupport("amasNode");
+if (isSwMode("WISP") && based_modelid === 'RT-BE58_GO') {
+	amesh_support = ameshRouter_support = false;
+}
 var amesh_wgn_support = isSupport("amas_wgn");
 var ifttt_support = isSupport("ifttt");
 var alexa_support = isSupport("alexa");
@@ -869,7 +872,8 @@ if(based_modelid != "BRT-AC828"){
 //notification value
 if(navigator.userAgent.search("asusrouter") == -1){
 	var notice_pw_is_default = '<% check_pw(); %>';
-	if(notice_pw_is_default == 1 && window.location.pathname.toUpperCase().search("QIS_") < 0) //force to change http_passwd / http_username & except QIS settings
+	var force_chgpass = `<% nvram_get("force_chgpass"); %>`;
+	if((notice_pw_is_default == 1 || force_chgpass == 1) && window.location.pathname.toUpperCase().search("QIS_") < 0) //force to change http_passwd / http_username & except QIS settings
 		location.href = 'Main_Password.asp?nextPage=' + window.location.pathname.substring(1 ,window.location.pathname.length);
 	else if(`<% nvram_get("w_Setting"); %>` == '0' && !isSwMode("RP") && window.location.pathname.toUpperCase().search("QIS_") < 0)
 		location.href = '/QIS_wizard.htm?flag=wireless';
@@ -3020,7 +3024,7 @@ if(isSwMode("RP") || isSwMode("MB")){
 }
 var wlifnames = '<% nvram_get("wl_ifnames"); %>'.split(" ");
 var dpsta_band = parseInt('<% nvram_get("dpsta_band"); %>');
-
+var ajaxStatusLog = [];
 function refreshStatus(xhr){
 	if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "/";
 
@@ -3058,12 +3062,9 @@ function refreshStatus(xhr){
 	wan1_ipaddr = wanStatus[24].firstChild.nodeValue.replace("wan1_ipaddr=", "");
 	wan0_realip_ip = wanStatus[25].firstChild.nodeValue.replace("wan0_realip_ip=", "");
 	wan1_realip_ip = wanStatus[26].firstChild.nodeValue.replace("wan1_realip_ip=", "");
-	if(concurrent_pap){
-		_wlc0_state = wanStatus[27].firstChild.nodeValue;
-		_wlc1_state = wanStatus[28].firstChild.nodeValue;
-		if(isSupport("triband"))
-			_wlc2_state = wanStatus[33].firstChild.nodeValue;
-	}
+	_wlc0_state = wanStatus[27].firstChild.nodeValue;
+	_wlc1_state = wanStatus[28].firstChild.nodeValue;
+	_wlc2_state = wanStatus[33].firstChild.nodeValue;
 	rssi_2g = wanStatus[29].firstChild.nodeValue.replace("rssi_2g=", "");
 	rssi_5g = wanStatus[30].firstChild.nodeValue.replace("rssi_5g=", "");
 	rssi_5g_2 = wanStatus[31].firstChild.nodeValue.replace("rssi_5g_2=", "");
@@ -3163,6 +3164,21 @@ function refreshStatus(xhr){
 				external_ip = -1;
 			}
 		}
+	}
+
+	var ajaxStatusLogNew = [
+		link_internet, link_status, link_sbstatus, link_auxstatus, 
+		_wlc_state, _wlc0_state, _wlc1_state, _wlc2_state, 
+		first_link_sbstatus, first_link_auxstatus, first_link_status, 
+		secondary_link_status, secondary_link_sbstatus, secondary_link_auxstatus
+	];
+
+	if(JSON.stringify(ajaxStatusLog) !== JSON.stringify(ajaxStatusLogNew)){
+		if (typeof httpApi !== 'undefined') {
+			httpApi.log(`ajaxStatusXML`, `${location.pathname}: ${JSON.stringify(ajaxStatusLogNew)}`)
+		}
+
+		ajaxStatusLog = [...ajaxStatusLogNew];
 	}
 
 	if(location.pathname == "/"+ QISWIZARD)
@@ -3480,10 +3496,13 @@ function refreshStatus(xhr){
 
 			if(targetBand == 2) {
 				$("#speed_status").html(data_rate_info_2g);
+				$("#rssi_status").html(rssi_2g);
 			} else if (wlc_band == 1) {
 				$("#speed_status").html(data_rate_info_5g);
+				$("#rssi_status").html(rssi_5g);
 			} else if (wlc_band == 2) {
 				$("#speed_status").html(data_rate_info_5g_2);
+				$("#rssi_status").html(rssi_5g_2);
 			}
 			else{
 				$("#dataRate_div").hide()
@@ -3496,6 +3515,30 @@ function refreshStatus(xhr){
 				_wlc_state = "wlc_state=2";
 			else
 				_wlc_state = "wlc_state=0";
+		}
+		if(isSupport("mloclient")){
+			if (typeof httpApi === 'undefined') {
+				const httpApi_script = document.createElement('script');
+				httpApi_script.type = 'text/javascript';
+				httpApi_script.src = '/js/httpApi.js';
+				document.head.appendChild(httpApi_script);
+			}
+			else{
+				_wlc_state = "wlc_state=0";
+				const wlcX_state = httpApi.nvramGet(["wlc0_state", "wlc1_state", "wlc2_state"], true);
+				if(wlcX_state.wlc0_state == "2"){
+					_wlc_state = "wlc_state=2";
+					wlc_band = "0";
+				}
+				if(wlcX_state.wlc1_state == "2"){
+					_wlc_state = "wlc_state=2";
+					wlc_band = "1";
+				}
+				if(wlcX_state.wlc2_state == "2"){
+					_wlc_state = "wlc_state=2";
+					wlc_band = "2";
+				}
+			}
 		}
 
 		if(_wlc_state == "wlc_state=2"){
@@ -3546,10 +3589,19 @@ function refreshStatus(xhr){
 				var rssi_info = "";				
 			}
 
-			if(`<% nvram_get("mlo_rp"); %>` == "1" || `<% nvram_get("mlo_mb"); %>` == "1"){
-				if(rssi_2g != "") speed_info = data_rate_info_2g;
-				if(rssi_5g != "") speed_info = data_rate_info_5g;
-				if(rssi_5g_2 != "") speed_info = data_rate_info_5g_2;
+			if(isSupport("mloclient")){
+				if(rssi_2g != ""){
+					rssi_info = rssi_2g;
+					speed_info = data_rate_info_2g;
+				}
+				if(rssi_5g != ""){
+					rssi_info = rssi_5g;
+					speed_info = data_rate_info_5g;
+				}
+				if(rssi_5g_2 != ""){
+					rssi_info = rssi_5g_2;
+					speed_info = data_rate_info_5g_2;
+				}
 			}
 
 			if(concurrent_pap){
@@ -3589,7 +3641,8 @@ function refreshStatus(xhr){
 				document.getElementById('speed_status').innerHTML = speed_info;
 
 				if(!Rawifi_support && !Qcawifi_support){
-					if(`<% nvram_get("mlo_rp"); %>` == "1" || `<% nvram_get("mlo_mb"); %>` == "1"){
+					//if(`<% nvram_get("mlo_rp"); %>` == "1" || `<% nvram_get("mlo_mb"); %>` == "1"){
+					if(0){
 						var mlo_bands = `<% nvram_get("mld0_ifnames"); %>`.replace(/wl/g, "").trim().split(/\s+/);
 
 						var rssi_info_array = [];
@@ -3975,7 +4028,6 @@ function refreshStatus(xhr){
 		return 0;
 	}
 }	
-
 function FormActions(_Action, _ActionMode, _ActionScript, _ActionWait){
 	if(_Action != "")
 		document.form.action = _Action;

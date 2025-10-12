@@ -1741,16 +1741,15 @@ void start_lan(void)
 #ifdef RTAC87U
 		eval("brctl", "stp", lan_ifname, nvram_safe_get("lan_stp"));
 #else
-#if !defined(HND_ROUTER) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RPBE58) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 		if (is_routing_enabled()
-#if defined(RPBE58)
-		//|| !nvram_match("re_mode", "1")
-		|| 1
+#if defined(HND_ROUTER) && defined(RTCONFIG_NEW_PHYMAP)
+			&& ext_switch_exist()
+#elif defined(RPBE58)
+			|| 1
 #endif
 		)
 			eval("brctl", "stp", lan_ifname, nvram_safe_get("lan_stp"));
 		else
-#endif
 			eval("brctl", "stp", lan_ifname, "0");
 #endif
 
@@ -2410,7 +2409,7 @@ gmac3_no_swbr:
 		return;
 	}
 #if defined(RTBE58_GO)
-	if (nvram_match("x_Setting", "0"))
+	if (nvram_match("x_Setting", "0") && nvram_match("sw_mode", "3"))
 		eval("brctl", "delif", lan_ifname, "eth1");
 #endif
 
@@ -2799,12 +2798,17 @@ _dprintf("nat_rule: stop_nat_rules 1.\n");
 	set_ezwds_radio_type();
 #endif  
 #if defined(RTCONFIG_SW_BTN)
-	start_sw_btn();
+	if (!pids("sw_btnd"))
+		start_sw_btn();
 #endif
 	post_start_lan();
 
+#if defined(RPBE58) || defined(RTBE58_GO)
 #if defined(RPBE58)
 	if (client_mode() && !nvram_match("force_mlo", "1")) {
+#else 
+	if (client_mode() && nvram_match("mlo_off", "1")) {
+#endif
 		mlo_down();
 		nvram_set("5gbh_war", "0");
 	}
@@ -3795,6 +3799,8 @@ NEITHER_WDS_OR_PSTA:
 						strlcpy(p, "none", sizeof(dualwan) - (p - dualwan));
 						nvram_set("wans_dualwan", dualwan);
 						nvram_set_int("wans_usb_bk_act", 0);
+						nvram_set_int("link_wan1", 0);
+						notify_rc("restart_wan_if 1");
 					}
 				}
 #endif	//RTCONFIG_MULTIWAN_PROFILE
@@ -4106,6 +4112,8 @@ NEITHER_WDS_OR_PSTA:
 						strlcpy(p, "none", sizeof(dualwan) - (p - dualwan));
 						nvram_set("wans_dualwan", dualwan);
 						nvram_set_int("wans_usb_bk_act", 0);
+						nvram_set_int("link_wan1", 0);
+						notify_rc("restart_wan_if 1");
 					}
 				}
 #endif	//RTCONFIG_MULTIWAN_PROFILE
@@ -4962,6 +4970,15 @@ wait_lan_port_to_forward_state(void)
 		if (nvram_match(lan_stp, "0"))
 			continue;
 
+#ifndef RPBE58
+		if (!is_routing_enabled()
+#ifdef RTCONFIG_NEW_PHYMAP
+			|| !ext_switch_exist()
+#endif
+		)
+			continue;
+#endif
+
 		timeout = 5;
 		state = BR_STATE_DISABLED;
 
@@ -5210,7 +5227,9 @@ gmac3_no_swbr:
 #endif
 
 #if defined(RTCONFIG_SW_BTN)
+#if !defined(RTBE58_GO)
 	stop_sw_btn();
+#endif
 #endif
 	// inform watchdog to stop WPS LED
 	kill_pidfile_s("/var/run/watchdog.pid", SIGUSR2);
@@ -5867,7 +5886,7 @@ gmac3_no_swbr:
 	}
 
 #if defined(RTBE58_GO)
-	if (nvram_match("x_Setting", "0"))
+	if (nvram_match("x_Setting", "0") && nvram_match("sw_mode", "3"))
 		eval("brctl", "delif", lan_ifname, "eth1");
 #endif
 	ctrl_lan_gro(nvram_get_int("qca_gro"));
@@ -5993,7 +6012,8 @@ gmac3_no_swbr:
 #endif	
 
 #if defined(RTCONFIG_SW_BTN)
-	start_sw_btn();
+	if (!pids("sw_btnd"))
+		start_sw_btn();
 #endif
 	free(lan_ifname);
 
@@ -6145,6 +6165,10 @@ void lanaccess_mssid(const char *limited_ifname, int mode)
 	strlcpy(lifname, limited_ifname, sizeof(lifname));
 
 #if defined(RTCONFIG_MULTILAN_CFG)
+#if defined(RTBE58_GO)
+	if (nvram_match("x_Setting", "0"))
+		return;
+#endif
 	if (is_ap_group_if(lifname))
 		return;
 #endif	// defined(RTCONFIG_MULTILAN_CFG)
@@ -6572,8 +6596,12 @@ void restart_wireless(void)
 	nvram_set_int("wlready", 0);
 
 #if defined(RTCONFIG_HND_ROUTER_BE_4916) && defined(RTCONFIG_MLO)
+#if defined(RPBE58) || defined(RTBE58_GO)
 #if defined(RPBE58)
 	if (client_mode() && !nvram_match("force_mlo", "1")) {
+#else 
+	if (client_mode() && nvram_match("mlo_off", "1")) {
+#endif
 		mlo_down();
 		nvram_set("5gbh_war", "0");
 	} else
@@ -6703,7 +6731,7 @@ void restart_wireless(void)
 		wl_defaults_wps();
 	}
 
-#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(RTBE58_GO) || defined(RPBE58)
 	reload_wl_check();
 #endif
 
@@ -6751,7 +6779,6 @@ void restart_wireless(void)
 	restart_wl();
 	lanaccess_wl();
 #endif
-	start_acsd();
 #if defined(RTCONFIG_QCA) || \
 		(defined(RTCONFIG_RALINK) && !defined(RTCONFIG_DSL) && !defined(RTN13U))
 	reinit_hwnat(-1);
@@ -6759,6 +6786,7 @@ void restart_wireless(void)
 
 #ifdef CONFIG_BCMWL5
 	start_eapd();
+	start_acsd();
 	start_nas();
 #elif defined(RTCONFIG_RALINK) || defined(RTCONFIG_REALTEK)
 	start_8021x();

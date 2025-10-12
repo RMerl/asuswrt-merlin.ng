@@ -1,0 +1,24 @@
+## This is a template file for generating default nvrama per Radio during Radio or Factory Reset
+## Uniformed nvram parameter per Radio are placed under the section of "Radio reset default nvrams"
+## Unique nvram parameter per Radio will be placed in the section of "Factory restore default nvrams"
+## During reset, a loadable nvram text file will be generated from this template file where prefix "wlX"
+## will be replaced by actual interface name based on the Radio's index
+## Please review, add, delete or modify nvram parameters with prefix "wlX" in the section
+## Retain only those which would be affected by user requested Radio reset either through GUI or command
+## Note: lines procedded with ## are comments only
+##       lined with # are nvram examples for quick reference, they will be ignored unless being uncommented first
+
+
+## Radiio reset default nvrams
+wlX_boot_time=0
+wlX_dcs_dwell_time=30
+
+wlX_channel=0
+
+wlX_rateset=default
+wlX_reset_count=0
+wlX_txbcn_timeout=100
+
+wl0_rfc_allow_11ax=1
+
+wlX_sgi_tx=auto

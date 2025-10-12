@@ -1,0 +1,173 @@
+#!/usr/bin/perl
+#
+# This script replaces predefined macros in linker script template with information
+# synthesized from <overlay-table> and outputs the linker script to STDOUT.
+#
+# OVERLAY_SECTION macro - Dongle Overlay sections (DONGLEOVERLAYS)
+#
+# It needs various information listed below to replace a macro.
+#
+# OVERLAY_SECTION macro:
+#     - OVERLAY section function & data declarations based on <overlay-table>
+#
+# $Id: replace-overlaysec,v 1.5 2010-02-12 23:34:19 sgsiener Exp $
+#
+
+use warnings;
+
+my $fnovlytbl = "nil";
+my $fnldsin = "nil";
+if (@ARGV > 0) {
+    $fnovlytbl = $ARGV[0];
+    $fnldsin = $ARGV[1];
+ }
+if ($fnovlytbl eq "nil" || $fnldsin eq "nil") {
+    die "Usage: perl replace-rommap <overlay-table> <linker-script-template>\n";
+}
+
+# load overlay file contents into memory
+my @overlays = ();
+if ($fnovlytbl ne "nil") {
+    open($fnovlytbl, "<$fnovlytbl") or die "Unable to open file $fnovlytbl: $!\n";
+    @overlays = split(/\n/, join('', <$fnovlytbl>));
+close($fnovlytbl);
+}
+
+# replace macros while copying input to output
+open($fhldsin, "<$fnldsin") or die "Unable to open file $fnldsin: $!\n";
+while (<$fhldsin>) {
+    # replace OVERLAY_SECTION
+    if (/OVERLAY_SECTION/) {
+	if (@overlays == 0) {
+	    printf("\t\t/* No OVERLAY entries from overlay input file %s */\n", $fnovlytbl);
+	    next;
+	}
+
+	printf("\n\t_overlayerrfn_start = .;\n");
+	printf("\t.overlayerrfn : {\n");
+	printf("\t\tKEEP(*(.overlayerr.nonresident_overlay_access))\n");
+	printf("\t}\n");
+	printf("\t_overlayerrfn_end = .;\n\n");
+
+	my $or = "";
+	my $on = "";
+	my $prev_on = "";
+	my $region = "";
+	my $overlaynum = "";
+	my $overlayname = "";
+	my @overlaynums = ();
+	my $need_postamble = 0;
+	# produce all OVERLAY sections
+	for (my $o = 0; $o < @overlays; $o ++) {
+	    # read the overlay def from the list (input from the file)
+	    @tokens = split(/\s+/, $overlays[$o]);
+	    # skip blank line
+	    if (@tokens == 0) {
+		if ($o == $#overlays && $need_postamble == 1) {
+		    # last entry: terminate the section and exit the loop
+		    $region = $or;
+		    goto endofoverlay;
+		} else {
+		    next;
+		}
+	    }
+	    $region = $tokens[0];
+	    # skip comments
+	    if (index($region, '#') == 0) {
+		if ($o == $#overlays && $need_postamble == 1) {
+		    # last entry: terminate the section and exit the loop
+		    $region = $or;
+		    goto endofoverlay;
+		} else {
+		    next;
+		}
+	    }
+	    if (@tokens < 3) {
+		die "Invalid format in file $fnovlytbl\n";
+	    }
+	    $overlaynum = $tokens[1];
+	    $overlayname = $tokens[2];
+
+	    # new overlay region
+	    if ($or ne $region) {
+		# wrap up the previous overlay region if it's not the first time this logic was executed
+		if ($or ne "") {
+endofoverlay:
+		    printf("\t\t}\n");
+		    printf("\t}\n");
+		    printf("\t_r%soverlaymem_start = ADDR(.r%soverlay1);\n", $or, $or);
+		    printf("\t_r%soverlaymem_end = _r%soverlaymem_start;\n", $or, $or);
+		    # determine the size of the overlay region in memory: must accommodate the largest overlay
+		    for (my $oidx = 0; $oidx < @overlaynums; $oidx ++) {
+			printf("\t_r%soverlaymem_end = MAX(_r%soverlaymem_end, _r%soverlaymem_start + SIZEOF(.r%soverlay%s));\n", $or, $or, $or, $or, $overlaynums[$oidx]);
+		    }
+		    # create symbols for the offsets of the overlays within the binary file
+		    if ($or eq "0") {
+			printf("\t_r0overlay0_end = ADDR(.r0overlay1);\n");
+			printf("\t_r0overlay1_end = _r0overlay0_end + SIZEOF(.r0overlay1);\n");
+		    }
+		    else {
+			printf("\t_r%soverlay1_end = _r%uoverlay%s_end + SIZEOF(.r%soverlay1);\n", $or, int($or) - 1, $prev_on, $or);
+		    }
+		    for (my $oidx = 1; $oidx < @overlaynums; $oidx ++) {
+			printf("\t_r%soverlay%s_end = _r%soverlay%s_end + SIZEOF(.r%soverlay%s);\n", $or, $overlaynums[$oidx], $or, $overlaynums[$oidx - 1], $or, $overlaynums[$oidx]);
+		    }
+		    printf("\t/* --- Overlay Region %s END --- */\n\n", $or);
+		    # wrap it up and exit if we've written the last entry
+		    if ($or eq $region && $o == $#overlays) {
+			printf("\t. = _r%soverlaymem_end;\n", $or);
+			printf("\t. = ALIGN(4);\n");
+			printf("\t_end = .;\n");
+			# exit the loop
+			last;
+		    }
+		    # save the last overlay num of the previous overlay region
+		    $prev_on = $overlaynums[$#overlaynums];
+		    $need_postamble = 0;
+		}
+		# start with an empty list of collected overlay numbers
+		@overlaynums = ();
+		$or = $region;
+		# write the opening entries for the next overlay region
+		printf("\t/* --- Overlay Region %s START --- */\n", $or);
+		if ($or eq "0") {
+		    printf("\tOVERLAY : NOCROSSREFS {\n");
+		}
+		else {
+		    printf("\tOVERLAY _r%uoverlaymem_end : NOCROSSREFS AT (_r%uoverlay%s_end) {\n", int($or) - 1, int($or) - 1, $on);
+		}
+		$on = "";
+		$need_postamble = 1;
+	    }
+	    if ($on ne $overlaynum) {
+		# terminate previous overlay
+		if ($on ne "") {
+		    printf("\t\t}\n");
+		}
+		# first symbols within a new overlay
+		printf("\t\t.r%soverlay%s {\n", $or, $overlaynum);
+		printf("\t\t\tKEEP(*(.r%soverlay.%s_vals))\n", $or, $overlayname);
+		printf("\t\t\tKEEP(*(.r%soverlay.%s_idx))\n", $or, $overlayname);
+		printf("\t\t\tKEEP(*(.r%soverlay.%s_name))\n", $or, $overlayname);
+		printf("\t\t\t*(.r%soverlay.%s)\n", $or, $overlayname);
+		$on = $overlaynum;
+		# keep a list of overlay numbers instead of just counting them.
+		# this allows for gaps in the number space
+		push @overlaynums, $overlaynum;
+	    }
+	    else {
+		# subsequent symbols within an overlay
+		printf("\t\t\t*(.r%soverlay.%s)\n", $or, $overlayname);
+	    }
+	    if ($o == $#overlays) {
+		# last entry: terminate the section and exit the loop
+		goto endofoverlay;
+	    }
+	}
+    }
+    # print the line as is
+    else {
+	print $_;
+    }
+}
+close($fhldsin);

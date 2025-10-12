@@ -1,0 +1,26 @@
+#
+# overlays.in
+#
+# $Id: overlays.in,v 1.1 2010-02-04 03:04:25 sgsiener Exp $
+#
+# Fields are:
+#    region-num overlay-num overlay-name ioctl1 ioctl2 name
+#
+# - the minimum required positional fields are region-num, overlay-num & overlay-name
+# - the first symbol declared for an overlay must also include the ioctl1 & ioctl2 fields
+# - subsequent symbols within a given overlay do not include the ioctl1 & ioctl2 fields
+# - an iovar must also include the name field in its first symbol declaration
+#
+# (NOTE: the definitions in the file must be placed in numerically increasing order by 
+# region-num and overlay-num, within each region. Gaps are allowed in the number sequence.)
+#
+# - region-num is the overlay memory region to which the overlay should be mapped
+# - overlay-num is the number of the overlay within a region. multiple functions
+#   and/or data (symbols) may reside in a single overlay
+# - overlay-name is the symbol name of the first symbol defined for a given overlay
+# - ioctl1 is the first IOCTL lookup (match) value
+# - ioctl2 is the second IOCTL lookup (match) value
+# - name corresponds to the iovar name lookup value
+
+0 1  wl_overlaytest_iovar		WLC_GET_VAR		0xffffffff	overlaytest
+1 1  wl_overlaytest2_iovar		WLC_GET_VAR		0xffffffff	overlaytest2

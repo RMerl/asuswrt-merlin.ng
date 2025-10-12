@@ -60,7 +60,10 @@ var str_GuestNetwork_Portal_desc2 = stringSafeGet("<#GuestNetwork_Portal_desc2#>
 var str_GuestNetwork_Wizard_type_desc0 = stringSafeGet("<#GuestNetwork_Wizard_type_desc0#>");
 var str_GuestNetwork_Employee_recommend = stringSafeGet("<#GuestNetwork_Employee_recommend#>");
 var sdn_maximum = ((isSupport("MaxRule_SDN") == "0") ? 6 : (parseInt(isSupport("MaxRule_SDN")) - 1));//default is sdn 0
-const wifi_band_maximum = isSupport("SMART_HOME_MASTER_UI") ? 3 : 5;
+const specific_model = decodeURIComponent(sdn_variable.productid) === 'RT-BE58_GO';
+const wifi_band_maximum = specific_model
+	? 3
+	: isSupport("SMART_HOME_MASTER_UI") ? 3 : 5;
 const mlo_fh_enable_maximum = 1;
 const maclist_maximum = isSupport("MaxRule_apx_maclist") || 64;
 const manual_dhcp_maximum = 32;

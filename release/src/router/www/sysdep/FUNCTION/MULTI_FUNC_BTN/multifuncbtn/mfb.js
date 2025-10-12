@@ -15,6 +15,10 @@ if(!support_vpn_btn){
 if(!isSupport("mtlancfg")){
 	btnsw_list = btnsw_list.filter(item => item.value != "5")
 }
+if (isSwMode("RP") || isSwMode("MB")) {
+	btnsw_list = btnsw_list.filter(item => item.value != "3" && item.value != "5");
+}
+
 let nv_btnsw_onoff = httpApi.nvramGet(["btnsw_onoff"]).btnsw_onoff;
 let vpnc_profile_list = [];
 if(support_vpn_btn){
@@ -673,8 +677,10 @@ function Get_Component_SDN_Profiles(){
 				let profile_data = value.split(">");
 				let sdn_rl_profile = set_sdn_profile(profile_data);
 				if(sdn_rl_profile.idx == "0") return true;
+				if(sdn_rl_profile.sdn_name === "MAINBH" || sdn_rl_profile.sdn_name === "MAINFH") return true;
 				sdn_all_rl.sdn_rl = sdn_rl_profile;
-				let apg_rl_list = get_apg_rl_list(sdn_rl_profile.apg_idx);
+				const ap_prefix = (sdn_rl_profile.sdn_name == "MAINFH" || sdn_rl_profile.sdn_name == "MAINBH") ? "apm" : "apg";
+				const apg_rl_list = get_apg_rl_list(sdn_rl_profile.apg_idx, ap_prefix);
 				let specific_apg = apg_rl_list.filter(function(item, index, array){
 					return (item.apg_idx == sdn_rl_profile.apg_idx);
 				})[0];
@@ -694,13 +700,14 @@ function Get_Component_SDN_Profiles(){
 			sdn_profile.apg_idx = profile_data[5];
 			return sdn_profile;
 		}
-		function get_apg_rl_list(_apg_idx){
+		function get_apg_rl_list(_idx, _prefix){
+			let prefix = (_prefix === "apg" || _prefix === "apm") ? _prefix : "apg";
 			let apg_rl_list = [];
-			if(parseInt(_apg_idx) > 0){
+			if(parseInt(_idx) > 0){
 				let apg_profile = new apg_rl_attr();
-				let apg_info = httpApi.nvramCharToAscii(["apg" + _apg_idx + "_ssid"], true);
-				apg_profile.apg_idx = _apg_idx.toString();
-				apg_profile.ssid = decodeURIComponent(apg_info["apg" + _apg_idx + "_ssid"]);
+				let apg_info = httpApi.nvramCharToAscii([prefix + _idx + "_ssid"], true);
+				apg_profile.apg_idx = _idx.toString();
+				apg_profile.ssid = decodeURIComponent(apg_info[prefix + _idx + "_ssid"]);
 				apg_rl_list.push(JSON.parse(JSON.stringify(apg_profile)));
 			}
 			return apg_rl_list;

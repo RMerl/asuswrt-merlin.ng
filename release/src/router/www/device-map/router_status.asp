@@ -172,20 +172,53 @@ function genElement(){
 		"wl2_hwaddr",
 		"wl3_hwaddr",
 		"wl4_hwaddr"
-	])
+	]);
+	const cap_info = isSupport("sdn_mainfh") ? (httpApi.hookGet("get_cfg_clientlist")[0] || {}) : {};
+	const bandToApMapping = {
+		'2G': 'ap2g',
+		'5G1': 'ap5g',
+		'5G2': 'ap5g1',
+		'6G1': 'ap6g',
+		'6G2': 'ap6g1'
+	};
 
-	for(var i = 0; i < bandName.length; i++){
-		if(get_wl_unit_by_band(bandName[i]) !== ""){
-			code += `
-				<div class="info-block">
-					<div class="info-title">${wl_nband_title[get_wl_unit_by_band(bandName[i])]} <#MAC_Address#></div>
-					<div class="info-content">${router_mac["wl" + get_wl_unit_by_band(bandName[i]) + "_hwaddr"]}</div>
-				</div>
-			`;
+	for (let i = 0; i < bandName.length; i++) {
+		const unit = get_wl_unit_by_band(bandName[i]);
+		if (!unit) continue;
+
+		const title = wl_nband_title[unit];
+		let mac = '';
+
+		if (isSupport("sdn_mainfh")) {
+			mac = getMainFHMac(bandName[i], cap_info, bandToApMapping);
+		} else {
+			mac = router_mac["wl" + unit + "_hwaddr"];
+		}
+
+		if (mac) {
+			code += genMacInfoBlock(title, mac);
 		}
 	}
 
 	$('#hw_information_field').html(code);
+
+	function getMainFHMac(bandName, cap_info, bandToApMapping) {
+		const apKey = bandToApMapping[bandName];
+		if (!apKey) return '';
+		const ap_ssid = cap_info[`${apKey}_ssid_fh`];
+		if (ap_ssid && ap_ssid !== '') {
+			return cap_info[`${apKey}_fh`] || '';
+		}
+		return '';
+	}
+	function genMacInfoBlock(title, mac) {
+		return `
+			<div class="info-block">
+				<div class="info-title">${title} <#MAC_Address#></div>
+				<div class="info-content">${mac}</div>
+			</div>
+		`;
+	}
 
 	//YADEX DNS
 /*	if(system.yadnsSupport &&　parent.sw_mode == 1){

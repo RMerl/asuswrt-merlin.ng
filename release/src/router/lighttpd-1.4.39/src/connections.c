@@ -819,7 +819,7 @@ static int parser_share_link(server *srv, connection *con){
 
 static int redirect_mobile_share_link(server *srv, connection *con){
 	data_string *ds_userAgent = (data_string *)array_get_element(con->request.headers, "user-Agent");
-	char* aa = get_filename_ext(con->request.uri->ptr);
+	const char* aa = get_filename_ext(con->request.uri->ptr);
 	int len = strlen(aa)+1; 		
 	char* file_ext = (char*)malloc(len);
 	memset(file_ext,'\0', len);
@@ -1019,7 +1019,7 @@ static void check_available_temp_space(server *srv, connection *con){
 			if(fp){
 				int len = fread(mybuffer, sizeof(char), BUFSIZ - 1, fp);
 				if(len>0){
-					mybuffer[len] = "\0";
+					mybuffer[len] = '\0';
 				
 					char * pch;
 					pch = strtok(mybuffer, " ");
@@ -1049,7 +1049,7 @@ static void check_available_temp_space(server *srv, connection *con){
 
 				}
 				else {
-					mybuffer[0] = "\0";
+					mybuffer[0] = '\0';
 				}
 
 				pclose(fp);

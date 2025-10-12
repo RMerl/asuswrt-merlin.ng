@@ -1,0 +1,14 @@
+--- a/wifi_hal.c
++++ b/wifi_hal.c
+@@ -123,8 +123,9 @@
+ #define MAC_STR_LEN		18
+ #define MAC_ADDR_LEN		6
+ 
+-#define HAL_GET_MAX_RADIOS	wldm_get_radios()
+-#define HAL_GET_MAX_APS		wldm_get_max_aps()
++/* RDKM 21.3 does not support triband yet, limit it to 2 radios */  
++#define HAL_GET_MAX_RADIOS	2
++#define HAL_GET_MAX_APS	16
+ 
+ void hal_wifi_log(const char *fmt, ...)
+ {

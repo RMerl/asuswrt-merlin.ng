@@ -123,6 +123,36 @@
   #selectable { border-spacing:0px; margin-left:0px;margin-top:0px; padding: 0px; width:100%;}
   #selectable td { height: 22px; }
 
+.btn {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid transparent;
+    font-size: 1rem;
+    line-height: 1.5;
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    padding: 0.5rem 1rem;
+    border-radius: 0.3rem;
+}
+.btn:hover {
+    cursor: pointer;
+}
+.btn-primary {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+}
+.btn-primary:hover {
+    color: #fff;
+    background-color: #0069d9;
+    border-color: #0062cc;
+}
 </style>
 <script>
 $(function () {
@@ -846,7 +876,16 @@ function initial(){
 	if(isSupport("sdn_mainfh")){
 		document.getElementById('wifi7_mode_field').style.display = 'none';
 		document.getElementById('wl_sched_enable').style.display = 'none';
-	}	
+	}
+
+	// for JP outdoor mode
+	if(od_mode_support && (isSwMode("RT") || isSwMode("AP"))){
+		if((band5g2_support && get_band_name_by_wl_unit(wl_unit_value) == '5G2')
+		||(!band5g2_support && get_band_name_by_wl_unit(wl_unit_value) == '5G1')
+		){
+			document.querySelector('#od_mode_field').style.display = '';
+		}
+	}
 }
 
 function generate_country_selection(){
@@ -1055,6 +1094,17 @@ function applyRule(){
 		if(location_list_support && !cfg_ui_region_disable){
 			var uiLocationCode = document.form.ui_location_code.value;
 			var locationCode = (U5_country_code && uiLocationCode == "U5") ? "AA" : uiLocationCode;
+		}
+
+		if(od_mode_support && (isSwMode("RT") || isSwMode("AP"))){
+			if((band5g2_support && get_band_name_by_wl_unit(wl_unit_value) == '5G2')
+			||(!band5g2_support && get_band_name_by_wl_unit(wl_unit_value) == '5G1')
+			){
+				if(document.form.od_mode.value != "<% nvram_get("od_mode"); %>"){
+					document.form.action_script.value = "reboot";
+					document.form.action_wait.value = reboot_needed_time;
+				}				
+			}
 		}
 
 		if(reboot_confirm==1){
@@ -1830,6 +1880,26 @@ function wifi7_mode(obj){
 		}
 	}
 }
+function od_mode_change(value){
+	const cookie = document.cookie;
+	const parts = cookie.split('jp_od=');
+	if(parts.length < 2){
+		document.querySelector('[class*="container"]').classList.add('blur_effect');
+		document.querySelector('[role="popup"]').style.display = 'block';
+	}	
+}
+
+function hide_od_desc(){
+	document.form.od_mode.value = '0';
+	document.querySelector('[class*="container"]').classList.remove('blur_effect');
+	document.querySelector('[role="popup"]').style.display = 'none';
+}
+
+function confirm_od_desc(){
+	document.cookie='jp_od=1';
+	document.querySelector('[class*="container"]').classList.remove('blur_effect');
+	document.querySelector('[role="popup"]').style.display = 'none';
+}
 </script>
 </head>
 
@@ -2263,6 +2333,15 @@ function wifi7_mode(obj){
 							</select>
 						</td>
 					</tr>
+					<tr id="od_mode_field" style="display:none">
+						<th><a class="hintstyle">Outdoor Mode</a></th>
+						<td>
+							<select name="od_mode" class="input_option" onchange="od_mode_change(this.value);">
+								<option value="0" <% nvram_match("od_mode", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
+								<option value="1" <% nvram_match("od_mode", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
+							</select>
+						</td>
+					</tr>
 					<tr id="wl_txPower_field">
 						<th><a id="wl_txPower_field_title" class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 16);"><#WLANConfig11b_TxPower_itemname#></a></th>
 						<td>
@@ -2314,6 +2393,34 @@ function wifi7_mode(obj){
 					
 				</div>	<!-- for .container  -->
 				<div class="popup_container popup_element_second"></div>
+				<div class="popup_container popup_element_second" role="popup">
+					<div>
+						<div class="popup_title_container">
+							<div class="title"></div>
+							<div class="close_btn" onclick="hide_od_desc()">×</div>
+						</div>
+						<div class="popup_content_container">
+							<div class="feature_desc_container">
+								<div style="display:flex;align-items: center;">
+									<div class="drImg"><img src="images/alertImg.png"></div>
+									<div class="title" style="margin-left:110px;"><#Outdoor_desc_title#></div>
+								</div>								
+								<div class="desc">
+									<div class="text-list">											
+										<ol>
+											<li><#Outdoor_desc1#></li>
+											<br>
+											<li><#Outdoor_desc2#></li>				
+										</ol>							
+									</div>			
+									<div style="display: flex;align-items: center;justify-content: center;">
+										<button type="button" class="btn btn-primary " onclick="confirm_od_desc();"><#CTL_ok#></button>
+									</div>										
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
 		</td>
 	</tr>
 </tbody>

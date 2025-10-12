@@ -270,6 +270,7 @@ system.currentOPMode = (() => {
         ew2: { id: "EW2", desc: "<#OP_RE2G_item#>" },
         ew5: { id: "EW5", desc: "<#OP_RE5G_item#>" },
         hs: { id: "HS", desc: "Hotspot" },
+        wisp: { id: "WISP", desc: `<#OP_WISP_item#>` }
     };
 
     let { sw_mode, wlc_psta, wlc_express } = nvram;

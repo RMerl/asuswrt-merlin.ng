@@ -1,0 +1,48 @@
+diff --git a/vlan_util_brcm93390.sh b/vlan_util_brcm93390.sh
+index c3b1611..a384a4f 100644
+--- a/vlan_util_brcm93390.sh
++++ b/vlan_util_brcm93390.sh
+@@ -144,6 +144,8 @@ get_expected_if_list() {
+             if [ "$BRIDGE_MODE" -gt 0 ]; then
+                 IF_LIST_ALL+=" l${CMDIAG_IF} erouter0"
+             fi
++            wifi_lan_ifs=`nvram get lan_ifnames`
++            IF_LIST_ALL+=" $wifi_lan_ifs"
+         ;;
+ 
+         #XFinity Home
+@@ -152,6 +154,8 @@ get_expected_if_list() {
+             if [ "$isport2enable" = "true" ]; then
+                 IF_LIST_ALL="eth1"
+             fi
++            wifi_lan1_ifs=`nvram get lan1_ifnames`
++            IF_LIST_ALL+=" $wifi_lan1_ifs"
+         ;;
+ 
+         #XFinity Hostspot 2.4 GHz
+@@ -556,5 +560,25 @@ if [ -f "$ROUTER_PERM_CONFIG" ]; then
+     fi
+ fi
+ 
++# Enable Broadcom WiFi packet Acceleration
++for wlmainindex in {0..1}
++do
++    if [ -e "/sys/class/net/wl${wlmainindex}" ]; then
++        echo 3 > /sys/class/net/wl${wlmainindex}/queues/rx-0/rps_cpus
++        echo 3 > /sys/class/net/wl${wlmainindex}/queues/tx-0/xps_cpus
++        echo 1 > /sys/class/net/wl${wlmainindex}/netdev_group
++        echo "inf add wl${wlmainindex}" > /proc/driver/flowmgr/cmd
++    fi
++done
++
++# Enable telnetd access
++telnet_en=`nvram get telnet_enable`
++if [ "${telnet_en}" == "1" ]; then
++    telnetd -l /bin/sh -K
++    iptables -I INPUT -i brlan0 -p tcp --dport 23 -j ACCEPT
++    iptables -I INPUT -i brlan0 -p tcp --dport 22 -j ACCEPT
++    ushd -d
++fi
++
+ #Script finished, remove lock file
+ rm -f ${LOCKFILE}

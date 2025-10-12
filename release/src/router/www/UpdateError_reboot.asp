@@ -11,6 +11,7 @@
 <script>
 	var reboottime = eval("<% get_default_reboot_time(); %>");
 	var upgrade_fw_status = '<% nvram_get("upgrade_fw_status"); %>';
+	window.localStorage.setItem(Date.now(), `[<% nvram_get("productid"); %>#<% nvram_get("extendno"); %>] The manual firmware upgrade failed and returned the error code: ${upgrade_fw_status}`);
 	
 	if(upgrade_fw_status == 2 || upgrade_fw_status == 4){
 		parent.document.getElementById("hiddenMask").style.visibility = "hidden";

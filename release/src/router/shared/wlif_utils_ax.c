@@ -3500,4 +3500,54 @@ int apply_mlo_rp_settings(int mlo_client_mode)
 	return 0;
 }
 
+int get_wlx_unit(char *wlx)
+{
+	while(*wlx && !isdigit(*wlx))
+		wlx++;
+
+	return *wlx ? atoi(wlx) : -1;
+}
+
+#ifdef RTCONFIG_BRCM_HOSTAPD
+int get_wpacli_status(int unit)
+{
+	char cmd[128], buf[32];
+	FILE *pfp = NULL;
+	char tmp[16], prefix[] = "wlXXXXXXXXXX_";
+	char ifname[IFNAMSIZ] = { 0 };
+	int ret = 0;
+	struct ether_addr bssid;
+	unsigned char bssid_null[6] = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
+#ifdef RTCONFIG_WIFI7
+	static int status = -1, status_old;
+	int val = -1;
+	static int count = 0;
+#endif
+
+	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+	strlcpy(ifname, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(ifname));
+
+	if ((wl_ioctl(ifname, WLC_GET_BSSID, &bssid, ETHER_ADDR_LEN) != 0) || !memcmp(&bssid, bssid_null, 6))
+		goto exit;
+
+	snprintf(cmd, sizeof(cmd), "wpa_cli-2.7 -i %s -p /var/run/%swpa_supplicant/ status | grep wpa_state | cut -d\"=\" -f2", ifname, prefix);
+	memset(buf, 0, sizeof(buf));
+
+	pfp = popen(cmd, "r");
+	if (pfp != NULL) {
+		if (fgets(buf, sizeof(buf), pfp) != NULL) {
+			buf[strlen(buf) - 1] = '\0';
+			if (!strcmp(buf, "COMPLETED"))
+				ret = 2;
+			else if (!strcmp(buf, "4WAY_HANDSHAKE"))
+			ret = 1;
+		}
+
+		pclose(pfp);
+	}
+exit:
+	return ret;
+}
+#endif
+
 #endif

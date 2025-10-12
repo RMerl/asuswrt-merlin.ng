@@ -9,19 +9,19 @@ process_reverse_oops_dump()
 {
 	:>$1_temp
 	:>$1_final
-	while IFS= read -r line; do     
-		chunk=`echo "$line" | grep -l "$2"`
-		if [ -z "$chunk" ]; then
-			if [ -f "$1_chunk" ]; then
-				echo "$line" >> $1_chunk
-			fi
-		else
-			if [ -f "$1_chunk" ]; then
-				cat $1_chunk $1_temp >| $1_final
-				cp $1_final $1_temp;
-			fi
-			:>$1_chunk;
-		fi;
+	while IFS= read -r line; do	
+	        chunk=`echo "$line" | grep -l "$2"`
+	        if [ -z "$chunk" ]; then
+	                if [ -f "$1_chunk" ]; then
+	                        echo "$line" >> $1_chunk
+	                fi
+	        else
+	                if [ -f "$1_chunk" ]; then
+	                        cat $1_chunk $1_temp >| $1_final
+	                        cp $1_final $1_temp;
+	                fi
+	                :>$1_chunk;
+	        fi;
 	done < $1
 	\rm $1_chunk $1_temp
 	mv $1_final $1
@@ -30,72 +30,68 @@ process_reverse_oops_dump()
 # Kernel crash log config
 kernel_oops_config()
 {
-	ROOTFS_DEV=`/rom/etc/get_rootfs_dev.sh`
+	ROOTFS_DEV=`/etc/get_rootfs_dev.sh`
 	MTDOOPS_PART=/proc/environment/mtdoops
 	# Max size(bytes) limit before compression. 131072 = 128KB
 	OOPSLOG_MAX_SIZE=131072
 
 	# NAND
-#	if [ -e $MTDOOPS_PART ]; then
-#		mtdoops=$(cat $MTDOOPS_PART)
-#		rec_size=65536
-#		log_shift=$(gunzip -c /proc/config.gz | grep CONFIG_LOG_BUF_SHIFT | cut -d '=' -f 2)
-#		rec_size=$((2**$log_shift))
-#		mtdsize=$(cat /proc/mtd  | grep $mtdoops | cut -d ' ' -f2)
-#		mtdnum=$(cat /proc/mtd  | grep $mtdoops | cut -d ':' -f1)
-#		if [ "$mtdsize" != "" ]; then
-#			mtdsize=$((0x${mtdsize}))
-#			if [ $rec_size -gt $mtdsize ]; then
-#				rec_size=$mtdsize
-#			fi
-#
-#			# Header check
-#			# linux kernel v4.19, #define MTDOOPS_KERNMSG_MAGIC 0x5d005d00
-#			# linux kernel v6.5.3, #define MTDOOPS_KERNMSG_MAGIC_v1 0x5d005d00, #define MTDOOPS_KERNMSG_MAGIC_v2 0x5d005e00
-#			mtd_debug read /dev/$mtdnum 0x0 8 /tmp/kernel_crash_log.header >& /dev/null
-#			mtdoops_kernmsg_magic=$(xxd -g4 -s4 -p /tmp/kernel_crash_log.header)
-#			if [ "$mtdoops_kernmsg_magic" == "005d005d" -o "$mtdoops_kernmsg_magic" == "005e005d" ]; then
-#				mtd_debug read /dev/$mtdnum 0x0 $rec_size /tmp/kernel_crash_log.bin >& /dev/null
-#				# Erase mtdoops partition with 0xff
-#				mtd_debug erase /dev/$mtdnum 0x0 $mtdsize >& /dev/null
-#			fi
-#
-#			# Note: please load mtdoops driver after reading/erasing old oops in above.
-#			# This ensures mtdoops driver always writes new oops starting at offset 0x0.
-#			echo "load mtdoops driver: mtd partition $mtdoops record size $rec_size"
-#
-#			# upstream kernel commit 1114e3d00f539ecb7a8415663f2a47a80e00a537
-#			# doesn't allow mtdoops partition to be bigger than 8MB
-#			# so check if mtdoops partition is bigger than that,
-#			# if yes, reduce it to 8MB
-#			mtd_parts_format_check=$(cat /proc/environment/mtdparts|grep @)
-#			if [ ! "x${mtd_parts_format_check}" == "x" ]; then
-#				part_start_addr=$(cat /proc/environment/mtdparts | sed -e 's/,/\n/g' | grep ${mtdoops} | sed -e 's/.*@//' -e 's/(.*//' )
-#				mtd_part_num=$(echo ${mtdnum} | sed -e 's/mtd//')
-#				boot_part_name=$(cat /proc/environment/mtdparts | sed 's/:.*//')
-#				boot_part_num=$(cat /proc/mtd | grep $boot_part_name | sed -e 's/:.*//' | sed -e 's/mtd//')
-#				if [ "${mtdsize}" -gt "8388608" ]; then
-#					echo "mtdoops partition is too big at ${mtdsize}, limiting it to 8MB"
-#					mtdpart del /dev/mtd${boot_part_num} ${mtd_part_num}
-#					mtdpart add /dev/mtd${boot_part_num} ${mtdoops} ${part_start_addr} 8388608
-#				fi
-#			fi
-#			insmod /lib/modules/$KERNELVER/kernel/drivers/mtd/mtdoops.ko mtddev=$mtdoops record_size=$rec_size
-#		fi
+	if [ -e $MTDOOPS_PART ]; then
+		mtdoops=$(cat $MTDOOPS_PART)
+		rec_size=65536
+		log_shift=$(gunzip -c /proc/config.gz | grep CONFIG_LOG_BUF_SHIFT | cut -d '=' -f 2)
+		rec_size=$((2**$log_shift))
+		mtdsize=$(cat /proc/mtd  | grep $mtdoops | cut -d ' ' -f2)
+		mtdnum=$(cat /proc/mtd  | grep $mtdoops | cut -d ':' -f1)
+		if [ "$mtdsize" != "" ]; then   
+			mtdsize=$((0x${mtdsize}))
+			if [ $rec_size -gt $mtdsize ]; then
+				rec_size=$mtdsize
+			fi
+
+			# Header check
+			# linux kernel v4.19, #define MTDOOPS_KERNMSG_MAGIC 0x5d005d00
+			# linux kernel v6.5.3, #define MTDOOPS_KERNMSG_MAGIC_v1 0x5d005d00, #define MTDOOPS_KERNMSG_MAGIC_v2 0x5d005e00
+			mtd_debug read /dev/$mtdnum 0x0 8 /tmp/kernel_crash_log.header >& /dev/null
+			mtdoops_kernmsg_magic=$(xxd -g4 -s4 -p /tmp/kernel_crash_log.header)
+			if [ "$mtdoops_kernmsg_magic" == "005d005d" -o "$mtdoops_kernmsg_magic" == "005e005d" ]; then
+				mtd_debug read /dev/$mtdnum 0x0 $rec_size /tmp/kernel_crash_log.bin >& /dev/null
+				# Erase mtdoops partition with 0xff
+				mtd_debug erase /dev/$mtdnum 0x0 $mtdsize >& /dev/null
+			fi
+
+			# Note: please load mtdoops driver after reading/erasing old oops in above.
+			# This ensures mtdoops driver always writes new oops starting at offset 0x0.
+			echo "load mtdoops driver: mtd partition $mtdoops record size $rec_size"
+
+			# upstream kernel commit 1114e3d00f539ecb7a8415663f2a47a80e00a537
+			# doesn't allow mtdoops partition to be bigger than 8MB
+			# so check if mtdoops partition is bigger than that,
+			# if yes, reduce it to 8MB
+			mtd_parts_format_check=$(cat /proc/environment/mtdparts|grep @)
+			if [ ! "x${mtd_parts_format_check}" == "x" ]; then
+				part_start_addr=$(cat /proc/environment/mtdparts | sed -e 's/,/\n/g' | grep ${mtdoops} | sed -e 's/.*@//' -e 's/(.*//' )
+				mtd_part_num=$(echo ${mtdnum} | sed -e 's/mtd//')
+				boot_part_name=$(cat /proc/environment/mtdparts | sed 's/:.*//')
+				boot_part_num=$(cat /proc/mtd | grep $boot_part_name | sed -e 's/:.*//' | sed -e 's/mtd//')
+				if [ "${mtdsize}" -gt "8388608" ]; then
+					echo "mtdoops partition is too big at ${mtdsize}, limiting it to 8MB"
+					mtdpart del /dev/mtd${boot_part_num} ${mtd_part_num}
+					mtdpart add /dev/mtd${boot_part_num} ${mtdoops} ${part_start_addr} 8388608
+				fi
+			fi
+			insmod /lib/modules/$KERNELVER/kernel/drivers/mtd/mtdoops.ko mtddev=$mtdoops record_size=$rec_size
+		fi
 
 	# MMC
-#	el
-	if TEMP=`echo $ROOTFS_DEV | grep mmcblk`; then
-#		mmcoops_offset=$(xxd -g4 /proc/device-tree/periph/mmcoops/start-offset | cut -d ' ' -f2)
-#		mmcoops_size=$(xxd -g4 /proc/device-tree/periph/mmcoops/size | cut -d ' ' -f2)
-		mmcoops_offset=$(hexdump -ve '/1 "%02x"' /proc/device-tree/periph/mmcoops/start-offset)
-		mmcoops_size=$(hexdump -ve '/1 "%02x"' /proc/device-tree/periph/mmcoops/size)
-
+	elif TEMP=`echo $ROOTFS_DEV | grep mmcblk`; then
+		mmcoops_offset=$(xxd -g4 /proc/device-tree/periph/mmcoops/start-offset | cut -d ' ' -f2)
+		mmcoops_size=$(xxd -g4 /proc/device-tree/periph/mmcoops/size | cut -d ' ' -f2)
 		if [ "$mmcoops_offset" != "" -a "$mmcoops_size" != "" ]; then
 			mmcoops_offset=$((0x${mmcoops_offset}))
 			mmcoops_size=$((0x${mmcoops_size}))
 
-			insmod /lib/modules/$KERNELVER/kernel/drivers/mmc/core/oops_mmc.ko mmcdev=/dev/mmcblk0 partition_start_block=$mmcoops_offset partition_size=$(($mmcoops_size*512)) mmc_blksz=512 dump_to_console=n dump_file_path=/var/kernel_crash_log.bin
+			insmod /lib/modules/$KERNELVER/kernel/drivers/mmc/core/oops_mmc.ko mmcdev=/dev/mmcblk0 partition_start_block=$mmcoops_offset partition_size=$(($mmcoops_size*512)) mmc_blksz=512 dump_to_console=n dump_file_path=/tmp/kernel_crash_log.bin
 		fi
 
 	# VFLASH
@@ -133,33 +129,33 @@ kernel_oops_config()
 	fi
 
 	# Save new crash log file
-	if [ -f /var/kernel_crash_log.bin ]; then
+	if [ -f /tmp/kernel_crash_log.bin ]; then
 		# Remove the 0x00 tail from the bin
-		tr -d '\000' < /var/kernel_crash_log.bin > /var/kernel_crash_log.bin2
+		tr -d '\000' < /tmp/kernel_crash_log.bin > /tmp/kernel_crash_log.bin2
 		# Remove the 0xff tail from the bin
-		tr -d '\377' < /var/kernel_crash_log.bin2 > /var/kernel_crash_log.txt
-		oops_log_size=$(ls -l /var/kernel_crash_log.txt  | awk '{print $5}')
+		tr -d '\377' < /tmp/kernel_crash_log.bin2 > /tmp/kernel_crash_log.txt
+		oops_log_size=$(ls -l /tmp/kernel_crash_log.txt  | awk '{print $5}')
 		# If the size exceeds the limit, truncate the tail(valuable) part
 		if [ $oops_log_size -gt $OOPSLOG_MAX_SIZE ]; then
-			mv /var/kernel_crash_log.txt /var/kernel_crash_log.big
-			dd if=/var/kernel_crash_log.big of=/var/kernel_crash_log.txt bs=1 skip=$(($oops_log_size-$OOPSLOG_MAX_SIZE)) >& /dev/null
+			mv /tmp/kernel_crash_log.txt /tmp/kernel_crash_log.big
+			dd if=/tmp/kernel_crash_log.big of=/tmp/kernel_crash_log.txt bs=1 skip=$(($oops_log_size-$OOPSLOG_MAX_SIZE)) >& /dev/null
 		fi
 		# Check if its a reverse dump. 4.19 eMMC oops driver may use a
 		# reverse dump to avoid loss of key oops traces due to eMMC device
 		# not being able to fully flush its internal cache due to reset pin 
 		# assertion. A reverse oops dump allows the newest traces to be written
 		# to the eMMC first, increasing chances of them getting comitted
-		if TEMP=`cat /var/kernel_crash_log.txt | grep REV_OOPS`; then
+		if TEMP=`cat /tmp/kernel_crash_log.txt | grep REV_OOPS`; then
 			# Re-assemble reverse dump into proper chronological order
 			echo "Reverse oops trace detected!"
-			process_reverse_oops_dump /var/kernel_crash_log.txt "REV_OOPS"
+			process_reverse_oops_dump /tmp/kernel_crash_log.txt "REV_OOPS"
 		fi
 
-		tar -czf $CORE_DIR_NEW/kernel_crash_log.tar.gz -C /var kernel_crash_log.txt
+		tar -czf $CORE_DIR_NEW/kernel_crash_log.tar.gz -C /tmp kernel_crash_log.txt
 	fi
 
 	# Remove tmp files
-	rm -f /var/kernel_crash_log.*
+	rm -f /tmp/kernel_crash_log.*
 }
 
 # Application coredump config
@@ -175,7 +171,7 @@ coredump_config()
 			else
 				COREDUMP_APP=DEFAULT
 			fi
-			echo "| /rom/etc/init.d/coredump.sh $CORE_DIR_NEW $CORE_DIR_LAST $COREDUMP_APP %E{%e} %P %u %g %s %t %h" > /proc/sys/kernel/core_pattern
+			echo "| /etc/init.d/coredump.sh $CORE_DIR_NEW $CORE_DIR_LAST $COREDUMP_APP %E{%e} %P %u %g %s %t %h" > /proc/sys/kernel/core_pattern
 			nfiles=`ls $CORE_DIR_NEW/core_* 2> /dev/null`
 			if [ "$nfiles" != "" ]; then
 				echo "Detected coredumps from last boot: $nfiles"
@@ -208,8 +204,8 @@ crash_log_config()
 		rm -rf $CORE_DIR_LAST/*
 		cp $CORE_DIR_NEW/image_version $CORE_DIR_LAST/image_version
 	fi
-	if [ "$(cat /rom/etc/image_version 2> /dev/null)" != "$(cat $CORE_DIR_NEW/image_version 2> /dev/null)" ]; then
-		cp /rom/etc/image_version $CORE_DIR_NEW/image_version
+	if [ "$(cat /etc/image_version 2> /dev/null)" != "$(cat $CORE_DIR_NEW/image_version 2> /dev/null)" ]; then
+		cp /etc/image_version $CORE_DIR_NEW/image_version
 	fi
 
 	kernel_oops_config
@@ -230,7 +226,7 @@ case "$1" in
 		fi
 
 		# Crash log settings
-		crash_log_config &
+#		crash_log_config &
 
 		if [ -n "$BRCM_SCHED_RT_RUNTIME" ]; then
 			echo $BRCM_SCHED_RT_RUNTIME > /proc/sys/kernel/sched_rt_runtime_us
@@ -258,8 +254,8 @@ case "$1" in
 		# (This is needed by ubusd early during bootup).
 		# The CMS/BDK entries in both files (admin user and root group) will be overwritten by
 		# CMS/BDK when it fully starts up.  But all other entries will be preserved.
-		cp /rom/etc/passwd.static /var/passwd
-		cp /rom/etc/group.static /var/group
+		cp /etc/passwd.static /var/passwd
+		cp /etc/group.static /var/group
 
 		echo "Configuring system OK"
 

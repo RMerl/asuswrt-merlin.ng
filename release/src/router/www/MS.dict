@@ -4905,3 +4905,6 @@ Notice_Message_1=Due to system optimization, the %@ network(s) have to be reconf
 Notice_Message_2=Due to system optimization, please help to add existing MAC filter again on Network settings.
 Notice_Message_3=I have read it, do not show it again
 CTL_Decline=Decline
+Outdoor_desc_title=Warning
+Outdoor_desc1=By enabling mode 1, AiMesh will be limited and might cause mesh node disconnect.
+Outdoor_desc2=In compliance with regulations, the system will scan channels for about 1 minute to avoid weather radar interference. If radar signals are detected, it will switch to 2.4GHz, causing brief disconnection. The affected channel will be blocked for 30 minutes.

@@ -361,6 +361,7 @@ var systemVariable = {
 	"uiModelNameCloud": {},
 	"authModePostData": {},
 	"eth_wan_list":{},
+	"eth_port_num": 0,
 	"ispProfiles": [],
 	"ispPortDefinitions": {},
 	"cloudIspProfiles": [],
@@ -396,7 +397,9 @@ var systemVariable = {
 	},
 	"cfg_ready_check" : 0,
 	"sdn_idx" : 0,
-	"apg_idx" : 0
+	"apg_idx" : 0,
+	"wlc_pre_auth_checked" : false,
+	"wlc_pre_auth_count" : 0
 }
 
 var aimeshObj = {

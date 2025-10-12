@@ -68,6 +68,11 @@ ifneq ($(strip $(BUILD_BCM_WLAN_REMOVE_INTERNAL_DEBUG)),)
 export NO_BCMINTERNAL = 1
 export NO_BCMDBG = 1
 endif
+
+ifneq ($(strip $(BUILD_UBUS_CAPT_WLAN)),)
+export UBUS_CAPT_WLAN = 1
+endif
+
 endif # For either wlan driver or userspace
 
 ifneq ($(strip $(BUILD_43602NIC)),)

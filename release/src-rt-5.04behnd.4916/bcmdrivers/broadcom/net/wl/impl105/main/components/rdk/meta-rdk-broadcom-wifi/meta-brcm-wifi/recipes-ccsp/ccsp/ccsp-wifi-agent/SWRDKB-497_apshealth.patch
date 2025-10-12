@@ -1,0 +1,17 @@
+diff --git a/scripts/apshealth.sh b/scripts/apshealth.sh
+index eba828d..773b1c0 100755
+--- a/scripts/apshealth.sh
++++ b/scripts/apshealth.sh
+@@ -51,7 +51,11 @@ while [ "$forever" -eq "1" ]; do
+ 	t=`date -u +"%s"`
+ 	line=""
+ 	for i in {0..15}; do
+-		up=`wifi_api wifi_getApStatus $i`
++		if [ -e "/usr/bin/wifi_api" ]; then
++			up=`wifi_api wifi_getApStatus $i`
++		else
++			up="Disable"
++		fi
+ 		if [ "$up" == "Up" ]; then
+ 			a[$i]=$((a[$i]+1))
+ 		fi

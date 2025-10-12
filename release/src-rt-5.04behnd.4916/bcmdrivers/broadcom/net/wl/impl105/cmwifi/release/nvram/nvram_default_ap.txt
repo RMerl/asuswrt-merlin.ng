@@ -1,0 +1,49 @@
+## This is a template file for generating default nvrama per bss during AP or Factory Reset
+## Uniformed nvram parameter per AP are placed under the section of "AP reset default nvrams"
+## Unique nvram parameter per AP will be placed in the section of "Factory restore default nvrams"
+## During reset, a loadable nvram text file will be generated from this template file where prefix "wlX.Y"
+## will be replaced by actual interface name based on the AP's index
+## Please review, add, delete or modify nvram parameters with prefix "wlX.Y" in the section
+## Retain only those which would be affected by user requested AP reset either through GUI or command
+## Note: lines procedded with ## are comments only
+##       lined with # are nvram examples for quick reference, they will be ignored unless being uncommented first
+
+## AP reset default nvrams
+wlX.Y_wpa_psk=1234567890
+
+## hspot passport
+wlX.Y_hs_reset=0
+wlX.Y_hspot=0
+wlX.Y_interface=wlX.Y
+wlX.Y_ip_add_type_avail=1
+wlX.Y_oper_name=1
+wlX.Y_preauth=0
+wlX.Y_proxy_arp=1
+
+## Factory restore default nvrams
+wl0_ssid=BROADCOM
+wl1_ssid=BROADCOM
+wl2_ssid=BROADCOM
+wl0.1_ssid=BROADCOM_GUEST_0_1
+wl0.2_ssid=BROADCOM_GUEST_0_2
+wl0.3_ssid=BROADCOM_GUEST_0_3
+wl0.4_ssid=BROADCOM_GUEST_0_4
+wl0.5_ssid=BROADCOM_GUEST_0_5
+wl0.6_ssid=BROADCOM_GUEST_0_6
+wl0.7_ssid=BROADCOM_GUEST_0_7
+
+wl1.1_ssid=BROADCOM_GUEST_1_1
+wl1.2_ssid=BROADCOM_GUEST_1_2
+wl1.3_ssid=BROADCOM_GUEST_1_3
+wl1.4_ssid=BROADCOM_GUEST_1_4
+wl1.5_ssid=BROADCOM_GUEST_1_5
+wl1.6_ssid=BROADCOM_GUEST_1_6
+wl1.7_ssid=BROADCOM_GUEST_1_7
+
+wl2.1_ssid=BROADCOM_GUEST_2_1
+wl2.2_ssid=BROADCOM_GUEST_2_2
+wl2.3_ssid=BROADCOM_GUEST_2_3
+wl2.4_ssid=BROADCOM_GUEST_2_4
+wl2.5_ssid=BROADCOM_GUEST_2_5
+wl2.6_ssid=BROADCOM_GUEST_2_6
+wl2.7_ssid=BROADCOM_GUEST_2_7

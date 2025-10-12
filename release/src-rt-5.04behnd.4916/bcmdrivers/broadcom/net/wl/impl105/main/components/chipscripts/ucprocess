@@ -1,0 +1,137 @@
+#!/usr/bin/perl
+#
+# This script takes generates ucode.trx containing both ucode fw
+# and initvals.
+# 1)Takes tunable file as one of the args, finds out d11 rev & identifies
+#   the ucode source file corresponding to that rev. 
+# 2)Using the source file found out above, extracts the ucode array variable 
+#	name from the corresponding object file
+# 3)Using the variable name extracted above the whole ucode array from the
+#   object file is extracted into a seperate file later which is used in 
+# 	ucode.trx file generation.
+# $Id: ucprocess,v 1.2 2010-09-13 14:20:36 basavesh Exp $
+
+my $ucobjfile = "nil";
+my $ucfwlen = "nil";
+my $initvalslen = "nil";
+my $is_p2ppresent = $ARGV[2];
+my $tunable_file = $ARGV[3];
+my $cfg_dir = $ARGV[4];
+my $full_file;
+my $ucode_file;
+my $initvals_file;
+my $d11conf;
+my $btcoex_flag = $ARGV[5];
+
+$cfg_dir = $cfg_dir."/"; #appending / to config dir input val
+$full_file = $cfg_dir.$tunable_file; #creating full path for tunable file
+
+#following lines open tunable file, grep for D11CONF & extract the value
+open($full_file , "<$full_file ") or die "Unable to open file confline: $!\n";
+my @d11conflines = grep(/D11CONF/ , <$full_file>);
+close($full_file );
+@d11confwords = split(" ", $d11conflines[0]);
+
+my $sum   = 0;
+my $shift = 0;
+#below loop to identify the mac rev
+do {
+	$shift ++;
+	$sum = 1 << $shift;
+}while($sum != hex($d11confwords[2]) );
+
+#$shift contains the mac rev value
+$d11conf = $shift;
+
+#below conditions will identify the actual ucode object file that will be used
+#based on mac rev
+if ($d11conf <= 15) {
+	$ucode_file = d11ucode_le15;
+	$initvals_file = d11ucode_le15;
+}
+else {
+	if ($d11conf > 15 && $d11conf < 24) {
+		$ucode_file = d11ucode_gt15;
+		$initvals_file = d11ucode_gt15;
+	}
+	else {
+		$ucode_file = d11ucode_ge24;
+		$initvals_file = d11ucode_ge24;
+	}
+}
+
+#following condition will change ucode obj file if it is being built for
+#p2p & ucode array name that has to be grepped from symbol list
+if ($is_p2ppresent == 1) {
+	$ucode_file = d11ucode_p2p;
+	$ucode_word = "d11ucode_p2p";
+}
+else {
+	$ucode_word = "d11ucode";
+}
+
+$ucobjfile = $ucode_file.'.txt';
+$ucobj = $ucode_file.'.o';
+
+$result =  ''.$ARGV[0].' -t '.$ucobj.' > '.$ucobjfile.'';
+print "$result\n";
+system ($result);
+
+$initvalsobjfile = $initvals_file.'.txt';
+$initvalsobj = $initvals_file.'.o';
+
+if($ucode_file ne $initvals_file) {
+	$result =  ''.$ARGV[0].' -t '.$initvalsobj.' > '.$initvalsobjfile.'';
+	print "$result\n";
+	system ($result);
+}
+
+#open the symbol list text file created above & 
+#identify the ucode symbol
+open($ucobjfile , "<$ucobjfile ") or die "Unable to open file $fnromtbl: $!\n";
+my @declare = grep(/$ucode_word/, <$ucobjfile>);
+close($ucobjfile );
+for (my $d = 0; $d < @declare; $d ++) {
+    @words = split(" ", $declare[$d]);
+    if(hex($words[4]) > 4) {
+    	#if btcoex flag is set, skip the nobt ucode if found in the search
+    	if($btcoex_flag eq 1) {
+	    	if($words[3] =~ m/_nobt/) {
+	    		next;
+	    	}
+    	}
+       	$ucfwlen = $words[4];
+       	printf("%s %d\n", $words[3],hex($ucfwlen));
+    	$result =  ''.$ARGV[1].' -O binary -j '.$words[3].' '.$ucobj.' ucodefw.hex';    	
+    	print "$result\n";
+    	system ($result);
+    	last;
+    }
+}
+
+#open the symbol list text file created above & 
+#identify the initvals symbol
+open($initvalsobjfile , "<$initvalsobjfile ") or die "Unable to open file $fnromtbl: $!\n";
+my @declare = grep(/initvals/ && !/bsinitvals/, <$initvalsobjfile>);
+close($initvalsobjfile );
+
+for (my $d = 0; $d < @declare; $d ++) {
+    @words = split(" ", $declare[$d]);
+    if(hex($words[4]) > 8) {
+       	$initvalslen = $words[4];
+		printf("%s %d\n", $words[3],hex($initvalslen));
+    	$result =  ''.$ARGV[1].' -O binary -j '.$words[3].' '.$initvalsobj.' initvals.hex';    	
+    	print "$result\n";
+    	system ($result);
+    	last;
+    }
+}
+
+#creation of ucode.trx containing ucode & fw
+$result = 'trx -x '.hex($ucfwlen).' -x '.hex($initvalslen).' -o ucode.trx ucodefw.hex initvals.hex';
+print "$result\n";
+system ($result);
+
+$result = 'rm *.txt *.hex';
+print "$result\n";
+system ($result);

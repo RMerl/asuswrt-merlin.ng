@@ -34,7 +34,7 @@
         word[sizeof(word) - 1] = '\0',                \
         word[strcspn(word, " ")] = '\0',              \
         next = strchr(next, ' ');                     \
-         safe_strlen(word, sizeof(word));                                \
+         l_safe_strlen(word, sizeof(word));                                \
          next = next ? &next[strspn(next, " ")] : "", \
         strlcpy(word, next, sizeof(word)),            \
         word[sizeof(word) - 1] = '\0',                \
@@ -53,7 +53,7 @@ char *get_usb_xhci_port(int port)
 
     // Check if the NVRAM data is available
     char *ports_string = nvram_safe_get("xhci_ports");
-    if (!ports_string || safe_strlen(ports_string, MAX_NVRAM_SIZE) == 0)
+    if (!ports_string || l_safe_strlen(ports_string, MAX_NVRAM_SIZE) == 0)
     {
         xhci_string[0] = '\0'; // Indicate no data
         return NULL;
@@ -84,7 +84,7 @@ char *get_usb_ehci_port(int port)
 
     // Check if the NVRAM data is available
     char *ports_string = nvram_safe_get("ehci_ports");
-    if (!ports_string || safe_strlen(ports_string, MAX_NVRAM_SIZE) == 0)
+    if (!ports_string || l_safe_strlen(ports_string, MAX_NVRAM_SIZE) == 0)
     {
         ehci_string[0] = '\0'; // Indicate no data
         return NULL;
@@ -115,7 +115,7 @@ char *get_usb_ohci_port(int port)
 
     // Check if the NVRAM data is available
     char *ports_string = nvram_safe_get("ohci_ports");
-    if (!ports_string || safe_strlen(ports_string, MAX_NVRAM_SIZE) == 0)
+    if (!ports_string || l_safe_strlen(ports_string, MAX_NVRAM_SIZE) == 0)
     {
         ohci_ports[0] = '\0'; // Indicate no data
         return NULL;
@@ -214,7 +214,7 @@ char *get_line_from_buffer(const char *buf, char *line, const int line_size)
     int buf_len, len;
     char *ptr;
     
-    if (buf == NULL || (buf_len = safe_strlen(buf, MAX_NVRAM_SIZE)) <= 0)
+    if (buf == NULL || (buf_len = l_safe_strlen(buf, MAX_NVRAM_SIZE)) <= 0)
         return NULL;
 
     if ((ptr = strchr(buf, '\n')) == NULL)
@@ -240,7 +240,7 @@ int isStorageDevice(const char *device_name)
 
 int get_device_type_by_device(const char *device_name)
 {
-    if (device_name == NULL || safe_strlen(device_name, MAX_NVRAM_SIZE) <= 0)
+    if (device_name == NULL || l_safe_strlen(device_name, MAX_NVRAM_SIZE) <= 0)
     {
         usb_dbg("(%s): The device name is not correct.\n", device_name);
         return DEVICE_TYPE_UNKNOWN;
@@ -297,7 +297,7 @@ int is_disk_name(const char *device_name)
     }
     else
 #endif
-        if (isdigit(device_name[safe_strlen(device_name, MAX_NVRAM_SIZE) - 1]))
+        if (isdigit(device_name[l_safe_strlen(device_name, MAX_NVRAM_SIZE) - 1]))
         return 0;
 
     return 1;
@@ -325,7 +325,7 @@ int get_disk_partitionnumber(const char *string, u32 *partition_number, u32 *mou
         mount_info = read_whole_file(MOUNT_FILE);
     }
 
-    len = safe_strlen(string, MAX_NVRAM_SIZE);
+    len = l_safe_strlen(string, MAX_NVRAM_SIZE);
     if (!is_disk_name(string))
     {
         while (isdigit(string[len - 1]))
@@ -368,7 +368,7 @@ int get_disk_partitionnumber(const char *string, u32 *partition_number, u32 *mou
         return 0;
     }
 
-    len = safe_strlen(disk_name, MAX_NVRAM_SIZE);
+    len = l_safe_strlen(disk_name, MAX_NVRAM_SIZE);
     while ((file = readdir(dp)) != NULL)
     {
         if (file->d_name[0] == '.')
@@ -593,9 +593,9 @@ void FAST_FUNC bb_verror_msg(const char *s, va_list p, const char *strerr)
      * This is needed for e.g. httpd logging, when multiple
      * children can produce log messages simultaneously. */
 
-    applet_len = safe_strlen(applet_name, MAX_NVRAM_SIZE) + 2; /* "applet: " */
-    strerr_len = strerr ? safe_strlen(strerr, MAX_NVRAM_SIZE) : 0;
-    msgeol_len = safe_strlen(msg_eol, MAX_NVRAM_SIZE);
+    applet_len = l_safe_strlen(applet_name, MAX_NVRAM_SIZE) + 2; /* "applet: " */
+    strerr_len = strerr ? l_safe_strlen(strerr, MAX_NVRAM_SIZE) : 0;
+    msgeol_len = l_safe_strlen(msg_eol, MAX_NVRAM_SIZE);
     /* can't use xrealloc: it calls error_msg on failure,
      * that may result in a recursion */
     /* +3 is for ": " before strerr and for terminating NUL */
@@ -1967,7 +1967,7 @@ int find_partition_label(const char *dev_name, char *label)
 
     memset(nvram_value, 0, 512);
     strncpy(nvram_value, nvram_safe_get(nvram_label), 512);
-    if (safe_strlen(nvram_value, MAX_NVRAM_SIZE) > 0)
+    if (l_safe_strlen(nvram_value, MAX_NVRAM_SIZE) > 0)
     {
         strcpy(label, nvram_value);
 
@@ -2013,7 +2013,7 @@ void strntrim(char *str)
     if (str == NULL)
         return;
 
-    len = safe_strlen(str, MAX_NVRAM_SIZE);
+    len = l_safe_strlen(str, MAX_NVRAM_SIZE);
     start = str;
     end = start + len - 1;
 
@@ -2082,7 +2082,7 @@ char *detect_fs_type(char *device)
     close(fd);
 
     /* first check for mbr */
-    if (*device && device[safe_strlen(device, MAX_NVRAM_SIZE) - 1] > '9' &&
+    if (*device && device[l_safe_strlen(device, MAX_NVRAM_SIZE) - 1] > '9' &&
         buf[510] == 0x55 && buf[511] == 0xAA &&                            /* signature */
         ((buf[0x1be] | buf[0x1ce] | buf[0x1de] | buf[0x1ee]) & 0x7f) == 0) /* boot flags */
     {
@@ -2168,7 +2168,7 @@ int read_mount_data(const char *device_name, char *mount_point, int mount_len, c
         return 0;
     }
 
-    start += safe_strlen(target, MAX_NVRAM_SIZE);
+    start += l_safe_strlen(target, MAX_NVRAM_SIZE);
 
     if (get_line_from_buffer(start, line, PATH_MAX) == NULL)
     {
@@ -2240,7 +2240,7 @@ extern char *get_disk_name(const char *string, char *buf, const int buf_size)
     if (!is_disk_name(string) && !is_partition_name(string, NULL))
         return NULL;
 
-    len = safe_strlen(string, MAX_NVRAM_SIZE);
+    len = l_safe_strlen(string, MAX_NVRAM_SIZE);
     if (!is_disk_name(string))
     {
         while (isdigit(string[len - 1]))
@@ -2287,8 +2287,8 @@ int get_partition_size(const char *partition_name, u64 *size_in_kilobytes)
 
     get_disk_name(partition_name, disk_name, 16);
 
-    sanitize_input(disk_name, safe_strlen(disk_name, MAX_NVRAM_SIZE));
-    sanitize_input(partition_name, safe_strlen(partition_name, MAX_NVRAM_SIZE));
+    sanitize_input(disk_name, l_safe_strlen(disk_name, MAX_NVRAM_SIZE));
+    sanitize_input(partition_name, l_safe_strlen(partition_name, MAX_NVRAM_SIZE));
 
     snprintf(target_file, sizeof(target_file), "%s/%s/%s/size", SYS_BLOCK, disk_name, partition_name);
     if ((fp = fopen(target_file, "r")) == NULL)
@@ -2334,7 +2334,7 @@ partition_info_t *create_partition(const char *device_name, partition_info_t **n
         return NULL;
     }
 
-    len = safe_strlen(device_name, MAX_NVRAM_SIZE);
+    len = l_safe_strlen(device_name, MAX_NVRAM_SIZE);
     follow_part_info->device = (char *)malloc(len + 1);
     if (follow_part_info->device == NULL)
     {
@@ -2358,7 +2358,7 @@ partition_info_t *create_partition(const char *device_name, partition_info_t **n
     if (find_partition_label(device_name, label))
     {
         strntrim(label);
-        len = safe_strlen(label, MAX_NVRAM_SIZE);
+        len = l_safe_strlen(label, MAX_NVRAM_SIZE);
         follow_part_info->label = (char *)malloc(len + 1);
         if (follow_part_info->label == NULL)
         {
@@ -2373,7 +2373,7 @@ partition_info_t *create_partition(const char *device_name, partition_info_t **n
 
     if (read_mount_data(device_name, buf1, PATH_MAX, buf2, 64, buf3, PATH_MAX))
     {
-        len = safe_strlen(buf1, MAX_NVRAM_SIZE);
+        len = l_safe_strlen(buf1, MAX_NVRAM_SIZE);
         follow_part_info->mount_point = (char *)malloc(len + 1);
         if (follow_part_info->mount_point == NULL)
         {
@@ -2394,7 +2394,7 @@ partition_info_t *create_partition(const char *device_name, partition_info_t **n
             return NULL;
         }
 
-        len = safe_strlen(buf2, MAX_NVRAM_SIZE);
+        len = l_safe_strlen(buf2, MAX_NVRAM_SIZE);
         follow_part_info->file_system = (char *)malloc(len + 1);
         if (follow_part_info->file_system == NULL)
         {
@@ -2415,7 +2415,7 @@ partition_info_t *create_partition(const char *device_name, partition_info_t **n
             return NULL;
         }
 
-        len = safe_strlen(buf3, MAX_NVRAM_SIZE);
+        len = l_safe_strlen(buf3, MAX_NVRAM_SIZE);
         follow_part_info->permission = (char *)malloc(len + 1);
         if (follow_part_info->permission == NULL)
         {
@@ -2666,7 +2666,7 @@ char *get_usb_node_by_string(const char *target_string, char *ret, const int ret
     if ((ptr = strstr(target_string, usb_port)) == NULL)
         return NULL;
     if (ptr != target_string)
-        ptr += safe_strlen(usb_port, MAX_NVRAM_SIZE) + 1;
+        ptr += l_safe_strlen(usb_port, MAX_NVRAM_SIZE) + 1;
 
     if ((ptr2 = strchr(ptr, ':')) == NULL)
         return NULL;
@@ -2678,7 +2678,7 @@ char *get_usb_node_by_string(const char *target_string, char *ret, const int ret
     else
         ptr = ptr2 + 1;
 
-    len = safe_strlen(ptr, MAX_NVRAM_SIZE);
+    len = l_safe_strlen(ptr, MAX_NVRAM_SIZE);
     if (len > 16)
         len = 15;
 
@@ -2686,7 +2686,7 @@ char *get_usb_node_by_string(const char *target_string, char *ret, const int ret
     strncpy(buf, ptr, len);
     buf[len] = '\0';
 
-    len = safe_strlen(buf, MAX_NVRAM_SIZE);
+    len = l_safe_strlen(buf, MAX_NVRAM_SIZE);
     if (len > ret_size)
         len = ret_size - 1;
 
@@ -2876,7 +2876,7 @@ char *get_path_by_node(const char *usb_node, char *buf, const int buf_size)
     if (port_num == 0)
         return NULL;
 
-    if (safe_strlen(usb_node, MAX_NVRAM_SIZE) > (len = safe_strlen(usb_port, MAX_NVRAM_SIZE)))
+    if (l_safe_strlen(usb_node, MAX_NVRAM_SIZE) > (len = l_safe_strlen(usb_port, MAX_NVRAM_SIZE)))
     {
         hub_path = (char *)usb_node + len;
         snprintf(buf, buf_size, "%d%s", port_num, hub_path);
@@ -2915,7 +2915,7 @@ char *get_disk_vendor(const char *disk_name, char *buf, const int buf_size)
     if (ptr == NULL)
         return NULL;
 
-    len = safe_strlen(buf, MAX_NVRAM_SIZE);
+    len = l_safe_strlen(buf, MAX_NVRAM_SIZE);
     buf[len - 1] = 0;
     fprintf(stderr, "get_disk_vendor,buf=%s\n", buf);
     return buf;
@@ -2949,7 +2949,7 @@ char *get_disk_model(const char *disk_name, char *buf, const int buf_size)
     if (ptr == NULL)
         return NULL;
 
-    len = safe_strlen(buf, MAX_NVRAM_SIZE);
+    len = l_safe_strlen(buf, MAX_NVRAM_SIZE);
     if (len > 0)
         buf[len - 1] = 0;
     fprintf(stderr, "get_disk_model,buf=%s\n", buf);
@@ -2984,7 +2984,7 @@ disk_info_t *create_disk(const char *device_name, disk_info_t **new_disk_info)
         return NULL;
     }
 
-    len = safe_strlen(device_name, MAX_NVRAM_SIZE);
+    len = l_safe_strlen(device_name, MAX_NVRAM_SIZE);
     follow_disk_info->device = (char *)malloc(len + 1);
     if (follow_disk_info->device == NULL)
     {
@@ -3041,7 +3041,7 @@ disk_info_t *create_disk(const char *device_name, disk_info_t **new_disk_info)
             return NULL;
         }
 
-        len = safe_strlen(buf, MAX_NVRAM_SIZE);
+        len = l_safe_strlen(buf, MAX_NVRAM_SIZE);
         if (len > 0)
         {
             port = (char *)malloc(9);
@@ -3061,7 +3061,7 @@ disk_info_t *create_disk(const char *device_name, disk_info_t **new_disk_info)
         // start get vendor.
         get_disk_vendor(device_name, buf, 64);
 
-        len = safe_strlen(buf, MAX_NVRAM_SIZE);
+        len = l_safe_strlen(buf, MAX_NVRAM_SIZE);
         if (len > 0)
         {
             vendor = (char *)malloc(len + 1);
@@ -3081,7 +3081,7 @@ disk_info_t *create_disk(const char *device_name, disk_info_t **new_disk_info)
         // start get model.
         get_disk_model(device_name, buf, 64);
 
-        len = safe_strlen(buf, MAX_NVRAM_SIZE);
+        len = l_safe_strlen(buf, MAX_NVRAM_SIZE);
         if (len > 0)
         {
             model = (char *)malloc(len + 1);
@@ -3104,7 +3104,7 @@ disk_info_t *create_disk(const char *device_name, disk_info_t **new_disk_info)
         ptr = buf;
         if (vendor != NULL)
         {
-            len += safe_strlen(vendor, MAX_NVRAM_SIZE);
+            len += l_safe_strlen(vendor, MAX_NVRAM_SIZE);
             strcpy(ptr, vendor);
             ptr += len;
         }
@@ -3116,7 +3116,7 @@ disk_info_t *create_disk(const char *device_name, disk_info_t **new_disk_info)
                 strcpy(ptr, " ");
                 ++ptr;
             }
-            len += safe_strlen(model, MAX_NVRAM_SIZE);
+            len += l_safe_strlen(model, MAX_NVRAM_SIZE);
             strcpy(ptr, model);
             ptr += len;
         }
@@ -3199,7 +3199,7 @@ extern disk_info_t *read_disk_data()
         return disk_info_list;
     }
 
-    if (safe_strlen(partition_info, 2049) > 2048)
+    if (l_safe_strlen(partition_info, 2049) > 2048)
     {
         usb_dbg("Failed to open \"%s\", because file size is too large!!\n", PARTITION_FILE);
         return disk_info_list;
@@ -3209,7 +3209,7 @@ extern disk_info_t *read_disk_data()
     memset(device_name, 0, 16);
     while (get_line_from_buffer(follow_info, line, 64) != NULL)
     {
-        follow_info += safe_strlen(line, MAX_NVRAM_SIZE);
+        follow_info += l_safe_strlen(line, MAX_NVRAM_SIZE);
 
         if (sscanf(line, "%u %*u %llu %15s", &major, &device_size, device_name) != 3)
             continue;
@@ -3485,7 +3485,7 @@ int get_account_list(int *acc_num, char ***account_list)
 
     nv = nvp = strdup(nvram_safe_get("acc_list"));
     i = 0;
-    if (nv && safe_strlen(nv, MAX_NVRAM_SIZE) > 0)
+    if (nv && l_safe_strlen(nv, MAX_NVRAM_SIZE) > 0)
     {
         while ((b = strsep(&nvp, "<")) != NULL)
         {
@@ -3503,7 +3503,7 @@ int get_account_list(int *acc_num, char ***account_list)
             memset(char_user, 0, 64);
             ascii_to_char_safe(char_user, tmp_ascii_user, 64);
 
-            len = safe_strlen(char_user, MAX_NVRAM_SIZE);
+            len = l_safe_strlen(char_user, MAX_NVRAM_SIZE);
             tmp_account[i] = (char *)malloc(sizeof(char) * (len + 1));
             if (tmp_account[i] == NULL)
             {
@@ -3582,12 +3582,12 @@ extern int add_account(const char *const account, const char *const password)
     char ascii_user[64], ascii_passwd[64];
     int lock;
 
-    if (account == NULL || safe_strlen(account, MAX_NVRAM_SIZE) <= 0)
+    if (account == NULL || l_safe_strlen(account, MAX_NVRAM_SIZE) <= 0)
     {
         usb_dbg("No input, \"account\".\n");
         return -1;
     }
-    if (password == NULL || safe_strlen(password, MAX_NVRAM_SIZE) <= 0)
+    if (password == NULL || l_safe_strlen(password, MAX_NVRAM_SIZE) <= 0)
     {
         usb_dbg("No input, \"password\".\n");
         return -1;
@@ -3622,7 +3622,7 @@ extern int add_account(const char *const account, const char *const password)
 
     memset(nvram_value, 0, PATH_MAX);
     strcpy(nvram_value, nvram_safe_get("acc_list"));
-    len = safe_strlen(nvram_value, MAX_NVRAM_SIZE);
+    len = l_safe_strlen(nvram_value, MAX_NVRAM_SIZE);
     if (len > 0)
     {
         ptr = nvram_value + len;

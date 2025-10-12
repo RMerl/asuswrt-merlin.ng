@@ -281,26 +281,37 @@
 		status="okay";
 		brightness = <0>;
 	};
-	/* LED421_G */
-	led0: sw_parallel_led_0 {
-		pinctrl-0 = <&a_per_led_00_pin_0>;
+	/* CC3220R Reset */
+	led51:led_gpio_51 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <51>;
 		active_low;
-		status="okay";
-		brightness = <0>;
+		init_high;
 	};
-	/* LED421_R */
-	led9: sw_parallel_led_9 {
-		pinctrl-0 = <&a_per_led_09_pin_9>;
-		active_low;
-		status="okay";
-		brightness = <0>;
+	/* CC3220R SOP0 */
+	led71:led_gpio_71 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <71>;
+		active_high;
+		init_low;
 	};
-	/* LED421_B */
-	led11: sw_parallel_led_11 {
-		pinctrl-0 = <&a_per_led_11_pin_11>;
-		active_low;
-		status="okay";
-		brightness = <0>;
+	/* CC3220R SOP1 */
+	led72:led_gpio_72 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <72>;
+		active_high;
+		init_low;
+	};
+	/* CC3220R SOP2 */
+	led73:led_gpio_73 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <73>;
+		active_high;
+		init_low;
 	};
 };
 

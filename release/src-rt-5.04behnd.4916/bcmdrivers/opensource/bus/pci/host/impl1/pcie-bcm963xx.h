@@ -394,6 +394,9 @@ extern "C" {
 #define SERDES_TXPMD_B_OFFSET                      0xD210
 #define SERDES_RX_AFE0_OFFSET                      0x6000
 #define SERDES_RX_DFE0_OFFSET                      0x7000
+#define SERDES_RX_DFE1_OFFSET                      0x7100
+#define SERDES_RX_DFE2_OFFSET                      0x7200
+#define SERDES_RX_DFE3_OFFSET                      0x7300
 #define SERDES_LN_OFFSET                           0x0010
 #define SERDES_TXPMD_B_OFFSET                      0xD210
 #define SERDES_RX_AFE0_BC_OFFSET                   0xF600

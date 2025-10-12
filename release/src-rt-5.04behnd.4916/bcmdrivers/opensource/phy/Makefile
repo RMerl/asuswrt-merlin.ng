@@ -612,7 +612,6 @@ ifneq ("$(CONFIG_BCM_SELECTIVE_PHYS)", "y")
     CONFIG_BCM_PHY_XPHY=y
     CONFIG_BCM_PHY_KAUAI_A0=y
     CONFIG_BCM_PHY_LANAI_A0=y
-    CONFIG_BCM_PHY_NIIHAU_A0=y
 endif
 
 ifeq ("$(CONFIG_BCM_PHY_MAKO_A0)", "y")
@@ -653,11 +652,6 @@ endif
 ifeq ("$(CONFIG_BCM_PHY_LANAI_A0)", "y")
     EXTRA_CFLAGS += -DCONFIG_BCM_PHY_LANAI_A0
     PHY_FIRMWARE += firmware/lanai_a0_firmware.bin
-endif
-
-ifeq ("$(CONFIG_BCM_PHY_NIIHAU_A0)", "y")
-    EXTRA_CFLAGS += -DCONFIG_BCM_PHY_NIIHAU_A0
-    PHY_FIRMWARE += firmware/niihau_a0_firmware.bin
 endif
 
 ifneq ($(findstring _y_,_$(CONFIG_BCM_PHY_LONGFIN_A0)_$(CONFIG_BCM_PHY_LONGFIN_B0)_),)

@@ -215,6 +215,7 @@ struct bcm963xx_hc_msi {
  * @g3tcaerrata:     GEN3 Transmit Clock Alignment Errata (MCS4915-ESX00-R)
  * @rxsigdetflt:     RX Signal Detect Filter
  * @ptmcapadv:       PTM Capability advertisement
+ * @phaseonlyckcmp:  Phase Only clock compensation (CRRBBPCIE-262)
  */
 struct bcm963xx_hc_war
 {
@@ -228,6 +229,7 @@ struct bcm963xx_hc_war
 	uint32 g3tcaerrata:1;
 	uint32 rxsigdetflt:1;
 	uint32 ptmcapadv:1;
+	uint32 phaseonlyckcmp:1;
 };
 
 /*
@@ -2049,6 +2051,31 @@ static void bcm963xx_hc_gen2_phy_config(struct pcie_hc_core *phc)
 	    HCD_LOG("Core [%d] Applied g2pllcoupling WAR\r\n", phc->info.id);
 	}
 
+	if (phc_cb->wars.phaseonlyckcmp == 1) {
+	    /*
+	     * Settings from SoC Design team
+	     *
+	     *  mdio write 0x1f, 0x7300 # RX_DFE3_LN0 register set
+	     *  mdio write 0x0e, 0x2800 # mdio_ckcmp_phase_only_en bit-11=1,
+	     *                          # value bit=13=1
+	     *  mdio write 0x1f, 0x7310 # RX_DFE3_LN1 register set
+	     *  mdio write 0x0e, 0x2800 # mdio_ckcmp_phase_only_en bit-11=1,
+	     *                          # value bit=13=1
+	     */
+	    bcm963xx_hc_mdio_write(phc, 0, 0x1f, SERDES_RX_DFE3_OFFSET);
+	    /* RX_DFE3_LN0_ctrlE.mdio_ckcmp_phase_only_en = 1*/
+	    /* RX_DFE3_LN0_ctrlE.Reserved = 1*/
+	    bcm963xx_hc_mdio_write(phc, 0, 0x0e, 0x2800);
+
+	    bcm963xx_hc_mdio_write(phc, 0, 0x1f,
+	        SERDES_RX_DFE3_OFFSET+SERDES_LN_OFFSET);
+	    /* RX_DFE3_LN0_ctrlE.mdio_ckcmp_phase_only_en = 1*/
+	    /* RX_DFE3_LN0_ctrlE.Reserved = 1*/
+	    bcm963xx_hc_mdio_write(phc, 0, 0x0e, 0x2800);
+
+	    HCD_LOG("Core [%d] Applied phaseonlyckcmp WAR\r\n", phc->info.id);
+	}
+
 	HCD_FN_EXT();
 
 	return;
@@ -3782,6 +3809,14 @@ static int bcm963xx_hc_setup_rev(struct pcie_hc_core *phc)
 	    phc_cb->wars.ptmcapadv = 1;
 	} else {
 	    phc_cb->wars.ptmcapadv = 0;
+	}
+
+	/*
+	 * Enable Phase only clock compensation WAR for 6764 A0/A1 SoC's
+	 * that use rev 4.08
+	 */
+	if (phc->info.rev == 0x0408) {
+	    phc_cb->wars.phaseonlyckcmp = 1;
 	}
 
 	msi = &phc_cb->msi;

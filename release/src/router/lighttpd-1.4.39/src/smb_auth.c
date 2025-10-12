@@ -4814,7 +4814,7 @@ int change_port_rule_on_iptable(int toOpen, int port_number)
 	return 1;
 }
 
-size_t safe_strlen(const char *s, size_t n)
+size_t l_safe_strlen(const char *s, size_t n)
 {
 	const char *e = memchr(s, 0, n);
 	return e ? (size_t)(e - s) : n;

@@ -3897,6 +3897,10 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 			snprintf(prefix, sizeof(prefix), "wan%d_", i++);
 			value = get_cgi_json(strlcat_r(prefix, name+4, tmp, sizeof(tmp)),root);
 			if(value && strcmp(nvram_safe_get(tmp), value)) {
+				if(!validate_apply_input_value(tmp, value)){
+					dbg("validate(wanX) %s=%s is illegal\n", tmp, value);
+					continue;
+				}
 				dbG("nvram set %s = %s\n", tmp, value);
 				nvram_check_and_set_for_prefix(name, tmp, value);
 				//nvram_set(tmp, value);
@@ -4510,6 +4514,10 @@ int validate_apply(webs_t wp, json_object *root)
 				(void)strlcat_r(prefix, name+4, tmp, sizeof(tmp));
 
 				if(strcmp(nvram_safe_get(tmp), value)) {
+					if(!validate_apply_input_value(tmp, value)){
+						dbg("validate(wan) %s=%s is illegal\n", tmp, value);
+						continue;
+					}
 					nvram_set(tmp, value);
 					nvram_modified = 1;
 					_dprintf("wan_ set %s=%s\n", tmp, value);
@@ -10054,78 +10062,6 @@ static int get_sdn_idx_form_apg_ifnames(char * mac, char *wireless, char * guest
 
 #endif
 
-static int get_amas_client_mac(json_object *allClientList, char *ip, char *mac, int macBufSize) {
-	int i;
-	int shm_client_tbl_id;
-	P_CM_CLIENT_TABLE p_client_tbl;
-	void *shared_client_info=(void *) 0;
-	unsigned char mac_buf[6] = {0};
-	json_object *nodeEntry = NULL;
-	json_object *bandEntry = NULL;
-	json_object *macEntry = NULL;
-	json_object *ipEntry = NULL;
-
-	if (allClientList == NULL)
-		return 0;
-
-	/* get real mac for wireless client */
-	json_object_object_foreach(allClientList, key, val) {
-		nodeEntry = val;
-		json_object_object_foreach(nodeEntry, key, val) {
-			bandEntry = val;
-			json_object_object_foreach(bandEntry, key, val) {
-				macEntry = val;
-				if (!is_re_node(key, 0)) {
-					json_object_object_get_ex(macEntry, "ip", &ipEntry);
-					if (ipEntry) {
-						if (strcmp(ip, json_object_get_string(ipEntry)) == 0) {
-							memset(mac, 0, macBufSize);
-							snprintf(mac, macBufSize, "%s", key);
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	/* check sta2g and sta5g, replace real mac for RE if client is RE */
-	if (strlen(mac)) {
-		shm_client_tbl_id = shmget((key_t)KEY_SHM_CFG, sizeof(CM_CLIENT_TABLE), 0666|IPC_CREAT);
-		if (shm_client_tbl_id == -1){
-			fprintf(stderr, "shmget failed\n");
-			return 0;
-		}
-
-		shared_client_info = shmat(shm_client_tbl_id,(void *) 0,0);
-		if (shared_client_info == (void *)-1){
-			fprintf(stderr, "shmat failed\n");
-			return 0;
-		}
-
-		ether_atoe(mac, mac_buf);
-
-		p_client_tbl = (P_CM_CLIENT_TABLE)shared_client_info;
-		for(i = 1; i < p_client_tbl->count; i++) {
-			if (memcmp(p_client_tbl->sta2g[i], mac_buf, sizeof(mac_buf)) == 0 ||
-				memcmp(p_client_tbl->sta5g[i], mac_buf, sizeof(mac_buf)) == 0)
-			{
-				//_dprintf("replace client mac (%s) by ", mac);
-				memset(mac, 0, macBufSize);
-				snprintf(mac, macBufSize, "%02X:%02X:%02X:%02X:%02X:%02X",
-					p_client_tbl->realMacAddr[i][0], p_client_tbl->realMacAddr[i][1],
-					p_client_tbl->realMacAddr[i][2], p_client_tbl->realMacAddr[i][3],
-					p_client_tbl->realMacAddr[i][4], p_client_tbl->realMacAddr[i][5]);
-				_dprintf("(%s)\n", mac);
-				break;
-			}
-		}
-
-		shmdt(shared_client_info);
-	}
-
-	return strlen(mac);
-}
 #ifdef RTCONFIG_STA_AP_BAND_BIND
 #define MAC_STR_LEN 17
 static int get_client_bind_info(char *client_mac, char *node_mac, int node_mac_size, char *band_index, int band_index_size) {
@@ -10276,10 +10212,6 @@ static int get_client_detail_info(struct json_object *clients, struct json_objec
 	//get amas re client detail info
 	amasReClientDetailList = json_object_new_object();
 	amasReClientDetailList_status = get_amas_re_client_detail_info(amasReClientDetailList);
-	//get all client list
-	lock = file_lock(CLIENTLIST_FILE_LOCK);
-	allClientList = json_object_from_file(CLIENT_LIST_JSON_PATH);
-	file_unlock(lock);
 #endif
 
 	// set check wireless offline
@@ -10368,9 +10300,6 @@ static int get_client_detail_info(struct json_object *clients, struct json_objec
 
 #ifdef RTCONFIG_AMAS
 			if(is_amas_support()) {
-				/* replace client mac if needed */
-				if (allClientList)
-					get_amas_client_mac(allClientList, ipaddr, mac_buf, sizeof(mac_buf));
 
 				if (is_re_node(mac_buf, 1))
 					continue;
@@ -10709,7 +10638,6 @@ static int get_client_detail_info(struct json_object *clients, struct json_objec
 		json_object_put(amasWiredClientList);
 	if(amasReClientDetailList)
 		json_object_put(amasReClientDetailList);
-	json_object_put(allClientList);
 #endif
 	if(custom_attr_get)
 		json_object_put(custom_attr_get);
@@ -18317,6 +18245,47 @@ do_ipsec_cert_info_cgi(char *url, FILE *stream)
 		X509_free(x509data);
 }
 
+int prn_cert_info(const char *fn)
+{
+	FILE *fp;
+	char buf[256] = "", subject[64] = "", issuer[64] = "";
+	char notBefore[64] = "", notAfter[64] = "";
+	X509 *x509data = NULL;
+	struct tm tm;
+
+	if (!fn || !f_exists(fn))
+		return -1;
+
+	if (!(fp = fopen(fn, "r")))
+		return -2;
+
+	if (!PEM_read_X509(fp, &x509data, NULL, NULL)) {
+		fseek(fp, 0, SEEK_SET);
+		d2i_X509_fp(fp, &x509data);
+	}
+	fclose(fp);
+	if (!x509data) {
+		return -3;
+	}
+
+	X509_NAME_oneline(X509_get_issuer_name(x509data), buf, sizeof(buf));
+	if (strstr(buf, "Let's Encrypt")) {
+		snprintf(issuer, sizeof(issuer), "Let's Encrypt");
+	} else {
+		_get_common_name(buf, issuer, sizeof(issuer));
+	}
+	X509_NAME_oneline(X509_get_subject_name(x509data), buf, sizeof(buf));
+	_get_common_name(buf, subject, sizeof(subject));
+	ASN1_TimeToTM(X509_getm_notBefore(x509data), &tm);
+	snprintf(notBefore, sizeof(notBefore), "%d/%d/%d", tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday);
+	ASN1_TimeToTM(X509_getm_notAfter(x509data), &tm);
+	snprintf(notAfter, sizeof(notAfter), "%d/%d/%d", tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday);
+	_dprintf("S:%s, I:%s, %s ~ %s\n", subject, issuer, notBefore, notAfter);
+	logmessage("httpd", "S:%s, I:%s, %s ~ %s", subject, issuer, notBefore, notAfter);
+
+	return 0;
+}
+
 static void
 do_get_ipsec_profile_cgi(char *url, FILE *stream)
 {
@@ -21951,6 +21920,7 @@ login_cgi(webs_t wp, char_t *url, int auth_version)
 			websWrite(wp,"Connection: close\r\n" );
 			websWrite(wp,"\r\n" );
 			login_error_status = WRONGCAPTCHA;
+			logmessage("HTTPD", "[LOGIN][%s][%s] captcha error (%s)\n", (do_ssl)?"https":"http", (fromapp_flag)?"APP":"Web", temp_ip_str);
 			if(fromapp_flag != 0){
 					websWrite(wp, "{\n\"error_status\":\"%d\", \"captcha_on\":\"%d\", \"last_time_lock_warning\":\"%d\"\n}\n", login_error_status, captcha_on(), last_time_lock_warning());
 			}else{
@@ -22002,6 +21972,7 @@ login_cgi(webs_t wp, char_t *url, int auth_version)
 		)
 	{
 		HTTPD_DBG("authpass!\n");
+		logmessage("HTTPD", "[LOGIN][%s][%s] success (%s)\n", (do_ssl)?"https":"http",(fromapp_flag)?"APP":"Web", temp_ip_str);
 #ifdef RTCONFIG_CAPTCHA
 		nvram_set_int(CAPTCHA_FAIL_NUM, 0);
 		HTTPD_DBG("authpass: captcha_fail_num = %d\n", nvram_get_int(CAPTCHA_FAIL_NUM));
@@ -22051,7 +22022,7 @@ login_cgi(webs_t wp, char_t *url, int auth_version)
 
 			websWrite(wp,"<HTML><HEAD>\n" );
 #ifndef RTCONFIG_BCM_MFG
-			if(is_passwd_default() && !nvram_match(ATE_FACTORY_MODE_STR(), "1"))
+			if((is_passwd_default() && !nvram_match(ATE_FACTORY_MODE_STR(), "1")) || nvram_get_int("force_chgpass"))
 				websWrite(wp, T("<meta http-equiv=\"refresh\" content=\"0; url=Main_Password.asp\">\r\n"));
 			else
 #endif
@@ -22150,6 +22121,7 @@ login_cgi(webs_t wp, char_t *url, int auth_version)
 #if defined(RTCONFIG_RGBLED) && defined(GTAC2900)
 		send_aura_event("LoginFail");
 #endif
+		logmessage("HTTPD", "[LOGIN][%s][%s] fail (%s)\n", (do_ssl)?"https":"http", (fromapp_flag)?"APP":"Web", temp_ip_str);
 		HTTPD_DBG("authfail: login_error_status = %d\n", login_error_status);
 		if(fromapp_flag != 0){
 			if(login_error_status == LOGINLOCK)
@@ -36033,7 +36005,7 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 	json_object *allBrMacListObj = NULL;
 	json_object *macEntryObj = NULL;
 	json_object *reMacFileObj = NULL, *reMac_misc_obj = NULL, *reMac_misc_cfg_alias = NULL;
-	json_object *capabilityObj = NULL, *wiredPortObj = NULL, *plcStatusObj = NULL, *mocaStatusObj = NULL, *mloStatusObj = NULL;
+	json_object *capabilityObj = NULL, *wiredPortObj = NULL, *plcStatusObj = NULL, *mocaStatusObj = NULL, *mloStatusObj = NULL, *findcapStatusObj = NULL;
 	json_object *miscInfoObj = NULL, *bandInfoObj = NULL;
 	int online = 0;
 	int level = 0;
@@ -36051,7 +36023,7 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 	char pap2g_ssid_conv_buf[65], pap5g_ssid_conv_buf[65], pap6g_ssid_conv_buf[65];
 	char word[256], *next = NULL, prefix[16], tmp[64];
 	int unit = 0, bandNum = 0;
-	char file_name[64] = {0}, wired_port_buf[512] = {0}, plc_status_buf[256] = {0}, moca_status_buf[256] = {0}, mlo_status_buf[256] = {0};
+	char file_name[64] = {0}, wired_port_buf[512] = {0}, plc_status_buf[256] = {0}, moca_status_buf[256] = {0}, mlo_status_buf[256] = {0}, findcap_status_buf[256] = {0};
 	char tcode_buf[16] = {0};
 	int nband = 0;
 	char misc_info_buf[256] = {0};
@@ -36438,6 +36410,15 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 			json_object_put(mloStatusObj);
 		}
 
+		/* findcap status */
+		memset(findcap_status_buf, 0, sizeof(findcap_status_buf));
+		snprintf(file_name, sizeof(file_name), "/tmp/%s.findcap", rmac_buf);
+		findcapStatusObj = json_object_from_file(file_name);
+		if (findcapStatusObj) {
+			snprintf(findcap_status_buf, sizeof(findcap_status_buf), "%s", json_object_to_json_string_ext(findcapStatusObj, 0));
+			json_object_put(findcapStatusObj);
+		}
+
 		/* get misc info */
 		memset(misc_info_buf, 0, sizeof(misc_info_buf));
 		if (i == 0)
@@ -36581,6 +36562,7 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 		websWrite(wp, "\"plc_status\":%s,", strlen(plc_status_buf) ? plc_status_buf : "{}");
 		websWrite(wp, "\"moca_status\":%s,", strlen(moca_status_buf) ? moca_status_buf : "{}");
 		websWrite(wp, "\"mlo_status\":%s,", strlen(mlo_status_buf) ? mlo_status_buf : "{}");
+		websWrite(wp, "\"findcap_status\":%s,", strlen(findcap_status_buf) ? findcap_status_buf : "{}");
 		websWrite(wp, "\"band_num\":\"%d\",", bandNum);
 		websWrite(wp, "\"tcode\":\"%s\",", strlen(tcode_buf) ? tcode_buf : "");
 		websWrite(wp, "\"misc_info\":%s,", strlen(misc_info_buf) ? misc_info_buf : "{}");
@@ -40387,7 +40369,7 @@ ej_get_ethernet_wan_list(int eid, webs_t wp, int argc, char **argv) {
     json_object_object_add(eth_wan_setting, "extra_settings", extra_setting);
     json_object_object_add(eth_wan_setting, "wans_lanport", json_object_new_string("1"));
     json_object_object_add(eth_wan_list, "1g", eth_wan_setting);
-#elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE86U) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
+#elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE86U) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7)
     struct json_object *eth_wan_setting = json_object_new_object();
     struct json_object *extra_setting = json_object_new_object();
 

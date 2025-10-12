@@ -1,0 +1,14 @@
+diff --git a/source/TR-181/sbapi/cosa_wifi_apis.c b/source/TR-181/sbapi/cosa_wifi_apis.c
+index 0687c17..a8279bd 100755
+--- a/source/TR-181/sbapi/cosa_wifi_apis.c
++++ b/source/TR-181/sbapi/cosa_wifi_apis.c
+@@ -13575,7 +13575,8 @@
+                     wifi_stopHostApd();
+                     wifi_startHostApd();
+                 }
+-#elif (defined(_COSA_INTEL_USG_ATOM_) && !defined(_INTEL_WAV_) ) || ( (defined(_COSA_BCM_ARM_) || defined(_PLATFORM_TURRIS_)) && !defined(_CBR_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_) )
++#elif 0
++				// Not for Broadcom WiFi
+                 wifi_restartHostApd();
+ #else
+                 wifi_stopHostApd();

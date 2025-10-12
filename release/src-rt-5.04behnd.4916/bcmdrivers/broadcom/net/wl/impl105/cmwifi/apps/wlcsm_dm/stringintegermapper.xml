@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2006-2012"  warning="This file is auto-generated.  Edits to this file will be lost!" >
+
+<object name="WLBAND." shortObjectName="WLBAND" specSource="TR181" profile="Device2_Baseline:1" requirements="P" supportLevel="Present"  />
+  <parameter name="2.4GHz" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32" defaultValue="BAND_B" />
+  <parameter name="5GHz" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32" defaultValue="BAND_A" />
+
+<object name="WLNMODE." shortObjectName="WLNMODE" specSource="TR181" profile="Device2_Baseline:1" requirements="P" supportLevel="Present"  />
+  <parameter name="auto" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32" defaultValue="-1" />
+  <parameter name="off" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32" defaultValue="0" />
+
+<object name="WLNBWCAP." shortObjectName="WLBWCAP" specSource="TR181" profile="Device2_Baseline:1" requirements="P" supportLevel="Present"  />
+  <parameter name="20MHz" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32" defaultValue="1" />
+  <parameter name="40MHz" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32" defaultValue="3" />
+  <parameter name="80MHz" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32" defaultValue="7" />
+  <parameter name="160MHz" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32" defaultValue="15" />
+
+<object name="WLSTBCTX." shortObjectName="WLSTBCTX" specSource="TR181" profile="Device2_Baseline:1" requirements="P" supportLevel="Present"  />
+  <parameter name="auto" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32" defaultValue="-1" />
+  <parameter name="off" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32" defaultValue="0" />
+  <parameter name="on" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32" defaultValue="1" />
+
+<object name="WLREGMODE." shortObjectName="WLREGMODE" specSource="TR181" profile="Device2_Baseline:1" requirements="P" supportLevel="Present"  />
+  <parameter name="off" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32" defaultValue="REG_MODE_OFF" />
+  <parameter name="h" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32" defaultValue="REG_MODE_H" />
+  <parameter name="d" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32" defaultValue="REG_MODE_D" />
+
+<object name="WME." shortObjectName="WME" specSource="TR181" profile="Device2_Baseline:1" requirements="P" supportLevel="Present"  />
+  <parameter name="auto" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32" defaultValue="-1" />
+  <parameter name="off" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32" defaultValue="0" />
+  <parameter name="on" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32" defaultValue="1" />
+
+<object name="WMENOACK." shortObjectName="WMENOACK" specSource="TR181" profile="Device2_Baseline:1" requirements="P" supportLevel="Present"  />
+ <parameter name="off"  defaultValue="0" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32"/>
+ <parameter name="on"  defaultValue="1" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32"/>
+
+<object name="WMEAPSD." shortObjectName="WMEAPSD" specSource="TR181" profile="Device2_Baseline:1" requirements="P" supportLevel="Present"  />
+ <parameter name="off"  defaultValue="0" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32"/>
+ <parameter name="on"  defaultValue="1" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32"/>
+
+<object name="BOOL." shortObjectName="BOOL" specSource="TR181" profile="Device2_Baseline:1" requirements="P" supportLevel="Present"  />
+
+<object name="WLCTRLSB." shortObjectName="WLCTRLSB" specSource="TR181" profile="Device2_Baseline:1" requirements="P" supportLevel="Present"  />
+ <parameter name="AboveControlChannel"  defaultValue="WL_CTL_SB_UPPER" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32"/>
+ <parameter name="BelowControlChannel"  defaultValue="WL_CTL_SB_LOWER" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32"/>
+ <parameter name="Auto"  defaultValue="WL_CTL_SB_NONE" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="32"/>
+
+<object name="WPS_METHOD." shortObjectName="WPS_METHOD" specSource="TR181" profile="Device2_Baseline:1" requirements="W" supportLevel="ReadWrite"  />
+  <parameter name="None" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="W" supportLevel="ReadWrite" maxLength="32" defaultValue="0" />
+  <parameter name="PIN" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="W" supportLevel="ReadWrite" maxLength="32" defaultValue="1" />
+  <parameter name="PushButton" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="W" supportLevel="ReadWrite" maxLength="32" defaultValue="2" />
+ <vsaInfo>
+ </vsaInfo>
+
+<profileInfo>
+<profile name="Device2_Baseline:1" />
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

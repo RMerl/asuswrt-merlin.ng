@@ -2000,7 +2000,7 @@ int doSystem(const char *fmt, ...)
 	va_list		vargs;
 	char		*cmd = NULL;
 	int 		rc = 0;
-	#define CMD_BUFSIZE 256
+	#define CMD_BUFSIZE 512
 	va_start(vargs, fmt);
 	if (fmtValloc(&cmd, CMD_BUFSIZE, fmt, vargs) >= CMD_BUFSIZE) {
 		fprintf(stderr, "doSystem: lost data, buffer overflow\n");

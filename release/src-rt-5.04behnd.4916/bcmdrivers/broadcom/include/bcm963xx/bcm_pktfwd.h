@@ -119,13 +119,6 @@
 
 /**
  * -----------------------------------------------------------------------------
- * Section : Features in BCM_PKTFWD
- * -----------------------------------------------------------------------------
- */
-#define BCM_PKTFWD_LLC_SNAP
-
-/**
- * -----------------------------------------------------------------------------
  *
  * Section: Packet Forwarding Domains
  *
@@ -999,9 +992,6 @@ struct pktlist_context              /* pktlist_context_t */
 #else /* ! BCM_PKTFWD_FLCTL */
     void              * fctable;
 #endif /* ! BCM_PKTFWD_FLCTL */
-#if defined(BCM_PKTFWD_LLC_SNAP)
-    bool     add_llcsnap_header;    /* add LLCSNAP header */
-#endif /* BCM_PKTFWD_LLC_SNAP */
     /* Peer consumer's pktlist context for daisy chaining (xfer lists) */
     pktlist_context_t * peer;       /* peer driver pktlist_context */
     pktlist_context_xfer_fn_t xfer_fn;  /* Transfer to peer hander */

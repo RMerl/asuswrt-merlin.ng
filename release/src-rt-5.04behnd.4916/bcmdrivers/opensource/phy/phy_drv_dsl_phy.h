@@ -105,7 +105,6 @@ enum {
     SERDES_OP_WR_PMD,
     SERDES_OP_TMR_SET,
     SERDES_OP_TMR_GET,
-    SERDES_OP_DUMP_EEPROM,
 };
 
 extern int ephy_leds_init(void *leds_info);

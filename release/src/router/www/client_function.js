@@ -774,7 +774,6 @@ function popClientListEditTable(event) {
 	var ip = event.data.ip;
 	var callBack = event.data.callBack;
 	var panel_block_top_value = event.data.adjust_panel_block_top;
-	var adv_setting = event.data.adv_setting;
 	if(mac != "") {
 		var isMacAddr = mac.split(":");
 		if(isMacAddr.length != 6)
@@ -802,6 +801,8 @@ function popClientListEditTable(event) {
 	if(obj.className.search("card_clicked") != -1) {
 		return true;
 	}
+
+	let adv_setting = (isSwMode("RT") && !clientInfo.amesh_isRe) ? event.data.adv_setting : false;
 
 	client_hide_flag = false;
 
@@ -1123,14 +1124,16 @@ function popClientListEditTable(event) {
 		document.getElementById("card_client_opMode").style.display = "";
 		document.getElementById("card_client_opMode").innerHTML = opModeDes[clientInfo.opMode];
 	}
-	if(clientInfo.sdn_idx > 0) {
-		document.getElementById('card_client_sdnIdx').style.display = "";
-		const sdn_profile = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx == clientInfo.sdn_idx) || {};
-		const sdn_ssid = $.isEmptyObject(sdn_profile) ? "" : sdn_profile.apg_rl.ssid;
-		document.getElementById('card_client_sdnIdx').innerHTML = "SDN " + sdn_ssid;
-		document.getElementById('card_client_sdnIdx').setAttribute('client_sdn_idx', clientInfo.sdn_idx);
-	}else{
-		document.getElementById('card_client_sdnIdx').setAttribute('client_sdn_idx', '0');
+	if(adv_setting) {
+		if(clientInfo.sdn_idx > 0) {
+			document.getElementById('card_client_sdnIdx').style.display = "";
+			const sdn_profile = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx == clientInfo.sdn_idx) || {};
+			const sdn_ssid = $.isEmptyObject(sdn_profile) ? "" : sdn_profile.apg_rl.ssid;
+			document.getElementById('card_client_sdnIdx').innerHTML = "SDN " + sdn_ssid;
+			document.getElementById('card_client_sdnIdx').setAttribute('client_sdn_idx', clientInfo.sdn_idx);
+		}else{
+			document.getElementById('card_client_sdnIdx').setAttribute('client_sdn_idx', '0');
+		}
 	}
 	//device title info. end
 
@@ -3025,7 +3028,8 @@ function create_clientlist_listview() {
 									})();
 									var wl_ssid_parm = `wl${wl_unit}_ssid`;
 									if(isSwMode("RP")){
-										if(concurrep_support){
+										if((typeof concurrep_support !== 'undefined' && concurrep_support) ||
+												(typeof parent.concurrep_support !== 'undefined' && parent.concurrep_support)){
 											wl_ssid_parm = `wl${wl_unit}.1_ssid`;
 										}
 										else{

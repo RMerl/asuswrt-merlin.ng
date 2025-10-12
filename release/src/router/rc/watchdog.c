@@ -2576,7 +2576,7 @@ static int handle_btn_in_mfg(void)
 	}
 #endif
 
-#if defined(PRTAX57_GO) || defined(RTBE58_GO)
+#if defined(PRTAX57_GO)
 	if (!button_pressed(BTN_SWITCH)) {
 		nvram_set("btn_switch", "0");
 	}
@@ -9783,7 +9783,12 @@ void onboarding_check()
 		return;
 
 	if (strlen(nvram_safe_get("cfg_group")))
+	{
+#if defined(RTBE58_GO)
+		//nvram_unset("mlo_off");
+#endif
 		return;
+	}
 
 	if (!check_if_dir_exist(CFG_MNT_FOLDER))
 		mkdir(CFG_MNT_FOLDER, 0755);
@@ -11218,6 +11223,35 @@ void infosvr_check(void)
 		start_infosvr();
 }
 
+#if defined(RTCONFIG_UBIFS)
+void check_ubifs()
+{
+	static long last_check = 0;
+	long now = uptime();
+	int chk_period = nvram_get_int("ubinfo_time_period")?:86400;
+
+	if (now - last_check >= chk_period) {
+		last_check = now;
+
+		FILE *fp = popen("ubinfo -a | grep -E \"bad physical|erase counter\"", "r");
+		if (fp) {
+			char line[256];
+			char result[1024] = {0};
+			while (fgets(line, sizeof(line), fp)) {
+				strncat(result, line, sizeof(result) - strlen(result) - 1);
+			}
+			pclose(fp);
+
+			if (strlen(result) > 0) {
+				logmessage("ubinfo", result);
+			} else {
+				logmessage("ubinfo", "no ubinfo.");
+			}
+		}
+	}
+}
+#endif
+
 /* wathchdog is runned in NORMAL_PERIOD, 1 seconds
  * check in each NORMAL_PERIOD
  *	1. button
@@ -11753,6 +11787,9 @@ wdp:
 	feedback_check();
 #endif /* RTCONFIG_FRS_FEEDBACK */
 	infosvr_check();
+#if defined(RTCONFIG_UBIFS)
+        check_ubifs();
+#endif
 }
 
 #if ! (defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK))

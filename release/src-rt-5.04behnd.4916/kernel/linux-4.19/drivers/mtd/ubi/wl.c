@@ -1053,7 +1053,7 @@ out_unlock:
  * needed. Returns zero in case of success and a negative error code in case of
  * failure.
  */
-#define WAR_UBI_SYNC_ERASE          1	/* This WAR is for MXIC parallel NAND, for ex. MX30LFxG28AD */
+#define WAR_UBI_SYNC_ERASE          0	/* This WAR is for MXIC parallel NAND, for ex. MX30LFxG28AD */
 #if defined(WAR_UBI_SYNC_ERASE)
 #define UBI_SYNC_ERASE_RETRY_COUNT  3
 #endif

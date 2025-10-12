@@ -329,9 +329,11 @@ extern int guest_mark_calc(int guest_mark);
 #define GUEST_INIT_MARKNUM  1   /* 0x1 ~ 0xf */
 #define INITIAL_MARKNUM    16   /* 0x10 ~ 0x3f */
 #define SHIFT_BIT           5   /* 0x200 ~ 0x7e0 */
+#define LIMITER_MASK       (QOS_MASK<<SHIFT_BIT)
 #else
 #define GUEST_INIT_MARKNUM 10   /*10 ~ 30 for Guest Network. */
 #define INITIAL_MARKNUM    30   /*30 ~ X  for LAN . */
+#define LIMITER_MASK       QOS_MASK
 #endif
 
 #ifdef RTCONFIG_INTERNAL_GOBI
@@ -4399,6 +4401,20 @@ static inline void swap_wanlan(phy_port_mapping *port_mapping)
 
 extern void get_phy_port_mapping(phy_port_mapping *port_mapping); // for capability use
 extern void get_usb_modem_tatus(phy_info_list *list); // for usb modem status
+
+static inline int ext_switch_exist(void)
+{
+	phy_port_mapping port_mapping;
+	int i;
+
+	get_phy_port_mapping(&port_mapping);
+	for (i = 0; i < port_mapping.count; i++) {
+		if (port_mapping.port[i].ext_port_id != -1)
+			return 1;
+	}
+
+	return 0;
+}
 #endif //RTCONFIG_NEW_PHYMAP
 
 static inline int iptv_enabled(void)

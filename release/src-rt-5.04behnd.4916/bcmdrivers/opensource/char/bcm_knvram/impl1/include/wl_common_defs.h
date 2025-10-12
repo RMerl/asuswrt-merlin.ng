@@ -37,7 +37,9 @@ written consent.
 
 #define WL_MAX_NUM_RADIO  (4)
 
+#ifndef WL_MAX_NUM_SSID
 #define WL_MAX_NUM_SSID (WL_DEFAULT_NUM_SSID)
+#endif
 
 #endif
 

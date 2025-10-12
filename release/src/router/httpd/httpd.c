@@ -2920,6 +2920,7 @@ void start_ssl(int http_port)
 			if (save)
 				save_cert();
 
+			prn_cert_info(HTTPD_CERT);
 			/* Unset reload flag if set */
 #if defined(RTCONFIG_IPV6)
 			if (!http_ipv6_only && nvram_get("httpds_reload_cert"))

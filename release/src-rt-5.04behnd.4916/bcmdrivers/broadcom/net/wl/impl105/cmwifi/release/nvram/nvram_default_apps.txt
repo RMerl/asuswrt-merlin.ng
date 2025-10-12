@@ -1,0 +1,51 @@
+bsd_bounce_detect=120 4 600
+bsd_idle_rate=20
+bsd_ifnames=_IFNAMES_
+bsd_poll_interval=1
+bsd_rdk_log_file=/rdklogs/logs/bandsteering_log.txt
+bsd_scheme=2
+bsd_status_poll=5
+bsd_steer_no_deauth=1
+wl0_bsd_if_qualify_policy=0 0x0 -90
+wl0_bsd_if_select_policy=wl1
+wl0_bsd_sta_select_policy=300 0 0 0 1 0 0 0 0 0x400
+wl0_bsd_steering_policy=0 5 3 -60 0 0x12
+wl1_bsd_if_qualify_policy=60 0x0 -75
+wl1_bsd_if_select_policy=wl0
+wl1_bsd_sta_select_policy=300 0 0 0 1 0 0 0 0 0x0
+wl1_bsd_steering_policy=80 5 3 -75 0 0x0
+wl2_bsd_if_qualify_policy=0 0x0 -75
+wl2_bsd_if_select_policy=wl0 wl1
+wl2_bsd_sta_select_policy=4 0 400 0 0 -1 0 0 0 0x60
+wl2_bsd_steering_policy=0 5 3 0 400 0x60
+
+# check if these two are enabled by default without template
+# ecbd should start by default.
+ecbd_enable=1
+ecbd_msglevel=0
+
+lan_ifname=_BRNAME_
+lan_ifnames=_IFNAMES_
+lan1_ifname=
+lan1_ifnames=
+lan2_ifname=
+lan2_ifnames=
+lan3_ifname=
+lan3_ifnames=
+lan4_ifname=
+lan4_ifnames=
+lan5_ifname=
+lan5_ifnames=
+lan6_ifname=
+lan6_ifnames=
+lan7_ifname=
+lan7_ifnames=
+lan8_ifname=
+lan8_ifnames=
+
+wan_ifname=erouter0
+wifi_apps_log_file=/rdklogs/logs/wifi_vendor_apps.log
+
+#wl0_vifs=wl0.1 wl0.2 wl0.3 wl0.4 wl0.5 wl0.6 wl0.7
+#wl1_vifs=wl1.1 wl1.2 wl1.3 wl1.4 wl1.5 wl1.6 wl1.7
+#wl2_vifs=wl2.1 wl2.2 wl2.3 wl2.4 wl2.5 wl2.6 wl2.7

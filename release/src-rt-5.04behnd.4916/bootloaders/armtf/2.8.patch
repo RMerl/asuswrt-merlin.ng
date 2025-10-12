@@ -90,6 +90,19 @@ index df11d86..1cfe0e2 100644
  	cortex_a53_reset_func, \
  	cortex_a53_core_pwr_dwn, \
  	cortex_a53_cluster_pwr_dwn
+diff --git a/lib/el3_runtime/aarch64/context.S b/lib/el3_runtime/aarch64/context.S
+index 60501f6..38b5708 100644
+--- a/lib/el3_runtime/aarch64/context.S
++++ b/lib/el3_runtime/aarch64/context.S
+@@ -792,7 +792,7 @@ endfunc fpregs_context_restore
+ 	 */
+ 	.macro enable_serror_at_el3
+ 	mrs     x8, scr_el3
+-	orr     x8, x8, #SCR_EA_BIT
++	//orr     x8, x8, #SCR_EA_BIT
+ 	msr     scr_el3, x8
+ 	.endm
+ 
 diff --git a/lib/psci/psci_main.c b/lib/psci/psci_main.c
 index a631f3f..02afe39 100644
 --- a/lib/psci/psci_main.c

@@ -1487,7 +1487,6 @@ static int nandEraseBlk( struct mtd_info *mtd, int blk_addr )
     return (sts);
 }
 
-#define WAR_NAND_WRITE_BLK       1        /* This WAR is for MXIC parallel NAND, for ex. MX30LFxG28AD */
 #if defined(WAR_NAND_WRITE_BLK)
 #define WRITE_OOB_RETRY_COUNT    3
 #endif

@@ -174,7 +174,11 @@ static void wlcscan_safeleave(int signo) {
 
 #define MAX_LINE_LENGTH 1024
 #define MAX_AP_LIST	250
+#if defined(RTBE58_GO)
+#define MAX_FRESH_TIME	60
+#else
 #define MAX_FRESH_TIME	300
+#endif
 
 long parse_suffix(const char *filepath) {
 	const char *last_dot = strrchr(filepath, '.');
@@ -321,7 +325,7 @@ int wlcscan_main(void)
 #if defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
 	int apscan_counts = nvram_get_int("apscan_counts");
 	char apscan_file[32];
-	int wlcscan_wait = nvram_get_int("wlcscan_wait")?:4;
+	int wlcscan_wait = nvram_get_int("pre_wlcscan_wait")?:1;
 
 	if (nvram_match("wlescan", "1"))
 		snprintf(apscan_file, sizeof(apscan_file), "%s.%d.%ld.e", APSCAN_INFO, apscan_counts, uptime());
@@ -336,7 +340,7 @@ int wlcscan_main(void)
 			stop_conn_diag_ss();
 			sleep(wlcscan_wait);
 		} else
-			sleep(2);
+			sleep(wlcscan_wait);
 	}
 #endif
 
@@ -431,6 +435,14 @@ int wlcscan_main(void)
 		nvram_set_int("wlc_scan_state", WLCSCAN_STATE_FINISHED);
 		nvram_set_int("wlcscan", 0);
 		dbg("[wlc] wlcscan fin.(%d)\n", filestat.st_size);
+#if defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
+		if (nvram_match("x_Setting", "0") && !pids("obd")) {
+			_dprintf("%s, recover obd due ss fin.\n", __func__);
+			start_obd();
+			nvram_set("no_obd", "0");
+		} else
+			_dprintf("%s, obd?(%d)(%d).\n", __func__, nvram_get_int("x_Setting"), pids("obd"));
+#endif
 	} else {
 		dbg("[wlc] invalid scan results, re-scan...\n\n");
 		if (nvram_match("escan_ref", "1"))

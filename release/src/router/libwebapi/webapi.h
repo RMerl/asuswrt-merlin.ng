@@ -1,6 +1,7 @@
 #ifndef __WEBAPI_H__
 #define __WEBAPI_H__
 
+#include <json.h>
 #ifdef RTCONFIG_CFGSYNC
 #include <cfg_capability.h>
 #endif
@@ -172,4 +173,8 @@ extern int do_upload_config(void);
 extern int set_security_update(char *security_update);
 extern int get_security_update(void);
 #endif
+extern int check_cmd_injection_blacklist(char *para);
+extern int check_xss_blacklist(char* para, int check_www);
+extern int validate_apply_input_value(char *name, char *value);
+extern int detect_vul_scan(void);
 #endif /* !__WEBAPI_H__ */

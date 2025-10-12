@@ -4905,3 +4905,6 @@ Notice_Message_1=På grund av systemoptimering måste %@ nätverk omkonfigureras
 Notice_Message_2=På grund av systemoptimering, vänligen lägg till det befintliga MAC-filtret igen i nätverksinställningarna.
 Notice_Message_3=Jag har läst det, visa inte igen.
 CTL_Decline=Avböj
+Outdoor_desc_title=Warning
+Outdoor_desc1=By enabling mode 1, AiMesh will be limited and might cause mesh node disconnect.
+Outdoor_desc2=In compliance with regulations, the system will scan channels for about 1 minute to avoid weather radar interference. If radar signals are detected, it will switch to 2.4GHz, causing brief disconnection. The affected channel will be blocked for 30 minutes.

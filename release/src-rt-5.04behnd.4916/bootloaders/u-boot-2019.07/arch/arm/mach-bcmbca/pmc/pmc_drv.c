@@ -118,21 +118,20 @@ static int SendAndWait(TCommand * cmd, TCommand * rsp)
 
 	/* clear previous rsp data if any */
 	while (pmc->dqm.notEmptySts & PMC_DQM_RPL_STS) {
-		if (!rsp)
-			rsp = &dummy;
+		TCommand *rsp0 = &dummy;
 
-		rsp->word0.Reg32 = pmc->dqmQData[PMC_DQM_RPL_NUM].word[0];
-		rsp->word1.Reg32 = pmc->dqmQData[PMC_DQM_RPL_NUM].word[1];
-		rsp->u.cmdGenericParams.params[0] =
+		rsp0->word0.Reg32 = pmc->dqmQData[PMC_DQM_RPL_NUM].word[0];
+		rsp0->word1.Reg32 = pmc->dqmQData[PMC_DQM_RPL_NUM].word[1];
+		rsp0->u.cmdGenericParams.params[0] =
 		    pmc->dqmQData[PMC_DQM_RPL_NUM].word[2];
-		rsp->u.cmdGenericParams.params[1] =
+		rsp0->u.cmdGenericParams.params[1] =
 		    pmc->dqmQData[PMC_DQM_RPL_NUM].word[3];
 
 		printk
 		    ("PMC reqdID=%d previous rsp.word[0-3]=0x[%08x %08x %08x %08x] status=%d\n",
-		     reqdID, rsp->word0.Reg32, rsp->word1.Reg32,
-		     rsp->u.cmdGenericParams.params[0],
-		     rsp->u.cmdGenericParams.params[1], rsp->word0.Bits.error);
+			reqdID, rsp0->word0.Reg32, rsp0->word1.Reg32,
+			rsp0->u.cmdGenericParams.params[0],
+			rsp0->u.cmdGenericParams.params[1], rsp0->word0.Bits.error);
 	}
 
 #if IS_BCMCHIP(63138)

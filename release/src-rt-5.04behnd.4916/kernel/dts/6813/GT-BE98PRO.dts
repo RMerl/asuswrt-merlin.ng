@@ -153,10 +153,10 @@
 		init_low;
 	};
         /* AFC LED */
-	led15afc:led_gpio_15 {
+	led48:led_gpio_48 {
 		compatible = "brcm,gpio-led";
 		software_led;
-		pin = <15>;
+		pin = <48>;
 		active_low;
 		init_high;
         };

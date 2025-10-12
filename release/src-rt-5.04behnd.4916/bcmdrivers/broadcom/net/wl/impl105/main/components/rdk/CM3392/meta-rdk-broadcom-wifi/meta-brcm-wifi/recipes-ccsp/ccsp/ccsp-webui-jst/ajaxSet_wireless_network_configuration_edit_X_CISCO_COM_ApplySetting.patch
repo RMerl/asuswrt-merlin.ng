@@ -1,0 +1,13 @@
+--- a/source/Styles/xb6/jst/actionHandler/ajaxSet_wireless_network_configuration_edit.jst
++++ b/source/Styles/xb6/jst/actionHandler/ajaxSet_wireless_network_configuration_edit.jst
+@@ -224,9 +224,7 @@
+ 				}
+ 			}
+ 		}
+-		// setStr("Device.WiFi.Radio."+$r+".X_CISCO_COM_ApplySetting", "true", true);
+-		setStr("Device.WiFi.ApplyAccessPointSettings", "true", true);
+-                setStr("Device.WiFi.ApplyRadioSettings","true",true);
++		setStr("Device.WiFi.Radio."+$r+".X_CISCO_COM_ApplySetting", "true", true);
+ 	}
+ }
+ if($response_message=='') {

@@ -1,0 +1,45 @@
+#!/usr/bin/perl
+#
+# This script parses linker output of discarded section being accessed by non-discarded section
+#
+# ARGV[0]: List of reclaim symbols to ignore
+#       Eg. These are typically reclaimed probe functios used in pciedev_funcs/msgbuf_proto_ops/etc.
+#
+# STDIN: 
+#     `pciedev_close' referenced in section `.data.pciedev_funcs' of pciedev_rte.o: defined in discarded section `.textini2.pciedev_close' of pciedev_rte.o
+#     `msgbuf_proto_detach' referenced in section `.data.msgbuf_proto_ops' of bcmmsgbuf.o: defined in discarded section `.textini2.msgbuf_proto_detach' of bcmmsgbuf.o
+#
+
+use Getopt::Std;
+my $idre = '([\w$]+)';
+
+#
+# Open file for list of reclaim
+#   symbols to ignore
+#
+my $fncfg_ignore_input = $ARGV[0];
+my %reclaim_syms_ignore_list = ();
+open($fhcfg, "<$fncfg_ignore_input") or die "Unable to open file $fncfg_ignore_input: $!\n";
+map {
+	$reclaim_syms_ignore_list{$1} = 1 if /^${idre}/;
+} <$fhcfg>;
+close($fhcfg);
+
+#
+# STDIN: symbols accessing reclaimed sections from linker
+#
+my %reclaim_syms_linker = ();
+my %reclaim_syms_linker_error_str = ();
+map {
+	$reclaim_syms_linker{$1} = 1 if /\`${idre}\'/;
+	$reclaim_syms_linker_error_str{$1} = $_ if /\`${idre}\'/;
+} <STDIN>;
+
+my $err = 0;
+foreach my $sym (sort keys %reclaim_syms_linker) {
+	if (!$reclaim_syms_ignore_list{$sym}) {
+		printf STDERR $reclaim_syms_linker_error_str{$sym};
+		$err = -1;
+	}
+}
+exit $err;

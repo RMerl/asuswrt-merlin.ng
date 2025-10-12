@@ -110,6 +110,9 @@ CFLAGS += -I$(TOP_PLATFORM)/bcm_flashutil -I$(HND_SRC)/userspace/public/include 
 else ifeq ($(HND_ROUTER_BE_4916),y)
 LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -L$(TOP_PLATFORM)/bcm_flashutil -lbcm_flashutil -L$(TOP_PLATFORM)/bcm_util $(if $(HND_ROUTER_BE_4916),-lbcm_util) -L$(TOP_PLATFORM)/bcm_boardctl -lbcm_boardctl
 CFLAGS += -I$(TOP_PLATFORM)/bcm_flashutil -I$(HND_SRC)/userspace/public/include -I$(HND_SRC)/userspace/public/libs/cms_util/ -I$(HND_SRC)/userspace/public/include/linux
+ifeq ($(BRCM_CHIP),6764)
+CFLAGS += -DCHIP_BCM6764
+endif
 else
 LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -L$(TOP_PLATFORM)/bcm_flashutil -lbcm_flashutil -L$(TOP_PLATFORM)/bcm_util $(if $(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),-lbcm_util,-lbcm_crc) -L$(TOP_PLATFORM)/bcm_boardctl -lbcm_boardctl
 endif
@@ -293,6 +296,9 @@ endif
 ifeq ($(RTCONFIG_BT_CONN),y)
 CFLAGS  += -I$(TOP)/bluez-5.56/lib
 endif
+
+CFLAGS += -I$(TOP)/libwebapi
+LDFLAGS += -L$(TOP)/libwebapi -lwebapi
 
 #CFLAGS += -DRC_BUILDTIME=$(shell date -d "now" +"%s")
 

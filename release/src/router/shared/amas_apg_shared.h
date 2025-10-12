@@ -449,4 +449,6 @@ extern char* get_sdn_type_by_sdn_idx(int index, char *type, size_t type_bsize);
 extern char* get_fh_if_prefix_by_apm(int apm_idx, char *ret_prefix, size_t ret_bsize);
 
 extern int get_sdn_new_idx(char *sdn_rl);
+extern char *get_cap_main_bh_ifnames(unsigned long wifi_band, char *ret_ifnames, size_t ret_bsize, int get_prefix);
+extern char *lookup_main_wifi_on_lan_ifnames(unsigned long wifi_band, char *ret_wlifname, size_t ret_bsize);
 #endif  /* !__APG_SHAREDH__ */

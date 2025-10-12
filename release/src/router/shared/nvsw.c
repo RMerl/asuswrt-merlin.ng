@@ -101,7 +101,7 @@ static int go_need_nv_switch_byBTNSW(unsigned char target_idx, unsigned char cur
 static int go_need_nv_switch_byBTNSW(unsigned char target_idx, unsigned char cur_idx, unsigned char *chgto)
 {
 	char sw_btn;
-	sw_btn = button_pressed(BTN_SWITCH)? '0' : 'i';
+	sw_btn = button_pressed(BTN_SWITCH)? '0' : '1';
 	if (cur_idx == 99) {
 			*chgto = cur_idx;
 			return 1;
@@ -456,7 +456,7 @@ int nvsw_switching(int *outval, int restore_default)
 		char nvram_file_name[64];
 		// backup current nvram
 		if (!restore_default) {
-			doSystem("nvram save %s/%s%d.CFG", NVSW_PATH, NVSW_SNAP_PREFIX, cur_nvswid);
+			doSystem("nvram save %s/%s%d.CFG 1", NVSW_PATH, NVSW_SNAP_PREFIX, cur_nvswid);
 		}
 		// restore nvram
 		snprintf(nvram_file_name, sizeof(nvram_file_name), "%s/%s%d.CFG", NVSW_PATH, NVSW_SNAP_PREFIX, changed_to_idx);

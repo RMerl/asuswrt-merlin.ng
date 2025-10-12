@@ -1,5 +1,5 @@
-﻿.item_tag_container > .item_tag.link:before{
-	background-image: url(/images/New_ui/SDN/white_theme/Content/link.svg);
+﻿.item_tag_container > .item_tag:before{
+	background: #006CE1;
 }
 .feature_profiles_container{
 	background: #F5F5F5;

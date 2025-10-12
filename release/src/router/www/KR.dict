@@ -4905,3 +4905,6 @@ Notice_Message_1=시스템 최적화로 인해 %@ 네트워크를 다시 구성�
 Notice_Message_2=시스템 최적화로 인해 네트워크 설정에서 기존 MAC 필터를 다시 추가하세요.
 Notice_Message_3=읽었습니다. 다시 표시하지 않습니다.
 CTL_Decline=거부
+Outdoor_desc_title=Warning
+Outdoor_desc1=By enabling mode 1, AiMesh will be limited and might cause mesh node disconnect.
+Outdoor_desc2=In compliance with regulations, the system will scan channels for about 1 minute to avoid weather radar interference. If radar signals are detected, it will switch to 2.4GHz, causing brief disconnection. The affected channel will be blocked for 30 minutes.

@@ -13,6 +13,10 @@
 #include <sm.h>
 #include <json.h>
 
+#ifdef RTCONFIG_MLO
+#include "api/nmp_api.h"
+#endif
+
 #ifndef FALSE
 #define FALSE	0
 #endif
@@ -266,6 +270,7 @@ typedef struct {
 	char			mlo_5G1_mac[MAX_NR_CLIENT_LIST][18];
 	char			mlo_6G_mac[MAX_NR_CLIENT_LIST][18];
 	char			mlo_6G1_mac[MAX_NR_CLIENT_LIST][18];
+	char			mlo_all_mac[MAX_NR_CLIENT_LIST][MLO_ALL_MAC_LEN];
 #endif
 	unsigned char	is_wireless[MAX_NR_CLIENT_LIST];
 	int        		conn_ts[MAX_NR_CLIENT_LIST];		// connect  timestamp

@@ -6364,7 +6364,7 @@ int
 start_acsd()
 {
 	int ret = 0;
-#if defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_HND_ROUTER_AX) || defined(GTAC5300)
+#if defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_HND_ROUTER_AX)
 #if defined(RTCONFIG_HND_ROUTER_AX)
 	char *acsd_argv[] = { "/usr/sbin/acsd2", NULL };
 #else
@@ -6385,14 +6385,10 @@ start_acsd()
 #if defined(RTCONFIG_BCM_7114)
 		ret = _eval(acsd_argv, NULL, 0, &pid);
 #else
-#if defined(RTCONFIG_HND_ROUTER_AX) || defined(GTAC5300)
 #if defined(RTCONFIG_HND_ROUTER_AX)
 		/* depending on NVRAM start the respective version */
 		if (nvram_match("acs_version", "2"))
-#elif defined(GTAC5300)
-		if (nvram_get_int("re_mode") == 1)
-#endif
-			ret = _eval(acsd_argv, NULL, 0, &pid);
+			system("/usr/sbin/acsd2");
 		/* default acsd version; to use even when the NVRAM is not set */
 		else
 #endif
@@ -12837,7 +12833,6 @@ start_services(void)
 #ifdef GTAX6000
 	start_antled();
 #endif
-	start_acsd();
 #ifdef RTCONFIG_ASD
 	start_asd();
 #endif
@@ -12864,6 +12859,7 @@ start_services(void)
 	start_telnetd();
 #ifdef CONFIG_BCMWL5
 	start_eapd();
+	start_acsd();
 	start_nas();
 #elif defined(RTCONFIG_RALINK) || defined(RTCONFIG_REALTEK)
 	start_8021x();
@@ -12914,7 +12910,6 @@ start_services(void)
 #ifdef BCM_EVENTD
 	start_eventd();
 #endif
-	//start_acsd();
 #if defined(RTCONFIG_DHDAP) || defined(RTCONFIG_HND_ROUTER_AX)
 	start_dhd_monitor();
 #endif
@@ -14864,6 +14859,12 @@ int start_sw_btn(void)
 	char *swbtn_argv[] = {"sw_btnd", NULL};
 	pid_t pid;
 	stop_sw_btn();
+
+#ifdef CONFIG_BCMWL5
+	if (factory_debug())
+		return 0;
+#endif
+
 #if defined(RTCONFIG_NVSW_IN_JFFS)
 	if(nvram_match("x_Setting", "1")) { // sync btnsw_onoff & default new image if needed
 #if defined(PRTAX57_GO) || defined(RTBE58_GO)// stupid mode GUI, force target id to 1/"travel mode"
@@ -16811,6 +16812,7 @@ script_allnet:
 #endif
 #ifdef CONFIG_BCMWL5
 			start_eapd();
+			start_acsd();
 			start_nas();
 #elif defined RTCONFIG_RALINK
 			start_8021x();
@@ -16843,7 +16845,6 @@ script_allnet:
 #ifdef BCM_EVENTD
 			start_eventd();
 #endif
-			start_acsd();
 #if defined(RTCONFIG_DHDAP) || defined(RTCONFIG_HND_ROUTER_AX)
 			start_dhd_monitor();
 #endif
@@ -17060,6 +17061,7 @@ script_allnet:
 #endif
 #ifdef CONFIG_BCMWL5
 			start_eapd();
+			start_acsd();
 			start_nas();
 #elif defined RTCONFIG_RALINK
 			start_8021x();
@@ -17092,7 +17094,6 @@ script_allnet:
 #ifdef BCM_EVENTD
 			start_eventd();
 #endif
-			start_acsd();
 #if defined(RTCONFIG_DHDAP) || defined(RTCONFIG_HND_ROUTER_AX)
 			start_dhd_monitor();
 #endif
@@ -17358,6 +17359,7 @@ script_allnet:
 #endif
 #ifdef CONFIG_BCMWL5
 			start_eapd();
+			start_acsd();
 			start_nas();
 #elif defined RTCONFIG_RALINK
 			start_lan_wl();
@@ -17394,7 +17396,6 @@ script_allnet:
 #ifdef BCM_EVENTD
 			start_eventd();
 #endif
-			start_acsd();
 #if defined(RTCONFIG_DHDAP) || defined(RTCONFIG_HND_ROUTER_AX)
 			start_dhd_monitor();
 #endif
@@ -18050,6 +18051,7 @@ check_ddr_done:
 			lanaccess_wl();
 #endif
 			start_eapd();
+			start_acsd();
 			start_nas();
 			start_wps();
 #ifdef RTCONFIG_NOTIFICATION_CENTER
@@ -18079,7 +18081,6 @@ check_ddr_done:
 #ifdef BCM_EVENTD
 			start_eventd();
 #endif
-			start_acsd();
 #if defined(RTCONFIG_DHDAP) || defined(RTCONFIG_HND_ROUTER_AX)
 			start_dhd_monitor();
 #endif
@@ -20262,17 +20263,19 @@ retry_wps_enr:
 			nvram_set("skip_init_run_wpas", "1");
 			nvram_set("apply_wlc", "0");
 
-			nvram_set("wl0_ssid", "ASUS_2G");
-			nvram_set("wl0_akm", "");
-			nvram_set("wl0_wpa_psk", "");
-			nvram_set("wl0_crypto", "");
-			nvram_set("wl0_auth_mode_x", "");
+			if (nvram_match("x_Setting", "0")) {
+				nvram_set("wl0_ssid", nvram_safe_get("wl0.1_ssid"));
+				nvram_set("wl0_akm", nvram_safe_get("wl0.1_akm"));
+				nvram_set("wl0_wpa_psk", nvram_safe_get("wl0.1_wpa_psk"));
+				nvram_set("wl0_crypto", nvram_safe_get("wl0.1_crypto"));
+				nvram_set("wl0_auth_mode_x", nvram_safe_get("wl0.1_auth_mode_x"));
 
-			nvram_set("wl1_ssid", "ASUS_5G");
-			nvram_set("wl1_akm", "");
-			nvram_set("wl1_wpa_psk", "");
-			nvram_set("wl1_crypto", "");
-			nvram_set("wl1_auth_mode_x", "");
+				nvram_set("wl1_ssid", nvram_safe_get("wl1.1_ssid"));
+				nvram_set("wl1_akm", nvram_safe_get("wl1.1_akm"));
+				nvram_set("wl1_wpa_psk", nvram_safe_get("wl1.1_wpa_psk"));
+				nvram_set("wl1_crypto", nvram_safe_get("wl1.1_crypto"));
+				nvram_set("wl1_auth_mode_x", nvram_safe_get("wl1.1_auth_mode_x"));
+			}
 #else
 			if(client_mode)
 				stop_wpasupp(band);
@@ -22824,6 +22827,11 @@ void start_amas_lldpd(void)
 		else
 		{
 			strlcpy(ifnames, nvram_safe_get("wired_ifnames"), sizeof(ifnames));
+			if(access_point_mode())
+			{
+				strlcat(ifnames, " ", sizeof(ifnames));
+				strlcat(ifnames, nvram_safe_get("eth_ifnames"), sizeof(ifnames));
+			}
 		}
 		foreach(word, ifnames, next)
 		{

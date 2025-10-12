@@ -244,7 +244,6 @@ static inline int usxgmii_m_total_ports(usxgmii_m_type_t usxgmii_m_type)
 typedef struct phy_dev_s
 {
     struct phy_drv_s *phy_drv;
-    u16 phy_id1, phy_id2, pkg_id1, pkg_id2;
     bus_drv_t *bus_drv;
     phy_mii_type_t mii_type;
     link_change_cb_t link_change_cb;
@@ -325,7 +324,6 @@ typedef struct phy_dev_s
 #define PHY_FLAG_SHARED_REF_CLK_SET             (1<<18)
 #define PHY_FLAG_ON_MEZZANINE                   (1<<19)
 #define PHY_FLAG_SHARED_CLOCK_BOOTSTRAP         (1<<20)
-#define PHY_FLAG_IGNORE_PKGID                   (1<<21)
 
 #define PhyIsPortConnectedToExternalSwitch(phy) (((phy)->flag & PHY_FLAG_TO_EXTSW)?1:0)
 #define PhyIsExtPhyId(phy)                      (((phy)->flag & PHY_FLAG_EXTPHY)?1:0)
@@ -335,7 +333,6 @@ typedef struct phy_dev_s
 #define PhyIsSharedRefClkSet(phy)               (((phy)->flag & PHY_FLAG_SHARED_REF_CLK_SET)?1:0)
 #define PhyIsPowerSetEnabled(phy)               (((phy)->flag & PHY_FLAG_POWER_SET_ENABLED)?1:0)
 #define PhySetSharedRefClk(phy)                 ((phy)->flag |= PHY_FLAG_SHARED_REF_CLK_SET)
-#define PhyIsPackageIdIgnored(phy)              (((phy)->flag & PHY_FLAG_IGNORE_PKGID) > 0)
 
 #define PHY_MAC_LINK_VALID  (1<<31)
 

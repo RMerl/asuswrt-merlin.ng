@@ -1,0 +1,15 @@
+[Unit]
+Description=WiFi Service.
+
+After=brcm-net.service
+Requires=brcm-net.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c '/lib/rdk/wifi_setup.sh init'
+ExecReload=/bin/sh -c '/lib/rdk/wifi_setup.sh restart'
+ExecStop=/bin/sh -c '/lib/rdk/wifi_setup.sh stop'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

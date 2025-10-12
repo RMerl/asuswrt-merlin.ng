@@ -14,6 +14,7 @@ html::-webkit-scrollbar-track{
 body{
 	background:url('./qis_background_downsize.png') repeat;
 	background-color: #111 !important;
+	zoom: 0.7;
 /*
 	background:url('./bg.png') no-repeat;
 	background-attachment: fixed;
@@ -841,7 +842,7 @@ a{
 	text-align: right;
 	padding-right: 28px;
 }
-.configuredSupport{
+.configuredSupport, .hiddenUI{
 	display: none;	
 }
 .defaultSupport{
@@ -1085,6 +1086,9 @@ a{
 
 /*for Desktop*/
 @media screen and (min-aspect-ratio: 11/13){
+	body {
+		zoom: 1;
+	}	
 	.pageDesc{
 		font-size: 1.8em;
 	}

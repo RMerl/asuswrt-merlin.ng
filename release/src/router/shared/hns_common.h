@@ -90,6 +90,23 @@ enum {
 		printf("[HNS_DB][%s:(%d)] "fmt, __FUNCTION__, __LINE__, ##args); \
 	}
 
+typedef enum {
+	HNS_DPI_MALS = 0,
+	HNS_DPI_VP,
+	HNS_DPI_CC,
+	HNS_WEBS_FILTER,
+	HNS_WEB_HISTORY,
+	HNS_ADAPTIVE_QOS,
+	HNS_FEATURE_MAX
+} hnsFeature_e;
+
+struct hnsSupport_t {
+	char *model;
+	int feature[HNS_FEATURE_MAX];
+};
+
+extern int HNSisSupport(const char *name);
+
 /* HNS services */
 extern void disable_hns_setting(void);
 extern void add_hns_ufwd_rules(FILE *fp);
@@ -106,6 +123,7 @@ extern void wan_start_hns_engine(int wan_unit);
 extern int check_hns_switch();
 extern int check_hns_setting();
 extern void check_hns_alive_service();
+extern int HNSisSupport(const char *name);
 
 /* HNS DB */
 extern void exe_hns_history();

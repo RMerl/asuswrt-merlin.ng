@@ -134,7 +134,7 @@ function update_traffic() {
 						diff_rx = 1;
 					}
 					else{
-						diff_rx = (current_rx - last_speed_data[ifname].rx)/2;
+						diff_rx = (current_rx - last_speed_data[ifname].rx) / (updateFrequency/1000);
 					}
 				}
 
@@ -143,7 +143,7 @@ function update_traffic() {
 						diff_tx = 1;
 					}
 					else{
-						diff_tx = (current_tx - last_speed_data[ifname].tx)/2;
+						diff_tx = (current_tx - last_speed_data[ifname].tx) / (updateFrequency/1000);
 					}
 				}
 

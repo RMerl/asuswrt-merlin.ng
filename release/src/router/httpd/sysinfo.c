@@ -192,6 +192,8 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				strcpy(model, "BCM4912 - B53 ARMv8");
 #elif defined(BCM6765)
 				strcpy(model, "BCM6765 - ARMv8");
+#elif defined(BCM6764)
+				strcpy(model, "BCM6764 - Cortex A7 ARMv7");
 #elif defined(RTCONFIG_HND_ROUTER_BE_4916)
 				strcpy(model, "BCM4916 - B53 ARMv8");
 #else
@@ -249,7 +251,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 
 		} else if(strcmp(type,"cpu.freq") == 0) {
 #ifdef HND_ROUTER
-#if defined(BCM4912) || defined(BCM6765)
+#if defined(BCM4912) || defined(BCM6765) || defined(BCM6764)
 			if (1)
 				strcpy(result, "2000");
 			else

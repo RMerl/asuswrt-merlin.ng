@@ -1,5 +1,6 @@
 const is_Web_iframe = (($(parent.document).find("#mainMenu").length > 0) || (top.webWrapper)) ? true : false;
-const vpn_title_text = (()=>{return (isSupport("vpn_fusion") ? `<#VPN_Fusion#>` : `<#vpnc_title#>`);})();
+//const vpn_title_text = (()=>{return (isSupport("vpn_fusion") ? `<#VPN_Fusion#>` : `<#vpnc_title#>`);})();
+const vpn_title_text = "<#vpnc_title#>";
 let btnsw_list = [
 	{"title":vpn_title_text, "value":"4"},
 	{"title":`LED`, "value":"2"},/* untranslated */
@@ -8,7 +9,8 @@ let btnsw_list = [
 	{"title":`<#AiMesh_NodeLocation01#> / Travel`, "value":"1"},/* untranslated */
 	{"title":`No Function`, "value":"0"}/* untranslated */
 ];
-const support_vpn_btn = (isSupport("vpn_fusion") && (isSwMode("RT") || isSwMode("WISP")));
+//const support_vpn_btn = (isSupport("vpn_fusion") && (isSwMode("RT") || isSwMode("WISP")));
+const support_vpn_btn = 0;
 if(!support_vpn_btn){
 	btnsw_list = btnsw_list.filter(item => item.value != "4")
 }

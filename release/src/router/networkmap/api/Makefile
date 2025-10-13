@@ -13,7 +13,7 @@ ifneq ($(wildcard *.c),)
 	$(CC) -fPIC -c nmp_api.c $(CFLAGS_SO) -o $(OBJS_SO)
 	$(CC) -shared $(OBJS_SO) -o $(NMP_API_SO) $(LDFLAGS_SO)
 else
-	-cp -f ../../nmp-api/networkmap/prebuild/$(NMP_API_SO) .
+	-cp -f ../../nmp-api/networkmap/prebuild/$(BUILD_NAME)/$(NMP_API_SO) .
 endif
 
 install:
@@ -26,3 +26,4 @@ endif
 
 clean:
 	rm -f $(OBJS_SO) $(NMP_API_SO)
+

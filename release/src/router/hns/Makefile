@@ -40,7 +40,7 @@ endif
 	@cp package/model.enc prebuild -rf
 
 ifeq ($(wildcard $(SRCBASE)/router/hns/*.c),)
-all:
+all: prebuild
 	@cp -f prebuild/hwinfo hwinfo
 	@cp -f prebuild/libhns.so ./
 else

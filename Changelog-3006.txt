@@ -12,6 +12,9 @@ Asuswrt-Merlin 3006.xxx Changelog
          - Settings moved from the tab to the dropdown menu
          - Number formatting is automatically localized
            by the webui language
+         - Removed NVRAM database location option and added
+           JFFS.  Also removed rarely used start-of-month
+           setting.
 
   - UPDATED: OpenVPN to 2.6.15.
   - FIXED: IPv6 requests for prefix lengths other than 64 for

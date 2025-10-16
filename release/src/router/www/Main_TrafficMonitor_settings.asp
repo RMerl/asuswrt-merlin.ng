@@ -467,7 +467,7 @@ function set_rstats_location()
 	{
 		document.form.rstats_location.value = "0";
 	}
-	else if (rstats_loc === "*nvram")
+	else if (rstats_loc === "/jffs/")
 	{
 		document.form.rstats_location.value = "2";
 	}
@@ -485,15 +485,12 @@ function hide_rstats_storage(_value){
 }
 
 function applyRule(){
-	if (!validator.numberRange(document.form.rstats_offset, 1, 31))
-		return false;
-
 	showLoading();
 
-	if (document.form.rstats_location.value == "2")
-		document.form.rstats_path.value = "*nvram";
-	else if (document.form.rstats_location.value == "0")
+	if (document.form.rstats_location.value == "0")
 		document.form.rstats_path.value = "";
+	else if (document.form.rstats_location.value == "2")
+		document.form.rstats_path.value = "/jffs/";
 
 	document.form.submit();
 }
@@ -599,10 +596,9 @@ function applyRule(){
 						<td>
 							<select name="rstats_location" class="input_option" onchange="hide_rstats_storage(this.value);">
 								<option value="0">RAM (Default)</option>
-								<option value="1">Custom location</option>
-								<option value="2">NVRAM</option>
+								<option value="1">USB disk</option>
+								<option value="2">JFFS</option>
 							</select>
-							<span id="invalid_location" style="display:none;" class="formfontdesc">Cannot use NVRAM if IPTraffic is enabled!</span>
 						</td>
 					</tr>
 
@@ -629,10 +625,6 @@ function applyRule(){
 							<input type="radio" name="rstats_new" class="input" value="1" <% nvram_match_x("", "rstats_new", "1", "checked"); %>><#checkbox_Yes#>
 							<input type="radio" name="rstats_new" class="input" value="0" <% nvram_match_x("", "rstats_new", "0", "checked"); %>><#checkbox_No#>
 						</td>
-					</tr>
-					<tr>
-						<th>Starting day of monthly cycle</th>
-						<td><input type="text" maxlength="2" class="input_3_table" name="rstats_offset" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("rstats_offset"); %>"></td>
 					</tr>
 				</table>
 				<div class="apply_gen">
@@ -662,4 +654,3 @@ function applyRule(){
 
 </body>
 </html>
-

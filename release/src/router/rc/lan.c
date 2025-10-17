@@ -4648,6 +4648,8 @@ lan_up(char *lan_ifname)
 					}
 				}
 			}
+
+			free(wl_ifnames);
 		}
 	}
 #else
@@ -4821,7 +4823,7 @@ lan_up(char *lan_ifname)
 
 #if defined(RTCONFIG_MEDIA_SERVER) && (defined(RTCONFIG_SAMBASRV) || defined(RTCONFIG_TUXERA_SMBD)) && defined(RTCONFIG_AMAS)
 	if(aimesh_re_node() && get_invoke_later()&INVOKELATER_DMS)
-		notify_rc("restart_samba");
+		notify_rc_and_wait_2min("restart_samba");
 #endif
 
 #ifdef RTCONFIG_REDIRECT_DNAME
@@ -4924,6 +4926,8 @@ lan_down(char *lan_ifname)
 					}
 				}
 			}
+
+			free(wl_ifnames);
 		}
 	}
 #else
@@ -6165,10 +6169,6 @@ void lanaccess_mssid(const char *limited_ifname, int mode)
 	strlcpy(lifname, limited_ifname, sizeof(lifname));
 
 #if defined(RTCONFIG_MULTILAN_CFG)
-#if defined(RTBE58_GO)
-	if (nvram_match("x_Setting", "0"))
-		return;
-#endif
 	if (is_ap_group_if(lifname))
 		return;
 #endif	// defined(RTCONFIG_MULTILAN_CFG)
@@ -6731,7 +6731,7 @@ void restart_wireless(void)
 		wl_defaults_wps();
 	}
 
-#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(RTBE58_GO) || defined(RPBE58)
+#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	reload_wl_check();
 #endif
 

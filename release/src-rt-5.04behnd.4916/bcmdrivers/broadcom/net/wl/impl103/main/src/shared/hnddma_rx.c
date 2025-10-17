@@ -85,6 +85,25 @@ static uint16 BCMFASTPATH dma_pcap_rx_rs0cd_fixup(dma_info_t *di, uint16 rs0cd_h
 #endif /* BCM_PCAP */
 
 static void
+pcn_pktrefill(dma_info_t *di, int num_dd)
+{
+#if defined(BCMRX_PCN) && defined(BCMRX_PCN_PKTPOOL)
+	if (di->bcmrx_pcn_fifo) {
+		pktpool_t *pcn_pktpool = OSH_GET_PCNPKTPOOL(di->osh);
+		int refill;
+		if (pcn_pktpool->n_pkts >= num_dd) {
+			refill = num_dd;
+		} else {
+			refill = pcn_pktpool->n_pkts;
+		}
+		/* Fill new packets to the pool */
+		pcn_pktpool->n_pkts -= refill;
+		pktpool_fill(di->osh, pcn_pktpool, FALSE);
+	}
+#endif /* BCMRX_PCN && BCMRX_PCN_PKTPOOL */
+}
+
+static void
 _dma_update_num_dd(dma_info_t *di, int *num_dd)
 {
 #if defined(D11_SPLIT_RX_FD)
@@ -873,6 +892,7 @@ dma_rx(hnddma_t *dmah, rx_list_t *rx_list, uint nbound)
 				}
 				PKTSETLINK(free_p, NULL);
 				PKTFREE(di->osh, free_p, FALSE);
+				pcn_pktrefill(di, 1);
 				di->hnddma.rxgiants++;
 				continue;
 			}
@@ -937,12 +957,14 @@ dma_rx(hnddma_t *dmah, rx_list_t *rx_list, uint nbound)
 
 				PKTSETLINK(free_p, NULL);
 				PKTFREE(di->osh, free_p, FALSE);
+				pcn_pktrefill(di, 1);
 				continue;
 			}
 		} else {
 			/* multi-buffer rx */
 			uint32 rx_frm_sts;
 			int num_dd; /* Number of DMA descriptors used for this packet. */
+			int num_multi = 1; /* num_dd in a multi-buffer packet */
 			void *tail, *p;
 
 			rx_frm_sts = ltoh32(*(uint32 *)PKTDATA(di->osh, head));
@@ -970,6 +992,7 @@ dma_rx(hnddma_t *dmah, rx_list_t *rx_list, uint nbound)
 				if (p == NULL)
 					break;
 
+				num_multi++;
 				pkt_len = MIN(resid, (int)di->rxbufsize);
 #if defined(D11_SPLIT_RX_FD)
 				if (di->sep_rxhdr)
@@ -1032,6 +1055,7 @@ dma_rx(hnddma_t *dmah, rx_list_t *rx_list, uint nbound)
 					}
 					PKTSETLINK(free_p, NULL);
 					PKTFREE(di->osh, free_p, FALSE);
+					pcn_pktrefill(di, num_multi);
 					continue;
 				}
 			}
@@ -1123,6 +1147,7 @@ next_frame:
 		DMA_ERROR(("%s: dma_rx: frame length (%d) packet is not ready, Big Hammer\n",
 			di->name, len));
 		PKTFREE(di->osh, head, FALSE);
+		pcn_pktrefill(di, 1);
 		goto next_frame;
 	}
 
@@ -1165,10 +1190,12 @@ next_frame:
 		DMA_ERROR(("%s: dma_rx: corrupted length (%d). "
 			"Frame received in multiple buffers\n", di->name, len));
 		PKTFREE(di->osh, head, FALSE);
+		pcn_pktrefill(di, 1);
 		di->hnddma.rxgiants++;
 		goto next_frame;
 	} else {
 		/* multi-buffer rx */
+		int num_multi = 1; /* num_dd in a multi-buffer packet */
 #ifdef BCMDBG
 		/* get rid of compiler warning */
 		p = NULL;
@@ -1205,6 +1232,7 @@ next_frame:
 			_dma_update_num_dd(di, &num_dd);
 			while (num_dd > 0 && (p = dma_getnextrxp(dmah, FALSE))) {
 				PKTSETNEXT(di->osh, tail, p);
+				num_multi++;
 				pkt_len = MIN(resid, (int)di->rxbufsize);
 #if defined(D11_SPLIT_RX_FD)
 				if (di->sep_rxhdr)
@@ -1241,6 +1269,7 @@ next_frame:
 					di->name, len, rx_frm_sts));
 			}
 			PKTFREE(di->osh, head, FALSE);
+			pcn_pktrefill(di, num_multi);
 			di->hnddma.rxgiants++;
 			goto next_frame;
 		}
@@ -3151,4 +3180,28 @@ dma_rx_head_pkt_entry_ptr(hnddma_t *dmah)
 	DMA_NONE(("%s: dma_rx_head_pkt_entry_ptr head = %p\n", di->name, p));
 #endif
 	return p;
+}
+
+/* PCN pktpool dump */
+void
+pcn_pktpool_dump(hnddma_t *dmah, int fifo, struct bcmstrbuf *b)
+{
+#if defined(BCMRX_PCN) && defined(BCMRX_PCN_PKTPOOL)
+	dma_info_t *di = DI_INFO(dmah);
+	pktpool_t *pktpool = (pktpool_t *)OSH_GET_PCNPKTPOOL(di->osh);
+
+	if (!di->bcmrx_pcn_fifo) {
+		return;
+	}
+
+	bcm_bprintf(b, "fifo%d: rxin %d rxout %d nrxd %d avail %d rxact %d nrxpost %d rxnobuf %d ",
+		fifo, di->rxin, di->rxout,
+		di->nrxd, di->rxavail, (NRXDACTIVE(di->rxin, di->rxout)),
+		di->nrxpost, di->hnddma.rxnobuf);
+	bcm_bprintf(b, "pool-tot %d pool-avail %d pool-max %d n_pkts %d\n",
+		pktpool_tot_pkts(pktpool), pktpool_avail(pktpool),
+		pktpool_max_pkts(pktpool), pktpool->n_pkts);
+#else
+	bcm_bprintf(b, "PCN pktpool is not available\n");
+#endif /* BCMRX_PCN && BCMRX_PCN_PKTPOOL */
 }

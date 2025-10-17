@@ -499,7 +499,8 @@ BUILD_MPMCTL=y
 #
 # Ingress QoS
 #
-# BRCM_DRIVER_INGQOS is not set
+BRCM_DRIVER_INGQOS=m
+BUILD_IQCTL=dynamic
 
 #
 # Misc datapath configuration

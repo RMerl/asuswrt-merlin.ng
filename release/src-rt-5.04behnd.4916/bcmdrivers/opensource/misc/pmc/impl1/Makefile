@@ -42,6 +42,10 @@ ifeq ($(strip $(BUILD_DSL)),)
 EXTRA_CFLAGS += -DNO_DSL
 endif
 
+ifeq ($(CONFIG_BRCM_CHIP_COMPAT_NAME),"6764L")
+EXTRA_CFLAGS += -DCONFIG_BCM96764L
+endif
+
 obj-y	 := pmc_drv.o pmc_drv_linux.o pmc_drv_dt.o
 ifeq ($(strip $(BRCM_IKOS)),)
 obj-y += clk_rst.o pmc_sysfs.o pmc_pcie.o pmc_usb.o

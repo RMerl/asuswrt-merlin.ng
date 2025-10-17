@@ -83,6 +83,10 @@ enum bcmsfp_connector
     SFF8024_CONNECTOR_COPPER_PIGTAIL    = 0x21,
     SFF8024_CONNECTOR_RJ45              = 0x22,
 };
+#define SFP_I2C_A0_ADDR (0xA0>>1)
+#define SFP_I2C_A2_ADDR (0xA2>>1)
+#define SFP_I2C_PHY_ADDR (0xAC>>1)
+#define XFP_I2C_ADDR SFP_I2C_A0_ADDR
 
 #define SFP_DIAGMON_ADDRMODE 0x4
 

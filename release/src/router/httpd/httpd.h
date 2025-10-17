@@ -177,6 +177,7 @@ struct wl_sync_nvram {
 #define WRONGCAPTCHA   10
 #endif
 #define FORCELOCK       11
+#define UNEXPECTED      12
 
 /* image path for app */
 #define IMAGE_MODEL_PRODUCT	"/Model_product.png"
@@ -601,7 +602,7 @@ extern void do_endpoint_request_token_cgi(char *url, FILE *stream);
 #ifdef RTCONFIG_CAPTCHA
 extern int is_captcha_match(char *catpch);
 #endif
-#if defined(RTCONFIG_BCMLEDG) \
+#if defined(RTCONFIG_AURALED) \
         || defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) \
         || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) \
         || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI)
@@ -651,4 +652,5 @@ extern int json_object_get_string_to_double(json_object *source_obj, char *targe
 #ifdef RTCONFIG_BCM_AFC
 extern int find_afc_challenge(char *id, char *challenge);
 #endif
+extern int nvram_modify_log(char *name, char *new, char *old, struct json_object *nvram_modify_obj);
 #endif /* _httpd_h_ */

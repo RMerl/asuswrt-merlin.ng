@@ -49,7 +49,6 @@ static int LED_status_old = -1;
 static int LED_status = -1;
 static int LED_status_changed = 0;
 static int LED_status_first = 1;
-static int LED_status_on = -1;
 #ifdef RTAX82U
 static int phystatus_period = -1;
 static int phystatus = -1;
@@ -80,7 +79,7 @@ static void ledbtn_alarmtimer()
 static void ledbtn(int sig)
 {
 	LED_status_old = LED_status;
-	LED_status = 0;
+	LED_status = nvram_get_int("AllLED");
 #if !defined(RTCONFIG_LED_BTN) && !defined(RTCONFIG_WIFI_TOG_BTN)
 	int val = button_pressed(BTN_WPS) && nvram_match("btn_ez_radiotoggle", "0") && nvram_match("btn_ez_mode", "1");
 #elif defined(RTCONFIG_TURBO_BTN)
@@ -95,13 +94,15 @@ static void ledbtn(int sig)
 			btn_led_count = 0;
 
 			int ledg_scheme = nvram_get_int("ledg_scheme");
+#ifdef GTAX6000
 			int antled_scheme = nvram_get_int("antled_scheme");
+#endif
 
 			if ((ledg_scheme >= LEDG_SCHEME_BLINKING) || (ledg_scheme == LEDG_SCHEME_OFF)) {
 				if (ledg_scheme == LEDG_SCHEME_OFF)
 					LED_status = 1;
-				if (nvram_default_get("ledg_scheme"))
-					nvram_set("ledg_scheme", nvram_default_get("ledg_scheme"));
+
+				nvram_set("ledg_scheme", nvram_default_get("ledg_scheme"));
 #ifdef GTAX6000
 				if (antled_scheme == ANTLED_SCHEME_OFF){
 					nvram_set("antled_scheme", "1");
@@ -111,9 +112,11 @@ static void ledbtn(int sig)
 				ledg_scheme = (ledg_scheme + 1) % (LEDG_SCHEME_MAX - 2);
 				if (ledg_scheme == LEDG_SCHEME_OFF)
 					ledg_scheme = LEDG_SCHEME_GRADIENT;
+
+				LED_status = 1;
+				nvram_set_int("ledg_scheme", ledg_scheme);
 			}
 
-			nvram_set_int("ledg_scheme", ledg_scheme);
 			nvram_commit();
 
 			dbg("switch effect\n");
@@ -127,6 +130,7 @@ static void ledbtn(int sig)
 	} else {
 		if (btn_led_pressed == 2)
 		{
+			nvram_set_int("ledg_scheme_old", (nvram_get_int("ledg_scheme") > 1) ? (nvram_get_int("ledg_scheme") - 1) : atoi(nvram_default_get("ledg_scheme")));
 			nvram_set_int("ledg_scheme", LEDG_SCHEME_OFF);
 #ifdef GTAX6000
 			nvram_set_int("antled_scheme",ANTLED_SCHEME_OFF);
@@ -137,51 +141,37 @@ static void ledbtn(int sig)
 			kill_pidfile_s("/var/run/ledg.pid", SIGTSTP);
 			kill_pidfile_s("/var/run/antled.pid", SIGTSTP);
 
-			LED_status = 1;
+			LED_status = 0;
 		}
 
 		btn_led_count = 0;
 		btn_led_pressed = 0;
 	}
 
-	if (!nvram_get_int("AllLED") && LED_status_first)
+	if (!nvram_get_int("AllLED") && LED_status_first && LED_status)
 	{
 		LED_status_first = 0;
 		LED_status_changed = 1;
-		LED_status_on = 0;
 	}
-	else if (LED_status &&
-	    (LED_status != LED_status_old))
-	{
+	else if (LED_status != LED_status_old)
 		LED_status_changed = 1;
-		if (LED_status_first)
-		{
-			LED_status_first = 0;
-			LED_status_on = 0;
-		}
-		else
-			LED_status_on = 1 - LED_status_on;
-	}
 	else
 		LED_status_changed = 0;
 
 	if (LED_status_changed)
 	{
 		TRACE_PT("button BTN_LED pressed\n");
-		if (LED_status && (LED_status != LED_status_old)) {
-			if (LED_status_on)
-				nvram_set_int("AllLED", 1);
-			else
-				nvram_set_int("AllLED", 0);
-			nvram_commit();
-		}
+		if (LED_status)
+			nvram_set_int("AllLED", 1);
+		else
+			nvram_set_int("AllLED", 0);
+		nvram_commit();
 
-		if (LED_status_on)
+		if (LED_status)
 			setAllLedNormal();
 		else
 			setAllLedOff();
 	}
-
 #if defined(RTAX82U) && !defined(RTCONFIG_BCM_MFG)
 	if (!nvram_get_int("LED_order")) {
 		if (nvram_get_int("asus_mfg")) return;

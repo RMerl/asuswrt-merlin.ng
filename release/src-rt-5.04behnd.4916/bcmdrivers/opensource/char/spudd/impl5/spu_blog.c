@@ -141,14 +141,9 @@ void spu_blog_ctx_add(struct iproc_ctx_s *ctx)
            ctx->stream, ctx->spi, ctx->xfrm->id.spi, ctx->blog_chan_id);
 }
 
-static void flush_notify_callback(void *data)
-{
-    kfree(data);
-}
-
 void spu_blog_evict(struct iproc_ctx_s *ctx)
 {
-    BlogFlushParams_t *params;
+    BlogFlushParams_t params = {};
     struct net_device *dev;
 
     if (ctx->stream == SPU_STREAM_US)
@@ -166,16 +161,13 @@ void spu_blog_evict(struct iproc_ctx_s *ctx)
         }
     }
 #endif
-    params = (BlogFlushParams_t *)kzalloc(sizeof(BlogFlushParams_t), GFP_KERNEL);
-    if (params == NULL) {
-        pr_err("failed to allocate params memory for evict\n");
-        return;
-    }
-    params->flush_dev = 1;
-    params->devid = dev->ifindex;
-    params->flush_chan = 1;
-    params->chan_id = ctx->blog_chan_id;
-    blog_notify_async(FLUSH, dev, (unsigned long)params, 0, flush_notify_callback, params);
+    params.flush_dev = 1;
+    params.devid = dev->ifindex;
+    params.flush_chan = 1;
+    params.chan_id = ctx->blog_chan_id;
+    blog_lock();
+    blog_notify(FLUSH, dev, (unsigned long)&params, 0);
+    blog_unlock();
 }
 
 void spu_blog_ctx_del(struct iproc_ctx_s *ctx)

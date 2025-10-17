@@ -497,19 +497,13 @@ function is_original_eth_lan(port_val){//Check if the wan port is the original e
 	return is_original_eth_lan;
 }
 
-function is_default_wan(wan_val){
-	let _is_default_wan = true;
+function is_default_wan_sfp(wan_val){
+	let _is_default_wan_sfp = true;
 
-	if(wan_val == "auto" || wan_val == "usb")
-		_is_default_wan = false;
-	else if(!isEmpty(eth_wan_list)){
-		let wan_obj = eth_wan_list[wan_val];
-		if(wan_obj.hasOwnProperty("wans_lanport")){
-			_is_default_wan = false;
-		}
-	}
+	if(wan_val != "wan" && wan_val != "sfp")
+		_is_default_wan_sfp = false;
 
-	return _is_default_wan;
+	return _is_default_wan_sfp;
 }
 
 function get_default_wan(){
@@ -958,7 +952,7 @@ function applyRule(){
 		document.form.wans_routing_rulelist.disabled =true;
 
 		/* Only default WAN can be configured when IPTV is enabled */
-		if(!is_default_wan(document.form.wans_primary.value) && (switch_stb_x != "0" || orig_switch_wantag != "none")){
+		if(!is_default_wan_sfp(document.form.wans_primary.value) && (switch_stb_x != "0" || orig_switch_wantag != "none")){
 			let hint_str = `<#PortConflict_DisableFunc_Check#>`;
 			let confirm_str = hint_str.replace("%1$@", `"`+document.form.wans_primary[document.form.wans_primary.selectedIndex].text+`"`).replace("%2$@", "<#menu5_3#>").replace("%3$@", "IPTV");
 			if(confirm(confirm_str)){

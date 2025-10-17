@@ -1699,13 +1699,6 @@ var validator = {
 			return false;
 		}
 
-		if(!this.string_KR(psk_obj)){
-			alert("<#JS_PSK64Hex#>");
-			psk_obj.focus();
-			psk_obj.select();
-			return false;
-		}
-
 		var invalid_char = "";
 		for(var i = 0; i < psk_length; ++i){
 			if(psk_obj.value.charAt(i) <= ' ' || psk_obj.value.charAt(i) > '~'){

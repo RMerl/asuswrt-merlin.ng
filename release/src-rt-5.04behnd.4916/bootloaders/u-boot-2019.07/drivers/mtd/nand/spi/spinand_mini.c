@@ -12,6 +12,37 @@
 
 #include <linux/mtd/spinand_mini.h>
 
+#ifdef CONFIG_TPL_BUILD
+#define BBT_BLOCK_GOOD		0x00
+#define BBT_BLOCK_BAD		0x01
+#define BBT_BLOCK_RESERVED	0x02
+#define BBT_BLOCK_FACTORY_BAD	0x03
+
+#define BBT_ENTRY_MASK		0x03
+#define BBT_ENTRY_SHIFT		2
+static char *bbt;
+
+static inline char bbt_get_entry(int block)
+{
+	char entry = bbt[block >> BBT_ENTRY_SHIFT];
+
+	entry >>= (block & BBT_ENTRY_MASK) * 2;
+	return entry & BBT_ENTRY_MASK;
+}
+
+static inline void bbt_mark_entry(int block, char mark)
+{
+	int shift = (block & BBT_ENTRY_MASK) * 2;
+	char msk = (mark & BBT_ENTRY_MASK) << shift;
+
+	bbt[block >> BBT_ENTRY_SHIFT] &= ~(BBT_ENTRY_MASK << shift);
+	bbt[block >> BBT_ENTRY_SHIFT] |= msk;
+}
+#else
+// single bit signifies good block
+static int gbt = 1; // set block 0 as always good
+#endif
+
 static struct spinandmini_device *spinand = NULL;
 
 static const struct spinandmini_info spinand_chip_table[] = {
@@ -246,7 +277,7 @@ static const struct spinandmini_info spinand_chip_table[] = {
 static int spinandchip_select_target(struct spinandmini_device *spinand,
 				  unsigned int target)
 {
-	u32 buf = target;  
+	u32 buf = target;
 	struct spi_mem_op op = SPI_MEM_OP(SPI_MEM_OP_CMD(0xc2, 1),
 					  SPI_MEM_OP_NO_ADDR,
 					  SPI_MEM_OP_NO_DUMMY,
@@ -489,7 +520,7 @@ int spinandmini_read_buf(int blk, int offset, u8 *buffer, u32 len)
 	int ret = 0, target = 0, readlen = len;
 	u64 addr, page_addr, page_boundary;
 	u32 page_offset;
-	u32 size;	
+	u32 size;
 
 	addr = (blk * spinand->block_size) + offset;
 	page_addr = addr & ~(spinand->page_size - 1);
@@ -537,6 +568,18 @@ int spinandmini_is_bad_block(int blk)
 	int target = addr >> spinand->target_shift;
 	int ret = 0;
 	
+#ifdef CONFIG_TPL_BUILD
+	if (bbt) {
+		if (bbt_get_entry(blk) == BBT_BLOCK_GOOD)
+			return 0;
+		else if (bbt_get_entry(blk) == BBT_BLOCK_BAD)
+			return 1;
+	}
+#else
+	// check if block was already determined to be good
+	if (blk < 32 && (gbt & (1 << blk)))
+		return 0;
+#endif
 	ret = spinandmini_select_target(spinand, target);
 	if (ret)
 		return 1;
@@ -550,8 +593,23 @@ int spinandmini_is_bad_block(int blk)
 	if (ret)
 		return 1;
 
-	if (hweight8(oobbuf) < 4)
+	if (hweight8(oobbuf) < 4) {
+#ifdef CONFIG_TPL_BUILD
+		if (bbt)
+			bbt_mark_entry(blk, BBT_BLOCK_BAD);
+
 		return 1;
+	}
+
+	if (bbt)
+		bbt_mark_entry(blk, BBT_BLOCK_GOOD);
+#else
+		return 1;
+	}
+
+	if (blk < 32)
+		gbt |= (1 << blk); // mark block good
+#endif
 
 	return 0;
 }
@@ -570,7 +628,7 @@ static int spinandmini_detect(struct spinandmini_device *spinand)
 	const struct spinandmini_info* spinand_info;
 	const struct spinandmini_mem_org* memorg;
 	u64 target_size;
-	
+
 	ret = spinandmini_reset_op(spinand);
 	if (ret)
 		return ret;
@@ -580,22 +638,22 @@ static int spinandmini_detect(struct spinandmini_device *spinand)
 		return ret;
 
 	tbl_size = sizeof(spinand_chip_table)/sizeof(struct spinandmini_info);
-	
+
 	for (i = 0; i < tbl_size; i++) {
 		spinand_info = &spinand_chip_table[i];
 		if (!memcmp(spinand_info->id, spinand->id.data, spinand_info->id_len))
 			break;
 	}
-	
+
 	if ( i == tbl_size) {
 		printf("unknown ID, use default setting\n");
 	}
 	memorg = spinand->memorg = &spinand_info->memorg;
 	spinand->id.len = spinand_info->id_len;
-	
+
 	spinand->page_size = memorg->pagesize;
 	spinand->page_shift = fls(spinand->page_size-1);
-	
+
 	spinand->block_size =
 		spinand->page_size * memorg->pages_per_eraseblock;
 	spinand->block_shift = fls(spinand->block_size-1);
@@ -604,11 +662,11 @@ static int spinandmini_detect(struct spinandmini_device *spinand)
 		memorg->eraseblocks_per_lun *
 		memorg->luns_per_target;
 	spinand->target_shift = fls(target_size-1);
-	
+
 	spinand->total_size = target_size * memorg->ntargets;
 
 	spinand->select_target = spinandchip_select_target;
-	
+
 	if (spinand->memorg->ntargets > 1 && !spinand->select_target) {
 		return -EINVAL;
 	}
@@ -683,7 +741,7 @@ static int spinandmini_probe(struct udevice *dev)
 
 	spinand = spinand_dev;
 	spinand->slave = slave;
-	
+
 	return spinandmini_initdev(spinand);
 }
 
@@ -691,14 +749,26 @@ void spinandmini_init(void)
 {
 	struct udevice *dev;
 	int ret = -1;
-
+#ifdef CONFIG_TPL_BUILD
+	int blocks, blk;
+#endif
 	ret = uclass_get_device_by_driver(UCLASS_MTD, DM_GET_DRIVER(spinand),
 		  &dev);
 	if (ret){
 		printf("SPI NAND failed to initialize. (error %d)\n", ret);
 		hang();
 	}
-
+#ifdef CONFIG_TPL_BUILD
+	blocks = spinand->total_size / spinand->block_size;
+	bbt = malloc(blocks >> BBT_ENTRY_SHIFT);
+	if (bbt) {
+		for (blk = 1; blk < blocks; blk++)
+			bbt_mark_entry(blk, BBT_BLOCK_RESERVED);
+		bbt_mark_entry(0, BBT_BLOCK_GOOD);
+	} else {
+		printf("ERROR! unable to allocate block table memory\n");
+	}
+#endif
 	return;
 }
 

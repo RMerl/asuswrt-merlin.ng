@@ -3,7 +3,12 @@ document.write('<script type="text/javascript" src="/require/require.min.js"></s
 document.write('<script type="text/javascript" src="/js/support_site.js"></script>');
 
 var CoBrand = '<% nvram_get("CoBrand"); %>';
-if(isSupport("TS_UI"))
+var productid = '<#Web_Title2#>';
+var based_modelid = '<% nvram_get("productid"); %>';
+var odmpid = '<% nvram_get("odmpid"); %>';
+var support_site_modelid = (odmpid == "")? based_modelid : odmpid;
+
+if(isSupport("TS_UI") || (based_modelid=="GS7" && CoBrand =="18"))
 	document.write('<link rel="stylesheet" type="text/css" href="/css/difference.css"></link>');
 
 /* String splice function */
@@ -274,10 +279,6 @@ var isSwMode = function(mode){
 var INDEXPAGE = "<% rel_index_page(); %>";
 var ABS_INDEXPAGE = "<% abs_index_page(); %>";
 var current_url = location.pathname.substring(location.pathname.lastIndexOf('/') + 1) || INDEXPAGE;
-var productid = '<#Web_Title2#>';
-var based_modelid = '<% nvram_get("productid"); %>';
-var odmpid = '<% nvram_get("odmpid"); %>';
-var support_site_modelid = (odmpid == "")? based_modelid : odmpid;
 var hw_ver = '<% nvram_get("hardware_version"); %>';
 var bl_version = '<% nvram_get("bl_version"); %>';
 var uptimeStr = "<% uptime(); %>";
@@ -316,7 +317,7 @@ var is_CH_sku = in_territory_code("CH");
 var is_SG_sku = in_territory_code("SG");
 var is_EU_sku = in_territory_code("EU");
 var SG_mode = ('<% nvram_get("SG_mode"); %>' == 1);
-var od_mode_support = isSupport('jp_od');
+
 var isGundam = in_territory_code("GD") || CoBrand_flag == 1;
 var isKimetsu = (CoBrand_flag == '2');
 var isEva = (CoBrand_flag == '3');
@@ -539,7 +540,7 @@ var rbkfw_support = isSupport("rbkfw");
 var cooler_support = isSupport("fanctrl");
 var power_support = isSupport("pwrctrl");
 var repeater_support = isSupport("repeater");
-var concurrep_support = isSupport("concurrep") && !isSupport("mloclient");
+var concurrep_support = isSupport("concurrep") && `<% nvram_get("mlo_rp"); %>` != `1` && `<% nvram_get("mlo_mb"); %>` != `1`;
 var psta_support = isSupport("psta");
 var wisp_support = isSupport("wisp");
 var wl6_support = isSupport("wl6");
@@ -697,9 +698,6 @@ var hdspindown_support = isSupport("hdspindown");
 var amesh_support = isSupport("amas");
 var ameshRouter_support = isSupport("amasRouter");
 var ameshNode_support = isSupport("amasNode");
-if (isSwMode("WISP") && based_modelid === 'RT-BE58_GO') {
-	amesh_support = ameshRouter_support = false;
-}
 var amesh_wgn_support = isSupport("amas_wgn");
 var ifttt_support = isSupport("ifttt");
 var alexa_support = isSupport("alexa");
@@ -3024,7 +3022,7 @@ if(isSwMode("RP") || isSwMode("MB")){
 }
 var wlifnames = '<% nvram_get("wl_ifnames"); %>'.split(" ");
 var dpsta_band = parseInt('<% nvram_get("dpsta_band"); %>');
-var ajaxStatusLog = [];
+
 function refreshStatus(xhr){
 	if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "/";
 
@@ -3062,9 +3060,12 @@ function refreshStatus(xhr){
 	wan1_ipaddr = wanStatus[24].firstChild.nodeValue.replace("wan1_ipaddr=", "");
 	wan0_realip_ip = wanStatus[25].firstChild.nodeValue.replace("wan0_realip_ip=", "");
 	wan1_realip_ip = wanStatus[26].firstChild.nodeValue.replace("wan1_realip_ip=", "");
-	_wlc0_state = wanStatus[27].firstChild.nodeValue;
-	_wlc1_state = wanStatus[28].firstChild.nodeValue;
-	_wlc2_state = wanStatus[33].firstChild.nodeValue;
+	if(concurrent_pap){
+		_wlc0_state = wanStatus[27].firstChild.nodeValue;
+		_wlc1_state = wanStatus[28].firstChild.nodeValue;
+		if(isSupport("triband"))
+			_wlc2_state = wanStatus[33].firstChild.nodeValue;
+	}
 	rssi_2g = wanStatus[29].firstChild.nodeValue.replace("rssi_2g=", "");
 	rssi_5g = wanStatus[30].firstChild.nodeValue.replace("rssi_5g=", "");
 	rssi_5g_2 = wanStatus[31].firstChild.nodeValue.replace("rssi_5g_2=", "");
@@ -3164,21 +3165,6 @@ function refreshStatus(xhr){
 				external_ip = -1;
 			}
 		}
-	}
-
-	var ajaxStatusLogNew = [
-		link_internet, link_status, link_sbstatus, link_auxstatus, 
-		_wlc_state, _wlc0_state, _wlc1_state, _wlc2_state, 
-		first_link_sbstatus, first_link_auxstatus, first_link_status, 
-		secondary_link_status, secondary_link_sbstatus, secondary_link_auxstatus
-	];
-
-	if(JSON.stringify(ajaxStatusLog) !== JSON.stringify(ajaxStatusLogNew)){
-		if (typeof httpApi !== 'undefined') {
-			httpApi.log(`ajaxStatusXML`, `${location.pathname}: ${JSON.stringify(ajaxStatusLogNew)}`)
-		}
-
-		ajaxStatusLog = [...ajaxStatusLogNew];
 	}
 
 	if(location.pathname == "/"+ QISWIZARD)
@@ -3496,13 +3482,10 @@ function refreshStatus(xhr){
 
 			if(targetBand == 2) {
 				$("#speed_status").html(data_rate_info_2g);
-				$("#rssi_status").html(rssi_2g);
 			} else if (wlc_band == 1) {
 				$("#speed_status").html(data_rate_info_5g);
-				$("#rssi_status").html(rssi_5g);
 			} else if (wlc_band == 2) {
 				$("#speed_status").html(data_rate_info_5g_2);
-				$("#rssi_status").html(rssi_5g_2);
 			}
 			else{
 				$("#dataRate_div").hide()
@@ -3515,30 +3498,6 @@ function refreshStatus(xhr){
 				_wlc_state = "wlc_state=2";
 			else
 				_wlc_state = "wlc_state=0";
-		}
-		if(isSupport("mloclient")){
-			if (typeof httpApi === 'undefined') {
-				const httpApi_script = document.createElement('script');
-				httpApi_script.type = 'text/javascript';
-				httpApi_script.src = '/js/httpApi.js';
-				document.head.appendChild(httpApi_script);
-			}
-			else{
-				_wlc_state = "wlc_state=0";
-				const wlcX_state = httpApi.nvramGet(["wlc0_state", "wlc1_state", "wlc2_state"], true);
-				if(wlcX_state.wlc0_state == "2"){
-					_wlc_state = "wlc_state=2";
-					wlc_band = "0";
-				}
-				if(wlcX_state.wlc1_state == "2"){
-					_wlc_state = "wlc_state=2";
-					wlc_band = "1";
-				}
-				if(wlcX_state.wlc2_state == "2"){
-					_wlc_state = "wlc_state=2";
-					wlc_band = "2";
-				}
-			}
 		}
 
 		if(_wlc_state == "wlc_state=2"){
@@ -3589,19 +3548,10 @@ function refreshStatus(xhr){
 				var rssi_info = "";				
 			}
 
-			if(isSupport("mloclient")){
-				if(rssi_2g != ""){
-					rssi_info = rssi_2g;
-					speed_info = data_rate_info_2g;
-				}
-				if(rssi_5g != ""){
-					rssi_info = rssi_5g;
-					speed_info = data_rate_info_5g;
-				}
-				if(rssi_5g_2 != ""){
-					rssi_info = rssi_5g_2;
-					speed_info = data_rate_info_5g_2;
-				}
+			if(`<% nvram_get("mlo_rp"); %>` == "1" || `<% nvram_get("mlo_mb"); %>` == "1"){
+				if(rssi_2g != "") speed_info = data_rate_info_2g;
+				if(rssi_5g != "") speed_info = data_rate_info_5g;
+				if(rssi_5g_2 != "") speed_info = data_rate_info_5g_2;
 			}
 
 			if(concurrent_pap){
@@ -3641,8 +3591,7 @@ function refreshStatus(xhr){
 				document.getElementById('speed_status').innerHTML = speed_info;
 
 				if(!Rawifi_support && !Qcawifi_support){
-					//if(`<% nvram_get("mlo_rp"); %>` == "1" || `<% nvram_get("mlo_mb"); %>` == "1"){
-					if(0){
+					if(`<% nvram_get("mlo_rp"); %>` == "1" || `<% nvram_get("mlo_mb"); %>` == "1"){
 						var mlo_bands = `<% nvram_get("mld0_ifnames"); %>`.replace(/wl/g, "").trim().split(/\s+/);
 
 						var rssi_info_array = [];
@@ -4028,6 +3977,7 @@ function refreshStatus(xhr){
 		return 0;
 	}
 }	
+
 function FormActions(_Action, _ActionMode, _ActionScript, _ActionWait){
 	if(_Action != "")
 		document.form.action = _Action;

@@ -277,12 +277,6 @@ var new_lan_ip = [<% get_next_lanip(); %>][0].next_lanip;
 var header_info = [<% get_header_info(); %>];
 var location_org = header_info[0].protocol + "://" + header_info[0].host + ":" + header_info[0].port;
 
-const isSwMode = function(mode){
-	var ui_sw_mode = [<% get_operation_mode(); %>][0];
-	mode = mode.toLowerCase();
-	return ui_sw_mode == mode;
-}
-
 function initial(){
 	var is_logined = [<% is_logined_hook(); %>][0];
 	var html_code = '';
@@ -453,21 +447,11 @@ function initial(){
 		else{		
 			html_code += "<ul>";
 			html_code += "<li><#web_redirect_case8_suggestion1#></li>";
-			const $change_connect = $(`<#web_redirect_case8_suggestion2#>`);
-			if (isSwMode('RP')) {
-				$change_connect.attr('href', '/QIS_wizard.htm?flag=sitesurvey_rep');
-			}
-			else if (isSwMode('MB')) {
-				$change_connect.attr('href', '/QIS_wizard.htm?flag=sitesurvey_mb');
-			}
-			else if (isSwMode('WISP')) {
-				$change_connect.attr('href', '/QIS_wizard.htm?flag=wispMode');
-			}
-			html_code += `<li>${$change_connect.prop('outerHTML')}</li>`.replace("#FFF", "#000");
+			html_code += "<li><#web_redirect_case8_suggestion2#></li>".replace("#FFF", "#000");
 			//html_code += "<li><#web_redirect_suggestion0_1#></li>";
 			html_code += "</ul>";
-
-			if (isSwMode('RP')) {
+			
+			if(sw_mode == "2"){
 				if(wlc_express == '1') 
 					url_flag += "sitesurvey_exp2";
 				else if(wlc_express == '2') 
@@ -475,13 +459,9 @@ function initial(){
 				else 
 					url_flag += "sitesurvey_rep";
 			}
-			else if (isSwMode('MB')) {
+			else
 				url_flag += "sitesurvey_mb";
-			}
-			else if (isSwMode('WISP')) {
-				url_flag += "wispMode";
-			}
-
+				
 			$("#wanLink").click(function(){
 				top.location.href = "/QIS_wizard.htm?flag=" + url_flag;
 			});

@@ -473,7 +473,8 @@ extern char *stallmodule2str(char stall_module);
 #define BCME_BANDLOCKED			-67	/* interface is restricted to a band */
 #define BCME_BAD_IE_DATA		-68	/* Recieved ie with invalid/bad data */
 #define BCME_NOT_ADMITTED		-69 /* Client not admitted for OFDMA */
-#define BCME_LAST			BCME_NOT_ADMITTED
+#define BCME_TRY_AGAIN			-70
+#define BCME_LAST			BCME_TRY_AGAIN
 
 #define BCME_NOTENABLED BCME_DISABLED
 
@@ -559,6 +560,7 @@ extern char *stallmodule2str(char stall_module);
 	"band locked",			\
 	"Recieved ie with invalid data", \
 	"Client not admitted for OFDMA", \
+	"Retry iovar",			\
 }
 
 #ifndef ABS

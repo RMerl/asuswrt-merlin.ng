@@ -2042,7 +2042,7 @@ skip:
 		update_wgs_client_ep();
 #endif
 #if defined(RTCONFIG_SAMBASRV) || defined(RTCONFIG_TUXERA_SMBD)
-		notify_rc("restart_samba");
+		notify_rc_and_wait_2min("restart_samba");
 #endif
 	}
 
@@ -2293,7 +2293,7 @@ start_dhcp6c(void)
 
 #ifndef RT4GAC68U
 	if (getpid() != 1) {
-		notify_rc_and_wait_1min("start_dhcp6c");
+		notify_rc_and_wait_2min("start_dhcp6c");
 		return 0;
 	}
 #endif

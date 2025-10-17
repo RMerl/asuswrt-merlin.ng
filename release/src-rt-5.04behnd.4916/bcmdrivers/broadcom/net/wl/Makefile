@@ -31,10 +31,12 @@ EXT_CPU_ARCH_NAME := $(subst \",,$(CONFIG_BCM_CPU_ARCH_NAME))
 export EXT_CPU_ARCH_NAME
 
 ifneq ($(CONFIG_BRCM_CHIP_COMPAT_NAME),"")
-BRCM_CHIP := $(subst $\",,$(CONFIG_BRCM_CHIP_COMPAT_NAME))
+BRCM_HOST_CHIP := $(subst $\",,$(CONFIG_BRCM_CHIP_COMPAT_NAME))
+else
+BRCM_HOST_CHIP := $(BRCM_CHIP)
 endif
 prebuilt_files_set1 = $(shell find . -name *_saved-$(PROFILE_ARCH) -print)
-prebuilt_files_set2 = $(shell find . -name *_saved-$(BRCM_CHIP)-$(PROFILE_KARCH) -print)
+prebuilt_files_set2 = $(shell find . -name *_saved-$(BRCM_HOST_CHIP)-$(PROFILE_KARCH) -print)
 
 export BUILD_WLAN_TESTBED_AP
 export BUILD_BCM_WLMLO
@@ -48,9 +50,9 @@ endif
 .PHONY: oldconfig version pciefd clean version_info loadscript modules_install
 
 check_prebuilt:
-	$(info check_prebuilt: BRCM_CHIP=$(BRCM_CHIP) PROFILE_ARCH=$(PROFILE_ARCH) PROFILE_KARCH=$(PROFILE_KARCH))
+	$(info check_prebuilt: BRCM_CHIP=$(BRCM_CHIP) BRCM_HOST_CHIP=$(BRCM_HOST_CHIP) PROFILE_ARCH=$(PROFILE_ARCH) PROFILE_KARCH=$(PROFILE_KARCH))
 	$(foreach f,$(prebuilt_files_set1),$(shell cp -pf $(f) $(subst _saved-$(shell echo $(PROFILE_ARCH)),,$(f))))
-	$(foreach f,$(prebuilt_files_set2),$(shell cp -pf $(f) $(subst _saved-$(shell echo $(BRCM_CHIP)-$(PROFILE_KARCH)),,$(f))))
+	$(foreach f,$(prebuilt_files_set2),$(shell cp -pf $(f) $(subst _saved-$(shell echo $(BRCM_HOST_CHIP)-$(PROFILE_KARCH)),,$(f))))
 	$(info WLTEST=$(WLTEST) BUILD_HND_MFG=$(BUILD_HND_MFG) BUILD_BCM_WLAN_NO_MFGBIN=$(BUILD_BCM_WLAN_NO_MFGBIN))
 	if [ -d $(DONGLE_FW_PATH)/mfg ]; then \
 		rm -rf $(INSTALL_DIR)/etc/wlan/ ; \
@@ -140,9 +142,9 @@ modules_install:
 				$(INSTALL_DIR)/lib/modules/$(LINUX_VER_STR)/extra/wl.ko; \
 			ln -sv ./wl.ko $(INSTALL_DIR)/lib/modules/$(LINUX_VER_STR)/extra/wl_mfgtest.ko; \
 			cp -u -vf $(ALLSRCBASE)/main/src/wl/linux/prebuilt/wl.o \
-				$(ALLSRCBASE)/main/src/wl/linux/prebuilt/wl_mfgtest.o_saved-$(BRCM_CHIP)-$(PROFILE_KARCH); \
+				$(ALLSRCBASE)/main/src/wl/linux/prebuilt/wl_mfgtest.o_saved-$(BRCM_HOST_CHIP)-$(PROFILE_KARCH); \
 			cp -u -vf $(ALLSRCBASE)/main/components/router/hnd_wl/wl.ko \
-				$(ALLSRCBASE)/main/components/router/hnd_wl/wl_mfgtest.ko_saved-$(BRCM_CHIP)-$(PROFILE_KARCH); \
+				$(ALLSRCBASE)/main/components/router/hnd_wl/wl_mfgtest.ko_saved-$(BRCM_HOST_CHIP)-$(PROFILE_KARCH); \
 		fi ; \
 		if [ -f $(ALLSRCBASE)/main/components/router/hnd/hnd.ko ] && [ -d $(INSTALL_DIR)/lib/modules/$(LINUX_VER_STR)/extra ]; then \
 			echo "linking hnd_mfgtest.ko to generated hnd.ko in fs as well as copying prebuilt."; \
@@ -151,7 +153,7 @@ modules_install:
 				$(INSTALL_DIR)/lib/modules/$(LINUX_VER_STR)/extra/hnd.ko; \
 			ln -sv ./hnd.ko $(INSTALL_DIR)/lib/modules/$(LINUX_VER_STR)/extra/hnd_mfgtest.ko; \
 			cp -u -vf $(ALLSRCBASE)/main/components/router/hnd/hnd.ko \
-				$(ALLSRCBASE)/main/components/router/hnd/hnd_mfgtest.ko_saved-$(BRCM_CHIP)-$(PROFILE_KARCH); \
+				$(ALLSRCBASE)/main/components/router/hnd/hnd_mfgtest.ko_saved-$(BRCM_HOST_CHIP)-$(PROFILE_KARCH); \
 		fi ; \
 	fi ;
 	if [ "$(BUILD_BCM_WLAN_NO_MFGBIN)" == "y" ]; then \

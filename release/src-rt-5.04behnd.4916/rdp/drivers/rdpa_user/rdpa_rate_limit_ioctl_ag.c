@@ -130,6 +130,26 @@ static int rdpa_user_rate_limit_cfg_set(rdpa_ioctl_cmd_t *pa)
 	return 0;
 }
 
+static int rdpa_user_rate_limit_in_use_get(rdpa_ioctl_cmd_t *pa)
+{
+	bdmf_boolean parm;
+
+	BDMF_TRACE_DBG("inside rate_limit_user_in_use_get\n");
+
+	if ((pa->ret = rdpa_rate_limit_in_use_get(pa->mo, &parm)))
+	{
+		BDMF_TRACE_DBG("rdpa_rate_limit_in_use_get failed, ret:%d\n", pa->ret);
+	}
+
+	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_boolean)))
+	{
+		BDMF_TRACE_ERR("failed to copy to user\n");
+		return -1;
+	}
+
+	return 0;
+}
+
 long rdpa_rate_limit_ag_ioctl(unsigned int op, rdpa_ioctl_cmd_t *pa)
 {
 	int ret;
@@ -157,6 +177,10 @@ long rdpa_rate_limit_ag_ioctl(unsigned int op, rdpa_ioctl_cmd_t *pa)
 
 		case RDPA_RATE_LIMIT_CFG_SET:
 			ret = rdpa_user_rate_limit_cfg_set(pa);
+			break;
+
+		case RDPA_RATE_LIMIT_IN_USE_GET:
+			ret = rdpa_user_rate_limit_in_use_get(pa);
 			break;
 
 		default:

@@ -21,6 +21,7 @@
 #include "vfbio.h"
 #endif
 #include "bcm_otp.h"
+#include "bcm_bootstate.h"
 
 char * get_loader_media(void);
 
@@ -443,12 +444,23 @@ static int set_bootargs(void *blob)
 			if (strlen(rootfs) > 128) {
 				env_set("rootfs_opts","");
 			}
-		}
 
-		/* If rootfs is on eMMC, add 'gpt' kernel option which forces 
-		 * use of backup GPT header incase the primary header is corrupted */
-		if (strstr(rootfs, "mmc")) {
-			strncat(boot_args, " gpt", 1024-strlen(boot_args));
+			if (((bcmbca_get_old_boot_reason() & BCM_BOOT_PHASE_MASK)) ==
+			    BCM_BOOT_PHASE_LINUX_START) {
+				/* If we are running a fallback image which failed after the
+				 * LINUX_START phase add 'gpt' parameter to allow for parsing of
+				 * alternate GPT headers just incase last reboot was due to
+				 * primary GPT header corruption
+				 */
+				if (strstr(rootfs, "mmc")) {
+					/* Only pass 'gpt' if we detect bad GPT headers */
+					if (run_command("gpt verify mmc 0", 0)) {
+						strlcat(boot_args, " gpt",
+							1024 - strlen(boot_args));
+						printf("gpt: appending [gpt] to boot args\n");
+					}
+				}
+			}
 		}
 
 		/* any other argment to append? */
@@ -531,7 +543,7 @@ static void set_reserved_memory(void *dtb_ptr, bd_t *bd)
 	use_max_from_env_and_dt = 1;
 #endif
 	
-#if defined(BQ16) || defined(BQ16_PRO) || defined(BT10) || defined(RTBE82U) || defined(RTBE82M) || defined(GSBE18000) || defined(GS7_PRO) || defined(GT7)
+#if defined(BQ16) || defined(BQ16_PRO) || defined(BT10) || defined(RTBE82U) || defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	char cma_str[30] = {0};
 #endif
 	struct mem_reserv_prm {
@@ -628,7 +640,7 @@ static void set_reserved_memory(void *dtb_ptr, bd_t *bd)
 	}
 #endif
 
-#if defined(GSBE18000) || defined(GS7_PRO) || defined(GT7)
+#if defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	// GS-BE18000 is BCM6766 and has CMA
 	snprintf(cma_str, sizeof(cma_str), "%s", env_get("bootargs_append"));
 	if(strcmp(cma_str, "cma=64M vmalloc=384") == 0){
@@ -642,7 +654,7 @@ static void set_reserved_memory(void *dtb_ptr, bd_t *bd)
 #ifdef RTBE86U
 	env_set_ulong("dhd0", 0);
 #endif
-#if defined(GSBE18000) || defined(GS7_PRO) || defined(GT7)
+#if defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	env_set_ulong("dhd0", 11);
 #endif
 #if defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE92U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)

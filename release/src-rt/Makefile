@@ -5015,14 +5015,14 @@ define RouterOptions
 		sed -i "/RTCONFIG_PASS_V2/d" $(1); \
 		echo "RTCONFIG_PASS_V2=y" >>$(1); \
 	fi;
-	if [ "$(BCMLEDG)" = "y" ]; then \
-		sed -i "/RTCONFIG_BCMLEDG/d" $(1); \
-		echo "RTCONFIG_BCMLEDG=y" >>$(1); \
+	if [ "$(AURALED)" = "y" ]; then \
+		sed -i "/RTCONFIG_AURALED/d" $(1); \
+		echo "RTCONFIG_AURALED=y" >>$(1); \
 	fi;
-	if [ "$(BCMLEDG_NIGHT)" = "y" ]; then \
-		sed -i "/RTCONFIG_BCMLEDG_NIGHT/d" $(1); \
-		echo "RTCONFIG_BCMLEDG_NIGHT=y" >>$(1); \
-	fi;
+        if [ "$(AURALED_NIGHT)" = "y" ]; then \
+                sed -i "/RTCONFIG_AURALED_NIGHT/d" $(1); \
+                echo "RTCONFIG_AURALED_NIGHT=y" >>$(1); \
+        fi;
 	if [ "$(SINGLE_LED_NIGHT)" = "y" ]; then \
 		sed -i "/RTCONFIG_SINGLE_LED_NIGHT_MODE/d" $(1); \
 		echo "RTCONFIG_SINGLE_LED_NIGHT_MODE=y" >>$(1); \

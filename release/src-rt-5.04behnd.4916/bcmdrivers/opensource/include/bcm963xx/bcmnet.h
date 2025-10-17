@@ -299,13 +299,16 @@ enum {
     ETHCTL_FLAG_ACCESS_EXT_PHY              = (1<<0),
     ETHCTL_FLAG_ACCESS_EXTSW_PHY            = (1<<1),
     ETHCTL_FLAG_ACCESS_I2C_PHY              = (1<<2),
-    ETHCTL_FLAG_ACCESS_SERDES               = (1<<3),
-    ETHCTL_FLAG_ACCESS_SERDES_POWER_MODE    = (1<<4),
-    ETHCTL_FLAG_ACCESS_32BIT                = (1<<5),
-    ETHCTL_FLAG_ACCESS_10GSERDES            = (1<<6),
-    ETHCTL_FLAG_ACCESS_10GPCS               = (1<<7),
-    ETHCTL_FLAG_ACCESS_SILENT_START         = (1<<8),
-    ETHCTL_FLAG_ACCESS_SERDES_TIMER         = (1<<9),
+    ETHCTL_FLAG_ACCESS_I2C_PHY_EEPROM       = (1<<3),
+
+    ETHCTL_FLAG_ACCESS_SERDES               = (1<<4),
+    ETHCTL_FLAG_ACCESS_SERDES_POWER_MODE    = (1<<5),
+    ETHCTL_FLAG_ACCESS_32BIT                = (1<<6),
+    ETHCTL_FLAG_ACCESS_10GSERDES            = (1<<7),
+
+    ETHCTL_FLAG_ACCESS_10GPCS               = (1<<8),
+    ETHCTL_FLAG_ACCESS_SILENT_START         = (1<<9),
+    ETHCTL_FLAG_ACCESS_SERDES_TIMER         = (1<<10),
 };
 #define ETHCTL_FLAG_ANY_SERDES  (ETHCTL_FLAG_ACCESS_SERDES|ETHCTL_FLAG_ACCESS_10GSERDES)
 

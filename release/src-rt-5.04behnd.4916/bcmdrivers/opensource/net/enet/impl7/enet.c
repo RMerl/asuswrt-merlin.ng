@@ -1753,9 +1753,9 @@ int enet_create_netdevice(enetx_port_t *p)
 #if defined(CONFIG_BCM_SW_GSO)
          case PORT_CAP_WAN_ONLY:
          case PORT_CAP_LAN_WAN:
-             dev->features       |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6;
-             dev->vlan_features  |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6;
-             dev->hw_features    |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6;
+             dev->features       |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6 | NETIF_F_HIGHDMA;
+             dev->vlan_features  |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6 | NETIF_F_HIGHDMA;
+             dev->hw_features    |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6 | NETIF_F_HIGHDMA;
              ndev->priv_feat |= BCMENET_PRIV_FEAT_SW_GSO;
              break;
 #endif

@@ -1973,7 +1973,7 @@ cd_end:
                 [PHY_TYPE_158CLASS_SERDES] = "PHY_TYPE_158CLASS_SERDES",
             };
 
-            if (ethctl->flags & ETHCTL_FLAG_ACCESS_I2C_PHY)
+            if (ethctl->flags & (ETHCTL_FLAG_ACCESS_I2C_PHY | ETHCTL_FLAG_ACCESS_I2C_PHY_EEPROM))
                 phy_type = PHY_TYPE_I2C_PHY;
             else if (ethctl->flags & (ETHCTL_FLAG_ACCESS_10GSERDES|ETHCTL_FLAG_ACCESS_10GPCS))
                 phy_type = PHY_TYPE_158CLASS_SERDES;
@@ -2043,6 +2043,18 @@ cd_end:
                         ethctl->long_tmr_ms, ethctl->long_tmr_weight, ethctl->val);
                 }
             } 
+            else if (ethctl->flags & ETHCTL_FLAG_ACCESS_I2C_PHY_EEPROM)
+            {
+                void *buf;
+
+                phy_dev = cascade_phy_get_prev(phy_dev);
+                if (!(buf = kzalloc(ethctl->buf_size, GFP_KERNEL)))
+                    return -EFAULT;
+                ret = phy_priv_fun(phy_dev, SERDES_OP_DUMP_EEPROM, ethctl->val/2, ethctl->phy_reg, buf, ethctl->buf_size);
+                if (ret == 0)
+                    copy_to_user(ethctl->buf, buf, ethctl->buf_size);
+                kfree(buf);
+            }
             else
             {
                 uint16_t val = ethctl->val;

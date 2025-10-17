@@ -44,9 +44,6 @@ written consent.
 #include <bcm_bca_extintr.h>
 #include <linux/pinctrl/consumer.h>
 #include <linux/of.h>
-#if defined(CONFIG_BCM_ETHTOOL)
-#include <linux/ethtool.h>
-#endif
 #include "trxbus.h"
 
 struct sfp_eeprom_base
@@ -128,11 +125,6 @@ enum {
 #define T_PROBE_RETRY msecs_to_jiffies(1000)
 #define T_PROBE_RETRY_NUM 100
 
-#define SFP_I2C_A0_ADDR 0x50
-#define SFP_I2C_A1_ADDR 0x51
-#define SFP_I2C_PHY_ADDR 0x56
-#define XFP_I2C_ADDR 0x50
-
 typedef enum
 {
     GPIO_MODDEF0,
@@ -191,10 +183,7 @@ static int sfp_mon_read(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int ch
 static int sfp_mon_read_buf(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, char **buf, int *len);
 static int sfp_mon_write(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, long value);
 static int sfp_mon_write_buf(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, char *buf, int len);
-#if defined(CONFIG_BCM_ETHTOOL)
-static int bcmsfp_module_eeprom(struct sfp_data *psfp, struct ethtool_eeprom *ee, u8 *data);
-static int bcmsfp_module_info(struct sfp_data *psfp, struct ethtool_modinfo *modinfo);
-#endif /* CONFIG_BCM_ETHTOOL */
+static int sfp_mon_read_eeprom_raw(struct sfp_data *psfp, int addr, int reg, uint8_t *data, int len);
 
 /*********************** S T A T I C  D A T A *********************/
 /**
@@ -216,10 +205,7 @@ static struct bcmsfp_ops sfp_ops = {
     .mon_read_buf = sfp_mon_read_buf,
     .mon_write = sfp_mon_write,
     .mon_write_buf = sfp_mon_write_buf,
-#if defined(CONFIG_BCM_ETHTOOL)
-    .module_eeprom = bcmsfp_module_eeprom,
-    .module_info = bcmsfp_module_info,
-#endif
+    .mon_read_raw = sfp_mon_read_eeprom_raw,
 };
 
 static const struct of_device_id of_platform_sfp_table[] = {
@@ -1114,10 +1100,15 @@ static int sfp_mon_read_eeprom_mon_buf(struct sfp_data *psfp, int reg, u8 *data,
     if (psfp->eeprom.base.phys_id == PHYS_ID_XFP)
         addr = XFP_I2C_ADDR;
     else
-        addr = SFP_I2C_A1_ADDR;
+        addr = SFP_I2C_A2_ADDR;
 
     ret = i2c_read(psfp, addr, reg, data, len);
     return ret < 0 ? ret : 0;
+}
+
+static int sfp_mon_read_eeprom_raw(struct sfp_data *psfp, int addr, int reg, uint8_t *data, int len)
+{
+    return i2c_read(psfp, addr, reg, data, len);
 }
 
 static int sfp_mon_read_eeprom_mon(struct sfp_data *psfp, int reg, long *value)
@@ -1372,53 +1363,6 @@ static int sfp_mon_write(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int c
         return -EOPNOTSUPP;
     }
 }
-
-#if defined(CONFIG_BCM_ETHTOOL)
-static int bcmsfp_module_info(struct sfp_data *psfp, struct ethtool_modinfo *modinfo)
-{
-    if (psfp->eeprom.ext.sff8472_compliance &&
-        !(psfp->eeprom.ext.diagmon & SFP_DIAGMON_ADDRMODE)) {
-        modinfo->type = ETH_MODULE_SFF_8472;
-        modinfo->eeprom_len = ETH_MODULE_SFF_8472_LEN;
-    } else {
-        modinfo->type = ETH_MODULE_SFF_8079;
-        modinfo->eeprom_len = ETH_MODULE_SFF_8079_LEN;
-    }
-    return 0;
-}
-
-static int bcmsfp_module_eeprom(struct sfp_data *psfp, struct ethtool_eeprom *ee, u8 *data)
-{
-    unsigned int first, last, len;
-    int ret;
-	u8* peeprom = (u8*)(&psfp->eeprom);
-	
-    if (ee->len == 0)
-        return -EINVAL;
-
-    first = ee->offset;
-    last = ee->offset + ee->len;
-    if (first < ETH_MODULE_SFF_8079_LEN) {
-        len = min_t(unsigned int, last, ETH_MODULE_SFF_8079_LEN);
-        len -= first;
-
-        memcpy(data, peeprom + ee->offset, len);
-
-        first += len;
-        data += len;
-    }
-    if (first < ETH_MODULE_SFF_8472_LEN && last > ETH_MODULE_SFF_8079_LEN) {
-        len = min_t(unsigned int, last, ETH_MODULE_SFF_8472_LEN);
-        len -= first;
-        first -= ETH_MODULE_SFF_8079_LEN;
-
-        ret = sfp_mon_read_eeprom_mon_buf(psfp, first, data, len);
-        if (ret < 0)
-            return ret;
-    }
-    return 0;
-}
-#endif
 
 module_init(bcm_sfp_init);
 module_exit(bcm_sfp_uninit);

@@ -53,7 +53,7 @@ extern "C"
 #elif defined(GT7)
 #define WAN_PORT 0
 #define CPU_WAN_PORT 0
-#define CPU_LAN_PORT 6
+#define CPU_LAN_PORT 7
 #else
 #error "Unsupported platform"
 #endif

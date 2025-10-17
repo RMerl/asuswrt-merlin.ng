@@ -249,6 +249,42 @@ static inline int rdpa_rate_limit_cfg_set(bdmf_object_handle mo_, const rdpa_rl_
 	return pa.ret;
 }
 
+
+/** Get rate_limit/in_use attribute.
+ *
+ * Get Is object in use.
+ * \param[in]   mo_ rate_limit object handle or mattr transaction handle
+ * \param[out]  in_use_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_rate_limit_in_use_get(bdmf_object_handle mo_, bdmf_boolean *in_use_)
+{
+	rdpa_ioctl_cmd_t pa = {0};
+	int fd, ret;
+
+	pa.mo = mo_;
+	pa.ptr = (bdmf_ptr)(unsigned long)in_use_;
+	pa.cmd = RDPA_RATE_LIMIT_IN_USE_GET;
+
+	fd = open(RDPA_USR_DEV_NAME, O_RDWR);
+	if (fd < 0)
+	{
+		rdpa_usr_error("%s: %s\n", RDPA_USR_DEV_NAME, strerror(errno));
+		return -EINVAL;
+	}
+	ret = ioctl(fd, RDPA_RATE_LIMIT_IOCTL, &pa);
+	if (ret)
+	{
+		rdpa_usr_error("ioctl failed, ret=%d\n", ret);
+		close(fd);
+		return ret;
+	}
+
+	close(fd);
+	return pa.ret;
+}
+
 /** @} end of rate_limit Doxygen group */
 
 

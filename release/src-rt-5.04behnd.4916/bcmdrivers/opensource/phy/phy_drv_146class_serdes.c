@@ -60,12 +60,9 @@ static phy_serdes_t serdes_146class[MAX_146CORES][MAX_146USXGMII_PORTS] =
 #if defined(CONFIG_BCM963146)
         .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
         .inter_phy_types = INTER_PHY_TYPES_AUS1KR2KXR_M,
-#elif defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96765)
+#elif defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766)
         .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
         .inter_phy_types = INTER_PHY_TYPES_AUS1KR2KXR5KXR10R_M,
-#elif defined(CONFIG_BCM96766)
-        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
-        .inter_phy_types = INTER_PHY_TYPES_AQUS1KR2KXR5KXR10R_M,
 #elif defined(CONFIG_BCM96764)
         .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
         .inter_phy_types = INTER_PHY_TYPES_AQUS1KR2KXR5KXR_M,
@@ -93,12 +90,9 @@ static phy_serdes_t serdes_146class[MAX_146CORES][MAX_146USXGMII_PORTS] =
         .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
         .inter_phy_types = INTER_PHY_TYPES_AUS1KR2KXR_M,
 #endif
-#elif defined(CONFIG_BCM94912)
+#elif defined(CONFIG_BCM94912) || defined(CONFIG_BCM96766)
         .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
         .inter_phy_types = INTER_PHY_TYPES_AUS1KR2KXR5KXR10R_M,
-#elif defined(CONFIG_BCM96766)
-        .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
-        .inter_phy_types = INTER_PHY_TYPES_AQUS1KR2KXR5KXR10R_M,
 #elif defined(CONFIG_BCM96764)
         .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
         .inter_phy_types = INTER_PHY_TYPES_AQUS1KR2KXR_M,
@@ -352,7 +346,7 @@ phy_drv_t phy_drv_serdes_146class =
     .speed_set = dsl_serdes_cfg_speed_set_lock,
     .caps_get = dsl_serdes_caps_get,
     .caps_set = dsl_serdes_caps_set_lock,
-    .config_speed_get = dsl_serdes_speed_get_lock,
+    .config_speed_get = dsl_serdes_speed_get,
     .priv_fun = dsl_merlin16_priv_fun_lock,
     .power_set = phy_dsl_serdes_power_set_lock,
     .power_get = phy_dsl_serdes_power_get,

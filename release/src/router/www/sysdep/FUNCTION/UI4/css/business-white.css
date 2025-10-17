@@ -170,14 +170,14 @@ ul{
 .menu {
 	font-size: 16px;
 	width: 200px;
-    line-height: 48px;
-	border-bottom: 0px solid #FFF;
-	margin-bottom: 8px;
+    line-height: 25px;
+	border-bottom: 1px solid #DDD !important;
 	padding: 0 5px;
-	padding-left: 5px;
+	padding-left: 15px;
+	min-height: 50px;
 }
 .bg-shadow-right{
-	background-image: url(/images/bg-shadow-re.png); 
+	background-image: url(/images/bg-shadow-re.png);
 	background-position-x: right;
 	background-repeat: repeat-y;
 }
@@ -225,7 +225,7 @@ input, select{
 
 .formfontdesc{
     padding: 15px;
-    background-color: #ececec;	
+    background-color: #ececec;
 	font-weight: bolder;
 	margin-left: 0px;
     margin-bottom: 20px;
@@ -1315,7 +1315,7 @@ input:hover{
 }
 #proceeding_img{
     height: 30px !important;
-    background: #006ce1 !important;	
+    background: #006ce1 !important;
 }
 .loadingBarBlock{
 	width: 30% !important;

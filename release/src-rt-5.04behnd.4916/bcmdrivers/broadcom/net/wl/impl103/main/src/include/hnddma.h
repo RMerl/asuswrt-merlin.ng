@@ -428,6 +428,7 @@ void dma_pcap_set(hnddma_t *dmah, bool en, uint16 nrxpost, uint16 nrxd, bool up)
 void dma_pcap_attach(dma_common_t *dmacommon, void *pcap_hdl);
 void dma_pcap_rx(hnddma_t *dmah);
 #endif /* BCM_PCAP */
+extern void pcn_pktpool_dump(hnddma_t *dmah, int fifo, struct bcmstrbuf *b);
 /**
  * ------------------------------------------------------------------------------------------------
  * Section: rx_list_t Accessor Macros

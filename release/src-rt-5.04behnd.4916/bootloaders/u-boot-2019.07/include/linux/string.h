@@ -35,6 +35,9 @@ extern char * strcat(char *, const char *);
 #ifndef __HAVE_ARCH_STRNCAT
 extern char * strncat(char *, const char *, __kernel_size_t);
 #endif
+#ifndef __HAVE_ARCH_STRLCAT
+size_t strlcat(char *, const char *, size_t);
+#endif
 #ifndef __HAVE_ARCH_STRCMP
 extern int strcmp(const char *,const char *);
 #endif

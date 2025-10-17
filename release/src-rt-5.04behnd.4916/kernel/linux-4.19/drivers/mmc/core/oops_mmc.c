@@ -437,7 +437,7 @@ static int oops_mmc_probe(struct platform_device *pdev)
 			buf, strlen(OOPS_MMC_DUMP_SIGNATURE))) {
 		sprintf(marker_string, "\n%s%s%s\n", dump_mark, dump_start_str,
 			dump_mark);
-		pr_err("%s", marker_string);
+		pr_info("%s", marker_string);
 
 		if (pdata->dump_file_path) {
 			file = filp_open(pdata->dump_file_path, O_WRONLY|O_CREAT, 0644);
@@ -459,7 +459,7 @@ static int oops_mmc_probe(struct platform_device *pdev)
 			(!strcmp(pdata->dump_to_console, "no")))) {
 			pr_info("%s:OEM has own script to read!\n",
 				__func__);
-			pr_err("\n%s%s%s\n", dump_mark,
+			pr_info("\n%s%s%s\n", dump_mark,
 				dump_end_str, dump_mark);
 			return 0;
 		}
@@ -476,13 +476,21 @@ static int oops_mmc_probe(struct platform_device *pdev)
 						sizeof(int));
 			buf = buf+strlen(OOPS_MMC_DUMP_SIGNATURE)+sizeof(int);
 
-			if ((text_len == 0) || (text_len > context->num_rw_bytes)) {
+			if ((text_len == 0)) {
 				pr_info("%s:Invalid text length[%d]\n",
 					__func__, text_len);
 				break;
 			}
+			if (text_len > context->num_rw_bytes) {
+				pr_info("%s:text length[%d] over maximum allowed length, trim the length of content as [%d]\n",
+					__func__, text_len, context->num_rw_bytes);
+				text_len = context->num_rw_bytes;
+			}
+
 			pr_info("%s: printing text length = %d\n",
 				__func__, text_len);
+			pr_err("%s: dump previous kernel oops log! [length: %d]\n",
+                                __func__, text_len);
 
 			if (file) {
 				kernel_write(file, buf, text_len, &pos);
@@ -498,7 +506,7 @@ static int oops_mmc_probe(struct platform_device *pdev)
 		}
 		sprintf(marker_string, "\n%s%s%s\n", dump_mark, dump_end_str,
 			dump_mark);
-		pr_err("%s", marker_string);
+		pr_info("%s", marker_string);
 		if (file) {
 			kernel_write(file, marker_string,
 				strlen(marker_string), &pos);

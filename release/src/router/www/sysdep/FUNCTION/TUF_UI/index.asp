@@ -670,27 +670,15 @@ function set_default_choice(){
 
 		clickEvent(document.getElementById(icon_name));
 	}
-	else{
-		if(isSwMode("RP") || isSwMode("WISP")){
-			document.getElementById("iconRouter").style.backgroundPosition = '0% 0%';
-			if(concurrent_pap && pap_flag == "1"){
-				clickEvent(document.getElementById("iconInternet_primary"));
-			}
-			else{
-				clickEvent(document.getElementById("iconInternet"));
-			}
-		}
-		else{
-			clickEvent(document.getElementById("iconRouter"));
-		}
-	}
+	else
+		clickEvent(document.getElementById("iconRouter"));
 }
 
 function showMapWANStatus(flag){
 	if(isSwMode("AP")){
 		showtext(document.getElementById("NM_connect_status"), "<div style='margin-top:10px;'><#WLANConfig11b_x_APMode_itemname#></div>");
 	}
-	else if(isSwMode("RP") || isSwMode("WISP")){
+	else if(isSwMode("RP")){
 		showtext(document.getElementById("NM_connect_title"), "<div style='margin-top:10px;'><#statusTitle_AP#>:</div><br>");
 	}
 	else
@@ -1798,7 +1786,7 @@ function popupEditBlock(clientObj){
 			document.getElementById('client_iTunes').style.display = "";
 			document.getElementById('client_iTunes').innerHTML = "iTunes";
 		}
-		if(clientObj.sdn_idx > 0) {
+		if(clientObj.sdn_idx > 0 && clientObj.sdn_type !== "MAINFH") {
 			document.getElementById('client_sdnIdx').style.display = "";
 			const sdn_profile = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx == clientObj.sdn_idx) || {};
 			const sdn_ssid = $.isEmptyObject(sdn_profile) ? "" : sdn_profile.apg_rl.ssid;
@@ -2934,7 +2922,7 @@ function showClientlistModal(){
 							(function(){
 								const defaultRouterFrame = `/device-map/router${isSupport("sdn_mainfh")?"_status":""}.asp`;
 								setTimeout(function(){
-									const statusframe_src = (isSwMode("RP") || isSwMode("WISP")) ? `/device-map/internet.asp` : defaultRouterFrame;
+									const statusframe_src = isSwMode("RP") ? `/device-map/internet.asp` : defaultRouterFrame;
 									$('#statusframe').attr('src', statusframe_src).show();
 									const get_header_info = httpApi.hookGet("get_header_info");
 									const domain = `${get_header_info.protocol}://${get_header_info.host}`;
@@ -2947,7 +2935,7 @@ function showClientlistModal(){
 									}, 5000);
 
 									window.addEventListener('message', function(event){
-										const msg_page = (isSwMode("RP") || isSwMode("WISP")) ? `internet.asp` : `router${isSupport("sdn_mainfh")?"_status":""}.asp`;
+										const msg_page = isSwMode("RP") ? `internet.asp` : `router${isSupport("sdn_mainfh")?"_status":""}.asp`;
 										if(event.data == msg_page){
 											const has_port = /:\d+$/.test(event.origin);
 											if(has_port){

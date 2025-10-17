@@ -191,7 +191,7 @@
                 if (systemManipulable.brcmAfcSupport) {
                     const applyRule = function () {
                         httpApi.set_afc_enable("1");
-                        let restartTime = 10;
+                        let restartTime = 150;
                         showLoading(restartTime);
                         setTimeout(function () {
                             location.reload();

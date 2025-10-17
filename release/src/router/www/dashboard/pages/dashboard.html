@@ -50,7 +50,7 @@
                                 </div>
                             </div>
                             <div
-                                class="col-12 col-sm-4 col-md-12 my-2 ms-sm-auto p-0 client-detail"
+                                class="col-12 col-sm-4 col-md-12 my-2 ms-sm-auto p-0 client-detail noWiFi"
                                 id="wifi_client_table"
                             ></div>
                         </div>
@@ -3375,6 +3375,8 @@
 				$("#wan1_field").hide();
 				$("#ping_field").hide();
 			}
+
+			if(isSupport("noWiFi")) $(".noWiFi").hide()
 
             function showClientlistModal(){
                 const clientlistModal = new ClientlistModel();

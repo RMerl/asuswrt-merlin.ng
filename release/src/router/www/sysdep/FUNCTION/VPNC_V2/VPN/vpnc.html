@@ -4316,10 +4316,16 @@ function initial(){
 	}
 
 	showLoading = (function(seconds, flag){//overwrite function
-		$("#Loading").css({"width":"", "height":""});
-		progress = 100/seconds;
-		y = 0;
-		LoadingTime(seconds, flag);
+		if (isSupport("UI4") && businessLoader) {
+			businessLoader.setSeconds(seconds);
+			businessLoader.show();
+		}
+		else {
+			$("#Loading").css({"width":"", "height":""});
+			progress = 100/seconds;
+			y = 0;
+			LoadingTime(seconds, flag);
+		}
 	});
 	resize_iframe_height();
 

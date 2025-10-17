@@ -47,7 +47,11 @@ int SendCommand(int cmdID, int devAddr, int zone, int island, uint32_t word2,
 #elif IS_BCMCHIP(63146)
 #include "pmc_firmware_63146.h"
 #elif IS_BCMCHIP(6765)
+#if defined(RTBE58U) || defined(TUFBE3600)
+#include "pmc_firmware_6764l.h"
+#else
 #include "pmc_firmware_6765.h"
+#endif
 #elif IS_BCMCHIP(6766)
 #include "pmc_firmware_6766.h"
 #elif IS_BCMCHIP(6764)
@@ -466,13 +470,6 @@ static void pmc_boot(void)
 	printf("waiting for PMC finish booting\n");
 	WaitPmc(PMC_IN_MAIN_LOOP, pmc_log_start);
 #if defined(PMC_IMPL_3_X)
-#ifdef PMC_LOG_IN_DTCM
-	pmc->ctrl.hostMboxOut = 0; // ignore dtcm log
-	pmc_show_boot_log();
-#endif
-#if IS_BCMCHIP(6813)
-	boost_cpu_clock();
-#endif
 	{
 		uint32_t change;
 		uint32_t revision;
@@ -481,6 +478,13 @@ static void pmc_boot(void)
 			       (revision >> 28) & 0xf, (revision >> 20) & 0xff,
 			       (revision & 0xfffff), change);
 		}
+#ifdef PMC_LOG_IN_DTCM
+		pmc->ctrl.hostMboxOut = 0; // ignore dtcm log
+		pmc_show_boot_log();
+#endif
+#if IS_BCMCHIP(6813)
+		boost_cpu_clock();
+#endif
 	}
 #endif
 }

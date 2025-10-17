@@ -52,6 +52,10 @@ struct hnsSupport_t s_hnsSupport_tuple[] =
 	{"ZenWiFi_BE14000" , {1, 1, 1, 1, 1, 1}},
 #endif
 
+#ifdef BT7
+	{"ZenWiFi_BT7"     , {1, 1, 0, 0, 1, 1}},
+#endif
+
 #ifdef BT8P
 	{"ZenWiFi_BT8P"    , {1, 1, 1, 1, 1, 1}},
 #endif

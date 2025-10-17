@@ -265,6 +265,15 @@ endif
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT10 GS-BE18000))
 	cd $(INSTALLDIR)/www/light_effect && mv sysdep_css/light_effect_GT10.css light_effect_sysdep.css
 endif
+ifeq ($(RTCONFIG_UI4),y)
+	rm -rf $(INSTALLDIR)/www/images/New_ui/light_effect/light_effect_mask.png
+	rm -rf $(INSTALLDIR)/www/images/New_ui/light_effect/light_effect_mask_rog.png
+	cd $(INSTALLDIR)/www/images/New_ui/light_effect/ && mv light_effect_mask_UI4.png light_effect_mask.png
+	cd $(INSTALLDIR)/www/images/New_ui/light_effect/ && mv light_effect_mask_rog_UI4.png light_effect_mask_rog.png
+else
+	rm -rf $(INSTALLDIR)/www/images/New_ui/light_effect/light_effect_mask_UI4.png
+	rm -rf $(INSTALLDIR)/www/images/New_ui/light_effect/light_effect_mask_rog_UI4.png
+endif
 	rm -rf $(INSTALLDIR)/www/light_effect/sysdep_css
 endif
 endif
@@ -1083,11 +1092,11 @@ ifneq ($(RTCONFIG_USB_WAN_BACKUP), y)
 endif
 
 ifneq ($(RTCONFIG_DNSQUERY_INTERCEPT),y)
-	rm -rf $(INSTALLDIR)/www/app_client_stats_page.html
 	rm -rf $(INSTALLDIR)/www/datatables
 	rm -rf $(INSTALLDIR)/www/getWanTraffic_Dns.asp
 	rm -rf $(INSTALLDIR)/www/getAppTraffic_Dns.asp
 endif
+	rm -rf $(INSTALLDIR)/www/app_client_stats_page.html
 
 ifeq ($(RTCONFIG_TS_UI),y)
 	rm -rf $(INSTALLDIR)/TS_UI

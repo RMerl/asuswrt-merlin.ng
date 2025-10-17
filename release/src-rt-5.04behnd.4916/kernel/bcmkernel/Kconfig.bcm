@@ -2372,6 +2372,11 @@ config BCM_PHY_LANAI_A0
 	depends on BCM_SELECTIVE_PHYS
 	default n
 
+config BCM_PHY_NIIHAU_A0
+	bool "Niihau A0 support"
+	depends on BCM_SELECTIVE_PHYS
+	default n
+
 config BCM_PHY_XPHY
 	bool "XPHY support"
 	depends on BCM_SELECTIVE_PHYS

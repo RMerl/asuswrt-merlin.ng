@@ -52,7 +52,7 @@
 		status = "okay";
 	};
 	phy_cascade {
-	        shared-ref-clk-mhz = <80>;
+		shared-ref-clk-mhz = <80>;
 		status = "okay";
 	};
 	phy_serdes {

@@ -359,6 +359,19 @@ static uint32_t bcmbca_get_old_boot_reason_v1(void)
 	return rc;
 }
 
+static uint32_t bcmbca_get_old_boot_reason_v2(void)
+{
+	u32 rc = -1;
+
+	//boot reason is only good in case of sw reset
+	if ((b_state_data.reset_reason && b_state_data.reset_status)) {
+		rc = (*b_state_data.reset_status & SW_RESET_STATUS) != 0 ?
+		      *b_state_data.reset_reason & BCM_RESET_REASON_FULL_MASK : -1;
+		rc = (rc >> BCM_RESET_REASON_BITS);
+	}
+	return rc;
+}
+
 static uint32_t bcmbca_get_boot_reason_v1(void)
 {
 	uint32_t rc=-1;
@@ -485,7 +498,7 @@ static int bootstate_v2_probe(struct udevice *dev)
 	b_state_data.clear_boot_reason = bcmbca_clear_boot_reason_v2;
 	b_state_data.set_boot_reason = bcmbca_set_boot_reason_v2;
 	b_state_data.get_boot_reason = bcmbca_get_boot_reason_v2;
-	b_state_data.get_old_boot_reason = NULL;
+	b_state_data.get_old_boot_reason = bcmbca_get_old_boot_reason_v2;
 	b_state_data.clear_boot_failed_count = bcmbca_clear_boot_failed_count_v2;
 	b_state_data.set_boot_failed_count = bcmbca_set_boot_failed_count_v2;
 	b_state_data.get_boot_failed_count = bcmbca_get_boot_failed_count_v2;

@@ -378,5 +378,10 @@
     "keyword": "RingPro",
     "type": 85,
     "os_type": 0
+  },
+  {
+    "keyword": "aiboard",
+    "type": 137,
+    "os_type": 0
   }
 ]

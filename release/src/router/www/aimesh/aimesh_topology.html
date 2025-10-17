@@ -2643,29 +2643,38 @@ function display_manage_block(){
 					if($conn_priority_select_obj.val() == null)//avoiding some value do not exist at select option
 						$conn_priority_select_obj.val(3);
 
+					let prev_conn_priority = $conn_priority_select_obj.val();
 					$conn_priority_select_obj.unbind("change").change(function() {
-						let data = new Object();
-						data.amas_ethernet = $conn_priority_select_obj.val();
-						manage_set_config(data, specific_node_data.mac);
-						setTimeout(function(){
+						let new_conn_priority = $conn_priority_select_obj.val();
+						if (new_conn_priority === prev_conn_priority) return;
+						$conn_priority_select_obj.val(prev_conn_priority);
+						setTimeout(()=>{
 							let $aimesh_hint_msg = $("#aimesh_hint_msg");
 							$aimesh_hint_msg
 								.empty()
 								.append(popup_hint_api.get_component_text())
 								.append(popup_hint_api.get_component_action());
-							$aimesh_hint_msg.find(".hint_text").append($("<div>").html("<#Main_alert_proceeding_desc3#>!"));
 							const node_name_location = get_node_name_w_location(specific_node_data);
 							const hint = `<#AiMesh_PB_Lose_Conn_Hint#> <#AiMesh_PB_Apply_Rule01#>`.replace(/%@/g, node_name_location);
 							$aimesh_hint_msg.find(".hint_text").append($("<div>").html(hint));
-							$aimesh_hint_msg.find("#action_canacl").hide();
-							$aimesh_hint_msg.find("#action_ok").show().unbind("click").click(function(e){
+							$aimesh_hint_msg.find("#action_canacl").show().unbind("click").click(function(e){
 								e = e || event;
 								e.stopPropagation();
 								$aimesh_hint_msg.hide();
 							});
+							$aimesh_hint_msg.find("#action_ok").show().unbind("click").click(function(e){
+								e = e || event;
+								e.stopPropagation();
+								$aimesh_hint_msg.hide();
+								$conn_priority_select_obj.val(new_conn_priority);
+								prev_conn_priority = new_conn_priority;
+								let data = new Object();
+								data.amas_ethernet = new_conn_priority;
+								manage_set_config(data, specific_node_data.mac);
+							});
 							$aimesh_hint_msg.show();
 							adjust_panel_block_top("aimesh_hint_msg", 100);
-						},200);
+						}, 0);
 					});
 					if(!select_node_capability.wans_cap_wan){
 						$conn_priority_select_obj.children("option[conn_type='eth']").remove();
@@ -4804,24 +4813,31 @@ function initial_AiMesh(){
 		$connect_line_info_bg.append(gen_line_info("mlo", "great", stringSafeGet("<#AiMesh_Topology_Moca_Great#>".replace("MoCA", "MLO"))));
 		$connect_line_info_bg.append(gen_line_info("mlo", "weak", stringSafeGet("<#AiMesh_Topology_Moca_Weak#>".replace("MoCA", "MLO"))));
 		$connect_line_info_bg.append(gen_line_info("", "disconnected", "<#Disconnected#>"));
-		var $faq = $("<div>");
-		$faq.addClass("faq_bg");
-		var faq_text = `<#AiMesh_Topology_FAQ#><br>`;
-		faq_text += "<div class='aimesh_setup_info' style='margin-left:0px'>FAQ</div><br>";
-		faq_text += "<a id='connect_line_info_faq' href='' target='_blank' class='faq_link'><#HOWTOSETUP#></a>";
+		const $faq = $("<div>").addClass("faq_bg");
+		const faq_text = `
+			<#AiMesh_Topology_FAQ#>
+			<br>
+			For instructions on setting up the AiMesh system, please refer to this <a id='connect_line_info_faq'>FAQ</a>.
+		`;
 		$faq.html(faq_text);
 		$connect_line_info_bg.append($faq);
 		$("#aimesh_hint_msg").empty().append(popup_hint_api.get_component_title()).append(popup_hint_api.get_component_text()).append(popup_hint_api.get_component_action());
 		$("#aimesh_hint_msg .hint_title").html(`<#NewFeatureAbout#>`);
 		$("#aimesh_hint_msg .hint_text").html($connect_line_info_bg).promise().done(function(){
+			$("#Intro_AiMesh, #connect_line_info_faq").each(function(){
+				this.style.setProperty("color", "#006ce1", "important");
+				this.style.setProperty("text-decoration", "underline", "important");
+				this.setAttribute("rel", "noopener noreferrer");
+				this.setAttribute("target", "_blank");
+			});
 			$("#Intro_AiMesh").attr({
-				"href":faq_href2,
-				"target":"_blank"
-			}).css({
-				"color":"#FFCC00",
-				"text-decoration": "underline"
+				"href": faq_href2,
+				"aria-label": `<#AiMesh_Topology_FAQ_old#>`
 			})
-			$("#aimesh_hint_msg .hint_text #connect_line_info_faq").attr("href", faq_href3);
+			$("#aimesh_hint_msg .hint_text #connect_line_info_faq").attr({
+				"href": faq_href3,
+				"aria-label": `For instructions on setting up the AiMesh system, please refer to this FAQ.`
+			});
 		});
 		$("#aimesh_hint_msg #action_canacl").hide();
 		$("#aimesh_hint_msg #action_ok").show().unbind("click").click(function(e){

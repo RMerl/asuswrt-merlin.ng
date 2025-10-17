@@ -329,6 +329,7 @@ define(function(){
 					{url: "Main_IPTStatus_Content.asp", tabName: "<#menu5_7_5#>"},
 					{url: "Main_AdslStatus_Content.asp", tabName: "<#menu_dsl_log#>"},
 					{url: "Main_ConnStatus_Content.asp", tabName: "<#Connections#>"},
+					{url: "Main_Security_Change_Notification.asp", tabName: "Security Update Notification"},
 					/* {url: "###Main_ConnStatus_Content.asp", tabName: "Captive Portal Connection Log"}, */
 					{url: "NULL", tabName: "__INHERIT__"}
 				]

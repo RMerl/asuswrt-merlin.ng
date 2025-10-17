@@ -1193,9 +1193,10 @@ LDFLAGS += -lm
 OBJS += ledg.o
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-AX6000 GT10 GS-BE18000 GS-BE12000 GS7_PRO GT7))
 OBJS += ledbtn.o
+CFLAGS += -DSW_LEDBTN
 endif
 endif
-ifeq ($(RTCONFIG_BCMLEDG),y)
+ifeq ($(RTCONFIG_AURALED),y)
 LDFLAGS += -lm
 OBJS += ledg.o
 endif
@@ -1900,7 +1901,7 @@ ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5
 endif
 endif
 
-ifeq ($(RTCONFIG_BCMLEDG),y)
+ifeq ($(RTCONFIG_AURALED),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ledg
 endif
 
@@ -2490,7 +2491,7 @@ ledg.o:
 	@-cp -f ./prebuild/ledg.o .
 endif
 endif
-ifeq ($(RTCONFIG_BCMLEDG),y)
+ifeq ($(RTCONFIG_AURALED),y)
 ifneq ($(wildcard ./prebuild/ledg.o),)
 ledg.o:
 	@-cp -f ./prebuild/ledg.o .

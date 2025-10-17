@@ -28,6 +28,14 @@ body{
 	background-size: cover;
 	background:#283437\9;
 }
+.bg_gs7_miku{
+	background: url(/images/New_ui/login_bg_noTitle.png) no-repeat center center fixed;
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;
+	background:#283437\9;
+}
 .main-field-bg{
 	margin:20px auto 0;
 	width: 887px;
@@ -225,8 +233,15 @@ var secure_default = (function(){
 	return (rc_support.search("secure_default") == -1) ? false : true;
 })();
 
+var CoBrand = '<% nvram_get("CoBrand"); %>';
+var based_modelid = '<% nvram_get("productid"); %>';
+
 function initial(){
 	top.name = "";/* reset cache of state.js win.name */
+
+	if(based_modelid == "GS7" && CoBrand=="18"){
+		document.getElementsByClassName("bg")[0].className = "bg_gs7_miku";
+	}
 
 	if(`<% nvram_get("force_chgpass"); %>` == 1)
 		document.getElementById("QIS_pass_desc1").innerHTML ="To enhance security, a new password policy has been implemented.";

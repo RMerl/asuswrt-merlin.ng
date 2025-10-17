@@ -753,7 +753,6 @@ const showAsusNotice = () => {
     const checkNvramList = [];
     const noticeContents = [];
     const apgInfo = [];
-    const macInfo = [];
 
     const apg_arr = [];
     const apm_arr = [];
@@ -777,10 +776,6 @@ const showAsusNotice = () => {
 
     for (const i of apg_arr) {
         checkNvramList.push(`apg${i}_disabled`);
-    }
-
-    for (let i = 0; i < 4; i++) {
-        checkNvramList.push(`wl${i}_macmode`);
     }
 
     const checkNvramListResult = httpApi.nvramGet(checkNvramList, false);
@@ -809,23 +804,11 @@ const showAsusNotice = () => {
                 }
             }
         }
-        const match = key.match(/wl(\d+)_macmode/);
-        if (match) {
-            const index = parseInt(match[1]);
-            if (checkNvramListResult[key] !== "disabled" && checkNvramListResult[key] !== "") {
-                macInfo.push({index: index, key: key, value: checkNvramListResult[key]});
-            }
-        }
     }
 
     if (apgInfo.length > 0) {
         const noticeTemplate = `<#Notice_Message_1#>`;
         const noticeText = noticeTemplate.replace("%@", `<b>${apgInfo.join(', ')}</b>`);
-        noticeContents.push(noticeText);
-    }
-
-    if (macInfo.length > 0) {
-        const noticeText = `<#Notice_Message_2#>`;
         noticeContents.push(noticeText);
     }
 
@@ -842,13 +825,6 @@ const showAsusNotice = () => {
                 if (noticeModal.getReadCheck()) {
                     noticeModal.setRead();
                 }
-                const postData = {};
-                for (const macmode of macInfo) {
-                    postData[macmode.key] = "disabled";
-                    postData[`wl${macmode.index}_maclist_x`] = "";
-                }
-                postData.action_mode = "apply";
-                httpApi.nvramSet(postData);
             }
         },
         // theme: "", // RT, ROG, TUF

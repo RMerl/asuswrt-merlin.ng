@@ -851,8 +851,6 @@ width:122px;
 }*/
 .menu_Desc{
 	word-break: keep-all;
-    line-height: 150% !important;
-    height: 50px !important;
 	font-weight: bolder;
 }
 .menu_Split{
@@ -927,7 +925,7 @@ width:122px;
 }
 .menu_LAN{
 	background: url(images/New_ui/icon_menues.png);
-	background-position: 0px -36px;  
+	background-position: 0px -36px;
 }
 .menu_WAN{
 	background: url(images/New_ui/icon_menues.png);
@@ -986,7 +984,7 @@ width:122px;
 	background: #006ce1; /* Old browsers */
 	color:#fefefe;
 	border-radius: 8px;
-	
+
 }
 .tab:hover{
 	color:#006ce1;

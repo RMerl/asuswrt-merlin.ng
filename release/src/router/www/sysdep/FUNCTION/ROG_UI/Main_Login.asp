@@ -45,6 +45,14 @@ body{
 	background-size: cover;
 	background:#283437\9;
 }
+.bg_gs7_miku{
+	background: url(/images/New_ui/login_bg_noTitle.png) no-repeat center center fixed;
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;
+	background:#283437\9;
+}
 .logo-container{
 	display: flex;
 	align-items: center;
@@ -391,6 +399,8 @@ var countdownid, rtime_obj;
 var redirect_page = login_info.page;
 var cloud_file = '<% get_parameter("file"); %>';
 var isRouterMode = ('<% nvram_get("sw_mode"); %>' == '1') ? true : false;
+var CoBrand = '<% nvram_get("CoBrand"); %>';
+var based_modelid = '<% nvram_get("productid"); %>';
 
 const getQueryString = function(name){
 	var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
@@ -440,6 +450,10 @@ function initial(){
 
 	if(ATEMODE == "1"){
 		$(".login-title-desc").text("<#Sign_in_title#>" + " (ATE Mode)");
+	}
+
+	if(based_modelid == "GS7" && CoBrand=="18"){
+		document.getElementsByClassName("bg")[0].className = "bg_gs7_miku";
 	}
 
 	/*handle sysdep for ROG or ODM product*/
@@ -602,25 +616,6 @@ function initial(){
 		document.getElementById("captcha_field").style.display = "none";
 
 	if(history.pushState != undefined) history.pushState("", document.title, window.location.pathname);
-
-	// log the access to the login page
-	try {
-        const productNameElement = document.querySelector(".model-name");
-        const productName = productNameElement ? productNameElement.innerHTML : "Unknown Product";
-
-        window.localStorage.setItem(
-            `${Date.now()}#${window.localStorage.length}`,
-            ` Accessing the login page of ${productName} at ${location.origin}`
-        );
-
-        const loginInfoString = login_info ? JSON.stringify(login_info) : "No login info available";
-        window.localStorage.setItem(
-            `${Date.now()}#${window.localStorage.length}`,
-            ` Retrieve the status code: ${loginInfoString}`
-        );
-    } catch (error) {
-        console.error("An error occurred while setting localStorage items:", error);
-    }
 }
 
 function countdownfunc(){
@@ -746,10 +741,6 @@ function login(id, nonce){
 	}
 
 	document.form.submit();
-	window.localStorage.setItem(
-		`${Date.now()}#${window.localStorage.length}`, 
-		` Attempting to log in with ${nonce} & ${cnonce}.`
-	);
 }
 
 function disable_input(val){

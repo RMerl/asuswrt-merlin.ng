@@ -1653,7 +1653,16 @@ void sigtermHandler(int sig)
 }
 
 void timerHandler(int sig){
-	sh_collect_stats();
+	static int disabled = 0;
+	if (nvram_get_int("smarthaul_enable") == 1) {
+		sh_collect_stats();
+		disabled = 0;
+	}
+	else if (disabled == 0) {
+		SMARTHAUL_SYSLOG("Smarthaul algorithm not enable\n");
+		sh_reset_tidmap();
+		disabled = 1;
+	}
 }
 
 int smarthaul_main(void)

@@ -286,35 +286,20 @@ int trxbus_dt_bus_get(struct device_node *dn)
 }
 EXPORT_SYMBOL(trxbus_dt_bus_get);
 
-
-
-int trxbus_module_eeprom(int bus, struct ethtool_eeprom *ee, u8 *data)
+int trxbus_module_read_raw(int bus, int addr, int offset, uint8_t *data, int len)
 {
     struct bus_to_sfp_t *b = &bus_to_sfp[bus];
+
     if (bus < 0 || bus >= ARRAY_SIZE(bus_to_sfp))
     {
         printk("TRXBUS: bus %d is not valid\n", bus);
         return -1;
     }
-    if (b->sfpops && b->sfpops->module_eeprom)
-        return b->sfpops->module_eeprom(b->psfp, ee, data);
+    if (b->sfpops && b->sfpops->mon_read_raw)
+        return b->sfpops->mon_read_raw(b->psfp, addr, offset, data, len);
     return -1;
 }
-EXPORT_SYMBOL(trxbus_module_eeprom);
-
-int trxbus_module_info(int bus, struct ethtool_modinfo *modinfo)
-{
-    struct bus_to_sfp_t *b = &bus_to_sfp[bus];
-    if (bus < 0 || bus >= ARRAY_SIZE(bus_to_sfp))
-    {
-        printk("TRXBUS: bus %d is not valid\n", bus);
-        return -1;
-    }
-    if (b->sfpops && b->sfpops->module_info)
-        return b->sfpops->module_info(b->psfp, modinfo);
-    return -1;
-}
-EXPORT_SYMBOL(trxbus_module_info);
+EXPORT_SYMBOL(trxbus_module_read_raw);
 
 int trxbus_mon_read(int bus, enum bcmsfp_mon_attr attr, int channel, long *value)
 {

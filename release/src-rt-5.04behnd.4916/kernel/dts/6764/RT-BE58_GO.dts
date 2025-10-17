@@ -3,7 +3,7 @@
 / {
 	memory_controller {
 		memcfg = <(BP_DDR_TYPE_DDR4       | \
-			BP_DDR_SPEED_1600_22_22_22    | \
+			BP_DDR_SPEED_1200_17_17_17    | \
 			BP_DDR_TOTAL_SIZE_1024MB      | \
 			BP_DDR_DEVICE_WIDTH_16        | \
 			BP_DDR_TOTAL_WIDTH_16BIT      | \

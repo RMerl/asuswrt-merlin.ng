@@ -978,8 +978,6 @@ int button_pressed(int which)
 		gpio_value = get_gpio(use_gpio&0xff);
 
 		//_dprintf("use_gpio: %x gpio_value: %x\n", use_gpio, gpio_value);
-		if (gpio_value == -1)
-			return 0;	// invalid state, return no-pressed
 
 		if((use_gpio&GPIO_ACTIVE_LOW)==0) // active high case
 			return gpio_value==0 ? 0 : 1;

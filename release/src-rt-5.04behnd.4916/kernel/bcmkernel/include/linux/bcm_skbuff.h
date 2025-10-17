@@ -578,11 +578,6 @@ struct sk_buff {
 	 * first. This is owned by whoever has the skb queued ATM.
 	 */
 	char			cb[BCM_SKB_CB_SIZE] __aligned(8);
-#if defined(CONFIG_IMQ) || defined(CONFIG_IMQ_MODULE)
-	void			*cb_next;
-	struct nf_queue_entry   *nf_queue_entry;
-	__u8			imq_flags:IMQ_F_BITS;
-#endif
 
 	/* public: */
 
@@ -606,6 +601,11 @@ struct sk_buff {
  * binary modules should access any field after truesize via function calls
  * ---------------------------------------------------------------------------
  */
+#if defined(CONFIG_IMQ) || defined(CONFIG_IMQ_MODULE)
+	void			*cb_next;
+	struct nf_queue_entry   *nf_queue_entry;
+	__u8			imq_flags:IMQ_F_BITS;
+#endif
 	sk_buff_data_t		tail;
 	refcount_t		users;
 };

@@ -1694,13 +1694,11 @@ static void merlin28_pcs_loopback(int CoreNum)
 static int phy_speed_to_merlin28_speed(phy_dev_t *phy_dev)
 {
     phy_serdes_t *phy_serdes = phy_dev->priv;
-    phy_dev_t *phy_next = cascade_phy_get_next(phy_dev);
 
     switch(phy_dev->current_inter_phy_type)
     {
         case INTER_PHY_TYPE_SGMII:
-            if (phy_serdes->sfp_module_type != SFP_FIXED_PHY || !phy_dev_is_broadcom_phy(phy_next))
-                /* SFP module or Non Broadcom PHYs */
+            if (phy_serdes->sfp_module_type != SFP_FIXED_PHY) /* SFP module */
             {
                 phy_serdes->serdes_speed_mode = MLN_SPD_AN_SGMII_SLAVE;
                 phy_dev->an_enabled = 1;

@@ -1164,7 +1164,7 @@ system.client = (() => {
         mapArray.push(key);
     }
 
-    for (let [key, value] of Object.entries(database)) {
+    for (let [key, value] of Object.entries(nmp)) {
         if (key === "maclist" || key === "ClientAPILevel") {
             continue;
         }

@@ -52,17 +52,32 @@ static int phy_i2c_power_get(phy_dev_t *phy_dev, int *enable)
 static char *i2c_get_phy_name(phy_dev_t *phy_dev)
 {
     static char buf[64];
-    phy_serdes_t *phy_serdes = phy_dev->priv;
+    phy_serdes_t *phy_serdes = cascade_phy_get_prev(phy_dev)->priv;
     char *sfp_type;
 
-    if (phy_serdes->sfp_module_type == SFP_GPON_MODULE)
-        sfp_type = "GPON Module";
-    else if (phy_dev->flag & PHY_FLAG_COPPER_CONFIGURABLE_SFP_TYPE)
-        sfp_type = "SGMII SFP";
-    else if (phy_dev->flag & (PHY_FLAG_COPPER_SFP_TYPE))
-        sfp_type = "CopperSFP";
-    else
-        sfp_type = "SFP Module";
+    switch (phy_serdes->sfp_module_type)
+    {
+        case SFP_NO_MODULE:
+            sfp_type = "NoSFP";
+            break;
+        case SFP_GPON_MODULE:
+            sfp_type = "GPON";
+            break;
+        case SFP_AE_OPTICAL_MODULE:
+            sfp_type = "OpiticalSFP";
+            break;
+        case SFP_AE_COPPER_MODULE:
+            if (phy_dev->flag & PHY_FLAG_COPPER_CONFIGURABLE_SFP_TYPE)
+                sfp_type = "SgmiiSFP";
+            else
+                sfp_type = "CopperSFP";
+            break;
+        case SFP_DAC_CABLE:
+            sfp_type = "DacCable";
+            break;
+        default:
+            sfp_type = "SFP Module";
+    }
     sprintf(buf, "%s#%d", sfp_type, phy_dev->addr);
     return buf;
 }

@@ -48,6 +48,7 @@ bdmf_type_handle rdpa_rate_limit_drv(void);
 typedef enum {
     rdpa_rate_limit_attr_index = 0, /* index : KRI : number : Rate_limit Index */
     rdpa_rate_limit_attr_cfg = 1, /* cfg : RW : aggregate tm_rate_limit_cfg(rdpa_rl_cfg_t) : Configuration */
+    rdpa_rate_limit_attr_in_use = 2, /* in_use : R : bool : Is object in use */
 } rdpa_rate_limit_attr_types;
 
 extern int (*f_rdpa_rate_limit_get)(bdmf_number index_, bdmf_object_handle *pmo);
@@ -118,6 +119,24 @@ static inline int rdpa_rate_limit_cfg_get(bdmf_object_handle mo_, rdpa_rl_cfg_t 
 static inline int rdpa_rate_limit_cfg_set(bdmf_object_handle mo_, const rdpa_rl_cfg_t * cfg_)
 {
     return bdmf_attr_set_as_buf(mo_, rdpa_rate_limit_attr_cfg, cfg_, sizeof(*cfg_));
+}
+
+
+/** Get rate_limit/in_use attribute.
+ *
+ * Get Is object in use.
+ * \param[in]   mo_ rate_limit object handle or mattr transaction handle
+ * \param[out]  in_use_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_rate_limit_in_use_get(bdmf_object_handle mo_, bdmf_boolean *in_use_)
+{
+    bdmf_number _nn_;
+    int _rc_;
+    _rc_ = bdmf_attr_get_as_num(mo_, rdpa_rate_limit_attr_in_use, &_nn_);
+    *in_use_ = (bdmf_boolean)_nn_;
+    return _rc_;
 }
 
 /** @} end of rate_limit Doxygen group */

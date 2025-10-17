@@ -1,0 +1,9 @@
+#include "96765REF1.dts"
+
+&mdio_sf2 {
+	phy_cascade {
+		shared-ref-clk-mhz = <80>;
+		status = "okay";
+	};
+};
+

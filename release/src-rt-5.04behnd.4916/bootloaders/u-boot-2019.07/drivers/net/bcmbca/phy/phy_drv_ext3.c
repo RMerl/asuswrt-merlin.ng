@@ -37,6 +37,7 @@
  * LONGFIN A0/B0    2.2.15
  * LANAI_A0         1.0.03
  * KAUAI_A0         1.0.04
+ * NIIHAU_A0        0.2.00
  * XPHY             0.0.14
  */
 
@@ -57,8 +58,10 @@ struct phy_desc_s {
     char *name;
     firmware_t *firmware;
     uint32_t inter_phy_types;
+    int flag;
     uint16_t packageid1;
     uint16_t packageid2;
+#define PHY_DESC_FLAG_VALID_PACKAGEID  (1<<0)
 };
 
 typedef struct loading_reg_s {
@@ -83,6 +86,7 @@ typedef struct loading_reg_s {
 #define CONFIG_BCM_PHY_KAUAI_A0
 #define CONFIG_BCM_PHY_XPHY
 #define CONFIG_BCM_PHY_LANAI_A0
+#define CONFIG_BCM_PHY_NIIHAU_A0
 #endif
 
 #if defined(CONFIG_BCM_PHY_SHORTFIN_B0) || defined(CONFIG_BCM_PHY_KAUAI_A0)
@@ -106,6 +110,9 @@ static int load_kauai(firmware_t *firmware);
 #endif
 #ifdef CONFIG_BCM_PHY_LANAI_A0
 static int load_lanai(firmware_t *firmware);
+#endif
+#ifdef CONFIG_BCM_PHY_NIIHAU_A0
+static int load_niihau(firmware_t *firmware);
 #endif
 
 #ifdef CONFIG_BCM_PHY_MAKO_A0
@@ -149,6 +156,10 @@ firmware_t kauai_a0 = { "kauai_a0", kauai_a0_firmware, sizeof(kauai_a0_firmware)
 #include "lanai_a0_firmware.h"
 firmware_t lanai_a0 = { "lanai_a0", lanai_a0_firmware, sizeof(lanai_a0_firmware), &load_lanai, 0 };
 #endif
+#ifdef CONFIG_BCM_PHY_NIIHAU_A0
+#include "niihau_a0_firmware.h"
+firmware_t niihau_a0 = { "niihau_a0", niihau_a0_firmware, sizeof(niihau_a0_firmware), &load_niihau, 0 };
+#endif
 
 static firmware_t *firmware_list[] = {
 #ifdef CONFIG_BCM_PHY_MAKO_A0
@@ -180,6 +191,9 @@ static firmware_t *firmware_list[] = {
 #endif
 #if defined(CONFIG_BCM_PHY_LANAI_A0)
     &lanai_a0,
+#endif
+#if defined(CONFIG_BCM_PHY_NIIHAU_A0)
+    &niihau_a0,
 #endif
 };
 
@@ -259,13 +273,20 @@ static phy_desc_t phy_desc[] = {
     { 0x3590, 0x501d, "54994EL  B0", &shortfin_b0, INTER_PHY_TYPE_USXGMII_MP_M },
 #endif
 #ifdef CONFIG_BCM_PHY_KAUAI_A0
-    { 0x3590, 0x53c0, "54904EL  A0", &kauai_a0, INTER_PHY_TYPE_USXGMII_MP_M },
-    { 0x3590, 0x53c1, "54904EL  A1", &kauai_a0, INTER_PHY_TYPE_USXGMII_MP_M, 0x002a, 0x0000 },
-    { 0x3590, 0x53c1, "50904EL  A1", &kauai_a0, INTER_PHY_TYPE_USXGMII_MP_M, 0x003a, 0x0000 },
+    { 0x3590, 0x53c0, "54904EL  A0", &kauai_a0, INTER_PHY_TYPE_USXGMII_MP_M},
+    { 0x3590, 0x53c1, "54904EL  A1", &kauai_a0, INTER_PHY_TYPE_USXGMII_MP_M, PHY_DESC_FLAG_VALID_PACKAGEID, 0x002a, 0x0000 },
+    { 0x3590, 0x53c1, "50904EL  A1", &kauai_a0, INTER_PHY_TYPE_USXGMII_MP_M, PHY_DESC_FLAG_VALID_PACKAGEID, 0x003a, 0x0000 },
 #endif
 #ifdef CONFIG_BCM_PHY_LANAI_A0
     { 0xf7a6, 0x1c14, "50901E   A0", &lanai_a0, INTER_PHY_TYPES_QS1K2XR_M },
-    { 0xf7a6, 0x1c10, "54901E   A0", &lanai_a0, INTER_PHY_TYPES_QS1K2XR_M },
+    { 0xf7a6, 0x1c10, "54901E   A0", &lanai_a0, INTER_PHY_TYPES_QS1K2XR_M, PHY_DESC_FLAG_VALID_PACKAGEID, 0x0000, 0x0000 },
+    { 0xf7a6, 0x1c10, "54901EM  A0", &lanai_a0, INTER_PHY_TYPES_QS1K2XR_M, PHY_DESC_FLAG_VALID_PACKAGEID, 0x0003, 0x0000 },
+    { 0xf7a6, 0x1c10, "54901EMX A0", &lanai_a0, INTER_PHY_TYPES_QS1K2XR_M, PHY_DESC_FLAG_VALID_PACKAGEID, 0x0013, 0x0000 },
+#endif
+#ifdef CONFIG_BCM_PHY_NIIHAU_A0
+    { 0xf7a6, 0x1c40, "84991    A0", &niihau_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M, PHY_DESC_FLAG_VALID_PACKAGEID, 0x0000, 0x0000 },
+    { 0xf7a6, 0x1c40, "84991    A0", &niihau_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M, PHY_DESC_FLAG_VALID_PACKAGEID, 0x0008, 0x0000 },
+    { 0xf7a6, 0x1c40, "84991M   A0", &niihau_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M, PHY_DESC_FLAG_VALID_PACKAGEID, 0x0028, 0x0000 },
 #endif
 #ifdef CONFIG_BCM_PHY_LONGFIN_A0
     { 0x3590, 0x5180, "84891LM  A0", &longfin_a0, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
@@ -352,50 +373,43 @@ static int inline _bus_write(uint32_t addr, uint16_t dev, uint16_t reg, uint16_t
     return bus_drv && bus_drv->c45_write(addr, dev, reg, val);
 }
 
-static phy_desc_t *_phy_get_ext3_desc_by_phyid(int phyid1, int phyid2, int pkgid1, int pkgid2)
+static phy_desc_t *_phy_get_desc_from_phydev(phy_dev_t *phy_dev)
 {
-    int i;
-
-    for (i = 0; i < (int)ARRAY_SIZE(phy_desc); i++)
-    {
-        if (phy_desc[i].phyid1 != phyid1 || phy_desc[i].phyid2 != phyid2)
-            continue;
-
-        if (phy_desc[i].packageid1 || phy_desc[i].packageid2) 
-        {
-            if (phy_desc[i].packageid1 != pkgid1 || phy_desc[i].packageid2 != pkgid2)
-            {
-                if (i < ((int)ARRAY_SIZE(phy_desc) - 1)) /* If not last entry */
-                {
-                    /* If next entry is still the same PHY ID, compare next entry */
-                    if (phy_desc[i+1].phyid1 == phyid1 && phy_desc[i+1].phyid2 == phyid2)
-                        continue;
-                }
-                /* if it is the last entry of the same PHY IDs, return the entry even package ID does not match */
-            }
-        }
-
-        return &phy_desc[i];
-    }
-
-    return NULL;
-}
-
-static phy_desc_t *_phy_get_ext3_desc(phy_dev_t *phy_dev)
-{
-    uint16_t phyid1, phyid2;
-    uint16_t pkgid1, pkgid2;
     int ret;
+    int i;
+    phy_desc_t *_phy_desc, *phy_desc_candidate = NULL;
 
     if (phy_dev->descriptor)
         return phy_dev->descriptor;
 
-    PHY_READ(phy_dev, 0x01, 0x0002, &phyid1);
-    PHY_READ(phy_dev, 0x01, 0x0003, &phyid2);
-    PHY_READ(phy_dev, 0x01, 0x000e, &pkgid1);
-    PHY_READ(phy_dev, 0x01, 0x000f, &pkgid2);
+    if (phy_dev->phy_id1 == 0 && phy_dev->phy_id2 == 0)
+    {
+        PHY_READ(phy_dev, 0x01, 0x0002, &phy_dev->phy_id1);
+        PHY_READ(phy_dev, 0x01, 0x0003, &phy_dev->phy_id2);
+        PHY_READ(phy_dev, 0x01, 0x000e, &phy_dev->pkg_id1);
+        PHY_READ(phy_dev, 0x01, 0x000f, &phy_dev->pkg_id2);
+    }
 
-    phy_dev->descriptor = _phy_get_ext3_desc_by_phyid(phyid1, phyid2, pkgid1, pkgid2);
+    for (i = 0; i < (int)ARRAY_SIZE(phy_desc); i++)
+    {
+        _phy_desc = &phy_desc[i];
+	if (_phy_desc->phyid1 != phy_dev->phy_id1 || _phy_desc->phyid2 != phy_dev->phy_id2)
+            continue;
+
+	if (!(_phy_desc->flag & PHY_DESC_FLAG_VALID_PACKAGEID) || 
+            (_phy_desc->packageid1 == phy_dev->pkg_id1 && _phy_desc->packageid2 == phy_dev->pkg_id2))
+    {
+            phy_dev->descriptor = _phy_desc;
+            break;
+    }
+        phy_desc_candidate = _phy_desc;
+    }
+
+    if (!phy_dev->descriptor && phy_desc_candidate)
+    {
+        phy_dev->descriptor = phy_desc_candidate;
+        phy_dev->flag |= PHY_FLAG_IGNORE_PKGID;
+    }
 
 Exit:
     return phy_dev->descriptor;
@@ -403,7 +417,7 @@ Exit:
 
 static inline int _phy_use_firmware(phy_dev_t *phy_dev, firmware_t *firmware)
 {
-    phy_desc_t *phy_desc = _phy_get_ext3_desc(phy_dev);
+    phy_desc_t *phy_desc = _phy_get_desc_from_phydev(phy_dev);
 
     if (!phy_dev->descriptor)
         return 0;
@@ -482,10 +496,12 @@ static inline int _phy_use_firmware(phy_dev_t *phy_dev, firmware_t *firmware)
 /* Fixups for 5499x phys */
 #define ID1_5499X                                   0x35900000
 #define ID1_50901E                                  0xf7a60000
+#define ID1_84991                                   0xf7a60000
 #define ID1_MASK                                    0xffff0000
 #define SUPER_I_DEFAULT                             (1<<15)
 #define SUPER_I_BLACKFIN                            (1<<8)
 #define SUPER_I_LANAI                               (1<<10)
+#define SUPER_I_NIIHAU                              (1<<10)
 #define CHANGE_STRAP_STATUS                         (1<<1)
 
 static int _wait_for_cmd_ready(phy_dev_t *phy_dev)
@@ -707,7 +723,8 @@ Exit:
     return ret;
 }
 
-#if defined(CONFIG_BCM_PHY_SHORTFIN_B0) || defined(CONFIG_BCM_PHY_BLACKFIN_A0) || defined(CONFIG_BCM_PHY_BLACKFIN_B0) || defined(CONFIG_BCM_PHY_LANAI_A0)
+#if defined(CONFIG_BCM_PHY_SHORTFIN_B0) || defined(CONFIG_BCM_PHY_BLACKFIN_A0) || defined(CONFIG_BCM_PHY_BLACKFIN_B0) \
+    || defined(CONFIG_BCM_PHY_KAUAI_A0) || defined(CONFIG_BCM_PHY_LANAI_A0) || defined(CONFIG_BCM_PHY_NIIHAU_A0)
 static int xfiRegIn[] = {0x1e, 0x4110, 0x2004, 0x1e, 0x4111, 0x2004, 0x1e, 0x4113, 0x2004, -1};
 static int xfiRegOut[] = {0x1e, 0x4110, 0x0001, 0x1e, 0x4111, 0x0001, 0x1e, 0x4113, 0x1002, -1};
 static void serdes_register_read(phy_dev_t *phy_dev, int dev, int reg, uint16_t *val)
@@ -866,7 +883,14 @@ static int _phy_inter_phy_types_set(phy_dev_t *phy_dev, int inter_phy_types)
         data2 = XFI_MODE_IDLE_STUFFING;
 
 #ifdef CONFIG_BCM_PHY_LANAI_A0
-    if (_phy_use_firmware(phy_dev, &lanai_a0))  /* Disable SGMII_AN for LANAI family */
+    /* Disable SGMII_AN for LANAI family */
+    if (_phy_use_firmware(phy_dev, &lanai_a0) || _phy_use_firmware(phy_dev, &lanai_a0))
+        data2 = 0;
+#endif
+
+#if defined(CONFIG_BCM_PHY_NIIHAU_A0)
+    /* Disable SGMII_AN for NIIHAU family */
+    if (_phy_use_firmware(phy_dev, &niihau_a0) || _phy_use_firmware(phy_dev, &niihau_a0))
         data2 = 0;
 #endif
 
@@ -1169,7 +1193,14 @@ static int inter_phy_type_2p5g5g_set(phy_dev_t *phy_dev, inter_phy_types_dir_t i
     }
 
 #ifdef CONFIG_BCM_PHY_LANAI_A0
-    if (_phy_use_firmware(phy_dev, &lanai_a0))  /* Disable SGMII_AN for LANAI family */
+    /* Disable SGMII_AN for LANAI family */
+    if (_phy_use_firmware(phy_dev, &lanai_a0) || _phy_use_firmware(phy_dev, &lanai_a0))
+        data2 = 0;
+#endif
+
+#if defined(CONFIG_BCM_PHY_NIIHAU_A0)
+    /* Disable SGMII_AN for NIIHAU family */
+    if (_phy_use_firmware(phy_dev, &niihau_a0) || _phy_use_firmware(phy_dev, &niihau_a0))
         data2 = 0;
 #endif
 
@@ -1901,8 +1932,7 @@ Exit:
     return ret;
 }
 
-#ifdef CONFIG_BCM_PHY_LANAI_A0
-static int _phy_super_isolate_50901E(phy_dev_t *phy_dev, int isolate)
+static int _phy_super_isolate_lanai(phy_dev_t *phy_dev, int isolate)
 {
     int ret;
     uint16_t data;
@@ -1921,7 +1951,26 @@ static int _phy_super_isolate_50901E(phy_dev_t *phy_dev, int isolate)
 Exit:
     return ret;
 }
-#endif
+
+static int _phy_super_isolate_niihau(phy_dev_t *phy_dev, int isolate)
+{
+    int ret;
+    uint16_t data;
+
+    /* Read the status register */
+    PHY_READ(phy_dev, 0x1e, 0x401c, &data);
+
+    if (isolate)
+        data |= SUPER_I_NIIHAU;
+    else
+        data &= ~SUPER_I_NIIHAU;
+
+    PHY_WRITE(phy_dev, 0x1e, 0x401c, data);
+
+    return 0;
+Exit:
+    return ret;
+}
 
 static int _phy_super_isolate_default(phy_dev_t *phy_dev, int isolate)
 {
@@ -1970,10 +2019,10 @@ static int _phy_super_isolate(phy_dev_t *phy_dev, int isolate)
 
     if ((phyid & ID1_MASK) == ID1_5499X)
         ret = _phy_super_isolate_5499x(phy_dev, isolate);
-#ifdef CONFIG_BCM_PHY_LANAI_A0
     else if ((phyid & ID1_MASK) == ID1_50901E)
-        ret = _phy_super_isolate_50901E(phy_dev, isolate);
-#endif
+        ret = _phy_super_isolate_lanai(phy_dev, isolate);
+    else if ((phyid & ID1_MASK) == ID1_84991)
+        ret = _phy_super_isolate_niihau(phy_dev, isolate);
     else
         ret = _phy_super_isolate_default(phy_dev, isolate);
 
@@ -2646,7 +2695,7 @@ Exit:
 #endif
 
 #if defined(CONFIG_BCM_PHY_KAUAI_A0) || defined(CONFIG_BCM_PHY_SHORTFIN_B0) || defined(CONFIG_BCM_PHY_BLACKFIN_A0) \
-    || defined(CONFIG_BCM_PHY_BLACKFIN_B0) || defined(CONFIG_BCM_PHY_LONGFIN_A0) || defined(CONFIG_BCM_PHY_LONGFIN_B0) || defined(CONFIG_BCM_PHY_XPHY) || defined(CONFIG_BCM_PHY_LANAI_A0)
+    || defined(CONFIG_BCM_PHY_BLACKFIN_B0) || defined(CONFIG_BCM_PHY_LONGFIN_A0) || defined(CONFIG_BCM_PHY_LONGFIN_B0) || defined(CONFIG_BCM_PHY_XPHY) || defined(CONFIG_BCM_PHY_LANAI_A0) || defined(CONFIG_BCM_PHY_NIIHAU_A0)
 static loading_reg_t default_load_reg = {
     .ram_addr   = 0x00000000,
     .devid      = 0x01,
@@ -2717,7 +2766,7 @@ static int verify_firmware_file(int phy_addr, firmware_t *firmware, loading_reg_
 }
 #endif
 
-#if defined(CONFIG_BCM_PHY_SHORTFIN_B0) || defined(CONFIG_BCM_PHY_KAUAI_A0) || defined(CONFIG_BCM_PHY_LANAI_A0)
+#if defined(CONFIG_BCM_PHY_SHORTFIN_B0) || defined(CONFIG_BCM_PHY_KAUAI_A0) || defined(CONFIG_BCM_PHY_LANAI_A0) || defined(CONFIG_BCM_PHY_NIIHAU_A0)
 static int load_firmware_file(int master_addr, firmware_t *firmware, loading_reg_t *load_reg)
 {
     int ret = 0;
@@ -3192,7 +3241,8 @@ Exit:
 }
 #endif
 
-#if defined(CONFIG_BCM_PHY_LANAI_A0) 
+
+#if defined(CONFIG_BCM_PHY_LANAI_A0)
 static int load_lanai(firmware_t *firmware)
 {
     /*
@@ -3286,6 +3336,103 @@ static int load_lanai(firmware_t *firmware)
     i = 8000;
     do
     {
+        udelay(2000);
+        ret = _bus_read_all(phy_map_with_base, 0x1e, 0x400d, 0x4000, 0xc000);
+    } while ((ret != phy_map_with_base) && i--);
+
+    pr_cont("%s\n", ret != phy_map_with_base ? "Failed" : "OK");
+
+    ret = ret != phy_map_with_base;
+    if (ret)
+        goto Exit;
+
+    print_firmware_version(master_addr);
+
+Exit:
+    if (ret)
+        verify_firmware_file(master_addr, firmware, &load_reg);
+    return ret;
+}
+#endif
+
+#if defined(CONFIG_BCM_PHY_NIIHAU_A0)
+static int load_niihau(firmware_t *firmware)
+{
+    /*
+        phy_map is the ports defined by DT which might not contain base port.
+        while phy_map_with_base contains missing base port if DT does not define it.
+    */
+    int i, ret, master_addr, phy_cnt;
+    uint32_t phy_map, mphy_base_map, phy_map_with_base, mphy_non_master_base_map;
+
+    static loading_reg_t load_reg = {
+        .ram_addr   = 0x00000000,
+        .devid      = 0x1e,
+        .ctrl       = 0x4138,
+        .addr_low   = 0x413a,
+        .addr_high  = 0x413b,
+        .data_low   = 0x413c,
+        .data_high  = 0x413d,
+    };
+
+    phy_map = firmware->map;
+    mphy_base_map = phy_map;
+    phy_map_with_base = phy_map | mphy_base_map;
+    master_addr = get_base_phy_addr(phy_map_with_base); /* select the min PHY address for broadcast operation */
+	mphy_non_master_base_map = mphy_base_map & ~(1 << master_addr);
+
+    phy_cnt = phy_count(phy_map_with_base);
+
+	printk("Niihau Driver Version: 1.0 for v0.2.0 firmware\n");
+	printk("phy_map:%08x, mphy_base_map:%08x, phy_map_with_base:%08x, mphy_non_master_base_map:%08x, master_addr:%d, phy_cnt:%d\n",
+		phy_map, mphy_base_map, phy_map_with_base, mphy_non_master_base_map, master_addr, phy_cnt);
+
+
+	printk("Step3. Put All CPUs in Halt.\n");
+	bus_write_reg32_all(mphy_base_map, 0xf0003000, 0x00000121, 9, &load_reg);
+
+	printk("Step4. Set 0x1e.88a6 to 0 to re-do PLL\n");
+	bus_write_reg32_all(mphy_base_map, 0xf23d114c, 0x0000, 5, &load_reg);
+
+	printk("Step6. Issue soft reset on all ports.\n");
+	bus_write_reg32_all(mphy_base_map, 0xf2020000, 0x8000, 5, &load_reg);
+
+	printk("Step6.5 Clear TMUX_MODE to 0.\n");
+	bus_write_reg32_all(mphy_base_map, 0xf23d1502, 0x0000, 5, &load_reg);
+
+	printk("Step7. Enable broadcast mode for device 1.  \n");
+	bus_write_reg32_all((phy_map_with_base & ~(1 << master_addr)), 0xf23c820e, (0x0400 | ((master_addr & 0x1f) << 5) | 0x1e), 5, &load_reg);
+	bus_write_reg32_all((phy_map_with_base & ~(1 << master_addr)), 0xf23c822e, 0xf001, 5, &load_reg);
+
+	printk("Step8. Upload the firmware file content into the on-chip memory of the device\n");
+	ret = load_firmware_file(master_addr, firmware, &load_reg);
+	if (ret)
+		goto Exit;
+
+	printk("Step9. Disable broadcast mode for device 1.  \n");
+	bus_write_reg32_all((phy_map_with_base & ~(1 << master_addr)), 0xf23c820e, 0, 5, &load_reg);
+	bus_write_reg32_all((phy_map_with_base & ~(1 << master_addr)), 0xf23c822e, 0, 5, &load_reg);
+
+	printk("Step10. Bring CPU0 out of halt.\n");
+	bus_write_reg32_all(mphy_base_map, 0xf0003000, 0x00000020, 9, &load_reg);
+
+    /* 6. Verify that the processors are running */
+    pr_cont("Verify that the processors are running: ");
+    i = 1000;
+	do {
+        udelay(2000);
+        ret = _bus_read_all(phy_map_with_base, 0x01, 0x0000, 0x2040, 0xffff);
+    } while ((ret != phy_map_with_base) && i--);
+    pr_cont("%s\n", ret != phy_map_with_base ? "Failed" : "OK");
+
+    ret = ret != phy_map_with_base;
+    if (ret)
+        goto Exit;
+
+    /* 7. Verify that the firmware has been loaded into the on-chip memory with a good CRC */
+    printk("Verify that the firmware has been loaded with good CRC: ");
+    i = 8000;
+	do {
         udelay(2000);
         ret = _bus_read_all(phy_map_with_base, 0x1e, 0x400d, 0x4000, 0xc000);
     } while ((ret != phy_map_with_base) && i--);
@@ -3448,7 +3595,7 @@ static inline char *print_phy_names(uint32_t phy_map)
         if (((1<<i) & phy_map) == 0)
             continue;
         phy_dev = phy_dev_get(PHY_TYPE_EXT3, i);
-        phy_desc = _phy_get_ext3_desc(phy_dev);
+        phy_desc = _phy_get_desc_from_phydev(phy_dev);
         if (cur_name != phy_desc->name)
             j += sprintf(buf + j, " %s,", phy_desc->name);
         cur_name = phy_desc->name;
@@ -3458,9 +3605,10 @@ static inline char *print_phy_names(uint32_t phy_map)
 
 static int _phy_cfg(void)
 {
-    int i, j, k, ret = 0;
+    int i, ret = 0;
+    phy_dev_t *phy_dev;
     uint32_t phy_map;
-    uint16_t rd_phyid1[32], rd_phyid2[32];
+    phy_desc_t *phy_desc;
 
     printk("\nDetecting PHYs...\n");
 
@@ -3469,62 +3617,30 @@ static int _phy_cfg(void)
     if (!enabled_phys)
         return 0;
 
-    for (i = 0; i < 32; i++)
+    for (i = 0; i < 32; i++, ret = 0)
     {
-        rd_phyid1[i] = rd_phyid2[i] = 0;
-
         if (!(enabled_phys & (1 << i)))
             continue;
 
-        if ((_bus_read(i, 1, 2, &rd_phyid1[i])))
+        phy_dev = phy_dev_get(PHY_TYPE_UNKNOWN, i);
+        if (!phy_dev)
             continue;
 
-        if ((_bus_read(i, 1, 3, &rd_phyid2[i])))
-            continue;
-    }
-
-    for (i = 0; i < (int)ARRAY_SIZE(firmware_list); i++)
-    {
-        for (j = 0; j < (int)ARRAY_SIZE(phy_desc); j++)
+        phy_desc = _phy_get_desc_from_phydev(phy_dev);
+        if (!phy_desc)
         {
-            if (phy_desc[j].firmware != firmware_list[i])
-                continue;
-
-            for (k = 0, phy_map = 0; k < 32; k++)
-            {
-                if (!(enabled_phys & (1 << k)))
-                    continue;
-
-                if (phy_desc[j].phyid1 == rd_phyid1[k] && phy_desc[j].phyid2 == rd_phyid2[k])
-                {
-                    phy_map |= (1 << k);
+            printk("No PHY descriptor found for PHY at %d; %04x:%04x;%04x:%04x\n", 
+                    phy_dev->addr, phy_dev->phy_id1, phy_dev->phy_id2, phy_dev->pkg_id1, phy_dev->pkg_id2);
+            continue;
+        }
+        phy_desc->firmware->map |= (1 << i);
 
 #if defined(RESCAL_BY_XPHY)
-                    /* Check if PCI-E driver is running */
-                    /* if (pci_e_dirver_is_runing()
-                        bug_check() TODO */
-
-                    if (phy_desc[j].firmware == &xphy)
-                        xphy_rescal(k);
+        if (phy_desc->firmware == &xphy)
+            xphy_rescal(i);
 #endif
-                }
-            }
-
-            firmware_list[i]->map |= phy_map;
-
-            if (phy_map)
-            {
-                pr_cont("%s %x:%x --> ", phy_desc[j].name, phy_desc[j].phyid1, phy_desc[j].phyid2);
-                for (k = 0; k < 32 ; k++)
-                {
-                    if (!(phy_map & (1 << k)))
-                        continue;
-
-                    pr_cont("0x%x ", k);
-                }
-                printk("\n");
-            }
-        }
+        printk("    0x%x --> %s %04x:%04x,%04x:%04x\n", i, phy_desc->name, 
+                phy_desc->phyid1, phy_desc->phyid2, phy_desc->packageid1, phy_desc->packageid2);
     }
 
     for (i = 0; i < sizeof(firmware_list)/sizeof(firmware_list[0]); i++)
@@ -3615,7 +3731,7 @@ static char *_phy_get_phy_name(phy_dev_t *phy_dev)
 {
     if (!phy_dev->descriptor)
     {
-        phy_dev->descriptor = _phy_get_ext3_desc(phy_dev);
+        phy_dev->descriptor = _phy_get_desc_from_phydev(phy_dev);
         if (!phy_dev->descriptor)
             return "No Descrpter Found."; // bug
     }

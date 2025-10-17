@@ -52,12 +52,20 @@
 /* DEBUG FUNCTION */
 #ifdef RTCONFIG_LIBASUSLOG
 extern void Debug2String(int level, char *path, int conlog, int showtime, unsigned filesize, char *function_name, int function_line, const char *fmt, ...);
+extern void security2log(int level, char *path, int conlog, int showtime, unsigned filesize, const char *fmt, ...);
 #define HTTPD_DBG(fmt, arg...) do {\
 	int save_errno = errno; \
 	if (f_exists(HTTPD_DEBUG) > 0 || nvram_get_int("HTTPD_DBG") > 0) \
 		Debug2String(LOG_INFO, HTTPD_DEBUG_FILE, LOG_CUSTOM, LOG_SHOWTIME, 0, __FUNCTION__, __LINE__, fmt, ##arg); \
 	errno = save_errno; \
 }while(0)
+
+#define SECURITY_LOG_FILE "/jffs/security_recored.log"
+#define SECURITY_LOG(fmt,args...) \
+	if(1) { \
+		security2log(LOG_INFO, SECURITY_LOG_FILE, LOG_CUSTOM, LOG_SHOWTIME, 30, fmt, ##args); \
+	}
+
 #else
 extern void Debug2File(const char *path, const char *fmt, ...);
 #define HTTPD_DBG(fmt, args...) ({ \

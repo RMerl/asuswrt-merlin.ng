@@ -18,3 +18,6 @@ bcm_uboot_kernel_compression = lzo
 bcm_cred_dir = targets/keys/demo/GEN3
 bcm_uboot_fit_sign = targets/keys/demo/GEN3/Krot-fld.pem
 bcm_uboot_fit_signer = sign_openssl_simple.sh
+bcm_emmc_raw_linux_bootfs_part_size = 50
+bcm_emmc_raw_linux_rootfs_part_size = 200
+

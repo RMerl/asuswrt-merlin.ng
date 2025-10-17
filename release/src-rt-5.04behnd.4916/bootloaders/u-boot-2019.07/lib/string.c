@@ -176,6 +176,27 @@ char * strncat(char *dest, const char *src, size_t count)
 }
 #endif
 
+#ifndef __HAVE_ARCH_STRLCAT
+/**
+ * strlcat - Append a length-limited, %NUL-terminated string to another
+ * @dest: The string to be appended to
+ * @src: The string to append to it
+ * @size: The size of @dest
+ *
+ * Compatible with *BSD: the result is always a valid NUL-terminated string that
+ * fits in the buffer (unless, of course, the buffer size is zero). It does not
+ * write past @size like strncat() does.
+ *
+ * Return: min(strlen(dest), size) + strlen(src)
+ */
+size_t strlcat(char *dest, const char *src, size_t size)
+{
+    size_t len = strnlen(dest, size);
+
+    return len + strlcpy(dest + len, src, size - len);
+}
+#endif
+
 #ifndef __HAVE_ARCH_STRCMP
 /**
  * strcmp - Compare two strings

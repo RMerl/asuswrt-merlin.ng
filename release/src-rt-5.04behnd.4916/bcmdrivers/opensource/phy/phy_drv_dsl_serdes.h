@@ -45,8 +45,11 @@ typedef enum
     SFP_FIXED_PHY,
     SFP_NO_MODULE,
     SFP_GPON_MODULE,
-    SFP_AE_MODULE,
+    SFP_AE_OPTICAL_MODULE,
+    SFP_AE_COPPER_MODULE,
+    SFP_DAC_CABLE,
 } serdes_sfp_type_t;
+#define SFP_COPPER_MODULE_MAX_LENGTH_METER (100)
 
 enum SERDES_POWER_LEVEL {SERDES_POWER_DOWN, SERDES_POWER_UP};
 typedef enum {
@@ -280,7 +283,7 @@ int dsl_serdes_apd_get(phy_dev_t *phy_dev, int *enable);
 int dsl_serdes_apd_set_lock(phy_dev_t *phy_dev, int enable);
 int dsl_serdes_cfg_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t duplex);
 int dsl_serdes_cfg_speed_set_lock(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t duplex);
-int dsl_serdes_speed_get_lock(phy_dev_t *phy_dev, phy_speed_t *speed, phy_duplex_t *duplex);
+int dsl_serdes_speed_get(phy_dev_t *phy_dev, phy_speed_t *speed, phy_duplex_t *duplex);
 int dsl_serdes_inter_phy_types_get(phy_dev_t *phy_dev, inter_phy_types_dir_t if_dir, uint32_t *types);
 int phy_dsl_serdes_dt_priv(dt_handle_t handle, uint32_t addr, uint32_t phy_mode, void **_priv);
 int phy_dsl_serdes_dev_add_lock(phy_dev_t *phy_dev);

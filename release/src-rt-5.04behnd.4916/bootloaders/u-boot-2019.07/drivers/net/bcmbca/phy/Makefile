@@ -1,3 +1,8 @@
+PROFILE  = $(shell cat ../../../.last_profile)
+ifneq ($(findstring BUILD_HND_MFG=, $(shell cat ../../../targets/$(PROFILE)/$(PROFILE))),)
+EXTRA_CFLAGS += -DHND_MFG
+endif
+
 BRCM_CHIP = $(patsubst "bcm%",%,$(CONFIG_SYS_SOC))
 BCMBCA_PATH = $(srctree)/drivers/net/bcmbca
 DRV_OBJS :=

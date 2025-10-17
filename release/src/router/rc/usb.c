@@ -3465,7 +3465,7 @@ start_samba(void)
 #endif // !defined(RTCONFIG_TUXERA_SMBD)
 
 	if (getpid() != 1) {
-		notify_rc_and_wait_1min("start_samba");
+		notify_rc_and_wait_2min("start_samba");
 		return;
 	}
 
@@ -3692,7 +3692,7 @@ start_samba(void)
 void stop_samba(int force)
 {
 	if(!force && getpid() != 1){
-		notify_rc_and_wait_1min("stop_samba");
+		notify_rc_and_wait_2min("stop_samba");
 		return;
 	}
 

@@ -43,6 +43,8 @@ extern void bwdpi_monitor_stat(int *retval, webs_t wp);
 extern void bwdpi_monitor_info(char *type, char *event, int *retval, webs_t wp);
 extern void bwdpi_monitor_ips(char *type, char *date, int *retval, webs_t wp);
 extern void bwdpi_monitor_nonips(char *type, char *date, int *retval, webs_t wp);
+extern void hns_cgi_mon_to_json(char *type, char *start, char *end, FILE *stream);
+extern void hns_cgi_mon_del_db(char *type, FILE *stream);
 
 /* wrs_wbl */
 extern int WRS_WBL_WRITE_LIST(int bflag, char *mac, char *input_type, char *input);

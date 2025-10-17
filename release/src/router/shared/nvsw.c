@@ -456,7 +456,7 @@ int nvsw_switching(int *outval, int restore_default)
 		char nvram_file_name[64];
 		// backup current nvram
 		if (!restore_default) {
-			doSystem("nvram save %s/%s%d.CFG 1", NVSW_PATH, NVSW_SNAP_PREFIX, cur_nvswid);
+			doSystem("nvram save %s/%s%d.CFG", NVSW_PATH, NVSW_SNAP_PREFIX, cur_nvswid);
 		}
 		// restore nvram
 		snprintf(nvram_file_name, sizeof(nvram_file_name), "%s/%s%d.CFG", NVSW_PATH, NVSW_SNAP_PREFIX, changed_to_idx);

@@ -627,6 +627,12 @@ fi
 	fi
 fi
 
+if [ "$BUILD_NAME" == "GT-BE19000AI" ] || [ "$BUILD_NAME" == "GT-BE96_AI" ]; then
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/extra/wl.ko
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/cdrom
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/mtd
+fi
+
 if [ "$BCM_CHIP" == "6813" ] || [ "$BCM_CHIP" == "6764" ] || [ "$BCM_CHIP" == "6765" ] || [ "$BCM_CHIP" == "6766" ]; then
 	if [ "$CONFIG_BCM_PHY_MAKO_A0" != "y" ]; then
 		rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/fw/mako_a0_firmware.bin
@@ -665,15 +671,18 @@ if [ "$BCM_CHIP" == "6813" ]; then
 	cp $TARGETS_DIR/pakl/*1077*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
 	cp $TARGETS_DIR/pakl/*1079*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
 	cp $TARGETS_DIR/pakl/*1080*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+	cp $TARGETS_DIR/pakl/*BQ16*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
 fi
 
 if [ "$BCM_CHIP" == "6765" ]; then
 	mkdir -p $TARGETS_DIR/$ROOTFS/rom/etc/licenses
 	if [ "$BRCM_CHIP_COMPAT_NAME" == "6764L" ]; then
-		cp $TARGETS_DIR/pakl/*924*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+		cp $TARGETS_DIR/pakl/*1111*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+		cp $TARGETS_DIR/pakl/*BE3600*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
 	else
 		cp $TARGETS_DIR/pakl/*936*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
 		cp $TARGETS_DIR/pakl/*1058*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
+		cp $TARGETS_DIR/pakl/*BE92U*.bin $TARGETS_DIR/$ROOTFS/rom/etc/licenses
 	fi
 fi
 

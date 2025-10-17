@@ -514,12 +514,17 @@ function hideLoadingBar(){
 }
 
 function hideLoading(flag){
-	document.getElementById("Loading").style.visibility = "hidden";
-	htmlbodyforIE = document.getElementsByTagName("html");  //this both for IE&FF, use "html" but not "body" because <!DOCTYPE html PUBLIC.......>
-	htmlbodyforIE[0].style.overflow = "";	  //hidden the Y-scrollbar for preventing from user scroll it.
-	document.getElementById("Loading").style.width = "initial";
-	document.getElementById("Loading").style.height = "initial";
-}             
+	if (isSupport("UI4") && businessLoader) {
+		businessLoader.hide();
+	}
+	else {
+		document.getElementById("Loading").style.visibility = "hidden";
+		htmlbodyforIE = document.getElementsByTagName("html");  //this both for IE&FF, use "html" but not "body" because <!DOCTYPE html PUBLIC.......>
+		htmlbodyforIE[0].style.overflow = "";	  //hidden the Y-scrollbar for preventing from user scroll it.
+		document.getElementById("Loading").style.width = "initial";
+		document.getElementById("Loading").style.height = "initial";
+	}
+}
 
 function dr_advise(){
 	disableCheckChangedStatus();

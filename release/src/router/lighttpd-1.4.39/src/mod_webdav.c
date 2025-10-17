@@ -2945,6 +2945,14 @@ URIHANDLER_FUNC(mod_webdav_subrequest_handler) {
 
 		start = destination->ptr;
 
+		//- To avoid Directory Traversal Attack
+		if (NULL != (sep = strstr(start, ".."))) {
+			if ((sep == start || *(sep - 1) == '/') && (*(sep + 2) == '/' || *(sep + 2) == '\0')) {
+				con->http_status = 400; // Bad Request
+				return HANDLER_FINISHED;
+			}
+		}
+
 		if (NULL == (sep = strstr(start, "://"))) {
 			con->http_status = 400;
 			return HANDLER_FINISHED;
@@ -2977,7 +2985,7 @@ URIHANDLER_FUNC(mod_webdav_subrequest_handler) {
 			con->http_status = 502;
 			return HANDLER_FINISHED;
 		}
-
+		
 		buffer_copy_buffer(p->tmp_buf, p->uri.path_raw);
 		buffer_urldecode_path(p->tmp_buf);
 		buffer_path_simplify(p->uri.path, p->tmp_buf);
@@ -3009,23 +3017,38 @@ URIHANDLER_FUNC(mod_webdav_subrequest_handler) {
 		if (con->conf.force_lowercase_filenames) {
 			buffer_to_lower(p->physical.rel_path);
 		}
-
+		
 		buffer_copy_buffer(p->physical.path, p->physical.doc_root);
 		buffer_append_slash(p->physical.path);
 		buffer_copy_buffer(p->physical.basedir, p->physical.path);
-
+		
 		/* don't add a second / */
 		if (p->physical.rel_path->ptr[0] == '/') {
 			buffer_append_string_len(p->physical.path, p->physical.rel_path->ptr + 1, buffer_string_length(p->physical.rel_path) - 1);
 		} else {
 			buffer_append_string_buffer(p->physical.path, p->physical.rel_path);
 		}
+		
+		if (string_starts_with(p->physical.path->ptr, "/mnt/")) {
+			const char *path = p->physical.path->ptr + 5;
+			int slash_count = 0;
 
-		if(!string_starts_with(p->physical.path->ptr, "/mnt") ){
+			for (const char *c = path; *c != '\0'; ++c) {
+				if (*c == '/') {
+					++slash_count;
+				}
+			}
+
+			if (slash_count < 2) {
+				Cdbg(DBE, "Your destination path is not allowed, slash_count is %d", slash_count);
+				con->http_status = 403;
+				return HANDLER_FINISHED;
+			}
+		} else {
 			con->http_status = 403;
 			return HANDLER_FINISHED;
 		}
-		
+
 		/* let's see if the source is a directory
 		 * if yes, we fail with 501 */
 
@@ -3686,6 +3709,8 @@ propmatch_cleanup:
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "URL"))) {
 			buffer_url = ds->value;
 
+			buffer_urldecode_path(buffer_url);
+
 			if (buffer_url->used> 2048) {
 				con->http_status = 400;
 				return HANDLER_FINISHED;
@@ -3698,6 +3723,8 @@ propmatch_cleanup:
 		
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "FILENAME"))) {
 			buffer_filename = ds->value;
+
+			buffer_urldecode_path(buffer_filename);
 
 			if (buffer_filename->used> 512) {
 				con->http_status = 400;
@@ -3719,7 +3746,7 @@ propmatch_cleanup:
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "TOSHARE"))) {
 			toShare = atoi(ds->value->ptr);
 		}
-
+		
 		int sharelink_save_count = get_sharelink_save_count();
 		int file_count = 0;
 		
@@ -3749,7 +3776,11 @@ propmatch_cleanup:
 		}
 
 		char* base64_auth = (char *)ldb_base64_encode(auth, strlen(auth));
-
+		if (NULL == base64_auth) {
+			con->http_status = 400;
+			return HANDLER_FINISHED;
+		}
+		
 		if( generate_sharelink(srv, 
 			                   con, 
 			                   buffer_filename->ptr, 

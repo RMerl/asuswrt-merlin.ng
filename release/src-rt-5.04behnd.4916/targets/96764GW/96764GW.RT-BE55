@@ -218,7 +218,7 @@ BUILD_SELECTIVE_PHYS=y
 # BRCM_PHY_LONGFIN_A0 is not set
 # BRCM_PHY_LONGFIN_B0 is not set
 # BRCM_PHY_KAUAI_A0 is not set
-BRCM_PHY_LANAI_A0=y
+# BRCM_PHY_LANAI_A0 is not set
 # BRCM_PHY_XPHY is not set
 
 #

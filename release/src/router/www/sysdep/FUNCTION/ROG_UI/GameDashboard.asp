@@ -157,72 +157,6 @@
 	line-height: 14px;
 	word-break: keep-all;
 }
-.aura-icon-static{
-	background-image: url('images/aura/static.svg');
-}
-.aura-icon-static:hover, .aura-icon-static-active{
-	background-image: url('images/aura/static_active.svg');
-}
-.aura-icon-breathing{
-	background-image: url('images/aura/breathing.svg');
-}
-.aura-icon-breathing:hover, .aura-icon-breathing-active{
-	background-image: url('images/aura/breathing_active.svg');
-}
-.aura-icon-rainbow{
-	background-image: url('images/aura/rainbow.svg');
-}
-.aura-icon-rainbow:hover, .aura-icon-rainbow-active{
-	background-image: url('images/aura/rainbow_active.svg');
-}
-.aura-icon-comet{
-	background-image: url('images/aura/comet.svg');
-}
-.aura-icon-comet:hover, .aura-icon-comet-active{
-	background-image: url('images/aura/comet_active.svg');
-}
-.aura-icon-flash{
-	background-image: url('images/aura/flash.svg');
-}
-.aura-icon-flash:hover, .aura-icon-flash-active{
-	background-image: url('images/aura/flash_active.svg');
-}
-.aura-icon-yoyo{
-	background-image: url('images/aura/glowing_yoyo.svg');
-}
-.aura-icon-yoyo:hover, .aura-icon-yoyo-active{
-	background-image: url('images/aura/glowing_yoyo_active.svg');
-}
-.aura-icon-ccycle{
-	background-image: url('images/aura/color_cycle.svg');
-}
-.aura-icon-ccycle:hover, .aura-icon-ccycle-active{
-	background-image: url('images/aura/color_cycle_active.svg');
-}
-.aura-icon-snight{
-	background-image: url('images/aura/starry_night.svg');
-}
-.aura-icon-snight:hover, .aura-icon-snight-active{
-	background-image: url('images/aura/starry_night_active.svg');
-}
-.aura-icon-strobing{
-	background-image: url('images/aura/strobing.svg');
-}
-.aura-icon-strobing:hover, .aura-icon-strobing-active{
-	background-image: url('images/aura/strobing_active.svg');
-}
-.aura-icon-wave{
-	background-image: url('images/aura/wave.svg');
-}
-.aura-icon-wave:hover, .aura-icon-wave-active{
-	background-image: url('images/aura/wave_active.svg');
-}
-.aura-icon-event{
-	background-image: url('images/aura/event.svg');
-}
-.aura-icon-event:hover, .aura-icon-event-active{
-	background-image: url('images/aura/event_active.svg');
-}
 .boost-function{
 	width: 150px;
 	font-size: 16px;
@@ -342,11 +276,82 @@ function initial(){
 	if(rog_support){
 		$("#pingMap").show();
 		if (aura_support) {
+			const style = document.createElement('style');
+			style.textContent = `
+				.aura-icon-static{
+					background-image: url('images/aura/static.svg');
+				}
+				.aura-icon-static:hover, .aura-icon-static-active{
+					background-image: url('images/aura/static_active.svg');
+				}
+				.aura-icon-breathing{
+					background-image: url('images/aura/breathing.svg');
+				}
+				.aura-icon-breathing:hover, .aura-icon-breathing-active{
+					background-image: url('images/aura/breathing_active.svg');
+				}
+				.aura-icon-rainbow{
+					background-image: url('images/aura/rainbow.svg');
+				}
+				.aura-icon-rainbow:hover, .aura-icon-rainbow-active{
+					background-image: url('images/aura/rainbow_active.svg');
+				}
+				.aura-icon-comet{
+					background-image: url('images/aura/comet.svg');
+				}
+				.aura-icon-comet:hover, .aura-icon-comet-active{
+					background-image: url('images/aura/comet_active.svg');
+				}
+				.aura-icon-flash{
+					background-image: url('images/aura/flash.svg');
+				}
+				.aura-icon-flash:hover, .aura-icon-flash-active{
+					background-image: url('images/aura/flash_active.svg');
+				}
+				.aura-icon-yoyo{
+					background-image: url('images/aura/glowing_yoyo.svg');
+				}
+				.aura-icon-yoyo:hover, .aura-icon-yoyo-active{
+					background-image: url('images/aura/glowing_yoyo_active.svg');
+				}
+				.aura-icon-ccycle{
+					background-image: url('images/aura/color_cycle.svg');
+				}
+				.aura-icon-ccycle:hover, .aura-icon-ccycle-active{
+					background-image: url('images/aura/color_cycle_active.svg');
+				}
+				.aura-icon-snight{
+					background-image: url('images/aura/starry_night.svg');
+				}
+				.aura-icon-snight:hover, .aura-icon-snight-active{
+					background-image: url('images/aura/starry_night_active.svg');
+				}
+				.aura-icon-strobing{
+					background-image: url('images/aura/strobing.svg');
+				}
+				.aura-icon-strobing:hover, .aura-icon-strobing-active{
+					background-image: url('images/aura/strobing_active.svg');
+				}
+				.aura-icon-wave{
+					background-image: url('images/aura/wave.svg');
+				}
+				.aura-icon-wave:hover, .aura-icon-wave-active{
+					background-image: url('images/aura/wave_active.svg');
+				}
+				.aura-icon-event{
+					background-image: url('images/aura/event.svg');
+				}
+				.aura-icon-event:hover, .aura-icon-event-active{
+					background-image: url('images/aura/event_active.svg');
+				}
+			`;
+			document.head.appendChild(style);
 			if(based_modelid == 'GT-AC2900'){
 				$("#aura_event").show();
 			}
 
-			$("#aura_field").show();
+			$("#aura_field, #aura_rgb_bg").show();
+			$("#light_effect_container").hide();
 		}
 		if (boostKey_support) {
 			$("#boostKey_field").show();
@@ -357,8 +362,7 @@ function initial(){
 	}
 
 	if(isSupport("ledg")){
-		$("#aura_field").show();
-		$("#light_effect_container").show();
+		$("#aura_field, #light_effect_container").show();
 		$("#aura_rgb_bg").hide();
 	}
 

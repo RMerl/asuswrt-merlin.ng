@@ -1077,10 +1077,16 @@ function resize_iframe_height(_preheight){
 	}
 }
 function showLoading_RWD(seconds, flag){
-	$("#Loading").css({"width":"", "height":""});
-	progress = 100/seconds;
-	y = 0;
-	LoadingTime(seconds, flag);
+	if (isSupport("UI4") && businessLoader) {
+		businessLoader.setSeconds(seconds);
+		businessLoader.show();
+	}
+	else {
+		$("#Loading").css({"width":"", "height":""});
+		progress = 100/seconds;
+		y = 0;
+		LoadingTime(seconds, flag);
+	}
 }
 function show_customize_alert(_text){
 	$(".popup_customize_alert").css("display", "flex");

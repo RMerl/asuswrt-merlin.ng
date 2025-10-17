@@ -83,7 +83,7 @@
 #include <lp5523led.h>
 #endif
 
-#ifdef RTCONFIG_BSC_SR
+#if defined(RTCONFIG_BCMWL6)
 #include <bcmparams.h>
 #include <wlioctl.h>
 #endif
@@ -2390,88 +2390,163 @@ void qca_wps_state_check(void)
 #endif /* RTCONFIG_CONCURRENTREPEATER */
 #endif /* RTCONFIG_REALTEK */
 
-#ifdef RTCONFIG_BSC_SR
+#if defined(RTCONFIG_BCMWL6)
 int
-wl_sr_config(char *ifname)
+wl_sr(char *ifname)
 {
 	FILE *fp;
 	int sz = 0;
-        char cmd[32], *ptr = NULL, *val = NULL;
+        char cmd[32];
 	char buf[16] = {0};
 	int bsc_dbg = nvram_get_int("bsc_dbg");
 
         snprintf(cmd, sizeof(cmd), "wl -i %s sr_config options", ifname);
-	//_dprintf("%s, ifname is %s\n", __func__, ifname);
 
         fp = popen(cmd, "r");
         if (fp == NULL) {
-                dprintf("Err: shared %s failed to open cmd = [%s] \n", __func__, cmd);
+                dbg("Err: %s failed to open cmd = [%s] \n", __func__, cmd);
                 return -1;
         }
 
  	sz = sizeof(buf) - 1;
-	if (!fgets(buf, sz, fp)) {
-		if(bsc_dbg) _dprintf("set sr_config option as 1\n");
-		eval("wl", "-i", ifname, "sr_config", "options", "1");
-	} else {
-		buf[strcspn(buf, "\r\n")] = 0;
-		if(*buf && bsc_dbg)
-			_dprintf("sr_config:[%s]\n", buf);
-	} 
+	fgets(buf, sz, fp);
+        pclose(fp);
+
+	if (*buf && *(buf+8))	// "options x"
+        	return atoi(buf+8);
+	else
+		return 0;
+}
+
+int
+wl_sr_config(char *ifname, int *nsrg_pdmin, int *nsrg_pdmax, int *srg_pdmin, int *srg_pdmax, 
+	int *txpwrref, int *nsrg_txpwrref0, int *srg_txpwrref0)
+{
+	FILE *fp;
+        char cmd[32];
+	char buffer[32] = {0};
+	int bsc_dbg = nvram_get_int("bsc_dbg");
+
+        snprintf(cmd, sizeof(cmd), "wl -i %s sr_config", ifname);
+
+        fp = popen(cmd, "r");
+        if (fp == NULL) {
+                dbg("Err: %s failed to open cmd = [%s] \n", __func__, cmd);
+                return -1;
+        }
+
+	while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+		if (sscanf(buffer, "nsrg_pdmin : %d dBm", nsrg_pdmin) == 1) continue;
+		if (sscanf(buffer, "nsrg_pdmax : %d dBm", nsrg_pdmax) == 1) continue;
+		if (sscanf(buffer, "srg_pdmin : %d dBm", srg_pdmin) == 1) continue;
+		if (sscanf(buffer, "srg_pdmax : %d dBm", srg_pdmax) == 1) continue;
+		if (sscanf(buffer, "txpwrref : %d dBm", txpwrref) == 1) continue;
+		if (sscanf(buffer, "nsrg_txpwrref0 : %d dBm", nsrg_txpwrref0) == 1) continue;
+		if (sscanf(buffer, "srg_txpwrref0 : %d dBm", srg_txpwrref0) == 1) continue;
+	}
 
         pclose(fp);
 
-        return 1;
+	return 0;
 }
 
 #define BSC_INTERVAL 	8
 
 void bsc_sr_check(void)
 {
-        char lan_ifname[16], *lan_ifnames, *ifname, *p;
-        int unit, subunit;
-        char tmp[100], tmp2[100], prefix[] = "wlXXXXXXXXXXXXXX";
+        char word[256], *next;
+        char wl_ifnames[32] = { 0 };
+	char tmp[256], prefix[] = "wlXXXXXXXXXX_";
+	char str[8];
+	int unit;
 	static int chki = 0;
-	int bsc_interval = nvram_get_int("bsc_interval")?:BSC_INTERVAL;
-	int bsc_dbg = nvram_get_int("bsc_dbg");
+	int bsc_interval = nvram_get_int("sr_period")?:BSC_INTERVAL;
+	int bss_sr = 0, cur_bss_sr = 0;
+	int sr_config = 0;
 
 	if(chki++ == bsc_interval) {
 		chki = 0;	
 	} else
 		return 0;
 
-        if(bsc_dbg) _dprintf("%s.....(c:%d)\n", __func__, client_mode());
-        snprintf(lan_ifname, sizeof(lan_ifname), "%s", nvram_safe_get("lan_ifname"));
-        if ((lan_ifnames = strdup(nvram_safe_get("lan_ifnames"))) != NULL) {
-                p = lan_ifnames;
-                while ((ifname = strsep(&p, " ")) != NULL) {
-                        while (*ifname == ' ') ++ifname;
-                        if (*ifname == 0) break;
-
-                        unit = -1; subunit = -1;
-
-                        // ignore disabled wl vifs
-                        if (strncmp(ifname, "wl", 2) == 0) {
-                                if (get_ifname_unit(ifname, &unit, &subunit) < 0) {
-                                        continue;
-				}
-                        }
-                        // get the instance number of the wl i/f
-                        else if (wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit))) {
+	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+	foreach (word, wl_ifnames, next) {
+		if (wl_ioctl(word, WLC_GET_INSTANCE, &unit, sizeof(unit)))
                                 continue;
+
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		bss_sr = nvram_get_int(strcat_r(prefix, "bss_sr", tmp));		
+		cur_bss_sr = wl_sr(word);
+
+		//dbg("%s: [%s] bss_sr/cur_bss_sr= %d/%d\n", __func__, word, bss_sr, cur_bss_sr);
+		if (bss_sr != cur_bss_sr) {
+			sprintf(str, "%d", bss_sr);
+			dbg("%s:: [%s]: change SR as %s.\n", __func__, word, str);
+			eval("wl", "-i", word, "sr_config", "options", str);
+		}
+
+		sr_config = nvram_get_int(strcat_r(prefix, "sr_config", tmp));		
+		if (bss_sr > 0 && sr_config) {
+			//int bss_color = nvram_get_int(strcat_r(prefix, "bss_color", tmp));  // ap 
+			int nsrg_pdmin = nvram_get_int(strcat_r(prefix, "nsrg_pdmin", tmp));
+			int nsrg_pdmax = nvram_get_int(strcat_r(prefix, "nsrg_pdmax", tmp));
+			int srg_pdmin = nvram_get_int(strcat_r(prefix, "srg_pdmin", tmp));
+			int srg_pdmax = nvram_get_int(strcat_r(prefix, "srg_pdmax", tmp));
+			int txpwrref = nvram_get_int(strcat_r(prefix, "txpwrref", tmp));
+			int nsrg_txpwrref0 = nvram_get_int(strcat_r(prefix, "nsrg_txpwrref0", tmp));
+			int srg_txpwrref0 = nvram_get_int(strcat_r(prefix, "srg_txpwrref0", tmp));
+			int cur_nsrg_pdmin = 0;
+			int cur_nsrg_pdmax = 0;
+			int cur_srg_pdmin = 0;
+			int cur_srg_pdmax = 0;
+			int cur_txpwrref = 0;
+			int cur_nsrg_txpwrref0 = 0;
+			int cur_srg_txpwrref0 = 0;
+
+			wl_sr_config(word, &cur_nsrg_pdmin, &cur_nsrg_pdmax, &cur_srg_pdmin, &cur_srg_pdmax, &cur_txpwrref, &cur_nsrg_txpwrref0, &cur_srg_txpwrref0);
+			if (nsrg_pdmin && nsrg_pdmin != cur_nsrg_pdmin) {
+				sprintf(str, "%d", nsrg_pdmin);
+				dbg("%s:: [%s]: reset nsrg_pdmin as %s\n", __func__, word, str);
+				eval("wl", "-i", word, "sr_config", "nsrg_pdmin", str);
 			}
 
-			if(nvram_match("disable_sr", "1")) {
-        			if(bsc_dbg) _dprintf("%s disable reset sr conifg\n", __func__);	
-			} else
-                        	wl_sr_config(ifname);
+			if (nsrg_pdmax && nsrg_pdmax != cur_nsrg_pdmax) {
+				sprintf(str, "%d", nsrg_pdmax);
+				dbg("%s:: [%s]: reset nsrg_pdmax as %s\n", __func__, word, str);
+				eval("wl", "-i", word, "sr_config", "nsrg_pdmax", str);
+			}
 
-			if(nvram_match("disable_bsc", "1")) {
-        			if(bsc_dbg) _dprintf("%s disable sync bsscolor\n", __func__);	
-			} else
-				record_bsscolor(ifname, unit, subunit, client_mode());
-                }
-        }
+			if (srg_pdmin && srg_pdmin != cur_srg_pdmin) {
+				sprintf(str, "%d", srg_pdmin);
+				dbg("%s:: [%s]: reset srg_pdmin as %s\n", __func__, word, str);
+				eval("wl", "-i", word, "sr_config", "srg_pdmin", str);
+			}
+
+			if (srg_pdmax && srg_pdmax != cur_srg_pdmax) {
+				sprintf(str, "%d", srg_pdmax);
+				dbg("%s:: [%s]: reset srg_pdmax as %s\n", __func__, word, str);
+				eval("wl", "-i", word, "sr_config", "srg_pdmax", str);
+			}
+
+			if (txpwrref && txpwrref != cur_txpwrref) {
+				sprintf(str, "%d", txpwrref);
+				dbg("%s:: [%s]: reset txpwrref as %s\n", __func__, word, str);
+				eval("wl", "-i", word, "sr_config", "txpwrref", str);
+			}
+
+			if (nsrg_txpwrref0 && nsrg_txpwrref0 != cur_nsrg_txpwrref0) {
+				sprintf(str, "%d", nsrg_txpwrref0);
+				dbg("%s:: [%s]: reset nsrg_txpwrref0 as %s\n", __func__, word, str);
+				eval("wl", "-i", word, "sr_config", "nsrg_txpwrref0", str);
+			}
+
+			if (srg_txpwrref0 && srg_txpwrref0 != cur_srg_txpwrref0) {
+				sprintf(str, "%d", srg_txpwrref0);
+				dbg("%s:: [%s]: reset srg_txpwrref0 as %s\n", __func__, word, str);
+				eval("wl", "-i", word, "sr_config", "srg_txpwrref0", str);
+			}
+		}
+	}
 }
 #endif
 
@@ -2576,7 +2651,7 @@ static int handle_btn_in_mfg(void)
 	}
 #endif
 
-#if defined(PRTAX57_GO)
+#if defined(PRTAX57_GO) || defined(RTBE58_GO)
 	if (!button_pressed(BTN_SWITCH)) {
 		nvram_set("btn_switch", "0");
 	}
@@ -3884,8 +3959,10 @@ void btn_check(void)
 #if (((defined(RTCONFIG_LED_BTN) || !defined(RTCONFIG_WIFI_TOG_BTN)) && !defined(RTCONFIG_QCA)) && !defined(RTAX82U) && !defined(DSL_AX82U) && !defined(GSAX3000) && !defined(GSAX5400) && !defined(TUFAX5400)) && !defined(GTAX6000) && !defined(GT10) && !defined(RTAX82U_V2) && !defined(TUFAX5400_V2) && !defined(EBG15) && !defined(EBG19)
 	LED_status_old = LED_status;
 #if !defined(RTCONFIG_LED_BTN) && !defined(RTCONFIG_WIFI_TOG_BTN)
+#ifndef SW_LEDBTN
 	LED_status = nvram_match("btn_ez_radiotoggle", "0") && nvram_match("btn_ez_mode", "1") &&
 		     button_pressed(BTN_WPS);
+#endif
 #else
 	LED_status = button_pressed(BTN_LED);
 #endif
@@ -3935,6 +4012,7 @@ void btn_check(void)
 		}
 	}
 #elif defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+#ifndef SW_LEDBTN
 	if (!nvram_get_int("AllLED") && LED_status_first)
 	{
 		LED_status_first = 0;
@@ -3954,6 +4032,7 @@ void btn_check(void)
 			LED_status_on = 1 - LED_status_on;
 	}
 	else
+#endif
 		LED_status_changed = 0;
 #endif
 
@@ -6711,6 +6790,9 @@ void fake_wifi_led(void)
 	static int status = -1;
 	static int status_old;
 	int debug = nvram_get_int("debug_fake_wifi_led");
+
+	if (!nvram_get_int("AllLED"))
+		return;
 
 	if (!nvram_get_int("wlready") ||
 		(!nvram_get_int("wl0_radio") &&
@@ -11298,7 +11380,7 @@ void watchdog(int sig)
 #endif
 	}
 
-#ifdef RTCONFIG_BSC_SR
+#if defined(RTCONFIG_BCMWL6)
 	bsc_sr_check();
 #endif
 #ifdef RTAC88U

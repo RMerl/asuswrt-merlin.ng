@@ -893,13 +893,11 @@ void phy_bus_probe(bus_drv_t *bus_drv)
         bus_drv->c45_read(i, 0x1, 0x000e, &pkgid1);
 		bus_drv->c45_read(i, 0x1, 0x000f, &pkgid2);
 
-        printk("    Detected Copper PHY at address %2d with PHY ID 0x%04x.0x%04x: ", i, phyid1, phyid2);
-		if (pkgid1 || pkgid2)
-			pr_cont("Package ID: 0x%04x.0x%04x: ", pkgid1, pkgid2);
+        printk("    Detected Copper PHY at address %2d with PhyId:0x%04x.0x%04x; PkgId:0x%04x.0x%04x; ", i, phyid1, phyid2, pkgid1, pkgid2);
 			
         no_name = *phy_dev->name == 0;
         name = phy_dev_get_phy_name(phy_dev);
-        pr_cont("%s\n", name);
+        pr_cont("%s %s\n", name, PhyIsPackageIdIgnored(phy_dev)? "Package ID Ignored": "");
         if (no_name)
             phy_dev->name[0] = 0;   /* For PHYs firmware version requesting firmware loading after probing */
 

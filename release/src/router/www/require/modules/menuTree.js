@@ -292,6 +292,7 @@ define(function(){
 					{url: "Main_IPTStatus_Content.asp", tabName: "<#menu5_7_5#>"},
 					{url: "Main_AdslStatus_Content.asp", tabName: "<#menu_dsl_log#>"},
 					{url: "Main_ConnStatus_Content.asp", tabName: "<#Connections#>"},
+					{url: "Main_Security_Change_Notification.asp", tabName: "Security Update Notification"},
 					/* {url: "###Main_ConnStatus_Content.asp", tabName: "Captive Portal Connection Log"}, */
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
@@ -387,7 +388,6 @@ define(function(){
 					retArray.push("menu_VLAN");
 					retArray.push("menu_Firewall");
 					retArray.push("menu_ParentalControl");
-					retArray.push("menu_QoS");
 
 					if(!userRSSI_support){
 						retArray.push("menu_Wireless");
@@ -413,7 +413,6 @@ define(function(){
 					retArray.push("menu_VLAN");
 					retArray.push("menu_Firewall");
 					retArray.push("menu_ParentalControl");
-					retArray.push("menu_QoS");
 
 					if(ifttt_support || alexa_support){
 						retArray.push("menu_Alexa_IFTTT");
@@ -433,7 +432,6 @@ define(function(){
 					retArray.push("menu_VLAN");
 					retArray.push("menu_Firewall");
 					retArray.push("menu_ParentalControl");
-					retArray.push("menu_QoS");
 
 					if(ifttt_support || alexa_support){
 						retArray.push("menu_Alexa_IFTTT");
@@ -797,12 +795,6 @@ define(function(){
 		});
 		menuTree.list.filter(function(item, index, array){
 			if(item.index == "menu_TrafficAnalyzer")
-				menuTree.list.splice(index, 1);
-		});
-	}
-	else{
-		menuTree.list.filter(function(item, index, array){
-			if(item.index == "menu_QoS")
 				menuTree.list.splice(index, 1);
 		});
 	}

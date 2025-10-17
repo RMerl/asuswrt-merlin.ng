@@ -270,25 +270,7 @@ function initial(){
 	var autodet_state = '<% nvram_get("autodet_state"); %>';
 	var autodet_auxstate = '<% nvram_get("autodet_auxstate"); %>';	
 	var wan_proto = '<% nvram_get("wan_proto"); %>';
-	var wlc_band = (()=>{
-		if(isSupport("mloclient")){
-			let band = "0";
-			const wlcX_state = httpApi.nvramGet(["wlc0_state", "wlc1_state", "wlc2_state"], true);
-			if(wlcX_state.wlc0_state == "2"){
-				band = "0";
-			}
-			if(wlcX_state.wlc1_state == "2"){
-				band = "1";
-			}
-			if(wlcX_state.wlc2_state == "2"){
-				band = "2";
-			}
-			return band;
-		}
-		else{
-			return httpApi.nvramGet(["wlc_band"]).wlc_band;
-		}
-	})();
+	var wlc_band = '<% nvram_get("wlc_band"); %>';
 	show_menu();
 	var isIE6 = navigator.userAgent.search("MSIE 6") > -1;
 	if(isIE6)
@@ -453,8 +435,7 @@ function initial(){
 				document.getElementById('rssi_div').style.display = "none";
 			}
 			else{
-				//if(`<% nvram_get("mlo_rp"); %>` == "1" || `<% nvram_get("mlo_mb"); %>` == "1"){
-				if(0){
+				if(`<% nvram_get("mlo_rp"); %>` == "1" || `<% nvram_get("mlo_mb"); %>` == "1"){
 					document.getElementById('rssi_mlo_div').innerHTML = "";
 					
 					var mlo_bands = `<% nvram_get("mld0_ifnames"); %>`.replace(/wl/g, "").trim().split(/\s+/);
@@ -478,13 +459,13 @@ function initial(){
 
 			document.getElementById('wlc_band_status').innerHTML = wl_nband_title[wlc_band];
 
-			//if(`<% nvram_get("mlo_rp"); %>` == "1" || `<% nvram_get("mlo_mb"); %>` == "1"){
-			if(0){
+			if(`<% nvram_get("mlo_rp"); %>` == "1" || `<% nvram_get("mlo_mb"); %>` == "1"){
+				document.getElementById('NM_connect_title').style.display = "none";
 				document.getElementById('wlc_band_status').innerHTML = "MLO";
 			}
 		}
 
-		document.getElementById('NM_connect_title').style.display = "none";
+		document.getElementById('NM_connect_title').innerHTML = `<#parent_AP_status#> :`;
 	}
 	else{
 		document.getElementById("index_status").innerHTML = '<span style="word-break:break-all;">' + wanlink_ipaddr + '</span>';
@@ -706,27 +687,15 @@ function set_default_choice(){
 
 		clickEvent(document.getElementById(icon_name));
 	}
-	else{
-		if(isSwMode("RP") || isSwMode("WISP")){
-			document.getElementById("iconRouter").style.backgroundPosition = '0% 0%';
-			if(concurrent_pap && pap_flag == "1"){
-				clickEvent(document.getElementById("iconInternet_primary"));
-			}
-			else{
-				clickEvent(document.getElementById("iconInternet"));
-			}
-		}
-		else{
-			clickEvent(document.getElementById("iconRouter"));
-		}
-	}
+	else
+		clickEvent(document.getElementById("iconRouter"));
 }
 
 function showMapWANStatus(flag){
 	if(isSwMode("AP")){
 		showtext(document.getElementById("NM_connect_status"), "<div style='margin-top:10px;'><#WLANConfig11b_x_APMode_itemname#></div>");
 	}
-	else if(isSwMode("RP") || isSwMode("WISP")){
+	else if(isSwMode("RP")){
 		showtext(document.getElementById("NM_connect_title"), "<div style='margin-top:10px;'><#statusTitle_AP#>:</div><br>");
 	}
 	else
@@ -1837,16 +1806,15 @@ function popupEditBlock(clientObj){
 			document.getElementById('client_iTunes').style.display = "";
 			document.getElementById('client_iTunes').innerHTML = "iTunes";
 		}
-		if(isSwMode("RT") && !clientObj.amesh_isRe) {
-			if(clientObj.sdn_idx > 0) {
-				document.getElementById('client_sdnIdx').style.display = "";
-				const sdn_profile = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx == clientObj.sdn_idx) || {};
-				const sdn_ssid = $.isEmptyObject(sdn_profile) ? "" : sdn_profile.apg_rl.ssid;
-				document.getElementById('client_sdnIdx').innerHTML = "SDN " + sdn_ssid;
-				document.getElementById('client_sdnIdx').setAttribute('client_sdn_idx', clientObj.sdn_idx);
-			}else{
-				document.getElementById('client_sdnIdx').setAttribute('client_sdn_idx', '0');
-			}
+		if(clientObj.sdn_idx > 0 && clientObj.sdn_type !== "MAINFH") {
+			document.getElementById('client_sdnIdx').style.display = "";
+			const sdn_profile = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx == clientObj.sdn_idx) || {};
+			const sdn_ssid = $.isEmptyObject(sdn_profile) ? "" : sdn_profile.apg_rl.ssid;
+			document.getElementById('client_sdnIdx').innerHTML = "SDN " + sdn_ssid;
+			document.getElementById('client_sdnIdx').setAttribute('client_sdn_idx', clientObj.sdn_idx);
+		}
+		else {
+			document.getElementById('client_sdnIdx').setAttribute('client_sdn_idx', '0');
 		}
 
 		if(clientObj.opMode != 0) {
@@ -2898,7 +2866,7 @@ function showClientlistModal(){
 								const defaultRouterFrame = "/device-map/router_status.asp";
 								document.getElementById("iconRouterLink").href = defaultRouterFrame;
 								setTimeout(function(){
-									const statusframe_src = (isSwMode("RP") || isSwMode("WISP")) ? `/device-map/internet.asp` : defaultRouterFrame;
+									const statusframe_src = isSwMode("RP") ? `/device-map/internet.asp` : defaultRouterFrame;
 									$('#statusframe').attr('src', statusframe_src).show();
 									const get_header_info = httpApi.hookGet("get_header_info");
 									const domain = `${get_header_info.protocol}://${get_header_info.host}`;
@@ -2911,7 +2879,7 @@ function showClientlistModal(){
 									}, 5000);
 
 									window.addEventListener('message', function(event){
-										const msg_page = (isSwMode("RP") || isSwMode("WISP")) ? `internet.asp` : `router${isSupport("sdn_mainfh")?"_status":""}.asp`;
+										const msg_page = isSwMode("RP") ? `internet.asp` : `router${isSupport("sdn_mainfh")?"_status":""}.asp`;
 										if(event.data == msg_page){
 											const has_port = /:\d+$/.test(event.origin);
 											if(has_port){

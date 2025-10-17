@@ -116,7 +116,10 @@ function adjust_TM_eula_height(_objID) {
 }
 function adjust_panel_block_top(_objID, _offsetHeight) {
 	const getScrollTop = () => {
-		if (parent.webWrapper) {
+		if(isSupport("UI4")){
+			return top.document.querySelector("article.main-content").scrollTop;
+		}
+		else if (parent.webWrapper) {
 			return top.window.pageYOffset || top.document.documentElement.scrollTop || top.document.body.scrollTop || 0
 		}
 		else {

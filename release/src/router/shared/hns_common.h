@@ -82,12 +82,14 @@ enum {
 #define HNS_DEBUG_JFFS      "/jffs/HNS_DEBUG"
 #define HNS_DBG(fmt,args...) \
 	if(f_exists(HNS_DEBUG) > 0 || f_exists(HNS_DEBUG_JFFS) > 0) { \
-		printf("[HNS][%s:(%d)] "fmt, __FUNCTION__, __LINE__, ##args); \
+		_dprintf("[HNS][%s:(%d)] "fmt, __FUNCTION__, __LINE__, ##args); \
 	}
 
+#define HNS_DB_DEBUG        "/tmp/HNS_DB_DEBUG"
+#define HNS_DB_DEBUG_JFFS   "/jffs/HNS_DB_DEBUG"
 #define HNS_DB_DBG(fmt,args...) \
-	if(nvram_get_int("hns_debug")) { \
-		printf("[HNS_DB][%s:(%d)] "fmt, __FUNCTION__, __LINE__, ##args); \
+	if(nvram_get_int("hns_debug") || f_exists(HNS_DB_DEBUG) > 0 || f_exists(HNS_DB_DEBUG_JFFS) > 0) { \
+		_dprintf("[HNS_DB][%s:(%d)] "fmt, __FUNCTION__, __LINE__, ##args); \
 	}
 
 typedef enum {

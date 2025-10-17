@@ -863,6 +863,9 @@ char *get_scb_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int sta_
 	int ret = 0;
 	char link_stats[MLO_MINBUFFER] = {0};
 
+	if(!isMloConnectionMode())
+		goto END;
+
 	memset(sta_mac, 0, sta_mac_len);
 	ret = mlo_info_get(ap_ifname, link_stats, sta_mac, mld_mac, mlo_active, GET_SCB_MAC);
 
@@ -875,7 +878,7 @@ char *get_scb_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int sta_
 	else {
 		MLO_API_DBG("Get SCB MAC is %s\n", sta_mac);
 	}
-
+END:
 	return sta_mac;
 }
 
@@ -883,6 +886,9 @@ char *get_mld_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int mld_
 {
 	int ret = 0;
 	char link_stats[MLO_MINBUFFER] = {0};
+
+	if(!isMloConnectionMode())
+		goto END;
 
 	memset(mld_mac, 0, mld_mac_len);
 	ret = mlo_info_get(ap_ifname, link_stats, sta_mac, mld_mac, mlo_active, GET_MLD_MAC);
@@ -896,7 +902,7 @@ char *get_mld_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int mld_
 	else {
 		MLO_API_DBG("Get MLD MAC is %s\n", mld_mac);
 	}
-
+END:
 	return mld_mac;
 }
 
@@ -904,6 +910,9 @@ char *get_mlo_link_stats(char *ap_ifname, char *sta_mac, char *link_stats, int *
 {
 	int ret = 0;
 	char mld_mac[MLO_MEDBUFFER] = {0};
+
+	if(!isMloConnectionMode())
+		goto END;
 
 	ret = mlo_info_get(ap_ifname, link_stats, sta_mac, mld_mac, mlo_active, GET_LINK_STATS);
 
@@ -916,7 +925,7 @@ char *get_mlo_link_stats(char *ap_ifname, char *sta_mac, char *link_stats, int *
 	else {
 		MLO_API_DBG("API get MLO active_link_map is %s\n", link_stats);
 	}
-
+END:
 	return link_stats;
 }
 
@@ -3189,7 +3198,7 @@ void get_phy_port_mapping(phy_port_mapping *port_mapping)
 		.port[2] = { .phy_port_id = 2, .ext_port_id = 1, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 2500, .ifname = "eth1", .flag = (0 | PHY_PORT_FLAG_BYPASS_CABLE_DIAG), .seq_no = -1, .ui_display = "2.5G LAN-2" },
 		.port[3] = { .phy_port_id = 3, .ext_port_id = 2, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 2500, .ifname = "eth1", .flag = (0 | PHY_PORT_FLAG_BYPASS_CABLE_DIAG), .seq_no = -1, .ui_display = "2.5G LAN-3" },
 		.port[4] = { .phy_port_id = 4, .ext_port_id = 3, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 2500, .ifname = "eth1", .flag = (0 | PHY_PORT_FLAG_BYPASS_CABLE_DIAG), .seq_no = -1, .ui_display = "2.5G LAN-4" },
-		.port[5] = { .phy_port_id = 5, .ext_port_id = 8, .label_name = "L5", .cap = PHY_PORT_CAP_LAN, .max_rate = 10000, .ifname = "eth1", .flag = (0 | PHY_PORT_FLAG_BYPASS_CABLE_DIAG), .seq_no = -1, .ui_display = "10G LAN-5" },
+		.port[5] = { .phy_port_id = 5, .ext_port_id = 8, .label_name = "L5", .cap = PHY_PORT_CAP_LAN | PHY_PORT_CAP_WANLAN, .max_rate = 10000, .ifname = "eth1", .flag = (0 | PHY_PORT_FLAG_BYPASS_CABLE_DIAG), .seq_no = -1, .ui_display = "10G LAN-5" },
 		.port[6] = { .phy_port_id = -1, .ext_port_id = -1, .label_name = "U1", .cap = PHY_PORT_CAP_USB, .max_rate = 5000, .ifname = NULL, .flag = 0, .seq_no = -1, .ui_display = NULL },
 #else
 		#error "port_mapping is not defined."
@@ -3387,5 +3396,96 @@ void check_wireless_auth(char *mac, char *wl_auth, int auth_len)
 				break;
 		}
 	}
+}
+#endif
+
+#ifdef RTCONFIG_BCM_AFC
+
+void dump_afc_info_raw()
+{
+	char wlif[16] = {0};
+	char ifname[16] = {0};
+	char *cmd[] = {"wl",  "-i", ifname, "afc_info", NULL};
+
+	snprintf(wlif, sizeof(wlif), "wl%d_ifname", WL_6G_BAND);
+	snprintf(ifname, sizeof(ifname), "%s", nvram_safe_get(wlif));
+
+	if (ifname[0] != '\0') {
+		_eval(cmd, ">"AFC_INFO_RAW, AFC_INFO_TIMEOUT, NULL);
+	}
+	else {
+		AFC_DBG("DEBUG", "we can't find 6g band interface\n");
+	}
+}
+
+/*
+ * acsd will request to check AFC SP status in bandwidth 160 / 320
+ * 0 : other cases
+ * 1 : BW160 is SP and BW320 is LPI
+ * */
+int afc_sp_failback_status()
+{
+	char line[256] = {0};
+	FILE *fp1 = NULL;
+	int line_num = 0;
+	int ret = 0;
+	int is_160_sp = 0;
+	int is_320_sp = 0;
+
+	// dump afc_info raw data
+	dump_afc_info_raw();
+
+	fp1 = fopen(AFC_INFO_RAW, "r");
+	if (!fp1) {
+		AFC_DBG("DEBUG", "there is no afc_info raw data\n");
+		goto END;
+	}
+
+	while (fgets(line, sizeof(line), fp1)) {
+		line_num++;
+		if (line_num < AFC_INFO_HEADER_LINES) continue; // skip AFC_INFO_HEADER_LINES rows
+
+		char eirp[16] = {0};
+		char chanspec[16] = {0};
+		if (sscanf(line, " %*d / %*s | %15s | %*[^:] : %15s", eirp, chanspec) == 2) {
+			AFC_DBG("DEBUG", "eirp = %s, chanspec = %s\n", eirp, chanspec);
+
+			trimNL(eirp);
+			trimNL(chanspec);
+
+			// no eirp and chanspec
+			if (eirp[0] == '\0' || chanspec[0] == '\0') continue;
+
+			int bw = 20;
+			char channel[32] = {0};
+
+			char *slash = strchr(chanspec, '/');
+			if (slash) {
+				bw = atoi(slash + 1);
+				*slash = '\0';
+			}
+
+			if (strncmp(chanspec, "6g", 2) == 0) {
+				snprintf(channel, sizeof(channel), "%s", chanspec + 2);
+			} else {
+				snprintf(channel, sizeof(channel), "%s", chanspec);
+			}
+
+			/* only check BW160 and BW320, skip others */
+			if (bw != 160 && bw != 320) continue;
+			AFC_DBG("DEBUG", "eirp = %s, bw = %d, channel = %s\n", eirp, bw, channel);
+
+			/* check eirp status in BW160 and BW320 */
+			if (bw == 160 && (strcmp(eirp, "ERR-128") != 0)) is_160_sp |= 1;
+			if (bw == 320 && (strcmp(eirp, "ERR-128") != 0)) is_320_sp |= 1;
+		}
+	}
+
+	/* BW160 is SP and BW320 is LPI */
+	if (is_160_sp == 1 && is_320_sp == 0) ret = 1;
+END:
+	if (fp1) fclose(fp1);
+	AFC_DBG("DEBUG", "is_160_sp=%d, is_320_sp=%d, ret=%d\n", is_160_sp, is_320_sp, ret);
+	return ret;
 }
 #endif

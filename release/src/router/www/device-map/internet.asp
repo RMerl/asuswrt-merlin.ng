@@ -17,8 +17,6 @@
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
-const get_header_info = httpApi.hookGet("get_header_info");
-window.parent.postMessage('internet.asp', `${get_header_info.protocol}://${get_header_info.host}:${get_header_info.port}`);
 if(parent.location.pathname.search("index") === -1) top.location.href = "../"+'<% networkmap_page(); %>';
 
 <% wanlink(); %>
@@ -233,11 +231,7 @@ function initial(){
 			}
 		}
 		else{
-			let remoteAP_WISP_text = `<#Disconnected#>`;
-			if (parent.link_status === "2" && parent.link_sbstatus === "0" && parent.link_auxstatus === "0") {
-				remoteAP_WISP_text = decodeURIComponent(httpApi.nvramCharToAscii([`wlc_ssid`]).wlc_ssid);
-			}
-			showtext(document.getElementById("RemoteAP_WISP"), remoteAP_WISP_text);
+			showtext(document.getElementById("RemoteAP_WISP"), httpApi.getPAPStatus());
 			document.getElementById("dualwan_enable_button").style.display = "none";
 			document.getElementById("goDualWANSetting").style.display = "none";
 			document.getElementById('RemoteAP_Item_WISP').style.display = "";
@@ -258,18 +252,13 @@ function initial(){
 
 		showtext(document.getElementById("RemoteAP"), httpApi.getPAPStatus());
 
-		if(parent.concurrent_pap || isSupport("mloclient")){
-			const wlc_unit = (()=>{
-				if(isSupport("mloclient")){
-					return parent.wlc_band == "0" ? "0" : "1";
-				}
-				else{
-					return parent.pap_click_flag == 0 ? "0" : "1";
-				}
-			})();
-			showtext(document.getElementById("RemoteAP"), httpApi.getPAPStatus(wlc_unit));
+		if(parent.concurrent_pap){
+			if(parent.pap_click_flag == 0)
+				showtext(document.getElementById("RemoteAP"), httpApi.getPAPStatus("0"));
+			else
+				showtext(document.getElementById("RemoteAP"), httpApi.getPAPStatus("1"));
 		}
-
+				
 		if(lanproto == "static")
 			showtext(document.getElementById("LanProto"), "<#BOP_ctype_title5#>");
 		else
@@ -1167,9 +1156,9 @@ function manualSetup(){
 </tr>
 
 <tr id="sitesurvey_tr_WISP" style="display:none">
-	<td height="50" style="padding:10px 15px 0px 15px;text-align: center;">
+	<td height="50" style="padding:10px 15px 0px 15px;">
 		<p class="formfonttitle_nwm" style="float:left;"><#APSurvey_action_search_again_hint2#></p>  
-		<input type="button" class="button_gen" onclick="gotoSiteSurvey();" value="Change Network" style="margin: 5px 0;"><!-- untranslated -->
+		<input type="button" class="button_gen" onclick="gotoSiteSurvey();" value="<#QIS_rescan#>" style="float:right;margin: 5px 0;">
 	</td>
 </tr>
 </table>
@@ -1221,9 +1210,9 @@ function manualSetup(){
 </tr>
 
 <tr id="sitesurvey_tr" style="display:none">
-  <td height="50" style="padding:10px 15px 0px 15px;text-align: center;">
+  <td height="50" style="padding:10px 15px 0px 15px;">
   	<p class="formfonttitle_nwm" style="float:left;"><#APSurvey_action_search_again_hint2#></p>
-	<input type="button" class="button_gen" onclick="gotoSiteSurvey();" value="Change Network" style="margin: 5px 0;"><!-- untranslated -->
+	<input type="button" class="button_gen" onclick="gotoSiteSurvey();" value="<#QIS_rescan#>" style="float:right;margin: 5px 0;">
   </td>
 </tr>
 

@@ -291,7 +291,7 @@ wl_stats () {
     echo "WL Statistics for $PRIM_IFNAME"
     echo "============================================="
 
-    items="chanim_stats memuse chan_info dfs_status_all noise phy_tempsense band scanresults wme_counters counters
+    items="chanim_stats memuse chan_info dfs_status_all radar_status noise phy_tempsense band scanresults wme_counters counters
         wme_clear_counters reset_cnts spect oper_mode interference interference_override"
 
     for x in $items; do
@@ -409,8 +409,8 @@ Archer_accel_dump () {
     dmesg -c
 
     # Dump partial flow to avoid too much print ..
-    archer flows --max 64
-    dmesg -c
+    # archer flows --max 64
+    # dmesg -c
 
     # Service Queue stats
     # archer sq stats

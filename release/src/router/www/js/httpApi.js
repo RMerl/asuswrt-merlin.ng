@@ -240,8 +240,6 @@ var httpApi ={
 				async: async,
 				error: function(){},
 				success: function(response){
-					httpApi.log(`${location.pathname}`, `Try to change the value of ${JSON.stringify(Object.keys(postData))} and got ${JSON.stringify(response)}`);
-					
 					if(handler) handler.call(response);
 
 					if(typeof postMessageToApp == "function" && postMessageToAppFlag){
@@ -925,11 +923,6 @@ var httpApi ={
 	"isAlive": function(hostOrigin, token, callback){
 		window.chdom = callback;
 		$.getJSON(hostOrigin + "/chdom.json?hostname=" + token + "&callback=?");
-	},
-
-	"isAliveForce": function(hostOrigin, callback){
-		window.chdomForce = callback;
-		$.getJSON(`${hostOrigin}/repage.json?callback=?`);
 	},
 
 	"checkCap": function(targetOrigin, callback){
@@ -2336,7 +2329,6 @@ var httpApi ={
 			}
 		})
 
-		httpApi.log(`httpApi.chpass`, `do chpass.cgi and got ${statusCode}`);
 		return statusCode;
 	},
         "get_app_client_stats": function(queryParam, handler){
@@ -2345,6 +2337,7 @@ var httpApi ={
                         dataType: 'json',
                         type: "GET",
                         error: function(jqXHR, textStatus, errorThrown){
+                                //console.log("status:${jqXHR.status} error:${jqXHR.responseText}");
                                 console.log("error:${textStatus}");
                         },
                         success: function(response){
@@ -2360,17 +2353,17 @@ var httpApi ={
 		if(!sessionId) sessionId = deviceId.productid + "#" + deviceId.extendno;
 
 		try{
-			window.localStorage.setItem(`${Date.now()}#${window.localStorage.length}`, `[${sessionId}][${funcName}] ${content}`);
+			setTimeout(function(){
+				window.localStorage.setItem(Date.now(), "[" + sessionId + "][" + funcName + "] " + content);
+			}, 100*Math.random())
 		}catch(err){
-			httpApi.rmLog();
-			window.localStorage.setItem(`${Date.now()}#${window.localStorage.length}`, `[${sessionId}][${funcName}] ${content}`);
+			localStorage.clear();
+			setTimeout(function(){
+				window.localStorage.setItem(Date.now(), "[" + sessionId + "][" + funcName + "] " + content);
+			}, 100*Math.random())
 		}
 	},
 	
-	"rmLog": function(){
-		localStorage.clear();
-	},
-
 	"getLog": function(){
 		if(typeof window.localStorage === 'undefined') return false;
 
@@ -2388,8 +2381,8 @@ var httpApi ={
 		var logContentArray = [];
 
 		for(var key in window.localStorage){
-			if(typeof window.localStorage[key] !== "function" && key !== "length" && key.split("#").length == 2){
-				logContentArray.push([key.split("#")[0], window.localStorage[key]])
+			if(typeof window.localStorage[key] !== "function" && key !== "length"){
+				logContentArray.push([key, window.localStorage[key]])
 			}
 		}
 
@@ -2406,7 +2399,7 @@ var httpApi ={
 
 		_download("uiLog.txt", logContent.join("\n"));
 	},
-	
+
 	"get_diag_avg_data": function(queryParam, handler){
 /*
 		example:
@@ -2663,13 +2656,12 @@ var httpApi ={
 				fbInfo.fbwifi_secret != ""  
 			)
 
+			// debug log
+			httpApi.log("httpApi.fbwifi.isAvailable fbwifi_cp_config_url", fbInfo.fbwifi_cp_config_url);
+			httpApi.log("httpApi.fbwifi.isAvailable fbwifi_id", fbInfo.fbwifi_id);
+			httpApi.log("httpApi.fbwifi.isAvailable fbwifi_secret", fbInfo.fbwifi_secret);
+
 			return isAvailable;
 		}
 	}
 }
-
-window.onerror = function(message, source, lineno, colno, error) {
-    httpApi.log(`JS ERROR`, `
-Message: ${message} 
-The error occurred in ${source}, Line: ${lineno}, Column: ${colno}.`);
-};

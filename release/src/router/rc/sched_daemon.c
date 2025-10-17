@@ -35,6 +35,7 @@
 #define PERIOD_10_SEC			10*TIMER_HZ
 #define PERIOD_30_SEC			30*TIMER_HZ
 #define PERIOD_120_SEC			120*TIMER_HZ
+#define PERIOD_600_SEC			600*TIMER_HZ
 #define PERIOD_86400_SEC		86400*TIMER_HZ
 
 #define SCHED_DAEMON_DEBUG		"/tmp/SCHED_DAEMON_DEBUG"
@@ -91,6 +92,9 @@ static void task_hns_signature(struct timer_entry *timer, void *data);
 static void task_hns_event_cc(struct timer_entry *timer, void *data);
 static void task_hns_alive(struct timer_entry *timer, void *data);
 #endif
+#if defined(RTCONFIG_BCM_AFC) && defined(RTCONFIG_AFC_POSITIONING)
+static void task_afc_pos_retry(struct timer_entry *timer, void *data);
+#endif
 ///////////////////////////////////// task prototype /////////////////////////////////////
 
 ///////////////////////////////////// signal handler prototype /////////////////////////////////////
@@ -128,6 +132,9 @@ static struct task_table sd_task_t[] =
         {SIGALRM, 0, task_hns_event_cc, 0, PERIOD_10_SEC},
         {SIGALRM, 0, task_hns_alive, 0, PERIOD_30_SEC},
 #endif
+#if defined(RTCONFIG_BCM_AFC) && defined(RTCONFIG_AFC_POSITIONING)
+        {SIGALRM, 0, task_afc_pos_retry, 0, PERIOD_600_SEC},
+#endif
         {SIGUSR1, 0, sched_daemon_sigusr1, 0, 0},
         {SIGUSR2, 0, sched_daemon_sigusr2, 0, 0},
         {SIGTERM, 0, sched_daemon_exit, 0, 0},
@@ -147,6 +154,7 @@ static int period_time_quota_sec = 0;
 #endif
 static int period_30_sec = 0;
 static int period_120_sec = 0;
+static int period_600_sec = 0;
 static int period_3600_sec = 0;
 static int period_86400_sec = 0;
 ///////////////////////////////////// task prototype /////////////////////////////////////
@@ -277,6 +285,7 @@ static void sched_daemon(int sig)
 	period_10_sec = (period_10_sec + 1) % 10;
 	period_30_sec = (period_30_sec + 1) % 30;
 	period_120_sec = (period_120_sec + 1) % 120;
+	period_600_sec = (period_600_sec + 1) % 600;
 	period_3600_sec = (period_3600_sec + 1) % 3600;
 	period_86400_sec = (period_86400_sec + 1) % 86400;
 
@@ -323,6 +332,14 @@ static void sched_daemon(int sig)
 #ifdef RTCONFIG_HNS
 	task_hns_history();
 	task_hns_protection();
+#endif
+
+/*======== The following is for period 600 seconds ========*/
+	if (period_600_sec)
+		return;
+
+#if defined(RTCONFIG_BCM_AFC) && defined(RTCONFIG_AFC_POSITIONING)
+	task_afc_pos_retry();
 #endif
 
 /*======== The following is for period 1 hour ========*/
@@ -1158,6 +1175,45 @@ static void task_hns_alive(void)
 #endif
 }
 #endif
+
+#if defined(RTCONFIG_BCM_AFC) && defined(RTCONFIG_AFC_POSITIONING)
+#ifdef USE_TIMERUTIL
+static void task_afc_pos_retry(struct timer_entry *timer, void *data)
+#else
+static void task_afc_pos_retry(void)
+#endif
+{
+	if (IS_AFC_EXCL_MODEL())
+		goto AFC_POS_RETRY_END;
+
+	if (!IS_AFC_ENABLED())
+		goto AFC_POS_RETRY_END;
+
+	if (!IS_AFC_PP())
+		goto AFC_POS_RETRY_END;
+
+	if (!IS_ICP_MODELS())
+		goto AFC_POS_RETRY_END;
+
+	if (!IS_AFC_ALLOW_SWMODE())
+		goto AFC_POS_RETRY_END;
+
+	if (!IS_AFC_SKU())
+		goto AFC_POS_RETRY_END;
+
+	// RE node and backhaul is disconnected, skip afc positioning.
+	if (nvram_get_int("re_mode") == 1 && nvram_get_int("cfg_alive") == 0)
+		goto AFC_POS_RETRY_END;
+
+	if (!check_afc_nvram())
+		trigger_afc_positioning("silent");
+
+AFC_POS_RETRY_END:
+#ifdef USE_TIMERUTIL
+	mod_timer(timer, PERIOD_600_SEC);
+#endif
+}
+#endif // #if defined(RTCONFIG_BCM_AFC) && defined(RTCONFIG_AFC_POSITIONING)
 
 #ifdef USE_TIMERUTIL
 static void sched_daemon_sigusr1(struct timer_entry *timer, void *data)

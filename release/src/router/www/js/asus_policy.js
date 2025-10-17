@@ -67,6 +67,7 @@ const ASUS_POLICY = {
                     <div class="policy_desc"><#ASUS_PP_Desc_3#></div>
                     <div class="policy_desc"><#ASUS_PP_Desc_4#></div>
                     <div class="policy_desc"><#ASUS_PP_Desc_5#></div>
+                    <div class="policy_desc"><#ASUS_PP_Desc_6#></div>
                     <div class="policy_show"></div>
                 </div>`,
             PersonalData: `<#ASUS_Personal#>`,

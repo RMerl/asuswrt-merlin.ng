@@ -154,7 +154,9 @@ mount_data() {
 			if [ $? -ne 0 ]; then
 				echo ">>>>> ERROR: Failed to fix GPT inconsistencies! Run sgdisk from linux for more info <<<<<"
 			else
-				echo ">>>>> GPT updated successfully!  <<<<<"
+				echo ">>>>> GPT updated successfully! -- Reboot required! <<<<<"
+				# Log that GPT was modified
+				touch /var/gpt_modified.txt
 			fi
 		fi
 		# For new flash layout mount mandatory defaults partition

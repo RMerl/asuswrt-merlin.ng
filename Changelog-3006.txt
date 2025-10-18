@@ -2,6 +2,7 @@ Asuswrt-Merlin 3006.xxx Changelog
 =================================
 
 3006.102.6 (xx-xx-xxxx)
+  - NEW: Added support for the RT-BE58_Go.
   - NEW: Redesigned Traffic Monitor pages.
          - Uses Chart.js for Realtime and Last24 pages
          - Removes legacy Tomato code
@@ -16,6 +17,8 @@ Asuswrt-Merlin 3006.xxx Changelog
            JFFS.  Also removed rarely used start-of-month
            setting.
 
+  - UPDATED: Merged GPL 38978 (RT-BE58_GO only)
+  - UPDATED: Merged GPL 39099 (other Wifi 7 models)
   - UPDATED: OpenVPN to 2.6.15.
   - FIXED: IPv6 requests for prefix lengths other than 64 for
            routers with Multiwan support.

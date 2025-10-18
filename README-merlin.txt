@@ -51,6 +51,7 @@ Fully supported devices:
  * RT-AX86U Pro
  * RT-AX88U Pro
  * RT-BE92U
+ * RT-BE58_Go
 
 No longer supported:
  * RT-N16

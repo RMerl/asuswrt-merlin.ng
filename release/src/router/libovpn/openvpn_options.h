@@ -7,6 +7,8 @@
 #define VPN_UPLOAD_NEED_STATIC      (1<<3)
 #define VPN_UPLOAD_NEED_CRL         (1<<4)
 #define VPN_UPLOAD_NEED_EXTRA       (1<<5)
+#define VPN_UPLOAD_NEED_UP          (1<<6)
+#define VPN_UPLOAD_NEED_TLSCRYPTV2  (1<<7)
 
 #define MAX_PARMS 16
 

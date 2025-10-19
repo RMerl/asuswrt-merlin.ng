@@ -44,6 +44,7 @@ typedef enum ovpn_key {
 	OVPN_SERVER_CLIENT_KEY,
 	OVPN_CLIENT_EXTRA,
 	OVPN_SERVER_EXTRA,
+	OVPN_CLIENT_TLSCRYPTV2,
 }ovpn_key_t;
 
 typedef enum ovpn_status{

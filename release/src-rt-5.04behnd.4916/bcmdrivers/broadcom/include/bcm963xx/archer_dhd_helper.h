@@ -658,6 +658,20 @@ typedef struct {
     int queue;
 } rdpa_cpu_int_arg_t;
 
+#define CC_CROSSBOW_SWBCACPE_60718
+
+#if defined(CONFIG_BCM_DHD_CROSSBOW) && defined(CC_CROSSBOW_SWBCACPE_60718)
+static inline int rdpa_cpu_rxq_empty(uint32_t radio_idx, int queue)
+{
+    rdpa_cpu_int_arg_t arg = { .radio_idx = radio_idx,
+                               .queue = queue };
+
+    bcmFun_t *hook = bcmFun_get(BCM_FUN_ID_ARCHER_DHD_CPU_RXQ_EMPTY);
+
+    return hook(&arg);
+}
+#endif
+
 static inline void rdpa_cpu_int_enable(uint32_t radio_idx, int queue)
 {
     rdpa_cpu_int_arg_t arg = { .radio_idx = radio_idx,

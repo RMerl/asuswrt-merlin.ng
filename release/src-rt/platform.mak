@@ -547,8 +547,8 @@ define platformKernelConfig
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcmvlan.o $(HND_SRC)/bcmdrivers/broadcom/char/vlan/impl1/ ; \
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/wlcsm.o $(HND_SRC)/bcmdrivers/broadcom/char/wlcsm_ext/impl1/ ; \
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcm_license.o $(HND_SRC)/bcmdrivers/broadcom/char/license/impl1/ ; \
-					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcm_mpm.o $(HND_SRC)/bcmdrivers/broadcom/char/mpm/impl1/ ; \
 				fi; \
+				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcm_mpm.o $(HND_SRC)/bcmdrivers/broadcom/char/mpm/impl1/ ; \
 				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcm63xx_flash.o $(HND_SRC)/bcmdrivers/opensource/char/board/bcm963xx/impl1/ ; \
 				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcm63xx_gpio.o $(HND_SRC)/bcmdrivers/opensource/char/board/bcm963xx/impl1/ ; \
 				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcm63xx_led.o $(HND_SRC)/bcmdrivers/opensource/char/board/bcm963xx/impl1/ ; \

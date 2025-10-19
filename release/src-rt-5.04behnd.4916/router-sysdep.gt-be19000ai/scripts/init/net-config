@@ -1,0 +1,29 @@
+#!/bin/sh
+
+case "$1" in
+	start)
+		echo "Configuring networking..."
+		# Do this after all the networking drivers has been insmod'd
+		echo 3 > /proc/sys/net/ipv4/conf/all/force_igmp_version
+		echo 1 > /proc/sys/net/ipv4/ip_forward
+		echo 1 > /proc/sys/net/ipv4/ip_dynaddr
+		echo 0 > /proc/sys/net/ipv6/auto_flowlabels
+		if [ -f /proc/sys/net/ipv6/conf/all/forwarding ]; then
+			echo "Enabling IPv6 Forwarding..."
+			echo 1 > /proc/sys/net/ipv6/conf/all/forwarding
+		fi
+		exit 0
+		;;
+
+	stop)
+		# nothing to do here.
+		exit 0
+		;;
+
+	*)
+		echo "$0: unrecognized option $1"
+		exit 1
+		;;
+
+esac
+

@@ -1,0 +1,5 @@
+
+dependson: private/libs/blogctl
+condition: ifneq ($(strip $(BUILD_BLOGCTL)),)
+makeflags: $(BUILD_BLOGCTL)
+

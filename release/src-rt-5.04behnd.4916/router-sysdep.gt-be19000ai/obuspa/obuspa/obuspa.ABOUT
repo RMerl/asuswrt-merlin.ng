@@ -1,0 +1,17 @@
+about_resource: .
+name: obuspa
+version: 4.1
+homepage_url: https://github.com/BroadbandForum/obuspa
+download_url: https://github.com/BroadbandForum/obuspa/archive/refs/tags/v4.1.0-master.tar.gz
+licenses:
+    -   key: bsd-new
+        name: BSD-3-Clause
+        file: LICENSE
+        spdx_license_key: BSD-3-Clause
+copyright: |
+           Copyright (C) 2019-2021, Broadband Forum 
+           Copyright (C) 2016-2021  CommScope, Inc
+           Copyright (C) 2020-2021, BT PLC
+
+
+

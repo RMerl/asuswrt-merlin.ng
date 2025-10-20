@@ -3091,7 +3091,7 @@ define RouterOptions
 		echo "RTCONFIG_HAS_5G_2=y" >>$(1); \
 	fi;
 	if [ "$(TFTP)" = "y" ]; then \
-		sed -i "/RTCONFIG_TFTP\>/d" $(1); \
+		sed -i "/RTCONFIG_TFTP \>/d" $(1); \
 		echo "RTCONFIG_TFTP=y" >>$(1); \
 	fi;
 	if [ "$(QTN)" = "y" ]; then \
@@ -5176,7 +5176,7 @@ define BusyboxOptions
 			echo "CONFIG_FEATURE_SYSLOGD_READ_BUFFER_SIZE=512" >>$(1); \
 		fi; \
 		if [ "$(DSL)" = "y" ]; then \
-			sed -i "/CONFIG_TFTP/d" $(1); \
+			sed -i "/CONFIG_TFTP /d" $(1); \
 			echo "CONFIG_TFTP=y" >>$(1); \
 			sed -i "/CONFIG_TFTPD/d" $(1); \
 			echo "# CONFIG_TFTPD is not set" >>$(1); \
@@ -5304,10 +5304,8 @@ define BusyboxOptions
 		echo "CONFIG_TRACEROUTE6=y" >>$(1); \
 	fi;
 	if [ "$(SNMPD)" = "y" ]; then \
-		sed -i "/CONFIG_TFTP/d" $(1); \
+		sed -i "/CONFIG_TFTP /d" $(1); \
 		echo "CONFIG_TFTP=y" >>$(1); \
-		sed -i "/CONFIG_TFTPD/d" $(1); \
-		echo "# CONFIG_TFTPD is not set" >>$(1); \
 		sed -i "/CONFIG_FEATURE_TFTP_GET/d" $(1); \
 		echo "CONFIG_FEATURE_TFTP_GET=y" >>$(1); \
 		sed -i "/CONFIG_FEATURE_TFTP_PUT/d" $(1); \
@@ -5350,7 +5348,7 @@ define BusyboxOptions
 		echo "CONFIG_DEVMEM=y" >>$(1); \
 	fi;
 	if [ "$(MAPAC1300)" = "y" ] || [ "$(MAPAC2200)" = "y" ] || [ "$(VZWAC1300)" = "y" ] || [ "$(SHAC1300)" = "y" ] || [ "$(RTAC95U)" = "y" ] ; then \
-		sed -i "/CONFIG_TFTP/d" $(1); \
+		sed -i "/CONFIG_TFTP /d" $(1); \
 		echo "CONFIG_TFTP=y" >>$(1); \
 		sed -i "/CONFIG_FEATURE_TFTP_GET/d" $(1); \
 		echo "CONFIG_FEATURE_TFTP_GET=y" >>$(1); \
@@ -5486,7 +5484,7 @@ define BusyboxOptions
 		echo "CONFIG_XARGS=y" >>$(1); \
 	fi;
 	if [ "$(LANTIQ)" = "y" ] ; then \
-		sed -i "/CONFIG_TFTP/d" $(1); \
+		sed -i "/CONFIG_TFTP /d" $(1); \
 		echo "CONFIG_TFTP=y" >>$(1); \
 		sed -i "/CONFIG_FEATURE_TFTP_GET/d" $(1); \
 		echo "CONFIG_FEATURE_TFTP_GET=y" >>$(1); \

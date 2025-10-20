@@ -191,6 +191,18 @@ endif
 else
 ifeq ($(RTCONFIG_HTTPS),y)
 	cp -f webs_scripts/public.pem $(INSTALLDIR)/usr/sbin/public.pem
+ifeq ($(RTCONFIG_AI_SERVICE),y)
+	cp -f webs_scripts/ssl_webs_ai_rescue.sh $(INSTALLDIR)/usr/sbin/webs_ai_rescue.sh
+	cp -f webs_scripts/ssl_webs_ai_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_ai_upgrade.sh
+	install -m 0755 apps_scripts/ai_upgrade.sh $(INSTALLDIR)/usr/sbin/ai_upgrade
+	#install -m 0755 apps_scripts/ai_request.sh $(INSTALLDIR)/usr/sbin/ai_request
+ifeq ($(BUILD_NAME), GT-BE19000AI)
+	install -d $(INSTALLDIR)/usr/slmqa
+	cp -f slm-data.archive $(INSTALLDIR)/usr/slmqa/slm-data.archive
+	install -m 0755 webs_scripts/webs_slmqa_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_slmqa_upgrade.sh
+	install -m 0755 webs_scripts/webs_slmqa_update.sh $(INSTALLDIR)/usr/sbin/webs_slmqa_update.sh
+endif
+endif
 endif
 endif
 
@@ -211,6 +223,18 @@ endif
 else
 ifeq ($(RTCONFIG_HTTPS),y)
 	cp -f webs_scripts/public.pem $(INSTALLDIR)/usr/sbin/public.pem
+ifeq ($(RTCONFIG_AI_SERVICE),y)
+	cp -f webs_scripts/ssl_webs_ai_rescue.sh $(INSTALLDIR)/usr/sbin/webs_ai_rescue.sh
+	cp -f webs_scripts/ssl_webs_ai_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_ai_upgrade.sh
+	install -m 0755 apps_scripts/ai_upgrade.sh $(INSTALLDIR)/usr/sbin/ai_upgrade
+	#install -m 0755 apps_scripts/ai_request.sh $(INSTALLDIR)/usr/sbin/ai_request
+ifeq ($(BUILD_NAME), GT-BE19000AI)
+	install -d $(INSTALLDIR)/usr/slmqa
+	cp -f slm-data.archive $(INSTALLDIR)/usr/slmqa/slm-data.archive
+	install -m 0755 webs_scripts/webs_slmqa_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_slmqa_upgrade.sh
+	install -m 0755 webs_scripts/webs_slmqa_update.sh $(INSTALLDIR)/usr/sbin/webs_slmqa_update.sh
+endif
+endif
 endif
 endif
 ifeq ($(RTAC68U),y)

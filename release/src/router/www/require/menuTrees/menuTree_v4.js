@@ -35,6 +35,14 @@ define(function () {
                 ]
             },
             {
+                menuName: "System Info",
+                index: "menu_Sysinfo",
+                tab: [
+                    {url: "Tools_Sysinfo.asp", tabName: "Sysinfo"},
+                    {url: "NULL", tabName: "__INHERIT__"}
+                ]
+            },
+            {
                 menuName: "<#menu5_1#>",
                 index: "menu_Wireless",
                 tab: [
@@ -56,7 +64,7 @@ define(function () {
                 tab: [
                     {url: "Advanced_LAN_Content.asp", tabName: "<#menu5_2_1#>"},
                     {url: "Advanced_DHCP_Content.asp", tabName: "<#menu5_2_2#>"},
-                    //{url: "DNSFilter.asp", tabName: "DNSFilter"},
+                    {url: "DNSDirector.asp", tabName: "DNS Director"},
                     {url: "Advanced_MultiSubnet_Content.asp", tabName: "<#menu5_2_2#>"},
                     {url: "Advanced_GWStaticRoute_Content.asp", tabName: "<#menu5_2_3#>"},
                     {url: "Advanced_IPTV_Content.asp", tabName: "IPTV"},
@@ -144,9 +152,12 @@ define(function () {
                 index: "menu_QoS",
                 tab: [
                     {url: "QoS_EZQoS.asp", tabName: "<#menu5_3_2#>"},
+                    {url: "QoS_Stats.asp", tabName: "Classification"},
                     {url: "Main_TrafficMonitor_realtime.asp", tabName: "<#traffic_monitor#>"},
                     {url: "Main_TrafficMonitor_last24.asp", tabName: "__INHERIT__"},
                     {url: "Main_TrafficMonitor_daily.asp", tabName: "__INHERIT__"},
+                    {url: "Main_TrafficMonitor_monthly.asp", tabName: "__INHERIT__"},
+                    {url: "Main_TrafficMonitor_settings.asp", tabName: "__INHERIT__"},
                     {url: "Main_Spectrum_Content.asp", tabName: "<#Spectrum_title#>"},
                     {url: "AdaptiveQoS_TrafficLimiter.asp", tabName: "Traffic Limiter"},
                     {url: "Advanced_QOSUserPrio_Content.asp", tabName: "__INHERIT__"},
@@ -191,10 +202,12 @@ define(function () {
                 menuName: "<#Traffic_Analyzer#>",
                 index: "menu_TrafficAnalyzer",
                 tab: [
-                    {url: "TrafficAnalyzer_Statistic.asp", tabName: "<#Statistic#>"},
                     {url: "Main_TrafficMonitor_realtime.asp", tabName: "<#traffic_monitor#>"},
                     {url: "Main_TrafficMonitor_last24.asp", tabName: "__INHERIT__"},
                     {url: "Main_TrafficMonitor_daily.asp", tabName: "__INHERIT__"},
+                    {url: "Main_TrafficMonitor_monthly.asp", tabName: "__INHERIT__"},
+                    {url: "Main_TrafficMonitor_settings.asp", tabName: "__INHERIT__"},
+/*                    {url: "TrafficAnalyzer_Statistic.asp", tabName: "<#Statistic#>"}, */
                     {url: "AdaptiveQoS_TrafficLimiter.asp", tabName: "Traffic Limiter"},
                     {url: "NULL", tabName: "__INHERIT__"}
                 ]
@@ -289,13 +302,15 @@ define(function () {
                 menuName: "VPN",
                 index: "menu_VPN",
                 tab: [
-                    {url: "Advanced_VPNServer_Content.asp", tabName: "<#BOP_isp_heart_item#>"},
-                    {
-                        url: "Advanced_VPNClient_Content.asp",
-                        tabName: (vpn_fusion_support) ? "<#VPN_Fusion#>" : "<#vpnc_title#>"
-                    },
+                {url: "Advanced_VPNStatus.asp", tabName: "VPN Status"},
+                    {url: "Advanced_VPNDirector.asp", tabName: "VPN Director"},
+                    {url: "Advanced_VPN_OpenVPN.asp", tabName: "<#BOP_isp_heart_item#>"},
+                    {url: "Advanced_VPNServer_Content.asp", tabName: "__INHERIT__"},
+                    {url: "Advanced_OpenVPNClient_Content.asp", tabName: "<#vpnc_title#>"},
+                    {url: "Advanced_VPNClient_Content.asp", tabName: "__INHERIT__"},
                     {url: "Advanced_TOR_Content.asp", tabName: "TOR"},
                     {url: "Advanced_Instant_Guard.asp", tabName: "<#Instant_Guard_title#>"},
+                    {url: "Advanced_WireguardClient_Content.asp", tabName: "__INHERIT__"},
                     {url: "Advanced_GRE_Content.asp", tabName: "GRE"},/*untranslated*/
                     {url: "NULL", tabName: "__INHERIT__"}
                 ]
@@ -329,6 +344,7 @@ define(function () {
                     {url: "Advanced_Notification_Content.asp", tabName: "Notification"},
                     {url: "Advanced_Privacy.asp", tabName: "<#menu_privacy#>"},
                     {url: "Advanced_MultiFuncBtn.asp", tabName: "Multi-Function Button"},
+                    {url: "Tools_OtherSettings.asp", tabName: "Tweaks"},
                     {url: "NULL", tabName: "__INHERIT__"}
                 ]
             },
@@ -358,6 +374,7 @@ define(function () {
                     {url: "Main_WOL_Content.asp", tabName: "<#NetworkTools_WOL#>"},
                     // {url: "Main_ChkSta_Content.asp", tabName: "<#NetworkTools_ChkSta#>"},
                     // {url: "Advanced_Smart_Connect.asp", tabName: "<#smart_connect_rule#>"},
+                    {url: "Advanced_Wireless_Survey.asp", tabName: "Site Survey"},
                     {url: "NULL", tabName: "__INHERIT__"}
                 ]
             },
@@ -377,7 +394,7 @@ define(function () {
                 var retArray = [];
 
                 if (!dnsfilter_support) {
-                    retArray.push("DNSFilter.asp");
+                    retArray.push("DNSDirector.asp");
                 }
 
                 if (!multissid_support) {
@@ -444,6 +461,10 @@ define(function () {
 
                 if(isUI4){
                     retArray.push("menu_ParentalControl");
+                }
+
+                if(isUI4){
+                   retArray.push("TrafficAnalyzer_Statistic.asp");
                 }
 
                 if (!rog_support && !tuf_support) {
@@ -828,7 +849,7 @@ define(function () {
                     retArray.push("fileflex.asp");
 
                 if (!dnsfilter_support)
-                    retArray.push("DNSFilter.asp");
+                    retArray.push("DNSDirector.asp");
 
                 if (!gre_support) {
                     retArray.push("Advanced_GRE_Content.asp");
@@ -860,6 +881,7 @@ define(function () {
                 if (isSupport("wifi7")) {
                     retArray.push("cloud_sync.asp");
                     retArray.push("cloud_router_sync.asp");
+                    retArray.push("QoS_Stats.asp");
                 }
 
                 /* Operation Mode */
@@ -878,7 +900,7 @@ define(function () {
                     retArray.push("Main_IPTStatus_Content.asp");
                     retArray.push("Main_ConnStatus_Content.asp");
                     retArray.push("Advanced_Smart_Connect.asp");
-                    retArray.push("DNSFilter.asp");
+                    retArray.push("DNSDirector.asp");
                     retArray.push("Advanced_Modem_Content.asp");
 
                     if (userRSSI_support) {
@@ -909,7 +931,7 @@ define(function () {
                     retArray.push("Captive_Portal_Advanced.asp");
                     //short term solution for only router mode support Facebook Wi-Fi
                     retArray.push("Guest_network_fbwifi.asp");
-                    retArray.push("DNSFilter.asp");
+                    retArray.push("DNSDirector.asp");
                     retArray.push("Advanced_Modem_Content.asp");
                 } else if (isSwMode("mb")) {
                     retArray.push("GameBoost.asp");
@@ -926,7 +948,7 @@ define(function () {
                     retArray.push("Main_IPTStatus_Content.asp");
                     retArray.push("Main_ConnStatus_Content.asp");
                     retArray.push("Advanced_Smart_Connect.asp");
-                    retArray.push("DNSFilter.asp");
+                    retArray.push("DNSDirector.asp");
                     retArray.push("Advanced_Modem_Content.asp");
                 }
 

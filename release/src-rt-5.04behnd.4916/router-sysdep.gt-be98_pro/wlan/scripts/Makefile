@@ -34,6 +34,10 @@ SCRIPTS += wifi.sh
 SCRIPTS += mdev_wl.sh
 endif
 
+ifneq ("$(wildcard ubus_cap_start.sh)","")
+SCRIPTS += on_start_monitor.sh ubus_cap_start.sh on_crash_detected.sh ubus_cap_dump.sh
+endif
+
 ifneq ($(strip $(BUILD_BRCM_BDK)),)
  ifeq ($(strip $(RDK_BUILD)),)
   ALLOW_LOAD_DRIVER_IN_BACKGROUND=y

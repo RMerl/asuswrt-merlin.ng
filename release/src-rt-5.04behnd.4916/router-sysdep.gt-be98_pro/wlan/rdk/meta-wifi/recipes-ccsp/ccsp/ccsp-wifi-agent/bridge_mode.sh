@@ -17,3 +17,9 @@ if [ "$BRIDGE_MODE" = "bridge-static" ] ; then
 else
 	echo "Running in Router Mode"
 fi
+touch /tmp/.wifiagent_ready
+if  [[ -n $(cat /tmp/wifi_setup_feature.txt|grep ^start_services$) ]]; then
+	echo "=== STARTING all services ===="
+	wifi_setup.sh start_services
+	echo "=== STARIING sevice done!!!==="
+fi

@@ -148,7 +148,9 @@ OBJS += $(WIRELESS_IMPL_PATH)/cmwifi/apps/nvram/nvram_ext.o
 ALLOWED_INCLUDE_PATHS += -I$(WIRELESS_IMPL_PATH)/cmwifi/apps/nvram
 endif
 
-ifeq ($(strip $(BUILD_RDKWIFI)),)
+ifneq ($(strip $(BUILD_RDKWIFI)),)
+OBJS += nvram_api_rdkb.o
+else
 ifneq ($(strip $(BUILD_BRCM_BDK)),)
 OBJS += nvram_zbus_out.o nvram_zbus_in.o
 ifneq ($(strip $(BUILD_DBUS)),)

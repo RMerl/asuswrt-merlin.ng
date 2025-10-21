@@ -1165,6 +1165,24 @@ wldpdctl_mode()
     mode=$DPD_MODE_EDPD_MLO;
   fi
 
+  if [ $mode -ge $DPD_MODE_EDPD ] && [ $correct != 0 ]; then
+    # Check persistence setting and clear previous persistence settings
+    # onetime before loading the wifi drivers
+    if [ -f /proc/environment/wl_edpd_persist ]; then
+      persist=$(cat /proc/environment/wl_edpd_persist);
+    else
+      persist=$(nvram kget wl_edpd_persist);
+    fi
+    if [ ! -z $persist ] && [ $persist == 0 ]; then
+      for unit in $WLUNIT_LIST; do
+        if [ ! -z $(nvram kget wl${unit}_dpd) ]; then
+          nvram kset wl${unit}_dpd=0;
+        fi
+      done
+      nvram kcommit;
+    fi
+  fi
+
   echo $mode
 }
 

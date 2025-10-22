@@ -42,7 +42,7 @@ function genArchitecture() {
 	genMidHeader();
 }
 
-function genHeader(filter = ["logo", "router-assistant", "model-name", "time", "notification", "logout", "reboot", "language", "more"]) {
+function genHeader(filter = ["logo", "router-assistant", "model-name", "time", "notification", "logout", "reboot", "language", "more", "merlin-logo"]) {
     let header = document.getElementsByTagName("header")[0];
     if (header) {
         let code = "";
@@ -182,13 +182,17 @@ function checkRouterAssistantVisibility() {
     }
 }
 
-function genLogoModelName(filter = ["logo", "model-name", "time"]) {
+function genLogoModelName(filter = ["logo", "model-name", "merlin-logo", "time"]) {
 	let code = "";
 	code += `
 		<div class="d-flex align-items-center me-auto">
 			<div role="icon" class="d-block d-md-none icon-size-24 icon-menu ms-3 menu-header" id='mobile_menu'></div>
 			${filter.includes('logo')?`<div class="d-none d-md-block icon-logo-asus ms-3"></div>`:``}
 			${filter.includes('model-name')?`<div class="model-name mx-3"><#Web_Title2#></div>`:``}
+			${filter.includes('merlin-logo')?`
+			<div class="d-none d-md-block ms-3">
+				<a href="https://www.asuswrt-merlin.net/" target="_blank" rel="noreferrer"><img src="images/merlin-logo-dark.png" style="border: 0;padding-right:8px;"></a>
+			</div>`:``}
 			${filter.includes('time')?`
 			<div role="time-banner" class="d-none px-2 py-1 d-lg-flex flex-row" onclick="goToSystem()">
 				<div class="ps-1 banner-title d-flex flex-column me-2">

@@ -1806,7 +1806,7 @@ function showMenuTree(menuList, menuExclude){
 		var getMenuCode = function(){
 			var menu_code = parent.webWrapper ? '<div>' : '<div style="margin-top:-172px">';
 
-			if (rog_support)
+			if (rog_support && !isSupport("UI4"))
 				menu_code += '<div style="width:160px;height:52px;"><span><a href="https://www.asuswrt-merlin.net/" target="_blank" rel="noreferrer"><img src="images/merlin-logo.png" style="border: 0;"></a></span></div>';
 			for(var i=0; i<menuList.length; i++){
 				var curMenu = menuList[i];

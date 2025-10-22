@@ -23,36 +23,31 @@
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <style type="text/css">
-.contentM_qis{
-	width:740px;	
+.tlsPanel{
+	width:740px;
 	margin-top:280px;
 	margin-left:380px;
 	position:absolute;
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
 	border-radius: 5px;
 	z-index:200;
 	background-color:#2B373B;
 	box-shadow: 3px 3px 10px #000;
 	display:none;
-	/*behavior: url(/PIE.htc);*/
 }
 
-.QISform_wireless{
+.tlsTable{
 	width:600px;
 	font-size:12px;
-	color:#FFFFFF;
 	margin-top:10px;
 	*margin-left:10px;
 }
 
-.QISform_wireless th{
+.tlsTable th{
 	padding-left:10px;
 	*padding-left:30px;
 	font-size:12px;
 	font-weight:bolder;
-	color: #FFFFFF;
-	text-align:left; 
+	text-align:left;
 }
 .description_down{
 	margin-top:10px;
@@ -60,7 +55,6 @@
 	padding-left:5px;
 	font-weight:bold;
 	line-height:140%;
-	color:#ffffff;	
 }
 #client_pwd_strength{
 	margin-top: 6px;
@@ -68,12 +62,19 @@
 	justify-content: center;
 }
 .renewLoadingIcon {
-        background-image: url(/images/InternetScan.gif);
-        width: 125px;
-        height: 33px;
-        background-repeat: no-repeat;
-        background-position: 50%;
-        display: none;
+	background-image: url(/images/InternetScan.gif);
+	width: 125px;
+	height: 33px;
+	background-repeat: no-repeat;
+	background-position: 50%;
+	display: none;
+}
+.textarea_ssh_font{
+	font-family: Courier New, Courier, monospace;
+	font-size:13px;
+	min-height: revert !important;
+	white-space: pre;
+	overflow-wrap: normal;
 }
 </style>
 <script>
@@ -148,6 +149,10 @@ function initial(){
 	var currentdigest = "<% nvram_get("vpn_server_digest"); %>";
 
 	show_menu();
+
+	if (isSupport("UI4")) {
+		document.getElementById("tlsKey_panel").style.backgroundColor="white";
+	}
 
 	//if support pptpd and openvpnd then show switch button
 	if(pptpd_support && openvpnd_support) {
@@ -1382,9 +1387,9 @@ function handle_ipv6_submit_settings(){
 </script>
 </head>
 <body onload="initial();" class="bg">
-<div id="tlsKey_panel"  class="contentM_qis">
+<div id="tlsKey_panel" class="tlsPanel">
 	<!--===================================Beginning of tls Content===========================================-->
-	<table class="QISform_wireless" border=0 align="center" cellpadding="5" cellspacing="0">
+	<table class="tlsTable" border=0 align="center" cellpadding="5" cellspacing="0">
 		<form method="post" name="openvpnTLSKeyForm" action="/start_apply.htm" target="hidden_frame">
 		<input type="hidden" name="current_page" value="Advanced_VPN_OpenVPN.asp">
 		<input type="hidden" name="next_page" value="Advanced_VPN_OpenVPN.asp">
@@ -1429,43 +1434,43 @@ function handle_ipv6_submit_settings(){
 								<tr>
 									<th><#vpn_openvpn_KC_StaticK#></th>
 									<td>
-										<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_server_static" spellcheck="false" name="edit_vpn_crt_server_static" cols="65" maxlength="7999"></textarea>
+										<textarea rows="8" class="textarea_ssh_table textarea_ssh_font" id="edit_vpn_crt_server_static" spellcheck="false" name="edit_vpn_crt_server_static" cols="65" maxlength="7999"></textarea>
 									</td>
 								</tr>
 								<tr id="edit_tls1">
 									<th><#vpn_openvpn_KC_CA#></th>
 									<td>
-										<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_server_ca" spellcheck="false" name="edit_vpn_crt_server_ca" cols="65" maxlength="7999"></textarea>
+										<textarea rows="8" class="textarea_ssh_table textarea_ssh_font" id="edit_vpn_crt_server_ca" spellcheck="false" name="edit_vpn_crt_server_ca" cols="65" maxlength="7999"></textarea>
 									</td>
 								</tr>
 								<tr id="edit_tls2">
 									<th><#vpn_openvpn_KC_SA#></th>
 									<td>
-										<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_server_crt" spellcheck="false" name="edit_vpn_crt_server_crt" cols="65" maxlength="7999"></textarea>
+										<textarea rows="8" class="textarea_ssh_table textarea_ssh_font" id="edit_vpn_crt_server_crt" spellcheck="false" name="edit_vpn_crt_server_crt" cols="65" maxlength="7999"></textarea>
 									</td>
 								</tr>
 								<tr id="edit_tls3">
 									<th><#vpn_openvpn_KC_SK#></th>
 									<td>
-										<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_server_key" spellcheck="false" name="edit_vpn_crt_server_key" cols="65" maxlength="7999"></textarea>
+										<textarea rows="8" class="textarea_ssh_table textarea_ssh_font" id="edit_vpn_crt_server_key" spellcheck="false" name="edit_vpn_crt_server_key" cols="65" maxlength="7999"></textarea>
 									</td>
 								</tr>
 								<tr id="edit_tls4">
 									<th><#vpn_openvpn_KC_DH#><br><br><i>(Enter "none" to disable)</i></th>
 									<td>
-										<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_server_dh" spellcheck="false" name="edit_vpn_crt_server_dh" cols="65" maxlength="7999"></textarea>
+										<textarea rows="8" class="textarea_ssh_table textarea_ssh_font" id="edit_vpn_crt_server_dh" spellcheck="false" name="edit_vpn_crt_server_dh" cols="65" maxlength="7999"></textarea>
 									</td>
 								</tr>
 								<tr id="edit_tls5">
 									<th>Certificate Revocation List<br><br><i>(Optional)</i></th>
 									<td>
-										<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_server_crl" spellcheck="false" name="edit_vpn_crt_server_crl" cols="65" maxlength="7999"></textarea>
+										<textarea rows="8" class="textarea_ssh_table textarea_ssh_font" id="edit_vpn_crt_server_crl" spellcheck="false" name="edit_vpn_crt_server_crl" cols="65" maxlength="7999"></textarea>
 									</td>
 								</tr>
 								<tr id="edit_tls6">
 									<th>Extra Chain Certificates<br><br><i>(Optional)</i></th>
 									<td>
-										<textarea rows="8" class="textarea_ssh_table" id="edit_vpn_crt_server_extra" spellcheck="false" name="edit_vpn_crt_server_extra" cols="65" maxlength="7999"></textarea>
+										<textarea rows="8" class="textarea_ssh_table textarea_ssh_font" id="edit_vpn_crt_server_extra" spellcheck="false" name="edit_vpn_crt_server_extra" cols="65" maxlength="7999"></textarea>
 									</td>
 								</tr>
 							</table>
@@ -1473,7 +1478,7 @@ function handle_ipv6_submit_settings(){
 					</tr>						
 					</tbody>						
 				</table>
-				<div style="margin-top:5px;width:100%;text-align:center;">
+				<div style="margin-top:5px; justify-content: center; display:flex; flex-direction:row; gap:0.5em;">
 					<input class="button_gen" type="button" onclick="cancel_Key_panel();" value="<#CTL_Cancel#>">
 					<input class="button_gen" type="button" onclick="save_keys();" value="<#CTL_onlysave#>">	
 				</div>					
@@ -1520,9 +1525,10 @@ function handle_ipv6_submit_settings(){
 							<tr>
 								<td bgcolor="#4D595D" valign="top">
 									<div>&nbsp;</div>
-									<div class="formfonttitle"><#BOP_isp_heart_item#> - OpenVPN</div>
-									<div id="divSwitchMenu" style="margin-top:-40px;float:right;"></div>
+									<div class="formfonttitle">VPN Server</div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
+									<div class="formfontdesc">OpenVPN Server Settings</div>
+									<div id="divSwitchMenu" style="margin-top:-40px;float:right;"></div>
 									<div id="privateIP_notes" class="formfontdesc" style="display:none;color:#FFCC00;"></div>
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 										<thead>
@@ -1592,7 +1598,7 @@ function handle_ipv6_submit_settings(){
 											<th><#vpn_export_ovpnfile#></th>
 											<td>
 												<div id="export_div">
-													<input id="exportToLocal" class="button_gen" type="button" value="<#btn_Export#>" />
+													<input id="exportToLocal" class="button_gen_in_table button_gen buttonInTable" type="button" value="<#btn_Export#>" />
 												</div>
 												<script type="text/javascript">
 													document.getElementById("exportToLocal").onclick = function(){
@@ -1611,7 +1617,7 @@ function handle_ipv6_submit_settings(){
 										<tr id="openvpn_re_cert" style="display:none;" data-group="cert_btn">
 											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(33,2);"><#vpn_ipsec_re_cert#></a></th>
 											<td>
-												<input id="renewCertToLocal" class="button_gen" type="button" value="<#CTL_renew#>" onClick="renewCert();"/>
+												<input id="renewCertToLocal" class="button_gen_in_table button_gen buttonInTable" type="button" value="<#CTL_renew#>" onClick="renewCert();"/>
 												<div class="renewLoadingIcon"></div>
 											</td>
 										</tr>
@@ -1629,13 +1635,13 @@ function handle_ipv6_submit_settings(){
 											<tr id="openvpn_export_cert" style="display:none;" data-group="cert_btn">
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,27);"><#vpn_export_cert#></a></th>
 												<td>
-													<input id="exportCertToLocal" class="button_gen" type="button" value="<#btn_Export#>" onClick="exportCert();"/>
+													<input id="exportCertToLocal" class="button_gen_in_table button_gen buttonInTable" type="button" value="<#btn_Export#>" onClick="exportCert();"/>
 												</td>
 											</tr>
 											<tr id="openvpn_import_cert" style="display:none;" data-group="cert_btn">
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,28);"><#vpn_import_cert#></a></th>
 												<td>
-													<input class="button_gen" type="button" value="<#CTL_upload#>" onClick="selectImportFile();"/>
+													<input class="button_gen_in_table button_gen buttonInTable" type="button" value="<#CTL_upload#>" onClick="selectImportFile();"/>
 												</td>
 											</tr>
 										</table>
@@ -1758,7 +1764,7 @@ function handle_ipv6_submit_settings(){
 											<tr id="server_tls_crypto_tr">
 												<th>Keys and Certificates</th>
 												<td>
-													<input type="button" onclick="edit_Keys();" value="Edit...">
+													<input class="button_gen_in_table button_gen buttonInTable" type="button" onclick="edit_Keys();" value="Edit">
 												</td>
 											</tr>
 											<tr id="server_userpass">
@@ -1834,15 +1840,15 @@ function handle_ipv6_submit_settings(){
 											<tr id="server_range">
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,14);"><#vpn_openvpn_ClientPool#></a></th>
 												<td>
-													<input type="text" maxlength="15" class="input_15_table" name="vpn_server_r1" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_server_r1"); %>" autocorrect="off" autocapitalize="off">
-													<input type="text" maxlength="15" class="input_15_table" name="vpn_server_r2" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_server_r2"); %>" autocorrect="off" autocapitalize="off">
+													<input type="text" maxlength="15" class="input_15_table" style="width: 150px !important;" name="vpn_server_r1" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_server_r1"); %>" autocorrect="off" autocapitalize="off">
+													<input type="text" maxlength="15" class="input_15_table" style="width: 150px !important;" name="vpn_server_r2" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_server_r2"); %>" autocorrect="off" autocapitalize="off">
 												</td>
 											</tr>
 											<tr id="server_local">
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,12);"><#vpn_openvpn_LocalRemote_IP#></a></th>
 												<td>
-													<input type="text" maxlength="15" class="input_15_table" name="vpn_server_local" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_server_local"); %>" autocorrect="off" autocapitalize="off">
-													<input type="text" maxlength="15" class="input_15_table" name="vpn_server_remote" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_server_remote"); %>" autocorrect="off" autocapitalize="off">
+													<input type="text" maxlength="15" class="input_15_table" style="width: 150px !important;" name="vpn_server_local" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_server_local"); %>" autocorrect="off" autocapitalize="off">
+													<input type="text" maxlength="15" class="input_15_table" style="width: 150px !important;" name="vpn_server_remote" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_server_remote"); %>" autocorrect="off" autocapitalize="off">
 												</td>
 											</tr>
 											<tr id="server_ipv6_local" data-group="ipv6_settings">
@@ -1971,7 +1977,7 @@ function handle_ipv6_submit_settings(){
 										<!-- Custom setting table end-->
 									</div>
 
-									<div id="divApply" class="apply_gen">
+									<div style="margin-top:5px; justify-content:center; display:flex; flex-direction:row; gap:0.5em;">
 										<input type="button" id="restoreButton" class="button_gen" value="<#Setting_factorydefault_value#>" onclick="defaultSettings();">
 										<input class="button_gen" onclick="applyRule()" type="button" value="<#CTL_apply#>"/>
 									</div>

@@ -42,7 +42,7 @@ function genArchitecture() {
 	genMidHeader();
 }
 
-function genHeader(filter = ["logo", "router-assistant", "model-name", "time", "notification", "logout", "reboot", "language", "more", "merlin-logo"]) {
+function genHeader(filter = ["logo", "router-assistant", "model-name", /*"time",*/ "notification", "logout", "reboot", "language", "more", "merlin-logo"]) {
     let header = document.getElementsByTagName("header")[0];
     if (header) {
         let code = "";
@@ -182,7 +182,7 @@ function checkRouterAssistantVisibility() {
     }
 }
 
-function genLogoModelName(filter = ["logo", "model-name", "merlin-logo", "time"]) {
+function genLogoModelName(filter = ["logo", "model-name", "merlin-logo"/*, "time"*/]) {
 	let code = "";
 	code += `
 		<div class="d-flex align-items-center me-auto">

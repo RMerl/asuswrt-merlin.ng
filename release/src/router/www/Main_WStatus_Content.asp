@@ -52,6 +52,11 @@ var dataarray3 = [], wificlients3 = [];
 
 var dfs_statusarray0 = [], dfs_statusarray1 = [], dfs_statusarray2 = [];
 
+if (isSupport("UI4")){
+	var secondFieldStyle = "margin-top:-15px; color: blue;";
+} else {
+	var secondFieldStyle = "margin-top:-15px; color: cyan;";
+}
 <% get_wl_status(); %>;
 
 var classObj= {
@@ -102,7 +107,7 @@ function initial(){
 	get_wlclient_list();
 
 	if (bcm_mumimo_support) {
-                document.getElementById("flags_mumimo_div").style.display = "";
+		document.getElementById("flags_mumimo_div").style.display = "";
 		document.getElementById("flags_div").style.display = "none";
 	}
 }
@@ -174,6 +179,11 @@ function generate_clients(clientsarray) {
 	var nmapentry;
 	var guestheader = "";
 
+	if (isSupport("UI4")){
+		var guestBackgroundColor = "background-color: #EEEEEE;";
+	} else {
+		var guestBackgroundColor = "";
+	}
 	code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">';
 	code += '<thead><tr>';
 	code += '<td width="25%">Device</td>';
@@ -196,9 +206,9 @@ function generate_clients(clientsarray) {
 			if (client[12] != "" && client[12] != guestheader) {
 				guestheader = client[12];
 				if (sw_mode == "2") {
-					code += '<tr><th colspan="6" style="color:white;height:20px;"><span class="hint-color" style="font-weight:bolder;">Local Clients: </span> ' + guestheader;
+					code += `<tr><th colspan="6" style="height:20px; ${guestBackgroundColor}"><span class="hint-color" style="font-weight:bolder;">Local Clients: </span> ${guestheader}`;
 				} else {
-					code += '<tr><th colspan="6" style="color:white;height:20px;"><span class="hint-color" style="font-weight:bolder;">Guest Network: </span> ' + guestheader;
+					code += `<tr><th colspan="6" style="height:20px; ${guestBackgroundColor}"><span class="hint-color" style="font-weight:bolder;">Guest Network: </span> ${guestheader}`;
 					if (client[13] != "") {
 						code += '<span style="float:right;"><span class="hint-color" style="font-weight:bolder;">VLAN: </span> ' + client[13] + '</span>';
 					}
@@ -210,7 +220,7 @@ function generate_clients(clientsarray) {
 			// Mac
 			mac = client[0];
 			overlib_str = "<p><#MAC_Address#>:</p>" + mac;
-			code += '<td><span style="margin-top:-15px; color: white;" class="link" onclick="oui_query_full_vendor(\'' + mac +'\');overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">'+ mac +'</span>';
+			code += '<td><span style="margin-top:-15px;" class="link" onclick="oui_query_full_vendor(\'' + mac +'\');overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">'+ mac +'</span>';
 
 			if (typeof clientList[mac] === "undefined")
 				nmapentry = false;
@@ -226,9 +236,9 @@ function generate_clients(clientsarray) {
 			}
 
 			if (hostname.length > 24) {		// Name
-				code +='<br><span style="margin-top:-15px; color: cyan;" title="' + hostname + '">'+ hostname.substring(0,20) +'...</span></td>';
+				code +=`<br><span style="${secondFieldStyle}"${hostname}">${hostname.substring(0,20)}...</span></td>`;
 			} else {
-				code +='<br><span style="margin-top:-15px; color: cyan;">'+ htmlEnDeCode.htmlEncode(hostname) +'</span></td>';
+				code +=`<br><span style="${secondFieldStyle}">${htmlEnDeCode.htmlEncode(hostname)}</span></td>`;
 			}
 
 			ipaddr = client[1];
@@ -240,27 +250,27 @@ function generate_clients(clientsarray) {
 
 			if (client[3].length) {
 				overlib_str = client[3].replace(/,/g, "<br>");
-				code += '<br><span style="margin-top:-15px; color:cyan; text-decoration:underline; cursor:pointer;" onclick="return overlib(\''+ overlib_str +'\');" onmouseout="nd();">IPv6 addresses</span></td>';
+				code += `<br><span style="${secondFieldStyle} text-decoration:underline; cursor:pointer;" onclick="return overlib(\''+ overlib_str +'\');" onmouseout="nd();">IPv6 addresses</span></td>`;
 			} else
 				code += '<br></td>'; // IPv6
 
-			code += '<td style="text-align: right;">' + client[5] + ' / ' + client[6] +' Mbps';	// Rate
-			code += '<br><span style="margin-top:-15px; color: cyan;">' + client[4] + ' dBm</td>';	// RSSI
-			code += '<td style="text-align: right;vertical-align:top;">' + client[7] + '</td>';	// Time
+			code += `<td style="text-align: right;">${client[5]} / ${client[6]} Mbps`;	// Rate
+			code += `<br><span style="${secondFieldStyle}">${client[4]} dBm</td>`;	// RSSI
+			code += `<td style="text-align: right;vertical-align:top;">${client[7]}</td>`;	// Time
 
 			if (client[8] != "") {
-				code += '<td style="vertical-align:top;">' + client[8] + ' ('+ client[9] +')';	// NSS + PHY
+				code += `<td style="vertical-align:top;">${client[8]} (${client[9]})`;	// NSS + PHY
 			} else if (client[9] != "") {
-				code += '<td style="vertical-align:top;">' + client[9];	// PHY
+				code += `<td style="vertical-align:top;">${client[9]}`;	// PHY
 			} else {
 				code += '<td>';
 			}
 			if (client[10] != "") {
-				code += '<br><span style="margin-top:-15px; color: cyan;">' + client[10] + '</td>';  // BW
+				code += `<br><span style="${secondFieldStyle}">${client[10]}</td>`;  // BW
 			} else {
 				code += '</td>';
 			}
-			code += '<td style="vertical-align:top;">' + client[11] + '</td>';	// Flags
+			code += `<td style="vertical-align:top;">${client[11]}</td>`;	// Flags
 			code += '</tr>';
 		}
 	} else {
@@ -335,7 +345,7 @@ function get_wlclient_list() {
 
 
 function getRefresh() {
-	val  = parseInt(cookie.get('awrtm_wlrefresh'));
+	val  = parseInt(window.localStorage.getItem('awrtm_wlrefresh'));
 
 	if ((val != 0) && (val != 1) && (val != 3) && (val != 5) && (val != 10))
 		val = 3;
@@ -348,7 +358,7 @@ function getRefresh() {
 
 function setRefresh(obj) {
 	refreshRate = obj.value;
-	cookie.set('awrtm_wlrefresh', refreshRate, 365);
+	window.localStorage.setItem('awrtm_wlrefresh', refreshRate, 365);
 	get_wlclient_list();
 }
 
@@ -414,14 +424,14 @@ function hide_details_window(){
 										<tr>
 											<th>Display low level details</th>
 											<td>
-												<input class="button_gen" type="button" onclick="open_details_window();" value="Open">
+												<input class="button_gen_in_table button_gen buttonInTable" type="button" onclick="open_details_window();" value="Open">
 											</td>
 										</tr>
 									</table>
 									<br>
 									<div id="datablock"></div>
-									<div id="flags_mumimo_div" style="display:none;">Flags: <span class="hint-color">P</span>=Powersave Mode, <span class="hint-color">S</span>=Short GI, <span class="hint-color">T</span>=STBC, <span class="hint-color">M</span>=MU Beamforming, <span class="hint-color">A</span>=Associated, <span class="hint-color">U</span>=Authenticated</div>
-									<div id="flags_div">Flags: <span class="hint-color">P</span>=Powersave Mode, <span class="hint-color">S</span>=Short GI, <span class="hint-color">T</span>=STBC, <span class="hint-color">A</span>=Associated, <span class="hint-color">U</span>=Authenticated</div>
+									<div id="flags_mumimo_div" style="display:none;">Flags: <span style="color: #FFCC00;">P</span>=Powersave Mode, <span style="color: #FFCC00;">S</span>=Short GI, <span style="color: #FFCC00;">T</span>=STBC, <span style="color: #FFCC00;">M</span>=MU Beamforming, <span style="color: #FFCC00;">A</span>=Associated, <span style="color: #FFCC00;">U</span>=Authenticated</div>
+									<div id="flags_div">Flags: <span style="color: #FFCC00;">P</span>=Powersave Mode, <span style="color: #FFCC00;">S</span>=Short GI, <span style="color: #FFCC00;">T</span>=STBC, <span style="color: #FFCC00;">A</span>=Associated, <span style="color: #FFCC00;">U</span>=Authenticated</div>
 									<br>
 									<div class="apply_gen">
 										<input type="button" onClick="location.reload();" value="<#CTL_refresh#>" class="button_gen" >
@@ -439,10 +449,12 @@ function hide_details_window(){
 </form>
 
 <div id="details_window"  class="contentM_details  pop_div_bg">
+	<div style="margin-top:15px;margin-left:15px;float:left;font-size:15px;color:#93A9B1;">Detailed wireless log</div>
+	<div style="float:right;"><img src="/images/button-close.gif" style="width:30px;cursor:pointer" onclick="hide_details_window();"></div>
 	<div style="margin: 15px;">
 		<textarea id="wl_log" cols="63" rows="30" class="textarea_ssh_table" style="width:99%;font-family:'Courier New', Courier, mono; font-size:13px;" readonly="readonly" wrap="off"></textarea>
 	</div>
-	<div style="margin-top:5px;margin-bottom:5px;width:100%;text-align:center;">
+	<div style='margin-top:10px;margin-bottom:20px;width:100%;text-align:center;display:flex;justify-content:center;'>
 		<input class="button_gen" type="button" onclick="hide_details_window();" value="Close">
 	</div>
 </div>

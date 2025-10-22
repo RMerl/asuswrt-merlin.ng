@@ -1478,9 +1478,11 @@ function show_banner(L3){// L3 = The third Level of Menu
 	show_top_status();
 	updateStatus();
 
+/*
 	if(app_support && !isIE8){
 		document.body.addEventListener('click', show_app_table, false);
 	}
+*/
 
 	if(tuf_support && ui_lang == "CN"){
 		var CN_STRING = ""; // need to maintain this table refer to ej

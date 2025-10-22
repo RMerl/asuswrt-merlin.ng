@@ -1623,7 +1623,7 @@ function confirm_autowan_change(){
 		document.form.wans_dualwan.value = "wan none";
 	}
 
-	if(is_GTBE_series){
+	if(is_GTBE_externalswitch_series){
 		if(lacp_ifnames_x == "eth0 eth3"){
 			document.form.lacp_enabled.disabled = false;
 			document.form.lacp_enabled.value = "0";
@@ -2093,21 +2093,21 @@ function use_single_default_wan_sfp(){
 			<th width="30%"><#Internet#></th>
 			<td>
 				VID&nbsp;<input type="text" name="switch_wan0tagid" class="input_6_table" maxlength="4" value="" onKeyPress="return validator.isNumber(this, event);" autocorrect="off" autocapitalize="off" disabled>&nbsp;&nbsp;&nbsp;&nbsp;
-				PRIO&nbsp;<input type="text" name="switch_wan0prio" class="input_3_table" maxlength="1" value="0" onKeyPress="return validator.isNumber(this, event);" autocorrect="off" autocapitalize="off" disabled>
+				PRIO&nbsp;<input type="text" name="switch_wan0prio" class="input_3_table" style="width: 35px !important;" maxlength="1" value="0" onKeyPress="return validator.isNumber(this, event);" autocorrect="off" autocapitalize="off" disabled>
 			</td>
 		</tr>
 		<tr id="wan_iptv_port4_x" style="display: none;">
 			<th id="iptv_port4" width="30%">LAN port 4</th>
 			<td>
 				VID&nbsp;<input type="text" name="switch_wan1tagid" class="input_6_table" maxlength="4" value="" onKeyPress="return validator.isNumber(this, event);" autocorrect="off" autocapitalize="off" disabled>&nbsp;&nbsp;&nbsp;&nbsp;
-				PRIO&nbsp;<input type="text" name="switch_wan1prio" class="input_3_table" maxlength="1" value="0" onKeyPress="return validator.isNumber(this, event);" autocorrect="off" autocapitalize="off" disabled>
+				PRIO&nbsp;<input type="text" name="switch_wan1prio" class="input_3_table" style="width: 35px !important;" maxlength="1" value="0" onKeyPress="return validator.isNumber(this, event);" autocorrect="off" autocapitalize="off" disabled>
 			</td>
 		</tr>
 		<tr id="wan_voip_port3_x" style="display: none;">
 			<th id="voip_port3" width="30%">LAN port 3</th>
 			<td>
 				VID&nbsp;<input type="text" name="switch_wan2tagid" class="input_6_table" maxlength="4" value="" onKeyPress="return validator.isNumber(this, event);" autocorrect="off" autocapitalize="off" disabled>&nbsp;&nbsp;&nbsp;&nbsp;
-				PRIO&nbsp;<input type="text" name="switch_wan2prio" class="input_3_table" maxlength="1" value="0" onKeyPress="return validator.isNumber(this, event);" autocorrect="off" autocapitalize="off" disabled>
+				PRIO&nbsp;<input type="text" name="switch_wan2prio" class="input_3_table" style="width: 35px !important;" maxlength="1" value="0" onKeyPress="return validator.isNumber(this, event);" autocorrect="off" autocapitalize="off" disabled>
 			</td>
 		</tr>
 		</table>

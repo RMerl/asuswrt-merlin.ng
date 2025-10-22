@@ -1358,6 +1358,7 @@ _dprintf("%s: IFUP.\n", __FUNCTION__);
 	lan_up(lan_ifname);
 
 	_dprintf("%s: done\n", __FUNCTION__);
+	logmessage("udhcpc", "bound_lan %s with IP/netmask %s/%s", lan_ifname, nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
 	return 0;
 }
 
@@ -1421,6 +1422,12 @@ deconfig6(char *wan_ifname, const int mode)
 	char wan_prefix[16];
 	snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", unit);
 #endif
+	char path[128];
+
+	snprintf(path, sizeof(path), "/tmp/wan%d_bound6.env", unit);
+	unlink(path);
+	snprintf(path, sizeof(path), "/tmp/wan%d_ra.env", unit);
+	unlink(path);
 
 	if (nvram_invmatch(ipv6_nvname_by_unit("ipv6_wan_addr", unit), "")) {
 		eval("ip", "-6", "addr", "del", nvram_safe_get(ipv6_nvname_by_unit("ipv6_wan_addr", unit)), "dev", wan_ifname);
@@ -1453,8 +1460,11 @@ deconfig6(char *wan_ifname, const int mode)
 		if (nvram_get_int(ipv6_nvname_by_unit("ipv6_dnsenable", unit)))
 		{
 #ifdef RTCONFIG_MULTIWAN_IF
-			if (is_mtwan_unit(unit)) {
-				update_mtwan_ip_rule_ipv6(unit);
+#if !defined RTCONFIG_MULTIWAN_PROFILE
+			if (is_mtwan_unit(unit))
+#endif
+			{
+				mtwan6_handle_ip_rule(unit);
 			}
 #endif
 			update_resolvconf();
@@ -1935,6 +1945,16 @@ bound6(char *wan_ifname, int bound)
 			break; /* only first address at the moment */
 		}
 	}
+	else {
+		value = safe_getenv("RA_ADDRESSES");
+		if (*value) {
+			foreach(tmp, value, next) {
+				char *ptr = tmp;
+				value = strsep(&ptr,",");
+				break; /* only first address at the moment */
+			}
+		}
+	}
 	wanaddr_changed = !nvram_match(ipv6_nvname_by_unit("ipv6_wan_addr", wan_unit), value);
 	if (wanaddr_changed) {
 		if (nvram_invmatch(ipv6_nvname_by_unit("ipv6_wan_addr", wan_unit), ""))
@@ -1995,21 +2015,29 @@ skip:
 	if (*safe_getenv("RDNSS")) {
 		dns_changed = nvram_set_env(ipv6_nvname_by_unit("ipv6_get_dns", wan_unit), "RDNSS");
 		dns_changed += nvram_set_env(ipv6_nvname_by_unit("ipv6_get_domain", wan_unit), "DOMAINS");
-	} else {
+	}
+	else if (*safe_getenv("RA_DNS")) {
 		dns_changed = nvram_set_env(ipv6_nvname_by_unit("ipv6_get_dns", wan_unit), "RA_DNS");
 		dns_changed += nvram_set_env(ipv6_nvname_by_unit("ipv6_get_domain", wan_unit), "RA_DOMAINS");
 	}
 	if (dns_changed && nvram_get_int(ipv6_nvname_by_unit("ipv6_dnsenable", wan_unit)))
 	{
 #ifdef RTCONFIG_MULTIWAN_IF
-		if (is_mtwan_unit(wan_unit)) {
-			update_mtwan_ip_rule_ipv6(wan_unit);
+#if !defined(RTCONFIG_MULTIWAN_PROFILE)
+		if (is_mtwan_unit(wan_unit))
+#endif
+		{
+			mtwan6_handle_ip_rule(wan_unit);
 		}
 #endif
 		update_resolvconf();
 #ifdef RTCONFIG_MULTILAN_CFG
 		update_sdn_resolvconf();
 #endif
+	}
+
+	if (*safe_getenv("RA_ROUTES")) {
+		nvram_set_env(ipv6_nvname_by_unit("ipv6_ra_routes", wan_unit), "RA_ROUTES");
 	}
 
 	if (bound == 1 || wanaddr_changed || prefix_changed) {
@@ -2029,7 +2057,15 @@ skip:
 #endif
 
 #ifdef RTCONFIG_MULTIWAN_IF
-		add_mtwan_ipv6_route(wan_unit, wan_ifname, get_ipv6_service_by_unit(wan_unit));
+		mtwan6_handle_ip_route(wan_unit);
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+		add_mtwan_ipv6_nat_rules(wan_unit);
+		mtwan_init_profile();
+		if (is_mtwan_lb(wan_unit)) {
+			mtwan6_update_lb_route(wan_unit, MTWAN_CONNECTED);
+			mtwan_update_lb_iptables(wan_unit, MTWAN_CONNECTED, MTWAN_HANDLE_V6);
+		}
+#endif
 #endif
 #ifdef RTCONFIG_MULTILAN_CFG
 		stop_dnsmasq(ALL_SDN);
@@ -2172,6 +2208,10 @@ skip:
 		refresh_ntpc();
 	}
 
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+	if (is_mtwan6_primary(wan_unit))
+#endif
+	{
 #ifdef RTCONFIG_INADYN
 	if (nvram_get_int("ddns_enable_x") && nvram_get_int("ddns_ipv6_update")) {
 		stop_ddns();
@@ -2180,6 +2220,7 @@ skip:
 #endif
         if (nvram_get_int("telnetd_enable"))
                 notify_rc("restart_telnetd");
+	}
 
 	return 0;
 }
@@ -2216,20 +2257,31 @@ ra_updated6(char *wan_ifname)
 	if (*safe_getenv("RDNSS")) {
 		dns_changed = nvram_set_env(ipv6_nvname_by_unit("ipv6_get_dns", wan_unit), "RDNSS");
 		dns_changed += nvram_set_env(ipv6_nvname_by_unit("ipv6_get_domain", wan_unit), "DOMAINS");
-	} else {
+	}
+	else if (*safe_getenv("RA_DNS")) {
 		dns_changed = nvram_set_env(ipv6_nvname_by_unit("ipv6_get_dns", wan_unit), "RA_DNS");
 		dns_changed += nvram_set_env(ipv6_nvname_by_unit("ipv6_get_domain", wan_unit), "RA_DOMAINS");
 	}
 	if (dns_changed && nvram_get_int(ipv6_nvname_by_unit("ipv6_dnsenable", wan_unit)))
 	{
 #ifdef RTCONFIG_MULTIWAN_IF
-		if (is_mtwan_unit(wan_unit)) {
-			update_mtwan_ip_rule_ipv6(wan_unit);
+#if !defined(RTCONFIG_MULTIWAN_PROFILE)
+		if (is_mtwan_unit(wan_unit))
+#endif
+		{
+			mtwan6_handle_ip_rule(wan_unit);
 		}
 #endif
 		update_resolvconf();
 #ifdef RTCONFIG_MULTILAN_CFG
 		update_sdn_resolvconf();
+#endif
+	}
+
+	if (*safe_getenv("RA_ROUTES")) {
+		nvram_set_env(ipv6_nvname_by_unit("ipv6_ra_routes", wan_unit), "RA_ROUTES");
+#ifdef RTCONFIG_MULTIWAN_IF
+		mtwan6_handle_ip_route(wan_unit);
 #endif
 	}
 
@@ -2470,11 +2522,12 @@ void stop_mtwan_dhcp6c(int unit)
 
 int start_mtwan_dhcp6c(int unit)
 {
+	char mode[8] = "try";
 	char *dhcp6c_argv[] = { "odhcp6c",
 		"-df",
 		"-R",
 		"-s", "/tmp/dhcp6c",
-		"-N", "try",
+		"-N", mode,
 		NULL, NULL,	/* -c duid */
 		NULL, NULL,	/* -P len:iaidhex */
 		NULL, NULL,	/* -rdns -rdomain */
@@ -2547,12 +2600,17 @@ int start_mtwan_dhcp6c(int unit)
 		break;
 	case WAN_MAPE:
 	case WAN_V6PLUS:
+		dhcp6c_argv[index++] = "-r94";	/* S46_CONT_MAPE */
+		break;
 	case WAN_OCNVC:
+		/* Send Information-Request message */
+		snprintf(mode, sizeof(mode), "%s", "none");
 		dhcp6c_argv[index++] = "-r94";	/* S46_CONT_MAPE */
 		break;
 	case WAN_DSLITE:
 		/* Send Information-Request message */
 		snprintf(mode, sizeof(mode), "%s", "none");
+		dhcp6c_argv[index++] = "-r64";	/* OPTION_AFTR_NAME */
 		break;
 	}
 #endif
@@ -2568,31 +2626,26 @@ int start_mtwan_dhcp6c(int unit)
 #ifdef RTCONFIG_6RELAYD
 void stop_mtwan_6relayd(int unit)
 {
-	char wan_ifname[IFNAMSIZ] = {0};
-	char wan_prefix[16] = {0};
 	char path[128] = {0};
 
-	snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", unit);
-	strlcpy(wan_ifname, nvram_pf_safe_get(wan_prefix, "pppoe_ifname"), sizeof(wan_ifname));
-	if (wan_ifname[0]) {
-		snprintf(path, sizeof(path), "/var/run/6relayd.%s.pid", wan_ifname);
-		kill_pidfile_tk(path);
-	}
-	strlcpy(wan_ifname, nvram_pf_safe_get(wan_prefix, "ifname"), sizeof(wan_ifname));
-	if (wan_ifname[0]) {
-		snprintf(path, sizeof(path), "/var/run/6relayd.%s.pid", wan_ifname);
-		kill_pidfile_tk(path);
-	}
+	snprintf(path, sizeof(path), "/var/run/6relayd.%d.pid", unit);
+	kill_pidfile_tk(path);
 }
 
 int start_mtwan_6relayd(int unit)
 {
 	char pidfile[128] = {0};
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+	char neighdata[128] = {0};
+#endif
 	char *relayd_argv[] = { "6relayd",
 		"-drs",
 		"-Rrelay", "-Dserver", "-N",
 		"-n",
 		"-p", pidfile,
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+		"-b", neighdata,
+#endif
 		NULL,		/* -v */
 		NULL,		/* master ifname */
 		NULL,		/* internal ifname */
@@ -2601,14 +2654,19 @@ int start_mtwan_6relayd(int unit)
 		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 #endif
 		NULL };
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+	int index = 10;
+#else
 	int index = 8;
+#endif
 	int ret = -1;
 	char wan_ifname[IFNAMSIZ] = {0};
-	char lan_ifname[IFNAMSIZ] = {0};
 #ifdef RTCONFIG_MULTILAN_CFG
 	MTLAN_T *pmtl = NULL;
 	size_t mtl_sz = 0;
 	int i;
+#else
+	char lan_ifname[IFNAMSIZ] = {0};
 #endif
 
 	if (get_ipv6_service_by_unit(unit) != IPV6_PASSTHROUGH)
@@ -2618,9 +2676,17 @@ int start_mtwan_6relayd(int unit)
 	if (wan_ifname[0] == '\0')
 		return -1;
 
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+	if (!is_mtwan6_used(unit)) {
+		_dprintf("unit %d not used by any lan.\n", unit);
+		return 0;
+	}
+	snprintf(neighdata, sizeof(neighdata), "/var/lib/misc/6relayd.%d.nd,/sbin/mtwan6_neighbor", unit);
+#endif
+
 	stop_mtwan_6relayd(unit);
 
-	snprintf(pidfile, sizeof(pidfile), "/var/run/6relayd.%s.pid", wan_ifname);
+	snprintf(pidfile, sizeof(pidfile), "/var/run/6relayd.%d.pid", unit);
 
 	if (nvram_get_int("ipv6_debug"))
 		relayd_argv[index++] = "-v";
@@ -2632,10 +2698,22 @@ int start_mtwan_6relayd(int unit)
 	if (pmtl) {
 		get_mtlan(pmtl, &mtl_sz);
 		for (i = 0; i < mtl_sz; i++) {
-			if (pmtl[i].enable && pmtl[i].nw_t.v6_enable
-			 && mtwan_get_mapped_unit(pmtl[i].sdn_t.wan6_idx) == unit
-			)
-				relayd_argv[index++] = pmtl[i].nw_t.ifname;
+			if (pmtl[i].enable && pmtl[i].nw_t.v6_enable) {
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+				if (pmtl[i].sdn_t.mtwan_idx) {
+					if (mtwan6_get_active_wan_unit(pmtl[i].sdn_t.mtwan_idx) == unit)
+						relayd_argv[index++] = pmtl[i].nw_t.ifname;
+				}
+				else
+#endif
+				if (pmtl[i].sdn_t.wan6_idx) {
+					if (mtwan_get_mapped_unit(pmtl[i].sdn_t.wan6_idx) == unit)
+						relayd_argv[index++] = pmtl[i].nw_t.ifname;
+				}
+				else if (unit == wan_primary_ifunit_ipv6()) {
+					relayd_argv[index++] = pmtl[i].nw_t.ifname;
+				}
+			}
 		}
 	}
 #else

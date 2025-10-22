@@ -46,11 +46,11 @@ const char* queryfriend_template =
 
 const char* listprofile_template =
 "<listprofile>\r\n"
-      "<cusid>%s</cusid>\r\n"
-      "<userticket>%s</userticket>\r\n"
-      "<deviceticket>%s</deviceticket>\r\n"
-      "<friendid>%s</friendid>\r\n"
-      "<deviceid>%s</deviceid>\r\n"
+"<cusid>%s</cusid>\r\n"
+"<userticket>%s</userticket>\r\n"
+"<deviceticket>%s</deviceticket>\r\n"
+"<friendid>%s</friendid>\r\n"
+"<deviceid>%s</deviceid>\r\n"
 "</listprofile>\r\n\r\n";
 
 const char* updateprofile_template =
@@ -205,8 +205,20 @@ const char* fbwifi2_reg_template =
 ;
 
 const char* getprovision_pincode_reg_template = 
-"{ \"mac\" : \"%s\","
-" \"timestamp\" : \"%d\""
+"{ \"cusid\" : \"%s\","
+" \"deviceid\" : \"%s\","
+" \"deviceticket\" : \"%s\","
+" \"mac\" : \"%s\","
+" \"duration\" : %d,"
+" \"timestamp\" : %d"
+"}"
+;
+
+const char* delprovision_pincode_reg_template = 
+"{ \"cusid\" : \"%s\","
+" \"deviceid\" : \"%s\","
+" \"deviceticket\" : \"%s\","
+" \"mac\" : \"%s\""
 "}"
 ;
 
@@ -240,6 +252,24 @@ const char* update_db_tunneltest_template =
 "}"
 ;
 
+const char* update_wireguard_master_ip_template = 
+"{ \"cusid\" : \"%s\","
+" \"deviceid\" : \"%s\","
+" \"deviceticket\" : \"%s\","
+" \"routerDeviceid\" : \"%s\","
+" \"ip\" : \"%s\""
+"}"
+;
+
+const char* unbind_device_template = 
+"<unbind_device>\r\n"
+"<cusid>%s</cusid>\r\n"
+"<deviceid>%s</deviceid>\r\n"
+"<deviceticket>%s</deviceticket>\r\n"
+"<unbinddeviceid>%s</unbinddeviceid>\r\n"
+"</unbind_device>\r\n\r\n"
+;
+
 const char* wb_custom_header_templ = 
 "Set-Cookie:ONE_VER=1_0; path=/; sid=%s; devicetype=%s; fwver=%s; dmapilevel=%d; apilevel=%d; modelname=%s";
 
@@ -253,6 +283,9 @@ const char* fbwifi2_reg_header_templ =
 "Content-Type: application/json";
 
 const char* get_provision_pincode_header_templ = 
+"Content-Type: application/json";
+
+const char* del_provision_pincode_header_templ = 
 "Content-Type: application/json";
 
 const char* get_db_header_templ = 

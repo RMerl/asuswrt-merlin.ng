@@ -315,6 +315,13 @@ int _ifconfig(const char *name, int flags, const char *addr, const char *netmask
 			goto ERROR;
 	}
 
+#if defined(BCM6765) || defined(BCM6764)
+	/* need to reconfigure the reg */
+	if (mtu > 0 && flags & IFUP && !strncmp(name, "eth", 3) && nvram_match("jumbo_frame_enable", "1")) {
+		_dprintf("reconfig jumbo reg\n");
+		enable_jumbo_frame();
+	}
+#endif
 	close(s);
 
 //Andrew add
@@ -332,6 +339,7 @@ int _ifconfig(const char *name, int flags, const char *addr, const char *netmask
 	err = errno; 
 	perror(name);
 	close(s);
+
 	return err;
 }
 

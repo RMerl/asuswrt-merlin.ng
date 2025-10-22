@@ -1188,6 +1188,10 @@ config RTCONFIG_MDNS
 	bool "MDNS Support"
 	default n
 
+config RTCONFIG_NMP_MATTER
+	bool "NMP MATTER Support"
+	default n
+
 config RTCONFIG_FINDASUS
 	bool "FINDASUS Support"
 	default n
@@ -1684,6 +1688,10 @@ config RTCONFIG_WPS_DUALBAND
 
 config RTCONFIG_N18UTXBF
 	bool "enable TXBF for RT-N18U"
+	default n
+
+config RTCONFIG_GTBOOSTER
+	bool "GT-Booster ark engine"
 	default n
 
 config RTCONFIG_HNS
@@ -2604,6 +2612,12 @@ config RTCONFIG_OPENSSL10
 config RTCONFIG_OPENSSL11
 	bool "OpenSSL 1.1.x"
 
+config RTCONFIG_OPENSSL30
+	bool "OpenSSL 3.0.x"
+
+config RTCONFIG_OPENSSL35
+	bool "OpenSSL 3.5.x"
+
 endchoice
 
 config RTCONFIG_NO_PTHREAD_TIMEDWAIT
@@ -3166,6 +3180,18 @@ config RTCONFIG_AMAS_CHANNEL_PLAN
         bool "AiMesh channel plan support"
         default n
 
+config RTCONFIG_AMAS_NEWOB
+        bool "AiMesh New Onboarding"
+        default n
+
+config RTCONFIG_AMAS_NEWOB_RP
+        bool "AiMesh New Onboarding for repeater"
+        default n
+
+config RTCONFIG_AMAS_NEWOB_ROUTER_AP
+        bool "AiMesh New Onboarding for setting router/ap"
+        default n
+
 config RTCONFIG_DUPVIF
 	bool "QCA/MTK platform support Hinet MOD Mesh"
 	depends on RTCONFIG_MULTICAST_IPTV
@@ -3262,6 +3288,10 @@ config RTCONFIG_PASS_V2
 	depends on RTCONFIG_RALINK
 	default n
 
+config RTCONFIG_SWITCH_POE
+	bool "SWITCH POE Control"
+	default n
+
 config RTCONFIG_NVSW_IN_JFFS
         bool "multiple profile in JFFS, nvram switching mechainsm"
         default n
@@ -3330,6 +3360,14 @@ config RTCONFIG_JFFS_PARTITION
 	bool "jffs2 partition support"
 	default n
 
+config RTCONFIG_ETHMON
+	bool "ethernet monitor"
+	default n
+
+config RTCONFIG_IP808AR
+	bool "ip808ar pse control"
+	default n
+
 config RTCONFIG_KNV_BACKUP
 	bool "kernel nvram backup file"
 	default n
@@ -3366,3 +3404,10 @@ config RTCONFIG_SINGLE_LED_NIGHT_MODE
 	bool "SINGLE LED NIGHT MODE FUNCTION"
 	default n
 
+config RTCONFIG_AIRIQ
+	bool "AIRIQ FUNCTION"
+	default n
+
+config RTCONFIG_CSIMON
+	bool "CSIMON FUNCTION"
+	default n

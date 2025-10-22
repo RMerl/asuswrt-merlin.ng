@@ -141,7 +141,6 @@ define(function(){
 					{url: "Main_TrafficMonitor_realtime.asp", tabName: "<#traffic_monitor#>"},
 					{url: "Main_TrafficMonitor_last24.asp", tabName: "__INHERIT__"},
 					{url: "Main_TrafficMonitor_daily.asp", tabName: "__INHERIT__"},
-					{url: "AdaptiveQoS_ROG.asp", tabName: "<table style='margin-top:-7px;'><tr><td><img src='/images/ROG_Logo.png' style='border:0px;width:32px;'></td><td>ROG First</td></tr></table>"}, 
 					{url: "Main_Spectrum_Content.asp", tabName: "<#Spectrum_title#>"},
 					{url: "AdaptiveQoS_TrafficLimiter.asp", tabName: "Traffic Limiter"},
 					{url: "Advanced_QOSUserPrio_Content.asp", tabName: "__INHERIT__"},
@@ -153,6 +152,7 @@ define(function(){
 				index: "menu_ParentalControl", 
 				tab: [
 					{url: "AiProtection_WebProtector.asp", tabName: "<#AiProtection_filter#>"},
+					{url: "AiProtection_ContentFilter.asp", tabName: "<#AiProtection_filter#>"},
 					{url: "ParentalControl.asp", tabName: "<#Time_Scheduling#>"},
 					{url: "YandexDNS.asp", tabName: "<#YandexDNS#>"},
 					{url: "adGuard_DNS.asp", tabName: "AdGuard"},
@@ -166,7 +166,6 @@ define(function(){
 					{url: "AdaptiveQoS_Bandwidth_Monitor.asp", tabName: "<#Bandwidth_monitor#>"},
 					{url: "QoS_EZQoS.asp", tabName: "<#menu5_3_2#>"},
 					{url: "AdaptiveQoS_WebHistory.asp", tabName: "<#Adaptive_History#>"},
-					{url: "AdaptiveQoS_ROG.asp", tabName: "<table style='margin-top:-7px;'><tr><td><img src='/images/ROG_Logo.png' style='border:0px;width:32px;'></td><td>ROG First</td></tr></table>"}, 
 					{url: "Main_Spectrum_Content.asp", tabName: "<#Spectrum_title#>"},
 					{url: "Advanced_QOSUserPrio_Content.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_QOSUserRules_Content.asp", tabName: "__INHERIT__"},
@@ -349,6 +348,15 @@ define(function(){
 					{url: "Advanced_Smart_Connect.asp", tabName: "<#smart_connect_rule#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
+			},
+			{
+				menuName: "ASUS Site Manager",
+				index: "menu_SiteManager",
+				tab: [
+					{url: "Advanced_Site_PinCode.asp", tabName: "PIN Code"},
+					{url: "Advanced_Site_Manager.asp", tabName: "<#Pincode_Title#>"},
+					{url: "NULL", tabName: "__INHERIT__"}
+				]
 			}
 		],
 
@@ -403,6 +411,10 @@ define(function(){
 				if(!networkTool_support){
 					retArray.push("menu_NekworkTool");
 				}
+
+				if(!newsite_provisioning_support){
+					retArray.push("menu_SiteManager");
+				}
 				
 				if(!pptpd_support && !openvpnd_support && !vpnc_support){
 					retArray.push("menu_VPN");
@@ -412,8 +424,9 @@ define(function(){
 					retArray.push("menu_VLAN");
 				}
 
-				if(!gameMode_support) {
-					if(!isSupport("gu_accel"))
+				const isUI4 = isSupport("UI4");
+				if(!gameMode_support || isUI4) {
+					if(!isSupport("gu_accel") || isUI4)
 						retArray.push("menu_GameBoost");
 					retArray.push("menu_OpenNAT");
 				}
@@ -728,10 +741,6 @@ define(function(){
 					retArray.push("mediaserver.asp");
 				}
 
-				if(!rog_support){
-					retArray.push("AdaptiveQoS_ROG.asp");
-				}
-
 				if(!wtfast_support && !gameMode_support && !isSupport('gu_accel')){
 					retArray.push("GameBoost.asp");
 				}
@@ -823,10 +832,14 @@ define(function(){
 				if(!isSupport("mtlancfg") || !isSupport("mlo")){
 					retArray.push("MLO.asp");
 				}
-				
+
 				if(isSupport("sdn_mainfh")){
 					retArray.push("Advanced_ACL_Content.asp");
 					retArray.push("Advanced_WSecurity_Content.asp");
+				}
+
+				if(isSupport("UI4")) {
+					retArray.push("Advanced_WMode_Content.asp");
 				}
 
 				if(isSupport("wifi7")){
@@ -902,6 +915,14 @@ define(function(){
 					retArray.push("Advanced_Smart_Connect.asp");
 					retArray.push("DNSFilter.asp");
 					retArray.push("Advanced_Modem_Content.asp");				
+				}
+
+				if (isSupport("gtbooster")) {
+					if (isSupport("ark_iam")) {
+						retArray.push("AiProtection_WebProtector.asp");
+					} else {
+						retArray.push("AiProtection_ContentFilter.asp");
+					}
 				}
 
 				/* System Status Changed */

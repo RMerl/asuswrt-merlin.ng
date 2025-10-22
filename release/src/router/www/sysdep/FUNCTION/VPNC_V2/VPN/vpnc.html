@@ -48,10 +48,17 @@ $(function () {
 	$('link[group="extend_css"]').remove();
 	var theme = getUrlParameter("current_theme").toUpperCase();
 	if(theme == "WHITE" || rog_support || tuf_support){
-		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpnc' + theme + '.css">');
+		if (isSupport("UI4")) {
+			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/vpn_v4.css">');
+		} else {
+			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpnc' + theme + '.css">');
+		}
 	}
 	else{
-		if(rog_support){
+		if(isSupport("UI4")) {
+			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/vpn_v4.css">');
+		}
+		else if(rog_support){
 			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpncGT.css">');
 		}
 		else if(isSupport("TUF_UI")){
@@ -2095,7 +2102,7 @@ function updateRegionListOnline(){
 						}
 					}
 				);
-			}, 500);
+			}, 1000);
 		}
 	});
 }
@@ -2132,7 +2139,7 @@ function updateNordVPNRegionListOnline(){
 						}
 					}
 				);
-			}, 500);
+			}, 1000);
 		}
 	});
 }
@@ -2344,6 +2351,9 @@ function check_profile_status(){
 								case "2" :
 									connect_error_text = "<#qis_fail_desc1#>";
 									break;
+								case "3" :
+									connect_error_text = "configuration error";/* untranslated */
+									break;
 								default :
 									connect_status_text = "<#Adaptive_Others#>";
 							}
@@ -2401,7 +2411,7 @@ function check_profile_status(){
 			}
 			else if(connect_errno == 7){
 				connect_status_text = "<#ConnectionFailed#>";
-				connect_error_text = ".ovpn file error";/* untranslated */
+				connect_error_text = "configuration error";/* untranslated */
 			}
 			else //Stop connection
 				connect_status_text = "<#ConnectionFailed#>";
@@ -4172,6 +4182,19 @@ function get_wl_unit_by_band(_band){
 	}
 }
 function initial(){
+	if(parent.webWrapper){
+		const resizeObserver = new ResizeObserver(entries => {
+			var height = document.querySelector('.server_list_container').scrollHeight - 20;
+			for (const entry of entries) {
+				height = Math.max(height, entry.target.scrollHeight);
+			}
+			window.parent.postMessage({type: 'resize', height: height+40}, '*');
+		});
+
+		resizeObserver.observe(document.querySelector('.popup_container'));
+		resizeObserver.observe(document.querySelector('.profile_setting_container'));
+	}
+	
 	show_loading_obj();
 
 	var vpn_client_array = {"OpenVPN" : ["OpenVPN", "/Advanced_OpenVPNClient_Content.asp"], "PPTP" : ["PPTP/L2TP", "/Advanced_VPNClient_Content.asp"], "Wireguard" : ["Wireguard", "/Advanced_WireguardClient_Content.asp"]};
@@ -4329,144 +4352,147 @@ function initial(){
 	});
 	resize_iframe_height();
 
-	if(support_Surfshark){
-		//Surfshark_w625_Default.png
-		//Surfshark_w728_Default.png
-		if(is_CN){
-			var UrlPromote_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_w625_CN.png";
-			var UrlBanner_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_w728_CN.png";
-			var UrlPromote = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w625_CN.png";
-			var UrlBanner = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w728_CN.png";
-		}
-		else if(!app_lang){
-			var UrlPromote_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_w625_"+ ui_lang +".png";
-			var UrlBanner_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_w728_"+ ui_lang +".png";
-			var UrlPromote = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w625_"+ ui_lang +".png";
-			var UrlBanner = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w728_"+ ui_lang +".png";
-		}
-		else{
-			var UrlPromote_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_w625_"+ app_lang +".png";
-			var UrlBanner_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_w728_"+ app_lang +".png";
-			var UrlPromote = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w625_"+ app_lang +".png";
-			var UrlBanner = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w728_"+ app_lang +".png";
-		}
+	setTimeout(function(){
+		if(support_Surfshark){
+			//Surfshark_w625_Default.png
+			//Surfshark_w728_Default.png
+			if(is_CN){
+				var UrlPromote_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_w625_CN.png";
+				var UrlBanner_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_w728_CN.png";
+				var UrlPromote = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w625_CN.png";
+				var UrlBanner = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w728_CN.png";
+			}
+			else if(!app_lang){
+				var UrlPromote_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_w625_"+ ui_lang +".png";
+				var UrlBanner_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_w728_"+ ui_lang +".png";
+				var UrlPromote = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w625_"+ ui_lang +".png";
+				var UrlBanner = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w728_"+ ui_lang +".png";
+			}
+			else{
+				var UrlPromote_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_w625_"+ app_lang +".png";
+				var UrlBanner_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_w728_"+ app_lang +".png";
+				var UrlPromote = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w625_"+ app_lang +".png";
+				var UrlBanner = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w728_"+ app_lang +".png";
+			}
 
-		var UrlPromoteDefault_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_w625_Default.png";
-		var UrlBannerDefault_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_w728_Default.png";
-		var UrlPromoteDefault = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w625_Default.png";
-		var UrlBannerDefault = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w728_Default.png";
+			var UrlPromoteDefault_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_w625_Default.png";
+			var UrlBannerDefault_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_w728_Default.png";
+			var UrlPromoteDefault = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w625_Default.png";
+			var UrlBannerDefault = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w728_Default.png";
 
-		if(is_CN){
-			var UrlPromoteMobile_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_375x160_CN_mobile.png";
-			var UrlBannerMobile_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_375x72_CN_mobile.png";
-			var UrlPromoteMobile = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_375x160_CN_mobile.png";
-			var UrlBannerMobile = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_375x72_CN_mobile.png";
-		}
-		else if(!app_lang){
-			var UrlPromoteMobile_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_375x160_"+ ui_lang +"_mobile.png";
-			var UrlBannerMobile_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_375x72_"+ ui_lang +"_mobile.png";
-			var UrlPromoteMobile = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_375x160_"+ ui_lang +"_mobile.png";
-			var UrlBannerMobile = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_375x72_"+ ui_lang +"_mobile.png";
-		}
-		else{
-			var UrlPromoteMobile_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_375x160_"+ app_lang +"_mobile.png";
-			var UrlBannerMobile_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_375x72_"+ app_lang +"_mobile.png";
-			var UrlPromoteMobile = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_375x160_"+ app_lang +"_mobile.png";
-			var UrlBannerMobile = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_375x72_"+ app_lang +"_mobile.png";
-		}
+			if(is_CN){
+				var UrlPromoteMobile_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_375x160_CN_mobile.png";
+				var UrlBannerMobile_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_375x72_CN_mobile.png";
+				var UrlPromoteMobile = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_375x160_CN_mobile.png";
+				var UrlBannerMobile = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_375x72_CN_mobile.png";
+			}
+			else if(!app_lang){
+				var UrlPromoteMobile_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_375x160_"+ ui_lang +"_mobile.png";
+				var UrlBannerMobile_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_375x72_"+ ui_lang +"_mobile.png";
+				var UrlPromoteMobile = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_375x160_"+ ui_lang +"_mobile.png";
+				var UrlBannerMobile = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_375x72_"+ ui_lang +"_mobile.png";
+			}
+			else{
+				var UrlPromoteMobile_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_375x160_"+ app_lang +"_mobile.png";
+				var UrlBannerMobile_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_375x72_"+ app_lang +"_mobile.png";
+				var UrlPromoteMobile = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_375x160_"+ app_lang +"_mobile.png";
+				var UrlBannerMobile = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_375x72_"+ app_lang +"_mobile.png";
+			}
 
-		var UrlPromoteMobileDefault_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_375x160_Default_mobile.png";
-		var UrlBannerMobileDefault_nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_375x72_Default_mobile.png";
-		var UrlPromoteMobileDefault = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_375x160_Default_mobile.png";
-		var UrlBannerMobileDefault = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_375x72_Default_mobile.png";
+			var UrlPromoteMobileDefault_Nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_375x160_Default_mobile.png";
+			var UrlBannerMobileDefault_nord = "https://nw-dlcdnet.asus.com/plugin/vpn/NordVPN_375x72_Default_mobile.png";
+			var UrlPromoteMobileDefault = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_375x160_Default_mobile.png";
+			var UrlBannerMobileDefault = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_375x72_Default_mobile.png";
 
-		const current_promote_url = (ww > 500) ? UrlPromote : UrlPromoteMobile;
-		const default_promote_url = (ww > 500) ? UrlPromoteDefault : UrlPromoteMobileDefault;
-		$ssk_promote_img.attr('src', current_promote_url)
-			.on('load', function() {
-				// image loaded successfully
-				$(this).attr({'data-img-ready':"true"});
-			})
-			.on('error', function() {
-				// image failed to load
-				$(this).attr('src', default_promote_url)
+			const current_promote_url = (ww > 500) ? UrlPromote : UrlPromoteMobile;
+			const default_promote_url = (ww > 500) ? UrlPromoteDefault : UrlPromoteMobileDefault;
+			$ssk_promote_img.attr('src', current_promote_url)
 				.on('load', function() {
 					// image loaded successfully
-					$(this).attr('data-img-ready', "true");
+					$(this).attr({'data-img-ready':"true"});
 				})
 				.on('error', function() {
 					// image failed to load
-					$(this).unbind('error').unbind("click");
+					$(this).attr('src', default_promote_url)
+					.on('load', function() {
+						// image loaded successfully
+						$(this).attr('data-img-ready', "true");
+					})
+					.on('error', function() {
+						// image failed to load
+						$(this).unbind('error').unbind("click");
+					});
+				})
+				.on('click', function(e) {
+					e = e || event;
+					e.stopPropagation();
+					window.open(surfshark_href);
 				});
-			})
-			.on('click', function(e) {
-				e = e || event;
-				e.stopPropagation();
-				window.open(surfshark_href);
-			});
 
-		const current_promote_url_Nord = (ww > 500) ? UrlPromote_Nord : UrlPromoteMobile_Nord;
-		const default_promote_url_Nord = (ww > 500) ? UrlPromoteDefault_Nord : UrlPromoteMobileDefault_Nord;
-		$nord_promote_img.attr('src', current_promote_url_Nord)
-			.on('load', function() {
-				// image loaded successfully
-				$(this).attr({'data-img-ready':"true"});
-			})
-			.on('error', function() {
-				// image failed to load
-				$(this).attr('src', default_promote_url_Nord)
+			const current_promote_url_Nord = (ww > 500) ? UrlPromote_Nord : UrlPromoteMobile_Nord;
+			const default_promote_url_Nord = (ww > 500) ? UrlPromoteDefault_Nord : UrlPromoteMobileDefault_Nord;
+			$nord_promote_img.attr('src', current_promote_url_Nord)
 				.on('load', function() {
 					// image loaded successfully
-					$(this).attr('data-img-ready', "true");
+					$(this).attr({'data-img-ready':"true"});
 				})
 				.on('error', function() {
 					// image failed to load
-					$(this).unbind('error').unbind("click");
+					$(this).attr('src', default_promote_url_Nord)
+					.on('load', function() {
+						// image loaded successfully
+						$(this).attr('data-img-ready', "true");
+					})
+					.on('error', function() {
+						// image failed to load
+						$(this).unbind('error').unbind("click");
+					});
+				})
+				.on('click', function(e) {
+					e = e || event;
+					e.stopPropagation();
+					window.open(Nord_href);
 				});
-			})
-			.on('click', function(e) {
-				e = e || event;
-				e.stopPropagation();
-				window.open(Nord_href);
-			});
 
-	}
-	(()=>{
-		let current_lang = "EN";
-		if(is_CN){
-			current_lang = "CN";
 		}
-		else if(!app_lang){
-			current_lang = ui_lang;
-		}
-		else{
-			current_lang = app_lang;
-		}
-		const current_promote_url = `https://nw-dlcdnet.asus.com/plugin/CyberGhost/CyberGhost_${current_lang}.png`;
-		const default_promote_url = "https://nw-dlcdnet.asus.com/plugin/CyberGhost/CyberGhost_Default.png";
-		$cyberghost_promote_img.attr('src', current_promote_url)
-			.on('load', function() {
-				// image loaded successfully
-				$(this).attr({'data-img-ready':"true"});
-			})
-			.on('error', function() {
-				// image failed to load
-				$(this).attr('src', default_promote_url)
+		(()=>{
+			let current_lang = "EN";
+			if(is_CN){
+				current_lang = "CN";
+			}
+			else if(!app_lang){
+				current_lang = ui_lang;
+			}
+			else{
+				current_lang = app_lang;
+			}
+			const current_promote_url = `https://nw-dlcdnet.asus.com/plugin/CyberGhost/CyberGhost_${current_lang}.png`;
+			const default_promote_url = "https://nw-dlcdnet.asus.com/plugin/CyberGhost/CyberGhost_Default.png";
+			$cyberghost_promote_img.attr('src', current_promote_url)
 				.on('load', function() {
 					// image loaded successfully
-					$(this).attr('data-img-ready', "true");
+					$(this).attr({'data-img-ready':"true"});
 				})
 				.on('error', function() {
 					// image failed to load
-					$(this).unbind('error').unbind("click");
+					$(this).attr('src', default_promote_url)
+					.on('load', function() {
+						// image loaded successfully
+						$(this).attr('data-img-ready', "true");
+					})
+					.on('error', function() {
+						// image failed to load
+						$(this).unbind('error').unbind("click");
+					});
+				})
+				.on('click', function(e) {
+					e = e || event;
+					e.stopPropagation();
+					window.open(`https://www.cyberghostvpn.com/en_US/offer/bestasus?coupon=2Y5Mb&brand=asus&noForceCondition=true&aff_id=19933`);
 				});
-			})
-			.on('click', function(e) {
-				e = e || event;
-				e.stopPropagation();
-				window.open(`https://www.cyberghostvpn.com/en_US/offer/bestasus?coupon=2Y5Mb&brand=asus&noForceCondition=true&aff_id=19933`);
-			});
-	})();
+		})();
+	}, 1000)
+
 }
 function showThirdPartyPolicy(party) {
 	const thirdPartyPolicyModal = new ThirdPartyPolicyModalComponent({

@@ -14,6 +14,7 @@ html::-webkit-scrollbar-track{
 body{
 	background:url('./qis_background_downsize.png') repeat;
 	background-color: #111 !important;
+	zoom: 0.7;
 /*
 	background:url('./bg.png') no-repeat;
 	background-attachment: fixed;
@@ -1085,6 +1086,9 @@ a{
 
 /*for Desktop*/
 @media screen and (min-aspect-ratio: 11/13){
+	body {
+		zoom: 1;
+	}	
 	.pageDesc{
 		font-size: 1.8em;
 	}
@@ -1636,9 +1640,11 @@ a{
 	position: relative;
 	margin-left: 18px;
 }
+/*
 #wireless_setting{
 	min-height: 800px;
 }
+*/
 .scorebar {
 	color: #222;
 	font-weight: bold;
@@ -1971,4 +1977,14 @@ a{
 }
 .qisBackground {
 	height: 100%;
+}
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0,0,0,0);
+	border: 0;
 }

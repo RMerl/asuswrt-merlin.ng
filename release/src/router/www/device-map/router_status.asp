@@ -635,6 +635,7 @@ function get_ethernet_ports() {
 				var $label_W_bg = $("<div>").addClass("label_W_bg").appendTo($port_status_bg);
 				var $label_L_bg = $("<div>").addClass("label_L_bg").appendTo($port_status_bg);
 				var error_port_list = [];
+				let show_poe_status_desc = false;
 				$.each(port_info, function(label, label_array){
 					$.each(port_info[label], function(index, port_item){
 						const { cap_support } = port_item;
@@ -673,6 +674,12 @@ function get_ethernet_ports() {
 							}
 							else
 								$port_icon.addClass("unplug");
+						}
+						if(port_item.cap_support.POE){
+							show_poe_status_desc = true;
+							$port_icon.addClass(()=>{
+								return ("poe_port " + ((port_item.poe_info.poe_link == "1") ? "poe_en" : "poe_dis"));
+							});
 						}
 
 						if(cap_support.WAN || cap_support.WANAUTO){
@@ -750,6 +757,10 @@ function get_ethernet_ports() {
 				$("<div>").addClass("conn").html("<#Connected#>").appendTo($port_status_icon_desc);
 				$("<div>").addClass("warn").html("<#Notice#>").appendTo($port_status_icon_desc);/* untranslated */
 				$("<div>").addClass("unplug").html("<#Status_Unplugged#>").appendTo($port_status_icon_desc);
+				if(show_poe_status_desc){
+					$("<div>").addClass("conn poe_en").html(`PoE <#Connected#>`).appendTo($port_status_icon_desc);
+					$("<div>").addClass("conn poe_dis").html(`PoE <#Status_Unplugged#>`).appendTo($port_status_icon_desc);
+				}
 
 				if(show_notice){
 					if(top.webWrapper){
@@ -896,7 +907,7 @@ function switchTab(id){
 	<div class="display-flex flex-a-center">
 		<div id="wireless_tab" class="tab-block" onclick="switchTab(this.id)"><#menu5_1#></div>
 		<div id="status_tab" class="tab-block tab-click" onclick="switchTab(this.id)"><#Status_Str#></div>
-		<div id="light_effect_tab" class="tab-block"style="display:none;" onclick="switchTab(this.id)">Aura RGB</div><!-- untranslated -->
+		<div id="light_effect_tab" class="tab-block"style="display:none;" onclick="switchTab(this.id)"><#BoostKey_Aura_RGB#></div>
 	</div>
 	<div id="net_field" class="unit-block"></div>
 	<div id="cpu_field" class="unit-block"></div>

@@ -330,6 +330,23 @@ input[type="text"], input[type="password"], .input_option{
 	border-radius: 2px;
 	position: relative;
 }
+.port_status_bg .port_icon.poe_port:after{
+	position: absolute;
+	content: "";
+	width: 10px;
+	height: 10px;
+	right: -8px;
+	border-radius: 50%;
+	background-clip: padding-box;
+	top: -8px;
+	border: 3px solid #4D595D;
+}
+.port_status_bg .port_icon.poe_port.poe_en:after{
+	background-color: #6DD400;
+}
+.port_status_bg .port_icon.poe_port.poe_dis:after{
+	background-color: #999999;
+}
 .port_status_bg .port_icon.conn{
 	background-position: 0px 0px;
 }
@@ -405,6 +422,24 @@ input[type="text"], input[type="password"], .input_option{
 }
 .port_status_icon_desc > div.unplug:before{
 	background-color: #D7D7D7;
+}
+.port_status_icon_desc > div.poe_en:after,
+.port_status_icon_desc > div.poe_dis:after{
+	position: absolute;
+	content: "";
+	width: 7px;
+	height: 7px;
+	left: -11px;
+	border-radius: 50%;
+	background-clip: padding-box;
+	top: 1px;
+	border: 2px solid #4D595D;
+}
+.port_status_icon_desc > div.conn.poe_en:after{
+	background-color: #6DD400;
+}
+.port_status_icon_desc > div.conn.poe_dis:after{
+	background-color: #999999;
 }
 .port_status_notice_icon{
 	background-image: url(/images/New_ui/amesh/bind_notice.png);

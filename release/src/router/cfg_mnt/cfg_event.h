@@ -48,6 +48,7 @@
 #define HTTPD_CONFIG_CHANGED_MSG	"{\""HTTPD_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""RE_MAC"\":\"%s\",\""CONFIG"\":%s}}"
 #define HTTPD_REBOOT_MSG	"{\""HTTPD_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""MAC_LIST"\":%s}}"
 #define HTTPD_ACTION_MSG	"{\""HTTPD_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""MAC_LIST"\":%s,\""DATA"\":%s}}"
+#define HTTPD_DEVICE_LIST_MSG	"{\""HTTPD_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""MAC_LIST"\":%s}}"
 #define RC_GENERIC_MSG	 	"{\""RC_PREFIX"\":{\""EVENT_ID"\":\"%d\"}}"
 #define RC_CONFIG_CHANGED_MSG	"{\""RC_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""CONFIG"\":%s}}"
 #ifdef RTCONFIG_AMAS_CENTRAL_OPTMZ
@@ -59,6 +60,7 @@
 #ifdef RTCONFIG_AMAS_CENTRAL_ADS
 #define RC_ADS_DS_MSG	"{\""RC_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""SEQUENCE"\":%d}}"
 #endif
+#define HTTPD_NEWOB_MSG	"{\""HTTPD_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""MAC_LIST"\":%s}}"
 
 /* source */
 #define FROM_NONE	0x0
@@ -80,6 +82,9 @@ enum httpdEventType {
 	EID_HTTPD_REBOOT,
 	EID_HTTPD_RE_RECONNECT,
 	EID_HTTPD_FORCE_ROAMING,
+#ifdef RTCONFIG_AMAS_NEWOB
+	EID_HTTPD_NEWOB_ONBOARDING,
+#endif
 	EID_HTTPD_MAX
 };
 

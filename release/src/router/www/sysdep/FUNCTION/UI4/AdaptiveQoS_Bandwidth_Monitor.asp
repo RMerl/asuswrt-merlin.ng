@@ -69,7 +69,7 @@
 }
 .traffic_bar{
 	width: 0%;
-	background-color: #5EE3F6;
+	background-color: #006ec1;
 	height: 8px;
 	border-radius:5px;
 }
@@ -129,8 +129,8 @@ if(dns_dpi_support)
   curState = '<% nvram_get("dns_dpi_apps_analysis"); %>';
 }
 
-if(cookie.get('maxBandwidth') == "" || cookie.get('maxBandwidth') == undefined){
-	cookie.set("maxBandwidth", "100");
+if(window.localStorage.getItem('maxBandwidth') == "" || window.localStorage.getItem('maxBandwidth') == undefined){
+	window.localStorage.setItem("maxBandwidth", "100");
 }
 
 function register_event(){
@@ -172,13 +172,13 @@ var scale = [1, 5, 10, 20, 30, 50, 75, 100];
 var download_maximum = 100 * 1024;
 var upload_maximum = 100 * 1024;
 function initial(){
-	var _scale = cookie.get('maxBandwidth_scale');
-	if(cookie.get('maxBandwidth') == '100'){
+	var _scale = window.localStorage.getItem('maxBandwidth_scale');
+	if(window.localStorage.getItem('maxBandwidth') == '100'){
 		if(_scale != '0'){
 			$('#traffic_unit').val('100');
 		}
 	}
-	else if(cookie.get('maxBandwidth') == '1000'){
+	else if(window.localStorage.getItem('maxBandwidth') == '1000'){
 		scale = [10, 50, 100, 200, 350, 500, 750, 1000];
 		download_maximum = 1000 * 1024;
 		upload_maximum = 1000 * 1024;
@@ -186,7 +186,7 @@ function initial(){
 			$('#traffic_unit').val('1000');
 		}
 	}
-	else if(cookie.get('maxBandwidth') == '10000'){
+	else if(window.localStorage.getItem('maxBandwidth') == '10000'){
 		scale = [500, 750, 1000, 2000, 3500, 5000, 7500, 10000];
 		download_maximum = 10000 * 1024;
 		upload_maximum = 10000 * 1024;
@@ -508,7 +508,7 @@ function show_clients(priority_type){
 		code += '<td><div><table>';
 		code += '<tr>';
 		code += '<td style="width:100%">';
-		code += '<div style="height:8px;background: #dcdcdc; box-shadow: 0px 2px 2px rgb(0 0 0 / 3%), -1px -1px 0px #ffffff, inset 2px 2px 6px rgb(0 47 113 / 5%);border-radius:10px;">';
+		code += '<div class="loading_bar_container" style="height:8px;background: #dcdcdc; box-shadow: 0px 2px 2px rgb(0 0 0 / 3%), -1px -1px 0px #ffffff, inset 2px 2px 6px rgb(0 47 113 / 5%);border-radius:10px;">';
 		if(clientObj.wtfast && wtfast_support)
 			code += '<div id="'+clientObj.mac+'_upload_bar" class="traffic_bar transition_style traffic_bar_boost"></div>';
 		else
@@ -527,7 +527,7 @@ function show_clients(priority_type){
 		code += '</tr>';
 		code += '<tr>';
 		code += '<td>';
-		code +=	'<div style="height:8px;background: #dcdcdc; box-shadow: 0px 2px 2px rgb(0 0 0 / 3%), -1px -1px 0px #ffffff, inset 2px 2px 6px rgb(0 47 113 / 5%);border-radius:10px;">';
+		code +=	'<div class="loading_bar_container" style="height:8px;background: #dcdcdc; box-shadow: 0px 2px 2px rgb(0 0 0 / 3%), -1px -1px 0px #ffffff, inset 2px 2px 6px rgb(0 47 113 / 5%);border-radius:10px;">';
 		if(clientObj.wtfast && wtfast_support)
 			code += '<div id="'+clientObj.mac+'_download_bar" class="traffic_bar transition_style traffic_bar_boost"></div>';
 		else
@@ -743,7 +743,7 @@ function render_apps(apps_array, obj_icon, apps_field){
                         <table>
                             <tr>
                                 <td style="width:305px">
-                                    <div style="height:6px;padding:3px;background-color: #dcdcdc;box-shadow: 0px 2px 2px rgb(0 0 0 / 3%), -1px -1px 0px #ffffff, inset 2px 2px 6px rgb(0 47 113 / 5%);border-radius:10px;">
+                                    <div class="loading_bar_container" style="height:6px;padding:3px;background-color: #dcdcdc;box-shadow: 0px 2px 2px rgb(0 0 0 / 3%), -1px -1px 0px #ffffff, inset 2px 2px 6px rgb(0 47 113 / 5%);border-radius:10px;">
                                         <div id="${apps_array[i][0]}_upload_bar" style="width:0%;background:linear-gradient(270deg, #02CBFD 38.31%, #133ED4 100%);height:6px;black;border-radius:5px;"></div>
                                     </div>
                                 </td>
@@ -756,7 +756,7 @@ function render_apps(apps_array, obj_icon, apps_field){
                             </tr>
                             <tr>
                                 <td>
-                                    <div style="height:6px;padding:3px;background-color: #dcdcdc;box-shadow: 0px 2px 2px rgb(0 0 0 / 3%), -1px -1px 0px #ffffff, inset 2px 2px 6px rgb(0 47 113 / 5%);border-radius:10px;">
+                                    <div class="loading_bar_container" style="height:6px;padding:3px;background-color: #dcdcdc;box-shadow: 0px 2px 2px rgb(0 0 0 / 3%), -1px -1px 0px #ffffff, inset 2px 2px 6px rgb(0 47 113 / 5%);border-radius:10px;">
                                         <div id="${apps_array[i][0]}_download_bar" style="width:0%;background:linear-gradient(270deg, #02CBFD 38.31%, #133ED4 100%);height:6px;black;border-radius:5px;"></div>
                                     </div>
                                 </td>
@@ -1507,9 +1507,10 @@ function update_apps_tarffic(mac, obj, new_element) {
     },
     success: function(response){
 		render_apps(array_traffic, obj, new_element);
-		render_app_icon(array_traffic);
-		apps_time_flag = setTimeout((function (mac,obj,new_element){ return function (){ update_apps_tarffic(mac,obj,new_element); } })(mac,obj,new_element), detect_interval*1000);
-    }
+        render_app_icon(array_traffic);
+		apps_time_flag = setTimeout(function(){
+			update_apps_tarffic(mac,obj,new_element)
+		}, detect_interval*1000);    }
   });
 }
 function update_apps_tarffic_Dns(mac, obj, new_element) {
@@ -1521,8 +1522,10 @@ function update_apps_tarffic_Dns(mac, obj, new_element) {
     },
     success: function(response){
 		render_apps(array_traffic, obj, new_element);
-		render_app_icon(array_traffic);
-		apps_time_flag = setTimeout((function (mac,obj,new_element){ return function (){ update_apps_tarffic_Dns(mac,obj,new_element); } })(mac,obj,new_element), detect_interval*1000);
+        render_app_icon(array_traffic);
+		apps_time_flag = setTimeout(function(){
+			update_apps_tarffic_Dns(mac,obj,new_element)
+		}, detect_interval*1000);
     }
   });
 }
@@ -1630,7 +1633,7 @@ function switch_control(_status){
 	}
 	else {
 		document.form.apps_analysis.value = 0;
-    if(dns_dpi_support)
+        if(dns_dpi_support)
 			document.form.dns_dpi_apps_analysis.value = 0;
 		applyRule();
 	}
@@ -1638,29 +1641,29 @@ function switch_control(_status){
 
 function setUnit(unit){
 	if(unit == '1000'){		// 1 Gbps
-		cookie.set("maxBandwidth", unit);
-		cookie.set("maxBandwidth_scale", unit);
+		window.localStorage.setItem("maxBandwidth", unit);
+		window.localStorage.setItem("maxBandwidth_scale", unit);
 		scale = [10, 50, 100, 200, 350, 500, 750, 1000];
 		download_maximum = 1000 * 1024;
 		upload_maximum = 1000 * 1024;
 	}
 	else if(unit == '10000'){	// 10 Gbps
-		cookie.set("maxBandwidth", unit);
-		cookie.set("maxBandwidth_scale", unit);
+		window.localStorage.setItem("maxBandwidth", unit);
+		window.localStorage.setItem("maxBandwidth_scale", unit);
 		scale = [500, 750, 1000, 2000, 3500, 5000, 7500, 10000];
 		download_maximum = 10000 * 1024;
 		upload_maximum = 10000 * 1024;
 	}
 	else if(unit == '100'){	// 100 Mbps
-		cookie.set("maxBandwidth", unit);
-		cookie.set("maxBandwidth_scale", unit);
+		window.localStorage.setItem("maxBandwidth", unit);
+		window.localStorage.setItem("maxBandwidth_scale", unit);
 		scale = [1, 5, 10, 20, 30, 50, 75, 100];
 		download_maximum = 100 * 1024;
 		upload_maximum = 100 * 1024;
 	}
 	else{		// Auto
-		cookie.set("maxBandwidth", '100');
-		cookie.set("maxBandwidth_scale", unit);
+		window.localStorage.setItem("maxBandwidth", '100');
+		window.localStorage.setItem("maxBandwidth_scale", unit);
 		scale = [1, 5, 10, 20, 30, 50, 75, 100];
 		download_maximum = 100 * 1024;
 		upload_maximum = 100 * 1024;
@@ -1668,13 +1671,13 @@ function setUnit(unit){
 }
 
 function setScale(scale){
-	cookie.set('ASUS_TrafficClient_unit', scale);
+	window.localStorage.setItem('ASUS_TrafficClient_unit', scale);
 }
 
 function getTrafficUnit(){
 	var value = 9;
-	if(cookie.get('ASUS_TrafficClient_unit')){
-		value = cookie.get('ASUS_TrafficClient_unit');
+	if(window.localStorage.getItem('ASUS_TrafficClient_unit')){
+		value = window.localStorage.getItem('ASUS_TrafficClient_unit');
 	}
 
 	return value;
@@ -1707,7 +1710,6 @@ function getTrafficUnit(){
 <input type="hidden" name="dns_dpi_apps_analysis" value="<% nvram_get("dns_dpi_apps_analysis"); %>">
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
-		<td width="0">&nbsp;</td>
 		<!--=====Beginning of Main Menu=====-->
 		<td valign="top" width="202">
 		  <div id="mainMenu"></div>
@@ -1749,7 +1751,7 @@ function getTrafficUnit(){
 														</td>
 														
 														<td >
-															<div align="center" class="left" style="width:94px; float:left; cursor:pointer;" id="apps_analysis_enable"></div>
+															<div align="center" class="left" style="width:94px; float:right; cursor:pointer;" id="apps_analysis_enable"></div>
 															<script type="text/javascript">
                               if(dns_dpi_support)
                               {
@@ -1788,7 +1790,7 @@ function getTrafficUnit(){
 						</tr>
 						<tr>
 							<td>
-								<div class="border rounded-2 px-2 py-3" style="display: flex; justify-content: space-evenly;">
+								<div class="border rounded-2 px-2 py-3" id="speedmeter_png" style="display: flex; justify-content: space-evenly;">
 									<div id="upload_unit" style="display: flex; flex-direction: row; align-items: center;">
 										<div style="display: flex; flex-direction: column;">
 											<div id="upload_speed" style="font-size:48px; line-height: 150%;">0.00</div>
@@ -1828,7 +1830,7 @@ function getTrafficUnit(){
 									<table style="width: 100%;">
 										<tr>
 											<td colspan="2">
-												<div style="display:flex; align-items:center; justify-content:space-between;">
+												<div id="qos_level_icon" style="display:flex; align-items:center; justify-content:space-between;">
 													<div style="display:flex;align-items: center;justify-content: flex-end;margin-right:8px;">
 														<div style="font-size:14px;margin-right:8px;"><#Scale#></div>
 														<div>
@@ -1985,7 +1987,7 @@ function getTrafficUnit(){
 								</div>
 							</td>
 						</tr>
-						<tr>
+						<tr class="notInMobile">
 							<td>
 								<div style="">
 									<a id="faq" href="" style="text-decoration:underline;" target="_blank"><#Bandwidth_monitor_WANLAN#> FAQ</a>

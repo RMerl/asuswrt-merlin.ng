@@ -107,6 +107,9 @@ var redirect_page = login_info.page;
 var cloud_file = '<% get_parameter("file"); %>';
 var isRouterMode = ('<% nvram_get("sw_mode"); %>' == '1') ? true : false;
 var CoBrand = '<% nvram_get("CoBrand"); %>';
+var ui_lang = '<% nvram_get("preferred_lang"); %>';
+var based_modelid = '<% nvram_get("productid"); %>';
+var odmpid = '<% nvram_get("odmpid"); %>';
 
 const getQueryString = function(name){
 	var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
@@ -158,7 +161,7 @@ else
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=SG_TeleStand&lang=&kw=&num=";
 var ATEMODE = '<% nvram_get("ATEMODE"); %>';
 
-function initial(){
+function initial(){	
 	top.name = "";/* reset cache of state.js win.name */
 
 	if(ATEMODE == "1"){
@@ -183,7 +186,22 @@ function initial(){
 		document.getElementsByClassName("login-field-padding")[0].className = "login-field-padding-odm";
 	}
 	else{
-		document.getElementsByClassName("model-name")[0].innerHTML = "<#Web_Title2#>"
+		document.getElementsByClassName("model-name")[0].innerHTML = "<#Web_Title2#>";
+	}
+
+	if(tuf_support && ui_lang == "CN"){
+		var CN_STRING = ""; // need to maintain this table refer to ej
+		if(based_modelid == "TUF-AX3000_V2")	//MODELDEP
+			CN_STRING = $(".model-name").html().replace("TUF GAMING ", "");
+		else if(based_modelid == "TUF-AX4200Q" || odmpid == "TUF-AX4200Q")
+			CN_STRING = $(".model-name").html().replace("TUF GAMING ", "").replace(" Pro", "");
+
+		if(CN_STRING.length > 0){
+			if($(".model-name").html().indexOf(CN_STRING) != -1){ //Fine tune font-size til improve of ROG font 
+				var Name_temp = $(".model-name").html().replace(CN_STRING, "<span class='tuf_CN'>" + CN_STRING + "</span>");
+				$(".model-name").html(Name_temp);
+			}
+		}
 	}
 	
 	var flag = login_info.error_status;
@@ -332,6 +350,25 @@ function initial(){
 		document.getElementById("captcha_field").style.display = "none";
 
 	if(history.pushState != undefined) history.pushState("", document.title, window.location.pathname);
+
+	// log the access to the login page
+    try {
+        const productNameElement = document.querySelector(".model-name");
+        const productName = productNameElement ? productNameElement.innerHTML : "Unknown Product";
+
+        window.localStorage.setItem(
+            `${Date.now()}#${window.localStorage.length}`,
+            ` Accessing the login page of ${productName} at ${location.origin}`
+        );
+
+        const loginInfoString = login_info ? JSON.stringify(login_info) : "No login info available";
+        window.localStorage.setItem(
+            `${Date.now()}#${window.localStorage.length}`,
+            ` Retrieve the status code: ${loginInfoString}`
+        );
+    } catch (error) {
+        console.error("An error occurred while setting localStorage items:", error);
+    }
 }
 
 function countdownfunc(){
@@ -457,6 +494,10 @@ function login(id, nonce){
 	}
 
 	document.form.submit();
+	window.localStorage.setItem(
+		`${Date.now()}#${window.localStorage.length}`, 
+		` Attempting to log in with ${nonce} & ${cnonce}.`
+	);
 }
 
 function disable_input(val){

@@ -87,6 +87,7 @@ define(function(){
 				index: "menu_ParentalControl", 
 				tab: [
 					{url: "AiProtection_WebProtector.asp", tabName: "<#AiProtection_filter#>"},
+					{url: "AiProtection_ContentFilter.asp", tabName: "<#AiProtection_filter#>"},
 					{url: "ParentalControl.asp", tabName: "<#Time_Scheduling#>"},
 					{url: "YandexDNS.asp", tabName: "<#YandexDNS#>"},
 					{url: "adGuard_DNS.asp", tabName: "AdGuard"},
@@ -357,6 +358,15 @@ define(function(){
 					{url: "Advanced_Wireless_Survey.asp", tabName: "Site Survey"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
+			},
+			{
+				menuName: "ASUS Site Manager",
+				index: "menu_SiteManager",
+				tab: [
+					{url: "Advanced_Site_PinCode.asp", tabName: "PIN Code"},
+					{url: "Advanced_Site_Manager.asp", tabName: "<#Pincode_Title#>"},
+					{url: "NULL", tabName: "__INHERIT__"}
+				]
 			}
 		],
 
@@ -406,6 +416,10 @@ define(function(){
 
 				if(!networkTool_support){
 					retArray.push("menu_NekworkTool");
+				}
+
+				if(!newsite_provisioning_support){
+					retArray.push("menu_SiteManager");
 				}
 				
 				
@@ -832,10 +846,14 @@ define(function(){
 				if(!isSupport("mtlancfg") || !isSupport("mlo")){
 					retArray.push("MLO.asp");
 				}
-								
+
 				if(isSupport("sdn_mainfh")){
 					retArray.push("Advanced_ACL_Content.asp");
 					retArray.push("Advanced_WSecurity_Content.asp");
+				}
+
+				if(isSupport("UI4")) {
+					retArray.push("Advanced_WMode_Content.asp");
 				}
 
 				if(isSupport("BUSINESS")){
@@ -923,6 +941,14 @@ define(function(){
 					retArray.push("Main_ConnStatus_Content.asp");
 					retArray.push("Advanced_Smart_Connect.asp");
 					retArray.push("DNSFilter.asp");
+				}
+
+				if (isSupport("gtbooster")) {
+					if (isSupport("ark_iam")) {
+						retArray.push("AiProtection_WebProtector.asp");
+					} else {
+						retArray.push("AiProtection_ContentFilter.asp");
+					}
 				}
 
 				/* System Status Changed */

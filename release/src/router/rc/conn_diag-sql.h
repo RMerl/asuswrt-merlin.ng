@@ -88,6 +88,7 @@ struct amas_eth_port {
 	time_t cmd_time;
 	int seq_no;
 	char ui_display[32];
+	POE_INFO poe_info;
 	int phy_port_id;
 	int ext_port_id;
 	char ifname[32];
@@ -158,8 +159,10 @@ enum {
 	DB_IPERF_CLIENT,
 	DB_WLC_EVENT,
 	DB_WIFI_CBP,
-        DB_PORT_STATUS_MOCA_CHANGE,
+	DB_PORT_STATUS_MOCA_CHANGE,
+	DB_PORT_STATUS_POE_CHANGE,
 	DB_ACSD_EVENT,
+	DB_AIRIQ_EVENT,
 	DB_MAX
 };
 

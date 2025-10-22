@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,  user-scalable=no"/>
+    <style>
+        /* ========================================
+         * CSS VARIABLES & THEMING
+         * ======================================== */
+        :root {
+            /* Art & Layout Variables */
+            --bleed-y: 90px;
+
+            /* Color System */
+            --color-start: rgba(0, 153, 255, 0.2);
+            --color-end: rgba(0, 247, 255, 0.25);
+            --color-stroke-start: #7230ff;
+            --color-stroke-end: #1cfff4;
+
+            /* UI Components */
+            --slider-fill-start: #6366f1;
+            --slider-fill-end: #df63f1;
+            --slider-track: #e5e7eb;
+            --slider-thumb: #dc2626;
+            --progress: 50%;
+
+            /* Layout & Spacing */
+            --bandwidth-row-bg: rgba(255, 255, 255, 0.4);
+            --bandwidth-row-border: var(--neutral-30, #fff);
+            --bandwidth-cell-divider: var(--cell-stroke);
+            --bandwidth-divider-gap: 16px;
+            --toggle-radius: 14px;
+            --toggle-thumb-radius: 50%;
+            --radius-none: 0;
+
+            /* Settings Panel */
+            --setting-row-bg: var(--bandwidth-row-bg, #fff);
+            --table-row-text-color: var(--body-text-color);
+            --setting-row-border: var(--bandwidth-row-border);
+            --cell-divider-border: var(--bandwidth-row-border);
+
+            /* Dividers */
+            --divide-stroke-color-default: var(--neutral-30);
+            --divider-strong: var(--white-alpha-100);
+            --divider-weak: var(--black-alpha-3);
+            --divider-default: var(--neutral-30);
+        }
+
+        /* Dark Mode Theme */
+        [data-asuswrt-color="dark"] {
+            --setting-row-bg: rgba(24, 24, 24, 0.4);
+            --bandwidth-row-bg: rgba(24, 24, 24, 0.4);
+            --table-row-text-color: var(--white-alpha-100);
+            --bandwidth-row-border: var(--neutral-90, #333);
+            --setting-row-border: var(--bandwidth-row-border);
+            --cell-divider-border: var(--bandwidth-row-border);
+            --divide-stroke-color-default: var(--white-alpha-10);
+            --divider-strong: var(--white-alpha-10);
+            --divider-weak: var(--white-alpha-5);
+            --divider-default: var(--neutral-90);
+        }
+
+        /* ========================================
+         * BASE ELEMENTS
+         * ======================================== */
+        label {
+            font-weight: bold;
+        }
+
+        h2, h3, h4, h5, h6 {
+            color: var(--text-subtitle-color);
+        }
+
+        /* ========================================
+         * SETTINGS COMPONENTS
+         * ======================================== */
+        .setting-row {
+            display: flex;
+            align-items: center;
+            padding: 1em 0;
+            gap: 2em;
+            border-bottom: 1px solid var(--divide-stroke-color-El20);
+        }
+
+        .setting-row:last-child {
+            border-bottom: none;
+        }
+
+        .setting-label {
+            flex: 0 0 35%;
+            min-width: 120px;
+            padding-left: 10px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .setting-side {
+            display: flex;
+            align-items: center;
+            gap: 1em;
+        }
+
+        .setting-info {
+            padding: 0.375rem 0;
+            font-size: .825rem;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        /* ========================================
+         * CONTENT LAYOUT
+         * ======================================== */
+
+        .ad-item .ad-item-background-image {
+            z-index: -1;
+        }
+
+        .ad-item .ad-item-background-image img {
+            width: 100px;
+            height: auto;
+        }
+
+        /* ========================================
+         * APP COMPONENTS
+         * ======================================== */
+        .app-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            gap: 16px;
+            padding: 8px;
+            width: 100%;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 3;
+        }
+
+        .app-card .app-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+
+        .card-inner-content {
+            z-index: 2;
+            height: 100%;
+            padding: 16px 24px;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: .5rem;
+        }
+
+        .card-title-section h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #35F2FF;
+            text-shadow: 0 0 15px rgba(53, 242, 255, 0.4);
+            margin-bottom: 8px;
+        }
+
+        .ad-item {
+            flex: 1 0 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-radius: 4px;
+            border: 1px solid #FFF;
+            background: rgba(255, 255, 255, 0.40);
+            box-shadow: 0 0 14px 0 rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(17px);
+        }
+
+        .ad-item .ad-description {
+            font-style: italic;
+            color: var(--text-subtitle-color);
+            width: 100%;
+            margin-top: .5rem;
+            margin-bottom: 0;
+            font-size: 0.875rem;
+        }
+
+        .ad-item .ad-button {
+            position: absolute;
+            right: 1rem;
+            bottom: 1rem;
+        }
+
+        .card-description {
+            margin-top: .5rem;
+            margin-bottom: 0;
+            font-size: 0.875rem;
+        }
+
+        .card-footer {
+            height: 56px;
+        }
+
+        .block-title {
+            font-size: 1.25rem;
+            font-style: italic;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            margin-top: .5rem;
+            margin-bottom: .5rem;
+        }
+
+        .ad-title, .app-title {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            font-size: 1.25rem;
+            font-style: italic;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            margin-top: .3rem;
+        }
+
+        .ad-content, .app-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 200px;
+        }
+
+        .ad-label {
+            color: var(--primary-50, #FF1929);
+            font-size: 12px;
+            font-style: italic;
+            font-weight: 400;
+            line-height: 16px;
+            letter-spacing: 0.4px;
+        }
+
+        .ai-tips {
+            display: flex;
+            gap: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .ai-tips::-webkit-scrollbar {
+            display: none;
+        }
+
+        .ai-tip {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            backdrop-filter: blur(17px);
+            border: 1px solid #FFF;
+            background: rgba(255, 255, 255, 0.20);
+            padding: 10px 16px;
+            background: #f8f9fa;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            color: #006EFF;
+            cursor: pointer;
+            width: fit-content;
+            flex-shrink: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .ai-tip:hover::before {
+            opacity: 1;
+        }
+
+        .ai-tip .icon-container {
+            display: none;
+        }
+
+        .ai-tip:hover {
+            background: rgb(255, 255, 255, .25);
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .ai-tip:hover .icon-container {
+            display: flex;
+            width: 80px;
+            border-radius: 16px;
+            justify-content: flex-start;
+            padding: 8px 16px;
+            background-color: #0091ff;
+            align-items: center;
+        }
+
+        .more-action .dropdown-toggle::after {
+            display: none;
+        }
+
+        .docker-apps-div {
+            height: 400px;
+        }
+
+        .ai-example-input {
+            position: relative;
+            pointer-events: none;
+        }
+
+        .ai-example-input .icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .ai-example-input input {
+            padding-left: 40px;
+        }
+
+        .ai-example-result {
+            margin-top: -8px;
+            display: flex;
+            padding: 16px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+            border-top: 3px solid var(--primary-50, #FF1929);
+            background: var(--white-alpha-100, #FFF);
+            box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.10);
+        }
+
+        .ai-faq-btn {
+            cursor: pointer;
+        }
+
+        /* ========================================
+         * RESPONSIVE DESIGN
+         * ======================================== */
+
+
+        @media (max-width: 1200px) {
+            .ad-item .ad-description {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .app-card {
+                box-shadow: none;
+                background: transparent;
+                backdrop-filter: none;
+                border: none;
+            }
+
+            .app-card .app-info {
+                display: none;
+            }
+
+            .ad-item .ad-description {
+                width: 100%;
+            }
+
+        }
+
+        @media (max-width: 768px) {
+            .setting-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5em;
+                padding: 1em 0;
+            }
+
+            .setting-label,
+            .setting-side {
+                min-width: 0;
+                text-align: left;
+            }
+
+            .setting-label {
+                flex: 0 0 0;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .card-inner-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .ad-content, .app-content {
+                height: auto;
+            }
+
+            .ad-item-background-image, .brand-icon {
+                position: absolute;
+                right: .5rem;
+                top: .5rem;
+            }
+
+            .brand-icon object {
+                height: 30px !important;
+            }
+
+            .docker-apps-div {
+                height: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="d-flex align-items-center mb-3">
+    <div class="page-title">AI Board<i data-faq="AI_FAQ_AIBoard" role="icon"
+                                       class="icon icon-help-hexagon icon-size-18 ai-faq-btn"></i></div>
+</div>
+
+<div class="row d-none" id="first-block">
+    <div class="col-12 col-xl-5 mb-3">
+        <div class="card card-bar-2 h-100">
+            <div class="card-body p-4">
+                <div class="ad-title mb-3">
+                    Router Assistant
+                </div>
+                <div class="d-flex flex-column gap-2">
+                    <div class="card-description">The Edge AI lets you ask questions directly. Queries are processed
+                        locally to protect your privacy. It also helps you fix common issues and perform quick control
+                        actions.
+                    </div>
+                    <div id="ai-tips" class="ai-tips">
+                    </div>
+                    <div class="ai-example-input">
+                        <i role="icon" class="icon icon-AiBoard icon-size-20"></i>
+                        <input class="form-control">
+                    </div>
+                    <div class="ai-example-result" style="display: none;">
+                        <div class="text-break mb-2 p-2"
+                             style="background-color: #f8f9fa; color: #6c757d; font-size: 0.9em; border-left: 5px solid #dee2e6;">
+                            <strong id="ai-example-question"></strong>
+                        </div>
+                        <div class="text-break mb-3" id="ai-example-answer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-7 mb-3">
+        <div class="card card-bar-2 h-100">
+            <div class="card-body p-4">
+                <div class="ad-title">Advertisement Blocking</div>
+                <div class="d-flex flex-column">
+                    <div class="card-description">Triple level content filter</div>
+                    <div class="card-inner-content">
+
+                        <div class="ad-item">
+                            <div class="card-body">
+                                <div class="ad-label">Edge AI</div>
+                                <div class="ad-title">AiProtection</div>
+                                <div class="ad-content">
+                                    <p class="ad-description">
+                                        Blocks ads and trackers with one click.
+                                    </p>
+                                    <div class="ad-item-background-image"><img
+                                            src="../images/aiboard/aiboard-aiprotection.png"
+                                            style="width: 100px;height: 90px;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer d-flex align-items-center justify-content-between">
+                                <div id="ark_adblock_switch" class="toggle-button with-text">
+                                    <div class="toggle-button-handle"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ad-item">
+                            <div class="card-body">
+                                <div class="ad-label">Edge server</div>
+                                <h3 class="ad-title">AdGuard Home<i data-faq="AI_FAQ_AdguardHome" role="icon"
+                                                                    class="icon icon-help-hexagon icon-size-18 ai-faq-btn"></i>
+                                </h3>
+                                <div class="ad-content">
+                                    <p class="ad-description">
+                                        A self-hosted edge server on router. Provides detailed network insights,
+                                        advanced control, and enhanced home privacy.
+                                    </p>
+                                    <div class="ad-item-background-image"><img
+                                            src="../images/aiboard/aiboard-adguard-home.svg">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer d-flex align-items-center justify-content-between">
+                                <div class="setting-side">
+                                    <button class="btn btn-outline-primary app-install-btn d-none disabled"
+                                            data-app="adguard">
+                                        <#Excute#>
+                                    </button>
+                                    <div class="d-flex align-items-center gap-1 message" data-app="adguard">
+                                        <span class="setting-info"></span>
+                                        <img src="images/InternetScan.gif"/>
+                                    </div>
+                                </div>
+                                <button class="btn btn-outline-primary app-open-btn disabled" data-app="adguard">
+                                    Open
+                                </button>
+                            </div>
+                        </div>
+                        <div class="ad-item">
+                            <div class="card-body">
+                                <div class="ad-label">Cloud server</div>
+                                <h3 class="ad-title">AdGuard DNS<i data-faq="AI_FAQ_AdguardDNS" role="icon"
+                                                                   class="icon icon-help-hexagon icon-size-18 ai-faq-btn"></i>
+                                </h3>
+                                <div class="ad-content">
+                                    <p class="ad-description">
+                                        Extends protection across multiple sites via the cloud.
+                                    </p>
+                                    <div class="ad-item-background-image"><img
+                                            src="../images/aiboard/aiboard-adguard.svg">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer d-flex align-items-center justify-content-end">
+                                <button class="btn btn-outline-primary"
+                                        onclick="pageRedirect('parentalcontrol', 'adGuard_DNS')">Open
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12 col-md-4 h-100 mb-3">
+
+        <div class="block-title">Docker Management</div>
+
+        <!-- Portainer -->
+        <div class="card card-bar pt-2" style="height:400px;">
+            <div class="card-body p-4">
+                <div class="app-title">Control & Deploy <i data-faq="AI_FAQ_portainer" role="icon"
+                                                           class="icon icon-help-hexagon icon-size-18 ai-faq-btn"></i>
+                </div>
+                <div class="app-content">
+                    <p class="card-description">
+                        Run powerful applications with Docker, the world’s leading container platform trusted by
+                        millions of
+                        developers. With Portainer CE’s intuitive UI, you can deploy, monitor, and manage
+                        containers
+                        visually.
+                    </p>
+                    <div class="brand-icon">
+                        <div class="d-flex gap-1 align-items-center">
+                            <object type="image/svg+xml" data="../images/aiboard/logo-docker.svg" role="img"
+                                    style="width:auto; height:48px; vertical-align:middle;"></object>
+                            &
+                            <object type="image/svg+xml" data="../images/aiboard/logo-portainer.svg" role="img"
+                                    style="width:auto; height:48px; vertical-align:middle;"></object>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <div class="setting-side">
+                    <div id="enable_portainer_btn" class="toggle-button with-text">
+                        <div class="toggle-button-handle"></div>
+                    </div>
+                    <button class="btn btn-outline-primary app-install-btn d-none disabled" data-app="portainer">
+                        <#Excute#>
+                    </button>
+                    <div class="d-flex align-items-center gap-1 message" data-app="portainer">
+                        <span class="setting-info"></span>
+                        <img src="images/InternetScan.gif"/>
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <button class="btn btn-outline-primary app-open-btn disabled" data-app="portainer">Open</button>
+                    <div class="more-action btn-group dropup">
+                        <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                            <i role="icon" class="d-block icon-size-18 icon-more-horiz"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a id="reset_portainer_btn" class="dropdown-item" href="#"><#CTL_restore#></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-8 h-100 mb-3">
+        <div class="block-title">Docker APPs</div>
+        <div class="card card-bar p-2 d-flex justify-content-center docker-apps-div">
+            <div class="row gap-2 gap-sm-0">
+                <!-- HA -->
+                <div class="col-12 col-sm-6">
+                    <div class="ad-item">
+                        <div class="card-body">
+                            <div class="app-title">Home Assistant <i data-faq="AI_FAQ_HA" role="icon"
+                                                                     class="icon icon-help-hexagon icon-size-18 ai-faq-btn"></i>
+                            </div>
+                            <div class="app-content">
+                                <p class="card-description">
+                                    Home Assistant brings all your smart devices together into one simple dashboard,
+                                    making them easy to control and automate in one place.
+                                </p>
+                                <div class="brand-icon">
+                                    <object type="image/svg+xml" data="../images/aiboard/logo-home-assistant.svg"
+                                            role="img"
+                                            style="width:auto; height:48px; vertical-align:middle;"></object>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <div class="setting-side">
+                                <button class="btn btn-outline-primary app-install-btn d-none disabled"
+                                        data-app="homeassistant">
+                                    <#Excute#>
+                                </button>
+                                <div class="d-flex align-items-center gap-1 message" data-app="homeassistant">
+                                    <span class="setting-info"></span>
+                                    <img src="images/InternetScan.gif"/>
+                                </div>
+                            </div>
+                            <button class="btn btn-outline-primary app-open-btn disabled" data-app="homeassistant">Open
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- FRIGATE -->
+                <div class="col-12 col-sm-6">
+                    <div class="ad-item">
+                        <div class="card-body">
+                            <div class="app-title">FRIGATE <i data-faq="AI_FAQ_Frigate" role="icon"
+                                                              class="icon icon-help-hexagon icon-size-18 ai-faq-btn"></i>
+                            </div>
+                            <div class="app-content">
+                                <p class="card-description">
+                                    An open source NVR built around real-time AI object detection. All processing is
+                                    performed locally on your own hardware, and your camera feeds never leave your home.
+                                    Note: Ensure your IP camera supports RTSP.
+                                </p>
+                                <div class="brand-icon">
+                                    <object type="image/svg+xml" data="../images/aiboard/logo-frigate.svg"
+                                            role="img"
+                                            style="width:auto; height:48px; vertical-align:middle;"></object>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <div class="setting-side">
+                                <button class="btn btn-outline-primary app-install-btn d-none disabled"
+                                        data-app="frigate"><#Excute#>
+                                </button>
+                                <div class="d-flex align-items-center gap-1 message" data-app="frigate">
+                                    <span class="setting-info"></span>
+                                    <img src="images/InternetScan.gif"/>
+                                </div>
+                            </div>
+                            <button class="btn btn-outline-primary app-open-btn disabled" data-app="frigate">Open
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12 mb-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="block-title">AI Board Settings</div>
+                <div class="card card-bar">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-lg-8">
+                                <div class="border pt-2 mb-3">
+                                    <h5 class="card-header d-flex align-items-center justify-content-between">
+                                        Change the AI Board login password, host name, and IP address settings.
+                                    </h5>
+                                    <div class="card-body">
+                                        <!-- Hostname -->
+                                        <section class="mb-3">
+                                            <div class="setting-row">
+                                                <label class="setting-label"
+                                                       for="ai_hostname"><#LANHostConfig_x_DDNSHostNames_itemname#></label>
+                                                <div class="setting-side">
+                                                    <input id="ai_hostname" class="input form-control" disabled
+                                                           type="text"
+                                                           value=""
+                                                           maxlength="32"
+                                                           onKeyPress="return validator.isString(this, event);"
+                                                           style="width:100%;max-width:320px;"
+                                                           autocorrect="off" autocapitalize="off">
+                                                    <div class="setting-info">.local</div>
+                                                </div>
+                                            </div>
+                                        </section>
+                                    </div>
+                                    <div class="card-footer text-end d-none">
+                                        <button type="button" id="applyBtn" class="btn btn-primary"><#CTL_apply#>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <section class="border pt-2">
+                                    <h5 class="card-header d-flex align-items-center justify-content-between">
+                                        Firmware Upgrade
+                                    </h5>
+                                    <div class="card-body">
+                                        <div class="setting-row">
+                                            <label class="setting-label" for="currentFwVer">AI Board Firmware
+                                                Version</label>
+                                            <div class="setting-side">
+                                                <div id="currentFwVer" class="setting-info"></div>
+                                            </div>
+                                        </div>
+                                        <div class="setting-row">
+                                            <label class="setting-label"
+                                                   for="checkBtn"><#AiMesh_Check_Update#></label>
+                                            <div class="setting-side">
+                                                <button id="checkBtn" class="btn btn-outline-primary">
+                                                    <#AiMesh_Check_Update#>
+                                                </button>
+                                                <button id="upgradeBtn" class="btn btn-outline-primary"
+                                                        style="display:none;">
+                                                    <#CTL_upgrade#>
+                                                </button>
+                                                <div id="check_states">
+                                                    <span id="update_states"></span>
+                                                    <img id="update_scan" style="display:none;"
+                                                         src="images/InternetScan.gif"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                            <div class="col-12 col-lg-4 mt-3 mt-lg-0">
+                                <section class="border pt-2 mb-3 h-100">
+                                    <h5 class="card-header">Restore Setting</h5>
+                                    <div class="card-body">
+                                        <div class="row px-2">
+                                            <div id="tab-section-aiboard"
+                                                 class="qoe-container container tab-content">
+                                                <div class="row justify-content-center">
+                                                    <div class="col-12">
+                                                        <!-- Restore setting -->
+                                                        <section class="mb-3">
+                                                            <div class="setting-row">
+                                                                <label class="setting-label" for="rescueBtn">Firmware
+                                                                    Restoration</label>
+                                                                <div class="setting-side">
+                                                                    <button id="rescueBtn"
+                                                                            class="btn btn-outline-primary">
+                                                                        <#CTL_restore#>
+                                                                    </button>
+                                                                    <span id="rescue_message"
+                                                                          style="display:none;"></span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="setting-row">
+                                                                <label class="setting-label"
+                                                                       for="rebootBtn"><#BTN_REBOOT#></label>
+                                                                <div class="setting-side">
+                                                                    <button id="rebootBtn"
+                                                                            class="btn btn-outline-primary">
+                                                                        <#BTN_REBOOT#>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </section>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    const lang = system.language.currentLang;
+    const faqBtns = document.querySelectorAll('i.ai-faq-btn');
+    faqBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const faqKey = btn.getAttribute('data-faq');
+            if (faqKey) {
+                openFaq(faqKey);
+            }
+        });
+    })
+    const openFaq = (faqKey) => {
+        const faqUrl = `https://nw-dlcdnet.asus.com/support/forward.html?model=&type=${faqKey}&lang=${lang}&kw=&num=`;
+        window.open(faqUrl, '_blank');
+    };
+
+    class AppContainer {
+        constructor(prop) {
+            const {
+                name,
+                displayName,
+                appName,
+                status = 'not_installed',
+                installed = false,
+                openBtn,
+                installBtn,
+                enableBtn = null,
+                messageDiv = null
+            } = prop;
+            this.name = name;
+            this.displayName = displayName;
+            this.appName = appName;
+            this.status = status;//not_installed, installing, running, stopped
+            this.installed = installed; // 0: not installed, 1: installed
+            this.openBtn = openBtn;
+            this.installBtn = installBtn;
+            this.enableBtn = enableBtn;
+            this.messageDiv = messageDiv;
+        }
+
+        open() {
+            const ai_hostname_str = httpApi.nvramGet(["ai_hostname"]).ai_hostname;
+            const urlMap = {
+                'formal-portainer-asus': `https://${ai_hostname_str}.local:9443`,
+                'homeassistant-asus': `http://${ai_hostname_str}.local:8123`,
+                'adguard-asus': `http://${ai_hostname_str}.local:3000`,
+                'formal-frigate-asus': `https://${ai_hostname_str}.local:8971`
+            };
+            const url = urlMap[this.name];
+            if (url) {
+				if(url == `http://${ai_hostname_str}.local:3000`){
+					var get_adguard_home_port = httpApi.hookGet("ai_adguard_home_port", true);	// 3000:80
+					window.open((get_adguard_home_port==3000)? url:url.replace("3000", get_adguard_home_port), '_blank');
+				}
+				else {
+					window.open(url, '_blank');
+				}
+            } else {
+                console.error(`No URL mapped for ${this.name}`);
+            }
+        }
+
+        applyInstall() {
+            const self = this;
+            self.installBtn?.classList.add('d-none');
+            self.messageDiv?.classList.remove('d-none');
+            const messageSpan = self.messageDiv?.querySelector('span');
+            messageSpan.innerHTML = `<#Excute_processing#>`;
+
+            let postObject = {};
+            switch (this.appName) {
+                case "portainer":
+                    postObject.ai_app_name = "start_portainer";
+                    postObject.action_mode = "apply";
+                    postObject.rc_service = "start_ai_request app";
+                    break;
+
+                case "homeassistant":
+                    postObject.ai_app_name = "start_homeassistant";
+                    postObject.action_mode = "apply";
+                    postObject.rc_service = "start_ai_request app";
+                    break;
+
+                case "adguard":
+                    const _nvram = httpApi.nvramGet([
+                        "wan0_dnsenable_x",
+                        "wan0_dns",
+                        "ai_sys_ip_address"
+                    ], true);
+                    const {wan0_dnsenable_x, wan0_dns, ai_sys_ip_address} = _nvram;
+                    postObject.ai_app_name = "start_adguard";
+                    postObject.action_mode = "apply";
+                    postObject.rc_service = "restart_wan_dns 0;start_ai_request app";
+                    postObject.wan0_dnsenable_x = "0";
+                    postObject.wan0_dns1_x = ai_sys_ip_address;
+                    if (wan0_dns.split(" ")[0] != ai_sys_ip_address) {
+                        postObject.wan0_dns2_x = (typeof wan0_dns === "string" && wan0_dns.trim() !== "") ? wan0_dns.split(" ")[0] : "";
+                    }
+                    break;
+
+                case "frigate":
+                    postObject.ai_app_name = "start_frigate";
+                    postObject.action_mode = "apply";
+                    postObject.rc_service = "start_ai_request app";
+                    break;
+
+                default:
+                    console.warn("Unknown item.", this.name);
+                    break;
+            }
+            httpApi.nvramSet(postObject);
+
+            setTimeout(function () {
+                self.detect_install("install");
+            }, 8000);
+        }
+
+        install() {
+            if (this.installed) {
+                console.warn(`${this.appName} is already installed.`);
+                return;
+            }
+            this.applyInstall();
+            this.status = 'installing';
+            document.querySelectorAll('.app-install-btn').forEach(btn => {
+                btn.classList.add('disabled');
+            })
+        }
+
+        toggleEnable() {
+            if (!this.enableBtn) return;
+
+            // Special handling for Portainer
+            if (this.name === 'formal-portainer-asus') {
+                let postObject = {};
+                let hasActive = this.enableBtn.classList.contains("active");
+                if (hasActive) {
+                    this.enableBtn.classList.remove("active");
+                    postObject.ai_app_name = "stop_portainer";
+                    postObject.action_mode = "apply";
+                    postObject.rc_service = "start_ai_request app";
+                } else {
+                    this.enableBtn.classList.add("active");
+                    postObject.ai_app_name = "start_portainer";
+                    postObject.action_mode = "apply";
+                    postObject.rc_service = "start_ai_request app";
+                }
+
+                let applyTime = (postObject.ai_app_name == "stop_portainer") ? 30 : 40;
+                httpApi.nvramSet(postObject, function () {
+                    showLoading(applyTime);
+
+                    setTimeout(function () {
+                        let queryPost = {};
+                        queryPost.action_mode = "apply";
+                        queryPost.rc_service = "start_ai_request query";
+                        httpApi.nvramSet(queryPost);
+                    }, (applyTime - 5) * 1000);
+
+                    setTimeout(function () {
+                        location.reload();
+                    }, applyTime * 1000);
+                });
+                return;
+            }
+
+            // Default toggle behavior
+            const isEnabled = this.enableBtn.classList.contains('active');
+            if (isEnabled) {
+                this.enableBtn.classList.remove('active');
+                this.status = 'stopped';
+            } else {
+                this.enableBtn.classList.add('active');
+                this.status = 'running';
+            }
+        }
+
+        updateStatus() {
+            if (this.status === 'running') {
+                this.openBtn.classList.remove('disabled');
+                this.openBtn?.classList.remove('d-none');
+                this.installBtn.classList.add('disabled');
+                this.installBtn.classList.add('d-none');
+                if (this.enableBtn) {
+                    this.enableBtn.classList.add('active');
+                }
+                if (this.messageDiv) {
+                    this.messageDiv.classList.add('d-none');
+                }
+            } else if (this.status === 'not_installed') {
+                this.openBtn?.classList.add('disabled');
+                this.openBtn?.classList.add('d-none');
+                this.installBtn?.classList.remove('disabled');
+                this.installBtn?.classList.remove('d-none');
+                if (this.enableBtn) {
+                    this.enableBtn.classList.add('d-none');
+                }
+                if (this.messageDiv) {
+                    this.messageDiv.classList.add('d-none');
+                }
+            } else if (this.status === 'installing') {
+                this.openBtn.classList.add('disabled');
+                this.installBtn.classList.add('d-none');
+                if (this.enableBtn) {
+                    this.enableBtn.classList.add('d-none');
+                }
+                if (this.messageDiv) {
+                    this.messageDiv.classList.remove('d-none');
+                }
+            } else if (this.status === 'stopped') {
+                if (this.appName === 'portainer') {
+                    this.installBtn.classList.add('disabled');
+                    this.installBtn.classList.add('d-none');
+                } else {
+                    this.installBtn.classList.remove('disabled');
+                    this.installBtn.classList.remove('d-none');
+                }
+                this.openBtn.classList.add('disabled');
+                if (this.enableBtn) {
+                    this.enableBtn.classList.remove('active');
+                }
+                if (this.messageDiv) {
+                    this.messageDiv.classList.add('d-none');
+                }
+            } else {
+                console.warn(`Unknown status: ${this.status}`);
+            }
+        }
+
+        init() {
+            this.updateStatus();
+
+            if (this.installBtn) {
+                this.installBtn.addEventListener('click', () => {
+                    if (this.status === 'not_installed') {
+                        this.install();
+                    } else {
+                        console.warn(`${this.displayName} is already installed.`);
+                    }
+                });
+            }
+
+            if (this.openBtn) {
+                this.openBtn.addEventListener('click', () => {
+                    if (this.status === 'running') {
+                        this.open();
+                    } else {
+                        console.warn(`${this.displayName} is not running.`);
+                    }
+                });
+            }
+
+            if (this.enableBtn) {
+                this.enableBtn.addEventListener('click', () => {
+                    this.toggleEnable();
+                });
+            }
+        }
+
+        detect_install(flag) {
+            const self = this;
+
+            try {
+                const _nvram = httpApi.nvramGet(["ai_app_prog_status", "ai_app_prog_error_code", "ai_app_prog_reason", "ai_app_prog_total_steps", "ai_app_prog_current_step", "ai_app_prog_current_percent", "ai_app_prog_current_image", "ai_app_name"], true);
+                const app_prog_status = _nvram.ai_app_prog_status || "";
+                const app_prog_error_code = _nvram.ai_app_prog_error_code || "0";
+                const app_prog_reason = _nvram.ai_app_prog_reason || "";
+                const app_prog_total_steps = parseInt(_nvram.ai_app_prog_total_steps) || 0;
+                const app_prog_current_step = parseInt(_nvram.ai_app_prog_current_step) || 0;
+                const app_prog_current_percent = parseInt(_nvram.ai_app_prog_current_percent) || 0;
+                const app_prog_current_image = _nvram.ai_app_prog_current_image || "";
+                const ai_app_name = _nvram.ai_app_name || "";
+
+                httpApi.log("check_update", `ai_app_prog_status: ${app_prog_status}, ai_app_prog_error_code: ${app_prog_error_code}, ai_app_prog_reason: ${app_prog_reason}, ai_app_prog_total_steps: ${app_prog_total_steps}, ai_app_prog_current_step: ${app_prog_current_step}, ai_app_prog_current_percent: ${app_prog_current_percent}, ai_app_prog_current_image: ${app_prog_current_image}, ai_app_name: ${ai_app_name}`);
+                let install_hint = `${app_prog_status} (${app_prog_current_step}/${app_prog_total_steps})`;
+
+                if (app_prog_status !== "DONE" && app_prog_status !== "failed" && app_prog_status !== "") {
+                    if (ai_app_name === `start_${this.appName}`) {
+                        document.querySelectorAll('.app-install-btn').forEach(btn => {
+                            btn.classList.add('disabled');
+                        })
+                        this.status = 'installing';
+                        this.messageDiv.querySelector('span').innerHTML = install_hint;
+                        this.updateStatus();
+                    }
+                    setTimeout(function () {
+                        self.detect_install("install");
+                    }, 1000);
+                } else if (app_prog_status == "failed" && flag != "init") {
+                    if (ai_app_name === `start_${this.appName}`) {
+                        this.messageDiv.querySelector('span').innerHTML = "The installation was not performed correctly. Please install again.";
+                        this.messageDiv.querySelector('img').classList.add('d-none');
+                        this.status = 'failed';
+                        this.updateStatus();
+                        this.installBtn.classList.remove('d-none');
+                        document.querySelectorAll('.app-install-btn').forEach(btn => {
+                            btn.classList.remove('disabled');
+                        })
+                    }
+                } else if (app_prog_status == "") {
+                    if (ai_app_name === `start_${this.appName}`) {
+                        this.messageDiv.querySelector('span').innerHTML = "";
+                        this.status = 'not_installed';
+                        this.updateStatus();
+                    }
+                } else if (app_prog_status == "DONE") {
+                    if (flag != "init") {
+                        if (ai_app_name === `start_${this.appName}`) {
+                            document.querySelectorAll('.app-install-btn').forEach(btn => {
+                                btn.classList.remove('disabled');
+                            })
+                            this.messageDiv.querySelector('span').innerHTML = `<#Main_alert_processing#>`;
+                            this.status = "running";
+                            this.updateStatus();
+                        }
+
+                        setTimeout(function () {
+                            let queryPost = {};
+                            queryPost.action_mode = "apply";
+                            queryPost.rc_service = "start_ai_request query";
+                            httpApi.nvramSet(queryPost);
+                        }, 3000);
+                    }
+                }
+            } catch (e) {
+                install_dead++;
+                if (install_dead < 30)
+                    setTimeout(function () {
+                        self.detect_install(flag);
+                    }, 1000);
+                else {
+                    this.messageDiv.querySelector('span').innerHTML = "The installation was not performed correctly. Please install again.";
+                    this.status = "not_installed";
+                    this.updateStatus();
+                }
+            }
+        }
+    }
+
+    const container_list = {
+        portainer: {
+            name: 'formal-portainer-asus',
+            displayName: 'Portainer',
+        },
+        adguard: {
+            name: 'adguard-asus',
+            displayName: 'AdGuard Home',
+        },
+        homeassistant: {
+            name: 'homeassistant-asus',
+            displayName: 'Home Assistant',
+        },
+        frigate: {
+            name: 'formal-frigate-asus',
+            displayName: 'FRIGATE',
+        }
+    };
+
+    window.container_list = container_list;
+
+    const get_ai_docker_date = async () => {
+        return await httpApi.get_ai_docker_container();
+    }
+
+    get_ai_docker_date().then(data => {
+        Object.entries(container_list).forEach(([key, config]) => {
+            const container_status = data.find(container => {
+                return container.name === config.name
+            })
+            let installed = false;
+            let status = 'not_installed';
+            if (container_status) {
+                const statusText = container_status.status.toLowerCase();
+                if (key !== 'portainer') { // portainer can be stopped, others are either running or not installed
+                    status = statusText.startsWith('up') ? 'running' : 'not_installed';
+                } else {
+                    status = statusText.startsWith('up') ? 'running' : 'stopped';
+                }
+                if (status === 'running') {
+                    installed = true;
+                }
+            }
+
+            config.container = new AppContainer({
+                name: config.name,
+                appName: key,
+                displayName: config.displayName,
+                status: status,
+                installed: installed,
+                openBtn: document.querySelector(`.app-open-btn[data-app='${key}']`),
+                installBtn: document.querySelector(`.app-install-btn[data-app='${key}']`),
+                enableBtn: key === 'portainer' ? document.getElementById("enable_portainer_btn") : undefined,
+                messageDiv: document.querySelector(`.message[data-app='${key}']`)
+            });
+
+            config.container.init();
+            if (!installed) {
+                config.container.detect_install("init");
+            }
+        });
+    });
+
+    // Global variables
+    let dead = 0;
+    let install_dead = 0;
+
+    // Global functions that need to be called from setTimeout strings
+    function detect_firmware(flag) {
+        try {
+            const _nvram = httpApi.nvramGet([
+                "webs_state_ai_update",
+                "webs_state_ai_error",
+                "webs_state_ai_info",
+                "webs_state_ai_REQinfo",
+                "webs_state_ai_flag",
+                "webs_state_ai_upgrade"], true);
+            const {
+                webs_state_ai_update,
+                webs_state_ai_error,
+                webs_state_ai_info,
+                webs_state_ai_REQinfo,
+                webs_state_ai_flag,
+                webs_state_ai_upgrade,
+            } = _nvram;
+
+            httpApi.log("check_update", `webs_state_ai_update: ${webs_state_ai_update}, webs_state_ai_error: ${webs_state_ai_error}, webs_state_ai_info: ${webs_state_ai_info}, webs_state_ai_REQinfo: ${webs_state_ai_REQinfo}, webs_state_ai_flag: ${webs_state_ai_flag}`);
+
+            if (webs_state_ai_update === "0") {
+                setTimeout(() => {
+                    detect_firmware()
+                }, 1000);
+            } else {   // got fw info
+                if (webs_state_ai_error === "1") {    //1:wget fail
+                    document.getElementById('update_scan').style.display = "none";
+                    document.getElementById('update_states').innerHTML = "The router cannot connect to ASUS server to check for the firmware update.";
+                } else {
+                    document.getElementById('update_scan').style.display = "none";
+                    document.getElementById('update_states').classList.add("new_fw_info");
+
+                    if (webs_state_ai_flag === "2" || webs_state_ai_flag === "1") {
+                        document.getElementById('update_states').innerHTML = `<#ADSL_FW_item3#> : ` + webs_state_ai_info;
+                        document.getElementById("upgradeBtn").style.display = "";
+                    } else {
+                        document.getElementById('update_states').innerHTML = `The current firmware of AI Board is the latest version.`;
+                    }
+                }
+            }
+        } catch (e) {
+            dead++;
+            if (dead < 30)
+                setTimeout("detect_firmware();", 1000);
+            else {
+                document.getElementById('update_scan').style.display = "none";
+                document.getElementById('update_states').innerHTML = "<#info_failed#>&nbsp;<#FW_n4#>";
+            }
+        }
+    }
+
+    let initPost = {};
+    initPost.action_mode = "apply";
+    initPost.rc_service = "start_ai_request query";
+    await httpApi.nvramSet(initPost);
+
+
+    // AiBoard Setting Block
+    let rescueReturn_init = httpApi.get_aiboard_upgrade_status();
+    let rescue_status_init = rescueReturn_init.retStatus;     //DOWNLOAD, PROGRESS|RUN, SUCCESS, DONE ; DOWNLOAD, LOAD, VERIFY, SUCCESS, DOCKER_DONE; failed
+    let rescue_err_code_init = rescueReturn_init.retErrCode;
+    const _init_nvram = await httpApi.nvramGet(["ai_fw_path", "territory_code"], true);
+    const ai_fw_path_str = _init_nvram.ai_fw_path;
+    const territory_code = _init_nvram.territory_code;
+    const isCnSku = territory_code.search("CN") !== -1
+    if (!isCnSku) {
+        document.getElementById("first-block").classList.remove('d-none');
+    }
+
+    const getAiboardInfoData = async () => {
+        const data = await httpApi.nvramGet([
+            "ai_hostname", "webs_state_ai_flag", "webs_state_ai_info",
+        ], true);
+        return {
+            ai_hostname: data.ai_hostname || "",
+            ai_webs_state_flag: data.webs_state_ai_flag || "0",
+            webs_state_ai_info: data.webs_state_ai_info || "",
+        }
+    }
+    getAiboardInfoData().then(nvramData => {    //Update setting info
+        const {
+            ai_hostname,
+            ai_webs_state_flag,
+            webs_state_ai_info,
+        } = nvramData;
+
+        if (ai_hostname !== "") {
+            document.getElementById("ai_hostname").value = ai_hostname;
+        }
+
+        setTimeout(function () {
+            const ai_fw_version_array = httpApi.nvramGet(["ai_sys_fw_version", "ai_buildno", "ai_sys_fw_commit_number", "ai_sys_fw_commit_hash", "ai_sys_sdk_commit_number", "ai_sys_sdk_commit_hash"], true);
+            let ai_fw_version_str = ai_fw_version_array.ai_sys_fw_version + `.` + ai_fw_version_array.ai_buildno + `_` + ai_fw_version_array.ai_sys_fw_commit_number + `-g` + ai_fw_version_array.ai_sys_fw_commit_hash + `_` + ai_fw_version_array.ai_sys_sdk_commit_number + `-g` + ai_fw_version_array.ai_sys_sdk_commit_hash;
+            document.getElementById("currentFwVer").innerText = ai_fw_version_str;
+        }, 500);
+
+        if (ai_webs_state_flag == "2" || ai_webs_state_flag == "1") {
+            document.getElementById("upgradeBtn").style.display = "";
+            document.getElementById("update_states").classList.add("new_fw_info");
+            document.getElementById("update_states").innerText = `<#ADSL_FW_item3#> : ` + webs_state_ai_info;
+        }
+
+        // applyBtn click event
+        const ApplyBtn = document.getElementById("applyBtn");
+        ApplyBtn.addEventListener("click", () => {
+            //valid hostname
+            let alert_str = "";
+            const aiHostname = document.getElementById("ai_hostname");
+
+            if (!aiHostname.disabled) {
+                if (aiHostname.value.length < 5) {
+                    alert_str = "<#JS_short_username#>";
+                }
+                if (alert_str !== "") {
+                    const oldHint = document.getElementById("hint_ai_hostname");
+                    if (oldHint) oldHint.remove();
+
+                    const span = document.createElement("span");
+                    span.id = "hint_ai_hostname";
+                    span.textContent = alert_str;
+                    span.style.marginLeft = "10px";
+                    span.style.color = "rgb(0, 108, 225)";
+                    span.style.fontSize = "13px";
+
+                    aiHostname.insertAdjacentElement("afterend", span);
+                    aiHostname.focus();
+                }
+            }
+            if (alert_str !== "") {
+                return;
+            }
+
+            let postObject = {};
+            postObject.action_mode = "apply";
+            postObject.rc_service = "start_ai_request apply";
+
+            postObject.ai_portainer_enable = document.getElementById("enable_portainer_btn").classList.contains("active") ? "1" : "0";
+            postObject.ai_hostname = document.getElementById("ai_hostname").value;
+
+            let applyTime = 20;
+            httpApi.nvramSet(postObject, function () {
+                showLoading(applyTime);
+                setTimeout(function () {
+                    location.reload();
+                }, applyTime * 1000);
+            });
+        });
+    });
+
+    //Ajax ai_prog_status to determine whether to display show_progress()
+    //execute it while laoding this page
+    if (ai_fw_path_str.includes("aisom_reset.swu")) { //rescue
+        if (rescue_status_init != "" && rescue_status_init != "failed" && rescue_status_init != "DOCKER_DONE") {
+            setTimeout(function () {
+                let detailRescueLoader = null;
+                detailRescueLoader = new AsusLoaderComponent({
+                    id: 'loader',
+                    type: 'rescueDetail',
+                    seconds: null
+                });
+                top.loader = detailRescueLoader;
+
+                detailRescueLoader.show_progress("rescue");
+            }, 500);
+        }
+    } else if (ai_fw_path_str.includes("aisom.swu")) { //OTA
+        if (rescue_status_init != "" && rescue_status_init != "failed" && rescue_status_init != "DONE") {
+            setTimeout(function () {
+                let detailLoader = null;
+                detailLoader = new AsusLoaderComponent({
+                    id: 'loader',
+                    type: 'detail',
+                    seconds: null
+                });
+                top.loader = detailLoader;
+
+                detailLoader.show_progress("liveupdate");
+            }, 500);
+        }
+    }
+
+    function reset_portainer() {
+        let postObject = {};
+        postObject.ai_app_name = "reset_portainer";
+        postObject.action_mode = "apply";
+        postObject.rc_service = "start_ai_request app";
+
+        let resetTime = 40;
+        httpApi.nvramSet(postObject, function () {
+            showLoading(resetTime);
+
+            setTimeout(function () {
+                let queryPost = {};
+                queryPost.action_mode = "apply";
+                queryPost.rc_service = "start_ai_request query";
+                httpApi.nvramSet(queryPost);
+            }, (resetTime - 5) * 1000);
+
+            setTimeout(function () {
+                location.reload();
+            }, resetTime * 1000);
+        });
+    }
+
+    // reset_portainer_btn click event
+    document.getElementById("reset_portainer_btn").addEventListener('click', () => reset_portainer());
+
+
+    // checkBtn click event
+    const checkBtn = document.getElementById("checkBtn");
+    checkBtn.addEventListener("click", applyUpdate);
+
+    function applyUpdate() {
+        document.getElementById("checkBtn").classList.add('d-none');
+        let postObject = {};
+        postObject.action_mode = "apply";
+        postObject.webs_update_trigger = "FWUG";
+        postObject.rc_service = "start_webs_update";
+
+        httpApi.nvramSet(postObject);
+        document.getElementById('upgradeBtn').style.display = "none";
+        document.getElementById('update_states').style.display = "";
+        document.getElementById("update_states").classList.remove('new_fw_info');
+        document.getElementById('update_states').innerHTML = "<#check_proceeding#>";
+        document.getElementById('update_scan').style.display = "";
+
+        setTimeout(() => detect_firmware(), 3000);
+    }
+
+    // upgradeBtn click event
+    const upgradeBtn = document.getElementById("upgradeBtn");
+    upgradeBtn.addEventListener("click", function () {
+        applyDownloadUpgrade();
+    });
+
+    function applyDownloadUpgrade() {
+        let detailLoader = null;
+        detailLoader = new AsusLoaderComponent({
+            id: 'loader',
+            type: 'detail',
+            seconds: null
+        });
+        top.loader = detailLoader;
+
+        let postObject = {};
+        postObject.action_mode = "apply";
+        postObject.rc_service = "start_webs_ai_upgrade";
+        httpApi.nvramSet(postObject, function () {
+            detailLoader.show_progress('liveupdate');
+        });
+    }
+
+
+    // rescueBtn click event
+    const rescueBtn = document.getElementById("rescueBtn");
+    rescueBtn.addEventListener("click", function () {
+        if (confirm(
+            `
+                        Remind: Reset Operation
+                        You are about to perform a complete reset of the device. This operation will:
+                        • Erase all existing data and settings
+                        • Reinstall the system image and necessary components
+                        • Reconfigure the Docker environment
+
+                        This process will take approximately 30-40 minutes to complete and cannot be interrupted.
+                        Please ensure stable power supply and do not disconnect from the network.
+
+                        Are you sure you want to proceed with the reset?
+                    `
+        )) {
+            applyRescue();
+        }
+    });
+
+    function applyRescue() {
+        let detailRescueLoader = null;
+        detailRescueLoader = new AsusLoaderComponent({
+            id: 'loader',
+            type: 'rescueDetail',
+            seconds: null
+        });
+        top.loader = detailRescueLoader;
+
+        const now = new Date();
+        const unixUTC = Math.floor(now.getTime() / 1000);
+        let postObject = {};
+        postObject.ai_rescue_ts = unixUTC;
+        postObject.action_mode = "apply";
+        postObject.rc_service = "start_webs_ai_rescue";
+        httpApi.nvramSet(postObject, function () {
+            detailRescueLoader.show_progress('rescue');
+        });
+    }
+
+    // rebootBtn click event
+    const rebootBtn = document.getElementById("rebootBtn");
+    rebootBtn.addEventListener("click", function () {
+        applyReboot();
+    });
+    let rebootTime = 30;
+
+    function applyReboot() {
+        let postObject = {};
+        postObject.action_mode = "apply";
+        postObject.rc_service = "start_ai_reboot";
+        httpApi.nvramSet(postObject, function () {
+            showLoading(rebootTime);
+            setTimeout(function () {
+                location.reload();
+            }, rebootTime * 1000);
+        });
+    }
+
+    // Router assistant input
+    const assistantInput = document.getElementById('router-assistant-input');
+
+    // AI tip hover typing animation
+    const exampleInput = document.querySelector('.ai-example-input input');
+    const exampleResult = document.querySelector('.ai-example-result');
+    const exampleQuestion = document.getElementById('ai-example-question');
+    const exampleAnswer = document.getElementById('ai-example-answer');
+    let typingInterval = null;
+    let currentTipText = '';
+
+    const qaDatas = [
+        {
+            question: `What can 'Router assistant' do?`,
+            answer: `I can provide a brief router system status report, quick answers for some technical questions and helps to do some actions.`
+        },
+        {
+            question: `How do you set the ASUS router to wireless access point mode using the ASUS router app?`,
+            answer: `Log in to the ASUS router app, go to Settings > System Settings > Operation Mode, select Access Point(AP) Mode, tap Apply, and follow the app instructions to complete the setup.`
+        },
+        {
+            question: `How can I optimize my ASUS router connection to reduce lag when playing online games?`,
+            answer: `Enable Adaptive QoE [game mode] to prioritize gaming traffic, connect your device via wired Ethernet instead of WiFi, if you still want to use WiFi, try to use 5GHz or 6GHz, and place router closer to your devices.`
+        },
+        {
+            question: `Can I assign a preferred Uplink AP in an AiMesh system?`,
+            answer: `Connect to the router via wired or WiFi and access the Web GUI using the router LAN IP or [ASUSWRT](http://www.asusrouter.com), log in with your credentials, go to AiMesh > Topology > Management > Uplink AP.`
+        },
+        {
+            question: `What is the function and benefit of WiFi Insight smart channel switching in routers?`,
+            answer: `WiFi Insight smart channel switching continuously monitors and records channel changes across all router bands, analyzes interference sources, device connections, and network quality...`
+        },
+        {
+            question: `How to setup AiMesh system (Web GUI)?`,
+            answer: `In app, Click Add button on the top-right corner and follow the instructions in app. On web GUI, navigate to AiMesh and click add AiMesh node.`
+        },
+        {
+            question: `How many devices are currently connected to my network?`,
+            answer: `Current number of connected devices: 10 (example)`
+        },
+        {
+            question: `What steps can I take to improve slow WiFi speed on my ASUS router?`,
+            answer: `Restart your router, ensure the router is placed in an open area, reduce interference from other electronic devices, disconnect unused devices, switch to a less congested WiFi channel.`
+        },
+        {
+            question: `Can I use VPN on my router to access streaming services?`,
+            answer: `You can set up a VPN client (VPN Fusion) on your ASUS router to route all devices or selected devices through the VPN and potentially access region-restricted streaming services.`
+        },
+        {
+            question: `Will router assistants record my personal data?`,
+            answer: `No, it does not record personal data.`
+        }
+    ]
+
+    const aiTipsContainer = document.getElementById('ai-tips');
+
+    // Randomly select 3 questions
+    const shuffled = [...qaDatas].sort(() => Math.random() - 0.5);
+    const selectedQuestions = shuffled.slice(0, 3);
+
+    selectedQuestions.forEach(qa => {
+        const tip = document.createElement('div');
+        tip.className = 'ai-tip';
+        tip.textContent = qa.question;
+        aiTipsContainer.appendChild(tip);
+    });
+
+    function typeText(text, callback) {
+        let index = 0;
+        exampleInput.value = '';
+
+        clearInterval(typingInterval);
+
+        typingInterval = setInterval(() => {
+            if (index < text.length) {
+                exampleInput.value += text[index];
+                index++;
+            } else {
+                clearInterval(typingInterval);
+                if (callback) callback();
+            }
+        }, 20);
+    }
+
+    function showAnswer(question) {
+        const qaItem = qaDatas.find(qa => qa.question === question);
+        const answer = qaItem ? qaItem.answer : "No answer available for this question.";
+        exampleQuestion.textContent = question;
+        exampleAnswer.textContent = answer;
+        exampleResult.style.display = 'flex';
+    }
+
+    function hideAnswer() {
+        exampleResult.style.display = 'none';
+        exampleQuestion.textContent = '';
+        exampleAnswer.textContent = '';
+    }
+
+    // Get all dynamically created tips
+    const aiTips = document.querySelectorAll('.ai-tip');
+    aiTips.forEach(tip => {
+        tip.addEventListener('mouseenter', () => {
+            const tipText = tip.textContent.trim();
+            if (currentTipText !== tipText) {
+                hideAnswer(); // Hide previous answer first
+                clearInterval(typingInterval); // Stop any ongoing typing
+                exampleInput.value = ''; // Clear text immediately
+                currentTipText = tipText;
+                typeText(tipText, () => {
+                    // Show answer after typing is complete
+                    setTimeout(() => {
+                        showAnswer(tipText);
+                    }, 500);
+                });
+            }
+        });
+
+        // Click event to submit question to router assistant
+        tip.addEventListener('click', () => {
+            const question = tip.textContent.trim();
+            if (assistantInput) {
+                assistantInput.value = question;
+                assistantInput.focus();
+                assistantInput.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter', bubbles: true}));
+            }
+        });
+    });
+
+    // Clear on mouse leave from all tips
+    if (aiTipsContainer) {
+        aiTipsContainer.addEventListener('mouseleave', () => {
+            clearInterval(typingInterval);
+            exampleInput.value = '';
+            currentTipText = '';
+            hideAnswer();
+        });
+    }
+
+    // Mouse drag scroll functionality
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    aiTipsContainer.addEventListener('mousedown', (e) => {
+        isDown = true;
+        aiTipsContainer.style.cursor = 'grabbing';
+        startX = e.pageX - aiTipsContainer.offsetLeft;
+        scrollLeft = aiTipsContainer.scrollLeft;
+    });
+
+    aiTipsContainer.addEventListener('mouseleave', () => {
+        isDown = false;
+        aiTipsContainer.style.cursor = 'grab';
+    });
+
+    aiTipsContainer.addEventListener('mouseup', () => {
+        isDown = false;
+        aiTipsContainer.style.cursor = 'grab';
+    });
+
+    aiTipsContainer.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - aiTipsContainer.offsetLeft;
+        const walk = (x - startX) * 2;
+        aiTipsContainer.scrollLeft = scrollLeft - walk;
+    });
+
+    // Mouse wheel horizontal scroll
+    aiTipsContainer.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        aiTipsContainer.scrollLeft += e.deltaY;
+    });
+
+
+    // aiProtection
+    const ark_adblock_init = await httpApi.nvramGet(["ark_adblock_enable"], true).ark_adblock_enable;
+    const ark_adblock_switch = document.querySelector('#ark_adblock_switch');
+    if (ark_adblock_init == "1") {
+        ark_adblock_switch.classList.add("active");
+    } else {
+        ark_adblock_switch.classList.remove("active");
+    }
+    ark_adblock_switch.addEventListener('click', () => {
+        ark_adblock_switch.classList.toggle("active");
+        const active = ark_adblock_switch.classList.contains("active");
+        const value = active ? "1" : "0";
+        showLoading();
+        httpApi.nvramSet({
+            "ark_adblock_enable": value,
+            "wrs_protect_enable": "1",
+            "action_mode": "apply",
+            "rc_service": "restart_ark",
+        }, () => {
+            hideLoading();
+        })
+    });
+
+</script>
+</body>
+</html>

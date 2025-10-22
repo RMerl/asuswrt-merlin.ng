@@ -265,7 +265,7 @@ function selectSetting() {
 	            								</th>
 	            								<td colspan = "4">
 													<div style="float:left;">
-														<input class="btn_subusage button_gen" onclick="restoreRule('restore');" type="button" value="<#CTL_restore#>" name="action1" />
+														<input class="button_gen_in_table btn_subusage button_gen" onclick="restoreRule('restore');" type="button" value="<#CTL_restore#>" name="action1" />
 													</div>
 													<div id="restoreInit_div">
 														<div style="float:left;margin-left:5px;">
@@ -284,7 +284,7 @@ function selectSetting() {
 												</th>
 												<td>
 													<div style="float:left;display:table-cell">
-														<input class="btn_subusage button_gen" onclick="saveSetting('Router');" type="button" value="<#Setting_save_itemname#>" name="action2" />
+														<input class="button_gen_in_table btn_subusage button_gen" onclick="saveSetting('Router');" type="button" value="<#Setting_save_itemname#>" name="action2" />
 													</div>
 													<div style="display:table-cell">
 														<div id="remove_passwd_field" style="display:table-row">
@@ -315,7 +315,7 @@ function selectSetting() {
 														<table>
 															<tr>
 																<td style="border:0px">
-																	<input type="button" class="btn_subusage button_gen" onclick="selectSetting();" value="<#CTL_upload#>"/>
+																	<input type="button" class="button_gen_in_table btn_subusage button_gen" onclick="selectSetting();" value="<#CTL_upload#>"/>
 																</td>
 																<td style="display:none;">
 																	<input type="file" name="file" class="input"  accept=".CFG" style="color:#FFCC00;"/>

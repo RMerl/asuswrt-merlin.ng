@@ -21,6 +21,15 @@ $(document).ready(function(){
 	initial();
 });
 
+window.addEventListener('message', event => {
+	if (event.data.type === 'resize') {
+		document.getElementById('mtwan_iframe').style.height = `${event.data.height+50}px`
+	}
+	
+	if(parent.webWrapper)
+		window.parent.postMessage({ type: 'resize', height: event.data.height }, '*');
+});
+
 function load_page(){
 	document.getElementById("mtwan_iframe").style.height = "1452px";
 	var curTheme = (top.webWrapper) ? "?current_theme=white" : "";

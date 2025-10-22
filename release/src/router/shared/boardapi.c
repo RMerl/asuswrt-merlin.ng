@@ -53,7 +53,9 @@ static const struct led_btn_table_s {
 } led_btn_table[] = {
 	/* button */
 	{ "btn_rst_gpio",	&btn_gpio_table[BTN_RESET] },
+#ifndef RTCONFIG_NOWL
 	{ "btn_wps_gpio",	&btn_gpio_table[BTN_WPS] },
+#endif
 #ifdef RTCONFIG_SWMODE_SWITCH
 #if defined(PLAC66U)
 	{ "btn_swmode1_gpio",	&btn_gpio_table[BTN_SWMODE_SW_ROUTER] },
@@ -92,25 +94,33 @@ static const struct led_btn_table_s {
 #if defined(RTCONFIG_PWRRED_LED)
 	{ "led_pwr_red_gpio",	&led_gpio_table[LED_POWER_RED] },
 #endif
+#ifndef RTCONFIG_NOWL
 	{ "led_wps_gpio",	&led_gpio_table[LED_WPS] },
 	{ "led_2g_gpio",	&led_gpio_table[LED_2G] },
 	{ "led_5g_gpio",	&led_gpio_table[LED_5G] },
 	{ "led_5g2_gpio",	&led_gpio_table[LED_5G2] },
 	{ "led_60g_gpio",	&led_gpio_table[LED_60G] },
+#endif
 #ifdef RTCONFIG_LAN4WAN_LED
 	{ "led_lan1_gpio",	&led_gpio_table[LED_LAN1] },
 	{ "led_lan2_gpio",	&led_gpio_table[LED_LAN2] },
 	{ "led_lan3_gpio",	&led_gpio_table[LED_LAN3] },
 	{ "led_lan4_gpio",	&led_gpio_table[LED_LAN4] },
 #else
+#ifndef EBG19P
 	{ "led_lan_gpio",	&led_gpio_table[LED_LAN] },
+#endif
 #endif
 #if defined(RTAX86U) || defined(RTAX86U_PRO)
 	{ "led_lan_gpio",	&led_gpio_table[LED_LAN] },
 #endif
+#ifndef EBG19P
 	{ "led_wan_gpio",	&led_gpio_table[LED_WAN] },
+#endif
 #ifdef HND_ROUTER
+#ifndef EBG19P
 	{ "led_wan_normal_gpio",&led_gpio_table[LED_WAN_NORMAL] },
+#endif
 #endif
 #ifdef RTCONFIG_EXTPHY_BCM84880
 	{ "led_extphy_gpio",&led_gpio_table[LED_EXTPHY] },
@@ -130,8 +140,10 @@ static const struct led_btn_table_s {
 #if defined(RTCONFIG_M2_SSD)
 	{ "led_sata_gpio",	&led_gpio_table[LED_SATA] },
 #endif
+#ifndef EBG19P
 	{ "led_usb_gpio",	&led_gpio_table[LED_USB] },
 	{ "led_usb3_gpio",	&led_gpio_table[LED_USB3] },
+#endif
 #ifdef RTCONFIG_MMC_LED
 	{ "led_mmc_gpio",	&led_gpio_table[LED_MMC] },
 #endif
@@ -144,7 +156,9 @@ static const struct led_btn_table_s {
 #ifdef RTCONFIG_LOGO_LED
 	{ "led_logo_gpio",	&led_gpio_table[LED_LOGO] },
 #endif
+#ifndef EBG19P
 	{ "led_wan_red_gpio",	&led_gpio_table[LED_WAN_RED] },
+#endif
 #if defined(RTCONFIG_WANLEDX2) && defined(RTCONFIG_WANRED_LED)
 	{ "led_wan2_red_gpio",	&led_gpio_table[LED_WAN2_RED] },
 #endif
@@ -374,6 +388,11 @@ static const struct led_btn_table_s {
         { "led_ar3012_dis_gpio",          &led_gpio_table[LED_AR3012_DIS] },
         { "led_ar3012_rst_gpio",          &led_gpio_table[LED_AR3012_RST] },
         { "led_ethall_gpio",          	  &led_gpio_table[LED_ETHALL] },
+#endif
+#if defined(EBG19P)
+	{ "led_ar3012_dis_gpio",          &led_gpio_table[LED_AR3012_DIS] },
+	{ "led_ar3012_rst_gpio",          &led_gpio_table[LED_AR3012_RST] },
+	{ "led_poe_alert_gpio",           &led_gpio_table[LED_POE_ALERT] },
 #endif
 #if defined(RTBE96U) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	{ "led_afc_gpio",		&led_gpio_table[LED_AFC] },
@@ -658,7 +677,7 @@ int init_gpio(void)
 #endif
 
 #if !defined(RTCONFIG_CONCURRENTREPEATER)
-#if defined(EBG15) || defined(EBG19)
+#if defined(EBG15) || defined(EBG19) || defined(EBG19P)
 		if(i == LED_POWER)
 			set_gpio(gpio_pin, enable);
 		else	
@@ -765,7 +784,7 @@ dump_ledtable()
 	for(i=0; i<BTN_ID_MAX; i++)
 		printf("tb_btn[%d]=%04x\n", i, btn_gpio_table[i]);
 }
-#ifdef EBG19
+#if defined(EBG19) || defined(EBG19P)
 int rtkswitch_LanPort_linkUp(void)
 {
 	eval("rtkswitch", "5");
@@ -970,7 +989,10 @@ int button_pressed(int which)
 
 	if (which < 0 || which >= BTN_ID_MAX)
 		return -1;
-
+#if defined(EBG19P) || defined(EBG15)
+        if (which == BTN_WPS)
+                return 0;
+#endif
 	get_gpio_values_once(0);
 	use_gpio = btn_gpio_table[which];
 	if((use_gpio&0xff)!=0x0ff)
@@ -978,6 +1000,8 @@ int button_pressed(int which)
 		gpio_value = get_gpio(use_gpio&0xff);
 
 		//_dprintf("use_gpio: %x gpio_value: %x\n", use_gpio, gpio_value);
+		if (gpio_value == -1)
+			return 0;	// invalid state, return no-pressed
 
 		if((use_gpio&GPIO_ACTIVE_LOW)==0) // active high case
 			return gpio_value==0 ? 0 : 1;
@@ -1494,7 +1518,7 @@ int lanport_ctrl(int ctrl)
 		system("/usr/bin/switch_cli GSW_MDIO_DATA_WRITE nAddressDev=5 nAddressReg=0 nData=0x1c00");
 	}
 	return 1;
-#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(EBG19) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(EBG19P) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 	if (ctrl)
 #if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 		mxlswitch_LanPort_linkUp();
@@ -1578,7 +1602,7 @@ int lanport_ctrl(int ctrl)
 		system("ethctl eth0 phy-reset");
 #endif
 
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19P) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 #if !defined(EBG19)
 	if (is_rtl8372_boardid())
 #endif

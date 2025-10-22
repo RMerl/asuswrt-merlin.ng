@@ -118,6 +118,7 @@ extern int cm_checkReListUpdate(char *newReMac, char *sta2gMac, char *sta5gMac, 
 extern void cm_updateReList(char *newReMac, char *sta2gMac, char *sta5gMac, char *sta6gMac, int action);
 extern void cm_handleReListUpdate(unsigned char *decodeMsg);
 extern int cm_isReWifiUpstreamMac(char *staMac);
+extern int cm_isReUpstreamMac(char *mac);
 extern int cm_prepareReListMsg(char *msg, int msgLen);
 extern void cm_generateReList();
 extern void cm_updateReListTimestamp(unsigned char *decodeMsg);
@@ -158,6 +159,7 @@ extern int cm_checkIdData(unsigned char *msg, int index);
 #ifdef AFC_ENABLED
 extern json_object *cm_getConnectedChildReList(CM_CLIENT_TABLE *clientTbl, char *reMac);
 #endif
+extern char *cm_getCobrandByMac(char *mac, char *cobrand, int cobrandLen);
 
 #endif /* __CFG_SLAVELIST_H__ */
 /* End of cfg_slavelist.h */

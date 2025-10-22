@@ -1658,13 +1658,15 @@ function genMain_table(){
 	code += '<tr id="main_element">';
 	code += '<td style="background:#2F3A3E"><div id="enable_button" class="check" style="width:22px;height:22px;margin:0 auto;display:none"><div style="width:16px;height:16px;margin: 3px auto" class="icon_check"></div></div>-</td>';
 	code += '<td style="border-bottom:2px solid #000;">';
+    code += '<div class="clientlist_dropdown_main" style="width: 100%">';
 	if(pm_support)
-		code += '<input type="text" style="margin-left:10px;float:left;width:255px;" class="input_20_table" name="PC_devicename" onkeyup="device_filter(this);check_field();" placeholder="Please select the Device Group Name" autocorrect="off" autocapitalize="off" autocomplete="off" disabled>';/*untranslated*/
+		code += '<input type="text" class="input_20_table" name="PC_devicename" onkeyup="device_filter(this);check_field();" placeholder="Please select the Device Group Name" autocorrect="off" autocapitalize="off" autocomplete="off" disabled>';/*untranslated*/
 	else
-		code += '<input type="text" style="margin-left:10px;float:left;width:255px;" class="input_20_table" name="PC_devicename" onkeyup="device_filter(this);check_field();" placeholder="<#AiProtection_client_select#>" autocorrect="off" autocapitalize="off" autocomplete="off">';
+		code += '<input type="text" class="input_20_table" name="PC_devicename" onkeyup="device_filter(this);check_field();" placeholder="<#AiProtection_client_select#>" autocorrect="off" autocapitalize="off" autocomplete="off">';
 	code += '<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullLANIPList(this);" title="<#select_client#>">';
-	code += '<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-top:25px;margin-left:10px;"></div>';
-	code += '</td>';
+	code += '<div id="ClientList_Block_PC" class="clientlist_dropdown"></div>';
+	code += '</div>';
+    code += '</td>';
 	code += '<td style="border-bottom:2px solid #000;text-align:right;"><input type="text" id="download_rate" class="input_6_table" maxlength="6" onkeypress="return validator.bandwidth_code(this, event);" onkeyup="check_field();"><span style="margin: 0 5px;color:#FFF;">Mb/s</span></td>';
 	code += '<td style="border-bottom:2px solid #000;text-align:right;"><input type="text" id="upload_rate" class="input_6_table" maxlength="6" onkeypress="return validator.bandwidth_code(this, event);" onkeyup="check_field();"><span style="margin: 0 5px;color:#FFF;">Mb/s</span></td>';
 	code += '<td style="border-bottom:2px solid #000;"><div id="add_delete" class="add_disable" style="margin:0 auto" onclick="addRow_main(this, 32)"></div></td>';

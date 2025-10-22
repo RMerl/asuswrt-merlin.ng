@@ -185,6 +185,7 @@ static int _dns_check(const int wan_unit)
 static int _set_link_internet(const int wan_unit, const int link_internet, int *success_cnt, int *fail_cnt)
 {
 	char name[128];
+	int maxfail, fb_count;
 
 #ifdef RTCONFIG_MULTIWAN_PROFILE
 	if (wan_unit != WAN_UNIT_NONE)
@@ -192,21 +193,42 @@ static int _set_link_internet(const int wan_unit, const int link_internet, int *
 	if(is_mtwan_unit(wan_unit))
 #endif
 	{
+		snprintf(name, sizeof(name), "wan%d_maxfail", wan_unit);
+		maxfail = nvram_get_int(name);
+		snprintf(name, sizeof(name), "wan%d_fb_count", wan_unit);
+		fb_count = nvram_get_int(name);
+
 		snprintf(name, sizeof(name), "wan%d_link_internet", wan_unit);
-		nvram_set_int(name, link_internet);
+		if(maxfail < 1)
+			maxfail = nvram_get_int("wan_wandog_maxfail");
+		if(fb_count < 1)
+			maxfail = nvram_get_int("wan_wandog_fb_count");
+
 		if(link_internet == 2)
 		{
 			if(success_cnt)
+			{
 				(*success_cnt) ++;
-			if(fail_cnt)
-				(*fail_cnt) = 0;
+				if(*success_cnt >= fb_count)
+				{
+					if(fail_cnt)
+						(*fail_cnt) = 0;
+					nvram_set_int(name, link_internet);
+				}
+			}
 		}
 		else
 		{
-			if(success_cnt)
-				(*success_cnt) =0;
 			if(fail_cnt)
+			{
 				(*fail_cnt) ++;
+				if(*fail_cnt >= maxfail)
+				{
+					if(success_cnt)
+						(*success_cnt) =0;
+					nvram_set_int(name, link_internet);
+				}
+			}
 		}
 		return 0;
 	}
@@ -221,10 +243,12 @@ void  *mtwan_detect_internet(void *arg)
 	char prefix[] = "wanXXXX_", tmp[256];
 	LList *lst;
 	CHECK_WAN *chk_wan;
+	int x_Setting = 0;
 
 	_dprintf("[%s]Start!\n", __FUNCTION__);
 	while(!stop)
 	{
+		x_Setting = nvram_get_int("x_Setting");
 		for(i = 0; i < MAX_MULTI_WAN_NUM; ++i)
 		{
 			cur_tm = uptime();
@@ -282,8 +306,9 @@ void  *mtwan_detect_internet(void *arg)
 			}
 			else if(chk_wan && (cur_tm - chk_wan->last_check_tm >= wandog_interval))
 			{
+#if !defined(RTCONFIG_MULTIWAN_PROFILE)
 				default_route_ret = found_default_route(real_unit);
-
+#endif
 				if(wandog_enable == 1)
 				{
 					//_dprintf("[%s, %d]do _ping_check\n", __FUNCTION__, __LINE__);
@@ -296,7 +321,17 @@ void  *mtwan_detect_internet(void *arg)
 				}
 				chk_wan->last_check_tm = cur_tm;
 				conn_flag = 1;
+				if (x_Setting == 0)
+				{
+					dns_ret = _dns_check(real_unit);
+					if(!dns_ret)
+					{
+						conn_flag = 2;
+					}
+				}
+#if !defined(RTCONFIG_MULTIWAN_PROFILE)
 				if(default_route_ret)
+#endif
 				{
 					if(wandog_enable && dns_check && !ping_ret && !dns_ret)
 					{
@@ -312,7 +347,10 @@ void  *mtwan_detect_internet(void *arg)
 					}
 					else if(!wandog_enable && !dns_check)
 					{
-						conn_flag = 2;
+						if (x_Setting)
+						{
+							conn_flag = 2;
+						}
 					}
 				}
 				_set_link_internet(real_unit, conn_flag, &(chk_wan->success_cnt), &(chk_wan->fail_cnt));

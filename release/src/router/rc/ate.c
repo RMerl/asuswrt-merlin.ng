@@ -29,6 +29,33 @@
 extern int cled_gpio[];
 #endif
 
+char *string_to_uppercase(const char *input, char *output, size_t output_length)
+{
+	if(input == NULL || output == NULL)
+	{
+		_dprintf("Error: Input or output string is NULL.\n");
+		return NULL;
+	}
+
+	size_t input_len = strlen(input);
+
+	if(output_length <= input_len)
+	{
+		_dprintf("Error: Output buffer is too small.\n");
+		return NULL;
+	}
+
+	// Perform the transformation.
+	for(size_t i = 0; i < input_len; ++i)
+	{
+		output[i] = toupper((unsigned char)input[i]);
+	}
+
+	output[input_len] = '\0';
+
+	return output;
+}
+
 static int setAllSpecificColorLedOn(enum ate_led_color color)
 {
 	int i, model = get_model();
@@ -2582,23 +2609,338 @@ void asus_ate_StartATEMode(void)
 	stop_services_mfg();
 }
 
-#if defined(RTCONFIG_AI_SERVICE)
-int GetAIMacAddr(){
-	int ret = -1;
-	char tmp[32] = {0};
-	
-	ret = system("ping -c 1 169.254.0.2 > /dev/null 2>&1");
-	if(ret) return ret;
+#ifdef RTCONFIG_AI_SERVICE
+int GetAIBoardInfo(void)
+{
+	int retry = 15;
 
-	ret = system("nvram set ate_ai_macaddr=$(arp 169.254.0.2 | awk '{print toupper($4)}')");
-	if(ret) return ret;
+	nvram_set("ai_sys_status", AI_REQ_ST_START);
+	send_ai_request(AI_STA_REQ);
 
-	strlcpy(tmp, nvram_safe_get("ate_ai_macaddr"), sizeof(tmp));
-	puts(tmp);
-	
-	return ret;	
+	while((!nvram_match("ai_sys_status", AI_REQ_ST_COMPLETE)) && retry)
+	{
+		sleep(1);
+		retry --;
+	}
+
+	if(nvram_match("ai_sys_status", AI_REQ_ST_COMPLETE))
+	{
+		puts("ATE_OK");
+		return 0;
+	}
+	else
+	{
+		puts("ATE_ERROR");
+		return -1;
+	}
 }
-#endif
+
+int GetAIFwVersion(void)
+{
+	char aiboardFW[256] = {0};
+
+	snprintf(aiboardFW, sizeof(aiboardFW), "%s_%s_%s-g%s_%s-g%s_%s",
+		nvram_safe_get(AI_NVM_FW_VERSION),
+		nvram_safe_get("ai_buildno"),
+		nvram_safe_get("ai_sys_fw_commit_number"),
+		nvram_safe_get("ai_sys_fw_commit_hash"),
+		nvram_safe_get("ai_sys_sdk_commit_number"),
+		nvram_safe_get("ai_sys_sdk_commit_hash"),
+		strlen(nvram_safe_get("ai_sdk_version_code"))?nvram_safe_get("ai_sdk_version_code"):AI_SDK_VER_CODE
+	);
+
+	if(strlen(aiboardFW) > 7)
+	{
+		puts(aiboardFW);
+		return 0;
+	}
+	else
+	{
+		puts("ATE_ERROR");
+		return -1;
+	}
+}
+
+int GetAIMacAddr(void)
+{
+	char macAddr[32] = {0};
+
+	snprintf(macAddr, sizeof(macAddr), "%s", nvram_safe_get("ai_sys_mac_address"));
+	if(strlen(macAddr) > 0)
+	{
+		puts(macAddr);
+		return 0;
+	}
+	else
+	{
+		puts("ATE_ERROR");
+		return -1;
+	}
+}
+
+// If ethernet IP of AI board is dynamic (DHCP) => ATE_OK
+// Others => ATE_ERROR
+int IsAIDHCP(void)
+{
+	if(strstr(nvram_safe_get("ai_sys_proto"), "DHCP"))
+	{
+		puts("ATE_OK");
+		return 0;
+	}
+	else
+	{
+		puts("ATE_ERROR");
+		return -1;
+	}
+}
+
+// If SSH of AI board is disabled => ATE_OK
+// Others => ATE_ERROR
+int CheckAISSHDisable(void)
+{
+	char buf[512] = {0};
+	char cmd[512] = {0};
+	FILE *fp = NULL;
+	int key_found = 0;
+
+	snprintf(cmd, sizeof(cmd),
+			"echo '%s sl1680' >> /etc/hosts;export DROPBEAR_PASSWORD='00000000';ssh -y sshuser@sl1680 '/bin/pwd' 2>&1",
+			AIBOARD_CONTROL_IP);
+
+	fp = popen(cmd, "r");
+
+	if(fp)
+	{
+		while(fgets(buf, sizeof(buf), fp))
+		{
+			//_dprintf("buf=[%s]\n", buf);
+			if(strstr(buf, "exited: Remote closed the connection"))
+			{
+				key_found = 1;
+				break;
+			}
+		}
+		pclose(fp);
+	}
+
+	if(key_found == 1)
+	{
+		puts("ATE_OK");
+		return 0;
+	}
+	else
+	{
+		puts("ATE_ERROR");
+		return -1;
+	}
+}
+
+volatile sig_atomic_t timeout_occurred = 0;
+
+void timeout_handler(int signum) {
+    (void)signum; // Suppress unused parameter warning
+    timeout_occurred = 1;
+}
+
+// 0: failed to ping
+// 1: ever ping successfully
+int ping_host(const char *hostname) {
+	pid_t pid;
+	int status;
+
+	struct sigaction sa;
+	memset(&sa, 0, sizeof(sa));
+	sa.sa_handler = timeout_handler;
+	sigemptyset(&sa.sa_mask);
+	if(sigaction(SIGALRM, &sa, NULL) == -1)
+	{
+		perror("sigaction");
+		return 0;
+	}
+
+	pid = fork();
+
+	if(pid == -1)
+	{
+		perror("fork");
+		return 0;
+	}
+
+	if(pid == 0)
+	{
+		// Child process: Execute the ping command, redirecting output
+		// Redirect both stdout (1) and stderr (2) to /dev/null for not showing the ping messages
+		freopen("/dev/null", "w", stdout);
+		freopen("/dev/null", "w", stderr);
+		execlp("ping", "ping", "-c", "1", hostname, NULL);
+		perror("execlp"); // Only reached if execlp fails
+		exit(127); // Exit with an error code
+	}
+	else
+	{
+		// Parent process: Set the alarm and wait for the child
+		alarm(5); // Set the alarm for 5 seconds
+
+		if(waitpid(pid, &status, 0) == -1)
+		{
+			if(timeout_occurred)
+			{
+				kill(pid, SIGTERM); // Terminate the child process if it's still running
+				waitpid(pid, &status, 0); // Clean up the zombie process
+				return 0; // Indicate timeout
+			}
+			else
+			{
+				perror("waitpid");
+				return 0; // Indicate failure
+			}
+		}
+		else
+		{
+			alarm(0); // Cancel the alarm
+			if(WIFEXITED(status))
+			{
+				int exit_status = WEXITSTATUS(status);
+				if(exit_status == 0)
+				{
+					// Ping was successful
+					return 1;
+				}
+				else
+				{
+					// Ping failed (host unreachable, etc.)
+					return 0; // Indicate failure
+				}
+			}
+			else
+			{
+				// Child process terminated abnormally
+				return 0;
+			}
+		}
+	}
+}
+
+// GPIO16 = reboot
+int Check_Gpio16_AI(void)
+{
+	int result = -1;
+
+	start_ai_reboot();
+
+	result = ping_host(AIBOARD_CONTROL_IP);
+
+	if(result == 1)
+	{
+		puts("ATE_ERROR");
+		return -1;
+	}
+	else
+	{
+		puts("ATE_OK");
+		return 0;
+	}
+}
+
+// GPIO16 = message
+int Check_Gpio21_AI(void)
+{
+	return GetAIBoardInfo();
+}
+
+int getAIHwVersion(void)
+{
+	char hwVer[32] = {0};
+
+	snprintf(hwVer, sizeof(hwVer), "%s", nvram_safe_get(AI_NVM_HW_VERSION));
+	if(strlen(hwVer) > 0)
+	{
+		puts(hwVer);
+		return 0;
+	}
+	else
+	{
+		puts("ATE_ERROR");
+		return -1;
+	}
+}
+
+int getAIProdDate(void)
+{
+	char output[32] = {0};
+
+	snprintf(output, sizeof(output), "%s", nvram_safe_get(AI_NVM_PROD_DATE));
+	if(strlen(output) > 0)
+	{
+		puts(output);
+		return 0;
+	}
+	else
+	{
+		puts("ATE_ERROR");
+		return -1;
+	}
+}
+
+int getAISerialNumber(void)
+{
+	char output[32] = {0};
+
+	snprintf(output, sizeof(output), "%s", nvram_safe_get(AI_NVM_SERIAL_NUMBER));
+	if(strlen(output) > 0)
+	{
+		puts(output);
+		return 0;
+	}
+	else
+	{
+		puts("ATE_ERROR");
+		return -1;
+	}
+}
+
+int getAIHwRevision(void)
+{
+	char output[32] = {0};
+
+	snprintf(output, sizeof(output), "%s", nvram_safe_get(AI_NVM_HW_REVISION));
+	if(strlen(output) > 0)
+	{
+		puts(output);
+		return 0;
+	}
+	else
+	{
+		puts("ATE_ERROR");
+		return -1;
+	}
+}
+
+int setAIResetDefault(void)
+{
+	int retry = 30;
+
+	nvram_set("ai_def_status", AI_REQ_ST_START);
+	send_ai_request(AI_RST_REQ);
+
+	while((!nvram_match("ai_def_status", AI_REQ_ST_COMPLETE)) && retry)
+	{
+		sleep(1);
+		retry --;
+	}
+
+	if(nvram_match("ai_def_status", AI_REQ_ST_COMPLETE))
+	{
+		puts("ATE_OK");
+		return 0;
+	}
+	else
+	{
+		puts("ATE_ERROR");
+		return -1;
+	}
+}
+#endif /* RTCONFIG_AI_SERVICE */
 
 int asus_ate_command(const char *command, const char *value, const char *value2)
 {
@@ -2632,14 +2974,65 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		puts("1");
 		return 0;
 	}
-#if defined(RTCONFIG_AI_SERVICE)
+#ifdef RTCONFIG_AI_SERVICE
+	else if (!strcmp(command, "Get_Info_AI")) {
+		return GetAIBoardInfo();
+	}
+	else if (!strcmp(command, "Get_FwVersion_AI")) {
+		return GetAIFwVersion();
+	}
 	else if (!strcmp(command, "Get_MacAddr_AI")) {
-		int ai_ret = -1;
-		ai_ret = GetAIMacAddr();
-		if(ai_ret) puts("Get_MacAddr FAIL");
+		return GetAIMacAddr();
+	}
+	else if (!strcmp(command, "Check_DynamicIp_AI")) {
+		return IsAIDHCP();
+	}
+	else if (!strcmp(command, "Check_SshDisable_AI")) {
+		return CheckAISSHDisable();
+	}
+	else if (!strcmp(command, "Check_Gpio16_AI")) {
+		return Check_Gpio16_AI();
+	}
+	else if (!strcmp(command, "Check_Gpio21_AI")) {
+		return Check_Gpio21_AI();
+	}
+	else if (!strcmp(command, "Get_HwVersion_AI")) {
+		return getAIHwVersion();
+	}
+	else if (!strcmp(command, "Get_ProdDate_AI")) {
+		return getAIProdDate();
+	}
+	else if (!strcmp(command, "Get_SerialNumber_AI")) {
+		return getAISerialNumber();
+	}
+	else if (!strcmp(command, "Get_HwRevision_AI")) {
+		return getAIHwRevision();
+	}
+	else if (!strcmp(command, "Set_ResetDefault_AI")) {
+		return setAIResetDefault();
+	}
+	else if (!strcmp(command, "Get_BackupMacAddr_AI")) {
+		if(!getAIBoardBackupMacAddr(AI_NVM_AIBOARD_MAC))
+		{
+			puts("ATE_ERROR");
+			return EINVAL;
+		}
 		return 0;
 	}
+	else if (!strcmp(command, "Set_BackupMacAddr_AI")) {
+#if defined(RTCONFIG_CFEZ) && defined(RTCONFIG_BCMARM)
+		if (!chk_envrams_proc())
+			return EINVAL;
 #endif
+		char UpperMac[20] = {0};
+		if(!setAIBoardBackupMacAddr(AI_NVM_AIBOARD_MAC, string_to_uppercase(value, UpperMac, sizeof(UpperMac))))
+		{
+			puts("ATE_ERROR_INCORRECT_PARAMETER");
+			return EINVAL;
+		}
+		return 0;
+	}
+#endif /* RTCONFIG_AI_SERVICE */
 #ifdef BLUECAVE
 	else if (!strcmp(command, "Set_AllRedLedOn")) {
 		return setAllRedLedOn();
@@ -2730,7 +3123,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		return setAllLedOff();
 #endif
 	}
-#if defined(RPAC53) || defined(RT4GAC68U) || defined(RPAC66)
+#if defined(RPAC53) || defined(RT4GAC68U) || defined(RPAC66) || defined(EBG19P)
 	else if (!strcmp(command, "Set_AllOrangeLedOn")) {
 		return setAllOrangeLedOn();
 	}
@@ -2740,7 +3133,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		return setAllBlueLedOn();
 	}
 #endif
-#if defined(RPAC53) || defined(RPAC66) || defined(RPAC92)
+#if defined(RPAC53) || defined(RPAC66) || defined(RPAC92) || defined(EBG19P)
 	else if (!strcmp(command, "Set_AllGreenLedOn"))  {
 		return setAllGreenLedOn();
 	}
@@ -2763,7 +3156,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 	}
 #endif
 #endif
-#if defined(RPAC53) || defined(RPAC51) || defined(RPAC55) || defined(RPAC66) || defined(RPAC92) || defined(RT4GAX56)
+#if defined(RPAC53) || defined(RPAC51) || defined(RPAC55) || defined(RPAC66) || defined(RPAC92) || defined(RT4GAX56) || defined(EBG19P)
 	else if (!strcmp(command, "Set_AllRedLedOn"))  {
 		return setAllRedLedOn();
 	}
@@ -5262,7 +5655,7 @@ int ate_dev_status(void)
 		else 
 			ate_wl_band = 2;
 #endif
-#if defined(EBG15) || defined(EBG19)
+#if defined(EBG15) || defined(EBG19P)
 		result = 'O';
 #else
 		if(wl_exist(word, ate_wl_band)){
@@ -5338,7 +5731,7 @@ int ate_dev_status(void)
 				have_bt_device = 0;
 		}
 #endif
-#if defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(ET12) || defined(XT12) || defined(XD6_V2) || defined(XC5) || defined(EBG15) || defined(EBG19)
+#if defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(ET12) || defined(XT12) || defined(XD6_V2) || defined(XC5) || defined(EBG15) || defined(EBG19P)
 		if(have_bt_device == 1){
 			system("killall bluetoothd");
 			system("hciconfig hci0 down");
@@ -5454,7 +5847,7 @@ int start_envrams(void) {
 	if (!pids("envrams")){
 		dbg("[%s][%d] start envrams\n", __func__, __LINE__);
 #if defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(ET8PRO) || defined(ET8_V2) || defined(XD4PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || \
-	defined(ET12) || defined(XT12) || defined(RTAX88U_PRO) || defined(EBG19) || defined(EBG15) || defined(RTBE96U)  || defined(XC5) || defined(EBA63) || defined(GTBE96) || defined(RTBE88U) || defined(RTCONFIG_HND_ROUTER_BE_4916) && defined(RTCONFIG_USB)
+	defined(ET12) || defined(XT12) || defined(RTAX88U_PRO) || defined(EBG19P) || defined(EBG15) || defined(RTBE96U)  || defined(XC5) || defined(EBA63) || defined(GTBE96) || defined(RTBE88U) || defined(RTCONFIG_HND_ROUTER_BE_4916) && defined(RTCONFIG_USB)
 		dbg("[%s][%d] start envrams\n", __func__, __LINE__);
 		system("mkdir -p /tmp/mnt/defaults");
 		system("umount /tmp/mnt/defaults");

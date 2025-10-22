@@ -351,9 +351,12 @@ int get_host_by_name(unsigned char *host, int query_type, const char *ifname, co
 			p = (long *)answers[i].rdata;
 			a.sin_addr.s_addr = (*p); // working without ntohl
 			printf("has IPv4 address : %s", inet_ntoa(a.sin_addr));
-			if(ip && ip[0] == '\0')
-				strlcpy(ip, inet_ntoa(a.sin_addr), ip_sz);
-			ret = 0;
+			if(strcmp(inet_ntoa(a.sin_addr), "10.0.0.1"))	//cannot be 10.0.0.1
+			{
+				if(ip && ip[0] == '\0')
+					strlcpy(ip, inet_ntoa(a.sin_addr), ip_sz);
+				ret = 0;
+			}
 		}
 
 		if (ntohs(answers[i].resource->type) == 5)
@@ -393,9 +396,12 @@ int get_host_by_name(unsigned char *host, int query_type, const char *ifname, co
 			p = (long *)addit[i].rdata;
 			a.sin_addr.s_addr = (*p);
 			printf("has IPv4 address : %s", inet_ntoa(a.sin_addr));
-			if(ip && ip[0] == '\0')
-				strlcpy(ip, inet_ntoa(a.sin_addr), ip_sz);
-			ret = 0;
+			if(strcmp(inet_ntoa(a.sin_addr), "10.0.0.1"))	//cannot be 10.0.0.1
+			{
+				if(ip && ip[0] == '\0')
+					strlcpy(ip, inet_ntoa(a.sin_addr), ip_sz);
+				ret = 0;
+			}
 		}
 		printf("\n");
 		//free data

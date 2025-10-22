@@ -42,7 +42,7 @@ function switchTab(id){
 		<div class="display-flex flex-a-center">
 			<div id="wireless_tab" class="tab-block " onclick="switchTab(this.id)"><#menu5_1#></div>
 			<div id="status_tab" class="tab-block" onclick="switchTab(this.id)"><#Status_Str#></div>
-			<div id="light_effect_tab" class="tab-block tab-click" onclick="switchTab(this.id)">Aura RGB</div><!-- untranslated -->
+			<div id="light_effect_tab" class="tab-block tab-click" onclick="switchTab(this.id)"><#BoostKey_Aura_RGB#></div>
 		</div>
 		<iframe id="light_effect_iframe" class="light_effect_iframe" frameborder="0"></iframe>
 		<script>

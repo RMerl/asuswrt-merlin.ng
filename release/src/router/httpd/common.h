@@ -51,7 +51,7 @@
 
 /* DEBUG FUNCTION */
 #ifdef RTCONFIG_LIBASUSLOG
-extern void Debug2String(int level, char *path, int conlog, int showtime, unsigned filesize, char *function_name, int function_line, const char *fmt, ...);
+extern void Debug2String(int level, char *path, int conlog, int showtime, unsigned filesize, const char *function_name, int function_line, const char *fmt, ...);
 extern void security2log(int level, char *path, int conlog, int showtime, unsigned filesize, const char *fmt, ...);
 #define HTTPD_DBG(fmt, arg...) do {\
 	int save_errno = errno; \
@@ -82,6 +82,13 @@ extern void Debug2File(const char *path, const char *fmt, ...);
 		asusdebuglog(LOG_INFO, HTTPD_FB_DEBUG_FILE, LOG_CUSTOM, LOG_SHOWTIME, 0, "[%s(%d)]:"fmt"\n", __FUNCTION__, __LINE__ , ##arg); \
 	errno = save_errno; \
 }while(0)
+
+#define CH_EVENT_FILE "/jffs/httpd_channel_event_file"
+
+extern void ch_event_dbg(const char *path, const char *fmt, ...);
+#define CH_EVENT_DBG(fmt, args...) ({ \
+	ch_event_dbg(CH_EVENT_FILE, fmt, ##args); \
+})
 
 // 2008.10 magic {
 enum{

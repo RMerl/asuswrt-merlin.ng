@@ -7,20 +7,20 @@
         <link rel="stylesheet" href="css/clients.css" />
     </head>
     <body>
-        <div class="d-flex align-items-center">
-            <div class="page-title py-3"><#traffic_monitor#></div>
+        <div class="d-flex align-items-center mb-3">
+            <div class="page-title"><#traffic_monitor#></div>
         </div>
         <div id="if_card_field"></div>
         <script src="../js/chart.min.js"></script>
         <script>
-            let inspect_length = 120,
+            var inspect_length = 120,
                 time_interval = 1,
                 if_names = [
                     ["wan1", "WAN"],
                     ["lan", "LAN"],
                 ];
 
-            let trafficData = {
+            var trafficData = {
                 wan1: {
                     ul: new Array(inspect_length).fill(0),
                     ulRaw: new Array(inspect_length).fill(0),
@@ -145,8 +145,8 @@
                 registerChart();
             }
 
-            let objChartList = {};
-            let chartLine1_Color = getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-1"),
+            var objChartList = {};
+            var chartLine1_Color = getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-1"),
                 chartLine1_BgColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--bg-chart-color-1"),
                 chartLine2_Color = getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-2"),
                 chartLine2_BgColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--bg-chart-color-2"),

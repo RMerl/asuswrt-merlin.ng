@@ -253,7 +253,7 @@ function inet_network(ip_str){
 }
 
 function apps_form(_act, _name, _flag){
-	cookie.set("apps_last", _name, 1000);
+	window.localStorage.setItem("apps_last", _name, 1000);
 	document.app_form.apps_action.value = _act;
 	document.app_form.apps_name.value = _name;
 	document.app_form.apps_flag.value = _flag;
@@ -446,7 +446,7 @@ function check_appstate(){
 				if(installPercent > 99)
 					installPercent = 99;
 				document.getElementById("loadingicon").style.display = "none";
-				document.getElementById("apps_state_desc").innerHTML = "[" + cookie.get("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
+				document.getElementById("apps_state_desc").innerHTML = "[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
 				installPercent = installPercent + proceed;//*/
 			}
 			else{
@@ -459,9 +459,9 @@ function check_appstate(){
 		else{
 			if(apps_depend_action_target != "terminated" && apps_depend_action_target != "error"){
 				if(apps_depend_action_target == "")
-					document.getElementById("apps_state_desc").innerHTML = "<b>[" + cookie.get("apps_last") + "] " + "<#Excute_processing#> </b>";
+					document.getElementById("apps_state_desc").innerHTML = "<b>[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> </b>";
 				else
-					document.getElementById("apps_state_desc").innerHTML = "<b>[" + cookie.get("apps_last") + "] " + "<#Excute_processing#> </b>"
+					document.getElementById("apps_state_desc").innerHTML = "<b>[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> </b>"
 							+"<br> <span style='font-size: 16px;'> <#Excute_processing#>："+apps_depend_do+"</span>"
 							+"<br> <span style='font-size: 16px;'>"+apps_depend_action+"  "+apps_depend_action_target+"</span>"
 							;
@@ -470,7 +470,7 @@ function check_appstate(){
 				if(installPercent > 99)
 					installPercent = 99;
 				document.getElementById("loadingicon").style.display = "none";
-				document.getElementById("apps_state_desc").innerHTML = "[" + cookie.get("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
+				document.getElementById("apps_state_desc").innerHTML = "[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
 				installPercent = installPercent + proceed;
 			}
 		}
@@ -572,7 +572,7 @@ function check_appstate(){
 				if(installPercent > 99)
 					installPercent = 99;
 				document.getElementById("loadingicon").style.display = "none";
-				document.getElementById("apps_state_desc").innerHTML = "[" + cookie.get("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
+				document.getElementById("apps_state_desc").innerHTML = "[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
 				installPercent = installPercent + proceed;//*/
 			}
 			else{
@@ -583,9 +583,9 @@ function check_appstate(){
 		else{
 			if(apps_depend_action_target != "terminated" && apps_depend_action_target != "error"){
 				if(apps_depend_action_target == "")
-					document.getElementById("apps_state_desc").innerHTML = "<b>[" + cookie.get("apps_last") + "] " + "<#Excute_processing#> </b>";
+					document.getElementById("apps_state_desc").innerHTML = "<b>[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> </b>";
 				else
-					document.getElementById("apps_state_desc").innerHTML = "<b>[" + cookie.get("apps_last") + "] " + "<#Excute_processing#> </b>"
+					document.getElementById("apps_state_desc").innerHTML = "<b>[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> </b>"
 							+"<br> <span style='font-size: 16px;'> <#Excute_processing#>："+apps_depend_do+"</span>"
 							+"<br> <span style='font-size: 16px;'>"+apps_depend_action+"  "+apps_depend_action_target+"</span>"
 							;
@@ -594,7 +594,7 @@ function check_appstate(){
 				if(installPercent > 99)
 					installPercent = 99;
 				document.getElementById("loadingicon").style.display = "none";
-				document.getElementById("apps_state_desc").innerHTML = "[" + cookie.get("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
+				document.getElementById("apps_state_desc").innerHTML = "[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
 				installPercent = installPercent + proceed;
 			}
 		}
@@ -626,7 +626,7 @@ function update_applist(e){
       update_applist();
     },
     success: function(response){
-			if(isinstall > 0 && cookie.get("apps_last") == "aicloud"){
+			if(isinstall > 0 && window.localStorage.getItem("apps_last") == "aicloud"){
 				document.getElementById('cloudsetup_movie').style.display = "none";
 				setTimeout('divdisplayctrl("none", "none", "none", "");', 100);
 			}

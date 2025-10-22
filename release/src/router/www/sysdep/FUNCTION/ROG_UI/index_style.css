@@ -52,6 +52,7 @@ body{
 }
 /*=================================1 Button Home================================*/
 .menu {
+	display: flex;
 	text-shadow: 1px 1px 0px black;	
 	width: 192px;
 	height: 48px;
@@ -62,6 +63,8 @@ body{
 	cursor: pointer;
 	color: #848c98;
 	background:url('/images/New_ui/btn_underline.png') no-repeat;
+	justify-content: left;
+	align-items: center;
 }
 .menu >table{
 	height: 100%;
@@ -771,7 +774,7 @@ width:122px;
 }
 .faq-filter-block{
 	position: absolute;
-	margin: -200px 100px 0 0;
+	margin-top: -230px;
 	width: 300px;
 	border: 1px solid #474747;
 	height: 200px;
@@ -865,6 +868,7 @@ width:122px;
 
 .menu_Icon{
 	width: 18px;
+	min-width: 18px;
 	height: 18px;
 	background-repeat: no-repeat;
 	margin: 0 6px;

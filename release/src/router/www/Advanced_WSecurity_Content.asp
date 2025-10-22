@@ -243,7 +243,7 @@ function checkWLReady(){
 		
 		</div>	<!-- for .container  -->
 		<div class="popup_container popup_element_second"></div>
-
+		
 		</td>
 	</tr>
 </tbody>

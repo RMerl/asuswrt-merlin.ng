@@ -75,7 +75,7 @@ html::-webkit-scrollbar-track{
 	font-size:12px;
 	font-family: "Inter", "Microsoft JhengHei", "sans-serif";
 	/*border:1px solid #4D595D;*/
-	color: #262626;
+	color: #000;
 	position:relative;
 	/**margin-top:-1px;
 	behavior: url(/PIE.htc);
@@ -84,7 +84,7 @@ html::-webkit-scrollbar-track{
 	border-radius: 0 0 3px 3px;*/
 }
 .FormTitle thead{
-	color:#262626;
+	color:#000;
 	font-size:13px;
 	text-align:center;
 	font-weight:bold;
@@ -105,8 +105,8 @@ html::-webkit-scrollbar-track{
 .FormTable th{
 	height: 45px;
 	font-family:Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
-	background-color:#f5f5f5;
-	color:#262626;	/*Viz add*/
+	background-color:#FFF;
+	color:#000;	/*Viz add*/
 	font-weight:normal;
 	/*line-height:14px;*/
 	height: 30px;
@@ -118,7 +118,7 @@ html::-webkit-scrollbar-track{
 	border-collapse: collapse;
 }
 .FormTable thead td{
-	color: #262626;
+	color: #000;
 	/*font-size:12px;*/
 	background-color:#dcdcdc;
 	text-align:left;
@@ -136,7 +136,7 @@ html::-webkit-scrollbar-track{
 	      /* W3C */
 }
 .FormTable thead th{
-	color: #262626;
+	color: #000;
 	/*font-size:12px;*/
 	text-align: center;
 	font-weight:normal;
@@ -145,7 +145,7 @@ html::-webkit-scrollbar-track{
 }
 .FormTable td{
 	padding-left: 10px;
-	background-color:#f5f5f5;
+	background-color:#FFF;
 	border-bottom: 1px solid #dcdcdc;
 	border-collapse: collapse;
 	border-left: 1px solid transparent;
@@ -158,7 +158,7 @@ html::-webkit-scrollbar-track{
 
 .FormTable td span.desc{
 	/*background-color:#f5f5f5;*/
-	color:#262626;
+	color:#000;
 }
 
 
@@ -221,7 +221,7 @@ html::-webkit-scrollbar-track{
 }
 .FormTable_table thead th{
 	width: 98px;
-	color: #262626;
+	color: #000;
 	font-size:12px;
 	/*background-color:#1F2D35;*/
 	text-align: center;
@@ -318,7 +318,7 @@ html::-webkit-scrollbar-track{
 	height:35px;
 	background-color:#f5f5f5;
 	border:1px solid #cccccc;
-	color:#262626;
+	color:#000;
 	border-radius: 2px;
 	width: 60% !important;
     min-width: 100px !important;
@@ -341,7 +341,7 @@ html::-webkit-scrollbar-track{
 	border-top-width:1px;
 	border-bottom-width:1px;
 	border-color:#cccccc;
-	color:#262626;
+	color:#000;
 	/**color:#000;*/
 	font-size:14px;
 
@@ -355,7 +355,7 @@ html::-webkit-scrollbar-track{
 	border-top-width:1px;
 	border-bottom-width:1px;
 	border-color:#dcdcdc;
-	color:#262626;
+	color:#000;
 	margin:8px 10px 0 0;
 
 	font-size:13px;
@@ -368,7 +368,7 @@ html::-webkit-scrollbar-track{
 	font-size:14px;
 	background: #f5f5f5;
 	border: 1px solid #cccccc;
-	color:#262626;
+	color:#000;
 	border-radius: 4px;
 }
 .input_32_table, 
@@ -389,7 +389,7 @@ html::-webkit-scrollbar-track{
     font-size: 16px;
     background: #FFF;
     border: 1px solid #cccccc;
-    color: #262626;
+    color: #000;
     border-radius: 2px;
     box-sizing: border-box;
     padding-left: 10px;
@@ -500,10 +500,10 @@ form{
 th a { 
 	height: 31px;	
 	text-decoration: none;	
-	color:#262626;
+	color:#000;
 }
 th a:link, th a:visited {
-	color: #262626;	
+	color: #000;	
 	/*display: block;	*/
 	/*background: url(../images/button-next.gif);*/
 	}
@@ -582,7 +582,7 @@ th a:hover,th a:active {
 
 .devicepin{
 	border:0px;
-	color:#262626;
+	color:#000;
 	font-family:Verdana;
 	font-size:13px;
 	padding-left:2px;
@@ -839,7 +839,7 @@ th a:hover,th a:active {
 }
 /* CSS Document */
 body{
-color:#262626;
+color:#000;
 font-family:Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
 font-size:13px;
 /*color:#FFFFFF;*/
@@ -1993,7 +1993,7 @@ padding-top:1px;
 }
 #sortable div table tr:hover{
 	cursor: pointer;
-	color: #262626;
+	color: #000;
 	background-color: #ecf5ff;
 	font-weight: bolder;
 	border-radius: 10px;
@@ -2401,6 +2401,8 @@ i.icon-comments {
 .popup_container .popup_title_container > .del_btn {
 	display: flex;
 	align-items: center;
+	justify-content: center;
+	color: #FFFFFF;
 	width: 24px;
 	height: 24px;
 	cursor: pointer;

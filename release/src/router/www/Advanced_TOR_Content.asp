@@ -22,15 +22,6 @@
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
-<style>
-#pull_arrow{
- 	float:center;
- 	cursor:pointer;
- 	border:2px outset #EFEFEF;
- 	background-color:#CCC;
- 	padding:3px 2px 4px 0px;
-}
-</style>
 <script>
 
 
@@ -375,9 +366,12 @@ function show_tor_settings(value){
 						</tr>
 						<tr>
 							<td width="80%">
-								<input type="text" style="margin-left:220px;float:left;" maxlength="17" class="input_macaddr_table" name="tor_maclist_0" onKeyPress="return validator.isHWAddr(this,event)">
-								<img style="float:left;" id="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullLANMacList(this);" title="Select the MAC address of the device.">
-								<div id="TORMACList" class="clientlist_dropdown" style="margin-left:220px;margin-top:25px;"></div>
+							    <div style="display: flex; justify-content: center">
+                                    <div class="clientlist_dropdown_main">
+                                        <input type="text" maxlength="17" class="input_macaddr_table" name="tor_maclist_0" onKeyPress="return validator.isHWAddr(this,event)">
+                                        <img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullLANMacList(this);" title="Select the MAC address of the device.">
+                                        <div id="TORMACList" class="clientlist_dropdown"></div>
+                                    </div>
 								</div>
 							</td>
 							<td width="20%">	

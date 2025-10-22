@@ -414,7 +414,7 @@ function save_applyData(wan_unit){
 
 	var autowan_conflict = false;
 	if(isSupport("autowan")){
-		var orig_autowan_enable = httpApi.nvramGet(["autowan_enable"]).autowan_enable;
+		var orig_autowan_enable = httpApi.nvramGet(["autowan_enable"], true).autowan_enable;
 		if(orig_autowan_enable == "1" && (applyData["bond_wan"] == "1" || applyData["wan_proto"] == "static" || applyData["wan_proto"] == "pptp" || applyData["wan_proto"] == "l2tp"))
 			autowan_conflict = true;
 	}
@@ -1177,7 +1177,7 @@ function load_profile_settings(wan_unit){
 				if($(this).attr("id") && $(this).attr("id").indexOf("select_") == -1){
 					var id = $(this).attr("id");
 					var nvram_name = id.replace("wan_", prefix);
-					var nvram_val = httpApi.nvramGet([nvram_name])[nvram_name];
+					var nvram_val = httpApi.nvramGet([nvram_name], true)[nvram_name];
 
 					if($(this).hasClass("icon_switch")){
 						$(this).removeClass(nvram_val == "1"? "off": "on").addClass(nvram_val == "1"? "on": "off");
@@ -1249,7 +1249,58 @@ function show_popup(type, wan_unit){ //_type: new, edit
 		load_profile_settings(wan_unit);
 	}
 
-	//adjust_popup_container_top($(".popup_container.popup_element"), 100);
+	setupPopupAutoResize($(".popup_container.popup_element"));
+}
+
+function setupPopupAutoResize($container) {
+	cleanupPopupResize($container);
+
+	if (window.ResizeObserver) {
+		const resizeObserver = new ResizeObserver(function(entries) {
+			clearTimeout(window.popupResizeTimer);
+			window.popupResizeTimer = setTimeout(function() {
+				resize_iframe_height();
+			}, 50);
+		});
+		resizeObserver.observe($container[0]);
+		$container.data('resizeObserver', resizeObserver);
+		$container.off('popup_closing.auto_resize').on('popup_closing.auto_resize', function() {
+			cleanupPopupResize($container);
+		});
+		if (window.MutationObserver) {
+			const removalObserver = new MutationObserver(function(mutations) {
+				mutations.forEach(function(mutation) {
+					if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
+						for (const node of mutation.removedNodes) {
+							if (node === $container[0] ||
+								($container[0] && !document.body.contains($container[0]))) {
+								cleanupPopupResize($container);
+								removalObserver.disconnect();
+								return;
+							}
+						}
+					}
+				});
+			});
+			if ($container.parent().length > 0) {
+				removalObserver.observe($container.parent()[0], { childList: true });
+				$container.data('removalObserver', removalObserver);
+			}
+		}
+	}
+}
+function cleanupPopupResize($container) {
+	const existingObserver = $container.data('resizeObserver');
+	if (existingObserver) {
+		existingObserver.disconnect();
+		$container.removeData('resizeObserver');
+	}
+	const removalObserver = $container.data('removalObserver');
+	if (removalObserver) {
+		removalObserver.disconnect();
+		$container.removeData('removalObserver');
+	}
+	$container.off('popup_closing.auto_resize');
 }
 
 function chg_pvc_unit(pvc_to_chg) {
@@ -1660,8 +1711,7 @@ function initial(){
 	if(parent.webWrapper){
 		$("#DNS_Assign_splitLine").addClass("splitLine_dns_bussiness");
 		$("#DNS_Assign_desc").addClass("assign_dns_bussiness");
-		$("#DNS_Assign_button").css("margin", "-52px 0px 5px 630px");
-
+		$("#DNS_Assign_splitLine").hide();
 	}
 	else{
 		$("#DNS_Assign_splitLine").addClass("splitLine_dns");
@@ -1918,7 +1968,7 @@ function applyRule(){
 
 		var autowan_conflict = false;
 		if(isSupport("autowan")){
-			var orig_autowan_enable = httpApi.nvramGet(["autowan_enable"]).autowan_enable;
+			var orig_autowan_enable = httpApi.nvramGet(["autowan_enable"], true).autowan_enable;
 			if(orig_autowan_enable == "1"){
 				if((wan_bonding_support && document.form.bond_wan_radio.value == "1") || document.form.wan_proto.value == "static" || document.form.wan_proto.value == "l2tp" || document.form.wan_proto.value == "pptp")
 					autowan_conflict = true;
@@ -3005,8 +3055,8 @@ function update_map(){
 
 			success: function( response ) {
 				httpApi.nvramSet({
-				    "action_mode": "apply",
-				    "rc_service" : "restart_wan"
+					"action_mode": "apply",
+					"rc_service": "restart_wan"
 				});
 				showLoading(10);
 			}
@@ -3033,7 +3083,7 @@ function change_dslite_mode(flag){
 
 function update_ipv6_s46_b4addr_selector(){
 	$("#ipv6_s46_b4addr_Select").empty();
-	var selectedValue = httpApi.nvramGet(["ipv6_s46_b4addr"]).ipv6_s46_b4addr;
+	var selectedValue = httpApi.nvramGet(["ipv6_s46_b4addr"], true).ipv6_s46_b4addr;
 
 	for (var i = 2; i <= 7; i++) {
 		var option = document.createElement("option");
@@ -3929,44 +3979,44 @@ function change_wizard(o, id){
 								<td colspan="2"><#IPConnection_x_DNSServerEnable_sectionname#></td>
 							</tr>
 						</thead>
-						<tr>
-							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,12);"><#PPPConnection_x_WANDNSServer_itemname#></a></th>
-							<td>
+							<tr>
+								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,12);"><#PPPConnection_x_WANDNSServer_itemname#></a></th>
+								<td>
 									<div id="DNS_status"></div>
 									<div id="DNS_Assign_splitLine" style="margin:10px 0 5px 0;"></div>
 									<div id="DNS_Assign_desc"><#DNS_Assign_desc#></div>
 									<div id="DNS_Assign_button" style="text-align:right;"><input id="assign_button" type="button" class="button_gen" onclick="Assign_DNS_service()" value="<#CTL_assign#>"></div>
-							</td>
-						</tr>
-						<tr>
-							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,42);"><#WAN_Queries_Upstream_DNS#></a></th>
-							<td>
-								<input type="radio" value="1" name="dns_fwd_local" <% nvram_match("dns_fwd_local", "1", "checked"); %> /><#checkbox_Yes#>
-								<input type="radio" value="0" name="dns_fwd_local" <% nvram_match("dns_fwd_local", "0", "checked"); %> /><#checkbox_No#>
-							</td>
-						</tr>
-						<tr>
-							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,43);"><#WAN_DNS_Rebind#></a></th>
-							<td>
-								<input type="radio" value="1" name="dns_norebind" <% nvram_match("dns_norebind", "1", "checked"); %> /><#checkbox_Yes#>
-								<input type="radio" value="0" name="dns_norebind" <% nvram_match("dns_norebind", "0", "checked"); %> /><#checkbox_No#>
-							</td>
-						</tr>
-						<tr id="dnssec_tr" style="display:none;">
-							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,44);"><#WAN_DNSSEC_Support#></a></th>
-							<td>
-								<input type="radio" value="1" name="dnssec_enable" onclick="showhide('dnssec_strict_tr',1);" <% nvram_match("dnssec_enable", "1", "checked"); %> /><#checkbox_Yes#>
-								<input type="radio" value="0" name="dnssec_enable" onclick="showhide('dnssec_strict_tr',0);" <% nvram_match("dnssec_enable", "0", "checked"); %> /><#checkbox_No#>
-							</td>
-						</tr>
-						<tr id="dnssec_strict_tr" style="display:none;">
+								</td>
+							</tr>
+							<tr>
+								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,42);"><#WAN_Queries_Upstream_DNS#></a></th>
+								<td>
+									<input type="radio" value="1" name="dns_fwd_local" <% nvram_match("dns_fwd_local", "1", "checked"); %> /><#checkbox_Yes#>
+									<input type="radio" value="0" name="dns_fwd_local" <% nvram_match("dns_fwd_local", "0", "checked"); %> /><#checkbox_No#>
+								</td>
+							</tr>
+							<tr>
+								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,43);"><#WAN_DNS_Rebind#></a></th>
+								<td>
+									<input type="radio" value="1" name="dns_norebind" <% nvram_match("dns_norebind", "1", "checked"); %> /><#checkbox_Yes#>
+									<input type="radio" value="0" name="dns_norebind" <% nvram_match("dns_norebind", "0", "checked"); %> /><#checkbox_No#>
+								</td>
+							</tr>
+							<tr id="dnssec_tr" style="display:none;">
+								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,44);"><#WAN_DNSSEC_Support#></a></th>
+								<td>
+									<input type="radio" value="1" name="dnssec_enable" onclick="showhide('dnssec_strict_tr',1);" <% nvram_match("dnssec_enable", "1", "checked"); %> /><#checkbox_Yes#>
+									<input type="radio" value="0" name="dnssec_enable" onclick="showhide('dnssec_strict_tr',0);" <% nvram_match("dnssec_enable", "0", "checked"); %> /><#checkbox_No#>
+								</td>
+							</tr>
+							<tr id="dnssec_strict_tr" style="display:none;">
 								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,45);"><#WAN_Valid_Unsigned_DNSSEC#></a></th>
 								<td>
 									<input type="radio" value="1" name="dnssec_check_unsigned_x" <% nvram_match("dnssec_check_unsigned_x", "1", "checked"); %> /><#checkbox_Yes#>
 									<input type="radio" value="0" name="dnssec_check_unsigned_x" <% nvram_match("dnssec_check_unsigned_x", "0", "checked"); %> /><#checkbox_No#>
 								</td>
-						</tr>
-						<tr id="dns_priv_override_tr">
+							</tr>
+							<tr id="dns_priv_override_tr">
 								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,46);"><#WAN_Prevent_DoH#></a></th>
 								<td>
 									<select id="dns_priv_override" class="input_option" name="dns_priv_override">
@@ -3975,8 +4025,8 @@ function change_wizard(o, id){
 										<option value="2" <% nvram_match("dns_priv_override", "2", "selected"); %>><#checkbox_No#></option>
 									</select>
 								</td>
-						</tr>
-						<tr style="display:none">
+							</tr>
+							<tr style="display:none">
 								<th>
 									<a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,35);"><#WAN_DNS_Privacy#></a>
 								</th>
@@ -3989,22 +4039,22 @@ function change_wizard(o, id){
 									</select>
 									<div id="yadns_hint_dnspriv" style="display:none;"></div>
 								</td>
-						</tr>
-						<tr style="display:none">
-							<th>
-								<a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,36);"><#WAN_DNS_over_TLS#></a>
-							</th>
-							<td>
-								<input type="radio" name="dnspriv_profile" class="input" value="1" onclick="return change_common_radio(this, 'IPConnection', 'dnspriv_profile', 1)" <% nvram_match("dnspriv_profile", "1", "checked"); %> /><#WAN_DNS_over_TLS_Strict#>
-								<input type="radio" name="dnspriv_profile" class="input" value="0" onclick="return change_common_radio(this, 'IPConnection', 'dnspriv_profile', 0)" <% nvram_match("dnspriv_profile", "0", "checked"); %> /><#WAN_DNS_over_TLS_Opportunistic#>
-							</td>
-						</tr>
-						<tr style="display:none" id="dot_presets_tr">
-							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,41);"><div class="table_text"><#WAN_DNS_dot_presets#></a></th>
-							<td>
-								<select name="dotPresets" id="dotPresets" class="input_option" onchange="change_wizard(this, 'dotPresets');">
-							</td>
-						</tr>
+							</tr>
+							<tr style="display:none">
+								<th>
+									<a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,36);"><#WAN_DNS_over_TLS#></a>
+								</th>
+								<td>
+									<input type="radio" name="dnspriv_profile" class="input" value="1" onclick="return change_common_radio(this, 'IPConnection', 'dnspriv_profile', 1)" <% nvram_match("dnspriv_profile", "1", "checked"); %> /><#WAN_DNS_over_TLS_Strict#>
+									<input type="radio" name="dnspriv_profile" class="input" value="0" onclick="return change_common_radio(this, 'IPConnection', 'dnspriv_profile', 0)" <% nvram_match("dnspriv_profile", "0", "checked"); %> /><#WAN_DNS_over_TLS_Opportunistic#>
+								</td>
+							</tr>
+							<tr style="display:none" id="dot_presets_tr">
+								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,41);"><div class="table_text"><#WAN_DNS_dot_presets#></a></th>
+								<td>
+									<select name="dotPresets" id="dotPresets" class="input_option" onchange="change_wizard(this, 'dotPresets');">
+								</td>
+							</tr>
 						</table>
 
 									<table id="DNSPrivacy" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table" style="display:none">
@@ -4232,7 +4282,7 @@ function change_wizard(o, id){
           								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,16);"><#PPPConnection_x_MacAddressForISP_itemname#></a></th>
 										<td>
 											<input type="text" name="wan_hwaddr_x" class="input_20_table" maxlength="17" value="<% nvram_get("wan_hwaddr_x"); %>" onKeyPress="return validator.isHWAddr(this,event)" autocorrect="off" autocapitalize="off">
-											<input type="button" class="btn_subusage my-1 button_gen" style="margin-top: 5px;" onclick="showMAC();" value="<#BOP_isp_MACclone#>">
+											<input type="button" class="btn_subusage my-1 button_gen button_gen_in_table" style="margin-top: 5px;" onclick="showMAC();" value="<#BOP_isp_MACclone#>">
 										</td>
         							</tr>
 

@@ -1,0 +1,943 @@
+.control-f-container {
+    margin: 18px 20px 18px 40px;
+}
+
+.control-description {
+    font-size: 14px;
+    font-family: Xolonium;
+    color: #FFFFFF;
+}
+
+.game-profile-container {
+    height: 560px;
+    margin: 6px 12px 6px 14px;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.game-profile {
+    width: 180px;
+    height: 234px;
+    margin: 18px 3px;
+    position: relative;
+    border: 1px solid #404247;
+    border-radius: 4px;
+    background-color: #222426;
+}
+
+.game-profile:nth-child(odd) {
+    margin-bottom: 4px;
+}
+
+.game-p-t-container {
+    width: 100%;
+    height: 82px;
+    position: absolute;
+    bottom: 0;
+    background-image: linear-gradient(to bottom, rgba(47, 48, 50, 0.7), rgba(0, 0, 0, 1));
+    border-radius: 4px;
+    transition-duration: 0.5s;
+    transition-timing-function: ease-out;
+}
+
+.world-map {
+    width: 744px;
+    height: 412px;
+    margin-top: -80px;
+    background: url('../images/gameprofile/open-nat_map-bg-light.png') no-repeat;
+    position: relative;
+    background-size: contain;
+    background-position: center;
+}
+
+.location-indicator {
+    width: 10.48%;
+    height: 37.38%;
+    position: absolute;
+    background-image: url('../images/gameprofile/open-nat_map-light-small-light.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+
+.location-US2 {
+    top: 32.04%;
+    left: 12.37%;
+    animation: indicator-shine 1s linear 0s 2;
+}
+
+.location-BR {
+    top: 49.03%;
+    left: 23.52%;
+    animation: indicator-shine 1s linear 0s 2;
+}
+
+.location-US3 {
+    top: 25.97%;
+    left: 16.26%;
+    animation: indicator-shine 1s linear 2s 2;
+}
+
+.location-CL {
+    top: 54.13%;
+    left: 18.15%;
+    animation: indicator-shine 1s linear 2s 2;
+}
+
+.location-SA {
+    top: 55.83%;
+    left: 44.35%;
+    animation: indicator-shine 1s linear 2s 2;
+}
+
+.location-US1 {
+    top: 25.49%;
+    left: 25.81%;
+    animation: indicator-shine 1s linear 4s 2;
+}
+
+.location-EU1 {
+    top: 25.49%;
+    left: 41.00%;
+    animation: indicator-shine 1s linear 4s 2;
+}
+
+.location-RU {
+    top: 23.79%;
+    left: 55.11%;
+    animation: indicator-shine 1s linear 4s 2;
+}
+
+.location-EU2 {
+    top: 29.13%;
+    left: 38.44%;
+    animation: indicator-shine 1s linear 6s 2;
+}
+
+.location-TW {
+    top: 33.50%;
+    left: 68.28%;
+    animation: indicator-shine 1s linear 6s 2;
+}
+
+.location-CN {
+    top: 30.58%;
+    left: 63.17%;
+    animation: indicator-shine 1s linear 8s 2;
+}
+
+.location-AU {
+    top: 54.85%;
+    left: 79.97%;
+    animation: indicator-shine 1s linear 8s 2;
+}
+
+/* map connectioon line animation */
+.map-connection-line {
+    width: 100%;
+    height: 100%;
+    background-image: url('../images/gameprofile/open-nat_map-link-light.png');
+    position: absolute;
+    animation: located-connection 10s linear 0s 1;
+    background-repeat: no-repeat;
+}
+
+@keyframes located-connection {
+    0% {
+        width: 0;
+    }
+
+    75% {
+        width: 0;
+    }
+
+    100% {
+        width: 774px;
+    }
+}
+
+@keyframes indicator-shine {
+    0% {
+        -webkit-filter: brightness(100%);
+        filter: brightness(100%);
+    }
+
+    30% {
+        -webkit-filter: brightness(250%);
+        filter: brightness(250%);
+    }
+
+    60% {
+        -webkit-filter: brightness(100%);
+        filter: brightness(100%);
+    }
+
+    90% {
+        -webkit-filter: brightness(70%);
+        filter: brightness(70%);
+    }
+
+    100% {
+        -webkit-filter: brightness(100%);
+        filter: brightness(100%);
+    }
+}
+
+/* End map connectioon line animation */
+
+/* customized scrollbar*/
+.game-profile-container::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+.game-profile-container::-webkit-scrollbar-thumb {
+    background-color: #7775;
+    border-radius: 20px;
+}
+
+.game-profile-container::-webkit-scrollbar-thumb:hover {
+    background-color: #7777;
+}
+
+.game-profile-container::-webkit-scrollbar-track:hover {
+    background-color: #5555;
+}
+
+/* End customized scrollbar*/
+.game-p-bar {
+    width: 18px;
+    height: 2px;
+    background-color: #E64100;
+    margin: 18px auto 6px auto;
+}
+
+.game-p-title {
+    color: var(--neutral-10);
+    font-family: Xolonium;
+    font-size: 14px;
+    text-align: center;
+}
+
+.game-profile:hover > .game-p-t-container {
+    height: 0px;
+}
+
+.game-profile:hover .game-p-bar,
+.game-profile:hover .game-p-title {
+    display: none;
+}
+
+.game-p-default {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-cod4mw {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/call-of-duty_modenWarefare.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-destiny2 {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/destiny2.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-diablo3 {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/diablo3.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-diabloImmortal {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-fifa17 {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/fifa17.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-LoL {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/league-of-legends.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-left4dead {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/left-4-dead.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-left4dead2 {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/left-4-dead2.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-WoT {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/world-of-tanks.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-assassinsCreed3 {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/assassins-creed3.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-overwatch {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/overwatch.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-starcraft2 {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/starcraft2.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-WoW {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-fornite {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/fortnite.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-injustice2 {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/injustice2.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-minecraft {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/minecraft.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-forhonor {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/for-honor.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-fallout76 {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/fallout76.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-dota2 {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/dota2.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-csGo {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/cs-go.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-quakechampions {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/quake-champions.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-dow3 {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/dawnofwar.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-pubattle {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/playerunknownsbattlegrounds.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-roblox {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/roblok.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-cod4 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-cod4aw {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/cod-aw.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-codbo3 {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/cod-ops3.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-codww2 {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/cod-ww2.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-battlefield5 {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/battlefield5.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-sniperelite4 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-overwatch {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/overwatch.jpg'), url('../images/gameprofile/default-game.png');
+}
+
+.game-p-masseffectandromeda {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-assassinsCreedUnity {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-destiny {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-halflife2 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-halo5 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-splatoon2 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-uncharted4 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-wwe2k17 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-superMarioOdyssey {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-rocketLeague {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-pokemonPikachu {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-marioKart8Deluxe {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-monsterHunterWorld {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-apexLegends {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-fifa20 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-fifa21 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-grandTheftAuto5 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-tomClancyRainbowSix {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-borderLand3 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-codWarzone {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-codeVein {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-cyberpunk2077 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-dauntless {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-gear5 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-gtfo {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-haloInfinite {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-indivisible {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-mlbTheShow20 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-nascarHeat4 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-nioh2 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-overwatch2 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-sniperGhostWarriro3 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-starWarsJediKnightJediAcademy {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-starWarsJediKnight2JediOutcast {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-tekken7 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-wolcenLordsofMayhem {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-animalCrossingNewHorizons {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-finalFantasy7 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-nba2k20 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-nba2k23 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-residentEvil2 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-residentEvil3 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-temtem {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-doomEternal {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-superMarioBros35 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-codbocw {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-marvelAvengers {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-mountblade2Bannerlord {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-starWarsSquadrons {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-farcry6 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-maddennfl21 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-forzaHorizon4 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-codmw2 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-codv {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-citizenSleeper {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-dyingLight2 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-eldenRing {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-fifa22 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-fifa23 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-granTurismo7 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-horizonForbiddenWest {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-kirbyForgottenLand {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-legoStarWarsSkywalkerSaga {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-lostArk {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-mlbTheShow22 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-olliolliWorld {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-pokemonLegendArceus {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-sniperelite5 {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-switchSports {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-tinyTinaAssaultDragonKeep {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-tunic {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-vRising {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.game-p-nvidiaGameStream {
+    background-image: url('../images/gameprofile/default-game.png');
+}
+
+.new-g-p-t-field {
+    height: 70px;
+    background-color: rgba(30, 28, 28, 0.8);
+    margin: 0 18px 12px 8px;
+}
+
+.new-g-p-title {
+    font-size: 18px;
+    font-family: Xolonium;
+    margin-left: 40px;
+}
+
+.new-g-p-title::first-letter {
+    color: #E64100;
+}
+
+.new-g-p-rule {
+    font-size: 14px;
+    font-family: Roboto;
+    margin-right: 18px;
+    color: #848c98;
+}
+
+.new-g-p-rule > span {
+    font-size: 14px;
+    font-family: Roboto;
+    color: #FFFFFF;
+    margin-left: 4px;
+}
+
+.new-g-p-step {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    color: var(--primary-60);
+    border: 1px solid var(--primary-60);
+    border-radius: 50%;
+}
+
+.new-g-p-s-title {
+    margin-left: 18px;
+    font-size: 16px;
+    font-family: Xolonium;
+}
+
+.new-g-p-content {
+    border: 2px solid transparent;
+    border-radius: 4px;
+    margin: 0 4px;
+    cursor: pointer;
+}
+
+.new-g-p-content:hover,
+.game-selected {
+    border: 2px solid #E64100;
+    box-shadow: 0 0 6px 2px #E64100;
+}
+
+.new-g-p-container {
+    display: flex;
+    height: 190px;
+    margin: 0 18px 0 98px;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+/* customized scrollbar*/
+.new-g-p-container::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+.new-g-p-container::-webkit-scrollbar-thumb {
+    background-color: #7775;
+    border-radius: 20px;
+}
+
+.new-g-p-container::-webkit-scrollbar-thumb:hover {
+    background-color: #7777;
+}
+
+.new-g-p-container::-webkit-scrollbar-track:hover {
+    background-color: #5555;
+}
+
+/* End customized scrollbar*/
+.new-g-p-image {
+    width: 92px;
+    height: 127px;
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+
+.new-g-p-desc {
+    width: 92px;
+    font-size: 12px;
+    font-family: Xolonium;
+    text-align: center;
+    word-break: break-word;
+}
+
+.new-g-profile {
+    margin-left: 40px;
+}
+
+.settings-filed-title {
+    width: 150px;
+    margin: 0 36px 0 0;
+    font-size: 14px;
+    font-family: Xolonium;
+    color: var(--body-text-color);
+}
+
+.game-p-s-field {
+    display: flex;
+    align-items: center;
+    margin: 12px 0;
+}
+
+.table-title {
+    font-size: 14px;
+    font-family: Xolonium;
+    color: #848c98;
+    border-bottom: 1px solid #400909;
+    word-break: break-all;
+    margin: 0 18px 0 48px;
+}
+
+.table-title {
+    padding: 12px 4px;
+}
+
+.table-per-content {
+    font-family: Roboto;
+    font-size: 14px;
+    word-break: break-all;
+    border-bottom: 1px solid #400909;
+    margin: 4px 18px 4px 48px;
+}
+
+.table-content-image {
+    background-repeat: no-repeat;
+    background-size: 100%;
+    width: 64px;
+    height: 64px;
+}
+
+.table-content1-container {
+    margin: 0 12px;
+}
+
+.table-content1-title {
+    margin-bottom: 8px;
+    width: 180px;
+}
+
+.table-content1-subcontainer {
+    margin-top: 8px;
+    color: #848c98;
+}
+
+.table-content1-platform {
+    word-break: normal;
+}
+
+.table-content1-divide {
+    width: 1px;
+    height: 13px;
+    background-color: #848c98;
+    margin: 0 8px;
+}
+
+.table-action-icon {
+    width: 16px;
+    height: 16px;
+    background-repeat: no-repeat;
+    background-size: 100%;
+    margin: 0 8px;
+    cursor: pointer;
+}
+
+.table-content1-width {
+    width: 45%;
+}
+
+.table-content2-width {
+    width: 25%;
+}
+
+.table-content3-width,
+.table-content4-width {
+    width: 15%;
+}
+
+.table-content1-width,
+.table-content2-width,
+.table-content3-width,
+.table-content4-width {
+    padding: 4px;
+}
+
+.edit-p-title {
+    width: 16px;
+    height: 16px;
+    background-repeat: no-repeat;
+    background-size: 100%;
+    margin: 0 -28px 0 40px;
+}
+
+.edit-i-container {
+    margin: auto 18px auto 0;
+}
+
+.edit-image {
+    width: 126px;
+    height: 164px;
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+
+.edit-i-title {
+    font-size: 18px;
+    font-family: Roboto;
+    text-align: center;
+}
+
+.edit-i-subTitle {
+    font-size: 14px;
+    font-family: Roboto;
+    text-align: center;
+    color: #848c98;
+}
+
+.edit-divide {
+    width: 2px;
+    height: 258px;
+    background-color: #400909;
+    margin: auto 0;
+}
+
+.edit-c-container {
+    margin-left: 18px;
+}
+
+.new-p-divide {
+    height: 1px;
+    margin: 12px 18px 12px 86px;
+    background-color: #400909;
+}
+
+.new-p-platform {
+    margin-left: 98px;
+}
+
+.edit-a-container {
+    margin: 4px 20px 4px 48px;
+}
+
+.right-desc {
+    margin: 18px 24px 18px 36px;
+    color: #9F5050;
+    font-family: Roboto;
+    font-size: 12px;
+}
+
+.icon-go-action {
+    background-image: url('../images/gameprofile/check.svg');
+    background-size: 70% !important;
+    background-color: #E64000;
+    background-position: center;
+    border-radius: 50%;
+}
+
+.edit-content {
+    margin: 0 18px 18px 48px;
+}
+
+.cancel-button-padding {
+    margin-right: 18px;
+}
+
+#list_content {
+    margin-bottom: 18px;
+}
+
+.input-container {
+    background-color: var(--neutral-10);
+}
+
+.select-container > select {
+    background-color: var(--neutral-10);
+}

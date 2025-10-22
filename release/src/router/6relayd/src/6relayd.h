@@ -102,6 +102,9 @@ struct relayd_config {
 	struct relayd_interface *slaves;
 	size_t slavecount;
 
+	char *ndp_neighfile;
+	char *ndp_cb;
+
 	char *dhcpv6_cb;
 	char *dhcpv6_statefile;
 	char** dhcpv6_lease;

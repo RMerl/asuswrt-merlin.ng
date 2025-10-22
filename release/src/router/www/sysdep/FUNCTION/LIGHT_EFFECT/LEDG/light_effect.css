@@ -512,6 +512,10 @@
 	padding: 0px 10px 10px 10px;
 	display: none;
 }
+.faq-link {
+	color: #FC0;
+	text-decoration: underline !important;
+}
 #default_set {
 	text-decoration: underline;
 	position: absolute;

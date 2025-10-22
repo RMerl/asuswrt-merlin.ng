@@ -1587,7 +1587,7 @@ TomatoRefresh.prototype = {
 		var e;
 
 		if ((e = E('refresh-time')) != null) {
-			if (this.cookieTag) cookie.set(this.cookieTag, e.value);
+			if (this.cookieTag) window.localStorage.setItem(this.cookieTag, e.value);
 			this.refreshTime = e.value * 1000;
 		}
 		e = undefined;
@@ -1605,7 +1605,7 @@ TomatoRefresh.prototype = {
 		this.http.onCompleted = function(text, xml) {
 			var p = this.parent;
 
-			if (p.cookieTag) cookie.unset(p.cookieTag + '-error');
+			if (p.cookieTag) window.localStorage.removeItem(p.cookieTag + '-error');
 			if (!p.running) {
 				p.stop();
 				return;
@@ -1637,11 +1637,11 @@ TomatoRefresh.prototype = {
 			}
 
 			if (p.cookieTag) {
-				var e = cookie.get(p.cookieTag + '-error') * 1;
+				var e = window.localStorage.getItem(p.cookieTag + '-error') * 1;
 				if (isNaN(e)) e = 0;
 					else ++e;
-				cookie.unset(p.cookieTag);
-				cookie.set(p.cookieTag + '-error', e, 1);
+				window.localStorage.removeItem(p.cookieTag);
+				window.localStorage.setItem(p.cookieTag + '-error', e, 1);
 				if (e >= 3) {
 					alert('XMLHTTP: ' + ex);
 					return;
@@ -1656,7 +1656,7 @@ TomatoRefresh.prototype = {
 	},
 
 	stop: function() {
-		if (this.cookieTag) cookie.set(this.cookieTag, -(this.refreshTime / 1000));
+		if (this.cookieTag) window.localStorage.setItem(this.cookieTag, -(this.refreshTime / 1000));
 		this.running = 0;
 		this.updateUI('stop');
 		this.timer.stop();
@@ -1688,7 +1688,7 @@ TomatoRefresh.prototype = {
 
 		e = E('refresh-time');
 		if (((this.cookieTag) && (e != null)) &&
-			((v = cookie.get(this.cookieTag)) != null) && (!isNaN(v *= 1))) {
+			((v = window.localStorage.getItem(this.cookieTag)) != null) && (!isNaN(v *= 1))) {
 			e.value = Math.abs(v);
 			if (v > 0) v = (v * 1000) + (delay || 0);
 		}
@@ -1864,27 +1864,6 @@ function tabHigh(id)
 	}
 	elem.addClass(id, 'active');
 }
-
-// -----------------------------------------------------------------------------
-
-var cookie = {
-	set: function(key, value, days) {
-		document.cookie = key + '=' + value + '; expires=' +
-			(new Date(new Date().getTime() + ((days ? days : 14) * 86400000))).toUTCString() + '; path=/';
-	},
-
-	get: function(key) {
-		var r = ('; ' + document.cookie + ';').match(key + '=(.*?);');
-		return r ? r[1] : null;
-	},
-
-	unset: function(key) {
-		document.cookie = key + '=; expires=' +
-			(new Date(1)).toUTCString() + '; path=/';
-	}
-};
-
-// -----------------------------------------------------------------------------
 
 function checkEvent(evt)
 {

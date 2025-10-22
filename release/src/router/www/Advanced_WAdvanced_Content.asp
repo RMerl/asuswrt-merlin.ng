@@ -307,7 +307,7 @@ function backForwardCompatibility(){
 function initial(){
 	show_menu();
 	register_event();
-	init_cookie();
+	init_localStorage();
 	backForwardCompatibility();
 
 	if(lantiq_support){
@@ -332,6 +332,7 @@ function initial(){
 		document.getElementById("wl_unit_field").style.display = "none";
 
 	regen_band(document.form.wl_unit);
+	document.form.wl_unit.value = wl_unit_value;
 	if(Rawifi_support){
 		inputCtrl(document.form.wl_noisemitigation, 0);
 	}
@@ -354,6 +355,10 @@ function initial(){
 		if(document.form.wl_HW_switch.value == "1"){
 			document.form.wl_radio[0].disabled = true;
 		}
+	}
+
+	if(mlr_support){
+		document.getElementById('mlr_field').style.display = '';
 	}
 	
 	// MODELDEP: for AC ser
@@ -558,6 +563,8 @@ function initial(){
 			}
 		}
 	}
+	if(based_modelid == "BT8" || based_modelid == "BT6" || based_modelid == "BT8P")
+		document.getElementById("wl_itxbf_field").style.display = "none";
 
 	var mcast_rate = '<% nvram_get("wl_mrate_x"); %>';
 	var mcast_unit = wl_unit_value;
@@ -704,7 +711,7 @@ function initial(){
 	}
 
 	/* Agile DFS, EU sku, HE2.0 only */
-	if((get_band_name_by_wl_unit(wl_unit_value).indexOf('2G') != -1) && "<% nvram_get("wl0_country_code"); %>" == 'GB' && "<% soc_version_major(); %>" == "2" && (based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000")){
+	if ((is_unit_5g(wl_unit_value) || is_unit_5g_2(wl_unit_value)) && agile_dfs_support) {
 		inputCtrl(document.form.wl_precacen, 1);
 	}
 	else{
@@ -1249,16 +1256,8 @@ function set_power(power_value){
 	document.form.wl_txpower.value = power_table[power_value-1];
 }
 
-function init_cookie(){
-	if(document.cookie.indexOf('clock_type') == -1)		//initialize
-		document.cookie = "clock_type=1";
-
-	x = document.cookie.split(';');
-	for(i=0;i<x.length;i++){
-		if(x[i].indexOf('clock_type') != -1){
-			clock_type = x[i].substring(x[i].length-1, x[i].length);
-		}	
-	}
+function init_localStorage(){
+	clock_type = window.localStorage.getItem("clock_type") || 1;	
 }
 
 function save_wifi_schedule(){
@@ -1538,7 +1537,7 @@ function wifi7_mode(obj){
                     confirm_cancel();
 					be_confirm_flag = 0;
 		 			document.form.wl_11be.value = wifi7ModeEnable === '1' ? '0': '1';
-                    	return false;
+					return false;
                 },
                 left_button_args: {},
                 right_button: "<#checkbox_Yes#>",
@@ -1804,7 +1803,7 @@ function wl_disable11b(obj){
 								<a id="he_mode_text" class="hintstyle"><#WLANConfig11b_HE_Frame_Mode_itemname#></a>
 						</th>
 						<td>
-							<div style="width:465px;display:flex;align-items: center;">
+							<div style="display:flex;align-items: center;">
 								<select name="wl_11ax" class="input_option" onChange="he_frame_mode(this);">
 										<option value="1" <% nvram_match("wl_11ax", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 										<option value="0" <% nvram_match("wl_11ax", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
@@ -1818,7 +1817,7 @@ function wl_disable11b(obj){
 							<a id="wifi7_mode_text" class="hintstyle"><#WiFi7_Mode#></a>
 						</th>
 						<td>
-							<div style="width:465px;display:flex;align-items: center;">
+							<div style="display:flex;align-items: center;">
 								<select name="wl_11be" class="input_option" onChange="wifi7_mode(this);">
 									<option value="1" <% nvram_match("wl_11be", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 									<option value="0" <% nvram_match("wl_11be", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
@@ -1831,7 +1830,7 @@ function wl_disable11b(obj){
 							<a class="hintstyle"><#WLANConfig11b_AgileMultiband_itemdesc#></a>
 						</th>
 						<td>
-							<div style="width:465px;display:flex;align-items: center;">
+							<div style="display:flex;align-items: center;">
 								<select name="wl_mbo_enable" class="input_option">
 									<option value="1" <% nvram_match("wl_mbo_enable", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 									<option value="0" <% nvram_match("wl_mbo_enable", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
@@ -1844,7 +1843,7 @@ function wl_disable11b(obj){
 							<a class="hintstyle"><#WLANConfig11b_WakeTime_itemname#></a>
 						</th>
 						<td>
-							<div style="width:465px;display:flex;align-items: center;">
+							<div style=display:flex;align-items: center;">
 								<select name="wl_twt" class="input_option">
 									<option value="1" <% nvram_match("wl_twt", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 									<option value="0" <% nvram_match("wl_twt", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
@@ -2028,6 +2027,15 @@ function wl_disable11b(obj){
 							</select>
 						</td>
 					</tr>
+					<tr id="mlr_field" style="display:none;">
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="">Xtra Range 2.0</a></th>
+						<td>
+							<select name="mlr_enable" class="input_option">
+									<option value="0" <% nvram_match("mlr_enable", "0","selected"); %> ><#WLANConfig11b_WirelessCtrl_buttonname#></option>
+									<option value="1" <% nvram_match("mlr_enable", "1","selected"); %> ><#WLANConfig11b_WirelessCtrl_button1name#></option>
+							</select>
+						</td>
+					</tr>
 					<tr id="wl_module_scheme_field">
 						<th id="turbo_qam_title"><a id="turbo_qam_hint" class="hintstyle" href="javascript:void(0);" onClick="openHint(3,28);"><#WLANConfig11b_x_TurboQAM#></a></th>
 						<td>
@@ -2132,8 +2140,8 @@ function wl_disable11b(obj){
 							<div>
 								<table>
 									<tr>
-										<td style="border:0px;padding-left:0px;">
-											<div id="slider" style="width:80px;"></div>
+										<td style="border:0px;padding-left:0px;width:100%">
+											<div id="slider"></div>
 										</td>									
 										<td style="border:0px;width:60px;">
 											<div id="tx_power_desc" style="width:150px;font-size:14px;"></div>
@@ -2152,7 +2160,7 @@ function wl_disable11b(obj){
 						<td>
 							<select name="wl_precacen" class="input_option">
 									<option value="0" <% nvram_match("wl_precacen", "0","selected"); %> ><#WLANConfig11b_WirelessCtrl_buttonname#></option>
-									<option value="1" <% nvram_match("wl_precacen", "1","selected"); %> ><#WLANConfig11b_WirelessCtrl_button1name#></option>
+									<option value="1" <% nvram_match("wl_precacen", "1","selected"); %> ><#Auto#></option>
 							</select>
 						</td>
 					</tr>
@@ -2177,7 +2185,7 @@ function wl_disable11b(obj){
 
 				</div>  <!-- for .container  -->
 				<div class="popup_container popup_element_second"></div>
-
+					
 		</td>
 	</tr>
 </tbody>

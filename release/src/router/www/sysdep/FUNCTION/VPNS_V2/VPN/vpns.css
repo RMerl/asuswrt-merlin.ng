@@ -132,6 +132,7 @@
 	align-items: center;
 	justify-content: center;
 	margin-bottom: 10px;
+	margin-left: 2px;
 }
 .svr_item_container.selected{
 	background: rgb(43, 67, 86);
@@ -951,13 +952,19 @@
 	border: 1px solid rgba(23, 62, 103, 0.2);
 	box-shadow: 0px 2px 3px 0px rgb(20 50 80 / 5%);
 	border-radius: 5px;
-	line-height: 40px;
+	line-height: 100%;
 	color: rgb(255, 255, 255);
 	font-size: 14px;
 	font-weight: 600;
 	letter-spacing: 1.25px;
 	text-align: center;
 	cursor: pointer;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	word-break: break-all;
+	white-space: normal;
+	overflow-wrap: break-word;
 }
 .action_container .btn_container.valid_fail{
 	cursor: not-allowed;

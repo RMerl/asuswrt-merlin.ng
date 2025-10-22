@@ -1,0 +1,207 @@
+.\" -*- nroff -*- --------------------------------------------------------- *
+.\"  
+.\" Copyright (c) 1990, 1993, 1994
+.\"     The Regents of the University of California.  All rights reserved.
+.\"
+.\" Copyright 2001 H. Peter Anvin - All Rights Reserved
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"----------------------------------------------------------------------- */
+.TH TFTP 1 "23 July 2008" "tftp-hpa @@VERSION@@" "User's Manual"
+.SH NAME
+.B tftp
+\- IPv4 Trivial File Transfer Protocol client
+.SH SYNOPSIS
+.B tftp
+[ \fIoptions...\fP ]
+[\fIhost\fP [\fIport\fP]]
+[\fB\-c\fP \fIcommand\fP]
+.br
+.SH DESCRIPTION
+.B tftp
+is a client for the Trivial file Transfer Protocol, which can be
+used to transfer files to and from remote machines, including some
+very minimalistic, usually embedded, systems.  The remote
+.I host
+may be specified on the command line, in which case
+.B tftp
+uses
+.I host
+as the default host for future transfers (see the
+.B connect
+command below.)
+.SH OPTIONS
+.TP
+.B \-4
+Connect with IPv4 only, even if IPv6 support was compiled in.
+.TP
+.B \-6
+Connect with IPv6 only, if compiled in.
+.TP
+\fB\-c\fP \fIcommand\fP
+Execute \fIcommand\fP as if it had been entered on the tftp prompt.
+Must be specified last on the command line.
+.TP
+.B \-l
+Default to literal mode. Used to avoid special processing of ':' in a
+file name.
+.TP
+\fB\-m\fP \fImode\fP
+Set the default transfer mode to \fImode\fP.  This is usually used with \-c.
+.TP
+\fB\-R\fP \fIport:port\fP
+Force the originating port number to be in the specified range of port
+numbers.
+.TP
+.B \-v
+Default to verbose mode.
+.TP
+.B \-V
+Print the version number and configuration to standard output, then
+exit gracefully.
+.SH COMMANDS
+Once
+.B tftp
+is running, it issues the prompt
+\f(CWtftp>\fP
+and recognizes the following commands:
+.TP
+\fB?\fP \fIcommand-name...\fP
+.TP
+\fBhelp\fP \fIcommand-name...\fP
+Print help information
+.TP
+.B ascii
+Shorthand for
+.BR "mode ascii" .
+.TP
+.B binary
+Shorthand for
+.BR "mode binary" .
+.TP
+\fBconnect\fP \fIhost [port]\fP
+Set the
+.I host
+(and optionally
+.IR port )
+for transfers.  Note that the TFTP protocol, unlike the FTP protocol,
+does not maintain connections between transfers; thus, the
+.B connect
+command does not actually create a connection, but merely remembers
+what host is to be used for transfers.  You do not have to use the
+.B connect
+command; the remote host can be specified as part of the
+.B get
+or
+.B put
+commands.
+.TP
+\fBget\fP \fIfile\fP
+.sp -.6l
+.TP
+\fBget\fP \fIremotefile localfile\fP
+.sp -.6l
+.TP
+\fBget\fP \fIfile1 file2 file3...\fP
+Get a file or set of files from the specified sources.  A remote
+filename can be in one of two forms: a plain filename on the remote
+host, if the host has already been specified, or a string of the form
+.I "host:filename"
+to specify both a host and filename at the same time.  If the latter
+form is used, the last hostname specified becomes the default for
+future transfers.  Enable
+.B literal
+mode to prevent special treatment of the ':' character (e.g. C:\\dir\\file).
+.TP
+.B literal
+Toggle literal mode.  When set, this mode prevents special treatment of ':' in filenames. 
+.TP
+\fBmode\fP \fItransfer-mode\fP
+Specify the mode for transfers;
+.I transfer-mode
+may be one of
+.B ascii
+(or
+.BR netascii )
+or
+.B binary
+(or
+.BR octet .)
+The default is
+.BR ascii .
+.TP
+\fBput\fP \fIfile\fP
+.sp -.6l
+.TP
+\fBput\fP \fIlocalfile remotefile\fP
+.sp -.6l
+.TP
+\fBput\fP \fIfile1 file2 file3... remote-directory\fP
+Put a file or set of files to the specified remote file or directory.
+The destination can be in one of two forms: a filename on the remote
+host, if the host has already been specified, or a string of the form
+.I "host:filename"
+to specify both a host and filename at the same time.  If the latter
+form is used, the hostname specified becomes the default for future
+transfers.  If the remote-directory form is used, the remote host is
+assumed to be a UNIX system or another system using
+.B /
+as directory separator.  Enable
+.B literal
+mode to prevent special treatment of the ':' character (e.g. C:\\dir\\file).
+.TP
+.B quit
+Exit
+.BR tftp .
+End-of-file will also exit.
+.TP
+\fBrexmt\fP \fIretransmission-timeout\fP
+Set the per-packet retransmission timeout, in seconds.
+.TP
+.B status
+Show current status.
+.TP
+\fBtimeout\fP \fItotal-transmission-timeout\fP
+Set the total transmission timeout, in seconds.
+.TP
+.B trace
+Toggle packet tracing (a debugging feature.)
+.TP
+.B verbose
+Toggle verbose mode.
+.SH "NOTES"
+The TFTP protocol provides no provisions for authentication or
+security.  Therefore, the remote server will probably implement some
+kinds of access restriction or firewalling.  These access restrictions
+are likely to be site- and server-specific.
+.SH "AUTHOR"
+This version of
+.B tftp
+is maintained by H. Peter Anvin <hpa@zytor.com>.  It was derived from,
+but has substantially diverged from, an OpenBSD source base, with
+added patches by Markus Gutschke and Gero Kulhman.
+.SH "SEE ALSO"
+.BR tftpd (8).

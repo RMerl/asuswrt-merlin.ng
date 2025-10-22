@@ -692,6 +692,10 @@ extern void set_wlc_auto_reconnect(int band, int enable);
 #ifdef RTCONFIG_HND_ROUTER_AX
 extern int hnd_boardid_cmp(const char *boardid);
 #endif
+#ifdef RTCONFIG_AI_SERVICE
+extern int getAIBoardBackupMacAddr(const char *envram_name);
+extern int setAIBoardBackupMacAddr(const char *envram_name, const char *mac);
+#endif /* RTCONFIG_AI_SERVICE */
 /* board API under sysdeps/ralink/ralink.c */
 #ifdef RTCONFIG_RALINK
 extern int FWRITE(const char *da, const char* str_hex);
@@ -1314,20 +1318,32 @@ extern int eth_down_time;
 #endif
 #endif
 
+//update the datecode once you update the 'backhaul_period_t'.
+#define BHP_VER_STRING "2025061101"
 //The definition comes from Sungmin_Lin
 typedef struct backhaul_period_s {
+	char ver[16];
 	long int bhc_st_init; // initial state
 	long int bhc_st_0; // no backhaul
 	long int bhc_st_1; // eth
 	long int bhc_st_2; // 2G
-	long int bhc_st_4; // 2G+5G
-	long int bhc_st_6; // 2G+5G
-	long int bhc_st_8; // 2G+5G1
+	long int bhc_st_4; // 5G
+	long int bhc_st_8; // 5G1
 	long int bhc_st_10; // eth_2
 	long int bhc_st_20; // eth_3
 	long int bhc_st_40; // eth_4
-	long int bhc_st_128; // 2G+5G(5G1)+6G
+	long int bhc_st_80; // 6G
+	long int bhc_st_100; // 6G-1
+	long int bhc_st_200; // MLO
 } backhaul_period_t;
+
+//update the datecode once you update the 'ahs_dhcp_period_t'.
+#define AHS_DHCP_VER_STRING "2025071001"
+typedef struct ahs_dhcp_period_s {
+	char ver[16];
+	long int ahs_dhcp_st_deconfig; // deconfig or leasefail
+	long int ahs_dhcp_st_nwchg; // network changes
+} ahs_dhcp_period_t;
 
 #ifdef RTCONFIG_DSL
 /* sysdeps/init-*-dsl.c */
@@ -1752,6 +1768,10 @@ extern void write_extra_filter6(FILE *fp);
 #endif
 extern void rule_apply_checking(char *caller, int line, char *rule_path, int ret);
 extern void reset_filter(void);
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+extern void add_mtwan_ipv6_nat_rules(int wan_unit);
+extern void add_mtwan_ipv6_mangle_rules(int wan_unit);
+#endif
 
 /* pc.c */
 #ifdef RTCONFIG_PARENTALCTRL
@@ -1892,6 +1912,7 @@ extern int update_resolvconf(void);
 extern void wan_add_resolv_conf(FILE* fp, int wan_unit);
 extern void wan_add_resolv_dnsmasq(FILE* fp, int wan_unit);
 #ifdef RTCONFIG_IPV6
+extern void wan_add_resolv_conf_ipv6(FILE* fp, int wan6_unit);
 extern void wan_add_resolv_dnsmasq_ipv6(FILE* fp, int wan6_unit);
 #endif
 
@@ -2022,6 +2043,13 @@ extern void erase_nvram(void);
 extern int init_toggle(void);
 extern void btn_check(void);
 extern int watchdog_main(int argc, char *argv[]);
+#ifdef RTCONFIG_ETHMON
+extern int ethmon_main(int argc, char *argv[]);
+#endif
+#ifdef RTCONFIG_IP808AR
+extern int poemon_main(int argc, char *argv[]);
+extern int poeInit_main(int argc, char *argv[]);
+#endif
 #ifdef RTCONFIG_CONNTRACK
 extern int pctime_main(int argc, char *argv[]);
 #endif
@@ -2322,12 +2350,14 @@ extern void stop_tftpd(int force);
 extern void start_tftpd(void);
 #endif
 #ifdef RTCONFIG_AI_SERVICE
+extern int is_ai_if_on(void);
 extern int update_ai_key(char *private_key_filename, char *public_key_filename);
 extern int verify_ai_key(char *private_key_filename, char *public_key_filename);
 extern int gen_ai_key(char *private_key_filename, char *public_key_filename);
 extern int renew_ai_key(char *private_key_filename, char *public_key_filename, char *tftp_filename);
 extern int start_ai_upgrade(char *);
 extern int ai_response_check_main(int argc, char *argv[]);
+extern int ai_request_main(int argc, char *argv[]);
 extern void stop_ai_response_check(void);
 extern int start_ai_response_check(void);
 extern int send_ai_request(int);
@@ -3090,6 +3120,7 @@ extern int amas_cd_ipc_send_event(const char *ipc_path, char *data);
 extern void create_cd_portstatus_thread(void);
 extern int amas_ssd_cd_main(void);
 extern int amas_portstatus_main();
+extern int airiq_monitor_main();
 void start_amas_ssd_cd(void);
 void stop_amas_ssd_cd(void);
 extern int amas_ssd_main(void);
@@ -3217,6 +3248,8 @@ extern void start_amas_portstatus(void);
 extern void stop_conn_diag(void);
 extern void start_conn_diag(void);
 extern int send_reinit_bssinfo_to_conn_diag(void);
+extern void stop_airiq_monitor(void);
+extern void start_airiq_monitor(void);
 #endif
 #ifdef RTCONFIG_FU_TEST
 extern int futest_main(int argc, char *argv[]);
@@ -3695,8 +3728,15 @@ void config_lacp(void);
 
 #ifdef RTCONFIG_HND_ROUTER_AX
 #ifdef RTCONFIG_BONDING_WAN
+char *get_wan_bonding_ifname(char *ifname, size_t len);
+char *get_wan_bonding_ifnames(char *ifnames, size_t len);
+#ifdef RTCONFIG_MULTIWAN_IF
+void start_wan_bonding(int wan_unit);
+void stop_wan_bonding(int wan_unit);
+#else
 void start_wan_bonding(void);
 void stop_wan_bonding(void);
+#endif
 #endif
 #endif
 
@@ -4129,11 +4169,29 @@ extern void start_mtwan_lan_ipv6(int wan_unit);
 extern void stop_mtwan_lan_ipv6(int wan_unit);
 extern void restart_mtwan_dnsmasq_ipv6(int wan_unit);
 extern void mtwan_update_sdn_resolvconf_ipv6(int unit);
-extern void update_mtwan_ip_rule_ipv6(int unit);
-extern void add_mtwan_ipv6_route(int unit, char *ifname, int service);
-extern void check_mtwan_ipv6_route();
+extern void mtwan6_handle_ip_rule(int unit);
+extern void mtwan6_handle_ip_route(int unit);
+extern void mtwan6_handle_new_default_route(const char* ifname, const char* gateway);
+extern void mtwan6_handle_new_addr(const char* ifname, const char* addr, int prefix_length);
+extern void mtwan6_check_route();
+extern void mtwan6_check_addr();
+extern void mtwan6_check_dns();
 #ifdef RTCONFIG_SOFTWIRE46
 extern void update_mtwan_s46_resolvconf_ipv6(int wan_unit);
+#endif
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+extern int is_mtwan6_primary(int wan_unit);
+extern int is_mtwan6_used(int wan_unit);
+extern int is_mtwan6_def_route_exist(const char *ifname, const char *table);
+extern int mtwan6_neighbor_main(int argc, char *argv[]);
+extern void mtwan6_update_lb_route(int wan_unit, int up);
+extern void mtwan6_update_profile_lb_route(int mtwan_idx, int mtwan_group, int unit, int up);
+extern void mtwan6_update_main_default_route();
+extern int mtwan6_get_active_wan_unit(int mtwan_idx);
+extern void mtwan6_restart_6relayd(int mtwan_idx, int old_unit, int new_unit);
+#ifdef RTCONFIG_MULTILAN_CFG
+extern int mtwan6_get_sdn_wan6_unit(int mtwan_idx);
+#endif
 #endif
 #endif
 
@@ -4164,6 +4222,12 @@ int nvsw_cmd(int argc, char **argv);
 #endif
 #if defined(BQ16) || defined(BQ16_PRO)
 extern int wl_defer_conf_main(int argc, char *argv[]);
+#endif
+
+#ifdef RTCONFIG_CSIMON
+extern int csi_monitor_main(int argc, char *argv[]);
+extern void stop_csi_monitor();
+extern void start_csi_monitor(int argc, char *argv[]);
 #endif
 
 #endif	/* __RC_H__ */

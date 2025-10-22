@@ -2501,7 +2501,8 @@ int write_3g_ppp_conf(int modem_unit){
 		fprintf(fp, "demand\n");
 		fprintf(fp, "idle %d\n", nvram_get_int("modem_idletime")?:30);
 	}
-	fprintf(fp, "persist\n");
+	else 
+		fprintf(fp, "persist\n");
 	fprintf(fp, "holdoff %s\n", nvram_invmatch(strcat_r(prefix, "pppoe_holdoff", tmp), "")?nvram_safe_get(tmp):"10");
 #ifdef SET_USB_MODEM_MTU_PPP
 	modem_mtu = nvram_get_int("modem_mtu");

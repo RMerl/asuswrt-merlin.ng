@@ -1,3 +1,20 @@
+if(window.self !== window.top) {
+	if(top.document.documentElement.getAttribute("data-asuswrt-color") !== null) {
+		document.documentElement.setAttribute("data-asuswrt-color", top.document.documentElement.getAttribute("data-asuswrt-color"));
+	}
+	if(top.document.documentElement.getAttribute("data-asuswrt-theme") !== null) {
+		document.documentElement.setAttribute("data-asuswrt-theme", top.document.documentElement.getAttribute("data-asuswrt-theme"));
+	}
+	window.addEventListener("message", (event) => {
+		if (typeof event.data.color !== "undefined") {
+			document.documentElement.setAttribute("data-asuswrt-color", event.data.color);
+		}
+		if (typeof event.data.theme !== "undefined") {
+			document.documentElement.setAttribute("data-asuswrt-theme", event.data.theme);
+		}
+	});
+}
+
 if(parent.webWrapper) document.write('<link rel="stylesheet" type="text/css" href="/css/business-white.css"></link>');
 document.write('<script type="text/javascript" src="/require/require.min.js"></script>');
 document.write('<script type="text/javascript" src="/js/support_site.js"></script>');
@@ -148,21 +165,6 @@ Array.prototype.del = function(n){
 　else
 　　return this.slice(0,n).concat(this.slice(n+1,this.length));
 }
-
-var cookie = {
-	set: function(key, value, days) {
-		document.cookie = key + '=' + value + '; expires=' +
-			(new Date(new Date().getTime() + ((days ? days : 14) * 86400000))).toUTCString() + '; path=/';
-	},
-	get: function(key) {
-		var r = ('; ' + document.cookie + ';').match(key + '=(.*?);');
-		return r ? r[1] : null;
-	},
-	unset: function(key) {
-		document.cookie = key + '=; expires=' +
-			(new Date(1)).toUTCString() + '; path=/';
-	}
-};
 
 var Session = Session || (function(){
 	var win = window.top || window;
@@ -442,6 +444,47 @@ var wl_info = {
 	})()
 };
 
+var DUT_SUPPORT_WLBANDS = (() => {
+	const BAND_DEFINITIONS = [
+		{ bit: 1, band: "2G", text: "2.4 GHz", unit: get_wl_unit_by_band("2G") },
+		{ bit: 2, band: "5G", text: "5 GHz", unit: get_wl_unit_by_band("5G") },
+		{ bit: 4, band: "5G1", text: "5 GHz-1", unit: get_wl_unit_by_band("5G1") },
+		{ bit: 8, band: "5G2", text: "5 GHz-2", unit: get_wl_unit_by_band("5G2") },
+		{ bit: 16, band: "6G", text: "6 GHz", unit: get_wl_unit_by_band("6G") },
+		{ bit: 32, band: "6G1", text: "6 GHz-1", unit: get_wl_unit_by_band("6G1") },
+		{ bit: 64, band: "6G2", text: "6 GHz-2", unit: get_wl_unit_by_band("6G2") },
+	];
+
+	return (() => {
+		if (isSupport("noWiFi")) return [];
+
+		const availableBands = BAND_DEFINITIONS.filter(bandItem => bandItem.unit !== "");
+		const has5G2 = availableBands.some(bandItem => bandItem.band === "5G2");
+		const has6G2 = availableBands.some(bandItem => bandItem.band === "6G2");
+		const finalBands = [];
+		availableBands.forEach(bandItem => {
+			let shouldKeep = true;
+			if (has5G2) {
+				if (bandItem.band === "5G") shouldKeep = false;
+			} else {
+				if (bandItem.band === "5G1") shouldKeep = false;
+			}
+
+			if (has6G2) {
+				if (bandItem.band === "6G") shouldKeep = false;
+			} else {
+				if (bandItem.band === "6G1") shouldKeep = false;
+			}
+
+			if (shouldKeep) {
+				finalBands.push(bandItem);
+			}
+		});
+
+		return finalBands;
+	})();
+})();
+
 function get_band_name_by_wl_unit(wl_unit){
 	var wlnband_list = `<% nvram_get("wlnband_list"); %>`.split("&#60");
 
@@ -499,16 +542,18 @@ if(isSupport("UI4") && !parent.webWrapper){
 		"aidisk/popDeleteFolder.asp", 
 		"aidisk/popModifyAccount.asp", 
 		"aidisk/popModifyFolder.asp",
+		"device-map/router_status.asp",
 		"multi_wan.html",
-		"adguard_dns.html"
+		"adguard_dns.html",
+		"mlo.html"
 	];
 
 	for(var i in rwdPageSupport){whiteList.push(rwdPageSupport[i].path)}
 
-	if (!whiteList.includes(currentPath) && re_mode != "1" && !noWrapper) {
+	if (!whiteList.find(element=>currentPath.indexOf(element)!=-1) && re_mode != "1" && !noWrapper) {
 		Session.set("lastPage", location.pathname.replace("/", ""));
 		window.localStorage.setItem("page", "settings");
-		location.href = "/index.html?url=settings&current_theme=white";
+		location.href = "/index.html?current_theme=white";
 	}
 }
 var cake_support = isSupport("cake");
@@ -526,9 +571,9 @@ var band5g2_support = isSupport("5G-2");
 var band6g_support = wl_info.band6g_support;
 var wifi7_support = isSupport("wifi7");
 var band60g_support = isSupport("wigig");
-var max_band60g_wl_bw = 6;	// 2.16 GHz
+var max_band60g_wl_bw = 10;	// 2.16 GHz
 if (based_modelid == "GT-AXY16000") {
-	max_band60g_wl_bw = 7; // 4.32 GHz
+	max_band60g_wl_bw = 11; // 4.32 GHz
 }
 var live_update_support = isSupport("update"); 
 var no_update_support = isSupport("noupdate");
@@ -722,6 +767,7 @@ var hnd_ax_675x_support = isSupport('hnd_ax_675x');
 var wireguard_support = isSupport('wireguard');
 var gre_support = isSupport('gre');
 var mtppp_support = isSupport("mtppp");
+var mlr_support = isSupport("mlr");
 
 var QISWIZARD = "QIS_wizard.htm";
 
@@ -753,7 +799,8 @@ var MaxRule_bwdpi_wrs = isSupport("MaxRule_bwdpi_wrs");
 var isp_customize_tool_support = isSupport('isp_customize_tool');
 var lacp_support = isSupport("lacp");
 var dashboard_support = isSupport("dashboard");
-const is_GTBE_series = (based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000" || based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI")? true : false;// These models have the same hardware designs.
+var newsite_provisioning_support = isSupport("newsite_provisioning");
+let is_GTBE_externalswitch_series = (based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000")? true : false;// These models have the same hardware designs (externel realtek switch).
 
 function get_bonding_ports(product_id){//return lacp bonding ports
 	let bonding_port_settings = [];
@@ -765,11 +812,11 @@ function get_bonding_ports(product_id){//return lacp bonding ports
 			bonding_port_settings = [{"val": "4", "text": "LAN1"}, {"val": "3", "text": "LAN2"}];
 		else if(product_id == "XT8PRO" || product_id == "BT12" || product_id == "BM68")
 			bonding_port_settings = [{"val": "2", "text": "LAN2"}, {"val": "3", "text": "LAN3"}];
-		else if(product_id == "BT10")
+		else if(product_id == "BT10" || product_id == "EBG15" || product_id == "EBG19P")
 			bonding_port_settings = [{"val": "1", "text": "LAN2"}, {"val": "2", "text": "LAN3"}];
 		else if(product_id == "BQ16" || product_id == "BQ16_PRO")
 			bonding_port_settings = [{"val": "3", "text": "LAN4"}, {"val": "4", "text": "LAN5"}];
-		else if(product_id == "GT-BE98" || product_id == "GT-BE98_PRO" || product_id == "GT-BE96" || based_modelid == "GT-BE19000" || based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI"){
+		else if(is_GTBE_externalswitch_series){
 			let lacp_ifnames_x = httpApi.nvramGet(["lacp_ifnames_x"], true).lacp_ifnames_x;
 			if(lacp_ifnames_x == "eth0 eth3")
 				bonding_port_settings = [{"val": "0", "text": "10G WAN/LAN1"}, {"val": "6", "text": "10G LAN6"}];
@@ -967,7 +1014,7 @@ var dsl_index = wans_dualwan_array.getIndexByValue("dsl");
 var active_wan_unit = '<% get_wan_unit(); %>';
 var wan0_enable = '<% nvram_get("wan0_enable"); %>';
 var wan1_enable = '<% nvram_get("wan1_enable"); %>';
-var dualwan_enabled = (dualWAN_support && wans_dualwan_orig.search("none") == -1) ? 1 : 0;
+var dualwan_enabled = (isSupport("dualwan") && wans_dualwan_orig.search("none") == -1) ? 1 : 0;
 
 var realip_support = isSupport("realip");
 var realip_state = "";
@@ -1017,21 +1064,9 @@ var aimesh_location_arr = [
 	{value:"Custom",text:"<#AiMesh_NodeLocation24#>"}
 ];
 
-var radioHintIgnored = false;
-var blockAllDeviceHintIgnored = false;
-(function(){
-	var array = document.cookie.split(';');
+var radioHintIgnored = (window.localStorage.getItem("radioAllDisableHint") == "ignore");
+var blockAllDeviceHintIgnored = (window.localStorage.getItem("blockAllDeviceHint") == "ignore");
 
-	for(var i=0; i<array.length; i++){
-		var _temp = array[i].trim();
-		if(_temp == 'radioAllDisableHint=ignore'){
-			radioHintIgnored = true;
-		}
-		if(_temp == 'blockAllDeviceHint=ignore'){
-			blockAllDeviceHintIgnored = true;
-		}
-	}
-})();
 var radio_all_disabled = (function(){
 	 if((wlan0_radio_flag == '' || wlan0_radio_flag == '0')
 	 && (wlan1_radio_flag == '' || wlan1_radio_flag == '0')
@@ -1141,7 +1176,15 @@ function show_banner(L3){// L3 = The third Level of Menu
 		banner_code +='</form>\n';
 	}	
 
-	if(rog_support){
+	if(top.webWrapper){
+		banner_code += `
+			<div class="banner1" align="center">
+			<div align="center">
+				<span id="modelName_top"></span>
+			</div>
+		`;
+	}
+	else if(rog_support){
 		if(odm_support){
 			banner_code += `<div class="banner1" style="display:flex"><img src="images/New_ui/logo_ROG.svg" align="left" style="width:250px;height:70px;margin-left:45px;">`;
 		}
@@ -1389,23 +1432,24 @@ function show_banner(L3){// L3 = The third Level of Menu
 
 	/* Traffic Limit Warning*/
 	if(gobi_support && (usb_index != -1) && (sim_state != "")){	
-		var setCookie = 0;
-		traffic_warning_cookie = cookie.get(keystr);
-		if(traffic_warning_cookie == null){
-			setCookie = 1;
+		var setHintFlag = 0;
+		traffic_warning_localStorage = window.localStorage.getItem(keystr);
+
+		if(traffic_warning_localStorage == null){
+			setHintFlag = 1;
 		}
 		else{
-			var cookie_year = traffic_warning_cookie.substring(0,4);
-			var indexOfcolon = traffic_warning_cookie.indexOf(':');
-			var cookie_month = traffic_warning_cookie.substring(5, indexOfcolon);
+			var HintFlag_year = traffic_warning_localStorage.substring(0,4);
+			var indexOfcolon = traffic_warning_localStorage.indexOf(':');
+			var HintFlag_month = traffic_warning_localStorage.substring(5, indexOfcolon);
 
-			if(cookie_year == date_year && cookie_month == date_month)
-				traffic_warning_flag = parseInt(traffic_warning_cookie.substring(indexOfcolon + 1));
+			if(HintFlag_year == date_year && HintFlag_month == date_month)
+				traffic_warning_flag = parseInt(traffic_warning_localStorage.substring(indexOfcolon + 1));
 			else
-				setCookie = 1;
+				setHintFlag = 1;
 		}
 
-		if(setCookie){
+		if(setHintFlag){
 			set_traffic_show("1");
 		}
 
@@ -1437,6 +1481,22 @@ function show_banner(L3){// L3 = The third Level of Menu
 	if(app_support && !isIE8){
 		document.body.addEventListener('click', show_app_table, false);
 	}
+
+	if(tuf_support && ui_lang == "CN"){
+		var CN_STRING = ""; // need to maintain this table refer to ej
+		if(based_modelid == "TUF-AX3000_V2")	//MODELDEP
+			CN_STRING = $("#modelName_top").html().replace("TUF GAMING ", "");
+		else if(based_modelid == "TUF-AX4200Q" || odmpid == "TUF-AX4200Q")
+			CN_STRING = $("#modelName_top").html().replace("TUF GAMING ", "").replace(" Pro", "");
+
+		if(CN_STRING.length > 0){
+			if($("#modelName_top").html().indexOf(CN_STRING) != -1){ //Fine tune font-size til improve of ROG font 
+				var Name_temp = $("#modelName_top").html().replace(CN_STRING, "<span class='tuf_CN'>" + CN_STRING + "</span>");
+				$("#modelName_top").html(Name_temp);
+			}
+		}
+	}
+
 }
 
 function show_app_table(evt){
@@ -1472,8 +1532,8 @@ function show_app_table(evt){
 }
 
 function set_traffic_show(flag){ //0:hide 1:show
-	traffic_warning_cookie = date_year + '.' + date_month + ':' + flag;
-	cookie.set(keystr, traffic_warning_cookie, 1000);
+	traffic_warning_localStorage = date_year + '.' + date_month + ':' + flag;
+	window.localStorage.setItem(keystr, traffic_warning_localStorage, 1000);
 	traffic_warning_flag = parseInt(flag);
 }
 
@@ -1679,9 +1739,9 @@ function show_menu(){
 	if(lyra_hide_support && (current_url.indexOf("Advanced_Wireless_Content")!= -1 || current_url.indexOf("Advanced_WWPS_Content")!= -1 ||
 		current_url.indexOf("Advanced_WMode_Content")!= -1 || current_url.indexOf("Advanced_ACL_Content")!= -1 ||
 		current_url.indexOf("Advanced_WSecurity_Content")!= -1 || current_url.indexOf("Advanced_WAdvanced_Content")!= -1)){
-		var wireless_hint_cookie = cookie.get("lyra_wireless_hint");
-		if(wireless_hint_cookie == null){
-			cookie.set("lyra_wireless_hint", "1", 1);
+		var wireless_hint_localStorage = window.localStorage.getItem("lyra_wireless_hint");
+		if(wireless_hint_localStorage == null){
+			window.localStorage.setItem("lyra_wireless_hint", "1", 1);
 			create_wireless_notice();
 		}
 	}
@@ -1733,7 +1793,7 @@ function create_wireless_notice(){
 }
 
 var goToPage = function(menu, tab, obj){
-	cookie.set("clickedItem_tab", tab);
+	window.localStorage.setItem("clickedItem_tab", tab);
 	Session.set("lastPage", obj.title);
 	location.href = obj.title;
 }
@@ -1792,12 +1852,12 @@ function showMenuTree(menuList, menuExclude){
 						menu_code += curMenu.tab[firstEntry].url;
 						menu_code += '" id="';
 						menu_code += curMenu.tab[firstEntry].url.split(".")[0];
-						menu_code += '_menu"><table><tr><td><div class="menu_Icon ';
+						menu_code += '_menu"><div style="display: flex; align-items: center; gap: 5px;"><div class="menu_Icon ';
 						if((based_modelid == "RT-AC85U" || based_modelid == "RT-AC85P") && curMenu.index == 'menu_QoS')	//MODELDEP : RT-AC85U change icon
 							menu_code += 'menu_BandwidthMonitor';
 						else
 							menu_code += curMenu.index;
-						menu_code += '"></div></td><td class="menu_Desc">';
+						menu_code += '"></div><div class="menu_Desc">';
 						if(curMenu.index == 'menu_Alexa_IFTTT' && (!alexa_support || !ifttt_support)){
 							if(alexa_support)
 								menu_code += "Amazon Alexa";
@@ -1809,7 +1869,7 @@ function showMenuTree(menuList, menuExclude){
 						}
 						else
 						menu_code += curMenu.menuName;
-						menu_code += '</td></tr></table></div>\n';
+						menu_code += '</div></div></div>\n';
 					}
 				}
 			}
@@ -1819,6 +1879,8 @@ function showMenuTree(menuList, menuExclude){
 
 		var getTabCode = function(){
 			var tab_code = "", tabCounter = 0;
+			if(parent.webWrapper) tabCounter = 1;
+			if(clickedItem.menu == -1) clickedItem.menu = 2;
 
 			for(var j=0; j<menuList[clickedItem.menu].tab.length; j++){
 				var curTab = menuList[clickedItem.menu].tab[j];
@@ -1838,7 +1900,7 @@ function showMenuTree(menuList, menuExclude){
 					}
 				}
 
-				tab_code += '<td><div class="';
+				tab_code += '<td class="tabButtons"><div class="';
 	
 				//-----Fine tune tab icon start-----------				
 				if( dsl_support && (current_url.indexOf("Advanced_DSL_Content") == 0 || current_url.indexOf("Advanced_VDSL_Content") == 0 || current_url.indexOf("Advanced_WAN_Content") == 0 || current_url.indexOf("Advanced_Modem_Content") == 0)){
@@ -1923,11 +1985,10 @@ function showMenuTree(menuList, menuExclude){
 					if(curMenu.tab[j].url.indexOf("Advanced_WireguardClient_Content.asp") == 0) {
 						clickedItem.tab = clickedItem_tabVPNC;
 					} else {
-
-						clickedItem.tab = (curMenu.tab[cookie.get("clickedItem_tab")]) ? parseInt(cookie.get("clickedItem_tab")) : 0;
+						clickedItem.tab = (curMenu.tab[window.localStorage.getItem("clickedItem_tab")]) ? parseInt(window.localStorage.getItem("clickedItem_tab")) : 0;						
 					}
 				}
-				cookie.set("clickedItem_tab", clickedItem.tab);
+				window.localStorage.setItem("clickedItem_tab", clickedItem.tab);
 				break;
 			}
 		}
@@ -1938,7 +1999,7 @@ function showMenuTree(menuList, menuExclude){
 	document.getElementById("mainMenu").innerHTML = getCode("menus");
 	document.getElementById("tabMenu").innerHTML = getCode("tabs");
 
-	if(document.getElementById("tabMenu").innerHTML) {
+	if(document.getElementById("tabMenu").innerHTML && !parent.webWrapper) {
 		var getStyle = function(el, prop) {
 			if(typeof getComputedStyle != 'undefined')
 				return window.getComputedStyle(el, null).getPropertyValue(prop);
@@ -2068,6 +2129,18 @@ function reset_NM_height(){
 }
 
 function show_footer(){
+	if(parent.webWrapper){
+		const resizeObserver = new ResizeObserver(entries => {
+			for (let entry of entries) {
+				const height = entry.target.getBoundingClientRect().height;
+				window.parent.postMessage({ type: 'resize', height: height }, '*');
+			}
+		});
+
+		resizeObserver.observe(document.querySelector('.content'));
+		return false;
+	}
+
 	var href_lang = get_supportsite_lang();
 	var href_reg_url = get_registersite_url();
 	if(based_modelid == "RT-N56UB1" || based_modelid == "RT-N56UB2" ||
@@ -2154,8 +2227,7 @@ function show_footer(){
 	var saq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=174";
 	footer_code += '&nbsp|&nbsp<a id="faq_bottom" href="'+saq_href+'" target="_blank" style="font-weight: bolder;text-decoration:underline;cursor:pointer;">FAQ</a>';
 	footer_code += '</td>';
-	footer_code += '<td width="270" id="bottom_help_FAQ" align="right" style="font-family:Arial, Helvetica, sans-serif;">&nbsp&nbsp<input type="text" id="FAQ_input" class="input_FAQ_table" maxlength="40" onKeyPress="submitenter(this,event);" autocorrect="off" autocapitalize="off" onkeyup="filterFAQ();"></td>';
-	footer_code += '<div id="faq-block" class="faq-filter-block" style="display:none"></div>';
+	footer_code += '<td width="270" id="bottom_help_FAQ" align="right" style="font-family:Arial, Helvetica, sans-serif;position:relative">&nbsp&nbsp<input type="text" id="FAQ_input" class="input_FAQ_table" maxlength="40" onKeyPress="submitenter(this,event);" autocorrect="off" autocapitalize="off" onkeyup="filterFAQ();"><div id="faq-block" class="faq-filter-block" style="display:none"></div></td>';
 	footer_code += '</td>';
 	footer_code += '<td width="30" align="left"><div id="bottom_help_FAQ_icon" class="bottom_help_FAQ_icon" style="cursor:pointer;margin-left:3px;" target="_blank" onClick="search_supportsite();"></div></td>';
 	footer_code += '</tr></table></div>\n';
@@ -2207,7 +2279,7 @@ function genFAQList(_str){
 				var name = Object.values(faq_data)[i].name;
 				var _name = Object.values(faq_data)[i].name.toUpperCase();
 				var link = Object.values(faq_data)[i].link;
-				if(isSupport("mtlancfg") !== -1){
+				if(isSupport("mtlancfg") !== -1 && link === "Guest_network.asp"){
 					link = "SDN.asp";
 				}
 				
@@ -2994,7 +3066,7 @@ var secondary_link_auxstatus = '';
 var modem_bytes_data_limit = parseFloat('<% nvram_get("modem_bytes_data_limit"); %>');
 var rx_bytes = parseFloat('<% nvram_get("modem_bytes_rx"); %>');
 var tx_bytes = parseFloat('<% nvram_get("modem_bytes_tx"); %>');
-var traffic_warning_cookie = '';
+var traffic_warning_localStorage = '';
 var traffic_warning_flag = '';
 var keystr = 'traffic_warning_' + modem_bytes_data_limit;
 var date = new Date();
@@ -3022,7 +3094,7 @@ if(isSwMode("RP") || isSwMode("MB")){
 }
 var wlifnames = '<% nvram_get("wl_ifnames"); %>'.split(" ");
 var dpsta_band = parseInt('<% nvram_get("dpsta_band"); %>');
-
+var ajaxStatusLog = [];
 function refreshStatus(xhr){
 	if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "/";
 
@@ -3060,12 +3132,9 @@ function refreshStatus(xhr){
 	wan1_ipaddr = wanStatus[24].firstChild.nodeValue.replace("wan1_ipaddr=", "");
 	wan0_realip_ip = wanStatus[25].firstChild.nodeValue.replace("wan0_realip_ip=", "");
 	wan1_realip_ip = wanStatus[26].firstChild.nodeValue.replace("wan1_realip_ip=", "");
-	if(concurrent_pap){
-		_wlc0_state = wanStatus[27].firstChild.nodeValue;
-		_wlc1_state = wanStatus[28].firstChild.nodeValue;
-		if(isSupport("triband"))
-			_wlc2_state = wanStatus[33].firstChild.nodeValue;
-	}
+	_wlc0_state = wanStatus[27].firstChild.nodeValue;
+	_wlc1_state = wanStatus[28].firstChild.nodeValue;
+	_wlc2_state = wanStatus[33].firstChild.nodeValue;
 	rssi_2g = wanStatus[29].firstChild.nodeValue.replace("rssi_2g=", "");
 	rssi_5g = wanStatus[30].firstChild.nodeValue.replace("rssi_5g=", "");
 	rssi_5g_2 = wanStatus[31].firstChild.nodeValue.replace("rssi_5g_2=", "");
@@ -3165,6 +3234,21 @@ function refreshStatus(xhr){
 				external_ip = -1;
 			}
 		}
+	}
+
+	var ajaxStatusLogNew = [
+		link_internet, link_status, link_sbstatus, link_auxstatus, 
+		_wlc_state, _wlc0_state, _wlc1_state, _wlc2_state, 
+		first_link_sbstatus, first_link_auxstatus, first_link_status, 
+		secondary_link_status, secondary_link_sbstatus, secondary_link_auxstatus
+	];
+
+	if(JSON.stringify(ajaxStatusLog) !== JSON.stringify(ajaxStatusLogNew)){
+		if (typeof httpApi !== 'undefined') {
+			httpApi.log(`ajaxStatusXML`, `${location.pathname}: ${JSON.stringify(ajaxStatusLogNew)}`)
+		}
+
+		ajaxStatusLog = [...ajaxStatusLogNew];
 	}
 
 	if(location.pathname == "/"+ QISWIZARD)
@@ -3977,7 +4061,6 @@ function refreshStatus(xhr){
 		return 0;
 	}
 }	
-
 function FormActions(_Action, _ActionMode, _ActionScript, _ActionWait){
 	if(_Action != "")
 		document.form.action = _Action;
@@ -4387,7 +4470,7 @@ function getBrowser_info(){
 function regen_band(obj_name){
 	var band_desc = new Array();
 	var band_value = new Array();
-	var current_band = '<% nvram_get("wl_unit"); %>';
+	var current_band = (typeof httpApi !== "undefined") ? httpApi.nvramGet(["wl_unit"], true).wl_unit : '<% nvram_get("wl_unit"); %>';
 
 	for(var i = 0; i < bandName.length; i++){
 		if(get_wl_unit_by_band(bandName[i]) != ""){ 
@@ -4644,17 +4727,15 @@ function radio_hint(){
 
 function radio_disagree(){
 	if(document.getElementById('radio_hint_checkbox').checked){
-		radio_set_cookie();
+		radio_set_localStorage();
 	}
 
 	$('.banner1').html('');
 	location.reload();
 }
 
-function radio_set_cookie(){
-	var cookie = document.cookie;
-	var array = cookie.split(';');
-	document.cookie = 'radioAllDisableHint=ignore';
+function radio_set_localStorage(){
+	window.localStorage.setItem("radioAllDisableHint", "ignore");
 }
 
 function radio_agree(){
@@ -4662,7 +4743,7 @@ function radio_agree(){
 	$("#loadingBlock").css({"visibility": ""});
 	
 	if(document.getElementById('radio_hint_checkbox').checked){
-		radio_set_cookie();
+		radio_set_localStorage();
 	}
 
 	
@@ -4685,10 +4766,8 @@ function radio_agree(){
 }
 
 function block_all_device_hint(_flag){
-	var radio_set_cookie = function(){
-		var cookie = document.cookie;
-		var array = cookie.split(';');
-		document.cookie = 'blockAllDeviceHint=ignore';
+	var radio_set_localStorage = function(){
+		window.localStorage.setItem("blockAllDeviceHint", "ignore");
 	}
 	$("#Loading").css({"visibility": "visible"});
 	$("#loadingBlock").css({"visibility": "hidden"});
@@ -4708,7 +4787,7 @@ function block_all_device_hint(_flag){
 		e = e || event;
 		e.stopPropagation();
 		if(obj.find("#radio_hint_checkbox").prop("checked"))
-			radio_set_cookie();
+			radio_set_localStorage();
 		$('.banner1').html('');
 		location.reload();
 	});
@@ -4716,7 +4795,7 @@ function block_all_device_hint(_flag){
 		e = e || event;
 		e.stopPropagation();
 		if(obj.find("#radio_hint_checkbox").prop("checked"))
-			radio_set_cookie();
+			radio_set_localStorage();
 		$("#Loading").css({"visibility": "hidden"});
 		$("#loadingBlock").css({"visibility": ""});
 		var rc_time = 3;

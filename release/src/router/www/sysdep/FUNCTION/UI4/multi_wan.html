@@ -285,12 +285,13 @@ $(document).ready(function(){
 <% get_mtwan_parameter(); %>;
 var MAX_MULTI_WAN_NUM = isSupport("max_multi_wan_num");
 var dut_mac = (httpApi.hookGet('get_lan_hwaddr')) ? httpApi.hookGet('get_lan_hwaddr') : '';
-var orig_dns_probe_host = httpApi.nvramGet(["dns_probe_host"]).dns_probe_host;
-var mt_wan_group_index = httpApi.nvramGet(["mtwan_unit"]).mtwan_unit;
-var orig_wans_mt_ioport =  httpApi.nvramGet(["wans_mt_ioport"], true).wans_mt_ioport;
+var orig_settings = httpApi.nvramGet(["dns_probe_host", "mtwan_unit", "wans_mt_ioport", "mtwan_mt_group", "mtwan_mt_weight"], true);
+var orig_dns_probe_host = orig_settings.dns_probe_host;
+var mt_wan_group_index = orig_settings.mtwan_unit;
+var orig_wans_mt_ioport =  orig_settings.wans_mt_ioport;
 var wans_mt_ioport_array = orig_wans_mt_ioport.split(" ");
-var orig_mtwan_mt_group = '<% nvram_get("mtwan_mt_group"); %>';
-var orig_mtwan_mt_weight = '<% nvram_get("mtwan_mt_weight"); %>';
+var orig_mtwan_mt_group = orig_settings.mtwan_mt_group;
+var orig_mtwan_mt_weight = orig_settings.mtwan_mt_weight;
 var mt_wan_options = [];
 var primary_group = [];
 var secondary_group = [];
@@ -315,6 +316,13 @@ var wizard_schedule = new schedule({ //set primary wan off time
 		btn_cancel_callback: resize_schedule_div
 	});
 
+const resizeObserver = new ResizeObserver(entries => {
+	for (let entry of entries) {
+		const height = entry.target.getBoundingClientRect().height;
+		window.parent.postMessage({ type: 'resize', height: height }, '*');
+	}
+});
+
 function init(){
 	mt_wan_options = get_wan_options();
 	get_port_group(mt_wan_group_index);
@@ -323,6 +331,8 @@ function init(){
 	show_port_status();
 	setTimeout("load_profile_settings(mt_wan_group_index)", 100);
 	setTimeout("resize_schedule_div()", 100);
+
+	resizeObserver.observe(document.querySelector('#content_container'));
 }
 
 var DNSService = new Object;
@@ -453,7 +463,28 @@ function load_profile_settings(wan_group_index){
 	var id = "";
 	var nvram_name = "";
 	var nvram_val = "";
-	var prefix = "mtwan" + wan_group_index + "_";
+	let nvram_name_array = [];
+	let prefix = "mtwan" + wan_group_index + "_";
+
+	/* Get and update cached data */
+	$.each($(".input_container"), function(){
+		if($(this).attr("id")){
+			id = $(this).attr("id");
+			nvram_name = id.replace("mtwan_", prefix);
+			nvram_name_array.push(nvram_name);
+		}
+
+		$(this).find("*").each(function(){
+			if($(this).attr("id") && $(this).attr("id").indexOf("select_") == -1){
+				id = $(this).attr("id");
+				nvram_name = id.replace("mtwan_", prefix);
+				nvram_name_array.push(nvram_name);
+			}
+		})
+	});
+	httpApi.nvramGet(nvram_name_array, true);
+	httpApi.nvramDefaultGet(["mtwan_mode"], true).mtwan_mode;
+	/* -- */
 
 	$.each($(".input_container"), function(){
 		if($(this).attr("id")){
@@ -968,7 +999,7 @@ function resize_schedule_div(){
 }
 
 function generate_setting_items(){
-	var multi_wan_enabled_parm = {"title":"Enable Multi-WAN", "type":"switch", "id":"multi_wan_enable", "set_value": "off"};
+	var multi_wan_enabled_parm = {"title":"<#Group_WAN_enable#>", "type":"switch", "id":"multi_wan_enable", "set_value": "off"};
 	var $multi_wan_enable_item = Get_Component_Switch(multi_wan_enabled_parm)
 		.closest(".profile_setting_item").css("display", "flex")
 		.closest(".profile_setting_item").css("background-color", "transparent")
@@ -1333,7 +1364,7 @@ function generate_setting_items(){
 
 	$schedule_time_div.append(wizard_schedule.Get_UI());
 	$(".schedule_header_container .title").css("margin-left", "10px");
-	$(".schedule_header_container .title").html("Time period to swap to backup WAN.");
+	$(".schedule_header_container .title").html(`<#Group_WAN_switch_period#>`);
 
 	var failover_policy_options = [
 		{"text": "Active Backup WAN when any primary WAN port failed.", "value": "0"},
@@ -1581,15 +1612,6 @@ function get_port_settings_nvram_prefix(port_index){//get nvram prefix of per-po
 
 
 function load_port_settings(port_id){
-	var nvram_prefix = "";
-	var nvram_name = "";
-	var nvram_val = "";
-	var port_index = get_mt_ioport_index(port_id);
-	var key_val_pairs = {};
-
-	if(port_index != -1)
-		nvram_prefix = get_port_settings_nvram_prefix(port_index);
-
 	if(per_port_settings.hasOwnProperty(port_id)){
 		var id = "";
 		var current_val = "";
@@ -1623,14 +1645,41 @@ function load_port_settings(port_id){
 		});
 	}
 	else{
-		var id = "";
-		var nvram_prefix = "";
-		var nvram_name = "";
-		var nvram_val = "";
-		var port_index = get_mt_ioport_index(port_id);
+		let id = "";
+		let nvram_prefix = "";
+		let nvram_name = "";
+		let nvram_val = "";
+		let nvram_name_array = [];
+		let port_index = get_mt_ioport_index(port_id);
+		let key_val_pairs = {};
 
 		if(port_index != -1)
 			nvram_prefix = get_port_settings_nvram_prefix(port_index);
+
+		/* Get and update cached data */
+		$("#network_detection_settings_div").find(".input_container").each(function(){
+			$(this).find("*").each(function(){
+				if($(this).attr("id")){
+					id = $(this).attr("id");
+					if(id.indexOf("select_") != -1)
+						return;
+
+					if(port_index != -1){
+						nvram_name = nvram_prefix + id;
+						nvram_name_array.push(nvram_name);
+					}
+					else{
+						nvram_name_array.push(id);
+					}
+				}
+			});
+		});
+
+		if(port_index != -1)
+			httpApi.nvramGet(nvram_name_array, true);
+		else
+			httpApi.nvramDefaultGet(nvram_name_array, true);
+		/* -- */
 
 		$("#network_detection_settings_div").find(".input_container").each(function(){
 			$(this).find("*").each(function(){
@@ -1796,22 +1845,22 @@ function show_port_status(){
 }
 
 </script>
-<div id="content_container" style="min-height: 1428px;">
+<div id="content_container">
 	<!--div style="display: flex; justify-content: center;	align-items: center; height: 68px; font-weight: bolder;	font-size: 16px; color: #000000;">
 		<div>WAN - Multi WAN Settings</div>
 	</div-->
-	<div style="display: flex; flex-direction: row; align-items: center; padding: 8px 16px; height: 44px;	border: 1px solid #DCDCDC; border-radius: 10px; margin: 20px 10px;">
+	<div style="display: flex; flex-direction: row; align-items: center; padding: 8px 16px; height: 44px;	border: 1px solid #DCDCDC; border-radius: 10px; margin: 25px 10px;">
 		<div id="multi_wan_enable_div" style="width: 100%;"></div>
 	</div>
 
-	<div style="margin: 0 10px;">
+	<div style="margin: 25px 10px;">
 		<div style="display: flex; align-items: center; min-height: 30px; margin: 10px 0px; border-left: 6px solid #248DFF;">
 			<div id="wan_selection_title" style="font-size: 16px;  margin-left:10px;"></div>
 		</div>
 		<div id="wan_items_div" class="mt_wans_container" style="display: flex; justify-content: space-between; flex-wrap: wrap;">
 			<div id="primary_group_div" class="wan_group_container">
 				<div style="margin-left: 3%; margin-top: 20px;">
-					<div id="wan_group_title" style="font-size: 14px;">WAN Group</div>
+					<div id="wan_group_title" style="font-size: 14px;"><#Group_WAN#></div>
 					<div style="font-size: 24px; margin-top: 5px;"><#dualwan_primary#></div>
 				</div>
 				<div id = "primary_select_div"></div>
@@ -1819,13 +1868,13 @@ function show_port_status(){
 				<div id="primary_lb_hint_div" style="display: none; background-color: #FFF1E8; border: 1px solid #B42D18; border-radius: 4px; margin: 10px 3% 10px; padding: 10px;">
 					<div style="display: flex; justify-content: space-around;">
 						<div style="min-width: 30px;"></div>
-						<div style="font-size: 14px;"><span style="font-weight: bolder;">Load Balance</span>(LB) optimizes resource and maximizes throughput, which provides better performance for Primary and Secondary WAN with similar network speeds.</div>
+						<div style="font-size: 14px;"><#dualwan_lb_note3#></div>
 					</div>
 				</div>
 			</div>
 			<div id="secondary_group_div" class="wan_group_container group2">
 				<div style="margin-left: 15px; margin-top: 20px;">
-					<div style="font-size: 14px;">WAN Group</div>
+					<div style="font-size: 14px;"><#Group_WAN#></div>
 					<div style="font-size: 24px; margin-top: 5px;"><#dualwan_secondary#></div>
 				</div>
 				<div id = "secondary_select_div"></div>
@@ -1833,18 +1882,22 @@ function show_port_status(){
 			</div>
 		</div>
 	</div>
-	<div style="display: none; flex-direction: row; align-items: center; padding: 8px 16px; height: 44px; border: 1px solid #DCDCDC; border-radius: 10px; margin: 10px 10px;">
+
+	<div style="display: none; flex-direction: row; align-items: center; padding: 8px 16px; height: 44px; border: 1px solid #DCDCDC; border-radius: 10px; margin: 25px 10px;">
 		<div id="auto_usb_backup_div" style="width: 100%;"></div>
 	</div>
-	<div  id="policy_setting_div"  style="display: none; margin: 0 10px;">
+
+	<div  id="policy_setting_div"  style="display: none; margin: 25px 10px;">
 		<div style="display: flex; align-items: center; min-height: 30px; margin: 10px 0px; border-left: 6px solid #248DFF;">
-			<div style="font-size: 16px;  margin-left:10px;">Set policy  with Muti-WAN</div>
+			<div style="font-size: 16px;  margin-left:10px;"><#Group_WAN_policy#></div>
 		</div>
 		<div id="multiwan_policy_div" style="border: 1px solid #DCDCDC; border-radius: 10px; padding-bottom: 5px;"></div>
 	</div>
+
 	<div style="display: flex; align-items: center; min-height: 30px; margin: 10px 0px 10px 10px; border-left: 6px solid #248DFF;">
-		<div style="font-size: 16px;  margin-left:10px;">Per-Port Settings</div>
+		<div style="font-size: 16px;  margin-left:10px;"><#Group_WAN_port_setting#></div>
 	</div>
+
 	<div style="border: 1px solid #DCDCDC; border-radius: 10px; margin: 0 10px;">
 		<div class="port_status_container">
 			<div id="wan_usb_container"></div>

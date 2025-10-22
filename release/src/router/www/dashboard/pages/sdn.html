@@ -1,20 +1,66 @@
+<!DOCTYPE html>
 <html>
-	<iframe id="settingsWindow" style="
-		width: 100%;
-		height: 100vh;
-	" src="/SDN/sdn.html?current_theme=white"></iframe>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0,  user-scalable=no" />
+    </head>
+
+    <body>
+        <div class="row justify-content-center">
+            <div class="col-12 mb-3">
+                <div class="page-title"><#GuestNetwork_SDN_title#></div>
+            </div>
+        </div>
+		<div class="row justify-content-center">
+            <div class="col-12 col-xxl-10 mb-3">
+				<div class="pt-2 h-100">
+					<iframe id="settingsWindow" style="
+						width: 98%;
+						height: 100vh;
+						margin: 0 auto;
+					" src=""></iframe>
+				</div>
+			</div>
+        </div>
+
+		<script>
+		</script>	
+	</body>
 
 	<script>
+        if (typeof menuSDNNaming === 'undefined') {
+            const menuSDNNaming = (() => {
+                if (isSupport("sdn_mwl")) return `<#Network#>`;
+                if (!isSupport("mtlancfg")) return `<#Guest_Network#>`;
+                if (isSupport("BUSINESS")) return `<#GuestNetwork_SDN_title#>`;
+                if (isSupport("SMART_HOME_MASTER_UI")) return `<#Guest_Network#>`;
+                return `<#GuestNetwork_PRO_title#>`;
+            })();
+            document.querySelector('.page-title').textContent = menuSDNNaming;
+        } else {
+            document.querySelector('.page-title').textContent = menuSDNNaming;
+        }
 		var webWrapper = true;
 		$("#settingsWindow")
 			.attr({src: "/SDN/sdn.html?current_theme=" + theme})
 			.on("load", function(){
-				$("#settingsWindow").contents().find("body").hide().css("visibility", "visible").fadeIn();
-				$("#settingsWindow").contents().find(".bg").css({
-					"max-width": "1400px",
-					"margin": "0 auto"
-				})
-				document.getElementById('settingsWindow').style.height = `${document.body.clientHeight - 70}px`;
+				$("#settingsWindow").contents().find("body").hide().css({"visibility":"visible"}).fadeIn();
+                const sendThemeColorMessage = () => {
+                    const theme = top.document.documentElement.getAttribute("data-asuswrt-theme");
+                    const color = top.document.documentElement.getAttribute("data-asuswrt-color");
+                    const iframe = document.getElementById("settingsWindow");
+                    if (iframe) {
+                        iframe.contentWindow.postMessage({theme, color}, "*");
+
+                        const iFrameAdguard = iframe.contentDocument.getElementById("adguard_iframe");
+                        if (iFrameAdguard) {
+                            iFrameAdguard.contentWindow.postMessage({theme, color}, "*");
+                        }
+                    }
+                    window.parent.postMessage({theme, color}, "*");
+                }
+                sendThemeColorMessage();
 			})
 
 		window.addEventListener('message', event => {

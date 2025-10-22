@@ -17,6 +17,7 @@ var ciphersarray = [
 	["AES-128-GCM"],
 	["AES-192-GCM"],
 	["AES-256-GCM"],
+	["CHACHA20-POLY1305"],
 	["BF-CBC"],
 	["CAST5-CBC"],
 	["CAMELLIA-128-CBC"],
@@ -34,14 +35,18 @@ var ciphersarray = [
 	["SEED-CBC"]
 ];
 var hmacarray = [
-	["MD 5", "MD5"],
 	["SHA 1", "SHA1"],
 	["SHA 224", "SHA224"],
 	["SHA 256", "SHA256"],
 	["SHA 384", "SHA384"],
 	["SHA 512", "SHA512"],
+	["SHA3 224", "SHA3-224"],
+	["SHA3 256", "SHA3-256"],
+	["SHA3 384", "SHA3-384"],
+	["SHA3 512", "SHA3-512"],
 	["RIPEMD 160", "RIPEMD160"],
-	["RSA MD4", "RSA-MD4"]
+	["MD 4", "MD4"],
+	["MD 5", "MD5"]
 ];
 var wan0_proto = '<% nvram_get("wan0_proto"); %>';
 var ipv6_item_flag = false;
@@ -51,14 +56,14 @@ if(isSupport("ipv6")){
 		ipv6_item_flag = true;
 	}
 }
-const get_s46_hgw_case = httpApi.nvramGet(["s46_hgw_case"]).s46_hgw_case; //topology 2,3,6
-const s46_ports_check_flag = (get_s46_hgw_case == '3' || get_s46_hgw_case == '6') ? true : false; //true for topology 3||6
-const get_ipv6_s46_ports = (isSupport("s46") && (wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt")) ? httpApi.nvramGet(["ipv6_s46_ports"]).ipv6_s46_ports : '0';
-let array_ipv6_s46_ports = new Array("");
+var get_s46_hgw_case = httpApi.nvramGet(["wan0_s46_hgw_case"]).wan0_s46_hgw_case; //topology 2,3,6
+var s46_ports_check_flag = (get_s46_hgw_case == '3' || get_s46_hgw_case == '6'); //true for topology 3||6
+var get_ipv6_s46_ports = (isSupport("s46") && (wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt")) ? httpApi.nvramGet(["ipv6_s46_ports"]).ipv6_s46_ports : '0';
+var array_ipv6_s46_ports = [];
 if (get_ipv6_s46_ports != "0" && get_ipv6_s46_ports != "") {
 	array_ipv6_s46_ports = get_ipv6_s46_ports.split(" ");
 }
-let port_confirm = (()=>{
+var port_confirm = (()=>{
 	const result = `<#IPv6_plus_port_confirm#>`;
 	const replacements = {
 		"v6plus": `<#IPv6_plus#>`,
@@ -1982,16 +1987,24 @@ function Get_Component_Setting_Profile_OpenVPN(_type){
 	var vpn_server_pdns_parm = {"title":"<#vpn_openvpn_AdvDNS#>", "type":"switch", "id":"vpn_server_pdns", "openHint":"32_16", "container_id":"server_pdns"};
 	Get_Component_Switch(vpn_server_pdns_parm).appendTo($detail_adv_standard);
 
-	var vpn_server_cipher_options = [{"text":"Default (BF-CBC)","value":"default"},{"text":"None","value":"none"}];
+	var vpn_server_cipher_options = [{"text":"Default (Auto)","value":"default"},{"text":"None","value":"none"}];
 	for(var i = 0; i < ciphersarray.length; i += 1){
-		vpn_server_cipher_options.push({"text":ciphersarray[i][0],"value":ciphersarray[i][0]});
+		if (ciphersarray[i][0] == "BF-CBC" || ciphersarray[i][0] == "CAST5-CBC"
+		 || ciphersarray[i][0] == "DES-CBC" || ciphersarray[i][0] == "DESX-CBC"
+		 || ciphersarray[i][0] == "IDEA-CBC" || ciphersarray[i][0] == "RC2-40-CBC"
+		 || ciphersarray[i][0] == "RC2-64-CBC" || ciphersarray[i][0] == "RC2-CBC"
+		 || ciphersarray[i][0] == "SEED-CBC" || ciphersarray[i][0] == "RC5-CBC"
+		)
+			vpn_server_cipher_options.push({"text":ciphersarray[i][0] + " (Not recommended)","value":ciphersarray[i][0]});
+		else
+			vpn_server_cipher_options.push({"text":ciphersarray[i][0],"value":ciphersarray[i][0]});
 	}
 	var vpn_server_cipher_parm = {"title": "<#vpn_openvpn_Encrypt#>", "id": "vpn_server_cipher", "options": vpn_server_cipher_options, "openHint":"32_17"};
 	Get_Component_Custom_Select(vpn_server_cipher_parm).appendTo($detail_adv_standard);
 
 	var vpn_server_digest_options = [];
 	for(var i = 0; i < hmacarray.length; i += 1){
-		if(hmacarray[i][1] == "MD5" || hmacarray[i][1] == "RSA-MD4")
+		if(hmacarray[i][1] == "MD5" || hmacarray[i][1] == "MD4")
 			vpn_server_digest_options.push({"text":hmacarray[i][0] + " (Not recommended)","value":hmacarray[i][1]});
 		else
 			vpn_server_digest_options.push({"text":hmacarray[i][0],"value":hmacarray[i][1]});
@@ -2001,10 +2014,10 @@ function Get_Component_Setting_Profile_OpenVPN(_type){
 
 	var vpn_server_comp_options = [
 		{"text":"<#WLANConfig11b_WirelessCtrl_buttonname#>","value":"-1"},
-		{"text":"<#wl_securitylevel_0#>","value":"no"},
-		{"text":"<#WLANConfig11b_WirelessCtrl_button1name#>","value":"yes"},
-		{"text":"<#Adaptive#>","value":"adaptive"},
-		{"text":"LZ4","value":"lz4"}
+		{"text":"<#wl_securitylevel_0#> (Not recommended)","value":"no"},
+		{"text":"<#WLANConfig11b_WirelessCtrl_button1name#> (Not recommended)","value":"yes"},
+		{"text":"<#Adaptive#> (Not recommended)","value":"adaptive"},
+		{"text":"LZ4 (Not recommended)","value":"lz4"}
 	];
 	var vpn_server_comp_parm = {"title": "<#vpn_openvpn_Compression#>", "id": "vpn_server_comp", "options": vpn_server_comp_options, "openHint":"32_18"};
 	Get_Component_Custom_Select(vpn_server_comp_parm).appendTo($detail_adv_standard);
@@ -2018,7 +2031,7 @@ function Get_Component_Setting_Profile_OpenVPN(_type){
 			update_visibility($content_container);
 		});
 
-	var vpn_server_crypt_options = [{"text":"TLS","value":"tls"},{"text":"Static Key","value":"secret"}];
+	var vpn_server_crypt_options = [{"text":"TLS","value":"tls"},{"text":"Static Key (Not recommended)","value":"secret"}];
 	var vpn_server_crypt_parm = {"title": "<#vpn_openvpn_Auth#>", "id": "vpn_server_crypt", "options": vpn_server_crypt_options, "openHint":"32_7"};
 	Get_Component_Custom_Select(vpn_server_crypt_parm).appendTo($detail_adv_standard).find("#select_" + vpn_server_crypt_parm.id + "").children("div").click(function(e){
 		e = e || event;

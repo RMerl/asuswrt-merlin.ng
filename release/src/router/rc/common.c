@@ -1220,7 +1220,7 @@ const zoneinfo_t tz_list[] = {
         {"GMT0_2",      "Africa/Monrovia"},	// (GMT+00:00) Monrovia
         {"UTC-1DST_1",  "Europe/Belgrade"},	// (GMT+01:00) Belgrade, Bratislava, Budapest
         {"UTC-1DST_1_1","Europe/Ljubljana"},	// (GMT+01:00) Ljubljana, Prague
-        {"UTC-1_2",     "Europe/Sarajevo"},	// (GMT+01:00) Sarajevo, Skopje
+		{"UTC-1DST_1_2","Europe/Sarajevo"},	// (GMT+01:00) Sarajevo, Skopje
         {"UTC-1DST_2",  "Europe/Warsaw"},	// (GMT+01:00) Warsaw, Zagreb
 	{"MET-1DST",    "Europe/Copenhagen"},	// (GMT+01:00) Copenhagen, Stockholm, Oslo
         {"MET-1DST_1",  "Europe/Madrid"},	// (GMT+01:00) Madrid, Paris
@@ -1257,10 +1257,10 @@ const zoneinfo_t tz_list[] = {
         {"UTC-5.30",    "Asia/Calcutta"},	// (GMT+05:30) Sri Jayawardenepura
 	{"UTC-5.45",    "Asia/Kathmandu"},	// (GMT+05:45) Kathmandu
         {"UTC-6",       "Asia/Dhaka"},		// (GMT+06:00) Dhaka
-        {"UTC-6_2",     "Asia/Novosibirsk"},	// (GMT+06:00) Novosibirsk
         {"UTC-6.30",    "Asia/Yangon"},		// (GMT+06:30) Yangon
         {"UTC-7",       "Asia/Bangkok"},	// (GMT+07:00) Bangkok, Hanoi, Jakarta
         {"UTC-7_2",     "Asia/Krasnoyarsk"},	// (GMT+07:00) Krasnoyarsk
+        {"UTC-7_3",     "Asia/Novosibirsk"},	// (GMT+07:00) Novosibirsk
         {"CST-8",       "Asia/Shanghai"},	// (GMT+08:00) Beijing, Hong Kong 
         {"CST-8_1",     "Asia/Chongqing"},	// (GMT+08:00) Chongqing, Urumqi
         {"SST-8",       "Asia/Kuala_Lumpur"},	// (GMT+08:00) Kuala_Lumpur, Singapore
@@ -1312,6 +1312,14 @@ void time_zone_x_mapping(void)
 						LOCALTIME_FILE);
 				unlink(LOCALTIME_FILE);
 				system(cmd);
+#ifdef RTCONFIG_AI_SERVICE
+				if(!strcmp("America/Saint-Pierre-et-Miquelon", pzlist[idx].timezone))
+					nvram_set("ai_timezone", "America/Miquelon");
+				else if(!strcmp("Europe/Sarajevo", pzlist[idx].timezone))
+					nvram_set("ai_timezone", "Europe/Budapest");
+				else
+					nvram_set("ai_timezone", pzlist[idx].timezone);
+#endif
 				break;
 			}
 		}

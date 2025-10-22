@@ -284,7 +284,7 @@ start_emf(char *lan_ifname)
 #define BCM_MCAST_SNOOPING_DISABLED_FLOOD	"0"	/* snooping is disabled, IP multicast is flooded */
 #define BCM_MCAST_SNOOPING_STANDARD_MODE	"1"	/* snoping is enabled, unsolicited IP multicast is flooded */
 #define BCM_MCAST_SNOOPING_BLOCKING_MODE	"2"	/* snoping is enabled, unsolicited IP mutlicast is dropped */
-#if defined(RTCONFIG_HND_ROUTER_AX) && !defined(RTCONFIG_NOWL)
+#if defined(RTCONFIG_HND_ROUTER_AX)
 	int bcm_client_mode = psta_exist() || psr_exist();
 	int bcm_mcast_snooping_disabled = (sw_mode() == SW_MODE_AP) && !bcm_client_mode && !nvram_get_int("bcm_snooping");
 	eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "1",  "-m", bcm_mcast_snooping_disabled ? BCM_MCAST_SNOOPING_DISABLED_FLOOD : BCM_MCAST_SNOOPING_STANDARD_MODE);
@@ -410,7 +410,7 @@ void start_wl(void)
 			p = lan_ifnames;
 			while ((ifname = strsep(&p, " ")) != NULL) {
 				while (*ifname == ' ') ++ifname;
-				if (*ifname == 0) break;
+				if (*ifname == 0) continue;
 
 				unit = -1; subunit = -1;
 
@@ -426,7 +426,7 @@ void start_wl(void)
 						continue; /* Ignore dsiabled WL VIF */
 				}
 				// get the instance number of the wl i/f
-				else if (wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit)))
+				else if (wl_probe(ifname) || wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit)))
 					continue;
 
 				is_client |= wl_client(unit, subunit) && nvram_get_int(wl_nvname("radio", unit, 0));
@@ -434,8 +434,9 @@ void start_wl(void)
 				snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 				if ((nvram_match(strcat_r(prefix, "radio", tmp), "0")
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
-					|| psta_exist_except(unit))
+					|| psta_exist_except(unit)
 #endif
+				    )
 #ifdef RTCONFIG_MLO
 					&& !nvram_match("amesh_wps_enr", "1")
 #endif
@@ -1370,14 +1371,16 @@ void dhcp_war()
 }
 
 #if defined(GTBE19000AI) || defined(GTBE96_AI)
-static void set_ai_vlan_itf(void) {	
+static void set_ai_vlan_itf(void) {
+	char cidr[64] = {0};
+	snprintf(cidr, sizeof(cidr), "%s/32", AIBOARD_CONTROL_IP);
 	_dprintf("AI_VLAN %s %d\n", __FUNCTION__, __LINE__);
 	logmessage("AI_VLAN", "%s %d\n", __FUNCTION__, __LINE__);
 	/* This interface is for ensuring the connection between router and aiboard */
 	eval("ip", "link", "add", "link", "eth.ai", "name", "eth.ai-10", "type", "vlan", "id", "10");
 	eval("ip", "addr", "add", "169.254.0.1/32", "dev", "eth.ai-10");
 	eval("ip", "link", "set", "eth.ai-10", "up");
-	eval("ip", "route", "add", "169.254.0.2/32", "dev", "eth.ai-10");
+	eval("ip", "route", "add", cidr, "dev", "eth.ai-10");
 }
 #endif
 
@@ -1740,6 +1743,8 @@ void start_lan(void)
 		eval("brctl", "setfd", lan_ifname, "0");
 #ifdef RTAC87U
 		eval("brctl", "stp", lan_ifname, nvram_safe_get("lan_stp"));
+#elif defined(EBG15) || defined(EBG19P)
+		eval("brctl", "stp", lan_ifname, nvram_get_int("fw_dos_x") | nvram_get_int("lan_stp") ? "1" : "0" );
 #else
 		if (is_routing_enabled()
 #if defined(HND_ROUTER) && defined(RTCONFIG_NEW_PHYMAP)
@@ -1792,7 +1797,7 @@ void start_lan(void)
 			p = lan_ifnames;
 			while ((ifname = strsep(&p, " ")) != NULL) {
 				while (*ifname == ' ') ++ifname;
-				if (*ifname == 0) break;
+				if (*ifname == 0) continue;
 				SKIP_ABSENT_FAKE_IFACE(ifname);
 #ifdef CONFIG_BCMWL5
 				unit = -1; subunit = -1;
@@ -2042,7 +2047,7 @@ void start_lan(void)
 #endif
 				{
 					// Bring UP interface
-#if defined(EBG15) || defined(EBG19)
+#if defined(EBG15) || defined(EBG19P)
 					_dprintf("reset lan port hwaddr [%s][%s]\n", ifname, get_lan_hwaddr());
 					eval("ifconfig", ifname, "hw", "ether", get_lan_hwaddr());
 #endif
@@ -2464,7 +2469,7 @@ gmac3_no_swbr:
 #endif
 	// Get current LAN hardware address
 	strlcpy(ifr.ifr_name, lan_ifname, IFNAMSIZ);
-#if defined(EBG15) || defined(EBG19)
+#if defined(EBG15) || defined(EBG19P)
 	if (ioctl(sfd, SIOCGIFHWADDR, &ifr) == 0) nvram_set("lan_hwaddr", get_lan_hwaddr());
 #else
 	if (ioctl(sfd, SIOCGIFHWADDR, &ifr) == 0) nvram_set("lan_hwaddr", ether_etoa((const unsigned char *) ifr.ifr_hwaddr.sa_data, eabuf));
@@ -2945,7 +2950,7 @@ void stop_lan(void)
 			p = lan_ifnames;
 			while ((ifname = strsep(&p, " ")) != NULL) {
 				while (*ifname == ' ') ++ifname;
-				if (*ifname == 0) break;
+				if (*ifname == 0) continue;
 				SKIP_ABSENT_FAKE_IFACE(ifname);
 #ifdef RTCONFIG_BLINK_LED
 				disable_wifi_bled(ifname);
@@ -3484,15 +3489,19 @@ NEITHER_WDS_OR_PSTA:
 				nvram_safe_get_r("wans_mt_ioport", wans_mt_ioport, sizeof(wans_mt_ioport));
 				if (!nvram_get_int("mtwan1_enable")	//Default Multi-WAN profile disabled and single wan
 				 && !strchr(wans_mt_ioport, ' ')
-				 && !strstr(wans_mt_ioport, "usb")	//not usb wan
+				 && (!strstr(wans_mt_ioport, "usb") || !strstr(wans_mt_ioport, "U"))	//not usb wan
 				) {
+#ifdef RTCONFIG_NEW_PHYMAP
+					strlcat(wans_mt_ioport, " U1", sizeof(wans_mt_ioport));
+#else
 					strlcat(wans_mt_ioport, " usb", sizeof(wans_mt_ioport));
+#endif
 					nvram_set("wans_mt_ioport", wans_mt_ioport);
 					nvram_set("mtwan1_mt_group", "1 2");
 					nvram_set("mtwan1_mt_weight", "1 1");
 					nvram_set_int("mtwan1_enable", 1);
 					nvram_set_int("mtwan1_mode", MTWAN_MODE_ALL);
-					nvram_set_int("mtwan1_fb", 0);
+					nvram_set_int("mtwan1_fb", 1);
 					nvram_set_int("mtwan1_group", 1);
 					nvram_set("mtwan1_order", "1 2");
 					mtwan_init_nvram();
@@ -3691,19 +3700,22 @@ NEITHER_WDS_OR_PSTA:
 					//&& strcmp(modem_type, "rndis") // rndis modem can't get IP when booting.
 					//&& strcmp(modem_type, "qmi") // qmi modem often be blocked when booting.
 					&& (unit == wan_primary_ifunit() || (unit != WAN_UNIT_NONE && nvram_match("wans_mode", "lb")))
+#ifdef RTCONFIG_MULTIWAN_PROFILE	//TBD
+					&& !*word
+#endif
 					){
 				_dprintf("%s: start_wan_if(%d)!\n", __FUNCTION__, unit);
 				start_wan_if(unit);
 			}
 #endif
+#if !defined(RTCONFIG_MULTIWAN_PROFILE)
 #ifdef RTCONFIG_MULTIWAN_IF
-#ifndef RTCONFIG_MULTIWAN_PROFILE
 			if (is_mtwan_unit(unit))
-#endif
 			{
 				_dprintf("%s: start_wan_if(%d)!\n", __FUNCTION__, unit);
 				start_wan_if(unit);
 			}
+#endif
 #endif
 		}
 		else{
@@ -3766,7 +3778,7 @@ NEITHER_WDS_OR_PSTA:
 				char wans_mt_ioport[32] = {0};
 				char *p;
 				nvram_safe_get_r("wans_mt_ioport", wans_mt_ioport, sizeof(wans_mt_ioport));
-				if (strncmp(wans_mt_ioport, "usb", 3))
+				if (strncmp(wans_mt_ioport, "usb", 3) && strncmp(wans_mt_ioport, "U", 1))
 				{
 					p = strchr(wans_mt_ioport, ' ');
 					if (p)
@@ -3891,18 +3903,23 @@ NEITHER_WDS_OR_PSTA:
 				nvram_safe_get_r("wans_mt_ioport", wans_mt_ioport, sizeof(wans_mt_ioport));
 				if (!nvram_get_int("mtwan1_enable")	//Default Multi-WAN profile disabled and single wan
 				 && !strchr(wans_mt_ioport, ' ')
-				 && !strstr(wans_mt_ioport, "usb")	//not usb wan
+				 && (!strstr(wans_mt_ioport, "usb") || !strstr(wans_mt_ioport, "U"))	//not usb wan
 				) {
+#ifdef RTCONFIG_NEW_PHYMAP
+					strlcat(wans_mt_ioport, " U1", sizeof(wans_mt_ioport));
+#else
 					strlcat(wans_mt_ioport, " usb", sizeof(wans_mt_ioport));
+#endif
 					nvram_set("wans_mt_ioport", wans_mt_ioport);
-					nvram_set("wans_mt_group", "1 2");
-					nvram_set("wans_mt_weight", "1 1");
+					nvram_set("mtwan1_mt_group", "1 2");
+					nvram_set("mtwan1_mt_weight", "1 1");
 					nvram_set_int("mtwan1_enable", 1);
 					nvram_set_int("mtwan1_mode", MTWAN_MODE_ALL);
-					nvram_set_int("mtwan1_fb", 0);
+					nvram_set_int("mtwan1_fb", 1);
 					nvram_set_int("mtwan1_group", 1);
 					nvram_set("mtwan1_order", "1 2");
 					mtwan_init_nvram();
+					mtwanduck_update_profile();
 					nvram_set_int("wans_usb_bk_act", 1);
 #if defined(RTCONFIG_NOTIFICATION_CENTER)
 					_nc_send_usb_tethering_event();
@@ -4020,16 +4037,21 @@ NEITHER_WDS_OR_PSTA:
 			// avoid the busy time of every start_wan when booting.
 			if(!strcmp(nvram_safe_get("success_start_service"), "0")
 					&& (unit == wan_primary_ifunit() || (unit != WAN_UNIT_NONE && nvram_match("wans_mode", "lb")))
+#ifdef RTCONFIG_MULTIWAN_PROFILE	//TBD
+					&& !*word
+#endif
 					){
 				_dprintf("%s: start_wan_if(%d)!\n", __FUNCTION__, unit);
 				start_wan_if(unit);
 			}
 #endif
+#if !defined(RTCONFIG_MULTIWAN_PROFILE)
 #ifdef RTCONFIG_MULTIWAN_IF
 			if (is_mtwan_unit(unit)) {
 				_dprintf("%s: start_wan_if(%d)!\n", __FUNCTION__, unit);
 				start_wan_if(unit);
 			}
+#endif
 #endif
 		}
 		else{
@@ -4631,7 +4653,7 @@ lan_up(char *lan_ifname)
 			p = wl_ifnames;
 			while ((ifname = strsep(&p, " ")) != NULL) {
 				while (*ifname == ' ') ++ifname;
-				if (*ifname == 0) break;
+				if (*ifname == 0) continue;
 				SKIP_ABSENT_FAKE_IFACE(ifname);
 
 				if (guest_wlif(ifname) && !get_ifname_unit(ifname, &unit, &subunit)) {
@@ -4909,7 +4931,7 @@ lan_down(char *lan_ifname)
 			p = wl_ifnames;
 			while ((ifname = strsep(&p, " ")) != NULL) {
 				while (*ifname == ' ') ++ifname;
-				if (*ifname == 0) break;
+				if (*ifname == 0) continue;
 				SKIP_ABSENT_FAKE_IFACE(ifname);
 
 				if (guest_wlif(ifname) && !get_ifname_unit(ifname, &unit, &subunit)) {
@@ -5052,7 +5074,7 @@ void stop_lan_wl(void)
 		p = wl_ifnames;
 		while ((ifname = strsep(&p, " ")) != NULL) {
 			while (*ifname == ' ') ++ifname;
-			if (*ifname == 0) break;
+			if (*ifname == 0) continue;
 			SKIP_ABSENT_FAKE_IFACE(ifname);
 #ifdef RTCONFIG_BLINK_LED
 			disable_wifi_bled(ifname);
@@ -5083,7 +5105,7 @@ void stop_lan_wl(void)
 				if (get_ifname_unit(ifname, &unit, &subunit) < 0)
 					continue;
 			}
-			else if (wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit)))
+			else if (wl_probe(ifname) || wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit)))
 				continue;
 
 			if (strncmp(ifname, "wl", 2) == 0)
@@ -5410,7 +5432,7 @@ void start_lan_wl(void)
 			p = wl_ifnames;
 			while ((ifname = strsep(&p, " ")) != NULL) {
 				while (*ifname == ' ') ++ifname;
-				if (*ifname == 0) break;
+				if (*ifname == 0) continue;
 				SKIP_ABSENT_FAKE_IFACE(ifname);
 #ifdef CONFIG_BCMWL5
 				unit = -1; subunit = -1;
@@ -5425,7 +5447,7 @@ void start_lan_wl(void)
 					if (subunit != -1)
 						wl_vif_hwaddr_set(ifname);
 				}
-				else if (wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit))) {
+				else if (wl_probe(ifname) || wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit))) {
 					continue;
 				}
 #endif
@@ -6036,7 +6058,7 @@ void restart_wl(void)
 		p = wl_ifnames;
 		while ((ifname = strsep(&p, " ")) != NULL) {
 			while (*ifname == ' ') ++ifname;
-			if (*ifname == 0) break;
+			if (*ifname == 0) continue;
 			SKIP_ABSENT_FAKE_IFACE(ifname);
 
 			unit = -1; subunit = -1;
@@ -6053,7 +6075,7 @@ void restart_wl(void)
 					continue; /* Ignore dsiabled WL VIF */
 			}
 			// get the instance number of the wl i/f
-			else if (wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit)))
+			else if (wl_probe(ifname) || wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit)))
 				continue;
 
 			is_client |= wl_client(unit, subunit) && nvram_get_int(wl_nvname("radio", unit, 0));
@@ -6061,8 +6083,9 @@ void restart_wl(void)
 			snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 			if ((nvram_match(strcat_r(prefix, "radio", tmp), "0")
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
-				|| psta_exist_except(unit))
+				|| psta_exist_except(unit)
 #endif
+			    )
 #ifdef RTCONFIG_MLO
 				&& !nvram_match("amesh_wps_enr", "1")
 #endif
@@ -6169,6 +6192,10 @@ void lanaccess_mssid(const char *limited_ifname, int mode)
 	strlcpy(lifname, limited_ifname, sizeof(lifname));
 
 #if defined(RTCONFIG_MULTILAN_CFG)
+#if defined(RTBE58_GO)
+	if (nvram_match("x_Setting", "0"))
+		return;
+#endif
 	if (is_ap_group_if(lifname))
 		return;
 #endif	// defined(RTCONFIG_MULTILAN_CFG)
@@ -6282,7 +6309,7 @@ void CP_lanaccess_wl(void)
 			//_dprintf("[John]%s\n", wl_ifnames);
 			while ((ifname = strsep(&p, " ")) != NULL) {
 				while (*ifname == ' ') ++ifname;
-				if (*ifname == 0) break;
+				if (*ifname == 0) continue;
 				SKIP_ABSENT_FAKE_IFACE(ifname);
 
 				snprintf(nv, sizeof(nv) - 1, "%s_lanaccess", wif_to_vif(ifname));
@@ -6341,7 +6368,7 @@ void lanaccess_wl(void)
 		p = wl_ifnames;
 		while ((ifname = strsep(&p, " ")) != NULL) {
 			while (*ifname == ' ') ++ifname;
-			if (*ifname == 0) break;
+			if (*ifname == 0) continue;
 			SKIP_ABSENT_FAKE_IFACE(ifname);
 
 			/* AP isolate */
@@ -6518,7 +6545,7 @@ void lanaccess_wl(void)
 		p = wl_ifnames;
 		while ((ifname = strsep(&p, " ")) != NULL) {
 			while (*ifname == ' ') ++ifname;
-			if (*ifname == 0) break;
+			if (*ifname == 0) continue;
 			SKIP_ABSENT_FAKE_IFACE(ifname);
 
 			lanaccess_mssid(ifname, 1);
@@ -6594,6 +6621,12 @@ void restart_wireless(void)
 	nvram_set_int("led_status", LED_RESTART_WL);
 #endif
 	nvram_set_int("wlready", 0);
+
+#ifdef RTCONFIG_AIRIQ
+	// To avoid conn_diag stop ariq_monitor too late,  call stop_airiq_monitor here.
+	// But let conn_diag to start ariq_monitor.
+	stop_airiq_monitor();
+#endif
 
 #if defined(RTCONFIG_HND_ROUTER_BE_4916) && defined(RTCONFIG_MLO)
 #if defined(RPBE58) || defined(RTBE58_GO)
@@ -6731,7 +6764,7 @@ void restart_wireless(void)
 		wl_defaults_wps();
 	}
 
-#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(RTBE58_GO) || defined(RPBE58)
 	reload_wl_check();
 #endif
 

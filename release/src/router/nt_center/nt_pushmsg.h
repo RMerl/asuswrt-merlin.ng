@@ -75,7 +75,8 @@ struct pnsInfo mapPushInfo[] =
 	/* ------------------------------
 	    ### AiMesh Event  ###
 	---------------------------------*/
-	{AIMESH_ETH_OB_EVENT                         ,"AiMesh Node Ethenet Auto Setup"                          ,"" },
+	{AIMESH_ETH_OB_EVENT                         ,"AiMesh Node Ethernet Auto Setup"                          ,"" },
+	{AIMESH_ETH_NODE_DISCONN_EVENT               ,"AiMesh Node Ethernet Disconnected"                        ,"" },
 	/* The End */
 	{0,0,0,0}
 };

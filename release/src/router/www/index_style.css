@@ -51,6 +51,7 @@ body {
 }
 /*=================================1 Button Home================================*/
 .menu {
+	display: flex;
 	font-weight:bold;
 	text-shadow: 1px 1px 0px black;	
 	width:185px;
@@ -62,6 +63,8 @@ body {
 	margin-top: -2px;
 	background-color:#3A4042;
 	border: 1px solid #6B7071;
+	justify-content: left;
+	align-items: center;
 }
 
 .menu_blocked {
@@ -775,7 +778,7 @@ width:122px;
 }
 .faq-filter-block{
 	position: absolute;
-	margin: -200px 100px 0 0;
+	margin-top: -230px;
 	width: 300px;
 	border: 1px solid #474747;
 	height: 200px;
@@ -870,6 +873,7 @@ width:122px;
 .menu_Icon{
 	width: 36px;
 	height: 36px;
+	min-width: 36px;
 }
 .menu_Desc{
 	word-break: keep-all;
@@ -1140,3 +1144,4 @@ width:122px;
 .radio_hint{
     background-color: #FA9100;
 }
+

@@ -134,6 +134,12 @@ function change_l3gre_unit(unit){
 								<input type="text" maxlength="44" name="l2gre_remote" id="l2gre_remote" class="input_32_table" value="<% nvram_get("l2gre_remote"); %>" autocorrect="off" autocapitalize="off"></input>
 							</td>
 						</tr>
+						<tr id="l2gre_local">
+							<th>Local Address</th>
+							<td>
+								<input type="text" maxlength="44" name="l2gre_local" id="l2gre_local" class="input_32_table" value="<% nvram_get("l2gre_local"); %>" autocorrect="off" autocapitalize="off"></input>
+							</td>
+						</tr>
 						<tr id="l2gre_vlanid">
 							<th>VLAN ID (optional)</th>
 							<td>
@@ -211,6 +217,12 @@ function change_l3gre_unit(unit){
 							<th>Remote Address</th>
 							<td>
 								<input type="text" maxlength="44" name="l3gre_remote" id="l3gre_remote" class="input_32_table" value="<% nvram_get("l3gre_remote"); %>" autocorrect="off" autocapitalize="off"></input>
+							</td>
+						</tr>
+						<tr id="l3gre_local">
+							<th>Local Address</th>
+							<td>
+								<input type="text" maxlength="44" name="l3gre_local" id="l3gre_local" class="input_32_table" value="<% nvram_get("l3gre_local"); %>" autocorrect="off" autocapitalize="off"></input>
 							</td>
 						</tr>
 						<tr id="l3gre_addr">

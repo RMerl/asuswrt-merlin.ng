@@ -22,17 +22,6 @@
 <script language="JavaScript" type="text/javascript" src="client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="validator.js"></script>
 <script type="text/javascript" src="/form.js"></script>
-<style>
-#pull_arrow{
- 	float:center;
- 	cursor:pointer;
- 	border:2px outset #EFEFEF;
- 	background-color:#CCC;
- 	padding:3px 2px 4px 0px;
-	*margin-left:-3px;
-	*margin-top:1px;
-}
-</style>
 <script>
 var wl_rast_static_client_array = new Array();
 
@@ -366,9 +355,11 @@ function enable_roaming_block(){
 										</tr>
 										<tr>
 											<td width="80%">
-												<input type="text" maxlength="17" class="input_macaddr_table" name="wlX_rast_static_client" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>" style="width:255px;">
-												<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;" onclick="pullWLMACList(this);" title="<#select_wireless_MAC#>">
-												<div id="WL_MAC_List_Block" class="clientlist_dropdown" style="margin-left:167px;"></div>
+                                                <div class="clientlist_dropdown_main" style="width: 100%">
+                                                    <input type="text" maxlength="17" class="input_macaddr_table" name="wlX_rast_static_client" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">
+                                                    <img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullWLMACList(this);" title="<#select_wireless_MAC#>">
+                                                    <div id="WL_MAC_List_Block" class="clientlist_dropdown"></div>
+												</div>
 											</td>
 											<td width="20%">
 												<input type="button" class="add_btn" onClick="addRow(document.form.wlX_rast_static_client, 64);" value="">

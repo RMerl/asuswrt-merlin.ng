@@ -95,6 +95,8 @@ typedef unsigned int __u32;   // 1225 ham
 #include <libasuslog.h>
 #endif
 
+#include <webapi.h>
+
 /* A multi-family sockaddr. */
 struct usockaddr {
 	union {
@@ -265,6 +267,8 @@ void add_ifttt_flag(void);
 extern int save_iptv_port(char *isp);
 #endif
 
+extern int get_file_md5(char *file, char *out, int len);
+
 int check_current_ip_is_lan_or_wan();
 
 /* added by Joey */
@@ -375,7 +379,7 @@ void Debug2File(const char *path, const char *fmt, ...)
 		fprintf(stderr, "Open %s Error!\n", path);
 }
 #else
-void Debug2String(int level, char *path, int conlog, int showtime, unsigned filesize, char *function_name, int function_line, const char *fmt, ...)
+void Debug2String(int level, char *path, int conlog, int showtime, unsigned filesize, const char *function_name, int function_line, const char *fmt, ...)
 {
 	int max_log = 5;
 	int len = 0, str_end = 0;
@@ -441,6 +445,20 @@ void security2log(int level, char *path, int conlog, int showtime, unsigned file
 	}
 }
 #endif
+
+void ch_event_dbg(const char *path, const char *fmt, ...)
+{
+	FILE *fp;
+	va_list args;
+	fp = fopen(path, "a+");
+	if (fp) {
+		va_start(args, fmt);
+		vfprintf(fp, fmt, args);
+		va_end(args);
+		fclose(fp);
+	} else
+		fprintf(stderr, "Open %s Error!\n", path);
+}
 
 void sethost(const char *host)
 {
@@ -1121,24 +1139,26 @@ int max_lock_time = MAX_LOGIN_BLOCK_TIME;
 struct etag_filter_table etag_filter_table[] = {
     {".cgi",0},
     {"client.ovpn",0},
-    {"chanspec.js",0},
-    {"client_function.js",0},
+    {"chanspec.js",2},
+    {"client_function.js",2},
     {"asus_policy.js",2},
-    {"disk.js",0},
-    {"form.js",0},
-    {"general.js",0},
-    {"handler.js",0},
-    {"help.js",0},
-    {"https_redirect.js",0},
-    {"notification.js",0},
-    {"oauth.js",0},
-    {"plugins.js",0},
-    {"remote.js",0},
-    {"state.js",0},
-    {"subnet_rule.js",0},
-    {"tableValidator.js",0},
-    {"validator.js",0},
-    {"vpns_openvpn.js",0},
+    {"disk.js",2},
+    {"form.js",2},
+    {"general.js",2},
+    {"handler.js",2},
+    {"help.js",2},
+    {"https_redirect.js",2},
+    {"notification.js",2},
+    {"oauth.js",2},
+    {"plugins.js",2},
+    {"remote.js",2},
+    {"state.js",2},
+    {"subnet_rule.js",2},
+    {"tableValidator.js",2},
+    {"validator.js",2},
+    {"vpns_openvpn.js",2},
+    {".xml",2},
+    {".json",2},
     {".png",2},
     {".svg",2},
     {".jpg",2},
@@ -1149,7 +1169,8 @@ struct etag_filter_table etag_filter_table[] = {
     {"jquery-ui.js",2},
     {"chart.min.js",2},
     {"require.min.js",2},
-    {"FreeWiFi_template.json",2}
+    {"FreeWiFi_template.json",2},
+    {".js",2}
 };
 
 int getEtagHeaderFlag(const char *key)
@@ -1168,7 +1189,7 @@ int append_etag_header(char *file, char *extra_header, char *if_none_match, char
 	int ret = 0, status = 200;
 	int etag_header_flag = 0, safariAgent = 0;
 	time_t now = time(NULL);
-	char md5String[35] = {0}, timebuf[100] = {0}, etag_header[512] = {0};
+	char md5String[35] = {0}, timebuf[100] = {0};
 
 	strlcpy(title, "OK", title_len);
 
@@ -1183,7 +1204,7 @@ int append_etag_header(char *file, char *extra_header, char *if_none_match, char
 			strftime( timebuf, sizeof(timebuf), RFC1123FMT, gmtime( &now ) );
 
 			if(strstr(file, ".js"))
-				sprintf(md5String, "%s%s", md5String, nvram_get("preferred_lang"));
+				strlcat(md5String, nvram_safe_get("preferred_lang"), sizeof(md5String));
 
 			if(etag_header_flag==2 && extra_header){
 				strlcpy(final_header, extra_header, final_header_len);
@@ -1789,6 +1810,8 @@ handle_request(void)
 				!strcmp(websGetVar(file, "x_Setting", ""), "1"))) {
 				if (!fromapp) set_referer_host();
 				send_token_headers(status, title, final_header, handler->mime_type, fromapp);
+			}else if(!strcmp(url, "chk_qr_ret.cgi")){
+				// send headers by self
 			}else if (strncmp(url, "login.cgi", strlen(url)) != 0 && strcmp(file, "login_v2.cgi")) {
 				send_headers(status, title, final_header, handler->mime_type, fromapp);
 			}

@@ -17,6 +17,7 @@
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
+<script type="text/javascript" language="JavaScript" src="/validator.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <style>
@@ -179,7 +180,7 @@ function disable_lacp_if_conflicts_with_dualwan(){
 		}
 	}
 
-	if(is_GTBE_series){
+	if(is_GTBE_externalswitch_series){
 		let disable_first_option = false;
 		let disable_two_10g_option = false;
 
@@ -326,18 +327,22 @@ function disable_lacp_if_conflict_with_vlan(){
 
 function initial(){
 	if((based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000")){
-			document.form.aqr_hwnat_type.disabled = false;
-			document.form.aqr_link_speed.disabled = false;
-			document.form.aqr_ipg.disabled = false;
-			document.form.sfpp_hwnat_type.disabled = false;
-			document.form.sfpp_max_speed.disabled = false;
-			document.form.sfpp_force_on.disabled = false;
-			document.getElementById("aqr_hwnat_type_tr").style.display = "";
-			document.getElementById("aqr_link_speed_tr").style.display = "";
-			document.getElementById("aqr_ipg_tr").style.display = "";
-			document.getElementById("sfpp_hwnat_type_tr").style.display = "";
-			document.getElementById("sfpp_max_speed_tr").style.display = "";
-			document.getElementById("sfpp_force_on_tr").style.display = "";
+		document.form.aqr_hwnat_type.disabled = false;
+		document.form.aqr_link_speed.disabled = false;
+		document.form.aqr_ipg.disabled = false;
+		document.form.sfpp_hwnat_type.disabled = false;
+		document.form.sfpp_max_speed.disabled = false;
+		document.form.sfpp_force_on.disabled = false;
+		document.form.sfpp_module_ipaddr.disabled = false;
+		document.getElementById("sfpp_module_ipaddr").style.color = "#FFFFFF";
+		document.getElementById("aqr_sfpp_table").style.display = "";
+		if (wans_dualwan_array.indexOf("sfp+") == -1) {
+			document.form.sfpp_module_ipaddr.disabled = true;
+			document.getElementById("sfpp_module_ipaddr").style.color = "#8C8C8C";
+		}
+		if (sw_mode != "1") {
+			document.getElementById("sfpp_ipaddr_tr").style.display = "none";
+		}
 	}
 	if(qca_support){
 		var nataccel = '<% nvram_get("qca_sfe"); %>';
@@ -447,7 +452,7 @@ function initial(){
 		if((isSwMode("RT") || isSwMode("WISP")))
 			disable_lacp_if_conflicts_with_dualwan();
 
-		if(!is_GTBE_series && (isSwMode("RT") || isSwMode("WISP")))
+		if(!is_GTBE_externalswitch_series && (isSwMode("RT") || isSwMode("WISP")))
 			disable_lacp_if_conflicts_with_iptv();
 
 		if(based_modelid == "RT-AXE7800" && wan_bonding_support && (isSwMode("RT") || isSwMode("WISP"))){
@@ -460,7 +465,7 @@ function initial(){
 			}
 		}
 
-		if(is_GTBE_series && document.form.lacp_enabled.disabled == false){
+		if(is_GTBE_externalswitch_series && document.form.lacp_enabled.disabled == false){
 			var hint_str = "Enable Bonding (802.3ad) support for your wired client and then connect it to your Router.";
 			$("#lacp_note").html(hint_str);
 
@@ -480,6 +485,10 @@ function initial(){
 
 	if(no_jumbo_frame_support)
 		$("#jumbo_tr").hide();
+
+	if(top.document.documentElement.getAttribute("data-asuswrt-color") == "light"){
+		$("#autowan_hint_div").css("background-color", "#FFFFFF");
+	}
 }
 
 function applyRule(){
@@ -507,9 +516,21 @@ function applyRule(){
 		}
 	}
 
+	if (based_modelid == "RT-AX89U") {
+		var lan_netmask = inet_network('<% nvram_get("lan_netmask"); %>');
+		if (document.form.sfpp_module_ipaddr.value != "" && document.form.sfpp_force_on.value == "0")
+			document.form.sfpp_force_on.value = "1";
+		if ((document.form.sfpp_module_ipaddr.value == '<% nvram_get("lan_ipaddr"); %>')
+		 || ((inet_network(document.form.sfpp_module_ipaddr.value) & lan_netmask)
+		  == (inet_network('<% nvram_get("lan_ipaddr"); %>') & lan_netmask))) {
+			alert(document.form.sfpp_module_ipaddr.value + " conflicts with LAN IP address!");
+			return false;
+		}
+	}
+
 	var wan_lacp_conflict = false;
 	if(lacp_support && document.form.lacp_enabled.value == "1"){
-		if(is_GTBE_series){
+		if(is_GTBE_externalswitch_series){
 			if(document.form.lacp_port_select[1].checked){
 				if((isSwMode("RT") || isSwMode("WISP"))){
 					if(isSupport("autowan")){
@@ -561,7 +582,7 @@ function applyRule(){
 		var msg = "";
 		var wanport_image_src = "images/wanport_plugin.png";
 
-		if(is_GTBE_series){
+		if(is_GTBE_externalswitch_series){
 			msg = hint_str.replace("%1$@", "<#NAT_lacp#>").replaceAll("%2$@", "2.5G WAN");
 			wanport_image_src = "images/wanport_plugin_2p5g.png";
 			$(".port_plugin_img").css("background-image", "url('images/wanport_plugin_2p5g.png')");
@@ -610,7 +631,7 @@ function show_related_settings(obj){
 			document.form.bonding_policy.disabled = false;
 		}
 
-		if(is_GTBE_series)
+		if(is_GTBE_externalswitch_series)
 			$("#lacp_port_selection").css("display", "flex");
 
 		document.getElementById("lacp_desc").style.display = "";
@@ -622,7 +643,7 @@ function show_related_settings(obj){
 		}
 
 		document.getElementById("lacp_desc").style.display = "none";
-		if(is_GTBE_series)
+		if(is_GTBE_externalswitch_series)
 			$("#lacp_port_selection").hide();
 	}
 }
@@ -640,7 +661,7 @@ function confirm_autowan_change(){
 		value: "wan none"
 	}).appendTo('form');
 
-	if(is_GTBE_series){
+	if(is_GTBE_externalswitch_series){
 		$('<input>').attr({
 			type: 'hidden',
 			name: "autowan_enable",
@@ -748,7 +769,6 @@ function get_default_wan_name(){
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="iptv_port_settings" value="<% nvram_get("iptv_port_settings"); %>" disabled>
-<input type="hidden" name="sfpp_force_on" value="<% nvram_get("sfpp_force_on"); %>" disabled>
 <!--===================================Beginning of Auto WAN Detection Confirm===========================================-->
 <div id="autowan_hint_div" style="display: none;">
 	<div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-evenly; align-items: center;">
@@ -855,79 +875,14 @@ function get_default_wan_name(){
 													</select>
 												</td>
 											</tr>
-
-											<tr id="aqr_hwnat_type_tr" style="display:none">
-												<th>10G base-T port acceleration type</th><!--untranslated-->
-												<td>
-													<select name="aqr_hwnat_type" class="input_option" disabled>
-														<option value="0" <% nvram_match("aqr_hwnat_type", "0","selected"); %>><#Auto#></option>
-														<option value="1" <% nvram_match("aqr_hwnat_type", "1","selected"); %>>PPE + NSS</option>
-														<option value="2" <% nvram_match("aqr_hwnat_type", "2","selected"); %>>NSS</option>
-													</select>
-												</td>
-											</tr>
-
-											<tr id="aqr_link_speed_tr" style="display:none">
-												<th>10G base-T port link speed</th><!--untranslated-->
-												<td>
-													<select name="aqr_link_speed" class="input_option" disabled>
-														<option value="0" <% nvram_match("aqr_link_speed", "0","selected"); %>><#Auto#></option>
-														<option value="1000" <% nvram_match("aqr_link_speed", "1000","selected"); %>>1Gbps</option>
-														<option value="2500" <% nvram_match("aqr_link_speed", "2500","selected"); %>>2.5Gbps</option>
-														<option value="5000" <% nvram_match("aqr_link_speed", "5000","selected"); %>>5Gbps</option>
-														<option value="10000" <% nvram_match("aqr_link_speed", "10000","selected"); %>>10Gbps</option>
-													</select>
-												</td>
-											</tr>
-
-											<tr id="aqr_ipg_tr" style="display:none">
-												<th>10G base-T interpacket gap</th><!--untranslated-->
-												<td>
-													<select name="aqr_ipg" class="input_option" disabled>
-														<option value="96" <% nvram_match("aqr_ipg", "96","selected"); %>><#CTL_Default#></option>
-														<option value="128" <% nvram_match("aqr_ipg", "128","selected"); %>>128 bit times</option>
-													</select>
-												</td>
-											</tr>
-
-											<tr id="sfpp_hwnat_type_tr" style="display:none">
-												<th>SFP+ port acceleration type</th><!--untranslated-->
-												<td>
-													<select name="sfpp_hwnat_type" class="input_option" disabled>
-														<option value="0" <% nvram_match("sfpp_hwnat_type", "0","selected"); %>><#Auto#></option>
-														<option value="1" <% nvram_match("sfpp_hwnat_type", "1","selected"); %>>PPE + NSS</option>
-														<option value="2" <% nvram_match("sfpp_hwnat_type", "2","selected"); %>>NSS</option>
-													</select>
-												</td>
-											</tr>
-
-											<tr id="sfpp_max_speed_tr" style="display:none">
-												<th>SFP+ port maximum link speed</th><!--untranslated-->
-												<td>
-													<select name="sfpp_max_speed" class="input_option" disabled>
-														<option value="0" <% nvram_match("sfpp_max_speed", "0","selected"); %>><#Auto#></option>
-														<option value="1000" <% nvram_match("sfpp_max_speed", "1000","selected"); %>>1Gbps</option>
-														<option value="10000" <% nvram_match("sfpp_max_speed", "10000","selected"); %>>10Gbps</option>
-													</select>
-												</td>
-											</tr>
-
-											<tr id="sfpp_force_on_tr" style="display:none">
-												<th>SFP+ port TX clock</th><!--untranslated-->
-												<td>
-													<input type="radio" name="sfpp_force_on" value="0" <% nvram_match("sfpp_force_on", "0", "checked"); %>><#Auto#>
-													<input type="radio" name="sfpp_force_on" value="1" <% nvram_match("sfpp_force_on", "1", "checked"); %>>ON<!--untranslated-->
-												</td>
-											</tr>
-
 											<tr id="lacp_tr" style="display:none;">
-		      									<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(29,1);"><#NAT_lacp#></a></th>
+											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(29,1);"><#NAT_lacp#></a></th>
 												<td>
 													<select name="lacp_enabled" class="input_option"  onchange="show_related_settings(this);" disabled>
 														<option class="content_input_fd" value="0" <% nvram_match("lacp_enabled", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
 														<option class="content_input_fd" value="1" <% nvram_match("lacp_enabled", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 													</select>
-													<div id="lacp_desc" style="display:none; margin-top: 5px;"><span id="lacp_note"><#NAT_lacp_note#></span></div>
+													<div id="lacp_desc" style="display:none; margin-top: 5px;"><span id="lacp_note"><#NAT_lacp_note#></span><div>
 													<div id = "lacp_port_selection" style="display: none; flex-direction: column; margin-top: 5px;">
 														<div style="display: flex;"><input type="radio" name="lacp_port_select" value="0" checked><div id="lacp_first_option">1G LAN5 and 10G LAN6</div></div>
 														<div id= "disable_first_option_hint" style="margin-left: 20px; color: #FFCC00;"></div>
@@ -948,6 +903,91 @@ function get_default_wan_name(){
 											</tr>
 										</table>
 
+										<table id="aqr_sfpp_table" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="display:none">
+											<!-- 10G base-T -->
+											<thead>
+												<tr id="aqr_title_field">
+													<td id="aqr_title" colspan="2">10G base-T port</td>
+												</tr>
+											</thead>
+											<tr id="aqr_hwnat_type_tr">
+												<th>Acceleration type</th><!--untranslated-->
+												<td>
+													<select name="aqr_hwnat_type" class="input_option" disabled>
+														<option value="0" <% nvram_match("aqr_hwnat_type", "0","selected"); %>><#Auto#></option>
+														<option value="1" <% nvram_match("aqr_hwnat_type", "1","selected"); %>>PPE + NSS</option>
+														<option value="2" <% nvram_match("aqr_hwnat_type", "2","selected"); %>>NSS</option>
+													</select>
+												</td>
+											</tr>
+
+											<tr id="aqr_link_speed_tr">
+												<th>Link speed</th><!--untranslated-->
+												<td>
+													<select name="aqr_link_speed" class="input_option" disabled>
+														<option value="0" <% nvram_match("aqr_link_speed", "0","selected"); %>><#Auto#></option>
+														<option value="1000" <% nvram_match("aqr_link_speed", "1000","selected"); %>>1Gbps</option>
+														<option value="2500" <% nvram_match("aqr_link_speed", "2500","selected"); %>>2.5Gbps</option>
+														<option value="5000" <% nvram_match("aqr_link_speed", "5000","selected"); %>>5Gbps</option>
+														<option value="10000" <% nvram_match("aqr_link_speed", "10000","selected"); %>>10Gbps</option>
+													</select>
+												</td>
+											</tr>
+
+											<tr id="aqr_ipg_tr">
+												<th>Interpacket gap</th><!--untranslated-->
+												<td>
+													<select name="aqr_ipg" class="input_option" disabled>
+														<option value="96" <% nvram_match("aqr_ipg", "96","selected"); %>><#CTL_Default#></option>
+														<option value="128" <% nvram_match("aqr_ipg", "128","selected"); %>>128 bit times</option>
+													</select>
+												</td>
+											</tr>
+
+											<!-- 10G SFP+ -->
+											<thead>
+												<tr id="sfpp_title_field">
+													<td id="sfpp_title" colspan="2">10G SFP+ port</td>
+												</tr>
+											</thead>
+											<tr id="sfpp_hwnat_type_tr">
+												<th>Acceleration type</th><!--untranslated-->
+												<td>
+													<select name="sfpp_hwnat_type" class="input_option" disabled>
+														<option value="0" <% nvram_match("sfpp_hwnat_type", "0","selected"); %>><#Auto#></option>
+														<option value="1" <% nvram_match("sfpp_hwnat_type", "1","selected"); %>>PPE + NSS</option>
+														<option value="2" <% nvram_match("sfpp_hwnat_type", "2","selected"); %>>NSS</option>
+													</select>
+												</td>
+											</tr>
+
+											<tr id="sfpp_max_speed_tr">
+												<th>Link speed</th><!--untranslated-->
+												<td>
+													<select name="sfpp_max_speed" class="input_option" disabled>
+														<option value="0" <% nvram_match("sfpp_max_speed", "0","selected"); %>><#Auto#></option>
+														<option value="1000" <% nvram_match("sfpp_max_speed", "1000","selected"); %>>1Gbps</option>
+														<option value="10000" <% nvram_match("sfpp_max_speed", "10000","selected"); %>>10Gbps</option>
+													</select>
+												</td>
+											</tr>
+
+											<tr id="sfpp_force_on_tr">
+												<th>TX clock</th><!--untranslated-->
+												<td>
+													<input type="radio" name="sfpp_force_on" value="0" <% nvram_match("sfpp_force_on", "0", "checked"); %>><#Auto#>
+													<input type="radio" name="sfpp_force_on" value="1" <% nvram_match("sfpp_force_on", "1", "checked"); %>>ON<!--untranslated-->
+												</td>
+											</tr>
+
+											<tr id="sfpp_ipaddr_tr">
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="overlib('IP address of GPON module, e.g., 192.168.1.1 for ZTE ZXHN F5716G. You can access telnet or web server of GPON module if it exist via LAN/WLAN devices by configuring this setting. SFP+ port must be primary WAN or secondary WAN.');" onmouseout="nd();">GPON module's IP address</th><!--untranslated-->
+												<td>
+													<input type="text" id="sfpp_module_ipaddr" name="sfpp_module_ipaddr" value="<% nvram_get("sfpp_module_ipaddr"); %>" tabindex="3" onKeyPress="return validator.isIPAddr(this, event);" maxlength="15" class="input_15_table" autocorrect="off" autocapitalize="off">
+												</td>
+											</tr>
+										</table>
+
 										<div class="apply_gen">
 											<input class="button_gen" onclick="applyRule()" type="button" value="<#CTL_apply#>"/>
 										</div>
@@ -961,7 +1001,7 @@ function get_default_wan_name(){
 						</table>		
 					</td>
 				</tr>
-			</table>
+			</table>	
 		</td>
 	    <td width="10" align="center" valign="top">&nbsp;</td>
 	</tr>

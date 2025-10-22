@@ -58,6 +58,12 @@ $(function(){
 	if(isSupport("rog")){
 		$("#light_effect_bg .light_effect_mask").addClass("rog");
 	}
+	if(isSupport("UI4")) {
+		const color = top.document.documentElement.getAttribute("data-asuswrt-color");
+		if (color === 'light' && $('link[href*="/light_effect/light_effect_white.css"]').length === 0) {
+			$('link').last().after('<link rel="stylesheet" type="text/css" href="/light_effect/light_effect_white.css">');
+		}
+	}
 
 	if(support_gaming){
 		setTimeout(function(){
@@ -951,7 +957,7 @@ $(document).ready(initial_led_control);
 <div class="light_effect_setting_bg" id="light_effect_setting" mode_group="panel">
 	<div class="settings_container">
 		<div id="ledg_scheme_switch" class="setting_enable_bg">
-			<div class="text"><span>Aura RGB</span></div>
+			<div class="text"><span><#BoostKey_Aura_RGB#></span></div>
 			<div class="switch"></div>
 			<div class="schedule"></div>
 		</div>

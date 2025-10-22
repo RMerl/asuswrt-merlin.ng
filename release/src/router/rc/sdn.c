@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <time.h>
 #include <stdbool.h>
 
 #include <shared.h>
@@ -98,8 +99,18 @@ int handle_sdn_feature(const int sdn_idx, const unsigned long features, const in
 					if (pmtl[i].sdn_t.sdn_idx == 0)	//LAN
 						update_resolvconf();
 #ifdef RTCONFIG_MULTIWAN_PROFILE
-					update_sdn_mtwan_iptables(&pmtl[i]);
+					update_sdn_mtwan_iptables(&pmtl[i], MTWAN_HANDLE_V4);
 					update_sdn_resolvconf();
+#endif
+#ifdef RTCONFIG_IPV6
+					if (pmtl[i].nw_t.v6_enable)
+					{
+						add_ip6_lanaddr();
+						start_dnsmasq(pmtl[i].sdn_t.sdn_idx);
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+						update_sdn_mtwan_iptables(&pmtl[i], MTWAN_HANDLE_V6);
+#endif
+					}
 #endif
 				}
 			}
@@ -535,7 +546,7 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 #endif
 #ifdef RTCONFIG_IPV6
 	int ipv6_service;
-	int wan6_unit;
+	int wan6_unit = wan_primary_ifunit_ipv6();
 #endif
 	char buf[32];
 
@@ -554,8 +565,10 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 #ifdef RTCONFIG_MULTIWAN_IF
 	if(!resolv_flag)
 	{
-		resolv_flag = 1;
 		update_sdn_resolvconf();
+		snprintf(resolv_path, sizeof(resolv_path), sdn_resolv_dnsmasq_path, pmtl->sdn_t.sdn_idx);
+		if (!access(resolv_path, F_OK))
+			resolv_flag = 1;
 	}
 #endif
 
@@ -714,9 +727,17 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 
 #ifdef RTCONFIG_IPV6
 #ifdef RTCONFIG_MULTIWAN_IF
-		wan6_unit = mtwan_get_mapped_unit(pmtl->sdn_t.wan6_idx) ? : wan_primary_ifunit_ipv6();
-#else
-		wan6_unit = wan_primary_ifunit_ipv6();
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+		if (pmtl->sdn_t.mtwan_idx)
+		{
+			wan6_unit = mtwan6_get_active_wan_unit(pmtl->sdn_t.mtwan_idx);
+			if (wan6_unit == WAN_UNIT_NONE)
+				_dprintf("%s: MTWAN(%d) No active wan6_unit\n", __FUNCTION__, pmtl->sdn_t.mtwan_idx);
+		}
+		else
+#endif
+		if (pmtl->sdn_t.wan6_idx)
+			wan6_unit = mtwan_get_mapped_unit(pmtl->sdn_t.wan6_idx);
 #endif
 		ipv6_service = get_ipv6_service_by_unit(wan6_unit);
 		if (ipv6_service != IPV6_DISABLED && pmtl->nw_t.v6_enable && ipv6_service != IPV6_PASSTHROUGH)
@@ -745,7 +766,7 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 			strlcpy(v6_prefix, nvram_safe_get(ipv6_nvname_by_unit("ipv6_prefix", wan6_unit)), sizeof(v6_prefix));
 			v6_prefix_length = nvram_get_int(ipv6_nvname_by_unit("ipv6_prefix_length", wan6_unit)) ?:64;
 			ra_lifetime = nvram_get_int("ra_lifetime") ? : 600;
-			dhcp_lifetime = nvram_get_int(ipv6_nvname_by_unit("ipv6_dhcp_lifetime", wan6_unit));
+			dhcp_lifetime = nvram_get_int(ipv6_nvname_by_unit("ipv6_dhcp_lifetime", wan6_unit)) ? : (int)strtol(nvram_default_get("ipv6_dhcp_lifetime"), NULL, 0);
 
 			fprintf(fp, "interface=%s\n", pmtl->nw_t.ifname);
 			fprintf(fp, "except-interface=lo\n");
@@ -1082,7 +1103,286 @@ int write_sdnlan_resolv_dnsmasq(FILE* fp)
 	}
 	return (ret);
 }
+
+
+#ifdef RTCONFIG_IPV6
+static void _handle_sdn_routing_ipv6_prefix(const MTLAN_T *pmtl)
+{
+	int wan6_unit = wan_primary_ifunit_ipv6();
+	char nv[32] = {0};
+	char cur_network[INET6_ADDRSTRLEN+4], network[INET6_ADDRSTRLEN+4];
+	int prefix_length;
+	char path[64] = {0}, path_tmp[64] = {0};
+	FILE *fpr, *fpw;
+	struct sysinfo sys_info;
+	char buf[128] = {0};
+	int ret;
+	int lifetime;
+	long finish_time;
+	char cmd[256] = {0};
+
+#ifdef RTCONFIG_MULTIWAN_IF
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+	if (pmtl->sdn_t.mtwan_idx)
+	{
+		wan6_unit = mtwan6_get_active_wan_unit(pmtl->sdn_t.mtwan_idx);
+		if (wan6_unit == WAN_UNIT_NONE)
+			return;
+	}
+	else
 #endif
+	if (pmtl->sdn_t.wan6_idx)
+		wan6_unit = mtwan_get_mapped_unit(pmtl->sdn_t.wan6_idx);
+#endif
+
+	// current network data
+	if (pmtl->sdn_t.sdn_idx)
+		snprintf(nv, sizeof(nv), "ipv6_prefix_sdn%d", pmtl->sdn_t.sdn_idx);
+	else
+		snprintf(nv, sizeof(nv), "ipv6_prefix");
+	prefix_length = nvram_get_int(ipv6_nvname_by_unit("ipv6_prefix_length_sdn", wan6_unit)) ?: nvram_get_int(ipv6_nvname_by_unit("ipv6_prefix_length", wan6_unit));
+	snprintf(cur_network, sizeof(cur_network), "%s/%d"
+		, nvram_safe_get(ipv6_nvname_by_unit(nv, wan6_unit)), prefix_length);
+
+	// handle previous network
+	snprintf(path, sizeof(path), "%s/ip6prefix_sdn%d", sdn_dir, pmtl->sdn_t.sdn_idx);
+	snprintf(path_tmp, sizeof(path_tmp), "/tmp/ip6prefix_tmp");
+	fpr = fopen(path, "r");
+	if (fpr)
+	{
+		fpw = fopen(path_tmp, "w");
+		if (!fpw)
+		{
+			fclose(fpr);
+			return;
+		}
+
+		sysinfo(&sys_info);
+		while (fgets(buf, sizeof(buf), fpr))
+		{
+			ret = sscanf(buf, "%s %d %ld\n", network, &lifetime, &finish_time);
+			// _dprintf("%s %d %ld\n", network, lifetime, finish_time);
+			switch (ret)
+			{
+				case 3:
+					if (sys_info.uptime < finish_time)
+					{
+						fputs(buf, fpw);
+						snprintf(cmd, sizeof(cmd), "ip -6 route add %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
+						system(cmd);
+					}
+					break;
+				case 2:
+					if (strcmp(network, cur_network))
+					{
+						trimNL(buf);
+						finish_time = sys_info.uptime + lifetime;
+						fprintf(fpw, "%s %ld\n", buf, finish_time);
+						snprintf(cmd, sizeof(cmd), "ip -6 route add %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
+						system(cmd);
+					}
+					break;
+			}
+		}
+		fclose(fpr);
+		fclose(fpw);
+		unlink(path);
+		rename(path_tmp, path);
+	}
+
+	// handle current network
+	if (*cur_network != '/')
+	{
+		snprintf(cmd, sizeof(cmd), "ip -6 route add %s dev %s table %d"
+			, cur_network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
+		system(cmd);
+		/// follow dnsmasq configuration
+		if (prefix_length != 64 || nvram_get_int(ipv6_nvname_by_unit("ipv6_autoconf_type", wan6_unit)))
+			lifetime = nvram_get_int(ipv6_nvname_by_unit("ipv6_dhcp_lifetime", wan6_unit))?:(int)strtol(nvram_default_get("ipv6_dhcp_lifetime"), NULL, 0);
+		else
+			lifetime = nvram_get_int("ra_lifetime") ? : 600;
+		snprintf(buf, sizeof(buf), "%s %d\n", cur_network, lifetime);
+		f_write_string(path, buf, FW_APPEND, 0);
+	}
+}
+
+#define NEIGHBOR_DEFAULT_TIMTOUT  86400
+static void _handle_sdn_routing_ipv6_neigh(const MTLAN_T *pmtl, const char *neighbor_file)
+{
+	char sdn_neighbor_path[128] = {0};
+	FILE *fpr, *fpw;
+	char *ip6neigh_tmp = "/tmp/ip6neigh_tmp";
+	struct timespec ts;
+	char line[128];
+	char network[INET6_ADDRSTRLEN+4], ifname[IFNAMSIZ];
+	unsigned long utime;
+	char cmd[256];
+	char buf[65536];
+	int lock;
+
+	lock = file_lock("ip6neigh");
+
+	snprintf(sdn_neighbor_path, sizeof(sdn_neighbor_path), "%s/ip6neigh_sdn%d", sdn_dir, pmtl->sdn_t.sdn_idx);
+
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+
+	// reconfigure old neighbors
+	fpr = fopen(sdn_neighbor_path, "r");
+	if (fpr)
+	{
+		fpw = fopen(ip6neigh_tmp, "w");
+		if (!fpw)
+		{
+			fclose(fpr);
+			file_unlock(lock);
+			return;
+		}
+
+		// snprintf(cmd, sizeof(cmd), "ip -6 route flush dev %s table %d", pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
+		// system(cmd);
+
+		while (fgets(line, sizeof(line), fpr))
+		{
+			if (sscanf(line, "%s %lu\n", network, &utime) != 2)
+				continue;
+			if (ts.tv_sec - utime < NEIGHBOR_DEFAULT_TIMTOUT)
+			{
+				_dprintf("keep %s", line);
+				fputs(line, fpw);
+				snprintf(cmd, sizeof(cmd), "ip -6 route replace %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
+				system(cmd);
+			}
+			else
+			{
+				_dprintf("drop %s", line);
+				snprintf(cmd, sizeof(cmd), "ip -6 route del %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
+				system(cmd);
+			}
+		}
+		fclose(fpw);
+		fclose(fpr);
+		unlink(sdn_neighbor_path);
+		rename(ip6neigh_tmp, sdn_neighbor_path);
+	}
+
+	// check new data
+	fpr = fopen(neighbor_file, "r");
+	if (fpr)
+	{
+		f_read_string(sdn_neighbor_path, buf, sizeof(buf));
+
+		fpw = fopen(sdn_neighbor_path, "a");
+		if (!fpw)
+		{
+			fclose(fpr);
+			file_unlock(lock);
+			return;
+		}
+
+		while (fgets(line, sizeof(line), fpr))
+		{
+			if (sscanf(line, "%s %s %lu\n", network, ifname, &utime) != 3)
+				continue;
+			if (strcmp(ifname, pmtl->nw_t.ifname))
+				continue;
+			if (strstr(buf, network))
+				continue;
+			fprintf(fpw, "%s %lu\n", network, utime);
+			snprintf(cmd, sizeof(cmd), "ip -6 route add %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
+			system(cmd);
+			_dprintf("Add: %s %lu\n", network, utime);
+		}
+		fclose(fpw);
+		fclose(fpr);
+	}
+
+	file_unlock(lock);
+}
+
+void handle_sdn_routing_ipv6_neigh(int wan6_unit, const char *neighbor_file)
+{
+	MTLAN_T *pmtl = NULL;
+	size_t mtl_sz = 0;
+	int i;
+
+	_dprintf("%s\n", __FUNCTION__);
+
+	pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
+	if (pmtl) {
+		get_mtlan(pmtl, &mtl_sz);
+		for (i = 0; i < mtl_sz; i++) {
+			if (pmtl[i].enable && pmtl[i].nw_t.v6_enable) {
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+				if (pmtl[i].sdn_t.mtwan_idx && wan6_unit >= WAN_UNIT_FIRST)
+				{
+					if (!is_mtwan_unit_in_active_group(pmtl[i].sdn_t.mtwan_idx, wan6_unit))
+						continue;
+				}
+				else
+#endif
+				if (pmtl[i].sdn_t.wan6_idx && pmtl[i].sdn_t.wan6_idx != wan6_unit)
+					continue;
+
+				_handle_sdn_routing_ipv6_neigh(&pmtl[i], neighbor_file);
+			}
+		}
+		FREE_MTLAN((void *)pmtl);
+	}
+}
+
+int update_sdn_by_wan_ipv6(int wan_unit)
+{
+	MTLAN_T *pmtl = NULL;
+	size_t mtl_sz = 0;
+	int i, default_wan, mtwan_unit = wan_unit;
+	char logaccept[32], logdrop[32];
+
+	if(!is_mtwan_unit(wan_unit))
+		mtwan_unit = mtwan_get_unit_by_dualwan_unit(wan_unit);
+	if(mtwan_unit == -1)
+		return -1;
+
+	get_drop_accept(logdrop, sizeof(logdrop), logaccept, sizeof(logaccept));
+
+	default_wan = mtwan_get_default_wan();
+
+	pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
+	if (pmtl)
+	{
+		get_mtlan(pmtl, &mtl_sz);
+		for (i = 0; i < mtl_sz; i++)
+		{
+			if ((pmtl[i].sdn_t.wan6_idx == mtwan_unit) || (default_wan == mtwan_unit))
+			{
+				_handle_sdn_wan(&pmtl[i], logdrop, logaccept);
+			}
+		}
+		FREE_MTLAN((void *)pmtl);
+	}
+	return 0;
+}
+
+int write_sdnlan_resolv_dnsmasq_ipv6(FILE* fp)
+{
+	MTLAN_T *pmtl = NULL;
+	size_t mtl_sz = 0;
+	int ret = 0;
+
+	pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
+	if (pmtl)
+	{
+		get_mtlan_by_idx(SDNFT_TYPE_SDN, 0, pmtl, &mtl_sz);
+		if (pmtl[0].sdn_t.wan6_idx && mtwanduck_get_phy_status(pmtl[0].sdn_t.wan6_idx))
+		{
+			wan_add_resolv_dnsmasq_ipv6(fp, mtwan_get_mapped_unit(pmtl[0].sdn_t.wan6_idx));
+			ret = 1;
+		}
+		FREE_MTLAN((void *)pmtl);
+	}
+	return (ret);
+}
+#endif	//RTCONFIG_IPV6
+#endif	//RTCONFIG_MULTIWAN_IF
 
 #ifdef RTCONFIG_MULTISERVICE_WAN
 static void _handle_sdn_ms_wan(const MTLAN_T *pmtl)
@@ -1145,6 +1445,9 @@ static int _handle_sdn_wan(const MTLAN_T *pmtl, const char *logdrop, const char 
 		return 0;
 
 	_remove_sdn_routing_rule(pmtl, 0);
+#ifdef RTCONFIG_IPV6
+	_remove_sdn_routing_rule(pmtl, 1);
+#endif
 	vpnc_default_wan = nvram_get_int("vpnc_default_wan");
 
 	if(pmtl->sdn_t.vpnc_idx != 0)	//assigned vpnc
@@ -1199,13 +1502,25 @@ static int _handle_sdn_wan(const MTLAN_T *pmtl, const char *logdrop, const char 
 				mtwan_get_lb_route_table_id(pmtl->sdn_t.mtwan_idx, group, table, sizeof(table));
 				mtwan_get_lb_rule_pref(pmtl->sdn_t.mtwan_idx, pref, sizeof(pref));
 				eval("ip", "rule", "add", "iif", (char*)pmtl->nw_t.ifname, "table", table, "pref", pref);
+#ifdef RTCONFIG_IPV6
+				if (pmtl->nw_t.v6_enable)
+				{
+					eval("ip", "-6", "rule", "add", "iif", (char*)pmtl->nw_t.ifname, "table", table, "pref", pref);
+				}
+#endif
 			}
 			else
 			{
-				wan_unit = mtwan_get_first_wan_unit_by_group(pmtl->sdn_t.mtwan_idx, group);
+				wan_unit = mtwan_get_first_wan_unit_by_group(pmtl->sdn_t.mtwan_idx, group, MTWAN_CHECK_CONN);
 				snprintf(pref, sizeof(pref), "%d", mtwan_get_route_rule_pref(wan_unit));
 				mtwan_get_route_table_id(wan_unit, table, sizeof(table));
 				eval("ip", "rule", "add", "iif", (char*)pmtl->nw_t.ifname, "table", table, "pref", pref);
+#ifdef RTCONFIG_IPV6
+				if (pmtl->nw_t.v6_enable)
+				{
+					eval("ip", "-6", "rule", "add", "iif", (char*)pmtl->nw_t.ifname, "table", table, "pref", pref);
+				}
+#endif
 			}
 
 		}
@@ -1220,8 +1535,7 @@ static int _handle_sdn_wan(const MTLAN_T *pmtl, const char *logdrop, const char 
 		eval("ip", "rule", "add", "iif", (char*)pmtl->nw_t.ifname, "table", table, "pref", pref);
 	}
 #ifdef RTCONFIG_IPV6
-	_remove_sdn_routing_rule(pmtl, 1);
-	if(pmtl->sdn_t.wan6_idx != 0)	//assigned wan
+	if(pmtl->sdn_t.wan6_idx != 0 && pmtl->sdn_t.mtwan_idx == 0)
 	{
 		// set routing table
 		mtwan_get_route_table_id(pmtl->sdn_t.wan6_idx, table, sizeof(table));
@@ -1237,7 +1551,7 @@ static int _handle_sdn_wan(const MTLAN_T *pmtl, const char *logdrop, const char 
 	if (pmtl->sdn_t.mtwan_idx)
 		update_SDN_iptables(pmtl, logdrop, logaccept);
 #endif
-#endif
+#endif	//RTCONFIG_MULTIWAN_IF
 
 #ifdef RTCONFIG_MULTISERVICE_WAN
 	_handle_sdn_ms_wan(pmtl);
@@ -1278,6 +1592,10 @@ static int _handle_sdn_routing(const MTLAN_T *pmtl)
 
 	if(pmtl)
 	{
+		// Skip SDN in br0 case
+		if (pmtl->sdn_t.sdn_idx > 0 && pmtl->nw_t.idx == 0)
+			return 0;
+
 		//search ip route rule
 		snprintf(cmd, sizeof(cmd), "ip route show table all | grep %s | grep \"table %d\" > %s", pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN, iproute_tmp);
 		system(cmd);
@@ -1299,6 +1617,15 @@ static int _handle_sdn_routing(const MTLAN_T *pmtl)
 			snprintf(cmd, sizeof(cmd), "ip route add %s/%d dev %s proto kernel scope link src %s table %d", pmtl->nw_t.subnet, pmtl->nw_t.prefixlen, pmtl->nw_t.ifname, pmtl->nw_t.addr, IP_ROUTE_TABLE_ID_SDN);
 			system(cmd);
 		}
+#ifdef RTCONFIG_MULTIWAN_IF
+#ifdef RTCONFIG_IPV6
+		if (pmtl->enable && pmtl->nw_t.v6_enable)
+		{
+			_handle_sdn_routing_ipv6_prefix(pmtl);
+			_handle_sdn_routing_ipv6_neigh(pmtl, NULL);
+		}
+#endif
+#endif
 	}
 
 	snprintf(cmd, sizeof(cmd), "ip rule show | grep \"lookup %d\" > %s", IP_ROUTE_TABLE_ID_SDN, iproute_tmp);
@@ -1308,6 +1635,15 @@ static int _handle_sdn_routing(const MTLAN_T *pmtl)
 		snprintf(cmd, sizeof(cmd), "ip rule add table %d pref %d", IP_ROUTE_TABLE_ID_SDN, IP_RULE_PREF_SDN_ROUTE);
 		system(cmd);
 	}
+#ifdef RTCONFIG_IPV6
+	snprintf(cmd, sizeof(cmd), "ip -6 rule show | grep \"lookup %d\" > %s", IP_ROUTE_TABLE_ID_SDN, iproute_tmp);
+	system(cmd);
+	if(f_size(iproute_tmp) == 0)
+	{
+		snprintf(cmd, sizeof(cmd), "ip -6 rule add table %d pref %d", IP_ROUTE_TABLE_ID_SDN, IP_RULE_PREF_SDN_ROUTE);
+		system(cmd);
+	}
+#endif
 	unlink(iproute_tmp);
 	return 0;
 }
@@ -1553,8 +1889,9 @@ void update_sdn_resolvconf()
 }
 
 #ifdef RTCONFIG_MULTIWAN_PROFILE
-void update_sdn_mtwan_iptables(const MTLAN_T *pmtl)
+void update_sdn_mtwan_iptables(const MTLAN_T *pmtl, int v6)
 {
+	char *xtables = (v6) ? "ip6tables" : "iptables";
 	int mtwan_idx = 0;
 	char mtwan_prefix[16] = {0};
 	char chain_li[16] = {0}, chain_lb[16] = {0};
@@ -1565,7 +1902,7 @@ void update_sdn_mtwan_iptables(const MTLAN_T *pmtl)
 		return;
 
 	snprintf(chain_li, sizeof(chain_li), "MTWAN_IN_L%d", pmtl->sdn_t.sdn_idx);
-	eval("iptables", "-t", "mangle", "-F", chain_li);
+	eval(xtables, "-t", "mangle", "-F", chain_li);
 
 	mtwan_idx = pmtl->sdn_t.mtwan_idx;
 	if (mtwan_idx)
@@ -1578,8 +1915,8 @@ void update_sdn_mtwan_iptables(const MTLAN_T *pmtl)
 			{
 				snprintf(chain_lb, sizeof(chain_lb), "MTWAN_LB_%d_%d", mtwan_idx, group);
 				snprintf(net, sizeof(net), "%s/%d", pmtl->nw_t.subnet, pmtl->nw_t.prefixlen);
-				eval("iptables", "-t", "mangle", "-A", chain_li, "-d", net, "-j", "RETURN");
-				eval("iptables", "-t", "mangle", "-A", chain_li, "-i", (char*)(pmtl->nw_t.ifname), "-j", chain_lb);
+				eval(xtables, "-t", "mangle", "-A", chain_li, "-d", net, "-j", "RETURN");
+				eval(xtables, "-t", "mangle", "-A", chain_li, "-i", (char*)(pmtl->nw_t.ifname), "-j", chain_lb);
 			}
 		}
 	}
@@ -1590,8 +1927,8 @@ void update_sdn_mtwan_iptables(const MTLAN_T *pmtl)
 		{
 			snprintf(chain_lb, sizeof(chain_lb), "MTWAN_LB_1_%d", group);
 			snprintf(net, sizeof(net), "%s/%d", pmtl->nw_t.subnet, pmtl->nw_t.prefixlen);
-			eval("iptables", "-t", "mangle", "-A", chain_li, "-d", net, "-j", "RETURN");
-			eval("iptables", "-t", "mangle", "-A", chain_li, "-i", (char*)(pmtl->nw_t.ifname), "-j", chain_lb);
+			eval(xtables, "-t", "mangle", "-A", chain_li, "-d", net, "-j", "RETURN");
+			eval(xtables, "-t", "mangle", "-A", chain_li, "-i", (char*)(pmtl->nw_t.ifname), "-j", chain_lb);
 		}
 	}
 }

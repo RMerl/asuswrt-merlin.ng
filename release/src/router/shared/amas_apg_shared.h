@@ -49,6 +49,14 @@
 
 #if defined(RTCONFIG_MULTILAN_MWL)
 #define APM_MAXINUM 	MTLAN_MWL_MAXINUM
+
+#if defined(RTCONFIG_NOWL) 
+#define SMRTCONN_SEL_2G     0x0001
+#define SMRTCONN_SEL_5G     0x0002
+#define SMRTCONN_SEL_5G2    0x0004
+#define SMRTCONN_SEL_6G     0x0008
+#define SMRTCONN_SEL_6G2    0x0010
+#endif	// RTCONFIG_NOWL
 #endif	// RTCONFIG_MULTILAN_MWL
 
 typedef struct ap_wifi_rule_t {

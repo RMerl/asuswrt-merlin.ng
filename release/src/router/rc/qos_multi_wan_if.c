@@ -1664,7 +1664,7 @@ static int start_bandwidth_limiter(int wan_unit)
 					, i, j, i, j // 5
 					, i, j, guest, g_mark
 					, i, j, guest, guest, nvram_safe_get(strcat_r(wlv, "_bw_dl", tmp)) //7
-					, i, j, guest, guest, g_mark, nvram_safe_get(strcat_r(wlv, "_bw_dl", tmp)), gmark
+					, i, j, guest, guest, g_mark, nvram_safe_get(strcat_r(wlv, "_bw_dl", tmp)), g_mark
 					, i, j, guest, g_mark, g_mark
 					, i, j, guest, g_mark, g_mark, guest, g_mark // 10
 					, g_mark, nvram_safe_get(strcat_r(wlv, "_bw_ul", tmp)), g_mark

@@ -104,7 +104,9 @@ enum {
 	DIAGMODE_EVENT_WLC 	                    = DIAGMODE_EVENT+6,
 	DIAGMODE_WIFI_CBP 	                    = DIAGMODE_EVENT+7,
 	DIAGMODE_EVENT_PORT_STATUS_MOCA_CHANGE  = DIAGMODE_EVENT+8,
+	DIAGMODE_EVENT_PORT_STATUS_POE_CHANGE   = DIAGMODE_EVENT+9,
 	DIAGMODE_EVENT_ACSD 	                = DIAGMODE_EVENT+10,
+	DIAGMODE_EVENT_AIRIQ 	                = DIAGMODE_EVENT+11,
 	//DIAGMODE_EVENT
 	//DIAGMODE_SITE_SURVEY_2G = 0x800, //need modify
 	//DIAGMODE_SITE_SURVEY_5G1 = 0x1000, //need modify
@@ -189,8 +191,10 @@ enum {
 #define DIAG_CABLE_DIAG "CABLEDIAG"
 #define DIAG_PS_USB_CHANGE "PORTSTATUSUSBCHANGE"
 #define DIAG_PS_MOCA_CHANGE "PORTSTATUSMOCACHANGE"
+#define DIAG_PS_POE_CHANGE "PORTSTATUSPOECHANGE"
 #define DIAG_EVENT_IPERF_SERVER "IPERFSERVER"
 #define DIAG_EVENT_IPERF_CLIENT "IPERFCLIENT"
+#define DIAG_AIRIQ_EVENT "AIRIQEVENT"
 #ifdef RTCONFIG_BCMARM
 #define DIAG_EVENT_WIFISYS2 "WIFISYS2" // DIAG_EVENT_WIFISYS2>node type>IP>MAC>band>band's ifname>band's MAC>band's noise>band's MCS>band's capability>band's subif_count>base64encode(band's subif_ssid)>band's chanim>band's tx rate>band's rx rate>band's tx byte>band's rx byte
 #else
@@ -232,6 +236,9 @@ extern int get_wifi_dfs_status(char *output, int len, char *node, char *lan_ipad
 extern char *diag_get_wifi_fh_ifnames(int wifi_unit, char *buffer, size_t buffer_size);
 extern char *diag_get_eth_bh_ifnames(char *buffer, size_t buffer_size);
 extern char *diag_get_eth_fh_ifnames(char *buffer, size_t buffer_size);
+#ifdef RTCONFIG_SWITCH_POE
+extern int diag_get_poe_status(phy_info_list *list);
+#endif
 extern int diag_is_wlif(char *ifname);
 extern int diag_is_uplink_ethif(char *ifname);
 extern int get_plc_phy_rate(unsigned long *tx_rate, unsigned long *rx_rate);
@@ -302,3 +309,5 @@ extern int check_iperf_server_resp(char *in);
 #define CD_CBP_EVENT_LOCK	"cd_cbp_event_lock"
 #define ACSD_EVENT_FILE_PATH "/jffs/acsd_event_file"
 #define ACSD_EVENT_FILE_LOCK "acsd_event_file_lock"
+#define AIRIQ_EVENT_FILE_PATH "/tmp/airiq_event_file"
+#define AIRIQ_EVENT_FILE_LOCK "airiq_event_file_lock"

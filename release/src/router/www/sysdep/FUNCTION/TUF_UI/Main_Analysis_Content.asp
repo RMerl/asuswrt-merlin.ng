@@ -11,45 +11,8 @@
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="/js/table/table.css">
-<style>
-#ClientList_Block_PC{
-	border:1px outset #92650F;
-	background-color:#3E2902;
-	position:absolute;
-	*margin-top:26px;
-	margin-left:2px;
-	*margin-left:-353px;
-	width:346px;
-	text-align:left;
-	height:auto;
-	overflow-y:auto;
-	z-index:200;
-	padding: 1px;
-	display:none;
-}
-#ClientList_Block_PC div{
-	height:auto;
-	*height:20px;
-	line-height:20px;
-	text-decoration:none;
-	font-family: Lucida Console;
-	padding-left:2px;
-}
-
-#ClientList_Block_PC a{
-	background-color:#EFEFEF;
-	color:#FFF;
-	font-size:12px;
-	font-family:Arial, Helvetica, sans-serif;
-	text-decoration:none;
-}
-#ClientList_Block_PC div:hover{
-	background-color:#3366FF;
-	color:#FFFFFF;
-	cursor:default;
-}
-</style>
-<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<link rel="stylesheet" type="text/css" href="/device-map/device-map.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
@@ -456,9 +419,11 @@ validator.targetDomainName = function($o){
 										<tr>
 											<th width="20%"><#NetworkTools_target#></th>
 											<td>
-												<input type="text" class="input_32_table" id="destIP" name="destIP" maxlength="100" value="" placeholder="ex: www.google.com" autocorrect="off" autocapitalize="off">
-												<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_network_host#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
-												<div id="ClientList_Block_PC" class="ClientList_Block_PC"></div>
+											    <div class="clientlist_dropdown_main" style="width: 100%;">
+                                                    <input type="text" class="input_32_table" id="destIP" name="destIP" maxlength="100" value="" placeholder="ex: www.google.com" autocorrect="off" autocapitalize="off">
+                                                    <img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullLANIPList(this);" title="<#select_network_host#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
+                                                    <div id="ClientList_Block_PC" class="clientlist_dropdown"></div>
+                                                </div>
 												<br/>
 												<span id="alert_block" style="color:#FC0;display:none"></span>
 											</td>

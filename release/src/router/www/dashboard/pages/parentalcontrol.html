@@ -1,0 +1,554 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0,  user-scalable=no" />
+
+        <style>
+        * {
+            font-family: "Roboto Condensed" !important;
+        }
+
+        :root {
+            --color-start: #005eff; /* radar-fill */
+            --color-end: #08faff; /* radar-fill */
+            --color-stroke-start: #4E91FB; /* radar-stroke */
+            --color-stroke-end: #6DF6FA; /* radar-stroke */
+            --slider-fill-start: #4E91FB; /* 已滑過的區域 */
+            --slider-fill-end: #6DF6FA; /* 已滑過的區域 */
+            --slider-track: #e5e7eb; /* 未滑過的區域 */
+            --slider-thumb: #dc2626; /* 拖曳圓點 */
+            --progress: 50%;
+
+            /* Bandwidth row 專屬語意 token */
+            --bandwidth-row-bg: rgba(255, 255, 255, 0.4); /* white-alpha40 */
+            --bandwidth-row-border: var(--neutral-30, #fff);
+            --bandwidth-cell-divider: var(--cell-stroke);
+            --bandwidth-divider-gap: 16px;
+            --toggle-radius: 14px;
+            --toggle-thumb-radius: 50%;
+            --tab-navigation-active-text: var(--black-alpha-100);
+            --tab-navigation-active-primary: var(--primary-60, #C00);
+            --radius-none: 0;
+            --tab-navigation-bg-color: var(--body-bg-color, #ededed);
+            --tab-navigation-hover-bg: var(--black-alpha-3);
+            --tab-navigation-text-color: var(--black-alpha-100);
+            --setting-row-bg: var(--bandwidth-row-bg, #fff);
+            --table-row-text-color: var(--body-text-color);
+            --setting-row-border: var(--bandwidth-row-border);
+            --cell-divider-border: var(--bandwidth-row-border);
+            --divide-stroke-color-default: var(--white-alpha-60);
+            --divider-strong: var(--white-alpha-100);
+            --divider-weak: var(--black-alpha-3);
+            --divider-default: var(--neutral-30);
+        }
+
+        [data-asuswrt-color="dark"] {
+            --tab-navigation-bg-color: var(--body-bg-color, #181818);
+            --tab-navigation-active-text: var(--white-alpha-100);
+            --tab-navigation-active-primary: var(--primary-50, #F00);
+            --tab-navigation-hover-bg: var(--white-alpha-5);
+            --tab-navigation-text-color: var(--white-alpha-100);
+            --setting-row-bg: rgba(24, 24, 24, 0.4);
+            --bandwidth-row-bg: rgba(24, 24, 24, 0.4);
+            --table-row-text-color: var(--white-alpha-100);
+            --bandwidth-row-border: var(--neutral-90, #333);
+            --setting-row-border: var(--bandwidth-row-border);
+            --cell-divider-border: var(--bandwidth-row-border);
+            --divide-stroke-color-default: var(--white-alpha-10);
+            --divider-strong: var(--white-alpha-10);
+            --divider-weak: var(--white-alpha-5);
+            --divider-default: var(--neutral-90);
+        }
+
+        .nav.nav-tabs {
+            position: relative;
+        }
+
+        .nav.nav-tabs::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 20px;
+            height: 100%;
+            background: linear-gradient(to right, transparent, var(--tab-navigation-bg-color));
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav.nav-tabs.scrollable::after {
+            opacity: 1;
+        }
+
+        .tab-navigation {
+            box-sizing: border-box;
+            border-bottom: 1px solid var(--divider-strong);
+            display: flex;
+            align-items: center;
+            background: var(--tab-navigation-bg-color);
+            font-size: 1.2rem;
+            font-family: inherit;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+            position: relative;
+            margin-bottom: 0.5rem;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            flex-wrap: nowrap !important;
+            scroll-behavior: smooth;
+            cursor: grab;
+        }
+
+        .scrollable .tab-navigation {
+            box-shadow: inset -10px 0 10px -10px rgba(0,0,0,0.1);
+        }
+
+        .tab-navigation::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-navigation__item {
+            min-width: 180px;
+            padding-left: 32px;
+            padding-right: 32px;
+            line-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            font-size: inherit;
+            font-family: inherit;
+            color: var(--tab-navigation-text-color);
+            cursor: pointer;
+            border-bottom: 4px solid transparent;
+            transition: color 0.2s, border-color 0.2s;
+            font-weight: 400;
+            flex: 0 0 auto;
+            white-space: nowrap;
+            outline: none;
+        }
+
+        .tab-navigation__item.active {
+            color: var(--tab-navigation-active-text);
+            font-weight: 700;
+            border-bottom: 4px solid var(--tab-navigation-active-primary);
+            border-radius: var(--radius-none) !important;
+        }
+
+        .tab-navigation__divider {
+            width: 1px;
+            height: 32px;
+            background: var(--divide-stroke-color-default);
+            margin: 0;
+            display: inline-block;
+            border-radius: 1px;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 539px) {
+            .tab-navigation {
+                font-size: 1rem;
+                padding: 1em 0 0.5em 0;
+                padding-left: 16px !important;
+                padding-right: 16px !important;
+            }
+
+            .tab-navigation__item {
+                padding: 0 0.5em 0.2em 0.5em;
+                min-width: 120px !important;
+                font-size: 0.9rem !important;
+            }
+
+            .tab-navigation__divider {
+                height: 1em;
+                width: 1px;
+                flex-shrink: 0;
+            }
+        }
+
+        @media (max-width: 1023px) {
+            .tab-navigation__item {
+                flex: 0 0 auto;
+                min-width: 150px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .tab-navigation__item {
+                flex: 0 1 auto;
+                min-width: var(--tab-item-min-width, auto);
+                justify-content: center;
+            }
+        }
+        </style>
+    </head>
+
+    <body>
+		<div class="nav nav-tabs" id="parentalcontrolTabList" role="tablist">
+			<nav class="tab-navigation p-0">
+				<button class="tab-navigation__item active" data-tab="AiProtection_WebProtector"><#AiProtection_filter#></button>
+				<span class="tab-navigation__divider"></span>
+				<button class="tab-navigation__item " data-tab="parentalControl"><#Time_Scheduling#></button>
+				<span class="tab-navigation__divider adguard_menu"></span>
+				<button class="tab-navigation__item adguard_menu" data-tab="adGuard_DNS">AdGuard</button>
+			</nav>
+		</div>
+		
+		<div class="row justify-content-center">
+            <div class="col-12 col-xxl-10 mb-3">
+				<div class="card card-cut-none pt-2 h-100">
+					<iframe id="settingsWindow" style="
+						width: 98%;
+						height: 100vh;
+						margin: 0 auto;
+					" src=""></iframe>
+				</div>
+			</div>
+        </div>
+	</body>
+
+	<script>
+		var webWrapper = true;
+        var webFilterPathname = isSupport("ark_iam") ? "/AiProtection_ContentFilter.asp" : "/AiProtection_WebProtector.asp";
+
+        $("#settingsWindow").attr({src: webFilterPathname});
+
+		var findColorAndReplace = function(styleSheet, oldColor, newColor){
+			function hexToRgb(hex) {
+				var result;
+
+				result = /([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+				var retData = result ? [
+					parseInt(result[1], 16),
+					parseInt(result[2], 16),
+					parseInt(result[3], 16)
+				] : null;
+
+				return retData ? retData.join(", ") : false;
+			}
+
+			$("#settingsWindow").contents().find('*').filter(function(){
+				var getElement = $(this).css(styleSheet) || "";
+
+				if(getElement.indexOf(hexToRgb(oldColor)) != -1){
+					var targetStyleSheet = {}
+					var originStyle = $(this).css(styleSheet);
+
+					if(originStyle){
+						targetStyleSheet[styleSheet] = (newColor != "transparent") ? originStyle.replace(hexToRgb(oldColor), hexToRgb(newColor)) : "transparent";
+					}
+
+					$(this).css(targetStyleSheet)
+				}
+			})
+		}
+
+		function setupWrapper(){
+			var iframe = $("#settingsWindow").contents();
+
+			// top banner
+			iframe.find("#TopBanner").hide()
+			iframe.find("#mainMenu").hide()
+			iframe.find("#mainMenu").parent().hide()
+
+			// menutree
+			iframe.find(".menu_Split").hide()
+			iframe.find("#QIS_wizard_menu").remove()
+			iframe.find("#index_menu").remove()
+			iframe.find("#index_menu").remove()
+			iframe.find("#SDN_menu").remove()
+			iframe.find("#AiMesh_menu").remove()
+			iframe.find("#cloud_main_menu").remove()
+			iframe.find("#AiProtection_HomeProtection_menu").remove()
+			iframe.find("#TrafficAnalyzer_Statistic_menu").remove()
+			iframe.find("#Guest_network_menu").remove()
+			iframe.find("#Advanced_Smart_Home_Alexa_menu").remove()
+			iframe.find("#Advanced_VPNServer_Content_menu").remove()
+
+			// submenu
+			iframe.find("#tabMenu").parent().css({
+				"text-align": "center"
+			})
+
+			iframe.find("#tabMenu table").css({
+				"width": "100%"
+			})
+
+			iframe.find("#mainTable_table").css({
+				"background": "#F5F5F5",
+				"opacity": "0.9"
+			})
+			setTimeout(function(){
+				iframe.find("#mainTable_table").css({
+					"background": "#F5F5F5",
+					"opacity": "0.9"
+				})
+			}, 100)
+			
+			iframe.find(".tab").parent().css({
+				"border-bottom": "solid 3px #6B7071"
+			})
+
+			iframe.find(".tabClicked").parent().css({
+				"border-bottom": "solid 3px #006ce1"
+			})
+
+			iframe.find("#tabMenu").hide();
+
+			// content
+			iframe.find("#FormTitle")
+				.parent().parent().parent().parent().wrap( "<div style='display:inline-block;width:100%;'></div>")
+
+			iframe.find("#FormTitle").attr({
+				"width": "100%"
+			})
+
+			iframe.find(".aimesh_introduction").css({
+				"visibility": "hidden"
+			})
+			iframe.find(".formfonttitle").hide()
+			iframe.find(".splitLine").hide()
+			iframe.find(".button_gen_dis").removeClass("button_gen_dis").addClass("button_gen")
+			iframe.find(".hint-color").removeClass("hint-color").addClass("warning_desc")
+
+			// footer
+			iframe.find("#footer").hide();
+			iframe.find("body").addClass("scaleBodyAiMesh");
+
+			// Apply consistent font family to iframe content
+			iframe.find("head").append('<style>* { font-family: "Roboto Condensed" !important; }</style>');
+		}
+
+		function setupBusinessUI(){
+			findColorAndReplace("color", "FFCC00", "006CE1");
+			findColorAndReplace("background-color", "475A5F", "transparent");
+			findColorAndReplace("background-color", "4D595D", "transparent");
+
+			setupWrapper();
+
+			// content
+			$("#settingsWindow").contents().find("#FormTitle").parent().parent().parent().parent()
+				.wrap( "<div id='whiteThemeWrapper'></div>")
+
+			setTimeout(function(){
+				$("#settingsWindow").contents().find("body").hide().css("visibility", "visible").fadeIn();
+			}, 100);
+		}
+
+		document.getElementById('settingsWindow').onload = function () {
+			if (top.loader) {
+				top.loader.hide();
+				top.loader = null;
+			}
+		}
+		
+		window.addEventListener('message', event => {
+			if (event.data.type === 'resize') {
+				const iframe = document.getElementById('settingsWindow');
+				if (iframe) {
+                    const footer = (navigator.userAgent.match(/ASUSMultiSiteManager/) || navigator.userAgent.match(/ASUSExpertSiteManager/)) ? 100 : 20;
+                    const iframeHeight = event.data.height + footer;
+                    let headerHeight = 0;
+                    if (document.querySelector('header')) {
+                        headerHeight = document.querySelector('header').scrollHeight;
+                    }
+                    const windowHeight = top.window.innerHeight - headerHeight * 2 - footer;
+                    iframe.style.height = `${Math.max(iframeHeight, windowHeight * 1.13)}px`
+				}
+			}
+		});
+
+	    function onTabShown(tab) {			
+			if (tab == "adGuard_DNS") {
+				$("#settingsWindow").attr({src: "/adGuard_DNS.asp"});
+			}
+			else if(tab == "parentalControl"){
+				$("#settingsWindow").attr({src: "/ParentalControl.asp"});
+			}
+			else {
+				$("#settingsWindow").attr({src: webFilterPathname});
+			}
+
+			Session.set("lastPage", tab);
+		}
+
+		document.querySelectorAll("button.tab-navigation__item").forEach(button => {
+			button.addEventListener("click", (e) => {
+				if (window.tabDragTime && (Date.now() - window.tabDragTime < 150)) {
+					e.preventDefault();
+					return;
+				}
+
+				document.querySelectorAll("button.tab-navigation__item").forEach(btn => btn.classList.remove("active"));
+				button.classList.add("active");
+				const tab = button.getAttribute("data-tab");
+
+				onTabShown(tab);
+			});
+		});
+
+		if(!isSupport("adguard_dns")){
+			$(".adguard_menu").hide();
+		}
+
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', function() {
+				setTimeout(function() {
+					initializeLastPage();
+					initTabScrolling();
+				}, 500);
+			});
+		} else {
+			setTimeout(function() {
+				initializeLastPage();
+				initTabScrolling();
+			}, 100);
+		}
+
+		function initTabScrolling() {
+			function checkScrollable() {
+				const tabContainer = document.getElementById('parentalcontrolTabList');
+				const tabNavigation = tabContainer?.querySelector('.tab-navigation');
+				if (tabNavigation && tabContainer) {
+					const isScrollable = tabNavigation.scrollWidth > tabNavigation.clientWidth;
+					tabContainer.classList.toggle('scrollable', isScrollable);
+				}
+			}
+
+			setTimeout(checkScrollable, 100);
+
+			let isMouseDown = false, hasMoved = false, dragStartTime = 0;
+			let startX = 0, startScrollLeft = 0;
+
+			const tabNavigation = document.querySelector('.tab-navigation');
+			if (!tabNavigation) return;
+
+			const setTabNavStyle = (cursor, userSelect = '') => {
+				tabNavigation.style.cursor = cursor;
+				tabNavigation.style.userSelect = userSelect;
+				tabNavigation.style.webkitUserSelect = userSelect;
+				tabNavigation.style.mozUserSelect = userSelect;
+				tabNavigation.style.msUserSelect = userSelect;
+			};
+
+			tabNavigation.addEventListener('wheel', function(e) {
+				e.preventDefault();
+				this.scrollLeft += (e.deltaY || e.deltaX) * 1.5;
+			});
+
+			tabNavigation.addEventListener('touchstart', function(e) {
+				hasMoved = false;
+				dragStartTime = Date.now();
+				startX = e.touches[0].clientX;
+				startScrollLeft = this.scrollLeft;
+			});
+
+			tabNavigation.addEventListener('mousedown', function(e) {
+				if (e.which !== 1) return;
+
+				isMouseDown = true;
+				hasMoved = false;
+				dragStartTime = Date.now();
+				startX = e.clientX;
+				startScrollLeft = this.scrollLeft;
+
+				setTabNavStyle('grabbing', 'none');
+				e.preventDefault();
+			});
+
+			const tabButtons = document.querySelectorAll('.tab-navigation__item');
+			tabButtons.forEach((button) => {
+				button.addEventListener('mousedown', function(e) {
+					e.stopPropagation();
+
+					if (e.which !== 1) return;
+
+					isMouseDown = true;
+					hasMoved = false;
+					dragStartTime = Date.now();
+					startX = e.clientX;
+					startScrollLeft = tabNavigation.scrollLeft;
+
+					setTabNavStyle('grabbing', 'none');
+					e.preventDefault();
+				});
+			});
+
+			tabNavigation.addEventListener('touchmove', function(e) {
+				const clientX = e.touches[0].clientX;
+				const diff = startX - clientX;
+
+				if (Math.abs(diff) > 2) hasMoved = true;
+
+				this.scrollLeft = startScrollLeft + diff * 1.5;
+				e.preventDefault();
+			});
+
+			document.addEventListener('mousemove', function(e) {
+				if (!isMouseDown) return;
+
+				const diff = startX - e.clientX;
+
+				if (Math.abs(diff) > 2) hasMoved = true;
+
+				tabNavigation.scrollLeft = startScrollLeft + diff * 1.5;
+				e.preventDefault();
+			});
+
+			document.addEventListener('mouseup', function() {
+				if (isMouseDown) {
+					isMouseDown = false;
+					setTabNavStyle('grab');
+					if (hasMoved) {
+						window.tabDragTime = Date.now();
+					}
+					setTimeout(() => hasMoved = false, 50);
+				}
+			});
+
+			tabNavigation.addEventListener('touchend', function() {
+				if (hasMoved) {
+					window.tabDragTime = Date.now();
+				}
+				setTimeout(() => hasMoved = false, 50);
+			});
+
+			tabNavigation.addEventListener('mouseenter', function() {
+				if (!isMouseDown) setTabNavStyle('grab');
+			});
+
+			tabNavigation.addEventListener('mouseleave', function() {
+				if (!isMouseDown) setTabNavStyle('default');
+			});
+
+			window.addEventListener('resize', () => {
+				checkScrollable();
+			});
+		}
+
+		function initializeLastPage() {
+			let lastPage = Session.get("lastPage") || "AiProtection_WebProtector";
+			if(
+				lastPage == "AiProtection_WebProtector" || 
+				lastPage == "parentalControl" || 
+				lastPage == "adGuard_DNS"
+			){
+				document.querySelectorAll("button.tab-navigation__item").forEach(btn => btn.classList.remove("active"));
+				const targetButton = document.querySelector(`button[data-tab="${lastPage}"]`);
+				if(targetButton) {
+					targetButton.classList.add("active");
+				}
+
+				onTabShown(lastPage);
+			}
+		}
+	</script>
+</html>

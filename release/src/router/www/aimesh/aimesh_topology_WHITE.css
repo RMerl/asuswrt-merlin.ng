@@ -74,11 +74,13 @@
 .custom_select_items div:hover{
 	background-color: rgba(0, 133, 255, 0.1);
 }
-.custom_select_items::-webkit-scrollbar-track{
+.custom_select_items::-webkit-scrollbar-track,
+.poe_settings_item .dropdown_select::-webkit-scrollbar-track{
 	border: 4px solid #FFFFFF;
 	background-color: #DCDCDC;
 }
-.custom_select_items::-webkit-scrollbar-thumb{
+.custom_select_items::-webkit-scrollbar-thumb,
+.poe_settings_item .dropdown_select::-webkit-scrollbar-thumb{
 	background-color: #CCCCCC;
 	border: 2px solid #FFFFFF;
 }
@@ -137,10 +139,14 @@
 	background-image: url(/images/New_ui/amesh/white_theme/cards_usage.svg);
 }
 .category_bg > div.iperf:before{
-	background: url(/images/New_ui/amesh/white_theme/iperf_speed.svg) no-repeat;
+	background: url(/images/New_ui/amesh/iperf_speed.svg) no-repeat;
+	background-size: 75%;
+	background-position: center;
 }
 .category_bg.clicked > div.iperf:before{
-	background: url(/images/New_ui/amesh/white_theme/iperf_speed_active.svg) no-repeat;
+	background: url(/images/New_ui/amesh/iperf_speed_active.svg) no-repeat;
+	background-size: 75%;
+	background-position: center;
 }
 .connect_type_status_bg .as_backhaul_info > div{
 	color: #ED4444;
@@ -251,24 +257,52 @@
 .backhaul_info .common_content_bg, .backhaul_info .common_title_content_bg .content_bg{
 	background: #F5F5F5;
 }
-.manage_switch_led .switch.off, .manage_switch_wifi .switch.off{
+.manage_switch_led .switch.off, .manage_switch_wifi .switch.off,
+.poe_settings_item .switch.off{
 	background: #818181;
 }
-.manage_switch_led .switch.on, .manage_switch_wifi .switch.on{
+.manage_switch_led .switch.on, .manage_switch_wifi .switch.on,
+.poe_settings_item .switch.on{
 	background: #006CE1;
 }
 .manage_common_title{
 	color: #262626;
 }
-.manage_settings_bg .dropdown_item_bg .dropdown_select{
+.manage_channel_plan .manage_common_title{
+	color: #262626 !important;
+}
+.manage_channel_plan .manage_common_title.wl_band_title{
+	color: #006CE1 !important;
+	background-color: initial;
+}
+.manage_channel_plan .manage_common_title > span{
+	color: #006CE1;
+}
+.manage_channel_plan .manage_sub_item_bg > div:before,
+.poe_settings_item:before{
+	border-top: 1px solid #DCDCDC;
+}
+.manage_settings_bg .dropdown_item_bg .dropdown_select,
+.poe_settings_item .dropdown_select{
 	background: #FFFFFF;
 	color: #4D4D4D;
 }
-.manage_settings_bg .sub_item_bg .manage_sub_item_bg > div .manage_common_title{
+.manage_ra_rssi .textInput{
+	background: #FFFFFF;
+	color: #4D4D4D;
+}
+.manage_settings_bg .sub_item_bg .manage_sub_item_bg > div .manage_common_title,
+.manage_ra_rssi .manage_sub_item_bg > div{
 	color: #006CE1;
 }
 .manage_settings_bg .sub_item_bg .manage_sub_item_bg > div:before{
 	border-top: 1px solid #DCDCDC;
+}
+.manage_ra_rssi .manage_sub_item_bg > div:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.manage_ra_rssi .manage_sub_item_bg > div.desc_cntr:before{
+	border-top: 1px solid #DCDCDC !important;
 }
 .manage_disconnected{
 	color: #ED4444;
@@ -286,10 +320,12 @@
 	border-top: 3px solid #262626;
 	border-right: 3px solid #262626;
 }
-.client_num_bg{
+.client_num_bg,
+.newOB_container .newOB_title_bg{
 	color: #262626;
 }
-.client_num_bg div.left span:before{
+.client_num_bg div.left span:before,
+.newOB_title_bg span:before{
 	border-top: 3px solid #7E54FF;
 }
 .client_tab_bg{
@@ -352,7 +388,8 @@
 .client_list_bg .client_content_bg > .client_content_mac_ip > div:not(:first-child):before{
 	border-left: 1px solid #DCDCDC;
 }
-.client_list_bg .no_client_hint{
+.client_list_bg .no_client_hint,
+.newOB_list_bg .no_client_hint{
 	color: #818181;
 }
 .popup_hint_bg{
@@ -424,8 +461,9 @@
 .hover_pop_hint.node_feature_notice:hover::after{
 	top: 20px;
 }
-.hover_pop_hint.conn_priority_icon:hover::before, .hover_pop_hint.prefer_ap_icon:hover::before,
-.hover_pop_hint.conn_priority_icon:hover::after, .hover_pop_hint.prefer_ap_icon:hover::after{
+.hover_pop_hint.conn_priority_icon:hover::before, .hover_pop_hint.conn_priority_icon:hover::after,
+.hover_pop_hint.prefer_ap_icon:hover::before, .hover_pop_hint.prefer_ap_icon:hover::after,
+.hover_pop_hint.channel_plan_icon:hover::before, .hover_pop_hint.channel_plan_icon:hover::after{
 	top: 5px;
 	left: -15px;
 	-o-transform: rotate(90deg);
@@ -434,8 +472,22 @@
 	-webkit-transform: rotate(90deg);
 	transform: rotate(90deg);
 }
-.hover_pop_hint.conn_priority_icon:hover::after, .hover_pop_hint.prefer_ap_icon:hover::after{
+.hover_pop_hint.conn_priority_icon:hover::after,
+.hover_pop_hint.prefer_ap_icon:hover::after,
+.hover_pop_hint.channel_plan_icon:hover::after{
 	left: -18px;
+}
+.hover_pop_hint.icon_obresult:hover::before{
+	top: 30px;
+	right: 3px;
+}
+.hover_pop_hint.icon_obresult:hover::after{
+	top: 31px;
+	right: 3px;
+	left: initial;
+}
+.hover_pop_hint_bg .amesh_device_info{
+	color: #006CE1;
 }
 .jstree-anchor:before {
 	background-image: url(/images/New_ui/amesh/white_theme/topology_connect_quality.svg);
@@ -535,8 +587,17 @@
 }
 .port_status_bg .port_icon,
 .port_status_bg .port_icon .wan_icon,
-.port_status_bg .label_W_bg .port_icon:before{
+.port_status_bg .label_W_bg .port_icon:before,
+.poe_settings_item .port_icon{
 	background-image: url(/images/New_ui/amesh/white_theme/port_status.svg);
+}
+.port_status_icon_desc > div.poe_en:after,
+.port_status_icon_desc > div.poe_dis:after{
+	border: 2px solid #FFFFFF;
+}
+.port_status_bg .port_icon.poe_port:after,
+.poe_settings_item .port_icon:after{
+	border: 3px solid #FFFFFF;
 }
 .port_status_icon_desc > div.conn:before{
 	background-color: #10B981;
@@ -564,6 +625,9 @@
 	border: 1px solid #006CE1;
 	background-color: #006CE1;
 }
+.iperf_dmac{
+	color: #777;
+}
 .text_link{
 	color: #006CE1 !important;
 }
@@ -585,4 +649,54 @@
 }
 .MoCA_node_container .MoCA_PHY_rate.weak{
 	color: #F05E16;
+}
+.poe_port_info_container .poe_port_info:not(:first-child):before{
+	border-left: 2px solid #DCDCDC;
+}
+.poe_port_info_container,
+.poe_settings_container{
+	color: #262626;
+}
+.tx_power_container{
+	color: #006CE1;
+}
+.tx_power_container > div:not(:first-child):before{
+	border-right: 1px solid #FFFFFF;
+}
+.device_icon_container .device_icon{
+	background-color: #B3B3B3;
+	box-shadow: initial;
+}
+.device_info_container .main_info{
+	color: #262626;
+}
+.device_info_container .sub_info{
+	color: #4D4D4D;
+}
+.device_info_container .device_connect_icon{
+	background-image: url(/images/New_ui/amesh/white_theme/client_control.svg);
+}
+.icon_checkbox{
+	border: 1px solid #818181;
+}
+.icon_checkbox.closed{
+	background: #DCDCDC;
+}
+.icon_checkbox.closed:before,
+.icon_checkbox.closed:after{
+	background-color: #818181;
+}
+.icon_checkbox.clicked.disabled{
+	border: 1px solid #818181;
+	background: #DCDCDC;
+}
+.icon_checkbox.clicked.disabled:before{
+	border-top: 2px solid #818181;
+	border-right: 2px solid #818181;
+}
+.loadingAnimation{
+	border-color: transparent #262626 transparent #262626;
+}
+.processText{
+	color: #262626;
 }

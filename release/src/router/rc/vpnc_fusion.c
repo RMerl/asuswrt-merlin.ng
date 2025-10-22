@@ -1774,7 +1774,8 @@ int start_vpnc_by_unit(const int unit)
 					fprintf(fp, "tx_only ");
 				fprintf(fp, "demand\n");
 			}
-			fprintf(fp, "persist\n");
+			else
+				fprintf(fp, "persist\n");
 		}
 
 		fprintf(fp, "holdoff %d\n", nvram_get_int(strlcat_r(prefix, "pppoe_holdoff", tmp, sizeof(tmp))) ?: 10);
@@ -2006,7 +2007,7 @@ static int _clean_routing_table(const int vpnc_id)
 	char tmp[256], tmp2[256];
 
 	// delete all rules in vpnc routing table
-	snprintf(tmp, sizeof(tmp), "ip route show table %d > /tmp/route_tmp", vpnc_id);
+	snprintf(tmp, sizeof(tmp), "ip route show table %d > /tmp/route_tmp", IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_id);
 	system(tmp);
 	fp = fopen("/tmp/route_tmp", "r");
 	if (fp)
@@ -2018,7 +2019,7 @@ static int _clean_routing_table(const int vpnc_id)
 			{
 				*ptr = '\0';
 			}
-			snprintf(tmp, sizeof(tmp), "ip route del %s table %d", tmp2, vpnc_id);
+			snprintf(tmp, sizeof(tmp), "ip route del %s table %d", tmp2, IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_id);
 			system(tmp);
 		}
 		fclose(fp);
@@ -2026,7 +2027,7 @@ static int _clean_routing_table(const int vpnc_id)
 	}
 	else
 	{
-		_dprintf("[%s]Can not get route table %d\n", __FUNCTION__, vpnc_id);
+		_dprintf("[%s]Can not get route table %d\n", __FUNCTION__, IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_id);
 		unlink("/tmp/route_tmp");
 		return -1;
 	}
@@ -2087,10 +2088,10 @@ static int _set_routing_table(const int cmd, const int vpnc_id)
 				}
 				if (!strncmp(tmp2, "default", 7) && (prof->protocol == VPNC_PROTO_PPTP || prof->protocol == VPNC_PROTO_L2TP))
 				{
-					snprintf(tmp, sizeof(tmp), "ip route add %s metric 1 table %d", tmp2, vpnc_id);
+					snprintf(tmp, sizeof(tmp), "ip route add %s metric 1 table %d", tmp2, IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_id);
 				}
 				else
-					snprintf(tmp, sizeof(tmp), "ip route add %s table %d", tmp2, vpnc_id);
+					snprintf(tmp, sizeof(tmp), "ip route add %s table %d", tmp2, IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_id);
 				system(tmp);
 			}
 			fclose(fp);

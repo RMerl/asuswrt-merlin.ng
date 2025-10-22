@@ -111,6 +111,11 @@ var is_SG_sku = (function(){
 var isIE8 = navigator.userAgent.search("MSIE 8") > -1; 
 var isIE9 = navigator.userAgent.search("MSIE 9") > -1; 
 
+if(isSupport("TS_UI")){
+	$('link').last().after('<link rel="stylesheet" type="text/css" href="css/difference.css">');
+	$(".form-input").css("")
+}
+
 var secure_default = (function(){
 	var rc_support = '<% nvram_get("rc_support"); %>';
 	return (rc_support.search("secure_default") == -1) ? false : true;

@@ -46,6 +46,9 @@
 .system_settings_bg.reboot > .system_icon{
 	background-position: 3px -198px;
 }
+.system_settings_bg.newob_auto > .system_icon{
+	background-position: 3px -399px;
+}
 .system_settings_bg.plc_master > .select_option_bg{
 	top: 10px;
 	right: 20px;

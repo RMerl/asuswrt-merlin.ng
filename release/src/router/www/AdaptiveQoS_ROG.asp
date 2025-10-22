@@ -198,7 +198,7 @@ function drawClient(){
 		clientCodeToObj = $(clientCode).click(function(){
 			if(this.id.indexOf("Apps") != -1) return false;
 
-			// cookie.set("ROG_SEL_ID", this.id, 30);
+			// window.localStorage.setItem("ROG_SEL_ID", this.id, 30);
 			if(!isSelected(this.id)){
 				Param.selectedClient = this.id;
 				$(".appTraffic").remove();			
@@ -207,8 +207,8 @@ function drawClient(){
 				$(".userIcons").removeClass("clicked");
 				$(".venderIcon").removeClass("clicked");
 				$("#" + this.id.replace(/:/g, "") + "_Icon").addClass("clicked");
-				$("#" + cookie.get("ROG_SEL_ID").replace(/:/g, "") + "_Apps").css("display", "none");
-				cookie.set("ROG_SEL_ID", this.id, 30);
+				$("#" + window.localStorage.getItem("ROG_SEL_ID").replace(/:/g, "") + "_Apps").css("display", "none");
+				window.localStorage.setItem("ROG_SEL_ID", this.id, 30);
 			}
 			else{
 				$("#" + this.id.replace(/:/g, "") + "_Apps").slideUp("fast", function(){
@@ -217,7 +217,7 @@ function drawClient(){
 					$(".clientIcon").removeClass("clicked");
 					$(".userIcons").removeClass("clicked");
 					$(".venderIcon").removeClass("clicked");
-					cookie.set("ROG_SEL_ID", "", 30);
+					window.localStorage.setItem("ROG_SEL_ID", "", 30);
 				});
 			}
 		});
@@ -225,7 +225,7 @@ function drawClient(){
 		$("#appTrafficDiv").append(clientCodeToObj);
 		$("#appTrafficDiv").append('<div class="splitLine"></div>');
 
-		if(rogClientList[i] == cookie.get("ROG_SEL_ID")){
+		if(rogClientList[i] == window.localStorage.getItem("ROG_SEL_ID")){
 			Param.selectedClient = rogClientList[i];
 			$(".appTraffic").remove();
 			$(".clientIcon").removeClass("clicked");
@@ -443,9 +443,9 @@ function debugMessage(msg){
 											<option class="content_input_fd" value="5">5</option>
 										</select>
 										<script>
-											// document.getElementById("refreshFreq").value = cookie.get("refreshFreq") ? cookie.get("refreshFreq") : 3;
+											// document.getElementById("refreshFreq").value = window.localStorage.getItem("refreshFreq") ? window.localStorage.getItem("refreshFreq") : 3;
 											document.getElementById("refreshFreq").onchange = function(){
-												cookie.set("refreshFreq", this.value, 300);
+												window.localStorage.setItem("refreshFreq", this.value, 300);
 											};
 										</script>
 									</div>

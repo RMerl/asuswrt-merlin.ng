@@ -265,7 +265,7 @@ var MUMIMO2G_support = isSupport('mumimo_2g');
 function initial(){
 	show_menu();
 	register_event();
-	init_cookie();
+	init_localStorage();
 	if(lantiq_support){
 		checkWLReady();
 	}
@@ -310,6 +310,10 @@ function initial(){
 		if(document.form.wl_HW_switch.value == "1"){
 			document.form.wl_radio[0].disabled = true;
 		}
+	}
+
+	if(mlr_support){
+		document.getElementById('mlr_field').style.display = '';
 	}
 	
 	// MODELDEP: for AC ser
@@ -1084,16 +1088,8 @@ function set_power(power_value){
 	document.form.wl_txpower.value = power_table[power_value-1];
 }
 
-function init_cookie(){
-	if(document.cookie.indexOf('clock_type') == -1)		//initialize
-		document.cookie = "clock_type=1";		
-			
-	x = document.cookie.split(';');
-	for(i=0;i<x.length;i++){
-		if(x[i].indexOf('clock_type') != -1){
-			clock_type = x[i].substring(x[i].length-1, x[i].length);			
-		}	
-	}
+function init_localStorage(){
+	clock_type = window.localStorage.getItem("clock_type") || 1;	
 }
 
 function save_wifi_schedule(){
@@ -1594,6 +1590,15 @@ function check_nodes_support_wireless_scheduler() {
 							</select>
 						</td>
 					</tr>
+					<tr id="mlr_field" style="display:none;">
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="">Xtra Range 2.0</a></th>
+						<td>
+							<select name="mlr_enable" class="input_option">
+									<option value="0" <% nvram_match("mlr_enable", "0","selected"); %> ><#WLANConfig11b_WirelessCtrl_buttonname#></option>
+									<option value="1" <% nvram_match("mlr_enable", "1","selected"); %> ><#WLANConfig11b_WirelessCtrl_button1name#></option>
+							</select>
+						</td>
+					</tr>
 					<tr>
 						<th id="turbo_qam_title"><a id="turbo_qam_hint" class="hintstyle" href="javascript:void(0);" onClick="openHint(3,28);"><#WLANConfig11b_x_TurboQAM#></a></th>
 						<td>
@@ -1705,8 +1710,8 @@ function check_nodes_support_wireless_scheduler() {
 							<div>
 								<table>
 									<tr>
-										<td style="border:0px;padding-left:0px;">
-											<div id="slider" style="width:80px;"></div>
+										<td style="border:0px;padding-left:0px;width:100%">
+											<div id="slider"></div>
 										</td>									
 										<td style="border:0px;width:60px;">
 											<div id="tx_power_desc" style="width:150px;font-size:14px;"></div>

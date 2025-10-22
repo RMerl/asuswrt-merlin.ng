@@ -797,9 +797,11 @@ function linkport(obj){
 									<div id="QoSList_Block" class="QoSList_Block" onclick="hideClients_Block()"></div>
 								</td>
 								<td width="20%">
-									<input type="text" maxlength="17" class="input_15_table" name="qos_ip_x_0" style="width:100px;float:left" autocorrect="off" autocapitalize="off">
-									<img id="pull_arrow_mac" class="pull_arrow"height="14px;" src="/images/unfold_more.svg" onclick="pullLANIPList(this);" title="<#select_client#>">
-									<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-left:2px;margin-top: 25px;"></div>
+                                    <div class="clientlist_dropdown_main" style="width: 100%;">
+                                        <input type="text" maxlength="17" class="input_15_table" name="qos_ip_x_0" autocorrect="off" autocapitalize="off">
+                                        <img id="pull_arrow_mac" class="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullLANIPList(this);" title="<#select_client#>">
+                                        <div id="ClientList_Block_PC" class="clientlist_dropdown"></div>
+									</div>
 								</td>
 								
 								

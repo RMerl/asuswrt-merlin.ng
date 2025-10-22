@@ -319,9 +319,13 @@ int update_SDN_iptables(const MTLAN_T *pmtl, const char *logdrop, const char *lo
 #endif
 #ifdef RTCONFIG_IPV6
 #ifdef RTCONFIG_MULTIWAN_IF
-	int wan6_idx = mtwan_get_mapped_unit(pmtl->sdn_t.wan6_idx) ? : wan_primary_ifunit_ipv6();
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+	int wan6_idx = (pmtl->sdn_t.wan6_idx) ? mtwan6_get_active_wan_unit(pmtl->sdn_t.wan6_idx) : wan_primary_ifunit_ipv6();
 #else
-	int wan6_idx = (pmtl->sdn_t.wan6_idx) ? : wan_primary_ifunit_ipv6();
+	int wan6_idx = mtwan_get_mapped_unit(pmtl->sdn_t.wan6_idx) ? : wan_primary_ifunit_ipv6();
+#endif
+#else
+	int wan6_idx = wan_primary_ifunit_ipv6();
 #endif
 	int v6_enable = pmtl->nw_t.v6_enable && ipv6x_enabled(wan6_idx);
 #endif
@@ -517,7 +521,6 @@ int update_SDN_iptables(const MTLAN_T *pmtl, const char *logdrop, const char *lo
 	char wan6face[IFNAMSIZ] = "";
 	char addr6[INET6_ADDRSTRLEN] = "";
 	strlcpy(addr6, nvram_safe_get(ipv6_nvname("ipv6_rtr_addr")), sizeof(addr6));	//br0 ip6 addr
-	strlcpy(wan6face, get_wan6_ifname(wan6_idx), sizeof(wan6face));
 	snprintf(path, sizeof(path), "%s/sdn-%d-filter-v6", sdn_dir, pmtl->sdn_t.sdn_idx);
 
 	// remove old rule first
@@ -561,7 +564,61 @@ int update_SDN_iptables(const MTLAN_T *pmtl, const char *logdrop, const char *lo
 				// kill switch
 				if (!(pmtl->sdn_t.killsw_sw))
 				{
+#ifdef RTCONFIG_MULTIWAN_IF
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+					if (pmtl->sdn_t.mtwan_idx)
+					{
+						snprintf(prefix, sizeof(prefix), "mtwan%d_", pmtl->sdn_t.mtwan_idx);
+						if (nvram_pf_get_int(prefix, "enable"))
+						{
+							group = nvram_pf_get_int(prefix, "group");
+							strlcpy(mt_group, nvram_pf_safe_get(prefix, "mt_group"), sizeof(mt_group));
+							i = 0;
+							foreach(word, mt_group, next)
+							{
+								if (group == (int)strtol(word, NULL, 10))
+								{
+									strlcpy(wan6face, get_wan6_ifname(mtwan_get_mapped_unit(i + MULTI_WAN_START_IDX)), sizeof(wan6face));
+									fprintf(fp, "-I %s -i %s -o %s -j %s\n", SDN_FILTER_FORWARD_CHAIN, pmtl->nw_t.ifname, wan6face, logaccept);
+								}
+								i++;
+							}
+						}
+						else
+						{
+							strlcpy(wan6face, get_wan6_ifname((pmtl->sdn_t.wan6_idx)?:mtwan_get_default_wan()), sizeof(wan6face));
+							if (!wan6face[0])
+								strlcpy(wan6face, get_wan6_ifname(wan_primary_ifunit_ipv6()), sizeof(wan6face));
+							fprintf(fp, "-I %s -i %s -o %s -j %s\n", SDN_FILTER_FORWARD_CHAIN, pmtl->nw_t.ifname, wan6face, logaccept);
+						}
+					}
+					else if (pmtl->sdn_t.wan_idx == 0 && nvram_get_int("mtwan1_enable"))	//follow default Multi-WAN profile
+					{
+						group = nvram_get_int("mtwan1_group");
+						strlcpy(mt_group, nvram_safe_get("mtwan1_mt_group"), sizeof(mt_group));
+						i = 0;
+						foreach(word, mt_group, next)
+						{
+							if (group == (int)strtol(word, NULL, 10))
+							{
+								strlcpy(wan6face, get_wan6_ifname(mtwan_get_mapped_unit(i + MULTI_WAN_START_IDX)), sizeof(wan6face));
+								fprintf(fp, "-I %s -i %s -o %s -j %s\n", SDN_FILTER_FORWARD_CHAIN, pmtl->nw_t.ifname, wan6face, logaccept);
+							}
+							i++;
+						}
+					}
+					else
+#endif
+					{
+						strlcpy(wan6face, get_wan6_ifname((pmtl->sdn_t.wan6_idx)?:mtwan_get_default_wan()), sizeof(wan6face));
+						if (!wan6face[0])
+							strlcpy(wan6face, get_wan6_ifname(wan_primary_ifunit_ipv6()), sizeof(wan6face));
+						fprintf(fp, "-I %s -i %s -o %s -j %s\n", SDN_FILTER_FORWARD_CHAIN, pmtl->nw_t.ifname, wan6face, logaccept);
+					}
+#else
+					strlcpy(wan6face, get_wan6_ifname(wan_primary_ifunit_ipv6()), sizeof(wan6face));
 					fprintf(fp, "-I %s -i %s -o %s -j %s\n", SDN_FILTER_FORWARD_CHAIN, pmtl->nw_t.ifname, wan6face, logaccept);
+#endif
 				}
 			}
 			fprintf(fp, commit_str);

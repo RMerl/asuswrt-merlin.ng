@@ -39,7 +39,9 @@ var getUrlParameter = function getUrlParameter(param){
 	return "";
 };
 var theme = getUrlParameter("current_theme").toLocaleUpperCase();
-if(theme == "WHITE"){
+if (isSupport("UI4")) {
+	$('link').filter("[href*='/aimesh/aimesh_topology.css']").after('<link rel="stylesheet" type="text/css" href="/aimesh/aimesh_topology_v4.css">');
+} else if (theme == "WHITE") {
 	$('link').filter("[href*='/aimesh/aimesh_topology.css']").after('<link rel="stylesheet" type="text/css" href="/aimesh/aimesh_topology_' + theme + '.css">');
 }
 
@@ -51,7 +53,9 @@ function initial(){
 	$("#AiMesh_Topology").load("/aimesh/aimesh_topology.html", function(){
 		setTimeout(function(){
 			$('link').filter("[href*='/aimesh/aimesh_topology.css']").after('<link rel="stylesheet" type="text/css" href="/aimesh/aimesh_system_settings.css">');
-			if(theme == "WHITE"){
+			if (isSupport("UI4")) {
+				$('link').filter("[href='/aimesh/aimesh_system_settings.css']").after('<link rel="stylesheet" type="text/css" href="/aimesh/aimesh_system_settings_v4.css">');
+			} else if(theme == "WHITE"){
 				$('link').filter("[href='/aimesh/aimesh_system_settings.css']").after('<link rel="stylesheet" type="text/css" href="/aimesh/aimesh_system_settings_' + theme + '.css">');
 			}
 			$("#AiMesh_System_Settings").load("/aimesh/aimesh_system_settings.html");
@@ -64,6 +68,17 @@ function initial(){
 			change_tab(1);
 		}, 100);
 	});
+
+	if(parent.webWrapper){
+		const resizeObserver = new ResizeObserver(entries => {
+			for (let entry of entries) {
+				const height = entry.target.getBoundingClientRect().height;
+				window.parent.postMessage({ type: 'resize', height: height }, '*');
+			}
+		});
+
+		resizeObserver.observe(document.querySelector('.content'));
+	}
 }
 function change_tab(_index){
 	$(".aimesh_tab span").removeClass("clicked");
@@ -72,6 +87,13 @@ function change_tab(_index){
 	$(".aimesh_tab_content.idx" + _index + "").css("display", "block");
 	if(_index.toString() === "2"){
 		initial_system_settings();
+	}
+
+	if(top.webWrapper){
+		if(!$(".info_left").is(":visible")){
+			$(".info_right").hide();
+			$(".info_left").show();
+		}
 	}
 }
 </script>

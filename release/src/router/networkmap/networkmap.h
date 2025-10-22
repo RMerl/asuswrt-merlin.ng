@@ -95,6 +95,8 @@ enum
 #define WIREDCLIENTLIST_FILE_LOCK    "wiredclientlist"
 #define WIRED_CLIENT_LIST_JSON_PATH  "/tmp/wiredclientlist.json"
 #define BRCTL_TABLE_PATH             "/tmp/nmp_brctl_table"
+#define NMP_CLIENT_LIST             "/tmp/nmp_client_list"
+
 #define ASUS_DEVICE_JSON_FILE        "/tmp/asus_device.json"
 
 #ifdef RTCONFIG_IPV6
@@ -362,6 +364,8 @@ int check_mlo_info(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const int
 int check_wire_info(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, const int i);
 
 int check_wireless_clientlist(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
+
+int get_client_list();
 
 void check_clients_from_ip_cmd(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
 

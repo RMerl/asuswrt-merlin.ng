@@ -402,8 +402,7 @@ function show_information(){
 
 	$("#goToSetup").click(function(){
 		function setValue(key, value, days) {
-			document.cookie = key + '=' + value + '; expires=' +
-			(new Date(new Date().getTime() + ((days ? days : 14) * 86400000))).toUTCString() + '; path=/';
+			window.localStorage.setItem(key, value)
 		}
 
 		setValue("malware", target_info.url)

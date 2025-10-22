@@ -1,20 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html data-asuswrt-color="light" data-asuswrt-theme="asus">
     <head>
         <meta charset="UTF-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-        <link rel="shortcut icon" href="images/favicon.png" />
+        
+        <!-- Standard favicon -->
+        <link rel="icon" type="image/png" href="images/favicon.png" />
+        
+        <!-- iOS Safari -->
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="ASUS Router" />
+        <link rel="apple-touch-icon" href="images/favicon.png" />
+        
+        <!-- Android Chrome -->
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="application-name" content="ASUS Router" />
+        <link rel="manifest" href="manifest.json" />
+        
+        <!-- Windows -->
+        <meta name="msapplication-TileImage" content="images/favicon.png" />
+        <meta name="msapplication-TileColor" content="#000000" />
+        <meta name="msapplication-navbutton-color" content="#000000" />
+        <meta name="theme-color" content="#000000" />
+        
         <title><#Web_Title#></title>
-
         <script src="./js/jquery.js"></script>
         <script src="./js/httpApi.js"></script>
+        <script src="./js/preloadData.js"></script>
         <script src="./js/bootstrap.bundle.min.js"></script>
 
         <script src="./js/asus.js"></script>
         <script src="./js/basic.js"></script>
         <script src="./js/wireless.js"></script>
         <script src="./js/asus_policy.js?v=4"></script>
+        <script src="./js/asus_clientlist.js"></script>
+        <script src="./popup.js"></script>
 
         <link rel="stylesheet" href="./css/bootstrap.min.css" />
         <link rel="stylesheet" href="./css/bootstrap-customize.css" />
@@ -70,18 +92,48 @@
         }
 
         document.addEventListener("DOMContentLoaded", function () {
-            let urlPath = urlParameter.get("url") ? urlParameter.get("url") : "dashboard";
+
+
+            let urlParameter = new URLSearchParams(window.location.search);
+            let page = urlParameter.get("page");
+            let param = [];
+            if (page === "aiprotection") {
+                let view = urlParameter.get("view");
+                const validViews = ["ark_mals", "ark_adblock", "ark_tracker", "dpi_mals", "dpi_vp", "dpi_cc"];
+                if (view && validViews.includes(view)) {
+                    param.push(`page=${page}`);
+                    param.push(`view=${view}`);
+                }
+            }
+
+            if(!page){
+                page = window.localStorage.getItem("page") || "dashboard";
+            }
+
+            const foundItem = menuList.find(item => item.url === page);
+            if(!foundItem) {
+                setTimeout(function(){pageRedirect("dashboard");}, 100);
+            }
+
             for (let item of menuList) {
-                if (item.url === urlPath) {
+                if (item.url === page) {
                     item.clicked = true;
                     break;
                 }
             }
 
+            if (urlParameter.size > 0) {
+                const state = null;
+                const title = "";
+                const newUrl = `index.html${param.length > 0 ? '?' + param.join('&') : ''}`;
+                history.replaceState(state, title, newUrl);
+            }
+
             genArchitecture();
-            fetch(`./pages/${urlPath}.html`)
+            fetch(`./pages/${page}.html`)
                 .then((response) => response.text())
                 .then((data) => {
+                    window.localStorage.setItem("page", page);
                     let target = document.querySelector("main");
                     target.innerHTML = data;
 
@@ -99,12 +151,13 @@
                             scriptElement.textContent = item.innerText;
                         }
 
+                        let type = item.getAttribute("type");
+                        if (type) {
+                            scriptElement.setAttribute("type", type);
+                        }
+
                         target.removeChild(item); // remove previous script tag
                         target.appendChild(scriptElement);
-
-                        // scriptElement.onload = () => {
-                        //     console.log(scriptElement);
-                        // };
                     }
 
                     // set link tag
@@ -126,37 +179,92 @@
                 document.querySelector("nav").classList.add("d-none");
             }
 
-            if(navigator.userAgent.match(/ASUSMultiSiteManager/) || navigator.userAgent.match(/ASUSExpertSiteManager/)){ // for Multisite App
-                const mapp_div = document.createElement("div");
-                mapp_div.style.position = "absolute";
-                mapp_div.style.top="22px";
-                mapp_div.style.left="10px";
-                const mobile_menu = document.getElementById("mobile_menu");
-                mobile_menu.classList.remove("d-none");
-                mapp_div.append(mobile_menu);
-                document.querySelector('article').prepend(mapp_div);
-                document.querySelector("section").classList.add("mt-3");
-                document.querySelector("header").remove();
+            checkPolicy();
+
+            const sendThemeColorMessage = () => {
+                const theme = top.document.documentElement.getAttribute("data-asuswrt-theme");
+                const color = top.document.documentElement.getAttribute("data-asuswrt-color");
+                const iframe = document.getElementById("settingsWindow");
+                if (iframe) {
+                    iframe.contentWindow.postMessage({theme, color}, "*");
+
+                    const iFrameAdguard = iframe.contentDocument.getElementById("adguard_iframe");
+                    if (iFrameAdguard) {
+                        iFrameAdguard.contentWindow.postMessage({theme, color}, "*");
+                    }
+                }
+                window.parent.postMessage({theme, color}, "*");
             }
 
-            checkPolicy();
+            const observer = new MutationObserver(() => {
+                sendThemeColorMessage();
+            });
+
+            observer.observe(top.document.documentElement, {
+                attributes: true,
+                attributeFilter: ["data-asuswrt-color", "data-asuswrt-theme"]
+            });
         });
     </script>
     <script src="js/chart.min.js"></script>
-    <body class="d-flex flex-row">
-        <!-- MENU -->
-        <nav class="notInApp nav-menu-hide"></nav>
-        <article class="container-fluid d-flex flex-column p-0">
-            <header class="notInApp container-fluid d-flex align-items-center p-2"></header>
-            <section>
-                <!-- UPPER SIDE STATUS FIELD -->
-                <div role="info-banner" class="d-flex align-items-center flex-grow"></div>
-                <!-- MAIN PAGE CONTENT -->
-                <main class="container-fluid"></main>
-            </section>
-            <!-- NOTIFICATION -->
-            <aside></aside>
-        </article>
-        <footer></footer>
+    <body>
+        <div class="dashboard-layout">
+            <!-- MENU -->
+            <aside class="sidebar">
+                <div class="menu-header"><div role="icon" class="icon-menu icon-size-24"></div></div>
+                <nav class="notInApp"></nav>
+            </aside>
+            <article class="main-content">
+                <header class="notInApp container-fluid d-flex align-items-center p-2"></header>
+                <section>
+                    <!-- UPPER SIDE STATUS FIELD -->
+                    <div role="info-banner" class="d-flex align-items-center flex-grow"></div>
+                    <!-- MAIN PAGE CONTENT -->
+                    <main class="container-fluid"></main>
+                </section>
+                <!-- NOTIFICATION -->
+                <aside></aside>
+            </article>
+            <footer></footer>
+        </div>
     </body>
+    <script>
+        if (/^aae-sgrst001-\w+\.asuscomm\.com$/.test(window.location.hostname)) {
+            fetch(`https://${window.location.hostname}/components/appbar.html`)
+                .then(response => response.text())
+                .then(data => {
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = data;
+                    const appbarStyle = tempDiv.querySelector('style');
+
+                    const appBarContainer = document.createElement("div");
+                    const appBarShadow = appBarContainer.attachShadow({mode: 'open'});
+                    const appTopBarDiv = tempDiv.querySelector('#app-top-bar');
+
+                    if (appbarStyle) {
+                        const styleClone1 = appbarStyle.cloneNode(true);
+                        appBarShadow.appendChild(styleClone1);
+                    }
+                    appBarShadow.appendChild(appTopBarDiv);
+                    document.body.insertBefore(appBarContainer, document.body.firstChild);
+
+                    const appButtonBarContainer = document.createElement("div");
+                    const appButtonShadow = appButtonBarContainer.attachShadow({mode: 'open'});
+                    const appFooterBarDiv = tempDiv.querySelector('#app-footer-bar');
+
+                    if (appbarStyle) {
+                        const styleClone2 = appbarStyle.cloneNode(true);
+                        appButtonShadow.appendChild(styleClone2);
+                    }
+                    appButtonShadow.appendChild(appFooterBarDiv);
+                    document.body.appendChild(appButtonBarContainer);
+
+                    document.body.querySelector(".dashboard-layout .sidebar").style.paddingTop = '58px';
+                    document.body.querySelector(".dashboard-layout .sidebar nav").style.height = 'calc(100% - 60px)';
+                    document.body.querySelector(".dashboard-layout .main-content").style.paddingBottom = '48px';
+                    document.body.querySelector(".dashboard-layout .main-content").style.paddingTop = '58px';
+                    document.body.querySelector(".dashboard-layout .main-content").style.paddingBottom = '48px';
+                });
+        }
+    </script>
 </html>

@@ -9,11 +9,12 @@
 
 #include <signal.h>
 
-#ifdef __cplusplus  
-extern "C" {  
+#ifdef __cplusplus
+extern "C"
+{
 #endif
 #include <bcmnvram.h>
-#ifdef __cplusplus  
+#ifdef __cplusplus
 }
 #endif
 
@@ -23,7 +24,6 @@ extern "C" {
 #include <assert.h>
 // #include <time.h>
 // #include <getopt.h>
-
 
 #include "log.h"
 #include "api.h"
@@ -40,25 +40,38 @@ extern "C" {
 
 char g_formated_router_mac[32] = {0};
 int g_sleep_stop = 0;
+int g_is_terminate = 0;
 
-void init_basic_data() {
+void init_basic_data()
+{
 
-    int account_bound = 0;
+    int wait_seconds = 60;
 
-    const char* router_mac = nvram_get("lan_hwaddr");
+    const char *router_mac = nvram_get("lan_hwaddr");
 
-    while(1) {
+    while (1)
+    {
 
+        if (!IS_EULA_OR_PPV2_SIGNED())
+        {
+            sleep(wait_seconds);
+            continue;
+        }
+
+        int ntp_ready = nvram_get_int("ntp_ready");
+        int link_internet = nvram_get_int("link_internet"); // 2 -> connected
+        int uploader_enable = nvram_get_int("uploader_enable");
+        int account_bound = 0;
 #ifdef RTCONFIG_ACCOUNT_BINDING
         account_bound = is_account_bound();
 #endif
-        
-        if (nvram_get_int("ntp_ready")==1 &&
-            nvram_get_int("link_internet")==2/* 2 -> connected*/ &&
-            nvram_get_int("uploader_enable")==1 &&
-			account_bound) {
-            
-            Cdbg(APP_DBG, "System is ready and start uploader.");
+
+        if ((ntp_ready == 1) &&
+            (link_internet == 2) &&
+            (account_bound == 1) &&
+            (uploader_enable == 1))
+        {
+            UPLOADER_DBG(APP_DBG, "System is ready and start uploader.");
 
             format_mac(router_mac, g_formated_router_mac);
 
@@ -67,87 +80,126 @@ void init_basic_data() {
 
         // ex_db_backup();
 
-        sleep(60);
+        sleep(wait_seconds);
     }
 
-    if(!check_if_dir_exist(UPLOADER_FOLDER)) {
+    if (!check_if_dir_exist(UPLOADER_FOLDER))
+    {
         Cdbg(APP_DBG, "Create folder for uploader (%s)", UPLOADER_FOLDER);
         mkdir(UPLOADER_FOLDER, 0755);
     }
 }
 
-void sleep_time(int sleep_time) {
+void sleep_time(int sleep_time)
+{
 
     g_sleep_stop = 0;
 
     int i;
-    for(i = 0; i < sleep_time; i++) {
+    for (i = 0; i < sleep_time; i++)
+    {
         sleep(1);
         // Cdbg(APP_DBG, "sleep count = %d", i);
-        if(g_sleep_stop) {
+        if (g_sleep_stop)
+        {
             break;
         }
     }
-
 }
 
 #define UPLOADER_SIG_ACTION SIGUSR1
 
-enum {
+enum
+{
     UPLOADER_ACTION_SIGUSR1,
 };
 
-static void uploader_sig_handler(int sig) {
+void set_terminate()
+{
+	g_is_terminate = 1;
+}
+
+static void uploader_sig_handler(int sig)
+{
 
     Cdbg(APP_DBG, "Get uploader sig = %d", sig);
 
-    switch (sig) {
+    switch (sig)
+    {
 
-        case UPLOADER_SIG_ACTION: {
-            g_sleep_stop = 1;
-
-            Cdbg(APP_DBG, "reset sleep time");
-        }
-
+    case UPLOADER_SIG_ACTION:
+    {
+        g_sleep_stop = 1;
+        Cdbg(APP_DBG, "reset sleep time");
         break;
+    }
+
+    case SIGTERM:
+    {
+        Cdbg(APP_DBG, "Got SIGTERM");
+        set_terminate();
+        break;
+    }
+
     }
 }
 
-int main( int argc, char ** argv ) {
-    
+int main(int argc, char **argv)
+{
+
     // Open Debug Log
-    CF_OPEN(APP_LOG_PATH,  FILE_TYPE | CONSOLE_TYPE | SYSLOG_TYPE);
+    CF_OPEN(APP_LOG_PATH, FILE_TYPE | CONSOLE_TYPE | SYSLOG_TYPE);
     // CF_OPEN(UL_DEBUG_TO_FILE, FILE_TYPE );
     // CF_OPEN(UL_DEBUG_TO_CONSOLE,  CONSOLE_TYPE | SYSLOG_TYPE | FILE_TYPE);
 
+    UPLOADER_DBG(APP_DBG, "uploader start");
+
+    if (nvram_get_int("uploader_reset_time") <= 0)
+    {
+        nvram_set_int("uploader_reset_time", (unsigned)time(NULL));
+    }
+
+    signal(SIGTERM, uploader_sig_handler);
+
     init_basic_data();
-    
+
     // receive uploader sig = SIGUSR1 = 10
     signal(UPLOADER_SIG_ACTION, uploader_sig_handler);
 
-    // ipc : waiting call 
+    // ipc : waiting call
     uploader_ipc_start();
 
     int while_count = 0;
-
-    if (nvram_get_int("uploader_reset_time")<=0) {
-        nvram_set_int("uploader_reset_time", (unsigned )time(NULL));
-    }
-
-    // uploader start:  backup [ui_support] config
-    nvram_set_int("ui_support_update_time", (unsigned )time(NULL));
     
+    // uploader start:  backup [ui_support] config
+    nvram_set_int("ui_support_update_time", (unsigned)time(NULL));
+
     DECLARE_CLEAR_MEM(char, access_token, MAX_DESC_LEN);
-    if (get_cloud_access_token(access_token)!=0) {
+    if (get_cloud_access_token(access_token) != 0)
+    {
         Cdbg(APP_DBG, "Fail to get access token");
         return 0;
     }
-    
+
     list_cloud_file(access_token);
-    
-    do {
+
+    do
+    {
+        if (g_is_terminate==1) 
+        {
+            Cdbg(APP_DBG, "Stop uploader due to termination signal received in main.");
+            break;
+        }
+
+        if (!IS_EULA_OR_PPV2_SIGNED())
+        {
+            //- EULA level is not allow and exit awsiot.
+            UPLOADER_DBG(APP_DBG, "EULA level is not allow and exit uploader.");
+            break;
+        }
+
         while_count++;
-        
+
         reorganize_cloud_file(access_token);
 
 #ifdef RTCONFIG_AMAS_CENTRAL_CONTROL
@@ -155,14 +207,14 @@ int main( int argc, char ** argv ) {
 #endif
 
         backup_cloud_file(access_token);
-        
+
         // External Backup File Upload (Scan db file every 30 seconds)
         backup_db_file();
 
         sleep_time(UPLOAD_WAITING_TIME);
-        
+
     } while (1);
-    
+
     clear_cloud_file();
 
     Cdbg(APP_DBG, "exit uploader, waiting restart");

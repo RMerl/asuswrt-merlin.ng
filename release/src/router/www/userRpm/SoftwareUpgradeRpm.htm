@@ -111,12 +111,8 @@ function detect_firmware(){
       										}
       										
       								}else{
-      										//var flag = getCookie("after_check");
-      										//if(flag==1){
       							  				document.getElementById('update_states').innerHTML="<#is_latest#>";
       												document.getElementById('update_scan').style.display="none";
-      												//setCookie("after_check", 0, 365);
-      										//}
       								}
       						}
       						else{		//miss-match model FW
@@ -131,52 +127,37 @@ function detect_firmware(){
 }
 
 function detect_update(){
-	//setCookie("after_check", 1, 365);
-  document.start_update.action_mode.value="apply";
-  document.start_update.action_script.value="start_webs_update";
-  //document.start_update.action_wait.value="60";
-  document.getElementById('update_states').innerHTML="<#check_proceeding#>";
-  document.getElementById('update_scan').style.display="";
+	document.start_update.action_mode.value="apply";
+	document.start_update.action_script.value="start_webs_update";
+	document.getElementById('update_states').innerHTML="<#check_proceeding#>";
+	document.getElementById('update_scan').style.display="";
 	document.start_update.submit();
 }
 
-function getCookie(c_name)
+function getLocalStorage(c_name)
 {
-var i,x,y,ARRcookies=document.cookie.split(";");
-for (i=0;i<ARRcookies.length;i++)
-  {
-  x=ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
-  y=ARRcookies[i].substr(ARRcookies[i].indexOf("=")+1);
-  x=x.replace(/^\s+|\s+$/g,"");
-  if (x==c_name)
-    {
-    return unescape(y);
-    }
-  }
+	window.localStorage.getItem(c_name)
 }
 
-function setCookie(c_name,value,exdays)
+function setLocalStorage(c_name,value,exdays)
 {
-var exdate=new Date();
-exdate.setDate(exdate.getDate() + exdays);
-var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
-document.cookie=c_name + "=" + c_value;
+	window.localStorage.setItem(c_name, value)
 }
 
-function checkCookie()
+function checkLocalStorage()
 {
-var aft_chk=getCookie("after_check");
+var aft_chk=getLocalStorage("after_check");
 if (aft_chk!=null && aft_chk!="")
   {
   	aft_chk=parseInt(aft_chk)+1;
-  	setCookie("after_check", aft_chk, 365);
+  	setLocalStorage("after_check", aft_chk, 365);
   }
 else
   {
-    setCookie("after_check", 0, 365);
+    setLocalStorage("after_check", 0, 365);
   }
 
-return getCookie("after_check");
+return getLocalStorage("after_check");
 }
 
 

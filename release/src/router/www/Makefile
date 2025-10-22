@@ -80,20 +80,6 @@ endif
 	cp -rf $(INSTALLDIR)/www/images/new/* $(INSTALLDIR)/www/images/
 	rm -rf $(INSTALLDIR)/www/images/new
 
-ifeq ($(RTCONFIG_ROG_UI), y)
-	cp -rfL $(TOP)/www/sysdep/FUNCTION/ROG_UI/* $(INSTALLDIR)/www/
-	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/white_04.gif
-endif
-
-ifeq ($(RTCONFIG_GS_UI), y)
-	cp -rfL $(TOP)/www/sysdep/FUNCTION/GS_UI/* $(INSTALLDIR)/www/
-endif
-
-ifeq ($(RTCONFIG_TUF_UI), y)
-	cp -rfL $(TOP)/www/sysdep/FUNCTION/TUF_UI/* $(INSTALLDIR)/www/
-	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/white_04.gif
-endif
-
 ifeq ($(RTCONFIG_BUSINESS), y)
 	cp -rfL $(TOP)/www/sysdep/FUNCTION/BUSINESS_UI/* $(INSTALLDIR)/www/
 endif
@@ -101,6 +87,28 @@ endif
 ifeq ($(RTCONFIG_UI4), y)
 	cp -rfL $(TOP)/www/sysdep/FUNCTION/UI4/* $(INSTALLDIR)/www/
 	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/white_04.gif
+endif
+
+ifeq ($(RTCONFIG_ROG_UI), y)
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/ROG_UI/mobile.customize $(INSTALLDIR)/www/mobile.customize
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/ROG_UI/images/New_ui/login_bg.png $(INSTALLDIR)/www/images/New_ui/login_bg.png
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/ROG_UI/images/New_ui/logo_ROG.png $(INSTALLDIR)/www/images/New_ui/logo_ROG.png
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/ROG_UI/images/New_ui/logo_ROG.svg $(INSTALLDIR)/www/images/New_ui/logo_ROG.svg
+ifneq ($(RTCONFIG_UI4), y)
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/ROG_UI/* $(INSTALLDIR)/www/
+	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/white_04.gif
+endif
+endif
+
+ifeq ($(RTCONFIG_GS_UI), y)
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/GS_UI/* $(INSTALLDIR)/www/
+endif
+
+ifeq ($(RTCONFIG_TUF_UI), y)
+ifneq ($(RTCONFIG_UI4), y)
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/TUF_UI/* $(INSTALLDIR)/www/
+	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/white_04.gif
+endif
 endif
 
 ifeq ($(HND_ROUTER),y)
@@ -135,7 +143,7 @@ ifeq ($(RTCONFIG_ADGUARDDNS),y)
 	cp $(TOP)/www/sysdep/FUNCTION/RWD_UI $(INSTALLDIR)/www/ -rf
 	cp $(TOP)/www/sysdep/FUNCTION/SDN/images/New_ui/SDN $(INSTALLDIR)/www/images/New_ui/ -rf
 	cp -r $(TOP)/www/sysdep/FUNCTION/ADGUARDDNS_UI/* $(INSTALLDIR)/www/
-ifneq ($(RTCONFIG_UI4), y)
+ifneq ($(RTCONFIG_BUSINESS), y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/SDN/scenarios
 endif
 ifneq ($(RTCONFIG_MLO), y)
@@ -166,7 +174,7 @@ ifneq ($(RTCONFIG_CAPTIVE_PORTAL), y)
 	rm -rf $(INSTALLDIR)/www/SDN/Captive_Portal
 	rm -rf $(INSTALLDIR)/www/ajax/freewifi_tos.json
 endif
-ifeq ($(RTCONFIG_UI4), y)
+ifeq ($(RTCONFIG_BUSINESS), y)
 	rm -rf $(INSTALLDIR)/www/SDN/Captive_Portal/MessageBoard_template.json
 else
 	rm -rf $(INSTALLDIR)/www/images/New_ui/SDN/scenarios
@@ -306,10 +314,18 @@ ifneq ($(RTCONFIG_DASHBOARD), y)
 else
 	cp -rf $(INSTALLDIR)/www/dashboard/index.html $(INSTALLDIR)/www/index.html
 	cp -rf $(INSTALLDIR)/www/dashboard/pages $(INSTALLDIR)/www/
+ifneq ($(RTCONFIG_GTBOOSTER), y)
+	rm -rf $(INSTALLDIR)/www/pages/qoe.html
+	rm -rf $(INSTALLDIR)/www/ark-app-list.json
+endif
+ifneq ($(and $(RTCONFIG_IPSEC),$(RTCONFIG_INSTANT_GUARD)), y)
+	rm -rf $(INSTALLDIR)/www/pages/ig.html
+endif
 	cp -rf $(INSTALLDIR)/www/dashboard/js/* $(INSTALLDIR)/www/js/
 	cp -rf $(INSTALLDIR)/www/dashboard/ajax/* $(INSTALLDIR)/www/ajax/
 	cp -rf $(INSTALLDIR)/www/dashboard/css/* $(INSTALLDIR)/www/css/
 	cp -rf $(INSTALLDIR)/www/dashboard/images/* $(INSTALLDIR)/www/images/
+	cp -rf $(INSTALLDIR)/www/dashboard/datatables $(INSTALLDIR)/www/
 	rm -rf $(INSTALLDIR)/www/dashboard
 endif
 
@@ -479,7 +495,6 @@ ifeq ($(RTCONFIG_NO_USBSTORAGE),y)
 	rm -rf $(INSTALLDIR)/www/aidisk
 	rm -rf $(INSTALLDIR)/www/getfoldertree.asp
 	rm -rf $(INSTALLDIR)/www/gettree.asp
-	rm -rf $(INSTALLDIR)/www/images/Tree
 	# disk utility
 	rm -rf $(INSTALLDIR)/www/device-map/disk_utility.asp
 	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/backgroud_move_8P_2.0.gif
@@ -523,7 +538,6 @@ ifneq ($(RTCONFIG_USB),y)
 	rm -rf $(INSTALLDIR)/www/getfoldertree.asp
 	rm -rf $(INSTALLDIR)/www/gettree.asp
 	rm -rf $(INSTALLDIR)/www/update_appstate.asp
-	rm -rf $(INSTALLDIR)/www/images/Tree
 	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/devicebt_default.png
 	rm -rf $(INSTALLDIR)/www/switch_AiDisk_app.asp
 	rm -rf $(INSTALLDIR)/www/update_diskinfo.asp
@@ -607,6 +621,7 @@ ifneq ($(RTCONFIG_DNSQUERY_INTERCEPT),y)
 	rm -rf $(INSTALLDIR)/www/AiProtection_MaliciousSitesBlocking.asp
 	rm -rf $(INSTALLDIR)/www/AiProtection_MaliciousSitesBlocking_m.asp
 	rm -rf $(INSTALLDIR)/www/css/adaptive_mobile.css
+	rm -rf $(INSTALLDIR)/www/css/adaptive_mobile_WHITE.css
 	rm -rf $(INSTALLDIR)/www/images/New_ui/QoS_quick
 	rm -rf $(INSTALLDIR)/www/images/New_ui/infected.svg
 	rm -rf $(INSTALLDIR)/www/images/New_ui/IPS.svg
@@ -669,6 +684,8 @@ ifneq ($(RTCONFIG_ROG_UI),y)
 	rm -rf $(INSTALLDIR)/www/rog.css
 	rm -rf $(INSTALLDIR)/www/AdaptiveQoS_ROG.asp
 	rm -rf $(INSTALLDIR)/www/api.asp
+	rm -rf $(INSTALLDIR)/www/images/game_acceleration
+	rm -rf $(INSTALLDIR)/www/pages/game_acceleration.html
 endif
 
 ifneq ($(RTCONFIG_DROPBOXCLIENT),y)
@@ -846,18 +863,18 @@ else
 	rm -rf $(INSTALLDIR)/www/nt_content.json
 endif
 
-ifeq ($(RTCONFIG_ROG_UI),y)
-	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_ROG.js modules/menuTree.js
-else ifeq ($(RTCONFIG_UI4),y)
+ifeq ($(RTCONFIG_UI4),y)
+	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_v4.js modules/menuTree.js
+else ifeq ($(RTCONFIG_BUSINESS),y)
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_BUSINESS.js modules/menuTree.js
+else ifeq ($(RTCONFIG_ROG_UI),y)
+	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_ROG.js modules/menuTree.js
 else ifeq ($(RTCONFIG_TUF_UI),y)
-	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_TUF.js modules/menuTree.js	
+	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_TUF.js modules/menuTree.js
+else ifeq ($(RTCONFIG_GS_UI),y)
+	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_GS.js modules/menuTree.js
 else
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree.js modules/menuTree.js
-endif
-
-ifeq ($(RTCONFIG_GS_UI),y)
-	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_GS.js modules/menuTree.js
 endif
 
 	rm -rf $(INSTALLDIR)/www/require/menuTrees
@@ -1062,9 +1079,11 @@ ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AX6000 GT-AX11000_PRO))
 	rm -rf $(INSTALLDIR)/www/css/eva.css
 endif
 ifeq ($(RTCONFIG_ROG_UI),y)
+ifneq ($(RTCONFIG_UI4), y)
 	cp -rf $(INSTALLDIR)/www/css/ROG/* $(INSTALLDIR)/www/css/
 	rm -rf $(INSTALLDIR)/www/css/ROG
 	rm -rf $(INSTALLDIR)/www/images/New_ui/RT
+endif
 endif
 
 ifneq ($(RTCONFIG_BCM_OAM), y)
@@ -1092,22 +1111,23 @@ ifneq ($(RTCONFIG_USB_WAN_BACKUP), y)
 endif
 
 ifneq ($(RTCONFIG_DNSQUERY_INTERCEPT),y)
-	rm -rf $(INSTALLDIR)/www/datatables
 	rm -rf $(INSTALLDIR)/www/getWanTraffic_Dns.asp
 	rm -rf $(INSTALLDIR)/www/getAppTraffic_Dns.asp
 endif
 	rm -rf $(INSTALLDIR)/www/app_client_stats_page.html
-
-ifeq ($(RTCONFIG_TS_UI),y)
-	rm -rf $(INSTALLDIR)/TS_UI
-	cp -rf $(TOP)/www/sysdep/FUNCTION/TS_UI $(INSTALLDIR)/
-endif
 
 ifeq ($(BUILD_NAME),TUF-AX6000)
 	@if [ -d $(INSTALLDIR)/www/images/TX-AX6000 ] ; then \
 		rm -rf $(INSTALLDIR)/TX-AX6000; \
 		mv $(INSTALLDIR)/www/images/TX-AX6000 $(INSTALLDIR)/TX-AX6000; \
 	fi
+endif
+
+ifneq ($(RTCONFIG_NEWSITE_PROVISIONING),y)
+	rm -rf $(INSTALLDIR)/www/Advanced_Site_Manager.asp
+	rm -rf $(INSTALLDIR)/www/Advanced_Site_PinCode.asp
+	rm -rf $(INSTALLDIR)/www/js/asus_pincode.js
+	rm -rf $(INSTALLDIR)/www/images/New_ui/site_manager.svg
 endif
 
 ifeq ($(RTCONFIG_NO_AIDISK), y)
@@ -1119,6 +1139,11 @@ ifeq ($(RTCONFIG_NO_AIDISK), y)
 	rm -rf $(INSTALLDIR)/www/aidisk/Aidisk-1_help.asp
 	rm -rf $(INSTALLDIR)/www/images/New_ui/aidisk
 	rm -rf $(INSTALLDIR)/www/aidisk.asp
+endif
+
+ifneq ($(RTCONFIG_AI_SERVICE), y)
+	rm -rf $(INSTALLDIR)/www/pages/aiboard.html
+	rm -rf $(INSTALLDIR)/www/images/aiboard
 endif
 
 # Legacy files no longer used by Asuswrt-Merlin

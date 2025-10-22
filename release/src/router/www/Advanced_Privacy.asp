@@ -91,6 +91,12 @@ function initial(){
 
 	if(eula_status.TM_EULA == "1"){
 		document.getElementById("tm_eula").style.display = "";
+		let tm_eula_support_str=`<#TM_eula_new_withdraw0#>`;
+		let tm_eula_support =``;
+		if(based_modelid=="GT-BE19000AI" || based_modelid=="GT-BE96_AI"){
+			tm_eula_support_str = tm_eula_support_str.replace('%@', `<#AiProtection_two-way_IPS#>`);
+		}
+		document.getElementById("tm_eula_withdraw_support").innerHTML = tm_eula_support_str;
 	}
 	else{
 		document.getElementById("tm_eula").style.display = "none";
@@ -268,7 +274,7 @@ function withdraw_eula(eula_type){
 									</div>
 
 									<div id="tm_eula" class="eula_withdraw" style="display:none;">
-										<div class="eula_withdraw_title"><#TM_eula_withdraw0#></div>
+										<div id="tm_eula_withdraw_support" class="eula_withdraw_title"><#TM_eula_withdraw0#></div>
 										<div class="eula_withdraw_content">
 											<div><#TM_eula_withdraw_desc1#></div>
 											<div style="margin-top:5px;"><#TM_eula_withdraw_desc2#>

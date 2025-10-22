@@ -8,19 +8,22 @@
     </head>
     <body>
         <script>
-            let time = {
+            var time = {
                     currentTimestamp: 0,
-                    dateISOString: "",
+                    dateString: "",
                     hour: 0,
                     minute: 0,
                     second: 0,
                 },
                 duration = {},
                 mainDate = new Date(),
-                dateStringArray = mainDate.toISOString().substr(0, 10).split("-"), // get [year, month, date]
+                dateStringArray = [mainDate.getFullYear(), mainDate.getMonth()+1, mainDate.getDate()];
                 statData = {};
-
-            class TrafficData {
+                
+            setTime(dateStringArray[0], dateStringArray[1], dateStringArray[2]);
+            document.querySelector('[type="date"]').value = time.dateString;
+            
+            var TrafficData = class {
                 constructor(type = "all") {
                     if (type === "all") {
                         this.macDetail = [];
@@ -38,10 +41,7 @@
                 }
             }
 
-            setTime(dateStringArray[0], dateStringArray[1], dateStringArray[2]);
-
             // set last date
-            document.querySelector('[type="date"]').value = time.dateISOString;
             updateDuration();
             function setTime(year, month, date) {
                 // set time to 23:59:59 per day
@@ -52,7 +52,7 @@
                 mainDate.setMinutes(59);
                 mainDate.setSeconds(59);
                 time.currentTimestamp = parseInt(mainDate.getTime() / 1000);
-                time.dateISOString = mainDate.toISOString().substr(0, 10);
+                time.dateString = `${mainDate.getFullYear()}-${String(mainDate.getMonth()+1).padStart(2, '0')}-${String(mainDate.getDate()).padStart(2, '0')}`;
             }
             function switchDate(event) {
                 let [year, month, date] = event.target.value.split("-");
@@ -152,8 +152,8 @@
             // Detail Information of Specified App
             // queryData("app", "youtube", "detail", duration.length, time.currentTimestamp);
 
-            const labelColor = `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-title-color")}`;
-            const chartColor = [
+            var labelColor = `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-title-color")}`;
+            var chartColor = [
                 `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--circle-chart-color-1")}`,
                 `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--circle-chart-color-2")}`,
                 `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--circle-chart-color-3")}`,
@@ -161,8 +161,8 @@
                 `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--circle-chart-color-5")}`,
             ];
             // render Top5 clients
-            const ctxTop5Client = document.getElementById("top5_client_chart");
-            let chartTop5ClientInstance = "";
+            var ctxTop5Client = document.getElementById("top5_client_chart");
+            var chartTop5ClientInstance = "";
             function renderChartTop5Client(scope) {
                 let clients = statData[scope].macDetail;
                 const length = clients.length < 5 ? clients.length : 5;
@@ -273,8 +273,8 @@
             }
 
             // render Top5 App Doughnut Chart
-            const ctxTop5App = document.getElementById("top5_app_chart");
-            let chartTop5AppInstance = "";
+            var ctxTop5App = document.getElementById("top5_app_chart");
+            var chartTop5AppInstance = "";
             function renderChartTop5App(scope) {
                 let apps = statData[scope].appDetail;
                 const length = apps.length < 5 ? apps.length : 5;
@@ -368,8 +368,8 @@
                 document.getElementById("top5_app_list").innerHTML = code;
             }
 
-            const ctxLineChartClient = document.getElementById("client_line_chart");
-            let lineChartClientInstantce = "";
+            var ctxLineChartClient = document.getElementById("client_line_chart");
+            var lineChartClientInstantce = "";
             function renderLineChartClient() {
                 let trafficArray = statData["all"].period;
                 const dataLineChartClient = {
@@ -634,8 +634,8 @@
                 document.getElementById("client_detail_apps_table").innerHTML = code;
             }
 
-            const ctxLineChartApp = document.getElementById("app_line_chart");
-            let lineChartAppInstance = "";
+            var ctxLineChartApp = document.getElementById("app_line_chart");
+            var lineChartAppInstance = "";
             function renderLineChartApp() {
                 let trafficArray = statData["all"].period;
                 const dataLineChartApp = {
@@ -923,8 +923,8 @@
                 });
             }
         </script>
-        <div class="d-flex align-items-center">
-            <div class="page-title py-3"><#Statistic#></div>
+        <div class="d-flex align-items-center mb-3">
+            <div class="page-title"><#Statistic#></div>
             <div role="icon" class="icon-size-24 icon-delete ms-3" onclick="clear_traffic_log()"></div>
         </div>
 
@@ -951,34 +951,33 @@
             </div>
         </div>
 
-		<script>
-			let { bwdpi_db_enable, dns_dpi_trf_analysis } = httpApi.nvramGet(["bwdpi_db_enable", "dns_dpi_trf_analysis"]);
-			let checked = bwdpi_db_enable === "1" || dns_dpi_trf_analysis === "1";
-			let nvram = httpApi.nvramGet(["ctf_disable", "ctf_fa_mode"]);
+        <script>
+            var { bwdpi_db_enable, dns_dpi_trf_analysis } = httpApi.nvramGet(["bwdpi_db_enable", "dns_dpi_trf_analysis"]);
+            var checked = bwdpi_db_enable === "1" || dns_dpi_trf_analysis === "1";
+            var nvramObj = httpApi.nvramGet(["ctf_disable", "ctf_fa_mode"]);
 
-			document.getElementById("enableStatistic").checked = checked;
-			document.getElementById("enableStatistic").addEventListener("click", function () {
+            document.getElementById("enableStatistic").checked = checked;
+            document.getElementById("enableStatistic").addEventListener("click", function () {
+                if ((policy_status.TM == 0 || policy_status.TM_time == "") && !isSupport("dns_dpi")) {
+                    showTMEula();
+                } else {
+                    let statisticEnable = this.checked;
+                    let obj = { action_mode: "apply", rc_service: "restart_dnsqd;restart_firewall" };
+                    if (statisticEnable) {
+                        obj.bwdpi_db_enable = "1";
+                        obj.dns_dpi_trf_analysis = "1";
+                    } else {
+                        obj.bwdpi_db_enable = "0";
+                        obj.dns_dpi_trf_analysis = "0";
+                    }
 
-				if(policy_status.TM == 0 || policy_status.TM_time == ''){
-					showTMEula();
-				} else {
-					let statisticEnable = this.checked;
-					let obj = { action_mode: "apply", rc_service: "restart_dnsqd;restart_firewall" };
-					if (statisticEnable) {
-						obj.bwdpi_db_enable = "1";
-						obj.dns_dpi_trf_analysis = "1";
-					} else {
-						obj.bwdpi_db_enable = "0";
-						obj.dns_dpi_trf_analysis = "0";
-					}
-
-					httpApi.nvramSet(obj, function () {
-						applyLoading(5, function () {
-							location.reload();
-						});
-					});
-				}
-			});
+                    httpApi.nvramSet(obj, function () {
+                        applyLoading(5, function () {
+                            location.reload();
+                        });
+                    });
+                }
+            });
 
             function showTMEula() {
                 const policyModal = new PolicyModalComponent({
@@ -993,7 +992,7 @@
                             action_time: 4,
                         };
 
-                        if ((nvram.ctf_disable == 0 && nvram.ctf_fa_mode == 2) || system.modelName === "MAP-AC1750") {
+                        if ((nvramObj.ctf_disable == 0 && nvramObj.ctf_fa_mode == 2) || system.modelName === "MAP-AC1750") {
                             applyObj.rc_service = "reboot";
                             applyObj.action_time = httpApi.hookGet("get_default_reboot_time");
                         }
@@ -1008,11 +1007,11 @@
                     },
                     disagreeCallback: () => {
                         document.getElementById("enableStatistic").checked = false;
-                    }
+                    },
                 });
                 policyModal.show();
             }
-		</script>
+        </script>
 
         <div class="row">
             <!-- Top 5 Information -->
@@ -1051,19 +1050,19 @@
                     <h5 class="card-header d-flex align-items-center justify-content-between"><#Permission_Management_Devices#></h5>
                     <div class="card-body">
                         <div class="row">
-                            <div class="d-flex align-items-center col-6 col-xl-3">
+                            <div class="d-flex align-items-center col-12 col-xl-3">
                                 <div class="ms-1 me-3 content-data-title"><#Traffic_Analyzer_usedpercent#></div>
                                 <div class="fs-5 content-data-value" id="client_traffic_percentage">- %</div>
                             </div>
-                            <div class="d-flex align-items-center col-6 col-xl-3">
+                            <div class="d-flex align-items-center col-12 col-xl-3">
                                 <div class="ms-1 me-3 content-data-title"><#Traffic_Analyzer_current#></div>
                                 <div class="fs-5 content-data-value" id="client_traffic_current">-</div>
                             </div>
-                            <div class="d-flex align-items-center col-6 col-xl-3">
+                            <div class="d-flex align-items-center col-12 col-xl-3">
                                 <div class="ms-1 me-3 content-data-title"><#Traffic_Analyzer_daily#></div>
                                 <div class="fs-5 content-data-value" id="client_traffic_total">-</div>
                             </div>
-                            <div class="d-flex align-items-center col-6 col-xl-3">
+                            <div class="d-flex align-items-center col-12 col-xl-3">
                                 <div class="ms-1 me-3 content-data-title">
                                     <select
                                         class="form-select w-auto"
@@ -1109,19 +1108,19 @@
                     <h5 class="card-header d-flex align-items-center justify-content-between"><#Apps#></h5>
                     <div class="card-body">
                         <div class="row">
-                            <div class="d-flex align-items-center col-6 col-xl-3">
+                            <div class="d-flex align-items-center col-12 col-xl-3">
                                 <div class="ms-1 me-3 content-data-title"><#Traffic_Analyzer_usedpercent#></div>
                                 <div class="fs-5 content-data-value" id="app_traffic_percentage">- %</div>
                             </div>
-                            <div class="d-flex align-items-center col-6 col-xl-3">
+                            <div class="d-flex align-items-center col-12 col-xl-3">
                                 <div class="ms-1 me-3 content-data-title"><#Traffic_Analyzer_current#></div>
                                 <div class="fs-5 content-data-value" id="app_traffic_current">-</div>
                             </div>
-                            <div class="d-flex align-items-center col-6 col-xl-3">
+                            <div class="d-flex align-items-center col-12 col-xl-3">
                                 <div class="ms-1 me-3 content-data-title"><#Traffic_Analyzer_daily#></div>
                                 <div class="fs-5 content-data-value" id="app_traffic_total">-</div>
                             </div>
-                            <div class="d-flex align-items-center col-6 col-xl-3">
+                            <div class="d-flex align-items-center col-12 col-xl-3">
                                 <div class="ms-1 me-3 content-data-title">
                                     <select
                                         class="form-select w-auto"

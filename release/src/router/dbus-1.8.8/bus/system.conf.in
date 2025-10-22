@@ -41,6 +41,10 @@
        systems.) -->
   <listen>@DBUS_SYSTEM_BUS_DEFAULT_ADDRESS@</listen>
 
+  <policy user="admin">
+    <allow own="org.freedesktop.Avahi"/>
+  </policy>
+
   <policy context="default">
     <!-- All users can connect to system bus -->
     <allow user="*"/>

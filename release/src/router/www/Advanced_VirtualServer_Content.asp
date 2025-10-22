@@ -38,6 +38,10 @@
 	color: #FFFFFF;
 	padding: 20px;
 }
+
+.butten_gen_white{
+	display: initial;
+}
 </style>
 <script>
 var wItem = new Array(new Array("", "", "TCP"),
@@ -88,6 +92,20 @@ var usb_port_conflict_faq = "https://nw-dlcdnet.asus.com/support/forward.html?mo
 var usb_port_conflict_current = false;
 var vts_enable_current = "0";
 var wan0_proto = '<% nvram_get("wan0_proto"); %>';
+var get_s46_hgw_case_tmp = '<% nvram_get("wan0_s46_hgw_case"); %>';	//topology 2,3,6
+var s46_ports_check_flag_tmp = (get_s46_hgw_case_tmp == '3' || get_s46_hgw_case_tmp == '6');	//true for topology 3||6
+var get_ipv6_s46_ports_tmp = (Softwire46_support && (wan0_proto=="v6plus" || wan0_proto=="ocnvc" || wan0_proto=="v6opt"))? '<%nvram_get("ipv6_s46_ports");%>':'0';
+var array_ipv6_s46_ports_tmp = [];
+if(get_ipv6_s46_ports_tmp != "0" && get_ipv6_s46_ports_tmp != ""){
+    array_ipv6_s46_ports_tmp = get_ipv6_s46_ports_tmp.split(" ");
+}
+if (typeof s46_ports_check_flag === "undefined") {
+	s46_ports_check_flag = s46_ports_check_flag_tmp;
+}
+if (typeof array_ipv6_s46_ports === "undefined") {
+    array_ipv6_s46_ports = array_ipv6_s46_ports_tmp;
+}
+
 function initial(){
 	show_menu();
 	document.getElementById("faq").href=usb_port_conflict_faq;
@@ -597,6 +615,10 @@ function editProfile(_mode, _this) {
 	$("#vts_target_x").val("");
 	$("#saveProfile").unbind("click");
 	$("#profile_setting").fadeIn(300);
+	if(top.webWrapper){
+		$("#saveProfile").addClass("butten_gen_white");
+		$("#saveProfile").prev().addClass("butten_gen_white");
+	}
 	adjust_panel_block_top("profile_setting", 100);
 	cal_panel_block("profile_setting", 0.25);
 
@@ -964,9 +986,11 @@ function cancelProfile() {
 		<tr>
 			<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,25);"><#IPConnection_VSList_Internal_IP#></a></th>
 			<td>
-				<input type="text" maxlength="15" class="input_25_table" id="vts_ipaddr_x" align="left" onkeypress="return validator.isIPAddr(this, event);" style="float:left;" onClick="hideClients_Block();" autocomplete="off" autocorrect="off" autocapitalize="off">
-				<img id="pull_arrow" class="pull_arrow" height="16px;" src="images/unfold_more.svg" align="right" onclick="pullLANIPList(this);" title="<#select_IP#>">
-				<div id="ClientList_Block" class="clientlist_dropdown" style="margin-left:2px;margin-top:27px;width:238px;"></div>
+                <div class="clientlist_dropdown_main">
+                    <input type="text" maxlength="15" class="input_25_table" id="vts_ipaddr_x" name="vts_ipaddr_x" align="left" onkeypress="return validator.isIPAddr(this, event);" onClick="hideClients_Block();" autocomplete="off" autocorrect="off" autocapitalize="off">
+                    <img id="pull_arrow" class="pull_arrow" height="16px;" src="images/unfold_more.svg" align="right" onclick="pullLANIPList(this);" title="<#select_IP#>">
+                    <div id="ClientList_Block" class="clientlist_dropdown"></div>
+				</div>
 			</td>
 		</tr>
 		<tr>

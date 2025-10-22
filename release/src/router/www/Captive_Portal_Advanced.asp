@@ -4078,7 +4078,7 @@ function finishRule(flag) {
 	//if(based_modelid == "BRT-AC828") {
 		var captive_portal_adv_enable_ori = '<% nvram_get("captive_portal_adv_enable"); %>';
 		if(captive_portal_adv_enable_ori == "off") {
-			cookie.set("captive_portal_gn_idx", get_captive_portal_wl_idx("captivePortal") + ">captivePortal", 1);
+			window.localStorage.setItem("captive_portal_gn_idx", get_captive_portal_wl_idx("captivePortal") + ">captivePortal", 1);
 			document.form.next_page.value = "Guest_network.asp";
 		}
 	//}

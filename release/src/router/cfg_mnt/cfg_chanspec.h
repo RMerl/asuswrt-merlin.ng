@@ -36,6 +36,9 @@ extern char *cm_findSuitableBandType(json_object *allBandObj, char *bandKey);
 #ifdef RTCONFIG_AMAS_CHANNEL_PLAN
 #define SEL_CHANNEL_INFO_FILE   TEMP_ROOT_PATH"/sel_channel_info.json"
 extern int cm_getSelChannelInfo(json_object *selChannelInfoObj);
+extern void cm_saveReChannelInfo(char *mac, json_object *channelInfoObj);
+extern void cm_saveReCurrentChannel(char *mac, json_object *currentChannelObj);
+extern void cm_recoverChannelPlan();
 #endif
 extern void cm_saveReOriginalChannelInfo(char *mac, json_object *channelInfoObj);
 

@@ -160,6 +160,7 @@ var dpi_engine_status = <%bwdpi_engine_status();%>;
 var sig_ver = '<% nvram_get("bwdpi_sig_ver"); %>';
 var sig_ver_ori = '<% nvram_get("bwdpi_sig_ver"); %>';
 var sig_update_t = '<% nvram_get("sig_update_t"); %>';
+var sig_type = '<% nvram_get("sig_type"); %>';
 if(cfg_sync_support){
 	var cfg_check = '<% nvram_get("cfg_check"); %>';
 	var cfg_upgrade = '<% nvram_get("cfg_upgrade"); %>';
@@ -398,8 +399,13 @@ function initial(){
 		html += "<th><#AiMesh_Check_Update#></th>";
 		html += "<td>";
 		html += '<div>';
-		html += '<input type="button" id="update" name="update" class="button_gen" onclick="show_offline_msg(true);" value="<#liveupdate#>" />';
-		html += '<input type="button" id="amas_update" class="button_gen" style="margin:-33px 0px 0px 200px;display:none;" onclick="cfgsync_firmware_upgrade();" value="<#CTL_upgrade#>"/>';
+		html += '<input type="button" id="update" name="update" class="button_gen_in_table button_gen" onclick="show_offline_msg(true);" value="<#liveupdate#>" />';
+		if(top.webWrapper){
+			html += '<div><input type="button" id="amas_update" class="button_gen_in_table button_gen" style="margin:-52px 0px 0px 215px;display:none;" onclick="cfgsync_firmware_upgrade();" value="<#CTL_upgrade#>"/><div>';
+		}
+		else{
+			html += '<div><input type="button" id="amas_update" class="button_gen_in_table button_gen" style="margin:-33px 0px 0px 200px;display:none;" onclick="cfgsync_firmware_upgrade();" value="<#CTL_upgrade#>"/><div>';
+		}
 		html += '</div>';
 		html += '<div id="check_beta_div"><input type="checkbox" name="check_beta" id="amas_beta" onclick="change_beta_path()" value="" <% nvram_match("webs_update_beta", "1", "checked"); %>/><#FW_beta_check#></div>';		// Untranslated 
 		html += '<div id="linkpage_div" class="button_helplink" style="margin-left:200px;margin-top:-38px;display:none;">';
@@ -740,6 +746,16 @@ function detect_firmware(flag){
 		},
 
 		success: function(){
+			httpApi.log("check_update", `webs_state_update: ${webs_state_update}, webs_state_error: ${webs_state_error}, webs_state_info: ${webs_state_info}, webs_state_REQinfo: ${webs_state_REQinfo}, webs_state_flag: ${webs_state_flag}, webs_state_upgrade: ${webs_state_upgrade}, webs_state_level: ${webs_state_level}`);
+			
+			if(cfg_sync_support){
+				httpApi.log("check_update", `cfg_check: ${cfg_check}, cfg_upgrade: ${cfg_upgrade}`);
+			}
+
+			if(pipefw_support || urlfw_support){
+				httpApi.log("check_update", `hndwr_status: ${hndwr_status}`);
+			}
+
 			if(cfg_sync_support){
 				if(cfg_check == "" || cfg_check == "0" || cfg_check == "1" || cfg_check == "5"){
 					setTimeout("detect_firmware();", 1000);
@@ -1100,6 +1116,7 @@ function submitForm(){
 				return;
 		else {
 			var status = onSubmitCtrlOnly(document.form.upload, 'Upload1');
+httpApi.log("FirmwareUpgrade", `upload ${document.form.file.value} and got status: ${status}`);			
 			if(amesh_support && status && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
 				if(interval_update_AiMesh_fw_status) {
 					clearInterval(interval_update_AiMesh_fw_status);
@@ -1120,7 +1137,7 @@ function sig_version_check(){
 }
 
 var sdead=0;
-var sig_chk_count=60;
+var sig_chk_count=(sig_type=="HNS")? 150:60;
 function sig_check_status(){
 	$.ajax({
     	url: '/detect_firmware.asp',
@@ -1150,8 +1167,18 @@ function sig_check_status(){
 					document.getElementById("sig_check").disabled = false;
 				}
 				else{
-					if(sig_state_flag == 1 && sig_state_update == 0 && sig_state_upgrade == 1){		//update complete
-						update_sig_ver();
+					if(sig_state_update == 0 && sig_state_upgrade == 1){		//upgrade complete
+						document.getElementById("sig_update_date").innerHTML = "";
+						if(sig_ver == sig_ver_ori){
+							$("#sig_status").html("<#sig_updating#>");
+							setTimeout("sig_check_status();", 1000);
+						}
+						else{
+							document.getElementById("sig_update_scan").style.display = "none";
+							document.getElementById("sig_check").disabled = false;
+							$("#sig_status").html("<#sig_completed#>");
+							$("#sig_ver_word").html(sig_ver);
+						}
 					}
 					else{		//updating
 						if(sig_chk_count < 1){
@@ -1168,30 +1195,6 @@ function sig_check_status(){
 			}
   		}
   	});
-}
-
-function update_sig_ver(){
-	$.ajax({
-    	url: '/detect_firmware.asp',
-    	dataType: 'script',
-		timeout: 3000,
-    	error:	function(xhr){
-    		setTimeout('update_sig_ver();', 1000);
-    	},
-    	success: function(){
-		if(sig_ver == sig_ver_ori){
-			setTimeout("update_sig_ver();", 1000);
-		}
-		else{
-			document.getElementById("sig_update_date").innerHTML = "";
-			document.getElementById("sig_update_scan").style.display = "none";
-			document.getElementById("sig_check").disabled = false;
-			$("#sig_status").html("<#sig_completed#>");
-			$("#sig_ver_word").html(sig_ver);
-		}
-	}
-  	
-	});
 }
 
 function hide_upgrade_opt(flag){
@@ -1310,7 +1313,7 @@ function show_offline_msg(_checkFlag) {
 	$offlineHtml.append($amesh_action_bg);
 
 	var $amesh_ok = $('<input/>');
-	$amesh_ok.addClass("button_gen");
+	$amesh_ok.addClass("button_gen button_gen_in_table");
 	$amesh_ok.attr({"type" : "button", "value" : "<#CTL_ok#>"});
 	$amesh_action_bg.append($amesh_ok);
 	$amesh_ok.click(
@@ -1698,7 +1701,7 @@ function create_rbkfw_view(){
 	var divObj_bot = document.createElement("div");
 	divObj_bot.id = "div_rbk_bot";
 	divObj_bot.style = "margin-top:10px;margin-bottom:20px;width:100%;text-align:center;";
-	divObj_bot.innerHTML = "<input class='button_gen' type='button' onclick='close_rbk_selector()' value='<#CTL_Cancel#>'><input class='button_gen' type='button' onclick='rbk_fw_confirm()' style='margin-left:15px;' value='<#FW_rollback#>'>";
+	divObj_bot.innerHTML = "<input class='button_gen_in_table button_gen' type='button' onclick='close_rbk_selector()' value='<#CTL_Cancel#>'><input class='button_gen_in_table button_gen' type='button' onclick='rbk_fw_confirm()' style='margin-left:15px;' value='<#FW_rollback#>'>";
 	$(divObj_bot).appendTo('#rbk_Block');
 
 }
@@ -2148,7 +2151,7 @@ function get_mobile_fw_upgrade_status(){
 				<td >
 					<div style="height:33px;margin-top:5px;"><span id="sig_ver_word" style="color:#FFFFFF;"></span><span id="sig_update_date"></span></div>
 					<div style="margin-left:200px;margin-top:-38px;">
-						<input type="button" id="sig_check" name="sig_check" class="button_gen" onclick="sig_version_check();" value="<#liveupdate#>">
+						<input type="button" id="sig_check" name="sig_check" class="button_gen_in_table button_gen" onclick="sig_version_check();" value="<#liveupdate#>">
 					</div>
 					<div>
 						<span id="sig_status" style="display:none"></span>
@@ -2168,7 +2171,7 @@ function get_mobile_fw_upgrade_status(){
 				<td>
 					<div id="FWString" style="height:33px;margin-top:5px;"></div>
 					<div id="update_div" style="margin-left:200px;margin-top:-38px;display:none;">
-						<input type="button" id="update" name="update" class="button_gen" onclick="detect_update();" value="<#liveupdate#>" />						
+						<input type="button" id="update" name="update" class="button_gen_in_table button_gen" onclick="detect_update();" value="<#liveupdate#>" />						
 					</div>
 					<div id="check_beta_div"><input type="checkbox" name="check_beta" id="path_beta" onclick="change_beta_path()" value="" <% nvram_match("webs_update_beta", "1", "checked"); %>/><#FW_beta_check#></div>
 					<div id="linkpage_div" class="button_helplink" style="margin-left:200px;margin-top:-38px;display:none;">
@@ -2184,7 +2187,7 @@ function get_mobile_fw_upgrade_status(){
 				<th><#FW_item5#></th>
 				<td>
 					<input type="file" name="file" class="input" style="color:#FFCC00;*color:#000;width: 194px;">
-					<input type="button" name="upload" class="button_gen" onclick="submitForm()" value="<#CTL_upload#>" />
+					<input type="button" name="upload" class="button_gen_in_table button_gen" onclick="submitForm()" value="<#CTL_upload#>" />
 				</td>
 			</tr>
 		</table>
@@ -2213,7 +2216,7 @@ function get_mobile_fw_upgrade_status(){
 				<th><#New_modem_fw#></th>
 				<td>
 					<input type="file" name="file" class="input" style="color:#FFCC00;*color:#000;width: 194px;">
-					<input type="button" name="upload" class="button_gen" onclick="upgrade_modem_fw()" value="<#CTL_upload#>" />
+					<input type="button" name="upload" class="button_gen_in_table button_gen" onclick="upgrade_modem_fw()" value="<#CTL_upload#>" />
 				</td>
 			</tr>
 		</table>

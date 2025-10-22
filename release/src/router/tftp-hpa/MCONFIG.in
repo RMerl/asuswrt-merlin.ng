@@ -1,0 +1,71 @@
+## -*- makefile -*- ------------------------------------------------------
+##   
+##   Copyright 2001-2007 H. Peter Anvin - All Rights Reserved
+##
+##   This program is free software available under the same license
+##   as the "OpenBSD" operating system, distributed at
+##   http://www.openbsd.org/.
+##
+## ----------------------------------------------------------------------- 
+
+##
+## MCONFIG.in
+##
+## Basic Makefile definitions
+##
+
+# Source and object root
+SRCROOT	    = @SRCROOT@
+OBJROOT     = @OBJROOT@
+
+# Prefixes
+prefix      = @prefix@
+exec_prefix = @exec_prefix@
+
+# Directory for user binaries
+BINDIR  = @bindir@
+
+# Man page tree
+MANDIR  = @mandir@
+
+# System binaries
+SBINDIR = @sbindir@
+
+# Data root directory
+datarootdir = @datarootdir@
+
+# Binary suffixes
+O = @OBJEXT@
+X = @EXEEXT@
+
+# Install into alternate root area, e.g. for package generation
+INSTALLROOT = 
+
+# Link
+LN_S            = @LN_S@
+
+# Install program
+INSTALL         = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA    = @INSTALL_DATA@
+
+# Compiler and compiler flags
+CC      = @CC@
+CFLAGS  = @CFLAGS@ -I$(SRCROOT)
+
+# Link flags
+LDFLAGS = @LDFLAGS@
+
+# Libraries (client and server)
+TFTP_LIBS  = ../common/libcommon.a @TFTP_LIBS@
+TFTPD_LIBS = ../common/libcommon.a @TFTPD_LIBS@
+
+# Additional library we need to build
+LIBOBJS	= @LIBOBJS@
+
+# Additional tftpd objects we need to build
+TFTPDOBJS = @TFTPDOBJS@
+
+# ar and ranlib (for making libraries)
+AR	= ar cq
+RANLIB	= @RANLIB@

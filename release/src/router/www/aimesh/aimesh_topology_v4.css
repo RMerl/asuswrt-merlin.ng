@@ -1,0 +1,867 @@
+﻿#jstree::-webkit-scrollbar-track{
+	background-color: rgba(0, 0, 0, 0.7);
+}
+#jstree::-webkit-scrollbar-thumb{
+	background-color: var(--primary-50);
+}
+.jstree-default {
+	background: var(--body-bg-opacity);
+}
+.ui-state-default,
+.ui-widget-content .ui-state-default,
+.ui-widget-header .ui-state-default {
+	background: var(--primary-60);
+	color: var(--primary-60);
+}
+.info_right{
+	background-color: var(--body-bg-color);
+	color: var(--body-text-color);
+}
+.card_block_bg{
+	background: var(--card-bg-color);
+	border: 1px solid rgb(0 0 0 / 5%);
+	box-shadow: 0 2px 4px 0 rgb(0 0 0 / 10%), 0 1px 4px 0 rgb(60 60 60 / 10%);
+}
+.icon_bg{
+	height: 200px;
+}
+.translucent_bg{
+	height: 200px;
+}
+.topology_icon .product_icon_container{
+	border: 1px solid #DCDCDC;
+}
+.jstree-clicked .product_icon_container{
+	background: linear-gradient(0deg, #ECF5FF 0%, #ECF5FF 100%), #D9D9D9;
+	border: 1px solid var(--secondary-80) !important;
+	box-shadow: 0px 0px 2px 0px rgba(0,0,0,0.6), 0px 0px 4px 4px rgba(153,202,255,0.4), 0px 0px 8px 0px rgba(0,0,0,0.2);
+}
+.product_icon_container.optimize{
+	background: linear-gradient(315deg, rgba(3, 200, 253, 0.00) -2.81%, #03C8FD 42.25%, #133ED4 67.78%, rgba(19, 62, 212, 0.00) 101.56%);
+	background-size: 200% 200%;
+	border: initial !important;
+}
+.custom_select input{
+	color: var(--switch-menu-option-selected-text-color);
+}
+.location_info_bg span.location_hint{
+	color: var(--hint-text-el10-warning);
+}
+.custom_pure_text{
+	border: 1px solid var(--dropdown-item-divide-color) !important;
+	border-radius: 4px !important;
+}
+.custom_select_selected, .custom_pure_text{
+	background-color: #FFFFFF;
+}
+.custom_select_selected:after{
+	border-top: 2px solid var(--icon-active-color);
+	border-right: 2px solid var(--icon-active-color);
+}
+.custom_select_same_as_selected:after{
+	border-color: var(--icon-active-color);
+}
+.custom_select_items div, .custom_select_selected, .custom_pure_text{
+	color: var(--switch-menu-option-selected-text-color);
+	border: 1px solid var(--dropdown-item-divide-color);
+	border-color: transparent transparent var(--dropdown-item-divide-color) transparent;
+}
+.custom_select_selected{
+	border: 1px solid var(--dropdown-item-divide-color);
+}
+.custom_select_same_as_selected{
+	background-color: var(--dropdown-item-bg-hover-color);
+	color: var(--primary-60) !important;
+}
+
+.custom_select_items {
+	background-color: var(--dropdown-bg-color);
+	box-shadow: 0px 3px 4px 0px rgb(0 0 0 / 14%), 0px 3px 3px -2px rgb(0 0 0 / 12%), 0px 1px 8px 0px rgb(0 0 0 / 20%);
+}
+.custom_select_items div:hover{
+	background-color: var(--dropdown-item-bg-hover-color);
+}
+.custom_select_items::-webkit-scrollbar-track,
+.poe_settings_item .dropdown_select::-webkit-scrollbar-track{
+	border: 4px solid #FFFFFF;
+	background-color: #DCDCDC;
+}
+.custom_select_items::-webkit-scrollbar-thumb,
+.poe_settings_item .dropdown_select::-webkit-scrollbar-thumb{
+	background-color: #CCCCCC;
+	border: 2px solid #FFFFFF;
+}
+.item_bg{
+	background-color: initial;
+	border-radius: var(--global-radius);
+}
+.item_space{
+	background-color: initial;
+}
+.item_bg.category{
+	background-color: var(--tab-nav-normal-card-bg-fill-color);
+}
+.rssi_title{
+	color: #181818;
+}
+.rssi_container .rssi_component{
+	background-color: #F5F5F5;
+	color: var(--tab-nav-text-active-color);
+}
+.rssi_container .rssi_component > span{
+	color: var(--primary-60);
+}
+.bubble_icon{
+	background: url(/images/New_ui/amesh/white_theme/cards_usage.svg) no-repeat;
+}
+.signal_hint_text{
+	color: #181818;
+}
+.fw_version_title_bg{
+	color: var(--body-text-color);
+}
+.fw_version_text{
+	color: var(--text-hyperlink-default-color);
+}
+.category_bg{
+	color: var(--tab-nav-text-normal-color);
+	background-image: none;
+	background-color: var(--tab-nav-normal-card-bg-fill-color);
+	border: 1px solid rgba(127, 143, 164, 0.4);
+	border-right-style: none;
+}
+.category_bg.clicked{
+	color: var(--tab-nav-icon-normal-color);
+	background-image: none;
+	outline: initial;
+}
+.category_bg.clicked:before{
+	content: "";
+	position: absolute;
+	left: 0;
+	bottom: -2px;
+	width: 100%;
+	border-bottom: 4px solid var(--tab-nav-active-pin-fill-color);
+}
+
+.category_bg > div.client:before {
+	background-color: var(--body-text-color);
+	background-position: center;
+	mask-image: url("/images/New_ui/amesh/white_theme/cards_usage.svg");
+	-webkit-mask-image: url("/images/New_ui/amesh/white_theme/cards_usage.svg");
+	mask-position: 5px -125.8px;
+}
+
+.category_bg > div.network:before {
+	background-color: var(--body-text-color);
+	background-position: center;
+	mask-image: url("/images/New_ui/amesh/white_theme/cards_usage.svg");
+	-webkit-mask-image: url("/images/New_ui/amesh/white_theme/cards_usage.svg");
+	mask-position: -42px -78px;
+}
+
+.category_bg > div.manage:before {
+	background-color: var(--body-text-color);
+	background-position: center;
+	mask-image: url("/images/New_ui/amesh/white_theme/cards_usage.svg");
+	-webkit-mask-image: url("/images/New_ui/amesh/white_theme/cards_usage.svg");
+	mask-position: -90px -78px;
+}
+
+.category_bg.clicked > div.client:before {
+	background-color: var(--primary-50);
+}
+
+.category_bg.clicked > div.network:before {
+	background-color: var(--primary-50);
+}
+
+.category_bg.clicked > div.manage:before {
+	background-color: var(--primary-50);
+}
+
+
+.category_bg > div:first-child:before{
+	background-image: none;
+	mask-repeat: no-repeat;
+	-webkit-mask-repeat: no-repeat;
+}
+.category_bg > div.iperf:before{
+	background: url(/images/New_ui/amesh/iperf_speed.svg) no-repeat;
+	background-size: 75%;
+	background-position: center;
+}
+.category_bg.clicked > div.iperf:before{
+	background: url(/images/New_ui/amesh/iperf_speed_active.svg) no-repeat;
+	background-size: 75%;
+	background-position: center;
+}
+.connect_type_status_bg .as_backhaul_info > div{
+	color: #ED4444;
+}
+.connect_type_status_bg .as_backhaul_info .faq-link{
+	color: var(--primary-60);
+}
+.connect_type_status_bg .uplink_type_title.great, .signal_text_bg.signal.great{
+	color: #059669;
+}
+.connect_type_status_bg .uplink_type_title.ok, .signal_text_bg.signal.ok{
+	color: #059669;
+}
+.connect_type_status_bg .uplink_type_title.disconnected, .signal_text_bg.signal.disconnected{
+	color: var(--tab-nav-text-active-color);
+}
+.connect_type_status_bg .uplink_type_ip, .connect_type_status_bg .uplink_type_mode_title{
+	color: #181818;
+}
+.connect_type_status_bg .uplink_type_mode_title{
+	color: var(--primary-60);
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.moca{
+	background: url(/images/New_ui/amesh/signal_quality_moca.svg) no-repeat;
+}
+.wan_status_bg div.connect_icon_bg > div{
+	background: url(/images/New_ui/amesh/white_theme/cards_usage.svg) no-repeat;
+}
+.card_block_bg span.connect_title, span.connect_status{
+	color: var(--body-text-color);
+}
+.card_block_bg span.connect_title.horizontal_line:before{
+	border-top: 3px solid var(--card-pin-stroke-static);
+}
+.card_block_bg span.connect_title.vertical.traffic:before{
+	border-left: 3px solid var(--card-pin-stroke-static);
+}
+.wan_status_bg span.connect_status.connected{
+	color: #059669;
+}
+.wan_connect_info > div:first-child:before, .common_separate_bg > div:nth-child(2):before{/*vertical_line*/
+	border-left: 1px solid #DCDCDC;
+}
+.wan_connect_info .connect_info_title{
+	color: var(--text-caption-color);
+}
+.wan_connect_info .connect_info_text{
+	color: var(--text-info-color);
+}
+.separation_line p{
+	color: var(--body-text-color);
+	background: var(--body-bg-color);
+}
+.fronthaul_info .separation_line p:before{
+	background: initial;
+	width: 12px;
+	height: 12px;
+	top: 24px;
+	-moz-transform:rotate(-45deg);
+	-webkit-transform:rotate(-45deg);
+	-o-transform:rotate(-45deg);
+	transform:rotate(-45deg);
+	border-top: 2px solid var(--icon-active-color);
+	border-right: 2px solid var(--icon-active-color);
+}
+.fronthaul_info .separation_line p.hide:before{
+	-moz-transform: rotate(135deg);
+	-webkit-transform: rotate(135deg);
+	-o-transform: rotate(135deg);
+	transform: rotate(135deg);
+}
+.common_title{
+	color: var(--body-text-color);
+}
+.common_title.white{
+	color: var(--body-text-color);
+}
+.common_content_bg{
+	background: #F5F5F5;
+}
+.common_content_text{
+	color: var(--body-text-color);
+}
+.common_title_content_bg{
+	color: var(--body-text-color);
+}
+.common_title_content_bg > div.content_bg{
+	background: #F5F5F5;
+	color: var(--body-text-color);
+}
+.common_separate_bg span{
+	color: #4b5261;
+}
+.common_separate_bg span.transmit_value{
+	color: var(--text-highlight-color);
+}
+.common_separate_bg span.transmit_value.green{
+	color: var(--text-highlight-color);
+}
+.common_separate_bg.horizontal_line:before,
+.item_bg.signal:before,.item_bg.location:before,
+.manage_settings_bg > div.horizontal_line:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.backhaul_info .backhaul_bg{
+	background: #FFFFFF;
+}
+.backhaul_info .common_content_bg, .backhaul_info .common_title_content_bg .content_bg{
+	background: #F5F5F5;
+}
+.manage_switch_led .switch.off, .manage_switch_wifi .switch.off,
+.poe_settings_item .switch.off{
+	background: #818181;
+}
+.manage_switch_led .switch.on, .manage_switch_wifi .switch.on,
+.poe_settings_item .switch.on{
+	background: var(--primary-60);
+}
+.manage_common_title{
+	color: var(--body-text-color);
+}
+.manage_channel_plan .manage_common_title{
+	color: var(--body-text-color) !important;
+}
+.manage_channel_plan .manage_common_title.wl_band_title{
+	color: var(--primary-60) !important;
+	background-color: initial;
+}
+.manage_channel_plan .manage_common_title > span{
+	color: var(--primary-60);
+}
+.manage_channel_plan .manage_sub_item_bg > div:before,
+.poe_settings_item:before{
+	border-top: 1px solid #DCDCDC;
+}
+.manage_settings_bg .dropdown_item_bg .dropdown_select,
+.poe_settings_item .dropdown_select{
+	background: #FFFFFF;
+	color: var(--switch-menu-option-selected-text-color);
+}
+.manage_ra_rssi .textInput{
+	background: #FFFFFF;
+	color: var(--switch-menu-option-selected-text-color);
+}
+.manage_settings_bg .sub_item_bg .manage_sub_item_bg > div .manage_common_title,
+.manage_ra_rssi .manage_sub_item_bg > div{
+	color: var(--text-caption-color);
+}
+.manage_settings_bg .sub_item_bg .manage_sub_item_bg > div:before{
+	border-top: 1px solid #DCDCDC;
+}
+.manage_ra_rssi .manage_sub_item_bg > div:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.manage_ra_rssi .manage_sub_item_bg > div.desc_cntr:before{
+	border-top: 1px solid #DCDCDC !important;
+}
+.manage_disconnected{
+	color: #ED4444;
+}
+.manage_disconnected:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.managment_icon{
+	background: url(/images/New_ui/amesh/white_theme/managment_icon.svg) no-repeat;
+}
+.preferable_backhaul_text{
+	color: var(--primary-60);
+}
+.arrow_icon{
+	border-top: 3px solid var(--tab-nav-text-active-color);
+	border-right: 3px solid var(--tab-nav-text-active-color);
+}
+.client_num_bg,
+.newOB_container .newOB_title_bg{
+	color: var(--text-caption-color);
+}
+.client_num_bg div.right span{
+	color: var(--text-highlight-color);
+}
+.client_num_bg div.left span:before,
+.newOB_title_bg span:before{
+	border-top: 3px solid var(--card-pin-stroke-static);
+}
+.client_tab_bg{
+	background: var(--switch-menu-card-bg-color);
+	border: initial;
+}
+.client_tab_bg div{
+	color: var(--body-text-color);
+	border: 1px solid rgba(127, 143, 164, 0.4);
+	border-right-style: none;
+}
+.client_tab_bg div:last-child{
+	border-radius: 0 2px 2px 0;
+	border-right: 1px solid rgba(127, 143, 164, 0.4);
+}
+.client_tab_bg div.clicked{
+	color: var(--body-text-color) !important;
+	background-image: initial;
+	background-color: var(--switch-menu-option-selected-bg-color);
+	outline: none;
+}
+.client_list_bg .each_client_bg:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.client_list_bg .client_icon_bg.default_icon, .client_list_bg .client_icon_bg.user_icon{
+	background-color: #B3B3B3;
+	box-shadow: initial;
+}
+.client_list_bg .client_action_bg > span{
+	background-color: #F5F5F5;
+	border: 1px solid rgba(127, 143, 164, 0.4);
+	background-image: url(/images/New_ui/amesh/white_theme/client_control.svg);
+}
+.client_list_bg .client_action_bg > span:hover{
+	background-color: #FFFFFF;
+	border: 1px solid rgba(127, 143, 164, 1);
+	box-shadow: 0px 3px 4px 0px rgb(0 0 0 / 14%), 0px 3px 3px -2px rgb(0 0 0 / 12%), 0px 1px 8px 0px rgb(0 0 0 / 20%);
+}
+.client_list_bg .client_action_bg > span.unbind{
+	border: 1px solid rgba(127, 143, 164, 1);
+	box-shadow: 0px 3px 4px 0px rgb(0 0 0 / 14%), 0px 3px 3px -2px rgb(0 0 0 / 12%), 0px 1px 8px 0px rgb(0 0 0 / 20%);
+}
+.client_list_bg .client_content_bg > .client_content_name{
+	color: var(--body-text-color);
+}
+.client_list_bg .client_content_bg > .client_content_name.offline, .client_list_bg .client_content_bg > .client_content_mac_ip.offline{
+	color: var(--body-text-color);
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon{
+	background-image: url(/images/New_ui/amesh/white_theme/client_control.svg);
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.mlo{
+	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_mlo.svg);
+	background-size: 110%;
+	background-position: -1px -2px;
+}
+.client_list_bg .client_content_bg > .client_content_mac_ip{
+	color: var(--switch-menu-option-selected-text-color);
+}
+.client_list_bg .client_content_bg > .client_content_mac_ip > div:not(:first-child):before{
+	border-left: 1px solid #DCDCDC;
+}
+.client_list_bg .no_client_hint,
+.newOB_list_bg .no_client_hint{
+	color: #818181;
+}
+.popup_hint_bg{
+	background: #FFFFFF;
+	border: 1px solid #CCCCCC;
+	color: var(--body-text-color);
+}
+.popup_hint_bg .notice_text.hint{
+	color: var(--hint-text-el10-warning);
+}
+.popup_hint_bg .notice_text_blue{
+	color: var(--primary-60);
+}
+.popup_hint_bg .horizontal_line:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.popup_hint_bg .notice_text_location{
+	color: var(--hint-text-el10-warning);
+}
+.popup_hint_bg .action_more_bg:before{
+	border-top: 1px solid #DCDCDC;
+}
+.popup_hint_bg .action_more_bg > span{
+	color: var(--primary-60);
+}
+.hover_pop_hint_bg{
+	background: #FFFFFF;
+	border: 1px solid #CCCCCC;
+	color: var(--tab-nav-text-active-color);
+}
+.hover_pop_hint_bg.conn_priority_icon > span.conn_priority_title:before{
+	background-color: var(--tab-nav-text-active-color);
+}
+.hover_pop_hint_bg.conn_priority_icon > span.conn_priority_content, .hover_pop_hint_bg.prefer_ap_icon > span.prefer_ap_content{
+	color: #181818;
+}
+.hover_pop_hint_bg.conn_priority_icon > span.conn_priority_content.text_yellow{
+	color: #EF4444;
+}
+.hover_pop_hint_bg.node_feature_notice .list_item, .hover_pop_hint_bg.prefer_ap_icon .list_item{
+	color: var(--primary-60);
+}
+.hover_pop_hint_bg.prefer_ap_icon .list_item{
+	color: var(--primary-60);
+}
+.hover_pop_hint:hover::before,
+.hover_pop_hint:hover::after{
+	content: '';
+	position: absolute;
+	width: 0;
+	height: 0;
+	border: 13px solid transparent;
+	border-bottom-color: #CCCCCC;
+	z-index: 510;
+	border-top: 0;
+	top: 23px;
+	left: 0px;
+}
+.hover_pop_hint:hover::after{
+	border-bottom-color: #FFFFFF;
+	top: 25px;
+}
+.hover_pop_hint.node_feature_notice:hover::before,
+.hover_pop_hint.node_feature_notice:hover::after{
+	right: -3px;
+	left: 0px;
+	top: 19px;
+}
+.hover_pop_hint.node_feature_notice:hover::after{
+	top: 20px;
+}
+.hover_pop_hint.conn_priority_icon:hover::before, .hover_pop_hint.conn_priority_icon:hover::after,
+.hover_pop_hint.prefer_ap_icon:hover::before, .hover_pop_hint.prefer_ap_icon:hover::after,
+.hover_pop_hint.channel_plan_icon:hover::before, .hover_pop_hint.channel_plan_icon:hover::after{
+	top: 5px;
+	left: -15px;
+	-o-transform: rotate(90deg);
+	-ms-transform: rotate(90deg);
+	-moz-transform: rotate(90deg);
+	-webkit-transform: rotate(90deg);
+	transform: rotate(90deg);
+}
+.hover_pop_hint.conn_priority_icon:hover::after,
+.hover_pop_hint.prefer_ap_icon:hover::after,
+.hover_pop_hint.channel_plan_icon:hover::after{
+	left: -18px;
+}
+.hover_pop_hint.icon_obresult:hover::before{
+	top: 30px;
+	right: 3px;
+}
+.hover_pop_hint.icon_obresult:hover::after{
+	top: 31px;
+	right: 3px;
+	left: initial;
+}
+.hover_pop_hint_bg .amesh_device_info{
+	color: var(--primary-60);
+}
+.jstree-anchor:before {
+	background-image: url(/images/New_ui/amesh/white_theme/topology_connect_quality.svg);
+}
+.jstree-anchor.moca:before {
+	background-image: url(/images/New_ui/amesh/white_theme/topology_connect_quality_moca.svg);
+}
+.jstree-anchor.mlo:before {
+	background-image: url(/images/New_ui/amesh/white_theme/topology_connect_quality_mlo.svg);
+}
+.jstree-default .jstree-hovered {
+	background: initial;
+	box-shadow: initial;
+}
+.jstree-default .jstree-clicked {
+	background: initial;
+}
+/*
+.jstree-default .jstree-wholerow-hovered {
+	background: initial;
+	box-shadow: initial;
+}
+.jstree-default .jstree-wholerow-clicked {
+	background: initial;
+	box-shadow: -3px 0 0 0 var(--primary-50), 0 2px 0 0 rgba(0,0,0,0);
+}
+*/
+.jstree-default .jstree-wholerow-clicked:before{
+	background: var(--primary-50);
+}
+.jstree-default .jstree-node:before{
+	background: url(/images/New_ui/amesh/white_theme/topology_connect_quality.svg);
+}
+.jstree-default .jstree-node.moca:before{
+	background: url(/images/New_ui/amesh/white_theme/topology_connect_quality_moca.svg);
+}
+.jstree-default .jstree-node.mlo:before{
+	background: url(/images/New_ui/amesh/white_theme/topology_connect_quality_mlo_1.svg);
+}
+.topology_node_info > div{
+	color: var(--body-text-color);
+}
+.topology_node_info > div:nth-child(2){
+	color: var(--secondary-80);
+}
+.topology_node_info > div:nth-child(3){
+	color: var(--text-caption-color);
+}
+.topology_node_info > div:nth-child(3) > span:nth-child(2){
+	color: var(--secondary-80);
+}
+.node_btn_control:before{
+	border-top: 1px solid #DCDCDC;
+}
+.node_btn_control > div{
+	background-image: initial;
+	border: 1px solid #B3B3B3;
+	box-shadow: initial;
+	color: var(--body-text-color);
+}
+.node_btn_control > div > span.refresh_icon:before{
+	background: url(/images/New_ui/amesh/white_theme/client_control.svg) no-repeat;
+}
+[data-asuswrt-color="dark"] .node_btn_control > div > span.refresh_icon:before{
+	filter: invert(1);
+}
+
+.connect_info_bg:before{
+	border-top: 1px solid #DCDCDC;
+}
+.connect_line_info_icon{
+	background: #FFFFFF;
+	background-image: url(/images/New_ui/amesh/white_theme/cards_usage.svg);
+}
+.connect_line_info_bg .connect_line{
+	background: #f5f5f5;
+}
+.connect_line_info_bg .connect_line:before{
+	background-image: url(/images/New_ui/amesh/white_theme/topology_connect_quality.svg);
+}
+.connect_line_info_bg .connect_line.moca:before{
+	background-image: url(/images/New_ui/amesh/white_theme/topology_connect_quality_moca.svg);
+}
+.connect_line_info_bg .connect_line.mlo:before{
+	background-image: url(/images/New_ui/amesh/white_theme/topology_connect_quality_mlo.svg);
+}
+.aimesh_tab{
+	color: var(--body-text-color);
+}
+.aimesh_tab > span.clicked:before{
+	border-bottom: 2px solid var(--primary-50);
+}
+.splitLine{
+	background: #DCDCDC;
+}
+.port_status_bg:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.port_status_bg .label_W_bg:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.port_status_bg .port_icon,
+.port_status_bg .port_icon .wan_icon,
+.port_status_bg .label_W_bg .port_icon:before,
+.poe_settings_item .port_icon{
+	background-image: url(/images/New_ui/amesh/white_theme/port_status.svg);
+}
+.port_status_icon_desc > div.poe_en:after,
+.port_status_icon_desc > div.poe_dis:after{
+	border: 2px solid #FFFFFF;
+}
+.port_status_bg .port_icon.poe_port:after,
+.poe_settings_item .port_icon:after{
+	border: 3px solid #FFFFFF;
+}
+.port_status_icon_desc > div.conn:before{
+	background-color: #10B981;
+}
+.port_status_icon_desc > div.warn:before, .port_status_notice_item.warn:before{
+	background-color: #F05E16;
+}
+.port_status_icon_desc > div.unplug:before{
+	background-color: #999999;
+}
+.iperf_title{
+    color: var(--tab-nav-text-active-color);
+}
+.iperf_GO{
+	border: 1px solid var(--primary-60);
+	color: var(--primary-60);
+}
+.iperf_GO:hover{
+	background-color: var(--primary-60);
+}
+.iperf_content_field{
+	border-bottom: 1px solid #DCDCDC;
+}
+.iperf_testing{
+	border: 1px solid var(--primary-60);
+	background-color: var(--primary-60);
+}
+.iperf_dmac{
+	color: #777;
+}
+.text_link{
+	color: var(--primary-60) !important;
+}
+.text_emphasize{
+	color: #EF4444 !important;
+}
+.MoCA_node_container:not(:last-child):before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.MoCA_node_sub_info > div:not(:first-child):before{
+	border-left: 1px solid #DCDCDC;
+}
+.MoCA_node_sub_info > div{
+	color: var(--switch-menu-option-selected-text-color);
+	text-shadow: initial;
+}
+.MoCA_node_container .MoCA_PHY_rate.great{
+	color: #10B981;
+}
+.MoCA_node_container .MoCA_PHY_rate.weak{
+	color: #F05E16;
+}
+.poe_port_info_container .poe_port_info:not(:first-child):before{
+	border-left: 2px solid #DCDCDC;
+}
+.poe_port_info_container,
+.poe_settings_container{
+	color: var(--tab-nav-text-active-color);
+}
+.tx_power_container{
+	color: var(--primary-60);
+}
+.tx_power_container > div:not(:first-child):before{
+	border-right: 1px solid #FFFFFF;
+}
+.device_icon_container .device_icon{
+	background-color: #B3B3B3;
+	box-shadow: initial;
+}
+.device_info_container .main_info{
+	color: var(--tab-nav-text-active-color);
+}
+.device_info_container .sub_info{
+	color: var(--switch-menu-option-selected-text-color);
+}
+.device_info_container .device_connect_icon{
+	background-image: url(/images/New_ui/amesh/white_theme/client_control.svg);
+}
+.icon_checkbox{
+	border: 1px solid #818181;
+}
+.icon_checkbox.closed{
+	background: #DCDCDC;
+}
+.icon_checkbox.closed:before,
+.icon_checkbox.closed:after{
+	background-color: #818181;
+}
+.icon_checkbox.clicked.disabled{
+	border: 1px solid #818181;
+	background: #DCDCDC;
+}
+.icon_checkbox.clicked.disabled:before{
+	border-top: 2px solid #818181;
+	border-right: 2px solid #818181;
+}
+.loadingAnimation{
+	border-color: transparent var(--tab-nav-text-active-color) transparent var(--tab-nav-text-active-color);
+}
+.processText{
+	color: var(--tab-nav-text-active-color);
+}
+.separation_line i{
+	background: var(--divide-stroke-color-default);
+}
+.mac_info{
+	color: var(--secondary-10);
+}
+.mac_info :first-child{
+	border-right: 1px solid var(--secondary-10);
+}
+.button_gen{
+	color: var();
+}
+.location_dropdown_icon:before {
+	mask-image: url(/images/New_ui/amesh/location_dropdown_active.svg);
+    mask-size: 850%;
+	background-image: none!important;
+	background-position: unset!important;
+	background-repeat: no-repeat;
+	background-size: unset;
+    background-color: var(--neutral-70);
+}
+
+.location_dropdown_icon.selected:before{
+	background-color: var(--primary-60);
+}
+
+.location_dropdown_icon.Home:before, .location_dropdown_icon.selected.Home:before, .topology_icon.Home:before{
+	mask-position: 0% 0%;
+}
+.location_dropdown_icon.Living_Room:before, .location_dropdown_icon.selected.Living_Room:before, .topology_icon.Living_Room:before{
+	mask-position: 0% 20%;
+}
+.location_dropdown_icon.Dining_Room:before, .location_dropdown_icon.selected.Dining_Room:before, .topology_icon.Dining_Room:before{
+	mask-position: 0% 40%;
+}
+.location_dropdown_icon.Kitchen:before, .location_dropdown_icon.selected.Kitchen:before, .topology_icon.Kitchen:before{
+	mask-position: 0% 60%;
+}
+.location_dropdown_icon.Bedroom:before, .location_dropdown_icon.selected.Bedroom:before, .topology_icon.Bedroom:before{
+	mask-position: 16.5% 0%;
+}
+.location_dropdown_icon.Master_Bedroom:before, .location_dropdown_icon.selected.Master_Bedroom:before, .topology_icon.Master_Bedroom:before{
+	mask-position: 16.5% 20%;
+}
+.location_dropdown_icon.Kids_Room:before, .location_dropdown_icon.selected.Kids_Room:before, .topology_icon.Kids_Room:before{
+	mask-position: 16.5% 40%;
+}
+.location_dropdown_icon.Guest_Room:before, .location_dropdown_icon.selected.Guest_Room:before, .topology_icon.Guest_Room:before{
+	mask-position: 16.5% 59%;
+}
+.location_dropdown_icon.Study_Room:before, .location_dropdown_icon.selected.Study_Room:before, .topology_icon.Study_Room:before{
+	mask-position: 16.5% 80%;
+}
+.location_dropdown_icon.Walk-in_Closet:before, .location_dropdown_icon.selected.Walk-in_Closet:before, .topology_icon.Walk-in_Closet:before{
+	mask-position: 16.5% 100%;
+}
+.location_dropdown_icon.Bathroom:before, .location_dropdown_icon.selected.Bathroom:before, .topology_icon.Bathroom:before{
+	mask-position: 33.5% 0%;
+}
+.location_dropdown_icon.Office:before, .location_dropdown_icon.selected.Office:before, .topology_icon.Office:before{
+	mask-position: 33.5% 20%;
+}
+.location_dropdown_icon.Meeting_Room:before, .location_dropdown_icon.selected.Meeting_Room:before, .topology_icon.Meeting_Room:before{
+	mask-position: 33.5% 40%;
+}
+.location_dropdown_icon.Hallway:before, .location_dropdown_icon.selected.Hallway:before, .topology_icon.Hallway:before{
+	mask-position: 50% 0%;
+}
+.location_dropdown_icon.Hall:before, .location_dropdown_icon.selected.Hall:before, .topology_icon.Hall:before{
+	mask-position: 50% 20%;
+}
+.location_dropdown_icon.Stairwell:before, .location_dropdown_icon.selected.Stairwell:before, .topology_icon.Stairwell:before{
+	mask-position: 50% 40%;
+}
+.location_dropdown_icon.Third_Floor:before, .location_dropdown_icon.selected.Third_Floor:before, .topology_icon.Third_Floor:before{
+	mask-position: 66.5% 0%;
+}
+.location_dropdown_icon.Second_Floor:before, .location_dropdown_icon.selected.Second_Floor:before, .topology_icon.Second_Floor:before{
+	mask-position: 66.5% 20%;
+}
+.location_dropdown_icon.First_Floor:before, .location_dropdown_icon.selected.First_Floor:before, .topology_icon.First_Floor:before{
+	mask-position: 66.5% 79%;
+}
+.location_dropdown_icon.Attic:before, .location_dropdown_icon.selected.Attic:before, .topology_icon.Attic:before{
+	mask-position: 66.5% 40%;
+}
+.location_dropdown_icon.Basement:before, .location_dropdown_icon.selected.Basement:before, .topology_icon.Basement:before{
+	mask-position: 66.5% 59%;
+}
+.location_dropdown_icon.Storage:before, .location_dropdown_icon.selected.Storage:before, .topology_icon.Storage:before{
+	mask-position: 83.5% 0%;
+}
+.location_dropdown_icon.Balcony:before, .location_dropdown_icon.selected.Balcony:before, .topology_icon.Balcony:before{
+	mask-position: 83.5% 20%;
+}
+.location_dropdown_icon.Yard:before, .location_dropdown_icon.selected.Yard:before, .topology_icon.Yard:before{
+	mask-position: 83.5% 40%;
+}
+.location_dropdown_icon.Garage:before, .location_dropdown_icon.selected.Garage:before, .topology_icon.Garage:before{
+	mask-position: 83.5% 59%;
+}
+.location_dropdown_icon.Gym:before, .location_dropdown_icon.selected.Gym:before, .topology_icon.Gym:before{
+	mask-position: 100% 21%;
+}
+.location_dropdown_icon.Gaming_Room:before, .location_dropdown_icon.selected.Gaming_Room:before, .topology_icon.Gaming_Room:before{
+	mask-position: 100% 40%;
+}
+.location_dropdown_icon.Custom:before, .location_dropdown_icon.selected.Custom:before, .topology_icon.Custom:before{
+	mask-position: 100% 0%;
+}

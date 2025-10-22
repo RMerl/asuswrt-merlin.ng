@@ -1,9 +1,14 @@
 ﻿.bg{
 	color: rgb(24, 24, 24);
+	width: 99% !important;
+	margin: 0 auto;
 }
 .vpn_icon_all_collect{
 	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
 	background-repeat: no-repeat;
+}
+.function_desc_container{
+	display: none;
 }
 .function_desc_container .title {
 	margin: 0;
@@ -45,6 +50,16 @@
 }
 .server_list_container {
 	width: 40%;
+}
+@media (max-width: 768px) {
+	.profile_setting_container, .function_desc_container {
+		width: 100%;
+		display: none;
+	}
+	.server_list_container {
+		width: 94% !important;
+		margin: auto;
+	}
 }
 .get_start_container .main_info_container .title{
 	color: rgb(0, 112, 255);
@@ -176,6 +191,8 @@
 }
 .profile_setting_item.policy .text_content > a{
 	color: rgb(0, 110, 255);
+	text-decoration: underline;
+	cursor: pointer;
 }
 .profile_setting_item .title{
 	color: rgb(26, 26, 26);

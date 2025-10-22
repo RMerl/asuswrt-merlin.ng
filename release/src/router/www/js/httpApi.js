@@ -1,6 +1,18 @@
+var disUpdate = !(top.cachedData?.get && Object.keys(top.cachedData.get).length);
+setTimeout(function(){
+	disUpdate = false;
+}, 1000);
+
 var cachedData = {
 	"get": {},
-	"clear": function(dataArray){$.each(dataArray, function(idx, val){delete cachedData.get[val];})}
+	"clear": function(dataArray){$.each(dataArray, function(idx, val){delete top.cachedData.get[val];})}
+}
+
+if (!top.cachedData) {
+    top.cachedData = {
+        "get": {},
+		"clear": function(dataArray){$.each(dataArray, function(idx, val){delete top.cachedData.get[val];})}
+    };
 }
 
 var asyncData = {
@@ -50,19 +62,20 @@ var httpApi ={
 	"nvramGet": function(objItems, forceUpdate){
 		var queryArray = [];
 		var retData = {};
+		if(disUpdate) forceUpdate = false;
 
 		var __nvramget = function(_nvrams){
 			return _nvrams.map(function(elem){return "nvram_get(" + elem + ")";}).join("%3B");
 		};
 
-		if(forceUpdate) cachedData.clear(objItems);
+		if(forceUpdate) top.cachedData.clear(objItems);
 
 		objItems.forEach(function(key){
-			if(cachedData.get.hasOwnProperty(key)){
-				retData[key] = cachedData.get[key];
+			if(top.cachedData.get.hasOwnProperty(key)){
+				retData[key] = top.cachedData.get[key];
 			}
 			else if(asyncData.get.hasOwnProperty(key)){
-				retData[key] = cachedData.get[key] = asyncData.get[key];
+				retData[key] = top.cachedData.get[key] = asyncData.get[key];
 				if(forceUpdate) delete asyncData.get[key];
 			}
 			else{
@@ -91,7 +104,7 @@ var httpApi ={
 					});
 				},
 				success: function(response){
-					Object.keys(response).forEach(function(key){retData[key] = cachedData.get[key] = response[key];})
+					Object.keys(response).forEach(function(key){retData[key] = top.cachedData.get[key] = response[key];})
 					retData.isError = false;
 				}
 			});
@@ -106,17 +119,18 @@ var httpApi ={
 	"nvramDefaultGet": function(objItems){
 		var queryArray = [];
 		var retData = {};
+		if(disUpdate) forceUpdate = false;
 
 		var __nvramget = function(_nvrams){
 			return _nvrams.map(function(elem){return "nvram_default_get(" + elem + ")";}).join("%3B");
 		};
 
 		objItems.forEach(function(key){
-			if(cachedData.get.hasOwnProperty(key + "_default")){
-				retData[key] = cachedData.get[key + "_default"];
+			if(top.cachedData.get.hasOwnProperty(key + "_default")){
+				retData[key] = top.cachedData.get[key + "_default"];
 			}
 			else if(asyncData.get.hasOwnProperty(key + "_default")){
-				retData[key] = cachedData.get[key + "_default"] = asyncData.get[key + "_default"];
+				retData[key] = top.cachedData.get[key + "_default"] = asyncData.get[key + "_default"];
 				if(forceUpdate) delete asyncData.get[key + "_default"];
 			}
 			else{
@@ -145,7 +159,7 @@ var httpApi ={
 					});
 				},
 				success: function(response){
-					Object.keys(response).forEach(function(key){retData[key] = cachedData.get[key + "_default"] = response[key];})
+					Object.keys(response).forEach(function(key){retData[key] = top.cachedData.get[key + "_default"] = response[key];})
 					retData.isError = false;
 				}
 			});
@@ -160,19 +174,20 @@ var httpApi ={
 	"nvramCharToAscii": function(objItems, forceUpdate){
 		var queryArray = [];
 		var retData = {};
+		if(disUpdate) forceUpdate = false;
 
 		var __nvramget = function(_nvrams){
 			return _nvrams.map(function(elem){return "nvram_char_to_ascii(" + elem + "," + elem + ")";}).join("%3B");
 		};
 
-		if(forceUpdate) cachedData.clear(objItems.map(item => item + '_ascii'));
+		if(forceUpdate) top.cachedData.clear(objItems.map(item => item + '_ascii'));
 
 		objItems.forEach(function(key){
-			if(cachedData.get.hasOwnProperty(key + "_ascii")){
-				retData[key] = cachedData.get[key + "_ascii"];
+			if(top.cachedData.get.hasOwnProperty(key + "_ascii")){				
+				retData[key] = top.cachedData.get[key + "_ascii"];
 			}
 			else if(asyncData.get.hasOwnProperty(key + "_ascii")){
-				retData[key] = cachedData.get[key + "_ascii"] = asyncData.get[key + "_ascii"];
+				retData[key] = top.cachedData.get[key + "_ascii"] = asyncData.get[key + "_ascii"];
 				if(forceUpdate) delete asyncData.get[key + "_ascii"];
 			}
 			else{
@@ -201,7 +216,7 @@ var httpApi ={
 					});
 				},
 				success: function(response){
-					Object.keys(response).forEach(function(key){retData[key] = cachedData.get[key + "_ascii"] = response[key];})
+					Object.keys(response).forEach(function(key){retData[key] = top.cachedData.get[key + "_ascii"] = response[key];})
 					retData.isError = false;
 				}
 			});
@@ -240,6 +255,8 @@ var httpApi ={
 				async: async,
 				error: function(){},
 				success: function(response){
+					httpApi.log(`${location.pathname}`, `Try to change the value of ${JSON.stringify(Object.keys(postData))} and got ${JSON.stringify(response)}`);
+					
 					if(handler) handler.call(response);
 
 					if(typeof postMessageToApp == "function" && postMessageToAppFlag){
@@ -411,10 +428,13 @@ var httpApi ={
 
 	"hookGet": function(hookName, forceUpdate){
 		var queryString = hookName.split("-")[0] + "(" + (hookName.split("-")[1] || "") + ")";
-		var retData = {};
+		var retData = {};	
+		if(disUpdate) forceUpdate = false;
 
-		if(cachedData.get.hasOwnProperty(hookName) && !forceUpdate){
-			retData[hookName] = cachedData.get[hookName];
+		if(forceUpdate) top.cachedData.clear([hookName]);
+		
+		if(top.cachedData.get.hasOwnProperty(hookName) && !forceUpdate){
+			retData[hookName] = top.cachedData.get[hookName];
 		}
 		else if(asyncData.get.hasOwnProperty(hookName)){
 			retData[hookName] = asyncData.get[hookName];
@@ -442,7 +462,7 @@ var httpApi ={
 				},
 				success: function(response){
 					retData = response;
-					cachedData.get[hookName] = response[hookName]
+					top.cachedData.get[hookName] = response[hookName]
 					retData.isError = false;
 				}
 			});
@@ -454,6 +474,7 @@ var httpApi ={
 	"hookGetMore": function(objItems, forceUpdate){
 		var queryArray = [];
 		var retData = {};
+		if(disUpdate) forceUpdate = false;
 
 		var __hookNames = function(hookNames){
 			return hookNames.map(function(hookName){
@@ -461,14 +482,14 @@ var httpApi ={
 			}).join("%3B");
 		};
 
-		if(forceUpdate) cachedData.clear(objItems);
+		if(forceUpdate) top.cachedData.clear(objItems);
 
 		objItems.forEach(function(key){
-			if(cachedData.get.hasOwnProperty(key)){
-				retData[key] = cachedData.get[key];
+			if(top.cachedData.get.hasOwnProperty(key)){
+				retData[key] = top.cachedData.get[key];
 			}
 			else if(asyncData.get.hasOwnProperty(key)){
-				retData[key] = cachedData.get[key] = asyncData.get[key];
+				retData[key] = top.cachedData.get[key] = asyncData.get[key];
 				if(forceUpdate) delete asyncData.get[key];
 			}
 			else{
@@ -497,7 +518,7 @@ var httpApi ={
 					});
 				},
 				success: function(response){
-					Object.keys(response).forEach(function(key){retData[key] = cachedData.get[key] = response[key];})
+					Object.keys(response).forEach(function(key){retData[key] = top.cachedData.get[key] = response[key];})
 					retData.isError = false;
 				}
 			});
@@ -1700,6 +1721,8 @@ var httpApi ={
 		});
 	},
 	"get_port_status_array": function(mac, callBack){
+		//return a collection of ports that actually have wan capabilities or non-wan capabilities
+		//ex. WAN:[W0, USB], LAN:[...]; WAN:[L3, USB], LAN:[W0, W1, L1...]
 		var rate_map = [
 			{value:"10",text:"10 Mbps"},
 			{value:"100",text:"100 Mbps"},
@@ -1718,7 +1741,7 @@ var httpApi ={
 			var port_info_temp = {};
 			if(response_temp["port_info"] != undefined){
 				if(response_temp["port_info"][mac] != undefined){
-					port_info_temp = {"WAN":[], "LAN":[]};
+					port_info_temp = {"WAN":[], "LAN":[]};//wan capabilities or non-wan capabilities
 					var port_info = response_temp["port_info"][mac];
 					$.each(port_info, function(index, data){
 						var label = index.substr(0,1);
@@ -1743,7 +1766,6 @@ var httpApi ={
 								return "MoCa";
 							}
 						})();
-
 
 						var link_rate = isNaN(parseInt(data.link_rate)) ? 0 : parseInt(data.link_rate);
 						var max_rate = isNaN(parseInt(data.max_rate)) ? 0 : parseInt(data.max_rate);
@@ -1847,6 +1869,72 @@ var httpApi ={
 				callBack(port_info_temp);
 		});
 	},
+	"get_poe_port_status_array": function(mac, callBack){
+		httpApi.get_port_status(mac, function(response){
+			let node_poe_info = {"power_limit":"0","power_remain":"0","per_port_power_limit":"30","poe_port":[]};
+			if(response["node_info"] != undefined){
+				node_poe_info.power_limit = response["node_info"][mac].power_limit;
+				node_poe_info.power_remain = response["node_info"][mac].power_remain;
+				node_poe_info.per_port_power_limit = response["node_info"][mac].per_port_power_limit;
+			}
+			if(response["port_info"] != undefined){
+				if(response["port_info"][mac] != undefined){
+					$.each(response["port_info"][mac], function(index, data){
+						if(data.cap_support.POE && data.poe_info != undefined){
+							let port_info = {};
+							let label_idx = index.substr(1,1);
+							port_info["label_idx"] = label_idx;
+							port_info["label_port_name"] = (()=>{
+								if(data.cap_support.WAN){
+									if(label_idx == "0")
+										return "WAN";
+									else
+										return "WAN " + label_idx;
+								}
+								else if(data.cap_support.LAN){
+									return "LAN " + label_idx;
+								}
+								else if(data.cap_support.USB){
+									return "USB";
+								}
+								else if(data.cap_support.MOCA){
+									return "MoCa";
+								}
+								else if(data.cap_support.POE){
+									return "PoE";
+								}
+							})();
+							port_info["display_port_name"] = (()=>{
+								if(data["cap_support"]["GAME"] == true)
+									return `<#Port_Gaming#>`;
+								else{
+									let max_rate = isNaN(parseInt(data.max_rate)) ? 0 : parseInt(data.max_rate);
+									if(max_rate >= 10000)
+										return (parseInt(max_rate/1000) + ((data.cap_support.SFPP) ? "G SFP+" : "G baseT"));
+									else
+										return (parseInt(max_rate/1000) + "G");
+								}
+							})();
+							port_info["is_on"] = data.is_on;
+							port_info["ui_display"] = (data.ui_display != undefined) ? data.ui_display : "";
+							port_info["cap_support"] = data.cap_support;
+							port_info["poe_info"] = data.poe_info;
+							port_info["poe_info"].watts = (()=>{
+								let V = isNaN(parseInt(this.poe_info.V)) ? 0 : parseInt(this.poe_info.V);
+								let mA = isNaN(parseInt(this.poe_info.mA)) ? 0 : parseInt(this.poe_info.mA);
+								return (Math.round((V*mA)/1000));//watts
+							})();
+							port_info["poe_settings"] = {};
+							node_poe_info.poe_port.push(port_info);
+						}
+					});
+				}
+			}
+			if(callBack){
+				callBack(node_poe_info);
+			}
+		});
+	},
 
 	"set_antled" : function(postData, parmData){
 		var asyncDefault = true;
@@ -1920,6 +2008,34 @@ var httpApi ={
 		return {retValue, retStatus};
 	},
 
+	"check_ai_pw": function(callBack){
+		return (httpApi.nvram_match_x("ai_portainer_acc", "admin", "1").ai_portainer_acc)
+	},
+
+	"get_aiboard_upgrade_status": function(){
+		var retStatus,retErrCode,retReason,retTotalSteps,retCurStep,retCurPercent,retCurImage = "";
+
+		$.ajax({
+			url: "/get_aisom_upgrade_info.cgi",
+			type: "POST",
+			dataType: 'json',
+			async: false,
+			error: function(){},
+			success: function(response){
+				retStatus = response.ai_prog_status;
+ 				retErrCode = response.ai_prog_error_code;
+ 				retReason = response.ai_prog_reason;
+ 				retTotalSteps = response.ai_prog_total_steps;
+ 				retCurStep = response.ai_prog_current_step;
+ 				retCurPercent = response.ai_prog_current_percent;
+ 				retCurImage = response.ai_prog_current_image;
+
+			}
+		});
+
+		return {retStatus, retErrCode, retReason, retTotalSteps, retCurStep, retCurPercent, retCurImage};
+	},
+
 	"aimesh_get_node_capability" : function(_node_info){
 		if(_node_info == undefined) _node_info = {};
 
@@ -1963,6 +2079,7 @@ var httpApi ={
 					"port_status" : {"bit" : 9},
 					"local_access" : {"bit" : 10},
 					"wpa3_enterprise" : {"bit" : 16},
+					"cd_iperf" : {"bit" : 18},
 					"mlo_bh" : {"bit" : 20},
 					"mlo_fh" : {"bit" : 21},
 					"smart_home_master_ui" : {"bit" : 22}
@@ -2060,12 +2177,41 @@ var httpApi ={
 					"GN_6G_3" : {"bit" : 2}
 				}
 			},
+			"channel_plan" : {
+				"value" : 25,
+				"def" : {
+					"channel_plan_cap_off" : {"bit" : 0},
+					"channel_plan_cap_on" : {"bit" : 1},
+					"channel_plan_cap_manual" : {"bit" : 2},
+					"channel_plan_cap_central" : {"bit" : 3}
+				}
+			},
+			"wifi_txpower_ctl" : {
+				"value" : 33,
+				"def" : {
+					"tx_power_0" : {"bit" : 0}, //2G
+					"tx_power_1" : {"bit" : 1}, //5G or 5G-1
+					"tx_power_2" : {"bit" : 2}, //5G-2
+					"tx_power_3" : {"bit" : 3}, //6G
+					"tx_power_4" : {"bit" : 4}  //6G-2
+				}
+			},
 			"GN_6GH_NO" : {//Number of supported RE 6GH guest network
 				"value" : 34,
 				"def" : {
 					"GN_6GH_1" : {"bit" : 0},
 					"GN_6GH_2" : {"bit" : 1},
 					"GN_6GH_3" : {"bit" : 2}
+				}
+			},
+			"ra_rssi_ctl" : {
+				"value" : 37,
+				"def" : {
+					"ra_rssi_2g" :  {"bit" : 0}, //2G
+					"ra_rssi_5g" :  {"bit" : 1}, //5G or 5G-1
+					"ra_rssi_5g2" : {"bit" : 2}, //5G-2
+					"ra_rssi_6g" :  {"bit" : 3}, //6G
+					"ra_rssi_6g2" : {"bit" : 4}  //6G-2
 				}
 			},
 		};
@@ -2329,6 +2475,7 @@ var httpApi ={
 			}
 		})
 
+		httpApi.log(`httpApi.chpass`, `do chpass.cgi and got ${statusCode}`);
 		return statusCode;
 	},
         "get_app_client_stats": function(queryParam, handler){
@@ -2337,7 +2484,6 @@ var httpApi ={
                         dataType: 'json',
                         type: "GET",
                         error: function(jqXHR, textStatus, errorThrown){
-                                //console.log("status:${jqXHR.status} error:${jqXHR.responseText}");
                                 console.log("error:${textStatus}");
                         },
                         success: function(response){
@@ -2353,17 +2499,17 @@ var httpApi ={
 		if(!sessionId) sessionId = deviceId.productid + "#" + deviceId.extendno;
 
 		try{
-			setTimeout(function(){
-				window.localStorage.setItem(Date.now(), "[" + sessionId + "][" + funcName + "] " + content);
-			}, 100*Math.random())
+			window.localStorage.setItem(`${Date.now()}#${window.localStorage.length}`, `[${sessionId}][${funcName}] ${content}`);
 		}catch(err){
-			localStorage.clear();
-			setTimeout(function(){
-				window.localStorage.setItem(Date.now(), "[" + sessionId + "][" + funcName + "] " + content);
-			}, 100*Math.random())
+			httpApi.rmLog();
+			window.localStorage.setItem(`${Date.now()}#${window.localStorage.length}`, `[${sessionId}][${funcName}] ${content}`);
 		}
 	},
 	
+	"rmLog": function(){
+		localStorage.clear();
+	},
+
 	"getLog": function(){
 		if(typeof window.localStorage === 'undefined') return false;
 
@@ -2381,8 +2527,8 @@ var httpApi ={
 		var logContentArray = [];
 
 		for(var key in window.localStorage){
-			if(typeof window.localStorage[key] !== "function" && key !== "length"){
-				logContentArray.push([key, window.localStorage[key]])
+			if(typeof window.localStorage[key] !== "function" && key !== "length" && key.split("#").length == 2){
+				logContentArray.push([key.split("#")[0], window.localStorage[key]])
 			}
 		}
 
@@ -2399,7 +2545,7 @@ var httpApi ={
 
 		_download("uiLog.txt", logContent.join("\n"));
 	},
-
+	
 	"get_diag_avg_data": function(queryParam, handler){
 /*
 		example:
@@ -2508,9 +2654,7 @@ var httpApi ={
 				dataType: 'json',
 				data: JSON.stringify(postData),
 				async: true,
-				success: function(response){
-					console.log(response)
-				}
+				success: function(response){}
 			});			
 		},
 
@@ -2656,12 +2800,84 @@ var httpApi ={
 				fbInfo.fbwifi_secret != ""  
 			)
 
-			// debug log
-			httpApi.log("httpApi.fbwifi.isAvailable fbwifi_cp_config_url", fbInfo.fbwifi_cp_config_url);
-			httpApi.log("httpApi.fbwifi.isAvailable fbwifi_id", fbInfo.fbwifi_id);
-			httpApi.log("httpApi.fbwifi.isAvailable fbwifi_secret", fbInfo.fbwifi_secret);
-
 			return isAvailable;
 		}
+	},
+
+	"get_re_channel_info": function(mac, callBack){
+		$.ajax({
+			url: "/get_re_channel_info.cgi?re_mac=" + mac,
+			dataType: 'json',
+			async: true,
+			success: function(response){
+				if(callBack){
+					callBack(response);
+				}
+			}
+		});
+	},
+	"get_re_current_channel_info": function(mac, callBack){
+		$.ajax({
+			url: "/get_re_current_channel_info.cgi?re_mac=" + mac,
+			dataType: 'json',
+			async: true,
+			success: function(response){
+				if(callBack){
+					callBack(response);
+				}
+			}
+		});
+	},
+
+	"get_ai_docker_container": function(){
+		var retData = [];
+
+		$.ajax({
+			url: '/get_ai_docker_container.cgi',
+			dataType: 'json',
+			async: false,
+			error: function(){},
+			success: function(response){
+				retData = response;
+			}
+		});
+
+		return retData;
+	},
+
+	"ai_board_slm": function(postData, callBack){
+		$.ajax({
+			url: '/ai_board_slm.cgi',
+			dataType: 'json',
+			data: postData,
+			error: function(){},
+			success: function(response){
+				if(callBack){
+					callBack(response);
+				}
+			}
+		});
 	}
 }
+
+window.onerror = function(message, source, lineno, colno, error) {
+    httpApi.log(`JS ERROR`, `
+		Message: ${message} 
+		The error occurred in ${source}, Line: ${lineno}, Column: ${colno}.
+	`);
+
+	if(top.webWrapper){
+        const errorPage = source.includes(location.pathname)
+            ? ""
+            : ` (${location.pathname.replace("/", "")})`;
+					
+		window.parent.postMessage({
+			type: "IFRAME_ERROR",
+			message: `${message}${errorPage}`,
+			filename: source,
+			lineno: lineno,
+			colno: colno,
+			error: error
+		}, "*");
+	}
+};

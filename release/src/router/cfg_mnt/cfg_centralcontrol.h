@@ -30,10 +30,13 @@ extern char *cm_getValueFromCommonConfig(const char *name, char *valueBuf, int v
 extern json_object *cm_getCommonObjFromCommonConfigFile();
 extern char *cm_getStrValueFromCommonObj(json_object *commonObj, const char *name, char *valueBuf, int valueBufLen);
 extern int cm_getIntValueFromCommonObj(json_object *commonObj, const char *name);
+extern int cm_getIntValueFromPrivateObjByMac(char *mac, const char *name);
 extern int cm_isParamExistInCommonObj(json_object *commonObj, const char *name);
+extern int cm_isParamExistInPrivateObjByMac(char *mac, const char *name);
 #ifdef RTCONFIG_AMAS_CAP_CONFIG
 extern void cm_addConfigFromCommonFileByFeature(json_object *inRoot, json_object *outRoot);
 #endif
+extern int cm_transformCapParamToReParam(char *mac, unsigned char *ftList, json_object *cfgRoot);
 
 #endif /* __CFG_CENTRALCONTROL_H__ */
 /* End of cfg_centralcontrol.h */

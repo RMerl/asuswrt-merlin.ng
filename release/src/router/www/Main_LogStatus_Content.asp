@@ -282,20 +282,22 @@ function get_log_data(){
 									</div>
 									<div>
 									<table class="apply_gen">
-										<tr class="apply_gen" valign="top">
-											<td width="50%" align="right">
-												<form method="post" name="form1" action="apply.cgi">
-													<input type="hidden" name="current_page" value="Main_LogStatus_Content.asp">
-													<input type="hidden" name="action_mode" value=" Clear ">
-													<input type="submit" onClick="onSubmitCtrl(this, ' Clear ')" value="<#CTL_clear#>" class="button_gen">
-												</form>
-											</td>
-											<td width="50%" align="left">
-												<form method="post" name="form2" action="syslog.txt">
-													<input type="submit" onClick="onSubmitCtrl(this, ' Save ');" value="<#CTL_onlysave#>" class="button_gen">
-												</form>
-											</td>
-										</tr>
+										<tbody style="width:100%">
+											<tr class="apply_gen" valign="top">
+												<td width="50%" align="right">
+													<form method="post" name="form1" action="apply.cgi">
+														<input type="hidden" name="current_page" value="Main_LogStatus_Content.asp">
+														<input type="hidden" name="action_mode" value=" Clear ">
+														<input type="submit" onClick="onSubmitCtrl(this, ' Clear ')" value="<#CTL_clear#>" class="button_gen">
+													</form>
+												</td>
+												<td width="50%" align="left">
+													<form method="post" name="form2" action="syslog.txt">
+														<input type="submit" onClick="onSubmitCtrl(this, ' Save ');" value="<#CTL_onlysave#>" class="button_gen">
+													</form>
+												</td>
+											</tr>
+										</tbody>
 									</table>
 									</div>
 

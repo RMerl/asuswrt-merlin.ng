@@ -1,0 +1,1035 @@
+﻿<html>
+<head>
+    <link rel="stylesheet" href="./css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="./css/bootstrap-customize.css"/>
+    <link rel="stylesheet" href="./css/architecture.css"/>
+
+    <link rel="stylesheet" type="text/css" href="index_style.css">
+    <link rel="stylesheet" type="text/css" href="form_style.css">
+    <link rel="stylesheet" type="text/css" href="device-map/device-map.css">
+    <link rel="stylesheet" type="text/css" href="css/basic.css">
+    <link rel="stylesheet" type="text/css" href="css/gameprofile.css">
+
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript" src="js/httpApi.js"></script>
+    <script type="text/javascript" src="/state.js"></script>
+    <script type="text/javascript" src="/help.js"></script>
+    <script type="text/javascript" src="/general.js"></script>
+    <script type="text/javascript" src="/popup.js"></script>
+    <script type="text/javascript" src="/client_function.js"></script>
+    <script type="text/javascript" src="/validator.js"></script>
+    <script type="text/javascript" src="js/gameProfile.js"></script>
+    <script type="text/javascript" src="js/searchOpenNatProfile.js"></script>
+</head>
+
+<body onload="show_menu();" onunload="unload_body();" class="bg">
+<div id="TopBanner"></div>
+
+<div id="Loading" class="popup_bg"></div>
+
+<iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
+
+<!-- httpApi is used instead of form submission -->
+
+<table class="content" align="center" cellpadding="0" cellspacing="0">
+    <tr>
+        <td width="17">&nbsp;</td>
+        <td valign="top" width="202">
+            <div id="mainMenu"></div>
+            <div id="subMenu"></div>
+        </td>
+        <td valign="top">
+            <div id="tabMenu" class="submenuBlock"></div>
+            <div class="row m-2 gap-2 text-start">
+                <div class="col-12">
+                    <div class="card">
+                        <!-- Title field -->
+                        <div class="card-body">
+                            <div class="d-flex title-container">
+                                <div class="title-symbol"></div>
+                                <div class="title-content">OPEN NAT</div>
+                            </div>
+
+                            <!-- Content field -->
+                            <div class="description-container openNatDescription"><#OpenNAT_desc#></div>
+                            <p class="card-subtitle mb-2 text-muted" style="display:none;"
+                               id="v6plus_port_range_note">* When using v6plus, the number of available
+                                assigned
+                                ports is limited. Kindly understand that this may result in an interruption of this
+                                services
+                                and functions.</p>
+                            <!-- Untranslated -->
+                            <div class="d-flex w-100 align-items-center">
+                                <div class="world-map">
+                                    <div class="map-connection-line"></div>
+                                    <div class="location-indicator location-US3"></div>
+                                    <div class="location-indicator location-US2"></div>
+                                    <div class="location-indicator location-US1"></div>
+                                    <div class="location-indicator location-BR"></div>
+                                    <div class="location-indicator location-CL"></div>
+                                    <div class="location-indicator location-EU1"></div>
+                                    <div class="location-indicator location-EU2"></div>
+                                    <div class="location-indicator location-RU"></div>
+                                    <div class="location-indicator location-SA"></div>
+                                    <div class="location-indicator location-CN"></div>
+                                    <div class="location-indicator location-TW"></div>
+                                    <div class="location-indicator location-AU"></div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="control-description"><#IPConnection_VServerEnable_itemname#></div>
+                                    <div id="PF_switch" class="toggle-button with-text" onclick="switchToggle()">
+                                        <div class="toggle-button-handle"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div id="emptyTable" class="col-12" style="display:none">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="border-corner border-corner-top-left"></div>
+                            <div class="border-corner border-corner-bottom-left"></div>
+                            <div class="border-bar notInBusiness"></div>
+
+                            <div class="d-flex title-container">
+                                <div class="title-symbol"></div>
+                                <div class="title-content"><#Game_Profile#></div>
+                            </div>
+
+                            <div class="description-container openNatDescription"><#Game_Profile_desc#></div>
+                            <div class="d-flex justify-content-end">
+                                <button type="button" class="btn btn-outline-primary mb-2"
+                                        onclick="addNewProfile();">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div class="button-icon icon-plus"></div>
+                                        <#CTL_add#>
+                                    </div>
+                                </button>
+                            </div>
+
+                            <div class="divide-line"></div>
+
+                            <div id='empty_qiuckAdd'
+                                 class="d-flex flex-d-column flex-w-wrap game-profile-container"></div>
+                            <div class="divide-line"></div>
+                            <div class="right-desc">** <#AiProtection_title_Radar_desc2#></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- New rule field -->
+                <div id="addRuleField" class="card col-12" style="display:none">
+                    <div class="d-flex align-items-center justify-content-between" onclick="cancelNewProfile()">
+                        <div class="new-g-p-title">New Game Profile</div>
+                        <div class="icon-button-container">
+                            <div class="icon-button icon-cancel"></div>
+                        </div>
+                    </div>
+
+                    <div style="display: inline-grid;">
+                        <div class="d-flex flex-a-center new-g-profile">
+                            <div class="new-g-p-step">1</div>
+                            <div class="new-g-p-s-title"><#Game_List#></div>
+                        </div>
+                        <div id="inner_quickAdd" class="new-g-p-container"></div>
+                        <div class="divide-line new-p-divide"></div>
+                    </div>
+
+                    <div>
+                        <div class="d-flex flex-a-center new-g-profile">
+                            <div class="new-g-p-step">2</div>
+                            <div class="new-g-p-s-title"><#Game_Platform#></div>
+                        </div>
+                        <div class="d-flex new-p-platform">
+                            <div id="platformPC_field" class="checkbox-container">
+                                <div>
+                                    <input id="platformPC" type="checkbox">
+                                    <label for="platformPC">
+                                        <div></div>
+                                    </label>
+                                </div>
+                                <div class="checkbox-desc">PC</div>
+                            </div>
+                            <div id="platformXBOXSerX_field" class="checkbox-container">
+                                <div>
+                                    <input id="platformXBOXSerX" type="checkbox">
+                                    <label for="platformXBOXSerX">
+                                        <div></div>
+                                    </label>
+                                </div>
+                                <div class="checkbox-desc">XBOX Series X</div>
+                            </div>
+                            <div id="platformXBOXONE_field" class="checkbox-container">
+                                <div>
+                                    <input id="platformXBOXONE" type="checkbox">
+                                    <label for="platformXBOXONE">
+                                        <div></div>
+                                    </label>
+                                </div>
+                                <div class="checkbox-desc">XBOX ONE</div>
+                            </div>
+                            <div id="platformXBOX360_field" class="checkbox-container">
+                                <div>
+                                    <input id="platformXBOX360" type="checkbox">
+                                    <label for="platformXBOX360">
+                                        <div></div>
+                                    </label>
+                                </div>
+                                <div class="checkbox-desc">XBOX 360</div>
+                            </div>
+                            <div id="platformPS5_field" class="checkbox-container">
+                                <div>
+                                    <input id="platformPS5" type="checkbox">
+                                    <label for="platformPS5">
+                                        <div></div>
+                                    </label>
+                                </div>
+                                <div class="checkbox-desc">PS 5</div>
+                            </div>
+                            <div id="platformPS4_field" class="checkbox-container">
+                                <div>
+                                    <input id="platformPS4" type="checkbox">
+                                    <label for="platformPS4">
+                                        <div></div>
+                                    </label>
+                                </div>
+                                <div class="checkbox-desc">PS 4</div>
+                            </div>
+                            <div id="platformPS3_field" class="checkbox-container">
+                                <div>
+                                    <input id="platformPS3" type="checkbox">
+                                    <label for="platformPS3">
+                                        <div></div>
+                                    </label>
+                                </div>
+                                <div class="checkbox-desc">PS 3</div>
+                            </div>
+                            <div id="platformSTEAM_field" class="checkbox-container">
+                                <div>
+                                    <input id="platformSTEAM" type="checkbox">
+                                    <label for="platformSTEAM">
+                                        <div></div>
+                                    </label>
+                                </div>
+                                <div class="checkbox-desc">STEAM</div>
+                            </div>
+                            <div id="platformSWITCH_field" class="checkbox-container">
+                                <div>
+                                    <input id="platformSWITCH" type="checkbox">
+                                    <label for="platformSWITCH">
+                                        <div></div>
+                                    </label>
+                                </div>
+                                <div class="checkbox-desc">SWITCH</div>
+                            </div>
+                        </div>
+                        <div class="divide-line new-p-divide"></div>
+                    </div>
+
+                    <div>
+                        <div class="d-flex flex-a-center new-g-profile">
+                            <div class="new-g-p-step">3</div>
+                            <div class="new-g-p-s-title"><#Settings#></div>
+                        </div>
+
+                        <div class="new-p-platform">
+                            <div id="name_field" class="game-p-s-field">
+                                <div class="settings-filed-title"><#BM_UserList1#></div>
+                                <input id="new_profile_name" type="text" class="input-container" value=""
+                                       maxlength="30" onkeypress="return validator.isString(this, event);"
+                                       autocomplete="off" autocorrect="off" autocapitalize="off">
+                            </div>
+
+                            <div id="protocol_field" class="game-p-s-field">
+                                <div class="settings-filed-title"><#IPConnection_VServerProto_itemname#></div>
+                                <div class="select-container">
+                                    <select id="new_profile_protocol">
+                                        <option value="TCP">TCP</option>
+                                        <option value="UDP">UDP</option>
+                                        <option value="BOTH"><#option_both_direction#></option>
+                                    </select>
+                                    <div class="select-arrow">
+                                        <div></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="externalPort_field" class="game-p-s-field">
+                                <div class="settings-filed-title"><#IPConnection_VSList_External_Port#>
+                                    <div class="setup_info_icon_game" style="display:none;"></div>
+                                </div>
+                                <input id="new_profile_externalPort" type="text" class="input-container" value=""
+                                       maxlength="60" onkeypress="return validator.isPortRange(this, event);"
+                                       autocomplete="off" autocorrect="off" autocapitalize="off">
+                            </div>
+
+                            <div id="localPort_field" class="game-p-s-field">
+                                <div class="settings-filed-title"><#IPConnection_VSList_Internal_Port#></div>
+                                <input id="new_profile_localPort" type="text" class="input-container" value=""
+                                       maxlength="5" onkeypress="return validator.isNumber(this,event);"
+                                       autocomplete="off" autocorrect="off" autocapitalize="off">
+                                <div class="hint"><#feedback_optional#></div>
+                            </div>
+
+                            <div id="localIP_field" class="game-p-s-field">
+                                <div class="settings-filed-title"><#IPConnection_VSList_Internal_IP#></div>
+                                <div style="position: relative">
+                                    <div class="clientlist_dropdown_main" style="width: 245px;">
+                                        <input id="new_profile_localIP" type="text" class="input-container" value=""
+                                               maxlength="15" onkeypress="return validator.isIPAddr(this, event);"
+                                               autocomplete="off" autocorrect="off" autocapitalize="off">
+                                        <div class="select-arrow" style="cursor:pointer;z-index: 999;"
+                                             onclick="pullLANIPList(this);">
+                                            <div></div>
+                                        </div>
+                                        <div id="ClientList_Block_PC" class="clientlist_dropdown"
+                                             style="top: 10px;"></div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div id="sourceIP_field" class="game-p-s-field">
+                                <div class="settings-filed-title"><#IPConnection_VSList_SourceTarget#></div>
+                                <input id="new_profile_sourceIP" type="text" class="input-container" value=""
+                                       maxlength="15" onkeypress="return validator.isIPAddrPlusNetmask(this, event)"
+                                       autocomplete="off" autocorrect="off" autocapitalize="off">
+                                <div class="hint"><#feedback_optional#></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="divide-line"></div>
+                    <div class="d-flex justify-content-center mb-3">
+                        <button type="button" class="btn btn-primary" onclick="newProfileOK();">
+                            <div class="d-flex align-items-center gap-1 text-white">
+                                <#CTL_ok#>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                <!-- End New rule field -->
+
+                <!-- List Field -->
+                <div id="listTable" class="card col-12" style="display:none">
+                    <div class="border-corner border-corner-top-left"></div>
+                    <div class="border-corner border-corner-bottom-left"></div>
+                    <div class="border-bar notInBusiness"></div>
+
+                    <div class="d-flex title-container">
+                        <div class="title-symbol"></div>
+                        <div class="title-content"><#Game_Profile#></div>
+                    </div>
+
+                    <div class="d-flex flex-j-spaceB control-f-container">
+
+                        <div class="d-flex justify-content-center w-100 mb-3 gap-2">
+                            <button type="button" class="btn btn-primary" onclick="applyRule();">
+                                <div class="d-flex align-items-center gap-1 text-white">
+                                    <#CTL_apply#>
+                                </div>
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="addNewProfile();">
+                                <div class="d-flex align-items-center gap-1 text-white">
+                                    <#CTL_add#>
+                                </div>
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <div class="d-flex flex-a-center flex-j-spaceB new-g-p-t-field ">
+                        <div class="new-g-p-title"><#Game_List#></div>
+                        <div class="new-g-p-rule"><span id="rule_num">2</span> Rules (<#List_limit#> 32)</div>
+                    </div>
+
+                    <div id="list_content">
+                        <div class="d-flex table-title">
+                            <div class="table-content1-width">
+                                <div><#AiProtection_filter_stream1#></div>
+                            </div>
+                            <div class="table-content2-width">
+                                <div><#Clientlist_device#></div>
+                            </div>
+                            <div class="table-content3-width">
+                                <div><#IPConnection_VServerProto_itemname#></div>
+                            </div>
+                            <div class="table-content4-width">
+                                <div>Actions</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </td>
+        <td width="10" align="center" valign="top">&nbsp;</td>
+    </tr>
+</table>
+<div id="footer"></div>
+<script>
+    var wItem2 = new Array();
+
+    <% login_state_hook();%>
+
+    var overlib_str0 = new Array();	//Viz add 2011.07 for record longer virtual srvr rule desc
+    var overlib_str = new Array();	//Viz add 2011.07 for record longer virtual srvr portrange value
+    var vts_rulelist_array = '';
+    var nvram = {};
+    var gameList = new Object;
+    var wan0_proto = '';
+
+    /*handle legacy profile*/
+    (function () {
+        var vts_rulelist_row = vts_rulelist_array.split('<');
+        var _temp = '';
+        for (var i = 0; i < vts_rulelist_row.length; i++) {
+            var vts_rulelist_col = vts_rulelist_row[i].split('>');
+            var _platform = vts_rulelist_col[0].split('@')[1];
+            var _port = vts_rulelist_col[1];
+            if ((vts_rulelist_col[0].indexOf('Rocket League') != -1)) {
+                if (_platform == 'PC' && _port == '7000:9000') {
+                    _temp += '<' + vts_rulelist_col[0];
+                    _temp += '>' + '7000:8080,8082:8442,8444:9000';
+                    _temp += '>' + vts_rulelist_col[2];
+                    _temp += '>' + vts_rulelist_col[3];
+                    _temp += '>' + vts_rulelist_col[4];
+                    _temp += '>' + vts_rulelist_col[5];
+                } else if (_platform == 'PS4' && _port == '1935,3074,3478:3480,7000:9000') {
+                    _temp += '<' + vts_rulelist_col[0];
+                    _temp += '>' + '1935,3074,3478:3480,7000:8080,8082:8442,8444:9000';
+                    _temp += '>' + vts_rulelist_col[2];
+                    _temp += '>' + vts_rulelist_col[3];
+                    _temp += '>' + vts_rulelist_col[4];
+                    _temp += '>' + vts_rulelist_col[5];
+                } else if (_platform == 'XBOXONE' && _port == '88,500,3074,3544,4500,7000:9000') {
+                    _temp += '<' + vts_rulelist_col[0];
+                    _temp += '>' + '88,500,3074,3544,4500,7000:8080,8082:8442,8444:9000';
+                    _temp += '>' + vts_rulelist_col[2];
+                    _temp += '>' + vts_rulelist_col[3];
+                    _temp += '>' + vts_rulelist_col[4];
+                    _temp += '>' + vts_rulelist_col[5];
+                } else if (_platform == 'STEAM' && _port == '4380,7000:9000,27000:27031,27036:27037') {
+                    _temp += '<' + vts_rulelist_col[0];
+                    _temp += '>' + '4380,7000:8080,8082:8442,8444:9000,27000:27031,27036:27037';
+                    _temp += '>' + vts_rulelist_col[2];
+                    _temp += '>' + vts_rulelist_col[3];
+                    _temp += '>' + vts_rulelist_col[4];
+                    _temp += '>' + vts_rulelist_col[5];
+                }
+            } else {
+                _temp += '<' + vts_rulelist_row[i];
+            }
+        }
+    })();
+
+
+    async function getInitialData() {
+        const [nvramData, charData] = await Promise.all([
+            httpApi.nvramGet(["vts_enable_x", "wan0_proto"], true),
+            httpApi.nvramCharToAscii(["game_vts_rulelist"], true)
+        ]);
+
+        return {
+            vts_enable_x: nvramData.vts_enable_x,
+            wan0_proto: nvramData.wan0_proto,
+            game_vts_rulelist: decodeURIComponent(charData.game_vts_rulelist || '').replace(/&#62/g, ">")
+        };
+    }
+
+    async function initial() {
+        show_menu();
+
+        try {
+            const data = await getInitialData();
+            nvram = data;
+            wan0_proto = data.wan0_proto;
+            vts_rulelist_array = data.game_vts_rulelist;
+
+            if ((wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1) {
+                $("#v6plus_port_range_note").show();
+                $(".setup_info_icon_game").show();
+                $(".setup_info_icon_game").click(
+                    function () {
+                        if ($("#s46_ports_content").is(':visible'))
+                            $("#s46_ports_content").fadeOut();
+                        else {
+                            var position = $(".setup_info_icon_game").position();
+                            pop_s46_ports(position, "game");
+                        }
+                    }
+                );
+                $("#new_profile_externalPort").focus(
+                    function () {
+                        var position_text = $("#new_profile_externalPort").position();
+                        pop_s46_ports(position_text, "game");
+                    }
+                );
+            }
+
+            (nvram.vts_enable_x == '1') ? document.getElementById("PF_switch").classList.add('active')
+                : document.getElementById("PF_switch").classList.remove('active');
+            collectGameList();
+            updatProfileOnline();
+            if (vts_rulelist_array != '') {
+                $('#listTable').show();
+                genListTable();
+            } else {
+                genQuickAdd();
+                $('#emptyTable').show();
+            }
+
+            genQuickAddInner();
+            setTimeout("showDropdownClientList('setClientIP', 'ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');", 1000);
+        } catch (error) {
+            console.error('初始化失败:', error);
+        }
+    }
+
+    function collectGameList() {
+        var _profile = gameProfile.profile;
+        for (i = 0; i < _profile.length; i++) {
+            if (gameList[_profile[i].id] == undefined) {
+                gameList[_profile[i].id] = {
+                    'id': _profile[i].id,
+                    'title': _profile[i].title,
+                    'class': _profile[i].class
+                }
+            }
+        }
+    }
+
+    function updatProfileOnline() {
+        $.ajax({
+            url: 'https://nw-dlcdnet.asus.com/plugin/js/gameProfile.json',
+            dataType: 'json',
+            error: function (xhr) {
+                setTimeout("updatProfileOnline();", 5000);
+            },
+            success: function (response) {
+                gameProfile.profile = Object.keys(response).map(function (e) {
+                    return response[e];
+                });
+
+                collectGameList();
+                genQuickAdd();
+                genQuickAddInner();
+            }
+        });
+    }
+
+    function genQuickAdd() {
+        var code = '';
+        var _list = Object.keys(gameList).map(function (e) {
+            return gameList[e];
+        });
+
+        for (i = 0; i < _list.length; i++) {
+            code += '<div id="_' + _list[i].id + '" class="game-profile game-p-' + _list[i].class + '" onclick="addNewProfile(this.id);">';
+            code += '<div class="game-p-t-container">';
+            code += '<div class="game-p-bar"></div>';
+            code += '<div class="game-p-title">' + _list[i].title + '</div>';
+            code += '</div>';
+            code += '</div>';
+        }
+
+        $('#empty_qiuckAdd').html(code);
+    }
+
+    function genQuickAddInner() {
+        var code = '';
+        var _list = Object.keys(gameList).map(function (e) {
+            return gameList[e];
+        });
+
+        var _defaultObj = {
+            'id': 'default_game',
+            'title': 'Manual',
+            'class': 'default'
+        }
+
+        _list.unshift(_defaultObj);
+
+        for (i = 0; i < _list.length; i++) {
+            code += '<div id="' + _list[i].id + '" class="new-g-p-content" onclick="quickAddRule(this.id);">';
+            code += '<div class="new-g-p-image game-p-' + _list[i].class + '"></div>';
+            code += '<div class="new-g-p-desc">' + _list[i].title + '</div>';
+            code += '</div>';
+        }
+
+        $('#inner_quickAdd').html(code);
+    }
+
+    function genListTable() {
+        var vts_rulelist_row = vts_rulelist_array.split('<');
+        var code = '';
+        var _count = 0;
+        code += '<div class="d-flex table-title">';
+        code += '<div class="table-content1-width"><div><#AiProtection_filter_stream1#></div></div>';
+        code += '<div class="table-content2-width"><div><#Clientlist_device#></div></div>';
+        code += '<div class="table-content3-width"><div><#IPConnection_VServerProto_itemname#></div></div>';
+        code += '<div class="table-content4-width"><div>Actions</div></div>';
+        code += '</div>';
+
+        for (i = 1; i < vts_rulelist_row.length; i++) {
+            var vts_rulelist_col = vts_rulelist_row[i].split('>');
+            var _platform = '';
+            var _class = 'game-p-default';
+            _count++;
+
+            code += '<div class="d-flex flex-a-center table-per-content">';
+            code += '<div class="d-flex flex-a-center table-content1-width">';
+            // matching game
+            for (j = 0; j < gameProfile.profile.length; j++) {
+                var _target = gameProfile.profile[j];
+                if (_target.port == vts_rulelist_col[1]) {
+                    if (vts_rulelist_col[0].split('@').length < 2) {
+                        if (_target.port == vts_rulelist_col[1]
+                            && (_target.title == vts_rulelist_col[0] || vts_rulelist_col[0].indexOf(_target.title) != -1)) {
+                            _platform = _target.platform;
+                        }
+                    } else {
+                        _platform = vts_rulelist_col[0].split('@')[1];
+                    }
+
+
+                    _class += ' game-p-' + _target.class;
+                }
+            }
+
+            var _platformObj = {
+                'PC': 'PC',
+                "XBOXSerX": "XBOX Series X",
+                "XBOXONE": "XBOX ONE",
+                "XBOX360": "XBOX 360",
+                "PS5": "PS5",
+                "PS4": "PS4",
+                "PS3": "PS3",
+                "STEAM": "STEAM",
+                "SWITCH": "SWITCH"
+            }
+
+            code += '<div class="table-content-image ' + _class + ' "></div>';
+            code += '<div class="table-content1-container">';
+            code += '<div class="table-content1-title">' + vts_rulelist_col[0] + '</div>';
+            code += '<div class="d-flex flex-a-center table-content1-subcontainer">';
+
+            // platform
+            if (_platform != '') {
+                code += '<div class="table-content1-platform">' + _platformObj[_platform] + '</div>';
+                code += '<div class="table-content1-divide"></div>';
+            }
+
+            // port
+            var _port = vts_rulelist_col[1];
+            if (vts_rulelist_col[1].length > 18) {
+                _port = vts_rulelist_col[1].slice(0, 14) + '...';
+            }
+
+            code += '<div title="' + vts_rulelist_col[1] + '">' + _port + '</div>';
+            code += '</div>';
+            code += '</div>';
+            code += '</div>';
+
+            code += '<div class="table-content2-width">';
+            var _clientName = '';
+            for (j = 0; j < clientList.length; j++) {
+                var _index = clientList[j];
+                if (clientList[_index].ip == vts_rulelist_col[2]) {
+                    _clientName = clientList[_index].name;
+                }
+            }
+
+            code += '<div class="table-content1-title">' + _clientName + '</div>';
+            code += '<div class="table-content1-subcontainer">' + vts_rulelist_col[2] + '</div>';
+            code += '</div>';
+
+            code += '<div class="table-content3-width">';
+            code += '<div class="table-content1-title">' + vts_rulelist_col[4] + '</div>';
+            code += '<div class="table-content1-subcontainer">' + vts_rulelist_col[3] + '</div>';
+            code += '</div>';
+            code += '<div class="table-content4-width">';
+            code += '<div class="d-flex flex-a-center">';
+            //code += '<div class="table-action-icon icon-pause"></div>';
+            //code += '<div class="table-action-icon icon-edit"></div>';
+            code += '<div class="table-action-icon icon-delete" onclick="deleteRule(' + i + ')"></div>';
+            code += '</div>';
+            code += '</div>';
+            code += '</div>';
+        }
+
+        $('#rule_num').html(_count);
+        $('#list_content').html(code);
+    }
+
+    function deleteRule(flag) {
+        var vts_rulelist_row = vts_rulelist_array.split('<');
+        var code = '';
+        for (i = 1; i < vts_rulelist_row.length; i++) {
+            if (i != flag) {
+                code += '<' + vts_rulelist_row[i];
+            }
+        }
+
+        vts_rulelist_array = code;
+        genListTable();
+    }
+
+    function applyRule() {
+        httpApi.nvramSet({
+            "game_vts_rulelist": vts_rulelist_array,
+            "action_mode": "apply",
+            "action_wait": "5",
+            "rc_service": "restart_firewall"
+        });
+        showLoading(5);
+    }
+
+    /*------------ Mouse event of fake LAN IP select menu {-----------------*/
+    function setClientIP(num) {
+        document.getElementById('new_profile_localIP').value = num;
+        hideClients_Block();
+    }
+
+    function pullLANIPList(obj) {
+        var element = document.getElementById('ClientList_Block_PC');
+        var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
+        if (isMenuopen == 0) {
+            element.style.display = 'block';
+            document.getElementById('new_profile_localIP').focus();
+        } else
+            hideClients_Block();
+    }
+
+    function hideClients_Block() {
+        document.getElementById('ClientList_Block_PC').style.display = 'none';
+    }
+
+    /*----------} Mouse event of fake LAN IP select menu-----------------*/
+
+    function validate_multi_range(val, mini, maxi) {
+        var rangere = new RegExp("^([0-9]{1,5})\:([0-9]{1,5})$", "gi");
+        if (rangere.test(val)) {
+
+            if (!validator.eachPort(document.getElementById("new_profile_externalPort"), RegExp.$1, mini, maxi) || !validator.eachPort(document.getElementById("new_profile_externalPort"), RegExp.$2, mini, maxi)) {
+                return false;
+            } else if (parseInt(RegExp.$1) >= parseInt(RegExp.$2)) {
+                alert("<#JS_validport#>");
+                return false;
+            } else
+                return true;
+        } else {
+            if (!validate_single_range(val, mini, maxi)) {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    function validate_single_range(val, min, max) {
+        for (j = 0; j < val.length; j++) {		//is_number
+            if (val.charAt(j) < '0' || val.charAt(j) > '9') {
+                alert('<#JS_validrange#> ' + min + ' <#JS_validrange_to#> ' + max);
+                return false;
+            }
+        }
+
+        if (val < min || val > max) {		//is_in_range
+            alert('<#JS_validrange#> ' + min + ' <#JS_validrange_to#> ' + max);
+            return false;
+        } else
+            return true;
+    }
+
+    function check_multi_range(obj, mini, maxi, allow_range) {
+        var _objValue = obj.value.replace(/[-~]/gi, ":");	// "~-" to ":"
+        var PortSplit = _objValue.split(/,|:/);
+        for (i = 0; i < PortSplit.length; i++) {
+            PortSplit[i] = PortSplit[i].replace(/(^\s*)|(\s*$)/g, ""); 		// "\space" to ""
+            PortSplit[i] = PortSplit[i].replace(/(^0*)/g, ""); 		// "^0" to ""
+
+            if (PortSplit[i] == "" || PortSplit[i] == 0) {
+                alert("<#JS_ipblank1#>");
+                obj.focus();
+                obj.select();
+                return false;
+            }
+            if (allow_range)
+                res = validate_multi_range(PortSplit[i], mini, maxi);
+            else
+                res = validate_single_range(PortSplit[i], mini, maxi);
+            if (!res) {
+                obj.focus();
+                obj.select();
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    function check_multi_range_s46_ports(obj) {
+        _objValue = obj.value.replace(/[-~]/gi, ":");	// "~-" to ":"
+        var PortSplit = _objValue.split(/,|:/);
+        var res = false;
+        var res_result = 0;
+        for (i = 0; i < PortSplit.length; i++) {
+            PortSplit[i] = PortSplit[i].replace(/(^\s*)|(\s*$)/g, ""); 		// "\space" to ""
+            PortSplit[i] = PortSplit[i].replace(/(^0*)/g, ""); 		// "^0" to ""
+
+            res = validator.range_s46_ports(obj, PortSplit[i]);
+            if (res)
+                res_result++;
+        }
+
+        if (res_result != PortSplit.length) {
+            return false;
+        }
+
+        return true;
+    }
+
+    function switchToggle() {
+        let hasActive = document.getElementById("PF_switch").classList.contains("active");
+        nvram.vts_enable_x = (hasActive) ? "0" : "1";
+        if (hasActive) {
+            document.getElementById("PF_switch").classList.remove("active");
+        } else {
+            document.getElementById("PF_switch").classList.add("active");
+        }
+        httpApi.nvramSet({
+            "vts_enable_x": nvram.vts_enable_x,
+            "action_mode": "apply",
+            "action_wait": "5",
+            "rc_service": "restart_firewall"
+        });
+        showLoading(5);
+    }
+
+    function addNewProfile(target) {
+        $('#emptyTable').hide();
+        $('#listTable').hide();
+        $('#addRuleField').show();
+        $('.game-selected').removeClass('game-selected');
+        $('#new_profile_name').val('');
+        $('#new_profile_externalPort').val('');
+        $('#new_profile_localPort').val('');
+        $('#new_profile_localIP').val('');
+        $('#new_profile_sourceIP').val('');
+        // remove checked platform
+        $('#platformPC').prop('checked', false);
+        $('#platformXBOXSerX').prop('checked', false);
+        $('#platformXBOXONE').prop('checked', false);
+        $('#platformXBOX360').prop('checked', false);
+        $('#platformPS5').prop('checked', false);
+        $('#platformPS4').prop('checked', false);
+        $('#platformPS3').prop('checked', false);
+        $('#platformSTEAM').prop('checked', false);
+        $('#platformSWITCH').prop('checked', false);
+        $('#platformPC_field').hide();
+        $('#platformXBOXSerX_field').hide();
+        $('#platformXBOXONE_field').hide();
+        $('#platformXBOX360_field').hide();
+        $('#platformPS5_field').hide();
+        $('#platformPS4_field').hide();
+        $('#platformPS3_field').hide();
+        $('#platformSTEAM_field').hide();
+        $('#platformSWITCH_field').hide();
+        if (target == undefined) {
+            $('#default_game').addClass('game-selected');
+            $('#protocol_field').show();
+            $('#externalPort_field').show();
+            $('#localPort_field').show();
+            $('#sourceIP_field').show();
+        } else {
+            var id = target.split('_')[1];
+            $('#new_profile_name').prop('disabled', true);
+            $('#protocol_field').hide();
+            $('#externalPort_field').hide();
+            $('#localPort_field').hide();
+            $('#sourceIP_field').hide();
+            $('#' + id).addClass('game-selected');
+            var _name = '';
+            for (i = 0; i < gameProfile.profile.length; i++) {
+                var _platform = '';
+                if (gameProfile.profile[i].id == id) {
+                    _platform = gameProfile.profile[i].platform;
+                    $('#platform' + _platform).prop('checked', true);
+                    $('#platform' + _platform + '_field').show();
+                    _name = gameProfile.profile[i].title;
+                }
+            }
+
+            $('#new_profile_name').val(_name);
+        }
+    }
+
+    function cancelNewProfile() {
+        if ($("#s46_ports_content").is(':visible'))
+            $("#s46_ports_content").fadeOut();
+        if ($("#ClientList_Block_PC").is(':visible'))
+            $("#ClientList_Block_PC").fadeOut();
+
+        $('#addRuleField').hide();
+        if (vts_rulelist_array != '') {
+            $('#listTable').show();
+        } else {
+            $('#emptyTable').show();
+        }
+    }
+
+    function quickAddRule(id) {
+        $('.game-selected').removeClass('game-selected');
+        $('#' + id).addClass('game-selected');
+
+        // remove checked platform
+        $('#platformPC').prop('checked', false);
+        $('#platformXBOXSerX').prop('checked', false);
+        $('#platformXBOXONE').prop('checked', false);
+        $('#platformXBOX360').prop('checked', false);
+        $('#platformPS5').prop('checked', false);
+        $('#platformPS4').prop('checked', false);
+        $('#platformPS3').prop('checked', false);
+        $('#platformSTEAM').prop('checked', false);
+        $('#platformSWITCH').prop('checked', false);
+        $('#platformPC_field').hide();
+        $('#platformXBOXSerX_field').hide();
+        $('#platformXBOXONE_field').hide();
+        $('#platformXBOX360_field').hide();
+        $('#platformPS5_field').hide();
+        $('#platformPS4_field').hide();
+        $('#platformPS3_field').hide();
+        $('#platformSTEAM_field').hide();
+        $('#platformSWITCH_field').hide();
+        if (id == 'default_game') {
+            $('#new_profile_name').prop('disabled', false);
+            $('#protocol_field').show();
+            $('#externalPort_field').show();
+            $('#localPort_field').show();
+            $('#sourceIP_field').show();
+        } else {
+            $('#new_profile_name').prop('disabled', true);
+            $('#protocol_field').hide();
+            $('#externalPort_field').hide();
+            $('#localPort_field').hide();
+            $('#sourceIP_field').hide();
+        }
+
+        var _name = '';
+        for (i = 0; i < gameProfile.profile.length; i++) {
+            var _platform = '';
+            if (gameProfile.profile[i].id == id) {
+                _platform = gameProfile.profile[i].platform;
+                $('#platform' + _platform).prop('checked', true);
+                $('#platform' + _platform + '_field').show();
+                _name = gameProfile.profile[i].title;
+            }
+        }
+        $('#new_profile_name').val(_name);
+    }
+
+    function newProfileOK() {
+        // valid input
+        var _platformArray = ['PC', 'XBOXSerX', 'XBOXONE', 'XBOX360', 'PS5', 'PS4', 'PS3', 'STEAM', 'SWITCH'];
+        if ($("#s46_ports_content").is(':visible'))
+            $("#s46_ports_content").fadeOut();
+        if ($("#ClientList_Block_PC").is(':visible'))
+            $("#ClientList_Block_PC").fadeOut();
+
+        var _manual = $('#protocol_field').is(':visible');
+        if (!_manual) {		// quick add
+            var _platformCheck = false;
+            for (i = 0; i < _platformArray.length; i++) {
+                if ($('#platform' + _platformArray[i]).prop('checked')) {
+                    _platformCheck = true;
+                }
+            }
+            if (_platformCheck == false) {
+                alert('Please select at least one platform.');
+                return false;
+            }
+        }
+
+        if (!Block_chars(document.getElementById("new_profile_name"), ["<", ">", "%"])) {
+            return false;
+        }
+        if (!Block_chars(document.getElementById("new_profile_externalPort"), ["<", ">"])) {
+            return false;
+        }
+        if (!Block_chars(document.getElementById("new_profile_localPort"), ["<", ">"])) {
+            return false;
+        }
+
+        if ($("#default_game").hasClass("game-selected")) {
+            if (document.getElementById("new_profile_externalPort").value == "OTHER") {
+                document.getElementById("new_profile_localPort").value = "";
+                if (!validator.numberRange(document.getElementById("new_profile_externalPort"), 1, 255, false))
+                    return false;
+            } else {
+                if (!check_multi_range(document.getElementById("new_profile_externalPort"), 1, 65535, true))
+                    return false;
+                if ((wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1) {
+                    if (!check_multi_range_s46_ports(document.getElementById("new_profile_externalPort"))) {
+                        if (!confirm(port_confirm)) {
+                            document.getElementById("new_profile_externalPort").focus();
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        if (document.getElementById("new_profile_localPort").value.length > 0
+            && !validator.numberRange(document.getElementById("new_profile_localPort"), 1, 65535)) {
+            return false;
+        }
+
+        if (document.getElementById("new_profile_localIP").value == "") {
+            alert("<#JS_fieldblank#>");
+            document.getElementById("new_profile_localIP").focus();
+            document.getElementById("new_profile_localIP").select();
+            return false;
+        }
+
+        if (!validator.validIPForm(document.getElementById("new_profile_localIP"), 0)) {
+            return false;
+        }
+
+        $('#addRuleField').hide();
+        $('#listTable').show();
+        var _name = $('#new_profile_name').val();
+        var _id = $('.game-selected').prop('id');
+        if (_id == 'default_game') {
+            vts_rulelist_array += '<' + _name;
+            vts_rulelist_array += '>' + $('#new_profile_externalPort').val();
+            vts_rulelist_array += '>' + $('#new_profile_localIP').val();
+            vts_rulelist_array += '>' + $('#new_profile_localPort').val();
+            vts_rulelist_array += '>' + $('#new_profile_protocol').val();
+            vts_rulelist_array += '>' + $('#new_profile_sourceIP').val();
+
+        } else {
+            for (i = 0; i < gameProfile.profile.length; i++) {
+                var _target = gameProfile.profile[i];
+                if (_target.id == _id && $('#platform' + _target.platform).prop('checked')) {
+                    vts_rulelist_array += '<' + _name + '@' + _target.platform;
+                    //external port
+                    vts_rulelist_array += '>' + _target.port;
+                    vts_rulelist_array += '>' + $('#new_profile_localIP').val();
+                    // internal port
+                    vts_rulelist_array += '>';
+                    vts_rulelist_array += '>' + _target.protocol;
+                    //source IP
+                    vts_rulelist_array += '>';
+                }
+            }
+        }
+
+        genListTable();
+    }
+
+    initial();
+</script>
+</body>
+</html>

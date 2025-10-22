@@ -5,45 +5,7 @@
 <meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="stylesheet" type="text/css" href="../form_style.css">
-<style>
-#ClientList_Block_PC{
-	border:1px outset #999;
-	background-color:#576D73;
-	position:absolute;
-	*margin-top:26px;	
-	margin-left:2px;
-	*margin-left:-189px;
-	width:181px;
-	text-align:left;	
-	height:auto;
-	overflow-y:auto;
-	z-index:200;
-	padding: 1px;
-	display:none;
-}
-#ClientList_Block_PC div{
-	background-color:#576D73;
-	height:auto;
-	*height:20px;
-	line-height:20px;
-	text-decoration:none;
-	font-family: Lucida Console;
-	padding-left:2px;
-}
-
-#ClientList_Block_PC a{
-	background-color:#EFEFEF;
-	color:#FFF;
-	font-size:12px;
-	font-family:Arial, Helvetica, sans-serif;
-	text-decoration:none;	
-}
-#ClientList_Block_PC div:hover, #ClientList_Block a:hover{
-	background-color:#3366FF;
-	color:#FFFFFF;
-	cursor:default;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="../device-map/device-map.css">
 <script type="text/javascript" src="QISMobilePlugin.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/JavaScript" src="../state.js"></script>
@@ -900,9 +862,11 @@ function select_usb_device(obj){
 		 <tr>
 			<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(21,3);"><#HSDPAConfig_private_apn_itemname#></a></th>
 			<td>
-				<input id="modem_apn" type="text" value="" name="modem_apn" tabindex="6" class="input_20_table" autocorrect="off" autocapitalize="off"/>
-     			<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="display:none;position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_device_name#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
-				<div id="ClientList_Block_PC" class="ClientList_Block_PC"></div>
+				<div class="clientlist_dropdown_main" style="width: 100%;">
+					<input id="modem_apn" type="text" value="" name="modem_apn" tabindex="6" class="input_20_table" autocorrect="off" autocapitalize="off"/>
+					<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullLANIPList(this);" title="<#select_device_name#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
+					<div id="ClientList_Block_PC" class="clientlist_dropdown"></div>
+				</div>
 			</td>
 		</tr>
 

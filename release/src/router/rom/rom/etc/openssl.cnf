@@ -1,7 +1,7 @@
 # This definition stops the following lines choking if HOME isn't
 # defined.
 HOME			= .
-RANDFILE		= $ENV::HOME/.rnd
+RANDFILE		= $ENV::HOME/.rng
 
 # Extra OBJECT IDENTIFIER info:
 #oid_file		= $ENV::HOME/.oid

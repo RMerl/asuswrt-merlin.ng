@@ -1,0 +1,84 @@
+<div id="workarea" class="row" style="overflow: hidden;">
+    <div class="col-12" id="clients_container">
+        <div class="page-title mb-3">Clients</div>
+        <div class="row">
+            <div id="ClientListView" class="col-12 mb-3"></div>
+        </div>
+    </div>
+</div>
+<script src="/js/chart.min.js"></script>
+<script src="/js/chartjs-adapter-date-fns.js"></script>
+<script type="module">
+    import {RightPanel, ClientList, ClientListTable} from '/js/clientlist.module.js';
+    import {AsuswrtWidgetLoading} from "/js/component.module.js";
+
+    const rightPanel = new RightPanel({
+        defaultHtml: `
+                        <link rel="stylesheet" href="/css/bootstrap.min.css">
+                        <link rel="stylesheet" href="/device-map/device-map.css">
+                        <link rel="stylesheet" href="/device-map/clientlist.css">
+                    `
+    });
+    const scriptState = document.createElement('script');
+    scriptState.src = '/state.js';
+    rightPanel.shadowRoot.appendChild(scriptState);
+
+    const scriptValidator = document.createElement('script');
+    scriptValidator.src = '/validator.js';
+    rightPanel.shadowRoot.appendChild(scriptValidator);
+
+    const scriptGeneral = document.createElement('script');
+    scriptGeneral.src = '/general.js';
+    rightPanel.shadowRoot.appendChild(scriptGeneral);
+
+    document.querySelector('#clients_container .row').appendChild(rightPanel.render());
+
+    const widgetloader = new AsuswrtWidgetLoading();
+    document.querySelector('#workarea').appendChild(widgetloader.render());
+
+    async function initializeClientList() {
+        let clientList = window.clientList || new ClientList();
+
+        if (!window.clientList) {
+            window.clientList = clientList;
+            await clientList.init();
+            if(clientList.fetchDone) {
+                widgetloader.hide();
+            }
+        }else{
+            widgetloader.hide();
+        }
+
+        const clientListTable = new ClientListTable(clientList, rightPanel);
+        window.clientListTable = clientListTable;
+        document.querySelector('#ClientListView').replaceChildren(clientListTable.render());
+
+        if (window.clientList) {
+            clientListTable.reloadClientListData();
+        }
+    }
+    // setTimeout(() => {
+    //     initializeClientList();
+    // }, 3000);
+    initializeClientList();
+
+</script>
+<script>
+    var webWrapper = true;
+
+    window.addEventListener('message', event => {
+        if (event.data.type === 'resize') {
+            const iframe = document.getElementById('settingsWindow');
+            if (iframe) {
+                const footer = navigator.userAgent.match(/ASUSSiteManager/) ? 100 : 20;
+                const iframeHeight = event.data.height + footer;
+                let headerHeight = 0;
+                if (document.querySelector('header')) {
+                    headerHeight = document.querySelector('header').scrollHeight;
+                }
+                const windowHeight = top.window.innerHeight - headerHeight * 2 - footer;
+                iframe.style.height = `${Math.max(iframeHeight, windowHeight * 1.13)}px`
+            }
+        }
+    });
+</script>

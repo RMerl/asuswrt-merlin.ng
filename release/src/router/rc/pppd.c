@@ -225,7 +225,8 @@ start_pppd(int unit)
 				fprintf(fp, "tx_only ");
 			fprintf(fp, "demand\n");
 		}
-		fprintf(fp, "persist\n");
+		else
+			fprintf(fp, "persist\n");
 	}
 
 	if (nvram_match(strcat_r(prefix, "pppoe_auth", tmp), "pap")) {
@@ -320,7 +321,11 @@ start_pppd(int unit)
 #ifdef RTCONFIG_DUALWAN
 			&& (unit == wan_primary_ifunit_ipv6()
 #ifdef RTCONFIG_MULTIWAN_IF
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+				|| 1
+#else
 				|| is_mtwan_unit(unit)
+#endif
 #endif
 			)
 #endif

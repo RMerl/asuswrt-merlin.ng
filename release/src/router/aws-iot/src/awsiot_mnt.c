@@ -16,7 +16,7 @@
 #include "awsiot_ipc.h"
 #include "awsiot_mnt.h"
 
-
+#include <cfg_ipc.h>
 
 CM_CTRL cm_ctrlBlock;
 

@@ -37,8 +37,8 @@ var colorTX = ['#FF9000', '#3CF', '#000000',  '#dd0000', '#999999',  '#118811'];
 
 function getTrafficUnit(){
 	var value = 0;
-	if(cookie.get('ASUS_TrafficMonitor_unit')){
-		value = cookie.get('ASUS_TrafficMonitor_unit');
+	if(window.localStorage.getItem('ASUS_TrafficMonitor_unit')){
+		value = window.localStorage.getItem('ASUS_TrafficMonitor_unit');
 	}
 
 	return value;
@@ -125,7 +125,7 @@ function switchDraw(n)
 	drawMode = n;
 	showDraw();
 	showCTab();
-	cookie.set(cprefix + 'draw', drawMode);
+	window.localStorage.setItem(cprefix + 'draw', drawMode);
 }
 
 // Viz add 2010.09  vvvvvvvvvv
@@ -164,7 +164,7 @@ function switchScale(n)
 	scaleMode = n;
 	showScale();
 	showTab('speed-tab-' + ifname);
-	cookie.set(cprefix + 'scale', scaleMode);
+	window.localStorage.setItem(cprefix + 'scale', scaleMode);
 }
 
 function showAvg()
@@ -180,7 +180,7 @@ function switchAvg(n)
 	avgMode = n;
 	showAvg();
 	showCTab();
-	cookie.set(cprefix + 'avg', avgMode);
+	window.localStorage.setItem(cprefix + 'avg', avgMode);
 }
 
 function tabSelect(name)
@@ -198,7 +198,7 @@ function showTab(name)
 	var wan_num = 0, wireless_num = 0, multi_wan = 0, multi_wireless = 0, wired_num = 0, multi_waggr = 0, multi_wired = 0;
 
 	ifname = name.replace('speed-tab-', '');
-	cookie.set(cprefix + 'tab', ifname, 14);
+	window.localStorage.setItem(cprefix + 'tab', ifname, 14);
 	tabHigh(name);
 
 	for(var i = 0; i < tabs.length; i++){
@@ -564,7 +564,7 @@ function loadData()
 	if (changed) {
 		E('tab-area').innerHTML = _tabCreate.apply(this, tabs);
 	}
-	if (((name = cookie.get(cprefix + 'tab')) != null) && ((speed_history[name] != undefined))) {
+	if (((name = window.localStorage.getItem(cprefix + 'tab')) != null) && ((speed_history[name] != undefined))) {
 		showTab('speed-tab-' + name);
 		return;
 	}
@@ -631,21 +631,21 @@ function initCommon(defAvg, defDrawMode, defDrawColorRX, defDrawColorTX) //Viz m
 		return valueA.localeCompare(valueB);
 	});
 
-	drawMode = fixInt(cookie.get(cprefix + 'draw'), 0, 1, defDrawMode);
+	drawMode = fixInt(window.localStorage.getItem(cprefix + 'draw'), 0, 1, defDrawMode);
 	showDraw();
 
 	var c = nvram.rstats_colors.split(',');
 
-	c = (cookie.get(cprefix + 'color') || '').split(',');
+	c = (window.localStorage.getItem(cprefix + 'color') || '').split(',');
 	
 	drawColorRX = defDrawColorRX;
 	drawColorTX = defDrawColorTX;		
 	showColor();
 
-	scaleMode = fixInt(cookie.get(cprefix + 'scale'), 0, 1, 0);  //cprefix = 'bw_r';
+	scaleMode = fixInt(window.localStorage.getItem(cprefix + 'scale'), 0, 1, 0);  //cprefix = 'bw_r';
 	showScale();
 
-	avgMode = fixInt(cookie.get(cprefix + 'avg'), 1, 10, defAvg);
+	avgMode = fixInt(window.localStorage.getItem(cprefix + 'avg'), 1, 10, defAvg);
 	showAvg();
 
 	// if just switched

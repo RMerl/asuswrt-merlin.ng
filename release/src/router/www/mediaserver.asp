@@ -869,7 +869,7 @@ function set_dms_dir(obj){
   <tr>
    	<td>
    		<div id="iTunes_div">
-   		<table id="iTunes" width="98%" border="1" align="center" cellpadding="4" cellspacing="1" bordercolor="#6b8fa3" class="FormTable">
+   		<table id="iTunes" width="98%" border="0" align="center" cellpadding="4" cellspacing="1" bordercolor="#6b8fa3" class="FormTable">
  				<thead>
 					<tr><td colspan="2">iTunes Server</td></tr>
 				</thead>  
@@ -901,7 +901,7 @@ function set_dms_dir(obj){
       	</table> 
       </div>	
       <div style="margin-top:10px;">
-   		<table id="dlna" width="98%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
+   		<table id="dlna" width="98%" border="0" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
    			<thead>
 					<tr><td colspan="2"><#UPnPMediaServer#></td></tr>
 				</thead>
@@ -936,7 +936,7 @@ function set_dms_dir(obj){
        	<tr>
        		<th><#DLNA_itemname#></th>
 					<td>
-						<div><input name="dms_friendly_name" type="text" style="margin-left:15px;" class="input_32_table" maxlength="32" placeholder="<% nvram_get("lan_hostname"); %>" value="<% nvram_get("dms_friendly_name"); %>" autocorrect="off" autocapitalize="off"><br/><div id="alert_msg2" style="color:#FC0;margin-left:10px;"></div></div>
+						<div><input id="dms_friendly_name" name="dms_friendly_name" type="text" style="margin-left:15px;" class="input_32_table" maxlength="32" placeholder="<% nvram_get("lan_hostname"); %>" value="<% nvram_get("dms_friendly_name"); %>" autocorrect="off" autocapitalize="off"><br/><div id="alert_msg2" style="color:#FC0;margin-left:10px;"></div></div>
 					</td>
       	</tr>
    			<tr>

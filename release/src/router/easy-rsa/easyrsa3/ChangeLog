@@ -1,0 +1,409 @@
+Easy-RSA 3 ChangeLog
+
+3.2.2 (2025-02-01)
+
+   * Fold easyrsa-tools.lib into easyrsa (56cfa0c) (#1288)
+   * Revert da3c249: Do not remove index.txt.attr (a236b97) (#1287)
+   * Windows: Remove mktemp binary and text files (135f642) (#1285)
+   * op-test.sh: Disable download ossl3 and shellcheck binaries (473c43b) (#1284)
+   * Forbid self-signed certificate from being expired/renewed/revoked (ab45ae7) (#1274)
+   * Rename global option --ssl-conf (DEPRECATED) to --ssl-cnf (c788423) (#1270)
+   * bugfix: Save and Restore $EASYRSA_SSL_CONF for compound commands (7cdb14d) (#1270)
+   * bugfix: Always use locate_support_files() after secure_session() (d530bc3) (#1270)
+   * bugfix: easyrsa-tools.lib: renew, write full metadata to temp-file (b47d2af) (#1267)
+   * Introduce new command 'revoke-issued' (38bf2d8) (#1266)
+     Commands 'revoke' and 'revoke-issued' are identical.
+     Command 'revoke' can ONLY be used in batch mode.
+   * vars.example: Remove $EASYRSA_PKI (8ee8dcf) (#1262)
+     There is no effect on existing 'vars' files.
+   * easyrsa-tools.lib: Move to 'easyrsa3' directory (d30b688) (#1259)
+     This now includes 'easyrsa-tools.lib' in the distribution tarballs.
+   * Upgrade easyrsa-tools.lib to version 322 - As of command 'renew-ca'
+   * easyrsa-tools.lib: Introduce new command 'renew-ca' (ba32b0d) (#1255)
+   * easyrsa-tools.lib: show-expire, allow --days to be zero (a1033a5) (#1254)
+   * Command 'help': Ignore EASYRSA_SILENT (8804d6b) (#1249)
+   * bugfix: easyrsa-tools.lib: renew SAN, remove excess word 'Address' (af17492) (#1251)
+   * New global variable 'EASYRSA_DISABLE_INLINE' (ad257ab) (#1245)
+   * bugfix: revoke, renew: Remove pki/inline/private/$file.inline (febef85) (#1244)
+     Initial bug report #1242 (Minor)
+     Stop removing old credentials file pki/$file.creds (a871e9c)
+   * Add LibreSSL version 4 to supported SSL Libraries (7df616b) (#1240)
+   * sign-req: Allow custom X509 Types (2ee08cc) (#1238)
+   * Remove redundant file index.txt.attr (da3c249) (#1233)
+
+3.2.1 (2024-09-13)
+
+   * inline: Add decimal value for cert. serial (Linux Only) (b33038e) (#1222)
+   * Always exit with error for unknown command options (Except nopass) (#1221)
+     (build-ca: b2f7912); (gen-req: 07f21d3); (build_full(): 0ff7f4c);
+     (export_pkcs(): 2c51288); (set-pass: 1266d4e)
+   * Integrate Easy-RSA TLS-Key for use with 'init-pki soft' (03d9dc2) (#1220)
+     Note: Inline files that contain private key data are now created in sub-dir
+     'pki/inline/private'.
+   * easyrsa-tools.lib, show-expire: Add CA certificate to report (a36cd54) (#1215)
+   * inline: OpenVPN TLS Keys inlining for TLS-AUTH, TLS-CRYPT-V1 (6e9e4a2) (#1185)
+     Note: Command inline only writes directly to inline file not stdout.
+   * easyrsa-tools.lib: OpenVPN TLS Key gen. TLS-AUTH, TLS-CRYPT-V1 (cf0da16) (#1185)
+   * easyrsa-tools.lib: expire_status_v2() (show-expire version 2) (1e43bf5) (#1214)
+   * sign-req: Require 128bit serial number (806ee19) (#1213)
+   * Move command 'verify-cert' to Tools-lib; drop 'verify' shortcut (ddbf304) (#1209)
+   * Windows secure_session(): Ensure $secured_session dir is created (d99b242) (#1203)
+   * Switch to '-f' for file existence (6ab98c9..a02f545) (#1201)
+   * inline: Move auto-inline from build_full() to sign_req() (823f70f) (#1201)
+   * gen-crl: Create additional CRL in DER format (69df0d8) (#1198)
+   * self-sign: Allow Edwards Curve based keys (81b749b) (#1197)
+   * Re-enable command 'renew' (version 2): Requires EasyRSA Tools (30fe311) (#1195)
+   * bug-fix: revoke: Pass the correct certificate location (24d5514)
+   * vars.example: Add flags for auto-SAN and X509 critical attribute (a41dfcc)
+   * Global option --eku-crit: Mark X509 extendedKeyUsage as critical (ca09211)
+   * sign-req: Add critical and pathlen details to confirmation (deae705) (#1182)
+   * export-p12: Automatically generate inline file (9d90370) (#1181)
+   * Introduce global option --auto-san, use commonName as SAN (5c36d44) (#1180)
+   * Introduce global option --san-crit, mark SAN critical (dd69f50) (#1179)
+   * Introduce new global options: --ku-crit and --bc-crit (b79abee) (#1176)
+   * gen-req: Always check for existing request file (7eab98e) (#1177)
+   * revoke/revoke-expired/-renewed: Keep duplicate certificate (3da7f66) (#1177)
+   * revoke-expired/-renewed: Keep req/key files for resigning (4537ae7) (#1177)
+   * revoke: Add abbreviations for optional 'reason' (a88ccc7) (#1173)
+   * build-ca: Allow use of --req-cn without batch mode (b77a0fb) (#1170)
+   * gen-req: Re-enable use of --req-cn (5cf8c46) (#1170)
+   * write: Change syntax, target as file, not directory (722ce54) (#1165)
+
+3.2.0 (2024-05-18)
+
+   * Revert ca76697: Restore escape_hazard() (b1e9d7a) (#1137)
+   * New X509 Type: 'selfsign' Internal only (999533e) (#1135)
+   * New commands: self-sign-server and self-sign-client (9f8a1d1) (#1127)
+   * build-ca: Command 'req', remove SSL option '-keyout' (4e02c8a) (#1123)
+   * Remove escape_hazard(), obsolete (ca76697)
+   * Remove command and function display_cn(), unused (be8f400) (#1114)
+   * Introduce Options to edit Request Subject during command 'sign-req'
+     Global Option: --new-subject -- Command 'sign-req' option: 'newsubj'
+     First proposed in: (#439) -- Completed: (83b81c7) (#1111)
+   * docs: Update EasyRSA-Renew-and-Revoke.md (f6c2bf5) (#1109)
+   * Remove all 'renew' code; replaced by 'expire' code (9d94207) (#1109)
+   * Introduce commands: 'expire' and 'revoke-expired' (a1890fa) (#1109)
+   * Keep request files [CSR] when revoking certificates (6d6e8d8) (#1109)
+   * Restrict use of --req-cn to build-ca (0a46164) (#1098)
+   * Remove command 'display-san' (Code removed in 5a06f94) (50e6002) (#1096)
+   * help: Add 'copyext'; How to use --copy-ext and --san (5a06f94) (#1096)
+   * Allow --san to be used multiple times (5a06f94) (#1096)
+   * Remove default server subject alternative name (0b85a5d) (#576)
+   * Move Status Reports to 'easyrsa-tools.lib' (214b909) (#1080)
+   * export-p12, OpenSSL v1.x: Upgrade PBE and MAC options (60a508a)
+     (#1084 - Based on #1081)
+   * Windows: Introduce 'Non-Admin' mode (c2823c4) (#1073)
+   * LibreSSL: Add fix for missing 'x509' option '-ext' (96dd959) (#1068)
+   * Variable heredoc expansion for SSL/Safe Config file (9c5d423) (#1064)
+
+   Branch-merge: v3.2.0-beta2 (#1055) 2024/01/13 Commit: d51d79b
+
+   * Always use here-doc version of openssl-easyrsa.cnf (2a8c0de)
+     Only use here-doc if the current version is recognised by sha256 hash.
+     The current file is NEVER deleted (60216d5). Partially revert: 2a8c0de
+   * export-p12: New command option 'legacy'. OpenSSL V3 Only (f8514de)
+     Fallback to encryption algorithm RC2_CBC or 3DES_CBC
+   * export-p12: Always set 'friendlyName' to file-name-base (da9e594)
+   * Update OpenSSL to 3.2.0 (03e4829)
+
+   Branch-merge: v3.2.0-beta1 (#1046) 2023/12/15 Commit: 7120876
+
+   * Important note: As of Easy-RSA version 3.2.0-beta1, the configuration files
+     `vars.example`, `openssl-easyrsa.cnf` and all files in `x509-types` directory
+     are no longer required. Package maintainers can omit these files in the future.
+     All files are created as required and deleted upon command completion.
+     `vars.example` is created during `init-pki` and placed in the fresh PKI.
+     These files will be retained for downstream packaging compatibility.
+
+   * Rename X509-type file `code-signing` to `codeSigning` (1c6b31a)
+     The original file will be retained as `code-signing`, however, the automatic
+     X509-types creation will name the file `codeSigning`. This effectively means
+     that both are valid X509-types, until `code-signing` is dropped.
+   * init-pki: Always write vars.example file to fresh PKI (66a8f3e)
+   * New command 'write': Write 'legacy' files to stdout or files (c814e0a)
+   * Remove command 'make-safe-ssl': Replaced by command 'write safe-cnf' (c814e0a)
+   * New Command 'rand': Expose easyrsa_random() to the command line (6131cbf)
+   * Remove function 'set_pass_legacy()' (7470c2a)
+   * Remove command 'rewind-renew' (72b4079)
+   * Remove command 'rebuild' (d6953cc)
+   * Remove command 'upgrade' (6a88edd)
+
+   Branch-merge: v3.2.0-alpha2 (#1043) 2023/12/7 Commit: ed0dc46
+   * Remove EASYRSA_NO_VARS; Allow graceful use without a vars file (3c0ca17)
+
+   Branch-merge: v3.2.0-alpha1 (#1041) 2023/12/2 Commit: 42c2e95
+   * New diagnostic command 'display-cn' (#1040)
+   * Expand renewable certificate types to include code-signing (#1039)
+
+3.1.7 (2023-10-13)
+   * Rewrite vars-auto-detect, adhere to EasyRSA-Advanced.md (#1029)
+     Under the hood, this is a considerable change but there are no user
+     noticeable differences. With the exception of:
+     Caveat: The default '$PWD/pki/vars' file is forbidden to change either
+             EASYRSA or EASYRSA_PKI, which are both implied by default.
+   * EasyRSA-Advanced.md: Correct vars-auto-detect hierarchy (#1029)
+     Commit: ecd65065e3303da78811278a154ef7a969c2777b
+             EASYRSA/vars is moved to a higher priority than a default PKI.
+             vars-auto-detect no longer searches 'easyrsa' program directory.
+   * gen-crl: preserve existing crl.pem ownership+mode (#1020)
+   * New command: make-vars - Print vars.example (here-doc) to stdout (#1024)
+   * show-expire: Calculate cert. expire seconds from DB date (#1023)
+   * Update OpenSSL to 3.1.2
+
+3.1.6 (2023-07-18)
+   * New commands: 'inline' and 'x509-eku' (#993)
+     inline: Build an inline file for a commonName
+     x509-eku: Extract X509v3 extended key usage from a certificate
+   * Expose serial-check, display-dn, display-san and default-san to
+     command line. (#980) (Debugging functions, which remain undocumented)
+   * Expand default status to include vars-file and CA status (#973)
+   * sign-req: Allow the CSR DN-field order to be preserved (#970)
+
+3.1.5 (2023-06-10)
+   * Build Update: script now supports signing and verifying
+   * Automate support-file creation (Free packaging) (#964)
+   * build-ca: New command option 'raw-ca', abbreviation: 'raw' (#963)
+
+     This 'raw' method, is the most reliable way to build a CA,
+     with a password, without writing the CA password to a temp-file.
+
+   This option completely replaces both methods below:
+
+   * build-ca: New option --ca-via-stdin, use SSL -pass* argument 'stdin' (#959)
+     Option '--ca-via-stdin' offers no more security than standard method.
+     Easy-RSA version 3.1.4 ONLY.
+
+   * build-ca: Replace password temp-files with file-descriptors (#955)
+     Using file-descriptors does not work in Windows.
+     Easy-RSA version 3.1.3 ONLY.
+
+3.1.4 (2023-05-23)
+   * build-ca: New option --ca-via-stdin, use SSL -pass* argument 'stdin' (#959)
+   * build-ca: Revert manual CA password method to temp-files (#959)
+     Supersedes #955
+
+     Release v3.1.3 was fatally flawed, it would fail to build a CA under Windows.
+     Release v3.1.4 is specifically a bugfix ONLY, to resolve the Windows problem.
+
+     See the following commits for further details:
+     5d7ad1306d5ebf1588aef77eb3445e70cf5b4ebc
+         build-ca: Revert manual CA password method to temp-files
+     c11135d19b2e7e7385d28abb1132978c849dfa74
+         build-ca: Use OpenSSL password I/O argument 'stdin'
+     27870d695a324e278854146afdac5d6bdade9bba
+         build-ca: Replace password temp-file method with file-descriptors
+         Superseded by 5d7ad13 above.
+
+3.1.3 (2023-05-19)
+   * build-ca: Replace password temp-files with file-descriptors (#955)
+     Superseded by #959
+   * Replace --fix-offset with --startdate, --enddate (#918)
+   * Introduce option -S|--silent-ssl: Silence SSL output (#913)
+   * Only create a random serial number file when expected (#896)
+   * Always verify SSL lib, for all commands (#877)
+   * Option --fix-offset: Adjust off-by-one day (#847) Superseded (#918)
+   * Update OpenSSL to v3.0.8
+
+3.1.2 (2023-01-13)
+   * build-full: Always enable inline file creation (#834)
+   * Make default Edwards curve ED25519 (#828)
+   * Allow --fix-offset to create post-dated certificates (#804) Superseded (#918)
+   * Introduce command 'set-pass' (#756)
+   * Introduce global option '--nopass|--no-pass' (#752)
+   * Introduce global option '--notext|--no-text' (#745)
+   * Command 'help': For unknown command, exit with error (#737)
+   * Find data-files in the correct order (#727 - Reported #725)
+   * Update OpenSSL to 3.0.7 for Windows distribution
+
+3.1.1 (2022-10-13)
+   * Remove command 'renewable' (#715)
+   * Expand 'show-renew', include 'renewed/certs_by_serial' (#700)
+   * Resolve long-standing issue with --subca-len=N (#691)
+   *  ++ NOTICE: Add EasyRSA-Renew-and-Revoke.md (#690)
+   * Require 'openssl-easyrsa.cnf' is up to date (#695}
+   * Introduce 'renew' (version 3). Only renew cert (#688)
+   * Always ensure X509-types files exist (#581 #696)
+   * Expand alias '--days' to all suitable options with a period (#674)
+   * Introduce --keep-tmp, keep temp files for debugging (#667)
+   * Add serialNumber (OID 2.5.4.5) to DN 'org' mode (#606)
+   * Support ampersand and dollar-sign in vars file (#590)
+   * Introduce 'rewind-renew' (#579)
+   * Expand status reports to include checking a single cert (#577)
+   * Introduce 'revoke-renewed' (#547)
+   * update OpenSSL for Windows to 3.0.5
+
+3.1.0 (2022-05-18)
+   * Introduce basic support for OpenSSL version 3 (#492)
+   * Update regex in grep to be POSIX compliant (#556)
+   * Introduce status reporting tools (#555 & #557)
+   * Display certificates using UTF8 (#551)
+   * Allow certificates to be created with fixed date offset (#550)
+   * Add 'verify' to verify certificate against CA (#549)
+   * Add PKCS#12 alias 'friendlyName' (#544)
+   * Support multiple IP-Addresses in SAN (#564)
+   * Add option '--renew-days=NN', custom renew grace period (#557)
+   * Add 'nopass' option to the 'export-pkcs' functions (#411)
+   * Add support for 'busybox' (#543)
+   * Add option '--tmp-dir=DIR' to declare Temp-dir (Commit f503a22)   
+
+3.0.9 (2022-05-17)
+   * Upgrade OpenSSL from 1.1.0j to 1.1.1o (#405, #407) 
+      - We are building this ourselves now.
+   * Fix --version so it uses EASYRSA_OPENSSL (#416)
+   * Use openssl rand instead of non-POSIX mktemp (#478)
+   * Fix paths with spaces (#443)
+   * Correct OpenSSL version from Homebrew on macOs (#416)
+   * Fix revoking a renewed certificate (Original PR #394)
+     Follow-up commit: ef22701878bb10df567d60f2ac50dce52a82c9ee
+   * Introduce 'show-crl' (d1993892178c5219f4a38d50db3b53d1a972b36c)
+   * Support Windows-Git 'version of bash' (#533)
+   * Disallow use of single quote (') in vars file, Warning (#530)
+   * Creating a CA uses x509-types/ca and COMMON (#526)
+   * Prefer 'PKI/vars' over all other locations (#528)
+   * Introduce 'init-pki soft'  option (#197)
+   * Warnings are no longer silenced by --batch (#523)
+   * Improve packaging options (#510)
+   * Update regex for POSIX compliance (#556)
+   * Correct date format for Darwin/BSD (#559)
+
+3.0.8 (2020-09-09)
+   * Provide --version option (#372)
+   * Version information now within generated certificates like on *nix
+   * Fixed issue where gen-dh overwrote existing files without warning (#373)
+   * Fixed issue with ED/EC certificates were still signed by RSA (#374)
+   * Added support for export-p8 (#339)
+   * Clarified error message (#384)
+   * 2->3 upgrade now errors and prints message when vars isn't found (#377)
+
+3.0.7 (2020-03-30)
+   * Include OpenSSL libs and binary for Windows 1.1.0j
+   * Remove RANDFILE environment variable (#261)
+   * Workaround for bug in win32 mktemp (#247, #305, PR #312)
+   * Handle IP address in SAN and renewals (#317)
+   * Workaround for ash and no set -o echo (#319)
+   * Shore up windows testing framework (#314)
+   * Provide upgrade mechanism for older versions of EasyRSA (#349)
+   * Add support for KDC certificates (#322)
+   * Add support for Edward Curves (#354, #350)
+   * Add support for EASYRSA_PASSIN and EASYRSA_PASSOUT env vars (#368)
+   * Add support for RID to SAN (#362)
+
+3.0.6 (2019-02-01)
+   * Certificates that are revoked now move to a revoked subdirectory (#63)
+   * EasyRSA no longer clobbers non-EASYRSA environment variables (#277)
+   * More sane string checking, allowing for commas in CN (#267)
+   * Support for reasonCode in CRL (#280)
+   * Better handling for capturing passphrases (#230, others)
+   * Improved LibreSSL/MacOS support
+   * Adds support to renew certificates up to 30 days before expiration (#286)
+     - This changes previous behavior allowing for certificate creation using
+       duplicate CNs.
+
+3.0.5 (2018-09-15)
+   * Fix #17 & #58: use AES256 for CA key
+   * Also, don't use read -s, use stty -echo
+   * Fix broken "nopass" option
+   * Add -r to read to stop errors reported by shellcheck (and to behave)
+   * Remove overzealous quotes around $pkcs_opts (more SC errors)
+   * Support for LibreSSL
+   * EasyRSA version will be reported in certificate comments
+   * Client certificates now expire in 3 year (1080 days) by default
+
+3.0.4 (2018-01-21)
+    * Remove use of egrep (#154)
+    * Integrate with Travis-CI (#165)
+    * Remove "local" from variable assignment (#165)
+    * Other changes related to Travis-CI fixes
+	* Assign values to variables defined previously w/local
+    * Finally(?) fix the subjectAltName issues I presented earlier (really
+      fixes #168)
+
+3.0.3 (2017-08-22)
+    * Include mktemp windows binary
+    * copy CSR extensions into signed certificate
+
+
+3.0.2 (2017-08-21)
+    * Add missing windows binaries
+
+
+3.0.1 (2015-10-25)
+    * Correct some packaging errors
+
+
+3.0.0 (2015-09-07)
+
+    * cab4a07 Fix typo: Hellman
+        (ljani: Github)
+
+    * 171834d Fix typo: Default
+        (allo-: Github)
+
+    * 8b42eea Make aes256 default, replacing 3des
+        (keros: Github)
+
+    * f2f4ac8 Make -utf8 default
+        (roubert: Github)
+
+
+3.0.0-rc2 (2014/07/27)
+
+    * 1551e5f docs: fix typo
+        (Josh Cepek <josh.cepek@usa.net>)
+
+    * 7ae44b3 Add KNOWN_ISSUES to stage next -rc release
+        (Josh Cepek <josh.cepek@usa.net>)
+
+    * a0d58b2 Update documentation
+        (Josh Cepek <josh.cepek@usa.net>)
+
+    * 5758825 Fix vars.example with proper path to extensions.temp
+        (Josh Cepek <josh.cepek@usa.net>)
+
+    * 89f369c Add support to change private key passphrases
+        (Josh Cepek <josh.cepek@usa.net>)
+
+    * 49d7c10 Improve docs: add Upgrade-Notes; add online support refs
+        (Josh Cepek <josh.cepek@usa.net>)
+
+    * fcc4547 Add build-dist packaging script; update Building docs
+        (Josh Cepek <josh.cepek@usa.net>)
+
+    * f74d08e docs: update Hacking.md with layout & git conventions
+        (Josh Cepek <josh.cepek@usa.net>)
+
+    * 0754f23 Offload temp file removal to a clean_temp() function
+        (Josh Cepek <josh.cepek@usa.net>)
+
+    * 1c90df9 Fix incorrect handling of invalid --use-algo option
+        (Josh Cepek <josh.cepek@usa.net>)
+
+    * c86289b Fix batch-mode handling with changes in e75ad75
+        (Josh Cepek <josh.cepek@usa.net>)
+
+    * e75ad75 refine how booleans are evaluated
+        (Eric F Crist <ecrist@secure-computing.net>)
+
+    * cc19823 Merge PKCS#7 feature from pull req #14
+        (Author: Luiz Angelo Daros de Luca <luizluca@tre-sc.gov.br>)
+        (Modified-By: Josh Cepek <josh.cepek@usa.net>)
+
+    * 8b1fe01 Support OpenSSL-0.9.8 with the EXTRA_EXTS feature
+        (Josh Cepek <josh.cepek@usa.net>)
+
+    * d5516d5 Windows: make builds easier by using a matching dir structure
+        (Josh Cepek <josh.cepek@usa.net>)
+
+    * dc2e6dc Windows: improve external checks and env-var help
+        (Josh Cepek <josh.cepek@usa.net>)
+
+3.0.0-rc1 (2013/12/01)
+
+    * The 3.x release is a nearly complete re-write of the 2.x codebase
+
+    * Initial 3.x series code by Josh Cepek <josh.cepek@usa.net> -- continuing
+    maintenance by the OpenVPN community development team and associated
+    contributors
+
+    * Add ECDSA (elliptic curve) support, thanks to Steffan Karger
+    <steffan@karger.me>

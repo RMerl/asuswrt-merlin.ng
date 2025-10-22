@@ -3,10 +3,15 @@
 }
 .bg{
 	color: rgb(24, 24, 24);
+	width: 99% !important;
+	margin: 0 auto;
 }
 .vpn_icon_all_collect{
 	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
 	background-repeat: no-repeat;
+}
+.function_desc_container{
+	display: none;
 }
 .function_desc_container:before{
 	background: #dcdcdc;
@@ -36,6 +41,16 @@
 	width: 100%;
 	flex-grow: 1;
 	margin-top: 0.5rem;
+}
+@media (max-width: 768px) {
+	.profile_setting_container, .function_desc_container {
+		width: 100%;
+		display: none;
+	}
+	.server_list_container {
+		width: 94% !important;
+		margin: auto;
+	}
 }
 .svr_list_title_container{
 	color: rgb(24, 24, 24);

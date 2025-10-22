@@ -3920,7 +3920,15 @@ _dprintf("nat_rule: start_nat_rules 4.\n");
 		else
 #endif
 #if defined(RTCONFIG_MULTIWAN_PROFILE)
-		if (!is_router_mode())
+		if (isFirstUse && is_router_mode()) {
+			chk_proto(0);
+		}
+		else
+#ifdef RTCONFIG_AUTO_WANPORT
+		if (is_auto_wanport_enabled()) {
+			chk_proto(nvram_get_int("autowan_live_wanunit"));
+		}
+#endif
 #else
 #ifdef RTCONFIG_DUALWAN
 		if(is_router_mode() && !strcmp(dualwan_mode, "lb")){

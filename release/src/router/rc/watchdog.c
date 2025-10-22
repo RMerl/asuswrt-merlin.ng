@@ -515,8 +515,10 @@ void led_control_normal(void)
 #if defined(RTN11P) || defined(RTN300) || defined(RTN11P_B1)
 	led_control(LED_WPS, LED_ON);	//wps led is also 2g led. and NO power led.
 #else
+#ifndef EBG19P
 	if (nvram_get_int("led_pwr_gpio") != nvram_get_int("led_wps_gpio"))
 		led_control(LED_WPS, LED_OFF);
+#endif
 #endif
 
 #if defined(RTCONFIG_RGBLED) && defined(GTAC2900)
@@ -2651,7 +2653,7 @@ static int handle_btn_in_mfg(void)
 	}
 #endif
 
-#if defined(PRTAX57_GO) || defined(RTBE58_GO)
+#if defined(PRTAX57_GO)
 	if (!button_pressed(BTN_SWITCH)) {
 		nvram_set("btn_switch", "0");
 	}
@@ -3505,7 +3507,7 @@ void btn_check(void)
 
 	/*--------------- Add BTN_RST MFG test ------------------------*/
 #ifndef RTCONFIG_WPS_RST_BTN
-#if defined(RTCONFIG_DSL) || defined(EBG15) || defined(EBG19) /* Paul add 2013/4/2 */
+#if defined(RTCONFIG_DSL) || defined(EBG15) || defined(EBG19P) /* Paul add 2013/4/2 */
 			if ((btn_count % 2) == 0)
 				led_control(LED_POWER, LED_ON);
 			else
@@ -3956,7 +3958,7 @@ void btn_check(void)
 	handle_turbo_button();
 	handle_led_onoff_button();
 
-#if (((defined(RTCONFIG_LED_BTN) || !defined(RTCONFIG_WIFI_TOG_BTN)) && !defined(RTCONFIG_QCA)) && !defined(RTAX82U) && !defined(DSL_AX82U) && !defined(GSAX3000) && !defined(GSAX5400) && !defined(TUFAX5400)) && !defined(GTAX6000) && !defined(GT10) && !defined(RTAX82U_V2) && !defined(TUFAX5400_V2) && !defined(EBG15) && !defined(EBG19)
+#if (((defined(RTCONFIG_LED_BTN) || !defined(RTCONFIG_WIFI_TOG_BTN)) && !defined(RTCONFIG_QCA)) && !defined(RTAX82U) && !defined(DSL_AX82U) && !defined(GSAX3000) && !defined(GSAX5400) && !defined(TUFAX5400)) && !defined(GTAX6000) && !defined(GT10) && !defined(RTAX82U_V2) && !defined(TUFAX5400_V2) && !defined(EBG15) && !defined(EBG19P)
 	LED_status_old = LED_status;
 #if !defined(RTCONFIG_LED_BTN) && !defined(RTCONFIG_WIFI_TOG_BTN)
 #ifndef SW_LEDBTN
@@ -5026,6 +5028,32 @@ int timecheck_item(char *activeTime)
 	return active;
 }
 
+
+#ifdef RTCONFIG_AI_SERVICE
+static char *AI_SERVICE_STATUS[] = {
+	"failed",
+	"DOCKER_DONE",
+	"DONE",
+	"",
+	NULL
+};
+
+int is_ota_or_rescue_in_progress(void)
+{
+	int ret = 1;
+	int i;
+	char status[64];
+	snprintf(status, sizeof(status), "%s", nvram_safe_get("ai_prog_status"));
+	for (i = 0; AI_SERVICE_STATUS[i] != NULL; i++) {
+		if (strcmp(status, AI_SERVICE_STATUS[i]) == 0) {
+			ret = 0;
+			break;
+		}
+	}
+	return ret;
+}
+#endif
+
 int timecheck_reboot(int sched_type, char *activeSchedule)
 {
 	int active, current_time, current_date, Time2Active, Date2Active;
@@ -5317,7 +5345,11 @@ end_of_wl_sched:
 	int reboot_schedule_type = 0;
 	RB_SCHED_DBG("[reboot-scheduler] checking...\n");
 	// don't need to check reboot schedule when the system is booting up.
-	if (uptime() > 300 && nvram_match("reboot_schedule_enable", "1"))
+	if (uptime() > 300 && nvram_match("reboot_schedule_enable", "1") 
+#ifdef RTCONFIG_AI_SERVICE
+		&& is_ota_or_rescue_in_progress() == 0
+#endif
+		)
 	{
 		if (nvram_match("ntp_ready", "1"))
 		{
@@ -6089,7 +6121,7 @@ static int allstatus = 0;
 
 void fake_etlan_led(void)
 {
-#if !defined(GTAC5300) && !defined(RTAX88U) && !defined(BC109) && !defined(EBG19)
+#if !defined(GTAC5300) && !defined(RTAX88U) && !defined(BC109) && !defined(EBG19P)
 	static unsigned int blink_etlan_check = 0;
 	static unsigned int blink_etlan = 0;
 	static unsigned int data_etlan = 0;
@@ -6872,11 +6904,15 @@ int confirm_led()
 #endif
 #if defined(RTCONFIG_USB) && !defined(RTCONFIG_BLINK_LED)
 #ifdef RTCONFIG_USB_XHCI
+#ifndef EBG19P
 		&& led_gpio_table[LED_USB3] != 0xff
 		&& led_gpio_table[LED_USB3] != -1
 #endif
+#endif
+#ifndef EBG19P
 		&& led_gpio_table[LED_USB] != 0xff
 		&& led_gpio_table[LED_USB] != -1
+#endif
 #endif
 #ifdef RTCONFIG_MMC_LED
 		&& led_gpio_table[LED_MMC] != 0xff
@@ -6888,8 +6924,10 @@ int confirm_led()
 #endif
 #ifdef RTCONFIG_DSL
 #ifndef RTCONFIG_DUALWAN
+#ifndef EBG19P
 		&& led_gpio_table[LED_WAN] != 0xff
 		&& led_gpio_table[LED_WAN] != -1
+#endif
 #endif
 #endif
 	)
@@ -7267,6 +7305,7 @@ void led_check(int sig)
 		case MODEL_BC109:
 		case MODEL_BC105:
 		case MODEL_EBG19:
+		case MODEL_EBG19P:
 		case MODEL_GTAX11000:
 		case MODEL_RTAX92U:
 		case MODEL_RTAX95Q:
@@ -9071,7 +9110,6 @@ static void auto_firmware_check()
 {
 	int periodic_check = 0;
 	static time_t periodic_check_timestamp = 0;
-	static int period_retry = 0;
 	static int bootup_check_period = 3;	//wait 3 times(90s) to check
 	static int bootup_check = 1;
 	int live_update_pause = nvram_get_int("live_update_pause");
@@ -9124,21 +9162,18 @@ static void auto_firmware_check()
 	}
 	if( update_enable == 1 && local.tm_hour == update_time_hr && local.tm_min == update_time_min){ //at user defined time to check
 		periodic_check = 1;
-		period_retry = 0;
 		FAUPGRADE_DBG("update_enable : %d , update_time : %d:%d", update_enable, update_time_hr, update_time_min);
 	}
 	else if( update_enable == 0 && local.tm_hour == (2 + rand_hr) && local.tm_min == rand_min ){ //at 2 am + random offset to check
 		periodic_check = 1;
-		period_retry = 0;
 	}
 #else
 	if(local.tm_hour == (2 + rand_hr) && local.tm_min == rand_min) //at 2 am + random offset to check
 		periodic_check = 1;
-		period_retry = 0;
 #endif
-	//FAUPGRADE_DBG("periodic_check = %d, period_retry = %d, bootup_check = %d", periodic_check, period_retry, bootup_check);
+	//FAUPGRADE_DBG("periodic_check = %d, bootup_check = %d", periodic_check, bootup_check);
 #ifndef RTCONFIG_FW_JUMP
-	if (bootup_check || periodic_check || period_retry!=0)
+	if (bootup_check || periodic_check)
 #endif
 	{
 #if defined(RTCONFIG_ASUSCTRL)
@@ -9146,7 +9181,7 @@ static void auto_firmware_check()
 			asus_ctrl_sku_update();
 #endif
 #ifdef RTCONFIG_HMA
-		if (bootup_check || (periodic_check && period_retry == 0))
+		if (bootup_check || periodic_check)
 			system("hmavpn update &");
 #endif
 #ifndef RTCONFIG_FW_JUMP
@@ -9189,8 +9224,6 @@ static void auto_firmware_check()
 			}
 #endif
 		}
-
-		period_retry = (period_retry+1) % 3;
 #endif
 
 		if(!nvram_contains_word("rc_support", "noupdate")){
@@ -9209,7 +9242,6 @@ static void auto_firmware_check()
 				if(uptime() - periodic_check_timestamp > 60){
 					FAUPGRADE_DBG("fimrware update check first time");
 					periodic_check_timestamp = uptime();
-					period_retry = 0;
 				}
 				else{
 					FAUPGRADE_DBG("cfg fimrware update check once");
@@ -9240,14 +9272,23 @@ static void auto_firmware_check()
 				&& strlen(nvram_safe_get("webs_state_info"))
 				)
 #ifdef RTCONFIG_AI_SERVICE
-		|| (nvram_get_int("webs_state_ai_update") && !nvram_get_int("webs_state_ai_error") && strlen("webs_state_ai_info"))
+			|| (nvram_get_int("webs_state_ai_update")
+					&& !nvram_get_int("webs_state_ai_error")
+					&& !nvram_safe_get("webs_state_ai_info")
+					&& !nvram_safe_get("webs_state_ai_REQinfo"))
+#if  defined(GTBE19000AI)
+			|| (nvram_get_int("webs_state_slmqa_update")
+					&& !nvram_get_int("webs_state_slmqa_error"))
 #endif
-				)
+#endif // RTCONFIG_AI_SERVICE
+		)
 		{
 			FAUPGRADE_DBG("retrieve firmware information");
 
 			if (!get_chance_to_control()){
 				FAUPGRADE_DBG("user in use");
+				FAUPGRADE_DBG("uptime(%ld), login_timestamp(%s), app_login_timestamp(%s)", uptime(), nvram_safe_get("login_timestamp"), nvram_safe_get("app_login_timestamp"));
+				FAUPGRADE_DBG("login_ip(%s), login_ip_str(%s)", nvram_safe_get("login_ip"), nvram_safe_get("login_ip_str"));
 				return;
 			}
 
@@ -9261,7 +9302,6 @@ static void auto_firmware_check()
 			if(uptime() - periodic_check_timestamp > 60){
 				FAUPGRADE_DBG("fimrware update check first time");
 				periodic_check_timestamp = uptime();
-				period_retry = 0; //stop retry
 			}
 			else{
 				FAUPGRADE_DBG("fimrware update check once");
@@ -9271,10 +9311,6 @@ static void auto_firmware_check()
 #ifdef RTCONFIG_FORCE_AUTO_UPGRADE
 			if(
 			nvram_get_int("webs_state_flag") == 2
-#ifdef RTCONFIG_AI_SERVICE
-			|| nvram_get_int("webs_state_ai_flag") == 2
-			|| (update_enable == 1 && nvram_get_int("webs_state_ai_flag") == 1)
-#endif
 #ifdef RTCONFIG_AUTO_FW_UPGRADE
 			|| (update_enable == 1 && nvram_get_int("webs_state_flag") == 1)
 #endif
@@ -9293,6 +9329,20 @@ static void auto_firmware_check()
 					return;
 				}
 			}
+#ifdef RTCONFIG_AI_SERVICE
+#if  defined(GTBE19000AI)
+			else if(nvram_get_int("webs_state_slmqa_flag") == 2)
+			{
+				FAUPGRADE_DBG("Need to upgrade SLM QA data!");
+				notify_rc("start_webs_slmqa_upgrade");
+			}
+#endif
+			else if(nvram_get_int("webs_state_ai_flag") == 2)
+			{
+				FAUPGRADE_DBG("Need to upgrade AI firmware!");
+				notify_rc("start_webs_ai_upgrade");
+			}
+#endif // RTCONFIG_AI_SERVICE
 #endif
 
 #ifdef RTCONFIG_CFGSYNC
@@ -9913,12 +9963,22 @@ void onboarding_check()
 #endif
 		}
 
-		lock = file_lock("onboarding");
-		if (strlen(nvram_safe_get("cfg_group")) == 0) {
-			stop_cfgsync();
-			notify_rc("resetdefault");
+#ifdef RTCONFIG_AMAS_NEWOB
+		if (nvram_get_int("newob_approval"))
+		{
+			_dprintf("### restore to rpt setting ###\n");
+			restore_rpt_setting();
 		}
-		file_unlock(lock);
+		else
+#endif
+		{
+			lock = file_lock("onboarding");
+			if (strlen(nvram_safe_get("cfg_group")) == 0) {
+				stop_cfgsync();
+				notify_rc("resetdefault");
+			}
+			file_unlock(lock);
+		}
 	}
 }
 #endif
@@ -9961,6 +10021,22 @@ void cfgsync_check()
 			notify_rc_and_wait_2min("start_cfgsync");
 		}
 		return;
+	}
+#endif
+
+#if defined(RTCONFIG_AMAS_NEWOB)
+	if (!pids("cfg_newob") && ((is_router_mode() && (nvram_get_int("x_Setting") == 0)))
+#if defined(RTCONFIG_AMAS_NEWOB_RP)
+		|| repeater_mode()
+#endif
+#if defined(RTCONFIG_AMAS_NEWOB_ROUTER_AP)
+		|| ((nvram_get_int("re_mode") == 0) &&(access_point_mode() && (nvram_get_int("cfg_recount") == 0))
+		|| ((is_router_mode() && (nvram_get_int("x_Setting") == 1)) && (nvram_get_int("cfg_recount") == 0))
+#endif
+		)
+	{
+		_dprintf("start cfgnewob\n");
+		notify_rc_and_wait_2min("start_cfgnewob");
 	}
 #endif
 
@@ -11226,6 +11302,15 @@ void check_eth1_pause()
 }
 #endif
 
+#ifdef RTCONFIG_MULTIWAN_IF
+void mtwan_check()
+{
+	if(!pids("mtwanduck") && !no_need_to_start_wanduck()){
+		start_mtwanduck();
+	}
+}
+#endif
+
 /*******************************************************************
 * NAME: record_current_sys_uptime
 * AUTHOR: Renjie Lee
@@ -11331,6 +11416,54 @@ void check_ubifs()
 			}
 		}
 	}
+}
+#endif
+
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+
+#define MOUNT_FILE "/proc/mounts"
+#define CHECK_PATH "/data"
+
+int is_data_ro() {
+	FILE *fp = fopen(MOUNT_FILE, "r");
+	if (!fp) {
+		perror("fopen");
+		return -1;
+	}
+	char line[512];
+	int found = 0;
+
+	while (fgets(line, sizeof(line), fp)) {
+		char dev[128], mnt[128], fstype[64], opts[256];
+		if (sscanf(line, "%127s %127s %63s %255s", dev, mnt, fstype, opts) == 4) {
+			if (strcmp(mnt, CHECK_PATH) == 0) {
+				found = 1;
+				if (strstr(opts, "ro")) {
+					fclose(fp);
+					return 1; // read-only
+				} else {
+					fclose(fp);
+					return 0; // read-write
+				}
+			}
+		}
+	}
+	fclose(fp);
+	return found ? 0 : -1; // -1: not mounted
+}
+
+void check_mtd_data()
+{
+	static int prev_state = -1;
+	int ro = is_data_ro();
+	if (ro == 1 && prev_state != 1) {
+		logmessage("mtd", "ALERT: /data is now read-only!\n");
+	} else if (ro == 0 && prev_state != 0) {
+		logmessage("mtd", "/data checked (rw).\n");
+	} else if (ro == -1 && prev_state != -1) {
+		logmessage("mtd", "WARNING: /data is not mounted.\n");
+	}
+	prev_state = ro;
 }
 #endif
 
@@ -11451,7 +11584,7 @@ void watchdog(int sig)
 	single_led_status();
 #endif
 #if defined(RTCONFIG_BT_CONN)
-#if defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2) || defined(XC5)
+#if defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2) || defined(XC5) || defined(EBG15) || defined(EBG19P)
 	bluetooth_check();
 #endif
 	bt_turn_off_service();
@@ -11706,8 +11839,10 @@ wdp:
 	mtketh_reset_check();
 #endif
 	dnsmasq_check();
+#if !defined(RTCONFIG_NOWL)
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
 	roamast_check();
+#endif
 #endif
 #if defined(RPAX56)
 	amas_linkctrl();
@@ -11860,7 +11995,7 @@ wdp:
 		fbwifi_check();
 #endif
 #ifdef RTCONFIG_MULTIWAN_IF
-	check_mtwan_ipv6_route();
+	mtwan_check();
 #endif
 #if defined(RPBE58) || defined(RTBE58_GO)
 	//wpasupp_hapd_check();
@@ -11871,6 +12006,9 @@ wdp:
 	infosvr_check();
 #if defined(RTCONFIG_UBIFS)
         check_ubifs();
+#endif
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+	check_mtd_data();
 #endif
 }
 

@@ -3,6 +3,7 @@
 }
 .light_effect_setting_bg {
 	width: 100%;
+	box-shadow: initial;
 }
 .setting_enable_bg .text > span {
 	color: rgb(0, 0, 0);
@@ -92,4 +93,8 @@
 }
 #default_set {
 	color: rgb(0, 0, 0);
+}
+.all_led_off,
+.faq-link {
+	color: rgb(255, 0, 0) !important;
 }

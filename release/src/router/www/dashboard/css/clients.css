@@ -379,9 +379,9 @@ div[role~="icon-inner"] {
     color: var(--text-regular-color);
 }
 .btn-input-icon {
-    color: var(--bg-btn-confirm-color);
-    border-color: var(--bg-btn-confirm-color);
-    background-color: var(--bg-btn-confirm-color);
+    color: var(--primary-btn-text-color);
+    border-color: var(--primary-btn-normal-stroke);
+    background-color: var(--primary-btn-normal-fill);
 }
 .card-sub-content {
     width: 90%;
@@ -441,13 +441,19 @@ div[role~="icon-inner"] {
     font-size: 12px;
     font-weight: 600;
 }
-
+.system-linkwan-tab {
+    width: 12px;
+    height: 12px;
+    background-color: var(--text-hint-color-light);
+    border-radius: 2px;
+}
 .extend-panel {
     position: absolute;
     top: 12px;
     right: 12px;
     border-radius: 4px;
     border: 1px solid var(--bg-divide-line-color);
+    background: var(--bg-card-color);
 }
 
 .detail-table-height {
@@ -487,9 +493,6 @@ div[role~="icon-inner"] {
 }
 .aiProtection-scenario {
     width: 75%;
-}
-.text-primary {
-    color: var(--bg-btn-confirm-color) !important;
 }
 .fixedChartSize {
     height: 300px !important;

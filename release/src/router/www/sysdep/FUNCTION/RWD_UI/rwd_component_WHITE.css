@@ -6,6 +6,10 @@
 }
 .bg_rwd{
 	color: #181818;
+	width: 99% !important;
+}
+.function_desc_container {
+	display: none;
 }
 .function_desc_container .help_icon,
 .profile_list_container .help_icon,
@@ -79,6 +83,16 @@
 }
 .profile_setting_title > .title{
 	color: #4D4D4D;
+}
+@media (max-width: 768px) {
+	.profile_setting_container, .function_desc_container {
+		width: 100%;
+		display: none;
+	}
+	.profile_list_container {
+		width: 94% !important;
+		margin: auto;
+	}
 }
 .profile_setting_title .del_btn{
 	background-color: var(--icon-color);

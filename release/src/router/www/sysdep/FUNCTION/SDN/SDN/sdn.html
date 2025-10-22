@@ -54,8 +54,13 @@ var app_control = {
 }
 $('link[group="extend_css"]').remove();
 if(theme == "WHITE" || theme == "ROG" || theme == "TUF"){
-	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_' + theme + '.css">');
-	$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/SDN/sdn_' + theme + '.css">');
+	if(isSupport("UI4")) {
+		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_v4.css">');
+		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/SDN/sdn_v4.css">');
+	} else {
+		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_' + theme + '.css">');
+		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/SDN/sdn_' + theme + '.css">');
+	}
 }
 
 function check_fbwifi2_id_secret(){
@@ -74,6 +79,19 @@ function check_fbwifi2_id_secret(){
 
 function initial(){
 	postMessageToApp({"web_ready": "1", "web_init": "0"});
+
+	if(parent.webWrapper){
+		const resizeObserver = new ResizeObserver(entries => {
+			var height = document.querySelector('.profile_list_container').scrollHeight;
+			for (const entry of entries) {
+				height = Math.max(height, entry.target.scrollHeight);
+			}
+			window.parent.postMessage({type: 'resize', height: height+20}, '*');
+		});
+		
+		resizeObserver.observe(document.querySelector('.popup_container'));
+		resizeObserver.observe(document.querySelector('.profile_setting_container'));
+	}
 
 	init_sdn_all_list();
 	show_loading_obj();
@@ -103,7 +121,11 @@ function initial(){
 	var delay_load = (app_control.type == "") ? 100 : 0;
 	setTimeout(function(){
 		if(theme == "WHITE" || theme == "ROG" || theme == "TUF"){
-			$('link').first().before('<link rel="stylesheet" type="text/css" href="/js/weekSchedule/schedule_ui_' + theme + '.css">');
+			if (isSupport("UI4")) {
+				$('link').first().before('<link rel="stylesheet" type="text/css" href="/js/weekSchedule/schedule_ui_v4.css">');
+			} else {
+				$('link').first().before('<link rel="stylesheet" type="text/css" href="/js/weekSchedule/schedule_ui_' + theme + '.css">');
+			}
 		}
 		$('link').first().before('<link rel="stylesheet" type="text/css" href="/js/weekSchedule/schedule_ui.css">');
 		$('link').first().before('<link rel="stylesheet" type="text/css" href="/pwdmeter.css">');

@@ -1450,7 +1450,7 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 #if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_QCA)
 				sprintf(options + strlen(options), ",nodev" + (options[0] ? 0 : 1));
 //#if defined(BCM6756) || defined(BCM6813) || defined(BCM6855) || defined(BCM4912) \
-//	|| defined(EBG19) || defined(EBG15) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX5400)
+//	|| defined(EBG19P) || defined(EBG15) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX5400)
 #if 0
 				// dalloc=0 cannot be set with iostreaming
 				sprintf(options + strlen(options), ",dalloc=0" + (options[0] ? 0 : 1));
@@ -1473,7 +1473,7 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 #if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_QCA)
 			sprintf(options + strlen(options), ",nodev" + (options[0] ? 0 : 1));
 //#if defined(BCM6756) || defined(BCM6813) || defined(BCM6855) || defined(BCM4912) \
-//	|| defined(EBG19) || defined(EBG15) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX5400)
+//	|| defined(EBG19P) || defined(EBG15) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX5400)
 #if 0
 			// dalloc=0 cannot be set with iostreaming
 			sprintf(options + strlen(options), ",dalloc=0" + (options[0] ? 0 : 1));
@@ -2837,7 +2837,7 @@ _dprintf("restart_nas_services(%d): test 5.\n", getpid());
 					notify_rc_and_wait("restart_nasapps");
 				}
 				TRACE_PT(" end of mount\n");
-#if defined(EBG15) || defined(EBG19)
+#if defined(EBG15) || defined(EBG19P)
 				led_control(LED_USB, LED_ON);
 #endif
 			}
@@ -2859,7 +2859,7 @@ _dprintf("restart_nas_services(%d): test 6.\n", getpid());
 				//restart_nas_services(1, 1, 0);
 				notify_rc_after_wait("restart_nasapps");
 			}
-#if defined(EBG15) || defined(EBG19)
+#if defined(EBG15) || defined(EBG19P)
 			led_control(LED_USB, LED_OFF);
 #endif
 		}
@@ -2960,7 +2960,7 @@ void write_ftpd_conf()
 		}
 	}
 	fprintf(fp, "tcp_wrappers=NO\n");
-	strcpy(maxuser, nvram_safe_get("st_max_user"));
+	snprintf(maxuser, sizeof(maxuser), "%s", nvram_safe_get("st_max_user"));
 	if ((atoi(maxuser)) > 0)
 		fprintf(fp, "max_clients=%s\n", maxuser);
 	else

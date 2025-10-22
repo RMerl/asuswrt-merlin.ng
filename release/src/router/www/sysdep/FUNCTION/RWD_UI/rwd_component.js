@@ -1075,6 +1075,39 @@ function resize_iframe_height(_preheight){
 		var margin_bottom = 30;
 		$(parent.document).find(".rwd_iframe").css("height", (Math.max(menu_height, container_height, pop_height) + margin_bottom));
 	}
+
+	if (isSupport("UI4")) {
+		if($(parent.document).find("#settingsWindow").length == "1"){
+			const $settingsWindow = $(parent.document).find("#settingsWindow");
+			const currentSettingsHeight = $settingsWindow[0].offsetHeight;
+
+			let hasPopup = false;
+			let actualHeight = 0;
+
+			$(".popup_container").each(function(index){
+				if($(this).css("display") == "flex"){
+					hasPopup = true;
+					actualHeight = Math.max(actualHeight, $(this)[0].scrollHeight);
+				}
+			});
+
+			if(hasPopup && actualHeight > 0){
+				if(actualHeight > currentSettingsHeight){
+					if(!window.originalSettingsWindowHeight){
+						window.originalSettingsWindowHeight = $settingsWindow.css("height") || currentSettingsHeight + 'px';
+					}
+
+					const newHeight = actualHeight + 50;
+					$settingsWindow.css("height", newHeight + "px");
+				}
+			}
+			else{
+				if(window.originalSettingsWindowHeight){
+					$settingsWindow.css("height", window.originalSettingsWindowHeight);
+				}
+			}
+		}
+	}
 }
 function showLoading_RWD(seconds, flag){
 	if (isSupport("UI4") && businessLoader) {
@@ -1144,8 +1177,20 @@ function close_popup_customize_alert(){
 	resize_iframe_height();
 }
 function adjust_popup_container_top(_obj, _offsetHeight){
+	const getScrollTop = () => {
+		if(isSupport("UI4")){
+			return top.document.querySelector("article.main-content").scrollTop;
+		}
+		else if (top.webWrapper) {
+			return top.window.pageYOffset || top.document.documentElement.scrollTop || top.document.body.scrollTop || 0
+		}
+		else {
+			return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+		}
+	};
+
 	$(_obj).css({top: ""});
-	var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+	var scrollTop = getScrollTop();
 	var parent_scrollTop = parent.window.pageYOffset || parent.document.documentElement.scrollTop || parent.document.body.scrollTop || 0;
 	if(scrollTop == 0 && parent_scrollTop != 0)
 		parent_scrollTop = parent_scrollTop - 200;

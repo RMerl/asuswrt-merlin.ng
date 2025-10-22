@@ -1,8 +1,30 @@
+
+<!DOCTYPE html>
 <html>
-	<iframe id="settingsWindow" style="
-		width: 100%;
-		height: 100vh;
-	"></iframe>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0,  user-scalable=no" />
+    </head>
+
+    <body>
+        <div class="row justify-content-center">
+            <div class="col-12 mb-3">
+                <div class="page-title">AiMesh</div>
+            </div>
+        </div>
+		<div class="row justify-content-center">
+            <div class="col-12 col-xxl-10 mb-3">
+				<div class="pt-2 h-100">
+					<iframe id="settingsWindow" style="
+						width: 98%;
+						height: 100vh;
+						margin: 0 auto;
+					" src=""></iframe>
+				</div>
+			</div>
+        </div>
+	</body>
 
 	<script>
 		var webWrapper = true;
@@ -77,6 +99,8 @@
 				"border-bottom": "solid 3px #006ce1"
 			})
 
+			iframe.find("#tabMenu").hide();
+
 			// content
 			iframe.find("#FormTitle")
 				.parent().parent().parent().parent().wrap( "<div style='display:inline-block;width:100%;'></div>")
@@ -94,11 +118,11 @@
 			iframe.find(".hint-color").removeClass("hint-color").addClass("warning_desc")
 
 			// footer
-			iframe.find("#footer").hide()
+			iframe.find("#footer").hide();
+			iframe.find("body").addClass("scaleBodyAiMesh");
 		}
 
 		function setupBusinessUI(){
-			findColorAndReplace("color", "FFFFFF", "006CE1");
 			findColorAndReplace("color", "FFCC00", "006CE1");
 			findColorAndReplace("background-color", "475A5F", "transparent");
 			findColorAndReplace("background-color", "4D595D", "transparent");
@@ -135,6 +159,6 @@
                     iframe.style.height = `${Math.max(iframeHeight, windowHeight * 1.13)}px`
 				}
 			}
-		}, 1000);
+		});
 	</script>
 </html>

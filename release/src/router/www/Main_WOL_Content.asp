@@ -11,9 +11,6 @@
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="/device-map/device-map.css">
-<style>
-
-</style>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
@@ -366,9 +363,13 @@ function applyRule(){
 									  			<!-- client info -->
 																					  		
 				            			<td width="80%">
-											<input type="text" class="input_20_table" maxlength="17" name="wollist_macAddr" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" style="margin-left:-12px;width:255px;" onKeyPress="return validator.isHWAddr(this,event)" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">
-											<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_device_name#>">
-											<div id="ClientList_Block_PC" class="clientlist_dropdown"></div>	
+                                            <div style="display: flex; justify-content: center">
+                                                <div class="clientlist_dropdown_main" style="width: 60%">
+                                                    <input type="text" class="input_20_table" maxlength="17" name="wollist_macAddr" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" onKeyPress="return validator.isHWAddr(this,event)" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">
+                                                    <img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullLANIPList(this);" title="<#select_device_name#>">
+                                                    <div id="ClientList_Block_PC" class="clientlist_dropdown"></div>
+                                                </div>
+                                            </div>
 				            			</td>
 				            			<td width="20%">
 											<div> 

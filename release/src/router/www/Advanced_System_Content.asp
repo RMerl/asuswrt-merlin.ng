@@ -239,6 +239,20 @@ var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
 
 var secure_default = isSupport("secure_default");
 
+var get_s46_hgw_case_tmp = '<% nvram_get("wan0_s46_hgw_case"); %>';  //topology 2,3,6
+var s46_ports_check_flag_tmp = (get_s46_hgw_case_tmp == '3' || get_s46_hgw_case_tmp == '6');    //true for topology 3||6
+var get_ipv6_s46_ports_tmp = (Softwire46_support && (wan0_proto=="v6plus" || wan0_proto=="ocnvc" || wan0_proto=="v6opt"))? '<%nvram_get("ipv6_s46_ports");%>':'0';
+var array_ipv6_s46_ports_tmp = [];
+if(get_ipv6_s46_ports_tmp != "0" && get_ipv6_s46_ports_tmp != ""){
+    array_ipv6_s46_ports_tmp = get_ipv6_s46_ports_tmp.split(" ");
+}
+if (typeof s46_ports_check_flag === "undefined") {
+    s46_ports_check_flag = s46_ports_check_flag_tmp;
+}
+if (typeof array_ipv6_s46_ports === "undefined") {
+    array_ipv6_s46_ports = array_ipv6_s46_ports_tmp;
+}
+
 function initial(){	
 	//parse nvram to array
 	var parseNvramToArray = function(oriNvram) {
@@ -2737,10 +2751,10 @@ function Get_Component_reboot_schedule_ui(config){
 					<td>
 								<div id="dst_start" style="color:white;display:none;">
 									<div>
-										<select name="dst_start_m" class="input_option"></select>&nbsp;<#month#> &nbsp;
-										<select name="dst_start_w" class="input_option"></select>&nbsp;
-										<select name="dst_start_d" class="input_option"></select>&nbsp;<#diskUtility_week#> & <#Day#> &nbsp;
-										<select name="dst_start_h" class="input_option"></select>&nbsp;<#Hour#> &nbsp;
+										<select name="dst_start_m" class="input_option short_input"></select>&nbsp;<#month#> &nbsp;
+										<select name="dst_start_w" class="input_option short_input"></select>&nbsp;
+										<select name="dst_start_d" class="input_option short_input"></select>&nbsp;<#diskUtility_week#> & <#Day#> &nbsp;
+										<select name="dst_start_h" class="input_option short_input"></select>&nbsp;<#Hour#> &nbsp;
 										<script>
 											for(var i = 1; i < dst_month.length; i++){
 												add_option(document.form.dst_start_m, dst_month[i], i, 0);
@@ -2764,10 +2778,10 @@ function Get_Component_reboot_schedule_ui(config){
 					<td>
 								<div id="dst_end" style="color:white;display:none;">
 									<div>
-										<select name="dst_end_m" class="input_option"></select>&nbsp;<#month#> &nbsp;
-										<select name="dst_end_w" class="input_option"></select>&nbsp;
-										<select name="dst_end_d" class="input_option"></select>&nbsp;<#diskUtility_week#> & <#Day#> &nbsp;
-										<select name="dst_end_h" class="input_option"></select>&nbsp;<#Hour#> &nbsp;
+										<select name="dst_end_m" class="input_option short_input"></select>&nbsp;<#month#> &nbsp;
+										<select name="dst_end_w" class="input_option short_input"></select>&nbsp;
+										<select name="dst_end_d" class="input_option short_input"></select>&nbsp;<#diskUtility_week#> & <#Day#> &nbsp;
+										<select name="dst_end_h" class="input_option short_input"></select>&nbsp;<#Hour#> &nbsp;
 										<script>
 											for(var i = 1; i < dst_month.length; i++){
 												add_option(document.form.dst_end_m, dst_month[i], i, 0);
@@ -2912,8 +2926,8 @@ function Get_Component_reboot_schedule_ui(config){
 				<tr id="reboot_schedule_time_tr">
 					<th><#Reboot_Time_1#></th>
 					<td>
-						<input type="text" maxlength="2" class="input_3_table" name="reboot_time_x_hour" onKeyPress="return validator.isNumber(this,event);" onblur="validator.timeRange(this, 0);" autocorrect="off" autocapitalize="off"> :
-						<input type="text" maxlength="2" class="input_3_table" name="reboot_time_x_min" onKeyPress="return validator.isNumber(this,event);" onblur="validator.timeRange(this, 1);" autocorrect="off" autocapitalize="off">
+						<input type="text" maxlength="2" class="input_3_table short_input" name="reboot_time_x_hour" onKeyPress="return validator.isNumber(this,event);" onblur="validator.timeRange(this, 0);" autocorrect="off" autocapitalize="off"> :
+						<input type="text" maxlength="2" class="input_3_table short_input" name="reboot_time_x_min" onKeyPress="return validator.isNumber(this,event);" onblur="validator.timeRange(this, 1);" autocorrect="off" autocapitalize="off">
 					</td>
 				</tr>
 				<tr id="ncb_enable_option_tr" style="display:none">
@@ -3071,12 +3085,12 @@ function Get_Component_reboot_schedule_ui(config){
 					<th><#Local_access_certificate_download#></th>
 					<td>
 						<div style="display: flex;">
-							<input id="download_cert_btn" class="button_gen buttonInTable" onclick="save_cert_key();" type="button" value="<#btn_Export#> <#vpn_openvpn_KC_SA#>" />
-							<input id="clear_cert_btn" class="button_gen buttonInTable" style="margin-left:10px" onclick="clear_server_cert_key();" type="button" value="<#CTL_renew#> <#vpn_openvpn_KC_SA#>" /><!-- untranslated -->
+							<input id="download_cert_btn" class="button_gen_in_table button_gen buttonInTable" onclick="save_cert_key();" type="button" value="<#btn_Export#> <#vpn_openvpn_KC_SA#>" />
+							<input id="clear_cert_btn" class="button_gen_in_table button_gen buttonInTable" style="margin-left:10px" onclick="clear_server_cert_key();" type="button" value="<#CTL_renew#> <#vpn_openvpn_KC_SA#>" /><!-- untranslated -->
 						</div>
 						<div style="display: flex;">
-							<input id="download_cacert_btn" class="button_gen buttonInTable" style="margin-top:10px" onclick="save_cacert_key();" type="button" value="<#btn_Export#> Root Certificate" />
-							<input id="clear_cacert_btn" class="button_gen buttonInTable" style="margin-left:10px;margin-top:10px" onclick="clear_cert_key();" type="button" value="<#CTL_renew#> Root Certificate" /><!-- untranslated -->
+							<input id="download_cacert_btn" class="button_gen_in_table button_gen buttonInTable" style="margin-top:10px" onclick="save_cacert_key();" type="button" value="<#btn_Export#> Root Certificate" />
+							<input id="clear_cacert_btn" class="button_gen_in_table button_gen buttonInTable" style="margin-left:10px;margin-top:10px" onclick="clear_cert_key();" type="button" value="<#CTL_renew#> Root Certificate" /><!-- untranslated -->
 						</div>
 						<span id="download_cacert_desc"><#Local_access_certificate_desc#></span><a id="creat_cert_link" href="" style="font-family:Lucida Console;text-decoration:underline;color:#FFCC00; margin-left: 5px;" target="_blank">FAQ</a>
 					</td>

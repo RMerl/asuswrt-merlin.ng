@@ -36,6 +36,20 @@ var nvram = httpApi.nvramGet(["vts_enable_x"]);
 var gameList = new Object;
 var wan0_proto = '<% nvram_get("wan0_proto"); %>';
 
+var get_s46_hgw_case_tmp = '<% nvram_get("wan0_s46_hgw_case"); %>';  //topology 2,3,6
+var s46_ports_check_flag_tmp = (get_s46_hgw_case_tmp == '3' || get_s46_hgw_case_tmp == '6');    //true for topology 3||6
+var get_ipv6_s46_ports_tmp = (Softwire46_support && (wan0_proto=="v6plus" || wan0_proto=="ocnvc" || wan0_proto=="v6opt"))? '<%nvram_get("ipv6_s46_ports");%>':'0';
+var array_ipv6_s46_ports_tmp = [];
+if(get_ipv6_s46_ports_tmp != "0" && get_ipv6_s46_ports_tmp != ""){
+    array_ipv6_s46_ports_tmp = get_ipv6_s46_ports_tmp.split(" ");
+}
+if (typeof s46_ports_check_flag === "undefined") {
+    s46_ports_check_flag = s46_ports_check_flag_tmp;
+}
+if (typeof array_ipv6_s46_ports === "undefined") {
+    array_ipv6_s46_ports = array_ipv6_s46_ports_tmp;
+}
+
 /*handle legacy profile*/
 (function(){
 	var vts_rulelist_row = vts_rulelist_array.split('<');
@@ -694,10 +708,10 @@ function newProfileOK(){
     	<td valign="top">
 			<div id="tabMenu" class="submenuBlock"></div>
 
-			<div class="border-container">
+			<div class="border-container OpenNatSettingBlock" id="openNatEnableBlock">
 				<div class="border-corner border-corner-top-left"></div>
 				<div class="border-corner border-corner-bottom-left"></div>
-				<div class="border-bar"></div>
+				<div class="border-bar notInBusiness"></div>
 
 				<!-- Title field -->
 				<div class="flexbox title-container">
@@ -706,8 +720,8 @@ function newProfileOK(){
 				</div>
 
 				<!-- Content field -->
-				<div class="description-container"><#OpenNAT_desc#></div>
-				<div class="description-container" id="v6plus_port_range_note" style="color:#FFCC00;display:none;">* When using v6plus, the number of available assigned ports is limited. Kindly understand that this may result in an interruption of this services and functions.</div>		<!-- Untranslated -->
+				<div class="description-container openNatDescription"><#OpenNAT_desc#></div>
+				<div class="description-container openNatDescription" id="v6plus_port_range_note" style="color:#FFCC00;display:none;">* When using v6plus, the number of available assigned ports is limited. Kindly understand that this may result in an interruption of this services and functions.</div>		<!-- Untranslated -->
 				<div class="world-map">
 					<div class="map-connection-line"></div>
 					<div class="location-indicator location-US3"></div>
@@ -739,20 +753,20 @@ function newProfileOK(){
 				</div>
 			</div>
 
-			<div id="emptyTable" class="border-container" style="display:none">
+			<div id="emptyTable" class="border-container OpenNatSettingBlock" style="display:none">
 				<div class="border-corner border-corner-top-left"></div>
 				<div class="border-corner border-corner-bottom-left"></div>
-				<div class="border-bar"></div>
+				<div class="border-bar notInBusiness"></div>
 
 				<div class="flexbox title-container">
 					<div class="title-symbol"></div>
 					<div class="title-content"><#Game_Profile#></div>
 				</div>
 
-				<div class="description-container"><#Game_Profile_desc#></div>
+				<div class="description-container openNatDescription"><#Game_Profile_desc#></div>
 				<div class="button-container button-container-left" onclick="addNewProfile();">
 					<div class="button-icon icon-plus"></div>
-					<div class="button-text"><#CTL_add#></div>
+					<div class="button-text openNatButtonText"><#CTL_add#></div>
 				</div>
 
 				<div class="divide-line"></div>
@@ -763,10 +777,10 @@ function newProfileOK(){
 			</div>
 
 			<!-- New rule field -->
-			<div id="addRuleField" class="border-container" style="display:none">
+			<div id="addRuleField" class="border-container OpenNatSettingBlock" style="display:none">
 				<div class="border-corner border-corner-top-left"></div>
 				<div class="border-corner border-corner-bottom-left"></div>
-				<div class="border-bar"></div>
+				<div class="border-bar notInBusiness"></div>
 
 				<div class="flexbox flex-j-end cancel-button-padding" onclick="cancelNewProfile()">
 					<div class="icon-button-container">
@@ -778,7 +792,7 @@ function newProfileOK(){
 					<div class="new-g-p-title">New Game Profile</div>
 				</div>
 
-				<div>
+				<div style="display: inline-grid;">
 					<div class="flexbox flex-a-center new-g-profile">
 						<div class="new-g-p-step">1</div>
 						<div class="new-g-p-s-title"><#Game_List#></div>	
@@ -917,12 +931,13 @@ function newProfileOK(){
 						<div id="localIP_field" class="game-p-s-field" >
 							<div class="settings-filed-title"><#IPConnection_VSList_Internal_IP#></div>
 							<div style="position: relative">
-								<input id="new_profile_localIP" type="text" class="input-container" value="" maxlength="15" onkeypress="return validator.isIPAddr(this, event);" autocomplete="off" autocorrect="off" autocapitalize="off">
-								<div class="select-arrow" style="cursor:pointer;z-index: 999;" onclick="pullLANIPList(this);" >
-									<div></div>
+							    <div class="clientlist_dropdown_main" style="width: 245px;">
+                                    <input id="new_profile_localIP" type="text" class="input-container" value="" maxlength="15" onkeypress="return validator.isIPAddr(this, event);" autocomplete="off" autocorrect="off" autocapitalize="off">
+                                    <div class="select-arrow" style="cursor:pointer;z-index: 999;" onclick="pullLANIPList(this);" >
+                                        <div></div>
+                                    </div>
+                                    <div id="ClientList_Block_PC" class="clientlist_dropdown" style="top: 10px;"></div>
 								</div>
-								<!-- <div id="pull_arrow" style="display:none"></div> -->
-								<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-left:0;"></div>
 							</div>
 							
 						</div>
@@ -937,16 +952,16 @@ function newProfileOK(){
 				<div class="divide-line"></div>
 				<div class="button-container button-container-center" onclick="newProfileOK();">
 					<div class="button-icon button-icon-check"></div>
-					<div class="button-text"><#CTL_ok#></div>
+					<div class="button-text openNatButtonText"><#CTL_ok#></div>
 				</div>
 			</div>
 			<!-- End New rule field -->
 
 			<!-- List Field -->
-			<div id="listTable" class="border-container" style="display:none">
+			<div id="listTable" class="border-container OpenNatSettingBlock" style="display:none">
 				<div class="border-corner border-corner-top-left"></div>
 				<div class="border-corner border-corner-bottom-left"></div>
-				<div class="border-bar"></div>
+				<div class="border-bar notInBusiness"></div>
 
 				<div class="flexbox title-container">
 					<div class="title-symbol"></div>
@@ -956,11 +971,11 @@ function newProfileOK(){
 				<div class="flexbox flex-j-spaceB control-f-container">
 					<div class="button-container " onclick="applyRule();">
 						<div class="button-icon button-icon-check"></div>
-						<div class="button-text"><#CTL_apply#></div>
+						<div class="button-text openNatButtonText"><#CTL_apply#></div>
 					</div>
 					<div class="button-container" onclick="addNewProfile();">
 						<div class="button-icon icon-plus"></div>
-						<div class="button-text"><#CTL_add#></div>
+						<div class="button-text openNatButtonText"><#CTL_add#></div>
 					</div>
 				</div>
 
@@ -989,10 +1004,10 @@ function newProfileOK(){
 			
 			<!-- End List Field -->
 			<!-- Edit field -->
-			<!--div class="border-container" style="display:none">
+			<!--div class="border-container OpenNatSettingBlock" style="display:none">
 				<div class="border-corner border-corner-top-left"></div>
 				<div class="border-corner border-corner-bottom-left"></div>
-				<div class="border-bar"></div>
+				<div class="border-bar notInBusiness"></div>
 	
 				<div class="flexbox title-container">
 					<div class="title-symbol"></div>
@@ -1002,7 +1017,7 @@ function newProfileOK(){
 				<div class="flexbox flex-j-spaceB flex-a-center edit-a-container">
 					<div class="button-container ">
 						<div class="button-icon button-icon-check"></div>
-						<div class="button-text">Apply</div>
+						<div class="button-text openNatButtonText">Apply</div>
 					</div>
 					<div class="cancel-container">
 						<div class="icon-button icon-cancel"></div>

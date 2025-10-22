@@ -1098,9 +1098,13 @@ function pullLANIPList(obj){
 				  	<tr>
 			  			<!-- client info -->
 	        			<td width="60%">
-							<input type="text" class="input_20_table" maxlength="17" name="dhcp_staticmac_x_0" style="margin-left:-12px;width:255px;" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">
-							<img id="pull_arrow" height="14px;" src="images/unfold_more.svg" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_MAC#>">
-							<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-left:50px;"></div>	
+                            <div style="display: flex; justify-content: center">
+                                <div class="clientlist_dropdown_main">
+                                    <input type="text" class="input_20_table" maxlength="17" name="dhcp_staticmac_x_0" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">
+                                    <img id="pull_arrow" height="14px;" src="images/unfold_more.svg" onclick="pullLANIPList(this);" title="<#select_MAC#>">
+                                    <div id="ClientList_Block_PC" class="clientlist_dropdown"></div>
+                                </div>
+							</div>
 						</td>
 	        			<td width="30%">
 	        				<input type="text" class="input_15_table" maxlength="15" name="dhcp_staticip_x_0" onkeypress="return validator.isIPAddr(this,event)" autocorrect="off" autocapitalize="off">

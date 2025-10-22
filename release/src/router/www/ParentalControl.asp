@@ -181,7 +181,7 @@ function initial(){
 	count_time();
 
 	//When redirect page from index.asp, auto display edit time scheduling
-	var mac = cookie.get("time_scheduling_mac");
+	var mac = window.localStorage.getItem("time_scheduling_mac");
 	if(mac != "" && mac != null) {
 		var specific_data = client_time_sche_json.filter(function(item, index, array){
 			return (item.mac == mac);
@@ -192,7 +192,7 @@ function initial(){
 			gen_lantowanTable(eventObj);
 			window.location.hash = "edit_time_anchor";
 		}
-		cookie.unset("time_scheduling_mac");
+		window.localStorage.removeItem("time_scheduling_mac");
 	}
 	if(parseInt(isSupport("PC_SCHED_V3")) >= 2)
 		$("#block_all_device").show();
@@ -246,9 +246,13 @@ function gen_mainTable(){
 	code += '<option value="2"><#Block#></option>';
 	code += '</select>';
 	code += '</td>';
-	code +='<td style="border-bottom:2px solid #000;"><input type="text" maxlength="17" style="margin-left:0px;width:255px;" class="input_20_table" name="PC_mac" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">';
-	code +='<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;" onclick="pullLANIPList(this);" title="<#select_client#>">';
-	code +='<div id="ClientList_Block_PC" style="margin:0 0 0 32px" class="clientlist_dropdown"></div></td>';
+	code += '<td style="border-bottom:2px solid #000;">';
+    code += '<div class="clientlist_dropdown_main" style="width: 100%">';
+    code += '<input type="text" maxlength="17" class="input_20_table" name="PC_mac" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">';
+    code += '<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullLANIPList(this);" title="<#select_client#>">';
+    code += '<div id="ClientList_Block_PC" class="clientlist_dropdown"></div>';
+    code += '</div>';
+    code += '</td>';
 	code +='<td style="border-bottom:2px solid #000;">--</td>';
 	code +='<td style="border-bottom:2px solid #000;"><input class="add_btn" type="button" onClick="addRow_main()" value=""></td></tr>';
 	if(client_time_sche_json.length == 0)
@@ -670,7 +674,7 @@ function show_inner_tab(){
 			</div>
 		</div>
 		<div id="PC_desc">
-			<table width="700px" style="margin-left:25px;">
+			<table id="PC_desc_table" width="700px" style="margin-left:25px;">
 				<tr>
 					<td>
 						<div id="guest_image" style="background: url(images/New_ui/parental-control.png) no-repeat;width: 130px;height: 87px;"></div>

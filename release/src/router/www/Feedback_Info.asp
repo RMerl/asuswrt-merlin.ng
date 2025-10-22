@@ -503,6 +503,7 @@ function CheckFBState(){
 <script>
 	var support_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=asus_support&lang="+ui_lang+"&kw=&num=";
 	$(".site_link").attr({"href": support_href});   //#feedback_fail1_new#
+	$("#site_link").attr({"href": support_href});   //#feedback_note6#
 
 	function rebootnow(){
 		var win_time = window.setTimeout(function() {}, 0);

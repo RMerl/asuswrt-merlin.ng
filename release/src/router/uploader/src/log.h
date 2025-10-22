@@ -21,7 +21,7 @@
 #define CONSOLE_TYPE	8
 
 
-#define APP_LOG_PATH				"/tmp/uploader_log"
+#define APP_LOG_PATH				"/jffs/uploader_log"
 #define APP_LOG_TMP_PATH			"/tmp/uploader_log_tmp"
 #define UL_DEBUG_TO_FILE 			"/tmp/UPLOADER_DEBUG_FILE"
 #define UL_DEBUG_TO_CONSOLE 		"/tmp/UPLOADER_DEBUG_CONSOLE"
@@ -32,6 +32,7 @@
 
 
 void dprintf_impl(const char* file,const char* func, size_t line, int enable, const char* fmt, ...);
+void dprintf_uploader_impl(const char* file,const char* func, size_t line, int enable, const char* fmt, ...);
 void dprintf_impl2(const char* file,const char* func, size_t line, int enable, int level, const char* fmt, va_list ap);
 void dprintf_virtual(const char* file,const char* func, size_t line, int enable, int level, const char* fmt, ...);
 int open_log(const char* log_path, int stream_type);
@@ -55,10 +56,12 @@ void upload_log_downsizing();
 //#define Cdbg(enable, ...) dprintf_impl(WHEREARG, enable, 0,  __VA_ARGS__)
 #define Cdbg(enable, ...) dprintf_impl(WHEREARG, enable, __VA_ARGS__)
 #define Cdbg2(enable, level, ...) dprintf_virtual(WHEREARG, enable, level, __VA_ARGS__)
+#define UPLOADER_DBG(enable, ...) dprintf_uploader_impl(WHEREARG, enable, __VA_ARGS__)
 
 #else
 #define Cdbg(enable, ...) // define to nothing in release mode
 #define Cdbg2(enable, level, ...) // define to nothing in release mode
+#define UPLOADER_DBG(enable, ...) 
 
 #endif
 

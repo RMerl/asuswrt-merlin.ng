@@ -67,7 +67,7 @@ int main(int argc, char* const argv[])
 	bool daemonize = false;
 	int verbosity = 0;
 	int c;
-	while ((c = getopt(argc, argv, "ASR:D:Nsucn::l:a:rt:m:oi:p:dvh")) != -1) {
+	while ((c = getopt(argc, argv, "ASR:D:Nsucn::l:a:rt:b:m:oi:p:dvh")) != -1) {
 		switch (c) {
 		case 'A':
 			config.enable_router_discovery_relay = true;
@@ -142,6 +142,12 @@ int main(int argc, char* const argv[])
 			config.static_ndp = realloc(config.static_ndp,
 					sizeof(char*) * ++config.static_ndp_len);
 			config.static_ndp[config.static_ndp_len - 1] = optarg;
+			break;
+
+		case 'b':
+			config.ndp_neighfile = strtok(optarg, ",");
+			if (config.ndp_neighfile)
+				config.ndp_cb = strtok(NULL, ",");
 			break;
 
 		case 'm':

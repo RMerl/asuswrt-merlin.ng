@@ -1,0 +1,87 @@
+#!/bin/sh
+
+GHS_CMD=ghs
+INI_FILE=/usr/ark/gmq.ini
+ret=0
+
+# Check if GHS_CMD exists and is executable
+if ! type $GHS_CMD >/dev/null 2>&1; then
+    echo "Error: $GHS_CMD not found!"
+    exit 1
+fi
+
+start() {
+    echo "Starting GMQ..."
+    
+    if [ "$(status)" = "1" ]; then
+        echo "Server is already running."
+        return 0
+    fi
+
+    $GHS_CMD -d -i "$INI_FILE"
+
+    if [ "$(status)" = "1" ]; then
+        echo "Server stated successfully."
+        return 0
+    else
+        echo "Failed to run server!"
+        return 1
+    fi
+}
+
+stop() {
+    echo "Stopping GMQ..."
+
+    if [ "$(status)" = "0" ]; then
+        echo "Server is not running."
+        return 0
+    fi
+
+    $GHS_CMD -s -i "$INI_FILE"
+
+    if [ "$(status)" = "1" ]; then
+        echo "Failed to stop server!"
+        return 1
+    else
+        echo "Server stop successfully."
+        return 0
+    fi
+}
+
+status() {
+    # pid=$(cat $(get_ini_default_value pid_file) 2>/dev/null)
+    pid=$(cat $(gini get -i "$INI_FILE" -k pid_file) 2>/dev/null)
+    [ -n "$pid" -a -d "/proc/$pid" ] && echo "1" || echo "0"
+}
+
+# Check if an argument is provided
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 {start|stop}"
+    exit 1
+fi
+
+cd $(dirname $0);
+
+# Call the appropriate function based on the argument
+case "$1" in
+    start)
+        start
+        ret=$?
+        ;;
+    stop)
+        stop
+        ret=$?
+        ;;
+    status)
+        result=$(status)
+        echo $result
+        ret=0
+        ;;
+    *)
+        ret=1
+        echo "Invalid argument. Usage: $0 {start|stop|auth|deauth}"
+        ;;
+esac
+
+cd - > /dev/null
+exit $ret

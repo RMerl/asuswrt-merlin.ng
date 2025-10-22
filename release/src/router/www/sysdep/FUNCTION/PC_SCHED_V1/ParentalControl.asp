@@ -102,16 +102,8 @@ var MULTIFILTER_MACFILTER_DAYTIME_row = MULTIFILTER_MACFILTER_DAYTIME.split('>')
 var _client;
 var clock_type = "";
 
-function init_cookie(){
-	if(document.cookie.indexOf('clock_type') == -1)		//initialize
-		document.cookie = "clock_type=1";		
-			
-	x = document.cookie.split(';');
-	for(i=0;i<x.length;i++){
-		if(x[i].indexOf('clock_type') != -1){
-			clock_type = x[i].substring(x[i].length-1, x[i].length);			
-		}	
-	}
+function init_localStorage(){
+	clock_type = window.localStorage.getItem("clock_type") || 1;	
 }
 
 var array = new Array(7);
@@ -216,7 +208,7 @@ function initial(){
 
 	show_footer();
 	init_array(array);
-	init_cookie();	
+	init_localStorage();	
 	if(downsize_4m_support || downsize_8m_support){
 			document.getElementById("guest_image").parentNode.style.display = "none";
 	}
@@ -237,14 +229,14 @@ function initial(){
 	count_time();
 
 	//When redirect page from index.asp, auto display edit time scheduling
-	var mac = cookie.get("time_scheduling_mac");
+	var mac = window.localStorage.getItem("time_scheduling_mac");
 	if(mac != "" && mac != null) {
 		var idx = MULTIFILTER_MAC_row.indexOf(mac);
 		if(idx != -1){
 			gen_lantowanTable(idx);
 			window.location.hash = "edit_time_anchor";
 		}
-		cookie.unset("time_scheduling_mac");
+		window.localStorage.removeItem("time_scheduling_mac");
 	}
 	if(isSupport("PC_SCHED_V3") == "2")
 		$("#block_all_device").show();
@@ -298,9 +290,13 @@ function gen_mainTable(){
 	code += '<option value="2"><#Block#></option>';
 	code += '</select>';
 	code += '</td>';
-	code +='<td style="border-bottom:2px solid #000;"><input type="text" maxlength="17" style="margin-left:0px;width:255px;" class="input_20_table" name="PC_mac" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">';
-	code +='<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;" onclick="pullLANIPList(this);" title="<#select_client#>">';
-	code +='<div id="ClientList_Block_PC" style="margin:0 0 0 32px" class="clientlist_dropdown"></div></td>';
+	code += '<td style="border-bottom:2px solid #000;">';
+    code += '<div class="clientlist_dropdown_main" style="width: 100%">';
+    code += '<input type="text" maxlength="17" class="input_20_table" name="PC_mac" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">';
+	code += '<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullLANIPList(this);" title="<#select_client#>">';
+	code += '<div id="ClientList_Block_PC" class="clientlist_dropdown"></div>';
+    code += '</div>';
+	code += '</td>';
 	code +='<td style="border-bottom:2px solid #000;">--</td>';
 	code +='<td style="border-bottom:2px solid #000;"><input class="add_btn" type="button" onClick="addRow_main(16)" value=""></td></tr>';
 	if(MULTIFILTER_DEVICENAME == "" && MULTIFILTER_MAC == "")
@@ -547,7 +543,7 @@ function gen_lantowanTable(client){
 	document.getElementById('hintBlock').style.display = "";
 	document.getElementById("ctrlBtn").innerHTML = '<input class="button_gen" type="button" onClick="cancel_lantowan('+client+');" value="<#CTL_Cancel#>" style="margin:0 10px;">';
 	document.getElementById("ctrlBtn").innerHTML += '<input class="button_gen" type="button" onClick="saveto_lantowan('+client+');applyRule();" value="<#CTL_ok#>" style="margin:0 10px;">';  
-	document.getElementById('clock_type_select')[clock_type].selected = true;		// set clock type by cookie
+	document.getElementById('clock_type_select')[clock_type].selected = true;
 	
 	document.getElementById("mainTable").style.display = "";
 	$("#mainTable").fadeIn();
@@ -737,7 +733,8 @@ function select_all_time(time){
 }
 
 function change_clock_type(type){
-	document.cookie = "clock_type="+type;
+	window.localStorage.setItem("clock_type", type);
+
 	if(type == 1)
 		var array_time = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"];
 	else

@@ -143,11 +143,11 @@ function initial(){
 		}
 	});
 
-	var malware = cookie.get("malware");
+	var malware = window.localStorage.getItem("malware");
 	if(malware){
 		showWhitelistField();
 		$("#newDomain").val(malware);
-		cookie.unset("malware");
+		window.localStorage.removeItem("malware");
 	}
 }
 

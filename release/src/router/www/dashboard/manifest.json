@@ -1,0 +1,14 @@
+{
+  "name": "ASUS Router",
+  "short_name": "ASUS Router",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "images/favicon.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    }
+  ]
+}

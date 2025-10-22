@@ -49,7 +49,7 @@ function switchHours(h)
 	updateMaxL = (updateMaxL / 24) * hours;
 	showHours();
 	loadData();
-	cookie.set(cprefix + 'hrs', hours);
+	window.localStorage.setItem(cprefix + 'hrs', hours);
 }
 
 var ref = new TomatoRefresh('update.cgi', 'output=bandwidth&arg0=speed');
@@ -89,14 +89,14 @@ ref.toggleX = function()
 {
 	this.toggle();
 	this.showState();
-	cookie.set(cprefix + 'refresh', this.running ? 1 : 0);
+	window.localStorage.setItem(cprefix + 'refresh', this.running ? 1 : 0);
 }
 
 ref.initX = function()
 {
 	var a;
 
-	a = fixInt(cookie.get(cprefix + 'refresh'), 0, 1, 1);
+	a = fixInt(window.localStorage.getItem(cprefix + 'refresh'), 0, 1, 1);
 	if (a) {
 		ref.refreshTime = 100;
 		ref.toggleX();
@@ -120,7 +120,7 @@ function init()
 //		E('rbusy').style.display = '';	
 	}
 
-	hours = fixInt(cookie.get(cprefix + 'hrs'), 1, 24, 24);
+	hours = fixInt(window.localStorage.getItem(cprefix + 'hrs'), 1, 24, 24);
 	updateMaxL = (updateMaxL / 24) * hours;
 	showHours();
 	initCommon(1, 0, 0, 1);	   //Viz 2010.09
@@ -171,7 +171,7 @@ function Zoom(func){
 }
 
 function setUnit(unit){
-	cookie.set('ASUS_TrafficMonitor_unit', unit);
+	window.localStorage.setItem('ASUS_TrafficMonitor_unit', unit);
 	initCommon(1, 0, 0, 1);
 }
 </script>

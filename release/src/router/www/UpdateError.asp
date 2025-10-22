@@ -10,6 +10,8 @@
 <body>
 <script>
 	var upgrade_fw_status = '<% nvram_get("upgrade_fw_status"); %>';
+	window.localStorage.setItem(Date.now(), `[<% nvram_get("productid"); %>#<% nvram_get("extendno"); %>] The manual firmware upgrade failed and returned the error code: ${upgrade_fw_status}`);
+
 	parent.cancel_dr_advise();
 	parent.document.form.update.disabled = true;
 	parent.document.form.file.disabled = true;

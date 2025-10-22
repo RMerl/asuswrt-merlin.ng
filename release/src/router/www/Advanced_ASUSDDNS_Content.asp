@@ -1454,7 +1454,7 @@ function clear_cert_key(){
 						<div id="CAexpireOn" class="cert_status_val"></div>
 					</div>
 					<div>
-						<input class="button_gen" onclick="save_cacert_key();" type="button" value="<#btn_Export#>" />
+						<input class="button_gen button_gen_in_table" onclick="save_cacert_key();" type="button" value="<#btn_Export#>" />
 					</div>
 				</td>
 			</tr>
@@ -1476,9 +1476,6 @@ function clear_cert_key(){
 					<div style="display: flex;">
 						<div class="cert_status_title"><#vpn_openvpn_KC_expire#> :</div>
 						<div id="expireOn" class="cert_status_val"></div>
-					</div>
-					<div>
-						<input class="button_gen" onclick="save_cert_key();" type="button" value="<#btn_Export#>" />
 					</div>
 				</td>
 			</tr>

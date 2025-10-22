@@ -185,7 +185,8 @@ start_vpnc(void)
 				fprintf(fp, "tx_only ");
 			fprintf(fp, "demand\n");
 		}
-		fprintf(fp, "persist\n");
+		else
+			fprintf(fp, "persist\n");
 	}
 
 	fprintf(fp, "holdoff %d\n", nvram_get_int(strcat_r(prefix, "pppoe_holdoff", tmp)) ? : 10);

@@ -1,3 +1,6 @@
+.bg_internetSpeed {
+    width: 99% !important;
+}
 .container{
 	background-color: #FFFFFF;
 }
@@ -13,13 +16,17 @@
 	color: #000000;
 	font-weight: bolder;
 }
-
+#function_row {
+    width: 100%;
+    height: 48px;
+    border-bottom: #dcdcdc solid 1px;
+}
 .formfontdesc{
 	color: #C9D1D7;
 }
 
 .desc_div{
-	color: #333538;
+	color: #4d4d4d;
 }
 
 .description-bar{
@@ -42,12 +49,14 @@
 }
 
 .ookla_info{
-	color: #9EAEB9;
+	color: #818181;
 }
 
 .speedTest_div{
 	background: rgba(255, 255, 255, 0.16);
 	border: 0px;
+	box-shadow: 0 2px 4px 0 rgba(0,0,0,0.0), 0 1px 4px 0 rgba(60,60,60,0.0);
+    border: 1px solid #dcdcdc;
 }
 
 .speedTest_result_div{
@@ -55,33 +64,36 @@
 }
 
 .date_div{
-	border-bottom: solid #006EFF 6px;
-	color: #5E6470;
+	border-bottom: solid #dcdcdc 6px;
+	color: #4d4d4d;
 }
 
 .time_div{
-	color: #5E6470;
+	color: #4d4d4d;
 }
 
 .download_upload_text{
-	color: #333538;
+	color: #4d4d4d;
 }
 
 .test_result{
-	color: #006EFF;
+	color: #006CE1;
 }
 
+.result_unit {
+    color: #4d4d4d;
+}
 
 .ping_result_title{
-	color: #3E4044;
+	color: #4d4d4d;
 }
 
 .ping_result_value{
-	color: #006EFF;
+	color: #006CE1;
 }
 
 .ping_result_unit{
-	color: #3E4044;
+	color: #4d4d4d;
 }
 
 .speedTest_btn_normal{
@@ -100,7 +112,7 @@
 }
 
 .speed_level_title_default{
-	color: #5E6470;
+	color: #4d4d4d;
 }
 
 .speed_level_ultra{
@@ -186,9 +198,11 @@
 .close_icon:hover{
 	background-color: #333333;
 }
-
+.history_row{
+	border-bottom: #dcdcdc solid 1px;
+}
 .history_desc{
-	color: #354052;
+	color: #4d4d4d;
 }
 
 .history_icon{
@@ -218,15 +232,16 @@
 }
 
 .history_title_m{
-	color: #5E6470;
+	color: #4d4d4d;
 }
 
 .history_timestamp_div{
-	color: #5E6470;
+	color: #181818;
 }
 
 .history_downup_font{
-	color: #333538;
+	color: #181818;
+    font-size: 16px;
 }
 
 .history_more{
@@ -250,12 +265,12 @@
 }
 
 .history_select:hover{
-	border: 1px solid #5E6470;
+	border: 1px solid #4d4d4d;
 }
 
 .history_select_checked{
-	background: #006EFF url(../images/speedtest/white_theme/checked_24px_white.svg) no-repeat center;
-	border: #5E6470 solid 1px;
+	background: #006CE1 url(../images/speedtest/white_theme/checked_24px_white.svg) no-repeat center;
+	border: #4d4d4d solid 1px;
 	background-size: 90%;
 }
 
@@ -276,7 +291,7 @@
 }
 
 .detail_downup_text{
-	color: #006EFF;
+	color: #006CE1;
 }
 
 .speed_level_container{
@@ -292,7 +307,7 @@
 }
 
 .speed_level_range{
-	color: #3E4044;
+	color: #4d4d4d;
 }
 
 .speed_level_detail{
@@ -300,7 +315,7 @@
 }
 
 .speed_level_desc_level{
-	color: #3E4044;
+	color: #4d4d4d;
 }
 
 .speed_level_desc_font{
@@ -308,11 +323,11 @@
 }
 
 .level_desc_title{
-	color: #006EFF;
+	color: #006CE1;
 }
 
 .ping_title{
-	color: #006EFF;
+	color: #006CE1;
 }
 
 .ping_unit{
@@ -320,7 +335,11 @@
 }
 
 .history_value_font{
-	color: #333538;
+	color: #181818;
+	font-size: 16px;
+}
+.history_title {
+    color: #4d4d4d;
 }
 
 .down_arrow{
@@ -338,16 +357,18 @@
 }
 
 .host_font{
-	color: #333538;
+	color: #4d4d4d;
 }
 
 .location_font{
-	color: rgba(51, 53, 56, 0.74);
+	color: #818181;
+    line-height: initial;
 }
 
 .server_icon{
 	background: url(../images/speedtest/white_theme/server_connect.svg) no-repeat center;
 	background-size: 100%;
+	margin-right: 16px;
 }
 
 .server_list_check{
@@ -360,15 +381,17 @@
 }
 
 .cur_server_container{
-	background: #EFF6FF;
+	background: transparent;
+    border: 1px solid #dcdcdc;
+	padding: 0 8px;
 }
 
 #outer_server_container{
-	background: #EFF6FF;
+	background: #f5f5f5;
 }
 
 .server_list_brick{
-	background: #006EFF;
+	background: #006CE1;
 }
 
 .sub_server_title{
@@ -376,7 +399,10 @@
 }
 
 .level_ping_div{
-	background-color: #F3F8FF;
+	background-color: #f5f5f5;
+	border-radius: 0;
+    margin-left: 0%;
+    width: 100%;
 }
 
 .download_result_icon{
@@ -399,6 +425,7 @@
 	background-size: 12px 12px;
 }
 
+
 .alert_header{
 	color: #000000;
 	font-weight: bolder;
@@ -420,13 +447,15 @@
 .alert_notification_text{
 	color: #50ABFF;
 }
-
+.test_server_container {
+    width: fit-content;
+}
 ::-webkit-scrollbar{
 	background: #B2BBC1;
 }
 
 ::-webkit-scrollbar-thumb {
-	background: #006EFF;
+	background: #006CE1;
 }
 
 .LinkRate_div_white{
@@ -477,17 +506,37 @@
 }
 
 @media (max-width: 720px) {
+	.container {
+		width: 98%;
+		margin: 0 16px;
+	}
 	.level_ping_div{
-		background-color: transparent;
+		/* background-color: transparent; */
+		background-color: #F5F5F5;
+		border-radius: 0 0 5px 5px;
+		margin-left: 0;
+		width: 100%;
 	}
 
 	.ping_result_div{
-		background-color: #F3F8FF;
+		background-color: #F5F5F5;
+    	border-bottom: 1px solid #DCDCDC;
+		margin: 8px 0 0;
+		border-radius: 0;
+		box-shadow: none;
+		
+
 	}
 
 	.up_arrow_container{
-		background: #006EFF;
+		background: #006CE1;
 	}
+	.test_result {
+		line-height: 150%;
+	}
+	.test_server_container {
+		width: 60%;
+	}	
 
 	#outer_server_container{
 		background: #FDFEFF;

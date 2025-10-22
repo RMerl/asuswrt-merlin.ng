@@ -117,9 +117,15 @@ function gen_mainTable(){
 	code +='<th width="15%"><#list_add_delete#></th></tr>';
 
 	code +='<tr><td style="border-bottom:2px solid #000;" title="<#WLANConfig11b_WirelessCtrl_button1name#>/<#btn_disable#>"><input type=\"checkbox\" id="newrule_Enable" checked></td>';
-	code +='<td style="border-bottom:2px solid #000;"><input type="text" maxlength="32" style="margin-left:10px;float:left;width:255px;" class="input_20_table" name="PC_devicename" onKeyPress="" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off">';
+	code +='<td style="border-bottom:2px solid #000;">';
+    code +='<div style="display: flex; justify-content: center">';
+    code +='<div class="clientlist_dropdown_main">';
+    code +='<input type="text" maxlength="32" class="input_20_table" name="PC_devicename" onKeyPress="" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off">';
 	code +='<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullLANIPList(this);" title="<#select_client#>">';
-	code +='<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-top:25px;margin-left:10px;"></div></td>';
+	code +='<div id="ClientList_Block_PC" class="clientlist_dropdown"></div>';
+    code +='</div>';
+    code +='</div>';
+    code +='</td>';
 	code +='<td style="border-bottom:2px solid #000;"><input type="text" maxlength="17" class="input_macaddr_table" name="PC_mac" onKeyPress="return validator.isHWAddr(this,event)" autocorrect="off" autocapitalize="off"></td>';
 	code +='<td style="border-bottom:2px solid #000;"><input class="add_btn" type="button" onClick="addRow_main(16)" value=""></td></tr>';
 	if(kg_devicename == "" && kg_mac == "")

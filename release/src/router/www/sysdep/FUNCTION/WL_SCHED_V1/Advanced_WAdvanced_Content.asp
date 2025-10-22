@@ -11,7 +11,7 @@
 	<link rel="stylesheet" href="css/confirm_block.css" />
 	<script src="/js/jquery.js"></script>
 	<script src="/js/httpApi.js"></script>
-	<script src="/calendar/jquery-ui.js"></script>
+	<script src="/calendar/jquery-ui.js"></script> 
 	<script src="/state.js"></script>
 	<script src="/general.js"></script>
 	<script src="/help.js"></script>
@@ -96,7 +96,7 @@
 	height:22px;
 	border-bottom:solid 1px black;
 	border-right:solid 1px black;
-}
+} 
 .parental_th:hover{
 	background:rgb(94, 116, 124);
 	cursor: pointer;
@@ -325,7 +325,7 @@ var wifi7_mumimo_support = isSupport('hide_mumimo') ? false : wifi7_support;
 		}
 	}
 })();
-
+  
 function backForwardCompatibility(){
 	var locationCode = httpApi.nvramGet(["ui_location_code", "location_code"]);
 	if(locationCode.ui_location_code == "" && locationCode.location_code != ""){
@@ -345,7 +345,7 @@ function initial(){
 	register_event();
 	array = new Array(7);
 	init_array(array);
-	init_cookie();
+	init_localStorage();
 	count_time();
 	backForwardCompatibility();
 
@@ -394,6 +394,10 @@ function initial(){
 			document.form.wl_radio[0].disabled = true;
 		}
 	}
+
+	if(mlr_support){
+		document.getElementById('mlr_field').style.display = '';
+	}
 	
 	// MODELDEP: for AC ser
 	if(Rawifi_support){
@@ -434,17 +438,17 @@ function initial(){
 				}
 				else{
 					document.getElementById('wl_txbf_desc').innerHTML = "<#WLANConfig11b_x_axBeam#>";
-				}
+				}			
 			}
 			else
 			{
 				document.getElementById('wl_txbf_desc').innerHTML = "<#WLANConfig11b_x_acBeam#>";
 			}
-
+			
 			inputCtrl(document.form.wl_txbf, 1);
 			inputCtrl(document.form.wl_itxbf, 1);
 		}
-
+		
 		if(based_modelid == "RT-AC88N" || based_modelid == "RT-AC88Q" 
 		|| based_modelid == "BRT-AC828" || based_modelid == "RT-AD7200" 
 		|| based_modelid == "RT-AC58U" || based_modelid.substring(0,7) == "RT-AC59" || based_modelid == "RT-AC82U" 
@@ -719,7 +723,7 @@ function initial(){
 	}
 
 	/* Agile DFS, EU sku, HE2.0 only */
-	if((is_unit_5g(wl_unit_value) || is_unit_5g_2(wl_unit_value)) && "<% nvram_get("wl0_country_code"); %>" == 'GB' && "<% soc_version_major(); %>" == "2" && (based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000")){
+	if ((is_unit_5g(wl_unit_value) || is_unit_5g_2(wl_unit_value)) && agile_dfs_support) {
 		inputCtrl(document.form.wl_precacen, 1);
 	}
 	else{
@@ -1067,7 +1071,7 @@ function applyRule(){
 						"action_mode": "apply",
 						"rc_service": "saveNvram"
 					})
-				}
+				}	
 
 				showLoading();
 				document.form.submit();
@@ -1190,8 +1194,7 @@ power_table_desc = ["<#WLANConfig11b_TxPower1#>", "<#WLANConfig11b_TxPower2#>", 
 //power_table_desc = ["Power Saving", "Fair", "Balance", "Good", "Performance"];
 //power_table_desc = ["省電", "弱", "平衡", "強", "效能"];
 function register_event(){
-	
-	$(function() {
+
 		$( "#slider" ).slider({
 			orientation: "horizontal",
 			range: "min",
@@ -1204,9 +1207,8 @@ function register_event(){
 			stop:function(event, ui){
 				set_power(ui.value);	  
 			}
-		}); 
-	});
-
+		});
+	
 	var array_temp = new Array(7);
 	var checked = 0
 	var unchecked = 0;
@@ -1216,15 +1218,15 @@ function register_event(){
     $( "#selectable" ).selectable({
 		filter:'td',
 		selecting: function(event, ui){
-
+					
 		},
 		unselecting: function(event, ui){
-
+			
 		},
-		selected: function(event, ui){
+		selected: function(event, ui){	
 			id = ui.selected.getAttribute('id');
 			column = parseInt(id.substring(0,1), 10);
-			row = parseInt(id.substring(1,3), 10);
+			row = parseInt(id.substring(1,3), 10);	
 
 			array_temp[column][row] = 1;
 			if(array[column][row] == 1){
@@ -1236,44 +1238,44 @@ function register_event(){
 		},
 		unselected: function(event, ui){
 
-		},
+		},		
 		stop: function(event, ui){
 			if((checked == 1 && unchecked == 1) || (checked == 0 && unchecked == 1)){
 				for(i=0;i<7;i++){
 					for(j=0;j<24;j++){
 						if(array_temp[i][j] == 1){
-						array[i][j] = array_temp[i][j];
+						array[i][j] = array_temp[i][j];					
 						array_temp[i][j] = 0;		//initialize
 						if(j < 10){
-							j = "0" + j;
-						}
-							id = i.toString() + j.toString();
-							document.getElementById(id).className = "checked";
+							j = "0" + j;						
+						}		
+							id = i.toString() + j.toString();					
+							document.getElementById(id).className = "checked";					
 						}
 					}
-				}
+				}									
 			}
 			else if(checked == 1 && unchecked == 0){
 				for(i=0;i<7;i++){
 					for(j=0;j<24;j++){
 						if(array_temp[i][j] == 1){
-						array[i][j] = 0;
+						array[i][j] = 0;					
 						array_temp[i][j] = 0;
-
+						
 						if(j < 10){
-							j = "0" + j;
+							j = "0" + j;						
 						}
-							id = i.toString() + j.toString();
-							document.getElementById(id).className = "disabled";
+							id = i.toString() + j.toString();											
+							document.getElementById(id).className = "disabled";												
 						}
 					}
-				}
+				}			
 			}
-
+		
 			checked = 0;
 			unchecked = 0;
-		}
-	});
+		}		
+	});		
   });
 }
 
@@ -1292,16 +1294,8 @@ function init_array(arr){
 	}
 }
 
-function init_cookie(){
-	if(document.cookie.indexOf('clock_type') == -1)		//initialize
-		document.cookie = "clock_type=1";
-
-	x = document.cookie.split(';');
-	for(i=0;i<x.length;i++){
-		if(x[i].indexOf('clock_type') != -1){
-			clock_type = x[i].substring(x[i].length-1, x[i].length);
-		}
-	}
+function init_localStorage(){
+	clock_type = window.localStorage.getItem("clock_type") || 1;	
 }
 
 //draw time slot at first time
@@ -1327,12 +1321,12 @@ function redraw_selected_time(obj){
 			duration = end_time - start_time;
 			if(duration == 0)	//for whole selected
 				duration = 7*24;
-
+			
 			while(duration >0){
 				array[start_day][start_time] = 1;
 				if(start_time < 10)
 					start_time = "0" + start_time;
-
+								
 				id = start_day.toString() + start_time.toString();
 				document.getElementById(id).className = "checked";
 				start_time++;
@@ -1342,23 +1336,23 @@ function redraw_selected_time(obj){
 					if(start_day == 7)
 						start_day = 0;
 				}
-
+	
 				duration--;
-				id = "";
-			}
+				id = "";		
+			}	
 		}else{			// cross day
 			var duration_day = 0;
 			if(end_day - start_day < 0)
 				duration_day = 7 - start_day;
 			else
 				duration_day = end_day - start_day;
-
+		
 			duration = (24 - start_time) + (duration_day - 1)*24 + end_time;
 			while(duration > 0){
 				array[start_day][start_time] = 1;
 				if(start_time < 10)
 					start_time = "0" + start_time;
-
+				
 				id = start_day.toString() + start_time.toString();
 				document.getElementById(id).className = "checked";
 				start_time++;
@@ -1366,13 +1360,13 @@ function redraw_selected_time(obj){
 					start_time = 0;
 					start_day++;
 					if(start_day == 7)
-						start_day = 0;
+						start_day = 0;		
 				}
-
+				
 				duration--;
-				id = "";
-			}
-		}
+				id = "";	
+			}		
+		}	
 	}
 }
 
@@ -1380,12 +1374,12 @@ function select_all(){
 	var full_flag = 1;
 	for(i=0;i<7;i++){
 		for(j=0;j<24;j++){
-			if(array[i][j] ==0){
+			if(array[i][j] ==0){ 
 				full_flag = 0;
 				break;
 			}
 		}
-
+		
 		if(full_flag == 0){
 			break;
 		}
@@ -1398,23 +1392,23 @@ function select_all(){
 				if(j<10){
 					j = "0"+j;
 				}
-
+		
 				id = i.toString() + j.toString();
 				document.getElementById(id).className = "disabled";
 			}
-		}
+		}	
 	}
 	else{
 		for(i=0;i<7;i++){
 			for(j=0;j<24;j++){
 				if(array[i][j] == 1)
 					continue;
-				else{
+				else{	
 					array[i][j] = 1;
 					if(j<10){
 						j = "0"+j;
 					}
-
+			
 					id = i.toString() + j.toString();
 					document.getElementById(id).className = "checked";
 				}
@@ -1428,19 +1422,19 @@ function select_all_day(day){
 	day = day.substring(4,5);
 	for(i=0;i<24;i++){
 		if(array[day][i] == 0){
-			check_flag = 1;
-		}
+			check_flag = 1;			
+		}			
 	}
-
+	
 	if(check_flag == 1){
 		for(j=0;j<24;j++){
 			array[day][j] = 1;
 			if(j<10){
 				j = "0"+j;
 			}
-
+		
 			id = day + j;
-			document.getElementById(id).className = "checked";
+			document.getElementById(id).className = "checked";	
 		}
 	}
 	else{
@@ -1449,22 +1443,22 @@ function select_all_day(day){
 			if(j<10){
 				j = "0"+j;
 			}
-
+		
 			id = day + j;
-			document.getElementById(id).className = "disabled";
+			document.getElementById(id).className = "disabled";	
 		}
 	}
 }
 
 function select_all_time(time){
 	var check_flag = 0;
-	time_int = parseInt(time, 10);
+	time_int = parseInt(time, 10);	
 	for(i=0;i<7;i++){
 		if(array[i][time] == 0){
-			check_flag = 1;
-		}
+			check_flag = 1;			
+		}			
 	}
-
+	
 	if(time<10){
 		time = "0"+time;
 	}
@@ -1472,7 +1466,7 @@ function select_all_time(time){
 	if(check_flag == 1){
 		for(i=0;i<7;i++){
 			array[i][time_int] = 1;
-
+			
 		id = i + time;
 		document.getElementById(id).className = "checked";
 		}
@@ -1488,7 +1482,8 @@ function select_all_time(time){
 }
 
 function change_clock_type(type){
-	document.cookie = "clock_type="+type;
+	window.localStorage.setItem("clock_type", type);
+
 	if(type == 1)
 		var array_time = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"];
 	else
@@ -1502,7 +1497,7 @@ function change_clock_type(type){
 				document.getElementById(i).innerHTML = array_time[i] +" ~ "+ array_time[i+1] + " AM";
 			else
 				document.getElementById(i).innerHTML = array_time[i] +" ~ "+ array_time[i+1] + " PM";
-		}
+		}	
 	}
 }
 
@@ -1513,7 +1508,7 @@ function save_wifi_schedule(){
 	var start_time = 0;
 	var end_time = 0;
 	var time_temp = "";
-
+	
 	for(i=0;i<7;i++){
 		for(j=0;j<24;j++){
 			if(array[i][j] == 1){
@@ -1522,8 +1517,8 @@ function save_wifi_schedule(){
 					start_day = i;
 					if(j<10)
 						j = "0" + j;
-
-					start_time = j;
+						
+					start_time = j;				
 				}
 			}
 			else{
@@ -1532,29 +1527,29 @@ function save_wifi_schedule(){
 					end_day = i;
 					if(j<10)
 						j = "0" + j;
-
-					end_time = j;
+					
+					end_time = j;		
 					if(time_temp != "")
 						time_temp += "<";
-
+				
 					time_temp += start_day.toString() + end_day.toString() + start_time.toString() + end_time.toString();
 				}
 			}
-		}
+		}	
 	}
-
+	
 	if(flag == 1){
 		if(time_temp != "")
 			time_temp += "<";
-
-		time_temp += start_day.toString() + "0" + start_time.toString() + "00";
+									
+		time_temp += start_day.toString() + "0" + start_time.toString() + "00";	
 	}
 
 	if(time_temp == ""){
 		alert("If you want to deny WiFi radio all time, you should check the '<#WLANConfig11b_x_RadioEnable_itemname#>' to No");
 		return false;
-	}
-
+	}	
+	
 	wifi_schedule_value = time_temp;
 	document.getElementById("schedule_block").style.display = "none";
 	document.getElementById("titl_desc").style.display = "";
@@ -1577,7 +1572,7 @@ function count_time(){		// To count system time
 
 function showclock(){
 	JS_timeObj.setTime(systime_millsec);
-	JS_timeObj2 = JS_timeObj.toString();
+	JS_timeObj2 = JS_timeObj.toString();	
 	JS_timeObj2 = JS_timeObj2.substring(0,3) + ", " +
 	              JS_timeObj2.substring(4,10) + "  " +
 				  checkTime(JS_timeObj.getHours()) + ":" +
@@ -1586,7 +1581,7 @@ function showclock(){
 				  JS_timeObj.getFullYear();
 	document.getElementById("system_time").value = JS_timeObj2;
 	setTimeout("showclock()", 1000);
-
+	
 	if(svc_ready == "0")
 		document.getElementById('svc_hint_div').style.display = "";
 	corrected_timezone();
@@ -1604,43 +1599,43 @@ function show_wifi_schedule(){
 		var array_time = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"];
 	else
 		var array_time = ["12am", "1am", "2am", "3am", "4am", "5am", "6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm", "7pm", "8pm", "9pm", "10pm", "11pm", "12am"];
-
+	
 	var code = "";
-
+	
 	wifi_schedule_row = wifi_schedule_value.split('<');
 
 	code +='<div style="margin-bottom:10px;color: #003399;font-family: Verdana;" align="left">';
 	code +='<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="FormTable">';
 	code +='<thead><tr><td colspan="6" id="LWFilterList"><#ParentalCtrl_Act_schedule#></td></tr></thead>';
-	code +='<tr><th style="width:40%;height:20px;" align="right"><#General_x_SystemTime_itemname#></th>';
-	code +='<td align="left" style="color:#FFF"><input type="text" id="system_time" name="system_time" class="devicepin" value="" readonly="1" style="font-size:12px;width:200px;"></td></tr>';
+	code +='<tr><th style="width:40%;height:20px;" align="right"><#General_x_SystemTime_itemname#></th>';	
+	code +='<td align="left" style="color:#FFF"><input type="text" id="system_time" name="system_time" class="devicepin" value="" readonly="1" style="font-size:12px;width:200px;"></td></tr>';		
 	code +='</table><table id="main_select_table">';
 	code +='<table  id="selectable" class="table_form" >';
 	code += "<tr>";
 	for(i=0;i<8;i++){
 		if(i == 0)
-			code +="<th class='parental_th' onclick='select_all();'>"+array_date[i]+"</th>";
+			code +="<th class='parental_th' onclick='select_all();'>"+array_date[i]+"</th>";	
 		else
-			code +="<th id=col_"+(i-1)+" class='parental_th' onclick='select_all_day(this.id);'>"+array_date[i]+"</th>";
+			code +="<th id=col_"+(i-1)+" class='parental_th' onclick='select_all_day(this.id);'>"+array_date[i]+"</th>";			
 	}
-
+	
 	code += "</tr>";
 	for(i=0;i<24;i++){
 		code += "<tr>";
 		code +="<th id="+i+" class='parental_th' onclick='select_all_time(this.id)'>"+ array_time[i] + " ~ " + array_time[i+1] +"</th>";
 		for(j=0;j<7;j++){
-			code += "<td id="+ j + array_time_id[i] +" class='disabled' ></td>";
+			code += "<td id="+ j + array_time_id[i] +" class='disabled' ></td>";		
 		}
-
-		code += "</tr>";
+		
+		code += "</tr>";			
 	}
-
+	
 	code +='</table></table></div>';
 	document.getElementById("mainTable").innerHTML = code;
 
 	register_event();
 	redraw_selected_time(wifi_schedule_row);
-
+	
 	var code_temp = "";
 	code_temp = '<table style="width:350px;margin-left:20px;"><tr>';
 	code_temp += "<td><div style=\"width:95px;font-family:Arial,sans-serif,Helvetica;font-size:18px;\"><#Clock_Format#></div></td>";
@@ -1659,9 +1654,9 @@ function show_wifi_schedule(){
 	document.getElementById('hintBlock').style.marginTop = "10px";
 	document.getElementById('hintBlock').style.display = "";
 	document.getElementById("ctrlBtn").innerHTML = '<input class="button_gen" type="button" onClick="cancel_wifi_schedule();" value="<#CTL_Cancel#>" style="margin:0 10px;">';
-	document.getElementById("ctrlBtn").innerHTML += '<input class="button_gen" type="button" onClick="save_wifi_schedule();" value="<#CTL_ok#>" style="margin:0 10px;">';
-	document.getElementById('clock_type_select')[clock_type].selected = true;		// set clock type by cookie
-
+	document.getElementById("ctrlBtn").innerHTML += '<input class="button_gen" type="button" onClick="save_wifi_schedule();" value="<#CTL_ok#>" style="margin:0 10px;">';  
+	document.getElementById('clock_type_select')[clock_type].selected = true;
+	
 	document.getElementById("mainTable").style.display = "";
 	$("#mainTable").fadeIn();
 	showclock();
@@ -1743,11 +1738,11 @@ function checkWLReady(){
   	});
 }
 
-function wifi7_mode(obj){
+function wifi7_mode(obj){	
 	var wifi7ModeEnable = obj.value;
 	if(wifi7ModeEnable == '1'){
 		let hintStr = '';
-		if(document.form.wl_auth_mode_x.value == 'psk'
+		if(document.form.wl_auth_mode_x.value == 'psk' 
 		|| document.form.wl_auth_mode_x.value == 'psk2'
 		|| document.form.wl_auth_mode_x.value == 'pskpsk2'){
 			hintStr = 'WPA3-Personal';
@@ -1755,25 +1750,25 @@ function wifi7_mode(obj){
 		else if(document.form.wl_auth_mode_x.value == 'wpa'
 			 || document.form.wl_auth_mode_x.value == 'wpa2'
 			 || document.form.wl_auth_mode_x.value == 'wpawpa2'){
-				if(document.form.wl_radius_ipaddr.value != '' && document.form.wl_radius_key != '' && document.form.wl_radius_port.value != ''){
+				if(document.form.wl_radius_ipaddr.value != '' && document.form.wl_radius_key != '' && document.form.wl_radius_port.value != ''){					
 					hintStr = 'WPA2/WPA3-Enterprise';
 				}
 				// else{
 				// 	hintStr = `<#WiFi7_enable_hint#>`;
 				// }
-
+				
 		}
 		else if(document.form.wl_auth_mode_x.value == 'open'
 			 || document.form.wl_auth_mode_x.value == 'openowe'){
 				hintStr = 'Enhanced Open';
 		}
-		if(document.form.wl_auth_mode_x.value == 'psk'
-		|| document.form.wl_auth_mode_x.value == 'psk2'
-		|| document.form.wl_auth_mode_x.value == 'pskpsk2'
-		|| document.form.wl_auth_mode_x.value == 'wpa'
-		|| document.form.wl_auth_mode_x.value == 'wpa2'
-		|| document.form.wl_auth_mode_x.value == 'wpawpa2'
-		|| document.form.wl_auth_mode_x.value == 'open'
+		if(document.form.wl_auth_mode_x.value == 'psk' 
+		|| document.form.wl_auth_mode_x.value == 'psk2' 
+		|| document.form.wl_auth_mode_x.value == 'pskpsk2' 
+		|| document.form.wl_auth_mode_x.value == 'wpa' 
+		|| document.form.wl_auth_mode_x.value == 'wpa2' 
+		|| document.form.wl_auth_mode_x.value == 'wpawpa2' 
+		|| document.form.wl_auth_mode_x.value == 'open' 
 		|| document.form.wl_auth_mode_x.value == 'openowe'){
 			confirm_asus({
                 title: "",
@@ -1799,7 +1794,7 @@ function wifi7_mode(obj){
                 })(),
                 note_display_flag: 0,
             });
-		}
+		}   
 	}
 	else{
 		if(mloEnable == '1'){
@@ -1882,7 +1877,7 @@ function wifi7_mode(obj){
 <table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
 	<tr>
 		<td valign="top" >
-
+		
 			<table width="760px" border="0" cellpadding="4" cellspacing="0" class="FormTitle" id="FormTitle">
 			<tbody>
 			<tr>
@@ -1896,7 +1891,7 @@ function wifi7_mode(obj){
 		 				<div id="titl_desc" class="formfontdesc"><#WLANConfig11b_display5_sectiondesc#></div>
 		 				<div id="lantiq_ready" style="display:none;color:#FC0;margin-left:5px;font-size:13px;">Wireless is setting...</div>
 		 				<div id="svc_hint_div" style="display:none;margin-left:5px;"><span onClick="location.href='Advanced_System_Content.asp?af=ntp_server0'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"><#General_x_SystemTime_syncNTP#></span></div>
-		  			<div id="timezone_hint_div" style="margin-left:5px;display:none;"><span id="timezone_hint" onclick="location.href='Advanced_System_Content.asp?af=time_zone_select'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"></span></div>
+		  			<div id="timezone_hint_div" style="margin-left:5px;display:none;"><span id="timezone_hint" onclick="location.href='Advanced_System_Content.asp?af=time_zone_select'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"></span></div>	
 
 
 					<div id="schedule_block" style="display:none">
@@ -1968,7 +1963,7 @@ function wifi7_mode(obj){
 								<a id="he_mode_text" class="hintstyle"><#WLANConfig11b_HE_Frame_Mode_itemname#></a>
 						</th>
 						<td>
-							<div style="width:465px;display:flex;align-items: center;">
+							<div style="display:flex;align-items: center;">
 								<select name="wl_11ax" class="input_option" onChange="he_frame_mode(this);">
 										<option value="1" <% nvram_match("wl_11ax", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 										<option value="0" <% nvram_match("wl_11ax", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
@@ -1984,7 +1979,7 @@ function wifi7_mode(obj){
 							<a id="wifi7_mode_text" class="hintstyle"><#WiFi7_Mode#></a>
 						</th>
 						<td>
-							<div style="width:465px;display:flex;align-items: center;">
+							<div style="display:flex;align-items: center;">
 								<select name="wl_11be" class="input_option" onChange="wifi7_mode(this);">
 									<option value="1" <% nvram_match("wl_11be", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 									<option value="0" <% nvram_match("wl_11be", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
@@ -2166,6 +2161,15 @@ function wifi7_mode(obj){
 							</select>
 						</td>
 					</tr>
+					<tr id="mlr_field" style="display:none;">
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="">Xtra Range 2.0</a></th>
+						<td>
+							<select name="mlr_enable" class="input_option">
+									<option value="0" <% nvram_match("mlr_enable", "0","selected"); %> ><#WLANConfig11b_WirelessCtrl_buttonname#></option>
+									<option value="1" <% nvram_match("mlr_enable", "1","selected"); %> ><#WLANConfig11b_WirelessCtrl_button1name#></option>
+							</select>
+						</td>
+					</tr>
 					<tr>
 						<th id="turbo_qam_title"><a id="turbo_qam_hint" class="hintstyle" href="javascript:void(0);" onClick="openHint(3,28);"><#WLANConfig11b_x_TurboQAM#></a></th>
 						<td>
@@ -2269,8 +2273,8 @@ function wifi7_mode(obj){
 							<div>
 								<table>
 									<tr>
-										<td style="border:0px;padding-left:0px;">
-											<div id="slider" style="width:80px;"></div>
+										<td style="border:0px;padding-left:0px;width:100%">
+											<div id="slider"></div>
 										</td>									
 										<td style="border:0px;width:60px;">
 											<div id="tx_power_desc" style="width:150px;font-size:14px;"></div>
@@ -2289,7 +2293,7 @@ function wifi7_mode(obj){
 						<td>
 							<select name="wl_precacen" class="input_option">
 									<option value="0" <% nvram_match("wl_precacen", "0","selected"); %> ><#WLANConfig11b_WirelessCtrl_buttonname#></option>
-									<option value="1" <% nvram_match("wl_precacen", "1","selected"); %> ><#WLANConfig11b_WirelessCtrl_button1name#></option>
+									<option value="1" <% nvram_match("wl_precacen", "1","selected"); %> ><#Auto#></option>
 							</select>
 						</td>
 					</tr>

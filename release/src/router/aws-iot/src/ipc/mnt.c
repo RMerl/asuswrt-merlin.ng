@@ -3,7 +3,9 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/un.h>
-
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
 #include <sys/select.h>
 
 #include <pthread.h>

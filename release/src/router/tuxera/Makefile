@@ -75,7 +75,7 @@ ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_HND_ROUTER_AX_6756),$(RTCON
 ifneq ($(BCM_CHIP),)
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U_V2 TUF-AX5400_V2 RT-AX5400))
 SRCFILE = broadcom_arm_ax_$(BCM_CHIP)_src-rt-5.04axhnd.675x
-else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),EBG19 EBG15))
+else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),EBG19P EBG15))
 SRCFILE = broadcom_arm_ax_62118G
 else ifeq ($(RTCONFIG_HND_ROUTER_BE_4916),y)
 ifeq ($(ASUSWRT_BRCM_SDK_VERSION),$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126 WIFI7_SDK_20250122))
@@ -142,7 +142,6 @@ ifeq ($(RTCONFIG_TUXERA_SMBD),y)
 	@cp -f $(SRCFILE)/smb/kernel-module/tsmb.ko $(DSTDIR)
 	install -D $(SRCFILE)/smb/bin/tsmb-server $(INSTALLDIR)/usr/sbin/tsmb-server
 	install -D $(SRCFILE)/smb/tools/tsmb-passwd $(INSTALLDIR)/usr/sbin/tsmb-passwd
-	install -D -m 0644 $(SRCFILE)/VERSION-INFO.tsmb $(INSTALLDIR)/rom/Tuxera-VERSION-INFO.tsmb
 endif
 ifeq ($(RTCONFIG_TFAT),y)
 	@cp -f $(SRCFILE)/fat/kernel-module/tfat.ko $(DSTDIR)

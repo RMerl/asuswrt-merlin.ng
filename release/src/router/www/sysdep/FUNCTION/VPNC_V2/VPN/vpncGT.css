@@ -108,6 +108,7 @@
 	background-color: rgba(0, 0, 0, 0.1);
 }
 .profile_setting_item.policy{
+	font-size:13px;
 	color: #b9c5d4 !important;
 }
 .profile_setting_item .title,

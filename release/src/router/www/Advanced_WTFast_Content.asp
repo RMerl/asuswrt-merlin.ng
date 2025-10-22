@@ -23,52 +23,6 @@
 <script language="JavaScript" type="text/javascript" src="validator.js"></script>
 <script type="text/javascript" src="switcherplugin/jquery.iphone-switch.js"></script>
 <style>
-#ClientList_Block_PC{
-	border:1px outset #FFF;
-	background-color:#000;
-	position:absolute;
-	margin-top:1px;
-	*margin-top:22px;
-	margin-left:-4px;
-	*margin-left:-263px;
-	width:220px;
-	*width:192px;
-	text-align:left;
-	height:auto;
-	overflow-y:auto;
-	z-index:200;
-	padding: 1px;
-	display:none;
-	left: 151px;
-}
-
-#ClientList_Block_PC div{
-	background-color:#000;
-	height:auto;
-	*height:20px;
-	line-height:20px;
-	text-decoration:none;
-	font-family: calibri;
-	font-size:14px;
-}
-
-#ClientList_Block_PC a{
-	background-color:#EFEFEF;
-	color:#EAE9E9;
-	font-size:12px;
-	font-family:Arial, Helvetica, sans-serif;
-	text-decoration:none;
-}
-
-#ClientList_Block_PC strong {
-	padding-left: 3px;
-}
-
-#ClientList_Block_PC div:hover, #ClientList_Block a:hover{
-	background-color:#3366FF;
-	color:#FFFFFF;
-}
-
 .Background{
 	background-image:
 		url(images/wtfast_point.gif),
@@ -1182,9 +1136,11 @@ function clean_macerr(){
 								</td>
 
 								<td>
-									<input type="text" class="wtfast_input_option" maxlength="17" name="clientmac_x_0" style="width:180px; border-right:0px;" onKeyPress="return validator.isHWAddr(this,event);" onKeyUp="check_value(this);" onKeyDown="clean_macerr();" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">
-										<img id="pull_arrow" src="images/unfold_more.svg" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANList(this);" title="<#select_MAC#>">
-										<div id="ClientList_Block_PC" class="ClientList_Block_PC"></div> 
+								    <div class="clientlist_dropdown_main">
+                                        <input type="text" class="wtfast_input_option" maxlength="17" name="clientmac_x_0" onKeyPress="return validator.isHWAddr(this,event);" onKeyUp="check_value(this);" onKeyDown="clean_macerr();" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">
+                                        <img id="pull_arrow" src="images/unfold_more.svg" onclick="pullLANList(this);" title="<#select_MAC#>">
+                                        <div id="ClientList_Block_PC" class="clientlist_dropdown"></div>
+                                    </div> 
 								</td>
 								<td>
 									<select id="game_list" name="game_list" style="width:160px; background-position:143px;" onchange=""></select>

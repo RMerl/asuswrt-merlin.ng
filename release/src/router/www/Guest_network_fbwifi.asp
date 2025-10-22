@@ -120,7 +120,7 @@ function initial(){
 		fbwifiShowAndHide(0);
 	}
 
-	var show_fbwifi_page_flag = cookie.get("fbwifi_page_flag");
+	var show_fbwifi_page_flag = window.localStorage.getItem("fbwifi_page_flag");
 	if(show_fbwifi_page_flag == null && fbwifi_enable == "on") {
 		show_fbwifi_page_setting();
 		$("#full_screen_bg").fadeIn(300);
@@ -130,7 +130,7 @@ function initial(){
 function show_fbwifi_page_setting() {
 	cal_panel_block("fbwifi_page_setting", 0.35);
 	$('#fbwifi_page_setting').fadeIn();
-	cookie.set("fbwifi_page_flag", true, 30);
+	window.localStorage.setItem("fbwifi_page_flag", true, 30);
 }
 function close_fbwifi_page_setting() {
 	$('#fbwifi_page_setting').fadeOut(100);
@@ -473,7 +473,7 @@ function applyRuleFBWiFi(){
 		}
 	}
 	else {
-		cookie.unset("fbwifi_page_flag");
+		window.localStorage.removeItem("fbwifi_page_flag");
 		showLoading();
 		document.form.action_script.value += ";stop_fbwifi";
 		document.form.fbwifi_enable.value = fbwifi_enable;

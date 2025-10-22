@@ -76,7 +76,7 @@ function initial(){
 	if(fanctrl_info.length != 0)
 		update_coretmp();
 
-	if(cookie.get("CoreTmpUnit") == 1){
+	if(window.localStorage.getItem("CoreTmpUnit") == 1){
 		document.getElementById("unitDisplay1").innerHTML = "°F";
 		document.getElementById("unitDisplay2").innerHTML = "°F";
 		document.form.fanctrl_fullspeed_temp.value = fanctrl_fullspeed_temp_orig_F;
@@ -88,7 +88,7 @@ function initial(){
 		document.form.fanctrl_fullspeed_temp.value = fanctrl_fullspeed_temp_orig;
 		document.form.fanctrl_period_temp.value = fanctrl_period_temp_orig;
 	}
-	document.form.fanctrl_fullspeed_temp_unit.selectedIndex = cookie.get("CoreTmpUnit");
+	document.form.fanctrl_fullspeed_temp_unit.selectedIndex = window.localStorage.getItem("CoreTmpUnit");
 
 	if(!power_support || Qcawifi_support){
 		inputHideCtrl(document.form.wl0_TxPower, 0);
@@ -467,17 +467,17 @@ function applyRule(){
 }
 
 function changeTempUnit(num){
-	cookie.set("CoreTmpUnit", num, 365);
+	window.localStorage.setItem("CoreTmpUnit", num, 365);
 	refreshpage();
 }
 
-function setCookie(num){
-	cookie.set("CoreTmpUnit", num, 365);
+function setLocalStorage(num){
+	window.localStorage.setItem("CoreTmpUnit", num, 365);
 }
 
-function getCookie(c_name)
+function getLocalStorage(c_name)
 {
-	return cookie.get("CoreTmpUnit");
+	return window.localStorage.getItem("CoreTmpUnit");
 }
 </script>
 </head>

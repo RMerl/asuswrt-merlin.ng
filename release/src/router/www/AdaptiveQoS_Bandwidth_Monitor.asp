@@ -123,8 +123,8 @@ if(dns_dpi_support)
 {
   curState = '<% nvram_get("dns_dpi_apps_analysis"); %>';
 }
-if(cookie.get('maxBandwidth') == "" || cookie.get('maxBandwidth') == undefined){
-	cookie.set("maxBandwidth", "100");
+if(window.localStorage.getItem('maxBandwidth') == "" || window.localStorage.getItem('maxBandwidth') == undefined){
+	window.localStorage.setItem("maxBandwidth", "100");
 }
 
 function register_event(){
@@ -166,13 +166,13 @@ var scale = [1, 5, 10, 20, 30, 50, 75, 100];
 var download_maximum = 100 * 1024;
 var upload_maximum = 100 * 1024;
 function initial(){
-	var _scale = cookie.get('maxBandwidth_scale');
-	if(cookie.get('maxBandwidth') == '100'){
+	var _scale = window.localStorage.getItem('maxBandwidth_scale');
+	if(window.localStorage.getItem('maxBandwidth') == '100'){
 		if(_scale != '0'){
 			$('#traffic_unit').val('100');
 		}
 	}
-	else if(cookie.get('maxBandwidth') == '1000'){
+	else if(window.localStorage.getItem('maxBandwidth') == '1000'){
 		scale = [10, 50, 100, 200, 350, 500, 750, 1000];
 		download_maximum = 1000 * 1024;
 		upload_maximum = 1000 * 1024;
@@ -180,7 +180,7 @@ function initial(){
 			$('#traffic_unit').val('1000');
 		}
 	}
-	else if(cookie.get('maxBandwidth') == '10000'){
+	else if(window.localStorage.getItem('maxBandwidth') == '10000'){
 		scale = [500, 750, 1000, 2000, 3500, 5000, 7500, 10000];
 		download_maximum = 10000 * 1024;
 		upload_maximum = 10000 * 1024;
@@ -1501,8 +1501,10 @@ function update_apps_tarffic(mac, obj, new_element) {
     },
     success: function(response){
 		render_apps(array_traffic, obj, new_element);
-		render_app_icon(array_traffic);
-		apps_time_flag = setTimeout((function (mac,obj,new_element){ return function (){ update_apps_tarffic(mac,obj,new_element); } })(mac,obj,new_element), detect_interval*1000);
+        render_app_icon(array_traffic);
+		apps_time_flag = setTimeout(function(){
+			update_apps_tarffic(mac,obj,new_element)
+		}, detect_interval*1000);
     }
   });
 }
@@ -1516,8 +1518,10 @@ function update_apps_tarffic_Dns(mac, obj, new_element) {
     },
     success: function(response){
 		render_apps(array_traffic, obj, new_element);
-		render_app_icon(array_traffic);
-		apps_time_flag = setTimeout((function (mac,obj,new_element){ return function (){ update_apps_tarffic_Dns(mac,obj,new_element); } })(mac,obj,new_element), detect_interval*1000);
+        render_app_icon(array_traffic);
+		apps_time_flag = setTimeout(function(){
+			update_apps_tarffic_Dns(mac,obj,new_element)
+		}, detect_interval*1000);
     }
   });
 }
@@ -1630,29 +1634,29 @@ function switch_control(_status){
 
 function setUnit(unit){
 	if(unit == '1000'){		// 1 Gbps
-		cookie.set("maxBandwidth", unit);
-		cookie.set("maxBandwidth_scale", unit);
+		window.localStorage.setItem("maxBandwidth", unit);
+		window.localStorage.setItem("maxBandwidth_scale", unit);
 		scale = [10, 50, 100, 200, 350, 500, 750, 1000];
 		download_maximum = 1000 * 1024;
 		upload_maximum = 1000 * 1024;
 	}
 	else if(unit == '10000'){	// 10 Gbps
-		cookie.set("maxBandwidth", unit);
-		cookie.set("maxBandwidth_scale", unit);
+		window.localStorage.setItem("maxBandwidth", unit);
+		window.localStorage.setItem("maxBandwidth_scale", unit);
 		scale = [500, 750, 1000, 2000, 3500, 5000, 7500, 10000];
 		download_maximum = 10000 * 1024;
 		upload_maximum = 10000 * 1024;
 	}
 	else if(unit == '100'){	// 100 Mbps
-		cookie.set("maxBandwidth", unit);
-		cookie.set("maxBandwidth_scale", unit);
+		window.localStorage.setItem("maxBandwidth", unit);
+		window.localStorage.setItem("maxBandwidth_scale", unit);
 		scale = [1, 5, 10, 20, 30, 50, 75, 100];
 		download_maximum = 100 * 1024;
 		upload_maximum = 100 * 1024;
 	}
 	else{		// Auto
-		cookie.set("maxBandwidth", '100');
-		cookie.set("maxBandwidth_scale", unit);
+		window.localStorage.setItem("maxBandwidth", '100');
+		window.localStorage.setItem("maxBandwidth_scale", unit);
 		scale = [1, 5, 10, 20, 30, 50, 75, 100];
 		download_maximum = 100 * 1024;
 		upload_maximum = 100 * 1024;
@@ -1660,13 +1664,13 @@ function setUnit(unit){
 }
 
 function setScale(scale){
-	cookie.set('ASUS_TrafficClient_unit', scale);
+	window.localStorage.setItem('ASUS_TrafficClient_unit', scale);
 }
 
 function getTrafficUnit(){
 	var value = 9;
-	if(cookie.get('ASUS_TrafficClient_unit')){
-		value = cookie.get('ASUS_TrafficClient_unit');
+	if(window.localStorage.getItem('ASUS_TrafficClient_unit')){
+		value = window.localStorage.getItem('ASUS_TrafficClient_unit');
 	}
 
 	return value;
@@ -1745,7 +1749,7 @@ function getTrafficUnit(){
 															<script type="text/javascript">
 															if(dns_dpi_support)
 															{
-																$('#apps_analysis_enable').iphoneSwitch('<% nvram_get("dns_dpi_apps_analysis"); %>',
+                                                                    $('#apps_analysis_enable').iphoneSwitch('<% nvram_get("dns_dpi_apps_analysis"); %>',
 																	function(){
 																		switch_control(1);
 																	},

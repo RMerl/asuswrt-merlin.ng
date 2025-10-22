@@ -76,6 +76,9 @@ body{
 	word-break: break-word;
 	max-width: 500px;
 }
+.tuf_CN{
+	font-size: 32px;
+}
 .login-bg, .login-bg-odm{
 	width: 887px;
 	height: 600px;

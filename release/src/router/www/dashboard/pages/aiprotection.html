@@ -1,105 +1,1981 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-        <link rel="stylesheet" href="css/clients.css" />
-        <link rel="stylesheet" href="css/aiProtection.css" />
-    </head>
-    <body>
-        <div class="d-flex align-items-center">
-            <div class="page-title py-3"><#AiProtection_title#></div>
-        </div>
-        <div class="row">
-            <div class="col-12 col-md-6 mb-3">
-                <div class="card pt-2 h-100" id="feature_desc"></div>
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-                <div class="card pt-2 h-100" id="router_scan"></div>
-            </div>
-
-            <div class="col-12 col-md-6 col-xl-4 mb-3">
-                <div class="card pt-2 h-100" id="mals_topClient"></div>
-            </div>
-
-            <div class="col-12 col-md-6 col-xl-4 mb-3">
-                <div class="card pt-2 h-100" id="vp_topClient"></div>
-            </div>
-            <div class="col-12 col-md-6 col-xl-4 mb-3">
-                <div class="card pt-2 h-100" id="cc_topClient"></div>
-            </div>
-
-            <!-- CHART -->
-            <div class="col-12 col-md-6 col-xl-4 mb-3">
-                <div class="card pt-2 h-100">
-                    <h5 class="card-header d-flex align-items-center justify-content-between"><#AiProtection_sites_blocking#></h5>
-                    <div class="card-body">
-                        <div class="row">
-                            <span><#AiProtection_activity#></span>
-                            <div class="ips-chart-height">
-                                <canvas id="mals_chart"></canvas>
-                            </div>
-                        </div>
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <link rel="stylesheet" href="css/clients.css"/>
+    <link rel="stylesheet" href="css/aiProtection.css"/>
+    <link rel="stylesheet" href="datatables/datatables.min.css">
+    <link rel="stylesheet" href="datatables/datatables.asuswrt.css">
+    <link rel="stylesheet" href="css/daterangepicker.css"/>
+</head>
+<body>
+<div class="d-flex align-items-center mb-3">
+    <div class="page-title"><#AiProtection_title#></div>
+</div>
+<div class="row">
+    <div class="col-12 col-md-6 mb-3">
+        <div class="card pt-2 h-100" id="feature_desc">
+            <h5 class="card-header"><#AiProtection_title#></h5>
+            <div class="card-body d-flex flex-column gap-3">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="mb-3"><#AiProtection_ARK_Desc#></div>
+                        <a id="aiprotection_faq"
+                           href="https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang=EN&kw=&num=139"
+                           target="_blank" class="text-decoration-underline">
+                            <#AiProtection_title#> FAQ
+                        </a>
                     </div>
                 </div>
-            </div>
-
-            <div class="col-12 col-md-6 col-xl-4 mb-3">
-                <div class="card pt-2 h-100">
-                    <h5 class="card-header d-flex align-items-center justify-content-between"><#AiProtection_two-way_IPS#></h5>
-
-                    <div class="card-body">
-                        <div class="row">
-                            <span><#AiProtection_level#></span>
-                            <div class="ips-chart-height">
-                                <canvas id="vp_chart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-footer d-flex align-items-center">
-                        <div class="d-flex align-items-center me-3">
-                            <div class="me-2 vp-tab vp-tab-high"></div>
-                            <div>High</div>
-                        </div>
-                        <div class="d-flex align-items-center me-3">
-                            <div class="me-2 vp-tab vp-tab-medium"></div>
-                            <div>Medium</div>
-                        </div>
-                        <div class="d-flex align-items-center me-3">
-                            <div class="me-2 vp-tab vp-tab-low"></div>
-                            <div>Low</div>
-                        </div>
-                    </div>
+                <div class="text-center pt-2">
+                    <img src="images/New_ui/Home_Protection_Scenario.svg" class="aiProtection-scenario"/>
                 </div>
-            </div>
-
-            <div class="col-12 col-md-6 col-xl-4 mb-3">
-                <div class="card pt-2 h-100">
-                    <h5 class="card-header d-flex align-items-center justify-content-between"><#AiProtection_detection_blocking#></h5>
-                    <div class="card-body">
-                        <div class="row">
-                            <span><#AiProtection_activity#></span>
-                            <div class="ips-chart-height">
-                                <canvas id="cc_chart"></canvas>
-                            </div>
-                        </div>
-                    </div>
+                <div class="card-body-block">
                 </div>
-            </div>
-
-            <div class="col-12 mb-3">
-                <div class="card pt-2 h-100" id="mals_detail"></div>
-            </div>
-            <div class="col-12 mb-3">
-                <div class="card pt-2 h-100" id="vp_detail"></div>
-            </div>
-            <div class="col-12 mb-3">
-                <div class="card pt-2 h-100" id="cc_detail"></div>
             </div>
         </div>
+    </div>
+    <div class="col-12 col-md-6 mb-3">
+        <div class="card pt-2 h-100" id="router_scan"></div>
+    </div>
+</div>
+<div id="feature_info" class="position-relative"></div>
+<script src="../datatables/datatables.min.js"></script>
+<script src="../js/chart.min.js"></script>
+<script src="../js/chartjs-adapter-date-fns.js"></script>
+<script src="../js/moment.min.js"></script>
+<script src="../js/daterangepicker.js"></script>
+<script type="module">
+    const faqHref = `https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang=${system.language.currentLang}&kw=&num=139`;
+    document.getElementById("aiprotection_faq").href = faqHref;
 
-        <script></script>
-        <script src="../js/aiProtection.js"></script>
-    </body>
+    const urlParameters = new URLSearchParams(window.location.search);
+    const view = urlParameters.get("view") || "overview";
+
+    import {ClientList} from '/js/clientlist.module.js';
+
+    async function initializeClientList() {
+        let clientList = window.clientList || new ClientList();
+        if (!window.clientList) {
+            window.clientList = clientList;
+            await clientList.init();
+        }
+    }
+
+    const _nvram = {
+        ...httpApi.nvramGet([
+            "TM_EULA",
+            "TM_EULA_time",
+            "wrs_protect_enable",
+            "wrs_mals_enable",
+            "wrs_vp_enable",
+            "wrs_cc_enable",
+            "wps_enable",
+            "dmz_ip",
+            "autofw_enable_x",
+            "vts_enable_x",
+            "misc_http_x",
+            "misc_ping_x",
+            "st_ftp_mode",
+            "st_samba_mode",
+            "wans_dualwan",
+            "wan0_upnp_enable",
+            "wan1_upnp_enable",
+            "dslx_transmode",
+            "dsl0_upnp_enable",
+            "dsl8_upnp_enable",
+            "wrs_mail_bit",
+            "PM_SMTP_AUTH_USER",
+            "PM_SMTP_SERVER",
+            "PM_SMTP_PORT",
+            "PM_MY_EMAIL",
+            "ctf_disable",
+            "ctf_fa",
+            "ark_mals_enable",
+            "ark_adblock_enable",
+            "ark_tracker_enable"
+        ], true)
+    };
+
+    class FeatureSwitch {
+        constructor(type) {
+            this.type = type;
+            this.element = null;
+            this.nvram = _nvram;
+
+            this.configs = {
+                dpi_mals: {
+                    title: `<#AiProtection_sites_blocking#>`,
+                    desc: `<#AiProtection_sites_block_desc#>`,
+                    id: 'dpi_mals_switch',
+                    icon: 'icon-malicious',
+                    enableKey: 'wrs_mals_enable'
+                },
+                dpi_vp: {
+                    title: `<#AiProtection_two-way_IPS#>`,
+                    desc: `<#AiProtection_two-way_IPS_desc#>`,
+                    id: 'vp_switch',
+                    icon: 'icon-twowayips',
+                    enableKey: 'wrs_vp_enable'
+                },
+                dpi_cc: {
+                    title: `<#AiProtection_detection_blocking#>`,
+                    desc: `<#AiProtection_detection_block_desc#>`,
+                    id: 'cc_switch',
+                    icon: 'icon-deviceprevention',
+                    enableKey: 'wrs_cc_enable'
+                },
+                ark_mals: {
+                    title: `<#AiProtection_ARK_Malicious_Site_blocking#>`,
+                    desc: `<#AiProtection_ARK_Malicious_Site_blocking_desc#>`,
+                    id: 'ark_mals_switch',
+                    icon: 'icon-malicious',
+                },
+                ark_adblock: {
+                    title: `<#AiProtection_AdvertisementBlocking#>`,
+                    desc: `<#AiProtection_AdvertisementBlocking_Desc#>`,
+                    id: 'ark_adblock_switch',
+                    icon: 'icon-adblock',
+                },
+                ark_tracker: {
+                    title: `<#AiProtection_TrackerBlocking#>`,
+                    desc: `<#AiProtection_TrackerBlocking_Desc#>`,
+                    id: 'ark_tracker_switch',
+                    icon: 'icon-tracker',
+                }
+            }
+        }
+
+        isFeatureEnabled(featureName) {
+            const enableKey = `${featureName}_enable`;
+            return this.nvram[enableKey] === "1";
+        }
+
+        isDpiFeatureEnabled(featureName) {
+            const config = this.configs[featureName];
+            if (!config || !config.enableKey) return false;
+            return this.nvram[config.enableKey] === "1";
+        }
+
+        generateFeatureHtml(featureName, isArk = true) {
+            const feature = this.configs[featureName];
+            const isEnabled = isArk ? this.isFeatureEnabled(featureName) : this.isDpiFeatureEnabled(featureName);
+            const title = feature.title || feature.titleKey;
+            const desc = feature.desc || feature.descKey;
+
+            return `
+            <div class="d-flex flex-row align-items-start justify-content-around">
+                <div class="d-flex flex-row align-items-start gap-2">
+                    <div class="icon ${feature.icon} text-primary icon-size-28"></div>
+                    <span class="d-flex flex-column align-items-start">
+                        <div class="feature-title">${title}</div>
+                        <div class="feature-desc">${desc}</div>
+                    </span>
+                </div>
+                <div class="form-check form-switch ms-auto">
+                    <div id="${feature.id}" class="toggle-button ${isEnabled ? "active" : ""}">
+                        <div class="toggle-button-handle"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+        }
+
+        handleArkFeatureToggle(featureName, element) {
+            element.classList.toggle("active");
+            const active = element.classList.contains("active");
+            const value = active ? "1" : "0";
+
+            Object.assign(this.nvram, {
+                [`${featureName}_enable`]: value,
+            });
+            showLoading();
+
+            httpApi.nvramSet({
+                [`${featureName}_enable`]: value,
+                "wrs_protect_enable": "1",
+                "action_mode": "apply",
+                "rc_service": "restart_ark",
+            }, () => {
+                hideLoading();
+            })
+
+        }
+
+        handleDpiFeatureToggle(featureName, element) {
+            element.classList.toggle("active");
+            const active = element.classList.contains("active");
+            const value = active ? "1" : "0";
+
+            if (this.nvram.TM_EULA === "0" || this.nvram.TM_EULA_time === "") {
+                showTMEula(featureName);
+                return;
+            }
+
+            const feature = this.configs[featureName];
+            if (!feature || !feature.enableKey) {
+                console.error(`No config or enableKey found for feature: ${featureName}`);
+                return;
+            }
+
+            let applyObj = {
+                action_mode: "apply",
+                rc_service: "restart_wrs;restart_firewall",
+                wrs_protect_enable: "1",
+                [feature.enableKey]: value,
+                action_time: 4,
+            };
+            showLoading();
+
+            const {ctf_disable, ctf_fa_mode} = this.nvram;
+            if ((ctf_disable == 0 && ctf_fa_mode == 2) || system.modelName === "MAP-AC1750") {
+                applyObj.rc_service = "reboot";
+                applyObj.action_time = httpApi.hookGet("get_default_reboot_time");
+            }
+
+            httpApi.nvramSet(applyObj, () => {
+                hideLoading();
+            });
+        }
+
+        // Bind event listeners
+        bindEventListeners() {
+            const config = this.configs[this.type];
+            if (!config || !this.element) return;
+
+            const toggleButton = this.element.querySelector(`#${config.id}`);
+            if (toggleButton) {
+                const isArk = this.type.startsWith('ark_');
+                toggleButton.addEventListener("click", (event) => {
+                    if (isArk) {
+                        this.handleArkFeatureToggle(this.type, event.target);
+                    } else {
+                        this.handleDpiFeatureToggle(this.type, event.target);
+                    }
+                });
+            }
+        }
+
+        render() {
+            const config = this.configs[this.type];
+            if (!config) {
+                console.warn(`No config found for feature type: ${this.type}`);
+                return;
+            }
+
+            const isArk = this.type.startsWith('ark_');
+            const featureHtml = this.generateFeatureHtml(this.type, isArk);
+
+            const div = document.createElement('div');
+            div.className = 'feature-switch-container mb-3';
+            div.innerHTML = featureHtml;
+
+            this.element = div;
+            this.bindEventListeners();
+
+            return this.element;
+        }
+
+        init() {
+            this.render();
+        }
+    }
+
+    function genRouterScan() {
+        let {
+            wps_enable,
+            dmz_ip,
+            autofw_enable_x,
+            vts_enable_x,
+            misc_http_x,
+            misc_ping_x,
+            st_ftp_mode,
+            st_samba_mode,
+            wrs_protect_enable,
+            wrs_mals_enable,
+            wrs_vp_enable,
+            wrs_cc_enable,
+            wans_dualwan,
+            dslx_transmode,
+            wan0_upnp_enable,
+            wan1_upnp_enable,
+            dsl0_upnp_enable,
+            dsl8_upnp_enable,
+            ark_mals_enable,
+            ark_adblock_enable,
+            ark_tracker_enable,
+        } = _nvram;
+
+        let wpsEnable = wps_enable === "1" ? true : false,
+            dmzEnable = dmz_ip !== "" ? true : false,
+            portTriggerEnable = autofw_enable_x === "1" ? true : false,
+            portForwardingEnable = vts_enable_x === "1" ? true : false,
+            accessFromWAN = misc_http_x === "1" ? true : false,
+            pingFromWAN = misc_ping_x === "1" ? true : false,
+            ftpAnonymous = st_ftp_mode === "1" ? true : false,
+            sambaAnonymous = st_samba_mode === "1" ? true : false,
+            malsEnable = wrs_mals_enable === "1" ? true : false,
+            vpEnable = wrs_vp_enable === "1" ? true : false,
+            ccEnable = wrs_cc_enable === "1" ? true : false;
+
+        //check default username/password
+        let defaultNamePasswd = httpApi.hookGet("check_acorpw") === "1" ? true : false;
+
+        // password strength of wireless
+        let score = httpApi.hookGet("check_passwd_strength-wl_key"),
+            level = Math.floor(score / 20);
+        const passwdStrengthDesc = [
+            "<#PASS_score0#>",
+            "<#PASS_score1#>",
+            "<#PASS_score2#>",
+            "<#PASS_score3#>",
+            "<#PASS_score4#>",
+            "<#PASS_score4#>",
+        ];
+
+        /*
+            check wireless auth,
+            - Personal: WPA2, WPA/WPA2, WAP3, WPA2/WPA3.
+            - Enterprise: WPA2, WPA/WPA2, WPA3, WPA2/WPA3, Suite-b,
+            - Enhanced Open, Enhanced Open Transition
+        */
+        let wlEncryptEnough = httpApi.hookGet("check_wireless_encryption") === "1" ? true : false;
+
+        // check UPNP risk
+        let redirectPage = "";
+        let uPnpHasRisk = (function () {
+            let dualWANIfArray = wans_dualwan.split(" ");
+            let dslEnable = dualWANIfArray.find((value) => value === "dsl") === "dsl" ? true : false;
+
+            if (dslEnable && dslx_transmode === "atm" && dsl0_upnp_enable === "1") {
+                redirectPage = "Advanced_DSL_Content.asp";
+                return true;
+            } else if (dslEnable && dslx_transmode === "ptm" && dsl8_upnp_enable === "1") {
+                redirectPage = "Advanced_VDSL_Content.asp";
+                return true;
+            } else if (
+                ((dualWANIfArray[0] === "wan" || dualWANIfArray[0] === "lan") && wan0_upnp_enable === "1") ||
+                ((dualWANIfArray[1] === "wan" || dualWANIfArray[1] === "lan") && wan1_upnp_enable === "1")
+            ) {
+                redirectPage = "Advanced_WAN_Content.asp";
+                return true;
+            }
+
+            return false;
+        })();
+
+        let code = "";
+        code += `
+        <h5 class="card-header d-flex align-items-center"><div class="icon icon-search text-primary icon-size-28"></div><#AiProtection_scan#></h5>
+        <div class="card-body d-flex flex-column gap-3">
+            <div><#AiProtection_scan_desc#></div>
+            <div class="card-body-block">
+                <div class="feature-title"><#HSDPAConfig_Password_itemname#></div>
+                <div class="row">
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item1#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button button-danger">
+                                ${
+            defaultNamePasswd
+                ? "<a href='Advanced_System_Content.asp' target='_blank'><#checkbox_No#></a>"
+                : "<#checkbox_Yes#>"
+        }
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item2#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${level < 2 ? "button-danger" : ""}
+                                ${level === 2 ? "button-warning" : ""}
+                                ${level > 2 ? "button-safe" : ""}
+                                ">
+                                ${passwdStrengthDesc[level]}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body-block">
+                <div class="feature-title"><#menu5_3#> / <#menu5_2#></div>
+                <div class="row">
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item3#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${wlEncryptEnough ? "button-safe" : "button-danger"}">
+
+                                ${
+            wlEncryptEnough
+                ? " <#PASS_score3#>"
+                : "<a href='Advanced_Wireless_Content.asp' target='_blank'><#PASS_score1#></a>"
+        }
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#WPS_disabled#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${!wpsEnable ? "button-safe" : "button-warning"}">
+
+                                ${
+            !wpsEnable ? "<#checkbox_Yes#>" : "<a href='Advanced_WWPS_Content.asp' target='_blank'><#checkbox_No#></a>"
+        }
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item4#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${uPnpHasRisk ? "button-warning" : "button-safe"}">
+                                ${
+            uPnpHasRisk ? "<a href='" + redirectPage + "' target='_blank'><#checkbox_No#></a>" : "<#checkbox_Yes#>"
+        }
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item7#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${dmzEnable ? "button-warning" : "button-safe"}">
+                                ${
+            dmzEnable
+                ? "<a href='Advanced_Exposed_Content.asp' target='_blank'><#checkbox_No#></a>"
+                : "<#checkbox_Yes#>"
+        }
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item8#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${portTriggerEnable ? "button-warning" : "button-safe"}">
+                                ${
+            portTriggerEnable
+                ? "<a href='Advanced_PortTrigger_Content.asp' target='_blank'><#checkbox_No#></a>"
+                : "<#checkbox_Yes#>"
+        }
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item9#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${portForwardingEnable ? "button-warning" : "button-safe"}">
+                                ${
+            portForwardingEnable
+                ? "<a href='Advanced_VirtualServer_Content.asp' target='_blank'><#checkbox_No#></a>"
+                : "<#checkbox_Yes#>"
+        }
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item5#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${accessFromWAN ? "button-warning" : "button-safe"}">
+                                ${
+            accessFromWAN
+                ? "<a href='Advanced_System_Content.asp' target='_blank'><#checkbox_No#></a>"
+                : "<#checkbox_Yes#>"
+        }
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item6#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${pingFromWAN ? "button-warning" : "button-safe"}">
+                                ${
+            pingFromWAN
+                ? "<a href='Advanced_BasicFirewall_Content.asp' target='_blank'><#checkbox_No#></a>"
+                : "<#checkbox_Yes#>"
+        }
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item10#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${ftpAnonymous ? "button-warning" : "button-safe"}">
+                                ${ftpAnonymous ? "<a href='Advanced_AiDisk_ftp.asp' target='_blank'><#checkbox_No#></a>" : "<#checkbox_Yes#>"}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item11#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${sambaAnonymous ? "button-warning" : "button-safe"}">
+                                ${
+            sambaAnonymous
+                ? "<a href='Advanced_AiDisk_samba.asp' target='_blank'><#checkbox_No#></a>"
+                : "<#checkbox_Yes#>"
+        }
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+        document.getElementById("router_scan").innerHTML = code;
+    }
+
+    class Feature {
+        constructor(props) {
+            this.type = props.type;
+            this.urlBase = props.urlBase;
+            this.title = props.title;
+            this.data = [];
+            this.support = isSupport(props.support);
+            this.featureSwitch = null;
+            this.topClientWidget = null;
+            this.detailTableWidget = null;
+            this.chartWidget = null;
+        }
+
+        setData(data) {
+            this.data = data;
+            if (this.topClientWidget) {
+                this.topClientWidget.updateDataset(data);
+            }
+            if (this.detailTableWidget) {
+                this.detailTableWidget.updateDataset(data);
+            }
+            if (this.chartWidget) {
+                this.chartWidget.updateDataset(data);
+            }
+        }
+
+        fetchData() {
+            const currentTime = Math.floor(Date.now() / 1000);
+            const weekAgoTime = currentTime - (7 * 24 * 60 * 60) - 1;
+            this.fetchDataWithDateRange(weekAgoTime, currentTime);
+        }
+
+        fetchDataWithDateRange(startTime, endTime) {
+            const allClientSet = window.clientList;
+
+            function formatDate(date) {
+                const yyyy = date.getFullYear();
+                const MM = String(date.getMonth() + 1).padStart(2, '0');
+                const dd = String(date.getDate()).padStart(2, '0');
+                const HH = String(date.getHours()).padStart(2, '0');
+                const mm = String(date.getMinutes()).padStart(2, '0');
+                const ss = String(date.getSeconds()).padStart(2, '0');
+                return `${yyyy}/${MM}/${dd} ${HH}:${mm}:${ss}`;
+            }
+
+            fetch(`${this.urlBase}?type=${this.type}&starttime=${startTime}&endtime=${endTime}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.map(item => {
+                        const client = allClientSet.findClientByMac(item.mac) || null;
+                        const client_name = client?.nickName || client?.name || item.mac.toUpperCase();
+                        item.mac = item.mac.toUpperCase();
+                        item.format_timestamp = formatDate(new Date(item.timestamp * 1000));
+                        item.client_name = client_name;
+                        item.client = client;
+                        return item;
+                    })
+                    this.setData(data);
+                    // console.log(`Fetched data for ${this.type}:`, data);
+                })
+                .catch(error => {
+                    console.error(`Error fetching data for ${this.type}:`, error);
+                });
+        }
+    }
+
+    let supportedFeatures = [];
+    window.supportedFeatures = supportedFeatures;
+
+    class TopClientWidget {
+        constructor(type, targetElement) {
+            this.type = type;
+            this.targetElement = targetElement;
+            this.element = null;
+            this.data = [];
+        }
+
+        updateDataset(data) {
+            this.data = data;
+            this.render();
+        }
+
+        getCount() {
+            return this.data.length;
+        }
+
+        generateHTML() {
+            const count = this.getCount();
+            const allClientSet = system.client.detail;
+
+            const renderEmpty = () => `
+                <div class="d-flex justify-content-center align-items-center my-4">
+                    <div class="fs-5"><#AiProtection_eventnodetected#></div>
+                </div>
+            `;
+
+            const renderClient = (mac, num, total) => {
+                const percentage = Math.min(100, Math.max(1, Math.ceil((num / total) * 100)));
+                const name = allClientSet[mac] ? allClientSet[mac].name : mac;
+
+                return `
+                    <div class="row">
+                        <div class="col-12 col-md-12 col-xl-6 text-truncate dns-text" title="${mac}">
+                            ${name}
+                        </div>
+                        <div class="col-8 col-xl-4 my-auto">
+                            <div class="progress">
+                                <div class="progress-bar progress-active bar-percent-${percentage}" role="progressbar"></div>
+                            </div>
+                        </div>
+                        <div class="col-4 col-xl-2 text-end card-data-value">${num}</div>
+                    </div>
+                `;
+            };
+
+            const stats = this.data.reduce((acc, {mac}) => {
+                acc[mac] = (acc[mac] || 0) + 1;
+                return acc;
+            }, {});
+
+            const clientHTML = Object.entries(stats)
+                .sort(([, a], [, b]) => b - a) // Sort by count descending
+                .map(([mac, num]) => renderClient(mac.toUpperCase(), num, count))
+                .join("");
+
+            return `
+                <h5 class="card-header"><#AiProtection_event#></h5>
+                <div class="card-body">
+                    <div class="row h-100">
+                        <div class="dns-content-default">
+                            <div class="d-flex align-items-center justify-content-center flex-column">
+                                <div class="fs-4">${count}</div>
+                                <div class="fs-7"><#AiProtection_scan_rHits#></div>
+                            </div>
+                            <div class="d-flex justify-content-between pb-2 card-data-title">
+                                <div><#AiProtection_event_Source#></div>
+                                <div><#NetworkTools_Count#></div>
+                            </div>
+                            <div class="d-flex flex-column gap-2" style="max-height: 290px; overflow-y: auto;">
+                                ${count === 0 ? renderEmpty() : clientHTML}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        render() {
+            const div = document.createElement('div');
+            div.className = "col-12 col-md-5";
+            const card = document.createElement('div');
+            card.className = "border shadow-sm pt-2";
+            card.style = "height: 450px;";
+            card.innerHTML = this.generateHTML();
+            div.appendChild(card);
+
+            if (this.element) {
+                this.element.replaceWith(div);
+            } else {
+                this.targetElement.append(div);
+            }
+
+            this.element = div;
+        }
+
+        init() {
+            this.render();
+        }
+    }
+
+    class ChartWidget {
+        constructor(type, targetElement) {
+            this.type = type;
+            this.targetElement = targetElement;
+            this.element = null;
+            this.chart = null;
+            this.data = [];
+
+            this.configs = {
+                dpi_mals: {
+                    title: '<#AiProtection_activity#>',
+                    canvasId: `${type}_chart`,
+                    datasets: [{
+                        label: "",
+                        yAxisID: "y",
+                        tension: 0.2,
+                        borderWidth: 1
+                    }]
+                },
+                dpi_vp: {
+                    title: '<#AiProtection_level#>',
+                    canvasId: `${type}_chart`,
+                    hasFooter: true,
+                    datasets: [
+                        {
+                            label: "High",
+                            backgroundColor: `rgba(237, 28, 36, 0.3)`,
+                            borderColor: `rgb(237, 28, 36)`,
+                            fill: true,
+                            yAxisID: "y",
+                            borderWidth: 1,
+                            dataKey: 'H'
+                        },
+                        {
+                            label: "Medium",
+                            backgroundColor: `rgba(215, 215, 0, 0.3)`,
+                            borderColor: `rgb(215, 215, 0)`,
+                            fill: true,
+                            yAxisID: "y",
+                            borderWidth: 1,
+                            dataKey: 'M'
+                        },
+                        {
+                            label: "Low",
+                            backgroundColor: `rgba(19, 211, 210, 0.3)`,
+                            borderColor: `rgb(19, 211, 210)`,
+                            fill: true,
+                            yAxisID: "y",
+                            borderWidth: 1,
+                            dataKey: 'L'
+                        }
+                    ],
+                    hasStepSize: true
+                },
+                dpi_cc: {
+                    title: '<#AiProtection_activity#>',
+                    canvasId: `${type}_chart`,
+                    datasets: [{
+                        label: "",
+                        fill: true,
+                        yAxisID: "y",
+                        borderWidth: 1
+                    }]
+                },
+                ark_mals: {
+                    title: '<#AiProtection_activity#>',
+                    canvasId: `${type}_chart`,
+                    datasets: [{
+                        label: "",
+                        fill: true,
+                        yAxisID: "y",
+                        borderWidth: 1
+                    }]
+                },
+                ark_adblock: {
+                    title: '<#AiProtection_activity#>',
+                    canvasId: `${type}_chart`,
+                    datasets: [{
+                        label: "",
+                        fill: true,
+                        yAxisID: "y",
+                        borderWidth: 1
+                    }]
+                },
+                ark_tracker: {
+                    title: '<#AiProtection_activity#>',
+                    canvasId: `${type}_chart`,
+                    datasets: [{
+                        label: "",
+                        fill: true,
+                        yAxisID: "y",
+                        borderWidth: 1
+                    }]
+                }
+            };
+        }
+
+        updateDataset(data) {
+            this.data = data;
+            if (this.chart) {
+                this.updateChart();
+            }
+        }
+
+        getTypeConfig() {
+            return this.configs[this.type];
+        }
+
+        generateDatasets() {
+            const config = this.getTypeConfig();
+
+            return config.datasets.map(datasetConfig => {
+                const dataset = {
+                    label: datasetConfig.label,
+                    backgroundColor: datasetConfig.backgroundColor || "#b7f3d5",
+                    borderColor: datasetConfig.borderColor || "#34c38f",
+                    fill: true,
+                    yAxisID: datasetConfig.yAxisID,
+                    tension: 0.2,
+                    borderWidth: datasetConfig.borderWidth,
+                    data: this.data.reduce((acc, item) => {
+                        const itemDate = new Date(item.timestamp * 1000);
+                        const month = itemDate.getMonth() + 1;
+                        const date = itemDate.getDate();
+                        const label = `${month}/${date}`;
+
+                        if (acc[label] === undefined) {
+                            acc[label] = 0;
+                        }
+
+                        if (datasetConfig.dataKey) {
+                            if (item.severity && item.severity.toUpperCase() === datasetConfig.dataKey) {
+                                acc[label] += 1;
+                            }
+                        } else {
+                            acc[label] += 1;
+                        }
+
+                        return acc;
+                    }, {})
+                };
+
+                return dataset;
+            });
+        }
+
+        generateHTML() {
+            const config = this.getTypeConfig();
+
+            let code = `
+                <h5 class="card-header d-flex align-items-center justify-content-between">
+                    ${config.title}
+                </h5>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="ips-chart-height">
+                            <canvas id="${config.canvasId}"></canvas>
+                        </div>
+                    </div>
+                </div>`;
+
+            if (config.hasFooter) {
+                code += `
+                <div class="card-footer d-flex align-items-center">
+                    <div class="d-flex align-items-center me-3">
+                        <div class="me-2 vp-tab vp-tab-high"></div>
+                        <div>High</div>
+                    </div>
+                    <div class="d-flex align-items-center me-3">
+                        <div class="me-2 vp-tab vp-tab-medium"></div>
+                        <div>Medium</div>
+                    </div>
+                    <div class="d-flex align-items-center me-3">
+                        <div class="me-2 vp-tab vp-tab-low"></div>
+                        <div>Low</div>
+                    </div>
+                </div>`;
+            }
+
+            return code;
+        }
+
+        initChart() {
+            const config = this.getTypeConfig();
+            // const labelColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--text-regular-color");
+            const labelColor = "#6c757d";
+            const ctx = this.element.querySelector('canvas').getContext("2d");
+
+            const chartOptions = {
+                type: "line",
+                data: {
+                    datasets: this.generateDatasets(),
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                color: labelColor,
+                                beginAtZero: true,
+                                stepSize: 1
+                            },
+                            min: 0,
+                        },
+                        x: {
+                            ticks: {
+                                color: labelColor,
+                            },
+                        },
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                },
+            };
+
+            if (config.hasStepSize) {
+                chartOptions.options.scales.y.ticks.stepSize = 1;
+            }
+
+            this.chart = new Chart(ctx, chartOptions);
+        }
+
+        updateChart() {
+            if (this.chart) {
+                this.chart.data.datasets = this.generateDatasets();
+                this.chart.update();
+            }
+        }
+
+        render() {
+            const div = document.createElement('div');
+            div.className = "col-12 col-md-7";
+            const card = document.createElement('div');
+            card.className = "border shadow-sm pt-2 h-100";
+            card.innerHTML = this.generateHTML();
+            div.appendChild(card);
+
+            if (this.element) {
+                this.element.replaceWith(div);
+            } else {
+                this.targetElement.append(div);
+            }
+            this.element = div;
+
+            setTimeout(() => {
+                this.initChart();
+            }, 100);
+        }
+
+        init() {
+            this.render();
+        }
+    }
+
+    class DetailTableWidget {
+        constructor(type, targetElement) {
+            this.type = type;
+            this.targetElement = targetElement;
+            this.element = null;
+            this.data = [];
+
+            const cat_id_index = {
+                39: "Proxy Avoidance",
+                73: "Malicious Software",
+                74: "Spyware",
+                75: "Phishing",
+                76: "Spam",
+                77: "Adware",
+                78: "Malware Accomplic",
+                79: "Disease Vector",
+                80: "Cookies",
+                81: "Dialers",
+                82: "Hacking",
+                83: "Joke Program",
+                84: "Password Cracking Apps",
+                85: "Remote Access",
+                86: "Made for AdSense sites",
+                91: "C&C Server",
+                92: "Malicious Domain",
+                94: "Scam",
+                95: "Ransomware",
+            };
+
+            const directType = {0: "", 1: "Device Infected", 2: "External Attacks"};
+
+            const clinetDiv = function (data, type, row) {
+                let targetValue = data;
+                let targetName = "";
+                if (row.client !== null && row.client !== undefined) {
+                    targetName = (row.client.nickName !== "") ? row.client.nickName : row.client.name;
+                    return `<div class="client-name-group">
+                                        <div class="client-name">${targetName}</div>
+                                        <div class="client-info">${data}</div>
+                                    </div>`;
+                } else {
+                    return `<div class="client-name">${targetValue}</div>`;
+                }
+            }
+
+            this.configs = {
+                dpi_mals: {
+                    containerId: 'mals_detail',
+                    columns: [
+                        {
+                            title: '<#diskUtility_time#>',
+                            data: 'format_timestamp',
+                            className: 'dt-head-left dt-body-left',
+                        },
+                        {
+                            title: '<#AiProtection_event_Source#>',
+                            data: 'mac',
+                            render: clinetDiv
+                        },
+                        {title: '<#AiProtection_event_Destination#>', data: 'dst_ip'},
+                        {
+                            title: 'White List',
+                            data: null,
+                            sortable: false,
+                            render: function (data, type, row) {
+                                return `<div role="icon" class="icon-size-24 icon-add-circle me-3" data-bind="add_white_list"></div>`;
+                            }
+                        }
+                    ],
+                    hasWhitelistButton: true,
+                    hasManageWhitelist: true,
+                    fileName: 'MaliciousSitesBlocking.csv',
+                    exportId: 'mals_db_export',
+                },
+                dpi_vp: {
+                    containerId: 'vp_detail',
+                    columns: [
+                        {
+                            title: '<#diskUtility_time#>',
+                            data: 'format_timestamp',
+                            className: 'dt-head-left dt-body-left',
+                        },
+                        {
+                            title: '<#AiProtection_level_th#>', data: 'severity',
+                            render: function (data, type, row) {
+                                if (data == "H") {
+                                    return "High"
+                                } else if (data == "M") {
+                                    return "Medium"
+                                } else if (data == "L") {
+                                    return "Low"
+                                } else {
+                                    ""
+                                }
+                            }
+                        },
+                        {
+                            title: 'Type', data: 'dir',
+                            render: function (data, type, row) {
+                                return directType[data]
+                            }
+                        },
+                        {title: '<#AiProtection_event_Source#>', data: 'mac', render: clinetDiv},
+                        {title: '<#AiProtection_event_Destination#>', data: 'dst_ip'},
+                        {title: '<#AiProtection_event_Threat#>', data: 'msg'}
+                    ],
+                    hasWhitelistButton: false,
+                    hasManageWhitelist: false,
+                    fileName: 'IntrusionPreventionSystem.csv',
+                    dbType: 'vp_db',
+                    exportId: 'vp_db_export',
+                },
+                dpi_cc: {
+                    containerId: 'cc_detail',
+                    columns: [
+                        {
+                            title: '<#diskUtility_time#>',
+                            data: 'format_timestamp',
+                            className: 'dt-head-left dt-body-left',
+                        },
+                        {title: '<#AiProtection_event_Source#>', data: 'mac', render: clinetDiv},
+                        {title: '<#AiProtection_event_Destination#>', data: 'dst_ip'}
+                    ],
+                    hasWhitelistButton: false,
+                    hasManageWhitelist: false,
+                    fileName: 'InfectedDevicePreventBlock.csv',
+                    dbType: 'cc_db',
+                    exportId: 'cc_db_export',
+                },
+                ark_mals: {
+                    containerId: 'mals_detail',
+                    columns: [
+                        {
+                            title: '<#diskUtility_time#>',
+                            data: 'format_timestamp',
+                            className: 'dt-head-left dt-body-left',
+                        },
+                        {
+                            title: '<#AiProtection_event_Source#>',
+                            data: 'mac',
+                            render: clinetDiv
+                        },
+                        {
+                            title: '<#AiProtection_event_Destination#>',
+                            data: 'domain',
+                        }
+                    ],
+                    hasWhitelistButton: false,
+                    hasManageWhitelist: false,
+                    fileName: 'MaliciousSitesBlocking.csv',
+                    dbType: 'mals_db',
+                    exportId: 'mals_db_export',
+                },
+                ark_adblock: {
+                    containerId: 'adblock_detail',
+                    columns:
+                        [
+                            {
+                                title: '<#diskUtility_time#>',
+                                data: 'format_timestamp',
+                                className: 'dt-head-left dt-body-left',
+                            },
+                            {title: '<#AiProtection_event_Source#>', data: 'mac', render: clinetDiv},
+                            {title: '<#AiProtection_event_Destination#>', data: 'domain'}
+                        ],
+                    hasWhitelistButton: false,
+                    hasManageWhitelist: false,
+                    fileName: 'AdblockBlocking.csv',
+                    dbType: 'adblock_db',
+                    exportId: 'adblock_db_export',
+                }
+                ,
+                ark_tracker: {
+                    containerId: 'tracker_detail',
+                    columns:
+                        [
+                            {
+                                title: '<#diskUtility_time#>',
+                                data: 'format_timestamp',
+                                className: 'dt-head-left dt-body-left',
+                            },
+                            {title: '<#AiProtection_event_Source#>', data: 'mac', render: clinetDiv},
+                            {title: '<#AiProtection_event_Destination#>', data: 'domain'}
+                        ],
+                    hasWhitelistButton: false,
+                    hasManageWhitelist: false,
+                    fileName: 'TrackerBlocking.csv',
+                    dbType: 'tracker_db',
+                    exportId: 'tracker_db_export',
+
+                }
+            }
+            ;
+        }
+
+        updateDataset(data) {
+            this.data = data;
+            this.render();
+        }
+
+        getClientName(mac) {
+            const client = system.client.detail;
+            const macUpperCase = mac.toUpperCase();
+            return client[macUpperCase] ? client[macUpperCase].name : macUpperCase;
+        }
+
+        generateHTML() {
+            const config = this.getTypeConfig();
+
+            let code = `
+                <h5 class="card-header d-flex align-items-center justify-content-between">
+                    <#AiProtection_eventdetails#>
+                </h5>
+                <div class="card-body">
+                    <div>
+                        <table id="${this.type}_datatable" class="table table-striped table-hover align-middle table-responsive">
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer d-flex justify-content-end align-items-center">
+                    <div role="icon" class="icon-size-24 icon-delete me-3" title="<#CTL_del#>" data-bind="empty_db" data-type="${this.type}"></div>
+                    ${config.hasManageWhitelist ? '<div role="icon" class="icon-size-24 icon-edit-document me-3" title="Manage Whitelist" id="manage_whiteList"></div>' : ''}
+                    <div role="icon" class="csv-export-btn icon-size-24 icon-export-file me-3" title="<#CTL_onlysave#>" id="${config.exportId}"></div>
+                </div>`;
+
+            return code;
+        }
+
+        bindEvents() {
+            const config = this.getTypeConfig();
+
+            if (config.hasWhitelistButton) {
+                for (let target of document.querySelectorAll("[data-bind='add_white_list']")) {
+                    target.addEventListener("click", function () {
+                        let url = this.getAttribute("data-key");
+                        if (whitelist[url]) {
+                            return false;
+                        }
+
+                        $.ajax({
+                            url: "/wrs_wbl.cgi?action=add&type=0&url_type=url&url=" + url,
+                            type: "POST",
+                            success: function (response) {
+                                whitelist[url] = true;
+                            },
+                        });
+                    });
+                }
+            }
+
+            const emptyDbButton = this.element.querySelector("[data-bind='empty_db']");
+            if (emptyDbButton) {
+                emptyDbButton.addEventListener("click", function () {
+                    eraseDB(this.getAttribute("data-type"));
+                });
+            }
+
+            if (config.hasManageWhitelist) {
+                document.getElementById("manage_whiteList").addEventListener("click", function () {
+                    manageWhiteList();
+                });
+            }
+
+            this.element.querySelector('.csv-export-btn').addEventListener("click", () => {
+                this.exportCsv();
+            });
+        }
+
+        exportCsv() {
+            const config = this.getTypeConfig();
+            const tableId = `${this.type}_datatable`;
+            const table = $(`#${tableId}`).DataTable();
+
+            let aTag = document.createElement("a");
+
+            // Get column headers, excluding White List column
+            const headers = config.columns
+                .filter(col => col.data !== null)
+                .map(col => col.title || col);
+            let content = headers.join(',') + "\n";
+
+            // Get all current table data (including search and pagination filtered)
+            const tableData = table.rows({search: 'applied'}).data().toArray();
+
+            for (let item of tableData) {
+                const row = [];
+                config.columns.forEach((col, index) => {
+                    const dataKey = col.data;
+                    let value = "";
+
+                    if (dataKey) {
+                        // If render function exists, use rendered data
+                        if (col.render && typeof col.render === 'function') {
+                            // For MAC address field, use original MAC address directly
+                            if (dataKey === 'mac') {
+                                value = item[dataKey] || "";
+                            } else {
+                                value = col.render(item[dataKey], 'export', item);
+                            }
+                        } else {
+                            value = item[dataKey] || "";
+                        }
+                    } else {
+                        // Skip columns without data (like White List button)
+                        return;
+                    }
+
+                    // Clean HTML tags, keep text content only
+                    if (typeof value === 'string') {
+                        value = value.replace(/<[^>]*>/g, '');
+                        // Prevent CSV injection attacks
+                        value = sanitizeForCsv(value);
+                    }
+
+                    row.push(value);
+                });
+
+                if (row.length > 0) {
+                    content += row.join(",") + "\n";
+                }
+            }
+
+            // Add UTF-8 BOM for Excel to recognize encoding correctly
+            const BOM = '\uFEFF';
+            const csvContent = BOM + content;
+
+            let mimeType = "text/csv;charset=utf-8";
+            if (navigator.msSaveBlob) {
+                return navigator.msSaveBlob(new Blob([csvContent], {type: mimeType}), config.fileName);
+            } else if ("download" in aTag) {
+                const blob = new Blob([csvContent], {type: mimeType});
+                const url = URL.createObjectURL(blob);
+                aTag.href = url;
+                aTag.setAttribute("download", config.fileName);
+                document.getElementById(config.exportId).appendChild(aTag);
+                setTimeout(function () {
+                    document.getElementById(config.exportId).removeChild(aTag);
+                    aTag.click();
+                    URL.revokeObjectURL(url);
+                }, 66);
+                return true;
+            } else {
+                let f = document.createElement("iframe");
+                document.getElementById(config.exportId).appendChild(f);
+                f.src = "data:" + mimeType + "," + encodeURIComponent(csvContent);
+                setTimeout(function () {
+                    document.getElementById(config.exportId).removeChild(f);
+                }, 333);
+                return true;
+            }
+        }
+
+        getTypeConfig() {
+            return this.configs[this.type];
+        }
+
+        getColumnConfigs() {
+            const config = this.getTypeConfig();
+            return config.columns;
+        }
+
+        initDataTable() {
+            const config = this.getTypeConfig();
+            const tableId = `${this.type}_datatable`;
+
+            // 確保銷毀現有的 DataTable
+            if ($.fn.DataTable.isDataTable(`#${tableId}`)) {
+                $(`#${tableId}`).DataTable().destroy();
+            }
+
+            // 準備 columns 配置
+            const columns = this.getColumnConfigs()
+
+            // 初始化 DataTable
+            $(`#${tableId}`).DataTable({
+                data: this.data,
+                columns: columns,
+                responsive: true,
+                pageLength: 5,
+                lengthMenu: [5, 10, 25, 50],
+                order: [[0, 'desc']], // 按時間降序排列
+                language: {
+                    info: `_START_ - _END_ <#Table_Info_NoData#>`,
+                    infoEmpty: `<#Table_Info_NoData#>`,
+                    infoFiltered: "(<#Table_Info_FilterData#>)",
+                    emptyTable: `<#No_Data_In_Table#>`,
+                    lengthMenu: `<div class="d-flex align-items-center gap-2"><div><#Rows_Per_Page#>:</div><div>_MENU_</div></div>`,
+                    search: '',
+                    paginate: {
+                        first: '',
+                        previous: `<i class="icon icon-previous icon-size-24"></i>`,
+                        next: '<i class="icon icon-next icon-size-24"></i>',
+                        last: '',
+                    },
+                    select: {
+                        rows: {
+                            0: '',
+                            _: '%d client selected',
+                        }
+                    }
+                },
+                drawCallback: () => {
+                    // 修正空表格的 colspan，包括 resize 時
+                    setTimeout(() => {
+                        const emptyCell = this.element.querySelector('.dt-empty');
+                        if (emptyCell) {
+                            const visibleColumns = this.element.querySelectorAll(`#${tableId} thead th:not(.dtr-hidden)`).length;
+                            emptyCell.setAttribute('colspan', visibleColumns || columns.length);
+                        }
+                    }, 10);
+
+                    // 重新綁定白名單按鈕事件
+                    if (config.hasWhitelistButton) {
+                        this.bindWhitelistEvents();
+                    }
+                },
+                layout: {
+                    topStart: 'pageLength',
+                    topEnd: 'search',
+                    bottomStart: ['info'],
+                    bottomEnd: {
+                        paging: {
+                            numbers: 0
+                        }
+                    }
+                },
+                initComplete: (settings, json) => {
+                    const search = this.element.querySelector('.dt-search');
+                    if (search) {
+                        const search_icon = document.createElement('div');
+                        search_icon.classList.add('search-icon');
+                        search_icon.innerHTML = '<i class="icon icon-search icon-size-24"></i>';
+                        search.prepend(search_icon);
+                    }
+                    const search_input = this.element.querySelector('.dt-search .dt-input');
+                    if (search_input) {
+                        search_input.classList.add("border-0");
+                    }
+                },
+            });
+        }
+
+        bindWhitelistEvents() {
+            document.querySelectorAll("[data-bind='add_white_list']").forEach(target => {
+                // Remove old event listeners to avoid duplicate binding
+                target.replaceWith(target.cloneNode(true));
+            });
+
+            // Re-bind events
+            const self = this;
+            document.querySelectorAll("[data-bind='add_white_list']").forEach(target => {
+                target.addEventListener("click", function () {
+                    const row = this.closest('tr');
+                    const tableId = `${self.type}_datatable`;
+                    const table = $(`#${tableId}`).DataTable();
+                    const rowData = table.row(row).data();
+
+                    let url = rowData.dst_ip || rowData.domain;
+                    if (whitelist[url]) {
+                        alert(`${url} is already in the whitelist.`)
+                        return false;
+                    }
+
+                    $.ajax({
+                        url: "/wrs_wbl.cgi?action=add&type=0&url_type=url&url=" + url,
+                        type: "POST",
+                        success: function (response) {
+                            whitelist[url] = true;
+                            alert(`Successfully added ${url} to the whitelist.`)
+                        },
+                    });
+                });
+            });
+        }
+
+        render() {
+            const div = document.createElement('div');
+            div.className = "col-12 my-3";
+            const card = document.createElement('div');
+            card.className = "border shadow-sm pt-2 h-100";
+            card.innerHTML = this.generateHTML();
+            div.appendChild(card);
+
+            if (this.element) {
+                this.element.replaceWith(div);
+            } else {
+                this.targetElement.append(div);
+            }
+
+            this.element = div;
+            this.bindEvents();
+
+            setTimeout(() => {
+                this.initDataTable();
+            }, 100);
+        }
+
+        init() {
+            this.render();
+        }
+    }
+
+    var whitelist = {};
+
+    function getWhitelist() {
+        $.ajax({
+            url: "/wrs_wbl.cgi?action=get&type=0",
+            type: "POST",
+            success: function (response) {
+                let res = JSON.parse(response).data;
+                for (let item of res) {
+                    whitelist[item] = true;
+                }
+            },
+        });
+    }
+
+
+    function eraseDB(type) {
+        let template = `
+        <div class="d-flex justify-content-center mt-5">
+            <div class="card-float">
+                <div class="card-header-float"><#Web_Title2#></div>
+                <div class="card-body-float">
+                    <#AiProtection_event_del_confirm#>
+                </div>
+                <div class="d-flex justify-content-end card-footer-float">
+                    <div class="text-center btn-regular db_erase_cancel">
+                        <div><#CTL_Cancel#></div>
+                    </div>
+                    <div class="text-center btn-confirm db_erase_confirm">
+                        <div><#CTL_ok#></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+        let element = document.createElement("div");
+        element.className = "shadow-bg";
+        element.innerHTML = template;
+        document.body.appendChild(element);
+        document.querySelector(".db_erase_cancel").addEventListener("click", function () {
+            document.body.removeChild(element);
+        });
+        document.querySelector(".db_erase_confirm").addEventListener("click", function () {
+            // Determine the correct API endpoint based on type
+            const apiEndpoint = type.startsWith('ark_') ? '/delArkInfo.cgi' : '/delDpiInfo.cgi';
+
+            fetch(`${apiEndpoint}?type=${type}`, {method: "POST"})
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    if (data.includes("200") === false) {
+                        throw new Error(`Server error! response: ${data}`);
+                    }
+                    // Refresh the current feature's data
+                    const feature = supportedFeatures.find(f => f.type === type);
+                    if (feature) {
+                        feature.fetchData();
+                    }
+                    // Show success message
+                    alert('Database cleared successfully.');
+                })
+                .catch((error) => {
+                    console.error("Error deleting database:", error);
+                    alert('Failed to clear database. Please try again.');
+                });
+
+            document.body.removeChild(element);
+        });
+    }
+
+    function manageWhiteList() {
+        let whitelist_length = Object.keys(whitelist).length;
+        const WHITELIST_MAX_LENGTH = 64;
+        let template = `
+        <div class="d-flex justify-content-center mt-5">
+            <div class="card-float">
+                <div class="card-header-float"><#Web_Title2#></div>
+                <div class="card-body-float">
+                    <div><#AiProtection_sites_trust#></div>
+                    <div class="d-flex align-items-center py-2">
+                        <div class="me-auto"><#Domain_Name#></div>
+                        <div class="card-content-float">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="whitelist_domain_name" value="" />
+                                <button class="btn btn-input-icon" type="button">
+                                    <div role="icon" class="icon-size-24 icon-add-circle" id="addWhitelist"></div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <div><#WhiteList#>: <span id="whitelist_length">${whitelist_length}</span>/${WHITELIST_MAX_LENGTH} (<#List_limit#> ${WHITELIST_MAX_LENGTH})</div>
+                        <div class="table-responsive detail-table-height">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th><#Domain_Name#></th>
+                                        <th><#btn_remove#></th>
+                                    </tr>
+                                </thead>
+                                <tbody data-table="whitelist_tbody">
+        `;
+
+        for (let item of Object.keys(whitelist)) {
+            template += `
+            <tr>
+                <td>${item}</td>
+                <td><div role="icon" class="icon-size-24 icon-delete-circle me-3" data-bind="delete_white_list" data-key="${item}"></div></td>
+            </tr>
+        `;
+        }
+
+        template += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="d-flex justify-content-end card-footer-float">
+                    <div class="text-center btn-regular" id="whitelist_close">
+                        <div><#CTL_close#></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+        let element = document.createElement("div");
+        element.className = "shadow-bg";
+        element.innerHTML = template;
+        document.body.appendChild(element);
+
+        document.getElementById("addWhitelist").addEventListener("click", function () {
+            let url = document.getElementById("whitelist_domain_name").value;
+            whitelist_length = Object.keys(whitelist).length;
+            let hintElement = document.getElementById("whitelist_domain_name").parentNode.nextElementSibling;
+            let ipformat =
+                /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+
+            let domainNameFormat = /^((?:(?:(?:\w[\.\-\+]?)*)\w)+)((?:(?:(?:\w[\.\-\+]?){0,62})\w)+)\.(\w{2,6})$/;
+            if (hintElement) {
+                hintElement.remove();
+            }
+
+            if (
+                whitelist[url] ||
+                whitelist_length >= WHITELIST_MAX_LENGTH ||
+                url === "" ||
+                (!domainNameFormat.test(url) && !ipformat.test(url))
+            ) {
+                let text = "";
+                if (whitelist[url]) {
+                    text = "<#AiProtection_ErrMsg_duplicate#>";
+                } else if (whitelist_length >= WHITELIST_MAX_LENGTH) {
+                    text = "<#AiProtection_ErrMsg_full#>";
+                } else if (url === "") {
+                    text = "<#AiProtection_ErrMsg_blank#>";
+                } else if (!domainNameFormat.test(url) && !ipformat.test(url)) {
+                    text = "<#AiProtection_ErrMsg_wrong_format#>";
+                }
+
+                let element = document.createElement("div");
+                element.className = "mt-2 hint-text";
+                element.innerHTML = text;
+                document.getElementById("whitelist_domain_name").parentNode.insertAdjacentElement("afterend", element);
+                return false;
+            }
+
+            let target = document.querySelector('[data-table="whitelist_tbody"]');
+            $.ajax({
+                url: "/wrs_wbl.cgi?action=add&type=0&url_type=url&url=" + url,
+                type: "POST",
+                success: function (response) {
+                    whitelist[url] = true;
+                    let trElement = document.createElement("tr");
+                    let code = `
+                    <td>${url}</td>
+                    <td><div role="icon" class="icon-size-24 icon-delete-circle me-3" data-bind="delete_white_list" data-key="${url}"></div></td>
+                `;
+
+                    trElement.innerHTML = code;
+                    target.appendChild(trElement);
+                    whitelist_length = Object.keys(whitelist).length;
+                    document.getElementById("whitelist_length").innerHTML = whitelist_length;
+                    document.getElementById("whitelist_domain_name").value = "";
+                    document.querySelector("[data-key='" + url + "']").addEventListener("click", function () {
+                        delete whitelist[url];
+                        trElement.remove();
+                        whitelist_length = Object.keys(whitelist).length;
+                        document.getElementById("whitelist_length").innerHTML = whitelist_length;
+                    });
+                },
+            });
+        });
+
+        document.getElementById("whitelist_close").addEventListener("click", function () {
+            document.body.removeChild(element);
+        });
+
+        for (let target of document.querySelectorAll("[data-bind='delete_white_list']")) {
+            let trElement = target.parentNode.parentNode;
+            target.addEventListener("click", function () {
+                let url = this.getAttribute("data-key");
+                if (whitelist[url] === undefined) {
+                    return false;
+                }
+
+                $.ajax({
+                    url: "/wrs_wbl.cgi?action=del&type=0&url_type=url&url=" + url,
+                    type: "POST",
+                    success: function (response) {
+                        delete whitelist[url];
+                        trElement.remove();
+                        document.getElementById("whitelist_length").innerHTML = Object.keys(whitelist).length;
+                    },
+                });
+            });
+        }
+    }
+
+    function showTMEula(type) {
+        const policyModal = new PolicyModalComponent({
+            policy: "TM",
+            agreeCallback: () => {
+                let applyObj = {
+                    action_mode: "apply",
+                    rc_service: "restart_wrs;restart_firewall",
+                    wrs_protect_enable: "1",
+                    TM_EULA: "1",
+                    action_time: 4,
+                };
+
+                let {ctf_disable, ctf_fa_mode} = _nvram;
+                if ((ctf_disable == 0 && ctf_fa_mode == 2) || system.modelName === "MAP-AC1750") {
+                    applyObj.rc_service = "reboot";
+                    applyObj.action_time = httpApi.hookGet("get_default_reboot_time");
+                }
+                showLoading();
+                if (type === "dpi_mals") {
+                    applyObj["wrs_mals_enable"] = "1";
+                } else if (type === "dpi_vp") {
+                    applyObj["wrs_vp_enable"] = "1";
+                } else if (type === "dpi_cc") {
+                    applyObj["wrs_cc_enable"] = "1";
+                }
+
+                httpApi.nvramSet(applyObj, function () {
+                    hideLoading();
+                });
+            },
+            disagreeCallback: () => {
+                if (type === "dpi_mals") {
+                    document.getElementById("mals_switch").classList.remove("active");
+                } else if (type === "dpi_vp") {
+                    document.getElementById("vp_switch").classList.remove("active");
+                } else if (type === "dpi_cc") {
+                    document.getElementById("cc_switch").classList.remove("active");
+                }
+            }
+        });
+        policyModal.show();
+    }
+
+    function initSwitches() {
+        if (supportedFeatures.length === 0) return;
+        const block = document.querySelector("#feature_desc .card-body-block");
+
+        supportedFeatures.forEach(item => {
+            const featureSwitch = new FeatureSwitch(item.type);
+            featureSwitch.init();
+            item.featureSwitch = featureSwitch;
+            block.append(featureSwitch.element);
+        });
+    }
+
+    function initTabs() {
+        if (supportedFeatures.length === 0) return;
+
+        const today = new Date();
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 6);
+
+        const tabsHtml = `
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="card pt-2">
+                        <div class="card-header row">
+                            <div class="col-12 col-lg-6">
+                                AI Protection Features
+                            </div>
+                            <div class="col-12 col-lg-6 d-flex justify-content-end align-items-center gap-2">
+                                <div class="input-date-selector">
+                                    <i class="icon icon-calendar icon-size-24 bg-dark"></i>
+                                    <input type="text" id="daterange_input" class="form-control" style="max-width: 250px;" readonly />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body pt-0">
+                            <ul class="nav nav-pills" id="featureTabs" role="tablist">
+                                ${supportedFeatures.map((feature, index) => `
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link ${index === 0 ? 'active' : ''}"
+                                                id="${feature.type}-tab"
+                                                data-bs-toggle="tab"
+                                                data-bs-target="#${feature.type}-tab-pane"
+                                                type="button"
+                                                role="tab">
+                                            ${feature.title}
+                                        </button>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                            <div class="tab-content" id="featureTabContent">
+                                ${supportedFeatures.map((feature, index) => `
+                                    <div class="tab-pane fade ${index === 0 ? 'show active' : ''}"
+                                         id="${feature.type}-tab-pane"
+                                         role="tabpanel">
+                                        <div class="row mt-3" id="${feature.type}-content">
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.getElementById("feature_info").innerHTML = tabsHtml;
+
+        // Initialize DateRangePicker
+        $('#daterange_input').daterangepicker({
+            startDate: weekAgo,
+            endDate: today,
+            autoApply: true,
+            locale: {
+                format: 'YYYY/MM/DD',
+                separator: ' - '
+            },
+            opens: "left",
+            parentEl: '#feature_info'
+        }, function (startDate, endDate) {
+            const startTime = startDate.unix();
+            const endTime = endDate.unix();
+
+            supportedFeatures.forEach(feature => {
+                feature.fetchDataWithDateRange(startTime, endTime);
+            });
+        });
+
+
+        supportedFeatures.forEach(item => {
+            const div = document.getElementById(`${item.type}-content`);
+            // const header = document.createElement("h5");
+            // header.classList.add("card-title");
+            // header.innerHTML = item.title;
+            // div.append(header);
+
+            const topClientWidget = new TopClientWidget(item.type, div);
+            topClientWidget.init();
+            item.topClientWidget = topClientWidget;
+
+            const chartWidget = new ChartWidget(item.type, div);
+            chartWidget.init();
+            item.chartWidget = chartWidget;
+
+            const detailTableWidget = new DetailTableWidget(item.type, div);
+            detailTableWidget.init();
+            item.detailTableWidget = detailTableWidget;
+        });
+    }
+
+    async function init() {
+        await initializeClientList();
+
+        const features = [
+            {
+                type: "ark_mals",
+                title: `<#AiProtection_ARK_Malicious_Site_blocking#>`,
+                support: "ark_iam",
+                urlBase: "/getArkInfo.cgi"
+            },
+            {
+                type: "ark_adblock",
+                title: `<#AiProtection_AdvertisementBlocking#>`,
+                support: "ark_iam",
+                urlBase: "/getArkInfo.cgi"
+            },
+            {
+                type: "ark_tracker",
+                title: `<#AiProtection_TrackerBlocking#>`,
+                support: "ark_iam",
+                urlBase: "/getArkInfo.cgi"
+            },
+            {
+                type: "dpi_mals",
+                title: `<#AiProtection_sites_blocking#>`,
+                support: "dpi_mals",
+                urlBase: "/getDpiInfo.cgi"
+            },
+            {type: "dpi_vp", title: `<#AiProtection_two-way_IPS#>`, support: "dpi_vp", urlBase: "/getDpiInfo.cgi"},
+            {
+                type: "dpi_cc",
+                title: `<#AiProtection_detection_blocking#>`,
+                support: "dpi_cc",
+                urlBase: "/getDpiInfo.cgi"
+            },
+        ];
+
+        supportedFeatures = features.map(f => new Feature(f)).filter(f => f.support);
+
+        if (view === "overview") {
+            genRouterScan();
+        } else {
+            document.getElementById("feature_desc").parentElement.classList.remove("col-md-6")
+            document.getElementById("router_scan").parentElement.remove();
+            supportedFeatures = supportedFeatures.filter(t => t.type === view)
+        }
+
+        initSwitches();
+
+        initTabs();
+        getWhitelist();
+
+        supportedFeatures.forEach(feature => {
+            feature.fetchData();
+        });
+    }
+
+    function sanitizeForCsv(value) {
+        if (typeof value !== 'string') return value;
+
+        // If value starts with potentially dangerous characters, prepend single quote
+        if (/^[=+\-@]/.test(value)) {
+            return "'" + value;
+        }
+
+        // If contains comma, double quote or newline, wrap in double quotes and escape internal double quotes
+        if (/[",\r\n]/.test(value)) {
+            return '"' + value.replace(/"/g, '""') + '"';
+        }
+
+        return value;
+    }
+
+    init();
+
+</script>
+</body>
 </html>

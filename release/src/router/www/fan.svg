@@ -101,7 +101,7 @@ function xps(n){
 	if(n<nr_v_scale){
 		var currUnit;
 		x = n * top.d_temp + top.temp_base;
-		if(top.getCookie("CoreTmpUnit") == "1"){
+		if(window.localStorage.getItem("CoreTmpUnit") == "1"){
 			currUnit = " \'F";
 			x = x*9/5+32;
 		}

@@ -1,0 +1,402 @@
+Changes in 5.2:
+	Fix breakage on newer Linux when a single interface has
+	multiple IP addresses.
+
+
+Changes in 5.1:
+	Add -P option to write a PID file.  Patch by Ferenc Wagner.
+
+	Bounce the syslog socket in standalone mode, in case the
+	syslog daemon has been restarted.  Patch by Ferenc Wagner.
+
+	Build fixes.
+
+	Fix handling of block number wraparound after a successful
+	options negotiation.
+
+	Fix a buffer overflow in option parsing.
+
+
+Changes in 5.0:
+	Try to on platforms with getaddrinfo() without AI_ADDRCONFIG or
+	AI_CANONNAME.
+
+	Implement the "rollover" option, for clients which want block
+	number to rollover to anything other than zero.
+
+	Correctly disable PMTU in standalone mode.  Patch by Florian
+	Lohoff.
+
+
+Changes in 0.49:
+	Add IPv6 support.  Patch by Karsten Keil.
+
+	Support systems with editline instead of readline.
+
+	Support long options in the server.
+
+
+Changes in 0.48:
+	Unbreak -l -s in the server, which was broken in 0.47.
+
+
+Changes in 0.47:
+	Add -L option to the server to run standalone without
+	detaching from the shell.
+
+	Parallel make fix.
+
+
+Changes in 0.46:
+	Minor portability improvements.
+
+
+Changes in 0.45:
+	Add -l (literal) option to the client, to override the special
+	treatment of the colon (:) character as a hostname separator.
+
+
+Changes in 0.44:
+	Allow the client to specify a range of local port numbers,
+	just like the server can.
+
+	Fix sending SIGHUP to update the regular expression table.
+
+
+Changes in 0.43:
+	Fix double-free error on ^c in client.
+
+	Try to deal with clients that send TFTP requests to broadcasts
+	(apparently some recent Sun boxes do this instead of using the
+	address told by DHCP.  Bad Sun!  Bad Sun!)
+
+	Portability fixes.
+
+
+Changes in 0.42:
+	Try to disable path MTU discovery for TFTP connections (it's
+	useless anyway.)
+
+	Add a hack to allow the admin to specify a range of local port
+	numbers to use.
+
+	Fix local IP number handling on systems which present
+	IP_RECVDSTADDR in recvmsg().
+
+
+Changes in 0.41:
+	Fix bug by which patterns of the form \U\1 weren't converted
+	correctly.
+
+
+Changes in 0.40.1:
+	Solaris build fix.
+
+
+Changes in 0.40:
+	Fix bug which would cause "r" remapping rules to be
+	incorrectly rejected.
+
+
+Changes in 0.39:
+	Support Perl-style \U...\E and \L...\E, as well as allow
+	matching rules to be inverted (execute if rule *doesn't*
+	match.)
+
+	Fix a timeout bug.
+
+	Add an RPM spec file.
+
+
+Changes in 0.38:
+	Portability fixes.
+
+
+Changes in 0.37:
+	Fix a pathology where a client sending ACKs for the wrong
+	packet can prevent proper retransmission.
+
+
+Changes in 0.36:
+	Portability fixes.
+
+
+Changes in 0.35:
+	Add an option to control the maximum value of blksize
+	negotiated.
+
+	Removed workaround for obsolete Cygwin problem.
+
+	Don't use getopt() -- the -c option doesn't work correctly
+	since it depends on the ordering of arguments and options.  It
+	is now possible to do:
+
+	tftp -m binary hostname -c get filename
+
+	This was previous possible by doing:
+
+	tftp -m binary -c get hostname:filename
+
+	... but it seemed that was counterintuitive to people.
+
+	Somewhat improved configure scripts.
+
+
+Changes in 0.34:
+	Additional Solaris gcc compiler bug workarounds; these
+	actually make the code somewhat cleaner.
+	
+
+Changes in 0.33:
+	Even better error messages.
+
+	Work around a suspect Solaris gcc bug.
+
+	Configuration fix: readline needs termcap.
+
+	Support running the tftp client from the command line.  For
+	example:
+
+		tftp -m binary -c get hostname:file
+
+
+Changes in 0.32:
+	Better error messages; including the capability to send a
+	custom error message to the client when hitting an "a" rule in
+	a remapping table.
+
+
+Changes in 0.31:
+	Put in a check to make sure xinetd (in particular) doesn't
+	pass us an IPv6 socket.
+
+	Fix some problems related to timeout negotiation.
+
+	Allow the user to set the default timeout speed.
+
+
+Changes in 0.30:
+	(Hopefully) better timeout algorithm.
+
+	Add a "utimeout" option; like "timeout" but in microseconds.
+
+	Change the log level of client-side errors to LOG_WARNING.
+
+	autoconf portability improvements.
+
+	Minor bugfixes.
+
+
+Changes in 0.29:
+	Posixly correctness.
+
+	Now compiles and runs on Win32 systems using Cygwin
+	(http://www.cygwin.com/).
+	(<http://www.cygwin.com/>).
+
+	Fixed a bug which could cause a standalone server to exit with
+	a "recvfrom: Interrupted system call" log message if signals
+	arrive at a particularly inopportune moment.
+
+	Fix a macro substitution bug (thanks to Richard Nyberg.)
+
+
+Changes in 0.28:
+	Fix stupid one-liner bug which broke standalone mode (-l).
+
+
+Changes in 0.27:
+	Make the Digital Unix 4.0F platform work again.  Thanks to
+	Alan Sundell for helping out with this platform!
+
+	Make the AIX 4.3 platform work again.  Thanks to Josef Siemes
+	for helping out with this platform!
+
+	Allow replacement patterns to include the IP address of the
+	requesting host (\i).
+
+	Allow relying on Unix permissions rather than o+r magic if the
+	-p option is specified.  As part of this, set all groups if
+	initgroups() is specified on the platform.
+
+	Clean up race conditions inherited from the BSD source base.
+
+
+Changes in 0.26:
+	Fix the configuration process so tftpd doesn't end up
+	depending on readline, which apparently could happen on some
+	platforms before.
+
+	Make parallel builds (make -j) work correctly.
+
+	Improve parsing of the "connect" command in the tftp client.
+
+	Add a -V option to both tftp and tftpd to print the version
+	number on stdout and immediately exit.
+
+	Add a -v option to tftp to start out in verbose mode.
+	
+	Rewrite the man pages using standard "man" troff macros.
+
+	Enable the (limited) use of readline on systems which don't
+	have readline/history.h.
+
+	Support compiling under MacOS X with fink (see
+	<http://fink.sourceforge.net/>).  Thanks for Justin Hallett
+	and Eric Eslinger for their help in getting this working!
+
+
+Changes in 0.25:
+	Fixed Sorcerer's Apprentice bug in both the client and the
+	server.  These bugs were inherited from the original BSD code.
+
+
+Changes in 0.24:
+	Fix bugs in both client and server dealing with block number
+	wraparound, usually manifesting themselves as failure to
+	handle files over 32 MB in size.
+
+	Officially make the client a part of the tftp-hpa project.
+
+
+Changes in 0.23:
+	Correct memory overwrite bug in the tftp client when compiled
+	with readline.
+
+
+Changes in 0.22:
+	Even more portability improvements: FreeBSD and
+	Tru64/Digital Unix.
+
+	Fix tsize option on systems on which off_t is "long long".
+
+	Support large files on systems which need _LARGE_FILE_BITS or
+	similar.
+
+	Some source cleanups; change to autoconf 2.52.
+
+	Add support for readline command-line editing in tftp.
+
+
+Changes in 0.21:
+	Support running in standalone mode, without inetd.
+
+	Even more portability improvements.  Now known to compile and
+	run on Linux, Solaris 5, 5.1, 6, 7 and 8, and AIX.  Reports of
+	success or failure on other modern systems always appreciated.
+
+	Clean and modernize some really ugly old code.
+
+	Fix a potential illegal memory access when running in "totally
+	insecure mode" - no -s, no directories listed.
+
+
+Changes in 0.20:
+	Portability improvements.  Now known to compile and run on
+	Solaris 8.
+
+
+Changes in 0.19:
+	Fork before performing tcpwrappers check.
+
+	Don't rely on nonstandard bsd_signal() function, instead
+	require that the platform has sigaction().  This is 2001,
+	after all.  This may resolve some potential portability
+	problems.
+
+	Log a message if memory allocation fails, instead of dying
+	silently.
+
+	Clean up the main dispatch loop.
+
+	Use <sysexits.h> for exit codes, if it exists.
+
+	Add support for debugging remapping rulefiles; if logging with
+	-vvv tftpd will log all rules actions.
+
+	Correct the error code issued by an "abort" rule.
+
+
+Changes in 0.18:
+	Support (almost) arbitrary filename remappings via regular
+	expression-based rulesets.
+
+	Added -v option for more verbose logging.
+
+
+Changes in 0.17:
+
+	Add support for tcpwrapper checking (/etc/hosts.allow;
+	/etc/hosts.deny) in tftpd.
+
+	Compile correctly on glibc 2.1.2.
+
+	Add -u option to specify the user id to run as (default
+	"nobody".)
+
+	Operate in "daemon mode" as long as we keep getting requests.
+	This should speed up handling large amounts of requests at
+	once, as can happen when a client starts up, and avoids inetd
+	misconfiguration problems.
+	
+
+Changes in 0.16:
+
+	Correct massive lossage from 0.15: apparently 0.15 was based
+	on an out-of-date CVS repository, somehow.
+
+	Fix for ACKs in TFTP PUT; patch by Roger Venning.
+
+
+Changes in 0.15:
+
+	If the operating system allows, try to obtain the local
+	address used for the request packet, and reply using the same
+	local IP address.  Some embedded TFTP clients are (probably
+	incorrectly) picky about this.
+
+
+Changes in 0.14:
+
+	Hacks to signal handling to avoid "zombie servers."
+
+
+Changes in 0.13:
+
+	Added the non-standard option "blksize2".  The "blksize"
+	option is limited in its usability, since TFTP is designed to
+	be implemented in a ROM, and ROM code might find it painful to
+	deal with packets that don't meet certain alignment
+	restrictions.
+
+	The "blksize2" option tells the server that the block size
+	must be a power of 2 to be usable to the client.  The server
+	SHALL respond with a block size that is a power of two, up to
+	a maximum of 32768, or reject the option.  Furthermore, the
+	server SHALL grant a block size that is no smaller than 512
+	bytes unless the client explicitly requested a smaller block
+	size.  If the client request both options, the server MAY
+	accept one or the other, but not both.  At some point I will
+	probably write up an IETF draft for this option.
+
+
+General information on the tftp-hpa series:
+
+The core software was taken from OpenBSD (CVS source as of
+1999-09-21).  I believe this was the most secure source base available
+at the time I obtained this code, and it included support for the -s
+and -c options.
+
+The un-BSD-ized Makefiles and a lot of the configure macros were taken
+from netkit-tftp-0.10 by David Holland; I also followed this example
+and modernized the code style throughout.
+
+Patches by Markus Gutschke and Gero Kuhlmann were the basis for the
+option negotiation as well as the "blksize" and "tsize" option
+support, although I made a fair amount of mostly stylistic changes to
+their code.
+
+Adding the -r option (disable a specific option), the "timeout"
+option, converting to using autoconf for setup, and any additions
+listed in the Changes list above, has all been my own code, as are any
+bugs introduced in the merge.

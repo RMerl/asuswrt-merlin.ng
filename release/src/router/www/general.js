@@ -861,13 +861,13 @@ function insertExtChannelOption(){
 
 function wl_bw_to_wigig_bw(wl_bw){
 	/* WL_BW_2160 ~ WL_BW_8640 */
-	if (wl_bw == 6)
+	if (wl_bw == 10)
 		return 2160;
-	else if (wl_bw == 7)
+	else if (wl_bw == 11)
 		return 4320;
-	else if (wl_bw == 8)
+	else if (wl_bw == 12)
 		return 6480;
-	else if (wl_bw == 9)
+	else if (wl_bw == 13)
 		return 8640;
 	else
 		return 0;
@@ -881,14 +881,14 @@ function insertChannelOption_60g(){
 	var CurrentEdmgCh = document.form.wl_edmg_channel.value;
 	var edma_ch_ary = [], ary = [], ch_v = [];
 
-	if (document.form.wl_bw.value == 6) {
+	if (document.form.wl_bw.value == 10) {
 		// 2.16GHz, hide EDMA channel.
 		document.getElementById("wl_edmg_field").style.display = "none";
 	} else {
 		if (document.form.wl_bw.value == 1) {
 			// auto-bandwidth, list channels of all possible bandwidth
 			max_wl_bw = max_band60g_wl_bw;
-			for (var i = 7; i <= max_wl_bw; ++i) {
+			for (var i = 11; i <= max_wl_bw; ++i) {
 				if (wl_bw_to_wigig_bw(i) <= 2160)
 					continue;
 				ary = filter_60g_edmg_channel_by_bw(wl_channel_list_60g, wl_bw_to_wigig_bw(i));

@@ -290,7 +290,7 @@ function get_layer_items(new_layer_order, motion){
 	
 	document.getElementById("motion").value = motion;
 	document.getElementById("layer_order").value = new_layer_order;
-	document.aidiskForm.submit();
+	setTimeout(function(){document.aidiskForm.submit()}, 1000);
 }
 
 function get_tree_items(treeitems, motion){

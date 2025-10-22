@@ -1,0 +1,1908 @@
+{
+  "main_category": [
+    {
+      "_id": "1",
+      "name": "Adult"
+    },
+    {
+      "_id": "2",
+      "name": "Entertainment"
+    },
+    {
+      "_id": "3",
+      "name": "Communication"
+    },
+    {
+      "_id": "4",
+      "name": "Work"
+    }
+  ],
+  "category": [
+    {
+      "_id": "2",
+      "name": "Adult",
+      "main_category_id": "1"
+    },
+    {
+      "_id": "3",
+      "name": "Gambling",
+      "main_category_id": "1"
+    },
+    {
+      "_id": "4,5,6,7",
+      "name": "Illegal and Violence ",
+      "main_category_id": "1"
+    },
+    {
+      "_id": "8",
+      "name": "Manga",
+      "main_category_id": "2"
+    },
+    {
+      "_id": "9",
+      "name": "Dating",
+      "main_category_id": "2"
+    },
+    {
+      "_id": "11",
+      "name": "Game",
+      "main_category_id": "2"
+    },
+    {
+      "_id": "12",
+      "name": "Cloud Game",
+      "main_category_id": "2"
+    },
+    {
+      "_id": "15",
+      "name": "Live",
+      "main_category_id": "2"
+    },
+    {
+      "_id": "23",
+      "name": "Streaming",
+      "main_category_id": "2"
+    },
+    {
+      "_id": "103",
+      "name": "Shopping",
+      "main_category_id": "2"
+    },
+    {
+      "_id": "105",
+      "name": "Sports",
+      "main_category_id": "2"
+    },
+    {
+      "_id": "21",
+      "name": "Instant Messaging",
+      "main_category_id": "3"
+    },
+    {
+      "_id": "25",
+      "name": "Meeting",
+      "main_category_id": "3"
+    },
+    {
+      "_id": "107",
+      "name": "Mail",
+      "main_category_id": "3"
+    },
+    {
+      "_id": "26",
+      "name": "Remote Control",
+      "main_category_id": "3"
+    },
+    {
+      "_id": "104",
+      "name": "Social Networks",
+      "main_category_id": "3"
+    },
+    {
+      "_id": "22",
+      "name": "File Transfer",
+      "main_category_id": "4"
+    },
+    {
+      "_id": "24",
+      "name": "Office",
+      "main_category_id": "4"
+    },
+    {
+      "_id": "113",
+      "name": "Mining",
+      "main_category_id": "4"
+    },
+    {
+      "_id": "106",
+      "name": "VPN",
+      "main_category_id": "4"
+    },
+    {
+      "_id": "111",
+      "name": "Speedtest",
+      "main_category_id": "4"
+    },
+    {
+      "_id": "40,41,42,43,44,45,46,47,48",
+      "name": "Malicious",
+      "main_category_id": "4",
+      "display": false
+    },
+    {
+      "_id": "10",
+      "name": "AdBlock",
+      "main_category_id": "4",
+      "display": false
+    },
+    {
+      "_id": "13",
+      "name": "Tracker",
+      "main_category_id": "4",
+      "display": false
+    }
+  ],
+  "app_list": [
+    {
+      "app_id": "40",
+      "name": "Steam In-Home Streaming Protocol",
+      "category_id": "12",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Steam In-Home Streaming Protocol"
+      }
+    },
+    {
+      "app_id": "248",
+      "name": "GeForce NOW",
+      "category_id": "12",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "GeForce NOW"
+      }
+    },
+    {
+      "app_id": "201",
+      "name": "Brawl Stars",
+      "category_id": "11",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Brawl Stars",
+        "TW": "荒野亂鬥",
+        "CN": "荒野乱斗"
+      }
+    },
+    {
+      "app_id": "203",
+      "name": "Clash Royale",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Clash Royale",
+        "TW": "皇室戰爭",
+        "CN": "皇室战争"
+      }
+    },
+    {
+      "app_id": "208",
+      "name": "Honor Of Kings",
+      "category_id": "11",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Honor Of Kings (HOK)",
+        "TW": "王者榮耀",
+        "CN": "王者荣耀"
+      }
+    },
+    {
+      "app_id": "211",
+      "name": "Honkai Impact 3",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Honkai Impact 3",
+        "TW": "崩壞3",
+        "CN": "崩坏3"
+      }
+    },
+    {
+      "app_id": "217",
+      "name": "Riot Games",
+      "category_id": "11",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Riot Games",
+        "TW": "銳玩遊戲",
+        "CN": "拳头游戏"
+      }
+    },
+    {
+      "app_id": "218",
+      "name": "Valorant",
+      "category_id": "11",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Valorant",
+        "TW": "特戰英豪",
+        "CN": "无畏契约"
+      }
+    },
+    {
+      "app_id": "219",
+      "name": "Epic Games",
+      "category_id": "11",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Epic Games",
+        "TW": "埃匹克娛樂"
+      }
+    },
+    {
+      "app_id": "220",
+      "name": "FORTNITE",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "FORTNITE",
+        "TW": "要塞英雄",
+        "CN": "堡垒之夜"
+      }
+    },
+    {
+      "app_id": "221",
+      "name": "PUBG: Battlegrounds",
+      "category_id": "11",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "PUBG: Battlegrounds",
+        "TW": "絕地求生",
+        "CN": "絕地求生"
+      }
+    },
+    {
+      "app_id": "226",
+      "name": "Wild Rift",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Wild Rift",
+        "TW": "英雄聯盟:激鬥峽谷",
+        "CN": "英雄联盟手游"
+      }
+    },
+    {
+      "app_id": "234",
+      "name": "Electronic Arts",
+      "category_id": "11",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Electronic Arts (EA)",
+        "TW": "美商藝電",
+        "CN": "美国艺电"
+      }
+    },
+    {
+      "app_id": "237",
+      "name": "Genshin Impact",
+      "category_id": "11",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Genshin Impact",
+        "TW": "原神",
+        "CN": "原神"
+      }
+    },
+    {
+      "app_id": "239",
+      "name": "Arena of Valor",
+      "category_id": "11",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Arena of Valor (AOV)",
+        "TW": "傳說對決",
+        "CN": "传说对决"
+      }
+    },
+    {
+      "app_id": "243",
+      "name": "Counter Strike2",
+      "category_id": "11",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Counter Strike2 (CS2)",
+        "TW": "絕對武力2",
+        "CN": "反恐精英2"
+      }
+    },
+    {
+      "app_id": "244",
+      "name": "Dota 2",
+      "category_id": "11",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Dota 2",
+        "TW": "刀塔2"
+      }
+    },
+    {
+      "app_id": "246",
+      "name": "Free Fire",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Free Fire",
+        "TW": "我要活下去",
+        "CN": "自由之火"
+      }
+    },
+    {
+      "app_id": "249",
+      "name": "Game for Peace",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Game for Peace",
+        "TW": "和平精英",
+        "CN": "和平精英"
+      }
+    },
+    {
+      "app_id": "251",
+      "name": "Knives Out",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Knives Out",
+        "TW": "荒野行動",
+        "CN": "荒野行动"
+      }
+    },
+    {
+      "app_id": "253",
+      "name": "League of Legends (LOL)",
+      "category_id": "11",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "League of Legends (LOL)",
+        "TW": "英雄聯盟",
+        "CN": "英雄联盟"
+      }
+    },
+    {
+      "app_id": "259",
+      "name": "PUBG Mobile",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "PUBG Mobile",
+        "TW": "絕地求生M"
+      }
+    },
+    {
+      "app_id": "277",
+      "name": "GOG Games",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "GOG Games"
+      }
+    },
+    {
+      "app_id": "304",
+      "name": "Honkai: Star Rail",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Honkai: Star Rail",
+        "TW": "崩壞:星穹鐵道",
+        "CN": "崩坏：星穹铁道"
+      }
+    },
+    {
+      "app_id": "316",
+      "name": "Lineage",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Lineage",
+        "TW": "天堂",
+        "CN": "天堂"
+      }
+    },
+    {
+      "app_id": "317",
+      "name": "Path of Exile",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Path of Exile (POE)",
+        "TW": "流亡黯道",
+        "CN": "流放之路"
+      }
+    },
+    {
+      "app_id": "319",
+      "name": "Apex Legends",
+      "category_id": "11",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Apex Legends",
+        "TW": "Apex英雄",
+        "CN": "Apex 英雄"
+      }
+    },
+    {
+      "app_id": "404",
+      "name": "Diablo 2",
+      "category_id": "11",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Diablo 2",
+        "TW": "暗黑破壞神II",
+        "CN": "暗黑破坏神2"
+      }
+    },
+    {
+      "app_id": "424",
+      "name": "World of Warcraft",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "World of Warcraft",
+        "TW": "魔獸世界",
+        "CN": "魔兽世界"
+      }
+    },
+    {
+      "app_id": "468",
+      "name": "Wargaming Games",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Wargaming Games",
+        "CN": "战争游戏公司"
+      }
+    },
+    {
+      "app_id": "549",
+      "name": "Ubisoft Games",
+      "category_id": "11",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Ubisoft Games",
+        "TW": "育碧",
+        "CN": "育碧游戏"
+      }
+    },
+    {
+      "app_id": "785",
+      "name": "Steam Games",
+      "category_id": "11",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Steam Games"
+      }
+    },
+    {
+      "app_id": "1007",
+      "name": "Rockstar Games",
+      "category_id": "11",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Rockstar Games"
+      }
+    },
+    {
+      "app_id": "1010",
+      "name": "Roblox",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Roblox",
+        "TW": "機器磚塊"
+      }
+    },
+    {
+      "app_id": "1069",
+      "name": "PlayStation Games",
+      "category_id": "11",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "PlayStation Games"
+      }
+    },
+    {
+      "app_id": "1337",
+      "name": "Nintendo Games",
+      "category_id": "11",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Nintendo Games",
+        "TW": "任天堂",
+        "CN": "任天堂游戏"
+      }
+    },
+    {
+      "app_id": "1451",
+      "name": "XBOX",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "XBOX"
+      }
+    },
+    {
+      "app_id": "1473",
+      "name": "Minecraft",
+      "category_id": "11",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Minecraft",
+        "TW": "當個創世神",
+        "CN": "我的世界"
+      }
+    },
+    {
+      "app_id": "2808",
+      "name": "Clash of Clans",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Clash of Clans (COC)",
+        "TW": "部落衝突",
+        "CN": "部落冲突"
+      }
+    },
+    {
+      "app_id": "2861",
+      "name": "Candy Crush",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Candy Crush",
+        "TW": "糖果傳奇",
+        "CN": "糖果传奇"
+      }
+    },
+    {
+      "app_id": "2927",
+      "name": "Blizzard Games",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Blizzard Games",
+        "TW": "暴雪",
+        "CN": "暴雪"
+      }
+    },
+    {
+      "app_id": "3151",
+      "name": "The Sims 4",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "The Sims 4",
+        "TW": "模擬市民4",
+        "CN": "模拟人生4"
+      }
+    },
+    {
+      "app_id": "3167",
+      "name": "MapleStory",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "MapleStory",
+        "TW": "新楓之谷",
+        "CN": "冒险岛"
+      }
+    },
+    {
+      "app_id": "3207",
+      "name": "Hearthstone",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Hearthstone",
+        "TW": "爐石戰記",
+        "CN": "炉石传说"
+      }
+    },
+    {
+      "app_id": "3556",
+      "name": "Tower Of Saviors",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Tower Of Saviors",
+        "TW": "神魔之塔",
+        "CN": "神魔之塔"
+      }
+    },
+    {
+      "app_id": "3563",
+      "name": "Pokémon GO",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Pokémon GO",
+        "TW": "寶可夢GO",
+        "CN": "精灵宝可梦GO"
+      }
+    },
+    {
+      "app_id": "3618",
+      "name": "StarCraft II",
+      "category_id": "11",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "StarCraft II",
+        "TW": "星海爭霸II",
+        "CN": "星际争霸2"
+      }
+    },
+    {
+      "app_id": "270",
+      "name": "Youku",
+      "category_id": "23",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Youku",
+        "TW": "優酷",
+        "CN": "优酷"
+      }
+    },
+    {
+      "app_id": "331",
+      "name": "Amazon Video",
+      "category_id": "23",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Amazon Video"
+      }
+    },
+    {
+      "app_id": "1180",
+      "name": "Pluto TV",
+      "category_id": "23",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Pluto TV"
+      }
+    },
+    {
+      "app_id": "1486",
+      "name": "HamiVideo",
+      "category_id": "23",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "HamiVideo"
+      }
+    },
+    {
+      "app_id": "1634",
+      "name": "Dailymotion",
+      "category_id": "23",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Dailymotion"
+      }
+    },
+    {
+      "app_id": "1707",
+      "name": "Douban",
+      "category_id": "23",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Douban",
+        "TW": "豆瓣",
+        "CN": "豆瓣"
+      }
+    },
+    {
+      "app_id": "1731",
+      "name": "TuDou",
+      "category_id": "23",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "TuDou",
+        "TW": "土豆",
+        "CN": "土豆"
+      }
+    },
+    {
+      "app_id": "3177",
+      "name": "Spotify",
+      "category_id": "23",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "Spotify"
+      }
+    },
+    {
+      "app_id": "3436",
+      "name": "TikTok",
+      "category_id": "23",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "TikTok",
+        "TW": "抖音",
+        "CN": "抖音"
+      }
+    },
+    {
+      "app_id": "3524",
+      "name": "Youtube",
+      "category_id": "23",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "YouTube"
+      }
+    },
+    {
+      "app_id": "3525",
+      "name": "Twitch",
+      "category_id": "23",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "Twitch",
+        "TW": "圖奇",
+        "CN": "图奇"
+      }
+    },
+    {
+      "app_id": "3526",
+      "name": "Netflix",
+      "category_id": "23",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "Netflix",
+        "TW": "網飛",
+        "CN": "网飞"
+      }
+    },
+    {
+      "app_id": "3527",
+      "name": "Amazon Prime Video",
+      "category_id": "23",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "Amazon Prime Video",
+        "TW": "亞馬遜Prime",
+        "CN": "亚马逊Prime"
+      }
+    },
+    {
+      "app_id": "3528",
+      "name": "Disney+",
+      "category_id": "23",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "Disney+",
+        "TW": "迪士尼+",
+        "CN": "迪士尼+"
+      }
+    },
+    {
+      "app_id": "3529",
+      "name": "Hulu",
+      "category_id": "23",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Hulu"
+      }
+    },
+    {
+      "app_id": "3530",
+      "name": "HBO Max",
+      "category_id": "23",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "HBO Max"
+      }
+    },
+    {
+      "app_id": "3531",
+      "name": "Apple TV+",
+      "category_id": "23",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Apple TV+"
+      }
+    },
+    {
+      "app_id": "3532",
+      "name": "Peacock",
+      "category_id": "23",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Peacock",
+        "TW": "孔雀",
+        "CN": "孔雀"
+      }
+    },
+    {
+      "app_id": "3533",
+      "name": "Tencent Video",
+      "category_id": "23",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Tencent Video",
+        "TW": "騰訊視頻",
+        "CN": "腾讯视频"
+      }
+    },
+    {
+      "app_id": "3534",
+      "name": "iQiyi",
+      "category_id": "23",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "iQiyi",
+        "TW": "愛奇藝",
+        "CN": "爱奇艺"
+      }
+    },
+    {
+      "app_id": "3539",
+      "name": "ESPN+",
+      "category_id": "23",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "ESPN+"
+      }
+    },
+    {
+      "app_id": "3542",
+      "name": "Bigo Live",
+      "category_id": "23",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Bigo Live"
+      }
+    },
+    {
+      "app_id": "3548",
+      "name": "Line TV",
+      "category_id": "23",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Line TV"
+      }
+    },
+    {
+      "app_id": "3555",
+      "name": "BiliBili",
+      "category_id": "23",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "BiliBili",
+        "TW": "嗶哩嗶哩",
+        "CN": "哔哩哔哩"
+      }
+    },
+    {
+      "app_id": "3570",
+      "name": "Xiaohongshu",
+      "category_id": "23",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Xiaohongshu",
+        "TW": "小紅書",
+        "CN": "小红书"
+      }
+    },
+    {
+      "app_id": "3574",
+      "name": "YY",
+      "category_id": "23",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "YY",
+        "TW": "YY直播",
+        "CN": "YY直播"
+      }
+    },
+    {
+      "app_id": "308",
+      "name": "IKEA",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "IKEA",
+        "TW": "宜家家居",
+        "CN": "宜家家居"
+      }
+    },
+    {
+      "app_id": "313",
+      "name": "Daiso",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Daiso",
+        "TW": "大創百貨",
+        "CN": "大创百货"
+      }
+    },
+    {
+      "app_id": "1771",
+      "name": "Apple Store",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Apple Store"
+      }
+    },
+    {
+      "app_id": "1773",
+      "name": "App Store",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "App Store"
+      }
+    },
+    {
+      "app_id": "3273",
+      "name": "Yandex Market",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Yandex Market"
+      }
+    },
+    {
+      "app_id": "3285",
+      "name": "Booking.com",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Booking.com",
+        "CN": "缤客网"
+      }
+    },
+    {
+      "app_id": "3286",
+      "name": "Costco",
+      "category_id": "103",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Costco",
+        "TW": "好市多",
+        "CN": "开市客"
+      }
+    },
+    {
+      "app_id": "3395",
+      "name": "Shopee",
+      "category_id": "103",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "Shopee",
+        "TW": "蝦皮購物",
+        "CN": "虾皮购物"
+      }
+    },
+    {
+      "app_id": "3399",
+      "name": "Taobao",
+      "category_id": "103",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Taobao",
+        "TW": "淘寶",
+        "CN": "淘宝"
+      }
+    },
+    {
+      "app_id": "3401",
+      "name": "eBay",
+      "category_id": "103",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "eBay",
+        "CN": "eBay易趣"
+      }
+    },
+    {
+      "app_id": "3403",
+      "name": "Tmall",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Tmall",
+        "TW": "天貓",
+        "CN": "天猫"
+      }
+    },
+    {
+      "app_id": "3404",
+      "name": "Jingdong",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Jingdong",
+        "TW": "京東",
+        "CN": "京东"
+      }
+    },
+    {
+      "app_id": "3409",
+      "name": "MOMO",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "MOMO",
+        "TW": "MOMO購物網",
+        "CN": "MOMO购物网"
+      }
+    },
+    {
+      "app_id": "3410",
+      "name": "BigGo",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "BigGo",
+        "TW": "比個夠比價王",
+        "CN": "BigGo比价网"
+      }
+    },
+    {
+      "app_id": "3411",
+      "name": "Rakuten",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Rakuten",
+        "TW": "樂天市場",
+        "CN": "乐天市场"
+      }
+    },
+    {
+      "app_id": "3412",
+      "name": "PChome",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "PChome"
+      }
+    },
+    {
+      "app_id": "3419",
+      "name": "Ruten",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Ruten"
+      }
+    },
+    {
+      "app_id": "3423",
+      "name": "CarreFour",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "CarreFour",
+        "TW": "家樂福",
+        "CN": "家乐福"
+      }
+    },
+    {
+      "app_id": "3425",
+      "name": "Pinduoduo",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Pinduoduo",
+        "TW": "拼多多",
+        "CN": "拼多多"
+      }
+    },
+    {
+      "app_id": "3428",
+      "name": "AliExpress",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "AliExpress",
+        "CN": "全球速卖通"
+      }
+    },
+    {
+      "app_id": "3429",
+      "name": "Amazon",
+      "category_id": "103",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "Amazon",
+        "TW": "亞馬遜",
+        "CN": "亚马逊"
+      }
+    },
+    {
+      "app_id": "3464",
+      "name": "Thegioididong",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Thế Giới Di Động"
+      }
+    },
+    {
+      "app_id": "3466",
+      "name": "Lazada",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Lazada"
+      }
+    },
+    {
+      "app_id": "3478",
+      "name": "FPT Shop",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "FPT Shop"
+      }
+    },
+    {
+      "app_id": "3638",
+      "name": "Daraz",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Daraz"
+      }
+    },
+    {
+      "app_id": "3643",
+      "name": "Tesco",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Tesco",
+        "TW": "特易購",
+        "CN": "特易购"
+      }
+    },
+    {
+      "app_id": "3651",
+      "name": "Sainsbury's",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Sainsbury's",
+        "TW": "森寶利"
+      }
+    },
+    {
+      "app_id": "3675",
+      "name": "Waitrose",
+      "category_id": "103",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Waitrose",
+        "TW": "維特羅斯"
+      }
+    },
+    {
+      "app_id": "278",
+      "name": "Kakao Talk",
+      "category_id": "21",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "Kakao Talk"
+      }
+    },
+    {
+      "app_id": "279",
+      "name": "Lark",
+      "category_id": "21",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Lark",
+        "TW": "飛書",
+        "CN": "飞书"
+      }
+    },
+    {
+      "app_id": "280",
+      "name": "LINE",
+      "category_id": "21",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "LINE"
+      }
+    },
+    {
+      "app_id": "281",
+      "name": "QQ",
+      "category_id": "21",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "QQ"
+      }
+    },
+    {
+      "app_id": "282",
+      "name": "Signal",
+      "category_id": "21",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Signal"
+      }
+    },
+    {
+      "app_id": "288",
+      "name": "WhatsApp",
+      "category_id": "21",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "WhatsApp"
+      }
+    },
+    {
+      "app_id": "290",
+      "name": "WeChat",
+      "category_id": "21",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "WeChat",
+        "TW": "微信",
+        "CN": "微信"
+      }
+    },
+    {
+      "app_id": "1073",
+      "name": "Telegram",
+      "category_id": "21",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Telegram"
+      }
+    },
+    {
+      "app_id": "3176",
+      "name": "Discord",
+      "category_id": "21",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Discord"
+      }
+    },
+    {
+      "app_id": "3186",
+      "name": "Messenger",
+      "category_id": "21",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "Messenger"
+      }
+    },
+    {
+      "app_id": "3597",
+      "name": "Slack",
+      "category_id": "21",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Slack"
+      }
+    },
+    {
+      "app_id": "276",
+      "name": "Google Meet/Hangouts",
+      "category_id": "25",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "Google Meet/Hangouts"
+      }
+    },
+    {
+      "app_id": "284",
+      "name": "Microsoft Skype",
+      "category_id": "25",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Microsoft Skype"
+      }
+    },
+    {
+      "app_id": "285",
+      "name": "Microsoft Teams",
+      "category_id": "25",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Microsoft Teams"
+      }
+    },
+    {
+      "app_id": "287",
+      "name": "VooV",
+      "category_id": "25",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "VooV"
+      }
+    },
+    {
+      "app_id": "292",
+      "name": "zoom",
+      "category_id": "25",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Zoom"
+      }
+    },
+    {
+      "app_id": "3211",
+      "name": "Cisco Jabber",
+      "category_id": "25",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Cisco Jabber"
+      }
+    },
+    {
+      "app_id": "19",
+      "name": "RDP",
+      "category_id": "26",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "RDP (Remote Desktop Protocol)"
+      }
+    },
+    {
+      "app_id": "20",
+      "name": "VNC",
+      "category_id": "26",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "VNC (Virtual Network Computing)"
+      }
+    },
+    {
+      "app_id": "26",
+      "name": "XDMCP",
+      "category_id": "26",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "XDMCP"
+      }
+    },
+    {
+      "app_id": "333",
+      "name": "Teamviewer",
+      "category_id": "26",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Teamviewer"
+      }
+    },
+    {
+      "app_id": "2616",
+      "name": "AnyDesk",
+      "category_id": "26",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "AnyDesk"
+      }
+    },
+    {
+      "app_id": "3434",
+      "name": "Pinterest",
+      "category_id": "104",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Pinterest"
+      }
+    },
+    {
+      "app_id": "3437",
+      "name": "LinkedIn",
+      "category_id": "104",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "LinkedIn",
+        "TW": "領英",
+        "CN": "领英"
+      }
+    },
+    {
+      "app_id": "3438",
+      "name": "Snapchat",
+      "category_id": "104",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Snapchat"
+      }
+    },
+    {
+      "app_id": "3440",
+      "name": "Weibo",
+      "category_id": "104",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Weibo",
+        "TW": "微博",
+        "CN": "微博"
+      }
+    },
+    {
+      "app_id": "3441",
+      "name": "X",
+      "category_id": "104",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "X (Twitter)",
+        "TW": "推特",
+        "CN": "推特"
+      }
+    },
+    {
+      "app_id": "3442",
+      "name": "Facebook",
+      "category_id": "104",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "Facebook",
+        "TW": "臉書"
+      }
+    },
+    {
+      "app_id": "3444",
+      "name": "Instagram",
+      "category_id": "104",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "Instagram"
+      }
+    },
+    {
+      "app_id": "3601",
+      "name": "Threads",
+      "category_id": "104",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "Threads"
+      }
+    },
+    {
+      "app_id": "3639",
+      "name": "Clubhouse",
+      "category_id": "104",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Clubhouse"
+      }
+    },
+    {
+      "app_id": "3683",
+      "name": "Reddit",
+      "category_id": "104",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Reddit"
+      }
+    },
+    {
+      "app_id": "3684",
+      "name": "Tumblr",
+      "category_id": "104",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Tumblr"
+      }
+    },
+    {
+      "app_id": "295",
+      "name": "BitTorrent",
+      "category_id": "22",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "BitTorrent"
+      }
+    },
+    {
+      "app_id": "585",
+      "name": "Dropbox",
+      "category_id": "22",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "Dropbox"
+      }
+    },
+    {
+      "app_id": "1776",
+      "name": "iCloud",
+      "category_id": "22",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "iCloud"
+      }
+    },
+    {
+      "app_id": "3165",
+      "name": "Rsync",
+      "category_id": "22",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Rsync"
+      }
+    },
+    {
+      "app_id": "3173",
+      "name": "Syncthing",
+      "category_id": "22",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Syncthing"
+      }
+    },
+    {
+      "app_id": "3247",
+      "name": "Microsoft SQL Server",
+      "category_id": "22",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Microsoft SQL Server"
+      }
+    },
+    {
+      "app_id": "3248",
+      "name": "MySQL",
+      "category_id": "22",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "MySQL"
+      }
+    },
+    {
+      "app_id": "3249",
+      "name": "Oracle",
+      "category_id": "22",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "Oracle"
+      }
+    },
+    {
+      "app_id": "3250",
+      "name": "PostgreSQL",
+      "category_id": "22",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "PostgreSQL"
+      }
+    },
+    {
+      "app_id": "3258",
+      "name": "MongoDB",
+      "category_id": "22",
+      "isHot": false,
+      "cnShow": false,
+      "language": {
+        "EN": "MongoDB"
+      }
+    },
+    {
+      "app_id": "3606",
+      "name": "Biadu Pan",
+      "category_id": "22",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Biadu Pan",
+        "TW": "百度網盤",
+        "CN": "百度网盘"
+      }
+    },
+    {
+      "app_id": "3609",
+      "name": "中国移动云盘",
+      "category_id": "22",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "TW": "中國移動雲盤",
+        "CN": "中国移动云盘"
+      }
+    },
+    {
+      "app_id": "1767",
+      "name": "Microsoft Office 365",
+      "category_id": "24",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Microsoft Office 365"
+      }
+    },
+    {
+      "app_id": "2620",
+      "name": "Microsoft Outlook",
+      "category_id": "24",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Microsoft Outlook"
+      }
+    },
+    {
+      "app_id": "2622",
+      "name": "Microsoft SharePoint",
+      "category_id": "24",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Microsoft SharePoint"
+      }
+    },
+    {
+      "app_id": "3593",
+      "name": "Dropbox Paper",
+      "category_id": "24",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "Dropbox Paper"
+      }
+    },
+    {
+      "app_id": "3599",
+      "name": "WPS Office",
+      "category_id": "24",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "WPS Office"
+      }
+    },
+    {
+      "app_id": "321",
+      "name": "Mysterium",
+      "category_id": "113",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "Mysterium"
+      }
+    },
+    {
+      "app_id": "322",
+      "name": "Kryptex",
+      "category_id": "113",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "Kryptex"
+      }
+    },
+    {
+      "app_id": "323",
+      "name": "Cudo Ventures",
+      "category_id": "113",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "Cudo Ventures"
+      }
+    },
+    {
+      "app_id": "332",
+      "name": "Bitcoin",
+      "category_id": "113",
+      "isHot": true,
+      "cnShow": false,
+      "language": {
+        "EN": "Bitcoin"
+      }
+    },
+    {
+      "app_id": "15",
+      "name": "PPTP",
+      "category_id": "106",
+      "isHot": false,
+      "cnShow": true,
+      "language": {
+        "EN": "PPTP (Point to Point Tunneling Protocol)"
+      }
+    },
+    {
+      "app_id": "35",
+      "name": "IPsec/ISAKMP",
+      "category_id": "106",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "IPsec (Internet Protocol Security) / ISAKMP"
+      }
+    },
+    {
+      "app_id": "302",
+      "name": "OpenVPN",
+      "category_id": "106",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "OpenVPN"
+      }
+    },
+    {
+      "app_id": "3178",
+      "name": "Cisco VPN",
+      "category_id": "106",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "Cisco VPN"
+      }
+    },
+    {
+      "app_id": "3184",
+      "name": "WireGuard",
+      "category_id": "106",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "WireGuard"
+      }
+    },
+    {
+      "app_id": "324",
+      "name": "iPhone Private Relay",
+      "category_id": "106",
+      "isHot": true,
+      "cnShow": true,
+      "language": {
+        "EN": "iPhone Private Relay"
+      }
+    }
+  ],
+  "version": "1.1"
+}

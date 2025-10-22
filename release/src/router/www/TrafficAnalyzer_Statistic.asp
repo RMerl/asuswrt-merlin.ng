@@ -331,8 +331,8 @@ function show_individual_info_block(client_index, type){
 
 function getTrafficUnit(){
 	var value = 9;
-	if(cookie.get('ASUS_Traffic_unit')){
-		value = cookie.get('ASUS_Traffic_unit');
+	if(window.localStorage.getItem('ASUS_Traffic_unit')){
+		value = window.localStorage.getItem('ASUS_Traffic_unit');
 	}
 
 	return value;
@@ -1485,9 +1485,9 @@ function cal_panel_block(obj){
 	else if(winWidth <=1050){
 		blockmarginLeft= (winWidth)*0.2 + document.body.scrollLeft;
 	}
-    if(document.getElementById(obj)!==null){
-	    document.getElementById(obj).style.marginLeft = blockmarginLeft+"px";
-    }
+	if(document.getElementById(obj)!==null){
+		document.getElementById(obj).style.marginLeft = blockmarginLeft+"px";
+	}
 }
 
 function eula_confirm(){
@@ -1585,7 +1585,7 @@ function updateTrafficAnalyzer() {
 }
 
 function setUnit(unit){
-	cookie.set('ASUS_Traffic_unit', unit);
+	window.localStorage.setItem('ASUS_Traffic_unit', unit);
 	draw_flow(date_string, router_traffic_array);
 	get_client_used_apps_info(top5_client_array[0], client_used_app_array, top5_client_array, "router");
 	$('#current_traffic_field').html('');

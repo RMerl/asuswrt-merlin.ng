@@ -741,7 +741,7 @@ function showThirdPartyPolicy(party){
 		<div>
 			<input type="button" class="button_gen" value="<#CTL_apply#>" onclick="applyRule();">
 		</div>
-		<div style="width:28px;height:28px;background-image:url('images/New_ui/cancel.svg');cursor:pointer" onclick="hideGameListField();"></div>
+		<div id="gameList_block_close" style="width:28px;height:28px;background-image:url('images/New_ui/cancel.svg');cursor:pointer" onclick="hideGameListField();"></div>
 	</div>
 	
 	<table id="game_list" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;"></table> 

@@ -613,7 +613,22 @@ rtk_wan_primary_ifunit(void)
 int
 wan_primary_ifunit_ipv6(void)
 {
-#ifdef RTCONFIG_DUALWAN
+#if defined(RTCONFIG_MULTIWAN_PROFILE)
+	int unit, real_unit;
+	char nvname[32];
+	int dualwan_idx;
+	char *p;
+	for (unit = MULTI_WAN_START_IDX; unit < MULTI_WAN_START_IDX + MAX_MULTI_WAN_NUM; unit++) {
+		dualwan_idx = -1;
+		snprintf(nvname, sizeof(nvname), "wan%d_dualwan_idx", unit);
+		if ((p = nvram_get(nvname)))
+			dualwan_idx = (int)strtol(p, NULL, 10);
+		real_unit = ((dualwan_idx >= 0) ? dualwan_idx : unit);
+		if (nvram_get_int(ipv6_nvname_by_unit("ipv6_primary", real_unit)))
+			return real_unit;
+	}
+	return WAN_UNIT_FIRST;
+#elif defined(RTCONFIG_DUALWAN)
 #if defined(RTCONFIG_MULTIWAN_CFG)
 	int unit = wan_primary_ifunit();
 
@@ -1498,6 +1513,9 @@ char *get_default_ssid(int unit, int subunit)
 			strlcat(ssid, "_XD4_Plus", sizeof(ssid));
 		else
 			strlcat(ssid, "_XD4S", sizeof(ssid));
+#elif defined(EBG15) || defined(EBG19) || defined(EBG19P)
+		strlcat(ssid, "_", sizeof(ssid));
+		strlcat(ssid, nvram_safe_get("model"), sizeof(ssid));
 #else
 		strlcat(ssid, "_", sizeof(ssid));
 		char *pid = get_productid();
@@ -1629,7 +1647,7 @@ char *get_default_ssid(int unit, int subunit)
 	return ssid;
 }
 
-#if defined(EBG15) || defined(EBG19)
+#if defined(EBG15) || defined(EBG19P)
 char defpsk[32] = { 0 };
 char *get_default_psk(int unit, int subunit)
 {
@@ -1949,5 +1967,23 @@ int get_ms_idx_by_wan_unit(int wan_unit)
 		return wan_unit % 10;
 	else
 		return -1;
+}
+
+int get_ms_num(int wan_unit)
+{
+	int i, ms_wan_unit;
+	char tmp[64], prefix[sizeof("wanXXXXXXXXXX_")];
+	int num = 0;
+
+	for (i = 0; i < WAN_MULTISRV_MAX; i++)
+	{
+		ms_wan_unit = get_ms_wan_unit(wan_unit, i);
+		if (ms_wan_unit == WAN_UNIT_NONE)
+			continue;
+		snprintf(prefix, sizeof(prefix), "wan%d_", ms_wan_unit);
+		if (nvram_get_int(strlcat_r(prefix, "enable", tmp, sizeof(tmp))))
+			num++;
+	}
+	return (num);
 }
 #endif //RTCONFIG_MULTISERVICE_WAN

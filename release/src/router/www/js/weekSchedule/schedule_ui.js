@@ -421,7 +421,7 @@ var schedule = function(config_set){
 			}).appendTo($btn_control_bg);
 
 		$("<div>")
-			.addClass("btn_icon_bg overview_icon listview_mode")
+			.addClass("btn_icon_bg overview_icon listview_mode notInMobile")
 			.attr("title", "Switch View")/* untranslated */
 			.unbind("click").click(function(e){
 				e = e || event;
@@ -441,7 +441,7 @@ var schedule = function(config_set){
 			}).appendTo($btn_control_bg).hide();
 
 		$("<div>")
-			.addClass("btn_icon_bg listview_icon overview_mode")
+			.addClass("btn_icon_bg listview_icon overview_mode notInMobile")
 			.attr("title", "Switch View")/* untranslated */
 			.unbind("click").click(function(e){
 				e = e || event;

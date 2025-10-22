@@ -50,7 +50,6 @@ function initial(){
 	else{
 		document.getElementById("log_field").style.display = "none";
 	}
-
 }
 
 var htmlEnDeCode = (function() {
@@ -528,7 +527,7 @@ function export_CSV(export_array) {
 
 									</div>	<!-- for .container  -->
 									<div class="popup_container popup_element_second"></div>
-
+									
 								</td>
 							</tr>
 						</table>

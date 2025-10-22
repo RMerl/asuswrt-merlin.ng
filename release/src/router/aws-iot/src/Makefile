@@ -69,6 +69,11 @@ LIBS += -L$(TOP)/smspdu -lsmspdu
 endif
 endif
 
+ifeq ($(RTCONFIG_NOTIFICATION_CENTER),y)
+CFLAGS  += -I$(TOP)/nt_center/lib
+LDFLAGS += -L$(TOP)/nt_center/lib/ -lnt -lm
+endif
+
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif

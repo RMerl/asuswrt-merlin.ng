@@ -209,6 +209,15 @@ CFLAGS += -I$(TOP)/openssl/include
 LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl $(if $(RTCONFIG_OPENSSL11),-lpthread,)
 endif
 
+ifeq ($(RTCONFIG_GTBOOSTER),y)
+CFLAGS += -I$(TOP)/sqlite
+CFLAGS += -I$(TOP)/ark
+CFLAGS += -I$(TOP)/json-c
+LDFLAGS += -L$(TOP)/ark -lark_db
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+LDFLAGS += -L$(TOP)/sqlite/.libs -lsqlite3
+endif
+
 ifeq ($(RTCONFIG_HNS),y)
 CFLAGS += -I$(TOP)/sqlite
 CFLAGS += -I$(TOP)/hns
@@ -396,6 +405,13 @@ ifeq ($(or $(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916)),y)
 CFLAGS += -DJFFS2_UBI_VOLUME_SIZE=$(JFFS2_UBI_VOLUME_SIZE)
 endif
 
+ifeq ($(RTCONFIG_IP808AR),y)
+CFLAGS += -I$(SRCBASE)/shared -I$(HND_SRC)/kernel/linux-4.19/drivers/char/pse
+CFLAGS += -I$(TOP)/pse_lib -L$(TOP)/pse_lib -lPsE
+CFLAGS += -DUSER_API
+CFLAGS += -L$(TOP_PLATFORM)/i2c-tools/i2c-tools-4.0/lib -li2c
+endif
+
 ifeq ($(HND_ROUTER_BE_4916), y)
 ifneq ($(findstring CONFIG_MMC_OOPS=, $(shell cat $(LINUXDIR)/.config)),)
 CFLAGS += -DCONFIG_MMC_OOPS
@@ -405,6 +421,12 @@ endif
 OBJS := rc.o init.o interface.o lan.o wireless.o $(if $(RTCONFIG_SOFTWIRE46), s46comm.o) wan.o pppd.o auth.o services.o
 OBJS += firewall.o ppp.o services.o common.o conn_diag_log.o
 OBJS += watchdog.o check_watchdog.o fwupg_flashing.o ntp.o udhcpc.o ate.o
+ifeq ($(RTCONFIG_ETHMON),y)
+OBJS += ethmon.o
+endif
+ifeq ($(RTCONFIG_IP808AR),y)
+OBJS += poemon.o
+endif
 ifeq ($(RTCONFIG_MULTIWAN_IF),y)
 OBJS += qos_multi_wan_if.o
 else ifeq ($(RTCONFIG_MULTIWAN_CFG),y)
@@ -558,6 +580,9 @@ OBJS += usb_devices.o
 endif
 
 ifeq ($(RTCONFIG_AI_SERVICE),y)
+AILIB_OBJS := ai_lib.o
+AILIB_CFLAGS := -I$(TOP)/shared
+AILIB_LDFLAGS := -shared
 OBJS += ai_service.o
 endif
 
@@ -802,6 +827,10 @@ endif
 
 ifeq ($(RTCONFIG_HNS),y)
 OBJS += hns.o
+endif
+
+ifeq ($(RTCONFIG_GTBOOSTER),y)
+OBJS += ark.o
 endif
 
 ifeq ($(RTCONFIG_BWDPI),y)
@@ -1288,6 +1317,10 @@ OBJS += bcm_afc.o afc_coldreboot_monitor.o afc_heartbeat.o
 BCMAFC_OBJS += bcm_afc.o
 endif
 
+ifeq ($(RTCONFIG_CSIMON),y)
+OBJS += csi_monitor.o
+endif
+
 all: PB rc $(if $(RTCONFIG_BRCM_HOSTAPD), $(WPS_PBCD)) init.prep
 
 PB:
@@ -1306,7 +1339,7 @@ $(WPS_PBCD): $(OBJS_WPS_PBCD)
 	@$(CC) -o $@ $(OBJS_WPS_PBCD) $(LDFLAGS)
 endif
 
-rc: $(OBJS) $(if $(RTCONFIG_CONNDIAG),libconn_diag.so,) $(if $(RTCONFIG_ENERGY_SAVE),libes.so,) $(if $(RTCONFIG_BCM_AFC),libbcm_afc.so,)
+rc: $(OBJS) $(if $(RTCONFIG_CONNDIAG),libconn_diag.so,) $(if $(RTCONFIG_ENERGY_SAVE),libes.so,) $(if $(RTCONFIG_BCM_AFC),libbcm_afc.so,) $(if $(RTCONFIG_AI_SERVICE),libai.so,)
 	@echo " [rc] CC $@"
 	@$(CC) -o $@ $^ $(LDFLAGS2) $(CFLAGS)
 
@@ -1395,9 +1428,19 @@ endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc check_watchdog
 ifeq ($(RTCONFIG_AI_SERVICE),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ai_response_check
+	@cd $(INSTALLDIR)/sbin && ln -sf rc ai_request
+	@install -D libai.so $(INSTALLDIR)/usr/lib/libai.so
 endif
 ifeq ($(RTCONFIG_NFCM),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc alt_watchdog
+endif
+ifeq ($(RTCONFIG_ETHMON),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc ethmon
+endif
+ifeq ($(RTCONFIG_IP808AR),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc poemon
+	@cd $(INSTALLDIR)/sbin && ln -sf rc poe_init
+	@cd $(INSTALLDIR)/sbin && ln -sf rc poe_cap
 endif
 ifeq ($(RTCONFIG_SINGLEIMG_B),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc fwupg_flashing
@@ -1553,6 +1596,9 @@ endif
 ifeq ($(RTCONFIG_MULTIWAN_IF),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc mtwanduck
 	@cd $(INSTALLDIR)/sbin && ln -sf rc det_dns
+ifeq ($(RTCONFIG_MULTIWAN_PROFILE),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc mtwan6_neighbor
+endif
 endif
 ifeq ($(RTCONFIG_CONNDIAG),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc conn_diag
@@ -1598,6 +1644,9 @@ endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc restart_wireless
 	@cd $(INSTALLDIR)/sbin && ln -sf rc wpasupp
 	@cd $(INSTALLDIR)/sbin && ln -sf rc wlconf_pre
+ifeq ($(and $(CONFIG_BCMWL5),$(RTCONFIG_WIFI7)),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc wl_scb
+endif
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX55 RT-AX1800 RT-AX58U_V2 RT-AX3000N BR63 GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 RT-BE58U_V2 TUF-BE3600_V2 RT-BE55 GT-BE19000 RT-BE92U RT-BE95U RT-BE82U TUF-BE82 RT-BE58U_PRO GT-BE19000AI RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7 GT-BE96_AI))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc config_switch
 endif
@@ -1670,6 +1719,9 @@ ifeq ($(RTCONFIG_AMAS),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc send_bcnreq
 	@cd $(INSTALLDIR)/sbin && ln -sf rc get_rrm_bcnrep
 	@cd $(INSTALLDIR)/sbin && ln -sf rc get_rclass
+ifeq ($(RTCONFIG_AMAS_NEWOB),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc reload_backup_config
+endif
 ifeq ($(RTCONFIG_BTM_11V),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc send_11v
 endif
@@ -1847,6 +1899,9 @@ endif
 ifeq ($(RTCONFIG_CONNDIAG),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc amas_ssd_cd
 	@cd $(INSTALLDIR)/sbin && ln -sf rc amas_portstatus
+ifeq ($(RTCONFIG_AIRIQ), y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc airiq_monitor
+endif
 endif
 ifeq ($(RTCONFIG_CFGSYNC),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc firmware_webs_update
@@ -2015,6 +2070,10 @@ endif
 
 ifeq ($(RTCONFIG_AFC_POSITIONING),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc afc_positioning
+endif
+
+ifeq ($(RTCONFIG_CSIMON),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc csi_monitor
 endif
 
 clean:
@@ -2611,6 +2670,43 @@ ifneq ($(wildcard ./prebuild/afc_positioning.o),)
 afc_positioning.o:
 	@-cp -f ./prebuild/afc_positioning.o .
 endif
+endif
+
+ifeq ($(RTCONFIG_GTBOOSTER),y)
+ifneq ($(wildcard ./prebuild/ark.o),)
+ark.o:
+	@-cp -f ./prebuild/ark.o .
+endif
+endif
+
+ifeq ($(RTCONFIG_CSIMON),y)
+ifneq ($(wildcard ./prebuild/csi_monitor.o),)
+csi_monitor.o:
+	@-cp -f ./prebuild/csi_monitor.o .
+endif
+endif
+
+ifeq ($(RTCONFIG_FLASH_TYPE_EMMC),y)
+ifneq ($(wildcard ./prebuild/ext4fs.o),)
+ext4fs.o:
+	@-cp -f ./prebuild/ext4fs.o .
+endif
+endif
+
+
+ifeq ($(RTCONFIG_AI_SERVICE),y)
+ifneq ($(wildcard ./prebuild/ai_service.o),)
+ai_service.o:
+	@-cp -f ./prebuild/ai_service.o .
+endif
+
+ifneq ($(wildcard ./prebuild/ai_lib.o),)
+ai_lib.o:
+	@-cp -f ./prebuild/ai_lib.o .
+endif
+libai.so: $(AILIB_OBJS)
+	@echo " [rc] CC $@"
+	@$(LD) $(AILIB_LDFLAGS) -o $@ $(AILIB_OBJS)
 endif
 
 %.o: %.c

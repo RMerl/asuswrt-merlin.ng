@@ -36,10 +36,16 @@ $(function () {
 
 	var theme = getUrlParameter("current_theme").toUpperCase();
 	if(theme == "WHITE" || theme == "GT" || theme == "TUF"){
-		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpns' + theme + '.css">');
+		if (isSupport("UI4")) {
+			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/vpn_v4.css">');
+		} else {
+			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpns' + theme + '.css">');
+		}
 	}
 	else{
-		if(isSupport("ROG_UI")){
+		if (isSupport("UI4")) {
+			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/vpn_v4.css">');
+		} else if(isSupport("ROG_UI")){
 			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpnsGT.css">');
 		}
 		else if(isSupport("TUF_UI")){
@@ -383,7 +389,7 @@ function show_vpn_serverlist(){
 	if(!window.matchMedia('(max-width: 575px)').matches)
 		$("#srv_profile_list").children("[type='" + select_vpn_type + "']").addClass("selected").find(".svr_item_text_container").click();
 }
-function initial(){
+function initial(){	
 	show_loading_obj();
 
 	var vpn_server_array = { "OpenVPN" : ["OpenVPN", "/Advanced_VPN_OpenVPN.asp"], "Others" : ["Others", "/Advanced_VPNServer_Content.asp"]};
@@ -394,6 +400,19 @@ function initial(){
 	$('#divSwitchMenu').html(gen_switch_menu(vpn_server_array, "Others"));
 
 	show_vpn_serverlist();
+
+	if(parent.webWrapper){
+		const resizeObserver = new ResizeObserver(entries => {
+			var height = document.querySelector('.server_list_container').scrollHeight - 20;
+			for (const entry of entries) {
+				height = Math.max(height, entry.target.scrollHeight);
+			}
+			window.parent.postMessage({type: 'resize', height: height+20}, '*');
+		});
+
+		resizeObserver.observe(document.querySelector('.popup_container'));
+		resizeObserver.observe(document.querySelector('.profile_setting_container'));
+	}
 }
 $(document).ready(initial);
 </script>

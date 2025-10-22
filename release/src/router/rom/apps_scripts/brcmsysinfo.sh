@@ -422,6 +422,43 @@ if [ -e /bin/blogctl ]; then
     redirect_dmesg
 fi
 
+if [ -e /bin/tmctl ]; then
+    echo "###### tmctl queue cfg & stats ######"
+    intf_list=$(ifconfig -a | grep -E "^(eth|atm|ptm)" | cut -d" " -f1 | grep -v "\.")
+    for intf in $intf_list; do
+        echo "###### $intf ######"
+        if [[ $(expr match "$intf" 'eth*') != 0 ]]; then
+            dev_type=0
+            max_qid=7
+        elif [[ $(expr match "$intf" 'ptm*') != 0 ]]; then
+            dev_type=3
+            max_qid=7
+        elif [[ $(expr match "$intf" 'atm*') != 0 ]]; then
+            dev_type=3
+            max_qid=15
+        else
+            echo "Unsupported interface..."
+            continue
+        fi
+
+        if [ -e /sys/class/net/$intf/device/uevent ]; then
+            if grep -q -i "usb_interface" /sys/class/net/$intf/device/uevent; then
+                echo "tmctl currently does not support USB Ethernet interface $intf."
+                continue
+            fi
+        fi
+
+        tmctl getporttmparms --devtype $dev_type --if $intf
+        tmctl getportshaper  --devtype $dev_type --if $intf
+        for i in $(seq 0 $max_qid); do
+            echo "###### $intf Q$i ######"
+            tmctl getqcfg     --devtype $dev_type --if $intf --qid $i
+            tmctl getqdropalg --devtype $dev_type --if $intf --qid $i
+            tmctl getqstats   --devtype $dev_type --if $intf --qid $i
+        done
+    done
+fi
+
 # RDPA configuration
 if [ -e /bin/bs ]; then
     echo

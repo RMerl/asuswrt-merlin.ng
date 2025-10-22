@@ -1033,7 +1033,7 @@ var validator = {
 				}
 			}
 		
-			if(pos!=3 || num<0 || num>255){		
+			if(pos!=3 || num<1 || num>254){
 				return false;
 			}
 			else
@@ -1143,6 +1143,7 @@ var validator = {
 		
 		if(v == 'dhcp_start' || v == 'dhcp_end' ||
 				v == 'wan_ipaddr_x' ||
+				v == 'vts_ipaddr_x' ||
 				v == 'dhcp1_start' || v == 'dhcp1_end' ||
 				v == 'lan_ipaddr' || v == 'lan1_ipaddr' ||
 				v == 'staticip' || v == 'wl_radius_ipaddr' ||
@@ -2051,7 +2052,7 @@ var validator = {
 
 		ssid_obj.parent().children().remove(".hint");
 		len = this.lengthInUtf8(ssid);
-		if(len > 32){
+		if(len >= 32){
 			hintStr = "<#JS_max_ssid#>";
 			showHint = 1;
 		}
@@ -2228,7 +2229,60 @@ var validator = {
 					}
 				}
 			}		
-		}else
+		}
+		else if(flag==4){ //ipv4 plus netmask || ipv6
+			if(obj.value.search("/") == -1 && obj.value.search(":") == -1){ // only IPv4
+				if(!this.ipAddrFinal(obj, obj.name)){
+					obj.focus();
+					obj.select();
+					return false;
+				}
+				else
+					return true;
+			}
+			else if(obj.value.search("/") != -1){ // IP plus netmask
+				if(obj.value.split("/").length > 2){
+					alert(obj.value + " <#JS_validip#>");
+					obj.value = "";
+					obj.focus();
+					obj.select();
+					return false;
+				}
+				else{
+					if(obj.value.split("/")[1] == "" || obj.value.split("/")[1] == 0 || obj.value.split("/")[1] > 32){
+						alert(obj.value + " <#JS_validip#>");
+						obj.value = "";
+						obj.focus();
+						obj.select();
+						return false;
+					}
+					else{
+						var IP_tmp = obj.value;
+						obj.value = obj.value.split("/")[0];
+						if(!this.ipAddrFinal(obj, obj.name)){
+							obj.focus();
+							obj.select();
+							return false;
+						}
+						else{
+							obj.value = IP_tmp;
+							return true;
+						}
+					}
+				}
+			}
+			else if(obj.value.search(":") != -1){   // IPv6
+				if(!this.isLegal_ipv6(obj, 1)){
+					alert(obj.value+" <#JS_validip#>");
+					obj.focus();
+					obj.select();
+					return false;
+				}
+				else
+					return true;
+			}
+		}
+		else
 			return false;
 	},
 

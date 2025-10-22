@@ -472,7 +472,7 @@ function initial(){
 			else
 				document.getElementById('rssi_div').style.display = "";
 			
-			document.getElementById('wlc_band_status').innerHTML = wl_nband_title[wlc_band];
+			document.getElementById('wlc_band_status').innerHTML = wl_nband_title[wlc_band]; 	
 		}
 		document.getElementById('NM_connect_title').innerHTML = "<#parent_AP_status#> :";
 	}
@@ -573,7 +573,7 @@ function initial(){
 	if(MULTIFILTER_BLOCK_ALL == "1")
 		$(".block_all_icon").css("display", "flex");
 
-	if(cookie.get("show_phone_as_modem_hints") == "1"){
+	if(window.localStorage.getItem("show_phone_as_modem_hints") == "1"){
 		$("#phone_as_modem_instructions").load("/phone_as_modem_instructions.html", function(){
 			$("#phone_as_modem_div").css("display", "flex");
 		});
@@ -692,7 +692,7 @@ function show_middle_status(auth_mode, wl_wep_x){
 				security_mode = "Open System";
 				break;
 		case "openowe":
-				security_mode = "Enhanced Open Transition";
+				security_mode = "<#WLANConfig11b_AuthenticationMethod_EOT#>";
 				break;
 		case "owe":
 				security_mode = "Enhanced Open";
@@ -2396,7 +2396,7 @@ function notice_apply(){
 
 function close_phone_as_modem_hint(){
 	$("#phone_as_modem_div").hide();
-	cookie.unset("show_phone_as_modem_hints");
+	window.localStorage.removeItem("show_phone_as_modem_hints");
 }
 
 function copyDdnsName(e) {

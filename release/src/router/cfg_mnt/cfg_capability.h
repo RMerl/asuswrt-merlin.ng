@@ -88,6 +88,8 @@ enum capabilityType {
 	DIVERSITY_PORT_STATE_BAND3 = 32,
 #endif
 
+	WIFI_TXPOWER_CTL = 33,
+
 #if defined(RTCONFIG_AMAS_WGN) || defined(RTCONFIG_MULTILAN_CFG)
 	GUEST_NETWORK_NO_6GH = 34, 	
 #endif
@@ -96,6 +98,8 @@ enum capabilityType {
 	MAX_MTLAN = 35,
 	AVAILABLE_SDN_INDEX = 36,
 #endif	// RTCONFIG_MULTILAN_CFG
+
+	RA_RSSI_CTL = 37,
 
 #ifdef RTCONFIG_MLO
 	MLO_RADIO = 40,
@@ -148,6 +152,7 @@ enum capabilityType {
 #ifdef RTCONFIG_AMAS_CENTRAL_OPTMZ
 #define CENTRAL_OPTMZ		BIT(17)
 #endif
+#define DWB_BAND		BIT(19)
 #ifdef RTCONFIG_MLO
 #define MLO		BIT(20)
 #define MLO_RE_BH_FH	BIT(21)
@@ -205,12 +210,12 @@ enum capabilityType {
 /* for reset to default */
 #define MANUAL_RESET_DEFAULT		BIT(0)
 
-/* for WIFI_RADIO_NO */
-#define WIFI_RADIO_2G		BIT(0)
-#define WIFI_RADIO_5G		BIT(1)
-#define WIFI_RADIO_5GH		BIT(2)
-#define WIFI_RADIO_6G		BIT(3)
-#define WIFI_RADIO_6GH		BIT(4)
+/* for WIFI_BAND_NO */
+#define WIFI_BAND_NO_2G		BIT(0)
+#define WIFI_BAND_NO_5G		BIT(1)
+#define WIFI_BAND_NO_5G2		BIT(2)
+#define WIFI_BAND_NO_6G		BIT(3)
+#define WIFI_BAND_NO_6G2		BIT(4)
 
 /* for channel plan */
 #ifdef RTCONFIG_AMAS_CHANNEL_PLAN
@@ -232,6 +237,9 @@ enum capabilityType {
 #define SMARTHAUL_CAP	0	/* for nothing */
 #endif
 #endif
+/* for ONBOARDING SUPPORT */
+#define OLD_ONBOARDING		BIT(0)
+#define NEW_ONBOARDING		BIT(1)
 
 /* Capability support on role */
 #define CAP_SUPPORT		BIT(0)

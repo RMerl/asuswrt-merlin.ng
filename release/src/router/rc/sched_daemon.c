@@ -92,6 +92,12 @@ static void task_hns_signature(struct timer_entry *timer, void *data);
 static void task_hns_event_cc(struct timer_entry *timer, void *data);
 static void task_hns_alive(struct timer_entry *timer, void *data);
 #endif
+#ifdef RTCONFIG_GTBOOSTER
+static void task_ark_signature(struct timer_entry *timer, void *data);
+static void task_ark_alive(struct timer_entry *timer, void *data);
+static void task_ark_protection(struct timer_entry *timer, void *data);
+static void task_ark_history(struct timer_entry *timer, void *data);
+#endif
 #if defined(RTCONFIG_BCM_AFC) && defined(RTCONFIG_AFC_POSITIONING)
 static void task_afc_pos_retry(struct timer_entry *timer, void *data);
 #endif
@@ -131,6 +137,12 @@ static struct task_table sd_task_t[] =
         {SIGALRM, 0, task_hns_signature, 0, PERIOD_86400_SEC},
         {SIGALRM, 0, task_hns_event_cc, 0, PERIOD_10_SEC},
         {SIGALRM, 0, task_hns_alive, 0, PERIOD_30_SEC},
+#endif
+#ifdef RTCONFIG_GTBOOSTER
+        {SIGALRM, 0, task_ark_signature, 0, PERIOD_86400_SEC},
+        {SIGALRM, 0, task_ark_alive, 0, PERIOD_120_SEC},
+        {SIGALRM, 0, task_ark_protection, 0, PERIOD_120_SEC},
+        {SIGALRM, 0, task_ark_history, 0, PERIOD_120_SEC},
 #endif
 #if defined(RTCONFIG_BCM_AFC) && defined(RTCONFIG_AFC_POSITIONING)
         {SIGALRM, 0, task_afc_pos_retry, 0, PERIOD_600_SEC},
@@ -184,6 +196,12 @@ static void task_hns_protection(void);
 static void task_hns_signature(void);
 static void task_hns_event_cc(void);
 static void task_hns_alive(void);
+#endif
+#ifdef RTCONFIG_GTBOOSTER
+static void task_ark_signature(void);
+static void task_ark_alive(void);
+static void task_ark_protection(void);
+static void task_ark_history(void);
 #endif
 ///////////////////////////////////// task prototype /////////////////////////////////////
 
@@ -333,6 +351,11 @@ static void sched_daemon(int sig)
 	task_hns_history();
 	task_hns_protection();
 #endif
+#ifdef RTCONFIG_GTBOOSTER
+	task_ark_alive();
+	task_ark_protection();
+	task_ark_history();
+#endif
 
 /*======== The following is for period 600 seconds ========*/
 	if (period_600_sec)
@@ -359,6 +382,9 @@ static void sched_daemon(int sig)
 #endif
 #ifdef RTCONFIG_HNS
 	task_hns_signature();
+#endif
+#ifdef RTCONFIG_GTBOOSTER
+	task_ark_signature();
 #endif
 }
 #endif
@@ -1044,6 +1070,9 @@ static void task_timezone_checking(void)
 #endif	/* RTCONFIG_AVOID_TZ_ENV */
 
 #ifdef RTCONFIG_REBOOT_SCHEDULE
+#ifdef RTCONFIG_AI_SERVICE
+extern int is_ota_or_rescue_in_progress(void);
+#endif
 extern int timecheck_reboot(int sched_type, char *activeSchedule);
 #ifdef USE_TIMERUTIL
 static void task_reboot_schedule(struct timer_entry *timer, void *data)
@@ -1056,7 +1085,11 @@ static void task_reboot_schedule(void)
 	int reboot_schedule_type = 0;
 	SCHED_DAEMON_DBG("[reboot-scheduler] checking...\n");
 	// don't need to check reboot schedule when the system is booting up.
-	if (uptime() > 300 && nvram_match("reboot_schedule_enable", "1"))
+	if (uptime() > 300 && nvram_match("reboot_schedule_enable", "1") 
+#ifdef RTCONFIG_AI_SERVICE
+		&& is_ota_or_rescue_in_progress() == 0
+#endif
+		)
 	{
 		if (nvram_match("ntp_ready", "1"))
 		{
@@ -1176,6 +1209,60 @@ static void task_hns_alive(void)
 }
 #endif
 
+#ifdef RTCONFIG_GTBOOSTER
+#ifdef USE_TIMERUTIL
+static void task_ark_signature(struct timer_entry *timer, void *data)
+#else
+static void task_ark_signature(void)
+#endif
+{
+	ark_sig_update_flow();
+
+#ifdef USE_TIMERUTIL
+	mod_timer(timer, PERIOD_86400_SEC);
+#endif
+}
+
+#ifdef USE_TIMERUTIL
+static void task_ark_alive(struct timer_entry *timer, void *data)
+#else
+static void task_ark_alive(void)
+#endif
+{
+	check_ark_alive_service();
+
+#ifdef USE_TIMERUTIL
+	mod_timer(timer, PERIOD_120_SEC);
+#endif
+}
+#endif
+
+#ifdef USE_TIMERUTIL
+static void task_ark_protection(struct timer_entry *timer, void *data)
+#else
+static void task_ark_protection(void)
+#endif
+{
+	exe_ark_protection();
+
+#ifdef USE_TIMERUTIL
+	mod_timer(timer, PERIOD_120_SEC);
+#endif
+}
+
+#ifdef USE_TIMERUTIL
+static void task_ark_history(struct timer_entry *timer, void *data)
+#else
+static void task_ark_history(void)
+#endif
+{
+	exe_ark_history();
+
+#ifdef USE_TIMERUTIL
+	mod_timer(timer, PERIOD_120_SEC);
+#endif
+}
+
 #if defined(RTCONFIG_BCM_AFC) && defined(RTCONFIG_AFC_POSITIONING)
 #ifdef USE_TIMERUTIL
 static void task_afc_pos_retry(struct timer_entry *timer, void *data)
@@ -1204,6 +1291,11 @@ static void task_afc_pos_retry(void)
 	// RE node and backhaul is disconnected, skip afc positioning.
 	if (nvram_get_int("re_mode") == 1 && nvram_get_int("cfg_alive") == 0)
 		goto AFC_POS_RETRY_END;
+
+	if (nvram_match("wifi_pos_stop_retry", "1")) {
+		SCHED_DAEMON_DBG("There is wifi_pos_stop_retry marked with wifi_pos_error(%s). Skip afc positioning.", nvram_safe_get("wifi_pos_error"));
+		goto AFC_POS_RETRY_END;
+	}
 
 	if (!check_afc_nvram())
 		trigger_afc_positioning("silent");

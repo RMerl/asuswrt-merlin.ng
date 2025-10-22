@@ -138,14 +138,26 @@ enum led_id get_led_id(const char *led_str)
 		return LED_POWER;
 	}
 	else if(!strcmp(led_str, "LED_WPS")){
-		return LED_WPS;
+#ifdef RTCONFIG_NOWL
+                return LED_POWER;
+#else
+                return LED_WPS;
+#endif
 	}
 	else if(!strcmp(led_str, "LED_WAN")){
-		return LED_WAN;
+#ifdef EBG19P
+                return LED_POWER;
+#else
+                return LED_WAN;
+#endif
 	}
 #ifdef HND_ROUTER
 	else if(!strcmp(led_str, "LED_WAN_NORMAL")){
-		return LED_WAN_NORMAL;
+#ifdef EBG19P
+                return LED_POWER;
+#else
+                return LED_WAN_NORMAL;
+#endif
 	}
 #endif
 #ifdef RTCONFIG_EXTPHY_BCM84880
@@ -869,7 +881,7 @@ static int rctest_main(int argc, char *argv[])
 
 		_dprintf("totally printed %d defaults\n", total);
 	}
-#ifdef EBG19
+#ifdef EBG19P
 	else if (strcmp(argv[1], "chk_duplex")==0) {
 		int port = atoi(argv[2]);
 		int rtkval = 0;
@@ -1650,10 +1662,10 @@ static int rctest_main(int argc, char *argv[])
 	}
 	else if (strcmp(argv[1], "mtwan_conn")==0) {
 		mtwan_init_profile();
-		if (argv[2] && argv[3])
-			mtwan_handle_wan_conn(atoi(argv[2]), atoi(argv[3]));
+		if (argv[2] && argv[3] && argv[4])
+			mtwan_handle_wan_conn(atoi(argv[2]), atoi(argv[3]), atoi(argv[4]));
 		else
-			_dprintf("<wan_unit> <connection status>\n");
+			_dprintf("<wan_unit> <connection status> <phy status>\n");
 	}
 #endif
 #if defined(RTCONFIG_CONNDIAG)
@@ -2037,7 +2049,7 @@ static int rctest_main(int argc, char *argv[])
 		}
 #endif
 #if 0
-#if defined(EBG19)
+#if defined(EBG19P)
 		else if (strcmp(argv[1], "readv") == 0) {
 			read_ext_53134_vlan(atoi(argv[2]));
 		}
@@ -2396,6 +2408,66 @@ static int rctest_main(int argc, char *argv[])
 			memleakdbg();
 		}
 #endif
+#if defined(RTCONFIG_CSIMON)
+		else if (strcmp(argv[1], "csi_mon_server") == 0) {
+#define MAX_PER_LINE 8
+#define MAX_RECORD_ROWS 32
+#define BUFSIZE (MAX_PER_LINE * MAX_RECORD_ROWS * sizeof(uint32_t))
+			if (argc < 4) {
+				printf("Usage: %s <ip> <port>\n", argv[1]);
+				return 1;
+			}
+
+			int port = safe_atoi(argv[3]);
+			char ip_addr[24];
+			int sockfd;
+			struct sockaddr_in servaddr, cliaddr;
+			socklen_t len;
+			uint8_t buf[BUFSIZE];
+
+			snprintf(ip_addr, sizeof(ip_addr), "%s", argv[2]);
+			if (!is_valid_ip4(ip_addr)) {
+				printf("IP %s is invalid IPv4 IP address\n", ip_addr);
+				return 1;
+			}
+
+			sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+			if (sockfd < 0) {
+				perror("socket");
+				return 1;
+			}
+
+			memset(&servaddr, 0, sizeof(servaddr));
+			servaddr.sin_family = AF_INET;
+			servaddr.sin_addr.s_addr = inet_addr(ip_addr);
+			servaddr.sin_port = htons(port);
+
+			if (bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0) {
+				perror("bind");
+				close(sockfd);
+				return 1;
+			}
+
+			printf("UDP receiver binding on %s:%d ...\n", ip_addr, port);
+			while (1) {
+				len = sizeof(cliaddr);
+				ssize_t n = recvfrom(sockfd, buf, sizeof(buf), 0, (struct sockaddr *)&cliaddr, &len);
+				if (n <= 0) continue;
+				printf("Received %zd bytes:\n", n);
+
+				int total = n / sizeof(uint32_t);
+				uint32_t *data = (uint32_t*)buf;
+				for (int i = 0; i < total; ++i) {
+					printf("0x%08x ", data[i]);
+					if ((i+1) % MAX_PER_LINE == 0) printf("\n");
+				}
+				printf("\n====\n");
+			}
+
+			close(sockfd);
+			return 0;
+		}
+#endif
 		else {
 			printf("what?\n");
 		}
@@ -2440,10 +2512,10 @@ char *fix_fw_name(char *orig_fw_name)
 static inline char *fix_fw_name(char *orig_fw_name) { return orig_fw_name; }
 #endif
 
-#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800) || defined(BC109) || defined(EBG19) || defined(BC105) || defined(EBG15) || defined(XC5) || defined(EBA63)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800) || defined(BC109) || defined(EBG19P) || defined(BC105) || defined(EBG15) || defined(XC5) || defined(EBA63)
 /* download firmware */
 #ifndef FIRMWARE_DIR
-#if defined(RTCONFIG_QCA) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800) || defined(BC109) || defined(EBG19) || defined(BC105) || defined(EBG15) || defined(XC5) || defined(EBA63)
+#if defined(RTCONFIG_QCA) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800) || defined(BC109) || defined(EBG19P) || defined(BC105) || defined(EBG15) || defined(XC5) || defined(EBA63)
 #define FIRMWARE_DIR	"/lib/firmware"
 #else
 #define FIRMWARE_DIR	"/tmp"
@@ -2873,7 +2945,7 @@ static int hotplug_main(int argc, char *argv[])
 			return coma_uevent();
 #endif /* LINUX_2_6_36 */
 #endif
-#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800) || defined(BC109) || defined(EBG19) || defined(BC105) || defined(EBG15) || defined(XC5) || defined(EBA63)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800) || defined(BC109) || defined(EBG19P) || defined(BC105) || defined(EBG15) || defined(XC5) || defined(EBA63)
 		else if(!strcmp(argv[1], "firmware")) {
 			hotplug_firmware();
 		}
@@ -3075,8 +3147,16 @@ static const applets_t applets[] = {
 	{ "watchdog",			watchdog_main			},
 	{ "check_watchdog",		check_watchdog_main		},
 	{ "fwupg_flashing",		fwupg_flashing_main		},
+#if defined(RTCONFIG_ETHMON)
+	{ "ethmon",			ethmon_main			},
+#endif
+#if defined(RTCONFIG_IP808AR)
+	{ "poemon",			poemon_main			},
+	{ "poe_init",			poeInit_main			},
+#endif
 #ifdef RTCONFIG_AI_SERVICE
 	{ "ai_response_check",		ai_response_check_main		},
+	{ "ai_request",                 ai_request_main		        },
 #endif
 #ifdef RTCONFIG_CONNTRACK
 	{ "pctime",			pctime_main			},
@@ -3185,6 +3265,9 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_MULTIWAN_IF
 	{ "mtwanduck",			mtwanduck_main			},
 	{ "det_dns",			det_dns_main			},
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+	{ "mtwan6_neighbor",		mtwan6_neighbor_main		},
+#endif
 #endif
 #if defined(RTCONFIG_CONNDIAG) && defined(RTCONFIG_ADV_RAST)
 	{ "conn_diag",			conn_diag_main			},
@@ -3394,6 +3477,9 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_CC3220
 	{ "esrt",				esrt_main		},
 #endif
+#endif
+#ifdef RTCONFIG_CSIMON
+	{ "csi_monitor",			csi_monitor_main			},
 #endif
 	{NULL, NULL}
 };
@@ -3870,6 +3956,10 @@ void __rc_get_mtlan_by_idx(const char *idx_name, const int idx, const int is_rm)
 	FREE_MTLAN((void *)pmtl);
 	return;
 }
+#endif
+
+#if defined(CONFIG_BCMWL5) && defined(RTCONFIG_WIFI7)
+extern void wl_scb(void);
 #endif
 
 extern void gen_spcmd(char *);
@@ -4372,18 +4462,26 @@ int main(int argc, char **argv)
 		restart_wireless();
 		return 0;
 	}
+#ifdef RTCONFIG_BRCM_HOSTAPD
 	if (!strcmp(base, "wpasupp")) {
                 _dprintf("restart wpasupp\n");
                 start_hapd_wpasupp(2);  // skip hostapd
 
 		return 0;
 	}
+#endif
 	if (!strcmp(base, "wlconf_pre")) {
                 _dprintf("wlconf pre\n");
 		wlconf_pre();
 
 		return 0;
 	}
+#if defined(CONFIG_BCMWL5) && defined(RTCONFIG_WIFI7)
+	if (!strcmp(base, "wl_scb")) {
+		wl_scb();
+		return 0;
+	}
+#endif
 #if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI)
 	else if (!strcmp(base, "config_switch")) {
 		config_switch();
@@ -4770,6 +4868,12 @@ int main(int argc, char **argv)
 		if (argc == 2)
 			return get_rclass(atoi(argv[1]));
 	}
+#ifdef RTCONFIG_AMAS_NEWOB
+	else if (!strcmp(base, "reload_backup_config")) {
+		restore_rpt_setting();
+		return 0;
+	}
+#endif /* RTCONFIG_AMAS_NEWOB */
 #ifdef RTCONFIG_BTM_11V
 	else if (!strcmp(base, "send_11v")) {
 		if (argc == 5)
@@ -4906,6 +5010,11 @@ int main(int argc, char **argv)
 	else if (!strcmp(base, "amas_portstatus")) {
 		return amas_portstatus_main();
 	}
+#ifdef RTCONFIG_AIRIQ
+	else if (!strcmp(base, "airiq_monitor")) {
+		return airiq_monitor_main();
+	}
+#endif
 #endif
 #ifdef RTCONFIG_BHCOST_OPT
 	else if (!strcmp(base, "amas_status")) {

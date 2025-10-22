@@ -30,7 +30,10 @@ PCIEFD_TARGETS_LIST :=
 
 # All firmware targets must be defined here
 # PCIEFD_TARGETS_LIST		+= 43684b0 43684c0 6715b0 6717a0 6726b0
-PCIEFD_TARGETS_LIST             := 6717a0 6726b0
+PCIEFD_TARGETS_LIST             := 6726b0
+ifeq ($(BUILD_6717A0),y)
+    PCIEFD_TARGETS_LIST         += 6717a0
+endif
 ifeq ($(BUILD_6715B0),y)
     PCIEFD_TARGETS_LIST         += 6715b0
 endif

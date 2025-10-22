@@ -598,8 +598,7 @@ function detect_ppp_connect(){
 }
 
 function show_phone_as_modem_hints(){
-	document.cookie = "show_phone_as_modem_hints = 1;" + '; expires=' +
-	(new Date(new Date().getTime() + 86400000)).toUTCString() + '; path=/';
+	window.localStorage.setItem("show_phone_as_modem_hints", "1")
 	top.location.href = '/index.asp';
 }
 </script>

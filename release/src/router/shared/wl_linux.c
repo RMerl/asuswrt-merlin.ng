@@ -48,6 +48,10 @@ wl_ioctl(char *name, int cmd, void *buf, int len)
 	int s;
 	char buffer[100];
 
+#ifdef RTCONFIG_NOWL
+        errno = ENODEV;
+        return -errno;
+#endif
 	/* open socket to kernel */
 	if ((s = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 		perror("socket");

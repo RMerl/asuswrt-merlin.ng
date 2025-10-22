@@ -72,6 +72,10 @@
 #include <libatee.h>
 #endif
 
+#ifdef RTCONFIG_SWITCH_POE
+#include <poe.h>
+#endif
+
 #if defined(RTCONFIG_COOVACHILLI)
 #define MAC_FMT "%.2X:%.2X:%.2X:%.2X:%.2X:%.2X"
 #define MAC_ARG(x) (x)[0],(x)[1],(x)[2],(x)[3],(x)[4],(x)[5]
@@ -3502,6 +3506,22 @@ int is_private_subnet(const char *ip)
 	return 0;
 }
 
+/* 0:
+ * 1: RFC 4193 */
+int is_private_subnet6(const char *address)
+{
+	struct in6_addr addr;
+
+	if (inet_pton(AF_INET6, address, &addr) != 1) {
+		return 0;
+	}
+
+	if ((addr.s6_addr[0] & 0xfe) == 0xfc)	//fc00::/7
+		return 1;
+
+	return 0;
+}
+
 // clean_mode: 0~3, clean_time: 0~(LONG_MAX-1), threshold(KB): 0: always act, >0: act when lower than.
 int free_caches(const char *clean_mode, const int clean_time, const unsigned int threshold){
 	int test_num;
@@ -3634,24 +3654,34 @@ char *get_modemlog_fname(void){
 #endif
 
 #ifdef RTCONFIG_NOWL
+int psta_exist()
+{
+        return 0;
+}
+
+int psr_exist()
+{
+        return 0;
+}
+
 int is_dpsta(int unit)
 {
-	return 0;
+        return 0;
 }
 
 int is_dpsr(int unit)
 {
-	return 0;
+        return 0;
 }
 
 int is_psr(int unit)
 {
-	return 0;
+        return 0;
 }
 
 int is_psta(int unit)
 {
-	return 0;
+        return 0;
 }
 #endif
 
@@ -3825,6 +3855,7 @@ int is_psta_mlo(int unit)
 	return 0;
 #endif
 }
+
 
 int psta_exist(void)
 {
@@ -4838,6 +4869,9 @@ enum led_id get_wl_led_id(int band)
 {
 	enum led_id led = LED_ID_MAX;
 
+#ifdef RTCONFIG_NOWL
+        return LED_POWER;
+#else
 	if (band < 0 || band >= MAX_NR_WL_IF)
 		return led;
 
@@ -4873,7 +4907,7 @@ enum led_id get_wl_led_id(int band)
 	default:
 		dbg("%s: Unknown wl%d band!\n", __func__, band);
 	}
-
+#endif
 	return led;
 }
 
@@ -7206,6 +7240,28 @@ unsigned short get_extend_cap()
        return extend_cap;
 }
 
+
+void backup_rpt_setting()
+{
+	nvram_unset("asus_device_list");
+	nvram_unset("amas_newob_discovery");
+	nvram_unset("amas_newob_status");
+	nvram_commit();
+
+	sys_download("/jffs/settings");
+}
+
+void restore_rpt_setting()
+{
+	sys_upload("/jffs/settings");
+	nvram_commit();
+
+#ifdef RTCONFIG_NVRAM_ENCRYPT
+	start_enc_nvram();
+#endif
+	sys_reboot();
+}
+
 void wl_vif_to_subnet(const char *ifname, char *net, int len)
 {
 	int i, found = 0;
@@ -7633,3 +7689,47 @@ rfctime(const time_t *timep, char *ts_string, int len)
 	strftime(ts_string, len, "%a, %d %b %Y %H:%M:%S %z", &tm);
 	return ts_string;
 }
+
+int wl_masking(char *ifname, int unit, int subunit)
+{
+        char prefix[] = "wlXXXXXXXXXXXX_";
+	char wlx_nvname[16];
+
+	if(subunit != -1)
+		return 0;
+
+        snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+	snprintf(wlx_nvname, sizeof(wlx_nvname), "%smasking", prefix);
+
+        if (strlen(nvram_safe_get(wlx_nvname)) == 17) {
+                return 1;
+	}
+
+        return 0;
+}
+
+#ifdef RTCONFIG_SWITCH_POE
+
+char *poe_PwrCap[] =
+{
+        "poe_none",
+        "802_3_af",
+        "802_3_at",
+        "802_3_bt",
+        NULL
+};
+
+int get_poeCap()
+{
+        int i;
+
+        for(i=0; i<POE_CAP_MAX; ++i) {
+                if (nvram_contains_word("rc_support", poe_PwrCap[i]))
+                        return i;
+        }
+
+        return 0;
+}
+
+#endif
+

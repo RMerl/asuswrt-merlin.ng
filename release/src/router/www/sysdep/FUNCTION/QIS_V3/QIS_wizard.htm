@@ -5,6 +5,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
 		<meta name="viewport" content="width=device-width, target-densitydpi=device-dpi, initial-scale=1, user-scalable=no">
 		<title><#Web_Title#> - <#QIS_title#></title>
+		<link rel="stylesheet" href="./css/color-table.css">
 		<link rel="stylesheet" href="./mobile/css/jquery.mobile.css"></link>
 		<link rel="stylesheet" href="./mobile/css/qis.css"></link>
 		<link rel="stylesheet" href="./mobile/css/icon.css"></link>
@@ -20,9 +21,25 @@
 		<script type="text/javascript" src="./mobile/js/handler.js"></script>
 		<script type="text/javascript" src="./mobile/js/login_state.js"></script>
 		<script type="text/javascript" src="./js/https_redirect/https_redirect.js"></script>
+        <script type="text/javascript" src="./js/asus_policy.js?v=4&lang=<#selected_language#>"></script>
 		<script type="text/javascript" src="./md5.js"></script>
-		<script type="text/javascript" src="./js/asus_policy.js?v=4"></script>
 		<script>
+			if (isSupport("rog")) {
+				document.documentElement.setAttribute('data-asuswrt-theme', 'rog');
+			} else if (isSupport("tuf")) {
+				document.documentElement.setAttribute('data-asuswrt-theme', 'tuf');
+			} else if (isSupport("business")) {
+				document.documentElement.setAttribute('data-asuswrt-theme', 'business');
+			} else {
+				document.documentElement.setAttribute('data-asuswrt-theme', 'asus');
+			}
+
+			if (isSupport("UI4") || isSupport("business")) {
+				document.documentElement.setAttribute('data-asuswrt-color', 'light');
+			} else {
+				document.documentElement.setAttribute('data-asuswrt-color', 'dark');
+			}
+
 			let urlParameter = new URLSearchParams(window.location.search);
 
 			if(isSupport("TS_UI") || isSupport("GS7_MIKU"))
@@ -41,17 +58,8 @@
 					Initial_Https_Redirect();
 					return;
 				}
-				var getJsonFromUrl = (function(){
-					var query = location.search.substr(1);
-					var result = {};
-					query.split("&").forEach(function(part) {
-						var item = part.split("=");
-						result[item[0]] = decodeURIComponent(item[1]);
-					});
-					return result;
-				})();
 
-				if(getJsonFromUrl["flag"] == "amas_addNode"){
+				if(urlParameter.get("flag") == "amas_addNode"){
 					$("#welcome").hide();
 					installPages("amasAddNodePages");
 				}
@@ -110,7 +118,20 @@
 					systemVariable.historyPage = [];
 					systemVariable.restart_wan_if = false;//flag used to record excution of "restart_wan_if"
 
-					if(isSupport("BUSINESS")){
+					if (isSupport("UI4") && isSupport("rog")) {
+						$('<script />', { type : 'text/javascript', src : "./js/qrcode/jquery.qrcode.min.js"}).appendTo('head');
+						$("#welcome").load("/mobile/pages/welcome_rog.html");
+						document.querySelector("#welcome").classList.remove("qisBackgroundIndex");
+						document.querySelector("#welcome").classList.remove("NotInBusiness");
+
+						document.querySelectorAll(".icon_logo").forEach(function(logo) {
+							const modelNameDiv = document.createElement("div");
+							modelNameDiv.classList.add("qis-modal-title");
+							modelNameDiv.textContent = initNvram.productid;
+							logo.parentNode.className = "d-flex align-items-center gap-2";
+							logo.parentNode.append(modelNameDiv);
+						});
+					}else if(isSupport("BUSINESS")){
 						$('<script />', { type : 'text/javascript', src : "./js/qrcode/jquery.qrcode.min.js"}).appendTo('head');
 						$("#welcome").load("/mobile/pages/welcome_business.html");
 					}
@@ -155,6 +176,9 @@
 					}
 
 					systemVariable.originOpMode = (httpApi.hookGet("get_operation_mode") || "RT").toUpperCase();
+					if(systemVariable.originOpMode === "RT" && isSupport("noRouter")){
+						systemVariable.originOpMode = "AP";
+					}
 					systemVariable.qisSession = "qis"+Date.now();
 					systemVariable.opMode = systemVariable.originOpMode;
 					systemVariable.wirelessBand = initNvram.wlnband_list.split("&#60").length;
@@ -179,7 +203,8 @@
 					});
 					systemVariable.macClone = false;
 
-					httpApi.log("tcode", systemVariable.territoryCode, systemVariable.qisSession)
+					httpApi.log(systemVariable.qisSession, `Entering ${location.href}`);
+					httpApi.log(systemVariable.qisSession, `Tcode is ${systemVariable.territoryCode}, ${systemVariable.isDefault ? "Default Setup, " : ""}rc_support: ${systemVariable.rcSupport}`);
 
 					if(isSupport("2p5G_LWAN"))
 						systemVariable.originWansExtwan = httpApi.nvramGet(["wans_extwan"]).wans_extwan;
@@ -316,10 +341,11 @@
 
 					if(initNvram.isError) setTimeout(arguments.callee, 1000);
 				}, 500);
-				
-				$("#uiLanguage").load("/mobile/pages/uiLanguage.html", function(){
-					$('#selected_lang').html("<#selected_language#>");
-				});
+
+				const languageDropdown = new AccessibleLanguageDropdown(
+						document.querySelector("#selectLang"),
+						document.querySelector(".dropdown-menu"),
+						httpApi.nvramGet(["preferred_lang"]).preferred_lang, httpApi);
 
 				if(isSupport("SDN_Scenario")){
 					$('<script />', { type : 'text/javascript', src : "/help.js"}).appendTo('head');
@@ -391,7 +417,19 @@
 							</div>
 						</td>
 						<td style="vertical-align: top;position: absolute;right:250px;">
-							<ul id="uiLanguage" class="navigation" style="color: #fff"></ul>
+							<div class="header-dropdown" data-asuswrt-color="dark">
+								<button id="selectLang" class="qis-lang-btn" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="lang-label" aria-controls="language-listbox">
+									<span id="lang-label" class="sr-only">Select Language</span>
+									<div class="d-flex align-items-center gap-1">
+										<i class="lang-icon"></i>
+										<span class="line-height-normal"><#selected_language#></span>
+									</div>
+								</button>
+								<div class="dropdown-menu qis-lang-dropdown-menu" tabindex="-1" role="listbox" aria-labelledby="lang-label">
+									<ul role="group"></ul>
+									<ul role="group"></ul>
+								</div>
+							</div>
 						</td>
 					</tr>
 				</table>
@@ -431,8 +469,8 @@
 				<div class="tos tosSupport">
 					<input id="tosCheckbox" type="checkbox" />
 					<span id="tosTitle"><#TM_eula_confirm#>&nbsp;</span>
-					<a href="#" onclick="goTo.AsusPP()">ASUS Privacy Policy</a>, 
-					<a href="#" onclick="goTo.AsusToS()">ASUS Terms of Use</a> & 
+					<a href="#" onclick="goTo.AsusPP()">ASUS Privacy Policy</a>,
+					<a href="#" onclick="goTo.AsusToS()">ASUS Terms of Use</a> &
 					<a href="#" onclick="goTo.TMToS()">Trend Micro End User License Agreement</a>.
 				</div>
 			</div>
@@ -1117,7 +1155,7 @@
 										<#checkbox_No#>
 									</div>
 									<div class="narrowContainer">
-										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+										<div class="select_no_iptv_right icon_arrow_right" style="width:20px;height:32px;"></div>
 									</div>
 								</div>
 							</div>
@@ -1127,7 +1165,7 @@
 					<div>
 						<!-- Action Button -->
 						<div class="footer_desktop">
-							<div class="desktop_abortBtn" onclick='abort.specialISP()'><#CTL_prev#></div>
+							<div class="desktop_abortBtn btn_iptv_previous" onclick='abort.specialISP()'><#CTL_prev#></div>
 						</div>
 						<div class="footer_mobile">
 							<table style="width:100%;" cellpadding="0" cellspacing="0">
@@ -1163,7 +1201,7 @@
 										<#BOP_ctype_title1#>
 									</div>
 									<div class="narrowContainer">
-										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+										<div class="select_dhcp_right icon_arrow_right" style="width:20px;height:32px;"></div>
 									</div>
 								</div>
 							</div>
@@ -1470,7 +1508,7 @@
 						<!-- Action Button -->
 						<div class="footer_desktop">
 							<div class="desktop_abortBtn" onclick='abort.pppoe()'><#CTL_prev#></div>
-							<div class="desktop_applyBtn" onclick="apply.pppoe();"><#CTL_next#></div>
+							<div class="desktop_applyBtn btn_pppoe_apply" onclick="apply.pppoe();"><#CTL_next#></div>
 						</div>
 						<div class="footer_mobile">
 							<table style="width:100%;" cellpadding="0" cellspacing="0">
@@ -1725,7 +1763,7 @@
 						<!-- Action Button -->
 						<div class="footer_desktop">
 							<div class="desktop_abortBtn" onclick='abort.iptv()'><#CTL_prev#></div>
-							<div class="desktop_applyBtn" onclick="apply.iptv();"><#CTL_next#></div>
+							<div class="desktop_applyBtn btn_iptv_apply" onclick="apply.iptv();"><#CTL_next#></div>
 						</div>
 						<div class="footer_mobile">
 							<table style="width:100%;" cellpadding="0" cellspacing="0">
@@ -2428,6 +2466,7 @@
 							<div class="inputContainer">
 								<select id="wlc_auth_mode_manual" class="optionInput">
 									<option value="open">Open System</option>
+									<option value="owe">Enhanced Open</option>
 									<option value="shared">Shared Key</option>
 									<option value="psk">WPA-Personal</option>
 									<option value="psk2" selected>WPA2-Personal</option>

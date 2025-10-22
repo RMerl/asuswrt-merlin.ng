@@ -157,7 +157,7 @@ function initial(){
 function get_disk_tree(){
 	if(this.isLoading == 0){
 		get_layer_items("0", "gettree");
-		setTimeout('get_disk_tree();', 1000);
+//		setTimeout('get_disk_tree();', 1000);
 	}
 	else
 		;

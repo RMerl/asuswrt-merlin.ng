@@ -1,19 +1,12 @@
-@font-face {
-    font-family: TT-Norms-Pro;
-    src: url(/fonts/TESTONLY-TT-Norms-Pro-Bold.ttf) format("opentype"), url(/fonts/TESTONLY-TT-Norms-Pro-Medium.ttf) format("opentype"),url(/fonts/TESTONLY-TT-Norms-Pro-Regular.ttf) format("opentype");
-}
-@font-face {
-    font-family: MyriadPro;
-    src: url(/fonts/TESTONLY-MyriadPro-Bold.otf) format("opentype"), url(/fonts/TESTONLY-MyriadPro-Regular.otf) format("opentype");
-}
+@import "/css/color-table.css";
 
 body {
-	font-family: "Microsoft JhengHei", "sans-serif" !important;
+	font-family: var(--global-font-style);
+    color: var(--body-text-color);
 	visibility: hidden;
 	background: transparent;
 	padding: 0px;
 	overflow-x: hidden;
-	color: #181818;
 }
 
 option {
@@ -49,9 +42,13 @@ ul{
 
 #whiteThemeWrapper {
 	display: inline-block;
-	width: 100%;
-	/* max-width: 1200px; */
+	width: 99%;
 }
+#whiteThemeWrapper table {
+	width: 100%;
+	border: 0px !important;
+}
+
 .d-flex{
 	display: flex;
 }
@@ -151,7 +148,7 @@ ul{
     border-radius: 50rem!important;
 }
 .border-primary{
-	border: 1px solid #006ce1;
+	border: 1px solid var(--primary-50);
 }
 .splitLine{
 	margin: 4px 0;
@@ -177,17 +174,34 @@ ul{
 	min-height: 50px;
 }
 .bg-shadow-right{
-	background-image: url(/images/bg-shadow-re.png);
+/*
+	background-image: url(/images/bg-shadow-re.png); 
+*/
+	width: 1px;
 	background-position-x: right;
 	background-repeat: repeat-y;
 }
 .submenuBlock{
 	margin: 0;
 }
-.input_option {
+.input_option, select {
     height: auto;
-	border-radius: 4px;
+	color: var(--text-input-color);
+    border: 1px solid var(--textbox-normal-stroke-color);
+    border-radius: var(--global-radius);
+    background: var(--textbox-bg-color);
 }
+
+.input_option option {
+	background: var(--dropdown-bg-color);
+    box-shadow: var(--shadow-elevation20);
+    border-radius: var(--global-radius);
+}
+
+.input_option.decorated option:hover {
+	 background-color: yellow;
+}
+
 input, select{
     font-size: 14px !important;
 }
@@ -213,6 +227,7 @@ input, select{
 }
 
 .menu_Split {
+	display: none !important;
 	color: #181818;
     width: 190px;
     height: 50px;
@@ -220,22 +235,34 @@ input, select{
     font-size: 28px;
 	padding: 0;
     margin-bottom: 16px;
+    margin-left: 5px;
     font-weight: 500;
 }
 
 .formfontdesc{
     padding: 15px;
-    background-color: #ececec;
+    background-color: var(--neutral-20);
+	color: var(--body-text-color);
 	font-weight: bolder;
 	margin-left: 0px;
     margin-bottom: 20px;
+}
+
+.FormTable th, .FormTable td {
+	font-family: var(--global-font-style);
+	color: var(--body-text-color);
+	background-color: var(--panel-card-EL10-fill-color);
+	border-bottom: 1px solid var(--td-stroke);
 }
 
 #WPS_hideSSID_hint {
 	color: #ef4444 !important;
 }
 #mainMenu{
-	padding-right: 16px;
+	margin-top: 15px;
+	padding-right: 0px;
+	border-right: 1px solid #DDD !important;
+	border-top: 1px solid #DDD !important;
 }
 .content {
 	margin: 0;
@@ -245,7 +272,6 @@ input, select{
 }
 
 .tabClicked, .tab{
-	font-family: inter, "Microsoft JhengHei", sans-serif;
 	background-color: transparent;
 	border-bottom: 0px;
 	display: block;
@@ -254,15 +280,12 @@ input, select{
     height: 42px;
 	font-weight: bolder;
 }
-.tab{
-	color: #262626;
-}
 
 #tabMenu {
     font-weight: 500;
-	max-width: 100%;
+	max-width: 99%;
 	display: inline-block;
-	width: 100%;
+	width: 99%;
     font-size: 16px;
 }
 div#tabMenu> div > table{
@@ -274,12 +297,11 @@ div#tabMenu> div > table{
 .FormTitle {
 	margin: 0 auto;
 	text-align: left;
-    min-width: 740px;
+/*    min-width: 740px;*/
 	width: 100% !important;
 }
 
 .FormTable th {
-	font-family: inter, "Microsoft JhengHei", sans-serif;
 	font-size: 14px;
     line-height: 25px;
     font-weight: 500;
@@ -287,7 +309,6 @@ div#tabMenu> div > table{
 }
 
 .FormTable td {
-	font-family: inter, "Microsoft JhengHei", sans-serif;
 	font-size: 14px;
     line-height: 24px;
 }
@@ -295,9 +316,7 @@ div#tabMenu> div > table{
 	font-weight: bolder;
 }
 .formfontdesc {
-	font-family: inter, "Microsoft JhengHei", sans-serif;
     font-size: 14px;
-    color: #262626;
 	line-height: 180%;
 }
 
@@ -314,42 +333,49 @@ div#tabMenu> div > table{
 }
 /* btn usage in content or tool */
 .btn_subusage{
-	background-color: #f5f5f5 !important;
-    border: 1px solid #006ce1 !important;
-    font-weight: 500 !important;
-    cursor: pointer !important;
     padding: 0 1rem !important;
     min-width: 8rem !important;
-    height: 32px !important;
+    height: 40px !important;
 	display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-	color: #006ce1 !important;
-	border-radius: 4px !important;
 	width: fit-content !important;
-	font-size: 14px !important;
-}
-.btn_subusage:hover{
-	box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.12), 0px 3px 1px rgba(0, 0, 0, 0.04) !important;
-	color: #000 !important;
 }
 .button_content, .button_gen, .button_gen_pre, .titlebtn{
 	padding: 0 1.5em 0 1.5em;
-	height: 50px;
-	color: #006ce1;
-	border: 1px solid rgba(0, 0, 0, 0.1);
-	border-radius: 8px;
+	height: 45px;
 	font-size: 14px;
-	background-color: rgba(255,255,255,0.6);
-	min-width: 150px;
+	min-width: 200px;
     margin-top: 0px;
 	display: flex;
     align-items: center;
     justify-content: center;
+
+	background: var(--primary-btn-normal-fill);
+    border-radius: var(--radius-sm);
+    border: 1px outset transparent;
+    color: var(--primary-btn-text-color) !important;
+    border-image: var(--primary-btn-normal-stroke);
+    border-image-slice: 2;	
+}
+.button_gen_in_table{
+	background: unset;
+    color: var(--body-text-color) !important;
+    border: 1px solid var(--body-text-color);
+    margin: 10px;
+	margin-left: 0px;	
+}
+.button_gen_in_table:hover{
+	color: var(--primary-btn-text-color) !important
 }
 .button_content:hover, .button_gen:hover, .button_gen_pre:hover, .titlebtn:hover{
-	background-color: #f5f5f5;
 	box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.12), 0px 3px 1px rgba(0, 0, 0, 0.04);
+	background: var(--primary-btn-normal-fill);
+    border-radius: var(--radius-sm);
+    border: 1px outset transparent;
+    color: var(--primary-btn-text-color);
+    border-image: var(--primary-btn-normal-stroke);
+    border-image-slice: 2;		
 }
 .titlebtn span {
     display: block;
@@ -364,16 +390,16 @@ div#tabMenu> div > table{
 	color:#262626;
 }
 .txt_dict_a{
-	color:#006ce1;
+	color:var(--primary-50);
 	text-decoration:underline;
 }
 
 div>a[class*="hint"]{
-	color:#006ce1;
+	color:var(--primary-50);
 }
 
 span>a[class~="fontClor"]{
-	color:#006ce1;
+	color:var(--primary-50);
 }
 .hint_desc{
 	color: #c74200;
@@ -396,7 +422,7 @@ span>a[class~="fontClor"]{
     /* border-bottom: 0.5px solid #c74200; */
     color: #181818;
 	font-size: 14px;
-    margin: 0.5rem 0;
+    margin: 0.5rem;
 	border-radius: 8px;
 	font-weight: bolder;
 	display: block;
@@ -406,8 +432,8 @@ span>a[class~="fontClor"]{
     color: #181818;
     font-size: 13px;
     background-color: #ECF5FF;
-	border-top: 0.5px solid #006ce1;
-    border-bottom: 0.5px solid #006ce1;
+	border-top: 0.5px solid var(--primary-50);
+    border-bottom: 0.5px solid var(--primary-50);
 }
 .explain_desc2{
     color: #181818;
@@ -420,12 +446,6 @@ span>a[class~="fontClor"]{
 
 #returnBtn{
 	display: none;
-}
-
-.menuClicked{
-	color:#fefefe;
-    background:  #006ce1;
-	/* font-weight: bolder; */
 }
 /* dropdown with client table, mac address */
 #pull_arrow{
@@ -447,14 +467,16 @@ span>a[class~="fontClor"]{
     color: #000;
 	width: 100%;
 	margin-bottom:5px;
+	min-height: 350px;
 }
 
 [bgcolor="#4D595D"]{
 	background: transparent;
+	padding: 0px;
 }
 
-#slider .ui-slider-handle { border-color: #006ce1 !important; }
-#slider .ui-slider-range { background: #006ce1 !important; }
+#slider .ui-slider-handle { border-color: var(--primary-50) !important; }
+#slider .ui-slider-range { background: var(--primary-50) !important; }
 .ui-widget-header .ui-state-default { background: #ffffff }
 .ui-widget-content {
 	border: 0px solid transparent;
@@ -475,6 +497,19 @@ span>a[class~="fontClor"]{
 }
 .input_32_table, .input_30_table, .input_25_table, .input_22_table, .input_20_table, .input_18_table, .input_15_table, .input_12_table, .input_6_table, .input_3_table, .input_macaddr_table{
 	width: 60% !important;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--body-text-color);
+    background-color: var(--textbox-normal-fill-color);
+    background-clip: padding-box;
+    border: 1px solid var(--bg-btn-regular-color);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: var(--global-radius);
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 }
 
 #WDSAPList {
@@ -513,12 +548,15 @@ span>a[class~="fontClor"]{
 	border-radius: 3px;
 }
 .clientlist_dropdown_expand {
-	color: #006ce1 !important;
+	color: var(--primary-50) !important;
 	text-align: center !important;
 }
 
 input[name="sr_gateway_x_0"],input[name="dhcp_staticmac_x_0"],input[name="wollist_macAddr"],input[name="PC_devicename"] {
 	margin: 0 !important;
+}
+input[type="redio"]{
+	margin-left: 20px !important;
 }
 
 /* root:weekSchedule.css */
@@ -537,11 +575,11 @@ input[name="sr_gateway_x_0"],input[name="dhcp_staticmac_x_0"],input[name="wollis
 	background-color: #f5f5f5;
 }
 .popup_edit_weekSchedule .routine_schedule_bg > div.clicked{
-	border: 1px solid #006ce1;
-    background-color: #006ce1;
+	border: 1px solid var(--primary-50);
+    background-color: var(--primary-50);
 }
 .overview_a_week_bg .weekday_bg .weekday_title.current_weekday:before{
-	border-bottom: 3px solid #006ce1;
+	border-bottom: 3px solid var(--primary-50);
 }
 .popup_hint_bg .action_bg{
 	margin-top: 3rem;
@@ -585,10 +623,6 @@ input[name="sr_gateway_x_0"],input[name="dhcp_staticmac_x_0"],input[name="wollis
 .PC_SCHED .grid_period_content:hover, .WL_SCHED .grid_period_content:hover{
 	background-color: #cce4ff;
 	box-shadow: 0 0 0 0px transparent;
-}
-
-.action_btn_bg > div {
-	line-height: 50px;
 }
 
 .action_btn_bg div:nth-of-type(2) {
@@ -654,13 +688,15 @@ tr.data_tr>td.row_td{
 }
 .dns_server_list_dropdown a:hover{
 	background-color: #ffffff;
-	border: 1px solid #006ce1;
+	border: 1px solid var(--primary-50);
 	border-radius: 4px;
 }
 /* page/AiMesh */
-
+#AiMesh_Topology{
+	min-width: 690px;
+}
 .aimesh_intro_text > div:nth-child(2):before{
-	background: #006ce1;
+	background: var(--primary-50);
 }
 
 .aimesh_introduction{
@@ -669,19 +705,10 @@ tr.data_tr>td.row_td{
 .aimesh_intro_text{
 	color: #262626;	
 }
-.jstree-default .jstree-wholerow-clicked{
-	background: #fff;
-}
 .category_bg{
-	border-top: 1px solid #dcdcdc;
-	border-left: none;
+	border: none;
 }
-.separation_line i{
-	background: #dcdcdc;
-}
-.separation_line p{
-	color: #006ce1;
-}
+
 .jstree-default .jstree-icon.jstree-themeicon:after{
 	box-shadow: none;
 }
@@ -711,8 +738,8 @@ tr.data_tr>td.row_td{
 	color: #262626 !important;
 }
 .block_filter_pressed{
-	background: #006ce1;
-	border: 1px solid #006ce1;
+	background: var(--primary-50);
+	border: 1px solid var(--primary-50);
 	box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1), 0px 0px 1px rgba(0, 0, 0, 0.05);
 	border-radius: 8px;
 	padding: 4px;
@@ -801,7 +828,7 @@ tr.data_tr>td.row_td{
 	padding: 32px 24px;
 }
 .popup_edit_weekSchedule .edit_offtime_title{
-	color: #006ce1;
+	color: var(--primary-50);
 	font-size: 22px;
     line-height: 32px;
     padding: 0 8px;
@@ -887,8 +914,8 @@ tr.data_tr>td.row_td{
 	border: 1px solid #dcdcdc;
 }
 .popup_edit_weekSchedule .custom_select_input_bg .custom_select:after{
-	border-top: 2px solid #006ce1;
-    border-right: 2px solid #006ce1;
+	border-top: 2px solid var(--primary-50);
+    border-right: 2px solid var(--primary-50);
 }
 .popup_edit_weekSchedule .custom_select_input_bg .custom_select_list{
 	border: 1px solid #dcdcdc;
@@ -916,7 +943,7 @@ tr.data_tr>td.row_td{
     border-bottom: 1px solid #dcdcdc;
 }
 .popup_edit_weekSchedule .edit_time_setting_bg > div.time_setting_title > span{
-	color: #006ce1;
+	color: var(--primary-50);
 }
 .popup_edit_weekSchedule .edit_offtime_title {
     color: #262626;
@@ -929,8 +956,8 @@ tr.data_tr>td.row_td{
 	color: #fff;
 }
 .PC_SCHED.offline .popup_edit_weekSchedule .routine_schedule_bg > div.clicked {
-    border: 1px solid #006ce1;
-    background-color: #006ce1;
+    border: 1px solid var(--primary-50);
+    background-color: var(--primary-50);
 }
 .popup_edit_weekSchedule .routine_schedule_bg > div{
 	border: 1px solid #4d4d4d;
@@ -963,8 +990,8 @@ tr.data_tr>td.row_td{
     border-radius: 4px;
 }
 .popup_edit_weekSchedule .all_day_checkbox.clicked{
-	background-color: #006ce1;
-    border: 1px solid #006ce1;
+	background-color: var(--primary-50);
+    border: 1px solid var(--primary-50);
 }
 
 
@@ -980,6 +1007,7 @@ tr.data_tr>td.row_td{
     padding: 0;
     margin: 0px auto !important;
 	margin-top: 30px !important;
+	width: 100%;
 }
 .accountBar td{
 	background-color: #dcdcdc;
@@ -989,7 +1017,7 @@ tr.data_tr>td.row_td{
 	height: 0px;
 }
 .PC_SCHED .offtime_schedule_header .title.offline, .WL_SCHED .offtime_schedule_header .title.offline {
-    color: #006ce1;
+    color: var(--primary-50);
     border: 1px solid #dcdcdc;
     padding: 8px 16px;
     border-radius: 8px;
@@ -997,7 +1025,7 @@ tr.data_tr>td.row_td{
 .PC_SCHED .offtime_schedule_header .title.offline:hover, .WL_SCHED .offtime_schedule_header .title.offline:hover{
 	background: #fff;
 	box-shadow: rgb(0 0 0 / 12%) 0px 3px 8px, rgb(0 0 0 / 4%) 0px 3px 1px;
-	color: #006ce1;
+	color: var(--primary-50);
 }
 .PC_SCHED .offtime_schedule_header, .WL_SCHED .offtime_schedule_header{
 	padding: 16px 0;
@@ -1020,7 +1048,7 @@ tr.data_tr>td.row_td{
 
 .PC_SCHED .grid_period_content .period_text_bg .start_time:before, .PC_SCHED .grid_period_content .period_text_bg .end_time:before, .WL_SCHED .grid_period_content .period_text_bg .start_time:before, .WL_SCHED .grid_period_content .period_text_bg .end_time:before{
 	left: 0;
-    color: #006ce1;
+    color: var(--primary-50);
 
 }
 .PC_SCHED .grid_period_content, .WL_SCHED .grid_period_content{
@@ -1086,7 +1114,7 @@ tr.data_tr>td.row_td{
 }
 
 .ipMethodTag{
-	background-color: #006ce1;
+	background-color: var(--primary-50);
 	color: #fff;
 }
 .client_upload_div{
@@ -1094,19 +1122,19 @@ tr.data_tr>td.row_td{
     border: 0 !important;
 	color: #fff;
 }
-#card_client_name {
+#card_client_name, #card_client_ipaddr_field {
 	width: 100% !important;
     padding: 8px !important;
 }
 .client_input_text_disabled {
     background: #f5f5f5;
-    width: 269px;
+    width: 99% !important;
     padding: 8px;
-	border-radius: 4px;
-	line-height: 1.5em;
+	border-radius: 3px;
+	line-height: 0.5em;
 	height: auto;
-	width: 100% !important;
 }
+
 .each_period_bg .period_trash_icon, .PC_SCHED .grid_period_content .period_trash_icon, .each_period_bg .period_trash_icon, .WL_SCHED .grid_period_content .period_trash_icon{
 	width: 40px;
     height: 40px;
@@ -1171,12 +1199,6 @@ input:hover{
     background-size: cover;
 	background-position: unset;
 }
-
-.hidden_mask, .fullScreen{
-    backdrop-filter: blur(3px) !important;
-    background: #f5f5f5d9 !important;
-	opacity: 1 !important;
-}
 .popup_container .popup_content_container, .createNewRule, .pop_div_bg, .contentM_qis {
     background: rgb(255, 255, 255);
     color: rgb(24, 24, 24);
@@ -1232,7 +1254,7 @@ input:hover{
 	border-radius: 4px !important;
 }
 .actionButtonOK{
-	background-color: #006ce1;
+	background-color: var(--primary-50);
 }
 .inputSelect{
 	background-color: transparent;
@@ -1315,7 +1337,7 @@ input:hover{
 }
 #proceeding_img{
     height: 30px !important;
-    background: #006ce1 !important;
+    background: var(--primary-50) !important;
 }
 .loadingBarBlock{
 	width: 30% !important;
@@ -1330,10 +1352,12 @@ input:hover{
 	margin-left: -200px !important;
     margin-top: 38px !important;
 	height: 40px !important;
+	width: unset !important;
 }
 #update{
 	margin-top: 0px !important;
 	height: 40px !important;
+	width: unset !important;
 }
 .buttonInTable{
 	margin-top: 0px !important;
@@ -1344,7 +1368,7 @@ input:hover{
 	margin: 0 !important;
 }
 .aimesh_fw_update_offline{
-	color: #006ce1 !important;
+	color: var(--primary-50) !important;
 }
 #WAN_access_hint{
     display: block !important;
@@ -1406,6 +1430,7 @@ input:hover{
 }
 #phy_ports{
 	font-family: "Inter", "Microsoft JhengHei", "sans-serif";
+	zoom: 0.9;
 }
 .port_status_icon_desc.webWrapper {
 	display: none;
@@ -1419,6 +1444,14 @@ input:hover{
 }
 .port_icon{
 	transform: scale(1.8);
+}
+.poe_settings_item .port_icon{
+	transform: initial;
+}
+.port_status_bg .port_icon.poe_port:after{
+	transform: scale(0.9);
+	border: 3px solid #FFFFFF;
+	right: -7px;
 }
 .port_status_bg {
 	display: block;
@@ -1480,11 +1513,11 @@ input:hover{
 	padding: 0px !important;
 	text-align: center;
 	line-height: 35px;
-	color: #006ce1;
+	color: var(--primary-50);
 	font-size: 16px;
 }
 #statistic_hint{
-	color: #006ce1;
+	color: var(--primary-50);
 	background-color: unset !important;
 }
 .ui-datepicker-calendar {
@@ -1504,11 +1537,13 @@ input:hover{
 .container {
 	background-color: unset !important;
     width: 100% !important;
-	padding: 5px !important;
+	margin: 0% !important;
 }
+/* 
 .bg_internetSpeed {
 	width: 95% !important;
-}
+} 
+*/
 .speedTest_div{
 	background-color: #FFFFFF !important;
 	box-shadow: unset !important;
@@ -1524,13 +1559,14 @@ input:hover{
 @media (max-width: 720px){
 	.ping_result_div {
 		box-shadow: unset !important;
-		border: 1px solid #CCC !important;
+		/* border: 1px solid #CCC !important; */
 	}
 }
 
 @media (min-width: 1024px){
 	.container {
 		width: 100% !important;
+		margin: 0% !important;
 	}
 }
 #webs_update_time_x_hour, #webs_update_time_x_min{
@@ -1570,7 +1606,6 @@ input:hover{
 	height: 510px;
     border-radius: 4px;
     overflow: auto;
-	background-color: #ffffff;
 }
 #back_app_installation {
 	display: none;
@@ -1746,7 +1781,7 @@ div.wrapper> table>td{
 	background-image: unset !important;
 }
 .title-symbol {
-	background-color: #006ce1 !important;
+	background-color: var(--primary-50) !important;
 }
 .notInBusiness{
 	display: none !important;
@@ -1772,7 +1807,7 @@ div.wrapper> table>td{
 	color: #FF0000 !important;
 }
 .hintstyle:link {
-	color: #262626 !important;
+	color: var(--body-text-color) !important;
 }
 #deregister_btn {
 	height: 35px !important;
@@ -1796,7 +1831,7 @@ div.icon-circle-mask {
 	margin: 10px 0 10px 0 !important;
 }
 #eula_pp_main #asus_pp_title, #eula_pp_main #asus_pp_title_sub {
-	color: #006ce1;
+	color: var(--primary-50);
 }
 .eula_withdraw {
 	padding: 20px 20px 0px 20px !important;
@@ -1841,24 +1876,245 @@ div.icon-circle-mask {
 	margin-left: 2px;
 }
 
+#DNS_Assign_button{
+    height: 50px;	
+}
+.dnslist_viewlist_business {
+    top: 0 !important;
+    left: 5% !important;	
+}
+
+.scaleBody {
+	overflow-y: hidden;
+	overflow-x: auto;
+	zoom: 0.9;
+}
+.scaleBodyAiMesh {
+	overflow-y: hidden;
+	overflow-x: auto;	
+}
+.tabButtons {
+	padding: 0px;
+	padding-bottom: 10px !important;
+}
+#menu_setting {
+	width: 50px;
+}
+#tabMoreIcon {
+	mask-image: url(/images/New_ui/listview.svg);
+	background-color: var(--body-text-color);
+	mask-repeat: no-repeat;
+	width: 30px;
+	height: 30px;
+	background-position: left;
+}
+.GameModeFormTitle {
+	background: transparent !important;
+	margin-top: unset !important;
+}
+.GameModeTitle {
+	color: var(--primary-50) !important;
+}
+#gameList_block {
+	background-color: #FFF !important;
+	border: 1px solid #000 !important;
+	overflow: hidden !important;
+	margin-top: 0px !important;
+}
+#gameList_block_close {
+	background-color: #000 !important;
+}
+.OpenNatSettingBlock {
+	width: 99% !important;
+	background-color: unset !important;
+	border: 0px !important;
+}
+.openNatButtonText {
+	color: #FFF !important;
+}
+.openNatDescription{
+	color: #000 !important;
+}
+#openNatEnableBlock {
+	margin-top: 20px !important;
+}
+.world-map {
+	margin: 0 auto !important;
+}
+.new-g-p-t-field {
+	background-color: unset !important;
+}
+#Senario, #guest_image {
+	display: none !important;
+	width: 0px !important;
+}
+#PC_desc_table {
+	margin-left: 0px !important;
+}
+.info_right {
+	width: 57% !important;
+	padding: 0px !important;
+}
+.info_left {
+	width: 42% !important;
+}
+#dms_friendly_name{
+	margin-left: 0px !important;
+}
+
+/* width < 576px*/
+@media (max-width: 576px) {
+	.tabButtons {
+		zoom: 0.8 !important;
+	}	
+}
+
 /* width < 1200px*/
 @media (max-width: 1200px) {
+	#tabMenu {
+		zoom: 0.8;
+	}	
 	.scaleBody {
+/*
 		transform: scale(0.8);
 		transform-origin: top left;
 		width: 125% !important;
+*/
 		height: 100vh !important;
+	}
+	#mainMenu{
+		padding-right: 0px !important;
+        zoom: 0.8;
 	}
 }
 
-/* width < 1400px*/
+/* width < 1024px */
+@media (max-width: 1024px) {
+	.bg-shadow-right {
+		display: none;
+		position: absolute;
+        z-index: 10000;
+        width: 175px;
+		background: #FFF;
+		box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.12), 0px 3px 1px rgba(0, 0, 0, 0.04) !important;
+	}
+	#mainMenu {
+		margin-top: 0px !important;
+	}
+	.row>* {
+		padding-left: 5px;
+		padding-right: 5px;
+	}
+	.tabNameDiv, .tab, .tabClicked {
+		height: auto;
+	}
+	.p-tabMenu {
+		padding-left: 0px;
+	}
+}
+
 @media (max-width: 1400px) {
 	@media (min-width: 1200px) {
 		.scaleBody {
+/*
 			transform: scale(0.9);
 			transform-origin: top left;
 			width: 111% !important;
+*/
 			height: 100vh !important;
+		}
+		#mainMenu{
+			padding-right: 0px !important;
 		}
 	}
 }
+
+@media (min-width: 767px) {	
+	.info_left, .info_right {
+		display: block !important;
+	}
+}
+@media (max-width: 767px) {	
+	.scaleBodyAiMesh{
+		zoom: 0.8;
+		height: 100vh !important;
+	}
+	#AiMesh_Topology {
+		min-width: unset !important;
+	}
+	.info_left {
+		position: absolute;
+		margin-top: 0px;
+		background-color: #FFF;
+		z-index: 999;
+		width: 100% !important;
+	}
+	.info_right {
+		width: 100% !important;
+		display: none;
+	}
+	.bg-shadow-right {
+		display: none;
+		position: absolute;
+		z-index: 10000;
+	        width: 175px;
+		background: #FFF;
+		box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.12), 0px 3px 1px rgba(0, 0, 0, 0.04) !important;
+	}
+	#mainMenu {
+		margin-top: 0px !important;
+	}
+	.row>* {
+		padding-left: 5px;
+		padding-right: 5px;
+	}
+	.tabNameDiv, .tab, .tabClicked {
+		height: auto;
+	}
+	.p-tabMenu {
+		padding-left: 0px;
+	}
+	.tab, .formfonttitle_help {
+		display: none;
+	}
+	.tabButtons {
+		padding: 0px;
+	}
+	.input_option, .input_32_table, .input_30_table, .input_25_table, .input_22_table, .input_20_table, .input_18_table, .input_15_table, .input_12_table, .input_6_table, .input_3_table, .input_macaddr_table{
+		width: 100% !important;
+	}
+	#speedmeter_png, #qos_level_icon, .loading_bar_container {
+		display: none !important;
+	}
+	.table_input {
+		width: 80% !important;
+	}
+	.action_btn_bg {
+		display: flex;
+		gap: 10px;
+	}
+	.left_btn, .right_btn {
+		position: unset !important;
+		min-width: unset !important;
+		width: 30% !important;
+	}
+	.button_content, .button_gen, .button_gen_pre, .titlebtn {
+		min-width: unset !important;
+		width: 40%;
+        max-width: 250px;
+	}
+	.function_title_container, #Senario, .notInMobile {
+		display: none !important;
+	}
+	#feedback-eula-container {
+		width: 75% !important;
+	}
+	.input_option {
+		min-width: 50px !important;		
+	}
+}
+
+#dns_list_Block {
+	border: 1px solid #000 !important;
+}
+/*#whiteThemeWrapper*/

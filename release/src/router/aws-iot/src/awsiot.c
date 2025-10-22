@@ -4288,11 +4288,11 @@ static int rcv_general_data(char *data, char *topic)
                 }
 
                 //- 0:No need upgrade, 1:need upgrade, 2:need Force upgrade, 3:Fail to retrieve firmware
-                ret = do_firmware_check(FROM_AWSIOT, 1);
+                ret = do_firmware_check(FROM_AWSIOT, 1, "[]");
                 if (ret == 1 || ret == 2)
                 {
 
-                    ret = do_firmware_upgrade();
+                    ret = do_firmware_upgrade("[]");
 
                     if (ret == 0)
                     {
@@ -4442,6 +4442,10 @@ static int rcv_general_data(char *data, char *topic)
                 nvram_set("newsite_provisioning_timestamp", "");
 #endif
 
+#ifdef RTCONFIG_UPLOADER
+                nvram_set("uploader_enable", "0");
+#endif
+
 #if defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
 #else
                 nvram_commit();
@@ -4449,9 +4453,9 @@ static int rcv_general_data(char *data, char *topic)
 
                 char from_service[10] = {0};
                 snprintf(from_service, sizeof(from_service), "%s", "awsiot");
-
+                
                 //- Reset to default pp version
-                set_ASUS_privacy_policy("1", "0", from_service);
+                // set_ASUS_privacy_policy("1", "0", from_service);
 
                 notify_rc("restart_mastiff");
 

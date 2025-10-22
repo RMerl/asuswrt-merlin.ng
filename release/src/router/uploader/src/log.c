@@ -18,7 +18,7 @@ int facility = LOG_USER;
 int g_stream_type =0;
 int priority = LOG_ERR | LOG_USER;
 int g_is_log_opened =0;
-long FILE_MAX_SIZE = 2048576;
+long FILE_MAX_SIZE = 524288; //- 512K
 
 #define API_DBG 1
 
@@ -124,6 +124,22 @@ void dprintf_impl(const char* file,const char* func, size_t line, int enable, co
     va_end(ap);
 }
 
+void dprintf_uploader_impl(const char* file,const char* func, size_t line, int enable, const char* fmt, ...)
+{
+
+    long filesize = file_size(APP_LOG_PATH);
+
+    // if File > 512K , downsizing -> 1200 line
+    if(filesize > FILE_MAX_SIZE) {
+        upload_log_downsizing();
+    }
+
+    va_list ap;
+    va_start(ap, fmt);
+    dprintf_impl2(file, func, line, enable, 1, fmt, ap);
+    va_end(ap);
+}
+
 void dprintf_virtual(const char* file,const char* func, size_t line, int enable, int level, const char* fmt, ...)
 {
     va_list ap;
@@ -145,15 +161,16 @@ void dprintf_impl2(const char* file,const char* func, size_t line, int enable, i
 
         //va_start(ap, fmt);
         // Log to file
-        if (fileExist(UL_DEBUG_TO_FILE)) {
-            if (g_file_fp) {
 
+        if (level == 1 || fileExist(UL_DEBUG_TO_FILE)) {
+            if (g_file_fp) {
                 fprintf(g_file_fp, WHERESTR, ts, file, func, line);
                 vfprintf(g_file_fp, fmt, ap);
                 fprintf(g_file_fp, "\n");
                 fflush(g_file_fp);
             }
         }
+
         // Log to console
         if (fileExist(UL_DEBUG_TO_CONSOLE)) {
             if (g_console_fp) {
@@ -169,11 +186,11 @@ void dprintf_impl2(const char* file,const char* func, size_t line, int enable, i
         }
 
         // Log to syslog
-        if (level == 1 || fileExist(UL_DEBUG_TO_SYSLOG)) {
+        if (fileExist(UL_DEBUG_TO_SYSLOG)) {
             vsyslog(priority, fmt, ap);
-            fprintf(stdout, WHERESTR, ts, file, func, line);
-            vfprintf(stdout, fmt, ap);
-            fprintf(stdout, "\n");
+            // fprintf(stdout, WHERESTR, ts, file, func, line);
+            // vfprintf(stdout, fmt, ap);
+            // fprintf(stdout, "\n");
         }
         
         //va_end(ap);

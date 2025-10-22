@@ -602,13 +602,19 @@
 	border: 1px outset rgba(37, 151, 255, 0.2);
 	box-shadow: 0px 2px 3px 0px rgb(20 50 80 / 5%);
 	border-radius: 5px;
-	line-height: 40px;
+	line-height: 100%;
 	color: rgb(255, 255, 255);
 	font-size: 16px;
 	font-weight: 500;
 	letter-spacing: 1.25px;
 	text-align: center;
 	cursor: pointer;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	word-break: break-all;
+	white-space: normal;
+	overflow-wrap: break-word;
 }
 .action_container .btn_container.valid_fail{
 	cursor: not-allowed;
@@ -848,6 +854,12 @@
 .customize_alert.confirm .action_btn_container .cancel{
 	background: rgb(37 151 255);
 	color: #ffffff;
+}
+.customize_alert.confirm {
+	background-color: initial !important;
+	border: initial !important;
+	color: initial !important;
+	box-shadow: initial !important;
 }
 .textInput,
 .custom_select_container,

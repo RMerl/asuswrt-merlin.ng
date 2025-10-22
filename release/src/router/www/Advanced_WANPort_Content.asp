@@ -12,48 +12,11 @@
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="/js/table/table.css">
+<link rel="stylesheet" type="text/css" href="device-map/device-map.css">
 <style>
 .ISPProfile{
 	display:none;
 }
-#TargetList_Block_PC{
-	border:1px outset #999;
-	background-color:#576D73;
-	position:absolute;
-	*margin-top:26px;	
-	margin-left:2px;
-	*margin-left:-353px;
-	width:346px;
-	text-align:left;	
-	height:auto;
-	overflow-y:auto;
-	z-index:200;
-	padding: 1px;
-	display:none;
-}
-#TargetList_Block_PC div{
-	background-color:#576D73;
-	height:auto;
-	*height:20px;
-	line-height:20px;
-	text-decoration:none;
-	font-family: Lucida Console;
-	padding-left:2px;
-}
-
-#TargetList_Block_PC a{
-	background-color:#EFEFEF;
-	color:#FFF;
-	font-size:12px;
-	font-family:Arial, Helvetica, sans-serif;
-	text-decoration:none;	
-}
-#TargetList_Block_PC div:hover{
-	background-color:#3366FF;
-	color:#FFFFFF;
-	cursor:default;
-}
-
 #detect_time_confirm{
 	position:absolute;
 	-webkit-border-radius: 5px;
@@ -103,7 +66,8 @@ var dns_probe_timeout_threshold = (httpApi.nvramGet(["dns_probe_timeout"], true)
 var qos_enable_orig = '<% nvram_get("qos_enable"); %>';
 var qos_type_orig = '<% nvram_get("qos_type"); %>';
 
-
+var wans_dualwan = httpApi.nvramGet(["wans_dualwan"], true).wans_dualwan;
+var wans_dualwan_array = wans_dualwan_orig.split(" ");
 var country = new Array("None", "China");
 var country_n_isp = new Array;
 country_n_isp[0] = new Array("");
@@ -1072,7 +1036,7 @@ function applyRule(){
 				if(lacp_support){
 					document.form.lacp_enabled.disabled = false;
 					document.form.lacp_enabled.value = "0";
-					if(is_GTBE_series){
+					if(is_GTBE_externalswitch_series){
 						$('<input>').attr({
 							type: 'hidden',
 							name: "lacp_ifnames_x",
@@ -1104,7 +1068,7 @@ function applyRule(){
 		}
 	}
 
-	if(is_GTBE_series){
+	if(is_GTBE_externalswitch_series){
 		var lacp_ifnames_x = httpApi.nvramGet(["lacp_ifnames_x"], true).lacp_ifnames_x;
 		if(document.form.wans_dualwan.value.indexOf("wan") != -1 && document.form.wans_extwan.value == "0"){ //10G WAN included
 			if(lacp_support && lacp_enabled == "1" && lacp_ifnames_x == "eth0 eth3"){
@@ -1142,7 +1106,7 @@ function applyRule(){
 			if(conflict_func.indexOf("<#NAT_lacp#>") != -1){
 				document.form.lacp_enabled.disabled = false;
 				document.form.lacp_enabled.value = "0";
-				if(is_GTBE_series){
+				if(is_GTBE_externalswitch_series){
 					$('<input>').attr({
 						type: 'hidden',
 						name: "lacp_ifnames_x",
@@ -1653,9 +1617,11 @@ function show_watchdog_table(){
 function appendMonitorOption(obj){
 	if(obj.name == "wandog_enable_chk"){
 		if(obj.checked){
+            $('input[name="wandog_target"]').closest('tr').show();
 			inputCtrl(document.form.wandog_target, 1);
 		}
 		else{
+            $('input[name="wandog_target"]').closest('tr').hide();
 			inputCtrl(document.form.wandog_target, 0);
 		}
 	}
@@ -2198,7 +2164,7 @@ function remain_origins(){
 											<th><#dualwan_primary#></th>
 											<td>
 												<select id="wans_primary" name="wans_primary" class="input_option" onchange="changeWANProto(this);"></select>
-												<select id="wans_lanport1" name="wans_lanport1" class="input_option" style="margin-left:7px;">
+												<select id="wans_lanport1" name="wans_lanport1" class="input_option" style="margin-left:7px; width: auto !important;">
 													<option value="1" <% nvram_match("wans_lanport", "1", "selected"); %>>LAN Port 1</option>
 													<option value="2" <% nvram_match("wans_lanport", "2", "selected"); %>>LAN Port 2</option>
 													<option value="3" <% nvram_match("wans_lanport", "3", "selected"); %>>LAN Port 3</option>
@@ -2210,7 +2176,7 @@ function remain_origins(){
 											<th><#dualwan_secondary#></th>
 											<td>
 												<select id="wans_second" name="wans_second" class="input_option" onchange="changeWANProto(this);"></select>
-												<select id="wans_lanport2" name="wans_lanport2" class="input_option short_input" style="margin-left:7px;">
+												<select id="wans_lanport2" name="wans_lanport2" class="input_option short_input" style="margin-left:7px; width: auto !important;">
 													<option value="1" <% nvram_match("wans_lanport", "1", "selected"); %>>LAN Port 1</option>
 													<option value="2" <% nvram_match("wans_lanport", "2", "selected"); %>>LAN Port 2</option>
 													<option value="3" <% nvram_match("wans_lanport", "3", "selected"); %>>LAN Port 3</option>
@@ -2345,9 +2311,11 @@ function remain_origins(){
 					<tr>
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,2);"><#Ping_Target#></a></th>
 						<td>
+						    <div class="clientlist_dropdown_main">
 								<input type="text" class="input_25_table" name="wandog_target" maxlength="100" value="<% nvram_get("wandog_target"); %>" placeholder="ex: www.google.com" autocorrect="off" autocapitalize="off">
-								<img id="pull_arrow" class="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullPingTargetList(this);" title="<#select_network_host#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
-								<div id="TargetList_Block_PC" name="TargetList_Block_PC" class="TargetList_Block_PC" style="display:none;"></div>
+								<img id="pull_arrow" class="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullPingTargetList(this);" title="<#select_network_host#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
+								<div id="TargetList_Block_PC" name="TargetList_Block_PC" class="clientlist_dropdown"></div>
+                            </div>
 						</td>
 					</tr>
 

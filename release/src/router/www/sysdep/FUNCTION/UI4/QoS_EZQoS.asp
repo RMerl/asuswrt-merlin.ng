@@ -1662,7 +1662,7 @@ function setGroup(name){
 		  <div id="subMenu"></div>
 		</td>
 
-		<td valign="top">
+		<td valign="top" class="w-100">
 			<div id="tabMenu" class="submenuBlock"></div>
 		<!--===================================Beginning of Main Content===========================================-->
 			<div id="priority_panel">
@@ -1778,7 +1778,7 @@ function setGroup(name){
 									<div>
 										<table style="width:100%;">
 											<tr>
-												<td style="width:130px">
+												<td class="notInBusiness" style="width: 130px">
 													<div id="guest_image" style="background: url(images/New_ui/QoS.png);width: 143px;height: 87px;"></div>
 												</td>
 												<td>&nbsp&nbsp</td>
@@ -1938,7 +1938,7 @@ function setGroup(name){
 							</tr>
 						</table>
 
-						<table id="quick_setup_desc" width="98%" border="0" style="margin-top:5px;margin-left:5px;display:none;">
+						<table id="quick_setup_desc" class="notInMobile" width="98%" border="0" style="margin-top:5px;margin-left:5px;display:none;">
 							<tr>
 								<td height="30" align="left" valign="top" bgcolor="#4D595D">
 									<div class="formfontdesc" style="line-height:20px;font-size:14px;"><#Adaptive_QoS_priority#></div>
@@ -1946,7 +1946,7 @@ function setGroup(name){
 							</tr>
 						</table>
 
-						<div id="quick_setup_table" style="display:none;">
+						<div id="quick_setup_table" class="notInMobile" style="display:none;">
 							<div style="display:flex;align-items: center;justify-content: center;">
 								<div style="width: 120px;height:174px;">
 									<div style="display:flex;height:132px;">

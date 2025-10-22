@@ -1,17 +1,3 @@
-var cookie = {
-	set: function(key, value, days) {
-		document.cookie = key + '=' + value + '; expires=' +
-			(new Date(new Date().getTime() + ((days ? days : 14) * 86400000))).toUTCString() + '; path=/';
-	},
-	get: function(key) {
-		var r = ('; ' + document.cookie + ';').match(key + '=(.*?);');
-		return r ? r[1] : null;
-	},
-	unset: function(key) {
-		document.cookie = key + '=; expires=' +
-			(new Date(1)).toUTCString() + '; path=/';
-	}
-};
 function Check_Https_Redirect_Status(){
 	var result = false;
 
@@ -24,10 +10,10 @@ function Check_Https_Redirect_Status(){
 	var http_enable = '<% nvram_get("http_enable"); %>';
 	if(isTargetRegionSku && isSupport("secure_default") && (http_enable == "2") &&
 		(location.protocol != 'https:') &&
-		((cookie.get("not_show_https_redirect") != "1") && (cookie.get("from_https_redirect") != "1")) ){
+		((window.localStorage.getItem("not_show_https_redirect") != "1") && (window.localStorage.getItem("from_https_redirect") != "1")) ){
 		 result = true;
 	}
-	cookie.unset("from_https_redirect");
+	window.localStorage.removeItem("from_https_redirect");
 	return result;
 }
 function Initial_Https_Redirect(){
@@ -108,9 +94,9 @@ function Get_Component_Http_Desc(){
 		e = e || event;
 		e.stopPropagation();
 		if($(this).closest(".popup_component").find("#https_redirect_hint").prop("checked"))
-			cookie.set("not_show_https_redirect", "1", 365);
+			window.localStorage.setItem("not_show_https_redirect", "1", 365);
 
-		// cookie.set("from_https_redirect", "1", 1);
+		// window.localStorage.setItem("from_https_redirect", "1", 1);
 		location.reload();
 	});
 	return $popup_component;
@@ -150,12 +136,12 @@ function Get_Component_Https_Desc(){
 		e = e || event;
 		e.stopPropagation();
 		if($(this).closest(".popup_component").find("#https_redirect_hint").prop("checked"))
-			cookie.set("not_show_https_redirect", "1", 365);
+			window.localStorage.setItem("not_show_https_redirect", "1", 365);
 
 		$("body").find(".popup_component").remove();
 		$("body").find("#https_redirect_component").remove();
 
-		// cookie.set("from_https_redirect", "1", 1);
+		// window.localStorage.setItem("from_https_redirect", "1", 1);
 		if(location.protocol != 'https:'){
 			const https_lanport = '<% nvram_get("https_lanport"); %>';
 			const https_lanip = '<% nvram_get("lan_ipaddr"); %>';

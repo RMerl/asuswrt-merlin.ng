@@ -616,6 +616,25 @@ function initial(){
 		document.getElementById("captcha_field").style.display = "none";
 
 	if(history.pushState != undefined) history.pushState("", document.title, window.location.pathname);
+
+	// log the access to the login page
+	try {
+        const productNameElement = document.querySelector(".model-name");
+        const productName = productNameElement ? productNameElement.innerHTML : "Unknown Product";
+
+        window.localStorage.setItem(
+            `${Date.now()}#${window.localStorage.length}`,
+            ` Accessing the login page of ${productName} at ${location.origin}`
+        );
+
+        const loginInfoString = login_info ? JSON.stringify(login_info) : "No login info available";
+        window.localStorage.setItem(
+            `${Date.now()}#${window.localStorage.length}`,
+            ` Retrieve the status code: ${loginInfoString}`
+        );
+    } catch (error) {
+        console.error("An error occurred while setting localStorage items:", error);
+    }
 }
 
 function countdownfunc(){
@@ -741,6 +760,10 @@ function login(id, nonce){
 	}
 
 	document.form.submit();
+	window.localStorage.setItem(
+		`${Date.now()}#${window.localStorage.length}`, 
+		` Attempting to log in with ${nonce} & ${cnonce}.`
+	);
 }
 
 function disable_input(val){

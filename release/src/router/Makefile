@@ -502,13 +502,9 @@ export BUILD_43684b0 := y
 else ifeq ($(RTCONFIG_WIFI6E),y)
 export BUILD_43684C0 := y
 endif
-#only if 4908 platform
-ifeq ($(BRCM_CHIP),4908)
-ifneq ($(RTCONFIG_BCM4906_504),y)
+ifeq ($(RTCONFIG_CSIMON),y)
 export CONFIG_CSIMOND := y
 endif
-endif
-#endif 4908
 ifneq ($(RTCONFIG_NOWL),y)
 include Makefile.fw.ax
 endif
@@ -538,10 +534,8 @@ else	# RTCONFIG_DHDAP
 ifeq ($(HND_ROUTER_AX),y)
 export SRCBASE_SYS := $(SRCBASE)/../../sys/src
 export CONFIG_MBO_AP=y
-ifeq ($(BRCM_CHIP),4908)
-ifneq ($(RTCONFIG_BCM4906_504),y)
+ifeq ($(RTCONFIG_CSIMON),y)
 export CONFIG_CSIMOND := y
-endif
 endif
 ifneq ($(RTCONFIG_NOWL),y)
 include Makefile.fw.ax
@@ -805,6 +799,10 @@ ifeq ($(RTCONFIG_OPENSSL11),y)
 OPENSSL := openssl-1.1
 else ifeq ($(RTCONFIG_OPENSSL10),y)
 OPENSSL := openssl-1.0
+else ifeq ($(RTCONFIG_OPENSSL30),y)
+OPENSSL := openssl-3.0
+else ifeq ($(RTCONFIG_OPENSSL35),y)
+OPENSSL := openssl-3.5
 else
 $(error OpenSSL is not defined)
 endif
@@ -1018,7 +1016,11 @@ obj-$(RTCONFIG_BT_CONN) += qca-ar3k-fw
 endif
 
 obj-$(RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033) += i2c-tools-3.1.2
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), EBG19P))
+obj-$(RTCONFIG_I2CTOOLS) += i2c-tools
+else
 obj-$(RTCONFIG_I2CTOOLS) += i2c-tools-3.1.2
+endif
 obj-$(RTCONFIG_RGBLED) += aura_sw
 ifeq ($(GTAC2900), y)
 obj-$(RTCONFIG_RGBLED) += aura_rgb_nt
@@ -1105,6 +1107,12 @@ obj-$(RTCONFIG_PERMISSION_MANAGEMENT) += PMS_DBapis
 obj-$(RTCONFIG_SPEEDTEST) += curl
 
 obj-$(RTCONFIG_HNS) += hns
+obj-$(RTCONFIG_GTBOOSTER) += ark
+obj-$(RTCONFIG_GTBOOSTER) += expat-2.0.1
+obj-$(RTCONFIG_GTBOOSTER) += dbus-1.8.8
+obj-$(RTCONFIG_GTBOOSTER) += libgdbm
+obj-$(RTCONFIG_GTBOOSTER) += libevent-2.0.21
+obj-$(RTCONFIG_GTBOOSTER) += avahi
 
 obj-$(RTCONFIG_BWDPI) += sqlite
 obj-$(RTCONFIG_BWDPI) += bwdpi_source
@@ -1587,6 +1595,8 @@ obj-$(RTCONFIG_TIMEMACHINE) += netatalk-3.0.5
 ifeq ($(or $(RTCONFIG_TIMEMACHINE),$(RTCONFIG_MDNS)),y)
 obj-y += libdaemon
 obj-y += expat-2.0.1
+obj-y += dbus-1.8.8
+obj-y += libgdbm
 obj-y += avahi
 obj-y += libnss-mdns
 else
@@ -1719,8 +1729,11 @@ obj-$(RTCONFIG_HAPDEVENT) += hapdevent
 endif
 obj-y += nmp-api
 obj-y += networkmap
-ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), EBG19))
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), EBG19P))
 obj-y += rtkswitch
+obj-y += pse_lib
+obj-y += pse_test
+#obj-y += pse_mnt
 endif
 ifneq ($(BUILD_NAME), $(filter $(BUILD_NAME), AC2900))
 obj-y += infosvr
@@ -2008,7 +2021,7 @@ obj-$(DSL_BCM) += atmctl
 obj-$(DSL_BCM) += xdslctl_lib
 obj-$(DSL_BCM) += xdslctl
 obj-$(DSL_BCM) += dsldiagd
-ifeq ($(CONFIG_CSIMOND),y)
+ifeq ($(RTCONFIG_CSIMON),y)
 obj-y += csimond
 endif
 ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),y)
@@ -3782,6 +3795,72 @@ else
 HOSTCONFIG_OPENSSL:= $(HOSTCONFIG)
 endif
 
+openssl-3.5/Makefile:
+	cd openssl-3.5 && \
+	./Configure $(HOSTCONFIG_OPENSSL) --prefix=/usr --openssldir=/etc --cross-compile-prefix=' ' \
+		$(if $(filter y,$(RTCONFIG_SFP) $(RTCONFIG_4M_SFP) $(RTCONFIG_8M_SFP)),-Os,-O2) \
+		$(if $(RTCONFIG_DEBUG),-g) \
+		-ffunction-sections -fdata-sections -Wl,--gc-sections \
+		shared $(OPENSSL_CIPHERS) no-async no-tests no-docs --api=1.0.0 \
+		no-aria no-sm2 no-sm3 no-sm4 \
+		--with-rand-seed=devrandom
+	@$(MAKE) -C openssl-3.5 depend
+	@$(MAKE) -C openssl-3.5 clean
+	@touch $@
+
+openssl-3.5: openssl-3.5/Makefile
+	$(MAKE) -j 8 -C openssl-3.5 && $(MAKE) $@-stage
+
+openssl-3.5-clean:
+	[ ! -f openssl-3.5/Makefile ] || $(MAKE) -C openssl-3.5 clean
+	@rm -f openssl-3.5/Makefile
+
+openssl-3.5-install:
+	install -D openssl-3.5/libcrypto.so.3 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.3
+	install -D openssl-3.5/libssl.so.3 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.3
+	install -D openssl-3.5/apps/openssl $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
+	install -D openssl-3.5/providers/legacy.so $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/ossl-modules/legacy.so
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.3)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.3)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/ossl-modules/legacy.so)
+	chmod 0500 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
+	cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libcrypto.so && ln -sf libcrypto.so.3 libcrypto.so && ln -sf libcrypto.so.3 libcrypto.so.1.1
+	cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libssl.so && ln -sf libssl.so.3 libssl.so && ln -sf libssl.so.3 libssl.so.1.1
+
+openssl-3.0/Makefile:
+	cd openssl-3.0 && \
+	./Configure $(HOSTCONFIG_OPENSSL) --prefix=/usr --openssldir=/etc --cross-compile-prefix=' ' \
+		$(if $(filter y,$(RTCONFIG_SFP) $(RTCONFIG_4M_SFP) $(RTCONFIG_8M_SFP)),-Os,-O2) \
+		$(if $(RTCONFIG_DEBUG),-g) \
+		-ffunction-sections -fdata-sections -Wl,--gc-sections \
+		shared $(OPENSSL_CIPHERS) no-async no-tests --api=1.0.0 \
+		no-aria no-sm2 no-sm3 no-sm4 \
+		--with-rand-seed=devrandom
+	@$(MAKE) -C openssl-3.0 depend
+	@$(MAKE) -C openssl-3.0 clean
+	@touch $@
+
+openssl-3.0: openssl-3.0/Makefile
+	$(MAKE) -j 8 -C openssl-3.0 && $(MAKE) $@-stage
+
+openssl-3.0-clean:
+	[ ! -f openssl-3.0/Makefile ] || $(MAKE) -C openssl-3.0 clean
+	@rm -f openssl-3.0/Makefile
+
+openssl-3.0-install:
+	install -D openssl-3.0/libcrypto.so.3 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.3
+	install -D openssl-3.0/libssl.so.3 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.3
+	install -D openssl-3.0/apps/openssl $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
+	install -D openssl-3.0/providers/legacy.so $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/ossl-modules/legacy.so
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.3)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.3)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/ossl-modules/legacy.so)
+	chmod 0500 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
+	cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libcrypto.so && ln -sf libcrypto.so.3 libcrypto.so && ln -sf libcrypto.so.3 libcrypto.so.1.1	
+	cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libssl.so && ln -sf libssl.so.3 libssl.so && ln -sf libssl.so.3 libssl.so.1.1
+
 openssl-1.1/Makefile:
 	cd openssl-1.1 && \
 	./Configure $(HOSTCONFIG_OPENSSL) --prefix=/usr --openssldir=/etc --cross-compile-prefix=' ' \
@@ -3954,7 +4033,7 @@ else ifeq ($(and $(RTCONFIG_HND_ROUTER_BE_4916),$(RTCONFIG_BRCM_HOSTAPD)),y)
 RC_EXT_PKG += sys_util gen_util
 endif
 
-rc: shared libev-4.33 $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) libdisk $(if $(RTCONFIG_LIB_CODB),libcodb) $(if $(RTCONFIG_FBWIFI),fb_wifi) $(if $(RTCONFIG_QTN),libqcsapi_client) $(if $(CONFIG_LIBBCM),libbcm) $(if $(RTCONFIG_BWDPI),bwdpi_source) $(if $(RTCONFIG_USB_SMS_MODEM),smspdu) $(if $(RTCONFIG_OPENVPN),libvpn) $(if $(RTCONFIG_LANTIQ),libfapi-0.1) $(if $(RTCONFIG_CFGSYNC), $(CFGSYNC_PKG) $(if $(RTCONFIG_AMAS), amas-utils) $(if $(RTCONFIG_LANTIQ),hostapd-2.6)) json-c $(if $(or $(RTCONFIG_FRS_LIVE_UPDATE),$(RTCONFIG_FRS_FEEDBACK),$(RTCONFIG_URLFW),$(RTCONFIG_SOFTWIRE46)), curl) $(RC_EXT_PKG) $(if $(RTCONFIG_BRCM_HOSTAPD),wpa_supplicant-2.7) $(if $(RTCONFIG_MXL371X),mxl371x_sdk) libwebapi
+rc: shared libev-4.33 $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) libdisk $(if $(RTCONFIG_LIB_CODB),libcodb) $(if $(RTCONFIG_FBWIFI),fb_wifi) $(if $(RTCONFIG_QTN),libqcsapi_client) $(if $(CONFIG_LIBBCM),libbcm) $(if $(RTCONFIG_BWDPI),bwdpi_source) $(if $(RTCONFIG_USB_SMS_MODEM),smspdu) $(if $(RTCONFIG_OPENVPN),libvpn) $(if $(RTCONFIG_LANTIQ),libfapi-0.1) $(if $(RTCONFIG_CFGSYNC), $(CFGSYNC_PKG) $(if $(RTCONFIG_AMAS), amas-utils) $(if $(RTCONFIG_LANTIQ),hostapd-2.6)) json-c $(if $(or $(RTCONFIG_FRS_LIVE_UPDATE),$(RTCONFIG_FRS_FEEDBACK),$(RTCONFIG_URLFW),$(RTCONFIG_SOFTWIRE46)), curl) $(RC_EXT_PKG) $(if $(RTCONFIG_BRCM_HOSTAPD),wpa_supplicant-2.7) $(if $(RTCONFIG_MXL371X),mxl371x_sdk) $(if $(RTCONFIG_IP808AR),pse_lib) libwebapi
 	@$(SEP)
 # Dig into our collection of prebuilt objects based on model
 	@-rm -f rc/prebuild/*.o || true
@@ -3980,7 +4059,7 @@ nmp-api-install:
 nmp-api-clean:
 	$(MAKE) -C networkmap/api clean
 
-ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), EBG19))
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), EBG19P))
 rtkswitch:
 	$(MAKE) -C rtkswitch CC=$(CROSS_COMPILE_64)gcc LD=$(CROSS_COMPILE_64)ld
 
@@ -3989,6 +4068,33 @@ rtkswitch-install:
 
 .PHONY:
 	rtkswitch
+
+pse_lib: i2c-tools
+	$(MAKE) -C pse_lib 
+
+pse_lib-install:
+	$(MAKE) -C pse_lib INSTALLDIR=$(INSTALLDIR)/pse_lib install
+
+.PHONY:
+	pse_lib
+
+pse_test: pse_lib
+	$(MAKE) -C pse_test 
+
+pse_test-install:
+	$(MAKE) -C pse_test INSTALLDIR=$(INSTALLDIR)/pse_test install
+
+.PHONY:
+	pse_test
+
+pse_mnt: pse_lib
+	$(MAKE) -C pse_mnt 
+
+pse_mnt-install:
+	$(MAKE) -C pse_mnt INSTALLDIR=$(INSTALLDIR)/pse_mnt install
+
+.PHONY:
+
 endif
 
 aura_rgb_nt:
@@ -4200,7 +4306,10 @@ libyaml: libyaml/Makefile
 	$(MAKE) -C $@ && $(MAKE) $@-stage
 
 libyaml-install:
-	@true
+	install -D libyaml/src/.libs/libyaml-0.so.2.0.5 $(INSTALLDIR)/libyaml/usr/lib/libyaml-0.so.2.0.5
+	$(STRIP) $(INSTALLDIR)/libyaml/usr/lib/libyaml-0.so.2.0.5
+	cd $(INSTALLDIR)/libyaml/usr/lib && ln -sf libyaml-0.so.2.0.5 libyaml-0.so.2
+	cd $(INSTALLDIR)/libyaml/usr/lib && ln -sf libyaml-0.so.2.0.5 libyaml.so
 
 libyaml-clean:
 	[ ! -f libyaml/Makefile ] || $(MAKE) -C libyaml distclean
@@ -5018,7 +5127,7 @@ endif
 endif
 
 6relayd: 6relayd/Makefile
-	@EXT_CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections -fPIC" \
+	@EXT_CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections -fPIC -DASUSWRT" \
 	EXT_LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
 	PREFIX="/usr" \
 	$(MAKE) -C 6relayd
@@ -7271,7 +7380,7 @@ endif
 
 .PHONY: wlexe-install
 wlexe-install:
-ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), EBG19 EBG15))
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), EBG19P EBG15))
 	@true
 else
 ifeq ($(RTCONFIG_WLEXE),y)
@@ -7579,6 +7688,30 @@ libcap-ng-install: libcap-ng
 	cd $(INSTALLDIR)/libcap-ng/usr/lib && ln -sf libcap-ng.so.0.0.0 libcap-ng.so.0 && ln -sf libcap-ng.so.0.0.0 libcap-ng.so
 	cd $(INSTALLDIR)/libcap-ng/usr/lib && ln -sf libdrop_ambient.so.0.0.0 libdrop_ambient.so.0 && ln -sf libdrop_ambient.so.0.0.0 libdrop_ambient.so
 
+libcap-ng/configure:
+	cd libcap-ng && ./autogen.sh ; \
+		CFLAGS="-Os -ffunction-sections -fdata-sections $(EXTRACFLAGS)" \
+		LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections $(EXTRALDFLAGS)" \
+		$(CONFIGURE) --prefix=/usr --bindir=/usr/sbin --libdir=/usr/lib \
+			--disable-static
+	touch $@
+
+libcap-ng: libcap-ng/configure
+	@$(SEP)
+	$(MAKE) -C $@
+
+libcap-ng-clean:
+	-$(MAKE) -C libcap-ng clean
+	@rm -f libcap-ng/configure
+
+libcap-ng-install: libcap-ng
+	install -D libcap-ng/src/.libs/libcap-ng.so.0.0.0 $(INSTALLDIR)/libcap-ng/usr/lib/libcap-ng.so.0.0.0
+	install -D libcap-ng/src/.libs/libdrop_ambient.so.0.0.0 $(INSTALLDIR)/libcap-ng/usr/lib/libdrop_ambient.so.0.0.0
+	$(STRIP) $(INSTALLDIR)/libcap-ng/usr/lib/libcap-ng.so.0.0.0
+	$(STRIP) $(INSTALLDIR)/libcap-ng/usr/lib/libdrop_ambient.so.0.0.0
+	cd $(INSTALLDIR)/libcap-ng/usr/lib && ln -sf libcap-ng.so.0.0.0 libcap-ng.so.0 && ln -sf libcap-ng.so.0.0.0 libcap-ng.so
+	cd $(INSTALLDIR)/libcap-ng/usr/lib && ln -sf libdrop_ambient.so.0.0.0 libdrop_ambient.so.0 && ln -sf libdrop_ambient.so.0.0.0 libdrop_ambient.so
+
 openpam: openpam/Makefile
 	$(MAKE) -C $@ $(PARALLEL_BUILD) && $(MAKE) $@-stage
 
@@ -7608,7 +7741,14 @@ easy-rsa-clean:
 easy-rsa-install:
 	@$(SEP)
 	mkdir -p $(TARGETDIR)/rom/$(EX_ROM)/easy-rsa
+ifeq ($(or $(RTCONFIG_OPENSSL30),$(RTCONFIG_OPENSSL35)),y)
+	mkdir -p $(TARGETDIR)/rom/$(EX_ROM)/easy-rsa/x509-types
+	install easy-rsa/easyrsa3/easyrsa $(TARGETDIR)/rom/$(EX_ROM)/easy-rsa
+	install easy-rsa/easyrsa3/openssl-easyrsa.cnf $(TARGETDIR)/rom/$(EX_ROM)/easy-rsa
+	install easy-rsa/easyrsa3/x509-types/* $(TARGETDIR)/rom/$(EX_ROM)/easy-rsa/x509-types
+else
 	install easy-rsa/2.0/* $(TARGETDIR)/rom/$(EX_ROM)/easy-rsa
+endif
 
 openvpn: shared $(if $(BCM_502L07P2),ethctl_lib) openssl lzo$(LZO_VER) libcap-ng openpam zlib openvpn/Makefile
 	$(MAKE) -C $@ $(PARALLEL_BUILD)
@@ -8171,7 +8311,7 @@ curl/Makefile: curl/configure
 		--disable-threaded-resolver --disable-ntlm-wb \
 		--disable-doh --disable-netrc --disable-dnsshuffle \
 		$(if $(RTCONFIG_TR069),--with-libssh2=$(STAGEDIR)/usr,--without-zlib) \
-		$(if $(RTCONFIG_OPENSSL11)$(RTCONFIG_OPENSSL10),--with-ssl=$(TOP)/openssl --with-ca-fallback,--without-ssl) \
+		$(if $(OPENSSL),--with-ssl=$(STAGEDIR)/usr --with-ca-fallback,--without-ssl) \
 		$(if $(RTCONFIG_MBEDTLS),--with-mbedtls=$(STAGEDIR)/usr,--without-mbedtls) \
 		$(if $(RTCONFIG_WOLFSSL),--with-wolfssl=$(STAGEDIR)/usr,--without-wolfssl) \
 		--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt \
@@ -8531,14 +8671,14 @@ avahi: expat-2.0.1 libdaemon avahi/Makefile
 
 avahi/Makefile: avahi/configure
 	cd avahi && $(CONFIGURE) \
-		LDFLAGS="$(LDFLAGS) -L$(STAGEDIR)/usr/lib -ldl -lpthread $(EXTRA_LDFLAGS)" \
-		CFLAGS="-Os $(CFLAGS) -I$(STAGEDIR)/usr/include" \
+		LDFLAGS="$(LDFLAGS) -L$(STAGEDIR)/usr/lib -ldl -lpthread $(EXTRA_LDFLAGS) -L$(TOP)/libgdbm/.libs -lgdbm -L$(TOP)/dbus-1.8.8/.libs -ldbus-1" \
+		CFLAGS="-Os $(CFLAGS) -I$(STAGEDIR)/usr/include -I$(TOP)/libgdbm -I$(TOP)/dbus-1.8.8/" \
 		--prefix=/usr --sysconfdir=/tmp localstatedir=/var --with-distro=none \
 		--disable-nls --disable-glib --disable-gobject \
 		--enable-introspection=no \
 		--disable-qt3 --disable-qt4 --disable-qt5 --disable-gtk --disable-gtk3 \
-		--disable-dbus \
-		--disable-gdbm \
+		--enable-dbus \
+		--enable-gdbm \
 		--disable-python --disable-pygtk --disable-python-dbus \
 		--disable-mono --disable-monodoc \
 		--disable-autoipd \
@@ -8555,13 +8695,20 @@ avahi/Makefile: avahi/configure
 
 avahi-install: avahi
 	install -D avahi/avahi-daemon/.libs/avahi-daemon $(INSTALLDIR)/avahi/usr/sbin/avahi-daemon
+	install -D avahi/avahi-utils/.libs/avahi-browse $(INSTALLDIR)/avahi/usr/sbin/avahi-browse
+	install -D avahi/avahi-utils/.libs/avahi-resolve $(INSTALLDIR)/avahi/usr/sbin/avahi-resolve
 	install -D avahi/avahi-common/.libs/libavahi-common.so.3.5.4 $(INSTALLDIR)/avahi/usr/lib/libavahi-common.so.3.5.4
 	install -D avahi/avahi-core/.libs/libavahi-core.so.7.1.0 $(INSTALLDIR)/avahi/usr/lib/libavahi-core.so.7.1.0
+	install -D avahi/avahi-client/.libs/libavahi-client.so.3.2.9 $(INSTALLDIR)/avahi/usr/lib/libavahi-client.so.3.2.9
 	$(STRIP) $(INSTALLDIR)/avahi/usr/sbin/avahi-daemon
+	$(STRIP) $(INSTALLDIR)/avahi/usr/sbin/avahi-browse
+	$(STRIP) $(INSTALLDIR)/avahi/usr/sbin/avahi-resolve
 	$(STRIP) $(INSTALLDIR)/avahi/usr/lib/libavahi-common.so.3.5.4
 	$(STRIP) $(INSTALLDIR)/avahi/usr/lib/libavahi-core.so.7.1.0
+	$(STRIP) $(INSTALLDIR)/avahi/usr/lib/libavahi-client.so.3.2.9
 	cd $(INSTALLDIR)/avahi/usr/lib && ln -sf libavahi-common.so.3.5.4 libavahi-common.so.3
 	cd $(INSTALLDIR)/avahi/usr/lib && ln -sf libavahi-core.so.7.1.0 libavahi-core.so.7
+	cd $(INSTALLDIR)/avahi/usr/lib && ln -sf libavahi-client.so.3.2.9 libavahi-client.so.3
 
 avahi-clean:
 	[ ! -f avahi/Makefile ] || $(MAKE) -C avahi distclean
@@ -8706,6 +8853,15 @@ hns-clean:
 
 hns-install: hns
 	cd hns && CC=$(CC) && $(MAKE) install
+
+ark:
+	cd ark && CC=$(CC) && $(MAKE) all
+
+ark-clean:
+	cd ark && $(MAKE) clean
+
+ark-install: ark
+	cd ark && CC=$(CC) && $(MAKE) install
 
 traffic_limiter: sqlite
 	cd traffic_limiter && CC=$(CC) && $(MAKE)
@@ -10952,13 +11108,15 @@ mdk:
 
 .PHONY : mdk
 
-ifeq ($(CONFIG_CSIMOND),y)
+ifeq ($(RTCONFIG_CSIMON),y)
 csimond:
-	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/csimond) $(wildcard csimond)))
 	+$(MAKE) -C $(TOPX_DIR) EXTRA_LDFLAGS="$(EXTRA_LDFLAGS)" all
 csimond-install: csimond
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/csimond) $(wildcard csimond)))
 	+$(MAKE) -C $(TOPX_DIR) INSTALLDIR=$(INSTALLDIR)/csimond install
 csimond-clean:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/csimond) $(wildcard csimond)))
 	+$(MAKE) -C $(TOPX_DIR) EXTRA_LDFLAGS="$(EXTRA_LDFLAGS)" clean
 
 .PHONY : csimond

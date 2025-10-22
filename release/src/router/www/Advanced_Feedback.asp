@@ -1402,10 +1402,10 @@ function detect_fb_state(){
 <tr>
 	<td colspan="2">
 		<div style="display: flex; align-items: center;">
-			<div style="display: flex; flex-direction: row; padding: 16px;">
-			<div style="float: left;"><input type="checkbox" name="eula_checkbox"/></div>
-			<div id="eula_content" style="margin-left: 20px;"><#feedback_eula#></div>
-		</div>
+			<div id="feedback-eula-container" style="display: flex; flex-direction: row; padding: 16px;">
+				<div style="float: left;"><input type="checkbox" name="eula_checkbox"/></div>
+				<div id="eula_content" style="margin-left: 20px;"><#feedback_eula#></div>
+			</div>
 			<input class="btn_subusage button_gen" name="btn_send" onclick="applyRule()" type="button" value="<#btn_send#>"/>
 		</div>
 	</td>

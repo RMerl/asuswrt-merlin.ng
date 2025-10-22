@@ -30,6 +30,22 @@
 #ifdef BCM_BSD
 #define STOP_BSD_STATUS_PATH	"/tmp/bsdstatus"
 #endif
+#ifdef RTCONFIG_AMAS_NEWOB
+#define DEFAULT_ALIVE_TIMEOUT	60	//sec
+#define NEWOB_REMOVE_TIMEOUT	180	//sec
+#define NEWOB_FILE_LOCK	"newob"
+#define NEWOB_LIST_JSON_PATH	"/tmp/newob_onboarding.json"
+#define NEWOB_LIST_FOLDER	"/jffs/newob/"
+#define NEWOB_NOTIFY_FILE_LOCK	"newob_notify"
+#define NEWOB_NOTIFY_LIST_JSON_PATH	NEWOB_LIST_FOLDER"newob_notify.json"
+#define NEWOB_LIST_RULE_JSON_PATH	NEWOB_LIST_FOLDER"newob_rule_onboarding.json"
+#define NEWOB_RULE_FILE_LOCK	"newob_list_rule"
+#define NEWOB_DISMISS_FOLDER	"/tmp/newob/"
+#define NEWOB_DISMISS_LIST_JSON_PATH	NEWOB_DISMISS_FOLDER"newob_dismiss.json"
+#define NEWOB_DISMISS_FILE_LOCK	"newob_dismiss_list"
+#define NEWOB_TABLE_FILE_LOCK	"newob_table"
+#define NEWOB_LIST_TABLE_PATH	"/tmp/newob_table.json"
+#endif
 
 enum onboardingType {
 	OB_TYPE_OFF = 1,
@@ -41,6 +57,14 @@ enum onboardingType {
 #endif
 	OB_TYPE_MAX
 };
+
+
+enum onboardingRule {
+	OB_RULE_DISMISS = 1,
+	OB_RULE_BLOCK,
+	OB_RULE_ALLOW
+};
+
 
 enum onboardingStatus {
 	OB_STATUS_REQ = 0,
@@ -120,6 +144,29 @@ enum obVifAction {
 	OB_VIF_UP
 };
 
+#ifdef RTCONFIG_AMAS_NEWOB
+enum newobStatus {
+	NEWOB_INIT = 0,
+	NEWOB_CONNECT,
+	NEWOB_REQUEST,
+	NEWOB_ACK,
+	NEWOB_ALLOW,
+	NEWOB_RECONNECT,
+	NEWOB_GID_REQUEST,
+	NEWOB_GID_RESPONSE,
+	NEWOB_GID_ACK,
+	NEWOB_JOIN
+};
+
+enum newobResult {
+	NEWOB_FAIL_NONE = 0,			/* init result for nothing */
+	NEWOB_TIMEOUT_FAIL = 1,		/* fail for onboarding timeout */
+	NEWOB_CONN_TIMEOUT_FAIL,		/* fail for connection timeout */
+	NEWOB_TRAFFIC_TIMEOUT_FAIL,	/* fail for traffic tiemout */
+	NEWOB_SUCCESS,
+	NEWOB_MAX
+};
+#endif
 
 extern int cm_isOnboardingAvailable();
 extern void cm_processOnboardingEvent(char *inData);
@@ -152,6 +199,17 @@ extern void *cm_upOnboardingVif(void *args);
 extern void cm_computeVifDownTimeout(int rTime, int cTimeout, int tTimeout);
 extern void cm_updateVifUpStatus(int status);
 extern int cm_obVifDownUp(int action);
+#endif
+#ifdef RTCONFIG_AMAS_NEWOB
+extern void cm_updateNEWOBListSessionKey(char *mac, char *ip, char *key, int keyLen);
+extern int cm_updateNEWOBListStatus(char *newReMac, char *connMac, char *ip, int status, char *key, char *msg);
+extern int cm_getCobrandFromNEWOBListInfo(char *reMac, char *connMac, char *cobrand, int len);
+extern int cm_getNEWOBListInfo(char *reMac, char *connMac, char *ip, int ipLen, char *modelName, int modelNameLen);
+extern unsigned char * cm_getKeyFromNEWOBListInfo(char *reMac, char *connMac, int keyLen);
+extern int cm_checkNewOBNewReValid(char *mac);
+extern int cm_getNewOBNotifyList(char *mac);
+extern int cm_getNewOBRuleListType(char *mac);
+extern int cm_getNewOBDissmissListType(char *mac);
 #endif
 extern char *cm_getNewReModelName(char *reMac, char *newReMac, char *modelName, int modelNameLen);
 

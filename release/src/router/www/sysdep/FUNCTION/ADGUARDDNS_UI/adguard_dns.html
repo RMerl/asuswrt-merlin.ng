@@ -86,7 +86,7 @@ function reportContentHeight(mutationList, observer) {
 		var contentHeight = document.body.scrollHeight;
 		parent.postMessage({
 			messageType: 'contentHeight',
-			height: contentHeight
+			height: contentHeight + 10
 		}, '*');
 	});
 }
@@ -997,7 +997,7 @@ function apply_settings(){
 		return;
 }
 </script>
-<body style="visibility: hidden; background: transparent; width: 96%;">
+<body style="visibility: hidden; background: transparent; width: 96%;margin: 0 auto;">
 <div class="hidden_mask popup_element"></div>
 <div id="function_help_div" class="popup_container">
 	<div class="popup_title_container"><div class="title"><#NewFeatureAbout#></div><div id="title_close_btn" class="close_btn"></div></div>

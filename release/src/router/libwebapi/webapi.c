@@ -30,6 +30,9 @@
 #include <wlioctl.h>
 #endif
 
+char * nvram_get_x(const char *sid, const char *name);
+#define nvram_safe_get_x(sid, name) (nvram_get_x(sid, name) ? : "")
+
 #ifdef RTCONFIG_CFGSYNC
 #define CFG_JSON_FILE           "/tmp/cfg.json"
 #endif
@@ -691,7 +694,7 @@ struct RWD_MAPPING_TABLE rwd_mapping_t[] =
 	|| defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) \
 	|| defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) \
 	|| defined(GS7) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GTBE96_AI)
-	{"AuraRGB", "light_effect/light_effect.html", "<rt><white>light_effect/light_effect_white.css"},
+	{"AuraRGB", "light_effect/light_effect.html", "<rt><gt>light_effect/light_effect_rog.css<white>light_effect/light_effect_white.css"},
 	{"AuraRGB_preview", "light_effect/light_effect_pre.html", "<rt>"},
 #endif
 	{"Tencent", "game_accelerator_tencent.html", "<rt>"},
@@ -700,7 +703,7 @@ struct RWD_MAPPING_TABLE rwd_mapping_t[] =
 #endif
 #if defined(RTCONFIG_BWDPI) || defined(RTCONFIG_HNS)
 	{"AiProtection_MALS", "AiProtection_MaliciousSitesBlocking_m.asp", "<rt>"},
-	{"AiProtection_VP", "AiProtection_IntrusionPreventionSystem_m.asp", "<rt>"},
+	{"AiProtection_VP", "AiProtection_IntrusionPreventionSystem_m.asp", "<rt><white>css/adaptive_mobile_WHITE.css"},
 	{"AiProtection_CC", "AiProtection_InfectedDevicePreventBlock_m.asp", "<rt>"},
 #endif
 	{"VPN_Fusion", "VPN/vpnc.html", "<rt><gt>VPN/vpncGT.css<tuf>VPN/vpncTUF.css<white>VPN/vpncWHITE.css"},
@@ -709,7 +712,17 @@ struct RWD_MAPPING_TABLE rwd_mapping_t[] =
 	{"SDN", "SDN/sdn.html", "<rt><gt>SDN/sdn_ROG.css<tuf>SDN/sdn_TUF.css<white>SDN/sdn_WHITE.css"},
 #endif
 #ifdef RTCONFIG_DASHBOARD
-	{"Dashboard", "index.html?url=dashboard", "<white>css/business-white.css"},
+	{"Dashboard", "index.html?page=dashboard", "<white>css/business-white.css"},
+#ifdef RTCONFIG_GTBOOSTER
+    {"AiProtection_ARK_MALS", "index.html?page=aiprotection&view=ark_mals", "<white>css/business-white.css"},
+    {"AiProtection_ARK_ADBLOCK", "index.html?page=aiprotection&view=ark_adblock", "<white>css/business-white.css"},
+    {"AiProtection_ARK_TRACKER", "index.html?page=aiprotection&view=ark_tracker", "<white>css/business-white.css"},
+#if defined(RTCONFIG_BWDPI) || defined(RTCONFIG_HNS)
+    {"AiProtection_DPI_MALS", "index.html?page=aiprotection&view=dpi_mals", "<white>css/business-white.css"},
+    {"AiProtection_DPI_VP", "index.html?page=aiprotection&view=dpi_vp", "<white>css/business-white.css"},
+    {"AiProtection_DPI_CC", "index.html?page=aiprotection&view=dpi_cc", "<white>css/business-white.css"},
+#endif
+#endif
 #endif
 #ifdef RTCONFIG_SW_BTN
 	{"MultiFuncBtn", "multifuncbtn/mfb.html", "<rt><white>multifuncbtn/mfb_WHITE.css"},
@@ -1156,6 +1169,7 @@ struct REPLACE_PRODUCTID_S replace_productid_t[] =
 	{"TX-AX6000", "天选游戏路由", "CN"},
 	{"TUF-AX6000",  "TUF GAMING AX6000", "global"},
 	{"GT-BE96",  "ROG 八爪鱼7", "CN"},
+	{"RT-AX57M",  "RT-AX57 热血版", "CN"},
 	{"TUF-BE3600", "TUF GAMING 小旋风 WiFi7", "CN"},
 	{"TUF-BE6500", "TUF GAMING 小旋风 Pro WiFi7", "CN"},
 	{"TUF_3600", "TUF GAMING 小旋风 WiFi7", "CN"},
@@ -1167,6 +1181,7 @@ struct REPLACE_PRODUCTID_S replace_productid_t[] =
 	{"RP-BE58", "小飞侠组网超人 WiFi7", "CN"},
 	{"TUF_3600_V2", "TUF GAMING 小旋风 V2 WiFi7", "CN"},
 	{"GS-BE7200X", "ROG 魔盒 X", "CN"},
+	{"GT-BE96_AI", "ROG 八爪鱼7 AI", "CN"},
 	{NULL, NULL, NULL}
 };
 
@@ -1219,6 +1234,110 @@ void replace_productid(char *GET_PID_STR, char *RP_PID_STR, int len){
 		}
 	}
 }
+
+#ifdef RTCONFIG_AMAS_NEWOB
+int amas_newre_selection(char *device_list)
+{
+	int ret = HTTP_OK;
+	char word[32] = {0}, *next = NULL;
+	char event_msg[1024] = {0}, mac_list[512] = {0};
+	struct json_object *remac_array = json_object_new_array();
+
+	if(device_list)
+		strlcpy(mac_list, device_list, sizeof(mac_list));
+	else{
+		ret = HTTP_FAIL;
+		goto FINISH;
+	}
+
+	foreach_44(word, mac_list, next) {
+		if(!isValidMacAddress(word)){
+			ret = HTTP_INVALID_MAC;
+			goto FINISH;
+		}
+		json_object_array_add(remac_array, json_object_new_string(word));
+	}
+
+	snprintf(event_msg, sizeof(event_msg), HTTPD_NEWOB_MSG,
+		EID_HTTPD_NEWOB_ONBOARDING, json_object_to_json_string(remac_array));
+
+	if (strlen(event_msg))
+		send_cfgmnt_event(event_msg);
+
+FINISH:
+	if(remac_array)
+		json_object_put(remac_array);
+
+	return ret;
+}
+
+int get_newob_onboardinglist(struct json_object *new_ob_obj){
+
+	int lock = 0;
+	char covert_tmp[16] = {0};
+	char ui_modelName[33] = {0};
+	struct json_object *clietListObj = NULL, *client_obj = NULL;
+#if 0
+	char dismiss_file_name[128] = {0}, block_file_name[128] = {0};
+	json_object *dismiss_fileRoot = NULL, *block_fileRoot = NULL;
+	struct json_object *dismiss_array = json_object_new_array();
+	struct json_object *block_array = json_object_new_array();
+#endif
+
+	lock = file_lock(NEWOB_FILE_LOCK);
+
+	if((clietListObj = json_object_from_file(NEWOB_LIST_JSON_PATH)) != NULL){
+
+		json_object_object_foreach(clietListObj, key, val) {
+			json_object_object_del(val, "session_key");
+			client_obj = json_object_new_object();
+
+			json_object_object_foreach(val, key_tmp, val_tmp) {
+				if(!strcmp(key_tmp, "model_name")){
+					memset(ui_modelName, 0, sizeof(ui_modelName));
+					replace_productid((char *)json_object_get_string(val_tmp), ui_modelName, sizeof(ui_modelName));
+					json_object_object_add(client_obj, "ui_model_name", json_object_new_string(ui_modelName));
+					snprintf(covert_tmp, sizeof(covert_tmp), "%ld", time((time_t*)NULL));
+					json_object_object_add(client_obj, "cfg_obcurrent", json_object_new_string(covert_tmp));
+				}
+				if(json_object_get_type(val_tmp) == json_type_int){
+					snprintf(covert_tmp, sizeof(covert_tmp), "%d", json_object_get_int(val_tmp));
+					json_object_object_add(client_obj, key_tmp, json_object_new_string(covert_tmp));
+				}else
+					json_object_object_add(client_obj, key_tmp, val_tmp);
+			}
+			json_object_object_add(new_ob_obj, key, client_obj);
+		}
+#if 0
+		strlcpy(dismiss_file_name, NEWOB_DISMISS_LIST_JSON_PATH, sizeof(dismiss_file_name));
+		strlcpy(block_file_name, NEWOB_LIST_RULE_JSON_PATH, sizeof(block_file_name));
+
+		if ((dismiss_fileRoot = json_object_from_file(dismiss_file_name)) != NULL) {
+			json_object_object_foreach(dismiss_fileRoot, key, val)
+				json_object_array_add(dismiss_array, json_object_new_string(key));
+		}
+
+		if ((block_fileRoot = json_object_from_file(block_file_name)) != NULL) {
+			json_object_object_foreach(block_fileRoot, key, val)
+				json_object_array_add(block_array, json_object_new_string(key));
+		}
+
+		json_object_object_add(new_ob_obj, "DISMISS_LIST", dismiss_array);
+		json_object_object_add(new_ob_obj, "BLOCK_LIST", block_array);
+#endif
+	}
+
+#if 0
+	if(dismiss_fileRoot)
+		json_object_put(dismiss_fileRoot);
+	if(block_fileRoot)
+		json_object_put(block_fileRoot);
+#endif
+	file_unlock(lock);
+
+	return 0;
+}
+#endif
 
 #ifdef RTCONFIG_AMAS
 int do_reboot_action(char *device_list)
@@ -1303,9 +1422,10 @@ int check_firmware_update_status(void)
  * Do firmware update to FRS server
  * @param	from_id		trigger service
  * @param	wait_result	0: do not wait 1:watting
+ * @param	mac_list	list for CAP/RE
  * @return	0:No need upgrade 1:need upgrade 2:need Force upgrade 3:Fail to retrieve firmware
  */
-int do_firmware_check(int from_id, int wait_result)
+int do_firmware_check(int from_id, int wait_result, char *mac_list)
 {
 	int ret = 0;
 
@@ -1317,8 +1437,8 @@ int do_firmware_check(int from_id, int wait_result)
 		nvram_set("webs_update_trigger", "AWSIOT_CFG");
 
 #ifdef RTCONFIG_CFGSYNC
-	char event_msg[64] = {0};
-	snprintf(event_msg, sizeof(event_msg), HTTPD_GENERIC_MSG, EID_HTTPD_FW_CHECK);
+	char event_msg[1024] = {0};
+	snprintf(event_msg, sizeof(event_msg), HTTPD_DEVICE_LIST_MSG, EID_HTTPD_FW_CHECK, mac_list);
 	if(is_cfg_server_ready())
 	{
 		if (strlen(event_msg))
@@ -1334,12 +1454,12 @@ int do_firmware_check(int from_id, int wait_result)
 	return ret;
 }
 
-int do_firmware_upgrade(void)
+int do_firmware_upgrade(char *mac_list)
 {
 #ifdef RTCONFIG_CFGSYNC
-	char event_msg[64] = {0};
+	char event_msg[1024] = {0};
 
-	snprintf(event_msg, sizeof(event_msg), HTTPD_GENERIC_MSG, EID_HTTPD_FW_UPGRADE);
+	snprintf(event_msg, sizeof(event_msg), HTTPD_DEVICE_LIST_MSG, EID_HTTPD_FW_UPGRADE, mac_list);
 
 	if (strlen(event_msg))
 			send_cfgmnt_event(event_msg);

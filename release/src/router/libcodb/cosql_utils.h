@@ -73,6 +73,32 @@ typedef struct sql_column_match {
 #define FORMAT_OK           0   /* FORMAT correct */
 #define FORMAT_ERROR        1   /* FORMAT error */
 
+static void codb_safe_strncpy(char *dest, const char *src, size_t dest_size) {
+    if (dest == NULL || src == NULL || dest_size == 0) {
+        return; // Invalid input, do nothing
+    }
+
+    // Copy up to dest_size - 1 characters to leave space for null terminator
+    strncpy(dest, src, dest_size - 1);
+
+    // Ensure null termination
+    dest[dest_size - 1] = '\0';
+}
+
+static int codb_safe_strncat(char *dest, const char *src, size_t dest_size)
+{
+	size_t dest_len = strlen(dest);
+	size_t src_len = strlen(src);
+
+	if (dest_len + src_len + 1 > dest_size)
+	{
+		return -1;
+	}
+
+	strncat(dest, src, dest_size - dest_len - 1);
+	return 0;
+}
+
 extern sqlite3* cosql_open(const char* db_file);
 
 extern int cosql_close(sqlite3* pdb);
@@ -128,6 +154,19 @@ extern int cosql_get_column_values(sqlite3* pdb,
     int* ret_rows,
     char ***ret_result);
 
+extern int cosql_get_column_values_ex(sqlite3* pdb, 
+    int match_and_columns_count, sql_column_match_t* match_and_columns,
+    int match_or_columns_count, sql_column_match_t* match_or_columns,
+    int query_columns_count, sql_column_prototype_t* query_columns,
+    const char* between_column_name,
+    int start_data_time, int end_data_time,
+    const char* order_column_name,
+    const char* order_by,
+    int sampling_interval_sec,
+    int limit,
+    int* ret_rows,
+    char ***ret_result);
+    
 extern int cosql_free_column_values(char **result);
 
 extern int cosql_get_last_xth_double_value(sqlite3* pdb,
@@ -169,6 +208,8 @@ extern int cosql_get_latest_event_time(sqlite3* pdb, time_t* ret_time);
 extern int cosql_remove_data_between_time(sqlite3* pdb, int start_data_time, int end_data_time);
 
 extern int cosql_remove_data_between_column_value(sqlite3* pdb, const char* column_name, int start_value, int end_value);
+
+extern int cosql_remove_data_keep_one_per_group_by_columns(sqlite3 *pdb, int group_columns_count, sql_column_prototype_t *group_columns);
 
 extern int cosql_resize_table_by_reserved_count(sqlite3* pdb, int reserved_newest_data_count);
 

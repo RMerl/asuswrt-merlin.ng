@@ -668,7 +668,7 @@ i.vendor-icon.d-link{
 	background-color:#2B373B;
 	margin-left: 80px;
 	margin-top: -320px;
-	width:495px;
+	width:575px;
 	height:auto;
 	box-shadow: 3px 3px 10px #000;
 	display:block;
@@ -721,7 +721,7 @@ i.vendor-icon.d-link{
 }
 .client_input_text_disabled {
 	background:#475a5f;
-	width:275px;
+	width:290px;
 	height:15px;
 	padding:5px 0px 5px 5px;
 	margin-left:2px;
@@ -987,20 +987,35 @@ i.vendor-icon.d-link{
 	vertical-align: middle;
 }
 
+.clientlist_dropdown_main{
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	width: 60%;
+}
+
+.clientlist_dropdown_main input{
+	width: 100% !important;
+}
+
+.clientlist_dropdown_main #pull_arrow, .clientlist_dropdown_main .pull_arrow{
+	position: unset!important;
+}
+
 .clientlist_dropdown {
 	border:1px outset #999;
 	background-color:#576D73;
 	position:absolute;
-	*margin-top:26px;	
-	margin-left:159px;
-	*margin-left:-189px;
-	width:255px;
-	text-align:left;	
+	width:300px;
+	text-align:left;
 	height:auto;
 	overflow-y:auto;
 	z-index:200;
 	padding: 1px;
+	border-radius: 8px;
 	display:none;
+	transform: translate3d(0px, 28px, 0px);
+	will-change: transform;
 }
 .clientlist_dropdown div {
 	background-color:#576D73;
@@ -1016,16 +1031,16 @@ i.vendor-icon.d-link{
 	color:#FFF;
 	font-size:12px;
 	font-family:Arial, Helvetica, sans-serif;
-	text-decoration:none;	
+	text-decoration:none;
 }
 .clientlist_dropdown strong {
 	padding-left: 3px;
 }
-.clientlist_dropdown div:hover, .clientlist_dropdown a:hover {
+.clientlist_dropdown a div:hover{
 	background-color:#3366FF;
 	color:#FFFFFF;
 	cursor:default;
-}	
+}
 .clientlist_dropdown_expand {
 	text-align: center !important;
 	color: #A0A0A0 !important;

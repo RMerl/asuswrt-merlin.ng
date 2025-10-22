@@ -15,6 +15,7 @@
 extern int codb_test();
 
 extern int codb_content_query_json_field(char* db_name, int columns_count, char* columns_name, int filter_count, char* filter_data, int start, int end, char* order_by, int limit, json_object **retJsonObj);
+extern int codb_content_query_json_field_ex(char* db_name, int columns_count, char* columns_name, int filter_count, char* filter_data, const char* between_column_name, int start, int end, char* order_by, int sampling_interval_sec, int limit, json_object **retJsonObj);
 extern int codb_latest_content_query_json_field(char* db_name, int columns_count, char* columns_name, int filter_count, char* filter_data, json_object **retJsonObj);
 extern int codb_content_query_duration_json_field(char* db_name, int columns_count, char* columns_name, int filter_count, char* filter_data, int start, int end, int duration, json_object **retJsonObj);
 extern int codb_avg_query_json_field(char* db_name, char* field_name, char* node_mac, int start, int end, int duration, json_object **retJsonObj);

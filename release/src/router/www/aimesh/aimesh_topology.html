@@ -197,6 +197,16 @@ var AiMesh_Topology_AntDet_Desc = stringSafeGet("<#AiMesh_Topology_AntDet_Desc#>
 var aimesh_data = {
 	cfg_clientlist : "", sta_binding_list_json : {}
 }
+
+const support_DHCP_Content = (()=>{
+	if(isSupport("tagged_based_vlan")) return false;
+	if(isSwMode("rt")) return true;
+	if(isSwMode("ap")){
+		return isSupport("dhcp_override") ? true : false;
+	}
+	return false;
+})();
+
 var multi_model_icon_array = "";
 $.getJSON("https://nw-dlcdnet.asus.com/plugin/js/extend_model_icon.json", {_: new Date().getTime()},
 	function(data){
@@ -484,7 +494,7 @@ function client_set_tab(_type){
 	current_client_click_type = (is_no_wifi && _type === "wireless") ? "all" : _type;
 	$("#client_block").find(".client_tab_bg div").removeClass("clicked");
 	$("#client_block").find(".client_tab_bg div." + current_client_click_type + "").addClass("clicked");
-	var node_client_list = ciient_get_specific_client_list(current_client_click_type, current_click_mac);
+	var node_client_list = client_get_specific_client_list(current_client_click_type, current_click_mac);
 	var $component = client_gen_client_component(node_client_list, specific_node_data);
 	$(".card_block_bg .client_list_bg").empty();
 	$(".card_block_bg .client_list_bg").append($component);
@@ -493,8 +503,309 @@ function client_set_tab(_type){
 	else
 		online_client = $(".card_block_bg .client_list_bg .each_client_bg").length;
 	$(".card_block_bg .client_num_bg #client_num").html(online_client);
+
+	if(isSupport("AMAS_NEWOB")){
+		let isReNode = (specific_node_data.mac != cap_mac) ? true : false;
+		if(!isReNode){
+			$("#newOB_info").show();
+			newOB_display_support_device();
+		}
+		else{
+			$("#newOB_info").hide();
+		}
+	}
+	else{
+		$("#newOB_info").remove();
+	}
 }
-function ciient_get_specific_client_list(_type, _mac){
+let interval_newOB_update = false;
+let newOB_update_flag = false;
+function newOB_display_support_device(){
+	if(newOB_update_flag != false && interval_newOB_update != false)
+		return;
+
+	clearInterval(interval_newOB_update);
+	interval_newOB_update = false;
+
+	let $newOB_list_obj = $("#newOB_list_bg").empty();
+	let $btn_cntr_obj = $("#newOB_info").find(".action_container .btn_container");
+
+	$btn_cntr_obj.removeClass("disabled").unbind("click").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			if($(this).hasClass("disabled"))
+				return;
+			let device_list = "";
+			$.each($newOB_list_obj.find(".newOB_device_container .icon_checkbox.clicked").filter(":not(.disabled)"), function(index, obj){
+				if($(obj).hasClass("disabled"))
+					return true;
+				if(validator.mac_addr($(obj).attr("data-mac"))){
+					if(device_list != ""){
+						device_list += ",";
+					}
+					device_list += $(obj).attr("data-mac");
+				}
+			});
+			if(device_list != ""){
+				$btn_cntr_obj.hide().siblings(".loading_icon").show();
+				httpApi.nvramSet({
+					"device_list" : device_list,
+					"action_mode": "newre_selection"
+				});
+				update_newOB_status();
+				setTimeout(function(){
+					$btn_cntr_obj.show().siblings(".loading_icon").hide();
+					update_btn_status();
+				}, 3000);
+			}
+	});
+	let get_newob_onboardinglist = httpApi.hookGet("get_newob_onboardinglist",true);
+	if(Object.keys(get_newob_onboardinglist).length == 0){
+		$newOB_list_obj.html("<div class='no_client_hint'><#IPConnection_VSList_Norule#></div>");
+		$btn_cntr_obj.addClass("disabled");
+		$("#newOB_info").hide();
+	}
+	else{
+		$.each(get_newob_onboardinglist, function(ob_mac, ob_info){
+			let support_newOB = (ob_info.capability & (1 << 1)) ? true : false;
+			if(!support_newOB)
+				return;
+
+			let specific_node_data = aimesh_data.cfg_clientlist.filter(function(item, index, array){
+				return (item.mac == ob_mac);
+			})[0];
+			if(specific_node_data != undefined)//newob success
+				return;
+
+			get_newOB_device_cntr(ob_mac, ob_info).appendTo($newOB_list_obj);
+			if(newOB_update_flag == false && ob_info.status != "" && ob_info.status > "3"){
+				newOB_update_flag = true;
+			}
+		});
+		if($newOB_list_obj.children().length == 0){
+			$newOB_list_obj.html("<div class='no_client_hint'><#IPConnection_VSList_Norule#></div>");
+			$("#newOB_info").hide();
+		}
+
+		update_btn_status();
+	}
+
+	if(newOB_update_flag){
+		update_newOB_status();
+	}
+
+	function get_newOB_device_cntr(_ob_mac, _ob_info){
+		let $newOB_device_cntr = $("<div>").addClass("newOB_device_container").attr({"data-mac":htmlEnDeCode.htmlEncode(_ob_mac)}).appendTo($newOB_list_obj);
+		let $device_icon_cntr = $("<div>").addClass("device_icon_container").appendTo($newOB_device_cntr);
+		let $device_icon = $("<div>").addClass("device_icon").append($("<i>").addClass("type2")).appendTo($device_icon_cntr).hide();
+		let $loading_cntr = $("<div>").addClass("loading-container").appendTo($device_icon_cntr).hide();
+		const model_name = handle_ui_model_name(_ob_info.model_name, _ob_info.ui_model_name);
+		$loading_cntr.append($("<div>").addClass("loadingAnimation")).append($("<div>").addClass("processText").html("100 %"));
+		let $device_info_cntr = $("<div>").addClass("device_info_container").appendTo($newOB_device_cntr);
+		let $main_info_cntr = $("<div>").addClass("main_info").appendTo($device_info_cntr);
+		$("<div>").html(model_name).appendTo($main_info_cntr);
+
+		let $device_action_cntr = $("<div>").addClass("device_action_cntr").appendTo($main_info_cntr);
+
+		$("<div>").addClass("icon_checkbox").attr({"data-mac":htmlEnDeCode.htmlEncode(_ob_mac)}).addClass(function(){
+			if(_ob_info.status == "3"){
+				return "clicked";
+			}
+			else if(_ob_info.status != "" && _ob_info.status > "3"){
+				return "clicked disabled";
+			}
+		}).appendTo($device_action_cntr);
+		$("<div>").addClass("icon_obresult hover_pop_hint").hide().appendTo($device_action_cntr);
+		$newOB_device_cntr.unbind("click").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			if($(this).find(".icon_checkbox").hasClass("disabled"))
+				return;
+			$(this).find(".icon_checkbox").toggleClass("clicked");
+
+			if($newOB_list_obj.find(".newOB_device_container .icon_checkbox.clicked").filter(":not(.disabled)").length == 0){
+				$btn_cntr_obj.addClass("disabled");
+			}
+			else{
+				$btn_cntr_obj.removeClass("disabled");
+			}
+		});
+
+		let $sub_info_cntr = $("<div>").addClass("sub_info").appendTo($device_info_cntr);
+
+		let $device_connect_icon = $("<div>").addClass("device_connect_icon").appendTo($sub_info_cntr);
+		if(clientList[_ob_mac] != undefined){
+			switch(clientList[_ob_mac].isWL){
+				case 0:
+					$device_connect_icon.addClass("wired");
+					break;
+				case 1:
+					$device_connect_icon.addClass("wl_2g");
+					break;
+				case 2:
+					$device_connect_icon.addClass("wl_5g");
+					break;
+				case 3:
+					$device_connect_icon.addClass("wl_5g_2");
+					break;
+				case 4:
+					$device_connect_icon.addClass("wl_6g");
+					break;
+			}
+		}
+		else{
+			$device_connect_icon.addClass("wired");
+		}
+		$("<div>").html(htmlEnDeCode.htmlEncode(_ob_mac)).appendTo($sub_info_cntr);
+		$("<div>").html(htmlEnDeCode.htmlEncode(_ob_info.ip)).appendTo($sub_info_cntr);
+
+		let model_info = {"model_name": _ob_info.model_name, "tcode": _ob_info.tcode, "cobrand": ""};
+		let cloudModelName = httpApi.transformCloudModelName(model_info);
+		model_info.cloudModelName = cloudModelName;
+		if(cloudRouterIconCheckCache[cloudModelName] == undefined)
+			cloudRouterIconCheckCache[cloudModelName] = false;
+		if(cloudRouterIconCheckCache[cloudModelName]){
+			$device_icon.addClass("web").css("background-image", "url(" + cloudRouterIconCheckCache[cloudModelName] + ")").children("i").hide();
+		}
+		else{
+			update_device_icon($device_icon, model_info);
+		}
+
+		if(_ob_info.status == "3"){
+			$device_icon.show();
+		}
+		else if(_ob_info.status == "9"){
+			$device_icon.show();
+			if(_ob_info.cfg_obresult == "4"){
+				let hint_parm = {
+					"text": `<#AiMesh_Node_AddDescA#>`,
+					"css": "obresult"
+				};
+				$newOB_device_cntr.find(".icon_checkbox, .icon_obresult").hide()
+					.filter(".icon_obresult").addClass("success").show()
+					.after(gen_hint_component(hint_parm)).next(".hover_pop_hint_bg").find(".amesh_device_info").html(model_name);
+			}
+			else{
+				let hint_parm = {
+					"text": `<#AiMesh_info_unabled#>
+							<ol style='margin:0;padding-left:17px;'>
+							<li><#AiMesh_info_unabled1#></li>
+							<li><#AiMesh_OfflineTips1#></li>
+							<li><#AiMesh_info_unabled4#></li>
+							</ol>`,
+					"css": "obresult"
+				};
+				$newOB_device_cntr.find(".icon_checkbox, .icon_obresult").hide()
+					.filter(".icon_obresult").addClass("fail").show()
+					.after(gen_hint_component(hint_parm)).next(".hover_pop_hint_bg").find(".amesh_device_info").html(model_name);
+			}
+		}
+		else if(_ob_info.status != "" && _ob_info.status > "3"){
+			$loading_cntr.show().find(".processText").html(get_newOB_process(_ob_info) + " %");
+		}
+
+		return $newOB_device_cntr;
+	}
+	function get_newOB_process(_status){
+		const percentage = 100;
+		let cur_process = 0;
+		let interval = parseInt(_status.cfg_obcurrent) - parseInt(_status.cfg_obstart);
+		let denominator = parseInt(_status.cfg_obtimeout) / percentage;
+		cur_process = Math.round(interval / denominator);
+		if(isNaN(cur_process)) cur_process = 0;
+		return cur_process;
+	}
+	function update_btn_status(){
+		if($newOB_list_obj.find(".newOB_device_container .icon_checkbox.clicked").filter(":not(.disabled)").length == 0){
+			$btn_cntr_obj.addClass("disabled");
+		}
+		else{
+			$btn_cntr_obj.removeClass("disabled");
+		}
+	}
+	function update_device_icon(_obj, _model_info){
+		let cloud_url = "https://nw-dlcdnet.asus.com/plugin/productIcons/" + _model_info.cloudModelName + ".png";
+		$.ajax({
+			url: cloud_url,
+			crossDomain: true,
+			success: function(){
+				cloudRouterIconCheckCache[_model_info.cloudModelName] = cloud_url;
+				$(_obj).addClass("web").css("background-image", "url(" + cloud_url + ")").children("i").hide();
+			},
+		});
+	}
+	function update_newOB_status(){
+		clearInterval(interval_newOB_update);
+		interval_newOB_update = false;
+		update_device_status();
+		interval_newOB_update = setInterval(function(){
+			newOB_update_flag = false;
+			update_device_status();
+			if(!newOB_update_flag){
+				clearInterval(interval_newOB_update);
+				interval_newOB_update = false;
+				newOB_display_support_device();
+				jstree_refresh();
+			}
+		},3000);
+
+		function update_device_status(){
+			let flag = (current_click_tab == "client" && (current_click_mac == cap_mac)) ? true : false;
+			let get_newob_onboardinglist = httpApi.hookGet("get_newob_onboardinglist", flag);
+			$.each(get_newob_onboardinglist, function(ob_mac, ob_info){
+				let $newOB_device_cntr = $newOB_list_obj.find(".newOB_device_container[data-mac='"+ob_mac+"']");
+				if($newOB_device_cntr.length == 0)
+					return;
+				if(ob_info.status != "" && ob_info.status > "3"){
+					$newOB_device_cntr.find(".device_icon, .loading-container").hide();
+					$newOB_device_cntr.find(".icon_checkbox").addClass("disabled");
+					if(ob_info.cfg_obresult != undefined){
+						$newOB_device_cntr.find(".device_icon").show();
+						const model_name = handle_ui_model_name(ob_info.model_name, ob_info.ui_model_name);
+						if(ob_info.cfg_obresult == "4"){
+							let specific_node_data = aimesh_data.cfg_clientlist.filter(function(item, index, array){
+								return (item.mac == ob_mac);
+							})[0];
+							if(specific_node_data != undefined){
+								$newOB_device_cntr.remove();
+							}
+							else{
+								let hint_parm = {
+									"text": `<#AiMesh_Node_AddDescA#>`,
+									"css": "obresult"
+								};
+								$newOB_device_cntr.find(".icon_checkbox, .icon_obresult").hide()
+									.filter(".icon_obresult").addClass("success").show()
+									.after(gen_hint_component(hint_parm)).next(".hover_pop_hint_bg").find(".amesh_device_info").html(model_name);
+							}
+						}
+						else{
+							let hint_parm = {
+								"text": `<#AiMesh_info_unabled#>
+										<ol style='margin:0;padding-left:17px;'>
+										<li><#AiMesh_info_unabled1#></li>
+										<li><#AiMesh_OfflineTips1#></li>
+										<li><#AiMesh_info_unabled4#></li>
+										</ol>`,
+								"css": "obresult"
+							};
+							$newOB_device_cntr.find(".icon_checkbox, .icon_obresult").hide()
+								.filter(".icon_obresult").addClass("fail").show()
+								.after(gen_hint_component(hint_parm)).next(".hover_pop_hint_bg").find(".amesh_device_info").html(model_name);
+						}
+					}
+					else{
+						$newOB_device_cntr.find(".loading-container").show().find(".processText").html(get_newOB_process(ob_info) + " %");
+						newOB_update_flag = true;
+					}
+				}
+			});
+			if($newOB_list_obj.children().length == 0)
+				$newOB_list_obj.html("<div class='no_client_hint'><#IPConnection_VSList_Norule#></div>");
+		}
+	}
+}
+function client_get_specific_client_list(_type, _mac){
 	var specific_client_array = {"data":[], "online":0, "offline":0, "bind_notice":false};
 	var specific_client_array_temp = [];
 	var node_client_mac = "";
@@ -744,7 +1055,7 @@ function client_gen_client_component(_dataArray, _node_info){
 						var hint = "";
 						if(specific_node_data != undefined){
 							const node_name_location = get_node_name_w_location(specific_node_data);
-							hint += "<#AiMesh_Device_Bound_To_Specific_Node01#>".replace("#MODELNAME", node_name_location);
+							hint += `<#AiMesh_Device_Bound_To_Specific_Node01#>`.replace("#MODELNAME", node_name_location);
 							parm_node = specific_node_data;
 						}
 						else
@@ -1341,6 +1652,7 @@ function display_network_block(){
 						var $label_W_bg = $("<div>").addClass("label_W_bg").appendTo($port_status_bg);
 						var $label_L_bg = $("<div>").addClass("label_L_bg").appendTo($port_status_bg);
 						var error_port_list = [];
+						let show_poe_status_desc = false;
 						$.each(port_info, function(label, label_array){
 							$.each(port_info[label], function(index, port_item){
 								const { cap_support } = port_item;
@@ -1379,6 +1691,12 @@ function display_network_block(){
 									}
 									else
 										$port_icon.addClass("unplug");
+								}
+								if(port_item.cap_support.POE){
+									show_poe_status_desc = true;
+									$port_icon.addClass(()=>{
+										return ("poe_port " + ((port_item.poe_info.poe_link == "1") ? "poe_en" : "poe_dis"));
+									});
 								}
 
 								if(cap_support.WAN || cap_support.WANAUTO){
@@ -1448,6 +1766,11 @@ function display_network_block(){
 						$("<div>").addClass("conn").html("<#Connected#>").appendTo($port_status_icon_desc);
 						$("<div>").addClass("warn").html("<#Notice#>").appendTo($port_status_icon_desc);
 						$("<div>").addClass("unplug").html("<#Status_Unplugged#>").appendTo($port_status_icon_desc);
+						if(show_poe_status_desc){
+							let $poe_status_icon_desc = $("<div>").addClass("port_status_icon_desc").appendTo($port_status_content);
+							$("<div>").addClass("conn poe_en").html(`PoE <#Connected#>`).appendTo($poe_status_icon_desc);
+							$("<div>").addClass("conn poe_dis").html(`PoE <#Status_Unplugged#>`).appendTo($poe_status_icon_desc);
+						}
 
 						var $port_status_notice_icon = $("#network_block .port_status_info .port_status_notice_icon");
 						if(show_notice){
@@ -1499,6 +1822,229 @@ function display_network_block(){
 							$port_status_notice_icon.hide();
 					}
 				});
+			}
+
+			let re_poe_settings = {"enable":{},"priority":{},"limit":{}};
+			let support_poe_port = (()=>{
+				if(show_ports_status){
+					if(specific_node_data.online == "0")
+						return false;
+					if(isReNode){
+						let re_support_poe = false;
+						if("config" in specific_node_data){
+							if("poe_enable" in specific_node_data["config"]){
+								re_poe_settings["enable"] = specific_node_data["config"]["poe_enable"];
+								re_support_poe = true;
+							}
+							if("poe_priority" in specific_node_data["config"]){
+								re_poe_settings["priority"] = specific_node_data["config"]["poe_priority"];
+								re_support_poe = true;
+							}
+							if("poe_limit" in specific_node_data["config"]){
+								re_poe_settings["limit"] = specific_node_data["config"]["poe_limit"];
+								re_support_poe = true;
+							}
+						}
+						return re_support_poe;
+					}
+					else{
+						return (isSupport("poe_port")) ? true : false;
+					}
+				}
+				else{
+					return false;
+				}
+			})();
+			if(support_poe_port){
+				$("#network_block .PoE_port_status").show();
+				httpApi.get_poe_port_status_array(current_click_mac, (node_poe_info)=>{
+					$.each(node_poe_info.poe_port, function(index, port_item){
+						let poe_seq_no = port_item.poe_info.poe_seq_no;
+						let poe_enable = "poe"+poe_seq_no+"_enable";
+						let poe_priority = "poe"+poe_seq_no+"_priority";
+						let poe_limit = "poe"+poe_seq_no+"_limit";
+						if(isReNode){
+							if(re_poe_settings["enable"][poe_enable] != undefined && re_poe_settings["enable"][poe_enable] != ""){
+								port_item.poe_settings["enable"] = re_poe_settings["enable"][poe_enable] 
+							}
+							if(re_poe_settings["priority"][poe_priority] != undefined && re_poe_settings["priority"][poe_priority] != ""){
+								port_item.poe_settings["priority"] = re_poe_settings["priority"][poe_priority];
+							}
+							if(re_poe_settings["limit"][poe_limit] != undefined && re_poe_settings["limit"][poe_limit] != ""){
+								port_item.poe_settings["limit"] = re_poe_settings["limit"][poe_limit];
+							}
+						}
+						else{
+							let poe_settings = httpApi.nvramGet([poe_enable,poe_priority,poe_limit]);
+							if(poe_settings[poe_enable] != ""){
+								port_item.poe_settings["enable"] = poe_settings[poe_enable];
+							}
+							if(poe_settings[poe_priority] != ""){
+								port_item.poe_settings["priority"] = poe_settings[poe_priority];
+							}
+							if(poe_settings[poe_limit] != ""){
+								port_item.poe_settings["limit"] = poe_settings[poe_limit];
+							}
+						}
+					});
+					Get_Component_PoE_Status(node_poe_info);
+				});
+
+				function Get_Component_PoE_Status(node_poe_info){
+					let $PoE_port_status_content = $("#network_block .port_status_info #PoE_port_status_content").empty();
+					let $poe_title_cntr = $("<div>").addClass("poe_title_container").appendTo($PoE_port_status_content);
+					let $poe_info_cntr = $("<div>").addClass("poe_port_info_container").appendTo($poe_title_cntr);
+					const per_port_power_limit = isNaN(parseInt(node_poe_info.per_port_power_limit)) ? 30 : parseInt(node_poe_info.per_port_power_limit);
+					$("<div>").addClass("poe_port_info").html(`Maximum: <span>${node_poe_info.power_limit}</span>w`).appendTo($poe_info_cntr);
+					$("<div>").addClass("poe_port_info").html(`Remain: <span>${node_poe_info.power_remain}</span>w`).appendTo($poe_info_cntr);
+					$("<div>").addClass("arrow_icon up").unbind("click").click(function(e){
+						e = e || event;
+						e.stopPropagation();
+						let $poe_port_status_cntr = $(this).closest("[data-container=poe_port_status_cntr]");
+						$poe_port_status_cntr.find("[data-container=poe_settings_cntr]").slideToggle();
+						$(this).toggleClass("down  up");
+					}).appendTo($poe_title_cntr);
+
+					let $poe_settings_cntr = $("<div>").attr({"data-container": "poe_settings_cntr"}).addClass("poe_settings_container").appendTo($PoE_port_status_content);
+					$.each(node_poe_info.poe_port, function(index, port_item){
+						let $poe_port_settings = Get_Component_PoE_Port_Settings(port_item);
+						$poe_port_settings.appendTo($poe_settings_cntr);
+						$poe_port_settings.find("[data-component=poe_enable]")
+							.click(function(e){
+								e = e || event;
+								e.stopPropagation();
+								let poe_seq_no = $(this).closest("[data-container=poe_port_settings]").attr("data-poe_seq_no");
+								let switch_status = $(this).hasClass("on") ? "1" : "0";
+								let poe_settings = {};
+								poe_settings["poe"+poe_seq_no+"_enable"] = switch_status;
+								set_poe_port_parm(current_click_mac, poe_settings);
+							})
+							.removeClass("off on").addClass((()=>{
+								return (port_item.poe_settings.enable == "1") ? "on" : "off";
+							})());
+						$poe_port_settings.find("[data-component=poe_priority]").unbind("change").change(function(){
+							let poe_seq_no = $(this).closest("[data-container=poe_port_settings]").attr("data-poe_seq_no");
+							let priority = $(this).val();
+							let poe_settings = {};
+							poe_settings["poe"+poe_seq_no+"_priority"] = priority;
+							set_poe_port_parm(current_click_mac, poe_settings);
+						}).val(port_item.poe_settings.priority);
+						$poe_port_settings.find("[data-component=poe_limit]").unbind("change").change(function(){
+							let poe_seq_no = $(this).closest("[data-container=poe_port_settings]").attr("data-poe_seq_no");
+							let limit = $(this).val();
+							let poe_settings = {};
+							poe_settings["poe"+poe_seq_no+"_limit"] = limit;
+							set_poe_port_parm(current_click_mac, poe_settings);
+						}).val((()=>{
+							let limit = isNaN(parseInt(port_item.poe_settings.limit)) ? per_port_power_limit : parseInt(port_item.poe_settings.limit);
+							return (limit > per_port_power_limit) ? per_port_power_limit : limit;
+						})());
+					});
+
+					function Get_Component_PoE_Port_Settings(port_item){
+						let $poe_port_settings = $("<div>").attr({"data-container":"poe_port_settings" ,"data-poe_seq_no":port_item.poe_info.poe_seq_no});
+						let $poe_enable_item = $("<div>").addClass("poe_settings_item").appendTo($poe_port_settings);
+						let $poe_enable_left = $("<div>").addClass("poe_left").appendTo($poe_enable_item);
+						let port_text = "";
+						let port_idx = "";
+						if(port_item.ui_display != undefined && port_item.ui_display != ""){
+							port_text = port_item.ui_display;
+						}
+						else{
+							if(port_item.special_port_name != ""){
+								port_text = port_item.special_port_name;
+							}
+							if(port_item.cap_support.LAN)
+								port_idx = port_item.label_idx;
+						}
+						let $port_icon = $("<div>").addClass(()=>{
+							let status = "port_icon";
+							if(port_item.is_on == "1"){
+								status += (port_item.link_rate_status == "1") ? " conn" : " warn";
+							}
+							else if(port_item.is_on == "0"){
+								status += " unplug";
+							}
+							status += (port_item.poe_info.poe_link == "1") ? " poe_en" :  " poe_dis";
+							return status;
+						}).appendTo($poe_enable_left);
+						if(port_idx != "")
+							$("<div>").addClass("lan_idx").html(htmlEnDeCode.htmlEncode(port_idx)).appendTo($port_icon);
+
+						$("<div>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_text)).appendTo($poe_enable_left);
+
+						if(port_item.poe_settings.enable != undefined){
+							let $poe_enable_right = $("<div>").addClass("poe_right").appendTo($poe_enable_item);
+							$("<div>").addClass(()=>{
+								return "switch " + ((port_item.poe_settings.enable == "1") ? "on" : "off");
+							}).unbind("click").click(function(e){
+								e = e || event;
+								e.stopPropagation();
+								$(this).toggleClass("off on");
+							}).attr({"data-component":"poe_enable"}).appendTo($poe_enable_right);
+						}
+
+						if(port_item.poe_settings.priority != undefined){
+							let $poe_priority_item = $("<div>").addClass("poe_settings_item").appendTo($poe_port_settings);
+							$("<div>").addClass("poe_left").html(`PoE Priority`).appendTo($poe_priority_item);/* untranslated */
+							let $poe_priority_right = $("<div>").addClass("poe_right").appendTo($poe_priority_item);
+							let $poe_priority_sel = $("<select>").addClass("dropdown_select").attr({"data-component":"poe_priority"}).appendTo($poe_priority_right);
+							const priority_arr = [{"text":`<#Low#>`, "value":"0"},{"text":`<#High#>`, "value":"1"},{"text":`Critical`, "value":"2"}];/* untranslated */
+							$.each(priority_arr, function(index, item){
+								$("<option>", {value: item.value, text: item.text}).appendTo($poe_priority_sel);
+							});
+						}
+
+						if(port_item.poe_settings.limit != undefined){
+							let pow_min = 3;
+							let pow_max = per_port_power_limit;
+							let $poe_pow_budget_item = $("<div>").addClass("poe_settings_item").appendTo($poe_port_settings);
+							$("<div>").addClass("poe_left").html(`Power Budget (${pow_min}-${pow_max})w`).appendTo($poe_pow_budget_item);/* untranslated */
+							let $poe_pow_budget_right = $("<div>").addClass("poe_right").appendTo($poe_pow_budget_item);
+							let $poe_pow_budget_sel = $("<select>").addClass("dropdown_select").attr({"data-component":"poe_limit"}).appendTo($poe_pow_budget_right);
+
+							for(pow_min; pow_min <= pow_max; pow_min += 1){
+								$("<option>", {value: pow_min, text: pow_min}).appendTo($poe_pow_budget_sel);
+							}
+						}
+
+						let $poe_actual_pow_item = $("<div>").addClass("poe_settings_item").appendTo($poe_port_settings);
+						$("<div>").addClass("poe_left").html(`Actual Power`).appendTo($poe_actual_pow_item);/* untranslated */
+						$("<div>").addClass("poe_right").html(htmlEnDeCode.htmlEncode(port_item.poe_info.watts) + `w`).appendTo($poe_actual_pow_item);
+						return $poe_port_settings;
+					}
+					function set_poe_port_parm(mac, poe_settings){
+						if(isReNode){
+							let nvramSet_obj = {"action_mode": "config_changed", "re_mac": mac};
+							let data = {};
+							$.each(poe_settings, function(key, value){
+								data[key] = value;
+							});
+							nvramSet_obj["config"] = JSON.stringify(data);
+							httpApi.nvramSet(nvramSet_obj, ()=>{
+								setTimeout(()=>{
+									aimesh_data.cfg_clientlist = httpApi.hookGet("get_cfg_clientlist", true);
+								},2000);
+							});
+						}
+						else{
+							let nvramSet_obj = {"action_mode": "apply", "rc_service": "restart_poe_init;"};
+							let update_nv = [];
+							$.each(poe_settings, function(key, value){
+								nvramSet_obj[key] = value;
+								update_nv.push(key);
+							});
+							httpApi.nvramSet(nvramSet_obj, ()=>{
+								setTimeout(()=>{
+									httpApi.nvramGet(update_nv, true);
+								},2000);
+							});
+						}
+					}
+				}
+			}
+			else{
+				$("#network_block .PoE_port_status").hide();
 			}
 
 			var MoCA_nodes_info = [];
@@ -2568,6 +3114,11 @@ function display_manage_block(){
 				});
 				$("#aimesh_hint_msg").hide();
 				jstree_select_cap(specific_node_data.mac);
+				if(isSupport("channel_plan")){
+					if(channel_plan_re_data[specific_node_data.mac] != undefined){
+						delete channel_plan_re_data[specific_node_data.mac];
+					}
+				}
 			});
 			$("#aimesh_hint_msg").show();
 			adjust_panel_block_top("aimesh_hint_msg", 100);
@@ -2576,14 +3127,17 @@ function display_manage_block(){
 	var specific_node_data = aimesh_data.cfg_clientlist.filter(function(item, index, _array){
 		return (item.mac == current_click_mac);
 	})[0];
-
 	if(specific_node_data != undefined){
-		$("#manage_block").show();
+		const current_node_mac = $("#manage_block").attr("data-node_mac");
+		$("#manage_block").show().attr({"data-node_mac":specific_node_data.mac});
 		var isReNode = (current_click_mac != cap_mac) ? true : false;
 		var online = (specific_node_data.online == "1") ? true : false;
 		var re_path = (handle_re_path(specific_node_data.re_path) > 0) ? true : false;
 		if(isReNode){
 			if(online && re_path){
+				if(current_node_mac == specific_node_data.mac){//Only on first update
+					return;
+				}
 				$("#manage_block").find(".manage_disconnected").hide();
 				var connection_priority = manage_get_connection_priority(specific_node_data);
 				if(connection_priority.support){
@@ -2793,6 +3347,18 @@ function display_manage_block(){
 					$("#manage_block").find(".manage_lacp").find(".hover_pop_hint_bg").remove();
 					$("#manage_block").find(".manage_lacp").hide();
 				}
+
+				if(support_DHCP_Content){
+					$("#manage_block").find(".manage_manual_ip").show().find("#manual_ip").unbind("click").click(function(e){
+						closeAllSelect();
+						e = e || event;
+						e.stopPropagation();
+						window.localStorage.setItem("anchor_dhcp_manual", "true");
+						parent.window.location.href = "/Advanced_DHCP_Content.asp";
+					});
+				}
+				else
+					$("#manage_block").find(".manage_manual_ip").hide();
 
 				if(select_node_capability.usb){
 					$("#manage_block").find(".manage_usb_app").show();
@@ -3143,11 +3709,425 @@ function display_manage_block(){
 						});
 					});
 				}
+
+				const ra_rssi_ctl = manage_ra_rssi_ctl(specific_node_data, select_node_capability);
+				let $ra_rssi_cntr = $("#manage_block").find(".manage_ra_rssi");
+				if(ra_rssi_ctl.support){
+					$ra_rssi_cntr.show();
+					let $ra_rssi_item_cntr = $ra_rssi_cntr.find(".manage_sub_item_bg");
+					if($ra_rssi_item_cntr.attr("current_mac") != current_click_mac){
+						$ra_rssi_item_cntr.hide();
+						$ra_rssi_cntr.find("#ra_rssi_toggle")
+							.removeClass("down up").addClass("down")
+							.unbind("click").click(function(){
+								$ra_rssi_item_cntr.slideToggle();
+								$ra_rssi_cntr.find("#ra_rssi_toggle").toggleClass("down up");
+						});
+					}
+
+					$ra_rssi_item_cntr.empty().attr("current_mac", current_click_mac);
+					let $desc_cntr = $("<div>").addClass("desc_cntr").appendTo($ra_rssi_item_cntr);
+					$("<div>").html(`<#Roaming_assistant_depart#>`).appendTo($desc_cntr);
+					$.each(ra_rssi_ctl.band_info, function(index, wl_band){
+						let $wifi_item_bg = $("<div>").appendTo($ra_rssi_item_cntr);
+						let $title = $("<div>").appendTo($wifi_item_bg);
+						$title.addClass("manage_common_title manage_common_separate_bg left").html($("<span>").addClass("wifi_title").html(wl_band.text)[0].outerHTML);
+						let $setting_bg = $("<div>").addClass("manage_common_separate_bg right").appendTo($wifi_item_bg);
+						$("<input/>").addClass("textInput")
+							.attr({
+								"maxlength":"3", "autocomplete":"off", "autocorrect":"off", "autocapitalize":"off",
+								"data-component":"wl_ra_rssi", "data-wl_unit":wl_band.unit
+							})
+							.val(wl_band.ra_rssi)
+							.appendTo($setting_bg);
+						$("<span>").addClass("wifi_title").html(`dBm`).appendTo($setting_bg);
+					});
+					const $action_cntr = $("<div>").addClass("action_container").attr({"data-component":"ra_rssi_btn"}).appendTo($ra_rssi_item_cntr);
+					$("<div>").addClass("btn_container").html(`<#CTL_onlysave#>`).unbind("click").click(function(e){
+						e = e || event;
+						e.stopPropagation();
+						let apply_flag = true;
+						let data = {};
+						$ra_rssi_item_cntr.find("[data-component='wl_ra_rssi']").each(function(){
+							const $wl_ra_rssi = $(this);
+							const wl_unit = $wl_ra_rssi.attr("data-wl_unit");
+							const rssi = $wl_ra_rssi.val();
+							if(!validator.range($wl_ra_rssi[0], -90, -40)){
+								$wl_ra_rssi.focus();
+								apply_flag = false;
+								return false;
+							}
+							data["wl"+wl_unit+"_user_rssi"] = rssi;
+						});
+						if(apply_flag){
+							$(this).hide().siblings(".loading_icon").show();
+							manage_set_config(data, specific_node_data.mac);
+						}
+					}).appendTo($action_cntr);
+					$("<div>").addClass("loading_icon").css({"display":"none"}).appendTo($action_cntr);
+				}
+				else{
+					$ra_rssi_cntr.hide();
+				}
+
+				if(isSupport("amas_eap") && isSupport("channel_plan")){
+					let channel_plan_ctl = manage_get_channel_plan_ctl(specific_node_data, select_node_capability);
+					if(channel_plan_ctl.support){
+						$("#manage_block").find(".manage_channel_plan").show();
+						$("#manage_block").find(".manage_channel_plan #channel_plan_icon").removeClass("hover_pop_hint").hide();
+						$("#manage_block").find(".manage_channel_plan").find(".hover_pop_hint_bg").remove();
+						const amas_eap_bhmode = httpApi.nvramGet(["amas_eap_bhmode"]).amas_eap_bhmode;
+						let $cp_sel = $("#channel_plan_select");
+						$cp_sel.find("option").remove();
+						$.each(channel_plan_ctl.option, function(index, option){
+							$cp_sel.append($("<option>", {value: option.value, text: option.text}));
+						});
+						if(amas_eap_bhmode != "0" && amas_eap_bhmode != ""){
+							$cp_sel.attr("disabled", false).val(channel_plan_ctl.channel_plan).unbind("change").change(function(){
+								let data = {};
+								data.channel_plan = $(this).val();
+								manage_set_config(data, specific_node_data.mac);
+								let $wl_manual_cntr = $(this).closest(".manage_channel_plan").find(".manage_sub_item_bg");
+								if($(this).val() == "2"){
+									$wl_manual_cntr.show();
+								}
+								else{
+									$wl_manual_cntr.hide();
+								}
+							});
+
+							let $wl_manual_cntr = $("#manage_block").find(".manage_channel_plan .manage_sub_item_bg");
+							if($cp_sel.find("option[value=2]").length > 0){
+								$wl_manual_cntr.empty();
+								$.each(channel_plan_ctl.band_info, function(index, wl_band){
+									let $wl_band_cntr = $("<div>").addClass("wl_band_cntr").appendTo($wl_manual_cntr);
+									$("<div>").addClass("manage_common_title wl_band_title").html(wl_band.text).appendTo($wl_band_cntr);
+									let $wl_bw_cntr = $("<div>").appendTo($wl_band_cntr);
+									$("<div>").addClass("manage_common_title").html(`<#WLANConfig11b_ChannelBW_itemname#>`).appendTo($wl_bw_cntr);
+									let $wl_set_bw_cntr = $("<div>").addClass("").appendTo($wl_bw_cntr);
+									let $wl_bw_sel = $("<select>").addClass("dropdown_select").attr({"data-component":"wl_bw", "data-wl_unit":wl_band.unit}).appendTo($wl_set_bw_cntr);
+									$wl_bw_sel.append($("<option>", {value: "0", text: `<#Setting_factorydefault_value#>`}));
+									$.each(wl_band.bw_list, function(index, bw){
+										$wl_bw_sel.append($("<option>", {value: bw, text: `${bw} MHZ`}));
+									});
+									let $wl_channel_cntr = $("<div>").appendTo($wl_band_cntr);
+									$("<div>").addClass("manage_common_title")
+										.append(`<#WLANConfig11b_Channel_itemname#>`)
+										.append(
+											(()=>{
+												if(wl_band.channel == "0"){
+													return $("<span>")
+															.attr({"data-component":"wl_cur_channel", "data-wl_unit":wl_band.unit, "data-cur_channel":wl_band.channel})
+															.html(`(Current: ${wl_band.channel})`);
+												}
+											})()
+										)
+										.appendTo($wl_channel_cntr);
+
+									let $wl_set_channel_cntr = $("<div>").addClass("").appendTo($wl_channel_cntr);
+									let $wl_channel_sel = $("<select>").addClass("dropdown_select").attr({"data-component":"wl_channel", "data-wl_unit":wl_band.unit}).appendTo($wl_set_channel_cntr);
+									$wl_channel_sel.append($("<option>", {value: "0", text: `<#Setting_factorydefault_value#>`}));
+									$.each(wl_band.channel_list, function(index, channel){
+										$wl_channel_sel.append($("<option>", {value: channel, text: channel}));
+									});
+
+									if(wl_band.is2G){
+										let $wl_set_ex_channel_cntr = $("<div>").attr({"data-container":"wl_ex_channel_cntr"}).hide().appendTo($wl_band_cntr);
+										$("<div>").addClass("manage_common_title").html(`<#WLANConfig11b_EChannel_itemname#>`).appendTo($wl_set_ex_channel_cntr);
+										let $wl_ex_channel_sel = $("<select>").addClass("dropdown_select").attr({"data-component":"wl_ex_channel", "data-wl_unit":wl_band.unit}).appendTo($wl_set_ex_channel_cntr);
+										$wl_ex_channel_sel.append($("<option>", {value: "0", text: `<#WLANConfig11b_EChannelAbove#>`}));
+										$wl_ex_channel_sel.append($("<option>", {value: "1", text: `<#WLANConfig11b_EChannelBelow#>`}));
+									}
+
+									$wl_bw_sel.val(wl_band.bw).unbind("change").change(function(){
+										let wl_bw = $(this).val();
+										let $wl_channel_comp = $(this).closest(".wl_band_cntr").find("[data-component=wl_channel]").val("0");
+										if(wl_band.is2G){
+											$(this).closest(".wl_band_cntr")
+												.find("[data-container=wl_ex_channel_cntr]").hide()
+												.find("[data-component=wl_ex_channel]").val("0")
+												.find("option").hide().filter("[value=0]").show();
+										}
+										if(wl_bw == "0"){
+											$wl_channel_comp.find("option[value!=0]").hide();
+										}
+										else{
+											reset_channel_option({
+												"sel_obj":$(this).closest(".wl_band_cntr").find("[data-component=wl_channel]"),
+												"channel_list":wl_band.channel_list,
+												"bw":wl_bw
+											});
+											if(wl_band.is2G && wl_bw == "40"){
+												$(this).closest(".wl_band_cntr").find("[data-container=wl_ex_channel_cntr]").show();
+											}
+										}
+									});
+									$wl_channel_sel.val(wl_band.channel).unbind("change").change(function(){
+										if(wl_band.is2G){
+											let wl_bw = $(this).closest(".wl_band_cntr").find("[data-component=wl_bw]").val();
+											if(wl_bw == "40"){
+												let $wl_ex_channel_comp = $(this).closest(".wl_band_cntr").find("[data-component=wl_ex_channel]");
+												reset_ex_channel_option({
+													"sel_obj":$wl_ex_channel_comp,
+													"channel_list":wl_band.channel_list,
+													"channel":$(this).val(),
+													"nctrlsb":$wl_ex_channel_comp.val()
+												});
+											}
+										}
+									});
+
+									if(wl_band.bw == "0"){
+										$wl_channel_sel.find("option[value!=0]").hide();
+									}
+									else{
+										reset_channel_option({"sel_obj":$wl_channel_sel, "channel_list":wl_band.channel_list, "bw":wl_band.bw});
+										if(wl_band.is2G){
+											if(wl_band.bw == "40"){
+												let $wl_ex_channel_comp =
+													$wl_band_cntr.find("[data-container=wl_ex_channel_cntr]").show()
+													.find("[data-component=wl_ex_channel]").val(wl_band.nctrlsb);
+												reset_ex_channel_option({
+													"sel_obj":$wl_ex_channel_comp,
+													"channel_list":wl_band.channel_list,
+													"channel":wl_band.channel,
+													"nctrlsb":wl_band.nctrlsb
+												});
+											}
+											else{
+												$wl_band_cntr.find("[data-container=wl_ex_channel_cntr]").hide();
+											}
+										}
+									}
+
+									function reset_channel_option(_parm){
+										let cl_tmp = _parm.channel_list.slice();
+										if(wl_band.is5G){
+											cl_tmp = filter_5g_channel_by_bw(cl_tmp, _parm.bw);
+										}
+										else if(wl_band.is6G){
+											cl_tmp = filter_6g_channel_by_bw(cl_tmp, _parm.bw);
+										}
+										_parm.sel_obj.find("option[value!=0]").hide();
+										$.each(cl_tmp, function(index, channel){
+											_parm.sel_obj.find("option[value="+channel+"]").show();
+										});
+									}
+
+									function reset_ex_channel_option(_parm){
+										const max_channel_both = ((_parm.channel_list.length == 11) ? 7 : 9);
+										const min_channel_below = ((_parm.channel_list.length == 11) ? 8 : 10);
+										const max_channel_below = ((_parm.channel_list.length == 11) ? 11 : 13);
+										if(_parm.channel >= 1 && _parm.channel <= 4){
+											_parm.sel_obj.val(0).find("option").hide().filter("[value=0]").show();
+										}
+										else if(_parm.channel >= 5 && _parm.channel <= max_channel_both){
+											_parm.sel_obj.val(_parm.nctrlsb).find("option").show();
+										}
+										else if(_parm.channel >= min_channel_below && _parm.channel <= max_channel_below){
+											_parm.sel_obj.val(1).find("option").hide().filter("[value=1]").show();
+										}
+									}
+								});
+								const $action_cntr = $("<div>").addClass("action_container").appendTo($wl_manual_cntr);
+								$("<div>").addClass("btn_container").html(`<#CTL_onlysave#>`).unbind("click").click(function(e){
+									e = e || event;
+									e.stopPropagation();
+									$(this).hide().siblings(".loading_icon").show();
+									let data = {};
+									$wl_manual_cntr.find("[data-component='wl_bw']").each(function(){
+										const $wl_bw = $(this);
+										const wl_unit = $wl_bw.attr("data-wl_unit");
+										data[`wl${wl_unit}_set_bw`] = $wl_bw.val();
+									});
+									$wl_manual_cntr.find("[data-component='wl_channel']").each(function(){
+										const $wl_channel = $(this);
+										const wl_unit = $wl_channel.attr("data-wl_unit");
+										data[`wl${wl_unit}_set_channel`] = $wl_channel.val();
+									});
+									$wl_manual_cntr.find("[data-component='wl_ex_channel']").each(function(){
+										const $wl_ex_channel = $(this);
+										const wl_unit = $wl_ex_channel.attr("data-wl_unit");
+										data[`wl${wl_unit}_set_nctrlsb`] = $wl_ex_channel.val();
+									});
+									manage_set_config(data, specific_node_data.mac);
+								}).appendTo($action_cntr);
+								$("<div>").addClass("loading_icon").css({"display":"none"}).appendTo($action_cntr);
+							}
+							else{
+								$wl_manual_cntr.hide();
+							}
+
+							if($cp_sel.val() == "2"){
+								$wl_manual_cntr.show();
+							}
+							else{
+								$wl_manual_cntr.hide();
+							}
+
+							httpApi.get_re_current_channel_info(specific_node_data.mac, (function(cur_channel){
+								$("#manage_block").find(".manage_channel_plan [data-component=wl_cur_channel]").each(function(index){
+									let wl_cur_channel = cur_channel["wl" + $(this).attr("data-wl_unit") + "_channel"];
+									if(wl_cur_channel != $(this).attr("data-cur_channel")){
+										$(this).attr({"data-cur_channel": cur_channel["wl" + $(this).attr("data-wl_unit") + "_channel"]});
+										$(this).html(`(Current: ${cur_channel["wl" + $(this).attr("data-wl_unit") + "_channel"]})`);
+									}
+								});
+							}));
+						}
+						else{
+							$cp_sel.val("0").attr("disabled", true);
+							$("#manage_block").find(".manage_channel_plan .manage_sub_item_bg").empty();
+							const hint_parm = {
+								"text": `
+									${$("<span>").addClass("text_emphasize").html(`* <#AiMesh_Ethernet_Backhaul_Mode#> : <#CTL_Disabled#>`)[0].outerHTML}
+									<div class='height_space'></div>
+									<#AiMesh_EAP_WiFi_Node01#>
+									`,
+								"css": "channel_plan_icon"
+							};
+							$("#manage_block").find(".manage_channel_plan #channel_plan_icon")
+								.removeClass("hover_pop_hint").addClass("hover_pop_hint channel_plan_icon").show()
+								.after(gen_hint_component(hint_parm));
+						}
+					}
+					else{
+						$("#manage_block").find(".manage_channel_plan").hide();
+					}
+				}
+				else{
+					$("#manage_block").find(".manage_channel_plan").remove();
+				}
+
+				let txp_ctl = manage_get_tx_power_ctl(specific_node_data, select_node_capability);
+				if(txp_ctl.support){
+					let $manage_txp = $("#manage_block").find(".manage_tx_power").show();
+					let $txp_per_band_cntr = $manage_txp.find("#txp_per_band_cntr");
+					if($txp_per_band_cntr.attr("data-current_mac") != current_click_mac){
+						$txp_per_band_cntr.hide();
+						$manage_txp.find("#txp_toggle").removeClass("down  up").addClass("down").unbind("click").click(function(){
+							$txp_per_band_cntr.slideToggle();
+							$(this).toggleClass("down  up");
+						});
+					}
+
+					if($("#aimesh_hint_msg").css("display") == "none"){//When jstree_refresh do not update this block
+						$txp_per_band_cntr.attr("data-current_mac", current_click_mac).removeAttr("data-event").empty();
+						$.each(txp_ctl.band_info, function(index, wl_band){
+							let $txp_wl_band_cntr = $("<div>").addClass("wl_band_cntr").appendTo($txp_per_band_cntr);
+							$("<div>").addClass("manage_common_title wl_band_title").html(wl_band.text).appendTo($txp_wl_band_cntr);
+							let $tx_power_cntr = $("<div>").addClass("tx_power_container").attr({"data-wl_unit":wl_band.unit}).appendTo($txp_wl_band_cntr);
+							$.each(txp_ctl.power_table, function(index, item){
+								$("<div>").attr({"txp":item.val}).unbind("click").click(function(e){
+									e = e || event;
+									e.stopPropagation();
+									let $txp_obj = $(this);
+									let $txp_cntr = $txp_obj.parent();
+									if($("#aimesh_hint_msg").css("display") == "none" && $txp_per_band_cntr.attr("data-event") == "block"){
+										$txp_per_band_cntr.removeAttr("data-event");
+										$txp_cntr.attr({"data-txp":$txp_cntr.attr("data-config-txp")});
+									}
+									if($txp_per_band_cntr.attr("data-event") == "block"){
+										return;
+									}
+									const click_txp = parseInt($txp_obj.attr("txp"));
+									const cur_txp = parseInt($txp_cntr.attr("data-txp"));
+									$txp_per_band_cntr.attr({"data-event":"block"});
+									$txp_cntr.attr({"data-txp":click_txp}).children().removeClass("txp_set").each(function(index){
+										let $txp_obj = $(this);
+										$txp_obj.children(".txp_text").hide();
+										if(parseInt($txp_obj.attr("txp")) <= click_txp)
+											$txp_obj.addClass("txp_set");
+									});
+									$txp_cntr.children(".txp_set").last().children(".txp_text").show();
+
+									$("#aimesh_hint_msg").empty().append(popup_hint_api.get_component_text()).append(popup_hint_api.get_component_action()).show();
+									const node_name_location = get_node_name_w_location(specific_node_data);
+									const hint = `
+										Your ${node_name_location} ${wl_band.text} and its end devices will lose connection temporarily.
+										<br>
+										It take a few seconds for the rule to be effective
+									`;/* untranslated */
+									$("#aimesh_hint_msg .hint_text").html(hint);
+									$("#aimesh_hint_msg #action_canacl").show().unbind("click").click(function(e){
+										e = e || event;
+										e.stopPropagation();
+										$("#aimesh_hint_msg").hide();
+										$txp_cntr.attr({"data-txp":cur_txp}).children().removeClass("txp_set").each(function(index){
+											let $txp_obj = $(this);
+											$txp_obj.children(".txp_text").hide();
+											if(parseInt($txp_obj.attr("txp")) <= cur_txp)
+												$txp_obj.addClass("txp_set");
+										});
+										$txp_per_band_cntr.removeAttr("data-event");
+										$txp_cntr.children(".txp_set").last().children(".txp_text").show();
+									});
+									$("#aimesh_hint_msg #action_ok").show().unbind("click").click(function(e){
+										e = e || event;
+										e.stopPropagation();
+										$("#aimesh_hint_msg").hide();
+										$txp_cntr.removeAttr("data-event");
+										let data = new Object();
+										data["wl" + wl_band.unit + "_txpower"] = click_txp;
+										manage_set_config(data, specific_node_data.mac);
+									});
+									adjust_panel_block_top("aimesh_hint_msg", 100);
+								}).append($("<div>").attr({"data-group":"txp_text"}).addClass("txp_text").html(item.txt)).appendTo($tx_power_cntr);
+							});
+							$tx_power_cntr.children().hover(
+								function(){
+									let $txp_obj = $(this);
+									let $txp_cntr = $txp_obj.parent();
+									if($txp_per_band_cntr.attr("data-event") == "block")
+										return false;
+
+									$txp_cntr.find("[data-group=txp_text]").hide();
+									$txp_obj.removeClass("txp_set").addClass("txp_preview");
+									const hover_txp_set = parseInt($txp_obj.attr("txp"));
+									$txp_obj.siblings().removeClass("txp_set").each(function(index){
+										const sibling_txp_set = parseInt($(this).attr("txp"));
+										if(sibling_txp_set <= hover_txp_set)
+											$(this).addClass("txp_preview");
+									});
+									$txp_cntr.children(".txp_preview").last().children(".txp_text").show();
+								},
+								function(){
+									let $txp_obj = $(this);
+									let $txp_cntr = $txp_obj.parent();
+									$txp_cntr.find("[data-group=txp_text]").hide();
+									const cur_txp = parseInt($txp_cntr.attr("data-txp"));
+									$txp_cntr.children().removeClass("txp_preview").each(function(index){
+										if(parseInt($(this).attr("txp")) <= cur_txp){
+											$(this).addClass("txp_set");
+										}
+									});
+									$txp_cntr.children(".txp_set").last().children(".txp_text").show();
+								}
+							);
+							const wl_txp = parseInt(wl_band.txpower);
+							$tx_power_cntr.attr({"data-txp":wl_txp, "data-config-txp":wl_txp})
+								.children().removeClass("txp_set").each(function(index){
+									let $txp_obj = $(this);
+									$txp_obj.children(".txp_text").hide();
+									const item_txp = parseInt($txp_obj.attr("txp"));
+									if(item_txp <= wl_txp){
+										$txp_obj.addClass("txp_set");
+										if(item_txp == wl_txp){
+											$txp_obj.children(".txp_text").show();
+										}
+									}
+								});
+						});
+					}
+				}
+				else{
+					$("#manage_block").find(".manage_tx_power").hide();
+				}
 			}
 			else{
+				$("#manage_block").removeAttr("data-node_mac");
 				$("#manage_block").find(".manage_disconnected").show();
 				$("#manage_block").find(".manage_function_item").hide();
-
 				remove_node_control();
 			}
 		}
@@ -3506,6 +4486,240 @@ function manage_get_wifi_radio_control(_node_info, _node_capability){
 			});
 		}
 	}
+
+	return result;
+}
+function manage_get_channel_plan_ctl(_node_info, _node_capability){
+	const wl_band_attr = function(){
+		this.unit = 0;
+		this.text = "";
+		this.channel_list = [];
+		this.channel = 0;
+		this.bw_list = [];
+		this.bw = 0;
+		this.nctrlsb_list = [];
+		this.nctrlsb = 0;
+		this.is2G = false;
+		this.is5G = false;
+		this.is6G = false;
+	};
+	let result = {
+		"support": false,
+		"option": [],
+		"channel_plan": 0,
+		"band_info": []
+	};
+	if(_node_capability.channel_plan_cap_off){
+		result.option.push({"value":0, "text":"Auto per AiMesh System"});/* untranslated */
+	}
+	if(_node_capability.channel_plan_cap_on){
+		result.option.push({"value":1, "text":"Auto per AiMesh Node"});/* untranslated */
+	}
+	if(_node_capability.channel_plan_cap_manual){
+		result.option.push({"value":2, "text":"<#Manual_Setting_btn#>"});/* untranslated */
+	}
+	if(result.option.length > 0){
+		result.support = true;
+	}
+	let channel_plan_info = "";
+	if(channel_plan_re_data[_node_info.mac] != undefined){
+		channel_plan_info = channel_plan_re_data[_node_info.mac];
+	}
+	if(_node_info.band_info){
+		$.each(_node_info.band_info, function(idx, item){
+			let wl_obj = new wl_band_attr();
+			wl_obj.unit = item["unit"];
+			wl_obj.text = "";
+			wl_obj.channel_list = [];
+			wl_obj.bw_list = [];
+			switch(idx){
+				case "0":
+					wl_obj.text = "2.4 GHz";
+					wl_obj.is2G = true;
+					if(channel_plan_info["2G"] != undefined){
+						wl_obj.channel_list = channel_plan_info["2G"]["channel"].split(",");
+						wl_obj.bw_list = channel_plan_info["2G"]["bandwidth"].split(",");
+					}
+					break;
+				case "1":
+				case "2":
+					wl_obj.text = ((idx == "1") ? "5 GHz" : "5 GHz-1");
+					wl_obj.is5G = true;
+					if(channel_plan_info["5G"] != undefined){
+						wl_obj.channel_list = channel_plan_info["5G"]["channel"].split(",");
+						wl_obj.bw_list = channel_plan_info["5G"]["bandwidth"].split(",");
+					}
+					break;
+				case "3":
+					wl_obj.text = "5 GHz-2";
+					wl_obj.is5G = true;
+					if(channel_plan_info["5G1"] != undefined){
+						wl_obj.channel_list = channel_plan_info["5G1"]["channel"].split(",");
+						wl_obj.bw_list = channel_plan_info["5G1"]["bandwidth"].split(",");
+					}
+					break;
+				case "4":
+				case "5":
+					wl_obj.text = ((idx == "4") ? "6 GHz" : "6 GHz-1");
+					wl_obj.is6G = true;
+					if(channel_plan_info["6G"] != undefined){
+						wl_obj.channel_list = channel_plan_info["6G"]["channel"].split(",");
+						wl_obj.bw_list = channel_plan_info["6G"]["bandwidth"].split(",");
+					}
+					break;
+				case "6":
+					wl_obj.text = "6 GHz-2";
+					wl_obj.is6G = true;
+					if(channel_plan_info["6G1"] != undefined){
+						wl_obj.channel_list = channel_plan_info["6G1"]["channel"].split(",");
+						wl_obj.bw_list = channel_plan_info["6G1"]["bandwidth"].split(",");
+					}
+					break;
+				default:
+					break;
+			}
+			if(wl_obj.text == "")
+				return;
+			result.band_info.push(JSON.parse(JSON.stringify(wl_obj)));
+		});
+	}
+	if("config" in _node_info){
+		if("channel_plan" in _node_info.config){
+			if("channel_plan" in _node_info.config.channel_plan){
+				result.channel_plan = _node_info.config.channel_plan.channel_plan;
+			}
+			$.each(result.band_info, function(idx, item){
+				if("wl" + item.unit + "_set_channel" in _node_info.config.channel_plan){
+					item.channel = _node_info.config.channel_plan["wl" + item.unit + "_set_channel"];
+				}
+				if("wl" + item.unit + "_set_bw" in _node_info.config.channel_plan){
+					item.bw = _node_info.config.channel_plan["wl" + item.unit + "_set_bw"];
+				}
+				if("wl" + item.unit + "_set_nctrlsb" in _node_info.config.channel_plan){
+					item.nctrlsb = _node_info.config.channel_plan["wl" + item.unit + "_set_nctrlsb"];
+				}
+			});
+		}
+	}
+	return result;
+}
+function manage_get_tx_power_ctl(_node_info, _node_capability){
+	const power_table = [0, 25, 50, 88, 100];
+	const power_table_txt = [`<#WLANConfig11b_TxPower1#>`, `<#WLANConfig11b_TxPower2#>`, `<#WLANConfig11b_TxPower3#>`, `<#WLANConfig11b_TxPower4#>`, `<#WLANConfig11b_TxPower5#>`];
+	const wl_band_attr = function(){
+		this.unit = 0;
+		this.text = "";
+		this.txpower = 0;
+	};
+	let result = {
+		"support": false,
+		"band_info": [],
+		"power_table":[]
+	};
+	if(_node_info.band_info){
+		$.each(_node_info.band_info, function(idx, item){
+			let wl_obj = new wl_band_attr();
+			wl_obj.unit = item["unit"];
+			wl_obj.text = "";
+			switch(idx){
+				case "0":
+					wl_obj.text = "2.4 GHz";
+					break;
+				case "1":
+				case "2":
+					wl_obj.text = ((idx == "1") ? "5 GHz" : "5 GHz-1");
+					break;
+				case "3":
+					wl_obj.text = "5 GHz-2";
+					break;
+				case "4":
+				case "5":
+					wl_obj.text = ((idx == "4") ? "6 GHz" : "6 GHz-1");
+					break;
+				case "6":
+					wl_obj.text = "6 GHz-2";
+					break;
+				default:
+					break;
+			}
+			if(wl_obj.text == "")
+				return;
+
+			if("config" in _node_info){
+				if("wireless" in _node_info.config){
+					if("wl" + wl_obj.unit + "_txpower" in _node_info.config.wireless) {
+						const wl_txpower = parseInt(_node_info.config.wireless["wl" + wl_obj.unit + "_txpower"]);
+						wl_obj.txpower = (isNaN(wl_txpower)) ? 0 : ((power_table.includes(wl_txpower)) ? wl_txpower : 0);
+						result.band_info.push(JSON.parse(JSON.stringify(wl_obj)));
+					}
+				}
+			}
+		});
+	}
+	if(result.band_info.length > 0)
+		result.support = (result.band_info.length > 0) ? true : false;
+
+	if(result.support){
+		$.each(power_table, function(idx, txp){
+			result.power_table.push({"val":txp, "txt":power_table_txt[idx]});
+		});
+	}
+	return result;
+}
+function manage_ra_rssi_ctl(_node_info, _node_capability){
+	const wl_band_attr = function(){
+		this.unit = 0;
+		this.text = "";
+		this.ra_rssi = 0;
+	};
+	let result = {
+		"support": false,
+		"band_info": []
+	};
+
+	if(_node_info.band_info){
+		$.each(_node_info.band_info, function(idx, item){
+			let wl_obj = new wl_band_attr();
+			wl_obj.unit = item["unit"];
+			wl_obj.text = "";
+			switch(idx){
+				case "0":
+					wl_obj.text = _node_capability.ra_rssi_2g ? "2.4 GHz" : "";
+					break;
+				case "1":
+				case "2":
+					wl_obj.text =  _node_capability.ra_rssi_5g ? ((idx == "1") ? "5 GHz" : "5 GHz-1") : "";
+					break;
+				case "3":
+					wl_obj.text = _node_capability.ra_rssi_5g2 ? "5 GHz-2" : "";
+					break;
+				case "4":
+				case "5":
+					wl_obj.text = _node_capability.ra_rssi_6g ? ((idx == "4") ? "6 GHz" : "6 GHz-1") : "";
+					break;
+				case "6":
+					wl_obj.text = _node_capability.ra_rssi_6g2 ? "6 GHz-2" : "";
+					break;
+				default:
+					break;
+			}
+			if(wl_obj.text == "")
+				return;
+
+			if("config" in _node_info){
+				if("wireless" in _node_info.config){
+					if("wl" + wl_obj.unit + "_user_rssi" in _node_info.config.wireless) {
+						const wl_user_rssi = parseInt(_node_info.config.wireless["wl" + wl_obj.unit + "_user_rssi"]);
+						wl_obj.ra_rssi = (isNaN(wl_user_rssi)) ? 0 : wl_user_rssi;
+						result.band_info.push(JSON.parse(JSON.stringify(wl_obj)));
+					}
+				}
+			}
+		});
+	}
+	if(result.band_info.length > 0)
+		result.support = (result.band_info.length > 0) ? true : false;
+
 	return result;
 }
 var interval_reconnect = false;
@@ -3547,7 +4761,7 @@ function manage_set_reconnect_control(_node_info){
 		re_reconnect_flag = "all";
 		re_reconnect_mode = "all";
 		check_format = true;
-		if(cookie.get("AiMesh_never_ask_optimization") == "1")
+		if(window.localStorage.getItem("AiMesh_never_ask_optimization") == "1")
 			never_ask = true;
 		show_eth_backhaul_hint = all_node_is_eth_backhaul;
 	}
@@ -3556,7 +4770,7 @@ function manage_set_reconnect_control(_node_info){
 		re_reconnect_mode = "node";
 		check_format = true;
 		nvramSet_obj.device_list = _node_info.mac.toUpperCase();
-		//if(cookie.get("AiMesh_never_ask_reconnect_node") == "1")
+		//if(window.localStorage.getItem("AiMesh_never_ask_reconnect_node") == "1")
 			never_ask = true;
 		if(_node_info.re_path == "1" || _node_info.re_path == "16" || _node_info.re_path == "32" || _node_info.re_path == "64")
 			show_eth_backhaul_hint = true;
@@ -3671,9 +4885,9 @@ function manage_set_reconnect_control(_node_info){
 				e.stopPropagation();
 				if($("#aimesh_hint_msg").find("#never_ask_reconnect").prop("checked")){
 					if(re_reconnect_mode == "all")
-						cookie.set("AiMesh_never_ask_optimization", 1, 365);
+						window.localStorage.setItem("AiMesh_never_ask_optimization", 1, 365);
 					else if(re_reconnect_mode == "node")
-						cookie.set("AiMesh_never_ask_reconnect_node", 1, 365);
+						window.localStorage.setItem("AiMesh_never_ask_reconnect_node", 1, 365);
 				}
 				apply_and_loading(timeout);
 				$("#aimesh_hint_msg").hide();
@@ -3721,6 +4935,7 @@ function manage_set_config(_data, _nodeMac) {
 		"re_mac" : _nodeMac,
 		"action_mode": "config_changed"
 	}, function(){
+		$("#manage_block").removeAttr("data-node_mac");
 		setTimeout(function(){
 			jstree_refresh();
 		},1000);
@@ -4315,9 +5530,11 @@ function get_topology_data(){
 	return treeTopology;
 }
 function change_node(_node_info){
+	select_node_capability = httpApi.aimesh_get_node_capability(_node_info);
+
 	var isReNode = (_node_info.mac != cap_mac) ? true : false;
 	var hide_manage = true;
-	var hide_iperf = !isSupport("cd_iperf");
+	var hide_iperf = !select_node_capability.cd_iperf;
 
 	if(isReNode || isSupport("led_ctrl_cap"))
 		hide_manage = false;
@@ -4343,14 +5560,16 @@ function change_node(_node_info){
 		$(".category_bg").css({"width": "25%"});
 	}
 
-	select_node_capability = httpApi.aimesh_get_node_capability(_node_info);
 	set_primary_info(_node_info);
 	if(hide_manage && (current_click_tab == "manage")
 	|| hide_iperf && (current_click_tab == "iperf")){
 		current_click_tab = "client";
 	}
-		
-	control_category_block(current_click_tab);
+
+	if(current_click_tab != "iperf")
+		control_category_block(current_click_tab);
+	else
+		display_iperf_block()
 }
 function jstree_re_draw_connect_line(){
 	var $jstree_leaves = $('#jstree').find(".jstree-node");
@@ -4381,11 +5600,20 @@ function jstree_refresh(){
 	jstree_re_draw_connect_line();
 	aimesh_introduction_control();
 	$('#jstree').css("overflow-x", jstree_show_scroll() ? "auto" : "initial");
+	if(isSupport("channel_plan")){
+		aimesh_data.cfg_clientlist.forEach(function(item, index, array){
+			if(channel_plan_re_data[item.mac] == undefined){
+				httpApi.get_re_channel_info(item.mac, (function(channel_info){
+					channel_plan_re_data[item.mac] = channel_info;
+				}));
+			}
+		});
+	}
 }
 function jstree_select_cap(_reset_mac){
 	var count = 0;
 	var interval_check = setInterval(function(){
-		var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist");
+		var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist", true);
 		var specific_node_data = get_cfg_clientlist.filter(function(item, index, _array){
 			return (item.mac == _reset_mac);
 		})[0];
@@ -4433,6 +5661,8 @@ var node_not_support_feature = [];
 var all_node_is_eth_backhaul = true;
 var jstree_load_ready = false;
 const support_system_settings = {"led": false, "led_night_mode": false};
+
+let channel_plan_re_data = [];
 let uiModelNameCloud = (()=>{
 	const storedData = window.localStorage.getItem('uiModelNameJson');
 	if (storedData) {
@@ -4723,7 +5953,7 @@ function initial_AiMesh(){
 				$client_title.appendTo($client_num_bg);
 				$client_title.html("<#Full_Clients#>");
 				var $client_num = $("<span>");
-				var node_client_list = ciient_get_specific_client_list("all", specific_node_data.mac);
+				var node_client_list = client_get_specific_client_list("all", specific_node_data.mac);
 				$client_num.html(node_client_list.online);
 				if(node_client_list.bind_notice)
 					$client_num.addClass("bind_notice");
@@ -4770,6 +6000,16 @@ function initial_AiMesh(){
 		jstree_load_ready = true;
 		$('#jstree').jstree('select_node', "topo_" + current_click_mac.replace(/:/g, '-'));
 		$('#jstree').css("overflow-x", jstree_show_scroll() ? "auto" : "initial");
+
+		const node_mac = window.localStorage.getItem("node_mac");
+		if (node_mac != "" && node_mac != null) {
+			$("#jstree").jstree("deselect_all");
+			$('#jstree').jstree('select_node', `topo_${node_mac}`.replace(/:/g, '-'));
+			jstree_refresh();
+			control_category_block('manage');
+			window.localStorage.removeItem("node_mac");
+		}
+
 		setTimeout(function() {
 			client_get_client_date();
 			$('#jstree').jstree().refresh();
@@ -4862,6 +6102,24 @@ function initial_AiMesh(){
 		$("#optimization_btn").show();
 	else
 		$("#optimization_btn").hide();
+
+	if(isSupport("channel_plan")){
+		channel_plan_re_data = [];
+		aimesh_data.cfg_clientlist.forEach(function(item, index, array){
+			httpApi.get_re_channel_info(item.mac, (function(channel_info){
+				channel_plan_re_data[item.mac] = channel_info;
+			}));
+		});
+	}
+
+	if(top.webWrapper){
+		$("#jstree").click(function(){
+			if(!$(".info_right").is(":visible")){
+				$(".info_left").hide();
+				$(".info_right").show();
+			}
+		})
+	}
 }
 var pop_win;
 function add_node(){
@@ -5173,6 +6431,9 @@ var popup_hint_api = {
 };
 
 var iperf_data = {};
+var run_target = '';
+var iperf_ready = httpApi.nvramGet(["iperf_test_data_ready"], true)["iperf_test_data_ready"];
+
 function display_iperf_block(){
 	var specific_node_data = aimesh_data.cfg_clientlist.filter(function(item, index, _array){
 		return (item.mac == current_click_mac);
@@ -5186,7 +6447,7 @@ function display_iperf_block(){
 				continue
 			}
 
-			array = httpApi.iperf.getResult({ serverMac: current_click_mac, nodeMac: item.mac})			
+			array = httpApi.iperf.getResult({serverMac: current_click_mac, nodeMac: item.mac})	
 			iperf_data[current_click_mac][item.mac] = array.sort(function(a,b){ return b[1] - a[1]});
 		}
 
@@ -5199,23 +6460,32 @@ function display_iperf_block(){
 function genIperfFeild(){
 	var code = '';
 	var MAX_LENGTH = 5;
+
 	code +=`
 		<div class="iperf_control_all">
 			<div class="iperf_GO" onclick="iperfRun('${current_click_mac}', 'all')">RUN ALL</div>
 		</div>
 	`;
+
 	for([target_mac, value] of Object.entries(iperf_data[current_click_mac])){
 		var specific_target_data = aimesh_data.cfg_clientlist.filter(function(item, index, _array){
-				return (item.mac == target_mac);
-			})[0];
+			return (item.mac == target_mac);
+		})[0];
+
+		var node_capability = httpApi.aimesh_get_node_capability(specific_target_data);
+		if(!node_capability.cd_iperf || specific_target_data.online == '0') continue;
+
 		var model_name = handle_ui_model_name(specific_target_data.model_name, specific_target_data.ui_model_name);
 
 		code += `			
-			<div class="card_block_bg connect_type_status_bg uplink">
+			<div class="card_block_bg connect_type_status_bg uplink iperf_dblock">
 				<div class="iperf_title_field">
-					<div class="iperf_title">${model_name}</div>
-				    <div class="iperf_testing" id="${current_click_mac}_${target_mac}" style="display:none">Testing...</div>
-					<div class="iperf_GO" onclick="iperfRun('${current_click_mac}', '${target_mac}')">GO</div>
+					<div class="iperf_title">
+						<div>${model_name}</div>
+						<div class="iperf_dmac">${target_mac}</div>
+					</div>
+				    <div class="iperf_testing" id="${current_click_mac}_${target_mac}" style="display:none"><#InternetSpeed_Testing#>...</div>
+					<div class="iperf_GO" onclick="iperfRun('${current_click_mac}', '${target_mac}')"><#InternetSpeed_Go#></div>
 				</div>
 			`;
 
@@ -5253,7 +6523,28 @@ function genIperfFeild(){
 		code += "</div>";
 	}
 
+	if(code.indexOf("iperf_dblock") == -1){
+		code =`
+			<div class="iperf_control_all">
+				<div><#AiMesh_System_Not_Support_Feature_Nodes#></div>
+			</div>
+		`;
+	}
+
+	var clicked_target_data = aimesh_data.cfg_clientlist.filter(function(item, index, _array){
+		return (item.mac == current_click_mac);
+	})[0];
+	if(clicked_target_data.online == '0'){
+		code =`
+			<div class="iperf_control_all">
+				<div><#AiMesh_Features_Disabled_When_Offline#></div>
+			</div>
+		`;
+	}
+
 	document.getElementById("iperf_content_block").innerHTML = code;
+
+	iperf_ready = httpApi.nvramGet(["iperf_test_data_ready"], true)["iperf_test_data_ready"];
 	if(iperf_ready === '1'){
 		for(item of document.querySelectorAll('.iperf_GO')){
 			item.style.display = 'none';
@@ -5264,13 +6555,12 @@ function genIperfFeild(){
 				item.style.display = '';
 			}
 		}
-		else if(run_target != ''){
+		else if(run_target != '' && document.getElementById(run_target)){
 			document.getElementById(run_target).style.display = '';
 		}
 	}	
 }
 
-var run_target = '';
 function iperfRun(serverMac, clientMac){
 	for(item of document.querySelectorAll('.iperf_GO')){
 		item.style.display = 'none';
@@ -5285,29 +6575,24 @@ function iperfRun(serverMac, clientMac){
 	else{
 		run_target = serverMac + '_' + clientMac;
 		document.getElementById(serverMac + '_' + clientMac).style.display = '';
+		iperf_ready = "1";
 	}
 
-	httpApi.iperf.start({caller:'iperf', serverMac: serverMac, nodeMac: clientMac}, function(){
-		setTimeout(function() {
-			checkIperfReady();
-		}, 3000);		
-	})
+	httpApi.iperf.start({caller:'iperf', serverMac: serverMac, nodeMac: clientMac})
+	setTimeout(checkIperfReady, 10000);
 }
 
-var iperf_ready = httpApi.nvramGet(["iperf_test_data_ready"], true)["iperf_test_data_ready"];
 function checkIperfReady(){
 	iperf_ready = httpApi.nvramGet(["iperf_test_data_ready"], true)["iperf_test_data_ready"];
+
 	if(iperf_ready === '1'){
-		setTimeout(function() {
-			checkIperfReady();
-			
-		}, 3000);
+		setTimeout(checkIperfReady, 1000);
 	}
 	else{
 		genIperfFeild();
 	}
-
 }
+
 function get_opt_status(){
 	var get_opt_status = httpApi.hookGet("get_opt_status", true);
 	var result = {"stage": "", "text": "", "opt_follow": "0", "ads_pair": []};
@@ -5464,7 +6749,19 @@ $(document).ready(initial_AiMesh);
 		</div>
 	</div>
 
-	<div id="client_block" class="category_block">
+	<div id="client_block" class="category_block client_info_block">
+		<div id="newOB_info" class="card_block_bg">
+			<div class="newOB_container">
+				<div class="newOB_title_bg">
+					<span>AiMesh Support Device</span><!-- untranslated -->
+				</div>
+				<div id="newOB_list_bg" class="newOB_list_bg"></div>
+				<div class="action_container">
+					<div class="btn_container">Set up as AiMesh Node</div><!-- untranslated -->
+					<div class="loading_icon" style="display:none"></div><!-- untranslated -->
+				</div>
+			</div>
+		</div>
 		<div class="card_block_bg">
 			<div class="client_num_bg">
 				<div class="left"><span><#ConnectedClient#></span></div>
@@ -5596,6 +6893,12 @@ $(document).ready(initial_AiMesh);
 				</div>
 				<div id="MoCA_port_status_content"></div>
 			</div>
+			<div class="card_block_bg connect_type_status_bg port_status PoE_port_status" style="margin-top: 6px;">
+				<div>
+					<span class="connect_title horizontal_line">PoE <#Status_Str#></span>
+				</div>
+				<div id="PoE_port_status_content" data-container="poe_port_status_cntr"></div>
+			</div>
 		</div>
 
 		<div class="backhaul_info">
@@ -5687,6 +6990,46 @@ $(document).ready(initial_AiMesh);
 					<div class="manage_sub_item_bg"></div>
 				</div>
 
+				<div class="manage_ra_rssi horizontal_line manage_function_item sub_item_bg">
+					<div>
+						<div class="manage_common_title manage_common_separate_bg left"><#Roaming_assistant#></div>
+						<div class="manage_common_separate_bg right">
+							<div id="ra_rssi_toggle" class="arrow_icon down"></div>
+						</div>
+					</div>
+					<div class="manage_sub_item_bg"></div>
+				</div>
+
+				<div class="manage_channel_plan horizontal_line dropdown_item_bg manage_function_item">
+					<div class="manage_common_title">
+						<div>WiFi Channel Planning</div><!-- untranslated -->
+						<div id="channel_plan_icon" class="bubble_icon info"></div>
+					</div>
+					<div>
+						<select id="channel_plan_select" class="dropdown_select"></select>
+					</div>
+					<div class="manage_sub_item_bg"></div>
+				</div>
+
+				<div class="manage_tx_power horizontal_line manage_function_item sub_item_bg">
+					<div>
+						<div class="manage_common_title manage_common_separate_bg left">
+							<#WLANConfig11b_TxPower_itemname#>
+						</div>
+						<div class="manage_common_separate_bg right">
+							<div id="txp_toggle" class="arrow_icon down"></div>
+						</div>
+					</div>
+					<div id="txp_per_band_cntr" class="manage_sub_item_bg"></div>
+				</div>
+
+				<div class="manage_manual_ip horizontal_line manage_function_item">
+					<div class="manage_common_title manage_common_separate_bg left"><#Manual_Setting_assign#> IP</div>
+					<div class="manage_common_separate_bg right">
+						<div id="manual_ip" class="arrow_icon right"></div>
+					</div>
+				</div>
+
 				<div class="manage_usb_app horizontal_line manage_function_item">
 					<div class="manage_common_title manage_common_separate_bg left"><#Menu_usb_application#></div>
 					<div class="manage_common_separate_bg right">
@@ -5730,7 +7073,7 @@ $(document).ready(initial_AiMesh);
 		<div class="uplink_info">
 			<div class="separation_line">
 				<i></i>
-				<p>RESULTS</p>
+				<p><#AiMesh_Conn_Quality#></p>
 			</div>
 			<div id="iperf_content_block"></div> 
 		</div>

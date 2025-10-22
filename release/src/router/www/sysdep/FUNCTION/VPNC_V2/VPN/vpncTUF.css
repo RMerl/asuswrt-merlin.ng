@@ -36,6 +36,14 @@
 .profile_setting_item{
 	background-color: rgba(0, 0, 0, 0.1);
 }
+.profile_setting_item.policy{
+	font-size:13px;
+	color: #b9c5d4 !important;
+}
+.profile_setting_item .title,
+.profile_setting_item .title a:link{
+	color: #b9c5d4;
+}
 .btn_item .btn_container{
 	border: 1px solid rgb(255, 170, 0);
 	background: rgba(255, 170, 0, 0.2);

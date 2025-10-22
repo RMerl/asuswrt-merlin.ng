@@ -201,7 +201,7 @@ function initial(){
 	}
 
 	//When redirect page from Free WiFi or Captive Portal, auto go to anchor tag
-	var gn_idx = cookie.get("captive_portal_gn_idx");
+	var gn_idx = window.localStorage.getItem("captive_portal_gn_idx");
 	if(gn_idx != "" && gn_idx != null) {
 		var gn_idx_array = gn_idx.split(">");
 		if(gn_idx_array.length == 2) {
@@ -223,7 +223,7 @@ function initial(){
 				alert("Guest Network – " + gn_num + " will used by " + type_hint);
 			}, 100);
 		}
-		cookie.unset("captive_portal_gn_idx");
+		window.localStorage.removeItem("captive_portal_gn_idx");
 	}
 
 	//LYRA_VOICE
@@ -2029,9 +2029,11 @@ function hide_qr_code(unit) {
 									</tr>
 									<tr>
 										<td width="80%">
-											<input type="text" maxlength="17" class="input_macaddr_table" name="wl_maclist_x_0" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>" style="width:255px;">
-											<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;display:none;" onclick="pullWLMACList(this);" title="<#select_wireless_MAC#>">
-											<div id="WL_MAC_List_Block" class="clientlist_dropdown" style="margin-left:107px;"></div>
+										    <div class="clientlist_dropdown_main" style="width: 100%;">
+                                                <input type="text" maxlength="17" class="input_macaddr_table" name="wl_maclist_x_0" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">
+                                                <img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullWLMACList(this);" title="<#select_wireless_MAC#>">
+                                                <div id="WL_MAC_List_Block" class="clientlist_dropdown"></div>
+											</div>
 										</td>
 										<td width="20%">	
 											<input type="button" class="add_btn" onClick="addRow(document.form.wl_maclist_x_0, 16);" value="">

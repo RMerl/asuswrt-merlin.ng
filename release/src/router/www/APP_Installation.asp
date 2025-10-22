@@ -220,12 +220,12 @@ function update_applist(e){
 		update_applist();
     },
     success: function(response){
-			if(isinstall > 0 && cookie.get("apps_last") == "downloadmaster"){
+			if(isinstall > 0 && window.localStorage.getItem("apps_last") == "downloadmaster"){
 				for(var i = 0; i < apps_array.length; i++){
 					if(apps_array[i][0] == "DM2_Utility")
 						document.getElementById("DMUtilityLink").href = apps_array[i][5]+ "/" + apps_array[i][12];
 						
-					if(apps_array[i][0] == "downloadmaster"){			//set cookie for help.js	
+					if(apps_array[i][0] == "downloadmaster"){
 						_dm_install = apps_array[i][3];
 						_dm_enable = apps_array[i][4];
 					}	
@@ -234,7 +234,7 @@ function update_applist(e){
 				setTimeout('divdisplayctrl("none", "none", "none", "");', 100);
 				document.getElementById("return_btn").style.display = "";
 			}
-			else if(isinstall > 0 && cookie.get("apps_last") == "fileflex"){
+			else if(isinstall > 0 && window.localStorage.getItem("apps_last") == "fileflex"){
 				window.location.href = "fileflex.asp";
 			}
 			else{
@@ -295,7 +295,7 @@ function check_appstate(){
 				if(installPercent > 99)
 					installPercent = 99;
 				document.getElementById("loadingicon").style.display = "none";
-				document.getElementById("apps_state_desc").innerHTML = "[" + cookie.get("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
+				document.getElementById("apps_state_desc").innerHTML = "[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
 				installPercent = installPercent + proceed;//*/
 			}
 			else{
@@ -308,9 +308,9 @@ function check_appstate(){
 		else{
 			if(apps_depend_action_target != "terminated" && apps_depend_action_target != "error"){
 				if(apps_depend_action_target == "")
-					document.getElementById("apps_state_desc").innerHTML = "<b>[" + cookie.get("apps_last") + "] " + "<#Excute_processing#> </b>";
+					document.getElementById("apps_state_desc").innerHTML = "<b>[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> </b>";
 				else
-					document.getElementById("apps_state_desc").innerHTML = "<b>[" + cookie.get("apps_last") + "] " + "<#Excute_processing#> </b>"
+					document.getElementById("apps_state_desc").innerHTML = "<b>[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> </b>"
 							+"<br> <span style='font-size: 16px;'> <#Excute_processing#>："+apps_depend_do+"</span>"
 							+"<br> <span style='font-size: 16px;'>"+apps_depend_action+"  "+apps_depend_action_target+"</span>"
 							;
@@ -319,7 +319,7 @@ function check_appstate(){
 				if(installPercent > 99)
 					installPercent = 99;
 				document.getElementById("loadingicon").style.display = "none";
-				document.getElementById("apps_state_desc").innerHTML = "[" + cookie.get("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
+				document.getElementById("apps_state_desc").innerHTML = "[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
 				installPercent = installPercent + proceed;
 			}
 		}
@@ -421,7 +421,7 @@ function check_appstate(){
 				if(installPercent > 99)
 					installPercent = 99;
 				document.getElementById("loadingicon").style.display = "none";
-				document.getElementById("apps_state_desc").innerHTML = "[" + cookie.get("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
+				document.getElementById("apps_state_desc").innerHTML = "[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
 				installPercent = installPercent + proceed;//*/
 			}
 			else{
@@ -435,13 +435,13 @@ function check_appstate(){
 					if(installPercent > 99)
 						installPercent = 99;
 					document.getElementById("loadingicon").style.display = "none";
-					document.getElementById("apps_state_desc").innerHTML = "[" + cookie.get("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
+					document.getElementById("apps_state_desc").innerHTML = "[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
 					installPercent = installPercent + proceed;
 				}
 				else{
 					var _apps_depend_do = apps_depend_do.replace(apps_depend_action, "<span style='color:#FC0'>"+apps_depend_action+"</span>");
 
-					document.getElementById("apps_state_desc").innerHTML = "<b>[" + cookie.get("apps_last") + "] " + "<#Excute_processing#> </b>"
+					document.getElementById("apps_state_desc").innerHTML = "<b>[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> </b>"
 							+"<br> <span style='font-size: 16px;'> <#Excute_processing#>："+_apps_depend_do+"</span>"
 							+"<br><br> <span style='font-size: 18px;'>"+apps_depend_action+"  "+apps_depend_action_target+"</span>"
 					;
@@ -451,7 +451,7 @@ function check_appstate(){
 				if(installPercent > 99)
 					installPercent = 99;
 				document.getElementById("loadingicon").style.display = "none";
-				document.getElementById("apps_state_desc").innerHTML = "[" + cookie.get("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
+				document.getElementById("apps_state_desc").innerHTML = "[" + window.localStorage.getItem("apps_last") + "] " + "<#Excute_processing#> <b>" + Math.round(installPercent) +"</b> <span style='font-size: 16px;'>%</span>";
 				installPercent = installPercent + proceed;
 			}
 		}
@@ -721,11 +721,11 @@ function show_apps(){
 			else if(apps_array[i][0] == "fileflex")
 				htmlcode += '<span class="app_action" onclick="location.href=\'fileflex.asp\';"><#CTL_help#></span>\n';
 
-			if(	cookie.get("apps_last") == apps_array[i][0] &&
+			if(	window.localStorage.getItem("apps_last") == apps_array[i][0] &&
 					hasNewVer(apps_array[i]) && 
 					(sw_mode == 3 || link_internet == "2"))
 				htmlcode += '</div><div style="color:#FC0;margin-top:10px;"><span class="app_action" onclick="apps_form(\'upgrade\',\''+ apps_array[i][0] +'\',\'\');"><#update_available#></span>\n';	
-			else if(cookie.get("apps_last") == apps_array[i][0])
+			else if(window.localStorage.getItem("apps_last") == apps_array[i][0])
 				htmlcode += "</div><div style=\"color:#FC0;margin-top:10px;margin-left:10px;\"><span class=\"app_no_action\" onclick=\"\"><#liveupdate_up2date#></span>\n";
 
 		}
@@ -739,9 +739,7 @@ function show_apps(){
 		
 		htmlcode += '</div><br/><br/></td></tr>\n';
 	
-		// setCookie
-		if(apps_array[i][0] == "downloadmaster"){ // set Cookie
-			//set cookie for help.js		
+		if(apps_array[i][0] == "downloadmaster"){
 			_dm_install = apps_array[i][3];
 			_dm_enable = apps_array[i][4];
 		}
@@ -751,8 +749,8 @@ function show_apps(){
 	document.getElementById("app_table").innerHTML = htmlcode;
 	divdisplayctrl("", "none", "none", "none");
 	stoppullstate = 1;
-	cookie.set("hwaddr", '<% nvram_get("lan_hwaddr"); %>', 1000);
-	cookie.set("apps_last", "", 1000);
+	window.localStorage.setItem("hwaddr", '<% nvram_get("lan_hwaddr"); %>', 1000);
+	window.localStorage.setItem("apps_last", "", 1000);
 
 	if(re_mode == "1"){
 		if($("#upnp_link").length > 0){
@@ -882,7 +880,7 @@ function show_partition(){
 }
 
 function apps_form(_act, _name, _flag){
-	cookie.set("apps_last", _name, 1000);
+	window.localStorage.setItem("apps_last", _name, 1000);
 
 	document.app_form.apps_action.value = _act;
 	document.app_form.apps_name.value = _name;

@@ -150,6 +150,10 @@ SERVER_OBJS += cfg_ads.o
 endif
 CLIENT_OBJS += $(COMMON_OBJS) cfg_client.o
 REPORTSTATUS_OBJS += cfg_common.o cfg_reportstatus.o
+ifeq ($(RTCONFIG_AMAS_NEWOB),y)
+CFLAGS += -DRTCONFIG_AMAS_NEWOB
+NEWOB_OBJS += $(COMMON_OBJS) cfg_client_newob.o
+endif
 
 LIBSHARED_OBJS += cfg_lib.o
 ifeq ($(RTCONFIG_MULTILAN_CFG),y)
@@ -168,7 +172,9 @@ CFLAGS += -DLEGACY_ROAMING
 COMMON_OBJS += cfg_onboarding.o cfg_ethevent.o
 CFLAGS += -DONBOARDING -DRSSI_LIST
 ifeq ($(RTCONFIG_VIF_ONBOARDING),y)
+ifneq ($(RTCONFIG_NOWL),y)
 CFLAGS += -DONBOARDING_VIA_VIF
+endif
 endif
 # for wireless channel sync
 CFLAGS += -DSYNC_WCHANNEL
@@ -283,8 +289,15 @@ all:
 	-cp -f prebuild/$(BUILD_NAME)/cfg_client cfg_client
 	-cp -f prebuild/$(BUILD_NAME)/cfg_reportstatus cfg_reportstatus
 	-cp -f prebuild/$(BUILD_NAME)/libcfgmnt.so libcfgmnt.so
+ifeq ($(RTCONFIG_AMAS_NEWOB),y)
+	-cp -f prebuild/$(BUILD_NAME)/cfg_newob cfg_newob
+endif
+else
+ifeq ($(RTCONFIG_AMAS_NEWOB),y)
+all: libcfgmnt.so cfg_server cfg_client cfg_newob cfg_reportstatus
 else
 all: libcfgmnt.so cfg_server cfg_client cfg_reportstatus
+endif
 endif
 
 cfg_server: $(SERVER_OBJS)
@@ -294,6 +307,12 @@ cfg_server: $(SERVER_OBJS)
 cfg_client: $(CLIENT_OBJS)
 	echo " [cfg_mnt] CC $@"
 	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
+ 
+ifeq ($(RTCONFIG_AMAS_NEWOB),y)
+cfg_newob: $(NEWOB_OBJS)
+	echo " [cfg_mnt] CC $@"
+	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
+endif
 
 cfg_reportstatus: $(REPORTSTATUS_OBJS)
 	echo " [cfg_mnt] CC $@"
@@ -318,6 +337,14 @@ install: all
 	@chmod 0755 $(INSTALLDIR)/usr/sbin/cfg_client
 	@chmod 0755 $(INSTALLDIR)/usr/sbin/cfg_reportstatus
 	@chmod 0500 $(INSTALLDIR)/usr/sbin/gencfgcert.sh
+ifeq ($(RTCONFIG_AMAS_NEWOB),y)
+	@install -D cfg_newob $(INSTALLDIR)/usr/sbin/cfg_newob
+	@$(STRIP) $(INSTALLDIR)/usr/sbin/cfg_newob
+	@chmod 0755 $(INSTALLDIR)/usr/sbin/cfg_newob
+endif
 
 clean:
 	rm -f cfg_server cfg_client cfg_reportstatus *.so *.o .*.depend
+ifeq ($(RTCONFIG_AMAS_NEWOB),y)
+	rm -f cfg_newob
+endif

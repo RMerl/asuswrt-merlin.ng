@@ -37,10 +37,13 @@
 #define GET_AWS_CERTIFICATE	"/aae/getawscertificate"
 #define REMOTELOGIN	"/aae/remotelogin"
 #define FBWIF2_REG	"/aae/facebookwifiregister"
-#define GETPROVISIONPINCODE_REG	"/getProvisionningPincode"
+#define GETPROVISIONPINCODE_REG	"/aae/getProvisionningPincode"
+#define DELPROVISIONPINCODE_REG	"/aae/delProvisionningPincode"
 #define GET_DB_WIREGUARD	"/aae/getWireGuardVPNGroupList"
 #define UPDATE_DB_WIREGUARD	"/aae/updateWireGuardVPNGroup"
 #define UPDATE_DB_TUNNELTEST "/aae/updateTunnelTestResult"
+#define UPDATE_WIREGUARD_MASTER_IP "/aae/changeWireGuardVPNMasterIP"
+#define UNBIND_DEVICE "/aae/unbinddevice"
 
 #define MAX_STATUS_LEN 	32
 #define MAX_URL_LEN		128
@@ -113,6 +116,7 @@ typedef struct _Login{
 	pSrvInfo	ddnsinfoList;
 	pSrvInfo	awsiotinfoList;
 	int         ppver;
+	int         eulaver;
 	char	deviceticketexpiretime[MAX_DEV_TICKET_EXP_LEN];
 	char 	time[MAX_TIME_LEN];
 } Login, *pLogin;
@@ -273,8 +277,15 @@ typedef struct _GetProvisionPincode
 	char	rootca[MAX_CA_DATA_LEN];
 	char	certificate[MAX_CA_DATA_LEN];
 	char	privatekey[MAX_CA_DATA_LEN];
+	char    duetime[MAX_TIME_LEN];
 	// char	time[MAX_TIME_LEN];
 } GetProvisionPincode, *pGetProvisionPincode;
+
+typedef struct _DelProvisionPincode
+{
+	char 	status[MAX_STATUS_LEN];
+	char	time[MAX_TIME_LEN];
+} DelProvisionPincode, *pDelProvisionPincode;
 
 typedef struct _GetDB
 {
@@ -285,8 +296,14 @@ typedef struct _GetDB
 typedef struct _UpdateDB
 {
 	char 	status[MAX_STATUS_LEN];
-	char	message[MAX_DESC_LEN];
+	char	content[MAX_DESC_LEN];
 } UpdateDB, *pUpdateDB;
+
+typedef struct _UnbindDevice
+{
+	char 	status[MAX_STATUS_LEN];
+	char	time[MAX_TIME_LEN];
+} UnbindDevice, *pUnbindDevice;
 
 typedef enum _ws_status_code
 {
@@ -571,9 +588,22 @@ int send_fbwifi2_reg_req(
 );
 
 int send_get_provision_pincode_req(
-	const char *server,
-	const char* mac,
+	const char* server,
+	const char* cusid, 
+	const char* deviceid,
+	const char* deviceticket,
+	const char*	mac,
+	int	duration,
 	GetProvisionPincode *pGetProvisionPincode
+);
+
+int send_del_provision_pincode_req(
+	const char* server,
+	const char* cusid, 
+	const char* deviceid,
+	const char* deviceticket,
+	const char*	mac,
+	DelProvisionPincode *pDelProvisionPincode
 );
 
 int send_get_db_wireguard_req(
@@ -605,6 +635,23 @@ int send_update_db_tunneltest_req(
 	const char *type,
 	int error_code,
 	UpdateDB *pUpdateDB
+);
+
+int send_update_wireguard_master_ip_req(
+	const char *server,
+	const char *oauth_dm_cusid,
+	const char *dm_deviceid,
+	const char *dm_ticket,
+	const char *master_ip,
+	UpdateDB *pUpdateDB
+);
+
+int send_unbind_device_req(
+	const char *server,
+	const char *oauth_dm_cusid,
+	const char *dm_deviceid,
+	const char *dm_ticket,
+	UnbindDevice *pUnbindDevice
 );
 
 char *get_curl_status_string(int error);

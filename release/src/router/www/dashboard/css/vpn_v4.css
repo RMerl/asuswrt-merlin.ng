@@ -1,0 +1,491 @@
+﻿@import "/RWD_UI/rwd_component_v4.css";
+@import "/css/color-table.css";
+@import "/css/svg-icon.css";
+
+a:link{
+	color: var(--text-hyperlink-default-color) !important;
+}
+.bg{
+	color: var(--body-text-color);
+	width: 99% !important;
+	margin: 0 auto;
+	font-family: var(--global-font-style);
+}
+.vpn_icon_all_collect{
+	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
+	background-repeat: no-repeat;
+}
+.svr_list_add_icon, .client_list_add_icon{
+	mask-image: var(--ic-add-circle-stroke);
+	background-color: var(--primary-icon-normal-color);
+}
+.function_desc_container .vpnc_help_icon, 
+.get_start_container .sub_info_container .vpnc_help_icon, 
+.input_container .vpnc_help_icon{
+	mask-image: var(--ic-help-circle-stroke);
+	background-color: var(--icon-normal-color);
+}
+.profile_setting_container .popup_edit_profile_container,
+.client_content_bg .client_contorl_bg{
+	background: var(--card-bg-color);
+	border-radius: var(--radius-sm);
+}
+.profile_setting_container .get_start_container{
+	background: var(--card-bg-color);
+	border: 0;
+	box-shadow: var(--shadow-elevation10);
+	border-radius: var(--global-radius);
+}
+.get_start_container .main_info_container .get_start_img {
+	background-image: var(--img-vpns-get-start);
+	background-size: contain;
+}
+.profile_setting_container .get_start_container .main_info_container{
+	background: var(--card-bg-color);
+	border-radius: var(--global-radius) var(--global-radius) 0;
+	box-shadow: none;
+}
+.server_list_container .svr_item_horizontal_line{
+	outline-color: var(--divide-stroke-color-default);
+}
+.profile_setting_container .get_start_container .sub_info_container {
+	border-top: 1px solid var( --divide-stroke-color-default);
+}
+.profile_setting_container {
+	width: 100%;
+	flex-grow: 1;
+	margin-top: 0.5rem;
+	box-shadow: var(--shadow-elevation10);
+}
+.get_start_container .main_info_container .title{
+	color: var(--text-brand-color);
+}
+.get_start_container .main_info_container .desc{
+	color: var(--text-highlight-color);
+	font-weight: 400;
+}
+.get_start_container .sub_info_container .title{
+	color: var(--text-subtitle-color);
+}
+.profile_setting_title .title{
+	color: var(--page-title-color);
+	width: initial;
+	margin-right: 1.5rem;
+}
+@media (max-width: 768px) {
+	.profile_setting_container, .function_desc_container {
+		width: 100%;
+		display: none;
+	}
+	.server_list_container {
+		width: 94% !important;
+		margin: auto;
+	}
+}
+.svr_list_title_container, .client_list_title_container{
+	color: var(--text-caption-color);
+	margin: 0;
+}
+.svr_list_num, .client_list_num {
+	font-size: 14px;
+	font-weight: 500;
+	letter-spacing: 1px;
+	line-height: 16px;
+	margin-right: 16px;
+	color: var(--text-info-color);
+}
+.client_list_num:before{
+	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
+}
+.svr_item_container, .svr_item_error_hint_container{
+	background: var(--card-bg-color);
+	margin-bottom: 10px;
+	box-shadow: var(--shadow-elevation10);
+	border: 0.5px solid var(--divide-stroke-color-default);
+	width: initial;
+	margin-right: 1.5rem;
+	border-radius: var(--radius-sm)
+}
+.svr_item_container.selected{
+	background: var(--card-bg-color);
+    outline: 1px solid var(--brand-color);
+    box-shadow: var(--shadow-elevation20), var(--shadow-elevation10-primary-color);
+}
+.svr_item_text_container:before{
+	border-right: 1px solid var(--divide-stroke-color-El10);
+}
+.svr_item_text_container:after, .svr_item_container.internet:after{
+	border-top: 1.5px solid var(--icon-normal-color);
+	border-right: 1.5px solid var(--icon-normal-color);
+}
+.svr_item_main_info{
+	color: var(--page-title-color);
+	font-size: 14px;
+	font-weight: 400;
+}
+.svr_item_main_info:before{
+	background-position: -432px 0px;
+	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
+}
+.svr_item_container.active .svr_item_main_info:before{
+	background-position: -432px -55px;
+}
+.svr_item_container.error_hint.active .svr_item_main_info:before{
+	background-position: -432px -108px;
+}
+.svr_item_container.default_wan_selected .svr_item_main_info:before{
+	background-position: -432px -162px
+}
+.svr_item_container.active.default_wan_selected .svr_item_main_info:before{
+	background-position: -432px -216px
+}
+.svr_item_container.error_hint.active.default_wan_selected .svr_item_main_info:before{
+	background-position: -432px -270px
+}
+
+.svr_item_container.internet.connected .svr_item_main_info:before{
+	background-position: -486px -54px;
+}
+.svr_item_container.internet.disconnected .svr_item_main_info:before{
+	background-position: -486px -108px;
+}
+.svr_item_container.internet.standby .svr_item_main_info:before{
+	background-position: -486px 0px;
+}
+.svr_item_container.internet.connected.default_wan_selected .svr_item_main_info:before{
+	background-position: -486px -216px;
+}
+.svr_item_container.internet.disconnected.default_wan_selected .svr_item_main_info:before{
+	background-position: -486px -270px;
+}
+.svr_item_container.internet.standby.default_wan_selected .svr_item_main_info:before{
+	background-position: -486px -162px;
+}
+.svr_item_sub_info{
+	color: var(--text-info-02-color);
+}
+.svr_item_container.default .svr_item_sub_info:before{
+	background: var(--loading-box-wait-fill-default);
+}
+.svr_item_sub_info .vpn_type:before{
+	background: var(--loading-box-wait-fill-default);
+}
+.svr_item_sub_info .vpn_status{
+	color: var(--text-info-02-color);
+}
+.svr_item_error_hint_container > div:before{
+	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
+}
+.svr_item_container.active .svr_item_sub_info .vpn_status, .svr_item_container.internet.connected .svr_item_sub_info {
+	color: var(--text-status-good-color);
+}
+.checkbox, .checkbox.off{
+	border: 1.5px solid var(--checkbox-unselect-normal-fill-color);
+	border-radius: var(--radius-xs);
+	box-shadow: none;
+}
+.checkbox.on{
+	background-color: var(--checkbox-selected-normal-fill-color);
+	border: 1.5px solid var(--checkbox-selected-normal-fill-color);
+	box-shadow: none;
+}
+.profile_setting_item.policy{
+	color: var(--text-caption-color) !important;
+}
+.profile_setting_item.policy .text_content > a{
+	color: var(--text-hyperlink-default-color);
+	text-decoration: underline;
+	cursor: pointer;
+}
+.profile_setting_item .title{
+	color: var(--text-caption-color);
+	font-weight: normal;
+	flex: 0 0 40%;
+	max-width: 30%;
+}
+.profile_setting_item.nowrap .title{
+	flex: 0 0 40%;
+	max-width: 32%;
+}
+.btn_item .btn_container{
+	border-color: var(--primary-50);
+	background-color: var(--primary-50-alpha-20);
+}
+.btn_item .btn_container .text{
+	color: var(--primary-50);
+}
+.btn_item .btn_container .text.import_file:before,
+.btn_item .btn_container .text.create_account:before,
+.text.create_ssk_account:before,
+.text.create_nord_account:before{
+	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
+	background-position: 0px -163px;
+	filter: brightness(0);
+}
+.export_mode_container .desc{
+	color: rgb(24, 24, 24);
+}
+.qr_code_container{
+	border: 1px solid rgb(85 100 111);
+	border-radius: 8px;
+	background: initial;
+}
+.qr_code_container > .qr_text{
+	color: var(--body-text-color);
+}
+.notice_container .notice_desc{
+	color: var(--body-text-color);
+}
+.export_btn_container > .export_btn .text{
+	margin-left: initial;
+}
+.export_btn_container > .export_btn .text:before{
+	content: none;
+}
+.input_container {
+	flex: 0 0 60%;
+	margin: 0;
+	max-width: none;
+	margin: initial;
+}
+.textView{
+	color: var(--body-text-color);
+	font-weight: bolder;
+}
+.textInput:focus, .textareaInput:focus{
+	box-shadow: var( --shadow-elevation10-primary-color);
+	border-bottom: 1px solid var(--textbox-focus-stroke-color);
+}
+.custom_select_container:before, .profile_title_item.arrow_icon:after{
+	border-top: 1.5px solid var(--primary-icon-active-color);
+	border-right: 1.5px solid var(--primary-icon-active-color);
+}
+.custom_select_container .select_options_container{
+	background: var(--dropdown-bg-color);
+    box-shadow: var(--shadow-elevation20);
+    border-radius: var(--radius-sm);
+}
+.custom_select_container .select_options_container div.selected{
+	color: var(--dropdown-item-bg-active-color);
+}
+.custom_select_container .select_options_container div.selected:before{
+	border-top: 1.5px solid var(--primary-icon-active-color);
+	border-right: 1.5px solid var(--primary-icon-active-color);
+}
+.custom_select_container .select_options_container div:hover{
+	background: var(--dropdown-item-bg-hover-color);
+	border-radius: var(--radius-sm);
+}
+.action_container .btn_container, .get_start_container .main_info_container .add_btn{
+	background: var(--primary-btn-normal-fill);
+    border-radius: var(--radius-sm);
+    border: 1px outset transparent;
+    color: var(--primary-btn-text-color);
+    border-image: var(--primary-btn-normal-stroke);
+    border-image-slice: 2;
+}
+.action_container .btn_container.valid_fail{
+	background: #dcdcdc;
+	border: 0;
+	color: #4d4d4d;
+}
+.action_container_hint{
+	color: var(--primary-50);
+}
+.profile_title_item{
+	color: var(--primary-50);
+}
+.profile_title_item.edit_keys_desc{
+	color: var(--text-info-color);
+}
+.feature_desc .title{
+	color: var(--text-brand-color);
+}
+.feature_desc .desc{
+	color: var(--text-info-color);
+}
+.feature_desc .desc:before{
+	border-bottom: 1px solid var(--divide-stroke-color-default);
+}
+.feature_desc .step_text{
+	color: rgba(24, 24, 24, 0.87);
+}
+.feature_desc .step_text:before{
+	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
+	background-color: rgb(0, 110, 255);
+}
+.del_profile .title{
+	color: rgb(24, 24, 24);
+}
+.del_profile .desc{
+	color: rgba(24, 24, 24, 0.87);
+}
+.del_profile .action_btn_container .del, .customize_alert .action_btn_container .ok{
+	background: rgb(0, 110, 255);
+}
+.del_profile .action_btn_container .cancel{
+	border: 1px solid rgb(94 100 112 / 40%);
+	color: rgba(23, 62, 103, 0.6);
+}
+.customize_alert .desc{
+	color: var(--text-info-color);
+}
+.validate_hint, .vpn_type_maxi_hint, .item_hint{
+	background: var(--hint-bg-el10-warning);
+}
+.vpn_type_maxi_hint, .item_hint, .text_yellow{
+	color: var(--hint-text-el10-warning);
+}
+.client_list_content_container .client_container{
+	background: var(--card-list-EL02-item-static);
+}
+.client_list_content_container .client_container.no_data{
+	color: var(--text-no-data);
+}
+.client_container .client_name{
+	color: rgb(24, 24, 24);
+}
+.client_info_container .client_ip{
+	color: rgba(24, 24, 24, 0.87);
+}
+.wan_status_container{
+	background: var(--card-list-EL02-item-static);
+	box-shadow: none;
+}
+.wan_status_container .connect_title{
+	color: rgb(0, 110, 255);
+}
+.wan_connect_info_container .info_title{
+	color: var(--text-caption-color);
+}
+.wan_connect_info_container .info_text{
+	color: var(--text-highlight-color);
+}
+.item_tag_container > .item_tag {
+	background: var(--neutral-badage-01-bg-color);
+	border: 1px solid var(--neutral-badage-stroke-color);
+	box-shadow: var(--shadow-elevation20);
+	color: var(--neutral-badage-01-text-color);
+	border-radius: var(--global-radius);
+}
+.svr_item_text_container .svr_type_title{
+	color: var(--text-brand-color);
+}
+.svr_item_text_container .svr_type_text{
+	color: var(--text-highlight-color);
+}
+.add_acc_bg .acc_num:before{
+	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
+}
+.profile_setting_item.clientlist .client_content_bg,
+.profile_setting_item.allowed_clientlist .client_content_bg{
+	flex: 0 0 92%;
+	max-width: initial;
+}
+.client_content_bg .client_info_bg .status_icon{
+	background-color: var(--primary-50);
+}
+.client_content_bg .detail_icon{
+	border: 2px solid var(--primary-50);
+	color: var(--primary-50);
+}
+.client_content_bg .client_contorl_bg .contorl_btn{
+	background-color: rgb(247, 249, 252);
+}
+.radio_options_container .radio_container,
+.btn_options_container .btn_container{
+	color: var(--tab-nav-text-normal-color);
+	background-color: var(--tab-nav-normal-bg-fill-color);
+}
+.radio_options_container .radio_container.selected .radio_icon{
+	border-color: var(--primary-50);
+}
+.radio_options_container .radio_container.selected .radio_icon:before{
+	background-color: var(--primary-50);
+}
+.radio_options_container .radio_container .radio_icon{
+	border: 1px solid var(--tab-nav-normal-pin-fill-color);
+}
+.radio_options_container .radio_container.selected,
+.btn_options_container .btn_container.selected{
+	background-color: var(--tab-nav-active-bg-fill-color);
+	color: var(--tab-nav-text-active-color);
+	border: 1px solid var(--tab-nav-active-pin-fill-color);
+}
+.profile_setting_item .title .key_icon{
+	display: none;
+}
+.profile_title_item.edit_keys_desc{
+	color: rgb(24, 24, 24);
+}
+.client_connect_info_container .connect_client_title{
+	color: var(--primary-50);
+}
+.switch{
+	border-radius: var(--radius-lg);
+}
+.switch:before{
+	background: var(--switch-btn-off-normal-ellipse-stroke-color);
+    border-radius: var(--radius-lg);
+}
+.switch.off{
+	background: none;
+    border: 1.5px solid var(--switch-btn-off-normal-ellipse-stroke-color);
+}
+.switch.on{
+	background: var(--switch-btn-on-normal-fill-color);
+	border: 1.5px solid var(--switch-btn-on-normal-ellipse-stroke-color);
+}
+.switch.on:before{
+	background: var(--switch-btn-on-normal-ellipse-fill-color);
+    border-radius: var(--radius-lg);
+}
+
+@media (max-width: 992px) {
+	.profile_setting_item {
+		padding-bottom: 10px;
+		height: fit-content;
+	}
+	.profile_setting_item.nowrap{
+		padding-bottom: 0px;
+	}
+	.profile_setting_item .title {
+		max-width: 100%;
+	}
+	.input_container {
+		margin-left: 16px;
+		flex: 0 0 92%;
+	}
+}
+@media (max-width: 575px) {
+	.svr_list_title_container{
+		width: 100%;
+	}
+	.svr_item_container, .svr_item_container.active, .svr_item_container.selected{
+		background: rgb(255, 255, 255);
+		box-shadow: 0px 1px 2px 0px rgb(20 50 80 / 20%);
+		border: 1px solid rgb(0 0 0 / 10%);
+		margin-right: initial;
+	}
+	.action_container .btn_container.delete{
+		box-shadow: 0 0 0 1px rgb(94 100 112 / 40%);
+		color: rgba(23, 62, 103, 0.6);
+	}
+	.del_profile .action_btn_container:before{
+		border-top: 1px solid rgba(84, 84, 88, 0.65);
+	}
+	.del_profile .action_btn_container:after{
+		border-left: 1px solid rgba(84, 84, 88, 0.65);
+	}
+	.del_profile .action_btn_container .btn{
+		font-weight: bolder;
+	}
+	.del_profile .action_btn_container .del{
+		background: inherit;
+		color: inherit;
+	}
+	.del_profile .action_btn_container .cancel{
+		border: inherit;
+		color: inherit;
+	}
+}

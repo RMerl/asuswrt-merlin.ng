@@ -119,6 +119,7 @@ struct eInfo mapInfo[] =
 	   ### AiMesh Event ###
 	---------------------------------*/
 	{"AIMESH_ETH_OB_EVENT"                       ,AIMESH_ETH_OB_EVENT                         ,TYPE_OF_IMPORTANT  ,ACT(AIHOME)    ,ACT_NOTIFY_DB | ACT_NOTIFY_APPUSH, 1, PRI_LOW },
+	{"AIMESH_ETH_NODE_DISCONN_EVENT"             ,AIMESH_ETH_NODE_DISCONN_EVENT               ,TYPE_OF_IMPORTANT  ,ACT(AIHOME)    ,ACT_NOTIFY_DB | ACT_NOTIFY_APPUSH, 1, PRI_LOW },
 	/* The End */
 	{0, 0, 0, 0, 0, 0, 0}
 };

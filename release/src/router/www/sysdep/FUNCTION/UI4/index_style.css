@@ -1,7 +1,9 @@
 /* CSS Document */
 body {
+/*
 	background-color:#f5f5f5;
-	/*background: url(/images/bg_svg.png) repeat-x;*/
+	background: url(/images/bg_svg.png) repeat-x;
+*/
 	margin:0px;
 }
 
@@ -10,7 +12,7 @@ body {
 	border:0px;
 	/*background:url(images/New_ui/middown_bg.png);*/
 	background-color: #f5f5f5;
-	padding-bottom:24px;	/*for FAQ bottom searching bar */
+	padding-bottom:0px;	/*for FAQ bottom searching bar */
 	
 	margin-top:-5px \0;	/* \0 for IE8-9 to move upper for covering the hidden form By Viz*/
 	padding-top:15px \0;	/* \0 for IE8-9 to move upper for covering the hidden form By Viz*/
@@ -54,6 +56,7 @@ body {
 .menu {
 	/*font-weight:bold;*/
 	/*text-shadow: 1px 1px 0px black;	*/
+	display: flex;
 	width:185px;
 	/*height:48px;*/
 	font-family: inter, "Microsoft JhengHei", sans-serif;
@@ -61,7 +64,7 @@ body {
 	line-height: 150%;
 	text-align:left;
 	position:relative;
-	color:#262626;
+	color:var(--body-text-color);
 	padding: 8px;
 	/*margin-top: -2px;*/
 	/*background-color:#3A4042;*/
@@ -83,16 +86,16 @@ body {
 }
 
 .menu:hover, .menu:active{
-	color:#ffffff;
+	color:#ffffff !important;
 	cursor:pointer;
-	background-color: #248dff;
-	border-radius: 8px;
+	background-color: var(--primary-60);
+	border-radius: 0px;
 }
 .menu a {height:44px; text-decoration:none;	position:relative;}
 .menu a:link, .menu a:visited {
 	color:#ffffff;
 	cursor:pointer;
-	background-color: #248dff;
+	background-color: #006ce1;
 }
 .menu div{
 	filter: progid:DXImageTransform.Microsoft.DropShadow(OffX=1, OffY=1, Color=#000000);
@@ -753,7 +756,7 @@ width:122px;
 }
 .faq-filter-block{
 	position: absolute;
-	margin: -200px 100px 0 0;
+	margin-top: -230px;
 	width: 300px;
 	border: 1px solid #474747;
 	height: 200px;
@@ -854,7 +857,6 @@ width:122px;
 	font-weight: bolder;
 }
 .menu_Split{
-	background-color: #f5f5f5;
 	height: auto;
 	min-height: 30px;
 	width: 185px;
@@ -865,130 +867,13 @@ width:122px;
 	font-family: Verdana, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
 	/*border-radius: 5px 5px 0px 0px;*/
 }
-/*.menu_Index{
-	background: url(images/New_ui/icon_indexes.png);
-	background-position: 0px -36px;
-}
-.menu_GuestNetwork{
-	background: url(images/New_ui/icon_indexes.png);
-	background-position: 0px -72px;
-}
-.menu_PermissionManagement{
-	background: url(images/New_ui/icon_indexes.png);
-	background-position: -0px -288px;
-}
-.menu_Report{
-	background: url(images/New_ui/icon_menues.png);
-	background-position: -0px -257px;
-}
-.menu_BandwidthMonitor, .menu_UU{
-	background: url(images/New_ui/icon_indexes.png);
-	background-position: -0px -108px;
-}
-.menu_GameBoost{
-	background: url(images/New_ui/game.png);
-	background-position: 0px 0px;
-}
-.menu_TrafficAnalyzer, .menu_NewDashboard{
-	background: url(images/New_ui/icon_indexes.png);
-	background-position: 0px -144px;
-}
-.menu_QoS{
-	background: url(images/New_ui/icon_indexes.png);
-	background-position: 0px -108px;
-}
-.menu_AccessControl{
-	background: url(images/New_ui/icon_indexes.png);
-	background-position: 0px -180px;
-}
-.menu_AiProtection{
-	background: url(images/New_ui/icon_indexes.png);
-	background-position: 0px -180px;
-}
-.menu_ParentalControl{
-	background: url(images/New_ui/icon_ParentalControl.png);
-}
-.menu_APP{
-	background: url(images/New_ui/icon_indexes.png);
-	background-position: 0px -216px;
-}
-.menu_AiCloud{
-	background: url(images/New_ui/icon_indexes.png);
-	background-position: 0px -252px;
-}
-.menu_SMS{
-	background: url(images/New_ui/icon_SMS.png);
-}
-.menu_Wireless{
-	background: url(images/New_ui/icon_menues.png);
-	background-position: 0px 0px;
-}
-.menu_LAN{
-	background: url(images/New_ui/icon_menues.png);
-	background-position: 0px -36px;
-}
-.menu_WAN{
-	background: url(images/New_ui/icon_menues.png);
-	background-position: 0px -72px;
-}
-.menu_IPv6{
-	background: url(images/New_ui/icon_menues.png);
-	background-position: 0px -108px;
-}
-.menu_VPN{
-	background: url(images/New_ui/icon_menues.png);
-	background-position: 0px -144px;
-}
-.menu_VLAN{
-	background: url(images/New_ui/icon_menues.png);
-	background-position: 0px -144px;
-}
-.menu_Firewall{
-	background: url(images/New_ui/icon_menues.png);
-	background-position: 0px -180px;
-}
-.menu_Setting{
-	background: url(images/New_ui/icon_menues.png);
-	background-position: 0px -216px;
-}
-.menu_Log{
-	background: url(images/New_ui/icon_menues.png);
-	background-position: 0px -252px;
-}
-.menu_NekworkTool{
-	background: url(images/New_ui/icon_menues.png);
-	background-position: 0px -288px;
-}
-.menu_Alexa_IFTTT{
-	background: url(images/New_ui/icon_menues.png);
-	background-position: 0px -324px;
-}
-.menu_QIS{
-	background: url(images/New_ui/icon_indexes.png);
-	background-position: 0px 0px;
-}
-.menu_AiMesh{
-	background: url(images/New_ui/icon_AiMesh.png);
-}
-.menu_OpenNAT{
-	background: url(images/New_ui/open_NAT.svg);
-	background-size: 100%;
-	background-repeat: no-repeat;
-}
-.menu_TencentAcceleration{
-	background: url(images/New_ui/logo_tencent.svg);
-	background-size: 100%;
-	background-repeat: no-repeat;
-}*/
 .menuClicked{
-	background: #006ce1; /* Old browsers */
-	color:#fefefe;
-	border-radius: 8px;
+	background: var(--primary-60); /* Old browsers */
+	color: var(--body-bg-color) !important;
 
+	border-radius: 0px;	
 }
-.tab:hover{
-	color:#006ce1;
-}
+
 .tab span, .tabClicked span{ 
 	vertical-align: middle;
 	display: table-cell;
@@ -997,7 +882,6 @@ width:122px;
 .tab{
 	cursor:pointer;
 	background: #2F3A3E;
-	color: #262626;
 	float: left;
 	height: 28px;
 	padding: 8px 24px;   
@@ -1007,7 +891,6 @@ width:122px;
 	margin-right: -2px;
 	text-align:center;
 	text-decoration: none;
-	font-family: Verdana, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
 	/*font-size: 12px;*/
 	/*border-radius: 5px 5px 0 0;*/
 	display: flex;
@@ -1016,7 +899,7 @@ width:122px;
 .tabClicked{
 	cursor:pointer;
 	/*background: #4D595D;*/
-	color: #006ce1;
+	color: var(--primary-50);
 	float: left;
 	height: 28px;
 	/*height: 35px;*/
@@ -1027,7 +910,6 @@ width:122px;
 	margin-right: -2px;
 	text-align:center;
 	text-decoration: none;
-	font-family: Verdana, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
 	/*font-size: 12px;*/
 	/*border-radius: 5px;*/
 	display: flex;

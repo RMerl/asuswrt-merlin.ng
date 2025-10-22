@@ -414,6 +414,16 @@ CFLAGS += -I$(TOP)/libcbor-0.11/src -I$(TOP)/libcbor-0.11 -I$(TOP)/jansson-2.7/s
 LIBS += -L$(TOP)/libcbor-0.11/src -lcbor -L$(TOP)/jansson-2.7/src/.libs -ljansson -L$(TOP)/libjwt/libjwt/.libs -ljwt -L$(TOP)/curl-7.21.7/lib/.libs -lcurl
 endif
 
+ifeq ($(RTCONFIG_GTBOOSTER),y)
+CFLAGS += -I$(TOP)/ark
+LIBS += -L$(TOP)/ark -lark_db
+endif
+
+ifeq ($(RTCONFIG_AI_SERVICE),y)
+CFLAGS += -I$(TOP)/curl-7.21.7/include
+LIBS += -L$(TOP)/curl-7.21.7/lib/.libs -lcurl
+endif
+
 all: httpd #test_apps
 
 #test_apps: apps.c

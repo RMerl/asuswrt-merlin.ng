@@ -218,15 +218,7 @@ function drawData(poly, data, mode, color)
 	poly.setAttribute('points', pt);
 }
 function getTrafficUnit(){
-	var _index = 'ASUS_TrafficMonitor_unit=';
-	var x = document.cookie;
-	if(x.indexOf(_index) == -1){
-		document.cookie = 'ASUS_TrafficMonitor_unit=1';
-		x = document.cookie
-	}
-
-	var _offset =x.indexOf(_index) + _index.length;
-	return x.substring(_offset, _offset + 1);
+	return window.localStorage.getItem("ASUS_TrafficMonitor_unit") || 1;
 }
 function updateSVG(rxData, txData, maxValue, mode, rxColor, txColor, intv, maxLen, dataD, avgSamp, clock)
 {

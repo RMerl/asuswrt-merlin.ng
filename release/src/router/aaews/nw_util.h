@@ -15,5 +15,9 @@ struct stun_server
 #define MASTIFF_DEF_PORT 61689
 int get_mac(unsigned char* mac_address);
 int check_wan_ip_change(void);
+int get_src_ip( unsigned int * ipaddr );
+unsigned int get_device_public_ip(unsigned int wan_ip_addr);
+int is_in_private_list(const char *str_addr);
 int is_private_ip(int caller);
+int is_private_ip2(int is_wan_ip_change);
 #endif

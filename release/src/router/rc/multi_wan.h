@@ -13,6 +13,15 @@ enum {
 	MTWAN_MODE_TIME,
 };
 
+#define MTWAN_HANDLE_V4  0
+#define MTWAN_HANDLE_V6  1
+#define MTWAN_LINK_DOWN  0
+#define MTWAN_LINK_UP    1
+#define MTWAN_DISCONNECT 0
+#define MTWAN_CONNECTED  1
+#define MTWAN_IGNORE_CONN 0
+#define MTWAN_CHECK_CONN  1
+
 typedef struct __mtwan_profile {
 	// nvram
 	int enable;
@@ -38,9 +47,10 @@ int mtwan_start_multi_wan();
 int mtwan_stop_multi_wan6();
 int mtwan_handle_if_updown(const int unit, const char *ifname, const int up);
 int mtwan_handle_ip_rule(const int unit);
-int mtwan_handle_ip_route(const int unit);
+int mtwan_handle_ip_route(int unit, int xcase);
 int mtwan_get_route_table_id(const int unit, char *table, const size_t table_len);
 int mtwan_get_route_rule_pref(const int unit) ;
+int mtwan_get_dns_rule_pref(int unit);
 int mtwan_get_default_wan();
 int mtwan_get_ifname(const int unit, char *ifname, const size_t len);
 int mtwan_update_nat_firewall(FILE *fp_nat);
@@ -57,26 +67,28 @@ int is_mtwan_lb(int unit);
 int is_mtwan_group_lb(int mtwan_idx, int mtwan_group);
 int is_mtwan_group_in_profile(int mtwan_idx, int mtwan_group);
 int is_mtwan_unit_in_profile(int mtwan_idx, int wan_unit);
+int is_mtwan_unit_in_active_group(int mtwan_idx, int wan_unit);
 int is_mtwan_primary(int wan_unit);
 int is_mtwan_primary_group(int wan_unit);
 int mtwan_get_num_of_wan_by_group(int mtwan_idx, int mtwan_group);
 int mtwan_get_lb_route_table_id(int mtwan_idx, int mtwan_group, char *table, size_t table_len);
 int mtwan_get_lb_rule_pref(int mtwan_idx, char *pref, size_t pref_len);
 int mtwan_get_mark_rule_pref(int unit);
-int mtwan_get_first_wan_unit_by_group(int mtwan_idx, int mtwan_group);
+int mtwan_get_first_wan_unit_by_group(int mtwan_idx, int mtwan_group, int check_conn);
 int mtwan_group_compare(int mtwan_idx, int mtwan_group_1, int mtwan_group_2);
 int mtwan_get_wan_group(int mtwan_idx, int wan_unit);
 int mtwan_get_fo_group(int mtwan_idx, int check_conn);
 int mtwan_get_first_group(int mtwan_idx);
 int mtwan_get_second_group(int mtwan_idx);
 void mtwan_handle_group_change(int mtwan_idx, int to_group);
-void mtwan_handle_wan_conn(int wan_unit, int connected);
+void mtwan_handle_wan_conn(int wan_unit, int connected, int link_up);
+void mtwan_check_and_init_profile();
 void mtwan_init_profile();
 void mtwan_init_mtwan_group();
 void mtwan_append_group_main_resolvconf(int wan_unit);
 void mtwan_update_lb_route(int unit, int up);
 void mtwan_update_lb_prob(int unit, int up);
-void mtwan_update_lb_iptables(int unit, int up);
+void mtwan_update_lb_iptables(int unit, int up, int v6);
 void mtwan_update_main_default_route(int unit, int up);
 void mtwan_update_profile_lb_route(int mtwan_idx, int mtwan_group, int unit, int up);
 void mtwan_update_profile();

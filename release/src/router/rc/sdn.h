@@ -43,8 +43,13 @@ void update_sdn_resolvconf();
 #ifdef RTCONFIG_MULTIWAN_IF
 int update_sdn_by_wan(const int wan_idx);
 int write_sdnlan_resolv_dnsmasq(FILE* fp);
+#ifdef RTCONFIG_IPV6
+void handle_sdn_routing_ipv6_neigh(int wan6_unit, const char *neighbor_file);
+int update_sdn_by_wan_ipv6(int wan_unit);
+int write_sdnlan_resolv_dnsmasq_ipv6(FILE* fp);
+#endif
 #ifdef RTCONFIG_MULTIWAN_PROFILE
-void update_sdn_mtwan_iptables(const MTLAN_T *pmtl);
+void update_sdn_mtwan_iptables(const MTLAN_T *pmtl, int v6);
 #endif
 #endif
 

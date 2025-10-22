@@ -52,6 +52,10 @@
 }
 </style>
 <script>
+if (isSupport("ark_iam")) {
+	window.location.href = "AiProtection_ContentFilter.asp";
+}
+
 var apps_filter = "<% nvram_get("wrs_rulelist"); %>".replace(/&#62/g, ">").replace(/&#60/g, "<");
 var wrs_filter = "<% nvram_get("wrs_rulelist"); %>".replace(/&#62/g, ">").replace(/&#60/g, "<");
 var wrs_app_filter = "<% nvram_get("wrs_app_rulelist"); %>".replace(/&#62/g, ">").replace(/&#60/g, "<");
@@ -349,9 +353,13 @@ function genMain_table(){
 	code += '<input type="checkbox" checked="">';
 	code += '</td>';
 	code += '<td style="border-bottom:2px solid #000;">';
-	code += '<input type="text" maxlength="17" style="margin-left:10px;float:left;width:255px;" class="input_20_table" id="webProtectClient" name="PC_devicename" onkeypress="return validator.isHWAddr(this,event)" onclick="hideClients_Block();" placeholder="ex: <% nvram_get("lan_hwaddr"); %>" autocorrect="off" autocapitalize="off">';
+    code += '<div style="display: flex; justify-content: center">';
+    code += '<div class="clientlist_dropdown_main">';
+	code += '<input type="text" maxlength="17" class="input_20_table" id="webProtectClient" name="PC_devicename" onkeypress="return validator.isHWAddr(this,event)" onclick="hideClients_Block();" placeholder="ex: <% nvram_get("lan_hwaddr"); %>" autocorrect="off" autocapitalize="off">';
 	code += '<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullLANIPList(this);" title="<#select_client#>">';
-	code += '<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-top:25px;margin-left:10px;"></div>';
+	code += '<div id="ClientList_Block_PC" class="clientlist_dropdown"></div>';
+    code += '</div>';
+    code += '</div>';
 	code += '</td>';
 	code += '<td style="border-bottom:2px solid #000;text-align:left;">';
 	for(var i=0;i<category_name.length;i++){
@@ -889,7 +897,7 @@ function switch_control(_status){
 								</div>
 								<div style="margin:0px 0px 10px 5px;" class="splitLine"></div>
 								<div id="PC_desc">
-									<table width="700px" style="margin-left:25px;">
+									<table id="PC_desc_table" width="700px" style="margin-left:25px;">
 										<tr>
 											<td>
 												<img id="guest_image" src="/images/New_ui/Web_Apps_Restriction.png">

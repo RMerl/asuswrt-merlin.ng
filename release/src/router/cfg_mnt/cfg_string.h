@@ -312,6 +312,22 @@
 #define CFG_STR_DEVICE_INFO		"device_info"
 #define CFG_STR_PREFER_RETRY_COUNT		"prefer_retry_count"
 #define CFG_STR_PREFER_RETRY_TIME		"prefer_retry_time"
+#ifdef RTCONFIG_AMAS_NEWOB
+#define CFG_STR_APPROVAL_TIMEOUT		"approval_timeout"
+#define CFG_STR_APPROVAL_RESULT		"approval_result"
+#define CFG_STR_GROUPID_TIMEOUT		"cfg_obtimeout"
+#define CFG_STR_CONNECTION_MAC		"conn_mac"
+#define CFG_STR_ALIVE_TIMEOUT		"alive_timeout"
+#define CFG_STR_APPROVAL_OB_KEY		"ob_key"
+#define CFG_STR_SESSION_KEY		"session_key"
+#define CFG_STR_CAPABILITY		"capability"
+#define CFG_STR_OBRESULT		"cfg_obresult"
+#define CFG_STR_REMOVE_TIMEOUT		"remove_timeout"
+#define CFG_STR_OBSTART		"cfg_obstart"
+#define CFG_STR_OBREBOOT		"cfg_obreboottime"
+#define CFG_STR_OBCONN_TIMEOUT		"cfg_obconntimeout"
+#define CFG_STR_OBTRAFFIC_TIMEOUT       "cfg_obtraffictimeout"
+#endif
 #define CFG_STR_VERSION		"version"
 
 #define CFG_STR_MODEL_WIFI7	"support_wifi7"

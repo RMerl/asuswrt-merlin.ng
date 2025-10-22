@@ -342,6 +342,7 @@ var setClientAttr = function(){
 	this.isPrinter = false;
 	this.isITunes = false;
 	this.isASUS = false;
+	this.isAiBoard = false;
 	this.isLogin = false;
 	this.isOnline = false;
 	this.ipMethod = "Static";
@@ -392,6 +393,18 @@ const saveCloudAsusClientIcon = (mac, name) => {
 
 var clientList = new Array(0);
 function genClientList(){
+	const cfg_clientlist = (()=>{
+		if(isSupport("amas")){
+			if(typeof get_cfg_clientlist == "object"){
+				return get_cfg_clientlist;
+			}
+			else{
+				return httpApi.hookGet("get_cfg_clientlist");
+			}
+		}
+		else
+			return [];
+	})();
 	clientList = [];
 	totalClientNum.online = 0;
 	totalClientNum.wired = 0;
@@ -505,8 +518,13 @@ function genClientList(){
 						else {
 							totalClientNum.wired -= clientList[thisClientMacAddr].macRepeat;
 						}
-						if(AiMeshTotalClientNum[thisClientMacAddr] == undefined)
+						if(AiMeshTotalClientNum[thisClientMacAddr] == undefined){
 							AiMeshTotalClientNum[thisClientMacAddr] = 0;
+						}
+						const specific_node = cfg_clientlist.find(item=>item.mac == thisClientMacAddr);
+						if(specific_node != undefined){
+							clientList[thisClientMacAddr].name = specific_node.ui_model_name || specific_node.model_name;
+						}
 					}
 				}
 
@@ -536,6 +554,7 @@ function genClientList(){
 				clientList[thisClientMacAddr].mlo = (typeof thisClient.mlo == "undefined") ? false : (thisClient.mlo == "1" ? true : false);
 			}
 			clientList[thisClientMacAddr].isASUS = (thisClient.isASUS == "1");
+			clientList[thisClientMacAddr].isAiBoard = (thisClient.isAiBoard == "1");
 
 			if (clientList[thisClientMacAddr].type != '' && !clientList[thisClientMacAddr].isUserUplaodImg && clientList[thisClientMacAddr].isASUS && clientList[thisClientMacAddr].type == clientList[thisClientMacAddr].defaultType && clientList[thisClientMacAddr].name != "ASUS") {
 				saveCloudAsusClientIcon(clientList[thisClientMacAddr].mac, clientList[thisClientMacAddr].name);
@@ -582,6 +601,13 @@ function genClientList(){
 						clientList[thisClientMacAddr].amesh_bind_mac = (typeof thisClient.amesh_bind_mac == "undefined") ? "" : thisClient.amesh_bind_mac;
 						clientList[thisClientMacAddr].amesh_bind_band = (typeof thisClient.amesh_bind_band == "undefined") ? "0" : thisClient.amesh_bind_band;
 					}
+
+					if(clientList[thisClientMacAddr].amesh_isRe){
+						const specific_node = cfg_clientlist.find(item=>item.mac == thisClientMacAddr);
+						if(specific_node != undefined){
+							clientList[thisClientMacAddr].name = specific_node.ui_model_name || specific_node.model_name;
+						}
+					}
 				}
 
 				clientList[thisClientMacAddr].ROG = (thisClient.ROG == "1");
@@ -606,6 +632,17 @@ function genClientList(){
 			clientList[cap_mac].name = '<% nvram_get("productid"); %>';
 		}
 	}
+	clientList.sort((a, b) => clientList[a].amesh_isRe - clientList[b].amesh_isRe);//sort client > node
+	//filter out AiBoard clients
+	clientList = Object.assign(
+        clientList.filter(item => !clientList[item]?.isAiBoard),
+        Object.fromEntries(
+            clientList
+                .filter(item => !clientList[item]?.isAiBoard)
+                .map(item => [item, clientList[item]])
+                .filter(([key, value]) => value)
+        )
+    )
 }
 
 //Initialize client list obj immediately
@@ -633,9 +670,9 @@ function getUploadIcon(clientMac) {
 			if(str_tmp_arr.length != 2){
 				return false;
 			}
-			var mimeTypeRegExp = /(jpg|jpeg|gif|png|bmp|ico)/;
+			var mimeTypeRegExp = /(jpg|jpeg|gif|png|bmp|ico|svg\+xml)/;
 			var mimeType_str = str_tmp_arr[0];
-			if(mimeType_str.length > 5){
+			if(mimeType_str.length > 12){
 				return false;
 			}
 			var match_data = mimeType_str.match(mimeTypeRegExp);
@@ -824,6 +861,7 @@ function popClientListEditTable(event) {
 	code += '<tr>';
 	code += '<td>';
 	code += '<div id="card_client_state_div" class="clientState">';
+	code += '<span id="card_client_aimesh_node" class="ipMethodTag" style="color:#FFFFFF;margin-right:5px;"></span>';
 	code += '<span id="card_client_ipMethod" class="ipMethodTag" style="color:#FFFFFF;margin-right:5px;"></span>';
 	code += '<span id="card_client_login" class="ipMethodTag" style="color:#FFFFFF;margin-right:5px;"></span>';
 	code += '<span id="card_client_printer" class="ipMethodTag" style="color:#FFFFFF;margin-right:5px;"></span>';
@@ -1036,6 +1074,7 @@ function popClientListEditTable(event) {
 	//device title info. start
 	document.getElementById("card_client_name").value = (clientInfo.nickName == "") ? clientInfo.name : clientInfo.nickName;
 
+	document.getElementById("card_client_aimesh_node").style.display = "none";
 	document.getElementById("card_client_ipMethod").style.display = "none";
 	document.getElementById("card_client_login").style.display = "none";
 	document.getElementById("card_client_printer").style.display = "none";
@@ -1132,6 +1171,15 @@ function popClientListEditTable(event) {
 		document.getElementById('card_client_sdnIdx').setAttribute('client_sdn_idx', clientInfo.sdn_idx);
 	}else{
 		document.getElementById('card_client_sdnIdx').setAttribute('client_sdn_idx', '0');
+	}
+	if(clientInfo.amesh_isRe) {
+		document.getElementById("card_client_aimesh_node").style.display = "";
+		document.getElementById("card_client_aimesh_node").innerHTML = `<#AiMesh_Node#>`;
+
+		document.getElementById("card_client_login").style.display = "none";
+		document.getElementById("card_client_printer").style.display = "none";
+		document.getElementById("card_client_iTunes").style.display = "none";
+		document.getElementById("card_client_opMode").style.display = "none";
 	}
 	//device title info. end
 
@@ -1843,7 +1891,7 @@ function card_confirm(event) {
 
 							switch(callBack) {
 								case "DHCP" :
-									showDropdownClientList('setClientIP', 'mac>ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');
+									showDropdownClientList('setClientIP', 'mac>ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all', "DHCP");
 									showdhcp_staticlist();
 									break;
 								case "WOL" :
@@ -2795,7 +2843,8 @@ function exportClientListLog() {
 					clientList[clientList[i]].ip6,
 					clientList[clientList[i]].ip6_prefix,
 					clientList[clientList[i]].mlo,
-					clientList[clientList[i]].isASUS
+					clientList[clientList[i]].isASUS,
+					clientList[clientList[i]].isAiBoard,
 				]);
 			}
 
@@ -3117,7 +3166,8 @@ function create_clientlist_listview() {
 				clientList[clientList[i]].ip6,
 				clientList[clientList[i]].ip6_prefix,
 				clientList[clientList[i]].mlo,
-				clientList[clientList[i]].isASUS
+				clientList[clientList[i]].isASUS,
+				clientList[clientList[i]].isAiBoard,
 			];
 
 			switch (clienlistViewMode) {
@@ -3306,6 +3356,7 @@ function drawClientListBlock(objID) {
 		this.ip6_prefix = _profile[17];
 		this.mlo = _profile[18];
 		this.isASUS = _profile[19];
+		this.isAiBoard = _profile[20];
 	}
 
 	if (document.getElementById("clientlist_" + objID + "_Block") != null) {
@@ -3839,15 +3890,23 @@ function control_dropdown_client_block(_containerID, _pullArrowID, _evt) {
 }
 
 //_callBackFunParam = mac>ip>..., _interfaceMode = all(wired, wll), wired, wl, _clientState = all, online, offline
-function showDropdownClientList(_callBackFun, _callBackFunParam, _interfaceMode, _containerID, _pullArrowID, _clientState) {
+function showDropdownClientList(_callBackFun, _callBackFunParam, _interfaceMode, _containerID, _pullArrowID, _clientState, _showRE) {
 	document.body.addEventListener("click", function(_evt) {control_dropdown_client_block(_containerID, _pullArrowID, _evt);})
 	if(clientList.length == 0){
 		setTimeout(function() {
 			genClientList();
-			showDropdownClientList(_callBackFun, _callBackFunParam, _interfaceMode, _containerID, _pullArrowID);
+			showDropdownClientList(_callBackFun, _callBackFunParam, _interfaceMode, _containerID, _pullArrowID, _clientState, _showRE);
 		}, 500);
 		return false;
 	}
+	const showRE = _showRE?.toLowerCase() === "true";
+	const cfg_clientlist = (()=>{
+		if(showRE){
+			return httpApi.hookGet("get_cfg_clientlist");
+		}
+		else
+			return [];
+	})();
 
 	var htmlCode = "";
 	htmlCode += "<div id='" + _containerID + "_clientlist_online'></div>";
@@ -3881,7 +3940,10 @@ function showDropdownClientList(_callBackFun, _callBackFunParam, _interfaceMode,
 
 	var genClientItem = function(_state) {
 		var code = "";
-		var clientName = (clientObj.nickName == "") ? clientObj.name : clientObj.nickName;
+		let clientName = (clientObj.nickName == "") ? clientObj.name : clientObj.nickName;
+		if(clientObj.amesh_isRe){
+			clientName = `[Node] ${clientName} (${clientObj.mac})`;
+		}
 		
 		code += '<a id=' + clientList[i] + ' title=' + clientList[i] + '>';
 		if(_state == "online")
@@ -3899,7 +3961,7 @@ function showDropdownClientList(_callBackFun, _callBackFunParam, _interfaceMode,
 		}
 		code += '\');">';
 		code += '<strong>';
-		if(clientName.length > 32) {
+		if(clientName.length > 32 && !clientObj.amesh_isRe) {
 			code += clientName.substring(0, 30) + "..";
 		}
 		else {
@@ -3914,8 +3976,19 @@ function showDropdownClientList(_callBackFun, _callBackFunParam, _interfaceMode,
 
 	for(var i = 0; i < clientList.length; i +=1 ) {
 		var clientObj = clientList[clientList[i]];
-		if(clientObj.amesh_isRe)
-			continue;
+		if(clientObj.amesh_isRe){
+			if(showRE){
+				const specific_node = cfg_clientlist.find(item=>item.mac == clientObj.mac);
+				if(specific_node != undefined){
+					clientObj.isOnline = specific_node.online == "1" ? true : false;
+					clientObj.name = specific_node.ui_model_name || specific_node.model_name;
+					clientObj.ip = specific_node.ip;
+				}
+			}
+			else{
+				continue;
+			}
+		}
 		switch(_clientState) {
 			case "all" :
 				if(_interfaceMode == "wl" && (clientList[clientList[i]].isWL == 0)) {

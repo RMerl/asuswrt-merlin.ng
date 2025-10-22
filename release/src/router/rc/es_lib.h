@@ -39,8 +39,8 @@
 #define ES_PWR_ETH_1G    1
 #define ES_PWR_ETH_2P5G  100
 #define ES_PWR_ETH_10G   10000
-#define ES_PWR_USB_2     1
-#define ES_PWR_USB_3     100
+#define ES_PWR_USB_480   1
+#define ES_PWR_USB_5000  100
 
 typedef enum {
 	ES_LOG_NONE,
@@ -67,6 +67,9 @@ typedef enum {
 	ESR_SET_STS_WLBAND,
 	ESR_SET_HALT,
 	ESR_SET_CHECK,
+	ESR_SET_AUTO_RENEW_CYCLE,
+	ESR_GET_HISTORY,
+	ESR_GET_STATUS,
 } esr_t;
 
 typedef struct {
@@ -102,6 +105,16 @@ typedef struct {
 			char updater[16];
 		} wlband;
 		int halt;
+		time_t cycle;
+		struct {
+			time_t duration;
+			char output_path[64];
+			size_t buf_size;
+		} history;
+		struct {
+			char output_path[64];
+			size_t buf_size;
+		} status;
 	};
 } esr_data_t;
 
@@ -111,7 +124,7 @@ void es_set_log_level(es_log_level_t level);
 void es_set_log_ouput(const char* path);
 const char *es_log_level_to_str(es_log_level_t level);
 
-int es_do_write(int fd, void* data, size_t len);
+int es_do_write(int fd, const void* data, size_t len);
 int es_do_read(int fd, void* data, size_t len);
 int es_get_data(esr_data_t *s_data, void* data, size_t len);
 int es_set_data(esr_data_t *s_data);
@@ -132,5 +145,11 @@ int esr_set_usb(uint16_t status, const char* updater);
 int esr_set_wlband(uint8_t band, uint8_t status, const char* updater);
 int esr_set_wlunit(int unit, uint8_t status, const char* updater);
 int esr_set_halt(int activate);
+int esr_set_auto_renew_cycle(time_t cycle);
+int esr_get_history_day(size_t num_of_days, const char* output_file, char* buf, size_t len);
+int esr_get_history_hour(size_t num_of_hours, const char* output_file, char* buf, size_t len);
+int esr_get_history_min(size_t num_of_mins, const char* output_file, char* buf, size_t len);
+int esr_get_history_sec(size_t num_of_secs, const char* output_file, char* buf, size_t len);
+int esr_get_status(const char* output_file, char* buf, size_t len);
 
 #endif

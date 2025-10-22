@@ -168,6 +168,7 @@
     ### AiMesh Event  ###
 ---------------------------------*/
 #define AIMESH_ETH_OB_EVENT                        0x80001
+#define AIMESH_ETH_NODE_DISCONN_EVENT              0x80002
 /* EVENT DEFINE END
 ---------------------------------*/
 

@@ -26,7 +26,7 @@
 	display:block;
 	margin-left: 23%;
 	top: 15%;
-	width:495px;
+	width:575px;
 	height:auto;
 	box-shadow: 3px 3px 10px #000;
 	display: none;
@@ -239,7 +239,7 @@ if(gobi_support) {
 	var dualwan_second_if = wans_dualwan_array[1];
 }
 
-var wans_flag = (wans_dualwan_orig.search("none") != -1 || !parent.dualWAN_support) ? 0 : 1;
+var wans_flag = (wans_dualwan_orig.search("none") != -1 || !isSupport("dualwan")) ? 0 : 1;
 var wan_ipv6_network_json =('<% wan_ipv6_network(); %>' != '{}')? JSON.parse('<% wan_ipv6_network(); %>'):{};
 
 // USB function
@@ -276,8 +276,17 @@ function initial(){
 	if(isIE6)
 		alert("<#ALERT_TO_CHANGE_BROWSER#>");
 
-	if(dualWAN_support && isSwMode("RT")){
+	if(dualwan_enabled && isSwMode("RT")){
 		check_dualwan(wans_flag);
+
+		if(wans_dualwan_array[0] == 'usb'){
+			if(document.getElementById("iconInternet_primary")) 
+				document.getElementById("iconInternet_primary").style.background = "url('images/New_ui/networkmap/Mobile-Broadband.png') no-repeat 0% 0%";
+		}
+		else if(wans_dualwan_array[1] == 'usb'){
+			if(document.getElementById("iconInternet_secondary")) 
+				document.getElementById("iconInternet_secondary").style.background = "url('images/New_ui/networkmap/Mobile-Broadband.png') no-repeat 0% 0%";
+		}
 	}
 
 	if(concurrent_pap){
@@ -574,7 +583,7 @@ function initial(){
 	if(MULTIFILTER_BLOCK_ALL == "1")
 		$(".block_all_icon").css("display", "flex");
 
-	if(cookie.get("show_phone_as_modem_hints") == "1"){
+	if(window.localStorage.getItem("show_phone_as_modem_hints") == "1"){
 		$("#phone_as_modem_instructions").load("/phone_as_modem_instructions.html", function(){
 			$("#phone_as_modem_div").css("display", "flex");
 		});
@@ -709,7 +718,7 @@ function show_middle_status(auth_mode, wl_wep_x){
 				security_mode = "Open System";
 				break;
 		case "openowe":
-				security_mode = "Enhanced Open Transition";
+				security_mode = "<#WLANConfig11b_AuthenticationMethod_EOT#>";
 				break;
 		case "owe":
 				security_mode = "Enhanced Open";
@@ -1828,8 +1837,15 @@ function popupEditBlock(clientObj){
 		document.getElementById('ipaddr_field').value = clientObj.ip;
 
 		document.getElementById('hostname_field').value = clientObj.hostname;
-
-		document.getElementById('ipaddr_field').disabled = true;
+        document.getElementById('ip6addr_field').value = clientObj.ip6;
+        document.getElementById('ip6addr_prefix_field').value = clientObj.ip6_prefix;
+        document.getElementById('ipaddr_field').disabled = true;
+        if (clientObj.ip6 == '' || clientObj.ip6 == undefined) {
+            document.getElementById('ip6addr_field').parentNode.parentNode.style.display = "none";
+        }
+        if (clientObj.ip6_prefix == '' || clientObj.ip6_prefix == undefined) {
+            document.getElementById('ip6addr_prefix_field').parentNode.parentNode.style.display = "none";
+        }
 		$("#ipaddr_field").addClass("client_input_text_disabled");
 		if((isSwMode("RT") || isSwMode("WISP")) && !clientObj.amesh_isRe) {
 			$("#ipaddr_field").removeClass("client_input_text_disabled");
@@ -2346,7 +2362,7 @@ function notice_apply(){
 
 function close_phone_as_modem_hint(){
 	$("#phone_as_modem_div").hide();
-	cookie.unset("show_phone_as_modem_hints");
+	window.localStorage.removeItem("show_phone_as_modem_hints");
 }
 
 function copyDdnsName(e) {
@@ -2563,35 +2579,57 @@ function showClientlistModal(){
 				</div>
 			</td>
 			<td style="vertical-align:top;text-align:center;">
-				<div class="clientTitle">
-					<#Clientlist_name#>
-				</div>
-				<div  class="clientTitle" style="margin-top:10px;">
-					IP
-				</div>
-				<div  class="clientTitle" style="margin-top:10px;">
-					MAC
-				</div>
-				<div  class="clientTitle" style="margin-top:10px;">
-					<#Clientlist_device#>
-				</div>
-			</td>
-			<td style="vertical-align:top;width:280px;">
-				<div>
-					<input id="client_name" name="client_name" type="text" value="" class="input_32_table" maxlength="32" style="width:275px;" autocorrect="off" autocapitalize="off">
-					<input id="hostname_field" type="hidden" value="">
-				</div>
-				<div style="margin-top:10px;">
-					<input id="ipaddr_field_orig" type="hidden" value="" disabled="">
-					<input id="ipaddr_field" type="text" value="" class="input_32_table" style="width:275px;" onkeypress="return validator.isIPAddr(this,event)" autocorrect="off" autocapitalize="off">
-				</div>
-
-				<div style="margin-top:10px;">
-					<input id="macaddr_field" type="text" value="" class="input_32_table client_input_text_disabled" disabled autocorrect="off" autocapitalize="off">
-				</div>
-				<div style="margin-top:10px;">
-					<input id="manufacturer_field" type="text" value="" class="input_32_table client_input_text_disabled" disabled>
-				</div>
+				<div style="display: flex; flex-direction: column; gap:10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="clientTitle">
+                          <#Clientlist_name#>
+                        </div>
+                        <div>
+                            <input id="client_name" name="client_name" type="text" value="" class="input_32_table" maxlength="32" style="width:290px;" autocorrect="off" autocapitalize="off">
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="clientTitle">
+                          IP
+                        </div>
+                        <div>
+                            <input id="ipaddr_field_orig" type="hidden" value="" disabled="">
+                            <input id="ipaddr_field" type="text" value="" class="input_32_table" style="width:290px;" onkeypress="return validator.isIPAddr(this,event)" autocorrect="off" autocapitalize="off">
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="clientTitle">
+                          <#IPv6_wan_addr#>
+                        </div>
+                        <div>
+                            <input id="ip6addr_prefix_field" type="text" value="" class="input_32_table client_input_text_disabled" disabled autocorrect="off" autocapitalize="off">
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="clientTitle">
+                          WAN IPv6 Link-Local
+                        </div>
+                        <div>
+                            <input id="ip6addr_field" type="text" value="" class="input_32_table client_input_text_disabled" disabled autocorrect="off" autocapitalize="off">
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="clientTitle">
+                          MAC
+                        </div>
+                        <div>
+                            <input id="macaddr_field" type="text" value="" class="input_32_table client_input_text_disabled" disabled autocorrect="off" autocapitalize="off">
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="clientTitle">
+                          <#Clientlist_device#>
+                        </div>
+                        <div>
+                            <input id="manufacturer_field" type="text" value="" class="input_32_table client_input_text_disabled" disabled>
+                        </div>
+                    </div>
+                </div>
 			</td>
 		</tr>
 

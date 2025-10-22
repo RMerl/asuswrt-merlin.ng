@@ -73,6 +73,9 @@
 #endif
 #define FT_MOCA   BIT_ULL(33)
 #define FT_PRIVACY_POLICY   BIT_ULL(34)
+#define FT_SWITCH_POE_ENABLE BIT_ULL(35)
+#define FT_SWITCH_POE_PRIORITY BIT_ULL(36)
+#define FT_SWITCH_POE_LIMIT BIT_ULL(37)
 #if defined(RTCONFIG_MULTILAN_CFG)
 #define FT_MLO BIT_ULL(40)
 #endif
@@ -130,6 +133,7 @@
 #define RESTART_MLO				"set_mlo_config;reboot"
 #endif
 #define MOCA_SET_PRIVACY	"moca_set_privacy"
+#define RESTART_POE_INIT                "restart_poe_init"
 #ifdef AFC_ENABLED
 #define RESTART_AFC	"restart_bcm_afc"
 #endif
@@ -202,6 +206,9 @@ static struct feature_mapping_s feature_mapping_list[] __attribute__ ((unused)) 
 #endif
 	{ "moca", 	FT_MOCA,	MOCA_SET_PRIVACY },
 	{ "privacy_policy",	FT_PRIVACY_POLICY,	NULL },
+	{ "poe_enable", FT_SWITCH_POE_ENABLE, RESTART_POE_INIT },
+	{ "poe_priority", FT_SWITCH_POE_PRIORITY, RESTART_POE_INIT },
+	{ "poe_limit", FT_SWITCH_POE_LIMIT, RESTART_POE_INIT },
 #if defined(RTCONFIG_MLO)
 	{ "mld", FT_MLD_ENABLE, RESTART_MLO },
 	{ "mlo", FT_MLO, RESTART_WIRELESS },
@@ -722,6 +729,37 @@ enum {
 #endif	// RTCONFIG_MLO
 
 	SUBFT_PRIVACY_POLICY,
+
+	SUBFT_SWITCH_POE1,
+	SUBFT_SWITCH_POE2,
+	SUBFT_SWITCH_POE3,
+	SUBFT_SWITCH_POE4,
+	SUBFT_SWITCH_POE5,
+	SUBFT_SWITCH_POE6,
+	SUBFT_SWITCH_POE7,
+	SUBFT_SWITCH_POE8,
+	SUBFT_SWITCH_POE1_PRIORITY,
+	SUBFT_SWITCH_POE2_PRIORITY,
+	SUBFT_SWITCH_POE3_PRIORITY,
+	SUBFT_SWITCH_POE4_PRIORITY,
+	SUBFT_SWITCH_POE5_PRIORITY,
+	SUBFT_SWITCH_POE6_PRIORITY,
+	SUBFT_SWITCH_POE7_PRIORITY,
+	SUBFT_SWITCH_POE8_PRIORITY,
+	SUBFT_SWITCH_POE1_LIMIT,
+	SUBFT_SWITCH_POE2_LIMIT,
+	SUBFT_SWITCH_POE3_LIMIT,
+	SUBFT_SWITCH_POE4_LIMIT,
+	SUBFT_SWITCH_POE5_LIMIT,
+	SUBFT_SWITCH_POE6_LIMIT,
+	SUBFT_SWITCH_POE7_LIMIT,
+	SUBFT_SWITCH_POE8_LIMIT,
+
+	SUBFT_TX_POWER_BAND1,
+	SUBFT_TX_POWER_BAND2,
+	SUBFT_TX_POWER_BAND3,
+	SUBFT_TX_POWER_BAND4,
+
 	SUBFT_GENCERT,
 
 #ifdef RTCONFIG_MLO_BH_BAND
@@ -768,6 +806,11 @@ enum {
 #endif
 
 	SUBFT_NEW_EULA,
+
+	SUBFT_RA_RSSI_BAND1,
+	SUBFT_RA_RSSI_BAND2,
+	SUBFT_RA_RSSI_BAND3,
+	SUBFT_RA_RSSI_BAND4,
 
 	/* sub feature for disable 11b */
 	SUBFT_DISABLE_11B_BAND1,
@@ -1226,6 +1269,39 @@ static struct subfeature_mapping_s subfeature_mapping_list[] __attribute__ ((unu
 	{ "re_rb_enable", SUBFT_RB_ENABLE, FT_WIRELESS },
 #endif
 	{ "privacy_policy",	SUBFT_PRIVACY_POLICY,	FT_PRIVACY_POLICY },
+
+	/* poe */
+	{ "poe1_enable", SUBFT_SWITCH_POE1, FT_SWITCH_POE_ENABLE },
+	{ "poe2_enable", SUBFT_SWITCH_POE2, FT_SWITCH_POE_ENABLE },
+	{ "poe3_enable", SUBFT_SWITCH_POE3, FT_SWITCH_POE_ENABLE },
+	{ "poe4_enable", SUBFT_SWITCH_POE4, FT_SWITCH_POE_ENABLE },
+	{ "poe5_enable", SUBFT_SWITCH_POE5, FT_SWITCH_POE_ENABLE },
+	{ "poe6_enable", SUBFT_SWITCH_POE6, FT_SWITCH_POE_ENABLE },
+	{ "poe7_enable", SUBFT_SWITCH_POE7, FT_SWITCH_POE_ENABLE },
+	{ "poe8_enable", SUBFT_SWITCH_POE8, FT_SWITCH_POE_ENABLE },
+	{ "poe1_priority", SUBFT_SWITCH_POE1_PRIORITY, FT_SWITCH_POE_PRIORITY },
+	{ "poe2_priority", SUBFT_SWITCH_POE2_PRIORITY, FT_SWITCH_POE_PRIORITY },
+	{ "poe3_priority", SUBFT_SWITCH_POE3_PRIORITY, FT_SWITCH_POE_PRIORITY },
+	{ "poe4_priority", SUBFT_SWITCH_POE4_PRIORITY, FT_SWITCH_POE_PRIORITY },
+	{ "poe4_priority", SUBFT_SWITCH_POE4_PRIORITY, FT_SWITCH_POE_PRIORITY },
+	{ "poe5_priority", SUBFT_SWITCH_POE5_PRIORITY, FT_SWITCH_POE_PRIORITY },
+	{ "poe6_priority", SUBFT_SWITCH_POE6_PRIORITY, FT_SWITCH_POE_PRIORITY },
+	{ "poe7_priority", SUBFT_SWITCH_POE7_PRIORITY, FT_SWITCH_POE_PRIORITY },
+	{ "poe8_priority", SUBFT_SWITCH_POE8_PRIORITY, FT_SWITCH_POE_PRIORITY },
+	{ "poe1_limit", SUBFT_SWITCH_POE1_LIMIT, FT_SWITCH_POE_LIMIT },
+	{ "poe2_limit", SUBFT_SWITCH_POE2_LIMIT, FT_SWITCH_POE_LIMIT },
+	{ "poe3_limit", SUBFT_SWITCH_POE3_LIMIT, FT_SWITCH_POE_LIMIT },
+	{ "poe4_limit", SUBFT_SWITCH_POE4_LIMIT, FT_SWITCH_POE_LIMIT },
+	{ "poe5_limit", SUBFT_SWITCH_POE5_LIMIT, FT_SWITCH_POE_LIMIT },
+	{ "poe6_limit", SUBFT_SWITCH_POE6_LIMIT, FT_SWITCH_POE_LIMIT },
+	{ "poe7_limit", SUBFT_SWITCH_POE7_LIMIT, FT_SWITCH_POE_LIMIT },
+	{ "poe8_limit", SUBFT_SWITCH_POE8_LIMIT, FT_SWITCH_POE_LIMIT },
+
+	{ "tx_power_b1",	SUBFT_TX_POWER_BAND1,	FT_WIRELESS },
+	{ "tx_power_b2",	SUBFT_TX_POWER_BAND2, 	FT_WIRELESS },
+	{ "tx_power_b3",	SUBFT_TX_POWER_BAND3, 	FT_WIRELESS },
+	{ "tx_power_b3", 	SUBFT_TX_POWER_BAND4, 	FT_WIRELESS },
+
 #if defined(RTCONFIG_MLO)
 	{ "mld", SUBFT_MLD_ENABLE, FT_MLD_ENABLE },
 	{ "mlo", SUBFT_MLO, FT_MLO },
@@ -1275,6 +1351,12 @@ static struct subfeature_mapping_s subfeature_mapping_list[] __attribute__ ((unu
 
 	/* new eula */
 	{ "new_eula",	SUBFT_NEW_EULA,	FT_NEW_EULA },
+
+	/* rssi for roaming assistant */
+	{ "ra_rssi_b1", SUBFT_RA_RSSI_BAND1,    FT_WIRELESS },
+	{ "ra_rssi_b2", SUBFT_RA_RSSI_BAND2,    FT_WIRELESS },
+	{ "ra_rssi_b3", SUBFT_RA_RSSI_BAND3,    FT_WIRELESS },
+	{ "ra_rssi_b4", SUBFT_RA_RSSI_BAND4,    FT_WIRELESS },
 
 	/* Diable 11b */
 	{ "dis_11b_b1", SUBFT_DISABLE_11B_BAND1, FT_WIRELESS },
@@ -1809,6 +1891,11 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
     { "wl3.7_bw_dl",    	FT_BW_LIMIT,    SUBFT_BW_LIMIT_BAND4_G7,		"",	0,	0},
 #endif
 #endif
+	/* rssi for roaming assistant */
+	{ "wl0_user_rssi", 		FT_WIRELESS, 		SUBFT_RA_RSSI_BAND1,		"-70"},
+	{ "wl1_user_rssi", 		FT_WIRELESS, 		SUBFT_RA_RSSI_BAND2,		"-70"},
+	{ "wl2_user_rssi", 		FT_WIRELESS, 		SUBFT_RA_RSSI_BAND3,		"-70"},
+	{ "wl3_user_rssi", 		FT_WIRELESS, 		SUBFT_RA_RSSI_BAND4,		"-70"},
 	/* wireless advanced */
 	{ "wl0_user_rssi", 		FT_WIRELESS, 		SUBFT_ADVANCED_BAND1,		"-70",	0,	0},
 	{ "wl1_user_rssi", 		FT_WIRELESS, 		SUBFT_ADVANCED_BAND2,		"-70",	0,	0},
@@ -2021,6 +2108,11 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 	{ "wl1_itxbf", FT_WIRELESS, SUBFT_ADVANCED_BAND2,		"1",	0,	0},
 	{ "wl2_itxbf", FT_WIRELESS, SUBFT_ADVANCED_BAND3,		"1",	0,	0},
 	{ "wl3_itxbf", FT_WIRELESS, SUBFT_ADVANCED_BAND4,		"1",	0,	0},
+	/* Tx power adjustment */
+	{ "wl0_txpower", FT_WIRELESS, SUBFT_TX_POWER_BAND1,		"100",	0,	0},
+	{ "wl1_txpower", FT_WIRELESS, SUBFT_TX_POWER_BAND2,		"100",	0,	0},
+	{ "wl2_txpower", FT_WIRELESS, SUBFT_TX_POWER_BAND3,		"100",	0,	0},
+	{ "wl3_txpower", FT_WIRELESS, SUBFT_TX_POWER_BAND4,		"100",	0,	0},
 	/* Tx power adjustment */
 	{ "wl0_txpower", FT_WIRELESS, SUBFT_ADVANCED_BAND1,		"100",	0,	0},
 	{ "wl1_txpower", FT_WIRELESS, SUBFT_ADVANCED_BAND2,		"100",	0,	0},
@@ -3743,6 +3835,31 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 #ifdef RTCONFIG_MLO_BH_BAND
 	{ "mlo_bh_band", FT_MLO_BH_BAND, SUBFT_MLO_BH_BAND,		"",	0,	0},
 #endif
+
+	{ "poe1_enable", FT_SWITCH_POE_ENABLE, SUBFT_SWITCH_POE1, "1" },
+	{ "poe2_enable", FT_SWITCH_POE_ENABLE, SUBFT_SWITCH_POE2, "1" },
+	{ "poe3_enable", FT_SWITCH_POE_ENABLE, SUBFT_SWITCH_POE3, "1" },
+	{ "poe4_enable", FT_SWITCH_POE_ENABLE, SUBFT_SWITCH_POE4, "1" },
+	{ "poe5_enable", FT_SWITCH_POE_ENABLE, SUBFT_SWITCH_POE5, "1" },
+	{ "poe6_enable", FT_SWITCH_POE_ENABLE, SUBFT_SWITCH_POE6, "1" },
+	{ "poe7_enable", FT_SWITCH_POE_ENABLE, SUBFT_SWITCH_POE7, "1" },
+	{ "poe8_enable", FT_SWITCH_POE_ENABLE, SUBFT_SWITCH_POE8, "1" },
+	{ "poe1_priority", FT_SWITCH_POE_PRIORITY, SUBFT_SWITCH_POE1_PRIORITY, "1" },
+	{ "poe2_priority", FT_SWITCH_POE_PRIORITY, SUBFT_SWITCH_POE2_PRIORITY, "1" },
+	{ "poe3_priority", FT_SWITCH_POE_PRIORITY, SUBFT_SWITCH_POE3_PRIORITY, "1" },
+	{ "poe4_priority", FT_SWITCH_POE_PRIORITY, SUBFT_SWITCH_POE4_PRIORITY, "1" },
+	{ "poe5_priority", FT_SWITCH_POE_PRIORITY, SUBFT_SWITCH_POE5_PRIORITY, "1" },
+	{ "poe6_priority", FT_SWITCH_POE_PRIORITY, SUBFT_SWITCH_POE6_PRIORITY, "1" },
+	{ "poe7_priority", FT_SWITCH_POE_PRIORITY, SUBFT_SWITCH_POE7_PRIORITY, "1" },
+	{ "poe8_priority", FT_SWITCH_POE_PRIORITY, SUBFT_SWITCH_POE8_PRIORITY, "1" },
+	{ "poe1_limit", FT_SWITCH_POE_LIMIT, SUBFT_SWITCH_POE1_LIMIT, "30" },
+	{ "poe2_limit", FT_SWITCH_POE_LIMIT, SUBFT_SWITCH_POE2_LIMIT, "30" },
+	{ "poe3_limit", FT_SWITCH_POE_LIMIT, SUBFT_SWITCH_POE3_LIMIT, "30" },
+	{ "poe4_limit", FT_SWITCH_POE_LIMIT, SUBFT_SWITCH_POE4_LIMIT, "30" },
+	{ "poe5_limit", FT_SWITCH_POE_LIMIT, SUBFT_SWITCH_POE5_LIMIT, "30" },
+	{ "poe6_limit", FT_SWITCH_POE_LIMIT, SUBFT_SWITCH_POE6_LIMIT, "30" },
+	{ "poe7_limit", FT_SWITCH_POE_LIMIT, SUBFT_SWITCH_POE7_LIMIT, "30" },
+	{ "poe8_limit", FT_SWITCH_POE_LIMIT, SUBFT_SWITCH_POE8_LIMIT, "30" },
 
 #ifdef RTCONFIG_WIFI7
 	/* 802.11be/Wi-Fi 7 mode */

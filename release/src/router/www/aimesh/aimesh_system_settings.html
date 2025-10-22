@@ -12,6 +12,42 @@ var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq
 function initial_system_settings() {
 	popupHint.init();
 
+	if(isSupport("AMAS_NEWOB")){
+		$(".system_settings_bg.newob_auto .switch")
+			.addClass(() => {
+				let aimesh_newob_auto_notify = httpApi.nvramGet(["aimesh_newob_auto_notify"]).aimesh_newob_auto_notify;
+				if(aimesh_newob_auto_notify == "1")
+					return "on";
+				else
+					return "off";
+			})
+			.unbind("click").click(function(e){
+				e = e || event;
+				e.stopPropagation();
+				$(this).toggleClass("off on").promise().done(function(){
+					let set_newob_auto = "0";
+					if($(this).hasClass("on")){
+						set_newob_auto = "1";
+					}
+					else{
+						set_newob_auto = "0";
+					}
+					httpApi.nvramSet({
+						"action_mode" : "apply",
+						"aimesh_newob_auto_notify" : set_newob_auto
+					}, function(){
+						setTimeout(function(){
+							httpApi.nvramGet(["aimesh_newob_auto_notify"],true);
+							if(typeof jstree_refresh == "function")
+								jstree_refresh();
+						},1000);
+					}());
+				});
+			});
+	}
+	else
+		$(".system_settings_bg.newob_auto").hide();
+
 	if(isSupport("qca_plc2")){
 		var gen_option = function(_node_info){
 			var mac = _node_info.mac;
@@ -878,6 +914,13 @@ function handle_re_path(_re_path){
 }
 $(document).ready(initial_system_settings);
 </script>
+<div class="system_settings_bg newob_auto">
+	<div class="system_icon"></div>
+	<div class="system_text">
+		<span>AiMesh node Ethernet auto setup</span>
+	</div>
+	<div class="switch"></div>
+</div>
 <div class="system_settings_bg plc_master">
 	<div class="system_icon"></div>
 	<div class="system_text">

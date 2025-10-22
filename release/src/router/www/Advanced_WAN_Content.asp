@@ -374,7 +374,7 @@ function initial(){
 
 			add_options_x2(document.form.wanports_bond_menu, desc, val, orig_wanports_bond);
 		}
-		else if(based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000") {
+		else if(based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000" || based_modelid == "RT-AX57M") {
 			var desc = [ "LAN 4" ];
 			var val = [ "0 4" ];
 			if ((based_modelid == "TUF-AX4200" && "<% nvram_get("HwId"); %>" == "B") || based_modelid == "TUF-AX6000") {
@@ -486,6 +486,11 @@ function initial(){
 
 	if(isSupport("TELIA"))
 		inputCtrl(document.form.wan_vendorid, 0);
+
+	if(!parent.webWrapper){
+		$("#DNS_Assign_button").css("margin", "-38px 0 5px 0");
+		$("#DNS_Assign_button").css("text-align", "right");
+	}
 }
 
 function change_notusb_unit(){
@@ -1833,6 +1838,9 @@ function change_wanAggre_desc(){
 	else if(based_modelid == "RT-AXE7800"){
 		selectedName = "LAN 2";
 	}
+	else if(based_modelid == "EBG15" || based_modelid == "EBG19P"){
+		selectedName = "LAN 5";
+	}
 
 	if(based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000"){
 		if (document.form.wanports_bond_menu.value == "0 5" && ("<% nvram_get("HwId"); %>" == "B" || based_modelid == "TUF-AX6000")){
@@ -1907,7 +1915,7 @@ function Assign_DNS_service(){
 	divObj.setAttribute("id","dns_list_Block");
 	divObj.className = "clientlist_viewlist";
 	document.body.appendChild(divObj);
-	cal_panel_block("dns_list_Block", 0.045);
+	if(!top.webWrapper) cal_panel_block("dns_list_Block", 0.045);
 
 	create_DNSlist_view();
 }
@@ -2043,7 +2051,7 @@ function create_DNSlist_view(){
 
 	code += "</td></tr></tbody></table>";
 
-	code += "<div style='margin-top:10px;margin-bottom:20px;width:100%;text-align:center;'>";
+	code += "<div style='margin-top:10px;margin-bottom:20px;width:100%;text-align:center;display:flex;justify-content:center;'>";
 	code += "<input class='button_gen' type='button' onclick='closeDNSListView()' value='<#CTL_Cancel#>'>";
 	code += "<input class='button_gen' type='button' onclick='Update_DNS_service()' style='margin-left:15px;' value='<#CTL_onlysave#>'>";
 	code += "</div>";
@@ -2729,10 +2737,10 @@ function get_default_wan_name(){
 							</tr>
 						</thead>
 							<tr>
-								<th>Configuration Type</th>
+								<th><#Connection_Type#></th>
 								<td>
 									<select id="wan_s46_dslite_mode" class="input_option" name="wan_s46_dslite_mode" onchange="change_dslite_mode(this.value)">
-										<option value="0" <% nvram_match("wan_s46_dslite_mode", "0", "selected"); %>><#Auto#></option>
+										<option value="0" <% nvram_match("wan_s46_dslite_mode", "0", "selected"); %>><#QKSet_detect_sanglass#></option>
 										<option value="1" <% nvram_match("wan_s46_dslite_mode", "1", "selected"); %>><#Manual#></option>
 								</td>
 							</tr>
@@ -2831,7 +2839,7 @@ function get_default_wan_name(){
 						<div id="DNS_status"></div>
 						<div style="margin:10px 0 5px 5px;" class="splitLine_dns"></div>
 						<div class="assign_dns"><#DNS_Assign_desc#></div>
-						<div style="margin:-38px 0 5px 0;text-align:right;"><input type="button" class="button_gen" onclick="Assign_DNS_service()" value="<#CTL_assign#>"></div>
+						<div id="DNS_Assign_button"><input type="button" class="button_gen" onclick="Assign_DNS_service()" value="<#CTL_assign#>"></div>
 					</td>
           		</tr>
 			<tr>

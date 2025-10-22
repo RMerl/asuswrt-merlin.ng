@@ -27,7 +27,7 @@
 }
 
 .FormTable td span{
-	color:#FFFFFF;
+	color:var(--body-text-color, #FFFFFF);
 }
 
 </style>
@@ -247,11 +247,13 @@ function genStreerRSSI(){
 		}
 
 		code += '<td align="center">';
+		code += '<div style="display: flex; align-items: center; gap: 5px;">';
 		code += '<select class="input_option" id="wl'+ i +'_bsd_steering_rssi_s" name="wl'+ i +'_bsd_steering_rssi_s">';
 		code += '<option value="0" class="content_input_fd"><#option_less#></option>';
 		code += '<option value="1" class="content_input_fd"><#option_greater#></option>';
 		code += '</select>';
 		code += '<input type="text" onkeypress="return validator.isNegativeNumber(this,event)" value="'+ bsd_steering_policy_array[i][3] +'" class="input_3_table" id="wl'+ i +'_bsd_steering_rssi" name="wl'+ i +'_bsd_steering_rssi" maxlength="4"> dBm';
+		code += '</div>';
 		code += '</td>';
 	}
 
@@ -356,11 +358,13 @@ function genStaRSSI(){
 		}
 
 		code += `<td  style="width:${80/parseInt(bandList.length)}%" align="center">`;
+		code += '<div style="display: flex; align-items: center; gap: 5px;">';
 		code += '<select class="input_option" id="wl'+ i +'_bsd_sta_select_policy_rssi_s" name="wl'+ i +'_bsd_sta_select_policy_rssi_s">';
 		code += '<option value="0" class="content_input_fd"><#option_less#></option>';
 		code += '<option value="1" class="content_input_fd"><#option_greater#></option>';
 		code += '</select>';
 		code += '<input type="text" onkeypress="return validator.isNegativeNumber(this,event)" value="'+ bsd_sta_select_policy_array[i][1] +'" class="input_3_table" id="wl'+ i +'_bsd_sta_select_policy_rssi" name="wl'+ i +'_bsd_sta_select_policy_rssi" maxlength="4">dBm';
+		code += '</div>';
 		code += '</td>';
 	}
 
@@ -909,8 +913,15 @@ function restoreRule(){
 }
 
 function showClientlistModal(){
-	const clientlistModal = new ClientlistModel();
-	clientlistModal.show();
+	if(isSupport("UI4")){
+		if(typeof top.pageRedirect === 'function'){
+			top.pageRedirect('clients');
+			return;
+		}
+	}else {
+		const clientlistModal = new ClientlistModel();
+		clientlistModal.show();
+	}
 }
 </script>
 </head>
@@ -955,7 +966,7 @@ function showClientlistModal(){
 			<div class="formfonttitle"><#menu5_1#> - <#smart_connect_rule#></div>
 			<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 			<div class="formfontdesc"><#smart_connect_hint#></div>
-			<div style="text-align:right;margin-top:-36px;padding-bottom:3px;"><input type="button" class="button_gen" value="<#View_List#>" onClick="showClientlistModal()"></div>
+			<div id="showClientBtn"><input type="button" class="button_gen" value="<#View_List#>" onClick="showClientlistModal()"></div>
 			<div id="bsd_steering_div">
 				<table cellspacing="0" cellpadding="4" bordercolor="#6b8fa3" border="1" align="center" width="100%" class="FormTable" style="margin-top:10px">
 					<thead>

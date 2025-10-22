@@ -245,7 +245,8 @@ int parse_download_update(char* publish_data, char* awsiot_clientid, char *sn_ha
 }
 
 
-int split_received_tencent_session(const char *topic_url) {
+int split_received_tencent_session(const char *topic_url)
+{
 
   int i;
   
@@ -325,7 +326,8 @@ int split_received_tencent_session(const char *topic_url) {
 }
 
 
-int parse_receive_remote_connection(const char* json_data, const char* subscribe_topic) {
+int parse_receive_remote_connection(const char* json_data, const char* subscribe_topic)
+{
 
   struct json_object *root_obj = NULL, *enable_obj = NULL;
 
@@ -347,7 +349,8 @@ int parse_receive_remote_connection(const char* json_data, const char* subscribe
 
 
 int parse_receive_httpd(const char* json_data, char *request_data, int request_len, 
-      char *api_name, int api_name_len, char *session_id, int session_id_len) {
+      char *api_name, int api_name_len, char *session_id, int session_id_len)
+{
 
 
   // char api_name[128];
@@ -418,7 +421,8 @@ int parse_receive_httpd(const char* json_data, char *request_data, int request_l
 
 
 
-int copy_tencent_update_tmp() {
+int copy_tencent_update_tmp()
+{
 
   char cp_command[128] = {0};
   snprintf(cp_command, 128, "cp %s %s ", TENCENT_SESSION_REPORT_FILE, TENCENT_SESSION_JSON_TMP);
@@ -435,10 +439,13 @@ int copy_tencent_update_tmp() {
       break;
 
   } while(1);
+
+  return 0;
 }
 
 
-int compare_tencent_session() {
+int compare_tencent_session()
+{
 
   int i;
   
@@ -608,7 +615,8 @@ int compare_tencent_session() {
 
 
 
-int tencentgame_session_id_cmp(const char* cmp_session_id, char* get_session_state, char *get_session_msg) {
+int tencentgame_session_id_cmp(const char* cmp_session_id, char* get_session_state, char *get_session_msg)
+{
 
   int i, lock;
   int session_array_len = 0;
@@ -695,7 +703,8 @@ int tencentgame_session_id_cmp(const char* cmp_session_id, char* get_session_sta
 
 
 
-int compare_received_session_id(const char* cmp_session_id, char* session_state, char* session_update_state, int *session_error_code, const char* session_update_json) {
+int compare_received_session_id(const char* cmp_session_id, char* session_state, char* session_update_state, int *session_error_code, const char* session_update_json)
+{
 
 
   int i;
@@ -786,7 +795,8 @@ int compare_received_session_id(const char* cmp_session_id, char* session_state,
 
 
 
-int compare_received_session(const int subscribe_topic_number, int b_print) {
+int compare_received_session(const int subscribe_topic_number, int b_print)
+{
 
   int session_len = JSON_CONTENT_SIZE*subscribe_topic_number;
   char session_update_json[session_len];
@@ -1024,7 +1034,8 @@ int compare_received_session(const int subscribe_topic_number, int b_print) {
 }
 
 
-int save_received_session(const char* json_data, const char* subscribe_topic) {
+int save_received_session(const char* json_data, const char* subscribe_topic)
+{
 
   int i;
 
@@ -1103,7 +1114,8 @@ int save_received_session(const char* json_data, const char* subscribe_topic) {
   return 0;
 }
 
-int merge_received_session(const int subscribe_topic_number) {
+int merge_received_session(const int subscribe_topic_number)
+{
 
 
   // int session_len = JSON_CONTENT_SIZE*SUBSCRIBE_TOPIC_MAX_NUMBER;
@@ -1162,7 +1174,8 @@ int merge_received_session(const int subscribe_topic_number) {
 }
 
 
-int read_file_data(char *filename, char *data, int data_len) {
+int read_file_data(char *filename, char *data, int data_len)
+{
 
   FILE *pFile;
 
@@ -1263,7 +1276,8 @@ void get_sha256(const char *input_str, unsigned char * output_buffer)
 }
 
 
-int get_usb_space(unsigned long long int *total_space, unsigned long long int *used_space, unsigned long long int *available_space, char *tencent_download_path) {
+int get_usb_space(unsigned long long int *total_space, unsigned long long int *used_space, unsigned long long int *available_space, char *tencent_download_path)
+{
 
 
   DIR* dir = opendir(tencent_download_path);
@@ -1344,7 +1358,8 @@ void getTimeInMillis(char* timestamp_str)
   
 }
 
-char *replace_str(char *st, char *orig, char *repl, char* buff) {
+char *replace_str(char *st, char *orig, char *repl, char* buff)
+{
     char *ch;
     if (!(ch = strstr(st, orig)))
         return st;

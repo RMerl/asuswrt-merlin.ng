@@ -73,8 +73,10 @@ typedef enum _WS_ID
 	e_accountreg,
 	e_fbwifi2reg,
 	e_getprovisionpincode,
+	e_delprovisionpincode,
 	e_get_db,
-	e_update_db
+	e_update_db,
+	e_unbind_device
 }WS_ID;
 
 typedef struct _WS_MANAGER{

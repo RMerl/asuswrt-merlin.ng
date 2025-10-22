@@ -216,6 +216,9 @@ OBJS += llist.o
 ifeq ($(RTCONFIG_HNS),y)
 OBJS += hns_utils.o
 endif
+ifeq ($(RTCONFIG_GTBOOSTER),y)
+OBJS += $(if $(wildcard ark_utils.c),ark_utils.o,prebuild/ark_utils.o)
+endif
 ifeq ($(RTCONFIG_MULTILAN_CFG),y)
 OBJS += mtlan_utils.o
 endif

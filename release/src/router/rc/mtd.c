@@ -1240,7 +1240,7 @@ int hnd_nvram_erase()
 	sync();
 	_dprintf("Erasing nvram done\n");
 
-#if defined(EBG15) || defined(EBG19)
+#if defined(EBG15) || defined(EBG19P)
 	if(nvram_match(ATE_FACTORY_MODE_STR(), "1") || nvram_match(ATE_UPGRADE_MODE_STR(), "1")) {
 		_dprintf("reset bootimg..\n");
         	if (setBootImageState(BOOT_SET_NEW_IMAGE) != 0) {
@@ -1280,6 +1280,8 @@ CmsImageFormat parseImgHdr(UINT8 *bufP, UINT32 bufLen)
  *  The communication between HTTPD (parent) and bca_sys_upgrade is hold via pipe.
  *****************************************************************************/
 
+#define BCM_FLASHER_STD_BUFFSIZE  1024
+
 int
 bca_sys_upgrade(const char *path)
 {
@@ -1293,7 +1295,7 @@ bca_sys_upgrade(const char *path)
 	char *buf = NULL;
 	imgif_flash_info_t flash_info;
 	uint blknum = 0;
-	uint bufsz = 0;
+	uint bufsz = BCM_FLASHER_STD_BUFFSIZE;
 	pid_t pid = getpid();
 
 #ifdef RTCONFIG_PIPEFW
@@ -1365,16 +1367,21 @@ bca_sys_upgrade(const char *path)
 	}
 #endif
 
+	_dprintf("(hnd-write) Flash type 0x%x, flash size 0x%x, block size 0x%x\n", flash_info.flashType, flash_info.flashSize, flash_info.eraseSize);
+
 	/* evaluate image size */
 	if (((imgsz + CMS_IMAGE_OVERHEAD) > flash_info.flashSize) ||
 	    (imgsz < CMS_IMAGE_MIN_LEN)) {
 		ret = EINVAL;
 		goto fail;
 	}
+	_dprintf("(hnd-write) File size 0x%x (%d)\n", imgsz, imgsz);
 
 	/* setting image upload buf size equals to flash block size */
-	bufsz = flash_info.eraseSize;
+	if (flash_info.eraseSize)
+		bufsz = flash_info.eraseSize;
 
+	_dprintf("(hnd-wriet) : bufsz is %d\n", bufsz);
 	/* Allocating image upload buffer */
 	if ((buf = malloc(bufsz)) == NULL) {
 		ret = errno;
@@ -1383,7 +1390,7 @@ bca_sys_upgrade(const char *path)
 		goto fail;
 	}
 
-	printf("\nUpgrading: ");
+	_dprintf("\nUpgrading: ");
 	/* uploading entire image by chunks */
 	for (ulimgsz = 0, blknum = 1; ulimgsz < imgsz; ulimgsz += r_count, blknum++) {
 		r_count = safe_fread((void*)buf, 1, bufsz, fp);

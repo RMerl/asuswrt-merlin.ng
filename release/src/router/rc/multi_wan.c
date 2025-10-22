@@ -1,3 +1,9 @@
+/*
+ * Copyright 2023, ASUSTeK Inc.
+ * All Rights Reserved.
+ *
+ */
+
 #include <multi_wan.h>
 #include <rc.h>
 
@@ -41,6 +47,8 @@ MTWAN_PROF_T mtwan_prof[MAX_MTWAN_PROFILE_NUM] = {0};
 #endif
 
 #define IS_MTWAN_UNIT(x) (x >= MULTI_WAN_START_IDX && x < MULTI_WAN_START_IDX + MAX_MULTI_WAN_NUM)
+
+extern int g_upgrade;
 
 char wanX_resolv_path[] = "/tmp/resolv.wan%d";
 
@@ -228,6 +236,8 @@ int is_mtwan_lb(int unit)
 
 	for (i = 0; i < MAX_MTWAN_PROFILE_NUM; i++)
 	{
+		if (mtwan_prof[i].enable == 0)
+			continue;
 		if (is_mtwan_lb_in_profile(i + 1, unit))
 			return 1;
 	}
@@ -325,6 +335,26 @@ int is_mtwan_unit_in_profile(int mtwan_idx, int wan_unit)
 	return 0;
 }
 
+int is_mtwan_unit_in_active_group(int mtwan_idx, int wan_unit)
+{
+	int i = mtwan_idx - 1;
+	int j;
+
+	if (mtwan_idx < 1 || mtwan_idx > MAX_MTWAN_PROFILE_NUM
+	 || wan_unit < WAN_UNIT_FIRST)
+		return 0;
+
+	for (j = 0; j < MAX_MULTI_WAN_NUM; j++)
+	{
+		if (mtwan_prof[i].wan_units[j] == wan_unit
+		 && mtwan_prof[i].mt_group[j] == mtwan_prof[i].group
+		)
+			return 1;
+	}
+
+	return 0;
+}
+
 int mtwan_get_lb_route_table_id(int mtwan_idx, int mtwan_group, char *table, size_t table_len)
 {
 	int ret;
@@ -354,7 +384,12 @@ int mtwan_get_lb_rule_pref(int mtwan_idx, char *pref, size_t pref_len)
 
 int mtwan_get_mark_rule_pref(int unit)
 {
-	return IP_RULE_PREF_MTWAN_MARK_BASE + unit;
+	int mtwan_unit = unit;
+
+	if(unit < MULTI_WAN_START_IDX)
+		mtwan_unit = mtwan_get_unit_by_dualwan_unit(unit);
+
+	return IP_RULE_PREF_MTWAN_MARK_BASE + mtwan_unit;
 }
 
 void mtwan_update_profile_lb_route(int mtwan_idx, int mtwan_group, int unit, int up)
@@ -431,6 +466,8 @@ void mtwan_update_profile_lb_route(int mtwan_idx, int mtwan_group, int unit, int
 	/// default route
 	_dprintf("cmd: %s\n", cmd);
 	system(cmd);
+
+	eval("ip", "route", "flush", "cache");
 }
 
 void mtwan_update_main_default_route(int unit, int up)
@@ -440,6 +477,18 @@ void mtwan_update_main_default_route(int unit, int up)
 	int wan_unit;
 	char wan_prefix[16];
 	int wan_proto;
+
+	if (mtwan_prof[0].enable == 0)
+	{
+		snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", wan_primary_ifunit());
+		snprintf(cmd, sizeof(cmd), "ip route replace default via %s dev %s"
+			, nvram_pf_get(wan_prefix, "gateway") ?: "0.0.0.0"
+			, nvram_pf_safe_get(wan_prefix, "gw_ifname"));
+		_dprintf("cmd: %s\n", cmd);
+		system(cmd);
+		eval("ip", "route", "flush", "cache");
+		return;
+	}
 
 	snprintf(cmd, sizeof(cmd), "ip route replace default");
 	for(i = 0; i < MAX_MULTI_WAN_NUM; i++)
@@ -465,6 +514,7 @@ void mtwan_update_main_default_route(int unit, int up)
 	}
 	_dprintf("cmd: %s\n", cmd);
 	system(cmd);
+	eval("ip", "route", "flush", "cache");
 }
 
 void mtwan_update_lb_route(int wan_unit, int up)
@@ -572,6 +622,8 @@ void mtwan_update_lb_route(int wan_unit, int up)
 			_dprintf("cmd: %s\n", new_cmd);
 			system(new_cmd);
 		}
+
+		eval("ip", "route", "flush", "cache");
 	}
 }
 
@@ -588,6 +640,9 @@ void mtwan_update_lb_prob(int unit, int up)
 
 	for (i = 0; i < MAX_MTWAN_PROFILE_NUM; i++)
 	{
+		if (mtwan_prof[i].enable == 0)
+			continue;
+		memset(total, 0 , sizeof(total));
 		for(j = 0; j < MAX_MULTI_WAN_NUM; j++)
 		{
 			if (mtwan_prof[i].mt_group[j] < 1 || mtwan_prof[i].mt_group[j] > MAX_MULTI_WAN_NUM)
@@ -620,6 +675,7 @@ void mtwan_update_lb_prob(int unit, int up)
 				mtwan_prof[i].prob[j] = 0.0;
 			}
 		}
+		memset(prob, 0, sizeof(prob));
 		for(j = 0; j < MAX_MULTI_WAN_NUM; j++)
 		{
 			snprintf(buf, sizeof(buf), "%f", mtwan_prof[i].prob[j]);
@@ -632,22 +688,28 @@ void mtwan_update_lb_prob(int unit, int up)
 	}
 }
 
-void mtwan_update_lb_iptables(int unit, int up)
+void mtwan_update_lb_iptables(int unit, int up, int v6)
 {
+	char *xtables = (v6) ? "ip6tables" : "iptables";
 	char wan_prefix[16] = {0};
 	int i, j, wan_unit, wan_group;
 	int wan_num[MAX_MULTI_WAN_NUM+1] = {0}, add_num[MAX_MULTI_WAN_NUM+1] = {0};
 	char prob[16] = {0};
 	char chain[16] = {0}, smark[32] = {0}, mmark[32] = {0};
+	char table[8] = {0};
 
 	mtwan_update_lb_prob(unit, up);
 
 	for (i = 0; i < MAX_MTWAN_PROFILE_NUM; i++)
 	{
-		wan_group = mtwan_prof[i].mt_group[is_mtwan_unit(unit) ? unit - MULTI_WAN_START_IDX : unit];
+		if (unit == WAN_UNIT_NONE)
+			wan_group = mtwan_prof[i].group;
+		else
+			wan_group = mtwan_prof[i].mt_group[is_mtwan_unit(unit) ? unit - MULTI_WAN_START_IDX : unit];
 		if (wan_group == 0)
 			continue;
 		// count number of online wan in same group
+		wan_num[wan_group] = 0;
 		for (j = 0; j < MAX_MULTI_WAN_NUM; j++)
 		{
 			if (mtwan_prof[i].mt_group[j] == wan_group)
@@ -655,14 +717,23 @@ void mtwan_update_lb_iptables(int unit, int up)
 				wan_unit = mtwan_get_real_wan(j + MULTI_WAN_START_IDX, wan_prefix, sizeof(wan_prefix));
 				if (wan_unit == -1)
 					continue;
-				if ((unit != wan_unit) ? (nvram_pf_get_int(wan_prefix, "link_internet") == 2) : ((up) ? 1 : 0))
+				if (v6)
+					mtwan_get_route_table_id(wan_unit, table, sizeof(table));
+				if ((unit != wan_unit) ?
+						(v6) ?
+							is_mtwan6_def_route_exist(get_wan6_ifname(wan_unit), table)
+							: (nvram_pf_get_int(wan_prefix, "link_internet") == 2)
+						: ((up) ? 1 : 0)
+					) {
 					wan_num[wan_group]++;
+				}
 			}
 		}
 		// mangle rules
 		snprintf(chain, sizeof(chain), "MTWAN_LB_%d_%d", i + 1, wan_group);
-		eval("iptables", "-t", "mangle", "-N", chain);
-		eval("iptables", "-t", "mangle", "-F", chain);
+		eval(xtables, "-t", "mangle", "-N", chain);
+		eval(xtables, "-t", "mangle", "-F", chain);
+		add_num[wan_group] = 0;
 		for (j = 0; j < MAX_MULTI_WAN_NUM; j++)
 		{
 			if (mtwan_prof[i].mt_group[j] == wan_group
@@ -672,10 +743,10 @@ void mtwan_update_lb_iptables(int unit, int up)
 				snprintf(mmark, sizeof(mmark), "0x0/0x%08x", IPTABLES_MARK_MTWAN_MASK);
 				snprintf(prob, sizeof(prob), "%f", mtwan_prof[i].prob[j]);
 				if ((++add_num[wan_group]) == wan_num[wan_group])
-					eval("iptables", "-t", "mangle", "-A", chain, "-j", "CONNMARK",
+					eval(xtables, "-t", "mangle", "-A", chain, "-j", "CONNMARK",
 						"-m", "connmark", "--mark", mmark, "--set-xmark", smark);
 				else
-					eval("iptables", "-t", "mangle", "-A", chain, "-j", "CONNMARK",
+					eval(xtables, "-t", "mangle", "-A", chain, "-j", "CONNMARK",
 						"-m", "statistic", "--mode", "random", "--probability", prob, "--set-xmark", smark);
 			}
 		}
@@ -686,7 +757,7 @@ void mtwan_update_lb_iptables(int unit, int up)
  * get wan unit by group. for only one wan in the group.
  * return mapped unit
  */
-int mtwan_get_first_wan_unit_by_group(int mtwan_idx, int mtwan_group)
+int mtwan_get_first_wan_unit_by_group(int mtwan_idx, int mtwan_group, int check_conn)
 {
 	int wan_unit;
 	char wan_prefix[16] = {0};
@@ -702,7 +773,7 @@ int mtwan_get_first_wan_unit_by_group(int mtwan_idx, int mtwan_group)
 		if (mtwan_prof[i].mt_group[j] == mtwan_group)
 		{
 			wan_unit = mtwan_get_real_wan(MULTI_WAN_START_IDX + j, wan_prefix, sizeof(wan_prefix));
-			if (nvram_pf_get_int(wan_prefix, "link_internet") != 2)
+			if (check_conn && !mtwanduck_get_mtwan_status(MULTI_WAN_START_IDX + j))
 				continue;
 			else
 				return wan_unit;
@@ -835,7 +906,11 @@ int mtwan_get_fo_group(int mtwan_idx, int check_conn)
 	for (j = cur_idx + 1; j != cur_idx; j++)
 	{
 		if (j >= MAX_MULTI_WAN_NUM)
+		{
 			j -= MAX_MULTI_WAN_NUM;
+			if (j == cur_idx)
+				break;
+		}
 
 		if (!mtwan_prof[i].order[j])
 			continue;
@@ -871,7 +946,7 @@ int mtwan_get_second_group(int mtwan_idx)
 /// add dns in same group
 void mtwan_append_group_main_resolvconf(int wan_unit)
 {
-	int i, wan_grp_idx = 0, real_unit;
+	int i, wan_grp_idx = -1, real_unit;
 	int primary_unit = wan_primary_ifunit();
 	char wan_prefix[16] = {0};
 	FILE *fp;
@@ -881,7 +956,17 @@ void mtwan_append_group_main_resolvconf(int wan_unit)
 #ifdef RTCONFIG_DNSPRIVACY
 	int dnspriv_enable = nvram_get_int("dnspriv_enable");
 #endif
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+	int primary_unit6 = wan_primary_ifunit_ipv6();
+#endif
 
+	if (g_reboot || g_upgrade)
+		return;
+
+	if (!nvram_get_int("mtwan1_enable"))
+		return;
+	if (!mtwan_prof[0].enable)
+		mtwan_init_profile();
 	for (i = 0; i < MAX_MULTI_WAN_NUM; i++)
 	{
 		if (mtwan_prof[0].wan_units[i] == wan_unit)
@@ -890,6 +975,9 @@ void mtwan_append_group_main_resolvconf(int wan_unit)
 			break;
 		}
 	}
+	if (wan_grp_idx == -1)
+		return;
+
 	_dprintf("%s: add wan group %d dns\n", __FUNCTION__, mtwan_prof[0].mt_group[wan_grp_idx]);
 
 	for (i = 0; i < MAX_MULTI_WAN_NUM; i++)
@@ -908,6 +996,12 @@ void mtwan_append_group_main_resolvconf(int wan_unit)
 		if (fp)
 		{
 			wan_add_resolv_conf(fp, real_unit);
+#ifdef RTCONFIG_IPV6
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+			if (real_unit != primary_unit6 && ipv6x_enabled(real_unit))
+#endif
+			wan_add_resolv_conf_ipv6(fp, real_unit);
+#endif
 			fclose(fp);
 		}
 
@@ -924,6 +1018,12 @@ void mtwan_append_group_main_resolvconf(int wan_unit)
 		if (fp)
 		{
 			wan_add_resolv_dnsmasq(fp, real_unit);
+#ifdef RTCONFIG_IPV6
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+			if (real_unit != primary_unit6 && ipv6x_enabled(real_unit))
+#endif
+			wan_add_resolv_dnsmasq_ipv6(fp, real_unit);
+#endif
 			fclose(fp);
 		}
 	}
@@ -933,20 +1033,47 @@ static void _mtwan_set_wan_primary(int primary_unit)
 {
 	int i;
 	char buf[32];
+	int unit;
+#ifdef RTCONFIG_IPV6
+	int set_v6 = (get_ipv6_service_by_unit(primary_unit) != IPV6_DISABLED);
+#ifdef RTCONFIG_6RELAYD
+	int old_primary_unit6 = wan_primary_ifunit_ipv6();
+#endif
+#endif
+
+	// pre handle nat rules before renew primary unit since current nat_ruleXXX files are based on old primary unit.
+	if (nvram_get_int("nat_state") != NAT_STATE_NORMAL)
+		start_nat_rules();
+
 	for (i = MULTI_WAN_START_IDX; i < MULTI_WAN_START_IDX + MAX_MULTI_WAN_NUM; i++) {
-		snprintf(buf, sizeof(buf), "wan%d_primary", mtwan_get_mapped_unit(i));
+		unit = mtwan_get_mapped_unit(i);
+		snprintf(buf, sizeof(buf), "wan%d_primary", unit);
 		nvram_set(buf, "0");
+#ifdef RTCONFIG_IPV6
+		if (set_v6)
+			nvram_set(ipv6_nvname_by_unit("ipv6_primary", unit), "0");
+#endif
 	}
 	snprintf(buf, sizeof(buf), "wan%d_primary", primary_unit);
 	nvram_set(buf, "1");
 	nvram_set_int("wan_primary", primary_unit);
+#ifdef RTCONFIG_IPV6
+	if (set_v6)
+		nvram_set(ipv6_nvname_by_unit("ipv6_primary", primary_unit), "1");
+#ifdef RTCONFIG_6RELAYD
+	mtwan6_restart_6relayd(1, old_primary_unit6, primary_unit);
+#endif
+#endif
 }
 
 static void _mtwan_switch_primary_wan_line(int wan_unit)
 {
-	char wan_ifname[IFNAMSIZ] = {0};
+	char service[32] = {0};
 
 	_dprintf("\nswitch primary wan to %d\n", wan_unit);
+
+	_mtwan_set_wan_primary(wan_unit);
+
 #ifdef RTCONFIG_MULTISERVICE_WAN
 	if (nvram_match("switch_wantag", "none"))
 	{
@@ -957,8 +1084,17 @@ static void _mtwan_switch_primary_wan_line(int wan_unit)
 	tr_switch_wan_line(wan_unit);
 #endif
 
-	strlcpy(wan_ifname, get_wan_ifname(wan_unit), sizeof(wan_ifname));
-	wan_up(wan_ifname);
+	if (getpid() != 1)
+	{
+		snprintf(service, sizeof(service), "restart_wan_line %d", wan_unit);
+		notify_rc(service);
+	}
+	else
+	{
+		char wan_ifname[IFNAMSIZ] = {0};
+		strlcpy(wan_ifname, get_wan_ifname(wan_unit), sizeof(wan_ifname));
+		wan_up(wan_ifname);
+	}
 
 	if (nvram_get_int("link_internet") != 2)
 		mtwanduck_set_primary_link_internet(wan_unit, 2, 1);
@@ -968,15 +1104,43 @@ void mtwan_handle_group_change(int mtwan_idx, int to_group)
 {
 	char mtwan_prefix[16];
 	char prc[16] = {0};
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+	int old_group = 0;
+#endif
 
 	if (mtwan_idx < 1 || mtwan_idx > MAX_MTWAN_PROFILE_NUM)
 		return;
 	if (!is_mtwan_group_in_profile(mtwan_idx, to_group))
 		return;
 
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+	old_group = mtwan_prof[mtwan_idx-1].group;
+#endif
 	mtwan_prof[mtwan_idx-1].group = to_group;
 	snprintf(mtwan_prefix, sizeof(mtwan_prefix), "mtwan%d_", mtwan_idx);
 	nvram_pf_set_int(mtwan_prefix, "group", to_group);
+
+	/// Router HOST
+	if (mtwan_idx == 1)
+	{
+		int primary_unit = mtwan_get_first_wan_unit_by_group(mtwan_idx, to_group, MTWAN_CHECK_CONN);
+
+		if (primary_unit != WAN_UNIT_NONE)
+		{
+			// switch
+			_mtwan_switch_primary_wan_line(primary_unit);
+		}
+		else
+		{
+			_dprintf("MTWAN(%d) No connected WAN in group %d\n", mtwan_idx, to_group);
+		}
+
+#ifdef RTCONFIG_IPV6
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+		mtwan6_update_main_default_route();
+#endif
+#endif
+	}
 
 	prctl(PR_GET_NAME, prc);
 	if (!strcmp(prc, "mtwanduck"))
@@ -989,26 +1153,27 @@ void mtwan_handle_group_change(int mtwan_idx, int to_group)
 #endif
 	}
 
-	/// Router HOST
-	if (mtwan_idx == 1)
+#ifdef RTCONFIG_IPV6
+#ifdef RTCONFIG_MULTILAN_CFG
+	int wan_unit = mtwan6_get_active_wan_unit(mtwan_idx);
+	if (wan_unit != WAN_UNIT_NONE)
 	{
-		int primary_unit = mtwan_get_first_wan_unit_by_group(mtwan_idx, to_group);
-
-		if (primary_unit != WAN_UNIT_NONE)
-		{
-			// set wan primary
-			_mtwan_set_wan_primary(primary_unit);
-			// switch
-			_mtwan_switch_primary_wan_line(primary_unit);
-		}
-		else
-		{
-			_dprintf("MTWAN(%d) No connected WAN in group %d\n", mtwan_idx, to_group);
-		}
+		restart_mtwan_dnsmasq_ipv6(wan_unit);
+		add_ip6_lanaddr();
 	}
+#endif
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+	if (mtwan_idx > 1) {
+		mtwan6_restart_6relayd(mtwan_idx
+			, mtwan_get_first_wan_unit_by_group(mtwan_idx, old_group, MTWAN_IGNORE_CONN)
+			, mtwan_get_first_wan_unit_by_group(mtwan_idx, to_group, MTWAN_CHECK_CONN));
+	}
+#endif
+#endif
+
 }
 
-void mtwan_handle_wan_conn(int wan_unit, int connected)
+void mtwan_handle_wan_conn(int wan_unit, int connected, int link_up)
 {
 	int i, j;
 	int mtwan_idx;
@@ -1038,7 +1203,7 @@ void mtwan_handle_wan_conn(int wan_unit, int connected)
 		mtwan_group = mtwan_prof[i].group;
 		to_group = mtwan_group;
 
-		if (!is_mtwan_lb_in_profile(mtwan_idx, wan_unit) && ((connected && wan_group == mtwan_group) || (!connected && wan_group != mtwan_group)))
+		if (!is_mtwan_lb_in_profile(mtwan_idx, wan_unit) && (!connected && wan_group != mtwan_group))
 			continue;
 
 		_dprintf("MTWAN(%d) current mtwan group: %d, wan group: %d\n", mtwan_idx, mtwan_group, wan_group);
@@ -1121,6 +1286,10 @@ void mtwan_handle_wan_conn(int wan_unit, int connected)
 						if (connected)
 						{
 							_mtwan_set_wan_primary(mtwan_prof[i].wan_units[j]);
+#ifdef RTCONFIG_IPV6
+							restart_mtwan_dnsmasq_ipv6(mtwan_prof[i].wan_units[j]);
+							add_ip6_lanaddr();
+#endif
 							break;
 						}
 					}
@@ -1131,10 +1300,18 @@ void mtwan_handle_wan_conn(int wan_unit, int connected)
 						if (nvram_get_int(nvname) == 2)
 						{
 							_mtwan_set_wan_primary(mtwan_prof[i].wan_units[j]);
+#ifdef RTCONFIG_IPV6
+							restart_mtwan_dnsmasq_ipv6(mtwan_prof[i].wan_units[j]);
+							add_ip6_lanaddr();
+#endif
 							break;
 						}
 					}
 				}
+			}
+			else if (connected && wan_group == mtwan_group && !is_mtwan_primary(wan_unit))
+			{
+				_mtwan_switch_primary_wan_line(wan_unit);
 			}
 		}
 	}
@@ -1142,14 +1319,38 @@ void mtwan_handle_wan_conn(int wan_unit, int connected)
 	if (is_mtwan_lb(wan_unit))
 	{
 		mtwan_update_lb_route(wan_unit, connected);
-		mtwan_update_lb_iptables(wan_unit, connected);
+		mtwan_update_lb_iptables(wan_unit, connected, MTWAN_HANDLE_V4);
+		if (!connected)
+			remove_ip_rules(mtwan_get_mark_rule_pref(wan_unit), MTWAN_HANDLE_V4);
+#ifdef RTCONFIG_IPV6
+		if (!link_up && ipv6x_enabled(wan_unit))
+		{
+			// flush before update lb route
+			char table[8];
+			mtwan_get_route_table_id(wan_unit, table, sizeof(table));
+			eval("ip", "-6", "route", "flush", "table", table);
+			eval("ip", "-6", "route", "del", "default", "dev", get_wan6_ifname(wan_unit));
+			remove_ip_rules(mtwan_get_mark_rule_pref(wan_unit), MTWAN_HANDLE_V6);
+		}
+		mtwan6_update_lb_route(wan_unit, connected);
+		mtwan_update_lb_iptables(wan_unit, connected, MTWAN_HANDLE_V6);
+#endif
 	}
 
 	if (!connected)
 	{
+		remove_ip_rules(mtwan_get_route_rule_pref(wan_unit), MTWAN_HANDLE_V4);
+		remove_ip_rules(mtwan_get_dns_rule_pref(wan_unit), MTWAN_HANDLE_V4);
 		update_resolvconf();
 #ifdef RTCONFIG_MULTILAN_CFG
 		update_sdn_resolvconf();
+#endif
+#ifdef RTCONFIG_IPV6
+		if (!link_up && ipv6x_enabled(wan_unit))
+		{
+			remove_ip_rules(mtwan_get_route_rule_pref(wan_unit), MTWAN_HANDLE_V6);
+			remove_ip_rules(mtwan_get_dns_rule_pref(wan_unit), MTWAN_HANDLE_V6);
+		}
 #endif
 	}
 
@@ -1190,11 +1391,12 @@ void mtwan_init_mtwan_group()
 		{//enable -> disable
 			if (mtwan_idx == 1)
 			{
-				if (mtwan_get_first_wan_unit_by_group(mtwan_idx, mtwan_group) != WAN_UNIT_FIRST)
+				if (mtwan_get_first_wan_unit_by_group(mtwan_idx, mtwan_group, MTWAN_CHECK_CONN) != WAN_UNIT_FIRST)
 				{
-					_mtwan_set_wan_primary(WAN_UNIT_FIRST);
 					_mtwan_switch_primary_wan_line(WAN_UNIT_FIRST);
+#ifdef RTCONFIG_MULTILAN_CFG
 					update_sdn_resolvconf();
+#endif
 				}
 			}
 			mtwan_prof[i].group = 0;
@@ -1217,26 +1419,37 @@ void mtwan_update_profile()
 	mtwan_init_mtwan_group();
 
 	/// iptables
-	mtwan_update_lb_iptables(-1, 1);
+	mtwan_update_lb_iptables(-1, MTWAN_CONNECTED, MTWAN_HANDLE_V4);
+#ifdef RTCONFIG_IPV6
+	mtwan_update_lb_iptables(-1, MTWAN_CONNECTED, MTWAN_HANDLE_V6);
+#endif
 
 	/// routing
 	for (i = 0; i < MAX_MTWAN_PROFILE_NUM; i++)
 	{
+		mtwan_idx = i + 1;
+
+		if (mtwan_idx == 1)	//default profile
+		{
+			mtwan_update_main_default_route(-1, MTWAN_LINK_UP);
+#ifdef RTCONFIG_IPV6
+			mtwan6_update_main_default_route();
+#endif
+		}
+
 		if (mtwan_prof[i].enable == 0)
 			continue;
 
-		mtwan_idx = i + 1;
 		// by group
 		for (mtwan_group = 1; mtwan_group <= MAX_MULTI_WAN_NUM; mtwan_group++)
 		{
 			if (is_mtwan_group_lb(mtwan_idx, mtwan_group))
 			{
-				mtwan_update_profile_lb_route(mtwan_idx, mtwan_group, -1, 1);
+				mtwan_update_profile_lb_route(mtwan_idx, mtwan_group, -1, MTWAN_LINK_UP);
+#ifdef RTCONFIG_IPV6
+				mtwan6_update_profile_lb_route(mtwan_idx, mtwan_group, -1, MTWAN_LINK_UP);
+#endif
 			}
-		}
-		if (mtwan_idx == 1)	//default profile
-		{
-			mtwan_update_main_default_route(-1, 1);
 		}
 	}
 
@@ -1320,6 +1533,8 @@ void mtwan_init_profile()
 	{
 		snprintf(mtwan_prefix, sizeof(mtwan_prefix), "mtwan%d_", i+1);
 		mtwan_prof[i].enable = nvram_pf_get_int(mtwan_prefix, "enable");
+		if (mtwan_prof[i].enable == 0)
+			continue;
 		strlcpy(buf, nvram_pf_safe_get(mtwan_prefix, "mt_group"), sizeof(buf));
 		j = 0;
 		foreach(word, buf, next)
@@ -1327,12 +1542,20 @@ void mtwan_init_profile()
 			mtwan_prof[i].mt_group[j] = atoi(word);
 			j++;
 		}
+		for (; j < MAX_MULTI_WAN_NUM; j++)
+		{
+			mtwan_prof[i].mt_group[j] = 0;
+		}
 		strlcpy(buf, nvram_pf_safe_get(mtwan_prefix, "mt_weight"), sizeof(buf));
 		j = 0;
 		foreach(word, buf, next)
 		{
 			mtwan_prof[i].mt_weight[j] = atoi(word);
 			j++;
+		}
+		for (; j < MAX_MULTI_WAN_NUM; j++)
+		{
+			mtwan_prof[i].mt_weight[j] = 0;
 		}
 		memset(buf, 0, sizeof(buf));
 		for(j = 0; j < MAX_MULTI_WAN_NUM; j++)
@@ -1403,9 +1626,22 @@ void mtwan_init_profile()
 			mtwan_prof[i].order[j] = atoi(word);
 			j++;
 		}
+		for (; j < MAX_MULTI_WAN_NUM; j++)
+		{
+			mtwan_prof[i].order[j] = 0;
+		}
 		strlcpy(mtwan_prof[i].sched, nvram_pf_safe_get(mtwan_prefix, "sched"), sizeof(mtwan_prof[i].sched));
 		mtwan_prof[i].group = nvram_pf_get_int(mtwan_prefix, "group");
 	}
+}
+
+void mtwan_check_and_init_profile()
+{
+	char prc[16] = {0};
+
+	prctl(PR_GET_NAME, prc);
+	if (strcmp(prc, "mtwanduck"))
+		mtwan_init_profile();
 }
 #endif	//RTCONFIG_MULTIWAN_PROFILE
 
@@ -1448,7 +1684,7 @@ static int _set_route_table(const int unit, const int real_unit, const char *pre
 		snprintf(metric_str, sizeof(metric_str), "%d", metric);
 
 		// add xgateway
-		if(xgateway[0] != '\0' && ifname[0] != '\0' && strcmp(xgateway, "0.0.0.0") && strcmp(ifname, gw_ifname))
+		if(xgateway[0] != '\0' && ifname[0] != '\0' && strcmp(xgateway, "0.0.0.0"))
 		{
 #ifdef RTCONFIG_MULTISERVICE_WAN
 			if (!is_ms_wan_unit(unit))	//skip default route
@@ -1459,6 +1695,7 @@ static int _set_route_table(const int unit, const int real_unit, const char *pre
 			{
 				if(!get_network_addr_by_ip_prefix(xip, xnetmask, tmp, sizeof(tmp)))
 				{
+
 					eval("ip", "route", "add", tmp, "dev", ifname, "proto", "static", "scope", "link", "src", xip, "table", table);
 				}
 			}
@@ -1468,7 +1705,8 @@ static int _set_route_table(const int unit, const int real_unit, const char *pre
 		{
 			foreach(word, xdns, next)
 			{
-				eval("ip", "route", "add",  word, "via", xgateway, "dev", ifname, "metric", metric_str, "table", table);
+				if (inet_addr(word) != inet_addr(xgateway))
+					eval("ip", "route", "add",  word, "via", xgateway, "dev", ifname, "metric", metric_str, "table", table);
 			}
 		}
 
@@ -1550,7 +1788,8 @@ static int _set_route_table(const int unit, const int real_unit, const char *pre
 		{
 			foreach(word, dns, next)
 			{
-				eval("ip", "route", "add",  word, "via", gateway, "dev", gw_ifname, "metric", metric_str, "table", table);
+				if (inet_addr(word) != inet_addr(gateway))
+					eval("ip", "route", "add",  word, "via", gateway, "dev", gw_ifname, "metric", metric_str, "table", table);
 			}
 		}
 
@@ -1601,28 +1840,22 @@ static int _set_route_rule(const int unit, const int real_unit, const char *pref
 	char *dns, table[8], pref[16], tmp[128];
 	char word[64], *next;
 	int pref_num;
-#ifdef RTCONFIG_MULTILAN_CFG
-	MTLAN_T *pmtl = NULL;
-	size_t mtl_sz = 0;
-	int i;
-#endif
 
 	if(!prefix)
 		return -1;
 	if(unit < 0)
 		return -1;
 
-	/// rule for DNS, SDN, default WAN
-	pref_num = mtwan_get_route_rule_pref(unit);
-
-	snprintf(pref, sizeof(pref), "%d", pref_num);
 #ifdef RTCONFIG_MULTISERVICE
 	mtwan_get_route_table_id(get_ms_base_unit(unit), table, sizeof(table));
 #else
 	mtwan_get_route_table_id(unit, table, sizeof(table));
 #endif
 
-	remove_ip_rules(pref_num, 0);
+	/// rule for DNS
+	pref_num = mtwan_get_dns_rule_pref(unit);
+	snprintf(pref, sizeof(pref), "%d", pref_num);
+	remove_ip_rules(pref_num, MTWAN_HANDLE_V4);
 
 	// if(unit == real_unit ||	//by pass dual wan. It would be handled in the original wan_up()
 		// (!_is_dualwan_enable() && real_unit == WAN_UNIT_FIRST))
@@ -1643,22 +1876,17 @@ static int _set_route_rule(const int unit, const int real_unit, const char *pref
 	}
 
 	//set default wan
+#ifdef RTCONFIG_MULTILAN_CFG
+	/// handle by SDN_FEATURE_WAN
+	update_sdn_by_wan(unit);
+#else
 	if(mtwan_get_default_wan() == unit)
 	{
+		/// rule for default wan
+		pref_num = IP_RULE_PREF_MTWAN_ROUTE;
+		snprintf(pref, sizeof(pref), "%d", pref_num);
+		remove_ip_rules(pref_num, MTWAN_HANDLE_V4);
 		eval("ip", "rule", "add", "iif", nvram_safe_get("lan_ifname"), "table", table, "perf", pref);
-	}
-
-	//sdn route
-#ifdef RTCONFIG_MULTILAN_CFG
-	pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
-	if (pmtl)
-	{
-		get_mtlan_by_idx(SDNFT_TYPE_WAN, unit, pmtl, &mtl_sz);
-		for (i = 0; i < mtl_sz; i++)
-		{
-			eval("ip", "rule", "add", "iif", pmtl[i].nw_t.ifname, "table", table, "perf", pref);
-		}
-		FREE_MTLAN((void *)pmtl);
 	}
 #endif
 
@@ -1667,7 +1895,7 @@ static int _set_route_rule(const int unit, const int real_unit, const char *pref
 	if (IS_MTWAN_UNIT(unit))
 	{
 		pref_num = mtwan_get_mark_rule_pref(unit);
-		remove_ip_rules(pref_num, 0);
+		remove_ip_rules(pref_num, MTWAN_HANDLE_V4);
 		doSystem("ip rule add fwmark 0x%08x/0x%08x pref %d lookup %s"
 			, IPTABLES_MARK_MTWAN_SET(unit - MULTI_WAN_START_IDX, 0), IPTABLES_MARK_MTWAN_MASK
 			, pref_num, table);
@@ -1722,7 +1950,7 @@ static int _set_mtwan_route(const int unit, const char *ifname, const int up)
 			if (real_unit != -1 && real_unit >= MULTI_WAN_START_IDX)
 			{
 				// _remove_mtwan_routing(unit);
-				remove_ip_rules(mtwan_get_route_rule_pref(i + MULTI_WAN_START_IDX), 0);
+				//remove_ip_rules(mtwan_get_route_rule_pref(i + MULTI_WAN_START_IDX), MTWAN_HANDLE_V4);
 				if(up)
 				{
 					_set_route_table(i + MULTI_WAN_START_IDX, real_unit, prefix);
@@ -1739,7 +1967,7 @@ static int _set_mtwan_route(const int unit, const char *ifname, const int up)
 			if(real_unit == unit)
 			{
 				// _remove_mtwan_routing(unit);
-				remove_ip_rules(mtwan_get_route_rule_pref(unit), 0);
+				// remove_ip_rules(mtwan_get_route_rule_pref(unit), MTWAN_HANDLE_V4);
 				if(up)
 				{
 					_set_route_table(unit, real_unit, prefix);
@@ -1777,6 +2005,9 @@ static int _set_mtwan_route(const int unit, const char *ifname, const int up)
 		}
 #endif
 	}
+
+	eval("ip", "route", "flush", "cache");
+
 	return 0;
 }
 /*
@@ -1831,7 +2062,7 @@ static int _update_resolv_conf(const int unit, const int up)
 */
 
 #ifdef RTCONFIG_SOFTWIRE46
-void mtwan_append_s46_resolvconf_ipv4(int wan_unit)
+static void _mtwan_append_s46_resolvconf_ipv4(int wan_unit)
 {
 	char wan_prefix[16];
 	int wan_proto;
@@ -1875,7 +2106,34 @@ void mtwan_append_s46_resolvconf_ipv4(int wan_unit)
 	}
 }
 
-extern void mtwan_append_s46_resolvconf_ipv6(int wan_unit);
+static void _mtwan_append_s46_resolvconf_ipv6(int wan_unit)
+{
+	char wan_prefix[16];
+	int wan_proto;
+	char wan_dns_buf[256];
+	char wan_dns[64], *next_dns;
+	FILE *fp;
+
+	snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", wan_unit);
+
+	wan_proto = get_wan_proto(wan_prefix);
+	switch(wan_proto) {
+	case WAN_V6PLUS:
+	case WAN_OCNVC:
+		strlcpy(wan_dns_buf, nvram_safe_get(ipv6_nvname_by_unit("ipv6_get_dns", wan_unit)), sizeof(wan_dns_buf));
+		foreach (wan_dns, wan_dns_buf, next_dns) {
+			if (doSystem("cat /tmp/resolv.conf | grep %s", wan_dns)) {
+				fp = fopen("/tmp/resolv.conf", "a");
+				if(fp) {
+					fprintf(fp, "nameserver %s\n", wan_dns);
+					fclose(fp);
+				}
+			}
+		}
+		break;
+	}
+}
+
 void mtwan_append_s46_resolvconf()
 {
 	int unit;
@@ -1884,8 +2142,8 @@ void mtwan_append_s46_resolvconf()
 	for (unit = MULTI_WAN_START_IDX; unit < MULTI_WAN_START_IDX + MAX_MULTI_WAN_NUM; unit++)
 	{
 		real_unit = mtwan_get_mapped_unit(unit);
-		mtwan_append_s46_resolvconf_ipv4(real_unit);
-		mtwan_append_s46_resolvconf_ipv6(real_unit);
+		_mtwan_append_s46_resolvconf_ipv4(real_unit);
+		_mtwan_append_s46_resolvconf_ipv6(real_unit);
 	}
 }
 #endif
@@ -2059,7 +2317,22 @@ int mtwan_get_route_table_id(const int unit, char *table, const size_t table_len
 
 int mtwan_get_route_rule_pref(const int unit)
 {
-	return IP_RULE_PREF_MTWAN_ROUTE + unit;
+	int mtwan_unit = unit;
+
+	if(unit < MULTI_WAN_START_IDX)
+		mtwan_unit = mtwan_get_unit_by_dualwan_unit(unit);
+
+	return IP_RULE_PREF_MTWAN_ROUTE + mtwan_unit;
+}
+
+int mtwan_get_dns_rule_pref(int unit)
+{
+	int mtwan_unit = unit;
+
+	if(unit < MULTI_WAN_START_IDX)
+		mtwan_unit = mtwan_get_unit_by_dualwan_unit(unit);
+
+	return IP_RULE_PREF_MTWAN_DNS_ROUTE + mtwan_unit;
 }
 
 int mtwan_handle_ip_rule(const int unit)
@@ -2076,7 +2349,7 @@ int mtwan_handle_ip_rule(const int unit)
 	return _set_route_rule(mtwan_unit, unit, prefix);
 }
 
-int mtwan_handle_ip_route(const int unit)
+int mtwan_handle_ip_route(int unit, int xcase)
 {
 	int mtwan_unit = unit;
 	char prefix[32];
@@ -2086,6 +2359,9 @@ int mtwan_handle_ip_route(const int unit)
 	{
 		mtwan_unit = mtwan_get_unit_by_dualwan_unit(unit);
 	}
+
+	if (xcase)
+		_set_route_table(unit, -1, prefix);
 
 	return _set_route_table(mtwan_unit, unit, prefix);
 }
@@ -2144,9 +2420,6 @@ int mtwan_start_multi_wan()
 			// check enable and ifname
 			if (nvram_match(strlcat_r(prefix, "enable", tmp, sizeof(tmp)), "1") && !nvram_match(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), ""))
 			{
-#ifdef RTCONFIG_MULTISERVICE_WAN
-				config_mswan(unit);
-#endif
 				_dprintf("[%s] Start wan%d\n", __FUNCTION__, unit);
 				start_wan_if(unit);
 			}
@@ -2279,13 +2552,16 @@ int mtwan_handle_if_updown(const int unit, const char *ifname, const int up)
 		update_wan_state(prefix, WAN_STATE_CONNECTED, 0);
 
 		start_firewall(unit, 0);
+#ifdef RTCONFIG_FILTER_CUSTOM
+		reload_filter_custom_rule();
+#endif
 
 #ifdef RTCONFIG_MULTIWAN_PROFILE
 		if (is_mtwan_primary_group(unit))
 			update_resolvconf();
 		if (is_mtwan_lb(unit)) {
 			mtwan_update_lb_route(unit, up);
-			mtwan_update_lb_iptables(unit, up);
+			mtwan_update_lb_iptables(unit, up, MTWAN_HANDLE_V4);
 		}
 #endif
 
@@ -2317,15 +2593,17 @@ int mtwan_handle_if_updown(const int unit, const char *ifname, const int up)
 		) {
 			stop_mtwan_iQos(unit);
 		}
-		remove_ip_rules(mtwan_get_route_rule_pref(unit), 0);
+		remove_ip_rules(mtwan_get_route_rule_pref(unit), MTWAN_HANDLE_V4);
+		remove_ip_rules(mtwan_get_dns_rule_pref(unit), MTWAN_HANDLE_V4);
 		update_wan_state(prefix, WAN_STATE_DISCONNECTED, WAN_STOPPED_REASON_NONE);
 
 #ifdef RTCONFIG_MULTIWAN_PROFILE
 		if (is_mtwan_primary_group(unit))
 			update_resolvconf();
 		if (is_mtwan_lb(unit)) {
+			remove_ip_rules(mtwan_get_mark_rule_pref(unit), MTWAN_HANDLE_V4);
 			mtwan_update_lb_route(unit, up);
-			mtwan_update_lb_iptables(unit, up);
+			mtwan_update_lb_iptables(unit, up, MTWAN_HANDLE_V4);
 		}
 #endif
 
@@ -2379,6 +2657,7 @@ char *mtwan_get_lan_ifname(int port, char *buf, size_t len)
 #ifdef RTCONFIG_NEW_PHYMAP
 	phy_port_mapping port_mapping;
 	int i;
+	int lport = 0;
 
 	if (!buf)
 		return NULL;
@@ -2387,7 +2666,11 @@ char *mtwan_get_lan_ifname(int port, char *buf, size_t len)
 	for (i = 0; i < port_mapping.count; i++) {
 		if (!(port_mapping.port[i].cap & PHY_PORT_CAP_LAN))
 			continue;
-		if (port == i) {
+		if (port_mapping.port[i].seq_no != -1)
+			lport = port_mapping.port[i].seq_no;
+		else
+			lport = (int)strtol(port_mapping.port[i].label_name+1, NULL, 0);
+		if (port == lport) {
 			strlcpy(buf, port_mapping.port[i].ifname, len);
 			return buf;
 		}
@@ -2417,22 +2700,155 @@ char *mtwan_get_lan_ifname(int port, char *buf, size_t len)
 
 char *mtwan_get_wan_ifname(char *buf, size_t len)
 {
-	char wan_ifnames[128] = {0};
-	char *p;
-
 	if (!buf)
 		return NULL;
 
-	strlcpy(wan_ifnames, nvram_safe_get("wan_ifnames"), sizeof(wan_ifnames));
-	p = strchr(wan_ifnames, ' ');
-	if (p)
-		*p = '\0';
-	strlcpy(buf, wan_ifnames, len);
-	if (!buf[0])
-		strlcpy(buf, WAN_IF_ETH, len);
+	if (nvram_match("switch_wantag", "none"))
+		strlcpy(buf, wan_if_eth(), len);
+	else
+		strlcpy(buf, nvram_safe_get("switch_wantag_ifname"), len);
 
 	return buf;
 }
+
+#ifdef RTCONFIG_BONDING_WAN
+// remove the lan port which will bonding with wan port.
+static void _remove_mtwan_data_by_idx(const char *nvname, int idx)
+{
+	int i, j;
+	char mtwan_prefix[16] = {0};
+	char old_data[32] = {0};
+	char new_data[32] = {0};
+	char value[16] = {0}, *next = NULL;
+	int removed_group = 0;
+
+	if (!nvname)
+		return;
+
+	for (i = 1; i <= MAX_MTWAN_PROFILE_NUM; i++)
+	{
+		memset(old_data, 0, sizeof(old_data));
+		snprintf(mtwan_prefix, sizeof(mtwan_prefix), "mtwan%d_", i);
+		strlcpy(old_data, nvram_pf_safe_get(mtwan_prefix, nvname), sizeof(old_data));
+		if (*old_data)
+		{
+			memset(new_data, 0, sizeof(new_data));
+			j = 0;
+			foreach(value, old_data, next)
+			{
+				if (j == idx)
+				{
+					if (!strcmp(nvname, "mt_group"))
+						removed_group = strtol(value, NULL, 10);
+					j++;
+					continue;
+				}
+				else
+				{
+					if (*new_data)
+						strlcat(new_data, " ", sizeof(new_data));
+					strlcat(new_data, value, sizeof(new_data));
+				}
+				j++;
+			}
+			nvram_pf_set(mtwan_prefix, nvname, new_data);
+		}
+
+		if (removed_group)
+		{
+			memset(old_data, 0, sizeof(old_data));
+			strlcpy(old_data, nvram_pf_safe_get(mtwan_prefix, "order"), sizeof(old_data));
+			if (*old_data)
+			{
+				memset(new_data, 0, sizeof(new_data));
+				foreach(value, old_data, next)
+				{
+					if (removed_group == (int)strtol(value, NULL, 10))
+					{
+						continue;
+					}
+					else
+					{
+						if (*new_data)
+							strlcat(new_data, " ", sizeof(new_data));
+						strlcat(new_data, value, sizeof(new_data));
+					}
+				}
+				nvram_pf_set(mtwan_prefix, "order", new_data);
+			}
+		}
+	}
+}
+
+static void _update_wans_mt_bonding_port()
+{
+	char ioports_orig[32] = {0};
+	char ioports_new[32] = {0};
+	char ioport[8] = {0}, *next = NULL;
+	int lanport;
+	char ifname[IFNAMSIZ] = {0};
+	char wan_bonding_ifnames[64] = {0};
+	int i;
+	int removed_idx = -1;
+
+	if (nvram_get_int("bond_wan") == 0)
+		return;
+
+	nvram_safe_get_r("wans_mt_ioport", ioports_orig, sizeof(ioports_orig));
+	i = 0;
+	foreach(ioport, ioports_orig, next)
+	{
+		lanport = 0;
+		if (!strncmp(ioport, "lan", 3))
+			lanport = (int)strtol(ioport + 3, NULL, 0);
+#ifdef RTCONFIG_NEW_PHYMAP
+		else if (!strncmp(ioport, "L", 1))
+		{
+			phy_port_mapping port_mapping;
+			int j;
+
+			get_phy_port_mapping(&port_mapping);
+			for (j = 0; j < port_mapping.count; j++)
+			{
+				if (!strcmp(port_mapping.port[j].label_name, ioport))
+				{
+					if (port_mapping.port[j].seq_no != -1)
+						lanport = port_mapping.port[j].seq_no;
+					else
+						lanport = (int)strtol(ioport + 1, NULL, 0);
+				}
+			}
+		}
+#endif
+		if (lanport)
+		{
+			mtwan_get_lan_ifname(lanport, ifname, sizeof(ifname));
+			get_wan_bonding_ifnames(wan_bonding_ifnames, sizeof(wan_bonding_ifnames));
+			if (strstr(wan_bonding_ifnames, ifname))
+			{
+				removed_idx = i;
+				i++;
+				continue;
+			}
+		}
+
+		if (*ioports_new)
+			strlcat(ioports_new, " ", sizeof(ioports_new));
+		strlcat(ioports_new, ioport, sizeof(ioports_new));
+		i++;
+	}
+
+	if (*ioports_new)
+		nvram_set("wans_mt_ioport", ioports_new);
+
+	// update mtwan_mt_group, mtwan_mt_weight, mtwan_order
+	if (removed_idx != -1)
+	{
+		_remove_mtwan_data_by_idx("mt_group", removed_idx);
+		_remove_mtwan_data_by_idx("mt_weight", removed_idx);
+	}
+}
+#endif
 
 int mtwan_init_nvram()
 {
@@ -2440,6 +2856,8 @@ int mtwan_init_nvram()
 	char prefix[] = "wanXXXXXX_", *val, tmp[256];
 	char wan_type[8] = {0};
 	int lanport = -1;
+	int modem_unit = MODEM_UNIT_FIRST;
+	char modem_prefix[16] = {0};
 	char ifname[IFNAMSIZ];
 	int real_unit;
 #ifdef RTCONFIG_MULTIWAN_PROFILE
@@ -2469,19 +2887,41 @@ int mtwan_init_nvram()
 	}
 
 #ifdef RTCONFIG_MULTIWAN_PROFILE
+#ifdef RTCONFIG_BONDING_WAN
+	_update_wans_mt_bonding_port();
+#endif
 	/// ifnames, type, lanport
 	nvram_safe_get_r("wans_mt_ioport", buf, sizeof(buf));
 	nvram_safe_get_r("wans_dualwan", wans_dualwan, sizeof(wans_dualwan));
 	i = 0;
+	set_wan_phy("");
 	foreach(wan_type, buf, next)
 	{
 		snprintf(prefix_orig, sizeof(prefix_orig), "wan%d_", i+MULTI_WAN_START_IDX);
+		if (!nvram_get(strlcat_r(prefix_orig, "dualwan_idx", tmp, sizeof(tmp))))
+			nvram_set_int(strlcat_r(prefix_orig, "dualwan_idx", tmp, sizeof(tmp)), WAN_UNIT_NONE);
 		real_unit = mtwan_get_real_wan(i+MULTI_WAN_START_IDX, prefix, sizeof(prefix));
 		if (real_unit < 0)
 			continue;
 		nvram_set(strlcat_r(prefix, "enable", tmp, sizeof(tmp)), "1");
+		if ((val = nvram_get(strlcat_r(prefix, "proto", tmp, sizeof(tmp)))) == NULL || !*val)
+		{
+			nvram_set(strlcat_r(prefix, "proto", tmp, sizeof(tmp)), "dhcp");
+			nvram_set(strlcat_r(prefix, "dhcpenable_x", tmp, sizeof(tmp)), "1");
+			nvram_set(strlcat_r(prefix, "dnsenable_x", tmp, sizeof(tmp)), "1");
+			nvram_set(strlcat_r(prefix, "nat_x", tmp, sizeof(tmp)), "1");
+		}
+
 		if (!strncmp(wan_type, "wan", 3))
 		{
+			// wan type
+			nvram_set(strlcat_r(prefix, "type", tmp, sizeof(tmp)), "wan");
+			nvram_set(strlcat_r(prefix_orig, "type", tmp, sizeof(tmp)), "wan");
+			if (i == 0 && strstr(wans_dualwan, "none"))
+			{
+				nvram_set("wans_dualwan", "wan none");
+			}
+			// wanX_ifname
 #ifdef RTCONFIG_MULTISERVICE_WAN
 			if (nvram_match("switch_wantag", "none")
 			 && (nvram_get_int(strlcat_r(prefix, "dot1q", tmp, sizeof(tmp))) || nvram_get_int(strlcat_r(prefix, "ms_cnt", tmp, sizeof(tmp))) > 1)
@@ -2489,50 +2929,65 @@ int mtwan_init_nvram()
 				nvram_set(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), get_mswan_ifname(real_unit, ifname, sizeof(ifname)));
 			else
 #endif
+#ifdef RTCONFIG_BONDING_WAN
+			if (nvram_get_int("bond_wan") && if_nametoindex(get_wan_bonding_ifname(ifname, sizeof(ifname))))
+				nvram_set(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), ifname);
+			else
+#endif
 			nvram_set(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), mtwan_get_wan_ifname(ifname, sizeof(ifname)));
-			nvram_set(strlcat_r(prefix, "type", tmp, sizeof(tmp)), "wan");
-			nvram_set(strlcat_r(prefix_orig, "type", tmp, sizeof(tmp)), "wan");
-			if (i == 0 && strstr(wans_dualwan, "none"))
-			{
-				nvram_set("wans_dualwan", "wan none");
-			}
+			// wan_ifnames
+#ifdef RTCONFIG_BONDING_WAN
+			if (nvram_get_int("bond_wan") && if_nametoindex(get_wan_bonding_ifname(ifname, sizeof(ifname))))
+				add_wan_phy(ifname);
+			else
+#endif
+			add_wan_phy(mtwan_get_wan_ifname(ifname, sizeof(ifname)));
 		}
 		else if (!strncmp(wan_type, "lan", 3))
 		{
+			// wan type
 			nvram_set(strlcat_r(prefix, "type", tmp, sizeof(tmp)), "lan");
 			nvram_set(strlcat_r(prefix_orig, "type", tmp, sizeof(tmp)), "lan");
 			if (wan_type[3])
 			{
 				lanport = atoi(wan_type + 3);
 				nvram_set_int(strlcat_r(prefix, "lanport", tmp, sizeof(tmp)), lanport);
+				if (i == 0 && strstr(wans_dualwan, "none"))
+				{
+					nvram_set("wans_dualwan", "lan none");
+					nvram_set_int("wans_lanport", lanport);
+				}
+				// wan_ifnames, lan_ifnames
 				if (!mtwan_get_lan_ifname(lanport, ifname, sizeof(ifname)))
 					continue;
 				del_lan_phy(ifname);
 				add_wan_phy(ifname);
+				// wanX_ifname
 #ifdef RTCONFIG_MULTISERVICE_WAN
 				if (nvram_get_int(strlcat_r(prefix, "dot1q", tmp, sizeof(tmp))) || nvram_get_int(strlcat_r(prefix, "ms_cnt", tmp, sizeof(tmp))) > 1)
 					nvram_set(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), get_mswan_ifname(real_unit, ifname, sizeof(ifname)));
 				else
 #endif
 				nvram_set(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), ifname);
-				if (i == 0 && strstr(wans_dualwan, "none"))
-				{
-					nvram_set("wans_dualwan", "lan none");
-					nvram_set_int("wans_lanport", lanport);
-				}
 			}
 			else
 				_dprintf("%s:%d: configure error: %s\n", __FUNCTION__, __LINE__, wan_type);
 		}
 		else if (!strcmp(wan_type, "usb"))
 		{
+			// wan type
 			nvram_set(strlcat_r(prefix, "type", tmp, sizeof(tmp)), "usb");
 			nvram_set(strlcat_r(prefix_orig, "type", tmp, sizeof(tmp)), "usb");
-			nvram_set(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), "");
 			if (i == 0 && strstr(wans_dualwan, "none"))
 			{
 				nvram_set("wans_dualwan", "usb none");
 			}
+			// wanX_ifname
+			usb_modem_prefix(MODEM_UNIT_FIRST, modem_prefix, sizeof(modem_prefix));
+			strlcpy(ifname, nvram_safe_get(strlcat_r(modem_prefix, "act_dev", tmp, sizeof(tmp))), sizeof(ifname));
+			nvram_set(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), ifname);
+			// wan_ifnames
+			add_wan_phy("usb");
 		}
 #ifdef RTCONFIG_NEW_PHYMAP
 		else if (strlen(wan_type) == 2)
@@ -2545,14 +3000,16 @@ int mtwan_init_nvram()
 			{
 				if (!strcmp(port_mapping.port[j].label_name, wan_type))
 				{
-					if (port_mapping.port[j].cap == PHY_PORT_CAP_WAN)
+					if (*port_mapping.port[j].label_name == 'W')
 					{
+						// wan type
 						nvram_set(strlcat_r(prefix, "type", tmp, sizeof(tmp)), "wan");
 						nvram_set(strlcat_r(prefix_orig, "type", tmp, sizeof(tmp)), "wan");
 						if (i == 0 && strstr(wans_dualwan, "none"))
 						{
 							nvram_set("wans_dualwan", "wan none");
 						}
+						// wanX_ifname
 #ifdef RTCONFIG_MULTISERVICE_WAN
 						if (nvram_match("switch_wantag", "none")
 						 && (nvram_get_int(strlcat_r(prefix, "dot1q", tmp, sizeof(tmp))) || nvram_get_int(strlcat_r(prefix, "ms_cnt", tmp, sizeof(tmp))) > 1)
@@ -2560,40 +3017,79 @@ int mtwan_init_nvram()
 							nvram_set(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), get_mswan_ifname(real_unit, ifname, sizeof(ifname)));
 						else
 #endif
-						nvram_set(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), port_mapping.port[j].ifname);
+#ifdef RTCONFIG_BONDING_WAN
+						if (nvram_get_int("bond_wan") && if_nametoindex(get_wan_bonding_ifname(ifname, sizeof(ifname))))
+							nvram_set(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), ifname);
+						else
+#endif
+						if (nvram_match("switch_wantag", "none"))
+							nvram_set(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), port_mapping.port[j].ifname);
+						else
+							nvram_set(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), nvram_safe_get("switch_wantag_ifname"));
+						// wan_ifnames
+#ifdef RTCONFIG_BONDING_WAN
+						if (nvram_get_int("bond_wan") && if_nametoindex(get_wan_bonding_ifname(ifname, sizeof(ifname))))
+							add_wan_phy(ifname);
+						else
+#endif
+						if (nvram_match("switch_wantag", "none"))
+							add_wan_phy(port_mapping.port[j].ifname);
+						else
+							add_wan_phy(nvram_safe_get("switch_wantag_ifname"));
 					}
-					else if (port_mapping.port[j].cap == PHY_PORT_CAP_LAN)
+					else if (*port_mapping.port[j].label_name == 'L')
 					{
+						// wan type
 						nvram_set(strlcat_r(prefix, "type", tmp, sizeof(tmp)), "lan");
 						nvram_set(strlcat_r(prefix_orig, "type", tmp, sizeof(tmp)), "lan");
-						lanport = atoi(wan_type +1);
+						if (port_mapping.port[j].seq_no != -1)
+							lanport = port_mapping.port[j].seq_no;
+						else
+							lanport = (int)strtol(wan_type + 1, NULL, 10);
 						nvram_set_int(strlcat_r(prefix, "lanport", tmp, sizeof(tmp)), lanport);
-						del_lan_phy(port_mapping.port[j].ifname);
-						add_wan_phy(port_mapping.port[j].ifname);
 						if (i == 0 && strstr(wans_dualwan, "none"))
 						{
 							nvram_set("wans_dualwan", "lan none");
 							nvram_set_int("wans_lanport", lanport);
 						}
+						// wanX_ifname
 #ifdef RTCONFIG_MULTISERVICE_WAN
 						if (nvram_get_int(strlcat_r(prefix, "dot1q", tmp, sizeof(tmp))) || nvram_get_int(strlcat_r(prefix, "ms_cnt", tmp, sizeof(tmp))) > 1)
 							nvram_set(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), get_mswan_ifname(real_unit, ifname, sizeof(ifname)));
 						else
 #endif
 						nvram_set(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), port_mapping.port[j].ifname);
+						// wan_ifnames, lan_ifnames
+						del_lan_phy(port_mapping.port[j].ifname);
+						add_wan_phy(port_mapping.port[j].ifname);
 					}
-					else if (port_mapping.port[j].cap == PHY_PORT_CAP_USB)
+					else if (*port_mapping.port[j].label_name == 'U')
 					{
-						nvram_set(strlcat_r(prefix, "type", tmp, sizeof(tmp)), "usb");
-						nvram_set(strlcat_r(prefix_orig, "type", tmp, sizeof(tmp)), "usb");
-						nvram_set(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), "");
+						char *usb_wan_type;
+#ifdef RTCONFIG_USB_MULTIMODEM
+						modem_unit = (int)strtol(wan_type + 1, NULL, 10) - 1;
+#endif
+						// wan type
+						usb_wan_type = (modem_unit == MODEM_UNIT_FIRST) ? "usb" : "usb2";
+						nvram_set(strlcat_r(prefix, "type", tmp, sizeof(tmp)), usb_wan_type);
+						nvram_set(strlcat_r(prefix_orig, "type", tmp, sizeof(tmp)), usb_wan_type);
 						if (i == 0 && strstr(wans_dualwan, "none"))
 						{
-							nvram_set("wans_dualwan", "usb none");
+							char new_wans_dualwan[32];
+							snprintf(new_wans_dualwan, sizeof(new_wans_dualwan), "%s none", usb_wan_type);
+							nvram_set("wans_dualwan", new_wans_dualwan);
 						}
+						// wanX_ifname
+						usb_modem_prefix(modem_unit, modem_prefix, sizeof(modem_prefix));
+						strlcpy(ifname, nvram_safe_get(strlcat_r(modem_prefix, "act_dev", tmp, sizeof(tmp))), sizeof(ifname));
+						nvram_set(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), ifname);
+						// wan_ifnames
+						add_wan_phy(usb_wan_type);
 					}
 					else
 						continue;
+
+					break;
 				}
 			}
 		}
@@ -2603,12 +3099,18 @@ int mtwan_init_nvram()
 	for (;i < MAX_MULTI_WAN_NUM; i++)
 	{
 		snprintf(prefix_orig, sizeof(prefix_orig), "wan%d_", i);
-		snprintf(prefix, sizeof(prefix), "wan%d_", mtwan_get_mapped_unit(i+MULTI_WAN_START_IDX));
+		real_unit = mtwan_get_real_wan(i+MULTI_WAN_START_IDX, prefix, sizeof(prefix));
+		if (real_unit < 0)
+			continue;
 		nvram_set(strlcat_r(prefix, "enable", tmp, sizeof(tmp)), "0");
 		nvram_set(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), "");
 		nvram_set(strlcat_r(prefix, "type", tmp, sizeof(tmp)), "");
 		if (i < WAN_UNIT_MAX)
 			nvram_set(strlcat_r(prefix_orig, "type", tmp, sizeof(tmp)), "");
+#ifdef RTCONFIG_IPV6
+		if (nvram_get(ipv6_nvname_by_unit("ipv6_service", real_unit)))
+			nvram_set(ipv6_nvname_by_unit("ipv6_service", real_unit), "disabled");
+#endif
 	}
 
 	mtwan_init_profile();

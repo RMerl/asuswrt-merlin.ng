@@ -693,7 +693,10 @@ enum {
 #define GIF_PREFIXLEN  0x0002  /* return prefix length */
 #define GIF_PREFIX     0x0004  /* return prefix, not addr */
 
-#define EXTEND_AIHOME_API_LEVEL		22
+/*
+ * 23: Add / fine tune skip_modify_flag in apply.cgi
+ */
+#define EXTEND_AIHOME_API_LEVEL		23
 
 #define EXTEND_HTTPD_AIHOME_VER		0
 
@@ -752,6 +755,7 @@ enum conndiagEvent {
 	EID_CD_PS_CD_RET,
 	EID_CD_PS_USB_CHANGE,
 	EID_CD_PS_MOCA_CHANGE,
+	EID_CD_PS_POE_CHANGE,
 	EID_CD_PRINT_STA_INFO,
 	EID_CD_REINIT_BSSINFO,
 	EID_CD_MAX
@@ -818,6 +822,7 @@ enum conndiagEvent {
 #define CD_PS_CD_RET "CABLEDIAG_RET"
 #define CD_PS_USB_CHANGE "PORTSTATUS_USB_CHANGE"
 #define CD_PS_MOCA_CHANGE "PORTSTATUS_MOCA_CHANGE"
+#define CD_PS_POE_CHANGE "PORTSTATUS_POE_CHANGE"
 
 #ifdef RTCONFIG_HND_ROUTER_AX
 #define RMD_IPC_SOCKET_PATH    "/etc/rmd_ipc_socket"
@@ -1004,6 +1009,10 @@ struct vlan_rules_s {
 #define UUID_AMAP "8B"
 #elif defined(ET12)
 #define UUID_AMAP "8C"
+#elif defined(EBG15)
+#define UUID_AMAP "8E"
+#elif defined(EBG19) || defined(EBG19P)
+#define UUID_AMAP "8F"
 #else
 #define UUID_AMAP "00"
 #endif
@@ -1430,9 +1439,11 @@ enum led_id {
 	LED_3G_BLUE,
 	LED_4G_WHITE,
 #endif
+#ifndef EBG19P
 	LED_SIG1,
 	LED_SIG2,
 	LED_SIG3,
+#endif
 #if defined(RT4GAC53U)
 	LED_SIG4,
 #elif defined(RT4GAC56)
@@ -1653,6 +1664,11 @@ enum led_id {
         LED_AR3012_RST,
         LED_ETHALL,
 #endif
+#if defined(EBG19P)
+	LED_AR3012_DIS,
+	LED_AR3012_RST,
+	LED_POE_ALERT,
+#endif
 #if defined(RTBE96U) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	LED_AFC,
 #endif
@@ -1705,6 +1721,7 @@ static inline int have_usb3_led(int model)
 		case MODEL_BC109:
 		case MODEL_BC105:
 		case MODEL_EBG19:
+		case MODEL_EBG19P:
 		case MODEL_EBG15:
 		case MODEL_EBP15:
 			return 1;
@@ -1779,7 +1796,7 @@ static inline int max_no_mssid(void)
 /* brcm qualband machines need to re-define this table by its own case */
 /* wl_band_id must be 0, 1, 2 for 2G, 5G-1, 5G-2 on QCA/MTK platform respectively even some band don't exist. */
 enum wl_band_id {
-#if defined(GTAXE16000) || defined(GTBE98) || defined(BQ16) || defined(EBG15) || defined(EBG19)
+#if defined(GTAXE16000) || defined(GTBE98) || defined(BQ16) || defined(EBG15) || defined(EBG19) || defined(EBG19P)
 	WL_5G_BAND = 0,
 	WL_5G_2_BAND = 1,
 	WL_6G_BAND = 2,
@@ -2183,7 +2200,7 @@ static inline int wisp_mode(void) { return 0; }
 static inline int __access_point_mode(int sw_mode)
 {
 	return (sw_mode == SW_MODE_AP
-#if defined(RTCONFIG_PROXYSTA) || defined(EBG15) || defined(EBG19)
+#if defined(RTCONFIG_PROXYSTA) || defined(EBG15) || defined(EBG19) || defined(EBG19P)
 		&& !nvram_get_int("wlc_psta")
 #endif
 		);
@@ -2194,10 +2211,18 @@ static inline int access_point_mode(void)
 	return __access_point_mode(sw_mode());
 }
 
+static inline int dpsr_mode();
+static inline int psr_mode();
+static inline int rp_mode();
+
 #if defined(RTCONFIG_WIRELESSREPEATER)
 static inline int __repeater_mode(int sw_mode)
 {
-	return (sw_mode == SW_MODE_REPEATER);
+	return (sw_mode == SW_MODE_REPEATER
+#ifdef RTCONFIG_PROXYSTA
+		|| psr_mode() || dpsr_mode() || rp_mode()
+#endif
+		);
 }
 static inline int repeater_mode(void)
 {
@@ -2699,6 +2724,18 @@ struct _usb_device_info {
 };
 #endif
 
+typedef struct _POE_INFO
+{
+	int8 poe_seq_no;
+	unsigned char poe_enable;	/* disable, enable */
+	unsigned char poe_link;	/* has poe client plug in*/
+	unsigned int mA;
+	unsigned int V;
+	unsigned int sys_power_remain;
+	unsigned int sys_power_limit;
+	unsigned int port_power_limit;
+}POE_INFO;
+
 typedef struct _phy_info {
 	int phy_port_id;     // port id for driver
 	char label_name[8];  // could be W0, L1, ..., L8
@@ -2719,6 +2756,7 @@ typedef struct _phy_info {
 #ifdef RTCONFIG_MOCA
 	MOCA_NODE_INFO moca_devices[MAX_MOCA_DEVICES];
 #endif
+	POE_INFO poe_info;
 } phy_info;
 
 #define PHY_INFO_GET_STATUS 1 << 0
@@ -3078,6 +3116,7 @@ extern void create_amas_sys_folder();
 				(ea).octet[5]
 #endif
 
+extern int dwb_band_exist();
 #if defined(RTCONFIG_AMAS_CHANNEL_PLAN)
 extern void set_channel_by_manual();
 #endif
@@ -3292,7 +3331,7 @@ extern void check_wireless_auth(char *mac, char *wl_auth, int auth_len);
 extern int get_fa_rev(void);
 extern int get_fa_dump(void);
 #endif
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19) || defined(EBG19P) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 /* port statistic counter structure */
 #if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 unsigned int rtkswitch_serdes_status(void);
@@ -3473,7 +3512,7 @@ typedef struct rtk_stat_port_cntr_s
 #endif
 #endif
 #ifdef HND_ROUTER
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19) || defined(EBG19P) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 extern uint32_t rtk_get_phy_status(int port);
 extern uint32_t rtk_get_phy_speed(int port);
 extern uint32_t rtk_get_phy_duplex(int port);
@@ -3692,6 +3731,7 @@ extern int free_caches(const char *clean_mode, const int clean_time, const unsig
 extern int update_6rd_info(void);
 extern int update_6rd_info_by_unit(int unit);
 extern int is_private_subnet(const char *ip);
+extern int is_private_subnet6(const char *address);
 extern const char *get_wanface(void);
 extern const char *get_wanip(void);
 extern int is_intf_up(const char* ifname);
@@ -4024,6 +4064,7 @@ typedef struct _phy_port {
 	uint32_t flag;       // flag for special marks.
 	int seq_no;          // sequence nubmer of port WAN, LAN, ...
 	char *ui_display;    // UI display striing of port.
+	int8 poe_seq_no;     // PoE sequence number
 } phy_port;
 typedef struct _phy_port_mapping {
 	int count;           // the amount of phy port
@@ -4203,6 +4244,22 @@ static inline void add_sw_wan_cap(phy_port_mapping *port_mapping, int wan, uint3
 		}
 	}
 }
+
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+static inline void add_sw_mtwan_cap(phy_port_mapping *port_mapping, char *label_name, uint32_t cap)
+{
+	int i;
+	if (!label_name)
+		return;
+	for(i = 0; i < port_mapping->count; i++) {
+		if (!strcmp(port_mapping->port[i].label_name, label_name)) {
+			port_mapping->port[i].cap |= cap;
+			//_dprintf("%s WANS_DUALWAN_IF_SFPP is wan. cap1=%u, cap2=%u\n", port_mapping->port[i].label_name, cap, port_mapping->port[i].cap);
+			break;
+		}
+	}
+}
+#endif
 
 static inline void add_sw_iptv_cap(phy_port_mapping *port_mapping, char *ports, uint32_t cap)
 {
@@ -4446,10 +4503,12 @@ static inline int __wps_led_control(int onoff)
 #else
 static inline int wps_led_control(int onoff)
 {
+#ifndef RTCONFIG_NOWL
 	if (nvram_get_int("led_pwr_gpio") != nvram_get_int("led_wps_gpio")
 		&& nvram_get_int("led_wps_gpio") != 0xFF)
 		return led_control(LED_WPS, onoff);
 	else
+#endif
 		return led_control(LED_POWER, onoff);
 }
 
@@ -4890,6 +4949,8 @@ extern int calc_afc_cold_reboot();
 extern int wl_get_afc_info(char *ifname, char *chanspec);
 extern int wl_afc_status();
 extern int valid_afc_uncertainty_range(char *x, char *y, char *z);
+extern int valid_wifi_location(const char *lat_str, const char *lon_str);
+extern int is_wifi_lat_lon_empty();
 extern void afc_dumplog(const char *fmt, ...);
 extern double AFC_MeshPathLoss(int rssi, int tx, int channel, int band, int is_wired);
 extern void get_afc_info_json(char *bw);
@@ -4907,6 +4968,10 @@ extern void afcd_harness_config(int mode);  // sysdeps
 /* add nt_center 2nd stage event */
 #define CC_EVENT_JSON   "/jffs/ccevent.json"
 #define CC_EVENT_LOCK   "ccevent_lock"
+
+#if defined(RTCONFIG_GTBOOSTER)
+#include <ark_common.h>
+#endif
 
 /* hns_utils.c */
 #if defined(RTCONFIG_HNS)
@@ -5642,6 +5707,12 @@ enum {
 	CDIAG_BW_MAX	= 6
 };
 
+#define sys_upload(image) eval("nvram", "restore", image)
+#define sys_download(file) eval("nvram", "save", file)
+#define sys_reboot() notify_rc("reboot");
+void backup_rpt_setting();
+void restore_rpt_setting();
+
 #define SAFE_FREE(x)	if(x) {free(x); x=NULL;}
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_AMAS_ADTBW)
 #define ACSD_SCORE_FILE	"/tmp/auto_chan_score.txt"
@@ -5675,7 +5746,8 @@ extern int is_tpvpn_configured(int provider, const char* region, const char* con
 #define IP_RULE_PREF_VPNC_OVER_MTWAN				1200	//used by vpn client over multi wan
 #define IP_RULE_PREF_MTWAN_MARK_BASE				5000	//used by multi wan mark
 #define IP_RULE_PREF_MTWAN_LB_BASE					14900	//used by multi wan lb route
-#define IP_RULE_PREF_MTWAN_ROUTE					15000	//used by multi wan
+#define IP_RULE_PREF_MTWAN_ROUTE					15000	//used by multi wan, ~16999
+#define IP_RULE_PREF_MTWAN_DNS_ROUTE				18000	//used by multi wan dns, ~19999
 #define IP_RULE_PREF_DUALWAN_ROUTE				20100	//used by dual wan
 #define IP_RULE_PREF_DUALWAN_LB						20150	//used by dual wan
 #define IP_RULE_PREF_DUALWAN_FROM_WAN	20200	//used by dual wan
@@ -5827,6 +5899,22 @@ enum {
 	GU_REASON_NOT_RTMODE  = 2,  // gu is not under Router mode
 	GU_REASON_BLOCK       = 3   // gu is blocked
 };
+#endif
+
+static inline int is_support_airiq() {
+#ifdef RTCONFIG_AIRIQ
+	return (f_exists("/usr/sbin/airiq_service") && f_exists("/usr/sbin/airiq_app")) ? 1 : 0;
+#else
+	return 0;
+#endif
+}
+
+static inline int is_airiq_eanbled() {
+	return (nvram_get_int("airiq_enable") == 1) ? 1 : 0;
+}
+
+#ifdef RTCONFIG_AI_SERVICE
+#define AIBOARD_CONTROL_IP "169.254.0.2"
 #endif
 
 #endif	/* !__SHARED_H__ */

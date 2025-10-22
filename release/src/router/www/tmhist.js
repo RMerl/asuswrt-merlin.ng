@@ -13,7 +13,7 @@ function changeScale(e)
 {
 	scale = e.value * 1;
 	redraw();
-	cookie.set('daily', scale, 31);
+	window.localStorage.setItem('daily', scale, 31);
 }
 
 function makeRow(rclass, rtitle, dl, ul, total)
@@ -86,13 +86,13 @@ function ymdText(yr, mo, da)
 function changeDate(e, c)
 {
 	dateFormat = e.value * 1;
-	cookie.set(c, e.value, 31);
+	window.localStorage.setItem(c, e.value, 31);
 	redraw();
 }
 
 function initDate(c)
 {
-	dateFormat = fixInt(cookie.get(c), 0, 3, 0)
+	dateFormat = fixInt(window.localStorage.getItem(c), 0, 3, 0)
 	E('dafm').value = dateFormat;
 }
 

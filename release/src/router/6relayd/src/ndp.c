@@ -17,6 +17,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -509,6 +510,51 @@ void relayd_setup_route(const struct in6_addr *addr, int prefixlen,
 	send(rtnl_event.socket, &req, req.nh.nlmsg_len, MSG_DONTWAIT);
 }
 
+#ifdef ASUSWRT
+static void write_neighbor_file()
+{
+	if (config->ndp_neighfile) {
+		int fd = open(config->ndp_neighfile, O_CREAT | O_WRONLY | O_CLOEXEC, 0644);
+		if (fd < 0) {
+			return;
+		}
+		lockf(fd, F_LOCK, 0);
+		ftruncate(fd, 0);
+
+		FILE *fp = fdopen(fd, "w");
+		if (!fp) {
+			close(fd);
+			return;
+		}
+
+		struct ndp_neighbor *n, *e = NULL;
+		char addrbuf[INET6_ADDRSTRLEN];
+
+		list_for_each_entry_safe(n, e, &neighbors, head) {
+			if (!e)
+				e = n;
+			memset(addrbuf, 0, sizeof(addrbuf));
+			inet_ntop(AF_INET6, &n->addr, addrbuf, sizeof(addrbuf));
+			if (addrbuf[0] && n->iface && !n->is_addr) {
+				fprintf(fp, "%s/%d %s %lu\n", addrbuf, n->len, n->iface->ifname, n->timeout);
+			}
+		}
+
+		fclose(fp);
+	}
+
+	if (config->ndp_cb) {
+		char *argv[2] = {config->ndp_cb, NULL};
+		if (!vfork()) {
+			setenv("NEIGHBOR_FILE", config->ndp_neighfile, 1);
+			setenv("MASTER_INTERFACE", config->master.ifname, 1);
+			execv(argv[0], argv);
+			_exit(0);
+		}
+	}
+}
+#endif
+
 // Use rtnetlink to modify kernel routes
 static void setup_route(struct in6_addr *addr, struct relayd_interface *iface,
 		bool add, bool is_addr)
@@ -520,6 +566,10 @@ static void setup_route(struct in6_addr *addr, struct relayd_interface *iface,
 
 	if (!iface || !config->enable_route_learning || is_addr)
 		return;
+
+#ifdef ASUSWRT
+	write_neighbor_file();
+#endif
 
 	relayd_setup_route(addr, 128, iface, NULL, 1024, add);
 }
@@ -627,6 +677,7 @@ static void modify_neighbor(struct in6_addr *addr,
 		setup_route(addr, n->iface, false, n->is_addr);
 		n->iface = iface;
 		n->is_addr = is_addr;
+		n->timeout = relayd_monotonic_time();
 		setup_route(addr, n->iface, add, n->is_addr);
 	}
 	// TODO: In case a host switches interfaces we might want

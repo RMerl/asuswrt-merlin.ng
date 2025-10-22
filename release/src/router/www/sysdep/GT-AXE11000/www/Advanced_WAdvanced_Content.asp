@@ -307,7 +307,7 @@ function backForwardCompatibility(){
 function initial(){
 	show_menu();
 	register_event();
-	init_cookie();
+	init_localStorage();
 	backForwardCompatibility();
 
 	if(lantiq_support){
@@ -347,6 +347,10 @@ function initial(){
 		if(document.form.wl_HW_switch.value == "1"){
 			document.form.wl_radio[0].disabled = true;
 		}
+	}
+
+	if(mlr_support){
+		document.getElementById('mlr_field').style.display = '';
 	}
 	
 	// MODELDEP: for AC ser
@@ -1244,16 +1248,8 @@ function set_power(power_value){
 	document.form.wl_txpower.value = power_table[power_value-1];
 }
 
-function init_cookie(){
-	if(document.cookie.indexOf('clock_type') == -1)		//initialize
-		document.cookie = "clock_type=1";		
-			
-	x = document.cookie.split(';');
-	for(i=0;i<x.length;i++){
-		if(x[i].indexOf('clock_type') != -1){
-			clock_type = x[i].substring(x[i].length-1, x[i].length);			
-		}	
-	}
+function init_localStorage(){
+	clock_type = window.localStorage.getItem("clock_type") || 1;	
 }
 
 function save_wifi_schedule(){
@@ -1781,7 +1777,7 @@ function wifi7_mode(obj){
 							<a id="he_mode_text" class="hintstyle"><#WLANConfig11b_HE_Frame_Mode_itemname#></a>
 						</th>
 						<td>
-							<div style="width:465px;display:flex;align-items: center;">
+							<div style="display:flex;align-items: center;">
 								<select name="wl_11ax" class="input_option" onChange="he_frame_mode(this);">
 									<option value="1" <% nvram_match("wl_11ax", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 									<option value="0" <% nvram_match("wl_11ax", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
@@ -1795,7 +1791,7 @@ function wifi7_mode(obj){
 							<a id="wifi7_mode_text" class="hintstyle"><#WiFi7_Mode#></a>
 						</th>
 						<td>
-							<div style="width:465px;display:flex;align-items: center;">
+							<div style="display:flex;align-items: center;">
 								<select name="wl_11be" class="input_option" onChange="wifi7_mode(this);">
 									<option value="1" <% nvram_match("wl_11be", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 									<option value="0" <% nvram_match("wl_11be", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
@@ -1808,7 +1804,7 @@ function wifi7_mode(obj){
 							<a class="hintstyle"><#WLANConfig11b_AgileMultiband_itemdesc#></a>
 						</th>
 						<td>
-							<div style="width:465px;display:flex;align-items: center;">
+							<div style="display:flex;align-items: center;">
 								<select name="wl_mbo_enable" class="input_option">
 									<option value="1" <% nvram_match("wl_mbo_enable", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 									<option value="0" <% nvram_match("wl_mbo_enable", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
@@ -1821,7 +1817,7 @@ function wifi7_mode(obj){
 							<a class="hintstyle"><#WLANConfig11b_WakeTime_itemname#></a>
 						</th>
 						<td>
-							<div style="width:465px;display:flex;align-items: center;">
+							<div style="display:flex;align-items: center;">
 								<select name="wl_twt" class="input_option">
 									<option value="1" <% nvram_match("wl_twt", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 									<option value="0" <% nvram_match("wl_twt", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
@@ -2004,6 +2000,15 @@ function wifi7_mode(obj){
 							</select>
 						</td>
 					</tr>
+					<tr id="mlr_field" style="display:none;">
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="">Xtra Range 2.0</a></th>
+						<td>
+							<select name="mlr_enable" class="input_option">
+									<option value="0" <% nvram_match("mlr_enable", "0","selected"); %> ><#WLANConfig11b_WirelessCtrl_buttonname#></option>
+									<option value="1" <% nvram_match("mlr_enable", "1","selected"); %> ><#WLANConfig11b_WirelessCtrl_button1name#></option>
+							</select>
+						</td>
+					</tr>
 					<tr id="wl_module_scheme_field">
 						<th id="turbo_qam_title"><a id="turbo_qam_hint" class="hintstyle" href="javascript:void(0);" onClick="openHint(3,28);"><#WLANConfig11b_x_TurboQAM#></a></th>
 						<td>
@@ -2108,8 +2113,8 @@ function wifi7_mode(obj){
 							<div>
 								<table>
 									<tr>
-										<td style="border:0px;padding-left:0px;">
-											<div id="slider" style="width:80px;"></div>
+										<td style="border:0px;padding-left:0px;width:100%">
+											<div id="slider"></div>
 										</td>									
 										<td style="border:0px;width:60px;">
 											<div id="tx_power_desc" style="width:150px;font-size:14px;"></div>

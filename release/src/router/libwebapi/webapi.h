@@ -70,6 +70,13 @@ struct JFFS_BACKUP_PROFILE_S {
 };
 
 #define sys_reboot() notify_rc("reboot");
+#ifdef RTCONFIG_ENERGY_SAVE
+#define MaxRule_ENERGY_SAVE_SCHED 24
+#endif
+
+#ifdef RTCONFIG_ENERGY_SAVE
+#define MaxRule_ENERGY_SAVE_SCHED 24
+#endif
 
 extern struct JFFS_BACKUP_PROFILE_S jffs_backup_profile_t[];
 #define JFFS_CFGS_EXCLUDE "/jffs/exclude_lists"
@@ -164,8 +171,8 @@ extern int get_newob_onboardinglist(struct json_object *new_ob_obj);
 #ifdef RTCONFIG_AMAS
 extern int do_reboot_action(char *device_list);
 #endif
-extern int do_firmware_check(int from_id, int wait_result);
-extern int do_firmware_upgrade(void);
+extern int do_firmware_check(int from_id, int wait_result, char *mac_list);
+extern int do_firmware_upgrade(char *mac_list);
 extern int do_feedback_mail(struct json_object *feedback_obj);
 extern int is_noFwManual(void);
 extern int do_upload_config(void);

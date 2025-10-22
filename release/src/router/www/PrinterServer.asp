@@ -170,7 +170,7 @@ function showMethod(flag1, flag2){
 								</td>
 								</tr>
 								<tr>
-									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+									<table width="100%" border="0" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 											<tr>
 												<th><#Network_Printer_Server#></th>
 												<td>

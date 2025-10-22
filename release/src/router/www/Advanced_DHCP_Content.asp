@@ -38,6 +38,11 @@
 	bottom: 0;
 	top: initial;
 }
+.csv_action{
+	float: right;
+	padding-left: 10px;
+	cursor: pointer;
+}
 </style>
 <script>
 $(function () {
@@ -156,7 +161,7 @@ function initial(){
 	}
 	//}Viz 2011.10
 	setTimeout("showdhcp_staticlist();", 100);
-	setTimeout("showDropdownClientList('setClientIP', 'mac>ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');", 1000);
+	setTimeout("showDropdownClientList('setClientIP', 'mac>ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all', 'true');", 1000);
 	
 	if(pptpd_support){	 
 		var chk_vpn = check_vpn();
@@ -188,9 +193,18 @@ function initial(){
 	if(lyra_hide_support){
 		$("#dhcpEnable").hide();
 	}
-	$("#GWStatic").html("<#LANHostConfig_ManualDHCPList_groupitemdesc#>&nbsp;(<#List_limit#>&nbsp;"+MaxRule_extend_limit+")");
+	$("#GWStatic").html("<#LANHostConfig_ManualDHCPList_groupitemdesc#>&nbsp;(<#List_limit#>&nbsp;"+MaxRule_extend_limit+") <span class='csv_action' onclick='exportCSV()'>Export</span><span class='csv_action' onclick='(function(){document.form.import_file.click()})()'>Import</span>");
 
 	init_dhcp_manual_and_vpnc_policy();
+
+	const anchor_dhcp_manual = window.localStorage.getItem("anchor_dhcp_manual");
+	if(anchor_dhcp_manual == "true"){
+		const target = document.getElementById("dhcp_staticlist_Block");
+		if(target){
+			target.scrollIntoView({ behavior: 'smooth' });
+		}
+		window.localStorage.removeItem("anchor_dhcp_manual");
+	}
 }
 
 function addRow_Group(){
@@ -470,6 +484,24 @@ function validate_dhcp_range(ip_obj){
 	return 1;
 }
 
+function validate_dhcp_range_1(ip){
+	var ip_num = inet_network(ip);
+	var subnet_head, subnet_end;
+	
+	if(ip_num <= 0){
+		return 0;
+	}
+	
+	subnet_head = getSubnet(document.form.lan_ipaddr.value, document.form.lan_netmask.value, "head");
+	subnet_end = getSubnet(document.form.lan_ipaddr.value, document.form.lan_netmask.value, "end");
+	
+	if(ip_num <= subnet_head || ip_num >= subnet_end){
+		return 0;
+	}
+	
+	return 1;
+}
+
 function validForm(){	
 	var re = new RegExp('^[a-zA-Z0-9][a-zA-Z0-9\.\-]*[a-zA-Z0-9]$','gi');
 	if((!re.test(document.form.lan_domain.value) || document.form.lan_domain.value.indexOf("asuscomm.com") > 0) && document.form.lan_domain.value != ""){
@@ -742,6 +774,120 @@ function edit_dhcp_manual_ok(){
 	}
 	
 }
+
+function exportCSV(){
+	var csv = "MAC Address,IP Address,DNS,Hostname\n";
+	$.each(dhcp_manual_and_vpnc_policy, function(index, item){
+		if(item.mac != "" && item.ip != "")
+			csv += `${item.mac},${item.ip},${item.dns},${item.hostname}\n`;
+	});
+	var hiddenElement = document.createElement('a');
+	hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+	hiddenElement.target = '_blank';
+	hiddenElement.download = 'dhcp_manual_list.csv';
+	hiddenElement.click();
+
+}
+
+function importCSV(e){
+	var file = document.getElementById("import_file").files[0];
+	if(file){
+		var reader = new FileReader();
+		reader.onload = function(e){
+			var csv = e.target.result;
+			var rows = csv.split("\n");
+			var new_dhcp_manual_and_vpnc_policy = [];
+			var collision_flag = false;	
+			var importDataObj = {};
+			for(var i = 1; i < rows.length; i++){
+				if(rows[i] === ''){
+					continue;
+				}
+
+				var row = rows[i].replace('\r', '').split(",");
+				var legal_hwaddr = /^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/				
+				if(!legal_hwaddr.test(row[0])){
+					alert(`<#IPConnection_x_illegal_mac#>, ${row[0]}`);
+					collision_flag = true;
+					return;
+				}
+
+				var legal_ipaddr = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+				if(!legal_ipaddr.test(row[1]) || !validate_dhcp_range_1(row[1])){
+					alert(`${row[1]} <#JS_validip#>`);
+					collision_flag = true;
+					return;
+				}
+
+				if(row[2]!= '' && !legal_ipaddr.test(row[2])){
+					alert(`${row[2]} <#JS_validip#>`);
+					collision_flag = true;
+					return;
+				}
+
+				if(importDataObj[row[0]] === undefined){
+					importDataObj[row[0]] = {
+						ip: row[1],
+						dns: row[2],
+						hostname: row[3],
+					};
+				}					
+				else{
+					alert(`Same MAC Address,  ${row[0]}, in the CSV file.`);
+					collision_flag = true;
+					return;
+				}
+
+				if(importDataObj[row[1]] === undefined){
+					importDataObj[row[1]] = {
+						mac: row[0],
+						dns: row[2],
+						hostname: row[3],
+					};
+				}					
+				else{
+					alert(`Same IP Address, ${row[1]} ,in the CSV file.`);
+					collision_flag = true;
+					return;
+				}
+			}	
+					
+			for(let [key ,value] of Object.entries(importDataObj)){
+				if(value.mac){
+					continue;
+				}
+
+				var profile = new dhcp_manual_and_vpnc_policy_attr();					
+					profile.mac = key;
+					profile.ip = value.ip;
+					profile.dns = value.dns;
+					profile.hostname = value.hostname;
+					profile.activate = "";
+					profile.brifname = "";
+					profile.dest_ip = "";
+					profile.vpnc_idx = "";
+
+				if(!collision_flag){
+					new_dhcp_manual_and_vpnc_policy.push(JSON.parse(JSON.stringify(profile)));
+					collision_flag = false;
+				}										
+			}
+
+			if(new_dhcp_manual_and_vpnc_policy.length > MaxRule_extend_limit){
+				alert("<#JS_itemlimit1#> " + MaxRule_extend_limit + " <#JS_itemlimit2#>");
+				collision_flag = false;
+			}
+
+			if(!collision_flag){				
+				dhcp_manual_and_vpnc_policy = [...new_dhcp_manual_and_vpnc_policy];
+				showdhcp_staticlist();
+			}	
+		}
+
+		reader.readAsText(file);
+		document.getElementById("import_file").value = "";
+	}
+}
 </script>
 </head>
 
@@ -937,9 +1083,11 @@ function edit_dhcp_manual_ok(){
 					<tr>
 						<!-- client info -->
 						<td width="30%">
-							<input type="text" class="input_20_table" maxlength="17" name="dhcp_staticmac_x_0" style="margin-left:-20px;width:190px;" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">
-							<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_MAC#>">
-							<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-left:-1px;"></div>
+							<div class="clientlist_dropdown_main" style="width: 100%">
+								<input type="text" class="input_20_table" maxlength="17" name="dhcp_staticmac_x_0" onKeyPress="return validator.isHWAddr(this,event)" onClick="hideClients_Block();" autocorrect="off" autocapitalize="off" placeholder="ex: <% nvram_get("lan_hwaddr"); %>">
+								<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullLANIPList(this);" title="<#select_MAC#>">
+								<div id="ClientList_Block_PC" class="clientlist_dropdown"></div>
+							</div>
 						</td>
 						<td width="20%">
 							<input type="text" class="input_15_table" maxlength="15" name="dhcp_staticip_x_0" onkeypress="return validator.isIPAddr(this,event)" autocorrect="off" autocapitalize="off">
@@ -958,7 +1106,7 @@ function edit_dhcp_manual_ok(){
 					</tr>
 				</table>
 
-				<div id="edit_dhcp_manual_profile"  class="pop_div_bg pop_div_container">
+				<div id="edit_dhcp_manual_profile" class="pop_div_bg pop_div_container">
 					<table width="95%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable" style="margin-top:8px;">
 						<thead>
 							<tr>
@@ -1002,6 +1150,7 @@ function edit_dhcp_manual_ok(){
         			
         	<!-- manually assigned the DHCP List end-->		
            	<div class="apply_gen">
+				<input type="file"  name="import_file" id="import_file" onchange="importCSV()" style="display:none"> 
            		<input type="button" name="button" class="button_gen" onclick="applyRule();" value="<#CTL_apply#>"/>
             	</div>
 

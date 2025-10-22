@@ -55,7 +55,7 @@
 								<div>&nbsp;</div>
 								<div class="formfonttitle">Security Update Notification</div>
 								<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-								<div class="formfontdesc"></div>
+								<div class="formfontdesc">Monitor this log to stay informed about system security changes that may affect your network.</div>
 								<div style="margin-top:8px">   
 									<textarea class="textarea_ssh_table" style="width:99%; font-family:'Courier New', Courier, mono; font-size:13px;" cols="63" rows="25" readonly="readonly" wrap=off><% nvram_dump("security_recored.log",""); %></textarea>
 								</div>

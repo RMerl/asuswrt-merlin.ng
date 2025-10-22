@@ -132,7 +132,7 @@ function initial(){
 	document.getElementById("redirect_to_FAQ").href=faq_href;
 
 	wl_bwch_hint();
-	setTimeout("wds_scan();", 500);
+	// setTimeout("wds_scan();", 500);
 }
 
 function show_wl_wdslist(){

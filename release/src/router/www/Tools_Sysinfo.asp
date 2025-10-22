@@ -28,6 +28,32 @@
 	-o-transition: all 0.5s ease-in-out;
 	transition: all 0.5s ease-in-out;
 }
+
+.memgrid {
+	display: grid;
+	grid-template-columns: max-content max-content;
+	column-gap: 8px;
+	row-gap: 4px;
+	align-items: center;
+}
+
+.memrow {
+	display: contents;
+}
+
+.memlabel {
+	justify-self: end;
+	margin-right: 4px;
+}
+
+.memvalue {
+	justify-self: end;
+	padding-left: 10px;
+}
+
+span.memvalue {
+	color: revert !important;
+}
 </style>
 
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
@@ -46,6 +72,68 @@ var odmpid = "<% nvram_get("odmpid");%>";
 overlib_str_tmp = "";
 overlib.isOut = true;
 
+let backgroundColorCPU,
+    borderColorCPU,
+	backgroundColor24GHZ,
+	borderColor24GHZ,
+	backgroundColor5GHZ,
+	borderColor5GHZ,
+	backgroundColor5GHZ2,
+	borderColor5GHZ2,
+	backgroundColor6GHZ,
+	borderColor6GHZ,
+	backgroundColor6GHZ2,
+	borderColor6GHZ2,
+	labelsColor,
+	ticksColor,
+	canvasColor;
+
+if (isSupport("UI4")) {
+	backgroundColorCPU = "rgba(107, 174, 214, 0.2)";
+	borderColorCPU = "rgba(107, 174, 214, 1)";
+
+	backgroundColor24GHZ = "rgba(116, 196, 118, 0.2)";
+	borderColor24GHZ = "rgba(116, 196, 118, 1)";
+
+	backgroundColor5GHZ = "rgba(253, 180, 98, 0.2)";
+	borderColor5GHZ = "rgba(253, 180, 98, 1)";
+
+	backgroundColor5GHZ2 = "rgba(188, 128, 189, 0.2)";
+	borderColor5GHZ2 = "rgba(188, 128, 189, 1)";
+
+	backgroundColor6GHZ = "rgba(255, 153, 153, 0.2)";
+	borderColor6GHZ = "rgba(255, 153, 153, 1)";
+
+	backgroundColor6GHZ2 = "rgba(188, 128, 189, 0.2)";
+	borderColor6GHZ2 = "rgba(188, 128, 189, 1)";
+
+	labelsColor = "black";
+	ticksColor = "black";
+	canvasColor = "white";
+
+} else {
+	backgroundColorCPU = "rgba(0, 128, 191, 0.3)";
+	borderColorCPU = "rgba(0, 128, 191, 1)";
+
+	backgroundColor24GHZ = "rgba(200, 200, 0, 0.3)";
+	borderColor24GHZ = "rgba(200, 200, 0, 1)";
+
+	backgroundColor5GHZ = "rgba(0, 200, 200, 0.3)";
+	borderColor5GHZ = "rgba(0, 200, 200,  1)";
+
+	backgroundColor5GHZ2 = "rgba(200, 0, 200, 0.3)";
+	borderColor5GHZ2 = "rgba(200, 0, 200, 1)";
+
+	backgroundColor6GHZ = "rgba(128, 191, 0, 0.3)";
+	borderColor6GHZ = "rgba(128, 191, 0, 1)";
+
+	backgroundColor6GHZ2 = "rgba(200, 0, 200, 0.3)";
+	borderColor6GHZ2 = "rgba(200, 0, 200, 1)";
+
+	labelsColor = "#CCC";
+	ticksColor = "#CCC";
+	canvasColor = "#2f3e44";
+}
 
 var pieColor = ["rgba(0, 84, 159, 1)",
                 "rgba(0, 172, 223, 1)",
@@ -88,12 +176,11 @@ function draw_mem_charts(){
 			options: {
 				responsive: false,
 				segmentShowStroke : false,
-				segmentStrokeColor : "#000",
 				plugins: {
 					legend: {
 						display: true,
 						position: 'right',
-						labels: {color: '#FFF'}
+						labels: {color: labelsColor}
 					},
 					tooltip: {
 						callbacks: {
@@ -138,12 +225,11 @@ function draw_mem_charts(){
 			options: {
 				responsive: false,
 				segmentShowStroke : false,
-				segmentStrokeColor : "#000",
 				plugins: {
 					legend: {
 						display: true,
 						position: 'right',
-						labels: {color: '#FFF'}
+						labels: {color: labelsColor}
 					},
 					tooltip: {
 						callbacks: {
@@ -210,15 +296,15 @@ function draw_temps_charts(){
                 cputempGraph.update();
                 return;
         }
-        var cpuchart = document.getElementById("tempchartId").getContext("2d");
+	var cpuchart = document.getElementById("tempchartId").getContext("2d");
 	var datasets = [];
 
 /* CPU */
 	datasets.push({
 		label: "CPU",
 		data: cpudata,
-		backgroundColor: "rgba(0, 128, 191, 0.3)",
-		borderColor: "rgba(0, 128, 191, 1)",
+		backgroundColor: backgroundColorCPU,
+		borderColor: borderColorCPU,
 		borderWidth: "2",
 		pointStyle: "line",
 		lineTension: "0",
@@ -230,8 +316,8 @@ function draw_temps_charts(){
 		datasets.push({
 			label: "2.4 GHz",
 			data: wifi24data,
-			backgroundColor: "rgba(200, 200, 0, 0.3)",
-			borderColor: "rgba(200, 200, 0, 1)",
+			backgroundColor: backgroundColor24GHZ,
+			borderColor: borderColor24GHZ,
 			borderWidth: "2",
 			pointStyle: "line",
 			lineTension: "0",
@@ -244,8 +330,8 @@ function draw_temps_charts(){
 		datasets.push({
 			label: "5 GHz",
 			data: wifi51data,
-			backgroundColor: "rgba(0, 200, 200, 0.3)",
-			borderColor: "rgba(0, 200, 200,  1)",
+			backgroundColor: backgroundColor5GHZ,
+			borderColor: borderColor5GHZ,
 			borderWidth: "2",
 			pointStyle: "line",
 			lineTension: "0",
@@ -258,8 +344,8 @@ function draw_temps_charts(){
 		datasets.push({
 			label: "5 GHz-2",
 			data: wifi52data,
-			backgroundColor: "rgba(200, 0, 200, 0.3)",
-			borderColor: "rgba(200, 0, 200, 1)",
+			backgroundColor: backgroundColor5GHZ2,
+			borderColor: borderColor5GHZ2,
 			borderWidth: "2",
 			pointStyle: "line",
 			lineTension: "0",
@@ -272,8 +358,8 @@ function draw_temps_charts(){
 		datasets.push({
 			label: (wl_info.band6g_2_support ? "6 GHz-1" :"6 GHz"),
 			data: wifi6data,
-			backgroundColor: "rgba(128, 191, 0, 0.3)",
-			borderColor: "rgba(128, 191, 0, 1)",
+			backgroundColor: backgroundColor6GHZ,
+			borderColor: borderColor6GHZ,
 			borderWidth: "2",
 			pointStyle: "line",
 			lineTension: "0",
@@ -286,8 +372,8 @@ function draw_temps_charts(){
 		datasets.push({
 			label: "6 GHz-2",
 			data: wifi62data,
-			backgroundColor: "rgba(200, 0, 200, 0.3)",
-			borderColor: "rgba(200, 0, 200, 1)",
+			backgroundColor: backgroundColor6GHZ2,
+			borderColor: borderColor6GHZ2,
 			borderWidth: "2",
 			pointStyle: "line",
 			lineTension: "0",
@@ -302,7 +388,6 @@ function draw_temps_charts(){
 			responsive: true,
 			animation: false,
 			segmentShowStroke : false,
-			segmentStrokeColor : "#000",
 			plugins: {
 				tooltip: {
 					displayColors: false,
@@ -319,20 +404,20 @@ function draw_temps_charts(){
 				legend: {
 					display: true,
 					position: "right",
-					labels: {color: "#CCC"}
+					labels: {color: labelsColor}
 				},
 			},
 			scales: {
 				x: {
 					labels: [0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57],
 					ticks: {
-						color: "#CCC",
+						color: ticksColor,
 					}
 				},
 				y: {
 					grace: "5%",
 					ticks: {
-						color: "#CCC",
+						color: ticksColor,
 						callback: function(value, index, ticks) {return (Number.isInteger(value) ? value : value.toFixed(1)) + "°C";}
 					}
 				},
@@ -345,6 +430,7 @@ function draw_temps_charts(){
 function initial(){
 	show_menu();
 
+	document.getElementById("tempchartId").style.backgroundColor = canvasColor
 	if (wl_info.band5g_2_support) {
 		document.getElementById("wifi51_clients_th").innerHTML = "Wireless Clients (5 GHz-1)";
 		document.getElementById("wifi52_clients_tr").style.display = "";
@@ -705,41 +791,44 @@ function show_wifi_version() {
 					</tr>
 					<tr>
 						<td>
-							<div style="display: flex;">
-								<div class="hint-color" style="width:20%;"> Total :</div>
-								<div style="width:25%;padding-left: 10px;text-align:right;" id="mem_total_div"></div>
-							</div>
-							<div style="display: flex;">
-								<div class="hint-color" style="width:20%;">Used :</div>
-								<div style="width:25%;padding-left: 10px;text-align:right;" id="mem_used_div"></div>
-							</div>
-
-							<div style="display: flex;">
-								<div class="hint-color" style="width:20%;">Available :</div>
-								<div style="width:25%;padding-left: 10px;text-align:right;" id="mem_available_div"></div>
-							</div>
-							<div style="display: flex;">
-								<div class="hint-color" style="width:20%;">Free :</div>
-								<div style="width:25%;padding-left: 10px;text-align:right;" id="mem_free_div"></div>
-							</div>
-							<div style="display: flex;">
-								<div class="hint-color" style="width:20%;">Buffers :</div>
-								<div style="width:25%;padding-left: 10px;text-align:right;" id="mem_buffer_div"></div>
-							</div>
-							<div style="display: flex;">
-								<div class="hint-color" style="width:20%;">Cache :</div>
-								<div style="width:25%;padding-left: 10px;text-align:right;" id="mem_cache_div"></div>
+							<div class="memgrid">
+								<div class="memrow">
+									<span class="memlabel" style="color: #FFCC00;"> Total :</span>
+									<span class="memvalue" id="mem_total_div"></span>
+								</div>
+								<div class="memrow">
+									<span class="memlabel" style="color: #FFCC00;">Used :</span>
+									<span class="memvalue" id="mem_used_div"></span>
+								</div>
+								<div class="memrow">
+									<span class="memlabel" style="color: #FFCC00;">Available :</span>
+									<span class="memvalue" id="mem_available_div"></span>
+								</div>
+								<div class="memrow">
+									<span class="memlabel" style="color: #FFCC00;">Free :</span>
+									<span class="memvalue" id="mem_free_div"></span>
+								</div>
+								<div class="memrow">
+									<span class="memlabel" style="color: #FFCC00;">Buffers :</span>
+									<span class="memvalue" id="mem_buffer_div"></span>
+								</div>
+								<div class="memrow">
+									<span class="memlabel" style="color: #FFCC00;">Cache :</span>
+									<span class="memvalue" id="mem_cache_div"></span>
+								</div>
 							</div>
 						</td>
 
 						<td style="vertical-align:top;">
-							<div style="display: flex;">
-								<div class="hint-color" style="width:20%;"<th>Total Swap :</div>
-								<div style="width:25%; padding-left: 10px;text-align:right;" id="mem_swap_total_div"></div>
-							</div>
-							<div id="swap_div" style="display: flex;">
-								<div class="hint-color" style="width:20%;"<th>Used Swap :</div>
-								<div style="width:25%; padding-left: 10px;text-align:right;" id="mem_swap_used_div"></div>
+							<div class="memgrid">
+								<div class="memrow">
+									<span class="memlabel" style="color: #FFCC00;">Total Swap :</span>
+									<span class="memvalue" id="mem_swap_total_div"></span>
+								</div>
+								<div class="mewrow" id="swap_div">
+									<span class="memlabel" style="color: #FFCC00;">Used Swap :</span>
+									<span class="memvalue" id="mem_swap_used_div"></span>
+								</div>
 							</div>
 						</td>
 
@@ -775,7 +864,7 @@ function show_wifi_version() {
 						</tr>
 					</thead>
 					<tr>
-						<td colspan="2" style="padding:14px;" width="100%"><canvas style="background-color:#2f3e44;border-radius:10px;width: 100% !important; height:275px;"id="tempchartId" ></canvas></td>
+						<td colspan="2" style="padding:14px;" width="100%"><canvas style="border-radius:10px;width: 100% !important; height:275px;"id="tempchartId" ></canvas></td>
 					</tr>
 					<tr>
 						<th>Temperatures</th>

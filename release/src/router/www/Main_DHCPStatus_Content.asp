@@ -161,10 +161,11 @@ function show_leases() {
 										<div>&nbsp;</div>
 										<div class="formfonttitle"><#System_Log#> - <#menu5_7_3#></div>
 										<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-										<div class="formfontdesc"><#DHCPlease_title#></div>
-										<div class="formfontdesc">Click on a column header to sort by that field.</div>
+										<div class="formfontdesc"><#DHCPlease_title#><br>
+											Click on a column header to sort by that field.
+										</div>
 
-                                                                                <div style="margin-top:8px">
+										<div style="margin-top:8px">
 											<div id="leaseblock"></div>
 										</div>
 										<br>

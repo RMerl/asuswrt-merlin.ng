@@ -401,9 +401,12 @@ function setShowNames(obj) {
 										<div>&nbsp;</div>
 										<div class="formfonttitle"><#System_Log#> - <#System_act_connections#></div>
 										<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-										<div class="formfontdesc"><#System_log_connections#></div>
-										<div class="formfontdesc">Click on a column header to sort by that field.</div>
-										<div class="formfontdesc">Public IP addresses can be clicked on to launch a lookup on <a href="https://whatismyipaddress.com/" target="_blank" style="cursor:pointer; text-decoration:underline;">https://whatismyipaddress.com/</a>.</div>
+										<div class="formfontdesc"><#System_log_connections#>
+											<ol>
+												<li>Click on a column header to sort by that field.</li>
+												<li>Public IP addresses can be clicked on to launch a lookup on <a href="https://whatismyipaddress.com/" target="_blank" style="cursor:pointer; text-decoration:underline;">https://whatismyipaddress.com/</a>.</li>
+											</ol>
+										</div>
 										<table cellpadding="4" width="100%" class="FormTable_table"><thead><tr><td colspan="2">Display options</td></tr></thead>
 										<tr>
 											<th>Refresh frequency</th>

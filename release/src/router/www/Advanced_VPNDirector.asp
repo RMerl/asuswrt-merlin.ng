@@ -664,7 +664,8 @@ function applyRule() {
 								<div class="formfonttitle">VPN Director</div>
 								<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 								<div id="page_title" class="formfontdesc"><p>VPN Director allows you to direct LAN traffic through specific VPN tunnels.  Please consult the <a href="https://github.com/RMerl/asuswrt-merlin.ng/wiki/VPN-Director" style="font-weight: bolder;text-decoration: underline;" target="_blank">documentation</a> for more details on rule priority.
-								<br><br><p>You can click on the icon in the Enable column to toggle the state.
+									<br>You can click on the icon in the Enable column to toggle the state.
+								</div>
 								<div id="vpn_status_Block"></div>
 								<div id="wgc_status_Block"></div>
 								<br>
@@ -746,11 +747,10 @@ function applyRule() {
 	</table>
 	<div class="hint-color" style="margin:10px 0px;">
 		* IP addresses can be entered in CIDR format (for example, 192.168.1.0/24).
-		<br>
 	</div>
-	<div style="margin-top:15px;text-align:center;">
+	<div style="margin-top:15px; justify-content: center; display:flex; flex-direction:row; gap:0.5em;">
 		<input class="button_gen" type="button" onclick="cancelRule();" value="<#CTL_Cancel#>">
-		<input id="saveRule" class="button_gen" type="button" value="<#CTL_ok#>">
+		<input class="button_gen" type="button" id="saveRule" value="<#CTL_ok#>">
 	</div>
 </div>
 <div id="footer"></div>

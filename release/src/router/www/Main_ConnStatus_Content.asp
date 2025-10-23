@@ -21,6 +21,12 @@
 <script type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/table/table.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
+
+<style>
+span.connblock_title {
+	font-size: 125% !important;
+}
+</style>
 <script>
 
 var connarray = Array();
@@ -40,6 +46,12 @@ var sortfield_global = 0;
 var showNames;
 var refreshRate;
 var timedEvent = 0;
+
+if (isSupport("UI4")) {
+	var sortHighlightColor = "var(--primary-70)";
+} else {
+	var sortHighlightColor = "#FC0";
+}
 
 function initial() {
 	show_menu();
@@ -229,10 +241,10 @@ function draw_table(type){
 
 	if (type == "nat") {
 		document.getElementById('connblock_nat').innerHTML = code;
-		document.getElementById('track_header_' + sortfield_nat).style.boxShadow = "rgb(255, 204, 0) 0px " + (sortdir_nat == 1 ? "1" : "-1") + "px 0px 0px inset";
+		document.getElementById(`track_header_${sortfield_nat}`).style.boxShadow = `${sortHighlightColor} 0px ${(sortdir_nat == 1 ? "1" : "-1")}px 0px 0px inset`;
 	} else if (type == "route") {
 		document.getElementById('connblock_route').innerHTML = code;
-		document.getElementById('track_header_route_' + sortfield_route).style.boxShadow = "rgb(255, 204, 0) 0px " + (sortdir_route == 1 ? "1" : "-1") + "px 0px 0px inset";
+		document.getElementById(`track_header_route_${sortfield_route}`).style.boxShadow = `${sortHighlightColor} 0px ${(sortdir_route == 1 ? "1" : "-1")}px 0px 0px inset`;
 	}
 }
 
@@ -327,7 +339,7 @@ function get_connection_list() {
 }
 
 function getRefresh() {
-	val  = parseInt(cookie.get('awrtm_connrefresh'));
+	val  = parseInt(window.localStorage.getItem('awrtm_connrefresh'));
 
 	if ((val != 0) && (val != 1) && (val != 3) && (val != 5) && (val != 10))
 		val = 0;
@@ -339,12 +351,12 @@ function getRefresh() {
 
 function setRefresh(obj) {
 	refreshRate = obj.value;
-	cookie.set('awrtm_connrefresh', refreshRate, 365);
+	window.localStorage.setItem('awrtm_connrefresh', refreshRate, 365);
 	get_connection_list();
 }
 
 function getShowNames() {
-	val = parseInt(cookie.get('awrtm_connnames'));
+	val = parseInt(window.localStorage.getItem('awrtm_connnames'));
 
 	if ((val != 0) && (val != 1))
 		val = 1;
@@ -356,7 +368,7 @@ function getShowNames() {
 
 function setShowNames(obj) {
 	showNames = obj.value;
-	cookie.set('awrtm_connnames', showNames, 365);
+	window.localStorage.setItem('awrtm_connnames', showNames, 365);
 	draw_table("nat");
 	draw_table("route");
 }
@@ -431,7 +443,7 @@ function setShowNames(obj) {
 											<input type="button" onClick="get_connection_list();" value="<#CTL_refresh#>" class="button_gen">
 										</div>
 
-										<div id="connblock_header" style="display:none;"><span style="color:#FFCC00; font-size:larger;">NAT connections</span></div>
+										<div id="connblock_header" style="display:none;"><span class="connblock_title" style="color:#FFCC00;">NAT connections</span></div>
 										<table cellpadding="4" width="100%" class="FormTable_table" id="tracked_filters" style="display:none;"><thead><tr><td colspan="6">Filter NAT connections</td></tr></thead>
 											<tr>
 												<th width="8%">Proto</th>
@@ -466,7 +478,7 @@ function setShowNames(obj) {
 
 										<div id="connblock_nat"></div>
 
-										<div id="connblock_route_header" style="display:none; margin-top:50px;"><span style="color:#FFCC00; font-size:larger;">Routed IPv6 connections</span></div>
+										<div id="connblock_route_header" style="display:none; margin-top:50px;"><span class="connblock_title" style="color:#FFCC00;">Routed IPv6 connections</span></div>
 										<table cellpadding="4" width="100%" class="FormTable_table" id="tracked_filters_route" style="display:none;"><thead><tr><td colspan="6">Filter routed connections</td></tr></thead>
 											<tr>
 												<th width="8%">Proto</th>

@@ -260,9 +260,14 @@ var tableSorter = {
 		return parseInt(resultb) - parseInt(resulta);
 	},
 	"drawBorder" : function(_clickIndex) {
+		if (isSupport("UI4")) {
+			var sortHighlightColor = "var(--primary-70)";
+		} else {
+			var sortHighlightColor = "#FC0";
+		}
 		var clickSortingMethod = tableSorter.sortingMethod;
-		var boxShadowTopCss = "inset 0px -1px 0px 0px #FC0";
-		var boxShadowBottomCss = "inset 0px 1px 0px 0px #FC0";
+		var boxShadowTopCss = "inset 0px -1px 0px 0px " + sortHighlightColor;
+		var boxShadowBottomCss = "inset 0px 1px 0px 0px " + sortHighlightColor;
 
 		if(clickSortingMethod == "increase") {
 			$(".row_title").children().eq(_clickIndex).css("box-shadow", boxShadowTopCss);
@@ -1069,7 +1074,7 @@ var tableApi = {
 			$contentHtml.addClass("data_tr");
 			$("<td>")
 				.attr("colspan", tableApi._privateAttr.header_item_num)
-				.css("color", "#FC0")
+				.css("color", (isSupport("UI4")? "#D41927" : "#FC0"))
 				.html("<#IPConnection_VSList_Norule#>")
 				.appendTo($contentHtml);
 			contentArray.push($contentHtml);

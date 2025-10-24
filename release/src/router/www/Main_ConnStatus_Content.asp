@@ -241,10 +241,10 @@ function draw_table(type){
 
 	if (type == "nat") {
 		document.getElementById('connblock_nat').innerHTML = code;
-		document.getElementById(`track_header_${sortfield_nat}`).style.boxShadow = `${sortHighlightColor} 0px ${(sortdir_nat == 1 ? "1" : "-1")}px 0px 0px inset`;
+		document.getElementById(`track_header_${sortfield_nat}`).style.boxShadow = `${sortHighlightColor} 0px ${(sortdir_nat == 1 ? "-1" : "1")}px 0px 0px inset`;
 	} else if (type == "route") {
 		document.getElementById('connblock_route').innerHTML = code;
-		document.getElementById(`track_header_route_${sortfield_route}`).style.boxShadow = `${sortHighlightColor} 0px ${(sortdir_route == 1 ? "1" : "-1")}px 0px 0px inset`;
+		document.getElementById(`track_header_route_${sortfield_route}`).style.boxShadow = `${sortHighlightColor} 0px ${(sortdir_route == 1 ? "-1" : "1")}px 0px 0px inset`;
 	}
 }
 

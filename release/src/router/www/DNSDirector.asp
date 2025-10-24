@@ -590,22 +590,28 @@ function save_sdn_rules() {
 				<tr id="dnsfilter_custom1">
 					<th width="200">User defined DNS 1</th>
 					<td>
-						<span>IPv4: <input type="text" maxlength="15" class="input_15_table" name="dnsfilter_custom1" value="<% nvram_get("dnsfilter_custom1"); %>" onKeyPress="return validator.isIPAddr(this,event)"></span>
-						<span id="dnsfilter_custom61" style="padding-left:10px;display:none;">IPv6: <input type="text" maxlength="39" class="input_25_table" name="dnsfilter_custom61" value="<% nvram_get("dnsfilter_custom61"); %>"></span>
+						<div style="margin-top:5px; display:flex; flex-direction:row; gap:0.5em;">
+							<span>IPv4: <input type="text" maxlength="15" class="input_15_table" name="dnsfilter_custom1" value="<% nvram_get("dnsfilter_custom1"); %>" onKeyPress="return validator.isIPAddr(this,event)"></span>
+							<span id="dnsfilter_custom61" style="padding-left:10px;display:none;">IPv6: <input type="text" maxlength="39" class="input_25_table" name="dnsfilter_custom61" value="<% nvram_get("dnsfilter_custom61"); %>"></span>
+						</div>
 					</td>
 				</tr>
 				<tr id="dnsfilter_custom2">
 					<th width="200">User defined DNS 2</th>
 					<td>
-						<span>IPv4: <input type="text" maxlength="15" class="input_15_table" name="dnsfilter_custom2" value="<% nvram_get("dnsfilter_custom2"); %>" onKeyPress="return validator.isIPAddr(this,event)"></span>
-						<span id="dnsfilter_custom62" style="padding-left:10px;display:none;">IPv6: <input type="text" maxlength="39" class="input_25_table" name="dnsfilter_custom62" value="<% nvram_get("dnsfilter_custom62"); %>"></span>
+						<div style="margin-top:5px; display:flex; flex-direction:row; gap:0.5em;">
+							<span>IPv4: <input type="text" maxlength="15" class="input_15_table" name="dnsfilter_custom2" value="<% nvram_get("dnsfilter_custom2"); %>" onKeyPress="return validator.isIPAddr(this,event)"></span>
+							<span id="dnsfilter_custom62" style="padding-left:10px;display:none;">IPv6: <input type="text" maxlength="39" class="input_25_table" name="dnsfilter_custom62" value="<% nvram_get("dnsfilter_custom62"); %>"></span>
+						</div>
 					</td>
 				</tr>
 				<tr id="dnsfilter_custom3">
 					<th width="200">User defined DNS 3</th>
 					<td>
-						<span>IPv4: <input type="text" maxlength="15" class="input_15_table" name="dnsfilter_custom3" value="<% nvram_get("dnsfilter_custom3"); %>" onKeyPress="return validator.isIPAddr(this,event)"></span>
-						<span id="dnsfilter_custom63" style="padding-left:10px;display:none;">IPv6: <input type="text" maxlength="39" class="input_25_table" name="dnsfilter_custom63" value="<% nvram_get("dnsfilter_custom63"); %>"></span>
+						<div style="margin-top:5px; display:flex; flex-direction:row; gap:0.5em;">
+							<span>IPv4: <input type="text" maxlength="15" class="input_15_table" name="dnsfilter_custom3" value="<% nvram_get("dnsfilter_custom3"); %>" onKeyPress="return validator.isIPAddr(this,event)"></span>
+							<span id="dnsfilter_custom63" style="padding-left:10px;display:none;">IPv6: <input type="text" maxlength="39" class="input_25_table" name="dnsfilter_custom63" value="<% nvram_get("dnsfilter_custom63"); %>"></span>
+						</div>
 					</td>
 				</tr>
 			</table>

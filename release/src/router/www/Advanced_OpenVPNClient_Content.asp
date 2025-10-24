@@ -21,61 +21,33 @@
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <style type="text/css">
-.contentM_qis{
+.tlsPanel{
 	width:740px;
-	margin-top:220px;
+	margin-top:280px;
 	margin-left:380px;
 	position:absolute;
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
 	border-radius: 5px;
 	z-index:200;
 	background-color:#2B373B;
+	box-shadow: 3px 3px 10px #000;
 	display:none;
-	/*behavior: url(/PIE.htc);*/
 }
-.QISmain{
-	width:730px;
-	/*font-family:Verdana, Arial, Helvetica, sans-serif;*/
-	font-size:14px;
-	z-index:200;
-	position:relative;
-	background-color:black;
-}
-.QISform_wireless{
+
+.tlsTable{
 	width:600px;
 	font-size:12px;
-	color:#FFFFFF;
 	margin-top:10px;
 	*margin-left:10px;
 }
 
-.QISform_wireless thead{
-	font-size:15px;
-	line-height:20px;
-	color:#FFFFFF;
-}
-
-.QISform_wireless th{
+.tlsTable th{
 	padding-left:10px;
 	*padding-left:30px;
 	font-size:12px;
-	color: #FFFFFF;
+	font-weight:bolder;
 	text-align:left;
 }
 
-.QISform_wireless li{
-	margin-top:10px;
-}
-.QISGeneralFont{
-	font-family:Segoe UI, Arial, sans-serif;
-	margin-top:10px;
-	margin-left:70px;
-	*margin-left:50px;
-	margin-right:30px;
-	color:white;
-	LINE-HEIGHT:18px;
-}	
 .description_down{
 	margin-top:10px;
 	margin-left:10px;
@@ -95,6 +67,13 @@
 	height: 27px;
 	background-size: 50%;
 }
+.textarea_ssh_font{
+	font-family: Courier New, Courier, monospace;
+	font-size:13px;
+	min-height: revert !important;
+	white-space: pre;
+	overflow-wrap: normal;
+}
 </style>
 <script>
 
@@ -105,31 +84,11 @@ wan_nat_x = '<% nvram_get("wan_nat_x"); %>';
 wan_proto = '<% nvram_get("wan_proto"); %>';
 <% vpn_client_get_parameter(); %>
 
-openvpn_unit = '<% nvram_get("vpn_client_unit"); %>';
-
-switch (openvpn_unit) {
-	case "1":
-		client_state = (<% sysinfo("pid.vpnclient1"); %> > 0 ? 2 : 0);
-		break;
-	case "2":
-		client_state = (<% sysinfo("pid.vpnclient2"); %> > 0 ? 2 : 0);
-		break;
-	case "3":
-		client_state = (<% sysinfo("pid.vpnclient3"); %> > 0 ? 2 : 0);
-		break;
-	case "4":
-		client_state = (<% sysinfo("pid.vpnclient4"); %> > 0 ? 2 : 0);
-		break;
-	case "5":
-		client_state = (<% sysinfo("pid.vpnclient5"); %> > 0 ? 2 : 0);
-		break;
-	default:
-		client_state = 0;
-		break;
-}
+const openvpn_unit = '<% nvram_get("vpn_client_unit"); %>';
+const vpnprefix = `vpn_client${openvpn_unit}`;
+var client_state = httpApi.nvramGet([`${vpnprefix}_state`], true)[`${vpnprefix}_state`];
 
 var enabled_ori = "";
-
 var enforce_ori = "<% nvram_get("vpn_client_enforce"); %>";
 var policy_ori = "<% nvram_get("vpn_client_rgw"); %>";
 var dnsmode_ori = "<% nvram_get("vpn_client_adns"); %>";
@@ -184,6 +143,10 @@ var clientlist_array = "<% nvram_char_to_ascii("", "vpndirector_rulelist"); %>";
 function initial()
 {
 	show_menu();
+
+	if (isSupport("UI4")) {
+		document.getElementById("tlsKey_panel").style.backgroundColor="white";
+	}
 
 	var vpn_client_array = {"OpenVPN" : ["OpenVPN", "Advanced_OpenVPNClient_Content.asp"], "PPTP" : ["PPTP/L2TP", "Advanced_VPNClient_Content.asp"], "Wireguard" : ["Wireguard", "Advanced_WireguardClient_Content.asp"]};
 
@@ -723,40 +686,32 @@ function getConnStatus() {
 }
 
 function showConnStatus() {
+	const vpnstate = httpApi.nvramGet([`${vpnprefix}_state`, `${vpnprefix}_errno`], true);
+
 	switch (openvpn_unit) {
 		case "1":
-			client_state = vpnc_state_t1;
-			client_errno = vpnc_errno_t1;
 			localip = vpn_client1_ip;
 			remoteip = vpn_client1_rip;
 			break;
 		case "2":
-			client_state = vpnc_state_t2;
-			client_errno = vpnc_errno_t2;
 			localip = vpn_client2_ip;
 			remoteip = vpn_client2_rip;
 			break;
 		case "3":
-			client_state = vpnc_state_t3;
-			client_errno = vpnc_errno_t3;
 			localip = vpn_client3_ip;
 			remoteip = vpn_client3_rip;
 			break;
 		case "4":
-			client_state = vpnc_state_t4;
-			client_errno = vpnc_errno_t4;
 			localip = vpn_client4_ip;
 			remoteip = vpn_client4_rip;
 			break;
 		case "5":
-			client_state = vpnc_state_t5;
-			client_errno = vpnc_errno_t5;
 			localip = vpn_client5_ip;
 			remoteip = vpn_client5_rip;
 			break;
 	}
 
-	switch (client_state) {
+	switch (vpnstate[`${vpnprefix}_state`]) {
 		case "0":
 			code = "Disconnected";
 			break;
@@ -771,7 +726,7 @@ function showConnStatus() {
 				code = "Connected (Local: "+ localip + " - Public: " + remoteip + ") <a href='#' style='padding-left:12px;text-decoration:underline;' onclick='refreshVPNIP();'>Refresh</a>";
 			break;
 		case "-1":
-			switch (client_errno) {
+			switch (vpnstate[`${vpnprefix}_errno`]) {
 				case "1":
 					code = "Error - IP conflict!";
 					break;
@@ -780,7 +735,7 @@ function showConnStatus() {
 					break;
 				case "4":
 					code = "Error - SSL/TLS issue!";
-				break;
+					break;
 				case "5":
 					code = "Error - DH issue!";
 					break;
@@ -819,16 +774,16 @@ function refreshVPNIP() {
 </head>
 
 <body onload="initial();" onunLoad="return unload_body();" class="bg">
-	<div id="tlsKey_panel"  class="contentM_qis" style="box-shadow: 3px 3px 10px #000;">
-		<table class="QISform_wireless" border=0 align="center" cellpadding="5" cellspacing="0">
+	<div id="tlsKey_panel"  class="tlsPanel" style="box-shadow: 3px 3px 10px #000;">
+		<table class="tlsTable" border=0 align="center" cellpadding="5" cellspacing="0">
 			<tr>
 				<div class="description_down">Keys and Certificates</div>
 			</tr>
 			<tr>
-				<div style="margin-left:30px; margin-top:10px;">
-					<p><#vpn_openvpn_KC_Edit1#> <span class="hint-color">----- BEGIN xxx ----- </span>/<span class="hint-color"> ----- END xxx -----</span> <#vpn_openvpn_KC_Edit2#>
-					<p>Limit: 7999 characters per field
-				</div>
+			<div style="margin-left:30px; margin-top:10px;">
+				<p><#vpn_openvpn_KC_Edit1#> <span style="color:#FFCC00;">----- BEGIN xxx ----- </span>/<span style="color:#FFCC00;"> ----- END xxx -----</span> <#vpn_openvpn_KC_Edit2#>
+				<p>Limit: 7999 characters per field
+			</div>
 				<div style="margin:5px;*margin-left:-5px;width: 730px; height: 2px;" class="splitLine"></div>
 			</tr>			
 			<!--===================================Beginning of tls Content===========================================-->
@@ -843,37 +798,37 @@ function refreshVPNIP() {
 										<tr>
 											<th>Static Key</th>
 											<td>
-												<textarea rows="8" class="textarea_ssh_table" spellcheck="false" id="edit_vpn_crt_client_static" name="edit_vpn_crt_client_static" cols="65" maxlength="7999"></textarea>
+												<textarea rows="8" class="textarea_ssh_table  textarea_ssh_font" spellcheck="false" id="edit_vpn_crt_client_static" name="edit_vpn_crt_client_static" cols="65" maxlength="7999"></textarea>
 											</td>
 										</tr>
 										<tr>
 											<th id="manualCa">Certificate Authority</th>
 											<td>
-												<textarea rows="8" class="textarea_ssh_table" spellcheck="false" id="edit_vpn_crt_client_ca" name="edit_vpn_crt_client_ca" cols="65" maxlength="7999"></textarea>
+												<textarea rows="8" class="textarea_ssh_table  textarea_ssh_font" spellcheck="false" id="edit_vpn_crt_client_ca" name="edit_vpn_crt_client_ca" cols="65" maxlength="7999"></textarea>
 											</td>
 										</tr>
 										<tr>
 											<th id="manualCert">Client Certificate</th>
 											<td>
-												<textarea rows="8" class="textarea_ssh_table" spellcheck="false" id="edit_vpn_crt_client_crt" name="edit_vpn_crt_client_crt" cols="65" maxlength="7999"></textarea>
+												<textarea rows="8" class="textarea_ssh_table textarea_ssh_font" spellcheck="false" id="edit_vpn_crt_client_crt" name="edit_vpn_crt_client_crt" cols="65" maxlength="7999"></textarea>
 											</td>
 										</tr>
 										<tr>
 											<th id="manualKey">Client Key</th>
 											<td>
-												<textarea rows="8" class="textarea_ssh_table" spellcheck="false" id="edit_vpn_crt_client_key" name="edit_vpn_crt_client_key" cols="65" maxlength="7999"></textarea>
+												<textarea rows="8" class="textarea_ssh_table textarea_ssh_font" spellcheck="false" id="edit_vpn_crt_client_key" name="edit_vpn_crt_client_key" cols="65" maxlength="7999"></textarea>
 											</td>
 										</tr>
 										<tr>
 											<th id="manualKey">Certificate Revocation List<br><br><i>(Optional)</i></th>
 											<td>
-												<textarea rows="8" class="textarea_ssh_table" spellcheck="false" id="edit_vpn_crt_client_crl" name="edit_vpn_crt_client_crl" cols="65" maxlength="7999"></textarea>
+												<textarea rows="8" class="textarea_ssh_table textarea_ssh_font" spellcheck="false" id="edit_vpn_crt_client_crl" name="edit_vpn_crt_client_crl" cols="65" maxlength="7999"></textarea>
 											</td>
 										</tr>
 										<tr>
 											<th id="manualKey">Extra Chain Certificates<br><br><i>(Optional)</i></th>
 											<td>
-												<textarea rows="8" class="textarea_ssh_table" spellcheck="false" id="edit_vpn_crt_client_extra" name="edit_vpn_crt_client_extra" cols="65" maxlength="7999"></textarea>
+												<textarea rows="8" class="textarea_ssh_table textarea_ssh_font" spellcheck="false" id="edit_vpn_crt_client_extra" name="edit_vpn_crt_client_extra" cols="65" maxlength="7999"></textarea>
 											</td>
 										</tr>
 									</table>
@@ -881,7 +836,7 @@ function refreshVPNIP() {
 							</tr>						
 						</tbody>						
 					</table>
-					<div style="margin-top:5px;width:100%;text-align:center;">
+					<div style="margin-top:5px; justify-content:center; display:flex; flex-direction:row; gap:0.5em;">
 						<input class="button_gen" type="button" onclick="cancel_Keys();" value="<#CTL_Cancel#>">
 						<input class="button_gen" type="button" onclick="save_Keys();" value="<#CTL_onlysave#>">
 					</div>
@@ -964,14 +919,11 @@ function refreshVPNIP() {
                 <tr bgcolor="#4D595D">
                 <td valign="top">
                 <div>&nbsp;</div>
-                <div class="formfonttitle">OpenVPN Client Settings</div>
-		<div id="divSwitchMenu" style="margin-top:-40px;float:right;"></div>
-		<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-		<div class="formfontdesc">
-                        <p>Before starting the service make sure you properly configure it, including
-                           the required keys,<br>otherwise you will be unable to turn it on.
-                        <p><br>In case of problem, see the <a style="font-weight: bolder;text-decoration:underline;" class="hyperlink" href="Main_LogStatus_Content.asp">System Log</a> for any error message related to openvpn.
-                </div>
+                <div class="formfonttitle">VPN Client</div>
+                <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
+                <div class="formfontdesc">OpenVPN Client Settings</div>
+                <div id="divSwitchMenu" style="margin-top:-40px;float:right;"></div>
+                <div class="formfontdesc">In case of problem, see the <a style="font-weight: bolder;text-decoration:underline;" class="hyperlink" href="Main_LogStatus_Content.asp">System Log</a> for any error message related to openvpn.</div>
 
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
@@ -1009,7 +961,7 @@ function refreshVPNIP() {
 						<th><#vpn_openvpnc_importovpn#></th>
 						<td>
 							<input id="ovpnfile" type="file" name="file" class="input" style="color:#FFCC00;*color:#000;">
-							<input id="" class="button_gen" onclick="ImportOvpn();" type="button" value="<#CTL_upload#>" />
+							<input class="button_gen_in_table button_gen buttonInTable" onclick="ImportOvpn();" type="button" value="<#CTL_upload#>" />
 								<img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif">
 								<span id="importOvpnFile" style="display:none;"><#Main_alert_proceeding_desc3#></span>
 						</td>
@@ -1039,8 +991,10 @@ function refreshVPNIP() {
 					<tr>
 						<th>Server Address and Port</th>
 						<td>
-							<label>Address:</label><input type="text" maxlength="128" class="input_25_table" name="vpn_client_addr" value="<% nvram_get("vpn_client_addr"); %>" autocorrect="off" autocapitalize="off" spellcheck="false">
-							<label style="margin-left: 4em;">Port:</label><input type="text" maxlength="5" class="input_6_table" name="vpn_client_port" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_client_port"); %>" >
+							<div style="margin-top:5px; display:flex; justify-content: start; flex-direction:row; gap:0.5em;">
+								<label>Address:</label><input type="text" maxlength="128" class="input_25_table" name="vpn_client_addr" value="<% nvram_get("vpn_client_addr"); %>" autocorrect="off" autocapitalize="off" spellcheck="false">
+								<label style="margin-left: 2em;">Port:</label><input type="text" maxlength="5" class="input_6_table" name="vpn_client_port" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_client_port"); %>" >
+							</div>
 						</td>
 					</tr>
 					<tr id="client_bridge">
@@ -1069,15 +1023,19 @@ function refreshVPNIP() {
 					<tr id="client_local_1">
 						<th>Local/remote endpoint addresses</th>
 						<td>
-							<input type="text" maxlength="15" class="input_15_table" name="vpn_client_local_1" onkeypress="return validator.isIPAddr(this, event);" onblur="update_local_ip(this);" value="<% nvram_get("vpn_client_local"); %>">
-							<input type="text" maxlength="15" class="input_15_table" name="vpn_client_remote" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_client_remote"); %>">
+							<div style="margin-top:5px; display:flex; flex-direction:row; gap:0.5em;">
+								<input type="text" maxlength="15" class="input_15_table" name="vpn_client_local_1" onkeypress="return validator.isIPAddr(this, event);" onblur="update_local_ip(this);" value="<% nvram_get("vpn_client_local"); %>">
+								<input type="text" maxlength="15" class="input_15_table" name="vpn_client_remote" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_client_remote"); %>">
+							</div>
 						</td>
 					</tr>
 					<tr id="client_local_2">
 						<th>Tunnel address/netmask</th>
 						<td>
-							<input type="text" maxlength="15" class="input_15_table" name="vpn_client_local_2" onkeypress="return validator.isIPAddr(this, event);" onblur="update_local_ip(this);" value="<% nvram_get("vpn_client_local"); %>">
-							<input type="text" maxlength="15" class="input_15_table" name="vpn_client_nm" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_client_nm"); %>">
+							<div style="margin-top:5px; display:flex; flex-direction:row; gap:0.5em;">
+								<input type="text" maxlength="15" class="input_15_table" name="vpn_client_local_2" onkeypress="return validator.isIPAddr(this, event);" onblur="update_local_ip(this);" value="<% nvram_get("vpn_client_local"); %>">
+								<input type="text" maxlength="15" class="input_15_table" name="vpn_client_nm" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_client_nm"); %>">
+							</div>
 						</td>
 					</tr>
 					<tr id="client_adns">
@@ -1162,7 +1120,7 @@ function refreshVPNIP() {
 					<tr>
 						<th>Keys and Certificates</th>
 						<td>
-							<input type="button" onclick="edit_Keys();" value="Edit..."></td>
+							<input class="button_gen_in_table button_gen buttonInTable" type="button" onclick="edit_Keys();" value="Edit"></td>
 						</td>
 					</tr>
 					<tr id="ncp_ciphers">
@@ -1286,7 +1244,7 @@ function refreshVPNIP() {
 						</td>
 					</tr>
 					</table>
-					<div class="apply_gen">
+					<div style="margin-top:5px; justify-content:center; display:flex; flex-direction:row; gap:0.5em;">
 						<input type="button" id="restoreButton" class="button_gen" value="<#Setting_factorydefault_value#>" onclick="defaultSettings();">
 						<input name="button" type="button" class="button_gen" onclick="applyRule();" value="<#CTL_apply#>"/>
 			        </div>

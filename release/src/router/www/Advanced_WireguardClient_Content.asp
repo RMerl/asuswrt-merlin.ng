@@ -576,9 +576,10 @@ function defaultSettings() {
 			<tr>
 				<td bgcolor="#4D595D" valign="top"  >
 					<div>&nbsp;</div>
-					<div class="formfonttitle">VPN - WireGuard Client</div>
-					<div id="divSwitchMenu" style="margin-top:-40px;float:right;"></div
+					<div class="formfonttitle">VPN Client</div>
 					<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
+					<div class="formfontdesc">WireGuard Client Settings</div>
+					<div id="divSwitchMenu" style="margin-top:-40px;float:right;"></div>
 
 					<table id="WgcBasicTable" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
 						<thead>
@@ -616,7 +617,7 @@ function defaultSettings() {
 							<th>Import config</th>
 							<td>
 								<input id="wgfile" type="file" name="file" class="input" style="color:#FFCC00;*color:#000;">
-								<input id="" class="button_gen" onclick="Importwg();" type="button" value="<#CTL_upload#>" />
+								<input onclick="Importwg();" type="button" value="<#CTL_upload#>" />
 								<img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif">
 								<span id="importWgFile" style="display:none;"><#Main_alert_proceeding_desc3#></span>
 							</td>
@@ -711,8 +712,10 @@ function defaultSettings() {
 						<tr>
 							<th>Endpoint Address:Port</th>
 							<td>
-								<input type="text" maxlength="39" name="wgc_ep_addr" id="wgc_ep_addr" class="input_32_table" value="<% nvram_get("wgc_ep_addr"); %>" autocorrect="off" autocapitalize="off"></input> :
-								<input type="text" maxlength="5" name="wgc_ep_port" id="wgc_ep_port" class="input_6_table" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("wgc_ep_port"); %>" autocorrect="off" autocapitalize="off"></input>
+								<div style="margin-top:5px; display:flex; flex-direction:row; gap:0.5em;">
+									<input type="text" maxlength="39" name="wgc_ep_addr" id="wgc_ep_addr" class="input_32_table" value="<% nvram_get("wgc_ep_addr"); %>" autocorrect="off" autocapitalize="off"></input> :
+									<input type="text" maxlength="5" name="wgc_ep_port" id="wgc_ep_port" class="input_6_table" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("wgc_ep_port"); %>" autocorrect="off" autocapitalize="off"></input>
+								</div>
 							</td>
 						</tr>
 						<tr>
@@ -723,7 +726,7 @@ function defaultSettings() {
 						</tr>
 					</table>
 
-					<div class="apply_gen" id="apply_btn">
+					<div style="margin-top:5px; justify-content:center; display:flex; flex-direction:row; gap:0.5em;">
 						<input type="button" id="restoreButton" class="button_gen" value="<#Setting_factorydefault_value#>" onclick="defaultSettings();">
 						<input class="button_gen" onclick="applyRule();" type="button" value="<#CTL_apply#>"/>
 					</div>

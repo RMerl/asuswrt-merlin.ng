@@ -17,6 +17,11 @@
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/VPN/vpns_general.js"></script>
 </head>
+<style>
+.block_filter a {
+        text-decoration:none !important;
+}
+</style>
 <script>
 $(function () {
 	$('link[group="extend_css"]').remove();
@@ -38,6 +43,10 @@ $(function () {
 	if(theme == "WHITE" || theme == "GT" || theme == "TUF"){
 		if (isSupport("UI4")) {
 			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/vpn_v4.css">');
+			$('link').last().after('<link rel="stylesheet" type="text/css" href="/css/business-white.css">');
+			setTimeout(function(){
+				$("body").css({"visibility":"visible"})
+			}, 1000)
 		} else {
 			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpns' + theme + '.css">');
 		}
@@ -45,6 +54,10 @@ $(function () {
 	else{
 		if (isSupport("UI4")) {
 			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/vpn_v4.css">');
+			$('link').last().after('<link rel="stylesheet" type="text/css" href="/css/business-white.css">');
+			setTimeout(function(){
+				$("body").css({"visibility":"visible"})
+			}, 1000)
 		} else if(isSupport("ROG_UI")){
 			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpnsGT.css">');
 		}
@@ -396,8 +409,11 @@ function initial(){
 	if(!isSupport("openvpnd")){
 		delete vpn_server_array.OpenVPN;
 	}
-
-	$('#divSwitchMenu').html(gen_switch_menu(vpn_server_array, "Others"));
+	if (isSupport("UI4")) {
+		$('#divSwitchMenu4').html(gen_switch_menu(vpn_server_array, "Others"));
+	} else {
+		$('#divSwitchMenu').html(gen_switch_menu(vpn_server_array, "Others"));
+	}
 
 	show_vpn_serverlist();
 
@@ -429,6 +445,7 @@ $(document).ready(initial);
 			<div class="title"><#BOP_isp_heart_item#></div>
 			<div id="divSwitchMenu" style="float:right;"></div>
 		</div>
+		<div id="divSwitchMenu4" style="float:right;margin-top:10px !important;"></div>
 		<div class="content_container">
 			<div class="server_list_container">
 				<div class="svr_list_title_container">

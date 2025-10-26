@@ -86,16 +86,14 @@ function refresh_vpn_data(){
 }
 
 
-var state_srv_run = " - Running";
-var state_srv_stop = " - <span style=\"background-color: transparent; color: white;\">Stopped</span>";
-var state_clnt_ced = " - Connected";
-var state_clnt_cing = " - Connecting...";
-var state_clnt_err = " - Error connecting";
-var state_clnt_disc = " - <span style=\"background-color: transparent; color: white;\">Stopped</span>";
+const state_srv_run = " - Running";
+const state_srv_stop = ` - <span style="background-color: transparent; color: ${(isSupport("UI4") ? "blue" : "white")};">Stopped</span>`;
+const state_clnt_ced = " - Connected";
+const state_clnt_cing = " - Connecting...";
+const state_clnt_err = " - Error connecting";
+const state_clnt_disc = ` - <span style="background-color: transparent; color: ${(isSupport("UI4") ? "blue" : "white")};">Stopped</span>`;
 
 function display_vpn_data(){
-	var state_desc, tmp;
-
 	if (openvpnd_support) {
 		if (server1pid > 0) {
 			document.getElementById("ovpnserver1_Block_Running").innerHTML = state_srv_run;
@@ -112,55 +110,19 @@ function display_vpn_data(){
 		}
 
 		for (var unit = 1; unit < 6; unit++) {
-			switch (unit) {
-				case 1:
-					client_state = vpnc_state_t1;
-					client_errno = vpnc_errno_t1;
-					tmp = "<% nvram_get("vpn_client1_addr"); %>";
-					client_server = " ("+ tmp.shorter(42) +
-					                " <% nvram_get("vpn_client1_proto"); %>" +
-					                ":<% nvram_get("vpn_client1_port"); %>)";
-					client_desc = "<span style=\"background-color: transparent; color: white;\"><% nvram_get("vpn_client1_desc"); %></span>";
-					break;
-				case 2:
-					client_state = vpnc_state_t2;
-					client_errno = vpnc_errno_t2;
-					tmp = "<% nvram_get("vpn_client2_addr"); %>";
-					client_server = " ("+ tmp.shorter(42) +
-					                " <% nvram_get("vpn_client2_proto"); %>" +
-					                ":<% nvram_get("vpn_client2_port"); %>)";
-					client_desc = "<span style=\"background-color: transparent; color: white;\"><% nvram_get("vpn_client2_desc"); %></span>";
-					break;
-				case 3:
-					client_state = vpnc_state_t3;
-					client_errno = vpnc_errno_t3;
-					tmp = "<% nvram_get("vpn_client3_addr"); %>";
-					client_server = " ("+ tmp.shorter(42) +
-					                " <% nvram_get("vpn_client3_proto"); %>" +
-					                ":<% nvram_get("vpn_client3_port"); %>)";
-					client_desc = "<span style=\"background-color: transparent; color: white;\"><% nvram_get("vpn_client3_desc"); %></span>";
-					break;
-				case 4:
-					client_state = vpnc_state_t4;
-					client_errno = vpnc_errno_t4;
-					tmp = "<% nvram_get("vpn_client4_addr"); %>";
-					client_server = " ("+ tmp.shorter(42) +
-					                " <% nvram_get("vpn_client4_proto"); %>" +
-					                ":<% nvram_get("vpn_client4_port"); %>)";
-					client_desc = "<span style=\"background-color: transparent; color: white;\"><% nvram_get("vpn_client4_desc"); %></span>";
-					break;
-				case 5:
-					client_state = vpnc_state_t5;
-					client_errno = vpnc_errno_t5;
-					tmp = "<% nvram_get("vpn_client5_addr"); %>";
-					client_server = " ("+ tmp.shorter(42) +
-					                " <% nvram_get("vpn_client5_proto"); %>" +
-					                ":<% nvram_get("vpn_client5_port"); %>)";
-					client_desc = "<span style=\"background-color: transparent; color: white;\"><% nvram_get("vpn_client5_desc"); %></span>";
-					break;
-			}
+			var vpnprefix = `vpn_client${unit}`;
+			var vpnstate = httpApi.nvramGet([`${vpnprefix}_state`,
+			                                 `${vpnprefix}_errno`,
+											 `${vpnprefix}_proto`,
+											 `${vpnprefix}_addr`,
+			                                 `${vpnprefix}_port`,
+											 `${vpnprefix}_desc`], true)
 
-			switch (client_state) {
+			client_server = ` (${vpnstate[`${vpnprefix}_addr`].shorter(42)}` +
+							` - port ${vpnstate[`${vpnprefix}_port`]}/${vpnstate[`${vpnprefix}_proto`]})`;
+			client_desc = `<span style="background-color: transparent; color: ${(isSupport("UI4") ? "blue" : "white")};">${vpnstate[`${vpnprefix}_desc`]}</span>`;
+
+			switch (vpnstate[`${vpnprefix}_state`]) {
 				case "0":
 					document.getElementById("ovpnclient"+unit+"_Block_Running").innerHTML = client_desc + state_clnt_disc;
 					showhide("ovpnclient"+unit, 0);
@@ -174,7 +136,8 @@ function display_vpn_data(){
 					showhide("ovpnclient"+unit, 1);
 					break;
 				case "-1":
-					code = state_clnt_err;
+					const client_errno = vpnstate[`${vpnprefix}_errno`]
+					var code = state_clnt_err;
 					if (client_errno == 1 || client_errno == 2 || client_errno == 3)
 						code += " - <#vpn_openvpn_conflict#>";
 					else if(client_errno == 4 || client_errno == 5 || client_errno == 6)
@@ -579,7 +542,7 @@ function display_wg_data(){
 				desc = "<% nvram_get("wgc1_desc"); %>";
 				if (desc == "")
 					desc = "Client " + unit;
-				client_desc = "<span style=\"background-color: transparent; color: white;\">" + desc + "</span>";
+				client_desc = `<span style="background-color: transparent; color: ${(isSupport("UI4") ? "blue" : "white")};">${desc}</span>`;
 				local_ip = wgc1_ip;
 				remote_ip = wgc1_rip;
 				break;
@@ -591,7 +554,7 @@ function display_wg_data(){
 				desc = "<% nvram_get("wgc2_desc"); %>";
 				if (desc == "")
 					desc = "Client " + unit;
-				client_desc = "<span style=\"background-color: transparent; color: white;\">" + desc + "</span>";
+				client_desc = `<span style="background-color: transparent; color: ${(isSupport("UI4") ? "blue" : "white")};">${desc}</span>`;
 				local_ip = wgc2_ip;
 				remote_ip = wgc2_rip;
 				break;
@@ -603,7 +566,7 @@ function display_wg_data(){
 				desc = "<% nvram_get("wgc3_desc"); %>";
 				if (desc == "")
 					desc = "Client " + unit;
-                                client_desc = "<span style=\"background-color: transparent; color: white;\">" + desc + "</span>";
+				client_desc = `<span style="background-color: transparent; color: ${(isSupport("UI4") ? "blue" : "white")};">${desc}</span>`;
 				local_ip = wgc3_ip;
 				remote_ip = wgc3_rip;
 				break;
@@ -615,7 +578,7 @@ function display_wg_data(){
 				desc = "<% nvram_get("wgc4_desc"); %>";
 				if (desc == "")
 					desc = "Client " + unit;
-                                client_desc = "<span style=\"background-color: transparent; color: white;\">" + desc + "</span>";
+				client_desc = `<span style="background-color: transparent; color: ${(isSupport("UI4") ? "blue" : "white")};">${desc}</span>`;
 				local_ip = wgc4_ip;
 				remote_ip = wgc4_rip;
 				break;
@@ -627,7 +590,7 @@ function display_wg_data(){
 				desc = "<% nvram_get("wgc5_desc"); %>";
 				if (desc == "")
 					desc = "Client " + unit;
-                                client_desc = "<span style=\"background-color: transparent; color: white;\">" + desc + "</span>";
+				client_desc = `<span style="background-color: transparent; color: ${(isSupport("UI4") ? "blue" : "white")};">${desc}</span>`;
 				local_ip = wgc5_ip;
 				remote_ip = wgc5_rip;
 				break;

@@ -851,6 +851,33 @@ void ovpn_write_server_keys(ovpn_sconf_t *sconf, int unit) {
 			sprintf(buffer, "/tmp/genvpncert.sh");
 			fp = fopen(buffer, "w");
 			if(fp) {
+#if defined(RTCONFIG_OPENSSL30) || defined(RTCONFIG_OPENSSL35)
+				fprintf(fp, "#!/bin/sh\n");
+				fprintf(fp, "EASYRSA=\"/rom/easy-rsa/easyrsa\"\n");
+				fprintf(fp, "export EASYRSA_PKI=\"/etc/openvpn/server%d/pki\"\n", unit);
+				fprintf(fp, "export EASYRSA_BATCH=1\n");
+				fprintf(fp, "export EASYRSA_KEY_SIZE=%d\n", sconf->tls_keysize ? 2048 : 1024);
+				fprintf(fp, "export EASYRSA_REQ_COUNTRY=\"TW\"\n");
+				fprintf(fp, "export EASYRSA_REQ_PROVINCE=\"TW\"\n");
+				fprintf(fp, "export EASYRSA_REQ_CITY=\"Taipei\"\n");
+				fprintf(fp, "export EASYRSA_REQ_ORG=\"ASUS\"\n");
+				fprintf(fp, "export EASYRSA_REQ_EMAIL=\"me@asusrouter.lan\"\n");
+				fprintf(fp, "export EASYRSA_REQ_OU=\"Home/Office\"\n");
+				fprintf(fp, "export EASYRSA_REQ_CN=\"%s\"\n", nvram_safe_get("productid"));
+				fprintf(fp, "rm -rf /etc/openvpn/server%d/pki\n", unit);
+				fprintf(fp, "$EASYRSA init-pki\n");
+				fprintf(fp, "$EASYRSA build-ca nopass\n");
+				fprintf(fp, "$EASYRSA gen-req server nopass\n");
+				fprintf(fp, "$EASYRSA sign-req server server\n");
+				fprintf(fp, "$EASYRSA gen-req client nopass\n");
+				fprintf(fp, "$EASYRSA sign-req client client\n");
+				fprintf(fp, "cp /etc/openvpn/server%d/pki/ca.crt /etc/openvpn/server%d/ca.crt\n", unit, unit);
+				fprintf(fp, "cp /etc/openvpn/server%d/pki/private/ca.key /etc/openvpn/server%d/ca.key\n", unit, unit);
+				fprintf(fp, "cp /etc/openvpn/server%d/pki/private/server.key /etc/openvpn/server%d/server.key\n", unit, unit);
+				fprintf(fp, "cp /etc/openvpn/server%d/pki/issued/server.crt /etc/openvpn/server%d/server.crt\n", unit, unit);
+				fprintf(fp, "cp /etc/openvpn/server%d/pki/private/client.key /etc/openvpn/server%d/client.key\n", unit, unit);
+				fprintf(fp, "cp /etc/openvpn/server%d/pki/issued/client.crt /etc/openvpn/server%d/client.crt\n", unit, unit);
+#else
 				fprintf(fp, "#!/bin/sh\n");
 				fprintf(fp, "export OPENSSL=\"openssl\"\n");
 				fprintf(fp, "export GREP=\"grep\"\n");
@@ -874,6 +901,7 @@ void ovpn_write_server_keys(ovpn_sconf_t *sconf, int unit) {
 
 				fprintf(fp, "export KEY_CN=\"\"\n");
 				fprintf(fp, "/rom/easy-rsa/pkitool client\n");
+#endif
 
 				fclose(fp);
 				chmod(buffer, 0700);

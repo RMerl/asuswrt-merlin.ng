@@ -25,7 +25,6 @@
 
 .chartCanvas {
 	cursor: crosshair;
-	background-color: #2f3e44;
 	border-radius: 10px;
 	width: 100% !important;
 	height: 270px;
@@ -49,10 +48,6 @@
 	text-align: right;
 	margin-right: 4px;
 	flex-shrink: 0;
-}
-
-.ratevalue {
-	color: white !important;
 }
 
 
@@ -88,13 +83,29 @@ const samplesMax = 2880;
 const updateInt = 30;
 const showBitrate = 1;
 
-const labelsColor = "#CCC";
-const gridColor = "#282828";
-const ticksColor = "#CCC";
-const rxBorderColor = "rgba(76, 143, 192, 1)";
-const rxBackgroundColor = "rgba(76, 143, 192, 0.3)";
-const txBorderColor = "rgba(76, 192, 143, 1)";
-const txBackgroundColor = "rgba(76, 192, 143, 0.3)";
+if (isSupport("UI4")){
+	var labelsColor = "#1C1C1E";
+	var gridColor = "#CCC";
+	var ticksColor = "#1C1C1E";
+	var txBorderColor = `rgba(${getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-chart-1")})`;
+	var txBackgroundColor = `rgba(${getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-chart-1")}, 0.3)`;
+	var rxBorderColor = `rgba(${getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-chart-2")})`;
+	var rxBackgroundColor = `rgba(${getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-chart-2")}, 0.3)`;
+	var chartBackgroundColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-bg-card");
+	var tableLabelColor = "#006CE1";
+	var tableValueColor = "#1C1C1E !important";
+} else {
+	var labelsColor = "#CCC";
+	var gridColor = "#282828";
+	var ticksColor = "#CCC";
+	var rxBorderColor = "rgba(76, 143, 192, 1)";
+	var rxBackgroundColor = "rgba(76, 143, 192, 0.3)";
+	var txBorderColor = "rgba(76, 192, 143, 1)";
+	var txBackgroundColor = "rgba(76, 192, 143, 0.3)";
+	var chartBackgroundColor = "#2f3e44";
+	var tableLabelColor = "#FFCC00";
+	var tableValueColor = "white !important";
+}
 
 // disable auto log out
 AUTOLOGOUT_MAX_MINUTE = 0;
@@ -117,18 +128,18 @@ function init_data_object(){
 
 /* Canvas */
 		var htmldata = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">';
-		htmldata += '<thead><tr><td>' + speed_history[ifname].friendly + '</td></tr></thead>' +
+		htmldata += `<thead><tr><td>${speed_history[ifname].friendly}</td></tr></thead>` +
 		            '<tr>' +
-		            '<td style="padding:14px;" width="100%"><canvas class="chartCanvas" id="' + ifname + '_Chart"></canvas>' +
+		            `<td style="padding:14px;" width="100%"><canvas class="chartCanvas" style="background-color:${chartBackgroundColor};" id="${ifname}_Chart"></canvas>` +
 		            '<div class="rategrid">' +
-		            '<div class="ratepair"><span class="ratelabel hint-color">Current In: </span><span class="ratevalue" id="' + ifname + '_RX_current"></span></div>' +
-		            '<div class="ratepair"><span class="ratelabel hint-color">Avg In: </span><span class="ratevalue" id="'+ ifname + '_RX_avg"></span></div>' +
-		            '<div class="ratepair"><span class="ratelabel hint-color">Max In: </span><span class="ratevalue" id="' + ifname + '_RX_max"></span></div>' +
-		            '<div class="ratepair"><span class="ratelabel hint-color">Total In: </span><span class="ratevalue" id="' + ifname + '_RX_total"></span></div>' +
-		            '<div class="ratepair"><span class="ratelabel hint-color">Current Out: </span><span class="ratevalue" id="' + ifname + '_TX_current"></span></div>' +
-		            '<div class="ratepair"><span class="ratelabel hint-color">Avg Out: </span><span class="ratevalue" id="'+ ifname + '_TX_avg"></span></div>' +
-		            '<div class="ratepair"><span class="ratelabel hint-color">Max Out: </span><span class="ratevalue" id="' + ifname + '_TX_max"></span></div>' +
-		            '<div class="ratepair"><span class="ratelabel hint-color">Total Out: </span><span class="ratevalue" id="' + ifname + '_TX_total"></span></div>' +
+		            `<div class="ratepair"><span class="ratelabel" style="color: ${tableLabelColor};">Current In: </span><span style="color: ${tableValueColor};" id="${ifname}_RX_current"></span></div>` +
+		            `<div class="ratepair"><span class="ratelabel" style="color: ${tableLabelColor};">Avg In: </span><span style="color: ${tableValueColor};" id="${ifname}_RX_avg"></span></div>` +
+		            `<div class="ratepair"><span class="ratelabel" style="color: ${tableLabelColor};">Max In: </span><span style="color: ${tableValueColor};" id="${ifname}_RX_max"></span></div>` +
+		            `<div class="ratepair"><span class="ratelabel" style="color: ${tableLabelColor};">Total In: </span><span style="color: ${tableValueColor};" id="${ifname}_RX_total"></span></div>` +
+		            `<div class="ratepair"><span class="ratelabel" style="color: ${tableLabelColor};">Current Out: </span><span style="color: ${tableValueColor};" id="${ifname}_TX_current"></span></div>` +
+		            `<div class="ratepair"><span class="ratelabel" style="color: ${tableLabelColor};">Avg Out: </span><span style="color: ${tableValueColor};" id="${ifname}_TX_avg"></span></div>` +
+		            `<div class="ratepair"><span class="ratelabel" style="color: ${tableLabelColor};">Max Out: </span><span style="color: ${tableValueColor};" id="${ifname}_TX_max"></span></div>` +
+		            `<div class="ratepair"><span class="ratelabel" style="color: ${tableLabelColor};">Total Out: </span><span style="color: ${tableValueColor};" id="${ifname}_TX_total"></span></div>` +
 		            '</div>' +
 		            '</td></tr></table>';
 

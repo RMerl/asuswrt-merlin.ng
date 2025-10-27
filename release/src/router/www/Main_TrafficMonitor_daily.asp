@@ -23,7 +23,6 @@
 <style>
 .chartCanvas {
 	cursor: crosshair;
-	background-color: #2f3e44;
 	border-radius: 10px;
 	width: 100% !important;
 	height: 370px;
@@ -41,13 +40,30 @@ var chartObj;
 var scale = 2;
 var months = [];
 
-const labelsColor = "#CCC";
-const gridColor = "#282828";
-const ticksColor = "#CCC";
-const rxBackgroundColor = "#4C8FC0";
-const rxBorderColor = "#000000";
-const txBackgroundColor = "#4CC08F";
-const txBorderColor = "#000000";
+
+if (isSupport("UI4")){
+	var labelsColor = "#1C1C1E";
+	var gridColor = "#CCC";
+	var ticksColor = "#1C1C1E";
+	var rxBackgroundColor = "#4C8FC0";
+	var rxBorderColor = "#000000";
+	var txBackgroundColor = "#4CC08F";
+	var txBorderColor = "#000000";
+	var chartBackgroundColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-bg-card");
+	var tableLabelColor = "#006CE1";
+	var tableValueColor = "#1C1C1E";
+} else {
+	var labelsColor = "#CCC";
+	var gridColor = "#282828";
+	var ticksColor = "#CCC";
+	var rxBackgroundColor = "#4C8FC0";
+	var rxBorderColor = "#000000";
+	var txBackgroundColor = "#4CC08F";
+	var txBorderColor = "#000000";
+	var chartBackgroundColor = "#2f3e44";
+	var tableLabelColor = "#FFCC00";
+	var tableValueColor = "white";
+}
 
 function init(){
 	var scaleCookie;
@@ -55,8 +71,9 @@ function init(){
 	if (nvram.rstats_enable != '1') return;
 
 	months = generateMonthsLabels();
+	document.getElementById("chart").style.backgroundColor = chartBackgroundColor;
 
-	if ((scaleCookie = cookie.get('daily')) != null) {
+	if ((scaleCookie = window.localStorage.getItem('daily')) != null) {
 		var parsedScale = parseInt(scaleCookie);
 		if (!isNaN(parsedScale) && parsedScale >= 0 && parsedScale <= 2)
 			scale = parsedScale;
@@ -76,7 +93,7 @@ function ymdText(yr, mo, da){
 
 function changeScale(newscale){
 	scale = parseInt(newscale);
-	cookie.set('daily', scale, 366);
+	window.localStorage.setItem('daily', scale, 366);
 	display_data();
 }
 
@@ -120,7 +137,7 @@ function display_data(){
 	barDataDl = [];
 	barLabels = [];
 
-	htmldata = '<table width="730px" class="FormTable_NWM">' +
+	htmldata = '<table width="730px" class="FormTable_table">' +
 	           "<tr><th style=\"height:30px;\"><#Date#></th>" +
 	           "<th><#tm_reception#></th>" +
 	           "<th><#tm_transmission#></th>" +

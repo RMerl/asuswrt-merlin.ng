@@ -55,7 +55,7 @@ $(function(){
 	if(isSupport("antled")){
 		$('<script />', { type : 'text/javascript', src : "/light_effect/antenna.js"}).appendTo('head');
 	}
-	if(rog_support){
+	if(isSupport("rog")){
 		$("#light_effect_bg .light_effect_mask").addClass("rog");
 	}
 

@@ -60,7 +60,6 @@ function initial(){
 	add_option(document.form.wgc_unit, "4: <% nvram_get("wgc4_desc"); %>", "4", (wgc_unit == 4));
 	add_option(document.form.wgc_unit, "5: <% nvram_get("wgc5_desc"); %>", "5", (wgc_unit == 5));
 
-
 	show_director_rules();
 }
 
@@ -542,7 +541,6 @@ function defaultSettings() {
 
 <div id="Loading" class="popup_bg"></div>
 
-
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
 <form method="post" name="form" id="ruleForm" action="/start_apply.htm" target="hidden_frame">
 <input type="hidden" name="productid" value="<% nvram_get("productid"); %>">
@@ -569,7 +567,7 @@ function defaultSettings() {
 		<!--===================================Beginning of Main Content===========================================-->
 <table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
 	<tr>
-		<td valign="top" >
+		<td valign="top">
 
 			<table width="760px" border="0" cellpadding="4" cellspacing="0" class="FormTitle" id="FormTitle">
 			<tbody>
@@ -581,7 +579,7 @@ function defaultSettings() {
 					<div class="formfontdesc">WireGuard Client Settings</div>
 					<div id="divSwitchMenu" style="margin-top:-40px;float:right;"></div>
 
-					<table id="WgcBasicTable" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
+					<table id="WgcBasicTable" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 						<thead>
 							<tr>
 								<td colspan="2">Client control</td>
@@ -617,14 +615,14 @@ function defaultSettings() {
 							<th>Import config</th>
 							<td>
 								<input id="wgfile" type="file" name="file" class="input" style="color:#FFCC00;*color:#000;">
-								<input onclick="Importwg();" type="button" value="<#CTL_upload#>" />
+								<input class="button_gen_in_table button_gen buttonInTable" onclick="Importwg();" type="button" value="<#CTL_upload#>" />
 								<img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif">
 								<span id="importWgFile" style="display:none;"><#Main_alert_proceeding_desc3#></span>
 							</td>
 						</tr>
 					</table>
 
-					<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
+					<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 						<thead>
 							<tr>
 								<td colspan="2">Network</td>
@@ -653,7 +651,7 @@ function defaultSettings() {
 						</tr>
 					</table>
 
-					<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
+					<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 						<thead>
 							<tr>
 								<td colspan="2">Interface</td>
@@ -685,7 +683,7 @@ function defaultSettings() {
 						</tr>
 					</table>
 
-					<table id="WgcPeerTable" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
+					<table id="WgcPeerTable" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 						<thead>
 							<tr>
 								<td colspan="2">Peer</td>
@@ -731,7 +729,7 @@ function defaultSettings() {
 						<input class="button_gen" onclick="applyRule();" type="button" value="<#CTL_apply#>"/>
 					</div>
 
-					<table id="selectiveTable" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;">
+					<table id="selectiveTable" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table" style="margin-top:8px;">
 						<thead>
 							<tr>
 								<td colspan="5">VPN Director rules related to this client - <a href="Advanced_VPNDirector.asp" style="text-decoration:underline;">click here</a> to edit</td>
@@ -748,7 +746,7 @@ function defaultSettings() {
 					<div id="directorrules_Block"></div>
 					<br>
 
-					<table id="WgcLogTable" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable" style="display:none">
+					<table id="WgcLogTable" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable" bordercolor="#6b8fa3" style="display:none">
 						<thead>
 							<tr>
 								<td>Client status log:</td>

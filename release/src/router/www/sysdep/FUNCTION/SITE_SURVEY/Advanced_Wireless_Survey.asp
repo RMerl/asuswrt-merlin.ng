@@ -189,7 +189,13 @@ function showSiteTable(){
 				ssid_str=decodeURIComponent(handle_show_str(aplist[i][1]));
 				if (ssid_str == "")
 					ssid_str = `<span style="font-style:italic;color:${spanColor}">[hidden]</span>`;
-				htmlCode += '<td id="ssid" onclick="oui_query_full_vendor(\'' + aplist[i][6].toUpperCase() +'\');overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-align:left; padding-left: 14px;">' + ssid_str + '</td>';
+
+				if (isSupport("UI4"))
+					var popupHandler = `onclick="oui_query_full_vendor('${aplist[i][6].toUpperCase()}');overlib_str_tmp='${overlib_str}';return overlib('${overlib_str}', STICKY,  CAPTION, ' ');"`;
+				else
+					var popupHandler = `onclick="oui_query_full_vendor('${aplist[i][6].toUpperCase()}');overlib_str_tmp='${overlib_str}';return overlib('${overlib_str}');" onmouseout="nd();"`;
+
+				htmlCode += `<td id="ssid" ${popupHandler} style="cursor:pointer; text-align:left; padding-left: 14px;">${ssid_str}</td>`;
 
 				// channel
 				htmlCode += '<td width="15%" style="text-align:center;">';

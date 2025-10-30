@@ -178,6 +178,7 @@ function generate_clients(clientsarray) {
 	var mac, ipaddr, hostname;
 	var nmapentry;
 	var guestheader = "";
+	var popupHandler;
 
 	if (isSupport("UI4")){
 		var guestBackgroundColor = "background-color: #EEEEEE;";
@@ -220,7 +221,12 @@ function generate_clients(clientsarray) {
 			// Mac
 			mac = client[0];
 			overlib_str = "<p><#MAC_Address#>:</p>" + mac;
-			code += '<td><span style="margin-top:-15px;" class="link" onclick="oui_query_full_vendor(\'' + mac +'\');overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">'+ mac +'</span>';
+			if (isSupport("UI4"))
+				popupHandler = `onclick="oui_query_full_vendor('${mac}');overlib_str_tmp='${overlib_str}';return overlib('${overlib_str}', STICKY,  CAPTION, ' ');"`;
+			else
+				popupHandler = `onclick="oui_query_full_vendor('${mac}');overlib_str_tmp='${overlib_str}';return overlib('${overlib_str}');" onmouseout="nd();"`;
+
+			code += `<td><span style="margin-top:-15px;" class="link" ${popupHandler} style="cursor:pointer; text-decoration:underline;">${mac}</span>`;
 
 			if (typeof clientList[mac] === "undefined")
 				nmapentry = false;
@@ -250,7 +256,12 @@ function generate_clients(clientsarray) {
 
 			if (client[3].length) {
 				overlib_str = client[3].replace(/,/g, "<br>");
-				code += `<br><span style="${secondFieldStyle} text-decoration:underline; cursor:pointer;" onclick="return overlib(\''+ overlib_str +'\');" onmouseout="nd();">IPv6 addresses</span></td>`;
+				if (isSupport("UI4"))
+					popupHandler = `onclick="return overlib('${overlib_str}', STICKY, CAPTION, ' ');"`;
+				else
+					popupHandler = `onclick="return overlib('${overlib_str}');" onmouseout="nd();"`;
+
+				code += `<br><span style="${secondFieldStyle} text-decoration:underline; cursor:pointer;" ${popupHandler}>IPv6 addresses</span></td>`;
 			} else
 				code += '<br></td>'; // IPv6
 

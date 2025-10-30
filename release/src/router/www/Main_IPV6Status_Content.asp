@@ -96,7 +96,12 @@ function show_ipv6clients() {
 		for (i = 0; i < ipv6clientarray.length; ++i) {
 			ipv6clientarray[i][0] = htmlEnDeCode.htmlEncode(ipv6clientarray[i][0]);
 			overlib_str = "<p><#MAC_Address#>:</p>" + ipv6clientarray[i][1];
-			ipv6clientarray[i][1] = '<span class="ClientName" onclick="oui_query_full_vendor(\'' + ipv6clientarray[i][1].toUpperCase() +'\');overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">'+ ipv6clientarray[i][1].toUpperCase() +'</span>';
+			if (isSupport("UI4"))
+				var popupHandler = `onclick="oui_query_full_vendor('${ipv6clientarray[i][1].toUpperCase()}');overlib_str_tmp='${overlib_str}';return overlib('${overlib_str}', STICKY,  CAPTION, ' ');"`;
+			else
+				var popupHandler = `onclick="oui_query_full_vendor('${ipv6clientarray[i][1].toUpperCase()}');overlib_str_tmp='${overlib_str}';return overlib('${overlib_str}');" onmouseout="nd();"`;
+
+			ipv6clientarray[i][1] = `<span class="ClientName" ${popupHandler} style="cursor:pointer; text-decoration:underline;">${ipv6clientarray[i][1].toUpperCase()}</span>`;
 		}
 
 		tableStruct = {

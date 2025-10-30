@@ -4626,7 +4626,10 @@ function oui_query_full_vendor(mac){
 			var overlibStrTmp = retOverLibStr(clientList[mac]);
 			overlibStrTmp += "<p><span>.....................................</span></p><p style='margin-top:5px'><#Manufacturer#> :</p>";
 			overlibStrTmp += clientList[mac].vendor;
-			return overlib(overlibStrTmp);
+			if (isSupport("UI4"))
+				return overlib(overlibStrTmp, STICKY, CAPTION, " ");
+			else
+				return overlib(overlibStrTmp);
 		}, 1);
 	}
 	else {
@@ -4641,7 +4644,10 @@ function oui_query_full_vendor(mac){
 					var vendor_name = data[queryStr].trim();
 					overlibStrTmp += "<p><span>.....................................</span></p><p style='margin-top:5px'><#Manufacturer#> :</p>";
 					overlibStrTmp += vendor_name;
-					return overlib(overlibStrTmp);
+					if (isSupport("UI4"))
+						return overlib(overlibStrTmp, STICKY, CAPTION, " ");
+					else
+						return overlib(overlibStrTmp);
 				}
 			});
 	}

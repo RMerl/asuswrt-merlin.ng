@@ -3,7 +3,7 @@
 const tm_nvram = httpApi.nvramGet(["bond_wan", "wans_lanport"]);
 const scaleNames = ['KB', 'MB', 'GB'];
 const scaleFactors = [1, 1024, 1048576];
-const ui_locale = ui_lang.toLowerCase();
+const ui_locale = "en-US";
 
 function get_friendly_ifname(ifname){
 	var title;

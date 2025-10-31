@@ -20,9 +20,7 @@ body{
 p{
 	font-weight: bolder;
 }
-a{
-	color: #FFFFFF !important;
-}
+
 </style>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
@@ -61,9 +59,9 @@ function initial(){
 	<%radio_status();%>
 
 	if (radio_2 == 0)
-		E("radio2warn").style.display = "";
+		document.getElementById("radio2warn").style.display = "";
 	if ((band5g_support) && (radio_5 == 0))
-		E("radio5warn").style.display = "";
+		document.getElementById("radio5warn").style.display = "";
 
 	update_site_info();
 	showSiteTable();
@@ -188,14 +186,14 @@ function showSiteTable(){
 				//ssid
 				ssid_str=decodeURIComponent(handle_show_str(aplist[i][1]));
 				if (ssid_str == "")
-					ssid_str = `<span style="font-style:italic;color:${spanColor}">[hidden]</span>`;
+					ssid_str = `<span style="text-decoration:underline;font-style:italic;color:${spanColor}">[hidden]</span>`;
 
 				if (isSupport("UI4"))
 					var popupHandler = `onclick="oui_query_full_vendor('${aplist[i][6].toUpperCase()}');overlib_str_tmp='${overlib_str}';return overlib('${overlib_str}', STICKY,  CAPTION, ' ');"`;
 				else
 					var popupHandler = `onclick="oui_query_full_vendor('${aplist[i][6].toUpperCase()}');overlib_str_tmp='${overlib_str}';return overlib('${overlib_str}');" onmouseout="nd();"`;
 
-				htmlCode += `<td id="ssid" ${popupHandler} style="cursor:pointer; text-align:left; padding-left: 14px;">${ssid_str}</td>`;
+				htmlCode += `<td id="ssid" ${popupHandler} style="text-decoration:underline; cursor:pointer; text-align:left; padding-left: 14px;">${ssid_str}</td>`;
 
 				// channel
 				htmlCode += '<td width="15%" style="text-align:center;">';
@@ -298,8 +296,8 @@ function rescan(){
 	                <div>&nbsp;</div>
 			<div class="formfonttitle">Wireless - Visible Networks</div>
 			<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-			<span style="display:none; color:#FFCC00; padding-right:20px;" id="radio2warn">2.4 GHz radio is disabled - cannot scan that band!</span>
-			<span style="display:none; color:#FFCC00;" id="radio5warn">5 GHz radio is disabled - cannot scan that band!</span>
+			<span class="hint-color" style="display:none; padding-right:20px;" id="radio2warn">2.4 GHz radio is disabled - cannot scan that band!</span>
+			<span class="hint-color" style="display:none; id="radio5warn">5 GHz radio is disabled - cannot scan that band!</span>
 
 			<div class="apply_gen" valign="top">
 				<input style="display:none;" type="button" id="rescanButton" value="<#QIS_rescan#>" onclick="rescan();" class="button_gen">

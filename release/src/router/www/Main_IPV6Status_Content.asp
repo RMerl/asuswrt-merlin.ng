@@ -48,6 +48,12 @@ p{
 overlib_str_tmp = "";
 overlib.isOut = true;
 
+if (isSupport("UI4")) {
+	var macFieldStyle = "";
+} else {
+	var macFieldStyle = "color: white;";
+}
+
 function initial() {
 	show_menu();
 
@@ -74,7 +80,7 @@ function show_ipv6config() {
 	if (ipv6cfgarray.length > 1) {
 		for (i = 0; i < ipv6cfgarray.length-1; ++i) {
 			line = ipv6cfgarray[i];
-                        code += '<tr><th>' + line[0] + '</th>';
+			code += '<tr><th>' + line[0] + '</th>';
 			code += '<td>' + line[1] + '</td>';
 			code += '</tr>';
 		}
@@ -101,7 +107,7 @@ function show_ipv6clients() {
 			else
 				var popupHandler = `onclick="oui_query_full_vendor('${ipv6clientarray[i][1].toUpperCase()}');overlib_str_tmp='${overlib_str}';return overlib('${overlib_str}');" onmouseout="nd();"`;
 
-			ipv6clientarray[i][1] = `<span class="ClientName" ${popupHandler} style="cursor:pointer; text-decoration:underline;">${ipv6clientarray[i][1].toUpperCase()}</span>`;
+			ipv6clientarray[i][1] = `<span ${popupHandler} style="cursor:pointer; text-decoration:underline; ${macFieldStyle}">${ipv6clientarray[i][1].toUpperCase()}</span>`;
 		}
 
 		tableStruct = {

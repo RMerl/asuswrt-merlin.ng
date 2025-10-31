@@ -53,8 +53,10 @@ var dataarray3 = [], wificlients3 = [];
 var dfs_statusarray0 = [], dfs_statusarray1 = [], dfs_statusarray2 = [];
 
 if (isSupport("UI4")){
+	var macFieldStyle = "";
 	var secondFieldStyle = "margin-top:-15px; color: blue;";
 } else {
+	var macFieldStyle = "color: white;";
 	var secondFieldStyle = "margin-top:-15px; color: cyan;";
 }
 <% get_wl_status(); %>;
@@ -226,7 +228,7 @@ function generate_clients(clientsarray) {
 			else
 				popupHandler = `onclick="oui_query_full_vendor('${mac}');overlib_str_tmp='${overlib_str}';return overlib('${overlib_str}');" onmouseout="nd();"`;
 
-			code += `<td><span style="margin-top:-15px;" class="link" ${popupHandler} style="cursor:pointer; text-decoration:underline;">${mac}</span>`;
+			code += `<td><span class="link" ${popupHandler} style="cursor:pointer; text-decoration:underline; margin-top:-15px; ${macFieldStyle}">${mac}</span>`;
 
 			if (typeof clientList[mac] === "undefined")
 				nmapentry = false;

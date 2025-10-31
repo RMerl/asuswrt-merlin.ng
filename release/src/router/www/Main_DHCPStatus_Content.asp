@@ -39,6 +39,12 @@ p{
 overlib_str_tmp = "";
 overlib.isOut = true;
 
+if (isSupport("UI4")) {
+	var macFieldStyle = "";
+} else {
+	var macFieldStyle = "color: white;";
+}
+
 function initial() {
 	show_menu();
 	show_leases();
@@ -71,7 +77,7 @@ function show_leases() {
 			else
 				var popupHandler = `onclick="oui_query_full_vendor('${line[1].toUpperCase()}');overlib_str_tmp='${overlib_str}';return overlib('${overlib_str}');" onmouseout="nd();"`;
 
-			leasearray[i][1] = `<span class="ClientName" ${popupHandler} style="cursor:pointer; text-decoration:underline;">${line[1].toUpperCase()}</span>`;
+			leasearray[i][1] = `<span ${popupHandler} style="cursor:pointer; text-decoration:underline; ${macFieldStyle}">${line[1].toUpperCase()}</span>`;
 		}
 
 		var headerarray = [{

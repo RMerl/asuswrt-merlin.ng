@@ -16,14 +16,14 @@ This returns 0 on success and -1 on failure.
 
 .SH NOTES
 
-If you are doing multi-threaded programming, calling this function will only get capabilities on the calling thread. If you want to get overall capabilities for a multi-threaded process, you can only do that before creating any threads. Afterwards, threads may be able to independantly set capabilities.
+If you are doing multi-threaded programming, calling this function will only get capabilities on the calling thread. If you want to get overall capabilities for a multi-threaded process, you can only do that before creating any threads. Afterwards, threads may be able to independently set capabilities.
 
 capng_get_caps_process needs a mounted /proc to read the current bounding set, otherwise it will fail.
 
 .SH "SEE ALSO"
 
 .BR capng_setpid (3),
-.BR capabilities (7) 
+.BR capabilities (7)
 
 .SH AUTHOR
 Steve Grubb

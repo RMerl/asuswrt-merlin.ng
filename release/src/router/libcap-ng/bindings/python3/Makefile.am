@@ -1,5 +1,5 @@
 # Makefile.am -- 
-# Copyright 2009,2014-17 Red Hat Inc., Durham, North Carolina.
+# Copyright 2009,2014-17 Red Hat Inc.
 # All Rights Reserved.
 #
 # This library is free software; you can redistribute it and/or
@@ -12,22 +12,22 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
 # 
-# You should have received a copy of the GNU Lesser General Public
-# License along with this library; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; see the file COPYING. If not, write to the
+# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor
+# Boston, MA 02110-1335, USA.
 # 
 # Authors:
 #   Steve Grubb <sgrubb@redhat.com>
 #
-#SUBDIRS = test
+SUBDIRS = test
 CONFIG_CLEAN_FILES = *.loT *.rej *.orig
 AM_CFLAGS = -fPIC -DPIC $(PYTHON3_CFLAGS)
 AM_CPPFLAGS = -I. -I$(top_builddir) $(PYTHON3_INCLUDES)
 LIBS = ${top_builddir}/src/libcap-ng.la
-SWIG_FLAGS = -python -py3 -modern
+SWIG_FLAGS = -python
 SWIG_INCLUDES = ${AM_CPPFLAGS}
-# REMOVE SOMEDAY - without overriding this macro, it uses python2
-am__py_compile = PYTHON=$(PYTHON3) $(SHELL) $(py_compile)
+PYTHON = $(PYTHON3)
 py3exec_PYTHON = capng.py
 py3exec_LTLIBRARIES = _capng.la
 py3exec_SOLIBRARIES = _capng.so
@@ -46,4 +46,5 @@ capng.h:
 	cat ${top_srcdir}/src/cap-ng.h | grep -v '_state' > capng.h
 
 CLEANFILES = capng.py* capng_wrap.c caps.h capng.h *~
-
+clean-local:
+	$(RM) -rf __pycache__

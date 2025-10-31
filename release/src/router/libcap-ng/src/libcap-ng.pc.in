@@ -4,7 +4,7 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: libcap-ng
-Description: An alternate posix capabilities library.
+Description: An alternate POSIX capabilities library.
 Version: @VERSION@
 Libs: -L${libdir} -lcap-ng
 Cflags: -I${includedir}

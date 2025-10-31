@@ -41,7 +41,7 @@
 
 static void usage(void)
 {
-	fprintf(stderr, "usage: pscap [-a]\n");
+	fprintf(stderr, "usage: pscap [-a|-p pid]\n");
 	exit(1);
 }
 
@@ -79,8 +79,9 @@ int main(int argc, char *argv[])
 	struct dirent *ent;
 	int header = 0, show_all = 0, caps;
 	pid_t our_pid = getpid();
+	pid_t target_pid = 0;
 
-	if (argc > 2) {
+	if (argc > 3) {
 		fputs("Too many arguments\n", stderr);
 		usage();
 	}
@@ -88,6 +89,19 @@ int main(int argc, char *argv[])
 		if (strcmp(argv[1], "-a") == 0)
 			show_all = 1;
 		else
+			usage();
+	}
+	else if (argc == 3) {
+		if (strcmp(argv[1], "-p") == 0) {
+			errno = 0;
+			target_pid = strtol(argv[2], NULL, 10);
+			if (errno) {
+				fprintf(stderr, "Can't read pid: %s\n", argv[2]);
+				return 1;
+			}
+			if (target_pid == 1)
+				show_all = 1;
+		} else
 			usage();
 	}
 
@@ -109,6 +123,9 @@ int main(int argc, char *argv[])
 		errno = 0;
 		pid = strtol(ent->d_name, NULL, 10);
 		if (errno)
+			continue;
+
+		if (target_pid && (pid != target_pid))
 			continue;
 
 		/* Skip our pid so we aren't listed */
@@ -177,7 +194,7 @@ int main(int argc, char *argv[])
 
 			if (header == 0) {
 				printf("%-5s %-5s %-10s  %-18s  %s\n",
-				    "ppid", "pid", "name", "command",
+				    "ppid", "pid", "uid", "command",
 				    "capabilities");
 				header = 1;
 			}

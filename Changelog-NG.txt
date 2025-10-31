@@ -1,6 +1,12 @@
 Asuswrt-Merlin Changelog
 ========================
 
+3004.388.10_2 (31-Oct-2025)
+  - UPDATED: OpenVPN to 2.6.15.
+  - FIXED: Web server crashing when connecting using the App API,
+           used by the mobile app and also Home Assistant (Asus).
+
+
 3004.388.10 (4-Oct-2025)
   - NOTE: For developers, please note that the new default branch
           is now called "main" - it's what was previously the

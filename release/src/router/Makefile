@@ -8722,7 +8722,7 @@ traffic_limiter-clean:
 traffic_limiter-install: traffic_limiter
 
 coovachilli: coovachilli/Makefile
-	@$(MAKE) -C coovachilli $(PARALLEL_BUILD)
+	@$(MAKE) -C coovachilli
 
 coovachilli/Makefile:
 	$(MAKE) coovachilli-configure

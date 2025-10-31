@@ -236,9 +236,16 @@ int main(int argc, char *argv[])
 	{
 		case 1:
 			capng_clear(CAPNG_SELECT_ALL);
-			if (lock)
-				capng_lock();
-			capng_apply(CAPNG_SELECT_ALL);
+			if (lock) {
+				if (capng_lock()) {
+					fprintf(stderr, "capng_lock failed\n");
+					return 1;
+				}
+			}
+			if (capng_apply(CAPNG_SELECT_ALL)) {
+				fprintf(stderr, "capng_apply failed\n");
+				return 1;
+			}
 			report();
 			break;
 		case 2:
@@ -246,12 +253,24 @@ int main(int argc, char *argv[])
 			if (ambient)
 				capng_update(CAPNG_ADD, CAPNG_AMBIENT,
 					     CAP_CHOWN);
-			if (lock)
-				capng_lock();
-			if (ambient)
-			    capng_apply(CAPNG_SELECT_CAPS|CAPNG_SELECT_AMBIENT);
-			else
-				capng_apply(CAPNG_SELECT_CAPS);
+			if (lock) {
+				if (capng_lock()) {
+					fprintf(stderr, "capng_lock failed\n");
+					return 1;
+				}
+			}
+			if (ambient) {
+				if (capng_apply(
+				  CAPNG_SELECT_CAPS|CAPNG_SELECT_AMBIENT)) {
+				  fprintf(stderr, "capng_apply failed\n");
+				  return 1;
+				}
+			} else {
+				if (capng_apply(CAPNG_SELECT_CAPS)) {
+					fprintf(stderr, "capng_apply failed\n");
+					return 1;
+				}
+			}
 			report();
 			break;
 		case 3:
@@ -276,14 +295,18 @@ int main(int argc, char *argv[])
 				capng_print_caps_text(CAPNG_PRINT_STDOUT,
 					CAPNG_EFFECTIVE);
 				printf("\n");
-				exit(1);
+				return 1;
 			}
 			printf("Keeping CAP_CHOWN to show capabilities across uid change.\n");
 			report();
 			} break;
 		case 0:
-			if (lock)
-				capng_lock();
+			if (lock) {
+				if (capng_lock()) {
+					fprintf(stderr, "capng_lock failed\n");
+					return 1;
+				}
+			}
 			report();
 			break;
 	}

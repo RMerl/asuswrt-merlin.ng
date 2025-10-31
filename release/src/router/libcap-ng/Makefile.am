@@ -1,5 +1,5 @@
 # Makefile.am -- 
-# Copyright 2009 Red Hat Inc., Durham, North Carolina.
+# Copyright 2009 Red Hat Inc.
 # All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -13,8 +13,9 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# along with this program; see the file COPYING. If not, write to the
+# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor
+# Boston, MA 02110-1335, USA.
 #
 # Authors:
 #   Steve Grubb <sgrubb@redhat.com>
@@ -24,7 +25,7 @@ SUBDIRS = src utils m4 docs
 if HAVE_SWIG
 SUBDIRS += bindings
 endif
-EXTRA_DIST = ChangeLog AUTHORS NEWS README INSTALL COPYING COPYING.LIB \
+EXTRA_DIST = ChangeLog AUTHORS README.md INSTALL COPYING COPYING.LIB \
 	libcap-ng.spec autogen.sh 
 
 CONFIG_CLEAN_FILES = debug*.list config/*

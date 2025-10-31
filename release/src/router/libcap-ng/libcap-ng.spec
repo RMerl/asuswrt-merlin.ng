@@ -1,6 +1,6 @@
-Summary: An alternate posix capabilities library
+Summary: An alternate POSIX capabilities library
 Name: libcap-ng
-Version: 0.8.3
+Version: 0.8.4
 Release: 1%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
@@ -11,7 +11,7 @@ BuildRequires: kernel-headers >= 2.6.11
 BuildRequires: libattr-devel
 
 %description
-Libcap-ng is a library that makes using posix capabilities easier
+Libcap-ng is a library that makes using POSIX capabilities easier
 
 %package devel
 Summary: Header files for libcap-ng library
@@ -43,14 +43,14 @@ Group: Development/Libraries
 
 %description utils
 The libcap-ng-utils package contains applications to analyze the
-posix capabilities of all the program running on a system. It also
+POSIX capabilities of all the program running on a system. It also
 lets you set the file system based capabilities.
 
 %prep
 %setup -q
 
 %build
-%configure --libdir=%{_libdir} --with-python=no --with-python3
+%configure --libdir=%{_libdir} --with-python3
 make CFLAGS="%{optflags}" %{?_smp_mflags}
 
 %install
@@ -96,6 +96,6 @@ make check
 %attr(0644,root,root) %{_mandir}/man8/*
 
 %changelog
-* Tue Mar 29 2022 Steve Grubb <sgrubb@redhat.com> 0.8.3-1
+* Wed Dec 20 2023 Steve Grubb <sgrubb@redhat.com> 0.8.4-1
 - New upstream release
 

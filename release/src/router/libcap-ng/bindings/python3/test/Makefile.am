@@ -1,5 +1,5 @@
 # Makefile.am --
-# Copyright 2009 Red Hat Inc., Durham, North Carolina.
+# Copyright 2023 Red Hat Inc.
 # All Rights Reserved.
 #
 # This library is free software; you can redistribute it and/or
@@ -12,9 +12,10 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
 #
-# You should have received a copy of the GNU Lesser General Public
-# License along with this library; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; see the file COPYING. If not, write to the
+# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor
+# Boston, MA 02110-1335, USA.
 #
 # Authors:
 #   Steve Grubb <sgrubb@redhat.com>
@@ -22,5 +23,5 @@
 
 dist_check_SCRIPTS = capng-test.py
 TESTS = $(dist_check_SCRIPTS)
-TESTS_ENVIRONMENT = PYTHONPATH=${top_builddir}/bindings/python/:${top_builddir}/bindings/python/.libs
+TESTS_ENVIRONMENT = PYTHONPATH=${top_builddir}/bindings/python3/:${top_builddir}/bindings/python3/.libs
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -14,7 +14,7 @@ try:
 	with open('/proc/sys/kernel/cap_last_cap', 'r') as f:
 		last = int(f.readline())
 except IOError as e:
-	print "Error opening /proc/sys/kernel/cap_last_cap: {0}".format(e.strerror)
+	print("Error opening /proc/sys/kernel/cap_last_cap: {0}".format(e.strerror))
 
 print("Doing basic bit tests...")
 capng.capng_clear(capng.CAPNG_SELECT_BOTH)
@@ -49,7 +49,7 @@ for i in range(last+1):
 	if capng.capng_have_capabilities(capng.CAPNG_SELECT_CAPS) != capng.CAPNG_PARTIAL:
 		print("Failed have capabilities test 1")
 		sys.exit(1)
-	
+
 	capng.capng_fill(capng.CAPNG_SELECT_BOTH)
 	rc = capng.capng_update(capng.CAPNG_DROP, capng.CAPNG_EFFECTIVE, i)
 	if rc:

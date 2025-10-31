@@ -7551,13 +7551,18 @@ lzo$(LZO_VER)-install: lzo$(LZO_VER)
 lz4:
 	$(MAKE) -C $@ $(PARALLEL_BUILD)
 
+lz4-install:
+	install -D lz4/lib/liblz4.so.1.9.2 $(INSTALLDIR)/lz4/usr/lib/liblz4.so.1.9.2
+	$(STRIP) $(INSTALLDIR)/lz4/usr/lib/liblz4.so.1.9.2
+	cd $(INSTALLDIR)/lz4/usr/lib && ln -sf liblz4.so.1.9.2 liblz4.so.1
+	cd $(INSTALLDIR)/lz4/usr/lib && ln -sf liblz4.so.1.9.2 liblz4.so
+
 libcap-ng/configure:
-	cd libcap-ng && autoreconf -i -f ; \
-	CFLAGS="-O3 -Wall $(EXTRACFLAGS)" $(CONFIGURE) --enable-shared \
-		--prefix=/usr \
-		--bindir=/usr/sbin \
-		--without-python --without-python3 \
-		--libdir=/usr/lib
+	cd libcap-ng && ./autogen.sh ; \
+	CFLAGS="-Os -ffunction-sections -fdata-sections $(EXTRACFLAGS)" \
+		LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections $(EXTRALDFLAGS)" \
+		$(CONFIGURE) --prefix=/usr --bindir=/usr/sbin --libdir=/usr/lib \
+			--disable-static
 	touch $@
 
 libcap-ng: libcap-ng/configure
@@ -7565,26 +7570,16 @@ libcap-ng: libcap-ng/configure
 	$(MAKE) -C $@
 
 libcap-ng-clean:
-	$(MAKE) -C libcap-ng clean
+	-$(MAKE) -C libcap-ng clean
 	@rm -f libcap-ng/configure
 
 libcap-ng-install: libcap-ng
 	install -D libcap-ng/src/.libs/libcap-ng.so.0.0.0 $(INSTALLDIR)/libcap-ng/usr/lib/libcap-ng.so.0.0.0
-	$(STRIP) $(INSTALLDIR)/libcap-ng/usr/lib/libcap-ng.so.0.0.0
-	cd $(INSTALLDIR)/libcap-ng/usr/lib && ln -sf libcap-ng.so.0.0.0 libcap-ng.so.0 && \
-		ln -sf libcap-ng.so.0.0.0 libcap-ng.so
-ifneq ($(wildcard libcap-ng/src/.libs/libdrop_ambient.so.0.0.0),)
 	install -D libcap-ng/src/.libs/libdrop_ambient.so.0.0.0 $(INSTALLDIR)/libcap-ng/usr/lib/libdrop_ambient.so.0.0.0
+	$(STRIP) $(INSTALLDIR)/libcap-ng/usr/lib/libcap-ng.so.0.0.0
 	$(STRIP) $(INSTALLDIR)/libcap-ng/usr/lib/libdrop_ambient.so.0.0.0
-	cd $(INSTALLDIR)/libcap-ng/usr/lib && ln -sf libdrop_ambient.so.0.0.0 libdrop_ambient.so.0 && \
-		ln -sf libdrop_ambient.so.0.0.0 libdrop_ambient.so
-endif
-
-lz4-install:
-	install -D lz4/lib/liblz4.so.1.9.2 $(INSTALLDIR)/lz4/usr/lib/liblz4.so.1.9.2
-	$(STRIP) $(INSTALLDIR)/lz4/usr/lib/liblz4.so.1.9.2
-	cd $(INSTALLDIR)/lz4/usr/lib && ln -sf liblz4.so.1.9.2 liblz4.so.1
-	cd $(INSTALLDIR)/lz4/usr/lib && ln -sf liblz4.so.1.9.2 liblz4.so
+	cd $(INSTALLDIR)/libcap-ng/usr/lib && ln -sf libcap-ng.so.0.0.0 libcap-ng.so.0 && ln -sf libcap-ng.so.0.0.0 libcap-ng.so
+	cd $(INSTALLDIR)/libcap-ng/usr/lib && ln -sf libdrop_ambient.so.0.0.0 libdrop_ambient.so.0 && ln -sf libdrop_ambient.so.0.0.0 libdrop_ambient.so
 
 openpam: openpam/Makefile
 	$(MAKE) -C $@ $(PARALLEL_BUILD) && $(MAKE) $@-stage

@@ -405,7 +405,9 @@ function drawGraph(ifname){
 											</td>
 										</tr>
 										<tr>
-											<td height="5"><div class="splitLine"></div></td>
+											<td><div style="margin:10px 0 10px 5px;" class="splitLine"></div>
+												<div class="formfontdesc">The charts can be zoomed in and panned for closer inspection of a specific period of time.</div>
+											</td>
 										</tr>
 										<tr>
 											<td id="graph_content">

@@ -1,3 +1,9 @@
+0.8.4
+- In capng_change_id, clear PR_SET_KEEPCAPS if returning an error
+- pscap: add -p option for reporting a specified process (Masatake Yamato)
+- Annotate function prototypes to warn if results are unused
+- Drop python2 support
+
 0.8.3
 - Fix parameters to capng_updatev python bindings to be signed
 - Detect capability options at runtime to make containerization easier (ntkme)

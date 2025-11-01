@@ -80,6 +80,7 @@ endif
 
 ifeq ($(wildcard $(SRCBASE)/router/ark/*.c),)
 all:
+	@cp prebuild/$(BUILD_NAME)/* prebuild/
 	@cp -f prebuild/libark_db.so ./
 else
 all: prebuild libark_db.so

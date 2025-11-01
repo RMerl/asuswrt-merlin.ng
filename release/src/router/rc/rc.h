@@ -2006,7 +2006,7 @@ extern void stop_jffs2(int stop);
 #elif defined(RTCONFIG_FLASH_TYPE_EMMC)
 extern void start_ext4fs(void);
 extern void stop_ext4fs(int stop);
-static inline void start_jffs2(void) { start_ext4fs(); }
+static inline void start_jffs2(void) { start_ext4fs(); setup_jffs_dirs();}
 static inline void stop_jffs2(int stop) { stop_ext4fs(stop); }
 #else
 static inline void start_jffs2(void) { }

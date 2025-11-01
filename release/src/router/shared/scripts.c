@@ -137,3 +137,9 @@ void append_custom_config(char *config, FILE *fp)
 	}
 }
 
+void setup_jffs_dirs()
+{
+	if (!d_exists("/jffs/scripts/")) mkdir("/jffs/scripts/", 0755);
+	if (!d_exists("/jffs/configs/")) mkdir("/jffs/configs/", 0755);
+	if (!d_exists("/jffs/addons/")) mkdir("/jffs/addons/", 0755);
+}

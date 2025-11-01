@@ -3966,19 +3966,12 @@ extern int get_string_in_62(char *in_list, int idx, char *out, int out_len);
 extern int vpns_use_tunnel(void);
 extern int vpnc_use_tunnel(int vpnc_unit, const char *proto);
 
-#ifdef RTCONFIG_TOR
 /* scripts.c */
 extern void run_custom_script(char *name, int timeout, char *arg1, char *arg2);
 extern void run_postconf(char *name, char *config);
 extern void use_custom_config(char *config, char *target);
 extern void append_custom_config(char *config, FILE *fp);
-#endif
-
-/* scripts.c */
-extern void run_custom_script(char *name, int timeout, char *arg1, char *arg2);
-extern void run_postconf(char *name, char *config);
-extern void use_custom_config(char *config, char *target);
-extern void append_custom_config(char *config, FILE *fp);
+extern void setup_jffs_dirs();
 
 /* mt7620.c */
 #if defined(RTCONFIG_RALINK_MT7620)

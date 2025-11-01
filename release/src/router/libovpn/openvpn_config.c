@@ -148,6 +148,7 @@ char *get_ovpn_filename(ovpn_type_t type, int unit, ovpn_key_t key_type, char *b
 
 	switch (key_type) {
 		case OVPN_CLIENT_STATIC:
+		case OVPN_CLIENT_TLSCRYPTV2:
 		case OVPN_SERVER_STATIC:
 			keyStr = "static";
 			break;

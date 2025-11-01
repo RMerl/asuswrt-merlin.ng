@@ -3705,12 +3705,10 @@ endif
 openssl-stage:
 	@$(MAKE) $(OPENSSL)-stage
 
-ifeq ($(BRCM_CHIP),4908)
-export PRIORITY_CHACHA =
-else ifeq ($(BRCM_CHIP),4912)
-export PRIORITY_CHACHA =
-else
+ifeq ($(or $(filter 4908 4912 4916,$(BRCM_CHIP))),)
 export PRIORITY_CHACHA = -DOPENSSL_PREFER_CHACHA_OVER_GCM
+else
+export PRIORITY_CHACHA =
 endif
 
 ifeq ($(HND_ROUTER_BE_4916),y)

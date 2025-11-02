@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -296,7 +296,7 @@ static long file_ctrl(BIO *b, int cmd, long num, void *ptr)
         if (fp == NULL) {
             ERR_raise_data(ERR_LIB_SYS, get_last_sys_error(),
                            "calling fopen(%s, %s)",
-                           ptr, p);
+                           (const char *)ptr, p);
             ERR_raise(ERR_LIB_BIO, ERR_R_SYS_LIB);
             ret = 0;
             break;

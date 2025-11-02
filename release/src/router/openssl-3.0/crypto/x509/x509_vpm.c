@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2023 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2004-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -613,6 +613,11 @@ int X509_VERIFY_PARAM_get_count(void)
 const X509_VERIFY_PARAM *X509_VERIFY_PARAM_get0(int id)
 {
     int num = OSSL_NELEM(default_table);
+
+    if (id < 0) {
+        ERR_raise(ERR_LIB_X509, ERR_R_PASSED_INVALID_ARGUMENT);
+        return NULL;
+    }
 
     if (id < num)
         return default_table + id;

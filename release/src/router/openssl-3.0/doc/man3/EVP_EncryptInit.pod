@@ -744,7 +744,7 @@ See also EVP_CIPHER_CTX_get_key_length() and EVP_CIPHER_CTX_set_key_length().
 =item "tag" (B<OSSL_CIPHER_PARAM_AEAD_TAG>) <octet string>
 
 Gets or sets the AEAD tag for the associated cipher context I<ctx>.
-See L<EVP_EncryptInit(3)/AEAD Interface>.
+See L<EVP_EncryptInit(3)/AEAD INTERFACE>.
 
 =item "keybits" (B<OSSL_CIPHER_PARAM_RC2_KEYBITS>) <unsigned integer>
 
@@ -1746,7 +1746,7 @@ The EVP_CIPHER_CTX_flags() macro was deprecated in OpenSSL 1.1.0.
 
 =head1 COPYRIGHT
 
-Copyright 2000-2024 The OpenSSL Project Authors. All Rights Reserved.
+Copyright 2000-2025 The OpenSSL Project Authors. All Rights Reserved.
 
 Licensed under the Apache License 2.0 (the "License").  You may not use
 this file except in compliance with the License.  You can obtain a copy

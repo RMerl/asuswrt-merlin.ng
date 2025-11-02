@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -243,7 +243,8 @@ int X509_ocspid_print(BIO *bp, X509 *x)
         goto err;
     if ((der = dertmp = OPENSSL_malloc(derlen)) == NULL)
         goto err;
-    i2d_X509_NAME(subj, &dertmp);
+    if (i2d_X509_NAME(subj, &dertmp) < 0)
+        goto err;
 
     md = EVP_MD_fetch(x->libctx, SN_sha1, x->propq);
     if (md == NULL)

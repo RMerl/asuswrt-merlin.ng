@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2018-2025 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -202,9 +202,12 @@ int ossl_siv128_init(SIV128_CONTEXT *ctx, const unsigned char *key, int klen,
             || !EVP_MAC_final(mac_ctx, ctx->d.byte, &out_len,
                               sizeof(ctx->d.byte))) {
         EVP_CIPHER_CTX_free(ctx->cipher_ctx);
+        ctx->cipher_ctx = NULL;
         EVP_MAC_CTX_free(ctx->mac_ctx_init);
+        ctx->mac_ctx_init = NULL;
         EVP_MAC_CTX_free(mac_ctx);
         EVP_MAC_free(ctx->mac);
+        ctx->mac = NULL;
         return 0;
     }
     EVP_MAC_CTX_free(mac_ctx);

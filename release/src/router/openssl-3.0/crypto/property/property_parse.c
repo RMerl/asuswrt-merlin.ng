@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2024 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2019-2025 The OpenSSL Project Authors. All Rights Reserved.
  * Copyright (c) 2019, Oracle and/or its affiliates.  All rights reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
@@ -642,7 +642,7 @@ static void put_str(const char *str, char **buf, size_t *remain, size_t *needed)
         }
 
     quotes = quote != '\0';
-    if (*remain == 0) {
+    if (*remain <= (size_t)quotes) {
         *needed += 2 * quotes;
         return;
     }

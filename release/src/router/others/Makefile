@@ -28,11 +28,6 @@ endif
 # chpasswd script
 	install -m 0700 chpasswd.sh $(INSTALLDIR)/usr/sbin
 
-# OpenVPN
-ifeq ($(RTCONFIG_OPENVPN),y)
-	install -m 0700 setuprsa.sh $(INSTALLDIR)/usr/sbin
-endif
-
 # Postconf helper script
 	install -m 0755 helper.sh $(INSTALLDIR)/usr/sbin
 

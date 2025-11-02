@@ -2,6 +2,12 @@ Asuswrt-Merlin 3006.xxx Changelog
 =================================
 
 3006.102.6 (xx-xx-xxxx)
+  - NOTE: Asus has made some security related changes.  Password
+          requirements are stricter, and UPNP is no longer
+          enabled by default.  New password rules were
+          slightly loosened for Asuswrt-Merlin, repeating
+          characters are still allowed.
+
   - NEW: Added support for the RT-BE58_Go.
   - NEW: Redesigned Traffic Monitor pages.
          - Uses Chart.js for Realtime and Last24 pages
@@ -11,8 +17,6 @@ Asuswrt-Merlin 3006.xxx Changelog
          - Realtime and Last 24 now show as bits/s instead
            of bytes/s
          - Settings moved from the tab to the dropdown menu
-         - Number formatting is automatically localized
-           by the webui language
          - Removed NVRAM database location option and added
            JFFS.  Also removed rarely used start-of-month
            setting.
@@ -20,12 +24,18 @@ Asuswrt-Merlin 3006.xxx Changelog
   - UPDATED: Merged GPL 38978 (RT-BE58_GO only)
   - UPDATED: Merged GPL 39099 (other Wifi 7 models)
   - UPDATED: OpenVPN to 2.6.15.
+  - UPDATED: libcap-ng to 0.8.4 (to be in sync with upstream)
+  - CHANGED: TrafficMonitor stats can now be saved to JFFS,
+             and removed support for saving to NVRAM.
+  - REMOVED: outdated setuprsa.sh script.
   - FIXED: IPv6 requests for prefix lengths other than 64 for
            routers with Multiwan support.
   - FIXED: CVE-2025-9230 in OpenSSL (backport by RSDNTWK).
   - FIXED: Client name would be missing on the Wireless Log
            page if the MAC was missing in the DHCP lease list
            (for static clients for example)
+  - FIXED: OpenSSL 1.1 would prioritize CHACHA20 over AES
+           on BCM4916 devices
 
 
 3006.102.5 (3-Aug-2025)

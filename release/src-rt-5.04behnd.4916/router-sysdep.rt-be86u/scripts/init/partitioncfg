@@ -451,7 +451,7 @@ process_mng_partition() {
 	if [ "$VERBOSE" -eq "1" ]; then echo "Processing managed partition: $part_name"; fi
 
 	# Check if partition is already mounted
-	mount_status=`mount  | /dev/$part_name`
+	mount_status=`mount  | grep /dev/$part_name`
 	if [ -n "$mount_status" ]
 	then
 		echo "process_mng_partition: Warning! partition: $part_name already mounted! Check partition config files!"

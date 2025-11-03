@@ -381,7 +381,8 @@ setProcAffinity() {
     local nvram_name=$1
     local proc_name=$2
     local pid=$3
-    local affinity=`printf \%x $4`
+    local affinity=$4
+    [[ $4 =~ ^[0-9]+$ ]] && affinity=`printf \%x $4`
     echo "set $proc_name $pid to aff:$affinity"
     echo ""
     if [ ! -f "/bin/rtpolicy" ]; then

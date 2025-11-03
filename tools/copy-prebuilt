@@ -196,6 +196,7 @@ then
 
 	# Realtek driver used by some models
 	if [ -f "release/src-rt-5.04behnd.4916/kernel/linux-4.19/drivers/char/rtl8372/rtl8372.o" ]
+	then
 		cp release/src-rt-5.04behnd.4916/kernel/linux-4.19/drivers/char/rtl8372/rtl8372.o $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
 	fi
 

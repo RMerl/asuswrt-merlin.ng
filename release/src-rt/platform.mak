@@ -499,10 +499,20 @@ define platformKernelConfig
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/ivi_map.h $(HND_SRC)/bcmdrivers/opensource/char/map/impl1/ ; \
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/ivi_config.h $(HND_SRC)/bcmdrivers/opensource/char/map/impl1/ ; \
 				fi; \
-				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bdmf.o $(HND_SRC)/rdp/projects/WL4908/target/bdmf/bdmf$(PRBM_EXT).o ; \
-				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/rdpa.o $(HND_SRC)/rdp/projects/WL4908/target/rdpa/rdpa$(PRBM_EXT).o ; \
-				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/rdpa_gpl.o $(HND_SRC)/rdp/projects/WL4908/target/rdpa_gpl/rdpa_gpl$(PRBM_EXT).o ; \
-				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/rdpa_usr.o $(HND_SRC)/rdp/projects/WL4908/target/rdpa_user/rdpa_usr$(PRBM_EXT).o ; \
+				if [ "$(BRCM_CHIP)" = "6813" ]; then \
+					mkdir -p $(HND_SRC)/rdp/projects/BCM$(BRCM_CHIP)/target/rdpa ; \
+					mkdir -p $(HND_SRC)/rdp/projects/BCM$(BRCM_CHIP)/target/rdpa_gpl ; \
+					mkdir -p $(HND_SRC)/rdp/projects/BCM$(BRCM_CHIP)/target/rdpa_user ; \
+					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bdmf.o $(HND_SRC)/rdp/drivers/bdmf/bdmf$(PRBM_EXT).o ; \
+					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/rdpa.o $(HND_SRC)/rdp/projects/BCM$(BRCM_CHIP)/target/rdpa/rdpa$(PRBM_EXT).o ; \
+					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/rdpa_gpl.o $(HND_SRC)/rdp/projects/BCM$(BRCM_CHIP)/target/rdpa_gpl/rdpa_gpl$(PRBM_EXT).o ; \
+					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/rdpa_usr.o $(HND_SRC)/rdp/projects/BCM$(BRCM_CHIP)/target/rdpa_user/rdpa_usr$(PRBM_EXT).o ; \
+				else \
+					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bdmf.o $(HND_SRC)/rdp/projects/WL4908/target/bdmf/bdmf$(PRBM_EXT).o ; \
+					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/rdpa.o $(HND_SRC)/rdp/projects/WL4908/target/rdpa/rdpa$(PRBM_EXT).o ; \
+					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/rdpa_gpl.o $(HND_SRC)/rdp/projects/WL4908/target/rdpa_gpl/rdpa_gpl$(PRBM_EXT).o ; \
+					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/rdpa_usr.o $(HND_SRC)/rdp/projects/WL4908/target/rdpa_user/rdpa_usr$(PRBM_EXT).o ; \
+				fi; \
 				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/unimac_drv_impl1.o $(HND_SRC)/shared/opensource/drv/unimac/ ; \
 				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/mac_drv_unimac.o $(HND_SRC)/shared/opensource/drv/phys/ ; \
 				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcm_misc_hw_init_impl6.o $(HND_SRC)/shared/opensource/drivers/ ; \

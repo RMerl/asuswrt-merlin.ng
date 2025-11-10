@@ -151,7 +151,6 @@ var wifi62data = [];
 
 
 function draw_mem_charts(){
-
 /* Memory */
 	var memchart = document.getElementById("memchartId").getContext("2d");
 	var memdata = [mem_stats_arr[8], mem_stats_arr[9] - mem_stats_arr[1], mem_stats_arr[1]];
@@ -472,6 +471,12 @@ function initial(){
 	update_temperatures();
 	update_sysinfo();
 	show_wifi_version();
+
+	if (isSupport("ai_support")) {
+		document.getElementById("ai_board_info").style.display = "";
+		show_aiboard_info();	// Show current values
+		update_aiboard_info();	// Refresh nvram then display updated values
+	}
 }
 
 function update_temperatures(){
@@ -680,6 +685,48 @@ function show_wifi_version() {
 	document.getElementById("wifi_version_td").innerHTML = buf;
 }
 
+function update_aiboard_info() {
+	let queryPost = {};
+	queryPost.action_mode = "apply";
+	queryPost.rc_service = "start_ai_request query";
+	httpApi.nvramSet(queryPost);
+
+	setTimeout("show_aiboard_info();", 3500);
+}
+
+function show_aiboard_info() {
+	let ai_nv_info = httpApi.nvramGet(["ai_sys_ip_address", "ai_sys_cpu_usage_percentage", "ai_sys_cpu_usage_percentage", "ai_sys_free_memory_kb", "ai_sys_total_memory_kb", "ai_sys_hw_revision", "ai_sys_hw_version", "ai_sys_sdk_version", "ai_productid", "ai_sys_fw_version", "ai_buildno", "ai_sys_fw_commit_number", "ai_sys_fw_commit_hash", "ai_sys_sdk_commit_number", "ai_sys_sdk_commit_hash"], true);
+	let ai_fw_version_str = ai_nv_info.ai_sys_fw_version + `.` + ai_nv_info.ai_buildno + `_` + ai_nv_info.ai_sys_fw_commit_number + `-g` + ai_nv_info.ai_sys_fw_commit_hash + `_` + ai_nv_info.ai_sys_sdk_commit_number + `-g` + ai_nv_info.ai_sys_sdk_commit_hash + " - SDK " + ai_nv_info.ai_sys_sdk_version;
+
+	document.getElementById("ai_board_fwver_td").innerHTML = ai_fw_version_str;
+	document.getElementById("ai_board_model_td").innerHTML = ai_nv_info.ai_productid;
+	document.getElementById("ai_board_hw_td").innerHTML = "Version " + ai_nv_info.ai_sys_hw_version + " rev. " + ai_nv_info.ai_sys_hw_revision;
+
+	let free_mem = ai_nv_info.ai_sys_total_memory_kb - ai_nv_info.ai_sys_free_memory_kb;
+	let total_mem = ai_nv_info.ai_sys_total_memory_kb;
+	let used_percentage = Math.round((free_mem / total_mem)*100);
+
+	free_mem /= 1024;
+	total_mem /= 1024;
+
+	$("#ai_mem_bar").css("width", used_percentage +"%");
+	$("#ai_mem_label").html(free_mem.toLocaleString("en-US", { maximumFractionDigits: 0 }) + " / " + total_mem.toLocaleString("en-US", { maximumFractionDigits: 0 }) + " MB");
+	if (used_percentage > 90)
+		$("#ai_mem_bar").css("background-color", "orange");
+	else
+		$("#ai_mem_bar").css("background-color", "#00ACDF");
+
+	let cpu_usage = parseFloat(ai_nv_info.ai_sys_cpu_usage_percentage);
+	$("#ai_cpu_bar").css("width", cpu_usage +"%");
+	$("#ai_cpu_label").html(cpu_usage.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%");
+	if (cpu_usage > 90)
+		$("#ai_cpu_bar").css("background-color", "orange");
+	else
+		$("#ai_cpu_bar").css("background-color", "#00ACDF");
+
+	document.getElementById("ai_board_ipaddr_td").innerHTML = ai_nv_info.ai_sys_ip_address;
+}
+
 </script>
 </head>
 
@@ -857,6 +904,47 @@ function show_wifi_version() {
 					</tr>
 				</table>
 
+				<table id="ai_board_info" style="display:none;" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+					<thead>
+						<tr>
+							<td colspan="2">AI Board</td>
+						</tr>
+					</thead>
+					<tr>
+						<th>Model</th>
+						<td id="ai_board_model_td"></td>
+					</tr>
+					<tr>
+						<th>Hardware</th>
+						<td id="ai_board_hw_td"></td>
+					<tr>
+						<th>Firmware Version</th>
+						<td id="ai_board_fwver_td"></td>
+					</tr>
+					<tr>
+						<th>IP Address</th>
+						<td id="ai_board_ipaddr_td"></td>
+					</tr>
+					<tr>
+						<th>Memory Usage</th>
+						<td width="50%" style="padding: 10px;">
+							<div class="bar-container" style="width:60%;">
+								<div id="ai_mem_bar" class="core-color-container"></div>
+							</div>
+							<div style="padding-top:5px;" id="ai_mem_label"></div>
+						</td>
+					</tr>
+					<tr>
+						<th>CPU Usage</th>
+						<td width="50%" style="padding: 10px;">
+							<div class="bar-container" style="width:60%;">
+								<div id="ai_cpu_bar" class="core-color-container"></div>
+							</div>
+							<div style="padding-top:5px;" id="ai_cpu_label"></div>
+						</td>
+					</tr>
+				</table>
+
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
@@ -925,4 +1013,3 @@ function show_wifi_version() {
 <div id="footer"></div>
 </body>
 </html>
-

@@ -21869,6 +21869,9 @@ login_cgi(webs_t wp, char_t *url, int auth_version)
 	fromapp_flag = check_user_agent(user_agent);
 	lock_status = check_lock_status(&dt);
 
+	temp_ip_addr.s_addr = login_ip_tmp;
+	temp_ip_str = inet_ntoa(temp_ip_addr);
+
 	if(lock_status == FORCELOCK){
 		send_login_page(fromapp_flag, lock_status, NULL, NULL, 0, NOLOGINTRY);
 		ret = FORCELOCK;
@@ -22069,8 +22072,6 @@ login_cgi(webs_t wp, char_t *url, int auth_version)
 		}
 		if((cur_login_ip_type? nvram_get_int(HTTPD_LOGIN_FAIL_WAN): nvram_get_int(HTTPD_LOGIN_FAIL_LAN)) >= DEFAULT_LOGIN_MAX_NUM){
 			lock_flag |= (cur_login_ip_type? LOCK_LOGIN_WAN: LOCK_LOGIN_LAN);
-			temp_ip_addr.s_addr = login_ip_tmp;
-			temp_ip_str = inet_ntoa(temp_ip_addr);
 			logmessage("httpd login lock", "Detect abnormal logins at %d times. The newest one was from %s in login.", (cur_login_ip_type? nvram_get_int(HTTPD_LOGIN_FAIL_WAN): nvram_get_int(HTTPD_LOGIN_FAIL_LAN)), temp_ip_str);
 #ifdef RTCONFIG_NOTIFICATION_CENTER
 			json_object *nt_root = json_object_new_object();

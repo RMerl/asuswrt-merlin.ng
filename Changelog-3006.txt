@@ -28,6 +28,7 @@ Asuswrt-Merlin 3006.xxx Changelog
   - UPDATED: Merged GPL 38978 (RT-BE58_GO only)
   - UPDATED: Merged GPL 40103 (GT-BE19000AI only)
   - UPDATED: Merged GPL 39099 (other Wifi 7 models)
+  - UPDATED: Merged GPL 37351 (Wifi 7 models)
   - UPDATED: OpenVPN to 2.6.15.
   - UPDATED: libcap-ng to 0.8.4 (to be in sync with upstream)
   - CHANGED: TrafficMonitor stats can now be saved to JFFS,
@@ -60,7 +61,7 @@ Asuswrt-Merlin 3006.xxx Changelog
            - Local hostnames will be resolved and shown
            - Routed IPv6 connections will be shown
 
-  - UPDATED: Merged GPL 3006.102_37957 for Wifi 6 devices.
+  - UPDATED: Merged GPL 3006.102_36957 for Wifi 6 devices.
   - UPDATED: Merged GPL 3006.102_38757 for WIfi 7 devices.
   - UPDATED: dropbear to 2025.88.
   - CHANGED: Replaced netstat-nat by a fork called netstat-nat-ng.

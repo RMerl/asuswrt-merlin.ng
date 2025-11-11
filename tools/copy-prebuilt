@@ -156,7 +156,7 @@ then
 	cp release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/pktrunner/impl2/pktrunner.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
 	cp release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/wlcsm_ext/impl1/wlcsm.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
 
-elif [ "$BUILD_NAME" == "RT-BE96U" ] || [ "$BUILD_NAME" == "GT-BE98_PRO" ] || [ "$BUILD_NAME" == "RT-BE88U" ] || [ "$BUILD_NAME" == "RT-BE86U" ] || [ "$BUILD_NAME" == "RT-BE92U" ] || [ "$BUILD_NAME" == "RT-BE58_GO" ]
+elif [ "$BUILD_NAME" == "RT-BE96U" ] || [ "$BUILD_NAME" == "GT-BE98_PRO" ] || [ "$BUILD_NAME" == "RT-BE88U" ] || [ "$BUILD_NAME" == "RT-BE86U" ] || [ "$BUILD_NAME" == "RT-BE92U" ] || [ "$BUILD_NAME" == "RT-BE58_GO" ] || [ "$BUILD_NAME" == "GT-BE19000AI" ]
 then
         SDK="_4916hnd"
         ARCH="_arm"
@@ -212,6 +212,8 @@ then
 	fi
 
 	cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/mpm/impl1/bcm_mpm.o $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+	cp release/src-rt-5.04behnd.4916/bcmdrivers/opensource/net/enet/impl7/bcm_enet.o $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+	cp release/src-rt-5.04behnd.4916/bcmdrivers/opensource/net/wfd/impl1/wfd.o $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
 
 	# Realtek driver used by some models
 	if [ -f "release/src-rt-5.04behnd.4916/kernel/linux-4.19/drivers/char/rtl8372/rtl8372.o" ]
@@ -227,16 +229,29 @@ then
 		rsync -a --del release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/archer/impl1/ $REPO/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/archer/impl1
 		cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/cmdlist/impl1/cmdlist.o $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
 		cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/vlan/impl1/bcmvlan.o $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
-		cp release/src-rt-5.04behnd.4916/bcmdrivers/opensource/net/enet/impl7/bcm_enet.o  $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
 		cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/bpm/impl1/bcm_bpm.o  $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
 		cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/pktflow/impl1/pktflow.o  $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
 # Unused?
 #	release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/pon_drv/impl2/bcm_pondrv.o
 #	release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/gdx/impl1/prebuilt/gdx_hw.o
 
-	else	# These don't exist in bcm6765
+	else	# These don't exist in bcm676x
 		cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/pktrunner/impl2/pktrunner.o $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
 		cp release/src-rt-5.04behnd.4916/bootloaders/u-boot-2019.07/drivers/net/bcmbca/bcmbca_xrdp_eth.o $REPO/release/src-rt-5.04behnd.4916/bootloaders/obj.$BUILD_NAME_LC/drivers/net/bcmbca/
+	fi
+
+# RDP model-specifics for BCM6813
+	if [ -f "release/src-rt-5.04behnd.4916/rdp/projects/BCM6813/target/rdpa/rdpa.o" ]
+	then
+		cp release/src-rt-5.04behnd.4916/rdp/drivers/bdmf/bdmf.o $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+		cp release/src-rt-5.04behnd.4916/rdp/projects/BCM6813/target/rdpa/rdpa.o $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+		cp release/src-rt-5.04behnd.4916/rdp/projects/BCM6813/target/rdpa_gpl/rdpa_gpl.o $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+		cp release/src-rt-5.04behnd.4916/rdp/projects/BCM6813/target/rdpa_user/rdpa_usr.o $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+	fi
+
+	if [ "$BUILD_NAME" == "GT-BE19000AI" ]
+	then
+		cp release/src/router/ark/prebuild/* $REPO/release/src/router/ark/prebuild/
 	fi
 
 	aarch64-buildroot-linux-gnu-strip --strip-debug $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/*.o
@@ -249,19 +264,22 @@ fi
 # Skip these if no USB port
 
 echo "*** Copying USB-related files..."
-if [ "$BUILD_NAME" != "XT12" ]
+if [ "$BUILD_NAME" != "XT12" ] && [ "$BUILD_NAME" != "GT-BE58_GO" ]
 then
 	cp -ar release/src/router/tuxera/broadcom* $REPO/release/src/router/tuxera/
 	rm -rf $REPO/release/src/router/tuxera/broadcom_arm $REPO/release/src/router/tuxera/broadcom_arm_7114
-	cp release/src/router/lighttpd-1.4.39/prebuild/* $REPO/release/src/router/lighttpd-1.4.39/prebuild/$BUILD_NAME/
-	cp release/src/router/dropbox_client/prebuild/* $REPO/release/src/router/dropbox_client/prebuild/$BUILD_NAME/
-	cp release/src/router/ftpclient/prebuild/* $REPO/release/src/router/ftpclient/prebuild/$BUILD_NAME/
-	cp release/src/router/sambaclient/prebuild/* $REPO/release/src/router/sambaclient/prebuild/$BUILD_NAME/
 	cp release/src/router/u2ec/prebuild/* $REPO/release/src/router/u2ec/prebuild/$BUILD_NAME/
-	cp release/src/router/webdav_client/prebuild/* $REPO/release/src/router/webdav_client/prebuild/$BUILD_NAME/
-	cp release/src/router/usbclient/prebuild/* $REPO/release/src/router/usbclient/prebuild/$BUILD_NAME/
-	cp release/src/router/asuswebstorage/prebuild/* $REPO/release/src/router/asuswebstorage/prebuild/$BUILD_NAME/
-	cp release/src/router/inotify/prebuild/* $REPO/release/src/router/inotify/prebuild/$BUILD_NAME/
+	if [ "$BUILD_NAME" != "GT-BE19000AI" ]
+	then
+		cp release/src/router/lighttpd-1.4.39/prebuild/* $REPO/release/src/router/lighttpd-1.4.39/prebuild/$BUILD_NAME/
+		cp release/src/router/dropbox_client/prebuild/* $REPO/release/src/router/dropbox_client/prebuild/$BUILD_NAME/
+		cp release/src/router/ftpclient/prebuild/* $REPO/release/src/router/ftpclient/prebuild/$BUILD_NAME/
+		cp release/src/router/sambaclient/prebuild/* $REPO/release/src/router/sambaclient/prebuild/$BUILD_NAME/
+		cp release/src/router/webdav_client/prebuild/* $REPO/release/src/router/webdav_client/prebuild/$BUILD_NAME/
+		cp release/src/router/usbclient/prebuild/* $REPO/release/src/router/usbclient/prebuild/$BUILD_NAME/
+		cp release/src/router/asuswebstorage/prebuild/* $REPO/release/src/router/asuswebstorage/prebuild/$BUILD_NAME/
+		cp release/src/router/inotify/prebuild/* $REPO/release/src/router/inotify/prebuild/$BUILD_NAME/
+	fi;
 fi;
 
 # Common to all

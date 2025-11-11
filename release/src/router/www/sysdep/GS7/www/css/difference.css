@@ -1,0 +1,34 @@
+/* index_style.css */
+.bg{
+	background:url(/images/New_ui/login_bg_index.png) no-repeat center center fixed;
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;
+}
+
+/* mobile/js/handler.js */
+.Miku-bg{
+	background-image: url('../images/gundam_bg.png');
+	background-repeat: no-repeat;
+	background-size: 100%;
+	width: 100%;
+	height: 100vh;
+	margin-top: -100px;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: flex-end;
+}
+
+.GD-wait{
+	position: absolute;
+	background-image: url('../images/gundam-waiting.png');
+	width: 240px;
+	height: 102px;
+}
+
+.GD-wait > div{
+	color:#FFF;
+	margin: 40px 0 0 60px;
+}

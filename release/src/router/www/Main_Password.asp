@@ -212,6 +212,9 @@ var secure_default = isSupport("secure_default");
 function initial(){
 	top.name = "";/* reset cache of state.js win.name */
 
+	if(`<% nvram_get("force_chgpass"); %>` == 1)
+		document.getElementById("QIS_pass_desc1").innerHTML ="To enhance security, a new password policy has been implemented.";
+
 	if(isSupport("UI4")){
 		$(".title_name").css({"color": "#000"})
 		$(".sub_title_name").css({"color": "#000"})
@@ -613,7 +616,7 @@ function showError(str){
 			<div class="main_content">
 				<div class="title_name"><#PASS_changepasswd#></div>
 				<div class="sub_title_name">
-					<div>
+					<div id="QIS_pass_desc1">
 						<#QIS_pass_desc1#>
 					</div>
 					<div id="KRHint" style="display:none">

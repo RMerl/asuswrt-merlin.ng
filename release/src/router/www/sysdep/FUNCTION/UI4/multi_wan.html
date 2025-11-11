@@ -968,7 +968,7 @@ function resize_schedule_div(){
 }
 
 function generate_setting_items(){
-	var multi_wan_enabled_parm = {"title":"Enable Multi-WAN", "type":"switch", "id":"multi_wan_enable", "set_value": "off"};
+	var multi_wan_enabled_parm = {"title":"<#Group_WAN_enable#>", "type":"switch", "id":"multi_wan_enable", "set_value": "off"};
 	var $multi_wan_enable_item = Get_Component_Switch(multi_wan_enabled_parm)
 		.closest(".profile_setting_item").css("display", "flex")
 		.closest(".profile_setting_item").css("background-color", "transparent")
@@ -1333,7 +1333,7 @@ function generate_setting_items(){
 
 	$schedule_time_div.append(wizard_schedule.Get_UI());
 	$(".schedule_header_container .title").css("margin-left", "10px");
-	$(".schedule_header_container .title").html("Time period to swap to backup WAN.");
+	$(".schedule_header_container .title").html(`<#Group_WAN_switch_period#>`);
 
 	var failover_policy_options = [
 		{"text": "Active Backup WAN when any primary WAN port failed.", "value": "0"},
@@ -1811,7 +1811,7 @@ function show_port_status(){
 		<div id="wan_items_div" class="mt_wans_container" style="display: flex; justify-content: space-between; flex-wrap: wrap;">
 			<div id="primary_group_div" class="wan_group_container">
 				<div style="margin-left: 3%; margin-top: 20px;">
-					<div id="wan_group_title" style="font-size: 14px;">WAN Group</div>
+					<div id="wan_group_title" style="font-size: 14px;"><#Group_WAN#></div>
 					<div style="font-size: 24px; margin-top: 5px;"><#dualwan_primary#></div>
 				</div>
 				<div id = "primary_select_div"></div>
@@ -1819,13 +1819,13 @@ function show_port_status(){
 				<div id="primary_lb_hint_div" style="display: none; background-color: #FFF1E8; border: 1px solid #B42D18; border-radius: 4px; margin: 10px 3% 10px; padding: 10px;">
 					<div style="display: flex; justify-content: space-around;">
 						<div style="min-width: 30px;"></div>
-						<div style="font-size: 14px;"><span style="font-weight: bolder;">Load Balance</span>(LB) optimizes resource and maximizes throughput, which provides better performance for Primary and Secondary WAN with similar network speeds.</div>
+						<div style="font-size: 14px;"><#dualwan_lb_note3#></div>
 					</div>
 				</div>
 			</div>
 			<div id="secondary_group_div" class="wan_group_container group2">
 				<div style="margin-left: 15px; margin-top: 20px;">
-					<div style="font-size: 14px;">WAN Group</div>
+					<div style="font-size: 14px;"><#Group_WAN#></div>
 					<div style="font-size: 24px; margin-top: 5px;"><#dualwan_secondary#></div>
 				</div>
 				<div id = "secondary_select_div"></div>
@@ -1838,12 +1838,12 @@ function show_port_status(){
 	</div>
 	<div  id="policy_setting_div"  style="display: none; margin: 0 10px;">
 		<div style="display: flex; align-items: center; min-height: 30px; margin: 10px 0px; border-left: 6px solid #248DFF;">
-			<div style="font-size: 16px;  margin-left:10px;">Set policy  with Muti-WAN</div>
+			<div style="font-size: 16px;  margin-left:10px;"><#Group_WAN_policy#></div>
 		</div>
 		<div id="multiwan_policy_div" style="border: 1px solid #DCDCDC; border-radius: 10px; padding-bottom: 5px;"></div>
 	</div>
 	<div style="display: flex; align-items: center; min-height: 30px; margin: 10px 0px 10px 10px; border-left: 6px solid #248DFF;">
-		<div style="font-size: 16px;  margin-left:10px;">Per-Port Settings</div>
+		<div style="font-size: 16px;  margin-left:10px;"><#Group_WAN_port_setting#></div>
 	</div>
 	<div style="border: 1px solid #DCDCDC; border-radius: 10px; margin: 0 10px;">
 		<div class="port_status_container">

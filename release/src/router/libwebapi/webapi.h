@@ -1,6 +1,7 @@
 #ifndef __WEBAPI_H__
 #define __WEBAPI_H__
 
+#include <json.h>
 #ifdef RTCONFIG_CFGSYNC
 #include <cfg_capability.h>
 #endif
@@ -64,6 +65,10 @@ struct JFFS_BACKUP_PROFILE_S {
         char *rc_service;
         int sync_flag; //0:nvram 1:openvpn 2:ipsec 3:usericon
 };
+
+#ifdef RTCONFIG_ENERGY_SAVE
+#define MaxRule_ENERGY_SAVE_SCHED 24
+#endif
 
 extern struct JFFS_BACKUP_PROFILE_S jffs_backup_profile_t[];
 #define JFFS_CFGS_EXCLUDE "/jffs/exclude_lists"
@@ -150,4 +155,8 @@ extern int set_ASUS_EULA(char *ASUS_EULA);
 extern int set_ASUS_NEW_EULA(char *ASUS_NEW_EULA, char *from_service);
 extern int get_ASUS_privacy_policy_tbl(struct json_object *ASUS_privacy_policy_tbl);
 extern int get_ASUS_privacy_policy_info(struct json_object *ASUS_privacy_policy_info);
+extern int check_cmd_injection_blacklist(char *para);
+extern int check_xss_blacklist(char* para, int check_www);
+extern int validate_apply_input_value(char *name, char *value);
+extern int detect_vul_scan(void);
 #endif /* !__WEBAPI_H__ */

@@ -32,6 +32,9 @@
 #ifndef UUID_H
 #define UUID_H
 
+#if defined(EBG19P)
+#include "typedefs.h"
+#endif
 
 /* from rfc4122.txt */
 typedef struct _uuid {

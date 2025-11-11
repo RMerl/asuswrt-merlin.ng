@@ -1,0 +1,60 @@
+/dts-v1/;
+/ {
+security_policy {
+	delegate_id = <10001>;
+	min_tpl_compatibility = <0x2>;
+	key-aes {
+		description = "Encrypted AES key - Mandatory Node";
+		data = < 0x6F44925B 0x4B748D39 0x89096BCB 0x1C49E52A 0xA7FE8477 0x6452F88A 0x1BE11EC3 0xF68BA1A3 0xD2CA6367 0xB2D40451 0x259DACA9 0x8E30E6D6>;
+		algo = "aes-cbc-128";
+	};
+	sec_restriction {
+		description = "Security Restrictions xxx - Optional Node";
+		sw_restriction {
+			status = "disabled";
+			required_images {
+				// Order of images is important
+
+				// image1 {
+				// 	//Name of the FIT node for this binary
+				// 	node_name = "atf";
+				// 	load_addr = <0x>;
+				// 	start_addr = <0x>;
+				// 	// Size of binary
+				// 	size = <>;
+				// 	// Output of sha256sum <binary>
+				// 	sha256 = [];
+				// };
+
+				// image2 {
+				//  	node_name = "optee";
+				//  	load_addr = <0x>;
+				//  	start_addr = <0x>;
+				//  	size = <>;
+				//  	sha256 = [];
+				// };
+			};
+		};
+		sec_exports {
+			status = "enabled";
+			allowed_exports = "SEC_ITEM_KEY_DEV_SPECIFIC,SEC_ITEM_SER_NUM";
+		};
+		hw_state {
+ 			// all    - Blocks access for all masters 
+			// none   - Unlocks access for all masters
+			// nonsec - Blocks access for nonsecure masters only.
+			// prov   - unlock access for nonsecure provisioning by 
+			//          locking populated data only (sotp)
+			sotp-lock = "none";
+			rng-lock = "none";
+		};
+	};
+	anti-rollback {
+		status = "disabled";
+		description = "Anti-rollback update - Optional Node";
+		new_antirollback = <1>;
+		antirollback_limit = <64>;
+	};
+};
+
+};

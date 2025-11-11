@@ -1646,9 +1646,11 @@
 	margin-bottom: 12px;
 }
 .client_list_bg .each_client_bg{
-	position: relative;
-	padding: 8px 0px;
+	display: flex;
+	align-items: center;
+	padding: 8px 0;
 	height: 42px;
+	position: relative;
 }
 .client_list_bg .each_client_bg > div{
 	cursor: pointer;
@@ -1658,17 +1660,19 @@
 	position: absolute;
 	bottom: 0;
 	height: 1px;
-	width: 95%;
+	width: auto;
 	border-bottom: 1px solid #3E4E59;
-	left: 0;
-	right: 0;
+	left: 18px;
+	right: 18px;
 	margin: auto;
 }
 .client_list_bg .client_icon_bg{
 	height: 42px;
 	width: 42px;
 	margin: 0px 10px 0px 18px;
-	float: left;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	position: relative;
 }
 .client_list_bg .client_icon_bg.default_icon, .client_list_bg .client_icon_bg.user_icon{
@@ -1680,7 +1684,7 @@
 	background-position: 50%;
 }
 .client_list_bg .client_action_bg{
-	right: 0;
+	right: 18px;
 }
 .client_list_bg .client_action_bg > span{
 	cursor: pointer;
@@ -1715,8 +1719,11 @@
 	margin-left: initial;
 }
 .client_list_bg .client_content_bg{
-	float: left;
-	width: 75%;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	min-width: 0;
 	height: 100%;
 	position: relative;
 }

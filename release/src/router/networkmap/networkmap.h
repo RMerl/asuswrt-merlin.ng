@@ -99,7 +99,7 @@ enum
 
 #define NMP_CLIENT_LIST             "/tmp/nmp_client_list"
 
-#define NCL_LIMIT		14336   //database limit to 14KB to avoid UI glitch
+#define NCL_LIMIT		262144   //database limit to 256KB to avoid UI glitch
 
 #define IP_TABLE_PATH               "/tmp/nmp_ip_table"
 #define NMP_DEBUG_FILE				"/tmp/NMP_DEBUG"
@@ -199,7 +199,8 @@ enum
 	FLAG_ITUNE,
 	FLAG_EXIST,
 	FLAG_VENDOR,
-	FLAG_ASUS
+	FLAG_ASUS,
+	FLAG_AIBOARD
 };
 
 #define TYPE_LINUX_DEVICE	22
@@ -345,9 +346,6 @@ int check_allwclientlist_json(const char *client_mac, const int opMode);
 
 int check_wrieless_info(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, const int i, const int is_file, struct json_object *clients);
 
-void regularly_check_devices(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab);
-
-void check_clientlist_offline(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
 #ifdef RTCONFIG_MLO
 int check_mlo_info(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const int i, const int wireless_type, char *guest_network, char *client_mac, char *papMac, struct json_object *macObj, char *mlo_mac, int *is_mlo);
 #endif
@@ -360,8 +358,6 @@ void check_clients_from_ip_cmd(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_ta
 void check_dhcp_ip_online(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const char *mac, const char *ip_addr);
 
 int get_client_list();
-
-void check_brctl_mac_online(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
 
 int check_asus_device(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const int i);
 

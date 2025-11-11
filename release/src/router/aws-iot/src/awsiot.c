@@ -4222,7 +4222,7 @@ static int rcv_general_data(char *data, char *topic)
 
             char event[AAE_MAX_IPC_PACKET_SIZE];
             char out[AAE_MAX_IPC_PACKET_SIZE];
-            snprintf(event, sizeof(event), AAE_AWSIOT_TNL_TEST_MSG, EID_AWSIOT_TUNNEL_TEST, target_device_id);
+            snprintf(event, sizeof(event), AAE_AWSIOT_TNL_TEST_MSG, EID_AWSIOT_TUNNEL_TEST, target_device_id, "0", "", "");
             aae_sendIpcMsgAndWaitResp(MASTIFF_IPC_SOCKET_PATH, event, strlen(event), out, sizeof(out), 5);
 
             break;

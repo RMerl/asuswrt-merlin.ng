@@ -412,7 +412,7 @@ function save_applyData(wan_unit){
 
 	var autowan_conflict = false;
 	if(isSupport("autowan")){
-		var orig_autowan_enable = httpApi.nvramGet(["autowan_enable"]).autowan_enable;
+		var orig_autowan_enable = httpApi.nvramGet(["autowan_enable"], true).autowan_enable;
 		if(orig_autowan_enable == "1" && (applyData["bond_wan"] == "1" || applyData["wan_proto"] == "static" || applyData["wan_proto"] == "pptp" || applyData["wan_proto"] == "l2tp"))
 			autowan_conflict = true;
 	}
@@ -1175,7 +1175,7 @@ function load_profile_settings(wan_unit){
 				if($(this).attr("id") && $(this).attr("id").indexOf("select_") == -1){
 					var id = $(this).attr("id");
 					var nvram_name = id.replace("wan_", prefix);
-					var nvram_val = httpApi.nvramGet([nvram_name])[nvram_name];
+					var nvram_val = httpApi.nvramGet([nvram_name], true)[nvram_name];
 
 					if($(this).hasClass("icon_switch")){
 						$(this).removeClass(nvram_val == "1"? "off": "on").addClass(nvram_val == "1"? "on": "off");
@@ -1247,7 +1247,58 @@ function show_popup(type, wan_unit){ //_type: new, edit
 		load_profile_settings(wan_unit);
 	}
 
-	//adjust_popup_container_top($(".popup_container.popup_element"), 100);
+	setupPopupAutoResize($(".popup_container.popup_element"));
+}
+
+function setupPopupAutoResize($container) {
+	cleanupPopupResize($container);
+
+	if (window.ResizeObserver) {
+		const resizeObserver = new ResizeObserver(function(entries) {
+			clearTimeout(window.popupResizeTimer);
+			window.popupResizeTimer = setTimeout(function() {
+				resize_iframe_height();
+			}, 50);
+		});
+		resizeObserver.observe($container[0]);
+		$container.data('resizeObserver', resizeObserver);
+		$container.off('popup_closing.auto_resize').on('popup_closing.auto_resize', function() {
+			cleanupPopupResize($container);
+		});
+		if (window.MutationObserver) {
+			const removalObserver = new MutationObserver(function(mutations) {
+				mutations.forEach(function(mutation) {
+					if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
+						for (const node of mutation.removedNodes) {
+							if (node === $container[0] ||
+								($container[0] && !document.body.contains($container[0]))) {
+								cleanupPopupResize($container);
+								removalObserver.disconnect();
+								return;
+							}
+						}
+					}
+				});
+			});
+			if ($container.parent().length > 0) {
+				removalObserver.observe($container.parent()[0], { childList: true });
+				$container.data('removalObserver', removalObserver);
+			}
+		}
+	}
+}
+function cleanupPopupResize($container) {
+	const existingObserver = $container.data('resizeObserver');
+	if (existingObserver) {
+		existingObserver.disconnect();
+		$container.removeData('resizeObserver');
+	}
+	const removalObserver = $container.data('removalObserver');
+	if (removalObserver) {
+		removalObserver.disconnect();
+		$container.removeData('removalObserver');
+	}
+	$container.off('popup_closing.auto_resize');
 }
 
 function chg_pvc_unit(pvc_to_chg) {
@@ -1927,7 +1978,7 @@ function applyRule(){
 
 		var autowan_conflict = false;
 		if(isSupport("autowan")){
-			var orig_autowan_enable = httpApi.nvramGet(["autowan_enable"]).autowan_enable;
+			var orig_autowan_enable = httpApi.nvramGet(["autowan_enable"], true).autowan_enable;
 			if(orig_autowan_enable == "1"){
 				if((wan_bonding_support && document.form.bond_wan_radio.value == "1") || document.form.wan_proto.value == "static" || document.form.wan_proto.value == "l2tp" || document.form.wan_proto.value == "pptp")
 					autowan_conflict = true;
@@ -3028,8 +3079,8 @@ function update_map(){
 
 			success: function( response ) {
 				httpApi.nvramSet({
-				    "action_mode": "apply",
-				    "rc_service" : "restart_wan"
+					"action_mode": "apply",
+					"rc_service": "restart_wan"
 				});
 				showLoading(10);
 			}
@@ -3056,7 +3107,7 @@ function change_dslite_mode(flag){
 
 function update_ipv6_s46_b4addr_selector(){
 	$("#ipv6_s46_b4addr_Select").empty();
-	var selectedValue = httpApi.nvramGet(["ipv6_s46_b4addr"]).ipv6_s46_b4addr;
+	var selectedValue = httpApi.nvramGet(["ipv6_s46_b4addr"], true).ipv6_s46_b4addr;
 
 	for (var i = 2; i <= 7; i++) {
 		var option = document.createElement("option");

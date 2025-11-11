@@ -110,6 +110,9 @@ CFLAGS += -I$(TOP_PLATFORM)/bcm_flashutil -I$(HND_SRC)/userspace/public/include 
 else ifeq ($(HND_ROUTER_BE_4916),y)
 LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -L$(TOP_PLATFORM)/bcm_flashutil -lbcm_flashutil -L$(TOP_PLATFORM)/bcm_util $(if $(HND_ROUTER_BE_4916),-lbcm_util) -L$(TOP_PLATFORM)/bcm_boardctl -lbcm_boardctl
 CFLAGS += -I$(TOP_PLATFORM)/bcm_flashutil -I$(HND_SRC)/userspace/public/include -I$(HND_SRC)/userspace/public/libs/cms_util/ -I$(HND_SRC)/userspace/public/include/linux
+ifeq ($(BRCM_CHIP),6764)
+CFLAGS += -DCHIP_BCM6764
+endif
 else
 LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -L$(TOP_PLATFORM)/bcm_flashutil -lbcm_flashutil -L$(TOP_PLATFORM)/bcm_util $(if $(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),-lbcm_util,-lbcm_crc) -L$(TOP_PLATFORM)/bcm_boardctl -lbcm_boardctl
 endif
@@ -293,6 +296,9 @@ endif
 ifeq ($(RTCONFIG_BT_CONN),y)
 CFLAGS  += -I$(TOP)/bluez-5.56/lib
 endif
+
+CFLAGS += -I$(TOP)/libwebapi
+LDFLAGS += -L$(TOP)/libwebapi -lwebapi
 
 #CFLAGS += -DRC_BUILDTIME=$(shell date -d "now" +"%s")
 
@@ -1173,9 +1179,10 @@ LDFLAGS += -lm
 OBJS += ledg.o
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-AX6000 GT10 GS-BE18000 GS-BE12000 GS7_PRO GT7))
 OBJS += ledbtn.o
+CFLAGS += -DSW_LEDBTN
 endif
 endif
-ifeq ($(RTCONFIG_BCMLEDG),y)
+ifeq ($(RTCONFIG_AURALED),y)
 LDFLAGS += -lm
 OBJS += ledg.o
 endif
@@ -1838,7 +1845,7 @@ ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5
 endif
 endif
 
-ifeq ($(RTCONFIG_BCMLEDG),y)
+ifeq ($(RTCONFIG_AURALED),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ledg
 endif
 
@@ -2397,7 +2404,7 @@ ledg.o:
 	@-cp -f ./prebuild/ledg.o .
 endif
 endif
-ifeq ($(RTCONFIG_BCMLEDG),y)
+ifeq ($(RTCONFIG_AURALED),y)
 ifneq ($(wildcard ./prebuild/ledg.o),)
 ledg.o:
 	@-cp -f ./prebuild/ledg.o .

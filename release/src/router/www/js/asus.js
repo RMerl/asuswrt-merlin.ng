@@ -247,7 +247,74 @@ system.aMesh = (() => {
         if (dwb_mode === "1") {
             nBandArray.forEach((element) => {
                 let postfixIndex = wlPostfixIndexTransform[element];
-                let dwbChannel = (() => httpApi.hookGet(`get_wl_channel_list_${postfixIndex}`) || {})();
+                let dwbChannel = (() => {
+                    let _channel = httpApi.hookGet(`get_wl_channel_list_${postfixIndex}`) || {};
+
+                    // handle channel while CAP & RE intersection of control channels is empty
+                    if (!_channel.chan_20m) {
+                        let chanspecs = httpApi.hookGet(`chanspecs_${postfixIndex}`);
+                        chanspecs.forEach((element) => {
+                            let _ch = element.split("u")[0].split("l")[0].split("/")[0];
+                            if (_ch.indexOf("6g") !== -1) {
+                                _ch = _ch.split("6g")[1];
+                            }
+
+                            if (element.indexOf("u") !== -1 || element.indexOf("l") !== -1 || element.indexOf("/40") !== -1) {
+                                if (_channel.chan_40m === undefined) {
+                                    _channel.chan_40m = {
+                                        chanlist: [],
+                                        chanspec: [],
+                                    };
+                                }
+
+                                _channel.chan_40m.chanlist.push(_ch);
+                                _channel.chan_40m.chanspec.push(element);
+                            } else if (element.indexOf("/80") !== -1) {
+                                if (_channel.chan_80m === undefined) {
+                                    _channel.chan_80m = {
+                                        chanlist: [],
+                                        chanspec: [],
+                                    };
+                                }
+
+                                _channel.chan_80m.chanlist.push(_ch);
+                                _channel.chan_80m.chanspec.push(element);
+                            } else if (element.indexOf("/160") !== -1) {
+                                if (_channel.chan_160m === undefined) {
+                                    _channel.chan_160m = {
+                                        chanlist: [],
+                                        chanspec: [],
+                                    };
+                                }
+
+                                _channel.chan_160m.chanlist.push(_ch);
+                                _channel.chan_160m.chanspec.push(element);
+                            } else if (element.indexOf("/320") !== -1) {
+                                if (_channel.chan_320m === undefined) {
+                                    _channel.chan_320m = {
+                                        chanlist: [],
+                                        chanspec: [],
+                                    };
+                                }
+
+                                _channel.chan_320m.chanlist.push(_ch);
+                                _channel.chan_320m.chanspec.push(element);
+                            } else {
+                                if (_channel.chan_20m === undefined) {
+                                    _channel.chan_20m = {
+                                        chanlist: [],
+                                        chanspec: [],
+                                    };
+                                }
+
+                                _channel.chan_20m.chanlist.push(_ch);
+                                _channel.chan_20m.chanspec.push(element);
+                            }
+                        });
+                    }
+
+                    return _channel;
+                })();
                 _channel[element] = dwbChannel;
             });
 
@@ -268,6 +335,7 @@ system.currentOPMode = (() => {
         ew2: { id: "EW2", desc: "<#OP_RE2G_item#>" },
         ew5: { id: "EW5", desc: "<#OP_RE5G_item#>" },
         hs: { id: "HS", desc: "Hotspot" },
+        wisp: { id: "WISP", desc: `<#OP_WISP_item#>` },
     };
 
     let { sw_mode, wlc_psta, wlc_express } = nvram;
@@ -533,7 +601,7 @@ system.wlBandSeq = (() => {
                         return;
                     }
 
-                    if (isIDSku && (wlIfIndex === "5g1" || wlIfIndex === "5g2")) {
+                    if (isIDSku && productId === "GT-BE98" && (wlIfIndex === "5g1" || wlIfIndex === "5g2")) {
                         return;
                     }
 
@@ -557,6 +625,10 @@ system.wlBandSeq = (() => {
                 }
             });
         } else {
+            wlObj[wlIfIndex].chanspecs = (() => {
+                return httpApi.hookGet(`chanspecs_${postfixIndex}`);
+            })();
+
             let wlChannels = wlObj[wlIfIndex].channel;
             for (let element of wlChannels) {
                 // 20 MHz
@@ -673,10 +745,13 @@ system.wlBandSeq = (() => {
                 }
 
                 // 160 MHz
-                let bw160MHzSupport = isSupport("vht160");
-                if (isIDSku && (wlIfIndex === "5g1" || wlIfIndex === "5g2")) {
-                    bw160MHzSupport = false;
-                }
+                let bw160MHzSupport = (() => {
+                    if (isIDSku && productId === "GT-BE98" && (wlIfIndex === "5g1" || wlIfIndex === "5g2")) {
+                        return false;
+                    }
+
+                    return isSupport("vht160");
+                })();
 
                 if (bw160MHzSupport) {
                     const bw160MaxCount = 8;
@@ -835,7 +910,7 @@ system.wlBandSeq = (() => {
                 return false;
             }
 
-            if (isIDSku && (wlIfIndex === "5g1" || wlIfIndex === "5g2")) {
+            if (isIDSku && productId === "GT-BE98" && (wlIfIndex === "5g1" || wlIfIndex === "5g2")) {
                 return false;
             }
 
@@ -1088,12 +1163,17 @@ system.channelBandwidthObject = (() => {
     return bandwidthObject;
 })();
 
+system.bw320ChannelRangeObject = {
+    0: "<#Auto#>",
+    "320-1": "320-1",
+    "320-2": "320-2",
+    lower: "320-1",
+    upper: "320-2",
+};
 system.extensionChannelObject = {
     0: "<#Auto#>",
     l: "<#WLANConfig11b_EChannelAbove#>",
     u: "<#WLANConfig11b_EChannelBelow#>",
-    "320-1": "<#WLANConfig11b_EChannelAbove#>",
-    "320-2": "<#WLANConfig11b_EChannelBelow#>",
     lower: "<#WLANConfig11b_EChannelAbove#>",
     upper: "<#WLANConfig11b_EChannelBelow#>",
 };
@@ -1135,7 +1215,7 @@ system.client = (() => {
         mapArray.push(key);
     }
 
-    for (let [key, value] of Object.entries(database)) {
+    for (let [key, value] of Object.entries(nmp)) {
         if (key === "maclist" || key === "ClientAPILevel") {
             continue;
         }

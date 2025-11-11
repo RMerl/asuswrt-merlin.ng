@@ -1045,7 +1045,7 @@ var Get_Component_WirelessInput = function(wlArray){
 				.attr({
 					"id": "wireless_ssid_" + wl.ifname,
 					"type": "text",
-					"maxlength": "33",
+					"maxlength": "32",
 					"class": "textInput wlInput",
 					"autocomplete": "off",
 					"autocorrect": "off",
@@ -1130,7 +1130,7 @@ var Get_Component_WirelessInput_MLO = function(wlArray){
 			.attr({
 				"id": "wireless_ssid_" + wlArray.ifname,
 				"type": "text",
-				"maxlength": "33",
+				"maxlength": "32",
 				"class": "textInput wlInput",
 				"autocomplete": "off",
 				"autocorrect": "off",
@@ -1435,6 +1435,13 @@ function handleSysDep(){
 		$("#summary_page").append($("<div>").attr({"id": "gdContainer", "class": "gundam-footer-field"}).hide())
 		$("#gdContainer").html('');
 		$("#gdContainer").append($("<div>").attr({"class": "GD-wait"}).append($("<div>").attr({"id": "GD-status"}).html("<#Excute_processing#>")));
+	}
+
+	if(isSupport("GS7_MIKU")){
+		$("#summary_page").append($("<div>").attr({"id": "gdContainer", "class": "gundam-footer-field"}).hide())
+		$("#gdContainer").html('');
+		$(".headerBar").css("height", "72px");
+		$(".icon_logo").hide();
 	}
 
 	if(isSupport("mlo")){
@@ -2016,9 +2023,10 @@ var isPage = function(page){
 
 var isSupport = function(_ptn){
 	var ui_support = JSON.parse(JSON.stringify(httpApi.hookGet("get_ui_support")));
-	var modelInfo = httpApi.nvramGet(["productid", "odmpid"]);
+	var modelInfo = httpApi.nvramGet(["productid", "odmpid", "CoBrand"]);
 	var based_modelid = modelInfo.productid;
 	var odmpid = modelInfo.odmpid;
+	var CoBrand = modelInfo.CoBrand;
 	var matchingResult = false;
 	var amas_bdlkey = httpApi.nvramGet(["amas_bdlkey"]).amas_bdlkey;
 
@@ -2053,6 +2061,9 @@ var isSupport = function(_ptn){
 			break;
 		case "GUNDAM_UI":
 			matchingResult = ((isGundam() || isKimetsu() || isEva()) && $(".desktop_left_field").is(":visible")) ? true : false;
+			break;
+		case "GS7_MIKU":
+			matchingResult = (based_modelid == "GS7" && CoBrand == "18") ? true : false;
 			break;
 		case "amas_bdl":
 			matchingResult = (ui_support["amas_bdl"] >= 1 && amas_bdlkey.length != 0) ? true : false;
@@ -2254,6 +2265,7 @@ function startLiveUpdate(){
 					systemVariable.forceLevel = fwInfo.webs_state_level;
 				}
 
+				systemVariable.webs_state_update = fwInfo.webs_state_update;
 				if(TimeDiff > 1800 || fwInfo.webs_state_update != "1"){
 					setTimeout(arguments.callee, 1000);
 				}
@@ -2608,7 +2620,8 @@ function site2site_handle_wlSet(){
 }
 function adjust_popup_container_top(_obj, _offsetHeight){
 	$(_obj).css({top: ""});
-	var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+	const $scrollContainer = $('[data-role="page"]:visible');
+	let scrollTop = $scrollContainer.length ? $scrollContainer.scrollTop() : (window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0);
 	var parent_scrollTop = parent.window.pageYOffset || parent.document.documentElement.scrollTop || parent.document.body.scrollTop || 0;
 	if(scrollTop == 0 && parent_scrollTop != 0)
 		parent_scrollTop = parent_scrollTop - 200;
@@ -2841,4 +2854,30 @@ function isCompatibleNetworkFound(){
 	});
 	const sdn_rl_is_full = (sdn_rl_count >= sdn_maximum);
 	return (legacy_exist || sdn_rl_is_full);
+}
+function handle_mld_enable(mode) {
+	if (!isSupport("mlo")) return;
+
+	if (mode === "RT" || mode === "AP") {
+		if (isSwModeChanged()) {
+			postDataModel.insert(mloObj);
+			qisPostData.mld_enable = httpApi.nvramDefaultGet(["mld_enable"]).mld_enable || "0";
+		}
+	}
+	else if (mode === "RP" || mode === "MB" || mode === "WISP") {
+		let needInsert = false;
+		if (isSwModeChanged()) {
+			needInsert = true;
+		}
+		else {
+			const current_mld_enable = httpApi.nvramGet(["mld_enable"]).mld_enable || "0";
+			if (current_mld_enable == "1") {
+				needInsert = true;
+			}
+		}
+		if (needInsert) {
+			postDataModel.insert(mloObj);
+			qisPostData.mld_enable = "0";
+		}
+	}
 }

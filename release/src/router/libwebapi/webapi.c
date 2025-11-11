@@ -355,8 +355,12 @@ static int get_sdn_rwd_cap_array(struct json_object *sdn_rwd_cap_array){
 
 struct RWD_MAPPING_TABLE rwd_mapping_t[] =
 {
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GTAXE11000) || defined(GTAC2900) || defined(GTAX11000) || defined(GSAX3000) || defined(GSAX5400) || defined(GTAX11000_PRO) || defined(TUFAX5400) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
-	{"AuraRGB", "light_effect/light_effect.html", "<rt><white>light_effect/light_effect_white.css"},
+#if defined(GTAXE11000) || defined(GTAC2900) || defined(GTAX11000) \
+	|| defined(RTCONFIG_BCMLEDG) \
+	|| defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) \
+	|| defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) \
+	|| defined(GS7) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GTBE96_AI)
+	{"AuraRGB", "light_effect/light_effect.html", "<rt><gt>light_effect/light_effect_rog.css<white>light_effect/light_effect_white.css"},
 	{"AuraRGB_preview", "light_effect/light_effect_pre.html", "<rt>"},
 #endif
 	{"Tencent", "game_accelerator_tencent.html", "<rt>"},
@@ -365,7 +369,7 @@ struct RWD_MAPPING_TABLE rwd_mapping_t[] =
 #endif
 #if defined(RTCONFIG_BWDPI) || defined(RTCONFIG_HNS)
 	{"AiProtection_MALS", "AiProtection_MaliciousSitesBlocking_m.asp", "<rt>"},
-	{"AiProtection_VP", "AiProtection_IntrusionPreventionSystem_m.asp", "<rt>"},
+	{"AiProtection_VP", "AiProtection_IntrusionPreventionSystem_m.asp", "<rt><white>css/adaptive_mobile_WHITE.css"},
 	{"AiProtection_CC", "AiProtection_InfectedDevicePreventBlock_m.asp", "<rt>"},
 #endif
 	{"VPN_Fusion", "VPN/vpnc.html", "<rt><gt>VPN/vpncGT.css<tuf>VPN/vpncTUF.css<white>VPN/vpncWHITE.css"},
@@ -798,6 +802,7 @@ struct REPLACE_PRODUCTID_S replace_productid_t[] =
 	{"RP-BE58", "小飞侠组网超人 WiFi7", "CN"},
 	{"GS7_Pro", "ROG 魔盒 Pro", "CN"},
 	{"TUF_3600_V2", "TUF GAMING 小旋风 V2 WiFi7", "CN"},
+	{"GS-BE7200X", "ROG 魔盒 X", "CN"},
 	{NULL, NULL, NULL}
 };
 

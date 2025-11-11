@@ -1734,6 +1734,8 @@ void start_dnsmasq(void)
 		    "min-port=%u\n",		// min port used for random src port
 		dmservers, 1500, nvram_get_int("dns_minport") ? : 4096);
 
+	fprintf(fp, "addn-hosts=/etc/hosts\n");
+
 	/* limit number of outstanding requests */
 	{
 		int max_queries = nvram_get_int("max_dns_queries");
@@ -3334,7 +3336,7 @@ void start_rdisc6(void)
 	char *rdisc6_argv[] = { "rdisc6", "-r", RDISC6_RETRY_MAX, (char*) get_wan6face(), NULL };
 
 	if (getpid() != 1) {
-		notify_rc_and_wait_1min("start_rdisc6");
+		notify_rc_and_wait_2min("start_rdisc6");
 		return;
 	}
 
@@ -6084,6 +6086,8 @@ mcpd_conf(void)
 			proxy_ifname = "eth4.v0";
 		else if (model == MODEL_RTAX82_XD6S)
 			proxy_ifname = "eth1.v0";
+		else if (is_mxl_dual_serdes_war())
+			proxy_ifname = "eth0";
 		else
 			proxy_ifname = "eth0.v0";
 #if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
@@ -6146,6 +6150,8 @@ mcpd_conf(void)
 		}
 		else if (nvram_match("switch_wantag", "vodafone"))
 			fprintf(fp, "igmp-snooping-interfaces %s\n", "br103");
+		else if (is_mxl_dual_serdes_war())
+			fprintf(fp, "igmp-snooping-interfaces %s\n", "br0");
 		else
 #endif
 		fprintf(fp, "igmp-snooping-interfaces %s\n", "br101");
@@ -6307,7 +6313,7 @@ int
 start_acsd()
 {
 	int ret = 0;
-#if defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_HND_ROUTER_AX) || defined(GTAC5300)
+#if defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_HND_ROUTER_AX)
 #if defined(RTCONFIG_HND_ROUTER_AX)
 	char *acsd_argv[] = { "/usr/sbin/acsd2", NULL };
 #else
@@ -6328,14 +6334,10 @@ start_acsd()
 #if defined(RTCONFIG_BCM_7114)
 		ret = _eval(acsd_argv, NULL, 0, &pid);
 #else
-#if defined(RTCONFIG_HND_ROUTER_AX) || defined(GTAC5300)
 #if defined(RTCONFIG_HND_ROUTER_AX)
 		/* depending on NVRAM start the respective version */
 		if (nvram_match("acs_version", "2"))
-#elif defined(GTAC5300)
-		if (nvram_get_int("re_mode") == 1)
-#endif
-			ret = _eval(acsd_argv, NULL, 0, &pid);
+			system("/usr/sbin/acsd2");
 		/* default acsd version; to use even when the NVRAM is not set */
 		else
 #endif
@@ -7770,6 +7772,9 @@ int generate_mdns_config(void)
 #endif
 	fprintf(fp, "use-ipv4=yes\n");
 	fprintf(fp, "use-ipv6=no\n");
+#ifdef RTCONFIG_AI_SERVICE
+	fprintf(fp, "enable-dbus=no\n");
+#endif
 	fprintf(fp, "deny-interfaces=%s", nvram_safe_get("wan0_ifname"));
 #ifdef RTCONFIG_DUALWAN
 	wan1_ifname = nvram_safe_get("wan1_ifname");
@@ -8471,7 +8476,7 @@ void start_uam_srv()
 		eval("cp", UAM_JS, UAM_WEB_DIR);
 		eval("cp", BYPASS_PAGE, UAM_WEB_DIR);
 
-		if (gen_uam_srv_conf()) return;
+		// if (gen_uam_srv_conf()) return;
 		//_dprintf("%s %d\n", __FUNCTION__, __LINE__);	// tmp test;
 		if (!pids("uamsrv"))
 			_eval(lighttpd_argv, NULL, 0, &pid);
@@ -9748,9 +9753,9 @@ void chilli_config(void)
 		}
 	}*/
 	fprintf(fp, "cmdsocketport %s\n", "42424");
-#ifdef RTCONFIG_IPV6
-	if (ipv6_enabled()) fprintf(fp, "ipv6\n");
-#endif
+// #ifdef RTCONFIG_IPV6
+// 	if (ipv6_enabled()) fprintf(fp, "ipv6\n");
+// #endif
 	fprintf(fp, "tundev %s\n", "tun22");
 	fprintf(fp, "uamaliasip %d.%d.%d.%d\n", gw[0], gw[1], gw[2], gw[3]);
 	fprintf(fp, "redirssl\n");
@@ -9933,9 +9938,9 @@ void chilli_config_CP(void)
 	}*/
 	fprintf(fp, "unixipc %s\n", "chilli-cp.ipc");
 	fprintf(fp, "cmdsocketport %s\n", "42425");
-#ifdef RTCONFIG_IPV6
-	if (ipv6_enabled()) fprintf(fp, "ipv6\n");
-#endif
+// #ifdef RTCONFIG_IPV6
+// 	if (ipv6_enabled()) fprintf(fp, "ipv6\n");
+// #endif
 	fprintf(fp, "uamport %s\n", "3998");
 	fprintf(fp, "tundev %s\n", "tun23");
 	fprintf(fp, "uamaliasip %d.%d.%d.%d\n", gw[0], gw[1], gw[2], gw[3]);
@@ -10648,6 +10653,8 @@ void stop_chilli(void)
 	char *iface = NULL;
 	char ifname[32], *next = NULL;
 
+	stop_uam_srv();
+
 #ifdef	RTCONFIG_MULTILAN_CFG
 	nvram_set("captive_portal_enable", "off");
 	nvram_set("chilli_enable", "0");
@@ -10697,6 +10704,8 @@ void stop_CP(void)
 {
 	char *iface = NULL;
 	char ifname[32], *next = NULL;
+
+	stop_uam_srv();
 
 #ifdef	RTCONFIG_MULTILAN_CFG
 	nvram_set("captive_portal_adv_enable", "off");
@@ -10916,9 +10925,9 @@ void chilli_config_CPN(char *sn, char *dns1, char *dns2, char *sub_ip)
 	}*/
 	fprintf(fp, "unixipc %s\n", "chilli-cp.ipc");
 	fprintf(fp, "cmdsocketport %s\n", "42425");
-#ifdef RTCONFIG_IPV6
-	if (ipv6_enabled()) fprintf(fp, "ipv6\n");
-#endif
+// #ifdef RTCONFIG_IPV6
+// 	if (ipv6_enabled()) fprintf(fp, "ipv6\n");
+// #endif
 	fprintf(fp, "uamport %s\n", "3998");
 	fprintf(fp, "tundev %s\n", "tun23");
 	//fprintf(fp, "uamaliasip %d.%d.%d.%d\n", gw[0], gw[1], gw[2], gw[3]);
@@ -11148,9 +11157,9 @@ void chilli_confign(char *sn, char *dns1, char *dns2, char *sub_ip)
 		}
 	}*/
 	fprintf(fp, "cmdsocketport %s\n", "42424");
-#ifdef RTCONFIG_IPV6
-	if (ipv6_enabled()) fprintf(fp, "ipv6\n");
-#endif
+// #ifdef RTCONFIG_IPV6
+// 	if (ipv6_enabled()) fprintf(fp, "ipv6\n");
+// #endif
 	fprintf(fp, "tundev %s\n", "tun22");
 	//fprintf(fp, "uamaliasip %d.%d.%d.%d\n", gw[0], gw[1], gw[2], gw[3]);
 	fprintf(fp, "redirssl\n");
@@ -11383,6 +11392,7 @@ void start_CP(void)
 	int r_ornot = 0;
 	int ip_byte[4];
 	char new_net[32];
+	int sub_prefix=0;
 	
 	//get enabled cp_idx from sdn_rl
 	if(pmtl)
@@ -11412,8 +11422,9 @@ void start_CP(void)
 					sub_dlease = pmtl[i].nw_t.dhcp_lease;
 					sub_dns1 = pmtl[i].nw_t.dns[0];
 					sub_dns2 = pmtl[i].nw_t.dns[1];
+					sub_prefix = pmtl[i].nw_t.prefixlen;
 					if (sscanf(sub_ip, "%d.%d.%d.%d", &ip_byte[0], &ip_byte[1], &ip_byte[2], &ip_byte[3]) == 4) {
-						snprintf(new_net, sizeof(new_net), "%d.%d.%d.0/24", ip_byte[0], ip_byte[1], ip_byte[2]);
+						snprintf(new_net, sizeof(new_net), "%d.%d.%d.0/%d", ip_byte[0], ip_byte[1], ip_byte[2], sub_prefix);
 						nvram_set("cp_net", new_net);
 					}
 					break;
@@ -11644,6 +11655,8 @@ void start_CP(void)
                          free(nv);
         }
 
+	if (!pids("uamsrv"))
+		start_uam_srv();
 	if (!nvram_match("cp_enable", "1") && !nvram_match("hotss_enable", "1"))
 		return;
 
@@ -11750,6 +11763,7 @@ void start_chilli(void)
 	int UType = -1;
 	int ip_byte[4];
 	char new_net[32];
+	int sub_prefix=0;
 
 	//get enabled cp_idx from sdn_rl
 	if(pmtl)
@@ -11781,9 +11795,10 @@ void start_chilli(void)
 					sub_dlease = pmtl[i].nw_t.dhcp_lease;
 					sub_dns1 = pmtl[i].nw_t.dns[0];
 					sub_dns2 = pmtl[i].nw_t.dns[1];
+					sub_prefix = pmtl[i].nw_t.prefixlen;
 					_dprintf("[FUN:%s][LINE:%d]-sub_ip=%s-sub_ifname=%s-sub_dlease=%d-dns1=%s-dns2=%s-\n",__FUNCTION__,__LINE__,sub_ip,sub_mask,sub_dlease,sub_dns1,sub_dns2);
 					if (sscanf(sub_ip, "%d.%d.%d.%d", &ip_byte[0], &ip_byte[1], &ip_byte[2], &ip_byte[3]) == 4) {
-						snprintf(new_net, sizeof(new_net), "%d.%d.%d.0/24", ip_byte[0], ip_byte[1], ip_byte[2]);
+						snprintf(new_net, sizeof(new_net), "%d.%d.%d.0/%d", ip_byte[0], ip_byte[1], ip_byte[2], sub_prefix);
 						nvram_set("chilli_net", new_net);
 					}
 					break;
@@ -12007,6 +12022,9 @@ void start_chilli(void)
 		   }
                          free(nv);
         }
+
+	if (!pids("uamsrv"))
+		start_uam_srv();
 
 	//_dprintf("11\n");
 	if (!nvram_match("chilli_enable", "1") && !nvram_match("hotss_enable", "1"))
@@ -12436,7 +12454,7 @@ start_services(void)
 #else
 	start_haveged();
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
 	start_ledg();
 	start_ledbtn();
 #endif
@@ -12470,6 +12488,7 @@ start_services(void)
 	start_telnetd();
 #ifdef CONFIG_BCMWL5
 	start_eapd();
+	start_acsd();
 	start_nas();
 #elif defined(RTCONFIG_RALINK) || defined(RTCONFIG_REALTEK)
 	start_8021x();
@@ -12520,7 +12539,6 @@ start_services(void)
 #ifdef BCM_EVENTD
 	start_eventd();
 #endif
-	//start_acsd();
 #if defined(RTCONFIG_DHDAP) || defined(RTCONFIG_HND_ROUTER_AX)
 	start_dhd_monitor();
 #endif
@@ -13185,7 +13203,7 @@ stop_services(void)
 #ifdef GTAX6000
 	stop_antled();
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
 	stop_ledg();
 	stop_ledbtn();
 #endif
@@ -13305,7 +13323,7 @@ stop_services_mfg(void)
 #ifdef GTAX6000
 	stop_antled();
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
 	stop_ledg();
 	stop_ledbtn();
 #endif
@@ -14427,7 +14445,7 @@ void restore_config_before_firmware_downgrade()
 #endif
 }
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
 int
 start_ledg(void)
 {
@@ -15957,7 +15975,11 @@ again:
 #endif
 				  if (nvram_contains_word("rc_support", "nandflash")) {	/* RT-AC56S,U/RT-AC68U/RT-N16UHP */
 #ifdef HND_ROUTER
+#if defined(RTCONFIG_FLASH_TYPE_EMMC)
+					eval("/bin/bcm_flasher", upgrade_file);
+#else
 					eval("hnd-write", upgrade_file);
+#endif
 #elif defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
 					update_trx("/tmp/linux.trx");
 #else
@@ -16298,6 +16320,7 @@ script_allnet:
 #endif
 #ifdef CONFIG_BCMWL5
 			start_eapd();
+			start_acsd();
 			start_nas();
 #elif defined RTCONFIG_RALINK
 			start_8021x();
@@ -16330,7 +16353,6 @@ script_allnet:
 #ifdef BCM_EVENTD
 			start_eventd();
 #endif
-			start_acsd();
 #if defined(RTCONFIG_DHDAP) || defined(RTCONFIG_HND_ROUTER_AX)
 			start_dhd_monitor();
 #endif
@@ -16539,6 +16561,7 @@ script_allnet:
 #endif
 #ifdef CONFIG_BCMWL5
 			start_eapd();
+			start_acsd();
 			start_nas();
 #elif defined RTCONFIG_RALINK
 			start_8021x();
@@ -16571,7 +16594,6 @@ script_allnet:
 #ifdef BCM_EVENTD
 			start_eventd();
 #endif
-			start_acsd();
 #if defined(RTCONFIG_DHDAP) || defined(RTCONFIG_HND_ROUTER_AX)
 			start_dhd_monitor();
 #endif
@@ -16829,6 +16851,7 @@ script_allnet:
 #endif
 #ifdef CONFIG_BCMWL5
 			start_eapd();
+			start_acsd();
 			start_nas();
 #elif defined RTCONFIG_RALINK
 			start_lan_wl();
@@ -16865,7 +16888,6 @@ script_allnet:
 #ifdef BCM_EVENTD
 			start_eventd();
 #endif
-			start_acsd();
 #if defined(RTCONFIG_DHDAP) || defined(RTCONFIG_HND_ROUTER_AX)
 			start_dhd_monitor();
 #endif
@@ -17516,6 +17538,7 @@ check_ddr_done:
 			lanaccess_wl();
 #endif
 			start_eapd();
+			start_acsd();
 			start_nas();
 			start_wps();
 #ifdef RTCONFIG_NOTIFICATION_CENTER
@@ -17545,7 +17568,6 @@ check_ddr_done:
 #ifdef BCM_EVENTD
 			start_eventd();
 #endif
-			start_acsd();
 #if defined(RTCONFIG_DHDAP) || defined(RTCONFIG_HND_ROUTER_AX)
 			start_dhd_monitor();
 #endif
@@ -21031,7 +21053,7 @@ _dprintf("test 2. turn off the USB power during %d seconds.\n", reset_seconds[re
         if (action & RC_SERVICE_START) start_alt_watchdog();
     }
 // end of add
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
 	else if (strcmp(script, "ledg") == 0)
 	{
 		if (action & RC_SERVICE_STOP) stop_ledg();
@@ -21965,6 +21987,11 @@ void start_amas_lldpd(void)
 		else
 		{
 			strlcpy(ifnames, nvram_safe_get("wired_ifnames"), sizeof(ifnames));
+			if(access_point_mode())
+			{
+				strlcat(ifnames, " ", sizeof(ifnames));
+				strlcat(ifnames, nvram_safe_get("eth_ifnames"), sizeof(ifnames));
+			}
 		}
 		foreach(word, ifnames, next)
 		{

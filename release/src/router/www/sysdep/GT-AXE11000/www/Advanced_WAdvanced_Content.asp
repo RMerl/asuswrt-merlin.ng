@@ -720,6 +720,7 @@ function initial(){
 		if(document.form.wl_nmode_x.value == '0' || document.form.wl_nmode_x.value == '8'){
 			if (based_modelid != 'RT-AX92U' || (wl_unit_value != '0' && wl_unit_value != '1')) {
 				$('#ofdma_field').show();
+				document.getElementById("wl_MU_MIMO_field").style.display = "none";
 				if(wl_11ax == '0'){
 					document.form.wl_ofdma.value = 0;
 					document.form.wl_ofdma.disabled = true;
@@ -729,6 +730,7 @@ function initial(){
 		}
 		else if(document.form.wl_nmode_x.value == '9'){
 			$('#ofdma_field').show();
+			document.getElementById("wl_MU_MIMO_field").style.display = "none";
 			if(wl_11ax == '0'){
 				document.form.wl_ofdma.value = 0;
 				document.form.wl_ofdma.disabled = true;
@@ -1092,6 +1094,19 @@ function applyRule(){
 			})
 		}
 
+		if(ofdma_support){
+			if(document.form.wl_ofdma.value == '3' || document.form.wl_ofdma.value == '4'){
+				document.form.wl_mumimo.value = '1';
+			}	
+		}
+
+		if(document.form.wl_plcphdr.value == "0"){
+			document.form.wl_rateset.value = "ofdm";
+		}
+		else if(document.form.wl_plcphdr.value){
+			document.form.wl_rateset.value = "default";
+		}
+		
 		showLoading();
 		setTimeout(function(){document.form.submit()}, 500);
 	}
@@ -1837,6 +1852,7 @@ function wifi7_mode(obj){
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(3,20);"><#WLANConfig11n_PremblesType_itemname#></a></th>
 						<td>
 						<select name="wl_plcphdr" class="input_option">
+							<option value="0" <% nvram_match("wl_plcphdr", "0", "selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
 							<option value="long" <% nvram_match("wl_plcphdr", "long", "selected"); %>><#WLANConfig11n_PremblesType_long#></option>
 							<option value="short" <% nvram_match("wl_plcphdr", "short", "selected"); %>><#WLANConfig11n_PremblesType_short#></option>
 <!-- auto mode applicable for STA only
@@ -2040,7 +2056,8 @@ function wifi7_mode(obj){
 									<option value="0" <% nvram_match("wl_ofdma", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
 									<option value="1" <% nvram_match("wl_ofdma", "1","selected"); %>>DL OFDMA only</option>
 									<option value="2" <% nvram_match("wl_ofdma", "2","selected"); %>>DL/UL OFDMA</option>
-									<option value="3" <% nvram_match("wl_ofdma", "3","selected"); %>>DL/UL OFDMA + MU-MIMO</option>
+									<!--option value="4" <% nvram_match("wl_ofdma", "4","selected"); %>>DL/UL OFDMA + DL MU-MIMO</option-->
+									<option value="3" <% nvram_match("wl_ofdma", "3","selected"); %>>DL/UL OFDMA + DL/UL MU-MIMO</option>
 								</select>
 								<span id="ofdma_hint" style="margin-left:4px;display:none">*Need to enable <a href="Advanced_Wireless_Content.asp" style="color:#FC0;text-decoration:underline;">802.11ax / WiFi 6 mode</a></span>
 							</div>

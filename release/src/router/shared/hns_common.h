@@ -13,7 +13,7 @@
 #define UFWD_TIMEOUT        20
 #define UFWD_APP_TIMEOUT    "3600"
 #define UFWD_USER_TIMEOUT   "3600"
-#define UFWD_NFQ_MARK       "0x80000000"
+#define UFWD_NFQ_MARK       "0x40000000"
 #define UFWD_CPUNUM         TMP_HNS"CPUNUM"
 #define UFWD_HNS_PATH       "/usr/hns/"
 #define UFWD_WAITING        10
@@ -82,13 +82,32 @@ enum {
 #define HNS_DEBUG_JFFS      "/jffs/HNS_DEBUG"
 #define HNS_DBG(fmt,args...) \
 	if(f_exists(HNS_DEBUG) > 0 || f_exists(HNS_DEBUG_JFFS) > 0) { \
-		printf("[HNS][%s:(%d)] "fmt, __FUNCTION__, __LINE__, ##args); \
+		_dprintf("[HNS][%s:(%d)] "fmt, __FUNCTION__, __LINE__, ##args); \
 	}
 
+#define HNS_DB_DEBUG        "/tmp/HNS_DB_DEBUG"
+#define HNS_DB_DEBUG_JFFS   "/jffs/HNS_DB_DEBUG"
 #define HNS_DB_DBG(fmt,args...) \
-	if(nvram_get_int("hns_debug")) { \
-		printf("[HNS_DB][%s:(%d)] "fmt, __FUNCTION__, __LINE__, ##args); \
+	if(nvram_get_int("hns_debug") || f_exists(HNS_DB_DEBUG) > 0 || f_exists(HNS_DB_DEBUG_JFFS) > 0) { \
+		_dprintf("[HNS_DB][%s:(%d)] "fmt, __FUNCTION__, __LINE__, ##args); \
 	}
+
+typedef enum {
+	HNS_DPI_MALS = 0,
+	HNS_DPI_VP,
+	HNS_DPI_CC,
+	HNS_WEBS_FILTER,
+	HNS_WEB_HISTORY,
+	HNS_ADAPTIVE_QOS,
+	HNS_FEATURE_MAX
+} hnsFeature_e;
+
+struct hnsSupport_t {
+	char *model;
+	int feature[HNS_FEATURE_MAX];
+};
+
+extern int HNSisSupport(const char *name);
 
 /* HNS services */
 extern void disable_hns_setting(void);
@@ -106,6 +125,7 @@ extern void wan_start_hns_engine(int wan_unit);
 extern int check_hns_switch();
 extern int check_hns_setting();
 extern void check_hns_alive_service();
+extern int HNSisSupport(const char *name);
 
 /* HNS DB */
 extern void exe_hns_history();

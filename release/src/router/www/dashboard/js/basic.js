@@ -127,7 +127,13 @@ function genLanguageList() {
 
     return code;
 }
-
+const menuSDNNaming = (() => {
+	if (isSupport("sdn_mwl")) return `<#Network#>`;
+	if (!isSupport("mtlancfg")) return `<#Guest_Network#>`;
+	if (isSupport("BUSINESS")) return `<#GuestNetwork_SDN_title#>`;
+	if (isSupport("SMART_HOME_MASTER_UI")) return `<#Guest_Network#>`;
+	return `<#GuestNetwork_PRO_title#>`;
+})();
 var menuList = [
 /*
 	{
@@ -161,7 +167,7 @@ var menuList = [
 		divide: false,
 	},
 	{
-		name: `<#GuestNetwork_SDN_title#>`,
+		name: menuSDNNaming,
 		icon: "icon-SDN",
 		url: "sdn",
 		clicked: false,
@@ -280,7 +286,7 @@ if(system.currentOPMode.id != "RT"){
 			divide: false,
 		},
 		{
-			name: `<#GuestNetwork_SDN_title#>`,
+			name: menuSDNNaming,
 			icon: "icon-SDN",
 			url: "sdn",
 			clicked: false,
@@ -577,7 +583,7 @@ if (http_autologout != 0) {
         clearTimeout(oInactivityTimerId);
         oInactivityTimerId = setTimeout(() => {
             location.href = '/Logout.asp';
-        }, http_autologout * 10 * 1000);
+        }, http_autologout * 60 * 1000);
     }
 
     document.addEventListener("DOMContentLoaded", () => {

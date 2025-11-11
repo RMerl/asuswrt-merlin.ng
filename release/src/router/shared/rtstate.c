@@ -1121,7 +1121,7 @@ int get_gate_num(void)
 		strncpy(wan_gate, nvram_pf_safe_get(prefix, "gateway"), 32);
 
 		// when wan_down().
-#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+#if defined(RTCONFIG_BCMARM)
 		if(!is_phy_connect2(unit))
 			continue;
 #else

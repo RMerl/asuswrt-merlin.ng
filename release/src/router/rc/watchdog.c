@@ -3826,8 +3826,10 @@ void btn_check(void)
 #if (((defined(RTCONFIG_LED_BTN) || !defined(RTCONFIG_WIFI_TOG_BTN)) && !defined(RTCONFIG_QCA)) && !defined(RTAX82U) && !defined(DSL_AX82U) && !defined(GSAX3000) && !defined(GSAX5400) && !defined(TUFAX5400)) && !defined(GTAX6000) && !defined(GT10) && !defined(RTAX82U_V2) && !defined(TUFAX5400_V2) && !defined(EBG15) && !defined(EBG19)
 	LED_status_old = LED_status;
 #if !defined(RTCONFIG_LED_BTN) && !defined(RTCONFIG_WIFI_TOG_BTN)
+#ifndef SW_LEDBTN
 	LED_status = nvram_match("btn_ez_radiotoggle", "0") && nvram_match("btn_ez_mode", "1") &&
 		     button_pressed(BTN_WPS);
+#endif
 #else
 	LED_status = button_pressed(BTN_LED);
 #endif
@@ -3877,6 +3879,7 @@ void btn_check(void)
 		}
 	}
 #elif defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+#ifndef SW_LEDBTN
 	if (!nvram_get_int("AllLED") && LED_status_first)
 	{
 		LED_status_first = 0;
@@ -3896,6 +3899,7 @@ void btn_check(void)
 			LED_status_on = 1 - LED_status_on;
 	}
 	else
+#endif
 		LED_status_changed = 0;
 #endif
 
@@ -6648,6 +6652,9 @@ void fake_wifi_led(void)
 	static int status_old;
 	int debug = nvram_get_int("debug_fake_wifi_led");
 
+	if (!nvram_get_int("AllLED"))
+		return;
+
 	if (!nvram_get_int("wlready") ||
 		(!nvram_get_int("wl0_radio") &&
 		 !nvram_get_int("wl1_radio") &&
@@ -8909,7 +8916,6 @@ static void auto_firmware_check()
 {
 	int periodic_check = 0;
 	static time_t periodic_check_timestamp = 0;
-	static int period_retry = 0;
 	static int bootup_check_period = 3;	//wait 3 times(90s) to check
 	static int bootup_check = 1;
 	int live_update_pause = nvram_get_int("live_update_pause");
@@ -8962,21 +8968,18 @@ static void auto_firmware_check()
 	}
 	if( update_enable == 1 && local.tm_hour == update_time_hr && local.tm_min == update_time_min){ //at user defined time to check
 		periodic_check = 1;
-		period_retry = 0;
 		FAUPGRADE_DBG("update_enable : %d , update_time : %d:%d", update_enable, update_time_hr, update_time_min);
 	}
 	else if( update_enable == 0 && local.tm_hour == (2 + rand_hr) && local.tm_min == rand_min ){ //at 2 am + random offset to check
 		periodic_check = 1;
-		period_retry = 0;
 	}
 #else
 	if(local.tm_hour == (2 + rand_hr) && local.tm_min == rand_min) //at 2 am + random offset to check
 		periodic_check = 1;
-		period_retry = 0;
 #endif
-	//FAUPGRADE_DBG("periodic_check = %d, period_retry = %d, bootup_check = %d", periodic_check, period_retry, bootup_check);
+	//FAUPGRADE_DBG("periodic_check = %d, bootup_check = %d", periodic_check, bootup_check);
 #ifndef RTCONFIG_FW_JUMP
-	if (bootup_check || periodic_check || period_retry!=0)
+	if (bootup_check || periodic_check)
 #endif
 	{
 #if defined(RTCONFIG_ASUSCTRL)
@@ -8984,7 +8987,7 @@ static void auto_firmware_check()
 			asus_ctrl_sku_update();
 #endif
 #ifdef RTCONFIG_HMA
-		if (bootup_check || (periodic_check && period_retry == 0))
+		if (bootup_check || periodic_check)
 			system("hmavpn update &");
 #endif
 #ifndef RTCONFIG_FW_JUMP
@@ -9019,8 +9022,6 @@ static void auto_firmware_check()
 			}
 #endif
 		}
-
-		period_retry = (period_retry+1) % 3;
 #endif
 
 		if(!nvram_contains_word("rc_support", "noupdate")){
@@ -9039,7 +9040,6 @@ static void auto_firmware_check()
 				if(uptime() - periodic_check_timestamp > 60){
 					FAUPGRADE_DBG("fimrware update check first time");
 					periodic_check_timestamp = uptime();
-					period_retry = 0;
 				}
 				else{
 					FAUPGRADE_DBG("cfg fimrware update check once");
@@ -9074,6 +9074,8 @@ static void auto_firmware_check()
 
 			if (!get_chance_to_control()){
 				FAUPGRADE_DBG("user in use");
+				FAUPGRADE_DBG("uptime(%ld), login_timestamp(%s), app_login_timestamp(%s)", uptime(), nvram_safe_get("login_timestamp"), nvram_safe_get("app_login_timestamp"));
+				FAUPGRADE_DBG("login_ip(%s), login_ip_str(%s)", nvram_safe_get("login_ip"), nvram_safe_get("login_ip_str"));
 				return;
 			}
 
@@ -9087,7 +9089,6 @@ static void auto_firmware_check()
 			if(uptime() - periodic_check_timestamp > 60){
 				FAUPGRADE_DBG("fimrware update check first time");
 				periodic_check_timestamp = uptime();
-				period_retry = 0; //stop retry
 			}
 			else{
 				FAUPGRADE_DBG("fimrware update check once");
@@ -11323,8 +11324,11 @@ void watchdog(int sig)
 	mem_chk_period = nvram_get_int("mem_chk_period");
 	if (mem_chk_period) {
 		mem_chk = (mem_chk + 1) % mem_chk_period ;
-		if (!mem_chk)
+		if (!mem_chk) {
+#ifdef HND_ROUTER
 			memleakdbg();
+#endif
+		}
 	}
 
 #if !defined(RTCONFIG_BCM_MFG) && (defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(DSL_AX82U) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI))

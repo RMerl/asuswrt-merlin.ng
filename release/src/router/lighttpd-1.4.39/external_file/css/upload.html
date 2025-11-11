@@ -24,14 +24,14 @@ function adjustLayout(){
 }
 
 $("document").ready(function() {
-	var vars = getUrlVars();
+	
 	document.oncontextmenu = function() {return false;};
 	
 	//var this_upload_total = 0;
-	var this_url = vars["u"];
+	var this_url = getUrlVar("u");
 	
 	//- show upload option, 0: show all, 1: show upload file, 2:show upload folder
-	var this_upload_option = vars["d"];
+	var this_upload_option = getUrlVar("d");
 	
 	var g_support_html5 = 0;
 	

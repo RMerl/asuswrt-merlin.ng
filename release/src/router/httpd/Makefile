@@ -393,6 +393,11 @@ ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PR
 LIBS += -L$(TOP)/libhostapi -lhostapi
 endif
 
+ifeq ($(RTCONFIG_AI_SERVICE),y)
+CFLAGS += -I$(TOP)/curl-7.21.7/include
+LIBS += -L$(TOP)/curl-7.21.7/lib/.libs -lcurl
+endif
+
 all: httpd #test_apps
 
 #test_apps: apps.c

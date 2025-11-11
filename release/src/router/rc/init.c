@@ -119,6 +119,8 @@
 #include <openvpn_config.h>
 #endif
 
+#include <webapi.h>
+
 #ifdef RTCONFIG_TCODE
 extern int noasusddns(void);
 #endif
@@ -594,7 +596,7 @@ misc_ioctrl(void)
 #endif
 			lan_phy_led_pinmux(0);
 #endif
-#if !defined(RTBE58U) && !defined(TUFBE3600) && defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO)
+#if !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO)
 			setLANLedOn();
 #endif
 #ifdef RTBE86U
@@ -1657,9 +1659,6 @@ restore_defaults_module(char *prefix)
 }
 
 int restore_defaults_g = 0;
-#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
-int restart_wireless_g = 0;
-#endif
 
 #ifdef RTCONFIG_USB
 #ifndef RTCONFIG_PERMISSION_MANAGEMENT
@@ -3146,6 +3145,9 @@ static void shutdn(int rb)
 #if defined(BCM6855) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(BQ16) || defined(BQ16_PRO) || defined(GTBE19000) || defined(BT10) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(RTBE88U)
 	config_jumbo_frame();
 #endif
+#if defined(RTBE88U) || defined(RTBE96U) || defined(GTBE96) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
+	ed_thresh_clear();
+#endif
 #if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 	if (f_exists("/jffs/remove_hidden_flag"))
 		mtd_erase_misc2();
@@ -4031,6 +4033,21 @@ void init_ahs_bhc_params(void)
 	{
 		//Change from B or NULL to A
 		nvram_set("ahs_bhc_log_ext", "A");
+	}
+}
+
+void init_ahs_dhcp_params(void)
+{
+	nvram_set("ahs_dhcp_sent", "0");
+	if(nvram_match("ahs_dhcp_log_ext", "A"))
+	{
+		//Change from A to B
+		nvram_set("ahs_dhcp_log_ext", "B");
+	}
+	else
+	{
+		//Change from B or NULL to A
+		nvram_set("ahs_dhcp_log_ext", "A");
 	}
 }
 #endif /* RTCONFIG_AHS */
@@ -18750,8 +18767,9 @@ int init_nvram(void)
 		update_env_bootargs_append();
 #endif
 #if defined(GTBE19000AI)
-		remove_env_mtdoops();
+		update_uboot_env();
 #endif
+		ed_thresh_override();
 		nvram_set("dhd_rnr_offload_override", "7");
 		nvram_set("lan_ifname", "br0");
 		reconfig_manual_wan_ifnames();
@@ -18864,10 +18882,10 @@ int init_nvram(void)
 			nvram_set_int("led_afc_gpio", 48|GPIO_ACTIVE_LOW);      // AFC BLUE RED
 #endif
 #if defined(GTBE19000AI)
-		nvram_set_int("ps_rst_gpio", 51|GPIO_ACTIVE_LOW);	// ⇊ external module
+		nvram_set_int("ps_rst_gpio", 51|GPIO_ACTIVE_LOW);	// ��� external module
 		nvram_set_int("ps_sop0_gpio", 71);
 		nvram_set_int("ps_sop1_gpio", 72);
-		nvram_set_int("ps_sop2_gpio", 73);	// ⇈ external module
+		nvram_set_int("ps_sop2_gpio", 73);	// ��� external module
 		nvram_set_int("ps_switch_gpio", 78);
 		nvram_set_int("btn_wake_gpio", 79);
 		nvram_set_int("pwr_usb_gpio", 59);
@@ -18914,8 +18932,9 @@ int init_nvram(void)
 		update_rf_para();
 #endif
 #if defined(GTBE96_AI)
-		remove_env_mtdoops();
+		update_uboot_env();
 #endif
+		ed_thresh_override();
 		nvram_set("lan_ifname", "br0");
 		reconfig_manual_wan_ifnames();
 		nvram_set("wl_ifnames", "wl0 wl1 wl2");
@@ -18990,10 +19009,10 @@ int init_nvram(void)
 		nvram_set_int("led_group3_blue_gpio", 15);	// sw_parallel_led_15
 #endif
 #if defined(GTBE96_AI)
-                nvram_set_int("ps_rst_gpio", 51|GPIO_ACTIVE_LOW);       // ⇊ external module
+                nvram_set_int("ps_rst_gpio", 51|GPIO_ACTIVE_LOW);       // ��� external module
                 nvram_set_int("ps_sop0_gpio", 71);
                 nvram_set_int("ps_sop1_gpio", 72);
-                nvram_set_int("ps_sop2_gpio", 73);      // ⇈ external module
+                nvram_set_int("ps_sop2_gpio", 73);      // ��� external module
                 nvram_set_int("ps_switch_gpio", 78);
                 nvram_set_int("btn_wake_gpio", 79);
                 nvram_set_int("pwr_usb_gpio", 59);
@@ -19284,6 +19303,7 @@ int init_nvram(void)
 #endif
 		update_rf_para();
 		update_env_bootargs_append();
+		ed_thresh_override();
 		nvram_set("lan_ifname", "br0");
 		reconfig_manual_wan_ifnames();
 		nvram_set("wl_ifnames", "wl0 wl1 wl2");
@@ -19358,6 +19378,7 @@ int init_nvram(void)
 		get_ext_phy_id();
 #endif
 		update_rf_para();
+		ed_thresh_override();
 		nvram_set("lan_ifname", "br0");
 		reconfig_manual_wan_ifnames();
 		nvram_set("wl_ifnames", "wl0 wl1");
@@ -19441,7 +19462,7 @@ int init_nvram(void)
 		nvram_set("eth_ifnames", nvram_get_int("lacp_enabled") ? "eth0" : "eth0 eth1");
 		nvram_set("amas_ethif_type", nvram_get_int("lacp_enabled") ? "32" : "32 8"); // 10G, 2.5G
 		nvram_set("sta_ifnames", "wl0 wl1");
-		nvram_set("wired_ifnames", nvram_get_int("lacp_enabled") ? "bond0 eth3 eth4" : "eth1 eth2 eth3 eth4");
+		nvram_set("wired_ifnames", nvram_get_int("lacp_enabled") ? "bond0 eth3 eth4" : "eth2 eth3 eth4");
 		nvram_set("eth_priority", nvram_get_int("lacp_enabled") ? "0 1 1" : "0 1 1 1 2 1"); // eth0: 10G(idx:0,prio:1,used:1) > eth1: 2.5G(idx:1,prio:2,used:1)
 		nvram_set("sta_priority", "2 0 4 1 5 1 3 1"); // 2.4G:(prio:4, used:1), 5G:(prio:3, used:1)
 
@@ -19469,26 +19490,48 @@ int init_nvram(void)
 		nvram_set("0:ledbh7", "0x7");
 		nvram_set("1:ledbh12", "0x7");
 
-		nvram_unset("0:eu_edthresh2g");
-		nvram_unset("0:ed_thresh2g");
-		nvram_unset("1:eu_edthresh5g");
-		nvram_unset("1:ed_thresh5g");
-
 		int no_dy_ed_thresh_ctrl_old = nvram_get_int("no_dy_ed_thresh_ctrl");
+		int ed_thresh_2g_old = is_EU_sku() ? nvram_get_int("0:eu_edthresh2g") : nvram_get_int("0:ed_thresh2g");
+		int ed_thresh_5g_old = is_EU_sku() ? nvram_get_int("1:eu_edthresh5g") : nvram_get_int("1:ed_thresh5g");
+
+		if (nvram_get_int("no_ed_thresh_unset") == 0) {
+			if (is_CN_sku()) {
+				nvram_unset("0:ed_thresh2g");
+				nvram_unset("1:ed_thresh5g");
+			} else if (is_EU_sku()) {
+				nvram_unset("0:eu_edthresh2g");
+				nvram_unset("1:eu_edthresh5g");
+			} else {
+				nvram_unset("0:ed_thresh2g");
+				nvram_unset("1:ed_thresh5g");
+			}
+		}
+
+#ifdef RTCONFIG_TCODE
+		config_tcode(0);
+#endif
 
 		if (ATE_BRCM_FACTORY_MODE())
 			nvram_set("no_dy_ed_thresh_ctrl", "-1");
-		else if ((!nvram_get_int("x_Setting") || nvram_get_int("ed_thresh_force") || (!re_mode() && is_CN_sku() && nvram_match("location_code", "XX")) || (re_mode() && is_CN_sku())) &&
-			strncmp(nvram_safe_get("territory_code"), "EU", 2) &&
-			strncmp(nvram_safe_get("territory_code"), "IL", 2) &&
-			strncmp(nvram_safe_get("territory_code"), "UK", 2)) {
-			nvram_set("no_dy_ed_thresh_ctrl", "-1");
-			nvram_set("0:ed_thresh2g", ED_THRESH_DBG);
-			nvram_set("1:ed_thresh5g", ED_THRESH_DBG);
+		else if (!nvram_get_int("x_Setting") ||
+			 nvram_get_int("ed_thresh_force") ||
+			(!re_mode() && is_CN_sku() && nvram_match("location_code", "XX")) ||
+			(re_mode() && (!strlen(nvram_safe_get("cfg_group")) || (is_CN_sku() && nvram_match("location_code", "XX")))) ||
+			(nvram_contains_word("rc_support", "loclist") && strncmp(nvram_safe_get("territory_code"), "AU", 2) && nvram_match("location_code", "XX"))) {
+				nvram_set("no_dy_ed_thresh_ctrl", "-1");
+				if (is_EU_sku()) {
+					nvram_set("0:eu_edthresh2g", ED_THRESH_DBG);
+					nvram_set("1:eu_edthresh5g", ED_THRESH_DBG);
+				} else {
+					nvram_set("0:ed_thresh2g", ED_THRESH_DBG);
+					nvram_set("1:ed_thresh5g", ED_THRESH_DBG);
+				}
 		} else
 			nvram_unset("no_dy_ed_thresh_ctrl");
 
-		nvram_set_int("ed_thresh_reload", (no_dy_ed_thresh_ctrl_old != nvram_get_int("no_dy_ed_thresh_ctrl")));
+		nvram_set_int("ed_thresh_reload", (no_dy_ed_thresh_ctrl_old != nvram_get_int("no_dy_ed_thresh_ctrl")) ||
+			(ed_thresh_2g_old != (is_EU_sku() ? nvram_get_int("0:eu_edthresh2g") : nvram_get_int("0:ed_thresh2g"))) ||
+			(ed_thresh_5g_old != (is_EU_sku() ? nvram_get_int("1:eu_edthresh5g") : nvram_get_int("1:ed_thresh5g"))) );
 
 		if (usb_usb3 == 1) {
 			nvram_set("xhci_ports", "2-1");
@@ -19548,7 +19591,7 @@ int init_nvram(void)
 		nvram_set("sta_ifnames", "wl0 wl1");
 		nvram_set("wired_ifnames", "eth1");
 #ifdef RTBE55
-		nvram_set("eth_priority", "0 1 1 "); // eth0: 2.5G(idx:0,prio:1,used:1)
+		nvram_set("eth_priority", "0 1 1"); // eth0: 2.5G(idx:0,prio:1,used:1)
 		nvram_set("sta_priority", "2 0 3 1 5 1 2 1"); // 2.4G:(prio:3, used:1), 5G:(prio:2, used:1)
 #else
 		nvram_set("eth_priority", "0 1 1 1 2 1"); // eth0: 2.5G(idx:0,prio:1,used:1) > vlan4094(eth1): 1G(idx:1,prio:2,used:1)
@@ -19564,41 +19607,59 @@ int init_nvram(void)
 		nvram_set("amas_lldp_iftypes", "8 4"); // 2.5G, 1G
 #endif
 #endif
+		int no_dy_ed_thresh_ctrl_old = nvram_get_int("no_dy_ed_thresh_ctrl");
+		int ed_thresh_2g_old = is_EU_sku() ? nvram_get_int("sb/1/eu_edthresh2g") : nvram_get_int("sb/1/ed_thresh2g");
+		int ed_thresh_5g_old = is_EU_sku() ? nvram_get_int("sb/0/eu_edthresh5g") : nvram_get_int("sb/0/ed_thresh5g");
 		if (nvram_get_int("no_ed_thresh_unset") == 0) {
-#if defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
 			if (is_CN_sku()) {
 				if (strlen(cfe_nvram_safe_get_raw("sb/1/ed_thresh2g")))
 					nvram_set("sb/1/ed_thresh2g", cfe_nvram_safe_get_raw("sb/1/ed_thresh2g"));
 				else
-					nvram_set_int("1:ed_thresh5g", -70);
+					nvram_set_int("sb/1/ed_thresh2g", -65);
 				if (strlen(cfe_nvram_safe_get_raw("sb/0/ed_thresh5g")))
 					nvram_set("sb/0/ed_thresh5g", cfe_nvram_safe_get_raw("sb/0/ed_thresh5g"));
 				else
 					nvram_set_int("sb/0/ed_thresh5g", -70);
-			} else
-#endif
-			{
+			} else if (is_EU_sku()) {
+				nvram_unset("sb/1/eu_edthresh2g");
+				nvram_unset("sb/0/eu_edthresh5g");
+			} else {
 				nvram_unset("sb/1/ed_thresh2g");
 				nvram_unset("sb/0/ed_thresh5g");
 			}
 		}
 
-		int no_dy_ed_thresh_ctrl_old = nvram_get_int("no_dy_ed_thresh_ctrl");
+#ifdef RTCONFIG_TCODE
+		config_tcode(0);
+#endif
 
 		if (ATE_BRCM_FACTORY_MODE())
 			nvram_set("no_dy_ed_thresh_ctrl", "-1");
-		else if (!ATE_BRCM_FACTORY_MODE() && nvram_get_int("ed_thresh_dbg") &&
-			strncmp(nvram_safe_get("territory_code"), "EU", 2) &&
-			strncmp(nvram_safe_get("territory_code"), "IL", 2) &&
-			strncmp(nvram_safe_get("territory_code"), "UK", 2) &&
-			(!nvram_get_int("x_Setting") || (re_mode() && !strlen(nvram_safe_get("cfg_group"))) || nvram_get_int("ed_thresh_force"))) {
+		else if (!nvram_get_int("x_Setting") ||
+			 nvram_get_int("ed_thresh_force") ||
+			(!re_mode() && is_CN_sku() && nvram_match("location_code", "XX")) ||
+			(re_mode() && (!strlen(nvram_safe_get("cfg_group")) || (is_CN_sku() && nvram_match("location_code", "XX")))) ||
+			(nvram_contains_word("rc_support", "loclist") && strncmp(nvram_safe_get("territory_code"), "AU", 2) && nvram_match("location_code", "XX"))) {
 			nvram_set("no_dy_ed_thresh_ctrl", "-1");
+				if (is_EU_sku()) {
+					nvram_set("sb/1/eu_edthresh2g", ED_THRESH_DBG);
+					nvram_set("sb/0/eu_edthresh5g", ED_THRESH_DBG);
+				} else {
 			nvram_set("sb/1/ed_thresh2g", ED_THRESH_DBG);
 			nvram_set("sb/0/ed_thresh5g", ED_THRESH_DBG);
-		} else
+				}
+		} else {
+#if defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
+			if (is_CN_sku() && !nvram_match("location_code", "XX"))
+				nvram_set("no_dy_ed_thresh_ctrl", "-1");
+			else
+#endif
 			nvram_unset("no_dy_ed_thresh_ctrl");
+		}
 
-		nvram_set_int("ed_thresh_reload", (no_dy_ed_thresh_ctrl_old != nvram_get_int("no_dy_ed_thresh_ctrl")));
+		nvram_set_int("ed_thresh_reload", (no_dy_ed_thresh_ctrl_old != nvram_get_int("no_dy_ed_thresh_ctrl")) ||
+			(ed_thresh_2g_old != (is_EU_sku() ? nvram_get_int("sb/1/eu_edthresh2g") : nvram_get_int("sb/1/ed_thresh2g"))) ||
+			(ed_thresh_5g_old != (is_EU_sku() ? nvram_get_int("sb/0/eu_edthresh5g") : nvram_get_int("sb/0/ed_thresh5g"))) );
 
 		nvram_set("sb/0/ledbh0", "0x99");
 		nvram_set("sb/1/ledbh0", "0x99");
@@ -19675,26 +19736,53 @@ int init_nvram(void)
 		nvram_set("amas_lldp_iftypes", "32 8"); // 10G, 2.5G
 #endif
 
-		nvram_unset("1:ed_thresh2g");
-		nvram_unset("sb/1/ed_thresh5g");
-		nvram_set("sb/0/ed_thresh6g", "-68");
-		nvram_set("sb/0/eu_edthresh6g", "-68");
-
 		int no_dy_ed_thresh_ctrl_old = nvram_get_int("no_dy_ed_thresh_ctrl");
+		int ed_thresh_2g_old = is_EU_sku() ? nvram_get_int("1:eu_edthresh2g") : nvram_get_int("1:ed_thresh2g");
+		int ed_thresh_5g_old = is_EU_sku() ? nvram_get_int("sb/1/eu_edthresh5g") : nvram_get_int("sb/1/ed_thresh5g");
+
+		if (nvram_get_int("no_ed_thresh_unset") == 0) {
+			if (is_CN_sku()) {
+				nvram_unset("1:ed_thresh2g");
+				nvram_unset("sb/1/ed_thresh5g");
+				nvram_set("sb/0/ed_thresh6g", "-68");
+			} else if (is_EU_sku()) {
+				nvram_unset("1:eu_edthresh2g");
+				nvram_unset("sb/1/eu_edthresh5g");
+				nvram_set("sb/0/eu_edthresh6g", "-68");
+			} else {
+				nvram_unset("1:ed_thresh2g");
+				nvram_unset("sb/1/ed_thresh5g");
+				nvram_set("sb/0/ed_thresh6g", "-68");
+			}
+		}
+
+#ifdef RTCONFIG_TCODE
+		config_tcode(0);
+#endif
 
 		if (ATE_BRCM_FACTORY_MODE())
 			nvram_set("no_dy_ed_thresh_ctrl", "-1");
-		else if ((!nvram_get_int("x_Setting") || nvram_get_int("ed_thresh_force") || (!re_mode() && is_CN_sku() && nvram_match("location_code", "XX")) || (re_mode() && !strlen(nvram_safe_get("cfg_group")))) &&
-			strncmp(nvram_safe_get("territory_code"), "EU", 2) &&
-			strncmp(nvram_safe_get("territory_code"), "IL", 2) &&
-			strncmp(nvram_safe_get("territory_code"), "UK", 2)) {
-			nvram_set("no_dy_ed_thresh_ctrl", "-1");
-			nvram_set("1:ed_thresh2g", ED_THRESH_DBG);
-			nvram_set("sb/1/ed_thresh5g", ED_THRESH_DBG);
+		else if (!nvram_get_int("x_Setting") ||
+			 nvram_get_int("ed_thresh_force") ||
+			(!re_mode() && is_CN_sku() && nvram_match("location_code", "XX")) ||
+			(re_mode() && (!strlen(nvram_safe_get("cfg_group")) || (is_CN_sku() && nvram_match("location_code", "XX")))) ||
+			(nvram_contains_word("rc_support", "loclist") && strncmp(nvram_safe_get("territory_code"), "AU", 2) && nvram_match("location_code", "XX"))) {
+				nvram_set("no_dy_ed_thresh_ctrl", "-1");
+				if (is_EU_sku()) {
+					nvram_set("1:eu_edthresh2g", ED_THRESH_DBG);
+					nvram_set("sb/1/eu_edthresh5g", ED_THRESH_DBG);
+					nvram_set("sb/0/eu_edthresh6g", ED_THRESH_DBG);
+				} else {
+					nvram_set("1:ed_thresh2g", ED_THRESH_DBG);
+					nvram_set("sb/1/ed_thresh5g", ED_THRESH_DBG);
+					nvram_set("sb/0/ed_thresh6g", ED_THRESH_DBG);
+				}
 		} else
 			nvram_unset("no_dy_ed_thresh_ctrl");
 
-		nvram_set_int("ed_thresh_reload", (no_dy_ed_thresh_ctrl_old != nvram_get_int("no_dy_ed_thresh_ctrl")));
+		nvram_set_int("ed_thresh_reload", (no_dy_ed_thresh_ctrl_old != nvram_get_int("no_dy_ed_thresh_ctrl")) ||
+			(ed_thresh_2g_old != (is_EU_sku() ? nvram_get_int("1:eu_edthresh2g") : nvram_get_int("1:ed_thresh2g"))) ||
+			(ed_thresh_5g_old != (is_EU_sku() ? nvram_get_int("sb/1/eu_edthresh5g") : nvram_get_int("sb/1/ed_thresh5g"))) );
 
 		nvram_set_int("led_pwr_gpio", 28);
 		nvram_set_int("led_wps_gpio", 28);
@@ -19739,6 +19827,7 @@ int init_nvram(void)
 #ifdef RTCONFIG_EXTPHY_BCM84880
 		get_ext_phy_id();
 #endif
+		update_rf_para();
 		nvram_set("lan_ifname", "br0");
 		reconfig_manual_wan_ifnames();
 		nvram_set("wl_ifnames", "wl0 wl1 wl2");
@@ -19871,25 +19960,41 @@ int init_nvram(void)
 #endif
 
 		int no_dy_ed_thresh_ctrl_old = nvram_get_int("no_dy_ed_thresh_ctrl");
-		int ed_thresh5g_old = nvram_get_int("sb/0/ed_thresh5g");
+		int ed_thresh_2g_old = is_EU_sku() ? nvram_get_int("sb/1/eu_edthresh2g") : nvram_get_int("sb/1/ed_thresh2g");
+		int ed_thresh_5g_old = is_EU_sku() ? nvram_get_int("sb/0/eu_edthresh5g") : nvram_get_int("sb/0/ed_thresh5g");
 
 		if (nvram_get_int("no_ed_thresh_unset") == 0) {
-			nvram_unset("sb/1/ed_thresh2g");
-			if (is_CN_sku())
+			if (is_CN_sku()) {
+				nvram_unset("sb/1/ed_thresh2g");
 				nvram_set_int("sb/0/ed_thresh5g", -67);
-			else
+			} else if (is_EU_sku()) {
+				nvram_unset("sb/1/eu_edthresh2g");
+				nvram_unset("sb/0/eu_edthresh5g");
+			} else {
+				nvram_unset("sb/1/ed_thresh2g");
 				nvram_unset("sb/0/ed_thresh5g");
+			}
 		}
+
+#ifdef RTCONFIG_TCODE
+		config_tcode(0);
+#endif
 
 		if (ATE_BRCM_FACTORY_MODE())
 			nvram_set("no_dy_ed_thresh_ctrl", "-1");
-		else if ((!nvram_get_int("x_Setting") || nvram_get_int("ed_thresh_force") || (!re_mode() && is_CN_sku() && nvram_match("location_code", "XX")) || (re_mode() && !strlen(nvram_safe_get("cfg_group")))) &&
-			strncmp(nvram_safe_get("territory_code"), "EU", 2) &&
-			strncmp(nvram_safe_get("territory_code"), "IL", 2) &&
-			strncmp(nvram_safe_get("territory_code"), "UK", 2)) {
-			nvram_set("no_dy_ed_thresh_ctrl", "-1");
-			nvram_set("sb/1/ed_thresh2g", ED_THRESH_DBG);
-			nvram_set("sb/0/ed_thresh5g", ED_THRESH_DBG);
+		else if (!nvram_get_int("x_Setting") ||
+			 nvram_get_int("ed_thresh_force") ||
+			(!re_mode() && is_CN_sku() && nvram_match("location_code", "XX")) ||
+			(re_mode() && (!strlen(nvram_safe_get("cfg_group")) || (is_CN_sku() && nvram_match("location_code", "XX")))) ||
+			(nvram_contains_word("rc_support", "loclist") && strncmp(nvram_safe_get("territory_code"), "AU", 2) && nvram_match("location_code", "XX"))) {
+				nvram_set("no_dy_ed_thresh_ctrl", "-1");
+				if (is_EU_sku()) {
+					nvram_set("sb/1/eu_edthresh2g", ED_THRESH_DBG);
+					nvram_set("sb/0/eu_edthresh5g", ED_THRESH_DBG);
+				} else {
+					nvram_set("sb/1/ed_thresh2g", ED_THRESH_DBG);
+					nvram_set("sb/0/ed_thresh5g", ED_THRESH_DBG);
+				}
 		} else {
 			if (is_CN_sku() && !nvram_match("location_code", "XX"))
 				nvram_set("no_dy_ed_thresh_ctrl", "-1");
@@ -19897,7 +20002,9 @@ int init_nvram(void)
 				nvram_unset("no_dy_ed_thresh_ctrl");
 		}
 
-		nvram_set_int("ed_thresh_reload", ((no_dy_ed_thresh_ctrl_old != nvram_get_int("no_dy_ed_thresh_ctrl")) || (ed_thresh5g_old != nvram_get_int("sb/0/ed_thresh5g"))));
+		nvram_set_int("ed_thresh_reload", (no_dy_ed_thresh_ctrl_old != nvram_get_int("no_dy_ed_thresh_ctrl")) ||
+			(ed_thresh_2g_old != (is_EU_sku() ? nvram_get_int("sb/1/eu_edthresh2g") : nvram_get_int("sb/1/ed_thresh2g"))) ||
+			(ed_thresh_5g_old != (is_EU_sku() ? nvram_get_int("sb/0/eu_edthresh5g") : nvram_get_int("sb/0/ed_thresh5g"))) );
 
 		nvram_set("sb/0/ledbh0", "0x99");
 		nvram_set("sb/1/ledbh0", "0x99");
@@ -19945,7 +20052,7 @@ int init_nvram(void)
 #endif
 		nvram_set("lan_ifname", "br0");
 		reconfig_manual_wan_ifnames();
-		nvram_set("wl_ifnames", "wl2 wl1 wl0");
+		nvram_set("wl_ifnames", "wl0 wl1 wl2");
 		nvram_set("wl0_vifnames", "wl0.1 wl0.2 wl0.3");
 		nvram_set("wl1_vifnames", "wl1.1 wl1.2 wl1.3");
 		nvram_set("wl2_vifnames", "wl2.1 wl2.2 wl2.3");
@@ -19975,37 +20082,113 @@ int init_nvram(void)
 #endif
 
 		int no_dy_ed_thresh_ctrl_old = nvram_get_int("no_dy_ed_thresh_ctrl");
-		int ed_thresh5g_old = nvram_get_int("1:ed_thresh5g");
+		int ed_thresh_2g_old = is_EU_sku() ? nvram_get_int("0:eu_edthresh2g") : nvram_get_int("0:ed_thresh2g");
+		int ed_thresh_5g_old = is_EU_sku() ? nvram_get_int("1:eu_edthresh5g") : nvram_get_int("1:ed_thresh5g");
+#ifdef GS7_PRO
+		int ed_thresh_6g_old = is_EU_sku() ? nvram_get_int("2:eu_edthresh5g") : nvram_get_int("2:ed_thresh5g");
+#else
+		int ed_thresh_6g_old = is_EU_sku() ? nvram_get_int("2:eu_edthresh6g") : nvram_get_int("2:ed_thresh6g");
+#endif
 
 		if (nvram_get_int("no_ed_thresh_unset") == 0) {
-			nvram_unset("0:ed_thresh2g");
 			if (is_CN_sku()) {
-				nvram_set_int("1:ed_thresh5g", -65);
-				nvram_set_int("2:ed_thresh5g", -65);
-			} else {
+				nvram_unset("0:ed_thresh2g");
+#ifdef GS7_PRO
+				if (strlen(cfe_nvram_safe_get_raw("1:ed_thresh5g")))
+					nvram_set("1:ed_thresh5g", cfe_nvram_safe_get_raw("1:ed_thresh5g"));
+				else
+					nvram_set_int("1:ed_thresh5g", -68);
+				if (strlen(cfe_nvram_safe_get_raw("2:ed_thresh5g")))
+					nvram_set("2:ed_thresh5g", cfe_nvram_safe_get_raw("2:ed_thresh5g"));
+				else
+					nvram_set_int("2:ed_thresh5g", -70);
+#else
 				nvram_unset("1:ed_thresh5g");
+				nvram_unset("2:ed_thresh6g");
+#endif
+			} else if (is_EU_sku()) {
+#ifdef GS7_PRO
+				nvram_unset("0:eu_edthresh2g");
+				nvram_unset("1:eu_edthresh5g");
+				nvram_unset("2:eu_edthresh5g");
+#else
+				if (strlen(cfe_nvram_safe_get_raw("0:eu_edthresh2g")))
+					nvram_set("0:eu_edthresh2g", cfe_nvram_safe_get_raw("0:eu_edthresh2g"));
+				else
+					nvram_set_int("0:eu_edthresh2g", -67);
+				if (strlen(cfe_nvram_safe_get_raw("1:eu_edthresh5g")))
+					nvram_set("1:eu_edthresh5g", cfe_nvram_safe_get_raw("1:eu_edthresh5g"));
+				else
+					nvram_set_int("1:eu_edthresh5g", -77);
+				if (strlen(cfe_nvram_safe_get_raw("2:eu_edthresh6g")))
+					nvram_set("2:eu_edthresh6g", cfe_nvram_safe_get_raw("2:eu_edthresh6g"));
+				else
+					nvram_set_int("2:eu_edthresh6g", -77);
+#endif
+			} else {
+				nvram_unset("0:ed_thresh2g");
+				nvram_unset("1:ed_thresh5g");
+#ifdef GS7_PRO
 				nvram_unset("2:ed_thresh5g");
+#else
+				if (strlen(cfe_nvram_safe_get_raw("2:ed_thresh6g")))
+					nvram_set("2:ed_thresh6g", cfe_nvram_safe_get_raw("2:ed_thresh6g"));
+				else
+					nvram_set_int("2:ed_thresh6g", -75);
+#endif
 			}
 		}
 
+#ifdef RTCONFIG_TCODE
+		config_tcode(0);
+#endif
+
 		if (ATE_BRCM_FACTORY_MODE())
 			nvram_set("no_dy_ed_thresh_ctrl", "-1");
-		else if ((!nvram_get_int("x_Setting") || nvram_get_int("ed_thresh_force") || (!re_mode() && is_CN_sku() && nvram_match("location_code", "XX")) || (re_mode() && !strlen(nvram_safe_get("cfg_group")))) &&
-			strncmp(nvram_safe_get("territory_code"), "EU", 2) &&
-			strncmp(nvram_safe_get("territory_code"), "IL", 2) &&
-			strncmp(nvram_safe_get("territory_code"), "UK", 2)) {
-			nvram_set("no_dy_ed_thresh_ctrl", "-1");
-			nvram_set("0:ed_thresh2g", ED_THRESH_DBG);
-			nvram_set("1:ed_thresh5g", ED_THRESH_DBG);
-			nvram_set("2:ed_thresh5g", ED_THRESH_DBG);
+		else if (!nvram_get_int("x_Setting") ||
+			 nvram_get_int("ed_thresh_force") ||
+			(!re_mode() && is_CN_sku() && nvram_match("location_code", "XX")) ||
+			(re_mode() && (!strlen(nvram_safe_get("cfg_group")) || (is_CN_sku() && nvram_match("location_code", "XX")))) ||
+			(nvram_contains_word("rc_support", "loclist") && strncmp(nvram_safe_get("territory_code"), "AU", 2) && nvram_match("location_code", "XX"))) {
+				nvram_set("no_dy_ed_thresh_ctrl", "-1");
+				if (is_EU_sku()) {
+#ifdef GS7_PRO
+					nvram_set("0:eu_edthresh2g", ED_THRESH_DBG);
+					nvram_set("1:eu_edthresh5g", ED_THRESH_DBG);
+					nvram_set("2:eu_edthresh5g", ED_THRESH_DBG);
+#else
+					nvram_set("0:eu_edthresh2g", ED_THRESH_DBG);
+					nvram_set("1:eu_edthresh5g", ED_THRESH_DBG);
+					nvram_set("2:eu_edthresh6g", ED_THRESH_DBG);
+#endif
+				} else {
+#ifdef GS7_PRO
+					nvram_set("0:ed_thresh2g", ED_THRESH_DBG);
+					nvram_set("1:ed_thresh5g", ED_THRESH_DBG);
+					nvram_set("2:ed_thresh5g", ED_THRESH_DBG);
+#else
+					nvram_set("0:ed_thresh2g", ED_THRESH_DBG);
+					nvram_set("1:ed_thresh5g", ED_THRESH_DBG);
+					nvram_set("2:ed_thresh6g", ED_THRESH_DBG);
+#endif
+				}
 		} else {
+#ifdef GS7_PRO
 			if (is_CN_sku() && !nvram_match("location_code", "XX"))
 				nvram_set("no_dy_ed_thresh_ctrl", "-1");
 			else
+#endif
 				nvram_unset("no_dy_ed_thresh_ctrl");
 		}
 
-		nvram_set_int("ed_thresh_reload", ((no_dy_ed_thresh_ctrl_old != nvram_get_int("no_dy_ed_thresh_ctrl")) || (ed_thresh5g_old != nvram_get_int("1:ed_thresh5g"))));
+		nvram_set_int("ed_thresh_reload", (no_dy_ed_thresh_ctrl_old != nvram_get_int("no_dy_ed_thresh_ctrl")) ||
+			(ed_thresh_2g_old != (is_EU_sku() ? nvram_get_int("0:eu_edthresh2g") : nvram_get_int("0:ed_thresh2g"))) ||
+			(ed_thresh_5g_old != (is_EU_sku() ? nvram_get_int("1:eu_edthresh5g") : nvram_get_int("1:ed_thresh5g"))) ||
+#ifdef GS7_PRO
+			(ed_thresh_6g_old != (is_EU_sku() ? nvram_get_int("2:eu_edthresh5g") : nvram_get_int("2:ed_thresh5g"))) );
+#else
+			(ed_thresh_6g_old != (is_EU_sku() ? nvram_get_int("2:eu_edthresh6g") : nvram_get_int("2:ed_thresh6g"))) );
+#endif
 
 		nvram_set_int("led_pwr_gpio", 10|GPIO_ACTIVE_LOW);
 		nvram_set_int("led_wps_gpio", 10|GPIO_ACTIVE_LOW);
@@ -20080,51 +20263,59 @@ int init_nvram(void)
 			nvram_set("wait_wifi", "0");
 		}
 
-		nvram_set("eth_ifnames", "eth0 vlan4094");
-		nvram_set("amas_ethif_type", "32 8");			// 10G, 2.5G
+		nvram_set("eth_ifnames", "eth0");
+		nvram_set("amas_ethif_type", "32");			// 10G
 		nvram_set("sta_ifnames", "wl2 wl1 wl0");
 		nvram_set("wired_ifnames", "eth1");
-		nvram_set("eth_priority", "0 1 1 1 2 1");		// eth0: 10G(idx:0,prio:1,used:1) > vlan4094(eth1): 2.5G(idx:1,prio:2,used:1)
+		nvram_set("eth_priority", "0 1 1");			// eth0: 10G(idx:0,prio:1,used:1)
 		nvram_set("sta_priority", "6 2 2 1 5 1 3 1 2 0 4 1");	// 6G:(index:2, prio:2, used:1), 5G:(index:1, prio:3, used:1), 2G:(index:0, prio:4, used:1)
 
 		/* interface name & type mapping for lldp */
-		nvram_set("amas_lldp_ifnames", "eth0 vlan4094");
-		nvram_set("amas_lldp_iftypes", "32 8");			// 10G, 2.5G
+		nvram_set("amas_lldp_ifnames", "eth0");
+		nvram_set("amas_lldp_iftypes", "32");			// 10G
 #endif
 
 		int no_dy_ed_thresh_ctrl_old = nvram_get_int("no_dy_ed_thresh_ctrl");
-		int ed_thresh5g_old = nvram_get_int("1:ed_thresh5g");
+		int ed_thresh_2g_old = is_EU_sku() ? nvram_get_int("0:eu_edthresh2g") : nvram_get_int("0:ed_thresh2g");
+		int ed_thresh_5g_old = is_EU_sku() ? nvram_get_int("1:eu_edthresh5g") : nvram_get_int("1:ed_thresh5g");
 
 		if (nvram_get_int("no_ed_thresh_unset") == 0) {
-			nvram_unset("0:ed_thresh2g");
-#ifdef GS7_PRO
 			if (is_CN_sku()) {
-				if (strlen(cfe_nvram_safe_get_raw("1:ed_thresh5g")))
-					nvram_set("1:ed_thresh5g", cfe_nvram_safe_get_raw("1:ed_thresh5g"));
-				else
-					nvram_set_int("1:ed_thresh5g", -68);
-				if (strlen(cfe_nvram_safe_get_raw("2:ed_thresh5g")))
-					nvram_set("2:ed_thresh5g", cfe_nvram_safe_get_raw("2:ed_thresh5g"));
-				else
-					nvram_set_int("2:ed_thresh5g", -70);
-			} else
-#endif
-			{
+				nvram_unset("0:ed_thresh2g");
 				nvram_unset("1:ed_thresh5g");
-				nvram_unset("2:ed_thresh5g");
+				nvram_unset("2:ed_thresh6g");
+			} else if (is_EU_sku()) {
+				nvram_unset("0:eu_edthresh2g");
+				nvram_unset("1:eu_edthresh5g");
+				nvram_unset("2:eu_edthresh6g");
+			} else {
+				nvram_unset("0:ed_thresh2g");
+				nvram_unset("1:ed_thresh5g");
+				nvram_unset("2:ed_thresh6g");
 			}
 		}
 
+#ifdef RTCONFIG_TCODE
+		config_tcode(0);
+#endif
+
 		if (ATE_BRCM_FACTORY_MODE())
 			nvram_set("no_dy_ed_thresh_ctrl", "-1");
-		else if ((!nvram_get_int("x_Setting") || nvram_get_int("ed_thresh_force") || (!re_mode() && is_CN_sku() && nvram_match("location_code", "XX")) || (re_mode() && !strlen(nvram_safe_get("cfg_group")))) &&
-			strncmp(nvram_safe_get("territory_code"), "EU", 2) &&
-			strncmp(nvram_safe_get("territory_code"), "IL", 2) &&
-			strncmp(nvram_safe_get("territory_code"), "UK", 2)) {
-			nvram_set("no_dy_ed_thresh_ctrl", "-1");
-			nvram_set("0:ed_thresh2g", ED_THRESH_DBG);
-			nvram_set("1:ed_thresh5g", ED_THRESH_DBG);
-			nvram_set("2:ed_thresh5g", ED_THRESH_DBG);
+		else if (!nvram_get_int("x_Setting") ||
+			 nvram_get_int("ed_thresh_force") ||
+			(!re_mode() && is_CN_sku() && nvram_match("location_code", "XX")) ||
+			(re_mode() && (!strlen(nvram_safe_get("cfg_group")) || (is_CN_sku() && nvram_match("location_code", "XX")))) ||
+			(nvram_contains_word("rc_support", "loclist") && strncmp(nvram_safe_get("territory_code"), "AU", 2) && nvram_match("location_code", "XX"))) {
+				nvram_set("no_dy_ed_thresh_ctrl", "-1");
+				if (is_EU_sku()) {
+					nvram_set("0:eu_edthresh2g", ED_THRESH_DBG);
+					nvram_set("1:eu_edthresh5g", ED_THRESH_DBG);
+					nvram_set("2:eu_edthresh6g", ED_THRESH_DBG);
+				} else {
+					nvram_set("0:ed_thresh2g", ED_THRESH_DBG);
+					nvram_set("1:ed_thresh5g", ED_THRESH_DBG);
+					nvram_set("2:ed_thresh6g", ED_THRESH_DBG);
+				}
 		} else {
 			if (is_CN_sku() && !nvram_match("location_code", "XX"))
 				nvram_set("no_dy_ed_thresh_ctrl", "-1");
@@ -20132,7 +20323,9 @@ int init_nvram(void)
 				nvram_unset("no_dy_ed_thresh_ctrl");
 		}
 
-		nvram_set_int("ed_thresh_reload", ((no_dy_ed_thresh_ctrl_old != nvram_get_int("no_dy_ed_thresh_ctrl")) || (ed_thresh5g_old != nvram_get_int("1:ed_thresh5g"))));
+		nvram_set_int("ed_thresh_reload", (no_dy_ed_thresh_ctrl_old != nvram_get_int("no_dy_ed_thresh_ctrl")) ||
+			(ed_thresh_2g_old != (is_EU_sku() ? nvram_get_int("0:eu_edthresh2g") : nvram_get_int("0:ed_thresh2g"))) ||
+			(ed_thresh_5g_old != (is_EU_sku() ? nvram_get_int("1:eu_edthresh5g") : nvram_get_int("1:ed_thresh5g"))) );
 
 		nvram_set_int("btn_wps_gpio", 6|GPIO_ACTIVE_LOW);
 		nvram_set_int("btn_rst_gpio", 18|GPIO_ACTIVE_LOW);
@@ -20218,8 +20411,6 @@ int init_nvram(void)
 		nvram_unset("sb/1/ed_thresh2g");
 		nvram_unset("sb/0/ed_thresh5g");
 
-		nvram_unset("sb/1/ed_thresh2g");
-		nvram_unset("1:ed_thresh5g");
 
 		int no_dy_ed_thresh_ctrl_old = nvram_get_int("no_dy_ed_thresh_ctrl");
 
@@ -20232,14 +20423,8 @@ int init_nvram(void)
 			nvram_set("no_dy_ed_thresh_ctrl", "-1");
 			nvram_set("sb/1/ed_thresh2g", ED_THRESH_DBG);
 			nvram_set("sb/0/ed_thresh5g", ED_THRESH_DBG);
-		} else {
-#if defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55)
-			if (is_CN_sku() && !nvram_match("location_code", "XX"))
-				nvram_set("no_dy_ed_thresh_ctrl", "-1");
-			else
-#endif
+		} else
 				nvram_unset("no_dy_ed_thresh_ctrl");
-		}
 
 		nvram_set_int("ed_thresh_reload", (no_dy_ed_thresh_ctrl_old != nvram_get_int("no_dy_ed_thresh_ctrl")));
 
@@ -22444,7 +22629,7 @@ NO_USB_CAP:
 		if(can_run_router_boost())
 			add_rc_support("router_boost");
 	}
-	/*　take out obsolete a new qos type (routerboost) and return to default aqos */
+	/*���take out obsolete a new qos type (routerboost) and return to default aqos */
 	if(nvram_get_int("qos_type") == 4)
 		nvram_set_int("qos_type", 1);
 #ifdef RTCONFIG_AMAS		
@@ -23008,7 +23193,7 @@ int init_nvram2(void)
 #endif
 #ifdef RTCONFIG_AUTO_FW_UPGRADE
 	int rand_hr, rand_min;
-	char tmp_time_str[8] = {0};
+	char tmp_time_str[35] = {0};
 #endif
 #ifdef RTCONFIG_INSTANT_GUARD
 	char ig_guest_client_list[4096] = {0};
@@ -23345,6 +23530,7 @@ int init_nvram2(void)
 #ifdef RTCONFIG_FRS_LIVE_UPDATE
 #ifdef RTCONFIG_AHS
 	init_ahs_bhc_params();
+	init_ahs_dhcp_params();
 #endif /* RTCONFIG_AHS */
 #endif /* RTCONFIG_FRS_LIVE_UPDATE */
 
@@ -23364,6 +23550,8 @@ int init_nvram2(void)
 		nvram_set("ddns_server_x", "");
 		nvram_commit();
 	}
+
+	detect_vul_scan();
 
 	return 0;
 }  // end of init_nvram2
@@ -25647,9 +25835,12 @@ logmessage("ATE", "boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),
 #if !defined(HND_ROUTER) && !defined(BLUECAVE)
 			start_vlan();
 #elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) //handle dualwan on rtkswitch/mxlswitch
+#ifdef GT7
+			config_extwan();
+#endif
 			config_switch();
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 			config_extwan();
 #endif
 #endif
@@ -26139,6 +26330,13 @@ _dprintf("%s %d turnning on power on ethernet here\n", __func__, __LINE__);
 #if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 			sync_boot_state();
 #endif
+
+#if defined(RTBE92U) && defined(AVS_EN_WAR)
+			if (nvram_match("sys_reboot_reason", "config_avs")) {
+				kill(1, SIGTERM);
+			}
+#endif
+
 			misc_ctrl_post();
 #ifdef RTCONFIG_REALTEK
 			if (nvram_match("Ate_power_on_off_enable", "0")) {	/* avoid run in test to let all led off */
@@ -26581,6 +26779,14 @@ void reconfig_manual_wan_ifnames(void) {
 							if (nvram_get_int("wans_extwan") && nvram_match("wans_lanport", "1")) {
 								add_wan_phy("eth0");
 								remove_from_list("eth0", all_ifnames, sizeof(all_ifnames));
+#if defined(GTBE19000AI) || defined(GTBE96_AI)
+							} else {
+								snprintf(wan1_ifname, sizeof(wan1_ifname), "eth%d", nvram_get_int("wans_lanport"));
+								add_wan_phy(wan1_ifname);
+								remove_from_list(wan1_ifname, all_ifnames, sizeof(all_ifnames));
+							}
+
+#else
 							} else if (nvram_match("wans_lanport", "5")) {
 								add_wan_phy("eth2");
 								remove_from_list("eth2", all_ifnames, sizeof(all_ifnames));
@@ -26589,6 +26795,7 @@ void reconfig_manual_wan_ifnames(void) {
 								remove_from_list("eth3", all_ifnames, sizeof(all_ifnames));
 							} else
 								add_wan_phy("vlan2");
+#endif
 						else if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_2G) {
 #if defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 							add_wan_phy("wl0");
@@ -27234,10 +27441,10 @@ void reconfig_manual_wan_ifnames(void) {
 					nvram_set("wan_ifnames", wan_ifname);
 				}
 				else {
-					if (nvram_get_int("wans_extwan"))
+					if (is_router_mode() && nvram_get_int("wans_extwan"))
 						nvram_set("lan_ifnames", "eth0 eth1 wl0 wl1 wl2");
 					else
-						nvram_set("lan_ifnames", "vlan4094 eth1 wl0 wl1 wl2");
+						nvram_set("lan_ifnames", "eth1 wl0 wl1 wl2");
 					nvram_set("wan_ifnames", nvram_get_int("wans_extwan") ? "vlan4094" : "eth0");
 				}
 #endif
@@ -27290,7 +27497,10 @@ void reconfig_manual_wan_ifnames(void) {
 						}
 						else if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_LAN)
 							/* set dualwan of rtkswitch(LAN) config on config_switch() */
-							if (nvram_get_int("wans_extwan") && nvram_match("wans_lanport", "1")) {
+							if ((nvram_get_int("wans_extwan") == 1) && nvram_match("wans_lanport", "1")) {
+								add_wan_phy("eth0");
+								remove_from_list("eth0", all_ifnames, sizeof(all_ifnames));
+							} else if ((nvram_get_int("wans_extwan") == 2) && nvram_match("wans_lanport", "5")) {
 								add_wan_phy("eth0");
 								remove_from_list("eth0", all_ifnames, sizeof(all_ifnames));
 							} else

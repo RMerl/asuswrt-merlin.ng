@@ -3,22 +3,21 @@
 
 #include <sqlite3.h>
 
-#define WHERESTR "%s, %i: "
-#define WHEREARG  __func__,__LINE__
+#define WHERESTR "[%28s][%25s] <<%38s>>, line %i: "
+#define WHEREARG  __FILE__,__func__,__LINE__
 
 // #define PRINT_LOG
 
 #ifdef PRINT_LOG
-#define codbg(pdb, fmt, arg...) \
+#define codbg(fmt, arg...) \
 	do { \
 		printf(""fmt"\n", ##arg);	\
 	} while (0)
 #else
-#define codbg(pdb, ...) dprintf_impl(WHEREARG, pdb, __VA_ARGS__)
+#define codbg(...) codb_dprintf_impl(WHEREARG, __VA_ARGS__)
 #endif
 
 #define LIBCODB_DEBUG_TO_FILE "/tmp/LIBCODB_DEBUG_FILE"
 
-void dprintf_impl(const char* func, size_t line, sqlite3 *pdb, const char* fmt, ...);
-
+void codb_dprintf_impl(const char* file, const char* func, size_t line, const char* fmt, ...);
 #endif

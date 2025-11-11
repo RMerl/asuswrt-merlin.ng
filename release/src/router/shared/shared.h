@@ -326,9 +326,11 @@ extern int guest_mark_calc(int guest_mark);
 #define GUEST_INIT_MARKNUM  1   /* 0x1 ~ 0xf */
 #define INITIAL_MARKNUM    16   /* 0x10 ~ 0x3f */
 #define SHIFT_BIT           5   /* 0x200 ~ 0x7e0 */
+#define LIMITER_MASK       (QOS_MASK<<SHIFT_BIT)
 #else
 #define GUEST_INIT_MARKNUM 10   /*10 ~ 30 for Guest Network. */
 #define INITIAL_MARKNUM    30   /*30 ~ X  for LAN . */
+#define LIMITER_MASK       QOS_MASK
 #endif
 
 #ifdef RTCONFIG_INTERNAL_GOBI
@@ -587,7 +589,10 @@ enum {
 #define GIF_PREFIXLEN  0x0002  /* return prefix length */
 #define GIF_PREFIX     0x0004  /* return prefix, not addr */
 
-#define EXTEND_AIHOME_API_LEVEL		22
+/*
+ * 23: Add / fine tune skip_modify_flag in apply.cgi
+ */
+#define EXTEND_AIHOME_API_LEVEL		23
 
 #define EXTEND_HTTPD_AIHOME_VER		0
 
@@ -1472,7 +1477,7 @@ enum led_id {
 	IND_BT,
 	IND_PA,
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
 	LED_GROUP1_RED,
 	LED_GROUP1_GREEN,
 	LED_GROUP1_BLUE,
@@ -3385,6 +3390,7 @@ extern int mxlswitch_LanPort_linkUp(void);
 extern int mxlswitch_LanPort_linkDown(void);
 void mxl_fw_check();
 #endif
+extern int is_mxl_dual_serdes_war(void);
 #ifdef RTCONFIG_SW_SPDLED
 extern uint32_t hnd_get_phy_speed_rc(char *ifname);
 #endif
@@ -4252,6 +4258,20 @@ static inline void swap_wanlan(phy_port_mapping *port_mapping)
 
 extern void get_phy_port_mapping(phy_port_mapping *port_mapping); // for capability use
 extern void get_usb_modem_tatus(phy_info_list *list); // for usb modem status
+
+static inline int ext_switch_exist(void)
+{
+	phy_port_mapping port_mapping;
+	int i;
+
+	get_phy_port_mapping(&port_mapping);
+	for (i = 0; i < port_mapping.count; i++) {
+		if (port_mapping.port[i].ext_port_id != -1)
+			return 1;
+	}
+
+	return 0;
+}
 #endif //RTCONFIG_NEW_PHYMAP
 
 static inline int iptv_enabled(void)
@@ -5199,7 +5219,7 @@ extern void firmware_downgrade_check(uint32_t sf);
 #define ANTLED_SCHEME_RSSI              2
 #endif
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
 enum {
 	LEDG_QIS_RUN = 1,
 	LEDG_QIS_FINISH

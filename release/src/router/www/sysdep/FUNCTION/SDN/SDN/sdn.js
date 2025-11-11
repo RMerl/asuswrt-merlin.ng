@@ -38,6 +38,12 @@ if(typeof get_wl_unit_by_band != "function"){
 if(typeof ui_lang != "string"){
 	var ui_lang = httpApi.nvramGet(["preferred_lang"]).preferred_lang;
 }
+if(typeof isSku != "function"){
+	function isSku(_ptn){
+		const ttc = httpApi.nvramGet(["territory_code"]).territory_code;
+		return (ttc.search(_ptn) == -1) ? false : true;
+	}
+}
 
 const sdn_variable = httpApi.nvramCharToAscii(["vlan_rl", "vlan_trunklist", "cp_type_rl", "vpns_rl", "sdn_rl", "mlo_bh_band", "productid", "extendno"]);
 let terms_service_template = "Welcome to our Wi-Fi service (the \"Service\"). By accessing and using this Service, you represent and acknowledge that you are of legal age, and you have read and agree to be bound by the following terms and conditions:\n1. Accessing the Service\n1.1 The Service is provided by the store (the \"Store\") for your personal use. The Store reserves the right to change or terminate the Service or change this Terms and Conditions at any time. You are responsible for reviewing this Terms and Conditions each time you use the Service.\n1.2 Access to the Service may be blocked, suspended or terminated at any time for any reason including but not limited to your violation of this Terms and Conditions or applicable laws.\n1.3 The Store does not guarantee availability to the Internet, the minimum Internet connection speeds on the network, or that the Service will be stable, fault-free, timely, reliable, operational or suitable for supporting your intended use.\n1.4 The Store does not guarantee the quality of the information on the internet. It is your responsibility to determine the validity, quality, and relevance of the information obtained.\n1.5 The Service is provided on an open and public basis and the Store cannot guarantee the security of the Wi-Fi service, you acknowledge and agree that there are inherent security risks associated with using the Service and that you do so solely at your own risk.\n2. Restrictions\nYou acknowledge and agree that when using the Service you will comply with all applicable laws and that you will not;\na. use the Service for commercial purposes;\nb. use the Service to send unsolicited bulk emails;\nc. reveal or publish proprietary or confidential information;\nd. infringe the intellectual property rights of any person;\ne. collect or harvest any information or data from the Service or the servers used to provide the Service;\nf. attempt to intercept, interfere with or decipher any transmission to or from the servers used to provide the Service;\ng. connect to \"Peer to Peer\" file sharing networks, download large files, or run any programs, services, systems, processes, or servers that may substantially degrade network performance or accessibility;\nh. use the Service to transmit, send, upload, receive, download, publish, post, distribute, disseminate, encourage or solicit receipt of any material which is abusive, defamatory, harassing, indecent, offensive, obscene, menacing, racist, pornographic, threatening, unlawful or in breach of any right of any person;\ni. use the Service to transmit, store, publish or upload any electronic material, such as viruses, malware, Trojan horses, worms ,or time bombs, which will or are likely to cause damage to, or to destroy or limit the functionality of, any computer, software, hardware, electronic device or telecommunications equipment;\nj. obtain unauthorised access to any other person's computer, email account, bank account, computer network or equipment; or\nk. use the Service to invade the privacy of another person or to cause annoyance, inconvenience or anxiety to another person.\n3. Privacy\nYou acknowledge and agree that the Service will capture and process information about the web browser type and/or operating system information used by the enabled device to determine the more effective and/or customized means of displaying the requested website on your device. And the Store will collect the IP and MAC address of the enabled device that has accessed the Wi-Fi service, once the Terms and Conditions have been agreed to.\n4. Release and Indemnity\n4.1 The Store is not liable for loss of data due to service delays or interruptions or any kind of loss or damages you may sustain as a result of your use of the Service.\n4.2 You release and discharge the Store from any liability which might arise from your use of the Service, including liability in relation to defamatory or offensive material or any breach of copyright which may occur.\n4.3 You agree to indemnify and must defend and hold harmless the Store, its employees and agents, from and against all loss, damage, liability, charge, expense (including but not limited to attorneys' fees) of any nature or kind arising from your breach of these Terms and Conditions.";
@@ -160,7 +166,21 @@ var is_QIS_flow = (function(){
 })();
 var is_cfg_ready = (cfg_clientlist.length > 0) ? true : false;
 const support_gaming = (isSupport("open_nat") && isSupport("SDN_PRIORITY")) ? true : false;
-const support_ledg_sdn = (support_gaming && isSupport("ledg")) ? true : false;
+const support_ledg_sdn = (() => {
+	if (!support_gaming || !isSupport("ledg")) {
+		return false;
+	}
+
+	const isSpecialUIMode = isSupport("SMART_HOME_MASTER_UI") || isSupport("BUSINESS");
+	if (!isSpecialUIMode) {
+		return true;
+	}
+
+	//Whitelist for isSupport("SMART_HOME_MASTER_UI")
+	const productId = decodeURIComponent(sdn_variable.productid);
+	const SUPPORTED_PRODUCTS = ['GS-BE18000', 'GS7_PRO'];
+	return SUPPORTED_PRODUCTS.includes(productId);
+})();
 const is_iOS = (()=>{
 	if(	navigator.userAgent.match(/iPhone/i) ||
 		navigator.userAgent.match(/iPod/i) ||
@@ -3694,7 +3714,11 @@ function show_popup_Wizard_Setting(_type){
 						sdn_profile.sdn_rl.sdn_name = wizard_type;
 						sdn_profile.apg_rl.ssid = $(_obj).find("#sdn_name").val();
 						if(wifi_band > 0){
-							var sec_option_id = $(_obj).find("#security_guest .switch_text_container").children(".selected").attr("data-option-id");
+							const $security_guest = $(_obj).find("#security_guest .switch_text_container");
+							const sec_option_id = $security_guest.length > 0
+								? $security_guest.children(".selected").attr("data-option-id")
+								: "pwd";
+
 							var wifi_pwd = "";
 							var wifi_auth = "psk2";
 							let wifi_auth_6G = "sae";
@@ -4035,12 +4059,12 @@ function show_popup_Wizard_Setting(_type){
 				if($(this).hasClass("on")){
 					$control_container.show();
 					let sdnTheme = '?sdn_theme=sdn_wizard&current_theme=' + theme + '&flag=enable';
-					$("#adguard_iframe").attr("src", "/adguard_dns.html" + sdnTheme)
+					$("#adguard_iframe").attr("src", "/adguard_dns.html" + sdnTheme);
 				}
 				else{
 					$control_container.hide();
 					let sdnTheme = '?sdn_theme=sdn_wizard&current_theme=' + theme + '&flag=false';
-					$("#adguard_iframe").attr("src", "/adguard_dns.html" + sdnTheme)
+					$("#adguard_iframe").attr("src", "/adguard_dns.html" + sdnTheme);
 				}
 			});
 			let $adguard_container = $("<div>").addClass("profile_setting_item").attr({"id":"container_adguard"}).css({"display":"none", "height": "550px"}).appendTo($more_config_cntr);
@@ -7951,9 +7975,9 @@ function set_apply_btn_status(_obj){
 					if(wifi_band > 0 || is_mlo_fh){
 						var sec_option_id = "pwd";
 						if(support_sec_guest)
-							sec_option_id = $(_obj).find("#security_guest .switch_text_container").children(".selected").attr("data-option-id");
+							sec_option_id = $(_obj).find("#security_guest .switch_text_container").children(".selected").attr("data-option-id") || "pwd";
 						else if(support_sec_employee)
-							sec_option_id = $(_obj).find("#security_employee .switch_text_container").children(".selected").attr("data-option-id");
+							sec_option_id = $(_obj).find("#security_employee .switch_text_container").children(".selected").attr("data-option-id") || "pwd";
 
 						const radius_idx = sdn_profile.sdn_rl.idx;
 						var wifi_pwd = "";
@@ -8740,10 +8764,6 @@ function validate_format_Wizard_Item(_obj, _type){
 			return testResult;
 		}
 	};
-	var isSku = function(_ptn){
-		var ttc = httpApi.nvramGet(["territory_code"]).territory_code;
-		return (ttc.search(_ptn) == -1) ? false : true;
-	}
 	function valid_ipv6_dhcp(str){
 		let testResult = {
 			'isError': false,
@@ -10060,7 +10080,7 @@ function get_new_sdn_profile(){
 			"lan_domain", "dhcp_dns1_x", "dhcp_dns2_x", "dhcp_wins_x", "dhcp_static_x", "dnspriv_enable", "dnspriv_profile"]);
 		var ipaddr = get_subnet_rl_new_ipaddr();
 		var ipaddr_substr = ipaddr.substr(0,ipaddr.lastIndexOf("."));
-		var ipaddr_min = ipaddr_substr + "." + "2";
+		var ipaddr_min = ipaddr_substr + "." + "1";
 		var ipaddr_max = ipaddr_substr + "." + "254";
 
 		var subnet_profile = new subnet_rl_attr();

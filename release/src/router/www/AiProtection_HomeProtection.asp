@@ -280,6 +280,17 @@ function initial(){
 		$("#vp_service_field").hide();
 	}
 
+	if(!isSupport("dpi_mals")) {
+		$("[data-group='dpi_mals']").hide();
+	}
+	if(!isSupport("dpi_cc")) {
+		$("[data-group='dpi_cc']").hide();
+	}
+	if(!isSupport("dpi_mals") && !isSupport("dpi_cc") && isSupport("dpi_vp")) {
+		$("[data-group='dpi_vp']").hide();
+		$("#tm_logo").css("margin-left", "0");
+	}
+
 	if(document.form.wrs_protect_enable.value == '1'){
 		shadeHandle('1');
 	}
@@ -1153,7 +1164,7 @@ function shadeHandle(flag){
 								<div id="samba_account"></div>
 							</td>
 						</tr>
-						<tr>
+						<tr data-group="dpi_mals">
 							<th><#AiProtection_scan_item12#> -</th>
 							<td>
 								<div id="wrs_service"></div>
@@ -1165,7 +1176,7 @@ function shadeHandle(flag){
 								<div id="vp_service"></div>
 							</td>
 						</tr>
-						<tr>
+						<tr data-group="dpi_cc">
 							<th><#AiProtection_detection_blocking#> -</th>
 							<td>
 								<div id="cc_service"></div>
@@ -1275,7 +1286,7 @@ function shadeHandle(flag){
 														<tr>
 															<td>
 																<div style="width:430px"><#AiProtection_HomeDesc2#></div>
-																<div style="width:430px">
+																<div data-group="dpi_vp" style="width:430px">
 																	<a id="faq" style="text-decoration:underline;" href="" target="_blank"><#AiProtection_title#> FAQ</a>
 																</div>
 															</td>
@@ -1283,7 +1294,7 @@ function shadeHandle(flag){
 																<div id="tm_logo" style="width:100px;height:48px;margin-left:-40px;background-image:url('images/New_ui/tm_logo.png');"></div>
 															</td>
 														</tr>
-														<tr id="scenario_tr">
+														<tr data-group="dpi_vp" id="scenario_tr">
 															<td rowspan="2">
 																<div>
 																	<img id="scenario_img" src="/images/New_ui/Home_Protection_Scenario.png">
@@ -1350,7 +1361,7 @@ function shadeHandle(flag){
 												</td>
 											</tr>
 											<tr style="height:10px;"></tr>
-											<tr class="block_bg block_line" style="height:120px;">
+											<tr data-group="dpi_mals" class="block_bg block_line" style="height:120px;">
 												<td style="border-radius:10px 0px 0px 10px;">
 													<div class="AiProtection_02"></div>
 												</td>
@@ -1455,7 +1466,7 @@ function shadeHandle(flag){
 											</tr>
 
 											<tr style="height:10px;"></tr>
-											<tr class="block_bg" style="height:120px;">
+											<tr data-group="dpi_cc" class="block_bg" style="height:120px;">
 												<td style="border-radius:10px 0px 0px 10px;">
 													<div class="AiProtection_03"></div>
 												</td>
@@ -1505,8 +1516,8 @@ function shadeHandle(flag){
 											</tr>
 										</table>
 									</div>
-									<div style="width:20%;margin:10px 0 10px 600px;border-radius:0px 10px 10px 0px;cursor:pointer;">
-                            			<input class="button_gen alert_preference" type="button" value="<#AiProtection_alert_pref#>">
+									<div data-group="dpi_vp" style="width:20%;margin:10px 0 10px 600px;border-radius:0px 10px 10px 0px;cursor:pointer;">
+										<input class="button_gen alert_preference" type="button" value="<#AiProtection_alert_pref#>">
 									</div>
 
 									<div style="width:96px;height:44px;margin: 10px 0 0 600px;background-image:url('images/New_ui/TrendMirco_logo.svg');background-size: 100%;"></div>

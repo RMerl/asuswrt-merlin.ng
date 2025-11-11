@@ -6,6 +6,8 @@ typedef unsigned long long u64;
 typedef struct disk_info disk_info_t;
 typedef struct partition_info partition_info_t;
 
+#define MAX_NVRAM_SIZE 1024
+
 #pragma pack(1) // let struct be neat by byte.
 struct disk_info{
         char *tag;

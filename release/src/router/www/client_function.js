@@ -383,6 +383,7 @@ var setClientAttr = function(){
 	this.amesh_bind_mac = "";
 	this.amesh_bind_band = "0";
 	this.sdn_idx = "0";
+	this.sdn_type = "";
 	this.ROG = false;
 }
 
@@ -455,7 +456,7 @@ function genClientList(){
 				clientList[thisClientMacAddr].type = thisClient.type;
 				clientList[thisClientMacAddr].defaultType = thisClient.defaultType;
 			}
-			
+
 			clientList[thisClientMacAddr].ip = thisClient.ip;
 			clientList[thisClientMacAddr].ip6 = typeof thisClient.ip6 === "undefined" ? "" : thisClient.ip6;
 			clientList[thisClientMacAddr].ip6_prefix = typeof thisClient.ip6_prefix === "undefined" ? "" : thisClient.ip6_prefix;
@@ -476,6 +477,7 @@ function genClientList(){
 			clientList[thisClientMacAddr].isWL = parseInt(thisClient.isWL);
 			clientList[thisClientMacAddr].is_wireless = (clientList[thisClientMacAddr].isWL > 0) ? 1 : 0;
 			clientList[thisClientMacAddr].sdn_idx = parseInt(thisClient.sdn_idx);
+			clientList[thisClientMacAddr].sdn_type = thisClient.sdn_type || "";
 
 			if(isSupport("amas"))
 				clientList[thisClientMacAddr].isGN = ((thisClient.isGN != "") ? parseInt(thisClient.isGN) : "");
@@ -1139,7 +1141,7 @@ function popClientListEditTable(event) {
 		document.getElementById("card_client_opMode").style.display = "";
 		document.getElementById("card_client_opMode").innerHTML = opModeDes[clientInfo.opMode];
 	}
-	if(clientInfo.sdn_idx > 0) {
+	if(clientInfo.sdn_idx > 0 && clientInfo.sdn_type !== "MAINFH") {
 		document.getElementById('card_client_sdnIdx').style.display = "";
 		const sdn_profile = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx == clientInfo.sdn_idx) || {};
 		const sdn_ssid = $.isEmptyObject(sdn_profile) ? "" : sdn_profile.apg_rl.ssid;

@@ -1075,6 +1075,39 @@ function resize_iframe_height(_preheight){
 		var margin_bottom = 30;
 		$(parent.document).find(".rwd_iframe").css("height", (Math.max(menu_height, container_height, pop_height) + margin_bottom));
 	}
+
+	if (isSupport("UI4")) {
+		if($(parent.document).find("#settingsWindow").length == "1"){
+			const $settingsWindow = $(parent.document).find("#settingsWindow");
+			const currentSettingsHeight = $settingsWindow[0].offsetHeight;
+
+			let hasPopup = false;
+			let actualHeight = 0;
+
+			$(".popup_container").each(function(index){
+				if($(this).css("display") == "flex"){
+					hasPopup = true;
+					actualHeight = Math.max(actualHeight, $(this)[0].scrollHeight);
+				}
+			});
+
+			if(hasPopup && actualHeight > 0){
+				if(actualHeight > currentSettingsHeight){
+					if(!window.originalSettingsWindowHeight){
+						window.originalSettingsWindowHeight = $settingsWindow.css("height") || currentSettingsHeight + 'px';
+					}
+
+					const newHeight = actualHeight + 50;
+					$settingsWindow.css("height", newHeight + "px");
+				}
+			}
+			else{
+				if(window.originalSettingsWindowHeight){
+					$settingsWindow.css("height", window.originalSettingsWindowHeight);
+				}
+			}
+		}
+	}
 }
 function showLoading_RWD(seconds, flag){
 	$("#Loading").css({"width":"", "height":""});

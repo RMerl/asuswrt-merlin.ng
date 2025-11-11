@@ -912,7 +912,7 @@ function applyRule(){
 				return false;
 		}
 
-		if(((isSupport("autowan") && autowan_enable == "1") || !use_single_default_wan()) &&
+		if(((isSupport("autowan") && autowan_enable == "1") || !use_single_default_wan_sfp()) &&
 			(document.form.switch_stb_x.value != "0" || document.form.switch_wantag.value != "none")){
 			var hint_str = `<#conflict_function_wanport_hint#>`;
 			var msg = "";
@@ -1669,14 +1669,15 @@ function get_default_wan_name(){
 	return default_wan_name;
 }
 
-function use_single_default_wan(){
+function use_single_default_wan_sfp(){
 	let _use_single_default_wan = true;
+	let _use_single_sfp = true;
 
 	if(wans_dualwan_orig.indexOf("none") == -1)
 		_use_single_default_wan = false;
 	else if(!isEmpty(eth_wan_list)){
 		$.each(eth_wan_list, function(key) {
-			if(key == "wan"){
+			if(key == "wan" || key == "sfp"){
 				let wan_obj = eth_wan_list[key];
 				if(wan_obj.hasOwnProperty("extra_settings")){
 					let extra_settings = wan_obj.extra_settings;
@@ -1685,19 +1686,21 @@ function use_single_default_wan(){
 
 					extra_setting_nvram_list = Object.keys(extra_settings);
 					current_value_list = httpApi.nvramGet(extra_setting_nvram_list, true);
-					$.each(extra_settings, function(key) {
-						if(current_value_list[key] != extra_settings[key]){
-							_use_single_default_wan = false;
+					$.each(extra_settings, function(extra_settings_key) {
+						if(current_value_list[extra_settings_key] != extra_settings[extra_settings_key]){
+							if(key == "wan")
+								_use_single_default_wan = false;
+							if(key == "sfp")
+								_use_single_sfp = false;
 							return false;
 						}
 					});
 				}
-				return false;
 			}
 		});
 	}
 
-	return _use_single_default_wan;
+	return (_use_single_default_wan || _use_single_sfp);
 }
 </script>
 </head>

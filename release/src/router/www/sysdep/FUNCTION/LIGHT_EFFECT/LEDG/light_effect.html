@@ -144,8 +144,14 @@ function initial_led_control() {
 		}
 	};
 
-	if(model_info.productid == "TUF-AX5400" || model_info.productid == "TUF-AX6000" || model_info.productid == "GS7" || model_info.productid == "GS-BE18000" || model_info.productid == "GS-BE12000" || model_info.productid == "GS7_PRO")
+	if (
+		model_info.productid == "TUF-AX5400" ||
+		model_info.productid == "TUF-AX6000" ||
+		model_info.productid == "GS7" ||
+		model_info.productid == "GS-BE7200X"
+	) {
 		$("#light_effect_setting .scheme_bg:not(#static, #breathing, #wave, #rainbow)").remove();
+	}
 
 	$light_effect_bg = $("#light_effect_bg");
 	$hue_bar = $("#hue_bar");
@@ -945,7 +951,7 @@ $(document).ready(initial_led_control);
 <div class="light_effect_setting_bg" id="light_effect_setting" mode_group="panel">
 	<div class="settings_container">
 		<div id="ledg_scheme_switch" class="setting_enable_bg">
-			<div class="text"><span>Aura RGB</span></div>
+			<div class="text"><span><#BoostKey_Aura_RGB#></span></div>
 			<div class="switch"></div>
 			<div class="schedule"></div>
 		</div>

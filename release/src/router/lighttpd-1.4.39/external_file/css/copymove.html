@@ -54,7 +54,6 @@ $("document").ready(function() {
 	
 	document.oncontextmenu = function() {return false;};
 	
-	var vars = getUrlVars();
 	var loc_lan = String(window.navigator.userLanguage || window.navigator.language).toLowerCase();		
 	var lan = ( g_storage.get('lan') == undefined ) ? loc_lan : g_storage.get('lan');
 	m.setLanguage(lan);
@@ -62,10 +61,10 @@ $("document").ready(function() {
 	$('button#cancel').text(m.getString('btn_cancel'));
 	$('#select_dest').text(m.getString('title_select_dest'));
 	
-	g_action = vars["a"];
-	g_src_url = vars["f"]; //- source file path
+	g_action = getUrlVar("a");
+	g_src_url = getUrlVar("f"); //- source file path
 	
-	var src_name = vars["o"]; //- source file name
+	var src_name = getUrlVar("o"); //- source file name
 	g_src_files = src_name.split(",");
 	$('#jstree_main').jstree({
 		"core" : {

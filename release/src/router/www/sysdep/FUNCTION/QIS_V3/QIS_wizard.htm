@@ -23,7 +23,7 @@
 		<script>
 			let urlParameter = new URLSearchParams(window.location.search);
 
-			if(isSupport("TS_UI"))
+			if(isSupport("TS_UI") || isSupport("GS7_MIKU"))
 				$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/css/difference.css">');
 
 			$(document).ready(function(){
@@ -706,7 +706,6 @@
 					</div>
 				</div>
 			</div>
-			<div class="hidden_mask popup_element"></div>
 			<div class="popup_container popup_element defpass qisView">
 				<div>
 					<div class="title_container">
@@ -2544,7 +2543,6 @@
 					</div>
 				</div>
 			</div>
-			<div class="hidden_mask popup_element"></div>
 			<div class="popup_container popup_element defpass qisView">
 				<div>
 					<div class="title_container">

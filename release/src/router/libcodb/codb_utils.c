@@ -8,7 +8,51 @@
 #include "log.h"
 #include <shared.h>
 
+static time_t get_gmt_time_from_local(time_t local_time) {
+    struct tm local_tm;
+
+    // Convert local time to a `struct tm`
+    if (localtime_r(&local_time, &local_tm) == NULL) {
+        return -1; // Return error if conversion fails
+    }
+
+    // Use `mktime` to calculate the GMT time by adjusting for the timezone offset
+    time_t gmt_time = mktime(&local_tm) - timezone;
+
+    return gmt_time;
+}
+
+static char* format_timestamp_to_string(time_t timestamp, char* buffer, size_t buffer_size) {
+
+    //- This function formats a given timestamp into a human-readable string format.
+    //- The format used is "YYYY-MM-DD HH:MM:SS".
+    //- The function takes a time_t timestamp and a char buffer as input.
+
+    if (buffer==NULL || buffer_size == 0) {
+        return NULL;
+    }
+    
+    struct tm time_info;
+
+    if (localtime_r(&timestamp, &time_info) == NULL) {
+        return NULL;
+    }
+
+    memset(buffer, 0, buffer_size);
+
+    if (strftime(buffer, buffer_size, "%Y-%m-%d %H:%M:%S", &time_info) == 0) {
+        return NULL;
+    }
+
+    return buffer;
+}
+
 static time_t get_zero_time_on_day(unsigned long ts){
+
+    //- This code defines a static function get_zero_time_on_day, 
+    //- whose purpose is to calculate the "zero time" of a certain day 
+    //- (that is, the start time of the day, usually midnight 00:00)
+
     time_t current_time, zero_time;
 
     if(ts > 0)
@@ -20,7 +64,31 @@ static time_t get_zero_time_on_day(unsigned long ts){
     return zero_time;
 }
 
-static int get_tmp_db_path(const char* db_name, char* db_file_path) {
+static time_t get_zero_time_on_day2(unsigned long ts){
+
+    //- This code defines a static function get_zero_time_on_day, 
+    //- whose purpose is to calculate the "zero time" of a certain day 
+    //- (that is, the start time of the day, usually midnight 00:00)
+
+    time_t current_time, zero_time;
+    struct tm *time_info;
+
+    if(ts > 0)
+        current_time = ts;
+    else
+        current_time = time(NULL);
+    
+    time_info = localtime(&current_time);
+
+    // 將時間結構中的小時、分鐘和秒設為 0
+    time_info->tm_hour = 0;
+    time_info->tm_min = 0;
+    time_info->tm_sec = 0;
+    
+    return mktime(time_info);
+}
+
+static int get_tmp_db_path(const char* db_name, char* db_file_path, int path_len) {
 
     if (db_name==NULL || db_file_path==NULL) {
         return 0;
@@ -28,9 +96,9 @@ static int get_tmp_db_path(const char* db_name, char* db_file_path) {
 
     char db_path[12] = "/tmp/.diag/";
 
-    strncpy(db_file_path, db_path, strlen(db_path));
-    strncat(db_file_path, db_name, strlen(db_name));
-    strncat(db_file_path, ".db", 3);
+    snprintf(db_file_path, path_len, "%s", db_path);
+    strlcat(db_file_path, db_name, path_len);
+    strlcat(db_file_path, ".db", path_len);
 
     return 1;
 }
@@ -61,7 +129,12 @@ static int get_backup_db_path_by_datetime(const char* db_name, const char* db_ve
         return 0;
     }
 
-    time_t timestamp_day = get_zero_time_on_day(query_datetime);
+    //- MUST: local to GMT time
+    time_t gmt_time = get_gmt_time_from_local(query_datetime);
+    // fprintf(stdout, "GMT to local time %d to %d\n", query_datetime, gmt_time);
+
+    time_t timestamp_day = get_zero_time_on_day(gmt_time);
+    fprintf(stdout, "Get db name [%d] from query_datetime [%d]\n", timestamp_day, gmt_time);
     
     // file format
     // 1632960000_sys_detect_1.0.db
@@ -251,10 +324,10 @@ static sql_column_prototype_t* parse_query_columns_data(char* data, int data_cou
 int codb_test() {
 
     fprintf(stderr, "run codb_test\n");
-
+    
     int res = 0;
 
-    char content[50] = "sta_mac;txtps;txpr;data_time;sta_active";
+    char content[50] = "data_id;ifname;mac;noise;data_time;glitch";
 
     int column_count = 0;
     char* tmp_content = strdup(content);
@@ -267,14 +340,16 @@ int codb_test() {
         free(tmp_content);
     }
 
-    int query_duration = 7200; //- 2 hour
-    int query_end_time = 1641690995; //- GMT: 2022年1月9日Sunday 01:16:35
-    // int query_end_time = (unsigned)time(NULL);
+    int query_duration = 86400*2; //- 2 days
+    // int query_end_time = 1641690995; //- GMT: 2022年1月9日Sunday 01:16:35
+    int query_end_time = (unsigned)time(NULL);
     int query_start_time = query_end_time - query_duration;
-    int qyery_limit = 0;
+    int qyery_limit = 1;
 
-    char filter_data[100] = "node_mac>txt>04:D9:F5:B5:93:E0>0;sta_mac>txt>04:D9:F5:B5:94:78>0;sta_active>int>0>2";
-    
+    char filter_data[100] = "";
+    // char order_column_name[10] = "data_id";
+    char order_by[10] = "DESC";
+
     int filter_count = 0;
     char* pch2 = strdup(filter_data);
     pch2 = strtok(pch2, ";");
@@ -288,9 +363,13 @@ int codb_test() {
 
     json_object *retObj = NULL;
 
-    res = codb_content_query_json_field("stainfo", column_count, content, filter_count, filter_data, query_start_time, query_end_time, qyery_limit, &retObj);
+    query_start_time= 0;
+    query_end_time=0;
+
+    // res = codb_content_query_json_field("wifi_detect", column_count, content, filter_count, filter_data, query_start_time, query_end_time, order_by, qyery_limit, &retObj);
     // res = codb_content_query_duration_json_field("stainfo", column_count, content, filter_count, filter_data, query_start_time, query_end_time, 60, &retObj);
-    
+    res = codb_latest_content_query_json_field("wifi_detect", column_count, content, filter_count, filter_data, &retObj);
+
     if (res==CODB_OK && retObj!=NULL) {
         fprintf(stderr, json_object_to_json_string(retObj));
     }
@@ -416,7 +495,53 @@ int codb_test() {
     return 0;
 }
 
-int codb_content_query_json_field(char* db_name, int columns_count, char* columns_name, int filter_count, char* filter_data, int start, int end, int limit, json_object **retJsonObj) {
+int query_database(void *pdb, 
+                   int match_and_columns_count, char **match_and_columns,
+                   int match_or_columns_count, char **match_or_columns,
+                   int columns_count, char **query_columns, unsigned long query_start,
+                   unsigned long query_end, const char *order, int limit,
+                   json_object *resultValueArrayObj, int *total_ret_rows) {
+    int ret_rows = 0;
+    char **result = NULL;
+
+    if (pdb != NULL) {
+        int ret = cosql_get_column_values(pdb,
+                                          match_and_columns_count, match_and_columns,
+                                          match_or_columns_count, match_or_columns,
+                                          columns_count, query_columns,
+                                          query_start,
+                                          query_end,
+                                          "data_id",
+                                          order,
+                                          limit,
+                                          &ret_rows,
+                                          &result);
+
+        for (int i = 0; i < ret_rows; i++) {
+            json_object *fieldValueArrayObj = json_object_new_array();
+
+            for (int j = 0; j < columns_count; j++) {
+                int start_index = columns_count + i * columns_count;
+                int array_index = start_index + j;
+                char *column_value = result[array_index];
+                json_object *new_obj = json_object_new_string(column_value);
+                json_object_array_add(fieldValueArrayObj, new_obj);
+            }
+
+            json_object_array_add(resultValueArrayObj, fieldValueArrayObj);
+        }
+
+        if (result != NULL) {
+            cosql_free_column_values(result);
+        }
+
+        *total_ret_rows += ret_rows;
+    }
+
+    return ret_rows;
+}
+
+int codb_content_query_json_field(char* db_name, int columns_count, char* columns_name, int filter_count, char* filter_data, int start, int end, char* order_by, int limit, json_object **retJsonObj) {
     
     if (db_name==NULL || columns_name==NULL) {
         return CODB_ERROR;
@@ -426,9 +551,19 @@ int codb_content_query_json_field(char* db_name, int columns_count, char* column
         return CODB_ERROR;
     }
 
+    time_t current_time = time(NULL);
+
+    if (start==0) {
+        start = current_time - 86400;
+    }
+
+    if (end==0) {
+        end = current_time;
+    }
+    
     sqlite3* pdb_tmp = NULL;
     char tmp_db_file_path[MAX_FILE_PATH] = "\0";
-    if (get_tmp_db_path(db_name, tmp_db_file_path)==1) {
+    if (get_tmp_db_path(db_name, tmp_db_file_path, MAX_FILE_PATH)==1) {
         pdb_tmp = cosql_open(tmp_db_file_path);
         
         //cosql_enable_debug(pdb_tmp, 1);
@@ -446,39 +581,15 @@ int codb_content_query_json_field(char* db_name, int columns_count, char* column
 
     char db_version[20] = "1.0,2.0,3.0";
     char backup_db_file_path[MAX_FILE_PATH] = "\0";
+    char buffer_f_t_s[64] = "\0";
+    char buffer_f_t_e[64] = "\0";
     sqlite3* pdb_backup = NULL;
     ///////////////////////////////////////////////////////////////
 
     sql_column_prototype_t* query_columns = parse_query_columns_data(columns_name, columns_count);
 
-    // sql_column_prototype_t* query_columns = malloc(sizeof(sql_column_prototype_t)*columns_count);
-    // sql_column_prototype_t* query_columns_idx = query_columns;
-    // char* pch = strdup(columns_name);
-    // pch = strtok(pch, ";");
-    // while (pch!=NULL) {
-
-    //     int len = strlen(pch);
-
-    //     //- column name
-    //     query_columns_idx->name = (char *)malloc(sizeof(char)*len);
-    //     memset(query_columns_idx->name, 0, len);
-    //     strncpy(query_columns_idx->name, pch, len);
-
-    //     //- column type
-    //     query_columns_idx->type = COLUMN_TYPE_TEXT;
-        
-    //     pch = strtok(NULL, ";");
-
-    //     // fprintf(stderr, "query_columns->name=%s\n", query_columns->name);
-
-    //     query_columns_idx++;
-    // }
-
-    // if (pch!=NULL) {
-    //     free(pch);
-    // }
-
-    fprintf(stdout, "columns_count=%d, columns_name=%s, start=%d, end=%d\n", columns_count, columns_name, start, end);
+    codbg("Enter codb_content_query_json_field, query columns are %s, order_by is %s, start=%s, end=%s", 
+        columns_name, order_by, format_timestamp_to_string(start, buffer_f_t_s, sizeof(buffer_f_t_s)), format_timestamp_to_string(end, buffer_f_t_e, sizeof(buffer_f_t_e)));
     ///////////////////////////////////////////////////////////////
 
     int i, j, start_index, array_index, ret_rows = 0, count=0;
@@ -488,55 +599,27 @@ int codb_content_query_json_field(char* db_name, int columns_count, char* column
     json_object *resultValueArrayObj = json_object_new_array();
 
     int total_ret_rows = 0;
-    int query_start = start;
+    int query_start = 0;
     int query_end = 0;
-    int query_all_data = (start==0&&end==0) ? 1 : 0;
+    int query_limit = limit;
+    int order_desc = strncmp(order_by, "DESC", 4)==0 ? 1 : 0;
 
-    while (query_start<end || query_all_data==1) {
+    if (order_desc==1) {
+        query_start = get_zero_time_on_day2(end); //- ex. 2022-01-09 00:00:00
+        query_end = end; //- ex. 2022-01-09 09:12:35
+        if (query_start<start) query_start = start;
+    }
+    else {
+        query_start = start; //- ex. 2022-01-09 09:12:35
+        query_end = get_zero_time_on_day2(start) + 86399; //- ex. 2022-01-09 23:59:59
+        if (query_end>end) query_end = end;
+    }
 
-        if (query_all_data==0) {
-            time_t timestamp_day = get_zero_time_on_day(query_start) + 86400;
-            query_end = timestamp_day;
-            if (query_end>end) query_end = end;
-        }
+    while(1) {
 
-        //- get data from tmp db.
-        int ret = cosql_get_column_values(pdb_tmp,
-            match_and_columns_count, match_and_columns,
-            0, NULL,
-            columns_count, query_columns,
-            query_start, 
-            query_end,
-            NULL,
-            NULL,
-            0,
-            &ret_rows,
-            &result);
-
-        for (i=0; i<ret_rows; i++) {
-
-            json_object *fieldValueArrayObj = json_object_new_array();
-
-            for (j=0; j<columns_count; j++) {
-                start_index = columns_count + i*columns_count;
-                array_index = start_index + j;
-                column_value = result[array_index];
-                json_object *new_obj = json_object_new_string(column_value);
-                json_object_array_add(fieldValueArrayObj, new_obj);
-            }
-
-            json_object_array_add(resultValueArrayObj, fieldValueArrayObj);
-        }
-
-        if (result!=NULL) {
-            cosql_free_column_values(result);
-        }
-
-        if (ret_rows>0) {
-            goto NEXT_PERIOD;
-        }
-
-        //- get data from backup db.
+        codbg("******************************", count);
+        codbg("period count[%d], query_start=%s, query_end=%s", count, format_timestamp_to_string(query_start, buffer_f_t_s, sizeof(buffer_f_t_s)), format_timestamp_to_string(query_end, buffer_f_t_e, sizeof(buffer_f_t_e)));
+        
         char find_backup_db_file_path[MAX_FILE_PATH] = "\0";
         if (get_backup_db_path_by_datetime(db_name, db_version, query_start, find_backup_db_file_path)==1) {
 
@@ -549,57 +632,131 @@ int codb_content_query_json_field(char* db_name, int columns_count, char* column
                 pdb_backup = cosql_open(find_backup_db_file_path);
                 if (pdb_backup!=NULL) {
                     strncpy(backup_db_file_path, find_backup_db_file_path, strlen(find_backup_db_file_path));
-                    fprintf(stderr, "Open backup_db_file_path=%s\n", backup_db_file_path);
+                    codbg("Open backup_db_file_path=%s", backup_db_file_path);
                 }
-            }
-
-            if (pdb_backup==NULL) {
-                goto NEXT_PERIOD;
-            }
-
-            cosql_get_column_values(pdb_backup,
-                match_and_columns_count, match_and_columns,
-                0, NULL,
-                columns_count, query_columns,
-                query_start, 
-                query_end,
-                NULL,
-                NULL,
-                0,
-                &ret_rows,
-                &result);
-
-            for (i=0; i<ret_rows; i++) {
-                json_object *fieldValueArrayObj = json_object_new_array();
-
-                for (j=0; j<columns_count; j++) {
-                    start_index = columns_count + i*columns_count;
-                    array_index = start_index + j;
-                    column_value = result[array_index];
-                    json_object *new_obj = json_object_new_string(column_value);
-                    json_object_array_add(fieldValueArrayObj, new_obj);
-                }
-
-                json_object_array_add(resultValueArrayObj, fieldValueArrayObj);
-            }
-
-            if (result!=NULL) {
-                cosql_free_column_values(result);
             }
         }
 
+        if (order_desc == 1) {
+            //- get data from temp db.
+            ret_rows = query_database(pdb_tmp, 
+                match_and_columns_count, match_and_columns,
+                0, NULL,
+                columns_count, query_columns, 
+                query_start, 
+                query_end,
+                (order_desc==1) ? "DESC" : "ASC", 
+                limit, 
+                resultValueArrayObj, 
+                &total_ret_rows);
+
+            codbg("The count of query result from temp db is %d.", ret_rows);
+
+            if (query_limit>0) {
+                if (ret_rows>=limit) {
+                    break;
+                }
+                else {
+                    limit = limit - ret_rows;
+                }
+            }
+
+            //- get data from backup db.
+            ret_rows = query_database(pdb_backup, 
+                match_and_columns_count, match_and_columns,
+                0, NULL,
+                columns_count, query_columns, 
+                query_start, 
+                query_end,
+                (order_desc==1) ? "DESC" : "ASC", 
+                limit, 
+                resultValueArrayObj, 
+                &total_ret_rows);
+
+            codbg("The count of query result from backup db is %d.", ret_rows);
+
+            if (query_limit>0) {
+                if (ret_rows>=limit) {
+                    break;
+                }
+                else {
+                    limit = limit - ret_rows;
+                }
+            }
+        }
+        else {
+            //- get data from backup db.
+            ret_rows = query_database(pdb_backup, 
+                match_and_columns_count, match_and_columns,
+                0, NULL,
+                columns_count, query_columns, 
+                query_start, 
+                query_end,
+                (order_desc==1) ? "DESC" : "ASC", 
+                limit, 
+                resultValueArrayObj, 
+                &total_ret_rows);
+
+            codbg("The count of query result from backup db is %d.", ret_rows);
+
+            if (query_limit>0) {
+                if (ret_rows>=limit) {
+                    break;
+                }
+                else {
+                    limit = limit - ret_rows;
+                }
+            }
+
+            //- get data from temp db.
+            ret_rows = query_database(pdb_tmp, 
+                match_and_columns_count, match_and_columns,
+                0, NULL,
+                columns_count, query_columns, 
+                query_start, 
+                query_end,
+                (order_desc==1) ? "DESC" : "ASC", 
+                limit, 
+                resultValueArrayObj, 
+                &total_ret_rows);
+
+            codbg("The count of query result from temp db is %d.", ret_rows);
+
+            if (query_limit>0) {
+                if (ret_rows>=limit) {
+                    break;
+                }
+                else {
+                    limit = limit - ret_rows;
+                }
+            }
+        }
 NEXT_PERIOD:
-
-        fprintf(stdout, "[%d] ret=%d, query_start=%d, query_end=%d, ret_rows=%d\n", ret, count, query_start, query_end, ret_rows);
-
-        query_start = query_end;
         
         count++;
 
-        total_ret_rows = total_ret_rows + ret_rows;
+        //- next period
+        if (order_desc==1) {
 
-        if(query_all_data==1) {
-            break;
+            if (query_start<=start) {
+                //- End query
+                break;
+            }
+
+            query_end = query_start - 1; //- ex. 2022-01-08 23:59:59
+            query_start = get_zero_time_on_day2(query_end); //- ex. 2022-01-08 00:00:00
+            if (query_start<start) query_start = start;
+        }
+        else {
+            
+            if (query_end>=end) {
+                //- End query
+                break;
+            }
+
+            query_start = query_end + 1; //- ex. 2022-01-10 00:00:00
+            query_end = get_zero_time_on_day2(query_start) + 86399; //- ex. 2022-01-10 23:59:59
+            if (query_end>end) query_end = end;
         }
     }
     
@@ -613,12 +770,150 @@ NEXT_PERIOD:
     
     cosql_close(pdb_backup);
 
-    fprintf(stderr, "Success to open db file\n");
-
     json_object *rootObj = json_object_new_object();
     json_object_object_add(rootObj, "contents", resultValueArrayObj);
 
     *retJsonObj = rootObj;
+
+    codbg("Leave codb_content_query_json_field.");
+
+    return CODB_OK;
+}
+
+int codb_latest_content_query_json_field(char* db_name, int columns_count, char* columns_name, int filter_count, char* filter_data, json_object **retJsonObj) {
+    
+    if (db_name==NULL || columns_name==NULL) {
+        return CODB_ERROR;
+    }
+    
+    time_t current_time = time(NULL);
+
+    sqlite3* pdb_tmp = NULL;
+    char tmp_db_file_path[MAX_FILE_PATH] = "\0";
+    if (get_tmp_db_path(db_name, tmp_db_file_path, MAX_FILE_PATH)==1) {
+        pdb_tmp = cosql_open(tmp_db_file_path);
+        
+        //cosql_enable_debug(pdb_tmp, 1);
+        
+        if (pdb_tmp==NULL) {
+            fprintf(stderr, "Fail to open tmp db file\n");
+            return CODB_ERROR;
+        }       
+    }
+    ///////////////////////////////////////////////////////////////
+
+    int match_and_columns_count = filter_count;
+    sql_column_match_t* match_and_columns = parse_match_columns_data(filter_data, filter_count);
+    ///////////////////////////////////////////////////////////////
+
+    char db_version[20] = "1.0,2.0,3.0";
+    char backup_db_file_path[MAX_FILE_PATH] = "\0";
+    char buffer_f_t_s[64] = "\0";
+    char buffer_f_t_e[64] = "\0";
+    sqlite3* pdb_backup = NULL;
+    ///////////////////////////////////////////////////////////////
+
+    sql_column_prototype_t* query_columns = parse_query_columns_data(columns_name, columns_count);
+
+    codbg("Enter codb_latest_content_query_json_field, query columns are %s", columns_name);
+    ///////////////////////////////////////////////////////////////
+
+    int i, j, start_index, array_index, ret_rows = 0, count=0;
+    char **result;
+    char *column_value = NULL;
+
+    json_object *resultValueArrayObj = json_object_new_array();
+
+    int total_ret_rows = 0;
+    int query_start = get_zero_time_on_day2(current_time);
+
+    while(1) {
+
+        codbg("******************************", count);
+        codbg("count[%d]", count);
+        
+        //- get data from temp db.
+        ret_rows = query_database(pdb_tmp, 
+            match_and_columns_count, match_and_columns,
+            0, NULL,
+            columns_count, query_columns, 
+            0, 
+            0,
+            "DESC", 
+            1, 
+            resultValueArrayObj, 
+            &total_ret_rows);
+
+        codbg("The count of query result from temp db is %d.", ret_rows);
+
+        if (ret_rows<=0) {
+            char find_backup_db_file_path[MAX_FILE_PATH] = "\0";
+            if (get_backup_db_path_by_datetime(db_name, db_version, query_start, find_backup_db_file_path)==1) {
+
+                //- open backup db.
+                if (strlen(backup_db_file_path)==0 || strncmp(find_backup_db_file_path, backup_db_file_path, strlen(backup_db_file_path))!=0){
+                    if (pdb_backup!=NULL) {
+                        cosql_close(pdb_backup);
+                    }
+                    
+                    pdb_backup = cosql_open(find_backup_db_file_path);
+                    if (pdb_backup!=NULL) {
+                        strncpy(backup_db_file_path, find_backup_db_file_path, strlen(find_backup_db_file_path));
+                        codbg("Open backup_db_file_path=%s", backup_db_file_path);
+                    }
+                }
+            }
+            else {
+                break;
+            }
+
+            //- get data from backup db.
+            ret_rows = query_database(pdb_backup, 
+                match_and_columns_count, match_and_columns,
+                0, NULL,
+                columns_count, query_columns, 
+                0, 
+                0,
+                "DESC", 
+                1, 
+                resultValueArrayObj, 
+                &total_ret_rows);
+
+            codbg("The count of query result from backup db is %d.", ret_rows);
+        }
+NEXT_PERIOD:
+        
+        count++;
+
+        //- next period
+        if (ret_rows>0) {
+            break;
+        }
+
+        query_start = query_start - 86400;
+    }
+    
+    //- free match_and_columns
+    cosql_free_match_columns(match_and_columns, match_and_columns_count);
+
+    //- free query_columns
+    cosql_free_query_columns(query_columns, columns_count);
+    
+    cosql_close(pdb_tmp);
+    
+    cosql_close(pdb_backup);
+
+    json_object *rootObj = json_object_new_object();
+    if (rootObj == NULL) {
+        json_object_put(resultValueArrayObj);
+        return CODB_ERROR;
+    }
+
+    json_object_object_add(rootObj, "contents", resultValueArrayObj);
+
+    *retJsonObj = rootObj;
+
+    codbg("Leave codb_content_query_json_field.");
 
     return CODB_OK;
 }
@@ -635,7 +930,7 @@ int codb_content_query_duration_json_field(char* db_name, int columns_count, cha
 
     sqlite3* pdb_tmp = NULL;
     char tmp_db_file_path[MAX_FILE_PATH] = "\0";
-    if (get_tmp_db_path(db_name, tmp_db_file_path)==1) {
+    if (get_tmp_db_path(db_name, tmp_db_file_path, MAX_FILE_PATH)==1) {
         pdb_tmp = cosql_open(tmp_db_file_path);
         if (pdb_tmp==NULL) {
             fprintf(stderr, "Fail to open tmp db file\n");
@@ -837,7 +1132,7 @@ int codb_avg_query_json_field(char* db_name, char* field_name, char* node_mac, i
 
     sqlite3* pdb_tmp = NULL;
     char tmp_db_file_path[MAX_FILE_PATH] = "\0";
-    if (get_tmp_db_path(db_name, tmp_db_file_path)==1) {
+    if (get_tmp_db_path(db_name, tmp_db_file_path, MAX_FILE_PATH)==1) {
         pdb_tmp = cosql_open(tmp_db_file_path);
         if (pdb_tmp==NULL) {
             fprintf(stderr, "Fail to open tmp db file\n");
@@ -995,7 +1290,7 @@ int codb_eth_detect_traffic_data(char* node_mac, int is_bh, int start, int end, 
 
     sqlite3* pdb_tmp = NULL;
     char tmp_db_file_path[MAX_FILE_PATH] = "\0";
-    if (get_tmp_db_path(db_name, tmp_db_file_path)==1) {
+    if (get_tmp_db_path(db_name, tmp_db_file_path, MAX_FILE_PATH)==1) {
         pdb_tmp = cosql_open(tmp_db_file_path);
         if (pdb_tmp==NULL) {
             fprintf(stderr, "Fail to open tmp db file\n");
@@ -1273,7 +1568,7 @@ int codb_count_active_client(char* node_mac, int start, int end, int duration, j
 
     sqlite3* pdb_tmp = NULL;
     char tmp_db_file_path[MAX_FILE_PATH] = "\0";
-    if (get_tmp_db_path(db_name, tmp_db_file_path)==1) {
+    if (get_tmp_db_path(db_name, tmp_db_file_path, MAX_FILE_PATH)==1) {
         pdb_tmp = cosql_open(tmp_db_file_path);
         if (pdb_tmp==NULL) {
             fprintf(stderr, "Fail to open tmp db file\n");

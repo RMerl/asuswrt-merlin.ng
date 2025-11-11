@@ -175,6 +175,7 @@ struct wl_sync_nvram {
 #define WRONGCAPTCHA   10
 #endif
 #define FORCELOCK       11
+#define UNEXPECTED      12
 
 /* image path for app */
 #define IMAGE_MODEL_PRODUCT	"/Model_product.png"
@@ -474,22 +475,22 @@ extern void get_ipv6_client_list(void);
 extern int inet_raddr6_pton(const char *src, void *dst, void *buf);
 extern int delete_logout_from_list(char *cookies);
 extern void set_referer_host(void);
-extern int check_xss_blacklist(char* para, int check_www);
 extern int check_cmd_whitelist(char* para);
 extern int useful_redirect_page(char *next_page);
 extern char* reverse_str( char *str );
+#ifdef RTCONFIG_HTTPS
+extern int prn_cert_info(const char *fn);
+#endif
 #ifdef RTCONFIG_AMAS
 extern int check_AiMesh_whitelist(char *page);
 #endif
 #ifdef RTCONFIG_DNSPRIVACY
 extern int ej_get_dnsprivacy_presets(int eid, webs_t wp, int argc, char_t **argv);
 #endif
-extern int check_cmd_injection_blacklist(char *para);
 extern void __validate_apply_set_wl_var(char *nv, char *val) __attribute__((weak));
 #ifdef RTCONFIG_BWDPI
 extern int check_bwdpi_status_app_name(char *name);
 #endif
-extern int validate_apply_input_value(char *name, char *value);
 
 /* web-*.c */
 extern int ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit);
@@ -599,7 +600,7 @@ extern void do_endpoint_request_token_cgi(char *url, FILE *stream);
 #ifdef RTCONFIG_CAPTCHA
 extern int is_captcha_match(char *catpch);
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
 extern void httpd_switch_ledg(int action);
 #endif
 #ifdef RTCONFIG_SAVE_WL_NVRAM_BOTH
@@ -644,4 +645,12 @@ extern int check_lock_status(time_t *dt);
 extern void check_lock_state();
 extern int gen_asus_token_cookie(char *asus_token, int asus_token_len, char *token_cookie, int cookie_len);
 extern void gen_random_string_v2(char *out, size_t len);
+extern int nvram_modify_log(char *name, char *new, char *old, struct json_object *nvram_modify_obj);
+#ifdef RTCONFIG_AI_SERVICE
+extern int ej_is_ai_ssh_default(int eid, webs_t wp, int argc, char **argv);
+extern void do_ai_chpass_cgi(char *url, FILE *stream);
+extern void do_get_ai_docker_images_info_cgi(char *url, FILE *stream);
+extern void do_get_ai_docker_container_info_cgi(char *url, FILE *stream);
+extern void do_ai_board_slm_cgi(char *url, FILE *stream);
+#endif
 #endif /* _httpd_h_ */

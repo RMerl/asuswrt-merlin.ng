@@ -6,6 +6,7 @@
 #include <inttypes.h>
 #include <time.h>
 #include <json.h>
+#include <fcntl.h>
 #include "cosql_utils.h"
 #include "log.h"
 #include "codb_config.h"
@@ -32,7 +33,7 @@ static int cosql_exec(sqlite3 *pdb, const char *fmt, ...)
 	ret = sqlite3_exec(pdb, sql, 0, 0, &errMsg);
 	if( ret != SQLITE_OK ) {
 		if (errMsg) {
-			codbg(pdb, "errMsg=%s", errMsg);
+			codbg("errMsg=%s", errMsg);
 			sqlite3_free(errMsg);
 		}
 	}
@@ -56,18 +57,18 @@ static int cosql_get_int_field(sqlite3 *pdb, const char *fmt, ...)
 	va_start(ap, fmt);
 
 	if (pdb == NULL) {
-		codbg(pdb, "pdb is NULL");
+		codbg("pdb is NULL");
 		return -1;
 	}
 
 	sql = sqlite3_vmprintf(fmt, ap);
-	codbg(pdb, "sql=%s", sql);
+	codbg("sql=%s", sql);
 
 	switch (sqlite3_prepare_v2(pdb, sql, -1, &stmt, NULL)) {
 		case SQLITE_OK:
 			break;
 		default:
-			codbg(pdb, "prepare failed: %s, %s", sqlite3_errmsg(pdb), sql);
+			codbg("prepare failed: %s, %s", sqlite3_errmsg(pdb), sql);
 			sqlite3_free(sql);
 			return 0;
 	}
@@ -94,7 +95,7 @@ static int cosql_get_int_field(sqlite3 *pdb, const char *fmt, ...)
 			ret = sqlite3_column_int(stmt, 0);
 			break;
 		default:
-			codbg(pdb, "%s: step failed: %s, %s", __func__, sqlite3_errmsg(pdb), sql);
+			codbg("%s: step failed: %s, %s", __func__, sqlite3_errmsg(pdb), sql);
 			ret = 0;
 			break;
  	}
@@ -116,19 +117,19 @@ static double cosql_get_double_field(sqlite3 *pdb, const char *fmt, ...)
 	va_start(ap, fmt);
 
 	if (pdb == NULL) {
-		codbg(pdb, "pdb is NULL");
+		codbg("pdb is NULL");
 		return 0;
 	}
 
 	sql = sqlite3_vmprintf(fmt, ap);
 
-	codbg(pdb, "sql=%s", sql);
+	codbg("sql=%s", sql);
 
 	switch (sqlite3_prepare_v2(pdb, sql, -1, &stmt, NULL)) {
 		case SQLITE_OK:
 			break;
 		default:
-			codbg(pdb, "prepare failed: %s, %s", sqlite3_errmsg(pdb), sql);
+			codbg("prepare failed: %s, %s", sqlite3_errmsg(pdb), sql);
 			sqlite3_free(sql);
 			return 0;
 	}
@@ -155,7 +156,7 @@ static double cosql_get_double_field(sqlite3 *pdb, const char *fmt, ...)
 			ret = sqlite3_column_double(stmt, 0);
 			break;
 		default:
-			codbg(pdb, "%s: step failed: %s, %s", __func__, sqlite3_errmsg(pdb), sql);
+			codbg("%s: step failed: %s, %s", __func__, sqlite3_errmsg(pdb), sql);
 			ret = 0;
 			break;
  	}
@@ -176,7 +177,7 @@ static char *cosql_get_text_field(sqlite3 *pdb, const char *fmt, ...)
 	va_start(ap, fmt);
 
 	if (pdb == NULL) {
-		codbg(pdb, "pdb is NULL");
+		codbg("pdb is NULL");
 		return NULL;
 	}
 
@@ -187,7 +188,7 @@ static char *cosql_get_text_field(sqlite3 *pdb, const char *fmt, ...)
 		case SQLITE_OK:
 			break;
 		default:
-			codbg(pdb, "prepare failed: %s, %s", sqlite3_errmsg(pdb), sql);
+			codbg("prepare failed: %s, %s", sqlite3_errmsg(pdb), sql);
 			sqlite3_free(sql);
 			return NULL;
 	}
@@ -216,7 +217,7 @@ static char *cosql_get_text_field(sqlite3 *pdb, const char *fmt, ...)
 
 			len = sqlite3_column_bytes(stmt, 0);
 			if ((str = sqlite3_malloc(len + 1)) == NULL) {
-				codbg(pdb, "malloc failed");
+				codbg("malloc failed");
 				break;
 			}
 
@@ -224,7 +225,7 @@ static char *cosql_get_text_field(sqlite3 *pdb, const char *fmt, ...)
 			break;
 
 		default:
-			codbg(pdb, "SQL step failed: %s", sqlite3_errmsg(pdb));
+			codbg("SQL step failed: %s", sqlite3_errmsg(pdb));
 			str = NULL;
 			break;
 	}
@@ -241,7 +242,7 @@ static int cosql_get_table(sqlite3 *pdb, const char *sql, char ***pazResult, int
 	ret = sqlite3_get_table(pdb, sql, pazResult, pnRow, pnColumn, &errMsg);
 	if( ret != SQLITE_OK ) {
 		if (errMsg) {
-			codbg(pdb, "errMsg=%s", errMsg);
+			codbg("errMsg=%s", errMsg);
 			sqlite3_free(errMsg);
 		}
 
@@ -360,7 +361,7 @@ static int is_valid_text_ipv4(const char *input)
 		return FORMAT_ERROR;
 	}
 
-  	char str[31], temp[31];
+  	char temp[31];
 	int a, b, c, d;
 
 	//- ipv4 format 
@@ -1163,13 +1164,13 @@ int cosql_close(sqlite3 * pdb)
 	}
 	
 	if (SQLITE_OK != sqlite3_close(pdb)) { 	
-		codbg(pdb, "Fail to close db");
+		codbg("Fail to close db");
 		return COSQL_ERROR;
 	}
 
 	cosql_remove_config(pdb);
 
-	codbg(pdb, "Success to close db");
+	codbg("Success to close db");
 
 	return COSQL_OK;
 }
@@ -1186,13 +1187,13 @@ int cosql_create_table(sqlite3 *pdb, const char* db_version, int columns_count, 
 		char this_db_version[MAX_VERSION_LEN];
 		cosql_get_db_version(pdb, this_db_version);
 
-		codbg(pdb, "this_db_version=%s, db_version=%s", this_db_version, db_version);
+		codbg("this_db_version=%s, db_version=%s", this_db_version, db_version);
 		
 		if (db_version!=NULL && strncmp(this_db_version, db_version, strlen(db_version))==0) {
 			return COSQL_OK;
 		}
 
-		codbg(pdb, "db version is mismatch");
+		codbg("db version is mismatch");
 
 		return COSQL_DB_VERSION_MISMATCH;
 	}
@@ -1257,7 +1258,7 @@ int cosql_create_table(sqlite3 *pdb, const char* db_version, int columns_count, 
 	//- malloc() allocate the memory for sql_create_table_size+1 chars 
 	char* sql_create_table = (char*)malloc(sizeof(char) * (sql_create_table_size+1));
 	if (sql_create_table==NULL) {
-		codbg(pdb, "fail to create table %s", DATA_TABLE_NAME);
+		codbg("fail to create table %s", DATA_TABLE_NAME);
 		return COSQL_ERROR;
 	}
 
@@ -1330,27 +1331,27 @@ int cosql_create_table(sqlite3 *pdb, const char* db_version, int columns_count, 
 	}
 
 	if( ret != COSQL_OK ) {
-		codbg(pdb, "fail to create table %s", DATA_TABLE_NAME);
+		codbg("fail to create table %s", DATA_TABLE_NAME);
 		return COSQL_ERROR;
 	}
 	//////////////////////////////////////////////////////////////
 
 	ret = cosql_exec(pdb, "CREATE TABLE %s (info_name TEXT, info_value TEXT)", DB_TABLE_NAME);
 	if( ret != COSQL_OK ) {
-		codbg(pdb, "fail to create table %s", DB_TABLE_NAME);
+		codbg("fail to create table %s", DB_TABLE_NAME);
 		return COSQL_ERROR;
 	}
 	
 	ret = cosql_exec(pdb, "INSERT INTO %s (info_name, info_value) VALUES ('db_version', '%s')", DB_TABLE_NAME, db_version);
 	if( ret != COSQL_OK ) {
-		codbg(pdb, "fail to inert table %s", DB_TABLE_NAME);
+		codbg("fail to inert table %s", DB_TABLE_NAME);
 		return COSQL_ERROR;
 	}
 	//////////////////////////////////////////////////////////////
 
 	ret = cosql_exec(pdb, "CREATE INDEX idx_%s ON %s (data_id)", DATA_TABLE_NAME, DATA_TABLE_NAME);
 	if( ret != COSQL_OK ) {
-		codbg(pdb, "fail to create table idx_%s", DATA_TABLE_NAME);
+		codbg("fail to create table idx_%s", DATA_TABLE_NAME);
 		return COSQL_ERROR;
 	}
 	//////////////////////////////////////////////////////////////
@@ -1392,19 +1393,13 @@ int cosql_drop_db(sqlite3* pdb)
 
 int cosql_integrity_check(sqlite3* pdb)
 {
-	char* db_status = cosql_get_text_field(pdb, "PRAGMA integrity_check");
-	if (db_status == NULL) {
-		return COSQL_ERROR;
-	}
+  int ret = cosql_exec(pdb, "PRAGMA integrity_check");
+  if( ret != COSQL_OK ) {
+    codbg("fail to integrity check");
+    return COSQL_ERROR;
+  }
 
-	if(!strcmp("ok", db_status))
-	{
-		sqlite3_free(db_status);
-		return COSQL_OK;
-	}
-
-	sqlite3_free(db_status);
-	return COSQL_ERROR;
+  return COSQL_OK;
 }
 
 int cosql_clear_table(sqlite3* pdb) 
@@ -1659,7 +1654,7 @@ int cosql_insert_table(sqlite3* pdb, int columns_count, sql_column_t* columns)
 	//- malloc() allocate the memory for sql_insert_columns_size+1 chars 
 	char* sql_column_names = (char*)malloc(sizeof(char) * (sql_insert_columns_size+1));
 	if (sql_column_names==NULL) {
-		codbg(pdb, "fail to alloc sql buffer");
+		codbg("fail to alloc sql buffer");
 		return COSQL_ERROR;
 	}
 
@@ -1668,7 +1663,7 @@ int cosql_insert_table(sqlite3* pdb, int columns_count, sql_column_t* columns)
 	//- malloc() allocate the memory for sql_insert_values_size+1 chars 
 	char* sql_insert_values = (char*)malloc(sizeof(char) * (sql_insert_values_size+1));
 	if (sql_insert_values==NULL) {
-		codbg(pdb, "fail to alloc sql buffer");
+		codbg("fail to alloc sql buffer");
 		return COSQL_ERROR;
 	}
 
@@ -1796,7 +1791,7 @@ int cosql_insert_table(sqlite3* pdb, int columns_count, sql_column_t* columns)
 		columns++;
 	}
 	
-	codbg(pdb, "INSERT INTO %s (%s,data_time) VALUES (%s,%ld)", DATA_TABLE_NAME, sql_column_names, sql_insert_values, current_time);
+	codbg("INSERT INTO %s (%s,data_time) VALUES (%s,%ld)", DATA_TABLE_NAME, sql_column_names, sql_insert_values, current_time);
 
 	ret = cosql_exec(pdb, "INSERT INTO %s (%s,data_time) VALUES (%s,%ld)", DATA_TABLE_NAME, sql_column_names, sql_insert_values, current_time);
 
@@ -1840,7 +1835,7 @@ int cosql_upsert_table(sqlite3* pdb,
 		return COSQL_ERROR;
 	}
 
-	codbg(pdb, "update data id [%d], value [%s]", data_id, sql_update_value);
+	codbg("update data id [%d], value [%s]", data_id, sql_update_value);
 
 	int ret = cosql_exec(pdb, "UPDATE %s SET %s WHERE data_id=%d", DATA_TABLE_NAME, sql_update_value, data_id);
 
@@ -1959,7 +1954,7 @@ int cosql_get_column_values(sqlite3* pdb,
 	//- malloc() allocate the memory for sql_query_columns_size+1 chars 
 	char* sql_column_names = (char*)malloc(sizeof(char) * (sql_query_columns_size+1));
 	if (sql_column_names==NULL) {
-		codbg(pdb, "fail to alloc sql buffer");
+		codbg("fail to alloc sql buffer");
 		return COSQL_ERROR;
 	}
 
@@ -1987,7 +1982,7 @@ int cosql_get_column_values(sqlite3* pdb,
 	int sql_query_size = sql_query_columns_size+1024;
 	char* sql_query = (char*)malloc(sizeof(char) * (sql_query_size));
 	if (sql_query==NULL) {
-		codbg(pdb, "fail to alloc sql buffer");
+		codbg("fail to alloc sql buffer");
 		return COSQL_ERROR;
 	}
 
@@ -2039,7 +2034,7 @@ int cosql_get_column_values(sqlite3* pdb,
 		strncat(sql_query, buf_limit, strlen(buf_limit));
 	}
 	
-	codbg(pdb, "sql_query=%s", sql_query);
+	codbg("sql_query=%s", sql_query);
 	
 	if (cosql_get_table(pdb, sql_query, ret_result, ret_rows, NULL) != COSQL_OK) {
 		
@@ -2142,7 +2137,7 @@ int cosql_get_last_xth_double_value(sqlite3* pdb,
 	
 	char* sql_query = (char*)malloc(sizeof(char) * sql_query_size);
 	if (sql_query==NULL) {
-		codbg(pdb, "fail to alloc sql_query");
+		codbg("fail to alloc sql_query");
 		return COSQL_ERROR;
 	}
 
@@ -2625,13 +2620,13 @@ int cosql_remove_data_between_time(sqlite3* pdb, int start_data_time, int end_da
 
 	ret = cosql_exec(pdb, "DELETE FROM %s WHERE data_time BETWEEN %d AND %d", DATA_TABLE_NAME, start_data_time, end_data_time);
 	if( ret != COSQL_OK ) {
-		codbg(pdb, "fail to remove data between time");
+		codbg("fail to remove data between time");
 		return COSQL_ERROR;
 	}
 
 	ret = cosql_exec(pdb, "VACUUM");
 	if( ret != COSQL_OK ) {
-		codbg(pdb, "fail to VACUUM database");
+		codbg("fail to VACUUM database");
 		return COSQL_ERROR;
 	}
 
@@ -2648,13 +2643,13 @@ int cosql_remove_data_between_column_value(sqlite3* pdb, const char* column_name
 
 	ret = cosql_exec(pdb, "DELETE FROM %s WHERE %s BETWEEN %d AND %d", DATA_TABLE_NAME, column_name, start_value, end_value);
 	if( ret != COSQL_OK ) {
-		codbg(pdb, "fail to remove data between time");
+		codbg("fail to remove data between time");
 		return COSQL_ERROR;
 	}
 
 	ret = cosql_exec(pdb, "VACUUM");
 	if( ret != COSQL_OK ) {
-		codbg(pdb, "fail to VACUUM database");
+		codbg("fail to VACUUM database");
 		return COSQL_ERROR;
 	}
 
@@ -2679,13 +2674,13 @@ int cosql_resize_table_by_reserved_count(sqlite3* pdb, int reserved_newest_data_
 						  reserved_newest_data_count);
 
 	if( ret != COSQL_OK ) {
-		codbg(pdb, "fail to remove data by count");
+		codbg("fail to remove data by count");
 		return COSQL_ERROR;
 	}
 
 	ret = cosql_exec(pdb, "VACUUM");
 	if( ret != COSQL_OK ) {
-		codbg(pdb, "fail to VACUUM database");
+		codbg("fail to VACUUM database");
 		return COSQL_ERROR;
 	}
 
@@ -2729,13 +2724,13 @@ int xxcosql_resize_table_by_count(sqlite3* pdb, const char* table_name, const ch
 						  reserved_newest_data_count);
 
 	if( ret != COSQL_OK ) {
-		codbg(pdb, "fail to remove data by count");
+		codbg("fail to remove data by count");
 		return COSQL_ERROR;
 	}
 
 	ret = cosql_exec(pdb, "VACUUM");
 	if( ret != COSQL_OK ) {
-		codbg(pdb, "fail to VACUUM database");
+		codbg("fail to VACUUM database");
 		return COSQL_ERROR;
 	}
 
@@ -2768,13 +2763,13 @@ int cosql_backup_and_remove_data_between_time(sqlite3* src_pdb, sqlite3* dst_pdb
 	}
 	
 	if( ret != COSQL_OK ) {
-		codbg(src_pdb, "fail to insert data to target db %s.", dst_db_path);
+		codbg("fail to insert data to target db %s.", dst_db_path);
 		int ins_err = sqlite3_errcode(src_pdb);
 
 		// dettach target database.
 		ret = cosql_exec(src_pdb, "DETACH target");
 		if( ret != COSQL_OK )
-			codbg(src_pdb, "fail to dettach target db %s.", dst_db_path);
+			codbg("fail to dettach target db %s.", dst_db_path);
 
 		if (ins_err == SQLITE_FULL)
 			return COSQL_DB_OR_DISK_FULL;
@@ -2785,19 +2780,19 @@ int cosql_backup_and_remove_data_between_time(sqlite3* src_pdb, sqlite3* dst_pdb
 	// dettach target database.
 	ret = cosql_exec(src_pdb, "DETACH target");
 	if( ret != COSQL_OK ) {
-		codbg(src_pdb, "fail to dettach target db %s.", dst_db_path);
+		codbg("fail to dettach target db %s.", dst_db_path);
 		//return COSQL_ERROR;
 	}
 
 	ret = cosql_exec(src_pdb, "DELETE FROM %s WHERE data_time BETWEEN %d AND %d", DATA_TABLE_NAME, start_data_time, end_data_time);
 	if( ret != COSQL_OK ) {
-		codbg(src_pdb, "fail to remove data between time.");
+		codbg("fail to remove data between time.");
 		return COSQL_ERROR;
 	}
 
 	ret = cosql_exec(src_pdb, "VACUUM");
 	if( ret != COSQL_OK ) {
-		codbg(src_pdb, "fail to VACUUM database.");
+		codbg("fail to VACUUM database.");
 		return COSQL_ERROR;
 	}
 
@@ -2817,7 +2812,7 @@ int cosql_backup_and_remove_data_between_column_value(sqlite3* src_pdb, sqlite3*
 	// attach target database.
 	ret = cosql_exec(src_pdb, "ATTACH '%s' AS target", dst_db_path);
 	if( ret != COSQL_OK ) {
-		codbg(src_pdb, "fail to attach target db %s.", dst_db_path);
+		codbg("fail to attach target db %s.", dst_db_path);
 		return COSQL_ERROR;
 	}
 
@@ -2825,13 +2820,13 @@ int cosql_backup_and_remove_data_between_column_value(sqlite3* src_pdb, sqlite3*
 	ret = cosql_exec(src_pdb, "INSERT INTO target.%s SELECT * FROM main.%s WHERE %s BETWEEN %d AND %d", 
 		DATA_TABLE_NAME, DATA_TABLE_NAME, column_name, start_value, end_value);
 	if( ret != COSQL_OK ) {
-		codbg(src_pdb, "fail to insert data to target db %s.", dst_db_path);
+		codbg("fail to insert data to target db %s.", dst_db_path);
 		int ins_err = sqlite3_errcode(src_pdb);
 
 		// dettach target database.
 		ret = cosql_exec(src_pdb, "DETACH target");
 		if( ret != COSQL_OK )
-			codbg(src_pdb, "fail to dettach target db %s.", dst_db_path);
+			codbg("fail to dettach target db %s.", dst_db_path);
 
 		if (ins_err == SQLITE_FULL)
 			return COSQL_DB_OR_DISK_FULL;
@@ -2842,19 +2837,19 @@ int cosql_backup_and_remove_data_between_column_value(sqlite3* src_pdb, sqlite3*
 	// dettach target database.
 	ret = cosql_exec(src_pdb, "DETACH target");
 	if( ret != COSQL_OK ) {
-		codbg(src_pdb, "fail to dettach target db %s.", dst_db_path);
+		codbg("fail to dettach target db %s.", dst_db_path);
 		//return COSQL_ERROR;
 	}
 
 	ret = cosql_exec(src_pdb, "DELETE FROM %s WHERE %s BETWEEN %d AND %d", DATA_TABLE_NAME, column_name, start_value, end_value);
 	if( ret != COSQL_OK ) {
-		codbg(src_pdb, "fail to remove data between time");
+		codbg("fail to remove data between time");
 		return COSQL_ERROR;
 	}
 
 	ret = cosql_exec(src_pdb, "VACUUM");
 	if( ret != COSQL_OK ) {
-		codbg(src_pdb, "fail to VACUUM database");
+		codbg("fail to VACUUM database");
 		return COSQL_ERROR;
 	}
 
@@ -2873,7 +2868,7 @@ int cosql_backup_and_resize_table_by_reserved_count(sqlite3* src_pdb, sqlite3* d
 	// attach target database.
 	ret = cosql_exec(src_pdb, "ATTACH '%s' AS target", dst_db_path);
 	if( ret != COSQL_OK ) {
-		codbg(src_pdb, "fail to attach target db %s.", dst_db_path);
+		codbg("fail to attach target db %s.", dst_db_path);
 		return COSQL_ERROR;
 	}
 
@@ -2888,13 +2883,13 @@ int cosql_backup_and_resize_table_by_reserved_count(sqlite3* src_pdb, sqlite3* d
 							DATA_TABLE_NAME,
 							reserved_newest_data_count);
 	if( ret != COSQL_OK ) {
-		codbg(src_pdb, "fail to insert data to target db %s.", dst_db_path);
+		codbg("fail to insert data to target db %s.", dst_db_path);
 		int ins_err = sqlite3_errcode(src_pdb);
 
 		// dettach target database.
 		ret = cosql_exec(src_pdb, "DETACH target");
 		if( ret != COSQL_OK )
-			codbg(src_pdb, "fail to dettach target db %s.", dst_db_path);
+			codbg("fail to dettach target db %s.", dst_db_path);
 
 		if (ins_err == SQLITE_FULL)
 			return COSQL_DB_OR_DISK_FULL;
@@ -2905,7 +2900,7 @@ int cosql_backup_and_resize_table_by_reserved_count(sqlite3* src_pdb, sqlite3* d
 	// dettach target database.
 	ret = cosql_exec(src_pdb, "DETACH target");
 	if( ret != COSQL_OK ) {
-		codbg(src_pdb, "fail to dettach target db %s.", dst_db_path);
+		codbg("fail to dettach target db %s.", dst_db_path);
 		//return COSQL_ERROR;
 	}
 
@@ -2919,13 +2914,13 @@ int cosql_backup_and_resize_table_by_reserved_count(sqlite3* src_pdb, sqlite3* d
 						  reserved_newest_data_count);
 
 	if( ret != COSQL_OK ) {
-		codbg(src_pdb, "fail to remove data by count");
+		codbg("fail to remove data by count");
 		return COSQL_ERROR;
 	}
 
 	ret = cosql_exec(src_pdb, "VACUUM");
 	if( ret != COSQL_OK ) {
-		codbg(src_pdb, "fail to VACUUM database");
+		codbg("fail to VACUUM database");
 		return COSQL_ERROR;
 	}
 

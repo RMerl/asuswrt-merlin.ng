@@ -44,8 +44,8 @@ enum {
 };
 
 // ErP parameters
-/* the total period : 96 * 10  sec = 960 sec = 16 * 60 sec = 16 min */
-#define ERP_DEFAULT_COUNT  96
+/* the total period : 60 * 10  sec = 600 sec = 10 * 60 sec = 10 min */
+#define ERP_DEFAULT_COUNT  60
 //#define ERP_DEFAULT_COUNT  2
 static int erp_det_period = 0;             // detect mode
 static int erp_led_period = 0;             // led mode for flashing
@@ -144,6 +144,11 @@ static void erp_brcm_radio_down(int model)
 	foreach(wl, nvram_safe_get("wl_ifnames"), next) {
 		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
 		eval("wl", "-i", wl, "down");
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+		eval("wlconf", wl, "power_down");
+		ERP_DBG("%s power_down (deep sleep)\n", wl);
+		sleep(3);
+#endif
 		ERP_DBG("wl = %s\n", wl);
 		i++;
 	}
@@ -295,8 +300,12 @@ static int erp_check_arp_stat(int model)
 	int wan_conn = 0; // wan connection stat
 #if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 	char stat[20];    // ipv4 neigh stat
+	char mac[18];     // ipv4 neigh mac for filter
 	int stale_n = 0;  // ipv4 stale entries
 	int link_n = 0;   // ipv4 link entries
+#if defined(RTCONFIG_AI_SERVICE)
+	char aiboard_mac[18] = {0};
+#endif
 #endif
 
 	/* check arp table for IPv4 */
@@ -351,8 +360,15 @@ static int erp_check_arp_stat(int model)
 		while (fgets(buf, sizeof(buf), fp))
 		{
 			memset(stat, 0, sizeof(stat));
-			if (sscanf(buf, "%*s %*s %*s %s", stat) != 1) continue;
-			ERP_DBG("stat=%s\n", stat);
+			if (sscanf(buf, "%*s %*s %s %s", mac, stat) != 2) continue;
+			ERP_DBG("mac=%s, stat=%s\n", mac, stat);
+#if defined(RTCONFIG_AI_SERVICE)
+			snprintf(aiboard_mac, sizeof(aiboard_mac), "%s", nvram_safe_get("aiboard_macaddr"));
+			if (!strcasecmp(mac, aiboard_mac)) {
+				ERP_DBG("skip aiboard mac %s\n", aiboard_mac);
+				continue;
+			}
+#endif
 			if (!strcmp(stat, "STALE"))
 			{
 				stale_n++; // ipv4 clients
@@ -864,6 +880,23 @@ static void post_erp_wakeup_mode(int model)
 }
 #endif
 
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+static void erp_brcm_radio_up(int model)
+{
+	int i = 0;
+	char wl[32] = {0}, *next = NULL;
+
+	/* check each radio and make it down */
+	foreach(wl, nvram_safe_get("wl_ifnames"), next) {
+		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
+		eval("wlconf", wl, "power_up");
+		ERP_DBG("%s power_up (deep sleep)\n", wl);
+		sleep(10);
+		i++;
+	}
+}
+#endif
+
 static void erp_wakeup_mode(int model)
 {
 	ERP_DBG("enter wakeup mode, model = %d\n", model);
@@ -873,6 +906,7 @@ static void erp_wakeup_mode(int model)
 
 #if defined(RTCONFIG_HND_ROUTER_BE_4916)
 	load_wl();
+	erp_brcm_radio_up(model);
 #endif
 
 #if defined(RTCONFIG_QCA)

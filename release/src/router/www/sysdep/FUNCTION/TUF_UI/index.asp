@@ -1776,7 +1776,7 @@ function popupEditBlock(clientObj){
 			document.getElementById('client_iTunes').style.display = "";
 			document.getElementById('client_iTunes').innerHTML = "iTunes";
 		}
-		if(clientObj.sdn_idx > 0) {
+		if(clientObj.sdn_idx > 0 && clientObj.sdn_type !== "MAINFH") {
 			document.getElementById('client_sdnIdx').style.display = "";
 			const sdn_profile = sdn_rl_for_clientlist.find(item => item.sdn_rl.idx == clientObj.sdn_idx) || {};
 			const sdn_ssid = $.isEmptyObject(sdn_profile) ? "" : sdn_profile.apg_rl.ssid;

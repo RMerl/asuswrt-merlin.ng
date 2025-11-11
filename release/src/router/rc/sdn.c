@@ -577,6 +577,9 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 		fprintf(fp, "cache-size=1500\n");
 		fprintf(fp, "min-port=4096\n");
 
+		if(pmtl->sdn_t.ahs_sw)
+			fprintf(fp, "addn-hosts=/etc/hosts\n");
+
 		if (pmtl->nw_t.dhcp_enable)
 		{
 			fprintf(fp, "dhcp-authoritative\n");
@@ -1137,6 +1140,9 @@ static int _handle_sdn_wan(const MTLAN_T *pmtl, const char *logdrop, const char 
 
 	if (!pmtl)
 		return -1;
+
+	if (pmtl->sdn_t.sdn_idx != 0 && pmtl->nw_t.idx == 0)	// skip same subnet
+		return 0;
 
 	_remove_sdn_routing_rule(pmtl, 0);
 	vpnc_default_wan = nvram_get_int("vpnc_default_wan");

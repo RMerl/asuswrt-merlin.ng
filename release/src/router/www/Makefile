@@ -241,8 +241,17 @@ endif
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI))
 	cd $(INSTALLDIR)/www/light_effect && mv sysdep_css/light_effect_GT-BESeries.css light_effect_sysdep.css
 endif
-ifeq ($(BUILD_NAME),GT10)
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT10 GS-BE18000))
 	cd $(INSTALLDIR)/www/light_effect && mv sysdep_css/light_effect_GT10.css light_effect_sysdep.css
+endif
+ifeq ($(RTCONFIG_UI4),y)
+	rm -rf $(INSTALLDIR)/www/images/New_ui/light_effect/light_effect_mask.png
+	rm -rf $(INSTALLDIR)/www/images/New_ui/light_effect/light_effect_mask_rog.png
+	cd $(INSTALLDIR)/www/images/New_ui/light_effect/ && mv light_effect_mask_UI4.png light_effect_mask.png
+	cd $(INSTALLDIR)/www/images/New_ui/light_effect/ && mv light_effect_mask_rog_UI4.png light_effect_mask_rog.png
+else
+	rm -rf $(INSTALLDIR)/www/images/New_ui/light_effect/light_effect_mask_UI4.png
+	rm -rf $(INSTALLDIR)/www/images/New_ui/light_effect/light_effect_mask_rog_UI4.png
 endif
 	rm -rf $(INSTALLDIR)/www/light_effect/sysdep_css
 endif
@@ -577,6 +586,7 @@ ifneq ($(RTCONFIG_DNSQUERY_INTERCEPT),y)
 	rm -rf $(INSTALLDIR)/www/AiProtection_MaliciousSitesBlocking.asp
 	rm -rf $(INSTALLDIR)/www/AiProtection_MaliciousSitesBlocking_m.asp
 	rm -rf $(INSTALLDIR)/www/css/adaptive_mobile.css
+	rm -rf $(INSTALLDIR)/www/css/adaptive_mobile_WHITE.css
 	rm -rf $(INSTALLDIR)/www/images/New_ui/QoS_quick
 	rm -rf $(INSTALLDIR)/www/images/New_ui/infected.svg
 	rm -rf $(INSTALLDIR)/www/images/New_ui/IPS.svg
@@ -1029,6 +1039,7 @@ endif
 ifeq ($(RTCONFIG_ROG_UI),y)
 	cp -rf $(INSTALLDIR)/www/css/ROG/* $(INSTALLDIR)/www/css/
 	rm -rf $(INSTALLDIR)/www/css/ROG
+	rm -rf $(INSTALLDIR)/www/images/New_ui/RT
 endif
 
 ifneq ($(RTCONFIG_BCM_OAM), y)
@@ -1056,11 +1067,11 @@ ifneq ($(RTCONFIG_USB_WAN_BACKUP), y)
 endif
 
 ifneq ($(RTCONFIG_DNSQUERY_INTERCEPT),y)
-	rm -rf $(INSTALLDIR)/www/app_client_stats_page.html
 	rm -rf $(INSTALLDIR)/www/datatables
 	rm -rf $(INSTALLDIR)/www/getWanTraffic_Dns.asp
 	rm -rf $(INSTALLDIR)/www/getAppTraffic_Dns.asp
 endif
+	rm -rf $(INSTALLDIR)/www/app_client_stats_page.html
 
 ifeq ($(RTCONFIG_TS_UI),y)
 	rm -rf $(INSTALLDIR)/TS_UI

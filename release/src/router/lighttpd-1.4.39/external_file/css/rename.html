@@ -47,16 +47,16 @@ var m = new lang();
 var g_storage = new myStorage();
 
 $("document").ready(function() {
-	var vars = getUrlVars();
+	
 	var loc_lan = String(window.navigator.userLanguage || window.navigator.language).toLowerCase();		
 	var lan = ( g_storage.get('lan') == undefined ) ? loc_lan : g_storage.get('lan');
 	m.setLanguage(lan);
 	$('button#ok').text(m.getString('btn_ok'));
 	$('button#cancel').text(m.getString('btn_cancel'));
 	
-	this_name = vars["o"];
-	this_url = vars["f"];
-	this_isdir = vars["d"];
+	this_name = getUrlVar("o");
+	this_url = getUrlVar("f");
+	this_isdir = getUrlVar("d");
 	
 	$("input#dir_name").attr("value", mydecodeURI(this_name));
 	

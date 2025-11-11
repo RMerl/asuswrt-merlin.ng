@@ -15,65 +15,65 @@
 # 4: Tried to login while already logged in res=already
 # 5: Not logged in yet                      res=notyet
 */
-var username = getUrlVars()["username"];
-var password = getUrlVars()["password"];
-var chal = getUrlVars()["chal"];
-var login = getUrlVars()["login"];
-var logout = getUrlVars()["logout"];
-var prelogin = getUrlVars()["prelogin"];
-var res = getUrlVars()["res"];
-var uamip = getUrlVars()["uamip"];
-var uamport = getUrlVars()["uamport"];
-var timeleft = getUrlVars()["timeleft"];
-var userurl = getUrlVars()["userurl"];
-var challenge = getUrlVars()["challenge"];
+var username = getUrlVar("username");
+var password = getUrlVar("password");
+var chal = getUrlVar("chal");
+var login = getUrlVar("login");
+var logout = getUrlVar("logout");
+var prelogin = getUrlVar("prelogin");
+var res = getUrlVar("res");
+var uamip = getUrlVar("uamip");
+var uamport = getUrlVar("uamport");
+var timeleft = getUrlVar("timeleft");
+var userurl = getUrlVar("userurl");
+var challenge = getUrlVar("challenge");
 
-function isValidInput(input) {
-	
-	//- Blacklist: Check for known malicious characters or patterns
-	var blackListPatterns = [
-		/<script>/i,
-		/<\/script>/i,
-		/javascript:/i,
-		/vbscript:/i,
-		/on\w+=/i,
-		/eval\(/i,
-		/expression\(/i
-	];
-	
-	for (var i = 0; i < blackListPatterns.length; i++) {
-		if (blackListPatterns[i].test(input)) {
-			return false;
-		}
-	}
-
-	return true;
+function sanitizeInput(input) {
+    //- Remove or replace common XSS attack characters
+	// < and >
+	// ;
+	// =
+	// '
+	// "
+    return input.replace(/[<>;='"]/g, '');
 }
 
-function getUrlVars() {
-	var query = window.location.href.slice(window.location.href.indexOf('?') + 1);
+function isValidKey(key) {
+    // Only letters, numbers and underscores allowed
+    var regex = /^[a-zA-Z0-9_]+$/;
+    return regex.test(key);
+}
+
+function isUnsafeKey(key) {
+    return key === '__proto__' || key === 'constructor' || key === 'prototype';
+}
+
+function encodeSafeString(input){
+    input = input.replace(/&/g, '&amp;');
+    input = input.replace(/<script/g, '<script&lt;');
+    input = input.replace(/script>/g, 'script&gt;');
+    input = input.replace(/%0A/g, '');
+    input = input.replace(/%0D/g, '');
+    return input;
+}
+
+function getUrlVar(key_name) {
+	var url = new URL(window.location.href); //- Safely parsing URLs using the URL API
+	var query = url.searchParams.toString(); // Get the query string
 	var hashes = query.split('&');
-	var vars = {};
+	var key_value = "";
 
 	for (var i = 0; i < hashes.length; i++) {
 		var hash = hashes[i].split('=');
-		var key = decodeURIComponent(hash[0]);
-		var value = hash[1] || '';
-		var value_decode = decodeURIComponent(value);
+		var key = sanitizeInput(decodeURIComponent(hash[0]));
+		var value = sanitizeInput(decodeURIComponent(hash[1] || ''));
 
-		if (isValidInput(key) && isValidInput(value_decode)) {
-			if (key=="username" || key=="password" || key=="chal" || key=="login" || key=="logout" || 
-				key=="prelogin" || key=="res" || key=="uamip" || key=="uamport"|| key=="timeleft" || 
-				key=="userurl" || key=="challenge") {
-				vars[key] = value;
-			}
-		}
-		else {
-			alert("Invalid input!");
+		if (isValidKey(key) && !isUnsafeKey(key) && key==key_name) {
+			key_value = encodeSafeString(value);
 		}
 	}
 
-	return vars;
+	return key_value;
 }
 
 $("document").ready(function() {	
@@ -90,7 +90,13 @@ $("document").ready(function() {
 	}
 	else if (res == "success") {
 		if (userurl != null && userurl != undefined && userurl != '') {
-			window.location = userurl;
+			var urlPattern = /^(https?:\/\/[^\s/$.?#].[^\s]*)$/i; // Only support http or https protocols
+			if (urlPattern.test(userurl)) {
+				window.location = decodeURIComponent(userurl);
+			}
+			else {
+				alert("Invalid URL format. Please check the URL.");
+			}
 		}
 		else
 		{

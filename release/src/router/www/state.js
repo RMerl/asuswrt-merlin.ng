@@ -3,7 +3,12 @@ document.write('<script type="text/javascript" src="/require/require.min.js"></s
 document.write('<script type="text/javascript" src="/js/support_site.js"></script>');
 
 var CoBrand = '<% nvram_get("CoBrand"); %>';
-if(isSupport("TS_UI"))
+var productid = '<#Web_Title2#>';
+var based_modelid = '<% nvram_get("productid"); %>';
+var odmpid = '<% nvram_get("odmpid"); %>';
+var support_site_modelid = (odmpid == "")? based_modelid : odmpid;
+
+if(isSupport("TS_UI") || (based_modelid=="GS7" && CoBrand =="18"))
 	document.write('<link rel="stylesheet" type="text/css" href="/css/difference.css"></link>');
 
 /* String splice function */
@@ -299,10 +304,6 @@ var isSwMode = function(mode){
 var INDEXPAGE = "<% rel_index_page(); %>";
 var ABS_INDEXPAGE = "<% abs_index_page(); %>";
 var current_url = location.pathname.substring(location.pathname.lastIndexOf('/') + 1) || INDEXPAGE;
-var productid = '<#Web_Title2#>';
-var based_modelid = '<% nvram_get("productid"); %>';
-var odmpid = '<% nvram_get("odmpid"); %>';
-var support_site_modelid = (odmpid == "")? based_modelid : odmpid;
 var hw_ver = '<% nvram_get("hardware_version"); %>';
 var bl_version = '<% nvram_get("bl_version"); %>';
 var uptimeStr = "<% uptime(); %>";
@@ -465,6 +466,47 @@ var wl_info = {
 			return count;
 	})()
 };
+
+var DUT_SUPPORT_WLBANDS = (() => {
+	const BAND_DEFINITIONS = [
+		{ bit: 1, band: "2G", text: "2.4 GHz", unit: get_wl_unit_by_band("2G") },
+		{ bit: 2, band: "5G", text: "5 GHz", unit: get_wl_unit_by_band("5G") },
+		{ bit: 4, band: "5G1", text: "5 GHz-1", unit: get_wl_unit_by_band("5G1") },
+		{ bit: 8, band: "5G2", text: "5 GHz-2", unit: get_wl_unit_by_band("5G2") },
+		{ bit: 16, band: "6G", text: "6 GHz", unit: get_wl_unit_by_band("6G") },
+		{ bit: 32, band: "6G1", text: "6 GHz-1", unit: get_wl_unit_by_band("6G1") },
+		{ bit: 64, band: "6G2", text: "6 GHz-2", unit: get_wl_unit_by_band("6G2") },
+	];
+
+	return (() => {
+		if (isSupport("noWiFi")) return [];
+
+		const availableBands = BAND_DEFINITIONS.filter(bandItem => bandItem.unit !== "");
+		const has5G2 = availableBands.some(bandItem => bandItem.band === "5G2");
+		const has6G2 = availableBands.some(bandItem => bandItem.band === "6G2");
+		const finalBands = [];
+		availableBands.forEach(bandItem => {
+			let shouldKeep = true;
+			if (has5G2) {
+				if (bandItem.band === "5G") shouldKeep = false;
+			} else {
+				if (bandItem.band === "5G1") shouldKeep = false;
+			}
+
+			if (has6G2) {
+				if (bandItem.band === "6G") shouldKeep = false;
+			} else {
+				if (bandItem.band === "6G1") shouldKeep = false;
+			}
+
+			if (shouldKeep) {
+				finalBands.push(bandItem);
+			}
+		});
+
+		return finalBands;
+	})();
+})();
 
 function get_band_name_by_wl_unit(wl_unit){
 	var wlnband_list = `<% nvram_get("wlnband_list"); %>`.split("&#60");
@@ -910,7 +952,8 @@ if(based_modelid != "BRT-AC828"){
 //notification value
 if(navigator.userAgent.search("asusrouter") == -1){
 	var notice_pw_is_default = '<% check_pw(); %>';
-	if(notice_pw_is_default == 1 && window.location.pathname.toUpperCase().search("QIS_") < 0) //force to change http_passwd / http_username & except QIS settings
+	var force_chgpass = `<% nvram_get("force_chgpass"); %>`;
+	if((notice_pw_is_default == 1 || force_chgpass == 1) && window.location.pathname.toUpperCase().search("QIS_") < 0) //force to change http_passwd / http_username & except QIS settings
 		location.href = 'Main_Password.asp?nextPage=' + window.location.pathname.substring(1 ,window.location.pathname.length);
 	else if('<% nvram_get("w_Setting"); %>' == '0' && sw_mode != 2 && window.location.pathname.toUpperCase().search("QIS_") < 0)
 		location.href = '/QIS_wizard.htm?flag=wireless';
@@ -2187,8 +2230,7 @@ function show_footer(){
 	var saq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=174";
 	footer_code += '&nbsp|&nbsp<a id="faq_bottom" href="'+saq_href+'" target="_blank" style="font-weight: bolder;text-decoration:underline;cursor:pointer;">FAQ</a>';
 	footer_code += '</td>';
-	footer_code += '<td width="270" id="bottom_help_FAQ" align="right" style="font-family:Arial, Helvetica, sans-serif;">&nbsp&nbsp<input type="text" id="FAQ_input" class="input_FAQ_table" maxlength="40" onKeyPress="submitenter(this,event);" autocorrect="off" autocapitalize="off" onkeyup="filterFAQ();"></td>';
-	footer_code += '<div id="faq-block" class="faq-filter-block" style="display:none"></div>';
+	footer_code += '<td width="270" id="bottom_help_FAQ" align="right" style="font-family:Arial, Helvetica, sans-serif;position:relative">&nbsp&nbsp<input type="text" id="FAQ_input" class="input_FAQ_table" maxlength="40" onKeyPress="submitenter(this,event);" autocorrect="off" autocapitalize="off" onkeyup="filterFAQ();"><div id="faq-block" class="faq-filter-block" style="display:none"></div></td>';
 	footer_code += '</td>';
 	footer_code += '<td width="30" align="left"><div id="bottom_help_FAQ_icon" class="bottom_help_FAQ_icon" style="cursor:pointer;margin-left:3px;" target="_blank" onClick="search_supportsite();"></div></td>';
 	footer_code += '</tr></table></div>\n';
@@ -2240,7 +2282,7 @@ function genFAQList(_str){
 				var name = Object.values(faq_data)[i].name;
 				var _name = Object.values(faq_data)[i].name.toUpperCase();
 				var link = Object.values(faq_data)[i].link;
-				if(isSupport("mtlancfg") !== -1){
+				if(isSupport("mtlancfg") !== -1 && link === "Guest_network.asp"){
 					link = "SDN.asp";
 				}
 				

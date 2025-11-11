@@ -51,14 +51,14 @@ if(isSupport("ipv6")){
 		ipv6_item_flag = true;
 	}
 }
-const get_s46_hgw_case = httpApi.nvramGet(["s46_hgw_case"]).s46_hgw_case; //topology 2,3,6
-const s46_ports_check_flag = (get_s46_hgw_case == '3' || get_s46_hgw_case == '6') ? true : false; //true for topology 3||6
-const get_ipv6_s46_ports = (isSupport("s46") && (wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt")) ? httpApi.nvramGet(["ipv6_s46_ports"]).ipv6_s46_ports : '0';
-let array_ipv6_s46_ports = new Array("");
+var get_s46_hgw_case = httpApi.nvramGet(["wan0_s46_hgw_case"]).wan0_s46_hgw_case; //topology 2,3,6
+var s46_ports_check_flag = (get_s46_hgw_case == '3' || get_s46_hgw_case == '6'); //true for topology 3||6
+var get_ipv6_s46_ports = (isSupport("s46") && (wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt")) ? httpApi.nvramGet(["ipv6_s46_ports"]).ipv6_s46_ports : '0';
+var array_ipv6_s46_ports = [];
 if (get_ipv6_s46_ports != "0" && get_ipv6_s46_ports != "") {
 	array_ipv6_s46_ports = get_ipv6_s46_ports.split(" ");
 }
-let port_confirm = (()=>{
+var port_confirm = (()=>{
 	const result = `<#IPv6_plus_port_confirm#>`;
 	const replacements = {
 		"v6plus": `<#IPv6_plus#>`,

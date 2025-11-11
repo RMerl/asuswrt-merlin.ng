@@ -50,7 +50,7 @@
                                 </div>
                             </div>
                             <div
-                                class="col-12 col-sm-4 col-md-12 my-2 ms-sm-auto p-0 client-detail"
+                                class="col-12 col-sm-4 col-md-12 my-2 ms-sm-auto p-0 client-detail noWiFi"
                                 id="wifi_client_table"
                             ></div>
                         </div>
@@ -452,14 +452,25 @@
             }
 
             // DNS PING
-            let dns_ping_list = "",
-                ping_array = [];
+            var dns_ping_list = "", ping_array = [];
+            let getDnsPingDataRetryCount = 0;
             function getDnsPingData() {
                 let data = httpApi.diag_ping.getResult(),
                     dns_ping = {};
-                if (data.status === "PROCEEDING") {
-                    setTimeout(getDnsPingData, 1000);
+                if (
+                    typeof data === 'object' && (
+                        data.status === "PROCEEDING" ||
+                        data.status === "PARSE ERROR" ||
+                        Object.keys(data).length === 0 ||
+                        (data.status === "FINISH" && Object.keys(data).length === 1)
+                    )
+                ) {
+                    getDnsPingDataRetryCount++;
+                    if (getDnsPingDataRetryCount < 10) {
+                        setTimeout(getDnsPingData, 1000);
+                    }
                 } else {
+                    getDnsPingDataRetryCount = 0;
                     let item = Object.keys(data);
                     for (let i = 0; i < item.length; i++) {
                         if (item[i] === "status") {
@@ -541,7 +552,7 @@
                     }
                 }
 
-                document.querySelector("#dns_ping_table").innerHTML = code;
+                if(document.querySelector("#dns_ping_table")) document.querySelector("#dns_ping_table").innerHTML = code;
             }
 
             function genCpuRam(rawData) {
@@ -3375,6 +3386,8 @@
 				$("#wan1_field").hide();
 				$("#ping_field").hide();
 			}
+
+			if(isSupport("noWiFi")) $(".noWiFi").hide()
 
             function showClientlistModal(){
                 const clientlistModal = new ClientlistModel();

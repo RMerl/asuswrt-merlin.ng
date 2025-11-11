@@ -166,9 +166,8 @@ ipup_main(int argc, char **argv)
 	// always backup received dns
 	nvram_set(strlcat_r(prefix, "dns_r", tmp, sizeof(tmp)), buf);
 
-	/* empty DNS means they either were not requested or peer refused to send them.
-	 * for this case static DNS can be used, if they are configured */
-	if (strlen(buf) == 0 && !nvram_get_int(strcat_r(prefix, "dnsenable_x", tmp)))
+	// user configured dns
+	if (!nvram_get_int(strcat_r(prefix, "dnsenable_x", tmp)))
 		get_userdns_r(prefix, buf, sizeof(buf));
 
 #ifdef RTCONFIG_MULTI_PPP

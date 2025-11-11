@@ -26,12 +26,12 @@
 </style>
 <script><% wl_get_parameter(); %>
 $(function () {
-	if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
+	if(amesh_support && ((isSwMode("RT") || isSwMode("WISP")) || isSwMode("ap")) && ameshRouter_support) {
 		addNewScript('/require/modules/amesh.js');
 	}
 });
 
-const nvram = httpApi.nvramGet(["wsc_config_state", "wps_enable", "wps_band_x", "wl_wps_mode", "productid", "wl_closed", "wl0_radio", "wl1_radio"]);
+const nvram = httpApi.nvramGet(["wsc_config_state", "wps_enable", "wps_band_x", "wl_wps_mode", "productid", "wl_closed", "wl0_radio", "wl1_radio", "wl2_radio", "wl3_radio"]);
 var wsc_config_state_old = nvram.wsc_config_state;
 var wps_enable_old = nvram.wps_enable;
 var wl_wps_mode_old = nvram.wl_wps_mode;
@@ -42,6 +42,7 @@ var timeout = 2000;
 var delay = 1000;
 var productid= nvram.productid;
 var wl_ssid_closed = "<% nvram_get("wl_closed"); %>";
+let main_fh_status = {};
 var curState = nvram.wps_enable;
 var radio_2 = nvram.wl0_radio;
 var radio_5 = nvram.wl1_radio;
@@ -57,34 +58,34 @@ function reject_wps(auth_mode, wep){
 }
 
 function get_band_str(band){
-	if(band == 0)
-		return "2.4 GHz";
-	else if(band == 1){
-		if(!wl_info.band5g_2_support)
-			return "5 GHz";	
-		else{
-			return (band6g_support) ? '5 GHz' : '5 GHz-1';
-		}
-	}
-	else if(band == 2){
-		return (band6g_support) ? '6 GHz' : '5 GHz-2';
-	}
-		
-	return "";
+	const bandObj = DUT_SUPPORT_WLBANDS.find(item => item.unit === String(band));
+	return bandObj ? bandObj.text : "";
 }
 
 function initial(){
 	show_menu();
+
+	const wpsSelect = document.querySelector('select[name="wps_unit"]');
+	if (wpsSelect) {
+		wpsSelect.innerHTML = '';
+		DUT_SUPPORT_WLBANDS.forEach(function(band, idx) {
+			if (band.band === '6G' || band.band === '6G1' || band.band === '6G2') return;
+			const opt = document.createElement('option');
+			opt.id = 'wps_opt' + band.unit;
+			opt.className = 'content_input_fd';
+			opt.value = band.unit;
+			opt.textContent = band.text;
+			if (String(nvram.wps_band_x) === String(band.unit)) {
+				opt.selected = true;
+			}
+			wpsSelect.appendChild(opt);
+		});
+	}
+
 	if(!band5g_support){
 		document.getElementById("wps_band_tr").style.display = "none";		
 	}else{		
-		if(wl_info.band5g_2_support || wl_info.band6g_support){	//Tri-band, RT-AC3200
-			if(band6g_support){
-				document.getElementById("wps_opt1").innerHTML = '5 GHz';
-				// document.getElementById("wps_opt2").innerHTML = '6 GHz';
-				document.getElementById("wps_opt2").remove();
-			}
-			
+		if(!wps_multiband_support && (wl_info.band5g_2_support || wl_info.band6g_support)){	//Tri-band, RT-AC3200
 			document.getElementById("wps_switch").style.display = "none";
 			document.form.wps_unit.value = cur_wps_band;
 			document.getElementById("wps_select").style.display = "";
@@ -167,6 +168,13 @@ function initial(){
 	if("<% nvram_get("wl_closed"); %>" == 1){
 		document.getElementById('WPS_hideSSID_hint').style.display = "";
 	}
+
+	if(based_modelid == "PRT-AX57_GO"){
+		$("#wpsDesc").html(`<#WPS_add_client#>`);
+		$("input[name=wps_method][value=0]").parent().hide();
+		$("input[name=wps_method][value=1]").click();
+	}
+	main_fh_status = get_mainfh_by_wl_unit($('select[name="wps_unit"]').val());
 }
 
 function SwitchBand(){
@@ -229,20 +237,18 @@ function SwitchBand(){
 
 function SelectBand(wps_band){
 	if(wps_enable_old == "0"){
-	var wps_band = document.form.wps_band.value;
-	var wps_multiband = document.form.wps_multiband.value;
-	if (!wps_multiband_support){
-		if(document.form.wps_unit[0].selected)
-			document.form.wps_band.value = 0;
-		else if(document.form.wps_unit[1].selected)
-			document.form.wps_band.value = 1;
-		else if(document.form.wps_unit[2].selected)
-			document.form.wps_band.value = 2;
+		var wps_band = document.form.wps_band.value;
+		var wps_multiband = document.form.wps_multiband.value;
+		if (!wps_multiband_support){
+			const wpsSelect = document.querySelector('select[name="wps_unit"]');
+			if (wpsSelect) {
+				document.form.wps_band.value = wpsSelect.value;
+			}
 		}
 	}
 	else{
 		document.getElementById("wps_band_hint").innerHTML = "* <#WLANConfig11b_x_WPSband_hint#>";
-	return false;
+		return false;
 	}
 	FormActions("apply.cgi", "change_wps_unit", "", "");
 	document.form.target = "";
@@ -474,29 +480,18 @@ function show_wsc_status(wps_infos){
 	if(based_modelid == "RT-AC87U" || based_modelid == "RT-AC87R"){
 		document.getElementById("switchWPSbtn").style.display = "none";
 	}
-	else if(wps_infos[12]?.firstChild?.nodeValue == 0){
-			document.getElementById("wps_band_word").innerHTML = "2.4 GHz";
-			band_string = "2.4 GHz";
-			currentBand = 0;
-	}
-	else if(wps_infos[12]?.firstChild?.nodeValue == 1){
-		if(!wl_info.band5g_2_support){
-			document.getElementById("wps_band_word").innerHTML = "5 GHz";
-			band_string = "5 GHz";
-		}else{
-			document.getElementById("wps_band_word").innerHTML = "5 GHz-1";
-			band_string = "5 GHz-1";
+	else {
+		const bandVal = Number(wps_infos[12]?.firstChild?.nodeValue);
+		if ([0, 1, 2, 3].includes(bandVal)) {
+			currentBand = bandVal;
+			band_string = get_band_str(currentBand);
+			const bandObj = DUT_SUPPORT_WLBANDS.find(item => String(item.unit) === String(currentBand));
+			if (bandObj && !["6G", "6G1", "6G2"].includes(bandObj.band)) {
+				document.getElementById("wps_band_word").innerHTML = band_string;
+			}
 		}
-			
-		currentBand = 1;
-	}	
-	else if(wps_infos[12]?.firstChild?.nodeValue == 2){
-		document.getElementById("wps_band_word").innerHTML = "5 GHz-2";
-		band_string = "5 GHz-2";
-		currentBand = 1;
 	}
 
-	
 	var controlDisplayItem = function () {
 		document.getElementById("wps_state_tr").style.display = "none";
 		document.getElementById("devicePIN_tr").style.display = "none";
@@ -505,12 +500,16 @@ function show_wsc_status(wps_infos){
 			document.getElementById("wps_band_word").innerHTML = "<del>" + document.getElementById("wps_band_word").innerHTML + "</del>";
 	};
 	// First filter whether turn on Wi-Fi or not
-	if(currentBand == 0 && radio_2 != "1") {	//2.4GHz
+	const bandObj = DUT_SUPPORT_WLBANDS.find(item => String(item.unit) === String(currentBand));
+	const isBand2G = bandObj ? bandObj.band === "2G" : false;
+	const isBand5G = bandObj ? ["5G", "5G1", "5G2"].includes(bandObj.band) : false;
+	const wlRadio = nvram[`wl${bandObj ? bandObj.unit : ""}_radio`];
+	if(isBand2G && wlRadio != "1") {	//2.4GHz
 		document.getElementById("wps_enable_hint").innerHTML = "* <#note_turn_wifi_on_WPS#> <a style='color:#FC0; text-decoration: underline; font-family:Lucida Console;cursor:pointer;' onclick=\"_change_wl_advanced_unit_status(" + htmlEnDeCode.htmlEncode(wps_infos[12]?.firstChild?.nodeValue) + ");\"><#btn_go#></a>"
 		controlDisplayItem();
 		return;
 	}
-	else if(currentBand == 1 && radio_5 != "1") {	//5GHz
+	else if(isBand5G == 1 && wlRadio != "1") {	//5GHz
 		document.getElementById("wps_enable_hint").innerHTML = "* <#note_turn_wifi_on_WPS#> <a style='color:#FC0; text-decoration: underline; font-family:Lucida Console;cursor:pointer;' onclick=\"_change_wl_advanced_unit_status(" + htmlEnDeCode.htmlEncode(wps_infos[12]?.firstChild?.nodeValue) + ");\"><#btn_go#></a>"
 		controlDisplayItem();
 		return;
@@ -768,6 +767,78 @@ function checkWLReady(){
 	    }
   	});
 }
+function get_mainfh_by_wl_unit(_wl_unit){
+	let mainfh_info = {};
+	if(isSupport("sdn_mainfh")){
+		const wifi_band_mainfh = (()=>{
+			const options = [
+				{"band":"2G","value":"1"},
+				{"band":"5G","value":"2"},
+				{"band":"5G1","value":"4"},
+				{"band":"5G2","value":"8"},
+				{"band":"6G","value":"16"},
+				{"band":"6G1","value":"32"},
+				{"band":"6G2","value":"64"}
+			];
+			let result = [];
+			if(isSupport("noWiFi")){
+				return result;
+			}
+			if(get_wl_unit_by_band("2G") != ""){
+				result = result.concat(options.find(el => el.value === "1"));
+			}
+			if(get_wl_unit_by_band("5G2") != ""){
+				result = result.concat(options.filter(el => ["4", "8"].includes(el.value)));
+			}
+			else if(get_wl_unit_by_band("5G") != ""){
+				result = result.concat(options.find(el => el.value === "2"));
+			}
+			if(get_wl_unit_by_band("6G2") != ""){
+				result = result.concat(options.filter(el => ["32", "64"].includes(el.value)));
+			}
+			else if(get_wl_unit_by_band("6G") != ""){
+				result = result.concat(options.find(el => el.value === "16"));
+			}
+			return result;
+		})();
+		let specific_mainfh_band = 0;
+		$.each(wifi_band_mainfh, function(index, item){
+			const wl_unit = get_wl_unit_by_band(item.band);
+			if(wl_unit == _wl_unit){
+				specific_mainfh_band = parseInt(item.value);
+				return false;
+			}
+		});
+		let mainfh_info_list = [];
+		const mainfh_sdn_rl = decodeURIComponent(httpApi.nvramCharToAscii(["sdn_rl"]).sdn_rl).split("<").filter(item => item.includes("MAINFH"));
+		mainfh_sdn_rl.forEach(item=>{
+			if(item != ""){
+				const apmIdx = item.split(">")[5];
+				const apm_ssid = decodeURIComponent(httpApi.nvramCharToAscii([`apm${apmIdx}_ssid`])[`apm${apmIdx}_ssid`]);
+				const apm_enable = decodeURIComponent(httpApi.nvramCharToAscii([`apm${apmIdx}_enable`])[`apm${apmIdx}_enable`]);
+				const apm_hide_ssid = decodeURIComponent(httpApi.nvramCharToAscii([`apm${apmIdx}_hide_ssid`])[`apm${apmIdx}_hide_ssid`]);
+				const apm_dut_list = decodeURIComponent(httpApi.nvramCharToAscii([`apm${apmIdx}_dut_list`])[`apm${apmIdx}_dut_list`]).split("<");
+				let apm_band = "0";
+				if(apm_dut_list[1] != undefined && apm_dut_list[1] != ""){
+					const dut_list_arr = apm_dut_list[1].split(">");
+					apm_band = dut_list_arr[1];
+				}
+				mainfh_info_list.push({"ssid":apm_ssid, "band":apm_band, "enable":apm_enable, "hide_ssid":apm_hide_ssid});
+			}
+		});
+		if(mainfh_info_list.length == 0){
+			mainfh_info_list = [{"ssid":"", "band":"", "enable":"0", "hide_ssid":"1"}];
+		}
+		$.each(mainfh_info_list, function(index, item){
+			const band = parseInt(item.band);
+			if(band & specific_mainfh_band){
+				mainfh_info = item;
+				return false;
+			}
+		});
+	}
+	return mainfh_info;
+}
 </script>
 </head>
 
@@ -845,13 +916,28 @@ function checkWLReady(){
 						<div class="clear"></div>					
 						<script type="text/javascript">
 							$('#radio_wps_enable').iphoneSwitch(curState,
-								 function() {
-									if(wl_ssid_closed == 1){
-										alert(band_string + " : <#note_hide_SSID_WPS#>");
+								function() {
+									const show_wps_hint = (()=>{
+										if(isSupport("sdn_mainfh")){
+											if($.isEmptyObject(main_fh_status)){
+												return `${band_string} Main Network has not been established yet`;
+											}
+											else if(main_fh_status.hide_ssid == "1"){
+												return `${band_string} : <#note_hide_SSID_WPS#>`;
+											}
+											else
+												return "";
+										}
+										else{
+											return (wl_ssid_closed == 1) ? `${band_string} : <#note_hide_SSID_WPS#>` : "";
+										}
+									})();
+									if(show_wps_hint != ""){
+										alert(show_wps_hint);
 										$('#iphone_switch').animate({backgroundPosition: -37}, "slow", function() {});
 										return false;
 									}
-	
+
 									if(( wps_multiband_support && document.form.wps_multiband.value == "1")
 									  || document.form.wps_dualband.value == "1"){	//Ralink, Qualcomm Atheros, RT-AC87U WPS multiband case
 										if(	document.form.wl0_auth_mode_x.value == "shared" ||	document.form.wl1_auth_mode_x.value == "shared"

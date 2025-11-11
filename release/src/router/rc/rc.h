@@ -1296,20 +1296,32 @@ extern int eth_down_time;
 #endif
 #endif
 
+//update the datecode once you update the 'backhaul_period_t'.
+#define BHP_VER_STRING "2025061101"
 //The definition comes from Sungmin_Lin
 typedef struct backhaul_period_s {
+	char ver[16];
 	long int bhc_st_init; // initial state
 	long int bhc_st_0; // no backhaul
 	long int bhc_st_1; // eth
 	long int bhc_st_2; // 2G
-	long int bhc_st_4; // 2G+5G
-	long int bhc_st_6; // 2G+5G
-	long int bhc_st_8; // 2G+5G1
+	long int bhc_st_4; // 5G
+	long int bhc_st_8; // 5G1
 	long int bhc_st_10; // eth_2
 	long int bhc_st_20; // eth_3
 	long int bhc_st_40; // eth_4
-	long int bhc_st_128; // 2G+5G(5G1)+6G
+	long int bhc_st_80; // 6G
+	long int bhc_st_100; // 6G-1
+	long int bhc_st_200; // MLO
 } backhaul_period_t;
+
+//update the datecode once you update the 'ahs_dhcp_period_t'.
+#define AHS_DHCP_VER_STRING "2025071001"
+typedef struct ahs_dhcp_period_s {
+	char ver[16];
+	long int ahs_dhcp_st_deconfig; // deconfig or leasefail
+	long int ahs_dhcp_st_nwchg; // network changes
+} ahs_dhcp_period_t;
 
 #ifdef RTCONFIG_DSL
 /* sysdeps/init-*-dsl.c */
@@ -1588,7 +1600,8 @@ extern int discover_pppoe(const char *target_ifnames, char *pppoe_mac);
 extern int is_auto_wanport_enabled();
 extern int get_mac_from_ip(const char *tip, char *tmac, int tmac_size);
 extern int get_br_port_no_from_mac(const char *target_mac);
-extern int get_if_from_br_port_no(const int tno, char *if_name, int if_len);
+extern char *get_if_from_br_port_no(const int tno, char *if_name, int if_len);
+extern int get_autoif_from_br_port_no(const int tno, char *if_name, int if_len);
 extern int autowan_main(int argc, char *argv[]);
 extern void restore_auto_wanport();
 extern void set_auto_wanport(const char *wan_ifname, int restart_wan);
@@ -2048,7 +2061,7 @@ extern int send_arpreq(void);
 extern int psta_monitor_main(int argc, char *argv[]);
 #endif
 // ledg.c
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
 extern int ledg_main(int argc, char *argv[]);
 #endif
 #if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
@@ -2327,7 +2340,7 @@ extern int mount_cifs_main(int argc, char *argv[]);
 static inline void start_cifs(void) {};
 static inline void stop_cifs(void) {};
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_BCMLEDG)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
 extern int start_ledg(void);
 extern int stop_ledg(void);
 #endif

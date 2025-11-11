@@ -177,7 +177,7 @@ apply.login = function(){
 			}
 			else if(httpPassInput.val().length > 32){
 				var hintMaxPassword = `<#JS_max_password#>`;
-				if(isSku("KR") || isSku("SG") || isSku("AA")){
+				if(isSku("KR") || isSku("SG") || isSku("AA") || isSupport("secure_default")){
 					hintMaxPassword = hintMaxPassword.replace("5", "10");
 				}
 				httpPassInput.showTextHint(hintMaxPassword);
@@ -1408,7 +1408,19 @@ apply.submitQIS = function(){
 		}, 500);
 	}
 	else{
-		updateChanges();
+		var waitCount = 0;
+		setTimeout(function(){
+			if(systemVariable.webs_state_update != "1" && waitCount < 10){
+				waitCount++;
+				if(systemVariable.webs_state_update == "0"){
+					waitCount = 0;
+				}
+				setTimeout(arguments.callee, 1000);
+			}
+			else{
+				updateChanges();
+			}
+		}, 500);
 	}
 }
 
@@ -3048,6 +3060,7 @@ goTo.rtMode = function(){
 	qisPostData.wlc_psta = 0;
 	qisPostData.wlc_dpsta = 0;
 	systemVariable.opMode = "RT";
+	handle_mld_enable(systemVariable.opMode);
 	if(isSupport("amas")){
 		postDataModel.insert(aimeshObj);
 		qisPostData.cfg_master = "1";
@@ -3088,6 +3101,7 @@ goTo.rpMode = function(){
 	}
 	
 	systemVariable.opMode = "RP";
+	handle_mld_enable(systemVariable.opMode);
 	if(isSupport("amas")){
 		postDataModel.insert(aimeshObj);
 		qisPostData.cfg_master = "0";
@@ -3102,6 +3116,7 @@ goTo.apMode = function(){
 	qisPostData.wlc_psta = 0;
 	qisPostData.wlc_dpsta = 0;
 	systemVariable.opMode = "AP";
+	handle_mld_enable(systemVariable.opMode);
 	if(isSupport("amas")){
 		postDataModel.insert(aimeshObj);
 		qisPostData.cfg_master = "1";
@@ -3123,6 +3138,7 @@ goTo.mbMode = function(){
 		qisPostData.wlc_dpsta = 0;
 	}
 	systemVariable.opMode = "MB";
+	handle_mld_enable(systemVariable.opMode);
 	if(isSupport("amas")){
 		postDataModel.insert(aimeshObj);
 		qisPostData.cfg_master = "0";
@@ -4500,7 +4516,7 @@ goTo.Finish = function(){
 
 	sendMessageToSiteManager();
 
-	if(isSupport("GUNDAM_UI") || isSupport("TS_UI")) $("#gdContainer").show()
+	if(isSupport("GUNDAM_UI") || isSupport("TS_UI") || isSupport("GS7_MIKU")) $("#gdContainer").show()
 
 	if(!isSwMode("MB")){
 		$("#wirelessFinishFiled").append($("#wlInputField"));
@@ -4596,6 +4612,16 @@ goTo.Finish = function(){
 									.addClass("TX-modelText")
 									.appendTo($(".TX-title"));
 							}
+						}
+
+						if(isSupport("GS7_MIKU")){
+							$("#gundam_page").empty();
+							$("<div>")
+								.addClass("GD-content Miku-bg")
+								.attr("id", "GD-content")
+								.appendTo($("#gundam_page"));
+
+							$("#GD-content").append($("<div>").attr({"class": "GD-wait"}).append($("<div>").attr({"id": "GD-status"}).html("<#Excute_processing#>")));
 						}
 
 						$("#GD-status").html("<#QKSet_finishpre_rebootnow#>");

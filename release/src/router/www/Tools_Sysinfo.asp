@@ -475,7 +475,7 @@ function initial(){
 	if (isSupport("ai_support")) {
 		document.getElementById("ai_board_info").style.display = "";
 		show_aiboard_info();	// Show current values
-		update_aiboard_info();	// Refresh nvram then display updated values
+//		update_aiboard_info();	// Refresh nvram then display updated values
 	}
 }
 
@@ -702,6 +702,7 @@ function show_aiboard_info() {
 	document.getElementById("ai_board_model_td").innerHTML = ai_nv_info.ai_productid;
 	document.getElementById("ai_board_hw_td").innerHTML = "Version " + ai_nv_info.ai_sys_hw_version + " rev. " + ai_nv_info.ai_sys_hw_revision;
 
+/*
 	let free_mem = ai_nv_info.ai_sys_total_memory_kb - ai_nv_info.ai_sys_free_memory_kb;
 	let total_mem = ai_nv_info.ai_sys_total_memory_kb;
 	let used_percentage = Math.round((free_mem / total_mem)*100);
@@ -724,6 +725,7 @@ function show_aiboard_info() {
 	else
 		$("#ai_cpu_bar").css("background-color", "#00ACDF");
 
+*/
 	document.getElementById("ai_board_ipaddr_td").innerHTML = ai_nv_info.ai_sys_ip_address;
 }
 
@@ -925,6 +927,7 @@ function show_aiboard_info() {
 						<th>IP Address</th>
 						<td id="ai_board_ipaddr_td"></td>
 					</tr>
+<!--
 					<tr>
 						<th>Memory Usage</th>
 						<td width="50%" style="padding: 10px;">
@@ -943,6 +946,7 @@ function show_aiboard_info() {
 							<div style="padding-top:5px;" id="ai_cpu_label"></div>
 						</td>
 					</tr>
+-->
 				</table>
 
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">

@@ -12,7 +12,7 @@
 
 ### Manual/hardcoded
 # Append git revision
-#export BUILDREV=1
+export BUILDREV=1
 
 # Enable update server support (don't use if you build a fork!)
 #export MERLINUPDATE=y
@@ -38,28 +38,30 @@ BUILD_ROGUI=y
 #BGTAC2900=y
 #BAC68V4=y
 
-BAX88=y
-BGTAX11000=y
+#BAX88=y
+#BGTAX11000=y
 
 #BAX56=y
-BAX58=y
+#BAX58=y
 
-BAX86=y
-BAX68=y
-BGTAXE11000=y
+#BAX86=y
+#BAX68=y
+#BGTAXE11000=y
 
-BGTAX6000=y
-BXT12=y
-BGTAXE16000=y
-BGTAX11000_PRO=y
-BAX86_PRO=y
-BAX88_PRO=y
+#BGTAX6000=y
+#BXT12=y
+#BGTAXE16000=y
+#BGTAX11000_PRO=y
+#BAX86_PRO=y
+#BAX88_PRO=y
 
-BBE96=y
-BGTBE98PRO=y
-BBE88=y
-BBE86=y
-BBE92=y
+#BBE96=y
+#BGTBE98PRO=y
+#BBE88=y
+#BBE86=y
+#BBE92=y
+#BBE58GO=y
+#BGTBE19000AI=y
 
 ### Branches for each model
 BRANCH_AC68=386_x
@@ -94,6 +96,8 @@ BRANCH_GTBE98_PRO=main
 BRANCH_BE88=main
 BRANCH_BE86=main
 BRANCH_BE92=main
+BRANCH_BE58_GO=rt-be58_go
+BRANCH_GTBE19000AI=asuswrt6
 
 ### Paths
 # Store built images there
@@ -140,9 +144,12 @@ build_fw()
 		elif [ "$FWMODEL" = "gt-ax6000" ] || [ "$FWMODEL" = "xt12" ] || [ "$FWMODEL" = "gt-axe16000" ] || [ "$FWMODEL" = "gt-ax11000_pro" ] || [ "$FWMODEL" = "rt-ax86u_pro" ] || [ "$FWMODEL" = "rt-ax88u_pro" ] ; then
 			FWNAME="$(find -- *_nand_squashfs.pkgtb | head -n 1)"
 			ZIPNAME="$(echo "$FWNAME" | sed 's~_nand_squashfs.pkgtb~~g').zip"
-		elif [ "$FWMODEL" = "gt-be98_pro" ] || [ "$FWMODEL" = "gt-be98" ] || [ "$FWMODEL" = "rt-be96u" ] || [ "$FWMODEL" = "rt-be88u" ] || [ "$FWMODEL" = "rt-be86u" ] || [ "$FWMODEL" = "rt-be92u" ] ; then
+		elif [ "$FWMODEL" = "gt-be98_pro" ] || [ "$FWMODEL" = "gt-be98" ] || [ "$FWMODEL" = "rt-be96u" ] || [ "$FWMODEL" = "rt-be88u" ] || [ "$FWMODEL" = "rt-be86u" ] || [ "$FWMODEL" = "rt-be92u" ] || [ "$FWMODEL" = "rt-be58_go" ]; then
 			FWNAME="$(find -- *_nand_squashfs.pkgtb | head -n 1)"
 			ZIPNAME="$(echo "$FWNAME" | sed 's~_nand_squashfs.pkgtb~~g').zip"
+		elif [ "$FWMODEL" = "gt-be19000ai" ] ; then
+			FWNAME="$(find -- *_emmc_squashfs.pkgtb | head -n 1)"
+			ZIPNAME="$(echo "$FWNAME" | sed 's~_emmc_squashfs.pkgtb~~g').zip"
 		else
 			FWNAME="$(find -- *.trx | head -n 1)"
 			ZIPNAME="$(echo "$FWNAME" | sed 's~.trx~~g').zip"
@@ -202,6 +209,14 @@ clean_tree()
 	FWMODEL="$3"
 	BRANCH="$4"
 	echo "*** $(date +%R) - Cleaning up $FWMODEL..."
+
+	cd "$SRC_LOC" || exit 1
+
+	CURRENT=$(git branch | grep "\*" | cut -d ' ' -f2)
+	if [ "$CURRENT" != "$BRANCH" ] ; then
+		git switch "$BRANCH"
+	fi
+
 	if [ "$RSYNC_TREE" = "y" ]; then
 		echo "*** $(date +%R) - Updating $FWMODEL tree..."
 		rsync -a --del "$SRC_LOC/" "$HOME/$FWPATH"
@@ -212,12 +227,6 @@ clean_tree()
 	fi
 
 	cd "$HOME/$FWPATH" || exit 1
-
-	CURRENT=$(git branch | grep "\*" | cut -d ' ' -f2)
-	if [ "$CURRENT" != "$BRANCH" ] ; then
-		git checkout "$BRANCH"
-	fi
-
 	echo "*** $(date +%R) - $FWMODEL code ready."
 }
 
@@ -308,12 +317,26 @@ fi
 if [ "$BBE92" = "y" ]; then
 	clean_tree amng.be92 amng.be92/release/src-rt-5.04behnd.4916 rt-be92u $BRANCH_BE92
 fi
+if [ "$BBE58GO" = "y" ]; then
+	clean_tree amng.be58go amng.be58go/release/src-rt-5.04behnd.4916 rt-be58_go $BRANCH_BE58_GO
+fi
+if [ "$BGTBE19000AI" = "y" ]; then
+	clean_tree amng.gtbe19000ai amng.gtbe19000ai/release/src-rt-5.04behnd.4916 gt-be19000ai $BRANCH_GTBE19000AI
+fi
 
 echo "--- $(date +%R) - All trees ready!"
 
 # Launch parallel builds
 
 echo "--- $(date +%R) - Launching all builds"
+if [ "$BGTBE19000AI" = "y" ]; then
+	build_fw amng.gtbe19000ai release/src-rt-5.04behnd.4916 gt-be19000ai &
+fi
+
+if [ "$BBE58GO" = "y" ]; then
+	build_fw amng.be58go release/src-rt-5.04behnd.4916 rt-be58_go &
+fi
+
 if [ "$BBE92" = "y" ]; then
 	build_fw amng.be92 release/src-rt-5.04behnd.4916 rt-be92u &
 fi

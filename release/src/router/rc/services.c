@@ -12459,6 +12459,8 @@ start_services(void)
 	start_ledbtn();
 #endif
 #ifdef GTAX6000
+	if (nvram_get_int("AllLED") == 0)
+		setup_leds();
 	start_antled();
 #endif
 	start_acsd();

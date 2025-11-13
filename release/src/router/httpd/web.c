@@ -195,7 +195,7 @@ typedef unsigned long long u64;
 
 #include <passwd.h>
 
-#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2)) || defined(RTCONFIG_UBIFS)
+#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2)) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 static void do_jffs_file(char *url, FILE *stream);
 static void do_jffsupload_cgi(char *url, FILE *stream);
 static void do_jffsupload_post(char *url, FILE *stream, int len, char *boundary);
@@ -29101,7 +29101,7 @@ struct mime_handler mime_handlers[] =
 	{ "change_lang.cgi*", "text/html", no_cache, do_lang_post, do_lang_cgi, do_auth },
 	{ "change_location.cgi*", "text/html", no_cache, do_html_post_and_get, do_change_location_cgi, do_auth },
 #endif //TRANSLATE_ON_FLY
-#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2)) || defined(RTCONFIG_UBIFS)
+#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2)) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 	{ "backup_jffs*.tar", "application/x-tar", NULL, NULL, do_jffs_file, do_auth },
 	{ "jffsupload.cgi*", "text/html", no_cache, do_jffsupload_post, do_jffsupload_cgi, do_auth },
 #endif
@@ -43767,7 +43767,7 @@ void write_encoded_crt(char *name, char *value){
 }
 
 
-#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2)) || defined(RTCONFIG_UBIFS)
+#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2)) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION)
 
 #define JFFS_BACKUP_FILE "/tmp/backup_jffs.tar"
 

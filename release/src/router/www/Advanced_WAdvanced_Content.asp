@@ -1108,7 +1108,9 @@ function applyRule(){
 		if(ofdma_support){
 			if(document.form.wl_ofdma.value == '3' || document.form.wl_ofdma.value == '4'){
 				document.form.wl_mumimo.value = '1';
-			}	
+			} else {
+				document.form.wl_mumimo.value = '0';
+			}
 		}
 
 		if(document.form.wl_plcphdr.value == "0"){

@@ -2362,6 +2362,7 @@ delete_route_ipv6(const struct route_ipv6 *r6, const struct tuntap *tt,
         device = r6->iface;
         gateway_needed = true;
     }
+    (void)device; /* unused on some platforms */
 
     /* if we used a gateway on "add route", we also need to specify it on
      * delete, otherwise some OSes will refuse to delete the route
@@ -2371,7 +2372,7 @@ delete_route_ipv6(const struct route_ipv6 *r6, const struct tuntap *tt,
     {
         gateway_needed = true;
     }
-#endif
+#endif /* ifndef _WIN32 */
 
     struct gc_arena gc = gc_new();
     struct argv argv = argv_new();
@@ -3397,9 +3398,9 @@ done:
 }
 
 /* IPv6 implementation using netlink
- * http://www.linuxjournal.com/article/7356
+ * https://www.linuxjournal.com/article/7356 - "Kernel Korner - Why and How to Use Netlink Socket"
  * netlink(3), netlink(7), rtnetlink(7)
- * http://www.virtualbox.org/svn/vbox/trunk/src/VBox/NetworkServices/NAT/rtmon_linux.c
+ * https://www.virtualbox.org/svn/vbox/trunk/src/VBox/NetworkServices/NAT/
  */
 struct rtreq {
     struct nlmsghdr nh;

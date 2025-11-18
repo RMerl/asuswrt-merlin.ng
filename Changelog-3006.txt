@@ -29,7 +29,7 @@ Asuswrt-Merlin 3006.xxx Changelog
   - UPDATED: Merged GPL 40103 (GT-BE19000AI only)
   - UPDATED: Merged GPL 39099 (other Wifi 7 models)
   - UPDATED: Merged GPL 37351 (Wifi 6 models)
-  - UPDATED: OpenVPN to 2.6.15.
+  - UPDATED: OpenVPN to 2.6.16.
   - UPDATED: libcap-ng to 0.8.4 (to be in sync with upstream)
   - CHANGED: TrafficMonitor stats can now be saved to JFFS,
              and removed support for saving to NVRAM.
@@ -42,6 +42,7 @@ Asuswrt-Merlin 3006.xxx Changelog
            (for static clients for example)
   - FIXED: OpenSSL 1.1.1 would prioritize CHACHA20 over AES
            on BCM4916 devices
+  - FIXED: MU-MIMO couldn't be disabled on some models.
 
 
 3006.102.5 (3-Aug-2025)

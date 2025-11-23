@@ -55,17 +55,8 @@ if (isSupport("UI4")) {
 
 function initial(){
 	show_menu();
-
-	<%radio_status();%>
-
-	if (radio_2 == 0)
-		document.getElementById("radio2warn").style.display = "";
-	if ((band5g_support) && (radio_5 == 0))
-		document.getElementById("radio5warn").style.display = "";
-
 	update_site_info();
 	showSiteTable();
-
 }
 
 function doSorter(_flag, _Method, flip){
@@ -296,8 +287,6 @@ function rescan(){
 	                <div>&nbsp;</div>
 			<div class="formfonttitle">Wireless - Visible Networks</div>
 			<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-			<span class="hint-color" style="display:none; padding-right:20px;" id="radio2warn">2.4 GHz radio is disabled - cannot scan that band!</span>
-			<span class="hint-color" style="display:none; id="radio5warn">5 GHz radio is disabled - cannot scan that band!</span>
 
 			<div class="apply_gen" valign="top">
 				<input style="display:none;" type="button" id="rescanButton" value="<#QIS_rescan#>" onclick="rescan();" class="button_gen">

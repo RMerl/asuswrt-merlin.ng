@@ -18,7 +18,6 @@
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
-<script language="JavaScript" type="text/javascript" src="/tmmenu.js"></script>
 <script language="JavaScript" type="text/javascript" src="/disk_functions.js"></script>
 
 <style type="text/css">
@@ -86,6 +85,31 @@ function initial() {
 	hide_rstats_storage(document.form.rstats_location.value);
 	document.aidiskForm.protocol.value = PROTOCOL;
 	initial_dir();
+}
+
+
+function switchPage(page, current){
+	if (current == page) {
+		return false;
+	}
+
+	switch (page) {
+		case "1":
+			location.href = "/Main_TrafficMonitor_realtime.asp";
+			break;
+		case "2":
+			location.href = "/Main_TrafficMonitor_last24.asp";
+			break;
+		case "3":
+			location.href = "/Main_TrafficMonitor_daily.asp";
+			break;
+		case "4":
+			location.href = "/Main_TrafficMonitor_monthly.asp";
+			break;
+		case "5":
+			location.href = "/Main_TrafficMonitor_settings.asp";
+			break;
+	}
 }
 
 function initial_dir(){
@@ -443,7 +467,7 @@ function set_rstats_location()
 	{
 		document.form.rstats_location.value = "0";
 	}
-	else if (rstats_loc === "*nvram")
+	else if (rstats_loc === "/jffs/")
 	{
 		document.form.rstats_location.value = "2";
 	}
@@ -461,15 +485,12 @@ function hide_rstats_storage(_value){
 }
 
 function applyRule(){
-	if (!validator.numberRange(document.form.rstats_offset, 1, 31))
-		return false;
-
 	showLoading();
 
-	if (document.form.rstats_location.value == "2")
-		document.form.rstats_path.value = "*nvram";
-	else if (document.form.rstats_location.value == "0")
+	if (document.form.rstats_location.value == "0")
 		document.form.rstats_path.value = "";
+	else if (document.form.rstats_location.value == "2")
+		document.form.rstats_path.value = "/jffs/";
 
 	document.form.submit();
 }
@@ -547,9 +568,23 @@ function applyRule(){
                 <tbody>
                 <tr bgcolor="#4D595D">
                 <td valign="top">
-			<div>&nbsp;</div>
-			<div class="formfonttitle"><#Menu_TrafficManager#> - Settings</div>
-			<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
+					<table width="100%">
+						<tr>
+							<td  class="formfonttitle" align="left">
+								<div id="content_title" style="margin-top:5px;"><#Menu_TrafficManager#> - Settings</div>
+							</td>
+							<td>
+								<div align="right">
+									<select id="page_select" onchange="switchPage(this.options[this.selectedIndex].value, '5')" class="input_option" style="margin-top:8px;">
+										<option value="1"><#menu4_2_1#></option>
+										<option value="2"><#menu4_2_2#></option>
+										<option value="3"><#menu4_2_3#></option>
+										<option value="4">Monthly</option>
+										<option value="5" selected>Settings</option>
+									</select>
+								</div>
+				</td></tr></table>
+				<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
@@ -561,10 +596,9 @@ function applyRule(){
 						<td>
 							<select name="rstats_location" class="input_option" onchange="hide_rstats_storage(this.value);">
 								<option value="0">RAM (Default)</option>
-								<option value="1">Custom location</option>
-								<option value="2">NVRAM</option>
+								<option value="1">USB disk</option>
+								<option value="2">JFFS</option>
 							</select>
-							<span id="invalid_location" style="display:none;" class="formfontdesc">Cannot use NVRAM if IPTraffic is enabled!</span>
 						</td>
 					</tr>
 
@@ -591,10 +625,6 @@ function applyRule(){
 							<input type="radio" name="rstats_new" class="input" value="1" <% nvram_match_x("", "rstats_new", "1", "checked"); %>><#checkbox_Yes#>
 							<input type="radio" name="rstats_new" class="input" value="0" <% nvram_match_x("", "rstats_new", "0", "checked"); %>><#checkbox_No#>
 						</td>
-					</tr>
-					<tr>
-						<th>Starting day of monthly cycle</th>
-						<td><input type="text" maxlength="2" class="input_3_table" name="rstats_offset" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("rstats_offset"); %>"></td>
 					</tr>
 				</table>
 				<div class="apply_gen">
@@ -624,4 +654,3 @@ function applyRule(){
 
 </body>
 </html>
-

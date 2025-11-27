@@ -8,152 +8,287 @@
 <title><#Web_Title#> - <#traffic_monitor#> : <#menu4_2_1#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
-<link rel="stylesheet" type="text/css" href="tmmenu.css">
-<link rel="stylesheet" type="text/css" href="menu_style.css"> <!-- Viz 2010.09 -->
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<script type="text/javascript" src="/js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
+<script language="JavaScript" type="text/javascript" src="client_function.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/chart.min.js"></script>
 <script language="JavaScript" type="text/javascript" src="help.js"></script>
 <script language="JavaScript" type="text/javascript" src="state.js"></script>
 <script language="JavaScript" type="text/javascript" src="general.js"></script>
-<script language="JavaScript" type="text/javascript" src="tmmenu.js"></script>
-<script language="JavaScript" type="text/javascript" src="tmcal.js"></script>
 <script language="JavaScript" type="text/javascript" src="popup.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/trafmon.js"></script>
+
+<style>
+.chartCanvas {
+	cursor: crosshair;
+	border-radius: 10px;
+	width: 100% !important;
+}
+</style>
 
 <script type='text/javascript'>
-var nvram = httpApi.nvramGet(["wan_ifname", "lan_ifname", "wl_ifname", "wan_proto", "web_svg", "rstats_enable", "rstats_colors", "bond_wan", "rc_support", "http_id"])
 
-var cprefix = 'bw_r';
-var updateInt = 2;
-var updateDiv = updateInt;
-var updateMaxL = 300;
-var updateReTotal = 1;
-var prev = [];
-var speed_history = [];
-var debugTime = 0;
-var avgMode = 0;
-var wdog = null;
-var wdogWarn = null;
+var speed_data = {};
+var last_speed_data = {};
+var chartObj = {};
+var refresh_toggle = 1;
+
+const updateFrequency = 1000;
+const maxSamples = 60;
+const showBitrate = 1;
+
+if (isSupport("UI4")){
+	var labelsColor = "#1C1C1E";
+	var gridColor = "#CCC";
+	var ticksColor = "#1C1C1E";
+	var txBorderColor = `rgba(${getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-chart-1")})`;
+	var txBackgroundColor = `rgba(${getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-chart-1")}, 0.3)`;
+	var rxBorderColor = `rgba(${getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-chart-2")})`;
+	var rxBackgroundColor = `rgba(${getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-chart-2")}, 0.3)`;
+	var chartBackgroundColor = getComputedStyle(document.querySelector(":root")).getPropertyValue("--color-bg-card");
+	var tableLabelColor = "#006CE1";
+	var tableValueColor = "#1C1C1E";
+} else {
+	var labelsColor = "#CCC";
+	var gridColor = "#282828";
+	var ticksColor = "#CCC";
+	var rxBorderColor = "rgba(76, 143, 192, 1)";
+	var rxBackgroundColor = "rgba(76, 143, 192, 0.3)";
+	var txBorderColor = "rgba(76, 192, 143, 1)";
+	var txBackgroundColor = "rgba(76, 192, 143, 0.3)";
+	var chartBackgroundColor = "#2f3e44";
+	var tableLabelColor = "#FFCC00";
+	var tableValueColor = "white";
+}
 
 // disable auto log out
 AUTOLOGOUT_MAX_MINUTE = 0;
 
-var ref = new TomatoRefresh('update.cgi', 'output=netdev', 2);
 
-ref.stop = function() {
-	this.timer.start(1000);
-}
-
-ref.refresh = function(text) {
-	var c, i, h, n, j, k;
-
-	watchdogReset();
-
-	++updating;
-	try {
-		netdev = null;
-		eval(text);
-
-		n = (new Date()).getTime();
-		if (this.timeExpect) {
-			if (debugTime) E('dtime').innerHTML = (this.timeExpect - n) + ' ' + ((this.timeExpect + 2000) - n);
-			this.timeExpect += 2000;
-			this.refreshTime = MAX(this.timeExpect - n, 500);
-		}
-		else {
-			this.timeExpect = n + 2000;
-		}
-
-		for (i in netdev) {
-			c = netdev[i];
-			if ((p = prev[i]) != null) {
-				h = speed_history[i];
-
-				h.rx.splice(0, 1);
-				h.rx.push((c.rx < p.rx) ? (c.rx + (0xFFFFFFFF - p.rx)) : (c.rx - p.rx));
-
-				h.tx.splice(0, 1);
-				h.tx.push((c.tx < p.tx) ? (c.tx + (0xFFFFFFFF - p.tx)) : (c.tx - p.tx));
-				h.count++;
-				if (h.count > updateMaxL) h.count = updateMaxL;
-			}
-			else if (!speed_history[i]) {
-				speed_history[i] = {};
-				h = speed_history[i];
-				h.rx = [];
-				h.tx = [];
-				for (j = updateMaxL; j > 0; --j) {
-					h.rx.push(0);
-					h.tx.push(0);
-				}
-				h.count = 0;
-			}
-			prev[i] = c;
-		}
-		loadData();
-	}
-	catch (ex) {
-		; // No operation
-	}
-	--updating;
-}
-
-function watchdog()
-{
-	watchdogReset();
-	ref.stop();
-	wdogWarn.style.display = '';
-}
-
-function watchdogReset()
-{
-	if (wdog) clearTimeout(wdog)
-	wdog = setTimeout(watchdog, 10000);
-}
-
-function init()
-{
-	speed_history = [];
-
-	initCommon(2, 0, 0, 1);
-	wdogWarn = E('warnwd');
-	watchdogReset();
-
-	ref.start();
-	var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=158";
-	document.getElementById("faq0").href = faq_href;
-
-	var ctf_disable = '<% nvram_get("ctf_disable"); %>';
-	if(ctf_disable == "0"){
-		document.getElementById("ctfLevelDesc").style.display = "";
-	}
-	else{ // ctf_disable == 1 or ctf_disable is not existed
-		document.getElementById("ctfLevelDesc").style.display = "none";
-	}
-
+function init(){
 	if(bwdpi_support){
 		document.getElementById('content_title').innerHTML = "<#traffic_monitor#>";
 	}
-	
-	document.getElementById('traffic_unit').value = getTrafficUnit();
+	update_traffic();
 }
 
-function switchPage(page){
-	if(page == "1")
-		return false;
-	else if(page == "2")
-		location.href = "/Main_TrafficMonitor_last24.asp";
-	else if(page == "4")
-		location.href = "/Main_TrafficMonitor_monthly.asp";
-	else if(page== "3")
-		location.href = "/Main_TrafficMonitor_daily.asp";
+
+function toggle_refresh(){
+	if (refresh_toggle == 1) {
+		refresh_toggle = 0;
+		document.getElementById('refresh_button').value = "Resume";
+	} else {
+		refresh_toggle = 1;
+		document.getElementById('refresh_button').value = "Pause";
+	}
 }
 
-function setUnit(unit){
-	cookie.set('ASUS_TrafficMonitor_unit', unit);
-	initCommon(2, 0, 0, 1);
+function init_data_object(){
+	for (var ifname in netdev) {
+
+/* Speed data */
+		if (!speed_data[ifname]) {
+			speed_data[ifname] = {};
+			speed_data[ifname].rx = [];
+			speed_data[ifname].tx = [];
+			speed_data[ifname].max_rx = 0;
+			speed_data[ifname].max_tx = 0;
+			speed_data[ifname].friendly = get_friendly_ifname(ifname);
+
+			last_speed_data[ifname] = {};
+			last_speed_data[ifname].rx = 0;
+			last_speed_data[ifname].tx = 0;
+		}
+
+/* Canvas */
+		var htmldata = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">';
+		htmldata += `<thead><tr><td>${speed_data[ifname].friendly}</td></tr></thead>`;
+		htmldata += '<tr>';
+		htmldata += `<td style="padding:14px;" width="100%"><div style="height: 250px;"><canvas class="chartCanvas" style="background-color:${chartBackgroundColor};" id="${ifname}_Chart"></canvas></div>`;
+		htmldata += '<div style="padding-top: 14px; display: flex; justify-content: space-between;">';
+		htmldata += `<div style="color: ${tableLabelColor};">Current In: <span style="color: ${tableValueColor};" id="${ifname}_RX_current"></span></div><div style="color: ${tableLabelColor};">Max In: <span style="color: ${tableValueColor};" id="${ifname}_RX_max"></span></div>`;
+		htmldata += `<div style="color: ${tableLabelColor};">Current Out: <span style="color: ${tableValueColor};" id="${ifname}_TX_current"></span></div><div style="color: ${tableLabelColor};">Max Out: <span style="color: ${tableValueColor};"id="${ifname}_TX_max"></span></div>`;
+		htmldata += '</div></td>'
+		htmldata += '</tr></table>';
+
+		if (ifname == "INTERNET")	// Always insert at the top
+			document.getElementById("graph_content").insertAdjacentHTML("afterbegin", htmldata);
+		else
+			document.getElementById("graph_content").insertAdjacentHTML("beforeend", htmldata);
+
+/* Chart objects */
+		chartObj[ifname] = {};
+	}
 }
+
+
+function update_traffic() {
+	$.ajax({
+		url: '/update.cgi',
+		dataType: 'script',
+		data: {'output': 'netdev'},
+		error: function(xhr) {
+				setTimeout("update_traffic();", 1000);
+		},
+		success: function(response){
+			 if (Object.keys(speed_data).length === 0) {
+				init_data_object();
+			}
+
+			for (var ifname in netdev) {
+				var diff_rx = 0;
+				var diff_tx = 0;
+
+				var current_rx = netdev[ifname].rx;
+				var current_tx = netdev[ifname].tx;
+
+				if(last_speed_data[ifname].rx != 0){
+					if((current_rx - last_speed_data[ifname].rx) < 0){
+						diff_rx = 1;
+					}
+					else{
+						diff_rx = (current_rx - last_speed_data[ifname].rx) / (updateFrequency/1000);
+					}
+				}
+
+				if(last_speed_data[ifname].tx != 0){
+					if((current_tx - last_speed_data[ifname].tx) < 0){
+						diff_tx = 1;
+					}
+					else{
+						diff_tx = (current_tx - last_speed_data[ifname].tx) / (updateFrequency/1000);
+					}
+				}
+
+				last_speed_data[ifname].rx = current_rx;
+				last_speed_data[ifname].tx = current_tx;
+
+				speed_data[ifname].rx.push(diff_rx);
+				speed_data[ifname].tx.push(diff_tx);
+
+				if(diff_rx > speed_data[ifname].max_rx){
+					speed_data[ifname].max_rx = diff_rx;
+				}
+				if(diff_tx > speed_data[ifname].max_tx){
+					speed_data[ifname].max_tx = diff_tx;
+				}
+
+				if(speed_data[ifname].rx.length > maxSamples){
+					speed_data[ifname].rx.shift();
+				}
+				if(speed_data[ifname].tx.length > maxSamples){
+					speed_data[ifname].tx.shift();
+				}
+				if(refresh_toggle == 1) {
+					drawGraph(ifname);
+					document.getElementById(ifname + "_RX_current").innerHTML = rescale_data_rate(diff_rx, (showBitrate ? 2 : 1));
+					document.getElementById(ifname + "_TX_current").innerHTML = rescale_data_rate(diff_tx, (showBitrate ? 2 : 1));
+					document.getElementById(ifname + "_RX_max").innerHTML = rescale_data_rate(speed_data[ifname].max_rx, (showBitrate ? 2 : 1));
+					document.getElementById(ifname + "_TX_max").innerHTML = rescale_data_rate(speed_data[ifname].max_tx, (showBitrate ? 2 : 1));
+				}
+			}
+			setTimeout("update_traffic();", updateFrequency);
+		}
+	});
+}
+
+
+function drawGraph(ifname){
+	var displayed_data_rx = speed_data[ifname].rx;
+	var displayed_data_tx = speed_data[ifname].tx;
+
+	if (chartObj[ifname].obj != undefined) {
+		chartObj[ifname].obj.update();
+		return;
+	}
+
+	var ctx = document.getElementById(ifname + '_Chart').getContext("2d");
+
+	chartObj[ifname].obj = new Chart(ctx, {
+		type: "line",
+		data: {
+			labels: Array.from({length: maxSamples}, (v, i) => i),
+			datasets: [
+				{
+					label: speed_data[ifname].friendly + " In",
+					data: displayed_data_rx,
+					backgroundColor: rxBackgroundColor,
+					borderColor: rxBorderColor,
+					borderWidth: "2",
+					pointRadius: "0",
+					fill: { target: "origin"}
+				},
+				{
+					label: speed_data[ifname].friendly + " Out",
+					data: displayed_data_tx,
+					backgroundColor: txBackgroundColor,
+					borderColor: txBorderColor,
+					borderWidth: "2",
+					pointRadius: "0",
+					fill: { target: "origin"}
+				}
+			]
+		},
+		options: {
+			responsive: true,
+			maintainAspectRatio: false,
+			animation: false,
+			segmentShowStroke: false,
+			interaction: {
+				mode: 'index',
+				intersect: false
+			},
+			plugins: {
+				tooltip: {
+					position: 'nearest',
+					intersect: false,
+					mode: 'index',
+					displayColors: false,
+					bodySpacing: 6,
+					callbacks: {
+						title: function (context) {return "";},
+						label: function (context) {
+							var label = context.dataset.label || '';
+							var value = context.parsed.y;
+							return label + " - " + rescale_data_rate(value, (showBitrate ? 2 : 1));
+						}
+					}
+				},
+				legend: {
+					display: true,
+					position: "top",
+					labels: {color: labelsColor}
+				},
+			},
+			scales: {
+				x: {
+					display: true,
+					type: 'linear',
+					min: 0,
+					max: maxSamples,
+					grid: { color: gridColor },
+					ticks: {
+						display: false,
+						stepSize: 10 / (updateFrequency/1000),
+					}
+				},
+				y: {
+					grace: "5%",
+					min: 0,
+					grid: { color: gridColor },
+					ticks: {
+						color: ticksColor,
+						callback: function(value, index, ticks) {return rescale_data_rate(value, (showBitrate ? 2 : 1));}
+					}
+				},
+			}
+		}
+	});
+}
+
+
 </script>
 </head>
 
@@ -185,182 +320,54 @@ function setUnit(unit){
 	  <div id="subMenu"></div>
 	</td>
 
-  <td valign="top">
+	<td valign="top">
 		<div id="tabMenu" class="submenuBlock"></div>
-      	<!--===================================Beginning of Main Content===========================================-->
-      	<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
-  		<tr>
+		<!--===================================Beginning of Main Content===========================================-->
+		<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
+		<tr>
 			<td align="left"  valign="top">
 			<table width="100%" border="0" cellpadding="4" cellspacing="0" class="FormTitle" id="FormTitle">
 				<tbody>
-				<!--===================================Beginning of graph Content===========================================-->
-	      		<tr>
-					<td bgcolor="#4D595D" valign="top"  >
-		  				<table width="740px" border="0" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="TMTable">
-        			<tr>
-						<td>
-							<table width="100%" >
+				<tr>
+					<td bgcolor="#4D595D" valign="top">
+						<table width="740px" border="0" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="TMTable">
 							<tr>
-							<td  class="formfonttitle" align="left">
-										<div id="content_title" style="margin-top:5px;"><#Menu_TrafficManager#> - <#traffic_monitor#></div>
-									</td>
-							<td>
-     						<div align="right">
-     		   					<select id="page_select" onchange="switchPage(this.options[this.selectedIndex].value)" class="input_option">
-											<option value="1" selected><#menu4_2_1#></option>
-											<option value="2"><#menu4_2_2#></option>
-											<option value="3"><#menu4_2_3#></option>
-											<option value="4">Monthly</option>
-								</select>
-							</div>
-							</td></tr></table>
-						</td>
-        			</tr>
-        			<tr>
-          				<td height="5"><div class="splitLine"></div></td>
-        			</tr>
-        			<tr>
-						<td height="30" align="left" valign="middle" >
-							<div class="formfontcontent"><p class="formfontcontent"><#traffic_monitor_desc1#></p></div>
-          				</td>
-        			</tr>
-        			<tr>
-          				<td align="left" valign="middle">
-							<!-- add some hard code of style attributes to wordkaround for IE 11-->
-							<table width="95%" border="1" align="left" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="DescTable" style="font-size:12px; border: 1px solid #000000; border-collapse: collapse;">
-								<tr><th style="color:#FFFFFF; font-weight:normal; line-height:15px; height: 30px; text-align:left; font-size:12px;	padding-left: 10px;	border-collapse: collapse;" width="16%"></th><th class="tm_title_bg" style="color:#FFFFFF; font-weight:normal; line-height:15px; height: 30px; text-align:left; font-size:12px;padding-left: 10px;border-collapse: collapse;" width="26%"><#Internet#></th><th class="tm_title_bg" style="color:#FFFFFF; font-weight:normal; line-height:15px; height: 30px; text-align:left; font-size:12px;	padding-left: 10px;border-collapse: collapse;" width="29%"><#tm_wired#></th><th class="tm_title_bg" style="color:#FFFFFF; font-weight:normal; line-height:15px; height: 30px; text-align:left; font-size:12px;	padding-left: 10px; border-collapse: collapse;" width="29%"><#tm_wireless#></th></tr>
-								<tr><th class="tm_title_bg" style="color:#FFFFFF; font-weight:normal; line-height:15px; height: 30px; text-align:left; font-size:12px;	padding-left: 10px;	border-collapse: collapse;"><#tm_reception#></th><td style="color:#FF9000;padding-left: 10px;	border-collapse: collapse;"><#tm_recp_int#></td><td style="color:#3CF;padding-left: 10px;border-collapse: collapse;"><#tm_recp_wired#></td><td style="color:#3CF;padding-left: 10px;border-collapse: collapse;"><#tm_recp_wireless#></td></tr>
-								<tr><th class="tm_title_bg" style="color:#FFFFFF; font-weight:normal; line-height:15px; height: 30px; text-align:left; font-size:12px;	padding-left: 10px;border-collapse: collapse;"><#tm_transmission#></th><td style="color:#3CF;padding-left: 10px;border-collapse: collapse;"><#tm_trans_int#></td><td style="color:#FF9000;padding-left: 10px;;border-collapse: collapse;"><#tm_trans_wired#></td><td style="color:#FF9000;padding-left: 10px;border-collapse: collapse;"><#tm_trans_wireless#></td></tr>
-							</table>
-							<!--End-->
-          				</td>
-					</tr>
-					<tr>
-						<td>
-							<div style="display:flex;align-items: center;margin: 4px 0;">
-								<div><#Scale#></div>
-								<div style="margin-left: 24px;">
-									<select class="input_option" id="traffic_unit" onchange="setUnit(this.value);">
-										<option value="0">KB</option>
-										<option value="1">MB</option>
-										<option value="2">GB</option>
-										<option value="3">TB</option>
-									</select>
-								</div>
-							</div>
-							
-						</td>
-					</tr>
-        			<tr>
-          				<td height="30" align="left" valign="middle" >
-							<div class="formfontcontent"><p class="formfontcontent"><#traffic_monitor_desc2#></p></div>
-							
-							<div id="ctfLevelDesc" style="display:none" class="formfontcontent">
-								<p class="formfontcontent">
-									<b><#ADSL_FW_note#></b> <#traffic_monitor_desc3#>
-									Click <a style="text-decoration:underline" href="Advanced_SwitchCtrl_Content.asp?af=ctf_disable_force">HERE</a> to disable NAT Acceleration.  
-								</p>
-							</div>
-
-							<div class="formfontcontent"><p class="formfontcontent"><a id="faq0" href="" target="_blank" style="font-weight: bolder;text-decoration:underline;"><#traffic_monitor#> FAQ</a></p></div>
-          				</td>
-        			</tr>
-
-        			<tr>
-        				<td>
-							<span id="tab-area"></span>
-							<span id="iftitle" style="font-weight: bold; color: #A0B06B; position: absolute; top: 375px; left: 45%; min-width: 180px;"></span>
-							<!--========= svg =========-->
-							<!--[if IE]>
-								<div id="svg-table" align="left" class="IE8HACK">
-									<object id="graph" src="tm.svg" classid="image/svg+xml" width="730" height="350">
-								</div>
-							<![endif]-->
-							<!--[if !IE]>-->
-								<object id="graph" data="tm.svg" type="image/svg+xml" width="730" height="350">
-							<!--<![endif]-->
-								</object>
-  							<!--========= svg =========-->
-      					</td>
-        			</tr>
-
-  		     		<tr>
-						<td>
-				    	 	<table width="730px" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_NWM" style="margin-top:0px;margin-left:-1px;*margin-left:-10px;margin-left:-12px \9;">
-						  		<tr>
-						  			<th style="text-align:center; width:160px;"><#Current#></th>
-						  			<th style="text-align:center; width:160px;"><#Average#></th>
-						  			<th style="text-align:center; width:160px;"><#Maximum#></th>
-						  			<th style="text-align:center; width:160px;"><#Total#></th>
-						  		</tr>
-						  		<tr>
-						  			<td style="text-align:center;font-weight: bold; background-color:#111;"><div id="rx-current"></div></td>
-						  			<td style="text-align:center; background-color:#111;" id='rx-avg'></td>
-						  			<td style="text-align:center; background-color:#111;" id='rx-max'></td>
-						  			<td style="text-align:center; background-color:#111;" id='rx-total'></td>
-						    	</tr>
-						    	<tr>
-						    		<td style="text-align:center;font-weight: bold; background-color:#111;"><div id="tx-current"></div></td>
-									<td style="text-align:center; background-color:#111;" id='tx-avg'></td>
-									<td style="text-align:center; background-color:#111;" id='tx-max'></td>
-									<td style="text-align:center; background-color:#111;" id='tx-total'></td>
-								</tr>
-							</table>
-						</td>
-					</tr>
-					</table>
-					</td>
-				</tr>
-
-				<tr style="display:none">
-					<td bgcolor="#FFFFFF">
-		  				<table width="100%"  border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
-							<thead>
-								<tr>
-									<td colspan="5" id="TriggerList">Display Options</td>
-								</tr>
-							</thead>
-
-						<div id='bwm-controls'>
-							<tr>
-								<th width='50%'></th>
 								<td>
-									<a href='javascript:switchAvg(1)' id='avg1'>Off</a>,
-									<a href='javascript:switchAvg(2)' id='avg2'>2x</a>,
-									<a href='javascript:switchAvg(4)' id='avg4'>4x</a>,
-									<a href='javascript:switchAvg(6)' id='avg6'>6x</a>,
-									<a href='javascript:switchAvg(8)' id='avg8'>8x</a>
+									<table width="100%">
+										<tr>
+											<td  class="formfonttitle" align="left">
+												<div id="content_title" style="margin-top:5px;"><#Menu_TrafficManager#> - <#traffic_monitor#></div>
+											</td>
+											<td>
+												<div align="right">
+													<select id="page_select" onchange="tm_switchPage(this.options[this.selectedIndex].value, '1')" class="input_option">
+														<option value="1" selected><#menu4_2_1#></option>
+														<option value="2"><#menu4_2_2#></option>
+														<option value="3"><#menu4_2_3#></option>
+														<option value="4">Monthly</option>
+														<option value="5">Settings</option>
+													</select>
+												</div>
+											</td></tr></table>
 								</td>
 							</tr>
 							<tr>
-								<th></th>
-								<td>
-									<a href='javascript:switchScale(0)' id='scale0'>Uniform</a>,
-									<a href='javascript:switchScale(1)' id='scale1'>Per IF</a>
-								</td>
+								<td height="5"><div class="splitLine"></div></td>
 							</tr>
 							<tr>
-								<th></th>
-								<td>
-									<a href='javascript:switchDraw(0)' id='draw0'>Solid</a>,
-									<a href='javascript:switchDraw(1)' id='draw1'>Line</a>
-								</td>
+								<td><div class="apply_gen"><input id="refresh_button" type="button" onClick="toggle_refresh();" value="Pause" class="button_gen"></div></td>
 							</tr>
 							<tr>
-								<th></th>
-								<td>
-									<a href='javascript:switchColor()' id='drawcolor'>-</a><a href='javascript:switchColor(1)' id='drawrev'></a>
-								</td>
+								<td id="graph_content"></td>
 							</tr>
-						</div>
 						</table>
 					</td>
 				</tr>
-			</tbody>
+				</tbody>
 			</table>
-		</td>
-	</tr>
-	</table>
+			</td>
+		</tr>
+		</table>
 	</td>
 	</tr>
 </table>

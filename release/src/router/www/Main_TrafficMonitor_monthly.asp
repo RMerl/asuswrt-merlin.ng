@@ -51,6 +51,11 @@ if (isSupport("UI4")){
 	var tableLabelColor = "#006CE1";
 	var tableValueColor = "#1C1C1E";
 } else {
+	if (rog_support) {
+		var chartBackgroundColor = "rgba(17, 17, 17)";
+	} else {
+		var chartBackgroundColor = "#2f3e44";
+	}
 	var labelsColor = "#CCC";
 	var gridColor = "#282828";
 	var ticksColor = "#CCC";
@@ -58,7 +63,6 @@ if (isSupport("UI4")){
 	var rxBorderColor = "#000000";
 	var txBackgroundColor = "#4CC08F";
 	var txBorderColor = "#000000";
-	var chartBackgroundColor = "#2f3e44";
 	var tableLabelColor = "#FFCC00";
 	var tableValueColor = "white";
 }

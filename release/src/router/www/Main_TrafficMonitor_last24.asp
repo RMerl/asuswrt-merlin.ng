@@ -95,6 +95,11 @@ if (isSupport("UI4")){
 	var tableLabelColor = "#006CE1";
 	var tableValueColor = "#1C1C1E !important";
 } else {
+	if (rog_support) {
+		var chartBackgroundColor = "rgba(17, 17, 17)";
+	} else {
+		var chartBackgroundColor = "#2f3e44";
+	}
 	var labelsColor = "#CCC";
 	var gridColor = "#282828";
 	var ticksColor = "#CCC";
@@ -102,7 +107,6 @@ if (isSupport("UI4")){
 	var rxBackgroundColor = "rgba(76, 143, 192, 0.3)";
 	var txBorderColor = "rgba(76, 192, 143, 1)";
 	var txBackgroundColor = "rgba(76, 192, 143, 0.3)";
-	var chartBackgroundColor = "#2f3e44";
 	var tableLabelColor = "#FFCC00";
 	var tableValueColor = "white !important";
 }

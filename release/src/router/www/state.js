@@ -4552,27 +4552,8 @@ function plainPasswordSwitch(obj, event){
 }
 
 function checkPolicy() {
-
-    const applyRule = () => {
-        httpApi.privateEula.set("1", function(){
-            httpApi.securityUpdate.set(1);
-            httpApi.nvramSet({
-                "webs_update_enable": 1,
-                "action_mode": "apply",
-                "rc_service": "saveNvram"
-            },()=>{},false);
-        })
-    }
-
     if (policy_status.EULA == "0") {
         const policyModal = new PolicyUpdateModalComponent();
-        policyModal.show();
-    } else if (policy_status.EULA == 1 && ((policy_status.PP == 1 && policy_status.PP_time != "") || (policy_status.PP == 0 && policy_status.PP_time == ""))) {
-        const policyModal = new PolicyModalComponent({
-            policy: 'PP',
-            agreeCallback: applyRule,
-            submit_reload: 1
-        });
         policyModal.show();
     } else if (policy_status.TM == 1 && policy_status.TM_time == '') {
         const policyModal = new PolicyModalComponent({

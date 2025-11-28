@@ -16,71 +16,6 @@ ASUS_POLICY = {
         SelectLanguage: `<#selected_language#>`,
         ModalName: `<#Web_Title2#>`,
     }, Content: {
-        PP: {
-            Title: `<#ASUS_PP_Title#>`,
-            Desc: `<#ASUS_PP_Desc#>`,
-            HTML: `<style>
-                    .policy_title{
-                        font-weight: bold;
-                        text-decoration: underline;
-                        margin-bottom: 1em;
-                    }
-                    .policy_desc{
-                        font-weight: normal;
-                        margin-bottom: 1em;
-                    }
-                    .policy_end{
-                        border: 1px solid #ddd;
-                        padding: 5px;
-                        margin: 1em;
-                    }
-                    .policy_law {
-                        font-weight: normal;
-                    }
-                    .policy_law ol {
-                        padding-left: 1em;
-                    }
-                    .policy_law ol ol{
-                        padding-left: 2em;
-                    }
-                    .policy_law li{
-                        margin-top: 1em;
-                        margin-bottom: 1em;
-                    }
-                    .policy_law li li::marker{
-                        content: '(' counter(list-item) ') ';
-                    }
-                </style>
-                <div>
-                    <div class="policy_title"><#ASUS_PP_Title#></u></b></div>
-                    <div class="policy_desc"><#ASUS_PP_Desc#></div>
-                    <div class="policy_law">
-                        <ol>
-                            <li><#ASUS_PP_Law_1#>
-                                <ol>
-                                    <li><#ASUS_PP_Law_1_1#></li>
-                                    <li><#ASUS_PP_Law_1_2#><#ASUS_PP_Law_1_3#></li>
-                                </ol>
-                            </li>
-                            <li><#ASUS_PP_Law_2#>
-                                <ol>
-                                    <li><#ASUS_PP_Law_2_1#></li>
-                                    <li><#ASUS_PP_Law_2_2#></li>
-                                    <li><#ASUS_PP_Law_2_3#></li>
-                                </ol>
-                            </li>
-                            <li><#ASUS_PP_Law_3#>
-                                <ol>
-                                    <li><#ASUS_PP_Law_3_1#><#ASUS_PP_Law_3_2#></li>
-                                    <li><#ASUS_PP_Law_3_3#></li>
-                                </ol>
-                            </li>
-                            <li><#ASUS_PP_Law_4#></li>
-                        </ol>
-                        <div class="policy_end"><#ASUS_PP_End#></div>
-                    </div>
-                </div>`,
-        },
         EULA: {
             Title: `<#ASUS_EULA_Title#>`,
             Desc: `<#ASUS_EULA_Desc#>`,
@@ -685,8 +620,6 @@ policy_status = {
     "Policy_lang": "EN",
     "EULA": "0",
     "EULA_time": "",
-    "PP": "0",
-    "PP_time": "",
     "TM": "0",
     "TM_time": "",
 };
@@ -697,12 +630,6 @@ async function PolicyStatus() {
             policy_status.EULA = data.ASUS_NEW_EULA;
             policy_status.EULA_time = data.ASUS_NEW_EULA_time;
         });
-
-    await httpApi.privateEula.get()
-        .then(data => {
-            policy_status.PP = data.ASUS_PP;
-            policy_status.PP_time = data.ASUS_PP_time;
-        })
 
     const TM_EULA = await httpApi.nvramGet(['TM_EULA', 'TM_EULA_time'], true);
     policy_status.TM = TM_EULA.TM_EULA;
@@ -982,17 +909,7 @@ class PolicyModal extends HTMLElement {
                     }
                     break;
                 case "PP":
-                    if (policy_status.PP < "2" || policy_status.PP_time === "") {
-                        const scrollInfoDiv = document.createElement('div');
-                        scrollInfoDiv.className = "scroll-info";
-                        scrollInfoDiv.innerHTML = ASUS_POLICY.Dict.ScrollDown;
-
-                        this.div.querySelector('div.modal-body').appendChild(scrollInfoDiv);
-                        this.div.querySelector('div.modal-footer').appendChild(this.disagreeBtn);
-                        this.div.querySelector('div.modal-footer').appendChild(this.agreeBtn);
-                    } else {
-                        this.div.querySelector('div.modal-footer').appendChild(this.closeBtn);
-                    }
+                    // No privacy policy in stock ROM.
                     break;
                 case "TM":
                     this.div.querySelector('div.policy-scroll-div').querySelector('#tm_eula_url').setAttribute("href", "https://nw-dlcdnet.asus.com/trend/tm_privacy");
@@ -1098,16 +1015,7 @@ class PolicyModal extends HTMLElement {
                     }
                     break
                 case "PP":
-                    this.agreeCallback();
-                    this.agreeBtn.innerHTML = '';
-                    this.agreeBtn.appendChild(this.loadingImg);
-                    httpApi.privateEula.set("1", () => {
-                        top.document.body.style.removeProperty('overflow');
-                        this.remove();
-                        if (this.submit_reload == 1) {
-                            top.window.location.reload();
-                        }
-                    })
+                    // No privacy policy in the stock rom.
                     break
                 case "TM":
                     this.agreeCallback();
@@ -1227,7 +1135,6 @@ class PolicyWithdrawModal extends HTMLElement {
 
         this.shadowRoot.appendChild(template.content.cloneNode(true));
         this.div = this.shadowRoot.querySelector('div');
-        this.div.querySelector('button.know-risk').addEventListener('click', this.handleClickKnowRisk.bind(this));
         this.div.querySelector('button.read-again').addEventListener('click', this.handleClickReadAgain.bind(this));
     }
 
@@ -1252,18 +1159,10 @@ class PolicyWithdrawModal extends HTMLElement {
 
     readAgainCallback = () => {
     };
-    knowRiskCallback = () => {
-    };
 
     setReadAgainCallback(callback) {
         if (typeof callback === "function") {
             this.readAgainCallback = callback;
-        }
-    }
-
-    setKnowRiskCallback(callback) {
-        if (typeof callback === "function") {
-            this.knowRiskCallback = callback;
         }
     }
 
@@ -1277,34 +1176,10 @@ class PolicyWithdrawModal extends HTMLElement {
         }
     }
 
-    handleClickKnowRisk(e) {
-        e.target.innerHTML = '';
-        e.target.appendChild(this.loadingImg);
-        this.knowRiskCallback();
-        httpApi.privateEula.set("0", () => {
-            top.document.body.style.removeProperty('overflow')
-            this.remove();
-            if (this.submit_reload == 1) {
-                top.window.location.reload();
-            }
-        })
-    }
-
     handleClickReadAgain() {
         const parentNode = this.parentNode;
         this.remove();
         this.readAgainCallback();
-        if (window.location.pathname.toUpperCase().search("QIS_") < 0) {
-            const policyModal = new PolicyModalComponent({
-                policy: "PP",
-                submit_reload: this.submit_reload,
-                agreeCallback: this.agreeCallback,
-                disagreeCallback: this.disagreeCallback,
-                readAgainCallback: this.readAgainCallback,
-                knowRiskCallback: this.knowRiskCallback
-            });
-            parentNode.appendChild(policyModal.render());
-        }
     }
 }
 
@@ -2201,19 +2076,7 @@ class QisPolicyPageComponent {
 
         const handleClickApplyBtn = (e) => {
             if (!e.target.classList.contains("disabled")) {
-                if (policy === "PP") {
-                    applyBtn.innerHTML = Get_Component_btnLoading();
-                    setTimeout(function () {
-                        httpApi.privateEula.set("1", function () {
-                            httpApi.securityUpdate.set(1);
-                            httpApi.nvramSet({
-                                "webs_update_enable": 1, "action_mode": "apply", "rc_service": "saveNvram"
-                            }, () => {
-                            }, false);
-                            location.reload();
-                        })
-                    }, 1000);
-                } else if (policy === "EULA") {
+                if (policy === "EULA") {
                     const yearChecked = shadowRoot.querySelector("#ASUS_EULA_enable").checked;
 
                     if (!yearChecked) {

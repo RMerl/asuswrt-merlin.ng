@@ -171,9 +171,6 @@
 					systemVariable.originWansMode = initNvram.wans_mode;
 					systemVariable.keepDefpsk = isSupport("defpsk");
 					systemVariable.eulaStatus = initNvram.ASUS_NEW_EULA;
-					httpApi.privateEula.get().then(data=>{
-						systemVariable.ppStatus = data
-					});
 					systemVariable.macClone = false;
 
 					httpApi.log("tcode", systemVariable.territoryCode, systemVariable.qisSession)
@@ -231,68 +228,6 @@
 							.then(data => {
 								if (data.ASUS_NEW_EULA == 0 || data.ASUS_NEW_EULA_time == "") {
 									goTo.EULA();
-								} else {
-									httpApi.privateEula.get()
-											.then(data => {
-												if (data.ASUS_PP == 0 && data.ASUS_PP_time == "") {
-													goTo.PP();
-												} else {
-													switch (urlParameter.get("flag") || "") {
-														case "sitesurvey_rep":
-															goTo.rpMode();
-															break;
-														case "lanip":
-															goTo.apMode();
-															break;
-														case "sitesurvey_mb":
-															goTo.mbMode();
-															break;
-														case "manual":
-															goTo.opMode();
-															break;
-														case "pppoe":
-															goTo.PPPoE();
-															break;
-														case "wireless":
-															goTo.Wireless();
-															break;
-														case "amasrole_page":
-															goTo.chooseRole();
-															break;
-														case "amasnode_page":
-															goTo.asNode();
-															break;
-														case "amas_addNode":
-															systemVariable.amas_newWindow_addNode = true;
-															setTimeout(goTo.amassearch, 50);
-															break;
-														case "site2site":
-															goTo.site2site();
-															break;
-														case "changePass":
-															goTo.Login();
-															break;
-														case "EULA":
-															goTo.EULA();
-															break;
-														case "PP":
-															systemVariable.onlyReSignPP = true;
-															goTo.PP();
-															break;
-														case "rtMode":
-															systemVariable.advSetting = true;
-															goTo.rtMode();
-															break;
-														case "wispMode":
-															systemVariable.advSetting = true;
-															goTo.wispMode();
-															break;
-														default:
-															goTo.Welcome();
-															break;
-													}
-												}
-											});
 								}
 							});
 

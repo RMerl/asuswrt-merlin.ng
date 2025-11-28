@@ -43,15 +43,11 @@
 
 let eula_status = {
 	"EULA": "0",
-	"PP": "0",
 	"TM_EULA": "0"
 }
 
 eula_status = httpApi.nvramGet(["ASUS_NEW_EULA", "TM_EULA"], true);
 eula_status.EULA = eula_status.ASUS_NEW_EULA;
-httpApi.privateEula.get().then(data=>{
-    eula_status.PP = data.ASUS_PP;
-});
 
 var link_internet = httpApi.nvramGet(["link_internet"], true).link_internet;
 
@@ -94,16 +90,6 @@ function initial(){
 	else{
 		document.getElementById("tm_eula").style.display = "none";
 	}
-
-	if(eula_status.PP >= "1"){
-        $("#pp").find('.btn_subusage').attr({'onclick':`show_policy_withdraw('PP')`,'value':`<#withdraw_str#>`});
-        $("#pp").find('.eula_withdraw_content').append($('<div>').html(`<div><#ASUS_eula_withdraw_content1#> <#ASUS_eula_withdraw_content2#></div>`));
-        $("#pp").find('.eula_withdraw_content').append($('<div>').html(`<a style="cursor: pointer; color: #006ce1; text-decoration: underline;" onclick="show_policy('PP')"><#ASUS_PP_Title#></a>`));
-        $("#pp").find('.eula_withdraw_content').append($('<div>').html(`<div style="margin-top: 1em;"><#ASUS_eula_withdraw_content3#></div>`));
-	} else {
-        $("#pp").find('.eula_withdraw_content').append($('<div>').html(`<div><#ASUS_PP_Info#></div>`));
-		$("#pp").find('.btn_subusage').attr({'onclick':`show_policy('PP')`,'value':`<#Reading#>`});
-    }
 
 	setTimeout(update_link_status, 1000);
 }
@@ -159,24 +145,6 @@ function show_policy_withdraw(policy_type){
 
 function show_policy(policy_type) {
     const applyRule = () => {
-        httpApi.privateEula.set("1", function () {
-            httpApi.securityUpdate.set(1);
-            httpApi.nvramSet({
-                "webs_update_enable": 1,
-                "action_mode": "apply",
-                "rc_service": "saveNvram"
-            },()=>{},false);
-        })
-    }
-
-    if (policy_type == 'PP') {
-        const policyModal = new PolicyModalComponent({
-            policy: policy_type,
-            agreeCallback: applyRule,
-            submit_reload: 1
-        });
-        policyModal.show();
-    } else {
         const policyModal = new PolicyModalComponent({
             policy: policy_type,
             submit_reload: 1

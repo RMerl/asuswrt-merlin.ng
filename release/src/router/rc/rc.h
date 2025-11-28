@@ -2555,7 +2555,6 @@ extern void stop_dsl_autodet(void);
 extern void stop_dsl_diag(void);
 extern int start_dsl_diag(void);
 #endif
-extern int getPid_fromFile(char *file_name);
 #ifdef RTCONFIG_FRS_LIVE_UPDATE
 extern int firmware_check_update_main(int argc, char *argv[]);
 #endif

@@ -4914,12 +4914,6 @@ void init_syspara(void)
 		nvram_set("wps_device_pin", wps_gen_pin(devPwd, sizeof(devPwd)) ? devPwd : "12345670");
 	} else
 		nvram_set("wps_device_pin", value);
-#ifdef RTCONFIG_AMAS
-	int ret = 0;
-
-	ret = chk_acscli2_cmds("acs_restart");
-	_dprintf("%s, acscli2_can_do_restart:%d\n", __func__, ret);
-#endif
 }
 
 #ifdef RTCONFIG_BCMARM

@@ -232,6 +232,10 @@ static void do_jffsupload_post(char *url, FILE *stream, int len, char *boundary)
 #include <comfw.h>
 #endif
 
+// The stock ROM blobs (3.0.0.4.386_51733) does not contain multople functions
+// we define this switch to exclude them.
+#define IS_STOCK_ROM
+
 extern int ej_wl_sta_list_2g(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_wl_sta_list_5g(int eid, webs_t wp, int argc, char_t **argv);
 #ifndef RTCONFIG_QTN
@@ -351,8 +355,9 @@ extern int get_lang_num();
 extern int ej_get_iptvSettings(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_get_stbPortMappings(int eid, webs_t wp, int argc, char_t **argv);
 extern int config_iptv_vlan(char *isp);
+#ifndef IS_STOCK_ROM
 extern int is_builtin_profile(char *isp);
-
+#endif
 #ifdef RTCONFIG_ODMPID
 extern void replace_productid(char *GET_PID_STR, char *RP_PID_STR, int len);
 #endif
@@ -389,8 +394,10 @@ extern void do_set_security_update_cgi(char *url, FILE *stream);
 extern void do_get_security_update_cgi(char *url, FILE *stream);
 #endif
 
+#ifndef IS_STOCK_ROM
 extern void do_set_ASUS_privacy_policy_cgi(char *url, FILE *stream);
 extern void do_get_ASUS_privacy_policy_cgi(char *url, FILE *stream);
+#endif
 
 /*
 #define csprintf(fmt, args...) do{\
@@ -4400,7 +4407,11 @@ int validate_apply(webs_t wp, json_object *root)
 					HTTPD_SEND_NT_EVENT(GENERAL_TOGGLE_STATES_UPDATE, "wps");
 				}
 #endif
+#ifndef IS_STOCK_ROM
 				if(!strcmp(name, "switch_wantag") && strcmp(value, "manual") && is_builtin_profile(value)){
+#else
+                                if(!strcmp(name, "switch_wantag") && strcmp(value, "manual")){
+#endif
 					config_iptv_vlan(value);
 				}
 
@@ -15247,6 +15258,7 @@ err:
 	fcntl(fileno(stream), F_SETOWN, -ret);
 }
 
+#ifndef IS_STOCK_ROM
 static void
 do_set_ASUS_NEW_EULA_cgi(char *url, FILE *stream)
 {
@@ -15266,6 +15278,7 @@ do_set_ASUS_NEW_EULA_cgi(char *url, FILE *stream)
 
 	websWrite(stream, "{\"statusCode\":\"%d\"}", ret);
 }
+#endif
 
 static void
 do_upload_cgi(char *url, FILE *stream)
@@ -22360,9 +22373,11 @@ struct mime_handler mime_handlers[] =
 	{ "upgrade.cgi*", "text/html", no_cache_IE7, do_upgrade_post, do_upgrade_cgi, do_auth},
 	{ "upload.cgi*", "text/html", no_cache_IE7, do_upload_post, do_upload_cgi, do_auth },
 	{ "set_ASUS_EULA.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ASUS_EULA_cgi, do_auth },
+#ifndef IS_STOCK_ROM
 	{ "set_ASUS_NEW_EULA.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ASUS_NEW_EULA_cgi, do_auth },
 	{ "set_ASUS_privacy_policy.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ASUS_privacy_policy_cgi, do_auth },
 	{ "get_ASUS_privacy_policy.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_ASUS_privacy_policy_cgi, do_auth },
+#endif
 	{ "set_TM_EULA.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_TM_EULA_cgi, do_auth },
 #if defined(RTCONFIG_BWDPI)
 	{ "wrs_wbl.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_wrs_wbl_cgi, do_auth },
@@ -22503,9 +22518,11 @@ struct mime_handler mime_handlers[] =
 #endif
 #ifdef RTCONFIG_ACCOUNT_BINDING
 	{ "get_eptoken.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_eptoken_cgi, NULL },
+#ifndef IS_STOCK_ROM
 	{ "asusrouter_request_token.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_asusrouter_request_token_cgi, NULL },
 	{ "asusrouter_request_access_token.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_asusrouter_request_access_token_cgi, NULL },
 	{ "endpoint_request_token.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_endpoint_request_token_cgi, NULL },
+#endif
 #endif
 #ifdef RTCONFIG_WL_SCHED_V2
 	{ "get_wl_sched.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_wl_sched_cgi, do_auth },
@@ -22531,7 +22548,7 @@ struct mime_handler mime_handlers[] =
 #ifdef RTCONFIG_SOFTWIRE46
 	{ "s46reset.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_s46reset_cgi, do_auth },
 #endif
-#if defined(RTCONFIG_ASD) || defined(RTCONFIG_AHS)
+#if !defined(IS_STOCK_ROM) && defined(RTCONFIG_ASD) || defined(RTCONFIG_AHS)
 	{ "set_security_update.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_security_update_cgi, do_auth },
 	{ "get_security_update.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_security_update_cgi, do_auth },
 #endif

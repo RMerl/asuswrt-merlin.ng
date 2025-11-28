@@ -20626,6 +20626,58 @@ void sync_boot_state()
 
 #endif
 
+int init_pass_nvram(void){
+
+#ifdef RTCONFIG_NVRAM_ENCRYPT
+	char dec_passwd[128]={0};
+#endif
+#if defined(RTCONFIG_BCMARM)
+	if (!nvram_get_int("x_Setting")) {
+		char *forget_it = cfe_nvram_safe_get_raw("forget_it");
+#ifdef RTCONFIG_NVRAM_ENCRYPT
+		if(pw_dec(forget_it, dec_passwd, sizeof(dec_passwd), 0))
+			forget_it = dec_passwd;
+#endif
+		nvram_set("forget_it", forget_it);
+	}
+#elif defined(RTCONFIG_RALINK)
+	/* PASS */
+	{
+		char pass[MAX_PASS_LEN + 1];
+	        memset(pass, 0, sizeof(pass));
+		if (FRead(pass, OFFSET_PASS, MAX_PASS_LEN) < 0) {
+			_dprintf("READ ASUS PASS: Out of scope\n");
+			nvram_unset("forget_it");
+		 } else {
+			int len = strlen(pass);
+			int i;
+			if (pass[0] == 0xff)
+				nvram_unset("forget_it");
+			else
+			{
+				for(i = 0; i < MAX_PASS_LEN && pass[i] != '\0'; i++) {
+					if ((unsigned char)pass[i] == 0xff)
+					{
+						pass[i] = '\0';
+						break;
+					}
+				}
+#ifdef RTCONFIG_NVRAM_ENCRYPT
+				if(pw_dec(pass, dec_passwd, sizeof(dec_passwd), 0))
+					strlcpy(pass, dec_passwd, sizeof(pass));
+#endif
+				nvram_set("forget_it", pass);
+			}
+		}
+	}
+#endif
+
+	if (strcmp(nvram_safe_get("forget_it"), "") && !nvram_contains_word("rc_support", "defpass"))
+		add_rc_support("defpass");
+
+	return 0;
+}
+
 int init_main(int argc, char *argv[])
 {
 	int state, i;
@@ -21070,7 +21122,6 @@ logmessage("ATE", "boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),
 #endif
 			start_services();
 #ifdef CONFIG_BCMWL5
-			slabdbg();
 			if (restore_defaults_g)
 			{
 				restore_defaults_g = 0;
@@ -21089,8 +21140,6 @@ logmessage("ATE", "boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),
 				lanaccess_wl();
 #endif
 			}
-
-			check_wlx_nband_type();
 #ifdef RTCONFIG_TR069
 			tr_switch_wan_line(WAN_UNIT_FIRST);
 #endif

@@ -169,16 +169,7 @@ function tag_control(){
 	if((obj = document.getElementById('remote_control_here')) != null){
 		obj.style="text-decoration: underline;cursor:pointer;";
 		obj.onclick=function(){
-            if(policy_status.PP == 0 || policy_status.PP_time == ''){
-                const policyModal = new PolicyModalComponent({
-                    policy: "PP",
-                    agreeCallback: enable_remote_control,
-                });
-                policyModal.show();
-            }else{
-                enable_remote_control();
-            }
-		};
+            enable_remote_control();
 	}
 
 	document.getElementById("ifttt_signin").style="font-weight:bolder;text-decoration:underline;color:#FFCC00;";
@@ -257,16 +248,7 @@ function detcet_aae_state(){
 
 function get_activation_code(){
 	close_alert('alert_pin');
-
-    if(policy_status.PP == 0 || policy_status.PP_time == ''){
-        const policyModal = new PolicyModalComponent({
-            policy: "PP",
-            agreeCallback: gen_new_pincode,
-        });
-        policyModal.show();
-    }else{
         gen_new_pincode();
-    }
 }
 
 function gen_new_pincode(){

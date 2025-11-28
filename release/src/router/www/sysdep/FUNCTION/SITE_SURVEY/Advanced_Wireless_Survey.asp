@@ -20,12 +20,11 @@ body{
 p{
 	font-weight: bolder;
 }
-a{
-	color: #FFFFFF !important;
-}
+
 </style>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
@@ -45,20 +44,19 @@ overlib.isOut = true;
 var iserror = 0;
 var waitingTime = 120;
 
+if (isSupport("UI4")) {
+	var sortHighlightColor = "var(--primary-70)";
+	var spanColor = "blue;";
+	var qualityScale = ["#C0392B;","#C0392B;","#F39C12;","#3498DB;","#27AE60;"];
+} else {
+	var sortHighlightColor = "#FC0";
+	var spanColor = "#FC0;";
+}
 
 function initial(){
 	show_menu();
-
-	<%radio_status();%>
-
-	if (radio_2 == 0)
-		E("radio2warn").style.display = "";
-	if ((band5g_support) && (radio_5 == 0))
-		E("radio5warn").style.display = "";
-
 	update_site_info();
 	showSiteTable();
-
 }
 
 function doSorter(_flag, _Method, flip){
@@ -138,12 +136,7 @@ function update_site_info(){
 
 function addBorder(field) {
 	if (sorter.indexFlag == field) {
-		if (sorter.sortingMethod == "decrease")
-			return "border-top:1px solid #334044;border-bottom:1px solid #FC0;";
-		else
-			return "border-top:1px solid #FC0;border-bottom:1px solid #334044;";
-	} else {
-		return "border-top:1px solid #334044;border-bottom:1px solid #334044;";
+		return `box-shadow: ${sortHighlightColor} 0px ${(sorter.sortingMethod == "decrease" ? "-1" : "1")}px 0px 0px inset;`;
 	}
 }
 
@@ -157,17 +150,17 @@ function showSiteTable(){
 	htmlCode +='<table style="width:100%;" border="0" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" id="aplist_table">';
 
 	if(wlc_scan_state != 5){ // on scanning
-		htmlCode +='<tr><th style="text-align:center;" colspan="5"><span style="color:#FFCC00;line-height:25px;"><#APSurvey_action_searching_AP#></span>&nbsp;<img style="margin-top:10px;" src="/images/InternetScan.gif"></th></tr>';
+		htmlCode +=`<tr><th style="text-align:center;" colspan="5"><span style="color:${spanColor};line-height:25px;"><#APSurvey_action_searching_AP#></span>&nbsp;<img style="margin-top:10px;" src="/images/InternetScan.gif"></th></tr>`;
 	}
 	else{ // show ap list
 		if ((aplist.length) && (aplist[0].length == 0)) {
-			htmlCode +='<tr><td style="text-align:center;" colspan="5"><span style="color:#FFCC00;line-height:25px;"><#APSurvey_action_searching_noresult#></span>&nbsp;<img style="margin-top:10px;" src="/images/InternetScan.gif"></td></tr>';
+			htmlCode +=`<tr><td style="text-align:center;" colspan="5"><span style="color:${spanColor};line-height:25px;"><#APSurvey_action_searching_noresult#></span>&nbsp;<img style="margin-top:10px;" src="/images/InternetScan.gif"></td></tr>`;
 		}
 		else{
 			htmlCode += '<tr><th onclick="doSorter(1, \'str\', true);" style="cursor:pointer;text-align:left;' + addBorder(1) + '"><#Wireless_name#></th>';
 			htmlCode += '<th onclick="doSorter(2, \'num\', true);" width="15%" style="text-align:center;cursor:pointer;' + addBorder(2) + '"><#WLANConfig11b_Channel_itemname#></th>';
 			htmlCode += '<th onclick="doSorter(3, \'str\', true);" width="27%" style="cursor:pointer;' + addBorder(3) + '"><#QIS_finish_wireless_item2#></th>';
-	                htmlCode += '<th onclick="doSorter(0, \'str\', true);" width="10%" style="text-align:center;cursor:pointer;' + addBorder(0) + '">Band</th>';
+			htmlCode += '<th onclick="doSorter(0, \'str\', true);" width="10%" style="text-align:center;cursor:pointer;' + addBorder(0) + '">Band</th>';
 			htmlCode += '<th onclick="doSorter(5, \'num\', true);" width="10%" id="sigTh" style="text-align:center;cursor:pointer;' + addBorder(5) + '">Signal</tr>';
 
 			for(var i = 0; i < aplist.length; i++){
@@ -184,23 +177,29 @@ function showSiteTable(){
 				//ssid
 				ssid_str=decodeURIComponent(handle_show_str(aplist[i][1]));
 				if (ssid_str == "")
-					ssid_str = '<span style="font-style:italic;">[hidden]</span>';
-				htmlCode += '<td id="ssid" onclick="oui_query_full_vendor(\'' + aplist[i][6].toUpperCase() +'\');overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-align:left; padding-left: 14px;">' + ssid_str + '</td>';
+					ssid_str = `<span style="text-decoration:underline;font-style:italic;color:${spanColor}">[hidden]</span>`;
+
+				if (isSupport("UI4"))
+					var popupHandler = `onclick="oui_query_full_vendor('${aplist[i][6].toUpperCase()}');overlib_str_tmp='${overlib_str}';return overlib('${overlib_str}', STICKY,  CAPTION, ' ');"`;
+				else
+					var popupHandler = `onclick="oui_query_full_vendor('${aplist[i][6].toUpperCase()}');overlib_str_tmp='${overlib_str}';return overlib('${overlib_str}');" onmouseout="nd();"`;
+
+				htmlCode += `<td id="ssid" ${popupHandler} style="text-decoration:underline; cursor:pointer; text-align:left; padding-left: 14px;">${ssid_str}</td>`;
 
 				// channel
 				htmlCode += '<td width="15%" style="text-align:center;">';
 				if (aplist[i][0] == "6G")
-					htmlCode += '6g' + aplist[i][2] + ' (ax)</td>';
+					htmlCode += `6g${aplist[i][2]} (ax)</td>`;
 				else
-					htmlCode += aplist[i][2] + ' (' + aplist[i][7] + ')</td>';
+					htmlCode += `${aplist[i][2]} (${aplist[i][7]})</td>`;
 
 				// security
 				if(aplist[i][3] == "Open System" && aplist[i][4] == "NONE")
-					htmlCode += '<td width="27%">' + aplist[i][3] + '<img src="/images/New_ui/networkmap/unlock.png"></td>';
+					htmlCode += `<td width="27%">${aplist[i][3]}<img src="/images/New_ui/networkmap/unlock.png"></td>`;
 				else if(aplist[i][4] == "WEP")
 					htmlCode += '<td width="27%">WEP</td>';
 				else
-					htmlCode += '<td width="27%">' + aplist[i][3] +' (' + aplist[i][4] + ')</td>';
+					htmlCode += `<td width="27%">${aplist[i][3]} (${aplist[i][4]})</td>`;
 				// band
 				if(aplist[i][0] == "2G")
 					htmlCode += '<td width="10%" style="text-align:center;">2.4 GHz</td>';
@@ -210,13 +209,15 @@ function showSiteTable(){
 					htmlCode += '<td width="10%" style="text-align:center;">5 GHz</td>';
 
 				// signal
-				htmlCode += '<td width="10%" style="text-align:center;"><span title="' + aplist[i][5] + '%"><div style="margin-left:13px;"' +
-				            'class="icon_wifi_'+ Math.ceil(aplist[i][5]/25) +
-				            (aplist[i][4] == "NONE" ? '' : '_lock') +
-				            ' ap_icon"></div></span></td></tr>';
+				var quality = Math.ceil(aplist[i][5]/25);
+				if (isSupport("UI4")) {
+					htmlCode += `<td width="10%" style="text-align:center;color:${qualityScale[quality]}">${aplist[i][5]}%</td></tr>`;
+				} else {
+					htmlCode += `<td width="10%" style="text-align:center;"><span title="${aplist[i][5]}%"><div style="margin-left:13px;"` +
+					            `class="icon_wifi_${quality}${(aplist[i][4] == "NONE" ? '' : '_lock')} ap_icon"></div></span></td></tr>`;
+				}
 			}
-			document.form.rescanButton.disabled = false;
-			document.form.rescanButton.className = "button_gen";
+			document.getElementById("rescanButton").style.display = "";
 		}
 	}
 	htmlCode +='</table>';
@@ -229,10 +230,8 @@ function showSiteTable(){
 
 
 function rescan(){
-	document.form.rescanButton.disabled = true;
-	document.form.rescanButton.className = "button_gen_dis";
-
 	isrescan = 120; // stop rescan
+	document.getElementById("rescanButton").style.display = "none";
 	document.getElementById("SearchingIcon").style.display = "";
 	document.form.flag.value = "sitesurvey";
 	document.form.target = "hidden_frame";
@@ -288,11 +287,9 @@ function rescan(){
 	                <div>&nbsp;</div>
 			<div class="formfonttitle">Wireless - Visible Networks</div>
 			<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-			<span style="display:none; color:#FFCC00; padding-right:20px;" id="radio2warn">2.4 GHz radio is disabled - cannot scan that band!</span>
-			<span style="display:none; color:#FFCC00;" id="radio5warn">5 GHz radio is disabled - cannot scan that band!</span>
 
 			<div class="apply_gen" valign="top">
-				<input disabled type="button" id="rescanButton" value="<#QIS_rescan#>" onclick="rescan();" class="button_gen_dis">
+				<input style="display:none;" type="button" id="rescanButton" value="<#QIS_rescan#>" onclick="rescan();" class="button_gen">
 				<img id="SearchingIcon" style="display:none;" src="/images/InternetScan.gif">
 			</div>
 			<div id="wlscan_table"></div>

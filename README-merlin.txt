@@ -42,7 +42,7 @@ Fully supported devices:
 3006.102.x:
  * RT-BE96U 
  * GT-BE98_PRO
- * RT-BE88U and RT-BE7200
+ * RT-BE88U & RT-BE7200
  * RT-BE86U
  * GT-AX6000
  * ZenWifi Pro XT12
@@ -51,6 +51,8 @@ Fully supported devices:
  * RT-AX86U Pro
  * RT-AX88U Pro
  * RT-BE92U
+ * RT-BE58_Go
+ * GT-BE19000AI
 
 No longer supported:
  * RT-N16

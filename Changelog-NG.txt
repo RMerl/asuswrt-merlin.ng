@@ -3,8 +3,10 @@ Asuswrt-Merlin Changelog
 
 3004.388.11 (xx-xxx-2025)
   - NOTE: AiCloud has been removed from Asuswrt-Merlin due
-          to its security track record.  Use a VPN if you
-          need remote access to your data.
+          to its security track record.  This also includes
+          cloud syncing features such as Asuswebstorage or
+          Dropbox syncing with USB folder.  Use a VPN if you
+          need secure remote access to your data.
 
   - NOTE: For developers, the Tomato legacy files (tm*.*)
           are no longer included with the webui.  Please
@@ -22,7 +24,7 @@ Asuswrt-Merlin Changelog
            JFFS.  Also removed rarely used start-of-month
            setting.
 
-  - UPDATED: OpenVPN to 2.6.16.
+  - UPDATED: OpenVPN to 2.6.17.
   - UPDATED: libcap-ng to 0.8.4 (to be in sync with upstream)
   - CHANGED: TrafficMonitor stats can now be saved to JFFS,
              and removed support for saving to NVRAM.

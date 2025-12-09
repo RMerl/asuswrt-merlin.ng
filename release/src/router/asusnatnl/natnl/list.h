@@ -53,6 +53,8 @@ typedef struct list {
 	// +Roger - UDT disconnect mutex
 	pj_mutex_t *disconn_lock;
 #endif
+	pj_mutex_t *lock;
+    int use_pool;
 
 } natnl_list_t;
 
@@ -67,13 +69,14 @@ natnl_list_t *natnl_list_create2(int inst_id, int call_id,
 					 int obj_sz,
 					int (*obj_cmp)(const void *, const void *, size_t),
 					void* (*obj_copy)(void *, const void *, size_t),
-					void (*obj_free)(void **), int sort, int init_size);
+					void (*obj_free)(void **), int sort, int init_size, int use_pool);
 void *natnl_list_add(natnl_list_t *list, void *obj, int copy);
 void *natnl_list_add2(natnl_list_t *list, void *obj, int copy, int check_exists);
 void *natnl_list_get(natnl_list_t *list, void *obj);
+void *natnl_list_get_at2(natnl_list_t *list, int i, int debug, const char *prefix);
 void *natnl_list_get_at(natnl_list_t *list, int i);
 int natnl_list_get_index(natnl_list_t *list, void *obj);
-natnl_list_t *natnl_list_copy(int inst_id, int call_id, natnl_list_t *src);
+//natnl_list_t *natnl_list_copy(int inst_id, int call_id, natnl_list_t *src, int use_pool);
 void natnl_list_action(natnl_list_t *list, void (*action)(void *));
 void natnl_list_delete(natnl_list_t *list, void *obj);
 void natnl_list_delete_at(natnl_list_t *list, int i);

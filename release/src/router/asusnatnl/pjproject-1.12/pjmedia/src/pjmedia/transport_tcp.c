@@ -99,13 +99,14 @@ struct transport_tcp
 	pj_activesock_t     *incoming_asock;
 };
 
-
+#if 0
 static void on_rx_rtp( pj_ioqueue_key_t *key, 
                        pj_ioqueue_op_key_t *op_key, 
                        pj_ssize_t bytes_read);
 static void on_rx_rtcp(pj_ioqueue_key_t *key, 
                        pj_ioqueue_op_key_t *op_key, 
 					   pj_ssize_t bytes_read);
+#endif
 
 /* activesock call back*/
 static pj_bool_t on_data_read(pj_activesock_t *asock,
@@ -548,6 +549,7 @@ static pj_bool_t on_accept_complete(pj_activesock_t *asock,
     return PJ_TRUE;
 }
 
+#if 0
 /* Notification from ioqueue about incoming RTP packet */
 static void on_rx_rtp( pj_ioqueue_key_t *key, 
                        pj_ioqueue_op_key_t *op_key, 
@@ -655,7 +657,6 @@ static void on_rx_rtp( pj_ioqueue_key_t *key,
     } while (status != PJ_EPENDING && status != PJ_ECANCELLED);
 }
 
-
 /* Notification from ioqueue about incoming RTCP packet */
 static void on_rx_rtcp(pj_ioqueue_key_t *key, 
                        pj_ioqueue_op_key_t *op_key, 
@@ -717,7 +718,7 @@ static void on_rx_rtcp(pj_ioqueue_key_t *key,
 
     } while (status != PJ_EPENDING && status != PJ_ECANCELLED);
 }
-
+#endif
 
 /* Called to get the transport info */
 static pj_status_t transport_get_info(pjmedia_transport *tp,

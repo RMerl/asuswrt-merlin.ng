@@ -125,7 +125,7 @@ static int double_terminate(void)
 	    app_perror("   error: unable to terminate transaction", status);
 	    return -40;
 	}
-	pj_mutex_unlock(tsx->mutex);
+	pj_grp_lock_release(tsx->grp_lock);
     }
 
     flush_events(500);
@@ -155,3 +155,189 @@ int tsx_basic_test(struct tsx_test_param *param)
 
     return 0;
 }
+
+/**************************************************************************/
+
+struct tsx_test_state
+{
+    int pool_cnt;
+};
+
+static void save_tsx_test_state(struct tsx_test_state *st)
+{
+    st->pool_cnt = caching_pool.used_count;
+}
+
+static pj_status_t check_tsx_test_state(struct tsx_test_state *st)
+{
+    if (caching_pool.used_count > st->pool_cnt)
+	return -1;
+
+    return 0;
+}
+
+static void destroy_endpt()
+{
+    pjsip_endpt_destroy(endpt);
+    endpt = NULL;
+}
+
+static pj_status_t init_endpt()
+{
+    pj_str_t ns = { "10.187.27.172", 13};	/* just a random, unreachable IP */
+    pj_dns_resolver *resolver;
+    pj_status_t rc;
+
+    rc = pjsip_endpt_create(&caching_pool.factory, "endpt", &endpt);
+    if (rc != PJ_SUCCESS) {
+	app_perror("pjsip_endpt_create", rc);
+	return rc;
+    }
+
+    /* Start transaction layer module. */
+    rc = pjsip_tsx_layer_init_module(endpt);
+    if (rc != PJ_SUCCESS) {
+	app_perror("tsx_layer_init", rc);
+	return rc;
+    }
+
+    rc = pjsip_udp_transport_start(endpt, NULL, NULL, 1,  NULL);
+    if (rc != PJ_SUCCESS) {
+	app_perror("udp init", rc);
+	return rc;
+    }
+
+    rc = pjsip_tcp_transport_start(endpt, NULL, 1, NULL);
+    if (rc != PJ_SUCCESS) {
+	app_perror("tcp init", rc);
+	return rc;
+    }
+
+    rc = pjsip_endpt_create_resolver(endpt, &resolver);
+    if (rc != PJ_SUCCESS) {
+	app_perror("create resolver", rc);
+	return rc;
+    }
+
+    pj_dns_resolver_set_ns(resolver, 1, &ns, NULL);
+
+    rc = pjsip_endpt_set_resolver(endpt, resolver);
+    if (rc != PJ_SUCCESS) {
+	app_perror("set resolver", rc);
+	return rc;
+    }
+
+    return PJ_SUCCESS;
+}
+
+static int tsx_create_and_send_req(void *arg)
+{
+    pj_str_t dst_uri = pj_str((char*)arg);
+    pj_str_t from_uri = pj_str((char*)"<sip:user@host>");
+    pjsip_tx_data *tdata;
+    pj_status_t status;
+
+    status = pjsip_endpt_create_request(endpt, &pjsip_options_method,
+                                        &dst_uri, &from_uri, &dst_uri,
+                                        NULL, NULL, -1, NULL,
+                                        &tdata);
+    if (status != PJ_SUCCESS)
+	return status;
+
+    status = pjsip_endpt_send_request(endpt, tdata, -1, NULL, NULL);
+    if (status != PJ_SUCCESS)
+	return status;
+
+    return PJ_SUCCESS;
+}
+
+int tsx_destroy_test()
+{
+    struct tsx_test_state state;
+    struct test_desc
+    {
+	const char *title;
+	int (*func)(void*);
+	void *arg;
+	int sleep_before_unload;
+	int sleep_after_unload;
+    } test_entries[] =
+    {
+	{
+	    "normal unable to resolve",
+	    &tsx_create_and_send_req,
+	    "sip:user@somehost",
+	    10000,
+	    1
+	},
+	{
+	    "resolve and destroy, wait",
+	    &tsx_create_and_send_req,
+	    "sip:user@somehost",
+	    1,
+	    10000
+	},
+	{
+	    "tcp connect and destroy",
+	    &tsx_create_and_send_req,
+	    "sip:user@10.125.36.63:58517;transport=tcp",
+	    60000,
+	    1000
+	},
+	{
+	    "tcp connect and destroy",
+	    &tsx_create_and_send_req,
+	    "sip:user@10.125.36.63:58517;transport=tcp",
+	    1,
+	    60000
+	},
+
+    };
+    int rc;
+    unsigned i;
+    //const int INDENT = 2;
+
+    //pj_log_add_indent(INDENT);
+    destroy_endpt();
+
+    for (i=0; i<PJ_ARRAY_SIZE(test_entries); ++i) {
+	struct test_desc *td = &test_entries[i];
+
+	PJ_LOG(3,(THIS_FILE, "%s", td->title));
+
+	//pj_log_add_indent(INDENT);
+	save_tsx_test_state(&state);
+
+	rc = init_endpt();
+	if (rc != PJ_SUCCESS) {
+	    //pj_log_add_indent(-INDENT*2);
+	    return -10;
+	}
+
+	rc = td->func(td->arg);
+	if (rc != PJ_SUCCESS) {
+	    //pj_log_add_indent(-INDENT*2);
+	    return -20;
+	}
+
+	flush_events(td->sleep_before_unload);
+	//pjsip_tsx_layer_destroy();
+	flush_events(td->sleep_after_unload);
+	destroy_endpt();
+
+	rc = check_tsx_test_state(&state);
+	if (rc != PJ_SUCCESS) {
+	    init_endpt();
+	    //pj_log_add_indent(-INDENT*2);
+	    return -30;
+	}
+
+	//pj_log_add_indent(-INDENT);
+    }
+
+    init_endpt();
+
+    //pj_log_add_indent(-INDENT);
+    return 0;
+}
+

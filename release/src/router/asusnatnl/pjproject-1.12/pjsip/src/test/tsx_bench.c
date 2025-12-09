@@ -79,8 +79,13 @@ static int uac_tsx_bench(unsigned working_set, pj_timestamp *p_elapsed)
 on_error:
     for (i=0; i<working_set; ++i) {
 	if (tsx[i]) {
+	    pj_timer_heap_t *th;
+
 	    pjsip_tsx_terminate(tsx[i], 601);
 	    tsx[i] = NULL;
+
+	    th = pjsip_endpt_get_timer_heap(endpt);
+	    pj_timer_heap_poll(th, NULL);
 	}
     }
     pjsip_tx_data_dec_ref(request);
@@ -177,8 +182,14 @@ static int uas_tsx_bench(unsigned working_set, pj_timestamp *p_elapsed)
 on_error:
     for (i=0; i<working_set; ++i) {
 	if (tsx[i]) {
+	    pj_timer_heap_t *th;
+
 	    pjsip_tsx_terminate(tsx[i], 601);
 	    tsx[i] = NULL;
+
+	    th = pjsip_endpt_get_timer_heap(endpt);
+	    pj_timer_heap_poll(th, NULL);
+
 	}
     }
     pjsip_tx_data_dec_ref(request);
@@ -208,6 +219,8 @@ int tsx_bench(void)
     for (i=0; i<REPEAT; ++i) {
 	PJ_LOG(3,(THIS_FILE, "    test %d of %d..",
 		  i+1, REPEAT));
+	/*PJ_LOG(3,(THIS_FILE, "    number of current tsx: %d",
+		  pjsip_tsx_layer_get_tsx_count()));*/
 	status = uac_tsx_bench(WORKING_SET, &usec[i]);
 	if (status != PJ_SUCCESS)
 	    return status;
@@ -246,6 +259,8 @@ int tsx_bench(void)
     for (i=0; i<REPEAT; ++i) {
 	PJ_LOG(3,(THIS_FILE, "    test %d of %d..",
 		  i+1, REPEAT));
+	/*PJ_LOG(3,(THIS_FILE, "    number of current tsx: %d",
+		  pjsip_tsx_layer_get_tsx_count()));*/
 	status = uas_tsx_bench(WORKING_SET, &usec[i]);
 	if (status != PJ_SUCCESS)
 	    return status;

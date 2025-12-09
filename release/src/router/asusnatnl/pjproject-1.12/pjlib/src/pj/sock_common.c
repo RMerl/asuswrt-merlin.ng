@@ -184,7 +184,7 @@ PJ_DEF(pj_status_t) pj_sockaddr_set_str_addr(int af,
 	    status = pj_getaddrinfo(PJ_AF_INET6, str_addr, &count, &ai);
 	    if (status==PJ_SUCCESS) {
 		pj_memcpy(&addr->ipv6.sin6_addr, &ai.ai_addr.ipv6.sin6_addr,
-			  sizeof(pj_sockaddr_in6));
+			  sizeof(addr->ipv6.sin6_addr));
 	    }
 	}
     } else {

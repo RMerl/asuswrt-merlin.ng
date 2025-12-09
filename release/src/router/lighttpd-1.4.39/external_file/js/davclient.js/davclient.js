@@ -484,8 +484,8 @@ global.davlib = new function() {
 		
 	this.DavClient.prototype.GSL = function(path,urlPath,fileName,expire,toShare,handler,context,locktoken){			
 		var request = this._getRequest('GSL',path,handler,context);
-		request.setRequestHeader("URL",urlPath);
-		request.setRequestHeader("FILENAME",fileName);
+		request.setRequestHeader("URL", encodeURIComponent(urlPath));
+		request.setRequestHeader("FILENAME", encodeURIComponent(fileName));
 		request.setRequestHeader("EXPIRE",expire);
 		request.setRequestHeader("TOSHARE",toShare);
 		

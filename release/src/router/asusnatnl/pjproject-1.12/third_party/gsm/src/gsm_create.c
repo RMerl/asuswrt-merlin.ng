@@ -4,7 +4,7 @@
  * details.  THERE IS ABSOLUTELY NO WARRANTY FOR THIS SOFTWARE.
  */
 
-static char const	ident[] = "$Header: /tmp_amd/presto/export/kbs/jutta/src/gsm/RCS/gsm_create.c,v 1.4 1996/07/02 09:59:05 jutta Exp $";
+//static char const	ident[] = "$Header: /tmp_amd/presto/export/kbs/jutta/src/gsm/RCS/gsm_create.c,v 1.4 1996/07/02 09:59:05 jutta Exp $";
 
 #include	"config.h"
 

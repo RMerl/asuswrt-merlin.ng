@@ -111,7 +111,7 @@ dnl Memory alignment detection
 dnl
 AC_MSG_CHECKING([memory alignment])
 case $target in
-    sparc64-* | ia64-* | x86_64-* )
+    sparc64-* | ia64-* | x86_64-* | arm64-* | aarch64-* | mips64* )
 	AC_DEFINE(PJ_POOL_ALIGNMENT, 8)
 	AC_MSG_RESULT([8 bytes])
 	;;

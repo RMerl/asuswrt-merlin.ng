@@ -120,7 +120,12 @@ pj_status_t pj_log_init(int inst_id)
 	thread_tls_id_initialize();
 
     if (thread_suspended_tls_id[inst_id] == -1) {
-	pj_thread_local_alloc(&thread_suspended_tls_id[inst_id]);
+        pj_status_t status;
+		status = pj_thread_local_alloc(&thread_suspended_tls_id[inst_id]);
+        if (status != PJ_SUCCESS) {
+            thread_suspended_tls_id[inst_id] = -1;
+             return status;
+        }
 	pj_atexit(inst_id, &logging_shutdown);
     }
 #endif
@@ -308,13 +313,13 @@ PJ_DEF(void) pj_log2( const char *sender, int level, //INST_TODO
     if (log_decor & PJ_LOG_HAS_LEVEL_TEXT) {
 	static const char *ltexts[] = { "FATAL:", "ERROR:", " WARN:", 
 		" INFO:", "DEBUG:", "TRACE:", "DETRC:"};
-	pj_ansi_strcpy(pre, ltexts[level]);
+        pj_ansi_strxcpy(pre, ltexts[level], PJ_LOG_MAX_SIZE);
 	pre += 6;
     }
     if (log_decor & PJ_LOG_HAS_DAY_NAME) {
 	static const char *wdays[] = { "Sun", "Mon", "Tue", "Wed",
 				       "Thu", "Fri", "Sat"};
-	pj_ansi_strcpy(pre, wdays[ptime.wday]);
+        pj_ansi_strxcpy(pre, wdays[ptime.wday], PJ_LOG_MAX_SIZE-6);
 	pre += 3;
     }
     if (log_decor & PJ_LOG_HAS_YEAR) {

@@ -406,6 +406,7 @@ PJ_DEF(pj_status_t) pjsua_call_make_call( pjsua_inst_id inst_id,
 					  const pj_str_t *dest_uri,
 					  unsigned options,
 					  int use_sctp,
+					  int use_dtls,
 					  void *user_data,
 					  const pjsua_msg_data *msg_data,
 					  pjsua_call_id *p_call_id)
@@ -489,6 +490,11 @@ PJ_DEF(pj_status_t) pjsua_call_make_call( pjsua_inst_id inst_id,
 	call->med_tp->use_sctp = use_sctp;    // sctp
 	if (call->med_orig)
 		call->med_orig->use_sctp = use_sctp;  // dtls
+
+	call->use_dtls = use_dtls;
+	call->med_tp->use_dtls = use_dtls;    // sctp
+	if (call->med_orig)
+		call->med_orig->use_dtls = use_dtls;  // dtls
 
     /* Associate session with account */
     call->acc_id = acc_id;
@@ -652,6 +658,7 @@ PJ_DEF(pj_status_t) pjsua_call_make_call( pjsua_inst_id inst_id,
     /* Create initial INVITE: */
 
 	inv->use_sctp = use_sctp;
+	inv->use_dtls = use_dtls;
     status = pjsip_inv_invite(inv, &tdata);
     if (status != PJ_SUCCESS) {
 	pjsua_perror(THIS_FILE, "Unable to create initial INVITE request", 
@@ -3104,9 +3111,10 @@ PJ_DEF(pj_status_t) pjsua_call_dump( pjsua_inst_id inst_id,
     len = 0;
 
     print_call(inst_id, indent, call_id, tmp, sizeof(tmp));
-    
-    if (len + 3 > maxlen) len = maxlen - 3;
-    pj_ansi_strncpy(buffer, tmp, len);
+
+    len = (int)pj_ansi_strlen(tmp);
+    if (len + 3 > (int)maxlen) len = maxlen - 3;
+    pj_memcpy(buffer, tmp, len);
 
     p += len;
     *p++ = '\r';
@@ -3692,7 +3700,7 @@ static void pjsua_call_on_forked( pjsip_inv_session *inv,
     PJ_UNUSED_ARG(inv);
     PJ_UNUSED_ARG(e);
 
-    PJ_TODO(HANDLE_FORKED_DIALOG);
+    //PJ_TODO(HANDLE_FORKED_DIALOG);
 }
 
 
@@ -4446,7 +4454,7 @@ static void on_call_transfered( pjsip_inv_session *inv,
     /* Now make the outgoing call. */
     tmp = pj_str(uri);
     status = pjsua_call_make_call(existing_call->inst_id, existing_call->acc_id, &tmp, 0,
-				  existing_call->use_sctp, existing_call->user_data, &msg_data, 
+				  existing_call->use_sctp, existing_call->use_dtls, existing_call->user_data, &msg_data, 
 				  &new_call);
     if (status != PJ_SUCCESS) {
 
@@ -4573,6 +4581,8 @@ static void pjsua_call_on_tsx_state_changed(pjsip_inv_session *inv,
 	/* Process MESSAGE request */
 	pjsua_im_process_pager(call->index, &inv->dlg->remote.info_str,
 			       &inv->dlg->local.info_str, rdata);
+	(void) msg;
+	(void) status;
 
     }
     else if (tsx->role == PJSIP_ROLE_UAC &&

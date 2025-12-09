@@ -251,7 +251,7 @@
 
                /* update memory */
 
-               memcpy(mem, mem+SUBL, (CB_MEML-SUBL)*sizeof(float));
+               memmove(mem, mem+SUBL, (CB_MEML-SUBL)*sizeof(float));
                memcpy(mem+CB_MEML-SUBL,
 
 
@@ -299,7 +299,7 @@
 
                /* update memory */
 
-               memcpy(mem, mem+SUBL, (CB_MEML-SUBL)*sizeof(float));
+               memmove(mem, mem+SUBL, (CB_MEML-SUBL)*sizeof(float));
                memcpy(mem+CB_MEML-SUBL,
                    &reverseDecresidual[subframe*SUBL],
                    SUBL*sizeof(float));
@@ -648,5 +648,7 @@
        if (mode==0) { /* PLC was used */
            iLBCdec_inst->prev_enh_pl=1;
        }
+
+       (void) check;
    }
 

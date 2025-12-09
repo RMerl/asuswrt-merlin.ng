@@ -778,6 +778,32 @@ NATNL_LIB_API int WINAPI natnl_make_call_with_inst_id2(char *device_id, int tnl_
 								char *caller_device_pwd, struct natnl_tnl_info *tnl_info);
 
 /**
+ * Build the tunnel with remote device.
+ * @param [in]  device_id.         The device_id of remote device.
+ * @param [in]  tnl_port_cnt.      The number of tunnel port pair (lport,rport). The maximum value is defined in MAX_TUNNEL_PORT_COUNT.
+ * @param [in]  tnl_ports.         The array of tunnel port pair.
+ * @param [in]  user_id.           The user_id is sent to UAS for identity authentication.
+ * @param [in]  timeout_sec.       The timeout value in seconds. If call isn't made in timeout_sec, 
+                                       SDK will notify application NATNL_TNL_EVENT_MAKECALL_FAILED event with 
+							           NATNL_SC_MAKE_CALL_TIMEOUT status code. 
+							       If this value is 0, it represents that wait forever.
+ * @param [in]  use_sctp.          Indicate to use UDT or SCTP as flow control. 0 : use UDT, 1 : use SCTP.
+ * @param [in]  inst_id.           The instance id of SDK that is output by natnl_lib_init_with_inst_id. 
+                                   Default is 1.
+ * @param [in]  caller_device_pwd. The caller device password, this value must be set when use fase_init mode.
+ * @param [in]  use_dtls.          Indicate to use DTLS or not.
+ * @param [out]	tnl_info.		 The structure to be used in natnl_read_tnl_info API.
+ * @return 0 : For success. 
+ *     70004 : Invalid argument.
+ *  60000005 : SDK isn't initialized, please initialize it first.
+ *  non-zero : For another error.
+ */
+NATNL_LIB_API int WINAPI natnl_make_call_with_inst_id3(char *device_id, int tnl_port_cnt, 
+                                natnl_tnl_port tnl_ports[], char *user_id,
+								int timeout_sec, int use_sctp, int inst_id, 
+								char *caller_device_pwd, int use_dtls, struct natnl_tnl_info *tnl_info);
+
+/**
  * Terminate the tunnel with remote device.
  * @param [in]  call_id.  The call handle that is output by natnl_make_call.
  * @return 0 : For success. 

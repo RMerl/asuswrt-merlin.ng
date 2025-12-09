@@ -616,7 +616,7 @@ static pj_status_t init_openssl(pj_pool_t *pool)
 		pj_assert(meth);
 
 		ctx=SSL_CTX_new(meth);
-		SSL_CTX_set_cipher_list(ctx, "ALL");
+		SSL_CTX_set_cipher_list(ctx, "HIGH:!MEDIUM:!LOW:!aNULL:!eNULL:!kECDH:!aDH:!RC4:!3DES:!CAMELLIA:!MD5:!PSK:!SRP:!KRB5:@STRENGTH");
 
 		ssl = SSL_new(ctx);
 		sk_cipher = SSL_get_ciphers(ssl);
@@ -958,7 +958,7 @@ static pj_status_t create_ssl(transport_dtls *dtls)
     /* Make sure OpenSSL library has been initialized */
     init_openssl(dtls->pool);
 
-	openssl_ver = SSLeay_version(SSLEAY_VERSION);
+	openssl_ver = (char *)SSLeay_version(SSLEAY_VERSION);
 	PJ_LOG(4, (THIS_FILE, "create_ssl() OpenSSL version=[%s]", openssl_ver));
 
 	ssl_method = (SSL_METHOD*)DTLS_method();
@@ -1093,8 +1093,9 @@ static pj_status_t create_ssl(transport_dtls *dtls)
 
     /* SSL verification options */
     mode = SSL_VERIFY_PEER;
-    if (!dtls->offerer_side && dtls->setting.require_client_cert)
+    if (!dtls->offerer_side && dtls->setting.require_client_cert) {
 	mode |= SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
+	}
 
 	SSL_set_verify(dtls->ossl_ssl, mode, &verify_cb);
 	SSL_CTX_set_cookie_generate_cb(dtls->ossl_ctx, generate_cookie);
@@ -1117,8 +1118,8 @@ static pj_status_t create_ssl(transport_dtls *dtls)
 	//BIO_set_nbio(dtls->ossl_wbio, 1);
 	//BIO_set_flags(dtls->ossl_rbio, BIO_FLAGS_MEM_RDONLY);
 	//BIO_set_flags(dtls->ossl_wbio, BIO_FLAGS_MEM_RDONLY);
-    BIO_set_close(dtls->ossl_rbio, BIO_CLOSE);
-    BIO_set_close(dtls->ossl_wbio, BIO_CLOSE);
+    (void) BIO_set_close(dtls->ossl_rbio, BIO_CLOSE);
+    (void) BIO_set_close(dtls->ossl_wbio, BIO_CLOSE);
 	SSL_set_bio(dtls->ossl_ssl, dtls->ossl_rbio, dtls->ossl_wbio);
 
 	PJ_LOG(1, (THIS_FILE, "dtls=[%p], ctx=[%p], ssl=[%p]", dtls, dtls->ossl_ctx, dtls->ossl_ssl));
@@ -1273,9 +1274,9 @@ static pj_status_t set_cipher_list(transport_dtls *dtls)
 {
 	char buf[1024];
 	pj_str_t cipher_list;
-	STACK_OF(SSL_CIPHER) *sk_cipher;
-	unsigned i;
-	int j, ret;
+	//STACK_OF(SSL_CIPHER) *sk_cipher;
+	//unsigned i;
+	//int j, ret;
 
 	/*if (dtls->setting.ciphers_num == 0)
 		return PJ_SUCCESS;*/
@@ -1495,7 +1496,7 @@ static void get_cert_info(pj_pool_t *pool, pj_ssl_cert_info *ci, X509 *x)
 		    type = PJ_SSL_CERT_NAME_URI;
                     break;
                 case GEN_IPADD:
-		    p = ASN1_STRING_data(name->d.ip);
+		    p = (pj_uint8_t *)ASN1_STRING_get0_data(name->d.ip);
 		    len = ASN1_STRING_length(name->d.ip);
 		    type = PJ_SSL_CERT_NAME_IP;
                     break;
@@ -1545,10 +1546,10 @@ static void calculate_certs_fingerprint(transport_dtls *dtls)
 			for(i = 0; i < n; i++) {
 				pj_memset(tmp, 0, sizeof(tmp));
 				if (i == n-1)
-					sprintf(tmp, "%02X", md[i]);
+					snprintf((char *)tmp, sizeof(tmp), "%02X", md[i]);
 				else
-					sprintf(tmp, "%02X:", md[i]);
-				pj_strcat2(&dtls->cert_fingerprint, tmp);
+					snprintf((char *)tmp, sizeof(tmp), "%02X:", md[i]);
+				pj_strcat2(&dtls->cert_fingerprint, (char *)tmp);
 			}
 		}
 	}
@@ -1669,7 +1670,7 @@ static pj_status_t flush_write_bio(transport_dtls *dtls,
 			PJ_LOG(3, (THIS_FILE, "flush_write_bio() TIMER_HANDSHAKE_RETRANSMISSION scheduled."));
 	}
 
-	BIO_reset(dtls->ossl_wbio);
+	(void) BIO_reset(dtls->ossl_wbio);
 
 	((pj_uint8_t *)dtls->dtls_snd_buffer)[dtls->delayed_send_size] = flags;
 
@@ -1787,10 +1788,11 @@ static pj_bool_t on_handshake_complete(transport_dtls *dtls,
     }
 
     /* Update certificates info on successful handshake */
-    if (status == PJ_SUCCESS)
+    if (status == PJ_SUCCESS) {
 	update_certs_info(dtls);
 
 	dtls->ssl_state = SSL_STATE_ESTABLISHED;
+	}
 	pj_sem_post(dtls->handshake_sem);
 
     /* Accepting */
@@ -1869,7 +1871,7 @@ static void on_timer(pj_timer_heap_t *th, struct pj_timer_entry *te)
 	transport_dtls *dtls = (transport_dtls*)te->user_data;
 	int timer_id = te->id;
 	pj_status_t status;
-	pj_time_val delayed = {0, DELAYED_CLOSE_TIMEOUT};
+	//pj_time_val delayed = {0, DELAYED_CLOSE_TIMEOUT};
 
 	te->id = TIMER_NONE;
 
@@ -1965,6 +1967,7 @@ static pj_status_t do_handshake(transport_dtls *dtls)
 #ifdef USE_LOCAL_LOCK
 		MUTEX_UNLOCK(dtls->mutex);
 #endif
+		(void) err_str;
 	    return status;
 	}
     }
@@ -2045,6 +2048,7 @@ PJ_DEF(pj_status_t) pjmedia_dtls_do_handshake(pjmedia_transport *tp,
 	MUTEX_UNLOCK(global_mutex);
 #endif
 
+	(void) ret;
 	return status;
 }
 
@@ -2125,7 +2129,7 @@ PJ_DEF(pj_status_t) pjmedia_transport_dtls_create(
 {
     pj_pool_t *pool;
 	transport_dtls *dtls;
-	pj_timer_heap_t *timer = NULL;
+	//pj_timer_heap_t *timer = NULL;
     pj_status_t status;
 
     PJ_ASSERT_RETURN(endpt && tp && p_tp, PJ_EINVAL);
@@ -2654,7 +2658,9 @@ static void dtls_rtp_cb( void *user_data, void *pkt, pj_ssize_t size)
 	return;
 	}
 
-    if (!pkt || size <= 0 || dtls->ssl_state == SSL_STATE_INITIALIZED) {
+    if (!pkt || size <= 0 
+		|| dtls->ssl_state == SSL_STATE_NULL 
+		|| dtls->ssl_state == SSL_STATE_INITIALIZED) {
 	return;
 	}
 #ifdef USE_GLOBAL_LOCK
@@ -2706,12 +2712,13 @@ static void dtls_rtp_cb( void *user_data, void *pkt, pj_ssize_t size)
 #endif
 		status = do_handshake(dtls);
 		PJ_LOG(4, (THIS_FILE, "@#@#@#@#@# do_handshake. status=%d", status));
-		/* Not pending is either success or failed */
-		if (status != PJ_EPENDING)
-			ret = on_handshake_complete(dtls, status);
 #ifdef USE_GLOBAL_LOCK
 		MUTEX_UNLOCK(global_mutex);
 #endif
+		/* Not pending is either success or failed */
+		if (status != PJ_EPENDING)
+			ret = on_handshake_complete(dtls, status);
+		(void) ret;
 		return;
 	}
 
@@ -2920,6 +2927,8 @@ static pj_status_t transport_media_create(pjmedia_transport *tp,
 
 	m_rem = sdp_remote->media[media_index];
 
+	(void) m_rem;
+
 	/* Nothing to do on inactive media stream */
 	//if (pjmedia_sdp_media_find_attr(m_rem, &ID_INACTIVE, NULL))
 	//    goto BYPASS_DTLS;
@@ -2958,12 +2967,12 @@ static pj_status_t transport_encode_sdp(pjmedia_transport *tp,
     struct transport_dtls *dtls = (struct transport_dtls*) tp;
     pjmedia_sdp_media *m_rem, *m_loc;
     enum { MAXLEN = 512 };
-    char buffer[MAXLEN];
-    int buffer_len;
-    pj_status_t status;
-    pjmedia_sdp_attr *attr;
-    pj_str_t attr_value;
-    unsigned i, j;
+    //char buffer[MAXLEN];
+    //int buffer_len;
+    //pj_status_t status;
+    //pjmedia_sdp_attr *attr;
+    //pj_str_t attr_value;
+    //unsigned i, j;
 	pjmedia_sdp_attr *finprt_attr, *sctpmap_attr;
 
     PJ_ASSERT_RETURN(tp && sdp_pool && sdp_local, PJ_EINVAL);
@@ -2972,6 +2981,9 @@ static pj_status_t transport_encode_sdp(pjmedia_transport *tp,
 
     m_rem = sdp_remote ? sdp_remote->media[media_index] : NULL;
     m_loc = sdp_local->media[media_index];
+
+	(void) m_rem;
+	(void) m_loc;
 
 	// encode certificate fingerprint into SDP.
 	calculate_certs_fingerprint(dtls);
@@ -3102,6 +3114,9 @@ static pj_status_t transport_media_start(pjmedia_transport *tp,
 
     m_rem = sdp_remote->media[media_index];
     m_loc = sdp_local->media[media_index];
+
+	(void) m_rem;
+	(void) m_loc;
 
 	status = pjmedia_transport_dtls_start(tp);
 	if (status != PJ_SUCCESS)

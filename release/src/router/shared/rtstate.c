@@ -1058,10 +1058,14 @@ int get_gate_num(void)
 		strncpy(wan_gate, nvram_pf_safe_get(prefix, "gateway"), 32);
 
 		// when wan_down().
+#if defined(RTCONFIG_BCMARM)
+		if(!is_phy_connect2(unit))
+			continue;
+#else
 		if(!is_wan_connect(unit))
 			continue;
 
-#ifndef RTCONFIG_BCMARM
+//#ifndef RTCONFIG_BCMARM
 		/* We need to check link_wanX instead of wanX_state_t if this WAN unit is static IP. */
 		char link_wan[sizeof("link_wanXXXXXX")];
 
@@ -1071,6 +1075,7 @@ int get_gate_num(void)
 			if (!nvram_match(link_wan, "1"))
 				continue;
 		}
+//#endif
 #endif
 
 		if(strlen(wan_gate) <= 0 || !strcmp(wan_gate, "0.0.0.0"))

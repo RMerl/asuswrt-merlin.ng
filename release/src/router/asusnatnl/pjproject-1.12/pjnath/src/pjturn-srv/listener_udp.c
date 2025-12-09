@@ -103,7 +103,7 @@ PJ_DEF(pj_status_t) pj_turn_listener_create_udp( pj_turn_srv *srv,
 	goto on_error;
     
     /* Create info */
-    pj_ansi_strcpy(udp->base.info, "UDP:");
+    pj_ansi_strxcpy(udp->base.info, "UDP:", sizeof(udp->base.info));
     pj_sockaddr_print(&udp->base.addr, udp->base.info+4, 
 		      sizeof(udp->base.info)-4, 3);
 

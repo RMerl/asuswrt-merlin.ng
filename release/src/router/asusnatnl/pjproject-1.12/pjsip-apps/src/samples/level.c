@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
      */
     //status = pjmedia_endpt_create(&cp.factory, NULL, 1, &med_endpt);
 	// charles modified
-    status = pjmedia_endpt_create(0, &cp.factory, NULL, 1, 0, &med_endpt);
+    status = pjmedia_endpt_create(&cp.factory, NULL, 1, 0, 1, &med_endpt);
     PJ_ASSERT_RETURN(status == PJ_SUCCESS, 1);
 
     /* Create memory pool for our file player */

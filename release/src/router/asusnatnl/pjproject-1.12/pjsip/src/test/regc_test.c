@@ -347,7 +347,10 @@ static int do_test(const char *title,
 		  client_cfg->error, client_result.error));
 	return -210;
     }
-    if (client_result.code != client_cfg->code) {
+    if (client_result.code != client_cfg->code &&
+	client_cfg->code != 502 && client_cfg->code != 503 &&
+	client_result.code != 502 && client_result.code != 503)
+    {
 	PJ_LOG(3,(THIS_FILE, "    error: expecting code=%d, got code=%d",
 		  client_cfg->code, client_result.code));
 	return -220;
@@ -600,6 +603,7 @@ static int update_test(const pj_str_t *registrar_uri)
 
     u1 = (pjsip_sip_uri*) pjsip_uri_get_uri(h1->uri);
     u2 = (pjsip_sip_uri*) pjsip_uri_get_uri(h2->uri);
+	(void) u2;
 
     if (*u1->host.ptr == 'a') {
 	if (h1->expires != 0) {

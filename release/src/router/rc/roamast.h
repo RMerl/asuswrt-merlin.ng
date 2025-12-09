@@ -55,6 +55,7 @@ struct rcpi_checklist {
 
 #define RAST_SUPPORT_K_PASSIVE_SCAN	0x1
 #define RAST_SUPPORT_V	0x2
+#define RAST_SUPPORT_K_TABLE_SCAN      0x4
 
 #define RAST_POLL_INTV_NORMAL 5
 #if defined(RTCONFIG_RALINK)  /* Remove dead STA from assoclist */
@@ -258,6 +259,7 @@ typedef struct rast_sta_info {
 	uint32 wnm_cap;			/* WNM capability */
 #ifdef RTCONFIG_BCN_RPT
 	uint8 rrm_bcn_passive_cap;	/* RRM Beacon Passive Measurement capability */
+	uint8 rrm_bcn_table_cap;        /* RRM Beacon Table Measurement capability */
 #endif
 #endif
 	uint32 tx_rate;

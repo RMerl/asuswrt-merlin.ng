@@ -389,7 +389,7 @@ typedef struct pjsua_logging_config
      * application specific device. This function will be called for
      * log messages on input verbosity level.
      */
-    void       (*cb)(pjsua_inst_id inst_id, int level, const char *data, int len);
+    void       (*cb)(pjsua_inst_id inst_id, int level, const char *data, int len, int flush);
 
 	// The maximum size of the log file.
 	int        log_file_size;
@@ -3521,6 +3521,7 @@ PJ_DEF(pjsua_call_id) alloc_call_id(pjsua_inst_id inst_id);
  *			as the target URI).
  * @param options	Options (must be zero at the moment).
  * @param use_sctp	Indicate to use UDT or SCTP as flow control. 0 : use UDT, 1 : use SCTP..
+ * @param use_sctp	Indicate to use UDT or DTLS or not.
  * @param user_data	Arbitrary user data to be attached to the call, and
  *			can be retrieved later.
  * @param msg_data	Optional headers etc to be added to outgoing INVITE
@@ -3534,6 +3535,7 @@ PJ_DECL(pj_status_t) pjsua_call_make_call(pjsua_inst_id inst_id,
 					  const pj_str_t *dst_uri,
 					  unsigned options,
 					  int use_sctp,
+					  int use_dtls,
 					  void *user_data,
 					  const pjsua_msg_data *msg_data,
 					  pjsua_call_id *p_call_id);

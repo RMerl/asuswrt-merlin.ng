@@ -422,12 +422,12 @@ static pj_status_t init_media()
      */
 #if PJ_HAS_THREADS
     //status = pjmedia_endpt_create(&app.cp.factory, NULL, 1, &app.med_endpt);
-    status = pjmedia_endpt_create(0, &app.cp.factory, NULL, 1, 0, &app.med_endpt);
+    status = pjmedia_endpt_create(&app.cp.factory, NULL, 1, 0, 1, &app.med_endpt);
 #else
-    status = pjmedia_endpt_create(0, &app.cp.factory,
+    status = pjmedia_endpt_create(&app.cp.factory,
 				  pjsip_endpt_get_ioqueue(app.sip_endpt),
 				  //0, &app.med_endpt);
-				  0, 0, &app.med_endpt);
+				  0, 0, 1, &app.med_endpt);
 #endif
     PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
@@ -2035,12 +2035,12 @@ static pjsip_module msg_logger =
 static FILE *log_file;
 
 
-static void app_log_writer(int inst_id, int level, const char *buffer, int len)
+void app_log_writer(int inst_id, int level, const char *buffer, int len, int flush)
 {
     /* Write to both stdout and file. */
 
     if (level <= app.app_log_level)
-	pj_log_write(inst_id, level, buffer, len, 0);
+	pj_log_write(inst_id, level, buffer, len, flush);
 
     if (log_file) {
 	int count = fwrite(buffer, len, 1, log_file);

@@ -205,8 +205,9 @@ PJ_DEF(pj_status_t) pjsip_100rel_init_module(pjsip_endpoint *endpt)
 	mod_100rel_initialize(); // DEAN added
 	inst_id = pjsip_endpt_get_inst_id(endpt);
 
-    if (mod_100rel[inst_id].mod.id != -1)
+    if (mod_100rel[inst_id].mod.id != -1) {
 	return PJ_SUCCESS;
+	}
 
 	mod_100rel[inst_id].mod = mod_100rel_initializer.mod;
 

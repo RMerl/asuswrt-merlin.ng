@@ -323,7 +323,7 @@ PJ_DEF(void) pjsip_resolve( pjsip_resolver_t *resolver,
     /* If port is not specified, start with SRV resolution
      * (should be with NAPTR, but we'll do that later)
      */
-    PJ_TODO(SUPPORT_DNS_NAPTR);
+    //PJ_TODO(SUPPORT_DNS_NAPTR);
 
     /* Build dummy NAPTR entry */
     query->naptr_cnt = 1;

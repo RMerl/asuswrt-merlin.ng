@@ -269,7 +269,7 @@ int main(int argc, char *argv[])
      */
 #if PJ_HAS_THREADS
     //status = pjmedia_endpt_create(&cp.factory, NULL, 1, &g_med_endpt);
-    status = pjmedia_endpt_create(0, &cp.factory, NULL, 1, 0,&g_med_endpt);
+    status = pjmedia_endpt_create(&cp.factory, NULL, 1, 0, 1, &g_med_endpt);
 #else
     status = pjmedia_endpt_create(&cp.factory, 
 				  pjsip_endpt_get_ioqueue(g_endpt), 

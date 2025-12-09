@@ -106,6 +106,7 @@ if test "${CXX}" = ""; then
   export CXX=`echo ${CC} | sed 's/gcc/g++/'`
   echo "$F: CXX is not specified, using ${CXX}"
 fi
+export ARCH_VAL=`echo ${ARCH} | sed 's/\-arch //' | sed -e 's/^[ \t]*//;s/[ \t]*$//' `
 
 # Other settings to feed to configure script. 
 DEVELOPER=`xcode-select -print-path`

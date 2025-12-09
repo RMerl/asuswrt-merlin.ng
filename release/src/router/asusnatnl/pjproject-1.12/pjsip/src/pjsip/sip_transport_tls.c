@@ -247,12 +247,8 @@ PJ_DEF(pj_status_t) pjsip_tls_transport_start (pjsip_endpoint *endpt,
     pj_bool_t has_listener;
     pj_status_t status;
 
-	int inst_id;
-
     /* Sanity check */
     PJ_ASSERT_RETURN(endpt && async_cnt, PJ_EINVAL);
-
-	inst_id = pjsip_endpt_get_inst_id(endpt);
 
     /* Verify that address given in a_name (if any) is valid */
     if (a_name && a_name->host.slen) {
@@ -279,14 +275,15 @@ PJ_DEF(pj_status_t) pjsip_tls_transport_start (pjsip_endpoint *endpt,
     listener->factory.flag = 
 	pjsip_transport_get_flag_from_type(PJSIP_TRANSPORT_TLS);
 
-    pj_ansi_strcpy(listener->factory.obj_name, "tlslis");
+    pj_ansi_strxcpy(listener->factory.obj_name, "tlstp",
+                    sizeof(listener->factory.obj_name));
 
     if (opt)
 	pjsip_tls_setting_copy(pool, &listener->tls_setting, opt);
     else
 	pjsip_tls_setting_default(&listener->tls_setting);
 
-    status = pj_lock_create_recursive_mutex(pool, "tlslis", 
+    status = pj_lock_create_recursive_mutex(pool, listener->factory.obj_name, 
 					    &listener->factory.lock);
     if (status != PJ_SUCCESS)
 	goto on_error;

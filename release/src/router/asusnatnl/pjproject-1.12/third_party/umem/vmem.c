@@ -832,7 +832,7 @@ vmem_xalloc(vmem_t *vmp, size_t size, size_t align, size_t phase,
 {
 	vmem_seg_t *vsp;
 	vmem_seg_t *vbest = NULL;
-	uintptr_t addr, taddr, start, end;
+	uintptr_t addr = 0, taddr, start, end;
 	void *vaddr;
 	int hb, flist, resv;
 	uint32_t mtbf;

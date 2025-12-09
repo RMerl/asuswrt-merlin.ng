@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <time.h>
+#include <sys/mount.h>
 
 #include <disk_io_tools.h>	//mkdir_if_none()
 
@@ -883,7 +884,8 @@ static void _start_mxl371x()
 	_dprintf("[%s]\n", __FUNCTION__);
 	nvram_set_int("moca_dev_state", MOCA_STATE_INIT_DEV);
 	//mount /lib/firmware for moca driver
-	eval("mount", "-t",  "tmpfs", "mdev", "/lib/firmware");
+	mount ("mdev", "/lib/firmware", "tmpfs", 0, NULL);
+	//eval("mount", "-t",  "tmpfs", "mdev", "/lib/firmware");
 	eval("ln", "-sf", "/jffs/mxl371x/fw", "/lib/firmware/updates");
 	//insert moca module
 	eval("insmod", "mxl_moca_ctrl.ko");

@@ -120,7 +120,7 @@ PJ_DEF(pj_status_t) pj_pcap_open(pj_pool_t *pool,
     
     file = PJ_POOL_ZALLOC_T(pool, pj_pcap_file);
 
-    pj_ansi_strcpy(file->obj_name, "pcap");
+    pj_ansi_strxcpy(file->obj_name, "pcap", sizeof(file->obj_name));
 
     status = pj_file_open(pool, path, PJ_O_RDONLY, &file->fd, NULL);
     if (status != PJ_SUCCESS)

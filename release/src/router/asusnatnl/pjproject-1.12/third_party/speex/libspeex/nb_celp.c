@@ -1461,6 +1461,8 @@ int nb_decode(void *state, SpeexBits *bits, void *vout)
          }
 
       }
+      (void) sp;
+      (void) exc;
    }
    
    ALLOC(interp_qlsp, st->lpcSize, spx_lsp_t);
@@ -1536,6 +1538,7 @@ int nb_decode(void *state, SpeexBits *bits, void *vout)
       for (i=0;i<st->lpcSize;i++)
          st->interp_qlpc[i] = ak[i];
 
+      (void) exc;
    }
 
    if (st->highpass_enabled)

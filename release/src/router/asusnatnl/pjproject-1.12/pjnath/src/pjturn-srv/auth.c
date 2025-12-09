@@ -50,7 +50,7 @@ static struct cred_t
 PJ_DEF(pj_status_t) pj_turn_auth_init(const char *realm)
 {
     PJ_ASSERT_RETURN(pj_ansi_strlen(realm) < MAX_REALM, PJ_ENAMETOOLONG);
-    pj_ansi_strcpy(g_realm, realm);
+    pj_ansi_strxcpy(g_realm, realm, sizeof(g_realm));
     return PJ_SUCCESS;
 }
 

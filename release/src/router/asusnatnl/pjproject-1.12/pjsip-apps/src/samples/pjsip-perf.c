@@ -806,7 +806,7 @@ static pj_status_t init_sip()
 	}
 
 	app.local_uri.ptr = pj_pool_alloc(app.pool, 128);
-	app.local_uri.slen = pj_ansi_sprintf(app.local_uri.ptr, 
+        app.local_uri.slen = pj_ansi_snprintf(app.local_uri.ptr, 128,
 				    	     "<sip:pjsip-perf@%.*s:%d;transport=%s>",
 					     (int)app.local_addr.slen,
 					     app.local_addr.ptr,
@@ -962,10 +962,10 @@ static pj_status_t init_media()
 
     /* Generate dummy SDP */
     dummy_sdp_str.slen = pj_ansi_strlen(dummy_sdp_str.ptr);
-    status = pjmedia_sdp_parse(0, app.pool, &dummy_sdp_str.ptr, dummy_sdp_str.slen,
+    status = pjmedia_sdp_parse(0, app.pool, &dummy_sdp_str.ptr, (pj_size_t *)&dummy_sdp_str.slen,
 			       &app.dummy_sdp);
     if (status != PJ_SUCCESS) {
-	app_perror(THIS_FILE, "Error parsing dummy SDP", status);
+	app_perror(THIS_FILE, "Error parsing dum，y SDP", status);
 	return status;
     }
 
@@ -1117,7 +1117,7 @@ static pj_status_t verify_sip_url(const char *c_url)
     if (!pool) return PJ_ENOMEM;
 
     url = pj_pool_alloc(pool, len+1);
-    pj_ansi_strcpy(url, c_url);
+    pj_ansi_strxcpy(url, c_url, len+1);
     url[len] = '\0';
 
     p = pjsip_parse_uri(0, pool, url, len, 0);
@@ -1573,16 +1573,16 @@ static int client_thread(void *arg)
 }
 
 
-static const char *good_number(char *buf, pj_int32_t val)
+static const char *good_number(char *buf, unsigned buf_size, pj_int32_t val)
 {
     if (val < 1000) {
-	pj_ansi_sprintf(buf, "%d", val);
+        pj_ansi_snprintf(buf, buf_size, "%d", val);
     } else if (val < 1000000) {
-	pj_ansi_sprintf(buf, "%d.%dK", 
+        pj_ansi_snprintf(buf, buf_size, "%d.%dK", 
 			val / 1000,
 			(val % 1000) / 100);
     } else {
-	pj_ansi_sprintf(buf, "%d.%02dM", 
+        pj_ansi_snprintf(buf, buf_size, "%d.%02dM", 
 			val / 1000000,
 			(val % 1000000) / 10000);
     }
@@ -1633,9 +1633,12 @@ static int server_thread(void *arg)
 		stateful = app.server.cur_state.stateful_cnt - app.server.prev_state.stateful_cnt;
 		call = app.server.cur_state.call_cnt - app.server.prev_state.call_cnt;
 
-		good_number(str_stateless, app.server.cur_state.stateless_cnt);
-		good_number(str_stateful, app.server.cur_state.stateful_cnt);
-		good_number(str_call, app.server.cur_state.call_cnt);
+                good_number(str_stateless, sizeof(str_stateless),
+                            app.server.cur_state.stateless_cnt);
+                good_number(str_stateful, sizeof(str_stateful),
+                            app.server.cur_state.stateful_cnt);
+                good_number(str_call, sizeof(str_call),
+                            app.server.cur_state.call_cnt);
 
 		printf("Total(rate): stateless:%s (%d/s), statefull:%s (%d/s), call:%s (%d/s)       \r",
 		       str_stateless, stateless*1000/msec,
@@ -1712,13 +1715,15 @@ int main(int argc, char *argv[])
 
 	/* Get the job name */
 	if (app.client.method.id == PJSIP_INVITE_METHOD) {
-	    pj_ansi_strcpy(test_type, "INVITE calls");
+            pj_ansi_strxcpy(test_type, "INVITE calls", sizeof(test_type));
 	} else if (app.client.stateless) {
-	    pj_ansi_sprintf(test_type, "stateless %.*s requests",
+            pj_ansi_snprintf(test_type, sizeof(test_type),
+                            "stateless %.*s requests",
 			    (int)app.client.method.name.slen,
 			    app.client.method.name.ptr);
 	} else {
-	    pj_ansi_sprintf(test_type, "stateful %.*s requests",
+            pj_ansi_snprintf(test_type, sizeof(test_type),
+                            "stateful %.*s requests",
 			    (int)app.client.method.name.slen,
 			    app.client.method.name.ptr);
 	}
@@ -1781,7 +1786,8 @@ int main(int argc, char *argv[])
 	write_report(report);
 
 	/* Print detailed response code received */
-	pj_ansi_sprintf(report, "\nDetailed responses received:");
+        pj_ansi_snprintf(report, sizeof(report),
+                         "\nDetailed responses received:");
 	write_report(report);
 
 	for (i=0; i<PJ_ARRAY_SIZE(app.client.response_codes); ++i) {
@@ -1807,7 +1813,8 @@ int main(int argc, char *argv[])
 
 	write_report(report);
 
-	pj_ansi_sprintf(report, "Maximum outstanding job: %d", 
+        pj_ansi_snprintf(report, sizeof(report),
+                        "Maximum outstanding job: %d", 
 			app.client.stat_max_window);
 	write_report(report);
 

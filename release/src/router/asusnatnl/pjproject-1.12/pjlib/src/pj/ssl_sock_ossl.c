@@ -279,7 +279,7 @@ static pj_str_t ssl_strerror(pj_status_t status,
 	const char *tmp = NULL;
 	    tmp = ERR_reason_error_string(ssl_err);
 	if (tmp) {
-	    pj_ansi_strncpy(buf, tmp, bufsize);
+            pj_ansi_strxcpy(buf, tmp, bufsize);
 	    errstr = pj_str(buf);
 	    return errstr;
 	}
@@ -349,7 +349,7 @@ static pj_status_t init_openssl(void)
 #endif
 #ifndef OPENSSL_NO_TLS1_METHOD
 	if (!meth)
-	    meth = (SSL_METHOD*)TLSv1_server_method();
+	    meth = (SSL_METHOD*)TLS_server_method();
 #endif
 #ifndef OPENSSL_NO_SSL3_METHOD
 	if (!meth)
@@ -541,7 +541,7 @@ static pj_status_t create_ssl(pj_ssl_sock_t *ssock)
 	break;
 #ifndef OPENSSL_NO_TLS1_METHOD
     case PJ_SSL_SOCK_PROTO_TLS1:
-	ssl_method = (SSL_METHOD*)TLSv1_method();
+	ssl_method = (SSL_METHOD*)TLS_method();
 	break;
 #endif
 #ifndef OPENSSL_NO_SSL3_METHOD
@@ -644,8 +644,8 @@ static pj_status_t create_ssl(pj_ssl_sock_t *ssock)
     /* Setup SSL BIOs */
     ssock->ossl_rbio = BIO_new(BIO_s_mem());
     ssock->ossl_wbio = BIO_new(BIO_s_mem());
-    BIO_set_close(ssock->ossl_rbio, BIO_CLOSE);
-    BIO_set_close(ssock->ossl_wbio, BIO_CLOSE);
+    (void)BIO_set_close(ssock->ossl_rbio, BIO_CLOSE);
+    (void)BIO_set_close(ssock->ossl_wbio, BIO_CLOSE);
     SSL_set_bio(ssock->ossl_ssl, ssock->ossl_rbio, ssock->ossl_wbio);
 
     return PJ_SUCCESS;
@@ -707,9 +707,11 @@ static pj_status_t set_cipher_list(pj_ssl_sock_t *ssock)
 {
     char buf[1024];
     pj_str_t cipher_list;
+#if 0
     STACK_OF(SSL_CIPHER) *sk_cipher;
     unsigned i;
     int j, ret;
+#endif
 
     /*if (ssock->param.ciphers_num == 0)
 	return PJ_SUCCESS;*/
@@ -929,7 +931,7 @@ static void get_cert_info(pj_pool_t *pool, pj_ssl_cert_info *ci, X509 *x)
 		    type = PJ_SSL_CERT_NAME_URI;
                     break;
                 case GEN_IPADD:
-		    p = ASN1_STRING_data(name->d.ip);
+		    p = (unsigned char *)ASN1_STRING_get0_data(name->d.ip);
 		    len = ASN1_STRING_length(name->d.ip);
 		    type = PJ_SSL_CERT_NAME_IP;
                     break;
@@ -1250,7 +1252,6 @@ pj_status_t pj_ssl_sock_ossl_test_send_buf(pj_pool_t *pool)
     pj_ssl_sock_close(ssock);
     return status;
 }
-#endif
 
 static void dump_bin(const char *buf, unsigned len)
 {
@@ -1275,6 +1276,7 @@ static void dump_bin(const char *buf, unsigned len)
 	}
 	PJ_LOG(3,(THIS_FILE, "end dump"));
 }
+#endif
 
 
 /* Flush write BIO to network socket. Note that any access to write BIO
@@ -1331,7 +1333,7 @@ static pj_status_t flush_write_bio(pj_ssl_sock_t *ssock,
     pj_memcpy(&wdata->data, data, len);
 
     /* Reset write BIO */
-    BIO_reset(ssock->ossl_wbio);
+    (void)BIO_reset(ssock->ossl_wbio);
 
     /* Ticket #1573: Don't hold mutex while calling PJLIB socket send(). */
     pj_lock_release(ssock->write_mutex);

@@ -1719,6 +1719,14 @@ end:
     parse_hdr_end(scanner);
 }
 
+/* Parse generic array header. */
+PJ_DEF(void) pjsip_parse_generic_array_hdr_imp( pjsip_generic_array_hdr *hdr,
+						pj_scanner *scanner)
+{
+    parse_generic_array_hdr(hdr, scanner);
+}
+
+
 /* Parse generic string header. */
 static void parse_generic_string_hdr( pjsip_generic_string_hdr *hdr,
 				      pjsip_parse_ctx *ctx)

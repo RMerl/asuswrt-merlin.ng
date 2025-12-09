@@ -121,10 +121,10 @@ PJ_DEF(pj_ssize_t) pjsip_param_print_on( const pjsip_param *param_list,
     PJ_UNUSED_ARG(pname_spec);
 
     do {
-	*buf++ = (char)sep;
+	copy_advance_char_check(buf, (char)sep);
 	copy_advance_escape(buf, p->name, (*pname_spec));
 	if (p->value.slen) {
-	    *buf++ = '=';
+	    copy_advance_char_check(buf, '=');
 	    if (*p->value.ptr == '"')
 		copy_advance(buf, p->value);
 	    else
@@ -265,17 +265,17 @@ static pj_ssize_t pjsip_url_print(  pjsip_uri_context_e context,
     /* Print scheme ("sip:" or "sips:") */
     scheme = pjsip_uri_get_scheme(url);
     copy_advance_check(buf, *scheme);
-    *buf++ = ':';
+    copy_advance_char_check(buf, ':');
 
     /* Print "user:password@", if any. */
     if (url->user.slen) {
 	copy_advance_escape(buf, url->user, pc->pjsip_USER_SPEC);
 	if (url->passwd.slen) {
-	    *buf++ = ':';
+	    copy_advance_char_check(buf, ':');
 	    copy_advance_escape(buf, url->passwd, pc->pjsip_PASSWD_SPEC);
 	}
 
-	*buf++ = '@';
+	copy_advance_char_check(buf, '@');
     }
 
     /* Print host. */
@@ -301,7 +301,7 @@ static pj_ssize_t pjsip_url_print(  pjsip_uri_context_e context,
 	if (endbuf - buf < 10)
 	    return -1;
 
-	*buf++ = ':';
+	copy_advance_char_check(buf, ':');
 	printed = pj_utoa(url->port, buf);
 	buf += printed;
     }
@@ -563,13 +563,13 @@ static pj_ssize_t pjsip_name_addr_print(pjsip_uri_context_e context,
 
     if (context != PJSIP_URI_IN_REQ_URI) {
 	if (name->display.slen) {
-	    if (endbuf-buf < 8) return -1;
-	    *buf++ = '"';
+	    if (endbuf-buf < name->display.slen + 3) return -1;
+	    copy_advance_char_check(buf, '"');
 	    copy_advance(buf, name->display);
-	    *buf++ = '"';
-	    *buf++ = ' ';
+	    copy_advance_char_check(buf, '"');
+	    copy_advance_char_check(buf, ' ');
 	}
-	*buf++ = '<';
+	copy_advance_char_check(buf, '<');;
     }
 
     printed = pjsip_uri_print(context,uri, buf, size-(buf-startbuf));
@@ -578,7 +578,7 @@ static pj_ssize_t pjsip_name_addr_print(pjsip_uri_context_e context,
     buf += printed;
 
     if (context != PJSIP_URI_IN_REQ_URI) {
-	*buf++ = '>';
+	copy_advance_char_check(buf, '>');
     }
 
     *buf = '\0';

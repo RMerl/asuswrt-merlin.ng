@@ -157,6 +157,7 @@ struct cached_res
     pj_hash_entry_buf	     hbuf;	    /**< Hash buffer		    */
     pj_time_val		     expiry_time;   /**< Expiration time.	    */
     pj_dns_parsed_packet    *pkt;	    /**< The response packet.	    */
+    unsigned		     ref_cnt;	    /**< Reference counter.	    */
 };
 
 
@@ -702,8 +703,27 @@ static struct cached_res *alloc_entry(pj_dns_resolver *resolver)
 			  RES_BUF_SZ, 256, NULL);
     cache = PJ_POOL_ZALLOC_T(pool, struct cached_res);
     cache->pool = pool;
+    cache->ref_cnt = 1;
 
     return cache;
+}
+
+/* Re-allocate cache entry, to free cached packet */
+static void reset_entry(struct cached_res **p_cached)
+{
+    pj_pool_t *pool;
+    struct cached_res *cache = *p_cached;
+    unsigned ref_cnt;
+
+    pool = cache->pool;
+    ref_cnt = cache->ref_cnt;
+
+    pj_pool_reset(pool);
+
+    cache = PJ_POOL_ZALLOC_T(pool, struct cached_res);
+    cache->pool = pool;
+    cache->ref_cnt = ref_cnt;
+    *p_cached = cache;
 }
 
 /* Put unused/expired cached entry to the free list */
@@ -777,6 +797,13 @@ PJ_DEF(pj_status_t) pj_dns_resolver_start_query( pj_dns_resolver *resolver,
 	    status = PJ_DNS_GET_RCODE(cache->pkt->hdr.flags);
 	    status = PJ_STATUS_FROM_DNS_RCODE(status);
 
+	    /* Workaround for deadlock problem. Need to increment the cache's
+	     * ref counter first before releasing mutex, so the cache won't be
+	     * destroyed by other thread while in callback.
+	     */
+	    cache->ref_cnt++;
+	    pj_mutex_unlock(resolver->mutex);
+
 	    /* This cached response is still valid. Just return this
 	     * response to caller.
 	     */
@@ -785,6 +812,14 @@ PJ_DEF(pj_status_t) pj_dns_resolver_start_query( pj_dns_resolver *resolver,
 	    }
 
 	    /* Done. No host resolution is necessary */
+	    pj_mutex_lock(resolver->mutex);
+
+	    /* Decrement the ref counter. Also check if it is time to free
+	     * the cache (as it has been expired).
+	     */
+	    cache->ref_cnt--;
+	    if (cache->ref_cnt <= 0)
+		free_entry(resolver, cache);
 
 	    /* Must return PJ_SUCCESS */
 	    status = PJ_SUCCESS;
@@ -797,8 +832,10 @@ PJ_DEF(pj_status_t) pj_dns_resolver_start_query( pj_dns_resolver *resolver,
 	 */
 	pj_hash_set(NULL, resolver->hrescache, &key, sizeof(key), 0, NULL);
 
-	/* Store the entry into free nodes */
-	free_entry(resolver, cache);
+	/* Also free the cache, if it is not being used (by callback). */
+	cache->ref_cnt--;
+	if (cache->ref_cnt <= 0)
+	    free_entry(resolver, cache);
 
 	/* Must continue with creating a query now */
     }
@@ -1209,6 +1246,9 @@ static void update_res_cache(pj_dns_resolver *resolver,
     					      sizeof(*key), &hval);
     if (cache == NULL) {
 	cache = alloc_entry(resolver);
+    } else {
+	/* Reset cache to avoid bloated cache pool */
+	reset_entry(&cache);
     }
 
     /* Duplicate the packet.
@@ -1217,7 +1257,6 @@ static void update_res_cache(pj_dns_resolver *resolver,
      * section since DNS A parser needs the query section to know
      * the name being requested.
      */
-    cache->pkt = NULL;
     pj_dns_packet_dup(cache->pool, pkt, 
 		      PJ_DNS_NO_NS | PJ_DNS_NO_AR,
 		      &cache->pkt);

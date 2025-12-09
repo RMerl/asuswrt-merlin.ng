@@ -227,6 +227,7 @@ PJ_DEF(pj_status_t) pjmedia_codec_l16_deinit(void)
     l16_factory.endpt = NULL;
 
     /* Destroy mutex. */
+    pj_mutex_unlock(l16_factory.mutex);
     pj_mutex_destroy(l16_factory.mutex);
     l16_factory.mutex = NULL;
 

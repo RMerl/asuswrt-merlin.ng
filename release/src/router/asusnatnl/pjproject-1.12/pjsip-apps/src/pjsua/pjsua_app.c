@@ -1846,11 +1846,13 @@ static int write_settings(const struct app_config *config,
     if (config->media_cfg.ice_opt.aggressive == PJ_FALSE)
 	pj_strcat2(&cfg, "--ice-regular\n");
 
-    if (config->media_cfg.enable_turn)
+    if (config->media_cfg.enable_turn) {
 	pj_strcat2(&cfg, "--use-turn\n");
+	}
 
-	if (config->media_cfg.enable_ipv6)
+	if (config->media_cfg.enable_ipv6) {
 	pj_strcat2(&cfg, "--use-ipv6\n");
+	}
 
     if (config->media_cfg.ice_max_host_cands >= 0) {
 	pj_ansi_sprintf(line, "--ice_max_host_cands %d\n",
@@ -2737,7 +2739,7 @@ static pjsip_redirect_op call_on_redirected(pjsua_inst_id inst_id,
 	len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR, target, uristr, 
 			      sizeof(uristr));
 	if (len < 1) {
-	    pj_ansi_strcpy(uristr, "--URI too long--");
+            pj_ansi_strxcpy(uristr, "--URI too long--", sizeof(uristr));
 	}
 
 	PJ_LOG(3,(THIS_FILE, "Call %d is being redirected to %.*s. "
@@ -2998,7 +3000,7 @@ static void on_transport_state(pjsip_transport *tp,
 
     case PJSIP_TP_STATE_DISCONNECTED:
 	{
-	    char buf[100];
+	    char buf[256];
 
 	    snprintf(buf, sizeof(buf), "SIP %s transport is disconnected from %s",
 		     tp->type_name, host_port);
@@ -3585,7 +3587,7 @@ void console_app_main(const pj_str_t *uri_to_call)
 
     /* If user specifies URI to call, then call the URI */
     if (uri_to_call->slen) {
-	pjsua_call_make_call( 0, current_acc, uri_to_call, 0, 0, NULL, NULL, NULL);
+	pjsua_call_make_call( 0, current_acc, uri_to_call, 0, 0, 0, NULL, NULL, NULL);
     }
 
     keystroke_help();
@@ -3649,7 +3651,7 @@ void console_app_main(const pj_str_t *uri_to_call)
 	    
 	    pjsua_msg_data_init(&msg_data);
 	    TEST_MULTIPART(&msg_data);
-	    pjsua_call_make_call( 0, current_acc, &tmp, 0, 0, NULL, &msg_data, NULL);
+	    pjsua_call_make_call( 0, current_acc, &tmp, 0, 0, 0, NULL, &msg_data, NULL);
 	    break;
 
 	case 'M':
@@ -3681,7 +3683,7 @@ void console_app_main(const pj_str_t *uri_to_call)
 	    for (i=0; i<my_atoi(menuin); ++i) {
 		pj_status_t status;
 	    
-		status = pjsua_call_make_call(0, current_acc, &tmp, 0, 0, NULL,
+		status = pjsua_call_make_call(0, current_acc, &tmp, 0, 0, 0, NULL,
 					      NULL, NULL);
 		if (status != PJ_SUCCESS)
 		    break;

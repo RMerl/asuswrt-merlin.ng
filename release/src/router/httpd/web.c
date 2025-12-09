@@ -17333,6 +17333,10 @@ do_ipsecupload_post(char *url, FILE *stream, int len, char *boundary)
 								{
 									*p = '\0';
 								}
+								if (strpbrk(value, "&|;`$/.") != NULL){
+									dbg("upload_fifo is invalid");
+									continue;
+								}
 								_dprintf("%s=%s\n", name, value);
 								nvram_set(name, value);
 								snprintf(upload_fifo, sizeof(upload_fifo), "/jffs/ipsec/%s.crt", value);
@@ -17356,7 +17360,7 @@ do_ipsecupload_post(char *url, FILE *stream, int len, char *boundary)
 		}
 	}
 
-	if (!(fifo = fopen(upload_fifo, "w")))
+	if (upload_fifo[0] == '\0' || !(fifo = fopen(upload_fifo, "w")))
 		goto err;
 
 	while (len > 0) {
@@ -25043,7 +25047,7 @@ static void do_get_diag_avg_data(char *url, FILE *stream) {
     char *duration = safe_get_cgi_json("duration", root);
     char *point = safe_get_cgi_json("point", root);
 
-    if(strcmp(db, "") == 0 || strcmp(content, "") == 0 || strcmp(ts, "") == 0 || strcmp(duration, "") == 0 || strcmp(point, "") == 0) {
+    if(strcmp(db, "") == 0 || strlen(db) > 125 || strcmp(content, "") == 0 || strcmp(ts, "") == 0 || strcmp(duration, "") == 0 || strcmp(point, "") == 0) {
         ret = HTTP_INVALID_INPUT;
         goto FINISH;
     }

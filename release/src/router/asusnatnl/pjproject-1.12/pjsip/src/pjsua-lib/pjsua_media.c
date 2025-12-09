@@ -840,7 +840,7 @@ on_error:
 
 
 /* Create normal TCP media transports */
-static pj_status_t create_tcp_media_transports(pjsua_inst_id inst_id, 
+pj_status_t create_tcp_media_transports(pjsua_inst_id inst_id, 
 											   pjsua_transport_config *cfg)
 {
 	unsigned i;
@@ -916,6 +916,7 @@ on_error:
 	return status;
 }
 
+#if 0
 static void on_sctp_connection_complete(pjmedia_transport *tp, 
 										pj_status_t status,
 										pj_sockaddr *turn_mapped_addr)
@@ -938,6 +939,7 @@ static void on_sctp_connection_complete(pjmedia_transport *tp,
 			id, status, turn_mapped_addr);
 	}
 }
+#endif
 
 static void on_dtls_handshake_complete(pjmedia_transport *tp, 
 									   pj_status_t status,
@@ -1808,11 +1810,13 @@ pj_status_t pjsua_media_channel_init(pjsua_inst_id inst_id,
 	unsigned custom_med_tp_flags = 0;
 
 #if defined(PJMEDIA_HAS_DTLS) && (PJMEDIA_HAS_DTLS != 0)
+#if 0
 	pjsua_acc *acc = &pjsua_var[inst_id].acc[call->acc_id];
-	pjmedia_dtls_setting dtls_opt;
 	pjmedia_sctp_setting sctp_opt;
-	pjmedia_transport *dtls = NULL;
 	pjmedia_transport *sctp = NULL;
+#endif
+	pjmedia_dtls_setting dtls_opt;
+	pjmedia_transport *dtls = NULL;
 #elif defined(PJMEDIA_HAS_SRTP) && (PJMEDIA_HAS_SRTP != 0)
 	pjsua_acc *acc = &pjsua_var[inst_id].acc[call->acc_id];
 	pjmedia_srtp_setting dtls_opt;
@@ -1860,7 +1864,7 @@ pj_status_t pjsua_media_channel_init(pjsua_inst_id inst_id,
 		if (call->rem_dtls_use)
 			dtls_opt.use = call->rem_dtls_use;
 		else
-			dtls_opt.use = (pjsua_var[inst_id].media_cfg.enable_secure_data > 0) ?
+			dtls_opt.use =  (pjsua_var[inst_id].media_cfg.enable_secure_data > 0 || call->use_dtls)?
 							PJMEDIA_DTLS_MANDATORY : PJMEDIA_DTLS_DISABLED;
 
 		// Assign certificate and verify_server option
@@ -4301,7 +4305,7 @@ PJ_DEF(pj_status_t) pjsua_codec_get_param( pjsua_inst_id inst_id,
     status = pjmedia_codec_mgr_find_codecs_by_id(codec_mgr, codec_id,
 						 &count, &info, NULL);
     if (status != PJ_SUCCESS)
-	return status;
+		return status;
 
 	if (count != 1) {
 		PJ_LOG(4, ("pjsua_media.c", "pjsua_codec_get_param() pjsua_codec not found."));

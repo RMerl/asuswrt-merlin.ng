@@ -164,7 +164,7 @@ static pjsip_hdr *parse_hdr_replaces(pjsip_parse_ctx *ctx)
 /* Deinitialize Replaces */
 static void pjsip_replaces_deinit_module(pjsip_endpoint *endpt)
 {
-    PJ_TODO(provide_initialized_flag_for_each_endpoint);
+    //PJ_TODO(provide_initialized_flag_for_each_endpoint);
     PJ_UNUSED_ARG(endpt);
     is_initialized = PJ_FALSE;
 }

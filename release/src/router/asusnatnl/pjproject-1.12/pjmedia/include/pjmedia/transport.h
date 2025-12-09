@@ -517,6 +517,7 @@ struct pjmedia_transport
 	pj_time_val inv_recv_time;
 
 	pj_bool_t		 use_sctp; // If true, is use sctp for packet control.
+	pj_bool_t		 use_dtls; // If true, is use dtls for packet control.
 	pj_bool_t		 remote_ua_is_sdk; // If true, the remote user agent is our SDK.
 	
 	pj_sockaddr turn_mapped_addr;
@@ -946,178 +947,170 @@ PJ_INLINE(void) pjmedia_transport_set_use_turn_flag(void *user_data, int use_tur
 //====== local and remote user id ======
 
 /* Dean Added */
-PJ_INLINE(void) pjmedia_transport_get_local_userid(void *user_data, char *user_id)
+PJ_INLINE(void) pjmedia_transport_get_local_userid(void *user_data, char *user_id, int buf_len)
+{
+	if(user_id && buf_len) {
+		struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
+		snprintf(user_id, buf_len, "%s", tp->local_userid);
+	}
+}
+
+/* Dean Added */
+PJ_INLINE(void) pjmedia_transport_set_local_userid(void *user_data, char *user_id)
 {
 	if(user_id) {
 		struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
-		strncpy(user_id, tp->local_userid, sizeof(tp->local_userid));
+		snprintf(tp->local_userid, sizeof(tp->local_userid), "%s", user_id);
 	}
 }
 
 /* Dean Added */
-PJ_INLINE(void) pjmedia_transport_set_local_userid(void *user_data, char *user_id, int user_id_len)
+PJ_INLINE(void) pjmedia_transport_get_remote_userid(void *user_data, char *user_id, int buf_len)
 {
-	struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
-	if(user_id && user_id_len) {
-		memset(tp->local_userid, 0, sizeof(tp->local_userid));
-		strncpy(tp->local_userid, user_id, user_id_len);
+	if(user_id && buf_len) {
+		struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
+		snprintf(user_id, buf_len, "%s", tp->remote_userid);
 	}
 }
 
 /* Dean Added */
-PJ_INLINE(void) pjmedia_transport_get_remote_userid(void *user_data, char *user_id)
+PJ_INLINE(void) pjmedia_transport_set_remote_userid(void *user_data, char *user_id)
 {
 	if(user_id) {
 		struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
-		strncpy(user_id, tp->remote_userid, sizeof(tp->remote_userid));
-	}
-}
-
-/* Dean Added */
-PJ_INLINE(void) pjmedia_transport_set_remote_userid(void *user_data, char *user_id, int user_id_len)
-{
-	struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
-	if(user_id && user_id_len) {
-		memset(tp->remote_userid, 0, sizeof(tp->remote_userid));
-		strncpy(tp->remote_userid, user_id, user_id_len);
+		snprintf(tp->remote_userid, sizeof(tp->remote_userid), "%s", user_id);
 	}
 }
 
 //====== local and remote device id ======
 
 /* Dean Added */
-PJ_INLINE(void) pjmedia_transport_get_local_deviceid(void *user_data, char *device_id)
+PJ_INLINE(void) pjmedia_transport_get_local_deviceid(void *user_data, char *device_id, int buf_len)
+{
+	if(device_id && buf_len) {
+		struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
+		snprintf(device_id, buf_len, "%s", tp->local_deviceid);
+	}
+}
+
+/* Dean Added */
+PJ_INLINE(void) pjmedia_transport_set_local_deviceid(void *user_data, char *device_id)
 {
 	if(device_id) {
 		struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
-		strncpy(device_id, tp->local_deviceid, sizeof(tp->local_deviceid));
+		snprintf(tp->local_deviceid, sizeof(tp->local_deviceid), "%s", device_id);
 	}
 }
 
 /* Dean Added */
-PJ_INLINE(void) pjmedia_transport_set_local_deviceid(void *user_data, char *device_id, int device_id_len)
+PJ_INLINE(void) pjmedia_transport_get_remote_deviceid(void *user_data, char *device_id, int buf_len)
 {
-	struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
-	if(device_id && device_id_len) {
-		memset(tp->local_deviceid, 0, sizeof(tp->local_deviceid));
-		strncpy(tp->local_deviceid, device_id, device_id_len);
+	if(device_id && buf_len) {
+		struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
+		snprintf(device_id, buf_len, "%s", tp->remote_deviceid);
 	}
 }
 
 /* Dean Added */
-PJ_INLINE(void) pjmedia_transport_get_remote_deviceid(void *user_data, char *device_id)
+PJ_INLINE(void) pjmedia_transport_set_remote_deviceid(void *user_data, char *device_id)
 {
 	if(device_id) {
 		struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
-		strncpy(device_id, tp->remote_deviceid, sizeof(tp->remote_deviceid));
-	}
-}
-
-/* Dean Added */
-PJ_INLINE(void) pjmedia_transport_set_remote_deviceid(void *user_data, char *device_id, int device_id_len)
-{
-	struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
-	if(device_id && device_id_len) {
-		memset(tp->remote_deviceid, 0, sizeof(tp->remote_deviceid));
-		strncpy(tp->remote_deviceid, device_id, device_id_len);
+		snprintf(tp->remote_deviceid, sizeof(tp->remote_deviceid), "%s", device_id);
 	}
 }
 
 //====== local and remote turn server ======
 
 /* Dean Added */
-PJ_INLINE(void) pjmedia_transport_get_local_turnsrv(void *user_data, char *turn_server)
+PJ_INLINE(void) pjmedia_transport_get_local_turnsrv(void *user_data, char *turn_server, int buf_len)
+{
+	if(turn_server && buf_len) {
+		struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
+		snprintf(turn_server, buf_len, "%s", tp->local_turnsvr);
+	}
+}
+
+/* Dean Added */
+PJ_INLINE(void) pjmedia_transport_set_local_turnsrv(void *user_data, char *turn_server)
 {
 	if(turn_server) {
 		struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
-		strncpy(turn_server, tp->local_turnsvr, strlen(tp->local_turnsvr));
+		snprintf(tp->local_turnsvr, sizeof(tp->local_turnsvr), "%s", turn_server);
 	}
 }
 
 /* Dean Added */
-PJ_INLINE(void) pjmedia_transport_set_local_turnsrv(void *user_data, char *turn_server, int turn_server_len)
+PJ_INLINE(void) pjmedia_transport_get_remote_turnsvr(void *user_data, char *turn_server, int buf_len)
 {
-	struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
-	if(turn_server && turn_server_len) {
-		memset(tp->local_turnsvr, 0, sizeof(tp->local_turnsvr));
-		strncpy(tp->local_turnsvr, turn_server, turn_server_len);
+	if(turn_server && buf_len) {
+		struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
+		snprintf(turn_server, buf_len, "%s", tp->remote_turnsvr);
 	}
 }
 
 /* Dean Added */
-PJ_INLINE(void) pjmedia_transport_get_remote_turnsvr(void *user_data, char *turn_server)
+PJ_INLINE(void) pjmedia_transport_set_remote_turnsvr(void *user_data, char *turn_server)
 {
 	if(turn_server) {
 		struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
-		strncpy(turn_server, tp->remote_turnsvr, sizeof(tp->remote_turnsvr));
-	}
-}
-
-/* Dean Added */
-PJ_INLINE(void) pjmedia_transport_set_remote_turnsvr(void *user_data, char *turn_server, int turn_server_len)
-{
-	struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
-	if(turn_server && turn_server_len) {
-		memset(tp->remote_turnsvr, 0, sizeof(tp->remote_turnsvr));
-		strncpy(tp->remote_turnsvr, turn_server, turn_server_len);
+		snprintf(tp->remote_turnsvr, sizeof(tp->remote_turnsvr), "%s", turn_server);
 	}
 }
 
 //====== local and remote turn password ======
 
 /* Dean Added */
-PJ_INLINE(void) pjmedia_transport_get_local_turnpwd(void *user_data, char *turn_pwd)
+PJ_INLINE(void) pjmedia_transport_get_local_turnpwd(void *user_data, char *turn_pwd, int buf_len)
+{
+	if(turn_pwd && buf_len) {
+		struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
+		snprintf(turn_pwd, buf_len, "%s", tp->local_turnpwd);
+	}
+}
+
+/* Dean Added */
+PJ_INLINE(void) pjmedia_transport_set_local_turnpwd(void *user_data, char *turn_pwd)
 {
 	if(turn_pwd) {
 		struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
-		strncpy(turn_pwd, tp->local_turnpwd, sizeof(tp->local_turnpwd));
+		snprintf(tp->local_turnpwd, sizeof(tp->local_turnpwd), "%s", turn_pwd);
 	}
 }
 
 /* Dean Added */
-PJ_INLINE(void) pjmedia_transport_set_local_turnpwd(void *user_data, char *turn_pwd, int turn_pwd_len)
+PJ_INLINE(void) pjmedia_transport_get_remote_turnpwd(void *user_data, char *turn_pwd, int buf_len)
 {
-	struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
-	if(turn_pwd && turn_pwd_len) {
-		memset(tp->local_turnpwd, 0, sizeof(tp->local_turnpwd));
-		strncpy(tp->local_turnpwd, turn_pwd, turn_pwd_len);
+	if(turn_pwd && buf_len) {
+		struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
+		snprintf(turn_pwd, buf_len, "%s", tp->remote_turnpwd);
 	}
 }
 
 /* Dean Added */
-PJ_INLINE(void) pjmedia_transport_get_remote_turnpwd(void *user_data, char *turn_pwd)
+PJ_INLINE(void) pjmedia_transport_set_remote_turnpwd(void *user_data, char *turn_pwd)
 {
 	if(turn_pwd) {
 		struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
-		strncpy(turn_pwd, tp->remote_turnpwd, sizeof(tp->remote_turnpwd));
+		snprintf(tp->remote_turnpwd, sizeof(tp->remote_turnpwd), "%s", turn_pwd);
 	}
 }
 
 /* Dean Added */
-PJ_INLINE(void) pjmedia_transport_set_remote_turnpwd(void *user_data, char *turn_pwd, int turn_pwd_len)
+PJ_INLINE(void) pjmedia_transport_get_local_nattype(void *user_data, char *nat_type, int buf_len)
 {
-	struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
-	if(turn_pwd && turn_pwd_len) {
-		memset(tp->remote_turnpwd, 0, sizeof(tp->remote_turnpwd));
-		strncpy(tp->remote_turnpwd, turn_pwd, turn_pwd_len);
+	if(nat_type && buf_len) {
+		struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
+		snprintf(nat_type, buf_len, "%s", tp->local_nat_type);
 	}
 }
+
 /* Dean Added */
-PJ_INLINE(void) pjmedia_transport_get_local_nattype(void *user_data, char *nat_type)
+PJ_INLINE(void) pjmedia_transport_set_local_nattype(void *user_data, char *nat_type)
 {
 	if(nat_type) {
 		struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
-		strncpy(nat_type, tp->local_nat_type, sizeof(tp->local_nat_type));
-	}
-}
-
-/* Dean Added */
-PJ_INLINE(void) pjmedia_transport_set_local_nattype(void *user_data, char *nat_type, int nat_type_len)
-{
-	struct pjmedia_transport *tp = (struct pjmedia_transport *)user_data;
-	if(nat_type && nat_type_len) {
-		memset(tp->local_nat_type, 0, sizeof(tp->local_nat_type));
-		strncpy(tp->local_nat_type, nat_type, nat_type_len);
+		snprintf(tp->local_nat_type, sizeof(tp->local_nat_type), "%s", nat_type);
 	}
 }
 

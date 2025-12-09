@@ -858,7 +858,7 @@ struct pj_caching_pool
     /**
      * Internal pool.
      */
-    char	    pool_buf[256 * (sizeof(long) / 4)];
+    char	    pool_buf[256 * (sizeof(size_t) / 4)];
 
     /**
      * Mutex.
@@ -867,10 +867,11 @@ struct pj_caching_pool
 
 	// DEAN, isntance id of pjsua
 	int inst_id;
-
+#if !(defined(ROUTER) && defined(MUSL_LIBC))
 	// DEAN, if don't add this there are some strange problem.
 	// So this is tricky.
 	char reserved[36];
+#endif
 };
 
 

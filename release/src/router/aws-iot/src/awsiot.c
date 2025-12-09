@@ -1924,6 +1924,12 @@ void init_basic_data()
 
         int link_internet = nvram_get_int("link_internet"); // 2 -> connected
 
+        if (!IS_EULA_OR_PPV2_SIGNED())
+        {
+            sleep(30);
+            continue;
+        }
+
         if((ntp_ready == 1) && (link_internet == 2)) {
             Cdbg(APP_DBG, "waiting ntp_ready -> %d, link_internet -> %d", ntp_ready, link_internet);
             break;
@@ -2171,6 +2177,13 @@ int run_subscribe_topic(MQTTContext_t * pMqttContext, bool * pMqttSessionEstabli
             continue;
         }
 
+        if (!IS_EULA_OR_PPV2_SIGNED())
+        {
+            //- EULA level is not allow and exit awsiot.
+            Cdbg(APP_DBG, "run_subscribe_topic() EULA level is not allow and exit awsiot.");
+            returnStatus = EXIT_AWSIOT;
+            break;
+        }
         mqttStatus = MQTT_ProcessLoop( pMqttContext, MQTT_PROCESS_LOOP_TIMEOUT_MS );
 
         if( mqttStatus != MQTTSuccess )
@@ -2516,6 +2529,12 @@ int main( int argc, char ** argv )
             //     break;
             // }
 
+            if (!IS_EULA_OR_PPV2_SIGNED())
+            {
+                //- EULA level is not allow and exit awsiot.
+                Cdbg(APP_DBG, "main() EULA level is not allow and exit awsiot.");
+                break;
+            }
             Cdbg(APP_DBG, "Openssl disconnect, Short delay before starting the next iteration....");
             sleep( MQTT_SUBPUB_LOOP_DELAY_SECONDS );
         }

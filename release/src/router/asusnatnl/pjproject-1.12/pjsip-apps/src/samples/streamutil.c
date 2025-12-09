@@ -449,7 +449,7 @@ int main(int argc, char *argv[])
      * This will implicitly initialize PJMEDIA too.
      */
     //status = pjmedia_endpt_create(&cp.factory, NULL, 1, &med_endpt);
-    status = pjmedia_endpt_create(0, &cp.factory, NULL, 1, 0, &med_endpt);
+    status = pjmedia_endpt_create(&cp.factory, NULL, 1, 0, 1, &med_endpt);
     PJ_ASSERT_RETURN(status == PJ_SUCCESS, 1);
 
     /* Create memory pool for application purpose */
@@ -775,11 +775,12 @@ static void print_stream_stat(pjmedia_stream *stream,
 			    codec_param->info.frm_ptime)));
 
     if (stat.rx.update_cnt == 0)
-	strcpy(last_update, "never");
+        pj_ansi_strxcpy(last_update, "never", sizeof(last_update));
     else {
 	pj_gettimeofday(&now);
 	PJ_TIME_VAL_SUB(now, stat.rx.update);
-	sprintf(last_update, "%02ldh:%02ldm:%02ld.%03lds ago",
+        pj_ansi_snprintf(last_update, sizeof(last_update),
+                "%02ldh:%02ldm:%02ld.%03lds ago",
 		now.sec / 3600,
 		(now.sec % 3600) / 60,
 		now.sec % 60,
@@ -820,11 +821,12 @@ static void print_stream_stat(pjmedia_stream *stream,
 
 
     if (stat.tx.update_cnt == 0)
-	strcpy(last_update, "never");
+        pj_ansi_strxcpy(last_update, "never", sizeof(last_update));
     else {
 	pj_gettimeofday(&now);
 	PJ_TIME_VAL_SUB(now, stat.tx.update);
-	sprintf(last_update, "%02ldh:%02ldm:%02ld.%03lds ago",
+        pj_ansi_snprintf(last_update, sizeof(last_update),
+                "%02ldh:%02ldm:%02ld.%03lds ago",
 		now.sec / 3600,
 		(now.sec % 3600) / 60,
 		now.sec % 60,
@@ -929,11 +931,12 @@ static void print_stream_stat(pjmedia_stream *stream,
 	    sprintf(toh, "(report not available)");
 
 	if (xr_stat.rx.stat_sum.update.sec == 0)
-	    strcpy(last_update, "never");
+            pj_ansi_strxcpy(last_update, "never", sizeof(last_update));
 	else {
 	    pj_gettimeofday(&now);
 	    PJ_TIME_VAL_SUB(now, xr_stat.rx.stat_sum.update);
-	    sprintf(last_update, "%02ldh:%02ldm:%02ld.%03lds ago",
+            pj_ansi_snprintf(last_update, sizeof(last_update),
+                    "%02ldh:%02ldm:%02ld.%03lds ago",
 		    now.sec / 3600,
 		    (now.sec % 3600) / 60,
 		    now.sec % 60,
@@ -992,11 +995,12 @@ static void print_stream_stat(pjmedia_stream *stream,
 	    sprintf(toh,    "(report not available)");
 
 	if (xr_stat.tx.stat_sum.update.sec == 0)
-	    strcpy(last_update, "never");
+            pj_ansi_strxcpy(last_update, "never", sizeof(last_update));
 	else {
 	    pj_gettimeofday(&now);
 	    PJ_TIME_VAL_SUB(now, xr_stat.tx.stat_sum.update);
-	    sprintf(last_update, "%02ldh:%02ldm:%02ld.%03lds ago",
+            pj_ansi_snprintf(last_update, sizeof(last_update),
+                    "%02ldh:%02ldm:%02ld.%03lds ago",
 		    now.sec / 3600,
 		    (now.sec % 3600) / 60,
 		    now.sec % 60,
@@ -1060,11 +1064,12 @@ static void print_stream_stat(pjmedia_stream *stream,
 	sprintf(jbr, "%d", xr_stat.rx.voip_mtc.rx_config & 0x0F);
 
 	if (xr_stat.rx.voip_mtc.update.sec == 0)
-	    strcpy(last_update, "never");
+            pj_ansi_strxcpy(last_update, "never", sizeof(last_update));
 	else {
 	    pj_gettimeofday(&now);
 	    PJ_TIME_VAL_SUB(now, xr_stat.rx.voip_mtc.update);
-	    sprintf(last_update, "%02ldh:%02ldm:%02ld.%03lds ago",
+            pj_ansi_snprintf(last_update, sizeof(last_update),
+                    "%02ldh:%02ldm:%02ld.%03lds ago",
 		    now.sec / 3600,
 		    (now.sec % 3600) / 60,
 		    now.sec % 60,
@@ -1147,11 +1152,12 @@ static void print_stream_stat(pjmedia_stream *stream,
 	sprintf(jbr, "%d", xr_stat.tx.voip_mtc.rx_config & 0x0F);
 
 	if (xr_stat.tx.voip_mtc.update.sec == 0)
-	    strcpy(last_update, "never");
+            pj_ansi_strxcpy(last_update, "never", sizeof(last_update));
 	else {
 	    pj_gettimeofday(&now);
 	    PJ_TIME_VAL_SUB(now, xr_stat.tx.voip_mtc.update);
-	    sprintf(last_update, "%02ldh:%02ldm:%02ld.%03lds ago",
+            pj_ansi_snprintf(last_update, sizeof(last_update),
+                    "%02ldh:%02ldm:%02ld.%03lds ago",
 		    now.sec / 3600,
 		    (now.sec % 3600) / 60,
 		    now.sec % 60,

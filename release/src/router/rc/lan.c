@@ -4405,7 +4405,7 @@ lan_up(char *lan_ifname)
 
 #if defined(RTCONFIG_MEDIA_SERVER) && defined(RTCONFIG_SAMBASRV) && defined(RTCONFIG_AMAS)
 	if(aimesh_re_node() && get_invoke_later()&INVOKELATER_DMS)
-		notify_rc("restart_samba");
+		notify_rc_and_wait_2min("restart_samba");
 #endif
 
 #ifdef RTCONFIG_REDIRECT_DNAME

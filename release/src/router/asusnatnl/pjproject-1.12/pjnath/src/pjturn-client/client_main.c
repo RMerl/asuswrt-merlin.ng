@@ -107,6 +107,7 @@ static void my_perror(const char *title, pj_status_t status)
 			    return status; \
 			}
 
+#if 0
 /* Log callback */
 static void log_writer(int inst_id, int level, const char *buffer, int len, int flush)
 {
@@ -114,6 +115,7 @@ static void log_writer(int inst_id, int level, const char *buffer, int len, int 
 	if (level < 5)
 		pj_log_write(inst_id, level, buffer, len, flush);
 }
+#endif
 
 static int init()
 {
@@ -325,13 +327,14 @@ static pj_status_t create_relay(void)
     return PJ_SUCCESS;
 }
 
+#if 0
 static void destroy_relay(void)
 {
     if (g.relay) {
 	pj_turn_sock_destroy(g.relay);
     }
 }
-
+#endif
 
 static void turn_on_rx_data(pj_turn_sock *relay,
 			    void *pkt,
@@ -419,7 +422,7 @@ static pj_bool_t stun_sock_on_rx_data(pj_stun_sock *stun_sock,
     return PJ_TRUE;
 }
 
-
+#if 0
 static void menu(void)
 {
     pj_turn_session_info info;
@@ -431,22 +434,23 @@ static void menu(void)
     if (g.relay) {
 
 		pj_turn_sock_get_info(g.relay, &info);
-		strcpy(client_state, pj_turn_state_name(info.state));
+        pj_ansi_strxcpy(client_state, pj_turn_state_name(info.state),
+                         sizeof(client_state));
 
 		if (info.state >= PJ_TURN_STATE_READY) {
 		    pj_sockaddr_print(&info.relay_addr, relay_addr, sizeof(relay_addr), 3);
 			
-			strcpy(relay_addr_temp, relay_addr);
+            pj_ansi_strxcpy(relay_addr_temp, relay_addr, sizeof(relay_addr_temp));
 		} else {
-		    strcpy(relay_addr, "0.0.0.0:0");
-		    strcpy(relay_addr_temp, "0.0.0.0:0");
+            pj_ansi_strxcpy(relay_addr, "0.0.0.0:0", sizeof(relay_addr));
+            pj_ansi_strxcpy(relay_addr_temp, "0.0.0.0:0", sizeof(relay_addr_temp));
 		}
 
     } else {
 
-		strcpy(client_state, "NULL");
-		strcpy(relay_addr, "0.0.0.0:0");
-		strcpy(relay_addr_temp, "0.0.0.0:0");
+        pj_ansi_strxcpy(client_state, "NULL", sizeof(client_state));
+        pj_ansi_strxcpy(relay_addr, "0.0.0.0:0", sizeof(relay_addr));
+        pj_ansi_strxcpy(relay_addr_temp, "0.0.0.0:0", sizeof(relay_addr_temp));
     }
 
 
@@ -485,7 +489,7 @@ static void menu(void)
    //  printf(">>> ");
     fflush(stdout);
 }
-
+#endif
 
 static void console_main(void)
 {
@@ -495,13 +499,40 @@ static void console_main(void)
 
     	count++;
 
-		char input[32];
-		struct peer *peer;
+		//char input[32];
+		//struct peer *peer;
 		pj_status_t status;
+    	pj_turn_session_info info;
+		char relay_addr[80];
+		//menu();
 
-		menu();
+#if 1
+		if (g.relay) {
 
+			pj_turn_sock_get_info(g.relay, &info);
 
+			if (info.state >= PJ_TURN_STATE_READY) {
+				pj_sockaddr_print(&info.relay_addr, relay_addr, sizeof(relay_addr), 3);
+				
+				printf("Result=OK. relay_addr=%s\n", relay_addr);
+				exit(0);
+			} else {
+				if (info.state <= PJ_TURN_STATE_RESOLVED && count >= 5) {
+					printf("Result=FAILED. timeout.\n");
+					exit(0);
+				}
+
+				printf("relay creating.\n");
+			}
+
+		} else {
+			if ((status = create_relay()) != PJ_SUCCESS) {
+				printf("Result=FAILED. status=%d\n", status);
+				exit(0);
+			}
+		}
+		sleep(1);
+#else
 
 		//if (g.relay == NULL) {
 		if (strstr(relay_addr_temp, "0.0.0.0:0") && 
@@ -556,9 +587,9 @@ static void console_main(void)
 			}
 			exit(0);
 		}
+#endif
 
-
-
+#if 0
 		if (fgets(input, sizeof(input), stdin) == NULL)
 		    break;
 		
@@ -585,7 +616,7 @@ static void console_main(void)
 		    else
 			peer = &g.peer[1];
 
-		    strcpy(input, "Hello from client");
+            pj_ansi_strxcpy(input, "Hello from client", sizeof(input));
 		    status = pj_turn_sock_sendto(g.relay, (const pj_uint8_t*)input, 
 						strlen(input)+1, 
 						&peer->mapped_addr, 
@@ -644,6 +675,7 @@ static void console_main(void)
 		    g.quit = PJ_TRUE;
 		    break;
 		}
+#endif
     }
 }
 
@@ -729,8 +761,10 @@ int main(int argc, char *argv[])
 		o.srv_addr = argv[pj_optind];
     }
 
-    if ((status=init()) != 0)
+    if ((status=init()) != 0) {
+		printf("Result=FAILED.\n");
 		goto on_return;
+	}
     
     //if ((status=create_relay()) != 0)
     //	goto on_return;

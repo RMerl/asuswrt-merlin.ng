@@ -979,6 +979,7 @@ LDFLAGS += -lm
 OBJS += ledg.o
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX6000 GT10))
 OBJS += ledbtn.o
+CFLAGS += -DSW_LEDBTN
 endif
 endif
 ifeq ($(DSL_AX82U),y)

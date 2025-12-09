@@ -76,8 +76,8 @@ static pjsip_module mod_pjsua_im[PJSUA_MAX_INSTANCES];
 /* MIME constants. */
 static const pj_str_t STR_MIME_APP	   = { "application", 11 };
 static const pj_str_t STR_MIME_ISCOMPOSING = { "im-iscomposing+xml", 18 };
-static const pj_str_t STR_MIME_TEXT	   = { "text", 4 };
-static const pj_str_t STR_MIME_PLAIN	   = { "plain", 5 };
+//static const pj_str_t STR_MIME_TEXT	   = { "text", 4 };
+//static const pj_str_t STR_MIME_PLAIN	   = { "plain", 5 };
 static int is_initialized;
 
 static void mod_pjsua_im_initialize()
@@ -126,10 +126,10 @@ pjsip_accept_hdr* pjsua_im_create_accept(pj_pool_t *pool)
 /**
  * Create rport header for MESSAGE.
  */
-pjsip_generic_int_hdr* pjsua_im_create_rport(pj_pool_t *pool, pj_str_t *rport_value)
+pjsip_generic_string_hdr* pjsua_im_create_rport(pj_pool_t *pool, pj_str_t *rport_value)
 {
     /* Create Accept header. */
-    pjsip_generic_int_hdr *rport;
+    pjsip_generic_string_hdr *rport;
 
     rport = pjsip_generic_string_hdr_create(pool, &im_rport_hdr, rport_value);
 
@@ -139,10 +139,10 @@ pjsip_generic_int_hdr* pjsua_im_create_rport(pj_pool_t *pool, pj_str_t *rport_va
 /**
  * Create timeout header for MESSAGE.
  */
-pjsip_generic_int_hdr* pjsua_im_create_timtout(pj_pool_t *pool, pj_str_t *timeout_value)
+pjsip_generic_string_hdr* pjsua_im_create_timtout(pj_pool_t *pool, pj_str_t *timeout_value)
 {
     /* Create Accept header. */
-    pjsip_generic_int_hdr *timeout;
+    pjsip_generic_string_hdr *timeout;
 
     timeout = pjsip_generic_string_hdr_create(pool, &im_timeout_hdr, timeout_value);
 
@@ -152,10 +152,10 @@ pjsip_generic_int_hdr* pjsua_im_create_timtout(pj_pool_t *pool, pj_str_t *timeou
 /**
  * Create process name header for MESSAGE.
  */
-pjsip_generic_int_hdr* pjsua_im_create_proc_name(pj_pool_t *pool, pj_str_t *proc_name_value)
+pjsip_generic_string_hdr* pjsua_im_create_proc_name(pj_pool_t *pool, pj_str_t *proc_name_value)
 {
     /* Create Accept header. */
-    pjsip_generic_int_hdr *proc_name;
+    pjsip_generic_string_hdr *proc_name;
 
     proc_name = pjsip_generic_string_hdr_create(pool, &im_proc_name_hdr, proc_name_value);
 
@@ -399,6 +399,8 @@ static pj_bool_t im_on_rx_request(pjsip_rx_data *rdata)
 
     /* Process pager. */
     pjsua_im_process_pager(-1, &from, &to, rdata);
+
+	(void) status;
 
     /* Done. */
     return PJ_TRUE;

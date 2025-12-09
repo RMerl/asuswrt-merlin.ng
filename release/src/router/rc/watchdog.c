@@ -3814,8 +3814,10 @@ void btn_check(void)
 #if (((defined(RTCONFIG_LED_BTN) || !defined(RTCONFIG_WIFI_TOG_BTN)) && !defined(RTCONFIG_QCA)) && !defined(RTAX82U) && !defined(DSL_AX82U) && !defined(GSAX3000) && !defined(GSAX5400) && !defined(TUFAX5400)) && !defined(GTAX6000) && !defined(GT10) && !defined(RTAX82U_V2) && !defined(TUFAX5400_V2) && !defined(EBG15) && !defined(EBG19)
 	LED_status_old = LED_status;
 #if !defined(RTCONFIG_LED_BTN) && !defined(RTCONFIG_WIFI_TOG_BTN)
+#ifndef SW_LEDBTN
 	LED_status = nvram_match("btn_ez_radiotoggle", "0") && nvram_match("btn_ez_mode", "1") &&
 		     button_pressed(BTN_WPS);
+#endif
 #else
 	LED_status = button_pressed(BTN_LED);
 #endif
@@ -3865,6 +3867,7 @@ void btn_check(void)
 		}
 	}
 #elif defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+#ifndef SW_LEDBTN
 	if (!nvram_get_int("AllLED") && LED_status_first)
 	{
 		LED_status_first = 0;
@@ -3884,6 +3887,7 @@ void btn_check(void)
 			LED_status_on = 1 - LED_status_on;
 	}
 	else
+#endif
 		LED_status_changed = 0;
 #endif
 

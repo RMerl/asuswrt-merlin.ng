@@ -13821,7 +13821,7 @@ _dprintf("%s: set autowan_ifnames to be \"eth0 eth1\"\n", __func__);
 			nvram_set("eth_ifnames", "eth0 eth1");
 			nvram_set("amas_ethif_type", "8 4");
 			nvram_set("eth_priority", "0 2 1 1 1 1");		// eth0: 2.5G(idx:0,prio:2,used:1) > eth1: 1G(idx:1,prio:1,used:1)
-			nvram_set("wired_ifnames", "eth1 eth2 eth3 eth4");
+			nvram_set("wired_ifnames", "eth2 eth3 eth4");
 			nvram_set("sta_ifnames", "eth5 eth7 eth6");
 			nvram_set("sta_priority", "2 0 5 1 5 1 4 1 6 2 3 1");	// 2.4G:(prio:5, used:1), 5G:(prio:4, used:1), 6G:(prio:3, used:1)
 		} else {

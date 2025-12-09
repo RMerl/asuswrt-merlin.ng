@@ -518,8 +518,12 @@ umem_log_header_t *umem_failure_log;
 umem_log_header_t *umem_slab_log;
 
 extern thread_t _thr_self(void);
-#if defined(__MACH__) || defined(__FreeBSD__)
+#if defined(__MACH__) || defined(__FreeBSD__) || defined(MUSL_LIBC)
+#if defined(ARM64)
+# define CPUHINT()	((long int)(_thr_self()))
+#else
 # define CPUHINT()	((int)(_thr_self()))
+#endif
 #elif !(defined(__GLIBC__) || defined(__UCLIBC__))
 # define CPUHINT()	((int)(_thr_self()))
 #endif
@@ -2617,7 +2621,7 @@ umem_cache_create(
 		}
 		ASSERT(!(cp->cache_flags & UMF_AUDIT));
 	} else {
-		size_t chunks, bestfit, waste, slabsize;
+		size_t chunks, bestfit = 0, waste, slabsize;
 		size_t minwaste = LONG_MAX;
 
 		for (chunks = 1; chunks <= UMEM_VOID_FRACTION; chunks++) {

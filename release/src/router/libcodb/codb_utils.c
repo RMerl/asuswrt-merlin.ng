@@ -20,7 +20,7 @@ static time_t get_zero_time_on_day(unsigned long ts){
     return zero_time;
 }
 
-static int get_tmp_db_path(const char* db_name, char* db_file_path) {
+static int get_tmp_db_path(const char* db_name, char* db_file_path, int path_len) {
 
     if (db_name==NULL || db_file_path==NULL) {
         return 0;
@@ -28,9 +28,9 @@ static int get_tmp_db_path(const char* db_name, char* db_file_path) {
 
     char db_path[12] = "/tmp/.diag/";
 
-    strncpy(db_file_path, db_path, strlen(db_path));
-    strncat(db_file_path, db_name, strlen(db_name));
-    strncat(db_file_path, ".db", 3);
+    snprintf(db_file_path, path_len, "%s", db_path);
+    strlcat(db_file_path, db_name, path_len);
+    strlcat(db_file_path, ".db", path_len);
 
     return 1;
 }
@@ -401,7 +401,7 @@ int codb_content_query_json_field(char* db_name, int columns_count, char* column
 
     sqlite3* pdb_tmp = NULL;
     char tmp_db_file_path[MAX_FILE_PATH] = "\0";
-    if (get_tmp_db_path(db_name, tmp_db_file_path)==1) {
+    if (get_tmp_db_path(db_name, tmp_db_file_path, MAX_FILE_PATH)==1) {
         pdb_tmp = cosql_open(tmp_db_file_path);
         
         //cosql_enable_debug(pdb_tmp, 1);
@@ -608,7 +608,7 @@ int codb_content_query_duration_json_field(char* db_name, int columns_count, cha
 
     sqlite3* pdb_tmp = NULL;
     char tmp_db_file_path[MAX_FILE_PATH] = "\0";
-    if (get_tmp_db_path(db_name, tmp_db_file_path)==1) {
+    if (get_tmp_db_path(db_name, tmp_db_file_path, MAX_FILE_PATH)==1) {
         pdb_tmp = cosql_open(tmp_db_file_path);
         if (pdb_tmp==NULL) {
             fprintf(stderr, "Fail to open tmp db file\n");
@@ -810,7 +810,7 @@ int codb_avg_query_json_field(char* db_name, char* field_name, char* node_mac, i
 
     sqlite3* pdb_tmp = NULL;
     char tmp_db_file_path[MAX_FILE_PATH] = "\0";
-    if (get_tmp_db_path(db_name, tmp_db_file_path)==1) {
+    if (get_tmp_db_path(db_name, tmp_db_file_path, MAX_FILE_PATH)==1) {
         pdb_tmp = cosql_open(tmp_db_file_path);
         if (pdb_tmp==NULL) {
             fprintf(stderr, "Fail to open tmp db file\n");
@@ -968,7 +968,7 @@ int codb_eth_detect_traffic_data(char* node_mac, int is_bh, int start, int end, 
 
     sqlite3* pdb_tmp = NULL;
     char tmp_db_file_path[MAX_FILE_PATH] = "\0";
-    if (get_tmp_db_path(db_name, tmp_db_file_path)==1) {
+    if (get_tmp_db_path(db_name, tmp_db_file_path, MAX_FILE_PATH)==1) {
         pdb_tmp = cosql_open(tmp_db_file_path);
         if (pdb_tmp==NULL) {
             fprintf(stderr, "Fail to open tmp db file\n");
@@ -1246,7 +1246,7 @@ int codb_count_active_client(char* node_mac, int start, int end, int duration, j
 
     sqlite3* pdb_tmp = NULL;
     char tmp_db_file_path[MAX_FILE_PATH] = "\0";
-    if (get_tmp_db_path(db_name, tmp_db_file_path)==1) {
+    if (get_tmp_db_path(db_name, tmp_db_file_path, MAX_FILE_PATH)==1) {
         pdb_tmp = cosql_open(tmp_db_file_path);
         if (pdb_tmp==NULL) {
             fprintf(stderr, "Fail to open tmp db file\n");

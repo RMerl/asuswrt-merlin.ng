@@ -720,6 +720,23 @@ typedef enum pj_mutex_type_e
 /**
  * Create mutex of the specified type.
  *
+ * @param pool        The pool.
+ * @param name        Name to be associated with the mutex (for debugging).
+ * @param type        The type of the mutex, of type #pj_mutex_type_e.
+ * @param mutex        Pointer to hold the returned mutex instance..
+ * @param inst_id   instance id.
+ *
+ * @return        PJ_SUCCESS on success, or the error code.
+ */
+PJ_DECL(pj_status_t) pj_mutex_create2(pj_pool_t *pool,
+                                     const char *name,
+                     int type,
+                                     pj_mutex_t **mutex,
+                                    int inst_id);
+
+/**
+ * Create mutex of the specified type.
+ *
  * @param pool	    The pool.
  * @param name	    Name to be associated with the mutex (for debugging).
  * @param type	    The type of the mutex, of type #pj_mutex_type_e.
@@ -809,6 +826,23 @@ PJ_DECL(pj_bool_t) pj_mutex_is_locked(pj_mutex_t *mutex);
  * @return	    PJ_SUCCESS on success, or the error code.
  */
 PJ_DECL(int) pj_get_mutex_inst_id(pj_mutex_t *mutex);
+
+/**
+ * Dump mutex struct
+
+struct pj_mutex_t
+{
+    pthread_mutex_t     mutex;
+    char		obj_name[PJ_MAX_OBJ_NAME];
+#if PJ_DEBUG
+    int		        nesting_level;
+    pj_thread_t	       *owner;
+    char		owner_name[PJ_MAX_OBJ_NAME];
+#endif
+	int         inst_id;
+};
+ */
+PJ_DECL(void) pj_mutex_dump(const char *prefix, pj_mutex_t *mutex);
 
 /**
  * @}

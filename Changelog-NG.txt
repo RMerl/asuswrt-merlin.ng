@@ -24,6 +24,7 @@ Asuswrt-Merlin Changelog
            JFFS.  Also removed rarely used start-of-month
            setting.
 
+  - UPDATED: Merged GPL 388_25575.
   - UPDATED: OpenVPN to 2.6.17.
   - UPDATED: libcap-ng to 0.8.4 (to be in sync with upstream)
   - CHANGED: TrafficMonitor stats can now be saved to JFFS,

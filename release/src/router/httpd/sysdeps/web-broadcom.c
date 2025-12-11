@@ -1945,12 +1945,12 @@ wl_ht_nss(char *mcsset)
 
 	for (i = 0; i < (MCSSET_LEN * 8); i++) {
 		if (isset(mcsset, i)) {
-			if ((i % 8) == 0)
+			if (((i+1) % 8) == 0)
 				nss++;
 		}
 	}
 
-	return nss;
+	return nss ? : 1;
 }
 
 int

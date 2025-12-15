@@ -3,19 +3,13 @@
 /* Define if building universal (internal helper macro) */
 #undef AC_APPLE_UNIVERSAL_BUILD
 
-/* Define to one of `_getb67', `GETB67', `getb67' for Cray-2 and Cray-YMP
-   systems. This function is required for `alloca.c' support on those systems.
-   */
-#undef CRAY_STACKSEG_END
-
-/* Define to 1 if using `alloca.c'. */
+/* Define to 1 if using 'alloca.c'. */
 #undef C_ALLOCA
 
-/* Define to 1 if you have `alloca', as a function or macro. */
+/* Define to 1 if you have 'alloca', as a function or macro. */
 #undef HAVE_ALLOCA
 
-/* Define to 1 if you have <alloca.h> and it should be used (not on Ultrix).
-   */
+/* Define to 1 if <alloca.h> works. */
 #undef HAVE_ALLOCA_H
 
 /* Define if __builtin_bswap64 is available */
@@ -26,6 +20,9 @@
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
+
+/* Define to 1 if you have the `elf_aux_info' function. */
+#undef HAVE_ELF_AUX_INFO
 
 /* Define if fcntl file locking is available */
 #undef HAVE_FCNTL_LOCKING
@@ -51,14 +48,12 @@
 /* Define to 1 if you have the <malloc.h> header file. */
 #undef HAVE_MALLOC_H
 
-/* Define to 1 if you have the <memory.h> header file. */
-#undef HAVE_MEMORY_H
-
 /* Define to 1 each of the following for which a native (ie. CPU specific)
     implementation of the corresponding routine exists.  */
 #undef HAVE_NATIVE_memxor3
 #undef HAVE_NATIVE_aes_decrypt
 #undef HAVE_NATIVE_aes_encrypt
+#undef HAVE_NATIVE_aes_invert
 #undef HAVE_NATIVE_aes128_decrypt
 #undef HAVE_NATIVE_aes128_encrypt
 #undef HAVE_NATIVE_aes128_invert_key
@@ -96,23 +91,33 @@
 #undef HAVE_NATIVE_ecc_secp384r1_redc
 #undef HAVE_NATIVE_ecc_secp521r1_modp
 #undef HAVE_NATIVE_ecc_secp521r1_redc
+#undef HAVE_NATIVE_poly1305_set_key
+#undef HAVE_NATIVE_poly1305_block
+#undef HAVE_NATIVE_poly1305_digest
+#undef HAVE_NATIVE_poly1305_blocks
+#undef HAVE_NATIVE_fat_poly1305_blocks
 #undef HAVE_NATIVE_ghash_set_key
 #undef HAVE_NATIVE_ghash_update
+#undef HAVE_NATIVE_gcm_aes_encrypt
+#undef HAVE_NATIVE_gcm_aes_decrypt
 #undef HAVE_NATIVE_salsa20_core
 #undef HAVE_NATIVE_salsa20_2core
 #undef HAVE_NATIVE_fat_salsa20_2core
 #undef HAVE_NATIVE_sha1_compress
-#undef HAVE_NATIVE_sha256_compress
+#undef HAVE_NATIVE_sha256_compress_n
 #undef HAVE_NATIVE_sha512_compress
 #undef HAVE_NATIVE_sha3_permute
 #undef HAVE_NATIVE_umac_nh
 #undef HAVE_NATIVE_umac_nh_n
 
-/* Define to 1 if you have the <openssl/ecdsa.h> header file. */
-#undef HAVE_OPENSSL_ECDSA_H
+/* Define to 1 if you have the <openssl/ec.h> header file. */
+#undef HAVE_OPENSSL_EC_H
 
 /* Define to 1 if you have the <openssl/evp.h> header file. */
 #undef HAVE_OPENSSL_EVP_H
+
+/* Define to 1 if you have the <openssl/rsa.h> header file. */
+#undef HAVE_OPENSSL_RSA_H
 
 /* Define to 1 if you have the `secure_getenv' function. */
 #undef HAVE_SECURE_GETENV
@@ -120,11 +125,11 @@
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
+/* Define to 1 if you have the <stdio.h> header file. */
+#undef HAVE_STDIO_H
+
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
-
-/* Define to 1 if you have the `strerror' function. */
-#undef HAVE_STRERROR
 
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H
@@ -176,16 +181,18 @@
 	STACK_DIRECTION = 0 => direction of growth unknown */
 #undef STACK_DIRECTION
 
-/* Define to 1 if you have the ANSI C header files. */
+/* Define to 1 if all of the C90 standard headers exist (not just the ones
+   required in a freestanding environment). This macro is provided for
+   backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
 
-/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
-#undef TIME_WITH_SYS_TIME
+/* Defined to enable additional asserts */
+#undef WITH_EXTRA_ASSERTS
 
 /* Defined if public key features are enabled */
 #undef WITH_HOGWEED
 
-/* Define if you have openssl's libcrypto (used for benchmarking) */
+/* Define if you have openssl libcrypto (used for benchmarking) */
 #undef WITH_OPENSSL
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
@@ -244,13 +251,6 @@ char *alloca ();
 #   include <malloc.h>
 #  endif
 # endif
-#endif
-
-
-#if HAVE_STRERROR
-#define STRERROR strerror
-#else
-#define STRERROR(x) (sys_errlist[x])
 #endif
 
 

@@ -222,15 +222,15 @@ main (int argc, char **argv)
 	{
 	  FILE *f = fopen (argv[i], "rb");
 	  if (!f)
-	    die ("Cannot open `%s': %s\n", argv[i], STRERROR(errno));
+	    die ("Cannot open `%s': %s\n", argv[i], strerror(errno));
 	  printf("%s: ", argv[i]);
 	  if (!digest_file (alg, length, raw, f))
-	    die("Reading `%s' failed: %s\n", argv[i], STRERROR(errno));
+	    die("Reading `%s' failed: %s\n", argv[i], strerror(errno));
 	  fclose(f);
 	}
     }
   if (fflush(stdout) != 0 )
-    die("Write failed: %s\n", STRERROR(errno));
+    die("Write failed: %s\n", strerror(errno));
 
   return EXIT_SUCCESS;
 }

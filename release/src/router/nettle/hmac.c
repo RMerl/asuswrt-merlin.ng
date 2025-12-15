@@ -36,8 +36,6 @@
 #endif
 
 #include <assert.h>
-/* Needed for alloca on freebsd */
-#include <stdlib.h>
 #include <string.h>
 
 #include "hmac.h"

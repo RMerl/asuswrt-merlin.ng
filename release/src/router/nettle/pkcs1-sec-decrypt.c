@@ -44,14 +44,14 @@
 
 #include "gmp-glue.h"
 #include "pkcs1-internal.h"
+#include "nettle-internal.h"
 
 /* Inputs are always cast to uint32_t values. But all values used in this
  * function should never exceed the maximum value of a uint32_t anyway.
  * these macros returns 1 on success, 0 on failure */
 #define NOT_EQUAL(a, b) \
     ((0U - ((uint32_t)(a) ^ (uint32_t)(b))) >> 31)
-#define EQUAL(a, b) \
-    ((((uint32_t)(a) ^ (uint32_t)(b)) - 1U) >> 31)
+#define EQUAL(a, b) (IS_ZERO_SMALL ((a) ^ (b)))
 #define GREATER_OR_EQUAL(a, b) \
     (1U - (((uint32_t)(a) - (uint32_t)(b)) >> 31))
 

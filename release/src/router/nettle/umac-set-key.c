@@ -39,6 +39,7 @@
 #include "umac-internal.h"
 
 #include "macros.h"
+#include "bswap-internal.h"
 
 static void
 umac_kdf (struct aes128_ctx *aes, unsigned index, unsigned length, uint8_t *dst)
@@ -60,23 +61,6 @@ umac_kdf (struct aes128_ctx *aes, unsigned index, unsigned length, uint8_t *dst)
     }
 }
 
-#if WORDS_BIGENDIAN
-#define BE_SWAP32(x) x
-#define BE_SWAP32_N(n, x)
-#else
-#define BE_SWAP32(x)				\
-  ((ROTL32(8,  x) & 0x00FF00FFUL) |		\
-   (ROTL32(24, x) & 0xFF00FF00UL))
-#define BE_SWAP32_N(n, x) do {			\
-  unsigned be_i;				\
-  for (be_i = 0; be_i < n; be_i++)		\
-    {						\
-      uint32_t be_x = (x)[be_i];		\
-      (x)[be_i] = BE_SWAP32 (be_x);		\
-    }						\
-  } while (0)
-#endif
-
 void
 _nettle_umac_set_key (uint32_t *l1_key, uint32_t *l2_key,
 		      uint64_t *l3_key1, uint32_t *l3_key2,
@@ -89,7 +73,7 @@ _nettle_umac_set_key (uint32_t *l1_key, uint32_t *l2_key,
 
   size = UMAC_BLOCK_SIZE / 4 + 4*(n-1);
   umac_kdf (aes, 1, size * sizeof(uint32_t), (uint8_t *) l1_key);
-  BE_SWAP32_N (size, l1_key);
+  bswap32_n_if_le (size, l1_key);
 
   size = 6*n;
   umac_kdf (aes, 2, size * sizeof(uint32_t), (uint8_t *) l2_key);

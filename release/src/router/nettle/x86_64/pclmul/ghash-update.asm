@@ -2,6 +2,7 @@ C x86_64/ghash-update.asm
 
 ifelse(`
    Copyright (C) 2022 Niels Möller
+   Copyright (C) 2023 Mamone Tarsha
 
    This file is part of GNU Nettle.
 
@@ -41,11 +42,16 @@ define(`P', `%xmm0')
 define(`BSWAP', `%xmm1')
 define(`H', `%xmm2')
 define(`D', `%xmm3')
-define(`T', `%xmm4')
-
-define(`R', `%xmm5')
-define(`M', `%xmm6')
-define(`F', `%xmm7')
+define(`H2', `%xmm4')
+define(`D2', `%xmm5')
+define(`T', `%xmm6')
+define(`R', `%xmm7')
+define(`M', `%xmm8')
+define(`F', `%xmm9')
+define(`T2', `%xmm10')
+define(`R2', `%xmm11')
+define(`M2', `%xmm12')
+define(`F2', `%xmm13')
 
 C Use pclmulqdq, doing one 64x64 --> 127 bit carry-less multiplication,
 C with source operands being selected from the halves of two 128-bit registers.
@@ -80,21 +86,66 @@ C registers left for temporaries.
 	C				size_t blocks, const uint8_t *data)
 
 PROLOGUE(_nettle_ghash_update)
-	W64_ENTRY(4, 8)
+	W64_ENTRY(4, 14)
 	movdqa		.Lpolynomial(%rip), P
 	movdqa		.Lbswap(%rip), BSWAP
 	movups		(CTX), H
 	movups		16(CTX), D
+	movups		32(CTX), H2
+	movups		48(CTX), D2
 	movups		(X), R
 	pshufb		BSWAP, R
 
-	sub		$1, BLOCKS
-	jc		.Ldone
+	mov		BLOCKS, %rax
+	shr		$1, %rax
+	jz		.L1_block
 
 .Loop:
 	movups		(DATA), M
 	pshufb		BSWAP, M
-.Lblock:
+	pxor		M, R
+	movdqa		R, M
+	movdqa		R, F
+	movdqa		R, T
+	pclmullqlqdq	D2, F 	C {D^2}0 * M1_0
+	pclmullqhqdq	D2, R	C {D^2}1 * M1_0
+	pclmulhqlqdq	H2, T	C {H^2}0 * M1_1
+	pclmulhqhqdq	H2, M	C {H^2}1 * M1_1
+	
+
+	movups		16(DATA), M2
+	pshufb		BSWAP, M2
+	movdqa		M2, R2
+	movdqa		M2, F2
+	movdqa		M2, T2
+	pclmullqlqdq	D, F2 	C D0 * M2_0
+	pclmullqhqdq	D, R2	C D1 * M2_0
+	pclmulhqlqdq	H, T2	C H0 * M2_1
+	pclmulhqhqdq	H, M2	C H1 * M2_1
+
+	pxor		T, F
+	pxor		M, R
+	pxor		T2, F2
+	pxor		M2, R2
+
+	pxor		F2, F
+	pxor		R2, R
+
+	pshufd		$0x4e, F, T		C Swap halves of F
+	pxor		T, R
+	pclmullqhqdq	P, F
+	pxor		F, R
+
+	add		$32, DATA
+	dec		%rax
+	jnz		.Loop
+
+.L1_block:
+	test		$1, BLOCKS
+	jz		.Ldone
+
+	movups		(DATA), M
+	pshufb		BSWAP, M
 	pxor		M, R
 	movdqa		R, M
 	movdqa		R, F
@@ -112,14 +163,12 @@ PROLOGUE(_nettle_ghash_update)
 	pxor		F, R
 
 	add		$16, DATA
-	sub		$1, BLOCKS
-	jnc		.Loop
 
 .Ldone:
 	pshufb		BSWAP, R
 	movups		R, (X)
 	mov		DATA, %rax
-	W64_EXIT(4, 8)
+	W64_EXIT(4, 14)
 	ret
 EPILOGUE(_nettle_ghash_update)
 

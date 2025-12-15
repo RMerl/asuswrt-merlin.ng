@@ -8,14 +8,14 @@
 @syncodeindex tp cp
 @c %**end of header
 
-@set UPDATED-FOR 3.4
+@set UPDATED-FOR 3.9
 @set AUTHOR Niels Möller
 
 @copying
 This manual is for the Nettle library (version @value{UPDATED-FOR}), a
 low-level cryptographic library.
 
-Originally written 2001 by @value{AUTHOR}, updated 2017.
+Originally written 2001 by @value{AUTHOR}, updated 2023.
 
 @quotation
 This manual is placed in the public domain. You may freely copy it, in
@@ -105,6 +105,7 @@ Cipher functions
 * DES3::
 * Salsa20::
 * Serpent::
+* SM4::
 * Twofish::
 * nettle_cipher abstraction::
 
@@ -121,7 +122,9 @@ Authenticated encryption with associated data
 * GCM::
 * CCM::
 * ChaCha-Poly1305::
+* OCB::
 * SIV-CMAC::
+* SIV-GCM::
 * nettle_aead abstraction::
 
 Keyed Hash Functions
@@ -442,6 +445,14 @@ This function also resets the context in the same way as
 @code{sha256_init}.
 @end deftypefun
 
+@deftypefun void sha256_compress (const uint32_t *@var{state}, uint8_t *@var{input})
+Perform a raw SHA256 compress on SHA256_BLOCK_SIZE bytes from@var{input}
+using @var{state} as IV (an array of 8 uint32_t). The output is stored in @var{state}.
+This function provides access to the underlying compression function,
+for the rare applications that need that (e.g., using different IV from
+standard SHA256).
+@end deftypefun
+
 Earlier versions of nettle defined SHA256 in the header file
 @file{<nettle/sha.h>}, which is now deprecated, but kept for
 compatibility.
@@ -520,6 +531,14 @@ octets of the digest are written.
 
 This function also resets the context in the same way as
 @code{sha512_init}.
+@end deftypefun
+
+@deftypefun void sha512_compress (const uint64_t *@var{state}, uint8_t *@var{input})
+Perform a raw SHA512 compress on SHA512_BLOCK_SIZE bytes from
+@var{input} using @var{state} as IV (an array of 8 uint64_t). The output is stored in @var{state}.
+This function provides access to the underlying compression function,
+for the rare applications that need that (e.g., using different IV from
+standard SHA512).
 @end deftypefun
 
 @subsubsection @acronym{SHA384 and other variants of SHA512}
@@ -736,26 +755,69 @@ octets of the digest are written.
 This function also resets the context.
 @end deftypefun
 
-@subsubsection @acronym{SHAKE-256}
+@subsubsection @acronym{SHAKE}
 @cindex SHAKE
 
-In addition to those SHA-3 hash functions, Nettle also provides a SHA-3
-extendable-output function (XOF), SHAKE-256. Unlike SHA-3 hash functions,
-SHAKE can produce an output digest of any desired length.
+In addition to those SHA-3 hash functions, Nettle also supports a
+SHA-3 extendable-output function (XOF) called SHAKE. Unlike hash
+functions, SHAKE can produce an output digest of any desired
+length. There are two variants, SHAKE-128 and SHAKE-256, with
+different security strengths in terms of collision or preimage
+resistance: SHAKE-128 internally uses a SHA-3 hash function with
+128-bit security, while SHAKE-256 corresponds to SHA3-256 which
+provides 256-bit security.
 
-To use SHAKE256, the context struct, init and update functions are the
-same as for SHA3-256. To get a SHAKE256 digest, the following function
-is used instead of @code{sha3_256_digest}. For an output size of
-@code{SHA3_256_DIGEST_SIZE}, security is equivalent to SHA3-256 (but the
-digest is different). Increasing output size further does not increase
-security in terms of collision or preimage resistance. It can be seen as
-a built in pseudorandomness generator.
+To use SHAKE, the context struct needs to be initialized with the
+@code{init} function and data is hashed using the @code{update}
+function. Afterwards, a digest can be generated using either the
+@code{shake} or @code{shake_ouput} function, where the former
+generates the digest at once and resets the context, while the latter
+can be called multiple times to generate the digest in an incremental
+manner.
 
-@deftypefun void sha3_256_shake (struct shake256_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{digest})
-Performs final processing and produces a SHAKE256 digest, writing it
+For SHAKE-128 they are defined as follows.
+
+@deftp {Context struct} {struct sha3_128_ctx}
+@end deftp
+
+@deftypefun void sha3_128_init (struct sha3_128_ctx *@var{ctx})
+Initialize the SHA3-256 state.
+@end deftypefun
+
+@deftypefun void sha3_128_update (struct sha3_128_ctx *@var{ctx}, size_t @var{length}, const uint8_t *@var{data})
+Hash some more data.
+@end deftypefun
+
+@deftypefun void sha3_128_shake (struct sha3_128_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{digest})
+Performs final processing and produces a SHAKE-128 digest, writing it
 to @var{digest}. @var{length} can be of arbitrary size.
 
 This function also resets the context.
+@end deftypefun
+
+@deftypefun void sha3_128_shake_output (struct sha3_128_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{digest})
+Performs final processing and produces a SHAKE-128 digest, writing it
+to @var{digest}. @var{length} can be of arbitrary size.
+
+This function does not reset the context.
+@end deftypefun
+
+For SHAKE-256, the corresponding context struct and the @code{init}
+and @code{update} functions are the same as SHA3-256. To generate a
+digest, use either the @code{shake} or @code{shake_output} function.
+
+@deftypefun void sha3_256_shake (struct sha3_256_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{digest})
+Performs final processing and produces a SHAKE-256 digest, writing it
+to @var{digest}. @var{length} can be of arbitrary size.
+
+This function also resets the context.
+@end deftypefun
+
+@deftypefun void sha3_256_shake_output (struct sha3_256_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{digest})
+Performs final processing and produces a SHAKE-256 digest, writing it
+to @var{digest}. @var{length} can be of arbitrary size.
+
+This function does not reset the context.
 @end deftypefun
 
 @node Miscellaneous hash functions
@@ -929,6 +991,14 @@ This function also resets the context in the same way as
 @code{md5_init}.
 @end deftypefun
 
+@deftypefun void md5_compress (const uint32_t *@var{state}, uint8_t *@var{input})
+Perform a raw MD5 compress on MD5_BLOCK_SIZE bytes from @var{input}
+using @var{state} as IV (an array of 4 uint32_t). The output is stored in @var{state}.
+This function provides access to the underlying compression function,
+for the rare applications that need that (e.g., using different IV from
+standard MD5).
+@end deftypefun
+
 The normal way to use MD5 is to call the functions in order: First
 @code{md5_init}, then @code{md5_update} zero or more times, and finally
 @code{md5_digest}. After @code{md5_digest}, the context is reset to
@@ -1083,6 +1153,13 @@ This function also resets the context in the same way as
 @code{sha1_init}.
 @end deftypefun
 
+@deftypefun void sha1_compress (const uint32_t *@var{state}, uint8_t *@var{input})
+Perform a raw SHA1 compress on SHA1_BLOCK_SIZE bytes from @var{input}
+using @var{state} as IV (an array of 5 uint32_t). The output is stored in @var{state}.
+This function provides access to the underlying compression function,
+for the rare applications that need that (e.g., using different IV from
+standard SHA1).
+@end deftypefun
 
 @subsubsection @acronym{GOSTHASH94 and GOSTHASH94CP}
 @cindex GOST hash
@@ -1292,6 +1369,7 @@ decryption.
 * DES3::
 * Salsa20::
 * Serpent::
+* SM4::
 * Twofish::
 * nettle_cipher abstraction::
 @end menu
@@ -1384,15 +1462,23 @@ Analogous to the encryption functions above.
 @cindex Arcfour
 @cindex RC4
 
-ARCFOUR is a stream cipher, also known under the trade marked name RC4,
-and it is one of the fastest ciphers around. A problem is that the key
-setup of ARCFOUR is quite weak, you should never use keys with
-structure, keys that are ordinary passwords, or sequences of keys like
-``secret:1'', ``secret:2'', @enddots{}. If you have keys that don't look
-like random bit strings, and you want to use ARCFOUR, always hash the
-key before feeding it to ARCFOUR. Furthermore, the initial bytes of the
-generated key stream leak information about the key; for this reason, it
-is recommended to discard the first 512 bytes of the key stream.
+ARCFOUR is a historic stream cipher, also known under the trade marked
+name RC4, and was a widely used fast stream cipher.
+
+We do not recommend the use of ARCFOUR; the Nettle implementation is
+provided primarily for interoperability with existing applications and
+standards.
+
+One problem is that the key setup of ARCFOUR is quite weak, you should
+never use keys with structure, keys that are ordinary passwords, or
+sequences of keys like ``secret:1'', ``secret:2'', @enddots{}. If you
+have keys that don't look like random bit strings, and you want to use
+ARCFOUR, always hash the key before feeding it to ARCFOUR.
+
+Another problem is that the output is distinguishable from random data,
+and that the initial bytes of the generated key stream leak information
+about the key; for this reason, it was sometimes recommended to discard
+the first 512, 768 or 1024 bytes of the key stream.
 
 @example
 /* A more robust key setup function for ARCFOUR */
@@ -1896,7 +1982,7 @@ in any other way.
 Analogous to @code{des_encrypt}
 @end deftypefun
 
-@deftypefun int des_check_parity (size_t @var{length}, const uint8_t *@var{key});
+@deftypefun int des_check_parity (size_t @var{length}, const uint8_t *@var{key})
 Checks that the given key has correct, odd, parity. Returns 1 for
 correct parity, and 0 for bad parity.
 @end deftypefun
@@ -2112,6 +2198,42 @@ in any other way.
 
 @deftypefun void serpent_decrypt (struct serpent_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
 Analogous to @code{serpent_encrypt}
+@end deftypefun
+
+@node SM4
+@subsection SM4
+@cindex SM4
+
+SM4 is a block cipher standard adopted by the government of the People's
+Republic of China, and it was issued by the State Cryptography Administration
+on March 21, 2012. The standard is GM/T 0002-2012 "SM4 block cipher algorithm".
+Nettle defines it in @file{<nettle/sm4.h>}.
+
+@deftp {Context struct} {struct sm4_ctx}
+@end deftp
+
+@defvr Constant SM4_BLOCK_SIZE
+The SM4 block-size, 16.
+@end defvr
+
+@defvr Constant SM4_KEY_SIZE
+Default SM4 key size, 16.
+@end defvr
+
+@deftypefun void sm4_set_encrypt_key (struct sm4_ctx *@var{ctx}, const uint8_t *@var{key})
+Initialize the cipher. The function is used for encryption.
+@end deftypefun
+
+@deftypefun void sm4_set_decrypt_key (struct sm4_ctx *@var{ctx}, const uint8_t *@var{key})
+Initialize the cipher. The function is used for decryption.
+@end deftypefun
+
+@deftypefun void sm4_crypt (const struct sm4_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+Cryption function. @var{length} must be an integral multiple of the
+block size. If it is more than one block, the data is processed in ECB
+mode. @code{src} and @code{dst} may be equal, but they must not overlap
+in any other way. The same function is used for both encryption and
+decryption.
 @end deftypefun
 
 @node Twofish
@@ -2720,10 +2842,10 @@ cipher (256 bits for AES-128 and 512 bits for AES-256). One of
 these functions must be called before any of the other functions.
 @end deftypefun
 
-@deftypefun void xts_aes128_encrypt_message(struct xts_aes128_key *@var{ctx}, uint8_t *@var{tweak}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
-@deftypefunx void xts_aes256_encrypt_message(struct xts_aes256_key *@var{ctx}, uint8_t *@var{tweak}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
-@deftypefunx void xts_aes128_decrypt_message(struct xts_aes128_key *@var{ctx}, uint8_t *@var{tweak}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
-@deftypefunx void xts_aes256_decrypt_message(struct xts_aes256_key *@var{ctx}, uint8_t *@var{tweak}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+@deftypefun void xts_aes128_encrypt_message (struct xts_aes128_key *@var{ctx}, uint8_t *@var{tweak}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+@deftypefunx void xts_aes256_encrypt_message (struct xts_aes256_key *@var{ctx}, uint8_t *@var{tweak}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+@deftypefunx void xts_aes128_decrypt_message (struct xts_aes128_key *@var{ctx}, uint8_t *@var{tweak}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+@deftypefunx void xts_aes256_decrypt_message (struct xts_aes256_key *@var{ctx}, uint8_t *@var{tweak}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
 These are identical to @code{xts_encrypt_message} and
 @code{xts_decrypt_message}, except that @var{enc_ctx}, @var{dec_ctx},
 @var{twk_ctx}, @var{encf} and @var{decf} are replaced by the @var{ctx} context
@@ -2810,7 +2932,9 @@ more adventurous alternative, in particular if performance is important.
 * GCM::
 * CCM::
 * ChaCha-Poly1305::
+* OCB::
 * SIV-CMAC::
+* SIV-GCM::
 * nettle_aead abstraction::
 @end menu
 
@@ -2879,7 +3003,7 @@ All but the last call for each message @emph{must} use a length that is
 a multiple of the block size.
 @end deftypefun
 
-@deftypefun void eax_digest (struct eax_ctx *@var{eax}, const struct eax_key *@var{key}, const void *@var{cipher}, nettle_cipher_func *@var{f}, size_t @var{length}, uint8_t *@var{digest});
+@deftypefun void eax_digest (struct eax_ctx *@var{eax}, const struct eax_key *@var{key}, const void *@var{cipher}, nettle_cipher_func *@var{f}, size_t @var{length}, uint8_t *@var{digest})
 Extracts the message digest (also known ``authentication tag''). This is
 the final operation when processing a message. If @var{length} is
 smaller than @code{EAX_DIGEST_SIZE}, only the first @var{length} octets
@@ -2961,7 +3085,7 @@ each message @emph{must} use a length that is a multiple of the block
 size.
 @end deftypefun
 
-@deftypefun void eax_aes128_digest (struct eax_aes128_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{digest});
+@deftypefun void eax_aes128_digest (struct eax_aes128_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{digest})
 Extracts the message digest (also known ``authentication tag''). This is
 the final operation when processing a message. If @var{length} is
 smaller than @code{EAX_DIGEST_SIZE}, only the first @var{length} octets
@@ -3227,6 +3351,44 @@ that @var{length} is @code{GCM_DIGEST_SIZE}, but if you provide a smaller
 value, only the first @var{length} octets of the digest are written.
 @end deftypefun
 
+@subsubsection @acronym{GCM}-SM4 interface
+
+The following functions implement the case of @acronym{GCM} using
+SM4 as the underlying cipher.
+
+@deftp {Context struct} {struct gcm_sm4_ctx}
+Context structs, defined using @code{GCM_CTX}.
+@end deftp
+
+@deftypefun void gcm_sm4_set_key (struct gcm_sm4_ctx *@var{ctx}, const uint8_t *@var{key})
+Initializes @var{ctx} using the given key.
+@end deftypefun
+
+@deftypefun void gcm_sm4_set_iv (struct gcm_sm4_ctx *@var{ctx}, size_t @var{length}, const uint8_t *@var{iv})
+Initializes the per-message state, using the given @acronym{IV}.
+@end deftypefun
+
+@deftypefun void gcm_sm4_update (struct gcm_sm4_ctx *@var{ctx}, size_t @var{length}, const uint8_t *@var{data})
+Provides associated data to be authenticated. If used, must be called
+before @code{gcm_sm4_encrypt} or @code{gcm_sm4_decrypt}. All but the
+last call for each message @emph{must} use a length that is a multiple
+of the block size.
+@end deftypefun
+
+@deftypefun void gcm_sm4_encrypt (struct gcm_sm4_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+@deftypefunx void gcm_sm4_decrypt (struct gcm_sm4_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+Encrypts or decrypts the data of a message. All but the last call for
+each message @emph{must} use a length that is a multiple of the block
+size.
+@end deftypefun
+
+@deftypefun void gcm_sm4_digest (struct gcm_sm4_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{digest})
+Extracts the message digest (also known ``authentication tag''). This is
+the final operation when processing a message. It's strongly recommended
+that @var{length} is @code{GCM_DIGEST_SIZE}, but if you provide a smaller
+value, only the first @var{length} octets of the digest are written.
+@end deftypefun
+
 @node CCM
 @subsection Counter with CBC-MAC mode
 
@@ -3450,7 +3612,7 @@ These are identical to @code{ccm_set_digest}, except that @var{cipher},
 @deftypefunx void ccm_aes256_encrypt_message (struct ccm_aes256_ctx *@var{ctx}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{tlength}, size_t @var{clength}, uint8_t *@var{dst}, const uint8_t *@var{src})
 @deftypefunx int ccm_aes128_decrypt_message (struct ccm_aes128_ctx *@var{ctx}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{tlength}, size_t @var{mlength}, uint8_t *@var{dst}, const uint8_t *@var{src})
 @deftypefunx int ccm_aes192_decrypt_message (struct ccm_aes192_ctx *@var{ctx}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{tlength}, size_t @var{mlength}, uint8_t *@var{dst}, const uint8_t *@var{src})
-@deftypefunx int ccm_aes192_decrypt_message (struct ccm_aes256_ctx *@var{ctx}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{tlength}, size_t @var{mlength}, uint8_t *@var{dst}, const uint8_t *@var{src})
+@deftypefunx int ccm_aes256_decrypt_message (struct ccm_aes256_ctx *@var{ctx}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{tlength}, size_t @var{mlength}, uint8_t *@var{dst}, const uint8_t *@var{src})
 These are identical to @code{ccm_encrypt_message} and @code{ccm_decrypt_message}
 except that @var{cipher} and @var{f} are replaced with a context structure.
 @end deftypefun
@@ -3530,6 +3692,181 @@ Extracts the message digest (also known ``authentication tag''). This is
 the final operation when processing a message. If @var{length} is
 smaller than @code{CHACHA_POLY1305_DIGEST_SIZE}, only the first
 @var{length} octets of the digest are written.
+@end deftypefun
+
+@node OCB
+@subsection @acronym{OCB} (Offset Code Book) Mode
+
+@cindex OCB
+@cindex OCB mode
+@cindex Offset Code Book
+
+The @acronym{OCB} mode is an @acronym{AEAD} construction, featuring
+particularly fast and simple authentication; it needs one block cipher
+operation per data block, and almost free authentication. It is
+constructed on top of a block cipher which must have a block size of 128
+bits.
+
+There have been several versions of the OCB scheme, the implementation
+in Nettle follows @cite{RFC 7253}, which is almost the same as the
+scheme OCB3.
+
+@subsubsection General interface
+
+@deftp {Context struct} {struct ocb_key}
+@acronym{OCB} state which depends only on the key, but not on the nonce
+or the message.
+@end deftp
+
+@deftp {Context struct} {struct ocb_ctx}
+Holds state corresponding to a particular message.
+@end deftp
+
+@defvr Constant OCB_BLOCK_SIZE
+The block size for @acronym{OCB}'s block size, 16.
+@end defvr
+
+@defvr Constant OCB_MAX_NONCE_SIZE
+The maximum nonce size for @acronym{OCB}, 15.
+@end defvr
+
+@defvr Constant OCB_DIGEST_SIZE
+Size of the @acronym{OCB} authentication tag.
+@end defvr
+
+@deftypefun void ocb_set_key (struct ocb_key *@var{key}, const void *@var{cipher}, nettle_cipher_func *@var{f})
+Initializes the @var{key} struct. The @var{cipher} context must be
+initialized for encryption, and @var{f} should be the corresponding
+encryption function.
+@end deftypefun
+
+@deftypefun void ocb_set_nonce (struct ocb_ctx *@var{ctx}, const void *@var{cipher}, nettle_cipher_func *@var{f}, size_t @var{tag_length}, size_t @var{nonce_length}, const uint8_t *@var{nonce})
+Initializes @var{ctx} for processing a new message, using the given
+nonce. The @var{cipher} must be initialized for encryption, and @var{f}
+should be the corresponding encryption function. The @var{tag_length}
+(non-zero, and at most 16) is included when initializing the state, and
+should be the same value later passed to @code{ocb_digest}. Nonce is
+optional, and length at most 15 bytes.
+@end deftypefun
+
+@deftypefun void ocb_update (struct ocb_ctx *@var{ctx}, const struct ocb_key *@var{key}, const void *@var{cipher}, nettle_cipher_func *@var{f}, size_t @var{length}, const uint8_t *@var{data})
+Process associated data for authentication. All but the last call for
+each message @emph{must} use a length that is a multiple of the block
+size.
+@end deftypefun
+
+@deftypefun void ocb_encrypt (struct ocb_ctx *@var{ctx}, const struct ocb_key *@var{key}, const void *@var{cipher}, nettle_cipher_func *@var{f}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+Encrypts the data of a message. @var{cipher} is the context struct for
+the underlying cipher and @var{f} is the encryption function. All but
+the last call for each message @emph{must} use a length that is a
+multiple of the block size.
+@end deftypefun
+
+@deftypefun void ocb_decrypt (struct ocb_ctx *@var{ctx}, const struct ocb_key *@var{key}, const void *@var{encrypt_ctx}, nettle_cipher_func *@var{encrypt}, const void *@var{decrypt_ctx}, nettle_cipher_func *@var{decrypt}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+Decrypts the data of a message. @var{encrypt_ctx} and @var{encrypt}
+define the encryption operation of the underlying cipher, while
+@var{decrypt_ctx} and @var{decrypt} represent the decryption operation
+(for some ciphers, one of context pointer and function pointer may be
+the same). All but the last call for each message @emph{must} use a
+length that is a multiple of the block size.
+@end deftypefun
+
+@deftypefun void ocb_digest (const struct ocb_ctx *@var{ctx}, const struct ocb_key *@var{key}, const void *@var{cipher}, nettle_cipher_func *@var{f}, size_t @var{length}, uint8_t *@var{digest})
+Extracts the message digest (also known ``authentication tag''). This is
+the final operation when processing a message. The @var{length} value
+@emph{should} be the same as the tag length passed to the preceding
+@code{ocb_set_nonce} call (using a different length is possible, but
+incompatible with @cite{RFC 7253}).
+@end deftypefun
+
+@deftypefun void ocb_encrypt_message (const struct ocb_key *@var{ocb_key}, const void *@var{cipher}, nettle_cipher_func *@var{f}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{tlength}, size_t @var{clength}, uint8_t *@var{dst}, const uint8_t *@var{src})
+Computes the message digest from the @var{adata} and @var{src}
+parameters, encrypts the plaintext from @var{src}, appends the tag to
+the ciphertext and writes it to @var{dst}. The @var{clength} variable
+must be equal to the length of @var{src} plus @var{tlength}.
+@end deftypefun
+
+@deftypefun int ocb_decrypt_message (const struct ocb_key *@var{ocb_key}, const void *@var{encrypt_ctx}, nettle_cipher_func *@var{encrypt}, const void *@var{decrypt_ctx}, nettle_cipher_func *@var{decrypt}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{tlength}, size_t @var{mlength}, uint8_t *@var{dst}, const uint8_t *@var{src})
+Decrypts the ciphertext from @var{src}, outputs the plaintext to
+@var{dst}. Like @code{ocb_decrypt}, it needs both the encrypt and the
+decrypt function of the underlying cipher. It also recalculates the
+authentication tag from @var{adata} and the plaintext, and compares it
+to the final @var{tlength} bytes of @var{src}. If the values of the
+received and calculated tags are equal, this will return 1 indicating a
+valid and authenticated message. Otherwise, this function will return
+zero.
+@end deftypefun
+
+@subsubsection @acronym{OCB-AES} interface
+
+
+@deftp {Context struct} {struct ocb_aes128_encrypt_key}
+Key-dependent state for encryption using @acronym{OCB-AES128}. For
+decryption, a separate @code{struct aes128_ctx}, initialized for
+decryption, is needed as well.
+@end deftp
+
+@deftypefun void ocb_aes128_set_encrypt_key (struct ocb_aes128_encrypt_key *@var{ocb}, const uint8_t *@var{key})
+Initializes @var{ocb} and the underlying AES cipher with the given key.
+@end deftypefun
+
+@deftypefun void ocb_aes128_set_decrypt_key (struct ocb_aes128_encrypt_key *@var{ocb}, struct aes128_ctx *@var{decrypt}, const uint8_t *@var{key})
+Initializes @var{ocb} and the underlying AES cipher with the given key.
+In addition, initialize @var{decrypt} for decryption using the same key;
+this is needed for @code{ocb_aes128_decrypt} and
+@code{ocb_aes128_decrypt_message}.
+@end deftypefun
+
+@deftypefun void ocb_aes128_set_nonce (struct ocb_ctx *@var{ctx}, const struct ocb_aes128_encrypt_key *@var{key}, size_t @var{tag_length}, size_t @var{nonce_length}, const uint8_t *@var{nonce})
+Initializes @var{ctx} for processing a new message, using the given
+nonce and key. The @var{tag_length} (non-zero, and at most 16) is
+included when initializing the state, and should be the same value later
+passed to @code{ocb_digest}. Nonce is optional, and length at most 15
+bytes.
+@end deftypefun
+
+@deftypefun void ocb_aes128_update (struct ocb_ctx *@var{ctx}, const struct ocb_aes128_encrypt_key *@var{key}, size_t @var{length}, const uint8_t *@var{data})
+Process associated data for authentication. All but the last call for
+each message @emph{must} use a length that is a multiple of the block
+size.
+@end deftypefun
+
+@deftypefun void ocb_aes128_encrypt (struct ocb_ctx *@var{ctx}, const struct ocb_aes128_encrypt_key *@var{key}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+Encrypts the data of a message. All but the last call for each message
+@emph{must} use a length that is a multiple of the block size.
+@end deftypefun
+
+@deftypefun void ocb_aes128_decrypt (struct ocb_ctx *@var{ctx}, const struct ocb_aes128_encrypt_key *@var{key}, const struct aes128_ctx *@var{decrypt}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+Decrypts the data of a message. @var{decrypt} is an AES context
+initialized for decryption using the same key. All but the last call for
+each message @emph{must} use a length that is a multiple of the block
+size.
+@end deftypefun
+
+@deftypefun void ocb_aes128_digest (struct ocb_ctx *@var{ctx}, const struct ocb_aes128_encrypt_key *@var{key}, size_t @var{length}, uint8_t *@var{digest})
+Extracts the message digest (also known ``authentication tag''). This is
+the final operation when processing a message. The @var{length} value
+@emph{should} be the same as the tag length passed to the preceding
+@code{ocb_aes128_set_nonce} call (using a different length is possible, but
+incompatible with @cite{RFC 7253}).
+@end deftypefun
+
+@deftypefun void ocb_aes128_encrypt_message (const struct ocb_aes128_encrypt_key *@var{key}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{tlength}, size_t @var{clength}, uint8_t *@var{dst}, const uint8_t *@var{src})
+Computes the message digest from the @var{adata} and @var{src}
+parameters, encrypts the plaintext from @var{src}, appends the tag to
+the ciphertext and writes it to @var{dst}. The @var{clength} variable
+must be equal to the length of @var{src} plus @var{tlength}.
+@end deftypefun
+
+@deftypefun int ocb_aes128_decrypt_message (const struct ocb_aes128_encrypt_key *@var{key}, const struct aes128_ctx *@var{decrypt}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{tlength}, size_t @var{mlength}, uint8_t *@var{dst}, const uint8_t *@var{src})
+Decrypts the ciphertext from @var{src}, outputs the plaintext to
+@var{dst}. Like @code{ocb_aes128_decrypt}, it needs an AES context
+initialized for decryption using the same key. It also recalculates the
+authentication tag from @var{adata} and the plaintext, and compares it
+to the final @var{tlength} bytes of @var{src}. If the values of the
+received and calculated tags are equal, this will return 1 indicating a
+valid and authenticated message. Otherwise, this function will return
+zero.
 @end deftypefun
 
 @node SIV-CMAC
@@ -3614,11 +3951,99 @@ parameters, encrypts the plaintext from @var{src}, prepends the
 initialization vector to the ciphertext and outputs it to @var{dst}.
 The @var{clength} variable must be equal to the length of @var{src}
 plus @code{SIV_DIGEST_SIZE}.
-
 @end deftypefun
 
 @deftypefun int siv_cmac_aes128_decrypt_message (struct siv_cmac_aes128_ctx *@var{ctx}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{mlength}, uint8_t *@var{dst}, const uint8_t *@var{src})
 @deftypefunx int siv_cmac_aes256_decrypt_message (struct siv_cmac_aes128_ctx *@var{ctx}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{mlength}, uint8_t *@var{dst}, const uint8_t *@var{src})
+Decrypts the ciphertext from @var{src}, outputs the plaintext to
+@var{dst}, recalculates the initialization vector from @var{adata} and the
+plaintext. If the values of the received and calculated initialization vector
+are equal, this will return 1 indicating a valid and authenticated
+message. Otherwise, this function will return zero.
+@end deftypefun
+
+@node SIV-GCM
+@subsection SIV-GCM
+
+@acronym{SIV-GCM}, described in @cite{RFC 8452}, is an @acronym{AEAD}
+construction similar to @acronym{AES-GCM}, but provides protection against
+accidental nonce misuse like @acronym{SIV-CMAC} mode.
+
+It is constructed on top of a block cipher which must have a block size of 128
+bits and a nonce size of 12 bytes. Nettle's support for @acronym{SIV-GCM}
+consists of a message encryption and authentication interface, for
+@acronym{SIV-GCM} using AES as the underlying block cipher.  These
+interfaces are defined in @file{<nettle/siv-gcm.h>}.
+
+Unlike other @acronym{AEAD} mode in @acronym{SIV-GCM} the tag is calculated
+over the encoded additional authentication data and plaintext instead of the
+ciphertext.
+
+@subsubsection General interface
+
+@defvr Constant SIV_GCM_BLOCK_SIZE
+@acronym{SIV-GCM}'s block size, 16.
+@end defvr
+
+@defvr Constant SIV_GCM_DIGEST_SIZE
+Size of the @acronym{SIV-GCM} digest for tags, 16.
+@end defvr
+
+@defvr Constant SIV_GCM_NONCE_SIZE
+Size of the @acronym{SIV-GCM} nonce, 12.
+@end defvr
+
+@deftypefun void siv_gcm_encrypt_message (const struct nettle_cipher *@var{nc}, const void *@var{ctx}, void *@var{ctr_ctx}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{clength}, uint8_t *@var{dst}, const uint8_t *@var{src})
+Computes the message digest from the @var{adata} and @var{src}
+parameters, encrypts the plaintext from @var{src}, appends the
+authentication tag to the ciphertext and outputs it to @var{dst}.  The
+@var{clength} variable must be equal to the length of @var{src} plus
+@code{SIV_GCM_DIGEST_SIZE}.
+@end deftypefun
+
+@deftypefun int siv_gcm_decrypt_message (const struct nettle_cipher *@var{nc}, const void *@var{ctx}, void *@var{ctr_ctx}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{mlength}, uint8_t *@var{dst}, const uint8_t *@var{src})
+Decrypts the ciphertext from @var{src}, outputs the plaintext to
+@var{dst}, recalculates the initialization vector from @var{adata} and the
+plaintext. If the values of the received and calculated initialization vector
+are equal, this will return 1 indicating a valid and authenticated
+message. Otherwise, this function will return zero.
+@end deftypefun
+
+In the above interface, @var{nc} must point to a cipher that works
+with 16-byte block size and the key sizes that are multiple of
+8-bytes.  The @var{ctx} context structure must be initialized for
+encryption mode using a set-key function, before using any of the
+functions in this interface.  While the @var{ctr_ctx} context
+structure must have the same size as @var{ctx}, it does not need to be
+initialized before calling those functions as it is used as working
+storage.  These structures can point to the same area; in that case
+the contents of *@var{ctx} is destroyed by the call.
+
+For convenience, Nettle provides wrapper functions that works with
+@acronym{AES} described in the following section.
+
+@subsubsection @acronym{SIV-GCM}-@acronym{AES} interface
+
+The @acronym{SIV-GCM} functions provide an API for using @acronym{SIV-GCM}
+mode with the @acronym{AES} block ciphers. The parameters all have the same
+meaning as the general and message interfaces, except that the @var{cipher},
+@var{f}, and @var{ctx} parameters are replaced with an @acronym{AES} context
+structure. The @acronym{AES} context structure must be initialized for
+encryption mode using a set-key function, before using any of the functions in
+this interface.
+
+@deftypefun void siv_gcm_aes128_encrypt_message (const struct aes128_ctx *@var{ctx}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{clength}, uint8_t *@var{dst}, const uint8_t *@var{src})
+@deftypefunx void siv_gcm_aes256_encrypt_message (const struct aes256_ctx *@var{ctx}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{clength}, uint8_t *@var{dst}, const uint8_t *@var{src})
+Computes the message digest from the @var{adata} and @var{src}
+parameters, encrypts the plaintext from @var{src}, appends the
+authentication tag to the ciphertext and outputs it to @var{dst}.
+The @var{clength} variable must be equal to the length of @var{src}
+plus @code{SIV_GCM_DIGEST_SIZE}.
+
+@end deftypefun
+
+@deftypefun int siv_gcm_aes128_decrypt_message (const struct aes128_ctx *@var{ctx}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{mlength}, uint8_t *@var{dst}, const uint8_t *@var{src})
+@deftypefunx int siv_gcm_aes256_decrypt_message (const struct aes256_ctx *@var{ctx}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{mlength}, uint8_t *@var{dst}, const uint8_t *@var{src})
 Decrypts the ciphertext from @var{src}, outputs the plaintext to
 @var{dst}, recalculates the initialization vector from @var{adata} and the
 plaintext. If the values of the received and calculated initialization vector
@@ -4348,6 +4773,81 @@ salt @var{salt} of length @var{salt_length}, with iteration counter
 room for at least @var{length} octets.
 @end deftypefun
 
+
+@subsection @acronym{BALLOON}
+@cindex Balloon password-hashing algorithm
+Balloon is a memory-hard password-hashing algorithm.  An in-depth description
+of the algorithm and its properties can be found in an online research paper:
+Boneh, D., Corrigan-Gibbs, H., Schechter, S. (2017, May 12). Balloon Hashing:
+A Memory-Hard Function Providing Provable Protection Against Sequential Attacks.
+Retrieved Sep 1, 2022, from @url{https://eprint.iacr.org/2016/027.pdf}
+
+Nettle's definition of the @acronym{BALLOON} algorithm can be found in
+@file{<nettle/balloon.h>}.  There is a general @acronym{BALLOON} function where
+the user can specify desired hash algorithm that will be used by the function.
+There are also concrete, more user-friendly functions that use common hash algorithms
+like SHA1, SHA256, SHA384 and SHA512.  There is also a utility function which helps to
+determine the size of the working buffer that must be provided as one of the inputs.
+
+Each @acronym{BALLOON} function takes as an input a password and a salt of arbitrary
+lengths, a time and a space parameters, and a scratch buffer.  The space parameter
+@var{s_cost} determines how many blocks of working space the algorithm will require
+during its computation.  It is common to set @var{s_cost} to a high value in order
+to increase the cost of hardware accelerators built by the adversary.  The time
+parameter @var{t_cost} determines the number of rounds of computation that the algorithm
+will perform. This can be used to further increase the cost of computation without raising
+the memory requirement.  Scratch buffer @var{scratch} is a user allocated working space
+required by the algorithm.  To determine the required size of the scratch buffer use the
+utility function @code{balloon_itch}.  Output of @acronym{BALLOON} algorithm will be
+written into the output buffer @var{dst} that has to be at least @var{digest_size} bytes
+long.  Note that it is safe to use the same buffer for both @var{scratch} and @var{dst}.
+Next follows the description of the general @acronym{BALLOON} function.
+
+@deftypefun void balloon (void *@var{hash_ctx}, nettle_hash_update_func *@var{update}, nettle_hash_digest_func *@var{digest}, size_t @var{digest_size}, size_t @var{s_cost}, size_t @var{t_cost}, size_t @var{passwd_length}, const uint8_t *@var{passwd}, size_t @var{salt_length}, const uint8_t *@var{salt}, uint8_t *@var{scratch}, uint8_t *@var{dst})
+Compute hash of given password @var{passwd} of length @var{passwd_length} salted
+with @var{salt} of length @var{salt_length} and write @var{digest_size} bytes into
+the output buffer @var{dst}.  Parameter @var{hash_ctx} is a context for the
+underlying hash function, which much be initialized by the caller.  @var{update}
+and @var{digest} are the update and digest functions of the chosen hash algorithm.
+@var{digest_size} is the digest size of the chosen hash algorithm and determines
+the size of the output.
+@end deftypefun
+
+@deftypefun size_t balloon_itch (size_t @var{digest_size}, size_t @var{s_cost})
+Compute the size of the scratch buffer @var{scratch}.  @var{digest_size} is the
+digest size of the chosen hash algorithm.  @var{s_cost} is the space parameter
+used by the @code{balloon} function.
+@end deftypefun
+
+@subsection Concrete @acronym{BALLOON} functions
+Here follows a list of the specialized @acronym{BALLOON} functions, which are
+more user-friendly variants of the general function.
+
+@subsubsection @acronym{BALLOON-SHA1}
+
+@deftypefun void balloon_sha1 (size_t @var{s_cost}, size_t @var{t_cost}, size_t @var{passwd_length}, const uint8_t *@var{passwd}, size_t @var{salt_length}, const uint8_t *@var{salt}, uint8_t *@var{scratch}, uint8_t *@var{dst})
+@acronym{BALLOON} algorithm using SHA1 as the underlying hash function.
+@end deftypefun
+
+@subsubsection @acronym{BALLOON-SHA256}
+
+@deftypefun void balloon_sha256 (size_t @var{s_cost}, size_t @var{t_cost}, size_t @var{passwd_length}, const uint8_t *@var{passwd}, size_t @var{salt_length}, const uint8_t *@var{salt}, uint8_t *@var{scratch}, uint8_t *@var{dst})
+@acronym{BALLOON} algorithm using SHA256 as the underlying hash function.
+@end deftypefun
+
+@subsubsection @acronym{BALLOON-SHA384}
+
+@deftypefun void balloon_sha384 (size_t @var{s_cost}, size_t @var{t_cost}, size_t @var{passwd_length}, const uint8_t *@var{passwd}, size_t @var{salt_length}, const uint8_t *@var{salt}, uint8_t *@var{scratch}, uint8_t *@var{dst})
+@acronym{BALLOON} algorithm using SHA384 as the underlying hash function.
+@end deftypefun
+
+@subsubsection @acronym{BALLOON-SHA512}
+
+@deftypefun void balloon_sha512 (size_t @var{s_cost}, size_t @var{t_cost}, size_t @var{passwd_length}, const uint8_t *@var{passwd}, size_t @var{salt_length}, const uint8_t *@var{salt}, uint8_t *@var{scratch}, uint8_t *@var{dst})
+@acronym{BALLOON} algorithm using SHA512 as the underlying hash function.
+@end deftypefun
+
+
 @node Public-key algorithms
 @section Public-key algorithms
 
@@ -4584,10 +5084,10 @@ time nor message size compared to using SHA256 and SHA512, respectively.
 Creating an @acronym{RSA} signature is done with one of the following
 functions:
 
-@deftypefun int rsa_md5_sign_tr(const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, struct md5_ctx *@var{hash}, mpz_t @var{signature})
-@deftypefunx int rsa_sha1_sign_tr(const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, struct sha1_ctx *@var{hash}, mpz_t @var{signature})
-@deftypefunx int rsa_sha256_sign_tr(const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, struct sha256_ctx *@var{hash}, mpz_t @var{signature})
-@deftypefunx int rsa_sha512_sign_tr(const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, struct sha512_ctx *@var{hash}, mpz_t @var{signature})
+@deftypefun int rsa_md5_sign_tr (const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, struct md5_ctx *@var{hash}, mpz_t @var{signature})
+@deftypefunx int rsa_sha1_sign_tr (const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, struct sha1_ctx *@var{hash}, mpz_t @var{signature})
+@deftypefunx int rsa_sha256_sign_tr (const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, struct sha256_ctx *@var{hash}, mpz_t @var{signature})
+@deftypefunx int rsa_sha512_sign_tr (const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, struct sha512_ctx *@var{hash}, mpz_t @var{signature})
 The signature is stored in @var{signature} (which must have been
 @code{mpz_init}'ed earlier). The hash context is reset so that it can be
 used for new messages. The @var{random_ctx} and @var{random} pointers
@@ -4598,10 +5098,10 @@ not possible to create a signature using SHA512 and a 512-bit
 @acronym{RSA} key.
 @end deftypefun
 
-@deftypefun int rsa_md5_sign_digest_tr(const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, const uint8_t *@var{digest}, mpz_t @var{signature})
-@deftypefunx int rsa_sha1_sign_digest_tr(const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, const uint8_t *@var{digest}, mpz_t @var{signature})
-@deftypefunx int rsa_sha256_sign_digest_tr(const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, const uint8_t *@var{digest}, mpz_t @var{signature})
-@deftypefunx int rsa_sha512_sign_digest_tr(const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, const uint8_t *@var{digest}, mpz_t @var{signature})
+@deftypefun int rsa_md5_sign_digest_tr (const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, const uint8_t *@var{digest}, mpz_t @var{signature})
+@deftypefunx int rsa_sha1_sign_digest_tr (const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, const uint8_t *@var{digest}, mpz_t @var{signature})
+@deftypefunx int rsa_sha256_sign_digest_tr (const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, const uint8_t *@var{digest}, mpz_t @var{signature})
+@deftypefunx int rsa_sha512_sign_digest_tr (const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, const uint8_t *@var{digest}, mpz_t @var{signature})
 Creates a signature from the given hash digest. @var{digest} should
 point to a digest of size @code{MD5_DIGEST_SIZE},
 @code{SHA1_DIGEST_SIZE}, @code{SHA256_DIGEST_SIZE}, or
@@ -4610,7 +5110,7 @@ point to a digest of size @code{MD5_DIGEST_SIZE},
 Returns one on success, or zero on failure.
 @end deftypefun
 
-@deftypefun int rsa_pkcs1_sign_tr(const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, size_t @var{length}, const uint8_t *@var{digest_info}, mpz_t @var{signature})
+@deftypefun int rsa_pkcs1_sign_tr (const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, size_t @var{length}, const uint8_t *@var{digest_info}, mpz_t @var{signature})
 Similar to the above @code{_sign_digest_tr} functions, but the input is not the
 plain hash digest, but a PKCS#1 ``DigestInfo'', an ASN.1 DER-encoding
 of the digest together with an object identifier for the used hash
@@ -4630,9 +5130,9 @@ it's not possible to create a signature using SHA512 and a 512-bit
 @end deftypefun
 
 @deftypefun int rsa_md5_sign_digest (const struct rsa_private_key *@var{key}, const uint8_t *@var{digest}, mpz_t @var{signature})
-@deftypefunx int rsa_sha1_sign_digest (const struct rsa_private_key *@var{key}, const uint8_t *@var{digest}, mpz_t @var{signature});
-@deftypefunx int rsa_sha256_sign_digest (const struct rsa_private_key *@var{key}, const uint8_t *@var{digest}, mpz_t @var{signature});
-@deftypefunx int rsa_sha512_sign_digest (const struct rsa_private_key *@var{key}, const uint8_t *@var{digest}, mpz_t @var{signature});
+@deftypefunx int rsa_sha1_sign_digest (const struct rsa_private_key *@var{key}, const uint8_t *@var{digest}, mpz_t @var{signature})
+@deftypefunx int rsa_sha256_sign_digest (const struct rsa_private_key *@var{key}, const uint8_t *@var{digest}, mpz_t @var{signature})
+@deftypefunx int rsa_sha512_sign_digest (const struct rsa_private_key *@var{key}, const uint8_t *@var{digest}, mpz_t @var{signature})
 Creates a signature from the given hash digest; otherwise analoguous to
 the above signing functions. @var{digest} should point to a digest of
 size @code{MD5_DIGEST_SIZE}, @code{SHA1_DIGEST_SIZE},
@@ -4641,7 +5141,7 @@ The signature is stored in @var{signature} (which must have been
 @code{mpz_init}:ed earlier). Returns one on success, or zero on failure.
 @end deftypefun
 
-@deftypefun int rsa_pkcs1_sign(const struct rsa_private_key *@var{key}, size_t @var{length}, const uint8_t *@var{digest_info}, mpz_t @var{s})
+@deftypefun int rsa_pkcs1_sign (const struct rsa_private_key *@var{key}, size_t @var{length}, const uint8_t *@var{digest_info}, mpz_t @var{s})
 Similar to the above _sign_digest functions, but the input is not the
 plain hash digest, but a PKCS#1 ``DigestInfo'', an ASN.1 DER-encoding
 of the digest together with an object identifier for the used hash
@@ -4668,7 +5168,7 @@ should point to a digest of size @code{MD5_DIGEST_SIZE},
 @code{SHA512_DIGEST_SIZE} respectively.
 @end deftypefun
 
-@deftypefun int rsa_pkcs1_verify(const struct rsa_public_key *@var{key}, size_t @var{length}, const uint8_t *@var{digest_info}, const mpz_t @var{signature})
+@deftypefun int rsa_pkcs1_verify (const struct rsa_public_key *@var{key}, size_t @var{length}, const uint8_t *@var{digest_info}, const mpz_t @var{signature})
 Similar to the above _verify_digest functions, but the input is not the
 plain hash digest, but a PKCS#1 ``DigestInfo'', and ASN.1 DER-encoding
 of the digest together with an object identifier for the used hash
@@ -4677,7 +5177,7 @@ algorithm.
 
 While the above functions for the RSA signature operations use the
 @cite{PKCS#1} padding scheme, Nettle also provides the variants based on
-the PSS padding scheme, specified in @cite{RFC 3447}.  These variants
+the PSS padding scheme, specified in @cite{RFC 8017}.  These variants
 take advantage of a randomly choosen salt value, which could enhance the
 security by causing output to be different for equivalent inputs.
 However, assuming the same security level as inverting the @acronym{RSA}
@@ -4689,9 +5189,9 @@ the underlying hash function.
 Creating an RSA signature with the PSS padding scheme is done with one
 of the following functions:
 
-@deftypefun int rsa_pss_sha256_sign_digest_tr(const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, size_t @var{salt_length}, const uint8_t *@var{salt}, const uint8_t *@var{digest}, mpz_t @var{signature})
-@deftypefunx int rsa_pss_sha384_sign_digest_tr(const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, size_t @var{salt_length}, const uint8_t *@var{salt}, const uint8_t *@var{digest}, mpz_t @var{signature})
-@deftypefunx int rsa_pss_sha512_sign_digest_tr(const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, size_t @var{salt_length}, const uint8_t *@var{salt}, const uint8_t *@var{digest}, mpz_t @var{signature})
+@deftypefun int rsa_pss_sha256_sign_digest_tr (const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, size_t @var{salt_length}, const uint8_t *@var{salt}, const uint8_t *@var{digest}, mpz_t @var{signature})
+@deftypefunx int rsa_pss_sha384_sign_digest_tr (const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, size_t @var{salt_length}, const uint8_t *@var{salt}, const uint8_t *@var{digest}, mpz_t @var{signature})
+@deftypefunx int rsa_pss_sha512_sign_digest_tr (const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, size_t @var{salt_length}, const uint8_t *@var{salt}, const uint8_t *@var{digest}, mpz_t @var{signature})
 Creates a signature using the PSS padding scheme. @var{salt} should
 point to a salt string of size @var{salt_length}. @var{digest} should
 point to a digest of size @code{SHA256_DIGEST_SIZE},
@@ -4731,12 +5231,48 @@ randomized RSA blinding.
 Returns 1 on success, 0 on failure.
 @end deftypefun
 
+While the above functions for the RSA encryption operations use the
+@cite{PKCS#1} padding scheme, Nettle also provides the variants based
+on the OAEP padding scheme, specified in @cite{RFC 8017}.  These
+variants take advantage of a randomly choosen seed value, which could
+enhance the security by causing output to be different for equivalent
+inputs.
+
+Encrypting a clear text message using RSA with the OAEP padding scheme
+is done with one of the following functions:
+
+@deftypefun int rsa_oaep_sha256_encrypt (const struct rsa_public_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, size_t @var{label_length}, const uint8_t *@var{label}, size_t @var{length}, const uint8_t *@var{message}, uint8_t *@var{ciphertext})
+@deftypefunx int rsa_oaep_sha384_encrypt (const struct rsa_public_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, size_t @var{label_length}, const uint8_t *@var{label}, size_t @var{length}, const uint8_t *@var{message}, uint8_t *@var{ciphertext})
+@deftypefunx int rsa_oaep_sha512_encrypt (const struct rsa_public_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, size_t @var{label_length}, const uint8_t *@var{label}, size_t @var{length}, const uint8_t *@var{message}, uint8_t *@var{ciphertext})
+Returns 1 on success, 0 on failure. The label is optional and if
+omitted, @var{label_length} and @var{label} is set to 0 and
+@code{NULL} respectively. The maximum size of @var{message} can be
+calculated with @code{k - 2 * hLen - 2}, where @code{k} is the key
+size in octets obtained with @var{key}->size, and @code{hLen} is the
+output size of the underlying hash function (e.g.,
+@code{SHA256_DIGEST_SIZE} for @code{rsa_oaep_sha256_encrypt}).
+@end deftypefun
+
+Decrypting a cipher text message using RSA with the OAEP padding
+scheme is done with one of the following functions:
+
+@deftypefun int rsa_oaep_sha256_decrypt (const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, size_t @var{label_length}, const uint8_t *@var{label}, size_t *@var{length}, uint8_t *@var{message}, const uint8_t *@var{ciphertext})
+@deftypefunx int rsa_oaep_sha384_decrypt (const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, size_t @var{label_length}, const uint8_t *@var{label}, size_t *@var{length}, uint8_t *@var{message}, const uint8_t *@var{ciphertext})
+@deftypefunx int rsa_oaep_sha512_decrypt (const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, size_t @var{label_length}, const uint8_t *@var{label}, size_t *@var{length}, uint8_t *@var{message}, const uint8_t *@var{ciphertext})
+Returns 1 on success, 0 on failure. These function utilize randomized
+RSA blinding similarly to @code{rsa_decrypt_tr}. The message buffer
+pointed to by @var{cleartext} must be of size *@var{length}. After
+decryption, *@var{length} will be updated with the size of the
+message.
+@end deftypefun
+
+
 If you need to use the @acronym{RSA} trapdoor, the private key, in a way
 that isn't supported by the above functions Nettle also includes a
 function that computes @code{x^d mod n} and nothing more, using the
 @acronym{CRT} optimization.
 
-@deftypefun int rsa_compute_root_tr(const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, mpz_t @var{x}, const mpz_t @var{m})
+@deftypefun int rsa_compute_root_tr (const struct rsa_public_key *@var{pub}, const struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, mpz_t @var{x}, const mpz_t @var{m})
 Computes @code{x = m^d}. Returns one on success, or zero if a failure in
 the computation was detected.
 @end deftypefun
@@ -4747,7 +5283,7 @@ Computes @code{x = m^d}.
 
 At last, how do you create new keys?
 
-@deftypefun int rsa_generate_keypair (struct rsa_public_key *@var{pub}, struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func @var{random}, void *@var{progress_ctx}, nettle_progress_func @var{progress}, unsigned @var{n_size}, unsigned @var{e_size});
+@deftypefun int rsa_generate_keypair (struct rsa_public_key *@var{pub}, struct rsa_private_key *@var{key}, void *@var{random_ctx}, nettle_random_func @var{random}, void *@var{progress_ctx}, nettle_progress_func @var{progress}, unsigned @var{n_size}, unsigned @var{e_size})
 There are lots of parameters. @var{pub} and @var{key} is where the
 resulting key pair is stored. The structs should be initialized, but you
 don't need to call @code{rsa_public_key_prepare} or
@@ -5251,7 +5787,7 @@ Returns 1 if the signature is valid, otherwise 0.
 
 Finally, generating a new ECDSA key pair:
 
-@deftypefun void ecdsa_generate_keypair (struct ecc_point *@var{pub}, struct ecc_scalar *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random});
+@deftypefun void ecdsa_generate_keypair (struct ecc_point *@var{pub}, struct ecc_scalar *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random})
 @var{pub} and @var{key} is where the resulting key pair is stored. The
 structs should be initialized, for the desired ECC curve, before you call this function.
 
@@ -5306,7 +5842,7 @@ curve/generator combination. Following list defines correspondence
 between nettle's view on curves and actual identifiers defined in @cite{RFC
 4357} and @cite{RFC 7836}.
 
-@deftypefun {const struct ecc_curve} nettle_get_gost_gc256b(void)
+@deftypefun {const struct ecc_curve} nettle_get_gost_gc256b (void)
 Returns curve corresponding to following identifiers:
 @itemize
 @item id-GostR3410-2001-CryptoPro-A-ParamSet (@cite{RFC 4357})
@@ -5315,7 +5851,7 @@ Returns curve corresponding to following identifiers:
 @end itemize
 @end deftypefun
 
-@deftypefun {const struct ecc_curve} nettle_get_gost_gc512a(void)
+@deftypefun {const struct ecc_curve} nettle_get_gost_gc512a (void)
 Returns curve corresponding to following identifiers:
 @itemize
 @item id-tc26-gost-3410-12-512-paramSetA (@cite{RFC 7836})
@@ -5694,11 +6230,13 @@ what output is generated after @code{t_2}.
 Nettle includes one randomness generator that is believed to have all
 the above properties, and two simpler ones.
 
-@acronym{ARCFOUR}, like any stream cipher, can be used as a randomness
-generator. Its output should be of reasonable quality, if the seed is
-hashed properly before it is used with @code{arcfour_set_key}. There's
-no single natural way to reseed it, but if you need reseeding, you
-should be using Yarrow instead.
+@acronym{ChaCha} (@pxref{ChaCha}), like any stream cipher, can be used
+as a randomness generator. Its output should be of reasonable
+quality. There's no single natural way to reseed it, but if you need
+reseeding, you should be using Yarrow instead.  Historically ARCFOUR
+(@pxref{Arcfour}) has been used as a randomness generator, however it is
+known to be distinguishable from random data and the output leaks
+information about the key.
 
 The ``lagged Fibonacci'' generator in @file{<nettle/knuth-lfib.h>} is a
 fast generator with good statistical properties, but is @strong{not} for
@@ -5713,7 +6251,7 @@ The recommended generator to use is Yarrow, described below.
 Yarrow is a family of pseudo-randomness generators, designed for
 cryptographic use, by John Kelsey, Bruce Schneier and Niels Ferguson.
 Yarrow-160 is described in a paper at
-@url{https://www.counterpane.com/yarrow.html}, and it uses @acronym{SHA1}
+@url{https://www.schneier.com/academic/yarrow/}, and it uses @acronym{SHA1}
 and triple-DES, and has a 160-bit internal state. Nettle implements
 Yarrow-256, which is similar, but uses @acronym{SHA256} and
 @acronym{AES} to get an internal state of 256 bits.
@@ -5837,6 +6375,45 @@ units of 10 microseconds.
 
 Returns an entropy estimate, in bits, suitable for calling
 @code{yarrow256_update}. Usually, 0, 1 or 2 bits.
+@end deftypefun
+
+@subsection DRBG-CTR
+
+The Deterministic Random Bit Generator (DRBG) family is a complex family
+of deterministic randomness generators published by NIST in SP 800-90A.
+
+We support what we believe is the reasonable parts of the CTR_DRBG
+algorithm for AES256.  Re-seeding, personalization strings, derivation
+functions and support for non-AES256 is not implemented.
+Personalization strings can be implemented by the caller, if desired,
+with xor.  If you need re-seeding or entropy derivation, we suggest that
+you use Yarrow instead.
+
+The security bounds of DRBG-CTR are not intuitive, see ``Security Bounds
+for the NIST Codebook-based Deterministic Random Bit Generator'' by
+Matthew J. Campagna, from @url{https://eprint.iacr.org/2006/379.pdf}.
+
+Our suggested use-case for DRBG-CTR is to deterministically generate
+known values from a seed when comparing against expected values for some
+other algorithm.
+
+Nettle defines DRBG-CTR in @file{<nettle/drbg-ctr.h>}.
+
+@deftp {Context struct} {struct drbg_ctr_aes256_ctx}
+@end deftp
+
+@defvr Constant DRBG_CTR_AES256_SEED_SIZE
+The size of the seeding material.
+@end defvr
+
+@deftypefun void drbg_ctr_aes256_init (struct drbg_ctr_aes256_ctx *@var{ctx}, uint8_t *@var{seed_material})
+Initialize the DRBG-CTR-AES256 context using
+@code{DRBG_CTR_AES256_SEED_SIZE} bytes of @var{seed_material}.
+@end deftypefun
+
+@deftypefun void drbg_ctr_aes256_random (struct drbg_ctr_aes256_ctx *@var{ctx}, size_t n, uint8_t *@var{dst})
+Generates @var{n} octets of output into @var{dst}.  The generator must
+be initialized before you call this function.
 @end deftypefun
 
 @node ASCII encoding

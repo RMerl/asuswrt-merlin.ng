@@ -39,6 +39,7 @@
 
 #include "ecc.h"
 #include "ecc-internal.h"
+#include "nettle-internal.h"
 
 /* Binary algorithm needs 6*ecc->p.size + scratch for ecc_add_jja.
    Current total is 12 ecc->p.size, at most 864 bytes.
@@ -67,25 +68,23 @@ ecc_mul_a (const struct ecc_curve *ecc,
   
   for (i = ecc->p.size, is_zero = 1; i-- > 0; )
     {
-      mp_limb_t w = np[i];
-      mp_limb_t bit;
+      mp_limb_t w = np[i] << (GMP_LIMB_BITS - GMP_NUMB_BITS);
+      unsigned j;
 
-      for (bit = (mp_limb_t) 1 << (GMP_NUMB_BITS - 1);
-	   bit > 0;
-	   bit >>= 1)
+      for (j = 0; j < GMP_NUMB_BITS; j++, w <<= 1)
 	{
-	  int digit;
+	  int bit;
 
 	  ecc_dup_jj (ecc, r, r, scratch_out);
 	  ecc_add_jja (ecc, tp, r, pj, scratch_out);
 
-	  digit = (w & bit) > 0;
+	  bit = w >> (GMP_LIMB_BITS - 1);
 	  /* If is_zero is set, r is the zero point,
 	     and ecc_add_jja produced garbage. */
 	  cnd_copy (is_zero, tp, pj, 3*ecc->p.size);
-	  is_zero &= ~digit;
+	  is_zero &= 1 - bit;
 	  /* If we had a one-bit, use the sum. */
-	  cnd_copy (digit, r, tp, 3*ecc->p.size);
+	  cnd_copy (bit, r, tp, 3*ecc->p.size);
 	}
     }
 }
@@ -144,11 +143,12 @@ ecc_mul_a (const struct ecc_curve *ecc,
 
   assert (bits < TABLE_SIZE);
 
-  sec_tabselect (r, 3*ecc->p.size, table, TABLE_SIZE, bits);
-  is_zero = (bits == 0);
+  mpn_sec_tabselect (r, table, 3*ecc->p.size, TABLE_SIZE, bits);
+  is_zero = IS_ZERO_SMALL (bits);
 
   for (;;)
     {
+      int bits_is_zero;
       unsigned j;
       if (shift >= ECC_MUL_A_WBITS)
 	{
@@ -171,14 +171,15 @@ ecc_mul_a (const struct ecc_curve *ecc,
 	ecc_dup_jj (ecc, r, r, scratch_out);
 
       bits &= TABLE_MASK;
-      sec_tabselect (tp, 3*ecc->p.size, table, TABLE_SIZE, bits);
+      mpn_sec_tabselect (tp, table, 3*ecc->p.size, TABLE_SIZE, bits);
       cnd_copy (is_zero, r, tp, 3*ecc->p.size);
       ecc_add_jjj (ecc, tp, tp, r, scratch_out);
+      bits_is_zero = IS_ZERO_SMALL (bits);
 
       /* Use the sum when valid. ecc_add_jja produced garbage if
-	 is_zero != 0 or bits == 0, . */	  
-      cnd_copy (bits & (is_zero - 1), r, tp, 3*ecc->p.size);
-      is_zero &= (bits == 0);
+	 is_zero or bits_is_zero. */
+      cnd_copy (1 - (bits_is_zero | is_zero), r, tp, 3*ecc->p.size);
+      is_zero &= bits_is_zero;
     }
 #undef table
 #undef tp

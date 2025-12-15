@@ -40,7 +40,7 @@ Simon Josefsson		Port of Arctwo, from GnuTLS and libgcrypt. New
 			ports of LGPL Serpent and Blowfish code, from
 			libgcrypt. Port of Salsa20, based on djb's
 			reference. Implementation of PBKDF2 (RFC
-			2898).
+			2898) and drbg-ctr.
 
 Henrik Grubbström	AES assembly for Sparc64.
 
@@ -94,9 +94,9 @@ Owen Kirby		Implementation of CCM mode.
 Amos Jeffries		Implementation of base64url encoding.
 
 Daiki Ueno		Implementation of RSA-PSS signatures,
-			curve448, shake256, ed448-shake256 signatures,
+			curve448, SHA3 shake, ed448-shake256 signatures,
 			chacha functions for 32-bit nonce, struct
-			nettle_mac interface.
+			nettle_mac interface, siv-gcm, RSA-OAEP.
 
 Dmitry Baryshkov	CFB and CFB8 modes, CMAC64. gosthash94cp and
 			Streebog hash functions, GOST DSA signatures
@@ -113,18 +113,24 @@ Stephen R. van den Berg
 			Port of bcrypt.
 
 Mamone Tarsha Kurdi	Powerpc64 assembly and fat build setup,
-			including AES and GCM. Arm64 assembly and fat
+			including AES, GCM and poly1305. Arm64 assembly and fat
 			build setup, including AES, Chacha, GCM, SHA1,
 			SHA256. S390x assembly and fat build setup,
 			including AES, Chacha, memxor, memxor3, SHA1,
 			SHA256, SHA512, SHA3.
 
-Nicolas Mora		RFC 3394 keywrap.
+Nicolas Mora		RFC 3394 keywrap, RSA-OAEP.
 
-Tianjia Zhang		SM3 hash function.
+Tianjia Zhang		SM3 hash function, SM4 block cipher.
 
 Amitay Isaacs		Powerpc64 assembly for secp192r1, secp224r1
 			and secp256r1.
 
 Martin Schwenke		Powerpc64 assembly for secp384r1, secp521r1,
 			curve25519 and curve448.
+
+Zoltan Fridrich		Balloon password hashing.
+
+Danny Tsen		Powerpc64 assembly for combined GCM-AES.
+
+Eric Richter		Powerpc64 sha256 assembly.

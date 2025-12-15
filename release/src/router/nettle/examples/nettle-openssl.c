@@ -40,20 +40,13 @@
 
 #if WITH_OPENSSL
 
-/* No ancient ssleay compatibility */
-#define NCOMPAT
-#define OPENSSL_DISABLE_OLD_DES_SUPPORT
-
 #include <assert.h>
 
-#include <openssl/conf.h>
 #include <openssl/evp.h>
-#include <openssl/err.h>
 
-#include <openssl/md5.h>
-#include <openssl/sha.h>
-
-#include "nettle-internal.h"
+#include "non-nettle.h"
+#include "md5.h"
+#include "sha1.h"
 
 /* We use Openssl's EVP api for all openssl ciphers. This API selects
    platform-specific implementations if appropriate, e.g., using x86
@@ -68,18 +61,6 @@ struct openssl_cipher_ctx {
 struct openssl_hash_ctx {
   EVP_MD_CTX *evp;
 };
-
-void
-nettle_openssl_init(void)
-{
-  ERR_load_crypto_strings();
-  OpenSSL_add_all_algorithms();
-#if OPENSSL_VERSION_NUMBER >= 0x1010000
-  CONF_modules_load_file(NULL, NULL, 0);
-#else
-  OPENSSL_config(NULL);
-#endif
-}
 
 static void
 openssl_evp_set_encrypt_key(void *p, const uint8_t *key,
@@ -298,70 +279,6 @@ nettle_openssl_gcm_aes256 = {
   openssl_evp_gcm_digest
 };
 
-/* Blowfish */
-static void
-openssl_bf128_set_encrypt_key(void *ctx, const uint8_t *key)
-{
-  openssl_evp_set_encrypt_key(ctx, key, EVP_bf_ecb());
-}
-
-static void
-openssl_bf128_set_decrypt_key(void *ctx, const uint8_t *key)
-{
-  openssl_evp_set_decrypt_key(ctx, key, EVP_bf_ecb());
-}
-
-const struct nettle_cipher
-nettle_openssl_blowfish128 = {
-  "openssl bf128", sizeof(struct openssl_cipher_ctx),
-  8, 16,
-  openssl_bf128_set_encrypt_key, openssl_bf128_set_decrypt_key,
-  openssl_evp_encrypt, openssl_evp_decrypt
-};
-
-
-/* DES */
-static void
-openssl_des_set_encrypt_key(void *ctx, const uint8_t *key)
-{
-  openssl_evp_set_encrypt_key(ctx, key, EVP_des_ecb());
-}
-
-static void
-openssl_des_set_decrypt_key(void *ctx, const uint8_t *key)
-{
-  openssl_evp_set_decrypt_key(ctx, key, EVP_des_ecb());
-}
-
-const struct nettle_cipher
-nettle_openssl_des = {
-  "openssl des", sizeof(struct openssl_cipher_ctx),
-  8, 8,
-  openssl_des_set_encrypt_key, openssl_des_set_decrypt_key,
-  openssl_evp_encrypt, openssl_evp_decrypt
-};
-
-
-/* Cast128 */
-static void
-openssl_cast128_set_encrypt_key(void *ctx, const uint8_t *key)
-{
-  openssl_evp_set_encrypt_key(ctx, key, EVP_cast5_ecb());
-}
-
-static void
-openssl_cast128_set_decrypt_key(void *ctx, const uint8_t *key)
-{
-  openssl_evp_set_decrypt_key(ctx, key, EVP_cast5_ecb());
-}
-
-const struct nettle_cipher
-nettle_openssl_cast128 = {
-  "openssl cast128", sizeof(struct openssl_cipher_ctx),
-  8, 16,
-  openssl_cast128_set_encrypt_key, openssl_cast128_set_decrypt_key,
-  openssl_evp_encrypt, openssl_evp_decrypt
-};
 
 /* Hash functions */
 
@@ -379,7 +296,7 @@ static void								\
 openssl_##name##_init(void *p)						\
 {									\
   struct openssl_hash_ctx *ctx = p;					\
-  if ((ctx->evp = EVP_MD_CTX_new()) == NULL)			\
+  if ((ctx->evp = EVP_MD_CTX_new()) == NULL)				\
     return;								\
 									\
   EVP_DigestInit(ctx->evp, EVP_##name());				\
@@ -390,7 +307,7 @@ openssl_##name##_digest(void *p,					\
 		    size_t length, uint8_t *dst)			\
 {									\
   struct openssl_hash_ctx *ctx = p;					\
-  assert(length == NAME##_DIGEST_LENGTH);				\
+  assert(length == NAME##_DIGEST_SIZE);					\
 									\
   EVP_DigestFinal(ctx->evp, dst, NULL);					\
   EVP_DigestInit(ctx->evp, EVP_##name());				\
@@ -399,13 +316,13 @@ openssl_##name##_digest(void *p,					\
 const struct nettle_hash						\
 nettle_openssl_##name = {						\
   "openssl " #name, sizeof(struct openssl_hash_ctx),			\
-  NAME##_DIGEST_LENGTH, NAME##_CBLOCK,					\
+  NAME##_DIGEST_SIZE, NAME##_BLOCK_SIZE,				\
   openssl_##name##_init,						\
   openssl_hash_update,							\
   openssl_##name##_digest						\
 };
 
 OPENSSL_HASH(MD5, md5)
-OPENSSL_HASH(SHA, sha1)
+OPENSSL_HASH(SHA1, sha1)
 
 #endif /* WITH_OPENSSL */

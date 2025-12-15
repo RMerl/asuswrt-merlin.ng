@@ -1,6 +1,6 @@
 C Loads one word, and adds it to the subkey. Uses T0
-C AES_LOAD(SRC, KEY, REG)
-define(`AES_LOAD', `
+C AES_LOAD(SRC, KEY, REG, INCR)
+define(`AES_LOAD_INCR', `
 	ldrb	$3, [$1], #+1
 	ldrb	T0, [$1], #+1
 	orr	$3, T0, lsl #8
@@ -8,9 +8,13 @@ define(`AES_LOAD', `
 	orr	$3, T0, lsl #16
 	ldrb	T0, [$1], #+1
 	orr	$3, T0, lsl #24
-	ldr	T0, [$2], #+4
+	ldr	T0, [$2], #$4
 	eor	$3, T0
 ')
+C Loads one word, and adds it to the subkey. Uses T0
+C AES_LOAD(SRC, KEY, REG)
+define(`AES_LOAD', `AES_LOAD_INCR($1, $2, $3, +4)')
+
 C Stores one word. Destroys input.
 C AES_STORE(DST, X)
 define(`AES_STORE', `

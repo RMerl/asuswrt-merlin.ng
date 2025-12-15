@@ -1,9 +1,9 @@
-C powerpc64/ecc-25519-modp.asm
+C powerpc64/ecc-curve25519-modp.asm
 
 ifelse(`
    Copyright (C) 2021 Martin Schwenke & Alastair D´Silva, IBM Corporation
 
-   Based on x86_64/ecc-25519-modp.asm
+   Based on x86_64/ecc-curve25519-modp.asm
 
    This file is part of GNU Nettle.
 
@@ -32,7 +32,7 @@ ifelse(`
    not, see http://www.gnu.org/licenses/.
 ')
 
-	.file "ecc-25519-modp.asm"
+	.file "ecc-curve25519-modp.asm"
 
 define(`RP', `r4')
 define(`XP', `r5')

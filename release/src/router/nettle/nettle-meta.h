@@ -89,6 +89,8 @@ extern const struct nettle_cipher nettle_arctwo64;
 extern const struct nettle_cipher nettle_arctwo128;
 extern const struct nettle_cipher nettle_arctwo_gutmann128;
 
+extern const struct nettle_cipher nettle_sm4;
+
 struct nettle_hash
 {
   const char *name;
@@ -198,6 +200,7 @@ extern const struct nettle_aead nettle_gcm_aes192;
 extern const struct nettle_aead nettle_gcm_aes256;
 extern const struct nettle_aead nettle_gcm_camellia128;
 extern const struct nettle_aead nettle_gcm_camellia256;
+extern const struct nettle_aead nettle_gcm_sm4;
 extern const struct nettle_aead nettle_eax_aes128;
 extern const struct nettle_aead nettle_chacha_poly1305;
 
@@ -282,6 +285,8 @@ extern const struct nettle_mac nettle_cmac_aes256;
 extern const struct nettle_mac nettle_cmac_des3;
 
 /* HMAC variants with key size = digest size */
+extern const struct nettle_mac nettle_hmac_gosthash94;
+extern const struct nettle_mac nettle_hmac_gosthash94cp;
 extern const struct nettle_mac nettle_hmac_md5;
 extern const struct nettle_mac nettle_hmac_ripemd160;
 extern const struct nettle_mac nettle_hmac_sha1;

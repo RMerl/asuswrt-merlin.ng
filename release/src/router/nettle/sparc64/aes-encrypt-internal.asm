@@ -30,13 +30,7 @@ ifelse(`
    not, see http://www.gnu.org/licenses/.
 ')
 
-C The only difference between this code and the sparc32 code is the
-C frame offsets, and the magic BIAS when accessing the stack (which
-C doesn't matter, since we don't access any data on the stack).
-
-
-C Use the same AES macros as on sparc32.
-include_src(`sparc32/aes.m4')
+include_src(`sparc64/aes.m4')
 
 C	Arguments
 define(`ROUNDS',`%i0')

@@ -49,6 +49,8 @@ const struct nettle_hash * const _nettle_hashes[] = {
   &nettle_sha256,
   &nettle_sha384,
   &nettle_sha512,
+  &nettle_sha512_224,
+  &nettle_sha512_256,
   &nettle_sha3_224,
   &nettle_sha3_256,
   &nettle_sha3_384,

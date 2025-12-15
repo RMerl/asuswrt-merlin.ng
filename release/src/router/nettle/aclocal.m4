@@ -1,5 +1,4 @@
 dnl Choose cc flags for compiling position independent code
-dnl FIXME: Doesn't do the right thing when crosscompiling.
 AC_DEFUN([LSH_CCPIC],
 [AC_REQUIRE([AC_CANONICAL_HOST])dnl
 AC_MSG_CHECKING(CCPIC)
@@ -10,6 +9,7 @@ AC_CACHE_VAL(lsh_cv_sys_ccpic,[
 	bsdi4.*)	CCPIC="-fPIC" ;;
 	bsdi*)		CCPIC="" ;;
 	darwin*)	CCPIC="-fPIC" ;;
+	freebsd*|netbsd*|openbsd*)	CCPIC="-fPIC" ;;
 	# Could also use -fpic, depending on the number of symbol references
 	solaris*)	CCPIC="-fPIC" ;;
 	cygwin*)	CCPIC="" ;;
@@ -21,7 +21,7 @@ AC_CACHE_VAL(lsh_cv_sys_ccpic,[
 	darwin*)	CCPIC="-fPIC" ;;
         irix*)		CCPIC="-share" ;;
 	hpux*)		CCPIC="+z"; ;;
-	*freebsd*)	CCPIC="-fpic" ;;
+	freebsd*|netbsd*|openbsd*)	CCPIC="-fPIC" ;;
 	sco*|sysv4.*)	CCPIC="-KPIC -dy -Bdynamic" ;;
 	solaris*)	CCPIC="-KPIC -Bdynamic" ;;
 	winnt*)		CCPIC="-shared" ;;
@@ -31,8 +31,8 @@ AC_CACHE_VAL(lsh_cv_sys_ccpic,[
   fi
   OLD_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $CCPIC"
-  AC_TRY_COMPILE([], [return 0;],
-    lsh_cv_sys_ccpic="$CCPIC", lsh_cv_sys_ccpic='')
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[return 0;]])],
+    [lsh_cv_sys_ccpic="$CCPIC"], [lsh_cv_sys_ccpic=''])
   CFLAGS="$OLD_CFLAGS"
 ])
 CCPIC="$lsh_cv_sys_ccpic"
@@ -113,8 +113,8 @@ dnl LSH_RPATH_FIX
 AC_DEFUN([LSH_RPATH_FIX],
 [if test $cross_compiling = no -a "x$RPATHFLAG" != x ; then
   ac_success=no
-  AC_TRY_RUN([int main(int argc, char **argv) { return 0; }],
-    ac_success=yes, ac_success=no, :)
+  AC_RUN_IFELSE([AC_LANG_SOURCE([[int main(int argc, char **argv) { return 0; }]])],
+    [ac_success=yes], [ac_success=no], [:])
   
   if test $ac_success = no ; then
     AC_MSG_CHECKING([Running simple test program failed. Trying -R flags])
@@ -127,12 +127,12 @@ dnl echo RPATH_CANDIDATE_DIRS = $RPATH_CANDIDATE_DIRS
       else
   	LDFLAGS="$RPATHFLAG$d $LDFLAGS"
 dnl echo LDFLAGS = $LDFLAGS
-  	AC_TRY_RUN([int main(int argc, char **argv) { return 0; }],
-  	  [ac_success=yes
+	AC_RUN_IFELSE([AC_LANG_SOURCE([[int main(int argc, char **argv) { return 0; }]])],
+	  [ac_success=yes
   	  ac_rpath_save_LDFLAGS="$LDFLAGS"
-  	  AC_MSG_RESULT([adding $RPATHFLAG$d])
-  	  ],
-  	  [ac_remaining_dirs="$ac_remaining_dirs $d"], :)
+	  AC_MSG_RESULT([adding $RPATHFLAG$d])
+	  ],
+	  [ac_remaining_dirs="$ac_remaining_dirs $d"], [:])
   	LDFLAGS="$ac_rpath_save_LDFLAGS"
       fi
     done
@@ -150,7 +150,7 @@ dnl Check for gcc's __attribute__ construction
 AC_DEFUN([LSH_GCC_ATTRIBUTES],
 [AC_CACHE_CHECK(for __attribute__,
 	       lsh_cv_c_attribute,
-[ AC_TRY_COMPILE([
+[ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <stdlib.h>
 
 static void foo(void) __attribute__ ((noreturn));
@@ -160,9 +160,9 @@ foo(void)
 {
   exit(1);
 }
-],[],
-lsh_cv_c_attribute=yes,
-lsh_cv_c_attribute=no)])
+]], [[]])],
+  [lsh_cv_c_attribute=yes],
+  [lsh_cv_c_attribute=no])])
 
 AH_TEMPLATE([HAVE_GCC_ATTRIBUTE], [Define if the compiler understands __attribute__])
 if test "x$lsh_cv_c_attribute" = "xyes"; then
@@ -215,38 +215,6 @@ char *alloca ();
 #endif
 ])])
 
-AC_DEFUN([LSH_FUNC_STRERROR],
-[AC_CHECK_FUNCS(strerror)
-AH_BOTTOM(
-[#if HAVE_STRERROR
-#define STRERROR strerror
-#else
-#define STRERROR(x) (sys_errlist[x])
-#endif
-])])
-
-AC_DEFUN([LSH_FUNC_STRSIGNAL],
-[AC_CHECK_FUNCS(strsignal)
-AC_CHECK_DECLS([sys_siglist, _sys_siglist])
-AH_BOTTOM(
-[#if HAVE_STRSIGNAL
-# define STRSIGNAL strsignal
-#else /* !HAVE_STRSIGNAL */
-# if HAVE_DECL_SYS_SIGLIST
-#  define STRSIGNAL(x) (sys_siglist[x])
-# else
-#  if HAVE_DECL__SYS_SIGLIST
-#   define STRSIGNAL(x) (_sys_siglist[x])
-#  else
-#   define STRSIGNAL(x) "Unknown signal"
-#   if __GNUC__
-#    warning Using dummy STRSIGNAL
-#   endif
-#  endif
-# endif
-#endif /* !HAVE_STRSIGNAL */
-])])
-
 dnl LSH_DEPENDENCY_TRACKING
 
 dnl Defines compiler flags DEP_FLAGS to generate dependency
@@ -257,8 +225,7 @@ dnl themselves are not treated as targets.
 
 AC_DEFUN([LSH_DEPENDENCY_TRACKING],
 [AC_ARG_ENABLE(dependency_tracking,
-  AC_HELP_STRING([--disable-dependency-tracking],
-    [Disable dependency tracking. Dependency tracking doesn't work with BSD make]),,
+  AS_HELP_STRING([--disable-dependency-tracking], [Disable dependency tracking. Dependency tracking doesn't work with BSD make]),,
   [enable_dependency_tracking=yes])
 
 DEP_FLAGS=''
@@ -294,21 +261,21 @@ dnl  conftest.o and conftest.out are available for inspection in
 dnl  "action-success".  If either action does a "break" out of a loop then
 dnl  an explicit "rm -f conftest*" will be necessary.
 dnl
-dnl  This is not unlike AC_TRY_COMPILE, but there's no default includes or
+dnl  This is not unlike AC_COMPILE_IFELSE, but there's no default includes or
 dnl  anything in "asm-code", everything wanted must be given explicitly.
 
 AC_DEFUN([GMP_TRY_ASSEMBLE],
 [cat >conftest.s <<EOF
 [$1]
 EOF
-gmp_assemble="$CC $CFLAGS $CPPFLAGS -c conftest.s >conftest.out 2>&1"
+gmp_assemble="$CC $CFLAGS $CPPFLAGS $ASM_FLAGS -c conftest.s >conftest.out 2>&1"
 if AC_TRY_EVAL(gmp_assemble); then
-  cat conftest.out >&AC_FD_CC
+  cat conftest.out >&AS_MESSAGE_LOG_FD
   ifelse([$2],,:,[$2])
 else
-  cat conftest.out >&AC_FD_CC
-  echo "configure: failed program was:" >&AC_FD_CC
-  cat conftest.s >&AC_FD_CC
+  cat conftest.out >&AS_MESSAGE_LOG_FD
+  echo "configure: failed program was:" >&AS_MESSAGE_LOG_FD
+  cat conftest.s >&AS_MESSAGE_LOG_FD
   ifelse([$3],,:,[$3])
 fi
 rm -f conftest*
@@ -375,7 +342,7 @@ EOF
 gmp_compile="$1 conftest.c"
 cc_for_build_works=no
 if AC_TRY_EVAL(gmp_compile); then
-  if (./a.out || ./b.out || ./a.exe || ./a_out.exe || ./conftest) >&AC_FD_CC 2>&1; then
+  if (./a.out || ./b.out || ./a.exe || ./a_out.exe || ./conftest) >&AS_MESSAGE_LOG_FD 2>&1; then
     cc_for_build_works=yes
   fi
 fi
@@ -416,7 +383,7 @@ EOF
   for i in .exe ,ff8 ""; do
     gmp_compile="$CC_FOR_BUILD conftest.c -o conftest$i"
     if AC_TRY_EVAL(gmp_compile); then
-      if (./conftest) 2>&AC_FD_CC; then
+      if (./conftest) 2>&AS_MESSAGE_LOG_FD; then
         gmp_cv_prog_exeext_for_build=$i
         break
       fi
@@ -562,7 +529,7 @@ dnl  Determine whether the assembler takes powerpc registers with an "r" as
 dnl  in "r6", or as plain "6".  The latter is standard, but NeXT, Rhapsody,
 dnl  and MacOS-X require the "r" forms.
 dnl
-dnl  See also mpn/powerpc32/powerpc-defs.m4 which uses the result of this
+dnl  See also powerpc64/machine.m4 which uses the result of this
 dnl  test.
 
 AC_DEFUN([GMP_ASM_POWERPC_R_REGISTERS],
@@ -578,4 +545,29 @@ AC_DEFUN([GMP_ASM_POWERPC_R_REGISTERS],
 [gmp_cv_asm_powerpc_r_registers=no],
 [AC_MSG_ERROR([neither "mtctr 6" nor "mtctr r6" works])])])])
 ASM_PPC_WANT_R_REGISTERS="$gmp_cv_asm_powerpc_r_registers"
+])
+
+# Check if valgrind supports the platform we are compiling for.
+AC_DEFUN([NETTLE_PROG_VALGRIND],
+[AC_CACHE_CHECK([if valgrind is working],
+  nettle_cv_prog_valgrind,
+  [AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])], [
+    # Valgrind is known to work poorly and sometimes hang indefinitely
+    # on executables built with gcc's leak-sanitizer and
+    # address-sanitizer, and with clang's memory sanitizer. Attempt to
+    # work around. See https://bugs.kde.org/show_bug.cgi?id=492255
+    if "$NM" ./conftest$EXEEXT 2>&AS_MESSAGE_LOG_FD |
+       grep '_lsan_\|_msan_\|_asan_' >/dev/null; then
+      nettle_cv_prog_valgrind=no
+    elif valgrind -q ./conftest$EXEEXT 2>&AS_MESSAGE_LOG_FD; then
+      nettle_cv_prog_valgrind=yes
+    else
+      nettle_cv_prog_valgrind=no
+    fi], [nettle_cv_prog_valgrind=no])])
+  if test "$nettle_cv_prog_valgrind" = yes ; then
+    IF_VALGRIND=''
+  else
+    IF_VALGRIND='#'
+  fi
+  AC_SUBST(IF_VALGRIND)
 ])

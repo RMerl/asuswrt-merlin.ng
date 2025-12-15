@@ -38,8 +38,12 @@
 
 /* Internal functions. */
 void
-_nettle_dsa_hash (mpz_t h, unsigned bit_size,
+_nettle_dsa_hash (mp_limb_t *hp, unsigned bit_size,
 		  size_t length, const uint8_t *digest);
+
+void
+_nettle_gostdsa_hash (mp_limb_t *hp, unsigned bit_size,
+		      size_t length, const uint8_t *digest);
 
 
 #endif /* NETTLE_DSA_INTERNAL_H_INCLUDED */

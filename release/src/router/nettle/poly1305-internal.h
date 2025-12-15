@@ -53,7 +53,15 @@ void _nettle_poly1305_digest (struct poly1305_ctx *ctx, union nettle_block16 *s)
 /* Process one block. */
 void _nettle_poly1305_block (struct poly1305_ctx *ctx, const uint8_t *m,
 			     unsigned high);
+/* Updates CTX by hashing M, which must be an integral number of
+   blocks. For convenience, returns a pointer to the end of the
+   data. Implies 128 set on all input blocks. */
+const uint8_t *
+_nettle_poly1305_blocks (struct poly1305_ctx *ctx, size_t blocks, const uint8_t *m);
 
+unsigned
+_nettle_poly1305_update (struct poly1305_ctx *ctx, uint8_t *buffer, unsigned index,
+			 size_t length, const uint8_t *m);
 #ifdef __cplusplus
 }
 #endif

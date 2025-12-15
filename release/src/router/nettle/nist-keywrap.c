@@ -44,24 +44,7 @@
 #include "nist-keywrap.h"
 #include "memops.h"
 #include "macros.h"
-
-#if WORDS_BIGENDIAN
-#define bswap_if_le(x) (x)
-#elif HAVE_BUILTIN_BSWAP64
-#define bswap_if_le(x) (__builtin_bswap64 (x))
-#else
-static uint64_t
-bswap_if_le (uint64_t x)
-{
-  x = ((x >> 32) & UINT64_C (0xffffffff))
-    | ((x & UINT64_C (0xffffffff)) << 32);
-  x = ((x >> 16) & UINT64_C (0xffff0000ffff))
-    | ((x & UINT64_C (0xffff0000ffff)) << 16);
-  x = ((x >> 8) & UINT64_C (0xff00ff00ff00ff))
-    | ((x & UINT64_C (0xff00ff00ff00ff)) << 8);
-  return x;
-}
-#endif
+#include "bswap-internal.h"
 
 void
 nist_keywrap16 (const void *ctx, nettle_cipher_func *encrypt,
@@ -94,7 +77,7 @@ nist_keywrap16 (const void *ctx, nettle_cipher_func *encrypt,
 	  encrypt (ctx, 16, B.b, I.b);
 
 	  /* A = MSB(64, B) ^ t where t = (n*j)+i */
-	  A.u64 = B.u64[0] ^ bswap_if_le ((n * j) + (i + 1));
+	  A.u64 = B.u64[0] ^ bswap64_if_le ((n * j) + (i + 1));
 
 	  /* R[i] = LSB(64, B) */
 	  memcpy (R + (i * 8), B.b + 8, 8);
@@ -129,7 +112,7 @@ nist_keyunwrap16 (const void *ctx, nettle_cipher_func *decrypt,
       for (i = n - 1; i >= 0; i--)
 	{
 	  /* B = AES-1(K, (A ^ t) | R[i]) where t = n*j+i */
-	  I.u64[0] = A.u64 ^ bswap_if_le ((n * j) + (i + 1));
+	  I.u64[0] = A.u64 ^ bswap64_if_le ((n * j) + (i + 1));
 	  memcpy (I.b + 8, R + (i * 8), 8);
 	  decrypt (ctx, 16, B.b, I.b);
 

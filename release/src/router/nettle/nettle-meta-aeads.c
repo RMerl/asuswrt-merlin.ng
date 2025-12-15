@@ -43,6 +43,7 @@ const struct nettle_aead * const _nettle_aeads[] = {
   &nettle_gcm_aes256,
   &nettle_gcm_camellia128,
   &nettle_gcm_camellia256,
+  &nettle_gcm_sm4,
   &nettle_eax_aes128,
   &nettle_chacha_poly1305,
   NULL

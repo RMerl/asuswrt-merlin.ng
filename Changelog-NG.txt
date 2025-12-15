@@ -29,6 +29,7 @@ Asuswrt-Merlin Changelog
   - UPDATED: libcap-ng to 0.8.4 (to be in sync with upstream)
   - CHANGED: TrafficMonitor stats can now be saved to JFFS,
              and removed support for saving to NVRAM.
+  - FIXED: IPv6 blocking of DoT servers (dave14305)
   - REMOVED: outdated setuprsa.sh script.
   - REMOVED: AiCloud support, due to security reasons.
 

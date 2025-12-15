@@ -2,7 +2,7 @@
 #include "aes.h"
 #include "cbc.h"
 #include "knuth-lfib.h"
-#include "nettle-internal.h"
+#include "non-nettle.h"
 
 /* Test with more data and inplace decryption, to check that the
  * cbc_decrypt buffering works. */

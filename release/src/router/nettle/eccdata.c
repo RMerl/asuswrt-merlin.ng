@@ -71,6 +71,7 @@ struct ecc_curve
 
   /* Prime */
   mpz_t p;
+  /* Curve constant */
   mpz_t b;
 
   /* Curve order */
@@ -626,15 +627,15 @@ ecc_curve_init (struct ecc_curve *ecc, const char *curve)
 
 	   x^2 + y^2 = 1 + (121665/121666) x^2 y^2 (mod p).
 
-	   -x^2 + y^2 = 1 - (121665/121666) x^2 y^2, with p = 2^{255} - 19.
+	 But instead of using this curve, we use a twisted curve, following RFC 7748,
+
+	   -x^2 + y^2 = 1 - (121665/121666) x^2 y^2 (mod p)
+
+         (this is possible because -1 is a square modulo p).
 
 	 The generator is
 	   x = 0x216936d3cd6e53fec0a4e231fdd6dc5c692cc7609525a7b2c9562d608f25d51a
            y = 0x6666666666666666666666666666666666666666666666666666666666666658
-
-	 Also birationally equivalent to the curve25519 Montgomery curve,
-
-	   y^2 = x^3 + 486662 x^2 + x (mod p)
       */
       ecc_curve_init_str (ecc, ECC_TYPE_TWISTED_EDWARDS,
 			  "7fffffffffffffffffffffffffffffff"
@@ -1073,7 +1074,7 @@ output_digits (const mpz_t x,
   unsigned i;
   const char *suffix;
 
-  mpz_init (t);
+  mpz_init_set (t, x);
   mpz_init (mask);
   mpz_init (limb);
 
@@ -1081,8 +1082,6 @@ output_digits (const mpz_t x,
   mpz_sub_ui (mask, mask, 1);
 
   suffix = bits_per_limb > 32 ? "ULL" : "UL";
-
-  mpz_init_set (t, x);
 
   for (i = 0; i < size; i++)
     {
@@ -1119,6 +1118,7 @@ output_bignum_redc (const char *name, const mpz_t x, const mpz_t p,
   mpz_mul_2exp (t, x, size * bits_per_limb);
   mpz_mod (t, t, p);
   output_bignum (name, t, size, bits_per_limb);
+  mpz_clear (t);
 }
 
 static void
@@ -1151,23 +1151,121 @@ output_point (const struct ecc_curve *ecc,
   mpz_clear (t);
 }
 
-static unsigned
+static void
+string_toupper (char *buf, size_t size, const char *s)
+{
+  size_t i;
+  for (i = 0; i < size; i++)
+    {
+      buf[i] = toupper ((int)s[i]);
+      if (!buf[i])
+	return;
+    }
+  fprintf (stderr, "string '%s' too large for buffer of size %u.\n",
+	   s, (unsigned) size);
+  abort();
+}
+
+static void
 output_modulo (const char *name, const mpz_t x,
 	       unsigned size, unsigned bits_per_limb)
 {
-  mpz_t mod;
-  unsigned bits;
+  unsigned bit_size;
+  int shift;
+  char buf[20];
+  mpz_t t;
 
-  mpz_init (mod);
+  snprintf (buf, sizeof (buf), "ecc_%s", name);
+  output_bignum (buf, x, size, bits_per_limb);
 
-  mpz_setbit (mod, bits_per_limb * size);
-  mpz_mod (mod, mod, x);
+  mpz_init (t);
 
-  bits = mpz_sizeinbase (mod, 2);
-  output_bignum (name, mod, size, bits_per_limb);
+  mpz_setbit (t, bits_per_limb * size);
+  mpz_mod (t, t, x);
+
+  snprintf (buf, sizeof (buf), "ecc_Bmod%s", name);
+  output_bignum (buf, t, size, bits_per_limb);
   
-  mpz_clear (mod);
-  return bits;
+  string_toupper (buf, sizeof (buf), name);
+  printf ("#define ECC_BMOD%s_SIZE %u\n", buf,
+	  (unsigned) ((mpz_sizeinbase (t, 2) + bits_per_limb - 1)
+		      / bits_per_limb));
+
+  bit_size = mpz_sizeinbase (x, 2);
+
+  shift = size * bits_per_limb - bit_size;
+  assert (shift >= 0);
+  if (shift > 0)
+    {
+      mpz_set_ui (t, 0);
+      mpz_setbit (t, size * bits_per_limb);
+      mpz_submul_ui (t, x, 2);
+
+      snprintf (buf, sizeof (buf), "ecc_Bm2%s", name);
+      output_bignum (buf, t, size, bits_per_limb);
+
+      if (bit_size == 253)
+	{
+	  /* For curve25519, with q = 2^k + q', with a much smaller q' */
+	  unsigned mbits;
+	  unsigned shift;
+
+	  /* Shift to align the one bit at B */
+	  shift = bits_per_limb * size + 1 - bit_size;
+
+	  mpz_set (t, x);
+	  mpz_clrbit (t, bit_size-1);
+	  mbits = mpz_sizeinbase (t, 2);
+
+	  /* The shifted value must be a limb smaller than q. */
+	  assert (mbits + shift + bits_per_limb <= bit_size);
+
+	  /* q of the form 2^k + q', with q' a limb smaller */
+	  mpz_mul_2exp (t, t, shift);
+	  snprintf (buf, sizeof (buf), "ecc_mBmod%s_shifted", name);
+
+	  output_bignum (buf, t, size, bits_per_limb);
+	}
+      else
+	{
+	  mpz_set_ui (t, 0);
+	  mpz_setbit (t, bit_size);
+	  mpz_sub (t, t, x);
+
+	  snprintf (buf, sizeof (buf), "ecc_Bmod%s_shifted", name);
+	  output_bignum (buf, t, size, bits_per_limb);
+
+	  /* Check condition for reducing hi limbs. If s is the
+	     normalization shift and n is the bit size (so that s + n
+	     = limb_size * bits_per_limb), then we need
+
+	     (2^n - 1) + (2^s - 1) (2^n - p) < 2p
+
+	     or equivalently,
+
+	     2^s (2^n - p) <= p
+
+	     To a allow a carry limb to be added in at the same time,
+	     substitute s+1 for s.
+	  */
+	  /* FIXME: For ecdsa verify, we actually need the stricter
+	     inequality < 2 q. */
+	  mpz_mul_2exp (t, t, shift + 1);
+	  if (mpz_cmp (t, x) > 0)
+	    {
+	      fprintf (stderr, "Reduction condition failed for %u-bit %s.\n",
+		       bit_size, name);
+	      exit (EXIT_FAILURE);
+	    }
+	}
+    }
+  else
+    {
+      printf ("#define ecc_Bm2%s ecc_Bmod%s\n", name, name);
+      printf ("#define ecc_Bmod%s_shifted ecc_Bmod%s\n", name, name);
+    }
+
+  mpz_clear (t);
 }
 
 static void
@@ -1175,7 +1273,6 @@ output_curve (const struct ecc_curve *ecc, unsigned bits_per_limb)
 {
   unsigned limb_size = (ecc->bit_size + bits_per_limb - 1)/bits_per_limb;
   unsigned i;
-  unsigned bits;
   int redc_limbs;
   mpz_t t;
   mpz_t z;
@@ -1189,87 +1286,10 @@ output_curve (const struct ecc_curve *ecc, unsigned bits_per_limb)
   printf ("#define ECC_PIPPENGER_K %u\n", ecc->pippenger_k);
   printf ("#define ECC_PIPPENGER_C %u\n", ecc->pippenger_c);
 
-  output_bignum ("ecc_p", ecc->p, limb_size, bits_per_limb);
+  output_modulo ("p", ecc->p, limb_size, bits_per_limb);
+  output_modulo ("q", ecc->q, limb_size, bits_per_limb);
+
   output_bignum ("ecc_b", ecc->b, limb_size, bits_per_limb);
-  output_bignum ("ecc_q", ecc->q, limb_size, bits_per_limb);
-  
-  bits = output_modulo ("ecc_Bmodp", ecc->p, limb_size, bits_per_limb);
-  printf ("#define ECC_BMODP_SIZE %u\n",
-	  (bits + bits_per_limb - 1) / bits_per_limb);
-  bits = output_modulo ("ecc_Bmodq", ecc->q, limb_size, bits_per_limb);
-  printf ("#define ECC_BMODQ_SIZE %u\n",
-	  (bits + bits_per_limb - 1) / bits_per_limb);
-  bits = mpz_sizeinbase (ecc->q, 2);
-  if (bits < ecc->bit_size)
-    {
-      /* for curve25519, with q = 2^k + q', with a much smaller q' */
-      unsigned mbits;
-      unsigned shift;
-
-      /* Shift to align the one bit at B */
-      shift = bits_per_limb * limb_size + 1 - bits;
-      
-      mpz_set (t, ecc->q);
-      mpz_clrbit (t, bits-1);
-      mbits = mpz_sizeinbase (t, 2);
-
-      /* The shifted value must be a limb smaller than q. */
-      if (mbits + shift + bits_per_limb <= bits)
-	{
-	  /* q of the form 2^k + q', with q' a limb smaller */
-	  mpz_mul_2exp (t, t, shift);
-	  output_bignum ("ecc_mBmodq_shifted", t, limb_size, bits_per_limb);
-	}
-    }
-
-  if (ecc->bit_size < limb_size * bits_per_limb)
-    {
-      int shift;
-
-      mpz_set_ui (t, 0);
-      mpz_setbit (t, ecc->bit_size);
-      mpz_sub (t, t, ecc->p);      
-      output_bignum ("ecc_Bmodp_shifted", t, limb_size, bits_per_limb);
-
-      shift = limb_size * bits_per_limb - ecc->bit_size;
-      if (shift > 0)
-	{
-	  /* Check condition for reducing hi limbs. If s is the
-	     normalization shift and n is the bit size (so that s + n
-	     = limb_size * bite_per_limb), then we need
-
-	       (2^n - 1) + (2^s - 1) (2^n - p) < 2p
-
-	     or equivalently,
-
-	       2^s (2^n - p) <= p
-
-	     To a allow a carry limb to be added in at the same time,
-	     substitute s+1 for s.
-	  */
-	  /* FIXME: For ecdsa verify, we actually need the stricter
-	     inequality < 2 q. */
-	  mpz_mul_2exp (t, t, shift + 1);
-	  if (mpz_cmp (t, ecc->p) > 0)
-	    {
-	      fprintf (stderr, "Reduction condition failed for %u-bit curve.\n",
-		       ecc->bit_size);
-	      exit (EXIT_FAILURE);
-	    }
-	}
-    }
-  else
-    printf ("#define ecc_Bmodp_shifted ecc_Bmodp\n");
-
-  if (bits < limb_size * bits_per_limb)
-    {
-      mpz_set_ui (t, 0);
-      mpz_setbit (t, bits);
-      mpz_sub (t, t, ecc->q);      
-      output_bignum ("ecc_Bmodq_shifted", t, limb_size, bits_per_limb);      
-    }
-  else
-    printf ("#define ecc_Bmodq_shifted ecc_Bmodq\n");
 
   mpz_add_ui (t, ecc->p, 1);
   mpz_fdiv_q_2exp (t, t, 1);

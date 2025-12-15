@@ -35,6 +35,7 @@
 #define NETTLE_RSA_INTERNAL_H_INCLUDED
 
 #include "rsa.h"
+#include "nettle-meta.h"
 
 #define _rsa_verify _nettle_rsa_verify
 #define _rsa_verify_recover _nettle_rsa_verify_recover
@@ -44,6 +45,8 @@
 #define _rsa_sec_compute_root_itch _nettle_rsa_sec_compute_root_itch
 #define _rsa_sec_compute_root _nettle_rsa_sec_compute_root
 #define _rsa_sec_compute_root_tr _nettle_rsa_sec_compute_root_tr
+#define _rsa_oaep_encrypt _nettle_rsa_oaep_encrypt
+#define _rsa_oaep_decrypt _nettle_rsa_oaep_decrypt
 
 /* Internal functions. */
 int
@@ -84,5 +87,22 @@ _rsa_sec_compute_root_tr(const struct rsa_public_key *pub,
 			 const struct rsa_private_key *key,
 			 void *random_ctx, nettle_random_func *random,
 			 mp_limb_t *x, const mp_limb_t *m);
+
+int
+_rsa_oaep_encrypt (const struct rsa_public_key *key,
+		   void *random_ctx, nettle_random_func *random,
+		   void *hash_ctx, const struct nettle_hash *hash,
+		   size_t label_length, const uint8_t *label,
+		   size_t length, const uint8_t *message,
+		   uint8_t *ciphertext);
+
+int
+_rsa_oaep_decrypt (const struct rsa_public_key *pub,
+		   const struct rsa_private_key *key,
+		   void *random_ctx, nettle_random_func *random,
+		   void *hash_ctx, const struct nettle_hash *hash,
+		   size_t label_length, const uint8_t *label,
+		   size_t *length, uint8_t *message,
+		   const uint8_t *ciphertext);
 
 #endif /* NETTLE_RSA_INTERNAL_H_INCLUDED */

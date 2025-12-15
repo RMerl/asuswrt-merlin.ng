@@ -40,7 +40,7 @@
 #include "dsa.h"
 #include "dsa-internal.h"
 
-#include "bignum.h"
+#include "gmp-glue.h"
 
 int
 dsa_verify(const struct dsa_params *params,
@@ -52,6 +52,8 @@ dsa_verify(const struct dsa_params *params,
   mpz_t w;
   mpz_t tmp;
   mpz_t v;
+  unsigned bit_size;
+  unsigned limb_size;
 
   int res;
 
@@ -78,7 +80,10 @@ dsa_verify(const struct dsa_params *params,
   mpz_init(v);
 
   /* The message digest */
-  _nettle_dsa_hash (tmp, mpz_sizeinbase (params->q, 2), digest_size, digest);
+  bit_size = mpz_sizeinbase(params->q, 2);
+  limb_size = NETTLE_BIT_SIZE_TO_LIMB_SIZE(bit_size);
+  _nettle_dsa_hash (mpz_limbs_write (tmp, limb_size), bit_size, digest_size, digest);
+  mpz_limbs_finish (tmp, limb_size);
   
   /* v = g^{w * h (mod q)} (mod p)  */
   mpz_mul(tmp, tmp, w);

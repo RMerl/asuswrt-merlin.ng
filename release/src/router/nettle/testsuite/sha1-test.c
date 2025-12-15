@@ -1,8 +1,61 @@
 #include "testutils.h"
 
+#include "nettle-write.h"
+#include "sha1.h"
+
+/* Test compression only. */
+static void
+test_sha1_compress(const struct tstring *input,
+		   const struct tstring *expected) {
+  size_t split;
+
+  ASSERT (input->length % SHA1_BLOCK_SIZE == 0);
+  ASSERT (expected->length == SHA1_DIGEST_SIZE);
+
+  for (split = 0; split <= input->length; split += SHA1_BLOCK_SIZE)
+    {
+      struct sha1_ctx ctx;
+      uint8_t digest[SHA1_DIGEST_SIZE];
+      sha1_init (&ctx);
+      sha1_update (&ctx, split, input->data);
+      sha1_update (&ctx, input->length - split, input->data + split);
+
+      _nettle_write_be32 (SHA1_DIGEST_SIZE, digest, ctx.state);
+      if (!MEMEQ (SHA1_DIGEST_SIZE, digest, expected->data)) {
+	fprintf (stderr, "sha1_compress failed: length %u, split %u \nInput:",
+		 (unsigned) input->length, (unsigned) split);
+	tstring_print_hex (input);
+	fprintf (stderr, "\nOutput: ");
+	print_hex (SHA1_DIGEST_SIZE, digest);
+	fprintf(stdout, "\nExpected:\n");
+	tstring_print_hex (expected);
+	fprintf (stderr, "\n");
+	abort ();
+      }
+    }
+}
+
 void
 test_main(void)
 {
+  /* Initial state */
+  test_sha1_compress (SDATA(""),
+		      SHEX("67452301efcdab89 98badcfe10325476"
+			   "c3d2e1f0"));
+
+  /* Single block compressed */
+  test_sha1_compress (SDATA("0123456789abcdefghijklmnopqrstuv"
+			    "wxyzABCDEFGHIJKLMNOPQRSTUVWXYZZY"),
+		      SHEX("005cf6fb02d9a17e f77d0b8eac9da60c"
+			   "08ecaf1c"));
+  /* Two blocks compressed */
+  test_sha1_compress (SDATA("0123456789abcdefghijklmnopqrstuv"
+			    "wxyzABCDEFGHIJKLMNOPQRSTUVWXYZZY"
+			    "ABCDEFGHIJKLMNOPQRSTUVWXYZ012345"
+			    "6789abcdefghijklmnopqrstuvwxyzzy"),
+		      SHEX("3e0dd3db30fc4e45 c17a97f0c431f07b"
+			   "6b4a5cc5"));
+
   test_hash(&nettle_sha1, SDATA(""),
 	    SHEX("DA39A3EE5E6B4B0D 3255BFEF95601890 AFD80709")); 
 

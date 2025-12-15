@@ -51,3 +51,48 @@ forloop(i,0,63,`deflit(`vs'i,i)')
 forloop(i,0,31,`deflit(`f'i,i)')
 forloop(i,0,7, `deflit(`cr'i,i)')
 ')
+
+C Increase index of general-purpose register by specific value
+C INC_GPR(GPR, INC)
+define(`INC_GPR',`ifelse(substr($1,0,1),`r',
+``r'eval($2+substr($1,1,len($1)))',
+`eval($2+$1)')')
+
+C Increase index of vector register by specific value
+C INC_VR(VR, INC)
+define(`INC_VR',`ifelse(substr($1,0,1),`v',
+``v'eval($2+substr($1,1,len($1)))',
+`eval($2+$1)')')
+
+C Apply op x, x, y, for each x.
+C OPN_XXY(OP, Y, X1, X2, ...)
+define(`OPN_XXY',
+`$1 $3, $3, $2
+ifelse(eval($# > 3), 1,
+`OPN_XXY($1, $2, shift(shift(shift($@))))dnl
+')')
+
+C Apply op x, x, x, y, for each x.
+C OPN_XXXY(OP, Y, X1, X2, ...)
+define(`OPN_XXXY',
+`$1 $3, $3, $3, $2
+ifelse(eval($# > 3), 1,
+`OPN_XXXY($1, $2, shift(shift(shift($@))))dnl
+')')
+
+C Polynomial reduction R += x^{-64} F mod P
+C where x^{-64} = x^{64} + P1 (mod P)
+C GHASH_REDUCE(R, F, P1, T1, T2)
+define(`GHASH_REDUCE', `
+    vpmsumd        $4, $2, $3
+    xxswapd        VSR($5),VSR($2)
+    vxor           $1, $1, $5
+    vxor           $1, $1, $4
+')
+
+C GF multification of L/M and data
+C GF_MUL(
+C GF_MUL(F, R, HL, HM, S)
+define(`GF_MUL',
+  `vpmsumd $1,$3,$5
+   vpmsumd $2,$4,$5')

@@ -2,28 +2,23 @@
 
 #include "pkcs1-internal.h"
 
-#if HAVE_VALGRIND_MEMCHECK_H
-# include <valgrind/memcheck.h>
 static int
 pkcs1_decrypt_for_test(size_t msg_len, uint8_t *msg,
                        size_t pad_len, uint8_t *pad)
 {
   int ret;
 
-  VALGRIND_MAKE_MEM_UNDEFINED (msg, msg_len);
-  VALGRIND_MAKE_MEM_UNDEFINED (pad, pad_len);
+  mark_bytes_undefined (msg_len, msg);
+  mark_bytes_undefined (pad_len, pad);
 
   ret = _pkcs1_sec_decrypt (msg_len, msg, pad_len, pad);
 
-  VALGRIND_MAKE_MEM_DEFINED (msg, msg_len);
-  VALGRIND_MAKE_MEM_DEFINED (pad, pad_len);
-  VALGRIND_MAKE_MEM_DEFINED (&ret, sizeof (ret));
+  mark_bytes_defined (msg_len, msg);
+  mark_bytes_defined (pad_len, pad);
+  mark_bytes_defined (sizeof (ret), &ret);
 
   return ret;
 }
-#else
-#define pkcs1_decrypt_for_test _pkcs1_sec_decrypt
-#endif
 
 void
 test_main(void)

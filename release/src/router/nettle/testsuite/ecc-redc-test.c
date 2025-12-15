@@ -38,7 +38,7 @@ mod_equal(const struct ecc_modulo *m, const mp_limb_t *ref, mp_limb_t *tp)
 
 #define MAX_ECC_SIZE (1 + 521 / GMP_NUMB_BITS)
 #define MAX_SIZE (2*MAX_ECC_SIZE)
-#define COUNT 50000
+#define COUNT 10000
 
 void
 test_main (void)

@@ -39,7 +39,7 @@ ref_modinv (mp_limb_t *rp, const mp_limb_t *ap,
 }
 
 #define MAX_ECC_SIZE (1 + 521 / GMP_NUMB_BITS)
-#define COUNT 500
+#define COUNT 200
 
 static void
 test_modulo (gmp_randstate_t rands, const char *name,

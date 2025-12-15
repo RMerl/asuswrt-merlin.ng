@@ -162,12 +162,17 @@ typedef void aes_crypt_internal_func (unsigned rounds, const uint32_t *keys,
 				      const struct aes_table *T,
 				      size_t length, uint8_t *dst,
 				      const uint8_t *src);
+typedef void aes_invert_internal_func (unsigned rounds, uint32_t *dst, const uint32_t *src);
 
 struct gcm_key;
 typedef void ghash_set_key_func (struct gcm_key *ctx, const union nettle_block16 *key);
 typedef const uint8_t *
 ghash_update_func (const struct gcm_key *ctx, union nettle_block16 *state,
 		   size_t blocks, const uint8_t *data);
+
+typedef size_t
+gcm_aes_crypt_func (struct gcm_key *key, unsigned rounds,
+		    size_t len, uint8_t *dst, const uint8_t *src);
 
 typedef void *(memxor_func)(void *dst, const void *src, size_t n);
 typedef void *(memxor3_func)(void *dst_in, const void *a_in, const void *b_in, size_t n);
@@ -178,7 +183,9 @@ typedef void salsa20_crypt_func (struct salsa20_ctx *ctx, unsigned rounds,
 				 const uint8_t *src);
 
 typedef void sha1_compress_func(uint32_t *state, const uint8_t *input);
-typedef void sha256_compress_func(uint32_t *state, const uint8_t *input, const uint32_t *k);
+typedef const uint8_t *
+sha256_compress_n_func(uint32_t *state, const uint32_t *k,
+		       size_t blocks, const uint8_t *input);
 
 struct sha3_state;
 typedef void sha3_permute_func (struct sha3_state *state);
@@ -195,6 +202,14 @@ typedef void chacha_crypt_func(struct chacha_ctx *ctx,
 			       size_t length,
 			       uint8_t *dst,
 			       const uint8_t *src);
+
+struct poly1305_ctx;
+typedef void poly1305_set_key_func(struct poly1305_ctx *ctx, const uint8_t *key);
+typedef void poly1305_digest_func(struct poly1305_ctx *ctx, union nettle_block16 *s);
+typedef void poly1305_block_func(struct poly1305_ctx *ctx, const uint8_t *m,
+			     unsigned high);
+typedef const uint8_t * poly1305_blocks_func(struct poly1305_ctx *ctx, size_t blocks,
+			     const uint8_t *m);
 
 struct aes128_ctx;
 typedef void aes128_set_key_func (struct aes128_ctx *ctx, const uint8_t *key);

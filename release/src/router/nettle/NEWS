@@ -1,3 +1,217 @@
+NEWS for the Nettle 3.10.2 release
+
+	This is a maintenance release, with only a few bugfixes and
+	portability improvements.
+
+	The new version is intended to be fully source and binary
+	compatible with Nettle-3.6. The shared library names are
+	libnettle.so.8.11 and libhogweed.so.6.11, with sonames
+	libnettle.so.8 and libhogweed.so.6.
+
+	Bug fixes:
+
+	* Fix missing prototypes in getopt.h and getopt.c, affecting
+	  non-glibc systems, and causing compile errors with C23
+	  compilers that require prototypes, e.g., gcc-15.
+
+	* For powerpc64, avoid using v9 (ISA v3.0) instructions
+	  lxvb16x, lxv and stxv in powerpc64/p8/ files.
+
+	* For powerpc64, add configure check for __VSX__, and disable
+	  use of assembly if not defined. Nettle's powerpc64 assembly
+	  requires at least v7 (ISA v2.06).
+
+NEWS for the Nettle 3.10.1 release
+
+	This is a maintenance release, with only a few bugfixes and
+	portability improvements.
+
+	The new version is intended to be fully source and binary
+	compatible with Nettle-3.6. The shared library names are
+	libnettle.so.8.10 and libhogweed.so.6.10, with sonames
+	libnettle.so.8 and libhogweed.so.6.
+
+	Bug fixes:
+
+	* Fix buffer overread in the new sha256 assembly for
+	  powerpc64, as well as a stack alignment issue.
+
+	* Added missing nettle_mac structs for hmac-gosthash.
+
+	* Fix configure test for valgrind, to not attempt to run
+	  valgrind on executables built using memory sanitizers.
+
+	Optimizations:
+
+	* Improved runtime detection of cpu features for OpenBSD and
+	  FreeBSD, using elf_aux_info when available. This also adds
+	  runtime detection for FreeBSD on arm64. Contributed by Brad
+	  Smith.
+
+NEWS for the Nettle 3.10 release
+
+	This is a maintenance release, including a few each of bug
+	fixes, new features and optimizations.
+
+	The new version is intended to be fully source and binary
+	compatible with Nettle-3.6. The shared library names are
+	libnettle.so.8.9 and libhogweed.so.6.9, with sonames
+	libnettle.so.8 and libhogweed.so.6.
+
+	Bug fixes:
+
+	* Add missing hash functions sha512_224 and sha512_256 to the
+	  nettle_get_hashes() list. The name values in the
+	  corresponding nettle_hash structs also changed to use
+	  underscore instead of dash, for consistency.
+
+	* Fix a few cases of formally undefined calls to memcpy(dst,
+	  NULL, 0), resulting from valid calls to, e.g.,
+	  sha256_update(ctx, 0, NULL).
+
+	New features:
+
+	* Support RSA-OAEP encryption. Contributed by Nicolas Mora and
+	  Daiki Ueno.
+
+	* New function sha3_256_shake_output, new functions
+	  sha3_128_init, sha3_128_update, sha3_128_shake,
+	  sha3_128_shake_output. Contributed by Daiki Ueno.
+
+	* Added DRBG-CTR with AES256, contributed by Simon Josefsson.
+
+	Optimizations:
+
+	* New combined gcm-aes assembly for powerpc64, contributed by
+	  Danny Tsen.
+
+	* New sha256 assembly for powerpc64, contributed by Eric
+          Richter.
+
+	* Improved performance for powerpc64 AES decrypt, by skipping
+	  subkey transformations that don't suit the vncipher
+	  instructions.
+
+	* Add arm64 CPU feature detection for Android and for Apple systems,
+	  contributed by Foolbar and Tim Kosse, respectively.
+
+	Miscellaneous:
+
+	* New tests for side-channel silence, based on valgrind.
+
+	* Delete all md5 assembly code. Delete all sparc32 assembly code.
+
+NEWS for the Nettle 3.9.1 release
+
+	This is a bugfix release, fixing a few bugs reported for
+	Nettle-3.9. The bug in the new OCB code may be exploitable for
+	denial of service or worse, since triggering it leads to
+	memory corruption. Upgrading from Nettle-3.9 to the new
+	version is strongly recommended.
+
+	The new version is intended to be fully source and binary
+	compatible with Nettle-3.6. The shared library names are
+	libnettle.so.8.8 and libhogweed.so.6.8, with sonames
+	libnettle.so.8 and libhogweed.so.6.
+
+	Bug fixes:
+
+	* Fix OCB loop for processing messages of size 272 bytes or
+	  larger. Reported and fixed by Jussi Kivilinna.
+
+	* Fix alignment bug in the new x86_64 non-pclmul assembly
+	  implementation of ghash. Reported by Henrik Grubbström.
+
+	* Fix build-time memory leak in eccdata. Reported by Noah
+	  Watkins.
+
+NEWS for the Nettle 3.9 release
+
+	This release includes bug fixes, several new features, a few
+	performance improvements, and one performance regression
+	affecting GCM on certain platforms.
+
+	The new version is intended to be fully source and binary
+	compatible with Nettle-3.6. The shared library names are
+	libnettle.so.8.7 and libhogweed.so.6.7, with sonames
+	libnettle.so.8 and libhogweed.so.6.
+
+	This release includes a rewrite of the C implementation of
+	GHASH (dating from 2011), as well as the plain x86_64 assembly
+	version, to use precomputed tables in a different way, with
+	tables always accessed in the same sequential manner.
+
+	This should make Nettle's GHASH implementation side-channel
+	silent on all platforms, but considerably slower on platforms
+	without carry-less mul instructions. E.g., benchmarks of the C
+	implementation on x86_64 showed a slowdown of 3 times.
+
+	Bug fixes:
+
+	* Fix bug in ecdsa and gostdsa signature verify operation, for
+	  the unlikely corner case that point addition really is point
+	  duplication.
+
+	* Fix for chacha on Power7, nettle's assembly used an
+	  instruction only available on later processors. Fixed by
+	  Mamone Tarsha.
+
+	* GHASH implementation should now be side-channel silent on
+	  all architectures.
+
+	* A few portability fixes for *BSD.
+
+	New features:
+
+	* Support for the SM4 block cipher, contributed by Tianjia
+          Zhang.
+
+	* Support for the Balloon password hash, contributed by Zoltan
+          Fridrich.
+
+	* Support for SIV-GCM authenticated encryption mode,
+          contributed by Daiki Ueno.
+
+	* Support for OCB authenticated encryption mode.
+
+	* New exported functions md5_compress, sha1_compress,
+	  sha256_compress, sha512_compress, based on patches from
+	  Corentin Labbe.
+
+	Optimizations:
+
+	* Improved sha256 performance, in particular for x86_64 and
+	  s390x.
+
+	* Use GMP's mpn_sec_tabselect, which is implemented in
+	  assembly on many platforms, and delete the similar nettle
+	  function. Gives a modest speedup to all ecc operations.
+
+	* Faster poly1305 for x86_64 and ppc64. New ppc code
+	  contributed by Mamone Tarsha.
+
+	Miscellaneous:
+
+	* New ASM_FLAGS variable recognized by configure.
+
+	* Delete all arcfour assembly code. Affects 32-bit x86, 32-bit
+	  and 64-bit sparc.
+
+	Known issues:
+
+	* Version 6.2.1 of GNU GMP (the most recent GMP release as of
+	  this writing) has a known issue for MacOS on 64-bit ARM: GMP
+	  assembly files use the reserved x18 register. On this
+	  platform it is recommended to use a GMP snapshot where this
+	  bug is fixed, and upgrade to a later GMP release when one
+	  becomes available.
+
+	* Also on MacOS, Nettle's testsuite may still break due to
+	  DYLD_LIBRARY_PATH being discarded under some circumstances.
+	  As a workaround, use
+
+	  make check EMULATOR='env DYLD_LIBRARY_PATH=$(TEST_SHLIB_DIR)'
+
 NEWS for the Nettle 3.8.1 release
 
 	This is a bugfix release, fixing a few portability issues

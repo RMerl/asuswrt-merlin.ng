@@ -36,24 +36,10 @@
 #include "umac.h"
 #include "umac-internal.h"
 
-#include "macros.h"
+#include "bswap-internal.h"
 
 /* 2^36 - 5 */
 #define P 0x0000000FFFFFFFFBULL
-
-#if WORDS_BIGENDIAN
-#define BE_SWAP64(x) x
-#else
-#define BE_SWAP64(x)				\
-  (((x & 0xff) << 56)				\
-   | ((x & 0xff00) << 40)			\
-   | ((x & 0xff0000) << 24)			\
-   | ((x & 0xff000000) << 8)			\
-   | ((x >> 8) & 0xff000000)			\
-   | ((x >> 24) & 0xff0000)			\
-   | ((x >> 40) & 0xff00)			\
-   | (x >> 56) )
-#endif
 
 void
 _nettle_umac_l3_init (unsigned size, uint64_t *k)
@@ -62,7 +48,7 @@ _nettle_umac_l3_init (unsigned size, uint64_t *k)
   for (i = 0; i < size; i++)
     {
       uint64_t w = k[i];
-      w = BE_SWAP64 (w);
+      w = bswap64_if_le (w);
       k[i] = w % P;
     }
 }
@@ -88,9 +74,5 @@ _nettle_umac_l3 (const uint64_t *key, const uint64_t *m)
   uint32_t y = (umac_l3_word (key, m[0])
 		+ umac_l3_word (key + 4, m[1])) % P;
 
-#if !WORDS_BIGENDIAN
-  y = ((ROTL32(8,  y) & 0x00FF00FFUL)
-       | (ROTL32(24, y) & 0xFF00FF00UL));
-#endif
-  return y;
+  return bswap32_if_le (y);
 }

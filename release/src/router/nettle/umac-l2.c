@@ -39,18 +39,10 @@
 #include "umac.h"
 #include "umac-internal.h"
 
-#include "macros.h"
+#include "bswap-internal.h"
 
 /* Same mask applied to low and high halves */
 #define KEY_MASK 0x01ffffffUL
-
-#if WORDS_BIGENDIAN
-#define BE_SWAP32(x) x
-#else
-#define BE_SWAP32(x)				\
-  ((ROTL32(8,  x) & 0x00FF00FFUL) |		\
-   (ROTL32(24, x) & 0xFF00FF00UL))
-#endif
 
 void
 _nettle_umac_l2_init (unsigned size, uint32_t *k)
@@ -59,7 +51,7 @@ _nettle_umac_l2_init (unsigned size, uint32_t *k)
   for (i = 0; i < size; i++)
     {
       uint32_t w = k[i];
-      w = BE_SWAP32 (w);
+      w = bswap32_if_le (w);
       k[i] = w & KEY_MASK;
     }
 }
@@ -146,7 +138,7 @@ _nettle_umac_l2_final(const uint32_t *key, uint64_t *state, unsigned n,
 	  if (yh == UMAC_P128_HI && yl >= UMAC_P128_LO)
 	    {
 	      state[0] = 0;
-	      state[1] = yl -= UMAC_P128_LO;
+	      state[1] = yl - UMAC_P128_LO;
 	    }
 	}
     }

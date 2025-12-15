@@ -56,7 +56,7 @@ xts_aes128_set_decrypt_key(struct xts_aes128_key *xts_key, const uint8_t *key)
 }
 
 void
-xts_aes128_encrypt_message(struct xts_aes128_key *xts_key,
+xts_aes128_encrypt_message(const struct xts_aes128_key *xts_key,
                            const uint8_t *tweak, size_t length,
                            uint8_t *dst, const uint8_t *src)
 {
@@ -66,7 +66,7 @@ xts_aes128_encrypt_message(struct xts_aes128_key *xts_key,
 }
 
 void
-xts_aes128_decrypt_message(struct xts_aes128_key *xts_key,
+xts_aes128_decrypt_message(const struct xts_aes128_key *xts_key,
                            const uint8_t *tweak, size_t length,
                            uint8_t *dst, const uint8_t *src)
 {

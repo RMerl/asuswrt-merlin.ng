@@ -2,14 +2,14 @@
 #include "nettle-internal.h"
 #include "cmac.h"
 
-#define test_cmac_aes128(key, msg, ref)					\
-  test_mac(&nettle_cmac_aes128, key, msg, ref)
+#define test_cmac_aes128(key, msg, ref)			\
+  test_mac(&nettle_cmac_aes128, NULL, key, msg, ref)
 
-#define test_cmac_aes256(key, msg, ref)					\
-  test_mac(&nettle_cmac_aes256, key, msg, ref)
+#define test_cmac_aes256(key, msg, ref)			\
+  test_mac(&nettle_cmac_aes256, NULL, key, msg, ref)
 
-#define test_cmac_des3(key, msg, ref)					\
-  test_mac(&nettle_cmac_des3, key, msg, ref)
+#define test_cmac_des3(key, msg, ref)			\
+  test_mac(&nettle_cmac_des3, NULL, key, msg, ref)
 
 void
 test_main(void)

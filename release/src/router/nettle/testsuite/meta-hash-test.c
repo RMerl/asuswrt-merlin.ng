@@ -16,6 +16,8 @@ const char* hashes[] = {
   "sha256",
   "sha384",
   "sha512",
+  "sha512_224",
+  "sha512_256",
   "sha3_224",
   "sha3_256",
   "sha3_384",
@@ -36,6 +38,7 @@ test_main(void)
   }
 
   for (i = 0; NULL != nettle_hashes[i]; i++) {
+    ASSERT(nettle_hashes[i]->block_size <= NETTLE_MAX_HASH_BLOCK_SIZE);
     ASSERT(nettle_hashes[i]->digest_size <= NETTLE_MAX_HASH_DIGEST_SIZE);
     ASSERT(nettle_hashes[i]->context_size <= NETTLE_MAX_HASH_CONTEXT_SIZE);
   }

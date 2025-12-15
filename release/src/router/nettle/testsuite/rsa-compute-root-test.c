@@ -4,8 +4,8 @@
 
 #include "rsa.h"
 
-#define KEY_COUNT 20
-#define COUNT 100
+#define KEY_COUNT 10
+#define COUNT 50
 
 static void
 random_fn (void *ctx, size_t n, uint8_t *dst)

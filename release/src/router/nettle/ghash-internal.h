@@ -38,6 +38,8 @@
 /* Name mangling */
 #define _ghash_set_key _nettle_ghash_set_key
 #define _ghash_update _nettle_ghash_update
+#define _siv_ghash_set_key _nettle_siv_ghash_set_key
+#define _siv_ghash_update _nettle_siv_ghash_update
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,6 +59,17 @@ _ghash_set_key (struct gcm_key *ctx, const union nettle_block16 *key);
 const uint8_t *
 _ghash_update (const struct gcm_key *ctx, union nettle_block16 *state,
 	       size_t blocks, const uint8_t *data);
+
+/* Expands KEY as needed, for corresponding _siv_ghash_update */
+void
+_siv_ghash_set_key (struct gcm_key *ctx, const union nettle_block16 *key);
+
+/* Updates STATE by hashing DATA, which must be an integral number of
+   blocks. For convenience, returns a pointer to the end of the
+   data. */
+const uint8_t *
+_siv_ghash_update (const struct gcm_key *ctx, union nettle_block16 *state,
+		 size_t blocks, const uint8_t *data);
 
 #ifdef __cplusplus
 }

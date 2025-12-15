@@ -42,22 +42,28 @@
 #include "sha3-internal.h"
 
 #include "macros.h"
+#include "md-internal.h"
 #include "memxor.h"
 
+#if WORDS_BIGENDIAN
 static void
-sha3_absorb (struct sha3_state *state, unsigned length, const uint8_t *data)
+sha3_xor_block (struct sha3_state *state, unsigned length, const uint8_t *data)
 {
   assert ( (length & 7) == 0);
-#if WORDS_BIGENDIAN
   {    
     uint64_t *p;
     for (p = state->a; length > 0; p++, length -= 8, data += 8)
       *p ^= LE_READ_UINT64 (data);
   }
+}
 #else /* !WORDS_BIGENDIAN */
-  memxor (state->a, data, length);
+#define sha3_xor_block(state, length, data) memxor (state->a, data, length)
 #endif
 
+static void
+sha3_absorb (struct sha3_state *state, unsigned length, const uint8_t *data)
+{
+  sha3_xor_block (state, length, data);
   sha3_permute (state);
 }
 
@@ -67,21 +73,15 @@ _nettle_sha3_update (struct sha3_state *state,
 		     unsigned pos,
 		     size_t length, const uint8_t *data)
 {
+  assert (pos < block_size);
+
+  if (!length)
+    return pos;
+
   if (pos > 0)
     {
-      unsigned left = block_size - pos;
-      if (length < left)
-	{
-	  memcpy (block + pos, data, length);
-	  return pos + length;
-	}
-      else
-	{
-	  memcpy (block + pos, data, left);
-	  data += left;
-	  length -= left;
-	  sha3_absorb (state, block_size, block);
-	}
+      MD_FILL_OR_RETURN_INDEX (block_size, block, pos, length, data);
+      sha3_absorb (state, block_size, block);
     }
   for (; length >= block_size; length -= block_size, data += block_size)
     sha3_absorb (state, block_size, data);
@@ -100,5 +100,5 @@ _nettle_sha3_pad (struct sha3_state *state,
   memset (block + pos, 0, block_size - pos);
   block[block_size - 1] |= 0x80;
 
-  sha3_absorb (state, block_size, block);  
+  sha3_xor_block (state, block_size, block);
 }

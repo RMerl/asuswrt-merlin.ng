@@ -106,7 +106,7 @@ PROLOGUE(_nettle_poly1305_block)
 	adc	P1305_H2 (CTX), T2
 
 	mov	P1305_R1 (CTX), %rax
-	mul	T0			C R1 T0
+	mul	T0			C R1*T0
 	mov	%rax, F0
 	mov	%rdx, F1
 

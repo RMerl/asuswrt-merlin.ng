@@ -36,22 +36,47 @@
 #include "dsa.h"
 #include "dsa-internal.h"
 
-#include "bignum.h"
+#include "gmp-glue.h"
 
 /* Convert hash value to an integer. The general description of DSA in
-   FIPS186-3 allows both larger and smaller q; in the the latter case,
-   the hash must be truncated to the right number of bits. */
+   FIPS186-3 allows both larger and smaller q; in the the former case
+   the hash is zero-padded at the left, in the latter case, the hash
+   is truncated at the right.
+
+   NOTE: We don't considered the hash value to be secret, so it's ok
+   if the running time of this conversion depends on h.
+
+   Output size is ceil(bit_size / GMP_NUMB_BITS).
+*/
+
 void
-_nettle_dsa_hash (mpz_t h, unsigned bit_size,
+_nettle_dsa_hash (mp_limb_t *hp, unsigned bit_size,
 		  size_t length, const uint8_t *digest)
 {
-  
-  if (length > (bit_size + 7) / 8)
-    length = (bit_size + 7) / 8;
+  unsigned octet_size = (bit_size + 7) / 8;
+  unsigned limb_size = NETTLE_BIT_SIZE_TO_LIMB_SIZE (bit_size);
 
-  nettle_mpz_set_str_256_u(h, length, digest);
+  if (length > octet_size)
+    length = octet_size;
+
+  mpn_set_base256(hp, limb_size, digest, length);
 
   if (8 * length > bit_size)
     /* We got a few extra bits, at the low end. Discard them. */
-    mpz_tdiv_q_2exp (h, h, 8*length - bit_size);
+    mpn_rshift (hp, hp, limb_size, 8*length - bit_size);
+}
+
+/* Uses little-endian order, and no trimming of left-over bits in the
+   last byte (bits will instead be reduced mod q later). */
+void
+_nettle_gostdsa_hash (mp_limb_t *hp, unsigned bit_size,
+		      size_t length, const uint8_t *digest)
+{
+  unsigned octet_size = (bit_size + 7) / 8;
+  unsigned limb_size = NETTLE_BIT_SIZE_TO_LIMB_SIZE (bit_size);
+
+  if (length > octet_size)
+    length = octet_size;
+
+  mpn_set_base256_le(hp, limb_size, digest, length);
 }

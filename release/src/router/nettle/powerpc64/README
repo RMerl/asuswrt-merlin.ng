@@ -24,6 +24,8 @@ GPR13 reserved Reserved under 64-bit environment;
 GPR14:GPR31 nonvolatile These registers must be preserved across
  a function call.
 
+These registers are named rX in the assembly files.
+
 Vector Register Conventions
 
 Register Status
@@ -31,6 +33,22 @@ Register Status
 VR0:V19 Volatile
 VR20:VR31 Nonvolatile (extended ABI mode) their values are preserved
  across function calls
+
+These registers are named vX in the assembly files.
+
+Float/VSR Register Conventions
+
+FPR0:FPR13 Volatile
+FPR14:FPR31 Nonvolatile
+
+These registers are named fX in the assembly files, but aren't
+currently used by Nettle.
+
+For ISA 2.06 and later, floating point registers are mapped to the
+upper halves of the VSR registers. Then the corresponding VSR
+registers (named vsX in the assembly files) are volatile and
+non-volatile. (Formally, the lower halves of VSR14:VSR31 are volatile,
+but that is not so useful).
 
 Addressing memory
 
@@ -58,7 +76,7 @@ little-endian mode VSX registers are defined with "X" suffix
 
 Function Prologue
 
-Big-endian systems only support ELFv1 ABI which requires the following
+Big-endian systems usually support only ELFv1 ABI which requires the following
 steps in the function prologue:
 1. Write the "official procedure descriptor" in ".opd","aw" section
 2. Write procedure description for .my_func in my_func label
@@ -68,6 +86,23 @@ Refer to [1] for more information
 Little-endian systems are compatible with ELFv2 ABI, an example of
 function prologue for ELFv2 ABI can be seen in [2]
 
+Stack
+
+There's a 288 byte "protected zone" below the stack pointer, that can
+be used for storage (obviously "volatile": not preserved if calling
+other functions). Both ELFv1 [4] and ELFv2 [3] ABIs are the same in
+this respect.
+
+Instruction variants:
+
+Power5 supports ISA v2.02
+Power6 supports ISA v2.05
+Power7 (p7 subdirectory) supports ISA v2.06
+Power8 (v8 subdirectory) supports ISA v2.07
+Power9 (p9 subdirectory) supports ISA v3.0
+Power10 (p10 subdirectory) supports ISA v3.1
+
 [1] http://www.ibm.com/developerworks/linux/library/l-powasm1.html
 [2] https://openpowerfoundation.org/?resource_lib=64-bit-elf-v2-abi-specification-power-architecture
-[3] https://openpowerfoundation.org/?resource_lib=ibm-power-isa-version-2-07-b
+[3] https://openpowerfoundation.org/specifications/64bitelfabi/
+[4] https://refspecs.linuxfoundation.org/ELF/ppc64/PPC-elf64abi.html#STACK

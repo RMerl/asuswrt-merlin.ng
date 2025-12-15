@@ -34,7 +34,7 @@
 #include "eddsa.h"
 #include "eddsa-internal.h"
 
-#define COUNT 1000
+#define COUNT 500
 
 void test_main (void)
 {

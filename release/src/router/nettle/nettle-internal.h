@@ -1,7 +1,6 @@
 /* nettle-internal.h
 
-   Things that are used only by the testsuite and benchmark, and
-   not included in the library.
+   Misc internal definitions.
 
    Copyright (C) 2002, 2014 Niels Möller
 
@@ -36,8 +35,8 @@
 #define NETTLE_INTERNAL_H_INCLUDED
 
 #include <assert.h>
-
-#include "nettle-meta.h"
+/* Needed for alloca on bsd systems. */
+#include <stdlib.h>
 
 /* For definition of NETTLE_MAX_HASH_CONTEXT_SIZE. */
 #include "sha3.h"
@@ -72,55 +71,17 @@
   do { assert((size_t)(size) <= (sizeof(name))); } while (0)
 #endif 
 
-/* Arbitrary limits which apply to systems that don't have alloca */
-#define NETTLE_MAX_HASH_BLOCK_SIZE 128
+/* Limits that apply to systems that don't have alloca */
+#define NETTLE_MAX_HASH_BLOCK_SIZE 144  /* For sha3_224*/
 #define NETTLE_MAX_HASH_DIGEST_SIZE 64
 #define NETTLE_MAX_HASH_CONTEXT_SIZE (sizeof(struct sha3_224_ctx))
 #define NETTLE_MAX_SEXP_ASSOC 17
 #define NETTLE_MAX_CIPHER_BLOCK_SIZE 32
+#define NETTLE_MAX_CIPHER_KEY_SIZE 32
 
-/* Doesn't quite fit with the other algorithms, because of the weak
- * keys. Weak keys are not reported, the functions will simply crash
- * if you try to use a weak key. */
-
-extern const struct nettle_cipher nettle_des;
-extern const struct nettle_cipher nettle_des3;
-
-extern const struct nettle_cipher nettle_blowfish128;
-
-extern const struct nettle_cipher nettle_unified_aes128;
-extern const struct nettle_cipher nettle_unified_aes192;
-extern const struct nettle_cipher nettle_unified_aes256;
-
-/* Stream ciphers treated as aead algorithms with no authentication. */
-extern const struct nettle_aead nettle_arcfour128;
-extern const struct nettle_aead nettle_chacha;
-extern const struct nettle_aead nettle_salsa20;
-extern const struct nettle_aead nettle_salsa20r12;
-
-/* All-in-one CBC encrypt fucntinos treated as AEAD with no
-   authentication and no decrypt method. */
-extern const struct nettle_aead nettle_cbc_aes128;
-extern const struct nettle_aead nettle_cbc_aes192;
-extern const struct nettle_aead nettle_cbc_aes256;
-
-extern const struct nettle_aead nettle_openssl_gcm_aes128;
-extern const struct nettle_aead nettle_openssl_gcm_aes192;
-extern const struct nettle_aead nettle_openssl_gcm_aes256;
-
-
-/* Glue to openssl, for comparative benchmarking. Code in
- * examples/nettle-openssl.c. */
-extern void nettle_openssl_init(void);
-extern const struct nettle_cipher nettle_openssl_aes128;
-extern const struct nettle_cipher nettle_openssl_aes192;
-extern const struct nettle_cipher nettle_openssl_aes256;
-extern const struct nettle_cipher nettle_openssl_blowfish128;
-extern const struct nettle_cipher nettle_openssl_des;
-extern const struct nettle_cipher nettle_openssl_cast128;
-
-extern const struct nettle_hash nettle_openssl_md5;
-extern const struct nettle_hash nettle_openssl_sha1;
+/* Equivalent to x == 0, but with an expression that should compile to
+   branch free code on all compilers. Requires that x is at most 31 bits. */
+#define IS_ZERO_SMALL(x) (((uint32_t) (x) - 1U) >> 31)
 
 extern const struct nettle_hash * const _nettle_hashes[];
 

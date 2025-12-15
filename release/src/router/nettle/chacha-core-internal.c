@@ -49,6 +49,7 @@
 #include "chacha.h"
 #include "chacha-internal.h"
 
+#include "bswap-internal.h"
 #include "macros.h"
 
 /* For fat builds */
@@ -78,14 +79,6 @@ _nettle_chacha_core_c(uint32_t *dst, const uint32_t *src, unsigned rounds);
   } while (0)
 #else
 # define DEBUG(i)
-#endif
-
-#ifdef WORDS_BIGENDIAN
-#define LE_SWAP32(v)				\
-  ((ROTL32(8,  v) & 0x00FF00FFUL) |		\
-   (ROTL32(24, v) & 0xFF00FF00UL))
-#else
-#define LE_SWAP32(v) (v)
 #endif
 
 #define QROUND(x0, x1, x2, x3) do { \
@@ -123,7 +116,7 @@ _nettle_chacha_core(uint32_t *dst, const uint32_t *src, unsigned rounds)
   for (i = 0; i < _CHACHA_STATE_LENGTH; i++)
     {
       uint32_t t = x[i] + src[i];
-      dst[i] = LE_SWAP32 (t);
+      dst[i] = bswap32_if_be (t);
     }
 }
 

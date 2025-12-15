@@ -66,19 +66,19 @@ PROLOGUE(nettle_aes192_decrypt)
 	test	LENGTH, LENGTH
 	jz	.Lend
 
-	movups	(CTX), KEY0
-	movups	16(CTX), KEY1
-	movups	32(CTX), KEY2
-	movups	48(CTX), KEY3
-	movups	64(CTX), KEY4
-	movups	80(CTX), KEY5
+	movups	192(CTX), KEY0
+	movups	176(CTX), KEY1
+	movups	160(CTX), KEY2
+	movups	144(CTX), KEY3
+	movups	128(CTX), KEY4
+	movups	112(CTX), KEY5
 	movups	96(CTX), KEY6
-	movups	112(CTX), KEY7
-	movups	128(CTX), KEY8
-	movups	144(CTX), KEY9
-	movups	160(CTX), KEY10
-	movups	176(CTX), KEY11
-	movups	192(CTX), KEY12
+	movups	80(CTX), KEY7
+	movups	64(CTX), KEY8
+	movups	48(CTX), KEY9
+	movups	32(CTX), KEY10
+	movups	16(CTX), KEY11
+	movups	(CTX), KEY12
 	shr	LENGTH
 	jnc	.Lblock_loop
 

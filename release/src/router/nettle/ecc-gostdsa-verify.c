@@ -38,6 +38,7 @@
 #include <stdlib.h>
 
 #include "gostdsa.h"
+#include "dsa-internal.h"
 #include "ecc-internal.h"
 
 /* Low-level GOST DSA verify */
@@ -52,8 +53,8 @@ ecdsa_in_range (const struct ecc_curve *ecc, const mp_limb_t *xp)
 mp_size_t
 ecc_gostdsa_verify_itch (const struct ecc_curve *ecc)
 {
-  /* Largest storage need is for the ecc->mul call. */
-  return 5*ecc->p.size + ecc->mul_itch;
+  /* Largest storage need is for the ecc_mul_a call. */
+  return 5*ecc->p.size + ECC_MUL_A_ITCH (ecc->p.size);
 }
 
 /* FIXME: Use faster primitives, not requiring side-channel silence. */
@@ -93,7 +94,7 @@ ecc_gostdsa_verify (const struct ecc_curve *ecc,
 	 && ecdsa_in_range (ecc, sp)))
     return 0;
 
-  gost_hash (&ecc->q, hp, length, digest);
+  _nettle_gostdsa_hash (hp, ecc->q.bit_size, length, digest);
 
   if (mpn_zero_p (hp, ecc->p.size))
     mpn_add_1 (hp, hp, ecc->p.size, 1);
@@ -108,17 +109,18 @@ ecc_gostdsa_verify (const struct ecc_curve *ecc,
   mpn_sub_n (hp, ecc->q.m, rp, ecc->p.size);
   ecc_mod_mul_canonical (&ecc->q, z2, hp, vp, z2);
 
-   /* Total storage: 5*ecc->p.size + ecc->mul_itch */
-  ecc->mul (ecc, P2, z2, pp, z2 + ecc->p.size);
+   /* Total storage: 5*ecc->p.size + ECC_MUL_A_ITCH */
+  ecc_mul_a (ecc, P2, z2, pp, z2 + ecc->p.size);
 
-  /* Total storage: 7*ecc->p.size + ecc->mul_g_itch (ecc->p.size) */
-  ecc->mul_g (ecc, P1, z1, P1 + 3*ecc->p.size);
+  /* Total storage: 7*ecc->p.size + ECC_MUL_G_ITCH */
+  ecc_mul_g (ecc, P1, z1, P1 + 3*ecc->p.size);
 
-  /* Total storage: 6*ecc->p.size + ecc->add_hhh_itch */
-  ecc->add_hhh (ecc, P1, P1, P2, P1 + 3*ecc->p.size);
+  /* Total storage: 6*ecc->p.size + ECC_ADD_JJJ_ITCH */
+  if (!ecc_nonsec_add_jjj (ecc, P1, P1, P2, P1 + 3*ecc->p.size))
+    return 0;
 
   /* x coordinate only, modulo q */
-  ecc->h_to_a (ecc, 2, P2, P1, P1 + 3*ecc->p.size);
+  ecc_j_to_a (ecc, 2, P2, P1, P1 + 3*ecc->p.size);
 
   return (mpn_cmp (rp, P2, ecc->p.size) == 0);
 #undef P2

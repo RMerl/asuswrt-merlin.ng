@@ -194,7 +194,7 @@ main (int argc, char **argv)
   free (output);
 
   if (fflush(stdout) != 0 )
-    die("Write failed: %s\n", STRERROR(errno));
+    die("Write failed: %s\n", strerror(errno));
 
   return EXIT_SUCCESS;
 }

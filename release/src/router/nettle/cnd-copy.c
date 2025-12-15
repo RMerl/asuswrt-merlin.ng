@@ -43,7 +43,7 @@ cnd_copy (int cnd, mp_limb_t *rp, const mp_limb_t *ap, mp_size_t n)
   mp_limb_t mask, keep;
   mp_size_t i;
 
-  mask = -(mp_limb_t) (cnd !=0);
+  mask = -(mp_limb_t) cnd;
   keep = ~mask;
 
   for (i = 0; i < n; i++)

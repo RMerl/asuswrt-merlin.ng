@@ -42,7 +42,7 @@
 #include "dsa-internal.h"
 
 #include "bignum.h"
-
+#include "gmp-glue.h"
 
 int
 dsa_sign(const struct dsa_params *params,
@@ -55,8 +55,11 @@ dsa_sign(const struct dsa_params *params,
   mpz_t k;
   mpz_t h;
   mpz_t tmp;
+  unsigned bit_size;
+  unsigned limb_size;
+
   int res;
-  
+
   /* Check that p is odd, so that invalid keys don't result in a crash
      inside mpz_powm_sec. */
   if (mpz_even_p (params->p))
@@ -75,8 +78,11 @@ dsa_sign(const struct dsa_params *params,
   mpz_fdiv_r(signature->r, tmp, params->q);
 
   /* Compute hash */
+  bit_size = mpz_sizeinbase(params->q, 2);
+  limb_size = NETTLE_BIT_SIZE_TO_LIMB_SIZE(bit_size);
   mpz_init(h);
-  _nettle_dsa_hash (h, mpz_sizeinbase(params->q, 2), digest_size, digest);
+  _nettle_dsa_hash (mpz_limbs_write (h, limb_size), bit_size, digest_size, digest);
+  mpz_limbs_finish (h, limb_size);
 
   /* Compute k^-1 (mod q) */
   if (mpz_invert(k, k, params->q))

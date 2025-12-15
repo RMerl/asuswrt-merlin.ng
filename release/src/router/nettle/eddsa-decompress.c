@@ -83,7 +83,7 @@ _eddsa_decompress (const struct ecc_curve *ecc, mp_limb_t *p,
 
   /* Check range. */
   if (nlimbs > ecc->p.size)
-    res = (scratch[nlimbs - 1] == 0);
+    res = is_zero_limb (scratch[nlimbs - 1]);
   else
     res = 1;
 

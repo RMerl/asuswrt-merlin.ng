@@ -15,6 +15,11 @@
 #include <ctype.h>
 #include <sys/time.h>
 
+#if HAVE_VALGRIND_MEMCHECK_H
+# include <valgrind/memcheck.h>
+# include <valgrind/valgrind.h>
+#endif
+
 void
 die(const char *format, ...)
 {
@@ -118,6 +123,28 @@ print_hex(size_t length, const uint8_t *data)
 }
 
 int verbose = 0;
+int test_side_channel = 0;
+
+#if HAVE_VALGRIND_MEMCHECK_H
+
+void
+mark_bytes_undefined (size_t size, const void *p)
+{
+  if (test_side_channel)
+    VALGRIND_MAKE_MEM_UNDEFINED(p, size);
+}
+void
+mark_bytes_defined (size_t size, const void *p)
+{
+  if (test_side_channel)
+    VALGRIND_MAKE_MEM_DEFINED(p, size);
+}
+#else
+void
+mark_bytes_undefined (size_t size UNUSED, const void *p UNUSED) {}
+void
+mark_bytes_defined (size_t size UNUSED, const void *p UNUSED) {}
+#endif
 
 int
 main(int argc, char **argv)
@@ -134,6 +161,15 @@ main(int argc, char **argv)
 	}
     }
 
+  if (getenv("NETTLE_TEST_SIDE_CHANNEL"))
+    {
+#if HAVE_VALGRIND_MEMCHECK_H
+      if (RUNNING_ON_VALGRIND)
+	test_side_channel = 1;
+      else
+#endif
+	SKIP();
+    }
   test_main();
 
   tstring_clear();
@@ -798,88 +834,263 @@ test_aead(const struct nettle_aead *aead,
 	  const struct tstring *digest)
 {
   void *ctx = xalloc(aead->context_size);
-  uint8_t *data;
-  uint8_t *buffer = xalloc(aead->digest_size);
-  size_t offset;
+  uint8_t *in, *out;
+  uint8_t *buffer;
+  unsigned in_align;
 
   ASSERT (cleartext->length == ciphertext->length);
-
   ASSERT (key->length == aead->key_size);
-
-  data = xalloc(cleartext->length);
-
   ASSERT(aead->block_size > 0);
 
-  for (offset = 0; offset <= cleartext->length; offset += aead->block_size)
+  buffer = xalloc(aead->digest_size);
+  in = xalloc(cleartext->length + aead->block_size - 1);
+  out = xalloc(cleartext->length + aead->block_size - 1);
+
+  for (in_align = 0; in_align < aead->block_size; in_align++)
     {
-      /* encryption */
-      aead->set_encrypt_key(ctx, key->data);
-
-      if (nonce->length != aead->nonce_size)
+      /* Different alignment, but don't try all combinations. */
+      unsigned out_align = 3*in_align % aead->block_size;
+      size_t offset;
+      memcpy (in + in_align, cleartext->data, cleartext->length);
+      for (offset = 0; offset <= cleartext->length; offset += aead->block_size)
 	{
-	  ASSERT (set_nonce);
-	  set_nonce (ctx, nonce->length, nonce->data);
-	}
-      else
-	aead->set_nonce(ctx, nonce->data);
+	  /* encryption */
+	  aead->set_encrypt_key(ctx, key->data);
 
-      if (aead->update && authtext->length)
-	aead->update(ctx, authtext->length, authtext->data);
-
-      if (offset > 0)
-	aead->encrypt(ctx, offset, data, cleartext->data);
-
-      if (offset < cleartext->length)
-	aead->encrypt(ctx, cleartext->length - offset,
-		      data + offset, cleartext->data + offset);
-
-      if (digest)
-	{
-	  ASSERT (digest->length <= aead->digest_size);
-	  memset(buffer, 0, aead->digest_size);
-	  aead->digest(ctx, digest->length, buffer);
-	  ASSERT(MEMEQ(digest->length, buffer, digest->data));
-	}
-      else
-	ASSERT(!aead->digest);
-
-      ASSERT(MEMEQ(cleartext->length, data, ciphertext->data));
-
-      /* decryption */
-      if (aead->set_decrypt_key)
-	{
-	  aead->set_decrypt_key(ctx, key->data);
-
-	  if (nonce->length != aead->nonce_size)
-	    {
-	      ASSERT (set_nonce);
+	  if (set_nonce)
 	      set_nonce (ctx, nonce->length, nonce->data);
-	    }
 	  else
-	    aead->set_nonce(ctx, nonce->data);
+	    {
+	      assert (nonce->length == aead->nonce_size);
+	      aead->set_nonce(ctx, nonce->data);
+	    }
+	  if (aead->update)
+	    {
+	      size_t a_offset = (offset <= authtext->length) ? offset : 0;
+	      aead->update(ctx, a_offset, authtext->data);
+	      aead->update(ctx, 0, NULL);
+	      aead->update(ctx, authtext->length - a_offset, authtext->data + a_offset);
+	    }
+	  aead->encrypt(ctx, offset, out + out_align, in + in_align);
+	  aead->encrypt(ctx, 0, out + out_align, NULL);
+	  aead->encrypt(ctx, cleartext->length - offset,
+			out + out_align + offset, in + in_align + offset);
 
-	  if (aead->update && authtext->length)
-	    aead->update(ctx, authtext->length, authtext->data);
-
-	  if (offset > 0)
-	    aead->decrypt (ctx, offset, data, data);
-
-	  if (offset < cleartext->length)
-	    aead->decrypt(ctx, cleartext->length - offset,
-			  data + offset, data + offset);
-
+	  if (!MEMEQ(cleartext->length, out + out_align, ciphertext->data))
+	    {
+	      fprintf(stderr, "aead->encrypt failed (offset = %u):\nclear: ",
+		      (unsigned) offset);
+	      tstring_print_hex(cleartext);
+	      fprintf(stderr, "  got: ");
+	      print_hex(cleartext->length, out + out_align);
+	      fprintf(stderr, "  exp: ");
+	      tstring_print_hex(ciphertext);
+	      FAIL();
+	    }
 	  if (digest)
 	    {
+	      ASSERT (digest->length <= aead->digest_size);
 	      memset(buffer, 0, aead->digest_size);
 	      aead->digest(ctx, digest->length, buffer);
-	      ASSERT(MEMEQ(digest->length, buffer, digest->data));
+	      if (!MEMEQ(digest->length, buffer, digest->data))
+		{
+		  fprintf(stderr, "aead->digest failed (offset = %u):\n  got: ",
+			  (unsigned) offset);
+		  print_hex(digest->length, buffer);
+		  fprintf(stderr, "  exp: ");
+		  tstring_print_hex(digest);
+		  FAIL();
+		}
 	    }
-	  ASSERT(MEMEQ(cleartext->length, data, cleartext->data));
+	  else
+	    ASSERT(!aead->digest);
+
+	  /* decryption */
+	  if (aead->set_decrypt_key)
+	    {
+	      aead->set_decrypt_key(ctx, key->data);
+
+	      if (set_nonce)
+		set_nonce (ctx, nonce->length, nonce->data);
+	      else
+		{
+		  assert (nonce->length == aead->nonce_size);
+		  aead->set_nonce(ctx, nonce->data);
+		}
+
+	      if (aead->update && authtext->length)
+		aead->update(ctx, authtext->length, authtext->data);
+
+	      aead->decrypt(ctx, offset, out + out_align, out + out_align);
+	      aead->decrypt(ctx, 0, out + out_align, NULL);
+	      aead->decrypt(ctx, cleartext->length - offset,
+			    out + out_align + offset, out + out_align + offset);
+
+	      ASSERT(MEMEQ(cleartext->length, out + out_align, cleartext->data));
+
+	      if (digest)
+		{
+		  memset(buffer, 0, aead->digest_size);
+		  aead->digest(ctx, digest->length, buffer);
+		  ASSERT(MEMEQ(digest->length, buffer, digest->data));
+		}
+	    }
 	}
     }
   free(ctx);
-  free(data);
+  free(in);
+  free(out);
   free(buffer);
+}
+
+void
+test_aead_message (const struct nettle_aead_message *aead,
+		   const struct tstring *key,
+		   const struct tstring *nonce,
+		   const struct tstring *adata,
+		   const struct tstring *clear,
+		   const struct tstring *cipher)
+{
+  void *ctx = xalloc (aead->context_size);
+  uint8_t *buf = xalloc (cipher->length + 1);
+  uint8_t *copy = xalloc (cipher->length);
+
+  static const uint8_t nul = 0;
+  int res;
+
+  ASSERT (key->length == aead->key_size);
+  ASSERT (cipher->length > clear->length);
+  ASSERT (cipher->length - clear->length == aead->digest_size);
+
+  aead->set_encrypt_key (ctx, key->data);
+  buf[cipher->length] = 0xae;
+  aead->encrypt (ctx,
+		 nonce->length, nonce->data,
+		 adata->length, adata->data,
+		 cipher->length, buf, clear->data);
+  if (!MEMEQ (cipher->length, cipher->data, buf))
+    {
+      fprintf(stderr, "aead->encrypt (message) failed:\n  got: ");
+      print_hex (cipher->length, buf);
+      fprintf (stderr, "  exp: ");
+      tstring_print_hex (cipher);
+      FAIL();
+    }
+  if (buf[cipher->length] != 0xae)
+    {
+      fprintf (stderr, "aead->encrypt (message) wrote too much.\n ");
+      FAIL();
+    }
+  aead->set_decrypt_key (ctx, key->data);
+
+  memset (buf, 0xae, clear->length + 1);
+
+  res = aead->decrypt (ctx,
+		       nonce->length, nonce->data,
+		       adata->length, adata->data,
+		       clear->length, buf, cipher->data);
+  if (!res)
+    {
+      fprintf (stderr, "decrypting valid ciphertext failed:\n  ");
+      tstring_print_hex (cipher);
+    }
+  if (!MEMEQ (clear->length, clear->data, buf))
+    {
+      fprintf(stderr, "aead->decrypt (message) failed:\n  got: ");
+      print_hex (clear->length, buf);
+      fprintf (stderr, "  exp: ");
+      tstring_print_hex (clear);
+      FAIL();
+    }
+
+  /* Invalid messages */
+  if (clear->length > 0
+      && aead->decrypt (ctx,
+			nonce->length, nonce->data,
+			adata->length, adata->data,
+			clear->length - 1, buf, cipher->data))
+    {
+      fprintf (stderr, "Invalid message (truncated) not rejected\n");
+      FAIL();
+    }
+  memcpy (copy, cipher->data, cipher->length);
+  copy[0] ^= 4;
+  if (aead->decrypt (ctx,
+		     nonce->length, nonce->data,
+		     adata->length, adata->data,
+		     clear->length, buf, copy))
+    {
+      fprintf (stderr, "Invalid message (first byte modified) not rejected\n");
+      FAIL();
+    }
+
+  memcpy (copy, cipher->data, cipher->length);
+  copy[cipher->length - 1] ^= 4;
+  if (aead->decrypt (ctx,
+		     nonce->length, nonce->data,
+		     adata->length, adata->data,
+		     clear->length, buf, copy))
+    {
+      fprintf (stderr, "Invalid message (last byte modified) not rejected\n");
+      FAIL();
+    }
+
+  if (aead->decrypt (ctx,
+		     nonce->length, nonce->data,
+		     adata->length > 0 ? adata->length - 1 : 1,
+		     adata->length > 0 ? adata->data : &nul,
+		     clear->length, buf, cipher->data))
+    {
+      fprintf (stderr, "Invalid adata not rejected\n");
+      FAIL();
+    }
+
+  /* Test in-place operation. NOTE: Not supported for SIV-CMAC. */
+  if (aead->supports_inplace)
+    {
+      aead->set_encrypt_key (ctx, key->data);
+      buf[cipher->length] = 0xae;
+
+      memcpy (buf, clear->data, clear->length);
+      aead->encrypt (ctx,
+		     nonce->length, nonce->data,
+		     adata->length, adata->data,
+		     cipher->length, buf, buf);
+      if (!MEMEQ (cipher->length, cipher->data, buf))
+	{
+	  fprintf(stderr, "aead->encrypt (in-place message) failed:\n  got: ");
+	  print_hex (cipher->length, buf);
+	  fprintf (stderr, "  exp: ");
+	  tstring_print_hex (cipher);
+	  FAIL();
+	}
+      if (buf[cipher->length] != 0xae)
+	{
+	  fprintf (stderr, "aead->encrypt (in-place message) wrote too much.\n ");
+	  FAIL();
+	}
+
+      res = aead->decrypt (ctx,
+			   nonce->length, nonce->data,
+			   adata->length, adata->data,
+			   clear->length, buf, buf);
+      if (!res)
+	{
+	  fprintf (stderr, "in-place decrypting valid ciphertext failed:\n  ");
+	  tstring_print_hex (cipher);
+	}
+      if (!MEMEQ (clear->length, clear->data, buf))
+	{
+	  fprintf(stderr, "aead->decrypt (in-place message) failed:\n  got: ");
+	  print_hex (clear->length, buf);
+	  fprintf (stderr, "  exp: ");
+	  tstring_print_hex (clear);
+	  FAIL();
+	}
+    }
+  free (ctx);
+  free (buf);
+  free (copy);
 }
 
 void
@@ -892,21 +1103,25 @@ test_hash(const struct nettle_hash *hash,
   uint8_t *input;
   unsigned offset;
 
-  /* Here, hash->digest_size zero means arbitrary size. */
-  if (hash->digest_size)
-    ASSERT (digest->length == hash->digest_size);
+  ASSERT (digest->length == hash->digest_size);
 
   hash->init(ctx);
-  hash->update(ctx, msg->length, msg->data);
-  hash->digest(ctx, digest->length, buffer);
-
-  if (MEMEQ(digest->length, digest->data, buffer) == 0)
+  for (offset = 0; offset <= msg->length && offset < 40; offset++)
     {
-      fprintf(stdout, "\nGot:\n");
-      print_hex(digest->length, buffer);
-      fprintf(stdout, "\nExpected:\n");
-      print_hex(digest->length, digest->data);
-      abort();
+      hash->update(ctx, offset, msg->data);
+      hash->update(ctx, 0, NULL);
+      hash->update(ctx, msg->length - offset, msg->data + offset);
+
+      hash->digest(ctx, digest->length, buffer);
+
+      if (MEMEQ(digest->length, digest->data, buffer) == 0)
+	{
+	  fprintf(stdout, "Offset %u\nGot:\n", offset);
+	  print_hex(digest->length, buffer);
+	  fprintf(stdout, "\nExpected:\n");
+	  print_hex(digest->length, digest->data);
+	  abort();
+	}
     }
 
   memset(buffer, 0, digest->length);
@@ -934,6 +1149,91 @@ test_hash(const struct nettle_hash *hash,
 	  print_hex(digest->length, digest->data);
 	  abort();
 	}      
+    }
+  free(ctx);
+  free(buffer);
+  free(input);
+}
+
+void
+test_xof (const struct nettle_xof *xof,
+	  const struct tstring *msg,
+	  const struct tstring *digest)
+{
+  void *ctx = xalloc (xof->context_size);
+  uint8_t *buffer = xalloc (digest->length);
+  uint8_t *input;
+  unsigned offset, size;
+
+  xof->init (ctx);
+  for (offset = 0; offset <= msg->length && offset < 40; offset++)
+    {
+      xof->update (ctx, offset, msg->data);
+      xof->update (ctx, 0, NULL);
+      xof->update (ctx, msg->length - offset, msg->data + offset);
+
+      xof->digest (ctx, digest->length, buffer);
+
+      if (MEMEQ (digest->length, digest->data, buffer) == 0)
+	{
+	  fprintf (stdout, "Offset %u\nGot:\n", offset);
+	  print_hex (digest->length, buffer);
+	  fprintf (stdout, "\nExpected:\n");
+	  print_hex (digest->length, digest->data);
+	  abort ();
+	}
+    }
+
+  input = xalloc (msg->length + 16);
+  for (offset = 0; offset < 16; offset++)
+    {
+      memset (input, 0, msg->length + 16);
+      memcpy (input + offset, msg->data, msg->length);
+      xof->update (ctx, msg->length, input + offset);
+      xof->digest (ctx, digest->length, buffer);
+      if (MEMEQ(digest->length, digest->data, buffer) == 0)
+	{
+	  fprintf(stdout, "xof input address: %p\nGot:\n", input + offset);
+	  print_hex(digest->length, buffer);
+	  fprintf(stdout, "\nExpected:\n");
+	  print_hex(digest->length, digest->data);
+	  abort();
+	}
+    }
+
+  /* Test producing output incrementally. */
+  for (size = 1; size <= xof->block_size + 2; )
+    {
+      xof->init (ctx);
+      xof->update (ctx, msg->length, msg->data);
+      memset (buffer, 0, digest->length);
+
+      for (offset = 0; offset + size < digest->length; offset += size)
+	{
+	  xof->output (ctx, size, buffer + offset);
+
+	  ASSERT (MEMEQ (offset + size, digest->data, buffer));
+	  ASSERT (buffer[offset + size] == 0);
+	}
+      xof->output (ctx, digest->length - offset, buffer + offset);
+
+      if (MEMEQ(digest->length, digest->data, buffer) == 0)
+	{
+	  fprintf(stdout, "xof output increment: %u\nGot:\n", size);
+	  print_hex(digest->length, buffer);
+	  fprintf(stdout, "\nExpected:\n");
+	  print_hex(digest->length, digest->data);
+	  abort();
+	}
+      /* Try sizes 1, 2, 4, 7, 11, ..., and sizes around the block size. */
+      if (size < xof->block_size - 2)
+	{
+	  size += 1 + size/2;
+	  if (size > xof->block_size - 2)
+	    size = xof->block_size - 2;
+	}
+      else
+	size++;
     }
   free(ctx);
   free(buffer);
@@ -977,6 +1277,7 @@ test_hash_large(const struct nettle_hash *hash,
 
 void
 test_mac(const struct nettle_mac *mac,
+	 nettle_hash_update_func *set_key,
 	 const struct tstring *key,
 	 const struct tstring *msg,
 	 const struct tstring *digest)
@@ -986,8 +1287,13 @@ test_mac(const struct nettle_mac *mac,
   unsigned i;
 
   ASSERT (digest->length <= mac->digest_size);
-  ASSERT (key->length == mac->key_size);
-  mac->set_key (ctx, key->data);
+  if (set_key)
+    set_key (ctx, key->length, key->data);
+  else
+    {
+      ASSERT (key->length == mac->key_size);
+      mac->set_key (ctx, key->data);
+    }
   mac->update (ctx, msg->length, msg->data);
   mac->digest (ctx, digest->length, hash);
 
@@ -1019,13 +1325,12 @@ test_mac(const struct nettle_mac *mac,
     }
 
   /* attempt byte-by-byte hashing */
-  mac->set_key (ctx, key->data);
   for (i=0;i<msg->length;i++)
     mac->update (ctx, 1, msg->data+i);
   mac->digest (ctx, digest->length, hash);
   if (!MEMEQ (digest->length, digest->data, hash))
     {
-      fprintf (stderr, "cmac_hash failed on byte-by-byte, msg: ");
+      fprintf (stderr, "test_mac failed on byte-by-byte, msg: ");
       print_hex (msg->length, msg->data);
       fprintf(stderr, "Output:");
       print_hex (16, hash);
@@ -1108,6 +1413,13 @@ mpz_urandomb (mpz_t r, struct knuth_lfib_ctx *ctx, mp_bitcnt_t bits)
   buf[0] &= 0xff >> (8*bytes - bits);
   nettle_mpz_set_str_256_u (r, bytes, buf);
   free (buf);
+}
+void
+mpz_urandomm (mpz_t r, struct knuth_lfib_ctx *ctx, const mpz_t n)
+{
+  /* Add some extra bits, to make result almost unbiased. */
+  mpz_urandomb(r, ctx, mpz_sizeinbase(n, 2) + 30);
+  mpz_mod(r, r, n);
 }
 #else /* !NETTLE_USE_MINI_GMP */
 static void
@@ -1293,6 +1605,191 @@ test_rsa_set_key_1(struct rsa_public_key *pub,
 	      "04e103ee925cb5e6" "6653949fa5e1a462" "c9e65e1adcd60058"
 	      "e2df9607cee95fa8" "daec7a389a7d9afc" "8dd21fef9d83805a"
 	      "40d46f49676a2f6b" "2926f70c572c00", 16);
+
+  ASSERT (rsa_private_key_prepare(key));
+  ASSERT (pub->size == key->size);
+}
+
+void
+test_rsa_set_key_2(struct rsa_public_key *pub,
+		   struct rsa_private_key *key)
+{
+  /* Initialize key pair for test programs */
+  /* 2048-bit key, generated by
+   *
+   *   certtool --generate-privkey --key-type=rsa --bits=2048 --outfile -
+   *
+   * Public Key Info:
+   *         Public Key Algorithm: RSA
+   *         Key Security Level: Medium (2048 bits)
+   *
+   * modulus:
+   *         00:dd:ef:1d:66:d5:f0:b3:56:9b:da:2a:59:c7:96:e6
+   *         7a:c9:c8:13:61:89:da:f1:5a:01:65:61:ac:fb:53:1a
+   *         09:49:41:dd:fd:db:6e:68:c4:3a:8a:61:46:c3:ea:8b
+   *         34:5f:e1:f6:60:91:9b:09:ae:8e:8c:ad:fa:99:ef:2a
+   *         b5:7d:32:ad:cc:2d:4f:3f:df:21:42:b7:ce:6e:ab:ca
+   *         eb:a4:93:97:8f:55:c4:8f:19:de:dd:ea:0a:83:10:3c
+   *         8c:5f:f5:ce:01:7f:32:3d:d6:f8:82:f2:2d:3f:8f:20
+   *         6a:02:68:a9:8b:0d:12:99:93:67:f9:1c:23:ae:5f:0d
+   *         df:ec:2b:5d:78:c8:14:ac:6b:e9:2a:f7:aa:3e:cd:a1
+   *         c8:c8:3e:11:24:50:eb:68:34:4c:0c:c1:2a:be:13:95
+   *         ee:a0:73:dd:09:f2:38:5c:58:a7:dc:60:30:90:c9:a4
+   *         1b:19:ed:51:5c:15:51:54:cd:8a:92:10:76:d4:19:88
+   *         f8:93:ff:8d:08:a2:46:0f:59:af:c1:3d:4e:24:b5:e5
+   *         8a:8e:44:10:85:74:8d:06:64:72:b2:f7:c5:6c:75:09
+   *         fa:bc:9d:73:5d:14:c5:a6:81:f5:2e:8a:2d:a9:aa:c1
+   *         43:b9:07:cf:77:90:7a:28:c5:41:53:51:d1:b3:6a:e2
+   *         7b:
+   *
+   * public exponent:
+   *         01:00:01:
+   *
+   * private exponent:
+   *         73:2e:6f:66:f8:af:d4:93:a5:8d:63:9f:76:cb:a5:50
+   *         a2:ba:b8:fc:4d:4c:99:28:2a:43:50:9f:33:4c:9c:dd
+   *         a6:ec:8d:66:fb:e4:60:71:3f:24:a4:79:d2:a2:3e:9e
+   *         ef:08:5a:13:22:5e:81:76:db:ba:bd:6c:ab:49:8a:33
+   *         e9:07:4d:56:03:49:f7:0f:39:b6:e3:a8:3a:9d:e4:51
+   *         c9:f7:63:98:5b:5e:09:1a:d7:24:fb:1b:7b:8c:08:b0
+   *         9d:f8:f7:72:a5:6e:10:d4:29:e3:e4:06:81:cf:29:76
+   *         7b:4b:90:7a:7f:4d:60:f1:34:eb:ff:a3:b1:12:da:22
+   *         9e:87:c0:77:22:38:03:4b:80:ab:0c:8a:07:14:c3:c0
+   *         08:9e:2c:13:9f:74:f4:19:86:51:61:67:b0:ce:bc:7b
+   *         8f:81:18:8e:3c:8e:e7:e5:d4:e9:ed:49:b8:0b:21:b1
+   *         2a:82:0f:7b:4d:8d:e4:f7:bc:8a:6c:c9:20:8c:4b:ba
+   *         1e:67:43:9e:58:a4:e4:20:c6:4b:22:05:9d:33:d3:11
+   *         92:f2:94:88:d8:fb:c9:53:8f:9c:52:4e:d3:66:f3:2b
+   *         8c:3b:56:a7:4c:25:10:44:a0:62:79:4d:44:fb:9d:0e
+   *         35:8b:92:b0:49:af:5d:a4:00:36:44:3c:e7:31:9d:f9
+   *
+   *
+   * prime1:
+   *         00:ed:6b:29:25:c1:4f:9c:df:08:4b:c1:43:e3:e6:f3
+   *         d6:6e:1e:2d:46:d6:eb:97:aa:c7:c9:32:5e:0a:6b:39
+   *         ac:be:2a:49:98:f6:c3:c8:d0:08:33:5b:75:62:f7:d9
+   *         7e:87:d6:90:2d:9d:ce:94:be:2b:ed:8e:aa:85:29:86
+   *         d9:bc:c0:10:2e:95:30:cc:3f:72:75:81:d1:60:f6:89
+   *         86:f7:42:dc:29:8f:dc:d7:15:e8:99:1a:1d:12:92:89
+   *         88:95:47:3e:25:c5:f4:e5:c4:82:87:32:d3:d7:a8:ce
+   *         d9:77:2c:fc:87:bb:d9:f9:e6:a4:ec:1e:c8:a9:7b:0b
+   *         35:
+   *
+   * prime2:
+   *         00:ef:4d:b5:f6:53:12:9a:4e:3c:3f:56:ff:25:86:44
+   *         0e:b1:b7:81:c4:0e:31:40:90:e7:91:d7:e7:80:8e:8a
+   *         cc:99:1a:1b:0b:5d:9b:9b:00:81:fa:36:95:02:6a:44
+   *         16:6e:67:64:db:ba:35:9b:5b:1c:e7:96:ac:2a:e3:c8
+   *         7a:a9:de:1d:e4:75:54:cf:73:c9:76:92:2f:03:8b:ef
+   *         a4:dc:5c:4d:54:2a:cc:f6:c3:cd:a7:0e:84:ce:33:96
+   *         9b:99:68:e5:a9:cf:80:5b:df:2b:5a:a4:02:b2:d5:65
+   *         a7:b8:d0:33:c8:23:ed:89:d1:44:7b:d1:94:99:9f:3c
+   *         ef:
+   *
+   * coefficient:
+   *         5c:ba:5a:d7:98:43:ab:ac:a0:d2:9c:1f:ab:3d:5e:a0
+   *         54:c9:6e:54:19:9b:ff:9c:dc:05:75:93:97:3a:88:e9
+   *         bb:1f:79:05:03:79:9b:b7:ac:07:71:bf:b0:a7:12:fc
+   *         22:6c:38:04:40:2f:b9:0d:2d:0a:f3:b8:2e:88:3e:ab
+   *         d8:ee:30:5c:fb:dc:59:0e:d9:9f:96:cd:4a:4a:12:88
+   *         aa:c9:f0:03:e2:01:df:5d:0e:ec:e6:ac:0b:f1:81:b8
+   *         85:9b:f7:69:b6:c8:e4:54:d8:02:5b:58:b4:c2:45:02
+   *         b7:65:d4:5c:dc:aa:b6:47:6e:dd:1f:72:46:6c:27:22
+   *
+   *
+   * exp1:
+   *         41:78:03:68:bd:dd:ce:4c:52:65:51:6d:ff:32:78:9a
+   *         f0:d2:b1:79:8f:5a:78:00:48:07:5b:34:43:7b:3d:f4
+   *         3c:9c:3c:9f:49:ac:c3:7b:5a:47:8f:38:d7:89:b1:18
+   *         0b:2d:47:a4:cc:97:62:bc:ee:30:1b:df:39:c9:31:be
+   *         69:26:2d:50:2b:23:c1:ae:dd:49:39:fb:1a:d9:e1:22
+   *         ae:9c:69:49:ac:ba:21:35:91:66:66:a5:0d:b2:0a:ea
+   *         f6:ff:26:4c:14:42:6b:f9:bc:64:bb:c7:5e:f8:d5:d1
+   *         71:e3:9d:df:70:15:b3:ab:be:5e:be:3e:67:3d:de:e1
+   *
+   *
+   * exp2:
+   *         63:00:4a:5c:5a:e7:e2:50:a5:9a:2a:ba:a9:e2:8f:3b
+   *         69:08:9b:35:ea:0d:34:41:fe:9b:96:af:de:be:99:eb
+   *         a5:17:68:c2:dd:fa:27:39:21:8c:cb:92:00:0a:c8:9a
+   *         63:18:81:60:69:fc:0d:86:b7:41:94:53:2b:f7:4a:94
+   *         7c:bc:38:af:b0:5e:e2:e8:6b:1b:93:c4:c1:79:de:2d
+   *         dd:40:8e:79:58:af:ad:13:3a:7c:77:84:37:ee:9d:cb
+   *         47:bf:5e:ec:4e:bd:32:c4:f4:21:ae:a2:b3:2b:97:bf
+   *         b8:b4:e2:07:55:dd:ca:db:79:b2:a3:f5:0f:4d:12:9f
+   */
+
+  mpz_set_str(pub->n,
+	      "00ddef1d66d5f0b3" "569bda2a59c796e6" "7ac9c8136189daf1"
+	      "5a016561acfb531a" "094941ddfddb6e68" "c43a8a6146c3ea8b"
+	      "345fe1f660919b09" "ae8e8cadfa99ef2a" "b57d32adcc2d4f3f"
+	      "df2142b7ce6eabca" "eba493978f55c48f" "19deddea0a83103c"
+	      "8c5ff5ce017f323d" "d6f882f22d3f8f20" "6a0268a98b0d1299"
+	      "9367f91c23ae5f0d" "dfec2b5d78c814ac" "6be92af7aa3ecda1"
+	      "c8c83e112450eb68" "344c0cc12abe1395" "eea073dd09f2385c"
+	      "58a7dc603090c9a4" "1b19ed515c155154" "cd8a921076d41988"
+	      "f893ff8d08a2460f" "59afc13d4e24b5e5" "8a8e441085748d06"
+	      "6472b2f7c56c7509" "fabc9d735d14c5a6" "81f52e8a2da9aac1"
+	      "43b907cf77907a28" "c5415351d1b36ae2" "7b", 16);
+  mpz_set_str(pub->e, "010001", 16);
+
+  ASSERT (rsa_public_key_prepare(pub));
+
+  /* d is not used */
+#if 0
+  mpz_set_str(key->d,
+	      "732e6f66f8afd493" "a58d639f76cba550" "a2bab8fc4d4c9928"
+	      "2a43509f334c9cdd" "a6ec8d66fbe46071" "3f24a479d2a23e9e"
+	      "ef085a13225e8176" "dbbabd6cab498a33" "e9074d560349f70f"
+	      "39b6e3a83a9de451" "c9f763985b5e091a" "d724fb1b7b8c08b0"
+	      "9df8f772a56e10d4" "29e3e40681cf2976" "7b4b907a7f4d60f1"
+	      "34ebffa3b112da22" "9e87c0772238034b" "80ab0c8a0714c3c0"
+	      "089e2c139f74f419" "86516167b0cebc7b" "8f81188e3c8ee7e5"
+	      "d4e9ed49b80b21b1" "2a820f7b4d8de4f7" "bc8a6cc9208c4bba"
+	      "1e67439e58a4e420" "c64b22059d33d311" "92f29488d8fbc953"
+	      "8f9c524ed366f32b" "8c3b56a74c251044" "a062794d44fb9d0e"
+	      "358b92b049af5da4" "0036443ce7319df9" , 16);
+#endif
+
+  mpz_set_str(key->p,
+	      "00ed6b2925c14f9c" "df084bc143e3e6f3" "d66e1e2d46d6eb97"
+	      "aac7c9325e0a6b39" "acbe2a4998f6c3c8" "d008335b7562f7d9"
+	      "7e87d6902d9dce94" "be2bed8eaa852986" "d9bcc0102e9530cc"
+	      "3f727581d160f689" "86f742dc298fdcd7" "15e8991a1d129289"
+	      "8895473e25c5f4e5" "c4828732d3d7a8ce" "d9772cfc87bbd9f9"
+	      "e6a4ec1ec8a97b0b" "35", 16);
+
+  mpz_set_str(key->q,
+	      "00ef4db5f653129a" "4e3c3f56ff258644" "0eb1b781c40e3140"
+	      "90e791d7e7808e8a" "cc991a1b0b5d9b9b" "0081fa3695026a44"
+	      "166e6764dbba359b" "5b1ce796ac2ae3c8" "7aa9de1de47554cf"
+	      "73c976922f038bef" "a4dc5c4d542accf6" "c3cda70e84ce3396"
+	      "9b9968e5a9cf805b" "df2b5aa402b2d565" "a7b8d033c823ed89"
+	      "d1447bd194999f3c" "ef", 16);
+
+  mpz_set_str(key->a,
+	      "41780368bdddce4c" "5265516dff32789a" "f0d2b1798f5a7800"
+	      "48075b34437b3df4" "3c9c3c9f49acc37b" "5a478f38d789b118"
+	      "0b2d47a4cc9762bc" "ee301bdf39c931be" "69262d502b23c1ae"
+	      "dd4939fb1ad9e122" "ae9c6949acba2135" "916666a50db20aea"
+	      "f6ff264c14426bf9" "bc64bbc75ef8d5d1" "71e39ddf7015b3ab"
+	      "be5ebe3e673ddee1", 16);
+
+  mpz_set_str(key->b,
+	      "63004a5c5ae7e250" "a59a2abaa9e28f3b" "69089b35ea0d3441"
+	      "fe9b96afdebe99eb" "a51768c2ddfa2739" "218ccb92000ac89a"
+	      "6318816069fc0d86" "b74194532bf74a94" "7cbc38afb05ee2e8"
+	      "6b1b93c4c179de2d" "dd408e7958afad13" "3a7c778437ee9dcb"
+	      "47bf5eec4ebd32c4" "f421aea2b32b97bf" "b8b4e20755ddcadb"
+	      "79b2a3f50f4d129f", 16);
+
+  mpz_set_str(key->c,
+	      "5cba5ad79843abac" "a0d29c1fab3d5ea0" "54c96e54199bff9c"
+	      "dc057593973a88e9" "bb1f790503799bb7" "ac0771bfb0a712fc"
+	      "226c3804402fb90d" "2d0af3b82e883eab" "d8ee305cfbdc590e"
+	      "d99f96cd4a4a1288" "aac9f003e201df5d" "0eece6ac0bf181b8"
+	      "859bf769b6c8e454" "d8025b58b4c24502" "b765d45cdcaab647"
+	      "6edd1f72466c2722", 16);
 
   ASSERT (rsa_private_key_prepare(key));
   ASSERT (pub->size == key->size);

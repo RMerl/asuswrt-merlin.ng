@@ -66,6 +66,8 @@ _nettle_aes_encrypt(unsigned rounds, const uint32_t *keys,
 		    size_t length, uint8_t *dst,
 		    const uint8_t *src);
 
+/* The keys pointer points at the subkeys for the first decrypt round,
+   located at the end of the array. */
 void
 _nettle_aes_decrypt(unsigned rounds, const uint32_t *keys,
 		    const struct aes_table *T,

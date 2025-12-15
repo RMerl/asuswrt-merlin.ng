@@ -64,6 +64,6 @@ ecc_pp1_redc (const struct ecc_modulo *m, mp_limb_t *rp, mp_limb_t *xp)
   else
     {
       cy = mpn_cnd_sub_n (hi, rp, rp, m->m, m->size);
-      assert (cy == hi);      
+      assert_maybe (cy == hi);
     }
 }

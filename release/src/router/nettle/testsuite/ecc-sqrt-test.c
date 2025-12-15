@@ -31,7 +31,7 @@
 
 #include "testutils.h"
 
-#define COUNT 5000
+#define COUNT 500
 
 #if NETTLE_USE_MINI_GMP
 /* Implements Legendre symbol only, requiring that p is an odd prime */

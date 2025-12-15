@@ -30,6 +30,10 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
 
 /* Comment out all this code if we are using the GNU C Library, and are not
    actually compiling the library itself.  This code is part of the GNU C
@@ -49,17 +53,6 @@
 
 #ifndef ELIDE_CODE
 
-
-/* This needs to come after some library #include
-   to get __GNU_LIBRARY__ defined.  */
-#ifdef	__GNU_LIBRARY__
-/* Don't include stdlib.h for non-GNU C libraries because some of them
-   contain conflicting prototypes for getopt.  */
-# include <stdlib.h>
-# include <unistd.h>
-#endif	/* GNU C library.  */
-
-#include <string.h>
 
 #ifdef VMS
 # include <unixlib.h>
@@ -136,17 +129,6 @@ int optopt = '?';
 
 static struct _getopt_data getopt_data;
 
-
-#ifndef __GNU_LIBRARY__
-
-/* Avoid depending on library functions or files
-   whose names are inconsistent.  */
-
-#ifndef getenv
-extern char *getenv ();
-#endif
-
-#endif /* not __GNU_LIBRARY__ */
 
 #ifdef _LIBC
 /* Stored original parameters.

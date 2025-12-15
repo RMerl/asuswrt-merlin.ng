@@ -34,6 +34,7 @@
 #endif
 
 #include "memops.h"
+#include "nettle-internal.h"
 
 int
 memeql_sec (const void *a, const void *b, size_t n)
@@ -47,5 +48,5 @@ memeql_sec (const void *a, const void *b, size_t n)
   for (i = diff = 0; i < n; i++)
     diff |= (ap[i] ^ bp[i]);
 
-  return diff == 0;
+  return IS_ZERO_SMALL (diff);
 }

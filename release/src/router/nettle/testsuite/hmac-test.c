@@ -1,52 +1,35 @@
 #include "testutils.h"
 #include "hmac.h"
 
-#define HMAC_TEST(alg, key, msg, mac)			\
-  do {							\
-    struct hmac_##alg##_ctx ctx;			\
-							\
-    hmac_##alg##_set_key(&ctx, key->length, key->data);	\
-    hmac_##alg##_update(&ctx, msg->length, msg->data);	\
-    digest[mac->length] = 17;				\
-    hmac_##alg##_digest(&ctx, mac->length, digest);	\
-    ASSERT(MEMEQ (mac->length, digest, mac->data));	\
-    ASSERT(digest[mac->length] == 17);			\
-  } while (0)
-
 void
-test_main(void)
+test_main (void)
 {
-  /* sha512's digests are longest */
-  uint8_t digest[SHA512_DIGEST_SIZE+1];
-
-  memset(digest, 0, sizeof(digest));
-
   /* Test vectors for md5, from RFC-2202 */
 
   /* md5 - 1 */
-  test_mac (&nettle_hmac_md5,
+  test_mac (&nettle_hmac_md5, NULL,
 	    SHEX("0b0b0b0b0b0b0b0b 0b0b0b0b0b0b0b0b"),
 	    SDATA("Hi There"),
 	    SHEX("9294727a3638bb1c 13f48ef8158bfc9d"));
 
   /* md5 - 2 */
-  HMAC_TEST(md5,
+  test_mac (&nettle_hmac_md5, (nettle_hash_update_func*) hmac_md5_set_key,
 	    SDATA("Jefe"),
 	    SDATA("what do ya want for nothing?"),
-	    SHEX("750c783e6ab0b503 eaa86e310a5db738"));	    
+	    SHEX("750c783e6ab0b503 eaa86e310a5db738"));
 
   /* md5 - 3 */
-  test_mac(&nettle_hmac_md5,
+  test_mac (&nettle_hmac_md5, NULL,
 	    SHEX("aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"),
 	    SHEX("dddddddddddddddd dddddddddddddddd"
 		 "dddddddddddddddd dddddddddddddddd"
 		 "dddddddddddddddd dddddddddddddddd"
 		 "dddd"),
 	    SHEX("56be34521d144c88 dbb8c733f0e8b3f6"));
-  
+
   /* md5 - 4 */
-  HMAC_TEST(md5,
-	    SHEX("0102030405060708 090a0b0c0d0e0f10" 
+  test_mac (&nettle_hmac_md5, (nettle_hash_update_func*) hmac_md5_set_key,
+	    SHEX("0102030405060708 090a0b0c0d0e0f10"
 		 "1112131415161718 19"),
 	    SHEX("cdcdcdcdcdcdcdcd cdcdcdcdcdcdcdcd"
 		 "cdcdcdcdcdcdcdcd cdcdcdcdcdcdcdcd"
@@ -55,13 +38,13 @@ test_main(void)
 	    SHEX("697eaf0aca3a3aea 3a75164746ffaa79"));
 
   /* md5 - 5 */
-  test_mac(&nettle_hmac_md5,
+  test_mac (&nettle_hmac_md5, NULL,
 	    SHEX("0c0c0c0c0c0c0c0c 0c0c0c0c0c0c0c0c"),
 	    SDATA("Test With Truncation"),
 	    SHEX("56461ef2342edc00 f9bab995"));
 
   /* md5 - 6 */
-  HMAC_TEST(md5,
+  test_mac (&nettle_hmac_md5, (nettle_hash_update_func*) hmac_md5_set_key,
 	    SHEX("aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"
@@ -71,7 +54,7 @@ test_main(void)
 	    SHEX("6b1ab7fe4bd7bf8f 0b62e6ce61b9d0cd"));
 
   /* md5 - 7 */
-  HMAC_TEST(md5,
+  test_mac (&nettle_hmac_md5, (nettle_hash_update_func*) hmac_md5_set_key,
 	    SHEX("aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"
@@ -82,115 +65,115 @@ test_main(void)
 	    SHEX("6f630fad67cda0ee 1fb1f562db3aa53e"));
 
   /* Additional test vectors, from Daniel Kahn Gillmor */
-  HMAC_TEST(md5,
+  test_mac (&nettle_hmac_md5, (nettle_hash_update_func*) hmac_md5_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA(""),
 	    SHEX("e84db42a188813f30a15e611d64c7869"));
-  
-  HMAC_TEST(md5,
+
+  test_mac (&nettle_hmac_md5, (nettle_hash_update_func*) hmac_md5_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("a"),
 	    SHEX("123662062e67c2aab371cc49db0df134"));
-  
-  HMAC_TEST(md5,
+
+  test_mac (&nettle_hmac_md5, (nettle_hash_update_func*) hmac_md5_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("38"),
 	    SHEX("0a46cc10a49d4b7025c040c597bf5d76"));
-  
-  HMAC_TEST(md5,
+
+  test_mac (&nettle_hmac_md5, (nettle_hash_update_func*) hmac_md5_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("abc"),
 	    SHEX("d1f4d89f0e8b2b6ed0623c99ec298310"));
-  
-  HMAC_TEST(md5,
+
+  test_mac (&nettle_hmac_md5, (nettle_hash_update_func*) hmac_md5_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("message digest"),
 	    SHEX("1627207b9bed5009a4f6e9ca8d2ca01e"));
-  
-  HMAC_TEST(md5,
+
+  test_mac (&nettle_hmac_md5, (nettle_hash_update_func*) hmac_md5_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("abcdefghijklmnopqrstuvwxyz"),
 	    SHEX("922aae6ab3b3a29202e21ce5f916ae9a"));
 
-  HMAC_TEST(md5,
+  test_mac (&nettle_hmac_md5, (nettle_hash_update_func*) hmac_md5_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"),
 	    SHEX("ede9cb83679ba82d88fbeae865b3f8fc"));
 
-  HMAC_TEST(md5,
+  test_mac (&nettle_hmac_md5, (nettle_hash_update_func*) hmac_md5_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("12345678901234567890123456789012345678901234567890123456789012345678901234567890"),
 	    SHEX("939dd45512ee3a594b6654f6b8de27f7"));
 
   /* Test vectors for ripemd160, from
      http://homes.esat.kuleuven.be/~bosselae/ripemd160.html */
-  test_mac(&nettle_hmac_ripemd160,
+  test_mac (&nettle_hmac_ripemd160, NULL,
 	    SHEX("00112233445566778899aabbccddeeff01234567"),
 	    SDATA(""),
 	    SHEX("cf387677bfda8483e63b57e06c3b5ecd8b7fc055"));
 
-  test_mac(&nettle_hmac_ripemd160,
+  test_mac (&nettle_hmac_ripemd160, NULL,
 	    SHEX("00112233445566778899aabbccddeeff01234567"),
 	    SDATA("a"),
 	    SHEX("0d351d71b78e36dbb7391c810a0d2b6240ddbafc"));
 
-  test_mac(&nettle_hmac_ripemd160,
+  test_mac (&nettle_hmac_ripemd160, NULL,
 	    SHEX("00112233445566778899aabbccddeeff01234567"),
 	    SDATA("abc"),
 	    SHEX("f7ef288cb1bbcc6160d76507e0a3bbf712fb67d6"));
 
-  test_mac(&nettle_hmac_ripemd160,
+  test_mac (&nettle_hmac_ripemd160, NULL,
 	    SHEX("00112233445566778899aabbccddeeff01234567"),
 	    SDATA("message digest"),
 	    SHEX("f83662cc8d339c227e600fcd636c57d2571b1c34"));
 
-  test_mac(&nettle_hmac_ripemd160,
+  test_mac (&nettle_hmac_ripemd160, NULL,
 	    SHEX("00112233445566778899aabbccddeeff01234567"),
 	    SDATA("abcdefghijklmnopqrstuvwxyz"),
 	    SHEX("843d1c4eb880ac8ac0c9c95696507957d0155ddb"));
 
-  test_mac(&nettle_hmac_ripemd160,
+  test_mac (&nettle_hmac_ripemd160, NULL,
 	    SHEX("00112233445566778899aabbccddeeff01234567"),
 	    SDATA("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"),
 	    SHEX("60f5ef198a2dd5745545c1f0c47aa3fb5776f881"));
 
-  test_mac(&nettle_hmac_ripemd160,
+  test_mac (&nettle_hmac_ripemd160, NULL,
 	    SHEX("00112233445566778899aabbccddeeff01234567"),
 	    SDATA("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"),
 	    SHEX("e49c136a9e5627e0681b808a3b97e6a6e661ae79"));
 
   /* Other key */
-  test_mac(&nettle_hmac_ripemd160,
+  test_mac (&nettle_hmac_ripemd160, NULL,
 	    SHEX("0123456789abcdeffedcba987654321000112233"),
 	    SDATA(""),
 	    SHEX("fe69a66c7423eea9c8fa2eff8d9dafb4f17a62f5"));
 
-  test_mac(&nettle_hmac_ripemd160,
+  test_mac (&nettle_hmac_ripemd160, NULL,
 	    SHEX("0123456789abcdeffedcba987654321000112233"),
 	    SDATA("a"),
 	    SHEX("85743e899bc82dbfa36faaa7a25b7cfd372432cd"));
 
-  test_mac(&nettle_hmac_ripemd160,
+  test_mac (&nettle_hmac_ripemd160, NULL,
 	    SHEX("0123456789abcdeffedcba987654321000112233"),
 	    SDATA("abc"),
 	    SHEX("6e4afd501fa6b4a1823ca3b10bd9aa0ba97ba182"));
 
-  test_mac(&nettle_hmac_ripemd160,
+  test_mac (&nettle_hmac_ripemd160, NULL,
 	    SHEX("0123456789abcdeffedcba987654321000112233"),
 	    SDATA("message digest"),
 	    SHEX("2e066e624badb76a184c8f90fba053330e650e92"));
 
-  test_mac(&nettle_hmac_ripemd160,
+  test_mac (&nettle_hmac_ripemd160, NULL,
 	    SHEX("0123456789abcdeffedcba987654321000112233"),
 	    SDATA("abcdefghijklmnopqrstuvwxyz"),
 	    SHEX("07e942aa4e3cd7c04dedc1d46e2e8cc4c741b3d9"));
 
-  test_mac(&nettle_hmac_ripemd160,
+  test_mac (&nettle_hmac_ripemd160, NULL,
 	    SHEX("0123456789abcdeffedcba987654321000112233"),
 	    SDATA("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"),
 	    SHEX("b6582318ddcfb67a53a67d676b8ad869aded629a"));
 
-  test_mac(&nettle_hmac_ripemd160,
+  test_mac (&nettle_hmac_ripemd160, NULL,
 	    SHEX("0123456789abcdeffedcba987654321000112233"),
 	    SDATA("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"),
 	    SHEX("f1be3ee877703140d34f97ea1ab3a07c141333e2"));
@@ -198,19 +181,19 @@ test_main(void)
   /* Test vectors for sha1, from RFC-2202 */
 
   /* sha1 - 1 */
-  test_mac(&nettle_hmac_sha1,
+  test_mac (&nettle_hmac_sha1, NULL,
 	    SHEX("0b0b0b0b0b0b0b0b 0b0b0b0b0b0b0b0b 0b0b0b0b"),
 	    SDATA("Hi There"),
 	    SHEX("b617318655057264 e28bc0b6fb378c8e f146be00"));
 
   /* sha1 - 2 */
-  HMAC_TEST(sha1,
+  test_mac (&nettle_hmac_sha1, (nettle_hash_update_func*) hmac_sha1_set_key,
 	    SDATA("Jefe"),
 	    SDATA("what do ya want for nothing?"),
 	    SHEX("effcdf6ae5eb2fa2 d27416d5f184df9c 259a7c79"));
 
   /* sha1 - 3 */
-  test_mac(&nettle_hmac_sha1,
+  test_mac (&nettle_hmac_sha1, NULL,
 	    SHEX("aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa aaaaaaaa"),
 	    SHEX("dddddddddddddddd dddddddddddddddd"
 		 "dddddddddddddddd dddddddddddddddd"
@@ -219,8 +202,8 @@ test_main(void)
 	    SHEX("125d7342b9ac11cd 91a39af48aa17b4f 63f175d3"));
 
   /* sha1 - 4 */
-  HMAC_TEST(sha1,
-	    SHEX("0102030405060708 090a0b0c0d0e0f10" 
+  test_mac (&nettle_hmac_sha1, (nettle_hash_update_func*) hmac_sha1_set_key,
+	    SHEX("0102030405060708 090a0b0c0d0e0f10"
 		 "1112131415161718 19"),
 	    SHEX("cdcdcdcdcdcdcdcd cdcdcdcdcdcdcdcd"
 		 "cdcdcdcdcdcdcdcd cdcdcdcdcdcdcdcd"
@@ -229,13 +212,13 @@ test_main(void)
 	    SHEX("4c9007f4026250c6 bc8414f9bf50c86c 2d7235da"));
 
   /* sha1 - 5 */
-  test_mac(&nettle_hmac_sha1,
+  test_mac (&nettle_hmac_sha1, NULL,
 	    SHEX("0c0c0c0c0c0c0c0c 0c0c0c0c0c0c0c0c 0c0c0c0c"),
 	    SDATA("Test With Truncation"),
 	    SHEX("4c1a03424b55e07f e7f27be1"));
 
   /* sha1 - 6 */
-  HMAC_TEST(sha1,
+  test_mac (&nettle_hmac_sha1, (nettle_hash_update_func*) hmac_sha1_set_key,
 	    SHEX("aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"
@@ -245,7 +228,7 @@ test_main(void)
 	    SHEX("aa4ae5e15272d00e 95705637ce8a3b55 ed402112"));
 
   /* sha1 - 7 */
-  HMAC_TEST(sha1,
+  test_mac (&nettle_hmac_sha1, (nettle_hash_update_func*) hmac_sha1_set_key,
 	    SHEX("aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"
@@ -255,21 +238,22 @@ test_main(void)
 		  "Than One Block-Size Data"),
 	    SHEX("e8e99d0f45237d78 6d6bbaa7965c7808 bbff1a91"));
 
+  /* No test vectors for hmac-sha224 with key size = digest size. */
   /* Test vectors for sha224, from RFC 4231 */
-  HMAC_TEST(sha224,
+  test_mac (&nettle_hmac_sha224, (nettle_hash_update_func*) hmac_sha224_set_key,
 	    SHEX("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b"
 		 "0b0b0b0b"),
 	    SDATA("Hi There"),
 	    SHEX("896fb1128abbdf196832107cd49df33f"
 		 "47b4b1169912ba4f53684b22"));
 
-  HMAC_TEST(sha224,
+  test_mac (&nettle_hmac_sha224, (nettle_hash_update_func*) hmac_sha224_set_key,
 	    SDATA("Jefe"),
 	    SDATA("what do ya want for nothing?"),
 	    SHEX("a30e01098bc6dbbf45690f3a7e9e6d0f"
 		 "8bbea2a39e6148008fd05e44"));
 
-  HMAC_TEST(sha224,
+  test_mac (&nettle_hmac_sha224, (nettle_hash_update_func*) hmac_sha224_set_key,
 	    SHEX("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaa"),
 	    SHEX("dddddddddddddddddddddddddddddddd"
@@ -279,7 +263,7 @@ test_main(void)
 	    SHEX("7fb3cb3588c6c1f6ffa9694d7d6ad264"
 		 "9365b0c1f65d69d1ec8333ea"));
 
-  HMAC_TEST(sha224,
+  test_mac (&nettle_hmac_sha224, (nettle_hash_update_func*) hmac_sha224_set_key,
 	    SHEX("0102030405060708090a0b0c0d0e0f10"
 		 "111213141516171819"),
 	    SHEX("cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd"
@@ -289,12 +273,12 @@ test_main(void)
 	    SHEX("6c11506874013cac6a2abc1bb382627c"
 		 "ec6a90d86efc012de7afec5a"));
 
-  HMAC_TEST(sha224,
+  test_mac (&nettle_hmac_sha224, (nettle_hash_update_func*) hmac_sha224_set_key,
 	    SHEX("0c0c0c0c0c0c0c0c 0c0c0c0c0c0c0c0c 0c0c0c0c"),
 	    SDATA("Test With Truncation"),
 	    SHEX("0e2aea68a90c8d37c988bcdb9fca6fa8"));
 
-  HMAC_TEST(sha224,
+  test_mac (&nettle_hmac_sha224, (nettle_hash_update_func*) hmac_sha224_set_key,
 	    SHEX("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -308,7 +292,7 @@ test_main(void)
 	    SHEX("95e9a0db962095adaebe9b2d6f0dbce2"
 		 "d499f112f2d2b7273fa6870e"));
 
-  HMAC_TEST(sha224,
+  test_mac (&nettle_hmac_sha224, (nettle_hash_update_func*) hmac_sha224_set_key,
 	    SHEX("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -326,69 +310,69 @@ test_main(void)
 		 "946770db9c2b95c9f6f565d1"));
 
   /* Additional test vectors, from Daniel Kahn Gillmor */
-  HMAC_TEST(sha224,
+  test_mac (&nettle_hmac_sha224, (nettle_hash_update_func*) hmac_sha224_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA(""),
 	    SHEX("d12a49ae38177ffeaa548b2148bb5238"
 		 "60849772d9391e675b103d89"));
-  
-  HMAC_TEST(sha224,
+
+  test_mac (&nettle_hmac_sha224, (nettle_hash_update_func*) hmac_sha224_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("a"),
 	    SHEX("b04ff8522f904f553970bfa8ad3f0086"
 		 "bce1e8580affd8a12c94e31a"));
-  
-  HMAC_TEST(sha224,
+
+  test_mac (&nettle_hmac_sha224, (nettle_hash_update_func*) hmac_sha224_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("38"),
 	    SHEX("afcfb5511f710334f9350f57faec3c08"
 		 "764b4bd126a6840f4347f116"));
-  
-  HMAC_TEST(sha224,
+
+  test_mac (&nettle_hmac_sha224, (nettle_hash_update_func*) hmac_sha224_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("abc"),
 	    SHEX("9df9907af127900c909376893565c6cf"
 		 "2d7db244fdc4277da1e0b679"));
-  
-  HMAC_TEST(sha224,
+
+  test_mac (&nettle_hmac_sha224, (nettle_hash_update_func*) hmac_sha224_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("message digest"),
 	    SHEX("254ebf6b8ddd7a3271b3d9aca1699b0c"
 		 "0bfb7df61e8a114922c88d27"));
-  
-  HMAC_TEST(sha224,
+
+  test_mac (&nettle_hmac_sha224, (nettle_hash_update_func*) hmac_sha224_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("abcdefghijklmnopqrstuvwxyz"),
 	    SHEX("6ec5bffba5880c3234a6cf257816e4d5"
 		 "35ab178a7f12929769e378fb"));
 
-  HMAC_TEST(sha224,
+  test_mac (&nettle_hmac_sha224, (nettle_hash_update_func*) hmac_sha224_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"),
 	    SHEX("5f768179dbb29ca722875d0f461a2e2f"
 		 "597d0210340a84df1a8e9c63"));
 
-  HMAC_TEST(sha224,
+  test_mac (&nettle_hmac_sha224, (nettle_hash_update_func*) hmac_sha224_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("12345678901234567890123456789012345678901234567890123456789012345678901234567890"),
 	    SHEX("c7667b0d7e56b2b4f6fcc1d8da9e22da"
 		 "a1556f44c47132a87303c6a2"));
 
   /* Test vectors for sha256, from RFC 4231 */
-  HMAC_TEST(sha256,
+  test_mac (&nettle_hmac_sha256, (nettle_hash_update_func*) hmac_sha256_set_key,
 	    SHEX("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b"
 		 "0b0b0b0b"),
 	    SDATA("Hi There"),
 	    SHEX("b0344c61d8db38535ca8afceaf0bf12b"
 		 "881dc200c9833da726e9376c2e32cff7"));
 
-  HMAC_TEST(sha256,
+  test_mac (&nettle_hmac_sha256, (nettle_hash_update_func*) hmac_sha256_set_key,
 	    SDATA("Jefe"),
 	    SDATA("what do ya want for nothing?"),
 	    SHEX("5bdcc146bf60754e6a042426089575c7"
 		 "5a003f089d2739839dec58b964ec3843"));
 
-  HMAC_TEST(sha256,
+  test_mac (&nettle_hmac_sha256, (nettle_hash_update_func*) hmac_sha256_set_key,
 	    SHEX("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaa"),
 	    SHEX("dddddddddddddddddddddddddddddddd"
@@ -398,7 +382,7 @@ test_main(void)
 	    SHEX("773ea91e36800e46854db8ebd09181a7"
 		 "2959098b3ef8c122d9635514ced565fe"));
 
-  HMAC_TEST(sha256,
+  test_mac (&nettle_hmac_sha256, (nettle_hash_update_func*) hmac_sha256_set_key,
 	    SHEX("0102030405060708090a0b0c0d0e0f10"
 		 "111213141516171819"),
 	    SHEX("cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd"
@@ -408,12 +392,12 @@ test_main(void)
 	    SHEX("82558a389a443c0ea4cc819899f2083a"
 		 "85f0faa3e578f8077a2e3ff46729665b"));
 
-  HMAC_TEST(sha256,
+  test_mac (&nettle_hmac_sha256, (nettle_hash_update_func*) hmac_sha256_set_key,
 	    SHEX("0c0c0c0c0c0c0c0c 0c0c0c0c0c0c0c0c 0c0c0c0c"),
 	    SDATA("Test With Truncation"),
 	    SHEX("a3b6167473100ee06e0c796c2955552b"));
 
-  HMAC_TEST(sha256,
+  test_mac (&nettle_hmac_sha256, (nettle_hash_update_func*) hmac_sha256_set_key,
 	    SHEX("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -427,7 +411,7 @@ test_main(void)
 	    SHEX("60e431591ee0b67f0d8a26aacbf5b77f"
 		 "8e0bc6213728c5140546040f0ee37f54"));
 
-  HMAC_TEST(sha256,
+  test_mac (&nettle_hmac_sha256, (nettle_hash_update_func*) hmac_sha256_set_key,
 	    SHEX("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -444,48 +428,24 @@ test_main(void)
 	    SHEX("9b09ffa71b942fcb27635fbcd5b0e944"
 		 "bfdc63644f0713938a7f51535c3a35e2"));
 
-  /* Additional test vectors for sha256, from
-     draft-ietf-ipsec-ciph-sha-256-01.txt */
-
-  /* Test Case #1: HMAC-SHA-256 with 3-byte input and 32-byte key */
-  test_mac(&nettle_hmac_sha256,
-	    SHEX("0102030405060708 090a0b0c0d0e0f10"
-		 "1112131415161718 191a1b1c1d1e1f20"),
-	    SDATA("abc"),
-	    SHEX("a21b1f5d4cf4f73a 4dd939750f7a066a"
-		 "7f98cc131cb16a66 92759021cfab8181"));
-
-  /* Test Case #2: HMAC-SHA-256 with 56-byte input and 32-byte key */
-  test_mac(&nettle_hmac_sha256,
-	    SHEX("0102030405060708 090a0b0c0d0e0f10"
-		 "1112131415161718 191a1b1c1d1e1f20"),
-	    SDATA("abcdbcdecdefdefgefghfghighijhijk"
-		  "ijkljklmklmnlmnomnopnopq"),
-	    SHEX("104fdc1257328f08 184ba73131c53cae"
-		 "e698e36119421149 ea8c712456697d30"));
-
-  /* Test Case #3: HMAC-SHA-256 with 112-byte (multi-block) input
-     and 32-byte key */
-  test_mac(&nettle_hmac_sha256,
-	    SHEX("0102030405060708 090a0b0c0d0e0f10"
-		 "1112131415161718 191a1b1c1d1e1f20"),
-	    SDATA("abcdbcdecdefdefgefghfghighijhijk"
-		  "ijkljklmklmnlmnomnopnopqabcdbcde"
-		  "cdefdefgefghfghighijhijkijkljklm"
-		  "klmnlmnomnopnopq"),
-	    SHEX("470305fc7e40fe34 d3eeb3e773d95aab"
-		 "73acf0fd060447a5 eb4595bf33a9d1a3"));
-
-  /* Test Case #4:  HMAC-SHA-256 with 8-byte input and 32-byte key */
-  test_mac(&nettle_hmac_sha256,
+  /* Test vectors from RFC 4868 */
+  /* AUTH256-1 */
+  test_mac (&nettle_hmac_sha256, NULL,
 	    SHEX("0b0b0b0b0b0b0b0b 0b0b0b0b0b0b0b0b"
 		 "0b0b0b0b0b0b0b0b 0b0b0b0b0b0b0b0b"),
 	    SDATA("Hi There"),
 	    SHEX("198a607eb44bfbc6 9903a0f1cf2bbdc5"
 		 "ba0aa3f3d9ae3c1c 7a3b1696a0b68cf7"));
 
-  /* Test Case #6: HMAC-SHA-256 with 50-byte input and 32-byte key */
-  test_mac(&nettle_hmac_sha256,
+  /* AUTH256-2 */
+  test_mac (&nettle_hmac_sha256, NULL,
+	    SDATA("JefeJefeJefeJefeJefeJefeJefeJefe"),
+	    SDATA("what do ya want for nothing?"),
+	    SHEX("167f928588c5cc2eef8e3093caa0e87c"
+		 "9ff566a14794aa61648d81621a2a40c6"));
+
+  /* AUTH256-3 */
+  test_mac (&nettle_hmac_sha256, NULL,
 	    SHEX("aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"),
 	    SHEX("dddddddddddddddd dddddddddddddddd"
@@ -495,8 +455,57 @@ test_main(void)
 	    SHEX("cdcb1220d1ecccea 91e53aba3092f962"
 		 "e549fe6ce9ed7fdc 43191fbde45c30b0"));
 
+  /* AUTH256-4 */
+  test_mac (&nettle_hmac_sha256, NULL,
+	    SHEX("0102030405060708090a0b0c0d0e0f10"
+		 "1112131415161718191a1b1c1d1e1f20"),
+	    SHEX("cdcdcdcdcdcdcdcd cdcdcdcdcdcdcdcd"
+		 "cdcdcdcdcdcdcdcd cdcdcdcdcdcdcdcd"
+		 "cdcdcdcdcdcdcdcd cdcdcdcdcdcdcdcd"
+		 "cdcd"),
+	    SHEX("372efcf9b40b35c2115b1346903d2ef4"
+		 "2fced46f0846e7257bb156d3d7b30d3f"));
+
+  /* Additional test vectors for sha256, from
+     draft-ietf-ipsec-ciph-sha-256-01.txt */
+
+  /* Test Case #1: HMAC-SHA-256 with 3-byte input and 32-byte key */
+  test_mac (&nettle_hmac_sha256, NULL,
+	    SHEX("0102030405060708 090a0b0c0d0e0f10"
+		 "1112131415161718 191a1b1c1d1e1f20"),
+	    SDATA("abc"),
+	    SHEX("a21b1f5d4cf4f73a 4dd939750f7a066a"
+		 "7f98cc131cb16a66 92759021cfab8181"));
+
+  /* Test Case #2: HMAC-SHA-256 with 56-byte input and 32-byte key */
+  test_mac (&nettle_hmac_sha256, NULL,
+	    SHEX("0102030405060708 090a0b0c0d0e0f10"
+		 "1112131415161718 191a1b1c1d1e1f20"),
+	    SDATA("abcdbcdecdefdefgefghfghighijhijk"
+		  "ijkljklmklmnlmnomnopnopq"),
+	    SHEX("104fdc1257328f08 184ba73131c53cae"
+		 "e698e36119421149 ea8c712456697d30"));
+
+  /* Test Case #3: HMAC-SHA-256 with 112-byte (multi-block) input
+     and 32-byte key */
+  test_mac (&nettle_hmac_sha256, NULL,
+	    SHEX("0102030405060708 090a0b0c0d0e0f10"
+		 "1112131415161718 191a1b1c1d1e1f20"),
+	    SDATA("abcdbcdecdefdefgefghfghighijhijk"
+		  "ijkljklmklmnlmnomnopnopqabcdbcde"
+		  "cdefdefgefghfghighijhijkijkljklm"
+		  "klmnlmnomnopnopq"),
+	    SHEX("470305fc7e40fe34 d3eeb3e773d95aab"
+		 "73acf0fd060447a5 eb4595bf33a9d1a3"));
+
+  /* Test Case #4:  HMAC-SHA-256 with 8-byte input and 32-byte key
+     (same as AUTH256-1, see above) */
+
+  /* Test Case #6: HMAC-SHA-256 with 50-byte input and 32-byte key
+     (same as AUTH256-3, see above)*/
+
   /* Test Case #7: HMAC-SHA-256 with 50-byte input and 37-byte key */
-  HMAC_TEST(sha256,
+  test_mac (&nettle_hmac_sha256, (nettle_hash_update_func*) hmac_sha256_set_key,
 	    SHEX("0102030405060708 090a0b0c0d0e0f10"
 		 "1112131415161718 191a1b1c1d1e1f20"
 		 "2122232425"),
@@ -508,14 +517,14 @@ test_main(void)
 		 "6ec4af55ef079985 41468eb49bd2e917"));
 
   /* Test Case #8: HMAC-SHA-256 with 20-byte input and 32-byte key */
-  test_mac(&nettle_hmac_sha256,
+  test_mac (&nettle_hmac_sha256, NULL,
 	    SHEX("0c0c0c0c0c0c0c0c 0c0c0c0c0c0c0c0c"
 		 "0c0c0c0c0c0c0c0c 0c0c0c0c0c0c0c0c"),
 	    SDATA("Test With Truncation"),
 	    SHEX("7546af01841fc09b 1ab9c3749a5f1c17"));
 
   /* Test Case #9: HMAC-SHA-256 with 54-byte input and 80-byte key */
-  HMAC_TEST(sha256,
+  test_mac (&nettle_hmac_sha256, (nettle_hash_update_func*) hmac_sha256_set_key,
 	    SHEX("aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"
@@ -527,7 +536,7 @@ test_main(void)
 
   /* Test Case #10: HMAC-SHA-256 with 73-byte (multi-block) input
      and 80-byte key */
-  HMAC_TEST(sha256,
+  test_mac (&nettle_hmac_sha256, (nettle_hash_update_func*) hmac_sha256_set_key,
 	    SHEX("aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"
@@ -538,56 +547,56 @@ test_main(void)
 		 "84d3e7a1ff98a2fc 2ac7d8e064c3b2e6"));
 
   /* Additional test vectors, from Daniel Kahn Gillmor */
-  HMAC_TEST(sha256,
+  test_mac (&nettle_hmac_sha256, (nettle_hash_update_func*) hmac_sha256_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA(""),
 	    SHEX("5c780648c90d121c50091c3a0c3afc1f"
 		 "4ab847528005d99d9821ad3f341b651a"));
-  
-  HMAC_TEST(sha256,
+
+  test_mac (&nettle_hmac_sha256, (nettle_hash_update_func*) hmac_sha256_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("a"),
 	    SHEX("6142364c0646b0cfe426866f21d613e0"
 		 "55a136a7d9b45d85685e080a09cec463"));
-  
-  HMAC_TEST(sha256,
+
+  test_mac (&nettle_hmac_sha256, (nettle_hash_update_func*) hmac_sha256_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("38"),
 	    SHEX("e49aa7839977e130ad87b63da9d4eb7b"
 		 "263cd5a27c54a7604b6044eb35901171"));
-  
-  HMAC_TEST(sha256,
+
+  test_mac (&nettle_hmac_sha256, (nettle_hash_update_func*) hmac_sha256_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("abc"),
 	    SHEX("e5ef49f545c7af933a9d18c7c562bc91"
 		 "08583fd5cf00d9e0db351d6d8f8e41bc"));
-  
-  HMAC_TEST(sha256,
+
+  test_mac (&nettle_hmac_sha256, (nettle_hash_update_func*) hmac_sha256_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("message digest"),
 	    SHEX("373b04877180fea27a41a8fb8f88201c"
 		 "a6268411ee3c80b01a424483eb9156e1"));
-  
-  HMAC_TEST(sha256,
+
+  test_mac (&nettle_hmac_sha256, (nettle_hash_update_func*) hmac_sha256_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("abcdefghijklmnopqrstuvwxyz"),
 	    SHEX("eb5945d56eefbdb41602946ea6448d53"
 		 "86b08d7d801a87f439fab52f8bb9736e"));
 
-  HMAC_TEST(sha256,
+  test_mac (&nettle_hmac_sha256, (nettle_hash_update_func*) hmac_sha256_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"),
 	    SHEX("3798f363c57afa6edaffe39016ca7bad"
 		 "efd1e670afb0e3987194307dec3197db"));
 
-  HMAC_TEST(sha256,
+  test_mac (&nettle_hmac_sha256, (nettle_hash_update_func*) hmac_sha256_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("12345678901234567890123456789012345678901234567890123456789012345678901234567890"),
 	    SHEX("c89a7039a62985ff813fe4509b918a43"
 		 "6d7b1ffd8778e2c24dec464849fb6128"));
 
   /* Test vectors for sha384, from RFC 4231 */
-  HMAC_TEST(sha384,
+  test_mac (&nettle_hmac_sha384, (nettle_hash_update_func*) hmac_sha384_set_key,
 	    SHEX("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b"
 		 "0b0b0b0b"),
 	    SDATA("Hi There"),
@@ -595,14 +604,14 @@ test_main(void)
 		 "15f9dadbe4101ec682aa034c7cebc59c"
 		 "faea9ea9076ede7f4af152e8b2fa9cb6"));
 
-  HMAC_TEST(sha384,
+  test_mac (&nettle_hmac_sha384, (nettle_hash_update_func*) hmac_sha384_set_key,
 	    SDATA("Jefe"),
 	    SDATA("what do ya want for nothing?"),
 	    SHEX("af45d2e376484031617f78d2b58a6b1b"
 		 "9c7ef464f5a01b47e42ec3736322445e"
 		 "8e2240ca5e69e2c78b3239ecfab21649"));
 
-  HMAC_TEST(sha384,
+  test_mac (&nettle_hmac_sha384, (nettle_hash_update_func*) hmac_sha384_set_key,
 	    SHEX("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaa"),
 	    SHEX("dddddddddddddddddddddddddddddddd"
@@ -613,7 +622,7 @@ test_main(void)
 		 "0aa635d947ac9febe83ef4e55966144b"
 		 "2a5ab39dc13814b94e3ab6e101a34f27"));
 
-  HMAC_TEST(sha384,
+  test_mac (&nettle_hmac_sha384, (nettle_hash_update_func*) hmac_sha384_set_key,
 	    SHEX("0102030405060708090a0b0c0d0e0f10"
 		 "111213141516171819"),
 	    SHEX("cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd"
@@ -624,12 +633,12 @@ test_main(void)
 		 "7a9981480850009cc5577c6e1f573b4e"
 		 "6801dd23c4a7d679ccf8a386c674cffb"));
 
-  HMAC_TEST(sha384,
+  test_mac (&nettle_hmac_sha384, (nettle_hash_update_func*) hmac_sha384_set_key,
 	    SHEX("0c0c0c0c0c0c0c0c 0c0c0c0c0c0c0c0c 0c0c0c0c"),
 	    SDATA("Test With Truncation"),
 	    SHEX("3abf34c3503b2a23a46efc619baef897"));
 
-  HMAC_TEST(sha384,
+  test_mac (&nettle_hmac_sha384, (nettle_hash_update_func*) hmac_sha384_set_key,
 	    SHEX("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -644,7 +653,7 @@ test_main(void)
 		 "4f9ef1012a2b588f3cd11f05033ac4c6"
 		 "0c2ef6ab4030fe8296248df163f44952"));
 
-  HMAC_TEST(sha384,
+  test_mac (&nettle_hmac_sha384, (nettle_hash_update_func*) hmac_sha384_set_key,
 	    SHEX("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -662,8 +671,53 @@ test_main(void)
 		 "602420feb0b8fb9adccebb82461e99c5"
 		 "a678cc31e799176d3860e6110c46523e"));
 
+  /* Test vectors from RFC 4868 */
+  /* AUTH384-1 */
+  test_mac (&nettle_hmac_sha384, NULL,
+	    SHEX("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b"
+		 "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b"
+		 "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b"),
+	    SDATA("Hi There"),
+	    SHEX("b6a8d5636f5c6a7224f9977dcf7ee6c7"
+		 "fb6d0c48cbdee9737a959796489bddbc"
+		 "4c5df61d5b3297b4fb68dab9f1b582c2"));
+
+  /* AUTH384-2 */
+  test_mac (&nettle_hmac_sha384, NULL,
+	    SDATA("JefeJefeJefeJefeJefeJefeJefeJefeJefeJefeJefeJefe"),
+	    SDATA("what do ya want for nothing?"),
+	    SHEX("2c7353974f1842fd66d53c452ca42122"
+		 "b28c0b594cfb184da86a368e9b8e16f5"
+		 "349524ca4e82400cbde0686d403371c9"));
+
+  /* AUTH384-3 */
+  test_mac (&nettle_hmac_sha384, NULL,
+	    SHEX("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
+	    SHEX("dddddddddddddddddddddddddddddddd"
+		 "dddddddddddddddddddddddddddddddd"
+		 "dddddddddddddddddddddddddddddddd"
+		 "dddd"),
+	    SHEX("809f439be00274321d4a538652164b53"
+		 "554a508184a0c3160353e3428597003d"
+		 "35914a18770f9443987054944b7c4b4a"));
+
+  /* AUTH384-4 */
+  test_mac (&nettle_hmac_sha384, NULL,
+	    SHEX("0102030405060708090a0b0c0d0e0f10"
+		 "1112131415161718191a1b1c1d1e1f20"
+		 "0a0b0c0d0e0f10111213141516171819"),
+	    SHEX("cdcdcdcdcdcdcdcd cdcdcdcdcdcdcdcd"
+		 "cdcdcdcdcdcdcdcd cdcdcdcdcdcdcdcd"
+		 "cdcdcdcdcdcdcdcd cdcdcdcdcdcdcdcd"
+		 "cdcd"),
+	    SHEX("5b540085c6e6358096532b2493609ed1"
+		 "cb298f774f87bb5c2ebf182c83cc7428"
+		 "707fb92eab2536a5812258228bc96687"));
+
   /* Test vectors for sha512, from RFC 4231 */
-  HMAC_TEST(sha512,
+  test_mac (&nettle_hmac_sha512, (nettle_hash_update_func*) hmac_sha512_set_key,
 	    SHEX("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b"
 		 "0b0b0b0b"),
 	    SDATA("Hi There"),
@@ -672,7 +726,7 @@ test_main(void)
 		 "daa833b7d6b8a702038b274eaea3f4e4"
 		 "be9d914eeb61f1702e696c203a126854"));
 
-  HMAC_TEST(sha512,
+  test_mac (&nettle_hmac_sha512, (nettle_hash_update_func*) hmac_sha512_set_key,
 	    SDATA("Jefe"),
 	    SDATA("what do ya want for nothing?"),
 	    SHEX("164b7a7bfcf819e2e395fbe73b56e0a3"
@@ -680,7 +734,7 @@ test_main(void)
 		 "9758bf75c05a994a6d034f65f8f0e6fd"
 		 "caeab1a34d4a6b4b636e070a38bce737"));
 
-  HMAC_TEST(sha512,
+  test_mac (&nettle_hmac_sha512, (nettle_hash_update_func*) hmac_sha512_set_key,
 	    SHEX("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaa"),
 	    SHEX("dddddddddddddddddddddddddddddddd"
@@ -692,7 +746,7 @@ test_main(void)
 		 "bf3e848279a722c806b485a47e67c807"
 		 "b946a337bee8942674278859e13292fb"));
 
-  HMAC_TEST(sha512,
+  test_mac (&nettle_hmac_sha512, (nettle_hash_update_func*) hmac_sha512_set_key,
 	    SHEX("0102030405060708090a0b0c0d0e0f10"
 		 "111213141516171819"),
 	    SHEX("cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd"
@@ -704,12 +758,12 @@ test_main(void)
 		 "a91ca5c11aa25eb4d679275cc5788063"
 		 "a5f19741120c4f2de2adebeb10a298dd"));
 
-  HMAC_TEST(sha512,
+  test_mac (&nettle_hmac_sha512, (nettle_hash_update_func*) hmac_sha512_set_key,
 	    SHEX("0c0c0c0c0c0c0c0c 0c0c0c0c0c0c0c0c 0c0c0c0c"),
 	    SDATA("Test With Truncation"),
 	    SHEX("415fad6271580a531d4179bc891d87a6"));
 
-  HMAC_TEST(sha512,
+  test_mac (&nettle_hmac_sha512, (nettle_hash_update_func*) hmac_sha512_set_key,
 	    SHEX("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -725,7 +779,7 @@ test_main(void)
 		 "6b56d037e05f2598bd0fd2215d6a1e52"
 		 "95e64f73f63f0aec8b915a985d786598"));
 
-  HMAC_TEST(sha512,
+  test_mac (&nettle_hmac_sha512, (nettle_hash_update_func*) hmac_sha512_set_key,
 	    SHEX("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -745,47 +799,47 @@ test_main(void)
 		 "134676fb6de0446065c97440fa8c6a58"));
 
   /* Additional test vectors, from Daniel Kahn Gillmor */
-  HMAC_TEST(sha512,
+  test_mac (&nettle_hmac_sha512, (nettle_hash_update_func*) hmac_sha512_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA(""),
 	    SHEX("34316413c2d6940572d0bbbf099d529d"
 		 "148b424533cf562bc1b365f530e21a31"
 		 "799fc51cef78060cc6f448a8e5d780c2"
 		 "6cdf20d4c3e6f27fe5ef576bbd05e855"));
-  
-  HMAC_TEST(sha512,
+
+  test_mac (&nettle_hmac_sha512, (nettle_hash_update_func*) hmac_sha512_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("a"),
 	    SHEX("cf1948507378bc3ab58cb6ec87f4d456"
 		 "b90d3298395c29873f1ded1e111b50fe"
 		 "c336ed24684bf19716efc309212f37aa"
 		 "715cfb9ecccf3af13691ded167b4b336"));
-  
-  HMAC_TEST(sha512,
+
+  test_mac (&nettle_hmac_sha512, (nettle_hash_update_func*) hmac_sha512_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("38"),
 	    SHEX("b8201784216ce01b83cdd282616c6e89"
 		 "644c6dfd1269ed8580bbc39b92add364"
 		 "c2b2a2018cffb1915e8625e473b67d0f"
 		 "e54a50e475dfa0e2b1a97bac1383792c"));
-  
-  HMAC_TEST(sha512,
+
+  test_mac (&nettle_hmac_sha512, (nettle_hash_update_func*) hmac_sha512_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("abc"),
 	    SHEX("f097ee08b8c44e847a384f9fd645e35e"
 		 "4816baa9791ba39d3dc611210500b044"
 		 "873ee296bf1047dc06daa201a5767192"
 		 "5b73b4ea59c60114881c8287d0699c83"));
-  
-  HMAC_TEST(sha512,
+
+  test_mac (&nettle_hmac_sha512, (nettle_hash_update_func*) hmac_sha512_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("message digest"),
 	    SHEX("921a441a884b83c76a8526da8e60d60d"
 		 "17ded4eee5c29375e0d93717669a4c3e"
 		 "eba7473e95f7c1a2a85afc24a0adbc4d"
 		 "6c2bdd6ca6cab8b18d19f82d4a6c51bc"));
-  
-  HMAC_TEST(sha512,
+
+  test_mac (&nettle_hmac_sha512, (nettle_hash_update_func*) hmac_sha512_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("abcdefghijklmnopqrstuvwxyz"),
 	    SHEX("640054c96f35815095617d0a8c956066"
@@ -793,7 +847,7 @@ test_main(void)
 		 "59d9152c9b0948c1ed65c3fd72a8fb82"
 		 "190acc8830770afe5b0c5b6414c75a77"));
 
-  HMAC_TEST(sha512,
+  test_mac (&nettle_hmac_sha512, (nettle_hash_update_func*) hmac_sha512_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"),
 	    SHEX("835a4f5b3750b4c1fccfa88da2f746a4"
@@ -801,7 +855,7 @@ test_main(void)
 		 "8e32d37b724cc5aebb0f554c6338a3b5"
 		 "94c4ba26862b2dadb59b7ede1d08d53e"));
 
-  HMAC_TEST(sha512,
+  test_mac (&nettle_hmac_sha512, (nettle_hash_update_func*) hmac_sha512_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("12345678901234567890123456789012345678901234567890123456789012345678901234567890"),
 	    SHEX("fdf83dc879e3476c8e8aceff2bf6fece"
@@ -809,11 +863,9 @@ test_main(void)
 		 "997e6c7cf3720eae51ed2b00ad2a8225"
 		 "375092290edfa9d48ec7e4bc8e276088"));
 
-  /* Additional test vectors, from
-     draft-kelly-ipsec-ciph-sha2-01.txt */
-
-  /* Test case AUTH512-1: */
-  test_mac(&nettle_hmac_sha512,
+  /* Test vectors from RFC 4868 */
+  /* AUTH512-1 */
+  test_mac (&nettle_hmac_sha512, NULL,
 	    SHEX("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b"
 		 "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b"
 		 "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b"
@@ -824,20 +876,20 @@ test_main(void)
 		 "ac2878ebd5803f6f0b61dbce5e251ff8"
 		 "789a4722c1be65aea45fd464e89f8f5b"));
 
-  /* Test case AUTH512-2: */
-  HMAC_TEST(sha512,
+  /* AUTH512-2 */
+  test_mac (&nettle_hmac_sha512, (nettle_hash_update_func*) hmac_sha512_set_key,
 	    SDATA("JefeJefeJefeJefe"
 		  "JefeJefeJefeJefe"
 		  "JefeJefeJefeJefe"
-		  "JefeJefeJefeJefe"),	    
+		  "JefeJefeJefeJefe"),
 	    SDATA("what do ya want for nothing?"),
 	    SHEX("cb370917ae8a7ce28cfd1d8f4705d614"
 		 "1c173b2a9362c15df235dfb251b15454"
 		 "6aa334ae9fb9afc2184932d8695e397b"
 		 "fa0ffb93466cfcceaae38c833b7dba38"));
 
-  /* Test case AUTH512-3: */
-  test_mac(&nettle_hmac_sha512,
+  /* AUTH512-3 */
+  test_mac (&nettle_hmac_sha512, NULL,
 	    SHEX("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -851,16 +903,29 @@ test_main(void)
 		 "623c7b55cebefccf02d5581acc1c9d5f"
 		 "b1ff68a1de45509fbe4da9a433922655"));
 
-  /* Test case AUTH512-3 from same document seems broken. */
+  /* AUTH512-4 (note RFC errata). */
+  test_mac (&nettle_hmac_sha512, NULL,
+	    SHEX("0102030405060708090a0b0c0d0e0f10"
+		 "1112131415161718191a1b1c1d1e1f20"
+		 "2122232425262728292a2b2c2d2e2f30"
+		 "3132333435363738393a3b3c3d3e3f40"),
+	    SHEX("cdcdcdcdcdcdcdcd cdcdcdcdcdcdcdcd"
+		 "cdcdcdcdcdcdcdcd cdcdcdcdcdcdcdcd"
+		 "cdcdcdcdcdcdcdcd cdcdcdcdcdcdcdcd"
+		 "cdcd"),
+	    SHEX("5e6688e5a3daec826ca32eaea224eff5"
+		 "e700628947470e13ad01302561bab108"
+		 "b8c48cbc6b807dcfbd850521a685babc"
+		 "7eae4a2a2e660dc0e86b931d65503fd2"));
 
-  HMAC_TEST(gosthash94,
+  test_mac (&nettle_hmac_gosthash94, NULL,
 	    SHEX("000102030405060708090a0b0c0d0e0f"
 		 "101112131415161718191a1b1c1d1e1f"),
 	    SHEX("0126bdb87800af214341456563780100"),
 	    SHEX("bfebe25f051bfef6ac858babb0abc409"
 		 "bfd2e334ab847bc0b0d056517c7d94c5"));
 
-  HMAC_TEST(gosthash94cp,
+  test_mac (&nettle_hmac_gosthash94cp, NULL,
 	    SHEX("000102030405060708090a0b0c0d0e0f"
 		 "101112131415161718191a1b1c1d1e1f"),
 	    SHEX("0126bdb87800af214341456563780100"),
@@ -868,25 +933,25 @@ test_main(void)
 		 "6a5ceebd62ce75dbbb9ad76cda9f72f7"));
 
   /* RFC 7836 */
-  HMAC_TEST(streebog512,
+  test_mac (&nettle_hmac_streebog512, (nettle_hash_update_func*) hmac_streebog512_set_key,
 	    SHEX("000102030405060708090a0b0c0d0e0f"
 		 "101112131415161718191a1b1c1d1e1f"),
 	    SHEX("0126bdb87800af214341456563780100"),
 	    SHEX("a59bab22ecae19c65fbde6e5f4e9f5d8"
-	         "549d31f037f9df9b905500e171923a77"
+		 "549d31f037f9df9b905500e171923a77"
 		 "3d5f1530f2ed7e964cb2eedc29e9ad2f"
 		 "3afe93b2814f79f5000ffc0366c251e6"));
 
-  HMAC_TEST(streebog256,
+  test_mac (&nettle_hmac_streebog256, NULL,
 	    SHEX("000102030405060708090a0b0c0d0e0f"
 		 "101112131415161718191a1b1c1d1e1f"),
 	    SHEX("0126bdb87800af214341456563780100"),
 	    SHEX("a1aa5f7de402d7b3d323f2991c8d4534"
-	         "013137010a83754fd0af6d7cd4922ed9"));
+		 "013137010a83754fd0af6d7cd4922ed9"));
 
-  HMAC_TEST(sm3,
+  test_mac (&nettle_hmac_sm3, (nettle_hash_update_func*) hmac_sm3_set_key,
 	    SDATA("monkey monkey monkey monkey"),
 	    SDATA("abc"),
-            SHEX("7a9388e2ca5343b5d76e7c2c3d84f239"
-                 "f306c0b60d5e0dc4d2771e42860a6a2b"));
+	    SHEX("7a9388e2ca5343b5d76e7c2c3d84f239"
+		 "f306c0b60d5e0dc4d2771e42860a6a2b"));
 }

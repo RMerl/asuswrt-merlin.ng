@@ -7,20 +7,20 @@ fi
 data="$srcdir/nettle-benchmark.c"
 
 if [ -x rsa-verify$EXEEXT ] ; then
-  $EMULATOR ./rsa-sign testkey < "$data" > testsignature \
-    && $EMULATOR ./rsa-verify testkey.pub testsignature < "$data" \
+  $EMULATOR ./rsa-sign$EXEEXT testkey < "$data" > testsignature \
+    && $EMULATOR ./rsa-verify$EXEEXT testkey.pub testsignature < "$data" \
     || exit 1;
   
   # Try modifying the data
   sed s/128/129/ < "$data" >testdata
 
-  if $EMULATOR ./rsa-verify testkey.pub testsignature < testdata 2>/dev/null; then
+  if $EMULATOR ./rsa-verify$EXEEXT testkey.pub testsignature < testdata 2>/dev/null; then
     exit 1
   fi
   
   # Try modifying the signature
   sed s/1/2/ <testsignature > testsignature2
-  if $EMULATOR ./rsa-verify testkey.pub testsignature2 < "$data" 2>/dev/null; then
+  if $EMULATOR ./rsa-verify$EXEEXT testkey.pub testsignature2 < "$data" 2>/dev/null; then
     exit 1;
   fi
   exit 0

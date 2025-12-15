@@ -42,11 +42,19 @@ test_ghash_internal (const struct tstring *key,
   struct gcm_key gcm_key;
   union nettle_block16 state;
 
+  /* Mark inputs as "undefined" to valgrind, to get warnings about any
+     branches or memory accesses depending on secret data. */
   memcpy (state.b, key->data, GCM_BLOCK_SIZE);
+  mark_bytes_undefined (sizeof(state), &state);
   _ghash_set_key (&gcm_key, &state);
 
   memcpy (state.b, iv->data, GCM_BLOCK_SIZE);
+  mark_bytes_undefined (sizeof(state), &state);
+  mark_bytes_undefined (message->length, message->data);
   _ghash_update (&gcm_key, &state, message->length / GCM_BLOCK_SIZE, message->data);
+  mark_bytes_defined (sizeof(state), &state);
+  mark_bytes_defined (message->length, message->data);
+
   if (!MEMEQ(GCM_BLOCK_SIZE, state.b, digest->data))
     {
       fprintf (stderr, "gcm_hash (internal) failed\n");
@@ -91,7 +99,15 @@ nettle_gcm_unified_aes128 = {
   (nettle_crypt_func *) gcm_aes_decrypt,
   (nettle_hash_digest_func *) gcm_aes_digest
 };
-    
+
+/* Hack that uses a 16-byte nonce, a 12-byte standard GCM nonce and an
+   explicit initial value for the counter. */
+static void
+gcm_aes128_set_iv_hack (struct gcm_aes128_ctx *ctx, size_t size, const uint8_t *iv) {
+  assert (size == 16);
+  gcm_aes128_set_iv (ctx, 12, iv);
+  memcpy (ctx->gcm.ctr.b + 12, iv + 12, 4);
+}
 
 void
 test_main(void)
@@ -149,6 +165,40 @@ test_main(void)
 		 "1ba30b396a0aac973d58e091"),
 	    SHEX("cafebabefacedbaddecaf888"),
 	    SHEX("5bc94fbc3221a5db94fae95ae7121a47"));
+
+  /* Regression test, same inputs but explicitly setting the counter
+     value. */
+  test_aead(&nettle_gcm_aes128,
+	    (nettle_hash_update_func *) gcm_aes128_set_iv_hack,
+	    SHEX("feffe9928665731c6d6a8f9467308308"),
+	    SHEX("feedfacedeadbeeffeedfacedeadbeef"
+		 "abaddad2"),
+	    SHEX("d9313225f88406e5a55909c5aff5269a"
+		 "86a7a9531534f7da2e4c303d8a318a72"
+		 "1c3c0c95956809532fcf0e2449a6b525"
+		 "b16aedf5aa0de657ba637b39"),
+	    SHEX("42831ec2217774244b7221b784d0d49c"
+		 "e3aa212f2c02a4e035c17e2329aca12e"
+		 "21d514b25466931c7d8f6a5aac84aa05"
+		 "1ba30b396a0aac973d58e091"),
+	    SHEX("cafebabefacedbaddecaf88800000002"), /* ctr == 2, same as the spec */
+	    SHEX("5bc94fbc3221a5db94fae95ae7121a47"));
+
+  test_aead(&nettle_gcm_aes128,
+	    (nettle_hash_update_func *) gcm_aes128_set_iv_hack,
+	    SHEX("feffe9928665731c6d6a8f9467308308"),
+	    SHEX("feedfacedeadbeeffeedfacedeadbeef"
+		 "abaddad2"),
+	    SHEX("d9313225f88406e5a55909c5aff5269a"
+		 "86a7a9531534f7da2e4c303d8a318a72"
+		 "1c3c0c95956809532fcf0e2449a6b525"
+		 "b16aedf5aa0de657ba637b39"),
+	    SHEX("77ffd1ba63b141ba fb2efb329c9c25ee"
+		 "99e5e06e603dd5c6 8efe1cb2cefc0677"
+		 "2e7b14dea92760f7 6273dc0cce1d013d"
+		 "2ad8c11273fe9496 5448534b"),
+	    SHEX("cafebabefacedbaddecaf888ffffffff"), /* ctr == 2^31-1 */
+	    SHEX("83cf46eb0407be56 72f756a4caebcda7"));
 
   /* Test case 5 */
   test_aead(&nettle_gcm_aes128,
@@ -229,6 +279,204 @@ test_main(void)
 		 "ced486813846958a11e602c03cfc232b"),
 	    SHEX("cafebabefacedbaddecaf888"),
 	    SHEX("796836f1246c9d735c5e1be0a715ccc3"));
+
+  /* Test 719 bytes */
+  test_aead(&nettle_gcm_aes256, NULL,
+	    SHEX("6235f895fca5ebf60e921204d3a13f2e"
+	         "8b32cfe744ed1359043877b0b9adb438"),
+	    SHEX(""),
+	    SHEX("42c1cc08486f413f2f11668b2a16f0e0"
+		"5883f0c37014c05b3fec1d253c51d203"
+		"cf59741fb285b407c66a63398a5bdecb"
+		"af0844bd6f9115e1f57a6e18bddd6150"
+		"59a997abbb0e745c00a4435404549b3b"
+		"77ecfd5ca6e87b08aee6103f3265d1fc"
+		"a41d2c31fb337ab33523f42041d4ad82"
+		"8ba4ad961c2053be0ea6f4dc78493e72"
+		"b1a9b583cb0854b7ad493aae98cea666"
+		"1030908c5583d77c8be653ded26e1821"
+		"0152d19f9dbb9c7357cc8909759b7870"
+		"ed26974db4e40ca5fa700470c6961c7d"
+		"544177a8e3b07e9682d9eca2876855f9"
+		"8f9e7343476a08369367a82ddeac41a9"
+		"5c4d73970f7068fa564d00c23b1fc8b9"
+		"781f5107e39a134eed2b2ea3f744b2e7"
+		"ab1937d9ba765ed2f25315174c6b169f"
+		"026649ca7c9105f245361ef577ad1f46"
+		"a813fb63b608996382a2edb3acdf4319"
+		"45ea7873d9b73911a3137cf83ff7ad81"
+		"482fa95c5fa0f079a4477d802026fd63"
+		"0ac77e6d7547ff76662e8a6c8135af0b"
+		"2e6a4960c110e1e15403a4090c377a15"
+		"23275b8b4ba56497ae4a50731f661c5c"
+		"03253c8d485871340eec4e551a036ae5"
+		"b6192b842a20d1ea806f960e0562c778"
+		"8779603846b425576e1663f8ad6ed742"
+		"69e188ef6ed5b49a3c786c3be5a01d22"
+		"865c743aeb2426c709fc919647874f1a"
+		"d66b2c1847c0b824a85a4a9ecb03e72a"
+		"09e64d9c6d8660f52f4869379ff2d2cb"
+		"0e5add6e8afb6afe0b63de8742798a68"
+		"51289b7aebafb82f9dd1c7459008c983"
+		"e98384cb28690969ce99460054cbd838"
+		"f9534abf31ce571533fa96043342e3c0"
+		"b7544a657a7c02e61995d00e820763f9"
+		"e12b2afc559252c9b59f232860e72051"
+		"10d3ed6d9babb8e25d9a34b3be9c64cb"
+		"78c69122409180bed7785c0e0adc08e9"
+		"6710a483987923e792daa92216b1e778"
+		"a31c6c8f357c4d372f6e0b505c34b9f9"
+		"e63d910d3295aa3d481106bb2df26388"
+		"3f7309e245563151fa5e4e62f790f9a9"
+		"7d7b1bb1c8266e66f6909a7ff257cc23"
+		"59fafaaa440401a7a478db743d8bb5"),
+	    SHEX("840bdbd5b7a8fe20bbb1127f41eab3c0"
+		 "a2b437191158b60b4c1d380554d11673"
+		 "8e1c2090a29ab77447e6d8fc183ab4ea"
+		 "d5165a2c530146b31833746c50f2e8c0"
+		 "73da6022ebe3e59b20936c4b3799b823"
+		 "3b4eace85be80fb7c38ffb4a37d93995"
+		 "34f1db8f71d9c70b02f163fc9bfcc5ab"
+		 "b9141321dfceaa8844301ece260192f8"
+		 "9f004b0c4bf75fe089ca9466112197ca"
+		 "3e83742ddb4d11eb97c214ff9e1ea06b"
+		 "08b4312b85c6856c90ec39c0ecb3b54e"
+		 "f39ce7833a770af456fece18336d0b2d"
+		 "33dac8055cb4092ade6b529801ef363d"
+		 "bdf98fa83eaacdd1012d4249c3b684bb"
+		 "4896e090936c4864d4fa7f932ca621c8"
+		 "7a237baa205612ae169d940f54a1ecca"
+		 "514ef239f4f85f045a0dbff583a115e1"
+		 "f53cd862a3ed4789854ce5dbac9e171d"
+		 "0c09e33e395b4d740ef534ee70114cfd"
+		 "db34b1b5103f73b7f5faedb01fa5cd3c"
+		 "8d3583d411446e6c5be00e69a539e5bb"
+		 "a9572437e61fddcf162a13f96a2d90a0"
+		 "03607aed69d5008b7e4fcbb9fa91b937"
+		 "c126ce9097226464c172431bf6acc154"
+		 "8a109cdd8dd58eb2e485dae0205ff4b4"
+		 "15b5a08d127449233adf4ad3f03b89eb"
+		 "f8cc627bfb9307416126945870a63ce4"
+		 "ff58c4133dcb366b32e5b26d03746f76"
+		 "9377de48c4fa304ada4980770f1cbe11"
+		 "c848b1e5bbf28ae1962f9fd18e8a5ce2"
+		 "f7d7d854f33fc491b8fb86dc46249160"
+		 "6c2fc94137514954098121f3039f2be3"
+		 "1f3963aff4d75360a7c754f9eeb1b17d"
+		 "75546593feb1686b5702f9bb0ef9f8bf"
+		 "011227b4fee4797a405b514bdf38ecb1"
+		 "6a56ff354d4233aa6f1be4dce0db8535"
+		 "6210d4ecebc57e451c6f17ca3b8e2d66"
+		 "4f4b3656cd1b59aad29b17b958df7b64"
+		 "8aff3b9ca6b5489eaae25d0971325fb6"
+		 "29bee7c7527e91826b6d33e134063621"
+		 "5ebe1e2f3ec1fbea492cb5caf7b037ea"
+		 "1fed1004d9480d1a1cfbe7840e835374"
+		 "c765e25ce5ba734c0ee1b51145614346"
+		 "aa258fbd8508fa4c15c1c0d8f5dc16bb"
+		 "7b1de38757a72a1d38589e8a43dc57"),
+	    SHEX("00ffffffff0000ffffff00ff"),
+	    SHEX("d1817d2be9ff993a4b24525855e14914"));
+
+  /* Same input, but different initial counter value, to trigger wraparound. */
+  test_aead(&nettle_gcm_aes256,
+	    (nettle_hash_update_func *) gcm_aes128_set_iv_hack,
+	    SHEX("6235f895fca5ebf60e921204d3a13f2e"
+	         "8b32cfe744ed1359043877b0b9adb438"),
+	    SHEX(""),
+	    SHEX("42c1cc08486f413f2f11668b2a16f0e0"
+		"5883f0c37014c05b3fec1d253c51d203"
+		"cf59741fb285b407c66a63398a5bdecb"
+		"af0844bd6f9115e1f57a6e18bddd6150"
+		"59a997abbb0e745c00a4435404549b3b"
+		"77ecfd5ca6e87b08aee6103f3265d1fc"
+		"a41d2c31fb337ab33523f42041d4ad82"
+		"8ba4ad961c2053be0ea6f4dc78493e72"
+		"b1a9b583cb0854b7ad493aae98cea666"
+		"1030908c5583d77c8be653ded26e1821"
+		"0152d19f9dbb9c7357cc8909759b7870"
+		"ed26974db4e40ca5fa700470c6961c7d"
+		"544177a8e3b07e9682d9eca2876855f9"
+		"8f9e7343476a08369367a82ddeac41a9"
+		"5c4d73970f7068fa564d00c23b1fc8b9"
+		"781f5107e39a134eed2b2ea3f744b2e7"
+		"ab1937d9ba765ed2f25315174c6b169f"
+		"026649ca7c9105f245361ef577ad1f46"
+		"a813fb63b608996382a2edb3acdf4319"
+		"45ea7873d9b73911a3137cf83ff7ad81"
+		"482fa95c5fa0f079a4477d802026fd63"
+		"0ac77e6d7547ff76662e8a6c8135af0b"
+		"2e6a4960c110e1e15403a4090c377a15"
+		"23275b8b4ba56497ae4a50731f661c5c"
+		"03253c8d485871340eec4e551a036ae5"
+		"b6192b842a20d1ea806f960e0562c778"
+		"8779603846b425576e1663f8ad6ed742"
+		"69e188ef6ed5b49a3c786c3be5a01d22"
+		"865c743aeb2426c709fc919647874f1a"
+		"d66b2c1847c0b824a85a4a9ecb03e72a"
+		"09e64d9c6d8660f52f4869379ff2d2cb"
+		"0e5add6e8afb6afe0b63de8742798a68"
+		"51289b7aebafb82f9dd1c7459008c983"
+		"e98384cb28690969ce99460054cbd838"
+		"f9534abf31ce571533fa96043342e3c0"
+		"b7544a657a7c02e61995d00e820763f9"
+		"e12b2afc559252c9b59f232860e72051"
+		"10d3ed6d9babb8e25d9a34b3be9c64cb"
+		"78c69122409180bed7785c0e0adc08e9"
+		"6710a483987923e792daa92216b1e778"
+		"a31c6c8f357c4d372f6e0b505c34b9f9"
+		"e63d910d3295aa3d481106bb2df26388"
+		"3f7309e245563151fa5e4e62f790f9a9"
+		"7d7b1bb1c8266e66f6909a7ff257cc23"
+		"59fafaaa440401a7a478db743d8bb5"),
+	    SHEX("abdf2d43d5acea0e 037296441e544e8f"
+		 "d9b2fdfc434b3966 be04e88b226b9bbd"
+		 "ed6c798834bf5283 30d5a386d49b5a45"
+		 "2076bc49acf3d854 c15b52b15ab0008f"
+		 "b28069951f2baf3a d845ead585168f25"
+		 "b126ea81592fc417 3a4664cb599992dc"
+		 "5e2aebeb9a7f0ce3 46d2d100295469f2"
+		 "cae1f9190c3f50cd 8f2a4f19ea285453"
+		 "cbb7ab12f79807e5 400020da75e12ff6"
+		 "3a436705056e46bb abd17cc1e1a33b39"
+		 "4df0802b60bbe8cc 3aa5627c70279019"
+		 "7dca60f33e0eb11d cda293ac1cbe7454"
+		 "66f1c91f205e87a0 c84f06b0d920f973"
+		 "a1378dccc7950361 b7e406e557437005"
+		 "72fe973681beae6d 4a6947e3776f70f3"
+		 "71f9b1b3fbe70a51 2a0b9e6a6e6c7fd9"
+		 "b5a3471734e55883 5edddf7fb99001cf"
+		 "65fdf667c395724e 1984a0cff12a7c82"
+		 "9a740788cfc85c84 10e807d7b1c5860b"
+		 "5131eb7445ab198f 21a403a9284e44f0"
+		 "4a1383f19c6cf199 5ff1c72c83c3a34e"
+		 "f090bb8d3bc9fea0 ce70208e4effac75"
+		 "d930d8c81e6ca39a 94795f27d704724e"
+		 "873d43d6c4f6b080 221d892ec3a813b8"
+		 "9dfbf54b81d03b92 5805df1d3a510a58"
+		 "7303010c64c44fff 7fc8e5e7807ddfa0"
+		 "24e93a62d5ec07ee 1e12fa6d4676e8e9"
+		 "44ebbb62c61055f0 1634038b1306de00"
+		 "645de12137a32634 66c482feae4d9212"
+		 "5f5e8c48824d47a2 4233de2bf15f797b"
+		 "aa4ac69555d2f83c 95f8b5ea6aab9c58"
+		 "71efdf2d37dc48e8 045329279fb161ce"
+		 "c791d786b8b13ade 934c191376dcbbd7"
+		 "fca82eb907b71fe4 1d2c57e11c502933"
+		 "e770d742cdfc65d0 0d8f434b76cb5808"
+		 "4965dfade4c5a682 8e263fe55bd12052"
+		 "835e3ed3e8387163 b77ddc5c210181da"
+		 "5ec215b884d353ad 678ca70fc0251c35"
+		 "e411707a9649e1bc 4ee3e3b550ee286e"
+		 "9f51c98857530d88 e17b6e6dfacbe809"
+		 "7e1ed9df02427c7b 59e03f823ee85f35"
+		 "65066f1d8cc286b1 e1e13259769b6ebf"
+		 "60ebd2d913e6d019 755f6d6811d3e606"
+		 "8f42b10f2e02a646 8b0a9b7889b99b7c"
+		 "1754b9ee8e03b3c2 5dcf41b71f3c64"),
+	    SHEX("00ffffffff0000ff ffff00fffffffffd"), /* ctr == 2^31-3 */
+	    SHEX("d64dd27c678a2827 859bd29e7ea4ae07"));
+
 
   /* Test case 7 */
   test_aead(&nettle_gcm_aes192, NULL,
@@ -576,6 +824,24 @@ test_main(void)
 		 "c3c0c95156809539 fcf0e2429a6b5254"
 		 "16aedbf5a0de6a57 a637b39b"),	/* iv */
 	    SHEX("5791883f822013f8bd136fc36fb9946b"));	/* tag */
+
+  /*
+   * GCM-SM4 Test Vectors from
+   * https://datatracker.ietf.org/doc/html/rfc8998
+   */
+  test_aead(&nettle_gcm_sm4, NULL,
+	    SHEX("0123456789ABCDEFFEDCBA9876543210"),
+	    SHEX("FEEDFACEDEADBEEFFEEDFACEDEADBEEFABADDAD2"),
+	    SHEX("AAAAAAAAAAAAAAAABBBBBBBBBBBBBBBB"
+	         "CCCCCCCCCCCCCCCCDDDDDDDDDDDDDDDD"
+	         "EEEEEEEEEEEEEEEEFFFFFFFFFFFFFFFF"
+	         "EEEEEEEEEEEEEEEEAAAAAAAAAAAAAAAA"),
+	    SHEX("17F399F08C67D5EE19D0DC9969C4BB7D"
+	         "5FD46FD3756489069157B282BB200735"
+	         "D82710CA5C22F0CCFA7CBF93D496AC15"
+	         "A56834CBCF98C397B4024A2691233B8D"),
+	    SHEX("00001234567800000000ABCD"),
+	    SHEX("83DE3541E4C2B58177E065A9BF7B62EC"));
 
   /* Test gcm_hash, with varying message size, keys and iv all zero.
      Not compared to any other implementation. */

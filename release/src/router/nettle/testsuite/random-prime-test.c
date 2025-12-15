@@ -12,7 +12,7 @@ test_main(void)
   knuth_lfib_init(&lfib, 17);
 
   mpz_init(p);
-  for (bits = 6; bits < 1000; bits = bits + 1 + bits/20)
+  for (bits = 6; bits < 1000; bits = bits + 1 + bits/10)
     {
       if (verbose)
 	fprintf(stderr, "bits = %d\n", bits);

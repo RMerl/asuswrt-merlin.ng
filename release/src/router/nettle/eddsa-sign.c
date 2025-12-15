@@ -116,9 +116,9 @@ _eddsa_sign (const struct ecc_curve *ecc,
     }
 
   cy = mpn_submul_1 (sp, ecc->q.m, ecc->p.size, q);
-  assert (cy < 2);
+  assert_maybe (cy < 2);
   cy -= mpn_cnd_add_n (cy, sp, sp, ecc->q.m, ecc->p.size);
-  assert (cy == 0);
+  assert_maybe (cy == 0);
 
   mpn_get_base256_le (signature + nbytes, nbytes, sp, ecc->q.size);
 #undef rp

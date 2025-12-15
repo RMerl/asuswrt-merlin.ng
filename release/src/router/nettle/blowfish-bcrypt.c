@@ -42,7 +42,7 @@
 #include "blowfish.h"
 #include "blowfish-internal.h"
 #include "base64.h"
-
+#include "bswap-internal.h"
 #include "macros.h"
 
 #define CRYPTPLEN 7
@@ -148,17 +148,6 @@ static uint32_t magic_w[6] = {
   0x4F727068, 0x65616E42, 0x65686F6C,
   0x64657253, 0x63727944, 0x6F756274
 };
-
-static void swap32(uint32_t *x, int count)
-{
-#if !WORDS_BIGENDIAN
-  do {
-    uint32_t tmp = *x;
-    tmp = (tmp << 16) | (tmp >> 16);
-    *x++ = ((tmp & 0x00FF00FF) << 8) | ((tmp >> 8) & 0x00FF00FF);
-  } while (--count);
-#endif
-}
 
 static void set_xkey(size_t lenkey, const uint8_t *key,
                      bf_key expanded, bf_key initial,
@@ -340,7 +329,7 @@ static int ibcrypt(uint8_t *dst,
   else if (lenscheme < HASHOFFSET)
     return 0;
   memcpy(psalt, data.binary.salt, BLOWFISH_BCRYPT_BINSALT_SIZE);
-  swap32(data.binary.salt, 4);
+  bswap32_n_if_le (4, data.binary.salt);
 
   if (log2rounds < minlog2rounds || log2rounds > 31)
     return 0;
@@ -445,7 +434,7 @@ static int ibcrypt(uint8_t *dst,
   dst = (uint8_t*)
         encode_radix64((char*) dst, BLOWFISH_BCRYPT_BINSALT_SIZE, psalt) - 1;
 
-  swap32(data.binary.output, 6);
+  bswap32_n_if_le (6, data.binary.output);
 /* This has to be bug-compatible with the original implementation, so
    only encode 23 of the 24 bytes. */
   encode_radix64((char*) dst, 23, (uint8_t *) data.binary.output);

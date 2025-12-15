@@ -99,6 +99,26 @@ mpn_cnd_swap (mp_limb_t cnd, volatile mp_limb_t *ap, volatile mp_limb_t *bp, mp_
     }
 }
 
+/* Copy the k'th element of the table out tn elements, each of size
+   rn. Always read complete table. Similar to gmp's mpn_tabselect. */
+void
+mpn_sec_tabselect (volatile mp_limb_t *rp, volatile const mp_limb_t *table,
+		   mp_size_t rn, unsigned tn, unsigned k)
+{
+  volatile const mp_limb_t *end = table + tn * rn;
+  volatile const mp_limb_t *p;
+  mp_size_t i;
+
+  assert (k < tn);
+  for (p = table; p < end; p += rn, k--)
+    {
+      mp_limb_t mask = - (mp_limb_t) (k == 0);
+      for (i = 0; i < rn; i++)
+	rp[i] = (~mask & rp[i]) | (mask & p[i]);
+    }
+}
+
+
 #endif /* NETTLE_USE_MINI_GMP */
 
 int
@@ -110,7 +130,7 @@ sec_zero_p (const mp_limb_t *ap, mp_size_t n)
   for (i = 0, w = 0; i < n; i++)
     w |= ap[i];
 
-  return w == 0;
+  return is_zero_limb (w);
 }
 
 /* Additional convenience functions. */

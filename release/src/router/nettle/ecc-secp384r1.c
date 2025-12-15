@@ -122,7 +122,7 @@ ecc_secp384r1_modp (const struct ecc_modulo *p, mp_limb_t *rp, mp_limb_t *xp)
   cy += mpn_add_n (xp + 2, xp + 2, tp, 6);
   cy += mpn_add_n (xp + 4, xp + 4, xp + 8, 4);
 
-  assert (cy <= 2);
+  assert_maybe (cy <= 2);
   xp[8] = cy;
 
   /* Reduce from 9 to 6 limbs */
@@ -137,10 +137,10 @@ ecc_secp384r1_modp (const struct ecc_modulo *p, mp_limb_t *rp, mp_limb_t *xp)
   cy += mpn_add_n (xp + 2, xp + 2, xp + 6, 3);
 
   cy = sec_add_1 (xp + 5, xp + 5, 1, cy);
-  assert (cy <= 1);
+  assert_maybe (cy <= 1);
 
   cy = mpn_cnd_add_n (cy, xp, xp, p->B, ECC_LIMB_SIZE);
-  assert (cy == 0);
+  assert_maybe (cy == 0);
   mpn_copyi (rp, xp, ECC_LIMB_SIZE);
 }
 #else
@@ -314,6 +314,7 @@ const struct ecc_curve _nettle_secp_384r1 =
     ecc_p,
     ecc_Bmodp,
     ecc_Bmodp_shifted,
+    ecc_Bm2p,
     ecc_redc_ppm1,
     ecc_pp1h,
 
@@ -335,6 +336,7 @@ const struct ecc_curve _nettle_secp_384r1 =
     ecc_q,
     ecc_Bmodq,
     ecc_Bmodq_shifted,
+    ecc_Bm2q,
     NULL,
     ecc_qp1h,
 

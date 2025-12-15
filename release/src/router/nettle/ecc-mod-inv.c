@@ -135,7 +135,7 @@ ecc_mod_inv (const struct ecc_modulo *m,
          also v = orig_a^{-1} (mod m)
       */
 
-      assert (bp[0] & 1);
+      assert_maybe (bp[0] & 1);
       odd = ap[0] & 1;
 
       swap = mpn_cnd_sub_n (odd, ap, ap, bp, n);
@@ -145,15 +145,15 @@ ecc_mod_inv (const struct ecc_modulo *m,
       mpn_cnd_swap (swap, up, vp, n);
       cy = mpn_cnd_sub_n (odd, up, up, vp, n);
       cy -= mpn_cnd_add_n (cy, up, up, m->m, n);
-      assert (cy == 0);
+      assert_maybe (cy == 0);
 
       cy = mpn_rshift (ap, ap, n, 1);
-      assert (cy == 0);
+      assert_maybe (cy == 0);
       cy = mpn_rshift (up, up, n, 1);
       cy = mpn_cnd_add_n (cy, up, up, m->mp1h, n);
-      assert (cy == 0);
+      assert_maybe (cy == 0);
     }
-  assert ( (ap[0] | ap[n-1]) == 0);
+  assert_maybe ( (ap[0] | ap[n-1]) == 0);
 #undef ap
 #undef bp
 #undef up

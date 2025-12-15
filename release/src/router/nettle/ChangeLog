@@ -1,16 +1,1144 @@
+2025-06-26  Niels Möller  <nisse@lysator.liu.se>
+
+ 	* Released Nettle-3.10.2.
+
+	* config.guess: Update to 2024-07-27 version.
+	* config.sub: Update to 2024-05-27 version.
+
+2025-06-25  Niels Möller  <nisse@lysator.liu.se>
+
+	* configure.ac: Bump package version, to 3.10.2.
+	(LIBNETTLE_MINOR): Bump minor number, to 8.11.
+	(LIBHOGWEED_MINOR): Bump minor number, to 6.11.
+
+2025-06-24  Niels Möller  <nisse@lysator.liu.se>
+
+	Minimal patch for compilers that require prototypes, e.g., gcc-15.
+	* getopt.c (getenv): Delete non-prototype declaration.
+	* getopt.h (getopt): Declare getopt with a prototype, also for
+	non-glibc systems.
+
+2025-04-02  Niels Möller  <nisse@lysator.liu.se>
+
+	* configure.ac: For ppc64, check if __VSX__ is defined, and
+	disable use of assembly if it isn't.
+
+2025-03-02  Niels Möller  <nisse@lysator.liu.se>
+
+	* powerpc64/p8/gcm-aes-decrypt.asm: Avoid using lxvb16x
+	instruction in powerpc64/p8 files. Reported by Sean McGovern.
+	* powerpc64/p8/gcm-aes-encrypt.asm: Likewise.
+
+2025-02-09  Niels Möller  <nisse@lysator.liu.se>
+
+	* powerpc64/p8/gcm-aes-decrypt.asm: Use stxvd2x/lxvd2x rather than
+	stxv/lxv for save and restore of vector registers, since the
+	latter instructions are not available on Power8 (ISA v2.07).
+	* powerpc64/p8/gcm-aes-encrypt.asm: Likewise.
+
+2024-12-30  Niels Möller  <nisse@lysator.liu.se>
+
+	* Released Nettle-3.10.1.
+
+2024-12-28  Niels Möller  <nisse@lysator.liu.se>
+
+	* testsuite/testutils.c (mark_bytes_undefined)
+	(mark_bytes_defined) [!HAVE_VALGRIND_MEMCHECK_H]: Add UNUSED
+	attribute on dummy version of these functions.
+
+2024-12-14  Niels Möller  <nisse@lysator.liu.se>
+
+	* configure.ac: Bump package version, to 3.10.1.
+	(LIBNETTLE_MINOR): Bump minor number, to 8.10.
+	(LIBHOGWEED_MINOR): Bump minor number, to 6.10.
+
+2024-12-13  Niels Möller  <nisse@lysator.liu.se>
+
+	* aclocal.m4 (NETTLE_PROG_VALGRIND): Check if executable appears
+	to include lsan, asan or msan symbols, and if so, don't attempt to
+	run valgrind.
+
+2024-10-16  Niels Möller  <nisse@lysator.liu.se>
+
+	* run-tests: Cleanup, guided by shellcheck warnings. Use $()
+	rather than `` and $(()) rather than expr.
+
+2024-09-08  Niels Möller  <nisse@lysator.liu.se>
+
+	From Brad Smith: Support elf_aux_info (OpenBSD and FreeBSD).
+	* configure.ac: Check for elf_aux_info.
+	* fat-arm64.c (get_arm64_features): Use elf_aux_info if available.
+	* fat-ppc.c (get_ppc_features): Likewise.
+
+2024-06-23  Niels Möller  <nisse@lysator.liu.se>
+
+	* testsuite/testutils.h (struct nettle_xof): New struct type.
+	* testsuite/testutils.c (test_hash): Delete support for tests with
+	arbitrary digest size, reverting part of 2019-12-25 change.
+	(test_xof): New function, test both digest and output functions.
+	* testsuite/shake128-test.c (test_main): Change from using
+	test_hash to test_xof.
+	* testsuite/shake256-test.c (test_incremental): Deleted function,
+	superseded by test_xof.
+	(test_main): Change from using test_hash to test_xof, delete use
+	of test_incremental.
+
+2024-06-16  Niels Möller  <nisse@lysator.liu.se>
+
+	* testsuite/testutils.c (test_mac): Add set_key function argument,
+	to support tests with key size != mac->key_size.
+	* testsuite/cmac-test.c: Update test_mac usage.
+	* testsuite/hmac-test.c (HMAC_TEST): Deleted macro, replace with
+	test_mac, passing set_key function when needed.
+	(test_main): Add more test vectors from RFC 4868, previously
+	draft-kelly-ipsec-ciph-sha2.
+
+	* hmac-gosthash94-meta.c: New file.
+	* nettle-meta.h (nettle_hmac_gosthash94)
+	(nettle_hmac_gosthash94cp): Declare.
+	* nettle-meta-macs.c (_nettle_macs): Add nettle_hmac_gosthash94
+	and nettle_hmac_gosthash94cp.
+	* Makefile.in (nettle_SOURCES): Add hmac-gosthash94-meta.c.
+	* testsuite/meta-mac-test.c: Update test.
+
+	* Released Nettle-3.10.
+
+	* examples/rsa-encrypt-test: Consistently add $EXEEXT to
+	executable names.
+	* examples/rsa-sign-test: Likewise.
+	* examples/rsa-verify-test: Likewise.
+	* examples/setup-env: Likewise.
+	* tools/nettle-pbkdf2-test: Likewise.
+	* tools/pkcs1-conv-test: Likewise
+	* tools/sexp-conv-test: Likewise.
+
+	* configure.ac: When cross-compiling targetting windows,
+	always use "wine" as EMULATOR; using "wine64" for 64-bit windows
+	seems no longer needed.
+
+2024-06-15  Niels Möller  <nisse@lysator.liu.se>
+
+	* testsuite/Makefile.in (TS_SC_NETTLE): New variable.
+	(DISTFILES): Unconditionally include side-channel tests,
+	fix accidental dependence on IF_VALGRIND.
+
+2024-06-11  Niels Möller  <nisse@lysator.liu.se>
+
+	* fat-arm64.c: Enable use of getauxval on android, for
+	__ANDROID_API__ >= 18.
+
+2024-06-10  Niels Möller  <nisse@lysator.liu.se>
+
+	From Eric Richter:
+	* powerpc64/p8/sha256-compress-n.asm: New file.
+	* powerpc64/fat/sha256-compress-n-2.asm: New file.
+	* fat-ppc.c: Add fat setup for _nettle_sha256_compress_n.
+
+2024-06-09  Niels Möller  <nisse@lysator.liu.se>
+
+	* ecc-internal.h (assert_maybe) [!WITH_EXTRA_ASSERTS]: Cast to
+	void, to avoid warnings.
+
+2024-06-05  Niels Möller  <nisse@lysator.liu.se>
+
+	* config.guess: Update to 2024-01-01 version.
+	* config.sub: Update to 2024-01-01 version.
+
+2024-06-02  Niels Möller  <nisse@lysator.liu.se>
+
+	* configure.ac: Bump package version, to 3.10.
+	(LIBNETTLE_MINOR): Bump minor number, to 8.9.
+	(LIBHOGWEED_MINOR): Bump minor number, to 6.9.
+
+2024-06-01  Niels Möller  <nisse@lysator.liu.se>
+
+	* eddsa-hash.c (_eddsa_hash): Use NETTLE_OCTET_SIZE_TO_LIMB_SIZE.
+
+	* ecc-hash.c (ecc_hash, gost_hash): Deleted file, moved functions to...
+	* dsa-hash.c (_nettle_dsa_hash): Change to use mpn interface
+	instead of mpz, replacing ecc_hash.
+	(_nettle_gostdsa_hash): Moved here, renamed from gost_hash.
+	* dsa-internal.h (_nettle_dsa_hash): Update declaration.
+	(_nettle_gostdsa_hash): Moved declaration here.
+	* ecc-internal.h (ecc_hash, gost_hash): Delete old declarations.
+	* gmp-glue.h (NETTLE_BIT_SIZE_TO_LIMB_SIZE): New macro.
+
+	* dsa-sign.c (dsa_sign): Adapt to _nettle_dsa_hash change.
+	* dsa-verify.c (dsa_verify): Likewise.
+	* ecc-ecdsa-sign.c (ecc_ecdsa_sign): Use _nettle_dsa_hash.
+	* ecc-ecdsa-verify.c (ecc_ecdsa_verify): Likewise.
+	* ecc-gostdsa-sign.c (ecc_gostdsa_sign): Use _nettle_gostdsa_hash.
+	* ecc-gostdsa-verify.c (ecc_gostdsa_verify): Likewise.
+
+	* Makefile.in (hogweed_SOURCES): Delete ecc-hash.c
+
+2024-05-15  Niels Möller  <nisse@lysator.liu.se>
+
+	* powerpc64/p8/gcm-aes-encrypt.asm: Reduce register usage.
+	* powerpc64/p8/gcm-aes-decrypt.asm: Analogous changes.
+
+2024-04-14  Niels Möller  <nisse@lysator.liu.se>
+
+	From Danny Tsen: Combined gcm-aes implementation for powerpc64.
+	* configure.ac: Define HAVE_NATIVE_gcm_aes_encrypt and
+	HAVE_NATIVE_gcm_aes_decrypt.
+	(asm_nettle_optional_list): Add gcm-aes-encrypt.asm,
+	gcm-aes-encrypt-2.asm, gcm-aes-decrypt.asm, and
+	gcm-aes-decrypt-2.asm.
+	* gcm-internal.h (_gcm_aes_encrypt, _gcm_aes_decrypt): Declare
+	internal functions, and define as dummy macros when not supported.
+	* gcm-aes128.c (gcm_aes128_encrypt): Use _gcm_aes_encrypt.
+	(gcm_aes128_decrypt): Use _gcm_aes_encrypt.
+	* gcm-aes192.c (gcm_aes192_encrypt, gcm_aes128_decrypt): Likewise.
+	* gcm-aes256.c (gcm_aes256_encrypt, gcm_aes256_decrypt): Likewise.
+	* Makefile.in (DISTFILES): Add gcm-internal.h.
+	* powerpc64/machine.m4 (GF_MUL): New macro.
+	* powerpc64/fat/gcm-aes-decrypt-2.asm: New file.
+	* powerpc64/fat/gcm-aes-encrypt-2.asm: New file.
+	* powerpc64/p8/gcm-aes-decrypt.asm: New file.
+	* powerpc64/p8/gcm-aes-encrypt.asm: New file.
+	* fat-setup.h (gcm_aes_crypt_func): New typedef.
+	* fat-ppc.c: Fat setup for gcm_aes_encrypt and gcm_aes_decrypt.
+	(gcm_aes_crypt_c): New nop implementation.
+
+2024-03-29  Niels Möller  <nisse@lysator.liu.se>
+
+	* bswap-internal.h (nettle_bswap32_n): New inline function.
+	(bswap32_n_if_le): New macro, to reduce code duplication.
+	* blowfish-bcrypt.c (bswap32_if_le_n): Deleted, usage replaced
+	with shared bswap32_n_if_le.
+	* umac-set-key.c (bswap32_if_le_n): Likewise.
+
+2024-03-28  Niels Möller  <nisse@lysator.liu.se>
+
+	* sha512-224-meta.c (nettle_sha512_224): Change name to
+	"sha512_224", with underscore rather than dash.
+	* sha512-256-meta.c (nettle_sha512_256): Analogous change.
+	* nettle-meta-hashes.c (_nettle_hashes): Add nettle_sha512_224 and
+	nettle_sha512_256.
+	* testsuite/meta-hash-test.c: Update test.
+
+2024-03-24  Niels Möller  <nisse@lysator.liu.se>
+
+	* testsuite/gcm-test.c (test_main): Add a test case that triggers
+	32-bit counter wraparound for gcm_aes256, and a larger 719 byte
+	message.
+
+2024-03-28  Niels Möller  <nisse@lysator.liu.se>
+
+	From Daiki Ueno:
+	* shake128.c (sha3_128_init, sha3_128_update, sha3_128_shake)
+	(sha3_128_shake_output): New file, new functions.
+	* testsuite/shake128-test.c: New testcases.
+	* Makefile.in (nettle_SOURCES): Add shake128.c.
+	* testsuite/Makefile.in (TS_NETTLE_SOURCES): Add shake128-test.c.
+
+2024-03-24  Niels Möller  <nisse@lysator.liu.se>
+
+	* sha3-shake.c (_nettle_sha3_shake, _nettle_sha3_shake_output):
+	New file, new functions. Generalizations of sha3_256_shake and
+	sha3_256_shake_output, respectively.
+	(_nettle_sha3_shake_output): Use one's complement of index,
+	instead of just setting high bit.
+
+	* shake256.c (sha3_256_shake, sha3_256_shake_output): Implement in
+	terms of calls to the new functions.
+	* Makefile.in (nettle_SOURCES): Add sha3-shake.c.
+
+	* sha3.c (_nettle_sha3_update): Use MD_FILL_OR_RETURN_INDEX.
+	(sha3_xor_block): New function, taken out from sha3_absorb.
+	(_nettle_sha3_pad): Call sha3_xor_block, not sha3_absorb.
+	* sha3-internal.h (_sha3_pad_shake): By above change, no longer
+	implies sha3_permute.
+	(_sha3_pad_hash): Update, to still include a
+	call to sha3_permute.
+	* shake256.c (sha3_256_shake, sha3_256_shake_output): Update to
+	call sha3_permute before generating output.
+
+2024-03-20  Niels Möller  <nisse@lysator.liu.se>
+
+	* testsuite/gcm-test.c (test_main): Add a test case that triggers
+	32-bit counter wraparound for gcm_aes128.
+
+2024-03-10  Niels Möller  <nisse@lysator.liu.se>
+
+	From Daiki Ueno:
+	* shake256.c (sha3_256_shake_output): New function, incremental
+	shake256 output.
+	* testsuite/shake256-test.c (test_incremental): New function, for
+	testing sha3_256_shake_output.
+	(test_main): Use it.
+
+2024-03-10  Niels Möller  <nisse@lysator.liu.se>
+
+	* poly1305-update.c (_nettle_poly1305_update): Explicitly check
+	for empty input and return.
+
+	* testsuite/testutils.c (test_aead): Test with associated split
+	data into two pieces in different ways, respecting block
+	boundaries. Also add a call to update(ctx, 0, NULL) in the
+	middle, and encrypt and decrypt calls with empty input.
+
+2024-03-08  Niels Möller  <nisse@lysator.liu.se>
+
+	Fix ubsan issues for empty hash updates.
+	* macros.h (MD_UPDATE): Check upfront if length is zero. Avoids
+	calling memcpy(dst, NULL, 0), which is undefined behavior.
+	* sha256.c (sha256_update): Likewise.
+	* sha3.c (_nettle_sha3_update): Likewise.
+	* testsuite/testutils.c (test_hash): Test with message split into
+	two pieces in different ways, and also add an call to update(ctx,
+	0, NULL) in the middle.
+
+2024-02-16  Niels Möller  <nisse@lysator.liu.se>
+
+	RSA-OAEP support contributed by Nicolas Mora and Daiki Ueno:
+	* rsa-oaep-encrypt.c (_rsa_oaep_encrypt)
+	(rsa_oaep_sha256_encrypt, rsa_oaep_sha384_encrypt)
+	(rsa_oaep_sha512_encrypt): New file, new functions.
+	* rsa-oaep-decrypt.c (_rsa_oaep_decrypt)
+	(rsa_oaep_sha256_decrypt, rsa_oaep_sha384_decrypt)
+	(rsa_oaep_sha512_decrypt): New file, new functions.
+	* rsa.h: Declare new RSA OAEP functions.
+	* rsa-internal.h: Declare internal RSA OAEP functions.
+	* oaep.c (_oaep_sec_decrypt_variable, _oaep_decode_mgf1)
+	(_oaep_encode_mgf1): New file, new functions.
+	* oaep.h: New file, declaring internal functions.
+	* Makefile.in (hogweed_SOURCES): Add oaep.c, rsa-oaep-encrypt.c
+	rsa-oaep-decrypt.c.
+	(DISTFILES): Add oaep.h.
+	* nettle.texinfo (RSA): Document RSA-OAEP functions.
+	* testsuite/rsa-oaep-encrypt-test.c: New tests.
+	* testsuite/testutils.c (test_rsa_set_key_2): New function.
+	* testsuite/Makefile.in (TS_HOGWEED_SOURCES): Add rsa-oaep-encrypt-test.c
+	(TS_SC_HOGWEED): Add sc-rsa-oaep-encrypt-test.
+
+2024-02-02  Niels Möller  <nisse@lysator.liu.se>
+
+	Optimize powerpc64 aes decrypt. Speedup of 80%-100%, depending on
+	key size, when benchmarked on Power 10:
+	* configure.ac (asm_replace_list): Add aes-invert-internal.asm.
+	(asm_nettle_optional_list): Add aes-invert-internal-2.asm.
+	* powerpc64/p8/aes-invert-internal.asm (_aes_invert): New file.
+	Implementat _aes_invert as just a memcpy.
+	* powerpc64/p8/aes-decrypt-internal.asm: Rework to use unmixed
+	encryption subkeys, which fits better with the vncipher
+	instruction, and eliminates lots of vxor instructions.
+	* powerpc64/fat/aes-invert-internal-2.asm: New file.
+	* aes-invert-internal.c: Check HAVE_NATIVE_aes_invert, and define
+	_nettle_aes_invert_c wen needed.
+	* fat-setup.h (aes_invert_internal_func): New typedef.
+	* fat-ppc.c: Add fat setup for _aes_invert.
+
+2024-01-28  Niels Möller  <nisse@lysator.liu.se>
+
+	* powerpc64/p8/aes-encrypt-internal.asm: Use r10-r12 consistently
+	for indexing, and reducing number of used callee-save registers.
+	* powerpc64/p8/aes-decrypt-internal.asm: Likewise.
+
+2024-01-27  Niels Möller  <nisse@lysator.liu.se>
+
+	* aes-invert-internal.c (_nettle_aes_invert): Don't reorder the subkeys.
+	* aes-decrypt-internal.c (_nettle_aes_decrypt): Updated to process
+	subkeys starting from the end, and let subkeys pointer point at
+	the subkey for the first decrypt round, located at the end of the
+	array.
+	* aes128-decrypt.c (nettle_aes128_decrypt): Updated accordingly.
+	* aes192-decrypt.c (nettle_aes192_decrypt): Likewise.
+	* aes256-decrypt.c (nettle_aes256_decrypt): Likewise.
+	* arm/aes.m4 (AES_LOAD_INCR): New macro, specifying desired
+	increment of key pointer.
+	* arm/aes-decrypt-internal.asm: Updated for new conventions.
+	* arm/v6/aes-decrypt-internal.asm: Likewise.
+	* arm64/crypto/aes128-decrypt.asm: Likewise.
+	* arm64/crypto/aes192-decrypt.asm: Likewise.
+	* arm64/crypto/aes256-decrypt.asm: Likewise.
+	* powerpc64/p8/aes-decrypt-internal.asm: Likewise.
+	* sparc64/aes-decrypt-internal.asm: Likewise.
+	* x86/aes-decrypt-internal.asm: Likewise.
+	* x86_64/aes-decrypt-internal.asm: Likewise.
+	* x86_64/aes-decrypt-internal.asm: Likewise.
+	* x86_64/aesni/aes128-decrypt.asm: Likewise.
+	* x86_64/aesni/aes192-decrypt.asm: Likewise.
+	* x86_64/aesni/aes256-decrypt.asm: Likewise.
+
+2024-01-26  Niels Möller  <nisse@lysator.liu.se>
+
+	Delete all sparc32 assembly.
+	* sparc32/aes-decrypt-internal.asm: Deleted file.
+	* sparc32/aes-encrypt-internal.asm: Deleted file.
+	* configure.ac: Don't enable any assembly for 32-bit sparc.
+	* Makefile.in (distdir): Don't distribute sparc32 files.
+	* sparc64/aes.m4: Moved file, from...
+	* sparc32/aes.m4: ... old location.
+	* sparc64/aes-encrypt-internal.asm: Update for location of aes.m4.
+	* sparc64/aes-decrypt-internal.asm: Likewise.
+
+2024-01-23  Niels Möller  <nisse@lysator.liu.se>
+
+	* powerpc64/machine.m4 (GHASH_REDUCE): New macro. Improve
+	scheduling, adding vpmsumd result last.
+	* powerpc64/p8/ghash-update.asm: Use GHASH_REDUCE, slightly reduce
+	vector register usage, simplify use of index registers.
+
+2024-01-21  Niels Möller  <nisse@lysator.liu.se>
+
+	* powerpc64/machine.m4 (OPN_XXY, OPN_XXXY): New macros.
+	* powerpc64/p8/aes-encrypt-internal.asm: Use macros for repeated
+	instruction patterns.
+	* powerpc64/p8/aes-decrypt-internal.asm: Likewise.
+
+2023-12-27  Niels Möller  <nisse@lysator.liu.se>
+
+	* testsuite/gcm-test.c (test_main): Additional gcm test case, with
+	719 byte message, contributed by Danny Tsen.
+
+2023-12-08  Niels Möller  <nisse@lysator.liu.se>
+
+	Delete all md5 assembly code.
+	* md5.c (nettle_md5_compress): Move function and related macros
+	here, from...
+	* md5-compress.c: ... deleted file.
+	* x86/md5-compress.asm: Deleted file.
+	* x86_64/md5-compress.asm: Deleted file.
+
+	* configure.ac: When checking for openssl, use AC_LINK_IFELSE to
+	check if needed functions really are available. Just using
+	AC_CHECK_LIB to check for, e.g., EVP_RSA_gen, doesn't work, since
+	that is a macro that depends on including openssl/rsa.h.'
+
+2023-12-06  Niels Möller  <nisse@lysator.liu.se>
+
+	* drbg-ctr-aes256.c (drbg_ctr_aes256_output): New helper function.
+	(drbg_ctr_aes256_update, drbg_ctr_aes256_random): Use it.
+
+	From Simon Josefsson:
+	* drbg-ctr.h (struct drbg_ctr_aes256_ctx): New context struct.
+	(DRBG_CTR_AES256_SEED_SIZE): New constant.
+	* drbg-ctr-aes256.c (drbg_ctr_aes256_update)
+	(drbg_ctr_aes256_init, drbg_ctr_aes256_random): New file, new functions.
+
+	* testsuite/drbg-ctr-aes256-test.c: New testcase.
+	* nettle.texinfo (Randomness): Document DRBG-CTR.
+
+2023-12-05  Niels Möller  <nisse@lysator.liu.se>
+
+	From Tim Kosse:
+	* fat-arm64.c (check_sysctlbyname) [__APPLE__]: New function.
+	(get_arm64_features) [__APPLE__]: Fix feature detection for Apple
+	M1 devices.
+
+	* configure.ac: In openssl tests, check for the headers actually
+	used by the benchmarking code, and for a subset of the relevant
+	functions.
+
+	* examples/nettle-openssl.c: Trim openssl includes and defines,
+	and use Nettle's definition of sha1 and md5 constants.
+	(nettle_openssl_init): Deleted.
+	* examples/nettle-benchmark.c (main): Delete call to nettle_openssl_init.
+
+2023-12-04  Niels Möller  <nisse@lysator.liu.se>
+
+	* examples/nettle-openssl.c (nettle_openssl_blowfish128)
+	(nettle_openssl_des, openssl_cast128_set_encrypt_key): Deleted,
+	since these algorithms are now available in openssl only via the
+	"legacy provider". Also deleted declarations and usage.
+
+	* examples/hogweed-benchmark.c (struct openssl_ctx): Unified
+	struct, replacing openssl_rsa_ctx and openssl_ecdsa_ctx.
+	(bench_openssl_init, bench_openssl_sign, bench_openssl_verify)
+	(bench_openssl_clear): New functions, using EVP interfaces to
+	signing, replacing rsa- and ecdsa-specific functions.
+	(bench_openssl_rsa_init, bench_openssl_ecdsa_init): Use bench_openssl_init.
+
+2023-11-23  Niels Möller  <nisse@lysator.liu.se>
+
+	* nettle-internal.h: Keep only declarations actually used
+	internally in the library.
+	* non-nettle.h: New file, contents extracted from
+	nettle-internal.h, for use in test and benchmark code.
+	* non-nettle.c: New file, renamed from ...
+	* nettle-internal.c: ... old name, deleted.
+	* Makefile.in (internal_SOURCES, DISTFILES): Updated accordingly.
+	* testsuite/Makefile.in (TEST_OBJS): Replace ../nettle-internal.o
+	with ../non-nettle.o, and update corresponding make rule.
+	* examples/Makefile.in (BENCH_OBJS): Likewise.
+
+2023-11-22  Niels Möller  <nisse@lysator.liu.se>
+
+	Revert part of the 2023-08-05 change.
+	* rsa-sec-decrypt.c (rsa_sec_decrypt): Merge with
+	_rsa_sec_decrypt, including input range check.
+	(_rsa_sec_decrypt): Deleted.
+	* rsa-internal.h (_rsa_sec_decrypt): Delete declaration.
+	* testsuite/rsa-sec-decrypt-test.c (rsa_decrypt_for_test): Always
+	call rsa_sec_decrypt, but don't annotate the ciphertext input as
+	undefined/secret.
+
+2023-11-15  Niels Möller  <nisse@lysator.liu.se>
+
+	* ecc-mod-arith.c (ecc_mod_addmul_1): Use assert_maybe.
+	* ecc-curve448.c (ecc_curve448_modp): Likewise.
+	* ecc-curve25519.c (ecc_curve25519_modq): Likewise.
+	* eddsa-hash.c (_eddsa_hash): Likewise.
+	* eddsa-sign.c (_eddsa_sign): Likewise.
+
+	* testsuite/curve25519-dh-test.c (test_g): Add calls to
+	mark_bytes_undefined and mark_bytes_defined.
+	(test_a): Likewise.
+	(test_main): Skip side-channel tests in builds with mini-gmp or
+	extra asserts enabled.
+	* testsuite/curve448-dh-test.c: Analogous changes.
+	* testsuite/ed448-test.c (test_one): Analogous changes.
+	* testsuite/ed25519-test.c: Analogous changes.
+
+	* testsuite/Makefile.in (TS_SC_HOGWEED): New make variable. Added
+	sc-curve25519-dh-test, sc-curve448-dh-test, sc-ed25519-test, and
+	sc-ed448-test to list.
+	* testsuite/sc-curve25519-dh-test: New testcase.
+	* testsuite/sc-curve448-dh-test: New testcase.
+	* testsuite/sc-ed448-test: New testcase.
+	* testsuite/sc-ed25519-test: New testcase.
+
+2023-11-14  Niels Möller  <nisse@lysator.liu.se>
+
+	Add a first side-channel test for the ECC code.
+	* configure.ac: New option --enable-extra-asserts. Enables asserts
+	that are disabled by default, due to conflict with tests of
+	side-channel silence.
+	(WITH_EXTRA_ASSERTS): Corresponding new define.
+	* ecc-internal.h (assert_maybe): Conditionally define this assert
+	macro, depending on WITH_EXTRA_ASSERTS.
+	* ecc-mod-arith.c: Convert most asserts to assert_maybe.
+	* ecc-mod-inv.c (ecc_mod_inv): Likewise.
+	* ecc-mod.c (ecc_mod): Likewise.
+	* ecc-pm1-redc.c (ecc_pm1_redc): Likewise.
+	* ecc-pp1-redc.c (ecc_pp1_redc): Likewise.
+	* ecc-secp192r1.c (ecc_secp192r1_modp): Likewise.
+	* ecc-secp384r1.c (ecc_secp384r1_modp): Likewise.
+	* testsuite/ecdsa-sign-test.c (test_ecdsa): Add calls to
+	mark_bytes_undefined and mark_bytes_defined.
+	(test_main): Skip side-channel tests in builds with mini-gmp or
+	extra asserts enabled.
+	* testsuite/sc-ecdsa-sign-test: New testcase.
+	* testsuite/Makefile.in (TS_SC): Add sc-ecdsa-sign-test.
+
+2023-11-12  Niels Möller  <nisse@lysator.liu.se>
+
+	* gmp-glue.h (GMP_LIMB_BITS) [NETTLE_USE_MINI_GMP]: Define as alias for
+	GMP_NUMB_BITS.
+	(is_zero_limb): Move inline function here. Add static, for
+	compatibility with c89. and mini-gmp builds.
+	* gmp-glue.c (sec_zero_p): Use is_zero_limb.
+
+2023-11-06  Niels Möller  <nisse@lysator.liu.se>
+
+	Avoid comparison like cnd = (x == 0) in code intended to be
+	side-channel silent, since to eliminate branches with some
+	compilers/architectures, in particular 32-bit x86 and the msvc compiler.
+	* nettle-internal.h (IS_ZERO_SMALL): New macro.
+	* memeql-sec.c (memeql_sec): Use IS_ZERO_SMALL.
+	* pkcs1-sec-decrypt.c (EQUAL): Likewise.
+
+	* cnd-copy.c (cnd_copy): Require that cnd argument is 1 or 0.
+	* ecc-mul-a.c (ecc_mul_a) [ECC_MUL_A_WBITS == 0]:
+	Rearrange loop to pass 0 or 1 to cnd_copy.
+	* ecc-mul-a-eh.c (ecc_mul_a_eh) [ECC_MUL_A_EH_WBITS == 0]:
+	Likewise.
+	* ecc-mul-a.c (ecc_mul_a) [ECC_MUL_A_WBITS > 0]: Use
+	IS_ZERO_SMALL, and pass 0 or 1 to cnd_copy.
+	* ecc-mul-g.c (ecc_mul_g): Likewise.
+
+	* ecc-internal.h (is_zero_limb): New inline function.
+	* eddsa-decompress.c (_eddsa_decompress): Likewise.
+	* ecc-gostdsa-sign.c (ecc_gostdsa_sign): Likewise.
+	* ecc-mod-arith.c (ecc_mod_zero_p): Likewise.
+	(ecc_mod_equal_p): Avoid comparison cy == 0.
+	* ecc-j-to-a.c (ecc_j_to_a): Avoid comparison cy == 0.
+
+2023-10-06  Niels Möller  <nisse@lysator.liu.se>
+
+	* testsuite/rsa-sec-decrypt-test.c (test_main): Skip side-channel
+	test if built with mini-gmp.
+
+	* testsuite/sc-valgrind.sh (with_valgrind): Pass
+	--exit-on-first-error=yes.
+
+	* aclocal.m4 (NETTLE_PROG_VALGRIND): New macro.
+	* configure.ac: Use it.
+	* testsuite/Makefile.in (TS_SH): Include side-channel tests only
+	if we have a working valgrind.
+
+	* misc/c89: New wrapper script to force compiling in c89 mode.
+
+2023-10-04  Niels Möller  <nisse@lysator.liu.se>
+
+	* bswap-internal.h (bswap32_if_be, bswap32_if_le): New macros.
+	* blowfish-bcrypt.c (bswap32_if_le_n): Rename, to not collide with
+	new macro.
+	(bswap32_if_le): ... old name, deleted.
+	* umac-set-key.c (bswap32_if_le_n): Define in the same way as for
+	bcrypt, replacing...
+	(BE_SWAP32_N): ...deleted macro.
+	* umac-l3.c (_nettle_umac_l3_init): Use bswap64_if_le.
+	* umac-l2.c (_nettle_umac_l2_init): Use bswap32_if_le.
+	* chacha-core-internal.c (_nettle_chacha_core): Use bswap32_if_be.
+	* salsa20-core-internal.c (_nettle_salsa20_core): Likewise
+
+	* umac-l2.c (_nettle_umac_l2_final): Delete redundant assignment.
+
+2023-10-03  Niels Möller  <nisse@lysator.liu.se>
+
+	* Makefile.in (check-fat): Reduce tests to run to TS_FAT, to speed
+	up tests.
+
+	* testsuite/Makefile.in (TS_FAT): Define list of tests relevant
+	for testing algorithm variants in fat builds.
+
+	* testsuite/ecc-mod-arith-test.c: Reduce test count, aiming to get
+	test to complete in roughly 0.1s.
+	* testsuite/ecc-mod-test.c: Likewise.
+	* testsuite/ecc-modinv-test.c: Likewise.
+	* testsuite/ecc-mul-a-test.c: Likewise.
+	* testsuite/ecc-redc-test.c: Likewise.
+	* testsuite/ecc-sqrt-test.c: Likewise.
+	* testsuite/eddsa-compress-test.c: Likewise.
+	* testsuite/poly1305-test.c: Likewise.
+	* testsuite/random-prime-test.c: Likewise.
+	* testsuite/rsa-compute-root-test.c: Likewise.
+	* testsuite/rsa-sec-decrypt-test.c: Likewise.
+
+	* testsuite/Makefile.in (TS_SH): Delete tools tests from list.
+	* tools/Makefile.in (check): Run tools tests from this target.
+	(TS_ALL): New variable.
+	(DISTFILES): Add TS_ALL files.
+	* testsuite/teardown-env: Deleted, intead let make clean delete
+	test files.
+	* tools/nettle-pbkdf2-test: Moved, from testseuite/.
+	* tools/sexp-conv-test: Likewise.
+	* tools/pkcs1-conv-test: Likewise.
+
+2023-08-05  Niels Möller  <nisse@lysator.liu.se>
+
+	* testsuite/testutils.c (mark_bytes_undefined)
+	(mark_bytes_defined): New functions. Update side-channel related
+	tests to use them.
+	(main): Check environment variable NETTLE_TEST_SIDE_CHANNEL.
+	(test_side_channel): New global variable.
+
+	* testsuite/sc-valgrind.sh (with_valgrind): New file, new shell
+	utility function.
+
+	* testsuite/sc-pkcs1-sec-decrypt-test: New test, for side channel
+	silence.
+	* testsuite/sc-memeql-test: Likewise.
+	* testsuite/sc-gcm-test: Likewise.
+	* testsuite/sc-cnd-memcpy-test: Likewise.
+	* testsuite/rsa-sec-decrypt-test: Likewise.
+
+	* rsa-sec-decrypt.c (_rsa_sec_decrypt): New internal function,
+	without input range checks.
+	(rsa_sec_decrypt): Use it.
+
+2023-08-02  Niels Möller  <nisse@lysator.liu.se>
+
+	* configure.ac: Replace obsoleted macros, require autoconf-2.69,
+	from 2012, or later.
+	* aclocal.m4: Likewise.
+
+	* aclocal.m4 (LSH_FUNC_STRERROR): Delete macro.
+	(LSH_FUNC_STRSIGNAL): Delete unused macro.
+	* configure.ac: Delete usage of LSH_FUNC_STRERROR.
+	* tools/nettle-hash.c (main): Use strerror unconditionally.
+	* tools/nettle-pbkdf2.c (main): Likewise.
+
+2023-08-01  Niels Möller  <nisse@lysator.liu.se>
+
+	* configure.ac: Delete special handling of rntcl; it should be
+	treated like any other cross compiler. Delete obsolete check of
+	ac_cv_prog_cc_stdc.
+
+2023-06-01  Niels Möller  <nisse@lysator.liu.se>
+
+	* Released Nettle-3.9.1.
+
+2023-05-26  Niels Möller  <nisse@lysator.liu.se>
+
+	* configure.ac: Bump package version, to 3.9.1.
+	(LIBNETTLE_MINOR): Bump minor number, to 8.8.
+	(LIBHOGWEED_MINOR): Bump minor number, to 6.8.
+
+2023-05-19  Niels Möller  <nisse@lysator.liu.se>
+
+	From Jussi Kivilinna:
+	* ocb.c (ocb_crypt_n): Fix broken loop logic.
+	* testsuite/ocb-test.c (test_main): Add test vector from libgcrypt,
+	with larger message, to exercise above loop.
+
+2023-05-16  Niels Möller  <nisse@lysator.liu.se>
+
+	* x86_64/ghash-update.asm: Use separate unaligned load
+	instructions (movups) to load the tabulated values, since they are
+	only 8-byte aligned and pand memory operands require 16-byte
+	alignment.
+
+2023-05-15  Niels Möller  <nisse@lysator.liu.se>
+
+	* eccdata.c (output_bignum_redc): Add missing mpz_clear, reported
+	by Noah Watkins.
+	(output_digits): Delete a gratuitous mpz_init.
+
+2023-05-14  Niels Möller  <nisse@lysator.liu.se>
+
+	* Released nettle-3.9.
+
+2023-05-12  Niels Möller  <nisse@lysator.liu.se>
+
+	* texinfo.tex: Delete unused file.
+
+	Copy files from https://git.savannah.gnu.org/cgit/gnulib.git/plain/build-aux/
+	* install-sh: Update to 2020-11-14.01 version.
+	* config.guess: Update to 2023-01-01 version.
+	* config.sub: Update to 2023-01-21 version.
+
+2023-05-10  Niels Möller  <nisse@lysator.liu.se>
+
+	Fix compile error in --disable-public-key configuration.
+	* testsuite/sha1-test.c: Add missing include of sha1.h.
+	* testsuite/sha256-test.c: Add missing include of sha2.h.
+
+2023-05-07  Niels Möller  <nisse@lysator.liu.se>
+
+	* configure.ac: Bump package version, to 3.9.
+	(LIBNETTLE_MINOR): Bump minor number, to 8.7 (8.6 was used for
+	Nettle-3.8.1).
+	(LIBHOGWEED_MINOR): Bump minor number, to 6.7.
+
+2023-04-25  Niels Möller  <nisse@lysator.liu.se>
+
+	Rework tests of SIV message functions.
+	* testsuite/siv-gcm-test.c (nettle_encrypt_message_func)
+	(nettle_decrypt_message_func): Delete typedefs.
+	(test_compare_results, test_cipher_siv_gcm): Delete functions.
+	(test_siv_gcm_aes128, test_siv_gcm_aes256): Delete macros.
+	(siv_gcm_aes128, siv_gcm_aes256): New algorithm structs.
+	(test_main): Use test_aead_message.
+
+	* testsuite/siv-cmac-test.c (nettle_encrypt_message_func)
+	(nettle_decrypt_message_func): Delete typedefs.
+	(test_compare_results, test_cipher_siv): Delete functions.
+	(test_siv_aes128, test_siv_aes256): Delete macros.
+	(siv_cmac_aes128, siv_cmac_aes256): New algorithm structs.
+	(test_main): Use test_aead_message.
+
+2023-04-24  Niels Möller  <nisse@lysator.liu.se>
+
+	Rework tests of OCB message functions.
+	* testsuite/testutils.c (test_aead_message): New function, for
+	testing AEAD message functions.
+	* testsuite/testutils.h (nettle_encrypt_message_func)
+	(nettle_decrypt_message_func): New typedefs.
+	(struct nettle_aead_message): New struct.
+	* testsuite/ocb-test.c (nettle_encrypt_message_func)
+	(nettle_decrypt_message_func): Deleted typedefs.
+	(test_compare_results): Deleted function.
+	(test_ocb_aes128): Deleted macro.
+	(struct ocb_aes128_message_key): New struct.
+	(ocb_aes128_set_encrypt_key_wrapper)
+	(ocb_aes128_set_decrypt_key_wrapper)
+	(ocb_aes128_encrypt_message_wrapper)
+	(ocb_aes128_decrypt_message_wrapper): New wrapper functions, using
+	above ocb_aes128_message_key for both encrypt and decrypt, and a
+	fix tag length of 16 octets.
+	(ocb_aes128_message): New algorithm struct, with above wrappers.
+	(test_main): Use test_aead_message.
+
+2023-04-23  Niels Möller  <nisse@lysator.liu.se>
+
+	* testsuite/siv-cmac-test.c: Renamed file, from...
+	* testsuite/siv-test.c: ... old name.
+
+2023-04-13  Niels Möller  <nisse@lysator.liu.se>
+
+	* ghash-update.c (gcm_gf_mul): Rewrite to avoid side-channel
+	leakage. Now processes the message bits one at a time, using
+	tabulated values of the key premultiplied by appropriate powers of
+	x, so that the table is accessed in a fixed sequential order.
+	Performance penalty, on x86_64, is roughly 3 times.
+	(shift_table): Deleted table.
+	(gcm_gf_shift_8): Deleted function.
+	* ghash-set-key.c (_ghash_set_key): Rewrite table generation.
+	* gcmdata.c: Deleted.
+	* Makefile.in: Delete references to gcmdata.
+
+	* x86_64/ghash-update.asm: Rewritten, similar side-channel silent
+	method as the C implementation, with same table layout, but using
+	sse2 instructions.
+
+	* testsuite/gcm-test.c (test_ghash_internal): Add valgrind
+	annotations, to verify that the ghash implementation makes no
+	data-dependent branches or memory accesses.
+
+	* examples/nettle-benchmark.c (bench_ghash_update): New function.
+
+2023-04-03  Niels Möller  <nisse@lysator.liu.se>
+
+	From Mamone Tarsha:
+	* x86_64/pclmul/ghash-update.asm: New loop to process two blocks
+	at a time.
+	* x86_64/pclmul/ghash-set-key.asm: Likewise.
+
+2023-03-25  Niels Möller  <nisse@lysator.liu.se>
+
+	* ocb.h (OCB_MAX_NONCE_SIZE): New constant.
+
+2023-02-16  Niels Möller  <nisse@lysator.liu.se>
+
+	* x86_64/sha256-compress-n.asm: Fix incorrect w64 setup. Report
+	and fix from Gisle Vanem.
+
+2023-02-08  Niels Möller  <nisse@lysator.liu.se>
+
+	* examples/nettle-benchmark.c (main): Benchmark ocb_aes128.
+
+2023-02-07  Niels Möller  <nisse@lysator.liu.se>
+
+	Implement OCB mode. RFC 7253.
+	* block-internal.h (block16_set): New function.
+
+	* ocb.c (ocb_set_key, ocb_set_nonce, ocb_update, ocb_encrypt)
+	(ocb_decrypt, ocb_encrypt_message, ocb_decrypt_message): New
+	public functions.
+	(MEM_ROTATE_RIGHT, MEM_MASK): New macros.
+	(extract, update_offset, pad_block, ocb_fill_n, ocb_crypt_n)
+	(ocb_checksum_n): New helper functions.
+	* ocb-aes128.c (ocb_aes128_set_encrypt_key)
+	(ocb_aes128_set_decrypt_key, ocb_aes128_set_nonce)
+	(ocb_aes128_update, ocb_aes128_encrypt, ocb_aes128_decrypt)
+	(ocb_aes128_digest, ocb_aes128_encrypt_message)
+	(ocb_aes128_decrypt_message): New file, new functions.
+	* ocb.h: Declare ocb functions.
+	(struct ocb_key): New struct.
+	(struct ocb_ctx): New struct.
+	(struct ocb_aes128_encrypt_key): New struct.
+	* Makefile.in (nettle_SOURCES): Add ocb.c ocb-aes128.c.
+	(HEADERS): Add ocb.h.
+
+	* nettle-internal.c (nettle_ocb_aes128)
+	(ocb_aes128_set_encrypt_key_wrapper)
+	(ocb_aes128_set_decrypt_key_wrapper)
+	(ocb_aes128_set_nonce_wrapper, ocb_aes128_update_wrapper)
+	(ocb_aes128_encrypt_wrapper, ocb_aes128_decrypt_wrapper)
+	(ocb_aes128_digest_wrapper): New aead algorithm, and
+	related wrapper functions.
+	* nettle-internal.h (OCB_NONCE_SIZE): New constant.
+	(struct ocb_aes128_ctx): New struct.
+
+	* testsuite/ocb-test.c: New tests.
+	* testsuite/Makefile.in (TS_NETTLE_SOURCES): Add ocb-test.c.
+
+2023-02-06  Niels Möller  <nisse@lysator.liu.se>
+
+	* testsuite/testutils.c (test_aead): Always use set_nonce function
+	pointer if non-NULL, test varying alignment, output the unexpected
+	data when test fails.
+
+2022-12-05  Niels Möller  <nisse@lysator.liu.se>
+
+	* xts-aes128.c (xts_aes128_encrypt_message)
+	(xts_aes128_decrypt_message): const-declare the xts_key argument.
+	* xts-aes256.c (xts_aes256_encrypt_message)
+	(xts_aes256_decrypt_message): Likewise.
+
+2022-11-09  Niels Möller  <nisse@lysator.liu.se>
+
+	From Mamone Tarsha:
+	* powerpc64/p9/poly1305-blocks.asm: New file, multi-block radix
+	2^44 implementation. Benchmarked to give a speedup of 3.2 times on
+	Power9.
+	* powerpc64/p9/poly1305.m4 (DEFINES_BLOCK_R64, BLOCK_R64): New
+	file, new macros.
+	* powerpc64/p9/poly1305-internal.asm: Use BLOCK_R64 macro.
+	* powerpc64/machine.m4 (INC_GPR, INC_VR): New macros.
+	* powerpc64/fat/poly1305-blocks.asm: New file.
+	* poly1305-update.c: Check HAVE_NATIVE_fat_poly1305_blocks, and
+	define _nettle_poly1305_blocks_c when needed.
+	* fat-ppc.c: Fat setup for _nettle_poly1305_blocks.
+
+2022-11-07  Niels Möller  <nisse@lysator.liu.se>
+
+	* configure.ac (ASM_FLAGS): New configure environment variable.
+	* aclocal.m4 (GMP_TRY_ASSEMBLE): Use $ASM_FLAGS.
+	* config.make.in (ASM_FLAGS): Add substitution.
+	* Makefile.in: Use $(ASM_FLAGS) when compiling .asm files.
+
+2022-10-31  Niels Möller  <nisse@lysator.liu.se>
+
+	* configure.ac: (asm_file_list): Add HAVE_NATIVE_poly1305_blocks.
+	(asm_nettle_optional_list): Add poly1305-blocks.asm.
+	* x86_64/poly1305-blocks.asm: New file.
+
+	* md-internal.h (MD_FILL_OR_RETURN_INDEX): New macro.
+	* poly1305-update.c (_nettle_poly1305_update): New file and
+	function.
+	* poly1305-internal.h: Declare _nettle_poly1305_blocks and
+	_nettle_poly1305_update.
+	* chacha-poly1305.c (poly1305_update): Use _nettle_poly1305_update.
+	* poly1305-aes.c (poly1305_aes_update): Likewise.
+	* Makefile.in (nettle_SOURCES): Add poly1305-update.c.
+
+2022-10-13  Niels Möller  <nisse@lysator.liu.se>
+
+	* gmp-glue.c (mpn_sec_tabselect) [NETTLE_USE_MINI_GMP]: Add back
+	here, to support mini-gmp builds. Updated signature to be
+	compatible with the gmp version.
+	* gmp-glue.h: Add declaration.
+
+2022-10-11  Niels Möller  <nisse@lysator.liu.se>
+
+	* sec-tabselect.c (sec_tabselect): Delete file and function. All
+	callers updated to use gmp's mpn_sec_tabselect instead, which is
+	implemented in assembly on many platforms.
+
+2022-10-02  Niels Möller  <nisse@lysator.liu.se>
+
+	* examples/ecc-benchmark.c (bench_curve): Add benchmarking of
+	modulo q inversion.
+
+2022-09-29  Niels Möller  <nisse@lysator.liu.se>
+
+	* ecc-ecdsa-verify.c (ecc_ecdsa_verify): Call ecc_mul_g and ecc_mul_a directly, not via
+	function pointers.
+	(ecc_ecdsa_verify_itch): Use ECC_MUL_A_ITCH
+	rather than ecc->mul_itch.
+	* ecc-gostdsa-verify.c (ecc_gostdsa_verify_itch)
+	(ecc_gostdsa_verify): Analogous changes.
+
+	* ecc-ecdsa-sign.c (ecc_ecdsa_sign): Call ecc_mul_g and ecc_j_to_a
+	directly, not via function pointers.
+	(ecc_ecdsa_sign_itch): Use ECC_MUL_G_ITCH rather than
+	ecc->mul_g_itch.
+	* ecc-gostdsa-sign.c (ecc_gostdsa_sign_itch, ecc_gostdsa_sign):
+	Analogous changes.
+
+2022-09-28  Niels Möller  <nisse@lysator.liu.se>
+
+	* testsuite/meta-hash-test.c (test_main): Add check of
+	NETTLE_MAX_HASH_BLOCK_SIZE.
+	* nettle-internal.h (NETTLE_MAX_HASH_BLOCK_SIZE): Increase to 144,
+	to accommodate sha3_224.
+	* testsuite/meta-cipher-test.c (test_main): Check that cipher
+	metadata doesn't exceed NETTLE_MAX_CIPHER_BLOCK_SIZE or
+	NETTLE_MAX_CIPHER_KEY_SIZE.
+
+	From Daiki Ueno:
+	* siv-gcm.c (siv_gcm_encrypt_message, siv_gcm_decrypt_message):
+	New file, implementation of SIV-GCM.
+	* siv-gcm.h (SIV_GCM_BLOCK_SIZE, SIV_GCM_DIGEST_SIZE)
+	(SIV_GCM_NONCE_SIZE): New header file, new constants and
+	declarations.
+	* siv-gcm-aes128.c (siv_gcm_aes128_encrypt_message)
+	(siv_gcm_aes128_decrypt_message): New file and functions.
+	* siv-gcm-aes256.c (siv_gcm_aes256_encrypt_message)
+	(siv_gcm_aes256_decrypt_message): Likewise.
+	* siv-ghash-set-key.c (_siv_ghash_set_key): New file, new internal
+	function.
+	* siv-ghash-update.c (_siv_ghash_update): Likewise.
+	* block-internal.h (block16_bswap): New inline function.
+	* bswap-internal.h (bswap64_if_be): New macro.
+	* nettle-internal.h (NETTLE_MAX_CIPHER_KEY_SIZE): New constant.
+	* Makefile.in (nettle_SOURCES): Add new source files.
+	(HEADERS): Add siv-gcm.h.
+	* testsuite/siv-gcm-test.c: New tests.
+	* testsuite/Makefile.in (TS_NETTLE_SOURCES): Add siv-gcm-test.c.
+	* nettle.texinfo (SIV-GCM): Documentation.
+
+	From Zoltan Fridrich:
+	* balloon.c (balloon, balloon_itch): Implementation of balloon
+	password hash.
+	* balloon.h: New header file.
+	* balloon-sha1.c (balloon_sha1): New file and function.
+	* balloon-sha256.c (balloon_sha256): Likewise.
+	* balloon-sha384.c (balloon_sha384): Likewise.
+	* balloon-sha512.c (balloon_sha512): Likewise.
+	* Makefile.in (nettle_SOURCES): Add balloon source files.
+	(HEADERS): Add ballon.h.
+	* testsuite/balloon-test.c: New tests.
+	* testsuite/Makefile.in (TS_NETTLE_SOURCES): Add balloon-test.c.
+
+2022-09-14  Niels Möller  <nisse@lysator.liu.se>
+
+	* ecc-nonsec-add-jjj.c (ecc_nonsec_add_jjj): New file and
+	function.
+	* ecc-internal.h: Declare it.
+	* Makefile.in (hogweed_SOURCES): Add ecc-nonsec-add-jjj.c.
+	* testsuite/ecc-add-test.c (test_main): Add tests for ecc_nonsec_add_jjj.
+
+	* ecc-ecdsa-verify.c (ecc_ecdsa_verify): Use ecc_nonsec_add_jjj,
+	to produce correct result in a corner case where point addition
+	needs to use point duplication. Also use ecc_j_to_a rather than
+	ecc->h_to_a, since ecdsa supports only weierstrass curves.
+	* ecc-gostdsa-verify.c (ecc_gostdsa_verify): Analogous change.
+
+	* testsuite/ecdsa-verify-test.c (test_main): Add corresponding test.
+	* testsuite/ecdsa-sign-test.c (test_main): And a test producing
+	the problematic signature.
+
+2022-09-08  Niels Möller  <nisse@lysator.liu.se>
+
+	* eccdata.c (string_toupper): New utility function.
+	(output_modulo): Move more of the per-modulo output here.
+	(output_curve): Remove corresponding code.
+
+2022-08-31  Niels Möller  <nisse@lysator.liu.se>
+
+	* bswap-internal.h (nettle_bswap64, nettle_bswap32)
+	(bswap64_if_le): New header file, new inline functions/macros.
+	* gcm.c (gcm_hash_sizes): Use bswap64_if_le, and bswap-internal.h,
+	replacing local definition of bswap_if_le.
+	* nist-keywrap.c (nist_keywrap16): Likewise.
+	* blowfish-bcrypt.c (swap32): Renamed function, to...
+	(bswap32_if_le): ...new name, rewritten to use nettle_bswap32.
+	Update call sites.
+	* Makefile.in (DISTFILES): Add bswap-internal.h.
+
+2022-08-18  Niels Möller  <nisse@lysator.liu.se>
+
+	* Makefile.in (HEADERS): Add sm4.h.
+
+	From Tianjia Zhang: SM4 block cipher.
+	* sm4.c: New file.
+	* sm4.h: New file.
+	* sm4-meta.c: New file.
+	* gcm-sm4.c: New file
+	* gcm-sm4-meta.c: New file.
+	* nettle.texinfo: Document SM4.
+	* testsuite/gcm-test.c (test_main): Add SM4 tests.
+	* testsuite/sm4-test.c: New file.
+
+	* configure.ac (ABI): Change mips abi check to apply only to mips64.
+
+2022-08-17  Niels Möller  <nisse@lysator.liu.se>
+
+	* testsuite/testutils.c (mpz_urandomm) [NETTLE_USE_MINI_GMP]: New
+	fallback definition when building with mini-gmp.
+
+2022-08-16  Niels Möller  <nisse@lysator.liu.se>
+
+	* ecc-mod-arith.c (ecc_mod_sub): Ensure that if inputs are in the
+	range 0 <= a, b < 2m, then output is in the same range.
+	* eccdata.c (output_curve): New outputs ecc_Bm2p and ecc_Bm2q.
+	* ecc-internal.h (struct ecc_modulo): New member Bm2m (B^size -
+	2m), needed by ecc_mod_sub. Update all curves.
+	* testsuite/ecc-mod-arith-test.c: New tests for ecc_mod_add and
+	ecc_mod_sub.
+
+	* eccdata.c (output_modulo): Output the limb size, delete return
+	value.
+	(output_curve): Update calls to output_modulo, other minor cleanup.
+
+2022-08-07  Niels Möller  <nisse@lysator.liu.se>
+
+	Delete all arcfour assembly code.
+	* arcfour.c (arcfour_crypt): Moved function here, from...
+	* arcfour-crypt.c: ... deleted file.
+	* sparc32/arcfour-crypt.asm: Deleted.
+	* sparc64/arcfour-crypt.asm: Deleted.
+	* x86/arcfour-crypt.asm: Deleted.
+	* asm.m4: Delete arcfour structure offsets.
+
+2022-08-07  Niels Möller  <nisse@lysator.liu.se>
+
+	Based on patch from Corentin Labbe:
+	* nettle.texinfo: Document sha256_compress, sha512_compress,
+	md5_compress and sha1_compress.
+
+	* configure.ac: Refer to nettle-types.h, rather than arcfour.c,
+	for AC_CONFIG_SRCDIR.
+
+2022-08-05  Niels Möller  <nisse@lysator.liu.se>
+
+	* nettle-internal.h: Include stdlib.h, fix alloca warnings on BSD.
+	* hmac.c: Delete corresponding include here, no longer needed.
+
+	* getopt.c: Include stdlib.h and unistd.h unconditionally,
+	similarly to the gnulib version of this file.
+
+2022-08-04  Niels Möller  <nisse@lysator.liu.se>
+
+	From Brad Smith:
+	* configure.ac: Fix 64-bit MIPS ABI check for other OS's like *BSD / Linux.
+	* aclocal.m4 (LSH_CCPIC): Use proper PIC flag for *BSD OS's.
+	* blowfish-bcrypt.c (swap32): Eliminate conflict with OpenBSD's swap32 macro.
+
+2022-07-29  Niels Möller  <nisse@lysator.liu.se>
+
+	* s390x/msa_x1/sha256-compress-n.asm: New file. replacing...
+	* s390x/msa_x1/sha256-compress.asm: ...deleted file.
+	* s390x/fat/sha256-compress-n-2.asm: New file. replacing...
+	* s390x/fat/sha256-compress-2.asm: ...deleted file.
+	* fat-s390x.c: Update fat setup.
+
 2022-07-26  Niels Möller  <nisse@lysator.liu.se>
 
-	* Released nettle-3.8.1.
+	* arm/v6/sha256-compress-n.asm: New file. replacing...
+	* arm/v6/sha256-compress.asm: ...deleted file.
+	* arm/fat/sha256-compress-n-2.asm: New file. replacing...
+	* arm/fat/sha256-compress-2.asm: ...deleted file.
+	* fat-arm.c: Update fat setup.
 
-	* configure.ac: Bump package version, to 3.8.1.
-	(LIBNETTLE_MINOR): Bump minor number, to 8.6.
-	(LIBHOGWEED_MINOR): Bump minor number, to 6.6.
+2022-07-11  Niels Möller  <nisse@lysator.liu.se>
+
+	* arm64/crypto/sha256-compress-n.asm: New file. replacing...
+	* arm64/crypto/sha256-compress.asm: ...deleted file.
+	* arm64/fat/sha256-compress-n-2.asm: New file. replacing...
+	* arm64/fat/sha256-compress-2.asm: ...deleted file.
+	* fat-arm64.c: Update fat setup.
+
+2022-07-05  Niels Möller  <nisse@lysator.liu.se>
+
+	* md-internal.h (MD_FILL_OR_RETURN): New file, new macro.
+	* sha256-compress-n.c (_nettle_sha256_compress_n): New file and
+	function, replacing...
+	* sha256-compress.c (_nettle_sha256_compress): ...deleted file and
+	function.
+	* sha2-internal.h (_nettle_sha256_compress_n): Declare new function..
+	* sha256.c (sha256_compress): Update to use
+	_nettle_sha256_compress_n and MD_FILL_OR_RETURN.
+	* x86_64/sha256-compress-n.asm: New file. replacing...
+	* x86_64/sha256-compress.asm: ...deleted file.
+	* x86_64/sha_ni/sha256-compress-n.asm: New file. replacing...
+	* x86_64/sha_ni/sha256-compress.asm: ...deleted file.
+	* fat-setup.h (sha256_compress_n_func): New typedef, replacing...
+	(sha256_compress_func): ... deleted typedef.
+	* fat-x86_64.c: Update fat setup.
+
+2022-06-20  Niels Möller  <nisse@lysator.liu.se>
+
+	* testsuite/sha1-test.c (test_sha1_compress): New function.
+	(test_main): Add tests for compressing 0, 1 or 2 blocks.
+	* testsuite/sha256-test.c (test_sha256_compress): New function.
+	(test_main): Add tests for compressing 0, 1 or 2 blocks.
 
 2022-06-12  Niels Möller  <nisse@lysator.liu.se>
 
 	From Christian Weisgerber:
 	* fat-arm64.c (get_arm64_features): Enable runtime feature
 	detection for openbsd.
+
+2022-06-09  Niels Möller  <nisse@lysator.liu.se>
+
+	* md5.h (md5_compress): New public name for compression function.
+	* sha1.h (sha1_compress): Likewise.
+
+	Based on patches from Corentin Labbe:
+	* sha2.h: Declare new functions.
+	* sha256.c (sha256_compress): New function.
+	(COMPRESS): Updated to use sha256_compress.
+	(sha256_write_digest): Use sha256_compress directly.
+	* sha512.c (sha512_compress): New function.
+	(COMPRESS): Updated to use sha512_compress.
+	(sha512_write_digest): Use sha512_compress directly.
 
 2022-06-02  Niels Möller  <nisse@lysator.liu.se>
 

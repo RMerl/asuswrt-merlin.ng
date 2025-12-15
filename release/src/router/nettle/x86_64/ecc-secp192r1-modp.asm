@@ -43,7 +43,7 @@ define(`H', `%r9')
 define(`C1', `%r10')
 define(`C2', `%r11')
 
-	C ecc_secp192r1_modp (const struct ecc_modulo *m, mp_limb_t *rp)
+	C ecc_secp192r1_modp (const struct ecc_modulo *m, mp_limb_t *rp, mp_limb_t *xp)
 	.text
 	ALIGN(16)
 PROLOGUE(_nettle_ecc_secp192r1_modp)

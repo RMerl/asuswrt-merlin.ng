@@ -55,25 +55,7 @@
 #include "macros.h"
 #include "ctr-internal.h"
 #include "block-internal.h"
-
-/* FIXME: Duplicated in nist-keywrap.c */
-#if WORDS_BIGENDIAN
-#define bswap_if_le(x) (x)
-#elif HAVE_BUILTIN_BSWAP64
-#define bswap_if_le(x) (__builtin_bswap64 (x))
-#else
-static uint64_t
-bswap_if_le (uint64_t x)
-{
-  x = ((x >> 32) & UINT64_C (0xffffffff))
-    | ((x & UINT64_C (0xffffffff)) << 32);
-  x = ((x >> 16) & UINT64_C (0xffff0000ffff))
-    | ((x & UINT64_C (0xffff0000ffff)) << 16);
-  x = ((x >> 8) & UINT64_C (0xff00ff00ff00ff))
-    | ((x & UINT64_C (0xff00ff00ff00ff)) << 8);
-  return x;
-}
-#endif
+#include "bswap-internal.h"
 
 /* Initialization of GCM.
  * @ctx: The context of GCM
@@ -115,8 +97,8 @@ gcm_hash_sizes(const struct gcm_key *key, union nettle_block16 *x,
   data_size *= 8;
   auth_size *= 8;
 
-  buffer.u64[0] = bswap_if_le (auth_size);
-  buffer.u64[1] = bswap_if_le (data_size);
+  buffer.u64[0] = bswap64_if_le (auth_size);
+  buffer.u64[1] = bswap64_if_le (data_size);
 
   _ghash_update (key, x, 1, buffer.b);
 }

@@ -40,15 +40,16 @@
 
 #include "ecdsa.h"
 #include "ecc-internal.h"
+#include "dsa-internal.h"
 
 /* Low-level ECDSA signing */
 
 mp_size_t
 ecc_ecdsa_sign_itch (const struct ecc_curve *ecc)
 {
-  /* Needs 3*ecc->p.size + scratch for ecc->mul_g. Currently same for
-     ecc_mul_g. */
-  assert (ecc->p.size + ecc->p.invert_itch <= 3*ecc->p.size + ecc->mul_g_itch);
+  /* Needs 3*ecc->p.size + scratch for ecc_mul_g. */
+  assert (ecc->p.size + ecc->p.invert_itch
+	  <= 3*ecc->p.size + ECC_MUL_G_ITCH (ecc->p.size));
   return ECC_ECDSA_SIGN_ITCH (ecc->p.size);
 }
 
@@ -79,15 +80,15 @@ ecc_ecdsa_sign (const struct ecc_curve *ecc,
      4. s2 <-- (h + z*s1)/k mod q.
   */
 
-  ecc->mul_g (ecc, P, kp, P + 3*ecc->p.size);
+  ecc_mul_g (ecc, P, kp, P + 3*ecc->p.size);
   /* x coordinate only, modulo q */
-  ecc->h_to_a (ecc, 2, rp, P, P + 3*ecc->p.size);
+  ecc_j_to_a (ecc, 2, rp, P, P + 3*ecc->p.size);
 
   /* Invert k, uses up to 7 * ecc->p.size including scratch (for secp384). */
   ecc->q.invert (&ecc->q, kinv, kp, tp);
   
   /* Process hash digest */
-  ecc_hash (&ecc->q, hp, length, digest);
+  _nettle_dsa_hash (hp, ecc->q.bit_size, length, digest);
 
   ecc_mod_mul (&ecc->q, tp, zp, rp, tp);
   ecc_mod_add (&ecc->q, hp, hp, tp);

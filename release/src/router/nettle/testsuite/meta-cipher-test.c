@@ -1,5 +1,6 @@
 #include "testutils.h"
 #include "nettle-meta.h"
+#include "nettle-internal.h"
 
 const char* ciphers[] = {
   "aes128",
@@ -18,7 +19,8 @@ const char* ciphers[] = {
   "serpent256",
   "twofish128",
   "twofish192",
-  "twofish256"
+  "twofish256",
+  "sm4"
 };
 
 void
@@ -34,8 +36,11 @@ test_main(void)
     ASSERT(NULL != nettle_ciphers[j]); /* make sure we found a matching cipher */
   }
   j = 0;
-  while (NULL != nettle_ciphers[j])
-    j++;
+  for (j = 0; NULL != nettle_ciphers[j]; j++)
+    {
+      ASSERT(nettle_ciphers[j]->block_size <= NETTLE_MAX_CIPHER_BLOCK_SIZE);
+      ASSERT(nettle_ciphers[j]->key_size <= NETTLE_MAX_CIPHER_KEY_SIZE);
+    }
   ASSERT(j == count); /* we are not missing testing any ciphers */
 }
   

@@ -109,6 +109,21 @@ test_main (void)
 	      "952800792ed19341fdeeec047f2514f3b0f150d6066151fb", /* r */
 	      "ec5971222014878b50d7a19d8954bc871e7e65b00b860ffb"); /* s */
 
+  /* Test case provided by Guido Vranken, from oss-fuzz. Triggers
+     point duplication in the verify operation by using private key =
+     1 (public key = generator) and hash = r. */
+  test_ecdsa (&_nettle_secp_256r1,
+	      "6B17D1F2E12C4247F8BCE6E563A440F2"
+	      "77037D812DEB33A0F4A13945D898C296", /* x */
+	      "4FE342E2FE1A7F9B8EE7EB4A7C0F9E16"
+	      "2BCE33576B315ECECBB6406837BF51F5", /* y */
+	      SHEX("6ff03b949241ce1dadd43519e6960e0a"
+		   "85b41a69a05c328103aa2bce1594ca16"), /* hash */
+	      "6ff03b949241ce1dadd43519e6960e0a"
+	      "85b41a69a05c328103aa2bce1594ca16", /* r */
+	      "53f097727a0e0dc284a0daa0da0ab77d"
+	      "5792ae67ed075d1f8d5bda0f853fa093"); /* s */
+
   /* From RFC 4754 */
   test_ecdsa (&_nettle_secp_256r1,
 	      "2442A5CC 0ECD015F A3CA31DC 8E2BBC70"

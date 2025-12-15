@@ -1,0 +1,6 @@
+#! /bin/sh
+
+srcdir=`dirname $0`
+. "${srcdir}/sc-valgrind.sh"
+
+with_valgrind ./gcm-test

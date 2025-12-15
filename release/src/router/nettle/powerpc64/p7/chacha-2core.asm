@@ -60,6 +60,9 @@ define(`S3p1', `v16')
 
 define(`T0', `v17')
 
+define(`EW_MASK', `v18')
+define(`OW_MASK', `v19')
+
 	.text
 	C _chacha_2core(uint32_t *dst, const uint32_t *src, unsigned rounds)
 
@@ -78,6 +81,9 @@ PROLOGUE(_nettle_chacha_2core)
 	vor	Y3, Y3, X1
 
 .Lshared_entry:
+	DATA_LOAD_VEC(EW_MASK,.even_word_mask,r6)
+	DATA_LOAD_VEC(OW_MASK,.odd_word_mask,r6)
+	
 	vadduwm	Y3, Y3, X3
 
 	li	r6, 0x10	C set up some...
@@ -92,14 +98,14 @@ PROLOGUE(_nettle_chacha_2core)
 	vor	S3, X3, X3
 	vor	S3p1, Y3, Y3
 
-	vmrgow	Y0, X0, X0	C  1  1  3  3
-	vmrgew	X0, X0, X0	C  0  0  2  2
-	vmrgow	Y1, X1, X1	C  5  5  7  7
-	vmrgew	X1, X1, X1	C  4  4  6  6
-	vmrgow	Y2, X2, X2	C  9  9 11 11
-	vmrgew	X2, X2, X2	C  8  8 10 10
-	vmrgow	Y3, X3, S3p1	C 13 13 15 15
-	vmrgew	X3, X3, S3p1	C 12 12 14 14
+	vperm	Y0, X0, X0, OW_MASK	C  1  1  3  3
+	vperm	X0, X0, X0, EW_MASK	C  0  0  2  2
+	vperm	Y1, X1, X1, OW_MASK	C  5  5  7  7
+	vperm	X1, X1, X1, EW_MASK	C  4  4  6  6
+	vperm	Y2, X2, X2, OW_MASK	C  9  9 11 11
+	vperm	X2, X2, X2, EW_MASK	C  8  8 10 10
+	vperm	Y3, X3, S3p1, OW_MASK	C 13 13 15 15
+	vperm	X3, X3, S3p1, EW_MASK	C 12 12 14 14
 
 	vspltisw ROT16, -16	C -16 instead of 16 actually works!
 	vspltisw ROT12, 12
@@ -189,17 +195,17 @@ C Y3  A15 B15 A13 B13  X3  A12 B12 A14 B14 (Y3 swapped)
 
 	bdnz	.Loop
 
-	vmrgew	T0, X0, Y0
-	vmrgow	Y0, X0, Y0
+	vperm	T0, X0, Y0, EW_MASK
+	vperm	Y0, X0, Y0, OW_MASK
 
-	vmrgew	X0, X1, Y1
-	vmrgow	Y1, X1, Y1
+	vperm	X0, X1, Y1, EW_MASK
+	vperm	Y1, X1, Y1, OW_MASK
 
-	vmrgew	X1, X2, Y2
-	vmrgow	Y2, X2, Y2
+	vperm	X1, X2, Y2, EW_MASK
+	vperm	Y2, X2, Y2, OW_MASK
 
-	vmrgew	X2, X3, Y3
-	vmrgow	Y3, X3, Y3
+	vperm	X2, X3, Y3, EW_MASK
+	vperm	Y3, X3, Y3, OW_MASK
 
 	vadduwm T0, T0, S0
 	vadduwm Y0, Y0, S0
@@ -250,6 +256,15 @@ PROLOGUE(_nettle_chacha_2core32)
 	lxvw4x	VSR(X3), r8, SRC
 	b	.Lshared_entry
 EPILOGUE(_nettle_chacha_2core32)
+
+.rodata
+.align 4
+.even_word_mask:
+IF_LE(`.byte 27,26,25,24,11,10,9,8,19,18,17,16,3,2,1,0')
+IF_BE(`.byte 0,1,2,3,16,17,18,19,8,9,10,11,24,25,26,27')
+.odd_word_mask:
+IF_LE(`.byte 31,30,29,28,15,14,13,12,23,22,21,20,7,6,5,4')
+IF_BE(`.byte 4,5,6,7,20,21,22,23,12,13,14,15,28,29,30,31')
 
 divert(-1)
 define core2state

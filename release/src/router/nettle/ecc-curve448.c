@@ -91,7 +91,7 @@ ecc_curve448_modp(const struct ecc_modulo *m, mp_limb_t *rp, mp_limb_t *xp)
   tp[5] = tp[6] = 0;
   c7 = mpn_add_n (rp, xp, tp, 7);
   c7 = mpn_cnd_add_n (c7, rp, rp, m->B, 7);
-  assert (c7 == 0);
+  assert_maybe (c7 == 0);
 }
 #else
 #define ecc_curve448_modp ecc_mod
@@ -220,6 +220,7 @@ const struct ecc_curve _nettle_curve448 =
     ecc_p,
     ecc_Bmodp,
     ecc_Bmodp_shifted,
+    ecc_Bm2p,
     NULL,
     ecc_pp1h,
 
@@ -241,6 +242,7 @@ const struct ecc_curve _nettle_curve448 =
     ecc_q,
     ecc_Bmodq,
     ecc_Bmodq_shifted,
+    ecc_Bm2q,
     NULL,
     ecc_qp1h,
 

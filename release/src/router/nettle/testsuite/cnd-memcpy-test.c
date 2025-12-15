@@ -2,24 +2,19 @@
 #include "knuth-lfib.h"
 #include "memops.h"
 
-#if HAVE_VALGRIND_MEMCHECK_H
-# include <valgrind/memcheck.h>
 static void
 cnd_memcpy_for_test(int cnd, void *dst, const void *src, size_t n)
 {
   /* Makes valgrind trigger on any branches depending on the input
      data. */
-  VALGRIND_MAKE_MEM_UNDEFINED (dst, n);
-  VALGRIND_MAKE_MEM_UNDEFINED (src, n);
-  VALGRIND_MAKE_MEM_UNDEFINED (&cnd, sizeof(cnd));
+  mark_bytes_undefined (n, dst);
+  mark_bytes_undefined (n, src);
+  mark_bytes_undefined (sizeof(cnd), &cnd);
 
   cnd_memcpy (cnd, dst, src, n);
-  VALGRIND_MAKE_MEM_DEFINED (src, n);
-  VALGRIND_MAKE_MEM_DEFINED (dst, n);
+  mark_bytes_defined (n, src);
+  mark_bytes_defined (n, dst);
 }
-#else
-#define cnd_memcpy_for_test cnd_memcpy
-#endif
 
 #define MAX_SIZE 50
 void

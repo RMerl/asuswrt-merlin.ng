@@ -92,10 +92,15 @@ test_one (const char *line)
 
   decode_hex (msg_size, msg, mp);
 
+  mark_bytes_undefined (ED25519_KEY_SIZE, sk);
   ed25519_sha512_public_key (t, sk);
+  mark_bytes_defined (ED25519_KEY_SIZE, t);
+
   ASSERT (MEMEQ(ED25519_KEY_SIZE, t, pk));
 
   ed25519_sha512_sign (pk, sk, msg_size, msg, s2);
+  mark_bytes_defined (ED25519_SIGNATURE_SIZE, s2);
+
   ASSERT (MEMEQ (ED25519_SIGNATURE_SIZE, s, s2));
 
   ASSERT (ed25519_sha512_verify (pk, msg_size, msg, s));
@@ -158,6 +163,10 @@ getline(char **lineptr, size_t *n, FILE *f)
 void
 test_main(void)
 {
+#if NETTLE_USE_MINI_GMP || WITH_EXTRA_ASSERTS
+  if (test_side_channel)
+    SKIP();
+#endif
   const char *input = getenv ("ED25519_SIGN_INPUT");
   if (input)
     {

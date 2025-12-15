@@ -8,6 +8,7 @@ const char* aeads[] = {
   "gcm_aes256",
   "gcm_camellia128",
   "gcm_camellia256",
+  "gcm_sm4",
   "eax_aes128",
   "chacha_poly1305",
 };

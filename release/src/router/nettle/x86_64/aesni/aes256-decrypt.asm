@@ -67,20 +67,20 @@ PROLOGUE(nettle_aes256_decrypt)
 	test	LENGTH, LENGTH
 	jz	.Lend
 
-	movups	(CTX), KEY0_7
-	movups	16(CTX), KEY1
-	movups	32(CTX), KEY2
-	movups	48(CTX), KEY3
-	movups	64(CTX), KEY4
-	movups	80(CTX), KEY5
-	movups	96(CTX), KEY6
-	movups	128(CTX), KEY8
-	movups	144(CTX), KEY9
-	movups	160(CTX), KEY10
-	movups	176(CTX), KEY11
-	movups	192(CTX), KEY12
-	movups	208(CTX), KEY13
-	movups	224(CTX), KEY14
+	movups	224(CTX), KEY0_7
+	movups	208(CTX), KEY1
+	movups	192(CTX), KEY2
+	movups	176(CTX), KEY3
+	movups	160(CTX), KEY4
+	movups	144(CTX), KEY5
+	movups	128(CTX), KEY6
+	movups	96(CTX), KEY8
+	movups	80(CTX), KEY9
+	movups	64(CTX), KEY10
+	movups	48(CTX), KEY11
+	movups	32(CTX), KEY12
+	movups	16(CTX), KEY13
+	movups	(CTX), KEY14
 
 	shr	LENGTH
 	jnc	.Lblock_loop
@@ -95,7 +95,7 @@ PROLOGUE(nettle_aes256_decrypt)
 	aesdec	KEY5, X
 	aesdec	KEY6, X
 	aesdec	KEY0_7, X
-	movups	(CTX), KEY0_7
+	movups	224(CTX), KEY0_7
 	aesdec	KEY8, X
 	aesdec	KEY9, X
 	aesdec	KEY10, X
@@ -130,7 +130,7 @@ PROLOGUE(nettle_aes256_decrypt)
 	aesdec	KEY6, Y
 	aesdec	KEY0_7, X
 	aesdec	KEY0_7, Y
-	movups	(CTX), KEY0_7
+	movups	224(CTX), KEY0_7
 	aesdec	KEY8, X
 	aesdec	KEY8, Y
 	aesdec	KEY9, X

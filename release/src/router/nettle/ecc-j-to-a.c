@@ -72,7 +72,7 @@ ecc_j_to_a (const struct ecc_curve *ecc,
 	     already be < 2*ecc->q, so one subtraction should
 	     suffice. */
 	  cy = mpn_sub_n (scratch, r, ecc->q.m, ecc->p.size);
-	  cnd_copy (cy == 0, r, scratch, ecc->p.size);
+	  cnd_copy (1 - cy, r, scratch, ecc->p.size);
 	}
       return;
     }

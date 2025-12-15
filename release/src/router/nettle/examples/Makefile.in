@@ -49,8 +49,8 @@ all: $(TARGETS)
 	( cd .. && $(MAKE) getopt.$(OBJEXT))
 ../getopt1.$(OBJEXT):
 	( cd .. && $(MAKE) getopt1.$(OBJEXT))
-../nettle-internal.$(OBJEXT):
-	( cd .. && $(MAKE) nettle-internal.$(OBJEXT))
+../non-nettle.$(OBJEXT):
+	( cd .. && $(MAKE) non-nettle.$(OBJEXT))
 
 # For Solaris and BSD make, we have to use an explicit rule for each executable
 random-prime$(EXEEXT): random-prime.$(OBJEXT) io.$(OBJEXT) $(GETOPT_OBJS)
@@ -95,7 +95,7 @@ base64dec$(EXEEXT): base64dec.$(OBJEXT) io.$(OBJEXT)
 	-lnettle $(LIBS) -o base64dec$(EXEEXT)
 
 BENCH_OBJS = nettle-benchmark.$(OBJEXT) nettle-openssl.$(OBJEXT) \
-	$(GETOPT_OBJS) ../nettle-internal.$(OBJEXT) timing.$(OBJEXT)
+	$(GETOPT_OBJS) ../non-nettle.$(OBJEXT) timing.$(OBJEXT)
 nettle-benchmark$(EXEEXT): $(BENCH_OBJS)
 	$(LINK) $(BENCH_OBJS) -lnettle $(BENCH_LIBS) $(OPENSSL_LIBFLAGS) -o nettle-benchmark$(EXEEXT)
 

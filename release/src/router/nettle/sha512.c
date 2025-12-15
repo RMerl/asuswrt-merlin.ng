@@ -113,7 +113,7 @@ K[80] =
   0x5FCB6FAB3AD6FAECULL,0x6C44198C4A475817ULL,
 };
 
-#define COMPRESS(ctx, data) (_nettle_sha512_compress((ctx)->state, (data), K))
+#define COMPRESS(ctx, data) (sha512_compress((ctx)->state, (data)))
 
 void
 sha512_init(struct sha512_ctx *ctx)
@@ -175,7 +175,7 @@ sha512_write_digest(struct sha512_ctx *ctx,
      function. It's probably not worth the effort to fix this. */
   WRITE_UINT64(ctx->block + (SHA512_BLOCK_SIZE - 16), high);
   WRITE_UINT64(ctx->block + (SHA512_BLOCK_SIZE - 8), low);
-  COMPRESS(ctx, ctx->block);
+  sha512_compress(ctx->state, ctx->block);
 
   words = length / 8;
   leftover = length % 8;
@@ -311,4 +311,10 @@ sha512_256_digest(struct sha512_256_ctx *ctx,
 
   sha512_write_digest(ctx, length, digest);
   sha512_256_init(ctx);
+}
+
+void
+sha512_compress(uint64_t *state, const uint8_t *input)
+{
+  _nettle_sha512_compress(state, input, K);
 }

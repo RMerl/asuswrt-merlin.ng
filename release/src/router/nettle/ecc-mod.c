@@ -82,7 +82,7 @@ ecc_mod (const struct ecc_modulo *m, mp_limb_t *rp, mp_limb_t *xp)
 				     
 	  hi = mpn_add_n (xp + rn - sn, xp + rn - sn, xp + rn, sn);
 	  hi = mpn_cnd_add_n (hi, xp + rn - mn, xp + rn - mn, m->B, mn);
-	  assert (hi == 0);
+	  assert_maybe (hi == 0);
 	}
     }
 
@@ -111,6 +111,6 @@ ecc_mod (const struct ecc_modulo *m, mp_limb_t *rp, mp_limb_t *xp)
   else
     {
       hi = mpn_cnd_add_n (hi, rp, xp, m->B, mn);
-      assert (hi == 0);
+      assert_maybe (hi == 0);
     }
 }

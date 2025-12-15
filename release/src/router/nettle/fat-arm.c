@@ -153,9 +153,9 @@ DECLARE_FAT_FUNC(nettle_sha1_compress, sha1_compress_func)
 DECLARE_FAT_FUNC_VAR(sha1_compress, sha1_compress_func, c)
 DECLARE_FAT_FUNC_VAR(sha1_compress, sha1_compress_func, armv6)
 
-DECLARE_FAT_FUNC(_nettle_sha256_compress, sha256_compress_func)
-DECLARE_FAT_FUNC_VAR(sha256_compress, sha256_compress_func, c)
-DECLARE_FAT_FUNC_VAR(sha256_compress, sha256_compress_func, armv6)
+DECLARE_FAT_FUNC(_nettle_sha256_compress_n, sha256_compress_n_func)
+DECLARE_FAT_FUNC_VAR(sha256_compress_n, sha256_compress_n_func, c)
+DECLARE_FAT_FUNC_VAR(sha256_compress_n, sha256_compress_n_func, armv6)
 
 DECLARE_FAT_FUNC(_nettle_sha512_compress, sha512_compress_func)
 DECLARE_FAT_FUNC_VAR(sha512_compress, sha512_compress_func, c)
@@ -202,7 +202,7 @@ fat_init (void)
       _nettle_aes_encrypt_vec = _nettle_aes_encrypt_armv6;
       _nettle_aes_decrypt_vec = _nettle_aes_decrypt_armv6;
       nettle_sha1_compress_vec = _nettle_sha1_compress_armv6;
-      _nettle_sha256_compress_vec = _nettle_sha256_compress_armv6;
+      _nettle_sha256_compress_n_vec = _nettle_sha256_compress_n_armv6;
     }
   else
     {
@@ -211,7 +211,7 @@ fat_init (void)
       _nettle_aes_encrypt_vec = _nettle_aes_encrypt_arm;
       _nettle_aes_decrypt_vec = _nettle_aes_decrypt_arm;
       nettle_sha1_compress_vec = _nettle_sha1_compress_c;
-      _nettle_sha256_compress_vec = _nettle_sha256_compress_c;
+      _nettle_sha256_compress_n_vec = _nettle_sha256_compress_n_c;
     }
   if (features.have_neon)
     {
@@ -263,9 +263,10 @@ DEFINE_FAT_FUNC(nettle_sha1_compress, void,
 		(uint32_t *state, const uint8_t *input),
 		(state, input))
 
-DEFINE_FAT_FUNC(_nettle_sha256_compress, void,
-		(uint32_t *state, const uint8_t *input, const uint32_t *k),
-		(state, input, k))
+DEFINE_FAT_FUNC(_nettle_sha256_compress_n, const uint8_t *,
+		(uint32_t *state, const uint32_t *k,
+		 size_t blocks, const uint8_t *input),
+		(state, k, blocks, input))
 
 DEFINE_FAT_FUNC(_nettle_sha512_compress, void,
 		(uint64_t *state, const uint8_t *input, const uint64_t *k),

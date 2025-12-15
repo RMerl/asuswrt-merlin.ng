@@ -1,5 +1,5 @@
 #include "testutils.h"
-#include "nettle-internal.h"
+#include "non-nettle.h"
 #include "des.h"
 
 void

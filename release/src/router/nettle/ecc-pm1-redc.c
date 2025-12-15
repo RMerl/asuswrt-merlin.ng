@@ -54,7 +54,7 @@ ecc_pm1_redc (const struct ecc_modulo *m, mp_limb_t *rp, mp_limb_t *xp)
 			  m->redc_mpm1, m->size - k, xp[i]);
   hi = mpn_sub_n (xp, xp + m->size, xp, m->size);
   cy = mpn_cnd_add_n (hi, rp, xp, m->m, m->size);
-  assert (cy == hi);
+  assert_maybe (cy == hi);
 
   if (shift > 0)
     {

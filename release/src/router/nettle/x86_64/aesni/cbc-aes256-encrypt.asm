@@ -58,8 +58,9 @@ define(`BLOCK', `%xmm15')
 	.file "cbc-aes256-encrypt.asm"
 
 	C nettle_cbc_aes256_encrypt(struct cbc_aes256_ctx *ctx,
-	C                       size_t length, uint8_t *dst,
-	C                       const uint8_t *src);
+	C                           uint8_t *iv,
+	C                           size_t length, uint8_t *dst,
+	C                           const uint8_t *src);
 
 	.text
 	ALIGN(16)

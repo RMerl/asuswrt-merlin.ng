@@ -38,6 +38,7 @@
 #include <stdlib.h>
 
 #include "gostdsa.h"
+#include "dsa-internal.h"
 #include "ecc-internal.h"
 
 /* Low-level GOST DSA signing */
@@ -45,8 +46,7 @@
 mp_size_t
 ecc_gostdsa_sign_itch (const struct ecc_curve *ecc)
 {
-  /* Needs 3*ecc->p.size + scratch for ecc->mul_g. Currently same for
-     ecc_mul_g. */
+  /* Needs 3*ecc->p.size + scratch for ecc_mul_g. */
   return ECC_GOSTDSA_SIGN_ITCH (ecc->p.size);
 }
 
@@ -75,12 +75,12 @@ ecc_gostdsa_sign (const struct ecc_curve *ecc,
      4. s <-- (r*z + k*h) mod q.
   */
 
-  ecc->mul_g (ecc, P, kp, P + 3*ecc->p.size);
+  ecc_mul_g (ecc, P, kp, P + 3*ecc->p.size);
   /* x coordinate only, modulo q */
-  ecc->h_to_a (ecc, 2, rp, P, P + 3*ecc->p.size);
+  ecc_j_to_a (ecc, 2, rp, P, P + 3*ecc->p.size);
 
   /* Process hash digest */
-  gost_hash (&ecc->q, hp, length, digest);
+  _nettle_gostdsa_hash (hp, ecc->q.bit_size, length, digest);
   if (mpn_zero_p (hp, ecc->p.size))
     mpn_add_1 (hp, hp, ecc->p.size, 1);
 
@@ -92,7 +92,7 @@ ecc_gostdsa_sign (const struct ecc_curve *ecc,
    * so one subtraction should suffice. */
 
   *scratch = mpn_sub_n (tp, sp, ecc->q.m, ecc->p.size);
-  cnd_copy (*scratch == 0, sp, tp, ecc->p.size);
+  cnd_copy (is_zero_limb (*scratch), sp, tp, ecc->p.size);
 
 #undef P
 #undef hp

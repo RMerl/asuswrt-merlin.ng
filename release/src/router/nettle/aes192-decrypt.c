@@ -54,6 +54,6 @@ nettle_aes192_decrypt(const struct aes192_ctx *ctx,
 	       const uint8_t *src)
 {
   assert(!(length % AES_BLOCK_SIZE) );
-  _nettle_aes_decrypt(_AES192_ROUNDS, ctx->keys, &_nettle_aes_decrypt_table,
-		      length, dst, src);
+  _nettle_aes_decrypt(_AES192_ROUNDS, ctx->keys + 4 * _AES192_ROUNDS,
+		      &_nettle_aes_decrypt_table, length, dst, src);
 }

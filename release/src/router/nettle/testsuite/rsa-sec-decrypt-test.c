@@ -3,15 +3,12 @@
 #include "rsa.h"
 #include "knuth-lfib.h"
 
-#if HAVE_VALGRIND_MEMCHECK_H
-# include <valgrind/memcheck.h>
+#define MARK_MPZ_LIMBS_UNDEFINED(x) \
+  mark_bytes_undefined (mpz_size (x) * sizeof (mp_limb_t), mpz_limbs_read (x))
 
-#define MARK_MPZ_LIMBS_UNDEFINED(parm) \
-  VALGRIND_MAKE_MEM_UNDEFINED (mpz_limbs_read (parm), \
-                               mpz_size (parm) * sizeof (mp_limb_t))
-#define MARK_MPZ_LIMBS_DEFINED(parm) \
-  VALGRIND_MAKE_MEM_DEFINED (mpz_limbs_read (parm), \
-                               mpz_size (parm) * sizeof (mp_limb_t))
+#define MARK_MPZ_LIMBS_DEFINED(x) \
+  mark_bytes_defined (mpz_size (x) * sizeof (mp_limb_t), mpz_limbs_read (x))
+
 static int
 rsa_decrypt_for_test(const struct rsa_public_key *pub,
                      const struct rsa_private_key *key,
@@ -20,6 +17,7 @@ rsa_decrypt_for_test(const struct rsa_public_key *pub,
                      const mpz_t gibberish)
 {
   int ret;
+
   /* Makes valgrind trigger on any branches depending on the input
      data. Except that (i) we have to allow rsa_sec_compute_root_tr to
      check that p and q are odd, (ii) mpn_sec_div_r may leak
@@ -27,21 +25,19 @@ rsa_decrypt_for_test(const struct rsa_public_key *pub,
      normalization check and table lookup in invert_limb, and (iii)
      mpn_sec_powm may leak information about the least significant
      bits of p and q, due to table lookup in binvert_limb. */
-  VALGRIND_MAKE_MEM_UNDEFINED (message, length);
-  MARK_MPZ_LIMBS_UNDEFINED(gibberish);
+  mark_bytes_undefined (length, message);
   MARK_MPZ_LIMBS_UNDEFINED(key->a);
   MARK_MPZ_LIMBS_UNDEFINED(key->b);
   MARK_MPZ_LIMBS_UNDEFINED(key->c);
-  VALGRIND_MAKE_MEM_UNDEFINED(mpz_limbs_read (key->p) + 1,
-			      (mpz_size (key->p) - 3) * sizeof(mp_limb_t));
-  VALGRIND_MAKE_MEM_UNDEFINED(mpz_limbs_read (key->q) + 1,
-			      (mpz_size (key->q) - 3) * sizeof(mp_limb_t));
+  mark_bytes_undefined ((mpz_size (key->p) - 3) * sizeof(mp_limb_t),
+			mpz_limbs_read (key->p) + 1);
+  mark_bytes_undefined((mpz_size (key->q) - 3) * sizeof(mp_limb_t), 
+		       mpz_limbs_read (key->q) + 1);
 
   ret = rsa_sec_decrypt (pub, key, random_ctx, random, length, message, gibberish);
 
-  VALGRIND_MAKE_MEM_DEFINED (message, length);
-  VALGRIND_MAKE_MEM_DEFINED (&ret, sizeof(ret));
-  MARK_MPZ_LIMBS_DEFINED(gibberish);
+  mark_bytes_defined (length, message);
+  mark_bytes_defined (sizeof(ret), &ret);
   MARK_MPZ_LIMBS_DEFINED(key->a);
   MARK_MPZ_LIMBS_DEFINED(key->b);
   MARK_MPZ_LIMBS_DEFINED(key->c);
@@ -50,9 +46,6 @@ rsa_decrypt_for_test(const struct rsa_public_key *pub,
 
   return ret;
 }
-#else
-#define rsa_decrypt_for_test rsa_sec_decrypt
-#endif
 
 #define PAYLOAD_SIZE 50
 #define DECRYPTED_SIZE 256
@@ -69,8 +62,12 @@ test_main(void)
   unsigned n_size = 1024;
   mpz_t gibberish;
   mpz_t garbage;
-  size_t size;
+  unsigned count;
 
+#if NETTLE_USE_MINI_GMP
+  if (test_side_channel)
+    SKIP();
+#endif
   rsa_private_key_init(&key);
   rsa_public_key_init(&pub);
   mpz_init(gibberish);
@@ -80,7 +77,7 @@ test_main(void)
 
   memset(verifybad, 'A', PAYLOAD_SIZE);
 
-  for (size = 1; size < 51; size++)
+  for (count = 1; count < 20; count++)
     {
       ASSERT (rsa_generate_keypair(&pub, &key, &random_ctx,
 			           (nettle_random_func *) knuth_lfib_random,

@@ -2979,13 +2979,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-# Record which revision is being built
-if test -s "`which hg`" && test -d "$srcdir/.hg"; then
-	hgrev=`hg id -i -R "$srcdir"`
-	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Source directory Mercurial base revision $hgrev" >&5
-printf "%s\n" "$as_me: Source directory Mercurial base revision $hgrev" >&6;}
-fi
-
 ORIGCFLAGS="$CFLAGS"
 LATE_CFLAGS=""
 # Checks for programs.
@@ -7594,6 +7587,13 @@ ac_fn_c_check_func "$LINENO" "logwtmp" "ac_cv_func_logwtmp"
 if test "x$ac_cv_func_logwtmp" = xyes
 then :
   printf "%s\n" "#define HAVE_LOGWTMP 1" >>confdefs.h
+
+fi
+
+ac_fn_c_check_func "$LINENO" "setresgid" "ac_cv_func_setresgid"
+if test "x$ac_cv_func_setresgid" = xyes
+then :
+  printf "%s\n" "#define HAVE_SETRESGID 1" >>confdefs.h
 
 fi
 

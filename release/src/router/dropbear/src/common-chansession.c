@@ -28,6 +28,7 @@
 const struct SigMap signames[] = {
 	{SIGABRT, "ABRT"},
 	{SIGALRM, "ALRM"},
+	{SIGBUS, "BUS"},
 	{SIGFPE, "FPE"},
 	{SIGHUP, "HUP"},
 	{SIGILL, "ILL"},
@@ -37,6 +38,7 @@ const struct SigMap signames[] = {
 	{SIGQUIT, "QUIT"},
 	{SIGSEGV, "SEGV"},
 	{SIGTERM, "TERM"},
+	{SIGTRAP, "TRAP"},
 	{SIGUSR1, "USR1"},
 	{SIGUSR2, "USR2"},
 	{0, NULL}

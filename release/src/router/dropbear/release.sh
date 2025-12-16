@@ -9,7 +9,7 @@ else
     TESTREL=0
 fi
 
-VERSION=$(echo '#include "src/default_options.h"\n#include "src/sysoptions.h"\necho DROPBEAR_VERSION' | cpp -DHAVE_CRYPT - | sh)
+VERSION=$(echo '#include "src/default_options.h"\n#include "src/sysoptions.h"\necho DROPBEAR_VERSION' | cpp -DHAVE_CRYPT -DHAVE_SETRESGID - | sh)
 
 if [ $TESTREL -eq 1 ]; then
     echo Making test tarball for "$VERSION" ...

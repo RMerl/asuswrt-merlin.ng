@@ -409,9 +409,9 @@ void send_msg_userauth_failure(int partial, int incrfail) {
 
 		/* Desired total delay 300ms +-50ms (in nanoseconds).
 		Beware of integer overflow if increasing these values */
-		const int mindelay = 250000000;
-		const unsigned int vardelay = 100000000;
-		suseconds_t rand_delay;
+		const uint32_t mindelay = 250000000;
+		const uint32_t vardelay = 100000000;
+		uint32_t rand_delay;
 		struct timespec delay;
 
 		gettime_wrapper(&delay);
@@ -427,7 +427,7 @@ void send_msg_userauth_failure(int partial, int incrfail) {
 		genrandom((unsigned char*)&rand_delay, sizeof(rand_delay));
 		rand_delay = mindelay + (rand_delay % vardelay);
 
-		if (delay.tv_sec == 0 && delay.tv_nsec <= mindelay) {
+		if (delay.tv_sec == 0 && delay.tv_nsec <= rand_delay) {
 			/* Compensate for elapsed time */
 			delay.tv_nsec = rand_delay - delay.tv_nsec;
 		} else {
@@ -477,12 +477,23 @@ void send_msg_userauth_success() {
 	/* authdone must be set after encrypt_packet() for 
 	 * delayed-zlib mode */
 	ses.authstate.authdone = 1;
+
+#if DROPBEAR_SVR_DROP_PRIVS
+	/* Drop privileges as soon as authentication has happened. */
+	svr_switch_user();
+#endif
 	ses.connect_time = 0;
 
 
+#if DROPBEAR_SVR_DROP_PRIVS
+	/* If running as the user, we can rely on the OS
+	 * to limit allowed ports */
+	ses.allowprivport = 1;
+#else
 	if (ses.authstate.pw_uid == 0) {
 		ses.allowprivport = 1;
 	}
+#endif
 
 	/* Remove from the list of pre-auth sockets. Should be m_close(), since if
 	 * we fail, we might end up leaking connection slots, and disallow new
@@ -491,4 +502,95 @@ void send_msg_userauth_success() {
 
 	TRACE(("leave send_msg_userauth_success"))
 
+}
+
+#if DROPBEAR_SVR_DROP_PRIVS
+/* Returns DROPBEAR_SUCCESS or DROPBEAR_FAILURE */
+static int utmp_gid(gid_t *ret_gid) {
+	struct group *utmp_gr = getgrnam("utmp");
+	if (!utmp_gr) {
+		TRACE(("No utmp group"));
+		return DROPBEAR_FAILURE;
+	}
+
+	*ret_gid = utmp_gr->gr_gid;
+	return DROPBEAR_SUCCESS;
+}
+#endif
+
+/* Switch to the ses.authstate user.
+ * Fails if not running as root and the user differs.
+ *
+ * This may be called either after authentication, or 
+ * after shell/command fork if DROPBEAR_SVR_DROP_PRIVS is unset.
+ */
+void svr_switch_user(void) {
+	assert(ses.authstate.authdone);
+
+	/* We can only change uid/gid as root ... */
+	if (getuid() == 0) {
+
+		if ((setgid(ses.authstate.pw_gid) < 0) ||
+			(initgroups(ses.authstate.pw_name, 
+						ses.authstate.pw_gid) < 0)) {
+			dropbear_exit("Error changing user group");
+		}
+
+#if DROPBEAR_SVR_DROP_PRIVS
+		/* Retain utmp saved group so that wtmp/utmp can be written */
+		int ret = utmp_gid(&svr_ses.utmp_gid);
+		if (ret == DROPBEAR_SUCCESS) {
+			/* Set saved gid to utmp so that it can be
+			 * restored for login_logout() etc. This saved
+			 * group is cleared by the OS on execve() */
+			int rc = setresgid(-1, -1, svr_ses.utmp_gid);
+			if (rc == 0) {
+				svr_ses.have_utmp_gid = 1;
+			} else {
+				/* Will not attempt to switch to utmp gid.
+				 * login() etc may fail. */
+				TRACE(("utmp setresgid failed"));
+			}
+		}
+#endif
+
+		if (setuid(ses.authstate.pw_uid) < 0) {
+			dropbear_exit("Error changing user");
+		}
+	} else {
+		/* ... but if the daemon is the same uid as the requested uid, we don't
+		 * need to */
+
+		/* XXX - there is a minor issue here, in that if there are multiple
+		 * usernames with the same uid, but differing groups, then the
+		 * differing groups won't be set (as with initgroups()). The solution
+		 * is for the sysadmin not to give out the UID twice */
+		if (getuid() != ses.authstate.pw_uid) {
+			dropbear_exit("Couldn't	change user as non-root");
+		}
+	}
+}
+
+void svr_raise_gid_utmp(void) {
+#if DROPBEAR_SVR_DROP_PRIVS
+	if (!svr_ses.have_utmp_gid) {
+		return;
+	}
+
+	if (setegid(svr_ses.utmp_gid) != 0) {
+		dropbear_log(LOG_WARNING, "failed setegid");
+	}
+#endif
+}
+
+void svr_restore_gid(void) {
+#if DROPBEAR_SVR_DROP_PRIVS
+	if (!svr_ses.have_utmp_gid) {
+		return;
+	}
+
+	if (setegid(getgid()) != 0) {
+		dropbear_log(LOG_WARNING, "failed setegid");
+	}
+#endif
 }

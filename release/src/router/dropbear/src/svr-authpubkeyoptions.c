@@ -70,6 +70,12 @@ int svr_pubkey_allows_tcpfwd() {
 	return 1;
 }
 
+/* Returns 1 if a forced command pubkey option is set */
+int svr_pubkey_has_forced_command(void) {
+	return ses.authstate.pubkey_options
+		&& ses.authstate.pubkey_options->forced_command;
+}
+
 /* Returns 1 if pubkey allows x11 forwarding,
  * 0 otherwise */
 int svr_pubkey_allows_x11fwd() {

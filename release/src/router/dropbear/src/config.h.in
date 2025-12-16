@@ -231,6 +231,9 @@
 /* Define to 1 if you have the <security/pam_appl.h> header file. */
 #undef HAVE_SECURITY_PAM_APPL_H
 
+/* Define to 1 if you have the `setresgid' function. */
+#undef HAVE_SETRESGID
+
 /* Define to 1 if you have the `setutent' function. */
 #undef HAVE_SETUTENT
 

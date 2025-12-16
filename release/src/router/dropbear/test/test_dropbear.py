@@ -76,7 +76,7 @@ def own_venv_command():
 class HandleTcp(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
 	# override TCPServer's default, avoids TIME_WAIT
-	allow_reuse_addr = True
+	allow_reuse_address = True
 
 	""" Listens for a single incoming request, sends a response if given,
 	and returns the inbound data.

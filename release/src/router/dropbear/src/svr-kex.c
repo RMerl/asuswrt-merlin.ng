@@ -99,6 +99,14 @@ void recv_msg_kexdh_init() {
 	}
 #endif
 
+	if (!ses.kexstate.donesecondkex) {
+		/* Disable other signature types.
+		 * During future rekeying, privileges may have been dropped
+		 * so other keys won't be loadable.
+		 * This must occur after send_msg_ext_info() which uses the hostkey list */
+		disable_sig_except(ses.newkeys->algo_signature);
+	}
+
 	ses.requirenext = SSH_MSG_NEWKEYS;
 	TRACE(("leave recv_msg_kexdh_init"))
 }

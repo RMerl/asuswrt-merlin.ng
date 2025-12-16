@@ -61,6 +61,7 @@ extern runopts opts;
 int readhostkey(const char * filename, sign_key * hostkey,
 	enum signkey_type *type);
 void load_all_hostkeys(void);
+void disable_sig_except(enum signature_type sig_type);
 
 typedef struct svr_runopts {
 

@@ -346,6 +346,11 @@ static int newstreamlocal(struct Channel * channel) {
 
 	TRACE(("streamlocal channel %d", channel->index))
 
+	if (svr_opts.forced_command || svr_pubkey_has_forced_command()) {
+		TRACE(("leave newstreamlocal: no unix forwarding for forced command"))
+		goto out;
+	}
+
 	if (svr_opts.nolocaltcp || !svr_pubkey_allows_tcpfwd()) {
 		TRACE(("leave newstreamlocal: local unix forwarding disabled"))
 		goto out;

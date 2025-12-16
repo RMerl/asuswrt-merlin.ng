@@ -1,3 +1,60 @@
+2025.89 - 16 December 2025
+
+- Security: Avoid privilege escalation via unix stream forwarding in Dropbear
+  server. Other programs on a system may authenticate unix sockets via
+  SO_PEERCRED, which would be root user for Dropbear forwarded connections,
+  allowing root privilege escalation.
+  Reported by Turistu, and thanks for advice on the fix.
+  This is tracked as CVE-2025-14282, and affects 2024.84 to 2025.88.
+
+  It is fixed by dropping privileges of the dropbear process after
+  authentication. Unix stream sockets are now disallowed when a
+  forced command is used, either with authorized_key restrictions or
+  "dropbear -c command".
+
+  In previous affected releases running with "dropbear -j" (will also disable
+  TCP fowarding) or building with localoptions.h/distrooptions.h
+  "#define DROPBEAR_SVR_LOCALSTREAMFWD 0" is a mitigation.
+
+- Security: Include scp fix for CVE-2019-6111. This allowed
+  a malicious server to overwrite arbitrary local files.
+  The missing fix was reported by Ashish Kunwar.
+
+- Server dropping privileges post-auth is enabled by default. This requires
+  setresgid() support, so some platforms such as netbsd or macos will have to
+  disable DROPBEAR_SVR_DROP_PRIVS in localoptions.h. Unix stream forwarding is
+  not available if DROPBEAR_SVR_DROP_PRIVS is disabled.
+
+  Remote server TCP socket forwarding will now use OS privileged port
+  restrictions rather than having a fixed "allow >=1024 for non-root" rule.
+
+  A future release may implement privilege dropping for netbsd/macos.
+
+- Fix a regression in 2025.87 when RSA and DSS are not built. This would lead
+  to a crash at startup with bad_bufptr().
+  Reported by Dani Schmitt and Sebastian Priebe.
+
+- Don't limit channel window to 500MB. That is could cause stuck connections
+  if peers advise a large window and don't send an increment within 500MB.
+  Affects SSH.NET https://github.com/sshnet/SSH.NET/issues/1671
+  Reported by Rob Hague.
+
+- Ignore -g -s when passwords arent enabled. Patch from Norbert Lange.
+  Ignore -m (disable MOTD), -j/-k (tcp forwarding) when not enabled.
+
+- Report SIGBUS and SIGTRAP signals. Patch from Loïc Mangeonjean.
+
+- Fix incorrect server auth delay. Was meant to be 250-350ms, it was actually
+  150-350ms or possibly negative (zero). Reported by pickaxprograms.
+
+- Fix building without public key options. Thanks to Konstantin Demin
+
+- Fix building with proxycmd but without netcat. Thanks to Konstantin Demin
+
+- Fix incorrect path documentation for distrooptions, thanks to Todd Zullinger
+
+- Fix SO_REUSEADDR for TCP tests, reported by vt-alt.
+
 2025.88 - 7 May 2025
 
 - Security: Don't allow dbclient hostname arguments to be interpreted

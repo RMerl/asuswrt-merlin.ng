@@ -253,6 +253,9 @@ void svr_getopts(int argc, char ** argv) {
 				case 'j':
 					svr_opts.nolocaltcp = 1;
 					break;
+#else
+				case 'j':
+					break;
 #endif
 #if DROPBEAR_SVR_REMOTETCPFWD
 				case 'k':
@@ -260,6 +263,9 @@ void svr_getopts(int argc, char ** argv) {
 					break;
 				case 'a':
 					opts.listen_fwd_all = 1;
+					break;
+#else
+				case 'k':
 					break;
 #endif
 #if INETD_MODE
@@ -288,6 +294,9 @@ void svr_getopts(int argc, char ** argv) {
 				/* motd is displayed by default, -m turns it off */
 				case 'm':
 					svr_opts.domotd = 0;
+					break;
+#else
+				case 'm':
 					break;
 #endif
 				case 'w':
@@ -322,6 +331,10 @@ void svr_getopts(int argc, char ** argv) {
 					break;
 				case 't':
 					svr_opts.multiauthmethod = 1;
+					break;
+#else
+				case 's':
+				case 'g':
 					break;
 #endif
 				case 'h':
@@ -511,6 +524,17 @@ static void disablekey(enum signature_type type) {
 		if ((int)sigalgs[i].val == (int)type) {
 			sigalgs[i].usable = 0;
 			break;
+		}
+	}
+}
+
+void disable_sig_except(enum signature_type allow_type) {
+	int i;
+	TRACE(("Disabling other sigs except %d", allow_type));
+	for (i = 0; sigalgs[i].name != NULL; i++) {
+		enum signature_type sig_type = sigalgs[i].val;
+		if (sig_type != allow_type) {
+			sigalgs[i].usable = 0;
 		}
 	}
 }

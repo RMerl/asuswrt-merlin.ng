@@ -3,7 +3,7 @@ Asuswrt-Merlin Changelog
 
 3004.388.11 (xx-xxx-2025)
   - NOTE: AiCloud has been removed from Asuswrt-Merlin due
-          to its security track record.  This also includes
+          to its poor security track record.  This also includes
           cloud syncing features such as Asuswebstorage or
           Dropbox syncing with USB folder.  Use a VPN if you
           need secure remote access to your data.
@@ -27,6 +27,8 @@ Asuswrt-Merlin Changelog
   - UPDATED: Merged GPL 388_25575.
   - UPDATED: OpenVPN to 2.6.17.
   - UPDATED: libcap-ng to 0.8.4 (to be in sync with upstream)
+  - UPDATED: Dropbear to 2025.89.
+  - UPDATED: nettle to 3.10.2.
   - CHANGED: TrafficMonitor stats can now be saved to JFFS,
              and removed support for saving to NVRAM.
   - FIXED: IPv6 blocking of DoT servers (dave14305)

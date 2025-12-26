@@ -1,7 +1,7 @@
 Asuswrt-Merlin Changelog
 ========================
 
-3004.388.11 (xx-xxx-2025)
+3004.388.11 (26-Dec-2025)
   - NOTE: AiCloud has been removed from Asuswrt-Merlin due
           to its poor security track record.  This also includes
           cloud syncing features such as Asuswebstorage or

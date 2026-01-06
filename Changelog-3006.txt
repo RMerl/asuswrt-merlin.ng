@@ -1,6 +1,20 @@
 Asuswrt-Merlin 3006.xxx Changelog
 =================================
 
+3006.102.7 (xx-xxx-2026)
+  - NOTE: AiCloud has been removed from Asuswrt-Merlin due
+          to its poor security track record.  This also includes
+          cloud syncing features such as Asuswebstorage or
+          Dropbox syncing with USB folder.  Use a VPN if you
+          need secure remote access to your data.
+
+  - UPDATED: OpenVPN to 2.6.17.
+  - UPDATED: Dropbear to 2025.89.
+  - UPDATED: nettle to 3.10.2.
+  - FIXED: IPv6 blocking of DoT servers (dave14305)
+  - REMOVED: AiCloud support, due to security reasons.
+
+
 3006.102.6 (25-Nov-2025)
   - NOTE: Asus has made some security related changes.  Password
           requirements are stricter, and UPNP is no longer

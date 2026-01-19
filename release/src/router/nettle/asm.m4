@@ -73,12 +73,6 @@ define(`UCHAR', `STRUCT(`$1', 1)')dnl
 dnl UNSIGNED(name)
 define(`UNSIGNED', `STRUCT(`$1', 4)')dnl
 
-dnl Offsets in arcfour_ctx
-STRUCTURE(ARCFOUR)
-  STRUCT(S, 256)
-  UCHAR(I)
-  UCHAR(J)
-
 dnl Offsets in aes_table
 define(AES_SBOX_SIZE,	256)dnl
 define(AES_TABLE_SIZE,	1024)dnl

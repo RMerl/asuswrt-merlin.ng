@@ -1,10 +1,10 @@
-This is nettle.info, produced by makeinfo version 6.7 from
+This is nettle.info, produced by makeinfo version 6.8 from
 nettle.texinfo.
 
-This manual is for the Nettle library (version 3.4), a low-level
+This manual is for the Nettle library (version 3.9), a low-level
 cryptographic library.
 
-   Originally written 2001 by Niels Möller, updated 2017.
+   Originally written 2001 by Niels Möller, updated 2023.
 
      This manual is placed in the public domain.  You may freely copy
      it, in whole or in part, with or without modification.  Attribution
@@ -24,10 +24,10 @@ This document describes the Nettle low-level cryptographic library.  You
 can use the library directly from your C programs, or write or use an
 object-oriented wrapper for your favorite language or application.
 
-   This manual is for the Nettle library (version 3.4), a low-level
+   This manual is for the Nettle library (version 3.9), a low-level
 cryptographic library.
 
-   Originally written 2001 by Niels Möller, updated 2017.
+   Originally written 2001 by Niels Möller, updated 2023.
 
      This manual is placed in the public domain.  You may freely copy
      it, in whole or in part, with or without modification.  Attribution
@@ -82,6 +82,7 @@ Cipher functions
 * DES3::
 * Salsa20::
 * Serpent::
+* SM4::
 * Twofish::
 * nettle_cipher abstraction::
 
@@ -98,7 +99,9 @@ Authenticated encryption with associated data
 * GCM::
 * CCM::
 * ChaCha-Poly1305::
+* OCB::
 * SIV-CMAC::
+* SIV-GCM::
 * nettle_aead abstraction::
 
 Keyed Hash Functions
@@ -460,6 +463,14 @@ bits, or 32 octets.  Nettle defines SHA256 in ‘<nettle/sha2.h>’.
      This function also resets the context in the same way as
      ‘sha256_init’.
 
+ -- Function: void sha256_compress (const uint32_t *STATE, uint8_t
+          *INPUT)
+     Perform a raw SHA256 compress on SHA256_BLOCK_SIZE bytes fromINPUT
+     using STATE as IV (an array of 8 uint32_t).  The output is stored
+     in STATE.  This function provides access to the underlying
+     compression function, for the rare applications that need that
+     (e.g., using different IV from standard SHA256).
+
    Earlier versions of nettle defined SHA256 in the header file
 ‘<nettle/sha.h>’, which is now deprecated, but kept for compatibility.
 
@@ -530,6 +541,14 @@ octets.  Nettle defines SHA512 in ‘<nettle/sha2.h>’ (and in
 
      This function also resets the context in the same way as
      ‘sha512_init’.
+
+ -- Function: void sha512_compress (const uint64_t *STATE, uint8_t
+          *INPUT)
+     Perform a raw SHA512 compress on SHA512_BLOCK_SIZE bytes from INPUT
+     using STATE as IV (an array of 8 uint64_t).  The output is stored
+     in STATE.  This function provides access to the underlying
+     compression function, for the rare applications that need that
+     (e.g., using different IV from standard SHA512).
 
 7.1.1.4 SHA384 and other variants of SHA512
 ...........................................
@@ -734,27 +753,66 @@ This is SHA3 with 512-bit output size.
 
      This function also resets the context.
 
-7.1.1.9 SHAKE-256
-.................
+7.1.1.9 SHAKE
+.............
 
-In addition to those SHA-3 hash functions, Nettle also provides a SHA-3
-extendable-output function (XOF), SHAKE-256.  Unlike SHA-3 hash
-functions, SHAKE can produce an output digest of any desired length.
+In addition to those SHA-3 hash functions, Nettle also supports a SHA-3
+extendable-output function (XOF) called SHAKE. Unlike hash functions,
+SHAKE can produce an output digest of any desired length.  There are two
+variants, SHAKE-128 and SHAKE-256, with different security strengths in
+terms of collision or preimage resistance: SHAKE-128 internally uses a
+SHA-3 hash function with 128-bit security, while SHAKE-256 corresponds
+to SHA3-256 which provides 256-bit security.
 
-   To use SHAKE256, the context struct, init and update functions are
-the same as for SHA3-256.  To get a SHAKE256 digest, the following
-function is used instead of ‘sha3_256_digest’.  For an output size of
-‘SHA3_256_DIGEST_SIZE’, security is equivalent to SHA3-256 (but the
-digest is different).  Increasing output size further does not increase
-security in terms of collision or preimage resistance.  It can be seen
-as a built in pseudorandomness generator.
+   To use SHAKE, the context struct needs to be initialized with the
+‘init’ function and data is hashed using the ‘update’ function.
+Afterwards, a digest can be generated using either the ‘shake’ or
+‘shake_ouput’ function, where the former generates the digest at once
+and resets the context, while the latter can be called multiple times to
+generate the digest in an incremental manner.
 
- -- Function: void sha3_256_shake (struct shake256_ctx *CTX, size_t
+   For SHAKE-128 they are defined as follows.
+
+ -- Context struct: struct sha3_128_ctx
+
+ -- Function: void sha3_128_init (struct sha3_128_ctx *CTX)
+     Initialize the SHA3-256 state.
+
+ -- Function: void sha3_128_update (struct sha3_128_ctx *CTX, size_t
+          LENGTH, const uint8_t *DATA)
+     Hash some more data.
+
+ -- Function: void sha3_128_shake (struct sha3_128_ctx *CTX, size_t
           LENGTH, uint8_t *DIGEST)
-     Performs final processing and produces a SHAKE256 digest, writing
+     Performs final processing and produces a SHAKE-128 digest, writing
      it to DIGEST.  LENGTH can be of arbitrary size.
 
      This function also resets the context.
+
+ -- Function: void sha3_128_shake_output (struct sha3_128_ctx *CTX,
+          size_t LENGTH, uint8_t *DIGEST)
+     Performs final processing and produces a SHAKE-128 digest, writing
+     it to DIGEST.  LENGTH can be of arbitrary size.
+
+     This function does not reset the context.
+
+   For SHAKE-256, the corresponding context struct and the ‘init’ and
+‘update’ functions are the same as SHA3-256.  To generate a digest, use
+either the ‘shake’ or ‘shake_output’ function.
+
+ -- Function: void sha3_256_shake (struct sha3_256_ctx *CTX, size_t
+          LENGTH, uint8_t *DIGEST)
+     Performs final processing and produces a SHAKE-256 digest, writing
+     it to DIGEST.  LENGTH can be of arbitrary size.
+
+     This function also resets the context.
+
+ -- Function: void sha3_256_shake_output (struct sha3_256_ctx *CTX,
+          size_t LENGTH, uint8_t *DIGEST)
+     Performs final processing and produces a SHAKE-256 digest, writing
+     it to DIGEST.  LENGTH can be of arbitrary size.
+
+     This function does not reset the context.
 
 
 File: nettle.info,  Node: Miscellaneous hash functions,  Next: Legacy hash functions,  Prev: Recommended hash functions,  Up: Hash functions
@@ -920,6 +978,13 @@ octets.  Nettle defines MD5 in ‘<nettle/md5.h>’.
      This function also resets the context in the same way as
      ‘md5_init’.
 
+ -- Function: void md5_compress (const uint32_t *STATE, uint8_t *INPUT)
+     Perform a raw MD5 compress on MD5_BLOCK_SIZE bytes from INPUT using
+     STATE as IV (an array of 4 uint32_t).  The output is stored in
+     STATE.  This function provides access to the underlying compression
+     function, for the rare applications that need that (e.g., using
+     different IV from standard MD5).
+
    The normal way to use MD5 is to call the functions in order: First
 ‘md5_init’, then ‘md5_update’ zero or more times, and finally
 ‘md5_digest’.  After ‘md5_digest’, the context is reset to its initial
@@ -1058,6 +1123,13 @@ for Standards and Technology).  It outputs hash values of 160 bits, or
      This function also resets the context in the same way as
      ‘sha1_init’.
 
+ -- Function: void sha1_compress (const uint32_t *STATE, uint8_t *INPUT)
+     Perform a raw SHA1 compress on SHA1_BLOCK_SIZE bytes from INPUT
+     using STATE as IV (an array of 5 uint32_t).  The output is stored
+     in STATE.  This function provides access to the underlying
+     compression function, for the rare applications that need that
+     (e.g., using different IV from standard SHA1).
+
 7.1.3.6 GOSTHASH94 and GOSTHASH94CP
 ...................................
 
@@ -1131,7 +1203,7 @@ Nettle includes a struct including information about the supported hash
 functions.  It is defined in ‘<nettle/nettle-meta.h>’, and is used by
 Nettle’s implementation of HMAC (*note Keyed hash functions::).
 
- -- Meta struct: ‘struct nettle_hash’ name context_size digest_size
+ -- Meta struct: struct nettle_hash name context_size digest_size
           block_size init update digest
      The last three attributes are function pointers, of types
      ‘nettle_hash_init_func *’, ‘nettle_hash_update_func *’, and
@@ -1255,6 +1327,7 @@ decryption.
 * DES3::
 * Salsa20::
 * Serpent::
+* SM4::
 * Twofish::
 * nettle_cipher abstraction::
 
@@ -1360,15 +1433,23 @@ File: nettle.info,  Node: Arcfour,  Next: Arctwo,  Prev: AES,  Up: Cipher functi
 7.2.2 Arcfour
 -------------
 
-ARCFOUR is a stream cipher, also known under the trade marked name RC4,
-and it is one of the fastest ciphers around.  A problem is that the key
-setup of ARCFOUR is quite weak, you should never use keys with
-structure, keys that are ordinary passwords, or sequences of keys like
-“secret:1”, “secret:2”, ....  If you have keys that don’t look like
-random bit strings, and you want to use ARCFOUR, always hash the key
-before feeding it to ARCFOUR. Furthermore, the initial bytes of the
-generated key stream leak information about the key; for this reason, it
-is recommended to discard the first 512 bytes of the key stream.
+ARCFOUR is a historic stream cipher, also known under the trade marked
+name RC4, and was a widely used fast stream cipher.
+
+   We do not recommend the use of ARCFOUR; the Nettle implementation is
+provided primarily for interoperability with existing applications and
+standards.
+
+   One problem is that the key setup of ARCFOUR is quite weak, you
+should never use keys with structure, keys that are ordinary passwords,
+or sequences of keys like “secret:1”, “secret:2”, ....  If you have keys
+that don’t look like random bit strings, and you want to use ARCFOUR,
+always hash the key before feeding it to ARCFOUR.
+
+   Another problem is that the output is distinguishable from random
+data, and that the initial bytes of the generated key stream leak
+information about the key; for this reason, it was sometimes recommended
+to discard the first 512, 768 or 1024 bytes of the key stream.
 
      /* A more robust key setup function for ARCFOUR */
      void
@@ -1860,7 +1941,7 @@ DES at all one should be using “triple DES”, see DES3 below.
           uint8_t *DST, const uint8_t *SRC)
      Analogous to ‘des_encrypt’
 
- -- Function: int des_check_parity (size_t LENGTH, const uint8_t *KEY);
+ -- Function: int des_check_parity (size_t LENGTH, const uint8_t *KEY)
      Checks that the given key has correct, odd, parity.  Returns 1 for
      correct parity, and 0 for bad parity.
 
@@ -2030,7 +2111,7 @@ decryption.
      to 12 rounds.
 
 
-File: nettle.info,  Node: Serpent,  Next: Twofish,  Prev: Salsa20,  Up: Cipher functions
+File: nettle.info,  Node: Serpent,  Next: SM4,  Prev: Salsa20,  Up: Cipher functions
 
 7.2.11 Serpent
 --------------
@@ -2072,9 +2153,44 @@ larger ones.  Nettle defines SERPENT in ‘<nettle/serpent.h>’.
      Analogous to ‘serpent_encrypt’
 
 
-File: nettle.info,  Node: Twofish,  Next: nettle_cipher abstraction,  Prev: Serpent,  Up: Cipher functions
+File: nettle.info,  Node: SM4,  Next: Twofish,  Prev: Serpent,  Up: Cipher functions
 
-7.2.12 Twofish
+7.2.12 SM4
+----------
+
+SM4 is a block cipher standard adopted by the government of the People’s
+Republic of China, and it was issued by the State Cryptography
+Administration on March 21, 2012.  The standard is GM/T 0002-2012 "SM4
+block cipher algorithm".  Nettle defines it in ‘<nettle/sm4.h>’.
+
+ -- Context struct: struct sm4_ctx
+
+ -- Constant: SM4_BLOCK_SIZE
+     The SM4 block-size, 16.
+
+ -- Constant: SM4_KEY_SIZE
+     Default SM4 key size, 16.
+
+ -- Function: void sm4_set_encrypt_key (struct sm4_ctx *CTX, const
+          uint8_t *KEY)
+     Initialize the cipher.  The function is used for encryption.
+
+ -- Function: void sm4_set_decrypt_key (struct sm4_ctx *CTX, const
+          uint8_t *KEY)
+     Initialize the cipher.  The function is used for decryption.
+
+ -- Function: void sm4_crypt (const struct sm4_ctx *CTX, size_t LENGTH,
+          uint8_t *DST, const uint8_t *SRC)
+     Cryption function.  LENGTH must be an integral multiple of the
+     block size.  If it is more than one block, the data is processed in
+     ECB mode.  ‘src’ and ‘dst’ may be equal, but they must not overlap
+     in any other way.  The same function is used for both encryption
+     and decryption.
+
+
+File: nettle.info,  Node: Twofish,  Next: nettle_cipher abstraction,  Prev: SM4,  Up: Cipher functions
+
+7.2.13 Twofish
 --------------
 
 Another AES finalist, this one designed by Bruce Schneier and others.
@@ -2113,7 +2229,7 @@ Nettle defines it in ‘<nettle/twofish.h>’.
 
 File: nettle.info,  Node: nettle_cipher abstraction,  Prev: Twofish,  Up: Cipher functions
 
-7.2.13 The ‘struct nettle_cipher’ abstraction
+7.2.14 The ‘struct nettle_cipher’ abstraction
 ---------------------------------------------
 
 Nettle includes a struct including information about some of the more
@@ -2121,7 +2237,7 @@ regular cipher functions.  It can be useful for applications that need a
 simple way to handle various algorithms.  Nettle defines these structs
 in ‘<nettle/nettle-meta.h>’.
 
- -- Meta struct: ‘struct nettle_cipher’ name context_size block_size
+ -- Meta struct: struct nettle_cipher name context_size block_size
           key_size set_encrypt_key set_decrypt_key encrypt decrypt
      The last four attributes are function pointers, of types
      ‘nettle_set_key_func *’ and ‘nettle_cipher_func *’.  The first
@@ -2650,16 +2766,16 @@ decryption functions in this interface.
      AES-256).  One of these functions must be called before any of the
      other functions.
 
- -- Function: void xts_aes128_encrypt_message(struct xts_aes128_key
+ -- Function: void xts_aes128_encrypt_message (struct xts_aes128_key
           *CTX, uint8_t *TWEAK, size_t LENGTH, uint8_t *DST, const
           uint8_t *SRC)
- -- Function: void xts_aes256_encrypt_message(struct xts_aes256_key
+ -- Function: void xts_aes256_encrypt_message (struct xts_aes256_key
           *CTX, uint8_t *TWEAK, size_t LENGTH, uint8_t *DST, const
           uint8_t *SRC)
- -- Function: void xts_aes128_decrypt_message(struct xts_aes128_key
+ -- Function: void xts_aes128_decrypt_message (struct xts_aes128_key
           *CTX, uint8_t *TWEAK, size_t LENGTH, uint8_t *DST, const
           uint8_t *SRC)
- -- Function: void xts_aes256_decrypt_message(struct xts_aes256_key
+ -- Function: void xts_aes256_decrypt_message (struct xts_aes256_key
           *CTX, uint8_t *TWEAK, size_t LENGTH, uint8_t *DST, const
           uint8_t *SRC)
      These are identical to ‘xts_encrypt_message’ and
@@ -2737,7 +2853,9 @@ performance is important.
 * GCM::
 * CCM::
 * ChaCha-Poly1305::
+* OCB::
 * SIV-CMAC::
+* SIV-GCM::
 * nettle_aead abstraction::
 
 
@@ -2810,7 +2928,7 @@ the underlying cipher.  These interfaces are defined in ‘<nettle/eax.h>’
 
  -- Function: void eax_digest (struct eax_ctx *EAX, const struct eax_key
           *KEY, const void *CIPHER, nettle_cipher_func *F, size_t
-          LENGTH, uint8_t *DIGEST);
+          LENGTH, uint8_t *DIGEST)
      Extracts the message digest (also known “authentication tag”).
      This is the final operation when processing a message.  If LENGTH
      is smaller than ‘EAX_DIGEST_SIZE’, only the first LENGTH octets of
@@ -2883,7 +3001,7 @@ cipher.
      block size.
 
  -- Function: void eax_aes128_digest (struct eax_aes128_ctx *CTX, size_t
-          LENGTH, uint8_t *DIGEST);
+          LENGTH, uint8_t *DIGEST)
      Extracts the message digest (also known “authentication tag”).
      This is the final operation when processing a message.  If LENGTH
      is smaller than ‘EAX_DIGEST_SIZE’, only the first LENGTH octets of
@@ -3164,6 +3282,46 @@ underlying cipher.
      provide a smaller value, only the first LENGTH octets of the digest
      are written.
 
+7.4.2.5 GCM-SM4 interface
+.........................
+
+The following functions implement the case of GCM using SM4 as the
+underlying cipher.
+
+ -- Context struct: struct gcm_sm4_ctx
+     Context structs, defined using ‘GCM_CTX’.
+
+ -- Function: void gcm_sm4_set_key (struct gcm_sm4_ctx *CTX, const
+          uint8_t *KEY)
+     Initializes CTX using the given key.
+
+ -- Function: void gcm_sm4_set_iv (struct gcm_sm4_ctx *CTX, size_t
+          LENGTH, const uint8_t *IV)
+     Initializes the per-message state, using the given IV.
+
+ -- Function: void gcm_sm4_update (struct gcm_sm4_ctx *CTX, size_t
+          LENGTH, const uint8_t *DATA)
+     Provides associated data to be authenticated.  If used, must be
+     called before ‘gcm_sm4_encrypt’ or ‘gcm_sm4_decrypt’.  All but the
+     last call for each message _must_ use a length that is a multiple
+     of the block size.
+
+ -- Function: void gcm_sm4_encrypt (struct gcm_sm4_ctx *CTX, size_t
+          LENGTH, uint8_t *DST, const uint8_t *SRC)
+ -- Function: void gcm_sm4_decrypt (struct gcm_sm4_ctx *CTX, size_t
+          LENGTH, uint8_t *DST, const uint8_t *SRC)
+     Encrypts or decrypts the data of a message.  All but the last call
+     for each message _must_ use a length that is a multiple of the
+     block size.
+
+ -- Function: void gcm_sm4_digest (struct gcm_sm4_ctx *CTX, size_t
+          LENGTH, uint8_t *DIGEST)
+     Extracts the message digest (also known “authentication tag”).
+     This is the final operation when processing a message.  It’s
+     strongly recommended that LENGTH is ‘GCM_DIGEST_SIZE’, but if you
+     provide a smaller value, only the first LENGTH octets of the digest
+     are written.
+
 
 File: nettle.info,  Node: CCM,  Next: ChaCha-Poly1305,  Prev: GCM,  Up: Authenticated encryption
 
@@ -3414,7 +3572,7 @@ be called before using any of the other functions in this interface.
           *CTX, size_t NLENGTH, const uint8_t *NONCE, size_t ALENGTH,
           const uint8_t *ADATA, size_t TLENGTH, size_t MLENGTH, uint8_t
           *DST, const uint8_t *SRC)
- -- Function: int ccm_aes192_decrypt_message (struct ccm_aes256_ctx
+ -- Function: int ccm_aes256_decrypt_message (struct ccm_aes256_ctx
           *CTX, size_t NLENGTH, const uint8_t *NONCE, size_t ALENGTH,
           const uint8_t *ADATA, size_t TLENGTH, size_t MLENGTH, uint8_t
           *DST, const uint8_t *SRC)
@@ -3423,7 +3581,7 @@ be called before using any of the other functions in this interface.
      context structure.
 
 
-File: nettle.info,  Node: ChaCha-Poly1305,  Next: SIV-CMAC,  Prev: CCM,  Up: Authenticated encryption
+File: nettle.info,  Node: ChaCha-Poly1305,  Next: OCB,  Prev: CCM,  Up: Authenticated encryption
 
 7.4.4 ChaCha-Poly1305
 ---------------------
@@ -3499,9 +3657,200 @@ little-endian).  Nettle defines ChaCha-Poly1305 in
      LENGTH octets of the digest are written.
 
 
-File: nettle.info,  Node: SIV-CMAC,  Next: nettle_aead abstraction,  Prev: ChaCha-Poly1305,  Up: Authenticated encryption
+File: nettle.info,  Node: OCB,  Next: SIV-CMAC,  Prev: ChaCha-Poly1305,  Up: Authenticated encryption
 
-7.4.5 Synthetic Initialization Vector AEAD
+7.4.5 OCB (Offset Code Book) Mode
+---------------------------------
+
+The OCB mode is an AEAD construction, featuring particularly fast and
+simple authentication; it needs one block cipher operation per data
+block, and almost free authentication.  It is constructed on top of a
+block cipher which must have a block size of 128 bits.
+
+   There have been several versions of the OCB scheme, the
+implementation in Nettle follows ‘RFC 7253’, which is almost the same as
+the scheme OCB3.
+
+7.4.5.1 General interface
+.........................
+
+ -- Context struct: struct ocb_key
+     OCB state which depends only on the key, but not on the nonce or
+     the message.
+
+ -- Context struct: struct ocb_ctx
+     Holds state corresponding to a particular message.
+
+ -- Constant: OCB_BLOCK_SIZE
+     The block size for OCB’s block size, 16.
+
+ -- Constant: OCB_MAX_NONCE_SIZE
+     The maximum nonce size for OCB, 15.
+
+ -- Constant: OCB_DIGEST_SIZE
+     Size of the OCB authentication tag.
+
+ -- Function: void ocb_set_key (struct ocb_key *KEY, const void *CIPHER,
+          nettle_cipher_func *F)
+     Initializes the KEY struct.  The CIPHER context must be initialized
+     for encryption, and F should be the corresponding encryption
+     function.
+
+ -- Function: void ocb_set_nonce (struct ocb_ctx *CTX, const void
+          *CIPHER, nettle_cipher_func *F, size_t TAG_LENGTH, size_t
+          NONCE_LENGTH, const uint8_t *NONCE)
+     Initializes CTX for processing a new message, using the given
+     nonce.  The CIPHER must be initialized for encryption, and F should
+     be the corresponding encryption function.  The TAG_LENGTH
+     (non-zero, and at most 16) is included when initializing the state,
+     and should be the same value later passed to ‘ocb_digest’.  Nonce
+     is optional, and length at most 15 bytes.
+
+ -- Function: void ocb_update (struct ocb_ctx *CTX, const struct ocb_key
+          *KEY, const void *CIPHER, nettle_cipher_func *F, size_t
+          LENGTH, const uint8_t *DATA)
+     Process associated data for authentication.  All but the last call
+     for each message _must_ use a length that is a multiple of the
+     block size.
+
+ -- Function: void ocb_encrypt (struct ocb_ctx *CTX, const struct
+          ocb_key *KEY, const void *CIPHER, nettle_cipher_func *F,
+          size_t LENGTH, uint8_t *DST, const uint8_t *SRC)
+     Encrypts the data of a message.  CIPHER is the context struct for
+     the underlying cipher and F is the encryption function.  All but
+     the last call for each message _must_ use a length that is a
+     multiple of the block size.
+
+ -- Function: void ocb_decrypt (struct ocb_ctx *CTX, const struct
+          ocb_key *KEY, const void *ENCRYPT_CTX, nettle_cipher_func
+          *ENCRYPT, const void *DECRYPT_CTX, nettle_cipher_func
+          *DECRYPT, size_t LENGTH, uint8_t *DST, const uint8_t *SRC)
+     Decrypts the data of a message.  ENCRYPT_CTX and ENCRYPT define the
+     encryption operation of the underlying cipher, while DECRYPT_CTX
+     and DECRYPT represent the decryption operation (for some ciphers,
+     one of context pointer and function pointer may be the same).  All
+     but the last call for each message _must_ use a length that is a
+     multiple of the block size.
+
+ -- Function: void ocb_digest (const struct ocb_ctx *CTX, const struct
+          ocb_key *KEY, const void *CIPHER, nettle_cipher_func *F,
+          size_t LENGTH, uint8_t *DIGEST)
+     Extracts the message digest (also known “authentication tag”).
+     This is the final operation when processing a message.  The LENGTH
+     value _should_ be the same as the tag length passed to the
+     preceding ‘ocb_set_nonce’ call (using a different length is
+     possible, but incompatible with ‘RFC 7253’).
+
+ -- Function: void ocb_encrypt_message (const struct ocb_key *OCB_KEY,
+          const void *CIPHER, nettle_cipher_func *F, size_t NLENGTH,
+          const uint8_t *NONCE, size_t ALENGTH, const uint8_t *ADATA,
+          size_t TLENGTH, size_t CLENGTH, uint8_t *DST, const uint8_t
+          *SRC)
+     Computes the message digest from the ADATA and SRC parameters,
+     encrypts the plaintext from SRC, appends the tag to the ciphertext
+     and writes it to DST.  The CLENGTH variable must be equal to the
+     length of SRC plus TLENGTH.
+
+ -- Function: int ocb_decrypt_message (const struct ocb_key *OCB_KEY,
+          const void *ENCRYPT_CTX, nettle_cipher_func *ENCRYPT, const
+          void *DECRYPT_CTX, nettle_cipher_func *DECRYPT, size_t
+          NLENGTH, const uint8_t *NONCE, size_t ALENGTH, const uint8_t
+          *ADATA, size_t TLENGTH, size_t MLENGTH, uint8_t *DST, const
+          uint8_t *SRC)
+     Decrypts the ciphertext from SRC, outputs the plaintext to DST.
+     Like ‘ocb_decrypt’, it needs both the encrypt and the decrypt
+     function of the underlying cipher.  It also recalculates the
+     authentication tag from ADATA and the plaintext, and compares it to
+     the final TLENGTH bytes of SRC.  If the values of the received and
+     calculated tags are equal, this will return 1 indicating a valid
+     and authenticated message.  Otherwise, this function will return
+     zero.
+
+7.4.5.2 OCB-AES interface
+.........................
+
+ -- Context struct: struct ocb_aes128_encrypt_key
+     Key-dependent state for encryption using OCB-AES128.  For
+     decryption, a separate ‘struct aes128_ctx’, initialized for
+     decryption, is needed as well.
+
+ -- Function: void ocb_aes128_set_encrypt_key (struct
+          ocb_aes128_encrypt_key *OCB, const uint8_t *KEY)
+     Initializes OCB and the underlying AES cipher with the given key.
+
+ -- Function: void ocb_aes128_set_decrypt_key (struct
+          ocb_aes128_encrypt_key *OCB, struct aes128_ctx *DECRYPT, const
+          uint8_t *KEY)
+     Initializes OCB and the underlying AES cipher with the given key.
+     In addition, initialize DECRYPT for decryption using the same key;
+     this is needed for ‘ocb_aes128_decrypt’ and
+     ‘ocb_aes128_decrypt_message’.
+
+ -- Function: void ocb_aes128_set_nonce (struct ocb_ctx *CTX, const
+          struct ocb_aes128_encrypt_key *KEY, size_t TAG_LENGTH, size_t
+          NONCE_LENGTH, const uint8_t *NONCE)
+     Initializes CTX for processing a new message, using the given nonce
+     and key.  The TAG_LENGTH (non-zero, and at most 16) is included
+     when initializing the state, and should be the same value later
+     passed to ‘ocb_digest’.  Nonce is optional, and length at most 15
+     bytes.
+
+ -- Function: void ocb_aes128_update (struct ocb_ctx *CTX, const struct
+          ocb_aes128_encrypt_key *KEY, size_t LENGTH, const uint8_t
+          *DATA)
+     Process associated data for authentication.  All but the last call
+     for each message _must_ use a length that is a multiple of the
+     block size.
+
+ -- Function: void ocb_aes128_encrypt (struct ocb_ctx *CTX, const struct
+          ocb_aes128_encrypt_key *KEY, size_t LENGTH, uint8_t *DST,
+          const uint8_t *SRC)
+     Encrypts the data of a message.  All but the last call for each
+     message _must_ use a length that is a multiple of the block size.
+
+ -- Function: void ocb_aes128_decrypt (struct ocb_ctx *CTX, const struct
+          ocb_aes128_encrypt_key *KEY, const struct aes128_ctx *DECRYPT,
+          size_t LENGTH, uint8_t *DST, const uint8_t *SRC)
+     Decrypts the data of a message.  DECRYPT is an AES context
+     initialized for decryption using the same key.  All but the last
+     call for each message _must_ use a length that is a multiple of the
+     block size.
+
+ -- Function: void ocb_aes128_digest (struct ocb_ctx *CTX, const struct
+          ocb_aes128_encrypt_key *KEY, size_t LENGTH, uint8_t *DIGEST)
+     Extracts the message digest (also known “authentication tag”).
+     This is the final operation when processing a message.  The LENGTH
+     value _should_ be the same as the tag length passed to the
+     preceding ‘ocb_aes128_set_nonce’ call (using a different length is
+     possible, but incompatible with ‘RFC 7253’).
+
+ -- Function: void ocb_aes128_encrypt_message (const struct
+          ocb_aes128_encrypt_key *KEY, size_t NLENGTH, const uint8_t
+          *NONCE, size_t ALENGTH, const uint8_t *ADATA, size_t TLENGTH,
+          size_t CLENGTH, uint8_t *DST, const uint8_t *SRC)
+     Computes the message digest from the ADATA and SRC parameters,
+     encrypts the plaintext from SRC, appends the tag to the ciphertext
+     and writes it to DST.  The CLENGTH variable must be equal to the
+     length of SRC plus TLENGTH.
+
+ -- Function: int ocb_aes128_decrypt_message (const struct
+          ocb_aes128_encrypt_key *KEY, const struct aes128_ctx *DECRYPT,
+          size_t NLENGTH, const uint8_t *NONCE, size_t ALENGTH, const
+          uint8_t *ADATA, size_t TLENGTH, size_t MLENGTH, uint8_t *DST,
+          const uint8_t *SRC)
+     Decrypts the ciphertext from SRC, outputs the plaintext to DST.
+     Like ‘ocb_aes128_decrypt’, it needs an AES context initialized for
+     decryption using the same key.  It also recalculates the
+     authentication tag from ADATA and the plaintext, and compares it to
+     the final TLENGTH bytes of SRC.  If the values of the received and
+     calculated tags are equal, this will return 1 indicating a valid
+     and authenticated message.  Otherwise, this function will return
+     zero.
+
+
+File: nettle.info,  Node: SIV-CMAC,  Next: SIV-GCM,  Prev: OCB,  Up: Authenticated encryption
+
+7.4.6 Synthetic Initialization Vector AEAD
 ------------------------------------------
 
 SIV-CMAC mode is a combination of counter mode with message
@@ -3530,7 +3879,7 @@ In the terminology of the RFC, the input to the S2V function is always a
 vector of three elements, where S1 is the authenticated data, S2 is the
 nonce, and S3 is the plaintext.
 
-7.4.5.1 General interface
+7.4.6.1 General interface
 .........................
 
  -- Constant: SIV_BLOCK_SIZE
@@ -3542,7 +3891,7 @@ nonce, and S3 is the plaintext.
  -- Constant: SIV_MIN_NONCE_SIZE
      The the minimum size for an SIV-CMAC nonce, 1.
 
-7.4.5.2 SIV-CMAC-AES interface
+7.4.6.2 SIV-CMAC-AES interface
 ..............................
 
 The AES SIV-CMAC functions provide an API for using SIV-CMAC mode with
@@ -3597,15 +3946,117 @@ interface.
      return zero.
 
 
-File: nettle.info,  Node: nettle_aead abstraction,  Prev: SIV-CMAC,  Up: Authenticated encryption
+File: nettle.info,  Node: SIV-GCM,  Next: nettle_aead abstraction,  Prev: SIV-CMAC,  Up: Authenticated encryption
 
-7.4.6 The ‘struct nettle_aead’ abstraction
+7.4.7 SIV-GCM
+-------------
+
+SIV-GCM, described in ‘RFC 8452’, is an AEAD construction similar to
+AES-GCM, but provides protection against accidental nonce misuse like
+SIV-CMAC mode.
+
+   It is constructed on top of a block cipher which must have a block
+size of 128 bits and a nonce size of 12 bytes.  Nettle’s support for
+SIV-GCM consists of a message encryption and authentication interface,
+for SIV-GCM using AES as the underlying block cipher.  These interfaces
+are defined in ‘<nettle/siv-gcm.h>’.
+
+   Unlike other AEAD mode in SIV-GCM the tag is calculated over the
+encoded additional authentication data and plaintext instead of the
+ciphertext.
+
+7.4.7.1 General interface
+.........................
+
+ -- Constant: SIV_GCM_BLOCK_SIZE
+     SIV-GCM’s block size, 16.
+
+ -- Constant: SIV_GCM_DIGEST_SIZE
+     Size of the SIV-GCM digest for tags, 16.
+
+ -- Constant: SIV_GCM_NONCE_SIZE
+     Size of the SIV-GCM nonce, 12.
+
+ -- Function: void siv_gcm_encrypt_message (const struct nettle_cipher
+          *NC, const void *CTX, void *CTR_CTX, size_t NLENGTH, const
+          uint8_t *NONCE, size_t ALENGTH, const uint8_t *ADATA, size_t
+          CLENGTH, uint8_t *DST, const uint8_t *SRC)
+     Computes the message digest from the ADATA and SRC parameters,
+     encrypts the plaintext from SRC, appends the authentication tag to
+     the ciphertext and outputs it to DST.  The CLENGTH variable must be
+     equal to the length of SRC plus ‘SIV_GCM_DIGEST_SIZE’.
+
+ -- Function: int siv_gcm_decrypt_message (const struct nettle_cipher
+          *NC, const void *CTX, void *CTR_CTX, size_t NLENGTH, const
+          uint8_t *NONCE, size_t ALENGTH, const uint8_t *ADATA, size_t
+          MLENGTH, uint8_t *DST, const uint8_t *SRC)
+     Decrypts the ciphertext from SRC, outputs the plaintext to DST,
+     recalculates the initialization vector from ADATA and the
+     plaintext.  If the values of the received and calculated
+     initialization vector are equal, this will return 1 indicating a
+     valid and authenticated message.  Otherwise, this function will
+     return zero.
+
+   In the above interface, NC must point to a cipher that works with
+16-byte block size and the key sizes that are multiple of 8-bytes.  The
+CTX context structure must be initialized for encryption mode using a
+set-key function, before using any of the functions in this interface.
+While the CTR_CTX context structure must have the same size as CTX, it
+does not need to be initialized before calling those functions as it is
+used as working storage.  These structures can point to the same area;
+in that case the contents of *CTX is destroyed by the call.
+
+   For convenience, Nettle provides wrapper functions that works with
+AES described in the following section.
+
+7.4.7.2 SIV-GCM-AES interface
+.............................
+
+The SIV-GCM functions provide an API for using SIV-GCM mode with the AES
+block ciphers.  The parameters all have the same meaning as the general
+and message interfaces, except that the CIPHER, F, and CTX parameters
+are replaced with an AES context structure.  The AES context structure
+must be initialized for encryption mode using a set-key function, before
+using any of the functions in this interface.
+
+ -- Function: void siv_gcm_aes128_encrypt_message (const struct
+          aes128_ctx *CTX, size_t NLENGTH, const uint8_t *NONCE, size_t
+          ALENGTH, const uint8_t *ADATA, size_t CLENGTH, uint8_t *DST,
+          const uint8_t *SRC)
+ -- Function: void siv_gcm_aes256_encrypt_message (const struct
+          aes256_ctx *CTX, size_t NLENGTH, const uint8_t *NONCE, size_t
+          ALENGTH, const uint8_t *ADATA, size_t CLENGTH, uint8_t *DST,
+          const uint8_t *SRC)
+     Computes the message digest from the ADATA and SRC parameters,
+     encrypts the plaintext from SRC, appends the authentication tag to
+     the ciphertext and outputs it to DST.  The CLENGTH variable must be
+     equal to the length of SRC plus ‘SIV_GCM_DIGEST_SIZE’.
+
+ -- Function: int siv_gcm_aes128_decrypt_message (const struct
+          aes128_ctx *CTX, size_t NLENGTH, const uint8_t *NONCE, size_t
+          ALENGTH, const uint8_t *ADATA, size_t MLENGTH, uint8_t *DST,
+          const uint8_t *SRC)
+ -- Function: int siv_gcm_aes256_decrypt_message (const struct
+          aes256_ctx *CTX, size_t NLENGTH, const uint8_t *NONCE, size_t
+          ALENGTH, const uint8_t *ADATA, size_t MLENGTH, uint8_t *DST,
+          const uint8_t *SRC)
+     Decrypts the ciphertext from SRC, outputs the plaintext to DST,
+     recalculates the initialization vector from ADATA and the
+     plaintext.  If the values of the received and calculated
+     initialization vector are equal, this will return 1 indicating a
+     valid and authenticated message.  Otherwise, this function will
+     return zero.
+
+
+File: nettle.info,  Node: nettle_aead abstraction,  Prev: SIV-GCM,  Up: Authenticated encryption
+
+7.4.8 The ‘struct nettle_aead’ abstraction
 ------------------------------------------
 
 Nettle includes a struct including information about the supported hash
 functions.  It is defined in ‘<nettle/nettle-meta.h>’.
 
- -- Meta struct: ‘struct nettle_aead’ name context_size block_size
+ -- Meta struct: struct nettle_aead name context_size block_size
           key_size nonce_size digest_size set_encrypt_key
           set_decrypt_key set_nonce update encrypt decrypt digest
      The last seven attributes are function pointers.
@@ -4308,6 +4759,96 @@ than the general PBKDF2 function.
      output buffer is DST which must have room for at least LENGTH
      octets.
 
+7.6.4 BALLOON
+-------------
+
+Balloon is a memory-hard password-hashing algorithm.  An in-depth
+description of the algorithm and its properties can be found in an
+online research paper: Boneh, D., Corrigan-Gibbs, H., Schechter, S.
+(2017, May 12).  Balloon Hashing: A Memory-Hard Function Providing
+Provable Protection Against Sequential Attacks.  Retrieved Sep 1, 2022,
+from <https://eprint.iacr.org/2016/027.pdf>
+
+   Nettle’s definition of the BALLOON algorithm can be found in
+‘<nettle/balloon.h>’.  There is a general BALLOON function where the
+user can specify desired hash algorithm that will be used by the
+function.  There are also concrete, more user-friendly functions that
+use common hash algorithms like SHA1, SHA256, SHA384 and SHA512.  There
+is also a utility function which helps to determine the size of the
+working buffer that must be provided as one of the inputs.
+
+   Each BALLOON function takes as an input a password and a salt of
+arbitrary lengths, a time and a space parameters, and a scratch buffer.
+The space parameter S_COST determines how many blocks of working space
+the algorithm will require during its computation.  It is common to set
+S_COST to a high value in order to increase the cost of hardware
+accelerators built by the adversary.  The time parameter T_COST
+determines the number of rounds of computation that the algorithm will
+perform.  This can be used to further increase the cost of computation
+without raising the memory requirement.  Scratch buffer SCRATCH is a
+user allocated working space required by the algorithm.  To determine
+the required size of the scratch buffer use the utility function
+‘balloon_itch’.  Output of BALLOON algorithm will be written into the
+output buffer DST that has to be at least DIGEST_SIZE bytes long.  Note
+that it is safe to use the same buffer for both SCRATCH and DST.  Next
+follows the description of the general BALLOON function.
+
+ -- Function: void balloon (void *HASH_CTX, nettle_hash_update_func
+          *UPDATE, nettle_hash_digest_func *DIGEST, size_t DIGEST_SIZE,
+          size_t S_COST, size_t T_COST, size_t PASSWD_LENGTH, const
+          uint8_t *PASSWD, size_t SALT_LENGTH, const uint8_t *SALT,
+          uint8_t *SCRATCH, uint8_t *DST)
+     Compute hash of given password PASSWD of length PASSWD_LENGTH
+     salted with SALT of length SALT_LENGTH and write DIGEST_SIZE bytes
+     into the output buffer DST.  Parameter HASH_CTX is a context for
+     the underlying hash function, which much be initialized by the
+     caller.  UPDATE and DIGEST are the update and digest functions of
+     the chosen hash algorithm.  DIGEST_SIZE is the digest size of the
+     chosen hash algorithm and determines the size of the output.
+
+ -- Function: size_t balloon_itch (size_t DIGEST_SIZE, size_t S_COST)
+     Compute the size of the scratch buffer SCRATCH.  DIGEST_SIZE is the
+     digest size of the chosen hash algorithm.  S_COST is the space
+     parameter used by the ‘balloon’ function.
+
+7.6.5 Concrete BALLOON functions
+--------------------------------
+
+Here follows a list of the specialized BALLOON functions, which are more
+user-friendly variants of the general function.
+
+7.6.5.1 BALLOON-SHA1
+....................
+
+ -- Function: void balloon_sha1 (size_t S_COST, size_t T_COST, size_t
+          PASSWD_LENGTH, const uint8_t *PASSWD, size_t SALT_LENGTH,
+          const uint8_t *SALT, uint8_t *SCRATCH, uint8_t *DST)
+     BALLOON algorithm using SHA1 as the underlying hash function.
+
+7.6.5.2 BALLOON-SHA256
+......................
+
+ -- Function: void balloon_sha256 (size_t S_COST, size_t T_COST, size_t
+          PASSWD_LENGTH, const uint8_t *PASSWD, size_t SALT_LENGTH,
+          const uint8_t *SALT, uint8_t *SCRATCH, uint8_t *DST)
+     BALLOON algorithm using SHA256 as the underlying hash function.
+
+7.6.5.3 BALLOON-SHA384
+......................
+
+ -- Function: void balloon_sha384 (size_t S_COST, size_t T_COST, size_t
+          PASSWD_LENGTH, const uint8_t *PASSWD, size_t SALT_LENGTH,
+          const uint8_t *SALT, uint8_t *SCRATCH, uint8_t *DST)
+     BALLOON algorithm using SHA384 as the underlying hash function.
+
+7.6.5.4 BALLOON-SHA512
+......................
+
+ -- Function: void balloon_sha512 (size_t S_COST, size_t T_COST, size_t
+          PASSWD_LENGTH, const uint8_t *PASSWD, size_t SALT_LENGTH,
+          const uint8_t *SALT, uint8_t *SCRATCH, uint8_t *DST)
+     BALLOON algorithm using SHA512 as the underlying hash function.
+
 
 File: nettle.info,  Node: Public-key algorithms,  Next: Randomness,  Prev: Key derivation functions,  Up: Reference
 
@@ -4531,19 +5072,19 @@ size compared to using SHA256 and SHA512, respectively.
    Creating an RSA signature is done with one of the following
 functions:
 
- -- Function: int rsa_md5_sign_tr(const struct rsa_public_key *PUB,
+ -- Function: int rsa_md5_sign_tr (const struct rsa_public_key *PUB,
           const struct rsa_private_key *KEY, void *RANDOM_CTX,
           nettle_random_func *RANDOM, struct md5_ctx *HASH, mpz_t
           SIGNATURE)
- -- Function: int rsa_sha1_sign_tr(const struct rsa_public_key *PUB,
+ -- Function: int rsa_sha1_sign_tr (const struct rsa_public_key *PUB,
           const struct rsa_private_key *KEY, void *RANDOM_CTX,
           nettle_random_func *RANDOM, struct sha1_ctx *HASH, mpz_t
           SIGNATURE)
- -- Function: int rsa_sha256_sign_tr(const struct rsa_public_key *PUB,
+ -- Function: int rsa_sha256_sign_tr (const struct rsa_public_key *PUB,
           const struct rsa_private_key *KEY, void *RANDOM_CTX,
           nettle_random_func *RANDOM, struct sha256_ctx *HASH, mpz_t
           SIGNATURE)
- -- Function: int rsa_sha512_sign_tr(const struct rsa_public_key *PUB,
+ -- Function: int rsa_sha512_sign_tr (const struct rsa_public_key *PUB,
           const struct rsa_private_key *KEY, void *RANDOM_CTX,
           nettle_random_func *RANDOM, struct sha512_ctx *HASH, mpz_t
           SIGNATURE)
@@ -4556,19 +5097,19 @@ functions:
      it’s not possible to create a signature using SHA512 and a 512-bit
      RSA key.
 
- -- Function: int rsa_md5_sign_digest_tr(const struct rsa_public_key
+ -- Function: int rsa_md5_sign_digest_tr (const struct rsa_public_key
           *PUB, const struct rsa_private_key *KEY, void *RANDOM_CTX,
           nettle_random_func *RANDOM, const uint8_t *DIGEST, mpz_t
           SIGNATURE)
- -- Function: int rsa_sha1_sign_digest_tr(const struct rsa_public_key
+ -- Function: int rsa_sha1_sign_digest_tr (const struct rsa_public_key
           *PUB, const struct rsa_private_key *KEY, void *RANDOM_CTX,
           nettle_random_func *RANDOM, const uint8_t *DIGEST, mpz_t
           SIGNATURE)
- -- Function: int rsa_sha256_sign_digest_tr(const struct rsa_public_key
+ -- Function: int rsa_sha256_sign_digest_tr (const struct rsa_public_key
           *PUB, const struct rsa_private_key *KEY, void *RANDOM_CTX,
           nettle_random_func *RANDOM, const uint8_t *DIGEST, mpz_t
           SIGNATURE)
- -- Function: int rsa_sha512_sign_digest_tr(const struct rsa_public_key
+ -- Function: int rsa_sha512_sign_digest_tr (const struct rsa_public_key
           *PUB, const struct rsa_private_key *KEY, void *RANDOM_CTX,
           nettle_random_func *RANDOM, const uint8_t *DIGEST, mpz_t
           SIGNATURE)
@@ -4579,7 +5120,7 @@ functions:
      ‘mpz_init’:ed earlier).  Returns one on success, or zero on
      failure.
 
- -- Function: int rsa_pkcs1_sign_tr(const struct rsa_public_key *PUB,
+ -- Function: int rsa_pkcs1_sign_tr (const struct rsa_public_key *PUB,
           const struct rsa_private_key *KEY, void *RANDOM_CTX,
           nettle_random_func *RANDOM, size_t LENGTH, const uint8_t
           *DIGEST_INFO, mpz_t SIGNATURE)
@@ -4606,11 +5147,11 @@ functions:
  -- Function: int rsa_md5_sign_digest (const struct rsa_private_key
           *KEY, const uint8_t *DIGEST, mpz_t SIGNATURE)
  -- Function: int rsa_sha1_sign_digest (const struct rsa_private_key
-          *KEY, const uint8_t *DIGEST, mpz_t SIGNATURE);
+          *KEY, const uint8_t *DIGEST, mpz_t SIGNATURE)
  -- Function: int rsa_sha256_sign_digest (const struct rsa_private_key
-          *KEY, const uint8_t *DIGEST, mpz_t SIGNATURE);
+          *KEY, const uint8_t *DIGEST, mpz_t SIGNATURE)
  -- Function: int rsa_sha512_sign_digest (const struct rsa_private_key
-          *KEY, const uint8_t *DIGEST, mpz_t SIGNATURE);
+          *KEY, const uint8_t *DIGEST, mpz_t SIGNATURE)
      Creates a signature from the given hash digest; otherwise
      analoguous to the above signing functions.  DIGEST should point to
      a digest of size ‘MD5_DIGEST_SIZE’, ‘SHA1_DIGEST_SIZE’,
@@ -4619,7 +5160,7 @@ functions:
      ‘mpz_init’:ed earlier).  Returns one on success, or zero on
      failure.
 
- -- Function: int rsa_pkcs1_sign(const struct rsa_private_key *KEY,
+ -- Function: int rsa_pkcs1_sign (const struct rsa_private_key *KEY,
           size_t LENGTH, const uint8_t *DIGEST_INFO, mpz_t S)
      Similar to the above _sign_digest functions, but the input is not
      the plain hash digest, but a PKCS#1 “DigestInfo”, an ASN.1
@@ -4654,7 +5195,7 @@ functions:
      ‘SHA1_DIGEST_SIZE’, ‘SHA256_DIGEST_SIZE’, or ‘SHA512_DIGEST_SIZE’
      respectively.
 
- -- Function: int rsa_pkcs1_verify(const struct rsa_public_key *KEY,
+ -- Function: int rsa_pkcs1_verify (const struct rsa_public_key *KEY,
           size_t LENGTH, const uint8_t *DIGEST_INFO, const mpz_t
           SIGNATURE)
      Similar to the above _verify_digest functions, but the input is not
@@ -4664,7 +5205,7 @@ functions:
 
    While the above functions for the RSA signature operations use the
 ‘PKCS#1’ padding scheme, Nettle also provides the variants based on the
-PSS padding scheme, specified in ‘RFC 3447’.  These variants take
+PSS padding scheme, specified in ‘RFC 8017’.  These variants take
 advantage of a randomly choosen salt value, which could enhance the
 security by causing output to be different for equivalent inputs.
 However, assuming the same security level as inverting the RSA
@@ -4676,15 +5217,15 @@ underlying hash function.
    Creating an RSA signature with the PSS padding scheme is done with
 one of the following functions:
 
- -- Function: int rsa_pss_sha256_sign_digest_tr(const struct
+ -- Function: int rsa_pss_sha256_sign_digest_tr (const struct
           rsa_public_key *PUB, const struct rsa_private_key *KEY, void
           *RANDOM_CTX, nettle_random_func *RANDOM, size_t SALT_LENGTH,
           const uint8_t *SALT, const uint8_t *DIGEST, mpz_t SIGNATURE)
- -- Function: int rsa_pss_sha384_sign_digest_tr(const struct
+ -- Function: int rsa_pss_sha384_sign_digest_tr (const struct
           rsa_public_key *PUB, const struct rsa_private_key *KEY, void
           *RANDOM_CTX, nettle_random_func *RANDOM, size_t SALT_LENGTH,
           const uint8_t *SALT, const uint8_t *DIGEST, mpz_t SIGNATURE)
- -- Function: int rsa_pss_sha512_sign_digest_tr(const struct
+ -- Function: int rsa_pss_sha512_sign_digest_tr (const struct
           rsa_public_key *PUB, const struct rsa_private_key *KEY, void
           *RANDOM_CTX, nettle_random_func *RANDOM, size_t SALT_LENGTH,
           const uint8_t *SALT, const uint8_t *DIGEST, mpz_t SIGNATURE)
@@ -4735,11 +5276,63 @@ randomized RSA blinding.
           const mpz_t CIPHERTEXT)
      Returns 1 on success, 0 on failure.
 
+   While the above functions for the RSA encryption operations use the
+‘PKCS#1’ padding scheme, Nettle also provides the variants based on the
+OAEP padding scheme, specified in ‘RFC 8017’.  These variants take
+advantage of a randomly choosen seed value, which could enhance the
+security by causing output to be different for equivalent inputs.
+
+   Encrypting a clear text message using RSA with the OAEP padding
+scheme is done with one of the following functions:
+
+ -- Function: int rsa_oaep_sha256_encrypt (const struct rsa_public_key
+          *KEY, void *RANDOM_CTX, nettle_random_func *RANDOM, size_t
+          LABEL_LENGTH, const uint8_t *LABEL, size_t LENGTH, const
+          uint8_t *MESSAGE, uint8_t *CIPHERTEXT)
+ -- Function: int rsa_oaep_sha384_encrypt (const struct rsa_public_key
+          *KEY, void *RANDOM_CTX, nettle_random_func *RANDOM, size_t
+          LABEL_LENGTH, const uint8_t *LABEL, size_t LENGTH, const
+          uint8_t *MESSAGE, uint8_t *CIPHERTEXT)
+ -- Function: int rsa_oaep_sha512_encrypt (const struct rsa_public_key
+          *KEY, void *RANDOM_CTX, nettle_random_func *RANDOM, size_t
+          LABEL_LENGTH, const uint8_t *LABEL, size_t LENGTH, const
+          uint8_t *MESSAGE, uint8_t *CIPHERTEXT)
+     Returns 1 on success, 0 on failure.  The label is optional and if
+     omitted, LABEL_LENGTH and LABEL is set to 0 and ‘NULL’
+     respectively.  The maximum size of MESSAGE can be calculated with
+     ‘k - 2 * hLen - 2’, where ‘k’ is the key size in octets obtained
+     with KEY->size, and ‘hLen’ is the output size of the underlying
+     hash function (e.g., ‘SHA256_DIGEST_SIZE’ for
+     ‘rsa_oaep_sha256_encrypt’).
+
+   Decrypting a cipher text message using RSA with the OAEP padding
+scheme is done with one of the following functions:
+
+ -- Function: int rsa_oaep_sha256_decrypt (const struct rsa_public_key
+          *PUB, const struct rsa_private_key *KEY, void *RANDOM_CTX,
+          nettle_random_func *RANDOM, size_t LABEL_LENGTH, const uint8_t
+          *LABEL, size_t *LENGTH, uint8_t *MESSAGE, const uint8_t
+          *CIPHERTEXT)
+ -- Function: int rsa_oaep_sha384_decrypt (const struct rsa_public_key
+          *PUB, const struct rsa_private_key *KEY, void *RANDOM_CTX,
+          nettle_random_func *RANDOM, size_t LABEL_LENGTH, const uint8_t
+          *LABEL, size_t *LENGTH, uint8_t *MESSAGE, const uint8_t
+          *CIPHERTEXT)
+ -- Function: int rsa_oaep_sha512_decrypt (const struct rsa_public_key
+          *PUB, const struct rsa_private_key *KEY, void *RANDOM_CTX,
+          nettle_random_func *RANDOM, size_t LABEL_LENGTH, const uint8_t
+          *LABEL, size_t *LENGTH, uint8_t *MESSAGE, const uint8_t
+          *CIPHERTEXT)
+     Returns 1 on success, 0 on failure.  These function utilize
+     randomized RSA blinding similarly to ‘rsa_decrypt_tr’.  The message
+     buffer pointed to by CLEARTEXT must be of size *LENGTH.  After
+     decryption, *LENGTH will be updated with the size of the message.
+
    If you need to use the RSA trapdoor, the private key, in a way that
 isn’t supported by the above functions Nettle also includes a function
 that computes ‘x^d mod n’ and nothing more, using the CRT optimization.
 
- -- Function: int rsa_compute_root_tr(const struct rsa_public_key *PUB,
+ -- Function: int rsa_compute_root_tr (const struct rsa_public_key *PUB,
           const struct rsa_private_key *KEY, void *RANDOM_CTX,
           nettle_random_func *RANDOM, mpz_t X, const mpz_t M)
      Computes ‘x = m^d’.  Returns one on success, or zero if a failure
@@ -4755,7 +5348,7 @@ that computes ‘x^d mod n’ and nothing more, using the CRT optimization.
           struct rsa_private_key *KEY, void *RANDOM_CTX,
           nettle_random_func RANDOM, void *PROGRESS_CTX,
           nettle_progress_func PROGRESS, unsigned N_SIZE, unsigned
-          E_SIZE);
+          E_SIZE)
      There are lots of parameters.  PUB and KEY is where the resulting
      key pair is stored.  The structs should be initialized, but you
      don’t need to call ‘rsa_public_key_prepare’ or
@@ -5262,8 +5855,7 @@ used.
    Finally, generating a new ECDSA key pair:
 
  -- Function: void ecdsa_generate_keypair (struct ecc_point *PUB, struct
-          ecc_scalar *KEY, void *RANDOM_CTX, nettle_random_func
-          *RANDOM);
+          ecc_scalar *KEY, void *RANDOM_CTX, nettle_random_func *RANDOM)
      PUB and KEY is where the resulting key pair is stored.  The structs
      should be initialized, for the desired ECC curve, before you call
      this function.
@@ -5324,13 +5916,13 @@ single curve/generator combination.  Following list defines
 correspondence between nettle’s view on curves and actual identifiers
 defined in ‘RFC 4357’ and ‘RFC 7836’.
 
- -- Function: const struct ecc_curve nettle_get_gost_gc256b(void)
+ -- Function: const struct ecc_curve nettle_get_gost_gc256b (void)
      Returns curve corresponding to following identifiers:
         • id-GostR3410-2001-CryptoPro-A-ParamSet (‘RFC 4357’)
         • id-GostR3410-2001-CryptoPro-XchA-ParamSet (‘RFC 4357’)
         • id-tc26-gost-3410-12-256-paramSetB
 
- -- Function: const struct ecc_curve nettle_get_gost_gc512a(void)
+ -- Function: const struct ecc_curve nettle_get_gost_gc512a (void)
      Returns curve corresponding to following identifiers:
         • id-tc26-gost-3410-12-512-paramSetA (‘RFC 7836’)
 
@@ -5683,11 +6275,13 @@ Important properties of a generator are:
    Nettle includes one randomness generator that is believed to have all
 the above properties, and two simpler ones.
 
-   ARCFOUR, like any stream cipher, can be used as a randomness
-generator.  Its output should be of reasonable quality, if the seed is
-hashed properly before it is used with ‘arcfour_set_key’.  There’s no
-single natural way to reseed it, but if you need reseeding, you should
-be using Yarrow instead.
+   ChaCha (*note ChaCha::), like any stream cipher, can be used as a
+randomness generator.  Its output should be of reasonable quality.
+There’s no single natural way to reseed it, but if you need reseeding,
+you should be using Yarrow instead.  Historically ARCFOUR (*note
+Arcfour::) has been used as a randomness generator, however it is known
+to be distinguishable from random data and the output leaks information
+about the key.
 
    The “lagged Fibonacci” generator in ‘<nettle/knuth-lfib.h>’ is a fast
 generator with good statistical properties, but is *not* for
@@ -5703,7 +6297,7 @@ from a small seed.
 Yarrow is a family of pseudo-randomness generators, designed for
 cryptographic use, by John Kelsey, Bruce Schneier and Niels Ferguson.
 Yarrow-160 is described in a paper at
-<https://www.counterpane.com/yarrow.html>, and it uses SHA1 and
+<https://www.schneier.com/academic/yarrow/>, and it uses SHA1 and
 triple-DES, and has a 160-bit internal state.  Nettle implements
 Yarrow-256, which is similar, but uses SHA256 and AES to get an internal
 state of 256 bits.
@@ -5823,6 +6417,44 @@ User keyboard input.
 
      Returns an entropy estimate, in bits, suitable for calling
      ‘yarrow256_update’.  Usually, 0, 1 or 2 bits.
+
+7.8.2 DRBG-CTR
+--------------
+
+The Deterministic Random Bit Generator (DRBG) family is a complex family
+of deterministic randomness generators published by NIST in SP 800-90A.
+
+   We support what we believe is the reasonable parts of the CTR_DRBG
+algorithm for AES256.  Re-seeding, personalization strings, derivation
+functions and support for non-AES256 is not implemented.
+Personalization strings can be implemented by the caller, if desired,
+with xor.  If you need re-seeding or entropy derivation, we suggest that
+you use Yarrow instead.
+
+   The security bounds of DRBG-CTR are not intuitive, see “Security
+Bounds for the NIST Codebook-based Deterministic Random Bit Generator”
+by Matthew J. Campagna, from <https://eprint.iacr.org/2006/379.pdf>.
+
+   Our suggested use-case for DRBG-CTR is to deterministically generate
+known values from a seed when comparing against expected values for some
+other algorithm.
+
+   Nettle defines DRBG-CTR in ‘<nettle/drbg-ctr.h>’.
+
+ -- Context struct: struct drbg_ctr_aes256_ctx
+
+ -- Constant: DRBG_CTR_AES256_SEED_SIZE
+     The size of the seeding material.
+
+ -- Function: void drbg_ctr_aes256_init (struct drbg_ctr_aes256_ctx
+          *CTX, uint8_t *SEED_MATERIAL)
+     Initialize the DRBG-CTR-AES256 context using
+     ‘DRBG_CTR_AES256_SEED_SIZE’ bytes of SEED_MATERIAL.
+
+ -- Function: void drbg_ctr_aes256_random (struct drbg_ctr_aes256_ctx
+          *CTX, size_t n, uint8_t *DST)
+     Generates N octets of output into DST.  The generator must be
+     initialized before you call this function.
 
 
 File: nettle.info,  Node: ASCII encoding,  Next: Miscellaneous functions,  Prev: Randomness,  Up: Reference
@@ -6119,8 +6751,8 @@ Function and Concept Index
 * aes_set_encrypt_key:                   AES.                 (line  50)
 * API compatibility:                     Compatibility.       (line   6)
 * Arcfour:                               Arcfour.             (line   6)
-* arcfour_crypt:                         Arcfour.             (line  51)
-* arcfour_set_key:                       Arcfour.             (line  46)
+* arcfour_crypt:                         Arcfour.             (line  59)
+* arcfour_set_key:                       Arcfour.             (line  54)
 * Arctwo:                                Arctwo.              (line   6)
 * arctwo_decrypt:                        Arctwo.              (line  60)
 * arctwo_encrypt:                        Arctwo.              (line  53)
@@ -6129,6 +6761,20 @@ Function and Concept Index
 * arctwo_set_key_gutmann:                Arctwo.              (line  39)
 * Authenticated encryption:              Authenticated encryption.
                                                               (line   6)
+* balloon:                               Key derivation functions.
+                                                              (line 181)
+* Balloon password-hashing algorithm:    Key derivation functions.
+                                                              (line 150)
+* balloon_itch:                          Key derivation functions.
+                                                              (line 194)
+* balloon_sha1:                          Key derivation functions.
+                                                              (line 208)
+* balloon_sha256:                        Key derivation functions.
+                                                              (line 216)
+* balloon_sha384:                        Key derivation functions.
+                                                              (line 224)
+* balloon_sha512:                        Key derivation functions.
+                                                              (line 232)
 * base16_decode_final:                   ASCII encoding.      (line 143)
 * base16_decode_init:                    ASCII encoding.      (line 121)
 * BASE16_DECODE_LENGTH:                  ASCII encoding.      (line 130)
@@ -6200,7 +6846,6 @@ Function and Concept Index
 * ccm_aes128_update:                     CCM.                 (line 196)
 * ccm_aes192_decrypt:                    CCM.                 (line 213)
 * ccm_aes192_decrypt_message:            CCM.                 (line 246)
-* ccm_aes192_decrypt_message <1>:        CCM.                 (line 250)
 * ccm_aes192_digest:                     CCM.                 (line 223)
 * ccm_aes192_encrypt:                    CCM.                 (line 207)
 * ccm_aes192_encrypt_message:            CCM.                 (line 234)
@@ -6208,6 +6853,7 @@ Function and Concept Index
 * ccm_aes192_set_nonce:                  CCM.                 (line 187)
 * ccm_aes192_update:                     CCM.                 (line 198)
 * ccm_aes256_decrypt:                    CCM.                 (line 215)
+* ccm_aes256_decrypt_message:            CCM.                 (line 250)
 * ccm_aes256_digest:                     CCM.                 (line 225)
 * ccm_aes256_encrypt:                    CCM.                 (line 209)
 * ccm_aes256_encrypt_message:            CCM.                 (line 238)
@@ -6297,6 +6943,8 @@ Function and Concept Index
 * des_encrypt:                           DES.                 (line  36)
 * des_fix_parity:                        DES.                 (line  51)
 * des_set_key:                           DES.                 (line  29)
+* drbg_ctr_aes256_init:                  Randomness.          (line 333)
+* drbg_ctr_aes256_random:                Randomness.          (line 338)
 * dsa_compat_generate_keypair:           DSA.                 (line 301)
 * dsa_generate_keypair:                  DSA.                 (line 199)
 * dsa_generate_params:                   DSA.                 (line 131)
@@ -6418,26 +7066,32 @@ Function and Concept Index
 * GCM_SET_IV:                            GCM.                 (line 116)
 * gcm_set_key:                           GCM.                 (line  44)
 * GCM_SET_KEY:                           GCM.                 (line 111)
+* gcm_sm4_decrypt:                       GCM.                 (line 301)
+* gcm_sm4_digest:                        GCM.                 (line 307)
+* gcm_sm4_encrypt:                       GCM.                 (line 299)
+* gcm_sm4_set_iv:                        GCM.                 (line 288)
+* gcm_sm4_set_key:                       GCM.                 (line 284)
+* gcm_sm4_update:                        GCM.                 (line 292)
 * gcm_update:                            GCM.                 (line  55)
 * GCM_UPDATE:                            GCM.                 (line 120)
 * GOST DSA:                              GOSTDSA.             (line   6)
 * GOST hash:                             Legacy hash functions.
-                                                              (line 189)
+                                                              (line 203)
 * gostdsa_sign:                          GOSTDSA.             (line  30)
 * gostdsa_verify:                        GOSTDSA.             (line  39)
 * gostdsa_vko:                           GOSTDSA.             (line  68)
 * gosthash94cp_digest:                   Legacy hash functions.
-                                                              (line 239)
+                                                              (line 253)
 * gosthash94cp_init:                     Legacy hash functions.
-                                                              (line 232)
+                                                              (line 246)
 * gosthash94cp_update:                   Legacy hash functions.
-                                                              (line 235)
+                                                              (line 249)
 * gosthash94_digest:                     Legacy hash functions.
-                                                              (line 214)
+                                                              (line 228)
 * gosthash94_init:                       Legacy hash functions.
-                                                              (line 207)
+                                                              (line 221)
 * gosthash94_update:                     Legacy hash functions.
-                                                              (line 210)
+                                                              (line 224)
 * Hash function:                         Hash functions.      (line   6)
 * HKDF:                                  Key derivation functions.
                                                               (line  16)
@@ -6479,17 +7133,19 @@ Function and Concept Index
 * MAC:                                   Keyed hash functions.
                                                               (line   6)
 * md2_digest:                            Legacy hash functions.
-                                                              (line  77)
+                                                              (line  84)
 * md2_init:                              Legacy hash functions.
-                                                              (line  70)
+                                                              (line  77)
 * md2_update:                            Legacy hash functions.
-                                                              (line  73)
+                                                              (line  80)
 * md4_digest:                            Legacy hash functions.
-                                                              (line 110)
+                                                              (line 117)
 * md4_init:                              Legacy hash functions.
-                                                              (line 103)
+                                                              (line 110)
 * md4_update:                            Legacy hash functions.
-                                                              (line 106)
+                                                              (line 113)
+* md5_compress:                          Legacy hash functions.
+                                                              (line  48)
 * md5_digest:                            Legacy hash functions.
                                                               (line  39)
 * md5_init:                              Legacy hash functions.
@@ -6516,14 +7172,34 @@ Function and Concept Index
                                                               (line  28)
 * nettle_get_ciphers:                    nettle_cipher abstraction.
                                                               (line  48)
-* nettle_get_gost_gc256b(void):          GOSTDSA.             (line  51)
-* nettle_get_gost_gc512a(void):          GOSTDSA.             (line  57)
+* nettle_get_gost_gc256b:                GOSTDSA.             (line  51)
+* nettle_get_gost_gc512a:                GOSTDSA.             (line  57)
 * nettle_get_hashes:                     nettle_hash abstraction.
                                                               (line  35)
 * nettle_hash:                           nettle_hash abstraction.
                                                               (line   6)
 * nettle_hashes:                         nettle_hash abstraction.
                                                               (line  40)
+* OCB:                                   OCB.                 (line   6)
+* OCB mode:                              OCB.                 (line   6)
+* ocb_aes128_decrypt:                    OCB.                 (line 152)
+* ocb_aes128_decrypt_message:            OCB.                 (line 177)
+* ocb_aes128_digest:                     OCB.                 (line 160)
+* ocb_aes128_encrypt:                    OCB.                 (line 146)
+* ocb_aes128_encrypt_message:            OCB.                 (line 168)
+* ocb_aes128_set_decrypt_key:            OCB.                 (line 122)
+* ocb_aes128_set_encrypt_key:            OCB.                 (line 118)
+* ocb_aes128_set_nonce:                  OCB.                 (line 130)
+* ocb_aes128_update:                     OCB.                 (line 139)
+* ocb_decrypt:                           OCB.                 (line  65)
+* ocb_decrypt_message:                   OCB.                 (line  95)
+* ocb_digest:                            OCB.                 (line  76)
+* ocb_encrypt:                           OCB.                 (line  57)
+* ocb_encrypt_message:                   OCB.                 (line  85)
+* ocb_set_key:                           OCB.                 (line  34)
+* ocb_set_nonce:                         OCB.                 (line  40)
+* ocb_update:                            OCB.                 (line  50)
+* Offset Code Book:                      OCB.                 (line   6)
 * One-way:                               Hash functions.      (line  14)
 * One-way function:                      Public-key algorithms.
                                                               (line  18)
@@ -6555,35 +7231,41 @@ Function and Concept Index
 * RC2:                                   Arctwo.              (line   6)
 * RC4:                                   Arcfour.             (line   6)
 * ripemd160_digest:                      Legacy hash functions.
-                                                              (line 143)
+                                                              (line 150)
 * ripemd160_init:                        Legacy hash functions.
-                                                              (line 136)
+                                                              (line 143)
 * ripemd160_update:                      Legacy hash functions.
-                                                              (line 139)
-* rsa_compute_root:                      RSA.                 (line 360)
-* rsa_compute_root_tr(const:             RSA.                 (line 354)
+                                                              (line 146)
+* rsa_compute_root:                      RSA.                 (line 412)
+* rsa_compute_root_tr:                   RSA.                 (line 406)
 * rsa_decrypt:                           RSA.                 (line 335)
 * rsa_decrypt_tr:                        RSA.                 (line 344)
 * rsa_encrypt:                           RSA.                 (line 328)
-* rsa_generate_keypair:                  RSA.                 (line 366)
+* rsa_generate_keypair:                  RSA.                 (line 418)
 * rsa_md5_sign:                          RSA.                 (line 203)
 * rsa_md5_sign_digest:                   RSA.                 (line 218)
-* rsa_md5_sign_digest_tr(const:          RSA.                 (line 171)
-* rsa_md5_sign_tr(const:                 RSA.                 (line 146)
+* rsa_md5_sign_digest_tr:                RSA.                 (line 171)
+* rsa_md5_sign_tr:                       RSA.                 (line 146)
 * rsa_md5_verify:                        RSA.                 (line 244)
 * rsa_md5_verify_digest:                 RSA.                 (line 256)
-* rsa_pkcs1_sign(const:                  RSA.                 (line 234)
-* rsa_pkcs1_sign_tr(const:               RSA.                 (line 194)
-* rsa_pkcs1_verify(const:                RSA.                 (line 269)
+* rsa_oaep_sha256_decrypt:               RSA.                 (line 382)
+* rsa_oaep_sha256_encrypt:               RSA.                 (line 359)
+* rsa_oaep_sha384_decrypt:               RSA.                 (line 387)
+* rsa_oaep_sha384_encrypt:               RSA.                 (line 363)
+* rsa_oaep_sha512_decrypt:               RSA.                 (line 392)
+* rsa_oaep_sha512_encrypt:               RSA.                 (line 367)
+* rsa_pkcs1_sign:                        RSA.                 (line 234)
+* rsa_pkcs1_sign_tr:                     RSA.                 (line 194)
+* rsa_pkcs1_verify:                      RSA.                 (line 269)
 * rsa_private_key:                       RSA.                 (line  86)
 * rsa_private_key_clear:                 RSA.                 (line 104)
 * rsa_private_key_init:                  RSA.                 (line  97)
 * rsa_private_key_prepare:               RSA.                 (line 117)
-* rsa_pss_sha256_sign_digest_tr(const:   RSA.                 (line 291)
+* rsa_pss_sha256_sign_digest_tr:         RSA.                 (line 291)
 * rsa_pss_sha256_verify_digest:          RSA.                 (line 313)
-* rsa_pss_sha384_sign_digest_tr(const:   RSA.                 (line 295)
+* rsa_pss_sha384_sign_digest_tr:         RSA.                 (line 295)
 * rsa_pss_sha384_verify_digest:          RSA.                 (line 316)
-* rsa_pss_sha512_sign_digest_tr(const:   RSA.                 (line 299)
+* rsa_pss_sha512_sign_digest_tr:         RSA.                 (line 299)
 * rsa_pss_sha512_verify_digest:          RSA.                 (line 319)
 * rsa_public_key:                        RSA.                 (line  82)
 * rsa_public_key_clear:                  RSA.                 (line 103)
@@ -6591,20 +7273,20 @@ Function and Concept Index
 * rsa_public_key_prepare:                RSA.                 (line 116)
 * rsa_sha1_sign:                         RSA.                 (line 205)
 * rsa_sha1_sign_digest:                  RSA.                 (line 220)
-* rsa_sha1_sign_digest_tr(const:         RSA.                 (line 175)
-* rsa_sha1_sign_tr(const:                RSA.                 (line 150)
+* rsa_sha1_sign_digest_tr:               RSA.                 (line 175)
+* rsa_sha1_sign_tr:                      RSA.                 (line 150)
 * rsa_sha1_verify:                       RSA.                 (line 246)
 * rsa_sha1_verify_digest:                RSA.                 (line 258)
 * rsa_sha256_sign:                       RSA.                 (line 207)
 * rsa_sha256_sign_digest:                RSA.                 (line 222)
-* rsa_sha256_sign_digest_tr(const:       RSA.                 (line 179)
-* rsa_sha256_sign_tr(const:              RSA.                 (line 154)
+* rsa_sha256_sign_digest_tr:             RSA.                 (line 179)
+* rsa_sha256_sign_tr:                    RSA.                 (line 154)
 * rsa_sha256_verify:                     RSA.                 (line 248)
 * rsa_sha256_verify_digest:              RSA.                 (line 260)
 * rsa_sha512_sign:                       RSA.                 (line 209)
 * rsa_sha512_sign_digest:                RSA.                 (line 224)
-* rsa_sha512_sign_digest_tr(const:       RSA.                 (line 183)
-* rsa_sha512_sign_tr(const:              RSA.                 (line 158)
+* rsa_sha512_sign_digest_tr:             RSA.                 (line 183)
+* rsa_sha512_sign_tr:                    RSA.                 (line 158)
 * rsa_sha512_verify:                     RSA.                 (line 250)
 * rsa_sha512_verify_digest:              RSA.                 (line 262)
 * Salsa20:                               Salsa20.             (line   6)
@@ -6618,18 +7300,22 @@ Function and Concept Index
 * serpent_decrypt:                       Serpent.             (line  38)
 * serpent_encrypt:                       Serpent.             (line  31)
 * serpent_set_key:                       Serpent.             (line  26)
+* sha1_compress:                         Legacy hash functions.
+                                                              (line 193)
 * sha1_digest:                           Legacy hash functions.
-                                                              (line 177)
+                                                              (line 184)
 * sha1_init:                             Legacy hash functions.
-                                                              (line 170)
+                                                              (line 177)
 * sha1_update:                           Legacy hash functions.
-                                                              (line 173)
+                                                              (line 180)
 * sha224_digest:                         Recommended hash functions.
-                                                              (line  68)
+                                                              (line  76)
 * sha224_init:                           Recommended hash functions.
-                                                              (line  61)
+                                                              (line  69)
 * sha224_update:                         Recommended hash functions.
-                                                              (line  64)
+                                                              (line  72)
+* sha256_compress:                       Recommended hash functions.
+                                                              (line  41)
 * sha256_digest:                         Recommended hash functions.
                                                               (line  32)
 * sha256_init:                           Recommended hash functions.
@@ -6637,59 +7323,71 @@ Function and Concept Index
 * sha256_update:                         Recommended hash functions.
                                                               (line  28)
 * SHA3:                                  Recommended hash functions.
-                                                              (line 173)
+                                                              (line 189)
 * sha384_digest:                         Recommended hash functions.
-                                                              (line 160)
+                                                              (line 176)
 * sha384_init:                           Recommended hash functions.
-                                                              (line 144)
+                                                              (line 160)
 * sha384_update:                         Recommended hash functions.
-                                                              (line 151)
+                                                              (line 167)
+* sha3_128_init:                         Recommended hash functions.
+                                                              (line 353)
+* sha3_128_shake:                        Recommended hash functions.
+                                                              (line 360)
+* sha3_128_shake_output:                 Recommended hash functions.
+                                                              (line 367)
+* sha3_128_update:                       Recommended hash functions.
+                                                              (line 356)
 * sha3_224_digest:                       Recommended hash functions.
-                                                              (line 212)
+                                                              (line 228)
 * sha3_224_init:                         Recommended hash functions.
-                                                              (line 205)
+                                                              (line 221)
 * sha3_224_update:                       Recommended hash functions.
-                                                              (line 208)
+                                                              (line 224)
 * sha3_256_digest:                       Recommended hash functions.
-                                                              (line 244)
+                                                              (line 260)
 * sha3_256_init:                         Recommended hash functions.
-                                                              (line 237)
+                                                              (line 253)
 * sha3_256_shake:                        Recommended hash functions.
-                                                              (line 330)
+                                                              (line 378)
+* sha3_256_shake_output:                 Recommended hash functions.
+                                                              (line 385)
 * sha3_256_update:                       Recommended hash functions.
-                                                              (line 240)
+                                                              (line 256)
 * sha3_384_digest:                       Recommended hash functions.
-                                                              (line 275)
+                                                              (line 291)
 * sha3_384_init:                         Recommended hash functions.
-                                                              (line 268)
+                                                              (line 284)
 * sha3_384_update:                       Recommended hash functions.
-                                                              (line 271)
+                                                              (line 287)
 * sha3_512_digest:                       Recommended hash functions.
-                                                              (line 306)
+                                                              (line 322)
 * sha3_512_init:                         Recommended hash functions.
-                                                              (line 299)
+                                                              (line 315)
 * sha3_512_update:                       Recommended hash functions.
-                                                              (line 302)
-* sha512_224_digest:                     Recommended hash functions.
-                                                              (line 156)
-* sha512_224_init:                       Recommended hash functions.
-                                                              (line 142)
-* sha512_224_update:                     Recommended hash functions.
-                                                              (line 147)
-* sha512_256_digest:                     Recommended hash functions.
-                                                              (line 158)
-* sha512_256_init:                       Recommended hash functions.
-                                                              (line 143)
-* sha512_256_update:                     Recommended hash functions.
-                                                              (line 149)
-* sha512_digest:                         Recommended hash functions.
-                                                              (line 103)
-* sha512_init:                           Recommended hash functions.
-                                                              (line  96)
-* sha512_update:                         Recommended hash functions.
-                                                              (line  99)
-* SHAKE:                                 Recommended hash functions.
                                                               (line 318)
+* sha512_224_digest:                     Recommended hash functions.
+                                                              (line 172)
+* sha512_224_init:                       Recommended hash functions.
+                                                              (line 158)
+* sha512_224_update:                     Recommended hash functions.
+                                                              (line 163)
+* sha512_256_digest:                     Recommended hash functions.
+                                                              (line 174)
+* sha512_256_init:                       Recommended hash functions.
+                                                              (line 159)
+* sha512_256_update:                     Recommended hash functions.
+                                                              (line 165)
+* sha512_compress:                       Recommended hash functions.
+                                                              (line 120)
+* sha512_digest:                         Recommended hash functions.
+                                                              (line 111)
+* sha512_init:                           Recommended hash functions.
+                                                              (line 104)
+* sha512_update:                         Recommended hash functions.
+                                                              (line 107)
+* SHAKE:                                 Recommended hash functions.
+                                                              (line 334)
 * Side-channel attack:                   Side-channel silence.
                                                               (line   6)
 * SIV mode:                              SIV-CMAC.            (line   6)
@@ -6700,12 +7398,22 @@ Function and Concept Index
 * siv_cmac_aes256_decrypt_message:       SIV-CMAC.            (line  87)
 * siv_cmac_aes256_encrypt_message:       SIV-CMAC.            (line  74)
 * siv_cmac_aes256_set_key:               SIV-CMAC.            (line  64)
+* siv_gcm_aes128_decrypt_message:        SIV-GCM.             (line  87)
+* siv_gcm_aes128_encrypt_message:        SIV-GCM.             (line  74)
+* siv_gcm_aes256_decrypt_message:        SIV-GCM.             (line  91)
+* siv_gcm_aes256_encrypt_message:        SIV-GCM.             (line  78)
+* siv_gcm_decrypt_message:               SIV-GCM.             (line  41)
+* siv_gcm_encrypt_message:               SIV-GCM.             (line  32)
 * sm3_digest:                            Miscellaneous hash functions.
                                                               (line 107)
 * sm3_init:                              Miscellaneous hash functions.
                                                               (line 100)
 * sm3_update:                            Miscellaneous hash functions.
                                                               (line 103)
+* SM4:                                   SM4.                 (line   6)
+* sm4_crypt:                             SM4.                 (line  27)
+* sm4_set_decrypt_key:                   SM4.                 (line  23)
+* sm4_set_encrypt_key:                   SM4.                 (line  19)
 * Stream Cipher:                         Cipher functions.    (line  12)
 * streebog256_digest:                    Miscellaneous hash functions.
                                                               (line  62)
@@ -6723,7 +7431,7 @@ Function and Concept Index
 * struct aes192_ctx:                     AES.                 (line  20)
 * struct aes256_ctx:                     AES.                 (line  21)
 * struct aes_ctx:                        AES.                 (line  23)
-* struct arcfour_ctx:                    Arcfour.             (line  35)
+* struct arcfour_ctx:                    Arcfour.             (line  43)
 * struct arctwo_ctx:                     Arctwo.              (line  23)
 * struct base16_decode_ctx:              ASCII encoding.      (line 119)
 * struct base64_decode_ctx:              ASCII encoding.      (line  72)
@@ -6745,6 +7453,7 @@ Function and Concept Index
 * struct cmac_des3_ctx:                  CMAC.                (line  57)
 * struct des3_ctx:                       DES3.                (line  39)
 * struct des_ctx:                        DES.                 (line  21)
+* struct drbg_ctr_aes256_ctx:            Randomness.          (line 328)
 * struct eax_aes128_ctx:                 EAX.                 (line 117)
 * struct eax_ctx:                        EAX.                 (line  27)
 * struct eax_key:                        EAX.                 (line  23)
@@ -6758,10 +7467,11 @@ Function and Concept Index
 * struct gcm_camellia256_ctx:            GCM.                 (line 225)
 * struct gcm_ctx:                        GCM.                 (line  32)
 * struct gcm_key:                        GCM.                 (line  29)
+* struct gcm_sm4_ctx:                    GCM.                 (line 281)
 * struct gosthash94cp_ctx:               Legacy hash functions.
-                                                              (line 224)
+                                                              (line 238)
 * struct gosthash94_ctx:                 Legacy hash functions.
-                                                              (line 199)
+                                                              (line 213)
 * struct hmac_md5_ctx:                   HMAC.                (line  96)
 * struct hmac_ripemd160_ctx:             HMAC.                (line 118)
 * struct hmac_sha1_ctx:                  HMAC.                (line 140)
@@ -6769,9 +7479,9 @@ Function and Concept Index
 * struct hmac_sha512_ctx:                HMAC.                (line 184)
 * struct hmac_sm3_ctx:                   HMAC.                (line 206)
 * struct md2_ctx:                        Legacy hash functions.
-                                                              (line  62)
+                                                              (line  69)
 * struct md4_ctx:                        Legacy hash functions.
-                                                              (line  95)
+                                                              (line 102)
 * struct md5_ctx:                        Legacy hash functions.
                                                               (line  23)
 * struct nettle_aead:                    nettle_aead abstraction.
@@ -6780,37 +7490,43 @@ Function and Concept Index
                                                               (line  11)
 * struct nettle_hash:                    nettle_hash abstraction.
                                                               (line  10)
+* struct ocb_aes128_encrypt_key:         OCB.                 (line 113)
+* struct ocb_ctx:                        OCB.                 (line  22)
+* struct ocb_key:                        OCB.                 (line  18)
 * struct poly1305_aes_ctx:               Poly1305.            (line  40)
 * struct ripemd160_ctx:                  Legacy hash functions.
-                                                              (line 128)
+                                                              (line 135)
 * struct salsa20_ctx:                    Salsa20.             (line  34)
 * struct serpent_ctx:                    Serpent.             (line  12)
 * struct sha1_ctx:                       Legacy hash functions.
-                                                              (line 161)
+                                                              (line 168)
 * struct sha224_ctx:                     Recommended hash functions.
-                                                              (line  52)
+                                                              (line  60)
 * struct sha256_ctx:                     Recommended hash functions.
                                                               (line  16)
 * struct sha384_ctx:                     Recommended hash functions.
-                                                              (line 124)
+                                                              (line 140)
+* struct sha3_128_ctx:                   Recommended hash functions.
+                                                              (line 351)
 * struct sha3_224_ctx:                   Recommended hash functions.
-                                                              (line 197)
+                                                              (line 213)
 * struct sha3_256_ctx:                   Recommended hash functions.
-                                                              (line 229)
+                                                              (line 245)
 * struct sha3_384_ctx:                   Recommended hash functions.
-                                                              (line 260)
+                                                              (line 276)
 * struct sha3_512_ctx:                   Recommended hash functions.
-                                                              (line 291)
+                                                              (line 307)
 * struct sha512_224_ctx:                 Recommended hash functions.
-                                                              (line 122)
+                                                              (line 138)
 * struct sha512_256_ctx:                 Recommended hash functions.
-                                                              (line 123)
+                                                              (line 139)
 * struct sha512_ctx:                     Recommended hash functions.
-                                                              (line  87)
+                                                              (line  95)
 * struct siv_cmac_aes128_ctx:            SIV-CMAC.            (line  54)
 * struct siv_cmac_aes256_ctx:            SIV-CMAC.            (line  58)
 * struct sm3_ctx:                        Miscellaneous hash functions.
                                                               (line  91)
+* struct sm4_ctx:                        SM4.                 (line  11)
 * struct streebog256_ctx:                Miscellaneous hash functions.
                                                               (line  46)
 * struct streebog512_ctx:                Miscellaneous hash functions.
@@ -6822,9 +7538,9 @@ Function and Concept Index
 * struct umac96_ctx:                     UMAC.                (line  49)
 * struct xts_aes128_key:                 XTS.                 (line 112)
 * struct xts_aes256_key:                 XTS.                 (line 115)
-* struct yarrow256_ctx:                  Randomness.          (line 215)
-* struct yarrow_key_event_ctx:           Randomness.          (line 282)
-* struct yarrow_source:                  Randomness.          (line 217)
+* struct yarrow256_ctx:                  Randomness.          (line 217)
+* struct yarrow_key_event_ctx:           Randomness.          (line 284)
+* struct yarrow_source:                  Randomness.          (line 219)
 * Triple-DES:                            DES3.                (line   6)
 * Twofish:                               Twofish.             (line   6)
 * twofish_decrypt:                       Twofish.             (line  35)
@@ -6850,93 +7566,96 @@ Function and Concept Index
 * XEX-based tweaked-codebook mode with ciphertext stealing: XTS.
                                                               (line   6)
 * XTS Mode:                              XTS.                 (line   6)
-* xts_aes128_decrypt_message(struct:     XTS.                 (line 138)
-* xts_aes128_encrypt_message(struct:     XTS.                 (line 132)
+* xts_aes128_decrypt_message:            XTS.                 (line 138)
+* xts_aes128_encrypt_message:            XTS.                 (line 132)
 * xts_aes128_set_decrypt_key:            XTS.                 (line 122)
 * xts_aes128_set_encrypt_key:            XTS.                 (line 118)
-* xts_aes256_decrypt_message(struct:     XTS.                 (line 141)
-* xts_aes256_encrypt_message(struct:     XTS.                 (line 135)
+* xts_aes256_decrypt_message:            XTS.                 (line 141)
+* xts_aes256_encrypt_message:            XTS.                 (line 135)
 * xts_aes256_set_decrypt_key:            XTS.                 (line 124)
 * xts_aes256_set_encrypt_key:            XTS.                 (line 120)
 * xts_decrypt_message:                   XTS.                 (line  83)
 * xts_encrypt_message:                   XTS.                 (line  80)
-* yarrow256_fast_reseed:                 Randomness.          (line 274)
-* yarrow256_init:                        Randomness.          (line 223)
-* yarrow256_is_seeded:                   Randomness.          (line 264)
-* yarrow256_needed_sources:              Randomness.          (line 268)
-* yarrow256_random:                      Randomness.          (line 254)
-* yarrow256_seed:                        Randomness.          (line 229)
-* yarrow256_slow_reseed:                 Randomness.          (line 275)
-* yarrow256_update:                      Randomness.          (line 241)
-* yarrow_key_event_estimate:             Randomness.          (line 289)
-* yarrow_key_event_init:                 Randomness.          (line 285)
+* yarrow256_fast_reseed:                 Randomness.          (line 276)
+* yarrow256_init:                        Randomness.          (line 225)
+* yarrow256_is_seeded:                   Randomness.          (line 266)
+* yarrow256_needed_sources:              Randomness.          (line 270)
+* yarrow256_random:                      Randomness.          (line 256)
+* yarrow256_seed:                        Randomness.          (line 231)
+* yarrow256_slow_reseed:                 Randomness.          (line 277)
+* yarrow256_update:                      Randomness.          (line 243)
+* yarrow_key_event_estimate:             Randomness.          (line 291)
+* yarrow_key_event_init:                 Randomness.          (line 287)
 
 
 
 Tag Table:
 Node: Top543
-Node: Introduction2965
-Node: Copyright4544
-Node: Conventions5371
-Node: Example7525
-Node: Linking8824
-Node: Compatibility9689
-Node: Reference13315
-Node: Hash functions13766
-Node: Recommended hash functions15315
-Node: Miscellaneous hash functions27839
-Node: Legacy hash functions32080
-Ref: GOSTHASH94CP38834
-Node: nettle_hash abstraction41264
-Node: Cipher functions43539
-Node: AES47624
-Node: Arcfour51969
-Node: Arctwo54221
-Node: Blowfish56912
-Node: Camellia61547
-Node: CAST12866113
-Node: ChaCha68052
-Node: DES71148
-Node: DES373566
-Node: Salsa2076679
-Node: Serpent80724
-Node: Twofish82241
-Node: nettle_cipher abstraction83547
-Node: Cipher modes86082
-Node: CBC87266
-Node: CTR92195
-Node: CFB and CFB894817
-Node: XTS100599
-Node: Authenticated encryption106970
-Node: EAX110262
-Node: GCM116404
-Node: CCM129242
-Node: ChaCha-Poly1305142031
-Node: SIV-CMAC145535
-Node: nettle_aead abstraction150284
-Node: Keyed hash functions151966
-Node: HMAC153617
-Node: UMAC162305
-Node: CMAC168176
-Node: Poly1305171500
-Node: Key derivation functions174158
-Node: Public-key algorithms181396
-Node: RSA185467
-Node: RSA-Footnotes206035
-Ref: RSA-Footnote-1206088
-Node: DSA206266
-Node: Elliptic curves221800
-Node: Side-channel silence223185
-Node: ECDSA224632
-Node: GOSTDSA229455
-Node: Curve 25519 and Curve 448233451
-Node: Randomness241366
-Node: ASCII encoding256722
-Node: Miscellaneous functions263449
-Node: Compatibility functions264609
-Node: Nettle soup265298
-Node: Installation266295
-Node: Index267671
+Node: Introduction2993
+Node: Copyright4572
+Node: Conventions5399
+Node: Example7553
+Node: Linking8852
+Node: Compatibility9717
+Node: Reference13343
+Node: Hash functions13794
+Node: Recommended hash functions15343
+Node: Miscellaneous hash functions30264
+Node: Legacy hash functions34505
+Ref: GOSTHASH94CP42051
+Node: nettle_hash abstraction44481
+Node: Cipher functions46750
+Node: AES50843
+Node: Arcfour55188
+Node: Arctwo57702
+Node: Blowfish60393
+Node: Camellia65028
+Node: CAST12869594
+Node: ChaCha71533
+Node: DES74629
+Node: DES377046
+Node: Salsa2080159
+Node: Serpent84204
+Node: SM485717
+Node: Twofish87006
+Node: nettle_cipher abstraction88308
+Node: Cipher modes90837
+Node: CBC92021
+Node: CTR96950
+Node: CFB and CFB899572
+Node: XTS105354
+Node: Authenticated encryption111729
+Node: EAX115041
+Node: GCM121181
+Node: CCM135707
+Node: ChaCha-Poly1305148496
+Node: OCB151995
+Node: SIV-CMAC161453
+Node: SIV-GCM166174
+Node: nettle_aead abstraction171093
+Node: Keyed hash functions172768
+Node: HMAC174419
+Node: UMAC183107
+Node: CMAC188978
+Node: Poly1305192302
+Node: Key derivation functions194960
+Node: Public-key algorithms206647
+Node: RSA210718
+Node: RSA-Footnotes234297
+Ref: RSA-Footnote-1234350
+Node: DSA234528
+Node: Elliptic curves250062
+Node: Side-channel silence251447
+Node: ECDSA252894
+Node: GOSTDSA257706
+Node: Curve 25519 and Curve 448261704
+Node: Randomness269619
+Node: ASCII encoding286654
+Node: Miscellaneous functions293381
+Node: Compatibility functions294541
+Node: Nettle soup295230
+Node: Installation296227
+Node: Index297603
 
 End Tag Table
 

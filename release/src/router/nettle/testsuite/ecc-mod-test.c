@@ -13,7 +13,7 @@ ref_mod (mp_limb_t *rp, const mp_limb_t *ap, const mp_limb_t *mp, mp_size_t mn)
 
 #define MAX_ECC_SIZE (1 + 521 / GMP_NUMB_BITS)
 #define MAX_SIZE (2*MAX_ECC_SIZE)
-#define COUNT 50000
+#define COUNT 10000
 
 /* Destructively normalize tp, then compare */
 static int
@@ -215,7 +215,6 @@ void
 test_main (void)
 {
   gmp_randstate_t rands;
-  unsigned count = COUNT;
   unsigned i;
 
   gmp_randinit_default (rands);
@@ -228,13 +227,12 @@ test_main (void)
       test_patterns ("q", &ecc_curves[i]->p);
     }
 
-  if (test_randomize(rands))
-    count *= 20;
+  test_randomize(rands);
 
   for (i = 0; ecc_curves[i]; i++)
     {
-      test_modulo (rands, "p", &ecc_curves[i]->p, count);
-      test_modulo (rands, "q", &ecc_curves[i]->q, count);
+      test_modulo (rands, "p", &ecc_curves[i]->p, COUNT);
+      test_modulo (rands, "q", &ecc_curves[i]->q, COUNT);
     }
   gmp_randclear (rands);
 }

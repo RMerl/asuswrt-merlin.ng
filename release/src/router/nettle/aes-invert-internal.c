@@ -42,6 +42,13 @@
 
 #include "macros.h"
 
+/* For fat builds */
+#if HAVE_NATIVE_aes_invert
+void
+_nettle_aes_invert_c(unsigned rounds, uint32_t *dst, const uint32_t *src);
+#define _nettle_aes_invert _nettle_aes_invert_c
+#endif
+
 /* NOTE: We don't include rotated versions of the table. */
 static const uint32_t mtable[0x100] =
 {
@@ -111,9 +118,9 @@ static const uint32_t mtable[0x100] =
   0xbe805d9f,0xb58d5491,0xa89a4f83,0xa397468d,
 };
 
-#define MIX_COLUMN(T, key) do { \
+#define MIX_COLUMN(T, out, in) do {		\
     uint32_t _k, _nk, _t;	\
-    _k = (key);			\
+    _k = (in);			\
     _nk = T[_k & 0xff];		\
     _k >>= 8;			\
     _t = T[_k & 0xff];		\
@@ -124,7 +131,7 @@ static const uint32_t mtable[0x100] =
     _k >>= 8;			\
     _t = T[_k & 0xff];		\
     _nk ^= ROTL32(24, _t);	\
-    (key) = _nk;		\
+    (out) = _nk;		\
   } while(0)
   
 
@@ -136,29 +143,13 @@ _nettle_aes_invert(unsigned rounds, uint32_t *dst, const uint32_t *src)
 {
   unsigned i;
 
-  /* Reverse the order of subkeys, in groups of 4. */
-  /* FIXME: Instead of reordering the subkeys, change the access order
-     of aes_decrypt, since it's a separate function anyway? */
-  if (src == dst)
-    {
-      unsigned j, k;
-
-      for (i = 0, j = rounds * 4;
-	   i < j;
-	   i += 4, j -= 4)
-	for (k = 0; k<4; k++)
-	  SWAP(dst[i+k], dst[j+k]);
-    }
-  else
-    {
-      unsigned k;
-
-      for (i = 0; i <= rounds * 4; i += 4)
-	for (k = 0; k < 4; k++)
-	  dst[i+k] = src[rounds * 4 - i + k];
-    }
-
   /* Transform all subkeys but the first and last. */
   for (i = 4; i < 4 * rounds; i++)
-    MIX_COLUMN (mtable, dst[i]);
+    MIX_COLUMN (mtable, dst[i], src[i]);
+
+  if (src != dst)
+    {
+      dst[0] = src[0]; dst[1] = src[1]; dst[2] = src[2]; dst[3] = src[3];
+      dst[i] = src[i]; dst[i+1] = src[i+1]; dst[i+2] = src[i+2]; dst[i+3] = src[i+3];
+    }
 }

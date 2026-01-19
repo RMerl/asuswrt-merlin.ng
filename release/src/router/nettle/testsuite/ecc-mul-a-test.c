@@ -46,7 +46,7 @@ test_main (void)
 
       mpn_zero (n, size);
 
-      for (j = 0; j < 100; j++)
+      for (j = 0; j < 30; j++)
 	{
 	  if (j & 1)
 	    mpz_rrandomb (r, rands, size * GMP_NUMB_BITS);

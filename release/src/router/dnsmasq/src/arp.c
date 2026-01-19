@@ -111,22 +111,26 @@ int find_mac(union mysockaddr *addr, unsigned char *mac, int lazy, time_t now)
 
  again:
   
-  /* If the database is less then INTERVAL old, look in there */
-  if (difftime(now, last) < INTERVAL)
+  /* If the database is less then INTERVAL old, look in there.
+     
+     If we're a child process, we always rely on the existing cache we
+     inherited from the parent, since we don't have a netlink socket.
+  */
+  if (difftime(now, last) < INTERVAL || daemon->pipe_to_parent != -1)
     {
       /* addr == NULL -> just make cache up-to-date */
       if (!addr)
 	return 0;
-
+	
       for (arp = arps; arp; arp = arp->next)
 	{
 	  if (addr->sa.sa_family != arp->family)
 	    continue;
-	    
+	  
 	  if (arp->family == AF_INET &&
 	      arp->addr.addr4.s_addr != addr->in.sin_addr.s_addr)
 	    continue;
-	    
+	  
 	  if (arp->family == AF_INET6 && 
 	      !IN6_ARE_ADDR_EQUAL(&arp->addr.addr6, &addr->in6.sin6_addr))
 	    continue;
@@ -141,6 +145,10 @@ int find_mac(union mysockaddr *addr, unsigned char *mac, int lazy, time_t now)
 	}
     }
 
+  /* Not in cache in child, no go. */
+  if (daemon->pipe_to_parent != -1)
+    return 0;
+  
   /* Not found, try the kernel */
   if (!updated)
      {

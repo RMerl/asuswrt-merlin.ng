@@ -8,12 +8,6 @@
 AC_PREREQ([2.59])
 AC_INIT
 
-# Record which revision is being built
-if test -s "`which hg`" && test -d "$srcdir/.hg"; then
-	hgrev=`hg id -i -R "$srcdir"`
-	AC_MSG_NOTICE([Source directory Mercurial base revision $hgrev])
-fi
-
 ORIGCFLAGS="$CFLAGS"
 LATE_CFLAGS=""
 # Checks for programs.
@@ -545,6 +539,7 @@ AC_CHECK_FUNCS(utmpname)
 AC_CHECK_FUNCS(endutxent getutxent getutxid getutxline pututxline )
 AC_CHECK_FUNCS(setutxent utmpxname)
 AC_CHECK_FUNCS(logout updwtmp logwtmp)
+AC_CHECK_FUNCS(setresgid)
 
 # Might be a macro. Might be sys/endian.h on BSDs
 AC_CHECK_HEADERS([endian.h])

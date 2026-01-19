@@ -7,7 +7,7 @@ fi
 data="$srcdir/nettle-benchmark.c"
 
 if [ -x rsa-sign$EXEEXT ] ; then
-  if $EMULATOR ./rsa-sign testkey < "$data" > testsignature ; then
+  if $EMULATOR ./rsa-sign$EXEEXT testkey < "$data" > testsignature ; then
     exit 0;
   else
     exit 1

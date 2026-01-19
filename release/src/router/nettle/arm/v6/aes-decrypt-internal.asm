@@ -114,11 +114,12 @@ define(`AES_DECRYPT_ROUND', `
 	uxtb	T0, $1, ror #24
 	ldr	T0, [TABLE, T0, lsl #2]
 
-	ldm	$9!, {$1,$2,$3,$4}
+	ldm	$9, {$1,$2,$3,$4}
 	eor	$8, $8, T0
 	sub	TABLE, TABLE, #3072
 	eor	$5, $5, $1
 	eor	$6, $6, $2
+	sub	$9, $9, #16
 	eor	$7, $7, $3
 	eor	$8, $8, $4
 ')
@@ -148,7 +149,7 @@ PROLOGUE(_nettle_aes_decrypt)
 	AES_LOAD(SRC,KEY,W0)
 	AES_LOAD(SRC,KEY,W1)
 	AES_LOAD(SRC,KEY,W2)
-	AES_LOAD(SRC,KEY,W3)
+	AES_LOAD_INCR(SRC,KEY,W3, -28)
 
 	str	SRC, FRAME_SRC
 

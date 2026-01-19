@@ -64,17 +64,17 @@ PROLOGUE(nettle_aes128_decrypt)
 	test	LENGTH, LENGTH
 	jz	.Lend
 
-	movups	(CTX), KEY0
-	movups	16(CTX), KEY1
-	movups	32(CTX), KEY2
-	movups	48(CTX), KEY3
-	movups	64(CTX), KEY4
+	movups	160(CTX), KEY0
+	movups	144(CTX), KEY1
+	movups	128(CTX), KEY2
+	movups	112(CTX), KEY3
+	movups	96(CTX), KEY4
 	movups	80(CTX), KEY5
-	movups	96(CTX), KEY6
-	movups	112(CTX), KEY7
-	movups	128(CTX), KEY8
-	movups	144(CTX), KEY9
-	movups	160(CTX), KEY10
+	movups	64(CTX), KEY6
+	movups	48(CTX), KEY7
+	movups	32(CTX), KEY8
+	movups	16(CTX), KEY9
+	movups	(CTX), KEY10
 	shr	LENGTH
 	jnc	.Lblock_loop
 

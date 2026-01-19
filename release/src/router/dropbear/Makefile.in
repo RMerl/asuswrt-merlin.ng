@@ -290,7 +290,7 @@ lint:
 	cd $(srcdir); ./dropbear_lint.sh
 
 check: lint
-	make -C test
+	$(MAKE) -C test
 
 ## Fuzzing targets
 

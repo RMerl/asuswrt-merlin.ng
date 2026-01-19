@@ -37,7 +37,11 @@ static void
 test_g (const uint8_t *s, const uint8_t *r)
 {
   uint8_t p[CURVE25519_SIZE];
+
+  mark_bytes_undefined (CURVE25519_SIZE, s);
   curve25519_mul_g (p, s);
+  mark_bytes_defined (CURVE25519_SIZE, p);
+
   if (!MEMEQ (CURVE25519_SIZE, p, r))
     {
       printf ("curve25519_mul_g failure:\ns = ");
@@ -55,8 +59,12 @@ static void
 test_a (const uint8_t *s, const uint8_t *b, const uint8_t *r)
 {
   uint8_t p[CURVE25519_SIZE];
+
+  mark_bytes_undefined (CURVE25519_SIZE, b);
+  mark_bytes_undefined (CURVE25519_SIZE, s);
   curve25519_mul (p, s, b);
-    
+  mark_bytes_defined (CURVE25519_SIZE, p);
+
   if (!MEMEQ (CURVE25519_SIZE, p, r))
     {
       printf ("curve25519_mul failure:\ns = ");
@@ -75,6 +83,10 @@ test_a (const uint8_t *s, const uint8_t *b, const uint8_t *r)
 void
 test_main (void)
 {
+#if NETTLE_USE_MINI_GMP || WITH_EXTRA_ASSERTS
+  if (test_side_channel)
+    SKIP();
+#endif
   /* From RFC 7748. */
   test_g (H("77076d0a7318a57d3c16c17251b26645"
 	    "df4c2f87ebc0992ab177fba51db92c2a"),

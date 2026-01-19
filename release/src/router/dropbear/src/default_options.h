@@ -9,7 +9,7 @@ Local customisation should be added to localoptions.h which is
 used if it exists in the build directory. Options defined there will override
 any options in this file.
 
-Customisations will also be taken from src/distoptions.h if it exists.
+Customisations will also be taken from src/distrooptions.h if it exists.
 
 Options can also be defined with -DDROPBEAR_XXX=[0,1] in Makefile CFLAGS
 
@@ -302,6 +302,12 @@ group1 in Dropbear server too */
 /* Default maximum number of failed authentication tries (server option) */
 /* -T server option overrides */
 #define MAX_AUTH_TRIES 10
+
+/* Change server process to user privileges after authentication. */
+#ifndef DROPBEAR_SVR_DROP_PRIVS
+/* Default is enabled. Should only be disabled if platforms are incompatible */
+#define DROPBEAR_SVR_DROP_PRIVS DROPBEAR_SVR_MULTIUSER
+#endif
 
 /* Delay introduced before closing an unauthenticated session (seconds).
    Disabled by default, can be set to say 30 seconds to reduce the speed

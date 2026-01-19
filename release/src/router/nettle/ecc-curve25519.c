@@ -89,13 +89,13 @@ ecc_curve25519_modq (const struct ecc_modulo *q, mp_limb_t *rp, mp_limb_t *xp)
 			 q->B_shifted, ECC_LIMB_SIZE,
 			 xp[n + ECC_LIMB_SIZE]);
       /* Top limb of mBmodq_shifted is zero, so we get cy == 0 or 1 */
-      assert (cy < 2);
+      assert_maybe (cy < 2);
       mpn_cnd_add_n (cy, xp+n, xp+n, q->m, ECC_LIMB_SIZE);
     }
 
   cy = mpn_submul_1 (xp, q->m, ECC_LIMB_SIZE,
 		     xp[ECC_LIMB_SIZE-1] >> (GMP_NUMB_BITS - QHIGH_BITS));
-  assert (cy < 2);
+  assert_maybe (cy < 2);
   mpn_cnd_add_n (cy, rp, xp, q->m, ECC_LIMB_SIZE);
 }
 
@@ -266,6 +266,7 @@ const struct ecc_curve _nettle_curve25519 =
     ecc_p,
     ecc_Bmodp,
     ecc_Bmodp_shifted,
+    ecc_Bm2p,
     NULL,
     ecc_pp1h,
 
@@ -287,6 +288,7 @@ const struct ecc_curve _nettle_curve25519 =
     ecc_q,
     ecc_Bmodq,  
     ecc_mBmodq_shifted, /* Use q - 2^{252} instead. */
+    ecc_Bm2q,
     NULL,
     ecc_qp1h,
 

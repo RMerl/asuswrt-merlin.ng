@@ -858,17 +858,21 @@ void common_recv_msg_channel_data(struct Channel *channel, int fd,
 void recv_msg_channel_window_adjust() {
 
 	struct Channel * channel;
-	unsigned int incr;
+	unsigned int incr, newwin;
 	
 	channel = getchannel();
 	
 	incr = buf_getint(ses.payload);
-	TRACE(("received window increment %d", incr))
-	incr = MIN(incr, TRANS_MAX_WIN_INCR);
+	TRACE(("received window increment %u", incr))
 	
-	channel->transwindow += incr;
-	channel->transwindow = MIN(channel->transwindow, TRANS_MAX_WINDOW);
-
+	newwin = channel->transwindow + incr;
+	if (newwin < channel->transwindow) {
+		/* Integer overflow, clamp it at maximum.
+		 * Behaviour may be unexpected, senders MUST NOT overflow per rfc4254. */
+		TRACE(("overflow window, prev %u", channel->transwindow));
+		newwin = 0xffffffff;
+	}
+	channel->transwindow = newwin;
 }
 
 /* Increment the incoming data window for a channel, and let the remote
@@ -906,7 +910,6 @@ void recv_msg_channel_open() {
 
 	remotechan = buf_getint(ses.payload);
 	transwindow = buf_getint(ses.payload);
-	transwindow = MIN(transwindow, TRANS_MAX_WINDOW);
 	transmaxpacket = buf_getint(ses.payload);
 	transmaxpacket = MIN(transmaxpacket, TRANS_MAX_PAYLOAD_LEN);
 

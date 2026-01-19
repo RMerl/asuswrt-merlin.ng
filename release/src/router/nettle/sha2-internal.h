@@ -39,8 +39,9 @@
 /* Internal compression function. STATE points to 8 uint32_t words,
    DATA points to 64 bytes of input data, possibly unaligned, and K
    points to the table of constants. */
-void
-_nettle_sha256_compress(uint32_t *state, const uint8_t *data, const uint32_t *k);
+const uint8_t *
+_nettle_sha256_compress_n(uint32_t *state, const uint32_t *k,
+			  size_t blocks, const uint8_t *data);
 
 /* Internal compression function. STATE points to 8 uint64_t words,
    DATA points to 128 bytes of input data, possibly unaligned, and K

@@ -56,6 +56,7 @@
 #include "des.h"
 #include "eax.h"
 #include "gcm.h"
+#include "ghash-internal.h"
 #include "memxor.h"
 #include "salsa20.h"
 #include "salsa20-internal.h"
@@ -63,6 +64,7 @@
 #include "sha1.h"
 #include "sha2.h"
 #include "sha3.h"
+#include "sm4.h"
 #include "twofish.h"
 #include "umac.h"
 #include "cmac.h"
@@ -71,6 +73,7 @@
 
 #include "nettle-meta.h"
 #include "nettle-internal.h"
+#include "non-nettle.h"
 
 #include "getopt.h"
 
@@ -874,10 +877,22 @@ bench_sha3_permute(void)
   TIME_CYCLES (t, sha3_permute (&state));
   printf("sha3_permute: %.2f cycles (%.2f / round)\n", t, t / 24.0);
 }
+static void
+bench_ghash_update(void)
+{
+  struct gcm_key key;
+  union nettle_block16 state;
+  const uint8_t data[160];
+  double t;
+
+  TIME_CYCLES (t, _ghash_update (&key, &state, 10, data));
+  printf("ghash_update: %.2f cycles / block\n", t / 10.0);
+}
 #else
 #define bench_sha1_compress()
 #define bench_salsa20_core()
 #define bench_sha3_permute()
+#define bench_ghash_update()
 #endif
 
 #if WITH_OPENSSL
@@ -892,10 +907,6 @@ main(int argc, char **argv)
   unsigned i;
   int c;
   const char *alg;
-
-#if WITH_OPENSSL
-  nettle_openssl_init();
-#endif
 
   const struct nettle_hash *hashes[] =
     {
@@ -919,13 +930,14 @@ main(int argc, char **argv)
       OPENSSL(&nettle_openssl_aes128)
       OPENSSL(&nettle_openssl_aes192)
       OPENSSL(&nettle_openssl_aes256)
-      &nettle_blowfish128, OPENSSL(&nettle_openssl_blowfish128)
+      &nettle_blowfish128,
       &nettle_camellia128, &nettle_camellia192, &nettle_camellia256,
-      &nettle_cast128, OPENSSL(&nettle_openssl_cast128)
-      &nettle_des, OPENSSL(&nettle_openssl_des)
+      &nettle_cast128,
+      &nettle_des,
       &nettle_des3,
       &nettle_serpent256,
       &nettle_twofish128, &nettle_twofish192, &nettle_twofish256,
+      &nettle_sm4,
       NULL
     };
 
@@ -947,6 +959,7 @@ main(int argc, char **argv)
       &nettle_gcm_camellia256,
       &nettle_eax_aes128,
       &nettle_chacha_poly1305,
+      &nettle_ocb_aes128,
       NULL
     };
 
@@ -983,6 +996,7 @@ main(int argc, char **argv)
   bench_sha1_compress();
   bench_salsa20_core();
   bench_sha3_permute();
+  bench_ghash_update();
   printf("\n");
 
   header();

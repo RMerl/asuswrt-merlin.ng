@@ -185,7 +185,7 @@ test_fixed (void)
     }
 }
 
-#define COUNT 100000
+#define COUNT 10000
 #define MAX_MESSAGE_SIZE 300
 
 static void

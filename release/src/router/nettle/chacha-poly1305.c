@@ -97,7 +97,8 @@ static void
 poly1305_update (struct chacha_poly1305_ctx *ctx,
 		 size_t length, const uint8_t *data)
 {
-  MD_UPDATE (ctx, length, data, COMPRESS, (void) 0);
+  ctx->index = _nettle_poly1305_update (&(ctx)->poly1305,
+					ctx->block, ctx->index, length, data);
 }
 
 static void

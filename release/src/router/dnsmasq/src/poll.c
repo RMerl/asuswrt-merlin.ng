@@ -98,7 +98,7 @@ void poll_listen(int fd, short event)
      {
        if (arrsize == nfds)
 	 {
-	   /* Array too small, extend. */
+	   /* Array too small. Extend. */
 	   struct pollfd *new;
 
 	   arrsize = (arrsize == 0) ? 64 : arrsize * 2;

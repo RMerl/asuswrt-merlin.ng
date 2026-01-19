@@ -89,6 +89,7 @@ void dhcp6_init(void)
 void dhcp6_packet(time_t now)
 {
   struct dhcp_context *context;
+  struct dhcp_relay *relay;
   struct iface_param parm;
   struct cmsghdr *cmptr;
   struct msghdr msg;
@@ -176,6 +177,7 @@ void dhcp6_packet(time_t now)
   else
     {
       struct dhcp_bridge *bridge, *alias;
+      int multicast_dest = 0;
       
       for (tmp = daemon->if_except; tmp; tmp = tmp->next)
 	if (tmp->name && wildcard_match(tmp->name, ifr.ifr_name))
@@ -230,14 +232,24 @@ void dhcp6_packet(time_t now)
 	    context->current = context;
 	    memset(&context->local6, 0, IN6ADDRSZ);
 	  }
+
+      for (relay = daemon->relay6; relay; relay = relay->next)
+	relay->matchcount = 0;
+
+      inet_pton(AF_INET6, ALL_RELAY_AGENTS_AND_SERVERS, &all_servers);
+      if (IN6_ARE_ADDR_EQUAL(&dst_addr, &all_servers))
+	multicast_dest = 1;
       
-      /* Ignore requests sent to the ALL_SERVERS multicast address for relay when
-	 we're listening there for DHCPv6 server reasons. */
       inet_pton(AF_INET6, ALL_SERVERS, &all_servers);
-      
-      if (!IN6_ARE_ADDR_EQUAL(&dst_addr, &all_servers) &&
-	  relay_upstream6(if_index, (size_t)sz, &from.sin6_addr, from.sin6_scope_id, now))
-	return;
+      if (IN6_ARE_ADDR_EQUAL(&dst_addr, &all_servers))
+	multicast_dest = 1;
+      else
+	{
+	  /* Ignore requests sent to the ALL_SERVERS multicast address for relay when
+	     we're listening there for DHCPv6 server reasons. */
+	  if (relay_upstream6(if_index, (size_t)sz, &from.sin6_addr, from.sin6_scope_id, now))
+	    return;
+	}
       
       if (!iface_enumerate(AF_INET6, &parm, (callback_t){.af_inet6=complete_context6}))
 	return;
@@ -266,7 +278,7 @@ void dhcp6_packet(time_t now)
       
       lease_prune(NULL, now); /* lose any expired leases */
       
-      port = dhcp6_reply(parm.current, if_index, ifr.ifr_name, &parm.fallback, 
+      port = dhcp6_reply(parm.current, multicast_dest, if_index, ifr.ifr_name, &parm.fallback, 
 			 &parm.ll_addr, &parm.ula_addr, sz, &from.sin6_addr, now);
       
       /* The port in the source address of the original request should
@@ -444,7 +456,17 @@ static int complete_context6(struct in6_addr *local,  int prefix,
   if (match)
     for (relay = daemon->relay6; relay; relay = relay->next)
       if (IN6_ARE_ADDR_EQUAL(local, &relay->local.addr6))
-	relay->iface_index = if_index;
+	{
+	  relay->iface_index = if_index;
+
+	  /* More than one interface with the relay address breaks things. */
+	  if (relay->matchcount++ == 1 && !relay->warned)
+	    {
+	      relay->warned = 1;
+	      inet_ntop(AF_INET6, &local, daemon->addrbuff, ADDRSTRLEN);
+	      my_syslog(MS_DHCP | LOG_WARNING, _("DHCP relay address %s appears on more than one interface"), daemon->addrbuff);
+	    }
+	}
   
   return 1;
 }
@@ -812,7 +834,7 @@ void dhcp_construct_contexts(time_t now)
 	{
 	  if ((context->flags & CONTEXT_RA) || option_bool(OPT_RA))
 	    {
-	      /* previously constructed context has gone. advertise it's demise */
+	      /* previously constructed context has gone; advertise its demise */
 	      context->flags |= CONTEXT_OLD;
 	      context->address_lost_time = now;
 	      /* Apply same ceiling of configured lease time as in radv.c */

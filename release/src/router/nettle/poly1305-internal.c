@@ -85,6 +85,28 @@
 #define h3 h.h32[3]
 #define h4 hh
 
+/* For fat builds */
+#if HAVE_NATIVE_poly1305_set_key
+void
+_nettle_poly1305_set_key_c(struct poly1305_ctx *ctx,
+	       const uint8_t key[16]);
+# define _nettle_poly1305_set_key _nettle_poly1305_set_key_c
+#endif
+
+#if HAVE_NATIVE_poly1305_block
+void
+_nettle_poly1305_block_c(struct poly1305_ctx *ctx, const uint8_t *m,
+	       unsigned t4);
+# define _nettle_poly1305_block _nettle_poly1305_block_c
+#endif
+
+#if HAVE_NATIVE_poly1305_digest
+void
+_nettle_poly1305_digest_c(struct poly1305_ctx *ctx,
+	       union nettle_block16 *s);
+# define _nettle_poly1305_digest _nettle_poly1305_digest_c
+#endif
+
 void
 _nettle_poly1305_set_key(struct poly1305_ctx *ctx, const uint8_t key[16])
 {

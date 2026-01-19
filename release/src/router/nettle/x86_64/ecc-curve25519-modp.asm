@@ -1,4 +1,4 @@
-C x86_64/ecc-25519-modp.asm
+C x86_64/ecc-curve25519-modp.asm
 
 ifelse(`
    Copyright (C) 2014 Niels Möller
@@ -30,7 +30,7 @@ ifelse(`
    not, see http://www.gnu.org/licenses/.
 ')
 
-	.file "ecc-25519-modp.asm"
+	.file "ecc-curve25519-modp.asm"
 
 define(`RP', `%rsi')
 define(`XP', `%rdx')	C Overlaps with mul register

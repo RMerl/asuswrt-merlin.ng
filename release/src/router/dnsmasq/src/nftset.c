@@ -17,7 +17,7 @@
 
 #include "dnsmasq.h"
 
-#if defined (HAVE_NFTSET) && defined (HAVE_LINUX_NETWORK)
+#if defined (HAVE_NFTSET)
 
 #include <nftables/libnftables.h>
 

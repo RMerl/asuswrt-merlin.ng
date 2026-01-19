@@ -281,6 +281,12 @@ struct serversession {
 	/* The instance created by the plugin_new function */
 	struct PluginInstance *plugin_instance;
 #endif
+
+#if DROPBEAR_SVR_DROP_PRIVS
+	/* Set to 1 when utmp_gid is valid */
+	int have_utmp_gid;
+	gid_t utmp_gid;
+#endif
 };
 
 typedef enum {

@@ -186,12 +186,14 @@ void svr_auth_pubkey(int valid_user) {
 
 #if DROPBEAR_SK_ECDSA || DROPBEAR_SK_ED25519
 	key->sk_flags_mask = SSH_SK_USER_PRESENCE_REQD;
+#if DROPBEAR_SVR_PUBKEY_OPTIONS_BUILT
 	if (ses.authstate.pubkey_options && ses.authstate.pubkey_options->no_touch_required_flag) {
 		key->sk_flags_mask &= ~SSH_SK_USER_PRESENCE_REQD;
 	}
 	if (ses.authstate.pubkey_options && ses.authstate.pubkey_options->verify_required_flag) {
 		key->sk_flags_mask |= SSH_SK_USER_VERIFICATION_REQD;
 	}
+#endif /* DROPBEAR_SVR_PUBKEY_OPTIONS */
 #endif
 
 	/* create the data which has been signed - this a string containing
@@ -523,7 +525,13 @@ static int checkpubkey(const char* keyalgo, unsigned int keyalgolen,
 		line_num++;
 
 		ret = checkpubkey_line(line, line_num, filename, keyalgo, keyalgolen,
-			keyblob, keybloblen, &ses.authstate.pubkey_info);
+			keyblob, keybloblen,
+#if DROPBEAR_SVR_PUBKEY_OPTIONS_BUILT
+			&ses.authstate.pubkey_info
+#else
+			NULL
+#endif
+		);
 		if (ret == DROPBEAR_SUCCESS) {
 			break;
 		}

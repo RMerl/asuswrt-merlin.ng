@@ -2,6 +2,7 @@ C x86_64/ghash-set-key.asm
 
 ifelse(`
    Copyright (C) 2022 Niels Möller
+   Copyright (C) 2023 Mamone Tarsha
 
    This file is part of GNU Nettle.
 
@@ -39,12 +40,15 @@ define(`BSWAP', `%xmm1')
 define(`H', `%xmm2')
 define(`D', `%xmm3')
 define(`T', `%xmm4')
-define(`MASK', `%xmm5')
+define(`R', `%xmm5')
+define(`M', `%xmm6')
+define(`F', `%xmm7')
+define(`MASK', `%xmm7')
 
     C void _ghash_set_key (struct gcm_key *ctx, const union nettle_block16 *key)
 
 PROLOGUE(_nettle_ghash_set_key)
-	W64_ENTRY(2, 6)
+	W64_ENTRY(2, 8)
 	movdqa	.Lpolynomial(%rip), P
 	movdqa	.Lbswap(%rip), BSWAP
 	movups	(KEY), H
@@ -63,11 +67,35 @@ PROLOGUE(_nettle_ghash_set_key)
 	movups	H, (CTX)
 
 	C Set D = x^{-64} H = {H0, H1} + P1 H0
+	movdqa	H, T
+	pshufd	$0x4e, H, D	C Swap H0, H1
+	pclmullqhqdq P, T
+	pxor	T, D
+	movups	D, 16(CTX)
+
+	movdqa		H, M
+	movdqa		H, F
+	movdqa		H, T
+	pclmulhqlqdq	H, T	C H0 * M1
+	pclmulhqhqdq	H, M	C H1 * M1
+	pclmullqlqdq	D, F 	C D0 * M0
+	pclmullqhqdq	D, H	C D1 * M0
+	pxor		T, F
+	pxor		M, H
+
+	pshufd		$0x4e, F, T		C Swap halves of F
+	pxor		T, H
+	pclmullqhqdq	P, F
+	pxor		F, H
+	movups	H, 32(CTX)
+
+	C Set D2 = x^{-64} H^2 = {H0, H1} + P1 H0
 	pshufd	$0x4e, H, D	C Swap H0, H1
 	pclmullqhqdq P, H
 	pxor	H, D
-	movups	D, 16(CTX)
-	W64_EXIT(2, 6)
+	movups	D, 48(CTX)
+
+	W64_EXIT(2, 8)
 	ret
 EPILOGUE(_nettle_ghash_set_key)
 

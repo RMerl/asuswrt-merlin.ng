@@ -48,6 +48,12 @@
 #define ATTRIBUTE_NORETURN
 #endif
 
+#if __GNUC__ + 0 >= 8 // clang 20.1.0 does not yet support this
+#define ATTRIBUTE_NONSTRING __attribute__ ((nonstring))
+#else
+#define ATTRIBUTE_NONSTRING
+#endif
+
 /* get these before config.h  for IPv6 stuff... */
 #include <sys/types.h> 
 #include <sys/socket.h>
@@ -281,8 +287,10 @@ struct event_desc {
 #define OPT_LOG_PROTO      73
 #define OPT_NO_0x20        74
 #define OPT_DO_0x20        75
-#define OPT_RDNSS_WAR      76
-#define OPT_LAST           77
+#define OPT_AUTH_LOG       76
+#define OPT_LEASEQUERY     77
+#define OPT_RDNSS_WAR      78
+#define OPT_LAST           79
 
 #define OPTION_BITS (sizeof(unsigned int)*8)
 #define OPTION_SIZE ( (OPT_LAST/OPTION_BITS)+((OPT_LAST%OPTION_BITS)!=0) )
@@ -537,6 +545,11 @@ struct crec {
 #define SRC_HOSTS     2
 #define SRC_AH        3
 
+#define PIPE_OP_INSERT  1  /* Cache entry */
+#define PIPE_OP_RESULT  2  /* Validation result */
+#define PIPE_OP_STATS   3  /* Update parent's stats */
+#define PIPE_OP_IPSET   4  /* Update IPset */
+#define PIPE_OP_NFTSET  5  /* Update NFTset */
 
 /* struct sockaddr is not large enough to hold any address,
    and specifically not big enough to hold an IPv6 address.
@@ -554,9 +567,9 @@ union mysockaddr {
 
 
 /* The actual values here matter, since we sort on them to get records in the order
-   IPv6 addr, IPv4 addr, all zero return, resolvconf servers, upstream server, no-data return  */
-#define SERV_LITERAL_ADDRESS    1  /* addr is the answer, or NoDATA is the answer, depending on the next four flags */
-#define SERV_USE_RESOLV         2  /* forward this domain in the normal way */
+   IPv6 addr, IPv4 addr, all zero return, no-data return, resolvconf servers, upstream server */
+#define SERV_USE_RESOLV         1  /* forward this domain in the normal way */
+#define SERV_LITERAL_ADDRESS    2  /* addr is the answer, or NoDATA is the answer, depending on the next four flags */
 #define SERV_ALL_ZEROS          4  /* return all zeros for A and AAAA */
 #define SERV_4ADDR              8  /* addr is IPv4 */
 #define SERV_6ADDR             16  /* addr is IPv6 */
@@ -859,6 +872,8 @@ struct dhcp_lease {
   int last_interface;
   int new_interface;     /* save possible originated interface */
   int new_prefixlen;     /* and its prefix length */
+  unsigned char *agent_id, *vendorclass;
+  int agent_id_len, vendorclass_len;
 #ifdef HAVE_DHCP6
   struct in6_addr addr6;
   unsigned int iaid;
@@ -1095,7 +1110,7 @@ struct ping_result {
 
 struct tftp_file {
   int refcount, fd;
-  off_t size;
+  off_t size, posn;
   dev_t dev;
   ino_t inode;
   char filename[];
@@ -1103,14 +1118,14 @@ struct tftp_file {
 
 struct tftp_transfer {
   int sockfd;
-  time_t timeout;
-  int backoff;
-  unsigned int block, blocksize, expansion;
+  u16 block_hi, ackprev;
+  time_t retransmit, start;
+  unsigned int lastack, block, blocksize, windowsize, timeout, expansion;
   off_t offset;
   union mysockaddr peer;
   union all_addr source;
   int if_index;
-  char opt_blocksize, opt_transize, netascii, carrylf;
+  unsigned char opt_blocksize, opt_transize, opt_windowsize, opt_timeout, netascii, carrylf, lastcarrylf, backoff;
   struct tftp_file *file;
   struct tftp_transfer *next;
 };
@@ -1131,10 +1146,12 @@ struct dhcp_relay {
   union {
     struct in_addr addr4;
     struct in6_addr addr6;
-  } local, server;
+  } local, server, uplink;
   char *interface; /* Allowable interface for replies from server, and dest for IPv6 multicast */
   int iface_index; /* working - interface in which requests arrived, for return */
   int port;        /* Port of relay we forward to. */
+  int split_mode;  /* Split address allocation and relay address. */
+  int warned, matchcount;
 #ifdef HAVE_SCRIPT
   struct snoop_record {
     struct in6_addr client, prefix;
@@ -1178,7 +1195,7 @@ extern struct daemon {
   char *runfile; 
   char *lease_change_command;
   struct iname *if_names, *if_addrs, *if_except, *dhcp_except, *auth_peers, *tftp_interfaces;
-  struct bogus_addr *bogus_addr, *ignore_addr;
+  struct bogus_addr *bogus_addr, *ignore_addr, *leasequery_addr;
   struct server *servers, *servers_tail, *local_domains, **serverarray;
   struct rebind_domain *no_rebind;
   int server_has_wildcard;
@@ -1249,7 +1266,7 @@ extern struct daemon {
   char *namebuff; /* MAXDNAME size buffer */
   char *workspacename;
 #ifdef HAVE_DNSSEC
-  char *keyname; /* MAXDNAME size buffer */
+  char *keyname, *cname; /* MAXDNAME size buffer */
   unsigned long *rr_status; /* ceiling in TTL from DNSSEC or zero for insecure */
   int rr_status_sz;
   int dnssec_no_time_check;
@@ -1262,7 +1279,7 @@ extern struct daemon {
   struct serverfd *sfds;
   struct irec *interfaces;
   struct listener *listeners;
-  struct server *srv_save; /* Used for resend on DoD */
+  void *srv_save;      /* Used for resend on DoD and tftp prefetch */
   size_t packet_len;       /*      "        "        */
   int    fd_save;          /*      "        "        */
   pid_t *tcp_pids;
@@ -1354,6 +1371,13 @@ void cache_end_insert(void);
 void cache_start_insert(void);
 unsigned int cache_remove_uid(const unsigned int uid);
 int cache_recv_insert(time_t now, int fd);
+#ifdef HAVE_DNSSEC
+void cache_update_hwm(void);
+#endif
+#if defined(HAVE_IPSET) || defined(HAVE_NFTSET)
+void cache_send_ipset(unsigned char op, struct ipsets *sets,
+		      int flags, union all_addr *addr);
+#endif
 struct crec *cache_insert(char *name, union all_addr *addr, unsigned short class, 
 			  time_t now, unsigned long ttl, unsigned int flags);
 void cache_reload(void);
@@ -1394,11 +1418,11 @@ int extract_name(struct dns_header *header, size_t plen, unsigned char **pp,
 unsigned char *skip_name(unsigned char *ansp, struct dns_header *header, size_t plen, int extrabytes);
 unsigned char *skip_questions(struct dns_header *header, size_t plen);
 unsigned char *skip_section(unsigned char *ansp, int count, struct dns_header *header, size_t plen);
-unsigned int extract_request(struct dns_header *header, size_t qlen, 
-			       char *name, unsigned short *typep);
+unsigned int extract_request(struct dns_header *header, size_t qlen, char *name,
+			     unsigned short *typep, unsigned short *classp);
 void setup_reply(struct dns_header *header, unsigned int flags, int ede);
 int extract_addresses(struct dns_header *header, size_t qlen, char *name,
-		      time_t now, struct ipsets *ipsets, struct ipsets *nftsets, int is_sign,
+		      time_t now, struct ipsets *ipsets, struct ipsets *nftsets,
                       int check_rebind, int no_cache_dnssec, int secure);
 #if defined(HAVE_CONNTRACK) && defined(HAVE_UBUS)
 void report_addresses(struct dns_header *header, size_t len, u32 mark);
@@ -1417,6 +1441,7 @@ int add_resource_record(struct dns_header *header, char *limit, int *truncp,
 			int *offset, unsigned short type, unsigned short class, char *format, ...);
 int in_arpa_name_2_addr(char *namein, union all_addr *addrp);
 int private_net(struct in_addr addr, int ban_localhost);
+int private_net6(struct in6_addr *a, int ban_localhost);
 /* extract_name ops */
 #define EXTR_NAME_EXTRACT   1
 #define EXTR_NAME_COMPARE   2
@@ -1532,7 +1557,7 @@ void return_reply(time_t now, struct frec *forward, struct dns_header *header, s
 #ifdef HAVE_DNSSEC
 void pop_and_retry_query(struct frec *forward, int status, time_t now);
 int tcp_from_udp(time_t now, int status, struct dns_header *header, ssize_t *n, 
-		 int class, char *name, char *keyname, struct server *server, 
+		 int class, char *name, struct server *server, 
 		 int *keycount, int *validatecount);
 #endif
 unsigned char *tcp_request(int confd, time_t now,
@@ -1610,6 +1635,7 @@ void lease6_reset(void);
 struct dhcp_lease *lease6_find_by_client(struct dhcp_lease *first, int lease_type,
 					 unsigned char *clid, int clid_len, unsigned int iaid);
 struct dhcp_lease *lease6_find_by_addr(struct in6_addr *net, int prefix, u64 addr);
+struct dhcp_lease *lease6_find_by_plain_addr(struct in6_addr *addr);
 u64 lease_find_max_addr6(struct dhcp_context *context);
 void lease_ping_reply(struct in6_addr *sender, unsigned char *packet, char *interface);
 void lease_update_slaac(time_t now);
@@ -1622,6 +1648,8 @@ void lease_set_hwaddr(struct dhcp_lease *lease, const unsigned char *hwaddr,
 void lease_set_hostname(struct dhcp_lease *lease, const char *name, int auth, char *domain, char *config_domain);
 void lease_set_expires(struct dhcp_lease *lease, unsigned int len, time_t now);
 void lease_set_interface(struct dhcp_lease *lease, int interface, time_t now);
+void lease_set_agent_id(struct dhcp_lease *lease, unsigned char *new, int len);
+void lease_set_vendorclass(struct dhcp_lease *lease, unsigned char *new, int len);
 struct dhcp_lease *lease_find_by_client(unsigned char *hwaddr, int hw_len, int hw_type,  
 					unsigned char *clid, int clid_len);
 struct dhcp_lease *lease_find_by_hwaddr(unsigned char *hwaddr, int hw_len, int hw_type);
@@ -1643,9 +1671,13 @@ void lease_add_extradata(struct dhcp_lease *lease, unsigned char *data,
 #ifdef HAVE_DHCP
 size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 		  size_t sz, time_t now, int unicast_dest, int loopback,
-		  int *is_inform, int pxe, struct in_addr fallback, time_t recvtime);
+		  int *is_inform, int pxe, struct in_addr fallback,
+		  time_t recvtime, struct in_addr leasequery_source);
 unsigned char *extended_hwaddr(int hwtype, int hwlen, unsigned char *hwaddr, 
 			       int clid_len, unsigned char *clid, int *len_out);
+void relay_upstream4(struct in_addr iface_addr, int iface_index,
+		     struct dhcp_packet *mess, size_t sz, int unicast);
+unsigned int relay_reply4(struct dhcp_packet *mess, size_t sz, char *arrival_interface);
 #endif
 
 /* dnsmasq.c */
@@ -1660,7 +1692,7 @@ void send_event(int fd, int event, int data, char *msg);
 void clear_cache_and_reload(time_t now);
 #ifdef HAVE_DNSSEC
 int swap_to_tcp(struct frec *forward, time_t now, int status, struct dns_header *header,
-		ssize_t *plen, int class, struct server *server, int *keycount, int *validatecount);
+		ssize_t *plen, char *name, int class, struct server *server, int *keycount, int *validatecount);
 #endif
 
 /* netlink.c */
@@ -1747,7 +1779,6 @@ void queue_relay_snoop(struct in6_addr *client, int if_index, struct in6_addr *p
 
 /* tftp.c */
 #ifdef HAVE_TFTP
-void tftp_request(struct listener *listen, time_t now);
 void check_tftp_listeners(time_t now);
 int do_tftp_script_run(void);
 #endif
@@ -1782,7 +1813,7 @@ void get_client_mac(struct in6_addr *client, int iface, unsigned char *mac,
   
 /* rfc3315.c */
 #ifdef HAVE_DHCP6
-unsigned short dhcp6_reply(struct dhcp_context *context, int interface, char *iface_name,  
+unsigned short dhcp6_reply(struct dhcp_context *context, int multicast_dest, int interface, char *iface_name,  
 			   struct in6_addr *fallback, struct in6_addr *ll_addr, struct in6_addr *ula_addr,
 			   size_t sz, struct in6_addr *client_addr, time_t now);
 int relay_upstream6(int iface_index, ssize_t sz, struct in6_addr *peer_address, 
@@ -1893,6 +1924,7 @@ unsigned char *find_pseudoheader(struct dns_header *header, size_t plen,
 size_t add_pseudoheader(struct dns_header *header, size_t plen, unsigned char *limit, 
 			int optno, unsigned char *opt, size_t optlen, int set_do, int replace);
 size_t add_do_bit(struct dns_header *header, size_t plen, unsigned char *limit);
+void edns0_needs_mac(union mysockaddr *addr, time_t now);
 size_t add_edns0_config(struct dns_header *header, size_t plen, unsigned char *limit, 
 			union mysockaddr *source, time_t now, int *cacheable);
 int check_source(struct dns_header *header, size_t plen, unsigned char *pseudoheader, union mysockaddr *peer);
@@ -1919,7 +1951,7 @@ size_t make_local_answer(int flags, int gotname, size_t size, struct dns_header 
 			 char *name, char *limit, int first, int last, int ede);
 int server_samegroup(struct server *a, struct server *b);
 #ifdef HAVE_DNSSEC
-int dnssec_server(struct server *server, char *keyname, int *firstp, int *lastp);
+int dnssec_server(struct server *server, char *keyname, int is_ds, int *firstp, int *lastp);
 #endif
 void mark_servers(int flag);
 void cleanup_servers(void);

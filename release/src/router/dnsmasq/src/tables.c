@@ -18,7 +18,7 @@
 
 #include "dnsmasq.h"
 
-#if defined(HAVE_IPSET) && defined(HAVE_BSD_NETWORK)
+#if defined(HAVE_BSD_IPSET)
 
 #include <string.h>
 

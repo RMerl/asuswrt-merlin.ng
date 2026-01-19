@@ -61,7 +61,7 @@ void slaac_add_addrs(struct dhcp_lease *lease, time_t now, int force)
 	else if (lease->clid_len == 9 && 
 		 lease->clid[0] ==  ARPHRD_EUI64 &&
 		 lease->hwaddr_type == ARPHRD_IEEE1394)
-	  /* firewire has EUI-64 identifier as clid */
+	  /* FireWire has EUI-64 identifier as clid */
 	  memcpy(&addr.s6_addr[8], &lease->clid[1], 8);
 #endif
 	else

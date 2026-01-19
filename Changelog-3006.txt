@@ -11,6 +11,7 @@ Asuswrt-Merlin 3006.xxx Changelog
   - UPDATED: OpenVPN to 2.6.17.
   - UPDATED: Dropbear to 2025.89.
   - UPDATED: nettle to 3.10.2.
+  - UPDATED: dnsmasq to 2.92.
   - FIXED: IPv6 blocking of DoT servers (dave14305)
   - REMOVED: AiCloud support, due to security reasons.
 

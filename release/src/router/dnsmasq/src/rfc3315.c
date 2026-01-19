@@ -21,7 +21,7 @@
 
 struct state {
   unsigned char *clid;
-  int clid_len, ia_type, interface, hostname_auth, lease_allocate;
+  int multicast_dest, clid_len, ia_type, interface, hostname_auth, lease_allocate;
   char *client_hostname, *hostname, *domain, *send_domain;
   struct dhcp_context *context;
   struct in6_addr *link_address, *fallback, *ll_addr, *ula_addr;
@@ -68,7 +68,7 @@ static void calculate_times(struct dhcp_context *context, unsigned int *min_time
 #define opt6_user_vendor_next(opt, end) (opt6_next(((uint8_t *) opt) - 2, end))
  
 
-unsigned short dhcp6_reply(struct dhcp_context *context, int interface, char *iface_name,
+unsigned short dhcp6_reply(struct dhcp_context *context, int multicast_dest, int interface, char *iface_name,
 			   struct in6_addr *fallback,  struct in6_addr *ll_addr, struct in6_addr *ula_addr,
 			   size_t sz, struct in6_addr *client_addr, time_t now)
 {
@@ -87,6 +87,7 @@ unsigned short dhcp6_reply(struct dhcp_context *context, int interface, char *if
   
   reset_counter();
   state.context = context;
+  state.multicast_dest = multicast_dest;
   state.interface = interface;
   state.iface_name = iface_name;
   state.fallback = fallback;
@@ -246,7 +247,11 @@ static int dhcp6_maybe_relay(struct state *state, unsigned char *inbuff, size_t 
 	      struct in6_addr align;
 	      /* the packet data is unaligned, copy to aligned storage */
 	      memcpy(&align, inbuff + 2, IN6ADDRSZ); 
-	      state->link_address = &align;
+
+
+	      /* RFC6221 para 4 */
+	      if (!IN6_IS_ADDR_UNSPECIFIED(&align))
+		state->link_address = &align;
 	      /* zero is_unicast since that is now known to refer to the 
 		 relayed packet, not the original sent by the client */
 	      if (!dhcp6_maybe_relay(state, opt6_ptr(opt, 0), opt6_len(opt), client_addr, 0, now))
@@ -335,20 +340,24 @@ static int dhcp6_no_relay(struct state *state, int msg_type, unsigned char *inbu
   else if (msg_type != DHCP6IREQ)
     return 0;
 
-  /* server-id must match except for SOLICIT, CONFIRM and REBIND messages, which MUST NOT
-     have a server-id.  3315 para 15.x */
   opt = opt6_find(state->packet_options, state->end, OPTION6_SERVER_ID, 1);
-
-  if (msg_type == DHCP6SOLICIT || msg_type == DHCP6CONFIRM || msg_type == DHCP6REBIND)
+  
+  if (msg_type == DHCP6SOLICIT || msg_type == DHCP6CONFIRM || msg_type == DHCP6REBIND || msg_type == DHCP6IREQ)
     {
-      if (opt)
+      /* Above message types must be multicast 3315 Section 15. */
+      if (!state->multicast_dest)
 	return 0;
-    }
-  else if (msg_type == DHCP6IREQ)
-    {
-      /* If server-id provided, it must match. */
-      if (opt && (opt6_len(opt) != daemon->duid_len ||
-		  memcmp(opt6_ptr(opt, 0), daemon->duid, daemon->duid_len) != 0))
+
+      /* server-id must match except for SOLICIT, CONFIRM and REBIND messages, which MUST NOT
+	 have a server-id.  3315 para 15.x */
+      if (msg_type == DHCP6IREQ)
+	{
+	  /* If server-id provided in IREQ, it must match. */
+	  if (opt && (opt6_len(opt) != daemon->duid_len ||
+		      memcmp(opt6_ptr(opt, 0), daemon->duid, daemon->duid_len) != 0))
+	    return 0;
+	}
+      else if (opt) 
 	return 0;
     }
   else
@@ -636,7 +645,7 @@ static int dhcp6_no_relay(struct state *state, int msg_type, unsigned char *inbu
       
     case DHCP6SOLICIT:
       {
-      	int address_assigned = 0;
+      	int address_assigned;
 	/* tags without all prefix-class tags */
 	struct dhcp_netid *solicit_tags;
 	struct dhcp_context *c;
@@ -655,6 +664,7 @@ static int dhcp6_no_relay(struct state *state, int msg_type, unsigned char *inbu
 
       request_no_address:
 	solicit_tags = tagif;
+	address_assigned = 0;
 	
 	if (ignore)
 	  return 0;
@@ -766,15 +776,6 @@ static int dhcp6_no_relay(struct state *state, int msg_type, unsigned char *inbu
 	    
 	    if (address_assigned != 1)
 	      {
-		/* If the server will not assign any addresses to any IAs in a
-		   subsequent Request from the client, the server MUST send an Advertise
-		   message to the client that doesn't include any IA options. */
-		if (!state->lease_allocate)
-		  {
-		    save_counter(o);
-		    continue;
-		  }
-		
 		/* If the server cannot assign any addresses to an IA in the message
 		   from the client, the server MUST include the IA in the Reply message
 		   with no addresses in the IA and a Status Code option in the IA
@@ -801,7 +802,6 @@ static int dhcp6_no_relay(struct state *state, int msg_type, unsigned char *inbu
 	    o = new_opt6(OPTION6_PREFERENCE);
 	    put_opt6_char(option_bool(OPT_AUTHORITATIVE) ? 255 : 0);
 	    end_opt6(o);
-	    tagif = add_options(state, 0);
 	  }
 	else
 	  { 
@@ -821,7 +821,8 @@ static int dhcp6_no_relay(struct state *state, int msg_type, unsigned char *inbu
 		  break;
 		}
 	  }
-
+	
+	tagif = add_options(state, 0);
 	break;
       }
       
@@ -979,8 +980,10 @@ static int dhcp6_no_relay(struct state *state, int msg_type, unsigned char *inbu
 		  {
 		    if (msg_type == DHCP6REBIND)
 		      {
-			/* When rebinding, we can create a lease if it doesn't exist. */
-			lease = lease6_allocate(&req_addr, state->ia_type == OPTION6_IA_NA ? LEASE_NA : LEASE_TA);
+			/* When rebinding, we can create a lease if it doesn't exist, as long
+			   as --dhcp-authoritative is set. */
+			if (option_bool(OPT_AUTHORITATIVE))
+			  lease = lease6_allocate(&req_addr, state->ia_type == OPTION6_IA_NA ? LEASE_NA : LEASE_TA);
 			if (lease)
 			  lease_set_iaid(lease, state->iaid);
 			else
@@ -1603,9 +1606,14 @@ static void get_context_tag(struct state *state, struct dhcp_context *context)
 
 static int check_ia(struct state *state, void *opt, void **endp, void **ia_option)
 {
-  state->ia_type = opt6_type(opt);
   *ia_option = NULL;
 
+  /* must be a minimal option to check without stepping outside received packet. */
+  if (opt6_ptr(opt, 4) > state->end)
+    return 0;
+  
+  state->ia_type = opt6_type(opt);
+  
   if (state->ia_type != OPTION6_IA_NA && state->ia_type != OPTION6_IA_TA)
     return 0;
   
@@ -1615,7 +1623,10 @@ static int check_ia(struct state *state, void *opt, void **endp, void **ia_optio
   if (state->ia_type == OPTION6_IA_TA && opt6_len(opt) < 4)
     return 0;
   
-  *endp = opt6_ptr(opt, opt6_len(opt));
+  /* Check we don't overflow the received packet. */
+  if ((*endp = opt6_ptr(opt, opt6_len(opt))) > state->end)
+    return 0;
+  
   state->iaid = opt6_uint(opt, 0, 4);
   *ia_option = opt6_find(opt6_ptr(opt, state->ia_type == OPTION6_IA_NA ? 12 : 4), *endp, OPTION6_IAADDR, 24);
 
@@ -2286,64 +2297,61 @@ int relay_reply6(struct sockaddr_in6 *peer, ssize_t sz, char *arrival_interface)
     {
       void *opt, *opts = inbuff + 34;
       void *end = inbuff + sz;
-      for (opt = opts; opt; opt = opt6_next(opt, end))
-	if (opt6_type(opt) == OPTION6_RELAY_MSG && opt6_len(opt) > 0)
-	  {
-	    int encap_type = *((unsigned char *)opt6_ptr(opt, 0));
-	    put_opt6(opt6_ptr(opt, 0), opt6_len(opt));
-	    memcpy(&peer->sin6_addr, &inbuff[18], IN6ADDRSZ); 
-	    peer->sin6_scope_id = relay->iface_index;
-
-	    if (encap_type == DHCP6RELAYREPL)
-	      {
-		peer->sin6_port = ntohs(DHCPV6_SERVER_PORT);
-		return 1;
-	      }
-
-	    peer->sin6_port = ntohs(DHCPV6_CLIENT_PORT);
-	    
-#ifdef HAVE_SCRIPT
-	    if (daemon->lease_change_command && encap_type == DHCP6REPLY)
-	      {
-		/* decapsulate relayed message */
-		opts = opt6_ptr(opt, 4);
-		end = opt6_ptr(opt, opt6_len(opt));
-
-		for (opt = opts; opt; opt = opt6_next(opt, end))
-		  if (opt6_type(opt) == OPTION6_IA_PD && opt6_len(opt) > 12) 
-		    {
-		      void *ia_opts = opt6_ptr(opt, 12);
-		      void *ia_end = opt6_ptr(opt, opt6_len(opt));
-		      void *ia_opt;
-		      
-		      for (ia_opt = ia_opts; ia_opt; ia_opt = opt6_next(ia_opt, ia_end))
-			/* valid lifetime must not be zero. */
-			if (opt6_type(ia_opt) == OPTION6_IAPREFIX && opt6_len(ia_opt) >= 25 && opt6_uint(ia_opt, 4, 4) != 0)
-			  {
-			    if (daemon->free_snoops ||
-				(daemon->free_snoops = whine_malloc(sizeof(struct snoop_record))))
-			      {
-				struct snoop_record *snoop = daemon->free_snoops;
-				
-				daemon->free_snoops = snoop->next;
-				snoop->client = peer->sin6_addr;
-				snoop->prefix_len = opt6_uint(ia_opt, 8, 1); 
-				memcpy(&snoop->prefix, opt6_ptr(ia_opt, 9), IN6ADDRSZ); 
-				snoop->next = relay->snoop_records;
-				relay->snoop_records = snoop;
-			      }
-			  }
-		    }
-	      }
-#endif		
-	    return 1;
-	  }
       
+      if ((opt = opt6_find(opts, end, OPTION6_RELAY_MSG, 4)))
+	{
+	  int encap_type = opt6_uint(opt, 0, 1);
+	  put_opt6(opt6_ptr(opt, 0), opt6_len(opt));
+	  memcpy(&peer->sin6_addr, &inbuff[18], IN6ADDRSZ); 
+	  peer->sin6_scope_id = relay->iface_index;
+
+	  if (encap_type == DHCP6RELAYREPL)
+	    {
+	      peer->sin6_port = ntohs(DHCPV6_SERVER_PORT);
+	      return 1;
+	    }
+	  
+	  peer->sin6_port = ntohs(DHCPV6_CLIENT_PORT);
+	  
+#ifdef HAVE_SCRIPT
+	  if (daemon->lease_change_command && encap_type == DHCP6REPLY)
+	    {
+	      /* skip over message type and transaction-id. to get to options. */
+	      opts = opt6_ptr(opt, 4);
+	      end = opt6_ptr(opt, opt6_len(opt));
+
+	      if ((opt = opt6_find(opts, end, OPTION6_IA_PD, 12)))
+		{
+		  opts = opt6_ptr(opt, 12);
+		  end = opt6_ptr(opt, opt6_len(opt));
+		  
+		  for (opt = opt6_find(opts, end, OPTION6_IAPREFIX, 25); opt; opt = opt6_find(opt6_next(opt, end), end, OPTION6_IAPREFIX, 25))
+		    /* valid lifetime must not be zero. */
+		    if (opt6_uint(opt, 4, 4) != 0)
+		      {
+			if (daemon->free_snoops ||
+			    (daemon->free_snoops = whine_malloc(sizeof(struct snoop_record))))
+			  {
+			    struct snoop_record *snoop = daemon->free_snoops;
+			    
+			    daemon->free_snoops = snoop->next;
+			    snoop->client = peer->sin6_addr;
+			    snoop->prefix_len = opt6_uint(opt, 8, 1); 
+			    memcpy(&snoop->prefix, opt6_ptr(opt, 9), IN6ADDRSZ); 
+			    snoop->next = relay->snoop_records;
+			    relay->snoop_records = snoop;
+			  }
+		      }
+		}	      
+	    }
+#endif
+	  return 1;
+	}
     }
   
   return 0;
 }
-
+  
 #ifdef HAVE_SCRIPT
 int do_snoop_script_run(void)
 {

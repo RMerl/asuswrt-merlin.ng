@@ -1,949 +1,952 @@
-# German translations for dnsmasq package.
+# Swedish translations for dnsmasq package.
 #
-# This revised version is (C) Copyright by
-# Matthias Andree <matthias.andree@gmx.de>, 2010 - 2021.
-# Conrad Kostecki <conrad@kostecki.com>, 2014 - 2025.
-# It is subject to the GNU General Public License v2,
-# or at your option, any later version.
-#
-# An older version of this file was originally put in the public domain by
-# Simon Kelley <simon@thekelleys.org.uk>, 2005.
+# This file is put in the public domain.
+# Daniel Nylander <po@danielnylander.se>, 2025.
 msgid ""
 msgstr ""
-"Project-Id-Version: dnsmasq 2.92\n"
+"Project-Id-Version: dnsmasq 2.91\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-03-20 00:00+0000\n"
-"PO-Revision-Date: 2025-12-06 16:24+0100\n"
-"Last-Translator: Conrad Kostecki <conrad@kostecki.com>\n"
-"Language-Team: German <de@li.org>\n"
-"Language: de\n"
+"PO-Revision-Date: 2025-11-15 11:13+0100\n"
+"Last-Translator: Daniel Nylander <github@danielnylander.se>\n"
+"Language-Team: Swedish\n"
+"Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.8\n"
 
 #: cache.c:696
 msgid "Internal error in cache."
-msgstr "Interner Fehler im Cache."
+msgstr "Internt fel i cacheminnet."
 
 #: cache.c:1370
 #, c-format
 msgid "failed to load names from %s: %s"
-msgstr "Fehler beim Laden der Namen von %s: %s"
+msgstr "misslyckades med att läsa in namn från %s: %s"
 
 #: cache.c:1392 dhcp.c:991
 #, c-format
 msgid "bad address at %s line %d"
-msgstr "Fehlerhafte Adresse in %s Zeile %d"
+msgstr "felaktig adress på %s rad %d"
 
 #: cache.c:1445 dhcp.c:1007
 #, c-format
 msgid "bad name at %s line %d"
-msgstr "Fehlerhafter Name in %s Zeile %d"
+msgstr "felaktigt namn på %s rad %d"
 
 #: cache.c:1456
 #, c-format
 msgid "read %s - %d names"
-msgstr "%s gelesen - %d Namen"
+msgstr "läs %s - %d namn"
 
 #: cache.c:1578
 msgid "cleared cache"
-msgstr "Cache geleert"
+msgstr "rensat cacheminne"
 
 #: cache.c:1642
 #, c-format
 msgid "No IPv4 address found for %s"
-msgstr "Keine IPv4-Adresse für %s gefunden"
+msgstr "Ingen IPv4-adress hittades för %s"
 
 #: cache.c:1688
 #, c-format
 msgid "%s is a CNAME, not giving it to the DHCP lease of %s"
-msgstr "%s ist ein CNAME, weise es der DHCP-Lease von %s nicht zu"
+msgstr "%s är ett CNAME, som inte ges till DHCP-lån för %s"
 
 #: cache.c:1712
 #, c-format
 msgid "not giving name %s to the DHCP lease of %s because the name exists in %s with address %s"
-msgstr "Name %s wurde dem DHCP-Lease von %s nicht zugewiesen, da der Name in %s bereits mit Adresse %s existiert"
+msgstr "ger inte namnet %s till DHCP-lånet för %s eftersom namnet finns i %s med adress %s"
 
 #: cache.c:2067
 #, c-format
 msgid "time %lu"
-msgstr "Zeit %lu"
+msgstr "tid %lu"
 
 #: cache.c:2068
 #, c-format
 msgid "cache size %d, %d/%d cache insertions re-used unexpired cache entries."
-msgstr "Cache Größe %d, %d/%d Cache-Einfügungen verwendeten nicht abgelaufene Cache-Einträge wieder."
+msgstr "cache-storlek %d, %d/%d cache-inlägg återanvända cache-poster som inte har gått ut."
 
 #: cache.c:2070
 #, c-format
 msgid "queries forwarded %u, queries answered locally %u"
-msgstr "weitergeleitete Anfragen %u, lokal beantwortete Anfragen %u"
+msgstr "vidarebefordrade frågor %u, lokalt besvarade frågor %u"
 
 #: cache.c:2073
 #, c-format
 msgid "queries answered from stale cache %u"
-msgstr "Anfragen beantwortet vom veralteten Cache %u"
+msgstr "frågor besvarade från gammal cache %u"
 
 #: cache.c:2075
 #, c-format
 msgid "queries for authoritative zones %u"
-msgstr "Anfragen nach autoritativen Zonen %u"
+msgstr "frågor för auktoritativa zoner %u"
 
 #: cache.c:2078
 #, c-format
 msgid "DNSSEC per-query subqueries HWM %u"
-msgstr "DNSSEC-Unterabfragen pro Anfrage HWM %u"
+msgstr ""
 
 #: cache.c:2079
 #, c-format
 msgid "DNSSEC per-query crypto work HWM %u"
-msgstr "DNSSEC-Kryptografie pro Anfrage HWM %u"
+msgstr ""
 
 #: cache.c:2080
 #, c-format
 msgid "DNSSEC per-RRSet signature fails HWM %u"
-msgstr "DNSSEC-Signatur pro RRSet fehlgeschlagen HWM %u"
+msgstr ""
 
 #: cache.c:2084
 #, c-format
 msgid "child processes for TCP requests: in use %zu, highest since last SIGUSR1 %zu, max allowed %zu."
-msgstr "Kindprozesse für TCP-Anfragen: aktuell in Gebrauch %zu, höchster Wert seit letztem SIGUSR1 %zu, maximal erlaubt %zu."
+msgstr ""
 
 #: cache.c:2113
 #, c-format
 msgid "server %s#%d: queries sent %u, retried %u, failed %u, nxdomain replies %u, avg. latency %ums"
-msgstr "Server %s#%d: Anfragen gesendet %u, erneut versucht %u, fehlgeschlagen %u, nxdomain-Antworten %u, durchschnittliche Latenz %ums"
+msgstr "server %s#%d: frågor skickade %u, omförsök %u, misslyckade %u, nxdomain-svar %u, genomsnittlig latens %u ms"
 
 #: util.c:55
 #, c-format
 msgid "failed to seed the random number generator: %s"
-msgstr "Konnte den Zufallszahlengenerator nicht initialisieren: %s"
+msgstr "misslyckades med att starta slumptalsgeneratorn: %s"
 
 #: util.c:263
 msgid "failed to allocate memory"
-msgstr "Konnte Speicher nicht belegen"
+msgstr "misslyckades med att allokera minne"
 
 #: util.c:320 option.c:732
 msgid "could not get memory"
-msgstr "Speicher nicht verfügbar"
+msgstr "kunde inte få minne"
 
 #: util.c:341
 #, c-format
 msgid "cannot create pipe: %s"
-msgstr "Konnte Pipe nicht erzeugen: %s"
+msgstr "kan inte skapa rör: %s"
 
 #: util.c:349
 #, c-format
 msgid "failed to allocate %d bytes"
-msgstr "Konnte %d Bytes nicht belegen"
+msgstr "misslyckades med att allokera %d byte"
 
 #: util.c:359
 #, c-format
 msgid "failed to reallocate %d bytes"
-msgstr "Konnte %d Bytes nicht allozieren"
+msgstr "misslyckades med att omfördela %d byte"
 
 #: util.c:480
 #, c-format
 msgid "cannot read monotonic clock: %s"
-msgstr "monotone Uhr kann nicht gelesen werden: %s"
+msgstr "kan inte läsa monoton klocka: %s"
 
 # @Simon: not perfect but I cannot get nearer right now.
 #: util.c:594
 #, c-format
 msgid "infinite"
-msgstr "unendlich"
+msgstr "oändligt"
 
 #: util.c:942
 #, c-format
 msgid "failed to find kernel version: %s"
-msgstr "konnte Kernelversion nicht finden: %s"
+msgstr "misslyckades med att hitta kärnversionen: %s"
 
 #: option.c:417
 msgid "Specify local address(es) to listen on."
-msgstr "Lokale abzuhörende Adresse(n) angeben."
+msgstr "Ange lokal adress (adresser) att lyssna på."
 
 #: option.c:418
 msgid "Return ipaddr for all hosts in specified domains."
-msgstr "IP-Adresse für alle Hosts in angegebenen Domänen festlegen."
+msgstr "Returnera ipaddr för alla värdar i angivna domäner."
 
 #: option.c:419
 msgid "Fake reverse lookups for RFC1918 private address ranges."
-msgstr "Rückwärtsauflösungen für private Adressbereiche nach RFC1918 falsch erfinden."
+msgstr "Falska omvända sökningar för privata adressintervall enligt RFC1918."
 
 #: option.c:420
 msgid "Treat ipaddr as NXDOMAIN (defeats Verisign wildcard)."
-msgstr "Diese IP-Adresse als NXDOMAIN interpretieren (wehrt \"Suchhilfen\" ab)."
+msgstr "Behandla ipaddr som NXDOMAIN (upphäver Verisign-jokertecken)."
 
 #: option.c:421
 #, c-format
 msgid "Specify the size of the cache in entries (defaults to %s)."
-msgstr "Größe des Caches (Zahl der Einträge) festlegen (Voreinstellung: %s)."
+msgstr "Ange storleken på cachen i poster (standardvärdet är %s)."
 
 #: option.c:422
 #, c-format
 msgid "Specify configuration file (defaults to %s)."
-msgstr "Konfigurationsdatei festlegen (Voreinstellung: %s)."
+msgstr "Ange konfigurationsfil (standardvärde %s)."
 
 #: option.c:423
 msgid "Do NOT fork into the background: run in debug mode."
-msgstr "NICHT in den Hintergrund gehen: Betrieb im Debug-Modus."
+msgstr "Gör INTE en förgrening i bakgrunden: kör i felsökningsläge."
 
 #: option.c:424
 msgid "Do NOT forward queries with no domain part."
-msgstr "Anfragen ohne Domänen-Teil NICHT weiterschicken."
+msgstr "Vidarebefordra INTE förfrågningar utan domän."
 
 #: option.c:425
 msgid "Return self-pointing MX records for local hosts."
-msgstr "Für lokale Einträge MX-Einträge liefern, die auf sich selbst zeigen."
+msgstr "Returnera självpekande MX-poster för lokala värdar."
 
 #: option.c:426
 msgid "Expand simple names in /etc/hosts with domain-suffix."
-msgstr "Einfache Namen in /etc/hosts um Domänen-Endung erweitern."
+msgstr "Expandera enkla namn i /etc/hosts med domänsuffix."
 
 #: option.c:427
 msgid "Don't forward spurious DNS requests from Windows hosts."
-msgstr "Unberechtigte DNS-Anfragen von Windows-Rechnern nicht weiterleiten."
+msgstr "Vidarebefordra inte falska DNS-förfrågningar från Windows-värdar."
 
 #: option.c:428
 msgid "Don't include IPv4 addresses in DNS answers."
-msgstr "Keine IPv4-Adressen in DNS-Antworten inkludieren."
+msgstr "Inkludera inte IPv4-adresser i DNS-svar."
 
 #: option.c:429
 msgid "Don't include IPv6 addresses in DNS answers."
-msgstr "Keine IPv6-Adressen in DNS-Antworten inkludieren."
+msgstr "Inkludera inte IPv6-adresser i DNS-svar."
 
 #: option.c:430
+#, fuzzy
 msgid "Don't include resource records of the given type in DNS answers."
-msgstr "Resource Records des angegebenen Typs nicht in DNS-Antworten einfügen."
+msgstr "Inkludera inte IPv4-adresser i DNS-svar."
 
 #: option.c:431
 msgid "Enable DHCP in the range given with lease duration."
-msgstr "DHCP für angegebenen Bereich und Lease-Dauer einschalten."
+msgstr "Aktivera DHCP inom det angivna intervallet med låneperiod."
 
 #: option.c:432
 #, c-format
 msgid "Change to this group after startup (defaults to %s)."
-msgstr "Nach dem Start in diese Benutzergruppe wechseln (Voreinstellung %s)."
+msgstr "Ändra till denna grupp efter start (standardvärde är %s)."
 
 #: option.c:433
 msgid "Set address or hostname for a specified machine."
-msgstr "Adresse oder Hostnamen für einen angegebenen Computer setzen."
+msgstr "Ange adress eller värdnamn för en angiven maskin."
 
 #: option.c:434
 msgid "Read DHCP host specs from file."
-msgstr "DHCP-Host-Angaben aus Datei lesen."
+msgstr "Läs DHCP-värdspecifikationer från filen."
 
 #: option.c:435
 msgid "Read DHCP option specs from file."
-msgstr "DHCP-Optionen aus Datei lesen."
+msgstr "Läs DHCP-optionsspecifikationer från filen."
 
 #: option.c:436
 msgid "Read DHCP host specs from a directory."
-msgstr "DHCP-Host-Angaben aus einem Verzeichnis lesen."
+msgstr "Läs DHCP-värdspecifikationer från en katalog."
 
 #: option.c:437
 msgid "Read DHCP options from a directory."
-msgstr "DHCP-Optionen aus einem Verzeichnis lesen."
+msgstr "Läs DHCP-flaggor från en katalog."
 
 #: option.c:438
 msgid "Evaluate conditional tag expression."
-msgstr "Auswertung eines Ausdrucks bedingter Marken."
+msgstr "Utvärdera villkorlig tagguttryck."
 
 #: option.c:439
 #, c-format
 msgid "Do NOT load %s file."
-msgstr "%s-Datei NICHT laden."
+msgstr "Läs INTE in %s filen."
 
 #: option.c:440
 #, c-format
 msgid "Specify a hosts file to be read in addition to %s."
-msgstr "Hosts-Datei festlegen, die zusätzlich zu %s gelesen wird."
+msgstr "Ange en värdfil som ska läsas utöver %s."
 
 #: option.c:441
 msgid "Read hosts files from a directory."
-msgstr "DHCP-Host-Dateien aus einem Verzeichnis lesen."
+msgstr "Läs värdfiler från en katalog."
 
 #: option.c:442
 msgid "Specify interface(s) to listen on."
-msgstr "Schnittstelle(n) zum Empfang festlegen."
+msgstr "Ange gränssnitt som ska lyssna."
 
 #: option.c:443
 msgid "Specify interface(s) NOT to listen on."
-msgstr "Schnittstelle(n) festlegen, die NICHT empfangen sollen."
+msgstr "Ange gränssnitt som INTE ska lyssna på."
 
 #: option.c:444
 msgid "Map DHCP user class to tag."
-msgstr "DHCP-Benutzerklasse auf Marke abbilden."
+msgstr "Mappa DHCP-användarklass till tagg."
 
 #: option.c:445
 msgid "Map RFC3046 circuit-id to tag."
-msgstr "RFC3046 \"circuit-id\" auf Marke abbilden."
+msgstr "Mappa RFC3046-krets-id till tagg."
 
 #: option.c:446
 msgid "Map RFC3046 remote-id to tag."
-msgstr "RFC3046 \"remote-id\" auf Marke abbilden."
+msgstr "Mappa RFC3046 remote-id till tagg."
 
 #: option.c:447
 msgid "Map RFC3993 subscriber-id to tag."
-msgstr "RFC3993 \"subscriber-id\" auf Marke abbilden."
+msgstr "Mappa RFC3993-abonnent-id till tagg."
 
 #: option.c:448
 msgid "Specify vendor class to match for PXE requests."
-msgstr "Herstellerklasse für Vergleich von PXE-Anforderungen angeben."
+msgstr "Ange leverantörsklass som ska matchas för PXE-förfrågningar."
 
 #: option.c:449
 msgid "Don't do DHCP for hosts with tag set."
-msgstr "Kein DHCP für Hosts mit gesetzter Marke verwenden."
+msgstr "Använd inte DHCP för värdar med tagg inställd."
 
 #: option.c:450
 msgid "Force broadcast replies for hosts with tag set."
-msgstr "Antwort per Broadcast für Hosts mit gesetzter Marke erzwingen."
+msgstr "Tvinga fram svar för värdar med tagg inställd."
 
 #: option.c:451
 msgid "Do NOT fork into the background, do NOT run in debug mode."
-msgstr "NICHT in den Hintergrund wechseln, NICHT im Debug-Modus laufen."
+msgstr "Gör INTE en förgrening i bakgrunden, kör INTE i felsökningsläge."
 
 #: option.c:452
 msgid "Assume we are the only DHCP server on the local network."
-msgstr "Unterstellen, dass wir der einzige DHCP-Server im lokalen Netz sind."
+msgstr "Anta att vi är den enda DHCP-servern i det lokala nätverket."
 
 #: option.c:453
 #, c-format
 msgid "Specify where to store DHCP leases (defaults to %s)."
-msgstr "Festlegen, wo DHCP-Leases gespeichert werden (Voreinstellung %s)."
+msgstr "Ange var DHCP-lån ska lagras (standardvärdet är %s)."
 
 #: option.c:454
 msgid "Return MX records for local hosts."
-msgstr "MX-Einträge für lokale Hosts liefern."
+msgstr "Returnera MX-poster för lokala värdar."
 
 #: option.c:455
 msgid "Specify an MX record."
-msgstr "Einen MX-Eintrag festlegen."
+msgstr "Ange en MX-post."
 
 #: option.c:456
 msgid "Specify BOOTP options to DHCP server."
-msgstr "BOOTP-Optionen für DHCP-Server festlegen."
+msgstr "Ange BOOTP-flaggor för DHCP-servern."
 
 #: option.c:457
 #, c-format
 msgid "Do NOT poll %s file, reload only on SIGHUP."
-msgstr "%s-Datei NICHT abfragen, nur bei SIGHUP neu laden."
+msgstr "Kontrollera INTE %s-filen, läs om endast vid SIGHUP."
 
 #: option.c:458
 msgid "Do NOT cache failed search results."
-msgstr "Fehlerhafte Suchergebnisse NICHT zwischenspeichern."
+msgstr "Cache inte misslyckade sökresultat."
 
 #: option.c:459
 msgid "Use expired cache data for faster reply."
-msgstr "Verwende abgelaufene Cachedaten für schnellere Antwort."
+msgstr "Använd utgångna cachade data för snabbare svar."
 
 #: option.c:460
 #, c-format
 msgid "Use nameservers strictly in the order given in %s."
-msgstr "Namensserver streng in der in %s angegebenen Reihenfolge verwenden."
+msgstr "Använd namnservrar strikt i den ordning som anges i %s."
 
 #: option.c:461
 msgid "Specify options to be sent to DHCP clients."
-msgstr "Optionen festlegen, die an DHCP-Klienten gesendet werden."
+msgstr "Ange flaggor som ska skickas till DHCP-klienter."
 
 #: option.c:462
 msgid "DHCP option sent even if the client does not request it."
-msgstr "DHCP-Option, die selbst ohne Klientenanfrage gesendet wird."
+msgstr "DHCP-flagga skickas även om klienten inte begär det."
 
 #: option.c:463
+#, fuzzy
 msgid "DHCP option sent only to PXE clients."
-msgstr "DHCP-Option wird nur an PXE-Clients gesendet."
+msgstr "Uppmaning att skicka till PXE-klienter."
 
 #: option.c:464
 msgid "Specify port to listen for DNS requests on (defaults to 53)."
-msgstr "Port zum Empfangen der DNS-Anfragen festlegen (53 voreingestellt)."
+msgstr "Ange port för att lyssna efter DNS-förfrågningar (standard är 53)."
 
 #: option.c:465
 #, c-format
 msgid "Maximum supported UDP packet size for EDNS.0 (defaults to %s)."
-msgstr "Maximale unterstützte UDP-Paketgröße für EDNS.0 (Voreinstellung %s)."
+msgstr "Maximal stödd UDP-paketstorlek för EDNS.0 (standardvärde %s)."
 
 #: option.c:466
 msgid "Log DNS queries."
-msgstr "DNS-Anfragen protokollieren."
+msgstr "Logga DNS-förfrågningar."
 
 #: option.c:467
 msgid "Force the originating port for upstream DNS queries."
-msgstr "Ausgehenden Port für DNS-Anfragen an vorgelagerte Server erzwingen."
+msgstr "Tvinga den ursprungliga porten för uppströms DNS-frågor."
 
 #: option.c:468
 msgid "Set maximum number of random originating ports for a query."
-msgstr "Setze die maximale Anzahl zufälliger Ursprungsports für eine Abfrage."
+msgstr "Ställ in maximalt antal slumpmässiga ursprungsportar för en fråga."
 
 #: option.c:469
 msgid "Do NOT read resolv.conf."
-msgstr "Die resolv.conf NICHT lesen."
+msgstr "Läs INTE resolv.conf."
 
 #: option.c:470
 #, c-format
 msgid "Specify path to resolv.conf (defaults to %s)."
-msgstr "Pfad zu resolv.conf festlegen (%s voreingestellt)."
+msgstr "Ange sökvägen till resolv.conf (standardvärdet är %s)."
 
 #: option.c:471
 msgid "Specify path to file with server= options"
-msgstr "Pfad für Datei mit server=-Optionen angeben"
+msgstr "Ange sökvägen till filen med server= flaggor"
 
 #: option.c:472
 msgid "Specify address(es) of upstream servers with optional domains."
-msgstr "Adresse(n) vorgelagerter Server festlegen, optional mit Domänen."
+msgstr "Ange adresser till uppströmservrar med valfria domäner."
 
 #: option.c:473
 msgid "Specify address of upstream servers for reverse address queries"
-msgstr "Adresse(n) vorgelagerter Server festlegen, für Rückwärtsauflösung"
+msgstr "Ange adressen till uppströms servrar för omvända adressförfrågningar"
 
 #: option.c:474
 msgid "Never forward queries to specified domains."
-msgstr "Anfragen für angegebene Domänen niemals weiterleiten."
+msgstr "Vidarebefordra aldrig förfrågningar till angivna domäner."
 
 #: option.c:475
 msgid "Specify the domain to be assigned in DHCP leases."
-msgstr "Domäne festlegen, die für DHCP-Leases zugewiesen wird."
+msgstr "Ange domänen som ska tilldelas i DHCP-lån."
 
 #: option.c:476
 msgid "Specify default target in an MX record."
-msgstr "Voreingestelltes Ziel für MX-Einträge festlegen."
+msgstr "Ange standardmål i en MX-post."
 
 #: option.c:477
 msgid "Specify time-to-live in seconds for replies from /etc/hosts."
-msgstr "Gültigkeitsdauer für Antworten aus /etc/hosts festlegen."
+msgstr "Ange livslängd i sekunder för svar från /etc/hosts."
 
 #: option.c:478
 msgid "Specify time-to-live in seconds for negative caching."
-msgstr "Gültigkeitsdauer in Sekunden für Zwischenspeicher negativer Ergebnisse festlegen."
+msgstr "Ange livslängd i sekunder för negativ caching."
 
 #: option.c:479
 msgid "Specify time-to-live in seconds for maximum TTL to send to clients."
-msgstr "Gültigkeitsdauer in Sekunden für Caching negativer Ergebnisse festlegen."
+msgstr "Ange livslängd i sekunder för maximal TTL som ska skickas till klienter."
 
 #: option.c:480
 msgid "Specify time-to-live ceiling for cache."
-msgstr "Spezifiziere obere Gültigkeitsdauergrenze für Zwischenspeicher."
+msgstr "Ange maximal livslängd för cacheminnet."
 
 #: option.c:481
 msgid "Specify time-to-live floor for cache."
-msgstr "Spezifiziere untere Gültigkeitsdauergrenze für Zwischenspeicher."
+msgstr "Ange lägsta livslängd för cacheminnet."
 
 #: option.c:482
 msgid "Retry DNS queries after this many milliseconds."
-msgstr "DNS-Abfragen nach so vielen Millisekunden wiederholen."
+msgstr "Försök igen med DNS-frågor efter så många millisekunder."
 
 #: option.c:483
 #, c-format
 msgid "Change to this user after startup. (defaults to %s)."
-msgstr "Nach dem Start diese Benutzerrechte annehmen (%s voreingestellt)."
+msgstr "Ändra till denna användare efter start. (standardvärde är %s)."
 
 #: option.c:484
 msgid "Map DHCP vendor class to tag."
-msgstr "DHCP-\"vendor class\" auf Marke abbilden."
+msgstr "Mappa DHCP-leverantörsklass till tagg."
 
 #: option.c:485
 msgid "Display dnsmasq version and copyright information."
-msgstr "DNSMasq-Version und Urheberrecht anzeigen."
+msgstr "Visa dnsmasq-version och upphovsrättsinformation."
 
 #: option.c:486
 msgid "Translate IPv4 addresses from upstream servers."
-msgstr "IPv4-Adressen von vorgelagerten Servern umsetzen."
+msgstr "Översätt IPv4-adresser från uppströms servrar."
 
 #: option.c:487
 msgid "Specify a SRV record."
-msgstr "SRV-Eintrag festlegen."
+msgstr "Ange en SRV-post."
 
 #: option.c:488
 msgid "Display this message. Use --help dhcp or --help dhcp6 for known DHCP options."
-msgstr "Diese Hilfe anzeigen. Benutzen Sie --help dhcp oder --help dhcp6 für bekannte DHCP-Optionen."
+msgstr "Visa detta meddelande. Använd --help dhcp eller --help dhcp6 för kända DHCP-flaggor."
 
 #: option.c:489
 #, c-format
 msgid "Specify path of PID file (defaults to %s)."
-msgstr "Pfad für Prozesskennungsdatei (PID) festlegen (Voreinstellung: %s)."
+msgstr "Ange sökvägen till PID-filen (standardvärdet är %s)."
 
 #: option.c:490
 #, c-format
 msgid "Specify maximum number of DHCP leases (defaults to %s)."
-msgstr "Höchstzahl der DHCP-Leases festlegen (%s voreingestellt)."
+msgstr "Ange maximalt antal DHCP-lån (standardvärdet är %s)."
 
 #: option.c:491
 msgid "Answer DNS queries based on the interface a query was sent to."
-msgstr "DNS-Anfragen abhängig der Empfangsschnittstelle beantworten."
+msgstr "Svara på DNS-frågor baserat på det gränssnitt som frågan skickades till."
 
 #: option.c:492
 msgid "Specify TXT DNS record."
-msgstr "DNS-TXT-Eintrag festlegen."
+msgstr "Ange TXT DNS-post."
 
 #: option.c:493
 msgid "Specify PTR DNS record."
-msgstr "DNS-PTR-Eintrag festlegen."
+msgstr "Ange PTR DNS-post."
 
 #: option.c:494
 msgid "Give DNS name to IPv4 address of interface."
-msgstr "Schnittstellennamen zur IPv4-Adresse der Schnittstelle auflösen."
+msgstr "Ge DNS-namn till IPv4-adressen för gränssnittet."
 
 #: option.c:495
 msgid "Bind only to interfaces in use."
-msgstr "Nur an verwendete Schnittstellen binden."
+msgstr "Bind endast till gränssnitt som används."
 
 #: option.c:496
 #, c-format
 msgid "Read DHCP static host information from %s."
-msgstr "Statische DHCP-Host-Information aus %s lesen."
+msgstr "Läs DHCP-statisk värdinformation från %s."
 
 #: option.c:497
 msgid "Enable the DBus interface for setting upstream servers, etc."
-msgstr "DBus-Schnittstelle zum Festlegen vorgelagerter Server usw. festlegen."
+msgstr "Aktivera DBus-gränssnittet för att ställa in uppströms servrar etc."
 
 #: option.c:498
 msgid "Enable the UBus interface."
-msgstr "UBus-Schnittstelle aktivieren."
+msgstr "Aktivera UBus-gränssnittet."
 
 #: option.c:499
 msgid "Do not provide DHCP on this interface, only provide DNS."
-msgstr "Auf dieser Schnittstelle kein DHCP anbieten, sondern nur DNS."
+msgstr "Tillhandahåll inte DHCP på detta gränssnitt, tillhandahåll endast DNS."
 
 #: option.c:500
+#, fuzzy
 msgid "Do not provide DHCPv6 on this interface."
-msgstr "DHCPv6 auf dieser Schnittstelle nicht bereitstellen."
+msgstr "Tillhandahåll inte DHCP på detta gränssnitt, tillhandahåll endast DNS."
 
 #: option.c:501
+#, fuzzy
 msgid "Do not provide DHCPv4 on this interface."
-msgstr "DHCPv4 auf dieser Schnittstelle nicht bereitstellen."
+msgstr "Tillhandahåll inte DHCP på detta gränssnitt, tillhandahåll endast DNS."
 
 #: option.c:502
 msgid "Enable dynamic address allocation for bootp."
-msgstr "Dynamische Adressbelegung für bootp einschalten."
+msgstr "Aktivera dynamisk adressallokering för bootp."
 
 #: option.c:503
 msgid "Map MAC address (with wildcards) to option set."
-msgstr "MAC-Adresse (mit Jokerzeichen) auf Optionenmenge abbilden."
+msgstr "Mappa MAC-adress (med jokertecken) till flagguppsättning."
 
 #: option.c:504
 msgid "Treat DHCP requests on aliases as arriving from interface."
-msgstr "DHCP-Anfragen von Alias-Schnittstellen für die Hauptschnittstelle beantworten."
+msgstr "Behandla DHCP-förfrågningar på alias som om de kommer från gränssnittet."
 
 #: option.c:505
 msgid "Specify extra networks sharing a broadcast domain for DHCP"
-msgstr "Geben Sie zusätzliche Netzwerke an, die eine Broadcast-Domäne für DHCP gemeinsam nutzen"
+msgstr "Ange extra nätverk som delar en sändningsdomän för DHCP"
 
 #: option.c:506
 msgid "Enable RFC 4388 leasequery functions for DHCPv4"
-msgstr "RFC-4388-Leasequery-Funktionen für DHCPv4 aktivieren"
+msgstr ""
 
 #: option.c:507
 msgid "Disable ICMP echo address checking in the DHCP server."
-msgstr "ICMP-Echo-Adressprüfung im DHCP-Server abschalten."
+msgstr "Inaktivera ICMP-ekodresskontroll i DHCP-servern."
 
 #: option.c:508
 msgid "Shell script to run on DHCP lease creation and destruction."
-msgstr "Skript, das bei Erzeugung/Löschung einer DHCP-Lease laufen soll."
+msgstr "Skalskript som körs vid skapande och förstöring av DHCP-lån."
 
 #: option.c:509
 msgid "Lua script to run on DHCP lease creation and destruction."
-msgstr "Lua-Skript, welches bei Erzeugung/Löschung eines DHCP-Leases laufen soll."
+msgstr "Lua-skript som körs vid skapande och förstöring av DHCP-lån."
 
 #: option.c:510
 msgid "Run lease-change scripts as this user."
-msgstr "Lease-Änderungs-Skript mit den Rechten dieses Nutzers ausführen."
+msgstr "Kör skript för lease-change som denna användare."
 
 #: option.c:511
 msgid "Call dhcp-script with changes to local ARP table."
-msgstr "Rufe dhcp-script mit Änderungen an der lokalen ARP-Tabelle auf."
+msgstr "Anropa dhcp-script med ändringar i den lokala ARP-tabellen."
 
 #: option.c:512
 msgid "Read configuration from all the files in this directory."
-msgstr "Konfiguration aus allen Dateien in diesem Verzeichnis lesen."
+msgstr "Läs konfigurationen från alla filer i denna katalog."
 
 #: option.c:513
 msgid "Execute file and read configuration from stdin."
-msgstr "Führe Datei aus und lese die Konfiguration aus stdin."
+msgstr "Kör filen och läs konfigurationen från stdin."
 
 #: option.c:514
 msgid "Log to this syslog facility or file. (defaults to DAEMON)"
-msgstr "Für diese Syslog-Anlage oder in Datei loggen (Voreinstellung DAEMON)."
+msgstr "Logga till denna syslog-facilitet eller fil. (standard är DAEMON)"
 
 #: option.c:515
 msgid "Do not use leasefile."
-msgstr "Keine Lease-Datei benützen."
+msgstr "Använd inte lånefile."
 
 #: option.c:516
 #, c-format
 msgid "Maximum number of concurrent DNS queries. (defaults to %s)"
-msgstr "Höchstzahl nebenläufiger DNS-Anfragen (%s voreingestellt)."
+msgstr "Maximalt antal samtidiga DNS-frågor. (standardvärde %s)"
 
 #: option.c:517
 #, c-format
 msgid "Clear DNS cache when reloading %s."
-msgstr "DNS-Zwischenspeicher beim Neuladen von %s löschen."
+msgstr "Rensa DNS-cache när du läser om %s."
 
 #: option.c:518
 msgid "Ignore hostnames provided by DHCP clients."
-msgstr "Von DHCP-Klienten gelieferte Hostnamen ignorieren."
+msgstr "Ignorera värdnamn som tillhandahålls av DHCP-klienter."
 
 #: option.c:519
 msgid "Do NOT reuse filename and server fields for extra DHCP options."
-msgstr "Dateinamen und Server-Datenfelder NICHT für zusätzliche DHCP-Optionen wiederverwenden."
+msgstr "Återanvänd INTE filnamn och serverfält för extra DHCP-flaggor."
 
 #: option.c:520
 msgid "Enable integrated read-only TFTP server."
-msgstr "Eingebauten schreibgeschützten TFTP-Server einschalten."
+msgstr "Aktivera integrerad skrivskyddad TFTP-server."
 
 #: option.c:521
 msgid "Export files by TFTP only from the specified subtree."
-msgstr "Nur vom festgelegten Unterbaum Dateien per TFTP exportieren."
+msgstr "Exportera filer med TFTP endast från den angivna underträdet."
 
 #: option.c:522
 msgid "Add client IP or hardware address to tftp-root."
-msgstr "IP-Adresse oder Hardware-Adresse des Klienten an tftp-root anhängen."
+msgstr "Lägg till klientens IP-adress eller hårdvaruadress till tftp-root."
 
 #: option.c:523
 msgid "Allow access only to files owned by the user running dnsmasq."
-msgstr "Zugriff nur auf Dateien gestatten, die dem dnsmasq betreibenden Benutzer gehören."
+msgstr "Tillåt endast åtkomst till filer som ägs av användaren som kör dnsmasq."
 
 #: option.c:524
 msgid "Do not terminate the service if TFTP directories are inaccessible."
-msgstr "Den Dienst nicht beenden, wenn die TFTP-Verzeichnisse unerreichbar sind."
+msgstr "Avsluta inte tjänsten om TFTP-katalogerna är otillgängliga."
 
 #: option.c:525
 #, c-format
 msgid "Maximum number of concurrent TFTP transfers (defaults to %s)."
-msgstr "Maximale Anzahl gleichzeitiger TFTP-Übertragungen (%s voreingestellt)."
+msgstr "Maximalt antal samtidiga TFTP-överföringar (standardvärde %s)."
 
 #: option.c:526
 msgid "Maximum MTU to use for TFTP transfers."
-msgstr "Maximale MTU für TFTP-Übertragungen erreicht."
+msgstr "Maximal MTU som ska användas för TFTP-överföringar."
 
 #: option.c:527
 msgid "Disable the TFTP blocksize extension."
-msgstr "TFTP-Blockgrößen-Erweiterung abschalten."
+msgstr "Inaktivera TFTP-blockstorleksförlängningen."
 
 #: option.c:528
 msgid "Convert TFTP filenames to lowercase"
-msgstr "TFTP-Dateinamen in Kleinschreibung umsetzen"
+msgstr "Konvertera TFTP-filnamn till gemener"
 
 #: option.c:529
 msgid "Ephemeral port range for use by TFTP transfers."
-msgstr "Bereich für vorübergehende Ports für TFTP-Übertragungen."
+msgstr "Tillfälligt portintervall för användning vid TFTP-överföringar."
 
 #: option.c:530
 msgid "Use only one port for TFTP server."
-msgstr "Bitte nur einen Port für den TFTP-Server nutzen."
+msgstr "Använd endast en port för TFTP-servern."
 
 #: option.c:531
 msgid "Extra logging for DHCP."
-msgstr "Erweiterte DHCP-Protokollierung."
+msgstr "Extra loggning för DHCP."
 
 #: option.c:532
 msgid "Enable async. logging; optionally set queue length."
-msgstr "Asynchrone Protokollierung einschalten, opt. Warteschlangenlänge festlegen."
+msgstr "Aktivera asynkron loggning; ställ eventuellt in köens längd."
 
 #: option.c:533
 msgid "Stop DNS rebinding. Filter private IP ranges when resolving."
-msgstr "DNS-Rebinding unterbinden, private IP-Bereiche bei der Auflösung ausfiltern."
+msgstr "Stoppa DNS-återbindning. Filtrera privata IP-intervall vid uppslag."
 
 #: option.c:534
 msgid "Allow rebinding of 127.0.0.0/8, for RBL servers."
-msgstr "Auflösung zu 127.0.0.0/8 erlauben, für RBL-Server."
+msgstr "Tillåt ombindning av 127.0.0.0/8 för RBL-servrar."
 
 #: option.c:535
 msgid "Inhibit DNS-rebind protection on this domain."
-msgstr "DNS-Rebind-Schutz für diese Domäne aufheben."
+msgstr "Begränsa DNS-rebind-skyddet för denna domän."
 
 #: option.c:536
 msgid "Always perform DNS queries to all servers."
-msgstr "DNS-Anfragen immer an alle Server weiterleiten."
+msgstr "Utför alltid DNS-frågor till alla servrar."
 
 #: option.c:537
 msgid "Set tag if client includes matching option in request."
-msgstr "Marke setzen, wenn Klient eine entsprechende Option anfragt."
+msgstr "Ange tagg om klienten inkluderar matchande flagga i begäran."
 
 #: option.c:538
 msgid "Set tag if client provides given name."
-msgstr "Setzt das Tag, wenn der Client diesen Namen anbietet."
+msgstr "Ange tagg om klienten anger förnamn."
 
 #: option.c:539
 msgid "Use alternative ports for DHCP."
-msgstr "Alternative Ports für DHCP verwenden."
+msgstr "Använd alternativa portar för DHCP."
 
 #: option.c:540
 msgid "Specify NAPTR DNS record."
-msgstr "DNS-NAPTR-Eintrag festlegen."
+msgstr "Ange NAPTR DNS-post."
 
 #: option.c:541
 msgid "Specify lowest port available for DNS query transmission."
-msgstr "Niedrigsten verfügbaren Port für Übertragung von DNS-Anfragen festlegen."
+msgstr "Ange lägsta tillgängliga port för DNS-förfrågningar."
 
 #: option.c:542
 msgid "Specify highest port available for DNS query transmission."
-msgstr "Höchsten verfügbaren Port für Übertragung von DNS-Anfragen festlegen."
+msgstr "Ange den högsta tillgängliga porten för DNS-förfrågningar."
 
 #: option.c:543
 msgid "Use only fully qualified domain names for DHCP clients."
-msgstr "Für DHCP-Klienten nur vollständig bestimmte Domänennamen benutzen."
+msgstr "Använd endast fullständiga domännamn för DHCP-klienter."
 
 # FIXME: probably typo in original message. -- MA
 #: option.c:544
 msgid "Generate hostnames based on MAC address for nameless clients."
-msgstr "Generiere Hostnamen auf Basis der MAC-Adresse für namenlose Klienten."
+msgstr "Generera värdnamn baserat på MAC-adress för namnlösa klienter."
 
 #: option.c:545
 msgid "Use these DHCP relays as full proxies."
-msgstr "Diese DHCP-Relais als vollwertige Proxies verwenden."
+msgstr "Använd dessa DHCP-reläer som fullständiga proxyservrar."
 
 #: option.c:546 option.c:547
 msgid "Relay DHCP requests to a remote server"
-msgstr "Leite DHCP-Anfragen an entfernten Server weiter"
+msgstr "Vidarebefordra DHCP-förfrågningar till en fjärrserver"
 
 #: option.c:548
 msgid "Specify alias name for LOCAL DNS name."
-msgstr "Alias für LOKALEN DNS-Namen festlegen."
+msgstr "Ange aliasnamn för LOKALT DNS-namn."
 
 #: option.c:549
 msgid "Prompt to send to PXE clients."
-msgstr "Aufforderung, die an PXE-Klienten geschickt wird."
+msgstr "Uppmaning att skicka till PXE-klienter."
 
 #: option.c:550
 msgid "Boot service for PXE menu."
-msgstr "Boot-Dienst für PXE-Menü."
+msgstr "Uppstartstjänst för PXE-menyn."
 
 #: option.c:551
 msgid "Check configuration syntax."
-msgstr "Konfigurationssyntax prüfen."
+msgstr "Kontrollera konfigurationssyntaxen."
 
 #: option.c:552
 msgid "Add requestor's MAC address to forwarded DNS queries."
-msgstr "Anfragende MAC-Adresse in die weiterleitende DNS-Anfrage einfügen."
+msgstr "Lägg till begärarens MAC-adress till vidarebefordrade DNS-förfrågningar."
 
 #: option.c:553
 msgid "Strip MAC information from queries."
-msgstr "Entferne die MAC-Information von Abfragen."
+msgstr "Ta bort MAC-information från förfrågningar."
 
 #: option.c:554
 msgid "Add specified IP subnet to forwarded DNS queries."
-msgstr "Füge spezifiziertes IP-Subnetz an weitergeleiteten DNS-Anfragen hinzu."
+msgstr "Lägg till angivet IP-undernät till vidarebefordrade DNS-förfrågningar."
 
 #: option.c:555
 msgid "Strip ECS information from queries."
-msgstr "Entferne die ECS-Information von Abfragen."
+msgstr "Ta bort ECS-information från frågor."
 
 #: option.c:556
 msgid "Add client identification to forwarded DNS queries."
-msgstr "Füge Klient Identifikationan weitergeleiteten DNS-Anfragen hinzu."
+msgstr "Lägg till klientidentifiering till vidarebefordrade DNS-förfrågningar."
 
 # This is a rather liberal translation to convey the purpose.
 # something along "authorize upstream nameservers to validate DNSSEC [for us]"
 #: option.c:557
 msgid "Proxy DNSSEC validation results from upstream nameservers."
-msgstr "Vorgelagerte Namensserver für DNSSEC-Validierung ermächtigen."
+msgstr "Proxy DNSSEC-valideringsresultat från uppströmsnamnservrar."
 
 #: option.c:558
 msgid "Attempt to allocate sequential IP addresses to DHCP clients."
-msgstr "Versuche, sequenzielle IP-Adressen an DHCP-Klienten zu vergeben."
+msgstr "Försök att tilldela sekventiella IP-adresser till DHCP-klienter."
 
 #: option.c:559
 msgid "Ignore client identifier option sent by DHCP clients."
-msgstr "Ignorieren Sie die von DHCP-Clients gesendete Client-ID-Option."
+msgstr "Ignorera klientidentifieringsflagga som skickas av DHCP-klienter."
 
 #: option.c:560
 msgid "Copy connection-track mark from queries to upstream connections."
-msgstr "Kopiere \"connection-track mark\" von Anfragen nach Upstream-Verbindungen."
+msgstr "Kopiera anslutningsspårningsmarkering från frågor till uppströmsanslutningar."
 
 #: option.c:561
 msgid "Allow DHCP clients to do their own DDNS updates."
-msgstr "Erlaube DHCP-Klienten, ihre eigenen DDNS-Updates durchzuführen."
+msgstr "Tillåt DHCP-klienter att göra sina egna DDNS-uppdateringar."
 
 #: option.c:562
 msgid "Send router-advertisements for interfaces doing DHCPv6"
-msgstr "Sende \"Router-Advertisments\" für Netzwerkschnittstellen, welche DHCPv6 nutzen"
+msgstr "Skicka routerannonser för gränssnitt som använder DHCPv6"
 
 #: option.c:563
 msgid "Specify DUID_EN-type DHCPv6 server DUID"
-msgstr "Spezifiziere DUID_EN-type DHCPv6 Server DUID"
+msgstr "Ange DUID_EN-typ DHCPv6-server DUID"
 
 #: option.c:564
 msgid "Specify host (A/AAAA and PTR) records"
-msgstr "Spezifiziere Host (A/AAAA und PTR) Einträge"
+msgstr "Ange värd (A/AAAA och PTR) poster"
 
 #: option.c:565
 msgid "Specify host record in interface subnet"
-msgstr "Host-Eintrag für das Unternetzwerk der Schnittstelle angeben"
+msgstr "Ange värdpost i gränssnittets undernät"
 
 #: option.c:566
 msgid "Specify certification authority authorization record"
-msgstr "Autorisierungsdatensatz der Zertifizierungsstelle angeben"
+msgstr "Ange certifikatutfärdarens auktoriseringspost"
 
 #: option.c:567
 msgid "Specify arbitrary DNS resource record"
-msgstr "Spezifiziere einen beliebiegen DNS Eintrag"
+msgstr "Ange godtycklig DNS-resurspost"
 
 #: option.c:568
 msgid "Bind to interfaces in use - check for new interfaces"
-msgstr "Bindung an Schnittstellen in Benutzung - prüfe auf neue Schnittstellen"
+msgstr "Bind till gränssnitt som används – kontrollera om det finns nya gränssnitt"
 
 #: option.c:569
 msgid "Export local names to global DNS"
-msgstr "Exportiere lokale Namen in das globale DNS"
+msgstr "Exportera lokala namn till global DNS"
 
 #: option.c:570
 msgid "Domain to export to global DNS"
-msgstr "Domain für globales DNS ausgeben"
+msgstr "Domän att exportera till global DNS"
 
 #: option.c:571
 msgid "Set TTL for authoritative replies"
-msgstr "Setze Gültigkeitsdauer für autoritative Antworten"
+msgstr "Ställ in TTL för auktoritativa svar"
 
 #: option.c:572
 msgid "Set authoritative zone information"
-msgstr "Setze autoritative Zoneninformationen"
+msgstr "Ställ in auktoritativ zoninformation"
 
 #: option.c:573
 msgid "Secondary authoritative nameservers for forward domains"
-msgstr "Sekundärer autoritativer Nameserver für weitergeleitete Domains"
+msgstr "Sekundära auktoritativa namnservrar för vidarebefordrade domäner"
 
 #: option.c:574
 msgid "Peers which are allowed to do zone transfer"
-msgstr "Peers, die einen Zonentransfer durchführen dürfen"
+msgstr "Peers som har tillåtelse att utföra zonöverföring"
 
 #: option.c:575
 msgid "Specify ipsets to which matching domains should be added"
-msgstr "Spezifiziere IPSets, zu denen passende Domains hinzugefügt werden sollen"
+msgstr "Ange ipsets till vilka matchande domäner ska läggas till"
 
 #: option.c:576
 msgid "Specify nftables sets to which matching domains should be added"
-msgstr "Geben Sie nftables sets an, zu denen passende Domänen hinzugefügt werden sollen"
+msgstr "Ange nftables-uppsättningar till vilka matchande domäner ska läggas till"
 
 #: option.c:577
 msgid "Enable filtering of DNS queries with connection-track marks."
-msgstr "Aktivieren Sie das Filtern von DNS-Abfragen mit \"connection-track\"-Markierungen."
+msgstr "Aktivera filtrering av DNS-frågor med anslutningsspårningsmärken."
 
 #: option.c:578
 msgid "Set allowed DNS patterns for a connection-track mark."
-msgstr "Legen Sie zulässige DNS-Muster für eine \"connection-track\"-Markierung fest."
+msgstr "Ställ in tillåtna DNS-mönster för en anslutningsspårningsmarkering."
 
 #: option.c:579
 msgid "Specify a domain and address range for synthesised names"
-msgstr "Spezifiziere eine Domain und Adressbereich für synthetisierte Namen"
+msgstr "Ange en domän och ett adressintervall för syntetiserade namn"
 
 #: option.c:580
 msgid "Activate DNSSEC validation"
-msgstr "Aktiviere DNSSEC-Validierung"
+msgstr "Aktivera DNSSEC-validering"
 
 #: option.c:581
 msgid "Specify trust anchor key digest."
-msgstr "Spezifiziere Vertrauensursprung (Trust Anchor) der Schlüssel-Prüfdaten (Key Digest)."
+msgstr "Ange sammanfattning av förtroendeankare."
 
 # while there is no German manual, mark "not for productive use"
 #: option.c:582
 msgid "Disable upstream checking for DNSSEC debugging."
-msgstr "Deaktiviere die vorgelagerte Prüfung für die DNS-Fehlersuche. (Nicht für produktiven Einsatz!)"
+msgstr "Inaktivera uppströms kontroll för DNSSEC-felsökning."
 
 #: option.c:583
 msgid "Ensure answers without DNSSEC are in unsigned zones."
-msgstr "Stellt sicher, dass Antworten ohne DNSSEC sich in einer unsignierten Zone befinden."
+msgstr "Se till att svar utan DNSSEC finns i osignerade zoner."
 
 #: option.c:584
 msgid "Don't check DNSSEC signature timestamps until first cache-reload"
-msgstr "DNSSEC Signatur-Zeitstempel nicht prüfen, bis erstmalig der Cache neugeladen wird"
+msgstr "Kontrollera inte DNSSEC-signaturens tidsstämplar förrän cacheminnet har lästs om första gången"
 
 #: option.c:585
 msgid "Timestamp file to verify system clock for DNSSEC"
-msgstr "Zeitstempel-Datei für die Verifizierung der Systemuhrzeit für DNSSEC"
+msgstr "Tidsstämplingsfil för att verifiera systemklockan för DNSSEC"
 
 #: option.c:586
+#, fuzzy
 msgid "Set resource limits for DNSSEC validation"
-msgstr "Ressourcenlimits für die DNSSEC-Validierung festlegen"
+msgstr "Aktivera DNSSEC-validering"
 
 #: option.c:587
 msgid "Set MTU, priority, resend-interval and router-lifetime"
-msgstr "Setze MTU, Priorität, Sendewiederholintervall und Router-Lebensdauer"
+msgstr "Ställ in MTU, prioritet, återutsändningsintervall och routerns livslängd"
 
 #: option.c:588
 msgid "Do not log routine DHCP."
-msgstr "Protokolliere kein Routine-DHCP."
+msgstr "Logga inte rutinmässig DHCP."
 
 #: option.c:589
 msgid "Do not log routine DHCPv6."
-msgstr "Protokolliere kein Routine-DHCPv6."
+msgstr "Logga inte rutinmässig DHCPv6."
 
 #: option.c:590
 msgid "Do not log RA."
-msgstr "RA nicht protokollieren."
+msgstr "Logga inte RA."
 
 #: option.c:591
 msgid "Log debugging information."
-msgstr "Debug-(Fehlersuch-)Information protokollieren."
+msgstr "Logga felsökningsinformation."
 
 #: option.c:592
 msgid "Accept queries only from directly-connected networks."
-msgstr "Akzeptiere nur Anfragen von direkt verbundenen Netzwerken."
+msgstr "Acceptera endast förfrågningar från direktanslutna nätverk."
 
 #: option.c:593
 msgid "Detect and remove DNS forwarding loops."
-msgstr "Erkennen und Entfernen von DNS-Weiterleitungsschleifen."
+msgstr "Upptäck och ta bort DNS-vidarebefordringsloopar."
 
 #: option.c:594
 msgid "Ignore DNS responses containing ipaddr."
-msgstr "Ignoriere DNS-Antworten, die ipaddr enthalten."
+msgstr "Ignorera DNS-svar som innehåller ipaddr."
 
 #: option.c:595
 msgid "Set TTL in DNS responses with DHCP-derived addresses."
-msgstr "Setze TTL in DNS-Antworten mit DHCP-abgeleiteten Adressen."
+msgstr "Ställ in TTL i DNS-svar med DHCP-härledda adresser."
 
 #: option.c:596
 msgid "Delay DHCP replies for at least number of seconds."
-msgstr "Verzögere DHCP-Antworten mindestens für gegebene Anzahl von Sekunden."
+msgstr "Fördröj DHCP-svar i minst antal sekunder."
 
 #: option.c:597
 msgid "Enables DHCPv4 Rapid Commit option."
-msgstr "Aktiviert die DHCPv4-\"Rapid Commit\"-Option."
+msgstr "Aktiverar flaggan för DHCPv4 Rapid Commit."
 
 #: option.c:598
+#, fuzzy
 msgid "Path to debug packet dump file."
-msgstr "Pfad zur Dump-Datei für das Debug-Paket."
+msgstr "Sökväg till felsökningspaketdumpfilen"
 
 #: option.c:599
+#, fuzzy
 msgid "Mask which packets to dump."
-msgstr "Maskiere, welche Pakete protokolliert werden sollen."
+msgstr "Maskera vilka paket som ska dumpas"
 
 #: option.c:600
 msgid "Call dhcp-script when lease expiry changes."
-msgstr "Rufe dhcp-script auf, wenn der Ablauf des Leases sich ändert."
+msgstr "Anropa dhcp-script när låneperiodens slut ändras."
 
 #: option.c:601
 msgid "Send Cisco Umbrella identifiers including remote IP."
-msgstr "Senden Sie Cisco Umbrella-Identifikatoren einschließlich der Remote-IP."
+msgstr "Skicka Cisco Umbrella-identifierare inklusive fjärr-IP."
 
 #: option.c:602
 msgid "Do not log routine TFTP."
-msgstr "Protokolliere kein Routine-TFTP."
+msgstr "Logga inte rutinmässig TFTP."
 
 #: option.c:603
 msgid "Suppress round-robin ordering of DNS records."
-msgstr "Unterdrückt die Round-Robin-Sortierung von DNS-Einträgen."
+msgstr "Undertryck round-robin-ordning av DNS-poster."
 
 #: option.c:604
 msgid "Suppress DNS bit 0x20 encoding."
-msgstr "DNS-Bit-0x20-Codierung unterdrücken."
+msgstr ""
 
 #: option.c:605
 msgid "Enable DNS bit 0x20 encoding."
-msgstr "DNS-Bit-0x20-Codierung aktivieren."
+msgstr ""
 
 #: option.c:606
+#, fuzzy
 msgid "Do not add CHAOS TXT records."
-msgstr "Keine CHAOS-TXT-Einträge hinzufügen."
+msgstr "felaktig TXT-post"
 
 #: option.c:607
+#, fuzzy
 msgid "Cache this DNS resource record type."
-msgstr "Diesen DNS-Resource-Record-Typ cachen."
+msgstr "Ange godtycklig DNS-resurspost"
 
 #: option.c:608
+#, fuzzy
 msgid "Maximum number of concurrent tcp connections."
-msgstr "Maximale Anzahl gleichzeitiger TCP-Verbindungen."
+msgstr "Maximalt antal samtidiga TFTP-överföringar (standardvärde %s)."
 
 #: option.c:838
 #, c-format
@@ -951,425 +954,427 @@ msgid ""
 "Usage: dnsmasq [options]\n"
 "\n"
 msgstr ""
-"Verwendung: dnsmasq [Optionen]\n"
+"Användning: dnsmasq [flaggor]\n"
 "\n"
 
 #: option.c:840
 #, c-format
 msgid "Use short options only on the command line.\n"
-msgstr "Auf der Befehlszeile nur kurze Optionen verwenden!\n"
+msgstr "Använd endast korta flaggor på kommandoraden.\n"
 
 #: option.c:842
 #, c-format
 msgid "Valid options are:\n"
-msgstr "Gültige Optionen sind:\n"
+msgstr "Giltiga flaggor är:\n"
 
 #: option.c:889 option.c:1091
 msgid "bad address"
-msgstr "Fehlerhafte Adresse"
+msgstr "felaktig adress"
 
 #: option.c:918 option.c:922
 msgid "bad port"
-msgstr "Fehlerhafter Port"
+msgstr "felaktig port"
 
 #: option.c:935 option.c:1038 option.c:1084
 msgid "interface binding not supported"
-msgstr "Schnittstellenbindung nicht unterstützt"
+msgstr "gränssnittsbinding stöds inte"
 
 #: option.c:991
 msgid "Cannot resolve server name"
-msgstr "Servername kann nicht aufgelöst werden"
+msgstr "Kan inte slå upp servernamnet"
 
 #: option.c:1027
 msgid "cannot use IPv4 server address with IPv6 source address"
-msgstr "IPv4-Serveradresse kann nicht mit IPv6-Quelladresse verwendet werden"
+msgstr "kan inte använda IPv4-serveradress med IPv6-källadress"
 
 #: option.c:1033 option.c:1079
 msgid "interface can only be specified once"
-msgstr "Schnittstelle kann nur einmal angegeben werden"
+msgstr "gränssnittet kan endast anges en gång"
 
 #: option.c:1047 option.c:4955
 msgid "bad interface name"
-msgstr "Fehlerhafter Schnittestellenname"
+msgstr "felaktigt gränssnittsnamn"
 
 #: option.c:1073
 msgid "cannot use IPv6 server address with IPv4 source address"
-msgstr "IPv6-Serveradresse kann nicht mit IPv4-Quelladresse verwendet werden"
+msgstr "kan inte använda IPv6-serveradress med IPv4-källadress"
 
 #: option.c:1160
 msgid "bad IPv4 prefix length"
-msgstr "ungültige IPv4-Präfixlänge"
+msgstr "felaktig IPv4-prefixlängd"
 
 #: option.c:1191 option.c:1204 option.c:1279 option.c:1292 option.c:5585
 msgid "error"
-msgstr "Fehler"
+msgstr "fel"
 
 #: option.c:1246
 msgid "bad IPv6 prefix length"
-msgstr "ungültige IPv6-Präfixlänge"
+msgstr "felaktig IPv6-prefixlängd"
 
 #: option.c:1525
 msgid "inappropriate vendor:"
-msgstr "Ungeeigneter Anbieter:"
+msgstr "olämplig leverantör:"
 
 #: option.c:1532
 msgid "inappropriate encap:"
-msgstr "Ungeeignete Kapselung:"
+msgstr "olämplig kapsling:"
 
 #: option.c:1558
 msgid "unsupported encapsulation for IPv6 option"
-msgstr "Nicht unterstützte Verkapselung für eine IPv6-Option"
+msgstr "inkapsling för IPv6-flagga stöds inte"
 
 #: option.c:1572
 msgid "bad dhcp-option"
-msgstr "Fehlerhafte DHCP-Option"
+msgstr "felaktig dhcp-option"
 
 #: option.c:1650
 msgid "bad IP address"
-msgstr "Fehlerhafte IP-Adresse"
+msgstr "felaktig IP-adress"
 
 #: option.c:1653 option.c:1792 option.c:4076
 msgid "bad IPv6 address"
-msgstr "Fehlerhafte IPv6-Adresse"
+msgstr "felaktig IPv6-adress"
 
 #: option.c:1746
 msgid "bad IPv4 address"
-msgstr "Fehlerhafte IPv4-Adresse"
+msgstr "felaktig IPv4-adress"
 
 #: option.c:1819 option.c:1914
 msgid "bad domain in dhcp-option"
-msgstr "Fehlerhafte Domäne in DHCP-Option"
+msgstr "felaktig domän i dhcp-option"
 
 #: option.c:1958
 msgid "dhcp-option too long"
-msgstr "DHCP-Option zu lang"
+msgstr "dhcp-option för lång"
 
 #: option.c:1961
 msgid "No vendor-encap options allowed in dhcp-option-pxe"
-msgstr "Keine vendor-encap-Optionen in dhcp-option-pxe erlaubt"
+msgstr ""
 
 #: option.c:1968
 msgid "illegal dhcp-match"
-msgstr "Unzulässige dhcp-match-Option"
+msgstr "olaglig dhcp-matchning"
 
 #: option.c:2027
 msgid "illegal repeated flag"
-msgstr "unzulässig wiederholte Markierung"
+msgstr "olaglig upprepad flagga"
 
 #: option.c:2035
 msgid "illegal repeated keyword"
-msgstr "unzulässig wiederholtes Schlüsselwort"
+msgstr "olagligt upprepat nyckelord"
 
 #: option.c:2117 option.c:5758
 #, c-format
 msgid "cannot access directory %s: %s"
-msgstr "Kann auf Verzeichnis %s nicht zugreifen: %s"
+msgstr "kan inte komma åt katalogen %s: %s"
 
 #: option.c:2163 tftp.c:609 dump.c:80
 #, c-format
 msgid "cannot access %s: %s"
-msgstr "Kann auf %s nicht zugreifen: %s"
+msgstr "kan inte komma åt %s: %s"
 
 #: option.c:2280
 msgid "setting log facility is not possible under Android"
-msgstr "Die Einstellung der \"log facility\" kann unter Android nicht gesetzt werden"
+msgstr "det går inte att ställa in loggfacilitet på Android"
 
 #: option.c:2289
 msgid "bad log facility"
-msgstr "Falsche \"log facility\""
+msgstr "felaktig loggfacilitet"
 
 #: option.c:2342
 msgid "bad MX preference"
-msgstr "fehlerhafte MX-Präferenz-Angabe"
+msgstr "felaktig MX-inställning"
 
 #: option.c:2350
 msgid "bad MX name"
-msgstr "fehlerhafter MX-Name"
+msgstr "felaktigt MX-namn"
 
 #: option.c:2365
 msgid "bad MX target"
-msgstr "fehlerhaftes MX-Ziel"
+msgstr "felaktig MX-mål"
 
 #: option.c:2385
 msgid "recompile with HAVE_SCRIPT defined to enable lease-change scripts"
-msgstr "Neuübersetzung mit HAVE_SCRIPT nötig, um Lease-Änderungs-Skripte auszuführen"
+msgstr "kompilera om med HAVE_SCRIPT definierat för att aktivera skript för lease-change"
 
 #: option.c:2389
 msgid "recompile with HAVE_LUASCRIPT defined to enable Lua scripts"
-msgstr "Neuübersetzung mit HAVE_LUASCRIPT nötig, um benutzerdefinierte Lua-Skripte auszuführen"
+msgstr "kompilera om med HAVE_LUASCRIPT definierat för att aktivera Lua-skript"
 
 #: option.c:2508
 msgid "invalid auth-zone"
-msgstr "unzulässiger Alias-Bereich"
+msgstr "ogiltig autentiseringszon"
 
 #: option.c:2647 option.c:2682
 msgid "bad prefix length"
-msgstr "fehlerhafte Präfixlänge"
+msgstr "felaktig prefixlängd"
 
 #: option.c:2662 option.c:2703 option.c:2757
 msgid "bad prefix"
-msgstr "fehlerhaftes Präfix"
+msgstr "felaktigt prefix"
 
 #: option.c:2777
 msgid "prefix length too small"
-msgstr "Präfixlänge ist zu klein"
+msgstr "prefixlängden är för kort"
 
 #: option.c:3098
 msgid "Bad address in --address"
-msgstr "Fehlerhafte Adresse in --address"
+msgstr "Felaktig adress i --address"
 
 #: option.c:3198
 msgid "recompile with HAVE_IPSET defined to enable ipset directives"
-msgstr "Neuübersetzung mit HAVE_IPSET nötig, um IPSet-Direktiven zu aktivieren"
+msgstr "kompilera om med HAVE_IPSET definierat för att aktivera ipset-direktiv"
 
 #: option.c:3205
 msgid "recompile with HAVE_NFTSET defined to enable nftset directives"
-msgstr "Neukompilieren mit definiertem HAVE_NFTSET, um NFTSET-Direktiven zu aktivieren"
+msgstr "kompilera om med HAVE_NFTSET definierat för att aktivera nftset-direktiv"
 
 #: option.c:3280 option.c:3298
 msgid "recompile with HAVE_CONNTRACK defined to enable connmark-allowlist directives"
-msgstr "Neukompilierung mit HAVE_CONNTRACK notwendig, um connmark-allowlist-Direktiven zu aktivieren"
+msgstr "kompilera om med HAVE_CONNTRACK definierat för att aktivera connmark-allowlist-direktiv"
 
 #: option.c:3585
+#, fuzzy
 msgid "bad RR type"
-msgstr "Ungültiger RR-Typ"
+msgstr "felaktig RR-post"
 
 #: option.c:3644
 msgid "bad port range"
-msgstr "falscher Portbereich"
+msgstr "felaktigt portintervall"
 
 #: option.c:3670
 msgid "bad bridge-interface"
-msgstr "fehlerhafte Brücken-Schnittstelle"
+msgstr "felaktigt brygg-gränssnitt"
 
 #: option.c:3714
 msgid "bad shared-network"
-msgstr "fehlerhaftes geteiltes Netz (shared-network)"
+msgstr "felaktigt delat nätverk"
 
 #: option.c:3768
 msgid "only one tag allowed"
-msgstr "nur eine Marke zulässig"
+msgstr "endast en tagg tillåten"
 
 #: option.c:3789 option.c:3805 option.c:3931 option.c:3939 option.c:3982
 msgid "bad dhcp-range"
-msgstr "fehlerhafter DHCP-Bereich"
+msgstr "felaktigt dhcp-intervall"
 
 #: option.c:3823
 msgid "inconsistent DHCP range"
-msgstr "inkonsistenter DHCP-Bereich"
+msgstr "inkonsekvent DHCP-intervall"
 
 #: option.c:3889
 msgid "prefix length must be exactly 64 for RA subnets"
-msgstr "Die Präfixlänge für RA-Subnetze muss genau 64 sein"
+msgstr "prefixlängden måste vara exakt 64 för RA-undernät"
 
 #: option.c:3891
 msgid "prefix length must be exactly 64 for subnet constructors"
-msgstr "Die Präfixlänge für Subnet-Konstruktor muss genau 64 sein"
+msgstr "prefixlängden måste vara exakt 64 för undernätskonstruktorer"
 
 #: option.c:3894
 msgid "prefix length must be at least 64"
-msgstr "Die Präfixlänge muss mindestens 64 sein"
+msgstr "prefixlängden måste vara minst 64"
 
 #: option.c:3897
 msgid "inconsistent DHCPv6 range"
-msgstr "Inkonsistenter DHCPv6-Bereich"
+msgstr "inkonsekvent DHCPv6-intervall"
 
 #: option.c:3916
 msgid "prefix must be zero with \"constructor:\" argument"
-msgstr "Präfix muss in Verbindung mit \"constructor:\" Argument Null sein"
+msgstr "prefixet måste vara noll med argumentet \"constructor:\""
 
 #: option.c:4041 option.c:4119
 msgid "bad hex constant"
-msgstr "Fehlerhafte Hex-Konstante"
+msgstr "felaktig hexkonstant"
 
 #: option.c:4092
 msgid "bad IPv6 prefix"
-msgstr "fehlerhaftes IPv6-Präfix"
+msgstr "felaktigt IPv6-prefix"
 
 #: option.c:4142
 #, c-format
 msgid "duplicate dhcp-host IP address %s"
-msgstr "doppelte dhcp-host IP-Adresse %s"
+msgstr "duplicerad dhcp-värd IP-adress %s"
 
 #: option.c:4201
+#, fuzzy
 msgid "DHCP host has multiple names"
-msgstr "DHCP-Host hat mehrere Namen"
+msgstr "felaktigt DHCP-värdnamn"
 
 #: option.c:4209
 msgid "bad DHCP host name"
-msgstr "fehlerhafter DHCP-Hostname"
+msgstr "felaktigt DHCP-värdnamn"
 
 #: option.c:4295
 msgid "bad tag-if"
-msgstr "fehlerhafte bedingte Marke (tag-if)"
+msgstr "felaktig tagg-if"
 
 #: option.c:4645 option.c:5216
 msgid "invalid port number"
-msgstr "unzulässige Portnummer"
+msgstr "ogiltigt portnummer"
 
 #: option.c:4701
 msgid "bad dhcp-proxy address"
-msgstr "Fehlerhafte DHCP-Proxy-Adresse"
+msgstr "felaktig dhcp-proxyadress"
 
 #: option.c:4797
 msgid "Bad dhcp-relay"
-msgstr "Unzulässiges \"dhcp-relay\""
+msgstr "Felaktigt dhcp-relä"
 
 #: option.c:4841
 msgid "bad RA-params"
-msgstr "fehlerhafte RA-Parameter"
+msgstr "felaktiga RA-parametrar"
 
 #: option.c:4851
 msgid "bad DUID"
-msgstr "fehlerhafte DUID"
+msgstr "felaktig DUID"
 
 #: option.c:4885
 msgid "missing address in alias"
-msgstr "Adresse fehlt in Alias"
+msgstr "saknad adress i alias"
 
 #: option.c:4891
 msgid "invalid alias range"
-msgstr "unzulässiger Alias-Bereich"
+msgstr "ogiltigt aliasintervall"
 
 #: option.c:4940
 msgid "missing address in dynamic host"
-msgstr "Adresse fehlt in dynamischem Host"
+msgstr "saknad adress i dynamisk värd"
 
 #: option.c:4955
 msgid "bad dynamic host"
-msgstr "fehlerhafter dynamischer Host"
+msgstr "felaktig dynamisk värd"
 
 #: option.c:4973 option.c:4989
 msgid "bad CNAME"
-msgstr "fehlerhafter CNAME"
+msgstr "felaktig CNAME"
 
 #: option.c:4997
 msgid "duplicate CNAME"
-msgstr "doppelter CNAME"
+msgstr "duplicerat CNAME"
 
 #: option.c:5024
 msgid "bad PTR record"
-msgstr "fehlerhafter PTR-Eintrag"
+msgstr "felaktig PTR-post"
 
 #: option.c:5059
 msgid "bad NAPTR record"
-msgstr "fehlerhafter NAPTR-Eintrag"
+msgstr "felaktig NAPTR-post"
 
 #: option.c:5095
 msgid "bad RR record"
-msgstr "fehlerhafter RR-Eintrag"
+msgstr "felaktig RR-post"
 
 #: option.c:5128
 msgid "bad CAA record"
-msgstr "fehlerhafter CAA-Eintrag"
+msgstr "felaktig CAA-post"
 
 #: option.c:5157
 msgid "bad TXT record"
-msgstr "fehlerhafter TXT-Eintrag"
+msgstr "felaktig TXT-post"
 
 #: option.c:5200
 msgid "bad SRV record"
-msgstr "fehlerhafter SRV-Eintrag"
+msgstr "felaktig SRV-post"
 
 #: option.c:5207
 msgid "bad SRV target"
-msgstr "fehlerhaftes SRV-Ziel"
+msgstr "felaktigt SRV-mål"
 
 #: option.c:5226
 msgid "invalid priority"
-msgstr "unzulässige Priorität"
+msgstr "ogiltig prioritet"
 
 #: option.c:5231
 msgid "invalid weight"
-msgstr "unzulässige Wichtung"
+msgstr "ogiltig vikt"
 
 #: option.c:5254
 msgid "Bad host-record"
-msgstr "Fehlerhafter \"host-record\""
+msgstr "Felaktig värdpost"
 
 #: option.c:5293
 msgid "Bad name in host-record"
-msgstr "Fehlerhafter Name in \"host-record\""
+msgstr "Felaktigt namn i värdpost"
 
 #: option.c:5371
 msgid "bad value for dnssec-check-unsigned"
-msgstr "Fehlerhafter Wert für \"dnssec-check-unsigned\""
+msgstr "felaktigt värde för dnssec-check-unsigned"
 
 #: option.c:5404 option.c:5414
 msgid "bad trust anchor"
-msgstr "fehlerhafter Vertrauensursprung (Trust Anchor)"
+msgstr "felaktig förtroendeankare"
 
 #: option.c:5431
 msgid "bad HEX in trust anchor"
-msgstr "fehlerhafter Hexwert in Vertrauensursprung (Trust Anchor)"
+msgstr "felaktig HEX i förtroendeankare"
 
 #: option.c:5453
 msgid "unsupported option (check that dnsmasq was compiled with DHCP/TFTP/DNSSEC/DBus support)"
-msgstr "Nicht unterstützte Option (prüfen Sie, ob DNSMasq mit DHCP/TFTP/DNSSEC/DBus-Unterstützung übersetzt wurde)"
+msgstr "flaggan stöds inte (kontrollera att dnsmasq har kompilerats med stöd för DHCP/TFTP/DNSSEC/DBus)"
 
 #: option.c:5515
 msgid "missing \""
-msgstr "fehlende \\\""
+msgstr "saknar \""
 
 #: option.c:5572
 msgid "bad option"
-msgstr "fehlerhafter Option"
+msgstr "fel flagga"
 
 #: option.c:5574
 msgid "extraneous parameter"
-msgstr "überschüssiger Parameter"
+msgstr "främmande parameter"
 
 #: option.c:5576
 msgid "missing parameter"
-msgstr "fehlender Parameter"
+msgstr "saknad parameter"
 
 #: option.c:5578
 msgid "illegal option"
-msgstr "unzulässige Option"
+msgstr "olaglig flagga"
 
 #: option.c:5588
 #, c-format
 msgid " in output from %s"
-msgstr " in der Ausgabe von %s"
+msgstr " i utdata från %s"
 
 #: option.c:5590
 #, c-format
 msgid " at line %d of %s"
-msgstr " in Zeile %d von %s"
+msgstr " på rad %d i %s"
 
 #: option.c:5605 option.c:5916 option.c:5927
 #, c-format
 msgid "read %s"
-msgstr "%s gelesen"
+msgstr "läs %s"
 
 #: option.c:5671
 #, c-format
 msgid "cannot execute %s: %s"
-msgstr "kann %s nicht ausführen: %s"
+msgstr "kan inte utföra %s: %s"
 
 #: option.c:5679 option.c:5840 tftp.c:901
 #, c-format
 msgid "cannot read %s: %s"
-msgstr "kann %s nicht lesen: %s"
+msgstr "kan inte läsa %s: %s"
 
 #: option.c:5698
 #, c-format
 msgid "error executing %s: %s"
-msgstr "Fehler bei der Ausführung von %s: %s"
+msgstr "fel vid körning av %s: %s"
 
 #: option.c:5701
 #, c-format
 msgid "%s returns non-zero error code"
-msgstr "%s gibt einen Fehlercode ungleich Null zurück"
+msgstr "%s returnerar felkod som inte är noll"
 
 #: option.c:6009
 msgid "junk found in command line"
-msgstr "Müll in der Kommandozeile gefunden"
+msgstr "skräp hittades i kommandoraden"
 
 #: option.c:6049
 #, c-format
 msgid "Dnsmasq version %s  %s\n"
-msgstr "Dnsmasq Version %s  %s\n"
+msgstr "Dnsmasq version %s  %s\n"
 
 #: option.c:6050
 #, c-format
@@ -1377,772 +1382,775 @@ msgid ""
 "Compile time options: %s\n"
 "\n"
 msgstr ""
-"Kompilierungs-Optionen %s\n"
+"Flaggor vid kompileringstid: %s\n"
 "\n"
 
 #: option.c:6051
 #, c-format
 msgid "This software comes with ABSOLUTELY NO WARRANTY.\n"
-msgstr "Für diese Software wird ABSOLUT KEINE GARANTIE gewährt.\n"
+msgstr "Denna programvara levereras UTAN NÅGON SOM HELST GARANTI.\n"
 
 # FIXME: this must be one long string! -- MA
 #: option.c:6052
 #, c-format
 msgid "Dnsmasq is free software, and you are welcome to redistribute it\n"
-msgstr "Dnsmasq ist freie Software, und darf unter den Bedingungen der\n"
+msgstr "Dnsmasq är fri programvara och du är välkommen att distribuera den vidare\n"
 
 #: option.c:6053
 #, c-format
 msgid "under the terms of the GNU General Public License, version 2 or 3.\n"
-msgstr "GNU General Public Lizenz, Version 2 oder 3, weiterverteilt werden.\n"
+msgstr "enligt villkoren i GNU General Public License, version 2 eller 3.\n"
 
 #: option.c:6070
 msgid "try --help"
-msgstr "versuchen Sie --help"
+msgstr "prova --help"
 
 #: option.c:6072
 msgid "try -w"
-msgstr "versuchen Sie -w"
+msgstr "prova -w"
 
 #: option.c:6074
 #, c-format
 msgid "bad command line options: %s"
-msgstr "fehlerhafte Optionen auf der Befehlszeile: %s"
+msgstr "felaktiga kommandoradsflaggor: %s"
 
 #: option.c:6171
 #, c-format
 msgid "CNAME loop involving %s"
-msgstr "CNAME-Schleife mit %s"
+msgstr "CNAME-loop som involverar %s"
 
 #: option.c:6212
 #, c-format
 msgid "cannot get host-name: %s"
-msgstr "kann Hostnamen nicht ermitteln: %s"
+msgstr "kan inte hämta värdnamn: %s"
 
 #: option.c:6240
 msgid "only one resolv.conf file allowed in no-poll mode."
-msgstr "mit -n/--no-poll ist nur eine resolv.conf-Datei zulässig."
+msgstr "endast en resolv.conf-fil tillåts i no-poll-läge."
 
 #: option.c:6250
 msgid "must have exactly one resolv.conf to read domain from."
-msgstr "muss genau eine resolv.conf-Datei haben, um die Domäne zu lesen."
+msgstr "måste ha exakt en resolv.conf att läsa domänen från."
 
 #: option.c:6253 network.c:1708 dhcp.c:940
 #, c-format
 msgid "failed to read %s: %s"
-msgstr "konnte %s nicht lesen: %s"
+msgstr "misslyckades med att läsa %s: %s"
 
 #: option.c:6270
 #, c-format
 msgid "no search directive found in %s"
-msgstr "keine \"search\"-Anweisung in %s gefunden"
+msgstr "ingen sökningsdirektiv hittades i %s"
 
 #: option.c:6284
 #, c-format
 msgid "srv-host name %s too long after domain appended"
-msgstr "srv-Hostname %s nach Anfügen der Domain zu lang"
+msgstr ""
 
 #: option.c:6293
 msgid "there must be a default domain when --dhcp-fqdn is set"
-msgstr "Es muss eine Standard-Domain gesetzt sein, wenn --dhcp-fqdn gesetzt ist"
+msgstr "det måste finnas en standarddomän när --dhcp-fqdn är inställt"
 
 #: option.c:6311
 msgid "syntax check OK"
-msgstr "Syntaxprüfung OK"
+msgstr "syntaxkontroll OK"
 
 #: forward.c:103
 #, c-format
 msgid "failed to send packet: %s"
-msgstr "Paketversand gescheitert: %s"
+msgstr "misslyckades med att skicka paket: %s"
 
 #: forward.c:729
 msgid "discarding DNS reply: subnet option mismatch"
-msgstr "Verwerfe DNS Antwort: Subnetoption stimmt nicht überrein"
+msgstr "förkastar DNS-svar: subnätflaggan stämmer inte överens"
 
 #: forward.c:771
 #, c-format
 msgid "nameserver %s refused to do a recursive query"
-msgstr "Namensserver %s hat eine rekursive Anfrage verweigert"
+msgstr "namnserver %s vägrade att utföra en rekursiv sökning"
 
 #: forward.c:836
 #, c-format
 msgid "possible DNS-rebind attack detected: %s"
-msgstr "möglichen DNS-Rebind-Angriff entdeckt: %s"
+msgstr "möjlig DNS-rebind-attack upptäckt: %s"
 
 #: forward.c:1013 forward.c:2280
 msgid "limit exceeded: per-query subqueries"
-msgstr "Limit überschritten: Unterabfragen pro Anfrage"
+msgstr ""
 
 #: forward.c:1103 forward.c:2288
 #, c-format
 msgid "validation of %s failed: resource limit exceeded."
-msgstr "Validierung von %s fehlgeschlagen: Ressourcenlimit überschritten."
+msgstr ""
 
 #: forward.c:1697
 #, c-format
 msgid "ignoring query from non-local network %s (logged only once)"
-msgstr "Ignoriere Abfrage von nicht-lokalen Netzwerk %s (Nur einmal protokolliert)"
+msgstr "ignorerar förfrågan från icke-lokalt nätverk %s (loggas endast en gång)"
 
 #: forward.c:2120
-#, c-format
+#, fuzzy, c-format
 msgid "TCP connection failed to %s#%d"
-msgstr "TCP-Verbindung zu %s#%d fehlgeschlagen"
+msgstr "ARP-cacheinjektion misslyckades: %s"
 
 #: forward.c:2426
 #, c-format
 msgid "ignoring query from non-local network %s"
-msgstr "Ignoriere Abfrage von nicht-lokalen Netzwerk %s"
+msgstr "ignorerar förfrågan från icke-lokalt nätverk %s"
 
 #: forward.c:2804
 #, c-format
 msgid "failed to bind server socket to %s: %s"
-msgstr "konnte nicht an Server-Socket für %s binden: %s"
+msgstr "misslyckades med att binda serveruttag till %s: %s"
 
 #: forward.c:3193
 #, c-format
 msgid "Maximum number of concurrent DNS queries reached (max: %d)"
-msgstr "Höchstzahl an nebenläufiger DNS-Anfragen erreicht (max. %d)"
+msgstr "Maximalt antal samtidiga DNS-förfrågningar uppnått (max: %d)"
 
 #: forward.c:3195
 #, c-format
 msgid "Maximum number of concurrent DNS queries to %s reached (max: %d)"
-msgstr "Maximale Anzahl gleichzeitiger DNS-Abfragen, die erreicht %s (max. %d)"
+msgstr "Maximalt antal samtidiga DNS-förfrågningar till %s uppnått (max: %d)"
 
 #: forward.c:3243
 msgid "Case mismatch in DNS reply - check bit 0x20 encoding."
-msgstr "Groß-/Kleinschreibung stimmt in der DNS-Antwort nicht überein – Bit-0x20-Codierung überprüfen."
+msgstr ""
 
 #: network.c:705
 #, c-format
 msgid "stopped listening on %s(#%d): %s port %d"
-msgstr "Empfang auf %s(#%d) beendet: %s Port %d"
+msgstr "slutat lyssna på %s(#%d): %s port %d"
 
 #: network.c:916
 #, c-format
 msgid "failed to create listening socket for %s: %s"
-msgstr "Konnte Empfangs-Socket für %s nicht erzeugen: %s"
+msgstr "misslyckades med att skapa lyssningsuttag för %s: %s"
 
 #: network.c:1206
 #, c-format
 msgid "listening on %s(#%d): %s port %d"
-msgstr "Empfang auf %s(#%d): %s Port %d"
+msgstr "lyssnar på %s(#%d): %s port %d"
 
 #: network.c:1233
 #, c-format
 msgid "listening on %s port %d"
-msgstr "Empfang auf %s Port %d"
+msgstr "lyssnar på %s port %d"
 
 #: network.c:1266
 #, c-format
 msgid "LOUD WARNING: listening on %s may accept requests via interfaces other than %s"
-msgstr "LOUD WARNING: Empfang auf %s kann die Anfragen auf anderen Schnittstellen als %s akzeptieren"
+msgstr "VIKTIG VARNING: lyssning på %s kan acceptera förfrågningar via andra gränssnitt än %s"
 
 #: network.c:1273
 msgid "LOUD WARNING: use --bind-dynamic rather than --bind-interfaces to avoid DNS amplification attacks via these interface(s)"
-msgstr "LOUD WARNING: Es sollte --bind-dynamic anstatt --bind-interfaces benutzt werden, um DNS-Verstärkungsangriffe auf diesen Schnittstellen zu unterbinden"
+msgstr "VIKTIG VARNING: använd --bind-dynamic istället för --bind-interfaces för att undvika DNS-förstärkningsattacker via dessa gränssnitt"
 
 #: network.c:1282
 #, c-format
 msgid "warning: using interface %s instead"
-msgstr "Warnung: benutze stattdessen Schnittstelle %s"
+msgstr "varning: använder gränssnitt %s istället"
 
 #: network.c:1291
 #, c-format
 msgid "warning: no addresses found for interface %s"
-msgstr "Warnung: keine Adressen für die Schnittstelle %s gefunden"
+msgstr "varning: inga adresser hittades för gränssnitt %s"
 
 #: network.c:1349
 #, c-format
 msgid "interface %s failed to join DHCPv6 multicast group: %s"
-msgstr "Schnittstelle %s konnte DHCPv6-Multicast-Gruppe nicht beitreten: %s"
+msgstr "gränssnittet %s kunde inte ansluta till DHCPv6-multicastgrupp: %s"
 
 #: network.c:1354
 msgid "try increasing /proc/sys/net/core/optmem_max"
-msgstr "Versuchen Sie, /proc/sys/net/core/optmem_max zu erhöhen"
+msgstr "försök öka /proc/sys/net/core/optmem_max"
 
 #: network.c:1559
 #, c-format
 msgid "failed to bind server socket for %s: %s"
-msgstr "konnte nicht an Server-Socket für %s binden: %s"
+msgstr "misslyckades med att binda serveruttag för %s: %s"
 
 #: network.c:1607
 #, c-format
 msgid "ignoring nameserver %s - local interface"
-msgstr "ignoriere Namensserver %s - lokale Schnittstelle"
+msgstr "ignorerar namnserver %s - lokalt gränssnitt"
 
 #: network.c:1618
 #, c-format
 msgid "ignoring nameserver %s - cannot make/bind socket: %s"
-msgstr "ignoriere Namensserver %s - kann Socket nicht erzeugen/binden: %s"
+msgstr "ignorerar namnserver %s - kan inte skapa/binda uttag: %s"
 
 #: network.c:1628
 msgid "more servers are defined but not logged"
-msgstr "mehr Server sind definiert aber nicht protokolliert"
+msgstr "fler servrar är definierade men inte loggade"
 
 # FIXME: this isn't translatable - always provide full strings, do not assemble yourself! -- MA
 #: network.c:1638
 msgid "unqualified"
-msgstr "unqualifizierte"
+msgstr "okvalificerad"
 
 #: network.c:1638
 msgid "names"
-msgstr "Namen"
+msgstr "namn"
 
 #: network.c:1640
 msgid "default"
-msgstr "Standard"
+msgstr "standard"
 
 #: network.c:1642
 msgid "domain"
-msgstr "Domäne"
+msgstr "domän"
 
 #: network.c:1644
 #, c-format
 msgid "using nameserver %s#%d for %s %s%s %s"
-msgstr "benutze Namensserver %s#%d für %s %s%s %s"
+msgstr "använder namnserver %s#%d för %s %s%s %s"
 
 #: network.c:1648
 #, c-format
 msgid "NOT using nameserver %s#%d - query loop detected"
-msgstr "Benutze Namensserver %s#%d NICHT - Anfragenschleife festgetellt"
+msgstr "Använder INTE namnserver %s#%d – frågeslinga upptäckt"
 
 #: network.c:1651
 #, c-format
 msgid "using nameserver %s#%d(via %s)"
-msgstr "Benutze Namensserver %s#%d(via %s)"
+msgstr "använder namnserver %s#%d(via %s)"
 
 #: network.c:1653
 #, c-format
 msgid "using nameserver %s#%d"
-msgstr "Benutze Namensserver %s#%d"
+msgstr "använder namnserver %s#%d"
 
 #: network.c:1668
 #, c-format
 msgid "using only locally-known addresses for %s"
-msgstr "benutze nur lokal-bekannte Adressen für %s"
+msgstr "använder endast lokalt kända adresser för %s"
 
 #: network.c:1671
 #, c-format
 msgid "using standard nameservers for %s"
-msgstr "benutze standard Namensserver für %s"
+msgstr "använder standardnamnservrar för %s"
 
 #: network.c:1675
 #, c-format
 msgid "using %d more local addresses"
-msgstr "Benutze weitere %d lokale Adressen"
+msgstr "använder %d fler lokala adresser"
 
 #: network.c:1677
 #, c-format
 msgid "using %d more nameservers"
-msgstr "Benutze weitere %d Namensserver"
+msgstr "använder %d fler namnservrar"
 
 #: dnsmasq.c:190
 msgid "dhcp-hostsdir, dhcp-optsdir and hostsdir are not supported on this platform"
-msgstr "dhcp-hostsdir, dhcp-optsdir und hostsdir werden auf dieser Plattform nicht unterstüzt"
+msgstr "dhcp-hostsdir, dhcp-optsdir och hostsdir stöds inte på denna plattform"
 
 #: dnsmasq.c:205
 msgid "no root trust anchor provided for DNSSEC"
-msgstr "Keine Root-Vertrauensanker (Root Trust Anchor) für DNSSEC verfügbar"
+msgstr "ingen rotankare tillhandahålls för DNSSEC"
 
 #: dnsmasq.c:208
 msgid "cannot reduce cache size from default when DNSSEC enabled"
-msgstr "Kann die Standard-Zwischenspeichergröße nicht verkleinern, wenn DNSSEC aktiviert ist"
+msgstr "kan inte minska cacheminnets storlek från standardvärdet när DNSSEC är aktiverat"
 
 #: dnsmasq.c:210
 msgid "DNSSEC not available: set HAVE_DNSSEC in src/config.h"
-msgstr "DNSSEC nicht verfügbar: setzen Sie HAVE_DNSSEC in src/config.h"
+msgstr "DNSSEC inte tillgängligt: ställ in HAVE_DNSSEC i src/config.h"
 
 #: dnsmasq.c:216
 msgid "TFTP server not available: set HAVE_TFTP in src/config.h"
-msgstr "TFTP-Server nicht verfügbar, setzen Sie HAVE_TFTP in src/config.h"
+msgstr "TFTP-server inte tillgänglig: ställ in HAVE_TFTP i src/config.h"
 
 #: dnsmasq.c:223
 msgid "cannot use --conntrack AND --query-port"
-msgstr "Kann nicht --conntrack UND --query-port einsetzen"
+msgstr "kan inte använda --conntrack OCH --query-port"
 
 #: dnsmasq.c:229
 msgid "conntrack support not available: set HAVE_CONNTRACK in src/config.h"
-msgstr "Conntrack-Unterstützung nicht verfügbar: Aktivieren Sie HAVE_CONNTRACK in src/config.h"
+msgstr "conntrack-stöd inte tillgängligt: ställ in HAVE_CONNTRACK i src/config.h"
 
 #: dnsmasq.c:234
 msgid "asynchronous logging is not available under Solaris"
-msgstr "asynchrone Protokollierung ist unter Solaris nicht verfügbar"
+msgstr "asynkron loggning är inte tillgänglig under Solaris"
 
 #: dnsmasq.c:239
 msgid "asynchronous logging is not available under Android"
-msgstr "Asynchrone Protokollierung ist unter Android nicht verfügbar"
+msgstr "asynkron loggning är inte tillgänglig i Android"
 
 #: dnsmasq.c:244
 msgid "authoritative DNS not available: set HAVE_AUTH in src/config.h"
-msgstr "Autoritatives DNS nicht verfügbar: Setzen Sie HAVE_AUTH in src/config.h"
+msgstr "auktoritativ DNS inte tillgänglig: ställ in HAVE_AUTH i src/config.h"
 
 #: dnsmasq.c:249
 msgid "loop detection not available: set HAVE_LOOP in src/config.h"
-msgstr "Loop-Erkennung nicht verfügbar, aktivieren Sie HAVE_LOOP in src/config.h"
+msgstr "loop-detektering inte tillgänglig: ställ in HAVE_LOOP i src/config.h"
 
 #: dnsmasq.c:254
 msgid "Ubus not available: set HAVE_UBUS in src/config.h"
-msgstr "UBus nicht verfügbar: setzen Sie HAVE_UBUS in src/config.h"
+msgstr "Ubus inte tillgängligt: ställ in HAVE_UBUS i src/config.h"
 
 #: dnsmasq.c:265
 msgid "max_port cannot be smaller than min_port"
-msgstr "max_port darf nicht kleiner als min_port sein"
+msgstr "max_port kan inte vara mindre än min_port"
 
 #: dnsmasq.c:269
 msgid "port_limit must not be larger than available port range"
-msgstr "port_limit darf nicht größer als der verfügbare Portbereich sein"
+msgstr "port_limit får inte vara större än det tillgängliga portintervallet"
 
 #: dnsmasq.c:276
 msgid "--auth-server required when an auth zone is defined."
-msgstr "--auth-server ist notwendig, wenn eine Auth-Zone definiert ist."
+msgstr "--auth-server krävs när en autentiseringszon definieras."
 
 #: dnsmasq.c:281
 msgid "zone serial must be configured in --auth-soa"
-msgstr "Seriennummer der Zone muss mit --auth-soa konfiguriert werden"
+msgstr "zonens serienummer måste konfigureras i --auth-soa"
 
 #: dnsmasq.c:301
 msgid "dhcp-range constructor not available on this platform"
-msgstr "dhcp-range-Konstruktor ist auf dieser Plattform nicht verfügbar"
+msgstr "dhcp-range-konstruktorn är inte tillgänglig på denna plattform"
 
 #: dnsmasq.c:378
 msgid "cannot set --bind-interfaces and --bind-dynamic"
-msgstr "Kann nicht --bind-interfaces und --bind-dynamic setzen"
+msgstr "kan inte ställa in --bind-interfaces och --bind-dynamic"
 
 #: dnsmasq.c:381
 #, c-format
 msgid "failed to find list of interfaces: %s"
-msgstr "konnte Schnitstellenliste nicht auffinden: %s"
+msgstr "misslyckades med att hitta listan över gränssnitt: %s"
 
 #: dnsmasq.c:397
 #, c-format
 msgid "unknown interface %s"
-msgstr "unbekannte Schnittstelle %s"
+msgstr "okänt gränssnitt %s"
 
 #: dnsmasq.c:404
 #, c-format
 msgid "failed to set SO_BINDTODEVICE on DHCP socket: %s"
-msgstr "kann SO_BINDTODEVICE für DHCP-Socket nicht aktivieren: %s"
+msgstr "misslyckades med att ställa in SO_BINDTODEVICE på DHCP-uttaget: %s"
 
 #: dnsmasq.c:453
 msgid "Packet dumps not available: set HAVE_DUMP in src/config.h"
-msgstr "Paketmitschnitt nicht verfügbar: setzen Sie HAVE_DUMP in src/config.h"
+msgstr "Paketdumpningar inte tillgängliga: ställ in HAVE_DUMP i src/config.h"
 
 #: dnsmasq.c:461 dnsmasq.c:1267
 #, c-format
 msgid "DBus error: %s"
-msgstr "DBus-Fehler: %s"
+msgstr "DBus-fel: %s"
 
 #: dnsmasq.c:464
 msgid "DBus not available: set HAVE_DBUS in src/config.h"
-msgstr "DBus nicht verfügbar: setzen Sie HAVE_DBUS in src/config.h"
+msgstr "DBus är inte tillgängligt: ställ in HAVE_DBUS i src/config.h"
 
 #: dnsmasq.c:472 dnsmasq.c:1288
 #, c-format
 msgid "UBus error: %s"
-msgstr "UBus-Fehler: %s"
+msgstr "UBus-fel: %s"
 
 #: dnsmasq.c:475
 msgid "UBus not available: set HAVE_UBUS in src/config.h"
-msgstr "UBus nicht verfügbar: setzen Sie HAVE_UBUS in src/config.h"
+msgstr "UBus inte tillgängligt: ställ in HAVE_UBUS i src/config.h"
 
 #: dnsmasq.c:505
 #, c-format
 msgid "unknown user or group: %s"
-msgstr "Unbekannter Benutzer oder Gruppe: %s"
+msgstr "okänd användare eller grupp: %s"
 
 #: dnsmasq.c:583
 #, c-format
 msgid "process is missing required capability %s"
-msgstr "Prozess benötigt verlangte Fähigkeit %s"
+msgstr "processen saknar nödvändig kapacitet %s"
 
 #: dnsmasq.c:615
 #, c-format
 msgid "cannot chdir to filesystem root: %s"
-msgstr "kann nicht ins Wurzelverzeichnis des Dateisystems wechseln: %s"
+msgstr "kan inte byta katalog till filsystemets rot: %s"
 
 # FIXME: this and the next would need commas after the version
 #: dnsmasq.c:867
 #, c-format
 msgid "started, version %s DNS disabled"
-msgstr "gestartet, Version %s, DNS abgeschaltet"
+msgstr "startad, version %s DNS inaktiverad"
 
 #: dnsmasq.c:872
 #, c-format
 msgid "started, version %s cachesize %d"
-msgstr "gestartet, Version %s, Zwischenspeichergröße %d"
+msgstr "startad, version %s cachestorlek %d"
 
 #: dnsmasq.c:874
 msgid "cache size greater than 10000 may cause performance issues, and is unlikely to be useful."
-msgstr "Eine Cachegröße größer als 10000 kann Performanceprobleme verursachen und Nutzen ist wenig wahrscheinlich."
+msgstr "cacheminne större än 10000 kan orsaka prestandaproblem och är sannolikt inte användbart."
 
 #: dnsmasq.c:877
 #, c-format
 msgid "started, version %s cache disabled"
-msgstr "Gestartet, Version %s, Zwischenspeicher deaktiviert"
+msgstr "startad, version %s cache inaktiverad"
 
 #: dnsmasq.c:880
 msgid "DNS service limited to local subnets"
-msgstr "DNS-Dienst auf Unternetze eingeschränkt"
+msgstr "DNS-tjänst begränsad till lokala undernät"
 
 #: dnsmasq.c:882
+#, fuzzy
 msgid "DNS service limited to localhost"
-msgstr "DNS-Dienst auf localhost beschränkt"
+msgstr "DNS-tjänst begränsad till lokala undernät"
 
 #: dnsmasq.c:885
 #, c-format
 msgid "compile time options: %s"
-msgstr "Optionen bei Übersetzung: %s"
+msgstr "kompileringstidsflaggor: %s"
 
 #: dnsmasq.c:901
 msgid "DBus support enabled: connected to system bus"
-msgstr "DBus-Unterstützung eingeschaltet: mit Systembus verbunden"
+msgstr "DBus-stöd aktiverat: anslutet till systembussen"
 
 #: dnsmasq.c:903
 msgid "DBus support enabled: bus connection pending"
-msgstr "DBus-Unterstützung eingeschaltet: warte auf Systembus-Verbindung"
+msgstr "DBus-stöd aktiverat: bussanslutning väntar"
 
 #: dnsmasq.c:911
 msgid "UBus support enabled: connected to system bus"
-msgstr "UBus-Unterstützung aktiviert: mit Systembus verbunden"
+msgstr "UBus-stöd aktiverat: anslutet till systembussen"
 
 #: dnsmasq.c:913
 msgid "UBus support enabled: bus connection pending"
-msgstr "UBus-Unterstützung aktiviert: Bus-Verbindung wird hergestellt"
+msgstr "UBus-stöd aktiverat: bussanslutning väntar"
 
 #: dnsmasq.c:933
 msgid "DNSSEC validation enabled but all unsigned answers are trusted"
-msgstr "DNSSEC-Validierung aktiviert, jedoch wird allen unsignierten Antworten vertraut"
+msgstr "DNSSEC-validering aktiverad men alla osignerade svar är betrodda"
 
 #: dnsmasq.c:935
 msgid "DNSSEC validation enabled"
-msgstr "DNSSEC-Validierung aktiviert"
+msgstr "DNSSEC-validering aktiverad"
 
 #: dnsmasq.c:939
 msgid "DNSSEC signature timestamps not checked until receipt of SIGINT"
-msgstr "DNSSEC-Signatur-Zeitstempel werden erst nach Empfang von SIGINT überprüft"
+msgstr "DNSSEC-signaturens tidsstämplar kontrolleras inte förrän SIGINT har mottagits"
 
 #: dnsmasq.c:942
 msgid "DNSSEC signature timestamps not checked until system time valid"
-msgstr "DNSSEC Signatur-Zeitstempel werden erst überprüft, sobald die Systemuhrzeit gültig ist"
+msgstr "DNSSEC-signaturens tidsstämplar kontrolleras inte förrän systemtiden är giltig"
 
 #: dnsmasq.c:946
-#, c-format
+#, fuzzy, c-format
 msgid "configured with negative trust anchor for %s"
-msgstr "Mit negativem Vertrauensanker für %s konfiguriert"
+msgstr "konfigurerad med förtroendeankare för %s nyckelbricka %u"
 
 #: dnsmasq.c:946
 #, c-format
 msgid "configured with trust anchor for %s keytag %u"
-msgstr "konfiguriert mit Vertrauensanker für %s Schlüsselanhänger %u"
+msgstr "konfigurerad med förtroendeankare för %s nyckelbricka %u"
 
 #: dnsmasq.c:952
 #, c-format
 msgid "warning: failed to change owner of %s: %s"
-msgstr "Warnung: konnte den Besitzer von %s nicht ändern: %s"
+msgstr "varning: Det gick inte att ändra ägaren av %s: %s"
 
 #: dnsmasq.c:957
 msgid "setting --bind-interfaces option because of OS limitations"
-msgstr "Aktiviere --bind-interfaces wegen Einschränkungen des Betriebssystems"
+msgstr "ställer in flaggan --bind-interfaces på grund av OS-begränsningar"
 
 #: dnsmasq.c:970
 #, c-format
 msgid "warning: interface %s does not currently exist"
-msgstr "Warnung: Schnittstelle %s existiert derzeit nicht"
+msgstr "varning: gränssnitt %s finns för närvarande inte"
 
 #: dnsmasq.c:975
 msgid "warning: ignoring resolv-file flag because no-resolv is set"
-msgstr "Warnung: Ignoriere \"resolv-file\", weil \"no-resolv\" aktiv ist"
+msgstr "varning: ignorerar resolv-filflagga eftersom no-resolv är inställt"
 
 #: dnsmasq.c:981
+#, fuzzy
 msgid "no upstream servers configured - please set them from DBus"
-msgstr "Keine Upstream-Server konfiguriert – bitte über DBus festlegen"
+msgstr "varning: inga uppströms servrar konfigurerade"
 
 #: dnsmasq.c:984
 msgid "warning: no upstream servers configured"
-msgstr "Warnung: keine vorgeschalteten Server konfiguriert"
+msgstr "varning: inga uppströms servrar konfigurerade"
 
 #: dnsmasq.c:989
 #, c-format
 msgid "asynchronous logging enabled, queue limit is %d messages"
-msgstr "asynchrone Protokollierung eingeschaltet, Warteschlange fasst %d Nachrichten"
+msgstr "asynkron loggning aktiverad, kögräns är %d meddelanden"
 
 #: dnsmasq.c:1010
 msgid "IPv6 router advertisement enabled"
-msgstr "IPv6-Router-Advertisement aktiviert"
+msgstr "IPv6-routerannonsering aktiverad"
 
 #: dnsmasq.c:1015
 #, c-format
 msgid "DHCP, sockets bound exclusively to interface %s"
-msgstr "DHCP, Sockets exklusiv an die Schnittstelle %s gebunden"
+msgstr "DHCP, uttag som är exklusivt bundna till gränssnitt %s"
 
 # FIXME: this and the next few must be full strings to be translatable - do not assemble in code"
 #: dnsmasq.c:1032
 msgid "root is "
-msgstr "Wurzel ist "
+msgstr "rot är "
 
 #: dnsmasq.c:1032
 msgid "enabled"
-msgstr "Aktiviert"
+msgstr "aktiverad"
 
 #: dnsmasq.c:1034
 msgid "secure mode"
-msgstr "sicherer Modus"
+msgstr "säkert läge"
 
 #: dnsmasq.c:1035
 msgid "single port mode"
-msgstr "Einzelport-Modus"
+msgstr "enkelportsläge"
 
 #: dnsmasq.c:1038
 #, c-format
 msgid "warning: %s inaccessible"
-msgstr "Warnung: %s unerreichbar"
+msgstr "varning: %s otillgänglig"
 
 #: dnsmasq.c:1042
 #, c-format
 msgid "warning: TFTP directory %s inaccessible"
-msgstr "Warnung: Das TFTP-Verzeichnis %s ist unerreichbar"
+msgstr "varning: TFTP-katalogen %s är otillgänglig"
 
 #: dnsmasq.c:1068
 #, c-format
 msgid "restricting maximum simultaneous TFTP transfers to %d"
-msgstr "Begrenze gleichzeitige TFTP-Übertragungen auf maximal %d"
+msgstr "begränsa maximalt antal samtidiga TFTP-överföringar till %d"
 
 #: dnsmasq.c:1130
 #, c-format
 msgid "error binding DHCP socket to device %s"
-msgstr "Fehler beim Binden des DHCP-Sockets an Gerät %s"
+msgstr "fel vid bindning av DHCP-uttag till enhet %s"
 
 #: dnsmasq.c:1264
 msgid "connected to system DBus"
-msgstr "Mit System-DBus verbunden"
+msgstr "ansluten till systemet DBus"
 
 #: dnsmasq.c:1285
 msgid "connected to system UBus"
-msgstr "mit System-UBus verbunden"
+msgstr "ansluten till systemet UBus"
 
 #: dnsmasq.c:1452
 #, c-format
 msgid "cannot fork into background: %s"
-msgstr "kann nicht in den Hintergrund abspalten: %s"
+msgstr "kan inte förgrenas till bakgrunden: %s"
 
 #: dnsmasq.c:1456
 #, c-format
 msgid "failed to create helper: %s"
-msgstr "kann Helfer nicht erzeugen: %s"
+msgstr "misslyckades med att skapa hjälpfunktion: %s"
 
 #: dnsmasq.c:1460
 #, c-format
 msgid "setting capabilities failed: %s"
-msgstr "kann \"capabilities\" nicht setzen: %s"
+msgstr "inställning av förmågor misslyckades: %s"
 
 #: dnsmasq.c:1464
 #, c-format
 msgid "failed to change user-id to %s: %s"
-msgstr "Kann nicht Benutzerrechte %s annehmen: %s"
+msgstr "misslyckades med att ändra användar-id till %s: %s"
 
 #: dnsmasq.c:1468
 #, c-format
 msgid "failed to change group-id to %s: %s"
-msgstr "Kann nicht Gruppenrechte %s annehmen: %s"
+msgstr "misslyckades med att ändra grupp-id till %s: %s"
 
 #: dnsmasq.c:1472
 #, c-format
 msgid "failed to open pidfile %s: %s"
-msgstr "kann die Prozessidentifikations-(PID)-Datei %s nicht öffnen: %s"
+msgstr "misslyckades med att öppna pid-filen %s: %s"
 
 #: dnsmasq.c:1476
 #, c-format
 msgid "cannot open log %s: %s"
-msgstr "Kann Logdatei %s nicht öffnen: %s"
+msgstr "kan inte öppna logg %s: %s"
 
 #: dnsmasq.c:1480
 #, c-format
 msgid "failed to load Lua script: %s"
-msgstr "Konnte Lua-Script nicht laden: %s"
+msgstr "misslyckades med att läsa in Lua-skriptet: %s"
 
 #: dnsmasq.c:1484
 #, c-format
 msgid "TFTP directory %s inaccessible: %s"
-msgstr "Das TFTP-Verzeichnis %s ist unerreichbar: %s"
+msgstr "TFTP-katalogen %s är otillgänglig: %s"
 
 #: dnsmasq.c:1488
 #, c-format
 msgid "cannot create timestamp file %s: %s"
-msgstr "Kann keine Zeitstempel-Datei %s erzeugen: %s"
+msgstr "kan inte skapa tidsstämplingsfil %s: %s"
 
 #: dnsmasq.c:1576
 #, c-format
 msgid "TCP helper process %u died unexpectedly"
-msgstr "TCP-Hilfsprozess %u ist unerwartet abgestürzt"
+msgstr ""
 
 #: dnsmasq.c:1592
 #, c-format
 msgid "script process killed by signal %d"
-msgstr "Skriptprozess durch Signal %d beendet"
+msgstr "skriptprocessen avslutad av signal %d"
 
 #: dnsmasq.c:1596
 #, c-format
 msgid "script process exited with status %d"
-msgstr "Scriptprozess hat sich mit Status %d beendet"
+msgstr "skriptprocessen avslutades med status %d"
 
 #: dnsmasq.c:1600
 #, c-format
 msgid "failed to execute %s: %s"
-msgstr "konnte %s nicht ausführen: %s"
+msgstr "misslyckades med att köra %s: %s"
 
 #: dnsmasq.c:1640
 msgid "now checking DNSSEC signature timestamps"
-msgstr "Prüfe jetzt Zeitstempel der DNSSEC-Signaturen"
+msgstr "kontrollerar nu DNSSEC-signaturens tidsstämplar"
 
 #: dnsmasq.c:1676 dnssec.c:85 dnssec.c:129
 #, c-format
 msgid "failed to update mtime on %s: %s"
-msgstr "kann die mtime nicht auf %s aktualisieren: %s"
+msgstr "misslyckades med att uppdatera mtime på %s: %s"
 
 #: dnsmasq.c:1688
 msgid "exiting on receipt of SIGTERM"
-msgstr "beende nach Empfang von SIGTERM"
+msgstr "avslutas vid mottagande av SIGTERM"
 
 #: dnsmasq.c:1716
 #, c-format
 msgid "failed to access %s: %s"
-msgstr "konnte auf %s nicht zugreifen: %s"
+msgstr "kunde inte komma åt %s: %s"
 
 #: dnsmasq.c:1747
 #, c-format
 msgid "reading %s"
-msgstr "lese %s"
+msgstr "läser %s"
 
 #: dnsmasq.c:1763
 #, c-format
 msgid "no servers found in %s, will retry"
-msgstr "keine Server in %s gefunden, werde nochmal versuchen"
+msgstr "inga servrar hittades i %s, försöker igen"
 
 #: dhcp.c:49
 #, c-format
 msgid "cannot create DHCP socket: %s"
-msgstr "kann DHCP-Socket nicht erzeugen: %s"
+msgstr "kan inte skapa DHCP-uttag: %s"
 
 #: dhcp.c:64
 #, c-format
 msgid "failed to set options on DHCP socket: %s"
-msgstr "kann Optionen für DHCP-Socket nicht setzen: %s"
+msgstr "misslyckades med att ställa in flaggor på DHCP-uttag: %s"
 
 #: dhcp.c:85
 #, c-format
 msgid "failed to set SO_REUSE{ADDR|PORT} on DHCP socket: %s"
-msgstr "kann SO_REUSE{ADDR|PORT} für DHCP-Socket nicht aktivieren: %s"
+msgstr "misslyckades med att ställa in SO_REUSE{ADDR|PORT} på DHCP-uttaget: %s"
 
 #: dhcp.c:97
 #, c-format
 msgid "failed to bind DHCP server socket: %s"
-msgstr "kann nicht an DHCP-Server-Socket binden: %s"
+msgstr "misslyckades med att binda DHCP-serveruttag: %s"
 
 #: dhcp.c:123
 #, c-format
 msgid "cannot create ICMP raw socket: %s."
-msgstr "kann ICMP-Rohdaten-Socket nicht erzeugen: %s."
+msgstr "kan inte skapa ICMP-råuttag: %s."
 
 #: dhcp.c:284 dhcp6.c:212
 #, c-format
 msgid "unknown interface %s in bridge-interface"
-msgstr "unbekannte Schnittstelle %s in bridge-interface"
+msgstr "okänt gränssnitt %s i brygg-gränssnitt"
 
 #: dhcp.c:325
 #, c-format
 msgid "DHCP packet received on %s which has no address"
-msgstr "DHCP-Paket ohne Adresse an Schnittstelle %s empfangen"
+msgstr "DHCP-paket mottaget på %s som saknar adress"
 
 #: dhcp.c:466
 #, c-format
 msgid "ARP-cache injection failed: %s"
-msgstr "Einspeisen in ARP-Zwischenspeicher fehlgeschlagen: %s"
+msgstr "ARP-cacheinjektion misslyckades: %s"
 
 #: dhcp.c:527
 #, c-format
 msgid "Error sending DHCP packet to %s: %s"
-msgstr "Fehler beim Senden des DHCP-Pakets an %s: %s"
+msgstr "Fel vid sändning av DHCP-paket till %s: %s"
 
 #: dhcp.c:584
 #, c-format
 msgid "DHCP range %s -- %s is not consistent with netmask %s"
-msgstr "DHCP-Bereich %s - %s passt nicht zur Netzmaske %s"
+msgstr "DHCP-intervall %s -- %s stämmer inte överens med nätmask %s"
 
 #: dhcp.c:680 dhcp6.c:467
 #, c-format
 msgid "DHCP relay address %s appears on more than one interface"
-msgstr "DHCP-Relay-Adresse %s erscheint auf mehr als einer Schnittstelle"
+msgstr ""
 
 #: dhcp.c:978
 #, c-format
 msgid "bad line at %s line %d"
-msgstr "ungültige Zeile %2$d in Datei %1$s"
+msgstr "felaktig rad vid %s rad %d"
 
 #: dhcp.c:1021
 #, c-format
 msgid "ignoring %s line %d, duplicate name or IP address"
-msgstr "ignoriere %s Zeile %d, doppelter Name oder doppelte IP-Adresse"
+msgstr "ignorera %s rad %d, duplicerat namn eller IP-adress"
 
 #: dhcp.c:1082
 #, c-format
 msgid "read %s - %d addresses"
-msgstr "%s gelesen - %d Adressen"
+msgstr "läs %s - %d adresser"
 
 #: lease.c:90
 #, c-format
 msgid "ignoring invalid line in lease database: %s %s %s %s ..."
-msgstr "ignoriere ungültige Zeile in Lease-Datenbank: %s %s %s %s ..."
+msgstr "ignorera ogiltig rad i lånedatabasen: %s %s %s %s ..."
 
 #: lease.c:124
 #, c-format
 msgid "ignoring invalid line in lease database, bad address: %s"
-msgstr "ignoriere ungültige Zeile in Lease-Datenbank, fehlerhafte Adresse: %s"
+msgstr "ignorerar ogiltig rad i lånedatabasen, felaktig adress: %s"
 
 #: lease.c:131
 msgid "too many stored leases"
-msgstr "zu viele Leases gespeichert"
+msgstr "för många lagrade lån"
 
 #: lease.c:183
+#, fuzzy
 msgid "lease-change script name is too long"
-msgstr "Der Name des Lease-Change-Skripts ist zu lang"
+msgstr "Kör skript för lease-change som denna användare."
 
 #: lease.c:203
 #, c-format
 msgid "cannot open or create lease file %s: %s"
-msgstr "kann Lease-Datei %s nicht öffnen oder anlegen: %s"
+msgstr "kan inte öppna eller skapa lånefilen %s: %s"
 
 #: lease.c:212
 msgid "failed to parse lease database cleanly"
-msgstr "sauberes Aufgliedern der Lease-Datenbank fehlgeschlagen"
+msgstr "misslyckades med att analysera lånedatabasen korrekt"
 
 #: lease.c:215
 #, c-format
 msgid "failed to read lease file %s: %s"
-msgstr "konnte Lease-Datei %s nicht lesen: %s"
+msgstr "misslyckades med att läsa lånefilen %s: %s"
 
 #: lease.c:231
 #, c-format
 msgid "cannot run lease-init script %s: %s"
-msgstr "kann lease-init-Skript %s nicht ausführen: %s"
+msgstr "kan inte köra lease-init-skriptet %s: %s"
 
 #: lease.c:237
 #, c-format
 msgid "lease-init script returned exit code %s"
-msgstr "lease-init-Skript beendete sich mit Code %s"
+msgstr "lease-init-skriptet returnerade avslutningskod %s"
 
 #: lease.c:440
 #, c-format
 msgid "failed to write %s: %s (retry in %u s)"
-msgstr "Konnte %s nicht schreiben: %s (Neuversuch in %u s)"
+msgstr "misslyckades med att skriva %s: %s (försök igen om %u sekunder)"
 
 #: lease.c:1060
 #, c-format
 msgid "Ignoring domain %s for DHCP host name %s"
-msgstr "Ignoriere Domäne %s für DHCP-Hostnamen %s"
+msgstr "Ignorerar domän %s för DHCP-värdnamn %s"
 
 #: rfc2131.c:395
 msgid "with subnet selector"
-msgstr "mit Subnetz-Wähler"
+msgstr "med undernätsväljare"
 
 #: rfc2131.c:400
 msgid "via"
@@ -2153,408 +2161,408 @@ msgstr "via"
 #: rfc2131.c:406
 #, c-format
 msgid "no address range available for DHCP request %s %s"
-msgstr "Kein verfügbarer Adress-Bereich für DHCP-Anfrage %s %s"
+msgstr "inget adressintervall tillgängligt för DHCP-begäran %s %s"
 
 #: rfc2131.c:420
 #, c-format
 msgid "%u available DHCP subnet: %s/%s"
-msgstr "%u verfügbares DHCP-Subnetz: %s/%s"
+msgstr "%u tillgängligt DHCP-undernät: %s/%s"
 
 #: rfc2131.c:426 rfc3315.c:325
 #, c-format
 msgid "%u available DHCP range: %s -- %s"
-msgstr "%u verfügbarer DHCP-Bereich: %s - %s"
+msgstr "%u tillgängligt DHCP-intervall: %s -- %s"
 
 #: rfc2131.c:539
 #, c-format
 msgid "%u vendor class: %s"
-msgstr "%u \"Vendor class\": %s"
+msgstr "%u leverantörsklass: %s"
 
 #: rfc2131.c:541
 #, c-format
 msgid "%u user class: %s"
-msgstr "%u Benutzerklasse: %s"
+msgstr "%u användarklass: %s"
 
 # FIXME: do not programmatically assemble strings - untranslatable
 #: rfc2131.c:575
 msgid "disabled"
-msgstr "deaktiviert"
+msgstr "inaktiverad"
 
 #: rfc2131.c:616 rfc2131.c:1292 rfc2131.c:1755 rfc3315.c:661 rfc3315.c:836
 #: rfc3315.c:1147
 msgid "ignored"
-msgstr "ignoriert"
+msgstr "ignorerad"
 
 #: rfc2131.c:631 rfc2131.c:1545 rfc3315.c:888
 msgid "address in use"
-msgstr "Adresse in Gebrauch"
+msgstr "adress används"
 
 #: rfc2131.c:645 rfc2131.c:1346
 msgid "no address available"
-msgstr "keine Adresse verfügbar"
+msgstr "ingen adress tillgänglig"
 
 #: rfc2131.c:652 rfc2131.c:1507
 msgid "wrong network"
-msgstr "Falsches Netzwerk"
+msgstr "fel nätverk"
 
 #: rfc2131.c:667
 msgid "no address configured"
-msgstr "keine Adresse konfiguriert"
+msgstr "ingen adress konfigurerad"
 
 #: rfc2131.c:673 rfc2131.c:1558
 msgid "no leases left"
-msgstr "keine Leases übrig"
+msgstr "inga lån kvar"
 
 #: rfc2131.c:774 rfc3315.c:528
 #, c-format
 msgid "%u client provides name: %s"
-msgstr "%u Klient stellt Name bereit: %s"
+msgstr "%u klienten anger namn: %s"
 
 #: rfc2131.c:904
 msgid "PXE BIS not supported"
-msgstr "PXE BIS nicht unterstützt"
+msgstr "PXE BIS stöds inte"
 
 #: rfc2131.c:1088
 #, c-format
 msgid "leasequery from %s not permitted"
-msgstr "Leasequery von %s nicht erlaubt"
+msgstr ""
 
 #: rfc2131.c:1259 rfc3315.c:1248
 #, c-format
 msgid "disabling DHCP static address %s for %s"
-msgstr "schalte statische DHCP-Adresse %s für %s ab"
+msgstr "inaktivera DHCP statisk adress %s för %s"
 
 # FIXME: do not assemble
 #: rfc2131.c:1280
 msgid "unknown lease"
-msgstr "Unbekannte Lease"
+msgstr "okänt lån"
 
 #: rfc2131.c:1315
 #, c-format
 msgid "not using configured address %s because it is leased to %s"
-msgstr "benutze konfigurierte Adresse %s nicht, weil sie an %s verleast ist"
+msgstr "använder inte konfigurerad adress %s eftersom den är lånad till %s"
 
 #: rfc2131.c:1325
 #, c-format
 msgid "not using configured address %s because it is in use by the server or relay"
-msgstr "benutze konfigurierte Adresse %s nicht, weil sie von Server/Relais verwendet wird"
+msgstr "använder inte konfigurerad adress %s eftersom den används av servern eller reläet"
 
 #: rfc2131.c:1328
 #, c-format
 msgid "not using configured address %s because it was previously declined"
-msgstr "benutze konfigurierte Adresse %s nicht, weil sie zuvor abgelehnt wurde"
+msgstr "använder inte konfigurerad adress %s eftersom den tidigare avvisats"
 
 # FIXME: do not assemble
 #: rfc2131.c:1344 rfc2131.c:1551
 msgid "no unique-id"
-msgstr "keine eindeutige ID"
+msgstr "inget unikt id"
 
 #: rfc2131.c:1443
 msgid "wrong server-ID"
-msgstr "falsche Server-ID"
+msgstr "fel server-id"
 
 #: rfc2131.c:1462
 msgid "wrong address"
-msgstr "falsche Adresse"
+msgstr "fel adress"
 
 #: rfc2131.c:1480 rfc3315.c:998
 msgid "lease not found"
-msgstr "Lease nicht gefunden"
+msgstr "lån hittades inte"
 
 #: rfc2131.c:1515
 msgid "address not available"
-msgstr "Adresse nicht verfügbar"
+msgstr "adress inte tillgänglig"
 
 #: rfc2131.c:1526
 msgid "static lease available"
-msgstr "Statischer Lease verfügbar"
+msgstr "statiskt lån tillgängligt"
 
 #: rfc2131.c:1530
 msgid "address reserved"
-msgstr "Adresse reserviert"
+msgstr "adress reserverad"
 
 #: rfc2131.c:1539
 #, c-format
 msgid "abandoning lease to %s of %s"
-msgstr "Gebe Lease von %2$s an %1$s auf"
+msgstr "uppsägningsrätt till %s av %s"
 
 #: rfc2131.c:2093
 #, c-format
 msgid "%u bootfile name: %s"
-msgstr "%u Name der Bootdatei: %s"
+msgstr "%u uppstartsfilens namn: %s"
 
 #: rfc2131.c:2102
 #, c-format
 msgid "%u server name: %s"
-msgstr "%u Servername: %s"
+msgstr "%u servernamn: %s"
 
 #: rfc2131.c:2112
 #, c-format
 msgid "%u next server: %s"
-msgstr "%u nächster Server: %s"
+msgstr "%u nästa server: %s"
 
 #: rfc2131.c:2116
 #, c-format
 msgid "%u broadcast response"
-msgstr "%u Antwort per Broadcast"
+msgstr "%u utsändningssvar"
 
 #: rfc2131.c:2179
 #, c-format
 msgid "cannot send DHCP/BOOTP option %d: no space left in packet"
-msgstr "kann DHCP/BOOTP-Opition %d nicht setzen: kein Platz mehr im Paket"
+msgstr "kan inte skicka DHCP/BOOTP-flagga %d: inget utrymme kvar i paketet"
 
 #: rfc2131.c:2490
 msgid "PXE menu too large"
-msgstr "PXE-Menüeintrag zu groß"
+msgstr "PXE-menyn är för stor"
 
 #: rfc2131.c:2654 rfc3315.c:1544
 #, c-format
 msgid "%u requested options: %s"
-msgstr "%u angeforderte Optionen: %s"
+msgstr "%u begärda flaggor: %s"
 
 #: rfc2131.c:3014
 #, c-format
 msgid "cannot send RFC3925 option: too many options for enterprise number %d"
-msgstr "Kann RFC3925-Option nicht senden: zu viele Optionen für Unternehmen Nr. %d"
+msgstr "kan inte skicka RFC3925-flagga: för många flaggor för företagsnummer %d"
 
 #: rfc2131.c:3053
 #, c-format
 msgid "%u reply delay: %d"
-msgstr "%u Antwortverzögerung: %d"
+msgstr "%u svarfördröjning: %d"
 
 #: rfc2131.c:3118
-#, c-format
+#, fuzzy, c-format
 msgid "Cannot send to server via interface %s: %s"
-msgstr "Kann nicht über Schnittstelle %s an Server senden: %s"
+msgstr "Kan inte sända ut DHCP-relä via gränssnitt %s"
 
 #: rfc2131.c:3189
-#, c-format
+#, fuzzy, c-format
 msgid "Cannot broadcast DHCP relay via interface %s: %s"
-msgstr "Kann DHCP-Relay nicht über Schnittstelle %s senden: %s"
+msgstr "Kan inte sända ut DHCP-relä via gränssnitt %s"
 
 #: rfc2131.c:3213
 #, c-format
 msgid "broadcast via %s"
-msgstr "broadcast via %s"
+msgstr "sänd ut via %s"
 
 #: rfc2131.c:3216 rfc3315.c:2249
 #, c-format
 msgid "DHCP relay at %s -> %s"
-msgstr "DHCP-Relay bei %s -> %s"
+msgstr "DHCP-relä vid %s -> %s"
 
 #: netlink.c:86
 #, c-format
 msgid "cannot create netlink socket: %s"
-msgstr "kann Netlink-Socket nicht erzeugen: %s"
+msgstr "kan inte skapa netlink-uttag: %s"
 
 #: netlink.c:379
 #, c-format
 msgid "netlink returns error: %s"
-msgstr "Netlink liefert Fehler %s"
+msgstr "netlink returnerar fel: %s"
 
 #: dbus.c:498
 #, c-format
 msgid "Enabling --%s option from D-Bus"
-msgstr "Aktiviere --%s Option von D-Bus"
+msgstr "Aktivera --%s-flagga från D-Bus"
 
 #: dbus.c:500
 #, c-format
 msgid "Disabling --%s option from D-Bus"
-msgstr "Deaktiviere --%s Option von D-Bus"
+msgstr "Inaktivera --%s-flaggan från D-Bus"
 
 #: dbus.c:911
 msgid "setting upstream servers from DBus"
-msgstr "vorgeschaltete Server von DBus festgelegt"
+msgstr "ställer in uppströms servrar från DBus"
 
 #: dbus.c:961
 msgid "could not register a DBus message handler"
-msgstr "konnte Steuerungsprogramm für DBus-Nachrichten nicht anmelden"
+msgstr "kunde inte registrera en DBus-meddelandehanterare"
 
 #: bpf.c:259
 #, c-format
 msgid "cannot create DHCP BPF socket: %s"
-msgstr "konnte DHCP-BPF-Socket nicht einrichten: %s"
+msgstr "kan inte skapa DHCP BPF-uttag: %s"
 
 #: bpf.c:287
 #, c-format
 msgid "DHCP request for unsupported hardware type (%d) received on %s"
-msgstr "DHCP-Anfrage für nicht unterstützen Hardwaretyp (%d) auf %s empfangen"
+msgstr "DHCP-begäran för icke-stödd hårdvarutyp (%d) mottagen på %s"
 
 #: bpf.c:372
 #, c-format
 msgid "cannot create PF_ROUTE socket: %s"
-msgstr "Kann PF_ROUTE-Socket nicht erzeugen: %s"
+msgstr "kan inte skapa PF_ROUTE-uttag: %s"
 
 #: bpf.c:393
 msgid "Unknown protocol version from route socket"
-msgstr "Unbekannte Protokollversion vom Route-Socket"
+msgstr "Okänd protokollversion från routeruttag"
 
 #: helper.c:150
 msgid "lease() function missing in Lua script"
-msgstr "lease()-Funktion fehlt im Lua-Skript"
+msgstr "funktionen lease() saknas i Lua-skriptet"
 
 #: tftp.c:353
 msgid "unable to get free port for TFTP"
-msgstr "konnte keinen freien Port für TFTP bekommen"
+msgstr "kan inte få ledig port för TFTP"
 
 #: tftp.c:367
-#, c-format
+#, fuzzy, c-format
 msgid "unsupported write request from %s"
-msgstr "Nicht unterstützte Schreibanfrage von %s"
+msgstr "begäran stöds inte från %s"
 
 #: tftp.c:371
-#, c-format
+#, fuzzy, c-format
 msgid "empty filename in request from %s"
-msgstr "Leerer Dateiname in Anfrage von %s"
+msgstr "begäran stöds inte från %s"
 
 #: tftp.c:373
 #, c-format
 msgid "unsupported request from %s"
-msgstr "nicht unterstützte Anfrage von %s"
+msgstr "begäran stöds inte från %s"
 
 #: tftp.c:555
 #, c-format
 msgid "file %s not found for %s"
-msgstr "Datei %s nicht gefunden für %s"
+msgstr "filen %s hittades inte för %s"
 
 #: tftp.c:654
 #, c-format
 msgid "ignoring packet from %s (TID mismatch)"
-msgstr "Paket von %s wird ignoriert (TID-Nichtübereinstimmung)"
+msgstr "ignorerar paket från %s (TID-konflikt)"
 
 #: tftp.c:730
-#, c-format
+#, fuzzy, c-format
 msgid "timeout sending %s to %s"
-msgstr "Zeitüberschreitung beim Senden von %s an %s"
+msgstr "misslyckades med att skicka %s till %s"
 
 #: tftp.c:732
 #, c-format
 msgid "failed sending %s to %s"
-msgstr "konnte %s nicht an %s senden"
+msgstr "misslyckades med att skicka %s till %s"
 
 #: tftp.c:734
 #, c-format
 msgid "sent %s to %s"
-msgstr "%s an %s verschickt"
+msgstr "skickade %s till %s"
 
 #: tftp.c:816
 #, c-format
 msgid "error %d %s received from %s"
-msgstr "Fehler %d %s von %s empfangen"
+msgstr "fel %d %s mottaget från %s"
 
 #: log.c:203
 #, c-format
 msgid "overflow: %d log entries lost"
-msgstr "Überlauf: %d Protokolleinträge verloren"
+msgstr "överflöde: %d loggposter förlorade"
 
 #: log.c:281
 #, c-format
 msgid "log failed: %s"
-msgstr "Protokollierung fehlgeschlagen: %s"
+msgstr "logg misslyckades: %s"
 
 #: log.c:490
 msgid "FAILED to start up"
-msgstr "Start FEHLGESCHLAGEN"
+msgstr "MISSLYCKADES med att starta upp"
 
 #: conntrack.c:63
 #, c-format
 msgid "Conntrack connection mark retrieval failed: %s"
-msgstr "\"Conntrack connection mark\"-Abruf fehlgeschlagen: %s"
+msgstr "Hämtning av Conntrack-anslutningsmarkering misslyckades: %s"
 
 #: dhcp6.c:51
 #, c-format
 msgid "cannot create DHCPv6 socket: %s"
-msgstr "Kann DHCPv6-Socket nicht erzeugen: %s"
+msgstr "kan inte skapa DHCPv6-uttag: %s"
 
 #: dhcp6.c:72
 #, c-format
 msgid "failed to set SO_REUSE{ADDR|PORT} on DHCPv6 socket: %s"
-msgstr "kann SO_REUSE{ADDR|PORT} für DHCPv6-Socket nicht aktivieren: %s"
+msgstr "misslyckades med att ställa in SO_REUSE{ADDR|PORT} på DHCPv6-uttaget: %s"
 
 #: dhcp6.c:84
 #, c-format
 msgid "failed to bind DHCPv6 server socket: %s"
-msgstr "Kann nicht an DHCPv6-Server-Socket binden: %s"
+msgstr "misslyckades med att binda DHCPv6-serveruttag: %s"
 
 #: dhcp6.c:152
 #, c-format
 msgid "Working around kernel bug: faulty source address scope for VRF slave %s"
-msgstr "Umgehung eines Kernel-Fehlers: fehlerhafter Quelladressbereich für VRF-Slave %s"
+msgstr ""
 
 #: rfc3315.c:174
 #, c-format
 msgid "no address range available for DHCPv6 request from relay at %s"
-msgstr "Kein Adressbereich verfügbar für die DHCPv6-Anfrage vom Relais bei %s"
+msgstr "inget adressintervall tillgängligt för DHCPv6-begäran från relä vid %s"
 
 #: rfc3315.c:183
 #, c-format
 msgid "no address range available for DHCPv6 request via %s"
-msgstr "Kein Adressbereich verfügbar für die DHCPv6-Anfrage via %s"
+msgstr "inget adressintervall tillgängligt för DHCPv6-begäran via %s"
 
 #: rfc3315.c:322
 #, c-format
 msgid "%u available DHCPv6 subnet: %s/%d"
-msgstr "%u verfügbares DHCPv6-Subnetz: %s/%d"
+msgstr "%u tillgängligt DHCPv6-undernät: %s/%d"
 
 #: rfc3315.c:426
 #, c-format
 msgid "%u vendor class: %u"
-msgstr "%u Herstellerklasse: %u"
+msgstr "%u leverantörsklass: %u"
 
 #: rfc3315.c:474
 #, c-format
 msgid "%u client MAC address: %s"
-msgstr "%u Klient MAC-Adresse: %s"
+msgstr "%u klientens MAC-adress: %s"
 
 #: rfc3315.c:487
-#, c-format
+#, fuzzy, c-format
 msgid "%u cannot determine client MAC address"
-msgstr "%u kann die MAC-Adresse des Clients nicht bestimmen"
+msgstr "%u klientens MAC-adress: %s"
 
 #: rfc3315.c:783 rfc3315.c:880
 msgid "address unavailable"
-msgstr "Adresse nicht verfügbar"
+msgstr "adress ej tillgänglig"
 
 #: rfc3315.c:795 rfc3315.c:924 rfc3315.c:1298
 msgid "success"
-msgstr "Erfolg"
+msgstr "lyckades"
 
 #: rfc3315.c:809 rfc3315.c:818 rfc3315.c:932 rfc3315.c:934 rfc3315.c:1070
 msgid "no addresses available"
-msgstr "keine Adressen verfügbar"
+msgstr "inga adresser tillgängliga"
 
 #: rfc3315.c:911
 msgid "not on link"
-msgstr "nicht on link"
+msgstr "inte på länken"
 
 #: rfc3315.c:1002 rfc3315.c:1206 rfc3315.c:1287
 msgid "no binding found"
-msgstr "Keine Bindung gefunden"
+msgstr "ingen bindning hittades"
 
 #: rfc3315.c:1039
 msgid "deprecated"
-msgstr "veraltet"
+msgstr "föråldrad"
 
 #: rfc3315.c:1046
 msgid "address invalid"
-msgstr "Adresse ungültig"
+msgstr "ogiltig adress"
 
 #: rfc3315.c:1103 rfc3315.c:1119
 msgid "confirm failed"
-msgstr "Bestätigung fehlgeschlagen"
+msgstr "bekräftelse misslyckades"
 
 #: rfc3315.c:1119
 msgid "all addresses still on link"
-msgstr "Alle Adressen immer noch in Verbindung"
+msgstr "alla adresser finns fortfarande på länken"
 
 #: rfc3315.c:1215
 msgid "release received"
-msgstr "Freigabe empfangen"
+msgstr "release togs emot"
 
 #: rfc3315.c:2230
 #, c-format
 msgid "Cannot multicast DHCP relay via interface %s"
-msgstr "Multicast-DHCP-Relay über Schnittstelle %s nicht möglich"
+msgstr "Kan inte multicasta DHCP-relä via gränssnitt %s"
 
 #: rfc3315.c:2246
 #, c-format
@@ -2564,399 +2572,399 @@ msgstr "multicast via %s"
 #: dhcp-common.c:209
 #, c-format
 msgid "Ignoring duplicate dhcp-option %d"
-msgstr "Ignoriere doppelt vorhandene DHCP-Option %d"
+msgstr "Ignorerar duplicerad dhcp-option %d"
 
 #: dhcp-common.c:286
 #, c-format
 msgid "%u tags: %s"
-msgstr "%u Marken: %s"
+msgstr "%u taggar: %s"
 
 #: dhcp-common.c:506
 #, c-format
 msgid "%s has more than one address in hostsfile, using %s for DHCP"
-msgstr "%s hat mehr als eine Adresse in hosts-Datei, benutze %s für DHCP"
+msgstr "%s har mer än en adress i hostsfilen, använder %s för DHCP"
 
 #: dhcp-common.c:540
 #, c-format
 msgid "duplicate IP address %s (%s) in dhcp-config directive"
-msgstr "doppelte IP-Adresse %s (%s) in \"dhcp-config\"-Anweisung"
+msgstr "duplicerad IP-adress %s (%s) i dhcp-config-direktivet"
 
 #: dhcp-common.c:764
 #, c-format
 msgid "Known DHCP options:\n"
-msgstr "Bekannte DHCP-Optionen:\n"
+msgstr "Kända DHCP-flaggor:\n"
 
 #: dhcp-common.c:775
 #, c-format
 msgid "Known DHCPv6 options:\n"
-msgstr "Bekannte DHCPv6-Optionen:\n"
+msgstr "Kända DHCPv6-flaggor:\n"
 
 #: dhcp-common.c:972
 msgid ", prefix deprecated"
-msgstr ", Präfix veraltet"
+msgstr ", prefixet är föråldrat"
 
 #: dhcp-common.c:975
 #, c-format
 msgid ", lease time "
-msgstr ", Leasezeit "
+msgstr ", lånetid "
 
 #: dhcp-common.c:1017
 #, c-format
 msgid "%s stateless on %s%.0s%.0s%s"
-msgstr "%s zustandslos auf %s%.0s%.0s%s"
+msgstr "%s tillståndslös på %s%.0s%.0s%s"
 
 #: dhcp-common.c:1019
 #, c-format
 msgid "%s, static leases only on %.0s%s%s%.0s"
-msgstr "%s, nur statische Leases auf %.0s%s%s%.0s"
+msgstr "%s, statiska lån endast på %.0s%s%s%.0s"
 
 #: dhcp-common.c:1021
 #, c-format
 msgid "%s, proxy on subnet %.0s%s%.0s%.0s"
-msgstr "%s, Proxy im Subnetz %.0s%s%.0s%.0s"
+msgstr "%s, proxy på undernätet %.0s%s%.0s%.0s"
 
 #: dhcp-common.c:1022
 #, c-format
 msgid "%s, IP range %s -- %s%s%.0s"
-msgstr "%s, IP-Bereich %s -- %s%s%.0s"
+msgstr "%s, IP-intervall %s -- %s%s%.0s"
 
 #: dhcp-common.c:1035
 #, c-format
 msgid "DHCPv4-derived IPv6 names on %s%s"
-msgstr "DHCPv4-abgeleitete IPv6 Namen auf %s%s"
+msgstr "DHCPv4-härledda IPv6-namn på %s%s"
 
 #: dhcp-common.c:1038
 #, c-format
 msgid "router advertisement on %s%s"
-msgstr "Router-Advertisment auf %s%s"
+msgstr "routerannonsering på %s%s"
 
 #: dhcp-common.c:1069
 #, c-format
 msgid "DHCP relay from %s via %s"
-msgstr "DHCP-Relay von %s über %s"
+msgstr "DHCP-relä från %s via %s"
 
 #: dhcp-common.c:1071
-#, c-format
+#, fuzzy, c-format
 msgid "DHCP split-relay from %s to %s via %s"
-msgstr "DHCP-Split-Relay von %s nach %s über %s"
+msgstr "DHCP-relä från %s till %s via %s"
 
 #: dhcp-common.c:1073
 #, c-format
 msgid "DHCP relay from %s to %s via %s"
-msgstr "DHCP Weiterleitung von %s nach %s über %s"
+msgstr "DHCP-relä från %s till %s via %s"
 
 #: dhcp-common.c:1076
 #, c-format
 msgid "DHCP relay from %s to %s"
-msgstr "DHCP Weiterleitung von %s nach %s"
+msgstr "DHCP-relä från %s till %s"
 
 #: radv.c:110
 #, c-format
 msgid "cannot create ICMPv6 socket: %s"
-msgstr "Kann ICMPv6-Socket nicht erzeugen: %s"
+msgstr "kan inte skapa ICMPv6-uttag: %s"
 
 #: auth.c:464
 #, c-format
 msgid "ignoring zone transfer request from %s"
-msgstr "ignoriere Zonentransfer-Anfrage von %s"
+msgstr "ignorerar zonöverföringsbegäran från %s"
 
 #: ipset.c:99
 #, c-format
 msgid "failed to create IPset control socket: %s"
-msgstr "konnte IPset-Kontroll-Socket nicht erzeugen: %s"
+msgstr "misslyckades med att skapa IPset-kontrolluttag: %s"
 
 #: ipset.c:211
 #, c-format
 msgid "failed to update ipset %s: %s"
-msgstr "Aktualisierung von ipset %s fehlgeschlagen: %s"
+msgstr "misslyckades med att uppdatera ipset %s: %s"
 
 #: pattern.c:29
 #, c-format
 msgid "[pattern.c:%d] Assertion failure: %s"
-msgstr "[pattern.c:%d] Assertion failure: %s"
+msgstr "[pattern.c:%d] Assertionsfel: %s"
 
 #: pattern.c:142
 #, c-format
 msgid "Invalid DNS name: Invalid character %c."
-msgstr "Ungültiger DNS-Name: Ungültiges Zeichen %c."
+msgstr "Ogiltigt DNS-namn: Ogiltigt tecken %c."
 
 #: pattern.c:151
 msgid "Invalid DNS name: Empty label."
-msgstr "Ungültiger DNS-Name: Leeres Label."
+msgstr "Ogiltigt DNS-namn: Tom etikett."
 
 #: pattern.c:156
 msgid "Invalid DNS name: Label starts with hyphen."
-msgstr "Ungültiger DNS-Name: Label beginnt mit Bindestrich."
+msgstr "Ogiltigt DNS-namn: Etiketten börjar med bindestreck."
 
 #: pattern.c:170
 msgid "Invalid DNS name: Label ends with hyphen."
-msgstr "Ungültiger DNS-Name: Bezeichnung endet mit Bindestrich."
+msgstr "Ogiltigt DNS-namn: Etiketten slutar med bindestreck."
 
 #: pattern.c:176
 #, c-format
 msgid "Invalid DNS name: Label is too long (%zu)."
-msgstr "Ungültiger DNS-Name: Label ist zu lang (%zu)."
+msgstr "Ogiltigt DNS-namn: Etiketten är för lång (%zu)."
 
 #: pattern.c:184
 #, c-format
 msgid "Invalid DNS name: Not enough labels (%zu)."
-msgstr "Ungültiger DNS-Name: Nicht genügend Labels (%zu)."
+msgstr "Ogiltigt DNS-namn: Otillräckligt antal etiketter (%zu)."
 
 #: pattern.c:189
 msgid "Invalid DNS name: Final label is fully numeric."
-msgstr "Ungültiger DNS-Name: Das endgültige Label ist vollständig numerisch."
+msgstr "Ogiltigt DNS-namn: Slutetiketten är helt numerisk."
 
 #: pattern.c:199
 msgid "Invalid DNS name: \"local\" pseudo-TLD."
-msgstr "Ungültiger DNS-Name: \"lokale\" Pseudo-TLD."
+msgstr "Ogiltigt DNS-namn: \"local\" pseudo-TLD."
 
 #: pattern.c:204
 #, c-format
 msgid "DNS name has invalid length (%zu)."
-msgstr "Der DNS-Name hat eine ungültige Länge (%zu)."
+msgstr "DNS-namnet har ogiltig längd (%zu)."
 
 #: pattern.c:258
 #, c-format
 msgid "Invalid DNS name pattern: Invalid character %c."
-msgstr "Ungültiges DNS-Namensmuster: Ungültiges Zeichen %c."
+msgstr "Ogiltigt DNS-namnmönster: Ogiltigt tecken %c."
 
 #: pattern.c:267
 msgid "Invalid DNS name pattern: Empty label."
-msgstr "Ungültiges DNS-Namensmuster: Leeres Label."
+msgstr "Ogiltigt DNS-namnmönster: Tom etikett."
 
 #: pattern.c:272
 msgid "Invalid DNS name pattern: Label starts with hyphen."
-msgstr "Ungültiges DNS-Namensmuster: Bezeichnung beginnt mit Bindestrich."
+msgstr "Ogiltigt DNS-namnmönster: Etiketten börjar med bindestreck."
 
 #: pattern.c:285
 msgid "Invalid DNS name pattern: Wildcard character used more than twice per label."
-msgstr "Ungültiges DNS-Namensmuster: Platzhalterzeichen werden mehr als zweimal pro Label verwendet."
+msgstr "Ogiltigt DNS-namnmönster: Jokertecken används mer än två gånger per etikett."
 
 #: pattern.c:295
 msgid "Invalid DNS name pattern: Label ends with hyphen."
-msgstr "Ungültiges DNS-Namensmuster: Bezeichnung endet mit Bindestrich."
+msgstr "Ogiltigt DNS-namnmönster: Etiketten slutar med bindestreck."
 
 #: pattern.c:301
 #, c-format
 msgid "Invalid DNS name pattern: Label is too long (%zu)."
-msgstr "Ungültiges DNS-Namensmuster: Label ist zu lang (%zu)."
+msgstr "Ogiltigt DNS-namnmönster: Etiketten är för lång (%zu)."
 
 #: pattern.c:309
 #, c-format
 msgid "Invalid DNS name pattern: Not enough labels (%zu)."
-msgstr "Ungültiges DNS-Namensmuster: Nicht genügend Labels (%zu)."
+msgstr "Ogiltigt DNS-namnmönster: Otillräckligt antal etiketter (%zu)."
 
 #: pattern.c:314
 msgid "Invalid DNS name pattern: Wildcard within final two labels."
-msgstr "Ungültiges DNS-Namensmuster: Platzhalter innerhalb der letzten beiden Labels."
+msgstr "Ogiltigt DNS-namnmönster: Jokertecken inom de två sista etiketterna."
 
 #: pattern.c:319
 msgid "Invalid DNS name pattern: Final label is fully numeric."
-msgstr "Ungültiges DNS-Namensmuster: Das endgültige Label ist vollständig numerisch."
+msgstr "Ogiltigt DNS-namnmönster: Slutetiketten är helt numerisk."
 
 #: pattern.c:329
 msgid "Invalid DNS name pattern: \"local\" pseudo-TLD."
-msgstr "Ungültiges DNS-Namensmuster: \"lokale\" Pseudo-TLD."
+msgstr "Ogiltigt DNS-namnmönster: \"local\" pseudo-TLD."
 
 #: pattern.c:334
 #, c-format
 msgid "DNS name pattern has invalid length after removing wildcards (%zu)."
-msgstr "Das DNS-Namensmuster hat nach dem Entfernen von Platzhaltern (%zu) eine ungültige Länge."
+msgstr "DNS-namnmönstret har ogiltig längd efter borttagning av jokertecken (%zu)."
 
 #: dnssec.c:131
 msgid "system time considered valid, now checking DNSSEC signature timestamps."
-msgstr "Systemzeit als gültig betrachtet, prüfe jetzt DNSSEC Signatur-Zeitstempel."
+msgstr "systemtiden anses giltig, kontrollerar nu DNSSEC-signaturens tidsstämplar."
 
 #: dnssec.c:431
 msgid "per-query crypto work"
-msgstr "Kryptografische Arbeit pro Anfrage"
+msgstr ""
 
 #: dnssec.c:697
 msgid "per-RRSet signature fails"
-msgstr "Signatur pro RRSet fehlgeschlagen"
+msgstr ""
 
 #: dnssec.c:1027
 #, c-format
 msgid "Insecure reply received for DS %s, assuming that's OK for a RFC-1918 address."
-msgstr "Unsichere Antwort für DS %s empfangen, Annahme, dass dies für eine RFC-1918-Adresse in Ordnung ist."
+msgstr ""
 
 #: dnssec.c:1034
 #, c-format
 msgid "Insecure reply received for DS %s, assuming non-DNSSEC domain-specific server."
-msgstr "Unsichere Antwort für DS %s empfangen, Annahme eines nicht-DNSSEC-domänenspezifischen Servers."
+msgstr ""
 
 #: dnssec.c:1041
 #, c-format
 msgid "Insecure DS reply received for %s, check domain configuration and upstream DNS server DNSSEC support"
-msgstr "Unsichere DS-Antwort für %s, bitte Domainkonfiguration und Upstream DNS-Server für DNSSEC-Unterstützung überprüfen"
+msgstr "Osäkert DS-svar mottaget för %s, kontrollera domänkonfigurationen och DNSSEC-stöd för uppströms DNS-server"
 
 #: dnssec.c:1152
 #, c-format
 msgid "Negative DS reply without NS record received for %s, assuming non-DNSSEC domain-specific server."
-msgstr "Negative DS-Antwort ohne NS-Eintrag für %s empfangen, Annahme eines nicht-DNSSEC-domänenspezifischen Servers."
+msgstr ""
 
 #: blockdata.c:55
 #, c-format
 msgid "pool memory in use %zu, max %zu, allocated %zu"
-msgstr "Speicherpool in Benutzung %zu, Max %zu, zugewiesen %zu"
+msgstr "poolminne i bruk %zu, max %zu, allokerat %zu"
 
 #: tables.c:61
 #, c-format
 msgid "failed to access pf devices: %s"
-msgstr "konnte auf pf-Geräte nicht zugreifen: %s"
+msgstr "kunde inte komma åt pf-enheter: %s"
 
 #: tables.c:74
 #, c-format
 msgid "warning: no opened pf devices %s"
-msgstr "Warnung: Keine geöffneten pf-Geräte %s"
+msgstr "varning: inga öppna pf-enheter %s"
 
 #: tables.c:82
 #, c-format
 msgid "error: cannot use table name %s"
-msgstr "Fehler: Kann Tabellenname %s nicht benutzen"
+msgstr "fel: tabellnamnet %s kan inte användas"
 
 #: tables.c:90
 #, c-format
 msgid "error: cannot strlcpy table name %s"
-msgstr "Fehler: Kann den Tabellennamen %s nicht mit strlcpy kopieren"
+msgstr "fel: kan inte strlcpy tabellnamn %s"
 
 #: tables.c:101
 #, c-format
 msgid "IPset: error: %s"
-msgstr "IPset: Fehler: %s"
+msgstr "IPset: fel: %s"
 
 #: tables.c:108
 msgid "info: table created"
-msgstr "Info: Tabelle erstellt"
+msgstr "info: tabell skapad"
 
 #: tables.c:133
 #, c-format
 msgid "warning: DIOCR%sADDRS: %s"
-msgstr "Warnung: DIOCR%sADDRS: %s"
+msgstr "varning: DIOCR%sADDRS: %s"
 
 #: tables.c:137
 #, c-format
 msgid "%d addresses %s"
-msgstr "%d Adressen %s"
+msgstr "%d adresser %s"
 
 #: inotify.c:62
 #, c-format
 msgid "cannot access path %s: %s"
-msgstr "Kann auf Pfad %s nicht zugreifen: %s"
+msgstr "kan inte komma åt sökvägen %s: %s"
 
 #: inotify.c:95
 #, c-format
 msgid "failed to create inotify: %s"
-msgstr "Kann kein \"inotify\" erzeugen: %s"
+msgstr "misslyckades med att skapa inotify: %s"
 
 #: inotify.c:111
 #, c-format
 msgid "too many symlinks following %s"
-msgstr "zu viele Symlinks beim Verfolgen von %s"
+msgstr "för många symlänkar följer %s"
 
 #: inotify.c:127
 #, c-format
 msgid "directory %s for resolv-file is missing, cannot poll"
-msgstr "Verzeichnis %s für resolv-file fehlt, kann nicht abfragen"
+msgstr "katalogen %s för resolv-filen saknas, kan inte poll"
 
 #: inotify.c:131 inotify.c:215
 #, c-format
 msgid "failed to create inotify for %s: %s"
-msgstr "Konnte \"inotify\" für %s nicht erzeugen: %s"
+msgstr "misslyckades med att skapa inotify för %s: %s"
 
 #: inotify.c:193 inotify.c:200
 #, c-format
 msgid "bad dynamic directory %s: %s"
-msgstr "fehlerhaftes dynamisches Verzeichnis %s: %s"
+msgstr "felaktig dynamisk katalog %s: %s"
 
 #: inotify.c:201
 msgid "not a directory"
-msgstr "ist kein Verzeichnis"
+msgstr "inte en katalog"
 
 #: inotify.c:313
 #, c-format
 msgid "inotify: %s removed"
-msgstr "inotify: %s entfernt"
+msgstr "inotify: %s borttaget"
 
 #: inotify.c:315 inotify.c:346
 #, c-format
 msgid "inotify: %s new or modified"
-msgstr "inotify: %s neu oder modifiziert"
+msgstr "inotify: %s nytt eller modifierat"
 
 #: inotify.c:318
 #, c-format
 msgid "inotify: flushed %u names read from %s"
-msgstr "inotify: %u Namen gelöscht, aus %s gelesen"
+msgstr "inotify: tömde %u namn lästa från %s"
 
 #: dump.c:68
 #, c-format
 msgid "cannot create %s: %s"
-msgstr "kann %s nicht erstellen: %s"
+msgstr "kan inte skapa %s: %s"
 
 #: dump.c:76
-#, c-format
+#, fuzzy, c-format
 msgid "cannot open pipe %s: %s"
-msgstr "Kann Pipe %s nicht öffnen: %s"
+msgstr "kan inte öppna logg %s: %s"
 
 #: dump.c:82
 #, c-format
 msgid "bad header in %s"
-msgstr "Fehlerhafter Kopf in %s"
+msgstr "felaktig rubrik i %s"
 
 #: dump.c:295
 msgid "failed to write packet dump"
-msgstr "schreiben des Paketmitschnitts fehlgeschlagen"
+msgstr "misslyckades med att skriva paketdump"
 
 #: dump.c:297
 #, c-format
 msgid "%u dumping packet %u mask 0x%04x"
-msgstr "%u dumpe Paket %u Maske 0x%04x"
+msgstr "%u dumpning av paket %u mask 0x%04x"
 
 #: dump.c:299
 #, c-format
 msgid "dumping packet %u mask 0x%04x"
-msgstr "Dumpe Packet %u Make 0x%04x"
+msgstr "dumpar paket %u mask 0x%04x"
 
 #: ubus.c:79
 #, c-format
 msgid "UBus subscription callback: %s subscriber(s)"
-msgstr "UBus-Subskription Rückruf: %s Teilnehmer"
+msgstr "UBus-prenumerationsåterkoppling: %s prenumerant(er)"
 
 #: ubus.c:99
 #, c-format
 msgid "Cannot reconnect to UBus: %s"
-msgstr "Kann mit UBus nicht erneut verbinden: %s"
+msgstr "Kan inte återansluta till UBus: %s"
 
 #: ubus.c:135
 msgid "Cannot set UBus listeners: no connection"
-msgstr "Kann UBus-Zuhörer nicht setzen: Keine Verbindung"
+msgstr "Kan inte ställa in UBus-lyssnare: ingen anslutning"
 
 #: ubus.c:155
 msgid "Cannot poll UBus listeners: no connection"
-msgstr "Kann UBus-Zuhörer nicht abfragen: Keine Verbindung"
+msgstr "Kan inte avläsa UBus-lyssnare: ingen anslutning"
 
 #: ubus.c:168
 msgid "Disconnecting from UBus"
-msgstr "Von System-UBus trennen"
+msgstr "Koppla bort från UBus"
 
 #: ubus.c:179 ubus.c:331
 #, c-format
 msgid "UBus command failed: %d (%s)"
-msgstr "UBus-Befehl fehlgeschlagen: %d (%s)"
+msgstr "UBus-kommandot misslyckades: %d (%s)"
 
 #: nftset.c:35
 msgid "failed to create nftset context"
-msgstr "Fehler beim Erstellen des NFTSET-Kontexts"
+msgstr "misslyckades med att skapa nftset-kontext"
 
 #, c-format
 #~ msgid "reducing DNS packet size for nameserver %s to %d"
-#~ msgstr "Reduziere die DNS-Paketgröße für Nameserver %s auf %d"
+#~ msgstr "minskar DNS-paketstorleken för namnserver %s till %d"
 
 #~ msgid "(no DNSSEC)"
-#~ msgstr "(kein DNSSEC)"
+#~ msgstr "(ingen DNSSEC)"
 
 #~ msgid "Failed to create SHA-256 hash object"
-#~ msgstr "Kann SHA-256-Hash-Objekt nicht erstellen"
+#~ msgstr "Misslyckades med att skapa SHA-256-hash-objektet"
 
 #~ msgid "bad IPv4 prefix"
 #~ msgstr "fehlerhaftes IPv4-Präfix"

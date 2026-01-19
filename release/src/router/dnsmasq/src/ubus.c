@@ -213,6 +213,11 @@ static int ubus_handle_set_connmark_allowlist(struct ubus_context *ctx, struct u
   size_t num_patterns = 0;
   struct blob_attr *tb[policy_len];
   struct blob_attr *attr;
+
+  (void)ctx;
+  (void)obj;
+  (void)req;
+  (void)method;
   
   if (blobmsg_parse(policy, policy_len, tb, blob_data(msg), blob_len(msg)))
     return UBUS_STATUS_INVALID_ARGUMENT;

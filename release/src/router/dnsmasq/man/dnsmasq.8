@@ -134,7 +134,8 @@ only, to stop dnsmasq daemonising in production, use
 Log the results of DNS queries handled by dnsmasq. Enable a full cache dump on receipt of SIGUSR1. If the argument "extra" is supplied, ie
 .B --log-queries=extra
 then the log has extra information at the start of each line.
-This consists of a serial number which ties together the log lines associated with an individual query, and the IP address of the requestor. If the argument "proto" is supplied, this shows everything that "extra" does and also the network protocol used to communicate the queries.
+This consists of a serial number which ties together the log lines associated with an individual query, and the IP address of the requestor. If the argument "proto" is supplied, this shows everything that "extra" does and also the network protocol used to communicate the queries. Logging of only queries to the authoritative server can be configured with
+.B --log-queries=auth
 .TP
 .B \-8, --log-facility=<facility>
 Set the facility to which dnsmasq will send syslog entries, this
@@ -345,6 +346,10 @@ Bogus private reverse lookups. All reverse lookups for private IP ranges (ie 192
 which are not found in /etc/hosts or the DHCP leases file are answered
 with "no such domain" rather than being forwarded upstream. The 
 set of prefixes affected is the list given in RFC6303, for IPv4 and IPv6.
+Enabling this also subtly alters DNSSEC validation for reverse lookups in the
+private ranges such that a non-secure DS record is accepted as proof that
+the range is not signed. This works around behaviour by the public DNS services
+which seem not to return validated proof-of-non-existence for DS records in these domains.
 .TP
 .B \-V, --alias=[<old-ip>]|[<start-ip>-<end-ip>],<new-ip>[,<mask>]
 Modify IPv4 addresses returned from upstream nameservers; old-ip is
@@ -498,10 +503,7 @@ xxx.internal.thekelleys.org.uk at 192.168.1.1 then giving  the flag
 .B --server=/internal.thekelleys.org.uk/192.168.1.1
 will send all queries for
 internal machines to that nameserver, everything else will go to the
-servers in /etc/resolv.conf. DNSSEC validation is turned off for such
-private nameservers, UNLESS a
-.B --trust-anchor
-is specified for the domain in question. An empty domain specification,
+servers in /etc/resolv.conf. An empty domain specification,
 .B // 
 has the special meaning of "unqualified names only" ie names without any
 dots in them. A non-standard port may be specified as 
@@ -671,7 +673,7 @@ machine on which dnsmasq is running) for each
 local machine. Local machines are those in /etc/hosts or with DHCP
 leases.
 .TP
-.B \-W, --srv-host=<_service>.<_prot>.[<domain>],[<target>[,<port>[,<priority>[,<weight>]]]]
+.B \-W, --srv-host=<_service>.<_prot>[.<domain>],[<target>[,<port>[,<priority>[,<weight>]]]]
 Return a SRV DNS record. See RFC2782 for details. If not supplied, the
 domain defaults to that given by
 .B --domain.
@@ -876,7 +878,7 @@ Set the maximum number of concurrent DNS queries. The default value is
 150, which should be fine for most setups. The only known situation
 where this needs to be increased is when using web-server log file
 resolvers, which can generate large numbers of concurrent queries. This
-parameter actually controls the number of concurrent queries per server group, where a server group is the set of server(s) associated with a single domain. So if a domain has it's own server via --server=/example.com/1.2.3.4 and 1.2.3.4 is not responding, but queries for *.example.com cannot go elsewhere, then other queries will not be affected. On configurations with many such server groups and tight resources, this value may need to be reduced.
+parameter actually controls the number of concurrent queries per server group, where a server group is the set of server(s) associated with a single domain. So if a domain has its own server via --server=/example.com/1.2.3.4 and 1.2.3.4 is not responding, but queries for *.example.com cannot go elsewhere, then other queries will not be affected. On configurations with many such server groups and tight resources, this value may need to be reduced.
 .TP
 .B --dnssec
 Validate DNS replies and cache DNSSEC data. When forwarding DNS queries, dnsmasq requests the 
@@ -894,12 +896,15 @@ ie capable of returning DNSSEC records with data. If they are not,
 then dnsmasq will not be able to determine the trusted status of
 answers and this means that DNS service will be entirely broken.
 .TP
-.B --trust-anchor=<domain>,[<class>,]<key-tag>,<algorithm>,<digest-type>,<digest>
+.B --trust-anchor=<domain>,[<class>,][<key-tag>,<algorithm>,<digest-type>,<digest>]
 Provide DS records to act a trust anchors for DNSSEC
-validation. Typically these will be the DS record(s) for Key Signing
+validation. The class defaults to IN. Typically these will be the DS record(s) for Key Signing
 key(s) (KSK) of the root zone,
-but trust anchors for limited domains are also possible. The current
-root-zone trust anchors may be downloaded from https://data.iana.org/root-anchors/root-anchors.xml 
+but trust anchors for limited domains are also possible.
+A negative trust anchor (ie. proof that a DS record doesn't exist) may be configured be specifying
+only the name or only the name and class. This can be useful for forcing dnsmasq to treat zones delegated
+using \fB--server=/<domain>/<ip-address>\fP as unsigned. The current
+root-zone trust anchors may be downloaded from https://data.iana.org/root-anchors/root-anchors.xml
 .TP
 .B --dnssec-check-unsigned[=no]
 As a default, dnsmasq checks that unsigned DNS replies are
@@ -913,7 +918,7 @@ fast.
 
 Versions of dnsmasq prior to 2.80 defaulted to not checking unsigned replies, and used 
 .B --dnssec-check-unsigned
-to switch this on. Such configurations will continue to work as before, but those which used the default of no checking will need to be altered to explicitly select no checking. The new default is because switching off checking for unsigned replies is inherently dangerous. Not only does it open the possiblity of forged replies, but it allows everything to appear to be working even when the upstream namesevers do not support DNSSEC, and in this case no DNSSEC validation at all is occurring.
+to switch this on. Such configurations will continue to work as before, but those which used the default of no checking will need to be altered to explicitly select no checking. The new default is because switching off checking for unsigned replies is inherently dangerous. Not only does it open the possibility of forged replies, but it allows everything to appear to be working even when the upstream namesevers do not support DNSSEC, and in this case no DNSSEC validation at all is occurring.
 .TP
 .B --dnssec-no-timecheck
 DNSSEC signatures are only valid for specified time windows, and should be rejected outside those windows. This generates an
@@ -1192,7 +1197,7 @@ the appropriate network part inserted. For IPv6, an address may include a prefix
 which (in this case) specifies four addresses, 1234::50 to 1234::53. This (an the ability
 to specify multiple addresses) is useful
 when a host presents either a consistent name or hardware-ID, but varying DUIDs, since it allows
-dnsmasq to honour the static address allocation but assign a different adddress for each DUID. This
+dnsmasq to honour the static address allocation but assign a different address for each DUID. This
 typically occurs when chain netbooting, as each stage of the chain gets in turn allocates an address.
 
 Note that in IPv6 DHCP, the hardware address may not be
@@ -1342,7 +1347,7 @@ The special address 0.0.0.0 means "the address of the system running dnsmasq".
 
 An option without data is valid, and includes just the option without data.
 (There is only one option with a zero length data field currently defined for DHCPv4, 80:rapid commit, so this feature is not very useful in practice). Options for which dnsmasq normally
-provides default values can be ommitted by defining the option with no data. These are
+provides default values can be omitted by defining the option with no data. These are
 netmask, broadcast, router, DNS server, domainname and hostname. Thus, for DHCPv4
 .B --dhcp-option = option:router
 will result in no router option being sent, rather than the default of the host on which dnsmasq is running. For DHCPv6, the same is true of the options DNS server and refresh time.
@@ -1433,6 +1438,18 @@ DHCP options. This make extra space available in the DHCP packet for
 options but can, rarely, confuse old or broken clients. This flag
 forces "simple and safe" behaviour to avoid problems in such a case.
 .TP
+.B --leasequery[=<addr>[/<prefix>]]
+Enable RFC 4388 leasequery. The dnsmasq DHCP server will answer LEASEQUERY messages from DHCP relays
+when this option is given. If an address or subnet is given, only queries from a relay at that source are allowed. Repeat
+the --leasequery option to specify multiple allowed sources.
+To correctly answer lease queries it is necessary to store extra data in
+the lease database, and this is also enabled by the \fB--leasequery\fP option. The extra fields
+(agent-info and vendorclass) are stored in the leases file in a somewhat backwards compatible manner.
+Enabling and then disabling leasequery will not cause problems; the extra information will be aged
+out of the database. However, enabling leasequery in release 2.92 or later, storing leases
+which come via DHCP relays which add option-82 agent-info data, and then moving back to a pre-2.92 dnsmasq
+binary may cause problems reading the leases file. As of release 2.92, leasequery is only supported for DHCPv4.
+.TP
 .B --dhcp-relay=<local address>[,<server address>[#<server port>]][,<interface]
 Configure dnsmasq to do DHCP relay. The local address is an address
 allocated to an interface on the host running dnsmasq. All DHCP
@@ -1470,7 +1487,31 @@ DHCPv4 to a DHCPv6 server or vice-versa.
 The DHCP relay function for IPv6 includes the ability to snoop
 prefix-delegation from relayed DHCP transactions. See
 .B --dhcp-script
-for details. 
+for details.
+.TP
+.B --dhcp-split-relay=<local address>,[<server address>[#<server port>]],<server-facing-interface>|<server-facing-address>
+A usefully enhanced version of DHCPv4 relay. IPv4 DHCP normally uses a single address
+for two functions; it is used by the DHCP server to determine which network to allocate
+an address on, and it is used as the address of the relay to which the server sends packets.
+
+This version of DHCP relay splits these functions. It uses the address of the server-facing relay
+interface or a directly-specified address as the address that the server talks to. The address of the client-facing interface
+(the first item in the config) is used as to determine the client's subnet. The
+local address is also used as server-ID override so that the client always sends requests
+via the relay. The effect of this is that server doesn't require
+a route to the client network and the clients don't require a route to the server.
+
+The third parameter is mandatory. If it is an interface name it cannot be a wildcard and the same filtering as described in
+--dhcp-relay applies; answers from the server must arrve via the specified interface. If the third parameter
+is an IP address it must be an address of a local interface which is routable from the server; In this case no filtering
+is done, the reply packets can arrive via any route.
+
+If setting up a network where the client networks have limited routing, be careful
+about configuring the DHCP server. Dnsmasq, as DHCP server, will set the default route to the
+client-facing relay interface unless explicitly configured: that is a sensible default.
+The normal default DNS server (the same address as the DHCP server)
+will not be appropriate when there is no route bewteen the
+two, so this will have to be explicitly configured. 
 .TP
 .B \-U, --dhcp-vendorclass=set:<tag>,[enterprise:<IANA-enterprise number>,]<vendor-class>
 Map from a vendor-class string to a tag. Most DHCP clients provide a 
@@ -1631,7 +1672,7 @@ likely to move IP address; for this reason it should not be generally used.
 .TP
 .B --dhcp-ignore-clid
 Dnsmasq is reading 'client identifier' (RFC 2131) option sent by clients
-(if available) to identify clients. This allow to serve same IP address
+(if available) to identify clients. This allow one to serve same IP address
 for a host using several interfaces. Use this option to disable 'client identifier'
 reading, i.e. to always identify a host using the MAC address.
 .TP
@@ -1722,7 +1763,9 @@ For DHCPv4, it changes the behaviour from strict RFC compliance so that DHCP req
 unknown leases from unknown hosts are not ignored. This allows new hosts
 to get a lease without a tedious timeout under all circumstances. It also 
 allows dnsmasq to rebuild its lease database without each client needing to 
-reacquire a lease, if the database is lost. For DHCPv6 it sets the
+reacquire a lease, if the database is lost. For DHCPv6 it controls the same
+behaviour as DHCPv4 with missing leases (except for the RFC uncompliance - the
+DHCPv6 RFCs allow this behaviour if configured). It also sets the
 priority in replies to 255 (the maximum) instead of 0 (the minimum).
 .TP
 .B --dhcp-rapid-commit
@@ -1910,7 +1953,7 @@ was sent, and the complete pathname of the file.
 
 The "relay-snoop" action is invoked when dnsmasq is configured as a DHCP
 relay for DHCPv6 and it relays a prefx delegation to a client. The arguments
-are the name of the interface where the client is conected, its (link-local)
+are the name of the interface where the client is connected, its (link-local)
 address on that interface and the delegated prefix. This information is
 sufficient to install routes to the delegated prefix of a router. See
 .B --dhcp-relay
@@ -2261,7 +2304,7 @@ therein is updated when dnsmasq receives SIGHUP.
 .B \--conf-script=<file>[ <arg]
 Execute <file>, and treat what it emits to stdout as the contents of a configuration file.
 If the script exits with a non-zero exit code, dnsmasq treats this as a fatal error.
-The script can be passed arguments, space seperated from the filename and each other so, for instance
+The script can be passed arguments, space separated from the filename and each other so, for instance
 .B --conf-dir="/etc/dnsmasq-uncompress-ads /share/ads-domains.gz"
 
 with /etc/dnsmasq-uncompress-ads containing 

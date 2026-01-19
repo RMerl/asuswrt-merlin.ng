@@ -165,6 +165,13 @@ int iface_enumerate(int family, void *parm, callback_t callback)
     struct rtgenmsg g; 
   } req;
 
+  /* The netlink socket is not available in child processes. */
+  if (daemon->pipe_to_parent != -1)
+    {
+      my_syslog(LOG_ERR, _("BUG: called iface_enumerate() in child process"));
+      return 0;
+    }
+  
   memset(&req, 0, sizeof(req));
   memset(&addr, 0, sizeof(addr));
 

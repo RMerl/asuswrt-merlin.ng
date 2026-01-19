@@ -411,7 +411,7 @@ static void send_ra_alias(time_t now, int iface, char *iface_name, struct in6_ad
   if (!old_prefix && !parm.found_context)
     return; 
   
-  /* If we're sending router address instead of prefix in at least on prefix,
+  /* If we're sending router address instead of prefix in at least one prefix,
      include the advertisement interval option. */
   if (parm.adv_router)
     {
@@ -825,10 +825,10 @@ time_t periodic_ra(time_t now)
 	}
       else if (iface_enumerate(AF_INET6, &param, (callback_t){.af_inet6=iface_search}))
 	/* There's a context overdue, but we can't find an interface
-	   associated with it, because it's for a subnet we dont 
+	   associated with it, because it's for a subnet we don't
 	   have an interface on. Probably we're doing DHCP on
 	   a remote subnet via a relay. Zero the timer, since we won't
-	   ever be able to send ra's and satisfy it. */
+	   ever be able to send RAs to satisfy it. */
 	context->ra_time = 0;
       
       if (param.iface != 0 &&

@@ -265,6 +265,15 @@ static void encoder(unsigned char *in, char *out)
   out[3] = char64(in[2]);
 }
 
+/* This function needs to call find_mac if any option which requires a MAC address is enabled
+   and used below. If you add a new MAC consumer, modify this, otherwise your
+   new EDNS0 option won't work in TCP mode. */
+void edns0_needs_mac(union mysockaddr *addr, time_t now)
+{
+  if (option_bool(OPT_MAC_B64) || option_bool(OPT_MAC_HEX) || option_bool(OPT_ADD_MAC))
+    find_mac(addr, NULL, 0, now);
+}
+
 /* OPT_ADD_MAC = MAC is added (if available)
    OPT_ADD_MAC + OPT_STRIP_MAC = MAC is replaced, if not available, it is only removed
    OPT_STRIP_MAC = MAC is removed */
@@ -494,7 +503,7 @@ int check_source(struct dns_header *header, size_t plen, unsigned char *pseudohe
 #define UMBRELLA_DEVICESZ   sizeof(daemon->umbrella_device)
 
 struct umbrella_opt {
-  u8 magic[4];
+  u8 magic[4] ATTRIBUTE_NONSTRING;
   u8 version;
   u8 flags;
   /* We have 4 possible fields since we'll never send both IPv4 and
@@ -562,3 +571,4 @@ size_t add_edns0_config(struct dns_header *header, size_t plen, unsigned char *l
 
   return plen;
 }
+

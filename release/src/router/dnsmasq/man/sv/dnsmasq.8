@@ -1,0 +1,2870 @@
+.TH DNSMASQ 8 2025-02-05
+.SH NAMN
+dnsmasq \- En lättviktig DHCP- och caching-DNS-server.
+.SH SYNOPSIS
+.B dnsmasq
+.I [OPTION]...
+.SH BESKRIVNING
+.BR dnsmasq
+är en lättviktig DNS-, TFTP-, PXE-, routerannonserings- och DHCP-server. Den är avsedd att tillhandahålla 
+kopplade DNS- och DHCP-tjänster till ett LAN.
+.PP
+Dnsmasq accepterar DNS-förfrågningar och svarar antingen på dem från en liten, lokal
+cache eller vidarebefordrar dem till en riktig, rekursiv DNS-server. Den laddar
+in innehållet i /etc/hosts så att lokala värdnamn
+som inte finns i den globala DNS kan lösas och svarar också på
+DNS-förfrågningar för DHCP-konfigurerade värdar. Den kan också fungera som
+auktoritativ DNS-server för en eller flera domäner, vilket gör att lokala namn
+kan visas i den globala DNS. Den kan konfigureras för att utföra DNSSEC-validering
+.
+.PP
+DHCP-servern dnsmasq stöder statiska adress tilldelningar och flera
+nätverk. Den skickar automatiskt
+en rimlig standarduppsättning DHCP-alternativ och kan konfigureras för att
+skicka valfri uppsättning DHCP-alternativ, inklusive leverantörskapselade
+alternativ. Den inkluderar en säker, skrivskyddad
+TFTP-server för att möjliggöra nät-/PXE-start av DHCP-värdar och stöder även BOOTP. PXE-stödet är fullt utrustat och inkluderar ett proxyläge som tillhandahåller PXE-information till klienter medan DHCP-adressallokering utförs av en annan server.
+.PP
+DHCPv6-servern i dnsmasq tillhandahåller samma uppsättning funktioner som
+DHCPv4-servern och inkluderar dessutom routerannonser och
+en smidig funktion som möjliggör namngivning för klienter som använder DHCPv4 och
+stateless autoconfiguration endast för IPv6-konfiguration. Det finns stöd för adressallokering (både DHCPv6 och RA) från subnät som delegeras dynamiskt via DHCPv6-prefixdelegering.
+.PP
+Dnsmasq är kodat med små inbyggda system i åtanke. Det syftar till att uppnå minsta möjliga minnesavtryck som är kompatibelt med de funktioner som stöds, och gör det möjligt att utelämna onödiga funktioner från den kompilerade binären. 
+.SH OPTIONS
+Observera att i allmänhet är saknade parametrar tillåtna och stänger av
+funktioner, till exempel inaktiverar ”--pid-file” skrivning av en PID-fil. På
+BSD, om inte GNU getopt-biblioteket är länkat, fungerar inte den långa formen av
+alternativen på kommandoraden; den känns fortfarande igen i
+konfigurationsfilen.
+.TP
+.B --test
+Läs och syntaxkontrollera konfigurationsfiler. Avsluta med kod 0 om allt
+är OK, eller en kod som inte är noll i annat fall. Starta inte dnsmasq.
+.TP
+.B \-w, --help
+Visa alla kommandoradsalternativ.
+.B --help dhcp
+visar kända DHCPv4-konfigurationsalternativ, och
+.B --help dhcp6
+visar DHCPv6-alternativ.
+.TP
+.B \-h, --no-hosts
+Läs inte värdnamnen i /etc/hosts.
+.TP
+.B \-H, --addn-hosts=<fil>
+Ytterligare värdfiler. Läs den angivna filen samt /etc/hosts. Om \fB--no-hosts\fP anges, läs
+endast den angivna filen. Detta alternativ kan upprepas för mer än en
+ytterligare värdfil. Om en katalog anges, läs alla filer i den katalogen
+i alfabetisk ordning.
+.TP
+.B --hostsdir=<path>
+Läs alla värdfiler som finns i katalogen. Nya eller ändrade filer
+läses automatiskt och modifierade och raderade filer har borttagna poster
+som raderas automatiskt.
+.TP
+.B \-E, --expand-hosts
+Lägg till domänen till enkla namn (utan punkt) i /etc/hosts
+på samma sätt som för DHCP-härledda namn. Observera att detta inte
+gäller domännamn i cnames, PTR-poster, TXT-poster etc.
+.TP
+.B \-T, --local-ttl=<tid>
+När dnsmasq svarar med information från /etc/hosts eller konfigurationen eller DHCP-leasingfilen
+ställer den som standard in fältet time-to-live till noll, vilket innebär
+att den som begär informationen inte själv ska cacha informationen. Detta är
+det rätta att göra i nästan alla situationer. Med detta alternativ kan en
+time-to-live (i sekunder) anges för dessa svar. Detta
+minskar belastningen på servern, men innebär att klienterna under vissa omständigheter använder inaktuella
+data.
+.TP
+.B --dhcp-ttl=<tid>
+Samma som \fB--local-ttl\fP, men påverkar endast svar med information från DHCP-leasingavtal. Om båda anges gäller \fB--dhcp-ttl\fP för DHCP-information och \fB--local-ttl\fP för övrig information. Om detta sätts till noll elimineras effekten av \fB--local-ttl\fP för DHCP.
+.TP
+.B --neg-ttl=<tid>
+Negativa svar från uppströms servrar innehåller normalt information om livslängd
+i SOA-poster som dnsmasq använder för caching. Om
+svaren från uppströms servrar utelämnar denna information, cachelagrar dnsmasq inte
+svaret. Detta alternativ ger ett standardvärde för livslängd
+(i sekunder) som dnsmasq använder för att cachelagra negativa svar även i 
+avsaknad av en SOA-post. 
+.TP
+.B --max-ttl=<tid>
+Ställ in ett maximalt TTL-värde som kommer att delas ut till klienter. Det angivna
+maximala TTL-värdet kommer att ges till klienter istället för det verkliga TTL-värdet om det är 
+lägre. Det verkliga TTL-värdet behålls dock i cachen för att undvika att 
+uppströms DNS-servrarna översvämmas.
+.TP
+.B --max-cache-ttl=<tid>
+Ställ in ett maximalt TTL-värde för poster i cachen.
+.TP
+.B --min-cache-ttl=<tid>
+Förläng korta TTL-värden till den tid som anges när de cachelagras. Observera att
+det i allmänhet är en dålig idé att artificiellt förlänga TTL-värden. Gör det inte 
+om du inte har en god anledning och förstår vad du gör.
+ 
+Dnsmasq begränsar värdet för detta alternativ till en timme, om det inte kompileras om.
+.TP
+.B --auth-ttl=<tid>
+Ställ in TTL-värdet som returneras i svar från den auktoritära servern.
+.TP
+.B --fast-dns-retry=[<initial fördröjning för omförsök i ms>[,<tid för att fortsätta omförsök i ms>]]
+Under normala omständigheter förlitar sig dnsmasq på DNS-klienter för att göra omförsök; det
+genererar inte timeouts själv. Om du ställer in detta alternativ
+instrueras dnsmasq att generera sina egna omförsök med start efter en fördröjning
+som standard är 1000 ms. Om den andra parametern anges styr detta
+hur länge omförsöken ska fortsätta
+annars är standardvärdet 10000 ms. Försöken upprepas med exponentiell
+backoff. Användning av detta alternativ ökar minnesanvändningen och
+nätverksbandbredden. Om inget annat konfigurerats aktiveras detta alternativ
+med standardparametrarna när \fB--dnssec\fP är inställt.
+.TP
+.B \-k, --keep-in-foreground
+Gå inte in i bakgrunden vid start, men kör annars som
+vanligt. Detta är avsett att användas när dnsmasq körs under daemontools
+eller launchd.
+.TP
+.B \-d, --no-daemon
+Felsökningsläge: förgrena inte till bakgrunden, skriv inte en pid-fil,
+ändra inte användar-id, generera en komplett cache-dump vid mottagande av
+SIGUSR1, logga till stderr samt syslog, inte förgrena nya processer
+för att hantera TCP-förfrågningar. Observera att detta alternativ endast är avsett för felsökning.
+ För att stoppa dnsmasq från att köras som daemon i produktion, använd 
+.B --keep-in-foreground.
+.TP
+.B \-q, --log-queries
+Logga resultaten av DNS-frågor som hanteras av dnsmasq. Aktivera en fullständig cache-dump vid mottagande av SIGUSR1. Om argumentet ”extra” anges, dvs.
+.B --log-queries=extra,
+ innehåller loggen extra information i början av varje rad.
+Denna består av ett serienummer som kopplar samman loggraderna som är associerade med en enskild förfrågan och IP-adressen för den som gör förfrågan. Om argumentet ”proto” anges, visar detta allt som ”extra” gör och även det nätverksprotokoll som används för att kommunicera förfrågningarna. Loggning av endast förfrågningar till den auktoritära servern kan konfigureras med
+.B --log-queries=auth
+.TP
+.B \-8, --log-facility=<facility>
+Ställ in den funktion som dnsmasq ska skicka syslog-poster till, detta
+är som standard DAEMON och LOCAL0 när felsökningsläget är aktiverat. Om
+den angivna funktionen innehåller minst ett ’/’-tecken, tolkas det som
+ett filnamn och dnsmasq loggar till den angivna filen istället för
+syslog. Om funktionen är ’-’ loggar dnsmasq till stderr.
+(Fel vid läsning av konfigurationen kommer fortfarande att skickas till syslog,
+men all utdata från en lyckad start och all utdata under
+körning kommer att skickas exklusivt till filen.) Vid loggning till en fil
+stänger dnsmasq och öppnar om filen när den tar emot SIGUSR2. Detta 
+gör det möjligt att rotera loggfilen utan att stoppa dnsmasq.
+.TP
+.B --log-debug
+Aktivera extra loggning avsedd för felsökning snarare än information.
+.TP
+.B --log-async[=<linjer>]
+Aktivera asynkron loggning och ställ valfritt in gränsen för
+antalet rader
+som kommer att köas av dnsmasq när skrivningen till syslog är långsam.
+ 
+Dnsmasq kan logga asynkront: detta
+gör att det kan fortsätta fungera utan att blockeras av syslog, och
+gör att syslog kan använda dnsmasq för DNS-frågor utan risk för deadlock.
+Om kön med logglinjer blir full kommer dnsmasq att logga
+överflödet och antalet förlorade meddelanden. Standardlängden på kön är
+5, ett rimligt värde är 5-25, och en maximal gräns på 100 är inställd.
+.TP
+.B \-x, --pid-file=<sökväg>
+Ange en alternativ sökväg för dnsmasq att spara sitt process-id i. Normalt är det /var/run/dnsmasq.pid.
+.TP
+.B \-u, --user=<användarnamn>
+Ange det användar-id som dnsmasq kommer att byta till efter start. Dnsmasq måste normalt startas som root, men det kommer att släppa root-privilegierna 
+efter start genom att byta id till en annan användare. Normalt är denna användare ”nobody”, men det 
+kan åsidosättas med denna switch.
+.TP
+.B \-g, --group=<gruppnamn>
+Ange den grupp som dnsmasq ska köras
+som. Standard är ”dip”, om tillgängligt, för att underlätta åtkomst till
+/etc/ppp/resolv.conf som normalt inte är läsbar för alla.
+.TP
+.B \-v, --version
+Skriv ut versionsnumret.
+.TP
+.B \-p, --port=<port>
+Lyssna på <port> istället för standard-DNS-porten (53). Om du ställer in detta
+till noll inaktiveras DNS-funktionen helt, och endast DHCP och/eller TFTP finns kvar.
+.TP
+.B \-P, --edns-packet-max=<storlek>
+Ange det största EDNS.0 UDP-paketet som stöds av DNS
+forwarder. Standardvärdet är 1232, vilket är den rekommenderade storleken efter
+DNS flag day 2020. Öka endast om du vet vad du gör.
+.TP
+.B \-Q, --query-port=<query_port>
+Skicka utgående DNS-förfrågningar från och lyssna efter svar på den
+specifika UDP-porten <query_port> istället för att använda slumpmässiga portar. OBSERVERA
+att användning av detta alternativ gör dnsmasq mindre säkert mot DNS
+spoofing-attacker, men det kan vara snabbare och använda mindre resurser. Om du ställer in detta alternativ
+på noll använder dnsmasq en enda port som tilldelats det av
+operativsystemet: detta var standardbeteendet i versioner före 2.43.
+.TP
+.B --port-limit=<#ports>
+Som standard använder dnsmasq en enda slumpmässig port för alla försök/omförsök när en förfrågan skickas via slumpmässiga portar till flera uppströms servrar eller
+när en förfrågan försöks igen.
+Detta alternativ gör det möjligt att använda ett större antal portar, vilket kan öka robustheten
+i vissa nätverkskonfigurationer. Observera att om du ökar detta till mer än
+två eller tre kan det få konsekvenser för säkerheten och resurserna och bör endast
+göras med förståelse för dessa.
+.TP
+.B --min-port=<port>
+Använd inte portar som är mindre än den som anges som källa för utgående DNS
+-frågor. Dnsmasq väljer slumpmässiga portar som källa för utgående frågor:
+när detta alternativ anges kommer de portar som används alltid att vara större
+än den angivna. Användbart för system bakom brandväggar. Om det inte anges
+är standardvärdet 1024.
+.TP
+.B --max-port=<port>
+Använd portar som är lägre än den angivna som källa för utgående DNS-frågor.
+Dnsmasq väljer slumpmässiga portar som källa för utgående frågor:
+när detta alternativ anges kommer de portar som används alltid att vara lägre
+än den angivna. Användbart för system bakom brandväggar.
+.TP
+.B \-i, --interface=<gränssnittsnamn>
+Lyssna endast på angivna gränssnitt. Dnsmasq lägger automatiskt till
+loopback-gränssnittet (lokalt) till listan över gränssnitt som ska användas när
+alternativet
+.B \--interface
+används. Om inga
+.B \--interface
+eller
+.B \--listen-address
+alternativ anges lyssnar dnsmasq på alla tillgängliga gränssnitt utom de som anges i
+.B \--except-interface
+alternativ.
+På Linux, när I Linux, när
+.B \--bind-interfaces
+eller
+.B \--bind-dynamic
+är aktiva, kontrolleras IP-aliasgränssnittsetiketter (t.ex. ”eth1:0”) istället för
+gränssnittsnamn. I det degenererade fallet när ett gränssnitt har en adress blir resultatet detsamma, men när ett gränssnitt har flera adresser
+möjliggör det kontroll över vilka av dessa adresser som accepteras.
+Samma effekt kan uppnås i standardläget genom att använda
+.B \--listen-address.
+Ett enkelt jokertecken, bestående av ett efterföljande ’*’,
+kan användas i
+.B \--interface
+och
+.B \--except-interface
+alternativen.
+.TP
+.B \-I, --except-interface=<gränssnittsnamn>
+Lyssna inte på det angivna gränssnittet. Observera att ordningen på
+.B \--listen-address
+.B --interface
+och
+.B --except-interface
+inte spelar någon roll och att 
+.B --except-interface
+alltid har företräde framför de andra. Kommentarerna om gränssnittsetiketter för
+.B --listen-address
+gäller även här.
+.TP
+.B --auth-server=<domän>,[<gränssnitt>|<ip-adress>...]
+Aktivera DNS-auktoritativt läge för frågor som anländer till ett gränssnitt eller en adress. Observera att gränssnittet eller adressen
+inte behöver nämnas i 
+.B --interface
+eller
+.B --listen-address
+konfigurationen, eftersom
+.B --auth-server
+kommer att åsidosätta dessa och tillhandahålla en annan DNS-tjänst på det
+angivna gränssnittet. <domänen> är ”klisterposten” . Den bör
+i den globala DNS-tjänsten omvandlas till en A- och/eller AAAA-post som pekar på
+den adress som dnsmasq lyssnar på. När ett gränssnitt anges
+kan det kvalificeras med ”/4” eller ”/6” för att endast ange IPv4- eller IPv6-
+adresser som är associerade med gränssnittet. Eftersom alla definierade auktoritativa zoner också är tillgängliga som en del av den normala rekursiva DNS-tjänsten som tillhandahålls av dnsmasq, kan det vara meningsfullt att ha en --auth-server-deklaration utan gränssnitt eller adress, utan att bara ange den primära externa namnservraren.
+.TP
+.B --local-service[=net|host]
+Utan parameter eller med nätparametern begränsar tjänsten till anslutna nätverk.
+Acceptera endast DNS-förfrågningar från värdar vars adress finns i ett lokalt subnät,
+dvs. ett subnät för vilket det finns ett gränssnitt på servern. Med parametern host lyssnar
+den endast på lo-gränssnittet och accepterar endast förfrågningar från localhost. Detta alternativ
+har endast effekt om det inte finns några \fB--interface\fP-, \fB--except-interface\fP-,
+\fB--listen-address\fP eller \fB--auth-server\fP. Det är avsett att ställas in som
+standard vid installation, för att tillåta okonfigurerade installationer att vara
+användbara men också säkra från att användas för DNS-förstärkningsattacker.
+.TP
+.B \-2, --no-dhcp-interface=<gränssnittsnamn>
+Tillhandahåll inte DHCP, TFTP eller routerannonsering på det angivna gränssnittet, men tillhandahåll DNS-tjänst.
+.TP
+.B --no-dhcpv4-interface=<gränssnittsnamn>
+Inaktivera endast IPv4 DHCP på det angivna gränssnittet.
+.TP
+.B
+--no-dhcpv6-interface=<gränssnittsnamn>
+Inaktivera IPv6 DHCP och routerannonsering på det angivna gränssnittet.
+.TP
+.B \-a, --listen-address=<ipaddr>
+Lyssna på angivna IP-adresser. Både 
+.B \--interface
+och
+.B \--listen-address
+kan anges, i vilket fall både gränssnitt och
+adresser används. Observera att om inget
+.B \--interface
+anges, men 
+.B \--listen-address
+anges, kommer dnsmasq inte automatiskt att lyssna på loopback-gränssnittet.
+ För att uppnå detta måste dess IP-adress, 127.0.0.1,
+uttryckligen anges som ett 
+.B \--listen-address
+alternativ.
+.TP
+.B \-z, --bind-interfaces
+På system som stöder det binder dnsmasq vildkortsadressen,
+även när den endast lyssnar på vissa gränssnitt. Den kasserar då
+förfrågningar som den inte ska svara på. Detta har fördelen att 
+fungera även när gränssnitt kommer och går och byter adress. Detta
+alternativ tvingar dnsmasq att verkligen binda endast de gränssnitt som det
+lyssnar på. Det enda tillfället då detta är användbart är när 
+man kör en annan namnservrar (eller en annan instans av dnsmasq) på
+samma maskin. Att ställa in detta alternativ möjliggör också flera instanser av
+dnsmasq som tillhandahåller DHCP-tjänst att köras på samma maskin.
+.TP
+.B --bind-dynamic
+Aktivera ett nätverksläge som är en hybrid mellan
+.B --bind-interfaces
+och standardläget. Dnsmasq binder adressen för enskilda gränssnitt,
+vilket tillåter flera dnsmasq-instanser, men om nya gränssnitt eller
+adresser dyker upp lyssnar den automatiskt på dessa (med förbehåll för eventuell
+åtkomstkontrollkonfiguration). Detta gör att dynamiskt skapade
+gränssnitt fungerar på samma sätt som standard. Implementering av detta
+alternativ kräver icke-standardiserade nätverks-API:er och är endast tillgängligt
+under Linux. På andra plattformar faller det tillbaka till \fB--bind-interfaces\fP-läget.
+.TP
+.B \-y, --localise-queries
+Returnera svar på DNS-frågor från /etc/hosts och \fB--interface-name\fP och \fB--dynamic-host\fP som beror på det gränssnitt över vilket frågan mottogs.
+ Om ett namn har mer än en adress associerad med
+sig, och minst en av dessa adresser finns på samma subnät som
+gränssnittet till vilket frågan skickades, returnera då endast
+adressen (es) på det subnätet och returnera alla tillgängliga adresser i annat fall.
+Detta gör det möjligt för en server att ha flera
+adresser i /etc/hosts som motsvarar vart och ett av dess gränssnitt, och
+värdar får rätt adress baserat på vilket nätverk de är
+anslutna till. För närvarande är denna funktion begränsad till IPv4.
+.TP
+.B \-b, --bogus-priv
+Falska privata omvända sökningar. Alla omvända sökningar för privata IP-intervall (dvs. 192.168.x.x, etc)
+som inte finns i /etc/hosts eller DHCP-leasingfilen besvaras
+med ”no such domain” istället för att vidarebefordras uppströms. Den 
+uppsättning prefix som påverkas är listan som anges i RFC6303, för IPv4 och IPv6.
+Om du aktiverar detta ändras också DNSSEC-valideringen för omvända sökningar i de
+privata intervallen så att en icke-säker DS-post accepteras som bevis på att
+intervallet inte är signerat. Detta kringgår beteendet hos de offentliga DNS-tjänsterna
+som inte verkar returnera validerade bevis på icke-existens för DS-poster i dessa domäner.
+.TP
+.B \-V, --alias=[<old-ip>]|[<start-ip>-<end-ip>],<new-ip>[,<mask>]
+Ändra IPv4-adresser som returneras från uppströmsnamnservrar; old-ip ersätts
+med new-ip. Om den valfria masken anges kommer alla adresser
+som matchar den maskerade old-ip att skrivas om. Så, till exempel
+.B --alias=1.2.3.0, 6.7.8.0,255.255.255.0 
+kommer att mappa 1.2.3.56 till 6.7.8.56 och 1.2.3.67 till 6.7.8.67. Detta är vad
+Cisco PIX-routrar kallar ”DNS doctoring”. Om den gamla IP-adressen anges som
+intervall, skrivs endast adresser inom intervallet om, istället för hela subnätet
+.
+ Så 
+.B --alias=192.168.0.10-192.168.0.40,10.0.0.0,255.255.255.0
+mappar 192.168.0.10->192.168.0.40 till 10.0.0.10->10.0.0.40
+.TP
+.B \-B, --bogus-nxdomain=<ipaddr>[/prefix]
+Omvandlar svar som innehåller den angivna adressen eller subnätet till svar av typen ”No such
+domain”. IPv4 och IPv6 stöds. Detta är avsett att motverka ett bedrägligt drag som
+Verisign i september 2003 när de började returnera adressen till
+en reklamwebbsida som svar på förfrågningar om oregistrerade namn,
+istället för det korrekta NXDOMAIN-svaret. Detta alternativ säger åt dnsmasq att
+förfalska det korrekta svaret när det ser detta beteende. I september 2003
+var IP-adressen som returnerades av Verisign 64.94.110.11
+.TP
+.B --ignore-address=<ipaddr>[/prefix]
+Ignorera svar på A- eller AAAA-frågor som innehåller den angivna adressen eller subnätet.
+Inget fel genereras, dnsmasq fortsätter helt enkelt att lyssna efter ett annat svar.
+Detta är användbart för att motverka blockeringsstrategier som bygger på att snabbt leverera ett
+förfalskat svar på en DNS-förfrågan för en viss domän, innan det korrekta svaret hinner komma fram.
+.TP
+.B \-f, --filterwin2k
+Senare versioner av Windows gör periodiska DNS-förfrågningar som inte får meningsfulla svar från
+den offentliga DNS och kan orsaka problem genom att utlösa dial-on-demand-länkar. Denna flagga aktiverar ett alternativ
+för att filtrera sådana förfrågningar. De förfrågningar som blockeras är för poster av typen ANY
+där det begärda namnet har understreck, för att fånga LDAP-förfrågningar, och för
+\fBall\fP-poster av typen SOA och SRV.
+.TP
+.B --filter-A
+Ta bort A-poster från svaren. Inga IPv4-adresser kommer att returneras.
+.TP
+.B --filter-AAAA
+Ta bort AAAA-poster från svaren. Inga IPv6-adresser kommer att returneras.
+.TP
+.B --filter-rr=<rrtype>[,<rrtype>...]
+Ta bort poster av den eller de angivna typerna från svaren. Den annars meningslösa --filter-rr=ANY har
+en speciell betydelse: den filtrerar svar på förfrågningar av typen ANY. Allt annat än A-, AAAA-, MX- och CNAME-poster
+tas bort. Eftersom ANY-förfrågningar med förfalskade källadresser kan användas i DNS-förstärkningsattacker
+(svar på ANY-frågor kan vara stora) avväpnar detta sådana attacker, samtidigt som det fortfarande stöder den
+enda återstående möjliga användningen av ANY-frågor. Se RFC 8482 para 4.3 för detaljer.
+.TP
+.B --cache-rr=<rrtype>[,<rrtype>...]
+Som standard cachar dnsmasq A-, AAAA-, CNAME- och SRV-DNS-posttyper.
+Detta alternativ lägger till andra posttyper till cachen. RR-typen kan anges
+som ett namn, t.ex. TXT eller MX, eller som ett decimaltal. Ett enda --cache-rr-alternativ
+kan ta en kommaseparerad lista med RR-typer och mer än ett --cache -rr-alternativ
+tillåts. Använd --cache-rr=ANY för att aktivera caching för alla RR-typer.
+.TP
+.B \-r, --resolv-file=<fil>
+Läs IP-adresserna för uppströmsnamnserverna från <fil> istället för
+/etc/resolv.conf. För formatet på denna fil, se
+.BR resolv.conf (5).
+ 
+De enda raderna som är relevanta för dnsmasq är namnservrarna. Dnsmasq kan
+inställas att söka igenom mer än en resolv.conf-fil, det första filnamnet som anges
+ersätter standardinställningen, efterföljande filer läggs till i listan. Detta är endast
+tillåtet vid sökning; filen med den senaste ändringstiden
+används. 
+.TP
+.B \-R, --no-resolv
+Läs inte /etc/resolv.conf. Hämta endast uppströms servrar från kommandoraden
+eller dnsmasq-konfigurationsfilen.
+.TP
+.B \-1, --enable-dbus[=<service-name>]
+Tillåt att dnsmasq-konfigurationen uppdateras via DBus-metodanrop. Den
+konfiguration som kan ändras är uppströms DNS-servrar (och
+motsvarande domäner) och cache-rensning. Kräver att dnsmasq har
+byggts med DBus-stöd. Om tjänstenamnet anges tillhandahåller dnsmasq
+tjänsten med det namnet, istället för standardnamnet som är 
+.B uk.org.thekelleys.dnsmasq
+.TP
+.B --enable-ubus[=<service-name>]
+Aktivera dnsmasq UBus-gränssnitt. Det skickar meddelanden via UBus om
+DHCPACK- och DHCPRELEASE-händelser. Dessutom erbjuder det mätvärden
+och möjliggör konfiguration av Linux-anslutningsspårmärkesbaserad filtrering.
+När DNS-frågefiltrering baserad på Linux-anslutningsspårmärken är aktiverad
+genereras UBus-meddelanden för varje löst eller filtrerat DNS-fråge.
+Kräver att dnsmasq har byggts med UBus-stöd. Om tjänsten
+namn anges, tillhandahåller dnsmasq tjänsten vid det namnområdet, istället för
+standardvärdet som är
+.B dnsmasq
+.TP
+.B \-o, --strict-order
+Som standard skickar dnsmasq förfrågningar till alla uppströms servrar
+som den känner till och försöker prioritera servrar som är kända för att
+vara uppe. Om du ställer in denna flagga tvingas dnsmasq att prova varje förfrågan med varje
+server strikt i den ordning de visas i /etc/resolv.conf
+.TP
+.B --all-servers
+Som standard, när dnsmasq har mer än en uppströms server tillgänglig,
+skickar den frågor till endast en server. Om du ställer in denna flagga tvingas
+dnsmasq att skicka alla frågor till alla tillgängliga servrar. Svaret från
+den server som svarar först returneras till den ursprungliga frågeställaren.
+.TP
+.B --dns-loop-detect
+Aktivera kod för att upptäcka DNS-vidarebefordringsloopar, dvs. situationer där en förfrågan som skickas till en 
+av uppströms-servrarna så småningom returneras som en ny förfrågan till dnsmasq-instansen.
+Processen fungerar genom att generera TXT-förfrågningar av formen <hex>.test och skicka dem till
+varje uppströms server. Hex är ett UID som kodar instansen av dnsmasq som skickar frågan
+och den uppströms server som den skickades till. Om frågan returneras till den server som skickade den,
+inaktiveras den uppströms server genom vilken den skickades och denna händelse loggas. Varje gång
+uppsättningen uppströms servrar ändras, körs testet igen på alla, inklusive de som
+tidigare inaktiverats.
+.TP
+.B --stop-dns-rebind
+Avvisa (och logga) adresser från uppströmsnamnservrar som finns i de
+privata intervallen. Detta blockerar en attack där en webbläsare bakom en
+brandvägg används för att undersöka maskiner i det lokala nätverket. För IPv6 täcker det
+privata intervallet IPv4-mappade adresser i privat utrymme plus
+alla länklokala (LL) och webbplatslokala (ULA) adresser.
+.TP
+.B --rebind-localhost-ok
+Undanta 127.0.0.0/8 och ::1 från ombindningskontroller. Detta adressintervall
+returneras av realtids-black hole-servrar, så att blockera det kan inaktivera
+dessa tjänster.
+.TP
+.B --rebind-domain-ok=[<domän>]|[[/<domän>/[<domän>/]
+Detektera och blockera inte dns-rebind vid förfrågningar till dessa domäner. Argumentet
+kan vara antingen en enda domän eller flera domäner omgivna
+av ’/’, som i syntaxen \fB--server\fP, t.ex.
+.B --rebind-domain-ok=/domain1/domain2/domain3/
+.TP
+.B \-n, --no-poll
+Sök inte efter ändringar i /etc/resolv.conf.
+.TP
+.B --clear-on-reload
+När /etc/resolv.conf läses om eller uppströms servrarna ställs in
+via DBus, rensa DNS-cachen.
+Detta är användbart när nya namnservrar kan ha annan
+data än den som finns i cachen.
+.TP
+.B \-D, --domain-needed
+Säger åt dnsmasq att aldrig vidarebefordra A- eller AAAA-förfrågningar för vanliga namn, utan punkter
+eller domändelar, till uppströms namnservrar. Om namnet inte är känt
+från /etc/hosts eller DHCP returneras ett ”not found”-svar.
+.TP
+.B \-S, --local, --server=[/[<domän>]/[domän/]][<server>[#<port>]][@<gränssnitt>][@<käll-ip>[#<port>]]
+Ange uppströms servrar direkt. Att ställa in denna flagga
+undertrycker inte läsningen av /etc/resolv.conf, använd \fB--no-resolv\fP för att göra det. Om en eller flera
+valfria domäner anges, används den servern endast för dessa domäner
+och de frågas endast med hjälp av den angivna servern. Detta är
+avsett för privata namnservrar: om du har en namnservrar på ditt
+nätverk som hanterar namn av formen
+xxx.internal.thekelleys.org.uk på 192.168.1.1 och anger flaggan 
+.B --server=/internal.thekelleys.org.uk/192.168.1.1
+kommer alla förfrågningar för
+interna maskiner att skickas till den namnservraren, allt annat går till
+servrarna i /etc/resolv.conf. En tom domänspecifikation,
+.B //
+har den speciella betydelsen ”endast okvalificerade namn”, dvs. namn utan några
+punkter i sig. En icke-standardport kan anges som 
+del av IP-adressen
+med hjälp av tecknet #.
+Mer än en \fB--server\fP-flagga är tillåten, med
+upprepade domän- eller ipaddr-delar efter behov.
+
+Mer specifika domäner har företräde framför mindre specifika domäner, så:
+.B --server=/google.com/1.2.3.4
+.B --server=/www.google.com/2.3.4.5
+kommer att skicka förfrågningar för google.com och gmail.google.com till 1.2.3.4, men www.google.com
+kommer att skickas till 2.3.4.5
+
+Matchning av domäner görs normalt på kompletta etiketter, så /google.com/ matchar google.com och www.google.com
+men INTE supergoogle.com. Detta kan åsidosättas med ett * endast i början av ett mönster: /*google.com/
+matchar google.com och www.google.com OCH supergoogle.com. Formen utan jokertecken har prioritet, så
+om både /google.com/ och /*google.com/ anges kommer google.com och www.google.com att matcha /google.com/
+och / *google.com/ matchar endast supergoogle.com.
+
+Av historiska skäl är mönstret /.google.com/ likvärdigt med /google.com/. Om du vill matcha alla underdomäner
+till google.com men INTE google.com själv, använd /*.google.com/.
+
+Den speciella serveradressen ’#’ betyder ”använd standardservrarna”, så
+.B --server=/google.com/1.2.3.4
+.B --server=/www.google.com/#
+kommer att skicka förfrågningar för google.com och dess underdomäner till 1.2.3.4, förutom www.google.com (och dess underdomäner) som
+kommer att vidarebefordras som vanligt.
+
+Det är också tillåtet att använda flaggan -S
+som anger en domän men ingen IP-adress. Detta talar om för dnsmasq att
+domänen är lokal och att den kan svara på förfrågningar från /etc/hosts eller DHCP
+men aldrig vidarebefordra förfrågningar på den domänen till någon uppströms
+server.
+.B --local
+är en synonym för
+.B --server
+för att göra konfigurationsfilerna tydligare i detta fall.
+
+IPv6-adresser kan inkludera ett %interface scope-id, t.ex.
+fe80::202:a412:4512:7bbf%eth0.
+
+Den valfria strängen efter @-tecknet talar om för dnsmasq hur källan för
+frågorna till denna namnservrar ska ställas in. Det kan antingen vara en ip-adress, ett gränssnittsnamn
+eller båda. Ip-adressen bör tillhöra den maskin på vilken dnsmasq
+körs, annars kommer denna serverrad att loggas och sedan ignoreras. Om ett
+gränssnittsnamn anges kommer förfrågningar till servern att tvingas via det
+gränssnittet; om en IP-adress anges kommer källadressen för förfrågningarna att
+ställas in till den adressen; och om båda anges kommer en kombination av IP-adress
+och gränssnittsnamn att användas för att styra förfrågningar till servern.
+Flaggan query-port ignoreras för alla servrar som har en
+källadress angiven, men porten kan anges direkt som
+del av källadressen. Att tvinga förfrågningar till ett gränssnitt är inte
+implementerat på alla plattformar som stöds av dnsmasq.
+
+Uppströms servrar kan anges med ett värdnamn istället för en IP-adress.
+I detta fall kommer dnsmasq att försöka använda systemets resolver för att hämta IP-adressen
+till en server under uppstart. Om namnuppslagningen misslyckas misslyckas även starten av dnsmasq.
+Om systemets konfiguration är sådan att systemets resolver skickar DNS-frågor
+via dnsmasq-instansen som startar, kommer detta att timeout och misslyckas.
+.TP
+.B --rev-server=<ip-adress>[/<prefix-längd>][,<server>][#<port>][@<gränssnitt>][@<käll-ip>[#<port>]]
+Detta är funktionellt samma sak som
+.B --server,
+men ger lite syntaktisk socker för att göra det enklare att ange adress-till-namn-frågor. Till exempel
+.B --rev-server=1.2.3.0/24,192.168.0.1
+är exakt likvärdigt med
+.B --server=/3.2.1.in-addr.arpa/192.168.0.1
+Tillåtna prefixlängder är 1-32 (IPv4) och 1-128 (IPv6). Om prefixlängden utelämnas ersätter dnsmasq antingen 32 (IPv4) eller 128 (IPv6).
+.TP
+.B \-A, --address=/<domän>[/<domän>...]/ [<ipaddr>]
+Ange en IP-adress som ska returneras för alla värdar i de angivna domänerna.
+A- (eller AAAA-)frågor i domänerna vidarebefordras aldrig och besvaras alltid
+med den angivna IP-adressen, som kan vara IPv4 eller IPv6. För att ange
+flera adresser eller både IPv4- och IPv6-adresser för en domän, använd upprepade \fB--address\fP-flaggor.
+Observera att /etc/hosts och DHCP-leasingavtal åsidosätter detta för enskilda
+namn. En vanlig användning av detta är att omdirigera hela domänen doubleclick.net
+till någon vänlig lokal webbserver för att undvika bannerannonser.
+Domänspecifikationen fungerar på samma sätt som för \fB--server\fP, med
+den extra funktionen att \fB/#/\fP matchar alla domäner. Således
+\fB--address=/#/1.2.3.4\fP alltid returnera \fB1.2.3.4\fP för alla
+frågor som inte besvaras från \fB/etc/hosts\fP eller DHCP och som inte skickas till en
+uppströms namnservrar av ett mer specifikt \fB--server\fP-direktiv. När det gäller
+\fB--server\fP returnerar en eller flera domäner utan adress ett
+svar om att domänen inte finns, så \fB --address=/example.com/\fP motsvarar
+\fB--server=/example.com/\fP och returnerar NXDOMAIN för example.com och
+alla dess underdomäner. En adress som anges som ’#’ översätts till NULL-adressen
+0.0.0.0 och dess IPv6-motsvarighet ::, så
+\fB--address=/example.com/#\fP returnerar NULL-adresser för example.com och
+dess underdomäner. Detta är delvis syntaktiskt socker för \fB--address=/example.com/0.0.0.0\fP
+och \fB--address=/example.com/::\fP men är också effektivare än att inkludera båda
+som separata konfigurationsrader. Observera att NULL-adresser normalt fungerar på samma sätt som localhost, så var medveten om att klienter som söker efter dessa namn sannolikt kommer att kommunicera med sig själva.
+
+Observera att beteendet för frågor som inte matchar den angivna adresslitteralen ändrades i version 2.86.
+Tidigare versioner, konfigurerade med (t.ex.) --address=/example.com/1.2.3.4 och sedan frågade efter en annan RR-typ än
+A, skulle returnera ett NoData-svar. Från 2.86 skickas frågan uppströms. För att återställa beteendet före 2.86,
+använd konfigurationen --address=/example.com/1.2.3.4 --local=/example.com/
+.TP
+.B --ipset=/<domän>[/<domän>...]/<ipset>[,<ipset>...]
+Placerar de upplösta IP-adresserna för förfrågningar för en eller flera domäner i
+den angivna Netfilter IP-uppsättningen. Om flera uppsättningsnamn anges placeras
+adresserna i var och en av dem, med förbehåll för begränsningarna i en
+IP-uppsättning (IPv4-adresser kan inte lagras i en IPv6-IP-uppsättning och vice
+versa). Domäner och underdomäner matchas på samma sätt som
+\fB--address\fP.
+Dessa IP-uppsättningar måste redan existera. Se
+.BR ipset (8)
+för mer information.
+.TP
+.B --nftset=/<domän>[/<domän>...]/[(6|4)#[<familj>#]<tabell>#<uppsättning>[,[(6|4)#[<familj>#]<tabell>#<uppsättning>]...]
+Liknar alternativet \fB--ipset\fP, men accepterar en eller flera nftables
+-uppsättningar att lägga till IP-adresser i.
+Dessa uppsättningar måste redan existera. Se
+.BR nft (8)
+för mer information. Familjen, tabellen och uppsättningen skickas direkt till nft. Om specifikationen börjar med 4# eller 6# läggs
+endast A- respektive AAAA-poster till i uppsättningen. Eftersom en nftset endast kan innehålla IPv4- eller IPv6-adresser undviks
+fel som loggas för adresser av fel typ.
+.TP
+.B --connmark-allowlist-enable[=<mask>]
+Aktiverar filtrering av inkommande DNS-förfrågningar med associerade Linux-anslutningsspårmärken
+enligt individuella tillåtna listor som konfigurerats via en serie \fB--connmark-allowlist\fP
+-alternativ. Otillåtna förfrågningar vidarebefordras inte; de avvisas med felkoden REFUSED.
+DNS-frågor tillåts endast om de inte har en associerad Linux-anslutningsspårningsmarkering
+eller om de frågade domänerna matchar de konfigurerade DNS-mönstren för den
+associerade Linux-anslutningsspårningsmarkeringen. Om ingen tillåtelselista är konfigurerad för en
+Linux-anslutningsspårningsmarkering avvisas alla DNS-frågor som är associerade med den markeringen.
+Om en mask anges, bitvis AND-kopplas Linux-anslutningsspårningsmarkeringar
+med den angivna masken innan de bearbetas.
+.TP
+.B --connmark-allowlist=<connmark>[/<mask>][,<pattern>[/<pattern>...]]
+Konfigurerar de DNS-mönster som är tillåtna i DNS-förfrågningar associerade med
+den angivna Linux-anslutningsspårmärkningen.
+Om en mask anges, AND-kopplas Linux-anslutningsspårmärkningar först bitvis
+med den angivna masken innan de jämförs med den angivna anslutningsspårmärkningen.
+Mönstren följer syntaxen för DNS-namn, men tillåter dessutom att jokertecknet
+”*” används upp till två gånger per etikett för att matcha 0 eller fler tecken
+inom den etiketten. Observera att jokertecknet aldrig matchar en punkt (t.ex. ”*.example.com”
+matchar ”api.example.com” men inte ”api.us.example.com”). Mönster måste vara
+fullständigt kvalificerade, dvs. bestå av minst två etiketter. Den sista etiketten får inte vara
+helt numerisk och får inte vara den ”lokala” pseudo-TLD. Ett mönster måste sluta med minst
+två bokstavliga (icke-jokertecken) etiketter.
+Istället för ett mönster kan ”*” anges för att inaktivera filtrering av tillåtelselistan
+för ett givet Linux-anslutningsspårmärke helt.
+.TP
+.B \-m, --mx-host=<mx name>[[,<hostname>],<preference>]
+Returnera en MX-post med namnet <mx name> som pekar på det angivna värdnamnet (om
+angivet), eller
+den värd som anges i \fB--mx-target\fP-omkopplaren
+eller, om den omkopplaren inte anges, den värd på vilken dnsmasq 
+körs. Standardinställningen är användbar för att dirigera e-post från system på ett LAN
+till en central server. Preferensvärdet är valfritt och är som standard
+1 om det inte anges. Mer än en MX-post kan anges för en värd.
+.TP
+.B \-t, --mx-target=<hostname>
+Ange standardmålet för MX-posten som returneras av dnsmasq. Se
+\fB--mx-host\fP. Om \fB--mx-target\fP anges, men inte \fB--mx-host\fP, returnerar dnsmasq
+en MX-post som innehåller MX-målet för MX-frågor på 
+värdnamnet för den maskin där dnsmasq körs.
+.TP
+.B \-e, --selfmx
+Returnera en MX-post som pekar på sig själv för varje lokal
+maskin. Lokala maskiner är de som finns i /etc/hosts eller med DHCP-leasingavtal.
+.TP
+.B \-L, --localmx
+Returnera en MX-post som pekar på värden som anges av \fB--mx-target\fP (eller den
+maskin där dnsmasq körs) för varje
+lokal maskin. Lokala maskiner är de som finns i /etc/hosts eller med DHCP
+-leasingavtal.
+.TP
+.B \-W, --srv-host=<_service>.<_prot>[.<domain>],[<target>[,<port>[,<priority>[,<weight>]]]]
+Returnera en SRV DNS-post. Se RFC2782 för mer information. Om inte angivet, är
+domänen som standard den som anges av
+.B --domain.
+Standardvärdet för måldomänen är tomt, standardvärdet för port
+är ett och standardvärdena för 
+vikt och prioritet är noll. Var försiktig om du överför data från BIND
+zonfiler: port-, vikt- och prioritetsnumren är i en annan
+ordning. Mer än en SRV-post för en given tjänst/domän är tillåten,
+alla som matchar returneras.
+.TP
+.B --host-record=<name>[,<name>....],[<IPv4-address>],[<IPv6-address>] [,<TTL>]
+Lägg till A-, AAAA- och PTR-poster till DNS. Detta lägger till ett eller flera namn till
+DNS med tillhörande IPv4- (A) och IPv6- (AAAA) poster. Ett namn kan
+förekomma i mer än en 
+.B --host-record
+och därför tilldelas mer än en adress. Endast den första
+adressen skapar en PTR-post som länkar adressen till namnet. Detta är
+samma regel som används vid läsning av hosts-filer.
+ 
+.B --host-record
+-alternativ anses läsas före värdfiler, så ett namn
+som visas där hindrar skapandet av PTR-poster om det också visas i
+värdfilen. Till skillnad från värdfiler expanderas inte namn, även när
+.B --expand-hosts
+är aktivt. Korta och långa namn kan visas i samma 
+.B --host-record,
+t.ex.
+ 
+.B --host-record=laptop,laptop.thekelleys.org,192.168.0.1,1234::100
+
+Om time-to-live anges, åsidosätter det standardvärdet, som är noll
+eller värdet för \fB--local-ttl\fP. Värdet är ett positivt heltal och anger
+time-to-live i sekunder.
+.TP
+.B --dynamic-host=<namn>,[IPv4-adress],[IPv6-adress],<gränssnitt>
+Lägg till A-, AAAA- och PTR-poster till DNS i samma subnät som det angivna gränssnittet. Adressen härleds från nätverksdelen av varje adress som är associerad med gränssnittet, och värddelsdelen från den angivna adressen. Till exempel
+.B --dynamic-host=example.com,0.0.0.8,eth0
+kommer, när eth0 har adressen 192.168.78.x och nätmask 255.255.255.0, att ge
+namnet example.com en A-post för 192.168.78.8. Samma princip gäller för IPv6-adresser. Observera att om ett gränssnitt har mer än en adress kommer mer än en A- eller AAAA-post att skapas. Postaernas TTL är alltid noll, och alla ändringar av gränssnittsadresser kommer omedelbart att återspeglas i dem.
+.TP
+.B \-Y, --txt-record=<namn>[[,<text>],<text>]
+Returnera en TXT DNS-post. Värdet på TXT-posten är en uppsättning strängar,
+så valfritt antal kan inkluderas, avgränsade med kommatecken; använd citattecken för att infoga
+kommatecken i en sträng. Observera att den maximala längden på en enskild sträng
+är 255 tecken, längre strängar delas upp i bitar om 255 tecken.
+.TP
+.B --ptr-record=<namn>[,<mål>]
+Returnerar en PTR DNS-post.
+.TP
+.B --naptr-record=<namn>,<ordning>,<preferens>,<flaggor>,<tjänst>,<regexp>[,<ersättning>]
+Returnerar en NAPTR DNS-post, enligt specifikationen i RFC3403.
+.TP
+.B --caa-record=<namn>,<flaggor>,<tagg>,<värde>
+Returnerar en CAA DNS-post, enligt specifikationen i RFC6844.
+.TP
+.B --cname=<cname>,[<cname>,]<mål>[,<TTL>]
+Returnerar en CNAME-post som anger att <cname> egentligen är
+<target>. Det finns en betydande begränsning för målet; det måste vara en
+DNS-post som är känd för dnsmasq och INTE en DNS-post som kommer från
+en uppströms server. Cname måste vara unikt, men det
+är tillåtet att ha mer än ett cname som pekar på samma mål. Det
+är det möjligt att deklarera flera cnames till ett mål på en enda rad, så här:
+.B --cname=cname1,cname2,target
+
+Om time-to-live anges, åsidosätter det standardvärdet, som är noll
+eller värdet av \fB--local-ttl\fP. Värdet är ett positivt heltal och anger
+time-to-live i sekunder.
+.TP
+.B --dns-rr=<namn>,<RR-nummer>,[<hexdata>]
+Returnerar en godtycklig DNS-resurspost. Numret är typen av
+posten (som alltid är i klassen C_IN). Värdet på posten
+anges av hexdata, som kan ha formen 01:23:45 eller 01 23 45 eller
+012345 eller en kombination av dessa.
+.TP
+.B --interface-name=<namn>,<gränssnitt>[/4|/6]
+Returnerar DNS-poster som associerar namnet med adresserna för
+det angivna gränssnittet. Denna flagga anger en A- eller AAAA-post för det angivna
+namnet på samma sätt som en /etc/hosts-rad, förutom att adressen
+inte är konstant utan hämtas från det angivna gränssnittet. Gränssnittet kan
+följas av ”/4” eller ”/6” för att ange att endast IPv4- eller IPv6-adresser
+för gränssnittet ska användas. Om gränssnittet är
+nere, inte konfigurerat eller inte existerar, returneras en tom post. Den
+matchande PTR-posten skapas också, vilket mappar gränssnittsadressen till
+namnet. Mer än ett namn kan associeras med en gränssnitts
+adress genom att upprepa flaggan; i så fall används den första instansen
+för omvänd adress-till-namn-mappning. Observera att ett namn som används i 
+\fB--interface-name\fP inte får förekomma i /etc/hosts.
+.TP
+.B --synth-domain=<domän>,<adressintervall>[,<prefix>[*]]
+Skapa artificiella A/AAAA- och PTR-poster för ett adressintervall.
+Posterna är antingen sekventiella nummer eller adressen, med punkter (eller kolon för IPv6) ersatta med bindestreck.
+
+Ett exempel bör göra detta tydligare. Först sekventiella nummer.
+.B --synth-domain=thekelleys.org.uk,192.168.0.50,192.168.0.70,internal-*
+resulterar i namnet internal-0.thekelleys.org.uk. som returnerar 192.168.0.50, internal-1.thekelleys.org.uk som returnerar 192.168.0.51 och så vidare. (notera *) Samma princip gäller för IPv6-adresser (där siffrorna kan vara mycket stora). Omvända sökningar från adress till namn fungerar som förväntat.
+
+För det andra
+.B --synth-domain=thekelleys.org.uk,192.168.0.0/24,internal- (utan *)
+resulterar i en förfrågan om internal-192-168-0-56.thekelleys.org.uk som returnerar
+192.168.0.56 och en omvänd förfrågan vice versa. Detsamma gäller för IPv6;
+representationen använder inte ::-komprimeringsfunktionen eller
+den speciella representationen av V4-mappade IPv6-adresser, eftersom dessa
+kan generera olagliga domännamn, så alla domäner har formen
+internal-1000-0000-0000-0000-0000-0000-0000-0008.example.com
+
+Adressintervallet kan ha formen
+<startadress>,<slutadress> eller <ip-adress>/<prefixlängd> i båda formerna av alternativet. För IPv6 måste start- och slutadresserna
+falla inom samma /64-nätverk, eller prefixlängden måste vara större än eller lika med 64, förutom att prefixlängder kortare än 64 endast är tillåtna om icke-sekventiella namn används.
+.TP
+.B --dumpfile=<sökväg/till/fil>
+Ange platsen för en fil i pcap-format som dnsmasq använder för att dumpa kopior av nätverkspaket för felsökningsändamål. Om filen finns när dnsmasq startar raderas den inte; nya paket läggs till i slutet. Filen kan vara en namngiven pipe som Wireshark lyssnar på.
+.TP
+.B --dumpmask=<mask>
+Ange vilka typer av paket som ska läggas till i dumpfilen. Argumentet ska vara OR för bitmaskerna för varje typ av paket som ska dumpas: det kan anges i hexadecimal form genom att föregå siffran med 0x på normalt sätt. Varje gång ett paket skrivs till dumpfilen loggar dnsmasq paketsekvensen och masken
+som representerar dess typ. De aktuella typerna är: 0x0001 - DNS-förfrågningar från klienter, 0x0002 DNS-svar till klienter, 0x0004 - DNS-förfrågningar till uppströms, 0x0008 - DNS-svar från uppströms, 0x0010 - förfrågningar som skickas uppströms för DNSSEC-validering, 0x0020 – svar på förfrågningar för DNSSEC-validering, 0x0040 – svar på klientförfrågningar som misslyckas med DNSSEC-validering, 0x0080 – svar på förfrågningar för DNSSEC-validering som misslyckas med validering, 0x1000 – DHCPv4, 0x2000 – DHCPv6, 0x4000 - Routerannonsering, 0x8000 - TFTP.
+.TP
+.B --add-mac[=base64|text]
+Lägg till MAC-adressen för den som gör förfrågan till DNS-förfrågningar som
+vidarebefordras uppströms. Detta kan användas för DNS-filtrering av uppströms
+servern. MAC-adressen kan endast läggas till om den som gör förfrågan befinner sig i samma
+subnät som dnsmasq-servern. Observera att mekanismen som används för att uppnå detta (ett EDNS0-alternativ)
+ännu inte är standardiserad, så detta bör betraktas som
+experimentellt. Observera också att exponering av MAC-adresser på detta sätt kan
+ha konsekvenser för säkerhet och integritet. Varningen om caching
+som ges för \fB--add-subnet\fP gäller även \fB--add-mac\fP. En alternativ kodning av
+MAC, som base64, aktiveras genom att lägga till parametern ”base64” och en läsbar kodning av hex-och-kolon aktiveras genom att lägga till ”text”.
+.TP
+.B --strip-mac
+Ta bort all MAC-adressinformation som redan finns i nedströmsfrågor innan de vidarebefordras uppströms.
+.TP
+.B --add-cpe-id=<string>
+Lägg till en godtycklig identifieringssträng till DNS-frågor som
+vidarebefordras uppströms.
+.TP
+.B --add-subnet[[= [<IPv4-adress>/]<IPv4-prefixlängd>][,[<IPv6-adress>/]<IPv6-prefixlängd>]]
+Lägg till en subnätadress till DNS-frågor som vidarebefordras
+uppströms. Om en adress anges i flaggan kommer den att användas,
+annars kommer begärarens adress att användas. Mängden
+adress som vidarebefordras beror på prefixlängdsparametern: 32 (128
+för IPv6) vidarebefordrar hela adressen, noll vidarebefordrar ingen del av den men
+markerar ändå begäran så att ingen uppströms namnservrar lägger till klient
+adressinformation heller. Standardvärdet är noll för både IPv4 och
+IPv6. Observera att uppströms namnservrar kan konfigureras för att returnera
+olika resultat baserat på denna information, men dnsmasq-cachen
+tar inte hänsyn till detta. Cachning är därför inaktiverad för sådana svar,
+såvida inte den subnätadress som läggs till är konstant.
+
+Till exempel
+.B --add-subnet=24,96
+kommer att lägga till /24- och /96-undernät för IPv4- och IPv6-förfrågare.
+.B --add-subnet=1.2.3.4/24
+kommer att lägga till 1.2.3.0/24 för IPv4-förfrågare och ::/0 för IPv6-förfrågare.
+.B --add-subnet=1.2.3.4/24,1.2.3.4/24
+lägger till 1.2.3.0/24 för både IPv4- och IPv6-begärare.
+.TP
+.B --strip-subnet
+Ta bort alla subnätadresser som redan finns i en nedströmsfråga innan den vidarebefordras uppströms. Om --add-subnet är inställt säkerställer detta också
+att alla nedströmslevererade subnät ersätts av det som lagts till av dnsmasq. Annars kommer dnsmasq INTE att ersätta ett
+befintligt subnät i frågan.
+.TP
+.B --umbrella[=[deviceid:<deviceid>][,orgid:<orgid>][,assetid:<id>]]
+Bäddar in begärarens IP-adress i DNS-frågor som vidarebefordras uppströms.
+Om enhets-id, tillgångs-id eller organisations-id anges, inkluderas informationen
+i de vidarebefordrade frågorna och kan eventuellt användas i
+filtreringspolicyer och rapportering. Ordningen på id
+-attributen är irrelevant, men de måste separeras med kommatecken. Deviceid är
+ett sexton siffrigt hexadecimalt tal, org- och asset-id är decimaltal.
+.TP
+.B \-c, --cache-size=<cachesize>
+Ställ in storleken på dnsmasq:s cache. Standardvärdet är 150 namn. Om cacheminnets storlek ställs in på noll inaktiveras cachningen. Obs! Ett stort cacheminne påverkar prestandan.
+.TP
+.B \-N, --no-negcache
+Inaktivera negativ cachning. Negativ cachning gör det möjligt för dnsmasq att komma ihåg
+svaren ”ingen sådan domän” från uppströmsnamnserver och svara på
+identiska frågor utan att vidarebefordra dem igen.
+.TP
+.B --no-round-robin
+Dnsmasq permuterar normalt ordningen på A- eller AAAA-poster för samma
+namn vid på varandra följande frågor, för lastbalansering. Detta inaktiverar det
+beteendet, så att posterna alltid returneras i den ordning
+de tas emot från uppströms.
+.TP
+.B --do-0x20-encode, --no-0x20-encode
+Dnsmasq kan kryptera bokstäverna i DNS-frågor som skickas uppströms som en säkerhetsfunktion.
+Denna teknik kan interagera dåligt med sällsynta trasiga DNS-servrar som inte bevarar bokstäverna
+i frågan i sitt svar. Första gången ett svar returneras
+som matchar frågan i alla avseenden utom bokstäverna, loggas en varning.
+Om detta sammanfaller med att DNS inte fungerar, är det
+nödvändigt att inaktivera funktionen. I version 2.91 är 0x20-kodning
+inaktiverad som standard och måste aktiveras med --do-0x20-encode. Standardinställningen
+kan komma att ändras i framtiden, så för att vara säker på dess status efter en uppgradering, ställ in --do-0x20-encode
+eller --no-0x20-encode i din konfiguration. --no-0x20-encode åsidosätter --do-x20-encode eller en framtida standardinställning
+0x20-encode enable.
+.TP
+.B --use-stale-cache[=<max TTL excess in s>]
+När detta är inställt kommer dnsmasq att returnera data ändå om ett DNS-namn finns i cachen men dess livslängd har gått ut. (Det försöker uppdatera
+data med en uppströmsfråga efter att ha returnerat den inaktuella datan.) Detta kan förbättra hastigheten och tillförlitligheten. Det sker på bekostnad av att
+ibland returnera föråldrade data och mindre effektiv cacheanvändning, eftersom gamla data inte kan rensas när dess TTL löper ut, så cachen blir
+mestadels minst nyligen använd. För att mildra problem orsakade av massivt föråldrade DNS-svar kan den maximala åldern för cachade poster anges i sekunder
+(standardinställningen är att inte servera något äldre än en dag). Om TTL-övertiden ställs in på noll kommer föråldrade cachade data att serveras oavsett hur länge de har gått ut.
+.TP
+.B \-0, --dns-forward-max=<frågor>
+Ställ in det maximala antalet samtidiga DNS-frågor. Standardvärdet är
+150, vilket bör fungera bra för de flesta installationer. Den enda kända situationen
+där detta behöver ökas är när man använder webbserverloggfilsresolvers
+,
+ som kan generera ett stort antal samtidiga förfrågningar. Denna
+parameter styr faktiskt antalet samtidiga förfrågningar per servergrupp, där en servergrupp är den uppsättning servrar som är associerade med en enda domän. Så om en domän har sin egen server via --server=/example.com/1.2.3.4 och 1.2.3.4 inte svarar, men frågor för *.example.com inte kan gå någon annanstans, kommer andra frågor inte att påverkas. I konfigurationer med många sådana servergrupper och begränsade resurser kan det vara nödvändigt att minska detta värde.
+.TP
+.B --dnssec
+Validera DNS-svar och cachelagra DNSSEC-data. När DNS-frågor vidarebefordras begär dnsmasq de 
+DNSSEC-poster som behövs för att validera svaren. Svaren valideras och resultatet returneras som 
+den autentiserade databiten i DNS-paketet. Dessutom lagras DNSSEC-posterna i cachen, vilket gör 
+valideringen av klienter mer effektiv. Observera att validering av klienter är det säkraste DNSSEC-läget, men för
+klienter som inte kan utföra validering är det användbart att använda AD-biten som ställs in av dnsmasq, förutsatt att nätverket mellan 
+dnsmasq-servern och klienten är betrott. Dnsmasq måste kompileras med HAVE_DNSSEC aktiverat och DNSSEC
+trust anchors tillhandahållna, se 
+.B --trust-anchor.
+Eftersom DNSSEC-valideringsprocessen använder cachen är det inte
+tillåtet att minska cacheminnets storlek under standardvärdet när DNSSEC är
+aktiverat. Namnserverna uppströms från dnsmasq måste vara DNSSEC-kompatibla,
+dvs. kunna returnera DNSSEC-poster med data. Om de inte är det
+kommer dnsmasq inte att kunna avgöra den betrodda statusen för
+svaren, vilket innebär att DNS-tjänsten kommer att sluta fungera helt.
+.TP
+.B --trust-anchor=<domän>,[<klass>,][<nyckeltagg>,<algoritm>,<digest-typ>,<digest>]
+Tillhandahåll DS-poster som fungerar som förtroendeankare för DNSSEC
+-validering. Klassen är som standard IN. Vanligtvis är detta DS-poster för nyckelsigneringsnycklar
+nycklar (KSK) i rotzonen,
+men förtroendeankare för begränsade domäner är också möjliga.
+Ett negativt förtroendeankare (dvs. bevis på att en DS-post inte finns) kan konfigureras genom att ange
+endast namnet eller endast namnet och klassen. Detta kan vara användbart för att tvinga dnsmasq att behandla zoner som delegerats
+med \fB--server=/<domän>/<ip-adress>\fP som osignerade. De aktuella
+rotzonens förtroendeankare kan laddas ner från https://data.iana.org/root-anchors/root-anchors.xml
+.TP
+.B --dnssec-check-unsigned[=no]
+Som standard kontrollerar dnsmasq att osignerade DNS-svar är
+legitima: detta medför möjliga extra förfrågningar även för majoriteten av DNS
+-zoner som för närvarande inte är signerade. Om
+.B --dnssec-check-unsigned=no
+förekommer i konfigurationen, antas sådana svar vara giltiga och vidarebefordras (utan att
+”authentic data”-biten är inställd, förstås). Detta skyddar inte mot en
+angripare som förfalskar osignerade svar för signerade DNS-zoner, men det är
+snabbt.
+
+Versioner av dnsmasq före 2.80 kontrollerade som standard inte osignerade svar och använde 
+.B --dnssec-check-unsigned
+för att aktivera detta. Sådana konfigurationer kommer att fortsätta att fungera som tidigare, men de som använde standardinställningen utan kontroll måste ändras för att uttryckligen välja ingen kontroll. Den nya standardinställningen beror på att det är farligt att inaktivera kontrollen av osignerade svar. Det öppnar inte bara för möjligheten till förfalskade svar, utan gör också att allt verkar fungera även när uppströmsnamnserverna inte stöder DNSSEC, och i detta fall sker ingen DNSSEC-validering alls.
+.TP
+.B --dnssec-no-timecheck
+DNSSEC-signaturer är endast giltiga under angivna tidsfönster och bör avvisas utanför dessa fönster. Detta genererar ett
+intressant hönan-och-ägg-problem för maskiner som inte har en realtidsklocka i hårdvaran. För att dessa maskiner ska kunna bestämma rätt 
+tid krävs vanligtvis användning av NTP och därmed DNS, men för att validera DNS krävs att rätt tid redan är känd. Om denna flagga
+ställs in tas tidsfönsterkontrollerna bort (men inte andra DNSSEC-valideringar) endast tills dnsmasq-processen tar emot SIGINT. Avsikten är
+att dnsmasq ska startas med denna flagga när plattformen fastställer att tillförlitlig tid för närvarande inte är tillgänglig. Så snart 
+tillförlitlig tid har fastställts ska ett SIGINT skickas till dnsmasq, vilket aktiverar tidskontroll och rensar cachen för DNS-poster
+som inte har kontrollerats noggrant.
+
+Tidigare versioner av dnsmasq överbelastade SIGHUP (som läser om mycket av konfigurationen) för att också aktivera tidsvalidering.
+
+Om dnsmasq körs i felsökningsläge (\fB--no-daemon\fP flagga) behåller SIGINT sin vanliga funktion att avsluta dnsmasq-processen.
+.TP
+.B --dnssec-timestamp=<path>
+Aktiverar ett alternativt sätt att kontrollera giltigheten av systemtiden för DNSSEC (se \fB--dnssec-no-timecheck\fP). I detta fall anses
+systemtiden vara giltig när den blir senare än tidsstämpeln på den angivna filen. Filen skapas och 
+dess tidsstämpel ställs in automatiskt av dnsmasq. Filen måste lagras på ett beständigt filsystem, så att den och dess mtime överförs 
+vid omstart av systemet. Tidsstämpel-filen skapas efter att dnsmasq har släppt root, så den måste finnas på en plats som kan skrivas av den 
+icke-privilegierade användare som dnsmasq körs som.
+.TP
+.B --proxy-dnssec
+Kopiera DNSSEC-autentiserade databitar från uppströms servrar till nedströms klienter. Detta är ett 
+alternativ till att låta dnsmasq validera DNSSEC, men det beror på säkerheten i nätverket mellan 
+dnsmasq och uppströms servrarna, samt på uppströms servrarnas tillförlitlighet. Observera att det inte är tekniskt möjligt att cachelagra
+autentiserade databiten korrekt i alla fall inte tekniskt möjligt. Om AD-biten ska användas
+när detta alternativ används, bör cachen inaktiveras med --cache-size=0. I de flesta fall är det bättre att aktivera DNSSEC-validering
+i dnsmasq. Se --dnssec för mer information.
+.TP
+.B --dnssec-limits=<limit>[,<limit>.......]
+Åsidosätt de standardresursbegränsningar som tillämpas på DNSSEC-validering. Kryptografiska operationer är kostsamma och specialdesignade domäner
+kan överbelasta en DNSSEC-validerare genom att tvinga den att utföra hundratusentals sådana operationer. För att undvika detta tillämpar dnsmasq-valideringskoden
+begränsningar på hur mycket arbete som får läggas ner på valideringen.
+ Om någon av gränserna överskrids misslyckas valideringen och domänen behandlas som BOGUS. Det finns fyra gränser, i ordning (standardvärden inom parentes): antal signaturvalideringar som misslyckas per RRset (20), antal signaturvalideringar och
+hashberäkningar per fråga (200), antal underfrågor för att hämta DS- och DNSKEY-RRset per fråga (40) och antalet iterationer i en NSEC3-post (150).
+De maximala värden som uppnås under valideringen lagras och dumpas som en del av statistiken som genereras av SIGUSR1. Om du anger ett gränsvärde på 0 behålls standardvärdet, så
+\fB--dnssec-limits=0,0,20\fP ställer in antalet underfrågor till 20 medan de andra gränserna behålls på standardvärdena.
+.TP
+.B --dnssec-debug
+Ställ in felsökningsläge för DNSSEC-valideringen, ställ in biten Checking Disabled på uppströmsfrågor och 
+konvertera inte svar som inte valideras till svar med
+returkoden SERVFAIL. Observera att
+inställningen kan påverka DNS-beteendet på ett negativt sätt, det är inte en
+extra loggningsflagga och bör inte ställas in i produktion.
+.TP
+.B --auth-zone=<domän>[,<undernät>[/<prefixlängd>][,<undernät>[/<prefixlängd>].....][,exkludera:<undernät>[/<prefixlängd>]].....]
+Definiera en DNS-zon för vilken dnsmasq fungerar som auktoritativ server. Lokalt definierade DNS-poster som finns i domänen
+kommer att betjänas. Om subnät anges måste A- och AAAA-poster finnas i ett av de
+angivna subnäten.
+
+Som alternativ till att direkt ange subnät är det möjligt att
+ange namnet på ett gränssnitt, i vilket fall de subnät som antyds av
+det gränssnittets konfigurerade adresser och nätmask/prefixlängd
+används; detta är användbart när man använder konstruerade DHCP-intervall eftersom den faktiska
+adressen är dynamisk och inte känd när dnsmasq konfigureras. 
+Gränssnittsadresserna kan begränsas till endast IPv6-adresser med
+<interface>/6 eller till endast IPv4 med <interface>/4. Detta är användbart när
+ett gränssnitt har dynamiskt bestämda globala IPv6-adresser som ska
+visas i zonen, men RFC1918 IPv4-adresser som inte ska visas.
+Gränssnittsnamn och adressliterala subnätsspecifikationer kan användas
+fritt i samma \fB--auth-zone\fP-deklaration.
+
+Det är möjligt att utesluta vissa IP-adresser från svaren. Det kan
+användas för att säkerställa att svaren endast innehåller globala routbara IP-adresser
+(genom att utesluta loopback-, RFC1918- och ULA-adresser).
+
+Undernätet/undernäten används också för att definiera in-addr.arpa- och
+ip6.arpa-domäner som används för omvända DNS-frågor. Om inget
+anges är prefixlängden som standard 24 för IPv4 och 64 för IPv6.
+För IPv4-undernät bör prefixlängden ha värdet 8, 16 eller 24
+om du inte är bekant med RFC 2317 och har ordnat
+in-addr.arpa-delegeringen därefter. Observera att om inga undernät
+anges, besvaras inga omvända frågor.
+.TP
+.B --auth-soa=<serial>[,<hostmaster>[,<refresh>[,<retry>[,<expiry>]]]]
+Ange fält i SOA-posten som är associerad med auktoritativa
+zoner. Observera att detta är valfritt, alla värden är inställda på rimliga standardvärden.
+.TP
+.B --auth-sec-servers=<domän>[,<domän>[,<domän>...]]
+Ange eventuella sekundära servrar för en zon för vilken dnsmasq är
+auktoritativ. Dessa servrar måste konfigureras för att hämta zondata från
+dnsmasq genom zonöverföring och besvara frågor för samma
+auktoritativa zoner som dnsmasq.
+.TP
+.B --auth-peer=<ip-adress>[,<ip-adress>[,<ip-adress>...]]
+Ange adresserna till sekundära servrar som har tillåtelse att
+initiera zonöverföringsförfrågningar (AXFR) för zoner för vilka dnsmasq är
+auktoritativ. Om detta alternativ inte anges men --auth-sec-servers anges,
+kommer AXFR-förfrågningar att
+accepteras från alla sekundära servrar. Om du anger
+.B --auth-peer
+utan
+.B --auth-sec-servers
+aktiveras zonöverföring, men sekundärservern annonseras inte i NS-poster som returneras av dnsmasq.
+.TP
+.B --conntrack
+Läs Linux-anslutningsspårmärket som är associerat med inkommande DNS
+-frågor och ställ in samma märkesvärde på uppströms trafik som används för att svara på
+dessa frågor.
+ Detta gör att trafik som genereras av dnsmasq kan associeras med de förfrågningar som orsakar den, vilket är användbart för bandbreddsredovisning
+och brandväggar. Dnsmasq måste ha conntrack-stöd
+kompilerat och kärnan måste ha conntrack-stöd
+inkluderat och konfigurerat. Detta alternativ kan inte kombineras med
+.B --query-port.
+.TP
+.B \-F, --dhcp-range=[tag:<tag>[,tag:<tag>],][set:<tag>,]<start-addr>[,<end-addr>|<mode>[,<netmask>[,<broadcast>]]] [,<lease time>]
+.TP
+.B \-F, --dhcp-range=[tag:<tag>[,tag:<tag>],][set:<tag>,]<start-IPv6addr>[,<end-IPv6addr>|constructor:<interface>][,<mode>][,<prefix-len>][,<lease time>]
+
+Aktivera DHCP-servern. Adresser kommer att delas ut från intervallet
+<start-addr> till <end-addr> och från statiskt definierade adresser som anges
+i
+.B --dhcp-host
+alternativ. Om leasingtiden anges kommer leasingavtal
+att ges för den tidsperioden. Leasingtiden anges i sekunder,
+minuter (t.ex. 45m), timmar (t.ex. 1h), dagar (2d), veckor (1w) eller ”infinite” . Om den inte anges är
+standardleasetiden en timme för IPv4 och en dag för IPv6. Den
+minsta leasetiden är två minuter. För IPv6-intervall kan leasetiden
+vara ”deprecated”; detta sätter den önskade livslängden som skickas i en DHCP
+lease eller routerannonsering till noll, vilket gör att klienter använder
+andra adresser, om tillgängliga, för nya anslutningar som en förberedelse för omnumrering.
+
+Det här alternativet kan upprepas med olika adresser för att aktivera DHCP
+-tjänsten för mer än ett nätverk. För direktanslutna nätverk (dvs.
+nätverk där maskinen som kör dnsmasq har ett gränssnitt) är
+nätmasken valfri: dnsmasq bestämmer den utifrån gränssnittets
+konfiguration. För nätverk som tar emot DHCP-tjänsten via en reläagent
+kan dnsmasq inte bestämma nätmasken själv, så den bör
+anges, annars måste dnsmasq gissa utifrån klassen (A, B eller
+C) för nätverksadressen. Sändningsadressen är
+alltid valfri. Det är alltid
+tillåtet att ha mer än en \fB--dhcp-range\fP i ett enda undernät.
+
+För IPv6 är parametrarna något annorlunda: istället för nätmask
+och sändningsadress finns det en valfri prefixlängd som måste
+vara lika med eller större än prefixlängden på det lokala gränssnittet. Om den inte
+anges är standardvärdet 64. Till skillnad från IPv4-fallet härleds prefixlängden inte
+automatiskt från gränssnittskonfigurationen. Den minsta
+storleken på prefixlängden är 64.
+
+IPv6 (endast) stöder en annan typ av intervall. I detta fall innehåller startadressen och den valfria slutadressen endast nätverksdelen (dvs. ::1) och följs av
+.B konstruktör:<gränssnitt>.
+Detta bildar en mall som beskriver hur man skapar intervall, baserat på de adresser som tilldelats gränssnittet. Till exempel
+
+.B --dhcp-range=::1,::400,constructor:eth0
+
+kommer att söka efter adresser på
+eth0 och sedan skapa ett intervall från <nätverk>::1 till <nätverk>::400. Om
+gränssnittet tilldelas mer än ett nätverk, kommer
+motsvarande intervall att skapas automatiskt, och sedan
+föråldras och slutligen tas bort igen när adressen föråldras och
+sedan raderas. Gränssnittsnamnet kan ha ett slutligt ”*” jokertecken. Observera
+att inte vilken adress som helst på eth0 duger: den får inte vara en
+autokonfigurerad eller privat adress, eller vara föråldrad.
+
+Om \fB--dhcp-range\fP endast används för stateless DHCP och/eller SLAAC,
+kan adressen helt enkelt vara ::
+
+.B --dhcp-range=::,constructor:eth0
+
+
+Det valfria 
+.B set:<tag>
+ställer in en alfanumerisk etikett som markerar detta nätverk så att
+DHCP-alternativ kan anges per nätverk.
+När det istället prefixeras med ’tag:’ ändras dess betydelse från att ställa in
+en tagg till att matcha den. Endast en tagg kan ställas in, men mer än en tagg
+kan matchas.
+
+Det valfria nyckelordet <mode> kan vara 
+.B static
+som talar om för dnsmasq att aktivera DHCP för det angivna nätverket, men inte
+att dynamiskt tilldela IP-adresser: endast värdar som har statiska
+adresser angivna via 
+.B --dhcp-host
+eller från /etc/ethers kommer att betjänas. Ett statiskt subnät med adress
+alla nollor kan användas som en ”catch-all”-adress för att möjliggöra svar på alla
+informationsförfrågningspaket på ett subnät som tillhandahålls med
+stateless DHCPv6, dvs.
+.B --dhcp-range=::,static
+
+För IPv4 kan <mode> vara 
+.B proxy,
+ i vilket fall dnsmasq tillhandahåller proxy-DHCP på det angivna
+subnätet. (Se 
+.B --pxe-prompt
+och
+ 
+.B --pxe-service
+för mer information.)
+
+För IPv6 kan läget vara en kombination av
+.B ra-only, slaac, ra-names, ra-stateless, ra-advrouter, off-link.
+
+.B ra-only
+talar om för dnsmasq att endast erbjuda Router Advertisement på detta subnät,
+och inte DHCP.
+ 
+
+.B slaac
+ber dnsmasq att erbjuda Router Advertisement på detta subnät och att ställa in
+A-biten i routerannonseringen, så att klienten kommer att använda
+SLAAC-adresser. När detta används med ett DHCP-intervall eller en statisk DHCP-adress
+resulterar det i att klienten har både en DHCP-tilldelad och en SLAAC-adress
+.
+
+.B ra-stateless
+skickar routerannonser med O- och A-bitarna inställda och tillhandahåller en
+stateless DHCP-tjänst. Klienten kommer att använda en SLAAC-adress och använda
+DHCP för annan konfigurationsinformation.
+
+.B ra-names
+aktiverar ett läge
+som ger DNS-namn till dual-stack-värdar som använder SLAAC för
+IPv6. Dnsmasq använder värdens IPv4-lease för att härleda namnet, nätverkssegmentet
+och MAC-adressen och antar att värden också kommer att ha en
+IPv6-adress beräknad med SLAAC-algoritmen, på samma nätverkssegment.
+ Adressen pingas, och om ett svar mottas läggs en AAAA-post
+till i DNS för denna IPv6-adress.
+ Observera att detta endast sker för direktanslutna
+nätverk (inte sådana som använder DHCP via en relä) och att det inte fungerar 
+om en värd använder sekretessförlängningar.
+ 
+.B ra-names
+kan kombineras med 
+.B ra-stateless
+och
+.B slaac.
+
+.B ra-advrouter
+aktiverar ett läge där routeradresser snarare än prefix inkluderas i annonserna.
+Detta beskrivs i RFC-3775 avsnitt 7.2 och används i mobilt IPv6. I detta läge ingår även intervallalternativet,
+ som beskrivs i RFC-3775 avsnitt 7.3.
+
+.B off-link
+talar om för dnsmasq att annonsera prefixet utan att on-link-biten (även kallad L) är inställd.
+
+.TP
+.B \-G, --dhcp-host=[<hwaddr>][,id:<client_id>|*][,set:<tag>][,tag:<tag>][,<ipaddr>][,<hostname>][,<lease_time>][,ignore]
+Ange parametrar per värd för DHCP-servern. Detta gör att en maskin
+med en viss hårdvaruadress alltid tilldelas samma
+värdnamn, IP-adress och leasingtid. Ett värdnamn som anges på detta sätt
+ersätter alla som tillhandahålls av DHCP-klienten på maskinen. Det är också
+tillåtet att utelämna hårdvaruadressen och inkludera värdnamnet, i
+vilket fall IP-adressen och leasingtiderna kommer att gälla för alla maskiner
+som gör anspråk på det namnet. Till exempel 
+.B --dhcp-host=00:20:e0:3b:13:af,wap,infinite
+talar om för dnsmasq att ge
+maskinen med hårdvaruadress 00:20:e0:3b:13:af namnet wap och
+en oändlig DHCP-lease.
+ 
+.B --dhcp-host=lap,192.168.0.199
+talar om för
+dnsmasq att alltid tilldela maskinen lap IP-adressen
+192.168.0.199.
+ 
+
+Adresser som tilldelas på detta sätt är inte begränsade till
+det intervall som anges av alternativet \fB--dhcp-range\fP, men de måste vara i
+samma subnät som något giltigt dhcp-intervall. För
+subnät som inte behöver en pool med dynamiskt tilldelade adresser
+använder du nyckelordet ”static” i deklarationen \fB--dhcp-range\fP.
+
+Det är tillåtet att använda klientidentifierare (kallade klient
+DUID i IPv6-land) istället för
+hårdvaruadresser för att identifiera värdar genom att lägga till prefixet ’id:’. Alltså:
+.B --dhcp-host=id:01:02:03:04,.....
+ 
+hänvisar till värden med klientidentifieraren 01:02:03:04. Det är också
+tillåtet att ange klient-ID som text, så här:
+.B --dhcp-host=id:clientidastext,.....
+ 
+
+En enda
+.B --dhcp-host
+kan innehålla en IPv4-adress eller en eller flera IPv6-adresser, eller båda. IPv6-adresser måste omges av hakparenteser, så här:
+.B --dhcp-host=laptop,[1234::56]
+IPv6-adresser får endast innehålla värdidentifieringsdelen:
+.B --dhcp-host=laptop,[::56]
+I så fall fungerar de som jokertecken i konstruerade DHCP-intervall, med
+lämplig nätverksdel infogad. För IPv6 kan en adress innehålla en prefixlängd:
+.B --dhcp-host=laptop,[1234:50/126]
+vilket (i detta fall) anger fyra adresser, 1234::50 till 1234::53. Detta (och möjligheten
+att ange flera adresser) är användbart
+när en värd har ett konsekvent namn eller hårdvaru-ID, men varierande DUID:er, eftersom det gör det möjligt för
+dnsmasq att respektera den statiska adressallokeringen men tilldela en annan adress för varje DUID. Detta
+inträffar vanligtvis vid kedjebaserad nätverksstart, eftersom varje steg i kedjan i tur och ordning tilldelar en adress.
+
+Observera att i IPv6 DHCP kanske hårdvaruadressen inte är
+tillgänglig, även om den normalt är det för direktanslutna klienter eller
+klienter som använder DHCP-reläer som stöder RFC 6939.
+
+
+För DHCPv4 betyder det speciella alternativet \fBid:*\fP ”ignorera alla klient-id 
+och använd endast MAC-adresser”. Detta är användbart när en klient ibland presenterar ett klient-id 
+men inte alltid.
+
+Om ett namn förekommer i /etc/hosts kan den associerade adressen
+tilldelas en DHCP-lease, men endast om ett 
+.B --dhcp-host
+-alternativ som anger namnet också finns. Endast ett värdnamn kan
+anges i ett 
+.B --dhcp-host
+-alternativ, men alias är möjliga genom att använda CNAME. (Se 
+.B --cname).
+ Observera att /etc/hosts INTE används när DNS-serversidan av dnsmasq
+är inaktiverad genom att DNS-serverporten är inställd på noll.
+
+Mer än en
+.B --dhcp-host
+kan associeras (med namn, hårdvaruadress eller UID) med en värd. Vilken som används
+(och därmed vilken adress som tilldelas av DHCP och visas i DNS) beror
+på det subnät där värden senast erhöll en DHCP-lease:
+den
+.B --dhcp-host
+med en adress inom subnätet används. Om mer än en adress finns inom subnätet
+är resultatet odefinierat. En följd av detta är att namnet som är associerat med en värd som använder
+.B --dhcp-host
+inte visas i DNS förrän värden erhåller en DHCP-lease.
+
+
+Det speciella nyckelordet \fBignore\fP talar om för dnsmasq att aldrig erbjuda en DHCP-lease
+till en maskin. Maskinen
+kan anges med hårdvaruadress, klient-ID eller värdnamn. Till
+exempel: \fB--dhcp-host=00:20:e0:3b:13:af,ignore\fP.
+ 
+Detta kan vara användbart när det finns en annan DHCP-server i nätverket som ska
+användas av vissa maskiner.
+
+Konstruktionen \fBset:<tag>\fP ställer in taggen
+när denna \fB--dhcp-host\fP-direktiv används. Detta kan användas för att
+selektivt skicka DHCP-alternativ endast till denna värd. Mer än en tagg
+kan ställas in i ett \fB--dhcp-host\fP-direktiv (men inte på andra ställen där
+\fBset:<tag>\fP är tillåtet). När en värd matchar något
+\fB--dhcp-host\fP-direktiv (eller ett som antyds av /etc/ethers) sätts den speciella
+taggen \fBknown\fP. Detta gör det möjligt att konfigurera dnsmasq så att
+den ignorerar förfrågningar från okända maskiner med
+\fB--dhcp-ignore=tag:!known\fP.
+Om värden endast matchar ett \fB--dhcp-host\fP-direktiv som inte kan
+användas eftersom det anger en adress på ett annat subnät, sätts taggen \fBknown-othernet\fP.
+
+Konstruktionen \fBtag:<tag>\fP filtrerar vilka dhcp-host-direktiv som används. Mer än
+en tagg kan anges. I detta fall måste förfrågan matcha alla taggar. Taggade
+direktiv används före otaggade. Observera att en av <hwaddr>,
+<client_id> eller <hostname> fortfarande måste anges (kan vara ett jokertecken).
+
+Ethernet-adresser (men inte klient-id) kan ha
+jokertecken, så till exempel 
+.B --dhcp-host=00:20:e0:3b:13:*,ignore
+kommer att få dnsmasq att ignorera det angivna intervallet av hårdvaruadresser. Observera att
+”*” måste undvikas eller anges inom citationstecken på kommandoraden, men inte
+i konfigurationsfilen.
+
+Hårdvaruadresser matchar normalt alla
+nätverkstyper (ARP), men det är möjligt att begränsa dem till en enda
+ARP-typ genom att föregå dem med ARP-typen (i HEX) och ”-”. Så 
+.B --dhcp-host=06-00:20:e0:3b:13:af,1.2.3.4
+ 
+kommer endast att matcha en
+Token-Ring-hårdvaruadress, eftersom ARP-adress typen för token ring
+är 6.
+ 
+
+Som ett specialfall är det i DHCPv4 möjligt att inkludera mer än en
+hårdvaruadress. Exempel:
+\fB--dhcp-host=11:22:33:44:55:66,12:34:56:78:90:12,192.168.0.2\fP.
+Detta gör det möjligt att koppla en IP-adress till
+flera hårdvaruadresser och ger dnsmasq tillstånd att överge en
+DHCP-lease till en av hårdvaruadresserna när en annan begär
+en lease. Observera att detta är farligt att göra: det fungerar bara
+tillförlitligt om endast en av hårdvaruadresserna är aktiv vid varje
+tillfälle och det finns inget sätt för dnsmasq att genomdriva detta. Det är till exempel
+användbart att tilldela en stabil IP-adress till en bärbar dator som
+har både trådbundna och trådlösa gränssnitt.
+.TP
+.B --dhcp-hostsfile=<sökväg>
+Läs DHCP-värdinformation från den angivna filen. Om en katalog
+anges, läs då alla filer i den katalogen i alfabetisk ordning. Filen innehåller 
+information om en värd per rad. Radens format är detsamma
+som texten till höger om ’=’ i \fB--dhcp-host\fP. Fördelen med att lagra DHCP-värdinformation
+i den här filen är att den kan ändras utan att dnsmasq behöver startas om:
+filen läses om när dnsmasq tar emot SIGHUP.
+.TP
+.B --dhcp-optsfile=<sökväg>
+Läs DHCP-optionsinformation från den angivna filen. Om en katalog
+anges, läs då alla filer i den katalogen i alfabetisk ordning. Fördelen med att 
+använda detta alternativ är densamma som för \fB --dhcp-hostsfile\fP:
+\fB--dhcp-optsfile\fP läses om när dnsmasq tar emot SIGHUP. Observera att
+det är möjligt att koda informationen i en
+.B --dhcp-boot
+flagga som DHCP-alternativ, med hjälp av alternativnamnen bootfile-name,
+server-ip-address och tftp-server. Detta gör att dessa kan inkluderas
+i en \fB--dhcp-optsfile\fP.
+.TP
+.B --dhcp-hostsdir=<sökväg>
+Detta motsvarar \fB--dhcp-hostsfile\fP, med undantag för följande. Sökvägen MÅSTE vara en
+katalog, inte en enskild fil. Ändrade eller nya filer i
+katalogen läses automatiskt, utan att SIGHUP behöver skickas.
+Om en fil raderas eller ändras efter att den har lästs av dnsmasq, kommer
+värdpost som den innehöll att finnas kvar tills dnsmasq tar emot ett SIGHUP eller 
+startas om; dvs. värdposten läggs endast till dynamiskt. Ordningen i vilken
+filerna i en katalog läses är inte definierad.
+.TP
+.B --dhcp-optsdir=<sökväg>
+Detta motsvarar \fB--dhcp-optsfile\fP, med de skillnader som anges för \fB--dhcp-hostsdir\fP.
+.TP
+.B \-Z, --read-ethers
+Läs /etc/ethers för information om värdar för DHCP-servern.
+Formatet för /etc/ethers är en hårdvaruadress, följd av antingen ett
+värdnamn eller en IP-adress med fyra punkter. När dnsmasq läser dessa rader
+exakt samma effekt som
+.B --dhcp-host
+-alternativ som innehåller samma information. /etc/ethers läses om när 
+dnsmasq tar emot SIGHUP. IPv6-adresser läses INTE från /etc/ethers.
+.TP
+.B \-O, --dhcp-option=[tag:<tag>,[tag:<tag>,]][encap:<opt>,][vi-encap:<enterprise>,][vendor:[<vendor-class>],][<opt>|option:<opt-name>|option6:<opt>|option6:<opt-name>],[<value>[,<value>]]
+Skicka olika extra alternativ till DHCP-klienter. Som standard skickar
+dnsmasq vissa standardalternativ till DHCP-klienter, nätmasken och
+sändningsadressen är inställda på samma som värden som kör dnsmasq, och
+DNS-servern och standardrutten är inställda på adressen till den maskin
+som kör dnsmasq. (Motsvarande regler gäller för IPv6.) Om alternativet för domännamn har ställts in skickas det.
+Denna konfiguration gör det möjligt att åsidosätta dessa standardinställningar
+eller ange andra alternativ. Alternativet som ska skickas kan anges som ett
+decimaltal eller som \fBoption:<option-name>\fP.
+
+Alternativnumren
+anges i RFC2132 och efterföljande RFC:er. Den uppsättning alternativnamn
+som dnsmasq känner till kan hittas genom att köra \fBdnsmasq --help dhcp\fP.
+Om du till exempel vill ställa in standardroutningsalternativet till 192.168.4.4 använder du 
+\fB--dhcp-option=3,192.168.4.4\fP eller 
+\fB--dhcp-option=option: router,192.168.4.4\fP 
+och för att ställa in tidsserveradressen till 192.168.0.4, använd
+\fB--dhcp-option=42,192.168.0.4\fP eller
+\fB--dhcp-option=option:ntp-server,192.168.0.4\fP.
+Den speciella adressen 0.0.0.0 betyder ”adressen till det system som kör dnsmasq”.
+
+Ett alternativ utan data är giltigt och innehåller bara alternativet utan data.
+(Det finns för närvarande bara ett alternativ med ett datafält med längden noll definierat för DHCPv4, 80:rapid commit, så denna funktion är inte särskilt användbar i praktiken). Alternativ för vilka dnsmasq normalt
+tillhandahåller standardvärden kan utelämnas genom att definiera alternativet utan data. Dessa är
+netmask, broadcast, router, DNS-server, domännamn och värdnamn. För DHCPv4
+.B --dhcp-option = option:router
+resultera i att inget routeralternativ skickas, istället för standardvärdet för den värd där dnsmasq körs. För DHCPv6 gäller samma sak för alternativen DNS-server och uppdateringstid.
+
+
+Tillåtna datatyper är kommaseparerade
+punktseparerade IPv4-adresser, []-omslutna IPv6-adresser, ett decimaltal, kolonseparerade hexadecimala siffror
+och en textsträng. Om de valfria taggarna anges
+skickas detta alternativ endast när alla taggar matchar.
+
+Särskild bearbetning utförs på ett textargument för alternativ 119, för att
+överensstämma med RFC 3397. Text eller IP-adresser med fyra punkter som argument
+till alternativ 120 hanteras enligt RFC 3361. IP-adresser med fyra punkter 
+som följs av en snedstreck och sedan en nätmaskstorlek kodas enligt
+beskrivningen i RFC 3442.
+
+IPv6-alternativ anges med hjälp av nyckelordet \fBoption6:\fP,
+ följt av alternativnumret eller alternativnamnet. IPv6-alternativets
+är skilt från IPv4-optionsnamnrymden. IPv6-adresser
+i optioner måste omges av hakparenteser, t.ex. 
+\fB --dhcp-option=option6:ntp-server,[1234::56]\fP.
+ 
+För IPv6 betyder [::] ”den globala adressen för
+maskinen som kör dnsmasq”, medan [fd00::] ersätts med
+ULA, om den finns, och [fe80::] med den länklokala adressen.
+
+Var försiktig: datatypens lämplighet för det skickade optionsnumret kontrolleras inte.
+Det är fullt möjligt att få dnsmasq att generera olagliga DHCP-paket med
+oförsiktig användning av denna flagga.
+När värdet är ett decimaltal måste dnsmasq bestämma hur
+stor dataposten är. Detta görs genom att undersöka optionsnumret och/eller
+värdet, men kan åsidosättas genom att lägga till en enda bokstavsflagga enligt följande:
+b = en byte, s = två byte, i = fyra byte. Detta är främst användbart med 
+inkapslade leverantörsklassalternativ (se nedan) där dnsmasq inte kan
+bestämma datastorleken utifrån alternativnumret. Alternativdata som
+enbart består av punkter och siffror tolkas av dnsmasq
+som en IP-adress och infogas i ett alternativ som sådan. För att tvinga fram en
+bokstavlig sträng, använd citattecken. När du till exempel använder alternativ 66 för att skicka
+en bokstavlig IP-adress som TFTP-servernamn, måste du göra 
+\fB--dhcp-option=66,”1.2.3.4”\fP.
+
+Inkapslade leverantörsklassalternativ kan också anges (endast IPv4) med
+\fB--dhcp-option\fP: till exempel
+.B --dhcp-option=vendor:PXEClient,1,0.0.0.0
+skickar det inkapslade leverantörs
+klassspecifika alternativet ”mftp-address=0.0.0.0” till alla klienter vars
+leverantörsklass matchar ”PXEClient”. Leverantörsklassmatchningen är
+baserad på delsträngar (se \fB--dhcp-vendorclass\fP för mer information) . Om ett
+leverantörsklassalternativ (nummer 60) skickas av dnsmasq, används det 
+för att välja inkapslade alternativ framför de som skickas av
+klienten. Det är
+möjligt att helt utelämna leverantörsklassen;
+.B --dhcp-option=vendor:,1,0.0.0.0
+i vilket fall det inkapslade alternativet alltid skickas.
+ 
+
+Alternativ kan kapslas (endast IPv4) inom andra alternativ: till exempel
+.B --dhcp-option=encap:175, 190, ”iscsi-client0”
+skickar alternativ 175, inom vilket alternativ 190 finns. Om flera
+alternativ anges som är inkapslade med samma alternativnummer
+kommer de att kombineras korrekt till ett inkapslat alternativ.
+encap: och vendor: kan inte båda anges i samma \fB--dhcp-option\fP.
+
+Den sista varianten av inkapslade alternativ är ”Vendor-Identifying
+Vendor Options” enligt specifikationen i RFC3925. Dessa betecknas så här:
+.B --dhcp-option=vi-encap:2, 10, ”text”
+Siffran i vi-encap: är IANA-företagsnumret
+som används för att identifiera detta alternativ. Denna form av inkapsling stöds
+i IPv6.
+
+Adressen 0.0.0.0 behandlas inte särskilt i
+inkapslade alternativ.
+.TP
+.B --dhcp-option-force=[tag:<tag>,[tag:<tag>,]][encap:<opt>,][vi-encap:<enterprise>,][vendor:[<vendor-class>],]<opt>,[<value>[,<value>]]
+Detta fungerar på exakt samma sätt som
+.B --dhcp-option
+förutom att alternativet alltid skickas, även om klienten
+inte begär det i parameterförfrågningslistan. Detta är ibland
+nödvändigt, till exempel när alternativ skickas till PXELinux.
+.TP
+.B --dhcp-option-pxe=[tag:<tag>,[tag:<tag>,]][encap:<opt>,][vi-encap:<enterprise>,]<opt>,[<value> [,<värde>]]
+En variant av --dhcp-option som definierar alternativ som endast skickas som svar till PXE-klienter. Dessutom skickas sådana alternativ
+som svar till PXE-klienter när dnsmasq fungerar som en PXE-proxy, till skillnad från andra alternativ. Ett typiskt användningsfall är alternativ 175, som skickas till iPXE.
+.TP
+.B --dhcp-no-override
+(Endast IPv4) Inaktivera återanvändning av DHCP-servernamns- och filnamnsfälten som extra
+optionsutrymme. Om det är möjligt flyttar dnsmasq informationen om startserver och filnamn
+(från \fB--dhcp-boot\fP) från deras dedikerade fält till
+DHCP-alternativ. Detta frigör extra utrymme i DHCP-paketet för
+alternativ, men kan i sällsynta fall förvirra gamla eller trasiga klienter. Denna flagga
+tvingar fram ett ”enkelt och säkert” beteende för att undvika problem i sådana fall.
+.TP
+.B --leasequery[=<addr>[/<prefix>]]
+Aktivera RFC 4388 leasequery. Dnsmasq DHCP-servern svarar på LEASEQUERY-meddelanden från DHCP-reläer
+när detta alternativ anges. Om en adress eller ett subnät anges tillåts endast förfrågningar från ett relä vid den källan. Upprepa
+alternativet --leasequery för att ange flera tillåtna källor.
+För att kunna svara korrekt på lease-förfrågningar är det nödvändigt att lagra extra data i
+lease-databasen, och detta aktiveras också av alternativet \fB--leasequery\fP. De extra fälten
+(agent-info och vendorclass) lagras i leases-filen på ett något bakåtkompatibelt sätt.
+Att aktivera och sedan inaktivera leasequery orsakar inga problem; den extra informationen kommer att åldras
+ut ur databasen. Att aktivera leasequery i version 2.92 eller senare, lagra leases
+som kommer via DHCP-reläer som lägger till option-82 agent-info-data, och sedan återgå till en dnsmasq-binärfil före 2.92
+kan orsaka problem med att läsa leasingfilen. Från och med version 2.92 stöds leasequery endast för DHCPv4.
+.TP
+.B --dhcp-relay=<lokal adress>[,<serveradress>[#<serverport>]][,<gränssnitt]
+Konfigurera dnsmasq för att utföra DHCP-relä. Den lokala adressen är en adress
+som tilldelats ett gränssnitt på värden som kör dnsmasq. Alla DHCP
+-förfrågningar som anländer till det gränssnittet vidarebefordras till en fjärr-DHCP
+-server på serveradressen. Det är möjligt att vidarebefordra från en enda lokal
+adress till flera fjärrservrar genom att använda flera \fB--dhcp-relay\fP
+konfigurationer med samma lokala adress och olika serveradresser.
+ En serveradress måste vara en IP-adress, inte ett
+domännamn. Om serveradressen utelämnas kommer begäran att
+vidarebefordras via broadcast (IPv4) eller multicast (IPv6). I detta fall måste gränssnittet
+anges och får inte vara ett jokertecken. Serveradressen kan ange en icke-standardport
+att vidarebefordra till. Om detta används bör \fB--dhcp-proxy\fP troligen också anges,
+annars kommer delar av DHCP-konversationen som inte passerar genom vidarebefordran
+att levereras till fel port.
+
+Åtkomstkontroll för DHCP-klienter har samma regler som för DHCP
+-servern, se \fB--interface\fP, \fB--except-interface\fP, etc. Det valfria
+gränssnittsnamnet i \fB--dhcp-relay\fP-konfigurationen har en annan funktion: det
+styr på vilket gränssnitt DHCP-svar från servern kommer att
+accepteras. Detta är avsett för konfigurationer som har tre
+gränssnitt: ett som vidarebefordras från, ett andra som ansluter till DHCP-servern
+och ett tredje som är ett opålitligt nätverk, vanligtvis det bredare
+internet. Det undviker risken för att falska svar anländer via detta
+tredje gränssnitt.
+
+Det är tillåtet att låta dnsmasq fungera som en DHCP-server på en uppsättning
+gränssnitt och vidarebefordra från en separat uppsättning gränssnitt. Observera att
+även om det är fullt möjligt att skriva konfigurationer som verkar
+fungera som en server och en vidarebefordran på samma gränssnitt, stöds detta inte
+: vidarebefordringsfunktionen har företräde.
+
+Både DHCPv4- och DHCPv6-vidarebefordran stöds. Det är inte möjligt att vidarebefordra
+DHCPv4 vidare till en DHCPv6-server eller vice versa.
+
+DHCP-reläfunktionen för IPv6 inkluderar möjligheten att snoopa
+prefix-delegering från vidarebefordrade DHCP-transaktioner. Se
+.B --dhcp-script
+för mer information.
+.TP
+.B --dhcp-split-relay=<lokal adress>,[<serveradress> [#<serverport>]],<server-facing-interface>|<server-facing-address>
+En användbar förbättrad version av DHCPv4-relä. IPv4 DHCP använder normalt en enda adress
+för två funktioner; den används av DHCP-servern för att avgöra vilket nätverk som ska tilldelas
+en adress, och den används som adress för reläet till vilket servern skickar paket.
+
+Denna version av DHCP-relä delar upp dessa funktioner. Den använder adressen till det server-facing relä
+gränssnittet eller en direkt angiven adress som den adress som servern kommunicerar med. Adressen till det klient-facing gränssnittet
+(det första objektet i konfigurationen) används för att bestämma klientens subnät. Den 
+lokala adressen används också som server-ID-överskrivning så att klienten alltid skickar förfrågningar
+via reläet. Effekten av detta är att servern inte behöver
+en rutt till klientnätverket och att klienterna inte behöver en rutt till servern.
+
+Den tredje parametern är obligatorisk. Om det är ett gränssnittsnamn kan det inte vara ett jokertecken och samma filtrering som beskrivs i
+--dhcp-relay; svar från servern måste komma via det angivna gränssnittet. Om den tredje parametern
+är en IP-adress måste det vara en adress till ett lokalt gränssnitt som är routbart från servern; i detta fall sker ingen filtrering
+och svarspaketen kan komma via vilken rutt som helst.
+
+Om du konfigurerar ett nätverk där klientnätverken har begränsad routing, var försiktig
+med att konfigurera DHCP-servern. Dnsmasq, som DHCP-server, kommer att ställa in standardrutten till det
+klientinriktade relägränssnittet om det inte uttryckligen konfigureras: det är en rimlig standardinställning.
+Den normala standard-DNS-servern (samma adress som DHCP-servern)
+är inte lämplig när det inte finns någon rutt mellan de
+två, så detta måste konfigureras uttryckligen.
+ 
+.TP
+.B \-U, --dhcp-vendorclass=set:<tag>,[enterprise:<IANA-enterprise number>,]<vendor-class>
+Mappa från en vendor-class-sträng till en tagg. De flesta DHCP-klienter tillhandahåller en
+ 
+”leverantörsklass” som i viss mening representerar typen av värd. Detta alternativ 
+mappar leverantörsklasser till taggar, så att DHCP-alternativ kan levereras selektivt
+till olika klasser av värdar. Till exempel 
+.B --dhcp-vendorclass=set:printers,Hewlett-Packard JetDirect
+tillåter att alternativ endast ställs in för HP-skrivare så här:
+.B --dhcp-option=tag:printers,3,192.168.4.4
+Strängen för leverantörsklass är
+en delsträng som matchas mot den leverantörsklass som tillhandahålls av klienten, för att
+möjliggöra fuzzy-matchning. Prefixet set: är valfritt men tillåtet för
+konsistens.
+ 
+
+Observera att endast i IPv6 har leverantörsklasser namnutrymme med ett 
+IANA-tilldelat företagsnummer. Detta anges med nyckelordet enterprise:
+och specificerar att endast leverantörsklasser som matchar det angivna
+numret ska sökas.
+.TP
+.B \-j, --dhcp-userclass=set:<tag>,<user-class>
+Mappa från en användarklasssträng till en tagg (med delsträngsmatchning,
+ som leverantörsklasser). De flesta DHCP-klienter tillhandahåller en 
+”användarklass” som är konfigurerbar. Detta alternativ
+mappar användarklasser till taggar, så att DHCP-alternativ kan levereras selektivt
+till olika klasser av värdar. Det är till exempel möjligt att använda
+detta för att ställa in en annan skrivarserver för värdar i klassen
+’konton’ än för värdar i klassen ”teknik”.
+.TP
+.B \-4, --dhcp-mac=set:<tag>,<MAC-adress>
+Mappa från en MAC-adress till en tagg. MAC-adressen kan innehålla
+jokertecken. Till exempel
+.B --dhcp-mac=set:3com,01:34:23:*:*:*
+kommer att ställa in taggen ”3com” för alla värdar vars MAC-adress matchar mönstret.
+.TP
+.B --dhcp-circuitid=set:<tag>,<circuit-id>, --dhcp-remoteid=set:<tag>,<remote-id>
+Mappa från RFC3046-reläagentalternativ till taggar. Dessa data kan
+tillhandahållas av DHCP-reläagenter. Circuit-id eller remote-id anges
+normalt som kolonavgränsad hexadecimal, men kan också vara en
+enkel sträng. Om en exakt matchning uppnås mellan circuit- eller
+agent-id och den som tillhandahålls av en reläagent, sätts taggen.
+ 
+
+.B --dhcp-remoteid
+(men inte \fB--dhcp-circuitid\fP) stöds i IPv6.
+.TP
+.B --dhcp-subscrid=set:<tag>,<subscriber-id>
+(IPv4 och IPv6) Mappa från RFC3993-alternativ för abonnent-id-reläagent till taggar.
+.TP
+.B --dhcp-proxy[=<ip-adress>]......
+(endast IPv4) En normal DHCP-reläagent används endast för att vidarebefordra de inledande delarna av
+en DHCP-interaktion till DHCP-servern. När en klient har konfigurerats
+kommunicerar den direkt med servern. Detta är inte önskvärt om
+reläagenten lägger till extra information till DHCP-paketen, till exempel
+den som används av
+.B --dhcp-circuitid
+och
+.B --dhcp-remoteid.
+En fullständig reläimplementering kan använda RFC 5107 serverid-override
+-alternativet för att tvinga DHCP-servern att använda reläet som en fullständig proxy, med alla
+paket som passerar genom det. Denna flagga ger en alternativ metod
+för att göra samma sak, för reläer som inte stöder RFC
+5107. Om den anges ensam manipulerar den server-id för alla interaktioner
+via reläer. Om en lista med IP-adresser anges påverkas endast interaktioner via
+reläer på dessa adresser.
+.TP
+.B --dhcp-match=set:<tag>,<option number>|option:<option name>|vi-encap:<enterprise>[,<value>]
+Utan \fB<värde>\fP, ställ in \fB<tag>\fP om klienten skickar en DHCP
+\fBoption\fP med det angivna numret eller namnet. Med \fB<värde>\fP, ställ in \fB<tag>\fP endast om
+klienten skickar \fBoption\fP som matchar eller innehåller \fB<värde>\fP.
+
+Värdet kan ha formen
+”01:ff:*:02”, i vilket fall värdet måste matcha (förutom jokertecken)
+men den skickade optionen kan ha omatchade data efter slutet av
+värdet. Värdet kan också ha samma form som i 
+.B --dhcp-option,
+ i vilket fall den skickade optionen behandlas som en array, och ett element
+måste matcha.
+.B --dhcp-match=set:efi-ia32,option:client-arch,6
+ställer in taggen \fBefi-ia32\fP om siffran \fB6\fP förekommer i listan över
+arkitekturer som skickas av klienten i alternativ 93. (Se RFC 4578 för
+detaljer. ) Om värdet är en sträng används delsträngsmatchning.
+
+Den speciella formen med vi-encap:<företagsnummer> matchas mot
+leverantörsidentifierande leverantörsklasser för det angivna företaget. Se
+RFC 3925 för mer information om dessa sällsynta och intressanta varelser.
+.TP
+.B --dhcp-name-match=set:<tag>,<name>[*]
+Ställ in en \fB<tag>\fP om det angivna \fB<name>\fP tillhandahålls av en DHCP-klient. Det kan finnas ett enda efterföljande jokertecken *, med en glob-betydelse. I kombination med \fBdhcp-ignore\fP eller \fBdhcp-ignore-names\fP ger detta möjlighet att ignorera vissa klienter efter namn eller förbjuda vissa värdnamn från att göras anspråk på av en klient.
+.TP
+.B --tag-if=set:<tag>[,set:<tag>[,tag:<tag>[,tag:<tag>]]]
+Utför booleska operationer på taggar. Alla \fBset:<tag>\fP-taggar sätts om
+alla \fBtag:<tag>\fP redan är satta (eller avmarkeras när \fBtag:!<tag>\fP används).
+Om ingen \fBtag:<tag>\fP förekommer, sätts \fBset:<tag>\fP-taggarna villkorslöst.
+Valfritt antal \fBset:\fP- och \fBtag:\fP-former kan förekomma, i valfri ordning.
+\fB --tag-if\fP-raderna exekveras i ordning, så om taggen i \fBtag:<tag>\fP är en
+tagg som satts av en annan
+.B --tag-if,
+måste raden som sätter taggen föregå raden som testar den.
+
+Som en utökning stöder \fBtag:<tag>\fP-klausuler begränsad jokerteckenmatchning,
+liknande matchningen i direktivet \fB--interface\fP. Detta gör det möjligt för
+exemplet \fB--tag-if=set:ppp,tag:ppp*\fP att ställa in taggen ’ppp’ för alla förfrågningar
+som tas emot på alla matchande gränssnitt (ppp0, ppp1, etc). Detta kan användas tillsammans
+med formatet \fBtag:!<tag>\fP, vilket innebär att ingen tagg som matchar jokertecknet får sättas.
+.TP
+.B \-J, --dhcp-ignore=tag:<tag>[,tag:<tag>]
+När alla angivna taggar förekommer i tagguppsättningen, ignorera värden och
+tilldela den inte en DHCP-lease.
+.TP
+.B --dhcp-ignore-names[=tag:<tag> [,tag:<tag>]]
+När alla angivna taggar förekommer i tagguppsättningen, ignorera alla värdnamn
+som tillhandahålls av värden. Observera att till skillnad från \fB--dhcp-ignore\fP är det tillåtet
+att inte ange några taggar, i vilket fall DHCP-klientens värdnamn
+alltid ignoreras och DHCP-värdar läggs till i DNS med endast
+\fB--dhcp-host\fP-konfigurationen i dnsmasq och innehållet i /etc/hosts och
+/etc/ethers.
+.TP
+.B --dhcp-generate-names=tag:<tag>[,tag:<tag>]
+(endast IPv4) Generera ett namn för DHCP-klienter som annars inte har något,
+med hjälp av MAC-adressen uttryckt i hexadecimal form, separerad med bindestreck. Observera att
+om en värd tillhandahåller ett namn, kommer det att användas i stället för detta,
+såvida inte 
+.B --dhcp-ignore-names
+är inställt.
+.TP
+.B --dhcp-broadcast[=tag:<tag>[,tag:<tag>]]
+(endast IPv4) När alla angivna taggar förekommer i tagguppsättningen, använd alltid broadcast för att
+kommunicera med värden när den är okonfigurerad. Det är tillåtet
+att inte ange några taggar, i vilket fall detta är ovillkorligt. De flesta DHCP-klienter som
+behöver broadcast-svar sätter en flagga i sina förfrågningar så att detta
+sker automatiskt, men vissa äldre BOOTP-klienter gör inte det.
+.TP
+.B \-M, --dhcp-boot=[tag:<tag>,]<filename>,[<servername> [,<serveradress>|<tftp_servernamn>]]
+(endast IPv4) Ställ in BOOTP-alternativ som ska returneras av DHCP-servern. Servernamn och
+adress är valfria: om de inte anges lämnas namnet tomt och
+adressen ställs in till adressen för den maskin som kör dnsmasq. Om dnsmasq
+tillhandahåller en TFTP-tjänst (se 
+.B --enable-tftp
+)
+ krävs endast filnamnet här för att aktivera nätverksstart.
+Om valfria taggar anges
+måste de matcha för att denna konfiguration ska skickas.
+Istället för en IP-adress kan TFTP-serveradressen anges som ett domännamn
+som söks upp i /etc/hosts. Detta namn kan associeras i
+/etc/hosts med flera IP-adresser, som används i round-robin.
+Denna funktion kan användas för att balansera tftp-belastningen mellan en uppsättning servrar.
+.TP
+.B --dhcp-sequential-ip
+Dnsmasq är utformat för att välja IP-adresser för DHCP-klienter med hjälp av en
+hash av klientens MAC-adress. Detta gör normalt att en klients
+adress förblir stabil på lång sikt, även om klienten ibland låter sin DHCP
+-lease löpa ut. I detta standardläge fördelas IP-adresser
+pseudorandomt över hela det tillgängliga adressintervallet. Det finns
+ibland omständigheter (vanligtvis serverdistribution) där det är mer
+praktiskt att ha IP
+tilldelas sekventiellt, med början från den lägsta tillgängliga
+adressen, och denna flagga aktiverar detta läge. Observera att i
+sekventiellt läge är det mycket mer
+sannolikt att klienter som låter en leasing löpa ut byter IP-adress; av denna anledning bör det inte användas generellt.
+.TP
+.B --dhcp-ignore-clid
+Dnsmasq läser alternativet ”klientidentifierare” (RFC 2131) som skickas av klienter
+(om tillgängligt) för att identifiera klienter. Detta gör det möjligt att tilldela samma IP-adress
+till en värd som använder flera gränssnitt. Använd detta alternativ för att inaktivera läsning av ”klientidentifierare”,
+ dvs. för att alltid identifiera en värd med hjälp av MAC-adressen.
+.TP
+.B --pxe-service=[tag:<tag>,]<CSA>,<menytext>[,<basnamn>|<boot-servicetyp>][,<serveradress>|<server_namn>]
+De flesta användningar av PXE-boot-ROMS tillåter helt enkelt PXE
+-systemet att hämta en IP-adress och sedan ladda ner filen som anges av
+.B --dhcp-boot
+och köra den. PXE-systemet kan dock utföra mer komplexa
+funktioner när det stöds av en lämplig DHCP-server.
+
+Detta anger ett startalternativ som kan visas i en PXE-startmeny. <CSA> är
+klientsystemtyp, endast tjänster av rätt typ visas i en
+meny. De kända typerna är x86PC, PC98, IA64_EFI, Alpha, Arc_x86,
+Intel_Lean_Client, IA32_EFI, x86-64_EFI, Xscale_EFI, BC_EFI, ARM32_EFI och ARM64_EFI; ett
+heltal kan användas för andra typer. Parametern 
+efter menytexten kan vara ett filnamn, i vilket fall dnsmasq fungerar som en
+startserver och dirigerar PXE-klienten att ladda ner filen via TFTP,
+antingen från sig själv (
+.B --enable-tftp
+måste vara inställt för att detta ska fungera) eller en annan TFTP-server om den slutliga serverns
+adress/namn anges.
+Observera att suffixet ”lager”
+(normalt ”.0”) tillhandahålls av PXE och inte behöver läggas till
+basnamnet. Alternativt kan basnamnet vara ett filnamn, komplett med suffix, i vilket fall
+inget lagersuffix läggs till. Om en heltalstyp av starttjänst anges istället för ett basnamn
+kommer PXE-klienten att söka efter en
+lämplig starttjänst för den typen i nätverket. Denna sökning kan göras
+genom sändning eller direkt till en server om dess IP-adress/namn anges.
+ 
+Om ingen starttjänsttyp eller filnamn anges (eller om en starttjänsttyp på 0 anges)
+kommer menyposten att avbryta nätverksstartsproceduren och
+fortsätta starta från lokala medier. Serveradressen kan anges som ett domännamn
+som söks upp i /etc/hosts. Detta namn kan associeras i
+/etc/hosts med flera IP-adresser, som används i tur och ordning.
+.TP
+.B --pxe-prompt=[tag:<tag>,]<prompt>[,<timeout>]
+Om detta anges visas en prompt efter PXE-uppstarten. Om
+timeout anges kommer det första tillgängliga menyalternativet
+att köras automatiskt efter att
+timeout har löpt ut utan att något har matats in på tangentbordet. Om timeout är noll kommer det första tillgängliga menyalternativet
+att köras omedelbart. Om 
+.B --pxe-prompt
+utelämnas kommer systemet att vänta på användarinmatning om det finns flera
+alternativ i menyn, men startar omedelbart om
+det bara finns ett. Se
+.B --pxe-service
+för detaljer om menyalternativ.
+
+Dnsmasq stöder PXE ”proxy-DHCP”, i detta fall ansvarar en annan DHCP-server i
+nätverket för att tilldela IP-adresser, och dnsmasq
+tillhandahåller endast informationen som anges i 
+.B --pxe-prompt
+och
+.B --pxe-service
+för att möjliggöra nätverksstart. Detta läge aktiveras med hjälp av nyckelordet
+.B proxy
+i
+.B --dhcp-range.
+Om den ”andra” DHCP-servern finns på ett fjärrnätverk är det
+möjligt och användbart att konfigurera dnsmasq som både en PXE proxy-DHCP-server
+och en DHCP-relä till den fjärranslutna DHCP-servern. Se
+.B --dhcp-relay
+för mer information. PXE stöds för närvarande endast över IPv4.
+.TP
+.B --dhcp-pxe-vendor=<leverantör>[,...]
+Enligt UEFI- och PXE-specifikationerna ska DHCP-paket mellan PXE-klienter och
+proxy-PXE-servrar ha 
+.I PXEClient
+i sitt leverantörsklassfält. Dock är firmware för datorer från några
+leverantörer anpassad för att ha en annan identifierare i det fältet. Det här alternativet
+används för att betrakta sådana identifierare som giltiga för att identifiera PXE-klienter. Till 
+exempel
+
+.B --dhcp-pxe-vendor=PXEClient,HW-Client
+
+aktiverar dnsmasq så att det också tillhandahåller proxy-PXE-tjänst till de PXE-klienter som har
+.I HW-Client
+som identifierare.
+.TP
+.B \-X, --dhcp-lease-max=<nummer>
+Begränsar dnsmasq till det angivna maximala antalet DHCP-leasingavtal.
+Standardvärdet är 1000. Denna begränsning är till för att förhindra DoS-attacker från värdar som
+skapar tusentals leasingavtal och använder mycket minne i dnsmasq-processen
+.
+.TP
+.B \-K, --dhcp-authoritative
+Bör ställas in när dnsmasq definitivt är den enda DHCP-servern i ett nätverk.
+För DHCPv4 ändrar det beteendet från strikt RFC-kompatibilitet så att DHCP-förfrågningar på
+okända leasingavtal från okända värdar inte ignoreras. Detta gör det möjligt för nya värdar
+att få en leasing utan en tröttsam timeout under alla omständigheter. Det gör också 
+det möjligt för dnsmasq att återuppbygga sin leasingdatabas utan att varje klient behöver 
+skaffa en ny leasing om databasen går förlorad. För DHCPv6 styr det samma
+beteendet som DHCPv4 med saknade leasingavtal (förutom RFC-oöverensstämmelsen –
+DHCPv6 RFC tillåter detta beteende om det är konfigurerat). Det ställer också in
+prioritet i svar till 255 (det maximala) istället för 0 (minimivärdet).
+.TP
+.B --dhcp-rapid-commit
+Aktivera DHCPv4 Rapid Commit Option som anges i RFC 4039. När detta är aktiverat kommer dnsmasq
+att svara på ett DHCPDISCOVER-meddelande inklusive ett Rapid Commit
+-alternativ med ett DHCPACK som inkluderar ett Rapid Commit-alternativ och fullständigt bekräftad
+adress- och konfigurationsinformation. Bör endast aktiveras om antingen
+servern är den enda servern för undernätet, eller om flera servrar finns och de var och en bekräftar en bindning för alla klienter.
+.TP
+.B --dhcp-alternate-port[=<serverport>[,<klientport>]]
+(endast IPv4) Ändra de portar som används för DHCP från standardinställningen. Om detta alternativ
+anges ensamt, utan argument, ändras de portar som används för DHCP
+från 67 och 68 till 1067 och 1068. Om ett enda argument anges, används det
+portnumret för servern och portnumret plus ett används
+för klienten. Slutligen möjliggör två portnummer godtycklig
+specificering av både server- och klientportar för DHCP.
+.TP
+.B \-3, --bootp-dynamic[=<nätverks-id>[,<nätverks-id>]]
+(Endast IPv4) Aktivera dynamisk tilldelning av IP-adresser till BOOTP-klienter. Använd detta
+med försiktighet, eftersom varje adress som tilldelas en BOOTP-klient hyrs
+för alltid och därför blir permanent otillgänglig för återanvändning av
+andra värdar. Om detta anges utan taggar, aktiveras
+dynamisk tilldelning villkorslöst. Med taggar, endast när alla taggar är
+inställda. Det kan upprepas med olika taggset.
+ 
+.TP
+.B \-5, --no-ping
+(endast IPv4) Som standard försöker DHCP-servern säkerställa att en adress
+inte används innan den tilldelas en värd. Detta görs genom att skicka en
+ICMP-ekoförfrågan (även kallad ”ping”) till adressen i fråga. Om den får
+ett svar måste adressen redan vara i bruk, och en annan
+försöks. Denna flagga inaktiverar denna kontroll. Använd med försiktighet.
+.TP
+.B --log-dhcp
+Extra loggning för DHCP: logga alla alternativ som skickas till DHCP-klienter och
+de taggar som används för att bestämma dem.
+.TP
+.B --quiet-dhcp, --quiet-dhcp6, --quiet-ra, --quiet-tftp
+Undertryck loggning av rutinmässig drift av dessa protokoll. Fel och
+problem loggas fortfarande. \fB--quiet-tftp\fP betraktar inte filer som inte
+hittas som ett fel. \fB--quiet-dhcp\fP och quiet-dhcp6 åsidosätts av
+\fB--log-dhcp\fP.
+.TP
+.B \-l, --dhcp-leasefile=<sökväg>
+Använd den angivna filen för att lagra DHCP-leasinginformation.
+.TP
+.B --dhcp-duid=<enterprise-id>,<uid>
+(endast IPv6) Ange den permanenta UID som DHCPv6-servern
+kommer att använda. Detta alternativ krävs normalt inte eftersom dnsmasq skapar en
+DUID automatiskt när det behövs för första gången. När detta alternativ anges
+tillhandahåller det dnsmasq de data som krävs för att skapa en DUID-EN-typ DUID. Observera
+att när DUID väl har ställts in lagras den i leasingdatabasen, så för att växla mellan DUID-EN och
+automatiskt skapade DUID:er eller vice versa måste leasingdatabasen
+initialiseras om. Enterprise-id tilldelas av IANA, och uid är en
+sträng av hexadecimala oktetter som är unik för en viss enhet.
+.TP
+.B \-6 --dhcp-script=<path>
+När en ny DHCP-lease skapas, en gammal förstörs eller en
+TFTP-filöverföring slutförs, körs
+det exekverbara program som anges av detta alternativ. <path>
+måste vara en absolut sökväg, ingen PATH-sökning sker.
+ 
+Argumenten till processen
+är ”add”, ’old’ eller ”del”, MAC
+-adressen för värden (eller DUID för IPv6) , IP-adressen och värdnamnet,
+om det är känt. ”add” betyder att en leasing har skapats, ’del’ betyder att den har
+förstörts, ”old” är en anmälan om en befintlig leasing när
+dnsmasq startar eller en ändring av MAC-adress eller värdnamn för en befintlig
+leasing (även leasinglängd eller utgångsdatum och klient-id, om \fB--leasefile-ro\fP är inställt
+och leasingens utgångsdatum om \fB --script-on-renewal\fP är inställt).
+Om MAC-adressen kommer från en annan nätverkstyp än ethernet,
+kommer nätverkstypen att läggas till i början, t.ex. ”06-01:23:45:67:89:ab” för
+token ring. Processen körs som root (förutsatt att dnsmasq ursprungligen kördes som
+root) även om dnsmasq är konfigurerat för att ändra UID till en icke-privilegierad användare.
+
+Miljön ärvs från den som anropar dnsmasq, med några eller
+alla följande variabler tillagda
+
+För både IPv4 och IPv6:
+
+DNSMASQ_DOMAIN om värdens fullständiga domännamn är
+känt, är detta inställt på domändelen. (Observera att värdnamnet som skickas
+till skriptet som ett argument aldrig är fullständigt.)
+
+Om klienten tillhandahåller ett värdnamn, DNSMASQ_SUPPLIED_HOSTNAME
+
+Om klienten tillhandahåller användarklasser, DNSMASQ_USER_CLASS0..DNSMASQ_USER_CLASSn 
+
+Om dnsmasq kompilerades med HAVE_BROKEN_RTC,
+lagras längden på leasingavtalet (i sekunder) i
+DNSMASQ_LEASE_LENGTH, annars lagras tiden för leasingavtalets utgång i
+DNSMASQ_LEASE_EXPIRES. Antalet sekunder till leasingavtalets utgång
+lagras alltid i DNSMASQ_TIME_REMAINING.
+
+DNSMASQ_DATA_MISSING sätts till ”1” under ”gamla” händelser för befintliga
+leasingavtal som genereras vid start för att indikera att data som inte lagras i den
+permanenta leasingdatabasen inte kommer att finnas. Detta omfattar allt
+utom IP-adress, värdnamn, MAC-adress, DUID, IAID och leasingavtalets längd
+eller utgångstid.
+
+Om ett leasingavtal tidigare hade ett värdnamn som
+har tagits bort genereras en ”gammal” händelse med leasingavtalets nya status, 
+dvs. inget namn, och det tidigare namnet anges i miljövariabeln 
+DNSMASQ_OLD_HOSTNAME.
+ 
+
+DNSMASQ_INTERFACE lagrar namnet på
+det gränssnitt som begäran kom till; detta ställs inte in för ”gamla”
+åtgärder när dnsmasq startas om. 
+
+DNSMASQ_RELAY_ADDRESS ställs in om klienten
+använde en DHCP-relä för att kontakta dnsmasq och IP-adressen för reläet
+är känd.
+ 
+
+DNSMASQ_TAGS innehåller alla taggar som ställts in under
+DHCP-transaktionen, separerade med mellanslag.
+
+DNSMASQ_LOG_DHCP ställs in om
+.B --log-dhcp
+är aktivt.
+
+DNSMASQ_REQUESTED_OPTIONS en sträng som innehåller decimalvärdena i alternativet Parameter Request List, separerade med kommatecken, om alternativet parameter request list tillhandahålls av klienten.
+
+DNSMASQ_MUD_URL URL:en för tillverkarens användningsbeskrivning om den tillhandahålls av klienten. (Se RFC8520 för mer information.)
+
+
+Endast för IPv4:
+
+DNSMASQ_CLIENT_ID om värden tillhandahöll ett klient-id.
+
+DNSMASQ_CIRCUIT_ID, DNSMASQ_SUBSCRIBER_ID, DNSMASQ_REMOTE_ID om en
+DHCP-reläagent har lagt till något av dessa alternativ.
+
+Om klienten tillhandahåller leverantörsklass, DNSMASQ_VENDOR_CLASS.
+
+Endast för IPv6:
+
+Om klienten tillhandahåller leverantörsklass, DNSMASQ_VENDOR_CLASS_ID,
+som innehåller IANA-företags-id för klassen, och
+DNSMASQ_VENDOR_CLASS0..DNSMASQ_VENDOR_CLASSn för data.
+
+DNSMASQ_SERVER_DUID som innehåller serverns DUID: detta är detsamma för
+varje anrop till skriptet.
+
+DNSMASQ_IAID som innehåller IAID för leasingavtalet. Om leasingavtalet är en
+tillfällig tilldelning, prefixeras detta med ’T’.
+
+DNSMASQ_MAC innehåller klientens MAC-adress, om den är känd.
+
+Observera att de angivna uppgifterna om värdnamn, leverantörsklass och användarklass
+endast anges för
+”add”-åtgärder eller ”old”-åtgärder när en värd återupptar en befintlig leasing,
+eftersom dessa uppgifter inte finns i dnsmasq:s leasingdatabas
+.
+
+
+
+Alla filbeskrivare är
+stängda utom stdin, som är öppen för /dev/null, och stdout och stderr som fångar upp utdata för loggning av dnsmasq.
+(I felsökningsläge lämnas stdio-, stdout- och stderr-filerna som de ärvts från den som anropade dnsmasq).
+
+Skriptet anropas inte samtidigt: högst en instans
+av skriptet körs åt gången (dnsmasq väntar på att en instans av skriptet ska avslutas
+innan nästa körs). Ändringar i leasingdatabasen som
+kräver att skriptet anropas köas i väntan på att en körande instans ska avslutas.
+Om denna köning tillåter att flera tillståndsändringar sker för en enda
+lease innan skriptet kan köras, 
+kasseras tidigare tillstånd och det aktuella tillståndet för den leasen
+återspeglas när skriptet slutligen körs.
+ 
+
+Vid start av dnsmasq kommer skriptet att anropas för
+alla befintliga leasingavtal när de läses från leasingfilen. Utgångna
+leasingavtal kommer att anropas med ”del” och andra med ’old’. När dnsmasq
+tar emot en HUP-signal kommer skriptet att anropas för befintliga leasingavtal
+med en ”old”-händelse.
+
+
+Det finns ytterligare fem åtgärder som kan visas som det första argumentet
+till skriptet: ”init”, ”arp-add”, ”arp-del”, ”relay-snoop” och ’tftp’.
+Fler kan läggas till i framtiden, så
+skript bör skrivas så att de ignorerar okända åtgärder. ”init” beskrivs
+nedan i
+.B --leasefile-ro
+
+Åtgärden ”tftp” aktiveras när en TFTP-filöverföring slutförs:
+argumenten är filstorleken i byte, adressen till vilken filen
+skickades och filens fullständiga sökväg.
+
+Åtgärden ”relay-snoop” aktiveras när dnsmasq är konfigurerat som en DHCP
+relä för DHCPv6 och det vidarebefordrar en prefx-delegering till en klient. Argumenten
+är namnet på gränssnittet där klienten är ansluten, dess (lokal)
+adress på det gränssnittet och det delegerade prefixet. Denna information är
+tillräcklig för att installera rutter till det delegerade prefixet för en router. Se
+.B --dhcp-relay
+för mer information om konfigurering av DHCP-relä.
+
+Åtgärderna ”arp-add” och ”arp-del” anropas endast om de är aktiverade med
+.B --script-arp
+De förses med en MAC-adress och IP-adress som argument. ”arp-add” indikerar
+att en ny post har kommit in i ARP- eller grannbordet, och ”arp-del” indikerar att samma post har raderats.
+
+.TP
+.B --dhcp-luascript=<path>
+Ange ett skript skrivet i Lua som ska köras när leasingavtal skapas,
+förstörs eller ändras. För att kunna använda detta alternativ måste dnsmasq kompileras
+med rätt stöd. Lua-tolken initialiseras en gång när
+dnsmasq startar, så att globala variabler kvarstår mellan leasinghändelser.
+ Lua-koden måste definiera en
+.B lease
+-funktion och kan tillhandahålla
+.B init
+- och
+.B shutdown
+-funktioner, som anropas utan argument när dnsmasq startar
+och avslutas. Den kan också tillhandahålla en 
+.B tftp
+-funktion.
+
+Funktionen
+.B lease
+tar emot den information som beskrivs i
+.B --dhcp-script.
+Den får två argument, först åtgärden, som är en sträng
+som innehåller ”add”, ’old’ eller ”del”, och sedan en tabell med taggvärde
+par. Taggarna motsvarar mestadels de miljövariabler
+som beskrivs ovan, till exempel innehåller taggen ”domain” samma data som
+miljövariabeln DNSMASQ_DOMAIN. Det finns några extra taggar
+som innehåller data som anges som argument till
+.B --dhcp-script.
+ 
+Dessa är
+.B mac_address, ip_address
+och
+.B hostname
+för IPv4, samt
+.B client_duid, ip_address
+och
+.B hostname
+för IPv6.
+
+Funktionen
+.B tftp
+anropas på samma sätt som funktionen lease, och tabellen
+innehåller taggarna
+.B destination_address,
+.B file_name
+och
+.B file_size.
+
+Funktionerna
+.B arp
+och
+.B arp-old
+anropas endast när de är aktiverade med
+.B --script-arp
+och har en tabell som innehåller taggarna
+.B mac_address
+och
+.B client_address.
+.TP
+.B --dhcp-scriptuser
+Ange användaren som ska köra lease-change-skriptet eller Lua-skriptet. Standardvärdet är root, men kan ändras till en annan användare med hjälp av denna flagga.
+.TP
+.B --script-arp
+Aktivera funktionerna ”arp” och ”arp-old” i \fB--dhcp-script\fP och \fB--dhcp-luascript\fP.
+.TP
+.B \-9, --leasefile-ro
+Undvik helt användning av leasingdatabasfilen. Filen kommer inte att
+skapas, läsas eller skrivas. Ändra sättet på vilket lease-change
+-skriptet (om ett sådant finns) anropas, så att leasingdatabasen kan
+underhållas i extern lagring av skriptet. Utöver de
+anrop som anges i 
+.B --dhcp-script
+anropas lease-change-skriptet en gång, vid start av dnsmasq, med det
+enda argumentet ”init”. När det anropas på detta sätt ska skriptet skriva
+den sparade statusen för leasingdatabasen, i dnsmasq leasefile-format, till
+stdout och avslutas med utgångskod noll. Om denna
+option ställs in tvingas också leasechange-skriptet att anropas vid ändringar
+av klient-id och leasinglängd och utgångstid.
+.TP
+.B --script-on-renewal
+Anropa DHCP-skriptet när leasingens utgångstid ändras, till exempel när
+leasingen förnyas.
+.TP
+.B --bridge-interface=<interface>,<alias>[,<alias>]
+Behandla DHCP-förfrågningar (v4 och v6) och IPv6 Router Solicit-paket
+som anländer till något av <alias>-gränssnitten som om de hade anlänt till
+<interface>. Detta alternativ gör det möjligt för dnsmasq att tillhandahålla DHCP- och RA-tjänster
+över oadresserade och obryggade Ethernet-gränssnitt, t.ex. på en
+OpenStack-beräkningsvärd där varje sådant gränssnitt är ett TAP-gränssnitt till
+en VM, eller som i ”gammal stil-bryggning” på BSD-plattformar. Ett efterföljande ’*’
+jokertecken kan användas i varje <alias>.
+
+Det är tillåtet att lägga till mer än ett alias med mer än ett \fB--bridge-interface\fP-alternativ eftersom
+\fB--bridge-interface=int1,alias1,alias2\fP är exakt likvärdigt med
+\fB--bridge-interface=int1,alias1 --bridge-interface=int1,alias2\fP
+.TP
+.B --shared-network=<interface>,<addr>
+.PD 0
+.TP
+.B --shared-network=<addr>,<addr>
+.PD 1v
+DHCP-servern avgör vilka DHCP-intervall som kan användas för att tilldela en
+adress till en DHCP-klient baserat på det nätverk från vilket DHCP-förfrågan kommer
+och IP-konfigurationen för serverns gränssnitt på det nätverket. Alternativet shared-network
+utökar de tillgängliga undernäten (och därmed DHCP-intervall) utöver de 
+undernät som är konfigurerade på ankomstgränssnittet.
+
+Det första argumentet är antingen
+namnet på ett gränssnitt eller en adress som är konfigurerad på ett lokalt gränssnitt, och det
+andra argumentet är en adress som definierar ett annat undernät där adresser kan tilldelas.
+
+För att vara användbart måste det finnas ett lämpligt dhcp-intervall som tillåter adressallokering på detta undernät
+och detta dhcp-intervall MÅSTE inkludera nätmasken.
+
+Användning av shared-network kräver också extra
+hänsyn till routning. Dnsmasq har inte den vanliga informationen som den använder för att
+bestämma standardrutten, så standardrutealternativet (eller annan routning) MÅSTE
+konfigureras manuellt. Klienten måste ha en rutt till servern: om tvåadressformen
+av shared-network används måste denna vara till den första angivna adressen. Om gränssnitts-,adress
+, måste det finnas en rutt till alla adresser som är konfigurerade på gränssnittet.
+
+Den tvåadressform av shared-network kan också användas med en DHCP-relä: den första adressen
+är reläets adress och den andra anger, som tidigare, ett extra subnät från vilket
+adresser kan tilldelas.
+
+.TP
+.B \-s, --domain=<domän>[[,<adressintervall>[,lokal]]|<gränssnitt>]
+Anger DNS-domäner för DHCP-servern. Domäner kan anges 
+villkorslöst (utan IP-intervall) eller för begränsade IP-intervall. Detta har två effekter:
+för det första gör det att DHCP-servern returnerar domänen till alla värdar
+som begär den, och för det andra anger det den domän som det är tillåtet
+för DHCP-konfigurerade värdar att göra anspråk på. Avsikten är att begränsa
+värdnamn så att en opålitlig värd på LAN inte kan annonsera 
+sitt namn via DHCP som t.ex. ”microsoft.com” och fånga upp trafik som inte 
+är avsedd för den. Om inget domänsuffix anges kommer alla DHCP
+värdnamn med en domändel (dvs. med en punkt) att förbjudas 
+och loggas. Om suffix anges är värdnamn med en domändel 
+tillåtna, förutsatt att domändelen matchar suffixet.
+Dessutom, när ett suffix är inställt, läggs suffixet till som en valfri domändel för värdnamn utan en domändel
+. I mitt nätverk kan jag till exempel ställa in 
+.B --domain=thekelleys.org.uk
+och ha en maskin vars DHCP-värdnamn är ”laptop”. IP-adressen för den maskinen är tillgänglig från 
+.B dnsmasq
+både som ’laptop’ och ”laptop.thekelleys.org.uk”.
+ Om domänen anges som ”#” läses domänen från det första ”search”-direktivet
+i /etc/resolv.conf (eller motsvarande).
+
+Adressintervallet kan ha formen
+<ip-adress>,<ip-adress> eller <ip-adress>/<nätmask> eller bara en enda
+<ip-adress>. Se 
+.B --dhcp-fqdn
+som kan ändra beteendet hos dnsmasq med domäner.
+
+Om adressintervallet anges som ip-adress/nätverksstorlek, kan en
+ytterligare flagga ”local” anges, vilket har effekten att
+\fB--local\fP-deklarationer läggs till för framåt- och bakåt-DNS-frågor. T.ex.
+.B --domain=thekelleys.org.uk,192.168.0.0/24,local
+är identiskt med
+.B --domain=thekelleys.org.uk,192.168.0.0/24
+.B --local=/thekelleys.org.uk/ - -local=/0.168.192.in-addr.arpa/
+
+Adressintervallet kan också anges som ett nätverksgränssnittsnamn, i vilket fall
+alla subnät som för närvarande är tilldelade gränssnittet används för att matcha
+adressen. Detta gör det möjligt att ge värdar på olika fysiska subnät olika
+domäner på ett sätt som uppdateras automatiskt när gränssnittsadresserna ändras.
+.TP
+.B --dhcp-fqdn
+I standardläget infogar dnsmasq de okvalificerade namnen på
+DHCP-klienter i DNS. Av denna anledning måste namnen vara unika,
+även om två klienter med samma namn finns i olika
+domäner. Om en andra DHCP-klient dyker upp som har samma namn som en
+befintlig klient, överförs namnet till den nya klienten. Om 
+.B --dhcp-fqdn
+är inställt ändras detta beteende: det okvalificerade namnet läggs inte längre
+in i DNS, utan endast det kvalificerade namnet. Två DHCP-klienter med
+samma namn kan båda behålla namnet, förutsatt att domändelen är
+olika (dvs. de fullständigt kvalificerade namnen skiljer sig åt). För att säkerställa att alla
+namn har en domändel måste det finnas minst 
+.B --domain
+utan en adress angiven när 
+.B --dhcp-fqdn
+är inställt.
+.TP
+.B --dhcp-client-update
+Normalt, när dnsmasq ger en DHCP-lease, sätter det flaggor i FQDN
+-alternativet för att tala om för klienten att inte försöka en DDNS-uppdatering med sitt namn
+och IP-adress. Detta beror på att namn-IP-paret automatiskt
+läggs till i dnsmasq:s DNS-vy. Denna flagga undertrycker det beteendet,
+vilket är användbart, till exempel för att tillåta Windows-klienter att uppdatera
+Active Directory-servrar. Se RFC 4702 för detaljer.
+ 
+.TP
+.B --enable-ra
+Aktivera dnsmasq:s IPv6 Router Advertisement-funktion. DHCPv6 hanterar inte
+komplett nätverkskonfiguration på samma sätt som DHCPv4. Router
+upptäckt och (möjligen) prefixupptäckt för autonom adress
+hanteras av ett annat protokoll. När DHCP används
+behövs endast en delmängd av detta, och dnsmasq kan hantera det med hjälp av
+befintlig DHCP-konfiguration för att tillhandahålla de flesta data. När RA är aktiverat
+kommer dnsmasq att annonsera ett prefix för varje \fB--dhcp-range\fP, med standard
+router som relevant länklokal adress på 
+maskinen som kör dnsmasq. Som standard är bitarna för ”hanterad adress” inställda och
+biten ”använd SLAAC” återställd. Detta kan ändras för enskilda
+undernät med hjälp av de nyckelord för läge som beskrivs i
+.B --dhcp-range.
+RFC6106 DNS-parametrar ingår i annonserna. Som standard skickas 
+den relevanta länklokala adressen för den maskin som kör dnsmasq
+som rekursiv DNS-server. Om de anges används DHCPv6-alternativen dns-server och
+domain-search för DNS-servern (RDNSS) och domänsökningslistan (DNSSL).
+.TP
+.B --ra-param=<gränssnitt>,[mtu:<heltal>|<gränssnitt>|off,][high,|low,]<ra-intervall>[,<router livslängd>]
+Ställ in icke-standardvärden för routerannonser som skickas via ett
+gränssnitt. Prioritetsfältet för routern kan ändras från
+standardvärdet medium med t.ex.
+.B --ra-param=eth0,high.
+Intervallet mellan routerannonser kan ställas in (i sekunder) med 
+.B --ra-param=eth0,60.
+Livslängden för rutten kan ändras eller ställas in till noll, vilket gör att
+en router kan annonsera prefix men inte en rutt via sig själv. 
+.B --ra-param=eth0,0,0
+(Ett värde på noll för intervallet betyder standardvärdet.) Alla fyra parametrar kan ställas in samtidigt.
+.B --ra-param=eth0,mtu:1280,low,60,1200
+
+Gränssnittsfältet kan innehålla ett jokertecken.
+
+Parametern mtu: kan vara ett godtyckligt gränssnittsnamn, i vilket fall MTU-värdet för det gränssnittet används. Detta är användbart
+för (t.ex.) att annonsera MTU för ett WAN-gränssnitt på andra gränssnitt i en router.
+.TP
+.B --dhcp-reply-delay=[tag:<tag>,]<integer>
+Fördröjer sändningen av DHCPOFFER- och PROXYDHCP-svar med minst det angivna antalet sekunder.
+Detta kan användas som en lösning på buggar i PXE-startfirmware som inte fungerar korrekt när
+det tar emot ett omedelbart svar.
+Detta alternativ tar hänsyn till den tid som redan har gått åt till väntan (t.ex. ping-kontroll) om sådan finns.
+.TP
+.B --enable-tftp[=<gränssnitt>[,<gränssnitt>]]
+Aktiverar TFTP-serverfunktionen. Detta är avsiktligt begränsat till det
+som behövs för att nätverksstarta en klient. Endast läsning är tillåten; tsize- och
+blksize-tilläggen stöds (tsize stöds endast i oktett
+-läge). Utan ett argument tillhandahålls TFTP-tjänsten till samma uppsättning gränssnitt som DHCP-tjänsten.
+ 
+Om listan över gränssnitt anges, definierar den vilka gränssnitt som tar emot TFTP-tjänsten.
+.TP
+.B --tftp-root=<katalog>[,<gränssnitt>]
+Sök efter filer som ska överföras med TFTP relativt den angivna
+katalogen. När detta är inställt avvisas TFTP-sökvägar som innehåller ”..”
+för att förhindra att klienter kommer utanför den angivna roten.
+Absoluta sökvägar (som börjar med /) är tillåtna, men de måste ligga inom
+tftp-roten. Om det valfria gränssnittsargumentet anges används
+katalogen endast för TFTP-förfrågningar via det gränssnittet.
+.TP
+.B --tftp-no-fail
+Avbryt inte start om angivna tftp-rotkataloger är otillgängliga.
+.TP
+.B --tftp-unique-root[=ip|mac]
+Lägg till TFTP-klientens IP- eller hårdvaruadress som en sökvägsdel i slutet
+av TFTP-roten. Endast giltigt om \fB--tftp-root\fP är inställt och katalogen finns.
+Standardinställningen är att lägga till IP-adressen (i standardformat med punkter). .
+Om till exempel \fB--tftp-root\fP är ”/tftp” och klient 1.2.3.4 begär filen ’myfile’
+blir den effektiva sökvägen ”/tftp/1.2.3.4/myfile” om /tftp/1.2.3.4 finns eller /tftp/myfile i annat fall.
+När ”=mac” anges läggs MAC-adressen till istället, med små bokstäver och nollor framför siffrorna
+separerade med bindestreck, t.ex.: 01-02-03-04-aa-bb
+Observera att det endast är möjligt att lösa MAC-adresser om klienten befinner sig i det lokala nätverket eller har erhållit
+en DHCP-lease från oss.
+.TP
+.B --tftp-secure
+Aktivera TFTP-säkerhetsläge: utan detta är alla filer som kan läsas av
+dnsmasq-processen enligt normala Unix-åtkomstkontrollregler
+tillgängliga via TFTP. När flaggan \fB--tftp -secure\fP anges är endast filer
+som ägs av användaren som kör dnsmasq-processen tillgängliga. Om
+dnsmasq körs som root gäller andra regler: \fB--tftp-secure\fP
+har ingen effekt, utan endast filer som har biten för allmän läsbarhet inställd
+är tillgängliga. Det rekommenderas inte att köra dnsmasq som root med TFTP
+aktiverat, och absolut inte utan att ange \fB--tftp-root\fP. Om du gör det
+kan alla filer på servern som är läsbara för alla exponeras för alla värdar på nätet. 
+.TP
+.B --tftp-lowercase
+Konvertera filnamn i TFTP-förfrågningar till små bokstäver. Detta är användbart
+för förfrågningar från Windows-maskiner, som har filsystem som inte skiljer på versaler och gemener
+och tenderar att vara mindre noggranna med versaler och gemener i filnamn.
+Observera att dnsmasq:s tftp-server alltid konverterar ”\\” till ”/” i filnamn.
+.TP
+.B --tftp-max=<anslutningar>
+Ställ in det maximala antalet samtidiga TFTP-anslutningar som tillåts. Detta
+är som standard 50. När ett stort antal TFTP-anslutningar betjänas kan
+begränsningar för filbeskrivare per process uppstå. Dnsmasq behöver
+en filbeskrivare för varje samtidig TFTP-anslutning och en
+filbeskrivare per unik fil (plus några andra). Att betjäna
+samma fil samtidigt till n klienter kommer alltså att kräva cirka n + 10 filbeskrivare,
+ medan att betjäna olika filer samtidigt till n klienter kommer att
+kräva ungefär (2*n) + 10 deskriptorer. Om 
+.B --tftp-port-range
+anges kan det påverka antalet samtidiga anslutningar.
+.TP
+.B --tftp-mtu=<mtu-storlek>
+Använd storleken som tak för MTU som stöds av det mellanliggande nätverket när 
+TFTP-blocksize förhandlas, och åsidosätt MTU-inställningen för det lokala gränssnittet om den är större.
+.TP
+.B --tftp-no-blocksize
+Stoppa TFTP-servern från att förhandla om alternativet ”blocksize” med en
+klient. Vissa buggiga klienter begär detta alternativ men beter sig då dåligt
+när det beviljas.
+.TP
+.B --tftp-port-range=<start>,<slut>
+En TFTP-server lyssnar på en välkänd port (69) för att initiera anslutningar,
+men den använder också en dynamiskt tilldelad port för varje
+anslutning. Normalt tilldelas dessa av operativsystemet, men detta alternativ
+anger ett portintervall som ska användas för TFTP-överföringar. Detta kan vara
+användbart när TFTP måste passera en brandvägg. Intervallets start
+kan inte vara lägre än 1025 om inte dnsmasq körs som root. Antalet
+samtidiga TFTP-anslutningar begränsas av storleken på portintervallet. 
+.TP
+.B --tftp-single-port
+Kör i ett läge där TFTP-servern ENDAST använder den välkända porten (69) för sin ände
+av TFTP-överföringen. Detta gör att TFTP kan fungera när det finns NAT mellan klienten och servern. Observera att
+detta inte är helt kompatibelt med RFC:erna som specificerar TFTP-protokollet: använd på egen risk.
+.TP
+.B \-C, --conf-file=<fil>
+Ange en konfigurationsfil. När detta alternativ används läser dnsmasq inte standardkonfigurationsfilen
+(normalt /etc/dnsmasq.conf). Flera filer kan anges genom att upprepa alternativet
+antingen på kommandoraden eller i konfigurationsfiler. Ett
+filnamn på ”-” gör att dnsmasq läser konfigurationen från stdin.
+.TP
+.B \-7, --conf-dir=<katalog>[,<filändelse>......],
+Läs alla filer i den angivna katalogen som konfigurationsfiler.
+ Om filändelser anges, hoppas alla filer som slutar på dessa
+filändelser över. Alla filer vars namn slutar på ~ eller börjar med . eller börjar och slutar
+med # hoppas alltid över. Om filändelsen börjar med * laddas endast filer 
+som har den filändelsen. Så
+.B --conf-dir=/path/to/dir,*.conf
+laddar alla filer med suffixet .conf i /path/to/dir. Denna flagga kan anges på kommandoraden
+eller i en konfigurationsfil. Om du anger den på kommandoraden, se till att
+eskapera *-tecken. Filerna laddas i alfabetisk ordning efter filnamn.
+.TP
+.B --servers-file=<fil>
+Ett specialfall av
+.B --conf-file
+som skiljer sig på två sätt. För det första är endast \fB--server\fP och \fB--rev-server\fP tillåtna
+i den inkluderade konfigurationsfilen. För det andra läses filen om och konfigurationen
+där uppdateras när dnsmasq tar emot SIGHUP.
+.TP
+.B \--conf-script=<fil>[ <arg]
+Kör <fil> och behandla det som skickas till stdout som innehållet i en konfigurationsfil.
+Om skriptet avslutas med en exitkod som inte är noll, behandlar dnsmasq detta som ett allvarligt fel.
+Skriptet kan förses med argument, separerade med mellanslag från filnamnet och varandra, till exempel
+.B --conf-dir=”/etc/dnsmasq-uncompress-ads /share/ads-domains.gz”
+
+med /etc/dnsmasq-uncompress-ads innehållande 
+
+set -e
+
+zcat ${1} | sed -e ”s:^:address=/:” -e ”s:$:/:” 
+
+exit 0
+
+och /share/ads-domains.gz som innehåller en komprimerad
+lista över annonsserverdomäner sparar diskutrymme med stora annonsserverblocklistor.
+.TP
+.B --no-ident
+Svara inte på klass CHAOS och typ TXT i domänbindningsfrågor.
+
+Om detta alternativ inte är inställt är cache-statistiken också tillgänglig i
+DNS som svar på frågor av klass CHAOS och typ TXT i domänbindning. Domännamnen
+är cachesize.bind, insertions.bind, evictions.bind, misses.bind,
+hits.bind, auth.bind och servers.bind om de inte inaktiverats vid kompilering. Ett
+exempel på ett kommando för att fråga detta, med hjälp av verktyget
+.B dig,
+ skulle vara
+
+dig +short chaos txt cachesize.bind
+.TP
+.B --max-tcp-connections=<nummer>
+Det maximala antalet samtidiga TCP-anslutningar. Applikationen förgrenar sig för att
+hantera varje TCP-förfrågan. Standardvärdet är 20.
+
+.SH KONFIGURATIONSFIL
+Vid start läser dnsmasq
+.I /etc/dnsmasq.conf,
+om den finns. (På
+FreeBSD är filen 
+.I /usr/local/etc/dnsmasq.conf)
+ (men se 
+.B \--conf-file
+och
+.B \--conf-dir
+alternativen.) Formatet för denna
+fil består av ett alternativ per rad, precis som de långa alternativen som beskrivs 
+i avsnittet ALTERNATIV, men utan inledande ”--”. Rader som börjar med # är kommentarer och ignoreras. För
+alternativ som endast kan anges en gång åsidosätter konfigurationsfilen 
+kommandoraden. Citat är tillåtna i en konfigurationsfil:
+mellan "-citat tas den speciella betydelsen av ,:. och # bort och
+följande escape-tecken är tillåtna: \\\ \ \\" \\t \\e \\b \\r och \\n. De senare 
+motsvarar tabb, escape, backspace, retur och ny rad.
+.SH ANMÄRKNINGAR
+När den tar emot ett SIGHUP, 
+.B dnsmasq
+rensar sin cache och laddar sedan om 
+. I /etc/hosts
+och 
+.I /etc/ethers
+och alla filer som anges av \fB--dhcp-hostsfile\fP, \fB--dhcp-hostsdir\fP, \fB--dhcp-optsfile\fP,
+\fB--dhcp-optsdir\fP, \fB--addn-hosts\fP eller \fB--hostsdir\fP.
+Skriptet för ändring av DHCP-leasing kallas för alla
+befintliga DHCP-leasingavtal. Om 
+.B
+--no-poll
+är inställt läser SIGHUP också om
+.I /etc/resolv.conf.
+SIGHUP
+läser INTE om konfigurationsfilen.
+.PP
+När det tar emot ett SIGUSR1,
+. B dnsmasq 
+skriver statistik till systemloggen. Den skriver cacheminnets storlek,
+antalet namn som har behövt tas bort från cacheminnet innan
+de löpt ut för att göra plats för nya namn och det totala antalet
+namn som har lagts in i cacheminnet. Antalet cache-träffar och 
+missar samt antalet auktoritativa frågor som besvarats anges också. För varje uppströms
+server anges antalet skickade frågor och antalet som
+resulterade i ett fel. Det ger också information om antalet förgreningar för TCP-anslutningar. I
+.B --no-daemon
+-läge eller när fullständig loggning är aktiverad (\fB--log-queries\fP) görs en fullständig dumpning av
+innehållet i cachen.
+ 
+
+När den tar emot SIGUSR2 och loggar direkt till en fil (se
+.B --log-facility
+)
+.B dnsmasq
+stänger och öppnar loggfilen igen. Observera att under denna operation kommer
+dnsmasq inte att köras som root. När den först skapar loggfilen
+ändrar dnsmasq ägarskapet för filen till den icke-root-användare som den kommer att köras
+som. Logrotate bör konfigureras för att skapa en ny loggfil med
+ägarskapet som matchar det befintliga innan SIGUSR2 skickas.
+Om TCP DNS-förfrågningar pågår kommer den gamla loggfilen att förbli öppen i
+barnprocesser som hanterar TCP-förfrågningar och kan fortsätta att
+skrivas. Det finns en gräns på 150 sekunder, efter vilken alla befintliga TCP
+-processer ha löpt ut: av denna anledning är det inte klokt att
+konfigurera loggfilskomprimering för loggfiler som just har
+roterats. Med logrotate är de nödvändiga alternativen 
+.B create 
+och
+.B delaycompress.
+
+
+.PP
+Dnsmasq är en DNS-frågevidarebefordrare: den kan inte rekursivt
+svara på godtyckliga frågor som börjar från rotservrarna, men
+vidarebefordrar sådana frågor till en fullständigt rekursiv uppströms DNS-server som
+vanligtvis tillhandahålls av en internetleverantör. Som standard läser dnsmasq
+. I /etc/resolv.conf
+för att upptäcka IP-adresserna
+för de uppströmsnamnsservrar som den ska använda, eftersom
+informationen vanligtvis lagras där. Om inte
+.B --no-poll
+används,
+.B dnsmasq
+kontrollerar ändringstidpunkten för
+.I /etc/resolv.conf
+(eller motsvarande om 
+.B \--resolv-file
+används) och läser den igen om den ändras. Detta gör det möjligt att
+ställa in DNS-servrarna dynamiskt med PPP eller DHCP, eftersom båda protokollen tillhandahåller
+informationen.
+Avsaknaden av
+.I /etc/resolv.conf
+är inte ett fel
+eftersom den kanske inte har skapats innan en PPP-anslutning finns. Dnsmasq
+fortsätter helt enkelt att kontrollera om
+.I /etc/resolv.conf
+skapas vid någon
+tidpunkt. Dnsmasq kan instrueras att analysera mer än en resolv.conf
+-fil. Detta är användbart på en bärbar dator, där både PPP och DHCP kan användas:
+dnsmasq kan ställas in för att avfråga både 
+. I /etc/ppp/resolv.conf 
+och
+.I /etc/dhcpc/resolv.conf
+och kommer att använda innehållet i den som ändrats
+senast, vilket ger automatisk växling mellan DNS-servrar.
+.PP
+Uppströms servrar kan också anges på kommandoraden eller i
+konfigurationsfilen. Dessa serverspecifikationer tar valfritt ett
+domännamn som talar om för dnsmasq att endast använda den servern för att hitta namn
+i den specifika domänen.
+.PP
+För att konfigurera dnsmasq så att den fungerar som cache för den värd där den körs, lägg till ”nameserver 127.0.0.1” i
+.I /etc/resolv.conf
+för att tvinga lokala processer att skicka förfrågningar till
+dnsmasq. Ange sedan antingen uppströmservrarna direkt till dnsmasq
+med hjälp av
+.B \--server
+-alternativen eller lägg in deras adresser i en annan fil, till exempel
+.I /etc/resolv.dnsmasq
+och kör dnsmasq med 
+.B \--resolv-file /etc/resolv.dnsmasq
+-alternativet. Den andra tekniken möjliggör dynamisk uppdatering av serveradresserna
+med PPP eller DHCP.
+.PP
+Adresser i /etc/hosts kommer att ”skugga” olika adresser för samma
+namn i uppströms-DNS, så ”mycompany.com 1.2.3.4” i /etc/hosts säkerställer att 
+frågor om ”mycompany.com” alltid returnerar 1.2.3.4 även om frågor i
+uppströms DNS annars skulle returnera en annan adress. Det finns
+ett undantag från detta: om uppströms DNS innehåller ett CNAME som
+pekar på ett skuggat namn, kommer sökning av CNAME via dnsmasq
+att resultera i den oskuggade adressen som är associerad med målet för
+CNAME. För att komma runt detta, lägg till CNAME till /etc/hosts så att
+CNAME också skuggas.
+
+.PP
+Taggsystemet fungerar enligt följande: dnsmasq taggar varje DHCP-förfrågan
+med taggar från tillämpliga konfigurationsrader som innehåller \fBset:<tag>\fP, dvs. 
+
+\fBset:<tag>\fP från \fB--dhcp-range\fP som används för att tilldela adressen;
+
+\fBset:<tag>\fP från alla matchande \fB--dhcp-host\fP (plus taggen \fBknown\fP eller 
+\fBknown-othernet\fP).
+
+BOOTP-förfrågningar taggas med \fBbootp\fP. Varje förfrågan taggas också med namnet på 
+det gränssnitt som förfrågan anlände till.
+
+Varje konfigurationsrad som innehåller en eller flera \fBtag:<tag>\fP-konstruktioner
+gäller när alla dess taggar finns i begäran. Det vill säga:
+
+Konfigurationstagg:A gäller för en begäran som är märkt med A.
+
+Konfigurationstagg:B gäller för en begäran som är märkt med B.
+
+Konfigurationstagg:A+B gäller inte för en begäran som är märkt med A.
+
+Konfigurationstagg:A+B gäller inte för en begäran som är märkt med B.
+
+Konfigurationstaggarna:A+B, tagg:A, tagg:B gäller för en begäran som är märkt med A+B.
+
+\fBset:<tag>\fP-konstruktioner i \fB--dhcp-range\fP- och \fB--dhcp-host\fP-taggförfrågningar.
+
+Använd \fBtag:<tag>\fPs i \fB--dhcp-option\fPs för att matcha \fBset:<tag>\fP och tillämpa konfigurationer.
+
+En \fB--dhcp-option\fP med \fBtag:<tag>\fP föredras framför en otaggad 
+\fB--dhcp-option\fP, förutsatt att \fBall\fP dess taggar matchar någonstans i
+uppsättningen som samlats ovan. 
+
+Taggprefixet ’!’ betyder ’inte’.
+\fB--dhcp-option=tag:!purple,3,1.2.3.4\fP skickar alternativet när begäran 
+inte är taggad med purple. (Skalets metatecken ’!’ måste undvikas på
+kommandoraden men inte i en konfigurationsfil).
+
+När man väljer \fB--dhcp-option\fPs är en \fB--dhcp-range\fP-tagg underordnad 
+andra taggar, för att göra det enkelt att åsidosätta alternativ för
+enskilda värdar, så:
+
+.B --dhcp-range=set:interface1,......
+
+.B --dhcp-host=set:myhost,.....
+
+.B --dhcp-option=tag:interface1,option:nis-domain,”domain1”
+
+.B --dhcp-option=tag:myhost,option:nis-domain,”domain2”
+
+ställer in NIS-domänen till domain1 för värdar i intervallet, men
+till domain2 för en viss värd som kan eller inte kan falla inom intervallet.
+
+.PP
+Observera att för \fB--dhcp-range\fP är både 
+\fBtag:<tag>\fP och
+ 
+\fBset:<tag>\fP möjliga, för att både välja intervallet som
+används baserat på (t.ex.) \fB--dhcp-host\fP och för att påverka de alternativ som skickas, baserat på
+det valda intervallet.
+
+Taggsystemet har utvecklats från ett tidigare, mer begränsat system. För bakåtkompatibilitet
+kan ”net:” användas istället för ”tag:” och ”set:” kan
+uteslutas. (Förutom i 
+.B --dhcp-host,
+där ”net:” kan användas istället för ”set:”. ) Av samma anledning kan ’#’
+användas istället för ’!’ för att ange NOT.
+.PP
+DHCP-servern i dnsmasq fungerar också som en BOOTP-server,
+förutsatt att MAC-adressen och IP-adressen för klienterna anges,
+antingen med hjälp av
+.B --dhcp-host
+konfigurationer eller i
+.I /etc/ethers,
+ och ett
+.B --dhcp-range
+finns för att aktivera DHCP-servern
+på ett visst nätverk. (Inställningen \fB--bootp-dynamic\fP eliminerar behovet av
+statiska adressmappningar.) Parametern filnamn
+i en BOOTP-begäran används som en tagg,
+liksom taggen \fBbootp\fP, vilket möjliggör viss kontroll över de alternativ som returneras till
+olika klasser av värdar.
+
+.SH AUTORITATIV KONFIGURATION
+Att konfigurera dnsmasq för att fungera som en auktoritativ DNS-server är
+komplicerat eftersom det innebär konfiguration av externa DNS-servrar
+för att tillhandahålla delegering. Vi kommer att gå igenom tre scenarier med
+ökande komplexitet. Förutsättningar för alla dessa scenarier
+är en globalt tillgänglig IP-adress, en A- eller AAAA-post som pekar på den adressen
+och en extern DNS-server som kan delegera zonen i
+fråga. I den första delen av denna förklaring kallar vi A- (eller AAAA-)posten
+för den globalt tillgängliga adressen server.example.com och zonen
+för vilken dnsmasq är auktoritativ vår.zone.com.
+
+Den enklaste konfigurationen består av två rader i dnsmasq-konfigurationen, ungefär så här
+
+.nf
+.B --auth-server=server.example.com,eth0
+.B --auth-zone=our.zone.com,1.2.3.0/24
+.fi
+
+och två poster i den externa DNS
+
+.nf
+server.example.com A 192.0.43.10
+our.zone.com NS server.example.com
+.fi
+
+eth0 är det externa nätverksgränssnittet som dnsmasq lyssnar på
+och har (globalt tillgänglig) adress 192.0.43.10. 
+
+Observera att den externa IP-adressen mycket väl kan vara dynamisk (dvs. tilldelad
+av en ISP via DHCP eller PPP). Om så är fallet måste A-posten länkas till denna
+dynamiska tilldelning av ett av de vanliga dynamiska DNS-systemen.
+
+En mer komplex, men praktiskt användbar konfiguration har adress
+posten för den globalt tillgängliga IP-adressen som finns i den
+auktoritativa zonen som dnsmasq betjänar, vanligtvis i roten. Nu
+har vi
+
+.nf
+.B --auth-server=our.zone.com,eth0
+.B --auth-zone=our.zone.com,1.2.3.0/24
+.fi
+
+.nf
+our.zone.com A 1.2.3.4
+our.zone.com NS our.zone.com
+.fi
+
+A-posten för our.zone.com har nu blivit en limpost, den löser
+hönan-och-ägget-problemet med att hitta IP-adressen till
+namnservern för our.zone.com när A-posten finns inom den
+zonen.
+ Observera att detta är den enda funktionen för denna post: eftersom dnsmasq nu är auktoritativ från our.zone.com måste den också tillhandahålla denna
+post. Om den externa adressen är statisk kan detta göras med en
+.B /etc/hosts
+-post eller
+.B --host-record.
+
+.nf
+.B --auth-server=our.zone.com,eth0
+.B --host-record=our.zone.com,1.2.3.4
+.B --auth-zone=our.zone.com,1.2.3.0/24
+.fi
+
+Om den externa adressen är dynamisk måste adressen
+som är associerad med our.zone.com härledas från adressen för det
+relevanta gränssnittet. Detta görs med hjälp av 
+.B --interface-name
+Något i stil med:
+
+.nf
+.B --auth-server=our.zone.com,eth0
+.B --interface-name=our.zone.com,eth0
+.B --auth-zone=our.zone.com,1.2.3.0/24,eth0
+.fi
+
+(Argumentet ”eth0” i \fB--auth-zone\fP lägger till det subnät som innehåller eth0:s
+dynamiska adress till zonen, så att \fB--interface-name\fP returnerar
+adressen i externa frågor.)
+
+Vår slutliga konfiguration bygger på ovanstående, men lägger också till en
+sekundär DNS-server. Detta är en annan DNS-server som lär sig DNS-data
+för zonen genom att göra zonöverföringar och fungerar som en backup om
+den primära servern blir otillgänglig. Konfigurationen av den
+sekundära servern ligger utanför ramen för denna man-sida, men den extra
+konfigurationen av dnsmasq är enkel:
+
+.nf
+.B --auth-sec-servers=secondary.myisp.com
+.fi
+
+och
+
+.nf
+our.zone.com NS secondary.myisp.com
+.fi
+
+Genom att lägga till auth-sec-servers aktiveras zonöverföring i dnsmasq, så att
+sekundärservern kan samla in DNS-data. Om du vill begränsa dessa data
+till vissa värdar kan du använda
+
+.nf
+.B --auth-peer=<IP-adress för sekundärservern>
+.fi
+
+.
+
+Dnsmasq fungerar som en auktoritativ server för in-addr.arpa- och
+ip6.arpa-domäner som är associerade med de subnät som anges i \fB--auth-zone\fP
+-deklarationer, så omvända (adress till namn) uppslagningar kan enkelt
+konfigureras med en lämplig NS-post, till exempel i detta exempel,
+där vi tillåter 1.2.3.0/24-adresser.
+
+.nf
+3.2.1.in-addr.arpa NS our.zone.com
+.fi
+
+Observera att omvända zoner (in-addr.arpa och ip6.arpa) för närvarande
+inte är tillgängliga i zonöverföringar, så det är ingen mening med att ordna
+sekundära servrar för omvända sökningar.
+
+.PP
+När dnsmasq är konfigurerat för att fungera som en auktoritativ server används
+följande data för att fylla den auktoritativa zonen.
+.PP
+.B --mx-host, --srv-host, --dns-rr, --txt-record, --naptr-record, --caa-record,
+så länge postnamnen finns i den auktoritativa domänen.
+.PP
+.B --synth-domain
+så länge domänen finns i den auktoritativa zonen och, för
+omvända (PTR) frågor, adressen finns i relevant subnät.
+.PP
+.B --cname
+så länge postnamnet finns i den auktoritativa domänen. Om
+målet för CNAME är okvalificerat, kvalificeras det med
+det auktoritativa zonnamnet. CNAME som används på detta sätt (endast) kan vara jokertecken, som i
+
+.nf
+.B --cname=*.example.com,default.example.com
+.fi
+
+.PP
+IPv4- och IPv6-adresser från /etc/hosts (och 
+.B --addn-hosts)
+ och
+.B --host-record
+och 
+.B --interface-name
+och
+.B ---dynamic-host
+förutsatt att adressen faller inom ett av de subnät som anges i
+.B --auth-zone.
+.PP
+Adresser för DHCP-leasingavtal, förutsatt att adressen faller inom ett av de undernät som anges i
+.B --auth-zone.
+(Om konstruerade DHCP-intervall används, som beror på den adress som dynamiskt 
+tilldelas ett gränssnitt, bör formen
+.B --auth-zone
+som definierar undernät efter ett gränssnitts dynamiska adress
+användas för att säkerställa att detta villkor uppfylls.)
+.PP
+I standardläget, där en DHCP-lease
+har ett okvalificerat namn och eventuellt ett kvalificerat namn som konstruerats
+med
+.B --domain,
+ konstrueras namnet i den auktoritativa zonen från
+det okvalificerade namnet och zonens domän. Detta kan vara samma som
+det som anges av
+.B --domain
+Om 
+.B --dhcp-fqdn
+är inställt, används de fullständigt kvalificerade namnen som är associerade med DHCP-leasingavtalen
+och måste matcha zonens domän.
+
+
+
+.SH EXIT-KODER
+0 - Dnsmasq har framgångsrikt förgrenats till bakgrunden eller avslutats
+normalt om bakgrundskörning inte är aktiverad.
+.PP
+1 - Ett problem med konfigurationen upptäcktes.
+.PP
+2 - Ett problem med nätverksåtkomst uppstod (adress i bruk, försök
+att använda privilegierade portar utan tillstånd).
+.PP
+3 - Ett problem uppstod med en filsystemoperation (saknad
+fil/katalog, behörigheter).
+.PP
+4 - Fel vid minnesallokering.
+.PP
+5 - Annat diverse problem.
+.PP
+11 eller högre - en returkod som inte är noll mottogs från
+lease-script-processen ”init”-anrop eller en
+.B \--conf-script
+-fil. Avslutningskoden från dnsmasq är
+-skriptets avslutningskod med 10 tillagt.
+ 
+
+.SH BEGRÄNSNINGAR
+Standardvärdena för resursbegränsningar i dnsmasq är i allmänhet
+konservativa och lämpliga för inbäddade routertypsenheter med
+långsamma processorer och begränsat minne. På mer kapabel hårdvara är det
+möjligt att öka begränsningarna och hantera många fler klienter.
+Följande gäller för dnsmasq-2.37: tidigare versioner skalade inte lika bra.
+
+.PP
+Dnsmasq kan hantera DNS och DHCP för minst tusen
+klienter. DHCP-leasingtiderna bör inte vara för korta (mindre än en timme). Värdet
+för
+.B --dns-forward-max
+kan ökas: börja med ett värde som motsvarar
+antalet klienter och öka det om DNS verkar långsamt. Observera att DNS
+prestanda också beror på prestandan hos uppströms
+namnservrar. Storleken på DNS-cachen kan ökas: den hårda
+gränsen är 10000 namn och standardvärdet (150) är mycket lågt. Om du skickar
+SIGUSR1 till dnsmasq loggar den information som är användbar för att justera
+cacheminnets storlek. Se avsnittet 
+.B NOTES
+för mer information.
+
+.PP
+Den inbyggda TFTP-servern kan hantera många samtidiga filöverföringar
+: den absoluta gränsen är relaterad till antalet filhanterare
+som tillåts för en process och förmågan hos systemanropet select() att
+hantera ett stort antal filhanterare. Om gränsen är för hög
+med
+ 
+.B --tftp-max
+kommer den att skalas ned och den faktiska gränsen loggas vid
+start. Observera att fler överföringar är möjliga när samma fil
+skickas än när varje överföring skickar en annan fil.
+
+.PP
+Det är möjligt att använda dnsmasq för att blockera webbannonsering genom att använda en lista
+över kända bannerannonsservrar, som alla löser till 127.0.0.1 eller 0.0.0.0, i
+.B /etc/hosts 
+eller en ytterligare hosts-fil. Listan kan vara mycket lång, 
+dnsmasq har testats framgångsrikt med en miljon namn. En fil av den storleken
+kräver en 1 GHz-processor och cirka 60 MB RAM.
+
+.SH INTERNATIONALISERING
+Dnsmasq kan kompileras för att stödja internationalisering. För att göra detta
+bör målen ”all-i18n” och ”install-i18n” användas istället för
+standardmålen ’all’ och ”install”. När internationalisering
+är kompilerad kommer dnsmasq att producera loggmeddelanden på det lokala
+språket och stödja internationaliserade domännamn (IDN). Domän
+namn i /etc/hosts, /etc/ethers och /etc/dnsmasq.conf som innehåller 
+icke-ASCII-tecken kommer att översättas till DNS-intern punycode
+-representation. Observera att
+dnsmasq bestämmer både språket för meddelanden och den antagna
+teckensatsen för konfigurationsfiler
+från miljövariabeln LANG. Detta bör ställas in till systemets
+standardvärde av det skript som ansvarar för att starta
+dnsmasq. När du redigerar konfigurationsfilerna, var noga med att göra det
+med endast systemets standardlokalisering och inte en användarspecifik, eftersom
+dnsmasq inte har något direkt sätt att bestämma vilken teckenuppsättning som används och måste
+anta att det är systemets standard.
+ 
+
+.SH FILER
+.IR /etc/dnsmasq.conf 
+
+.IR /usr/local/etc/dnsmasq.conf
+
+.IR /etc/resolv.conf
+.IR /var/run/dnsmasq/resolv.conf
+.IR /etc/ppp/resolv.conf
+.IR /etc/dhcpc/resolv.conf
+
+.IR /etc/hosts
+
+.IR /etc/ethers
+
+.IR /var/lib/misc/dnsmasq.leases 
+
+.IR /var/db/dnsmasq.leases
+
+.IR /var/run/dnsmasq.pid
+.SH SE ÄVEN
+.BR hosts (5), 
+.BR resolver (5)
+.SH FÖRFATTARE
+Denna manual sida är skriven av Simon Kelley <simon@thekelleys.org.uk>.
+

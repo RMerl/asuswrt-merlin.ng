@@ -57,6 +57,8 @@
 #define OPTION_RAPID_COMMIT      80
 #define OPTION_CLIENT_FQDN       81
 #define OPTION_AGENT_ID          82
+#define OPTION_LAST_TRANSACTION  91
+#define OPTION_ASSOCIATED_IP     92
 #define OPTION_ARCH              93
 #define OPTION_PXE_UUID          97
 #define OPTION_SUBNET_SELECT     118
@@ -71,6 +73,7 @@
 #define SUBOPT_REMOTE_ID         2
 #define SUBOPT_SUBNET_SELECT     5     /* RFC 3527 */
 #define SUBOPT_SUBSCR_ID         6     /* RFC 3393 */
+#define SUBOPT_FLAGS             10    /* RFC 5010 */
 #define SUBOPT_SERVER_OR         11    /* RFC 5107 */
 
 #define SUBOPT_PXE_BOOT_ITEM     71    /* PXE standard */
@@ -87,6 +90,11 @@
 #define DHCPNAK                  6
 #define DHCPRELEASE              7
 #define DHCPINFORM               8
+#define DHCPFORCERENEW           9
+#define DHCPLEASEQUERY          10
+#define DHCPLEASEUNASSIGNED     11
+#define DHCPLEASEUNKNOWN        12
+#define DHCPLEASEACTIVE         13
 
 #define BRDBAND_FORUM_IANA       3561 /* Broadband forum IANA enterprise */
 

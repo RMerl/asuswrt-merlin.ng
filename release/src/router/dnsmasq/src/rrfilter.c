@@ -377,7 +377,7 @@ int expand_workspace(unsigned char ***wkspc, int *szp, int new)
 int to_wire(char *name)
 {
   unsigned char *l, *p, *q, term;
-  int len;
+  unsigned int len;
 
   for (l = (unsigned char*)name; *l != 0; l = p)
     {
@@ -409,7 +409,7 @@ int to_wire(char *name)
 void from_wire(char *name)
 {
   unsigned char *l, *p, *last;
-  int len;
+  unsigned int len;
   
   for (last = (unsigned char *)name; *last != 0; last += *last+1);
   

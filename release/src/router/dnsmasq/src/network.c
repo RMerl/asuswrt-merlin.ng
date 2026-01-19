@@ -1379,7 +1379,7 @@ int local_bind(int fd, union mysockaddr *addr, char *intname, unsigned int ifind
   /* cannot set source _port_ for TCP connections. */
   if (is_tcp)
     port = 0;
-  else if (port == 0 && daemon->max_port != 0)
+  else if (port == 0 && daemon->max_port != 0 && daemon->max_port >= daemon->min_port)
     {
       /* Bind a random port within the range given by min-port and max-port if either
 	 or both are set. Otherwise use the OS's random ephemeral port allocation by
@@ -1568,6 +1568,8 @@ void check_servers(int no_loop_check)
   struct serverfd *sfd, *tmp, **up;
   int port = 0, count;
   int locals = 0;
+
+  (void)no_loop_check;
   
 #ifdef HAVE_LOOP
   if (!no_loop_check)
@@ -1587,33 +1589,6 @@ void check_servers(int no_loop_check)
 
   for (count = 0, serv = daemon->servers; serv; serv = serv->next)
     {
-#ifdef HAVE_DNSSEC
-      if (option_bool(OPT_DNSSEC_VALID))
-	{ 
-	  if (!(serv->flags & SERV_FOR_NODOTS))
-	    serv->flags |= SERV_DO_DNSSEC;
-	  
-	  /* Disable DNSSEC validation when using server=/domain/.... servers
-	     unless there's a configured trust anchor. */
-	  if (strlen(serv->domain) != 0)
-	    {
-	      struct ds_config *ds;
-	      char *domain = serv->domain;
-	      
-	      /* .example.com is valid */
-	      while (*domain == '.')
-		domain++;
-	      
-	      for (ds = daemon->ds; ds; ds = ds->next)
-		if (ds->name[0] != 0 && hostname_isequal(domain, ds->name))
-		  break;
-	      
-	      if (!ds)
-		serv->flags &= ~SERV_DO_DNSSEC;
-	    }
-	}
-#endif
-      
       port = prettyprint_addr(&serv->addr, daemon->namebuff);
       
       /* 0.0.0.0 is nothing, the stack treats it like 127.0.0.1 */
@@ -1659,10 +1634,6 @@ void check_servers(int no_loop_check)
 	{
 	  char *s1, *s2, *s3 = "", *s4 = "";
 
-#ifdef HAVE_DNSSEC
-	  if (option_bool(OPT_DNSSEC_VALID) && !(serv->flags & SERV_DO_DNSSEC))
-	    s3 = _("(no DNSSEC)");
-#endif
 	  if (serv->flags & SERV_FOR_NODOTS)
 	    s1 = _("unqualified"), s2 = _("names");
 	  else if (strlen(serv->domain) == 0)
@@ -1696,7 +1667,7 @@ void check_servers(int no_loop_check)
 	   if (++locals <= LOCALS_LOGGED)
 	     my_syslog(LOG_INFO, _("using only locally-known addresses for %s"), serv->domain);
 	 }
-       else if (serv->flags & SERV_USE_RESOLV)
+       else if (serv->flags & SERV_USE_RESOLV && serv->domain_len != 0)
 	 my_syslog(LOG_INFO, _("using standard nameservers for %s"), serv->domain);
     }
   
@@ -1806,8 +1777,10 @@ int reload_servers(char *fname)
 /* Called when addresses are added or deleted from an interface */
 void newaddress(time_t now)
 {
+#ifdef HAVE_DHCP
   struct dhcp_relay *relay;
-
+#endif
+  
   (void)now;
   
   if (option_bool(OPT_CLEVERBIND) || option_bool(OPT_LOCAL_SERVICE) ||

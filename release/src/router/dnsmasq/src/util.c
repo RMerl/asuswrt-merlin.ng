@@ -34,6 +34,10 @@
 #include <sys/utsname.h>
 #endif
 
+#ifdef HAVE_BSD_NETWORK
+#include <libgen.h>
+#endif
+
 /* SURF random number generator */
 
 static u32 seed[32];
@@ -463,7 +467,7 @@ int hostname_order(const char *a, const char *b)
 
 int hostname_isequal(const char *a, const char *b)
 {
-  return hostname_order(a, b) == 0;
+  return strlen(a) == strlen(b) && hostname_order(a, b) == 0;
 }
 
 /* is b equal to or a subdomain of a return 2 for equal, 1 for subdomain */
@@ -868,9 +872,34 @@ void close_fds(long max_fd, int spare1, int spare2, int spare3)
 #endif
 
 #ifdef FDESCFS
-  DIR *d;
+  DIR *d = NULL;
   
-  if ((d = opendir(FDESCFS)))
+#  ifdef HAVE_BSD_NETWORK
+  dev_t dirdev = 0;
+  char fdescfs[] = FDESCFS; /* string must be writable */
+  struct stat statbuf;
+
+  /* On BSD, fdescfs is normally mounted at /dev/fd. However
+     if it is NOT mounted, devfs creates a directory at /dev/fd
+     which contains (only) the file descriptors 0,1 and 2.
+
+     Under these conditions, opendir() will succeed, and
+     if we proceed we will fail to close extant
+     file descriptors which should be closed.
+     
+     Check that there is a filesystem mounted at /dev/fd
+     by checking that the device changes between /dev/fd
+     and /dev. If if doesn't, fall back to the dumb path. */
+  
+  if (stat(fdescfs, &statbuf) != -1)
+    dirdev = statbuf.st_dev;
+
+  if (stat(dirname(fdescfs), &statbuf) != -1 &&
+      dirdev != statbuf.st_dev)
+#  endif
+    d = opendir(FDESCFS);
+      
+  if (d)
     {
       struct dirent *de;
 
@@ -892,9 +921,9 @@ void close_fds(long max_fd, int spare1, int spare2, int spare3)
       
       closedir(d);
       return;
-  }
+    }
 #endif
-
+  
   /* fallback, dumb code. */
   for (max_fd--; max_fd >= 0; max_fd--)
     if (max_fd != STDOUT_FILENO && max_fd != STDERR_FILENO && max_fd != STDIN_FILENO &&

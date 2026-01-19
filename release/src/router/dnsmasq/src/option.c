@@ -195,6 +195,8 @@ struct myoption {
 #define LOPT_PXE_OPT       386
 #define LOPT_NO_ENCODE     387
 #define LOPT_DO_ENCODE     388
+#define LOPT_LEASEQUERY    389
+#define LOPT_SPLIT_RELAY   390
 
 #ifdef HAVE_GETOPT_LONG
 static const struct option opts[] =  
@@ -373,6 +375,7 @@ static const struct myoption opts[] =
     { "dnssec-timestamp", 1, 0, LOPT_DNSSEC_STAMP },
     { "dnssec-limits", 1, 0, LOPT_DNSSEC_LIMITS },
     { "dhcp-relay", 1, 0, LOPT_RELAY },
+    { "dhcp-split-relay", 1, 0, LOPT_SPLIT_RELAY },
     { "ra-param", 1, 0, LOPT_RA_PARAM },
     { "quiet-dhcp", 0, 0, LOPT_QUIET_DHCP },
     { "quiet-dhcp6", 0, 0, LOPT_QUIET_DHCP6 },
@@ -394,6 +397,7 @@ static const struct myoption opts[] =
     { "use-stale-cache", 2, 0 , LOPT_STALE_CACHE },
     { "no-ident", 0, 0, LOPT_NO_IDENT },
     { "max-tcp-connections", 1, 0, LOPT_MAX_PROCS },
+    { "leasequery", 2, 0, LOPT_LEASEQUERY },
     { NULL, 0, 0, 0 }
   };
 
@@ -499,6 +503,7 @@ static struct {
   { '4', ARG_DUP, "set:<tag>,<mac address>", gettext_noop("Map MAC address (with wildcards) to option set."), NULL },
   { LOPT_BRIDGE, ARG_DUP, "<iface>,<alias>..", gettext_noop("Treat DHCP requests on aliases as arriving from interface."), NULL },
   { LOPT_SHARED_NET, ARG_DUP, "<iface>|<addr>,<addr>", gettext_noop("Specify extra networks sharing a broadcast domain for DHCP"), NULL},
+  { LOPT_LEASEQUERY, ARG_DUP, "[<addr>[/prefix>]]", gettext_noop("Enable RFC 4388 leasequery functions for DHCPv4"), NULL },
   { '5', OPT_NO_PING, NULL, gettext_noop("Disable ICMP echo address checking in the DHCP server."), NULL },
   { '6', ARG_ONE, "<path>", gettext_noop("Shell script to run on DHCP lease creation and destruction."), NULL },
   { LOPT_LUASCRIPT, ARG_DUP, "path", gettext_noop("Lua script to run on DHCP lease creation and destruction."), NULL },
@@ -539,6 +544,7 @@ static struct {
   { LOPT_GEN_NAMES, ARG_DUP, "[=tag:<tag>]", gettext_noop("Generate hostnames based on MAC address for nameless clients."), NULL},
   { LOPT_PROXY, ARG_DUP, "[=<ipaddr>]...", gettext_noop("Use these DHCP relays as full proxies."), NULL },
   { LOPT_RELAY, ARG_DUP, "<local-addr>,<server>[,<iface>]", gettext_noop("Relay DHCP requests to a remote server"), NULL},
+  { LOPT_SPLIT_RELAY, ARG_DUP, "<local-addr>,<server>,<iface>", gettext_noop("Relay DHCP requests to a remote server"), NULL},
   { LOPT_CNAME, ARG_DUP, "<alias>,<target>[,<ttl>]", gettext_noop("Specify alias name for LOCAL DNS name."), NULL },
   { LOPT_PXE_PROMT, ARG_DUP, "<prompt>,[<timeout>]", gettext_noop("Prompt to send to PXE clients."), NULL },
   { LOPT_PXE_SERV, ARG_DUP, "<service>", gettext_noop("Boot service for PXE menu."), NULL },
@@ -961,7 +967,7 @@ char *parse_server(char *arg, struct server_details *sdetails)
       hints.ai_family = AF_UNSPEC;
 
       /* Get addresses suitable for sending datagrams. We assume that we can use the
-	 same addresses for TCP connections. Settting this to zero gets each address
+	 same addresses for TCP connections. Setting this to zero gets each address
 	 threes times, for SOCK_STREAM, SOCK_RAW and SOCK_DGRAM, which is not useful. */
       hints.ai_socktype = SOCK_DGRAM;
 
@@ -2677,15 +2683,15 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 			if (msize > 128)
 			  ret_err_free(_("bad prefix length"), new);
 			
-			mask = (1LLU << (128 - msize)) - 1LLU;
+			/* prefix==64 overflows the mask calculation */
+			if (msize <= 64)
+			  mask = (u64)-1LL;
+			else
+			  mask = (1LLU << (128 - msize)) - 1LLU;
 			
 			new->is6 = 1;
 			new->prefixlen = msize;
 			
-			/* prefix==64 overflows the mask calculation above */
-			if (msize <= 64)
-			  mask = (u64)-1LL;
-			  
 			new->end6 = new->start6;
 			setaddr6part(&new->start6, addrpart & ~mask);
 			setaddr6part(&new->end6, addrpart | mask);
@@ -2914,7 +2920,20 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	arg = comma;
       } while (arg);
       break;
-      
+
+#ifdef HAVE_DHCP
+# if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+# endif
+    case LOPT_LEASEQUERY:
+      set_option_bool(OPT_LEASEQUERY);
+      if (!arg)
+	break;
+# if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+# pragma GCC diagnostic pop
+# endif
+#endif
     case 'B':  /* --bogus-nxdomain */
     case LOPT_IGNORE_ADDR: /* --ignore-address */
      {
@@ -2950,6 +2969,13 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	    baddr->next = daemon->bogus_addr;
 	    daemon->bogus_addr = baddr;
 	  }
+#ifdef HAVE_DHCP
+	else if (option == LOPT_LEASEQUERY)
+	  {
+	    baddr->next = daemon->leasequery_addr;
+	    daemon->leasequery_addr = baddr;
+	  }
+#endif
 	else
 	  {
 	    baddr->next = daemon->ignore_addr;
@@ -3437,6 +3463,8 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	      set_option_bool(OPT_EXTRALOG);
 	      set_option_bool(OPT_LOG_PROTO);
 	    }
+	  else if (strcmp(arg, "auth") == 0)
+	    set_option_bool(OPT_AUTH_LOG);
 	}
       break;
 
@@ -3989,7 +4017,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	while (arg)
 	  {
 	    comma = split(arg);
-	    if (strchr(arg, ':')) /* ethernet address, netid or binary CLID */
+	    if (strchr(arg, ':')) /* Ethernet address, netid or binary CLID */
 	      {
 		if ((arg[0] == 'i' || arg[0] == 'I') &&
 		    (arg[1] == 'd' || arg[1] == 'D') &&
@@ -4693,11 +4721,21 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
       break;
       
     case LOPT_RELAY: /* --dhcp-relay */
+    case LOPT_SPLIT_RELAY: /* --dhcp-splt-relay */
       {
 	struct dhcp_relay *new = opt_malloc(sizeof(struct dhcp_relay));
 	char *two = split(arg);
 	char *three = split(two);
-	
+
+	if (option == LOPT_SPLIT_RELAY)
+	  {
+	    new->split_mode = 1;
+	    
+	    /* split mode must have two addresses and a non-wildcard interface name. */
+	    if (!three || strchr(three, '*'))
+	      two = NULL;
+	  }
+		    
 	new->iface_index = 0;
 
 	if (two)
@@ -4720,12 +4758,15 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 		    else
 		      three = two;
 		  }
+		else if (new->split_mode && inet_pton(AF_INET, three, &new->uplink))
+		  /* Third arg in split mode can be an address. */
+		  three = NULL;
 		
 		new->next = daemon->relay4;
 		daemon->relay4 = new;
 	      }
 #ifdef HAVE_DHCP6
-	    else if (inet_pton(AF_INET6, arg, &new->local))
+	    else if (inet_pton(AF_INET6, arg, &new->local) && !new->split_mode)
 	      {
 		char *hash = split_chr(two, '#');
 
@@ -4746,7 +4787,9 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 		daemon->relay6 = new;
 	      }
 #endif
-
+	    else
+	      two = NULL;
+	    
 	    new->interface = opt_string_alloc(three);
 	  }
 	
@@ -5339,7 +5382,8 @@ err:
 	
 	new->class = C_IN;
 	new->name = NULL;
-
+	new->digestlen = 0;
+	
 	if ((comma = split(arg)) && (algo = split(comma)))
 	  {
 	    int class = 0;
@@ -5357,29 +5401,37 @@ err:
 		algo = split(comma);
 	      }
 	  }
-		  
-       	if (!comma || !algo || !(digest = split(algo)) || !(keyhex = split(digest)) ||
-	    !atoi_check16(comma, &new->keytag) || 
-	    !atoi_check8(algo, &new->algo) ||
-	    !atoi_check8(digest, &new->digest_type) ||
-	    !(new->name = canonicalise_opt(arg)))
+	
+	if (!(new->name = canonicalise_opt(arg)))
 	  ret_err_free(_("bad trust anchor"), new);
-	    
-	/* Upper bound on length */
-	len = (2*strlen(keyhex))+1;
-	new->digest = opt_malloc(len);
-	unhide_metas(keyhex);
-	/* 4034: "Whitespace is allowed within digits" */
-	for (cp = keyhex; *cp; )
-	  if (isspace((unsigned char)*cp))
-	    for (cp1 = cp; *cp1; cp1++)
-	      *cp1 = *(cp1+1);
-	  else
-	    cp++;
-	if ((new->digestlen = parse_hex(keyhex, (unsigned char *)new->digest, len, NULL, NULL)) == -1)
+
+	if (comma)
 	  {
-	    free(new->name);
-	    ret_err_free(_("bad HEX in trust anchor"), new);
+	    if (!algo || !(digest = split(algo)) || !(keyhex = split(digest)) ||
+		!atoi_check16(comma, &new->keytag) || 
+		!atoi_check8(algo, &new->algo) ||
+		!atoi_check8(digest, &new->digest_type))
+	      {
+		free(new->name);
+		ret_err_free(_("bad trust anchor"), new);
+	      }
+	    
+	    /* Upper bound on length */
+	    len = (2*strlen(keyhex))+1;
+	    new->digest = opt_malloc(len);
+	    unhide_metas(keyhex);
+	    /* 4034: "Whitespace is allowed within digits" */
+	    for (cp = keyhex; *cp; )
+	      if (isspace((unsigned char)*cp))
+		for (cp1 = cp; *cp1; cp1++)
+		  *cp1 = *(cp1+1);
+	      else
+		cp++;
+	    if ((new->digestlen = parse_hex(keyhex, (unsigned char *)new->digest, len, NULL, NULL)) == -1)
+	      {
+		free(new->name);
+		ret_err_free(_("bad HEX in trust anchor"), new);
+	      }
 	  }
 	
 	new->next = daemon->ds;
@@ -5928,6 +5980,9 @@ void read_opts(int argc, char **argv, char *compile_opts)
   daemon->randport_limit = 1;
   daemon->host_index = SRC_AH;
   daemon->max_procs = MAX_PROCS;
+#ifdef HAVE_DUMPFILE
+  daemon->dump_mask = 0xffffffff;
+#endif
 #ifdef HAVE_DNSSEC
   daemon->limit[LIMIT_SIG_FAIL] = DNSSEC_LIMIT_SIG_FAIL;
   daemon->limit[LIMIT_CRYPTO] = DNSSEC_LIMIT_CRYPTO;
@@ -6227,6 +6282,8 @@ void read_opts(int argc, char **argv, char *compile_opts)
 	    strchr(srv->name, '.') && 
 	    strchr(srv->name, '.') == strrchr(srv->name, '.'))
 	  {
+	    if (strlen(srv->name) + 1 + strlen(daemon->domain_suffix) > MAXDNAME)
+	      die(_("srv-host name %s too long after domain appended"), srv->name, EC_MISC);
 	    strcpy(buff, srv->name);
 	    strcat(buff, ".");
 	    strcat(buff, daemon->domain_suffix);

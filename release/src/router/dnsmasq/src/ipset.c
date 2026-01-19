@@ -16,7 +16,7 @@
 
 #include "dnsmasq.h"
 
-#if defined(HAVE_IPSET) && defined(HAVE_LINUX_NETWORK)
+#if defined(HAVE_LINUX_IPSET)
 
 #include <string.h>
 #include <errno.h>

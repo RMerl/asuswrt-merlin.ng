@@ -18,12 +18,12 @@
 
 #ifdef HAVE_TFTP
 
-static void handle_tftp(time_t now, struct tftp_transfer *transfer, ssize_t len);
-static struct tftp_file *check_tftp_fileperm(ssize_t *len, char *prefix, char *client);
+static void handle_tftp(char *packet, time_t now, struct tftp_transfer *transfer, ssize_t len);
+static struct tftp_file *check_tftp_fileperm(char *packet, ssize_t *len, char *prefix, char *client);
 static void free_transfer(struct tftp_transfer *transfer);
 static ssize_t tftp_err(int err, char *packet, char *message, char *file, char *arg2);
 static ssize_t tftp_err_oops(char *packet, const char *file);
-static ssize_t get_block(char *packet, struct tftp_transfer *transfer);
+static ssize_t get_block(struct tftp_transfer *transfer);
 static char *next(char **p, char *end);
 static void sanitise(char *buf);
 
@@ -41,11 +41,10 @@ static void sanitise(char *buf);
 #define ERR_ILL    4
 #define ERR_TID    5
 
-void tftp_request(struct listener *listen, time_t now)
+static void tftp_request(char *packet, ssize_t plen, struct listener *listen, time_t now)
 {
   ssize_t len;
-  char *packet = daemon->packet;
-  char *filename, *mode, *p, *end, *opt;
+  char *filename, *mode, *p, *end;
   union mysockaddr addr, peer;
   struct msghdr msg;
   struct iovec iov;
@@ -87,12 +86,10 @@ void tftp_request(struct listener *listen, time_t now)
   msg.msg_iov = &iov;
   msg.msg_iovlen = 1;
 
+  /* packet buff is DNS name workspace. */
   iov.iov_base = packet;
-  iov.iov_len = daemon->packet_buff_sz;
-
-  /* we overwrote the buffer... */
-  daemon->srv_save = NULL;
-
+  iov.iov_len = plen;
+  
   if ((len = recvmsg(listen->tftpfd, &msg, 0)) < 2)
     return;
 
@@ -198,11 +195,11 @@ void tftp_request(struct listener *listen, time_t now)
 
       name = namebuff;
       
-      addra.addr4 = addr.in.sin_addr;
-
       if (family == AF_INET6)
 	addra.addr6 = addr.in6.sin6_addr;
-
+      else
+	addra.addr4 = addr.in.sin_addr;
+      
       if (daemon->tftp_interfaces)
 	{
 	  /* dedicated tftp interface list */
@@ -267,14 +264,14 @@ void tftp_request(struct listener *listen, time_t now)
 		}
 	      else
 		{
-		  handle_tftp(now, transfer, len);
+		  handle_tftp(packet, now, transfer, len);
 		  return;
 		}
 	    }
 	}
       
       /* Enforce simultaneous transfer limit. In non-single-port mode
-	 this is doene by not listening on the server socket when
+	 this is done by not listening on the server socket when
 	 too many transfers are in progress. */
       if (!transfer && tftp_cnt >= daemon->tftp_max)
 	return;
@@ -308,7 +305,9 @@ void tftp_request(struct listener *listen, time_t now)
   /* May reuse struct transfer from abandoned transfer in single port mode. */
   if (!transfer && !(transfer = whine_malloc(sizeof(struct tftp_transfer))))
     return;
-  
+
+  memset(transfer, 0, sizeof(struct tftp_transfer));
+	 
   if (option_bool(OPT_SINGLE_PORT))
     transfer->sockfd = listen->tftpfd;
   else if ((transfer->sockfd = socket(family, SOCK_DGRAM, 0)) == -1)
@@ -320,15 +319,15 @@ void tftp_request(struct listener *listen, time_t now)
   transfer->peer = peer;
   transfer->source = addra;
   transfer->if_index = if_index;
-  transfer->timeout = now + 2;
+  transfer->timeout = 2;
+  transfer->start = now;
   transfer->backoff = 1;
   transfer->block = 1;
+  transfer->ackprev = 0;
+  transfer->block_hi = 0;
   transfer->blocksize = 512;
-  transfer->offset = 0;
-  transfer->file = NULL;
-  transfer->opt_blocksize = transfer->opt_transize = 0;
-  transfer->netascii = transfer->carrylf = 0;
- 
+  transfer->windowsize = 1;
+  
   (void)prettyprint_addr(&peer, daemon->addrbuff);
   
   /* if we have a nailed-down range, iterate until we find a free one. */
@@ -361,136 +360,171 @@ void tftp_request(struct listener *listen, time_t now)
   
   p = packet + 2;
   end = packet + len;
+
+  len = 0;
   
-  if (ntohs(*((unsigned short *)packet)) != OP_RRQ ||
-      !(filename = next(&p, end)) ||
-      !(mode = next(&p, end)) ||
-      (strcasecmp(mode, "octet") != 0 && strcasecmp(mode, "netascii") != 0))
+  if (ntohs(*((unsigned short *)packet)) == OP_WRQ)
+    len = tftp_err(ERR_ILL, packet, _("unsupported write request from %s"),daemon->addrbuff, NULL);
+  else if (ntohs(*((unsigned short *)packet)) == OP_RRQ)
     {
-      len = tftp_err(ERR_ILL, packet, _("unsupported request from %s"), daemon->addrbuff, NULL);
-      is_err = 1;
-    }
-  else
-    {
-      if (strcasecmp(mode, "netascii") == 0)
-	transfer->netascii = 1;
-      
-      while ((opt = next(&p, end)))
+      if (!(filename = next(&p, end)))
+	len = tftp_err(ERR_ILL, packet, _("empty filename in request from %s"), daemon->addrbuff, NULL);
+      else if (!(mode = next(&p, end)) || (strcasecmp(mode, "octet") != 0 && strcasecmp(mode, "netascii") != 0))
+	len = tftp_err(ERR_ILL, packet, _("unsupported request from %s"),daemon->addrbuff, NULL);
+      else
 	{
-	  if (strcasecmp(opt, "blksize") == 0)
+	  char *opt, *arg;
+	  
+	  if (strcasecmp(mode, "netascii") == 0)
+	    transfer->netascii = 1;
+	  
+	  while ((opt = next(&p, end)) && (arg = next(&p, end)))
 	    {
-	      if ((opt = next(&p, end)) && !option_bool(OPT_TFTP_NOBLOCK))
+	      unsigned int val = atoi(arg);
+	      
+	      if (strcasecmp(opt, "blksize") == 0 && !option_bool(OPT_TFTP_NOBLOCK))
 		{
 		  /* 32 bytes for IP, UDP and TFTP headers, 52 bytes for IPv6 */
 		  int overhead = (family == AF_INET) ? 32 : 52;
-		  transfer->blocksize = atoi(opt);
-		  if (transfer->blocksize < 1)
-		    transfer->blocksize = 1;
-		  if (transfer->blocksize > (unsigned)daemon->packet_buff_sz - 4)
-		    transfer->blocksize = (unsigned)daemon->packet_buff_sz - 4;
-		  if (mtu != 0 && transfer->blocksize > (unsigned)mtu - overhead)
-		    transfer->blocksize = (unsigned)mtu - overhead;
+		  if (val < 1)
+		    val  = 1;
+		  if (val > (unsigned)daemon->packet_buff_sz - 4)
+		    val  = (unsigned)daemon->packet_buff_sz - 4;
+		  if (mtu != 0 && val > (unsigned)mtu - overhead)
+		    val  = (unsigned)mtu - overhead;
+		  transfer->blocksize = val;
 		  transfer->opt_blocksize = 1;
 		  transfer->block = 0;
 		}
-	    }
-	  else if (strcasecmp(opt, "tsize") == 0 && next(&p, end) && !transfer->netascii)
-	    {
-	      transfer->opt_transize = 1;
-	      transfer->block = 0;
-	    }
-	}
-
-      /* cope with backslashes from windows boxen. */
-      for (p = filename; *p; p++)
-	if (*p == '\\')
-	  *p = '/';
-	else if (option_bool(OPT_TFTP_LC))
-	  *p = tolower((unsigned char)*p);
-		
-      strcpy(daemon->namebuff, "/");
-      if (prefix)
-	{
-	  if (prefix[0] == '/')
-	    daemon->namebuff[0] = 0;
-	  strncat(daemon->namebuff, prefix, (MAXDNAME-1) - strlen(daemon->namebuff));
-	  if (prefix[strlen(prefix)-1] != '/')
-	    strncat(daemon->namebuff, "/", (MAXDNAME-1) - strlen(daemon->namebuff));
-
-	  if (option_bool(OPT_TFTP_APREF_IP))
-	    {
-	      size_t oldlen = strlen(daemon->namebuff);
-	      struct stat statbuf;
-	      
-	      strncat(daemon->namebuff, daemon->addrbuff, (MAXDNAME-1) - strlen(daemon->namebuff));
-	      strncat(daemon->namebuff, "/", (MAXDNAME-1) - strlen(daemon->namebuff));
-	      
-	      /* remove unique-directory if it doesn't exist */
-	      if (stat(daemon->namebuff, &statbuf) == -1 || !S_ISDIR(statbuf.st_mode))
-		daemon->namebuff[oldlen] = 0;
+	      else if (strcasecmp(opt, "tsize") == 0 && !transfer->netascii)
+		{
+		  transfer->opt_transize = 1;
+		  transfer->block = 0;
+		}
+	      else if (strcasecmp(opt, "timeout") == 0)
+		{
+		  if (val > 255)
+		    val = 255;
+		  transfer->timeout = val;
+		  transfer->opt_timeout = 1;
+		  transfer->block = 0;
+		}
+	      else if (strcasecmp(opt, "windowsize") == 0 && !transfer->netascii)
+		{
+		  /* windowsize option only supported for binary transfers. */
+		  if (val < 1)
+		    val = 1;
+		  if (val > TFTP_MAX_WINDOW)
+		    val = TFTP_MAX_WINDOW;
+		  transfer->windowsize = val;
+		  transfer->opt_windowsize = 1;
+		  transfer->block = 0;
+		}
 	    }
 	  
-	  if (option_bool(OPT_TFTP_APREF_MAC))
+	  /* cope with backslashes from windows boxen. */
+	  for (p = filename; *p; p++)
+	    if (*p == '\\')
+	      *p = '/';
+	    else if (option_bool(OPT_TFTP_LC))
+	      *p = tolower((unsigned char)*p);
+	  
+	  strcpy(daemon->namebuff, "/");
+	  if (prefix)
 	    {
-	      unsigned char *macaddr = NULL;
-	      unsigned char macbuf[DHCP_CHADDR_MAX];
+	      if (prefix[0] == '/')
+		daemon->namebuff[0] = 0;
+	      strncat(daemon->namebuff, prefix, (MAXDNAME-1) - strlen(daemon->namebuff));
+	      if (prefix[strlen(prefix)-1] != '/')
+		strncat(daemon->namebuff, "/", (MAXDNAME-1) - strlen(daemon->namebuff));
 	      
-#ifdef HAVE_DHCP
-	      if (daemon->dhcp && peer.sa.sa_family == AF_INET)
-	        {
-		  /* Check if the client IP is in our lease database */
-		  struct dhcp_lease *lease = lease_find_by_addr(peer.in.sin_addr);
-		  if (lease && lease->hwaddr_type == ARPHRD_ETHER && lease->hwaddr_len == ETHER_ADDR_LEN)
-		    macaddr = lease->hwaddr;
-		}
-#endif
-	      
-	      /* If no luck, try to find in ARP table. This only works if client is in same (V)LAN */
-	      if (!macaddr && find_mac(&peer, macbuf, 1, now) > 0)
-		macaddr = macbuf;
-	      
-	      if (macaddr)
-	        {
+	      if (option_bool(OPT_TFTP_APREF_IP))
+		{
 		  size_t oldlen = strlen(daemon->namebuff);
 		  struct stat statbuf;
-
-		  snprintf(daemon->namebuff + oldlen, (MAXDNAME-1) - oldlen, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x/",
-			   macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5]);
+		  
+		  strncat(daemon->namebuff, daemon->addrbuff, (MAXDNAME-1) - strlen(daemon->namebuff));
+		  strncat(daemon->namebuff, "/", (MAXDNAME-1) - strlen(daemon->namebuff));
 		  
 		  /* remove unique-directory if it doesn't exist */
 		  if (stat(daemon->namebuff, &statbuf) == -1 || !S_ISDIR(statbuf.st_mode))
 		    daemon->namebuff[oldlen] = 0;
 		}
+	      
+	      if (option_bool(OPT_TFTP_APREF_MAC))
+		{
+		  unsigned char *macaddr = NULL;
+		  unsigned char macbuf[DHCP_CHADDR_MAX];
+		  
+#ifdef HAVE_DHCP
+		  if (daemon->dhcp && peer.sa.sa_family == AF_INET)
+		    {
+		      /* Check if the client IP is in our lease database */
+		      struct dhcp_lease *lease = lease_find_by_addr(peer.in.sin_addr);
+		      if (lease && lease->hwaddr_type == ARPHRD_ETHER && lease->hwaddr_len == ETHER_ADDR_LEN)
+			macaddr = lease->hwaddr;
+		    }
+#endif
+		  
+		  /* If no luck, try to find in ARP table. This only works if client is in same (V)LAN */
+		  if (!macaddr && find_mac(&peer, macbuf, 1, now) > 0)
+		    macaddr = macbuf;
+		  
+		  if (macaddr)
+		    {
+		      size_t oldlen = strlen(daemon->namebuff);
+		      struct stat statbuf;
+		      
+		      snprintf(daemon->namebuff + oldlen, (MAXDNAME-1) - oldlen, "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x/",
+			       macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5]);
+		      
+		      /* remove unique-directory if it doesn't exist */
+		      if (stat(daemon->namebuff, &statbuf) == -1 || !S_ISDIR(statbuf.st_mode))
+			daemon->namebuff[oldlen] = 0;
+		    }
+		}
+	      
+	      /* Absolute pathnames OK if they match prefix */
+	      if (filename[0] == '/')
+		{
+		  if (strstr(filename, daemon->namebuff) == filename)
+		    daemon->namebuff[0] = 0;
+		  else
+		    filename++;
+		}
 	    }
+	  else if (filename[0] == '/')
+	    daemon->namebuff[0] = 0;
+	  strncat(daemon->namebuff, filename, (MAXDNAME-1) - strlen(daemon->namebuff));
 	  
-	  /* Absolute pathnames OK if they match prefix */
-	  if (filename[0] == '/')
+	  /* check permissions and open file */
+	  if ((transfer->file = check_tftp_fileperm(packet, &len, prefix, daemon->addrbuff)))
 	    {
-	      if (strstr(filename, daemon->namebuff) == filename)
-		daemon->namebuff[0] = 0;
+	      transfer->lastack = transfer->block;
+	      transfer->retransmit = now + transfer->timeout;
+	      /* This packet is may be the first data packet, but only if windowsize == 1
+		 To get windowsize greater then one requires an option negotiation,
+		 in which case this packet is the OACK. */
+	      if ((len = get_block(transfer)) == -1)
+		len = tftp_err_oops(packet, daemon->namebuff);
 	      else
-		filename++;
+		{
+		  is_err = 0;
+		  /* get_block put the packet to send in a different buffer. */
+		  packet = daemon->packet;
+		}
 	    }
-	}
-      else if (filename[0] == '/')
-	daemon->namebuff[0] = 0;
-      strncat(daemon->namebuff, filename, (MAXDNAME-1) - strlen(daemon->namebuff));
-      
-      /* check permissions and open file */
-      if ((transfer->file = check_tftp_fileperm(&len, prefix, daemon->addrbuff)))
-	{
-	  if ((len = get_block(packet, transfer)) == -1)
-	    len = tftp_err_oops(packet, daemon->namebuff);
-	  else
-	    is_err = 0;
 	}
     }
-
-  send_from(transfer->sockfd, !option_bool(OPT_SINGLE_PORT), packet, len, &peer, &addra, if_index);
-
+  
+  if (len)
+    {
+      send_from(transfer->sockfd, !option_bool(OPT_SINGLE_PORT), packet, len, &peer, &addra, if_index);
+      
 #ifdef HAVE_DUMPFILE
-  dump_packet_udp(DUMP_TFTP, (void *)packet, len, NULL, (union mysockaddr *)&peer, transfer->sockfd);
+      dump_packet_udp(DUMP_TFTP, (void *)packet, len, NULL, (union mysockaddr *)&peer, transfer->sockfd);
 #endif
+    }
   
   if (is_err)
     free_transfer(transfer);
@@ -501,9 +535,9 @@ void tftp_request(struct listener *listen, time_t now)
     }
 }
  
-static struct tftp_file *check_tftp_fileperm(ssize_t *len, char *prefix, char *client)
+static struct tftp_file *check_tftp_fileperm(char *packet, ssize_t *len, char *prefix, char *client)
 {
-  char *packet = daemon->packet, *namebuff = daemon->namebuff;
+  char *namebuff = daemon->namebuff;
   struct tftp_file *file;
   struct tftp_transfer *t;
   uid_t uid = geteuid();
@@ -566,6 +600,7 @@ static struct tftp_file *check_tftp_fileperm(ssize_t *len, char *prefix, char *c
   file->size = statbuf.st_size;
   file->dev = statbuf.st_dev;
   file->inode = statbuf.st_ino;
+  file->posn = 0;
   file->refcount = 1;
   strcpy(file->filename, namebuff);
   return file;
@@ -585,12 +620,15 @@ static struct tftp_file *check_tftp_fileperm(ssize_t *len, char *prefix, char *c
 
 void check_tftp_listeners(time_t now)
 {
+  /* Use workspace to receive (small) request/ACK, to avoid overwriting precomputed reply */
+  char *packet = daemon->workspacename;
+  ssize_t plen = MAXDNAME * 2;
   struct listener *listener;
   struct tftp_transfer *transfer, *tmp, **up;
   
   for (listener = daemon->listeners; listener; listener = listener->next)
     if (listener->tftpfd != -1 && poll_check(listener->tftpfd, POLLIN))
-      tftp_request(listener, now);
+      tftp_request(packet, plen, listener, now);
     
   /* In single port mode, all packets come via port 69 and tftp_request() */
   if (!option_bool(OPT_SINGLE_PORT))
@@ -601,22 +639,23 @@ void check_tftp_listeners(time_t now)
 	  socklen_t addr_len = sizeof(union mysockaddr);
 	  ssize_t len;
 	  
-	  /* we overwrote the buffer... */
-	  daemon->srv_save = NULL;
-
-	  if ((len = recvfrom(transfer->sockfd, daemon->packet, daemon->packet_buff_sz, 0, &peer.sa, &addr_len)) > 0)
+	  if ((len = recvfrom(transfer->sockfd, packet, plen, 0, &peer.sa, &addr_len)) > 0)
 	    {
+#ifdef HAVE_DUMPFILE
+	      dump_packet_udp(DUMP_TFTP, (void *)packet, len, (union mysockaddr *)&peer, NULL, transfer->sockfd);
+#endif	      
+
 	      if (sockaddr_isequal(&peer, &transfer->peer)) 
-		handle_tftp(now, transfer, len);
+		handle_tftp(packet, now, transfer, len);
 	      else
 		{
 		  /* Wrong source address. See rfc1350 para 4. */
 		  prettyprint_addr(&peer, daemon->addrbuff);
-		  len = tftp_err(ERR_TID, daemon->packet, _("ignoring packet from %s (TID mismatch)"), daemon->addrbuff, NULL);
-		  while(retry_send(sendto(transfer->sockfd, daemon->packet, len, 0, &peer.sa, sa_len(&peer))));
+		  len = tftp_err(ERR_TID, packet, _("ignoring packet from %s (TID mismatch)"), daemon->addrbuff, NULL);
+		  while(retry_send(sendto(transfer->sockfd, packet, len, 0, &peer.sa, sa_len(&peer))));
 
 #ifdef HAVE_DUMPFILE
-		  dump_packet_udp(DUMP_TFTP, (void *)daemon->packet, len, NULL, (union mysockaddr *)&peer, transfer->sockfd);
+		  dump_packet_udp(DUMP_TFTP, (void *)packet, len, NULL, (union mysockaddr *)&peer, transfer->sockfd);
 #endif
 		}
 	    }
@@ -624,35 +663,52 @@ void check_tftp_listeners(time_t now)
 	  
   for (transfer = daemon->tftp_trans, up = &daemon->tftp_trans; transfer; transfer = tmp)
     {
-      tmp = transfer->next;
+      int endcon = 0, error = 0, timeout = 0;
       
-      if (difftime(now, transfer->timeout) >= 0.0)
+      tmp = transfer->next;
+            
+      /* ->start set to zero in handle_tftp() when we recv an error packet. */
+      if (transfer->start == 0)
+	endcon = error = 1;
+      else if (difftime(now, transfer->start) > TFTP_TRANSFER_TIME)  
 	{
-	  int endcon = 0;
+	  endcon = 1;
+	  /* don't complain about timeout when we're awaiting the last
+	     ACK, some clients never send it */
+	  if (get_block(transfer) > 0)
+	    error = timeout = 1;
+	}
+      else if (difftime(now, transfer->retransmit) >= 0.0)
+	{
+	  /* Do transmission or re-transmission. When we get an ACK, the call to handle_tftp()
+	     bumps transfer->lastack and trips the retransmit timer so that we send the next block(s)
+	     here. */
 	  ssize_t len;
-
-	  /* timeout, retransmit */
-	  transfer->timeout += 1 + (1<<(transfer->backoff/2));
-	  	  
-	  /* we overwrote the buffer... */
-	  daemon->srv_save = NULL;
-
-	  if ((len = get_block(daemon->packet, transfer)) == -1)
+	  unsigned int i, winsize;
+	  
+	  transfer->retransmit += transfer->timeout + (1<<(transfer->backoff/2));
+	  transfer->backoff++;
+	  transfer->block = transfer->lastack;
+	  
+	  /* send a window'a worth of blocks unless we're retransmitting OACK */
+	  winsize = transfer->block ? transfer->windowsize : 1;
+	  
+	  for (i = 0; i < winsize; i++, transfer->block++)
 	    {
-	      len = tftp_err_oops(daemon->packet, transfer->file->filename);
-	      endcon = 1;
-	    }
-	  else if (++transfer->backoff > 7)
-	    {
-	      /* don't complain about timeout when we're awaiting the last
-		 ACK, some clients never send it */
-	      if ((unsigned)len == transfer->blocksize + 4)
-		endcon = 1;
-	      len = 0;
-	    }
+	      if ((len = get_block(transfer)) == 0)
+		{
+		  if (i == 0)
+		    endcon = 1; /* got last ACK */
 
-	  if (len != 0)
-	    {
+		  break;
+		}
+	      
+	      if (len == -1)
+		{
+		  len = tftp_err_oops(daemon->packet, transfer->file->filename);
+		  endcon = error = 1;
+		}
+	      
 	      send_from(transfer->sockfd, !option_bool(OPT_SINGLE_PORT), daemon->packet, len,
 			&transfer->peer, &transfer->source, transfer->if_index);
 #ifdef HAVE_DUMPFILE
@@ -660,51 +716,93 @@ void check_tftp_listeners(time_t now)
 #endif
 	    }
 	  
-	  if (endcon || len == 0)
+	  /* prefetch the block we'll probably need when we get an ACK. */
+	  if (!endcon)
+	    get_block(transfer);
+	}
+		      
+      if (endcon)
+	{
+	  strcpy(daemon->namebuff, transfer->file->filename);
+	  sanitise(daemon->namebuff);
+	  (void)prettyprint_addr(&transfer->peer, daemon->addrbuff);
+	  if (timeout)
+	    my_syslog(MS_TFTP | LOG_ERR, _("timeout sending %s to %s"), daemon->namebuff, daemon->addrbuff);
+	  else if (error)
+	    my_syslog(MS_TFTP | LOG_ERR, _("failed sending %s to %s"), daemon->namebuff, daemon->addrbuff);
+	  else
+	    my_syslog(MS_TFTP | LOG_INFO, _("sent %s to %s"), daemon->namebuff, daemon->addrbuff);
+	  
+	  /* unlink */
+	  *up = tmp;
+	  if (error)
+	    free_transfer(transfer);
+	  else
 	    {
-	      strcpy(daemon->namebuff, transfer->file->filename);
-	      sanitise(daemon->namebuff);
-	      (void)prettyprint_addr(&transfer->peer, daemon->addrbuff);
-	      my_syslog(MS_TFTP | LOG_INFO, endcon ? _("failed sending %s to %s") : _("sent %s to %s"), daemon->namebuff, daemon->addrbuff);
-	      /* unlink */
-	      *up = tmp;
-	      if (endcon)
-		free_transfer(transfer);
-	      else
-		{
-		  /* put on queue to be sent to script and deleted */
-		  transfer->next = daemon->tftp_done_trans;
-		  daemon->tftp_done_trans = transfer;
-		}
-	      continue;
+	      /* put on queue to be sent to script and deleted */
+	      transfer->next = daemon->tftp_done_trans;
+	      daemon->tftp_done_trans = transfer;
 	    }
 	}
-
-      up = &transfer->next;
-    }    
+      else
+	up = &transfer->next;
+    }
 }
-	  
-/* packet in daemon->packet as this is called. */
-static void handle_tftp(time_t now, struct tftp_transfer *transfer, ssize_t len)
+
+static void handle_tftp(char *packet, time_t now, struct tftp_transfer *transfer, ssize_t len)
 {
   struct ack {
     unsigned short op, block;
-  } *mess = (struct ack *)daemon->packet;
+  } *mess = (struct ack *)packet;
   
   if (len >= (ssize_t)sizeof(struct ack))
     {
-      if (ntohs(mess->op) == OP_ACK && ntohs(mess->block) == (unsigned short)transfer->block) 
+      if (ntohs(mess->op) == OP_ACK)
 	{
-	  /* Got ack, ensure we take the (re)transmit path */
-	  transfer->timeout = now;
-	  transfer->backoff = 0;
-	  if (transfer->block++ != 0)
-	    transfer->offset += transfer->blocksize - transfer->expansion;
+	  /* Handle 16-bit block number wrap-around. */
+	  u16 new = ntohs(mess->block);
+	  u32 block;
+
+	  /* If the last ack received was in the top quarter of a 64k block
+	     and this one is in the bottom quarter, assume it has wrapped.
+	     
+	     Since this is UDP and an old packet can in theory wander in we may also
+	     need to drop back to a previous segment. Such an ACK is ignored below;
+	     here we're just getting the most likely 32 bit value from the
+	     16 bits that we have. */
+	  if (new <= 0x4000 && transfer->ackprev >= 0xc000)
+	    transfer->block_hi++;
+	  else if (new >= 0xc000 && transfer->ackprev <= 0x4000 && transfer->block_hi != 0)
+	    transfer->block_hi--;
+
+	  transfer->ackprev = new;
+	  block = (((u32)transfer->block_hi) << 16) + (u32)new;
+
+	  /* Ignore duplicate ACKs and ACKs for blocks we've not yet sent. */
+	  if (block >= transfer->lastack &&
+	      block <= transfer->block) 
+	    {
+	      /* Got ack, move forward and ensure we take the (re)transmit path */
+	      transfer->retransmit = transfer->start = now;
+	      transfer->backoff = 0;
+	      transfer->lastack = block + 1;
+
+	      /* We have no easy function from block no. to file offset when
+		 expanding line breaks in netascii mode, so we update the offset here
+		 as each block is acknowledged. This explains why the window size must be
+		 one for a netascii transfer; to avoid  the block no. doing anything
+		 other than incrementing by one. */
+	      if (transfer->netascii && block != 0)
+		{
+		  transfer->offset +=  (off_t)transfer->blocksize - (off_t)transfer->expansion;
+		  transfer->lastcarrylf = transfer->carrylf;
+		}
+	    }
 	}
       else if (ntohs(mess->op) == OP_ERR)
 	{
-	  char *p = daemon->packet + sizeof(struct ack);
-	  char *end = daemon->packet + len;
+	  char *p = packet + sizeof(struct ack);
+	  char *end = packet + len;
 	  char *err = next(&p, end);
 	  
 	  (void)prettyprint_addr(&transfer->peer, daemon->addrbuff);
@@ -720,8 +818,7 @@ static void handle_tftp(time_t now, struct tftp_transfer *transfer, ssize_t len)
 		    daemon->addrbuff);	
 	  
 	  /* Got err, ensure we take abort */
-	  transfer->timeout = now;
-	  transfer->backoff = 100;
+	  transfer->start = 0;
 	}
     }
 }
@@ -755,14 +852,22 @@ static char *next(char **p, char *end)
   return ret;
 }
 
+/* If we don't do anything, don't write the the input/ouptut
+   buffer. This allows us to pass in safe read-only strings constants. */
 static void sanitise(char *buf)
 {
   unsigned char *q, *r;
+
   for (q = r = (unsigned char *)buf; *r; r++)
     if (isprint((int)*r))
-      *(q++) = *r;
-  *q = 0;
-
+      {
+	if (q != r)
+	  *q = *r;
+	q++;
+      }
+  
+  if (q != r)
+    *q = 0;
 }
 
 #define MAXMESSAGE 500 /* limit to make packet < 512 bytes and definitely smaller than buffer */ 
@@ -773,8 +878,7 @@ static ssize_t tftp_err(int err, char *packet, char *message, char *file, char *
     char message[];
   } *mess = (struct errmess *)packet;
   ssize_t len, ret = 4;
-    
-  memset(packet, 0, daemon->packet_buff_sz);
+
   if (file)
     sanitise(file);
   
@@ -798,10 +902,11 @@ static ssize_t tftp_err_oops(char *packet, const char *file)
 }
 
 /* return -1 for error, zero for done. */
-static ssize_t get_block(char *packet, struct tftp_transfer *transfer)
+static ssize_t get_block(struct tftp_transfer *transfer)
 {
-  memset(packet, 0, daemon->packet_buff_sz);
-  
+  static off_t saved_offset = 0;
+  static ssize_t saved_len = 0;
+
   if (transfer->block == 0)
     {
       /* send OACK */
@@ -809,8 +914,12 @@ static ssize_t get_block(char *packet, struct tftp_transfer *transfer)
       struct oackmess {
 	unsigned short op;
 	char data[];
-      } *mess = (struct oackmess *)packet;
-      
+      } *mess = (struct oackmess *)daemon->packet;
+
+      /* we overwrote the buffer... */
+      daemon->srv_save = NULL;
+      memset(daemon->packet, 0, daemon->packet_buff_sz);
+            
       p = mess->data;
       mess->op = htons(OP_OACK);
       if (transfer->opt_blocksize)
@@ -823,8 +932,18 @@ static ssize_t get_block(char *packet, struct tftp_transfer *transfer)
 	  p += (sprintf(p,"tsize") + 1);
 	  p += (sprintf(p, "%u", (unsigned int)transfer->file->size) + 1);
 	}
-
-      return p - packet;
+      if (transfer->opt_timeout)
+	{
+	  p += (sprintf(p,"timeout") + 1);
+	  p += (sprintf(p, "%u", transfer->timeout) + 1);
+	}
+      if (transfer->opt_windowsize)
+	{
+	  p += (sprintf(p,"windowsize") + 1);
+	  p += (sprintf(p, "%u", (unsigned int)transfer->windowsize) + 1);
+	}
+ 
+      return p - daemon->packet;
     }
   else
     {
@@ -832,40 +951,58 @@ static ssize_t get_block(char *packet, struct tftp_transfer *transfer)
       struct datamess {
 	unsigned short op, block;
 	unsigned char data[];
-      } *mess = (struct datamess *)packet;
+      } *mess = (struct datamess *)daemon->packet;
       
-      size_t size = transfer->file->size - transfer->offset; 
+      size_t size;
+      
+      if (!transfer->netascii)
+	transfer->offset = (off_t)(transfer->block - 1) * (off_t)transfer->blocksize;
       
       if (transfer->offset > transfer->file->size)
 	return 0; /* finished */
-      
-      if (size > transfer->blocksize)
-	size = transfer->blocksize;
+
+      /* We may have a prefetched block already in the buffer. */
+      if (daemon->srv_save == transfer && saved_offset == transfer->offset)
+	return saved_len;
+	
+      /* we overwrote the buffer... */
+      daemon->srv_save = NULL;
+
+      if ((size = transfer->file->size - transfer->offset) > (size_t)transfer->blocksize)
+	size = (size_t)transfer->blocksize;
       
       mess->op = htons(OP_DATA);
       mess->block = htons((unsigned short)(transfer->block));
-      
-      if (lseek(transfer->file->fd, transfer->offset, SEEK_SET) == (off_t)-1 ||
-	  !read_write(transfer->file->fd, mess->data, size, RW_READ))
-	return -1;
-      
-      transfer->expansion = 0;
-      
+
+      if (size != 0)
+	{
+	  if (transfer->file->posn != transfer->offset &&
+	      lseek(transfer->file->fd, transfer->offset, SEEK_SET) == (off_t)-1)
+	    return -1;
+
+	  if (!read_write(transfer->file->fd, mess->data, size, RW_READ))
+	    return -1;
+
+	  transfer->file->posn = transfer->offset + size;
+	}
+
       /* Map '\n' to CR-LF in netascii mode */
       if (transfer->netascii)
 	{
 	  size_t i;
-	  int newcarrylf;
-
-	  for (i = 0, newcarrylf = 0; i < size; i++)
-	    if (mess->data[i] == '\n' && ( i != 0 || !transfer->carrylf))
+	  	  
+	  /* Map '\n' to CR-LF in netascii mode */
+	  transfer->expansion = transfer->carrylf = 0;
+	  
+	  for (i = 0; i < size; i++)
+	    if (mess->data[i] == '\n' && (i != 0 || !transfer->lastcarrylf))
 	      {
 		transfer->expansion++;
 
 		if (size != transfer->blocksize)
 		  size++; /* room in this block */
 		else  if (i == size - 1)
-		  newcarrylf = 1; /* don't expand LF again if it moves to the next block */
+		  transfer->carrylf = 1; /* don't expand LF again if it moves to the next block */
 		  
 		/* make space and insert CR */
 		memmove(&mess->data[i+1], &mess->data[i], size - (i + 1));
@@ -873,11 +1010,13 @@ static ssize_t get_block(char *packet, struct tftp_transfer *transfer)
 		
 		i++;
 	      }
-	  transfer->carrylf = newcarrylf;
-	  
 	}
 
-      return size + 4;
+      daemon->srv_save = transfer;
+      saved_offset = transfer->offset;
+      saved_len = size + 4;
+
+      return saved_len;
     }
 }
 

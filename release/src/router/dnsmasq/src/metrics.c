@@ -43,6 +43,10 @@ const char * metric_names[] = {
     "leases_allocated_6",
     "leases_pruned_6",
     "tcp_connections",
+    "dhcp_leasequery",
+    "dhcp_lease_unassigned",
+    "dhcp_lease_actve",
+    "dhcp_lease_unknown"
 };
 
 const char* get_metric_name(int i) {

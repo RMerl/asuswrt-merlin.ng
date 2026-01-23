@@ -28,6 +28,9 @@ static int _handle_sdn_wan(const MTLAN_T *pmtl, const char *logdrop, const char 
 static int _remove_sdn_routing_table(const MTLAN_T *pmtl);
 static int _remove_sdn_routing_rule(const MTLAN_T *pmtl, int v6);
 static int _handle_sdn_routing(const MTLAN_T *pmtl);
+#ifdef RTCONFIG_6RELAYD
+static int _handle_sdn_6relayd(const MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn);
+#endif
 
 int handle_sdn_feature(const int sdn_idx, const unsigned long features, const int action)
 {
@@ -69,6 +72,13 @@ int handle_sdn_feature(const int sdn_idx, const unsigned long features, const in
 		{
 			get_mtlan_by_idx(SDNFT_TYPE_SDN, sdn_idx, pmtl, &mtl_sz);
 			restart_all_sdn = 0;
+		}
+
+		if (features & SDN_FEATURE_DNSMASQ)
+		{
+			// TBD: Handle LAN (exclude LAN as WAN) ports power down/up
+			// nvram_set_int("freeze_duck", 60);
+			// lanport_ctrl(0);
 		}
 
 		for (i = 0; i < mtl_sz; ++i)
@@ -237,6 +247,22 @@ int handle_sdn_feature(const int sdn_idx, const unsigned long features, const in
 			update_gre_by_sdn(pmtl, mtl_sz, restart_all_sdn);
 		}
 #endif
+#ifdef RTCONFIG_6RELAYD
+		if (features & SDN_FEATURE_6RELAYD)
+		{
+			_handle_sdn_6relayd(pmtl, mtl_sz, restart_all_sdn);
+		}
+#endif
+		if (features & SDN_FEATURE_DNSMASQ)
+		{
+			if (!restart_all_sdn && ipv6_enabled())
+			{
+				start_dnsmasq(LAN_IN_SDN_IDX);
+			}
+			// TBD: Handle LAN (exclude LAN as WAN) ports power down/up
+			// nvram_set_int("freeze_duck", 5);
+			// lanport_ctrl(1);
+		}
 
 		FREE_MTLAN((void *)pmtl);
 		return 0;
@@ -1933,3 +1959,50 @@ void update_sdn_mtwan_iptables(const MTLAN_T *pmtl, int v6)
 	}
 }
 #endif	//RTCONFIG_MULTIWAN_PROFILE
+
+#ifdef RTCONFIG_6RELAYD
+static int _handle_sdn_6relayd(const MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn)
+{
+	if (!pmtl)
+		return -1;
+
+#if defined(RTCONFIG_MULTIWAN_IF)
+	int i, unit;
+	char wan_prefix[16];
+
+	if (restart_all_sdn)
+	{
+		for (i = 0; i < MAX_MULTI_WAN_NUM; ++i)
+		{
+			unit = mtwan_get_real_wan(i + MULTI_WAN_START_IDX, wan_prefix, sizeof(wan_prefix));
+			if (unit != -1)
+			{
+				if (!nvram_pf_get_int(wan_prefix, "enable"))
+					continue;
+				start_mtwan_6relayd(unit);
+			}
+		}
+	}
+	else
+	{
+		for (i = 0; i < mtl_sz; i++)
+		{
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+			if (pmtl[i].sdn_t.mtwan_idx)
+				unit = mtwan6_get_active_wan_unit(pmtl[i].sdn_t.mtwan_idx);
+			else
+#endif
+			if (pmtl[i].sdn_t.wan6_idx)
+				unit = mtwan_get_mapped_unit(pmtl[i].sdn_t.wan6_idx);
+			else
+				unit = wan_primary_ifunit_ipv6();
+
+			start_mtwan_6relayd(unit);
+		}
+	}
+#else
+	start_6relayd();
+#endif
+	return 0;
+}
+#endif

@@ -113,6 +113,9 @@ CFLAGS += -I$(TOP_PLATFORM)/bcm_flashutil -I$(HND_SRC)/userspace/public/include 
 ifeq ($(BRCM_CHIP),6764)
 CFLAGS += -DCHIP_BCM6764
 endif
+ifeq ($(BRCM_CHIP),6813)
+CFLAGS += -DCHIP_BCM6813
+endif
 else
 LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -L$(TOP_PLATFORM)/bcm_flashutil -lbcm_flashutil -L$(TOP_PLATFORM)/bcm_util $(if $(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),-lbcm_util,-lbcm_crc) -L$(TOP_PLATFORM)/bcm_boardctl -lbcm_boardctl
 endif
@@ -1313,7 +1316,7 @@ LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 
 ifeq ($(RTCONFIG_BCM_AFC),y)
-OBJS += bcm_afc.o afc_coldreboot_monitor.o afc_heartbeat.o
+OBJS += bcm_afc.o afc_coldreboot_monitor.o afc_heartbeat.o afc_data_collector.o
 BCMAFC_OBJS += bcm_afc.o
 endif
 
@@ -1428,6 +1431,7 @@ endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc check_watchdog
 ifeq ($(RTCONFIG_AI_SERVICE),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ai_response_check
+	@cd $(INSTALLDIR)/sbin && ln -sf rc ai_request_consumer
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ai_request
 	@install -D libai.so $(INSTALLDIR)/usr/lib/libai.so
 endif
@@ -2052,6 +2056,7 @@ endif
 ifeq ($(RTCONFIG_BCM_AFC),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc afc_coldreboot_monitor
 	@cd $(INSTALLDIR)/sbin && ln -sf rc afc_heartbeat
+	@cd $(INSTALLDIR)/sbin && ln -sf rc afc_data_collector
 endif
 
 ifeq ($(RTCONFIG_MOCA),y)
@@ -2639,6 +2644,10 @@ endif
 ifneq ($(wildcard ./prebuild/afc_coldreboot_monitor.o),)
 afc_coldreboot_monitor.o:
 	@-cp -f ./prebuild/afc_coldreboot_monitor.o .
+endif
+ifneq ($(wildcard ./prebuild/afc_data_collector.o),)
+afc_data_collector.o:
+	@-cp -f ./prebuild/afc_data_collector.o .
 endif
 endif
 

@@ -1006,12 +1006,37 @@ int upload_cloud_file(const char *access_token, const char *file_name)
 		return -1;
 	}
 
+	int send_upload_file_again_count = 1;
 	RouterUploadFile uf;
+
+SEND_UPLOAD_FILE_AGAIN:
+
 	memset(&uf, 0, sizeof(RouterUploadFile));
 	status = send_router_upload_file_req(server, access_token, file_name, &uf);
 	if (status != 0 || strncmp(uf.status, "0", 1) != 0)
 	{
-		UPLOADER_DBG(API_DBG, "Fail to send upload file[%s] to webstorage server[%s], status=%d", file_name, server, status);
+		UPLOADER_DBG(API_DBG, "Got 500 error! But file[%s] has been uploaded to webstorage server[%s], file_size is %d.", file_name, server, file_size);
+		return 0;
+	}
+	else if (strncmp(uf.status, "2", 1) == 0)
+	{
+		if (send_upload_file_again_count>3)
+		{
+			UPLOADER_DBG(API_DBG, "Fail to send upload file[%s] to webstorage server[%s], the send_upload_file_again_count>3", file_name, server);
+			return -1;
+		}
+
+		Cdbg(API_DBG, "Fail to send upload file[%s] to webstorage server[%s], the uf.status is %s, the file may not have been uploaded yet.", file_name, server, uf.status);
+
+		usleep(1000);
+
+		send_upload_file_again_count++;
+		
+		goto SEND_UPLOAD_FILE_AGAIN;
+	}
+	else if (status != 0 || strncmp(uf.status, "0", 1) != 0)
+	{
+		UPLOADER_DBG(API_DBG, "Fail to send upload file[%s] to webstorage server[%s], status=%d, uf.status=%s, file_size=%d", file_name, server, status, uf.status, file_size);
 		return -1;
 	}
 

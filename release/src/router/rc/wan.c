@@ -1287,6 +1287,9 @@ start_wan_if(int unit)
 #if defined(BCM4912)
 	uint phy_pwr_skip = 0;
 #endif
+#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
+	char mv_ifname[16];
+#endif
 
 #if !defined(RTCONFIG_MULTISERVICE_WAN)
 #ifdef RTCONFIG_HND_ROUTER_AX
@@ -1337,6 +1340,13 @@ start_wan_if(int unit)
 #endif
 			}
 #endif
+
+#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
+			if(is_auto_wanport_enabled() == 1)
+				_dprintf("%s(%d) %d: AUTO_WANPORT: skip to config_mswan().\n", __func__, getpid(), __LINE__);
+			else
+#endif
+			{
 			//config after bonding interface ready
 #if defined(HND_ROUTER)
 			config_mswan(unit);
@@ -1349,6 +1359,7 @@ start_wan_if(int unit)
 				if (nvram_get(tmp)) {
 					start_wan_if(mswan_unit);
 				}
+			}
 			}
 		}
 #ifdef RTCONFIG_MULTIWAN_IF
@@ -1784,6 +1795,13 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 		convert_wan_nvram(prefix, unit);
 
 		/* make sure the connection exists and is enabled */
+#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
+		if(is_auto_wanport_enabled() == 1){
+			config_macvlan(nvram_safe_get("lan_ifname"), 1, mv_ifname, sizeof(mv_ifname));
+			strlcpy(wan_ifname, mv_ifname, sizeof(wan_ifname));
+		}
+		else
+#endif
 		snprintf(wan_ifname, sizeof(wan_ifname), "%s", nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
 		if (*wan_ifname == '\0')
 			return;
@@ -1935,6 +1953,10 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 
 			/* Bring up i/f */
 			_ifconfig(wan_ifname, IFUP, NULL, NULL, NULL, wan_mtu);
+#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
+			if(is_auto_wanport_enabled() == 1)
+				_ifconfig(nvram_safe_get(strcat_r(prefix, "ifname", tmp)), IFUP, NULL, NULL, NULL, wan_mtu);
+#endif
 		}
 		close(s);
 
@@ -2123,8 +2145,6 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			if (dhcpenable) {
 #if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
 				if(is_auto_wanport_enabled() == 1){
-					strlcpy(wan_ifname, nvram_safe_get("lan_ifname"), sizeof(wan_ifname));
-
 					dbG("AUTO_WANPORT start PPP's udhcpc: %s, %d\n", wan_ifname, unit);
 					start_udhcpc(wan_ifname, unit,
 						(wan_proto == WAN_PPPOE) ? &pid : NULL);
@@ -2281,68 +2301,17 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			}
 #endif
 
-#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
-			if(is_auto_wanport_enabled() == 1){
-				strlcpy(wan_ifname, nvram_safe_get("lan_ifname"), sizeof(wan_ifname));
+			/* Bring up WAN interface */
+			dbG("ifup:%s\n", wan_ifname);
+			ifconfig(wan_ifname, IFUP, NULL, NULL);
 
-				/* Bring up WAN interface */
-				dbG("AUTO_WANPORT ifup:%s\n", wan_ifname);
-				ifconfig(wan_ifname, IFUP, NULL, NULL);
+			/* Start pre-authenticator */
+			dbG("start auth:%d\n", unit);
+			start_auth(unit, 0);
 
-				/* MTU */
-				if ((s = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) >= 0) {
-					mtu = nvram_get_int(strcat_r(prefix, "mtu", tmp));
-					if ((mtu < 576) || (mtu > 9000))
-						mtu = 1500;     // Set a sane default value
-
-					ifr.ifr_mtu = mtu;
-					strncpy(ifr.ifr_name, wan_ifname, IFNAMSIZ);
-					if (ioctl(s, SIOCSIFMTU, &ifr)) {
-						perror(wan_ifname);
-						logmessage("start_wan_if()","Error setting MTU on %s to %d", wan_ifname, mtu);
-					}
-					close(s);
-				}
-
-				/* Start pre-authenticator */
-				dbG("AUTO_WANPORT start auth:%d\n", unit);
-				start_auth(unit, 0);
-
-				/* Start dhcp daemon */
-				dbG("AUTO_WANPORT start udhcpc:%s, %d\n", wan_ifname, unit);
-				start_udhcpc(wan_ifname, unit, &pid);
-			}
-			else
-#endif
-			{
-				/* Bring up WAN interface */
-				dbG("ifup:%s\n", wan_ifname);
-				ifconfig(wan_ifname, IFUP, NULL, NULL);
-
-				/* MTU */
-				if ((s = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) >= 0) {
-					mtu = nvram_get_int(strcat_r(prefix, "mtu", tmp));
-					if ((mtu < 576) || (mtu > 9000))
-						mtu = 1500;     // Set a sane default value
-
-					ifr.ifr_mtu = mtu;
-					strncpy(ifr.ifr_name, wan_ifname, IFNAMSIZ);
-					if (ioctl(s, SIOCSIFMTU, &ifr)) {
-						perror(wan_ifname);
-						logmessage("start_wan_if()","Error setting MTU on %s to %d", wan_ifname, mtu);
-					}
-					close(s);
-				}
-
-				/* Start pre-authenticator */
-				dbG("start auth:%d\n", unit);
-				start_auth(unit, 0);
-
-				/* Start dhcp daemon */
-				dbG("start udhcpc:%s, %d\n", wan_ifname, unit);
-				start_udhcpc(wan_ifname, unit, &pid);
-			}
-
+			/* Start dhcp daemon */
+			dbG("start udhcpc:%s, %d\n", wan_ifname, unit);
+			start_udhcpc(wan_ifname, unit, &pid);
 			break;
 		}
 

@@ -183,7 +183,7 @@ var httpApi ={
 		if(forceUpdate) top.cachedData.clear(objItems.map(item => item + '_ascii'));
 
 		objItems.forEach(function(key){
-			if(top.cachedData.get.hasOwnProperty(key + "_ascii")){				
+			if(top.cachedData.get.hasOwnProperty(key + "_ascii")){
 				retData[key] = top.cachedData.get[key + "_ascii"];
 			}
 			else if(asyncData.get.hasOwnProperty(key + "_ascii")){
@@ -241,6 +241,7 @@ var httpApi ={
 
 	"nvramSet": function(postData, handler, async = true, postMessageToAppFlag = true){
 		delete postData.isError;
+		if(top.cachedData && typeof top.cachedData.clear === 'function') top.cachedData.clear(Object.keys(postData));
 
 		if(this.app_dataHandler && postMessageToAppFlag){
 			if(typeof postMessageToApp == "function")
@@ -256,7 +257,7 @@ var httpApi ={
 				error: function(){},
 				success: function(response){
 					httpApi.log(`${location.pathname}`, `Try to change the value of ${JSON.stringify(Object.keys(postData))} and got ${JSON.stringify(response)}`);
-					
+
 					if(handler) handler.call(response);
 
 					if(typeof postMessageToApp == "function" && postMessageToAppFlag){
@@ -428,11 +429,11 @@ var httpApi ={
 
 	"hookGet": function(hookName, forceUpdate){
 		var queryString = hookName.split("-")[0] + "(" + (hookName.split("-")[1] || "") + ")";
-		var retData = {};	
+		var retData = {};
 		if(disUpdate) forceUpdate = false;
 
 		if(forceUpdate) top.cachedData.clear([hookName]);
-		
+
 		if(top.cachedData.get.hasOwnProperty(hookName) && !forceUpdate){
 			retData[hookName] = top.cachedData.get[hookName];
 		}
@@ -448,7 +449,7 @@ var httpApi ={
 				error: function(){
 					retData[hookName] = "";
 					retData.isError = true;
-			
+
 					$.ajax({
 						url: '/appGet.cgi?hook=' + queryString,
 						dataType: 'json',
@@ -844,7 +845,7 @@ var httpApi ={
 
 	"getWanInfo": function(_index){
 		var connect_proto_array = {
-			"dhcp": "<#BOP_ctype_title1#>",
+			"dhcp": "<#BOP_ctype_dhcp_title1#>",
 			"static": "<#BOP_ctype_title5#>",
 			"pppoe": "PPPoE",
 			"pptp": "PPTP",
@@ -866,15 +867,24 @@ var httpApi ={
 			"proto": "",
 			"proto_text": ""
 		};
-		var wans_info = httpApi.nvramGet(["wans_dualwan", "wans_mode"], true);
+        const wan_index = (_index == undefined) ? 0 : _index;
+        const wans_info = httpApi.nvramGet(["wans_dualwan", "wans_mode", "wan" + wan_index + "_state_t", "wan" + wan_index + "_sbstate_t", "wan" + wan_index + "_auxstate_t"], true);
 		var dualwan_enabled = (isSupport("dualwan") && wans_info.wans_dualwan.search("none") == -1) ? 1 : 0;
 		var active_wan_unit = httpApi.hookGet("get_wan_unit", true);
-		var wan_index = (_index == undefined) ? 0 : _index;
+
 		if(dualwan_enabled){
 			if(active_wan_unit != wan_index && (wans_info.wans_mode == "fo" || wans_info.wans_mode == "fb")){
-				result.status = "standby";
-				result.status_text = "<#Standby_str_cold#>";
-
+		        if(wans_info["wan" + wan_index + "_auxstate_t"] == "0") {
+                    result.status = "standby";
+                    result.status_text = "<#Standby_str_cold#>";
+                } else {
+                    if (wans_info["wan" + wan_index + "_sbstate_t"] != "0") {
+                        result.status_text = "<#Disconnected#>";
+                    }else {
+                        result.status_text = "<#Status_Unplugged#>";
+                    }
+                    result.status = "disconnected";
+                }
 			}
 			else{//lb
 				result.status = (httpApi.isConnected(wan_index)) ? "connected" : "disconnected";
@@ -1053,6 +1063,82 @@ var httpApi ={
 		});
 	},
 
+    "AIBOARD_EULA": {
+        "set": (enable, callback) => {
+			$.ajax({
+				url: '/set_AI_board_EULA.cgi',
+				data: {
+					"AI_board_EULA": enable
+				},
+				dataType: 'json',
+				success: function (response) {
+					if (callback)
+						callback(response);
+				}
+            });
+        },
+        "get": () => {
+            return fetch('/get_ASUS_privacy_policy.cgi')
+                .then(response => response.json())
+                .then(resp => {
+                    const AIBOARD_EULA = parseInt(resp.AI_board_EULA);
+                    return {
+                        AIBOARD_EULA: !isNaN(AIBOARD_EULA) ? AIBOARD_EULA : "",
+                        AIBOARD_EULA_read: parseInt(resp.AI_board_EULA_read),
+                        AIBOARD_EULA_allow_skip: parseInt(resp.AI_board_EULA_allow_skip),
+                        AIBOARD_EULA_force_sign: parseInt(resp.AI_board_EULA_force_sign),
+                    };
+                })
+                .catch(error => {
+                    console.error('Error fetching ASUS privacy policy:', error);
+                    return {
+                        AIBOARD_EULA: "",
+                        AIBOARD_EULA_read: 0,
+                        AIBOARD_EULA_allow_skip: 0,
+                        AIBOARD_EULA_force_sign: 1,
+                    };
+                });
+        }
+    },
+
+    "AIBOARD_EULA": {
+        "set": (enable, callback) => {
+			$.ajax({
+				url: '/set_AI_board_EULA.cgi',
+				data: {
+					"AI_board_EULA": enable
+				},
+				dataType: 'json',
+				success: function (response) {
+					if (callback)
+						callback(response);
+				}
+            });
+        },
+        "get": () => {
+            return fetch('/get_ASUS_privacy_policy.cgi')
+                .then(response => response.json())
+                .then(resp => {
+                    const AIBOARD_EULA = parseInt(resp.AI_board_EULA);
+                    return {
+                        AIBOARD_EULA: !isNaN(AIBOARD_EULA) ? AIBOARD_EULA : "",
+                        AIBOARD_EULA_read: parseInt(resp.AI_board_EULA_read),
+                        AIBOARD_EULA_allow_skip: parseInt(resp.AI_board_EULA_allow_skip),
+                        AIBOARD_EULA_force_sign: parseInt(resp.AI_board_EULA_force_sign),
+                    };
+                })
+                .catch(error => {
+                    console.error('Error fetching ASUS privacy policy:', error);
+                    return {
+                        AIBOARD_EULA: "",
+                        AIBOARD_EULA_read: 0,
+                        AIBOARD_EULA_allow_skip: 0,
+                        AIBOARD_EULA_force_sign: 1,
+                    };
+                });
+        }
+    },
+
 	"newEula": {
 		"set": (enable, callback) => {
 			$.ajax({
@@ -1091,58 +1177,52 @@ var httpApi ={
 			});
 		},
 
-		"get": function(feature){
-			return new Promise((resolve, reject) =>{
-				if (feature == undefined || feature == "") feature = "ASUS_privacy_policy";
+        "get": function () {
+            return fetch('/get_ASUS_privacy_policy.cgi')
+                .then(response => response.json())
+                .then(resp => {
+                    const EULA = parseInt(resp.ASUS_NEW_EULA);
+                    const PP = parseInt(resp.ASUS_privacy_policy);
+                    const AIBOARD_EULA = parseInt(resp.AI_board_EULA);
 
-				let retData = {
-					ASUS_PP: 0,
-					ASUS_PP_time: ""
-				};
+                    return {
+                        EULA: !isNaN(EULA) ? EULA : "",
+                        EULA_read: parseInt(resp.ASUS_NEW_EULA_read),
+                        EULA_allow_skip: parseInt(resp.ASUS_NEW_EULA_allow_skip),
+                        EULA_force_sign: parseInt(resp.ASUS_NEW_EULA_force_sign),
 
-				$.ajax({
-					url: '/get_ASUS_privacy_policy.cgi',
-					dataType: 'json',
-					async: false,
-					success: function (resp) {
-						var ASUS_privacy_policy = resp.ASUS_privacy_policy;
-						var ASUS_privacy_policy_time = resp.ASUS_privacy_policy_time;
+                        PP: !isNaN(PP) ? PP : "",
+                        PP_time: resp.ASUS_privacy_policy_time,
+                        PP_read: parseInt(resp.ASUS_privacy_policy_read),
+                        PP_force_sign: parseInt(resp.ASUS_privacy_policy_force_sign),
 
-						if (feature == "SIGNED") {
-							var securityUpdate = httpApi.securityUpdate.get()
-							var audoUpgrade = httpApi.nvramGet(["webs_update_enable"]).webs_update_enable == "1";
+                        AIBOARD_EULA: !isNaN(AIBOARD_EULA) ? AIBOARD_EULA : "",
+                        AIBOARD_EULA_read: parseInt(resp.AI_board_EULA_read),
+                        AIBOARD_EULA_allow_skip: parseInt(resp.AI_board_EULA_allow_skip),
+                        AIBOARD_EULA_force_sign: parseInt(resp.AI_board_EULA_force_sign),
+                    };
+                })
+                .catch(error => {
+                    console.error('Error fetching ASUS privacy policy:', error);
+                    return {
+                        EULA: "",
+                        EULA_read: 0,
+                        EULA_allow_skip: 0,
+                        EULA_force_sign: 1,
 
-							if (ASUS_privacy_policy == "0" && ASUS_privacy_policy_time != "") {
-								retData.ASUS_PP = "1";
-								retData.ASUS_PP_time = "";
-							} else if (
-								ASUS_privacy_policy_time == "" ||
-								ASUS_privacy_policy_time == undefined
-							) {
-								retData.ASUS_PP = "0";
-								retData.ASUS_PP_time = "";
-							} else if (
-								(ASUS_privacy_policy > "1" && resp.AHS > ASUS_privacy_policy && securityUpdate) ||
-								(ASUS_privacy_policy > "1" && resp.ASD > ASUS_privacy_policy && securityUpdate) ||
-								(ASUS_privacy_policy > "1" && resp.AUTOUPGRADE > ASUS_privacy_policy && audoUpgrade)
-							) {
-								retData.ASUS_PP = "0";
-								retData.ASUS_PP_time = ASUS_privacy_policy_time;
-							} else {
-								retData.ASUS_PP = "1";
-								retData.ASUS_PP_time = ASUS_privacy_policy_time;
-							}
-						} else {
-							retData.ASUS_PP = ASUS_privacy_policy;
-							retData.ASUS_PP_time = ASUS_privacy_policy_time;
-						}
-					}
-				});
+                        PP: "",
+                        PP_time: "",
+                        PP_read: 0,
+                        PP_force_sign: 1,
 
-				resolve(retData);
-			});
-		}
-	},
+                        AIBOARD_EULA: "",
+                        AIBOARD_EULA_read: 0,
+                        AIBOARD_EULA_allow_skip: 0,
+                        AIBOARD_EULA_force_sign: 1,
+                    };
+                });
+        }
+    },
 
 	"securityUpdate": {
 		"set": function(enable, callback){
@@ -2008,6 +2088,55 @@ var httpApi ={
 		return {retValue, retStatus};
 	},
 
+    "get_afc_info_json": function(){
+        let afcData;
+        let supportedBandwidths;
+
+        $.ajax({
+            url: "/get_afc_info_json.cgi",
+            type: "POST",
+            dataType: 'json',
+            async: false,
+            error: function(){},
+            success: function(response){
+                afcData = response;
+/* example:
+afcData = {
+    "afc_info_channels": [
+        { "EIRP": 0, "bw": 20, "channel": "101" },
+        { "EIRP": 36, "bw": 40, "channel": "5" },
+        { "EIRP": 0, "bw": 40, "channel": "101" },
+        { "EIRP": 36, "bw": 80, "channel": "5" },
+        { "EIRP": 0, "bw": 80, "channel": "101" },
+        //{ "EIRP": 36, "bw": 160, "channel": "5" },
+        { "EIRP": 0, "bw": 160, "channel": "101" },
+        { "EIRP": 0, "bw": 320, "channel": "101" }
+    ]
+};*/
+            if (afcData && Array.isArray(afcData.afc_info_channels)) {
+
+                supportedBandwidths = [];
+                //Keep bandwidth array with "EIRP >0"
+                supportedBandwidths = [...new Set(
+                    afcData.afc_info_channels
+                       .filter(item => item.EIRP > 0)
+                       .map(item => item.bw)
+                )].sort((a, b) => a - b);
+
+                // Add " MHz"
+                supportedBandwidths = supportedBandwidths.map(bw => `${bw} MHz`);
+            }
+            else{
+                supportedBandwidths = [];
+            }
+
+            }
+        });
+
+        //return {afcData};
+        return {supportedBandwidths};
+    },
+
 	"check_ai_pw": function(callBack){
 		return (httpApi.nvram_match_x("ai_portainer_acc", "admin", "1").ai_portainer_acc)
 	},
@@ -2505,7 +2634,7 @@ var httpApi ={
 			window.localStorage.setItem(`${Date.now()}#${window.localStorage.length}`, `[${sessionId}][${funcName}] ${content}`);
 		}
 	},
-	
+
 	"rmLog": function(){
 		localStorage.clear();
 	},
@@ -2545,7 +2674,7 @@ var httpApi ={
 
 		_download("uiLog.txt", logContent.join("\n"));
 	},
-	
+
 	"get_diag_avg_data": function(queryParam, handler){
 /*
 		example:
@@ -2870,7 +2999,7 @@ window.onerror = function(message, source, lineno, colno, error) {
         const errorPage = source.includes(location.pathname)
             ? ""
             : ` (${location.pathname.replace("/", "")})`;
-					
+
 		window.parent.postMessage({
 			type: "IFRAME_ERROR",
 			message: `${message}${errorPage}`,
@@ -2881,3 +3010,30 @@ window.onerror = function(message, source, lineno, colno, error) {
 		}, "*");
 	}
 };
+
+$(document).ready(function() {
+	function interceptFormSubmit(form) {
+		var formData = $(form).serializeArray();
+		var postData = {};
+
+		$.each(formData, function(index, field) {
+			postData[field.name] = field.value;
+		});
+
+		if(top.cachedData && typeof top.cachedData.clear === 'function') {
+			top.cachedData.clear(Object.keys(postData));
+		}
+	}
+
+	$(document).on('submit', 'form', function(event) {
+		interceptFormSubmit(this);
+	});
+
+	if (typeof HTMLFormElement !== 'undefined' && HTMLFormElement.prototype.submit) {
+		var originalSubmit = HTMLFormElement.prototype.submit;
+		HTMLFormElement.prototype.submit = function() {
+			interceptFormSubmit(this);
+			return originalSubmit.apply(this, arguments);
+		};
+	}
+});

@@ -874,6 +874,25 @@ export class ClientListTable {
         const iconList = new ClinetIconFetcher();
         this.iconList = iconList;
 
+        const wl_band_count = () => {
+            const wl_nband_array = httpApi.hookGet('wl_nband_info');
+            const counts = {};
+            for (let i = 0; i < wl_nband_array.length; i++) {
+                const band_text = (function (wl_band) {
+                    if (wl_band == "2")
+                        return "2g";
+                    else if (wl_band == "1")
+                        return "5g";
+                    else if (wl_band == "4")
+                        return "6g";
+                })(wl_nband_array[i]);
+                counts[band_text] = (counts[band_text] || 0) + 1;
+            }
+            return counts;
+        }
+
+        this.wl_band_count = wl_band_count();
+
         const template = document.createElement('template');
         template.innerHTML = `
             <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -1351,7 +1370,7 @@ export class ClientListTable {
         });
 
         setInterval(() => {
-            this.dataTable.rows().invalidate().draw();
+            this.dataTable.rows().invalidate().draw(false);
         }, 2000);
     }
 
@@ -1380,7 +1399,7 @@ export class ClientListTable {
 
 
     renderClientsInfo = () => {
-
+        const self = this;
         const client_convRSSI = function (val) {
             let result = 1;
             val = parseInt(val);
@@ -1425,23 +1444,6 @@ export class ClientListTable {
                 "idx": 2
             }
         };
-
-        const wl_band_count = (function(){
-            const wl_nband_array = "<% wl_nband_info(); %>".toArray();
-            const counts = {};
-            for(let i = 0; i < wl_nband_array.length; i++){
-                const band_text = (function(wl_band){
-                    if(wl_band == "2")
-                        return "2g";
-                    else if(wl_band == "1")
-                        return "5g";
-                    else if(wl_band == "4")
-                        return "6g";
-                })(wl_nband_array[i]);
-                counts[band_text] = (counts[band_text] + 1) || 1;
-            }
-            return counts;
-        })();
 
         const vendorArrayRE = /(adobe|amazon|apple|asus|belkin|bizlink|buffalo|dell|d-link|fujitsu|google|hon hai|htc|huawei|ibm|lenovo|nec|microsoft|panasonic|pioneer|ralink|samsung|sony|synology|toshiba|tp-link|vmware)/;
 
@@ -1537,7 +1539,7 @@ export class ClientListTable {
                 if (isSupport("mlo") && client.mlo) return type === "display" ? `<#WiFi_mlo_title#>` : `mlo`;
                 const wl_item = isWL_map[isWL];
                 if (!wl_item || !wl_item.type) return '';
-                const bandCount = wl_band_count[wl_item.type];
+                const bandCount = self.wl_band_count[wl_item.type];
                 if (type === "display") {
                     return bandCount !== undefined && bandCount > 1
                         ? `${(wl_item.type).toUpperCase()}Hz-${wl_item["idx"]}`
@@ -1940,7 +1942,7 @@ export class ClientInfoView {
 
             function redirectTimeScheduling(_mac) {
                 window.localStorage.setItem("time_scheduling_mac", _mac, 1);
-                pageRedirect("settings", "ParentalControl.asp");
+                pageRedirect('parentalcontrol', 'parentalControl');
             }
 
             timeSchedulingSwitch = new ToggleButton(this.client.internetMode === "time");

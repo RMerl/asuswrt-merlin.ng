@@ -11,7 +11,7 @@
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/client_function.js"></script>
-<script type="text/javascript" src="/js/asus_policy.js?v=4"></script>
+<script type="text/javascript" src="/js/asus_policy.js?v=5"></script>
 <style>
 .block_filter a {
         text-decoration:none !important;
@@ -901,7 +901,7 @@ function Get_Component_Internet_Info(_type){
 		});
 	}
 	else if(isSwMode("ap")){
-		var connect_proto_array = {"dhcp":"<#BOP_ctype_title1#>", "static": "<#BOP_ctype_title5#>", "pppoe": "PPPoE","pptp": "PPTP","l2tp": "L2TP"};
+		var connect_proto_array = {"dhcp":"<#BOP_ctype_dhcp_title1#>", "static": "<#BOP_ctype_title5#>", "pppoe": "PPPoE","pptp": "PPTP","l2tp": "L2TP"};
 		var connect_info = new connect_attr();
 		connect_info.status = "connected";
 		connect_info.status_title = "<#WLANConfig11b_x_APMode_itemname#>";

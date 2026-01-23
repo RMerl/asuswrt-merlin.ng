@@ -366,53 +366,70 @@ async function loadData(lang = 'EN') {
         return data;
     }
 
-/*
-    let dictText = localStorage.getItem(`dict.${lang}`);
-    if (!dictText) {
-        const dictResponse = await fetch(`https://nw-dlcdnet.asus.com/indexing/${lang}.dict`);
-        dictText = await dictResponse.text();
-        try {
-            localStorage.setItem(`dict.${lang}`, dictText);
-        } catch (error) {
-            localStorage.clear();
-            localStorage.setItem(`dict.${lang}`, dictText);
-        }
-    }
-    dictData = parseDict(dictText);
-
-    let usageJson = localStorage.getItem('usageIndex');
-    if (!usageJson) {
-        const usageResponse = await fetch('https://nw-dlcdnet.asus.com/indexing/indexing.json');
-        usageJson = JSON.stringify(await usageResponse.json());
-
-        try {
-            localStorage.setItem('usageIndex', usageJson);
-        } catch (error) {
-            localStorage.clear();
-            localStorage.setItem('usageIndex', usageJson);
-        }
-
-    }
-    usageIndex = JSON.parse(usageJson);
-*/
-
-/* force to use cloud data - begin */
+    // Load local dictionary first
     let dictText = "";
-    const dictResponse = await fetch(`https://nw-dlcdnet.asus.com/indexing/${lang}.dict`);
-    dictText = await dictResponse.text();
-    dictData = parseDict(dictText);
-
-    let usageJson = "";
-    const usageResponse = await fetch('https://nw-dlcdnet.asus.com/indexing/indexing.json');
-    usageJson = JSON.stringify(await usageResponse.json());
-    usageIndex = JSON.parse(usageJson);
-
-    let qaPair = "";
-    if(isSupport("ai_board_slm")){
-        const qaPairResponse = await fetch('https://nw-dlcdnet.asus.com/indexing/qa_asuswrt.json');
-        qaPair = JSON.stringify(await qaPairResponse.json());
-        qaPairData = JSON.parse(qaPair);
+    const localDictResponse = await fetch(`/${lang}.dict`);
+    if (localDictResponse.ok) {
+        dictText = await localDictResponse.text();
+        dictData = parseDict(dictText);
     }
+
+    // Load local indexing.json first
+    let usageJson = "";
+    const localUsageResponse = await fetch('/js/indexing.json');
+    if (localUsageResponse.ok) {
+        usageJson = JSON.stringify(await localUsageResponse.json());
+        usageIndex = JSON.parse(usageJson);
+    }
+
+    // Load local qa_asuswrt.json first
+    let qaPair = "";
+    let qaPairFileName = httpApi.nvramGet(["territory_code"]).territory_code.includes("CN") ? 'qa_asuswrt_sc.json' : 'qa_asuswrt.json';
+    if(isSupport("ai_board_slm")){
+        const localQaPairResponse = await fetch(`/js/${qaPairFileName}`);
+        if (localQaPairResponse.ok) {
+            qaPairData = await localQaPairResponse.json();
+        }
+    }
+
+    // Try to load cloud data and replace local if successful (non-blocking)
+    const loadCloudData = async () => {
+        const cloudPromises = [
+            fetch(`https://nw-dlcdnet.asus.com/indexing/${lang}.dict`).then(response => {
+                if (response.ok) {
+                    return response.text().then(text => {
+                        dictData = parseDict(text);
+                    });
+                }
+            }).catch(() => {}),
+            
+            fetch('https://nw-dlcdnet.asus.com/indexing/indexing.json').then(response => {
+                if (response.ok) {
+                    return response.json().then(json => {
+                        usageIndex = json;
+                    });
+                }
+            }).catch(() => {}),
+            
+            isSupport("ai_board_slm") ? 
+                fetch(`https://nw-dlcdnet.asus.com/indexing/${qaPairFileName}`).then(response => {
+                    if (response.ok) {
+                        return response.json().then(json => {
+                            qaPairData = Array.isArray(json)
+                                ? json.filter(entry => entry.id !== 10029)
+                                : json;                            
+                        });
+                    }
+                }).catch(() => {}) 
+                : Promise.resolve()
+        ];
+        
+        // Load all cloud data in parallel, but don't block the main execution
+        return Promise.all(cloudPromises);
+    };
+    
+    // Start cloud data loading in background
+    loadCloudData();
 
     // Filter out entries with id=10029 in the answer
     if (qaPairData && qaPairData.qa_pairs) {
@@ -420,7 +437,6 @@ async function loadData(lang = 'EN') {
             return !(qa.answer && qa.answer.includes('id=10029'));
         });
     }
-/* force to use cloud data - end */
 
     searchInput.addEventListener('input', performSearch);
 
@@ -675,4 +691,55 @@ function performSearch() {
     });
 }
 
-loadData(currentLang);
+setTimeout(() => loadData(currentLang), 1000);
+
+const slm_cache = {
+    status: null,
+    model: null,
+    initialized: false
+};
+export async function get_slm_status(forceRefresh = false) {
+    const SLM_STATUS_CODES = {
+        NOT_SUPPORTED: "not_supported",
+        NOT_INSTALLED: "not_installed",
+        RUNNING: "running",
+        INSTALLED_NOT_RUNNING: "installed_not_running",
+        ERROR: "error"
+    };
+
+    if(!isSupport("ai_board_slm")) {
+        return { status: SLM_STATUS_CODES.NOT_SUPPORTED, model: null };
+    }
+
+    if (slm_cache.initialized && !forceRefresh) {
+        return { status: slm_cache.status, model: slm_cache.model };
+    }
+
+    try {
+        const data = await httpApi.get_ai_docker_container();
+        const slmContainer = data.find(container => (container.name === "slm-asus" || container.name === "slm-cn-asus"));
+        let status;
+        if (!slmContainer) {
+            status = SLM_STATUS_CODES.NOT_INSTALLED;
+            slm_cache.model = null;
+        } else {
+            const isUp = slmContainer.status.toLowerCase().startsWith('up');
+            if (isUp) {
+                status = SLM_STATUS_CODES.RUNNING;
+            } else {
+                status = SLM_STATUS_CODES.INSTALLED_NOT_RUNNING;
+            }
+            slm_cache.model = slmContainer.name;
+        }
+        slm_cache.status = status;
+        slm_cache.initialized = true;
+        return { status: slm_cache.status, model: slm_cache.model };
+    }
+    catch (error) {
+        const errorStatus = SLM_STATUS_CODES.ERROR;
+        slm_cache.status = errorStatus;
+        slm_cache.model = null;
+        slm_cache.initialized = true;
+        return { status: slm_cache.status, model: slm_cache.model };
+    }
+}

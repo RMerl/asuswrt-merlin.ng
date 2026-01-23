@@ -648,7 +648,7 @@ extern int check_lock_status(time_t *dt);
 extern void check_lock_state();
 extern int gen_asus_token_cookie(char *asus_token, int asus_token_len, char *token_cookie, int cookie_len);
 extern void gen_random_string_v2(char *out, size_t len);
-extern int json_object_get_string_to_double(json_object *source_obj, char *target, char *output, int len);
+extern int json_object_get_string_to_double(struct json_object *obj, const char *key, char *buf, size_t buf_size);
 #ifdef RTCONFIG_BCM_AFC
 extern int find_afc_challenge(char *id, char *challenge);
 #endif
@@ -658,10 +658,12 @@ extern void handle_nvram_modify_log(struct json_object *activity_obj);
 #ifdef RTCONFIG_AI_SERVICE
 extern int ej_is_ai_ssh_default(int eid, webs_t wp, int argc, char **argv);
 extern int ej_ai_adguard_home_port(int eid, webs_t wp, int argc, char **argv);
+extern int ej_is_ai_board_slm_alive(int eid, webs_t wp, int argc, char **argv);
 extern void do_ai_chpass_cgi(char *url, FILE *stream);
 extern void do_get_ai_docker_images_info_cgi(char *url, FILE *stream);
 extern void do_get_ai_docker_container_info_cgi(char *url, FILE *stream);
 extern void do_ai_board_slm_cgi(char *url, FILE *stream);
+extern void do_set_AI_board_EULA_cgi(char *url, FILE *stream);
 #endif
 extern void band_id_to_bandwidth(char *band_id, char *band, int len);
 #endif /* _httpd_h_ */

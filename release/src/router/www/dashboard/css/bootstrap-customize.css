@@ -314,3 +314,18 @@ input[type="number"] {
     background-color: currentColor;
     opacity: .25;
 }
+
+.offcanvas {
+    background-color: var(--panel-bg-color);
+}
+
+.offcanvas-footer {
+  position: sticky;
+  bottom: 0;
+  background-color: #f8f9fa;
+  z-index: 10;
+}
+
+.tooltip {
+    width: max-content;
+}

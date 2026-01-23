@@ -113,7 +113,7 @@
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/replaceisp.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js?v=4"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js?v=5"></script>
 <!-- script language="JavaScript" type="text/javascript" src="/ajax/get_rbk_info.asp"></script -->
 <script>
 
@@ -2020,28 +2020,28 @@ function get_mobile_fw_upgrade_status(){
 					<script type="text/javascript">
 						$('#switch_webs_update_enable').iphoneSwitch('<% nvram_get("webs_update_enable"); %>',
 								function () {
-									const policyStatus = PolicyStatus()
-											.then(data => {
-												if (data.PP == 0 || data.PP_time == "") {
-													const policyModal = new PolicyModalComponent({
-														policy: "PP",
-														policyStatus: data,
-														agreeCallback: () => {
-															hide_upgrade_opt(1);
-															save_update_enable('on');
-														},
-														knowRiskCallback: () => {
-															alert(`<#ASUS_POLICY_Function_Confirm#>`);
-															location.reload();
-														}
-													});
-													policyModal.show();
-													return false;
-												} else {
-													hide_upgrade_opt(1);
-													save_update_enable('on');
-												}
-											});
+									PolicyStatus()
+                                        .then(data => {
+                                            if (data.PP < 1) {
+                                                const policyModal = new PolicyModalComponent({
+                                                    policy: "PP",
+                                                    policyStatus: data,
+                                                    agreeCallback: () => {
+                                                        hide_upgrade_opt(1);
+                                                        save_update_enable('on');
+                                                    },
+                                                    knowRiskCallback: () => {
+                                                        alert(`<#ASUS_POLICY_Function_Confirm#>`);
+                                                        location.reload();
+                                                    }
+                                                });
+                                                policyModal.show();
+                                                return false;
+                                            } else {
+                                                hide_upgrade_opt(1);
+                                                save_update_enable('on');
+                                            }
+                                        });
 								},
 								function () {
 									hide_upgrade_opt(0);
@@ -2082,26 +2082,26 @@ function get_mobile_fw_upgrade_status(){
 						$('#switch_security_update_enable').iphoneSwitch(httpApi.securityUpdate.get(),
 								function () {
 									//on
-									const policyStatus = PolicyStatus()
-											.then(data => {
-												if (data.PP == 0 || data.PP_time == "") {
-													const policyModal = new PolicyModalComponent({
-														policy: "PP",
-														policyStatus: data,
-														agreeCallback: () => {
-															httpApi.securityUpdate.set(1);
-														},
-														knowRiskCallback: () => {
-															alert(`<#ASUS_POLICY_Function_Confirm#>`);
-															location.reload();
-														}
-													});
-													policyModal.show();
-													return false;
-												} else {
-													httpApi.securityUpdate.set(1);
-												}
-											});
+									PolicyStatus()
+                                        .then(data => {
+                                            if (data.PP < 1) {
+                                                const policyModal = new PolicyModalComponent({
+                                                    policy: "PP",
+                                                    policyStatus: data,
+                                                    agreeCallback: () => {
+                                                        httpApi.securityUpdate.set(1);
+                                                    },
+                                                    knowRiskCallback: () => {
+                                                        alert(`<#ASUS_POLICY_Function_Confirm#>`);
+                                                        location.reload();
+                                                    }
+                                                });
+                                                policyModal.show();
+                                                return false;
+                                            } else {
+                                                httpApi.securityUpdate.set(1);
+                                            }
+                                        });
 								},
 								function () {
 									//off

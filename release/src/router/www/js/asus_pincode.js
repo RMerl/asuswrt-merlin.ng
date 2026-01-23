@@ -962,7 +962,7 @@ class PincodeDiv extends HTMLElement {
         if (!e.target.classList.contains("disabled")) {
             const policyStatus = PolicyStatus()
 			.then(data => {
-                if (data.PP == 0 || data.PP_time == '') {
+                if (data.PP < 1) {
                     const policyModal = new PolicyModalComponent({
                         policy: "PP",
                         policyStatus: data,

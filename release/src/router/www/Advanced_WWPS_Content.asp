@@ -104,21 +104,27 @@ function initial(){
 				case "5 GHz-1":
 					band_prefix = '5g1';
 					break;
-					
+
 				case "5 GHz-2":
 					band_prefix = '5g2';
 					break;
-				
-				case "6 GHz-1": 
+
+				case "6 GHz-1":
 					band_prefix = '6g1';
 					break;
-				
-				case "6 GHz-2": 
+
+				case "6 GHz-2":
 					band_prefix = '6g2';
 					break;
 			}
 
-			var auth = httpApi.nvramGet([band_prefix + '_auth_mode_x'])[band_prefix + '_auth_mode_x'];	
+			var auth = "";
+			if (isSupport("sdn_mainfh")) {
+				auth = get_mainfh_by_wl_unit(document.form.wps_band.value)?.auth || "";
+			}
+			else if (band_prefix) {
+				auth = httpApi.nvramGet([band_prefix + '_auth_mode_x'])[band_prefix + '_auth_mode_x'] || "";
+			}
 			if(auth == 'sae' || auth == 'wpa3' || auth == 'suite-b'){
 				document.getElementById('wpa3_not_support_hint').innerHTML = `<#wireless_JS_WPS_fail_WPA3P#> <#wireless_JS_WPS_fail_WPA3P_faq#>`;
 				document.getElementById("faq_link").href=faq_href_fail_WPA3P;
@@ -138,13 +144,23 @@ function initial(){
 				band1 = "<del>" + band1 + "</del>";
 			
 			document.getElementById("wps_band_word").innerHTML = band0 + " / " + band1;
-			var auth = httpApi.nvramGet(['2g1_auth_mode_x', '5g1_auth_mode_x']);
-			var wl0_auth = auth['2g1_auth_mode_x'];
-			var wl1_auth = auth['5g1_auth_mode_x'];
-			if(wl0_auth == 'sae' || wl0_auth == 'wpa3' || wl0_auth == 'suite-b' 
+			var wl0_auth = "";
+			var wl1_auth = "";
+			if (isSupport("sdn_mainfh")) {
+				const wl2gUnit = get_wl_unit_by_band("2G");
+				const wl5gUnit = get_wl_unit_by_band("5G");
+				wl0_auth = (wl2gUnit !== "") ? (get_mainfh_by_wl_unit(wl2gUnit)?.auth || "") : "";
+				wl1_auth = (wl5gUnit !== "") ? (get_mainfh_by_wl_unit(wl5gUnit)?.auth || "") : "";
+			}
+			else {
+				const auth = httpApi.nvramGet(['2g1_auth_mode_x', '5g1_auth_mode_x']);
+				wl0_auth = auth['2g1_auth_mode_x'] || "";
+				wl1_auth = auth['5g1_auth_mode_x'] || "";
+			}
+			if(wl0_auth == 'sae' || wl0_auth == 'wpa3' || wl0_auth == 'suite-b'
 			|| wl1_auth == 'sae' || wl1_auth == 'wpa3' || wl1_auth == 'suite-b'){
 				document.getElementById('wpa3_not_support_hint').innerHTML = `<#wireless_JS_WPS_fail_WPA3P#> <#wireless_JS_WPS_fail_WPA3P_faq#>`;
-				document.getElementById("faq_link").href=faq_href_fail_WPA3P;	
+				document.getElementById("faq_link").href=faq_href_fail_WPA3P;
 				document.getElementById('wpa3_not_support_hint').style.display = "";
 			}
 		}
@@ -278,7 +294,7 @@ function enableWPS(){
 	else
 		document.form.action_script.value = "restart_wireless";
 	document.form.action_mode.value = "apply_new";
-	document.form.action_wait.value = "3";
+	document.form.action_wait.value = "10";
 	applyRule();
 }
 
@@ -824,12 +840,18 @@ function get_mainfh_by_wl_unit(_wl_unit){
 				const apm_enable = decodeURIComponent(httpApi.nvramCharToAscii([`apm${apmIdx}_enable`])[`apm${apmIdx}_enable`]);
 				const apm_hide_ssid = decodeURIComponent(httpApi.nvramCharToAscii([`apm${apmIdx}_hide_ssid`])[`apm${apmIdx}_hide_ssid`]);
 				const apm_dut_list = decodeURIComponent(httpApi.nvramCharToAscii([`apm${apmIdx}_dut_list`])[`apm${apmIdx}_dut_list`]).split("<");
+				const apm_security = decodeURIComponent(httpApi.nvramCharToAscii([`apm${apmIdx}_security`])[`apm${apmIdx}_security`]).split("<");
 				let apm_band = "0";
 				if(apm_dut_list[1] != undefined && apm_dut_list[1] != ""){
 					const dut_list_arr = apm_dut_list[1].split(">");
 					apm_band = dut_list_arr[1];
 				}
-				mainfh_info_list.push({"ssid":apm_ssid, "band":apm_band, "enable":apm_enable, "hide_ssid":apm_hide_ssid});
+				let apm_auth = "open";
+				if(apm_security[1] != undefined && apm_security[1] != ""){
+					const sec_arr = apm_security[1].split(">");
+					apm_auth = sec_arr[1];
+				}
+				mainfh_info_list.push({"ssid":apm_ssid, "band":apm_band, "enable":apm_enable, "hide_ssid":apm_hide_ssid, "auth":apm_auth});
 			}
 		});
 		if(mainfh_info_list.length == 0){
@@ -868,7 +890,7 @@ function get_mainfh_by_wl_unit(_wl_unit){
 <input type="hidden" name="modified" value="0">
 <input type="hidden" name="action_mode" value="">
 <input type="hidden" name="action_script" value="">
-<input type="hidden" name="action_wait" value="3">
+<input type="hidden" name="action_wait" value="10">
 <input type="hidden" name="first_time" value="">
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">

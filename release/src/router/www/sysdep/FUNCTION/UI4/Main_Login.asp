@@ -998,10 +998,12 @@
     var ATEMODE = '<% nvram_get("ATEMODE"); %>';
 
     function initial() {
+        window.localStorage.removeItem("page"); // clear cached page info, initial to Dashboard page
+
         top.name = "";/* reset cache of state.js win.name */
 
         if (ATEMODE == "1") {
-            $(".div-td.signin_hint").text("<#CTL_signin#>" + " (ATE MODE)");
+            document.querySelector('.submit-button').innerHTML = `<#CTL_signin#> (ATE MODE)`;
         }
 
         var flag = login_info.error_status;

@@ -349,6 +349,14 @@ var validator = {
 			return "<#Login_Name_Rule#>";
 	},
 
+	ai_host_name: function(obj){
+		var re = new RegExp(/^[a-z0-9][a-z0-9-_]{4,}$/i);
+		if(re.test(obj.value))
+			return "";
+		else
+			return `<#Login_AI_Name_Rule#>`;
+	},
+
 	samba_name: function(obj, flag){
 		let re = (flag == "computer_name") ? new RegExp(/^[a-z0-9][a-z0-9-]*$/i) : new RegExp(/^[a-z0-9][a-z0-9-_]*$/i);
 		let hint = (flag == "computer_name") ? `<#JS_valid_host_name_1#> <#JS_valid_host_name_first_char_1#>` : `<#JS_valid_host_name#> <#JS_valid_host_name_first_char#>`;

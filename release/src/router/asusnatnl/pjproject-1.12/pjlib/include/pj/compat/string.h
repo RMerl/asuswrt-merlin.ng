@@ -63,16 +63,40 @@
 #define pj_ansi_strcmp		strcmp
 #define pj_ansi_strncmp		strncmp
 #define pj_ansi_strlen		strlen
-#define pj_ansi_strcpy		strcpy
-#define pj_ansi_strncpy		strncpy
-#define pj_ansi_strcat		strcat
+#if defined(PJ_BAN_STRCPY) && PJ_BAN_STRCPY
+    /* Use pj_ansi_strxcpy() instead */
+#   define strcpy                  error__strcpy_is_banned
+#   define pj_ansi_strcpy          error__strcpy_is_banned
+#else
+#   define pj_ansi_strcpy          strcpy
+#endif
+#if defined(PJ_BAN_STRNCPY) && PJ_BAN_STRNCPY
+    /* Use pj_ansi_strxcpy() instead */
+#   define strncpy                 error__strncpy_is_banned
+#   define pj_ansi_strncpy         error__strncpy_is_banned
+#else
+#   define pj_ansi_strncpy         strncpy
+#endif
+#if defined(PJ_BAN_STRCAT) && PJ_BAN_STRCAT
+    /* Use pj_ansi_strxcat() instead */
+#   define strcat                  error__strcat_is_banned
+#   define pj_ansi_strcat          error__strcat_is_banned
+#else
+#   define pj_ansi_strcat          strcat
+#endif
 #define pj_ansi_strstr		strstr
 #define pj_ansi_strchr		strchr
 #define pj_ansi_strcasecmp	strcasecmp
 #define pj_ansi_stricmp		strcasecmp
 #define pj_ansi_strncasecmp	strncasecmp
 #define pj_ansi_strnicmp	strncasecmp
-#define pj_ansi_sprintf		sprintf
+#if defined(PJ_BAN_SPRINTF) && PJ_BAN_SPRINTF
+    /* Use pj_ansi_snprintf() instead */
+#   define sprintf                 error__sprintf_is_banned
+#   define pj_ansi_sprintf         error__sprintf_is_banned
+#else
+#   define pj_ansi_sprintf         sprintf
+#endif
 
 #if defined(PJ_HAS_NO_SNPRINTF) && PJ_HAS_NO_SNPRINTF != 0
 #   include <pj/types.h>
@@ -84,7 +108,13 @@
 #endif
     
 #define pj_ansi_snprintf	snprintf
-#define pj_ansi_vsprintf	vsprintf
+#if defined(PJ_BAN_VSPRINTF) && PJ_BAN_VSPRINTF
+     /* Use pj_ansi_vsnprintf() instead */
+#    define vsprintf                error__vsprintf_is_banned
+#    define pj_ansi_vsprintf        error__vsprintf_is_banned
+#else
+#    define pj_ansi_vsprintf        vsprintf
+#endif
 #define pj_ansi_vsnprintf	vsnprintf
 
 #define pj_unicode_strcmp	wcscmp

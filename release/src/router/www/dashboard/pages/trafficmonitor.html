@@ -274,7 +274,7 @@
 
                         // update wireless interface traffic data
                         for (let [index, value] of Object.entries(system.wlBandSeq)) {
-                            let wl_unit = "WIRELESS" + value.wl_unit;
+                            let wl_unit = "WIRELESS" + value.wlUnit;
                             if (netdev[wl_unit]) {
                                 if (trafficData[index].last_dl !== 0) {
                                     trafficData[index]["dlRaw"].shift();

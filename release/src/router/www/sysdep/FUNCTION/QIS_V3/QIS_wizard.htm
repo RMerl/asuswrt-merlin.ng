@@ -21,7 +21,7 @@
 		<script type="text/javascript" src="./mobile/js/handler.js"></script>
 		<script type="text/javascript" src="./mobile/js/login_state.js"></script>
 		<script type="text/javascript" src="./js/https_redirect/https_redirect.js"></script>
-        <script type="text/javascript" src="./js/asus_policy.js?v=4&lang=<#selected_language#>"></script>
+        <script type="text/javascript" src="./js/asus_policy.js?v=5&lang=<#selected_language#>"></script>
 		<script type="text/javascript" src="./md5.js"></script>
 		<script>
 			if (isSupport("rog")) {
@@ -274,9 +274,9 @@
 
                     const policyStatus = PolicyStatus()
                         .then(data => {
-                            if (data.EULA == "0" || data.EULA_time == "") {
+                            if (data.EULA < 1 && data.EULA_read === 0 && data.EULA_force_sign === 1) {
                                 goTo.EULA();
-                            } else if (data.EULA == 1 && ((data.PP == 1 && data.PP_time != "") || (data.PP == 0 && data.PP_time == ""))) {
+                            } else if (data.EULA > 0 && (data.PP === "" || (data.PP > 0 && data.PP_read === 0 && data.PP_force_sign === 1))) {
                                 goTo.PP();
                             } else {
                                 switch (urlParameter.get("flag") || "") {
@@ -1198,7 +1198,7 @@
 							<div class="selectorContainer autoIP">
 								<div class="selectorContainerDiv">
 									<div class="selectBar" onclick="goTo.DHCP()">
-										<#BOP_ctype_title1#>
+										<#BOP_ctype_dhcp_title1#>
 									</div>
 									<div class="narrowContainer">
 										<div class="select_dhcp_right icon_arrow_right" style="width:20px;height:32px;"></div>
@@ -1429,7 +1429,7 @@
 							<div class="selectorContainer">
 								<div class="selectorContainerDiv">
 									<div class="selectBar" onclick="goTo.vpnDHCP()">
-										<#BOP_ctype_title1#>
+										<#BOP_ctype_dhcp_title1#>
 									</div>
 									<div class="narrowContainer">
 										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
@@ -2180,7 +2180,7 @@
 							<div class="selectorContainer">
 								<div class="selectorContainerDiv">
 									<div class="selectBar" onclick="goTo.lanDHCP()">
-										<#BOP_ctype_title1#>
+										<#BOP_ctype_dhcp_title1#>
 									</div>
 									<div class="narrowContainer">
 										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>

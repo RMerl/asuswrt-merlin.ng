@@ -117,6 +117,7 @@ typedef unsigned long long u64;
 
 #include <net/if.h>
 #include <linux/sockios.h>
+#include <version.h>
 #include <networkmap.h> //2011.03 Yau add for new networkmap 2017.03 Rawny add
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -273,10 +274,6 @@ static void do_jffsupload_post(char *url, FILE *stream, int len, char *boundary)
 
 #ifdef RTCONFIG_ENERGY_SAVE
 #include <es_lib.h>
-#endif
-
-#ifdef RTCONFIG_BCM_AFC
-#include <asus_afc.h>
 #endif
 
 extern int ej_wl_sta_list_2g(int eid, webs_t wp, int argc, char_t **argv);
@@ -464,8 +461,11 @@ static int nvram_check_and_set(char *name, char *value);
 #endif
 static int nvram_check_and_set_for_prefix(char *name, char *tmp, char *value);
 #define wan_prefix(unit, prefix)	snprintf(prefix, sizeof(prefix), "wan%d_", unit)
+
+#if 0 //Temporarily mark unused code
 #if defined(RTCONFIG_TUNNEL) && defined(RTCONFIG_ACCOUNT_BINDING)
 extern void do_oauth_callback_cgi(char *url, FILE *stream);
+#endif
 #endif
 
 #ifdef RTCONFIG_FBWIFI
@@ -477,9 +477,11 @@ extern void sdn_set_fbwifi(void);
 
 extern int app_auth(char *authinfo, char *authpass);
 
-extern do_get_lqrc_cgi(char *url, FILE *stream);
-extern do_qr_auth_cgi(char *url, FILE *stream);
-extern do_chk_qr_ret_cgi(char *url, FILE *stream);
+#if 0 //Temporarily mark unused code
+extern void do_get_lqrc_cgi(char *url, FILE *stream);
+extern void do_qr_auth_cgi(char *url, FILE *stream);
+extern void do_chk_qr_ret_cgi(char *url, FILE *stream);
+#endif
 
 #if defined(RTCONFIG_ASD) || defined(RTCONFIG_AHS)
 extern void do_set_security_update_cgi(char *url, FILE *stream);
@@ -10238,8 +10240,8 @@ static int get_client_detail_info(struct json_object *clients, struct json_objec
 	int idx = 0, arraylen = 0;
 #endif
 #if defined(RTCONFIG_AMAS) || defined(RTCONFIG_WIFI_SON)
-	struct json_object *amasList = NULL, *amasReClientDetailList = NULL, *amasWiredClientList = NULL;
-	int amasList_status = 0, amasReClientDetailList_status = 0, amasWiredClientList_status = 0;
+	struct json_object *amasList = NULL, *amasReClientDetailList = NULL;
+	int amasList_status = 0, amasReClientDetailList_status = 0;
 	struct json_object *amasPAP_attr_get = NULL;
 #ifdef RTCONFIG_STA_AP_BAND_BIND
 	char node_mac[32]={0};
@@ -10279,9 +10281,6 @@ static int get_client_detail_info(struct json_object *clients, struct json_objec
 	//get amas cap re info
 	amasList = json_object_new_object();
 	amasList_status = get_amas_info(amasList);
-	//get amas wired client info
-	amasWiredClientList = json_object_new_object();
-	amasWiredClientList_status = get_amas_wired_client_info(amasWiredClientList, AMAS_JSON_CLIENT_KEY);
 	//get amas re client detail info
 	amasReClientDetailList = json_object_new_object();
 	amasReClientDetailList_status = get_amas_re_client_detail_info(amasReClientDetailList);
@@ -10613,30 +10612,13 @@ static int get_client_detail_info(struct json_object *clients, struct json_objec
 				}
 				CLIENT_DPRINTF("amasList finish\n");
 			}
-			if((strlen(p_client_info_tab->pap_mac[i]) > 15) && (strcmp(wireless, "0") != 0) )  {
+
+			if(isMAC(p_client_info_tab->pap_mac[i]))  {
 				json_object_object_add(client, "amesh_isReClient", json_object_new_string("1"));
 				json_object_object_add(client, "amesh_papMac", json_object_new_string(p_client_info_tab->pap_mac[i]));
 				CLIENT_DPRINTF("check amesh_isReClient finish\n");
 			}
-			if(amasWiredClientList_status) {
-				json_object_object_get_ex(amasWiredClientList, mac_buf, &custom_attr_get);
-				if(custom_attr_get != NULL) {
-					struct json_object *amas_re_get_papMac = NULL, *amas_re_get_online = NULL;
-					json_object_object_get_ex(custom_attr_get, "papMac", &amas_re_get_papMac);
-					json_object_object_add(client, "amesh_isReClient", json_object_new_string("1"));
-					if(strcmp(wireless, "0") == 0) {
-						json_object_object_add(client, "amesh_papMac", json_object_new_string(json_object_get_string(amas_re_get_papMac)));
-					}
-					if(amasList_status) {
-						json_object_object_get_ex(amasList, json_object_get_string(amas_re_get_papMac), &amasPAP_attr_get);
-						if(amasPAP_attr_get != NULL) {
-							json_object_object_get_ex(amasPAP_attr_get, "online", &amas_re_get_online);
-							json_object_object_add(client, "isOnline", json_object_new_string(json_object_get_string(amas_re_get_online)));
-						}
-					}
-				}
-				CLIENT_DPRINTF("amasWiredClientList finish\n");
-			}
+
 			if(amasReClientDetailList_status) {
 				struct json_object *amas_re_get_isWL = NULL, *amas_re_get_amesh_papMac = NULL;
 				json_object_object_get_ex(client, "isWL", &amas_re_get_isWL);
@@ -10708,8 +10690,6 @@ static int get_client_detail_info(struct json_object *clients, struct json_objec
 #if defined(RTCONFIG_AMAS) || defined(RTCONFIG_WIFI_SON)
 	if(amasList)
 		json_object_put(amasList);
-	if(amasWiredClientList)
-		json_object_put(amasWiredClientList);
 	if(amasReClientDetailList)
 		json_object_put(amasReClientDetailList);
 #endif
@@ -14713,6 +14693,20 @@ wps_finish:
 		if(action_para)
 			nvram_set("l3gre_unit", action_para);
 		websRedirect(wp, current_url);
+	}
+#endif
+#ifdef RTCONFIG_MULTISERVICE_WAN
+	else if (!strcmp(action_mode, "disable_multiservice_wan")) {
+		char *mswan_index_list = NULL;
+		char word[32] = {0}, *next = NULL, nvram_name[32] = {0};
+		mswan_index_list = safe_get_cgi_json("mswan_index_list", root);
+		if(strlen(mswan_index_list) != 0){
+			foreach_44 (word, mswan_index_list, next){
+				snprintf(nvram_name, sizeof(nvram_name), "wan%s_enable", word);
+				nvram_set(nvram_name, "0");
+			}
+			nvram_commit();
+		}
 	}
 #endif
 	goto APPLY_FINISH;
@@ -21702,13 +21696,15 @@ do_get_ArkLog_cgi(char *url, FILE *stream)
 	char *mac = safe_get_cgi_json("mac", root);
 	char *page = safe_get_cgi_json("page", root);
 	char *num = safe_get_cgi_json("num", root);
+	char *sortBy = safe_get_cgi_json("sortBy", root);
+	char *sortOrder = safe_get_cgi_json("sortOrder", root);
 
 	if (!strcmp(starttime, "") || !strcmp(endtime, "")) {
 		websWrite(stream, "[]");
 		goto END;
 	}
 
-	ark_cgi_log_to_json(starttime, endtime, mac, page, num, stream);
+	ark_cgi_log_to_json(starttime, endtime, mac, page, num, sortBy, sortOrder, stream);
 
 END:
 	if (root) json_object_put(root);
@@ -21733,6 +21729,28 @@ do_get_ArkLogCount_cgi(char *url, FILE *stream)
 
 END:
 	if (root) json_object_put(root);
+}
+
+
+/*
+ * [del ark log]
+ * Success: If unlink() successfully removes the specified file or symbolic link, it returns 0.
+ * Failure: If unlink() encounters an error during the operation, it returns -1. In this case,
+ * the global variable errno is set to a specific error code to indicate the reason for the failure. Common errno values include:
+ * EACCES: Permission denied (e.g., no write permission for the directory).
+ * ENOENT: The file or path does not exist.
+ * EPERM: Operation not permitted (e.g., attempting to unlink() a directory).
+ * EROFS: The file is on a read-only file system.
+ */
+static void
+do_delArkLog_cgi(char *url, FILE *stream)
+{
+	int ret = 0;
+
+	if(check_if_file_exist(ARK_LOG_DB))
+		ret = unlink(ARK_LOG_DB);
+
+	websWrite(stream, "{\"statusCode\":\"%d\"}", ret);
 }
 #endif
 
@@ -27225,27 +27243,69 @@ FINISH:
 }
 #endif
 
+int check_dns_ping_list_safe(const char *dns_ping_list)
+{
+	if (!dns_ping_list)
+		return 0;
+
+	int bIsIPv6 = 0, nPort = 0;
+	char buf[2048] = {0};
+	char word[128] = {0}, *next = NULL;
+	char *name = NULL, *dns_ip = NULL;
+	unsigned char abyAddr[16] = {0};
+	const char *ppszText = NULL;
+
+	snprintf(buf, sizeof(buf), "%s", dns_ping_list);
+
+	foreach_60(word, buf, next) {
+		if((vstrsep(word, ">", &name, &dns_ip)) != 2)
+			return 0;
+
+		if(check_cmd_whitelist(name)){
+			dbg("invalid name\n");
+			return 0;
+		}
+
+		ppszText = dns_ip;
+		if(ParseIPv4OrIPv6(&ppszText, abyAddr, &nPort, &bIsIPv6) == 0){
+			dbg("invalid ip\n");
+			return 0;
+		}
+	}
+	return 1;
+}
+
 #if defined(RTCONFIG_LIB_CODB) && defined(RTCONFIG_CONNDIAG) && defined(RTCONFIG_DNS_PING)
 static void do_dns_ping(char *url, FILE *stream) {
-	char cmdbuf[1024] = {0};
+
+	int ret = 1;
 	char *dns_ping_list = NULL;
-	struct json_object *json_root = NULL;
 	struct json_object *root = json_object_new_object();
+
 	do_json_decode(root);
+
 	dns_ping_list = safe_get_cgi_json("dns_ping_list", root);
-	system("killall -9 dns_ping");
-	if(strlen(dns_ping_list) > 0){
-		snprintf(cmdbuf, sizeof(cmdbuf), "dns_ping \"%s\" &", dns_ping_list);
+
+	if(dns_ping_list[0] != '\0'){
+		if(!check_dns_ping_list_safe(dns_ping_list)){
+			ret = 0;
+			goto FINISH;
+		}
+		else{
+			nvram_set("dns_ping_list_tmp", dns_ping_list);
+		}
 	}
-	else{
-		snprintf(cmdbuf, sizeof(cmdbuf), "dns_ping &");
-	}
-	system(cmdbuf);
+
+	notify_rc("restart_dns_ping");
+
+FINISH:
 	if(root)
 		json_object_put(root);
-	if(json_root)
-		json_object_put(json_root);
-	websWrite(stream, "{\"statusCode\": \"success\"}");
+
+	if(ret)
+		websWrite(stream, "{\"statusCode\": \"success\"}");
+	else
+		websWrite(stream, "{\"statusCode\": \"fail\"}");
 }
 #endif
 
@@ -28392,27 +28452,36 @@ FINISH:
 }
 #endif /* RTCONFIG_AMAS_CHANNEL_PLAN */
 
-int json_object_get_string_to_double(json_object *source_obj, char *target, char *output, int len){
+int json_object_get_string_to_double(struct json_object *obj, const char *key, char *buf, size_t buf_size)
+{
+	struct json_object *jval = NULL;
+	double v;
 
-	//double output_d = 0;
-	char *endptr = NULL;
-	json_object *output_obj = NULL;
+	if (!obj || !key || !buf || buf_size == 0) {
+		return HTTP_INVALID_FILE;    // invalid parameter
+	}
 
-	if(json_object_get_type(source_obj) != json_type_object)
-		return HTTP_INVALID_FILE;
-
-	if(target == NULL)
+	if (!json_object_object_get_ex(obj, key, &jval) || jval == NULL) {
+		snprintf(buf, buf_size, "0.0");   // fallback
 		return HTTP_INVALID_INPUT;
+	}
 
-	if(!json_object_object_get_ex(source_obj, target, &output_obj))
-		return HTTP_INVALID_INPUT;
-
-	strlcpy(output, json_object_get_string(output_obj), len);
-	//output_d = strtod(output, &endptr);
-	if(*endptr != '\0')
-		return HTTP_INVALID_INPUT;
+	// check type
+	if(json_object_get_type(jval) == json_type_string)
+	{
+		snprintf(buf, buf_size, "%s", json_object_get_string(jval));
+	}
+	else if (json_object_get_type(jval) == json_type_double || json_object_get_type(jval) == json_type_int) {
+		v = json_object_get_double(jval);
+		snprintf(buf, buf_size, "%.8f", v);
+	}
 	else
-		return 0;
+	{
+		snprintf(buf, buf_size, "0.0");
+		return HTTP_INVALID_INPUT;
+	}
+
+	return 0;
 }
 
 #ifdef RTCONFIG_BCM_AFC
@@ -28931,6 +29000,7 @@ struct mime_handler mime_handlers[] =
 	{ "**.xml", "text/xml", no_cache, do_html_post_and_get, do_ej, do_auth },
 	{ "**.htm*", "text/html", no_cache, do_html_post_and_get, do_ej, do_auth },
 	{ "**.asp*", "text/html", no_cache, do_html_post_and_get, do_ej, do_auth },
+	{ "**.dict", "text/txt", cache_long_object, NULL, do_file, do_auth },
 	{ "**.appcache", "text/cache-manifest", no_cache, do_html_post_and_get, do_ej, do_auth },
 	{ "nt_content.json", "application/json", no_cache, do_html_post_and_get, do_ej, do_auth },
 #ifdef RTCONFIG_DSL_TCLINUX
@@ -29029,6 +29099,7 @@ struct mime_handler mime_handlers[] =
 	{ "get_ai_docker_images_info.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_ai_docker_images_info_cgi, do_auth},
 	{ "get_ai_docker_container.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_ai_docker_container_info_cgi, do_auth},
 	{ "ai_board_slm.cgi*", "text/html", no_cache, do_html_post_and_get, do_ai_board_slm_cgi, do_auth},
+	{ "set_AI_board_EULA.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_AI_board_EULA_cgi, do_auth },
 #endif
 #ifdef RTCONFIG_ENERGY_SAVE
 	{ "esr_get_history.cgi*", "text/html", no_cache, do_html_post_and_get, do_esr_get_history_cgi, do_auth},
@@ -29301,8 +29372,10 @@ struct mime_handler mime_handlers[] =
 	{ "upload_blacklist_config.cgi*", "text/html", no_cache, do_html_post_and_get, do_upload_blacklist_config_cgi, do_auth },
 	{ "start_config_sync.cgi*", "text/html", no_cache, do_html_post_and_get, do_start_config_sync_cgi, do_auth },
 	{ "save_all_profile.cgi*", "application/octet-stream", no_cache, do_html_post_and_get, do_save_all_profile_cgi, do_auth },
+#if 0 //Temporarily mark unused code
 #if defined(RTCONFIG_TUNNEL) && defined(RTCONFIG_ACCOUNT_BINDING)
 	{ "oauth_callback.cgi*", "text/html", no_cache, do_html_post_and_get, do_oauth_callback_cgi, do_auth },
+#endif
 #endif
 #ifdef RTCONFIG_FBWIFI
     { "aae_fbwifi2_reg.cgi*", "text/html", no_cache, do_html_post_and_get, do_aae_fbwifi2_reg_cgi, do_auth },
@@ -29317,9 +29390,11 @@ struct mime_handler mime_handlers[] =
 #ifdef RTCONFIG_SOFTWIRE46
 	{ "s46reset.cgi*", "text/html", no_cache, do_html_post_and_get, do_s46reset_cgi, do_auth },
 #endif
+#if 0 //Temporarily mark unused code
 	{ "get_lqrc.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_lqrc_cgi, NULL },
 	{ "qr_auth.cgi*", "text/html", no_cache, do_html_post_and_get, do_qr_auth_cgi, do_auth },
 	{ "chk_qr_ret.cgi*", "text/html", no_cache, do_html_post_and_get, do_chk_qr_ret_cgi, NULL },
+#endif
 #if defined(RTCONFIG_ASD) || defined(RTCONFIG_AHS)
 	{ "set_security_update.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_security_update_cgi, do_auth },
 	{ "get_security_update.cgi*", "text/html", no_cache, do_html_post_and_get, do_get_security_update_cgi, do_auth },
@@ -29347,6 +29422,7 @@ struct mime_handler mime_handlers[] =
 	{ "delArkInfo.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_del_ArkInfo_cgi, do_auth },
 	{ "getArkLog.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_ArkLog_cgi, do_auth },
 	{ "getArkLogCount.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_ArkLogCount_cgi, do_auth },
+	{ "delArkLog.cgi*", "text/html", no_cache, do_html_post_and_get, do_delArkLog_cgi, do_auth },
 #endif
 	{ "set_wl_band.cgi*", "text/html", no_cache, do_html_post_and_get, do_set_wl_band_cgi, do_auth },
 	{ NULL, NULL, NULL, NULL, NULL, NULL }
@@ -34962,6 +35038,29 @@ int get_file_md5(char *file, char *out, int len)
 		_dprintf("read hash-source error !!\n");
 
 	return -4;
+}
+
+int get_string_md5(const char *input_string, char *out, int len)
+{
+	unsigned char key[MD5_DIGEST_LENGTH] = {0};
+	MD5_CTX mdContext;
+	int i;
+
+	if (!input_string || !out || len < 33) {
+		_dprintf("get_string_md5: invalid parameters\n");
+		return -1;
+	}
+
+	memset(out, 0, len);
+
+	MD5_Init(&mdContext);
+	MD5_Update(&mdContext, input_string, strlen(input_string));
+	MD5_Final(key, &mdContext);
+
+	for(i = 0; i < 16; ++i)
+		snprintf(&out[i*2], 3, "%02x", (unsigned int)key[i]);
+
+	return 0;
 }
 
 int
@@ -41032,6 +41131,16 @@ static int ej_get_MS_WAN_list(int eid, webs_t wp, int argc, char_t **argv)
 	return 0;
 }
 
+static int ej_get_MS_WAN_Num_Pri(int eid, webs_t wp, int argc, char_t **argv)
+{
+	if(hook_get_json == 1)
+		websWrite(wp, "\"%d\"", get_ms_num(WAN_UNIT_FIRST));
+	else
+		websWrite(wp, "%d", get_ms_num(WAN_UNIT_FIRST));
+
+	return 0;
+}
+
 static int ej_get_MS_WAN_list_Pri(int eid, webs_t wp, int argc, char_t **argv)
 {
 	nvram_set("wan_unit", "0");
@@ -42942,6 +43051,7 @@ struct ej_handler ej_handlers[] = {
 #endif
 #ifdef RTCONFIG_MULTISERVICE_WAN
 	{ "get_MS_WAN_list", ej_get_MS_WAN_list},
+	{ "get_MS_WAN_Num_Pri", ej_get_MS_WAN_Num_Pri},
 	{ "get_MS_WAN_list_Pri", ej_get_MS_WAN_list_Pri},
 	{ "get_MS_WAN_list_Sec", ej_get_MS_WAN_list_Sec},
 #endif
@@ -43298,6 +43408,7 @@ struct ej_handler ej_handlers[] = {
 #ifdef RTCONFIG_AI_SERVICE
 	{ "is_ai_ssh_default", ej_is_ai_ssh_default },
 	{ "ai_adguard_home_port", ej_ai_adguard_home_port },
+	{ "is_ai_board_slm_alive", ej_is_ai_board_slm_alive },
 #endif
 	{ NULL, NULL }
 };

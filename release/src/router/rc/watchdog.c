@@ -8074,6 +8074,10 @@ void ai_service_check() {
 		logmessage("watchdog", "start ai response check daemon");
 		start_ai_response_check();
 	}
+	if (!pids("ai_request_consumer")) {
+		logmessage("watchdog", "start ai request consumer daemon");
+		start_ai_request_consumer();
+	}
 }
 #endif /* RTCONFIG_AI_SERVICE */
 
@@ -9276,7 +9280,7 @@ static void auto_firmware_check()
 					&& !nvram_get_int("webs_state_ai_error")
 					&& !nvram_safe_get("webs_state_ai_info")
 					&& !nvram_safe_get("webs_state_ai_REQinfo"))
-#if  defined(GTBE19000AI)
+#if  defined(GTBE19000AI) || defined(GTBE96_AI)
 			|| (nvram_get_int("webs_state_slmqa_update")
 					&& !nvram_get_int("webs_state_slmqa_error"))
 #endif
@@ -9330,7 +9334,7 @@ static void auto_firmware_check()
 				}
 			}
 #ifdef RTCONFIG_AI_SERVICE
-#if  defined(GTBE19000AI)
+#if  defined(GTBE19000AI) || defined(GTBE96_AI)
 			else if(nvram_get_int("webs_state_slmqa_flag") == 2)
 			{
 				FAUPGRADE_DBG("Need to upgrade SLM QA data!");

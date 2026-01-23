@@ -141,6 +141,8 @@ function initial(){
 		document.form.fb_comment.value = decodeURIComponent('<% nvram_char_to_ascii("", "fb_comment"); %>');
 	}
 
+    $("#eula_content").html(`<#ASUS_Feedback_Check#>`.replace(/\[aa\](.*?)\[\/aa\]/g, `<span class="link" onclick="showFeedbackNotice()" style="text-decoration: underline;cursor: pointer;">$1</span>`));
+
 	var policy_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang="+ui_lang+"&kw=&num=";
 	$("#eula_content").find($("a")).attr({"href": policy_href});
 	//var call_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Call&lang="+ui_lang+"&kw=&num=";
@@ -580,7 +582,11 @@ function redirect_page(flag){
 }
 
 function redirect(){
-	top.location.href = "Feedback_Info.asp";
+    if(isSupport("UI4")){
+        top.pageRedirect("settings", "Feedback_Info.asp");
+    }else{
+      top.location.href = "Feedback_Info.asp";
+    }
 }
 
 function applyRule(){
@@ -989,11 +995,6 @@ function diag_change_service_list_all() {
 		$inputHtml2.attr({"name" : "dblog_service_list"});
 		$inputHtml2.val(_value);
 		$inputHtml2.click(function() {
-			if(this.checked) {
-				if(!confirm("<#feedback_WiFi_DHD_log_confirm#>")){
-					$(".dblog_service_item.dhd").children().prop("checked", false);
-				}
-			}
 			diag_change_service_list();
 		});
 
@@ -1009,12 +1010,6 @@ function diag_change_service_list_all() {
 		}
 		$("input[name=dblog_service_list]").prop("checked", true);
 
-		if(dhdlog_support && $(".dblog_service_item.dhd").children().prop("checked")) {
-			if(!confirm("<#feedback_WiFi_DHD_log_confirm#>")){
-				$(".dblog_service_item.all").children().prop("checked", false);
-				$(".dblog_service_item.dhd").children().prop("checked", false);
-			}
-		}
 	}
 	else {
 		$("input[name=dblog_service_list]").prop("checked", false);
@@ -1069,11 +1064,6 @@ function diag_tune_service_option() {
 		$inputHtml2.attr({"name" : "dblog_service_list"});
 		$inputHtml2.val(_value);
 		$inputHtml2.click(function() {
-			if(this.checked) {
-				if(!confirm("<#feedback_WiFi_DHD_log_confirm#>")){
-					$(".dblog_service_item.dhd").children().prop("checked", false);
-				}
-			}
 			diag_change_service_list();
 		});
 
@@ -1403,9 +1393,9 @@ function detect_fb_state(){
 	<td colspan="2">
 		<div style="display: flex; align-items: center;">
 			<div id="feedback-eula-container" style="display: flex; flex-direction: row; padding: 16px;">
-				<div style="float: left;"><input type="checkbox" name="eula_checkbox"/></div>
-				<div id="eula_content" style="margin-left: 20px;"><#feedback_eula#></div>
-			</div>
+			<div style="float: left;"><input type="checkbox" name="eula_checkbox"/></div>
+			<div id="eula_content" style="margin-left: 20px;"></div>
+		</div>
 			<input class="btn_subusage button_gen" name="btn_send" onclick="applyRule()" type="button" value="<#btn_send#>"/>
 		</div>
 	</td>

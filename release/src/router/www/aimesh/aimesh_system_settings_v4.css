@@ -1,9 +1,11 @@
-﻿.system_settings_bg{
+﻿#AiMesh_System_Settings{
+	backdrop-filter: blur(10px);
+}
+.system_settings_bg{
 	margin-top: 10px;
-    border-radius: var(--global-radius);
-    border: 1px solid var(--white-alpha-40);
-    background-color: var(--white-alpha-40);
-    backdrop-filter: blur(10px);
+	border-radius: var(--global-radius);
+	border: 1px solid var(--white-alpha-40);
+	background-color: var(--white-alpha-40);
 }
 .system_settings_bg:hover{
 	background-color: #FFFFFF;

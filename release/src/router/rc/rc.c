@@ -1843,6 +1843,10 @@ static int rctest_main(int argc, char *argv[])
 			if (on) start_ai_response_check();
 			else stop_ai_response_check();
 		}
+		else if (strcmp(argv[1], "ai_request_consumer") == 0) {
+			if (on) start_ai_request_consumer();
+			else stop_ai_request_consumer();
+		}
 #endif
 #ifdef RTAC87U
 		else if (strcmp(argv[1], "watchdog02") == 0) {
@@ -3156,6 +3160,7 @@ static const applets_t applets[] = {
 #endif
 #ifdef RTCONFIG_AI_SERVICE
 	{ "ai_response_check",		ai_response_check_main		},
+	{ "ai_request_consumer",	ai_request_consumer_main	},
 	{ "ai_request",                 ai_request_main		        },
 #endif
 #ifdef RTCONFIG_CONNTRACK
@@ -3289,6 +3294,7 @@ static const applets_t applets[] = {
 #endif
 #if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
 	{ "autowan",			autowan_main			},
+	{ "dhcp_det",			dhcp_det			},
 #endif
 #ifdef RTCONFIG_CIFS
 	{ "mount-cifs",			mount_cifs_main			},
@@ -3470,6 +3476,7 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_BCM_AFC
 	{ "afc_coldreboot_monitor",	afc_coldreboot_monitor_main	},
 	{ "afc_heartbeat",		afc_heartbeat_main		},
+	{ "afc_data_collector",		afc_dc_main			},
 #endif
 #ifdef RTCONFIG_ENERGY_SAVE
 	{ "esd",				esd_main		},

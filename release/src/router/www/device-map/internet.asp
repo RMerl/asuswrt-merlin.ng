@@ -262,7 +262,7 @@ function initial(){
 		if(lanproto == "static")
 			showtext(document.getElementById("LanProto"), "<#BOP_ctype_title5#>");
 		else
-			showtext(document.getElementById("LanProto"), "<#BOP_ctype_title1#>");
+			showtext(document.getElementById("LanProto"), "<#BOP_ctype_dhcp_title1#>");
 
 		if(sw_mode == 2 || sw_mode == 4 || wlc_band != "")
 			document.getElementById('sitesurvey_tr').style.display = "";
@@ -370,7 +370,7 @@ function update_connection_type(dualwan_unit){
 	}
 
 	if(wanlink_type_conv == "dhcp")
-		wanlink_type_conv = "<#BOP_ctype_title1#>";
+		wanlink_type_conv = "<#BOP_ctype_dhcp_title1#>";
 	else if(wanlink_type_conv == "static")
 		wanlink_type_conv = "<#BOP_ctype_title5#>";
 	else if(wanlink_type_conv == "pppoe" || wanlink_type_conv == "PPPOE")

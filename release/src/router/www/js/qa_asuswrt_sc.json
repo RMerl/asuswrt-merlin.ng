@@ -1,0 +1,2160 @@
+﻿{
+    "qa_pairs": [
+        {
+            "question": "QA版本是什麼(RAG版本)？",
+            "answer": "202510-SC"
+        },
+        {
+            "question": "FW 或 fw 也被称为 firmware（固件）的缩写吗？",
+            "answer": "[metadata]id=10020,desc=get_firmware_version[/metadata]"
+        },
+        {
+            "question": "Netgear 是知名的网络品牌，类似于华硕、TP-Link、Linksys吗？",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题。[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "TP-Link、TP、tp、tp-link 是知名网络品牌，类似于华硕、Netgear、Linksys吗？",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题。[metadata]id=10030,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "Linksys 是知名网络品牌，类似于华硕、Netgear、TP-Link吗？",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题。[metadata]id=10031,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "D-Link 是知名网络品牌，类似于华硕、Netgear、TP-Link吗？",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题。[metadata]id=10032,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "华为是知名网络品牌，类似于华硕、TP-Link、Netgear吗？",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题。[metadata]id=10033,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "小米是知名网络品牌，类似于华硕、TP-Link、Netgear吗？",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题。[metadata]id=10034,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "群晖是知名网络品牌，类似于华硕、Netgear、TP-Link吗？",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题。[metadata]id=10035,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "Ubiquiti 是知名网络品牌，类似于华硕、Netgear、TP-Link吗？",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题。[metadata]id=10036,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "腾达是知名网络品牌，类似于华硕、TP-Link、D-Link吗？",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题。[metadata]id=10037,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "Google Nest WiFi 是知名网络品牌，类似于华硕、TP-Link、Netgear吗？",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题。[metadata]id=10038,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "Mercusys 是知名网络品牌，类似于华硕、TP-Link、Netgear吗？",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题。[metadata]id=10039,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "TOTOLINK 是知名网络品牌，类似于华硕、TP-Link、D-Link吗？",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题。[metadata]id=10040,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "Belkin 是知名网络品牌，类似于华硕、Linksys、Netgear吗？",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题。[metadata]id=10041,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "Zyxel 是知名网络品牌，类似于华硕、TP-Link、Netgear吗？",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题。[metadata]id=10042,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "Edimax 是知名网络品牌，类似于华硕、TP-Link、D-Link吗？",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题。[metadata]id=10043,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "路由器助手可以做什么？",
+            "answer": "我可以提供路由器系统状态简报，快速回答一些技术问题，并帮助执行部分操作。"
+        },
+        {
+            "question": "你可以做什么？",
+            "answer": "我可以提供路由器系统状态简报，快速回答一些技术问题，并帮助执行部分操作。"
+        },
+        {
+            "question": "ROG 八爪魚 7 AI (GT-BE96 AI) 路由器华硕旗舰 WiFi 7 AI 游戏路由器的主要硬件和软件特性有哪些？",
+            "answer": "ROG 八爪魚 7 AI (GT-BE96 AI) 配备四核 2.6GHz CPU，四核 Synaptics SL1680 CPU，7.9 TOPs NPU，4GB DDR4 内存，32GB eMMC 闪存；支持三频 WiFi 7，最高速率 19Gbps，支持多 VLAN，内嵌 Docker，AI 加速，适合高性能、智能家居和游戏场景。详情请参考：[ROG 八爪魚 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪魚 7 AI (GT-BE96 AI)/)。"
+        },
+        {
+            "question": "ROG 八爪魚 7 AI (GT-BE96 AI) 路由器的内存和存储规格是什么？",
+            "answer": "ROG 八爪魚 7 AI (GT-BE96 AI) 配备四核 2.6GHz CPU，四核 Synaptics SL1680 CPU，7.9 TOPs NPU，4GB DDR4 内存，32GB eMMC 闪存；支持三频 WiFi 7，最高速率 19Gbps，支持多 VLAN，内嵌 Docker，AI 加速，适合高性能、智能家居和游戏场景。详情请参考：[ROG 八爪魚 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪魚 7 AI (GT-BE96 AI)/)。"
+        },
+        {
+            "question": "ROG 八爪魚 7 AI (GT-BE96 AI) 路由器的规格是什么？",
+            "answer": "ROG 八爪魚 7 AI (GT-BE96 AI) 路由器配备四核 2.6GHz CPU，四核 Synaptics SL1680 CPU，7.9 TOPs NPU，4GB DDR4 内存，32GB eMMC 闪存；支持三频 WiFi 7，最高速率 19Gbps，支持多 VLAN，内嵌 Docker，AI 加速，适合高性能、智能家居和游戏场景。详情请参考：[ROG 八爪魚 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪魚 7 AI (GT-BE96 AI)/)。"
+        },
+        {
+            "question": "请列出该路由器的硬件规格，例如 CPU 型号/频率、内存与存储容量、以太网端口规格以及无线（WiFi）能力等。",
+            "answer": "ROG 八爪魚 7 AI (GT-BE96 AI) 路由器配备四核 2.6GHz CPU，四核 Synaptics SL1680 CPU，7.9 TOPs NPU，4GB DDR4 内存，32GB eMMC 闪存；支持三频 WiFi 7，最高速率 19Gbps，支持多 VLAN，内嵌 Docker，AI 加速，适合高性能、智能家居和游戏场景。详情请参考：[ROG 八爪魚 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪魚 7 AI (GT-BE96 AI)/)。"
+        },
+        {
+            "question": "请说明这款路由器的完整硬件规格，包括 CPU 型号与主频、内存与存储容量、各以太网端口（LAN/WAN）规格与速率，以及无线（WiFi）支持能力与最高速率等。",
+            "answer": "ROG 八爪魚 7 AI (GT-BE96 AI) 路由器配备四核 2.6GHz CPU，四核 Synaptics SL1680 CPU，7.9 TOPs NPU，4GB DDR4 内存，32GB eMMC 闪存；支持三频 WiFi 7，最高速率 19Gbps，支持多 VLAN，内嵌 Docker，AI 加速，适合高性能、智能家居和游戏场景。详情请参考：[ROG 八爪魚 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪魚 7 AI (GT-BE96 AI)/)。"
+        },
+        {
+            "question": "请说明这款路由器的完整硬件规格?",
+            "answer": "ROG 八爪魚 7 AI (GT-BE96 AI) 路由器配备四核 2.6GHz CPU，四核 Synaptics SL1680 CPU，7.9 TOPs NPU，4GB DDR4 内存，32GB eMMC 闪存；支持三频 WiFi 7，最高速率 19Gbps，支持多 VLAN，内嵌 Docker，AI 加速，适合高性能、智能家居和游戏场景。详情请参考：[ROG 八爪魚 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪魚 7 AI (GT-BE96 AI)/)。"
+        },
+        {
+            "question": "ROG 八爪魚 7 AI (GT-BE96 AI) 路由器采用了什么硬件芯片组合？",
+            "answer": "ROG 八爪魚 7 AI (GT-BE96 AI) 路由器配备四核 2.6GHz CPU，四核 Synaptics SL1680 CPU，7.9 TOPs NPU，4GB DDR4 内存，32GB eMMC 闪存；支持三频 WiFi 7，最高速率 19Gbps，支持多 VLAN，内嵌 Docker，AI 加速，适合高性能、智能家居和游戏场景。详情请参考：[ROG 八爪魚 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪魚 7 AI (GT-BE96 AI)/)。"
+        },
+        {
+            "question": "ROG 八爪魚 7 AI (GT-BE96 AI) 路由器的以太网端口规格和配置是什么？",
+            "answer": "ROG八爪魚 路由器配备 1 个 10G WAN/LAN 口，1 个 10G 游戏 LAN 口，1 个 2.5G WAN/LAN 口，3 个 2.5G LAN 口，1 个 1G LAN 口。详情请参考：[ROG 八爪魚 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪魚 7 AI (GT-BE96 AI)/)。"
+        },
+        {
+            "question": "WiFi 7（IEEE 802.11be）相比上一代有哪些核心特性和优势？",
+            "answer": "WiFi 7 支持 320MHz 超宽信道、4096-QAM 提升 20% 速率、多链路操作（MLO）实现多频段同时传输，增强 MU-MIMO 和 OFDMA，支持更多设备，延迟更低、可靠性更高，适合智能家居、物联网、AR/VR、高性能网络环境。详情请参考：[WiFi 7 介绍](https://www.asus.com/content/wifi7/)。"
+        },
+        {
+            "question": "路由器中的 WiFi Insight 智能信道切换功能是什么，有什么好处？",
+            "answer": "WiFi Insight 智能信道切换会持续监控并记录所有频段的信道变化，分析干扰源、设备连接和网络质量，主动推荐最佳信道设置，避免拥堵和干扰，提升多设备、智能家居和高流量场景下的 WiFi 稳定性和速度。详情请参考：[ROG 八爪魚 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪魚 7 AI (GT-BE96 AI)/)。"
+        },
+        {
+            "question": "什么是 Adaptive QoE？AI 流量分析和动态带宽分配如何提升网络性能？",
+            "answer": "Adaptive QoE 通过 AI 流量分析识别和分类游戏、视频、远程办公流量，动态分配带宽，优先关键任务，降低延迟和丢包，自动调整优化策略，适合高流量家庭、游戏玩家和远程办公场景。详情请参考：[ROG 八爪魚 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪魚 7 AI (GT-BE96 AI)/)。"
+        },
+        {
+            "question": "ROG 八爪魚 7 AI (GT-BE96 AI) 路由器有哪些节能硬件和软件特性？如何优化智能家居和多设备环境的能耗？",
+            "answer": "ROG 八爪魚 7 AI (GT-BE96 AI) 采用高效电源管理芯片、低功耗元件和智能散热，支持智能无线功率调节、定时 WiFi、LED(灯)、USB 操作，AI 驱动动态节能，适合长期智能家居和多设备场景。详情请参考：[ROG 八爪魚 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪魚 7 AI (GT-BE96 AI)/)。"
+        },
+        {
+            "question": "ROG 八爪魚 7 AI (GT-BE96 AI) 路由器的 AI Board 智能网络管理面板有哪些主要功能和优势？",
+            "answer": "AI Board 集成嵌入式 Docker 和 Portainer 图形化容器管理，支持资源监控、容器安装/启动/停止/删除、镜像下载、网络配置和权限控制，兼容 Home Assistant 等智能家居平台，具备自动容器健康检测、资源优化、安全隔离、自定义通知和 AI 资源分配，提升智能家居网络的可靠性和效率。详情请参考：[ROG 八爪魚 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪魚 7 AI (GT-BE96 AI)/)。"
+        },
+        {
+            "question": "ASUS [Network] 的主要功能和支持机型有哪些？如何设置？",
+            "answer": "ASUS [Network] 支持多独立网络和 VLAN，按网络分配访问权限、带宽管理和 DNS 内容过滤。主要功能包括访客门户（登录认证页）、儿童网络（定时访问和内容限制）、IoT 网络（专用 WiFi）、VPN 网络（第三方和站点到站点 VPN）、自定义网络。支持 WiFi 7 ROG 系列和部分 WiFi 6 机型。详情请参考：[[Network]](https://www.asus.com/support/faq/1049414/)。"
+        },
+        {
+            "question": "WiFi 7 的多链路操作（MLO）在 ASUS 路由器上有哪些模式？STR 和 EMLSR 有什么区别？",
+            "answer": "WiFi 7 MLO 支持 STR（同时收发）和 EMLSR（增强多链路单射频）两种模式，具体取决于客户端能力。STR 可让设备同时连接多个频段（如手机 2GHz+5GHz），EMLSR 优化多链路的建立和恢复效率，提升动态网络环境下的性能。详情请参考：[MLO](https://www.asus.com/support/faq/1053342/)。"
+        },
+        {
+            "question": "什么是 VLAN？ASUS 路由器上的 trunk 和 access 端口如何工作？典型应用场景有哪些？",
+            "answer": "VLAN（虚拟局域网）将物理网络分割为隔离的逻辑子网，提升流量管理和安全性。ASUS 路由器上的 trunk 端口（带标签）可传输多个 VLAN，常用于设备间连接；access 端口（无标签）只传输单一 VLAN，常用于终端设备。详情请参考：[VLAN](https://www.asus.com/support/faq/1049415/)。"
+        },
+        {
+            "question": "如何通过 Web GUI 手动升级 ASUS 路由器固件并恢复出厂设置？",
+            "answer": "用网线或 WiFi 连接路由器，访问 Web GUI（[ASUSWRT](http://www.asusrouter.com)），登录后进入管理 > 固件升级，弹窗提示有新固件时点击 [Go] 进入升级页面，检查更新并等待完成。[metadata]id=10013,desc=firmware_update[/metadata]"
+        },
+        {
+            "question": "ASUS 路由器有哪些重置方法？各自适用什么场景？",
+            "answer": "可通过 Web GUI、App 重置（能进入设置页面时），或按实体 RESET 按钮（如忘记密码或升级失败无法进入 Web GUI 时）。"
+        },
+        {
+            "question": "如何访问 ASUS 路由器 Web GUI？",
+            "answer": "确保路由器已开机且 (LED灯) 稳定，设备通过网线或 WiFi 连接路由器，在浏览器输入路由器 LAN IP [ASUSWRT](http://192.168.50.1) 或 [ASUSWRT](http://www.asusrouter.com) 即可访问 Web GUI。"
+        },
+        {
+            "question": "如果忘记或输错用户名密码，无法登录 ASUS 路由器 Web GUI 或 App，应该怎么办？",
+            "answer": "如无法登录或忘记账号密码，请长按 RESET 按钮 5-10 秒至电源灯闪烁，等待路由器重启后重新设置，并在 Web GUI 或 App 创建新账号和强密码。"
+        },
+        {
+            "question": "如何用 ASUS 路由器 App 设置无线接入点模式？",
+            "answer": "登录 ASUS 路由器 App，进入设置 > 系统设置 > 工作模式，选择接入点（AP）模式，点击应用并按提示完成设置。"
+        },
+        {
+            "question": "电脑无线连接路由器无法上网时应如何排查？",
+            "answer": "将路由器靠近设备，检查路由器无线 LED (灯)状态，测试其他无线设备是否同样无法上网，确认有线连接正常，确保无线网卡自动获取 IP，检查设备是否被 AiProtection 家长控制阻止。[metadata]id=10003,desc=reboot[/metadata]"
+        },
+        {
+            "question": "如何用 Web GUI 设置 AiMesh 系统？",
+            "answer": "在 App 点击右上角添加按钮并按提示操作，Web GUI 进入 AiMesh 页面点击添加 AiMesh 节点。详细教程可参考 ASUS 官方 Youtube 视频：[AiMesh 设置视频](https://youtu.be/1uFx5ZYehTE)。"
+        },
+        {
+            "question": "如何在不同条件下设置 ASUS AiMesh 或 ZenWiFi Mesh 有线回程？",
+            "answer": "将网线一端插入 AiMesh 路由器 LAN 口，另一端插入 AiMesh 节点 WAN 口，再用另一根网线连接电脑和 AiMesh 路由器。详情请参考：[ASUS AiMesh 有线回程视频](https://www.youtube.com/watch?v=hPeyu_iWUvc)。"
+        },
+        {
+            "question": "AiMesh 系统可以指定首选上行 AP 吗？",
+            "answer": "用网线或 WiFi 连接路由器，访问 Web GUI（[ASUSWRT](http://www.asusrouter.com)），登录后进入 AiMesh > 拓扑，选择目标节点，点击管理，找到 [首选 WiFi 上行 AP]，从“自动”改为指定 AP，点击确定即可。详情请参考：[ASUS AiMesh 教程视频](https://youtu.be/nUzthFL2vRY)。"
+        },
+        {
+            "question": "如何通过 Web GUI 打开路由器 LED(灯)？",
+            "answer": "进入路由器设置页面（Web GUI），导航到 AiMesh > 拓扑 > 管理 > LED，切换 LED 开关即可。[metadata]id=10008,desc=system_led_on[/metadata]"
+        },
+        {
+            "question": "WAN LED(灯) 红灯（异常）时应如何处理？",
+            "answer": "这表示网络已断开。请重启路由器和光猫，确保网线正确连接，所有线缆牢固。如问题仍未解决，可恢复出厂设置或联系运营商。[metadata]id=10003,desc=reboot[/metadata]"
+        },
+        {
+            "question": "如何通过 Web GUI 配置 HTTP 服务器端口转发？",
+            "answer": "用网线或 WiFi 连接路由器，访问 Web GUI（[ASUSWRT](http://www.asusrouter.com)），登录后进入 WAN > 虚拟服务器/端口转发，启用端口转发，点击“添加配置”，从快速选择列表选择 HTTP（80），确认端口和内网 IP 设置正确，点击确定保存。"
+        },
+        {
+            "question": "如何通过 Web GUI 设置 DHCP 服务器？",
+            "answer": "用网线或 WiFi 连接路由器，访问 Web GUI（[ASUSWRT](http://www.asusrouter.com)），登录后进入 LAN > DHCP 服务器，按需配置 DHCP 设置。详情请参考：[ASUS DHCP 服务器 FAQ](https://www.asus.com/support/faq/1011703/)。"
+        },
+        {
+            "question": "ASUS 无线路由器的 3G/4G USB 适配器兼容列表在哪里查？",
+            "answer": "请参考：[ASUS 3G/4G USB FAQ](https://www.asus.com/support/faq/1047044/)。"
+        },
+        {
+            "question": "如何通过 Web GUI 用 [Network] 设置访客门户？",
+            "answer": "进入路由器 Web 界面或 ASUS Router App，进入 [Network] > 访客门户，填写相关设置，点击应用完成。[metadata]id=10010,desc=enable_portal[/metadata]"
+        },
+        {
+            "question": "如何通过 Web GUI 设置 IoT 网络？",
+            "answer": "进入路由器 Web 界面或 ASUS Router App，进入 [Network]，点击 IoT 网络，填写相关设置，点击应用完成。"
+        },
+        {
+            "question": "如果网络卡顿且华硕路由器好像卡住了，我应该怎么做？",
+            "answer": "请尝试重启路由器和光猫，检查所有线缆是否连接牢固，断开未使用的设备，如果问题仍然存在，可以恢复路由器出厂设置。如果还是无法解决，请联系您的网络服务提供商寻求进一步协助。[metadata]id=10003,desc=reboot[/metadata]"
+        },
+        {
+            "question": "如果我的设备无法连接华硕路由器，我应该怎么办？",
+            "answer": "请尝试重启路由器，检查WiFi是否开启，确认SSID和密码是否正确，如有需要可恢复路由器出厂设置。如果问题仍然存在，请检查网线连接是否牢固，并联系您的网络服务商寻求帮助。[metadata]id=10003,desc=reboot[/metadata]"
+        },
+        {
+            "question": "如何提升华硕路由器的WiFi速度变慢的问题？",
+            "answer": "重启路由器，确保路由器放置在通风开阔的位置，减少其他电子设备干扰，断开未使用的设备，切换到较少干扰的WiFi信道，并检查线缆连接。如果问题仍然存在，可恢复路由器出厂设置或联系网络服务商。[metadata]id=10003,desc=reboot[/metadata]"
+        },
+        {
+            "question": "如果华硕路由器一直显示红灯且网络断线，我应该怎么办？",
+            "answer": "红灯表示没有网络连接。请重启路由器和光猫，检查所有线缆连接，确认WAN口已连接到光猫，更新路由器固件，尝试更换网线，如果问题仍然存在，可恢复出厂设置或联系网络服务商。[metadata]id=10003,desc=reboot[/metadata]"
+        },
+        {
+            "question": "如何优化华硕路由器连接，减少玩网络游戏时的延迟？",
+            "answer": "请开启Adaptive QoE（游戏模式）以优先处理游戏流量，建议设备使用有线连接而非WiFi。如果仍需使用WiFi，建议选择5GHz或6G(注意：中国大陆尚未开放 WiFi 6GHz），并将路由器放在开阔位置以减少干扰。[metadata]id=10004,desc=qos_game_mode_on[/metadata]"
+        },
+        {
+            "question": "如果华硕路由器的LED灯一直亮影响睡眠，如何关闭或调暗？",
+            "answer": "进入路由器设置页面（Web GUI），导航到AiMesh > 拓扑 > 管理 > LED(灯)，切换LED(灯)开关即可关闭或开启。[metadata]id=10009,desc=system_led_off[/metadata]"
+        },
+        {
+            "question": "如果我的IP摄像头无法连接网络，我可以采取哪些措施？",
+            "answer": "请重启IP摄像头和路由器，确保WiFi账号密码正确，检查路由器是否启用MAC地址过滤，尝试将摄像头靠近路由器，更新设备固件，如有需要可恢复摄像头出厂设置。如果问题仍然存在，可尝试有线连接或联系摄像头厂商。关闭802.11b也可能有帮助。[metadata]id=10002,desc=11b_disable[/metadata]"
+        },
+        {
+            "question": "路由器应该放在什么样的表面和环境？",
+            "answer": "请将路由器放在平整、坚硬的表面，开阔通风的位置，避免用布覆盖或放在柜子里，并远离微波炉等电子设备以减少干扰。"
+        },
+        {
+            "question": "WiFi信号掉线的常见原因有哪些，如何解决？",
+            "answer": "WiFi掉线可能由其他电子设备干扰、物理障碍物或路由器摆放不当导致。建议将路由器放在开阔位置，远离其他设备并减少障碍物。关闭802.11b也可能有帮助。[metadata]id=10002,desc=11b_disable[/metadata]"
+        },
+        {
+            "question": "每次连接网络时都卡住不响应，是否需要重启路由器来解决？",
+            "answer": "重启路由器通常可以解决网络无响应的问题。可通过路由器网页界面或断电重启。如果重启后问题仍然存在，请检查网线连接，如仍无法解决建议联系当地网络服务商。[metadata]id=10003,desc=reboot[/metadata]"
+        },
+        {
+            "question": "如果WiFi非常慢甚至无法连接，我可以采取哪些措施？",
+            "answer": "请重启路由器，确保路由器放在开阔通风的位置，远离其他电子设备，减少连接设备数量，尝试切换到较少干扰的WiFi信道，并检查线缆连接。如果问题仍然存在，可恢复出厂设置或联系网络服务商。[metadata]id=10003,desc=reboot[/metadata]"
+        },
+        {
+            "question": "目前有多少设备连接到我的网络？",
+            "answer": "[metadata]id=10012,desc=get_client_num[/metadata]"
+        },
+        {
+            "question": "路由器状态如何？",
+            "answer": "以下是状态报告：[metadata]id=10022,desc=get_system_status[/metadata]"
+        },
+        {
+            "question": "如何提升Netflix、YouTube、Amazon Prime、Apple TV、Hulu、Disney+、Twitch、Spotify、HBO、ESPN、NBA等平台的流媒体性能，解决卡顿或缓冲问题？",
+            "answer": "可在华硕路由器上开启QoE流媒体模式。QoE会优先处理流媒体流量，降低延迟，确保Netflix、YouTube、Hulu等平台播放更流畅。[metadata]id=10006,desc=qos_media_mode_on[/metadata]"
+        },
+        {
+            "question": "哪些 iPhone 型号支持 WiFi 6E？",
+            "answer": "（注意：中国大陆尚未开放 WiFi 6GHz）iPhone 15 Pro 和 15 Pro Max，以及所有 iPhone 16（除 iPhone 16e）；iPhone 17 系列、iPhone Air 及更新机型均支持。详情请参考 [Apple 支持](https://support.apple.com/guide/deployment/WiFi-specifications-for-apple-devices-dep268652e6c/web?utm_source=chatgpt.com)"
+        },
+        {
+            "question": "哪些 iPad 型号支持 WiFi 6E？",
+            "answer": "(注意：中国大陆尚未开放 WiFi 6GHz）iPad Pro 11 英寸（第 4 代）和 12.9 英寸（第 6 代）及以后机型；iPad Air 11 英寸、13 英寸（M2）及以后机型；iPad mini（A17 Pro）及以后机型。详情请参考 [Apple 支持](https://support.apple.com/guide/deployment/WiFi-specifications-for-apple-devices-dep268652e6c/web?utm_source=chatgpt.com)"
+        },
+        {
+            "question": "哪些 Mac 型号支持 WiFi 6E？",
+            "answer": "(注意：中国大陆尚未开放 WiFi 6GHz）MacBook Pro（2023 年及以后）、iMac（2023 年及以后）、Mac mini（2023 年及以后）、Mac Studio（2023 年及以后）、Mac Pro（2023 年及以后）、MacBook Air（2024 年及以后）。详情请参考 [Apple 支持](https://support.apple.com/guide/deployment/WiFi-specifications-for-apple-devices-dep268652e6c/web?utm_source=chatgpt.com)。"
+        },
+        {
+            "question": "Apple Watch 或 Apple TV 支持 WiFi 6E 吗？",
+            "answer": "(注意：中国大陆尚未开放 WiFi 6GHz）不支持——Apple 的 WiFi 6E 兼容列表不包含 Apple Watch 或 Apple TV。详情请参考 [Apple 支持](https://support.apple.com/guide/deployment/WiFi-specifications-for-apple-devices-dep268652e6c/web?utm_source=chatgpt.com)。"
+        },
+        {
+            "question": "如何命名 SSID 才能获得最佳 6E 效果？",
+            "answer": "(注意：中国大陆尚未开放 WiFi 6GHz）建议 2.4、5、6GHz 使用同一个 SSID。如果不同频段使用不同名称，Apple 设备会标记为“兼容性受限”。详情请参考 [Apple 支持](https://support.apple.com/guide/deployment/WiFi-specifications-for-apple-devices-dep268652e6c/web?utm_source=chatgpt.com)。"
+        },
+        {
+            "question": "路由器灯 LED(灯) 是红色且无法上网，下一步该怎么做？",
+            "answer": "这表示您的网络已断开。请重启路由器和光猫，确保网线从光猫 LAN 口正确连接到华硕路由器 WAN 口，并确认所有线缆连接牢固。如果问题仍未解决，可恢复出厂设置或联系运营商。[metadata]id=10003,desc=reboot[/metadata]"
+        },
+        {
+            "question": "开启 Adaptive QoE 会影响整体下载速度吗？",
+            "answer": "不会。它不是简单限制总带宽，而是智能调度流量和数据包，优化游戏等低延迟应用体验。游戏时下载任务会自动让路，没游戏时下载优先级会动态提升。"
+        },
+        {
+            "question": "Adaptive QoE 能同时优化游戏和视频会议吗？",
+            "answer": "推荐使用“AI 平衡”模式，会自动在多种应用间智能分配，无需手动切换优化模式。"
+        },
+        {
+            "question": "Adaptive QoE 的灵敏度（调节）有什么用？",
+            "answer": "这是高级选项！可以理解为 AI 管理器的“激进程度”。数值越高（趋向不敏感），AI 优先处理选定模式（如游戏）；数值越低（趋向敏感），AI 更温和。默认值 0 适合大多数场景。"
+        },
+        {
+            "question": "开启 Adaptive QoE 会让网速变快吗？",
+            "answer": "它不是提升总带宽，而是让现有带宽更高效。通过实时优先关键应用，优化设备到路由器的数据流，提升连接体验。"
+        },
+        {
+            "question": "Adaptive QoE 哪种模式最适合我？",
+            "answer": "默认的 AI 平衡模式是最均衡的设计。如果不确定需求，建议使用此模式。"
+        },
+        {
+            "question": "开启节能模式会影响网速吗？",
+            "answer": "可能会有短暂影响。系统会在低需求时启用节能模式，高流量时会自动恢复全速。"
+        },
+        {
+            "question": "节能模式效果明显吗？",
+            "answer": "节能效果因使用情况而异，整体可有效降低最高达18% 的功耗。"
+        },
+        {
+            "question": "为什么有些设备无法显示或连接 6GHz 频段？",
+            "answer": "(注意：中国大陆尚未开放 WiFi 6GHz）6GHz 是新技术（WiFi 7、WiFi 6E），您的操作系统和终端设备（如手机、笔记本）需支持 WiFi 7/6E 并安装最新驱动，否则无法使用该频段。详情请参考 [WiFi6E_介绍](https://www.asus.com/support/faq/1044648/)。"
+        },
+        {
+            "question": "如何防止路由器过热？",
+            "answer": "请确保路由器通风孔未被堵塞，并放置在通风良好的位置，避免因过热导致性能下降。"
+        },
+        {
+            "question": "设备支持 WiFi 7 但连接性能差怎么办？",
+            "answer": "可尝试在路由器设置中关闭 OFDMA（保留 MU-MIMO），部分用户反馈这样能显著提升稳定性。详情请参考 [WiFi7兼容性](https://www.asus.com/support/faq/1053365/)。"
+        },
+        {
+            "question": "Spectrum 用户如何理解蓝灯、绿灯、红灯、交替红白灯？",
+            "answer": "蓝灯或绿灯常亮表示正常；蓝灯闪烁表示设备启动或正在连接（如持续闪烁请重启或检查线缆）；红灯常亮表示连接异常（可能是服务或线路问题）；红白交替闪烁表示设备过热，应放在通风处。详情请参考 [Spectrum_support](https://www.spectrum.net/support)。"
+        },
+        {
+            "question": "如何在华硕路由器上设置链路聚合（端口绑定，LACP）连接 NAS？",
+            "answer": "将 NAS 的 LAN1 和 LAN2 用两根网线分别连接到路由器的 LAN1 和 LAN2，登录路由器 Web GUI，进入 LAN > Switch Control > Bonding/Link aggregation，启用并应用设置，然后在 NAS 设置中启用 802.3ad 链路聚合（LACP）；确认路由器和 NAS 均显示已启用。不同地区的端口编号可能不同，请参考设备说明书。详情请参考：[Teaming_port](https://www.asus.com/support/faq/1016088/)"
+        },
+        {
+            "question": "路由器一直重启怎么办？",
+            "answer": "请发送反馈给我们。[metadata]id=10021,desc=feedback[/metadata]"
+        },
+        {
+            "question": "AiMesh 节点一直断线怎么办？",
+            "answer": "请尝试断电重启 AiMesh 节点，如问题仍未解决，请发送反馈。[metadata]id=10021,desc=feedback[/metadata]"
+        },
+        {
+            "question": "智能家居设备无法连接 WiFi，有什么设置需要调整？",
+            "answer": "重启智能家居设备和路由器，确保 WiFi 账号密码正确。[metadata]id=10003,desc=reboot[/metadata]"
+        },
+        {
+            "question": "为什么戴森设备无法连接 WiFi，如何解决？",
+            "answer": "戴森设备可能因网络或设备临时故障无法连接，通常可通过断电重启戴森设备恢复连接。如果仍无法解决，可尝试重启路由器。[metadata]id=10003,desc=reboot[/metadata]"
+        },
+        {
+            "question": "IP 地址冲突（环路）是什么原因，如何解决？",
+            "answer": "IP 地址冲突是指网络中有两个或以上设备分配了相同 IP，可通过重启路由器和所有设备，让它们重新获取 DHCP 分配的 IP 来解决。"
+        },
+        {
+            "question": "有多少设备（client_num）连接到我的路由器？",
+            "answer": "[metadata]id=10012,desc=get_client_num[/metadata]"
+        },
+        {
+            "question": "我的 WAN_IP（公网 IP 地址）是多少？",
+            "answer": "[metadata]id=10018,desc=get_wan_ip[/metadata]"
+        },
+        {
+            "question": "我的 WAN_Type 是什么？",
+            "answer": "[metadata]id=10017,desc=get_wan_type[/metadata]"
+        },
+        {
+            "question": "如何与家人分享 WiFi？",
+            "answer": "这是您的 WiFi 二维码，方便快速分享。[metadata]id=10023,desc=share_wifi[/metadata]"
+        },
+        {
+            "question": "如何关闭访客门户？",
+            "answer": "进入路由器 Web 界面或 ASUS Router App，进入 [Network] > Guest Portal，填写相关设置并点击应用完成。[metadata]id=10011,desc=disable_portal[/metadata]"
+        },
+        {
+            "question": "如何关闭路由器LED(灯)？",
+            "answer": "[metadata]id=10009,desc=system_led_off[/metadata]"
+        },
+        {
+            "question": "如何关闭游戏模式？",
+            "answer": "[metadata]id=10005,desc=qos_game_mode_off[/metadata]"
+        },
+        {
+            "question": "如何关闭媒体模式？",
+            "answer": "[metadata]id=10007,desc=qos_media_mode_off [/metadata]"
+        },
+        {
+            "question": "如何启用802.11b？",
+            "answer": "[metadata]id=10001,desc=11b_enable[/metadata]"
+        },
+        {
+            "question": "如何打开路由器LED灯？",
+            "answer": "[metadata]id=10008,desc=system_led_on[/metadata]"
+        },
+        {
+            "question": "如何与朋友分享WiFi？",
+            "answer": "[metadata]id=10010,desc=enable_portal[/metadata]"
+        },
+        {
+            "question": "为什么无法通过192.168.1.1访问路由器设置页面？",
+            "answer": "您可能无法通过`192.168.1.1`访问路由器设置页面，因为大多数华硕路由器默认登录地址是[http://192.168.50.1](http://192.168.50.1)或[http://asusrouter.com](http://asusrouter.com)，请尝试这些地址，并确保您的电脑或手机已连接到路由器的WiFi或有线网络。"
+        },
+        {
+            "question": "为什么我的5GHz WiFi信号在楼上较弱？",
+            "answer": "5GHz频段速度更快但穿墙能力较弱，2.4GHz频段速度较慢但覆盖范围更广，穿透障碍物能力更强。要提升楼上的WiFi性能，可以部署AiMesh节点或WiFi扩展器，并将主路由器放在居中且较高的位置，而不是角落或地面。"
+        },
+        {
+            "question": "如何修改WiFi密码？",
+            "answer": "进入[Network]，选择主网络或访客网络，然后选择修改密码的选项。[metadata]id=10024,desc=wifi_setting[/metadata]"
+        },
+        {
+            "question": "我的设备总是断开WiFi，如何解决？",
+            "answer": "设备频繁断开WiFi可能是信号弱、附近网络干扰、设备驱动过旧或路由器设置问题。可尝试靠近路由器、重启路由器、更新固件、分开2.4GHz和5GHz频段（或启用智能连接），如仍有问题可调整信道或增加AiMesh节点/扩展器。[metadata]id=10003,desc=reboot[/metadata]"
+        },
+        {
+            "question": "什么是AiMesh，如何用多台华硕路由器实现？",
+            "answer": "AiMesh是华硕的Mesh组网功能，可将多台华硕路由器连接成一个无缝WiFi网络。使用方法：确保所有路由器支持AiMesh并升级到最新固件，设置一台为主路由器，其余恢复出厂设置并放在合适位置，通过华硕路由器App或网页界面添加为AiMesh节点，设备会自动切换到信号最强的节点。"
+        },
+        {
+            "question": "可以用路由器VPN访问流媒体服务吗？",
+            "answer": "您可以在华硕路由器上设置VPN客户端（VPN Fusion），让所有或指定设备通过VPN访问流媒体服务。请进入VPN > VPN Fusion设置VPN连接。注意并非所有VPN都能稳定绕过地区限制，流媒体速度可能受加密影响，建议选择支持目标平台的VPN服务（如Netflix、Hulu、Disney+）。[metadata]id=10025,desc=vpn_setting[/metadata]"
+        },
+        {
+            "question": "如何为Xbox或PlayStation游戏开放端口？",
+            "answer": "OpenNAT是新功能，可一键为游戏开放端口。登录[http://asusrouter.com](http://asusrouter.com)，进入OpenNAT，选择游戏和平台，输入主机IP，点击应用。如游戏未列出，可手动添加端口转发规则。[详细教程](https://www.asus.com/support/faq/1039504/)"
+        },
+        {
+            "question": "如何启用桥接模式或接入点模式（AP模式）？",
+            "answer": "在华硕路由器设置中，进入系统设置 > 工作模式，选择接入点（AP）模式，按提示完成设置。[metadata]id=10026,desc=op_mode[/metadata]"
+        },
+        {
+            "question": "路由器模式和AP模式有什么区别？",
+            "answer": "路由器模式下，设备负责NAT、DHCP、防火墙等所有网络功能，是网络的主网关；AP模式则关闭这些功能，仅作为网络扩展，将主路由器分配的IP传递给设备，适用于ISP设备已提供路由功能的场景。"
+        },
+        {
+            "question": "如何设置双WAN备份（故障转移）？",
+            "answer": "在华硕路由器网页界面进入WAN > 双WAN，启用功能，选择主连接（如以太网WAN）和备份连接（如USB或另一条以太网），选择故障转移模式，主线路断网时自动切换到备份线路，或选择负载均衡模式共享流量。"
+        },
+        {
+            "question": "如何设置PPPoE连接？",
+            "answer": "登录[http://asusrouter.com](http://asusrouter.com)，进入WAN > Internet Connection，选择PPPoE，输入ISP提供的用户名和密码，点击应用即可连接。[metadata]id=10027,desc=wan_setting[/metadata]"
+        },
+        {
+            "question": "如何修改WiFi名称（SSID）和密码？",
+            "answer": "进入[Network]，选择主网络或访客网络，然后选择修改SSID或密码的选项。[metadata]id=10024,desc=wifi_setting[/metadata]"
+        },
+        {
+            "question": "如何恢复华硕路由器出厂设置？",
+            "answer": "长按路由器上的重置（Reset）按钮约10秒，直到电源灯闪烁，即可恢复出厂设置。"
+        },
+        {
+            "question": "重置路由器 / 路由器重置 / 恢复出厂设置",
+            "answer": "长按路由器上的重置（Reset）按钮约10秒，直到电源灯闪烁，即可恢复出厂设置。"
+        },
+        {
+            "question": "重启路由器",
+            "answer": "[metadata]id=10003,desc=reboot[/metadata]"
+        },
+        {
+            "question": "华硕路由器支持WPA3安全吗，如何启用？",
+            "answer": "进入[Network]，选择主网络，选择认证方式为WPA3。[metadata]id=10024,desc=wifi_setting[/metadata]"
+        },
+        {
+            "question": "如何启用Smart Connect合并2.4GHz和5GHz（或6GHz）？",
+            "answer": "进入[Network]，选择主网络，将不同WiFi频段合并为一个网络(注意：中国大陆尚未开放 WiFi 6GHz）。[metadata]id=10024,desc=wifi_setting[/metadata]"
+        },
+        {
+            "question": "可以定时关闭WiFi（夜间定时关闭）吗？",
+            "answer": "进入[Network]，选择主网络，启用WiFi定时功能，设置开关时间段。[metadata]id=10024,desc=wifi_setting[/metadata]"
+        },
+        {
+            "question": "可以定时关闭WiFi（夜间定时关闭）吗？",
+            "answer": "进入[Network]，选择主网络，启用WiFi定时功能，设置开关时间段。[metadata]id=10024,desc=wifi_setting[/metadata]"
+        },
+        {
+            "question": "为什么我的旧设备无法连接到 5 GHz 频段？",
+            "answer": "部分旧设备不支持 5 GHz 或路由器设置了高 DFS 信道。请将华硕路由器的 5 GHz 频段固定在 **36–48** 信道以提升兼容性。"
+        },
+        {
+            "question": "华硕路由器能否搭配 Starlink 卫星网络使用？",
+            "answer": "可以，华硕路由器支持 Starlink 卫星网络。只需将 Starlink 的以太网端口（或适配器）连接到华硕路由器的 WAN 口，在华硕 Web GUI 设置 WAN 类型为 **自动 IP (DHCP)**，然后在 Starlink App 启用 **Bypass 模式**（会关闭 Starlink WiFi 和 DHCP）；如需在旁路后继续访问 Starlink App，可在华硕路由器添加静态路由。详细操作请参考 [官方华硕指南](https://www.asus.com/support/faq/1047774/)。[metadata]id=10027,desc=wan_setting[/metadata]"
+        },
+        {
+            "question": "为什么我的 WiFi 速度低于运营商套餐？",
+            "answer": "WiFi 速度低于运营商套餐可能因路由器摆放、无线干扰、距离过远、设备 WiFi 标准较旧或路由器性能有限等原因。建议将路由器放在居中位置，优先使用 5 GHz，升级固件，或用有线连接测试实际运营商速度。如使用第三方测速工具，请尝试不同测试服务器。"
+        },
+        {
+            "question": "为什么路由器会过热，如何解决？",
+            "answer": "华硕路由器在正常环境下不会过热。如果设备温度偏高，可改善周围通风环境，并偶尔重启路由器以保持稳定性能。[metadata]id=10003,desc=reboot[/metadata]"
+        },
+        {
+            "question": "为什么无法登录 http://asusrouter.com？",
+            "answer": "请确保您的设备已连接到路由器的 WiFi 或有线网络，再尝试访问。如有使用 VPN 或 DNS 服务，请先关闭后重试。"
+        },
+        {
+            "question": "如何用华硕路由器替换运营商的猫/路由器？",
+            "answer": "如运营商要求使用猫，请保留猫并将其 LAN 口连接到华硕路由器 WAN 口；如运营商直接提供以太网（无需猫），直接将网线插入华硕路由器 WAN 口，然后登录 **http://www.asusrouter.com**，设置 WAN 类型（通常为 **自动 IP** 或 **PPPoE**，视运营商而定），如只用华硕路由器请关闭运营商设备的 WiFi。为获得最佳性能，建议将运营商设备设置为桥接模式（如支持）。"
+        },
+        {
+            "question": "世界上最好的路由器是什么？",
+            "answer": "您现在使用的这台路由器就是最好的。"
+        },
+        {
+            "question": "如何关闭 802.11b？",
+            "answer": "[metadata]id=10002,desc=11b_disable[/metadata]"
+        },
+        {
+            "question": "如何重启路由器？",
+            "answer": "[metadata]id=10003,desc=reboot[/metadata]"
+        },
+        {
+            "question": "如何开启游戏模式？",
+            "answer": "[metadata]id=10004,desc=qos_game_mode_on[/metadata]"
+        },
+        {
+            "question": "如何开启媒体模式？",
+            "answer": "[metadata]id=10006,desc=qos_media_mode_on[/metadata]"
+        },
+        {
+            "question": "如何查询连接设备数量？",
+            "answer": "[metadata]id=10012,desc=get_client_num[/metadata]"
+        },
+        {
+            "question": "如何暂停上网？",
+            "answer": "[metadata]id=10014,desc=pause_internet[/metadata]"
+        },
+        {
+            "question": "如何恢复上网？",
+            "answer": "[metadata]id=10015,desc=resume_internet[/metadata]"
+        },
+        {
+            "question": "如何查询路由器 CPU 和内存信息？",
+            "answer": "[metadata]id=10016,desc=get_cpu_ram_info[/metadata]"
+        },
+        {
+            "question": "如何查询路由器 WAN 类型？",
+            "answer": "[metadata]id=10017,desc=get_wan_type[/metadata]"
+        },
+        {
+            "question": "如何查询路由器 WAN IP 地址？",
+            "answer": "[metadata]id=10018,desc=get_wan_ip[/metadata]"
+        },
+        {
+            "question": "如何查询路由器系统时间？",
+            "answer": "[metadata]id=10019,desc=get_system_time[/metadata]"
+        },
+        {
+            "question": "如何发送反馈日志给华硕？",
+            "answer": "[metadata]id=10021,desc=feedback[/metadata]"
+        },
+        {
+            "question": "路由器固件版本是多少？",
+            "answer": "您的固件版本是：[metadata]id=10020,desc=get_firmware_version[/metadata]"
+        },
+        {
+            "question": "路由器 FW 版本是多少？",
+            "answer": "您的固件版本是：[metadata]id=10020,desc=get_firmware_version[/metadata]"
+        },
+        {
+            "question": "WiFi 设置在哪里？",
+            "answer": "进入 [Network]，选择主网络或访客网络，然后选择修改密码的选项。[metadata]id=10024,desc=wifi_setting[/metadata]"
+        },
+        {
+            "question": "VPN 设置在哪里？",
+            "answer": "[metadata]id=10025,desc=vpn_setting[/metadata]"
+        },
+        {
+            "question": "如何切换工作模式？",
+            "answer": "[metadata]id=10026,desc=op_mode[/metadata]"
+        },
+        {
+            "question": "如何修改 WAN 设置？",
+            "answer": "[metadata]id=10027,desc=wan_setting[/metadata]"
+        },
+        {
+            "question": "如何修改上网设置？",
+            "answer": "[metadata]id=10027,desc=wan_setting[/metadata]"
+        },
+        {
+            "question": "哪些路由器支持 AiMesh 节点？",
+            "answer": "大多数华硕 WiFi6 和 WiFi7 路由器升级到最新固件后均支持 AiMesh。可在产品页面 [ASUS Support](https://www.asus.com/support/) 查询。"
+        },
+        {
+            "question": "路由器助手会支持其他品牌吗？",
+            "answer": "不会，仅支持华硕路由器。"
+        },
+        {
+            "question": "路由器助手会记录我的个人数据吗？",
+            "answer": "不会，不会记录个人数据。"
+        },
+        {
+            "question": "tp, tplink, tp-link, fuck, fuck you, terrorism, terrorist, bomb, explosives, grenade",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "landmine, IED, C4, TNT, detonate, jihad, isis, al-qaeda, taliban, extremist",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "radicalization, insurgent, assassination, massacre, genocide, coup, rebellion, riot, insurrection, sabotage",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "espionage, spy, hacking, cyberattack, malware, ransomware, phishing, keylogger, trojan, botnet",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "ddos, sql injection, brute force, password cracking, exploit, zero-day, backdoor",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "drug, cocaine, heroin, meth, crystal meth, ecstasy, mdma, lsd, acid, psychedelic",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "marijuana, weed, cannabis, hashish, opium, fentanyl, oxycodone, morphine, xanax, ketamine",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "rohypnol, ghb, steroid, doping, money laundering, tax evasion, insider trading, ponzi scheme, pyramid scheme, bribery",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "corruption, counterfeit, forgery, fraud, scam, phishing email, fake ID, fake passport, credit card fraud, bank hack",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "child abuse, child exploitation, cp, pedophile, grooming, trafficking, human trafficking, organ trade, forced labor, slavery",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "prostitution, escort service, brothel, sex trafficking, revenge porn, bestiality, necrophilia, incest, rape, sexual assault",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "molestation, harassment, abuse, domestic violence, hate crime, racism, racist, homophobia, anti-semitism, islamophobia",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "white supremacy, kkk, neo-nazi, extremist group, mass shooting, school shooting, firearm, gun, rifle, pistol",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "revolver, shotgun, machine gun, ak-47, ar-15, sniper rifle, silencer, ammunition, bullet, armor piercing",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "explosives manual, bomb making, chemical weapon, biological weapon, anthrax, sarin gas, mustard gas, ricin, smallpox, weaponized virus",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "nuclear weapon, dirty bomb, uranium, plutonium, radioactive",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "hacking tutorial, cracking software, warez, pirated software, torrent, illegal download, dark web, onion site, tor marketplace, hitman",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "contract killing, murder for hire, assassination service, poison, cyanide, arsenic, chloroform, torture, mutilation, suicide",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "self-harm, overdose, euthanasia, abortion pill, counterfeit money, fake diploma, fake certificate, diploma mill, illegal immigration, fake visa",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "forged document, fake license, gambling, illegal betting, sportsbook, casino rigging, match fixing, steroids for sale, hacking credit card, black market",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "darknet drug market, illegal firearm trade, phishing kit, exploit kit, malware toolkit, ddos for hire",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "How do I download av (adult video, adult content, pornography)?",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "torrent download, illegal movie download, pirated movie, free netflix movies, watch hbo free, free disney plus, cracked software, warez, scene release, camrip, bdrip, dvdrip, screener copy, pirated blu ray, pirated dvd, illegal anime streaming, free manga download, kissanime, 9anime, crunchyroll crack, pirate bay, rarbg, 1337x, yts, fmovies, putlocker, primewire, solarmovie, illegal streaming site, stream movies free, mp3 download illegal, soundcloud ripper, youtube downloader illegal, spotify crack, deezer crack, tidal rip, apple music crack, ebook piracy, z library, sci hub, libgen, project gutenberg illegal, leaked pdf, textbook torrent, course download free, udemy crack, coursera crack, onlyfans leak, onlyfans ripper, pornhub premium free, xvideos free, redtube free, xnxx, xhamster, youporn, tube8, spankwire, chaturbate crack, camgirl leak, adult torrent, hentai download, jav download, uncensored jav, hentai manga raw, 3d hentai game, adult game download, porn game crack, lewd patch, nude mod, strip mod, gta nude mod, skyrim sex mod, loverslab, f95zone, eroge download, visual novel crack, rpgmaker hentai, emulation roms, gba roms, snes roms, nes roms, ps1 bios, ps2 bios, dolphin iso download, switch roms, yuzu roms, ryujinx roms, 3ds cia files, citra roms, nintendo rom pack, romset, mame roms, retroarch bios, atari roms, sega genesis roms, dreamcast iso, psp iso download, cracked emulator, hacked rom, fan translation rom, pokemon rom hack, mario rom hack, illegal iso, bios dump, warez forum, crackwatch, cs rin ru, piracy forum, ddl forum",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "switch emu, switch emulator, switch emulation, yuzu emulator, ryujinx emulator, skyline emulator, yuzu early access, yuzu keys, ryujinx keys, switch prod keys, switch title keys, switch firmware download, nsp download, xci download, switch rom download, switch iso, switch piracy, switch crack, free switch games, pokemon switch rom, zelda switch rom, mario switch rom, smash bros rom, animal crossing rom, xenoblade rom, splatoon rom, metroid dread rom, switch warez, switch scene release, switch hack, switch jailbreak, 3ds emulator, citra emulator, citra roms, 3ds cia download, decrypted 3ds roms, pokemon 3ds rom, fire emblem 3ds rom, mario 3ds rom, luigi mansion rom, cia to 3ds, cia to cia patched, ps1 emulator, epsxe, duckstation, ps1 bios download, ps1 rom pack, ps2 emulator, pcsx2, ps2 iso download, ps2 bios, ps2 rom pack, ps3 emulator, rpcs3, ps3 iso, ps3 pkg, ps3 jailbreak, ps4 emulator fake, ps vita emulator, vita3k, psp emulator, ppsspp, psp iso download, psp roms, psp warez, xbox emulator, xemu, cxbx, xbox iso download, xbox roms, xbox 360 emulator, xenia, xbox 360 iso, xbox jtag, xbox rgh, xbox one iso, xbox crack, retroarch roms, retroarch cores, gba emulator, visualboy advance, gba rom download, gba hacks, pokemon gba hack, emerald rom hack, firered hack, nes emulator, fceux, nes roms download, snes emulator, snes9x, bsnes, snes rom pack, sega emulator, genesis roms, dreamcast emulator, nulldc, redream, dreamcast iso, gamecube emulator, dolphin emulator, dolphin iso download, mario sunshine iso, zelda wind waker iso, metroid prime iso, wii emulator, dolphin wii iso, wii roms, wii warez, cracked pc games, steam crack, denuvo crack, crackwatch, gog crack, fitgirl repack, skidrow, reloaded, codex, plaza, empress crack, steamunlocked, cs rin ru",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "Is there wifi interference from other devices?",
+            "answer": "You might go to Dashboard > WiFi insights to check if there is interference from other devices.[metadata]id=10028,desc=wifi_txop_status[/metadata]"
+        },
+        {
+            "question": "search BT, Bit torrent, torrent, p2p devices?",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "我的路由器LED异常，如何修复？",
+            "answer": "请用网线连接电脑到路由器，确保路由器和光猫已通电，将光猫连接到路由器WAN口，电脑连接到路由器LAN口，检查是否能上网，确认网络线缆正常并与运营商核实，确保RJ-45网线完好可用。详情请参考：[ASUS WAN LED FAQ](https://www.asus.com/support/faq/1030645/)。[metadata]id=10003,desc=reboot[/metadata]"
+        },
+        {
+            "question": "什么是RADIUS（Radius服务器）？",
+            "answer": "RADIUS（远程认证拨号用户服务）是一种常用于无线和网络访问认证的网络协议。"
+        },
+        {
+            "question": "如何在华硕路由器上启用端口触发？",
+            "answer": "在路由器设置中，进入WAN > 端口触发，勾选“启用端口触发”，输入所需的触发端口和入站端口，选择协议，点击“应用”保存设置。"
+        },
+        {
+            "question": "路由器的WAN IP地址有什么作用？",
+            "answer": "路由器WAN IP地址是运营商分配的上网地址，也用于访问提供服务的电脑。[metadata]id=10018,desc=get_wan_ip[/metadata]"
+        },
+        {
+            "question": "AiMesh模式下支持WPA/WPA2/WPA3企业版吗？",
+            "answer": "不支持，WPA/WPA2/WPA3企业版仅在单台路由器下可用，AiMesh模式下不可用。"
+        },
+        {
+            "question": "AiMesh系统建议设置多少个节点？",
+            "answer": "建议设置5个节点（包括主路由和其他Mesh节点），此数量适用于所有节点通过WiFi连接。如果全部采用有线回程（最多9个），数量可更多，但5个节点是系统最佳性能建议。"
+        },
+        {
+            "question": "WiFi 7（wifi7, wifi 7, 802.11be）在流媒体方面有哪些优势？",
+            "answer": "WiFi 7通过多链路操作（MLO）支持多频段同时连接，减少拥堵提升吞吐，适合高清视频和4K流媒体。4096-QAM调制技术让每次信号传输的数据更多，多设备环境下也能保持稳定流畅。"
+        },
+        {
+            "question": "为什么我的节点总是与主路由断开？",
+            "answer": "节点与主路由断开可能因距离过远、信号弱、物理障碍物、WiFi信道冲突、固件未更新、网络配置错误或连接设备过多导致。建议缩短距离、减少障碍物、切换信道、升级固件、检查网络设置并减少连接设备。[metadata]id=10003,desc=reboot[/metadata]"
+        },
+        {
+            "question": "如何在电脑或笔记本上设置ROG USB-BE92？",
+            "answer": "将ROG USB-BE92插入电脑或笔记本的USB接口（支持Type-A和Type-C），Windows 10/11系统免驱动即插即用。若需完整WiFi 7功能，请确保操作系统升级到Windows 11 24H2或更高版本。"
+        },
+        {
+            "question": "ROG 八爪魚 7 AI (GT-BE96 AI)建议搭配哪些AiMesh节点？",
+            "answer": "ROG 八爪魚 7 AI (GT-BE96 AI)最佳AiMesh节点是另一台ROG 八爪魚 7 AI (GT-BE96 AI)。也可选GT-BE98 Pro、RT-BE96U等高性能型号，保证系统兼容性和性能。"
+        },
+        {
+            "question": "什么是Mesh？与普通路由器有何区别？",
+            "answer": "Mesh是多台路由器协同工作的网络系统，覆盖范围更广、信号更强。可用多台华硕AiMesh路由器组网，消除死角。普通路由器仅单点覆盖，面积大或障碍多时信号易衰减。"
+        },
+        {
+            "question": "AiMesh系统可以混用不同型号的华硕路由器吗？",
+            "answer": "可以，AiMesh支持不同型号混搭组网。为保证稳定和性能，建议主路由和关键节点选用同型号或规格接近的路由器。"
+        },
+        {
+            "question": "忘记华硕路由器用户名和密码怎么办？",
+            "answer": "请恢复路由器出厂设置后重新配置。"
+        },
+        {
+            "question": "你知道总统身份证号码吗？",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题。[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "价格、售价、msrp、Yandex、VK、Mail.ru等相关内容？",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题。[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "911、110、64、8964等数字是什么意思？",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题。[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "什么是aiboard？",
+            "answer": "华硕AI路由器配备AIboard，是一款带NPU的强大迷你平台，适合专家用户开发和集成第三方应用。推荐使用Home Assistant和Frigate等方案，充分发挥AIboard硬件性能，实现智能家居自动化、智能视频处理等功能，让路由器成为多功能边缘计算中心。"
+        },
+        {
+            "question": "什么是Home Assistant？",
+            "answer": "Home Assistant是开源智能家居平台，可统一管理和自动化各种智能设备，支持数千种集成，涵盖照明、空调、安全等。平台本地运行，保障隐私和可靠性，是打造智能安全家庭的强大“大脑”。\n了解更多：[https://www.home-assistant.io/](https://www.home-assistant.io/)"
+        },
+        {
+            "question": "什么是Frigate？",
+            "answer": "Frigate是专注于AI目标检测的开源NVR，支持与Home Assistant集成并实时推送告警。详情见[https://frigate.video/](https://frigate.video/)"
+        },
+        {
+            "question": "需要更新aiboard固件吗？",
+            "answer": "建议定期更新AIboard固件，以获得最佳性能、安全性和新功能。可在路由器管理界面检查固件更新。"
+        },
+        {
+            "question": "重置路由器会重置aiboard吗？",
+            "answer": "不会，重置路由器不会影响aiboard。如需重置aiboard，请在aiboard网页界面操作。"
+        },
+        {
+            "question": "重置aiboard会重置路由器吗？",
+            "answer": "不会，重置aiboard不会影响路由器。如需重置路由器，请在路由器管理界面操作。"
+        },
+        {
+            "question": "哪些型号支持VLAN功能？",
+            "answer": "WiFi 7带有[Network]功能的型号和ExpertWiFi系列支持VLAN功能。"
+        },
+        {
+            "question": "什么是ASUS [Network]？",
+            "answer": "ASUS [Network]是增强版访客网络，可创建多个独立网络和VLAN组合，支持不同权限、带宽管理和内容过滤，还可专门为IoT设备设立独立网络。"
+        },
+        {
+            "question": "什么是VLAN（虚拟局域网）？",
+            "answer": "VLAN是在物理网络中划分的逻辑子网，可隔离流量、提升性能和安全性。"
+        },
+        {
+            "question": "什么是VLAN trunk端口？",
+            "answer": "VLAN trunk端口用于在一根物理线缆上传输多个VLAN流量，实现交换机或路由器间多VLAN数据同步。"
+        },
+        {
+            "question": "什么是VLAN access端口？",
+            "answer": "VLAN access端口只允许单一VLAN流量，常用于连接电脑、打印机等终端设备。"
+        },
+        {
+            "question": "VLAN配置中trunk端口和access端口有何区别？",
+            "answer": "trunk端口（带标签）可传输多个VLAN，access端口（无标签）只传输单一VLAN。"
+        },
+        {
+            "question": "华硕路由器的防火墙设置在哪里？建议开启吗？",
+            "answer": "防火墙设置在高级设置页面，默认已开启，建议保持开启以保障网络安全。"
+        },
+        {
+            "question": "华硕路由器如何关闭Telnet和SSH？",
+            "answer": "请在高级设置 > 管理 > 服务中关闭Telnet和SSH，默认均为关闭。"
+        },
+        {
+            "question": "华硕路由器如何关闭Telnet和SSH？",
+            "answer": "请在高级设置 > 管理 > 服务中关闭Telnet和SSH，默认均为关闭。"
+        },
+        {
+            "question": "如何在华硕路由器上详细设置防火墙？",
+            "answer": "1. 用网线或WiFi连接电脑到华硕路由器。2. 打开浏览器，输入 http://www.asusrouter.com 或路由器的LAN IP地址。3. 输入用户名和密码登录。4. 在Web界面进入高级设置 > 防火墙。5. 防火墙默认已开启，请确认保持开启。6. 如需IPv6防火墙，进入防火墙 > 常规标签，切换IPv6防火墙（默认开启）。7. 如需添加过滤规则，进入防火墙 > URL过滤、关键字过滤或网络服务过滤。8. 输入要屏蔽的网址、关键字或服务，点击应用保存。9. 确认防火墙设置已生效，保障网络安全。"
+        },
+        {
+            "question": "如何在华硕路由器上设置LAN DHCP服务器？",
+            "answer": "1. 用WiFi或网线连接电脑到华硕路由器。2. 打开浏览器，输入 http://www.asusrouter.com 或路由器LAN IP地址。3. 输入用户名和密码登录。4. 在Web界面进入 [LAN] > [DHCP服务器]。5. 如未开启DHCP服务器，请先启用。6. 配置DHCP参数，包括IP池起始和结束地址、租期、默认网关和DNS服务器。7. 如需手动分配IP，启用手动分配，输入设备MAC地址和要绑定的IP（确保IP在DHCP池范围内，如192.168.50.2–192.168.50.254）。8. 点击应用保存设置。路由器会自动为LAN设备分配IP地址。"
+        },
+        {
+            "question": "如何修改华硕路由器默认LAN IP地址？",
+            "answer": "1. 用网线或WiFi连接电脑到路由器。2. 打开浏览器，输入 http://www.asusrouter.com 或当前LAN IP。3. 输入用户名和密码登录。4. 进入Web界面 [LAN] 设置。5. 找到LAN IP设置区域。6. 输入新的LAN IP地址，确保不与运营商或VPN服务器网段冲突。7. 点击应用保存。8. 路由器会自动重启并用新IP地址连接，过程约2分钟。9. 重启后用新LAN IP重新登录路由器管理界面。"
+        },
+        {
+            "question": "如何在华硕路由器上设置IPTV？",
+            "answer": "1. 用WiFi或网线连接电脑到路由器。2. 打开浏览器，输入 http://www.asusrouter.com 进入Web界面。3. 输入用户名和密码登录。4. 进入高级设置 [LAN] > [IPTV]。5. 如运营商要求，选择ISP配置文件；否则选[无]（默认）。6. 如需VLAN ID，填写Internet > VID字段。7. 在[选择IPTV机顶盒端口]选择机顶盒连接的LAN口。8. 如需组播服务，启用IGMP代理和IGMP侦听。9. 如运营商要求，UDP代理（Udpxy）设为4000。10. 点击应用保存并重启路由器。IPTV服务即可正常使用。"
+        },
+        {
+            "question": "如何在华硕路由器上设置静态路由？",
+            "answer": "1. 用电脑连接路由器，打开浏览器，输入路由器LAN IP或 http://www.asusrouter.com 登录。2. 进入 [LAN] > [路由]。3. 基本配置选择[是]启用静态路由。4. 在静态路由列表填写：网络/主机IP（如第二台路由器子网192.168.100.0）、子网掩码（如255.255.255.0）、网关（第二台路由器WAN IP）、度量值（如1，可选）、接口（默认LAN）。5. 点击添加，再点击应用保存。6. 配置前确保两台路由器LAN IP网段不同，并用主路由LAN口连接副路由WAN口。7. 完成后，两台路由器下的设备可跨网段通信。"
+        },
+        {
+            "question": "如何在华硕路由器上启用Jumbo Frame？",
+            "answer": "1. 用WiFi或网线连接电脑到路由器。2. 打开浏览器，输入 http://www.asusrouter.com 或路由器LAN IP。3. 输入用户名和密码登录。4. 在Web界面进入 [LAN] > [交换机控制]。5. 找到Jumbo Frame选项并选择启用。6. 确保网络内所有设备都支持Jumbo Frame，否则可能兼容性问题。7. 点击应用保存。Jumbo Frame功能已启用。"
+        },
+        {
+            "question": "如何在华硕路由器上设置链路聚合（Bonding）？",
+            "answer": "1. 用两根网线将NAS的LAN1和LAN2分别连接到路由器的LAN1和LAN2。2. 打开浏览器，输入 http://www.asusrouter.com 或路由器LAN IP，登录。3. 进入 [LAN] > [交换机控制] > [Bonding/链路聚合]。4. 选择启用并点击应用。5. 进入NAS设置页面，启用802.3ad链路聚合（LACP）。6. 确认路由器和NAS均显示已启用。7. 注意：华硕路由器仅支持一组链路聚合（LACP），需设备支持IEEE 802.3ad标准。"
+        },
+        {
+            "question": "如何在华硕路由器上设置WAN DNS？",
+            "answer": "1. 用网线或WiFi连接电脑到路由器，打开浏览器，输入 http://www.asusrouter.com 或路由器LAN IP进入Web界面。2. 输入用户名和密码登录。3. 进入WAN > Internet Connection > WAN DNS设置。4. 固件版本高于3.0.0.4.388.xxxxx：点击[分配]选择DNS服务器，或选[手动设置]输入主/备用DNS服务器，点击[确定]再[应用]保存。5. 注意：更改DNS可能导致网络短暂断开。"
+        },
+        {
+            "question": "如何在华硕路由器上设置双WAN故障转移？",
+            "answer": "1. 用 http://www.asusrouter.com 登录路由器。2. 进入WAN > 双WAN设置。3. 启用双WAN。4. 设置主WAN（如以太网WAN或移动宽带）和备份WAN（如USB或另一条以太网）。5. 双WAN模式选择“故障转移”。6. （可选）配置Ping监控主WAN，若无响应自动切换到备份WAN。7. 可调整故障转移重试次数。8. 点击应用保存。9. 测试断开主WAN，确认路由器能自动切换到备份WAN。此设置可确保主WAN故障时网络不中断。"
+        },
+        {
+            "question": "如何在华硕路由器上设置端口触发？",
+            "answer": "1. 打开浏览器，输入 http://192.168.50.1 或 http://asusrouter.com。2. 输入用户名和密码登录。3. 进入高级设置 [WAN] > [端口触发]。4. 勾选“启用端口触发”。5. 输入触发端口和入站端口，选择协议。例如FTP服务器，触发端口填80，入站端口填21。6. 点击编辑，再点击应用保存。7. 当LAN设备访问触发端口时，路由器会自动开放对应入站端口。8. 用外网PC测试访问路由器WAN IP，确认端口触发功能正常。"
+        },
+        {
+            "question": "如何在华硕路由器上设置端口转发？",
+            "answer": "登录路由器Web界面（输入LAN IP或 http://www.asusrouter.com），输入用户名和密码。进入WAN > 虚拟服务器/端口转发，开启[启用端口转发]，点击[添加]配置。可从快速选择列表选服务（如HTTP/FTP），或手动输入外部端口、内部端口和设备IP。最后点击确定保存规则。"
+        },
+        {
+            "question": "如何在华硕路由器上设置DMZ？",
+            "answer": "先为要暴露的设备分配固定IP。进入LAN > DHCP服务器，选择设备，分配IP（如192.168.1.2），点击添加/删除，再应用。然后进入WAN > Internet > Connection > DMZ，启用DMZ，输入设备IP（如192.168.1.2），点击应用保存。"
+        },
+        {
+            "question": "如何在华硕路由器上设置DDNS？",
+            "answer": "用网线或WiFi连接电脑到路由器，打开浏览器输入路由器LAN IP或 http://www.asusrouter.com 登录。进入WAN > DDNS，启用DDNS客户端，选择DDNS服务商。配置域名（Host Name），点击应用保存。"
+        },
+        {
+            "question": "如何在华硕路由器上设置NAT穿透？",
+            "answer": "登录路由器Web界面 http://www.asusrouter.com，进入WAN > NAT穿透。可根据需要启用或关闭PPTP、L2TP、IPSec、RTSP、H.323、SIP等穿透选项。启用后可让VPN和部分应用流量穿透路由器到内网设备。"
+        },
+        {
+            "question": "AiMesh中的漫游阻止列表是什么？",
+            "answer": "漫游阻止列表可限制设备被AiMesh强制漫游。加入阻止列表的设备不会被AiMesh自动切换节点，但可自行漫游到信号更好的节点。适合希望某些设备固定连接当前节点的场景。"
+        },
+        {
+            "question": "如何关闭华硕路由器的无线信号？",
+            "answer": "登录路由器Web界面 http://www.asusrouter.com，输入用户名和密码。进入无线 > 专业设置，选择要关闭的频段（2.4GHz/5GHz/6GHz），将“启用无线电”设为否，点击应用保存(注意：中国大陆尚未开放 WiFi 6GHz）。"
+        },
+        {
+            "question": "华硕路由器的儿童WiFi是什么？",
+            "answer": "儿童WiFi是专为儿童设计的独立无线网络，统一应用家长控制规则，避免因随机MAC地址导致规则失效。支持上网时间安排、安全浏览、服务屏蔽和广告过滤，帮助家长为孩子提供安全、适龄的上网环境。"
+        },
+        {
+            "question": "华硕路由器的游戏网络是什么？",
+            "answer": "游戏网络是华硕路由器专为提升游戏体验设计的功能，提供专属游戏SSID、OPEN NAT配置、每SSID可自定义VPN、MLO多链路、专属LED指示灯等。可降低延迟、提升可靠性，为游戏设备打造专属网络环境，确保流畅连接和更好体验。"
+        },
+        {
+            "question": "华硕路由器的VPN网络是什么？",
+            "answer": "VPN网络是华硕路由器提供的安全上网方式，通过VPN加密流量，保护隐私。可为指定SSID配置VPN（支持Surfshark、NordVPN、CyberGhost、WireGuard等协议），提升在线隐私并简化VPN Fusion管理，无需每台设备单独配置。"
+        },
+        {
+            "question": "最多可创建几个MLO（多链路）网络？",
+            "answer": "最多可创建2个，一个用于无线回程，一个用于客户端连接。"
+        },
+        {
+            "question": "华硕路由器的IoT网络是什么？",
+            "answer": "IoT网络是专为智能家居设备（如摄像头、插座、传感器、温控器）设计的独立网络。通过单独SSID隔离IoT设备，提升安全性、兼容性和稳定性。主网络可用最新WiFi协议，不受IoT设备限制。"
+        },
+        {
+            "question": "如何在华硕路由器上设置WireGuard VPN服务器？",
+            "answer": "用网线或WiFi连接电脑到路由器，登录 http://www.asusrouter.com。进入 [VPN] > [VPN服务器]，启用WireGuard VPN，点击添加。一般设备点击应用保存配置，导出配置文件。手机可下载WireGuard App并扫描路由器界面二维码导入配置。其他设备导出配置文件后导入WireGuard客户端。"
+        },
+        {
+            "question": "如何将我的 WireGuard VPN 服务器分享给家人或朋友（ASUS 路由器）？",
+            "answer": "要分享 WireGuard VPN 服务器，登录华硕路由器网页管理界面，进入 [VPN] > [VPN服务器]，启用 WireGuard。添加并应用服务器配置后，点击导出按钮生成配置。移动设备可安装 WireGuard App（应用商店），在路由器界面扫码导入配置。其他设备可导出配置文件并发送给对方，在 WireGuard 客户端导入即可。"
+        },
+        {
+            "question": "ASUS 路由器上的 VPN Fusion 是什么？",
+            "answer": "VPN Fusion 是 ASUS 路由器的功能，可同时运行多个 VPN 连接和普通互联网连接。用户可灵活指定设备走 VPN 或直连互联网，适合游戏、流媒体等场景，部分设备可用 VPN 保护隐私，其他设备直连提升性能。"
+        },
+        {
+            "question": "如何在 ASUS 路由器上设置 OpenVPN 客户端？",
+            "answer": "登录 ASUS 路由器 Web 管理界面 http://www.asusrouter.com，进入 [VPN] > [VPN Fusion]，点击添加新配置，选择 OpenVPN 类型，上传 VPN 服务商提供的 .ovpn 文件，填写用户名和密码（如有），点击应用并启用。连接失败请检查网络、VPN账号、LAN IP是否冲突、VPN服务器状态及固件版本。"
+        },
+        {
+            "question": "如何在 ASUS 路由器上设置 WireGuard VPN 客户端？",
+            "answer": "用电脑连接路由器，登录 http://www.asusrouter.com，进入 [VPN] > [VPN Fusion]，点击添加配置，上传 WireGuard 服务器提供的配置文件。下方选择要使用此 VPN 的设备，启用后点击应用保存。最后点击 VPN 客户端配置启用连接。"
+        },
+        {
+            "question": "ASUS 路由器上的 WireGuard 和 OpenVPN 有什么区别？",
+            "answer": "WireGuard 和 OpenVPN 都是 ASUS 路由器支持的 VPN 协议。WireGuard 更轻量、速度更快、配置简单，适合游戏和流媒体。OpenVPN 更成熟、兼容性更广，但速度较慢、资源占用高。"
+        },
+        {
+            "question": "如何在 ASUS 路由器上屏蔽指定 App？",
+            "answer": "可在家长控制的 Web & Apps 过滤器中屏蔽指定 App。"
+        },
+        {
+            "question": "如何在 ASUS 路由器上设置 AdGuard DNS？",
+            "answer": "设置步骤：1）注册 AdGuard DNS 账号，2）在 ASUS 路由器配置 AdGuard DNS，3）如需在 [Network] 设置，4）监控流量和拦截记录，5）自定义 DNS 设置，6）如需新建 DNS 服务器，7）自定义黑名单实现高级过滤。"
+        },
+        {
+            "question": "如何设置 ASUS 路由器定时重启？",
+            "answer": "可在 ASUS Router App 或 Web 管理界面设置定时重启。App：设置 > 系统设置 > 定时重启，选择星期和时间，点击应用。Web：登录 http://www.asusrouter.com，进入 管理 > 系统，启用定时重启，选择星期和时间，点击应用。重启约需1-3分钟，建议安排在闲时。"
+        },
+        {
+            "question": "如何在 ASUS WiFi 7 路由器上设置 MAC 过滤？",
+            "answer": "WiFi 7 路由器的 MAC 过滤在 [Network] 设置中。登录 http://www.asusrouter.com，进入 [Network]，选择主网络/儿童网络/IoT/访客网络，启用 MAC 过滤，添加允许或阻止的设备 MAC 地址，应用保存。此方法替代旧型号的无线 > MAC 过滤路径。[metadata]id=10024,desc=wifi_setting[/metadata]"
+        },
+        {
+            "question": "如何查看 ASUS 路由器客户端设备连接质量？",
+            "answer": "登录 http://www.asusrouter.com，进入 [Client] 页面，可查看所有连接设备的状态和质量（RSSI），包括 IP、MAC、连接类型等，便于监控每台设备的网络表现。"
+        },
+        {
+            "question": "AiMesh 是什么？",
+            "answer": "AiMesh 是 ASUS 路由器的 Mesh 组网功能，可用多台 ASUS 路由器扩展 WiFi 覆盖。至少需两台兼容路由器，主路由器先联网，副路由器放在需要扩展的位置，按 AiMesh 按钮自动搜索主路由，按提示完成设置。AiMesh 支持无缝漫游和更优性能。"
+        },
+        {
+            "question": "我的网络状态如何？",
+            "answer": "状态：[metadata]id=10030,desc=get_link_internet[/metadata]"
+        },
+        {
+            "question": "如何发送日志给华硕？",
+            "answer": "进入管理 > 反馈，提交日志。[metadata]id=10021,desc=feedback[/metadata]"
+        },
+        {
+            "question": "居家办公、居家上班时使用 Zoom、Microsoft Teams、Google Meet、Cisco Webex、Skype、GoToMeeting、BlueJeans、Slack Huddles、RingCentral Video、Zoho Meeting、Jitsi Meet、Whereby、BigBlueButton、Lifesize、Join.me、Adobe Connect、ClickMeeting、Webex Training、Webex Events、Google Duo、Amazon Chime、UberConference、FreeConference、FreeConferenceCall、TrueConf、Pexip、Highfive、StarLeaf、VSee、Intermedia AnyMeeting、Talky、Eyeson、MeetingBurner、Fuze、Spike、Discord、TeamViewer Meeting、Chanty、Zoho Cliq、Glip、Zoho Showtime、Gather、Kumospace、Remo、Hopin、Airmeet、Around、SpatialChat、Wonder、KUDO、StreamYard、Demio、Livestorm、Crowdcast、ON24、WebinarJam 时感觉卡顿？",
+            "answer": "开启Adaptive QoE居家办公模式。[metadata]id=10031,desc=qos_wfh_mode_on[/metadata]"
+        },
+        {
+            "question": "BT、tplink、tp、netgear、links...等品牌和 ASUS 有什么区别？",
+            "answer": "每个路由器品牌都有优缺点，具体看使用场景。请咨询 ASUS 路由器相关问题。[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "LED 红灯是什么意思？",
+            "answer": "表示网络断开。请重启路由器和光猫，检查网线连接是否正确，所有线缆是否牢固。如问题仍未解决，可恢复出厂设置或联系运营商。[metadata]id=10003,desc=reboot[/metadata]"
+        },
+        {
+            "question": "路由器价格是多少？",
+            "answer": "很抱歉，我只是技术助手，无法提供价格信息，请到零售或电商平台查询。"
+        },
+        {
+            "question": "如何连接新设备到路由器？",
+            "answer": "用网线（RJ45）连接到路由器 LAN 口，或连接到路由器的 WiFi 网络。"
+        },
+        {
+            "question": "如何连接新设备到路由器？",
+            "answer": "用网线（RJ45）连接到路由器 LAN 口，或连接到路由器的 WiFi 网络。"
+        },
+        {
+            "question": "如何开启防火墙？",
+            "answer": "进入高级设置 → 防火墙 → 常规，设置启用防火墙为 ON，可选启用 DoS 防护，关闭 WAN Ping 响应，点击应用保存。"
+        },
+        {
+            "question": "如何将设备绑定到指定 AiMesh 节点？",
+            "answer": "进入 AiMesh 页面，选择 Mesh 节点，找到要绑定的设备，选择要绑定的节点。详情参考：[ASUS FAQ](https://www.asus.com/support/faq/1046957/)"
+        },
+        {
+            "question": "手机已绑定近端路由器但仍连到远端节点，如何解决？",
+            "answer": "可尝试在设备上关闭再开启 WiFi。即使已绑定，AiMesh 系统可能因信号弱或不可用自动切换节点，请确保节点信号良好或调整漫游设置提升稳定性。"
+        },
+        {
+            "question": "什么是 QoE？",
+            "answer": "Adaptive QoE 通过 AI 流量分析识别和分类游戏、流媒体、远程办公流量，动态分配带宽，优先关键任务，降低延迟和丢包，自动优化多设备场景。详情请参考：[ROG 八爪魚 7 AI (GT-BE96 AI) 官方介绍](https://rog.asus.com/networking/rog-rapture-ROG 八爪魚 7 AI (GT-BE96 AI)/)。"
+        },
+        {
+            "question": "yandex?",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "客户端",
+            "answer": "[metadata]id=10012,desc=get_client_num[/metadata]"
+        },
+        {
+            "question": "Netflix、YouTube、Amazon Prime、Apple TV、Hulu、Disney+、Twitch、Spotify、HBO、ESPN、NBA等流媒体平台很慢怎么办？",
+            "answer": "要提升流媒体性能，可在华硕路由器上开启QoE（体验优化）设置。QoE会优先处理流媒体流量，降低延迟，确保Netflix、YouTube、Hulu等平台播放更流畅。[metadata]id=10006,desc=qos_media_mode_on[/metadata]"
+        },
+        {
+            "question": "在使用 腾讯视频,爱奇艺,优酷,芒果TV,bilibili(B站),央视频,西瓜视频,咪咕视频,搜狐视频,快手,抖音,AcFun,PP视频,乐视视频,新华网客户端,人民网客户端 和其他流媒体平台时遇到滞后或缓冲问题时，如何提高流媒体性能?",
+            "answer": "要提高华硕路由器上的流媒体性能，您可以启用 QoE 流媒体模式。QoE 会优先处理流媒体流量，减少延迟，并确保在 腾讯视频、爱奇艺、优酷、芒果TV、bilibili、央视频、西瓜视频、咪咕视频、搜狐视频、快手、抖音、AcFun、PP视频、乐视视频、新华网客户端、人民网客户端 等平台上的播放更流畅。 [metadata]id=10006,desc=qos_media_mode_on[/metadata]"
+        },
+        {
+            "question": "如何添加AiMesh节点？",
+            "answer": "在App中，点击右上角添加按钮并按提示操作。Web界面进入AiMesh页面点击添加AiMesh节点。详细教程可参考ASUS官方Youtube视频：[AiMesh设置视频](https://youtu.be/1uFx5ZYehTE)。"
+        },
+        {
+            "question": "如何开启Aura（ASUS Aura RGB灯效）？",
+            "answer": "[metadata]id=10008,desc=system_led_on[/metadata]"
+        },
+        {
+            "question": "如何关闭Aura（ASUS Aura RGB灯效）？",
+            "answer": "[metadata]id=10009,desc=system_led_off[/metadata]"
+        },
+        {
+            "question": "如何添加一个新的WiFi网络？",
+            "answer": "进入[Network]，选择添加新WiFi网络的选项。[metadata]id=10024,desc=wifi_setting[/metadata]"
+        },
+        {
+            "question": "如何设置访客网络？",
+            "answer": "进入路由器Web界面或ASUS Router App，进入[Network] > 访客门户，填写相关设置，点击应用完成。[metadata]id=10024,desc=wifi_setting[/metadata]"
+        },
+        {
+            "question": "如何修改管理员名称和密码？",
+            "answer": "进入路由器Web界面或ASUS Router App，进入[管理] > 系统，修改管理员名称和密码，点击应用保存。"
+        },
+        {
+            "question": "为什么路由器自带Speedtest测速只有100Mbps，而电脑测速有500Mbps？",
+            "answer": "路由器自带测速主要用于快速检测，结果可能因路由器处理方式和测试服务器不同而偏低，并不代表实际网络性能受限。建议用电脑或手机测速，更能反映真实使用情况。"
+        },
+        {
+            "question": "如何在华硕路由器上设置VPN服务器？",
+            "answer": "连接电脑到路由器，用网线或WiFi，登录Web界面 http://www.asusrouter.com，输入用户名和密码。进入[VPN服务器]，选择协议（如OpenVPN或PPTP），点击启用。一般设备点击[应用]保存配置，导出配置文件。手机可下载VPN客户端App并导入配置文件，其他设备导出配置文件后导入VPN客户端。"
+        },
+        {
+            "question": "如何设置VPN网络？",
+            "answer": "进入路由器Web界面或ASUS Router App，打开Network → VPN网络，输入VPN设置并应用，连接到该SSID的设备会自动使用VPN。"
+        },
+        {
+            "question": "如何屏蔽Pornhub、XVideos、XHamster、RedTube、YouPorn、OnlyFans、Brazzers、BangBros、NaughtyAmerica、RealityKings等成人网站？",
+            "answer": "进入[家长控制] > [网页与应用过滤]，启用过滤功能，添加设备并选择过滤类型，点击应用保存。如需全网屏蔽，建议进入WAN > DNS设置，分配如AdGuard或Control D DNS过滤成人网站。"
+        },
+        {
+            "question": "什么是gear accelerator？",
+            "answer": "本机型不支持gear accelerator，请使用adaptive QoE优化网络性能。"
+        },
+        {
+            "question": "为什么路由器App提示LAN口连接后又断开两次再重连？",
+            "answer": "部分网卡型号可能出现类似问题。Windows用户可在设备管理器 > 网络适配器 > 右键USB Realtek网卡 > 属性 > 电源管理，取消“允许计算机关闭此设备以节省电源”，点击确定。"
+        },
+        {
+            "question": "什么是WTFast？",
+            "answer": "本机型不支持WTFast，请使用adaptive QoE优化网络性能。"
+        },
+        {
+            "question": "ROG 八爪魚 7 AI (GT-BE96 AI)内容过滤最多可屏蔽多少应用？",
+            "answer": "最多可屏蔽161个应用。"
+        },
+        {
+            "question": "家长控制定时功能为何不生效？",
+            "answer": "请确认定时规则设置正确，检查孩子设备是否关闭“私有地址/随机MAC”，更新路由器固件并重启路由器。"
+        },
+        {
+            "question": "请阻止未知设备连接。",
+            "answer": "可在[Network]启用MAC过滤，选择主网络、儿童网络、IoT或访客网络，添加允许或阻止的设备MAC地址并应用设置，防止未授权设备连接。[metadata]id=10024,desc=wifi_setting[/metadata]"
+        },
+        {
+            "question": "哪些设备当前连接到我的WiFi？",
+            "answer": "登录路由器Web界面，进入“网络地图”或“客户端列表”可查看所有连接设备及其IP和MAC地址。[metadata]id=10012,desc=get_client_num[/metadata]"
+        },
+        {
+            "question": "请限制某台电脑的网络速度。",
+            "answer": "登录路由器Web界面，进入adaptive QoE > 带宽限制，找到目标设备并设置最大带宽限制。"
+        },
+        {
+            "question": "本机有哪些独特功能？",
+            "answer": "本机具备高级家长控制、adaptive QoE智能优化、WiFi insight、AiBoard专家功能等，支持自定义网络体验和安全高效上网环境。"
+        },
+        {
+            "question": "有未知设备连接到我的WiFi怎么办？",
+            "answer": "1. 登录路由器Web界面。2. 查看客户端列表识别设备。3. 启用MAC过滤并将该设备加入黑名单。4. 建议更改WiFi密码并启用WPA3加密提升安全性。"
+        },
+        {
+            "question": "我的aiboard IP地址是多少？",
+            "answer": "可在系统日志 > DHCP租约中查看。[metadata]id=10033,desc=get_aiboard_ip[/metadata]"
+        },
+        {
+            "question": "可以现在运行WiFi性能测试吗？",
+            "answer": "建议先升级固件，并关闭不必要功能如AiProtection、QoE、家长控制、VPN等再测试。[metadata]id=10013,desc=firmware_update[/metadata]"
+        },
+        {
+            "question": "你的版本是多少？",
+            "answer": "[metadata]id=10020,desc=get_firmware_version[/metadata]"
+        },
+        {
+            "question": "节能模式最多能节省多少百分比？",
+            "answer": "开启节能模式最多可节省30%能耗，实际节省比例因使用和环境而异。"
+        },
+        {
+            "question": "如何启用WiFi insight？",
+            "answer": "可进入Dashboard > WiFi insight查看是否有其他设备干扰。"
+        },
+        {
+            "question": "什么是签名版本？",
+            "answer": "签名版本是AiProtection安全数据库的版本，用于保护网络免受威胁。"
+        },
+        {
+            "question": "应否关闭自动固件升级？",
+            "answer": "关闭自动固件升级可能导致路由器无法及时获得安全更新和新功能，建议保持开启以保障性能和安全。"
+        },
+        {
+            "question": "什么是流量分析器？",
+            "answer": "流量分析器可监控网络流量，帮助识别带宽占用设备并优化网络性能。"
+        },
+        {
+            "question": "WPS是什么？",
+            "answer": "WPS（WiFi保护设置）是一种无线安全标准，可通过按路由器按钮快速连接设备，无需输入密码。默认关闭以提升安全性，如需可在设置中开启。"
+        },
+        {
+            "question": "什么是Aura RGB？",
+            "answer": "华硕游戏路由器支持Aura RGB灯效，可自定义灯光效果，搭配游戏设备。"
+        },
+        {
+            "question": "用户手册在哪里找？",
+            "answer": "可在ASUS官网支持页面搜索路由器型号，下载用户手册。[ASUS Support](https://www.asus.com/support/)"
+        },
+        {
+            "question": "什么是AiProtection？",
+            "answer": "AiProtection是华硕路由器集成的安全功能，具备恶意网站拦截、双向IPS、追踪器和广告拦截等，保护网络安全。"
+        },
+        {
+            "question": "FAQ在哪里找？",
+            "answer": "可在ASUS官网支持页面搜索路由器型号，查看FAQ和相关资源。[ASUS Support](https://www.asus.com/support/)"
+        },
+        {
+            "question": "我不知道问什么？",
+            "answer": "可以先深呼吸，等有问题时再来咨询。"
+        },
+        {
+            "question": "我没有问题要问？",
+            "answer": "可以先深呼吸，等有问题时再来咨询。"
+        },
+        {
+            "question": "我的 WiFi 状态如何，有干扰吗？",
+            "answer": "[metadata]id=10028,desc=wifi_txop_status[/metadata]"
+        },
+        {
+            "question": "你会支持 merlin asuswrt 或 merlin 固件吗？",
+            "answer": "我们会尽力支持 asuswrt 和 merlin 固件，但无法保证所有功能完全兼容。详情请参考 Merlin 官方网站。"
+        },
+        {
+            "question": "哪里可以找到华硕路由器教程视频？",
+            "answer": "你可以在这里找到教程视频：[ASUS Support](https://www.youtube.com/@asus_support)。"
+        },
+        {
+            "question": "华硕 AI 路由器最好的功能是什么？",
+            "answer": "WiFi insight 是其中之一，可以实时检测来自其他设备的 WiFi 干扰，帮助你找到最佳信道。还能检测微波炉、蓝牙、无线摄像头等外部设备的干扰。"
+        },
+        {
+            "question": "为什么无法通过网页手动升级固件？",
+            "answer": "请确保固件文件适用于你的路由器型号，检查网络连接，清除浏览器缓存，尝试不同浏览器，并确保路由器有足够存储空间（可暂时关闭流量分析和 AiProtection）。如问题仍在，建议恢复出厂设置。"
+        },
+        {
+            "question": "为什么关键字或网址过滤功能不正常？",
+            "answer": "请确保关键字或网址输入正确，无拼写错误，并正确配置过滤设置。如问题仍在，可考虑使用 AdGuard DNS 或 Control D 过滤不需要的网站。"
+        },
+        {
+            "question": "如何使用 AdGuard DNS 或 Control D 过滤不需要的网站？",
+            "answer": "AdGuard DNS 是一种提供广告拦截和隐私保护的 DNS 服务，通过在 DNS 层过滤广告、追踪和恶意域名请求，帮助屏蔽广告和有害内容。详情见 [ASUS FAQ](https://www.asus.com/support/faq/1051213/)"
+        },
+        {
+            "question": "路由器可以用 IPv6 吗？",
+            "answer": "可以，确保你的运营商支持 IPv6 并在路由器设置中启用。详情请参考：[ASUS IPv6 FAQ](https://www.asus.com/support/faq/113990/)"
+        },
+        {
+            "question": "什么是 ROG first？",
+            "answer": "你是 ROG 用户吗？如果是，你的 ROG 设备会在本路由器上优先处理。"
+        },
+        {
+            "question": "什么是 GTnet？",
+            "answer": "GTnet 是一种新的游戏加速技术，优化游戏应用的网络流量，降低延迟并提升整体游戏性能。"
+        },
+        {
+            "question": "什么是 gameboost？",
+            "answer": "Game boost 已升级为 adaptive QoE，通过 AI 流量分析识别和分类游戏、流媒体、远程办公流量，动态分配带宽，优先关键任务，降低延迟和丢包，自动优化多设备场景，适合高流量家庭、游戏玩家和远程办公。"
+        },
+        {
+            "question": "可以切换到深色主题吗？",
+            "answer": "暂不支持，未来可能会有。"
+        },
+        {
+            "question": "调制解调器和路由器有什么区别？",
+            "answer": "调制解调器负责将家庭连接到运营商的互联网，路由器则通过 WiFi 或网线将互联网分发给各设备。"
+        },
+        {
+            "question": "WiFi 5、WiFi 6 和 WiFi 7 有什么区别？",
+            "answer": "WiFi 5 较旧，速度慢延迟高；WiFi 6 增加 OFDMA 和多设备性能；WiFi 7 支持4096-QAM 和多链路操作，速度更快更稳定。"
+        },
+        {
+            "question": "为什么离路由器越远 WiFi 速度越慢？",
+            "answer": "WiFi 信号距离越远会变弱，被墙体、地板和家具吸收或阻挡，导致速度和覆盖变差。"
+        },
+        {
+            "question": "双频或三频路由器有什么作用？",
+            "answer": "双频路由器支持 2.4GHz 和 5GHz，三频路由器增加一个频段（5GHz 或 6GHz），减少拥堵提升性能(注意：中国大陆尚未开放 WiFi 6GHz）。"
+        },
+        {
+            "question": "为什么 2.4GHz 和 5GHz 网络覆盖范围不同？",
+            "answer": "2.4GHz 覆盖更远、穿墙能力强，5GHz 速度快但范围短，因频率更高。"
+        },
+        {
+            "question": "MU-MIMO 和 OFDMA 有什么区别？",
+            "answer": "MU-MIMO 让多个设备同时接收数据，OFDMA 将 WiFi 信道分成更小子信道，提升多设备效率。"
+        },
+        {
+            "question": "为什么有线比 WiFi 快？",
+            "answer": "有线连接干扰少、延迟低更稳定，WiFi 易受距离、障碍物和其他设备影响。"
+        },
+        {
+            "question": "什么是 WiFi 死角？",
+            "answer": "死角是家中 WiFi 信号太弱或被阻挡的区域，通常因距离远、墙体或干扰造成。"
+        },
+        {
+            "question": "常见 WiFi 干扰源有哪些？",
+            "answer": "微波炉、无线电话、蓝牙设备和邻居 WiFi 都会干扰信号，降低速度和稳定性。"
+        },
+        {
+            "question": "WPA3 比 WPA2 有什么优势？",
+            "answer": "WPA3 加密更强，防止密码猜测，对 IoT 设备安全性更高。"
+        },
+        {
+            "question": "为什么微波炉开时 WiFi 会断？",
+            "answer": "微波炉工作频率接近 2.4GHz，会干扰同频段 WiFi 信号，导致临时断线。"
+        },
+        {
+            "question": "什么是 WiFi 波束成形（beamforming）？",
+            "answer": "波束成形技术将 WiFi 信号定向传输到设备，提高速度和覆盖范围。"
+        },
+        {
+            "question": "IPv4 和 IPv6 有什么区别？",
+            "answer": "IPv4 用 32 位地址，数量有限；IPv6 用 128 位地址，地址更多，未来扩展性更好。"
+        },
+        {
+            "question": "什么是路由器上的 QoS？",
+            "answer": "QoS（服务质量）可优先处理特定设备或应用流量，如游戏或视频，减少卡顿和延迟。"
+        },
+        {
+            "question": "为什么手机 WiFi 比笔记本快？",
+            "answer": "不同设备 WiFi 芯片性能不同，笔记本可能用旧适配器或天线较弱，手机更现代。"
+        },
+        {
+            "question": "为什么晚上 WiFi 变慢？",
+            "answer": "晚上邻居上网人数多，运营商网络拥堵，导致速度下降。"
+        },
+        {
+            "question": "为什么手机会自动切换 WiFi 和移动数据？",
+            "answer": "手机检测到 WiFi 信号弱或不稳定时，会自动切换到移动数据以保证连接可靠。"
+        },
+        {
+            "question": "使用 6GHz WiFi 有什么好处？",
+            "answer": "(注意：中国大陆尚未开放 WiFi 6GHz）6GHz WiFi（WiFi 6E/7）干扰少、信道更宽、延迟更低，比 2.4GHz 和 5GHz 更快。"
+        },
+        {
+            "question": "为什么有些设备只能看到 2.4GHz 网络？",
+            "answer": "旧设备或 IoT 设备只支持 2.4GHz，兼容性更好但速度较慢。"
+        },
+        {
+            "question": "什么是路由器固件升级？",
+            "answer": "固件升级可提升性能、修复漏洞、增加安全补丁，有时还能解锁新功能。"
+        },
+        {
+            "question": "为什么 WiFi 速度和有线测速不同？",
+            "answer": "有线更稳定，干扰少；WiFi 受距离、障碍物和无线拥堵影响，速度可能较慢。"
+        },
+        {
+            "question": "SSID 和密码有什么区别？",
+            "answer": "SSID 是 WiFi 网络名称，密码是连接该网络的安全密钥。"
+        },
+        {
+            "question": "为什么看到多个同名 WiFi 网络？",
+            "answer": "可能有 AiMesh 节点、扩展器或附近网络使用同样 SSID，设备会根据信号强度自动切换。"
+        },
+        {
+            "question": "关闭 WiFi 有什么好处？",
+            "answer": "关闭 WiFi 可省电、减少干扰，也能提升安全性（不使用时）。"
+        },
+        {
+            "question": "为什么我的智能电视在观看流媒体时会缓冲？",
+            "answer": "如果WiFi信号弱、运营商速度太低或其他设备同时占用带宽，流媒体播放就会缓冲。"
+        },
+        {
+            "question": "什么是NAT类型，为什么对游戏很重要？",
+            "answer": "NAT（网络地址转换）类型影响主机与其他玩家的连接。开放型NAT最适合游戏，严格型NAT可能限制多人连接。"
+        },
+        {
+            "question": "静态IP和动态IP有什么区别？",
+            "answer": "静态IP是手动设置且不会变化，动态IP由运营商自动分配，可能会变化。"
+        },
+        {
+            "question": "什么是DNS，为什么要更换DNS？",
+            "answer": "DNS（域名系统）将网站名转换为IP地址。更换为更快或更稳定的DNS服务器可提升上网速度和稳定性。"
+        },
+        {
+            "question": "路由器链路聚合有什么好处？",
+            "answer": "链路聚合将两个LAN口合并为一个逻辑连接，为NAS等设备提供更高带宽和冗余。"
+        },
+        {
+            "question": "trunk端口和access端口有什么区别？",
+            "answer": "trunk端口可传输多个带标签的VLAN，常用于设备间连接；access端口只传输单一VLAN，通常用于终端设备。"
+        },
+        {
+            "question": "什么是ping，为什么很重要？",
+            "answer": "ping用于测量数据往返服务器的时间。ping值低表示延迟小，对游戏和视频通话很关键。"
+        },
+        {
+            "question": "为什么路由器有QoS设置？",
+            "answer": "QoS（服务质量）可优先处理游戏、流媒体或办公流量，网络繁忙时减少卡顿和缓冲。"
+        },
+        {
+            "question": "什么是WiFi信道绑定？",
+            "answer": "信道绑定将两个或多个信道合并为更宽的信道，提高WiFi速度，但更易受干扰影响。"
+        },
+        {
+            "question": "IPv4 NAT和IPv6有什么区别？",
+            "answer": "IPv4 NAT让多个设备共享一个公网IP，IPv6为每个设备分配唯一公网IP，减少NAT需求，提升直连能力。"
+        },
+        {
+            "question": "什么是缓冲膨胀（bufferbloat），对游戏有何影响？",
+            "answer": "缓冲膨胀是路由器或猫缓存过多数据导致高延迟，会造成游戏和视频通话卡顿。[metadata]id=10004,desc=qos_game_mode_on[/metadata]"
+        },
+        {
+            "question": "为什么我的智能灯泡无法连接WiFi？",
+            "answer": "大多数智能灯泡只支持2.4GHz WiFi，设置时请确保手机和路由器都在2.4GHz频段。"
+        },
+        {
+            "question": "为什么我的智能插座总是断线？",
+            "answer": "智能插座距离路由器太远或干扰严重时会断线。可尝试靠近路由器或增加Mesh节点。关闭802.11b也可能有帮助。[metadata]id=10002,desc=11b_disable[/metadata]"
+        },
+        {
+            "question": "为什么我的IP摄像头无法在WiFi上显示？",
+            "answer": "IP摄像头可能需要手动设置或2.4GHz WiFi。检查路由器是否启用MAC过滤，设置时请关闭。关闭802.11b也可能有帮助。[metadata]id=10002,desc=11b_disable[/metadata]"
+        },
+        {
+            "question": "为什么我的智能家居设备只能在路由器附近工作？",
+            "answer": "许多物联网设备天线较弱，2.4GHz效果更好。可用Mesh或扩展器提升远距离覆盖。"
+        },
+        {
+            "question": "为什么无法添加新智能设备到网络？",
+            "answer": "请检查网络是否隐藏、是否只用WPA3加密或分多个SSID。有些物联网设备只支持WPA2和可见SSID。"
+        },
+        {
+            "question": "为什么我的扫地机器人会掉线？",
+            "answer": "扫地机器人经常换房间，可能超出WiFi覆盖范围。请确保Mesh覆盖所有区域。"
+        },
+        {
+            "question": "为什么智能家居网关找不到设备？",
+            "answer": "请确保网关和设备在同一WiFi频段和子网。如果网关有线连接，确认与WiFi设备在同一网络。"
+        },
+        {
+            "question": "为什么我的智能电视在流媒体时会缓冲？",
+            "answer": "智能电视需要稳定带宽。建议用5GHz WiFi或有线连接提升流畅度。"
+        },
+        {
+            "question": "为什么我的智能音箱有时不响应？",
+            "answer": "WiFi拥堵时智能音箱可能掉线。可为其分配静态IP或靠近路由器。"
+        },
+        {
+            "question": "智能家居设备用哪个WiFi频段最好？",
+            "answer": "(注意：中国大陆尚未开放 WiFi 6GHz）大多数物联网设备用2.4GHz覆盖更远，摄像头或电视等高带宽设备建议用5GHz或6GHz。"
+        },
+        {
+            "question": "路由器随机重启怎么办？",
+            "answer": "电源不稳、过热或固件过旧会导致重启。请确保通风良好、升级固件并尝试更换电源适配器。"
+        },
+        {
+            "question": "为什么WiFi很慢但没人用？",
+            "answer": "后台更新、干扰或运营商问题可能导致变慢。重启路由器、切换信道并用有线测试确认。"
+        },
+        {
+            "question": "为什么设备经常断开WiFi？",
+            "answer": "信号弱、干扰或驱动过旧会导致频繁断线。靠近路由器、升级固件、必要时分开2.4/5GHz频段。"
+        },
+        {
+            "question": "为什么无法用192.168.1.1登录路由器？",
+            "answer": "多数华硕路由器默认地址是192.168.50.1或asusrouter.com，请确保设备已连接路由器网络。"
+        },
+        {
+            "question": "WiFi正常但无法访问部分网站？",
+            "answer": "可能是DNS问题。可尝试更换为阿里云公共DNS（223.5.5.5）或腾讯云公共DNS（119.29.29.29）等公共DNS。"
+        },
+        {
+            "question": "为什么路由器会过热？",
+            "answer": "路由器放在封闭空间易过热。请确保通风孔畅通并放在通风开阔处。"
+        },
+        {
+            "question": "为什么视频通话在WiFi下总是掉线？",
+            "answer": "视频通话对延迟和丢包敏感。建议用5GHz WiFi、为会议应用开启QoS或用有线连接。"
+        },
+        {
+            "question": "WiFi正常但有线网络无法使用怎么办？",
+            "answer": "有线问题可能是网线损坏、LAN口禁用或网络设置错误。请更换网线并确认端口已启用。"
+        },
+        {
+            "question": "为什么WiFi几分钟后消失？",
+            "answer": "可能是固件损坏或设备不稳定。重启路由器、升级固件或恢复出厂设置。"
+        },
+        {
+            "question": "什么是DFS信道，为什么用它时5GHz WiFi会断线？",
+            "answer": "DFS（动态频率选择）信道与雷达系统重叠，路由器需暂停WiFi扫描雷达，可能导致断线。建议用36–48等非DFS信道。"
+        },
+        {
+            "question": "为什么WiFi 6路由器有时比WiFi 5慢？",
+            "answer": "WiFi 6优化多设备场景，少量旧设备可能无法受益，协议开销有时会降低峰值速度。"
+        },
+        {
+            "question": "什么是双重NAT，对游戏有什么影响？",
+            "answer": "双重NAT是运营商和自己路由器都做NAT，会阻碍端口转发，导致游戏NAT类型严格。将运营商设备设为桥接模式可解决。"
+        },
+        {
+            "question": "为什么路由器VPN下WiFi速度变慢？",
+            "answer": "路由器VPN会加密所有设备流量，消耗大量CPU，硬件性能有限时速度会下降。"
+        },
+        {
+            "question": "为什么有些设备WiFi信号好但延迟高？",
+            "answer": "高延迟可能由缓冲膨胀、QoS设置不当或干扰引起。可用SQM或自适应QoS降低ping波动。"
+        },
+        {
+            "question": "160MHz和80MHz信道有什么区别？",
+            "answer": "160MHz信道带宽是80MHz的两倍，速度更快，但更易受干扰，并非所有设备都支持。"
+        },
+        {
+            "question": "为什么Mesh节点回程速度很低？",
+            "answer": "节点无线连接在拥堵频段时回程性能会下降。建议用有线回程或将节点放近提升稳定性。"
+        },
+        {
+            "question": "为设备分配静态IP有什么好处？",
+            "answer": "静态IP可防止设备地址变化，便于端口转发、服务器、打印机和智能家居设备固定网络位置。"
+        },
+        {
+            "question": "为什么路由器CPU占用很高？",
+            "answer": "高CPU占用可能由VPN加密、AiProtection扫描或连接数过多引起。可查日志、关闭不用功能或升级硬件。"
+        },
+        {
+            "question": "为什么WiFi下载快但上传慢？",
+            "answer": "上传更易受干扰和天线影响，部分运营商也限制上传速度。用5GHz或有线连接可改善。"
+        },
+        {
+            "question": "为什么用蓝牙耳机时WiFi会掉线？",
+            "answer": "2.4GHz WiFi和蓝牙频段重叠，蓝牙使用多时会干扰WiFi。建议设备切换到5GHz。"
+        },
+        {
+            "question": "什么是VLAN标签，为什么有些运营商要求？",
+            "answer": "部分运营商用VLAN ID区分互联网、IPTV或语音服务。路由器需正确打标签才能正常上网。"
+        },
+        {
+            "question": "为什么测速时抖动（jitter）很高但带宽正常？",
+            "answer": "高抖动表示延迟不稳定，常因拥堵、缓冲膨胀或干扰。可开启QoS并用有线连接改善。"
+        },
+        {
+            "question": "为什么路由器运行P2P或BT时会重启？",
+            "answer": "P2P连接数多，易导致路由器内存或NAT表溢出。可开启NAT加速或用高端路由器。"
+        },
+        {
+            "question": "WPA2-PSK和WPA2-Enterprise有什么区别？",
+            "answer": "WPA2-PSK用共享WiFi密码，WPA2-Enterprise用RADIUS服务器为每台设备单独认证，安全性更高，适合企业。"
+        },
+        {
+            "question": "什么是IPTV，如何设置？",
+            "answer": "IPTV（网络电视）通过互联网传输电视内容。设置方法：进入[LAN] > [IPTV]，选择运营商配置或自定义设置并应用。如需，将IPTV设备连接指定LAN口。"
+        },
+        {
+            "question": "IPTV能通过WiFi连接吗？",
+            "answer": "大多数IPTV机顶盒需用网线连接。但如运营商支持WiFi连接，可将IPTV设备连到WiFi。请咨询服务商确认。"
+        },
+        {
+            "question": "华硕路由器安全吗？",
+            "answer": "华硕路由器具备多种安全功能，如WPA3加密、AiProtection和定期固件更新。建议用户更改默认密码并关闭WPS。"
+        },
+        {
+            "question": "为什么要更改默认路由器密码？",
+            "answer": "默认密码容易被攻击者猜到。更换为强密码可保护家庭网络安全。"
+        },
+        {
+            "question": "是否应关闭路由器WPS？",
+            "answer": "建议关闭。WPS（WiFi保护设置）虽方便但易被暴力破解，关闭更安全。"
+        },
+        {
+            "question": "为什么WPA3比WPA2更好？",
+            "answer": "WPA3加密更强，防止密码破解，对物联网设备安全性更高。"
+        },
+        {
+            "question": "使用访客WiFi有什么好处？",
+            "answer": "访客WiFi将访客与主设备隔离，降低恶意软件传播或访问个人文件的风险。"
+        },
+        {
+            "question": "路由器固件要保持最新吗？",
+            "answer": "是的。固件更新可修复安全漏洞和提升稳定性，过时固件易被攻击。"
+        },
+        {
+            "question": "为什么要关闭路由器远程管理？",
+            "answer": "远程管理允许互联网访问路由器。若无需求建议关闭，防止被黑客利用。"
+        },
+        {
+            "question": "如何让WiFi密码更强？",
+            "answer": "建议12位以上，包含大小写字母、数字和符号。不要用生日或姓名等个人信息。"
+        },
+        {
+            "question": "是否要隐藏WiFi SSID？",
+            "answer": "隐藏SSID可防止被随意发现，但不是强安全措施。建议用WPA2/WPA3和强密码。"
+        },
+        {
+            "question": "为什么重要设备建议用有线连接？",
+            "answer": "有线连接不易被截获，比无线更安全，适合网银或远程办公等敏感操作。"
+        },
+        {
+            "question": "路由器上用VPN有什么好处？",
+            "answer": "VPN可加密所有家庭网络流量，保护隐私，防止运营商或攻击者跟踪上网行为。"
+        },
+        {
+            "question": "为什么要将物联网设备分到独立WiFi网络？",
+            "answer": "智能设备安全性较弱，单独分组可隔离主设备，降低被攻击风险。"
+        },
+        {
+            "question": "什么是安全浏览，如何保护我？",
+            "answer": "安全浏览功能可屏蔽已知恶意网站，提醒潜在威胁，防止钓鱼和恶意软件下载。"
+        },
+        {
+            "question": "是否应开启路由器DoS防护？",
+            "answer": "建议开启。DoS防护可检测并阻止异常流量，防止网络被攻击。"
+        },
+        {
+            "question": "MAC地址过滤是什么，对安全有用吗？",
+            "answer": "MAC过滤只允许指定设备连接，但易被绕过。可作为辅助安全措施，不能单独依赖。"
+        },
+        {
+            "question": "为什么要关闭路由器UPnP？",
+            "answer": "UPnP会自动开放端口，易被恶意软件利用。关闭可减少攻击面。"
+        },
+        {
+            "question": "什么是DPI（深度包检测），如何提升安全？",
+            "answer": "DPI可分析网络流量内容，帮助路由器更准确检测恶意软件、入侵或违规行为。"
+        },
+        {
+            "question": "为什么要定期监控连接设备？",
+            "answer": "发现未知设备可能说明WiFi被入侵，定期检查有助于及时发现异常。"
+        },
+        {
+            "question": "什么是VPN断线保护（kill switch），为什么重要？",
+            "answer": "VPN断线保护可在VPN掉线时阻止网络流量外泄，防止未加密数据暴露。"
+        },
+        {
+            "question": "为什么要更改路由器默认管理员用户名？",
+            "answer": "攻击者常用默认用户名如“admin”，更改后可增加暴力破解难度。"
+        },
+        {
+            "question": "开启路由器防火墙有什么好处？",
+            "answer": "防火墙可过滤进出流量，阻止未授权访问，降低网络风险。"
+        },
+        {
+            "question": "如何升级aiboard固件？",
+            "answer": "进入aiboard > 固件升级 > 检查升级。aiboard固件升级时间较长，请耐心等待。"
+        },
+        {
+            "question": "aiboard升级失败怎么办？",
+            "answer": "可在aiboard网页界面按[重置]按钮，aiboard会重新安装固件，过程较长请耐心等待。"
+        },
+        {
+            "question": "如何检测Netflix连接质量？",
+            "answer": "可用[Fast.com](https://fast.com)测速，该服务由Netflix提供。"
+        },
+        {
+            "question": "厕所、浴室、卫生间WiFi信号弱怎么办？",
+            "answer": "可用WiFi扩展器或Mesh系统提升弱信号区域的覆盖。"
+        },
+        {
+            "question": "如何让父母不知道我在上网？",
+            "answer": "作为路由器助手，我只能协助网络相关问题，无法处理个人事务，抱歉。"
+        },
+        {
+            "question": "我的AiMesh节点摆放是否能覆盖所有设备？如何优化？",
+            "answer": "可在AiMesh页面（或App拓扑）查看信号质量，节点间连线为绿色即摆放合理。建议节点放在开阔处，远离障碍物。"
+        },
+        {
+            "question": "我当前设置是否已最优？还有什么方法提升性能？",
+            "answer": "默认设置已适合大多数场景。可开启自适应QoE优先游戏或流媒体流量，确保固件最新，高带宽设备建议用有线连接。"
+        },
+        {
+            "question": "列出网络中接收质量差的设备（按吞吐量）",
+            "answer": "进入客户端页面，按信号强度或吞吐量排序，识别接收差的设备。WiFi信号2.4GHz低于-75dBm、5GHz低于-70dBm、6GHz低于-70dBm一般视为较差（仅供参考，具体视环境和设备类型）(注意：中国大陆尚未开放 WiFi 6GHz）。"
+        },
+        {
+            "question": "WiFi insight中的TXoP百分比是什么意思？",
+            "answer": "TXoP（发送机会百分比）表示设备在WiFi网络中有机会发送数据的时间占比。百分比越高，网络性能和效率越好。TXOP低于20%为好，20–50%为可接受，50–70%为拥堵，70%以上为差，可能导致高延迟、抖动或丢包。（仅供参考，实际体验视环境和设备能力）"
+        },
+        {
+            "question": "中国电信的官方客户支持网站是什么？",
+            "answer": "中国电信的官方客户支持网站是 [https://www.189.cn/](https://www.189.cn/)，这是其官方线上营业厅，家庭宽带用户可在此办理查询、缴费、套餐变更等业务。"
+        },
+        {
+            "question": "中国电信的客服电话是多少？",
+            "answer": "中国电信客服电话是10000，如果网站操作不便，直接拨打客服电话是高效的方式。"
+        },
+        {
+            "question": "中国电信的集团官网网址是什么？",
+            "answer": "中国电信集团官网是 [http://www.chinatelecom.com.cn/](http://www.chinatelecom.com.cn/)，该网站更多面向企业宣传和行业信息。"
+        },
+        {
+            "question": "处理中国电信个人业务应该优先使用哪个网站？",
+            "answer": "处理中国电信个人业务应优先使用线上营业厅网址：[https://www.189.cn/](https://www.189.cn/)，集团官网信息更偏向投资者和新闻公告。"
+        },
+        {
+            "question": "中国移动的官方客户支持网站是什么？",
+            "answer": "中国移动的官方客户支持网站是 [https://www.10086.cn/](https://www.10086.cn/)，这是其官方线上营业厅，是处理移动业务和家庭宽带业务的主要入口。"
+        },
+        {
+            "question": "中国移动的客服电话是多少？",
+            "answer": "中国移动客服电话是10086，如果网站操作不便，直接拨打客服电话是高效的方式。"
+        },
+        {
+            "question": "中国移动的集团官网网址是什么？",
+            "answer": "中国移动集团官网是 [http://www.10086.cn/about/](http://www.10086.cn/about/)（实际上会跳转到集团官网），该网站更多面向企业宣传和行业信息。"
+        },
+        {
+            "question": "处理中国移动个人业务应该优先使用哪个网站？",
+            "answer": "处理中国移动个人业务应优先使用线上营业厅网址：[https://www.10086.cn/](https://www.10086.cn/)，集团官网信息更偏向投资者和新闻公告。"
+        },
+        {
+            "question": "中国联通的官方客户支持网站是什么？",
+            "answer": "中国联通的官方客户支持网站是 [https://www.10010.com/](https://www.10010.com/)，这是其官方线上营业厅，功能全面，是联通用户的首选网站。"
+        },
+        {
+            "question": "中国联通的客服电话是多少？",
+            "answer": "中国联通客服电话是10010，如果网站操作不便，直接拨打客服电话是高效的方式。"
+        },
+        {
+            "question": "中国联通的集团官网网址是什么？",
+            "answer": "中国联通集团官网是 [http://www.chinaunicom.com.cn/](http://www.chinaunicom.com.cn/)，该网站更多面向企业宣传和行业信息。"
+        },
+        {
+            "question": "处理中国联通个人业务应该优先使用哪个网站？",
+            "answer": "处理中国联通个人业务应优先使用线上营业厅网址：[https://www.10010.com/](https://www.10010.com/)，集团官网信息更偏向投资者和新闻公告。"
+        },
+        {
+            "question": "中国广电的全国统一客服热线是多少？",
+            "answer": "中国广电的全国统一客服热线是10099，可用于业务咨询、费用查询、故障报修、投诉建议等。原有客服电话96655在部分省份可能仍有效，但通常会提示转接至10099。"
+        },
+        {
+            "question": "中国广电的用户如何线上办理业务？",
+            "answer": "中国广电用户办理业务最可靠的方式是通过官方App或微信小程序。请在手机应用商店搜索“中国广电”，或直接在微信中搜索“中国广电营业厅”小程序，登录后进行套餐查询、缴费、办理业务和故障报修。"
+        },
+        {
+            "question": "中国广电的官方网站是什么？",
+            "answer": "中国广电官方网站（集团官网）是 [http://www.chinabdn.com.cn/](http://www.chinabdn.com.cn/)，但此网站更多面向企业宣传和行业信息，不直接办理个人用户业务。"
+        },
+        {
+            "question": "如果遇到宽带故障，通过运营商网站可以如何报修？",
+            "answer": "在运营商网站的“个人中心”或“服务与支持”栏目里，通常可以找到“宽带故障报修”或“在线客服”的入口，可以进行自助排障或提交维修工单。中国电信：[189.cn](https://www.189.cn/)，中国移动：[10086.cn](https://www.10086.cn/)，中国联通：[10010.com](https://www.10010.com/)。"
+        },
+        {
+            "question": "登录运营商网站办理业务通常需要什么？",
+            "answer": "要查询详细账单或办理业务，通常需要使用本机手机号并接收短信验证码登录。如果是宽带账号（非手机号），可能需要先将其与一个手机号绑定。"
+        },
+        {
+            "question": "如果需要企业级（政企）宽带支持，应该怎么办？",
+            "answer": "如果需要企业级（政企）宽带支持，通常需要访问运营商在各省市的分公司网站，例如“北京电信”、“上海移动政企事业部”等。这些网站需要通过搜索引擎具体查找。"
+        },
+        {
+            "question": "中国电信、中国移动、中国联通 modem 的 POWER（电源灯）正常状态是什么？",
+            "answer": "POWER（电源灯）正常状态是**常亮**（绿色或蓝色）。"
+        },
+        {
+            "question": "中国电信、中国移动、中国联通 modem 的 POWER（电源灯）异常行为有哪些？",
+            "answer": "POWER（电源灯）异常行为：**不亮**（检查电源线是否插好，插座是否有电）；**闪烁**（设备启动或升级中，若长时间闪烁后无法常亮，可能为系统故障）。"
+        },
+        {
+            "question": "中国电信、中国移动、中国联通 modem 的 PON（业务通道灯）正常状态是什么？",
+            "answer": "PON（业务通道灯）正常状态是**常亮绿色**，表示光猫已成功在运营商网络侧注册并建立连接，链路正常。"
+        },
+        {
+            "question": "中国电信、中国移动、中国联通 modem 的 PON（业务通道灯）异常行为有哪些？",
+            "answer": "PON（业务通道灯）异常行为：**闪烁**（表示光猫正在尝试注册，如果长时间闪烁无法常亮，说明注册失败）；**不亮**（通常表示无光信号或光信号极弱）；**红色/橙色常亮**（表示认证失败或设备未被机房识别）。"
+        },
+        {
+            "question": "中国电信、中国移动、中国联通 modem 的 LOS（光信号）正常状态是什么？",
+            "answer": "LOS（光信号灯）正常状态是**不亮**，这是一个**告警灯**。"
+        },
+        {
+            "question": "中国电信、中国移动、中国联通 modem 的 LOS（光信号灯）异常行为有哪些？",
+            "answer": "LOS（光信号灯）异常行为：**常亮红色**或**闪烁红色**（表示没有接收到光信号或光信号太弱）。可能原因：光纤线弯曲过大、折断、接口松动、分光器故障或运营商线路问题。"
+        },
+        {
+            "question": "中国电信、中国移动、中国联通 modem 的 INTERNET（互联网灯）正常状态是什么？",
+            "answer": "INTERNET（互联网灯）正常状态是**常亮绿色/蓝色**，表示PPPoE拨号认证成功，可以访问互联网。"
+        },
+        {
+            "question": "中国电信、中国移动、中国联通 modem 的 INTERNET（互联网灯）异常行为有哪些？",
+            "answer": "INTERNET（互联网灯）异常行为：**闪烁**（可能有数据流量通过，但如果无法常亮，通常表示拨号失败）；**不亮**（表示未建立互联网连接）。可能原因：宽带账号密码错误、欠费、运营商侧数据配置问题、或PON灯本身就不正常。"
+        },
+        {
+            "question": "中国电信、中国移动、中国联通 modem 的 LAN（局域网灯）正常状态是什么？",
+            "answer": "LAN（局域网灯）正常状态：当有网线插入该端口并连接正常设备时，此灯**常亮**；有数据交换时会**闪烁**。"
+        },
+        {
+            "question": "中国电信、中国移动、中国联通 modem 的 LAN（局域网灯）异常行为有哪些？",
+            "answer": "LAN（局域网灯）异常行为：**不亮**（检查网线是否插紧、网线是否损坏、连接的设备是否开机）。"
+        },
+        {
+            "question": "遇到光纤线路故障时，三大运营商 modem 的灯号表现是什么？",
+            "answer": "光纤线路故障时灯号表现：POWER**常亮**，PON**灭/闪**，LOS**常亮/闪红**，INTERNET**灭**。这是**最常见故障**，问题出在物理线路上，建议检查光纤线是否弯折、接口是否插紧，如果无误，直接联系运营商客服报修。"
+        },
+        {
+            "question": "遇到注册/认证问题时，三大运营商 modem 的灯号表现是什么？",
+            "answer": "注册/认证问题时灯号表现：POWER**常亮**，PON**闪烁/红**，LOS**灭**，INTERNET**灭**。表示光信号正常，但设备无法注册到网络，可能是LOID配置错误或运营商后台数据问题，需要**联系运营商客服**。"
+        },
+        {
+            "question": "遇到拨号失败/账号问题时，三大运营商 modem 的灯号表现是什么？",
+            "answer": "拨号失败/账号问题时灯号表现：POWER**常亮**，PON**常亮**，LOS**灭**，INTERNET**灭/闪**。表示光纤链路正常，但无法上网，可能原因：宽带欠费、账号密码错误、运营商IP地址分配问题。可尝试重启光猫，或**联系运营商客服**确认账号状态。"
+        },
+        {
+            "question": "中国广电 modem 的 Online/在线灯正常状态是什么？",
+            "answer": "中国广电 modem 的 Online/在线灯正常状态是**常亮（绿色）**，表示设备与广电前端机房的连接和注册状态正常。"
+        },
+        {
+            "question": "中国广电 modem 的 Online/在线灯异常行为有哪些？",
+            "answer": "中国广电 modem 的 Online/在线灯异常行为：**闪烁**（正在注册/同步信号）；**不亮**（注册失败/线路问题）。"
+        },
+        {
+            "question": "中国广电 modem 的 Data/数据灯正常状态是什么？",
+            "answer": "中国广电 modem 的 Data/数据灯正常状态是：有上网活动时**快速闪烁**。"
+        },
+        {
+            "question": "中国广电 modem 的 Data/数据灯异常行为有哪些？",
+            "answer": "中国广电 modem 的 Data/数据灯异常行为：**常亮或不闪**（可能表示网络拥堵或异常）；**不亮**（无数据流）。"
+        },
+        {
+            "question": "遇到中国广电线路或注册问题时，modem 的灯号表现是什么？",
+            "answer": "中国广电线路或注册问题时灯号表现：Power**常亮**，Online**闪烁/不亮**，Data/Link**灭**，LAN/WiFi**灭**。这是**核心问题**，表示\"广电猫\"无法与机房建立稳定连接。建议检查同轴电缆接口、重启设备，如果无效则联系广电客服报修。"
+        },
+        {
+            "question": "遇到中国广电拨号成功但无法上网时，modem 的灯号表现是什么？",
+            "answer": "中国广电拨号成功但无法上网时灯号表现：Power**常亮**，Online**常亮**，Data**不亮/常亮**，LAN**常亮**。表示链路已通但无法上网，可能原因：欠费、账号认证问题、终端设备问题。建议先重启\"广电猫\"，无效则联系客服。"
+        },
+        {
+            "question": "通用网络故障排查的第一步建议是什么？",
+            "answer": "通用网络故障排查的第一步建议是**重启大法**：遇到网络问题，第一步可以先尝试**关闭设备电源，等待1-2分钟后再重新开启**。这能解决大部分临时性的软件故障。"
+        },
+        {
+            "question": "处理光纤设备时需要注意什么？",
+            "answer": "处理光纤设备时需要注意：**勿动光纤** - 光纤接口非常脆弱，不要直视光纤接口的激光，避免光纤线被严重弯折（转弯半径不宜小于5厘米）。"
+        },
+        {
+            "question": "TMD,限量,刻章,培训,办税,代开发票,办本科,办理本科,办理各种,办理票据,办理文凭,办理真实,办理证书,办理资格,办文凭,办怔,办证,包过答案,代孕,贷办,贷借款,考答案,考后付款,考机构,考考邓,考联盟,考前答,考前答案,考前付,考设备,考试包过,考试保,考试答案,考试机构,考试联盟,考试枪,考研考中,考中答案,专业代,专业代写,销售,售卖,打折,连锁加盟,兼职,招聘,网络,QQ,有意者,到货,本店,代购,扣扣,客服,微店,兼值,淘宝,小姐,答案卫星接收机,高薪养廉,佳静安定片,航空售票,号码百事通,考前发放,诚信通手机商城,高利贷,AK-47,M16,AK-74,AKM,AK-107,AK-12,AR-15,C7,HK416,FAMAS,AUG,斯泰尔AUG,CR-21,FN F2000,FN FNC,FN SCAR,HK G36,HK G41,加利尔（Galil）,K2,南非R4,REC7,SA80,SIG SG 550,SR-3,StG44,巴雷特M82,AW,SVD,PSG-1,M107,麦克米兰TAC-50,AWM,DSR-1,雷明顿M24,M21,巴雷特M98B,巴雷特M99,巴雷特M95,AWP,阿玛莱特AR-50,巴雷特XM109,WA2000,SV-98,奈特M110,R93战术型,CheyTac M200,FR-F2,MSG90,雷明顿XM2010,PGM Hecate Ⅱ,M25轻型,M1917,M2,刘易斯,MG42,M61,Negev,RPD,加特林,布伦,新加坡Ultimax 100,DP/DPM,PK通用,马克沁,DShK/DShKM,NSV,FN Minimi,ZB26,M60,MG45,Kord,M249,HK21,日本大正十一式,RPK,柯尔特M1911半自动,M9半自动,格洛克17半自动,IMI沙漠之鹰半自动,鲁格P08半自动,瓦尔特PP/PPK半自动,FN 57半自动,CZ52半自动,MEU（SOC）半自动,FN M1935大威力,SIG Sauer SP2022半自动,TT半自动,HK45半自动,毛瑟C96自动,柯尔特蟒蛇左轮,SIG Sauer P220半自动,瓦尔特P38自动,HK USP半自动,马卡洛夫PM,MP5,乌兹,PPSh-41,索米M1931,MP40,汤普森,MP7,PPS-43,PP-91,UMP,伯莱塔M12,FN P90,Vz.61,PP-2000,司登,斯特林,MAT-49,K7,M3,斯泰尔TMP,雷明顿870,温彻斯特1897,勃朗宁Auto-5,雷明顿1100,莫斯伯格500,伯奈利M4 Super 90,KS-23,伯奈利Nova,M26模块式,Saiga-12,AA-12,弗兰基SPAS-12,西藏天葬,魂,鬼村,僵尸,吸血鬼,血,血腥,血腥图片,重口味,尖锐,空手指,莲蓬乳,琵琶蟾蜍,下水道的美人鱼,恒河浮尸,巨人观,蜱虫观,米国内裤,蜗牛人,上海邻家宅37号,同济大学天佑楼,青蛇勾魂,恐怖食人案,浦东吸血鬼事件,95成都僵尸,少女浴室自杀二十天,少女浴室自杀20天,黄河透明棺材,北京375路公交,smile dog,一女多鳝,两女一杯,恐怖电影,电锯惊魂,孤儿,闪灵,生化危机,死神来了,僵尸世界大战,招魂,寂静岭,死寂,咒怨,酷刑,金瓜击顶,劓殄,炮烙,虿盆,万蛇坑,醢刑,脯刑,坐嘉石,汤刑,滴刑,滴水刑,剜目,刨心,挖心,斩首,枭首示众,极刑,剁指,断手,挑筋去指,去膝盖,刖足,阉割为奴,斩趾枷令,枷项游历,常加号令,至死,弃市,夷族,戮尸,剥皮实草,抽肠,剥皮,腰斩,车裂,俱五刑,凌迟,缢首,烹煮,宫刑,刖刑,插针,活埋,鸩毒,棍刑,锯割,断椎,灌铅,弹琵琶,骑木驴,浸猪笼,夹手指,火刑,红绣鞋,女优,小泽玛莉亚,强歼,乱交,色友,婊子,蒲团,女女,喷尿,三級,武腾兰,凌辱,暴干,诱惑,阴唇,小泽圆,插插,長瀨愛,川島和津實,草莓牛奶,小澤園,飯島愛,星崎未來,及川奈央,朝河蘭,夕樹舞子,大澤惠,金澤文子,三浦愛佳,慰安妇,女教師,武藤蘭,学生妹,无毛,猛插,护士,A片,A级,喷精,小穴,大片,黄色,被逼,强暴,破处,精液,幼交,狂干,兽交,群交,露毛,偷情,叫床,上床,制服,亚热,援交,情色,肉欲,自摸,18禁,捆绑,丝袜,潮吹,肛交,群射,内射,臭作,調教,近親,連發,乱伦,偷拍,無修正 一本道,夜勤病栋,三级,自慰,吹萧,色狼,胸罩,内裤,底裤,私处,爽死,变态,同房,打炮,造爱,作爱,做爱,鸡巴,阴茎,阳具,开苞,肛门,阴道,阴蒂,肉棍,肉棒,肉洞,荡妇,阴囊,睾丸,捅你,捅我,插我,插你,干她,干他,射精,口交,屁眼,阴户,阴门,下体,龟头,阴毛,避孕套,高潮,包夜,冰火,插B,操B,处女,打飞机,风骚,黄色电影,激情视频,叫春,狂插,狂操,狂搞,露乳,裸聊,裸体,屁股,三级片,色情,脱光,脱衣,性爱,性感,性高潮,性交,胸部,艳舞,一夜情,欲望,色情服务,激情小电影,黄色小电影,色情小电影,成人片,成人电影,换妻,爱液,按摩棒,爆草,包二奶,暴奸,暴乳,爆乳,暴淫,屄,被操,被插,被干,逼奸,仓井空,操逼,操黑,操烂,肏你,肏死,操死,操我,厕奴,插比,插b,插逼,插进,插阴,春药,大波,大乳,荡女,盗撮,多人轮,发浪,放尿,肥逼,粉穴,风月大陆,干死你,干穴,龟头,裹本,国产av,好嫩,豪乳,黑逼,后庭,虎骑,花花公子,黄片,几吧,鸡吧,鸡奸,寂寞男,寂寞女,妓女,激情,集体淫,奸情,脚交,金鳞岂是池中物,精液,就去日,巨屌,菊花洞,巨奶,巨乳,开苞,口爆,口活,口淫,裤袜,浪逼,浪妇,浪叫,浪女,狼友,聊性,流淫,凌辱,漏乳,露b,裸陪,买春,美逼,美少妇,美乳,美腿,美幼,秘唇,迷奸,密穴,蜜液,摸奶,摸胸,炮友,喷精,屁眼,前凸后翘,强奸处女,情趣用品,拳交,全裸,惹火身材,人妻,人兽,日逼,日烂,乳爆,乳沟,乳交,乳头,骚逼,骚比,骚女,骚水,骚穴,色逼,色诱,色欲,少年阿宾,射爽,射颜,食精,兽奸,手淫,熟妇,熟母,熟女,爽片,双臀,死逼,丝袜,丝诱,松岛枫,酥痒,套弄,体奸,体位,舔脚,舔阴,偷欢,推油,脱内裤,文做,无码,舞女,无修正,吸精,夏川纯,相奸,小逼,校鸡,小xue,写真,性感妖娆,性饥渴,性交,性奴,性虐,性息,性欲,胸推,穴口,学生妹,穴图,颜射,阳具,杨思敏,要射了,一夜欢,阴部,淫虫,淫荡,淫道,淫妇,淫叫,淫教师,淫精,淫浪,淫媚,淫魔,淫母,淫女,淫妻,淫声浪语,淫水,淫娃,淫威,淫液,淫照,应召,幼男,幼女,欲火,玉女心经,玉蒲团,玉乳,欲仙欲死,玉穴,援助交际,张筱雨,招妓,抓胸,自拍,自摸,做愛,失身粉,淫荡自慰器,戴海静,乔任梁,自杀指南,自杀手册,抑郁,活着,死亡,die,心理压力,自杀,自残,跳楼,割腕,切腹自尽,自缢,精神失常,精神病,大法,大纪元,真善忍,明慧,洪志,红志,洪智,红智,法轮,法论,法沦,法伦,发轮,发论,发沦,发伦,轮功,轮公,轮攻,沦功,论功,伦功,打倒,民运,六四,台独,王丹,柴玲,李鹏,天安门,邓小平,江泽民,朱镕基,李长春,李瑞环,胡锦涛,魏京生,台湾独立,藏独,西藏独立,疆独,新疆独立,自焚,骗局,猫肉,吸储,腐败,暴动,暴乱,文字狱,八九,专制,共产党,反共,习近平,中共,民主,自由门,新闻封锁,宪政,请愿,游行,示威,独裁,专政,共产党,解放军,台海战争,台湾问题,达赖,藏青会,疆独,恐怖分子,恐怖份子,民族矛盾,反政府,三股势力,迷药,迷昏药,窃听器,六合彩,买卖枪支,退党,三唑仑,麻醉药,麻醉乙醚,短信群发器,出售枪支,摇头丸,打砸抢烧,黑社会,枪决女犯,投毒杀人,出售假币,监听王,昏药,侦探设备,蒙汗药粉,强效失意药,迷奸药,透视眼镜,远程偷拍,自制手枪,高校暴乱,催情药,春药,身份证生成器,枪决现场,出售手枪,麻醉枪,办理证件,枪支弹药,迷幻药,隐形摄像头,精神药品,冰毒,卖淫,嫖娼,吸毒,贩毒,赌博,群殴,袭警,博彩,赌球,赌马,恶势力,仿真枪,售步枪,售弹簧刀,售防身,售狗子,售虎头,售火药,售假币,售健卫,售军用,售猎枪,售麻醉,售枪支,售热武,售三棱,售五四,炸药,原子弹,核弹,燃烧弹,炸弹,手枪,狙击枪,机枪,冲锋枪,霰弹枪,弓弩,军刀,匕首,操你,你他妈,傻逼,傻B,TMD,TNND,TND,贱人,装b,大sb,煞笔,沙比,欠干,婊子养的,我日你,我操,我草,卧艹,卧槽,爆你菊,艹你,cao你,真他妈,别他吗,草你吗,草你丫,操你妈,擦你妈,操你娘,操他妈,日你妈,干你妈,干你娘,娘西皮,狗操,狗草,狗杂种,狗日的,操你祖宗,操你全家,操你大爷,妈逼,你麻痹,妈了个逼,马勒,狗娘养,贱比,下贱,死全家,全家死光,全家不得好死,全家死绝,白痴,无耻,sb,杀b,你吗b,你妈的,婊子,贱货,人渣,混蛋,干你,干死,我干",
+            "answer": "我无法回答无关路由器的问题."
+        },
+        {
+            "question": "華碩官方網站？",
+            "answer": "您可以在 [asus.com](https://w3.asus.com.cn/) 了解更多信息。"
+        },
+        {
+            "question": "限量, 刻章, 培训, 办税, 代开发票, 办本科, 办理本科, 办理各种, 办理票据, 办理文凭",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "办理真实, 办理证书, 办理资格, 办文凭, 办怔, 办证, 包过答案, 代孕, 贷办, 贷借款",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "考答案, 考后付款, 考机构, 考考邓, 考联盟, 考前答, 考前答案, 考前付, 考设备, 考试包过",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "考试保, 考试答案, 考试机构, 考试联盟, 考试枪, 考研考中, 考中答案, 专业代, 专业代写, 销售",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "售卖, 打折, 连锁加盟, 兼职, 招聘, 网络, QQ, 招聘, 有意者, 到货",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "本店, 代购, 扣扣, 客服, 微店, 兼职, 兼值, 淘宝, 小姐, 答案卫星接收机",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "高薪养廉, 考后付款, 佳静安定片, 航空售票, 号码百事通, 考前发放, 诚信通手机商城, 高利贷",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "操你, 你他妈, 傻逼, 傻B, TMD, TNND, TND, 贱人, 装b, 大sb",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "傻逼, 傻b, 煞逼, 煞笔, 刹笔, 傻比, 沙比, 欠干, 婊子养的, 我日你",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "我操, 我草, 卧艹, 卧槽, 爆你菊, 艹你, cao你, 你他妈, 真他妈, 别他吗",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "草你吗, 草你丫, 操你妈, 擦你妈, 操你娘, 操他妈, 日你妈, 干你妈, 干你娘, 娘西皮",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "狗操, 狗草, 狗杂种, 狗日的, 操你祖宗, 操你全家, 操你大爷, 妈逼, 你麻痹, 麻痹的",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "妈了个逼, 马勒, 狗娘养, 贱比, 贱b, 下贱, 死全家, 全家死光, 全家不得好死, 全家死绝",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "白痴, 无耻, sb, 杀b, 你吗b, 你妈的, 婊子, 贱货, 人渣, 混蛋",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "李愚蠢, 中国猪, 台湾猪, 进化不完全的生命体, 震死他们, 贱人, 装b, 大sb, 傻逼, 傻b",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "煞逼, 煞笔, 刹笔, 傻比, 沙比, 欠干, 婊子养的, 我日你, 我操, 我草",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "卧艹, 卧槽, 爆你菊, 艹你, cao你, 你他妈, 真他妈, 别他吗, 草你吗, 草你丫",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "操你妈, 擦你妈, 操你娘, 操他妈, 日你妈, 干你妈, 干你娘, 娘西皮, 狗操, 狗草",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "狗杂种, 狗日的, 操你祖宗, 操你全家, 操你大爷, 妈逼, 你麻痹, 麻痹的, 妈了个逼, 马勒",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "狗娘养, 贱比, 贱b, 下贱, 死全家, 全家死光, 全家不得好死, 全家死绝, 白痴, 无耻",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "sb, 杀b, 你吗b, 你妈的, 婊子, 贱货, 人渣, 混蛋, 干你, 干死",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "我干",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "戴海静, 乔任梁, 自杀指南, 自杀手册, 抑郁, 活着, 死亡, die, 心理压力, 自杀",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "自残, 跳楼, 割腕, 切腹自尽, 自缢, 精神失常, 精神病",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "AK-47, M16, AK-74, AKM, AK-107, AK-12, AR-15, C7, HK416, FAMAS",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "AUG, 斯泰尔AUG, CR-21, FN F2000, FN FNC, FN SCAR, HK G36, HK G41, 加利尔（Galil）, K2",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "南非R4, REC7, SA80, SIG SG 550, SR-3, StG44, 巴雷特M82, AW, SVD, PSG-1",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "M107, 麦克米兰TAC-50, AWM, DSR-1, 雷明顿M24, M21, 巴雷特M98B, 巴雷特M99, 巴雷特M95, AWP",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "阿玛莱特AR-50, 巴雷特XM109, WA2000, SV-98, 奈特M110, R93战术型, CheyTac M200, FR-F2, MSG90, 雷明顿XM2010",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "PGM Hecate Ⅱ, M25轻型, M1917, M2, 刘易斯, MG42, M61, Negev, RPD, 加特林",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "布伦, 新加坡Ultimax 100, DP/DPM, PK通用, 马克沁, DShK/DShKM, NSV, FN Minimi, ZB26, M60",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "MG45, Kord, M249, HK21, 日本大正十一式, RPK, 柯尔特M1911半自动, M9半自动, 格洛克17半自动, 沙漠之鹰半自动",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "鲁格P08半自动, 瓦尔特PP/PPK半自动, FN 57半自动, CZ52半自动, MEU（SOC）半自动, FN M1935大威力, SIG Sauer SP2022半自动, TT半自动, HK45半自动, 毛瑟C96自动",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "柯尔特蟒蛇左轮, SIG Sauer P220半自动, 瓦尔特P38自动, HK USP半自动, 马卡洛夫PM, MP5, 乌兹, PPSh-41, 索米M1931, MP40",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "汤普森, MP7, PPS-43, PP-91, UMP, 伯莱塔M12, FN P90, Vz.61, PP-2000, 司登",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "斯特林, MAT-49, K7, M3, 斯泰尔TMP, 雷明顿870, 温彻斯特1897, 勃朗宁Auto-5, 雷明顿1100, 莫斯伯格500",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "伯奈利M4 Super 90, KS-23, 伯奈利Nova, M26模块式, Saiga-12, AA-12, 弗兰基SPAS-12",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "大法, 大纪元, 真善忍, 明慧, 洪志, 法轮, 法论, 轮功, 打倒, 民运",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "六四, 台独, 天安门, 邓小平, 江泽民, 朱镕基, 李长春, 胡锦涛, 魏京生, 台灣獨立",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "藏独, 西藏独立, 疆独, 新疆独立, 自焚, 骗局, 猫肉, 吸储, 大蓋帽, 黑社会",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "腐败, 暴动, 暴乱, 文字狱, 空难, 温家宝, 吴邦国, 曾庆红, 贾庆林, 专制",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "民运, 抗议, 维权, 关卓中, 抗议, 地下教会, 地下刊物, 持不同政见, 异见人士, 异议人士",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "达赖, 达赖喇嘛, 西藏, 雪山狮子旗, 东突厥斯坦, 东土耳其斯坦, 蒙独, 蒙古独立, 新疆骚乱, 藏独",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "反共, 反华, 打倒中共, 打倒共产党, 抵制共产党, 灭亡中国, 亡党亡国, 光复民国, 台湾国, 台海战争",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "新闻封锁, 网络封锁, 无界浏览, 自由门, 金盾工程, gfw, 互联网审查, 当局严密封锁, 封杀, 封锁消息",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "五毛党, 网特, 网评员, 网络评论员, 戒严, 流血冲突, 引起暴动, 罢工, 罢学, 罢运",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "选国家主席, 宪政, 宪章, 平反, 人权, 国际特赦, 大赦国际, 民主墙, 人权, 舆论反制",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "台独组织, 支持台湾, 统一台湾, 进攻台湾, 占领台湾, 解放台湾, 两岸战争, 台海危机, 台海统一, 打台湾",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "江泽民, 胡锦涛, 温家宝, 习近平, 李鹏, 朱镕基, 赵紫阳, 刘晓波, 周永康, 王岐山",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "反腐败论坛, 官商勾结, 腐败中国, 高干子弟, 权贵集团, 特权, 黑社会, 血书, 焚烧中国国旗, 骚乱",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "维基百科, youtube, bbc中文网, 美国之音, 自由亚洲, 境外媒体, 外国媒体, 国际新闻, 新闻封锁, 关闭所有论坛",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "示威, 游行, 集会, 静坐, 访民, 上访, 请命, 抗议活动, 维权行动, 公民不服从",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "法轮功, 法轮大法, 法轮佛法, 发正念, 转法轮, 真、善、忍, 法轮, 发轮, 发论, 法功",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "军队部署, 解放军, 兵力部署, 第21集团军, 七大军区, 北京军区, 军事社, 军事動態, 军转, 军事部署",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "台独, 台灣獨立, 臺灣獨立, 光复民国, 台湾共和国, 台湾问题, 两岸关系, 两岸三地论坛, 台海局势, 支持台湾",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "民主, 宪政, 选举, 人权组织, 国际监督, 司法独立, 言论自由, 新闻自由, 公民社会, 政治改革",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "西藏天葬, 魂, 鬼村, 僵尸, 吸血鬼, 血, 血腥, 血腥图片, 重口味, 尖锐",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "空手指, 莲蓬乳, 琵琶蟾蜍, 下水道的美人鱼, 恒河浮尸, 巨人观, 蜱虫观, 米国内裤, 蜗牛人, 上海邻家宅37号",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "同济大学天佑楼, 青蛇勾魂, 恐怖食人案, 浦东吸血鬼事件, 95成都僵尸, 少女浴室自杀二十天, 少女浴室自杀20天, 黄河透明棺材, 北京375路公交, smile dog",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "一女多鳝, 两女一杯, 恐怖电影, 电锯惊魂, 孤儿, 闪灵, 生化危机, 死神来了, 僵尸世界大战, 招魂",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "寂静岭, 死寂, 咒怨, 酷刑, 金瓜击顶, 劓殄, 炮烙, 虿盆, 万蛇坑, 醢刑",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "脯刑, 坐嘉石, 汤刑, 滴刑, 滴水刑, 剜目, 刨心, 挖心, 斩首, 枭首示众",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "极刑, 剁指, 断手, 挑筋去指, 去膝盖, 刖足, 阉割为奴, 斩趾枷令, 枷项游历, 常加号令",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "至死, 弃市, 夷族, 戮尸, 剥皮实草, 抽肠, 剥皮, 腰斩, 车裂, 俱五刑",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "凌迟, 缢首, 烹煮, 宫刑, 刖刑, 插针, 活埋, 鸩毒, 棍刑, 锯割",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "断椎, 灌铅, 弹琵琶, 抽肠, 骑木驴, 浸猪笼, 夹手指, 火刑, 红绣鞋",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "falun, tianwang, bignews, boxun, minghui, zhengjian, zhuanfalun, 真善忍, 大纪元, 李洪志",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "六四, 台独, 西藏独立, 新疆独立, 民运, 天安门, 藏独, 江泽民, 胡锦涛, 温家宝",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "fuck, sex, porn, anal, 色情, 做爱, 性交, 裸体, 阴道, 精液",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "强奸, 群交, 捆绑, 潮吹, 奶子, 狂插, 幼交, 轮奸, 肛交, 兽交",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "炸药, 炸弹, 枪支, 手枪, 步枪, 子弹, 爆炸, 制爆, 麻醉药, 冰毒",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "共产党, 中共, 习近平, 民主, 宪政, 平反, 言论自由, 反共, 民运人士, 台海战争",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "大法, 明慧网, 无界浏览, 自由门, gfw, 新闻封锁, 政府操控, 网络封锁, 封锁消息, 境外媒体",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "阴茎, 阴蒂, 阴唇, 阴户, 乳房, 奶子, 阴毛, 私处, 插入, 发情",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "妈逼, 干你娘, 操你妈, 傻逼, 狗日的, 贱人, 嫖妓, 草你吗, 卧槽, 我日你",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "a片, 色情, 情色, 成人, 艳情, 性交, 做爱, 激情, 情色小说, 性影片",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "口交, 肛交, 阴茎, 阴道, 阴唇, 乳房, 奶子, 屄, 屌, 阴毛",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "强奸, 群交, 轮奸, 幼交, 捆绑, 潮吹, 调教, 丝袜, 情趣, 裸体",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "女优, 仓井空, 武藤兰, 松岛枫, 波多野结衣, 小泽玛莉亚, 夏川纯, 凌辱, 爆草, 口爆",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "爆乳, 巨乳, 美乳, 美腿, 露乳, 裸聊, 直播, 性感, 诱惑, 激情视频",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "自慰, 手淫, 成人游戏, 成人网站, 成人影片, 色情表演, 色情电影, 淫水, 淫液, 淫照",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "援交, 一夜情, 偷情, 妓女, 包二奶, 援助交际, 性服务, 性伴侣, 约炮, 炮友",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "淫荡, 淫乱, 淫魔, 淫妻, 淫女, 淫娃, 淫兽, 淫叫, 淫母, 淫荡视频",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "射精, 精液, 发浪, 爽片, 爽死, 口射, 内射, 群射, 淫声浪语, 欲火焚身",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "SM, 调教, 兽交, 兽欲, 奴隶, 奴役, 鞭打, 束缚, 肉欲, 欲望",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "迷药, 迷昏药, 迷幻药, 迷魂药, 春药, 催情药, 强效失意药, 古方迷香, 苍蝇水, 昏药",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "三唑仑, 安眠药, 精神药品, 麻醉药, 麻醉枪, 麻醉弹, 麻醉狗, 麻醉箭, 麻醉弹药, 麻醉乙醚",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "冰毒, 海洛因, 吗啡, 大麻, 可卡因, 摇头丸, k粉, ketamine, MDMA, 安非他命",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "炸药, 炸弹, TNT, C4炸药, 硝酸甘油, 黑火药, 火药配方, 自制炸弹, 简易炸药, 制作炸药",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "炸药配方, 原子弹制作, 手把手教你做炸弹, DIY核弹, 燃烧弹制作, 高爆炸药, 导弹制作, 炸弹教程, 恐怖分子手册, 自制燃烧弹",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "AK-47, M16, AR-15, HK416, FAMAS, AUG, FN SCAR, G36, 巴雷特M82, PSG-1",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "狙击步枪, 手枪, 霰弹枪, 机枪, 冲锋枪, 猎枪, 仿真枪, 枪支弹药, 买卖枪支, 出售枪支",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "军刀, 弓弩, 三棱刀, 弹簧刀, 折刀, 匕首, 冷兵器, 军刺, 野营刀, 防卫棍刀",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "赌博, 赌球, 赌马, 博彩, 黑社会, 打砸抢烧, 群殴, 袭警, 暴乱, 暴力行为",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "身份证生成器, 监听器, 窃听器, 远程偷拍, 透视眼镜, 隐形摄像头, 侦探设备, 监听王, 间谍器材, 监听设备",
+            "answer": "与华硕路由器无关，请咨询华硕路由器相关问题.[metadata]id=10029,desc=sensitive_words[/metadata]"
+        },
+        {
+            "question": "Portainer 未运行？",
+            "answer": "如果 Portainer 未运行，请确保在 AiBoard 页面已启用 Portainer。请检查是否与 Portainer 默认端口 9443 存在端口冲突。如果问题仍然存在，建议重启 AiBoard 或考虑恢复 AiBoard（约需 20 分钟）。"
+        },
+        {
+            "question": "无法进入 Portainer 网页？",
+            "answer": "如果无法进入 Portainer 网页，请确保在 AiBoard 页面已启用 Portainer。请检查是否与 Portainer 默认端口 9443 存在端口冲突。如果问题仍然存在，建议重启 AiBoard 或考虑恢复 AiBoard（约需 20 分钟）。"
+        }
+    ]
+}

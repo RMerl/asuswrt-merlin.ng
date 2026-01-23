@@ -3,6 +3,7 @@ const ASUS_POLICY = {
         ScrollDown: `<#ASUS_POLICY_Scroll_Down#>`,
         AgeCheck: `<#ASUS_POLICY_Age_Check#>`,
         AgeConfirm: `<#ASUS_eula_age_confirm#>`,
+        I_Understand: `<#ASUS_EULA_I_Understand#>`,
         Agree: `<#CTL_Agree#>`,
         Disagree: `<#CTL_Decline#>`,
         Notice: `<#Notice#>`,
@@ -17,7 +18,9 @@ const ASUS_POLICY = {
         ModalName: `<#Web_Title2#>`,
     }, Content: {
         PP: {
+            Versions: [2, 4, 5],
             Title: `<#ASUS_PP_Title#>`,
+            Title_v5: `<#ASUS_Notice#>`,
             Desc: `<#ASUS_PP_Desc#>`,
             HTMLv2: `<style>
                     .policy_title{
@@ -40,8 +43,8 @@ const ASUS_POLICY = {
                     <div class="policy_desc"><#ASUS_PP_Desc_v2#></div>
                     <div class="policy_desc">${`<#ASUS_PP_Desc_2#>`.replace(/\[aa\](.*?)\[\/aa\]/g, `<span class="link" onclick="showPersonalData(2)" style="text-decoration: underline;cursor: pointer;">$1</span>`).replaceAll("%1$@", `<#menu5_6#>`).replaceAll("%2$@", `<#menu_privacy#>`)}</div>
                     <div class="policy_desc"><#ASUS_PP_Desc_3#></div>
-                    <div class="policy_desc"><#ASUS_PP_Desc_4#></div>
-                    <div class="policy_desc"><#ASUS_PP_Desc_5#></div>
+                    <div class="policy_desc">${`<#ASUS_PP_Desc_4#>`.replaceAll("%@", `<#CTL_Decline#>`)}</div>
+                    <div class="policy_desc">${`<#ASUS_PP_Desc_5#>`.replace(/\[aa\](.*?)\[\/aa\]/g, `<a target="_blank" class="url-policy" href="https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang=EN&kw=&num=" style="text-decoration: underline;cursor: pointer;">$1</a>`)}</div>
                     <div class="policy_show"></div>
                 </div>`,
             HTMLv4: `<style>
@@ -66,11 +69,46 @@ const ASUS_POLICY = {
                     <div class="policy_desc">${`<#ASUS_PP_Desc_2#>`.replace(/\[aa\](.*?)\[\/aa\]/g, `<span class="link" onclick="showPersonalData(4)" style="text-decoration: underline;cursor: pointer;">$1</span>`).replaceAll("%1$@", `<#menu5_6#>`).replaceAll("%2$@", `<#menu_privacy#>`)}</div>
                     <div class="policy_desc"><#ASUS_PP_Desc_3#></div>
                     <div class="policy_desc"><#ASUS_PP_Desc_4#></div>
-                    <div class="policy_desc"><#ASUS_PP_Desc_5#></div>
+                    <div class="policy_desc">${`<#ASUS_PP_Desc_5#>`.replace(/\[aa\](.*?)\[\/aa\]/g, `<a target="_blank" class="url-policy" href="https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang=EN&kw=&num=" style="text-decoration: underline;cursor: pointer;">$1</a>`)}</div>
                     <div class="policy_desc"><#ASUS_PP_Desc_6#></div>
                     <div class="policy_show"></div>
                 </div>`,
-            PersonalData: `<#ASUS_Personal#>`,
+            HTMLv5: `<style>
+                    .policy_title{
+                        font-weight: bold;
+                        text-decoration: underline;
+                        margin-bottom: 1em;
+                    }
+                    .policy_desc{
+                        font-weight: normal;
+                        margin-bottom: 1em;
+                    }
+                    .policy_end{
+                        border: 1px solid #ddd;
+                        padding: 5px;
+                        margin: 1em;
+                    }
+                </style>
+                <div>
+                    <div class="policy_title" role="heading" aria-level="1"><#ASUS_PP_Title_v5#></u></b></div>
+                    <div class="policy_desc"><#ASUS_PP_Desc_v4#></div>
+                    <div class="policy_desc">
+                        ${`<#ASUS_PP_Desc_2#>`.replace(/\[aa\](.*?)\[\/aa\]/g, `<span class="link" onclick="showPersonalData(4)" style="text-decoration: underline;cursor: pointer;">$1</span>`).replaceAll("%1$@", `<#menu5_6#>`).replaceAll("%2$@", `<#menu_privacy#>`)} 
+                        <#ASUS_PP_Desc_3#>
+                        ${
+                `<#ASUS_PP_Desc_4_v5#>`
+                    .replaceAll('<', '&lt;')
+                    .replaceAll('>', '&gt;')
+                    .replace("%@", `<#CTL_Decline#>`)
+                    .replace(/\[aa\](.*?)\[\/aa\]/g, `<span class="link" onclick="showPersonalData(4)" style="text-decoration: underline;cursor: pointer;">$1</span>`)
+            }
+                    </div>
+                    <div class="policy_desc"><#ASUS_PP_Desc_EU_1#>: ${`<#ASUS_PP_Desc_EU_2#>`.replace(/\[aa\](.*?)\[\/aa\]/g, `<span class="link" onclick="showPersonalData(4)" style="text-decoration: underline;cursor: pointer;">$1</span>`)}</div>
+                    <div class="policy_desc">${`<#ASUS_PP_Desc_5_v5#>`.replace(/\[aa\](.*?)\[\/aa\]/g, `<a target="_blank" class="url-policy" href="https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang=EN&kw=&num=" style="text-decoration: underline;cursor: pointer;"><#ASUS_PP_Desc_EU_3#></a>`)}</div>
+                    <div class="policy_desc"><#ASUS_PP_Desc_6#></div>
+                    <div class="policy_show"></div>
+                </div>`,
+            PersonalData: `<#ASUS_Notice#>`,
             PersonalDataHTMLv2: `
                 <style>
                     .policy_law {
@@ -170,10 +208,129 @@ const ASUS_POLICY = {
                         </li>
                         <li><#ASUS_Personal_Law_3#></li>
                         <li><#ASUS_Personal_Law_4#></li>
-                        <li><#ASUS_Personal_Law_5#></li>
+                        <li>${`<#ASUS_Personal_Law_5#>`.replace(/\[aa\](.*?)\[\/aa\]/g, `<a target="_blank" class="url-policy" href="https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang=EN&kw=&num=" style="text-decoration: underline;cursor: pointer;">$1</a>`)}</li>                    </ol>
+                </div>
+                <div class="policy_show"></div>
+            `,
+            PersonalDataHTMLv5: `
+                <style>
+                    .policy_law {
+                        font-weight: normal;
+                    }
+                    .policy_law ol {
+                        padding-left: 1em;
+                    }
+                    .policy_law ol ol{
+                        padding-left: 2em;
+                    }
+                    .policy_law li{
+                        margin-top: 1em;
+                        margin-bottom: 1em;
+                    }
+                    .policy_law li li::marker{
+                        content: '(' counter(list-item) ') ';
+                    }
+                    .mt-1 {
+                        margin-top: 1em;
+                    }
+                    .mb-1 {
+                        margin-bottom: 1em;
+                    }
+                </style>
+                <div class="policy_law">
+                    <div class="mb-1"><b><#ASUS_Personal_Title#></b></div>
+                    <div class="mb-1"><b><#ASUS_Personal_Part_1#></b></div>
+                    <div class="mb-1"><#ASUS_Personal_Desc#></div>
+                    <ol>
+                        <li>
+                            <div class="mb-1"><#ASUS_Personal_Law_1_1#></div>
+                            <div class="mb-1"><#ASUS_Personal_Law_1_2#></div>
+                            <div>${`<#ASUS_Personal_Law_1_3_v5#>`.replace('[%@]', `[<a target="_blank" href="https://www.asus.com/support/faq/1053743/">https://www.asus.com/support/faq/1053743/</a>]`)}</div>
+                        </li>
+                        <li>${`<#ASUS_Personal_Law_2_v5#>`.replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replace("%@", `<#CTL_Decline#>`)}
+                            <ol>
+                                <li><#ASUS_Personal_Law_2_1_1#><#ASUS_Personal_Law_2_1_2#></li>
+                                <li><#ASUS_Personal_Law_2_2#></li>
+                            </ol>
+                        </li>
+                        <li><#ASUS_Personal_Law_3#></li>
+                        <li><#ASUS_Personal_Law_4#></li>
+                        <li>${`<#ASUS_Personal_Law_5#>`.replace(/\[aa\](.*?)\[\/aa\]/g, `<a target="_blank" class="url-policy" href="https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang=EN&kw=&num=" style="text-decoration: underline;cursor: pointer;"><#ASUS_PP_Desc_EU_3#></a>`)}</li>
+                    </ol>
+                    <div class="mb-1"><b><#ASUS_Personal_Part_2#></b></div>
+                    <div class="mb-1"><#ASUS_Personal_EU_Desc#></div>
+                    <ol>
+                        <li><#ASUS_Personal_EU_Law_1#>
+                            <ol>
+                                <li><#ASUS_Personal_EU_Law_1_1#></li>
+                                <li><#ASUS_Personal_EU_Law_1_2#></li>
+                                <li>${`<#ASUS_Personal_EU_Law_1_3#>`.replace('%@', '10 MB')}</li>
+                            </ol>                            
+                        </li>
+                        <li><#ASUS_Personal_EU_Law_2#></li>
+                        <li><#ASUS_Personal_EU_Law_3#>
+                            <ol>
+                                <li><#ASUS_Personal_EU_Law_3_1#></li>
+                                <li><#ASUS_Personal_EU_Law_3_2#></li>
+                            </ol>
+                        </li>
+                        <li><#ASUS_Personal_EU_Law_4#>
+                            <ol>
+                                <li>${`<#ASUS_Personal_EU_Law_4_1#>`.replace(/\[aa\](.*?)\[\/aa\]/g, `<a class="url-personal-asus-privacy" target="_blank" href="https://nw-dlcdnet.asus.com/support/forward.html?model=&type=AsusPrivacy&lang=EN&kw=&num=">$1</a>`)}</li>
+                            </ol>
+                        </li>
                     </ol>
                 </div>
                 <div class="policy_show"></div>
+            `,
+            FeedbackNoticeHTML: `
+                <style>
+                    .policy_law {
+                        font-weight: normal;
+                    }
+                    .policy_law ol {
+                        padding-left: 1em;
+                    }
+                    .policy_law ol ol{
+                        padding-left: 2em;
+                    }
+                    .policy_law li{
+                        margin-top: 1em;
+                        margin-bottom: 1em;
+                    }
+                    .policy_law li li::marker{
+                        content: '(' counter(list-item) ') ';
+                    }
+                    .mt-1 {
+                        margin-top: 1em;
+                    }
+                    .mb-1 {
+                        margin-bottom: 1em;
+                    }
+                </style>
+                <div class="policy_law">
+                    <div class="mb-1"><b>${`<#ASUS_Feedback_Law_1#>`.replace(/\[aa\](.*?)\[\/aa\]/g, `<a class="url-policy" target="_blank" href="https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang=EN&kw=&num=">$1</a>`)}</b></div>
+                    <div class="mb-1"><b><#ASUS_PP_Desc_EU_1#>: <#ASUS_Feedback_Law_2#></b></div>
+                    <ol>
+                        <li><#ASUS_Feedback_Law_2_1#>
+                            <ol>
+                                <li><#ASUS_Feedback_Law_2_1_1#></li>
+                                <li><#ASUS_Feedback_Law_2_1_2#></li>
+                                <li>${`<#ASUS_Feedback_Law_2_1_3#>`.replace('[%@]', '10 MB')}</li>
+                            </ol>
+                        </li>
+                        <li><#ASUS_Feedback_Law_2_2#></li>
+                        <li><#ASUS_Feedback_Law_2_3#>
+                            <ol>
+                                <li><#ASUS_Feedback_Law_2_3_1#></li>
+                                <li><#ASUS_Feedback_Law_2_3_2#></li>
+                            </ol>
+                        </li>
+                        <li>${`<#ASUS_Feedback_Law_2_4#>`.replace(/\[aa\](.*?)\[\/aa\]/g, `<a class="url-personal-asus-privacy" target="_blank" href="https://nw-dlcdnet.asus.com/support/forward.html?model=&type=AsusPrivacy&lang=EN&kw=&num=">$1</a>`)}</li>
+                    </ol>
+                </div>
             `
         },
         EULA: {
@@ -386,6 +543,100 @@ const ASUS_POLICY = {
                     company: `CyberGhost S.R.L.`
                 }
             }
+        },
+        AIBOARD_EULA: {
+            Title: `<#ASUS_Aiboard_EULA_Title#>`,
+            HTML: `<style>
+                    .policy_title{
+                        font-weight: bold;
+                        text-decoration: underline;
+                        margin-bottom: 1em;
+                    }
+                    .policy_desc{
+                        font-weight: normal;
+                        margin-bottom: 1em;
+                    }
+                    .policy_law ol {
+                        margin: 0 0.5em 0 0.5em;
+                    }
+                    .policy_law ol {
+                        padding-left: 1em;
+                    }
+                    .policy_law ol ol{
+                        padding-left: 2em;
+                    }
+                    .policy_law li{
+                        margin-top: 1em;
+                        margin-bottom: 1em;
+                    }
+                    .policy_law li li::marker{
+                        content: counters(list-item,".",list-item)" ";
+                    }
+                    .policy_law > ol > li{
+                        font-weight: bold;
+                    }
+                    .policy_law > ol > li > div:first-child{
+                        font-weight: normal;
+                    }
+                    .policy_law > ol > li:not(:first-child) li{
+                        font-weight: bold;
+                    }
+                    .policy_law > ol > li:not(:first-child) li div{
+                        font-weight: normal;
+                    }
+                    .policy_law > ol > li li{
+                        font-weight: normal;
+                    }
+                    .font-weight-bold {
+                        font-weight: bold;
+                    }
+                </style>
+                <div>
+                    <div class="policy_desc"><#ASUS_Aiboard_EULA_Desc#></div>
+                    <div class="policy_law">
+                        <ol>
+                            <li><#ASUS_Aiboard_EULA_Law_1#>
+                                <ol>
+                                    <li><#ASUS_Aiboard_EULA_Law_1_1#></li>
+                                    <li><#ASUS_Aiboard_EULA_Law_1_2#></li>
+                                    <li><#ASUS_Aiboard_EULA_Law_1_3#></li>
+                                </ol>
+                            </li>
+                            <li><#ASUS_Aiboard_EULA_Law_2#>
+                                <ol>
+                                    <li><#ASUS_Aiboard_EULA_Law_2_1#>
+                                        <div><#ASUS_Aiboard_EULA_Law_2_1_Desc#></div>
+                                    </li>
+                                    <li><#ASUS_Aiboard_EULA_Law_2_2#>
+                                        <div><#ASUS_Aiboard_EULA_Law_2_2_Desc#></div>
+                                    </li>
+                                    <li><#ASUS_Aiboard_EULA_Law_2_3#>
+                                        <div><#ASUS_Aiboard_EULA_Law_2_3_Desc#></div>
+                                    </li>
+                                    <li><#ASUS_Aiboard_EULA_Law_2_4#>
+                                        <div><#ASUS_Aiboard_EULA_Law_2_4_Desc#></div>
+                                    </li>
+                                    <li><#ASUS_Aiboard_EULA_Law_2_5#>
+                                        <div><#ASUS_Aiboard_EULA_Law_2_5_Desc#></div>
+                                    </li>
+                                    <li><#ASUS_Aiboard_EULA_Law_2_6#>
+                                        <div><#ASUS_Aiboard_EULA_Law_2_6_Desc#></div>
+                                    </li>
+                                    <li><#ASUS_Aiboard_EULA_Law_2_7#>
+                                        <div><#ASUS_Aiboard_EULA_Law_2_7_Desc#></div>
+                                    </li>
+                                    <li><#ASUS_Aiboard_EULA_Law_2_8#>
+                                        <div><#ASUS_Aiboard_EULA_Law_2_8_Desc#></div>
+                                    </li>
+                                    <li><#ASUS_Aiboard_EULA_Law_2_9#>
+                                        <div><#ASUS_Aiboard_EULA_Law_2_9_Desc#></div>
+                                    </li>
+                                </ol>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            `,
         }
     },
 
@@ -400,6 +651,7 @@ const ASUS_POLICY = {
             z-index: 2000;
             backdrop-filter: blur(2px);
             -webkit-backdrop-filter: blur(2px);
+            color: var(--body-text-color);
         }
         .modal {
             position: fixed;
@@ -432,7 +684,7 @@ const ASUS_POLICY = {
             pointer-events: auto;
             background-color: var(--popup-bg-color);
             background-clip: padding-box;
-            border: 1px solid rgba(0, 0, 0, .2);
+            border: 1px solid var(--policy-border-color);
             border-radius: var(--global-radius);
             outline: 0;
         }
@@ -571,6 +823,35 @@ const ASUS_POLICY = {
             background-color: #6c757d;
             border-color: #6c757d;
         }
+        
+        [role~="icon"] {
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-size: 100%;
+            mask-size: 100%;
+            transition: transform 0.35s ease;
+            background-color: rgb(var(--color-icon-default));
+        }
+        
+        .skip-btn {
+            display: flex;
+            align-items: center;    
+            justify-content: center;
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+        }
+        
+        .skip-btn .icon-close {
+            width: 24px;
+            height: 24px;
+            mask-image: url("data:image/svg+xml;utf8,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cpath%20d%3D%22M18%205.91003L6%2018.09%22%20stroke%3D%22black%22%20stroke-width%3D%221.2%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%3Cpath%20d%3D%22M6%205.91003L18%2018.09%22%20stroke%3D%22black%22%20stroke-width%3D%221.2%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%3C%2Fsvg%3E%0A");
+        }
+
+        .skip-btn:hover .icon-close {
+            background-color: rgb(var(--color-icon-hover));
+        }
+        
         .scroll-info {
             font-weight: bold;
             color: #ff5722;
@@ -600,7 +881,7 @@ const ASUS_POLICY = {
             display: flex !important;
             justify-content: center !important;
             font-size: 1.5em;
-            color: var(--primary-60);
+            color: var(--policy-notice-title-color);
             font-weight: bold;
         }
         
@@ -731,28 +1012,58 @@ if (!areScriptsLoaded(dependencies)) {
     console.log('Dependencies did not load');
 }
 
+// Default policy status
 let policy_status = {
-    "Policy_lang": "EN", "EULA": "0", "EULA_time": "", "PP": "0", "PP_time": "", "TM": "0", "TM_time": "",
+    isFetchDone: false,
+    Policy_lang: "EN",
+    EULA: '',
+    EULA_read: 1,
+    EULA_allow_skip: 0,
+    EULA_force_sign: 1,
+    PP: '',
+    PP_read: 1,
+    PP_force_sign: 1,
+    TM: "", TM_time: "",
+    AIBOARD_EULA: '',
+    AIBOARD_EULA_read: 1,
 };
 
 async function PolicyStatus() {
     let policy_status = {};
-    await httpApi.privateEula.get()
-        .then(data => {
-            policy_status.PP = data.ASUS_PP;
-            policy_status.PP_time = data.ASUS_PP_time;
-        })
 
-    const asus_pp_support = await httpApi.hookGet("get_ui_support").asus_pp;
+    try {
+        const data = await httpApi.privateEula.get();
+        policy_status.EULA = data.EULA;
+        policy_status.EULA_read = data.EULA_read;
+        policy_status.EULA_allow_skip = data.EULA_allow_skip;
+        policy_status.EULA_force_sign = data.EULA_force_sign;
+        policy_status.PP = data.PP;
+        policy_status.PP_time = data.PP_time;
+        policy_status.PP_read = data.PP_read;
+        policy_status.PP_force_sign = data.PP_force_sign;
+        policy_status.AIBOARD_EULA = data.AIBOARD_EULA;
+        policy_status.AIBOARD_EULA_read = data.AIBOARD_EULA_read;
+        policy_status.AIBOARD_EULA_allow_skip = data.AIBOARD_EULA_allow_skip;
+        policy_status.AIBOARD_EULA_force_sign = data.AIBOARD_EULA_force_sign;
+    } catch (e) {
+        policy_status.isFetchDone = false;
+        return policy_status;
+    }
 
-    const nvram_data = await httpApi.nvramGet(["ASUS_NEW_EULA", "ASUS_NEW_EULA_time", 'TM_EULA', 'TM_EULA_time', 'preferred_lang', 'ASUS_PP_AutoWebUpgradeDisable'], true);
-    policy_status.EULA = nvram_data.ASUS_NEW_EULA;
-    policy_status.EULA_time = nvram_data.ASUS_NEW_EULA_time;
+    const ui_support = await httpApi.hookGet("get_ui_support");
+    const asus_pp_support = ui_support.asus_pp;
+
+    const nvram_data = await httpApi.nvramGet([
+        'TM_EULA', 'TM_EULA_time', 'preferred_lang', 'ASUS_PP_AutoWebUpgradeDisable'
+    ], true);
+
     policy_status.TM = nvram_data.TM_EULA;
     policy_status.TM_time = nvram_data.TM_EULA_time;
     policy_status.Policy_lang = nvram_data.preferred_lang;
     policy_status.ASUS_PP_AutoWebUpgradeDisable = nvram_data.ASUS_PP_AutoWebUpgradeDisable;
     policy_status.ASUS_PP_support = asus_pp_support;
+    policy_status.isFetchDone = true;
+
     return policy_status;
 }
 
@@ -979,7 +1290,10 @@ class AccessibleLanguageDropdown {
             return ui_support[_ptn] ? true : false;
         }
 
-        let theme = 'asus';
+        let theme = 'rt';
+        if (isSupport("UI4")) {
+            theme = 'asus'
+        }
         if (isSupport("rog")) {
             return "rog";
         } else if (isSupport("tuf")) {
@@ -987,7 +1301,7 @@ class AccessibleLanguageDropdown {
         } else if (isSupport("business")) {
             return "business";
         } else if (isSupport("TS_UI")) {
-            return "TS";
+            return "ts";
         } else {
             return theme;
         }
@@ -1314,11 +1628,13 @@ class PolicyScrollDiv {
 
     constructor(props) {
         const {policy, theme = '', scrollCallBack, policyStatus = policy_status} = props;
-        if (policyStatus.PP == 0) {
+        if (policyStatus.PP === 0 || policyStatus.PP === "" || (policyStatus.PP_read === 0 && policyStatus.PP > 0)) {
             this.ppVersion = policyStatus.ASUS_PP_support;
         } else {
             this.ppVersion = policyStatus.PP;
         }
+        const supportPPVersion = ASUS_POLICY.Content.PP.Versions.includes(this.ppVersion) ? this.ppVersion : Math.max(...ASUS_POLICY.Content.PP.Versions);
+
         const div = document.createElement('div');
         const shadowRoot = div.attachShadow({mode: 'open'});
         const template = document.createElement('template');
@@ -1360,9 +1676,10 @@ class PolicyScrollDiv {
         shadowRoot.querySelector('.policy-scroll-div').addEventListener('scroll', scrollCallBack.bind(this));
         if (policy) {
             if (policy == "PP") {
-                shadowRoot.querySelector('.policy-scroll-div').innerHTML = ASUS_POLICY.Content[policy][`HTMLv${this.ppVersion}`].replace(/\[aa\](.*?)\[\/aa\]/g, `<a target="_blank" href="https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang=` + policyStatus.Policy_lang + `&kw=&num=" style="text-decoration: underline;cursor: pointer;">$1</a>`)
+                shadowRoot.querySelector('.policy-scroll-div').innerHTML = ASUS_POLICY.Content[policy][`HTMLv${supportPPVersion}`]
+                shadowRoot.querySelector('.policy-scroll-div').querySelector('.url-policy')?.setAttribute('href', `https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang=` + policyStatus.Policy_lang + `&kw=&num=`);
             } else {
-                shadowRoot.querySelector('.policy-scroll-div').innerHTML = ASUS_POLICY.Content[policy].HTML.replace(/\[aa\](.*?)\[\/aa\]/g, `<a target="_blank" href="https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang=` + policyStatus.Policy_lang + `&kw=&num=" style="text-decoration: underline;cursor: pointer;">$1</a>`)
+                shadowRoot.querySelector('.policy-scroll-div').innerHTML = ASUS_POLICY.Content[policy].HTML;
             }
         }
 
@@ -1403,7 +1720,12 @@ class PolicyModalComponent {
             securityUpdate = false,
             websUpdate = false,
             policyStatus = policy_status,
-            singPPVersion = 0,
+            signPPVersion = 0,
+            modalSize = '',
+            agreeBtnText = '',
+            disagreeBtnText = '',
+            closeBtnText = '',
+            showDisagreeBtn = true,
             agreeCallback = function () {
             },
             disagreeCallback = function () {
@@ -1415,15 +1737,29 @@ class PolicyModalComponent {
         } = props;
         this.id = id;
         this.policy = policy;
-        this.singPPVersion = singPPVersion;
-        if (policyStatus.PP == 0) {
+
+        const hasAgreedBefore = policyStatus.PP >= 1;
+        const shouldForcePopup = policyStatus.PP_read === 0 && (policyStatus.PP === "" || (policyStatus.PP >= 0 && policyStatus.PP_force_sign === 1));
+        if (shouldForcePopup) {
             this.ppVersion = policyStatus.ASUS_PP_support;
         } else {
-            this.ppVersion = policyStatus.PP;
+            if(hasAgreedBefore){
+                this.ppVersion = policyStatus.PP;
+            }else{
+                this.ppVersion = policyStatus.ASUS_PP_support;
+            }
         }
-        if (singPPVersion > 0 && policyStatus.PP == 2) {
-            this.ppVersion = singPPVersion;
+        if (signPPVersion > 0) {
+            this.ppVersion = signPPVersion;
         }
+        const supportPPVersion = ASUS_POLICY.Content.PP.Versions.includes(this.ppVersion) ? this.ppVersion : Math.max(...ASUS_POLICY.Content.PP.Versions);
+        policyStatus.signPPVersion = signPPVersion;
+        policyStatus.supportPPVersion = supportPPVersion;
+        policyStatus.PPVersions = ASUS_POLICY.Content.PP.Versions;
+
+        this.hasAgreedBefore = hasAgreedBefore;
+        this.shouldForcePopup = shouldForcePopup;
+
         this.securityUpdate = securityUpdate;
         this.websUpdate = websUpdate;
         this.policyStatus = policyStatus;
@@ -1448,7 +1784,7 @@ class PolicyModalComponent {
           ${ASUS_POLICY.PolicyModalStyle}
           <div class="popup_bg" data-asuswrt-color="${color}" data-asuswrt-theme="${theme}">
             <div class="modal" tabindex="0">
-                <div class="modal-dialog">
+                <div class="modal-dialog ${modalSize}">
                     <div class="modal-content">
                         <div class="modal-header">
                             <div class="modal-title"></div>
@@ -1498,52 +1834,79 @@ class PolicyModalComponent {
         const closeBtn = document.createElement('button');
         closeBtn.type = 'button';
         closeBtn.className = 'btn btn-primary btn-block close';
-        closeBtn.innerHTML = ASUS_POLICY.Dict.Ok;
+        closeBtn.innerHTML = closeBtnText || ASUS_POLICY.Dict.Ok;
         closeBtn.addEventListener('click', this.handleClickClose.bind(this));
         this.closeBtn = closeBtn;
 
         const agreeBtn = document.createElement('button');
         agreeBtn.type = 'button';
         agreeBtn.className = (policy === 'EULA') ? 'btn btn-primary agree disabled' : 'btn btn-primary disagree';
-        agreeBtn.innerHTML = ASUS_POLICY.Dict.Agree;
+        agreeBtn.innerHTML = agreeBtnText || ASUS_POLICY.Dict.Agree;
         agreeBtn.addEventListener('click', this.handleClickAgree.bind(this));
         this.agreeBtn = agreeBtn;
-
 
         const disagreeBtn = document.createElement('button');
         disagreeBtn.type = 'button';
         disagreeBtn.className = (policy === 'EULA') ? 'btn btn-outline-secondary disagree disabled' : 'btn btn-primary disagree';
-        disagreeBtn.innerHTML = ASUS_POLICY.Dict.Disagree;
+        disagreeBtn.innerHTML = disagreeBtnText || ASUS_POLICY.Dict.Disagree;
         disagreeBtn.addEventListener('click', this.handleClickDisagree.bind(this));
         this.disagreeBtn = disagreeBtn;
 
+        const skipBtn = document.createElement('button');
+        skipBtn.type = 'button';
+        skipBtn.className = 'skip-btn';
+        const skipIcon = document.createElement('i');
+        skipIcon.setAttribute('role', 'icon');
+        skipIcon.className = 'icon-close';
+        skipBtn.appendChild(skipIcon);
+        skipBtn.addEventListener('click', this.handleClickSkip.bind(this));
+        this.skipBtn = skipBtn;
+
         if (policy) {
-            this.element.shadowRoot.querySelector('div.modal-title').innerHTML = ASUS_POLICY.Content[policy].Title;
             if (policy == "PP") {
-                this.element.shadowRoot.querySelector('div.policy-scroll-div').innerHTML = ASUS_POLICY.Content[policy][`HTMLv${this.ppVersion}`].replace(/\[aa\](.*?)\[\/aa\]/g, `<a target="_blank" href="https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang=` + this.policyStatus.Policy_lang + `&kw=&num=" style="text-decoration: underline;cursor: pointer;">$1</a>`);
+                this.element.shadowRoot.querySelector('div.modal-title').innerHTML = ASUS_POLICY.Content.PP.Title_v5;
+                this.element.shadowRoot.querySelector('div.policy-scroll-div').innerHTML = ASUS_POLICY.Content[policy][`HTMLv${supportPPVersion}`];
+                this.element.shadowRoot.querySelector('div.policy-scroll-div').querySelector('.url-policy')?.setAttribute('href', `https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang=` + this.policyStatus.Policy_lang + `&kw=&num=`);
             } else {
-                this.element.shadowRoot.querySelector('div.policy-scroll-div').innerHTML = ASUS_POLICY.Content[policy].HTML.replace(/\[aa\](.*?)\[\/aa\]/g, `<a target="_blank" href="https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang=` + this.policyStatus.Policy_lang + `&kw=&num=" style="text-decoration: underline;cursor: pointer;">$1</a>`);
+                this.element.shadowRoot.querySelector('div.modal-title').innerHTML = ASUS_POLICY.Content[policy].Title;
+                this.element.shadowRoot.querySelector('div.policy-scroll-div').innerHTML = ASUS_POLICY.Content[policy].HTML;
             }
 
             switch (policy) {
                 case "EULA":
-                    if (this.policyStatus.EULA === "0") {
+                    if (this.policyStatus.EULA < 1) {
                         const scrollInfoDiv = document.createElement('div');
                         scrollInfoDiv.className = "scroll-info";
                         scrollInfoDiv.innerHTML = ASUS_POLICY.Dict.ScrollDown;
                         this.element.shadowRoot.querySelector('div.modal-body').appendChild(scrollInfoDiv);
-                        this.element.shadowRoot.querySelector('div.modal-body').appendChild(ageCheckDiv);
+                        if (this.policyStatus.EULA_allow_skip === 1) {
+                            this.element.shadowRoot.querySelector('div.modal-header').appendChild(skipBtn);
+                        }else{
+                            this.element.shadowRoot.querySelector('div.modal-body').appendChild(ageCheckDiv);
+                        }
+                        agreeBtn.innerHTML = ASUS_POLICY.Dict.I_Understand;
                         this.element.shadowRoot.querySelector('div.modal-footer').appendChild(agreeBtn);
                     } else {
                         this.element.shadowRoot.querySelector('div.modal-footer').appendChild(closeBtn);
                     }
                     break;
                 case "PP":
-                    if (this.policyStatus.PP < "2" || this.policyStatus.PP_time === "" || this.ppVersion > this.policyStatus.PP) {
+                    if (this.shouldForcePopup) {
+                        if (this.policyStatus.PP === "" && this.policyStatus.EULA_allow_skip === 1) {
+                            this.element.shadowRoot.querySelector('div.modal-body').appendChild(ageCheckDiv);
+                        }
                         this.element.shadowRoot.querySelector('div.modal-footer').appendChild(disagreeBtn);
                         this.element.shadowRoot.querySelector('div.modal-footer').appendChild(agreeBtn);
                     } else {
-                        this.element.shadowRoot.querySelector('div.modal-footer').appendChild(closeBtn);
+                        if (this.hasAgreedBefore) {
+                            this.element.shadowRoot.querySelector('div.modal-footer').appendChild(closeBtn);
+                        } else {
+                            if (this.policyStatus.PP === "" && this.policyStatus.EULA_allow_skip === 1) {
+                                this.element.shadowRoot.querySelector('div.modal-body').appendChild(ageCheckDiv);
+                            }
+                            this.element.shadowRoot.querySelector('div.modal-footer').appendChild(disagreeBtn);
+                            this.element.shadowRoot.querySelector('div.modal-footer').appendChild(agreeBtn);
+                        }
                     }
                     break;
                 case "TM":
@@ -1572,6 +1935,18 @@ class PolicyModalComponent {
                         const speedtestLogo = document.createElement('div');
                         speedtestLogo.innerHTML = `<div class="speedtest_logo"></div>`;
                         this.element.shadowRoot.querySelector('div.policy-scroll-div').appendChild(speedtestLogo);
+                    }
+                    break;
+                case "AIBOARD_EULA":
+                    if (this.policyStatus.AIBOARD_EULA < 1) {
+                        if (showDisagreeBtn) {
+                            disagreeBtn.classList.remove("disabled");
+                            this.element.shadowRoot.querySelector('div.modal-footer').appendChild(disagreeBtn);
+                        }
+                        agreeBtn.classList.remove("disabled");
+                        this.element.shadowRoot.querySelector('div.modal-footer').appendChild(agreeBtn);
+                    } else {
+                        this.element.shadowRoot.querySelector('div.modal-footer').appendChild(closeBtn);
                     }
                     break;
             }
@@ -1639,7 +2014,10 @@ class PolicyModalComponent {
             return ui_support[_ptn] ? true : false;
         }
 
-        let theme = 'asus';
+        let theme = 'rt';
+        if (isSupport("UI4")) {
+            theme = 'asus'
+        }
         if (isSupport("rog")) {
             return "rog";
         } else if (isSupport("tuf")) {
@@ -1647,22 +2025,35 @@ class PolicyModalComponent {
         } else if (isSupport("business")) {
             return "business";
         } else if (isSupport("TS_UI")) {
-            return "TS";
+            return "ts";
         } else {
             return theme;
         }
     }
 
-    checkPolicy = () => {
-        const status = PolicyStatus()
+    checkPolicy = (Read = '') => {
+        PolicyStatus()
             .then(data => {
+                switch (Read){
+                    case 'EULA':
+                        data.EULA_read = 1;
+                        break;
+                    case 'PP':
+                        data.PP_read = 1;
+                        break;
+                    case 'AIBOARD_EULA':
+                        data.AIBOARD_EULA_read = 1;
+                        break;
+                    default:
+                        break;
+                }
                 httpApi.log('policy_status', JSON.stringify(data));
-                if (data.EULA == "0") {
+                if (data.EULA_read === 0) {
                     const policyModal = new PolicyUpdateModalComponent({
                         securityUpdate: true, websUpdate: true, policyStatus: data
                     });
                     policyModal.show();
-                } else if (data.EULA == 1 && ((data.PP == 1 && data.PP_time != "") || (data.PP == 0 && data.PP_time == ""))) {
+                } else if (data.EULA_read === 1 && data.PP_read === 0) {
                     const policyModal = new PolicyModalComponent({
                         policy: 'PP',
                         securityUpdate: true,
@@ -1738,22 +2129,34 @@ class PolicyModalComponent {
         if (!e.target.classList.contains("disabled")) {
             switch (this.policy) {
                 case "EULA":
-                    let yearChecked = this.ageCheckbox.checked;
-                    if (!yearChecked) {
-                        alert(ASUS_POLICY.Dict.AgeConfirm);
-                        this.ageLabel.style.color = top.businessWrapper ? "red" : "#ff5722";
-                        return false;
-                    } else {
-                        this.agreeBtn.classList.add("disabled");
-                        this.agreeBtn.innerHTML = '';
-                        this.agreeBtn.appendChild(this.loadingImg);
-                        httpApi.newEula.set(1, async () => {
-                            await this.hide();
-                            await this.checkPolicy();
-                        })
+                    if (this.policyStatus.EULA_allow_skip === 0) {
+                        let yearChecked = this.ageCheckbox.checked;
+                        if (!yearChecked) {
+                            alert(ASUS_POLICY.Dict.AgeConfirm);
+                            this.ageLabel.style.color = top.businessWrapper ? "red" : "#ff5722";
+                            return false;
+                        }
                     }
+
+                    this.agreeBtn.classList.add("disabled");
+                    this.agreeBtn.innerHTML = '';
+                    this.agreeBtn.appendChild(this.loadingImg);
+                    httpApi.newEula.set(1, async () => {
+                        await this.hide();
+                        await this.checkPolicy(this.policy);
+                    })
+
                     break
                 case "PP":
+                    if (this.policyStatus.PP_read === 0 && this.policyStatus.EULA_allow_skip === 1) {
+                        let yearChecked = this.ageCheckbox.checked;
+                        if (!yearChecked) {
+                            alert(ASUS_POLICY.Dict.AgeConfirm);
+                            this.ageLabel.style.color = top.businessWrapper ? "red" : "#ff5722";
+                            return false;
+                        }
+                    }
+
                     this.agreeBtn.classList.add("disabled");
                     this.disagreeBtn.classList.add("disabled");
                     this.agreeBtn.innerHTML = '';
@@ -1773,7 +2176,7 @@ class PolicyModalComponent {
                             }
                             await this.agreeCallback();
                             await this.hide();
-                            await this.checkPolicy();
+                            await this.checkPolicy(this.policy);
                         })
                     }, 1000);
                     break
@@ -1785,6 +2188,20 @@ class PolicyModalComponent {
                         top.document.body.style.removeProperty('overflow');
                         this.hide();
                     })
+                    break
+                case "AIBOARD_EULA":
+                    this.agreeBtn.classList.add("disabled");
+                    this.disagreeBtn.classList.add("disabled");
+                    this.agreeBtn.innerHTML = '';
+                    this.agreeBtn.appendChild(this.loadingImg);
+                    setTimeout(() => {
+                        httpApi.AIBOARD_EULA.set("1", async () => {
+                            await this.agreeCallback();
+                            await this.hide();
+                            await this.checkPolicy(this.policy);
+                        })
+                    }, 1000);
+                    break
             }
         }
     }
@@ -1793,13 +2210,22 @@ class PolicyModalComponent {
         if (!e.target.classList.contains("disabled")) {
             switch (this.policy) {
                 case "PP":
+                    if (this.policyStatus.PP_read === 0 && this.policyStatus.EULA_allow_skip === 1) {
+                        let yearChecked = this.ageCheckbox.checked;
+                        if (!yearChecked) {
+                            alert(ASUS_POLICY.Dict.AgeConfirm);
+                            this.ageLabel.style.color = top.businessWrapper ? "red" : "#ff5722";
+                            return false;
+                        }
+                    }
+
                     this.hide();
                     const policyModal = new PolicyWithdrawModalComponent({
                         policy: "PP",
                         policyStatus: this.policyStatus,
                         securityUpdate: this.securityUpdate,
                         websUpdate: this.websUpdate,
-                        singPPVersion: this.singPPVersion,
+                        signPPVersion: this.signPPVersion,
                         agreeCallback: this.agreeCallback,
                         disagreeCallback: this.disagreeCallback,
                         readAgainCallback: this.readAgainCallback,
@@ -1814,8 +2240,19 @@ class PolicyModalComponent {
                         this.hide();
                     })
                     break
+                case "AIBOARD_EULA":
+                    this.disagreeCallback();
+                    this.hide();
             }
         }
+    }
+
+    handleClickSkip(e) {
+        httpApi.newEula.set(0, async () => {
+            await this.hide();
+            await this.checkPolicy(this.policy);
+        })
+
     }
 
     render() {
@@ -1852,7 +2289,7 @@ class PolicyWithdrawModalComponent extends PolicyModalComponent {
             securityUpdate = false,
             websUpdate = false,
             policyStatus = policy_status,
-            singPPVersion = 0,
+            signPPVersion = 0,
             agreeCallback = function () {
             },
             disagreeCallback = function () {
@@ -1863,15 +2300,21 @@ class PolicyWithdrawModalComponent extends PolicyModalComponent {
             },
         } = props;
         this.id = id;
-        this.singPPVersion = singPPVersion;
-        if (policyStatus.PP == 0) {
+        const hasAgreedBefore = policyStatus.PP >= 1;
+        const shouldForcePopup = policyStatus.PP_read === 0 && (policyStatus.PP === "" || (policyStatus.PP >= 0 && policyStatus.PP_force_sign === 1));
+        if (shouldForcePopup) {
             this.ppVersion = policyStatus.ASUS_PP_support;
         } else {
-            this.ppVersion = policyStatus.PP;
+            if(hasAgreedBefore){
+                this.ppVersion = policyStatus.PP;
+            }else{
+                this.ppVersion = policyStatus.ASUS_PP_support;
+            }
         }
-        if (singPPVersion > 0 && policyStatus.PP == 2) {
-            this.ppVersion = singPPVersion;
+        if (signPPVersion > 0) {
+            this.ppVersion = signPPVersion;
         }
+        const supportPPVersion = ASUS_POLICY.Content.PP.Versions.includes(this.ppVersion) ? this.ppVersion : Math.max(...ASUS_POLICY.Content.PP.Versions);
         this.securityUpdate = securityUpdate;
         this.websUpdate = websUpdate;
         this.policyStatus = policyStatus;
@@ -1892,9 +2335,12 @@ class PolicyWithdrawModalComponent extends PolicyModalComponent {
             color = "light";
         }
 
+        const filename = window.location.pathname.split('/').pop();
+        const thisPage = filename==="QIS_wizard.htm" ? 'qis' : '';
+
         template.innerHTML = `
           ${ASUS_POLICY.PolicyModalStyle}
-          <div class="popup_bg" data-asuswrt-color="${color}" data-asuswrt-theme="${theme}">
+          <div class="popup_bg" data-asuswrt-color="${color}" data-asuswrt-theme="${theme}" data-asuswrt-page="${thisPage}">
             <div class="modal" tabindex="0">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -1917,7 +2363,7 @@ class PolicyWithdrawModalComponent extends PolicyModalComponent {
 
         this.element = div;
 
-        const disagreeNoticeComponent = new DisagreeNoticeComponent({ppVersion: this.ppVersion});
+        const disagreeNoticeComponent = new DisagreeNoticeComponent({ppVersion: supportPPVersion});
         this.element.shadowRoot.querySelector('div.modal-body').appendChild(disagreeNoticeComponent.render());
         this.element.shadowRoot.querySelector('button.know-risk').addEventListener('click', this.handleClickKnowRisk.bind(this));
         this.element.shadowRoot.querySelector('button.read-again').addEventListener('click', this.handleClickReadAgain.bind(this));
@@ -1935,7 +2381,7 @@ class PolicyWithdrawModalComponent extends PolicyModalComponent {
         httpApi.privateEula.set("0", async () => {
             await this.knowRiskCallback();
             await this.hide();
-            await this.checkPolicy();
+            await this.checkPolicy(this.policy);
         })
     }
 
@@ -1948,7 +2394,7 @@ class PolicyWithdrawModalComponent extends PolicyModalComponent {
                 policyStatus: this.policyStatus,
                 securityUpdate: this.securityUpdate,
                 websUpdate: this.websUpdate,
-                singPPVersion: this.singPPVersion,
+                signPPVersion: this.signPPVersion,
                 agreeCallback: this.agreeCallback,
                 disagreeCallback: this.disagreeCallback,
                 readAgainCallback: this.readAgainCallback,
@@ -1996,11 +2442,20 @@ class PersonalDataModalComponent {
             theme = this.getTheme(),
         } = props;
         this.id = id;
-        if (policyStatus.PP == 0) {
+
+        const hasAgreedBefore = policyStatus.PP >= 1;
+        const shouldForcePopup = policyStatus.PP_read === 0 && (policyStatus.PP === "" || (policyStatus.PP >= 0 && policyStatus.PP_force_sign === 1));
+        if (shouldForcePopup) {
             this.ppVersion = policyStatus.ASUS_PP_support;
         } else {
-            this.ppVersion = policyStatus.PP;
+            if(hasAgreedBefore){
+                this.ppVersion = policyStatus.PP;
+            }else{
+                this.ppVersion = policyStatus.ASUS_PP_support;
+            }
         }
+        const supportPPVersion = ASUS_POLICY.Content.PP.Versions.includes(this.ppVersion) ? this.ppVersion : Math.max(...ASUS_POLICY.Content.PP.Versions);
+
         const div = document.createElement('div');
         div.id = id;
         const shadowRoot = div.attachShadow({mode: 'open'});
@@ -2009,9 +2464,13 @@ class PersonalDataModalComponent {
         if (isSupport("UI4") || theme == "business") {
             color = "light";
         }
+
+        const filename = window.location.pathname.split('/').pop();
+        const thisPage = filename==="QIS_wizard.htm" ? 'qis' : '';
+
         template.innerHTML = `
           ${ASUS_POLICY.PolicyModalStyle}
-          <div class="popup_bg" data-asuswrt-color="${color}" data-asuswrt-theme="${theme}">
+          <div class="popup_bg" data-asuswrt-color="${color}" data-asuswrt-theme="${theme}" data-asuswrt-page="${thisPage}">
             <div class="modal">
                 <div class="modal-dialog modal-xl">
                     <div class="modal-content">
@@ -2035,16 +2494,15 @@ class PersonalDataModalComponent {
         const closeBtn = document.createElement('button');
         closeBtn.type = 'button';
         closeBtn.className = 'btn btn-primary btn-block close';
-        closeBtn.innerHTML = 'Understood';
+        closeBtn.innerHTML = ASUS_POLICY.Dict.I_Understand;
         closeBtn.addEventListener('click', this.handleClickClose.bind(this));
         this.closeBtn = closeBtn;
 
         this.element.shadowRoot.querySelector('div.modal-title').innerHTML = ASUS_POLICY.Content.PP.PersonalData;
-        this.element.shadowRoot.querySelector('div.policy-scroll-div').innerHTML = ASUS_POLICY.Content.PP[`PersonalDataHTMLv${this.ppVersion}`].replace(/\[aa\](.*?)\[\/aa\]/g, `<a target="_blank" href="https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang=` + policyStatus.Policy_lang + `&kw=&num=" style="text-decoration: underline;cursor: pointer;">$1</a>`);
+        this.element.shadowRoot.querySelector('div.policy-scroll-div').innerHTML = ASUS_POLICY.Content.PP[`PersonalDataHTMLv${supportPPVersion}`];
+        this.element.shadowRoot.querySelector('div.policy-scroll-div').querySelector('.url-policy')?.setAttribute('href', `https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang=${policyStatus.Policy_lang}&kw=&num=`);
+        this.element.shadowRoot.querySelector('div.policy-scroll-div').querySelector('.url-personal-asus-privacy')?.setAttribute('href', `https://nw-dlcdnet.asus.com/support/forward.html?model=&type=AsusPrivacy&lang=${policyStatus.Policy_lang}&kw=&num=`);
 
-        const scrollInfoDiv = document.createElement('div');
-        scrollInfoDiv.className = "scroll-info";
-        scrollInfoDiv.innerHTML = ASUS_POLICY.Dict.ScrollDown;
         this.element.shadowRoot.querySelector('div.modal-footer').appendChild(closeBtn);
 
 
@@ -2060,7 +2518,10 @@ class PersonalDataModalComponent {
             return ui_support[_ptn] ? true : false;
         }
 
-        let theme = 'asus';
+        let theme = 'rt';
+        if (isSupport("UI4")) {
+            theme = 'asus'
+        }
         if (isSupport("rog")) {
             return "rog";
         } else if (isSupport("tuf")) {
@@ -2068,7 +2529,7 @@ class PersonalDataModalComponent {
         } else if (isSupport("business")) {
             return "business";
         } else if (isSupport("TS_UI")) {
-            return "TS";
+            return "ts";
         } else {
             return theme;
         }
@@ -2116,7 +2577,7 @@ class DisagreeNoticeComponent {
                             <li>Google Assistant</li>
                             <li>Remote Connection</li>
                             <li>Notification</li>
-                            ${(ppVersion == 4) ?
+                            ${(ppVersion >= 4) ?
             `<li>AFC</li>
                             <li>ASUS Expert Site Manager</li>` : ``}
                         </ul>
@@ -2201,27 +2662,43 @@ class ThirdPartyPolicyModalComponent extends PolicyModalComponent {
 class QisPolicyPageComponent {
     constructor(props) {
         const {
-            policy, theme = this.getTheme(), policyStatus = policy_status
+            policy, theme = this.getTheme(), policyStatus = policy_status,
         } = props;
         this.policyStatus = policyStatus;
-        if (policyStatus.PP == 0) {
+        const hasAgreedBefore = policyStatus.PP >= 1;
+        const shouldForcePopup = policyStatus.PP_read === 0 && (policyStatus.PP === "" || (policyStatus.PP >= 0 && policyStatus.PP_force_sign === 1));
+        if (shouldForcePopup) {
             this.ppVersion = policyStatus.ASUS_PP_support;
         } else {
-            this.ppVersion = policyStatus.PP;
+            if(hasAgreedBefore){
+                this.ppVersion = policyStatus.PP;
+            }else{
+                this.ppVersion = policyStatus.ASUS_PP_support;
+            }
         }
+        const supportPPVersion = ASUS_POLICY.Content.PP.Versions.includes(this.ppVersion) ? this.ppVersion : Math.max(...ASUS_POLICY.Content.PP.Versions);
         httpApi.log('policy_status', JSON.stringify(policyStatus));
         const div = document.createElement('div');
         div.style.height = '100%';
         const shadowRoot = div.attachShadow({mode: 'open'});
         const template = document.createElement('template');
         let title = `${ASUS_POLICY.Content[policy].Title}`
+        let title_orig = title;
+        if (policy === "PP") {
+            if (supportPPVersion >= 5) {
+                title = `${ASUS_POLICY.Content.PP.Title_v5}`
+            } else {
+                title = `${ASUS_POLICY.Content.PP.Title}`
+            }
+        }
+
         if (policy === "EULA") {
             if (this.policyStatus.Policy_lang === "CN") {
                 title = title.replace(/(.{4})/g, '<div>$1</div>');
             } else if (this.policyStatus.Policy_lang === "TW") {
                 title = title.replace(/(.{5})/g, '<div>$1</div>');
             }
-        } else if (policy === "PP") {
+        } else if (policy === "PP" && supportPPVersion < 5) {
             if (this.policyStatus.Policy_lang === "CN") {
                 title = title.replaceAll(' ', '').replace(/(.{4})/g, '<div>$1</div>');
             } else if (this.policyStatus.Policy_lang === "TW") {
@@ -2490,6 +2967,37 @@ class QisPolicyPageComponent {
                     color: #007AFF;
                 }
                 
+                [role~="icon"] {
+                    -webkit-mask-repeat: no-repeat;
+                    mask-repeat: no-repeat;
+                    -webkit-mask-size: 100%;
+                    mask-size: 100%;
+                    transition: transform 0.35s ease;
+                    background-color: rgb(var(--color-icon-default));
+                }
+                
+                .skip-btn {
+                    display: flex;
+                    align-items: center;    
+                    justify-content: center;
+                    border: none;
+                    background-color: transparent;
+                    cursor: pointer;
+                    position: absolute;
+                    right: 10px;
+                    top:70px;
+                }
+                
+                .skip-btn .icon-close {
+                    width: 24px;
+                    height: 24px;
+                    mask-image: url("data:image/svg+xml;utf8,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cpath%20d%3D%22M18%205.91003L6%2018.09%22%20stroke%3D%22black%22%20stroke-width%3D%221.2%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%3Cpath%20d%3D%22M6%205.91003L18%2018.09%22%20stroke%3D%22black%22%20stroke-width%3D%221.2%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%3C%2Fsvg%3E%0A");
+                }
+        
+                .skip-btn:hover .icon-close {
+                    background-color: rgb(var(--color-icon-hover));
+                }
+                
                 .policy-age {
                     margin: 1em 0;
                     font-size: 1.5em;
@@ -2689,7 +3197,7 @@ class QisPolicyPageComponent {
                 }
                 ` : ``}
                 
-                ${theme === "asus" ? `
+                ${theme === "asus" || theme === "rt" ? `
                 .bg .header{
                     background-color: var(--primary-60);
                 }
@@ -2732,7 +3240,7 @@ class QisPolicyPageComponent {
                 
                 @media screen and (min-width: 576px){
                     .bg .btn:hover{
-                        box-shadow: 0 0 8px 0 #BA1622;
+                        box-shadow: var(--primary-btn-hover-boxshadow);
                     }
                     .bg .btn::after{
                         content: "";
@@ -2743,8 +3251,10 @@ class QisPolicyPageComponent {
                         position: absolute;
                         z-index: 3;
                         --borderColor: #FF3535;
+                        ${theme !== "asus" && theme !== "rt" ? `
                         background: linear-gradient(to left, var(--borderColor), var(--borderColor)) left top no-repeat, linear-gradient(to bottom, var(--borderColor), var(--borderColor)) left top no-repeat, linear-gradient(to left, var(--borderColor), var(--borderColor)) right top no-repeat, linear-gradient(to bottom, var(--borderColor), var(--borderColor)) right top no-repeat, linear-gradient(to left, var(--borderColor), var(--borderColor)) left bottom no-repeat, linear-gradient(to bottom, var(--borderColor), var(--borderColor)) left bottom no-repeat, linear-gradient(to left, var(--borderColor), var(--borderColor)) right bottom no-repeat, linear-gradient(to left, var(--borderColor), var(--borderColor)) right bottom no-repeat;
                         background-size: 1px 4px, 4px 1px, 1px 4px, 4px 1px;
+                        `:``}
                     }           
                     
                     .btn.disabled.agree::after {
@@ -2881,13 +3391,14 @@ class QisPolicyPageComponent {
                     </div>
                 </div>
                 <div class="container">
+                    <div id="skip-btn-div"></div>
                     <div class="page">
-                        <div class="page-title" role="heading" aria-level="1" aria-label="${ASUS_POLICY.Content[policy].Title}">${title}</div>
+                        <div class="page-title" role="heading" aria-level="1" aria-label="${title_orig}">${title}</div>
                         <div>
                             <div class="page-content">
                                 <div class="page-desc">${ASUS_POLICY.Dict.QisDesc}</div>
                                 <div class="policy-content"></div>
-                                <div class="scroll-info">${ASUS_POLICY.Dict.ScrollDown}</div>
+                                ${policy == 'EULA' ? `<div class="scroll-info">${ASUS_POLICY.Dict.ScrollDown}</div>` : ``}
                                 <div class="policy-age"></div>
                             </div>
                             <div class="page-footer"></div>
@@ -2903,6 +3414,16 @@ class QisPolicyPageComponent {
         this.element = div;
 
         const handleClickAbortBtn = (e) => {
+            if (policyStatus.EULA_allow_skip == 1) {
+                const yearChecked = shadowRoot.querySelector("#ASUS_EULA_enable").checked;
+
+                if (!yearChecked) {
+                    alert(`${ASUS_POLICY.Dict.AgeConfirm}`);
+                    shadowRoot.querySelector(".checkbox-wrapper-40").style.color = top.businessWrapper ? "red" : "#ff5722";
+                    return false;
+                }
+            }
+
             if (!e.target.classList.contains("disabled")) {
                 const policyModal = new PolicyWithdrawModalComponent({
                     policy: "PP",
@@ -2920,6 +3441,17 @@ class QisPolicyPageComponent {
         const handleClickApplyBtn = (e) => {
             if (!e.target.classList.contains("disabled")) {
                 if (policy === "PP") {
+
+                    if (policyStatus.EULA_allow_skip == 1) {
+                        const yearChecked = shadowRoot.querySelector("#ASUS_EULA_enable").checked;
+
+                        if (!yearChecked) {
+                            alert(`${ASUS_POLICY.Dict.AgeConfirm}`);
+                            shadowRoot.querySelector(".checkbox-wrapper-40").style.color = top.businessWrapper ? "red" : "#ff5722";
+                            return false;
+                        }
+                    }
+
                     applyBtn.innerHTML = Get_Component_btnLoading();
                     httpApi.privateEula.set("1", function () {
                         httpApi.securityUpdate.set(1);
@@ -2935,12 +3467,15 @@ class QisPolicyPageComponent {
                         window.goTo.Welcome();
                     })
                 } else if (policy === "EULA") {
-                    const yearChecked = shadowRoot.querySelector("#ASUS_EULA_enable").checked;
 
-                    if (!yearChecked) {
-                        alert(`${ASUS_POLICY.Dict.AgeConfirm}`);
-                        shadowRoot.querySelector(".checkbox-wrapper-40").style.color = top.businessWrapper ? "red" : "#ff5722";
-                        return false;
+                    if (policyStatus.EULA_allow_skip == 0) {
+                        const yearChecked = shadowRoot.querySelector("#ASUS_EULA_enable").checked;
+
+                        if (!yearChecked) {
+                            alert(`${ASUS_POLICY.Dict.AgeConfirm}`);
+                            shadowRoot.querySelector(".checkbox-wrapper-40").style.color = top.businessWrapper ? "red" : "#ff5722";
+                            return false;
+                        }
                     }
                     applyBtn.innerHTML = Get_Component_btnLoading();
                     httpApi.newEula.set("1", function () {
@@ -2948,6 +3483,15 @@ class QisPolicyPageComponent {
                     })
                 }
             }
+        }
+
+        const handleClickSkipBtn = (e) => {
+            if (policy === "EULA") {
+                httpApi.newEula.set("0", function () {
+                    goTo.PP();
+                })
+            }
+
         }
 
         const clickPopupReadAgainBtn = () => {
@@ -2982,18 +3526,33 @@ class QisPolicyPageComponent {
         let abortBtn = null;
         let applyBtn = null;
 
+
+        if (policy === "EULA" && policyStatus.EULA_allow_skip === 1) {
+            let skipBtn = document.createElement('button');
+            skipBtn.type = "button";
+            skipBtn.className = "skip-btn";
+            skipBtn.setAttribute("aria-label", ASUS_POLICY.Dict.Skip);
+            skipBtn.innerHTML = `<i role="icon" class="icon-close"></i>`;
+            shadowRoot.querySelector('#skip-btn-div').appendChild(skipBtn);
+            skipBtn.addEventListener('click', handleClickSkipBtn);
+        }
+
+
         if (policy !== "EULA") {
             abortBtn = document.createElement('div');
             abortBtn.className = "btn disagree";
             abortBtn.textContent = ASUS_POLICY.Dict.Disagree;
             shadowRoot.querySelector('.page-footer').appendChild(abortBtn);
             abortBtn.addEventListener("click", handleClickAbortBtn);
-
         }
 
         applyBtn = document.createElement('div');
         applyBtn.className = (policy === "EULA") ? "btn agree disabled" : "btn disagree";
-        applyBtn.textContent = ASUS_POLICY.Dict.Agree;
+        if(policy === "EULA"){
+            applyBtn.textContent = ASUS_POLICY.Dict.I_Understand;
+        }else {
+            applyBtn.textContent = ASUS_POLICY.Dict.Agree;
+        }
         shadowRoot.querySelector('.page-footer').appendChild(applyBtn);
         applyBtn.addEventListener('click', handleClickApplyBtn);
 
@@ -3002,7 +3561,7 @@ class QisPolicyPageComponent {
         });
         this.element.shadowRoot.querySelector('.policy-content').appendChild(scrollDiv.render());
 
-        if (policy === "EULA") {
+        if ((policy === "EULA" && policyStatus.EULA_allow_skip === 0) || (policy === "PP" && policyStatus.EULA_allow_skip === 1)) {
             const ageCheckboxDiv = document.createElement('div');
             ageCheckboxDiv.className = "checkbox-wrapper-40";
             ageCheckboxDiv.innerHTML = `
@@ -3011,8 +3570,6 @@ class QisPolicyPageComponent {
                     <span class="checkbox">${ASUS_POLICY.Dict.AgeCheck}</span>
                 </label>`;
             this.element.shadowRoot.querySelector('.policy-age').appendChild(ageCheckboxDiv);
-        } else {
-            this.element.shadowRoot.querySelector('.scroll-info').remove();
         }
 
         const languageDropdown = new AccessibleLanguageDropdown(
@@ -3028,7 +3585,10 @@ class QisPolicyPageComponent {
             return ui_support[_ptn] ? true : false;
         }
 
-        let theme = 'asus';
+        let theme = 'rt';
+        if (isSupport("UI4")) {
+            theme = 'asus'
+        }
         if (isSupport("rog")) {
             return "rog";
         } else if (isSupport("tuf")) {
@@ -3036,7 +3596,7 @@ class QisPolicyPageComponent {
         } else if (isSupport("business")) {
             return "business";
         } else if (isSupport("TS_UI")) {
-            return "TS";
+            return "ts";
         } else {
             return theme;
         }
@@ -3047,9 +3607,118 @@ class QisPolicyPageComponent {
     }
 }
 
+class FeedbackNoticeModalComponent {
+    constructor(props) {
+        const {
+            id = 'feedback_notice_popup_modal',
+            policyStatus = policy_status,
+            theme = this.getTheme(),
+        } = props;
+        this.id = id;
+        const div = document.createElement('div');
+        div.id = id;
+        const shadowRoot = div.attachShadow({mode: 'open'});
+        const template = document.createElement('template');
+        let color = "dark";
+        if (isSupport("UI4") || theme == "business") {
+            color = "light";
+        }
+        template.innerHTML = `
+          ${ASUS_POLICY.PolicyModalStyle}
+          <div class="popup_bg" data-asuswrt-color="${color}" data-asuswrt-theme="${theme}">
+            <div class="modal">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div class="modal-title"></div>
+                        </div>
+                        <div class="modal-body">
+                            <div class="policy-scroll-div"></div>
+                        </div>
+                        <div class="modal-footer">
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+        `;
+
+        shadowRoot.appendChild(template.content.cloneNode(true));
+        this.element = div;
+
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'btn btn-primary btn-block close';
+        closeBtn.innerHTML = ASUS_POLICY.Dict.I_Understand;
+        closeBtn.addEventListener('click', this.handleClickClose.bind(this));
+        this.closeBtn = closeBtn;
+
+        this.element.shadowRoot.querySelector('div.modal-title').innerHTML = ASUS_POLICY.Content.PP.PersonalData;
+        this.element.shadowRoot.querySelector('div.policy-scroll-div').innerHTML = ASUS_POLICY.Content.PP.FeedbackNoticeHTML;
+        this.element.shadowRoot.querySelector('div.policy-scroll-div').querySelector('.url-policy')?.setAttribute('href', `https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang=${policyStatus.Policy_lang}&kw=&num=`);
+        this.element.shadowRoot.querySelector('div.policy-scroll-div').querySelector('.url-personal-asus-privacy')?.setAttribute('href', `https://nw-dlcdnet.asus.com/support/forward.html?model=&type=AsusPrivacy&lang=${policyStatus.Policy_lang}&kw=&num=`);
+
+        this.element.shadowRoot.querySelector('div.modal-footer').appendChild(closeBtn);
+
+
+    }
+
+    policy = "";
+    closeBtn = null;
+
+    getTheme() {
+        let ui_support = httpApi.hookGet("get_ui_support");
+
+        function isSupport(_ptn) {
+            return ui_support[_ptn] ? true : false;
+        }
+
+        let theme = 'rt';
+        if (isSupport("UI4")) {
+            theme = 'asus'
+        }
+        if (isSupport("rog")) {
+            return "rog";
+        } else if (isSupport("tuf")) {
+            return "tuf";
+        } else if (isSupport("business")) {
+            return "business";
+        } else if (isSupport("TS_UI")) {
+            return "ts";
+        } else {
+            return theme;
+        }
+    }
+
+    handleClickClose() {
+        this.hide();
+    }
+
+    render() {
+        return this.element;
+    }
+
+    show() {
+        top.document.body.style.overflow = 'hidden';
+        if (top.document.querySelector(`#${this.id}`) == null) {
+            top.document.body.appendChild(this.element);
+        }
+    }
+
+    hide() {
+        top.document.body.style.removeProperty('overflow');
+        this.element.remove();
+    }
+}
+
 function showPersonalData() {
     const PersonalDataModal = new PersonalDataModalComponent({});
     PersonalDataModal.show();
+}
+
+function showFeedbackNotice() {
+    const FeedbackNoticeModal = new FeedbackNoticeModalComponent({});
+    FeedbackNoticeModal.show();
 }
 
 

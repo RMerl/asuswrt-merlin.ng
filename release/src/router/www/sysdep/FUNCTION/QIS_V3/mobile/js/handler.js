@@ -5617,7 +5617,7 @@ goTo.EULA = function(){
 	}
 	const policyStatus = PolicyStatus()
 		.then(data => {
-			if (data.EULA == "1") {
+			if (data.EULA > 0 && data.EULA_read == 1) {
 				goTo.PP();
 			} else {
 				const policy_page = document.querySelector('#policy_page');

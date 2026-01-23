@@ -195,7 +195,7 @@
  * threads.
  * Default: 0 (let OS decide the thread's stack size).
  */
-#undef PJ_THREAD_SET_STACK_SIZE
+//#undef PJ_THREAD_SET_STACK_SIZE
 
 /* If 1, pj_thread_create() should allocate stack from the pool supplied.
  * Default: 0 (let OS allocate memory for thread's stack).

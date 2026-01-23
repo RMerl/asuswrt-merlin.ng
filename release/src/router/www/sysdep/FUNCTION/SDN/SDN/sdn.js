@@ -5382,7 +5382,7 @@ function show_popup_Wizard_Setting(_type){
 								$(this).closest(".profile_setting_item")
 									.after(
 										$("<div>")
-											.html(`The added rule will be default disabled. <#WiFi_mlo_active_maxnum#>`.replace(/#MAXNUM/g, mlo_fh_enable_maximum))/* untranslated */
+											.html(`<#GB_rulelist_add_default#> <#WiFi_mlo_active_maxnum#>`.replace(/#MAXNUM/g, mlo_fh_enable_maximum))
 											.addClass("item_hint")
 									);
 							}
@@ -5391,8 +5391,8 @@ function show_popup_Wizard_Setting(_type){
 							$(this).closest(".profile_setting_item")
 								.after(
 									$("<div>")
-										.html(`The added rule will be default disabled. <#WiFi_mlo_enable_Hint#>`)
-										.addClass("item_hint")/* untranslated */
+										.html(`<#GB_rulelist_add_default#> <#WiFi_mlo_enable_Hint#>`)
+										.addClass("item_hint")
 								);
 						}
 					}
@@ -7257,7 +7257,7 @@ function Get_Component_Full_Setting(view_mode){
 			Get_Component_More_Item(manual_dhcp_parm).appendTo($net_mode_container);
 		}
 
-		var vid_parm = {"title":"<#WANVLANIDText#>", "type":"text", "id":"vlan_id", "need_check":true, "maxlength":4};//1-4093
+		var vid_parm = {"title":"<#WANVLANIDText#>", "type":"text", "id":"vlan_id", "need_check":true, "maxlength":4};//3-4093
 		if(is_Web_iframe){
 			if(isSupport("SMART_HOME_MASTER_UI")){
 				Get_Component_Input(vid_parm).appendTo($net_mode_container)
@@ -8551,7 +8551,7 @@ function Update_Setting_Profile(_obj, _profile_data){
 				}
 
 				//check vlan_trunklist existed
-				if( vlan_trunklist_orig != "" && _profile_data.vlan_rl.vid > 1){	//vid :2~4093
+				if( vlan_trunklist_orig != "" && _profile_data.vlan_rl.vid > 1){	//vid :3~4093
 					do_restart_net_and_phy = true;
 				}
 
@@ -8574,7 +8574,7 @@ function Update_Setting_Profile(_obj, _profile_data){
 				}
 
 				//update vlan_trunklist
-				if( vlan_trunklist_orig != "" && _profile_data.vlan_rl.vid > 1){	//vid :2~4093
+				if( vlan_trunklist_orig != "" && _profile_data.vlan_rl.vid > 1){	//vid :3~4093
 					var updated_vlan_trunklist = rm_vid_from_vlan_trunklist( _profile_data.vlan_rl.vid );
 					nvramSet_obj.vlan_trunklist = updated_vlan_trunklist;
 					if(vlan_rl_tmp==""){	//without vid for vlan_trunklist
@@ -9111,7 +9111,7 @@ function set_apply_btn_status(_obj){
 					}
 
 					//check vlan_trunklist with port binding
-					if( vlan_trunklist_orig != "" && sdn_profile.vlan_rl.vid > 1 ){	//vid :2~4093
+					if( vlan_trunklist_orig != "" && sdn_profile.vlan_rl.vid > 1 ){	//vid :3~4093
 						$.each(vlan_trunklist_json_tmp, function(index, item){
 							if(item.profile == sdn_profile.vlan_rl.vid){
 								do_restart_net_and_phy = true;
@@ -9422,7 +9422,7 @@ function set_apply_btn_status(_obj){
 					if($(_obj).find("#vlan_id").length > 0){
 
 						//update vlan_trunklist
-						if( sdn_profile.vlan_rl.vid > 1){	//vid :2~4093
+						if( sdn_profile.vlan_rl.vid > 1){	//vid :3~4093
 							var updated_vlan_trunklist = update_vlan_trunklist( sdn_profile.vlan_rl, $(_obj).find("#vlan_id").val());
 							nvramSet_obj.vlan_trunklist = updated_vlan_trunklist;
 						}
@@ -10261,7 +10261,7 @@ function validate_format_Wizard_Item(_obj, _type){
 					$vlan_id.focus();
 					return false;
 				}
-				var isValid_vlan_id = valid_num_range($vlan_id.val(), 1, 4093);
+				var isValid_vlan_id = valid_num_range($vlan_id.val(), 3, 4093);
 				if(isValid_vlan_id.isError){
 					$vlan_id.show_validate_hint(isValid_vlan_id.errReason);
 					$vlan_id.focus();

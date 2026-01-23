@@ -160,6 +160,7 @@ function get_vlan_portlist(){
 }
 
 function disable_lacp_if_conflicts_with_dualwan(){
+	let conflict_lanport_array = [];
 	let conflict_lanport_text = "";
 	let wan_lanport_num = "";
 	let hint_str1 = "<#PortConflict_DisableFunc_Reason#>";
@@ -175,7 +176,7 @@ function disable_lacp_if_conflicts_with_dualwan(){
 
 	for(var i = 0; i < bonding_port_settings.length; i++){
 		if(wan_lanport_num == bonding_port_settings[i].val){
-			conflict_lanport_text = bonding_port_settings[i].text.toUpperCase();
+			conflict_lanport_array.push(bonding_port_settings[i].text.toUpperCase());
 			break;
 		}
 	}
@@ -184,24 +185,34 @@ function disable_lacp_if_conflicts_with_dualwan(){
 		let disable_first_option = false;
 		let disable_two_10g_option = false;
 
-		if(wans_dualwan_array.indexOf("wan") != -1 && wans_extwan == "0"){//10G WAN/LAN1 conflict
-			if(conflict_lanport_text == ""){
-				conflict_lanport_text = "10G WAN/LAN1";
+		if(wans_dualwan_array.indexOf("wan") != -1 && wans_extwan == "0"){//10G WAN/LAN-1 conflict
+			conflict_lanport_array.push("10G WAN/LAN-1");
+			disable_two_10g_option = true;
+		}
+
+		if(based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI"){
+			if(wans_dualwan_array.indexOf("wan") != -1 && wans_extwan == "1"){//2.5G WAN/LAN-1 conflict
+				conflict_lanport_array.push("2.5G WAN/LAN-1");
 			}
-			else
-				conflict_lanport_text +=", 10G WAN/LAN1";
 
-			disable_two_10g_option = true;
+			if(conflict_lanport_array.indexOf("2.5G WAN/LAN-1") != -1)//2.5G LAN-1
+				disable_first_option = true;
+
+			if(conflict_lanport_array.indexOf("2.5G LAN-2") != -1){//2.5G LAN-2
+				disable_first_option = true;
+			}
+		}
+		else{
+			if(conflict_lanport_array.indexOf("1G LAN-5") != -1)//1G LAN-5
+				disable_first_option = true;
+
+			if(conflict_lanport_array.indexOf("10G LAN-6") != -1){//10G LAN-6
+				disable_first_option = true;
+				disable_two_10g_option = true;
+			}
 		}
 
-		if(conflict_lanport_text.indexOf("LAN5") != -1)//1G LAN5
-			disable_first_option = true;
-
-		if(conflict_lanport_text.indexOf("LAN6") != -1){//10G LAN6
-			disable_first_option = true;
-			disable_two_10g_option = true;
-		}
-
+		conflict_lanport_text = conflict_lanport_array.join(",");
 		if(disable_first_option && disable_two_10g_option){
 			hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_1");
 			note_str = hint_str1.replace("%1$@", conflict_lanport_text).replace("%2$@", "WAN") + " " + hint_str2;
@@ -212,7 +223,7 @@ function disable_lacp_if_conflicts_with_dualwan(){
 			document.getElementById("lacp_desc").style.display = "";
 			document.form.lacp_enabled.disabled = true;
 		}
-		else if(disable_first_option){//disable "1G LAN5 and 10G LAN6" option
+		else if(disable_first_option){//GT-BE98_PRO: disable "1G LAN5 and 10G LAN6" option   19000AI: disable "2.5G LAN1 and 2.5G LAN2" option
 			hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_3");
 			note_str = hint_str1.replace("%1$@", conflict_lanport_text).replace("%2$@", "WAN") + " " + hint_str2;
 
@@ -221,6 +232,7 @@ function disable_lacp_if_conflicts_with_dualwan(){
 			$("#disable_first_option_hint").show();
 			$("#lacp_first_option").css("color", "#848c98");
 			$("#setting_link_3").attr("href", "/Advanced_WANPort_Content.asp");
+			document.form.lacp_port_select[1].checked = true;
 		}
 		else if(disable_two_10g_option){// disable two 10g opton
 			hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_4");
@@ -231,6 +243,7 @@ function disable_lacp_if_conflicts_with_dualwan(){
 			$("#disable_two_10g_hint").show();
 			$("#two_10g_lacp").css("color", "#848c98");
 			$("#setting_link_4").attr("href", "/Advanced_WANPort_Content.asp");
+			document.form.lacp_port_select[0].checked = true;
 		}
 
 	}
@@ -394,6 +407,10 @@ function initial(){
 	$("#tabMenu").css("display", "");
 
 	if(lacp_support){
+		if(based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI"){
+			$("#lacp_first_option").html("2.5G WAN/LAN-1 and 2.5G LAN-2");
+		}
+
 		document.getElementById("lacp_tr").style.display = "";
 		document.form.lacp_enabled.disabled = false;
 		if(lacp_enabled){
@@ -470,7 +487,7 @@ function initial(){
 			$("#lacp_note").html(hint_str);
 
 			if(lacp_enabled_ori == "1"){
-				if(lacp_ifnames_x == "eth0 eth3")
+				if(lacp_ifnames_x == GTBE_lacp_ifnames_settings)
 					document.form.lacp_port_select[1].checked = true;
 				else
 					document.form.lacp_port_select[0].checked = true;
@@ -546,13 +563,13 @@ function applyRule(){
 					$('<input>').attr({
 						type: 'hidden',
 						name: "lacp_ifnames_x",
-						value: "eth0 eth3"
+						value: GTBE_lacp_ifnames_settings
 					}).appendTo('form');
 					setting_changed = true;
 				}
 			}
 			else{
-				if(lacp_ifnames_x == "eth0 eth3"){
+				if(lacp_ifnames_x == GTBE_lacp_ifnames_settings){
 					$('<input>').attr({
 						type: 'hidden',
 						name: "lacp_ifnames_x",
@@ -677,7 +694,7 @@ function confirm_autowan_change(){
 		$('<input>').attr({
 			type: 'hidden',
 			name: "lacp_ifnames_x",
-			value: "eth0 eth3"
+			value: GTBE_lacp_ifnames_settings
 		}).appendTo('form');
 	}
 	else{

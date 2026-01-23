@@ -1251,12 +1251,25 @@ typedef struct {
 	int base_wan_unit;
 	int mcast;
 	int dscp;
+	int ext_switch;
+	char switch_ifname[IFNAMSIZ];
+	int switch_wans_port;	//wans_lanport
 } MSWAN_PARAM;
+extern int _get_mswan_ext_switch_dualwan_vid(int wans_port);
+extern char *_get_mswan_ext_switch_dualwan_ifname(int wans_port);
+extern int _get_mswan_ext_switch_novlan_vid(int base_unit);
+extern char* _get_mswan_base_ifname(int wan_unit, char* buf, size_t len);
 extern void config_mswan(int wan_unit);
 extern void clean_mswan_vitf(int wan_unit);
 extern void set_mswan_vitf(MSWAN_PARAM *p);
 extern void update_iptv_ifname(int wan_base_unit);
 extern char* get_mswan_ifname(int wan_unit, char* buf, size_t len);
+#ifdef RTCONFIG_HND_ROUTER
+extern int is_wan_port_ext_switch(int base_unit);
+extern void config_mswan_ext_switch_vlan_add(MSWAN_PARAM *p);
+extern void config_mswan_ext_switch_vlan_del(int wan_unit);
+extern void config_extwan(void);
+#endif
 #endif
 
 #ifdef RTCONFIG_AMAS
@@ -1623,12 +1636,21 @@ extern int is_auto_wanport_enabled();
 extern int get_mac_from_ip(const char *tip, char *tmac, int tmac_size);
 extern int get_br_port_no_from_mac(const char *target_mac);
 extern char *get_if_from_br_port_no(const int tno, char *if_name, int if_len);
-extern int get_autoif_from_br_port_no(const int tno, char *if_name, int if_len);
 extern int autowan_main(int argc, char *argv[]);
 extern void restore_auto_wanport();
-extern void set_auto_wanport(const char *wan_ifname, int restart_wan);
+extern void set_auto_wanport(const char *wan_ifname, const char *ms_if, int restart_wan);
 extern int get_num_of_auto_wanport(const char *ifname);
 extern int get_auto_wanport_phy_status(void);
+extern int get_mac_from_ip(const char *tip, char *tmac, int tmac_size);
+extern char *get_macvlan_name(const char *net_ifname, char *mv_ifname, int mv_size);
+extern void config_macvlan(const char *net_ifname, int enable, char *mv_ifname, int mv_size);
+extern int dhcp_det(int argc, char **argv);
+#if defined(RTCONFIG_MULTISERVICE_WAN)
+extern char *get_ms_autowan_vif(const char *base_if, int autowan_unit, char* auto_cand, size_t len);
+extern void clean_ms_autowan_vif();
+extern int get_total_ms_num();
+extern void config_ms_autowan_vif();
+#endif // RTCONFIG_MULTISERVICE_WAN
 #endif // RTCONFIG_AUTO_WANPORT
 extern void start_wan_if(int unit);
 extern void stop_wan_if(int unit);
@@ -2357,9 +2379,12 @@ extern int gen_ai_key(char *private_key_filename, char *public_key_filename);
 extern int renew_ai_key(char *private_key_filename, char *public_key_filename, char *tftp_filename);
 extern int start_ai_upgrade(char *);
 extern int ai_response_check_main(int argc, char *argv[]);
+extern int ai_request_consumer_main(int argc, char *argv[]);
 extern int ai_request_main(int argc, char *argv[]);
 extern void stop_ai_response_check(void);
 extern int start_ai_response_check(void);
+extern void stop_ai_request_consumer(void);
+extern int start_ai_request_consumer(void);
 extern int send_ai_request(int);
 extern int start_ai_reboot(void);
 extern void stop_ai_service(void);
@@ -2595,6 +2620,7 @@ extern int dsld_main(int argc, char **argv);
 #endif
 
 //services.c
+extern int write_etc_hosts();
 void start_Tor_proxy(void);
 void stop_Tor_proxy(void);
 extern void write_static_leases(FILE *fp);
@@ -3878,6 +3904,9 @@ extern void start_afc_coldreboot_monitor();
 extern int afc_heartbeat_main(int argc, char *argv[]);
 extern void stop_afc_heartbeat();
 extern void start_afc_heartbeat();
+extern void stop_afc_data_collector(void);
+extern void start_afc_data_collector(char *nowait);
+extern int afc_dc_main(int argc, char *argv[]);
 #endif
 
 // natnl_api.c
@@ -4227,7 +4256,7 @@ extern int wl_defer_conf_main(int argc, char *argv[]);
 #ifdef RTCONFIG_CSIMON
 extern int csi_monitor_main(int argc, char *argv[]);
 extern void stop_csi_monitor();
-extern void start_csi_monitor(int argc, char *argv[]);
+extern void start_csi_monitor();
 #endif
 
 #endif	/* __RC_H__ */

@@ -752,6 +752,7 @@ PJ_DEF(pj_status_t) pj_ice_sess_add_cand(pj_ice_sess *ice,
 {
     pj_ice_sess_cand *lcand;
     pj_status_t status = PJ_SUCCESS;
+    char address[PJ_INET6_ADDRSTRLEN];
 	char *s_addr;
 
     PJ_ASSERT_RETURN(ice && comp_id && 
@@ -789,7 +790,9 @@ PJ_DEF(pj_status_t) pj_ice_sess_add_cand(pj_ice_sess *ice,
 		memcmp(s_addr, "192.168.", 8) == 0))
 		lcand->prio *=2;
 
-    pj_ansi_strcpy(ice->tmp.txt, pj_inet_ntoa(lcand->addr.ipv4.sin_addr));
+    pj_ansi_strxcpy(ice->tmp.txt, pj_sockaddr_print(&lcand->addr, address,
+                                                     sizeof(address), 2),
+                     sizeof(ice->tmp.txt));
     LOG4((ice->obj_name, 
 	 "Candidate %d added: comp_id=%d, tp_id=%d, type=%s, foundation=%.*s, "
 	 "addr=%s:%d, base=%s:%d, prio=0x%x (%u), local_pref=%u, tcp_type=%d, prefs=%u",
@@ -969,7 +972,11 @@ PJ_DEF(const char *)dump_check(char *buffer, unsigned bufsize,
 			       laddr, (int)pj_ntohs(lcand->addr.ipv4.sin_port),
 			       pj_inet_ntoa(rcand->addr.ipv4.sin_addr),
 			       (int)pj_ntohs(rcand->addr.ipv4.sin_port),
+#ifdef PJ_HAS_INT64
+				   check->prio.u64,
+#else
 				   check->prio,
+#endif
 				   check->local_path,
 				   check->tcp_sess_idx);
     } else {
@@ -2422,14 +2429,15 @@ PJ_DEF(pj_status_t) pj_ice_sess_start_check2(pj_ice_sess *ice, pj_bool_t check_c
         return PJ_EINVAL;
     //PJ_ASSERT_RETURN(ice, PJ_EINVAL);
 
-	if (check_cached_list)
+	if (check_cached_list) {
 		if (ice->clist.count == 0)
 			return PJ_EINVALIDOP;
 		//PJ_ASSERT_RETURN(ice->cached_clist.count > 0, PJ_EINVALIDOP);
-	else
+	} else {
 		if (ice->clist.count == 0)
 			return PJ_EINVALIDOP;
 		//PJ_ASSERT_RETURN(ice->clist.count > 0, PJ_EINVALIDOP);
+	}
 
     /* Lock session */
     pj_grp_lock_acquire(ice->grp_lock);
@@ -3082,7 +3090,7 @@ static void handle_incoming_check(pj_ice_sess *ice,
     pj_ice_sess_comp *comp;
     pj_ice_sess_cand *lcand = NULL;
     pj_ice_sess_cand *rcand;
-    unsigned i, j;
+    unsigned i;
 
     comp = find_comp(ice, rcheck->comp_id);
 
@@ -3100,6 +3108,7 @@ static void handle_incoming_check(pj_ice_sess *ice,
      * candidate.
      */
     if (i == ice->rcand_cnt) {
+        void *p;
 	if (ice->rcand_cnt >= PJ_ICE_MAX_CAND) {
 	    LOG4((ice->obj_name, 
 	          "Unable to add new peer reflexive candidate: too many "
@@ -3114,10 +3123,9 @@ static void handle_incoming_check(pj_ice_sess *ice,
 	pj_memcpy(&rcand->addr, &rcheck->src_addr, rcheck->src_addr_len);
 
 	/* Foundation is random, unique from other foundation */
-	rcand->foundation.ptr = (char*) pj_pool_alloc(ice->pool, 36);
+	rcand->foundation.ptr = p = (char*) pj_pool_alloc(ice->pool, 36);
 	rcand->foundation.slen = pj_ansi_snprintf(rcand->foundation.ptr, 36,
-						  "f%p", 
-						  rcand->foundation.ptr);
+						  "f%p", p);
 
 	LOG4((ice->obj_name, 
 	     "Added new remote candidate from the request: %s:%d",

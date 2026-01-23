@@ -220,6 +220,7 @@ PJ_DEF(pj_status_t) pjmedia_codec_g711_deinit(void)
     g711_factory.endpt = NULL;
 
     /* Destroy mutex. */
+    pj_mutex_unlock(g711_factory.mutex);
     pj_mutex_destroy(g711_factory.mutex);
     g711_factory.mutex = NULL;
 

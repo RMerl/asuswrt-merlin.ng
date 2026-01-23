@@ -924,6 +924,7 @@ static void create_dtmf_payload(pjmedia_stream *stream,
     }
 
     frame_out->size = 4;
+	(void) cur_ts;
 }
 
 
@@ -1393,6 +1394,7 @@ static pj_status_t put_frame_imp( pjmedia_port *port,
     stream->last_frm_ts_sent = frame->timestamp;
 #endif
 
+	(void) samples_per_frame;
     return PJ_SUCCESS;
 }
 
@@ -1507,7 +1509,7 @@ static pj_status_t put_frame( pjmedia_port *port,
 }
 
 
-#if 1
+#if 0
 static void dump_bin(const char *buf, unsigned len)
 {
 	unsigned i;
@@ -1543,7 +1545,9 @@ static void on_rx_rtp(void *data,
     pjsua_call *call = (pjsua_call *)pjmedia_session_get_user_data(session);
 	pj_bool_t is_tnl_data = PJ_FALSE;
     pj_uint8_t *pkt = (pj_uint8_t *)buf;
+#ifdef HTTP_DEBUG
     char *pkt_char = (char *)&pkt[UDT_DATA_CHUNK_TOTAL_HEADER_SIZE];
+#endif
 	pj_bool_t disable_flow_ctl = PJ_FALSE;
 /*
 	// Speed limit. Drop packet if it is over bandwidth.
@@ -1659,6 +1663,7 @@ static void on_rx_rtp(void *data,
 
 }
 
+#if 0
 /*
  * Handle incoming DTMF digits.
  */
@@ -1726,6 +1731,7 @@ static void handle_incoming_dtmf( pjmedia_stream *stream,
 	pj_mutex_unlock(stream->jb_mutex);
     }
 }
+#endif
 
 #if 0
 /*
@@ -2358,8 +2364,9 @@ PJ_DEF(pj_status_t) pjmedia_stream_create( pjmedia_endpt *endpt,
 				 stream->frame_size, 
 				 stream->codec_param.info.frm_ptime,
 				 jb_max, &stream->jb);
-    if (status != PJ_SUCCESS)
-	goto err_cleanup;
+    if (status != PJ_SUCCESS) {
+		goto err_cleanup;
+	}
 
 	/* create natnl jitter buffer mutex */
 	status = pj_mutex_create_simple(pool, NULL, &stream->natnl_jb_mutex);
@@ -2587,13 +2594,15 @@ PJ_DEF(pj_status_t) pjmedia_stream_destroy( pjmedia_stream *stream )
     /* Free mutex */
     
     if (stream->jb_mutex) {
+        pj_mutex_unlock(stream->jb_mutex);
 	pj_mutex_destroy(stream->jb_mutex);
 	stream->jb_mutex = NULL;
     }
 
     /* Destroy jitter buffer */
-    if (stream->jb)
-	pjmedia_jbuf_destroy(stream->jb);
+    if (stream->jb) {
+		pjmedia_jbuf_destroy(stream->jb);
+	}
 
 	/* Free mutex */
 	if (stream->natnl_jb_mutex) {

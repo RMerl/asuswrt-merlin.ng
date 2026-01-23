@@ -2810,9 +2810,9 @@ _dprintf("nat_rule: stop_nat_rules 1.\n");
 
 #if defined(RPBE58) || defined(RTBE58_GO)
 #if defined(RPBE58)
-	if (client_mode() && !nvram_match("force_mlo", "1")) {
+	if ((client_mode() && !nvram_match("re_mode", "1")) && !nvram_match("force_mlo", "1")) {
 #else 
-	if (client_mode() && nvram_match("mlo_off", "1")) {
+	if ((client_mode() && !nvram_match("re_mode", "1")) && nvram_match("mlo_off", "1")) {
 #endif
 		mlo_down();
 		nvram_set("5gbh_war", "0");
@@ -6621,6 +6621,9 @@ void restart_wireless(void)
 	nvram_set_int("led_status", LED_RESTART_WL);
 #endif
 	nvram_set_int("wlready", 0);
+#ifdef RTCONFIG_AMAS
+	nvram_set_int("amas_ready", 0);
+#endif
 
 #ifdef RTCONFIG_AIRIQ
 	// To avoid conn_diag stop ariq_monitor too late,  call stop_airiq_monitor here.
@@ -6631,9 +6634,9 @@ void restart_wireless(void)
 #if defined(RTCONFIG_HND_ROUTER_BE_4916) && defined(RTCONFIG_MLO)
 #if defined(RPBE58) || defined(RTBE58_GO)
 #if defined(RPBE58)
-	if (client_mode() && !nvram_match("force_mlo", "1")) {
+	if ((client_mode() && !nvram_match("re_mode", "1")) && !nvram_match("force_mlo", "1")) {
 #else 
-	if (client_mode() && nvram_match("mlo_off", "1")) {
+	if ((client_mode() && !nvram_match("re_mode", "1")) && nvram_match("mlo_off", "1")) {
 #endif
 		mlo_down();
 		nvram_set("5gbh_war", "0");
@@ -6876,6 +6879,8 @@ void restart_wireless(void)
 	if (nvram_get_int("channel_plan"))
 		start_amas_lanctrl();
 #endif
+	logmessage("AMAS", "restart amas service success\n");
+	nvram_set_int("amas_ready", 1);
 #endif
 
 #ifndef RTCONFIG_DHDAP

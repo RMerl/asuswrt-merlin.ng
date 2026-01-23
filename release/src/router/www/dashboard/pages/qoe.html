@@ -1154,6 +1154,10 @@
             }
         }
 
+        .ai-faq-btn {
+            cursor: pointer;
+        }
+
     </style>
 
     <div class="row p-0 m-0">
@@ -1175,7 +1179,10 @@
                             <div class="qoe-setting-div-svg"></div>
                             <div class="qoe-setting-controller-left">
                                 <div class="switch-div">
-                                    <div class="switch-div-title"><#AiQoE_Switch#></div>
+                                    <div class="switch-div-title"><#AiQoE_Switch#>
+                                    </div>
+                                    <i data-faq="AI_FAQ_QOE" role="icon"
+                                       class="icon icon-help-hexagon icon-size-18 ai-faq-btn" style="margin-left:110px;"></i>
                                     <div id="enable_qoe_btn" class="toggle-button with-text">
                                         <div class="toggle-button-handle"></div>
                                     </div>
@@ -2162,6 +2169,21 @@
                 var(--slider-track) 100%)`;
         }
 
+        const lang = system.language.currentLang;
+        const openFaq = (faqKey) => {
+            const faqUrl = `https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang=${lang}&kw=&num=206`;
+            window.open(faqUrl, '_blank');
+        };
+        const faqBtns = document.querySelectorAll('i.ai-faq-btn');
+        faqBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const faqKey = btn.getAttribute('data-faq');
+                if (faqKey) {
+                    openFaq(faqKey);
+                }
+            });
+        })
+
         // apply_btn click event
         const applyBtn = document.getElementById("applyBtn");
         applyBtn.addEventListener("click", function () {
@@ -2543,7 +2565,7 @@
         addRowBtn.addEventListener("click", () => {
 
             if (bandwidthLimiterRuleList.getList().length >= 32) {
-                alert('Bandwidth limit rules have reached the maximum (32).');
+                alert(`<#BwLimiter_max#>`);
                 return;
             }
 
@@ -2564,7 +2586,7 @@
                 if (isIPv4(deviceSelector.getInputValue()) || isIPv4CIDR(deviceSelector.getInputValue())) {
                     target = deviceSelector.getInputValue();
                 } else {
-                    alert('Select a device or enter a valid IP address.');
+                    alert(`<#BwLimiter_select_device#>`);
                     return;
                 }
             } else {
@@ -2573,13 +2595,13 @@
             }
 
             if (bandwidthLimiterRuleList.getList().find(rule => rule.target === target)) {
-                alert('This device is already in the bandwidth limit rules.');
+                alert(`<#BwLimiter_inRules#>`);
                 return;
             }
             const download = document.querySelector('.setting-cell--input-group input.download-bw').value;
             const upload = document.querySelector('.setting-cell--input-group input.upload-bw').value;
             if (!download || !upload) {
-                alert('Enter a bandwidth value.');
+                alert(`<#BwLimiter_enter_bandwidth#>`);
                 return;
             }
             // create new data row (with icon button)

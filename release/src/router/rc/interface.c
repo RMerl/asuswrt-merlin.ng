@@ -632,6 +632,8 @@ static void _mswan_stb_add()
 	 && wan_type != WANS_DUALWAN_IF_WAN2
 	)
 		return;
+	if (is_wan_port_ext_switch(WAN_UNIT_FIRST))
+		return;
 #endif
 
 	for (i = 1; i < WAN_MULTISRV_MAX; i++) {
@@ -666,6 +668,8 @@ static void _mswan_stb_del()
 	if (wan_type != WANS_DUALWAN_IF_WAN
 	 && wan_type != WANS_DUALWAN_IF_WAN2
 	)
+		return;
+	if (is_wan_port_ext_switch(WAN_UNIT_FIRST))
 		return;
 #endif
 

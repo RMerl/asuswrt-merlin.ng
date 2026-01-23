@@ -119,6 +119,10 @@ static int sleep_duration_test(void)
 
         /* Mark end of test. */
         rc = pj_gettimeofday(&stop);
+        if (rc != PJ_SUCCESS) {
+            app_perror("...error: pj_gettimeofday()", rc);
+            return -22;
+        }
 
         /* Calculate duration (store in stop). */
         PJ_TIME_VAL_SUB(stop, start);

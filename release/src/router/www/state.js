@@ -166,38 +166,49 @@ Array.prototype.del = function(n){
 　　return this.slice(0,n).concat(this.slice(n+1,this.length));
 }
 
-var Session = Session || (function(){
-	var win = window.top || window;
-	try{
-		var store = (win.name ? JSON.parse(win.name) : {});
-		function Save() {
-			win.name = JSON.stringify(store);
-		}
-		
-		if (window.addEventListener) window.addEventListener("unload", Save, false);
-		else if (window.attachEvent) window.attachEvent("onunload", Save);
-		else window.onunload = Save;
+var Session = top.Session || (function() {
+    const win = window.top || window;
 
-		return {
-			set: function(name, value) {
-				store[name] = value;
-			},
-			get: function(name) {
-				return (store[name] ? store[name] : undefined);
-			},
-			clear: function() { store = {}; },
-			dump: function() { return JSON.stringify(store); }
-		};
-	}
-	catch(e){
-		win.name = ""; /* reset cache */
-		return {
-			set: function(){},
-			get: function(){},
-			clear: function(){},
-			dump: function(){}
-		};
-	}
+    try {
+        let store = {};
+
+        if (win.name) {
+            try {
+                store = JSON.parse(win.name);
+            } catch (e) {
+                store = {};
+            }
+        }
+
+        function save() {
+            win.name = JSON.stringify(store);
+        }
+
+        return {
+            set: function(name, value) {
+                store[name] = value;
+                save();
+            },
+            get: function(name) {
+                return store[name] !== undefined ? store[name] : undefined;
+            },
+            clear: function() {
+                store = {};
+                save();
+            },
+            dump: function() {
+                return JSON.stringify(store);
+            }
+        };
+    } catch (e) {
+        win.name = "";
+        return {
+            set: function() {},
+            get: function() {},
+            clear: function() {},
+            dump: function() {}
+        };
+    }
 })();
 
 var htmlEnDeCode = (function() {
@@ -536,6 +547,8 @@ if(isSupport("UI4") && !parent.webWrapper){
 
 	var whiteList = [
 		"Main_Analysis_Content.asp", 
+		"Main_Netstat_Content.asp",
+		"Main_WOL_Content.asp",
 		"aidisk/popCreateAccount.asp", 
 		"aidisk/popCreateFolder.asp", 
 		"aidisk/popDeleteAccount.asp", 
@@ -551,9 +564,13 @@ if(isSupport("UI4") && !parent.webWrapper){
 	for(var i in rwdPageSupport){whiteList.push(rwdPageSupport[i].path)}
 
 	if (!whiteList.find(element=>currentPath.indexOf(element)!=-1) && re_mode != "1" && !noWrapper) {
-		Session.set("lastPage", location.pathname.replace("/", ""));
-		window.localStorage.setItem("page", "settings");
-		location.href = "/index.html?current_theme=white";
+		const pathname = window.location.pathname;
+        const filename = pathname.split('/').pop();
+        window.localStorage.setItem("page", "settings");
+        if (filename.endsWith(".asp")) {
+            top.Session.set(`settings-lastPage`, filename);
+        }
+        top.location.href = "/index.html";
 	}
 }
 var cake_support = isSupport("cake");
@@ -800,7 +817,8 @@ var isp_customize_tool_support = isSupport('isp_customize_tool');
 var lacp_support = isSupport("lacp");
 var dashboard_support = isSupport("dashboard");
 var newsite_provisioning_support = isSupport("newsite_provisioning");
-let is_GTBE_externalswitch_series = (based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000")? true : false;// These models have the same hardware designs (externel realtek switch).
+var is_GTBE_externalswitch_series = (based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000" || based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI")? true : false;// These models have the same hardware designs (externel realtek switch).
+var GTBE_lacp_ifnames_settings = (based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI")? "eth0 eth6":"eth0 eth3";
 
 function get_bonding_ports(product_id){//return lacp bonding ports
 	let bonding_port_settings = [];
@@ -818,10 +836,12 @@ function get_bonding_ports(product_id){//return lacp bonding ports
 			bonding_port_settings = [{"val": "3", "text": "LAN4"}, {"val": "4", "text": "LAN5"}];
 		else if(is_GTBE_externalswitch_series){
 			let lacp_ifnames_x = httpApi.nvramGet(["lacp_ifnames_x"], true).lacp_ifnames_x;
-			if(lacp_ifnames_x == "eth0 eth3")
-				bonding_port_settings = [{"val": "0", "text": "10G WAN/LAN1"}, {"val": "6", "text": "10G LAN6"}];
+			if(lacp_ifnames_x == GTBE_lacp_ifnames_settings)
+				bonding_port_settings = [{"val": "0", "text": "10G WAN/LAN-1"}, {"val": "6", "text": "10G LAN-6"}];
+			else if(based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI")
+				bonding_port_settings = [{"val": "1", "text": "2.5G WAN/LAN-1"}, {"val": "2", "text": "2.5G LAN-2"}];
 			else
-				bonding_port_settings = [{"val": "5", "text": "1G LAN5"}, {"val": "6", "text": "10G LAN6"}];
+				bonding_port_settings = [{"val": "5", "text": "1G LAN-5"}, {"val": "6", "text": "10G LAN-6"}];
 		}
 		else
 			bonding_port_settings = [{"val": "1", "text": "LAN1"}, {"val": "2", "text": "LAN2"}];
@@ -1676,12 +1696,12 @@ function show_menu(){
 	}
 
 	try{
-		showMenuTree(Session.get("menuList." + ui_lang), Session.get("menuExclude"));
+		showMenuTree(top.Session.get("menuList." + ui_lang), top.Session.get("menuExclude"));
 
 		setTimeout(function(){
 			require(['/require/modules/menuTree.js'], function(menuTree){
-				Session.set("menuList." + ui_lang, menuTree.list);
-				Session.set("menuExclude", {
+                top.Session.set("menuList." + ui_lang, menuTree.list);
+                top.Session.set("menuExclude", {
 					menus: menuTree.exclude.menus(),
 					tabs: menuTree.exclude.tabs()
 				});
@@ -1697,8 +1717,8 @@ function show_menu(){
 				tabs: menuTree.exclude.tabs()
 			};
 
-			Session.set("menuList." + ui_lang, menuList);
-			Session.set("menuExclude", menuExclude);
+			top.Session.set("menuList." + ui_lang, menuList);
+			top.Session.set("menuExclude", menuExclude);
 			showMenuTree(menuList, menuExclude);
 			if(parent.webWrapper) setTimeout(parent.setupBusinessUI, 100)
 		});
@@ -1796,7 +1816,7 @@ function create_wireless_notice(){
 
 var goToPage = function(menu, tab, obj){
 	window.localStorage.setItem("clickedItem_tab", tab);
-	Session.set("lastPage", obj.title);
+	top.Session.set("settings-lastPage", obj.title);
 	location.href = obj.title;
 }
 
@@ -2674,7 +2694,7 @@ function submit_language(obj){
 }
 
 function change_language(){
-	Session.clear();
+	top.Session.clear();
 
 	if(document.getElementById("select_lang").value != document.titleForm.preferred_lang.value)
 		document.getElementById("change_lang_btn").disabled = false;
@@ -5295,19 +5315,20 @@ function showWlHintContainer(_parm){
 function checkPolicy() {
     const policyStatus = PolicyStatus()
         .then(data => {
-            if (data.EULA == "0") {
+            if (data.EULA < 1 && data.EULA_read === 0 && data.EULA_force_sign === 1) {
                 const policyModal = new PolicyUpdateModalComponent({
                     policyStatus: data,
                     securityUpdate: 1,
                     websUpdate: 1,
                 });
                 policyModal.show();
-            } else if (data.EULA == 1 && ((data.PP == 1 && data.PP_time != "") || (data.PP == 0 && data.PP_time == ""))) {
+            } else if (data.EULA > 0 && (data.PP === "" || (data.PP > 0 && data.PP_read === 0 && data.PP_force_sign === 1))) {
                 const policyModal = new PolicyModalComponent({
                     policyStatus: data,
                     policy: 'PP',
                     securityUpdate: 1,
                     websUpdate: 1,
+					signPPVersion: data.ASUS_PP_support,
                 });
                 policyModal.show();
             } else if (data.TM == 1 && data.TM_time == '') {
@@ -5369,7 +5390,7 @@ setTimeout(() => {
 		!(window.appInterface ||
 			(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.appInterface)
 		)
-	){		
+	){
 		const scripts = top.document.head.getElementsByTagName('script');
 		let scriptFound = {
 			asusNotice: false,

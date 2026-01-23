@@ -321,11 +321,11 @@ a:link{
 	color: rgba(24, 24, 24, 0.87);
 }
 .del_profile .action_btn_container .del, .customize_alert .action_btn_container .ok{
-	background: rgb(0, 110, 255);
+	background: initial;
 }
 .del_profile .action_btn_container .cancel{
 	border: 1px solid rgb(94 100 112 / 40%);
-	color: rgba(23, 62, 103, 0.6);
+	color: #ffffff;
 }
 .customize_alert .desc{
 	color: var(--text-info-color);

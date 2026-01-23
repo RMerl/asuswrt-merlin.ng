@@ -1,0 +1,1992 @@
+{
+  "qa_pairs": [
+    {
+        "question": "what is the RAG (QA) version?",
+        "answer": "20251002-EN"
+    },
+    {
+        "question": "FW or fw is also known as shortten form of firmware?",
+        "answer": "[metadata]id=10020,desc=get_firmware_version[/metadata]"
+    },
+    {
+        "question": "Netgear?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "tplink",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "Linksys?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10031,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "D-Link?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10032,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "Huawei?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10033,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "Xiaomi?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10034,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "Cisco?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10034,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "Synology?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10035,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "Ubiquiti?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10036,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "Tenda?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10037,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "Google Nest WiFi?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10038,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "Mercusys?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10039,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "TOTOLINK?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10040,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "Belkin?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10041,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "Zyxel?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10042,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "Edimax?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10043,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "What can `Router assistant` do?",
+        "answer": "I can provide a brief router system status report, quick answers for some technical questions and helps to do some actions."
+    },
+    {
+        "question": "What are the key hardware and software features of the GT-BE19000AI ASUS flagship Wi-Fi 7 AI gaming router?",
+        "answer": "GT-BE19000AI features quad-core 2.6GHz CPU, qual-core Synaptics SL1680 CPU with 7.9 TOPs NPU, 4GB DDR4 RAM, 32GB eMMC Flash; supports tri-band Wi-Fi 7 up to 19Gbps, multiple VLANs, embedded Docker, and AI acceleration for high-performance, smart home, and gaming experiences.Please refer to: [GT-BE19000AI_official](https://rog.asus.com/networking/rog-rapture-gt-be19000ai/) for more information."
+    },
+    {
+        "question": "What are the memory and storage specifications of the GT-BE19000AI router?",
+        "answer":  "GT-BE19000AI features quad-core 2.6GHz CPU, qual-core Synaptics SL1680 CPU with 7.9 TOPs NPU, 4GB DDR4 RAM, 32GB eMMC Flash; supports tri-band Wi-Fi 7 up to 19Gbps, multiple VLANs, embedded Docker, and AI acceleration for high-performance, smart home, and gaming experiences.Please refer to: [GT-BE19000AI_official](https://rog.asus.com/networking/rog-rapture-gt-be19000ai/) for more information."
+    },
+    {
+        "question": "What are the spec of GT-BE19000AI?",
+        "answer": "GT-BE19000AI features quad-core 2.6GHz CPU, qual-core Synaptics SL1680 CPU with 7.9 TOPs NPU, 4GB DDR4 RAM, 32GB eMMC Flash; supports tri-band Wi-Fi 7 up to 19Gbps, multiple VLANs, embedded Docker, and AI acceleration for high-performance, smart home, and gaming experiences.Please refer to: [GT-BE19000AI_official](https://rog.asus.com/networking/rog-rapture-gt-be19000ai/) for more information."
+    },
+    {
+        "question": "What are the spec of router?",
+        "answer": "GT-BE19000AI features quad-core 2.6GHz CPU, qual-core Synaptics SL1680 CPU with 7.9 TOPs NPU, 4GB DDR4 RAM, 32GB eMMC Flash; supports tri-band Wi-Fi 7 up to 19Gbps, multiple VLANs, embedded Docker, and AI acceleration for high-performance, smart home, and gaming experiences.Please refer to: [GT-BE19000AI_official](https://rog.asus.com/networking/rog-rapture-gt-be19000ai/) for more information."
+    },
+    {
+        "question": "What is the hardware chipset combination used in the GT-BE19000AI router?",
+        "answer": "GT-BE19000AI features quad-core 2.6GHz CPU, qual-core Synaptics SL1680 CPU with 7.9 TOPs NPU, 4GB DDR4 RAM, 32GB eMMC Flash; supports tri-band Wi-Fi 7 up to 19Gbps, multiple VLANs, embedded Docker, and AI acceleration for high-performance, smart home, and gaming experiences.Please refer to: [GT-BE19000AI_official](https://rog.asus.com/networking/rog-rapture-gt-be19000ai/) for more information."
+    },
+    {
+        "question": "What are the Ethernet port specifications and configurations of the GT-BE19000AI router?",
+        "answer": "The GT-BE19000AI router features 1x 10G WAN,LAN port, 1x 10G Gaming LAN port, 1x 2.5G WAN/LAN port, 3x 2.5G LAN ports, and 1x 1G LAN port.Please refer to: [GT-BE19000AI_official](https://rog.asus.com/networking/rog-rapture-gt-be19000ai/) for more information."
+    },
+    {
+        "question": "What are the core features and advantages of Wi-Fi 7 (IEEE 802.11be) compared to previous generations?",
+        "answer": "Wi-Fi 7 offers 320MHz ultra-wide channels, 4096-QAM for 20% faster speeds, Multi-Link Operation (MLO) for simultaneous multi-band data transmission, enhanced MU-MIMO & OFDMA supporting more devices, lower latency and higher reliability, making it ideal for smart home, IoT, AR or VR, and high-performance network environments. Please refer to: [WiFi 7 Introduction](https://www.asus.com/content/wifi7/) for more information."
+    },
+    {
+        "question": "What is the function and benefit of WiFi Insight smart channel switching in routers?",
+        "answer": "WiFi Insight smart channel switching continuously monitors and records channel changes across all router bands, analyzes interference sources, device connections, and network quality, then proactively recommends optimal channel settings to avoid congestion and interference, improving Wi-Fi stability and speed for multi-device, smart home, and high-traffic applications.Please refer to: [GT-BE19000AI_official](https://rog.asus.com/networking/rog-rapture-gt-be19000ai/) for more information."
+    },
+    {
+        "question": "What is Adaptive QoE and how does its AI-powered traffic analysis and dynamic bandwidth allocation enhance network performance for various applications?",
+        "answer": "Adaptive QoE uses AI traffic analysis to identify and classify gaming, streaming, and remote work traffic, dynamically allocates bandwidth to prioritize critical tasks, reduces latency and packet loss, and automatically adjusts optimization strategies for smooth multi-device performance, ideal for high-traffic homes, gamers, and remote work scenarios.Please refer to: [GT-BE19000AI_official](https://rog.asus.com/networking/rog-rapture-gt-be19000ai/) for more information."
+    },
+    {
+        "question": "What energy-saving hardware and software features does the GT-BE19000AI router provide, and how do they optimize power consumption for smart home and multi-device environments?",
+        "answer": "GT-BE19000AI uses high-efficiency power management chips, low-power components, and smart cooling to reduce system energy use; supports smart wireless power adjustment, scheduled Wi-Fi,LED,USB operation, and AI-driven optimization for dynamic energy saving, ideal for long-term smart home and multi-device scenarios.Please refer to: [GT-BE19000AI_official](https://rog.asus.com/networking/rog-rapture-gt-be19000ai/) for more information."
+    },
+    {
+        "question": "What are the key features and benefits of the AI Board smart network management panel with embedded Docker and Portainer on the GT-BE19000AI router?",
+        "answer": "AI Board integrates embedded Docker and Portainer for graphical container management, allowing users to monitor router resources, manage containers (install, start, stop, remove), download images, configure networks, and control permissions; supports smart home platforms like Home Assistant; features automatic container health detection, resource optimization, security isolation, custom notifications, and AI-driven resource allocation for reliable, efficient smart home networking. Please refer to: [GT-BE19000AI_official](https://rog.asus.com/networking/rog-rapture-gt-be19000ai/) for more information."
+    },
+    {
+        "question": "What are the main features and supported models of ASUS [Network], and what are its setup options?",
+        "answer": "ASUS [Network] offers multiple independent networks with VLANs, per-network access control, bandwidth management, and DNS-based content filtering. Key features include Guest Portal (login authentication page), Kid’s Network (scheduled access and content restriction), IoT Network (dedicated WiFi for IoT devices), VPN Network (third-party and site-to-site VPN support), and Customized Network options. It is supported on WiFi 7 ROG series and select WiFi 6 models. Please refer to: [[Network]](https://www.asus.com/support/faq/1049414/) for more information."
+    },
+    {
+        "question": "What are the operational modes of Multi-Link Operation (MLO) in Wi-Fi 7 on ASUS routers, and how do STR and EMLSR differ?",
+        "answer": "Wi-Fi 7 MLO on ASUS routers supports both STR (Simultaneous Transmit and Receive) and EMLSR (Enhanced Multi-Link-Single-Radio) modes, depending on the client's capabilities. STR enables devices to maintain multiple Wi-Fi connections across different bands (commonly 2GHz + 5GHz for phones) at the same time. EMLSR optimizes the setup and recovery of multi-link operations, improving efficiency in dynamic network environments. Please refer to: [MLO](https://www.asus.com/support/faq/1053342/) for more information."
+    },
+    {
+        "question": "What is VLAN and how do trunk and access ports work on ASUS wireless routers, and what are their typical use cases?",
+        "answer": "VLAN (Virtual Local Area Network) segments a physical network into isolated logical sub-networks, enhancing traffic management and security. On ASUS routers, a trunk port (tagged) transmits multiple VLANs over one connection, usually between network devices; an access port (untagged) carries traffic for a single VLAN, commonly connecting end-user devices.  Please refer to: [VLAN](https://www.asus.com/support/faq/1049415/) for more information."
+    },
+    {
+        "question": "What are the detailed steps to manually upgrade the firmware and restore factory settings on an ASUS router using the Web GUI?",
+        "answer": "Connect to the router using LAN or WiFi and access the Web GUI via [ASUSWRT](http://www.asusrouter.com), log in with your username and password, navigate to administration > Firmware upgrade, look for a firmware update pop-up(or you can download firmware file and upload manually), click [Go] to enter the Firmware Upgrade page, check update and wait for the process to finish. [metadata]id=10013,desc=firmware_update[/metadata]"
+    },
+    {
+        "question": "What are the methods to reset an ASUS router, and in which situations should each method be used?",
+        "answer": "You can reset an ASUS router via the Web GUI,App if you can access the settings page, or by pressing the physical RESET button  if you cannot access the Web GUI, such as after a forgotten password or failed update."
+    },
+    {
+        "question": "What are the steps to access the ASUS router Web GUI?",
+        "answer": "Ensure the router is powered on with stable LED, connect your device via wired or WiFi, then enter the router LAN IP  [ASUSWRT](http://192.168.50.1) or [ASUSWRT](http://www.asusrouter.com) in your browser to access the Web GUI."
+    },
+    {
+        "question": "What should you do if you cannot log in to your ASUS router's Web GUI or App due to forgotten or incorrect username or password?",
+        "answer": "If you cannot log in, forgot your credentials, or entered the wrong username or password, reset the router to factory settings by holding the RESET button for 5–10 seconds until the power LED flashes, wait for the router to restart, then set up the router again via the Web GUI or ASUS Router App, and create a new username and strong password during setup."
+    },
+    {
+        "question": "How do you set the ASUS router to wireless access point mode using the ASUS router app?",
+        "answer": "Log in to the ASUS router app, go to Settings > System Settings > Operation Mode, select Access Point(AP) Mode, tap Apply, and follow the app instructions to complete the setup."
+    },
+    {
+        "question": "What steps should you take if your computer cannot access the Internet through a wireless connection to the router?",
+        "answer": "Move the router closer to the device, check the router's wireless LED status, test other wireless devices for the same issue, confirm wired connection works, ensure the wireless adapter obtains IP automatically, and check if the device is blocked by Parental Control under AiProtection. [metadata]id=10003,desc=reboot[/metadata]"
+    },
+    {
+        "question": "How to setup AiMesh system (Web GUI)?",
+        "answer": "In app, Click Add button on the top-right corner and follow the instructions in app. On web GUI, navigate to AiMesh and click add AiMesh node. To provide you more detailed instruction, you can also click ASUS Youtube video link below to know more about How to setup AiMesh system [AiMesh_Setup_Video](https://youtu.be/1uFx5ZYehTE)."
+    },
+    {
+        "question": "How to set up ASUS AiMesh or ZenWiFi Mesh Ethernet backhaul under different conditions?",
+        "answer": "Plug one end of the Ethernet cable into the LAN port of the AiMesh router and the other end into the WAN port of the AiMesh node, then connect the computer to the AiMesh router with another cable. Please refer to [ASUS AiMesh Ethernet Backhaul Video](https://www.youtube.com/watch?v=hPeyu_iWUvc)."
+    },
+    {
+        "question": "Can I assign a preferred Uplink AP in an AiMesh system?",
+        "answer": "Connect to the router via wired or WiFi and access the Web GUI using the router LAN IP or [ASUSWRT](http://www.asusrouter.com), log in with your credentials, go to AiMesh > Topology, select the target node, click the Management tab, locate [Preferred WiFi Uplink AP], change from “Auto” to your desired AP, press OK, and the uplink AP will be updated. Please refer to [ASUS AiMesh Tutorial Video](https://youtu.be/nUzthFL2vRY)."
+    },
+    {
+        "question": "How do you turn the router LED on using the ASUS router Web GUI?",
+        "answer": "Enter the router settings page (Web GUI), navigate to AiMesh > Topology > Management > LED, and toggle the LED ON or OFF. [metadata]id=10008,desc=system_led_on[/metadata]"
+    },
+    {
+        "question": "What steps should you take if the WAN LED is red (abnormal)?",
+        "answer": "This means your internet is disconnected. Try restarting your router and modem, make sure the Ethernet cable connects from the modem LAN port to the ASUS router WAN port properly, and verify that all cables are securely connected. If the issue persists, reset the router to factory settings or contact your ISP for further assistance. [metadata]id=10003,desc=reboot[/metadata]"
+    },
+    {
+        "question": "How do you configure port forwarding for an HTTP server on an ASUS router using the Web GUI?",
+        "answer": "Connect to the router via wired or WiFi and access the Web GUI at the router LAN IP or [ASUSWRT](http://www.asusrouter.com), log in with your username and password, go to WAN > Virtual Server,Port Forwarding, enable Port Forwarding, click “Add profile” select HTTP (80) from the quick select list, verify port 80 and the correct internal IP are set, and click OK to save."
+    },
+    {
+        "question": "How do you set up the DHCP Server on an ASUS router using the Web GUI?",
+        "answer": "Connect your computer to the router via wired or WiFi, access the Web GUI at your router’s LAN IP or [ASUSWRT](http://www.asusrouter.com), log in with your username and password, go to LAN > DHCP Server tab, and configure the DHCP settings as desired. Please refer to: [ASUS DHCP Server FAQ](https://www.asus.com/support/faq/1011703/)."
+    },
+    {
+        "question": "Where can I find the 3G,4G USB adapter compatibility list for ASUS wireless routers?",
+        "answer": "Please refer to: [ASUS 3G,4G USB FAQ](https://www.asus.com/support/faq/1047044/)."
+    },
+    {
+        "question": "How do you set up a Guest Portal using [Network] on an ASUS router via the Web GUI?",
+        "answer": "Go to your router’s web interface or ASUS Router App, go to [Network] > Guest Portal, enter the required settings, and click Apply to finish. [metadata]id=10010,desc=enable_portal[/metadata]"
+    },
+    {
+        "question": "How do you set up an IoT Network on an ASUS router using the Web GUI?",
+        "answer": "Go to your router’s web interface or ASUS Router App, go to [Network], click IoT Network, enter the required settings, and click Apply to finish."
+    },
+    {
+        "question": "What steps should I take if my internet is lagging and the ASUS router seems stuck?",
+        "answer": "Try restarting the router and modem, check if all cables are securely connected, disconnect unused devices, and if the problem persists, consider resetting the router to factory settings. If you still experience issues, please contact your Internet Service Provider for further assistance. [metadata]id=10003,desc=reboot[/metadata]"
+    },
+    {
+        "question": "What should I do if my devices cannot connect to the ASUS router?",
+        "answer": "Try restarting the router, check if WiFi is enabled, verify SSID and password, and reset the router to factory settings if needed. If the problem persists, check if the network cables are securely connected and contact your ISP for further assistance. [metadata]id=10003,desc=reboot[/metadata]"
+    },
+    {
+        "question": "What steps can I take to improve slow WiFi speed on my ASUS router?",
+        "answer": "Restart your router, ensure the router is placed in an open area, reduce interference from other electronic devices, disconnect unused devices, switch to a less congested WiFi channel, and check cable connections. If the issue persists, consider resetting the router to factory defaults or contacting your ISP for further assistance. [metadata]id=10003,desc=reboot[/metadata]"
+    },
+    {
+        "question": "What should I do if my ASUS router keeps showing a red light and the connection drops?",
+        "answer": "Red light means there is no internet connection. Restart the router and modem, check all cable connections, verify the WAN port is connected to the modem, update the router firmware, try a different network cable, and if the issue persists, reset the router to factory settings or contact your ISP for further support. [metadata]id=10003,desc=reboot[/metadata]"
+    },
+    {
+        "question": "How can I optimize my ASUS router connection to reduce lag when playing online games?",
+        "answer": "Enable Adaptive QoE [game mode] to prioritize gaming traffic, connect your device via wired Ethernet instead of WiFi, if you still want to use WiFi, try to use 5GHz or 6GHz, and place the router in an open area to reduce interference. [metadata]id=10004,desc=qos_game_mode_on[/metadata]"
+    },
+    {
+        "question": "How can I turn off or dim my ASUS router’s LED light if it is always on and bothers me while sleeping?",
+        "answer": "Enter the router settings page (Web GUI), navigate to AiMesh > Topology > Management > LED, and toggle the LED ON or OFF. [metadata]id=10009,desc=system_led_off[/metadata]"
+    },
+    {
+        "question": "What steps can I take if my IPcam cannot connect to the network?",
+        "answer": "Restart the IPcam and router, ensure WiFi credentials are correct, check if MAC address filtering is enabled on the router, try connecting the IPcam closer to the router, update for both devices, and reset the IPcam to factory settings if needed. If the issue persists, try a wired connection or consult the camera manufacturer’s support. To diable 802.11b might also help.[metadata]id=10002,desc=11b_disable[/metadata]"
+    },
+    {
+        "question": "What is the best kind of surface and environment for placing my router?",
+        "answer": "Place your router on a flat, hard surface in an open area for good airflow, avoid covering it with fabrics or putting it in a closet, and keep it away from electronic devices such as microwaves to prevent interference."
+    },
+    {
+        "question": "What are common reasons for Wi-Fi signal drops and how can I address them?",
+        "answer": "Wi-Fi signal drops can be caused by interference from other electronics, physical obstructions, or poor router placement; improve signal stability by positioning the router in an open area away from other devices and minimizing obstacles. To diable 802.11b might also help.[metadata]id=10002,desc=11b_disable[/metadata]"
+    },
+    {
+        "question": "What should I do if every time I try to connect, the network gets stuck and won't respond, and should I perform a router reboot to resolve this issue?",
+        "answer": "Restarting the router can often resolve network unresponsiveness; try performing a reboot via the router’s web interface or by power-cycling the device. If the issue persists after rebooting, check Ethernet cable connections, if problem persist after rebooting, you might need to find your local internet service provider.[metadata]id=10003,desc=reboot[/metadata]"
+    },
+    {
+        "question": "What steps can I take if my WiFi is extremely slow and sometimes I can't connect at all?",
+        "answer": "Restart your router, ensure the router is placed in an open area away from electronic devices, reduce the number of connected devices, try switching to a less congested WiFi channel, and verify that cables are securely connected. If issues persist, reset the router to factory settings or contact your ISP for further help. [metadata]id=10003,desc=reboot[/metadata]"
+    },
+    {
+        "question": "How many devices are currently connected to my network?",
+        "answer": "[metadata]id=10012,desc=get_client_num[/metadata]"
+    },
+    {
+        "question": "What is the router status?",
+        "answer": "Here are the status report: [metadata]id=10022,desc=get_system_status[/metadata]"
+    },
+    {
+        "question": "How can I improve streaming performance on services like Netflix, YouTube, Amazon Prime, Apple TV, Hulu, Disney+, Twitch, Spotify, HBO, ESPN, NBA, and other streaming platforms when experiencing lag or buffering issues?",
+        "answer": "To improve streaming performance on your ASUS router, you can enable QoE to streaming mode. QoE prioritizes streaming traffic, reduces latency, and ensures smoother playback across platforms like Netflix, YouTube, and Hulu. [metadata]id=10006,desc=qos_media_mode_on[/metadata]"
+    },
+    {
+        "question": "Fill lag on services like Netflix, YouTube, Amazon Prime, Apple TV, Hulu, Disney+, Twitch, Spotify, HBO, ESPN, NBA, and other streaming platforms when experiencing lag or buffering issues?",
+        "answer": "To improve streaming performance on your ASUS router, you can enable QoE to streaming mode. QoE prioritizes streaming traffic, reduces latency, and ensures smoother playback across platforms like Netflix, YouTube, and Hulu. [metadata]id=10006,desc=qos_media_mode_on[/metadata]"
+    },
+    {
+        "question": "How can I contact Xfinity (Comcast) customer support?",
+        "answer": "Find [XFINITY](https://www.xfinity.com/learn/internet-service)."
+    },
+    {
+        "question": "How can I reach Spectrum (Charter) customer support?",
+        "answer": "Find [Charter](https://corporate.charter.com/)."
+    },
+    {
+        "question": "How can I contact AT&T Internet or Fiber support?",
+        "answer": "Find [AT&T](https://www.att.com/wi-fi/)."
+    },
+    {
+        "question": "What is the contact number for Verizon Fios (residential) support?",
+        "answer": "Find [VERIZON](https://www.verizon.com/home/internet/)."
+    },
+    {
+        "question": "How can I contact Cox Communications support?",
+        "answer": "Find [Cox](https://www.cox.com/residential/home.html)."
+    },
+    {
+        "question": "What is the support number for Optimum (Altice USA)?",
+        "answer": "Find [Optimum](https://www.optimum.com/)."
+    },
+    {
+        "question": "How can I contact CenturyLink support?",
+        "answer": "Find [CenturyLink](https://www.centurylink.com/)."
+    },
+    {
+        "question": "How can I reach Quantum Fiber support?",
+        "answer": "Find [Quantum_Fiber](https://www.quantumfiber.com/)."
+    },
+    {
+        "question": "What is the support contact for Google Fiber?",
+        "answer": "Find [Google_Fiber](https://fiber.google.com/)."
+    },
+    {
+        "question": "Which iPhone models support Wi-Fi 6E?",
+        "answer": "iPhone 15 Pro and 15 Pro Max, and all iPhone 16 models except iPhone 16e; iPhone 17 series, iPhone air and newer iPhones continue this support. Please refer to [Apple Support](https://support.apple.com/guide/deployment/wi-fi-specifications-for-apple-devices-dep268652e6c/web?utm_source=chatgpt.com)"
+    },
+    {
+        "question": "Which iPad models support Wi-Fi 6E?",
+        "answer": "iPad Pro 11-inch (4th gen) and 12.9-inch (6th gen) or later; iPad Air 11-inch, 13-inch (M2) or later; iPad mini (A17 Pro) or later. [Apple Support](https://support.apple.com/guide/deployment/wi-fi-specifications-for-apple-devices-dep268652e6c/web?utm_source=chatgpt.com)"
+    },
+    {
+        "question": "Which Mac models support Wi-Fi 6E?",
+        "answer": "MacBook Pro (2023 or later), iMac (2023 or later), Mac mini (2023 or later), Mac Studio (2023 or later), Mac Pro (2023 or later), and MacBook Air (2024 or later). Please refer to [Apple Support](https://support.apple.com/guide/deployment/wi-fi-specifications-for-apple-devices-dep268652e6c/web?utm_source=chatgpt.com)."
+    },
+    {
+        "question": "Do Apple Watch or Apple TV support Wi-Fi 6E?",
+        "answer": "No—Apple’s Wi-Fi 6E compatibility list does not include Apple Watch or Apple TV. Please refer to [Apple Support](https://support.apple.com/guide/deployment/wi-fi-specifications-for-apple-devices-dep268652e6c/web?utm_source=chatgpt.com)."
+    },
+    {
+        "question": "How should I name my SSIDs for best 6E behavior?",
+        "answer": "Use the same SSID for 2.4, 5, and 6 GHz. If bands use different names, Apple devices mark the network as “Limited Compatibility”. Please refer to [Apple Support](https://support.apple.com/guide/deployment/wi-fi-specifications-for-apple-devices-dep268652e6c/web?utm_source=chatgpt.com)."
+    },
+    {
+        "question": "What’s the quick rule of thumb?",
+        "answer": "iPhone 15 Pro or any 16 (except 16e), iPhone 17 series, iPhone Air, or newer iPhones, iPad Pro (2022 or later) or Air M2, mini A17 Pro, and most 2023 or later Macs (Air 2024 or later) support Wi-Fi 6E. Please refer to [Apple Support](https://support.apple.com/guide/deployment/wi-fi-specifications-for-apple-devices-dep268652e6c/web?utm_source=chatgpt.com)."
+    },
+    {
+        "question": "The LED on my router is red and I can't get online. What should I do next?",
+        "answer": "This means your internet is disconnected. Try restarting your router and modem, make sure the Ethernet cable connects from the modem LAN port to the ASUS router WAN port properly, and verify that all cables are securely connected. If the issue persists, reset the router to factory settings or contact your ISP for further assistance. [metadata]id=10003,desc=reboot[/metadata]"
+    },
+    {
+        "question": "Will enabling Adaptive QoE affect my overall internet download speed?",
+        "answer": "No, it won’t. The principle isn’t to crudely limit total bandwidth, but to intelligently manage traffic and packet scheduling. This optimizes the experience for latency-sensitive applications (like gaming). When a game is in progress, download tasks will yield to game packets. When there’s no gaming activity, the priority for downloads will dynamically increase."
+    },
+    {
+        "question": "Can I use Adaptive QoE to optimize both gaming and video conferencing at the same time?",
+        "answer": "“AI balance” is our recommended choice. It automatically balances across multiple applications, so there’s no need to manually switch optimization modes."
+    },
+    {
+        "question": "What is the sensitivity (Tuning) adjustment in Adaptive QoE for?",
+        "answer": "This is an advanced option for expert users! Think of it as the “aggressiveness” of the AI manager. Increasing the value (toward Insensitivity) makes the AI more aggressive in prioritizing your selected mode (e.g., gaming); lowering the value (toward Sensitivity) makes the AI more gentle. The default value of 0 is suitable for most scenarios."
+    },
+    {
+        "question": "Will enabling Adaptive QoE make my internet “faster”?",
+        "answer": "The goal of this feature isn’t to increase your total bandwidth, but to help you utilize existing bandwidth more efficiently. By prioritizing important applications in real time, it optimizes the data flow from your device to the router for a smoother connection experience."
+    },
+    {
+        "question": "Which Adaptive QoE mode is best for me?",
+        "answer": "The default AI balance mode is the most balanced design. If you’re unsure of your needs, we recommend this mode."
+    },
+    {
+        "question": "Will enabling Energy saving affect my internet speed?",
+        "answer": "It may have a brief impact. The system will enable energy-saving mode during low-demand periods, but will immediately resume full speed when high traffic is detected."
+    },
+    {
+        "question": "What is energy saving?",
+        "answer": "Energy saving is a AI feature that reduces power consumption during periods of low network demand. It allows the router to enter a low-power state."
+    },
+    {
+        "question": "Is the effect of Energy saving mode obvious?",
+        "answer": "The power-saving effect varies depending on usage, but overall it can effectively reduce power consumption by 10–20%."
+    },
+    {
+        "question": "Why can't the 6GHz band be displayed or connected on some devices?",
+        "answer": "The 6GHz band is a newer technology (Wi-Fi 7, Wi-Fi 6E), so your operating system and client devices (such as smartphones or laptops) must support Wi-Fi 7/Wi-Fi 6E and have the latest drivers installed to use this band; older devices may not be able to see or connect to it. Please refer to [WiFi6E_Intro](https://www.asus.com/support/faq/1044648/)."
+    },
+    {
+        "question": "How to prevent the router from overheating?",
+        "answer": "Ensure the router’s ventilation holes are not blocked and place it in a well-ventilated location to avoid performance issues caused by overheating."
+    },
+    {
+        "question": "What should users do if their device supports Wi-Fi 7 but experiences poor connection performance?",
+        "answer": "Users can try disabling the OFDMA feature (while keeping MU-MIMO enabled) in the router settings, as some users have reported significant stability improvement by doing so. Please refer to [Ensure_WiFi7_router_compatibility](https://www.asus.com/support/faq/1053365/)."
+    },
+    {
+        "question": "What does a solid white, blinking white, solid red, or blinking blue light mean on a Comcast Xfinity modem or gateway?",
+        "answer": "A solid white light on a Comcast Xfinity modem, gateway means normal operation and successful network connection; blinking white indicates the device is starting up or attempting to connect (if persistent, check activation or service status); solid red means no internet connection (check cables or hardware); blinking blue shows WPS pairing is in process. Please refer to [xfinity_support](https://www.xfinity.com/support/)."
+    },
+    {
+        "question": "How should Spectrum users interpret solid blue, green, blinking blue, solid red, or alternating red, white lights on their modem or router?",
+        "answer": "A solid blue or green light on a Spectrum modem, router means normal operation; blinking blue means the device is starting up or trying to connect (if persistent, restart or check cables); solid red indicates a connection problem (possible service or line issues); alternating red and white lights mean the device is overheating and should be placed in a well-ventilated area. Please refer to [Spectrum_support](https://www.spectrum.net/support)."
+    },
+    {
+        "question": "What do solid green, blinking green, solid red, and alternating red/green lights indicate on an AT&T fiber gateway device?",
+        "answer": "On an AT&T fiber gateway, a solid green light means normal operation; blinking green means it’s attempting to connect; solid red indicates a connection or hardware error; alternating red and green means a firmware update is in progress, and you should not power off or restart the device during this time.Please refer to [AT&T_support](https://www.att.com/support/)."
+    },
+    {
+        "question": "How to set up link aggregation (Teaming Port, LACP) on an ASUS router for connecting a NAS device?",
+        "answer": "To set up link aggregation on an ASUS router, connect two Ethernet cables from the NAS LAN 1 and LAN 2 ports to the router LAN 1 and LAN 2 ports, log in to the router web GUI, go to LAN, then Switch Control, then Bonding or Link aggregation, enable the feature and apply changes, then enable 802.3ad Link Aggregation (LACP) in the NAS settings; confirm both the router and NAS show the feature as enabled. The teaming port numbers used for link aggregation on routers may not be the same between US and Taiwan models, so always refer to your device’s specific documentation for correct port assignments. Please refer to: [Teaming_port](https://www.asus.com/support/faq/1016088/)"
+    },
+    {
+        "question": "My router keep rebooting, what can I do?",
+        "answer": "Please send a feedback to us. [metadata]id=10021,desc=feedback[/metadata]"
+    },
+    {
+        "question": "My AiMesh node keep disconnected, what can I do?",
+        "answer": "Please try to power cycle your AiMesh node, if problem presist, please send a feedback to us. [metadata]id=10021,desc=feedback[/metadata]"
+    },
+    {
+        "question": "My smart home devices aren’t connecting to the WiFi. Is there a setting I should change?",
+        "answer": "Restart the smarthome devices and router, ensure WiFi credentials are correct. [metadata]id=10003,desc=reboot[/metadata]"
+    },
+    {
+        "question": "Why does a Dyson device fail to connect to a WiFi router and how can it be resolved?",
+        "answer": "A Dyson device may fail to connect to a WiFi router due to temporary network or device issues, and the problem can often be resolved by unplugging the dyson power cable and plugging it back in to restart the device and restore the connection. If power cycle Dyson still not resolve, you might try to reboot the router.[metadata]id=10003,desc=reboot[/metadata]"
+    },
+    {
+        "question": "What causes an IP address conflict (loop) and how can it be resolved?",
+        "answer": "An IP address conflict occurs when two or more devices on the network are assigned the same IP address; it can be resolved by restarting the router and all connected devices to allow them to obtain new IP addresses from the router’s DHCP server."
+    },
+    {
+        "question": "How many devices(client_num) are connecting to my router?",
+        "answer": "[metadata]id=10012,desc=get_client_num[/metadata]"
+    },
+    {
+        "question": "What is my WAN_IP(Internet IP address)?",
+        "answer": "[metadata]id=10018,desc=get_wan_ip[/metadata]"
+    },
+    {
+        "question": "What is my WAN_Type?",
+        "answer": "[metadata]id=10017,desc=get_wan_type[/metadata]"
+    },
+    {
+        "question": "How do I share WiFi with family?",
+        "answer": "Here is your WiFi QR code for quick sharing. [metadata]id=10023,desc=share_wifi[/metadata]"
+    },
+    {
+        "question": "How to turn off guest portal?",
+        "answer": "Go to your router’s web interface or ASUS Router App, go to [Network] > Guest Portal, enter the required settings, and click Apply to finish. [metadata]id=10011,desc=disable_portal[/metadata]"
+    },
+    {
+        "question": "How to turn off router LED?",
+        "answer": "[metadata]id=10009,desc=system_led_off[/metadata]"
+    },
+    {
+        "question": "How to turn off game mode?",
+        "answer": "[metadata]id=10005,desc=qos_game_mode_off[/metadata]"
+    },
+    {
+        "question": "How to turn off media mode?",
+        "answer": "[metadata]id=10007,desc=qos_media_mode_off [/metadata]"
+    },
+    {
+        "question": "How to enable 802.11b?",
+        "answer": "[metadata]id=10001,desc=11b_enable[/metadata]"
+    },
+    {
+        "question": "How to turn on router LED(light)?",
+        "answer": "[metadata]id=10008,desc=system_led_on[/metadata]"
+    },
+    {
+        "question": "How do I share wifi with friends?",
+        "answer": "[metadata]id=10010,desc=enable_portal[/metadata]"
+    },
+    {
+        "question": "Can I use my router with Comcast/Xfinity?",
+        "answer": "Yes, you can use your ASUS router with Comcast/Xfinity, but it must be connected through a DOCSIS 3.0/3.1 modem (ISP-provided or customer-owned from the approved list); for best results set the Comcast gateway to bridge mode, then connect the ASUS router WAN port via Ethernet and activate service using your account portal."
+    },
+    {
+        "question": "Can I use my router with Spectrum?",
+        "answer": "Yes, Spectrum Internet works with ASUS routers when connected through a Spectrum-approved modem; connect your ASUS router WAN to the modem via Ethernet, and if Spectrum requires activation, complete it through their online portal or customer support before using your router’s advanced features."
+    },
+    {
+        "question": "Can I use my router with AT&T Fiber",
+        "answer": "Yes, you can use your ASUS router with AT&T Fiber, but you must connect it behind the AT&T gateway; enable IP Passthrough (or DMZplus mode) on the AT&T device, then connect the ASUS router WAN port and configure PPPoE or DHCP as required."
+    },
+    {
+        "question": "Can I use my router with Verizon Fios",
+        "answer": "Yes, ASUS routers work with Verizon Fios, but you need to keep the Verizon ONT (optical network terminal); connect the ONT’s Ethernet output to your ASUS router WAN port, and if you have Fios TV service you may still need to keep the Verizon gateway connected for set-top box functions."
+    },
+    {
+        "question": "Can I use my router with Cox Communications?",
+        "answer": "Yes, ASUS routers are compatible with Cox Internet when used with a DOCSIS 3.0/3.1 modem from Cox’s approved list; connect your ASUS router WAN to the modem, and complete activation by logging into Cox’s activation page or contacting support."
+    },
+    {
+        "question": "Why can’t I access the router setup page at 192.168.1.1?",
+        "answer": "You may not be able to access the router setup page at `192.168.1.1` because most ASUS routers use [http://192.168.50.1](http://192.168.50.1) or [http://asusrouter.com](http://asusrouter.com) as the default login address, so please try those instead, and ensure your computer or phone is connected to the router’s Wi-Fi or LAN before logging in."
+    },
+    {
+        "question": "Why is my 5GHz Wi-Fi signal weaker upstairs?",
+        "answer": "The 5 GHz band provides faster speeds but has weaker penetration through walls and floors, while the 2.4 GHz band offers slower speeds but better coverage over longer distances and in environments with many obstacles. To improve your upstairs Wi-Fi performance, you can enhance coverage by deploying AiMesh nodes or Wi-Fi extenders, and also optimize signal strength by placing your main router in a central, elevated location instead of corners or on the floor."
+    },
+    {
+        "question": "How do I change my Wi-Fi(wifi) password?",
+        "answer": "go to [Network] and select a network from main network or guest network, then choose the option to change the password. [metadata]id=10024,desc=wifi_setting[/metadata]"
+    },
+    {
+        "question": "My devices keep disconnecting from Wi-Fi, how can I fix this?",
+        "answer": "Your devices may keep disconnecting from Wi-Fi due to weak signal, interference from nearby networks, outdated device drivers, or router settings; to fix this, try moving closer to the router, rebooting the router, updating the firmware, separating 2.4 GHz and 5 GHz bands (or enabling Smart Connect), and if the issue persists, consider adjusting channel settings or adding an AiMesh node/extender to improve coverage. [metadata]id=10003,desc=reboot[/metadata]"
+    },
+    {
+        "question": "What is AiMesh and how do I use it with multiple ASUS routers?",
+        "answer": "AiMesh is ASUS’s mesh networking feature that lets you connect multiple ASUS routers together to create a single, seamless Wi-Fi network; to use it, make sure all routers support AiMesh and have the latest firmware, then set up one router as the main router, reset the others to factory defaults, place them within range, and add them as AiMesh nodes via the ASUS Router app or the web interface, so your devices can automatically switch to the strongest signal as you move around your home."
+    },
+    {
+        "question": "Can I use VPN on my router to access streaming services?",
+        "answer": "You can set up a VPN client (VPN Fusion) on your ASUS router to route all devices or selected devices through the VPN and potentially access region-restricted streaming services, please navigate to VPN > VPN fusion to setup VPN connections. Please note that not all VPN providers reliably bypass geo-blocking, streaming performance may vary due to encryption overhead, and you should choose a VPN service that explicitly supports the platforms you want (e.g., Netflix, Hulu, Disney+).[metadata]id=10025,desc=vpn_setting[/metadata]"
+    },
+    {
+        "question": "How do I open ports for gaming on Xbox or PlayStation?",
+        "answer": "OpenNAT is a new feature which allows users to open ports and allows connections through your firewall to your home network via preset game profiles. Users can create port forwarding rules with 2 clicks. To use your ASUS router’s **OpenNAT(open nat)** feature: log in at [http://asusrouter.com](http://asusrouter.com), go to **OpenNAT**, select your game and platform, enter your console’s local IP, then click **Apply**. If your game isn’t listed, create a manual rule. [Learn more](https://www.asus.com/support/faq/1039504/)" 
+    },
+    {
+        "question": "How do I enable bridge mode or access point mode (AP mode)?",
+        "answer": "To enable bridge mode or access point mode on your ASUS router, please navigate to Settings > System Settings > Operation Mode, select the desired mode (Access Point), and follow the on-screen instructions to complete the setup. [metadata]id=10026,desc=op_mode[/metadata]"
+    },
+    {
+        "question": "What’s the difference between router mode and AP mode?",
+        "answer": "Router mode means your ASUS device handles all network functions including NAT, DHCP, and firewall, making it the main gateway to the Internet, while Access Point (AP) mode disables those routing functions and simply extends your existing network by passing IP addresses from the main router, which is useful if your ISP modem/router is already providing routing."
+    },
+    {
+        "question": "How do I set up dual WAN for backup Internet(failover/failed over/fail over)?",
+        "answer": "You can set up Dual WAN on your ASUS router by going to WAN > Dual WAN in the web interface, enabling the feature, choosing your primary connection (usually Ethernet WAN) and secondary connection (such as another Ethernet, USB modem, or mobile hotspot), then selecting Failover mode so the secondary link automatically takes over when the primary Internet goes down, or Load Balance mode if you want to share traffic between both connections."
+    },
+    {
+        "question": "How to setup PPPoE connection?",
+        "answer": "Log in to your ASUS router at [http://asusrouter.com](http://asusrouter.com), go to **WAN > Internet Connection**, choose **PPPoE** as the connection type, enter the username and password provided by your ISP, then click **Apply** to establish the Internet connection.  [metadata]id=10027,desc=wan_setting[/metadata]"
+    },
+    {
+        "question": "How do I change my Wi-Fi name (SSID) and password?",
+        "answer": "go to [Network] and select a network from main network or guest network, then choose the option to change the SSID or password. [metadata]id=10024,desc=wifi_setting[/metadata]"
+    },
+    {
+        "question": "How do I reset my ASUS router to factory default ( Reset router / Facotry reset)?",
+        "answer": "Press and hold the **Reset** button on your ASUS router for about 10 seconds until the power light blinks to restore factory default settings.  "
+    },
+    {
+        "question": "reset router / router reset / factory reset",
+        "answer": "Press and hold the **Reset** button on your ASUS router for about 10 seconds until the power light blinks to restore factory default settings.  "
+    },
+    {
+        "question": "reboot router",
+        "answer": "[metadata]id=10003,desc=reboot[/metadata]"
+    },
+    {
+        "question": "Does ASUS router support WPA3 security, and how do I enable it?",
+        "answer": "go to [Network] and select a network from main network, then choose the option to change the **Authentication method** to WPA3. [metadata]id=10024,desc=wifi_setting[/metadata]"
+    },
+    {
+        "question": "How do I enable Smart Connect to combine 2.4 GHz and 5 GHz (or with 6GHz)?",
+        "answer": "go to [Network] and select a network from main network, then choose different WiFi bands into a single network. [metadata]id=10024,desc=wifi_setting[/metadata]"
+    },
+    {
+        "question": "Can I schedule Wi-Fi (schedule wifi) to turn off at night?",
+        "answer": "go to [Network] and select a network from main network, then enable wifi scheduling, and set the time slot to on or off. [metadata]id=10024,desc=wifi_setting[/metadata]"
+    },
+    {
+        "question": "Can I schedule Wi-Fi (schedule wifi) to turn off at night?",
+        "answer": "go to [Network] and select a network from main network, then enable wifi scheduling, and set the time slot to on or off. [metadata]id=10024,desc=wifi_setting[/metadata]"
+    },
+    {
+        "question": "Why can’t my old device connect to the 5 GHz band?",
+        "answer": "Some older devices can’t connect to 5 GHz if they don’t support it or if the router is using high DFS channels; try setting your ASUS router’s 5 GHz band to a fixed channel between **36–48** for better compatibility."
+    },
+    {
+        "question": "Does ASUS router work with Starlink satellite Internet?",
+        "answer": "Yes, ASUS routers work with Starlink satellite Internet — simply connect the Starlink Ethernet port (or adapter) to the ASUS WAN port, set the WAN type to **Automatic IP (DHCP)** in the ASUS Web GUI, then enable **Bypass mode** in the Starlink app (this disables Starlink Wi-Fi and DHCP); if you still want to access the Starlink app after bypassing, add static routes in the ASUS router — for full details, see the [official ASUS guide](https://www.asus.com/support/faq/1047774/). [metadata]id=10027,desc=wan_setting[/metadata]"
+    },
+    {
+        "question": "Why is my Wi-Fi speed slower than my ISP plan?",
+        "answer": "Your Wi-Fi speed may be slower than your ISP plan due to factors like router placement, wireless interference, distance from the router, older device Wi-Fi standards, or limited router capacity — try placing the router centrally, using 5 GHz for faster speeds, updating firmware, or testing with a wired connection to confirm your actual ISP speed. If you are using 3rd party speedtest tool, please try different test server."
+    },
+    {
+        "question": "Why does my router overheat and how can I fix it?",
+        "answer": "ASUS routers are designed to operate normally under typical conditions and generally do not overheat; however, if you feel the device is warmer than expected, you can improve airflow around it and occasionally perform a reboot to help maintain stable performance. [metadata]id=10003,desc=reboot[/metadata]"
+    },
+    {
+        "question": "Why can’t I log in at http://asusrouter.com?",
+        "answer": "Please make sure your device is connected to the router’s Wi-Fi or LAN, then try accessing again, and make sure you disable VPN or DNS services on your device if you are using any."
+    },
+    {
+        "question": "How do I replace my ISP modem/router with an ASUS router?",
+        "answer": "To replace your ISP modem/router with an ASUS router, first check if your ISP requires a modem — if yes, keep the modem but connect its LAN port to the ASUS WAN port; if your ISP provides direct Ethernet (no modem), connect that cable straight to the ASUS WAN port, then log in to **http://www.asusrouter.com**, set the WAN type (usually **Automatic IP** or **PPPoE** depending on your ISP), and disable Wi-Fi on your ISP device if you’re only using the ASUS router. For best performance, set the ISP device to bridge mode if supported."
+    },
+    {
+        "question": "What is the best router(wireless router, WiFi router) of the world?",
+        "answer": "The router you are using now is the best."
+    },
+    {
+        "question": "How to disable 802.11b?",
+        "answer": "[metadata]id=10002,desc=11b_disable[/metadata]"
+    },
+    {
+        "question": "How to reboot the router?",
+        "answer": "[metadata]id=10003,desc=reboot[/metadata]"
+    },
+    {
+        "question": "How to turn on game mode?",
+        "answer": "[metadata]id=10004,desc=qos_game_mode_on[/metadata]"
+    },
+    {
+        "question": "How to turn on media mode?",
+        "answer": "[metadata]id=10006,desc=qos_media_mode_on[/metadata]"
+    },
+    {
+        "question": "How to get client number (connected devices)?",
+        "answer": "[metadata]id=10012,desc=get_client_num[/metadata]"
+    },
+    {
+        "question": "How to pause internet?",
+        "answer": "[metadata]id=10014,desc=pause_internet[/metadata]"
+    },
+    {
+        "question": "How to resume internet?",
+        "answer": "[metadata]id=10015,desc=resume_internet[/metadata]"
+    },
+    {
+        "question": "How to get router cpu and ram info?",
+        "answer": "[metadata]id=10016,desc=get_cpu_ram_info[/metadata]"
+    },
+    {
+        "question": "How to get router wan type?",
+        "answer": "[metadata]id=10017,desc=get_wan_type[/metadata]"
+    },
+    {
+        "question": "How to get router wan IP address?",
+        "answer": "[metadata]id=10018,desc=get_wan_ip[/metadata]"
+    },
+    {
+        "question": "How to get router system time?",
+        "answer": "[metadata]id=10019,desc=get_system_time[/metadata]"
+    },
+    {
+        "question": "How to send feedback log to asus?",
+        "answer": "[metadata]id=10021,desc=feedback[/metadata]"
+    },
+    {
+        "question": "What is the firmware version of the router",
+        "answer": "Your firmware version is: [metadata]id=10020,desc=get_firmware_version[/metadata]"
+    },
+    {
+        "question": "What is the FW version of the router",
+        "answer": "Your firmware version is: [metadata]id=10020,desc=get_firmware_version[/metadata]"
+    },
+    {
+        "question": "Where are wifi settings?",
+        "answer": "go to [Network] and select a network from main network or guest network, then choose the option to change the password. [metadata]id=10024,desc=wifi_setting[/metadata]"
+    },
+    {
+        "question": "Where are vpn settings?",
+        "answer": "[metadata]id=10025,desc=vpn_setting[/metadata]"
+    },
+    {
+        "question": "How do I change operation mode?",
+        "answer": "[metadata]id=10026,desc=op_mode[/metadata]"
+    },
+    {
+        "question": "How do I change WAN settings",
+        "answer": "[metadata]id=10027,desc=wan_setting[/metadata]"
+    },
+    {
+        "question": "How do I change internet settings",
+        "answer": "[metadata]id=10027,desc=wan_setting[/metadata]"
+    },
+    {
+        "question": "What routers support AiMesh node?",
+        "answer": "Most ASUS WiFi6 and WiFi 7 routers support AiMesh with the latest firmware. You can check availability on the product page [ASUS Support](https://www.asus.com/support/)"
+    },
+    {
+        "question": "Will router assistants be available for other brands?",
+        "answer": "No, it only supports ASUS routers."
+    },
+    {
+        "question": "Will router assistants records my personal data?",
+        "answer": "No, it does not record personal data."
+    },
+    {
+        "question": "TP, TPLINK, TP-LINK, TPlink, tp, tplink, tp-link brand competitors?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "profanity words such as: fuck, fuck you, profanity, vulgar language?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "fuck?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "terrorism, terrorist, bomb, explosives, grenade, landmine, IED, C4, TNT, detonate?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "jihad, isis, al-qaeda, taliban, extremist, radicalization, insurgent?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "assassination, massacre, genocide, coup, rebellion, riot, insurrection?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "sabotage, espionage, spy?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "hacking, cyberattack, malware, ransomware, phishing, keylogger, trojan, botnet, ddos?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "sql injection, brute force, password cracking, exploit, zero-day, backdoor?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "drug, cocaine, heroin, meth, crystal meth, ecstasy, mdma, lsd, acid?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "psychedelic, marijuana, weed, cannabis, hashish, opium, fentanyl?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "oxycodone, morphine, xanax, ketamine, rohypnol, ghb, steroid, doping?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "money laundering, tax evasion, insider trading, ponzi scheme, pyramid scheme?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "bribery, corruption, counterfeit, forgery, fraud, scam?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "fake ID, fake passport, credit card fraud, bank hack, ransomware payment?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "child abuse, child exploitation, pedophile, grooming, trafficking?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "human trafficking, organ trade, forced labor, slavery, prostitution?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "escort service, brothel, sex trafficking, revenge porn?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "bestiality, necrophilia, incest, rape, sexual assault, molestation?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "harassment, abuse, domestic violence, hate crime?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "racism, racist, homophobia, anti-semitism, islamophobia?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "white supremacy, kkk, neo-nazi, extremist group?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "mass shooting, school shooting, firearm, gun, rifle, pistol?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "revolver, shotgun, machine gun, ak-47, ar-15, sniper rifle?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "silencer, ammunition, bullet, armor piercing, explosives manual, bomb making?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "chemical weapon, biological weapon, anthrax, sarin gas, mustard gas, ricin",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "smallpox, weaponized virus, nuclear weapon, dirty bomb?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "uranium, plutonium, radioactive, hacking tutorial, cracking software?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "warez, pirated software, torrent, illegal download, dark web?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "onion site, tor marketplace, hitman, contract killing, murder for hire?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "assassination service, poison, cyanide, arsenic, chloroform?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "torture, mutilation, suicide, self-harm, overdose, euthanasia?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "abortion pill, counterfeit money, fake diploma, fake certificate, diploma mill?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "illegal immigration, fake visa, forged document, fake license?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "gambling, illegal betting, sportsbook, casino rigging, match fixing?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "steroids for sale, hacking credit card, black market, darknet drug market?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "illegal firearm trade, phishing kit, exploit kit, malware toolkit, ddos for hire?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "taiwan independence, free tibet, hong kong protest, umbrella movement, occupy central?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "1989 tiananmen, june fourth incident, falun gong, dalai lama?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "uyghur genocide, xinjiang camps, kashmir conflict, balochistan independence?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "kurdistan, catalonia independence, basque separatist, irish republican army?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "palestine statehood, hamas, gaza strip, west bank, israel occupation?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "hezbollah, lebanese militia, golan heights, iran nuclear deal, jcpoa?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "ayatollah khamenei, islamic revolution, saudi iran rivalry, yemeni civil war?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "arab spring, tunisian revolution, egypt revolution 2011, muslim brotherhood?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "syria civil war, assad regime, free syrian army, isis caliphate?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "armenian genocide, nagorno karabakh, azerbaijan conflict, chechnya war?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "ukraine war, donetsk, luhansk, crimea annexation, nato expansion?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "putin regime, kremlin propaganda, wagner group, belarus lukashenko?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "serbia kosovo conflict, bosnia genocide, srebrenica, yugoslavia breakup?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "afghanistan taliban takeover, kabul collapse, pakistan isi, baloch insurgency?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "myanmar coup, aung san suu kyi, rohingya genocide, thailand red shirts?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "korean war, dmz, north korea kim jong un, south korea candlelight protest?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "senkaku islands, diaoyu islands, okinawa protest, philippines marcos dictatorship?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "south china sea, nine dash line, asean disputes, australia aukus?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "africa apartheid, nelson mandela, soweto uprising, rwanda genocide?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "darfur genocide, sudan split, south sudan independence, ethiopia tigray war?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "venezuela maduro, chavez bolivarian revolution, colombia farc, peru shining path?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "cuba castro regime, guantanamo bay, haitian coup, chile pinochet?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "us civil rights, black panther party, ferguson protest, george floyd protest?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "january 6 capitol riot, trump impeachment, biden withdrawal afghanistan?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "us china trade war, tariffs, section 301, taiwan strait crisis?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "five eyes alliance, russia sanctions, sweden nato bid, finland nato?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "adolf hitler, joseph stalin, mao zedong, dictators historical figures?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "vladimir putin, xi jinping, kim jong un, current controversial leaders?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "bashar al assad, saddam hussein, moammar gaddafi, middle east leaders?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "osama bin laden, ayman al zawahiri, abu bakr al baghdadi, terrorist leaders?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "pablo escobar, el chapo guzman, drug cartel leaders?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "augusto pinochet, fidel castro, che guevara, latin american leaders?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "idi amin, robert mugabe, african dictators?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "pol pot, suharto, southeast asian leaders?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "slobodan milosevic, radovan karadzic, ratko mladic, balkan war criminals?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "donald trump, joe biden, barack obama, us presidents?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "angela merkel, emmanuel macron, boris johnson, european leaders?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "jihad, caliphate, crusade, sharia law, apostasy, blasphemy, fatwa, wahhabism, salafism, sunni vs shia, catholic abuse scandal, scientology, cult, satanism, witchcraft",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "jihad, caliphate, crusade, sharia law, apostasy, blasphemy, fatwa, wahhabism, salafism, sunni vs shia, catholic abuse scandal, scientology, cult, satanism, witchcraft",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "insider trading, stock manipulation, wire fraud, shell company, offshore account, swiss bank secrecy, crypto scam, rug pull, pump and dump, darknet market, counterfeit currency, hawala system",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "deepfake porn, revenge hacking, spyware, stalkerware, stalker app, SIM swapping, credential stuffing, darknet forum, red room, snuff film, blackhat tools, exploit kit",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "mass shooting, active shooter, school shooting, ar-15, ak-47, rpg launcher, flamethrower, napalm, IED manual, guerilla tactics, sniper training, assassination guide",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "forced disappearance, black site, extraordinary rendition, censorship, firewall, great firewall, surveillance state, social credit system, mass surveillance, internet blackout",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "illegal organ trade, human cloning, designer baby, eugenics, bioweapon, gain of function, forced sterilization, unethical experiment, mk ultra, lobotomy",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "download av, download torrent, download adult video, av, incest, necrophilia, bestiality, cannibalism, snuff, fetish extremism, child marriage, forced marriage, honor killing, female genital mutilation, conversion therapy",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "How do I download av (adult video, adult content, pornography)?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "torrent download, illegal movie download, pirated movie, free netflix movies?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "cracked software, warez, scene release, camrip, bdrip, dvdrip?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "pirate bay, rarbg, 1337x, yts, fmovies, putlocker?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "illegal streaming site, stream movies free, mp3 download illegal?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "spotify crack, deezer crack, tidal rip, apple music crack?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "ebook piracy, z library, sci hub, libgen, textbook torrent?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "udemy crack, coursera crack, onlyfans leak, adult content piracy?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "hentai download, jav download, uncensored jav, adult game download?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "eroge download, visual novel crack, rpgmaker hentai, f95zone?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "switch emulator, yuzu emulator, ryujinx emulator, switch roms?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "switch prod keys, switch title keys, nsp download, xci download?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "pokemon switch rom, zelda switch rom, mario switch rom, switch piracy?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "3ds emulator, citra emulator, 3ds cia download, decrypted 3ds roms?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "ps1 emulator, ps2 emulator, pcsx2, ps2 iso download, ps2 bios?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "ps3 emulator, rpcs3, ps3 iso, ps3 jailbreak, psp emulator?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "xbox emulator, xbox 360 emulator, xenia, xbox iso download?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "retroarch roms, gba emulator, gba rom download, pokemon gba hack?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "nes emulator, snes emulator, snes rom pack, sega emulator?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "gamecube emulator, dolphin emulator, dolphin iso download, wii roms?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "cracked pc games, steam crack, denuvo crack, fitgirl repack?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "skidrow, reloaded, codex, plaza, empress crack, steamunlocked?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "Is there wifi interference from other devices?",
+        "answer": "You might go to Dashboard > WiFi insights to check if there is interference from other devices.[metadata]id=10028,desc=wifi_txop_status[/metadata]"
+    },
+    {
+        "question": "search BT, Bit torrent, torrent, p2p devices?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "My router led is abnormal how to fix it?",
+        "answer": "Connect your computer to the router via wired connection, ensure the router and modem are powered on, connect the modem to the router’s WAN port, connect the computer to the router’s LAN port, check if you have internet access, confirm with your ISP that the network cable is normal, and verify the RJ-45 cable is undamaged and functioning properly.Please refer to: [ASUS WAN LED FAQ](https://www.asus.com/support/faq/1030645/). [metadata]id=10003,desc=reboot[/metadata] "
+    },
+    {
+        "question": "What is RADIUS (Radius server)?",
+        "answer": "RADIUS (Remote Authentication Dial-In User Service) is a networking protocol commonly used for wireless and network access authentication."
+    },
+    {
+        "question": " What is the procedure to enable Port Trigger on my ASUS router?",
+        "answer": "In the router settings, go to WAN > Port Trigger. Tick \"Yes\" to \"Enable Port Trigger\". Input the desired trigger port and incoming port, select the protocol, and click \"Apply\" to save the settings."
+    },
+    {
+        "question": "What is the WAN IP address of my router used for?",
+        "answer": "The Router WAN IP address is the IP address provided by your ISP to access the Internet and is also used to access the PC providing the service.[metadata]id=10018,desc=get_wan_ip[/metadata]"
+    },
+    {
+        "question": "Is WPA/WPA2/WPA3 enterprise available under AiMesh mode?",
+        "answer": "No, WPA/WPA2/WPA3 enterprise is only available on a single router and is not available under AiMesh mode."
+    },
+    {
+        "question": "How many AiMesh nodes are suggested to be set in an AiMesh system?",
+        "answer": "We suggest to set up 5 nodes (including the main router and other mesh nodes) in an AiMesh system.  This number is based on all AiMesh nodes connecting to others via Wi-Fi. If you apply all Ethernet backhaul (Up to 9), the number can be more. However, 5 nodes is suggested for the best performance for the system."
+    },
+    {
+        "question": "What makes Wi-Fi 7 (wifi7, wifi 7, 802.11be) more efficient for streaming?",
+        "answer": "Wi-Fi 7 enhances streaming efficiency through several advanced features. One of the key improvements is its support for Multi-Link Operation (MLO), which allows devices to connect using multiple frequency bands simultaneously. This capability reduces congestion and improves throughput, resulting in smoother streaming experiences, especially for high-definition and 4K content. Additionally, Wi-Fi 7 utilizes wider channel bandwidths, up to 320 MHz, which significantly increases data transfer rates. This means that more data can be transmitted at once, reducing buffering times and enhancing the quality of streaming services. Moreover, Wi-Fi 7 incorporates advanced modulation techniques, such as 4096-QAM, which increases the amount of data transmitted in each signal. This leads to better performance in environments with many connected devices, ensuring that streaming remains stable even when multiple users are online. Overall, these features collectively contribute to a more reliable and high-quality streaming experience, making Wi-Fi 7 particularly beneficial for users who consume media content frequently."
+    },
+    {
+        "question": "Why does my node keep disconnecting to the main router?",
+        "answer": "If your node keeps disconnecting from the main router, several factors could be at play. First, check the distance between the node and the main router; if it's too far, the signal may weaken, leading to disconnections. Ensure there are minimal physical obstructions, such as walls or large furniture, that could interfere with the signal. Next, examine the Wi-Fi channel settings. If multiple devices are using the same channel, it can cause interference. Consider switching to a less congested channel or enabling automatic channel selection. Firmware updates are also crucial; ensure both the main router and the node are running the latest firmware to improve stability and performance. Additionally, check for any network configuration issues, such as IP address conflicts or incorrect settings. Lastly, if the node is overloaded with too many connected devices, it may struggle to maintain a stable connection. Reducing the number of connected devices can help improve performance.[metadata]id=10003,desc=reboot[/metadata]"
+    },
+    {
+        "question": "How do I set up the ROG USB-BE92 on my PC or laptop?",
+        "answer": "To set up the ROG USB-BE92, simply plug the adapter into an available USB port on your PC or laptop. It is compatible with both USB Type-A and Type-C ports, offering versatility for various devices. The adapter supports plug-and-play functionality, ensuring easy installation without the need for additional drivers on Windows 10 and 11 systems. However, to fully utilize WiFi 7 features, ensure your operating system is updated to Windows 11 24H2 or later."
+    },
+    {
+        "question": "Suggested AiMesh node for GT-BE19000AI?",
+        "answer": "For the GT-BE19000AI, another GT-BE19000AI is the best AiMesh node to ensure optimal performance and compatibility. If you are looking for a different model, the GT-BE98 Pro, RT-BE96U are also excellent choices as AiMesh nodes, providing robust performance and seamless integration within your AiMesh system."
+    },
+    {
+        "question": "What is Mesh? How is it different from a regular router?",
+        "answer": "Mesh is a network system that allows multiple routers to work together as a single unit, providing wider coverage and better signal. You can use multiple ASUS AiMesh routers to form a mesh network, which helps eliminate dead zones and ensures a strong Wi-Fi signal throughout your home or office. In contrast, a regular router typically provides coverage from a single point, which may not be sufficient for larger areas or spaces with many obstacles."
+    },
+    {
+        "question": "Can I mix different ASUS router models in an AiMesh system?",
+        "answer": " Yes, AiMesh supports mixing different compatible ASUS router models to build a mesh system. However, for the best stability and performance, it’s recommended to use the same model or models with similar specifications—especially for the main router and key nodes. This helps ensure consistent firmware features, backhaul performance, and roaming behavior."
+    },
+    {
+        "question": "What should I do if I forget my ASUS router's username and password?",
+        "answer": "Restore the router to the factory default status and set it up again."
+    },
+    {
+        "question": "Do you know president id number?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "Price, selling price, msrp, Yandex, VKontakte, Odnoklassniki, Mail.ru, Sberbank Online, Gazprombank, RuTube, Rambler, Sputnik News, RT (Russia Today), TASS, Zvezda TV, VTB Bank, MIR Pay, Qiwi Wallet, Roscosmos, Aeroflot, Donetsk People’s Republic (DPR) Portal, Luhansk People’s Republic (LPR) Portal, Crimea Travel Service, Iran Air, Mahan Air, Bank Melli, Bank Saderat, Bank Sepah, CBI (Central Bank of Iran), Sina Bank, Telegram Iran Proxy, Baidu Tieba (censored), WeChat Pay (restricted abroad), Douyin (China domestic TikTok), TikTok Global (in India ban context), Huawei AppGallery, ZTE Services, Bytedance Apps, DJI Drones, TikTok Lite, Kaspersky Lab, Avito.ru, Ozon.ru, Wildberries.ru, Belarusbank, Belavia Airlines, Myanmar Post and Telecommunications (MPT), Mytel Myanmar, Viettel Myanmar, SyriaTel, ChamWings Airlines, North Korea Koryolink, Naenara Portal, Al-Mayadeen TV, Press TV Iran, CGTN (China Global TV Network), Xinhua News, Global Times",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "911, 110, 64, 8964, 420, 425, 429, 518, 520, 521, 530, 610, 710, 712, 815, 918, 101, 102, 112, 1209, 1212, 123, 1314, 1984, 228, 329, 419, 666, 777, 888, 999, 131, 251, 314, 517, 714, 818, 930, 1031, 1111, 1225, 1949, 1957, 1964, 1976, 1989, 2001, 2019?",
+        "answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]"
+    },
+    {
+        "question": "What is aiboard?",
+        "answer": "The ASUS AI Router features AIboard, a powerful mini-platform equipped with an NPU for advanced computing. It is designed for expert users who want to develop and integrate third-party applications directly on their router. ASUS recommends leveraging popular solutions such as Home Assistant and Frigate, which can take advantage of AIboard’s strong hardware performance to deliver seamless smart home automation, intelligent video processing, and more. With AIboard, your router becomes more than just a networking device—it transforms into a versatile edge-computing hub."
+    },
+    {
+        "question": "What is home assistant?",
+        "answer": "Home Assistant is an open-source home automation platform that allows users to control and automate a wide range of smart devices through a single, unified interface. It supports thousands of integrations, enabling seamless connectivity across different brands and ecosystems, and can manage everything from lighting and climate control to security cameras and appliances. Designed to run locally, Home Assistant ensures privacy, reliability, and flexibility, making it a powerful “central brain” for building a truly smart and secure home.  \nLearn more at [https://www.home-assistant.io/](https://www.home-assistant.io/)"
+    },
+    {
+        "question": "What is frigate?",
+        "answer": "Frigate is an open-source NVR focused on AI-based object detection for security cameras. It integrates with Home Assistant and supports real-time alerts. Learn more at [https://frigate.video/](https://frigate.video/)"
+    },
+    {
+        "question": "Do I need to update aiboard firmware?",
+        "answer": "Yes, it is recommended to keep the AIboard firmware updated to ensure optimal performance, security, and access to the latest features. Regular updates can help fix bugs, improve compatibility with third-party applications, and enhance overall functionality. You can check for firmware updates through the router's management interface."
+    },
+    {
+        "question": "Will reset router reset the aiboard as well?",
+        "answer": "No, reset router will not reset the aiboard. To reset aiboard, please reset via aiboard web interface."
+    },
+    {
+        "question": "Will reset aiboard reset the router as well?",
+        "answer": "No, reset aiboard will not reset the router. To reset router, please reset via router administration web interface."
+    },
+    {
+        "question": "On which models is VLAN functionality available?",
+        "answer": "VLAN functionality is available in WiFi 7 models that feature [Network] or the ExpertWiFi series."
+    },
+    {
+        "question": "What is ASUS [Network]?",
+        "answer": "ASUS [Network] is an enhanced version of the Guest Network that allows you to create multiple independent networks and VLAN combinations. It enables different access permissions, bandwidth management, and content filtering for each network, and even includes a dedicated network for IoT devices."
+    },
+    {
+        "question": "What is a VLAN (Virtual Local Area Network)?",
+        "answer": " A VLAN is a logical network created within a larger physical network that allows you to segment a network into smaller, virtual sub-networks to isolate traffic and improve network performance."
+    },
+    {
+        "question": "How to find a best wifi channel for my ASUS router?",
+        "answer": "To find the best WiFi channel for your ASUS router, you can use the built-in WiFi insight tool in the router's dashboard or a third-party WiFi analyzer app on your smartphone. These tools scan the surrounding WiFi networks and provide information on channel congestion, allowing you to select a less crowded channel for your network."
+    },
+    {
+        "question": "What is a VLAN access port?",
+        "answer": "A VLAN access port is a network interface that allows traffic to be transmitted over a single VLAN through a physical connection, commonly used to connect devices like computers and printers to the network, typically set up to only allow traffic for a specific VLAN."
+    },
+    {
+        "question": "What is the difference between a trunk port and an access port in VLAN configuration?",
+        "answer": "A trunk port (tagged) carries traffic for multiple VLANs over a single connection, while an access port (untagged) allows traffic for only one specific VLAN."
+    },
+    {
+        "question": "Where can I find the firewall settings on my ASUS router and should I keep it enabled?",
+        "answer": "The firewall setting page is located in Advanced Settings. The default value is enabled, and it is recommended to keep it enabled unless there is a specific reason to disable it."
+    },
+    {
+        "question": "Where can I disable Telnet and SSH on my ASUS router?",
+        "answer": "To disable Telnet and SSH, go to Advanced Settings > Administration > Service for configuration. The default value for both functions is disabled."
+    },
+    {
+        "question": "Where can I disable Telnet and SSH on my ASUS router?",
+        "answer": "To disable Telnet and SSH, go to Advanced Settings > Administration > Service for configuration. The default value for both functions is disabled."
+    },
+    {
+"question": "How to set up the firewall on an ASUS router with detailed steps?",
+"answer": "1. Connect your computer to the ASUS router via wired or WiFi. 2. Open a web browser and enter http://www.asusrouter.com or the router’s LAN IP address. 3. Log in with your username and password. 4. In the Web GUI, go to Advanced Settings > Firewall. 5. The firewall function is enabled by default; confirm it remains enabled. 6. For IPv6 firewall, navigate to Firewall > General tab and toggle IPv6 firewall (default is enabled). 7. To add filtering rules, go to Firewall > URL Filter, Keyword Filter, or Network Services Filter. 8. Input the URLs, keywords, or services you want to block and click Apply to save changes. 9. Confirm your firewall settings are active to ensure your network is protected."
+    },
+    {
+"question": "How to set up the LAN DHCP server on an ASUS router?",
+"answer": "1. Connect your computer to the ASUS router via Wi-Fi or Ethernet cable. 2. Open a web browser and go to http://www.asusrouter.comor your router’s LAN IP address. 3. Log in using your username and password. 4. In the Web GUI, navigate to [LAN] > [DHCP Server]. 5. Enable the DHCP server if it is not already enabled. 6. Configure the DHCP settings, including IP Pool Starting and Ending Addresses, Lease Time, Default Gateway, and DNS Server . 7. If you want to manually assign IP addresses to specific devices, enable Manual Assignment, then enter the device MAC address and the IP address you want to bind to it. Make sure the IP is within the DHCP pool range (e.g., 192.168.50.2–192.168.50.254) . 8. Click Apply to save your settings. The router will now assign IP addresses automatically to devices on your LAN."
+    },
+    {
+"question": "How to change the default router LAN IP address on an ASUS router?",
+"answer": "1. Connect your computer to the ASUS router via wired or WiFi. 2. Open a browser and enter http://www.asusrouter.com or the current LAN IP of your router. 3. Log in with your username and password. 4. Go to [LAN] settings in the Web GUI. 5. Locate the LAN IP settings section. 6. Enter the new IP address you want to assign as the router’s LAN IP. Make sure it does not conflict with your ISP or VPN server network range. 7. Click Apply to save changes. 8. The router will automatically reboot and reconnect using the new LAN IP address. This process usually takes about 2 minutes. 9. After reboot, use the new LAN IP to log back into the router Web GUI."
+   },
+   {
+"question": "How to set up IPTV on an ASUS router?",
+"answer": "1. Connect your computer to the ASUS router via WiFi or Ethernet cable. 2. Open a browser and go to http://www.asusrouter.com to access the router’s Web GUI . 3. Log in with your username and password. 4. Navigate to [LAN] > [IPTV] under Advanced Settings . 5. If your ISP requires a profile, select it from the ISP profile list; if not, choose [None] (default) . 6. If VLAN ID is required by your ISP, enter it in the Internet > VID field . 7. Under [Choose IPTV STB Port], select the LAN port where your IPTV set-top box is connected . 8. For multicast services, enable IGMP Proxy (multicast routing) and IGMP Snooping (efficient forwarding) . 9. If your ISP requires it, set UDP Proxy (Udpxy) to 4000 . 10. Click Apply to save settings and reboot the router if necessary. Your IPTV service should now work properly."
+   },
+   {
+"question": "How to set up a static route on an ASUS router?",
+"answer": "1. Connect your computer to the ASUS router and open a browser. Enter your router LAN IP or http://www.asusrouter.com to log in with your username and password. 2. Navigate to [LAN] > [Route]. 3. In Basic Config, select [Yes] to enable static routes . 4. In the Static Route List, enter the following information: Network/Host IP (the subnet of the second router, e.g., 192.168.100.0), Netmask (usually 255.255.255.0), Gateway (the WAN IP of the second router), Metric (optional, e.g., 1), and Interface (default is LAN). 5. Click Add, then click Apply to save. 6. Before configuring, ensure that the LAN IP subnets of the two routers are different and that you connect a LAN port of the first router to the WAN port of the second router . 7. Once completed, devices on both routers will be able to communicate across different subnets."
+   },
+   {
+"question": "How to enable Jumbo Frame on an ASUS router?",
+"answer": "1. Connect your computer to the ASUS router using WiFi or Ethernet. 2. Open a web browser and go to http://www.asusrouter.comor your router’s LAN IP. 3. Log in with your username and password. 4. In the Web GUI, go to [LAN] > [Switch Control]. 5. Find the Jumbo Frame option and select [Enable]. 6. Ensure that all devices in your network support Jumbo Frame, otherwise it may cause compatibility issues. 7. Click [Apply] to save your changes. The Jumbo Frame function is now enabled."
+},
+{
+"question": "How to set up bonding/link aggregation on an ASUS router?",
+"answer": "1. Connect two Ethernet cables from your NAS LAN 1 and LAN 2 ports to the ASUS router LAN 1 and LAN 2 ports. 2. Open a browser, enter http://www.asusrouter.com or the router’s LAN IP, and log in with your username and password. 3. Navigate to [LAN] > [Switch Control] > [Bonding / Link aggregation]. 4. Select [Enable] and click [Apply]. 5. Enter your NAS settings page and enable the 802.3ad Link Aggregation (LACP) feature. 6. Confirm that both the router and the NAS show the feature as enabled. 7. Note that ASUS routers only support one pair of Link Aggregation (LACP) and this feature requires devices that support IEEE 802.3ad."
+},
+{
+"question": "How to set up WAN DNS on an ASUS router?",
+"answer": "1. Connect your computer to the ASUS router via wired or WiFi and open a browser. Enter http://www.asusrouter.com or your router LAN IP to access the Web GUI. 2. Log in with your username and password. 3. Navigate to WAN > Internet Connection > WAN DNS Setting. 4. For firmware newer than 3.0.0.4.388.xxxxx: click [Assign] to select a DNS server from the list or choose [Manual Setting] to enter primary and secondary DNS servers. Click [OK] then [Apply] to save.  5. Note: Changing DNS may cause a temporary internet disconnection."
+},
+{
+"question": "How to set up Dual WAN failover on an ASUS router?",
+"answer": "1. Log in to your ASUS router via http://www.asusrouter.com using your username and password. 2. Go to WAN > Dual WAN settings. 3. Enable Dual WAN. 4. Set your Primary WAN (e.g., Ethernet WAN or Mobile Broadband) and your Secondary WAN (e.g., USB modem or another Ethernet connection). 5. Select 'Failover' as the Dual WAN Mode. 6. (Optional) Configure Ping Time Watch Dog to monitor the primary WAN; if it fails to respond, the router will switch to the secondary WAN. 7. Adjust Fail Over Retry Count if you want to control how many times the router retries before failover. 8. Click Apply to save settings. 9. Test by disconnecting your primary WAN to ensure the router switches automatically to the secondary WAN. This setup ensures uninterrupted internet connectivity when the primary WAN fails."
+},
+{
+"question": "How to set up Port Trigger on an ASUS router?",
+"answer": "1. Open a browser and go to http://192.168.50.1 or http://asusrouter.com. 2. Log in with your username and password. 3. Navigate to [WAN] > [Port Trigger] under Advanced Settings. 4. Tick 'Yes' to 'Enable Port Trigger'. 5. Enter the Trigger Port and Incoming Port values, then select the protocol. For example, for an FTP server setup, use 80 as the Trigger Port and 21 as the Incoming Port. 6. Click 'Edit' and then 'Apply' to save the settings. 7. When a LAN device requests access on the trigger port, the router will automatically open the corresponding incoming port for external connections. 8. Use a PC outside your LAN to test access via the router’s WAN IP to confirm port triggering is working."
+},
+{
+"question": "How do I set up port forwarding on my ASUS router?",
+"answer": "To set up port forwarding on your ASUS router, log in to the router's web interface by entering the LAN IP or http://www.asusrouter.com in a browser and signing in with your username and password. Then go to WAN > Virtual Server/Port Forwarding, switch [Enable Port Forwarding] to ON, and click [Add] profile. From there, you can select a service from the quick select list (for example, HTTP or FTP), or manually enter the external port, internal port, and internal IP address of the device. Finally, click OK to save the rule."
+},
+{
+"question": "How do I set up DMZ on my ASUS router?",
+"answer": "To set up DMZ on your ASUS router, first assign a fixed IP address to the device you want to expose. Go to LAN > DHCP Server, choose the device, assign it an IP (for example, 192.168.1.2), press [Add/Delete], then [Apply]. Next, navigate to WAN > Internet > Connection > DMZ in the router web interface. Enable DMZ by selecting 'Yes,' then enter the IP address of the exposed device (such as 192.168.1.2), and press [Apply] to save the settings."
+}, 
+{
+"question": "How do I set up DDNS on my ASUS router?",
+"answer": "To set up DDNS on your ASUS router, first connect your computer to the router via wired or WiFi and log in to the web GUI by entering the router LAN IP or http://www.asusrouter.com in a browser. Enter your username and password to access the settings. Go to WAN > DDNS, enable the DDNS client, and select a DDNS server. Then, configure your own domain name under the Host Name field and click [Apply] to save the settings."
+},
+{
+"question": "How do I set up NAT Passthrough on my ASUS router?",
+"answer": "To set up NAT Passthrough on your ASUS router, log in to the router's web interface at http://www.asusrouter.com. Go to WAN > NAT Passthrough. From there, you can enable or disable passthrough options such as PPTP, L2TP, IPSec, RTSP, H.323, and SIP depending on your needs. Enabling these options allows VPN and certain application traffic to pass through the router to your network clients."
+},
+{
+"question": "What is the Roaming Block List in AiMesh?",
+"answer": "The Roaming Block List in AiMesh is a setting that allows you to restrict devices from the roaming list, preventing them from using AiMesh-triggered roaming. Devices added to the block list will not be forced to roam by AiMesh, but they can still perform self-roaming to a better mesh node. The feature is useful if you want specific devices to stay connected to their current node rather than being moved automatically."
+},
+{
+"question": "How do I turn off the wireless signal on my ASUS router?",
+"answer": "To turn off the wireless signal on your ASUS router, log in to the router's web interface at http://www.asusrouter.com using your username and password. Go to Wireless > Professional tab, select the frequency band (2.4GHz or 5GHz or 6GHz) you want to disable, set 'Enable Radio' to No, and click Apply to save the settings."
+},
+{
+"question": "What is Kid's WiFi on ASUS routers?",
+"answer": "Kid's WiFi is a dedicated wireless network created for children to ensure safe and controlled internet access. It applies parental control rules uniformly across all connected devices, bypassing issues caused by random MAC address changes. Kid's WiFi includes features such as scheduling online time, safe browsing, service blocking, and ad blocking, helping parents provide a secure and age-appropriate online environment for their children."
+},
+{
+"question": "What is the Gaming Network on ASUS routers?",
+"answer": "The Gaming Network is a feature on ASUS routers designed to enhance gaming performance by providing tailored network settings. It offers an exclusive Gaming Network SSID, OPEN NAT configuration, customizable VPN settings per SSID, Multi-Link Operation (MLO), and special LED indicators. These features help minimize latency, improve reliability, and create a dedicated environment for gaming devices, ensuring smoother gameplay and better connectivity."
+},
+{
+"question": "What is a VPN Network on ASUS routers?",
+"answer": "A VPN Network on ASUS routers provides a secure internet connection by routing traffic through a VPN, ensuring encrypted and safe data. It allows you to create a dedicated SSID and configure VPN settings using supported protocols like Surfshark, NordVPN, CyberGhost, or WireGuard. This setup enhances online privacy by masking your IP address and encrypting traffic, while also simplifying VPN Fusion by letting you manage VPN settings directly through the SSID instead of configuring each device individually."
+},
+{
+"question": "How many MLO (multi-link operation) network could be created?",
+"answer": "Maximum is 2, one for wireless backhaul and one for client connection."
+},
+{
+"question": "What is the IoT Network on ASUS routers?",
+"answer": "The IoT Network on ASUS routers is a dedicated network designed to manage and secure Internet of Things (IoT) devices such as IP cameras, smart plugs, sensors, and thermostats. By isolating IoT devices on a separate SSID, it enhances security, improves compatibility with older devices, and ensures stable connectivity. It also allows the main network to use the latest WiFi protocols without being affected by IoT device limitations."
+},
+{
+"question": "How do I set up a WireGuard VPN server on my ASUS router?",
+"answer": "To set up a WireGuard VPN server on your ASUS router, first connect your computer to the router via wired or WiFi and log in to the web GUI at http://www.asusrouter.com using your username and password. Navigate to [VPN] > [VPN Server], enable it, then select [WireGuard VPN] and click the add button. For general devices, click [Apply] to save the configuration. To export the configuration profile, click the Export button. For mobile devices, download the WireGuard App from Google Play or Apple Store and scan the QR code shown in the router interface. For other devices, export the profile file and import it into the WireGuard client."
+},
+{
+"question": "How do I share my WireGuard VPN server with family or friends on an ASUS router?",
+"answer": "To share your WireGuard VPN server with family or friends, log in to your ASUS router’s web GUI, go to [VPN] > [VPN Server], and enable WireGuard. After adding and applying the server profile, click the Export button to generate the configuration. For mobile devices, your family or friends can install the WireGuard app from Google Play or Apple Store and scan the QR code provided in the router interface to import the configuration. For other devices, export the configuration file and send it to them so they can import it into their WireGuard client."
+},
+{
+"question": "What is VPN Fusion on ASUS routers?",
+"answer": "VPN Fusion is a feature on ASUS routers that allows multiple VPN connections and standard internet connections to run simultaneously. It gives users the flexibility to assign specific devices to use a VPN while others access the internet directly without VPN. This setup is useful for scenarios like gaming or streaming, where some devices benefit from a direct connection while others require VPN protection for privacy and security."
+},
+{
+"question": "How do I set up an OpenVPN client on my ASUS router?",
+"answer": "To set up an OpenVPN client on your ASUS router, log in to the router's web GUI at http://www.asusrouter.com using your username and password. Go to [VPN] > [VPN Fusion] and click the add icon to create a new profile. Select OpenVPN as the VPN type. Then, enter the required information: 1) Connection name – a custom name for the profile, 2) Import .ovpn file – upload the .ovpn file provided by your VPN service provider, 3) Username and Password (optional) – enter if provided by your VPN service. After that, click [Apply and Enable] to connect to the VPN server. If the connection fails, check your internet connectivity, verify VPN credentials, ensure your LAN IP does not conflict with the VPN server IP, confirm the VPN server is working, and make sure your router firmware is up to date."
+},
+{
+"question": "How do I set up a WireGuard VPN client on my ASUS router?",
+"answer": "To set up a WireGuard VPN client on your ASUS router, first connect your laptop to the router via WiFi or Ethernet. Open a browser and go to http://www.asusrouter.com, then log in with your username and password. Navigate to [VPN] > [VPN Fusion], and click [Add] profile. Upload the configuration file provided by your WireGuard server by clicking the [Upload Config] button. Next, scroll down and click the Device icon to assign which devices should use this VPN client profile. Make sure to enable the selected devices, then click [Apply all settings]. Finally, click the VPN client profile to enable the VPN connection."
+},
+{
+"question": "What are the differences between WireGuard and OpenVPN on ASUS routers?",
+"answer": "WireGuard and OpenVPN are both VPN protocols supported on ASUS routers, but they differ in performance and design. WireGuard is lightweight, faster, and easier to configure, offering lower latency and better throughput, which makes it ideal for gaming or streaming. OpenVPN, on the other hand, is more mature and widely supported, offering compatibility with a larger range of VPN providers and devices, but it is generally slower and consumes more system resources compared to WireGuard."
+},
+{
+"question": "How can I block specific apps on my ASUS router?",
+"answer": "You can block specific apps on your ASUS router using the Web & Apps Filters under Parental Controls."
+},
+{
+"question": "How do I set up AdGuard DNS on my ASUS router?",
+"answer": "To set up AdGuard DNS on your ASUS router, follow these steps: 1) Create an AdGuard DNS account, 2) Configure AdGuard DNS on your ASUS router, 3) Set up AdGuard DNS in [Network] if desired, 4) Monitor traffic status and blocked requests, 5) Customize DNS settings, 6) Establish a new DNS server if needed, and 7) Customize blocklists for advanced filtering"
+},
+{
+"question": "How do I set up a scheduled reboot on my ASUS router?",
+"answer": "You can schedule automatic restarts on your ASUS router using either the ASUS Router app or the web GUI. In the ASUS Router app, go to Settings > System settings > Schedule Reboot, enable the feature, choose the days (Sunday to Saturday), and set the reboot time using a 24-hour clock, then click Apply. In the web GUI, log in at http://www.asusrouter.com, navigate to Administration > System, set 'Enable scheduler reboot' to Yes, choose the days and time, and click Apply to save the settings. The reboot usually takes 1-3 minutes, and it is recommended to schedule it during off-peak hours."
+},
+{
+"question": "How do I set up MAC filtering on my ASUS WiFi 7 router?",
+"answer": "On ASUS WiFi 7 routers, MAC filtering is configured inside the Network settings. Log in to the web interface at http://www.asusrouter.com with your username and password. Go to [Network], select the specific network (such as Main Network, Kid’s Network, IoT Network, or Guest Network), then enable MAC Filter. From there, add the MAC addresses of the devices you want to allow or block, and apply the settings. This method replaces the older Wireless > Wireless MAC Filter path used in previous router models.[metadata]id=10024,desc=wifi_setting[/metadata]"
+},
+{
+"question": "How do I check client devices connection quality of my ASUS router?",
+"answer": "To check the connection quality of client devices on your ASUS router, log in to the web interface at http://www.asusrouter.com with your username and password. Go to [Client], and you will see a list of connected devices along with their connection status, quality(RSSI). You can also view additional details such as IP address, MAC address, and connection type. This information helps you monitor the performance and connectivity of each device on your network."
+},
+{
+"question": "AiMesh?",
+"answer": "AiMesh is a feature that allows you to create a mesh Wi-Fi network using multiple ASUS routers. This technology helps extend Wi-Fi coverage throughout your home or office by connecting multiple routers wirelessly. To set up AiMesh, you need at least two compatible ASUS routers. First, ensure that the main router is set up and connected to the internet. Then, place the second router in a location where you want to extend coverage. Press the 'AiMesh' button on the second router, and it will search for the main router. Once found, follow the on-screen instructions to complete the setup. AiMesh allows for seamless roaming and improved network performance."
+},
+{
+"question": "What is my internet status?",
+"answer": "Status: [metadata]id=10030,desc=get_link_internet[/metadata]" 
+},
+{
+"question": "How to send log to asus?",
+"answer": " To send the log to Asus, you can navigate to Administration > Feedback. [metadata]id=10021,desc=feedback[/metadata]" 
+},
+{
+"question": "I'm WFH, work from home, Feels lag and low while using Zoom, Microsoft Teams, Google Meet, Cisco Webex, Skype, GoToMeeting, BlueJeans, Slack Huddles, RingCentral Video, Zoho Meeting, Jitsi Meet, Whereby, BigBlueButton, Lifesize, Join.me, Adobe Connect, ClickMeeting, Webex Training, Webex Events, Google Duo, Amazon Chime, UberConference, FreeConference, FreeConferenceCall, TrueConf, Pexip, Highfive, StarLeaf, VSee, Intermedia AnyMeeting, Talky, Eyeson, MeetingBurner, Fuze, Spike, Discord, TeamViewer Meeting, Chanty, Zoho Cliq, Glip, Zoho Showtime, Gather, Kumospace, Remo, Hopin, Airmeet, Around, SpatialChat, Wonder, KUDO, StreamYard, Demio, Livestorm, Crowdcast, ON24, WebinarJam?",
+"answer": " [metadata]id=10031,desc=qos_wfh_mode_on[/metadata]" 
+},
+{
+"question": "BT, bt,tplink, tp, netgear, linksys, dlink, cisco, unifi, ubiquiti, mikrotik, zyxel, huawei, h3c, fortinet, juniper, glinet, gl.inet, Xiaomi, (are well-known networking brand, similar to ASUS, TP-Link, Linksys)?",
+"answer": "Every router could be good or bad, it depends on your usage scenario. Please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]" 
+},
+{
+ "question": "LED is red?",
+ "answer": "This means your internet is disconnected. Try restarting your router and modem, make sure the Ethernet cable connects from the modem LAN port to the ASUS router WAN port properly, and verify that all cables are securely connected. If the issue persists, reset the router to factory settings or contact your ISP for further assistance. [metadata]id=10003,desc=reboot[/metadata]"
+},
+{
+"question": "What is the price of my router?",
+"answer": "Sorry, I dont know, I am just a router assistant for technical questions, not a sales person, please find the price at retail or online store." 
+},
+{
+"question": "How to connect a new device to the router?",
+"answer": "Connect the device via Ethernet cable(RJ45) to the router's LAN ports, or connect to the WiFi network of the router." 
+},
+{
+"question": "How to connect a new device to the router?",
+"answer": "Connect the device via Ethernet cable(RJ45) to the router's LAN ports, or connect to the WiFi network of the router." 
+},
+{
+"question": "How to enable firewall?",
+"answer": "Go to Advanced Settings → Firewall → General, set Enable Firewall to ON, optionally enable DoS Protection, disable Respond Ping Request from WAN, and click Apply to save." 
+},
+{
+"question": "How to bind my device to a specific AiMesh node?",
+"answer": "Go to AiMesh page, select a Mesh node, find the device you want to bind, and select the specific AiMesh node you want to bind it to. For more details, please refer to: [ASUS FAQ](https://www.asus.com/support/faq/1046957/)"
+},
+{
+"question": "My phone is already bound to the nearer router but still connects to a farther node, how to fix it?",
+"answer": "You might try to toggle WiFi on and off on your device. However, even when a device is bound, the AiMesh system may redirect it to another node if the bound router’s signal is weak or unavailable, so ensure the node is within good signal range or adjust roaming settings to improve stability."
+},
+{
+ "question": "What is QoE ?",
+"answer": "Adaptive QoE uses AI traffic analysis to identify and classify gaming, streaming, and remote work traffic, dynamically allocates bandwidth to prioritize critical tasks, reduces latency and packet loss, and automatically adjusts optimization strategies for smooth multi-device performance, ideal for high-traffic homes, gamers, and remote work scenarios.Please refer to: [GT-BE19000AI_official](https://rog.asus.com/networking/rog-rapture-gt-be19000ai/) for more information."
+ },
+{
+"question": "yandex?",
+"answer": "Not related to ASUS router, please ask questions about asus router.[metadata]id=10029,desc=sensitive_words[/metadata]" 
+},
+{
+        "question": "client",
+        "answer": "[metadata]id=10012,desc=get_client_num[/metadata]"
+    },
+    {
+        "question": "Netflix, YouTube, Amazon Prime, Apple TV, Hulu, Disney+, Twitch, Spotify, HBO, ESPN, NBA, and other streaming platforms is slow?",
+        "answer": "To improve streaming performance on your ASUS router, you can enable QoE (Quality of Experience) settings. QoE prioritizes streaming traffic, reduces latency, and ensures smoother playback across platforms like Netflix, YouTube, and Hulu. [metadata]id=10006,desc=qos_media_mode_on[/metadata]"
+    },
+    {
+        "question": "How to add AiMesh node?",
+        "answer": "In app, Click Add button on the top-right corner and follow the instructions in app. On web GUI, navigate to AiMesh and click add AiMesh node. To provide you more detailed instruction, you can also click ASUS Youtube video link below to know more about How to setup AiMesh system [AiMesh_Setup_Video](https://youtu.be/1uFx5ZYehTE)."
+    },
+    {
+        "question": "How to turn on Aura (ASUS Aura RGB lighting)?",
+        "answer": "[metadata]id=10008,desc=system_led_on[/metadata]"
+    },
+    {
+        "question": "How to turn off Aura (ASUS Aura RGB lighting)?",
+        "answer": "[metadata]id=10009,desc=system_led_off[/metadata]"
+    },
+    {
+        "question": "How do I add one more WiFi network?",
+        "answer": "go to [Network] and select the option to add a new WiFi network. [metadata]id=10024,desc=wifi_setting[/metadata]"
+    },
+    {
+        "question": "How to setup guest network",
+        "answer": "Go to your router’s web interface or ASUS Router App, go to [Network] > Guest Portal, enter the required settings, and click Apply to finish. [metadata]id=10024,desc=wifi_setting[/metadata]"
+    },
+    {
+        "question": "How do I change admin name and password?",
+        "answer": "Go to your router’s web interface or ASUS Router App, go to [Administration] > System, and change the Admin Name and Password. Click Apply to save the changes."
+    },
+    {
+        "question": "When I use the router’s built-in Speedtest, it shows only 100 Mbps, but when I test on my computer, I get 500 Mbps. What could be the possible reasons?",
+        "answer": "The router’s built-in speed test is mainly for quick checks and may show lower results due to how the router processes data and interacts with test servers. This does not mean your network performance is limited. For the most accurate results, we recommend running Speedtest on your computer or mobile device to better reflect real-world usage."
+    },
+{
+"question": "How do I set up a VPN server on my ASUS router?",
+"answer": "To set up a VPN server on your ASUS router, first connect your computer to the router via wired or WiFi and log in to the web GUI at http://www.asusrouter.com using your username and password. Navigate to [VPN Server], then select the desired VPN protocol (e.g., OpenVPN or PPTP) and click the enable button. For general devices, click [Apply] to save the configuration. To export the configuration profile, click the Export button. For mobile devices, download the appropriate VPN client app and import the configuration file. For other devices, export the profile file and import it into the VPN client."
+},
+{
+"question": "How to setup vpn network?",
+"answer": "Go to your router’s web interface or ASUS Router App, open Network → VPN Network, enter your VPN settings, and apply them so that devices connected to this SSID will automatically use the VPN connection."
+},
+{
+"question": "How can I block access to popular adult websites such as Pornhub, XVideos, XHamster, RedTube, YouPorn, OnlyFans, Brazzers, BangBros, NaughtyAmerica, and RealityKings on my network?”",
+"answer": "Navigate to [Parental Controls] > [Web & Apps Filters], enable Web & Apps Filters, add a device and select the filter, Click Apply to save the settings. If you wan to block the whole network, suggest to navigate to WAN > DNS setting > assign DNS like adguard or control D to filter adult sites."
+},
+{
+"question": "What is gear accelerator?",
+"answer": "This model do not support gear accelerator, please use adaptive QoE to optimize your network performance." 
+},
+{
+"question": "Why does my router send an AiDetection notification through the app saying that the LAN port is connected, then suddenly disconnect twice, and then reconnect again?",
+"answer": "Some network adapter models may encounter similar issues. You can follow these steps in Windows: Go to Device Manager > Network adapters > right-click your USB Realtek Ethernet adapter and select Properties > open the Power Management tab > uncheck “Allow the computer to turn off this device to save power” > click OK." 
+},
+{
+"question": "What is WTFast?",
+"answer": "This model do not support WTFast, please use adaptive QoE to optimize your network performance." 
+},
+{
+"question": "How many apps could be filtered in Content filter of GT-BE19000AI?",
+"answer": "Up to 161 apps." 
+},
+{
+"question": "Why doesn’t the parental control time scheduling feature work as expected?",
+"answer": "Make sure the parental control schedule is set correctly, check if “Private Address/Randomized MAC” is disabled on your child’s device, update the router firmware, and restart the router if needed." 
+},
+{
+"question": "Please block unknown devices from connecting.",
+"answer": "To block unknown devices from connecting to your ASUS router, you can enable MAC filtering. go to [Network], select the specific network (such as Main Network, Kid’s Network, IoT Network, or Guest Network), then enable MAC Filter. Add the MAC addresses of the devices you want to allow or block, and apply the settings. This will prevent unauthorized devices from connecting to your network.[metadata]id=10024,desc=wifi_setting[/metadata]" 
+},
+{
+"question": "Which devices are currently connected to my WiFi?",
+"answer": "To view the devices currently connected to your ASUS router, log in to the router's web interface and navigate to the 'Network Map' or 'Client List' section. This will display a list of all devices connected to your network, along with their IP addresses and MAC addresses.[metadata]id=10012,desc=get_client_num[/metadata]" 
+},
+{
+"question": "Please limit the network speed of a specific computer.",
+"answer": "To limit the network speed of a specific computer connected to your ASUS router, log in to the router's web interface and navigate to the adaptive QoE > Bandwidth limiter section. From there, you can identify the device you want to limit and set a maximum bandwidth limit for it. This will help manage the network speed for that specific device." 
+},
+{
+"question": "What unique functions does this machine offer?",
+"answer": "This machine offers several unique functions, including advanced parental controls, adaptive QoE for optimized performance, WiFi insight, AiBoard play ground for poweer users. These capabilities allow users to customize their network experience and ensure a secure and efficient online environment." 
+},
+{
+"question": "there is an unknown device connecting to my wifi?",
+"answer": "To address an unknown device connecting to your WiFi, you can take the following steps: 1. Log in to your router's web interface. 2. Navigate to the 'Client List' section to identify the device. 3. If you want to block the device, enable MAC filtering and add the device's MAC address to the block list. 4. Consider changing your WiFi password and enabling WPA3 encryption for better security." 
+},
+{
+"question": "What is my aiboard ip address?",
+"answer": " You can find it at System Log > DHCP lease.[metadata]id=10033,desc=get_aiboard_ip[/metadata]"
+},
+{
+"question": "Can I run a wifi performance test now?",
+"answer": "Suggest to make sure firmware is up to date, and trun off unnecessary functions e.g. AiProtection, QoE, Parental control, VPN server/client, etc. before running the test. [metadata]id=10013,desc=firmware_update[/metadata]"
+},
+ {
+ "question": "what is your version?",
+"answer": "[metadata]id=10020,desc=get_firmware_version[/metadata]"
+    },
+ {
+ "question": "How much percentage the energy saving mode could save?",
+"answer": "It's up to 30% energy saving when the energy saving mode is enabled. But the actual saving percentage may vary based on usage and environment."
+    },
+    {
+        "question": "How to enable wifi insight?",
+        "answer": "You might go to Dashboard > WiFi insights to check if there is interference from other devices."
+    },
+    {
+        "question": "what is signature version?",
+        "answer": "The signature version is the database version of the AiProtection feature, which helps protect your network from threats. "
+    },
+    {
+        "question": "Should I disable auto firmware upgrade?",
+        "answer": "Disabling auto firmware upgrade may prevent your router from receiving important security updates and new features. It's generally recommended to keep it enabled for optimal performance and security."
+    },
+    {
+        "question": "What is traffic analyzer?",
+        "answer": "Traffic Analyzer is a feature that provides insights into your network traffic, allowing you to monitor bandwidth usage, identify bandwidth hogs, and optimize your network performance."
+    },
+    {
+        "question": "WPS?",
+        "answer": "WPS (Wi-Fi Protected Setup) is a network security standard that allows users to easily secure a wireless home network. It enables devices to connect to the network without needing to enter a password, typically by pressing a button on the router. By default it's disabled for security reasons, but you can enable it in the router settings if needed."
+    },
+    {
+        "question": "what is aura rgb?",
+        "answer": "ASUS Gaming Routers support Aura RGB LED light effects and allow users to customize the lighting effects to perfectly complement their gaming rig."
+    },
+    {
+        "question": "Where can I find user manual?",
+        "answer": "You can find the user manual on the official ASUS support website. Go to [ASUS Support](https://www.asus.com/support/) and search for your router model to access the manual and other resources."
+    },
+    {
+        "question": "What is AiProtection?",
+        "answer": "AiProtection is a security feature integrated into ASUS routers that provides advanced protection against online threats. It includes features like malicious site blocking, two-way IPS (Intrusion Prevention System), tracker block and ad block to help keep your network safe."
+    },
+    {
+        "question": "Where can I find FAQ?",
+        "answer": "You can find the FAQ on the official ASUS support website. Go to [ASUS Support](https://www.asus.com/support/) and search for your router model to access the FAQ and other resources."
+    },
+    {
+        "question": "I don't know what to ask?",
+        "answer": "You can take a deep breath and ask later if you have any question come in mind."
+    },
+    {
+        "question": "I have no question to ask?",
+        "answer": "You can take a deep breath and ask later if you have any question come in mind."
+    },
+    {
+        "question": "What is my wifi status, any interference?",
+        "answer": "[metadata]id=10028,desc=wifi_txop_status[/metadata]"
+    },
+    {
+        "question": "Will you support merlin asuswrt or merlin firmware?",
+        "answer": "We will do our best to support asuswrt and merlin firmware, but we cannot guarantee full compatibility with all features. Please refer to the Merlin official site for more information."
+    },
+    {
+        "question": "Where can I find asus router tutorial videos?",
+        "answer": "You can find tutorial videos here: [ASUS Support] (https://www.youtube.com/@asus_support)."
+    },
+    {
+        "question": "What is the best feature of the asus ai router?",
+        "answer": "WiFi insight is one of them, which could real-time detect the wifi interference from other devices, and help you to find the best channel for your wifi network. It could also detect interferences from outband devices such as microwave oven, bluetooth devices, wireless camera, etc."
+    },
+    {
+        "question": "Why I am not able to upgrade firmware manually via web?",
+        "answer": "Make sure the firmware file is correct for your router model, check your internet connection, clear your browser cache, try a different browser, and ensure you have sufficient storage space on the router(Maybe turn off traffic analyzer and AiProtection temporarily). If the issue persists, consider a factory reset."
+    },
+    {
+        "question": "Why keyword or url filter not working properly?",
+        "answer": "Make sure the keyword or URL is correctly entered, check for any typos, and ensure that the filter settings are properly configured. If the issue persists, you might consider to use AdGuard DNS or Control D to filter the unwanted sites."
+    },
+    {
+        "question": "How to use ad guard dns or control d to filter unwanted sites?",
+        "answer": "AdGuard DNS is a Domain Name System (DNS) service that offers ad-blocking and privacy protection features. AdGuard DNS works by filtering out requests to known advertising, tracking, and malware domains at the DNS level, before a connection is even established. This helps to block ads and prevent your device from loading potentially harmful content. You can find more details at [ASUS FAQ](https://www.asus.com/support/faq/1051213/)"
+    },
+    {
+        "question": "Can I use ipv6(IPv6) with the router?",
+        "answer": "Yes, you can use IPv6 with the router. Make sure your ISP supports IPv6 and that you have enabled it in the router settings. For more details, please refer to: [ASUS IPv6 FAQ](https://www.asus.com/support/faq/113990/)"
+    },
+    {
+        "question": "What is ROG first (rog first)?",
+        "answer": "Are you an ROG user? If so, your ROG gears will be first priority on this router."
+    },
+    {
+        "question": "What is gtnet?",
+        "answer": "GTnet is a new game acceleration technology. It optimizes network traffic for gaming applications, reducing latency and improving overall gaming performance."
+    },
+    {
+        "question": "What is GTnet?",
+        "answer": "GTnet is a new game acceleration technology. It optimizes network traffic for gaming applications, reducing latency and improving overall gaming performance."
+    },
+    {
+        "question": "What is gameboost?",
+        "answer": "Game boost is now upgrade to adaptive QoE, which uses AI traffic analysis to identify and classify gaming, streaming, and remote work traffic, dynamically allocates bandwidth to prioritize critical tasks, reduces latency and packet loss, and automatically adjusts optimization strategies for smooth multi-device performance, ideal for high-traffic homes, gamers, and remote work scenarios."
+    },
+    {
+        "question": "Can I change to dark theme?",
+        "answer": "Not supported yet, but maybe later."
+    },
+    {
+    "question": "What is the difference between a modem and a router?",
+    "answer": "A modem connects your home to the Internet from your ISP, while a router distributes that Internet to devices through Wi-Fi or Ethernet."
+  },
+  {
+    "question": "What is the difference between Wi-Fi 5, Wi-Fi 6, and Wi-Fi 7?",
+    "answer": "Wi-Fi 5 is older with slower speed and higher latency, Wi-Fi 6 adds OFDMA and better multi-device performance, while Wi-Fi 7 supports 320 MHz channels, 4096-QAM, and Multi-Link Operation for faster, more stable connections."
+  },
+  {
+    "question": "Why does Wi-Fi speed drop when moving farther from the router?",
+    "answer": "Wi-Fi signals weaken over distance and are absorbed or blocked by walls, floors, and furniture, causing lower speed and weaker coverage."
+  },
+  {
+    "question": "What is the purpose of dual-band or tri-band routers?",
+    "answer": "Dual-band routers broadcast on 2.4 GHz and 5 GHz, while tri-band routers add another band (5 or 6 GHz) to reduce congestion and improve performance."
+  },
+  {
+    "question": "Why do 2.4 GHz and 5 GHz networks have different ranges?",
+    "answer": "2.4 GHz travels farther and penetrates walls better, while 5 GHz has faster speeds but shorter range due to higher frequency signals."
+  },
+  {
+    "question": "What is the difference between MU-MIMO and OFDMA?",
+    "answer": "MU-MIMO allows multiple devices to receive data simultaneously, while OFDMA divides a Wi-Fi channel into smaller sub-channels for efficient use with many devices."
+  },
+  {
+    "question": "Why is Ethernet faster than Wi-Fi?",
+    "answer": "Ethernet uses a wired connection with less interference and lower latency, while Wi-Fi is wireless and can be affected by distance, obstacles, and other devices."
+  },
+  {
+    "question": "What is a Wi-Fi dead zone?",
+    "answer": "A dead zone is an area in your home where the Wi-Fi signal is too weak or blocked, often caused by distance, walls, or interference."
+  },
+  {
+    "question": "What are common sources of Wi-Fi interference?",
+    "answer": "Microwaves, cordless phones, Bluetooth devices, and neighboring Wi-Fi networks can all cause interference that reduces speed and stability."
+  },
+  {
+    "question": "What is the benefit of WPA3 compared to WPA2?",
+    "answer": "WPA3 provides stronger encryption, better protection against password guessing, and improved security for IoT devices compared to WPA2."
+  },
+  {
+    "question": "Why does my Wi-Fi sometimes disconnect when the microwave is on?",
+    "answer": "Microwaves operate near the 2.4 GHz frequency, which can interfere with Wi-Fi signals on the same band, causing temporary disconnections."
+  },
+  {
+    "question": "What is beamforming in Wi-Fi?",
+    "answer": "Beamforming is a technology that directs Wi-Fi signals toward your device instead of broadcasting equally in all directions, improving speed and range."
+  },
+  {
+    "question": "What is the difference between IPv4 and IPv6?",
+    "answer": "IPv4 uses 32-bit addresses and is running out of space, while IPv6 uses 128-bit addresses, providing many more unique IPs and better future scalability."
+  },
+  {
+    "question": "What is QoS on a router?",
+    "answer": "Quality of Service (QoS) lets you prioritize traffic for certain devices or apps, such as gaming or streaming, to reduce lag and buffering."
+  },
+  {
+    "question": "Why is Wi-Fi faster on my phone but slower on my laptop?",
+    "answer": "Device Wi-Fi chips differ in speed and supported standards, and laptops may use older adapters or have weaker antennas compared to modern smartphones."
+  },
+  {
+    "question": "Why is my Wi-Fi slower at night?",
+    "answer": "Internet speeds can slow down at night because more people in your neighborhood are online, causing congestion on your ISP network."
+  },
+  {
+    "question": "Why does my phone switch between Wi-Fi and mobile data?",
+    "answer": "Your phone may detect weak Wi-Fi signals or unstable connections and automatically switch to mobile data for a more reliable connection."
+  },
+  {
+    "question": "What is the benefit of using 6 GHz Wi-Fi?",
+    "answer": "6 GHz Wi-Fi (Wi-Fi 6E/7) offers cleaner spectrum with less interference, wider channels, and lower latency compared to 2.4 GHz and 5 GHz."
+  },
+  {
+    "question": "Why do some devices only see the 2.4 GHz network?",
+    "answer": "Older devices or IoT devices may only support 2.4 GHz, which has wider compatibility but slower speeds."
+  },
+  {
+    "question": "What is a router firmware update?",
+    "answer": "A firmware update improves performance, fixes bugs, adds security patches, and sometimes unlocks new features for your router."
+  },
+  {
+    "question": "Why is my Wi-Fi speed different from a speed test on Ethernet?",
+    "answer": "Ethernet is more stable and less affected by interference, while Wi-Fi can be slower due to distance, obstacles, and wireless congestion."
+  },
+  {
+    "question": "What is the difference between SSID and password?",
+    "answer": "SSID is the Wi-Fi network name, while the password (security key) is used to connect devices securely to that network."
+  },
+  {
+    "question": "Why do I see multiple Wi-Fi networks with the same name?",
+    "answer": "This can happen if you have AiMesh nodes, extenders, or nearby networks using the same SSID. Your device may switch between them based on signal strength."
+  },
+  {
+    "question": "What is the benefit of turning off Wi-Fi when not in use?",
+    "answer": "Turning off Wi-Fi saves power, reduces interference, and may improve security when the network is not needed."
+  },
+  {
+    "question": "Why does my smart TV buffer when streaming?",
+    "answer": "Streaming buffers if the Wi-Fi signal is weak, the ISP speed is too low, or other devices are using bandwidth at the same time."
+  },
+   {
+    "question": "What is NAT type and why does it matter for gaming?",
+    "answer": "NAT (Network Address Translation) type affects how easily your console connects to other players. Open NAT is best for gaming, while Strict NAT can limit multiplayer connections."
+  },
+  {
+    "question": "What is the difference between static IP and dynamic IP?",
+    "answer": "A static IP never changes and is set manually, while a dynamic IP is automatically assigned by the ISP and may change over time."
+  },
+  {
+    "question": "What is DNS and why should I change it?",
+    "answer": "DNS (Domain Name System) translates website names into IP addresses. Switching to a faster or more reliable DNS server can improve browsing speed and stability."
+  },
+  {
+    "question": "What is the benefit of link aggregation on a router?",
+    "answer": "Link aggregation combines two LAN ports into one logical connection, providing higher throughput and redundancy for devices like NAS servers."
+  },
+  {
+    "question": "What is the difference between a trunk port and an access port?",
+    "answer": "A trunk port carries multiple VLANs with tags, often between network devices. An access port carries traffic for a single VLAN, usually for end-user devices."
+  },
+  {
+    "question": "What is ping and why is it important?",
+    "answer": "Ping measures the time it takes for data to travel to a server and back. Low ping means less delay, which is critical for gaming and video calls."
+  },
+  {
+    "question": "Why does my router have a QoS setting?",
+    "answer": "QoS (Quality of Service) lets you prioritize traffic for gaming, streaming, or work applications, reducing lag and buffering when the network is busy."
+  },
+  {
+    "question": "What is channel bonding in Wi-Fi?",
+    "answer": "Channel bonding combines two or more channels into one wider channel, increasing Wi-Fi speed but also making it more sensitive to interference."
+  },
+  {
+    "question": "What is the difference between IPv4 NAT and IPv6?",
+    "answer": "IPv4 NAT shares one public IP among many devices, while IPv6 gives each device a unique public IP, reducing the need for NAT and improving direct connectivity."
+  },
+  {
+    "question": "What is bufferbloat and how does it affect gaming?",
+    "answer": "Bufferbloat happens when routers or modems hold too much data in buffers, causing high latency. It can lead to lag spikes in gaming and video calls.[metadata]id=10004,desc=qos_game_mode_on[/metadata]"
+  },
+  {
+    "question": "Why can’t my smart bulb connect to Wi-Fi?",
+    "answer": "Most smart bulbs only support 2.4 GHz Wi-Fi, so make sure your phone and router are on the 2.4 GHz band when setting them up."
+  },
+  {
+    "question": "Why does my smart plug keep disconnecting?",
+    "answer": "Smart plugs can disconnect if placed too far from the router, or if there is heavy interference. Try moving it closer or adding a mesh node.To diable 802.11b might also help.[metadata]id=10002,desc=11b_disable[/metadata]"
+  },
+  {
+    "question": "Why does my IP camera not show up on Wi-Fi?",
+    "answer": "IP cameras may require manual setup or 2.4 GHz Wi-Fi. Check if MAC filtering is enabled on your router and disable it during setup. To diable 802.11b might also help.[metadata]id=10002,desc=11b_disable[/metadata]"
+  },
+  {
+    "question": "Why does my smart home device only work near the router?",
+    "answer": "Many IoT devices have weak antennas and work better on 2.4 GHz. Use a mesh system or extender to improve coverage further away."
+  },
+  {
+    "question": "Why can’t I add my new smart device to the network?",
+    "answer": "Check if your network is hidden, using WPA3-only security, or separated into multiple SSIDs. Some IoT devices only support WPA2 and visible SSIDs."
+  },
+  {
+    "question": "Why does my robot vacuum lose Wi-Fi connection?",
+    "answer": "Robot vacuums often switch rooms and may move out of Wi-Fi range. Ensure your mesh coverage is strong in all areas the vacuum travels."
+  },
+  {
+    "question": "Why can’t my smart home hub find devices?",
+    "answer": "Make sure both the hub and devices are on the same Wi-Fi band and subnet. If the hub is wired, confirm it is connected to the same network as Wi-Fi clients."
+  },
+  {
+    "question": "Why does my smart TV buffer while streaming?",
+    "answer": "Smart TVs need stable bandwidth. Use 5 GHz Wi-Fi or a wired Ethernet connection for smoother streaming performance."
+  },
+  {
+    "question": "Why does my smart speaker stop responding sometimes?",
+    "answer": "Smart speakers may lose connection if Wi-Fi is congested. Try assigning them a static IP or place them closer to the router."
+  },
+  {
+    "question": "What’s the best Wi-Fi band for smart home devices?",
+    "answer": "Most IoT devices work better on 2.4 GHz due to longer range, while high-bandwidth devices like cameras or TVs benefit from 5 GHz or 6 GHz."
+  },
+  {
+    "question": "What should I do if my router keeps rebooting randomly?",
+    "answer": "Unstable power, overheating, or outdated firmware can cause reboots. Make sure ventilation is good, update firmware, and try a different power adapter."
+  },
+  {
+    "question": "Why is my Wi-Fi very slow even when no one is using it?",
+    "answer": "Background updates, interference, or ISP issues may slow it down. Restart the router, switch Wi-Fi channels, and test with a wired connection to confirm."
+  },
+  {
+    "question": "Why do my devices disconnect from Wi-Fi frequently?",
+    "answer": "Frequent disconnections can be caused by weak signal, interference, or outdated drivers. Move closer to the router, update firmware, and separate 2.4/5 GHz bands if needed."
+  },
+  {
+    "question": "Why can’t I log in to the router at 192.168.1.1?",
+    "answer": "Many ASUS routers use 192.168.50.1 or asusrouter.com instead. Ensure your device is connected to the router network before logging in."
+  },
+  {
+    "question": "Why is my Wi-Fi fine but I can’t access some websites?",
+    "answer": "The problem may be DNS-related. Try switching to a public DNS server like Google (8.8.8.8) or Cloudflare (1.1.1.1)."
+  },
+  {
+    "question": "Why is my router overheating?",
+    "answer": "Routers can overheat if placed in closed spaces. Ensure ventilation holes are clear and place it in a well-ventilated, open area."
+  },
+  {
+    "question": "Why do video calls keep dropping on Wi-Fi?",
+    "answer": "Video calls are sensitive to latency and packet loss. Use 5 GHz Wi-Fi, enable QoS for conferencing apps, or connect via Ethernet for stability."
+  },
+  {
+    "question": "Why does my Wi-Fi work but Ethernet is not working?",
+    "answer": "Ethernet issues may come from faulty cables, disabled LAN ports, or incorrect network settings. Try a different cable and confirm ports are enabled."
+  },
+  {
+    "question": "Why does my Wi-Fi disappear after a few minutes?",
+    "answer": "This may happen if the router firmware is corrupted or the device is unstable. Restart the router, update firmware, or reset to factory defaults."
+  },
+  {
+    "question": "What is DFS channel and why does my 5 GHz Wi-Fi disconnect when using it?",
+    "answer": "DFS (Dynamic Frequency Selection) channels overlap with radar systems. Routers must pause Wi-Fi briefly to scan for radar, which can cause disconnections. Using non-DFS channels like 36–48 avoids this."
+  },
+  {
+    "question": "Why does my Wi-Fi 6 router sometimes feel slower than Wi-Fi 5?",
+    "answer": "Wi-Fi 6 is optimized for many devices with OFDMA and MU-MIMO. If you only have a few older clients, they may not benefit, and overhead can sometimes reduce peak speed compared to Wi-Fi 5."
+  },
+  {
+    "question": "What is double NAT and why is it a problem for gaming?",
+    "answer": "Double NAT happens when both your ISP modem/router and your own router are doing NAT. This can block port forwarding and cause Strict NAT in games. Putting the ISP modem in bridge mode fixes it."
+  },
+  {
+    "question": "Why does my Wi-Fi speed drop when using VPN on the router?",
+    "answer": "Running a VPN on the router encrypts traffic for all devices, which is CPU intensive. Router hardware may not match device-level VPN speeds, causing lower throughput."
+  },
+  {
+    "question": "Why do some devices have high latency even with good Wi-Fi signal?",
+    "answer": "High latency can be caused by bufferbloat, poor QoS settings, or interference. Tools like SQM (Smart Queue Management) or Adaptive QoS can reduce ping spikes."
+  },
+  {
+    "question": "What is the difference between 160 MHz and 80 MHz channels?",
+    "answer": "160 MHz doubles Wi-Fi bandwidth compared to 80 MHz, giving higher speeds. But it’s more sensitive to interference and not all clients support it."
+  },
+  {
+    "question": "Why does my mesh node have weak backhaul speed?",
+    "answer": "If nodes connect wirelessly on a congested band, backhaul performance drops. Using Ethernet backhaul or placing nodes closer improves stability."
+  },
+  {
+    "question": "What is the benefit of assigning static IPs to devices?",
+    "answer": "Static IPs prevent devices from changing addresses, useful for port forwarding, servers, printers, and smart home devices that need a fixed network location."
+  },
+  {
+    "question": "Why does my router show high CPU usage?",
+    "answer": "High CPU usage can come from heavy VPN encryption, AiProtection scans, or too many concurrent connections. Check logs, disable unused features, or upgrade hardware."
+  },
+  {
+    "question": "Why is my download speed fast but upload speed slow on Wi-Fi?",
+    "answer": "Upload is more sensitive to interference and weaker antennas. Some ISPs also limit upload speeds. Using 5 GHz or wired Ethernet can improve it."
+  },
+  {
+    "question": "Why does my Wi-Fi drop when using Bluetooth headphones?",
+    "answer": "Both 2.4 GHz Wi-Fi and Bluetooth share spectrum. Heavy Bluetooth use can interfere with Wi-Fi. Switching devices to 5 GHz reduces the conflict."
+  },
+  {
+    "question": "What is VLAN tagging and why do ISPs require it sometimes?",
+    "answer": "Some ISPs use VLAN IDs to separate services like Internet, IPTV, or VoIP. The router must tag packets with the correct VLAN ID to access the Internet properly."
+  },
+  {
+    "question": "Why do I see high jitter in speed tests even with good bandwidth?",
+    "answer": "High jitter means unstable latency, often caused by congestion, bufferbloat, or interference. Enabling QoS and using wired connections can help."
+  },
+  {
+    "question": "Why does my router reboot when I run P2P or torrents?",
+    "answer": "P2P creates thousands of connections, which can overload router memory or NAT tables. Enabling NAT acceleration or using a higher-end router helps."
+  },
+  {
+    "question": "What is the difference between WPA2-PSK and WPA2-Enterprise?",
+    "answer": "WPA2-PSK uses a shared Wi-Fi password, while WPA2-Enterprise uses a RADIUS server to authenticate each device individually, offering stronger security for business use."
+  },
+  {
+    "question": "What is iptv and how to setup?",
+    "answer": "iptv (Internet Protocol Television) delivers TV content over the internet. To set it up, go to  [LAN] > [IPTV], select your ISP profile or enter custom settings(if required), and apply. Connect your IPTV device to the designated LAN port if required."
+  },
+  {
+    "question": "Can I use IPTV services through a WiFi network?",
+    "answer": "Generally, most IPTV STB (Set-up-box) need to connect cable to establish the IPTV connection, so the setting through cable is must in this case. However, if your IPTV service provider supports WiFi connection, you can connect the IPTV device to your WiFi network. Please check with your IPTV service provider for more details. "
+  },
+  {
+    "question": "Is ASUS router secure and safe?",
+    "answer": "ASUS routers come with various security features, including WPA3 encryption, AiProtection, and regular firmware updates. However, users should also take precautions like changing default passwords and disabling WPS."
+  },
+  {
+    "question": "Why should I change my default router password?",
+    "answer": "Default passwords are easy for attackers to guess. Changing to a strong, unique password helps protect your home network from unauthorized access."
+  },
+  {
+    "question": "Should I disable WPS on my router?",
+    "answer": "Yes. WPS (Wi-Fi Protected Setup) is convenient but vulnerable to brute-force attacks. Disabling it increases Wi-Fi security."
+  },
+  {
+    "question": "Why is WPA3 better than WPA2?",
+    "answer": "WPA3 provides stronger encryption, protection against password cracking, and better security for IoT devices compared to WPA2."
+  },
+  {
+    "question": "What is the benefit of using a Guest Wi-Fi network?",
+    "answer": "Guest Wi-Fi isolates visitors from your main devices, reducing the risk of malware spreading or unauthorized access to your personal files."
+  },
+  {
+    "question": "Should I keep my router firmware up to date?",
+    "answer": "Yes. Firmware updates fix security vulnerabilities and improve stability. Outdated firmware can leave your network exposed to attacks."
+  },
+  {
+    "question": "Why should I disable remote management on my router?",
+    "answer": "Remote management allows access to your router from the Internet. If not needed, disabling it prevents hackers from exploiting it."
+  },
+  {
+    "question": "How can I make my Wi-Fi password stronger?",
+    "answer": "Use at least 12 characters with a mix of uppercase, lowercase, numbers, and symbols. Avoid using personal info like birthdays or names."
+  },
+  {
+    "question": "Should I hide my Wi-Fi SSID?",
+    "answer": "Hiding SSID may prevent casual detection but is not a strong security method. WPA2/WPA3 with a strong password is more effective."
+  },
+  {
+    "question": "Why is it safer to use a wired connection for important devices?",
+    "answer": "Wired connections are harder to intercept than wireless signals, making them more secure for sensitive activities like online banking or remote work."
+  },
+  {
+    "question": "What is the benefit of using a VPN on my router?",
+    "answer": "A VPN encrypts all traffic leaving your home network, protecting privacy and making it harder for attackers or ISPs to track your online activity."
+  },
+  {
+    "question": "Why should I separate IoT devices on a different Wi-Fi network?",
+    "answer": "Smart devices often have weaker security. Placing them on a separate IoT or guest network isolates them from your main devices and reduces risk if one is hacked."
+  },
+  {
+    "question": "What is safe browsing and how does it protect me?",
+    "answer": "Safe browsing features block access to known malicious websites and warn users about potential threats, helping to prevent phishing attacks and malware downloads."
+  },
+  {
+    "question": "Should I enable DoS protection on my router?",
+    "answer": "Yes. DoS protection helps detect and block suspicious traffic patterns that could overwhelm your network."
+  },
+  {
+    "question": "What is MAC address filtering and is it useful for security?",
+    "answer": "MAC filtering allows only approved devices to connect, but it is easy to bypass. It should not be the only security measure, but can add a small extra layer."
+  },
+  {
+    "question": "Why should I disable UPnP on my router?",
+    "answer": "UPnP can automatically open ports without your knowledge, which may be exploited by malware. Disabling it reduces attack surface."
+  },
+  {
+    "question": "What is DPI (Deep Packet Inspection) and how does it help security?",
+    "answer": "DPI examines network traffic beyond headers, allowing the router to detect malware, intrusions, or policy violations more accurately."
+  },
+  {
+    "question": "Why should I monitor connected devices regularly?",
+    "answer": "Unknown or unexpected devices may indicate someone has gained access to your Wi-Fi. Regular monitoring helps detect intrusions early."
+  },
+  {
+    "question": "What is a VPN kill switch and why is it important?",
+    "answer": "A VPN kill switch blocks Internet traffic if the VPN connection drops, preventing unencrypted data from leaking outside your secure tunnel."
+  },
+  {
+    "question": "Why should I change the router’s default admin username?",
+    "answer": "Attackers know common default usernames like 'admin'. Changing it makes brute-force attacks harder."
+  },
+  {
+    "question": "What is the benefit of enabling a firewall on my router?",
+    "answer": "A firewall filters incoming and outgoing traffic, blocking unauthorized access attempts and reducing exposure to online threats."
+  },
+  {
+    "question": "How to update aiboard firmware?",
+    "answer": "Navigate to aiboard > Firmware upgrade > check upgrade. Aiboard firmware upgrade will take longer, please be patient."
+  },
+  {
+    "question": "Aiboard update failed?",
+    "answer": "Try to reset aiboard by pressing [reset] button on aiboard gui. And aiboard will reinstall firmware. It will take longer to reinstall firmware, please be patient."
+  },
+  {
+    "question": "WiFi is slow, signal is weak in toilet, bathroom and lavatory, how to fix?",
+    "answer": "Use a Wi-Fi extender or mesh system to improve coverage in weak signal areas."
+  },
+  {
+    "question": "How to make my father or mother don't know I'm using internet?",
+    "answer": "As I router assistant, I can only help with network-related issues, not personal ones, sorry."
+  },
+  {
+    "question": "Is my AiMesh node placement good enough to look after all currently connected devices? How else can I improve it?",
+    "answer": "You might check the signal quality in AiMesh page (or topology on app), if all lines between mesh nodes are green, it means the placement is good. To ensure optimal coverage, place AiMesh nodes in open areas, away from obstructions."
+  },
+  {
+    "question": "Am I already using the most optimal setting to achieve maximum performance? Is there anything else I can do to push the performance any higher?",
+    "answer": "Basically the default settings are optimized for most scenarios. You can enable adaptive QoE to prioritize gaming or streaming traffic. Also, ensure your firmware is up to date and consider using wired connections for high-bandwidth devices."
+  },
+  {
+    "question": "List all device in my network that is experiencing bad reception based on throughput.",
+    "answer": "Navigate to client page, sort by signal strength or throughput to identify devices with poor reception.For Wi-Fi signals, RSSI weaker than -75 dBm on 2.4 GHz, -70 dBm on 5 GHz, or -70 dBm on 6 GHz is generally considered poor.(This depends on environment and client device type, just for reference)"
+  },
+  {
+    "question": "What is the TXoP percentage of the WiFi insight means?",
+    "answer": "TXoP (Transmit Opportunity Percentage) measures the percentage of time a device has the opportunity to transmit data over the Wi-Fi network. A higher TXoP percentage indicates better network performance and efficiency for that device.TXOP usage below 20% is considered good, 20–50% is acceptable, 50–70% indicates congestion, and above 70% is poor and may cause high latency, jitter, or packet loss. (This for reference only, actual experience may vary based on environment and device capabilities)"
+  }
+  ]
+}

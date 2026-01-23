@@ -2918,6 +2918,8 @@ define RouterOptions
         echo "RTCONFIG_UI4=y" >>$(1); \
         sed -i "/RTCONFIG_DASHBOARD/d" $(1); \
         echo "RTCONFIG_DASHBOARD=y" >>$(1); \
+        sed -i "/RTCONFIG_TIMEMACHINE/d" $(1); \
+        echo "# RTCONFIG_TIMEMACHINE is not set" >>$(1); \
     fi; \
 	if [ "$(BUSINESS)" = "y" ]; then \
 		sed -i "/RTCONFIG_BUSINESS/d" $(1); \
@@ -3137,6 +3139,12 @@ define RouterOptions
 	if [ "$(PRESSURE_SENSOR)" = "y" ]; then \
 		sed -i "/RTCONFIG_PRESSURE_SENSOR/d" $(1); \
 		echo "RTCONFIG_PRESSURE_SENSOR=y" >>$(1); \
+	fi;
+	sed -i "/RTCONFIG_PRESSURE_SENSOR_CMP201/d" $(1); \
+	if [ "$(PRESSURE_SENSOR_CMP201)" = "y" ]; then \
+		echo "RTCONFIG_PRESSURE_SENSOR_CMP201=y" >>$(1); \
+	else \
+		echo "# RTCONFIG_PRESSURE_SENSOR_CMP201 is not set" >>$(1); \
 	fi;
 	if [ "$(SMARTHAUL)" = "y" ]; then \
                 sed -i "/RTCONFIG_SMARTHAUL/d" $(1); \
@@ -6947,6 +6955,14 @@ fi;
 		sed -i "/CONFIG_CRC8 is not set\>/d" $(1); \
 		echo "CONFIG_CRC8=y" >>$(1); \
 	fi;
+	sed -i "/CONFIG_CMP201/d" $(1); \
+	if [ "$(PRESSURE_SENSOR_CMP201)" = "y" ]; then \
+		echo "CONFIG_CMP201=y" >>$(1); \
+		echo "CONFIG_CMP201_I2C=y" >>$(1); \
+	else \
+		echo "# CONFIG_CMP201 is not set" >>$(1); \
+		echo "# CONFIG_CMP201_I2C is not set" >>$(1); \
+	fi;
 	if [ "$(FLASH_TYPE)" = "EMMC" ]; then \
 		sed -i "/CONFIG_SYSFS_DEPRECATED/d" $(1); \
 		echo "# CONFIG_SYSFS_DEPRECATED is not set" >>$(1); \
@@ -6954,6 +6970,16 @@ fi;
 		echo "# CONFIG_SYSFS_DEPRECATED_V2 is not set" >>$(1); \
 		sed -i "/CONFIG_MMC_OOPS is not set\>/d" $(1); \
 		echo "CONFIG_MMC_OOPS=m" >>$(1); \
+	fi;
+	if [ "$(AUTO_WANPORT)" = "y" ]; then \
+		sed -i "/CONFIG_MACVLAN/d" $(1); \
+		echo "CONFIG_MACVLAN=y" >>$(1); \
+		sed -i "/CONFIG_MACVTAP/d" $(1); \
+		echo "# CONFIG_MACVTAP is not set" >>$(1); \
+	else \
+		sed -i "/CONFIG_MACVLAN/d" $(1); \
+		echo "# CONFIG_MACVLAN is not set" >>$(1); \
+		sed -i "/CONFIG_MACVTAP/d" $(1); \
 	fi;
 	if [ "$(BUILD_NAME)" = "RT-BE58U_V2" ] || [ "$(BUILD_NAME)" = "TUF-BE3600_V2" ] || [ "$(BUILD_NAME)" = "RT-BE55" ]; then \
 		sed -i "/CONFIG_BCM_PHY_BLACKFIN_B0/d" $(1); \

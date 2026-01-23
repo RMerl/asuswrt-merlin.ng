@@ -545,21 +545,21 @@ class AsusLoaderComponent {
             ${detailStyle}
             <div id="loader" class="popup_bg d-flex flex-column align-items-center justify-content-center gap-2">
 
-				<h3 id="loader_title">AI Board Live Update Progress</h3>
+				<h3 id="loader_title"><#Setting_live_ai_title#></h3>
 			    <div class="stage-bar">
-			      <span id="step_start">Downloading</span>
+			      <span id="step_start"><#fw_downloading#></span>
 			      <span id="step_docker">Installing</span>
 			      <span id="step_done">Done & Reboot AI Board</span>
 			    </div>
 
-			    <div class="progress-info" id="proceeding_step">Current step：-</div>
+			    <div class="progress-info" id="proceeding_step"><#Setting_prog_ai_currStep#></div>
 			    <div class="progress-bar">
 			      <div class="progress-fill" id="progressFill"></div>
 			    </div>
 			    <div class="progress-info" id="percentInfo">0%</div>
 
 			    <ul class="checkpoints" id="checkpointList"></ul>
-			    <div class="notice" id="notice">Note: The system is working normally. Please do not interrupt the operation.</div>
+			    <div class="notice" id="notice"><#Setting_prog_ai_Note#></div>
 
 
 		    </div>
@@ -570,16 +570,16 @@ class AsusLoaderComponent {
             ${detailStyle}
             <div id="loader" class="popup_bg d-flex flex-column align-items-center justify-content-center gap-2">
 
-				<h3 id="loader_title">AI Board Rescue Progress</h3>
+				<h3 id="loader_title"><#Setting_rescue_ai_title#></h3>
 			    <div class="stage-bar">
-			      <span id="step_start">Prepare for rescue</span>
-			      <span id="step_upload_fw">Uplaod Firmware</span>
-			      <span id="step_install_fw">Install Firmware</span>
-			      <span id="step_docker">Install APP</span>
+			      <span id="step_start"><#Setting_rescue_ai_prepare#></span>
+			      <span id="step_upload_fw"><#Setting_rescue_ai_FWUpload#></span>
+			      <span id="step_install_fw"><#Setting_rescue_ai_FWInstall#></span>
+			      <span id="step_docker"><#Setting_rescue_ai_appInstall#></span>
 			      <span id="step_done">Done & Reboot AI Board</span>
 			    </div>
 
-			    <div class="progress-info" id="proceeding_step">Current step：-</div>
+			    <div class="progress-info" id="proceeding_step"><#Setting_prog_ai_currStep#></div>
 			    <div class="progress-notice" id="proceeding_notice" style="display:none;">This process may take several minutes.</div>
 			    <div class="progress-bar">
 			      <div class="progress-fill" id="progressFill"></div>
@@ -587,7 +587,7 @@ class AsusLoaderComponent {
 			    <div class="progress-info" id="percentInfo">0%</div>
 
 			    <ul class="checkpoints" id="checkpointList"></ul>
-			    <div class="notice" id="notice">Note: The system is working normally. Please do not interrupt the operation.</div>
+			    <div class="notice" id="notice"><#Setting_prog_ai_Note#></div>
 
 
 		    </div>
@@ -759,17 +759,17 @@ class AsusLoaderComponent {
               if (data.ai_prog_status === "START" || 
               		data.ai_prog_status === "DOWNLOAD_FW" || data.ai_prog_status === "DOWNLOAD_FW_RSA" || data.ai_prog_status === "VERIFY_FW") 
               {
-              	proceeding_step.textContent = `Current step：` + stepText;
+              	proceeding_step.textContent = `<#Setting_prog_ai_currStep#> ` + stepText;
 				stages[0].classList.add('active');
 				self.shadowRoot.getElementById('step_start').classList.add('active');
 			  } 
 			  else if (data.ai_prog_status.includes("DOWNLOAD") && data.ai_prog_current_image === "aisom.swu") {
-			  	proceeding_step.textContent = `Current step：` + stepText;
+			  	proceeding_step.textContent = `<#Setting_prog_ai_currStep#> ` + stepText;
 			  	stages[0].classList.add('active');
 			  	self.shadowRoot.getElementById('step_start').classList.add('active');
 			  }
 			  else if (data.ai_prog_status.includes("PROGRESS")) {
-			  	proceeding_step.textContent = `Current step：` + stepText;
+			  	proceeding_step.textContent = `<#Setting_prog_ai_currStep#> ` + stepText;
 			  	stages[0].classList.add('active');
 			  	self.shadowRoot.getElementById('step_start').classList.add('active');
 				stages[1].classList.add('active');
@@ -854,14 +854,14 @@ class AsusLoaderComponent {
               if (data.ai_prog_status === "START") {
 
               	self.rescueStart = true;
-              	proceeding_step.textContent = `Current step： Enter Rescue mode`;
+              	proceeding_step.textContent = `<#Setting_prog_ai_currStep#> <#Setting_rescue_ai_enter#>`;
               	//proceeding_notice.style.display = "";
 			  } 
 			  else if (data.ai_prog_status.includes("DOWNLOAD") && data.ai_prog_current_image.includes("aisom_reset")) {
 
 			  	self.rescueStart = true;
 				self.rescueFwDownload = true;
-			  	proceeding_step.textContent = `Current step：` + stepText;
+			  	proceeding_step.textContent = `<#Setting_prog_ai_currStep#> ` + stepText;
 			  	//proceeding_notice.style.display = "none";
 			  }
 			  else if (data.ai_prog_status.includes("PROGRESS") && (data.ai_prog_current_image.includes("subimg.gz") || data.ai_prog_current_image.includes("install")) ) {
@@ -869,7 +869,7 @@ class AsusLoaderComponent {
 			  	self.rescueStart = true;
 				self.rescueFwDownload = true;
 				self.rescueFwInstall = true;
-			  	proceeding_step.textContent = `Current step：` + stepText;
+			  	proceeding_step.textContent = `<#Setting_prog_ai_currStep#> ` + stepText;
 			  	//proceeding_notice.style.display = "none";
 			  }
 			  else if ( data.ai_prog_status === "DONE" ||
@@ -882,7 +882,7 @@ class AsusLoaderComponent {
 				self.rescueFwDownload = true;
 				self.rescueFwInstall = true;
 				self.rescueAPPInstall = true;
-			  	proceeding_step.textContent = `Current step：` + stepText;
+			  	proceeding_step.textContent = `<#Setting_prog_ai_currStep#> ` + stepText;
 			  	//proceeding_notice.style.display = "none";
 			  }
 			  else if(data.ai_prog_status.includes("failed")) {

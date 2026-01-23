@@ -119,11 +119,13 @@ static pj_status_t tcp_client_on_send_pkt(pj_tcp_session *sess,
 								   unsigned pkt_len,
 								   const pj_sockaddr_t *dst_addr,
 								   unsigned dst_addr_len);
+#if 0
 static void tcp_client_on_rx_data(pj_tcp_session *sess,
 						   void *pkt,
 						   unsigned pkt_len,
 						   const pj_sockaddr_t *peer_addr,
 						   unsigned addr_len);
+#endif
 static void tcp_client_on_state(pj_tcp_session *sess, 
 						 pj_tcp_state_t old_state,
 						 pj_tcp_state_t new_state);
@@ -391,7 +393,7 @@ PJ_DEF(void) pj_tcp_sock_destroy(pj_tcp_sock *tcp_sock)
 		count = tcp_sock->accept_sess_cnt;
 		for (i = 0; i < count; i++) {
 			if (tcp_sock->accept_sess[i]) {
-				pj_activesock_t **asock = pj_tcp_session_get_asock(tcp_sock->accept_sess[i]);
+				pj_activesock_t **asock = (pj_activesock_t **)pj_tcp_session_get_asock(tcp_sock->accept_sess[i]);
 				if (asock && *asock) {
 					pj_activesock_close(*asock);
 					pj_tcp_session_set_asock(tcp_sock->accept_sess[i], NULL);
@@ -407,7 +409,7 @@ PJ_DEF(void) pj_tcp_sock_destroy(pj_tcp_sock *tcp_sock)
 		count = tcp_sock->client_sess_cnt;
 		for (i = 0; i < count; i++) {
 			if (tcp_sock->client_sess[i]) {
-				pj_activesock_t **asock = pj_tcp_session_get_asock(tcp_sock->client_sess[i]);
+				pj_activesock_t **asock = (pj_activesock_t **)pj_tcp_session_get_asock(tcp_sock->client_sess[i]);
 				if (asock && *asock) {
 					pj_activesock_close(*asock);
 					pj_tcp_session_set_asock(tcp_sock->client_sess[i], NULL);
@@ -485,10 +487,10 @@ static void show_err(pj_tcp_session *tcp_sess, const char *title,
 static void sess_fail(pj_tcp_session *tcp_sess, const char *title,
 		      pj_status_t status)
 {
-	pj_tcp_sock *tcp_sock;
+	//pj_tcp_sock *tcp_sock;
     show_err(tcp_sess, title, status);
     if (tcp_sess) {
-		tcp_sock = pj_tcp_session_get_tcp_sock(tcp_sess);
+		//tcp_sock = pj_tcp_session_get_tcp_sock(tcp_sess);
 		pj_tcp_session_destroy(tcp_sess, status);
 		//tcp_sock->client_sess_cnt--;
     }
@@ -598,8 +600,9 @@ PJ_DEF(pj_status_t) pj_tcp_sock_sendto( pj_tcp_sock *tcp_sock,
 {
 	PJ_ASSERT_RETURN(tcp_sock && addr && addr_len, PJ_EINVAL);
 
-    if (tcp_sock == NULL)
-	return PJ_EINVALIDOP;
+    if (tcp_sock == NULL) {
+		return PJ_EINVALIDOP;
+	}
 
 	if (tcp_sock->client_sess_cnt > 0) {
 		if (tcp_sess_idx == -1)
@@ -703,7 +706,7 @@ static pj_bool_t on_client_connect_complete(pj_activesock_t *asock,
 	if (status != PJ_SUCCESS) {
 		int client_idx = pj_tcp_session_get_idx(client_tcp_sess);
 
-		pj_activesock_t **asock = pj_tcp_session_get_asock(client_tcp_sess);
+		pj_activesock_t **asock = (pj_activesock_t **)pj_tcp_session_get_asock(client_tcp_sess);
 		if (asock && *asock) {
 			pj_activesock_close(*asock);
 			pj_tcp_session_set_asock(client_tcp_sess, NULL);
@@ -746,7 +749,7 @@ static unsigned has_packet(pj_tcp_session *tcp_sess, const void *buf, pj_size_t 
 	pj_uint16_t data_len;
 	pj_status_t stun_check;
 
-	pj_tcp_sock *tcp_sock = (pj_tcp_sock *)pj_tcp_session_get_user_data(tcp_sess);
+	//pj_tcp_sock *tcp_sock = (pj_tcp_sock *)pj_tcp_session_get_user_data(tcp_sess);
 
     /* Quickly check if this is STUN message, by checking the first two bits and
      * size field which must be multiple of 4 bytes
@@ -757,7 +760,7 @@ static unsigned has_packet(pj_tcp_session *tcp_sess, const void *buf, pj_size_t 
 		/*PJ_STUN_IS_DATAGRAM | PJ_STUN_CHECK_PACKET*/ 0);
 
 	if (bufsize == 218)
-		printf("");
+		printf("\n");
 
 	if (stun_check == PJ_SUCCESS) 
 		is_stun = PJ_TRUE;
@@ -1091,6 +1094,7 @@ static void tcp_sock_state(pj_tcp_session *sess,
     }
 }
 
+#if 0
 static void dump_bin(const char *buf, unsigned len)
 {
 	unsigned i;
@@ -1114,6 +1118,7 @@ static void dump_bin(const char *buf, unsigned len)
 	}
 	PJ_LOG(3,("tcp_sock.c", "end dump"));
 }
+#endif
 
 /*
  * Callback from TCP session to send outgoing packet.
@@ -1164,6 +1169,7 @@ static pj_status_t tcp_client_on_send_pkt(pj_tcp_session *sess,
     return status;
 }
 
+#if 0
 /*
  * Callback from TCP session upon incoming data.
  */
@@ -1189,7 +1195,7 @@ static void tcp_client_on_rx_data(pj_tcp_session *sess,
 				  peer_addr, addr_len);
     }
 }
-
+#endif
 
 /*
  * Callback from TCP session when state has changed
@@ -1246,10 +1252,8 @@ static void tcp_client_on_state(pj_tcp_session *sess,
  */
 static pj_status_t tcp_start_read(pj_tcp_sock *tcp_sock)
 {
-    pj_pool_t *pool;
     pj_status_t status;
 	pj_activesock_t **asock = (pj_activesock_t **)pj_tcp_session_get_asock(tcp_sock->accept_sess[tcp_sock->accept_sess_cnt-1]);
-	pool = tcp_sock->pool;
 
 	status = pj_activesock_start_read(*asock, 
 		tcp_sock->pool, PJ_TCP_MAX_PKT_LEN, 0);
@@ -1609,7 +1613,6 @@ PJ_DECL(pj_status_t) tcp_sock_make_connection(pj_stun_config *cfg,
 
 	{
 		long flag;
-		int flaglen;
 		/* client active socket */
 		pj_sock_t client_sock = PJ_INVALID_SOCKET;
 		pj_activesock_cb asock_cb;

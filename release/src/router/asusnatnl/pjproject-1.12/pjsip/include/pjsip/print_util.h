@@ -20,6 +20,12 @@
 #ifndef __PJSIP_PRINT_H__
 #define __PJSIP_PRINT_H__
 
+#define copy_advance_char_check(buf,chr)   \
+	do { \
+	    if (1 >= (endbuf-buf)) return -1;	\
+	    *buf++ = chr; \
+	} while (0)
+
 #define copy_advance_check(buf,str)   \
 	do { \
 	    if ((str).slen >= (endbuf-buf)) return -1;	\

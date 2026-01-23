@@ -863,9 +863,6 @@ char *get_scb_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int sta_
 	int ret = 0;
 	char link_stats[MLO_MINBUFFER] = {0};
 
-	if(!isMloConnectionMode())
-		goto END;
-
 	memset(sta_mac, 0, sta_mac_len);
 	ret = mlo_info_get(ap_ifname, link_stats, sta_mac, mld_mac, mlo_active, GET_SCB_MAC);
 
@@ -878,7 +875,7 @@ char *get_scb_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int sta_
 	else {
 		MLO_API_DBG("Get SCB MAC is %s\n", sta_mac);
 	}
-END:
+
 	return sta_mac;
 }
 
@@ -886,9 +883,6 @@ char *get_mld_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int mld_
 {
 	int ret = 0;
 	char link_stats[MLO_MINBUFFER] = {0};
-
-	if(!isMloConnectionMode())
-		goto END;
 
 	memset(mld_mac, 0, mld_mac_len);
 	ret = mlo_info_get(ap_ifname, link_stats, sta_mac, mld_mac, mlo_active, GET_MLD_MAC);
@@ -902,7 +896,7 @@ char *get_mld_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int mld_
 	else {
 		MLO_API_DBG("Get MLD MAC is %s\n", mld_mac);
 	}
-END:
+
 	return mld_mac;
 }
 
@@ -910,9 +904,6 @@ char *get_mlo_link_stats(char *ap_ifname, char *sta_mac, char *link_stats, int *
 {
 	int ret = 0;
 	char mld_mac[MLO_MEDBUFFER] = {0};
-
-	if(!isMloConnectionMode())
-		goto END;
 
 	ret = mlo_info_get(ap_ifname, link_stats, sta_mac, mld_mac, mlo_active, GET_LINK_STATS);
 
@@ -925,7 +916,7 @@ char *get_mlo_link_stats(char *ap_ifname, char *sta_mac, char *link_stats, int *
 	else {
 		MLO_API_DBG("API get MLO active_link_map is %s\n", link_stats);
 	}
-END:
+
 	return link_stats;
 }
 
@@ -2151,12 +2142,19 @@ void update_macfilter_relist()
 		foreach (word, wl_ifnames, next) {
 			SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
 
-#ifdef RTCONFIG_AMAS
-			if (nvram_get_int("re_mode") == 1)
-				snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
+			if (get_fh_if_prefix_by_unit(unit, prefix, sizeof(prefix))) {
+				trim_space(prefix);
+				strncat(prefix, "_", 1);
+			}
 			else
+			{
+#ifdef RTCONFIG_AMAS
+				if (nvram_get_int("re_mode") == 1)
+					snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
+				else
 #endif
-				snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+					snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+			}
 
 			strlcpy(wlif_name, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(wlif_name));
 			maclist = (struct maclist *)maclist_buf;

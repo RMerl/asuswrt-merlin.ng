@@ -1029,8 +1029,8 @@ var Get_Component_WirelessInput = function(wlArray){
 
 			const specific_main_fh_info = main_fh_info.find(item => item.band & band_value);
 			if(specific_main_fh_info != undefined){
-				wirelessAP["wl" + wl.ifname + "_ssid"] = specific_main_fh_info["ssid"];
-				wirelessAP["wl" + wl.ifname + "_wpa_psk"] = specific_main_fh_info["psk"];
+				wirelessAP["wl" + wl.ifname + "_ssid"] = encodeURIComponent(specific_main_fh_info["ssid"]);
+				wirelessAP["wl" + wl.ifname + "_wpa_psk"] = encodeURIComponent(specific_main_fh_info["psk"]);
 			}
 			else{
 				wirelessAP["wl" + wl.ifname + "_ssid"] = "";

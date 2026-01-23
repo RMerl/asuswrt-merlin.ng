@@ -132,8 +132,8 @@ PJ_DEF(pj_status_t) pjmedia_tp_adapter_create( pjmedia_endpt *endpt,
     pool = pjmedia_endpt_create_pool(endpt, name, 512, 512);
     adapter = PJ_POOL_ZALLOC_T(pool, struct tp_adapter);
     adapter->pool = pool;
-    pj_ansi_strncpy(adapter->base.name, pool->obj_name, 
-		    sizeof(adapter->base.name));
+    pj_ansi_strxcpy(adapter->base.name, pool->obj_name, 
+                          sizeof(adapter->base.name));
     adapter->base.type = (pjmedia_transport_type)
 			 (PJMEDIA_TRANSPORT_TYPE_USER + 1);
     adapter->base.op = &tp_adapter_op;

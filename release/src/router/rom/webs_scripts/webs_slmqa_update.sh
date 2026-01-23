@@ -3,6 +3,8 @@
 ROUTER_SLMQA_FILE="/usr/slmqa/slm-data.archive"
 ROUTER_SLMQA_VER_FILE="/tmp/slm_version.json"
 AIBOARD_SLMQA_VER_FILE="/ai/slmqa/qa_version.json"
+ROUTER_SLMQA_CN_INIT_VOL_FILE="/ai/slmqa/slm-data.tar"
+
 
 AI_TX_TIMEOUT=90
 AI_UPG_TIMEOUT=60
@@ -94,7 +96,14 @@ fi
 
 nvram set webs_state_slmqa_update=1
 nvram set webs_state_slmqa_error=0
-
+model=`nvram get productid`
+info "model: $model"
+if [ "$model" == "GT-BE96_AI" ]; then
+    if [ ! -f "$ROUTER_SLMQA_CN_INIT_VOL_FILE" ]; then
+        info "CN model only: cp $ROUTER_SLMQA_FILE to $ROUTER_SLMQA_CN_INIT_VOL_FILE for init volume creation"
+        cp $ROUTER_SLMQA_FILE $ROUTER_SLMQA_CN_INIT_VOL_FILE
+    fi
+fi
 # always fetch new qa_version.json to avoid potential issue of time sync
 now=`date +%s`                # current epoch seconds
 info "At $now and fetch new qa_version.json"

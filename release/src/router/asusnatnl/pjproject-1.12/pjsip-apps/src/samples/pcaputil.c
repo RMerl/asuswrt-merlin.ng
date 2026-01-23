@@ -559,7 +559,7 @@ int main(int argc, char *argv[])
     T( pjlib_util_init() );
 	//charles modified
     //T( pjmedia_endpt_create(&app.cp.factory, NULL, 0, &app.mept) );
-    T( pjmedia_endpt_create(0, &app.cp.factory, NULL, 0, 0, &app.mept) );
+    T( pjmedia_endpt_create(&app.cp.factory, NULL, 0, 0, 1, &app.mept) );
 
     T( pj_pcap_open(app.pool, input.ptr, &app.pcap) );
     T( pj_pcap_set_filter(app.pcap, &filter) );

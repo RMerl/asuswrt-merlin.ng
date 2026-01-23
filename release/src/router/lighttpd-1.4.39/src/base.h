@@ -494,7 +494,7 @@ typedef struct smb_info_s {
 	buffer *username;
 	buffer *password;
 	time_t auth_time;
-	//unsigned char is_authed;
+	unsigned char is_authed;
 	
 	//for NTLM
 	struct cli_state *cli;

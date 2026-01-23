@@ -268,6 +268,7 @@ extern int save_iptv_port(char *isp);
 #endif
 
 extern int get_file_md5(char *file, char *out, int len);
+extern int get_string_md5(const char *input_string, char *out, int len);
 
 int check_current_ip_is_lan_or_wan();
 
@@ -293,6 +294,8 @@ int login_error_status = 0;
 char cloud_file[256];
 char indexpage[128];
 
+static char cached_extendno[256] = {0};
+static char cached_extendno_md5[33] = {0};
 
 /* Added by Joey for handle one people at the same time */
 unsigned int login_ip = 0; // IPv6 compat: the logined ip
@@ -1189,7 +1192,7 @@ int append_etag_header(char *file, char *extra_header, char *if_none_match, char
 	int ret = 0, status = 200;
 	int etag_header_flag = 0, safariAgent = 0;
 	time_t now = time(NULL);
-	char md5String[35] = {0}, timebuf[100] = {0};
+	char md5String[128] = {0}, timebuf[100] = {0};
 
 	strlcpy(title, "OK", title_len);
 
@@ -1202,6 +1205,22 @@ int append_etag_header(char *file, char *extra_header, char *if_none_match, char
 		if ((ret = get_file_md5(file, md5String, sizeof(md5String))) == 0) {
 
 			strftime( timebuf, sizeof(timebuf), RFC1123FMT, gmtime( &now ) );
+
+			if(etag_header_flag == 2) {
+				char *extendno = nvram_safe_get("extendno");
+				if (extendno && strlen(extendno) > 0) {
+					if (strcmp(cached_extendno, extendno) != 0) {
+						strlcpy(cached_extendno, extendno, sizeof(cached_extendno));
+						if (get_string_md5(extendno, cached_extendno_md5, sizeof(cached_extendno_md5)) != 0) {
+							cached_extendno_md5[0] = '\0';
+						}
+					}
+
+					if (cached_extendno_md5[0] != '\0') {
+						strlcat(md5String, cached_extendno_md5, sizeof(md5String));
+					}
+				}
+			}
 
 			if(strstr(file, ".js"))
 				strlcat(md5String, nvram_safe_get("preferred_lang"), sizeof(md5String));
@@ -2158,7 +2177,7 @@ char *config_model_name(char *source, char *find,  char *rep){
  *     >0:	lang can be supported.
  */
 
-#ifdef RTCONFIG_AUTODICT
+#if defined(RTCONFIG_AUTODICT) && !defined(RTCONFIG_UI4)
 int
 load_dictionary (char *lang, pkw_t pkw)
 {

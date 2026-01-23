@@ -501,7 +501,7 @@ int get_wl_nband_list()
 {
 	int unit = 0, ret = 0;
 	int band = 0, count2g = 0, count5g = 0, count6g = 0;
-	char nv[64] = {0};
+	char nv[64] = {0}, wl_ifname[8] = {0};
 	char band_str[8] = {0}, word[256] = {0}, *next = NULL;
 	char tmp[128] = {0}, prefix[] = "wlXXXXXXXXXX_";
 	char wlnband_list[64] = {0};
@@ -515,9 +515,10 @@ int get_wl_nband_list()
 
 	foreach (word, nvram_safe_get("wl_ifnames"), next) {
 
-		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		snprintf(prefix, sizeof(prefix), "wl%d", unit);
 		snprintf(nv, sizeof(nv), "wl%d_nband_type", unit);
-		band = nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp)));
+		snprintf(wl_ifname, sizeof(wl_ifname), "%s", nvram_pf_safe_get(prefix, "_ifname"));
+		band = nvram_get_int(strlcat_r(prefix, "_nband", tmp, sizeof(tmp)));
 
 		switch (band){
 			case 1:
@@ -530,7 +531,7 @@ int get_wl_nband_list()
 #endif
 				{
 #ifdef RTCONFIG_HND_ROUTER_AX
-					if (!wl_ioctl(word, WLC_GET_INSTANCE, &unit_real, sizeof(unit_real))) {
+					if (!wl_ioctl(wl_ifname, WLC_GET_INSTANCE, &unit_real, sizeof(unit_real))) {
 						if (unit_real == WL_5G_BAND) {
 							snprintf(band_str, sizeof(band_str), "5g1");
 							count5g++;
@@ -568,7 +569,7 @@ int get_wl_nband_list()
 #endif
 				{
 #if defined(RTCONFIG_HND_ROUTER_AX) && (defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G))
-					if (!wl_ioctl(word, WLC_GET_INSTANCE, &unit_real, sizeof(unit_real))) {
+					if (!wl_ioctl(wl_ifname, WLC_GET_INSTANCE, &unit_real, sizeof(unit_real))) {
 						if (unit_real == WL_6G_BAND) {
 							snprintf(band_str, sizeof(band_str), "6g1");
 							count6g++;

@@ -854,10 +854,10 @@ static int bench_test(pj_bool_t allow_concur, int bufsize,
 on_error:
     PJ_LOG(1,(THIS_FILE, "...ERROR: %s", 
 	      pj_strerror(pj_get_netos_error(), errbuf, sizeof(errbuf))));
-    if (ssock)
-	pj_sock_close(ssock);
-    if (csock)
-	pj_sock_close(csock);
+    if (ssock > 0)
+	    pj_sock_close(ssock);
+    if (csock > 0)
+	    pj_sock_close(csock);
     for (i=0; i<inactive_sock_count && inactive_sock && 
 	      inactive_sock[i]!=PJ_INVALID_SOCKET; ++i) 
     {

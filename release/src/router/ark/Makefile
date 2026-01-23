@@ -16,28 +16,43 @@ endif
 OBJS    +=  ark_db.o ark_hook.o
 
 # ARK engine files to move
-# ark.ini and gloger.ini are installed separately below, not here to install
-ARK_FILES := app.id app.xdb ark.ko ark.xdb ark.xr \
-	gbusd.ini gbus.ko gdd gdr.ini glog.ini \
-	gmq.ini gtools.ko kmod_logger.ko mal.xdb xni.ko xpi.ko
+# ark.ini and gloger.ini and gdm.ini are installed separately below, not here to install
+ARK_FILES := app.id app.xdb aqua.ko ark.ko ark.xdb ark.xr gar.env \
+	gbusd.ini gbus.ko glog.ini \
+	gmq.conf gst.ini gtools.ko init.d/gar kmod_logger.ko mal.xdb xni.ko xpi.ko ark.ini
 
-SBIN_FILES := arkctl arklog arklogd ark_service ark_tmctl.sh arktool gar.sh gbus \
-	gbusd gbusd.sh gdr gdrctl ghs gini glog gloger gloger.sh gmq gns mdns \
-	mqtt_pub mqtt_sub neigh.sh qos.sh xni
+SBIN_FILES := aqua arkctl arklog arklogd ark_service ark_tmctl.sh arktool garp gar.sh gbus \
+	gbusd gbusd.sh gdm gdm.sh ghs gini glog gloger gloger.sh gmdns gmq gns gping gst gst.sh gua gupnp mdns \
+	mosquitto mosquitto_pub mosquitto_sub neigh.sh qos.sh xni
 
 LIB_FILES := libgbus.so libgtools.so libpcrecpp.so.0.0.0 libpcreposix.so.0.0.1
 
+
+#
+# ARK_INI_MOVE is for copying the ark.ini, in the future, we should use ark.ini from tar ball, no need to copy another one
+#
+export ARK_INI_MOVE :=
+
 ##### TODO : add platform here #####
 ifeq ($(BRCM_CHIP),6813)
-export FILE_NAME := "gar_asus_be88u_aarch64_0.0.1.14"
-endif
-
-ifeq ($(BRCM_CHIP),6764)
-export FILE_NAME := "SmartRouter.ASUS_RTBE58_GO.0.2.7.32"
+export FILE_NAME := "gar_asus_be88u_aarch64_0.0.1.27"
 endif
 
 ifeq ($(RTCONFIG_SOC_MT7988D),y)
-export FILE_NAME := "SmartRouter.ASUS_GS7.0.2.7.31"
+export FILE_NAME := "gar_asus_mt7988_bt8_aarch64_cortex-a53_0.0.1.27"
+endif
+ifeq ($(RTCONFIG_SOC_MT7987),y)
+export FILE_NAME := "gar_asus_mt7987_be59_aarch64_0.0.1.27"
+endif
+
+# IPQ5322 kernel version or 32/64 bits
+ifeq ($(RTCONFIG_SOC_IPQ53XX),y)
+SUBLEVEL := $(shell grep '^SUBLEVEL =' $(LINUXDIR)/Makefile | awk '{print $$3}')
+ifeq ($(MUSL64),y)
+export FILE_NAME := "gar_asus_ipq5322_tuf_aarch64_cortex-a53_neon-vfpv4_0.0.1.27"
+else
+export FILE_NAME := "gar_asus_ipq5322_bd4d5_arm_cortex-a7_neon-vfpv4_0.0.1.27"
+endif
 endif
 
 .PHONY: prebuild
@@ -63,6 +78,13 @@ ifneq ($(FILE_NAME),)
 		fi; \
 	done
 	@for f in $(LIB_FILES); do \
+		if [ -e "prebuild/tmp/gar/$$f" ]; then \
+			cp -rf "prebuild/tmp/gar/$$f" "prebuild"; \
+		else \
+			echo "prebuild/tmp/gar/$$f NOT EXISTS" >&2; \
+		fi; \
+	done
+	@for f in $(LIB_FILES); do \
 		if [ -e "prebuild/tmp/ark/$$f" ]; then \
 			cp -rf "prebuild/tmp/ark/$$f" "prebuild"; \
 		else \
@@ -73,9 +95,15 @@ ifneq ($(FILE_NAME),)
 	@rm -rf prebuild/usr
 	@rm -rf prebuild/tmp
 	@rm -rf prebuild/init.d
-	@echo "[ARK] install ark.ini and gloger.ini"
+	@echo "[ARK] install ark.ini and gloger.ini and gdm.ini"
+ifeq ($(ARK_INI_MOVE), y)
+	@echo "[ARK] copy package/ark.ini"
 	@cp package/ark.ini prebuild -rf
+endif
 	@cp package/gloger.ini prebuild -rf
+	@cp package/gdm.ini prebuild -rf
+	@echo "[ARK] install sig"
+	@cp sig/* prebuild -rf
 endif
 
 ifeq ($(wildcard $(SRCBASE)/router/ark/*.c),)
@@ -110,11 +138,20 @@ install: all
 		fi; \
 	done
 	@echo "[ARK] prebuild installing $(INSTALLDIR)/usr/ark/"
-	@cp -f prebuild/*.ko $(INSTALLDIR)/usr/ark/
-	@cp -f prebuild/app.id $(INSTALLDIR)/usr/ark/
-	@cp -f prebuild/*.xdb $(INSTALLDIR)/usr/ark/
-	@cp -f prebuild/*.xr $(INSTALLDIR)/usr/ark/
-	@cp -f prebuild/*.ini $(INSTALLDIR)/usr/ark/
+	-@cp -f prebuild/*.ko $(INSTALLDIR)/usr/ark/
+	-@cp -f prebuild/app.id $(INSTALLDIR)/usr/ark/
+	-@cp -f prebuild/*.xdb $(INSTALLDIR)/usr/ark/
+	-@cp -f prebuild/*.xr $(INSTALLDIR)/usr/ark/
+	-@cp -f prebuild/*.ini $(INSTALLDIR)/usr/ark/
+	-@cp -f prebuild/gmq.conf $(INSTALLDIR)/usr/ark/
+	@echo "[ARK] prebuild installing $(TARGETDIR)/usr/ark/"
+	@install -d $(TARGETDIR)/usr/ark/
+	-@cp -f prebuild/*.ko $(TARGETDIR)/usr/ark/
+	-@cp -f prebuild/app.id $(TARGETDIR)/usr/ark/
+	-@cp -f prebuild/*.xdb $(TARGETDIR)/usr/ark/
+	-@cp -f prebuild/*.xr $(TARGETDIR)/usr/ark/
+	-@cp -f prebuild/*.ini $(TARGETDIR)/usr/ark/
+	-@cp -f prebuild/gmq.conf $(TARGETDIR)/usr/ark/
 
 %.o: %.c
 	@echo "[ARK] CC $@"

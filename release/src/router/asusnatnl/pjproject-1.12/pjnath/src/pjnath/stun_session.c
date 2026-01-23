@@ -683,9 +683,9 @@ PJ_DEF(pj_status_t) pj_stun_session_set_lock( pj_stun_session *sess,
     pj_lock_release(old_lock);
 
     if (old_lock)
-	pj_lock_destroy(old_lock);
+	pj_lock_destroy(old_lock);*/
 
-    return PJ_SUCCESS;*/
+    return PJ_SUCCESS;
 }
 
 PJ_DEF(pj_grp_lock_t *) pj_stun_session_get_grp_lock(pj_stun_session *sess)

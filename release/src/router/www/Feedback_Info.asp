@@ -59,10 +59,6 @@ function check_info(){
 			document.getElementById("fb_success_router_0").style.display = "";
 			document.getElementById("fb_success_router_1").style.display = "";
 		}
-
-		if(dhdlog_support && dblog_enable=="1" && (dblog_service & DHD_Service)){	//dhd
-				setTimeout("rebootnow();", 5000);
-		}
 	} 	
 
 	CheckFBState();
@@ -203,7 +199,14 @@ function get_debug_log_info(){
 function redirect(){
 	if(fb_state == "1" || fb_state == "2")
 		httpApi.nvramSet({"action_mode": "apply", "fb_state" : ""});
-	setTimeout("top.location.href='Advanced_Feedback.asp';", 500);
+    if(isSupport("UI4")){
+        setTimeout(()=>{
+            top.pageRedirect("settings", "Advanced_Feedback.asp");
+        }, 500);
+
+    }else{
+      setTimeout("top.location.href='Advanced_Feedback.asp';", 500);
+    }
 }
 
 function reset_diag_state(){	
@@ -504,26 +507,6 @@ function CheckFBState(){
 	var support_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=asus_support&lang="+ui_lang+"&kw=&num=";
 	$(".site_link").attr({"href": support_href});   //#feedback_fail1_new#
 	$("#site_link").attr({"href": support_href});   //#feedback_note6#
-
-	function rebootnow(){
-		var win_time = window.setTimeout(function() {}, 0);
-        while (win_time--)
-			window.clearTimeout(win_time);
-		var win_inter = window.setInterval(function() {}, 0);
-		while (win_inter--)
-			window.clearInterval(win_inter);
-		var iframe_len = frames.length;
-		for(var i = 0; i < iframe_len; i += 1) {
-			var ifr_time = frames[i].window.setTimeout(function() {}, 0);
-			while (ifr_time--)
-			frames[i].window.clearTimeout(ifr_time);
-			var ifr_inter = frames[i].window.setInterval(function() {}, 0);
-			while (ifr_inter--)
-			frames[i].window.clearInterval(ifr_inter);
-		}
-
-		document.rebootForm.submit();
-	}
 </script>
 </tr>
 </table>

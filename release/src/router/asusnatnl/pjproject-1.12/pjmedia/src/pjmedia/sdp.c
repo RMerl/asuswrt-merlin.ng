@@ -992,7 +992,7 @@ static void parse_connection_info(pj_scanner *scanner, pjmedia_sdp_conn *conn,
 
     /* address. */
     pj_scan_get_until_chr(scanner, "/ \t\r\n", &conn->addr);
-    PJ_TODO(PARSE_SDP_CONN_ADDRESS_SUBFIELDS);
+    //PJ_TODO(PARSE_SDP_CONN_ADDRESS_SUBFIELDS);
 
     /* We've got what we're looking for, skip anything until newline */
     pj_scan_skip_line(scanner);
@@ -1194,7 +1194,7 @@ PJ_DEF(pj_status_t) pjmedia_sdp_parse( int inst_id,
 	int ret, sdp_len = sizeof(sdp_buf);
 
 	// 2013-03-12 DEAN, decompress sdp
-	ret = BZ2_bzBuffToBuffDecompress(sdp_buf, &sdp_len, *buf, *len, 1, 0);
+	ret = BZ2_bzBuffToBuffDecompress(sdp_buf, (unsigned int *)&sdp_len, *buf, *len, 1, 0);
 		if (ret == BZ_OK) {
 		*buf = (char *)pj_pool_alloc(pool, sdp_len);
 		*len = sdp_len;
@@ -1322,7 +1322,7 @@ PJ_DEF(int) pjmedia_sdp_print( const pjmedia_sdp_session *desc,
 			PJ_LOG(4, ("sdp.c", "pjmedia_sdp_print() %.*s", ret, buf));
 
 		// 2013-03-12 DEAN, compress sdp
-		ret = BZ2_bzBuffToBuffCompress(buf, &size, buf, ret, 9, 0, 0);
+		ret = BZ2_bzBuffToBuffCompress(buf, (unsigned int *)&size, buf, ret, 9, 0, 0);
 		if (ret == BZ_OK) {
 			return size;
 		} else {

@@ -76,12 +76,13 @@ PJ_DEF(pj_status_t) pj_file_open( pj_pool_t *pool,
     *p++ = '\0';
 
     *fd = fopen(pathname, mode);
-    if (*fd == NULL)
+    if ((*fd) == NULL) {
         return PJ_RETURN_OS_ERROR(errno);
+    }
 
 	if ((flags & PJ_O_APPEND) == PJ_O_APPEND) {
 		if (size)
-			pj_file_getpos(*fd, size);
+			pj_file_getpos(*fd, (pj_off_t *)size);
 	}
 
     return PJ_SUCCESS;
@@ -101,7 +102,7 @@ PJ_DEF(pj_status_t) pj_file_write( pj_oshandle_t fd,
                                    const void *data,
                                    pj_ssize_t *size)
 {
-    size_t written;
+    size_t written = 0;
 	if (write_to_syslog) {
 		openlog("asusnatnl", LOG_CONS, syslog_facility == 0 ? LOG_USER: syslog_facility);
 		syslog(LOG_DEBUG, data);

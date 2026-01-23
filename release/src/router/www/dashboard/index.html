@@ -4,27 +4,27 @@
         <meta charset="UTF-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-        
+
         <!-- Standard favicon -->
         <link rel="icon" type="image/png" href="images/favicon.png" />
-        
+
         <!-- iOS Safari -->
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="ASUS Router" />
         <link rel="apple-touch-icon" href="images/favicon.png" />
-        
+
         <!-- Android Chrome -->
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="application-name" content="ASUS Router" />
         <link rel="manifest" href="manifest.json" />
-        
+
         <!-- Windows -->
         <meta name="msapplication-TileImage" content="images/favicon.png" />
         <meta name="msapplication-TileColor" content="#000000" />
         <meta name="msapplication-navbutton-color" content="#000000" />
         <meta name="theme-color" content="#000000" />
-        
+
         <title><#Web_Title#></title>
         <script src="./js/jquery.js"></script>
         <script src="./js/httpApi.js"></script>
@@ -32,9 +32,9 @@
         <script src="./js/bootstrap.bundle.min.js"></script>
 
         <script src="./js/asus.js"></script>
-        <script src="./js/basic.js"></script>
+        <script src="./js/basic.js?lang=<#selected_language#>"></script>
         <script src="./js/wireless.js"></script>
-        <script src="./js/asus_policy.js?v=4"></script>
+        <script src="./js/asus_policy.js?v=5&lang=<#selected_language#>"></script>
         <script src="./js/asus_clientlist.js"></script>
         <script src="./popup.js"></script>
 
@@ -70,23 +70,25 @@
         }, 3000);
 
         function checkPolicy() {
-            const policyStatus = PolicyStatus()
+            PolicyStatus()
                 .then(data => {
-                    if (data.EULA == "0") {
-                        const policyModal = new PolicyUpdateModalComponent({
-                            policyStatus: data,
-                            securityUpdate: 1,
-                            websUpdate: 1,
-                        });
-                        policyModal.show();
-                    } else if (data.EULA == 1 && ((data.PP == 1 && data.PP_time != "") || (data.PP == 0 && data.PP_time == ""))) {
-                        const policyModal = new PolicyModalComponent({
-                            policyStatus: data,
-                            policy: 'PP',
-                            securityUpdate: 1,
-                            websUpdate: 1,
-                        });
-                        policyModal.show();
+                    if (data.isFetchDone) {
+                        if (data.EULA_read === 0 && data.EULA_force_sign === 1) {
+                            const policyModal = new PolicyUpdateModalComponent({
+                                policyStatus: data,
+                                securityUpdate: 1,
+                                websUpdate: 1,
+                            });
+                            policyModal.show();
+                        } else if (data.EULA_read === 1 && data.PP_read === 0 && (data.PP === "" || (data.PP >= 0 && data.PP_force_sign === 1))) {
+                            const policyModal = new PolicyModalComponent({
+                                policyStatus: data,
+                                policy: 'PP',
+                                securityUpdate: 1,
+                                websUpdate: 1,
+                            });
+                            policyModal.show();
+                        }
                     }
                 });
         }
@@ -103,6 +105,14 @@
                 if (view && validViews.includes(view)) {
                     param.push(`page=${page}`);
                     param.push(`view=${view}`);
+                }
+            }
+            if (page === "aiboard") {
+                let aiboard_action = urlParameter.get("aiboard_action");
+                const validActions = ["rescue"];
+                if (aiboard_action && validActions.includes(aiboard_action)) {
+                    param.push(`page=${page}`);
+                    param.push(`aiboard_action=${aiboard_action}`);
                 }
             }
 
@@ -208,14 +218,16 @@
     </script>
     <script src="js/chart.min.js"></script>
     <body>
+        <div class="app-topbar d-flex align-items-center">
+            <div class="menu-header d-flex align-items-center ms-3 px-1"><div role="icon" class="icon-menu icon-size-24"></div></div>
+            <header class="notInApp container-fluid d-flex align-items-center flex-grow-1 p-0"></header>
+        </div>
         <div class="dashboard-layout">
             <!-- MENU -->
-            <aside class="sidebar">
-                <div class="menu-header"><div role="icon" class="icon-menu icon-size-24"></div></div>
+            <aside class="sidebar sidebar-show">
                 <nav class="notInApp"></nav>
             </aside>
             <article class="main-content">
-                <header class="notInApp container-fluid d-flex align-items-center p-2"></header>
                 <section>
                     <!-- UPPER SIDE STATUS FIELD -->
                     <div role="info-banner" class="d-flex align-items-center flex-grow"></div>

@@ -45,6 +45,28 @@
                 height: 24px;
                 cursor: pointer;
             }
+            .setup_afc_help_icon_white {
+                width: 26px;
+                height: 26px;
+                /*position: absolute;*/
+                border-radius: 50%;
+                background-image: url(/images/New_ui/help_normal.svg);
+                background-size: 100%;
+                background-repeat: no-repeat;
+                cursor: pointer;
+                z-index: 100;
+            }
+            .setup_afc_help_icon_white:hover {
+                width: 26px;
+                height: 26px;
+                /*position: absolute;*/
+                border-radius: 50%;
+                background-image: url(/images/New_ui/help_hover.svg);
+                background-size: 100%;
+                background-repeat: no-repeat;
+                cursor: pointer;
+                z-index: 100;
+            }
             .setup_bandwidth_help_icon {
                 margin-top: -24px;
                 margin-left: 200px;
@@ -56,6 +78,34 @@
                 width: 24px;
                 height: 24px;
                 cursor: pointer;
+            }
+            .setup_bandwidth_help_icon_white {
+                margin-top: -30px;
+                margin-left: 690px;
+                margin-bottom: 10px;
+                width: 26px;
+                height: 26px;
+                /*position: absolute;*/
+                border-radius: 50%;
+                background-image: url(/images/New_ui/help_normal.svg);
+                background-size: 100%;
+                background-repeat: no-repeat;
+                cursor: pointer;
+                z-index: 100;
+            }
+            .setup_bandwidth_help_icon_white:hover {
+                margin-top: -30px;
+                margin-left: 690px;
+                margin-bottom: 10px;
+                width: 26px;
+                height: 26px;
+                /*position: absolute;*/
+                border-radius: 50%;
+                background-image: url(/images/New_ui/help_hover.svg);
+                background-size: 100%;
+                background-repeat: no-repeat;
+                cursor: pointer;
+                z-index: 100;
             }
             .shadow {
                 position: absolute;
@@ -86,6 +136,7 @@
             }
         </style>
         <script>
+            var whiteTheme = Boolean(top.webWrapper);
             let { dwb_mode, dwb_band } = httpApi.nvramGet(["dwb_mode", "dwb_band"]);
             let nbandListArray = nvram["wlnband_list"].split("&#60");
             let systemManipulable = objectDeepCopy(system);
@@ -120,6 +171,15 @@
                         }, 5000);
                     }
                 }
+
+                if(whiteTheme){
+                    
+                    const elements = document.querySelectorAll('.setup_afc_help_icon');
+                    elements.forEach(element => {
+                        element.classList.remove('setup_afc_help_icon');
+                        element.classList.add('setup_afc_help_icon_white');
+                    });
+                }
             });
 
             var afc_count = 0;
@@ -127,7 +187,7 @@
                 let afcReturn = httpApi.get_afc_enable();
                 let afc_status = afcReturn.retStatus;
                 const { status = "", message = "" } = afcTable[afc_status] || {};
-                let str_message = message.replace(`%1$@`, maxbw_6g1);
+                let str_message = message.replace(`%@`, maxbw_6g1);
 
                 document.getElementById("afc_status").innerText = status;
                 document.getElementById("afc_err_message").innerText = str_message;
@@ -204,11 +264,11 @@
                         afc_enable,
                         function () {
                             const policyStatus = PolicyStatus().then((data) => {
-                                if (data.PP <= 2 || data.PP_time == "") {
+                                if (data.PP <= 2 || data.PP_read === 0) {
                                     const policyModal = new PolicyModalComponent({
                                         policy: "PP",
                                         policyStatus: data,
-                                        singPPVersion: 4,
+                                        signPPVersion: 4,
                                         agreeCallback: () => {
                                             applyRule();
                                         },
@@ -240,10 +300,10 @@
 
                         let confirm_content2 = `
                             <div class="title_num_div">
-                                <div class="title_num">1</div>
+                                <div class="${whiteTheme ? "title_num_white":"title_num"}">1</div>
                             </div>
-                            <div style="margin-left:45px;margin-top:-22px;">
-                                <span style="color:#FFFFFF;"><b><#GB_mobile_desc_short#></b></span><br>
+                            <div style="margin-left:45px;margin-top:-22px;${whiteTheme ? "color:#000000":""}">
+                                <span style="color:${whiteTheme ? "#006CE1":"#FFFFFF"};"><b><#GB_mobile_desc_short#></b></span><br>
                                 <#WiFi_AFC_step1#>
                             </div>
 
@@ -280,17 +340,17 @@
                             <!-- Step 2 -->
                             <br>
                             <div class="title_num_div">
-                                <div class="title_num">2</div>
+                                <div class="${whiteTheme ? "title_num_white":"title_num"}">2</div>
                             </div>
-                            <div style="margin-left:45px;margin-top:-22px;">
-                                <span style="color:#FFFFFF;"><b><#WiFi_AFC_enable#></b></span><br>
+                            <div style="margin-left:45px;margin-top:-22px;${whiteTheme ? "color:#000000":""}">
+                                <span style="color:${whiteTheme ? "#006CE1":"#FFFFFF"};"><b><#WiFi_AFC_enable#></b></span><br>
                                 <#WiFi_AFC_step2#>
                             </div>
 
                             <!-- AFC App Setup Step -->
                             <div style="padding:20px 0;">
                                 <div style="vertical-align:middle;padding-left:30px;margin-top:-10px;">
-                                    <img src="images/New_ui/AFC_dark.png" style="width:500px;height:180px;">
+                                    <img src="images/New_ui/${whiteTheme ? "AFC_light.png":"AFC_dark.png"}" style="width:500px;height:180px;">
                                 </div>
                             </div>
                         `;
@@ -1736,6 +1796,7 @@
                 } = wlBandSeq[prefixNvram];
                 let bandwidthStringObject = objectDeepCopy(channelBandwidthObject);
                 let autoBandwidthString = bandwidthStringObject.auto.string;
+
                 if (!bw320MHzSupport) {
                     autoBandwidthString = autoBandwidthString.replace("/320", "");
                     delete bandwidthStringObject["320mhz"];
@@ -1761,6 +1822,24 @@
                 }
 
                 bandwidthStringObject.auto.string = `${autoBandwidthString} MHz`;
+
+                //Add (SP mode available) for afc sp mode available
+                if (prefix === "6g1" && systemManipulable.brcmAfcSupport) {
+                    let afcSupportInfo = httpApi.get_afc_info_json();
+                    if(afcSupportInfo.supportedBandwidths && afcSupportInfo.supportedBandwidths.length > 0){
+                        
+                        // Matched bandwidth .includes()
+                        for (const key in bandwidthStringObject) {
+                            let obj = bandwidthStringObject[key];
+                            if (afcSupportInfo.supportedBandwidths.includes(obj.string)) {
+                                if (!obj.string.includes("(SP mode available)")) {
+                                    obj.string += " (SP mode available)";
+                                }
+                            }
+                        }
+                        //console.log(bandwidthStringObject);
+                    }
+                }
                 let channelBandwidthSnippet = "";
                 for (let { value, string } of Object.values(bandwidthStringObject)) {
                     channelBandwidthSnippet += `<option value="${value}" ${bandwidthValue === value ? "selected" : ""}>${string}</option>`;
@@ -1789,12 +1868,20 @@
                 }
 
                 let bwHintAFC = "";
+                let bwNoteAFC = "";
                 if (brcmAfcSupport && prefixNvram === "6g1") {
                     //afc support
-
-                    bwHintAFC += `
-                        <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 28);"><div class="setup_bandwidth_help_icon"></div></a>
-                    `;
+                    if(whiteTheme){
+                        bwHintAFC += `
+                            <span><a id="bandwidth_help_icon" class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 28);"><div class="setup_bandwidth_help_icon_white"></div></a></span>
+                        `;
+                    }
+                    else{
+                        bwHintAFC += `
+                            <a id="bandwidth_help_icon" class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 28);"><div class="setup_bandwidth_help_icon"></div></a>
+                        `;   
+                    }
+                    bwNoteAFC += `<span style="margin-left:0px;color:#fc0;"><#WiFi_AFC_bw_hint#></span>`;
                 }
 
                 return `
@@ -1805,6 +1892,7 @@
                             ${bw160Snippet}
                             ${bw240Snippet}
                             ${bwHintAFC}
+                            ${bwNoteAFC}
                         </td>
                     </tr>
                 `;
@@ -2296,15 +2384,8 @@
                 let getWlBandwidthData = httpApi.hookGet("get_wl_bandwidth", true);
                 let currentValue = getWlBandwidthData.current_band["6g1"];
                 if (currentValue === "auto") {
-                    // get max key from bandwidth list
-                    let maxKey = Math.max(
-                        ...Object.keys(getWlBandwidthData["6g1"])
-                            .filter((key) => key !== "auto")
-                            .map(Number)
-                    );
-                    return maxKey.toString();
+                    return "160/320";
                 }
-
                 return currentValue;
             }
 
@@ -2331,7 +2412,7 @@
 					},
 					{
 						status: "<#WiFi_AFC_LPImode#>",
-						message: `<#WiFi_AFC_Status_desc5#>`,
+						message: `<#WiFi_AFC_Status_desc5_1#> <#WiFi_AFC_Status_desc5_2#>`,
 					},
 					{
 						status: "<#WiFi_AFC_LPImode#>",

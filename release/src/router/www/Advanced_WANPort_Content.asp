@@ -91,6 +91,11 @@ var usb_bk_support = isSupport("usb_bk");
 var orig_autowan_enable = '<% nvram_get("autowan_enable"); %>';
 var orig_switch_wantag = '<% nvram_get("switch_wantag"); %>';
 var wan_proto = '<% nvram_get("wan_proto"); %>';
+var orig_wan0_dot1q = '<% nvram_get("wan0_dot1q"); %>';
+let wan_service_num = 0;
+if(isSupport("multi_service_wan")){
+	wan_service_num = parseInt(httpApi.hookGet("get_MS_WAN_Num_Pri", true));
+}
 
 const bonding_port_settings = get_bonding_ports(based_modelid);
 
@@ -534,7 +539,7 @@ function form_show(v, change_primary_wan){
 			}
 		}
 
-		if(isSupport("autowan") && orig_switch_wantag == "none" && switch_stb_x == "0" && (!wan_bonding_support || orig_bond_wan == "0") && (!lacp_support || lacp_enabled == "0") && (wan_proto == "dhcp" || wan_proto == "pppoe")){
+		if(isSupport("autowan") && orig_switch_wantag == "none" && switch_stb_x == "0" && (!wan_bonding_support || orig_bond_wan == "0") && (!lacp_support || lacp_enabled == "0") && (wan_proto == "dhcp" || wan_proto == "pppoe") && orig_wan0_dot1q == "0" && !(isSupport("multi_service_wan") && wan_service_num > 1)){
 			if($("#wans_primary option[value='auto']").length == 0){
 				($('<option>', {
 					"value": "auto",
@@ -1001,29 +1006,25 @@ function applyRule(){
 	}
 
 	/* Function Conflict Check */
+	let conflict_func_array = [];
+	let conflict_port_array = [];
 	let conflict_func = "";
 	let conflict_ports = "";
 	if(isSupport("autowan") && $('#wans_primary').find(":selected").val() == "auto"){
-		if(wan_bonding_support && orig_bond_wan == "1")
-			conflict_func = "<#WANAggregation#>";
+		if(wan_bonding_support && orig_bond_wan == "1"){
+			conflict_func_array.push("<#WANAggregation#>")
+		}
 
 		if(lacp_support && lacp_enabled == "1"){
-			if(conflict_func.length > 0){
-				conflict_func = conflict_func + ", <#NAT_lacp#>";
-			}
-			else
-				conflict_func = "<#NAT_lacp#>";
+			conflict_func_array.push("<#NAT_lacp#>");
 		}
 
 		if(switch_stb_x != "0" || orig_switch_wantag != "none"){
-			if(conflict_func.length > 0){
-				conflict_func = conflict_func + ", IPTV";
-			}
-			else
-				conflict_func = "IPTV";
+			conflict_func_array.push("IPTV");
 		}
 
-		if(conflict_func.length > 0){
+		if(conflict_func_array.length > 0){
+			conflict_func = conflict_func_array.join(",");
 			var hint_str = `<#conflict_function_hint#>`;
 			var msg = hint_str.replace("%1$@", `<#WAN_auto_detected#>`).replace("%2$@", conflict_func);
 
@@ -1055,51 +1056,63 @@ function applyRule(){
 		}
 	}
 
-	/* LACP Port Conflict Check */
+	conflict_func_array = [];
+	/* Dual WAN LAN port and LACP port conflict check */
 	if(lacp_support && lacp_enabled == "1" && document.form.wans_dualwan.value.indexOf("lan") != -1)
 	{
 		let lan_port_num = document.form.wans_lanport.value;
-		conflict_ports = "";
+		conflict_port_array = [];
 		for(let i = 0; i < bonding_port_settings.length; i++){
 			if(lan_port_num == bonding_port_settings[i].val){
-				conflict_func = "<#NAT_lacp#>";
-				conflict_ports = bonding_port_settings[i].text.toUpperCase();
+				conflict_func_array.push("<#NAT_lacp#>");
+				conflict_port_array.push(bonding_port_settings[i].text.toUpperCase());
 			}
 		}
 	}
 
 	if(is_GTBE_externalswitch_series){
+		/* WAN port and LACP port conflict check */
 		var lacp_ifnames_x = httpApi.nvramGet(["lacp_ifnames_x"], true).lacp_ifnames_x;
 		if(document.form.wans_dualwan.value.indexOf("wan") != -1 && document.form.wans_extwan.value == "0"){ //10G WAN included
-			if(lacp_support && lacp_enabled == "1" && lacp_ifnames_x == "eth0 eth3"){
-				if(conflict_func.length == 0)
-					conflict_func = "<#NAT_lacp#>";
-				else if(conflict_func.indexOf("<#NAT_lacp#>") == -1)
-					conflict_func += ", <#NAT_lacp#>";
+			if(lacp_support && lacp_enabled == "1" && lacp_ifnames_x == GTBE_lacp_ifnames_settings){
+				if(conflict_func_array.indexOf("<#NAT_lacp#>") == -1)
+					conflict_func_array.push("<#NAT_lacp#>");
 
-				if(conflict_ports.length == 0)
-					conflict_ports = "10G WAN/LAN1";
-				else if(conflict_ports.indexOf("10G WAN") == -1)
-					conflict_ports = "10G WAN/LAN1, " + conflict_ports;
+				if(conflict_port_array.indexOf("10G WAN/LAN1") == -1)
+					conflict_port_array.push("10G WAN/LAN1");
 			}
 		}
 
+		if(based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI"){
+			var lacp_ifnames_x = httpApi.nvramGet(["lacp_ifnames_x"], true).lacp_ifnames_x;
+			if(document.form.wans_dualwan.value.indexOf("wan") != -1 && document.form.wans_extwan.value == "1"){ //2.5G WAN included
+				if(lacp_support && lacp_enabled == "1" && lacp_ifnames_x == ""){
+					if(conflict_func_array.indexOf("<#NAT_lacp#>") == -1)
+						conflict_func_array.push("<#NAT_lacp#>");
+
+					if(conflict_port_array.indexOf("2.5G WAN/LAN-1") == -1)
+						conflict_port_array.push("2.5G WAN/LAN-1");
+				}
+			}
+		}
+
+		/* IPTV conflict check */
 		if(document.form.wans_dualwan.value.indexOf("wan") != -1 && document.form.wans_extwan.value == "1"){ //Single WAN: 2.5G WAN/LAN1
 			if(switch_stb_x != "0" || orig_switch_wantag != "none"){
-				if(conflict_func.length == 0)
-					conflict_func = "IPTV";
-				else if(conflict_func.indexOf("IPTV") == -1)
-					conflict_func += ", IPTV";
+				if(lacp_support && lacp_enabled == "1" && lacp_ifnames_x == ""){
+					if(conflict_func_array.indexOf("IPTV") == -1)
+						conflict_func_array.push("IPTV");
 
-				if(conflict_ports.length == 0)
-					conflict_ports = "2.5G WAN/LAN1";
-				else if(conflict_ports.indexOf("2.5G WAN/LAN1") == -1)
-					conflict_ports += ", 2.5G WAN/LAN1";
+					if(conflict_port_array.indexOf("2.5G WAN/LAN-1") == -1)
+						conflict_port_array.push("2.5G WAN/LAN-1");
+				}
 			}
 		}
 	}
 
-	if(conflict_func != "" && conflict_ports != ""){
+	if(conflict_func_array.length > 0 && conflict_port_array.length >0){
+		conflict_func = conflict_func_array.join(",");
+		conflict_ports = conflict_port_array.join(",");
 		let hint_str = `<#PortConflict_DisableFunc_Check#>`;
 		let confirm_str = hint_str.replace("%1$@", conflict_ports).replace("%2$@", "<#menu5_3#>").replace("%3$@", conflict_func);
 		if(confirm(confirm_str)){

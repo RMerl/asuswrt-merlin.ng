@@ -78,8 +78,8 @@ static const char *decode_caps(unsigned caps)
 	    const char *capname;
 	    capname = pjmedia_aud_dev_cap_name((pjmedia_aud_dev_cap)(1 << i), 
 					       NULL);
-	    strcat(text, capname);
-	    strcat(text, " ");
+            pj_ansi_strxcat(text, capname, sizeof(text));
+            pj_ansi_strxcat(text, " ", sizeof(text));
 	}
     }
 

@@ -72,10 +72,9 @@ PJ_DEF(pj_pool_t*) pj_pool_create_imp( const char *file, int line,
 	return NULL;
 
     if (name) {
-	pj_ansi_strncpy(pool->obj_name, name, sizeof(pool->obj_name));
-	pool->obj_name[sizeof(pool->obj_name)-1] = '\0';
+        pj_ansi_strxcpy(pool->obj_name, name, sizeof(pool->obj_name));
     } else {
-	strcpy(pool->obj_name, "altpool");
+        pj_ansi_strxcpy(pool->obj_name, "altpool", sizeof(pool->obj_name));
     }
 
     pool->factory = NULL;

@@ -16,6 +16,12 @@
 
 #define APG_IFNAMES_USED_FILE CFG_MNT_FOLDER"apg_ifnames_used.json"
 #define TMP_APG_IFNAMES_USED_FILE   "/tmp/apg_ifnames_used.json"
+#define APG_F_MAIN_BH	0x01
+#define APG_F_MAIN_FH	0x02
+#define APG_F_SDN		0x04
+#define APG_F_MLO		0x08
+
+#define JFFS_CFGMNT_DIR "/jffs/.sys/cfg_mnt"
 typedef struct __apg_dut_list_t__
 {
 	char dev_mac[18];
@@ -39,6 +45,7 @@ extern json_object* gen_lan_port_cap(json_object *root);
 extern char* get_wificap_ifname_from_wlprefix(char *dut_mac, char *wlprefix, char *ret_ifname, size_t ifname_bsize);
 extern char* get_lancap_ifname_from_portindex(char *dut_mac, int port_index, char *ret_ifname, size_t ifname_bsize);
 extern int get_sdn_vid_by_ifname_used(char *dut_mac, char *ifname);
+extern int get_sdn_idx_by_band_idx(char *dut_mac, int band_idx);
 extern int num_of_no_used_vif_from_wificap(char *dut_mac, unsigned short wifi_band);
 extern int num_of_vif_used(char *dut_mac, unsigned short wifi_band);
 extern int num_of_wifi_band(char *dut_mac, unsigned short wifi_band);
@@ -102,4 +109,5 @@ extern char* get_unused_ifnames_by_dut_2(char *dut_mac, unsigned short wifi_band
 extern int update_fh_smart_connect_x(int *retval);
 extern int save_cfg_param_to_json(json_object *in, char *param);
 extern char* get_apg_value(apg_rule_st* apg_rule, unsigned short wifi_band, char *item, char *ret_value, int ret_value_bsize);
+extern int get_apm_apg_indexs_by_role(char *mac, unsigned char role_flags, char *ret_apm_indexs, int ret_apm_bsize, char *ret_apg_indexs, int ret_apg_bsize);
 #endif

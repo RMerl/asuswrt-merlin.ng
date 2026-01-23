@@ -7,6 +7,7 @@
 #include "cosql_utils.h"
 #include "log.h"
 #include <shared.h>
+#include <regex.h>
 
 static time_t get_gmt_time_from_local(time_t local_time)
 {
@@ -113,6 +114,27 @@ static int get_tmp_db_path(const char *db_name, char *db_file_path, int path_len
     return 1;
 }
 
+static int get_db_ex_backup_path(char *db_backup_path, size_t path_size) 
+{
+    char *ex_db_backup_path = nvram_safe_get("ex_db_backup_path");
+    if (ex_db_backup_path != NULL &&
+        strlen(ex_db_backup_path) > 0 &&
+        d_exists(ex_db_backup_path))
+    {
+        snprintf(db_backup_path, path_size, "%s/%s", ex_db_backup_path, DIAG_DB_FOLDER);
+    }
+    else if (d_exists(JFFS_DIR))
+    {
+        snprintf(db_backup_path, path_size, "%s/%s", JFFS_DIR, DIAG_DB_FOLDER);
+    }
+    else
+    {
+        return -1;
+    }
+    
+    return 0;
+}
+
 static int get_backup_db_path_by_datetime(const char *db_name, const char *db_version, int query_datetime, char *db_file_path)
 {
 
@@ -122,22 +144,8 @@ static int get_backup_db_path_by_datetime(const char *db_name, const char *db_ve
     }
 
     char db_bakcup_path[MAX_FILE_PATH] = {0};
-    char *ex_db_backup_path = nvram_safe_get("ex_db_backup_path");
-    if (ex_db_backup_path != NULL &&
-        strlen(ex_db_backup_path) > 0 &&
-        d_exists(ex_db_backup_path))
-    {
-
-        snprintf(db_bakcup_path, MAX_FILE_PATH, "%s/%s", ex_db_backup_path, DIAG_DB_FOLDER);
-    }
-    else if (d_exists(JFFS_DIR))
-    {
-        snprintf(db_bakcup_path, MAX_FILE_PATH, "%s/%s", JFFS_DIR, DIAG_DB_FOLDER);
-    }
-    else
-    {
-
-        return 0;
+    if (get_db_ex_backup_path(db_bakcup_path, MAX_FILE_PATH) != 0) {
+        return -1;
     }
 
     if (!d_exists(db_bakcup_path))
@@ -364,6 +372,97 @@ static sql_column_prototype_t *parse_query_columns_data(char *data, int data_cou
     return query_columns;
 }
 
+static void convert_db_version_regex(const char *db_version, char *regex) 
+{
+    strcpy(regex, "(");
+
+    const char *ptr = db_version;
+    char buffer[16];
+    int first = 1;
+
+    while (*ptr) 
+    {
+        char *buf_ptr = buffer;
+
+        while (*ptr && *ptr != ',') 
+        {
+            if (*ptr == '.') 
+            {
+                *buf_ptr++ = '\\';
+            }
+            *buf_ptr++ = *ptr++;
+        }
+
+        *buf_ptr = '\0';
+
+        if (!first) 
+        {
+            strcat(regex, "|");
+        }
+        first = 0;
+
+        strcat(regex, buffer);
+
+        if (*ptr == ',') 
+        {
+            ptr++;
+        }
+    }
+
+    strcat(regex, ")");
+}
+
+static int compare_files(const void *a, const void *b) 
+{
+    return strcmp(*(const char **)b, *(const char **)a);
+}
+
+static int get_sorted_ex_backup_files(const char *directory, const char *db_name, const char *db_version, char ***file_list, int *file_count) 
+{
+    DIR *dir;
+    struct dirent *entry;
+    regex_t regex;
+    char pattern[MAX_FILE_PATH];
+    char **files = NULL;
+    int count = 0;
+    
+    if (directory == NULL || db_name == NULL || db_version == NULL)
+    {
+        return -1;
+    }
+    
+    char db_version_regex[100];
+    convert_db_version_regex(db_version, db_version_regex);
+
+    snprintf(pattern, sizeof(pattern), "^[0-9]+_%s_%s\\.db$", db_name, db_version_regex);
+    if (regcomp(&regex, pattern, REG_EXTENDED) != 0) {
+        codbg("Failed to compile regex.");
+        return -1;
+    }
+    
+    if ((dir = opendir(directory)) == NULL) {
+        regfree(&regex);
+        return -1;
+    }
+    
+    while ((entry = readdir(dir)) != NULL) {
+        if (regexec(&regex, entry->d_name, 0, NULL, 0) == 0) {
+            files = realloc(files, sizeof(char *) * (count + 1));
+            files[count] = strdup(entry->d_name);
+            count++;
+        }
+    }
+    
+    closedir(dir);
+    regfree(&regex);
+
+    qsort(files, count, sizeof(char *), compare_files);
+    
+    *file_list = files;
+    *file_count = count;
+    return 0;
+}
+
 int codb_test()
 {
 
@@ -371,7 +470,7 @@ int codb_test()
 
     int res = 0;
 
-    char content[50] = "data_id;ifname;mac;noise;data_time;glitch";
+    char content[100] = "data_id;band;new_control_chan;new_center_chan;new_bw;event;data_time";
 
     int column_count = 0;
     char *tmp_content = strdup(content);
@@ -421,7 +520,8 @@ int codb_test()
 
     // int duration = (query_end_time-query_start_time)/qyery_point;
     int duration = 300;
-    res = codb_content_query_json_field_ex("wifi_detect", column_count, content, filter_count, filter_data, "data_time", query_start_time, query_end_time, order_by, duration, qyery_limit, &retObj);
+    // res = codb_content_query_json_field_ex("wifi_detect", column_count, content, filter_count, filter_data, "data_time", query_start_time, query_end_time, order_by, duration, qyery_limit, &retObj);
+    res = codb_latest_content_query_json_field("channel_change", column_count, content, filter_count, filter_data, &retObj);
 
     if (res == CODB_OK && retObj != NULL)
     {
@@ -894,7 +994,7 @@ int codb_latest_content_query_json_field(char *db_name, int columns_count, char 
     time_t current_time = time(NULL);
 
     sqlite3 *pdb_tmp = NULL;
-    char tmp_db_file_path[MAX_FILE_PATH] = "\0";
+    char tmp_db_file_path[MAX_FILE_PATH] = {0};
     if (get_tmp_db_path(db_name, tmp_db_file_path, MAX_FILE_PATH) == 1)
     {
         pdb_tmp = cosql_open(tmp_db_file_path);
@@ -914,9 +1014,8 @@ int codb_latest_content_query_json_field(char *db_name, int columns_count, char 
     ///////////////////////////////////////////////////////////////
 
     char db_version[20] = "1.0,2.0,3.0";
-    char backup_db_file_path[MAX_FILE_PATH] = "\0";
-    char buffer_f_t_s[64] = "\0";
-    char buffer_f_t_e[64] = "\0";
+    char buffer_f_t_s[64] = {0};
+    char buffer_f_t_e[64] = {0};
     sqlite3 *pdb_backup = NULL;
     ///////////////////////////////////////////////////////////////
 
@@ -933,79 +1032,72 @@ int codb_latest_content_query_json_field(char *db_name, int columns_count, char 
 
     int total_ret_rows = 0;
     int query_start = get_zero_time_on_day2(current_time);
+    
+    codbg("******************************", count);
+    codbg("count[%d]", count);
 
-    while (1)
-    {
+    //- get data from temp db.
+    ret_rows = query_database(pdb_tmp,
+                                match_and_columns_count, match_and_columns,
+                                0, NULL,
+                                columns_count, query_columns,
+                                "data_time", 0, 0,
+                                "DESC",
+                                0,
+                                1,
+                                resultValueArrayObj,
+                                &total_ret_rows);
 
-        codbg("******************************", count);
-        codbg("count[%d]", count);
+    codbg("The count of query result from temp db is %d.", ret_rows);
 
-        //- get data from temp db.
-        ret_rows = query_database(pdb_tmp,
-                                  match_and_columns_count, match_and_columns,
-                                  0, NULL,
-                                  columns_count, query_columns,
-                                  "data_time", 0, 0,
-                                  "DESC",
-                                  0,
-                                  1,
-                                  resultValueArrayObj,
-                                  &total_ret_rows);
-
-        codbg("The count of query result from temp db is %d.", ret_rows);
-
-        if (ret_rows <= 0)
+    char **file_list = NULL;
+    int file_count = 0;
+    char db_bakcup_path[MAX_FILE_PATH] = {0};
+    
+    if (ret_rows <= 0 && 
+        get_db_ex_backup_path(db_bakcup_path, MAX_FILE_PATH) == 0 && 
+        get_sorted_ex_backup_files(db_bakcup_path, db_name, db_version, &file_list, &file_count) == 0)
+    {   
+        for (int i = 0; i < file_count; i++) 
         {
-            char find_backup_db_file_path[MAX_FILE_PATH] = "\0";
-            if (get_backup_db_path_by_datetime(db_name, db_version, query_start, find_backup_db_file_path) == 1)
-            {
-
-                //- open backup db.
-                if (strlen(backup_db_file_path) == 0 || strncmp(find_backup_db_file_path, backup_db_file_path, strlen(backup_db_file_path)) != 0)
-                {
-                    if (pdb_backup != NULL)
-                    {
-                        cosql_close(pdb_backup);
-                    }
-
-                    pdb_backup = cosql_open(find_backup_db_file_path);
-                    if (pdb_backup != NULL)
-                    {
-                        codb_safe_strncpy(backup_db_file_path, find_backup_db_file_path, MAX_FILE_PATH);
-                        codbg("Open backup_db_file_path=%s", backup_db_file_path);
-                    }
-                }
-            }
-            else
-            {
-                break;
-            }
+            char find_backup_db_file_path[MAX_FILE_PATH] = {0};
+            snprintf(find_backup_db_file_path, sizeof(find_backup_db_file_path), "%s/%s", db_bakcup_path, file_list[i]);
+            
+            cosql_close(pdb_backup);
 
             //- get data from backup db.
-            ret_rows = query_database(pdb_backup,
-                                      match_and_columns_count, match_and_columns,
-                                      0, NULL,
-                                      columns_count, query_columns,
-                                      "data_time", 0, 0,
-                                      "DESC",
-                                      0,
-                                      1,
-                                      resultValueArrayObj,
-                                      &total_ret_rows);
+            pdb_backup = cosql_open(find_backup_db_file_path);
+            if (pdb_backup != NULL)
+            {   
+                //- get data from backup db.
+                ret_rows = query_database(pdb_backup,
+                                        match_and_columns_count, match_and_columns,
+                                        0, NULL,
+                                        columns_count, query_columns,
+                                        "data_time", 0, 0,
+                                        "DESC",
+                                        0,
+                                        1,
+                                        resultValueArrayObj,
+                                        &total_ret_rows);
 
-            codbg("The count of query result from backup db is %d.", ret_rows);
+                codbg("Open find_backup_db_file_path=%s", find_backup_db_file_path);
+                codbg("The count of query result from backup db is %d.", ret_rows);
+
+                if (ret_rows > 0)
+                {
+                    break;
+                }
+            }
         }
-    NEXT_PERIOD:
-
-        count++;
-
-        //- next period
-        if (ret_rows > 0)
-        {
-            break;
+    }
+    
+    if (file_count > 0) 
+    {
+        for (int i = 0; i < file_count; i++) {
+            free(file_list[i]);
         }
-
-        query_start = query_start - 86400;
+        free(file_list);
     }
 
     //- free match_and_columns

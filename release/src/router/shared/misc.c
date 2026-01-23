@@ -5794,12 +5794,19 @@ int check_re_in_macfilter(int unit, char *mac)
 	char *nv, *nvp, *b;
 	int exist = 0;
 
-#ifdef RTCONFIG_AMAS
-	if (nvram_get_int("re_mode") == 1)
-		snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
+	if (get_fh_if_prefix_by_unit(unit, prefix, sizeof(prefix))) {
+		trim_space(prefix);
+		strncat(prefix, "_", 1);
+	}
 	else
+	{
+#ifdef RTCONFIG_AMAS
+		if (nvram_get_int("re_mode") == 1)
+			snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
+		else
 #endif
-		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+			snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+	}
 
 	nv = nvp = strdup(nvram_safe_get(strlcat_r(prefix, "maclist_x", tmp, sizeof(tmp))));
 	if (nv) {

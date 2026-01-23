@@ -504,6 +504,7 @@ PJ_DEF(pj_status_t) pj_thread_register ( int inst_id,
 #endif
 
     *ptr_thread = thread;
+    (void) stack_ptr;
     return PJ_SUCCESS;
 #else
     pj_thread_t *thread = (pj_thread_t*)desc;
@@ -605,8 +606,7 @@ PJ_DEF(pj_status_t) pj_thread_create( pj_pool_t *pool,
     if (strchr(thread_name, '%')) {
 	pj_ansi_snprintf(rec->obj_name, PJ_MAX_OBJ_NAME, thread_name, rec);
     } else {
-	strncpy(rec->obj_name, thread_name, PJ_MAX_OBJ_NAME);
-	rec->obj_name[PJ_MAX_OBJ_NAME-1] = '\0';
+        pj_ansi_strxcpy(rec->obj_name, thread_name, PJ_MAX_OBJ_NAME);
     }
 
     /* Set default stack size */
@@ -1225,8 +1225,7 @@ static pj_status_t init_mutex(int inst_id, pj_mutex_t *mutex, const char *name, 
     if (strchr(name, '%')) {
 	pj_ansi_snprintf(mutex->obj_name, PJ_MAX_OBJ_NAME, name, mutex);
     } else {
-	strncpy(mutex->obj_name, name, PJ_MAX_OBJ_NAME);
-	mutex->obj_name[PJ_MAX_OBJ_NAME-1] = '\0';
+        pj_ansi_strxcpy(mutex->obj_name, name, PJ_MAX_OBJ_NAME);
     }
 
     return PJ_SUCCESS;
@@ -1278,7 +1277,11 @@ PJ_DEF(pj_status_t) pj_mutex_create(pj_pool_t *pool,
 				    pj_mutex_t **ptr_mutex)
 {
     int inst_id = pool ? pool->factory->inst_id : 1;
+#if defined(ROUTER) && defined(MUSL_LIBC)
+    return pj_mutex_create2(pool, name, type, ptr_mutex, inst_id);
+#else
     return pj_mutex_create2(NULL, name, type, ptr_mutex, inst_id);
+#endif
 }
 
 /*
@@ -1327,7 +1330,8 @@ PJ_DEF(pj_status_t) pj_mutex_lock(pj_mutex_t *mutex)
 #if PJ_DEBUG
     if (status == PJ_SUCCESS) {
 	mutex->owner = pj_thread_this(mutex->inst_id);
-	pj_ansi_strncpy(mutex->owner_name, mutex->owner->obj_name, PJ_MAX_OBJ_NAME);
+        pj_ansi_strxcpy(mutex->owner_name, mutex->owner->obj_name,
+                        sizeof(mutex->owner_name));
 	++mutex->nesting_level;
     }
 
@@ -1410,7 +1414,8 @@ PJ_DEF(pj_status_t) pj_mutex_trylock(pj_mutex_t *mutex)
     if (status==0) {
 #if PJ_DEBUG
 	mutex->owner = pj_thread_this(mutex->inst_id);
-	pj_ansi_strncpy(mutex->owner_name, mutex->owner->obj_name, PJ_MAX_OBJ_NAME);
+        pj_ansi_strxcpy(mutex->owner_name, mutex->owner->obj_name,
+                        sizeof(mutex->owner_name));
 	++mutex->nesting_level;
 
 	PJ_LOG(6,(mutex->obj_name, "Mutex acquired by thread %s (level=%d)", 
@@ -1491,7 +1496,7 @@ PJ_DEF(int) pj_get_mutex_inst_id(pj_mutex_t *mutex)
 	return mutex->inst_id;
 }
 
-PJ_DEF(void) pj_mutex_dump(char *prefix, pj_mutex_t *mutex)
+PJ_DEF(void) pj_mutex_dump(const char *prefix, pj_mutex_t *mutex)
 {
 	PJ_LOG(6,(mutex->obj_name, "\n prefix=[%s]\n mutexp=[%p]\n mutexd=[%llu]\n mutex_size=[%llu]\n obj_name=[%s]\n nesting_level=[%d]\n owner=[%p]\n owner_name=[%s]\n inst_id=[%d]",
               prefix,
@@ -1689,8 +1694,7 @@ PJ_DEF(pj_status_t) pj_sem_create( pj_pool_t *pool,
     if (strchr(name, '%')) {
 	pj_ansi_snprintf(sem->obj_name, PJ_MAX_OBJ_NAME, name, sem);
     } else {
-	strncpy(sem->obj_name, name, PJ_MAX_OBJ_NAME);
-	sem->obj_name[PJ_MAX_OBJ_NAME-1] = '\0';
+        pj_ansi_strxcpy(sem->obj_name, name, PJ_MAX_OBJ_NAME);
     }
 
     PJ_LOG(6, (sem->obj_name, "Semaphore created"));
@@ -1987,45 +1991,45 @@ PJ_DEF(pj_status_t) pj_term_set_color(pj_color_t color)
     if (color & PJ_TERM_COLOR_BRIGHT) {
 	color ^= PJ_TERM_COLOR_BRIGHT;
     } else {
-	strcpy(ansi_color, "\033[00;3");
+        pj_ansi_strxcpy(ansi_color, "\033[00;3", sizeof(ansi_color));
     }
 
     switch (color) {
     case 0:
 	/* black color */
-	strcat(ansi_color, "0m");
+        pj_ansi_strxcat(ansi_color, "0m", sizeof(ansi_color));
 	break;
     case PJ_TERM_COLOR_R:
 	/* red color */
-	strcat(ansi_color, "1m");
+        pj_ansi_strxcat(ansi_color, "1m", sizeof(ansi_color));
 	break;
     case PJ_TERM_COLOR_G:
 	/* green color */
-	strcat(ansi_color, "2m");
+        pj_ansi_strxcat(ansi_color, "2m", sizeof(ansi_color));
 	break;
     case PJ_TERM_COLOR_B:
 	/* blue color */
-	strcat(ansi_color, "4m");
+        pj_ansi_strxcat(ansi_color, "4m", sizeof(ansi_color));
 	break;
     case PJ_TERM_COLOR_R | PJ_TERM_COLOR_G:
 	/* yellow color */
-	strcat(ansi_color, "3m");
+        pj_ansi_strxcat(ansi_color, "3m", sizeof(ansi_color));
 	break;
     case PJ_TERM_COLOR_R | PJ_TERM_COLOR_B:
 	/* magenta color */
-	strcat(ansi_color, "5m");
+        pj_ansi_strxcat(ansi_color, "5m", sizeof(ansi_color));
 	break;
     case PJ_TERM_COLOR_G | PJ_TERM_COLOR_B:
 	/* cyan color */
-	strcat(ansi_color, "6m");
+        pj_ansi_strxcat(ansi_color, "6m", sizeof(ansi_color));
 	break;
     case PJ_TERM_COLOR_R | PJ_TERM_COLOR_G | PJ_TERM_COLOR_B:
 	/* white color */
-	strcat(ansi_color, "7m");
+        pj_ansi_strxcat(ansi_color, "7m", sizeof(ansi_color));
 	break;
     default:
 	/* default console color */
-	strcpy(ansi_color, "\033[00m");
+        pj_ansi_strxcat(ansi_color, "\033[00m", sizeof(ansi_color));
 	break;
     }
 

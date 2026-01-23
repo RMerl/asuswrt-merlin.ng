@@ -176,7 +176,8 @@ function isUnsafeKey(key) {
 
 function getUrlVar(key_name) {
 	var url = new URL(window.location.href); //- Safely parsing URLs using the URL API
-	var query = url.searchParams.toString(); // Get the query string
+	// var query = url.searchParams.toString(); // Get the query string
+	var query = url.searchParams.toString().replace(/\+/g, '%20');
 	var hashes = query.split('&');
 	var key_value = "";
 
@@ -184,9 +185,9 @@ function getUrlVar(key_name) {
 		var hash = hashes[i].split('=');
 		var key = sanitizeInput(decodeURIComponent(hash[0]));
 		var value = sanitizeInput(decodeURIComponent(hash[1] || ''));
-
 		if (isValidKey(key) && !isUnsafeKey(key) && key==key_name) {
 			key_value = encodeSafeString(value);
+			key_value = key_value.replace(/#/g, '%23');
 		}
 	}
 
@@ -273,7 +274,7 @@ function myencodeURI(iurl){
 	}
 	catch(err){
 		//Handle errors here
-	  	//alert('catch error: '+ err);
+	  	// alert('catch error: '+ err);
 		return iurl;
 	}
 	

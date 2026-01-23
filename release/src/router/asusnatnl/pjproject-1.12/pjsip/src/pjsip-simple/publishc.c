@@ -158,12 +158,8 @@ PJ_DEF(pj_status_t) pjsip_publishc_create( pjsip_endpoint *endpt,
     pjsip_publishc_opt default_opt;
     pj_status_t status;
 
-	int inst_id;
-
     /* Verify arguments. */
     PJ_ASSERT_RETURN(endpt && cb && p_pubc, PJ_EINVAL);
-
-	inst_id = pjsip_endpt_get_inst_id(endpt);
 
     pool = pjsip_endpt_create_pool(endpt, "pubc%p", 1024, 1024);
     PJ_ASSERT_RETURN(pool != NULL, PJ_ENOMEM);

@@ -247,6 +247,7 @@ ledbtn_main(int argc, char *argv[])
 	signal(SIGUSR1, phystatus_reset);
 #endif
 
+	LED_status = nvram_get_int("AllLED");
 	ledbtn_init();
 	ledbtn_alarmtimer();
 

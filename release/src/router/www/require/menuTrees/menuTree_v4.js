@@ -455,8 +455,10 @@ define(function () {
 
                 const isUI4 = isSupport("UI4");
                 if (!gameMode_support || isUI4) {
-                    if (!isSupport("gu_accel") || isUI4)
+                    if (!isSupport("gu_accel") || isUI4) {
                         retArray.push("menu_GameBoost");
+                        retArray.push("menu_UU");
+                    }
                 }
 
                 if(isUI4){

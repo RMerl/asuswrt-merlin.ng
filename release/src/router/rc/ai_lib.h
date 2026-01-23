@@ -15,6 +15,7 @@
 #define APP_TEST       "test"
 #define APP_FRIGATE    "frigate"
 #define APP_PORTAINER  "portainer"
+#define APP_DPANEL     "dpanel"
 #define APP_HA         "homeassistant"
 #define APP_ADGUARD    "adguard"
 #define APP_SLM        "slm"

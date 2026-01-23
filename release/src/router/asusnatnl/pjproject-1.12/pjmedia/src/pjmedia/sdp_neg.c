@@ -823,7 +823,7 @@ static pj_status_t process_m_answer( int inst_id,
 	    return PJMEDIA_SDPNEG_EANSNOMEDIA;
 	}
 
-	PJ_TODO(CHECK_SDP_NEGOTIATION_WHEN_ASYMETRIC_MEDIA_IS_ALLOWED);
+	//PJ_TODO(CHECK_SDP_NEGOTIATION_WHEN_ASYMETRIC_MEDIA_IS_ALLOWED);
 
     } else {
 	/* Offer format priority based on answer format index/priority */
@@ -1307,6 +1307,7 @@ static pj_status_t match_offer(int inst_id,
     update_media_direction(pool, offer, answer);
 
     *p_answer = answer;
+	(void) master_has_telephone_event;
     return PJ_SUCCESS;
 }
 

@@ -191,7 +191,7 @@ $(WSLIB):
 	make libws.so
 
 
-$(TARGET):  main.o  $(WSLIB_OBJS) $(OBJS_MAIN) 
+$(TARGET):  $(WSLIB_OBJS) $(OBJS_MAIN) 
 	$(CXX) -fPIC $(CFLAGS) $(LDFLAGS) $(LIBS) -o $@ $^ 
 
 %.o: %.c

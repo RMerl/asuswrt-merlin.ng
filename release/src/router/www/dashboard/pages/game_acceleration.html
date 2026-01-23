@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8"/>
@@ -309,7 +309,7 @@
                         </div>
                         <div class="feature-content">
                             <div class="feature-name">
-                                <span>Game Boost</span>
+                                <span><#Game_Boost#></span>
                                 <div>
                                     <a target="_blank" href="#" class="faq-badge">| FAQ |</a>
                                 </div>
@@ -320,7 +320,7 @@
                             </p>
                         </div>
                         <div class="feature-settings">
-                            <button class="btn btn-outline-primary" onclick="pageRedirect('qoe')">Go to Settings
+                            <button class="btn btn-outline-primary" onclick="pageRedirect('qoe')"><#GO_SETTING#>
                             </button>
                         </div>
                     </div>
@@ -333,7 +333,7 @@
     <div class="card mb-3">
         <div class="level-header">
             <span class="level-number"><#AiProtection_level_th#> 3</span>
-            <h2 class="level-title">Gaming Server Acceleration</h2>
+            <h2 class="level-title"><#Gaming_Server_Acceleration#></h2>
         </div>
         <div class="level-content">
             <div class="row">
@@ -357,7 +357,7 @@
                             </p>
                         </div>
                         <div class="feature-settings">
-                            <button id="gtnet-setting-btn" class="btn btn-outline-primary">Go to Settings</button>
+                            <button id="gtnet-setting-btn" class="btn btn-outline-primary"><#GO_SETTING#></button>
                         </div>
                     </div>
                     <div class="feature-item d-none" id="feature-outfox">
@@ -376,7 +376,7 @@
                             </p>
                         </div>
                         <div class="feature-settings">
-                            <button class="btn btn-outline-primary">Go to Settings</button>
+                            <button class="btn btn-outline-primary"><#GO_SETTING#></button>
                         </div>
                     </div>
                     <div class="feature-item d-none" id="feature-uu">
@@ -397,7 +397,7 @@
                             </p>
                         </div>
                         <div class="feature-settings">
-                            <button class="btn btn-outline-primary">Go to Settings</button>
+                            <button class="btn btn-outline-primary"><#GO_SETTING#></button>
                         </div>
                     </div>
                 </div>
@@ -422,8 +422,13 @@
             await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
         }
 
+        const ai_support = await isSupport("ai_support");
         const uu_support = await isSupport("uu_accel");
         const outfox_support = await isSupport("outfox");
+
+        if (ai_support) {
+            document.querySelector('.page-title').innerText = "<#AI_Game_Boost#>";
+        }
 
         const label_mac = system.labelMac;
         const lang = system.language.currentLang;

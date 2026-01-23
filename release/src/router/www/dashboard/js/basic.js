@@ -1,35 +1,46 @@
-var Session = Session || (function(){
-	var win = window.top || window;
-	try{
-		var store = (win.name ? JSON.parse(win.name) : {});
-		function Save() {
-			win.name = JSON.stringify(store);
-		}
+var Session = top.Session || (function() {
+    const win = window.top || window;
 
-		if (window.addEventListener) window.addEventListener("unload", Save, false);
-		else if (window.attachEvent) window.attachEvent("onunload", Save);
-		else window.onunload = Save;
+    try {
+        let store = {};
 
-		return {
-			set: function(name, value) {
-				store[name] = value;
-			},
-			get: function(name) {
-				return (store[name] ? store[name] : undefined);
-			},
-			clear: function() { store = {}; },
-			dump: function() { return JSON.stringify(store); }
-		};
-	}
-	catch(e){
-		win.name = ""; /* reset cache */
-		return {
-			set: function(){},
-			get: function(){},
-			clear: function(){},
-			dump: function(){}
-		};
-	}
+        if (win.name) {
+            try {
+                store = JSON.parse(win.name);
+            } catch (e) {
+                store = {};
+            }
+        }
+
+        function save() {
+            win.name = JSON.stringify(store);
+        }
+
+        return {
+            set: function(name, value) {
+                store[name] = value;
+                save();
+            },
+            get: function(name) {
+                return store[name] !== undefined ? store[name] : undefined;
+            },
+            clear: function() {
+                store = {};
+                save();
+            },
+            dump: function() {
+                return JSON.stringify(store);
+            }
+        };
+    } catch (e) {
+        win.name = "";
+        return {
+            set: function() {},
+            get: function() {},
+            clear: function() {},
+            dump: function() {}
+        };
+    }
 })();
 
 function genArchitecture() {
@@ -185,8 +196,7 @@ function checkRouterAssistantVisibility() {
 function genLogoModelName(filter = ["logo", "model-name", "merlin-logo"/*, "time"*/]) {
 	let code = "";
 	code += `
-		<div class="d-flex align-items-center me-auto">
-			<div role="icon" class="d-block d-md-none icon-size-24 icon-menu ms-3 menu-header" id='mobile_menu'></div>
+		<div class="d-flex align-items-center">
 			${filter.includes('logo')?`<div class="d-none d-md-block icon-logo-asus ms-3"></div>`:``}
 			${filter.includes('model-name')?`<div class="model-name mx-3"><#Web_Title2#></div>`:``}
 			${filter.includes('merlin-logo')?`
@@ -369,7 +379,7 @@ var menuList = [
 		divide: false,
 	},
     	{
-		name: `<#Game_acceleration#>`,
+		name: isSupport('ai_support') ? `<#AI_Game_Boost#>` : `<#Game_acceleration#>`,
 		icon: "icon-GameAcceleration",
 		url: "game_acceleration",
 		clicked: false,
@@ -525,64 +535,171 @@ if (navigator.userAgent.match(/ASUSMultiSiteManager/) || navigator.userAgent.mat
 }
 
 function genNavMenu() {
-	let menuListClicked = urlParameter.get("page");
-	if(!menuListClicked){
-		menuListClicked = window.localStorage.getItem("page") || "dashboard";
-	}
+    let menuListClicked = urlParameter.get("page");
+    if(!menuListClicked){
+        menuListClicked = window.localStorage.getItem("page") || "dashboard";
+    }
 	for(var i=0; i<menuList.length; i++){
 		menuList[i].clicked = false;
 		if(menuList[i].url.indexOf(menuListClicked) != -1) menuList[i].clicked = true;
 	}
 
-	let nav = document.getElementsByTagName("nav")[0];
+    let nav = document.querySelector("aside.sidebar nav") || document.querySelector("nav");
+    if (!nav) {
+        return;
+    }
 
-	// for mobile layout, show the close icon
-	let code = `
-		<div role="menu-close">
-			<div role="icon" class="icon-size-36 icon-close mt-2 mx-2" id="mobile_menu_close"></div>
-		</div>
-	`;
+    // build menu list
+    let code = ``;
 
-	for (let i = 0; i < menuList.length; i++) {
-		let list = menuList[i];
-		if (list.divide) {
-			code += `<div class="ms-4 me-2 divide-menu"></div>`;
-		}
+    for (let i = 0; i < menuList.length; i++) {
+        let list = menuList[i];
+        if (list.divide) {
+            code += `<div class="ms-4 me-2 divide-menu"></div>`;
+        }
 
-		code += `
-			<ul class="list-unstyled mb-0">
-				<li role="menu">
-					<button
-						data-bs-toggle="tooltip" data-bs-placement="right" title="${list.name}"
-						class="btn btn-toggle manu-${list.url} nav-menu ${list.clicked ? "menu-clicked" : ""}"
-						onclick="pageRedirect('${list.url}')"
-					>
-						<div role="icon" class="icon-size-24 ${list.icon} icon-color-menu"></div>
-						<div class="menu-name">${list.name}</div>
-					</button>
-				</li>
-			</ul>
-		`;
-	}
+        code += `
+            <ul class="list-unstyled mb-0">
+                <li role="menu">
+                    <button
+                        data-bs-toggle="tooltip" data-bs-placement="right" title="${list.name}"
+                        class="btn btn-toggle manu-${list.url} nav-menu ${list.clicked ? "menu-clicked" : ""}"
+                        onclick="pageRedirect('${list.url}')"
+                    >
+                        <div role="icon" class="icon-size-24 ${list.icon} icon-color-menu"></div>
+                        <div class="menu-name">${list.name}</div>
+                    </button>
+                </li>
+            </ul>
+        `;
+    }
 
-	code += `
-		<div class="mb-3 p-2 copyright">2022 ASUSTeK Computer Inc. All rights reserved.</div>
-	`;
+    code += `
+        <div class="mb-3 p-2 copyright">2022 ASUSTeK Computer Inc. All rights reserved.</div>
+    `;
 
-	nav.innerHTML = code;
+    nav.innerHTML = code;
 
-	const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-	const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl, {trigger: 'hover', customClass:'tooltip-menu', container:'.sidebar'}));
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl, {trigger: 'hover', customClass:'tooltip-menu', container:'.sidebar'}));
 
-	document.querySelectorAll(".menu-header").forEach((item) => {
-		item.addEventListener("click", function () {
-			document.querySelector("aside.sidebar").classList.add("sidebar-show");
-		});
-	});
+    const sidebarEl = document.querySelector("aside.sidebar");
+    const navEl = sidebarEl?.querySelector("nav");
+    document.querySelectorAll(".menu-header").forEach((item) => {
+        item.addEventListener("click", function () {
+            if (!sidebarEl) return;
+            if (!navEl) return;
+            sidebarEl.classList.add("is-animating");
+            const cleanup = () => {
+                sidebarEl.classList.remove("is-animating");
+                navEl.removeEventListener("transitionend", cleanup);
+            };
+            navEl.addEventListener("transitionend", cleanup);
+            // 強制 reflow 以確保 transition 生效
+            void navEl.offsetWidth;
+            if (sidebarEl.classList.contains("sidebar-show")) {
+                sidebarEl.classList.remove("sidebar-show");
+                sidebarEl.classList.add("sidebar-collapse-80");
+            } else {
+                sidebarEl.classList.remove("sidebar-collapse-80");
+                sidebarEl.classList.add("sidebar-show");
+            }
+            // 切換後同步目前側欄寬度
+            setTimeout(() => {
+                if (typeof setCurrentSidenavWidth === "function") {
+                    setCurrentSidenavWidth();
+                }
+            }, 0);
+        });
+    });
 
-	document.getElementById("mobile_menu_close").addEventListener("click", function () {
-		document.querySelector("aside.sidebar").classList.remove("sidebar-show");
-	});
+    // 依斷點套用預設狀態（CSS 已管視覺與轉場，這裡只同步 class 以避免互相干擾）
+    const applySidenavBreakpointState = () => {
+        if (!sidebarEl) return;
+        const w = window.innerWidth || document.documentElement.clientWidth;
+        if (w >= 1400) {
+            // 預設展開
+            sidebarEl.classList.add("sidebar-show");
+            sidebarEl.classList.remove("sidebar-collapse-80");
+        } else if (w >= 1200) {
+            // 預設縮寬，可展開為 300px
+            sidebarEl.classList.add("sidebar-show");
+            sidebarEl.classList.remove("sidebar-collapse-80");
+        } else if (w >= 992) {
+            // 預設展開（180px），點擊才收合為 80px
+            sidebarEl.classList.add("sidebar-show");
+            sidebarEl.classList.remove("sidebar-collapse-80");
+        } else if (w >= 768) {
+            // 768px - 991.98px: 固定 80px（僅圖示），可展開為 overlay
+            sidebarEl.classList.remove("sidebar-show");
+            sidebarEl.classList.remove("sidebar-collapse-80");
+        } else {
+            // ≤767px: 手機預設收合（下拉展開）
+            sidebarEl.classList.remove("sidebar-show");
+            sidebarEl.classList.remove("sidebar-collapse-80");
+        }
+    };
+    // 初始化與視窗改變時套用
+    applySidenavBreakpointState();
+    // 移除舊的監聽器（如果存在）再添加新的，防止記憶體洩漏
+    if (window._applySidenavBreakpointState) {
+        window.removeEventListener("resize", window._applySidenavBreakpointState);
+    }
+    window._applySidenavBreakpointState = applySidenavBreakpointState;
+    window.addEventListener("resize", applySidenavBreakpointState);
+
+    // 同步目前側欄寬度到 CSS 變數，讓主內容動態配置剩餘寬度
+    const setCurrentSidenavWidth = () => {
+        const w = window.innerWidth || document.documentElement.clientWidth;
+        const root = document.documentElement;
+        if (!sidebarEl) return;
+        let px = "0px";
+        if (w >= 1920) {
+            // ≥1920 展開 300px
+            px = "300px";
+        } else if (w >= 1200) {
+            // ≥1200 <1920 固定 240（避免與 CSS 產生不一致）
+            px = "240px";
+        } else if (w >= 992) {
+            // ≥992 <1200 預設 180 展開、80 收合（與 CSS 一致）
+            px = sidebarEl.classList.contains("sidebar-show") ? "180px" : "80px";
+        } else if (w >= 768) {
+            // 768px - 991.98px: 80px (icon only)
+            px = sidebarEl.classList.contains("sidebar-show") ? "240px" : "80px";
+        } else {
+            // ≤767px: 手機寬度，側欄下拉覆蓋，內容使用全寬
+            px = "0px";
+        }
+        root.style.setProperty("--wrt-sidenav-width-current", px);
+    };
+    setCurrentSidenavWidth();
+    // 移除舊的監聽器（如果存在）再添加新的，防止記憶體洩漏
+    if (window._setCurrentSidenavWidth) {
+        window.removeEventListener("resize", window._setCurrentSidenavWidth);
+    }
+    window._setCurrentSidenavWidth = setCurrentSidenavWidth;
+    window.addEventListener("resize", setCurrentSidenavWidth);
+
+    // 讓頂部列在頁面捲動時加上陰影
+    const appTopbar = document.querySelector(".app-topbar");
+    const updateTopbarShadow = () => {
+        if (!appTopbar) return;
+        const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+        if (scrollTop > 0) {
+            appTopbar.classList.add("has-shadow");
+        } else {
+            appTopbar.classList.remove("has-shadow");
+        }
+    };
+    // 移除舊的監聽器（如果存在）再添加新的，防止記憶體洩漏
+    if (window._updateTopbarShadow) {
+        window.removeEventListener("scroll", window._updateTopbarShadow);
+    }
+    window._updateTopbarShadow = updateTopbarShadow;
+    window.addEventListener("scroll", updateTopbarShadow, { passive: true });
+    // 初始化一次
+    updateTopbarShadow();
+
 }
 
 var sysTimeTimer = 0;
@@ -750,7 +867,7 @@ function checkAiBoardStatusAndRedirect() {
 
 checkAiBoardStatusAndRedirect();
 
-function pageRedirect(target, lastPage) {
+function pageRedirect(target, lastPage = "") {
 
     checkAiBoardStatusAndRedirect();
 
@@ -759,11 +876,11 @@ function pageRedirect(target, lastPage) {
 	}
 
 	if(target){
-		Session.set("target", target);
+		top.Session.set("target", target);
 	}
-	
-	if(lastPage){
-		Session.set("lastPage", lastPage);
+
+    if (lastPage !== "") {
+		top.Session.set(`${target}-lastPage`, lastPage);
 	}
 
 	if (target === "index.asp") {
@@ -812,8 +929,12 @@ function pageRedirect(target, lastPage) {
 				}
 			}, 1000);
 		});
-		document.querySelector("aside.sidebar").classList.remove("sidebar-show");
 	}
+
+    const sidebarEl = document.querySelector("aside.sidebar");
+    if (sidebarEl && sidebarEl.offsetWidth >= window.innerWidth) {
+        sidebarEl.classList.remove("sidebar-show");
+    }
 }
 
 var ntCallbackEvent = [];
@@ -1025,7 +1146,12 @@ function autoResizeTextarea(textarea) {
 }
 
 function handleRouterAssistantInput(event) {
-	if(!isSupport("ai_board_slm")) return false;
+	if(!isSupport("ai_board_slm")){
+		if (event.key === 'Enter') {
+			event.preventDefault();
+		}
+		return false;
+	}
 
 	const textarea = event.target;
 
@@ -1105,7 +1231,12 @@ function showResult(response, userQuestion) {
 		responseText = response.data;
 	}
 	else {
-		responseText = `Unable to connect at the moment. Please refresh or check your network and try again. If problem persist, please try to reboot the router.`;
+		if (currentSLM.status === "not_installed") {
+			responseText = currentSLM.model === "slm-cn-asus" ? `<#SLM_not_installed_CN#>` : `<#SLM_not_installed#>`;
+		}
+		else {
+			responseText = currentSLM.model === "slm-cn-asus" ? `<#SLM_no_response_CN#>` : `<#SLM_no_response#>`;
+		}
 	}
 	showRouterAssistantResponse(responseText, userQuestion);
 	const responseDiv = document.querySelector('[data-component="router-assistant-response"]');
@@ -1113,6 +1244,8 @@ function showResult(response, userQuestion) {
 	actionBtns.forEach(btn => {
 		btn.style.display = 'none';
 	});
+	document.querySelector('[data-component="router-assistant-disclaimer"]').style.display = 'block';
+
 	const cancelBtn = document.querySelector('[data-group="router-assistant-action"][data-component="cancelBtn"]');
 	const okBtn = document.querySelector('[data-group="router-assistant-action"][data-component="okBtn"]');
 	let filteredContent = responseText;
@@ -1123,8 +1256,26 @@ function showResult(response, userQuestion) {
 	})(filteredContent);
 	const metadataList = extractMetadata(responseText);
 	if (typeof filteredContent === 'string') {
+		// Remove metadata tags like [metadata]id=10003,desc=reboot[/metadata]
 		filteredContent = filteredContent.replace(/\[metadata\][^\[]*?\[\/metadata\]/g, '');
+
+		// Remove confidence percentage at the end of response like "(59.3%)"
 		filteredContent = filteredContent.replace(/\s*\([^\)]*%\)\s*$/g, '');
+
+		// Convert Markdown-style links [text](url) to HTML anchor tags
+		filteredContent = filteredContent.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function(match, linkText, url) {
+			return `<a href="${url}"
+				target="_blank"
+				rel="noopener noreferrer"
+				aria-label="${linkText} - ${url}"
+				title="${linkText} - ${url}"
+				tabindex="0"
+				role="link"
+				style="color: var(--text-hyperlink-default-color);"
+				onkeydown="if(event.key==='Enter'||event.key===' '){this.click();}">
+				${linkText}</a>`;
+		});
+
 		if (metadataList.length > 0) {
 			const preActionHtml = metadataList
 				.filter(meta => meta.preActionSentence && meta.preActionSentence.trim() !== "")
@@ -1135,8 +1286,18 @@ function showResult(response, userQuestion) {
 		responseDiv.innerHTML = filteredContent;
 	}
 
-	if (isLowPercent) {
-		responseDiv.innerHTML = `Sorry, unable to answer the question.`;
+	if (currentSLM.status === "not_installed") {
+		if (cancelBtn) {
+			cancelBtn.style.display = '';
+			cancelBtn.textContent = `<#CTL_ok#>`;
+			cancelBtn.onclick = function() {
+				closeRouterAssistantResponse();
+				pageRedirect('aiboard', 'aiboard.html');
+			};
+		}
+	}
+	else if (isLowPercent) {
+		responseDiv.innerHTML = currentSLM.model === "slm-cn-asus" ? `<#SLM_low_percent_CN#>` : `<#SLM_low_percent#>`;
 		if (cancelBtn) {
 			cancelBtn.style.display = '';
 			cancelBtn.textContent = `<#CTL_ok#>`;
@@ -1154,15 +1315,23 @@ function showResult(response, userQuestion) {
 				case "10001":
 				case "10002": {
 					// // 11b_enable, 11b_disable
+					let wl_plcphdr = "long";
+					if (meta.id === "10001") wl_plcphdr = "long";
+					if (meta.id === "10002") wl_plcphdr = "0";
 					if (cancelBtn) {
 						cancelBtn.style.display = '';
 					}
 					if (okBtn) {
 						okBtn.style.display = '';
-						okBtn.textContent = `<#btn_go#>`;
 						okBtn.onclick = function() {
-							pageRedirect('sdn', 'sdn.html');
+							const apply_obj = {
+								"action_mode": "apply",
+								"rc_service": "restart_wireless",
+								"2g1_plcphdr": wl_plcphdr
+							};
+							httpApi.nvramSet(apply_obj);
 							closeRouterAssistantResponse();
+							showLoading(3);
 						};
 					}
 					break;
@@ -1889,8 +2058,11 @@ function showRouterAssistantResponse(content, userQuestion = '') {
 						Thinking...
 						</div>`;
 		} else {
-			html += `<div data-component="router-assistant-response" class="text-break mb-3">${content}</div>`;
+			html += `<div data-component="router-assistant-response" class="text-break mb-2">${content}</div>`;
 		}
+		html += `<div data-component="router-assistant-disclaimer" class="mb-2" style="font-size:0.8em;color:#6c757d;line-height:1.4;margin-top:4px;flex:1;display:none;">
+					${currentSLM.model === "slm-cn-asus" ? `<#SLM_disclaimer_CN#>` : `<#SLM_disclaimer#>`}
+			</div>`;
 		html += `<div class="d-flex justify-content-end gap-2 pt-2 border-top">
 				<button data-group="router-assistant-action" data-component="cancelBtn" type="button" class="btn btn-outline-primary btn-sm" style="display:none" onclick="closeRouterAssistantResponse()">Later</button>
 				<button data-group="router-assistant-action" data-component="okBtn" type="button" class="btn btn-primary btn-sm" style="display:none">Do it now</button>
@@ -1915,3 +2087,21 @@ document.addEventListener('click', function(event) {
         responseDiv.style.display = 'none';
     }
 });
+
+var currentSLM = {
+	status: 'not_supported',
+	model: null
+};
+setTimeout(async () => {
+	try {
+		const slmStatusModule = await import('/js/indexing.js');
+		if (slmStatusModule && slmStatusModule.get_slm_status) {
+			const result = await slmStatusModule.get_slm_status();
+			currentSLM.status = result.status;
+			currentSLM.model = result.model;
+		}
+	} catch (error) {
+		currentSLM.status = 'not_supported';
+		currentSLM.model = null;
+	}
+}, 1000);

@@ -52,9 +52,10 @@ static int encrypt_json(char *, char *);
 static int compute_enc_json_md5(char *, char *);
 static int encrypt_aes_key(char *, char *, char *);
 static int trigger_aisom(ai_volt_t, ai_action_t);
-static char *ai_level_to_str(ai_log_level_t);
+char *ai_level_to_str(ai_log_level_t);
 void aiprint(ai_log_level_t, const char * logpath, const char * format, ...);
 int write_to_log_overwrite(const char *log_file_path, const char *data);
+uint32_t commands_to_flag(char *);
 
 #define AI_LOG(log_level, logpath, fmt, args...)                      \
     do {                                                              \
@@ -87,14 +88,14 @@ int write_to_log_overwrite(const char *log_file_path, const char *data);
 #define EVENT_SIZE (sizeof(struct inotify_event))
 #define BUF_LEN (1024 * (EVENT_SIZE + 16))
 
-#define AI_STA_REQ 1<<0
-#define AI_UPD_REQ 1<<1
-#define AI_SET_REQ 1<<2
-#define AI_RST_REQ 1<<3
-#define AI_FBK_REQ 1<<4
-#define AI_RSC_REQ 1<<5
-#define AI_DKR_REQ 1<<6
-#define AI_APP_REQ 1<<7
+#define AI_STA_REQ (1 << 0)
+#define AI_UPD_REQ (1 << 1)
+#define AI_SET_REQ (1 << 2)
+#define AI_RST_REQ (1 << 3)
+#define AI_FBK_REQ (1 << 4)
+#define AI_RSC_REQ (1 << 5)
+#define AI_DKR_REQ (1 << 6)
+#define AI_APP_REQ (1 << 7)
 
 #define AI_NVM_FW_VERSION "ai_sys_fw_version"
 #define AI_NVM_HW_VERSION "ai_sys_hw_version"
@@ -205,5 +206,35 @@ int write_to_log_overwrite(const char *log_file_path, const char *data);
 #define AI_PROG_DNLD "DOWNLOAD"
 #define AI_PROG_DKDN "DOCKER_DONE"
 #define AI_PROG_DKFL "failed"
+
+/* STATS NAME */
+#define AI_STAT_CPU       "cpu"        // cpu usage
+#define AI_STAT_NPU       "npu"        // npu usage
+#define AI_STAT_MEM_AVAIL "mem_avail"  // available memory
+#define AI_STAT_MEM_TOTAL "mem_total"  // total memory
+#define AI_STAT_ROOTFS    "rootfs"     // A/B rootfs flash usage
+#define AI_STAT_HOME      "home"       // user partition flash usage
+
+/* AI Request Struct */
+#define AI_SOCK_PATH      "/var/run/ai_request_sock"
+#define AI_REQ_MAX_SIZE   16
+#define AI_MAX_CLIENTS    16
+#define AI_REQ_BUF_SIZE   32
+
+typedef struct Node {
+	unsigned int req_id;           // request id
+	uint32_t req_type;             // request type
+	char main_cmd[AI_REQ_BUF_SIZE];
+	char full_cmd[AI_REQ_BUF_SIZE];
+	struct Node *prev;             // prev request
+	struct Node *next;             // next request
+} ai_req_node_t;
+
+typedef struct LinkedList {
+	size_t size;
+	ai_req_node_t *head;
+	ai_req_node_t *tail;
+	pthread_mutex_t lock;
+} ai_req_list_t;
 
 #endif

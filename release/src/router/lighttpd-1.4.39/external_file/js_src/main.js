@@ -214,8 +214,6 @@ function doRENAME(old_name, new_name, callbackHandler){
 		return;
 	}
 	
-	//alert(old_name + '-> ' + this_url);
-		
 	g_webdav_client.LOCK(old_name, '', function(status, statusstring, content, headers){
 		
 		if (status != '201') {
@@ -657,7 +655,6 @@ function parserPropfindXML(xmlDoc, open_url, append_result){
 									
 					//this_name = this_href.replace( addPathSlash(o_url),"");									
 					this_name = this_href.substring( this_href.lastIndexOf("/")+1, this_href.length );
-														
 					if(this_name!=""){
 						this_uncode_name = this_name;
 										

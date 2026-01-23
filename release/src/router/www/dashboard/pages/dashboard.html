@@ -401,6 +401,7 @@
                 }
             }
 
+            var clientChart;
             function genAllClient() {
                 const wiredColor = `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-1")}`;
                 const wirelesssColor = `${getComputedStyle(document.querySelector(":root")).getPropertyValue("--chart-color-2")}`;
@@ -409,42 +410,48 @@
                 let wirelessAllCount = system.client.wirelessCount,
                     wireAllCount = system.client.wiredCount;
                 let client = [wireAllCount, wirelessAllCount];
-                const ctx1 = document.getElementById("chart_clients").getContext("2d");
                 const colorArray = [wiredColor, wirelesssColor];
-                const data = {
-                    labels: ["<#tm_wired#>", "<#tm_wireless#>"],
-                    datasets: [
-                        {
-                            data: client,
-                            backgroundColor: [colorArray[0], colorArray[1]],
-                            hoverOffset: 4,
-                            borderColor: "transparent",
-                        },
-                    ],
-                };
-                const myChart = new Chart(ctx1, {
-                    type: "doughnut",
-                    data: data,
-                    options: {
-                        scales: {
-                            ticks: {
-                                display: false,
+                if (clientChart) {
+                    clientChart.data.datasets[0].data = client;
+                    clientChart.data.datasets[0].backgroundColor = [colorArray[0], colorArray[1]];
+                    clientChart.update('none');
+                } else {
+                    const ctx1 = document.getElementById("chart_clients").getContext("2d");
+                    const data = {
+                        labels: ["<#tm_wired#>", "<#tm_wireless#>"],
+                        datasets: [
+                            {
+                                data: client,
+                                backgroundColor: [colorArray[0], colorArray[1]],
+                                hoverOffset: 4,
+                                borderColor: "transparent",
                             },
-                        },
-                        plugins: {
-                            legend: {
-                                position: "right",
-                                labels: {
-                                    color: labelColor,
+                        ],
+                    };
+                    clientChart = new Chart(ctx1, {
+                        type: "doughnut",
+                        data: data,
+                        options: {
+                            scales: {
+                                ticks: {
                                     display: false,
-                                    padding: 30,
                                 },
                             },
+                            plugins: {
+                                legend: {
+                                    position: "right",
+                                    labels: {
+                                        color: labelColor,
+                                        display: false,
+                                        padding: 30,
+                                    },
+                                },
+                            },
+                            responsive: true,
+                            maintainAspectRatio: false,
                         },
-                        responsive: true,
-                        maintainAspectRatio: false,
-                    },
-                });
+                    });
+                }
 
                 let code = "";
 
@@ -479,6 +486,10 @@
                 document.querySelector("#wireless_count").innerHTML = wirelessAllCount;
                 document.querySelector("#wired_count").innerHTML = wireAllCount;
             }
+            setInterval(() => {
+                system.client = updateSystemClient({ forceUpdate: true });
+                genAllClient();
+            }, 1000*10);
 
             function genAiMeshNode() {
                 const clientList = httpApi.hookGet("get_cfg_clientlist") || [];
@@ -612,7 +623,7 @@
                                 <div class="d-flex justify-content-center align-items-center mt-4">
                                     <div role="icon" class="icon-size-64 icon-search-server"></div>
                                 </div>
-                                <div class="text-center mt-2 dns-empty-text">No DNS Server</div>
+                                <div class="text-center mt-2 dns-empty-text"><#dns_server_no#></div>
                             `;
                 } else {
                     for (let i = 0; i < ping_array.length; i++) {
@@ -2796,12 +2807,12 @@
                     "wan1_gateway",
                     "wan1_proto",
                     "wan1_enable",
-                ]);
+                ],true);
 
                 if(nvram.wans_dualwan == "") nvram.wans_dualwan = "wan none";
 
                 let mapping_wanType = {
-                    dhcp: "<#BOP_ctype_title1#>",
+                    dhcp: "<#BOP_ctype_dhcp_title1#>",
                     static: "<#BOP_ctype_title5#>",
                     pppoe: "PPPoE",
 					pptp: "PPTP",
@@ -2885,6 +2896,14 @@
                         return mapping_wanType[type];
                     })();
 
+                    const hookWanInfo = httpApi.getWanInfo(1);
+                    if (hookWanInfo) {
+                        obj.ip = hookWanInfo.ipaddr;
+                        obj.status = hookWanInfo.status.toUpperCase();
+                        obj.status_text = hookWanInfo.status_text;
+                        obj.proto = hookWanInfo.proto;
+                        obj.proto_text = hookWanInfo.proto_text;
+                    }
                     return obj;
                 })();
 
@@ -3061,7 +3080,7 @@
                 // gen WAN 2, if necessary
                 if (system.dualWANSupport && wanInfo[0].dualWANEnabled) {
                     target = document.getElementById("wan1_field");
-                    wan_enable = wanInfo[1].wanEnabled ? "checked" : "";
+                    let wan_enable = wanInfo[1].wanEnabled ? "active" : "";
                     code = `
                                 <div class="card pt-2 h-100">
                                     <h5 class="card-header"><#dualwan_secondary#></h5>
@@ -3071,7 +3090,9 @@
                                                 <div class="d-sm-flex align-items-center mb-3">
                                                     <div class="card-data-title"><#menu5_3_1#></div>
                                                     <div class="form-check form-switch ms-auto">
-                                                        <input class="form-check-input form-switch-large" type="checkbox" id="wan1_enable_btn" ${wan_enable} />
+                                                        <div id="wan1_enable_btn" class="toggle-button with-text ${wan_enable}">
+                                                            <div class="toggle-button-handle"></div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="d-sm-flex align-items-center mb-3">
@@ -3084,7 +3105,7 @@
                                                 </div>
                                                 <div class="d-sm-flex align-items-center mb-3">
                                                     <div class="card-data-title"><#Status_Str#></div>
-                                                    <div class="ms-auto card-data-value">${wanInfo[1].status}</div>
+                                                    <div class="ms-auto card-data-value">${wanInfo[1].status_text}</div>
                                                 </div>
                                                 <div class="d-sm-flex align-items-center mb-3">
                                                     <div class="card-data-title"><#Connection_Type#></div>
@@ -3127,7 +3148,13 @@
 
                     target.classList.remove("d-none");
                     document.getElementById("wan1_enable_btn").addEventListener("click", function () {
-                        let wan1_enable = this.checked;
+                        const active = this.classList.contains("active");
+                        if (active) {
+                            this.classList.remove("active");
+                        } else {
+                            this.classList.add("active");
+                        }
+                        let wan1_enable = active ? false : true;
                         httpApi.nvramSet(
                             {
                                 action_mode: "apply",
@@ -3171,7 +3198,7 @@
                 var retData = {};
                 let nvram_name = "";
                 const mapping_wanType = {
-                    dhcp: "<#BOP_ctype_title1#>",
+                    dhcp: "<#BOP_ctype_dhcp_title1#>",
                     static: "<#BOP_ctype_title5#>",
                     pppoe: "PPPoE",
                     pptp: "PPTP",

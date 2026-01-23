@@ -16,13 +16,14 @@
 #define ARK_INI_TMP             TMP_ARK"/ark.ini"
 #define ARK_INI_USR             USR_ARK"/ark.ini"
 #define ARK_GMQ                 "gmq"
+#define ARK_MOSQUITTO           "mosquitto"
 #define ARK_GHS                 "ghs"
 #define ARK_GBUSD_SH            "gbusd.sh"
 #define ARK_GBUSD               "gbusd"
 #define ARK_GLOGER_SH           "gloger.sh"
 #define ARK_GLOGER              "gloger"
-#define ARK_GDRCTL              "gdrctl"
-#define ARK_GDR                 "gdr"
+#define ARK_GDRCTL              "gdm.sh"
+#define ARK_GDR                 "gdm"
 #define ARK_SERVICE             "ark_service"
 #define ARK_LOGD                "arklogd"
 
@@ -56,7 +57,7 @@
 #define ARK_LOG_DB              ARK_LOG_DIR"/ArkLog.db"
 #define ARK_GLOGER_LOG          "/tmp/iam.log"
 
-/* eum : ARK MON type ID */
+/* enum : ARK MON type ID */
 enum {
 	ARK_MON_TYPE_NONE         = 0,
 	ARK_MON_TYPE_MALS         = 1,
@@ -81,6 +82,13 @@ static const FeatureMap feature_table[] = {
 	{48, ARK_MON_TYPE_MALS},
 	{10, ARK_MON_TYPE_ADBLOCK},
 	{13, ARK_MON_TYPE_TRACKER},
+};
+
+/* eum : ARK MON type ID */
+enum {
+	ARK_LOG_ACTION_PASS         = 0,
+	ARK_LOG_ACTION_LOG          = 1,
+	ARK_LOG_ACTION_BLOCK        = 2
 };
 
 /* -- ARK -- */
@@ -119,7 +127,8 @@ static const FeatureMap feature_table[] = {
 enum {
 	ARK_BLOCKED_NONE            = 0, // 0 : normal, not to block
 	ARK_BLOCKED_DEFAULT         = 1, // 1 : general block
-	ARK_BLOCKED_DUALWAN_LB      = 2  // 2 : not support dualwan load-balance mode
+	ARK_BLOCKED_DUALWAN_LB      = 2, // 2 : not support dualwan load-balance mode
+	ARK_BLOCKED_STOP_FORCE      = 3  // 3 : stop force mode for debug
 };
 
 enum {
@@ -254,10 +263,30 @@ enum {
 	IAM_C_RULE_SCHEDULE_ALWAYS
 };
 
+// ark support
+typedef enum {
+	ARK_S_GTBOOSTER = 0,
+	ARK_S_QOE,
+	ARK_S_IAM,
+	ARK_S_LIMITER,
+	ARK_S_LOG,
+	ARK_S_HYQOS,
+	ARK_S_MALS,
+	ARK_S_ADBLOCK,
+	ARK_S_TRACKER,
+	ARK_S_FEATURE_MAX
+} arkFeature_e;
+
+struct arkSupport_t {
+	char *model;
+	int feature[ARK_S_FEATURE_MAX];
+};
+
 /* ark_utils.c */
 extern int check_ark_setting();
 extern int ark_atoi_checked_range(const char *s, int *out, int min, int max);
 extern int ark_atoi_checked_value(const char *s, int *out);
+extern int ARKisSupport(const char *name);
 
 /* ark.c */
 extern void stop_ark_engine();
@@ -277,6 +306,6 @@ extern void exe_ark_history();
 /* ark_hook.c */
 extern void ark_cgi_mon_to_json(char *type, char *start, char *end, FILE *stream);
 extern void ark_cgi_mon_del_db(char *type, FILE *stream);
-extern void ark_cgi_log_to_json(char *start, char *end, char *mac, char *page, char *num, FILE *stream);
+extern void ark_cgi_log_to_json(char *start, char *end, char *mac, char *page, char *num, char *sortBy, char *sortOrder, FILE *stream);
 
 #endif /* _ark_common_h_ */

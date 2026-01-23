@@ -696,7 +696,7 @@ static int parser_share_link(server *srv, connection *con){
 	if (con->request.uri == NULL|| con->request.uri->ptr == NULL) {
 		return result;
 	}
-
+	
 	size_t uri_length = strlen(con->request.uri->ptr);
 	if(uri_length >= 8 && strncmp(con->request.uri->ptr, "/AICLOUD", 8)==0){
 		int is_illegal = 0;

@@ -20,7 +20,7 @@
     <script language="JavaScript" type="text/javascript" src="/general.js"></script>
     <script language="JavaScript" type="text/javascript" src="/help.js"></script>
     <script type="text/javascript" src="/js/httpApi.js"></script>
-    <script type="text/javascript" src="/js/asus_policy.js"></script>
+    <script type="text/javascript" src="/js/asus_policy.js?v=5"></script>
     <script type="text/javascript" src="/js/asus_pincode.js?lang=<#selected_language#>"></script>
     <script>
 

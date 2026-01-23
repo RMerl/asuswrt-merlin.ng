@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html data-asuswrt-theme="rt">
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <link rel="stylesheet" href="../css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="../css/bootstrap-customize.css"/>
+    <link rel="stylesheet" href="../datatables/datatables.min.css">
+    <link rel="stylesheet" href="../datatables/datatables.asuswrt.css">
+    <link rel="stylesheet" href="../css/daterangepicker.css"/>
+    <link rel="stylesheet" href="../css/svg-icon.css"/>
+    <link rel="stylesheet" href="../css/aiProtection.css">
+    <script type="text/javascript" src="../js/jquery.js"></script>
+    <script type="text/javascript" src="../js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="../datatables/datatables.min.js"></script>
+    <script type="text/javascript" src="../js/chart.min.js"></script>
+    <script type="text/javascript" src="../js/chartjs-adapter-date-fns.js"></script>
+    <script type="text/javascript" src="../js/moment.min.js"></script>
+    <script type="text/javascript" src="../js/daterangepicker.js"></script>
+    <script type="text/javascript" src="../js/httpApi.js"></script>
+    <script type="text/javascript" src="../state.js"></script>
+    <script type="text/javascript" src="../help.js"></script>
+    <script type="text/javascript" src="../general.js"></script>
+    <script type="text/javascript" src="../popup.js"></script>
+    <script type="text/javascript" src="../form.js"></script>
+    <script type="text/javascript" src="../js/asus_policy.js?v=5"></script>
+</head>
+<style>
+
+    html::-webkit-scrollbar, div::-webkit-scrollbar {
+        display: block;
+        width: 4px;
+        height: 4px;
+        padding: 2px;
+    }
+
+    html::-webkit-scrollbar-thumb, div::-webkit-scrollbar-thumb {
+        background-color: #7775;
+        border-radius: 20px;
+    }
+
+    html::-webkit-scrollbar-thumb:hover, div::-webkit-scrollbar-thumb:hover {
+        background-color: #7777;
+    }
+
+    html::-webkit-scrollbar-track:hover, div::-webkit-scrollbar-track:hover {
+        background-color: #5555;
+    }
+
+    body {
+        background-color: transparent;
+    }
+
+    table {
+        font-size: 0.875rem;
+    }
+
+    a, .feature-desc {
+        font-size: 14px;
+        color: #FC0;
+        height: auto;
+        padding-top: 5px;
+    }
+
+    .split-line {
+        background: #32393B;
+        background: -webkit-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%);
+        background: -o-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%);
+        background: linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%);
+        height: 2px;
+        margin: 1px 0;
+    }
+
+    .input-date-selector {
+        position: relative;
+    }
+
+    .input-date-selector .icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        pointer-events: none;
+    }
+
+    .input-date-selector input {
+        padding-left: 40px;
+    }
+
+    .icon {
+        display: block;
+        box-sizing: border-box;
+        background-color: currentColor;
+        mask-size: cover;
+        mask-position: center;
+        mask-repeat: no-repeat;
+        -webkit-mask-size: cover;
+        -webkit-mask-position: center;
+        -webkit-mask-repeat: no-repeat;
+        mask-image: var(--svg);
+        -webkit-mask-image: var(--svg);
+        flex-shrink: 0;
+    }
+
+    .input-date-selector .icon {
+        background-color: var(--textbox-color);
+    }
+
+    .icon-delete, .icon-export-file {
+        background-color: var(--textbox-color);
+    }
+
+    .daterangepicker {
+        color: var(--black-alpha-100);
+    }
+
+    /* Modal Dialog Styles */
+    .shadow-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-float {
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        min-width: 400px;
+        max-width: 90%;
+        overflow: hidden;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    .card-header-float {
+        background: var(--modal-header-bg-color, #1a73e8);
+        color: #fff;
+        padding: 20px 24px;
+        font-size: 1.25rem;
+        font-weight: 600;
+        border-bottom: none;
+    }
+
+    .card-body-float {
+        padding: 24px;
+        color: var(--body-text-color, #333);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        min-height: 80px;
+        background-color: var(--modal-bg-color, #fff);
+    }
+
+    .card-footer-float {
+        padding: 16px 24px;
+        background: var(--model-footer-bg-color, #f8f9fa);
+        border-top: 1px solid var(--modal-bg-color, #e0e0e0);
+        gap: 12px;
+    }
+
+    .btn-regular,
+    .btn-confirm {
+        padding: 10px 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        user-select: none;
+        min-width: 80px;
+    }
+
+    .btn-regular {
+        background: var(--btn-secondary-bg, #fff);
+        color: var(--btn-secondary-color, #666);
+        border: 1px solid var(--border-color, #ddd);
+    }
+
+    .btn-regular:hover {
+        background: var(--btn-secondary-hover-bg, #f5f5f5);
+        border-color: var(--border-hover-color, #999);
+    }
+
+    .btn-regular:active {
+        transform: scale(0.98);
+    }
+
+    .btn-confirm {
+        background: var(--btn-danger-bg, #dc3545);
+        color: #fff;
+        border: 1px solid var(--btn-danger-bg, #dc3545);
+    }
+
+    .btn-confirm:hover {
+        background: var(--btn-danger-hover-bg, #c82333);
+        border-color: var(--btn-danger-hover-bg, #c82333);
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4);
+    }
+
+    .btn-confirm:active {
+        transform: scale(0.98);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .card-float {
+            min-width: 320px;
+            max-width: 95%;
+        }
+
+        .card-header-float {
+            font-size: 1.1rem;
+            padding: 16px 20px;
+        }
+
+        .card-body-float {
+            padding: 20px;
+            font-size: 0.9rem;
+        }
+
+        .card-footer-float {
+            padding: 12px 20px;
+        }
+
+        .btn-regular,
+        .btn-confirm {
+            padding: 8px 20px;
+            font-size: 0.85rem;
+            min-width: 70px;
+        }
+    }
+
+    .toggle-button {
+        width: 46px;
+        height: 24px;
+        display: flex;
+        padding: 4px;
+        border-radius: var(--radius-lg);
+        align-items: center;
+        justify-content: space-between;
+        border: 1.5px solid var(--switch-btn-off-normal-ellipse-stroke-color);
+        background-color: var(--switch-bg-color);
+        cursor: pointer;
+        transition: all 0.6s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .toggle-button.with-text {
+        width: 52px;
+    }
+
+    .toggle-button.with-text::before {
+        font-family: "Roboto";
+        content: "OFF";
+        font-size: 12px;
+        font-weight: bold;
+        color: var(--switch-btn-off-normal-ellipse-stroke-color);
+        transition: all 0.6s;
+        position: absolute;
+        right: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .toggle-button.with-text::after {
+        font-family: "Roboto";
+        content: "ON";
+        font-size: 12px;
+        font-weight: bold;
+        color: var(--switch-btn-on-normal-text-color);
+        transition: all 0.6s;
+        position: absolute;
+        left: 4px;
+        opacity: 0;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .toggle-button.with-text.active::before {
+        opacity: 0;
+    }
+
+    .toggle-button.with-text.active::after {
+        opacity: 1;
+    }
+
+    .toggle-button.active {
+        background-color: var(--switch-btn-on-normal-fill-color);
+        border: 1.5px solid var(--switch-btn-on-normal-ellipse-stroke-color);
+    }
+
+    .toggle-button .toggle-button-handle {
+        width: 16px;
+        height: 16px;
+        border-radius: var(--radius-lg);
+        background-color: var(--switch-btn-off-normal-ellipse-stroke-color);
+        transition: all 0.6s;
+        position: absolute;
+        left: 4px;
+        pointer-events: none;
+    }
+
+    .toggle-button.active .toggle-button-handle {
+        background-color: var(--switch-btn-on-normal-ellipse-fill-color);
+        transform: translateX(20px);
+    }
+
+    .toggle-button.with-text.active .toggle-button-handle {
+        background-color: var(--switch-btn-on-normal-ellipse-fill-color);
+        transform: translateX(26px);
+    }
+
+    .dt-paging-button:not(.previous):not(.next) {
+        display: none !important;
+    }
+
+    /* Router Scan Modal Styles */
+    .router-scan-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        animation: fadeIn 0.2s ease-out;
+        overflow-y: auto;
+        padding: 20px 0;
+    }
+
+    .router-scan-modal {
+        background: var(--modal-bg-color, #fff);
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        width: 90%;
+        max-width: 900px;
+        max-height: none;
+        overflow: hidden;
+        animation: slideUp 0.3s ease-out;
+        display: flex;
+        flex-direction: column;
+        margin-top: 0;
+    }
+
+    .router-scan-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        background: var(--modal-header-bg-color, #f8f9fa);
+    }
+
+    .router-scan-modal-title {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--body-text-color, #333);
+    }
+
+    .router-scan-modal-close {
+        background: none;
+        border: none;
+        font-size: 28px;
+        color: #666;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+        transition: color 0.2s;
+    }
+
+    .router-scan-modal-close:hover {
+        color: #333;
+    }
+
+    .router-scan-modal-body {
+        padding: 0;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .router-scan-modal-body .card-header {
+        display: none;
+    }
+
+    .router-scan-modal-body .card-body {
+        padding: 20px;
+    }
+
+    .card-body-block {
+        background: var(--modal-block-bg-color, #f5f5f5);
+        border-radius: 10px;
+        padding: 10px;
+    }
+
+    @media (max-width: 768px) {
+        .router-scan-modal {
+            width: 95%;
+            max-height: 95vh;
+        }
+
+        .router-scan-modal-body .card-body {
+            padding: 15px;
+        }
+    }
+</style>
+<body onload="initial()">
+<div id="TopBanner"></div>
+<div id="Loading" class="popup_bg"></div>
+<div id="whiteThemeWrapper" class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-12">
+            <div id="content_title" class="formfonttitle"><#AiProtection_title#>
+            </div>
+            <div class="split-line my-2"></div>
+            <div class="d-flex flex-row justify-content-evenly align-items-center gap-2 mb-3">
+                <img id="guest_image" src="/images/New_ui/HomeProtection.png">
+                <div class="d-flex flex-column">
+                    <div class="formfontdesc">
+                        <#AiProtection_scan_desc#>
+                    </div>
+                    <a id="faq" style="text-decoration:underline;"
+                       href="https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang=EN&kw=&num=139" target="_blank"><#AiProtection_title#> FAQ</a>
+                    <img id="scenario_img"
+                         src="/images/New_ui/Home_Protection_Scenario_white.svg">
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 mb-3">
+            <div class="card pt-2 h-100" id="router_scan_trigger">
+                <div class="card-header d-flex align-items-center"><div class="icon icon-search text-primary icon-size-28"></div><#AiProtection_scan#></div>
+                <div class="card-body d-flex flex-row justify-content-between align-items-center">
+                    <div><#AiProtection_scan_desc#></div>
+                    <button type="button" class="btn btn-primary" onclick="openRouterScanModal()">
+                        <#CTL_scan#>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 mb-3">
+            <div class="card pt-2 h-100" id="feature_desc">
+                <div class="card-header"><#AiProtection_title#></div>
+                <div class="card-body d-flex flex-column gap-3">
+                    <div class="card-body-block">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Router Scan Modal -->
+        <div id="router_scan_modal" class="router-scan-modal-overlay" style="display: none;">
+            <div class="router-scan-modal">
+                <div class="router-scan-modal-header">
+                    <div class="router-scan-modal-title d-flex align-items-center gap-2">
+                        <div class="icon icon-search text-primary icon-size-28"></div>
+                        <#AiProtection_scan#>
+                    </div>
+                    <button type="button" class="router-scan-modal-close" onclick="closeRouterScanModal()">&times;</button>
+                </div>
+                <div class="router-scan-modal-body" id="router_scan_content">
+                    <!-- Content will be generated by genRouterScan() -->
+                </div>
+            </div>
+        </div>
+        <div id="feature_info" class="position-relative"></div>
+    </div>
+</div>
+<script type="text/javascript">
+    function initial() {
+
+        function resize_iframe_height() {
+            if ($(parent.document).find("#arklog_iframe").length == "1") {
+                const menu_height = $(parent.document).find("#mainMenu").height();
+                const settingsWindow_height = $(top.document).find("#settingsWindow").height();
+                const margin_bottom = 30;
+                $(parent.document).find("#arklog_iframe").css("height", (Math.max(menu_height, settingsWindow_height) - margin_bottom));
+            }
+        }
+
+        resize_iframe_height();
+    }
+</script>
+<script type="module">
+    const faqHref = `https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang=${ui_lang}&kw=&num=139`;
+    document.getElementById("faq").href = faqHref;
+
+    const urlParameters = new URLSearchParams(window.location.search);
+    const view = urlParameters.get("view") || "overview";
+
+    import {ClientList} from '/js/clientlist.module.js';
+    import {
+        AiProtectionFeature,
+        TopClientWidget,
+        ChartWidget,
+        DetailTableWidget,
+        FeatureSwitch
+    } from '/js/aiprotection.module.js';
+
+    async function initializeClientList() {
+        let clientList = window.clientList || new ClientList();
+        if (!window.clientList) {
+            window.clientList = clientList;
+            await clientList.init();
+        }
+    }
+
+    const _nvram = {
+        ...httpApi.nvramGet([
+            "TM_EULA",
+            "TM_EULA_time",
+            "wrs_protect_enable",
+            "wrs_mals_enable",
+            "wrs_vp_enable",
+            "wrs_cc_enable",
+            "wps_enable",
+            "dmz_ip",
+            "autofw_enable_x",
+            "vts_enable_x",
+            "misc_http_x",
+            "misc_ping_x",
+            "st_ftp_mode",
+            "st_samba_mode",
+            "wans_dualwan",
+            "wan0_upnp_enable",
+            "wan1_upnp_enable",
+            "dslx_transmode",
+            "dsl0_upnp_enable",
+            "dsl8_upnp_enable",
+            "wrs_mail_bit",
+            "PM_SMTP_AUTH_USER",
+            "PM_SMTP_SERVER",
+            "PM_SMTP_PORT",
+            "PM_MY_EMAIL",
+            "ctf_disable",
+            "ctf_fa",
+            "ark_mals_enable",
+            "ark_adblock_enable",
+            "ark_tracker_enable"
+        ], true)
+    };
+
+
+    let supportedFeatures = [];
+    window.supportedFeatures = supportedFeatures;
+
+
+    var whitelist = {};
+
+    function getWhitelist() {
+        $.ajax({
+            url: "/wrs_wbl.cgi?action=get&type=0",
+            type: "POST",
+            success: function (response) {
+                let res = JSON.parse(response).data;
+                for (let item of res) {
+                    whitelist[item] = true;
+                }
+            },
+        });
+    }
+
+    function genRouterScan() {
+        let {
+            wps_enable,
+            dmz_ip,
+            autofw_enable_x,
+            vts_enable_x,
+            misc_http_x,
+            misc_ping_x,
+            st_ftp_mode,
+            st_samba_mode,
+            wans_dualwan,
+            dslx_transmode,
+            wan0_upnp_enable,
+            wan1_upnp_enable,
+            dsl0_upnp_enable,
+            dsl8_upnp_enable,
+        } = _nvram;
+
+        let wpsEnable = wps_enable === "1" ? true : false,
+            dmzEnable = dmz_ip !== "" ? true : false,
+            portTriggerEnable = autofw_enable_x === "1" ? true : false,
+            portForwardingEnable = vts_enable_x === "1" ? true : false,
+            accessFromWAN = misc_http_x === "1" ? true : false,
+            pingFromWAN = misc_ping_x === "1" ? true : false,
+            ftpAnonymous = st_ftp_mode === "1" ? true : false,
+            sambaAnonymous = st_samba_mode === "1" ? true : false;
+
+        //check default username/password
+        let defaultNamePasswd = httpApi.hookGet("check_acorpw") === "1" ? true : false;
+
+        // password strength of wireless
+        let score = httpApi.hookGet("check_passwd_strength-wl_key"),
+            level = Math.floor(score / 20);
+        const passwdStrengthDesc = [
+            "<#PASS_score0#>",
+            "<#PASS_score1#>",
+            "<#PASS_score2#>",
+            "<#PASS_score3#>",
+            "<#PASS_score4#>",
+            "<#PASS_score4#>",
+        ];
+
+        /*
+            check wireless auth,
+            - Personal: WPA2, WPA/WPA2, WAP3, WPA2/WPA3.
+            - Enterprise: WPA2, WPA/WPA2, WPA3, WPA2/WPA3, Suite-b,
+            - Enhanced Open, Enhanced Open Transition
+        */
+        let wlEncryptEnough = httpApi.hookGet("check_wireless_encryption") === "1" ? true : false;
+
+        // check UPNP risk
+        let redirectPage = "";
+        let uPnpHasRisk = (function () {
+            let dualWANIfArray = wans_dualwan.split(" ");
+            let dslEnable = dualWANIfArray.find((value) => value === "dsl") === "dsl" ? true : false;
+
+            if (dslEnable && dslx_transmode === "atm" && dsl0_upnp_enable === "1") {
+                redirectPage = "Advanced_DSL_Content.asp";
+                return true;
+            } else if (dslEnable && dslx_transmode === "ptm" && dsl8_upnp_enable === "1") {
+                redirectPage = "Advanced_VDSL_Content.asp";
+                return true;
+            } else if (
+                ((dualWANIfArray[0] === "wan" || dualWANIfArray[0] === "lan") && wan0_upnp_enable === "1") ||
+                ((dualWANIfArray[1] === "wan" || dualWANIfArray[1] === "lan") && wan1_upnp_enable === "1")
+            ) {
+                redirectPage = "Advanced_WAN_Content.asp";
+                return true;
+            }
+
+            return false;
+        })();
+
+        let code = "";
+        code += `
+        <div class="card-body d-flex flex-column gap-3">
+            <div><#AiProtection_scan_desc#></div>
+            <div class="card-body-block">
+                <div class="feature-title"><#HSDPAConfig_Password_itemname#></div>
+                <div class="row">
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item1#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button button-danger">
+                                ${
+            defaultNamePasswd
+                ? "<a href='/Advanced_System_Content.asp' target='_blank'><#checkbox_No#></a>"
+                : "<#checkbox_Yes#>"
+        }
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item2#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${level < 2 ? "button-danger" : ""}
+                                ${level === 2 ? "button-warning" : ""}
+                                ${level > 2 ? "button-safe" : ""}
+                                ">
+                                ${passwdStrengthDesc[level]}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body-block">
+                <div class="feature-title"><#menu5_3#> / <#menu5_2#></div>
+                <div class="row">
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item3#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${wlEncryptEnough ? "button-safe" : "button-danger"}">
+
+                                ${
+            wlEncryptEnough
+                ? " <#PASS_score3#>"
+                : "<a href='/Advanced_Wireless_Content.asp' target='_blank'><#PASS_score1#></a>"
+        }
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#WPS_disabled#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${!wpsEnable ? "button-safe" : "button-warning"}">
+
+                                ${
+            !wpsEnable ? "<#checkbox_Yes#>" : "<a href='/Advanced_WWPS_Content.asp' target='_blank'><#checkbox_No#></a>"
+        }
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item4#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${uPnpHasRisk ? "button-warning" : "button-safe"}">
+                                ${
+            uPnpHasRisk ? "<a href='/" + redirectPage + "' target='_blank'><#checkbox_No#></a>" : "<#checkbox_Yes#>"
+        }
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item7#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${dmzEnable ? "button-warning" : "button-safe"}">
+                                ${
+            dmzEnable
+                ? "<a href='/Advanced_Exposed_Content.asp' target='_blank'><#checkbox_No#></a>"
+                : "<#checkbox_Yes#>"
+        }
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item8#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${portTriggerEnable ? "button-warning" : "button-safe"}">
+                                ${
+            portTriggerEnable
+                ? "<a href='/Advanced_PortTrigger_Content.asp' target='_blank'><#checkbox_No#></a>"
+                : "<#checkbox_Yes#>"
+        }
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item9#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${portForwardingEnable ? "button-warning" : "button-safe"}">
+                                ${
+            portForwardingEnable
+                ? "<a href='/Advanced_VirtualServer_Content.asp' target='_blank'><#checkbox_No#></a>"
+                : "<#checkbox_Yes#>"
+        }
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item5#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${accessFromWAN ? "button-warning" : "button-safe"}">
+                                ${
+            accessFromWAN
+                ? "<a href='/Advanced_System_Content.asp' target='_blank'><#checkbox_No#></a>"
+                : "<#checkbox_Yes#>"
+        }
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item6#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${pingFromWAN ? "button-warning" : "button-safe"}">
+                                ${
+            pingFromWAN
+                ? "<a href='/Advanced_BasicFirewall_Content.asp' target='_blank'><#checkbox_No#></a>"
+                : "<#checkbox_Yes#>"
+        }
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item10#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${ftpAnonymous ? "button-warning" : "button-safe"}">
+                                ${ftpAnonymous ? "<a href='/Advanced_AiDisk_ftp.asp' target='_blank'><#checkbox_No#></a>" : "<#checkbox_Yes#>"}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 con-md-12 my-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="feature-item">
+                                <#AiProtection_scan_item11#>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm mx-3 router-scan-button
+                                ${sambaAnonymous ? "button-warning" : "button-safe"}">
+                                ${
+            sambaAnonymous
+                ? "<a href='/Advanced_AiDisk_samba.asp' target='_blank'><#checkbox_No#></a>"
+                : "<#checkbox_Yes#>"
+        }
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+        document.getElementById("router_scan_content").innerHTML = code;
+    }
+
+    // Open Router Scan Modal
+    window.openRouterScanModal = function() {
+        genRouterScan();
+        const modal = document.getElementById("router_scan_modal");
+        modal.style.display = "flex";
+        top.window.scrollTo({ top: 100, behavior: 'smooth' });
+        document.body.style.overflow = "hidden";
+    }
+
+    // Close Router Scan Modal
+    window.closeRouterScanModal = function() {
+        document.getElementById("router_scan_modal").style.display = "none";
+        document.body.style.overflow = "";
+    }
+
+    // Close modal when clicking overlay
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById("router_scan_modal").addEventListener("click", function(e) {
+            if (e.target === this) {
+                closeRouterScanModal();
+            }
+        });
+    });
+
+    function eraseDB(type) {
+        let template = `
+        <div class="d-flex justify-content-center mt-5">
+            <div class="card-float">
+                <div class="card-header-float"><#Web_Title2#></div>
+                <div class="card-body-float">
+                    <#AiProtection_event_del_confirm#>
+                </div>
+                <div class="d-flex justify-content-end card-footer-float">
+                    <div class="text-center btn-regular db_erase_cancel">
+                        <div><#CTL_Cancel#></div>
+                    </div>
+                    <div class="text-center btn-confirm db_erase_confirm">
+                        <div><#CTL_ok#></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+        let element = document.createElement("div");
+        element.className = "shadow-bg";
+        element.innerHTML = template;
+        document.body.appendChild(element);
+        document.querySelector(".db_erase_cancel").addEventListener("click", function () {
+            document.body.removeChild(element);
+        });
+        document.querySelector(".db_erase_confirm").addEventListener("click", function () {
+            // Determine the correct API endpoint based on type
+            const apiEndpoint = type.startsWith('ark_') ? '/delArkInfo.cgi' : '/delDpiInfo.cgi';
+
+            fetch(`${apiEndpoint}?type=${type}`, {method: "POST"})
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    if (data.includes("200") === false) {
+                        throw new Error(`Server error! response: ${data}`);
+                    }
+                    // Refresh the current feature's data
+                    const feature = supportedFeatures.find(f => f.type === type);
+                    if (feature) {
+                        feature.fetchData();
+                    }
+                    // Show success message
+                    alert('Database cleared successfully.');
+                })
+                .catch((error) => {
+                    console.error("Error deleting database:", error);
+                    alert('Failed to clear database. Please try again.');
+                });
+
+            document.body.removeChild(element);
+        });
+    }
+
+    function manageWhiteList() {
+        let whitelist_length = Object.keys(whitelist).length;
+        const WHITELIST_MAX_LENGTH = 64;
+        let template = `
+        <div class="d-flex justify-content-center mt-5">
+            <div class="card-float">
+                <div class="card-header-float"><#Web_Title2#></div>
+                <div class="card-body-float">
+                    <div><#AiProtection_sites_trust#></div>
+                    <div class="d-flex align-items-center py-2">
+                        <div class="me-auto"><#Domain_Name#></div>
+                        <div class="card-content-float">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="whitelist_domain_name" value="" />
+                                <button class="btn btn-input-icon" type="button">
+                                    <div role="icon" class="icon-size-24 icon-add-circle" id="addWhitelist"></div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <div><#WhiteList#>: <span id="whitelist_length">${whitelist_length}</span>/${WHITELIST_MAX_LENGTH} (<#List_limit#> ${WHITELIST_MAX_LENGTH})</div>
+                        <div class="table-responsive detail-table-height">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th><#Domain_Name#></th>
+                                        <th><#btn_remove#></th>
+                                    </tr>
+                                </thead>
+                                <tbody data-table="whitelist_tbody">
+        `;
+
+        for (let item of Object.keys(whitelist)) {
+            template += `
+            <tr>
+                <td>${item}</td>
+                <td><div role="icon" class="icon-size-24 icon-delete-circle me-3" data-bind="delete_white_list" data-key="${item}"></div></td>
+            </tr>
+        `;
+        }
+
+        template += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="d-flex justify-content-end card-footer-float">
+                    <div class="text-center btn-regular" id="whitelist_close">
+                        <div><#CTL_close#></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+        let element = document.createElement("div");
+        element.className = "shadow-bg";
+        element.innerHTML = template;
+        document.body.appendChild(element);
+
+        document.getElementById("addWhitelist").addEventListener("click", function () {
+            let url = document.getElementById("whitelist_domain_name").value;
+            whitelist_length = Object.keys(whitelist).length;
+            let hintElement = document.getElementById("whitelist_domain_name").parentNode.nextElementSibling;
+            let ipformat =
+                /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+
+            let domainNameFormat = /^((?:(?:(?:\w[\.\-\+]?)*)\w)+)((?:(?:(?:\w[\.\-\+]?){0,62})\w)+)\.(\w{2,6})$/;
+            if (hintElement) {
+                hintElement.remove();
+            }
+
+            if (
+                whitelist[url] ||
+                whitelist_length >= WHITELIST_MAX_LENGTH ||
+                url === "" ||
+                (!domainNameFormat.test(url) && !ipformat.test(url))
+            ) {
+                let text = "";
+                if (whitelist[url]) {
+                    text = "<#AiProtection_ErrMsg_duplicate#>";
+                } else if (whitelist_length >= WHITELIST_MAX_LENGTH) {
+                    text = "<#AiProtection_ErrMsg_full#>";
+                } else if (url === "") {
+                    text = "<#AiProtection_ErrMsg_blank#>";
+                } else if (!domainNameFormat.test(url) && !ipformat.test(url)) {
+                    text = "<#AiProtection_ErrMsg_wrong_format#>";
+                }
+
+                let element = document.createElement("div");
+                element.className = "mt-2 hint-text";
+                element.innerHTML = text;
+                document.getElementById("whitelist_domain_name").parentNode.insertAdjacentElement("afterend", element);
+                return false;
+            }
+
+            let target = document.querySelector('[data-table="whitelist_tbody"]');
+            $.ajax({
+                url: "/wrs_wbl.cgi?action=add&type=0&url_type=url&url=" + url,
+                type: "POST",
+                success: function (response) {
+                    whitelist[url] = true;
+                    let trElement = document.createElement("tr");
+                    let code = `
+                    <td>${url}</td>
+                    <td><div role="icon" class="icon-size-24 icon-delete-circle me-3" data-bind="delete_white_list" data-key="${url}"></div></td>
+                `;
+
+                    trElement.innerHTML = code;
+                    target.appendChild(trElement);
+                    whitelist_length = Object.keys(whitelist).length;
+                    document.getElementById("whitelist_length").innerHTML = whitelist_length;
+                    document.getElementById("whitelist_domain_name").value = "";
+                    document.querySelector("[data-key='" + url + "']").addEventListener("click", function () {
+                        delete whitelist[url];
+                        trElement.remove();
+                        whitelist_length = Object.keys(whitelist).length;
+                        document.getElementById("whitelist_length").innerHTML = whitelist_length;
+                    });
+                },
+            });
+        });
+
+        document.getElementById("whitelist_close").addEventListener("click", function () {
+            document.body.removeChild(element);
+        });
+
+        for (let target of document.querySelectorAll("[data-bind='delete_white_list']")) {
+            let trElement = target.parentNode.parentNode;
+            target.addEventListener("click", function () {
+                let url = this.getAttribute("data-key");
+                if (whitelist[url] === undefined) {
+                    return false;
+                }
+
+                $.ajax({
+                    url: "/wrs_wbl.cgi?action=del&type=0&url_type=url&url=" + url,
+                    type: "POST",
+                    success: function (response) {
+                        delete whitelist[url];
+                        trElement.remove();
+                        document.getElementById("whitelist_length").innerHTML = Object.keys(whitelist).length;
+                    },
+                });
+            });
+        }
+    }
+
+    function showTMEula(type) {
+        const _nvram = httpApi.nvramGet([
+            "TM_EULA", "TM_EULA_time"
+        ], true);
+        const {TM_EULA, TM_EULA_time} = _nvram;
+        if (TM_EULA === "0" || TM_EULA_time === "") {
+            const policyModal = new PolicyModalComponent({
+                policy: "TM",
+                agreeCallback: () => {
+                    let applyObj = {
+                        action_mode: "apply",
+                        rc_service: "restart_wrs;restart_firewall",
+                        wrs_protect_enable: "1",
+                        TM_EULA: "1",
+                        action_time: 4,
+                    };
+
+                    let {ctf_disable, ctf_fa_mode} = _nvram;
+                    if ((ctf_disable == 0 && ctf_fa_mode == 2) || system.modelName === "MAP-AC1750") {
+                        applyObj.rc_service = "reboot";
+                        applyObj.action_time = httpApi.hookGet("get_default_reboot_time");
+                    }
+                    showLoading();
+                    if (type === "dpi_mals") {
+                        applyObj["wrs_mals_enable"] = "1";
+                    } else if (type === "dpi_vp") {
+                        applyObj["wrs_vp_enable"] = "1";
+                    } else if (type === "dpi_cc") {
+                        applyObj["wrs_cc_enable"] = "1";
+                    }
+
+                    httpApi.nvramSet(applyObj, function () {
+                        hideLoading();
+                    });
+                },
+                disagreeCallback: () => {
+                    if (type === "dpi_mals") {
+                        document.getElementById("mals_switch").classList.remove("active");
+                    } else if (type === "dpi_vp") {
+                        document.getElementById("vp_switch").classList.remove("active");
+                    } else if (type === "dpi_cc") {
+                        document.getElementById("cc_switch").classList.remove("active");
+                    }
+                }
+            });
+            policyModal.show();
+        }
+    }
+
+    function initSwitches() {
+        if (supportedFeatures.length === 0) return;
+        const block = document.querySelector("#feature_desc .card-body-block");
+
+        supportedFeatures.forEach(item => {
+            const featureSwitch = new FeatureSwitch(item.type, _nvram);
+            featureSwitch.init();
+            item.featureSwitch = featureSwitch;
+            if (item.type.startsWith("dpi_")) {
+                featureSwitch.setTMEulaCallback(showTMEula);
+            }
+            block.append(featureSwitch.element);
+        });
+    }
+
+    // Wait for moment.js to be loaded
+    function waitForMoment() {
+        return new Promise((resolve) => {
+            if (typeof moment !== 'undefined') {
+                resolve();
+            } else {
+                const checkInterval = setInterval(() => {
+                    if (typeof moment !== 'undefined') {
+                        clearInterval(checkInterval);
+                        resolve();
+                    }
+                }, 50);
+                // Timeout after 5 seconds
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                    console.error('moment.js failed to load');
+                    resolve();
+                }, 5000);
+            }
+        });
+    }
+
+    async function initTabs() {
+        if (supportedFeatures.length === 0) return;
+
+        const today = new Date();
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 6);
+
+        const tabsHtml = `
+            <div class="row">
+                <div class="col-12">
+                    <div class="card pt-2">
+                        <div class="card-header row">
+                            <div class="col-6">
+                                <div><#AiProtection_Features#></div>
+                            </div>
+                            <div class="col-6 d-flex justify-content-end align-items-center gap-2">
+                                <div class="input-date-selector">
+                                    <i class="icon icon-calendar icon-size-24"></i>
+                                    <input type="text" id="daterange_input" class="form-control" style="max-width: 250px;" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body pt-0">
+                            <ul class="nav nav-pills" id="featureTabs" role="tablist">
+                                ${supportedFeatures.map((feature, index) => `
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link ${index === 0 ? 'active' : ''}"
+                                                id="${feature.type}-tab"
+                                                data-bs-toggle="tab"
+                                                data-bs-target="#${feature.type}-tab-pane"
+                                                type="button"
+                                                role="tab">
+                                            ${feature.title}
+                                        </button>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                            <div class="tab-content" id="featureTabContent">
+                                ${supportedFeatures.map((feature, index) => `
+                                    <div class="tab-pane fade ${index === 0 ? 'show active' : ''}"
+                                         id="${feature.type}-tab-pane"
+                                         role="tabpanel">
+                                        <div class="row mt-3" id="${feature.type}-content">
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.getElementById("feature_info").innerHTML = tabsHtml;
+
+        // Wait for moment.js to be loaded before initializing DateRangePicker
+        await waitForMoment();
+
+        // Initialize DateRangePicker
+        if (typeof moment !== 'undefined' && typeof $.fn.daterangepicker !== 'undefined') {
+            $('#daterange_input').daterangepicker({
+                startDate: weekAgo,
+                endDate: today,
+                autoApply: true,
+                locale: {
+                    format: 'YYYY/MM/DD',
+                    separator: ' - '
+                },
+                opens: "left",
+                parentEl: '#feature_info'
+            }, function (startDate, endDate) {
+                const startTime = startDate.unix();
+                const endTime = endDate.unix();
+
+                supportedFeatures.forEach(feature => {
+                    feature.fetchDataWithDateRange(startTime, endTime);
+                });
+            });
+        } else {
+            console.error('moment.js or daterangepicker.js not loaded');
+        }
+
+
+        supportedFeatures.forEach(item => {
+            const div = document.getElementById(`${item.type}-content`);
+            // const header = document.createElement("h5");
+            // header.classList.add("card-title");
+            // header.innerHTML = item.title;
+            // div.append(header);
+
+            const topClientWidget = new TopClientWidget(item.type, div, ['col-12', 'col-sm-6']);
+            topClientWidget.init();
+            item.topClientWidget = topClientWidget;
+
+            const chartWidget = new ChartWidget(item.type, div, ['col-12', 'col-sm-6']);
+            chartWidget.init();
+            item.chartWidget = chartWidget;
+
+            const detailTableWidget = new DetailTableWidget(item.type, div);
+            detailTableWidget.setEraseDbCallback(eraseDB);
+            detailTableWidget.init();
+            item.detailTableWidget = detailTableWidget;
+        });
+    }
+
+    async function init() {
+        await initializeClientList();
+
+        const features = [
+            {
+                type: "ark_mals",
+                title: `<#AiProtection_ARK_Malicious_Site_blocking#>`,
+                support: "ark_mals",
+                urlBase: "/getArkInfo.cgi"
+            },
+            {
+                type: "ark_adblock",
+                title: `<#AiProtection_AdvertisementBlocking#>`,
+                support: "ark_adblock",
+                urlBase: "/getArkInfo.cgi"
+            },
+            {
+                type: "ark_tracker",
+                title: `<#AiProtection_TrackerBlocking#>`,
+                support: "ark_tracker",
+                urlBase: "/getArkInfo.cgi"
+            },
+            {
+                type: "dpi_mals",
+                title: `<#AiProtection_sites_blocking#>`,
+                support: "dpi_mals",
+                urlBase: "/getDpiInfo.cgi"
+            },
+            {type: "dpi_vp", title: `<#AiProtection_two-way_IPS#>`, support: "dpi_vp", urlBase: "/getDpiInfo.cgi"},
+            {
+                type: "dpi_cc",
+                title: `<#AiProtection_detection_blocking#>`,
+                support: "dpi_cc",
+                urlBase: "/getDpiInfo.cgi"
+            },
+        ];
+
+        supportedFeatures = features.map(f => new AiProtectionFeature(f)).filter(f => f.support);
+
+        if (view === "overview") {
+            genRouterScan();
+            initSwitches();
+        } else {
+            document.getElementById("feature_desc").parentElement.remove();
+            document.getElementById("router_scan_trigger").parentElement.remove();
+            document.getElementById("content_title").parentElement.remove();
+            document.querySelector(".container-fluid").classList.remove('container-fluid');
+            supportedFeatures = supportedFeatures.filter(t => t.type === view);
+        }
+
+        initTabs();
+        getWhitelist();
+
+        supportedFeatures.forEach(feature => {
+            feature.fetchData();
+        });
+    }
+
+    init();
+
+</script>
+</body>
+</html>

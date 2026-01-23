@@ -71,7 +71,7 @@
     --font-size-72: 4.5rem;
 }
 
-:root, [data-asuswrt-theme="asus"] {
+:root, [data-asuswrt-theme="asus"], [data-asuswrt-theme="business"] {
     --logo-color-light: #2D2926;
     --logo-color-dark: #999999;
     /* primary color*/
@@ -835,6 +835,9 @@
     --popup-stroke-color: var(--black-alpha-10);
     --popup-card-EL10-fill-color: var(--black-alpha-3);
 
+    --policy-notice-title-color: var(--primary-60);
+    --policy-border-color: var(--black-alpha-10);
+
     /* panel usage*/
     --panel-bg-color: var(--neutral-10);
     --panel-stroke-color: var(--black-alpha-10);
@@ -946,6 +949,7 @@
     --primary-btn-disable-fill: var(--neutral-50);
     --primary-btn-text-color: var(--white-alpha-100);
     --primary-btn-disable-text-color: var(--white-alpha-100);
+    --primary-btn-hover-boxshadow: 0 0 8px 0 var(--primary-80);
 
     /* text for button usage */
     --primary-text-btn-normal: var(--primary-60);
@@ -1069,6 +1073,7 @@
 
 
     /* textbox, input, form */
+    --textbox-color: var(--black-alpha-100);
     --textbox-bg-color: var(--neutral-10);
     --textbox-normal-fill-color: var(--neutral-20);
     --textbox-normal-stroke-color: var(--neutral-30);
@@ -1145,6 +1150,8 @@
     --clientlist-switch-option-active-text-color: var(--black-alpha-100);
     --clientlist-switch-option-text-color: var(--black-alpha-100);
 
+    --datatable-page-btn-normal-color: var(--black-alpha-70);
+    --datatable-page-btn-current-color: var(--black-alpha-100);
     --clientlist-table-bg-color: var(--neutral-10);
     --clientlist-table-row-bg-color: var(--neutral-10);
     --clientlist-table-row-selected-bg-color: var(--white-alpha-100);
@@ -1195,6 +1202,19 @@
 
     /* QIS */
     --qis-bg-color: transparent;
+
+    --ark-iam-client-mac-color: var(--black-alpha-60);
+    --ark-iam-tree-hover-bg-color: var(--white-alpha-30);
+    --ark-iam-tree-second-bg-color: var(--black-alpha-10);
+    --ark-iam-list-action-btn-text-color: var(--primary-60);
+    --ark-iam-categories-container-bg-color: var(--white-alpha-100);
+    --ark-iam-category-header-bg-color: var(--black-alpha-20);
+    --ark-iam-category-header-hover-bg-color: var(--black-alpha-40);
+    --ark-iam-app-item-hover-bg-color: var(--white-alpha-40);
+    --ark-iam-selected-app-item-bg-color: var(--primary-10);
+    --ark-iam-selected-app-item-hover-bg-color: var(--primary-20);
+    --ark-iam-category-action-btn-border-color: var(--neutral-40);
+    --ark-iam-empty-state-color: var(--neutral-70);
 }
 
 [data-asuswrt-color="dark"] {
@@ -1214,6 +1234,9 @@
     --popup-bg-color: var(--neutral-110);
     --popup-stroke-color: var(--white-alpha-10);
     --popup-card-EL10-fill-color: var(--white-alpha-5);
+
+    --policy-notice-title-color: var(--white-alpha-100);
+    --policy-border-color: var(--white-alpha-40);
 
     /* panel usage*/
     --panel-bg-color: var(--neutral-110);
@@ -1332,6 +1355,7 @@
     --primary-btn-disable-fill: var(--neutral-70);
     --primary-btn-text-color: var(--white-alpha-100);
     --primary-btn-disable-text-color: var(--white-alpha-100);
+    --primary-btn-hover-boxshadow: 0 0 8px 0 var(--primary-80);
 
     --neutral-btn-normal-fill-01: var(var(--neutral-120));
 
@@ -1443,6 +1467,7 @@
     --select-text-disable-color: var(--neutral-70);
 
     /* textbox, input, form */
+    --textbox-color: var(--white-alpha-100);
     --textbox-bg-color: var(--white-alpha-8);
     --textbox-normal-fill-color: var(--white-alpha-10);
     --textbox-normal-stroke-color: var(--white-alpha-20);
@@ -1513,6 +1538,8 @@
     --clientlist-switch-option-active-text-color: var(--white-alpha-100);
     --clientlist-switch-option-text-color: var(--neutral-40);
 
+    --datatable-page-btn-normal-color: var(--white-alpha-70);
+    --datatable-page-btn-current-color: var(--white-alpha-100);
     --clientlist-table-bg-color: var(--neutral-100);
     --clientlist-table-row-bg-color: var(--neutral-100);
     --clientlist-table-row-selected-bg-color: var(--neutral-90);
@@ -1544,6 +1571,19 @@
 
     /* QIS */
     --qis-bg-color: var(--black-alpha-100);
+
+    --ark-iam-client-mac-color: var(--white-alpha-40);
+    --ark-iam-tree-hover-bg-color: var(--white-alpha-40);
+    --ark-iam-tree-second-bg-color: var(--black-alpha-10);
+    --ark-iam-list-action-btn-text-color: var(--white-alpha-100);
+    --ark-iam-categories-container-bg-color: var(--black-alpha-80);
+    --ark-iam-category-header-bg-color: var(--white-alpha-40);
+    --ark-iam-category-header-hover-bg-color: var(--white-alpha-60);
+    --ark-iam-app-item-hover-bg-color: var(--white-alpha-20);
+    --ark-iam-selected-app-item-bg-color: var(--white-alpha-10);
+    --ark-iam-selected-app-item-hover-bg-color: var(--white-alpha-20);
+    --ark-iam-category-action-btn-border-color: var(--neutral-40);
+    --ark-iam-empty-state-color: var(--neutral-20);
 }
 
 [data-asuswrt-color="light"][data-asuswrt-theme="rog"] {
@@ -1607,6 +1647,7 @@
 
     --primary-btn-text-color: var(--white-alpha-100);
     --primary-btn-disable-text-color: var(--neutral-70);
+    --primary-btn-hover-boxshadow: 0 0 8px 0 var(--primary-80);
 
     --clientinfo-traffic-chart-tx-border-color: var(--teal-50);
     --clientinfo-traffic-chart-tx-fill-start-color: var(--teal-50-alpha-0);
@@ -1870,3 +1911,155 @@
 }
 
 /* end: animate-border for rog */
+
+[data-asuswrt-theme="rt"] {
+    --body-bg-color: #4D595D;
+    --body-text-color: #FFFFFF;
+    --textbox-color: #FFFFFF;
+    --textbox-bg-color: #475A5F;
+
+    --textbox-normal-fill-color: #576D73;
+    --textbox-focus-fill-color: #6C8085;
+
+    --primary-10: #ECF5FF;
+    --primary-20: #CCE4FF;
+    --primary-30: #99CAFF;
+    --primary-40: #61ADFF;
+    --primary-50: #248DFF;
+    --primary-60: #006CE1;
+    --primary-70: #0051A8;
+    --primary-80: #003A7A;
+    --primary-90: #002752;
+
+    --radius-sm: 10px;
+    --global-radius: 8px;
+
+    --borderColor: var(--primary-60);
+
+    --primary-btn-normal-fill: var(--primary-60);
+    --primary-btn-normal-stroke: var(--primary-60);
+
+    --primary-btn-active-fill: var(--primary-60);
+    --primary-btn-hover-fill: var(--primary-40);
+    --primary-btn-disable-fill: #999999;
+    --primary-btn-text-color: #FFFFFF;
+    --primary-btn-disable-text-color: #FFFFFF;
+    --primary-btn-hover-boxshadow: 0 0 8px 0 var(--primary-80);
+
+    /* Datatable */
+    --datatable-page-btn-normal-color: var(--white-alpha-70);
+    --datatable-page-btn-current-color: var(--white-alpha-100);
+    --clientlist-table-bg-color: #475A5F;
+    --clientlist-table-row-bg-color: #475A5F;
+    --clientlist-table-row-selected-bg-color: var(--white-alpha-100);
+    --clientlist-table-info-text-color: var(--neutral-80);
+    --clientlist-table-border-color: var(--neutral-30);
+    --clientlist-pagination-border-color: var(--neutral-20);
+
+    --card-bg-color: #303d43;
+
+    --popup-bg-color: #303d43;
+    --policy-notice-title-color: #FFFFFF;
+    --policy-border-color: rgba(255, 255, 255, 0.2);
+
+    --ark-iam-client-mac-color: var(--white-alpha-40);
+    --ark-iam-tree-hover-bg-color: var(--white-alpha-40);
+    --ark-iam-tree-second-bg-color: var(--black-alpha-10);
+    --ark-iam-list-action-btn-text-color: var(--white-alpha-100);
+    --ark-iam-categories-container-bg-color: #475a5f;
+    --ark-iam-category-header-bg-color: var(--black-alpha-40);
+    --ark-iam-category-header-hover-bg-color: var(--black-alpha-60);
+    --ark-iam-app-item-hover-bg-color: var(--white-alpha-40);
+    --ark-iam-selected-app-item-bg-color: var(--black-alpha-10);
+    --ark-iam-selected-app-item-hover-bg-color: var(--black-alpha-20);
+    --ark-iam-category-action-btn-border-color: var(--neutral-40);
+    --ark-iam-empty-state-color: var(--neutral-20);
+
+    --qoe-button-bg-color: var(--neutral-60);
+    --qoe-button-active-bg-color: #0090d8;
+
+    --modal-bg-color: #303d43;
+    --modal-header-bg-color: #212d31;
+    --model-footer-bg-color: #212d31;
+    --modal-block-bg-color: #394a4f;
+}
+
+[data-asuswrt-theme="ts"] {
+    --body-bg-color: #00000000;
+    --body-text-color: #FFFFFF;
+    --textbox-color: #FFFFFF;
+    --textbox-bg-color: #ffffff40;
+
+    --textbox-normal-fill-color: #4b4b4b;
+    --textbox-focus-fill-color: #6C8085;
+
+    --primary-10: #E8FAF8;
+    --primary-20: #B9F2EC;
+    --primary-30: #8AE9E0;
+    --primary-40: #5BE1D4;
+    --primary-50: #2ED9C8;
+    --primary-60: #2ED9C3;
+    --primary-70: #25AE9C;
+    --primary-80: #1C8376;
+    --primary-90: #135850;
+
+    --radius-sm: 10px;
+    --global-radius: 8px;
+
+    --borderColor: var(--primary-60);
+
+    --primary-btn-normal-fill: var(--primary-60);
+    --primary-btn-normal-stroke: var(--primary-60);
+
+    --primary-btn-active-fill: var(--primary-60);
+    --primary-btn-hover-fill: var(--primary-40);
+    --primary-btn-disable-fill: #999999;
+    --primary-btn-text-color: #FFFFFF;
+    --primary-btn-disable-text-color: #FFFFFF;
+    --primary-btn-hover-boxshadow: 0 0 8px 0 var(--primary-80);
+
+    /* Datatable */
+    --datatable-page-btn-normal-color: var(--white-alpha-70);
+    --datatable-page-btn-current-color: var(--white-alpha-100);
+    --clientlist-table-bg-color: #ffffff40;
+    --clientlist-table-row-bg-color: #ffffff40;
+    --clientlist-table-row-selected-bg-color: var(--white-alpha-100);
+    --clientlist-table-info-text-color: var(--neutral-80);
+    --clientlist-table-border-color: var(--neutral-30);
+    --clientlist-pagination-border-color: var(--neutral-20);
+
+    --card-bg-color: #00000000;
+
+    --popup-bg-color: #25272a;
+    --policy-notice-title-color: #FFFFFF;
+    --policy-border-color: rgba(255, 255, 255, 0.2);
+
+    --ark-iam-client-mac-color: var(--white-alpha-40);
+    --ark-iam-tree-hover-bg-color: var(--white-alpha-40);
+    --ark-iam-tree-second-bg-color: var(--black-alpha-10);
+    --ark-iam-list-action-btn-text-color: var(--white-alpha-100);
+    --ark-iam-categories-container-bg-color: #313739;
+    --ark-iam-category-header-bg-color: var(--black-alpha-40);
+    --ark-iam-category-header-hover-bg-color: var(--black-alpha-60);
+    --ark-iam-app-item-hover-bg-color: var(--white-alpha-40);
+    --ark-iam-selected-app-item-bg-color: var(--black-alpha-10);
+    --ark-iam-selected-app-item-hover-bg-color: var(--black-alpha-20);
+    --ark-iam-category-action-btn-border-color: var(--neutral-40);
+    --ark-iam-empty-state-color: var(--neutral-20);
+
+    --qoe-button-bg-color: var(--neutral-60);
+    --qoe-button-active-bg-color: #2ED9C3;
+
+    --modal-bg-color: #303d43;
+    --modal-header-bg-color: #212d31;
+    --model-footer-bg-color: #212d31;
+    --modal-block-bg-color: #394a4f;
+
+    --textbox-focus-stroke-color: var(--primary-60);
+}
+
+[data-asuswrt-page="qis"] {
+    --popup-bg-color: #000000e6;
+    --policy-border-color: var(--primary-80);
+    --policy-notice-title-color: #FFFFFF;
+}

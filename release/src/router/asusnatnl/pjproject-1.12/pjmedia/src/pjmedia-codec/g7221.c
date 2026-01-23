@@ -443,6 +443,7 @@ PJ_DEF(pj_status_t) pjmedia_codec_g7221_deinit(void)
     if (!codec_mgr) {
 	pj_pool_release(codec_factory.pool);
 	codec_factory.pool = NULL;
+	pj_mutex_unlock(codec_factory.mutex);
 	return PJ_EINVALIDOP;
     }
 
@@ -451,7 +452,9 @@ PJ_DEF(pj_status_t) pjmedia_codec_g7221_deinit(void)
 						  &codec_factory.base);
     
     /* Destroy mutex. */
+    pj_mutex_unlock(codec_factory.mutex);
     pj_mutex_destroy(codec_factory.mutex);
+    codec_factory.mutex = NULL;
 
     /* Destroy pool. */
     pj_pool_release(codec_factory.pool);

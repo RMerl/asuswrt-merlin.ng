@@ -1377,6 +1377,162 @@ int restart_dnsmasq(int need_link_DownUp)
 }
 #endif
 
+int write_etc_hosts()
+{
+	FILE *fp;
+	char lan_hostname[64] = {0};
+	char lan_domain[256] = {0};
+	char lan_ipaddr[16] = {0};
+	char *mac, *ip, *dns, *hostname;
+	char *nv, *nvp, *b;
+	unsigned char ea[ETHER_ADDR_LEN];
+#ifdef RTCONFIG_USB
+	char computer_name[64] = {0};
+#endif
+#ifdef RTCONFIG_IPV6
+	char *value;
+#endif
+	int i;
+	const char *default_names[] = {
+		DUT_DOMAIN_NAME,
+		"asusrouter.com",
+		"www.asusrepeater.com",
+		"asusrepeater.com",
+		"www.asusap.com",
+		"asusap.com",
+		"www.asusswitch.com",
+		"asusswitch.com",
+		"router.asus.com",
+		"repeater.asus.com",
+		"ap.asus.com",
+		"www.asusnetwork.net",
+		"asusswitch.net",
+		"asusrepeater.net",
+		"asusap.net",
+		"zenwifi.net",
+#if defined(RTCONFIG_BUSINESS)
+		"www.expertwifi.net",
+		OLD_DUT_DOMAIN_NAME,
+#else
+		"expertwifi.net",
+#endif
+		NULL
+	};
+
+	fp = fopen("/etc/hosts.tmp", "w");
+	if (!fp) {
+		perror("/etc/hosts.tmp");
+		return -1;
+	}
+
+	strlcpy(lan_hostname, get_lan_hostname(), sizeof(lan_hostname));
+	strlcpy(lan_domain, nvram_safe_get("lan_domain"), sizeof(lan_domain));
+	if (!is_valid_domainname(lan_domain) || strstr(lan_domain, "asus.com"))
+		lan_domain[0] = '\0';
+
+	if ((repeater_mode()
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+		|| psr_mode() || mediabridge_mode()
+#elif defined(RTCONFIG_REALTEK) || defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
+		|| mediabridge_mode()
+#endif
+#if defined(RTCONFIG_DPSTA) || defined(RTCONFIG_DPSR)
+		|| ((dpsta_mode() || dpsr_mode()) && nvram_get_int("re_mode") == 0)
+#endif
+		|| (rp_mode() && nvram_get_int("re_mode") == 0)
+		) && nvram_get_int("wlc_state") != WLC_STATE_CONNECTED && !nvram_match("lan_proto", "static")
+	){
+		strlcpy(lan_ipaddr, nvram_default_get("lan_ipaddr"), sizeof(lan_ipaddr));
+	}
+	else {
+		strlcpy(lan_ipaddr, nvram_safe_get("lan_ipaddr"), sizeof(lan_ipaddr));
+	}
+
+	/* loclhost ipv4 */
+	fprintf(fp, "127.0.0.1 localhost.localdomain localhost\n");
+
+	/* lan hostname.domain hostname */
+	fprintf(fp, "%s %s.%s %s\n", lan_ipaddr, lan_hostname, lan_domain, lan_hostname);
+
+	/* mdns fallback */
+	fprintf(fp, "%s %s.local\n", lan_ipaddr, lan_hostname);
+
+	/* default names */
+	i = 0;
+	while (default_names[i]) {
+		fprintf(fp, "%s %s\n", lan_ipaddr, default_names[i]);
+		i++;
+	}
+
+	nv = nvp = strdup(nvram_safe_get("dhcp_staticlist"));
+	if (nv)
+	{
+		/* Parsing dhcp_staticlist nvram variable. */
+		while ((b = strsep(&nvp, "<")) != NULL) {
+			mac = ip = dns = hostname = NULL;
+			if ((vstrsep(b, ">", &mac, &ip, &dns, &hostname) < 2))
+				continue;
+
+			if (!ether_atoe(mac, ea))
+				continue;
+
+			if (ip && *ip != '\0' && hostname && *hostname != '\0' && is_valid_hostname(hostname))
+			{
+				fprintf(fp, "%s %s.%s\n", ip, hostname, lan_domain);
+			}
+		}
+		free(nv);
+	}
+
+#ifdef RTCONFIG_USB
+	/* samba name */
+	strlcpy(computer_name, nvram_safe_get("computer_name"), sizeof(computer_name));
+	if (is_valid_hostname(computer_name)
+	 && strcasecmp(lan_hostname, computer_name)) {
+		fprintf(fp, "%s %s.%s %s\n", lan_ipaddr, computer_name, lan_domain, computer_name);
+	}
+#endif
+#ifdef RTCONFIG_DSL
+	fprintf(fp, "192.168.121.70 ntp01.mvp.tivibu.com.tr\n");
+	fprintf(fp, "192.168.121.71 ntp02.mvp.tivibu.com.tr\n");
+#endif
+
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled()) {
+		/* localhost ipv6 */
+		fprintf(fp, "::1 ip6-localhost ip6-loopback\n");
+		/* multicast ipv6 */
+		fprintf(fp, "fe00::0 ip6-localnet\n"
+					"ff00::0 ip6-mcastprefix\n"
+					"ff02::1 ip6-allnodes\n"
+					"ff02::2 ip6-allrouters\n");
+
+		/* lan6 hostname.domain hostname */
+		value = (char*) ipv6_router_address(NULL);
+		if (*value) {
+			fprintf(fp, "%s %s.%s %s\n", value, lan_hostname, lan_domain, lan_hostname);
+
+			/* mdns fallback */
+			fprintf(fp, "%s %s.local\n", value, lan_hostname);
+		}
+	}
+#endif
+
+	if (ferror(fp)) {
+		perror("fprintf");
+		fclose(fp);
+		unlink("/etc/hosts.tmp");
+		return -1;
+	}
+
+	append_custom_config("hosts", fp);
+	fclose(fp);
+	unlink("/etc/hosts");
+	rename("/etc/hosts.tmp", "/etc/hosts");
+	use_custom_config("hosts", "/etc/hosts");
+	run_postconf("hosts","/etc/hosts");
+	return 0;
+}
 
 #ifdef RTCONFIG_WIFI_SON
 void gen_apmode_dnsmasq(void)
@@ -1547,12 +1703,9 @@ void start_dnsmasq(void)
 #endif
 {
 	FILE *fp;
-	char *lan_ifname, *lan_ipaddr, *lan_hostname;
+	char *lan_ifname, *lan_ipaddr;
 	char *value, *value2;
 	int /*i,*/ have_dhcp = 0;
-	char *mac, *ip, *dns, *hostname, *lan_domain;
-	char *nv, *nvp, *b;
-	unsigned char ea[ETHER_ADDR_LEN];
 #ifdef RTCONFIG_IPSEC
 	int unit;
 	char tmpStr[20];
@@ -1619,109 +1772,7 @@ void start_dnsmasq(void)
 	else
 		lan_ipaddr = nvram_safe_get("lan_ipaddr");
 
-	/* write /etc/hosts */
-	if ((fp = fopen("/etc/hosts", "w")) != NULL) {
-		/* loclhost ipv4 */
-		fprintf(fp, "127.0.0.1 localhost.localdomain localhost\n");
-
-		/* lan hostname.domain hostname */
-		lan_hostname = get_lan_hostname();
-		fprintf(fp, "%s %s.%s %s\n", lan_ipaddr,
-			    lan_hostname, nvram_safe_get("lan_domain"),
-			    lan_hostname);
-
-		/* mdns fallback */
-		fprintf(fp, "%s %s.local\n", lan_ipaddr, lan_hostname);
-
-		/* default names */
-		fprintf(fp, "%s %s\n", lan_ipaddr, DUT_DOMAIN_NAME);
-		fprintf(fp, "%s %s\n", lan_ipaddr, "asusrouter.com");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "www.asusrepeater.com");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "asusrepeater.com");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "www.asusap.com");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "asusap.com");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "www.asusswitch.com");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "asusswitch.com");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "router.asus.com");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "repeater.asus.com");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "ap.asus.com");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "www.asusnetwork.net");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "asusswitch.net");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "asusrepeater.net");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "asusap.net");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "zenwifi.net");
-#if defined(RTCONFIG_BUSINESS)
-		fprintf(fp, "%s %s\n", lan_ipaddr, "www.expertwifi.net");
-		fprintf(fp, "%s %s\n", lan_ipaddr, OLD_DUT_DOMAIN_NAME);
-#else
-		fprintf(fp, "%s %s\n", lan_ipaddr, "expertwifi.net");
-#endif
-
-	nv = nvp = strdup(nvram_safe_get("dhcp_staticlist"));
-	if (nv)
-	{
-		lan_domain = nvram_safe_get("lan_domain");		
-		/* Parsing dhcp_staticlist nvram variable. */
-		while ((b = strsep(&nvp, "<")) != NULL) {
-			dns = NULL;
-			hostname = NULL;
-			if ((vstrsep(b, ">", &mac, &ip, &dns, &hostname) < 2))
-				continue;
-
-			if (!ether_atoe(mac, ea))
-				continue;
-
-			if(ip && *ip != '\0' && hostname && *hostname != '\0' && is_valid_hostname(hostname))
-			{
-				fprintf(fp, "%s %s.%s %s\n", ip, hostname, lan_domain, hostname);
-			}	
-		}
-		free(nv);	
-	}
-		
-#ifdef RTCONFIG_USB
-		/* samba name */
-		if (is_valid_hostname(value = nvram_safe_get("computer_name")) &&
-		    strcasecmp(lan_hostname, value) != 0) {
-			fprintf(fp, "%s %s.%s %s\n", lan_ipaddr,
-				    value, nvram_safe_get("lan_domain"),
-				    value);
-		}
-#endif
-#ifdef RTCONFIG_DSL
-		fprintf(fp, "192.168.121.70 ntp01.mvp.tivibu.com.tr\n");
-		fprintf(fp, "192.168.121.71 ntp02.mvp.tivibu.com.tr\n");
-#endif
-
-#ifdef RTCONFIG_IPV6
-		if (ipv6_enabled()) {
-			/* localhost ipv6 */
-			fprintf(fp, "::1 ip6-localhost ip6-loopback\n");
-			/* multicast ipv6 */
-			fprintf(fp, "fe00::0 ip6-localnet\n"
-				    "ff00::0 ip6-mcastprefix\n"
-				    "ff02::1 ip6-allnodes\n"
-				    "ff02::2 ip6-allrouters\n");
-
-			/* lan6 hostname.domain hostname */
-			value = (char*) ipv6_router_address(NULL);
-			if (*value) {
-				fprintf(fp, "%s %s.%s %s\n", value,
-					    lan_hostname, nvram_safe_get("lan_domain"),
-					    lan_hostname);
-
-				/* mdns fallback */
-				fprintf(fp, "%s %s.local\n", value, lan_hostname);
-			}
-		}
-#endif
-		append_custom_config("hosts", fp);
-		fclose(fp);
-		use_custom_config("hosts", "/etc/hosts");
-		run_postconf("hosts","/etc/hosts");
-		chmod("/etc/hosts", 0644);
-	} else
-		perror("/etc/hosts");
+	write_etc_hosts();
 
 #ifdef RTCONFIG_REDIRECT_DNAME
 	if (nvram_invmatch("redirect_dname", "0") && access_point_mode()) {
@@ -6016,16 +6067,6 @@ start_syslogd(void)
 			syslogd_argv[argc++] = "1024";
 		else
 #endif
-#ifdef RTCONFIG_HND_ROUTER
-#ifdef RTCONFIG_DBLOG
-		if(nvram_match("dblog_adj_syslog", "1"))
-		{
-			syslogd_argv[argc++] = "1024";
-			nvram_set("dblog_adj_syslog", "0");
-		}
-		else
-#endif /* RTCONFIG_DBLOG */
-#endif /* RTCONFIG_HND_ROUTER */
 		syslogd_argv[argc++] = nvram_safe_get("log_size");
 	}
 	if (nvram_invmatch("log_level", "")) {
@@ -7264,6 +7305,9 @@ stop_misc(void)
 #endif
 #ifdef RTCONFIG_NETOOL
 	stop_netool();
+#endif
+#ifdef RTCONFIG_CSIMON
+	stop_csi_monitor();
 #endif
 
 	nvram_set_int("stop_misc", 1);
@@ -10459,9 +10503,9 @@ void chilli_config(void)
 		}
 	}*/
 	fprintf(fp, "cmdsocketport %s\n", "42424");
-#ifdef RTCONFIG_IPV6
-	if (ipv6_enabled()) fprintf(fp, "ipv6\n");
-#endif
+// #ifdef RTCONFIG_IPV6
+// 	if (ipv6_enabled()) fprintf(fp, "ipv6\n");
+// #endif
 	fprintf(fp, "tundev %s\n", "tun22");
 	fprintf(fp, "uamaliasip %d.%d.%d.%d\n", gw[0], gw[1], gw[2], gw[3]);
 	fprintf(fp, "redirssl\n");
@@ -10644,9 +10688,9 @@ void chilli_config_CP(void)
 	}*/
 	fprintf(fp, "unixipc %s\n", "chilli-cp.ipc");
 	fprintf(fp, "cmdsocketport %s\n", "42425");
-#ifdef RTCONFIG_IPV6
-	if (ipv6_enabled()) fprintf(fp, "ipv6\n");
-#endif
+// #ifdef RTCONFIG_IPV6
+// 	if (ipv6_enabled()) fprintf(fp, "ipv6\n");
+// #endif
 	fprintf(fp, "uamport %s\n", "3998");
 	fprintf(fp, "tundev %s\n", "tun23");
 	fprintf(fp, "uamaliasip %d.%d.%d.%d\n", gw[0], gw[1], gw[2], gw[3]);
@@ -11629,9 +11673,9 @@ void chilli_config_CPN(char *sn, char *dns1, char *dns2, char *sub_ip)
 	}*/
 	fprintf(fp, "unixipc %s\n", "chilli-cp.ipc");
 	fprintf(fp, "cmdsocketport %s\n", "42425");
-#ifdef RTCONFIG_IPV6
-	if (ipv6_enabled()) fprintf(fp, "ipv6\n");
-#endif
+// #ifdef RTCONFIG_IPV6
+// 	if (ipv6_enabled()) fprintf(fp, "ipv6\n");
+// #endif
 	fprintf(fp, "uamport %s\n", "3998");
 	fprintf(fp, "tundev %s\n", "tun23");
 	//fprintf(fp, "uamaliasip %d.%d.%d.%d\n", gw[0], gw[1], gw[2], gw[3]);
@@ -11861,9 +11905,9 @@ void chilli_confign(char *sn, char *dns1, char *dns2, char *sub_ip)
 		}
 	}*/
 	fprintf(fp, "cmdsocketport %s\n", "42424");
-#ifdef RTCONFIG_IPV6
-	if (ipv6_enabled()) fprintf(fp, "ipv6\n");
-#endif
+// #ifdef RTCONFIG_IPV6
+// 	if (ipv6_enabled()) fprintf(fp, "ipv6\n");
+// #endif
 	fprintf(fp, "tundev %s\n", "tun22");
 	//fprintf(fp, "uamaliasip %d.%d.%d.%d\n", gw[0], gw[1], gw[2], gw[3]);
 	fprintf(fp, "redirssl\n");
@@ -12169,6 +12213,7 @@ void start_CP(void)
 	int r_ornot = 0;
 	int ip_byte[4];
 	char new_net[32];
+	int sub_prefix=0;
 	
 	//get enabled cp_idx from sdn_rl
 	if(pmtl)
@@ -12198,8 +12243,9 @@ void start_CP(void)
 					sub_dlease = pmtl[i].nw_t.dhcp_lease;
 					sub_dns1 = pmtl[i].nw_t.dns[0];
 					sub_dns2 = pmtl[i].nw_t.dns[1];
+					sub_prefix = pmtl[i].nw_t.prefixlen;
 					if (sscanf(sub_ip, "%d.%d.%d.%d", &ip_byte[0], &ip_byte[1], &ip_byte[2], &ip_byte[3]) == 4) {
-						snprintf(new_net, sizeof(new_net), "%d.%d.%d.0/24", ip_byte[0], ip_byte[1], ip_byte[2]);
+						snprintf(new_net, sizeof(new_net), "%d.%d.%d.0/%d", ip_byte[0], ip_byte[1], ip_byte[2], sub_prefix);
 						nvram_set("cp_net", new_net);
 					}
 					break;
@@ -12536,6 +12582,7 @@ void start_chilli(void)
 	int UType = -1;
 	int ip_byte[4];
 	char new_net[32];
+	int sub_prefix=0;
 
 	//get enabled cp_idx from sdn_rl
 	if(pmtl)
@@ -12567,9 +12614,10 @@ void start_chilli(void)
 					sub_dlease = pmtl[i].nw_t.dhcp_lease;
 					sub_dns1 = pmtl[i].nw_t.dns[0];
 					sub_dns2 = pmtl[i].nw_t.dns[1];
+					sub_prefix = pmtl[i].nw_t.prefixlen;
 					_dprintf("[FUN:%s][LINE:%d]-sub_ip=%s-sub_ifname=%s-sub_dlease=%d-dns1=%s-dns2=%s-\n",__FUNCTION__,__LINE__,sub_ip,sub_mask,sub_dlease,sub_dns1,sub_dns2);
 					if (sscanf(sub_ip, "%d.%d.%d.%d", &ip_byte[0], &ip_byte[1], &ip_byte[2], &ip_byte[3]) == 4) {
-						snprintf(new_net, sizeof(new_net), "%d.%d.%d.0/24", ip_byte[0], ip_byte[1], ip_byte[2]);
+						snprintf(new_net, sizeof(new_net), "%d.%d.%d.0/%d", ip_byte[0], ip_byte[1], ip_byte[2], sub_prefix);
 						nvram_set("chilli_net", new_net);
 					}
 					break;
@@ -13418,6 +13466,8 @@ start_services(void)
 #endif
 #endif
 	}
+	logmessage("AMAS", "start amas service success\n");
+	nvram_set_int("amas_ready", 1);
 #endif
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 	start_psta_monitor();
@@ -13686,6 +13736,9 @@ start_services(void)
 		dhcp_war();
 #ifdef RTBE92U
 	start_tempsense();
+#endif
+#ifdef RTCONFIG_CSIMON
+	start_csi_monitor();
 #endif
 
 	run_custom_script("services-start", 0, NULL, NULL);
@@ -14395,6 +14448,9 @@ stop_services_mfg(void)
 #endif
 #ifdef RTBE92U
 	stop_tempsense();
+#endif
+#ifdef RTCONFIG_CSIMON
+	stop_csi_monitor();
 #endif
 }
 
@@ -16001,20 +16057,19 @@ void ai_init_default_hostname(void)
 	snprintf(ai_mac_s, sizeof(ai_mac_s), "%s", nvram_safe_get(AI_NVM_AIBOARD_MAC));
 	if(strlen(ai_mac_s) <= 0)
 	{
-		snprintf(ai_hostname_s, sizeof(ai_hostname_s), "aiboard-ANPU");
-		logmessage("AISRV", "Failed to get AI MAC to init hostname\n");
+		logmessage("AISRV", "Failed to get AI MAC when initialize ai hostname\n");
+		memset(ai_mac_s, 0, sizeof(ai_mac_s));
+		// replace aiboard mac with router's
+		snprintf(ai_mac_s, sizeof(ai_mac_s), "%s", nvram_safe_get("label_mac"));
 	}
-	else
+	for(mac_idx = 12; mac_idx < 17; mac_idx++)
 	{
-		for(mac_idx = 12; mac_idx < 17; mac_idx++)
-		{
-			if(ai_mac_s[mac_idx] == ':') continue;
-			ai_mac_suffix[suffix_idx] = ai_mac_s[mac_idx];
-			suffix_idx++;
-		}
-		ai_mac_suffix[4] = '\0';
-		snprintf(ai_hostname_s, sizeof(ai_hostname_s), "aiboard-%s", ai_mac_suffix);
+		if(ai_mac_s[mac_idx] == ':') continue;
+		ai_mac_suffix[suffix_idx] = ai_mac_s[mac_idx];
+		suffix_idx++;
 	}
+	ai_mac_suffix[4] = '\0';
+	snprintf(ai_hostname_s, sizeof(ai_hostname_s), "aiboard-%s", ai_mac_suffix);
 	logmessage("AISRV", "Set ai hostname [%s]\n", ai_hostname_s);
 		nvram_set("ai_hostname", ai_hostname_s);
 	}
@@ -18763,6 +18818,11 @@ check_ddr_done:
 		if(action & RC_SERVICE_STOP) stop_ai_response_check();
 		if(action & RC_SERVICE_START) start_ai_response_check();
 	}
+	else if (strcmp(script, "ai_request_consumer") == 0)
+	{
+		if(action & RC_SERVICE_STOP) stop_ai_request_consumer();
+		if(action & RC_SERVICE_START) start_ai_request_consumer();
+	}
 	else if (strcmp(script, "ai_tftpd") == 0)
 	{
 		if(action & RC_SERVICE_STOP) stop_ai_tftpd(0);
@@ -18770,6 +18830,8 @@ check_ddr_done:
 	}
 	else if (strcmp(script, "ai_request") == 0)
 	{
+		pid_t *ai_pids = find_pid_by_name("ai_request_consumer");
+		if(ai_pids) _dprintf("ai consumer pid %d\n", ai_pids[0]);
 		if(is_ai_if_on())
 		{
         		if(action & RC_SERVICE_START)
@@ -18945,6 +19007,15 @@ check_ddr_done:
 		int band = atoi(cmd[4]);
 		int is_wired = atoi(cmd[5]);
 		AFC_MeshPathLoss(rssi, tx, channel, band, is_wired);
+	}
+	else if (strcmp(script, "afc_data_collector") == 0)
+	{
+		if(action & RC_SERVICE_STOP) {
+			stop_afc_data_collector();
+		}
+		if(action & RC_SERVICE_START) {
+			start_afc_data_collector(cmd[1]);
+		}
 	}
 	else if (strcmp(script, "afc_info_json") == 0)
 	{
@@ -20102,6 +20173,10 @@ check_ddr_done:
 #if defined(RTCONFIG_GTBOOSTER)
 	else if (strcmp(script, "ark") == 0)
 	{
+#if defined(RTCONFIG_SOC_IPQ53XX)
+		/* ark engine software version*/
+		reinit_hwnat(-1);
+#endif
 		if (action & RC_SERVICE_STOP) stop_ark_engine(0);
 		if (action & RC_SERVICE_START) start_ark_engine();
 	}
@@ -22621,6 +22696,13 @@ _dprintf("test 2. turn off the USB power during %d seconds.\n", reset_seconds[re
 		if (action & RC_SERVICE_START) esr_set_halt(1);
 	}
 #endif
+#if defined(RTCONFIG_LIB_CODB) && defined(RTCONFIG_CONNDIAG) && defined(RTCONFIG_DNS_PING)
+	else if (strcmp(script, "dns_ping") == 0)
+	{
+		if (action & RC_SERVICE_STOP) stop_dns_ping();
+		if (action & RC_SERVICE_START) start_dns_ping();
+	}
+#endif
 #ifdef RTCONFIG_AIRIQ
 	else if (strcmp(script,"airiq_monitor") == 0){
 		if(action&RC_SERVICE_STOP) stop_airiq_monitor();
@@ -22630,7 +22712,7 @@ _dprintf("test 2. turn off the USB power during %d seconds.\n", reset_seconds[re
 #ifdef RTCONFIG_CSIMON
 	else if (strcmp(script,"csi_monitor") == 0){
 		if(action&RC_SERVICE_STOP) stop_csi_monitor();
-		if(action&RC_SERVICE_START) start_csi_monitor(count, cmd);
+		if(action&RC_SERVICE_START) start_csi_monitor();
 	}
 #endif
 	else
@@ -23278,19 +23360,8 @@ void start_amas_lldpd(void)
 		return;
 #endif
 
-#ifdef RTCONFIG_CONCURRENTREPEATER
-	if ((repeater_mode() && nvram_get_int("x_Setting")) || mediabridge_mode())
-#else
-	if ((repeater_mode() || mediabridge_mode()) && nvram_get_int("x_Setting")) {
+	if (!(is_router_mode() || access_point_mode() || re_mode()))
 		return;
-	}
-#endif
-
-#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
-	if (psr_mode() && nvram_get_int("x_Setting")) {
-		return;
-	}
-#endif
 
 #ifdef RTCONFIG_SW_HW_AUTH
 	if (!(getAmasSupportMode() & (AMAS_CAP | AMAS_RE))) {
@@ -23456,6 +23527,7 @@ void stop_amas_lldpd(void)
 }
 void stop_amas_services(void)
 {
+	nvram_set_int("amas_ready", 0);
 	if (nvram_get_int("re_mode") == 1) {
 #ifdef RTCONFIG_BHCOST_OPT
 		stop_amas_status();
@@ -23497,6 +23569,7 @@ void start_amas_services(void)
 #endif
 	}
 	start_amas_lldpd();
+	nvram_set_int("amas_ready", 1);
 }
 #endif
 
@@ -26680,6 +26753,34 @@ stop_wps_pbcd()
 	return 0;
 }
 #endif  /* CONFIG_HOSTAPD */
+
+#if defined(RTCONFIG_LIB_CODB) && defined(RTCONFIG_CONNDIAG) && defined(RTCONFIG_DNS_PING)
+void
+stop_dns_ping(void)
+{
+	if(pids("dns_ping"))
+		killall_tk("dns_ping");
+}
+
+void
+start_dns_ping(void)
+{
+	char dns_ping_list_tmp[1024] = {0};
+
+	stop_dns_ping();
+
+	snprintf(dns_ping_list_tmp, sizeof(dns_ping_list_tmp), "%s", nvram_safe_get("dns_ping_list_tmp"));
+
+	if(dns_ping_list_tmp[0] != '\0'){
+		safe_do_system("dns_ping \"%s\"", dns_ping_list_tmp);
+		nvram_unset("dns_ping_list_tmp");
+	}
+	else{
+		safe_do_system("dns_ping");
+	}
+}
+
+#endif
 
 #if defined(RTCONFIG_QCA_LBD)
 void start_qca_lbd(void)

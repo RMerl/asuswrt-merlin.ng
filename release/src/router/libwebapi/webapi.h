@@ -184,4 +184,7 @@ extern int check_cmd_injection_blacklist(char *para);
 extern int check_xss_blacklist(char* para, int check_www);
 extern int validate_apply_input_value(char *name, char *value);
 extern int detect_vul_scan(void);
+#ifdef RTCONFIG_AI_SERVICE
+extern int set_AI_board_EULA(char *AI_board_EULA, char *from_service);
+#endif
 #endif /* !__WEBAPI_H__ */

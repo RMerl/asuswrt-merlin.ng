@@ -2276,6 +2276,7 @@ misc_defaults(int restore_defaults)
 	nvram_unset("amas_status_service_ready");
 	nvram_unset("amas_misc_service_ready");
 	nvram_unset("amas_ssd_service_ready");
+	nvram_unset("amas_ready");
 #endif
 
 #if defined(RTAC66U) || defined(BCM4352)
@@ -20075,7 +20076,7 @@ int init_nvram(void)
 			 nvram_get_int("ed_thresh_force") ||
 			(!re_mode() && is_CN_sku() && nvram_match("location_code", "XX")) ||
 			(re_mode() && (!strlen(nvram_safe_get("cfg_group")) || (is_CN_sku() && nvram_match("location_code", "XX")))) ||
-			(!strncmp(nvram_safe_get("territory_code"), "AA", 2) && nvram_match("location_code", "XX"))) {
+			(nvram_contains_word("rc_support", "loclist") && strncmp(nvram_safe_get("territory_code"), "AU", 2) && nvram_match("location_code", "XX"))) {
 				nvram_set("no_dy_ed_thresh_ctrl", "-1");
 				if (is_EU_sku()) {
 					nvram_set("0:eu_edthresh2g", ED_THRESH_DBG);
@@ -20195,7 +20196,7 @@ int init_nvram(void)
 			 nvram_get_int("ed_thresh_force") ||
 			(!re_mode() && is_CN_sku() && nvram_match("location_code", "XX")) ||
 			(re_mode() && (!strlen(nvram_safe_get("cfg_group")) || (is_CN_sku() && nvram_match("location_code", "XX")))) ||
-			(!strncmp(nvram_safe_get("territory_code"), "AA", 2) && nvram_match("location_code", "XX"))) {
+			(nvram_contains_word("rc_support", "loclist") && strncmp(nvram_safe_get("territory_code"), "AU", 2) && nvram_match("location_code", "XX"))) {
 				nvram_set("no_dy_ed_thresh_ctrl", "-1");
 				if (is_EU_sku()) {
 					nvram_set("sb/1/eu_edthresh2g", ED_THRESH_DBG);
@@ -20319,7 +20320,7 @@ int init_nvram(void)
 			 nvram_get_int("ed_thresh_force") ||
 			(!re_mode() && is_CN_sku() && nvram_match("location_code", "XX")) ||
 			(re_mode() && (!strlen(nvram_safe_get("cfg_group")) || (is_CN_sku() && nvram_match("location_code", "XX")))) ||
-			(!strncmp(nvram_safe_get("territory_code"), "AA", 2) && nvram_match("location_code", "XX"))) {
+			(nvram_contains_word("rc_support", "loclist") && strncmp(nvram_safe_get("territory_code"), "AU", 2) && nvram_match("location_code", "XX"))) {
 				nvram_set("no_dy_ed_thresh_ctrl", "-1");
 				if (is_EU_sku()) {
 					nvram_set("1:eu_edthresh2g", ED_THRESH_DBG);
@@ -20535,7 +20536,7 @@ int init_nvram(void)
 			 nvram_get_int("ed_thresh_force") ||
 			(!re_mode() && is_CN_sku() && nvram_match("location_code", "XX")) ||
 			(re_mode() && (!strlen(nvram_safe_get("cfg_group")) || (is_CN_sku() && nvram_match("location_code", "XX")))) ||
-			(!strncmp(nvram_safe_get("territory_code"), "AA", 2) && nvram_match("location_code", "XX"))) {
+			(nvram_contains_word("rc_support", "loclist") && strncmp(nvram_safe_get("territory_code"), "AU", 2) && nvram_match("location_code", "XX"))) {
 				nvram_set("no_dy_ed_thresh_ctrl", "-1");
 				if (is_EU_sku()) {
 					nvram_set("sb/1/eu_edthresh2g", ED_THRESH_DBG);
@@ -20694,7 +20695,7 @@ int init_nvram(void)
 			 nvram_get_int("ed_thresh_force") ||
 			(!re_mode() && is_CN_sku() && nvram_match("location_code", "XX")) ||
 			(re_mode() && (!strlen(nvram_safe_get("cfg_group")) || (is_CN_sku() && nvram_match("location_code", "XX")))) ||
-			(!strncmp(nvram_safe_get("territory_code"), "AA", 2) && nvram_match("location_code", "XX"))) {
+			(nvram_contains_word("rc_support", "loclist") && strncmp(nvram_safe_get("territory_code"), "AU", 2) && nvram_match("location_code", "XX"))) {
 				nvram_set("no_dy_ed_thresh_ctrl", "-1");
 				if (is_EU_sku()) {
 #ifdef GS7_PRO
@@ -20846,7 +20847,7 @@ int init_nvram(void)
 			 nvram_get_int("ed_thresh_force") ||
 			(!re_mode() && is_CN_sku() && nvram_match("location_code", "XX")) ||
 			(re_mode() && (!strlen(nvram_safe_get("cfg_group")) || (is_CN_sku() && nvram_match("location_code", "XX")))) ||
-			(!strncmp(nvram_safe_get("territory_code"), "AA", 2) && nvram_match("location_code", "XX"))) {
+			(nvram_contains_word("rc_support", "loclist") && strncmp(nvram_safe_get("territory_code"), "AU", 2) && nvram_match("location_code", "XX"))) {
 				nvram_set("no_dy_ed_thresh_ctrl", "-1");
 				if (is_EU_sku()) {
 					nvram_set("0:eu_edthresh2g", ED_THRESH_DBG);
@@ -24030,7 +24031,7 @@ int init_nvram2(void)
 #endif
 #ifdef RTCONFIG_AUTO_FW_UPGRADE
 	int rand_hr, rand_min;
-	char tmp_time_str[8] = {0};
+	char tmp_time_str[35] = {0};
 #endif
 #ifdef RTCONFIG_INSTANT_GUARD
 	char ig_guest_client_list[4096] = {0};
@@ -24397,6 +24398,7 @@ int init_nvram2(void)
 	}
 
 	detect_vul_scan();
+	init_asus_pp_eula();
 
 	return 0;
 }  // end of init_nvram2
@@ -25375,7 +25377,7 @@ static void sysinit(void)
 		"/ai/docker_images",
 		"/ai/ctrl_msg",
 		"/ai/log",
-#if  defined(GTBE19000AI)
+#if  defined(GTBE19000AI) || defined(GTBE96_AI)
 		"/ai/slmqa",
 #endif
 #endif /* RTCONFIG_AI_SERVICE */

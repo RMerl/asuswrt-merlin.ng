@@ -118,7 +118,8 @@
        float *Out_ptr = Out;
        float *Coef_ptr, *In_ptr;
        float *state_ptr;
-       int i, j, stop;
+       int j, stop;
+       unsigned i;
 
        /* LP filter and decimate at the same time */
 

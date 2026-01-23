@@ -1,16 +1,6 @@
 #ifndef __NETWORKMAP_H__
 #define __NETWORKMAP_H__
-/*
-#include <sys/socket.h>
-#include <stdio.h>
-#include <linux/in.h>
-#include <linux/if_ether.h>
-#include <net/if.h>
- */
-#include <syslog.h>
-#include <version.h>
-#include <shared.h>
-#include <sm.h>
+
 #include <json.h>
 
 #ifdef RTCONFIG_MLO
@@ -70,6 +60,12 @@
 #define AMAS_WGN_BR_3	"br4"
 #define AMAS_WGN_BR_4	"br5"
 #endif
+
+#define CLIENT_CHECK_SUCCESS 1
+#define CLIENT_CHECK_FAIL 0
+#define MAC_ADDR_BYTE_LEN 6   // Raw MAC address length in bytes
+#define MAC_ADDR_STR_LEN 18   // String buffer size including '\0'
+#define SUBNET_IFNAME_LEN 7
 
 //for Notification Center trigger flag
 #ifdef RTCONFIG_NOTIFICATION_CENTER
@@ -354,14 +350,14 @@ int get_sdn_idx_form_apg(const char *papMac, const char *ifname, const int ifnam
 
 int get_brctl_macs(char * mac);
 
-int check_allwclientlist_json(const char *client_mac, const int opMode);
+int is_mac_in_allwclientlist(const char *client_mac, int opMode);
 
 int check_wrieless_info(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, const int i, const int is_file, struct json_object *clients);
 
 #ifdef RTCONFIG_MLO
 int check_mlo_info(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const int i, const int wireless_type, char *guest_network, char *client_mac, char *papMac, struct json_object *macObj, char *mlo_mac, int *is_mlo);
 #endif
-int check_wire_info(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, const int i);
+int check_wired_info(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, const int i);
 
 int check_wireless_clientlist(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
 

@@ -83,6 +83,8 @@
     --chart-color-good: rgb(var(--color-chart-good));
     --chart-color-warning: rgb(var(--color-chart-warning));
     --chart-color-unplug: rgb(var(--color-chart-unplug));
+
+    --app-topbar-height: 56px;
 }
 
 body {
@@ -115,7 +117,7 @@ body {
 }
 
 .dashboard-layout {
-    height: 100dvh;
+    height: calc(100% - var(--app-topbar-height));
     display: flex;
 }
 
@@ -208,33 +210,60 @@ header {
 
 aside.sidebar {
     flex: 0 0 auto;
-    width: initial;
+    width: 300px;
     box-sizing: border-box;
     border-right: 1px solid var(--nav-border-color);
     background: var(--nav-bg-color);
+    position: fixed; /* 固定在視窗左側 */
+    top: var(--app-topbar-height);       /* 讓出頂部工具列高度 */
+    left: 0;
+    bottom: 0;
+    height: auto;    /* 由 top/bottom 撐出高度 */
+    z-index: 1030;   /* 確保不被主內容覆蓋 */
+}
+
+aside.sidebar.sidebar-collapse-80 {
+    width: 80px;
 }
 
 article.main-content {
     -webkit-box-flex: 1;
     flex-grow: 1;
-    overflow: auto;
+    width: 100%;
+    padding-left: 300px; /* 與固定側欄同寬，避免覆蓋 */
+    margin-left: 0;
+    height: calc(100dvh - var(--app-topbar-height));
+    overflow: auto; /* 只有主內容捲動 */
+    overflow-x: hidden; /* 防止橫向溢出 */
+    box-sizing: border-box;
+    transition: padding-left .35s cubic-bezier(.22, .61, .36, 1);
+}
+
+aside.sidebar.sidebar-collapse-80 ~ article.main-content {
+    padding-left: 80px;
 }
 
 /* MENU */
 aside.sidebar nav {
-    max-width: 60px;
     box-sizing: border-box;
     backdrop-filter: blur(50px);
-    z-index: 1065;
+    z-index: 1030;
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
-    transition: max-width 0.5s ease;
+    transition-duration: 0.35s;
+    transition-property: max-width;
+    transition-timing-function: cubic-bezier(.22, .61, .36, 1);
+    height: 100%;
+}
+
+aside.sidebar.sidebar-collapse-80 nav {
+    max-width: 80px;
 }
 
 aside.sidebar.sidebar-show {
     display: block;
-    border: none;
 }
 
 aside.sidebar.sidebar-show .tooltip {
@@ -250,6 +279,7 @@ aside.sidebar nav .menu-name {
 aside.sidebar.sidebar-show nav .menu-name {
     display: block;
     color: var(--body-text-color);
+    font-size: 0.745rem;
 }
 
 aside.sidebar nav [role~="menu-close"] {
@@ -269,6 +299,7 @@ aside.sidebar nav button {
     align-items: center;
     width: 100%;
     height: 48px;
+    font-size: 0.745rem;
 }
 
 aside.sidebar.sidebar-show nav button {
@@ -276,8 +307,8 @@ aside.sidebar.sidebar-show nav button {
     justify-content: start;
     align-items: center;
     width: 100%;
-    gap: 8px;
-    padding-left: 17px;
+    gap: 24px;
+    padding: 0 32px 0 24px;
 }
 
 aside.sidebar.sidebar-show nav button [role~=icon] {
@@ -296,15 +327,187 @@ aside.sidebar.sidebar-show .menu-header {
 }
 
 aside.sidebar.sidebar-show nav {
-    width: 300px;
-    max-width: 500px;
+    max-width: 300px;
     height: 100%;
-    position: absolute;
-    z-index: 11;
-    opacity: 1;
-    -webkit-backdrop-filter: blur(50px);
-    backdrop-filter: blur(50px);
-    box-shadow: 0px 0px 4px 0px var(--elevation-20);
+}
+
+/* Responsive defaults: Sidenav behavior across breakpoints */
+/* 1400px - 1919.98px: fixed 240px nav width */
+@media (min-width: 1400px) and (max-width: 1919.98px) {
+    aside.sidebar nav { max-width: 240px; }
+}
+/* ≥1920px: expanded 300px nav width */
+@media (min-width: 1920px) {
+    aside.sidebar nav { max-width: 300px; }
+}
+/* ≥1200px and <1400px: reduced width by default */
+@media (min-width: 1200px) and (max-width: 1399.98px) {
+    /* default reduced */
+    aside.sidebar nav { max-width: 240px; }
+    /* no expand to 300 in this range */
+    aside.sidebar.sidebar-show nav { max-width: 240px; }
+}
+/* ≥992px and <1200px: reduced (240px) by default; user can collapse to 80px */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    /* default reduced for this range is 180 */
+    aside.sidebar nav { max-width: 180px; }
+    /* collapsed */
+    aside.sidebar.sidebar-collapse-80 nav { max-width: 80px; }
+}
+/* ≤767px: overlay 展開（覆蓋 main-content） */
+@media (max-width: 767px) {
+    .dashboard-layout {
+        flex-direction: column;
+    }
+    /* 手機：預設隱藏，展開時以 overlay 覆蓋 */
+    aside.sidebar { display: none; }
+    aside.sidebar.sidebar-show {
+        display: block !important;
+        width: 100% !important;
+        position: fixed; /* 以 overlay 方式覆蓋內容 */
+        top: var(--app-topbar-height);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: auto;
+        z-index: 2000;
+    }
+    /* 強制展開/收合狀態皆為全寬，避免 80px 設定殘留 */
+    aside.sidebar.sidebar-show { width: 100% !important; }
+    aside.sidebar.sidebar-collapse-80 { width: 100% !important; }
+    aside.sidebar nav {
+        max-width: 100%;
+        transition-property: max-height;
+        transition-duration: 0.3s;
+        transition-timing-function: cubic-bezier(.22, .61, .36, 1);
+        overflow-x: hidden;
+        overflow-y: auto;
+        max-height: 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1030;
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+    }
+    aside.sidebar.sidebar-show nav {
+        max-height: var(--wrt-sidenav-max-height-open, 100%);
+        max-width: 100% !important;
+    }
+    aside.sidebar.sidebar-collapse-80 nav {
+        max-height: 0;
+        max-width: 100% !important;
+    }
+}
+
+/* 768px - 991.98px: 固定 80px（僅圖示） */
+@media (min-width: 768px) and (max-width: 991.98px) {
+    aside.sidebar { width: 80px; }
+    aside.sidebar nav { max-width: 80px; }
+    aside.sidebar ~ article.main-content { padding-left: 80px; }
+    /* 文字隱藏，僅顯示 icon */
+    aside.sidebar nav .menu-name { display: none; }
+    /* 展開時以 overlay 方式覆蓋 main-content（維持文字隱藏） */
+    aside.sidebar.sidebar-show {
+        position: fixed;
+        top: var(--app-topbar-height);
+        left: 0;
+        bottom: 0;
+        width: 240px;
+        z-index: 2000;
+    }
+    aside.sidebar.sidebar-show nav { max-width: 240px; }
+    aside.sidebar.sidebar-show nav .menu-name { display: block; font-size: 0.675rem; }
+    aside.sidebar.sidebar-show nav button {
+        justify-content: start;
+        align-items: center;
+        gap: 16px;
+        padding: 0 16px;
+    }
+}
+
+/* 小於 768px，側欄隱藏時主內容回到全寬 */
+@media (max-width: 767px) {
+    article.main-content {
+        width: 100%;
+        padding-left: 0;
+    }
+    /* 折疊為 80px 時，同步讓位 */
+    aside.sidebar.sidebar-collapse-80 ~ article.main-content {
+    padding-left: 0;
+    }
+}
+
+/* 992px - 1199.98px: 寬 180（縮字級與間距），可收合為 80 */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    aside.sidebar { width: 180px; }
+    aside.sidebar.sidebar-collapse-80 { width: 80px; }
+    aside.sidebar ~ article.main-content { padding-left: 180px; }
+    aside.sidebar.sidebar-collapse-80 ~ article.main-content { padding-left: 80px; }
+    /* 導覽寬度同步 180/80 */
+    aside.sidebar nav { max-width: 180px; }
+    aside.sidebar.sidebar-collapse-80 nav { max-width: 80px; }
+    /* 防止 .sidebar-show 將寬度擴到 300（中尺寸固定 180） */
+    aside.sidebar.sidebar-show { width: 180px; }
+    aside.sidebar.sidebar-show nav { max-width: 180px; }
+    /* 展開（180）顯示功能名稱，縮字級與間距（sidebar-show 與預設相同字級，避免第一次點擊放大） */
+    aside.sidebar nav .menu-name { display: block; font-size: 0.625rem; }
+    aside.sidebar.sidebar-show nav .menu-name { font-size: 0.625rem; }
+    aside.sidebar nav .menu-name a { text-decoration: none; }
+    aside.sidebar.sidebar-collapse-80 nav .menu-name { display: none; }
+    aside.sidebar:not(.sidebar-collapse-80) nav button {
+        justify-content: start;
+        align-items: center;
+        gap: 16px;
+        padding: 0 16px 0 16px;
+    }
+    /* 覆寫全域 .sidebar-show 的排列與間距，維持中尺寸緊湊 */
+    aside.sidebar.sidebar-show nav button {
+        justify-content: start;
+        align-items: center;
+        gap: 16px;
+        padding: 0 16px;
+    }
+    /* 圖示尺寸從 24 降到 16（容器與尺寸） */
+    aside.sidebar nav button [role~=icon],
+    aside.sidebar.sidebar-show nav button [role~=icon] {
+        min-width: 16px;
+        width: 16px;
+        height: 16px;
+    }
+    /* 當收合為 80 時，icon 回復為 24px */
+    aside.sidebar.sidebar-collapse-80 nav button [role~=icon] {
+        min-width: 24px;
+        width: 24px;
+        height: 24px;
+    }
+    aside.sidebar:not(.sidebar-collapse-80) .menu-header { display: none; }
+}
+
+/* 1200px - 1919.98px: 固定 240（不再 300） */
+@media (min-width: 1200px) and (max-width: 1919.98px) {
+    aside.sidebar { width: 240px; }
+    aside.sidebar ~ article.main-content { padding-left: 240px; }
+    aside.sidebar.sidebar-collapse-80 ~ article.main-content { padding-left: 80px; }
+    /* 預設 240 時顯示功能名稱；非收合狀態使用展開排列樣式 */
+    aside.sidebar nav .menu-name { display: block; }
+    aside.sidebar nav .menu-name a { text-decoration: none; }
+    aside.sidebar.sidebar-collapse-80 nav .menu-name { display: none; }
+    aside.sidebar:not(.sidebar-collapse-80) nav button {
+        justify-content: start;
+        align-items: center;
+        gap: 24px;
+        padding: 0 32px 0 24px;
+    }
+    aside.sidebar:not(.sidebar-collapse-80) .menu-header { display: none; }
+}
+
+/* ≥1920px: expanded 300px */
+@media (min-width: 1920px) {
+    aside.sidebar { width: 300px; }
+    aside.sidebar ~ article.main-content { padding-left: 300px; }
+    aside.sidebar.sidebar-collapse-80 ~ article.main-content { padding-left: 80px; }
 }
 
 ::-webkit-scrollbar {
@@ -449,7 +652,7 @@ button {
     background-color: var(--divide-stroke-color-default);
 }
 
-/* SVG icon color*/ 
+/* SVG icon color*/
 .icon-color-menu {
     background-color: var(--nav-icon-color);
 }
@@ -605,10 +808,6 @@ main {
 }
 
 @media (min-width: 0px) {
-    aside.sidebar {
-        display: none;
-    }
-
     .tooltip-menu {
         display: none;
     }
@@ -672,7 +871,6 @@ main {
 @media (min-width: 768px) {
     aside.sidebar {
         display: block;
-        width: 60px;
     }
 
     .tooltip-menu {
@@ -746,10 +944,6 @@ main {
         display: none !important;
     }
 
-    #mobile_menu {
-        margin-left: unset !important;
-    }
-    
     [role~="btn-notification"] {
         visibility: hidden !important;
         display: none !important;
@@ -1108,3 +1302,81 @@ main {
 	margin-left: auto !important;
 	margin-right: auto !important;
 }
+
+/* Ensure no left gap on mobile when toggling sidebar (avoid 80px padding-left) */
+@media (max-width: 767px) {
+    aside.sidebar ~ article.main-content,
+    aside.sidebar.sidebar-show ~ article.main-content,
+    aside.sidebar.sidebar-collapse-80 ~ article.main-content {
+        padding-left: 0 !important;
+    }
+}
+
+/* config toggle button group */
+.config-title {
+    line-height: 1.5;
+    margin: 16px 0px 8px;
+    font-weight: 600;
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1rem;
+}
+
+.config-toggle-button-group-root {
+    display: inline-flex;
+    border-radius: var(--global-radius);
+    width: 100%;
+    background-color: rgb(255, 255, 255);
+}
+
+.config-toggle-button {
+    align-items: center;
+    position: relative;
+    background-color: transparent;
+    cursor: pointer;
+    text-transform: none;
+    font-weight: 500;
+    color: var(--body-text-color);
+    display: flex;
+    -webkit-box-pack: center;
+    justify-content: center;
+    width: 100%;
+    transition: 100ms ease-in;
+    border-radius: var(--global-radius);
+    padding: 11px;
+    border: 1px solid;
+    border-color: #DFE2E7FF;
+}
+
+.config-toggle-button:hover {
+    text-decoration: none;
+    background-color: var(--tab-nav-hover-bg-fill-color);
+}
+
+.config-toggle-button.selected {
+    background-color: var(--primary-10);
+    color: var(--primary-50);
+    border-color: var(--primary-30);
+}
+
+.config-toggle-button i[role="icon"]{
+    margin-right: 8px;
+}
+
+.config-toggle-button.selected i[role="icon"]{
+    background-color: var(--primary-50);
+}
+
+.config-toggle-button.selected:hover {
+    background-color: var(--primary-20);
+}
+
+.config-toggle-button-group-first {
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+.config-toggle-button-group-last {
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+}
+

@@ -160,11 +160,12 @@
 }
 
 #autowan_hint_div{
-	position: absolute;
+	position: fixed;
 	z-index: 1000;
 	width: 600px;
 	height: 550px;
-	margin-left: 40%;
+	top: 100px;
+	margin-left: 35%;
 	background-color: #232629;
 	box-shadow: 3px 3px 10px #000;
 	border-radius: 4px;
@@ -188,6 +189,11 @@
 	background-size: contain;
 }
 
+@media screen and (max-height: 720px) {
+	#autowan_hint_div{
+		top: 30px;
+	}
+}
 </style>
 <script>
 if(isSupport("UI4")){
@@ -412,20 +418,28 @@ function save_applyData(wan_unit){
 			(applyData["dns_fwd_local"] != '<% nvram_get("dns_fwd_local"); %>'))
 		applyData["rc_service"] += ";restart_dnsmasq";
 
-	var autowan_conflict = false;
+	/* Multi-Service WAN / IPTV Conflict check */
+	if(httpApi.nvramGet(["switch_wantag"], true).switch_wantag != "none" || original_switch_stb_x != "0"){
+		var hint_str = `<#conflict_function_hint#>`;
+		var msg = hint_str.replace("%1$@", `Multi-Service WAN`).replace("%2$@", "IPTV");
+
+		if(confirm(msg)){
+			applyData["switch_wantag"] = "none";
+			applyData["switch_stb_x"] = "0";
+		}
+		else
+			return false;
+	}
+
+	let autowan_conflict = false;
 	if(isSupport("autowan")){
 		var orig_autowan_enable = httpApi.nvramGet(["autowan_enable"], true).autowan_enable;
-		if(orig_autowan_enable == "1" && (applyData["bond_wan"] == "1" || applyData["wan_proto"] == "static" || applyData["wan_proto"] == "pptp" || applyData["wan_proto"] == "l2tp"))
+		if(orig_autowan_enable == "1")
 			autowan_conflict = true;
 	}
 
 	if(isSupport("autowan") && autowan_conflict){
-		var hint_str = `<#conflict_function_wanport_hint#>`;
-		var msg = "";
-		if(wan_bonding_support && document.form.bond_wan_radio.value == "1")
-			msg = hint_str.replace("%1$@", "<#WANAggregation#>").replaceAll("%2$@", get_default_wan_name());
-		else
-			msg = hint_str.replace("%1$@", document.form.wan_proto.options[document.form.wan_proto.selectedIndex].text).replaceAll("%2$@", get_default_wan_name());
+		var msg = `<#conflict_function_wanport_hint#>`.replace("%1$@", `Multi-Service WAN`).replaceAll("%2$@", get_default_wan_name());
 
 		$("#autowan_hint").html(msg);
 		$("#autowan_hint_div").show();
@@ -599,10 +613,10 @@ function Get_Component_Setting_Profile(type){//internet, user_defined
 	$content_container.append(Get_Component_Input(profile_name_parm));
 */
 	if(type == "user_defined")
-		var connection_type_options = [{"text":"<#BOP_ctype_title1#>","value":"dhcp", "title":"DHCP"}, {"text":"<#BOP_ctype_title5#>","value":"static"},
+		var connection_type_options = [{"text":"<#BOP_ctype_dhcp_title1#>","value":"dhcp", "title":"DHCP"}, {"text":"<#BOP_ctype_title5#>","value":"static"},
 		{"text":"PPPoE","value":"pppoe"}, {"text":"Bridge","value":"bridge"}];
 	else{
-		var connection_type_options = [{"text":"<#BOP_ctype_title1#>","value":"dhcp"}, {"text":"<#BOP_ctype_title5#>","value":"static"},
+		var connection_type_options = [{"text":"<#BOP_ctype_dhcp_title1#>","value":"dhcp"}, {"text":"<#BOP_ctype_title5#>","value":"static"},
 		{"text":"PPPoE","value":"pppoe"}, {"text":"PPTP","value":"pptp"}, {"text":"L2TP","value":"l2tp"}];
 		if(Softwire46_support){
 			connection_type_options.push({"text":"<#IPv6_plus#>","value":"v6plus"});
@@ -1352,7 +1366,7 @@ function remove_item_from_select_bridge() {
 
 function renew_wan_proto_options(){
 	free_options(document.form.wan_proto);			//remove beidge while edit Internet PVC if not mswan_support
-	var var_item0 = new Option("<#BOP_ctype_title1#>", "dhcp");
+	var var_item0 = new Option("<#BOP_ctype_dhcp_title1#>", "dhcp");
 	var var_item1 = new Option("<#BOP_ctype_title5#>", "static");
 	var var_item2 = new Option("PPPoE", "pppoe");
 	var var_item3 = new Option("Bridge", "bridge");
@@ -1364,7 +1378,7 @@ function renew_wan_proto_options(){
 
 function remove_bridge(){
 	free_options(document.form.wan_proto);			//remove beidge while edit Internet PVC if not mswan_support
-	var var_item0 = new Option("<#BOP_ctype_title1#>", "dhcp");
+	var var_item0 = new Option("<#BOP_ctype_dhcp_title1#>", "dhcp");
 	var var_item1 = new Option("<#BOP_ctype_title5#>", "static");
 	var var_item2 = new Option("PPPoE", "pppoe");
 	var var_item3 = new Option("PPTP", "pptp");
@@ -1537,7 +1551,7 @@ function showMSWANList(){
 				if(!parent.webWrapper) cell[2].style.color = "white";
 				cell[3] = addRow.insertCell(3);
 				if (MSWANList[i][1]=="pppoe") cell[3].innerHTML = "<center>PPPoE</center>";
-				else if (MSWANList[i][1]=="dhcp") cell[3].innerHTML = "<center><#BOP_ctype_title1#></center>";
+				else if (MSWANList[i][1]=="dhcp") cell[3].innerHTML = "<center><#BOP_ctype_dhcp_title1#></center>";
 				else if (MSWANList[i][1]=="bridge") cell[3].innerHTML = "<center>Bridge</center>";
 				else if (MSWANList[i][1]=="static") cell[3].innerHTML = "<center><#BOP_ctype_title5#></center>";
 				else if (MSWANList[i][1]=="pptp") cell[3].innerHTML = "<center>PPTP</center>";
@@ -1966,15 +1980,6 @@ function applyRule(){
 			}
 		}
 
-		var autowan_conflict = false;
-		if(isSupport("autowan")){
-			var orig_autowan_enable = httpApi.nvramGet(["autowan_enable"], true).autowan_enable;
-			if(orig_autowan_enable == "1"){
-				if((wan_bonding_support && document.form.bond_wan_radio.value == "1") || document.form.wan_proto.value == "static" || document.form.wan_proto.value == "l2tp" || document.form.wan_proto.value == "pptp")
-					autowan_conflict = true;
-			}
-		}
-
 		if(dnspriv_support){
 			if(document.form.dnspriv_enable.value == 1 && document.form.wan_unit.value < 100){
 				var dnspriv_rulelist_value = "";
@@ -2004,11 +2009,37 @@ function applyRule(){
 				(getRadioValue(document.form.dns_fwd_local) != '<% nvram_get("dns_fwd_local"); %>'))
 			document.form.action_script.value += ";restart_dnsmasq";
 
+		/* Check function conflict between 802.1Q and IPTV */
+		if(httpApi.nvramGet(["switch_wantag"], true).switch_wantag != "none" || original_switch_stb_x != "0"){
+			var hint_str = `<#conflict_function_hint#>`;
+			var msg = hint_str.replace("%1$@", `802.1Q`).replace("%2$@", "IPTV");
+
+			if(confirm(msg)){
+				document.form.switch_wantag.disabled = false;
+				document.form.switch_wantag.value = "none";
+				document.form.switch_stb_x.disabled = false;
+				document.form.switch_stb_x.value = "0";
+			}
+			else
+				return false;
+		}
+
+		let autowan_conflict = false;
+		if(isSupport("autowan")){
+			var orig_autowan_enable = httpApi.nvramGet(["autowan_enable"], true).autowan_enable;
+			if(orig_autowan_enable == "1"){
+				if((wan_bonding_support && document.form.bond_wan_radio.value == "1") || document.form.wan_proto.value == "static" || document.form.wan_proto.value == "l2tp" || document.form.wan_proto.value == "pptp" || document.form.wan_dot1q.value == "1")
+					autowan_conflict = true;
+			}
+		}
+
 		if(isSupport("autowan") && autowan_conflict){
 			var hint_str = `<#conflict_function_wanport_hint#>`;
 			var msg = "";
 			if(wan_bonding_support && document.form.bond_wan_radio.value == "1")
 				msg = hint_str.replace("%1$@", "<#WANAggregation#>").replaceAll("%2$@", get_default_wan_name());
+			else if(document.form.wan_dot1q.value == "1")
+				msg = hint_str.replace("%1$@", `802.1Q`).replaceAll("%2$@", get_default_wan_name());
 			else
 				msg = hint_str.replace("%1$@", document.form.wan_proto.options[document.form.wan_proto.selectedIndex].text).replaceAll("%2$@", get_default_wan_name());
 
@@ -3655,6 +3686,9 @@ function change_wizard(o, id){
 <input type="hidden" name="lan_ipaddr" value="<% nvram_get("lan_ipaddr"); %>" />
 <input type="hidden" name="lan_netmask" value="<% nvram_get("lan_netmask"); %>" />
 <input type="hidden" name="wan_unit" value="<% nvram_get("wan_unit"); %>">
+<input type="hidden" name="switch_wantag" value="<% nvram_get("switch_wantag"); %>" disabled>
+<input type="hidden" name="switch_stb_x" value="<% nvram_get("switch_stb_x"); %>" disabled>
+<input type="hidden" name="lacp_enabled" value="<% nvram_get("lacp_enabled"); %>" disabled>
 <input type="hidden" name="wan_clientid_type" value="">
 <input type="hidden" name="wan_dnsenable_x" value="<% nvram_get("wan_dnsenable_x"); %>">
 <input type="hidden" name="wan_dns1_x" value="<% nvram_get("wan_dns1_x"); %>">
@@ -3707,7 +3741,7 @@ function change_wizard(o, id){
 									<div style="margin: 10px 0 10px 5px;" class="splitLine"></div>
 									<div id="desc_default" class="formfontdesc"></div>
 									<div id="desc_edit" class="formfontdesc"></div>
-									<div style="font-size: 13px; text-decoration: underline; margin-left: 5px; cursor: pointer;" onclick="show_popup('new');">Add Profile</div>
+									<div style="font-size: 13px; text-decoration: underline; margin-left: 5px; cursor: pointer;" onclick="show_popup('new');">Add Profile (Multi-Service WAN)</div>
 									<table id="WANscap" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 										<thead>
 										<tr>
@@ -3754,7 +3788,7 @@ function change_wizard(o, id){
 											<td align="left">
 												<div style="display: flex; align-items: center;">
 													<select class="input_option" name="wan_proto" onchange="change_wan_proto_type(this.value);fixed_change_wan_proto_type(this.value);">
-														<option value="dhcp" <% nvram_match("wan_proto", "dhcp", "selected"); %>><#BOP_ctype_title1#></option>
+														<option value="dhcp" <% nvram_match("wan_proto", "dhcp", "selected"); %>><#BOP_ctype_dhcp_title1#></option>
 														<option value="static" <% nvram_match("wan_proto", "static", "selected"); %>><#BOP_ctype_title5#></option>
 														<option value="pppoe" <% nvram_match("wan_proto", "pppoe", "selected"); %>>PPPoE</option>
 														<option value="bridge" <% nvram_match("wan_proto", "bridge", "selected"); %>>Bridge</option>

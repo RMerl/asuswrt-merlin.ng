@@ -1733,7 +1733,7 @@
 }
 @media (max-width: 575px) {
 	.mobile{
-		display: block !important;
+		display: flex !important;
 	}
 	.desktop{
 		display: none;

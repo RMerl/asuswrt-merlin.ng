@@ -47,7 +47,6 @@ static void term_restore_color(void)
 void substr(char *dest, const char *src, unsigned int start, unsigned int end)
 {
     int i = start;
-    char *p = src;
 
     pj_assert(start <= strlen(src));
 
@@ -65,11 +64,13 @@ void substr(char *dest, const char *src, unsigned int start, unsigned int end)
 
 PJ_DEF(void) pj_log_write(int inst_id, int level, const char *buffer, int len, int flush)
 {
+#if PJ_ANDROID==1
 	int i;
     int shift;
     int chunk_cnt;
     int limit_len = 1000;
     char temp[1001];
+#endif
 
     PJ_CHECK_STACK();
     PJ_UNUSED_ARG(len);

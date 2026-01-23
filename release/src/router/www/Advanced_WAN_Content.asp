@@ -75,11 +75,12 @@
 }
 
 #autowan_hint_div{
-	position: absolute;
+	position: fixed;
 	z-index: 1000;
 	width: 600px;
 	height: 550px;
-	margin-left: 40%;
+	top: 100px;
+	margin-left: 35%;
 	background-color: #232629;
 	box-shadow: 3px 3px 10px #000;
 	border-radius: 4px;
@@ -101,6 +102,12 @@
 	height: 330px;
 	background: url('images/wanport_plugin.png') no-repeat center;
 	background-size: contain;
+}
+
+@media screen and (max-height: 720px) {
+	#autowan_hint_div{
+		top: 30px;
+	}
 }
 </style>
 <script type="text/javascript" src="/js/jquery.js"></script>
@@ -755,6 +762,14 @@ function applyRule(){
 						conflict_functions = `<#WANAggregation#>`;
 					else
 						conflict_functions += `, <#WANAggregation#>`;
+				}
+
+				if(document.form.wan_dot1q.value == "1"){
+					autowan_conflict = true;
+					if(conflict_functions.length == 0)
+						conflict_functions = `802.1Q`;
+					else
+						conflict_functions += `, 802.1Q`;
 				}
 
 				if(document.form.wan_hwaddr_x.value.length > 0){
@@ -2542,7 +2557,7 @@ function get_default_wan_name(){
 								<td align="left">
 									<div style="display: flex; align-items: center;">
 									<select id="wan_proto_menu" class="input_option" name="wan_proto" onchange="change_wan_type(this.value);fixed_change_wan_type(this.value);">
-										<option value="dhcp" <% nvram_match("wan_proto", "dhcp", "selected"); %>><#BOP_ctype_title1#></option>
+										<option value="dhcp" <% nvram_match("wan_proto", "dhcp", "selected"); %>><#BOP_ctype_dhcp_title1#></option>
 										<option value="static" <% nvram_match("wan_proto", "static", "selected"); %>><#BOP_ctype_title5#></option>
 										<option value="pppoe" <% nvram_match("wan_proto", "pppoe", "selected"); %>>PPPoE</option>
 										<option value="pptp" <% nvram_match("wan_proto", "pptp", "selected"); %>>PPTP</option>

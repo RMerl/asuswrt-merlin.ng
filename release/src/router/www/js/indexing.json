@@ -365,10 +365,10 @@
     "aidisk/Aidisk-1.asp"
   ],
   "AiMesh_AP_desc": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "AiMesh_AP_item": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "AiMesh_A_Few_Minutes_Complete": [
     "aimesh/aimesh_system_settings.html"
@@ -599,10 +599,10 @@
     "index.html?page=aimesh"
   ],
   "AiMesh_GW_desc": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "AiMesh_GW_item": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "AiMesh_Intro_Desc": [
     "sysdep/FUNCTION/QIS_V3/mobile/pages/amasintro_page.html",
@@ -655,7 +655,7 @@
     "index.html?page=aimesh"
   ],
   "AiMesh_Node_Add": [
-    "Advanced_OperationMode_Content.asp",
+    "Advanced_Operation_DISALLOW_Mode_Content.asp",
     "sysdep/FUNCTION/QIS_V3/mobile/pages/amasconncap_page.html"
   ],
   "AiMesh_Node_AddConfirm": [
@@ -735,13 +735,13 @@
     "index.html?page=aimesh"
   ],
   "AiMesh_Node_desc": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "AiMesh_Node_desc1": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "AiMesh_Node_desc2": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "AiMesh_Not_Support_Binding": [
     "index.html?page=aimesh"
@@ -1062,7 +1062,7 @@
     "Advanced_WAdvanced_Content.asp"
   ],
   "AiMesh_deviceDiscorvy3": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "AiMesh_errConn_desc": [
     "sysdep/FUNCTION/QIS_V3/mobile/pages/amasconncap_page.html"
@@ -2763,7 +2763,7 @@
     "sysdep/FUNCTION/UI4/QoS_EZQoS.asp"
   ],
   "EzQoS_type_QoS": [
-    "Advanced_OperationMode_Content.asp",
+    "Advanced_Operation_DISALLOW_Mode_Content.asp",
     "QoS_EZQoS.asp",
     "sysdep/FUNCTION/UI4/QoS_EZQoS.asp"
   ],
@@ -4895,7 +4895,7 @@
     "PrinterServer.asp"
   ],
   "Network_key": [
-    "Advanced_OperationMode_Content.asp",
+    "Advanced_Operation_DISALLOW_Mode_Content.asp",
     "index.html?page=sdn"
   ],
   "Network_segment": [
@@ -4958,80 +4958,80 @@
     "sysdep/FUNCTION/WL_SCHED_V1/Advanced_WAdvanced_Content.asp"
   ],
   "OP_AP_desc": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "OP_AP_hint": [
-    "Advanced_OperationMode_Content.asp",
+    "Advanced_Operation_DISALLOW_Mode_Content.asp",
     "Advanced_SettingBackup_Content.asp"
   ],
   "OP_GW_desc": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "OP_GW_item": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "OP_MB_desc1": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "OP_MB_desc2": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "OP_MB_desc3": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "OP_MB_desc4": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "OP_MB_desc5": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "OP_MB_desc6": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "OP_MB_item": [
-    "Advanced_OperationMode_Content.asp",
+    "Advanced_Operation_DISALLOW_Mode_Content.asp",
     "index.asp",
     "sysdep/FUNCTION/ROG_UI/GameDashboard.asp",
     "sysdep/FUNCTION/ROG_UI/index.asp",
     "sysdep/FUNCTION/TUF_UI/index.asp"
   ],
   "OP_RE2G_desc": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "OP_RE2G_item": [
-    "Advanced_OperationMode_Content.asp",
+    "Advanced_Operation_DISALLOW_Mode_Content.asp",
     "sysdep/FUNCTION/ROG_UI/GameDashboard.asp"
   ],
   "OP_RE5G_desc": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "OP_RE5G_item": [
-    "Advanced_OperationMode_Content.asp",
+    "Advanced_Operation_DISALLOW_Mode_Content.asp",
     "sysdep/FUNCTION/ROG_UI/GameDashboard.asp"
   ],
   "OP_RE_desc": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "OP_WISP_desc1": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "OP_WISP_desc2": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "OP_WISP_item": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "OP_desc1": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "OP_sdn_change_mode_desc1": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "OP_sdn_change_mode_desc2": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "OP_sdn_change_mode_desc3": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "OpenDNS": [
     "DNSFilter.asp"
@@ -5502,7 +5502,7 @@
     "Advanced_Feedback.asp"
   ],
   "QKSet_wireless_webtitle": [
-    "Advanced_OperationMode_Content.asp",
+    "Advanced_Operation_DISALLOW_Mode_Content.asp",
     "MLO.asp"
   ],
   "QoS_Type": [
@@ -5750,7 +5750,7 @@
     "Advanced_FirmwareUpgrade_Content.asp"
   ],
   "Security": [
-    "Advanced_OperationMode_Content.asp",
+    "Advanced_Operation_DISALLOW_Mode_Content.asp",
     "index.asp"
   ],
   "Security_Level": [
@@ -7994,13 +7994,13 @@
     "Advanced_ASUSDDNS_Content.asp"
   ],
   "deviceDiscorvy2": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "deviceDiscorvy3": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "deviceDiscorvy4": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "diskUtility": [
     "device-map/disk.asp",
@@ -8822,7 +8822,7 @@
     "sysdep/FUNCTION/TUF_UI/index.asp"
   ],
   "menu5_6_1_title": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "menu5_6_2": [
     "Advanced_Site_Manager.asp",
@@ -8909,7 +8909,7 @@
     "Advanced_WWPS_Content.asp"
   ],
   "op_already_configured": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "option_accepted": [
     "Advanced_BasicFirewall_Content.asp"
@@ -8994,13 +8994,13 @@
     "index.html?page=dashboard"
   ],
   "qis_ssid_desc": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "qis_wireless_setting": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "qis_wireless_setting_skdesc": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "qos_user_prio": [
     "Advanced_QOSUserPrio_Content.asp",
@@ -9376,7 +9376,7 @@
     "sysdep/FUNCTION/TUF_UI/Main_TrafficMonitor_realtime.asp"
   ],
   "triband_smart_connect": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "tunnel_MTU": [
     "Advanced_IPv61_Content.asp",
@@ -10084,7 +10084,7 @@
     "index.html?page=vpn"
   ],
   "vpnc_title": [
-    "Advanced_OperationMode_Content.asp",
+    "Advanced_Operation_DISALLOW_Mode_Content.asp",
     "index.html?page=vpn",
     "sysdep/FUNCTION/VPNC_V2/index.html?page=vpn",
     "index.html?page=vpn",
@@ -10139,7 +10139,7 @@
     "sysdep/FUNCTION/UI4/blocking.asp"
   ],
   "web_redirect_suggestion1": [
-    "Advanced_OperationMode_Content.asp"
+    "Advanced_Operation_DISALLOW_Mode_Content.asp"
   ],
   "web_redirect_suggestion_modify": [
     "Advanced_VLAN_Switch_Content.asp",

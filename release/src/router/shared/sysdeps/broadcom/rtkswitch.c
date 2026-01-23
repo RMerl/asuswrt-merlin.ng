@@ -128,6 +128,7 @@ int rtkswitch_ioctl(int val, int val2, int val3)
 	case 46:	/* power up specified LAN port */
 	case 47:	/* power down specified LAN port */
 	case 48:	/* dump serdes registers */
+	case 490:	/* disable lan ports and cpu port l2 learning */
 	case 51:	/* set FlowControlJumboMode */
 	case 53:	/* set Jumbo threhsold(enable/disable) */
 	case 55:	/* set Jumbo size for Jumbo mode flow control */

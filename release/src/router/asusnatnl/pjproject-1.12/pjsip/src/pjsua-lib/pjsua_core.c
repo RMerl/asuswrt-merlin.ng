@@ -627,7 +627,7 @@ static void log_rotate(pjsua_inst_id inst_id, int num_of_rotate) {
 		pjsua_var[inst_id].log_cfg.log_filename.ptr,
 		flags, 
 		&pjsua_var[inst_id].log_file,
-		&pjsua_var[inst_id].log_written_size);
+		(unsigned *)&pjsua_var[inst_id].log_written_size);
 }
 
 
@@ -671,7 +671,7 @@ static void log_writer(pjsua_inst_id inst_id, int level, const char *buffer, int
 		if (!pjsua_var[inst_id].log_cfg.disable_console_log) {
 			// callback or stdout
 			if (pjsua_var[inst_id].log_cfg.cb)
-				(*pjsua_var[inst_id].log_cfg.cb)(inst_id, level, buffer, len);
+				(*pjsua_var[inst_id].log_cfg.cb)(inst_id, level, buffer, len, flush);
 			else
 				pj_log_write(inst_id, level, buffer, len, flush);
 		}
@@ -726,7 +726,7 @@ PJ_DEF(pj_status_t) pjsua_reconfigure_logging(pjsua_inst_id inst_id, const pjsua
 			      pjsua_var[inst_id].log_cfg.log_filename.ptr,
 			      flags, 
 				  &pjsua_var[inst_id].log_file,
-				  &pjsua_var[inst_id].log_written_size);
+				  (unsigned *)&pjsua_var[inst_id].log_written_size);
 
 	if (status != PJ_SUCCESS) {
 	    pjsua_perror(THIS_FILE, "Error creating log file", status);
@@ -2154,7 +2154,7 @@ PJ_DEF(pj_status_t) pjsua_transport_create( pjsua_inst_id inst_id,
 	if (status != PJ_SUCCESS)
 	    goto on_return;
 
-	pj_ansi_strcpy(hostbuf, addr_string(&pub_addr));
+        pj_ansi_strxcpy(hostbuf, addr_string(&pub_addr), sizeof(hostbuf));
 	addr_name.host = pj_str(hostbuf);
 	addr_name.port = pj_sockaddr_get_port(&pub_addr);
 
@@ -2480,7 +2480,7 @@ PJ_DEF(pj_status_t) pjsua_transport_set_enable( pjsua_inst_id inst_id,
 
 
     /* To be done!! */
-    PJ_TODO(pjsua_transport_set_enable);
+    //PJ_TODO(pjsua_transport_set_enable);
     PJ_UNUSED_ARG(enabled);
 
     return PJ_EINVALIDOP;
@@ -2807,7 +2807,7 @@ PJ_DEF(pj_status_t) pjsua_verify_url(pjsua_inst_id inst_id, const char *c_url)
     if (!pool) return PJ_ENOMEM;
 
     url = (char*) pj_pool_alloc(pool, len+1);
-    pj_ansi_strcpy(url, c_url);
+    pj_ansi_strxcpy(url, c_url, len+1);
 
     p = pjsip_parse_uri(inst_id, pool, url, len, 0);
 
@@ -2832,7 +2832,7 @@ PJ_DEF(pj_status_t) pjsua_verify_sip_url(pjsua_inst_id inst_id,
     if (!pool) return PJ_ENOMEM;
 
     url = (char*) pj_pool_alloc(pool, len+1);
-    pj_ansi_strcpy(url, c_url);
+    pj_ansi_strxcpy(url, c_url, len+1);
 
     p = pjsip_parse_uri(inst_id, pool, url, len, 0);
     if (!p || (pj_stricmp2(pjsip_uri_get_scheme(p), "sip") != 0 &&

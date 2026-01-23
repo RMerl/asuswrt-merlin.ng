@@ -2214,10 +2214,14 @@ static inline int access_point_mode(void)
 static inline int dpsr_mode();
 static inline int psr_mode();
 static inline int rp_mode();
+static inline int re_mode(void);
 
 #if defined(RTCONFIG_WIRELESSREPEATER)
 static inline int __repeater_mode(int sw_mode)
 {
+	if (re_mode())
+		return 0;
+
 	return (sw_mode == SW_MODE_REPEATER
 #ifdef RTCONFIG_PROXYSTA
 		|| psr_mode() || dpsr_mode() || rp_mode()
@@ -5829,6 +5833,7 @@ enum{
 	ASUS_PP_CONFIG_TRANSFER = 5,
 	ASUS_PP_DDNS = 6,
 	ASUS_PP_AFC = 7,
+	ASUS_PP_LICENSE_UPDATE_V5 = 8,
 	ASUS_PP_MAX
 };
 
@@ -5836,6 +5841,7 @@ struct ASUS_PP_table {
 	char *name;
 	char *version;
 	int id;
+	int force_sign;
 };
 extern struct ASUS_PP_table ASUS_PP_t[];
 
@@ -5843,6 +5849,7 @@ extern int webapi_get_b(const int id, char *buf, size_t len);
 extern int get_ASUS_privacy_policy_state(const int id);
 extern int get_ASUS_privacy_policy(void);
 extern int get_ASUS_privacy_policy_ver(const int id);
+extern void init_asus_pp_eula(void);
 
 extern int adjust_62_nv_list(char *name);
 
@@ -5917,4 +5924,7 @@ static inline int is_airiq_eanbled() {
 #define AIBOARD_CONTROL_IP "169.254.0.2"
 #endif
 
+extern int safe_do_system(const char *fmt, ...);
+extern int safe_fork_do_system(const char *fmt, ...);
+extern int safe_do_system_to_file(const char *outfile, int append, const char *fmt, ...);
 #endif	/* !__SHARED_H__ */

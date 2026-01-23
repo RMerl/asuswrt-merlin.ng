@@ -391,3 +391,18 @@
 	color: #4D595D;
 	font-size: 16px;
 }
+.title_num_white {
+	display: block;
+	width: 21px;
+	height: 21px;
+	line-height: 22px;
+	-moz-border-radius: 50%;
+	-webkit-border-radius: 50%;
+	border-radius: 50%;
+	background-color: #4D595D;
+	text-align: center;
+	font-weight: 700;
+	font-family: sans-serif;
+	color: #FFFFFF;
+	font-size: 16px;
+}

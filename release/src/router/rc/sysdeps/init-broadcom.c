@@ -2699,6 +2699,14 @@ void init_switch_pre()
 #endif
 #if defined(BT10)
 	if (is_router_mode()){
+#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
+		if(is_auto_wanport_enabled() > 0){
+			foreach(word, nvram_safe_get("autowan_ifnames"), next) {
+				doSystem("ethswctl -c wan -i %s -o %s", word, "enable");
+			}
+		}
+		else
+#endif
 		if (nvram_match("wans_dualwan", "wan lan") || nvram_match("wans_dualwan", "lan wan")){
 			foreach(word, nvram_safe_get("wan_ifnames"), next) {
 				doSystem("ethswctl -c wan -i %s -o %s", word, "enable");
@@ -4840,7 +4848,7 @@ system("fapi-GSW-BridgePortAlloc");
 system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
 
 //CTP2 to set exVLAN, discard stag,dtag (port=2, blockId=16*(i-1)=0x10)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x10 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x10 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=0");
 system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x10 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
 
 //xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=7, blockId=16*(i-1)=0x60)
@@ -4933,7 +4941,7 @@ system("fapi-GSW-BridgePortAlloc");
 system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
 
 //CTP2 to set exVLAN, discard stag,dtag (port=3, blockId=16*(i-1)=0x20)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x20 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x20 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=0");
 system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x20 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
 
 //xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=7, blockId=16*(i-1)=0x60)
@@ -5026,7 +5034,7 @@ system("fapi-GSW-BridgePortAlloc");
 system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
 
 //CTP2 to set exVLAN, discard stag,dtag (port=4, blockId=16*(i-1)=0x30)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x30 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x30 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=0");
 system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x30 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
 
 //xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=7, blockId=16*(i-1)=0x60)
@@ -5119,7 +5127,7 @@ system("fapi-GSW-BridgePortAlloc");
 system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
 
 //CTP2 to set exVLAN, discard stag,dtag (port=5, blockId=16*(i-1)=0x40)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x40 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x40 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=0");
 system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x40 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
 
 //xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=7, blockId=16*(i-1)=0x60)
@@ -5250,7 +5258,7 @@ system("fapi-GSW-BridgePortAlloc");
 system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
 
 //CTP2 to set exVLAN, discard stag,dtag (port=5, blockId=16*(i-1)=0x10)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x40 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x40 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=0");
 system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x40 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
 
 //xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=10, blockId=16*(i-1)=0x90)
@@ -5346,7 +5354,7 @@ system("fapi-GSW-BridgePortAlloc");
 system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
 
 //CTP2 to set exVLAN, discard stag,dtag (port=6, blockId=16*(i-1)=0x10)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x50 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x50 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=0");
 system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x50 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
 
 //xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=10, blockId=16*(i-1)=0x90)
@@ -5442,7 +5450,7 @@ system("fapi-GSW-BridgePortAlloc");
 system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
 
 //CTP2 to set exVLAN, discard stag,dtag (port=7, blockId=16*(i-1)=0x10)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=0");
 system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x60 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
 
 //xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=10, blockId=16*(i-1)=0x90)
@@ -5538,7 +5546,7 @@ system("fapi-GSW-BridgePortAlloc");
 system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
 
 //CTP2 to set exVLAN, discard stag,dtag (port=8, blockId=16*(i-1)=0x10)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x70 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x70 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=0");
 system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x70 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
 
 //xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=10, blockId=16*(i-1)=0x90)
@@ -5676,7 +5684,7 @@ system("fapi-GSW-BridgePortAlloc");
 system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
 
 //CTP2 to set exVLAN, discard stag,dtag (port=1, blockId=16*(i-1)=0x0)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x0 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x0 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=0");
 system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x0 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
 
 //xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=7, blockId=16*(i-1)=0x60)
@@ -5773,7 +5781,7 @@ system("fapi-GSW-BridgePortAlloc");
 system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
 
 //CTP2 to set exVLAN, discard stag,dtag (port=2, blockId=16*(i-1)=0x10)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x10 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x10 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=0");
 system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x10 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
 
 //xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=7, blockId=16*(i-1)=0x60)
@@ -5875,7 +5883,7 @@ system("fapi-GSW-BridgePortAlloc");
 system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
 
 //CTP2 to set exVLAN, discard stag,dtag (port=3, blockId=16*(i-1)=0x20)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x20 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x20 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=0");
 system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x20 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
 
 //xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=7, blockId=16*(i-1)=0x60)
@@ -5977,7 +5985,7 @@ system("fapi-GSW-BridgePortAlloc");
 system("fapi-GSW-ExtendedVlanAlloc nNumberOfEntries=3");
 
 //CTP2 to set exVLAN, discard stag,dtag (port=4, blockId=16*(i-1)=0x30)
-system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x30 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=3");
+system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x30 nEntryIndex=1 eOuterVlanFilterVlanType=2 eInnerVlanFilterVlanType=3 eRemoveTagAction=0");
 system("fapi-GSW-ExtendedVlanSet nExtendedVlanBlockId=0x30 nEntryIndex=2 eOuterVlanFilterVlanType=1 eInnerVlanFilterVlanType=2 eRemoveTagAction=3");
 
 //xpcs1(CTP13) to set exVLAN, discard stag,dtag (port=7, blockId=16*(i-1)=0x60)
@@ -16377,10 +16385,6 @@ void set_acs_ifnames()
 	const char list_6g_unii5_10g_phy_affect_skip[] = "0x5059,0x585b,0x595b,0x6057,0x6157,0x6257,0x6357,0x684f,0x694f,0x6a4f,0x6b4f,0x6c4f,0x6d4f,0x6e4f,0x6f4f,0x7002,0x7042,0x7082,0x70c2,0x7102,0x7142,0x7182,0x71c2,0x7001,0x7041,0x7081,0x70c1,0x7101,0x7141,0x7181,0x71c1,0x7201,0x7241,0x7281,0x72c1,0x7301,0x7341,0x7381,0x73c1";
 	const char list_6g_unii6_10g_phy_affect_skip[] = "0x7202,0x7242,0x7282,0x72c2,0x7302,0x7342,0x7382,0x73c2";
 #endif
-#if defined(RTCONFIG_HND_ROUTER_BE_4916) && defined(RTCONFIG_BCM_AFC)
-	const char list_6g_unii6_afc_war[] = "0x5065,0x5963,0x6167,0x696f,0x7043,0x7242";
-	const char list_6g_unii8_afc_war[] = "0x50c5,0x50d5,0x59c3,0x59d3,0x61c7,0x61d7,0x69cf,0x6dcf,0x7245,0x7345";
-#endif
 #if defined(RTCONFIG_QUADBAND) && (defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7))
 #ifdef RTCONFIG_HAS_6G_2
 	const unsigned int wl_idx[4] = {WL_2G_BAND, WL_5G_BAND, WL_6G_BAND, WL_6G_2_BAND};      // 2.4G, 5G, 6G-1, 6G-2
@@ -16616,7 +16620,6 @@ void set_acs_ifnames()
 #ifdef RTCONFIG_HAS_5G_2
 	nvram_set(strcat_r(prefix_5g, "acs_excl_chans", tmp), nvram_match("acs_dfs", "1") ? "" : list3);        // 5GL
 	nvram_set(strcat_r(prefix_5g2, "acs_excl_chans", tmp), nvram_match("acs_band3", "1") ? list : list2);   // 5GH
-	nvram_set("wl_acs_excl_chans_dfs_2", nvram_match("acs_band3", "1") ? list : list2);
 #else
 	nvram_set(strcat_r(prefix_5g, "acs_excl_chans", tmp), nvram_match("acs_dfs", "1") ? list : list3);      // 5G full band
 #endif
@@ -16651,49 +16654,22 @@ void set_acs_ifnames()
 					list_6g_unii5_skip_non_eu,              // 6g1-6g29 bw20/40/80/160
 					list_6g_unii8_skip_non_eu);		// 6g225, 6g229 bw20/40, 6g233
 		}
+
 		nvram_set(strcat_r(prefix_6g, "acs_excl_chans", tmp), list6g);
 #ifdef RTCONFIG_HAS_6G_2
 		snprintf(list6g, sizeof(list6g), "%s",
 			list_6g_unii8_skip_non_eu);	// 6g225, 6g229 bw20/40, 6g233
 		nvram_set(strcat_r(prefix_6g2, "acs_excl_chans", tmp), list6g);
 #endif
+		nvram_set("wl_acs_excl_chans_dfs_2", list6g);
 #else // WIFI6E
 
 		snprintf(list6g, sizeof(list6g), "%s,%s",
 			list_6g_unii5_skip_non_eu,		// 6g1-6g29 bw20/40/80/160
 			list_6g_unii8_skip_non_eu);		// 6g225, 6g229 bw20/40, 6g233
 		nvram_set(strcat_r(prefix_6g, "acs_excl_chans", tmp), list6g);
+		nvram_set("wl_acs_excl_chans_dfs_2", list6g);
 #endif //defined(RTCONFIG_WIFI7) && defined(RTCONFIG_BW320M)
-#if defined(RTCONFIG_HND_ROUTER_BE_4916) && defined(RTCONFIG_BCM_AFC)
-                if (!strncmp(nvram_safe_get("territory_code"), "US", 2)) {
-			memset(list, 0, sizeof(list));
-			memset(list6g, 0, sizeof(list6g));
-#ifdef RTCONFIG_HAS_6G_2
-			snprintf(list, sizeof(list), "%s", list_6g_unii6_afc_war); //6g101 bw20/40/80/160/320
-#else
-			snprintf(list, sizeof(list), "%s,%s", list_6g_unii6_afc_war, list_6g_unii8_afc_war); //6g101, 6g197, 6g213 bw20/40/80/160/320
-#endif //RTCONFIG_HAS_6G_2
-			if(strlen(nvram_safe_get(strcat_r(prefix_6g, "acs_excl_chans", tmp))))
-				snprintf(list6g, sizeof(list6g), "%s,%s",
-					nvram_safe_get(strcat_r(prefix_6g, "acs_excl_chans", tmp)),
-					list);
-			else
-				snprintf(list6g, sizeof(list6g), "%s",
-					list);
-			nvram_set(strcat_r(prefix_6g, "acs_excl_chans", tmp), list6g);
-#ifdef RTCONFIG_HAS_6G_2
-			memset(list6g, 0, sizeof(list6g));
-			if(strlen(nvram_safe_get(strcat_r(prefix_6g2, "acs_excl_chans", tmp))))
-				snprintf(list6g, sizeof(list6g), "%s,%s",
-					nvram_safe_get(strcat_r(prefix_6g2, "acs_excl_chans", tmp)),
-					list_6g_unii8_afc_war); //6g197, 6g213 bw20/40/80/160/320
-			else
-				snprintf(list6g, sizeof(list6g), "%s",
-					list_6g_unii8_afc_war);
-			nvram_set(strcat_r(prefix_6g2, "acs_excl_chans", tmp), list6g);
-#endif //RTCONFIG_HAS_6G_2
-                }
-#endif //defined(RTCONFIG_HND_ROUTER_BE_4916) && defined(RTCONFIG_BCM_AFC)
 	}
 #endif //RTCONFIG_HAS_6G
 #else

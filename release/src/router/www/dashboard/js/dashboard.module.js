@@ -226,6 +226,22 @@ export class WiFiInterferenceChart {
         div.innerHTML = this.getTemplate();
         this.element = div;
 
+		// Add FAQ link event
+        const lang = system.language.currentLang;
+        const faqBtns = this.element.querySelectorAll('i.ai-faq-btn');
+        faqBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const faqKey = btn.getAttribute('data-faq');
+                if (faqKey) {
+                    openFaq(faqKey);
+                }
+            });
+        })
+        const openFaq = (faqKey) => {
+            const faqUrl = `https://nw-dlcdnet.asus.com/support/forward.html?model=&type=${faqKey}&lang=${lang}&kw=&num=`;
+            window.open(faqUrl, '_blank');
+        };
+
         // Verify critical elements exist
         const chartCanvas = this.element.querySelector('#wifi_inter_chart');
         if (!chartCanvas) {
@@ -282,6 +298,8 @@ export class WiFiInterferenceChart {
             /* START: wifi-channel-panel */
             
                 .wifi-insight-card-title {
+                    display: flex;
+                    gap: 8px;
                     min-width: 80px;
                 }
 
@@ -797,10 +815,16 @@ export class WiFiInterferenceChart {
                     content: '✓';
                     font-size: 16px;
                 }
+
+                .ai-faq-btn {
+                    cursor: pointer;
+                }
             </style>
             <div class="card pt-2 h-100">
                 <div class="card-header d-flex align-items-center justify-content-between">
-                    <div class="wifi-insight-card-title">WiFi Insight</div>
+                    <div class="wifi-insight-card-title">WiFi Insight<i data-faq="AI_FAQ_WiFiInsight" role="icon"
+                                                           class="icon icon-help-hexagon icon-size-18 ai-faq-btn"></i>
+                    </div>
                     <div id="band_change" style="min-width: 180px;">
                         <div class="segmented_picker"></div>
                     </div>
@@ -833,13 +857,13 @@ export class WiFiInterferenceChart {
                                     </div>
                                 </div>
                                 <div class="option-group">
-                                    <label>Interference Detect</label>
+                                    <label><#Wifi_Detect_Interference#></label>
                                     <div id="interference_toggle" role="button" tabindex="1" class="toggle-button with-text ${this.interferenceEnabled ? 'active' : ''}">
                                         <div class="toggle-button-handle"></div>
                                     </div>
                                 </div>
                                 <div class="option-group">
-                                    <label>Auto Refresh</label>
+                                    <label><#Wifi_Auto_Refresh#></label>
                                     <div id="auto_refresh_toggle" role="button" tabindex="1" class="toggle-button with-text">
                                         <div class="toggle-button-handle"></div>
                                     </div>
@@ -862,7 +886,7 @@ export class WiFiInterferenceChart {
                         <div class="col-12 col-lg-9 mt-1 mb-1">
                             <div class="row">
                                 <div class="col-12 px-3 py-2">
-                                    <div class="channel_chart_title">In Channel Interference</div>
+                                    <div class="channel_chart_title"><#Wifi_in_ch_Interference#></div>
                                 </div>
                                 <div class="w-100 d-flex gap-2 align-items-center justify-content-center justify-content-lg-end px-3" id="txop_legend">
                                     </div>
@@ -870,13 +894,13 @@ export class WiFiInterferenceChart {
                                     <canvas id="txop_chart"></canvas>
                                 </div>
                                 <div class="col-12 px-3 py-2">
-                                    <div id="bar-chart-title" class="channel_chart_title">Spectrum Scan Interference</div>
+                                    <div id="bar-chart-title" class="channel_chart_title"><#Wifi_specscan_Interference#></div>
                                 </div>
                                 <div class="col-12 px-3">
                                     <div class="row">
                                         <div class="col-12 col-lg-4 d-flex align-items-center mb-1">
                                             <div class="d-flex gap-2 align-items-center w-100" id="interference_info">
-                                                <span class="h-100">Interference</span>
+                                                <span class="h-100"><#Wifi_Interference#></span>
                                                 <div class="d-flex align-items-center" style="width: inherit">
                                                     <div class="range-form">
                                                         <div class="signal-bar" style="background: linear-gradient(to right, 
@@ -901,7 +925,7 @@ export class WiFiInterferenceChart {
                                             <div class="d-flex align-items-center d-none" id="channel_chart_info">
                                                 <span class="h-100">
                                                     <div class="alert alert-info p-1 m-0" role="alert">
-                                                      Spectrum interference scanning covers only 2.4GHz and 5GHz bands.
+                                                      <#Wifi_specscan_hint#>
                                                     </div>
                                                 </span>
                                             </div>
@@ -936,11 +960,11 @@ export class WiFiInterferenceChart {
                 if (this.showBand.startsWith("6G")) {
                     this.getCachedElement("#channel_chart_info").classList.remove("d-none");
                     this.getCachedElement("#interference_info").classList.add("d-none");
-                    this.getCachedElement("#bar-chart-title").innerText = "Channel In Use";
+                    this.getCachedElement("#bar-chart-title").innerText = `<#Channel_In_Use#>`;
                 } else {
                     this.getCachedElement("#channel_chart_info").classList.add("d-none");
                     this.getCachedElement("#interference_info").classList.remove("d-none");
-                    this.getCachedElement("#bar-chart-title").innerText = "Spectrum Scan Interference";
+                    this.getCachedElement("#bar-chart-title").innerText = `<#Wifi_specscan_Interference#>`;
                 }
 
                 const titleElement = this.getCachedElement(".channel_plan_title");
@@ -1107,7 +1131,7 @@ export class WiFiInterferenceChart {
 
         const channelLegendButton = this.createLegendButton({
             id: 'channel-in-use-legend-btn',
-            label: 'Channel In Use',
+            label: `<#Channel_In_Use#>`,
             checked: rectanglePlugin.legendStates.channel,
             fill: 'rgba(164, 210, 255, 0.8)',
             border: '1px solid rgba(36, 141, 255, 1)',
@@ -1141,7 +1165,7 @@ export class WiFiInterferenceChart {
 
             const otherWifiLegendButton = this.createLegendButton({
                 id: 'otherwifi-legend-btn',
-                label: 'Others WiFi Interference',
+                label: `<#OtherWifi_Interference#>`,
                 checked: rectanglePlugin.legendStates.wifi,
                 icon: false,
                 onChange: (checked) => {
@@ -1154,7 +1178,7 @@ export class WiFiInterferenceChart {
 
             const nonWifiLegendButton = this.createLegendButton({
                 id: 'nonwifi-legend-btn',
-                label: 'NonWiFi Interference',
+                label: `<#NonWifi_Interference#>`,
                 checked: rectanglePlugin.legendStates.nonwifi,
                 icon: false,
                 onChange: (checked) => {
@@ -1190,14 +1214,14 @@ export class WiFiInterferenceChart {
 
         const otherWifiLegendButton = this.createLegendButton({
             id: 'otherwifi-legend-btn',
-            label: 'Others WiFi Interference',
-            checked: this.txopChartInstance.data.datasets.find(dataset => dataset.label === 'Others WiFi Interference')?.hidden === false,
+            label: `<#OtherWifi_Interference#>`,
+            checked: this.txopChartInstance.data.datasets.find(dataset => dataset.label === `<#OtherWifi_Interference#>`)?.hidden === false,
             icon: true,
             fill: 'rgba(238,58,62,0.1)',
             border: '1px solid #ee3a3e',
             onChange: (checked) => {
                 this.txopChartInstance.data.datasets.forEach(dataset => {
-                    if (dataset.label === 'Others WiFi Interference') {
+                    if (dataset.label === `<#OtherWifi_Interference#>`) {
                         dataset.hidden = !checked;
                     }
                 });
@@ -1209,14 +1233,14 @@ export class WiFiInterferenceChart {
         if (!this.showBand.startsWith("6G")) {
             const nonWifiLegendButton = this.createLegendButton({
                 id: 'nonwifi-legend-btn',
-                label: 'NonWiFi Interference',
-                checked: this.txopChartInstance.data.datasets.find(dataset => dataset.label === 'NonWiFi Interference')?.hidden === false,
+                label: `<#NonWifi_Interference#>`,
+                checked: this.txopChartInstance.data.datasets.find(dataset => dataset.label === `<#NonWifi_Interference#>`)?.hidden === false,
                 icon: true,
                 fill: 'rgba(245,176,124, 0.1)',
                 border: '1px solid #f5b07c',
                 onChange: (checked) => {
                     this.txopChartInstance.data.datasets.forEach(dataset => {
-                        if (dataset.label === 'NonWiFi Interference') {
+                        if (dataset.label === `<#NonWifi_Interference#>`) {
                             dataset.hidden = !checked;
                         }
                     });
@@ -1331,11 +1355,11 @@ export class WiFiInterferenceChart {
                     color = 'rgba(200, 200, 200, 0.8)';
                     break;
                 case 1: // WiFi only
-                    text = 'Others WiFi Interference';
+                    text = `<#OtherWifi_Interference#>`;
                     color = '#4CAF50';
                     break;
                 case 2: // NonWiFi only
-                    text = 'NonWiFi Interference';
+                    text = `<#NonWifi_Interference#>`;
                     color = '#FF9800';
                     break;
                 case 3: // Both
@@ -1523,7 +1547,7 @@ export class WiFiInterferenceChart {
             }
         } catch (error) {
             console.error('Failed to initialize WiFi interference chart:', error);
-            this.showError('Failed to load chart data');
+            this.showError(`We’re preparing the latest chart for you...`);
         } finally {
             this.hideLoadingState();
         }
@@ -1837,18 +1861,18 @@ export class WiFiInterferenceChart {
 
                                         if (first_total_util >= this.signalRange.min.value && legendStates.interferenceState === 3) {
                                             if (first_wlan_util >= this.signalRange.min.value && legendStates.wifi) {
-                                                tooltipContent += `Others WiFi Interference: ${first_wlan_util.toFixed(0)}%<br/>`;
+                                                tooltipContent += `<#OtherWifi_Interference#>: ${first_wlan_util.toFixed(0)}%<br/>`;
                                                 found = true;
                                             }
                                             if (first_nonwlan_util >= this.signalRange.min.value && legendStates.nonwifi) {
-                                                tooltipContent += `NonWiFi Interference: ${first_nonwlan_util.toFixed(0)}%<br/>`;
+                                                tooltipContent += `<#NonWifi_Interference#>: ${first_nonwlan_util.toFixed(0)}%<br/>`;
                                                 found = true;
                                             }
                                         } else if (first_wlan_util >= this.signalRange.min.value && legendStates.wifi) {
-                                            tooltipContent += `Others WiFi Interference: ${first_wlan_util.toFixed(0)}%<br/>`;
+                                            tooltipContent += `<#OtherWifi_Interference#>: ${first_wlan_util.toFixed(0)}%<br/>`;
                                             found = true;
                                         } else if (first_nonwlan_util >= this.signalRange.min.value && legendStates.nonwifi) {
-                                            tooltipContent += `NonWiFi Interference: ${first_nonwlan_util.toFixed(0)}%<br/>`;
+                                            tooltipContent += `<#NonWifi_Interference#>: ${first_nonwlan_util.toFixed(0)}%<br/>`;
                                             found = true;
                                         }
 
@@ -1882,7 +1906,7 @@ export class WiFiInterferenceChart {
                         // 顯示 DFS tooltip
                         tooltipEl.innerHTML = `
                             ${new Date(d.x[0]).toLocaleString()} - ${new Date(d.x[1]).toLocaleString()}<br/>
-                            Channel: ${d.ch}<br/>
+                            <#Channel#>: ${d.ch}<br/>
                             DFS
                         `;
                         positionTooltip(event, tooltipEl);
@@ -1921,21 +1945,21 @@ export class WiFiInterferenceChart {
                                 const freq_result = getChannelFrequencyRange(showBand, d.controlChannel, d.bw);
                                 tooltipEl.innerHTML = `
                                 ${d.x[0].toLocaleString()}<br/>
-                                Control Channel ${d.controlChannel} / ${d.bw}MHz<br/>
-                                Center Channel ${d.centerChannel || '未知'}<br/>
-                                Frequency: ${freq_result ? freq_result.startMHz : '未知'}MHz - ${freq_result ? freq_result.endMHz : '未知'}MHz<br/>
+                                <#WiFi_Control_Channel#> ${d.controlChannel} / ${d.bw}MHz<br/>
+                                <#WiFi_Center_Channel#> ${d.centerChannel || '未知'}<br/>
+                                <#diskUtility_frenqucy#>: ${freq_result ? freq_result.startMHz : '未知'}MHz - ${freq_result ? freq_result.endMHz : '未知'}MHz<br/>
                             `;
                             } else {
                                 tooltipEl.innerHTML = `
                                 ${d.x[0].toLocaleString()}<br/>
-                                Control Channel ${d.controlChannel || '未知'} / ${d.bw || '未知'}MHz<br/>
-                                Center Channel ${d.centerChannel || '未知'}<br/>
+                                <#WiFi_Control_Channel#> ${d.controlChannel || '未知'} / ${d.bw || '未知'}MHz<br/>
+                                <#WiFi_Center_Channel#> ${d.centerChannel || '未知'}<br/>
                             `;
                             }
                         } else {
                             tooltipEl.innerHTML = `
                                 ${d.x[0].toLocaleString()}<br/>
-                                WiFi Off
+                                <#WiFi_OFF#>
                             `;
                         }
 
@@ -2563,7 +2587,7 @@ export class WiFiInterferenceChart {
                     ctx.font = '10px sans-serif';
                     ctx.fillStyle = 'rgba(0, 108, 225, 1)';
                     ctx.textBaseline = 'top';
-                    ctx.fillText(`Now`, xScale.getPixelForValue(nowTime) + 2, yScale.getPixelForValue(0));
+                    ctx.fillText(`<#Now#>`, xScale.getPixelForValue(nowTime) + 2, yScale.getPixelForValue(0));
                     ctx.restore();
 
                     // Frequency Line
@@ -2753,7 +2777,7 @@ export class WiFiInterferenceChart {
                             },
                             title: {
                                 display: false,
-                                text: 'Time'
+                                text: `<#diskUtility_time#>`
                             },
                             grid: {
                                 display: true,
@@ -2785,7 +2809,7 @@ export class WiFiInterferenceChart {
                             },
                             title: {
                                 display: false,
-                                text: 'Channel'
+                                text: `<#Channel#>`
                             },
                             grid: {
                                 display: false,
@@ -2945,13 +2969,13 @@ export class WiFiInterferenceChart {
             }
 
             if (d.radio_status === "1") {
-                text = `Channel ${d.controlChannel} / ${d.bandwidth}MHz`;
+                text = `<#Channel#> ${d.controlChannel} / ${d.bandwidth}MHz`;
             } else {
-                text = 'WiFi Off';
+                text = `<#WiFi_OFF#>`;
             }
 
             if (this.sysData.find(data => data.timestamp === d.timeStart)) {
-                d.event = "Boot";
+                d.event = `<#WiFi_Boot#>`;
             }
 
             const event_desc_array = [];
@@ -2959,48 +2983,48 @@ export class WiFiInterferenceChart {
                 let event = '';
                 switch (e) {
                     case 'HTTPD_CH_AUTO':
-                        event = 'Manually configured to Auto Channel';
+                        event = `<#WiFi_Insight_eCH_AUTO#>`;
                         break
                     case 'HTTPD_CH_FIXED':
-                        event = 'Manually configured to Fixed Channel';
+                        event = `<#WiFi_Insight_eCH_FIXED#>`;
                         break
                     case 'HTTPD_BW_AUTO':
-                        event = 'Manually configured to Auto Bandwidth';
+                        event = `<#WiFi_Insight_eBW_AUTO#>`;
                         break
                     case 'HTTPD_BW_FIXED':
-                        event = 'Manually configured to Fixed Bandwidth';
+                        event = `<#WiFi_Insight_eBW_FIXED#>`;
                         break
                     case 'TXOP':
-                        event = `Interference`;
+                        event = `<#Wifi_Interference#>`;
                         break
                     case 'TXFAIL':
-                        event = `Interference(${d.event})`;
+                        event = `<#Wifi_Interference#>(${d.event})`;
                         break
                     case 'RADAR':
-                        event = `Interference(${d.event})`;
+                        event = `<#Wifi_Interference#>(${d.event})`;
                         break
                     case 'EDCRS_HI':
-                        event = `Regulatory(Channel conflict)`;
+                        event = `<#WiFi_Regulatory#>(<#WiFi_ch_conflict#>)`;
                         break
                     case 'TIMER':
                     case 'NONACS':
                     case 'IOCTL':
-                        event = `Optimized automatically`;
+                        event = `<#WiFi_Optimized_auto#>`;
                         break
                     case 'DFS-REENTRY':
-                        event = `Optimized(DFS-REENTRY)`;
+                        event = `<#WiFi_Optimized#>(<#WiFi_DFS_REENTRY#>)`;
                         break
                     case 'INIT':
-                        event = `Initial auto selection`;
+                        event = `<#WiFi_INIT#>`;
                         break
                     case 'Boot':
-                        event = `Auto-selection after reboot`;
+                        event = `<#WiFi_After_Boot#>`;
                         break
                     case 'CSA':
                         if (d.oldBandwidth < d.bandwidth) {
-                            event = `Adaptive Bandwidth: Expand`;
+                            event = `<#WiFi_Adaptive_bw#>: <#WiFi_CSA_Expand#>`;
                         } else {
-                            event = `Adaptive Bandwidth: Reduce`;
+                            event = `<#WiFi_Adaptive_bw#>: <#WiFi_CSA_Reduce#>`;
                         }
                         break
                     default:
@@ -3012,7 +3036,7 @@ export class WiFiInterferenceChart {
                 }
             })
             div.innerHTML = `
-                <div class="time">${d.timeStart}${(index === 0) ? `<div class="now-text">Now</div>` : ``}</div>
+                <div class="time">${d.timeStart}${(index === 0) ? `<div class="now-text"><#Now#></div>` : ``}</div>
                 <div class="channel">${text}</div>
                 <div class="d-flex flex-column gap-1">
                 ${event_desc_array.length > 0 ? event_desc_array.map(e => {
@@ -3143,7 +3167,7 @@ export class WiFiInterferenceChart {
             type: 'line',
             data: {
                 datasets: [{
-                    label: 'Others WiFi Interference',
+                    label: `<#OtherWifi_Interference#>`,
                     data: this.showBand.startsWith('6G') ? obssData : wifiData,
                     borderColor: '#ee3a3e',
                     backgroundColor: 'rgba(238,58,62,0.1)',
@@ -3154,7 +3178,7 @@ export class WiFiInterferenceChart {
                     tension: 0.2,
                     yAxisID: 'stacked-y',
                 }, {
-                    label: 'NonWiFi Interference',
+                    label: `<#NonWifi_Interference#>`,
                     data: nonWifiData,
                     borderColor: '#f5b07c',
                     backgroundColor: 'rgb(245,176,124, 0.1)',
@@ -3322,7 +3346,7 @@ export class WiFiInterferenceChart {
             await this.genChart();
         } catch (error) {
             console.error('Failed to regenerate chart:', error);
-            this.showError('Failed to update chart');
+            this.showError(`We’re preparing the latest chart for you...`);
         }
     }
 

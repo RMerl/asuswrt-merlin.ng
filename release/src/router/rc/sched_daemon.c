@@ -1235,7 +1235,6 @@ static void task_ark_alive(void)
 	mod_timer(timer, PERIOD_120_SEC);
 #endif
 }
-#endif
 
 #ifdef USE_TIMERUTIL
 static void task_ark_protection(struct timer_entry *timer, void *data)
@@ -1262,6 +1261,7 @@ static void task_ark_history(void)
 	mod_timer(timer, PERIOD_120_SEC);
 #endif
 }
+#endif
 
 #if defined(RTCONFIG_BCM_AFC) && defined(RTCONFIG_AFC_POSITIONING)
 #ifdef USE_TIMERUTIL

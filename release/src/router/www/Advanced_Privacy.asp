@@ -18,7 +18,7 @@
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script type="text/javascript" src="/js/asus_policy.js?v=4"></script>
+<script type="text/javascript" src="/js/asus_policy.js?v=5"></script>
 <style>
 
 .eula_withdraw{
@@ -40,27 +40,8 @@
 }
 </style>
 <script>
-
-let eula_status = {
-	"EULA": "0",
-	"PP": "0",
-	"TM_EULA": "0"
-}
-
-eula_status = httpApi.nvramGet(["ASUS_NEW_EULA", "TM_EULA"], true);
-eula_status.EULA = eula_status.ASUS_NEW_EULA;
-httpApi.privateEula.get().then(data=>{
-    eula_status.PP = data.ASUS_PP;
-});
-
 var link_internet = httpApi.nvramGet(["link_internet"], true).link_internet;
 
-var services_array = {
-	"without_alexa_ifttt" : "Account Binding, DDNS",
-	"without_ifttt" : "Account Binding, DDNS, Google Assistant, Alexa™",
-	"within_alexa_ifttt" : "For Account Binding, DDNS, Google Assistant, Alexa™, IFTTT™"
-}
-var services_show = "<#ASUS_eula_withdraw0#>";
 function initial(){
     var url1 = "";
     var url2 = "";
@@ -71,46 +52,43 @@ function initial(){
 	url2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang="+ui_lang+"&kw=tm_ka&num=";
 	$("#tm_disclosure_url").attr("href",url2);  // #TM_data_collection#
 
-	// if(eula_status.EULA == "1"){
-	// 	if(!alexa_support && !ifttt_support){
-	// 		services_show = services_show.replace('%1$@', services_array.without_alexa_ifttt);
-	// 		document.getElementById("asus_eula_title").innerHTML = services_show;
-	// 		document.getElementById("alexa_ifttt").style.display = "none";
-	// 	}
-	// 	else if(alexa_support && !ifttt_support){
-	// 		services_show = services_show.replace('%1$@', services_array.without_ifttt);
-	// 		document.getElementById("asus_eula_title").innerHTML = services_show;
-	// 		document.getElementById("alexa_ifttt").innerHTML = "<#ASUS_eula_withdraw_desc2_Alexa#>";
-	// 	}
-	// 	else{
-	// 		services_show = services_show.replace('%1$@', services_array.within_alexa_ifttt);
-	// 		document.getElementById("asus_eula_title").innerHTML = services_show;
-	// 		document.getElementById("alexa_ifttt").innerHTML = "<#ASUS_eula_withdraw_desc2_AlexaIFTTT#>";
-	// 	}
-	// }
+    PolicyStatus()
+        .then(data => {
+            if(isSupport("ai_support")) {
+                if (data.AIBOARD_EULA > 0) {
+                    document.getElementById("aiboard-eula").style.display = "";
+                } else {
+                    document.getElementById("aiboard-eula").style.display = "none";
+                }
+            }
 
-	if(eula_status.TM_EULA == "1"){
-		document.getElementById("tm_eula").style.display = "";
-		let tm_eula_support_str=`<#TM_eula_new_withdraw0#>`;
-		let tm_eula_support =``;
-		if(based_modelid=="GT-BE19000AI" || based_modelid=="GT-BE96_AI"){
-			tm_eula_support_str = tm_eula_support_str.replace('%@', `<#AiProtection_two-way_IPS#>`);
-		}
-		document.getElementById("tm_eula_withdraw_support").innerHTML = tm_eula_support_str;
-	}
-	else{
-		document.getElementById("tm_eula").style.display = "none";
-	}
+            if (data.PP >= 1) {
+                //Withdraw PP
+                $("#pp").find('.btn_subusage').attr({
+                    'onclick': `show_policy_withdraw('PP')`,
+                    'value': `<#withdraw_str#>`
+                });
+                $("#pp").find('.eula_withdraw_content').append($('<div>').html(`<div><#ASUS_eula_withdraw_content1#> <#ASUS_eula_withdraw_content2#></div>`));
+                $("#pp").find('.eula_withdraw_content').append($('<div>').html(`<a style="cursor: pointer; color: #006ce1; text-decoration: underline;" onclick="show_policy('PP')"><#ASUS_PP_Title#></a>`));
+                $("#pp").find('.eula_withdraw_content').append($('<div>').html(`<div style="margin-top: 1em;"><#ASUS_eula_withdraw_content3#></div>`));
+            } else {
+                //Read PP
+                $("#pp").find('.eula_withdraw_content').append($('<div>').html(`<div><#ASUS_PP_Info#></div>`));
+                $("#pp").find('.btn_subusage').attr({'onclick': `show_policy('PP')`, 'value': `<#Reading#>`});
+            }
 
-	if(eula_status.PP >= "1"){
-        $("#pp").find('.btn_subusage').attr({'onclick':`show_policy_withdraw('PP')`,'value':`<#withdraw_str#>`});
-        $("#pp").find('.eula_withdraw_content').append($('<div>').html(`<div><#ASUS_eula_withdraw_content1#> <#ASUS_eula_withdraw_content2#></div>`));
-        $("#pp").find('.eula_withdraw_content').append($('<div>').html(`<a style="cursor: pointer; color: #006ce1; text-decoration: underline;" onclick="show_policy('PP')"><#ASUS_PP_Title#></a>`));
-        $("#pp").find('.eula_withdraw_content').append($('<div>').html(`<div style="margin-top: 1em;"><#ASUS_eula_withdraw_content3#></div>`));
-	} else {
-        $("#pp").find('.eula_withdraw_content').append($('<div>').html(`<div><#ASUS_PP_Info#></div>`));
-		$("#pp").find('.btn_subusage').attr({'onclick':`show_policy('PP')`,'value':`<#Reading#>`});
-    }
+            if (data.TM == "1") {
+                document.getElementById("tm_eula").style.display = "";
+                let tm_eula_support_str = `<#TM_eula_new_withdraw0#>`;
+                let tm_eula_support = ``;
+                if (based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI") {
+                    tm_eula_support_str = tm_eula_support_str.replace('%@', `<#AiProtection_two-way_IPS#>`);
+                }
+                document.getElementById("tm_eula_withdraw_support").innerHTML = tm_eula_support_str;
+            } else {
+                document.getElementById("tm_eula").style.display = "none";
+            }
+        });
 
 	setTimeout(update_link_status, 1000);
 }
@@ -122,38 +100,6 @@ function update_link_status(){
 function hide_withdraw_sec(eula_type){
 	var eula_id = '#' + eula_type + '_eula';
 	$(eula_id).css("display", "none");
-}
-
-var max_retry_count = 6;
-var retry_count = 0;
-function check_unregister_result(){
-	var asusddns_reg_result = httpApi.nvramGet(["asusddns_reg_result"], true).asusddns_reg_result;
-	var action_type = asusddns_reg_result.slice(0, asusddns_reg_result.indexOf(','));
-	var return_status = "";
-	var timeout = 0;
-
-	if(action_type != "unregister" && retry_count < max_retry_count){
-		setTimeout(check_unregister_result, 500);
-		retry_count++;
-	}
-	else if(action_type == "unregister"){
-		return_status = asusddns_reg_result.slice(asusddns_reg_result.indexOf(',') + 1);
-	}
-	else if(retry_count == max_retry_count){
-		timeout = 1;
-	}
-
-	if( return_status != "" || timeout ){
-		$.ajax({
-			url: "/set_ASUS_EULA.cgi",
-			data:{
-				"ASUS_EULA":"0"
-			},
-			success: function( response ) {
-				hide_withdraw_sec('asus');
-			}
-		});
-	}
 }
 
 function show_policy_withdraw(policy_type){
@@ -183,7 +129,17 @@ function show_policy(policy_type) {
 					}
 				});
 				policyModal.show();
-			} else {
+			} else if(policy_type == 'AIBOARD_EULA'){
+                const policyModal = new PolicyModalComponent({
+                    policy: policy_type,
+                    policyStatus: data,
+                    modalSize: "modal-lg",
+                    agreeBtnText: "<#Acknowledge#>",
+                    disagreeBtnText: "<#CTL_Decline#>",
+                });
+                policyModal.show();
+
+            } else {
 				const policyModal = new PolicyModalComponent({
 					policy: policy_type,
 					policyStatus: data,
@@ -286,6 +242,18 @@ function withdraw_eula(eula_type){
 											<div style="margin: 0px auto 10px;display: flex;justify-content: center;">
 												<input class="btn_subusage button_gen" id="tm_withdraw_btn" onclick="withdraw_eula('tm');" type="button" value="<#withdraw_str#>"/>
 												<img id="tm_loadingicon" style="display:none;" src="/images/InternetScan.gif">
+											</div>
+										</div>
+									</div>
+
+                                    <div id="aiboard-eula" class="eula_withdraw" style="display:none;">
+										<div class="eula_withdraw_title"><#ASUS_Aiboard_EULA_Title#></div>
+										<div class="eula_withdraw_content">
+											<div><#ASUS_Aiboard_EULA_Info#></div>
+										</div>
+										<div style="text-align: center;">
+											<div style="margin: 0px auto 10px;display: flex;justify-content: center;">
+												<input class="btn_subusage button_gen" onclick="show_policy('AIBOARD_EULA');" type="button" value="<#Reading#>"/>
 											</div>
 										</div>
 									</div>

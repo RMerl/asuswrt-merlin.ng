@@ -389,7 +389,7 @@ typedef struct pjsua_logging_config
      * application specific device. This function will be called for
      * log messages on input verbosity level.
      */
-    void       (*cb)(pjsua_inst_id inst_id, int level, const char *data, int len);
+    void       (*cb)(pjsua_inst_id inst_id, int level, const char *data, int len, int flush);
 
 	// The maximum size of the log file.
 	int        log_file_size;

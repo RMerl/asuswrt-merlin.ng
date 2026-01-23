@@ -3309,6 +3309,10 @@ config RTCONFIG_PRESSURE_SENSOR
 	bool "Pressure sensor"
 	default n
 
+config RTCONFIG_PRESSURE_SENSOR_CMP201
+	bool "Pressure sensor CMP201"
+	default n
+
 config RTCONFIG_BCM_AFC
 	bool "BCM AFC features : afcd / afcmd / locpold"
 	default n

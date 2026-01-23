@@ -161,7 +161,9 @@
 
         generateFeatureHtml(featureName, isArk = true) {
             const feature = this.configs[featureName];
-            const isEnabled = isArk ? this.isFeatureEnabled(featureName) : this.isDpiFeatureEnabled(featureName);
+            const isEnabled = isArk
+                ? this.isFeatureEnabled(featureName)
+                : (this.isDpiFeatureEnabled(featureName) && this.nvram.TM_EULA !== "0");
             const title = feature.title || feature.titleKey;
             const desc = feature.desc || feature.descKey;
 
@@ -1817,7 +1819,7 @@
                     <div class="card pt-2">
                         <div class="card-header row">
                             <div class="col-12 col-lg-6">
-                                AI Protection Features
+                                <#AiProtection_Features#>
                             </div>
                             <div class="col-12 col-lg-6 d-flex justify-content-end align-items-center gap-2">
                                 <div class="input-date-selector">
@@ -1908,19 +1910,19 @@
             {
                 type: "ark_mals",
                 title: `<#AiProtection_ARK_Malicious_Site_blocking#>`,
-                support: "ark_iam",
+                support: "ark_mals",
                 urlBase: "/getArkInfo.cgi"
             },
             {
                 type: "ark_adblock",
                 title: `<#AiProtection_AdvertisementBlocking#>`,
-                support: "ark_iam",
+                support: "ark_adblock",
                 urlBase: "/getArkInfo.cgi"
             },
             {
                 type: "ark_tracker",
                 title: `<#AiProtection_TrackerBlocking#>`,
-                support: "ark_iam",
+                support: "ark_tracker",
                 urlBase: "/getArkInfo.cgi"
             },
             {
@@ -1942,13 +1944,13 @@
 
         if (view === "overview") {
             genRouterScan();
+            initSwitches();
         } else {
-            document.getElementById("feature_desc").parentElement.classList.remove("col-md-6")
+            document.getElementById("feature_desc").parentElement.remove();
             document.getElementById("router_scan").parentElement.remove();
             supportedFeatures = supportedFeatures.filter(t => t.type === view)
+            document.querySelector(".container-fluid").classList.remove('container-fluid');
         }
-
-        initSwitches();
 
         initTabs();
         getWhitelist();

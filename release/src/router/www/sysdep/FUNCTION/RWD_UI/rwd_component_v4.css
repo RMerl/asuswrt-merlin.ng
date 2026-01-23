@@ -473,7 +473,18 @@
 	background: var(--icon-normal-color)!important;
 }
 
-@media (max-width: 575px) {
+@media (max-width: 768px) {
+	.mobile{
+		display: flex !important;
+	}
+	.action_container {
+		justify-content: space-around;
+	}
+	.action_container .btn_container {
+		width: 40%;
+		font-size: 14px;
+		letter-spacing: 0.6px;
+	}
 	.profile_item_container,
 	.profile_item_container.selected{
 		background: #FFFFFF;

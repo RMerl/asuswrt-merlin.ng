@@ -47,6 +47,7 @@
 
 
 pjsip_endpoint *endpt;
+pj_caching_pool caching_pool;
 int log_level = 3;
 int param_log_decor = PJ_LOG_HAS_NEWLINE | PJ_LOG_HAS_TIME | 
 		      PJ_LOG_HAS_MICRO_SEC;
@@ -223,7 +224,6 @@ static void close_report(void)
 int test_main(void)
 {
     pj_status_t rc;
-    pj_caching_pool caching_pool;
     const char *filename;
     unsigned tsx_test_cnt=0;
     struct tsx_test_param tsx_test[10];
@@ -369,6 +369,12 @@ int test_main(void)
     DO_TEST(regc_test());
 #endif
 
+    /*
+     * Better be last because it recreates the endpt
+     */
+#if INCLUDE_TSX_DESTROY_TEST
+    DO_TEST(tsx_destroy_test());
+#endif
 
 on_return:
     flush_events(500);

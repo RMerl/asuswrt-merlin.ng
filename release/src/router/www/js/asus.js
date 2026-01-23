@@ -1221,44 +1221,8 @@ system.firmwareVer = (() => {
 })();
 
 system.labelMac = httpApi.hookGet("get_label_mac");
-system.client = (() => {
-    let nmp = httpApi.hookGet("get_clientlist");
-    let database = httpApi.hookGet("get_clientlist_from_json_database");
-    let _client = { total: 0, activeCount: 0, detail: {}, wireless: {}, wiredCount: 0, wirelessCount: 0 };
-    let mapArray = [];
-    let mapArrayForIsWL = ["2g1", "5g1", "5g2", "6g1", "6g2"];
 
-    for (let key of Object.keys(system.wlBandSeq)) {
-        _client.wireless[key] = { count: 0 };
-        mapArray.push(key);
-    }
-
-    for (let [key, value] of Object.entries(nmp)) {
-        if (key === "maclist" || key === "ClientAPILevel") {
-            continue;
-        }
-
-        _client.detail[key] = { ...value };
-        if (nmp[key] !== undefined) {
-            if (nmp[key].isOnline !== "0" && !nmp[key].amesh_isRe) {
-                _client.activeCount++;
-                if (nmp[key].isWL !== "0") {
-                    let _index = mapArrayForIsWL[nmp[key].isWL - 1];
-                    _client.wireless[_index].count++;
-                    _client.wirelessCount++;
-                } else {
-                    _client.wiredCount++;
-                }
-            }
-
-            Object.assign(_client.detail[key], nmp[key]);
-        }
-
-        _client.total++;
-    }
-
-    return _client;
-})();
+system.client = updateSystemClient();
 
 system.aimesh_node_list = (() => {
     let { aMeshSupport, aMeshRouterSupport } = system.aMesh;
@@ -1397,6 +1361,63 @@ function webInterface(message) {
     }
 
     return returnData;
+}
+
+function updateSystemClient(options = {}) {
+    const { forceUpdate = false } = options;
+    let nmp = httpApi.hookGet("get_clientlist", forceUpdate);
+    let database = httpApi.hookGet("get_clientlist_from_json_database", forceUpdate);
+    let _client = { total: 0, activeCount: 0, detail: {}, wireless: {}, wiredCount: 0, wirelessCount: 0 };
+    let mapArray = [];
+    let mapArrayForIsWL = ["2g1", "5g1", "5g2", "6g1", "6g2"];
+
+    // Fallback mapping for secondary bands to primary bands
+    let bandFallbackMap = {
+        "5g2": "5g1",
+        "6g2": "6g1"
+    };
+
+    for (let key of Object.keys(system.wlBandSeq)) {
+        _client.wireless[key] = { count: 0 };
+        mapArray.push(key);
+    }
+
+    for (let [key, value] of Object.entries(nmp)) {
+        if (key === "maclist" || key === "ClientAPILevel") {
+            continue;
+        }
+
+        _client.detail[key] = { ...value };
+        if (nmp[key] !== undefined) {
+            if (nmp[key].isOnline !== "0" && !nmp[key].amesh_isRe) {
+                _client.activeCount++;
+                if (nmp[key].isWL !== "0") {
+                    let _index = mapArrayForIsWL[nmp[key].isWL - 1];
+
+                    // Check if the band exists, if not, try fallback
+                    if (!_client.wireless[_index]) {
+                        if (bandFallbackMap[_index] && _client.wireless[bandFallbackMap[_index]]) {
+                            _index = bandFallbackMap[_index];
+                        }
+                    }
+
+                    // Only increment if we have a valid wireless band
+                    if (_client.wireless[_index]) {
+                        _client.wireless[_index].count++;
+                        _client.wirelessCount++;
+                    }
+                } else {
+                    _client.wiredCount++;
+                }
+            }
+
+            Object.assign(_client.detail[key], nmp[key]);
+        }
+
+        _client.total++;
+    }
+
+    return _client;
 }
 
 var postMessageToApp = function () {};

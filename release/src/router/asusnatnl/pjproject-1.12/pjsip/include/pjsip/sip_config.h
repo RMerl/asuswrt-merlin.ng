@@ -88,6 +88,23 @@ typedef struct pjsip_cfg_t
 	 */
 	pj_bool_t disable_tcp_switch;
 
+	/**
+	 * Enable call media session to always be updated to the latest
+	 * received early media SDP when receiving forked early media
+	 * (multiple 183 responses with different To tag).
+	 *
+	 * Default is PJSIP_FOLLOW_EARLY_MEDIA_FORK.
+	 */
+	pj_bool_t follow_early_media_fork;
+
+	/**
+	 * Specify whether "alias" param should be added to the Via header
+	 * in any outgoing request with connection oriented transport.
+	 *
+	 * Default is PJSIP_REQ_HAS_VIA_ALIAS.
+	 */
+	pj_bool_t req_has_via_alias;
+
     } endpt;
 
     /** Transaction layer settings. */
@@ -265,6 +282,35 @@ PJ_INLINE(pjsip_cfg_t*) pjsip_cfg(void)
  */
 #ifndef PJSIP_DONT_SWITCH_TO_TCP
 #   define PJSIP_DONT_SWITCH_TO_TCP	0
+#endif
+
+
+/**
+ * Specify whether the call media session should be updated to the latest
+ * received early media SDP when receiving forked early media (multiple 183
+ * responses with different To tag).
+ *
+ * This option can also be controlled at run-time by the
+ * \a follow_early_media_fork setting in pjsip_cfg_t.
+ *
+ * Default is PJ_TRUE.
+ */
+#ifndef PJSIP_FOLLOW_EARLY_MEDIA_FORK
+#   define PJSIP_FOLLOW_EARLY_MEDIA_FORK	    PJ_TRUE
+#endif
+
+
+/**
+ * Specify whether "alias" param should be added to the Via header
+ * in any outgoing request with connection oriented transport.
+ *
+ * This option can also be controlled at run-time by the
+ * \a req_has_via_alias setting in pjsip_cfg_t.
+ *
+ * Default is PJ_TRUE.
+ */
+#ifndef PJSIP_REQ_HAS_VIA_ALIAS
+#   define PJSIP_REQ_HAS_VIA_ALIAS		    PJ_TRUE
 #endif
 
 

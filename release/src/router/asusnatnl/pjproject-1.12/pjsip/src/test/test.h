@@ -23,6 +23,7 @@
 #include <pjsip/sip_types.h>
 
 extern pjsip_endpoint *endpt;
+extern pj_caching_pool caching_pool;
 
 #define TEST_UDP_PORT	    15060
 #define TEST_UDP_PORT_STR   "15060"
@@ -64,6 +65,7 @@ extern pjsip_endpoint *endpt;
 #define INCLUDE_TCP_TEST	INCLUDE_TRANSPORT_GROUP
 #define INCLUDE_RESOLVE_TEST	INCLUDE_TRANSPORT_GROUP
 #define INCLUDE_TSX_TEST	INCLUDE_TSX_GROUP
+#define INCLUDE_TSX_DESTROY_TEST INCLUDE_TSX_GROUP
 #define INCLUDE_INV_OA_TEST	INCLUDE_INV_GROUP
 #define INCLUDE_REGC_TEST	INCLUDE_REGC_GROUP
 
@@ -75,6 +77,7 @@ int msg_err_test(void);
 int multipart_test(void);
 int txdata_test(void);
 int tsx_bench(void);
+int tsx_destroy_test(void);
 int transport_udp_test(void);
 int transport_loop_test(void);
 int transport_tcp_test(void);

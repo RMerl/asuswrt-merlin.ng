@@ -377,7 +377,7 @@
 				$("#settingsWindow").attr({src: webFilterPathname});
 			}
 
-			Session.set("lastPage", tab);
+			Session.set("parentalcontrol-lastPage", tab);
 		}
 
 		document.querySelectorAll("button.tab-navigation__item").forEach(button => {
@@ -535,7 +535,7 @@
 		}
 
 		function initializeLastPage() {
-			let lastPage = Session.get("lastPage") || "AiProtection_WebProtector";
+			let lastPage = Session.get("parentalcontrol-lastPage") || "AiProtection_WebProtector";
 			if(
 				lastPage == "AiProtection_WebProtector" || 
 				lastPage == "parentalControl" || 

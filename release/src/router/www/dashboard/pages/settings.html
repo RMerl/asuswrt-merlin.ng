@@ -22,25 +22,18 @@
 	<script>
 		var webWrapper = true;
 		var targetPage = urlParameter.get("tab");
-		if (targetPage === "" || targetPage === undefined || targetPage == null) {
-			let lastPage = Session.get("lastPage") || "";
-			if(lastPage == "index.html" || !lastPage.split(".")[1]) lastPage = "";
-
-			if (lastPage !== "" && lastPage !== undefined) {
-				targetPage = lastPage;
-			} else {
-				targetPage = "Tools_Sysinfo.asp";
-			}
+        if (targetPage === "" || targetPage === undefined || targetPage == null) {
+			const lastSettingsPage = top.Session.get("settings-lastPage") || "";
+            const isValidPage = lastSettingsPage && lastSettingsPage !== "index.html" && lastSettingsPage.includes(".");
+            targetPage = isValidPage ? lastSettingsPage : "Tools_Sysinfo.asp";
 		} else {
-			Session.set("lastPage", targetPage);
             const state = null;
             const title = "";
             const newUrl = "index.html";
             history.replaceState(state, title, newUrl);
 		}
-
 		var currentPage = $('#settingsWindow').attr('src').replace("/", "");
-		if (currentPage != targetPage) $('#settingsWindow').attr({'src': "/" + targetPage})
+        if (currentPage != targetPage) $('#settingsWindow').attr({'src': "/" + targetPage})
 
 		var findColorAndReplace = function(styleSheet, oldColor, newColor){
 			function hexToRgb(hex) {
@@ -173,14 +166,45 @@
 			});
 		}
 
-		document.getElementById('settingsWindow').onload = function () {
-			if (top.loader) {
-                if(top.loader.isShow()) {
-                    top.loader.hide();
-                    top.loader = null;
+		var iframeHandler = {
+			element: document.getElementById('settingsWindow'),
+			defaultPage: "/Advanced_Wireless_Content.asp",
+			
+			onLoad: function() {
+				if (top.loader?.isShow?.()) {
+					top.loader.hide();
+					top.loader = null;
+				}
+			},
+			
+			onError: function() {
+				httpApi.log("SETTING_WINDOW LOAD ERROR", this.src);
+				this.src = iframeHandler.defaultPage;
+			},
+			
+			checkContent: function() {
+				try {
+					var doc = this.contentDocument || this.contentWindow.document;
+					if (doc?.readyState === 'complete') {
+						var title = doc.title.toLowerCase();
+						if (/404|not found|error/.test(title)) {
+							httpApi.log("SETTING_WINDOW LOAD ERROR", this.src);
+							this.src = iframeHandler.defaultPage;
+						}
+					}
+				} catch (e) {
+                    httpApi.log("SETTING_WINDOW LOAD ERROR", this.src, e);
                 }
+			},
+			
+			init: function() {
+				this.element.onload = this.onLoad;
+				this.element.onerror = this.onError;
+				this.element.addEventListener('load', this.checkContent);
 			}
-		}
+		};
+		
+		iframeHandler.init();
 		
 		window.addEventListener('message', event => {
 			if (event.data.type === 'resize') {
@@ -189,9 +213,9 @@
                     const footer = (navigator.userAgent.match(/ASUSMultiSiteManager/) || navigator.userAgent.match(/ASUSExpertSiteManager/)) ? 100 : 20;
                     const iframeHeight = event.data.height + footer;
 					const remHeight = 16;
-					const headerHeight = document.querySelector('header').scrollHeight;
+					const headerHeight = document.querySelector('header')?.scrollHeight || 0;
 					const paddinHeight = remHeight * 2;
-					const pageTitleHeight = document.querySelector('.page-title').scrollHeight;
+					const pageTitleHeight = document.querySelector('.page-title')?.scrollHeight || 0;
 					const footerHeight = remHeight / 2;
 
                     const windowHeight = top.window.innerHeight - headerHeight - paddinHeight - pageTitleHeight - footerHeight;

@@ -346,96 +346,6 @@ bound(int renew)
 	ifunit = wan_prefix(wan_ifname, wanprefix);
 _dprintf("%s(%d): ifunit=%d, if=%s.\n", __func__, getpid(), ifunit, wan_ifname);
 
-#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
-	char lan_ifname[16], lan_ip[16], lan_net[16];
-	char autowan_detected_ifname[8];
-	char gateway[16], gateway_mac[32];
-	int br_no;
-	char if_name[16];
-
-	if(is_auto_wanport_enabled() == 1
-			&& !strcmp(wan_ifname, "br0")
-			){
-		strlcpy(autowan_detected_ifname, nvram_safe_get("autowan_detected_ifname"), sizeof(autowan_detected_ifname));
-
-		if(strcmp(autowan_detected_ifname, "") && strcmp(autowan_detected_ifname, wan_ifname)){
-			_dprintf("%s(%lu): auto_wanport: Had detected the WAN interface. skip bounding of %s.\n", __func__, getpid(), wan_ifname);
-			return -1;
-		}
-
-		// start_wan() will run faster than wanduck, so getting DHCP IP is in front of the PPPoE detect possiably
-		// Need to do the PPPoE detect once if the WAN port is not set
-		if(!strcmp(autowan_detected_ifname, "")){
-			strlcpy(gateway, getenv("router"), sizeof(gateway));
-			strlcpy(lan_ifname, nvram_safe_get("lan_ifname"), sizeof(lan_ifname));
-			strlcpy(lan_ip, nvram_safe_get("lan_ipaddr"), sizeof(lan_ip));
-			strlcpy(lan_net, nvram_safe_get("lan_netmask"), sizeof(lan_net));
-
-			_dprintf("%s(%lu): auto_wanport: Get gateway %s & apply to %s first.\n", __func__, getpid(), gateway, lan_ifname);
-			ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
-			ifconfig(lan_ifname, IFUP, getenv("ip"), getenv("subnet"));
-
-			_dprintf("%s(%lu): auto_wanport: send a ping to gateway for ARP.\n", __func__, getpid());
-			eval("ping", "-W1", "-c1", gateway);
-
-			memset(gateway_mac, 0, sizeof(gateway_mac));
-			get_mac_from_ip(gateway, gateway_mac, sizeof(gateway_mac));
-			if(!gateway_mac[0]){
-				_dprintf("%s(%lu): auto_wanport: Fail to get gateway_mac.\n", __func__, getpid());
-				ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
-				ifconfig(lan_ifname, IFUP, lan_ip, lan_net);
-
-				add_lan_routes(lan_ifname);
-
-				return -1;
-			}
-			_dprintf("%s(%lu): auto_wanport: Got gateway's MAC %s.\n", __func__, getpid(), gateway_mac);
-
-			br_no = get_br_port_no_from_mac(gateway_mac);
-			if(br_no < 0){
-				_dprintf("%s(%lu): auto_wanport: Cannot get gateway's br_no.\n", __func__, getpid());
-				ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
-				ifconfig(lan_ifname, IFUP, lan_ip, lan_net);
-
-				add_lan_routes(lan_ifname);
-
-				return -1;
-			}
-			_dprintf("%s(%lu): auto_wanport: Got gateway's br_no %d.\n", __func__, getpid(), br_no);
-
-			if(get_autoif_from_br_port_no(br_no, if_name, sizeof(if_name)) < 0){
-				ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
-				ifconfig(lan_ifname, IFUP, lan_ip, lan_net);
-
-				add_lan_routes(lan_ifname);
-
-				if(get_if_from_br_port_no(br_no, if_name, sizeof(if_name)) == NULL)
-					return -1;
-				_dprintf("%s(%lu): auto_wanport: The port(%s) of the DHCP source isn't AUTO_WANPORT...\n", __func__, getpid(), if_name);
-
-				return -1;
-			}
-			_dprintf("%s(%lu): auto_wanport: Got gateway's if %s.\n", __func__, getpid(), if_name);
-
-			wan_ifname = if_name;
-
-			_dprintf("%s(%lu): auto_wanport: restore the LAN IP of router.\n", __func__, getpid());
-			ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
-			ifconfig(lan_ifname, IFUP, lan_ip, lan_net);
-
-			add_lan_routes(lan_ifname);
-
-			_dprintf("%s(%lu): auto_wanport: Choose the WAN interface %s because of DHCP.\n", __func__, getpid(), wan_ifname);
-			set_auto_wanport(wan_ifname, 1);
-
-			return 0;
-		}
-
-		ifunit = nvram_get_int("autowan_live_wanunit");
-		snprintf(wanprefix, sizeof(wanprefix), "wan%d_", ifunit);
-	}
-	else
-#endif
 	/* Figure out nvram variable name prefix for this i/f */
 	if (ifunit < 0)
 		return -1;
@@ -905,6 +815,16 @@ start_udhcpc(char *wan_ifname, int unit, pid_t *ppid)
 #endif
 	)
 		return start_zcip(wan_ifname, unit, ppid);
+
+#if defined(RTCONFIG_AUTO_WANPORT)
+	char mv_ifname[16];
+
+	get_macvlan_name(nvram_safe_get("lan_ifname"), mv_ifname, sizeof(mv_ifname));
+	if(is_auto_wanport_enabled() == 1 && !strcmp(wan_ifname, mv_ifname)){
+		symlink("/sbin/rc", "/tmp/dhcp_det");
+		dhcp_argv[6] = "/tmp/dhcp_det";
+	}
+#endif
 
 	/* DHCP query frequency */
 	value = nvram_get(strcat_r(prefix, "dhcp_qry", tmp)); // new nvram with wan index

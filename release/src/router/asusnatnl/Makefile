@@ -1,8 +1,22 @@
 include ../common.mak
+CFLAGS += $(if $(RTCONFIG_DEBUG),-g)
+#CFLAGS += -Werror
+#CXXFLAGS += -Werror
 
+
+# check if 64bit
+CHECK_64BIT := $(shell $(CC) -dM -E - < /dev/null | grep -q '__x86_64__\|__aarch64__\|__PPC64__\|__sparc64__\|__ia64__\|__mips64' && echo 1 || echo 0)
 ifeq ($(or $(RTCONFIG_BCMARM),$(RTCONFIG_QCA_ARM),$(RTCONFIG_ALPINE),$(MUSL_LIBC)),y)
-CONFIGURE=configure-router-arm
-ARCH=ARM
+	ifeq ($(CHECK_64BIT), 1)
+		CONFIGURE=configure-router-arm64
+		ARCH=ARM
+	else
+		CONFIGURE=configure-router-arm
+		ARCH=ARM64
+	endif
+else ifeq ($(RTCONFIG_RALINK_MT7622),y)
+CONFIGURE=configure-router-arm64
+ARCH=ARM64
 else
 CONFIGURE=configure-router-mips
 ARCH=MIPS

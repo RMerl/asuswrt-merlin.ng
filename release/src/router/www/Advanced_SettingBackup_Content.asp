@@ -17,6 +17,18 @@
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
+<style>
+.AIrestoreInit_div {
+	margin-top: 18px;
+}
+.AIrestore_FAQ {
+	cursor: pointer;
+	text-decoration: underline;
+}
+.is-hidden {
+  display: none !important;
+}
+</style>
 <script>
 
 var varload = 0;
@@ -39,6 +51,14 @@ function initial(){
 		document.getElementById("jffsbackup").style.display = "none";
 	}
 
+	if(isSupport("ai_support")){
+		document.querySelectorAll('.AI_note').forEach(noteElement => {
+			noteElement.classList.remove('is-hidden');
+		});
+		
+		document.getElementById("AI_rescue_tr").style.display = "";
+	}
+
 	document.form.file.onchange = function() {
 		uploadSetting();
 	};
@@ -52,6 +72,28 @@ function initial(){
 		$("#restoreInit").prop("checked", false);
 	}
 	*/
+}
+
+function AIrestoreRule(_flag){
+if (confirm(
+`<#Setting_rescue_ai_Note0#>
+
+<#Setting_rescue_ai_Note1#>
+    • <#Setting_rescue_ai_Note1_1#>
+    • <#Setting_rescue_ai_Note1_2#>
+    • <#Setting_rescue_ai_Note1_3#>
+
+<#Setting_rescue_ai_Note2#>
+
+<#Setting_rescue_ai_confirm#>
+`
+)) {
+	applyRescue();
+	}
+}
+
+function applyRescue(){
+	top.location.href = "/index.html?page=aiboard&aiboard_action=rescue";
 }
 
 function restoreRule(_flag){
@@ -261,18 +303,23 @@ function selectSetting() {
 										</thead>
 	          								<tr>
 	            								<th width="25%" align="right">
-											<a id="factorydefault_hint" class="hintstyle"  href="javascript:void(0);" onclick="openHint(19,4)"><#Setting_factorydefault_itemname#></a>
+											<a id="factorydefault_hint" class="hintstyle"  href="javascript:void(0);" onclick="openHint(19,4)"><#Setting_factorydefault_itemname#> (Main router system)</a>
 	            								</th>
 	            								<td colspan = "4">
-													<div style="float:left;">
+													<div style="float:left;display:table-cell">
 														<input class="button_gen_in_table btn_subusage button_gen" onclick="restoreRule('restore');" type="button" value="<#CTL_restore#>" name="action1" />
 													</div>
-													<div id="restoreInit_div">
-														<div style="float:left;margin-left:5px;">
-															<input type="checkbox" id="restoreInit" checked>
+													<div id="restoreInit_div" style="display:table-cell">
+														<div style="display:table-row">
+															<div style="float:left;margin-left:5px;">
+																<input type="checkbox" id="restoreInit" checked>
+															</div>
+															<div style="float:left;width:80%;">
+																<span><label for="restoreInit"><#Setting_initialize_desc#></label></span>
+															</div>
 														</div>
-														<div style="float:left;width:65%;">
-															<span><label for="restoreInit"><#Setting_initialize_desc#></label></span>
+														<div style="display:table-row">
+															<div class="AI_note is-hidden" style="color: rgb(0, 108, 225);margin-left: 10px;font-size: 14px;"><#Setting_initialize_desc_ai#></div>
 														</div>
 													</div>
 													<input type="hidden" name="wl_gmode_protection_x" value="<% nvram_get("wl_gmode_protection_x"); %>" />
@@ -303,6 +350,7 @@ function selectSetting() {
 																<span><label for="transfer_ddns"><#DDNS_transfer#></span></label>
 															</div>
 														</div>
+														<div class="AI_note is-hidden" style="color: rgb(0, 108, 225);margin-left: 10px;font-size: 14px;"><#Setting_save_itemdesc_ai#></div>
 													</div>
 												</td>
 											</tr>
@@ -360,6 +408,20 @@ function selectSetting() {
 													</div>
 												</td>
 											</tr>
+
+											<tr id="AI_rescue_tr" style="display:none;">
+	            								<th width="25%" align="right">
+											<a id="factorydefault_hint" class="hintstyle"  href="javascript:void(0);" onclick=""><#Setting_factorydefault_itemname#> (AI Board system)</a>
+	            								</th>
+	            								<td colspan = "4">
+													<div style="float:left;display:table-cell">
+														<input class="button_gen_in_table btn_subusage button_gen" onclick="AIrestoreRule('restore');" type="button" value="<#CTL_restore#>" name="action2" />
+													</div>
+													<div class="AIrestoreInit_div" style="display:table-cell">
+														<div style="color: rgb(0, 108, 225);margin-left: 10px;margin-top: 18px;font-size: 14px;"><#Setting_ai_rescue_note#></div>
+													</div>
+	              								</td>
+	          								</tr>
 										</table>
 									</td>
 								</tr>
@@ -374,6 +436,28 @@ function selectSetting() {
 </table>
 </form>
 
+<script>
+
+document.addEventListener('DOMContentLoaded', () => {
+    const faqLinks = document.querySelectorAll('a.AIrestore_FAQ');
+
+    faqLinks.forEach(btn => {
+        btn.addEventListener('click', (event) => {
+            event.preventDefault();
+            const faqKey = btn.getAttribute('data-faq');
+            if (faqKey) {
+                openFaq(faqKey, ui_lang);
+            }
+        });
+    });
+
+    function openFaq(faqKey, lang) {
+        const faqUrl = `https://nw-dlcdnet.asus.com/support/forward.html?model=&type=${faqKey}&lang=${lang}&kw=&num=`;
+        window.open(faqUrl, '_blank');
+    }
+});
+
+</script>
 <div id="footer"></div>
 
 <form method="post" name="restoreform" action="apply.cgi" target="hidden_frame">

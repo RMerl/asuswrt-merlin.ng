@@ -1,36 +1,9 @@
 #!/bin/sh
+. /usr/ark/gar.env
 action=$1
-
-PREFIX=/usr
-PATH=${PREFIX}/bin:${PREFIX}/sbin:${PATH}
-LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
-
-export PATH
-export LD_LIBRARY_PATH
 
 TMP_ROOT=/tmp
 
-gtnet_stop() {
-    echo "stopping gtnet..."
-}
-
-gtnet_start() {
-    echo "starting gtnet..."
-}
-
-gdd_stop() {
-    echo "stopping gdd..."
-    # GDD begin
-    gdrctl stop
-    # GDD end
-}
-
-gdd_start() {
-    echo "starting gdd..."
-    # GDD begin
-    gdrctl start > /dev/null 2>&1
-    # GDD end
-}
 
 ark_stop() {
     echo "stopping ark..."
@@ -41,31 +14,26 @@ ark_stop() {
 
 gweb_stop() {
     echo "stopping gweb..."
-    # GWEB begin
-    gws stop
-    # GWEB end
 }
 
 gweb_start() {
     echo "starting gweb..."
-    # GWEB begin
-    gws start
-    # GWEB end
 }
 
 gweb_boot() {
     echo "booting gweb..."
-    # GWEB begin
-    gws boot
-    # GWEB end
 }
 
 boot() {
 
 
+    # GMQ begin
     gmq start > /dev/null 2>&1
+    # GMQ end
 
+    # GBUS begin
     gbusd.sh start
+    # GBUS end
 
     # GLOGER begin
     gloger.sh start
@@ -73,8 +41,16 @@ boot() {
 
     gweb_boot
 
-    gdd_start
-    gtnet_start > /dev/null 2>&1
+    # GDM begin
+    gdm.sh start > /dev/null 2>&1
+    # GDM end
+
+    # GST begin
+    gst.sh start
+    # GST end
+
+
+
 }
 
 start() {
@@ -82,19 +58,33 @@ start() {
 }
 
 stop() {
-    gtnet_stop
-    gdd_stop
+
+
+
+    # GST begin
+    gst.sh stop
+    # GST end
+    
+    # GDM begin
+    gdm.sh stop
+    # GDM end
+
     ark_stop
     gweb_stop
-    
+
     # GLOGER begin
     gloger.sh stop
     # GLOGER end
 
+    # GBUS begin
     gbusd.sh stop
-    gmq stop
+    # GBUS end
 
-    
+    # GMQ begin
+    gmq stop
+    # GMQ end
+
+
 
     rmmod aqua > /dev/null 2>&1
     rmmod gbus > /dev/null 2>&1

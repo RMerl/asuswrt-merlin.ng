@@ -1,4 +1,4 @@
-#Release date:2025/09/08 06:03:57
+#Release date:2025/12/15 17:04:51
 #25,23,MEETING/VOIP/RTP
 1:STUN（Session Traversal Utilities for NAT)
 4:RTP (Real-Time Transport Protocol)
@@ -125,21 +125,23 @@
 3700:SoundCloud
 3701:Vimeo
 3703:Kick
-#106,13,VPN
+#106,15,VPN
 3:SOCKS
 10:Teredo
 15:PPTP (Point to Point Tunneling Protocol)
 27:GTP (GPRS Tunnelling Protocol)
-35:IPsec (Internet Protocol Security) / ISAKMP
+35:IPsec ISAKMP
 302:OpenVPN
 324:iCloud Private Relay
 326:Secure VPN
 327:Rapid VPN
+3087:CyberGhost VPN
 3157:UltraSurf
 3178:Cisco VPN
+3179:NordVPN
 3184:WireGuard
 3706:Surfshark
-#22,36,FILETRANSFER
+#22,38,FILETRANSFER
 9:HTTP File Transfer
 14:AFP (AppleTalk Filing Protocol)
 17:FTP (File Transfer Protocol)
@@ -157,6 +159,7 @@
 585:Dropbox
 1776:iCloud
 2635:Mega
+3086:Box
 3165:Rsync
 3173:Syncthing
 3246:Elasticsearch
@@ -176,11 +179,12 @@
 3610:360安全云盘 (360安全云盘)
 3611:Aliyun (阿里雲)
 3612:Lanzou (藍奏雲)
+3707:Google Play
 #107,3,MAIL
 11:IMAP (Internet Mail Access Protocol)
 12:POP (Post Office Protocol)
 13:SMTP (Simple Mail Transfer Protocol)
-#11,2645,GAME
+#11,2648,GAME
 16:RakNet
 24:Netcode
 200:Games (遊戲)
@@ -2471,6 +2475,7 @@
 2634:Plicy
 2636:DOS Games
 2637:DOS Games Archive
+2638:Where Winds Meet (燕雲十六聲)
 2639:florr.io
 2640:Doodlr.io
 2641:Donut Games
@@ -2649,6 +2654,7 @@
 3082:ADDINK.NET
 3083:Addictive Games
 3084:Addicting Games
+3085:Last War:Survival Game (最後的戰爭)
 3088:Active Fighting Club
 3091:Accueil
 3095:Aboard PuzzleDepot.com
@@ -2726,6 +2732,7 @@
 3235:Snowball.io
 3236:Braains.io
 3237:So-net Games (碩網)
+3238:Age of Empires (世紀帝國)
 3239:Arkadium Games
 3455:Habbo (哈寶)
 3468:iCa
@@ -2889,10 +2896,9 @@
 1957:九游云游戏
 2907:Luna
 2908:Nware
-#115,10,FINANCIAL/PAYMENT
+#115,9,FINANCIAL/PAYMENT
 42:FIX (Financial Information eXchange)
 43:WS-Discovery (Web Services Dynamic Discovery)
-1637:Braintree
 1641:Swift
 1642:Venmo
 1643:Xoom
@@ -2913,7 +2919,7 @@
 300:iperf 3
 301:IxChariot
 3546:Speedtest
-#103,245,SHOPPING
+#103,246,SHOPPING
 303:Alibaba (阿里巴巴)
 305:E-life Mall (全國電子)
 306:RT-MART (大潤發)
@@ -2955,6 +2961,8 @@
 2248:Games Wave
 2320:Gamecash
 2625:Airbnb
+2643:Creema
+2644:Marais (瑪黑家居)
 2649:citySuper
 2650:Takealot.com
 2651:dlgamer.com
@@ -3107,7 +3115,6 @@
 3401:eBay
 3402:Vinted
 3403:Tmall (天貓)
-3404:Jingdong (京東)
 3405:Suning (蘇寧易購)
 3406:smzdm (什麼值得買)
 3407:1688 (阿里1688)
@@ -3169,9 +3176,7 @@
 #101,2,SEARCH ENGINE
 376:Baidu (百度)
 3553:Google (谷歌)
-#105,1,SPORTS
-1715:Hupu
-#104,39,SOCIAL NETWORKS
+#104,38,SOCIAL NETWORKS
 1725:达佳互联
 2618:Paltalk
 3431:IMMOMO (陌陌)
@@ -3182,9 +3187,9 @@
 3439:Sina (新浪)
 3440:Weibo (微博)
 3441:X (Twitter) (推特)
-3442:Facebook (臉書)
+3442:Facebook (FB) (臉書)
 3443:Vkontakte
-3444:Instagram
+3444:Instagram (IG) / Threads
 3445:meilishuo (美丽说)
 3446:beBee
 3447:Peanut
@@ -3200,7 +3205,6 @@
 3460:MySpace (聚友網)
 3570:Xiaohongshu (小紅書)
 3600:Gracg (塗鴉王國)
-3601:Threads
 3639:Clubhouse
 3641:Minds
 3674:Disqus

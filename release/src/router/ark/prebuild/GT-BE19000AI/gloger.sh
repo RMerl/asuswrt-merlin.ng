@@ -41,7 +41,7 @@ start() {
 }
 
 stop() {
-    echo "Stopping GBUSD..."
+    echo "Stopping LOGGER..."
 
     if [ "$(status)" = "0" ]; then
         echo "Module is not loaded."

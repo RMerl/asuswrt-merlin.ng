@@ -8,6 +8,7 @@ Asuswrt-Merlin 3006.xxx Changelog
           Dropbox syncing with USB folder.  Use a VPN if you
           need secure remote access to your data.
 
+  - UPDATED: Merged GPL 102_40399 (GT-BE19000AI only)
   - UPDATED: OpenVPN to 2.6.17.
   - UPDATED: Dropbear to 2025.89.
   - UPDATED: nettle to 3.10.2.

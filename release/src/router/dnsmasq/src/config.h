@@ -148,7 +148,8 @@ HAVE_LOOP
    include functionality to probe for and remove DNS forwarding loops.
 
 HAVE_INOTIFY
-   use the Linux inotify facility to efficiently re-read configuration files.
+   use the Linux and FreeBSD >= 15 inotify facility
+   to efficiently re-read configuration files.
 
 NO_ID
    Don't report *.bind CHAOS info to clients, forward such requests upstream instead.
@@ -382,8 +383,15 @@ HAVE_SOCKADDR_SA_LEN
 #undef HAVE_DUMPFILE
 #endif
 
-#if defined (HAVE_LINUX_NETWORK) && !defined(NO_INOTIFY)
-#define HAVE_INOTIFY
+#if !defined(NO_INOTIFY)
+#  if defined (HAVE_LINUX_NETWORK)
+#    define HAVE_INOTIFY
+#  elif defined (__FreeBSD__) && __FreeBSD__ + 0 >= 15
+#    include <osreldate.h>
+#    if __FreeBSD_version >= 1500068 /* 15.0.0 */
+#      define HAVE_INOTIFY
+#    endif
+#  endif
 #endif
 
 /* This never compiles code, it's only used by the makefile to fingerprint builds. */

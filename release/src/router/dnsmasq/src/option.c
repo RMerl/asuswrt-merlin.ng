@@ -197,7 +197,12 @@ struct myoption {
 #define LOPT_DO_ENCODE     388
 #define LOPT_LEASEQUERY    389
 #define LOPT_SPLIT_RELAY   390
-#define LOPT_RDNSS_WAR     391
+#define LOPT_LOG_MALLOC    391
+
+
+
+// Asus
+#define LOPT_RDNSS_WAR     501
 
 #ifdef HAVE_GETOPT_LONG
 static const struct option opts[] =  
@@ -400,6 +405,7 @@ static const struct myoption opts[] =
     { "max-tcp-connections", 1, 0, LOPT_MAX_PROCS },
 	{ "rdnss-war", 0, 0, LOPT_RDNSS_WAR },
     { "leasequery", 2, 0, LOPT_LEASEQUERY },
+    { "log-malloc", 0, 0, LOPT_LOG_MALLOC },
     { NULL, 0, 0, 0 }
   };
 
@@ -608,6 +614,7 @@ static struct {
   { LOPT_NO_IDENT, OPT_NO_IDENT, NULL, gettext_noop("Do not add CHAOS TXT records."), NULL },
   { LOPT_CACHE_RR, ARG_DUP, "<RR-type>", gettext_noop("Cache this DNS resource record type."), NULL },
   { LOPT_MAX_PROCS, ARG_ONE, "<integer>", gettext_noop("Maximum number of concurrent tcp connections."), NULL },
+  { LOPT_LOG_MALLOC, OPT_LOG_MALLOC, NULL, gettext_noop("Log memory allocation for debugging."), NULL },
   { LOPT_RDNSS_WAR, OPT_RDNSS_WAR, NULL, gettext_noop("Workaround to flush RDNSS."), NULL },
   { 0, 0, NULL, NULL, NULL }
 }; 
@@ -3468,6 +3475,8 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	    }
 	  else if (strcmp(arg, "auth") == 0)
 	    set_option_bool(OPT_AUTH_LOG);
+	  else if (strcmp(arg, "only_failed") == 0)
+	    set_option_bool(OPT_LOG_ONLY_FAILED);
 	}
       break;
 

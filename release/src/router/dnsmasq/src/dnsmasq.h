@@ -289,8 +289,10 @@ struct event_desc {
 #define OPT_DO_0x20        75
 #define OPT_AUTH_LOG       76
 #define OPT_LEASEQUERY     77
-#define OPT_RDNSS_WAR      78
-#define OPT_LAST           79
+#define OPT_LOG_ONLY_FAILED  78
+#define OPT_LOG_MALLOC     79
+#define OPT_RDNSS_WAR      80
+#define OPT_LAST           81
 
 #define OPTION_BITS (sizeof(unsigned int)*8)
 #define OPTION_SIZE ( (OPT_LAST/OPTION_BITS)+((OPT_LAST%OPTION_BITS)!=0) )
@@ -550,6 +552,7 @@ struct crec {
 #define PIPE_OP_STATS   3  /* Update parent's stats */
 #define PIPE_OP_IPSET   4  /* Update IPset */
 #define PIPE_OP_NFTSET  5  /* Update NFTset */
+#define PIPE_OP_KILLED  6  /* child killed by SIGALARM */
 
 /* struct sockaddr is not large enough to hold any address,
    and specifically not big enough to hold an IPv6 address.
@@ -761,10 +764,9 @@ struct dyndir {
 #define STAT_NEED_DS            0x40000
 #define STAT_NEED_KEY           0x50000
 #define STAT_TRUNCATED          0x60000
-#define STAT_SECURE_WILDCARD    0x70000
-#define STAT_OK                 0x80000
-#define STAT_ABANDONED          0x90000
-#define STAT_ASYNC              0xa0000
+#define STAT_OK                 0x70000
+#define STAT_ABANDONED          0x80000
+#define STAT_ASYNC              0x90000
 
 #define DNSSEC_FAIL_NYV         0x0001 /* key not yet valid */
 #define DNSSEC_FAIL_EXP         0x0002 /* key expired */
@@ -778,6 +780,7 @@ struct dyndir {
 #define DNSSEC_FAIL_NSEC3_ITERS 0x0200 /* too many iterations in NSEC3 */
 #define DNSSEC_FAIL_BADPACKET   0x0400 /* bad packet */
 #define DNSSEC_FAIL_WORK        0x0800 /* too much crypto */
+#define DNSSEC_FAIL_UPSTREAM    0x1000 /* SERVFAIL from UPSTREAM */
 
 #define STAT_ISEQUAL(a, b)  (((a) & 0xffff0000) == (b))
 
@@ -1206,6 +1209,7 @@ extern struct daemon {
   int log_fac; /* log facility */
   char *log_file; /* optional log file */
   int max_logs;  /* queue limit */
+  int log_malloc; /* log malloc/realloc/free */
   int randport_limit; /* Maximum number of source ports for query. */
   int cachesize, ftabsize;
   int port, query_port, min_port, max_port;
@@ -1272,6 +1276,9 @@ extern struct daemon {
   int dnssec_no_time_check;
   int back_to_the_future;
   int limit[LIMIT_MAX];
+  struct frec *forward_to_tcp;
+  struct dns_header *header_to_tcp;
+  ssize_t plen_to_tcp;
 #endif
   struct frec *frec_list;
   struct frec_src *free_frec_src;
@@ -1463,7 +1470,7 @@ int dnssec_validate_by_ds(time_t now, struct dns_header *header, size_t plen, ch
 int dnssec_validate_ds(time_t now, struct dns_header *header, size_t plen, char *name,
 		       char *keyname, int class, int *validate_count);
 int dnssec_validate_reply(time_t now, struct dns_header *header, size_t plen, char *name, char *keyname, int *class,
-			  int check_unsigned, int *neganswer, int *nons, int *nsec_ttl, int *validate_count);
+			  int check_unsigned, int *neganswer, int *prim_ok, int *nons, int *nsec_ttl, int *validate_count);
 int dnskey_keytag(int alg, int flags, unsigned char *key, int keylen);
 size_t filter_rrsigs(struct dns_header *header, size_t plen);
 int setup_timestamp(void);
@@ -1492,8 +1499,12 @@ unsigned char *do_rfc1035_name(unsigned char *p, char *sval, char *limit);
 void *safe_malloc(size_t size);
 void safe_strncpy(char *dest, const char *src, size_t size);
 void safe_pipe(int *fd, int read_noblock);
-void *whine_malloc(size_t size);
-void *whine_realloc(void *ptr, size_t size);
+#define whine_malloc(x) whine_malloc_real(__func__, __LINE__, (x))
+#define whine_realloc(x, y) whine_realloc_real(__func__, __LINE__, (x), (y))
+#define free(x) free_real(__func__, __LINE__, (x))
+void free_real(const char *func, unsigned int line, void *ptr);
+void *whine_malloc_real(const char *func, unsigned int line, size_t size);
+void *whine_realloc_real(const char *func, unsigned int line, void *ptr, size_t size);
 int sa_len(union mysockaddr *addr);
 int sockaddr_isequal(const union mysockaddr *s1, const union mysockaddr *s2);
 int sockaddr_isnull(const union mysockaddr *s);
@@ -1518,6 +1529,7 @@ int memcmp_masked(unsigned char *a, unsigned char *b, int len,
 int expand_buf(struct iovec *iov, size_t size);
 char *print_mac(char *buff, unsigned char *mac, int len);
 int read_write(int fd, unsigned char *packet, int size, int rw);
+int read_writev(int fd, struct iovec *iov, int iovcnt, int rw);
 void close_fds(long max_fd, int spare1, int spare2, int spare3);
 int wildcard_match(const char* wildcard, const char* match);
 int wildcard_matchn(const char* wildcard, const char* match, int num);
@@ -1560,8 +1572,8 @@ int tcp_from_udp(time_t now, int status, struct dns_header *header, ssize_t *n,
 		 int class, char *name, struct server *server, 
 		 int *keycount, int *validatecount);
 #endif
-unsigned char *tcp_request(int confd, time_t now,
-			   union mysockaddr *local_addr, struct in_addr netmask, int auth_dns);
+void tcp_request(int confd, time_t now, struct iovec *bigbuff,
+		 union mysockaddr *local_addr, struct in_addr netmask, int auth_dns);
 void server_gone(struct server *server);
 int send_from(int fd, int nowild, char *packet, size_t len, 
 	       union mysockaddr *to, union all_addr *source,

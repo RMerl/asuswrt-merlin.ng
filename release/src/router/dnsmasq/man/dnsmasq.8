@@ -136,6 +136,8 @@ Log the results of DNS queries handled by dnsmasq. Enable a full cache dump on r
 then the log has extra information at the start of each line.
 This consists of a serial number which ties together the log lines associated with an individual query, and the IP address of the requestor. If the argument "proto" is supplied, this shows everything that "extra" does and also the network protocol used to communicate the queries. Logging of only queries to the authoritative server can be configured with
 .B --log-queries=auth
+and logging only failed replies (Error, NXDOMAIN or NODATA) can be configured with
+.B --log-queries=only_failed
 .TP
 .B \-8, --log-facility=<facility>
 Set the facility to which dnsmasq will send syslog entries, this

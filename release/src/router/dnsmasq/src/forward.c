@@ -138,9 +138,9 @@ static void log_query_mysockaddr(unsigned int flags, char *name, union mysockadd
 }
 
 static void server_send(struct server *server, int fd,
-			const void *header, size_t plen, int flags)
+			const void *header, size_t plen)
 {
-  while (retry_send(sendto(fd, header, plen, flags,
+  while (retry_send(sendto(fd, header, plen, 0,
 			   &server->addr.sa,
 			   sa_len(&server->addr))));
 }
@@ -963,7 +963,7 @@ static void dnssec_validate(struct frec *forward, struct dns_header *header,
 	    status = dnssec_validate_ds(now, header, plen, daemon->namebuff, daemon->keyname, forward->class, &orig->validate_counter);
 	  else
 	    status = dnssec_validate_reply(now, header, plen, daemon->namebuff, daemon->keyname, &forward->class, 
-					   !option_bool(OPT_DNSSEC_IGN_NS), NULL, NULL, NULL, &orig->validate_counter);
+					   !option_bool(OPT_DNSSEC_IGN_NS), NULL, NULL, NULL, NULL, &orig->validate_counter);
 	  
 	  if (STAT_ISEQUAL(status, STAT_ABANDONED))
 	    log_resource = 1;
@@ -1077,7 +1077,7 @@ static void dnssec_validate(struct frec *forward, struct dns_header *header,
 		    set_outgoing_mark(orig, fd);
 #endif
 
-		  server_send(server, fd, header, nn, 0);
+		  server_send(server, fd, header, nn);
 		  server->queries++;
 #ifdef HAVE_DUMPFILE
 		  dump_packet_udp(DUMP_SEC_QUERY, (void *)header, (size_t)nn, NULL, &server->addr, fd);
@@ -1402,6 +1402,9 @@ void return_reply(time_t now, struct frec *forward, struct dns_header *header, s
       
 	  a.log.ede = ede;
 	  log_query(F_SECSTAT, domain, &a, result, 0);
+
+	  if (ede == EDE_US_SERVFAIL)
+	    ede = EDE_DNSSEC_BOGUS;
 	}
     }
   
@@ -2018,20 +2021,21 @@ void receive_query(struct listener *listen, time_t now)
 }
 
  
-/* Send query in packet, qsize to a server determined by first,last,start and
-   get the reply. return reply size. */
-static ssize_t tcp_talk(int first, int last, int start, unsigned char *packet,  size_t qsize,
-			int have_mark, unsigned int mark, struct server **servp)
+/* Send query in header, qsize to a server determined by first,last,start and
+   get the reply into the buffer passed by outbuff. Return reply size. */
+static ssize_t tcp_talk(int first, int last, int start, struct dns_header *header, size_t qsize,
+			struct iovec *recvbuff, int have_mark, unsigned int mark, struct server **servp)
 {
   int firstsendto = -1;
-  u16 *length = (u16 *)packet;
-  unsigned char *payload = &packet[2];
-  struct dns_header *header = (struct dns_header *)payload;
-  unsigned int rsize;
+  u16 length;
+  unsigned int rsize = 0;
   int class, rclass, type, rtype;
   unsigned char *p;
-  struct blockdata *saved_question;
   struct timeval tv;
+  struct iovec sendio[2];
+#ifdef MSG_FASTOPEN
+  struct msghdr msg;
+#endif
   
   (void)mark;
   (void)have_mark;
@@ -2043,10 +2047,12 @@ static ssize_t tcp_talk(int first, int last, int start, unsigned char *packet,  
   GETSHORT(type, p); 
   GETSHORT(class, p);
 
-  /* Save question for retry. */
-  if (!(saved_question = blockdata_alloc((char *)header, (size_t)qsize)))
-    return 0;
-  
+  length = htons(qsize);
+  sendio[0].iov_base = &length;
+  sendio[0].iov_len = sizeof(length);
+  sendio[1].iov_base = header;
+  sendio[1].iov_len = qsize;
+
   while (1) 
     {
       int data_sent = 0, fatal = 0;
@@ -2068,10 +2074,6 @@ static ssize_t tcp_talk(int first, int last, int start, unsigned char *packet,  
       *servp = serv = daemon->serverarray[start];
       
     retry:
-      blockdata_retrieve(saved_question, qsize, header);
-      
-      *length = htons(qsize);
-      
       if (serv->tcpfd == -1)
 	{
 	  if ((serv->tcpfd = socket(serv->addr.sa.sa_family, SOCK_STREAM, 0)) == -1)
@@ -2102,10 +2104,17 @@ static ssize_t tcp_talk(int first, int last, int start, unsigned char *packet,  
 	  tv.tv_sec += TCP_TIMEOUT;
 	  setsockopt(serv->tcpfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 #endif
-	  
 #ifdef MSG_FASTOPEN
-	  server_send(serv, serv->tcpfd, packet, qsize + sizeof(u16), MSG_FASTOPEN);
-	  
+	  msg.msg_name = &serv->addr.sa;
+	  msg.msg_namelen = sa_len(&serv->addr);
+	  msg.msg_iov = sendio;
+	  msg.msg_iovlen = 2;
+	  msg.msg_control = NULL;
+	  msg.msg_controllen = 0;
+	  msg.msg_flags = 0;
+
+	  while (retry_send(sendmsg(serv->tcpfd, &msg, MSG_FASTOPEN)));
+
 	  if (errno == 0)
 	    data_sent = 1;
 	  else if (errno == ETIMEDOUT || errno == EHOSTUNREACH || errno == EINPROGRESS || errno == ECONNREFUSED)
@@ -2131,12 +2140,13 @@ static ssize_t tcp_talk(int first, int last, int start, unsigned char *packet,  
 	  serv->flags &= ~SERV_GOT_TCP;
 	}
       
-      /* We us the _ONCE veriant of read_write() here because we've set a timeout on the tcp socket
+      /* We use the _ONCE variant of read_write() here because we've set a timeout on the tcp socket
 	 and wish to abort if the whole data is not read/written within the timeout. */      
-      if ((!data_sent && !read_write(serv->tcpfd, (unsigned char *)packet, qsize + sizeof(u16), RW_WRITE_ONCE)) ||
-	  !read_write(serv->tcpfd, (unsigned char *)length, sizeof (*length), RW_READ_ONCE) ||
-	  !read_write(serv->tcpfd, payload, (rsize = ntohs(*length)), RW_READ_ONCE))
-	{
+      if ((!data_sent && !read_writev(serv->tcpfd, sendio, 2, RW_WRITE_ONCE)) ||
+	  !read_write(serv->tcpfd, (unsigned char *)&length, sizeof(length), RW_READ_ONCE) ||
+	  !expand_buf(recvbuff, (rsize = ntohs(length))) ||
+	  !read_write(serv->tcpfd, recvbuff->iov_base, rsize, RW_READ_ONCE))
+      {
 	  /* We get data then EOF, reopen connection to same server,
 	     else try next. This avoids DoS from a server which accepts
 	     connections and then closes them. */
@@ -2149,28 +2159,28 @@ static ssize_t tcp_talk(int first, int last, int start, unsigned char *packet,  
 	  else
 	    goto failed;
 	}
+      else
+	{
+	  /* If the question section of the reply doesn't match the question we sent, then
+	     someone might be attempting to insert bogus values into the cache by 
+	     sending replies containing questions and bogus answers.
+	     Try another server, or give up */
+	  p = (unsigned char *)(((struct dns_header *)recvbuff->iov_base)+1);
+	  if (extract_name(((struct dns_header *)recvbuff->iov_base), rsize, &p, daemon->namebuff, EXTR_NAME_COMPARE, 4) != 1)
+	    continue;
+	  GETSHORT(rtype, p); 
+	  GETSHORT(rclass, p);
       
-      /* If the question section of the reply doesn't match the question we sent, then
-	 someone might be attempting to insert bogus values into the cache by 
-	 sending replies containing questions and bogus answers.
-	 Try another server, or give up */
-      p = (unsigned char *)(header+1);
-      if (extract_name(header, rsize, &p, daemon->namebuff, EXTR_NAME_COMPARE, 4) != 1)
-	continue;
-      GETSHORT(rtype, p); 
-      GETSHORT(rclass, p);
-      
-      if (type != rtype || class != rclass)
-	continue;
+	  if (type != rtype || class != rclass)
+	    continue;
+	}
       
       serv->flags |= SERV_GOT_TCP;
       
       *servp = serv;
-      blockdata_free(saved_question);
       return rsize;
     }
   
-  blockdata_free(saved_question);
   return 0;
 }
 		  
@@ -2182,19 +2192,16 @@ int tcp_from_udp(time_t now, int status, struct dns_header *header, ssize_t *ple
 		 int class, char *name, struct server *server, 
 		 int *keycount, int *validatecount)
 {
-  unsigned char *packet = whine_malloc(65536 + MAXDNAME + RRFIXEDSZ + sizeof(u16));
-  struct dns_header *new_header = (struct dns_header *)&packet[2];
   int start, first, last, new_status;
   ssize_t n = *plenp;
   int log_save = daemon->log_display_id;
+  struct iovec recvbuff;
+
+  recvbuff.iov_len = 0;
+  recvbuff.iov_base = NULL;
   
   *plenp = 0;
   
-  if (!packet)
-    return STAT_ABANDONED;
-
-  memcpy(new_header, header, n);
-
   /* Set TCP flag in logs. */
   daemon->log_display_id = -daemon->log_display_id;
 
@@ -2212,10 +2219,11 @@ int tcp_from_udp(time_t now, int status, struct dns_header *header, ssize_t *ple
 	log_query_mysockaddr(F_NOEXTRA | F_DNSSEC | F_SERVER, name, &server->addr,
 			     STAT_ISEQUAL(status, STAT_NEED_KEY) ? "dnssec-query[DNSKEY]" : "dnssec-query[DS]", 0);
 
-      if ((n = tcp_talk(first, last, start, packet, n, 0, 0, &server)) == 0)
+      if ((n = tcp_talk(first, last, start, header, n, &recvbuff, 0, 0, &server)) == 0)
 	new_status = STAT_ABANDONED;
       else
 	{
+	  struct dns_header *new_header = (struct dns_header *)recvbuff.iov_base;
 	  new_status = tcp_key_recurse(now, status, new_header, n, class, daemon->namebuff, daemon->keyname, server, 0, 0, keycount, validatecount);
 	  
 	  if (STAT_ISEQUAL(status, STAT_OK))
@@ -2226,7 +2234,7 @@ int tcp_from_udp(time_t now, int status, struct dns_header *header, ssize_t *ple
 	      
 	      if (n >= daemon->edns_pktsz)
 		{
-		  /* still too bIg, strip optional sections and try again. */
+		  /* still too big, strip optional sections and try again. */
 		  new_header->nscount = htons(0);
 		  new_header->arcount = htons(0);
 		  n = resize_packet(new_header, n, NULL, 0);
@@ -2240,6 +2248,10 @@ int tcp_from_udp(time_t now, int status, struct dns_header *header, ssize_t *ple
 		    }
 		}
 	      
+	      /* we have succeeded and are no longer blocked talking
+		 on a TCP connection, so if the watchdog alarm goes off,
+		 ignore it. */
+	      daemon->forward_to_tcp = NULL;
 	      /* return the stripped or truncated reply. */
 	      memcpy(header, new_header, n);
 	      *plenp = n;
@@ -2248,7 +2260,7 @@ int tcp_from_udp(time_t now, int status, struct dns_header *header, ssize_t *ple
     }
   
   daemon->log_display_id = log_save;
-  free(packet);
+  free(recvbuff.iov_base);
   return new_status;
 }			    
  
@@ -2258,9 +2270,12 @@ static int tcp_key_recurse(time_t now, int status, struct dns_header *header, si
 			   int have_mark, unsigned int mark, int *keycount, int *validatecount)
 {
   int first, last, start, new_status;
-  unsigned char *packet = NULL;
-  struct dns_header *new_header = NULL;
+  struct iovec new_packet;
+  struct dns_header *query_header = NULL, *new_header;
 
+  new_packet.iov_base = NULL;
+  new_packet.iov_len = 0;
+  
   while (1)
     {
       size_t m;
@@ -2273,7 +2288,7 @@ static int tcp_key_recurse(time_t now, int status, struct dns_header *header, si
 	new_status = dnssec_validate_ds(now, header, n, name, keyname, class, validatecount);
       else
 	new_status = dnssec_validate_reply(now, header, n, name, keyname, &class,
-					   !option_bool(OPT_DNSSEC_IGN_NS), NULL, NULL, NULL, validatecount);
+					   !option_bool(OPT_DNSSEC_IGN_NS), NULL, NULL, NULL, NULL, validatecount);
       
       if (!STAT_ISEQUAL(new_status, STAT_NEED_DS) && !STAT_ISEQUAL(new_status, STAT_NEED_KEY) && !STAT_ISEQUAL(new_status, STAT_ABANDONED))
 	break;
@@ -2294,34 +2309,21 @@ static int tcp_key_recurse(time_t now, int status, struct dns_header *header, si
 	}
       
       /* Can't validate because we need a key/DS whose name now in keyname.
-	 Make query for same, and recurse to validate */
-      if (!packet)
-	{
-	  packet = whine_malloc(65536 + MAXDNAME + RRFIXEDSZ + sizeof(u16));
-	  new_header = (struct dns_header *)&packet[2];
-	}
-      
-      if (!packet)
-	{
-	  new_status = STAT_ABANDONED;
-	  break;
-	}
-      
-      m = dnssec_generate_query(new_header, ((unsigned char *) new_header) + 65536, keyname, class, 0,
+	 Make query for same in UDP packet buffer, recurse to validate*/
+      query_header = (struct dns_header *)daemon->packet;
+      daemon->srv_save = NULL;
+
+      m = dnssec_generate_query(query_header, ((unsigned char *)query_header) + daemon->edns_pktsz, keyname, class, 0,
 				STAT_ISEQUAL(new_status, STAT_NEED_KEY) ? T_DNSKEY : T_DS);
       
-      if ((start = dnssec_server(server, keyname, STAT_ISEQUAL(new_status, STAT_NEED_DS), &first, &last)) == -1)
+      if ((start = dnssec_server(server, keyname, STAT_ISEQUAL(new_status, STAT_NEED_DS), &first, &last)) == -1 ||
+	  (m = tcp_talk(first, last, start, query_header, m, &new_packet, have_mark, mark, &server)) == 0)
 	{
 	  new_status = STAT_ABANDONED;
 	  break;
 	}
       
-      if ((m = tcp_talk(first, last, start, packet, m, have_mark, mark, &server)) == 0)
-	{
-	  new_status = STAT_ABANDONED;
-	  break;
-	}
-
+      new_header = new_packet.iov_base;
       log_save = daemon->log_display_id;
       daemon->log_display_id = -(++daemon->log_id);
       
@@ -2338,8 +2340,7 @@ static int tcp_key_recurse(time_t now, int status, struct dns_header *header, si
 	break; 
     }
   
-  if (packet)
-    free(packet);
+  free(new_packet.iov_base);
   
   return new_status;
 }
@@ -2349,11 +2350,11 @@ static int tcp_key_recurse(time_t now, int status, struct dns_header *header, si
 /* The daemon forks before calling this: it should deal with one connection,
    blocking as necessary, and then return. Note, need to be a bit careful
    about resources for debug mode, when the fork is suppressed: that's
-   done by the caller. */
-unsigned char *tcp_request(int confd, time_t now,
-			   union mysockaddr *local_addr, struct in_addr netmask, int auth_dns)
+   done by the caller, which also frees bigbuff. */
+void tcp_request(int confd, time_t now, struct iovec *bigbuff, 
+		 union mysockaddr *local_addr, struct in_addr netmask, int auth_dns)
 {
-  size_t size = 0, saved_size = 0;
+  size_t size = 0;
   int norebind = 0;
 #ifdef HAVE_CONNTRACK
   int allowed = 1;
@@ -2362,16 +2363,10 @@ unsigned char *tcp_request(int confd, time_t now,
   int local_auth = 0;
 #endif
   int checking_disabled, do_bit = 0, ad_reqd = 0, have_pseudoheader = 0;
-  struct blockdata *saved_question = NULL;
   unsigned short qtype;
   unsigned int gotname = 0;
-  /* Max TCP packet + slop + size */
-  unsigned char *packet = whine_malloc(65536 + MAXDNAME + RRFIXEDSZ + sizeof(u16));
-  unsigned char *payload = &packet[2];
-  u16 tcp_len;
-  /* largest field in header is 16-bits, so this is still sufficiently aligned */
-  struct dns_header *header = (struct dns_header *)payload;
-  u16 *length = (u16 *)packet;
+  u16 tcp_len, out_len;
+  struct dns_header *header, *out_header;
   struct server *serv;
   struct in_addr dst_addr_4;
   union mysockaddr peer_addr;
@@ -2381,9 +2376,13 @@ unsigned char *tcp_request(int confd, time_t now,
   unsigned int mark = 0;
   int have_mark = 0;
   int first, last, filtered, do_stale = 0;
-      
-  if (!packet || getpeername(confd, (struct sockaddr *)&peer_addr, &peer_len) == -1)
-    return packet;
+  struct iovec out_iov[2];
+  
+  bigbuff->iov_base = NULL;
+  bigbuff->iov_len = 0;
+  
+  if (getpeername(confd, (struct sockaddr *)&peer_addr, &peer_len) == -1)
+    return;
 
 #ifdef HAVE_CONNTRACK
   /* Get connection mark of incoming query to set on outgoing connections. */
@@ -2404,7 +2403,7 @@ unsigned char *tcp_request(int confd, time_t now,
   if (option_bool(OPT_LOCAL_SERVICE))
     {
       struct addrlist *addr;
-
+      
       if (peer_addr.sa.sa_family == AF_INET6) 
 	{
 	  for (addr = daemon->interface_addrs; addr; addr = addr->next)
@@ -2427,7 +2426,7 @@ unsigned char *tcp_request(int confd, time_t now,
 	{
 	  prettyprint_addr(&peer_addr, daemon->addrbuff);
 	  my_syslog(LOG_WARNING, _("ignoring query from non-local network %s"), daemon->addrbuff);
-	  return packet;
+	  return;
 	}
     }
 
@@ -2445,18 +2444,26 @@ unsigned char *tcp_request(int confd, time_t now,
 	  if (query_count >= TCP_MAX_QUERIES)
 	    break;
 	  
+	  /* Now get the query into the normal UDP packet buffer.
+	     Ignore queries long than this. If we're answering locally,
+	     copy the query into the output buffer, but for forwarding, tcp_talk()
+	     wants the query in a a different buffer from the reply.
+	     Note that we overwrote any saved UDP query - this onlt matters in debug mode. */
+	  daemon->srv_save = NULL;
 	  if (!read_write(confd, (unsigned char *)&tcp_len, sizeof(tcp_len), RW_READ) ||
-	      !(size = ntohs(tcp_len)) ||
-	      !read_write(confd, payload, size, RW_READ))
+	      !(size = ntohs(tcp_len)) || size > (size_t)daemon->packet_buff_sz ||
+	      !read_write(confd, (unsigned char *)daemon->packet, size, RW_READ))
 	    break;
-	      
+	  
 	  if (size < (int)sizeof(struct dns_header))
 	    continue;
 	  
-	  /* Clear buffer beyond request to avoid risk of
-	     information disclosure. */
-	  memset(payload + size, 0, 65536 - size);
+	  /* Make sure we have a buffer big enough for the largest answer. */
+	  expand_buf(bigbuff, 65536 + MAXDNAME + RRFIXEDSZ);
+	  out_header = bigbuff->iov_base;
 	  
+	  /* header == query */
+	  header = (struct dns_header *)daemon->packet;
 	  query_count++;
 	  
 	  /* log_query gets called indirectly all over the place, so 
@@ -2475,9 +2482,6 @@ unsigned char *tcp_request(int confd, time_t now,
 	    ede = EDE_INVALID_DATA;
 	  else
 	    {
-	      if (saved_question)
-		blockdata_free(saved_question);
-
 	      do_bit = 0;
 	      
 	      if (find_pseudoheader(header, (size_t)size, NULL, &pheader, NULL, NULL))
@@ -2492,9 +2496,12 @@ unsigned char *tcp_request(int confd, time_t now,
 		    do_bit = 1; /* do bit */ 
 		}
 
-	      size = add_edns0_config(header, size, ((unsigned char *) header) + 65536, &peer_addr, now, &cacheable);
-	      saved_question = blockdata_alloc((char *)header, (size_t)size);
-	      saved_size = size;
+	      size = add_edns0_config(header, size, ((unsigned char *) header) + daemon->edns_pktsz, &peer_addr, now, &cacheable);
+
+	      /* Clear buffer to avoid risk of information disclosure. */
+	      memset(bigbuff->iov_base, 0, bigbuff->iov_len);
+	      /* Copy query into output buffer for local answering */
+	      memcpy(out_header, header, size);	    
 	      
 	      log_query_mysockaddr((auth_dns ? F_NOERR | F_AUTH : 0) | F_QUERY | F_FORWARD, daemon->namebuff,
 				   &peer_addr, NULL, qtype);
@@ -2553,10 +2560,10 @@ unsigned char *tcp_request(int confd, time_t now,
 #endif
 #ifdef HAVE_AUTH
 	      else if (auth_dns)
-		m = answer_auth(header, ((char *) header) + 65536, (size_t)size, now, &peer_addr, local_auth);
+		m = answer_auth(out_header, ((char *) out_header) + 65536, (size_t)size, now, &peer_addr, local_auth);
 #endif
 	      else
-		m = answer_request(header, ((char *) header) + 65536, (size_t)size, 
+		m = answer_request(out_header, ((char *) out_header) + 65536, (size_t)size, 
 				   dst_addr_4, netmask, now, ad_reqd, do_bit, !cacheable, &stale, &filtered);
 	    }
 	}
@@ -2564,14 +2571,11 @@ unsigned char *tcp_request(int confd, time_t now,
       /* Do this by steam now we're not in the select() loop */
       check_log_writer(1); 
       
-      if (m == 0 && ede == EDE_UNSET && saved_question)
+      if (m == 0 && ede == EDE_UNSET)
 	{
 	  struct server *master;
 	  int start;
 	  int no_cache_dnssec = 0, cache_secure = 0, bogusanswer = 0;
-
-	  blockdata_retrieve(saved_question, (size_t)saved_size, header);
-	  size = saved_size;
 
 	  /* save state of "cd" flag in query */
 	  checking_disabled = header->hb4 & HB4_CD;
@@ -2601,7 +2605,7 @@ unsigned char *tcp_request(int confd, time_t now,
 #ifdef HAVE_DNSSEC
 		  if (option_bool(OPT_DNSSEC_VALID))
 		    {
-		      size = add_do_bit(header, size, ((unsigned char *) header) + 65536);
+		      size = add_do_bit(header, size, ((unsigned char *) header) + daemon->edns_pktsz);
 		      
 		      /* For debugging, set Checking Disabled, otherwise, have the upstream check too,
 			 this allows it to select auth servers when one is returning bad data. */
@@ -2611,12 +2615,14 @@ unsigned char *tcp_request(int confd, time_t now,
 #endif
 		  
 		  /* Loop round available servers until we succeed in connecting to one. */
-		  if ((m = tcp_talk(first, last, start, packet, size, have_mark, mark, &serv)) == 0)
+		  if ((m = tcp_talk(first, last, start, header, size, bigbuff, have_mark, mark, &serv)) == 0)
 		    ede = EDE_NETERR;
 		  else
 		    {
+		      /* just in case tcp_talk() expanded buffer - should never happen */
+		      out_header = bigbuff->iov_base;
 		      /* get query name again for logging - may have been overwritten */
-		      if (!extract_name(header, (unsigned int)size, NULL, daemon->namebuff, EXTR_NAME_EXTRACT, 0))
+		      if (!extract_name(out_header, (unsigned int)size, NULL, daemon->namebuff, EXTR_NAME_EXTRACT, 0))
 			strcpy(daemon->namebuff, "query");
 		      log_query_mysockaddr(F_SERVER | F_FORWARD, daemon->namebuff, &serv->addr, NULL, 0);
 		      
@@ -2632,7 +2638,8 @@ unsigned char *tcp_request(int confd, time_t now,
 			    {
 			      int keycount = daemon->limit[LIMIT_WORK]; /* Limit to number of DNSSEC questions, to catch loops and avoid filling cache. */
 			      int validatecount = daemon->limit[LIMIT_CRYPTO]; 
-			      int status = tcp_key_recurse(now, STAT_OK, header, m, 0, daemon->namebuff, daemon->keyname, 
+			      /* tcp_key_recurse() may overwrite packetbuf, and thuse *header is now invalid */
+			      int status = tcp_key_recurse(now, STAT_OK, out_header, m, 0, daemon->namebuff, daemon->keyname, 
 							   serv, have_mark, mark, &keycount, &validatecount);
 			      char *result, *domain = "result";
 			      
@@ -2658,12 +2665,14 @@ unsigned char *tcp_request(int confd, time_t now,
 				  no_cache_dnssec = 1;
 				  bogusanswer = 1;
 				  
-				  if (extract_name(header, m, NULL, daemon->namebuff, EXTR_NAME_EXTRACT, 0))
+				  if (extract_name(out_header, m, NULL, daemon->namebuff, EXTR_NAME_EXTRACT, 0))
 				    domain = daemon->namebuff;
 				}
 			      
 			      a.log.ede = ede;
 			      log_query(F_SECSTAT, domain, &a, result, 0);
+			      if (ede == EDE_US_SERVFAIL)
+				ede = EDE_DNSSEC_BOGUS;
 			      
 			      if ((daemon->limit[LIMIT_CRYPTO] - validatecount) > (int)daemon->metrics[METRIC_CRYPTO_HWM])
 				daemon->metrics[METRIC_CRYPTO_HWM] = daemon->limit[LIMIT_CRYPTO] - validatecount;
@@ -2680,18 +2689,18 @@ unsigned char *tcp_request(int confd, time_t now,
 		    
 		      /* restore CD bit to the value in the query */
 		      if (checking_disabled)
-			header->hb4 |= HB4_CD;
+			out_header->hb4 |= HB4_CD;
 		      else
-			header->hb4 &= ~HB4_CD;
+			out_header->hb4 &= ~HB4_CD;
 		      
 		      /* Never cache answers which are contingent on the source or MAC address EDSN0 option,
 			 since the cache is ignorant of such things. */
 		      if (!cacheable)
 			no_cache_dnssec = 1;
 		      
-		      m = process_reply(header, now, serv, (unsigned int)m, 
+		      m = process_reply(out_header, now, serv, (unsigned int)m, 
 					option_bool(OPT_NO_REBIND) && !norebind, no_cache_dnssec, cache_secure, bogusanswer,
-					ad_reqd, do_bit, !have_pseudoheader, &peer_addr, ((unsigned char *)header) + 65536, ede);
+					ad_reqd, do_bit, !have_pseudoheader, &peer_addr, ((unsigned char *)out_header) + 65536, ede);
 
 		      /* process_reply() adds pheader itself */
 		      have_pseudoheader = 0; 
@@ -2706,8 +2715,8 @@ unsigned char *tcp_request(int confd, time_t now,
       /* In case of local answer or no connections made. */
       if (m == 0)
 	{
-	  if (!(m = make_local_answer(flags, gotname, size, header, daemon->namebuff,
-				      ((char *) header) + 65536, first, last, ede)))
+	  if (!(m = make_local_answer(flags, gotname, size, out_header, daemon->namebuff,
+				      ((char *) out_header) + 65536, first, last, ede)))
 	    break;
 	}
       else if (ede == EDE_UNSET)
@@ -2723,14 +2732,12 @@ unsigned char *tcp_request(int confd, time_t now,
 	  u16 swap = htons((u16)ede);
 	  
 	  if (ede != EDE_UNSET)
-	    m = add_pseudoheader(header, m, ((unsigned char *) header) + 65536, EDNS0_OPTION_EDE, (unsigned char *)&swap, 2, do_bit, 0);
+	    m = add_pseudoheader(out_header, m, ((unsigned char *) out_header) + 65536, EDNS0_OPTION_EDE, (unsigned char *)&swap, 2, do_bit, 0);
 	  else
-	    m = add_pseudoheader(header, m, ((unsigned char *) header) + 65536, 0, NULL, 0, do_bit, 0);
+	    m = add_pseudoheader(out_header, m, ((unsigned char *) out_header) + 65536, 0, NULL, 0, do_bit, 0);
 	}
-		  
-      check_log_writer(1);
       
-      *length = htons(m);
+      check_log_writer(1);
       
 #if defined(HAVE_CONNTRACK) && defined(HAVE_UBUS)
 #ifdef HAVE_AUTH
@@ -2740,7 +2747,13 @@ unsigned char *tcp_request(int confd, time_t now,
 	  report_addresses(header, m, mark);
 #endif
       
-      if (!read_write(confd, packet, m + sizeof(u16), RW_WRITE))
+      /* use scatter-gather IO so that length doesn't end up in separate packet. */
+      out_len = htons(m);
+      out_iov[0].iov_len = sizeof(out_len);
+      out_iov[0].iov_base = &out_len;
+      out_iov[1].iov_len = m;
+      out_iov[1].iov_base = bigbuff->iov_base;
+      if (!read_writev(confd, out_iov, 2, RW_WRITE))
 	break;
       
       /* If we answered with stale data, this process will now try and get fresh data into
@@ -2756,18 +2769,15 @@ unsigned char *tcp_request(int confd, time_t now,
 	  daemon->log_source_addr = NULL;
 	}
     }
-
-  /* If we ran once to get fresh data, confd is already closed. */
+  
+/* If we ran once to get fresh data, confd is already closed. */
   if (!do_stale)
     {
       shutdown(confd, SHUT_RDWR);
       close(confd);
     }
-
-  blockdata_free(saved_question);
+  
   check_log_writer(1);
-
-  return packet;
 }
 
 /* return a UDP socket bound to a random port, have to cope with straying into
@@ -3268,7 +3278,7 @@ void resend_query(void)
 {
   if (daemon->srv_save)
     server_send(daemon->srv_save, daemon->fd_save,
-		daemon->packet, daemon->packet_len, 0);
+		daemon->packet, daemon->packet_len);
 }
 
 /* A server record is going away, remove references to it */

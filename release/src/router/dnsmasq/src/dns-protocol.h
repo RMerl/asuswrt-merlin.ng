@@ -86,6 +86,7 @@
 #define EDNS0_OPTION_UMBRELLA       20292 /* Cisco Umbrella temporary assignment */
 
 /* RFC-8914 extended errors, negative values are our definitions */
+#define EDE_US_SERVFAIL    -2  /* SERVFAIL from usptream */
 #define EDE_UNSET          -1  /* No extended DNS error available */
 #define EDE_OTHER           0  /* Other */
 #define EDE_USUPDNSKEY      1  /* Unsupported DNSKEY algo */

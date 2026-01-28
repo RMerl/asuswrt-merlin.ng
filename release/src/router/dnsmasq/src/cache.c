@@ -855,7 +855,7 @@ void cache_end_insert(void)
 #ifdef HAVE_DNSSEC
 void cache_update_hwm(void)
 {
-  /* Sneak out possibly updated crypto HWM values. */
+ /* Sneak out possibly updated crypto HWM values. */
   unsigned char op = PIPE_OP_STATS;
 
   read_write(daemon->pipe_to_parent, &op, sizeof(op), RW_WRITE);
@@ -1000,6 +1000,7 @@ int cache_recv_insert(time_t now, int fd)
       }
       
     case PIPE_OP_RESULT:
+    case PIPE_OP_KILLED:
       {
 	/* UDP validation moved to TCP to avoid truncation. 
 	   Restart UDP validation process with the returned result. */
@@ -1013,11 +1014,14 @@ int cache_recv_insert(time_t now, int fd)
 	    !read_write(fd, (unsigned char *)&ret_len, sizeof(ret_len), RW_READ) ||
 	    !read_write(fd, (unsigned char *)daemon->packet, ret_len, RW_READ) ||
 	    !read_write(fd, (unsigned char *)&forward, sizeof(forward), RW_READ) ||
-	    !read_write(fd, (unsigned char *)&uid, sizeof(uid), RW_READ) ||
-	    !read_write(fd, (unsigned char *)&keycount, sizeof(keycount), RW_READ) ||
-	    !read_write(fd, (unsigned char *)&keycountp, sizeof(keycountp), RW_READ) ||
-	    !read_write(fd, (unsigned char *)&validatecount, sizeof(validatecount), RW_READ) ||
-	    !read_write(fd, (unsigned char *)&validatecountp, sizeof(validatecountp), RW_READ))
+	    !read_write(fd, (unsigned char *)&uid, sizeof(uid), RW_READ))
+	  return 0;
+
+	if (op == PIPE_OP_RESULT && 
+	    (!read_write(fd, (unsigned char *)&keycount, sizeof(keycount), RW_READ) ||
+	     !read_write(fd, (unsigned char *)&keycountp, sizeof(keycountp), RW_READ) ||
+	     !read_write(fd, (unsigned char *)&validatecount, sizeof(validatecount), RW_READ) ||
+	     !read_write(fd, (unsigned char *)&validatecountp, sizeof(validatecountp), RW_READ)))
 	  return 0;
 	
 	/* There's a tiny chance that the frec may have been freed 
@@ -1025,9 +1029,12 @@ int cache_recv_insert(time_t now, int fd)
 	   the uid field which is unique modulo 2^32 for each use. */
 	if (uid == forward->uid)
 	  {
-	    /* repatriate the work counters from the child process. */
-	    *keycountp = keycount;
-	    *validatecountp = validatecount;
+	    if (op == PIPE_OP_RESULT)
+	      {
+		/* repatriate the work counters from the child process. */
+		*keycountp = keycount;
+		*validatecountp = validatecount;
+	      }
 	    
 	    if (!forward->dependent)
 	      return_reply(now, forward, (struct dns_header *)daemon->packet, ret_len, status);
@@ -2243,8 +2250,18 @@ static char *edestr(int ede)
     case EDE_UNS_NS3_ITER:                return "unsupported NSEC3 iterations value";
     case EDE_UNABLE_POLICY:               return "uanble to conform to policy";
     case EDE_SYNTHESIZED:                 return "synthesized";
+    case EDE_US_SERVFAIL:                 return "upstream returned SERVFAIL";
     default:                              return "unknown";
     }
+}
+
+static int error_occured(unsigned int flags) {
+  if (flags & F_RCODE)
+    return 1;
+  else if (flags & F_NEG)
+    return 1;
+  else
+    return 0;
 }
 
 void log_query(unsigned int flags, char *name, union all_addr *addr, char *arg, unsigned short type)
@@ -2257,6 +2274,9 @@ void log_query(unsigned int flags, char *name, union all_addr *addr, char *arg, 
   char opcodestring[3]; /* maximum is 15 */
 
   if (!option_bool(OPT_LOG))
+    return;
+
+  if(option_bool(OPT_LOG_ONLY_FAILED) && !error_occured(flags))
     return;
 
   /* F_NOERR is reused here to indicate logs arrising from auth queries */ 

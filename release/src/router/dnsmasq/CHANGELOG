@@ -1,3 +1,30 @@
+version 2.93
+	Fix a corner-case in DNSSEC validation with wildcards. If we have
+	a wildcard record *.example.com and recieve a query for
+	a.example.com then that's OK, but we have to check that there isn't
+	an actual a.example.com record. The corner case is when we get a
+	query for *.example.com in that case the non-existence check
+	is not required, was being done. Thanks to Jan Breig for
+	spotting this.
+
+	Enable support for inotify on FreeBSD 15.0-RELEASE, which added
+	Linux-compatible inotify support.
+
+	Fix DNSSEC failure with spurious RRSIGs. The presence of wrong
+	RRSIG RRs in replies caused DNSSEC validation to fail even
+	when the RRs do not require validation because the zone is
+	unsigned. Note that, at the time of this commit, Google
+	DNS appears to have the same bug, so if you're using 8.8.8.8
+	or friends as upstream, resolving the broken zones
+	(eg rivcoed.org) will still fail. Thanks to Petr Menšík
+	for the bug report.
+
+	Fix DNSSEC fail with CNAME replies to DS queries. As CNAME reply
+	to a DNSSEC query was confusing the validation logic. It now
+	accepts a signed CNAME reply to a DS query as proof that no DS
+	exists at the domain. This fixes the DS/zone break detection logic.
+
+	
 version 2.92
         Redesign the interaction between DNSSEC validation and per-domain
 	servers, specified as --server=/<domain>/<ip-address>. This should

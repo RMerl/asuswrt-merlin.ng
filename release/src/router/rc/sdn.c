@@ -648,7 +648,8 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 			if (nvram_get_int("dnssec_enable"))
 		{
 			fprintf(fp, "trust-anchor=.,20326,8,2,E06D44B80B8F1D39A95C0B0D7C65D08458E880409BBC683457104237C7F8EC8D\n"
-						"dnssec\n");
+			            "trust-anchor=.,38696,8,2,683D2D0ACB8C9B712A1948B27F741219298D0A450D612C483AF444A4C0FB2B16\n"
+			            "dnssec\n");
 
 			/* If NTP isn't set yet, wait until rc's ntp signals us to start validating time */
 			if (!nvram_get_int("ntp_ready"))

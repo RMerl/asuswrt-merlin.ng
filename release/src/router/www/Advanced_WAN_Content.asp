@@ -324,11 +324,6 @@ function initial(){
 		showhide("dnssec_strict_tr", "<% nvram_get("dnssec_enable"); %>" == "1" ? 1 : 0);
 	}
 
-	if(dnssec_support){
-		document.getElementById("dnssec_tr").style.display = "";
-		showhide("dnssec_strict_tr", "<% nvram_get("dnssec_enable"); %>" == "1" ? 1 : 0);
-	}
-
 	change_nat(<% nvram_get("wan_nat_x"); %>);
 
 	if(yadns_support){

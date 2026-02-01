@@ -2165,7 +2165,7 @@ function updatDNSListOnline(){
 				return local_data[e];
 		});
 		Update_DNS_status();
-
+/*
 		$.getJSON("https://nw-dlcdnet.asus.com/plugin/js/DNS_List.json",
 			function(cloud_data){
 				if(JSON.stringify(local_data) != JSON.stringify(cloud_data)){
@@ -2178,6 +2178,7 @@ function updatDNSListOnline(){
 				}
 			}
 		);
+*/
 	});
 }
 

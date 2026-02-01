@@ -412,6 +412,7 @@ function initial(){
 		showhide("ppp_conn_tr",1);
 	}
 
+/*
 	$.getJSON("/ajax/dns_db.json",
 		function(data){
 			var dns_db_translation_mapping = [
@@ -468,6 +469,7 @@ function initial(){
 		$(".dns_pull_arrow").attr("src","/images/unfold_more.svg");
 		$(".dns_server_list_dropdown").hide();
 	});
+*/
 
 	if(dslite_support){
 		showaftrList();

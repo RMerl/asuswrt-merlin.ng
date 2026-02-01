@@ -331,11 +331,6 @@ function initial(){
 		showhide("dnssec_strict_tr", "<% nvram_get("dnssec_enable"); %>" == "1" ? 1 : 0);
 	}
 
-	if(dnssec_support){
-		document.getElementById("dnssec_tr").style.display = "";
-		showhide("dnssec_strict_tr", "<% nvram_get("dnssec_enable"); %>" == "1" ? 1 : 0);
-	}
-
 	change_nat(<% nvram_get("wan_nat_x"); %>);
 
 	if(yadns_support){
@@ -424,6 +419,7 @@ function initial(){
 		showhide("ppp_conn_tr",1);
 	}
 
+/*
 	$.getJSON("/ajax/dns_db.json",
 		function(data){
 			var dns_db_translation_mapping = [
@@ -480,6 +476,7 @@ function initial(){
 		$(".dns_pull_arrow").attr("src","/images/unfold_more.svg");
 		$(".dns_server_list_dropdown").hide();
 	});
+*/
 
 	if(dslite_support){
 		showaftrList();
@@ -2195,7 +2192,7 @@ function updatDNSListOnline(){
 				return local_data[e];
 		});
 		Update_DNS_status();
-
+/*
 		$.getJSON("https://nw-dlcdnet.asus.com/plugin/js/DNS_List.json",
 			function(cloud_data){
 				if(JSON.stringify(local_data) != JSON.stringify(cloud_data)){
@@ -2208,6 +2205,7 @@ function updatDNSListOnline(){
 				}
 			}
 		);
+*/
 	});
 }
 

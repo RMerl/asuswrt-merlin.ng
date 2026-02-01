@@ -202,11 +202,15 @@ void *blockdata_retrieve(struct blockdata *block, size_t len, void *data)
     {
       if (len > buff_len)
 	{
-	  if (!(new = whine_malloc(len)))
+	  blen = len + 1024;
+	  if (!(new = whine_malloc(blen)))
 	    return NULL;
+
 	  if (buff)
 	    free(buff);
+
 	  buff = new;
+	  buff_len = blen;
 	}
       data = buff;
     }

@@ -12,8 +12,18 @@ Asuswrt-Merlin 3006.xxx Changelog
   - UPDATED: OpenVPN to 2.6.17.
   - UPDATED: Dropbear to 2025.89.
   - UPDATED: nettle to 3.10.2.
-  - UPDATED: dnsmasq to 2.92.
+  - UPDATED: dnsmasq to 2.93-test2 (includes a couple of DNSSEC
+             fixes over 2.92)
+  - UPDATED: openssl-3.0 to 3.0.19 (GT-BE19000AI only)
+  - UPDATED: Added new 2024 DNSSEC trust anchor, which will
+             start being used in October 2026.
   - FIXED: IPv6 blocking of DoT servers (dave14305)
+  - FIXED: Multiple minor CVE for OpenSSL 1.1: CVE-2025-68160,
+           CVE-2025-69418, CVE-2025-69419, CVE-2025-69420,
+           CVE-2025-69421, CVE-2026-22795 and CVE-2026-22796
+           (backports by RSDNTWK)
+  - FIXED: Missing UPnP settings on models with multiservice
+           WAN support.
   - REMOVED: AiCloud support, due to security reasons.
 
 

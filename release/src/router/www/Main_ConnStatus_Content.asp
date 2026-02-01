@@ -419,7 +419,7 @@ function setShowNames(obj) {
 												<li>Public IP addresses can be clicked on to launch a lookup on <a href="https://whatismyipaddress.com/" target="_blank" style="cursor:pointer; text-decoration:underline;">https://whatismyipaddress.com/</a>.</li>
 											</ol>
 										</div>
-										<table cellpadding="4" width="100%" class="FormTable_table"><thead><tr><td colspan="2">Display options</td></tr></thead>
+										<table cellpadding="4" width="100%" class="FormTable"><thead><tr><td colspan="2">Display options</td></tr></thead>
 										<tr>
 											<th>Refresh frequency</th>
 											<td>

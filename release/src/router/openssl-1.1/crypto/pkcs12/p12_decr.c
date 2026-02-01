@@ -88,6 +88,11 @@ void *PKCS12_item_decrypt_d2i(const X509_ALGOR *algor, const ASN1_ITEM *it,
     void *ret;
     int outlen;
 
+    if (oct == NULL) {
+        PKCS12err(PKCS12_F_PKCS12_ITEM_DECRYPT_D2I, ERR_R_PASSED_NULL_PARAMETER);
+        return NULL;
+    }
+
     if (!PKCS12_pbe_crypt(algor, pass, passlen, oct->data, oct->length,
                           &out, &outlen, 0)) {
         PKCS12err(PKCS12_F_PKCS12_ITEM_DECRYPT_D2I,

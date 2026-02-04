@@ -2982,7 +2982,7 @@ test_entry_guard_basic_path_selection(void *arg)
   oc->build_state = tor_malloc_zero(sizeof(cpath_build_state_t));
 
   /* First pick the exit and pin it on the build_state */
-  retval = onion_pick_cpath_exit(oc, NULL, 0);
+  retval = onion_pick_cpath_exit(oc, NULL);
   tt_int_op(retval, OP_EQ, 0);
 
   /* Extend path 3 times. First we pick guard, then middle, then exit. */
@@ -3050,7 +3050,7 @@ test_entry_guard_vanguard_path_selection(void *arg)
 
   /* First pick the exit and pin it on the build_state */
   tt_int_op(oc->build_state->desired_path_len, OP_EQ, 0);
-  retval = onion_pick_cpath_exit(oc, NULL, 0);
+  retval = onion_pick_cpath_exit(oc, NULL);
   tt_int_op(retval, OP_EQ, 0);
 
   /* Ensure that vanguards make 4-hop circuits by default */

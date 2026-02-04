@@ -47,6 +47,9 @@ typedef struct authdir_config_t {
 #define RTR_BADEXIT 16 /**< We'll tell clients not to use this as an exit. */
 /** We'll vote to only use this router as a midpoint. */
 #define RTR_MIDDLEONLY 32
+#define RTR_STRIPGUARD 64
+#define RTR_STRIPHSDIR 128
+#define RTR_STRIPV2DIR 256
 
 #endif /* defined(PROCESS_DESCS_PRIVATE) || defined(TOR_UNIT_TESTS) */
 

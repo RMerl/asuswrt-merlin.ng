@@ -434,15 +434,19 @@ measured_bw_line_parse(measured_bw_line_t *out, const char *orig_line,
         return -1;
       }
       got_bw=1;
-    } else if (strcmpstart(cp, "node_id=$") == 0) {
+    // Allow node_id to start with or without the dollar sign.
+    } else if (strcmpstart(cp, "node_id=") == 0) {
       if (got_node_id) {
         log_warn(LD_DIRSERV, "Double node_id= in bandwidth file line: %s",
                  escaped(orig_line));
         tor_free(line);
         return -1;
       }
-      cp+=strlen("node_id=$");
-
+      if (strcmpstart(cp, "node_id=$") == 0) {
+        cp+=strlen("node_id=$");
+      } else if (strcmpstart(cp, "node_id=") == 0) {
+        cp+=strlen("node_id=");
+      }
       if (strlen(cp) != HEX_DIGEST_LEN ||
           base16_decode(out->node_id, DIGEST_LEN,
                         cp, HEX_DIGEST_LEN) != DIGEST_LEN) {

@@ -486,15 +486,10 @@ circuit_establish_circuit(uint8_t purpose, extend_info_t *exit_ei, int flags)
 {
   origin_circuit_t *circ;
   int err_reason = 0;
-  int is_hs_v3_rp_circuit = 0;
-
-  if (flags & CIRCLAUNCH_IS_V3_RP) {
-    is_hs_v3_rp_circuit = 1;
-  }
 
   circ = origin_circuit_init(purpose, flags);
 
-  if (onion_pick_cpath_exit(circ, exit_ei, is_hs_v3_rp_circuit) < 0 ||
+  if (onion_pick_cpath_exit(circ, exit_ei) < 0 ||
       onion_populate_cpath(circ) < 0) {
     circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_NOPATH);
     return NULL;
@@ -535,7 +530,7 @@ circuit_establish_circuit_conflux,(const uint8_t *conflux_nonce,
   TO_CIRCUIT(circ)->conflux_pending_nonce =
     tor_memdup(conflux_nonce, DIGEST256_LEN);
 
-  if (onion_pick_cpath_exit(circ, exit_ei, 0) < 0 ||
+  if (onion_pick_cpath_exit(circ, exit_ei) < 0 ||
       onion_populate_cpath(circ) < 0) {
     circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_NOPATH);
     return NULL;
@@ -545,6 +540,12 @@ circuit_establish_circuit_conflux,(const uint8_t *conflux_nonce,
 
   if ((err_reason = circuit_handle_first_hop(circ)) < 0) {
     circuit_mark_for_close(TO_CIRCUIT(circ), -err_reason);
+    return NULL;
+  }
+
+  /* This can happen if the above triggered the OOM handler which in turn
+   * closed that very circuit. */
+  if (TO_CIRCUIT(circ)->marked_for_close) {
     return NULL;
   }
 
@@ -816,8 +817,10 @@ circuit_deliver_create_cell,(circuit_t *circ,
   circuit_set_n_circid_chan(circ, id, circ->n_chan);
   cell.circ_id = circ->n_circ_id;
 
-  append_cell_to_circuit_queue(circ, circ->n_chan, &cell,
-                               CELL_DIRECTION_OUT, 0);
+  if (append_cell_to_circuit_queue(circ, circ->n_chan, &cell,
+                                   CELL_DIRECTION_OUT, 0) < 0) {
+    return -1;
+  }
 
   if (CIRCUIT_IS_ORIGIN(circ)) {
     /* Update began timestamp for circuits starting their first hop */
@@ -1677,10 +1680,6 @@ choose_good_exit_server_general(router_crn_flags_t flags)
   IF_BUG_ONCE(flags & CRN_DIRECT_CONN)
     return NULL;
 
-  /* This isn't the function for picking rendezvous nodes. */
-  IF_BUG_ONCE(flags & CRN_RENDEZVOUS_V3)
-    return NULL;
-
   /* We only want exits to extend if we cannibalize the circuit.
    * But we don't require IPv6 extends yet. */
   IF_BUG_ONCE(flags & CRN_INITIATE_IPV6_EXTEND)
@@ -1854,14 +1853,6 @@ choose_good_exit_server_general(router_crn_flags_t flags)
   return NULL;
 }
 
-/* Pick a Rendezvous Point for our HS circuits according to <b>flags</b>. */
-static const node_t *
-pick_rendezvous_node(router_crn_flags_t flags)
-{
-  const or_options_t *options = get_options();
-  return router_choose_random_node(NULL, options->ExcludeNodes, flags);
-}
-
 /*
  * Helper function to pick a configured restricted middle node
  * (either HSLayer2Nodes or HSLayer3Nodes).
@@ -1969,9 +1960,12 @@ choose_good_exit_server(origin_circuit_t *circ,
     case CIRCUIT_PURPOSE_C_HSDIR_GET:
     case CIRCUIT_PURPOSE_S_HSDIR_POST:
     case CIRCUIT_PURPOSE_HS_VANGUARDS:
+    case CIRCUIT_PURPOSE_C_ESTABLISH_REND:
       /* For these three, we want to pick the exit like a middle hop,
        * since it should be random. */
       tor_assert_nonfatal(is_internal);
+      /* We want to avoid picking certain nodes for HS purposes. */
+      flags |= CRN_FOR_HS;
       FALLTHROUGH;
     case CIRCUIT_PURPOSE_CONFLUX_UNLINKED:
     case CIRCUIT_PURPOSE_C_GENERAL:
@@ -1979,14 +1973,6 @@ choose_good_exit_server(origin_circuit_t *circ,
         return router_choose_random_node(NULL, options->ExcludeNodes, flags);
       else
         return choose_good_exit_server_general(flags);
-    case CIRCUIT_PURPOSE_C_ESTABLISH_REND:
-      {
-        /* Pick a new RP */
-        const node_t *rendezvous_node = pick_rendezvous_node(flags);
-        log_info(LD_REND, "Picked new RP: %s",
-                 safe_str_client(node_describe(rendezvous_node)));
-        return rendezvous_node;
-      }
   }
   log_warn(LD_BUG,"Unhandled purpose %d", TO_CIRCUIT(circ)->purpose);
   tor_fragile_assert();
@@ -2119,8 +2105,7 @@ cpath_build_state_to_crn_ipv6_extend_flag(const cpath_build_state_t *state,
  *
  * Return 0 if ok, -1 if circuit should be closed. */
 STATIC int
-onion_pick_cpath_exit(origin_circuit_t *circ, extend_info_t *exit_ei,
-                      int is_hs_v3_rp_circuit)
+onion_pick_cpath_exit(origin_circuit_t *circ, extend_info_t *exit_ei)
 {
   cpath_build_state_t *state = circ->build_state;
 
@@ -2148,8 +2133,6 @@ onion_pick_cpath_exit(origin_circuit_t *circ, extend_info_t *exit_ei,
      * (Guards are always direct, middles are never direct.) */
     if (state->onehop_tunnel)
       flags |= CRN_DIRECT_CONN;
-    if (is_hs_v3_rp_circuit)
-      flags |= CRN_RENDEZVOUS_V3;
     if (state->need_conflux)
       flags |= CRN_CONFLUX;
     const node_t *node =

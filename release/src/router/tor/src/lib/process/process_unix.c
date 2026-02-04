@@ -130,14 +130,12 @@ process_unix_free_(process_unix_t *unix_process)
 process_status_t
 process_unix_exec(process_t *process)
 {
-  static int max_fd = -1;
-
   process_unix_t *unix_process;
   pid_t pid;
   int stdin_pipe[2];
   int stdout_pipe[2];
   int stderr_pipe[2];
-  int retval, fd;
+  int retval;
 
   unix_process = process_get_unix_process(process);
 
@@ -189,20 +187,6 @@ process_unix_exec(process_t *process)
     return PROCESS_STATUS_ERROR;
   }
 
-#ifdef _SC_OPEN_MAX
-  if (-1 == max_fd) {
-    max_fd = (int)sysconf(_SC_OPEN_MAX);
-
-    if (max_fd == -1) {
-      max_fd = DEFAULT_MAX_FD;
-      log_warn(LD_PROCESS,
-               "Cannot find maximum file descriptor, assuming: %d", max_fd);
-    }
-  }
-#else /* !defined(_SC_OPEN_MAX) */
-  max_fd = DEFAULT_MAX_FD;
-#endif /* defined(_SC_OPEN_MAX) */
-
   pid = fork();
 
   if (0 == pid) {
@@ -240,11 +224,9 @@ process_unix_exec(process_t *process)
     close(stdin_pipe[0]);
     close(stdin_pipe[1]);
 
-    /* Close all other fds, including the read end of the pipe.  XXX: We should
-     * now be doing enough FD_CLOEXEC setting to make this needless.
-     */
-    for (fd = STDERR_FILENO + 1; fd < max_fd; fd++)
-      close(fd);
+    /* Note that we don't close all FDs from here, which we used to do, because
+     * all our open are CLOEXEC. With a very large maximum number of FDs, the
+     * loop was taking a long time: #40990 */
 
     /* Create the argv value for our new process. */
     char **argv = process_get_argv(process);

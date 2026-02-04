@@ -315,7 +315,18 @@ conflux_send_switch_command(circuit_t *send_circ, uint64_t relative_seq)
   bool ret = true;
 
   tor_assert(send_circ);
-  tor_assert(relative_seq < UINT32_MAX);
+
+  /* This is possible unfortunately because the sequence numbers are 64 bit
+   * while in the SWITCH it is 32 bit. It would require more than 2.2 TB of
+   * data to be transfered on a circuit to reach this. Worth avoiding. */
+  if (relative_seq >= UINT32_MAX) {
+    /* Avoid spamming logs with this, every hours should be fine. */
+    static ratelim_t rlimit = RATELIM_INIT(60 * 60);
+    log_fn_ratelim(&rlimit, LOG_WARN, LD_CIRC,
+           "Relative sequence number is too high. Closing circuit.");
+    ret = false;
+    goto end;
+  }
 
   memset(&cell, 0, sizeof(cell));
 

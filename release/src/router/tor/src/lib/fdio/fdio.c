@@ -14,6 +14,9 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef HAVE_FCNTL_H
+#include <fcntl.h>
+#endif
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -118,3 +121,28 @@ write_all_to_fd_minimal(int fd, const char *buf, size_t count)
   }
   return 0;
 }
+
+#if defined(HAVE_PIPE2) && defined(O_CLOEXEC)
+int
+tor_pipe_cloexec(int pipefd[2])
+{
+  return pipe2(pipefd, O_CLOEXEC);
+}
+#elif defined(HAVE_PIPE) && defined(FD_CLOEXEC)
+int
+tor_pipe_cloexec(int pipefd[2])
+{
+  if (pipe(pipefd)) {
+    return -1;
+  }
+  if (fcntl(pipefd[0], F_SETFD, FD_CLOEXEC)) {
+    return -1;
+  }
+  if (fcntl(pipefd[1], F_SETFD, FD_CLOEXEC)) {
+    return -1;
+  }
+  return 0;
+}
+#else
+/* Intentionally leave symbol undefined. */
+#endif

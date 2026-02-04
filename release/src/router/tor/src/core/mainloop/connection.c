@@ -975,7 +975,7 @@ connection_free_,(connection_t *conn))
     return;
   tor_assert(!connection_is_on_closeable_list(conn));
   tor_assert(!connection_in_array(conn));
-  if (BUG(conn->linked_conn)) {
+  if (conn->linked_conn) {
     conn->linked_conn->linked_conn = NULL;
     if (! conn->linked_conn->marked_for_close &&
         conn->linked_conn->reading_from_linked_conn)

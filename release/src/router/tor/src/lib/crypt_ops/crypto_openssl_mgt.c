@@ -40,6 +40,11 @@ ENABLE_GCC_WARNING("-Wredundant-decls")
 
 #include <string.h>
 
+#ifdef OPENSSL_NO_ENGINE
+/* Android's OpenSSL seems to have removed all of its Engine support. */
+#define DISABLE_ENGINES
+#endif
+
 #ifndef NEW_THREAD_API
 /** A number of preallocated mutexes for use by OpenSSL. */
 static tor_mutex_t **openssl_mutexes_ = NULL;

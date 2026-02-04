@@ -33,6 +33,7 @@ src_lib_libtor_tls_testing_a_CFLAGS = \
 # ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS +=				\
 	src/lib/tls/ciphers.inc			\
+	src/lib/tls/ciphers_v13.inc		\
 	src/lib/tls/buffers_tls.h		\
 	src/lib/tls/nss_countbytes.h		\
 	src/lib/tls/tortls.h			\

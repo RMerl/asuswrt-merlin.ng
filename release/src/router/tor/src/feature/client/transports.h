@@ -114,10 +114,18 @@ typedef struct {
   /* transports to-be-launched by this proxy */
   smartlist_t *transports_to_launch;
 
+  /** Version as set by STATUS TYPE=version messages. */
+  char *version;
+
+  /** Implementation as set by the STATUS TYPE=version messages. */
+  char *implementation;
+
   /* The 'transports' list contains all the transports this proxy has
      launched. */
   smartlist_t *transports;
 } managed_proxy_t;
+
+struct config_line_t;
 
 STATIC transport_t *transport_new(const tor_addr_t *addr, uint16_t port,
                                   const char *name, int socks_ver,
@@ -131,6 +139,8 @@ STATIC void parse_proxy_error(const char *line);
 STATIC void handle_proxy_line(const char *line, managed_proxy_t *mp);
 STATIC void parse_log_line(const char *line, managed_proxy_t *mp);
 STATIC void parse_status_line(const char *line, managed_proxy_t *mp);
+STATIC void handle_status_message(const struct config_line_t *values,
+                                  managed_proxy_t *mp);
 STATIC char *get_transport_options_for_server_proxy(const managed_proxy_t *mp);
 
 STATIC void managed_proxy_destroy(managed_proxy_t *mp,

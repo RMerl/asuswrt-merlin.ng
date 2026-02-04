@@ -21,6 +21,7 @@
 #include "core/or/entry_connection_st.h"
 #include "core/or/or_connection_st.h"
 #include "core/or/origin_circuit_st.h"
+#include "core/or/conflux_util.h"
 #include "core/or/socks_request_st.h"
 #include "feature/control/control_connection_st.h"
 
@@ -158,6 +159,34 @@ circuit_describe_status_for_controller(origin_circuit_t *circ)
    * was provided by the client and then verified by the service. */
   if (circ->hs_pow_effort > 0) {
     smartlist_add_asprintf(descparts, "HS_POW=v1,%u", circ->hs_pow_effort);
+  }
+
+  /* Add conflux id and RTT info, for accurate circuit display. The RTT is
+   * provided to indicate the primary (preferred) circuit of a set
+   * (which will have the lowest current RTT).
+   *
+   * NOTE: Because control port events can happen at arbitrary points, we
+   * must specificially check exactly what we need from the conflux object.
+   * We cannot use CIRCUIT_IS_CONFLUX() because this event may have been
+   * emitted while a set was under partial construction or teardown. */
+  if (TO_CIRCUIT(circ)->conflux || TO_CIRCUIT(circ)->conflux_pending_nonce) {
+    const uint8_t *nonce = conflux_get_nonce(TO_CIRCUIT(circ));
+    tor_assert(nonce);
+
+    /* The conflux nonce is an ephemeral cryptographic secret that if known in
+     * full, enables confirmation or data injection on a set by adding new legs
+     * at an exit from elsewhere. Only output half of it. */
+    smartlist_add_asprintf(descparts, "CONFLUX_ID=%s",
+                           hex_str((const char *)nonce, DIGEST256_LEN/2));
+
+    /* If we have a conflux object that is fully linked, the circ has an RTT */
+    if (TO_CIRCUIT(circ)->conflux &&
+        TO_CIRCUIT(circ)->purpose == CIRCUIT_PURPOSE_CONFLUX_LINKED) {
+      uint64_t circ_rtt = conflux_get_circ_rtt(TO_CIRCUIT(circ));
+      if (circ_rtt) {
+        smartlist_add_asprintf(descparts, "CONFLUX_RTT=%" PRIu64, circ_rtt);
+      }
+    }
   }
 
   rv = smartlist_join_strings(descparts, " ", 0, NULL);

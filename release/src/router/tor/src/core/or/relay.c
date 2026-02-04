@@ -227,7 +227,7 @@ circuit_update_channel_usage(circuit_t *circ, cell_t *cell)
  *  - If not recognized, then we need to relay it: append it to the appropriate
  *    cell_queue on <b>circ</b>.
  *
- * Return -<b>reason</b> on failure.
+ * Return -<b>reason</b> on failure, else 0.
  */
 int
 circuit_receive_relay_cell(cell_t *cell, circuit_t *circ,
@@ -282,8 +282,7 @@ circuit_receive_relay_cell(cell_t *cell, circuit_t *circ,
                "failed.");
         return reason;
       }
-    }
-    if (cell_direction == CELL_DIRECTION_IN) {
+    } else if (cell_direction == CELL_DIRECTION_IN) {
       ++stats_n_relay_cells_delivered;
       log_debug(LD_OR,"Sending to origin.");
       reason = connection_edge_process_relay_cell(cell, circ, conn,
@@ -337,10 +336,8 @@ circuit_receive_relay_cell(cell_t *cell, circuit_t *circ,
       cell->command = CELL_RELAY; /* can't be relay_early anyway */
       if ((reason = circuit_receive_relay_cell(cell, TO_CIRCUIT(splice_),
                                                CELL_DIRECTION_IN)) < 0) {
-        log_warn(LD_REND, "Error relaying cell across rendezvous; closing "
+        log_info(LD_REND, "Error relaying cell across rendezvous; closing "
                  "circuits");
-        /* XXXX Do this here, or just return -1? */
-        circuit_mark_for_close(circ, -reason);
         return reason;
       }
       return 0;
@@ -365,14 +362,19 @@ circuit_receive_relay_cell(cell_t *cell, circuit_t *circ,
                                   * we might kill the circ before we relay
                                   * the cells. */
 
-  append_cell_to_circuit_queue(circ, chan, cell, cell_direction, 0);
+  if (append_cell_to_circuit_queue(circ, chan, cell, cell_direction, 0) < 0) {
+    return -END_CIRC_REASON_RESOURCELIMIT;
+  }
   return 0;
 }
 
 /** Package a relay cell from an edge:
  *  - Encrypt it to the right layer
  *  - Append it to the appropriate cell_queue on <b>circ</b>.
- */
+ *
+ * Return 1 if the cell was successfully sent as in queued on the circuit.
+ * Return 0 if the cell needs to be dropped as in ignored.
+ * Return -1 on error for which the circuit should be marked for close. */
 MOCK_IMPL(int,
 circuit_package_relay_cell, (cell_t *cell, circuit_t *circ,
                            cell_direction_t cell_direction,
@@ -430,8 +432,8 @@ circuit_package_relay_cell, (cell_t *cell, circuit_t *circ,
   }
   ++stats_n_relay_cells_relayed;
 
-  append_cell_to_circuit_queue(circ, chan, cell, cell_direction, on_stream);
-  return 0;
+  return append_cell_to_circuit_queue(circ, chan, cell,
+                                      cell_direction, on_stream);
 }
 
 /** If cell's stream_id matches the stream_id of any conn that's
@@ -638,18 +640,20 @@ relay_send_command_from_edge_,(streamid_t stream_id, circuit_t *orig_circ,
   if (orig_circ->conflux && conflux_should_multiplex(relay_command)) {
     circ = conflux_decide_circ_for_send(orig_circ->conflux, orig_circ,
                                         relay_command);
-    if (BUG(!circ)) {
-      log_warn(LD_BUG, "No circuit to send for conflux for relay command %d, "
-               "called from %s:%d", relay_command, filename, lineno);
-      conflux_log_set(LOG_WARN, orig_circ->conflux,
-                       CIRCUIT_IS_ORIGIN(orig_circ));
-      circ = orig_circ;
-    } else {
-      /* Conflux circuits always send multiplexed relay commands to
-       * to the last hop. (Non-multiplexed commands go on their
-       * original circuit and hop). */
-      cpath_layer = conflux_get_destination_hop(circ);
+    if (!circ) {
+      /* Something is wrong with the conflux set. We are done. */
+      return -1;
     }
+    /* Conflux circuits always send multiplexed relay commands to
+     * to the last hop. (Non-multiplexed commands go on their
+     * original circuit and hop). */
+    cpath_layer = conflux_get_destination_hop(circ);
+  }
+
+  /* This is possible because we have protocol error paths when deciding the
+   * next circuit to send which can close the whole set. Bail out early. */
+  if (circ->marked_for_close) {
+    return -1;
   }
 
   /* XXXX NM Split this function into a separate versions per circuit type? */
@@ -742,12 +746,22 @@ relay_send_command_from_edge_,(streamid_t stream_id, circuit_t *orig_circ,
     circuit_sent_valid_data(origin_circ, rh.length);
   }
 
-  if (circuit_package_relay_cell(&cell, circ, cell_direction, cpath_layer,
-                                 stream_id, filename, lineno) < 0) {
-    log_warn(LD_BUG,"circuit_package_relay_cell failed. Closing.");
+  int ret = circuit_package_relay_cell(&cell, circ, cell_direction,
+                                       cpath_layer, stream_id, filename,
+                                       lineno);
+  if (ret < 0) {
     circuit_mark_for_close(circ, END_CIRC_REASON_INTERNAL);
     return -1;
+  } else if (ret == 0) {
+    /* This means we should drop the cell or that the circuit was already
+     * marked for close. At this point in time, we do NOT close the circuit if
+     * the cell is dropped. It is not the case with arti where each circuit
+     * protocol violation will lead to closing the circuit. */
+    return 0;
   }
+
+  /* At this point, we are certain that the cell was queued on the circuit and
+   * thus will be sent on the wire. */
 
   if (circ->conflux) {
     conflux_note_cell_sent(circ->conflux, circ, relay_command);
@@ -2155,7 +2169,7 @@ connection_edge_process_relay_cell(cell_t *cell, circuit_t *circ,
       }
 
       /* Now, check queue for more */
-      while ((c_cell = conflux_dequeue_cell(circ->conflux))) {
+      while ((c_cell = conflux_dequeue_cell(circ))) {
         relay_header_unpack(&rh, c_cell->cell.payload);
         conn = relay_lookup_conn(circ, &c_cell->cell, CELL_DIRECTION_OUT,
                                  layer_hint);
@@ -2920,15 +2934,19 @@ cell_queues_check_size(void)
       /* Note this overload down */
       rep_hist_note_overload(OVERLOAD_GENERAL);
 
-      /* If we're spending over 20% of the memory limit on hidden service
-       * descriptors, free them until we're down to 10%. Do the same for geoip
-       * client cache. */
-      if (hs_cache_total > get_options()->MaxMemInQueues / 5) {
+      /* If we're spending over the configured limit on hidden service
+       * descriptors, free them until we're down to 50% of the limit. */
+      if (hs_cache_total > hs_cache_get_max_bytes()) {
         const size_t bytes_to_remove =
-          hs_cache_total - (size_t)(get_options()->MaxMemInQueues / 10);
-        removed = hs_cache_handle_oom(now, bytes_to_remove);
+          hs_cache_total - (size_t)(hs_cache_get_max_bytes() / 2);
+        removed = hs_cache_handle_oom(bytes_to_remove);
         oom_stats_n_bytes_removed_hsdir += removed;
         alloc -= removed;
+        static ratelim_t hs_cache_oom_ratelim = RATELIM_INIT(600);
+        log_fn_ratelim(&hs_cache_oom_ratelim, LOG_NOTICE, LD_REND,
+               "HSDir cache exceeded limit (%zu > %"PRIu64" bytes). "
+               "Pruned %zu bytes during cell_queues_check_size.",
+               hs_cache_total, hs_cache_get_max_bytes(), removed);
       }
       if (geoip_client_cache_total > get_options()->MaxMemInQueues / 5) {
         const size_t bytes_to_remove =
@@ -2963,11 +2981,11 @@ cell_queues_check_size(void)
 
 /** Return true if we've been under memory pressure in the last
  * MEMORY_PRESSURE_INTERVAL seconds. */
-int
+bool
 have_been_under_memory_pressure(void)
 {
-  return last_time_under_memory_pressure + MEMORY_PRESSURE_INTERVAL
-    < approx_time();
+  return approx_time() <
+         last_time_under_memory_pressure + MEMORY_PRESSURE_INTERVAL;
 }
 
 /**
@@ -3381,8 +3399,13 @@ relay_consensus_has_changed(const networkstatus_t *ns)
  * The given <b>cell</b> is copied onto the circuit queue so the caller must
  * cleanup the memory.
  *
- * This function is part of the fast path. */
-void
+ * This function is part of the fast path.
+ *
+ * Return 1 if the cell was successfully sent.
+ * Return 0 if the cell can not be sent. The caller MUST NOT close the circuit.
+ * Return -1 indicating an error and that the caller should mark the circuit
+ * for close. */
+int
 append_cell_to_circuit_queue(circuit_t *circ, channel_t *chan,
                              cell_t *cell, cell_direction_t direction,
                              streamid_t fromstream)
@@ -3393,8 +3416,9 @@ append_cell_to_circuit_queue(circuit_t *circ, channel_t *chan,
   int32_t max_queue_size;
   int circ_blocked;
   int exitward;
-  if (circ->marked_for_close)
-    return;
+  if (circ->marked_for_close) {
+    return 0;
+  }
 
   exitward = (direction == CELL_DIRECTION_OUT);
   if (exitward) {
@@ -3424,9 +3448,8 @@ append_cell_to_circuit_queue(circuit_t *circ, channel_t *chan,
            "Closing circuit for safety reasons.",
            (exitward) ? "Outbound" : "Inbound", queue->n,
            max_queue_size);
-    circuit_mark_for_close(circ, END_CIRC_REASON_RESOURCELIMIT);
     stats_n_circ_max_cell_reached++;
-    return;
+    return -1;
   }
 
   /* Very important that we copy to the circuit queue because all calls to
@@ -3437,8 +3460,9 @@ append_cell_to_circuit_queue(circuit_t *circ, channel_t *chan,
   /* Check and run the OOM if needed. */
   if (PREDICT_UNLIKELY(cell_queues_check_size())) {
     /* We ran the OOM handler which might have closed this circuit. */
-    if (circ->marked_for_close)
-      return;
+    if (circ->marked_for_close) {
+      return 0;
+    }
   }
 
   /* If we have too many cells on the circuit, note that it should
@@ -3462,6 +3486,7 @@ append_cell_to_circuit_queue(circuit_t *circ, channel_t *chan,
 
   /* New way: mark this as having waiting cells for the scheduler */
   scheduler_channel_has_waiting_cells(chan);
+  return 1;
 }
 
 /** Append an encoded value of <b>addr</b> to <b>payload_out</b>, which must

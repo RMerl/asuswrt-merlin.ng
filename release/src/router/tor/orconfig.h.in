@@ -6,7 +6,7 @@
 /* All assert failures are fatal */
 #undef ALL_BUGS_ARE_FATAL
 
-/* # for 0.4.8.10 Approximate date when this software was released. (Updated
+/* # for 0.4.8.22 Approximate date when this software was released. (Updated
    when the version changes.) */
 #undef APPROX_RELEASE_DATE
 
@@ -94,6 +94,9 @@
 
 /* defined if we have the fallthrough attribute. */
 #undef HAVE_ATTR_FALLTHROUGH
+
+/* defined if we have the nonstring attribute. */
+#undef HAVE_ATTR_NONSTRING
 
 /* Define to 1 if you have the `backtrace' function. */
 #undef HAVE_BACKTRACE
@@ -461,6 +464,9 @@
 
 /* Define to 1 if you have the `SSL_SESSION_get_master_key' function. */
 #undef HAVE_SSL_SESSION_GET_MASTER_KEY
+
+/* Define to 1 if you have the `SSL_set_ciphersuites' function. */
+#undef HAVE_SSL_SET_CIPHERSUITES
 
 /* Define to 1 if `state' is a member of `SSL'. */
 #undef HAVE_SSL_STATE

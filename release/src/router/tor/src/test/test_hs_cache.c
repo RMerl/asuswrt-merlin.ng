@@ -90,7 +90,7 @@ test_directory(void *arg)
     tt_str_op(desc_out, OP_EQ, desc1_str);
     /* Tell our OOM to run and to at least remove a byte which will result in
      * removing the descriptor from our cache. */
-    oom_size = hs_cache_handle_oom(time(NULL), 1);
+    oom_size = hs_cache_handle_oom(1);
     tt_int_op(oom_size, OP_GE, 1);
     ret = hs_cache_lookup_as_dir(3, helper_get_hsdir_query(desc1), NULL);
     tt_int_op(ret, OP_EQ, 0);
@@ -127,7 +127,7 @@ test_directory(void *arg)
                                  NULL);
     tt_int_op(ret, OP_EQ, 0);
     /* Cleanup our entire cache. */
-    oom_size = hs_cache_handle_oom(time(NULL), 1);
+    oom_size = hs_cache_handle_oom(1);
     tt_int_op(oom_size, OP_GE, 1);
     hs_descriptor_free(desc_zero_lifetime);
     tor_free(desc_zero_lifetime_str);
@@ -222,6 +222,61 @@ test_clean_as_dir(void *arg)
  done:
   hs_descriptor_free(desc1);
   tor_free(desc1_str);
+}
+
+static void
+test_clean_oom_as_dir(void *arg)
+{
+  size_t ret;
+  char *desc1_str = NULL, *desc2_str = NULL;
+  hs_descriptor_t *desc1 = NULL, *desc2 = NULL;
+  ed25519_keypair_t signing_kp1, signing_kp2;
+
+  (void) arg;
+
+  init_test();
+
+  /* Generate two valid descriptors. */
+  ret = ed25519_keypair_generate(&signing_kp1, 0);
+  tt_int_op(ret, OP_EQ, 0);
+  ret = ed25519_keypair_generate(&signing_kp2, 0);
+  tt_int_op(ret, OP_EQ, 0);
+  desc1 = hs_helper_build_hs_desc_with_ip(&signing_kp1);
+  tt_assert(desc1);
+  desc2 = hs_helper_build_hs_desc_with_ip(&signing_kp2);
+  tt_assert(desc2);
+  ret = hs_desc_encode_descriptor(desc1, &signing_kp1, NULL, &desc1_str);
+  tt_int_op(ret, OP_EQ, 0);
+  ret = hs_cache_store_as_dir(desc1_str);
+  tt_int_op(ret, OP_EQ, 0);
+  ret = hs_desc_encode_descriptor(desc2, &signing_kp2, NULL, &desc2_str);
+  tt_int_op(ret, OP_EQ, 0);
+  ret = hs_cache_store_as_dir(desc2_str);
+  tt_int_op(ret, OP_EQ, 0);
+
+  /* Set the downloaded count to 42 for the second one. */
+  dir_set_downloaded(&desc2->plaintext_data.blinded_pubkey, 42);
+  const hs_cache_dir_descriptor_t *entry =
+    lookup_v3_desc_as_dir(desc2->plaintext_data.blinded_pubkey.pubkey);
+  tt_u64_op(entry->n_downloaded, OP_EQ, 42);
+
+  /* Spin the OOM cleanup for only 1 descriptor (very low amount of bytes). We
+   * expect desc1 to be cleaned up because its downloaded counter is 0. */
+  size_t removed = hs_cache_handle_oom(1);
+  tt_size_op(removed, OP_GT, 0);
+
+  /* Desc1 is gone. */
+  entry = lookup_v3_desc_as_dir(desc1->plaintext_data.blinded_pubkey.pubkey);
+  tt_assert(!entry);
+  /* Desc2 is still there. */
+  entry = lookup_v3_desc_as_dir(desc2->plaintext_data.blinded_pubkey.pubkey);
+  tt_assert(entry);
+
+ done:
+  hs_descriptor_free(desc1);
+  hs_descriptor_free(desc2);
+  tor_free(desc1_str);
+  tor_free(desc2_str);
 }
 
 /* Test helper: Fetch an HS descriptor from an HSDir (for the hidden service
@@ -704,6 +759,8 @@ struct testcase_t hs_cache[] = {
   { "directory", test_directory, TT_FORK,
     NULL, NULL },
   { "clean_as_dir", test_clean_as_dir, TT_FORK,
+    NULL, NULL },
+  { "clean_oom_as_dir", test_clean_oom_as_dir, TT_FORK,
     NULL, NULL },
   { "hsdir_revision_counter_check", test_hsdir_revision_counter_check, TT_FORK,
     NULL, NULL },

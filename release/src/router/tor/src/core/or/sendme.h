@@ -70,7 +70,7 @@ STATIC bool cell_version_can_be_handled(uint8_t cell_version);
 
 STATIC ssize_t build_cell_payload_v1(const uint8_t *cell_digest,
                                      uint8_t *payload);
-STATIC bool sendme_is_valid(const circuit_t *circ,
+STATIC bool sendme_is_valid(circuit_t *circ,
                             const uint8_t *cell_payload,
                             size_t cell_payload_len);
 STATIC bool circuit_sendme_cell_is_next(int deliver_window,

@@ -13,7 +13,7 @@ static void
 test_util_format_unaligned_accessors(void *ignored)
 {
   (void)ignored;
-  char buf[9] = "onionsoup"; // 6f6e696f6e736f7570
+  NONSTRING char buf[9] = "onionsoup"; // 6f6e696f6e736f7570
 
   tt_u64_op(get_uint64(buf+1), OP_EQ,
       tor_htonll(UINT64_C(0x6e696f6e736f7570)));

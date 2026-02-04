@@ -2,12 +2,12 @@
 .\"     Title: tor
 .\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 12/08/2023
+.\"      Date: 01/28/2026
 .\"    Manual: Tor Manual
 .\"    Source: Tor
 .\"  Language: English
 .\"
-.TH "TOR" "1" "12/08/2023" "Tor" "Tor Manual"
+.TH "TOR" "1" "01/28/2026" "Tor" "Tor Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -2341,6 +2341,11 @@ seconds\&. This is a log level
 message designed to help developers instrumenting Tor\(cqs main event loop\&. (Default: 0)
 .RE
 .PP
+\fBMaxHSDirCacheBytes\fR \fIN\fR \fBbytes\fR|\fBKBytes\fR|\fBMBytes\fR|\fBGBytes\fR
+.RS 4
+This option configures a threshold of Hidden Service Directory memory consumption above which your Tor relay will begin to prune the least\-frequently accessed hidden service descriptors from the relay\(cqs HSDir cache\&. This pruning used to be done as part of MaxMemInQueues, but it has been decoupled to allow more fine\-grained control of descriptor cache size under DDoS conditions\&. This option defaults to 20% of the MaxMemInQueues size, which itself defaults to an automatically determined value based on system memory\&. (Default: 20% MaxMemInQueues)
+.RE
+.PP
 \fBMaxMemInQueues\fR \fIN\fR \fBbytes\fR|\fBKBytes\fR|\fBMBytes\fR|\fBGBytes\fR
 .RS 4
 This option configures a threshold above which Tor will assume that it needs to stop queueing or buffering data because it\(cqs about to run out of memory\&. If it hits this threshold, it will begin killing circuits until it has recovered at least 10% of this memory\&. Do not set this option too low, or your relay may be unreliable under load\&. This option only affects some queues, so the actual process size will be larger than this\&. If this option is set to 0, Tor will try to pick a reasonable default based on your system\(cqs physical memory\&. (Default: 0)
@@ -2674,7 +2679,7 @@ A relay is considered overloaded if at least one of these conditions is met:
 .sp -1
 .IP \(bu 2.3
 .\}
-Onionskins are starting to be dropped\&.
+A certain ratio of ntor onionskins are dropped\&.
 .RE
 .sp
 .RS 4
@@ -2696,31 +2701,22 @@ The OOM was invoked\&.
 .sp -1
 .IP \(bu 2.3
 .\}
-(Exit only) DNS timeout occurs X% of the time over Y seconds (values controlled by consensus parameters, see param\-spec\&.txt)\&.
-
-If ExtraInfoStatistics is enabled, it can also put two more specific overload lines in the extra\-info document if at least one of these conditions is met:
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
 TCP Port exhaustion\&.
-.RE
 .sp
+.if n \{\
 .RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
 .\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
+.nf
+ +
+If ExtraInfoStatistics is enabled, it can also put two more specific
+overload lines in the extra\-info document if at least one of these
+conditions is met:
+    \- Connection rate limits have been reached (read and write side)\&.
+    \- File descriptors are exhausted\&.
+.fi
+.if n \{\
+.RE
 .\}
-Connection rate limits have been reached (read and write side)\&.
 .RE
 .RE
 .PP

@@ -98,9 +98,6 @@ may be multiple times during the duration of an OpenVPN session.
 .sp
 When using \fB\-\-auth\-nocache\fP in combination with a user/password file
 and \fB\-\-chroot\fP or \fB\-\-daemon\fP, make sure to use an absolute path.
-.sp
-This directive does not affect the \fB\-\-http\-proxy\fP username/password.
-It is always cached.
 .TP
 .BI \-\-cd \ dir
 Change directory to \fBdir\fP prior to reading any files such as
@@ -188,15 +185,13 @@ should be observed:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 \e\e       Maps to a single backslash character (\e).
 \e\(dq       Pass a literal doublequote character (\(dq), don\(aqt
          interpret it as enclosing a parameter.
 \e[SPACE] Pass a literal space or tab character, don\(aqt
          interpret it as a parameter delimiter.
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -204,11 +199,9 @@ For example on Windows, use double backslashes to represent pathnames:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 secret \(dqc:\e\eOpenVPN\e\esecret.key\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -219,8 +212,7 @@ Here is an example configuration file:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 #
 # Sample OpenVPN configuration file for
 # using a pre\-shared static key.
@@ -239,8 +231,7 @@ ifconfig 10.1.0.1 10.1.0.2
 
 # Our pre\-shared static key
 secret static.key
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .TP
@@ -251,12 +242,10 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 daemon
 daemon progname
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -322,12 +311,10 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 engine
 engine engine\-name
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -336,7 +323,7 @@ If \fBengine\-name\fP is specified, use a specific crypto engine. Use the
 are supported by OpenSSL.
 .TP
 .B  \-\-fast\-io
-(Experimental) Optimize TUN/TAP/UDP I/O writes by avoiding a call to
+Optimize TUN/TAP/UDP I/O writes by avoiding a call to
 poll/epoll/select prior to the write operation. The purpose of such a
 call would normally be to block until the device or socket is ready to
 accept the write. Such blocking is unnecessary on some platforms which
@@ -356,11 +343,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 ignore\-unknown\-options opt1 opt2 opt3 ... optN
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -391,11 +376,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 keying\-material\-exporter label len
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -455,11 +438,9 @@ legacy provider with
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 \-\-providers legacy default
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -517,11 +498,9 @@ if you have a Visual Basic script, you must use this syntax now:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 \-\-up \(aqC:\e\eWindows\e\eSystem32\e\ewscript.exe C:\e\eProgram\e Files\e\eOpenVPN\e\econfig\e\emy\-up\-script.vbs\(aq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -561,12 +540,10 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 status file
 status file n
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -612,11 +589,9 @@ The typical usage of \fB\-\-test\-crypto\fP would be something like this:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 openvpn \-\-test\-crypto \-\-secret key
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -624,11 +599,9 @@ or
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 openvpn \-\-test\-crypto \-\-secret key \-\-verb 9
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -639,12 +612,11 @@ problems with encryption and authentication can be debugged
 independently of network and tunnel issues.
 .TP
 .BI \-\-tmp\-dir \ dir
-Specify a directory \fBdir\fP for temporary files. This directory will be
-used by openvpn processes and script to communicate temporary data with
-openvpn main process. Note that the directory must be writable by the
-OpenVPN process after it has dropped it\(aqs root privileges.
+Specify a directory \fBdir\fP for temporary files instead of the default
+\fBTMPDIR\fP (or \(dq/tmp\(dq if unset). Note that it must be writable by the main
+process after it has dropped root privileges.
 .sp
-This directory will be used by in the following cases:
+This directory will be used to communicate with scripts and plugins:
 .INDENT 7.0
 .IP \(bu 2
 \fB\-\-client\-connect\fP scripts and \fBOPENVPN_PLUGIN_CLIENT_CONNECT\fP
@@ -655,7 +627,7 @@ method
 .IP \(bu 2
 \fBOPENVPN_PLUGIN_AUTH_USER_PASS_VERIFY\fP plug\-in hooks returns
 success/failure via \fBauth_control_file\fP when using deferred auth
-method and pending authentication via \fBpending_auth_file\fP\&.
+method and pending authentication via \fBauth_pending_file\fP\&.
 .UNINDENT
 .TP
 .B  \-\-use\-prediction\-resistance
@@ -786,12 +758,10 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 allow\-compression
 allow\-compression mode
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -837,7 +807,7 @@ usually adds 16 or 20 bytes per packet. Set \fBalg=none\fP to disable
 authentication.
 .sp
 For more information on HMAC see
-\fI\%http://www.cs.ucsd.edu/users/mihir/papers/hmac.html\fP
+\fI\%https://tools.ietf.org/html/rfc2104\fP
 .TP
 .BI \-\-cipher \ alg
 This option should not be used any longer in TLS mode and still
@@ -943,12 +913,10 @@ for the client, for example:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 comp\-lzo yes
 push \(dqcomp\-lzo yes\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -1032,12 +1000,10 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 secret file
 secret file direction
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -1138,11 +1104,9 @@ To make use of this feature, the \fB\-\-client\-connect\fP script or
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 push \(dqauth\-token UNIQUE_TOKEN_VALUE\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -1169,12 +1133,10 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 auth\-user\-pass
 auth\-user\-pass up
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -1188,14 +1150,12 @@ This option can also be inlined
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 <auth\-user\-pass>
 username
 [password]
 </auth\-user\-pass>
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -1244,12 +1204,10 @@ client mode. This directive is equivalent to:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 pull
 tls\-client
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .TP
@@ -1263,12 +1221,10 @@ Examples:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 client\-nat snat 192.168.0.0/255.255.0.0
 client\-nat dnat 10.64.0.0/255.255.0.0
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -1292,12 +1248,10 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 connect retry n
 connect retry n max
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -1320,16 +1274,14 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 dns search\-domains domain [domain ...]
 dns server n address addr[:port] [addr[:port] ...]
 dns server n resolve\-domains domain [domain ...]
 dns server n dnssec yes|optional|no
 dns server n transport DoH|DoT|plain
 dns server n sni server\-name
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -1411,12 +1363,10 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 inactive n
 inactive n bytes
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -1462,13 +1412,11 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 pull\-filter accept text
 pull\-filter ignore text
 pull\-filter reject text
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -1485,11 +1433,9 @@ that
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 pull\-filter ignore \(dqroute\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -1499,12 +1445,10 @@ embed spaces.
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 pull\-filter accept \(dqroute 192.168.1.\(dq
 pull\-filter ignore \(dqroute \(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -1514,6 +1458,11 @@ would remove all routes that do not start with \fB192.168.1\fP\&.
 reconnect, unless multiple remotes are specified and connection to the
 next remote succeeds. To silently ignore an option pushed by the server,
 use \fBignore\fP\&.
+.sp
+\fIWarning:\fP \fBpull\-filter\fP cannot be relied upon as a security measure to
+protect against offending options pushed by a server. For example, the
+filter could be defeated by pushing options with extra spaces between
+tokens or other formatting variations.
 .TP
 .B  \-\-push\-peer\-info
 Push additional information about the client to server. The following
@@ -1625,7 +1574,10 @@ The ssl library version used by the client, e.g.
 The version of the operating system, e.g. 6.1 for Windows 7.
 This may be set by the client UI/GUI using \fB\-\-setenv\fP\&.
 On Windows systems it is automatically determined by openvpn
-itself.
+itself.  On other platforms OpenVPN will default to sending
+the information returned by the \fIuname()\fP system call in
+the \fIrelease\fP field, which is usually the currently running
+kernel version.  This is highly system specific, though.
 .TP
 .B \fBUV_<name>=<value>\fP
 Client environment variables whose names start with
@@ -1639,13 +1591,11 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 remote host
 remote host port
 remote host port proto
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -1671,13 +1621,11 @@ Examples:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 remote server1.example.net
 remote server1.example.net 1194
 remote server2.example.net 1194 tcp
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .INDENT 7.0
@@ -1754,11 +1702,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 static\-challenge text echo
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -1800,8 +1746,7 @@ Examples:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 # no authentication
 http\-proxy proxy.example.net 3128
 # basic authentication, load credentials from file
@@ -1823,8 +1768,7 @@ http\-proxy proxy.example.net 3128 \(dq\(dq basic
 username
 password
 </http\-proxy\-user\-pass>
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .TP
@@ -1838,14 +1782,12 @@ Example:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 <http\-proxy\-user\-pass>
 username
 password
 </http\-proxy\-user\-pass>
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .TP
@@ -1870,13 +1812,11 @@ Examples:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 http\-proxy\-option VERSION 1.1
 http\-proxy\-option AGENT OpenVPN/2.4
 http\-proxy\-option X\-Proxy\-Flag some\-flags
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .TP
@@ -1905,11 +1845,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 auth\-gen\-token [lifetime] [renewal\-time] [external\-auth]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -2071,11 +2009,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 connect\-freq n sec
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -2102,11 +2038,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 connect\-freq\-initial n sec
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -2133,11 +2067,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 ifconfig\-pool start\-IP end\-IP [netmask]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -2153,11 +2085,9 @@ Valid args:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 ifconfig\-ipv6\-pool ipv6addr/bits
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -2173,11 +2103,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 ifconfig\-pool\-persist file [seconds]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -2207,11 +2135,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 ifconfig\-push local remote\-netmask [alias]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -2259,11 +2185,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 ifconfig\-ipv6\-push ipv6addr/bits ipv6remote
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .TP
@@ -2299,11 +2223,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 iroute network [netmask]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -2344,11 +2266,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 iroute\-ipv6 ipv6addr/bits
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .TP
@@ -2388,11 +2308,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 port\-share host port [dir]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -2405,7 +2323,7 @@ extend to other protocols such as ssh.
 .sp
 \fBdir\fP specifies an optional directory where a temporary file with name
 N containing content C will be dynamically generated for each proxy
-connection, where N is the source IP:port of the client connection and C
+connection, where C is the source IP:port of the client connection and N
 is the source IP:port of the connection to the proxy receiver. This
 directory can be used as a dictionary by the proxy receiver to determine
 the origin of the connection. Each generated file will be automatically
@@ -2480,11 +2398,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 server network netmask [nopool]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -2492,8 +2408,7 @@ For example, \fB\-\-server 10.8.0.0 255.255.255.0\fP expands as follows:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 mode server
 tls\-server
 push \(dqtopology [topology]\(dq
@@ -2515,8 +2430,7 @@ if dev tap OR (dev tun AND topology == subnet):
   push \(dqroute\-gateway 10.8.0.1\(dq
   if route\-gateway unset:
     route\-gateway 10.8.0.2
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -2532,12 +2446,10 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 server\-bridge gateway netmask pool\-start\-IP pool\-end\-IP
 server\-bridge [nogw]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -2569,15 +2481,13 @@ For example, \fBserver\-bridge 10.8.0.4 255.255.255.0 10.8.0.128
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 mode server
 tls\-server
 
 ifconfig\-pool 10.8.0.128 10.8.0.254 255.255.255.0
 push \(dqroute\-gateway 10.8.0.4\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -2586,14 +2496,12 @@ follows:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 mode server
 tls\-server
 
 push \(dqroute\-gateway dhcp\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -2601,12 +2509,10 @@ Or \fB\-\-server\-bridge nogw\fP expands as follows:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 mode server
 tls\-server
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .TP
@@ -2619,11 +2525,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 server\-ipv6 ipv6addr/bits
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -2638,11 +2542,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 stale\-routes\-check n [t]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -2741,11 +2643,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 vlan\-accept  all|tagged|untagged
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -2796,7 +2696,7 @@ the client context, the global value is inherited.
 In some switch implementations, the \fIPVID\fP is also referred to as \(dqNative
 VLAN\(dq.
 .UNINDENT
-.SH ENCRYPTION OPTIONS
+.SS Encryption Options
 .SS SSL Library information
 .INDENT 0.0
 .TP
@@ -2839,11 +2739,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 \-\-genkey keytype keyfile
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -2865,15 +2763,13 @@ Examples:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 $ openvpn \-\-genkey secret shared.key
 $ openvpn \-\-genkey tls\-crypt shared.key
 $ openvpn \-\-genkey tls\-auth shared.key
 $ openvpn \-\-genkey tls\-crypt\-v2\-server v2crypt\-server.key
 $ openvpn \-\-tls\-crypt\-v2 v2crypt\-server.key \-\-genkey tls\-crypt\-v2\-client v2crypt\-client\-1.key
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .INDENT 7.0
@@ -2886,11 +2782,9 @@ Syntax:
 .INDENT 2.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 $ openvpn \-\-genkey secret|tls\-crypt|tls\-auth keyfile
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -2909,11 +2803,9 @@ Syntax:
 .INDENT 2.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 \-\-genkey tls\-crypt\-v2\-server keyfile
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .IP \(bu 2
@@ -2925,11 +2817,9 @@ Syntax
 .INDENT 2.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 \-\-genkey tls\-crypt\-v2\-client keyfile [metadata]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -2956,11 +2846,9 @@ Syntax:
 .INDENT 2.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 \-\-genkey auth\-token [keyfile]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .INDENT 2.0
@@ -3004,11 +2892,9 @@ Renegotiate data channel key after at most \fBmax\fP seconds
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 reneg\-sec max [min]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3071,12 +2957,10 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 askpass
 askpass file
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3102,11 +2986,9 @@ authority certificate and private key by using a command such as:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 openssl req \-nodes \-new \-x509 \-keyout ca.key \-out ca.crt
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3147,11 +3029,9 @@ use a command such as:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 openssl req \-nodes \-new \-keyout mycert.key \-out mycert.csr
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3162,11 +3042,9 @@ certificate with a command such as:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 openssl ca \-out mycert.crt \-in mycert.csr
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3185,11 +3063,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 crl\-verify file/directory flag
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3197,12 +3073,10 @@ Examples:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 crl\-verify crl\-file.pem
 crl\-verify /etc/openvpn/crls dir
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3223,11 +3097,9 @@ will log a warning in the logs \- e.g.
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 VERIFY WARNING: depth=0, unable to get certificate CRL
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3324,11 +3196,9 @@ The \fBkey\-usage\fP values in the list must be encoded in hex, e.g.
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 remote\-cert\-ku a0
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .TP
@@ -3340,12 +3210,10 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 remote\-cert\-tls server
 remote\-cert\-tls client
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3357,12 +3225,10 @@ The \fB\-\-remote\-cert\-tls client\fP option is equivalent to
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 remote\-cert\-ku
 remote\-cert\-eku \(dqTLS Web Client Authentication\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3370,12 +3236,10 @@ The \fB\-\-remote\-cert\-tls server\fP option is equivalent to
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 remote\-cert\-ku
 remote\-cert\-eku \(dqTLS Web Server Authentication\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3394,13 +3258,11 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 tls\-auth file
 tls\-auth file 0
 tls\-auth file 1
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3473,11 +3335,9 @@ OpenSSL 1.1+ restricts the list per default to
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 \(dqX25519:secp256r1:X448:secp521r1:secp384r1\(dq.
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3626,13 +3486,11 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 tls\-crypt\-v2 keyfile
 tls\-crypt\-v2 keyfile force\-cookie
 tls\-crypt\-v2 keyfile allow\-noncookie
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3714,11 +3572,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 tls\-version\-min version [\(aqor\-highest\(aq]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3739,11 +3595,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 verify\-hash hash [algo]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3755,11 +3609,9 @@ will fail. Hash is specified as XX:XX:... For example:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 AD:B0:95:D8:09:C8:36:45:12:A9:89:C8:90:09:CB:13:72:A6:AD:16
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3770,14 +3622,12 @@ This option can also be inlined
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 <verify\-hash>
 00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff:00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff
 11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff:00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff:00
 </verify\-hash>
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -3799,11 +3649,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 peer\-fingerprint AD:B0:95:D8:09:...
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3811,14 +3659,12 @@ or inline:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 <peer\-fingerprint>
 00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff:00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff
 11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff:00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff:00
 </peer\-fingerprint>
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3834,11 +3680,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 verify\-x509 name type
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3851,11 +3695,9 @@ match a subject RDN prefix. Which RDN is verified as name depends on the
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 C=KG, ST=NA, L=Bishkek, CN=Server\-1
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3863,13 +3705,11 @@ would be matched by:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 verify\-x509\-name \(aqC=KG, ST=NA, L=Bishkek, CN=Server\-1\(aq
 verify\-x509\-name Server\-1 name
 verify\-x509\-name Server\- name\-prefix
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3917,14 +3757,12 @@ Examples:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 x509\-track CN               # exports only X509_0_CN
 x509\-track +CN              # exports X509_{n}_CN for chain
 x509\-track basicConstraints # exports value of \(dqX509v3 Basic Constraints\(dq
 x509\-track SHA256           # exports SHA256 fingerprint
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .TP
@@ -3938,11 +3776,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 x509\-username\-field [ext:]fieldname [[ext:]fieldname...]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3951,13 +3787,11 @@ either of the following:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 x509\-username\-field emailAddress
 x509\-username\-field ext:subjectAltName
 x509\-username\-field CN serialNumber
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -3998,12 +3832,10 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 pkcs11\-cert\-private 0
 pkcs11\-cert\-private 1
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .TP
@@ -4047,12 +3879,10 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 pkcs11\-protected\-authentication 0
 pkcs11\-protected\-authentication 1
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .TP
@@ -4076,11 +3906,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 show\-pkcs11 [provider] [cert_private]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -4094,7 +3922,7 @@ queried.
 \fB\-\-verb\fP option can be used BEFORE this option to produce debugging
 information.
 .UNINDENT
-.SH DATA CHANNEL CIPHER NEGOTIATION
+.SS Data channel cipher negotiation
 .sp
 OpenVPN 2.4 and higher have the capability to negotiate the data cipher that
 is used to encrypt data packets. This section describes the mechanism in more detail and the
@@ -4226,12 +4054,10 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 fragment max
 fragment max mtu
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -4273,11 +4099,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 keepalive interval timeout
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -4298,8 +4122,7 @@ For example, \fB\-\-keepalive 10 60\fP expands as follows:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 if mode server:
     ping 10                    # Argument: interval
     ping\-restart 120           # Argument: timeout*2
@@ -4308,8 +4131,7 @@ if mode server:
 else
     ping 10                    # Argument: interval
     ping\-restart 60            # Argument: timeout
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .TP
@@ -4347,15 +4169,13 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 mssfix max [mtu]
 
 mssfix max [fixed]
 
 mssfix
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -4411,11 +4231,9 @@ following options:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 \-\-tun\-mtu 1500 \-\-fragment 1300 \-\-mssfix
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -4484,11 +4302,9 @@ For example,
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 openvpn [options...] \-\-inactive 3600 \-\-ping 10 \-\-ping\-exit 60
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -4563,7 +4379,7 @@ UDP, TCP will usually be somewhat less efficient and less robust when
 used over unreliable or congested networks.
 .sp
 This article outlines some of problems with tunneling IP over TCP:
-\fI\%http://sites.inka.de/sites/bigred/devel/tcp\-tcp.html\fP
+\fI\%https://web.archive.org/web/20141025181658/http://sites.inka.de/sites/bigred/devel/tcp\-tcp.html\fP
 .sp
 There are certain cases, however, where using TCP may be advantageous
 from a security and robustness perspective, such as tunneling non\-IP or
@@ -4588,12 +4404,10 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 replay\-window n
 replay\-window n t
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -4716,13 +4530,11 @@ The macro expands as follows:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 if mode server:
     socket\-flags TCP_NODELAY
     push \(dqsocket\-flags TCP_NODELAY\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .TP
@@ -4741,11 +4553,9 @@ In terms of \fB\-\-mssfix\fP it will expand to:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 mssfix size mtu
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -4788,13 +4598,11 @@ clients leaking around IPv4\-only VPN services).
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 \-\-ifconfig\-ipv6 fd15:53b6:dead::2/64 fd15:53b6:dead::1
 \-\-redirect\-gateway ipv6
 \-\-block\-ipv6
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .TP
@@ -4803,13 +4611,11 @@ Push a \(dqvalid\(dq ipv6 config to the client and block on the server
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 \-\-push \(dqifconfig\-ipv6 fd15:53b6:dead::2/64 fd15:53b6:dead::1\(dq
 \-\-push \(dqredirect\-gateway ipv6\(dq
 \-\-block\-ipv6
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -4843,13 +4649,11 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 dev tun2
 dev tap4
 dev ovpn
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -4925,11 +4729,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 dhcp\-option type [parm]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .INDENT 7.0
@@ -5051,15 +4853,13 @@ Examples:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 # tun device in net30/p2p mode
 ifconfig 10.8.0.2 10.8.0.1
 
 # tun/tap device in subnet mode
 ifconfig 10.8.0.2 255.255.255.0
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .TP
@@ -5070,11 +4870,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 ifconfig\-ipv6 ipv6addr/bits [ipv6remote]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -5192,14 +4990,12 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 route network/IP
 route network/IP netmask
 route network/IP netmask gateway
 route network/IP netmask gateway metric
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -5246,13 +5042,11 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 route\-delay
 route\-delay n
 route\-delay n w
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -5279,11 +5073,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 route\-ipv6 ipv6addr/bits [gateway] [metric]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -5301,12 +5093,10 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 route\-gateway gateway
 route\-gateway dhcp
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .TP
@@ -5374,12 +5164,10 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 tun\-mtu tun\-mtu
 tun\-mtu tun\-mtu occ\-mtu
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -5483,11 +5271,9 @@ Create VRF \fBvrf_external\fP and map it to routing table \fB1023\fP
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 ip link add vrf_external type vrf table 1023
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -5495,11 +5281,9 @@ Move \fBeth0\fP into \fBvrf_external\fP
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 ip link set master vrf_external dev eth0
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -5514,8 +5298,7 @@ code:\fIvrf_external\fP could look like this:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 auto eth0
 iface eth0
     address 192.0.2.42/24
@@ -5527,8 +5310,7 @@ iface eth0
 auto vrf_external
 iface vrf_external
     vrf\-table 1023
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .SS OpenVPN configuration
@@ -5537,11 +5319,9 @@ The OpenVPN configuration needs to contain this line:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 bind\-dev vrf_external
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .SS Further reading
@@ -5630,11 +5410,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 auth\-user\-pass\-verify cmd method
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -5656,11 +5434,9 @@ If \fBmethod\fP is set to \fBvia\-file\fP, OpenVPN will write the username
 and password to the first two lines of a temporary file. The filename
 will be passed as an argument to \fBcmd\fP, and the file will be
 automatically deleted by OpenVPN after the script returns. The location
-of the temporary file is controlled by the \fB\-\-tmp\-dir\fP option, and
-will default to the current directory if unspecified. For security,
-consider setting \fB\-\-tmp\-dir\fP to a volatile storage medium such as
-\fB/dev/shm\fP (if available) to prevent the username/password file
-from touching the hard drive.
+of the temporary file is controlled by the \fB\-\-tmp\-dir\fP option. For security,
+consider setting it to a volatile storage medium such as \fB/dev/shm\fP (if
+available) to prevent the username/password file from touching the hard drive.
 .sp
 The script should examine the username and password, returning a success
 exit code (\fB0\fP) if the client\(aqs authentication request is to be
@@ -5744,11 +5520,9 @@ Valid syntax:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 client\-crresponse cmd
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -5847,11 +5621,9 @@ specified in \fBcmd\fP , as follows:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 cmd ip address port number
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -5942,13 +5714,11 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 setenv name value
 setenv FORWARD_COMPATIBLE 1
 setenv opt config_option
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -5980,11 +5750,9 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 setenv\-safe name value
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -6012,11 +5780,9 @@ specified in \fBcmd\fP, as follows:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 cmd certificate_depth subject
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -6060,11 +5826,9 @@ For \fB\-\-dev tun\fP execute as:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 cmd tun_dev tun_mtu 0 ifconfig_local_ip ifconfig_remote_ip [init | restart]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -6072,11 +5836,9 @@ For \fB\-\-dev tap\fP execute as:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 cmd tap_dev tap_mtu 0 ifconfig_local_ip ifconfig_netmask [init | restart]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -6120,13 +5882,11 @@ you should abort with control\-c).
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 openvpn \-\-dev tun \-\-port 9999 \-\-verb 4 \-\-ping\-restart 10 \e
         \-\-up \(aqecho up\(aq \-\-down \(aqecho down\(aq \-\-persist\-tun  \e
         \-\-up\-restart
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -6141,11 +5901,9 @@ that they can be used to configure routes such as:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 route add \-net 10.0.0.0 netmask 255.255.255.0 gw $5
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .TP
@@ -6308,8 +6066,7 @@ of each individual variable, please refer to the documentation for \fB\-\-dns\fP
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 dns_search_domain_{n}
 dns_server_{n}_address_{m}
 dns_server_{n}_port_{m}
@@ -6317,8 +6074,7 @@ dns_server_{n}_resolve_domain_{m}
 dns_server_{n}_dnssec
 dns_server_{n}_transport
 dns_server_{n}_sni
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .TP
@@ -6327,13 +6083,6 @@ An option pushed via \fB\-\-push\fP to a client which does not natively
 support it, such as \fB\-\-dhcp\-option\fP on a non\-Windows system, will be
 recorded to this environmental variable sequence prior to \fB\-\-up\fP
 script execution.
-.TP
-.B \fBifconfig_broadcast\fP
-The broadcast address for the virtual ethernet segment which is derived
-from the \fB\-\-ifconfig\fP option when \fB\-\-dev tap\fP is used. Set prior to
-OpenVPN calling the \fBifconfig\fP or \fBnetsh\fP (windows version
-of ifconfig) commands which normally occurs prior to \fB\-\-up\fP script
-execution.
 .TP
 .B \fBifconfig_ipv6_local\fP
 The local VPN endpoint IPv6 address specified in the
@@ -6377,30 +6126,53 @@ used. Set prior to OpenVPN calling the \fBifconfig\fP or
 occurs prior to \fB\-\-up\fP script execution.
 .TP
 .B \fBifconfig_pool_local_ip\fP
-The local virtual IP address for the TUN/TAP tunnel taken from an
+The local virtual IPv4 address for the TUN/TAP tunnel taken from an
 \fB\-\-ifconfig\-push\fP directive if specified, or otherwise from the
 ifconfig pool (controlled by the \fB\-\-ifconfig\-pool\fP config file
 directive). Only set for \fB\-\-dev tun\fP tunnels. This option is set on
 the server prior to execution of the \fB\-\-client\-connect\fP and
 \fB\-\-client\-disconnect\fP scripts.
 .TP
+.B \fBifconfig_pool_local_ip6\fP
+The local virtual IPv6 address for the TUN/TAP tunnel taken from an
+\fB\-\-ifconfig\-ipv6\-push\fP directive if specified, or otherwise from the
+ifconfig pool (controlled by the \fB\-\-ifconfig\-ipv6\-pool\fP config file
+directive). Only set for \fB\-\-dev tun\fP tunnels. This option is set on
+the server prior to execution of the \fB\-\-client\-connect\fP and
+\fB\-\-client\-disconnect\fP scripts.
+.TP
 .B \fBifconfig_pool_netmask\fP
-The virtual IP netmask for the TUN/TAP tunnel taken from an
+The virtual IPv4 netmask for the TUN/TAP tunnel taken from an
 \fB\-\-ifconfig\-push\fP directive if specified, or otherwise from the
 ifconfig pool (controlled by the \fB\-\-ifconfig\-pool\fP config file
 directive). Only set for \fB\-\-dev tap\fP tunnels. This option is set on
 the server prior to execution of the \fB\-\-client\-connect\fP and
 \fB\-\-client\-disconnect\fP scripts.
 .TP
+.B \fBifconfig_pool_ip6_netbits\fP
+The virtual IPv6 prefix length for the TUN/TAP tunnel taken from an
+\fB\-\-ifconfig\-ipv6\-push\fP directive if specified, or otherwise from the
+ifconfig pool (controlled by the \fB\-\-ifconfig\-ipv6\-pool\fP config file
+directive). Only set for \fB\-\-dev tap\fP tunnels. This option is set on
+the server prior to execution of the \fB\-\-client\-connect\fP and
+\fB\-\-client\-disconnect\fP scripts.
+.TP
 .B \fBifconfig_pool_remote_ip\fP
-The remote virtual IP address for the TUN/TAP tunnel taken from an
+The remote virtual IPv4 address for the TUN/TAP tunnel taken from an
 \fB\-\-ifconfig\-push\fP directive if specified, or otherwise from the
 ifconfig pool (controlled by the \fB\-\-ifconfig\-pool\fP config file
 directive). This option is set on the server prior to execution of the
 \fB\-\-client\-connect\fP and \fB\-\-client\-disconnect\fP scripts.
 .TP
+.B \fBifconfig_pool_remote_ip6\fP
+The remote virtual IPv6 address for the TUN/TAP tunnel taken from an
+\fB\-\-ifconfig\-ipv6\-push\fP directive if specified, or otherwise from the
+ifconfig pool (controlled by the \fB\-\-ifconfig\-ipv6\-pool\fP config file
+directive). This option is set on the server prior to execution of the
+\fB\-\-client\-connect\fP and \fB\-\-client\-disconnect\fP scripts.
+.TP
 .B \fBlink_mtu\fP
-No longer passed to scripts since OpenVPN 2.6.0.  Used to be the
+\fIREMOVED\fP No longer passed to scripts since OpenVPN 2.6.0.  Used to be the
 maximum packet size (not including the IP header) of tunnel data in
 UDP tunnel transport mode.
 .TP
@@ -6581,8 +6353,7 @@ from the certificates.
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 X509_0_emailAddress=me@myhost.mydomain
 X509_0_CN=Test\-Client
 X509_0_O=OpenVPN\-TEST
@@ -6593,8 +6364,7 @@ X509_1_O=OpenVPN\-TEST
 X509_1_L=BISHKEK
 X509_1_ST=NA
 X509_1_C=KG
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -6612,14 +6382,12 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 management socket\-name unix          #
 management socket\-name unix pw\-file  # (recommended)
 management IP port                   # (INSECURE)
 management IP port pw\-file           #
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -6691,14 +6459,12 @@ Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 management\-external\-key
 management\-external\-key nopadding
 management\-external\-key pkcs1
 management\-external\-key pss
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -6706,12 +6472,10 @@ or any combination like:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 management\-external\-key nopadding pkcs1
 management\-external\-key pkcs1 pss
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -6770,12 +6534,10 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 plugin module\-name
 plugin module\-name \(dqarguments\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -6793,16 +6555,14 @@ or outside this directory.
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 \-\-plugin path         Effective directory used
 ===================== =============================
  myplug.so            DEFAULT_DIR/myplug.so
  subdir/myplug.so     DEFAULT_DIR/subdir/myplug.so
  ./subdir/myplug.so   CWD/subdir/myplug.so
  /usr/lib/my/plug.so  /usr/lib/my/plug.so
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -6881,11 +6641,9 @@ certificate\(aqs subject:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 cryptoapicert \(dqSUBJ:Peter Runestig\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -6893,11 +6651,9 @@ To select a certificate, based on certificate\(aqs thumbprint (SHA1 hash):
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 cryptoapicert \(dqTHUMB:f6 49 24 41 01 b4 ...\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -6909,11 +6665,21 @@ issuer name:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 cryptoapicert \(dqISSUER:Sample CA\(dq
-.ft P
-.fi
+.EE
+.UNINDENT
+.UNINDENT
+.sp
+To select a certificate based on a certificate\(aqs template name or
+OID of the template:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.EX
+cryptoapicert \(dqTMPL:Name of Template\(dq
+cryptoapicert \(dqTMPL:1.3.6.1.4...\(dq
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -7049,11 +6815,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 service exit\-event [0|1]
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -7138,12 +6902,10 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 \-\-show\-gateway
 \-\-show\-gateway IPv6\-target
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -7167,11 +6929,9 @@ Valid syntax:
 .INDENT 7.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 hash\-size r v
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -7298,7 +7058,7 @@ it will attempt to connect against.  But there are some configuration
 options which are related to specific \fB\-\-remote\fP options.  For these
 use cases, connection profiles are the solution.
 .sp
-By enacpulating the \fB\-\-remote\fP option and related options within
+By encapsulating the \fB\-\-remote\fP option and related options within
 \fB<connection>\fP and \fB</connection>\fP, these options are handled as a
 group.
 .sp
@@ -7312,8 +7072,7 @@ Here is an example of connection profile usage:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 client
 dev tun
 
@@ -7340,8 +7099,7 @@ persist\-tun
 pkcs12 client.p12
 remote\-cert\-tls server
 verb 3
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -7387,15 +7145,13 @@ Here is an example of an inline file usage
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 <cert>
 \-\-\-\-\-BEGIN CERTIFICATE\-\-\-\-\-
 [...]
 \-\-\-\-\-END CERTIFICATE\-\-\-\-\-
 </cert>
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -7472,10 +7228,10 @@ Report all bugs to the OpenVPN team \fI\%info@openvpn.net\fP
 This product includes software developed by the OpenSSL Project
 (\fI\%https://www.openssl.org/\fP)
 .sp
-For more information on the TLS protocol, see
-\fI\%http://www.ietf.org/rfc/rfc2246.txt\fP
+For more information on the TLS protocol see:
+\fI\%https://tools.ietf.org/html/rfc2246\fP
 .sp
-For more information on the LZO real\-time compression library see
+For more information on the LZO real\-time compression library see:
 \fI\%https://www.oberhumer.com/opensource/lzo/\fP
 .SH COPYRIGHT
 .sp

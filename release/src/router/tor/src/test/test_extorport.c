@@ -166,7 +166,7 @@ test_ext_or_cookie_auth(void *arg)
   size_t reply_len=0;
   char hmac1[32], hmac2[32];
 
-  const char client_nonce[32] =
+  NONSTRING const char client_nonce[32] =
     "Who is the third who walks alway";
   char server_hash_input[] =
     "ExtORPort authentication server-to-client hash"

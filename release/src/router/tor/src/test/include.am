@@ -365,6 +365,7 @@ src_test_test_timers_LDFLAGS = $(src_test_test_LDFLAGS)
 
 # ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS+= \
+	src/test/compression_bomb.h \
 	src/test/fakechans.h \
 	src/test/fakecircs.h \
 	src/test/hs_test_helpers.h \

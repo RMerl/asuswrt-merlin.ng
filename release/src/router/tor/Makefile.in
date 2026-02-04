@@ -4606,16 +4606,17 @@ am__noinst_HEADERS_DIST = src/ext/ht.h src/ext/byteorder.h \
 	src/lib/thread/numcpus.h src/lib/thread/thread_sys.h \
 	src/lib/thread/threads.h src/lib/time/compat_time.h \
 	src/lib/time/time_sys.h src/lib/time/tvdiff.h \
-	src/lib/tls/ciphers.inc src/lib/tls/buffers_tls.h \
-	src/lib/tls/nss_countbytes.h src/lib/tls/tortls.h \
-	src/lib/tls/tortls_internal.h src/lib/tls/tortls_st.h \
-	src/lib/tls/tortls_sys.h src/lib/tls/x509.h \
-	src/lib/tls/x509_internal.h src/lib/trace/trace.h \
-	src/lib/trace/trace_sys.h src/lib/trace/events.h \
-	src/lib/trace/debug.h src/lib/trace/usdt/usdt.h \
-	src/lib/trace/lttng/lttng.h src/lib/version/git_revision.h \
-	src/lib/version/torversion.h src/lib/wallclock/approx_time.h \
-	src/lib/wallclock/timeval.h src/lib/wallclock/time_to_tm.h \
+	src/lib/tls/ciphers.inc src/lib/tls/ciphers_v13.inc \
+	src/lib/tls/buffers_tls.h src/lib/tls/nss_countbytes.h \
+	src/lib/tls/tortls.h src/lib/tls/tortls_internal.h \
+	src/lib/tls/tortls_st.h src/lib/tls/tortls_sys.h \
+	src/lib/tls/x509.h src/lib/tls/x509_internal.h \
+	src/lib/trace/trace.h src/lib/trace/trace_sys.h \
+	src/lib/trace/events.h src/lib/trace/debug.h \
+	src/lib/trace/usdt/usdt.h src/lib/trace/lttng/lttng.h \
+	src/lib/version/git_revision.h src/lib/version/torversion.h \
+	src/lib/wallclock/approx_time.h src/lib/wallclock/timeval.h \
+	src/lib/wallclock/time_to_tm.h \
 	src/lib/wallclock/tor_gettimeofday.h \
 	src/lib/wallclock/wallclock_sys.h src/ext/trunnel/trunnel.h \
 	src/ext/trunnel/trunnel-impl.h src/trunnel/trunnel-local.h \
@@ -4815,11 +4816,12 @@ am__noinst_HEADERS_DIST = src/ext/ht.h src/ext/byteorder.h \
 	src/app/config/fallback_dirs.inc src/app/config/testnet.inc \
 	src/app/main/main.h src/app/main/ntmain.h \
 	src/app/main/risky_options.h src/app/main/shutdown.h \
-	src/app/main/subsysmgr.h src/test/fakechans.h \
-	src/test/fakecircs.h src/test/hs_test_helpers.h \
-	src/test/log_test_helpers.h src/test/opts_test_helpers.h \
-	src/test/resolve_test_helpers.h src/test/rng_test_helpers.h \
-	src/test/test.h src/test/ptr_helpers.h src/test/test_helpers.h \
+	src/app/main/subsysmgr.h src/test/compression_bomb.h \
+	src/test/fakechans.h src/test/fakecircs.h \
+	src/test/hs_test_helpers.h src/test/log_test_helpers.h \
+	src/test/opts_test_helpers.h src/test/resolve_test_helpers.h \
+	src/test/rng_test_helpers.h src/test/test.h \
+	src/test/ptr_helpers.h src/test/test_helpers.h \
 	src/test/test_dir_common.h src/test/test_connection.h \
 	src/test/test_tortls.h src/test/test_descriptors.inc \
 	src/test/example_extrainfo.inc \
@@ -5641,11 +5643,11 @@ noinst_HEADERS = $(EXTHEADERS) $(ED25519_REF10_HDRS) \
 	src/lib/thread/numcpus.h src/lib/thread/thread_sys.h \
 	src/lib/thread/threads.h src/lib/time/compat_time.h \
 	src/lib/time/time_sys.h src/lib/time/tvdiff.h \
-	src/lib/tls/ciphers.inc src/lib/tls/buffers_tls.h \
-	src/lib/tls/nss_countbytes.h src/lib/tls/tortls.h \
-	src/lib/tls/tortls_internal.h src/lib/tls/tortls_st.h \
-	src/lib/tls/tortls_sys.h src/lib/tls/x509.h \
-	src/lib/tls/x509_internal.h $(TRACEHEADERS) \
+	src/lib/tls/ciphers.inc src/lib/tls/ciphers_v13.inc \
+	src/lib/tls/buffers_tls.h src/lib/tls/nss_countbytes.h \
+	src/lib/tls/tortls.h src/lib/tls/tortls_internal.h \
+	src/lib/tls/tortls_st.h src/lib/tls/tortls_sys.h \
+	src/lib/tls/x509.h src/lib/tls/x509_internal.h $(TRACEHEADERS) \
 	src/lib/version/git_revision.h src/lib/version/torversion.h \
 	src/lib/wallclock/approx_time.h src/lib/wallclock/timeval.h \
 	src/lib/wallclock/time_to_tm.h \
@@ -5837,11 +5839,11 @@ noinst_HEADERS = $(EXTHEADERS) $(ED25519_REF10_HDRS) \
 	src/app/main/main.h src/app/main/ntmain.h \
 	src/app/main/risky_options.h src/app/main/shutdown.h \
 	src/app/main/subsysmgr.h src/app/main/ntmain.h \
-	src/test/fakechans.h src/test/fakecircs.h \
-	src/test/hs_test_helpers.h src/test/log_test_helpers.h \
-	src/test/opts_test_helpers.h src/test/resolve_test_helpers.h \
-	src/test/rng_test_helpers.h src/test/test.h \
-	src/test/ptr_helpers.h src/test/test_helpers.h \
+	src/test/compression_bomb.h src/test/fakechans.h \
+	src/test/fakecircs.h src/test/hs_test_helpers.h \
+	src/test/log_test_helpers.h src/test/opts_test_helpers.h \
+	src/test/resolve_test_helpers.h src/test/rng_test_helpers.h \
+	src/test/test.h src/test/ptr_helpers.h src/test/test_helpers.h \
 	src/test/test_dir_common.h src/test/test_connection.h \
 	src/test/test_tortls.h src/test/test_descriptors.inc \
 	src/test/example_extrainfo.inc \
@@ -26698,10 +26700,9 @@ test-network-clean:
 #
 # Run the IPv4 tests in $(ipv4_flavors), unconditionally
 #   - tor relays and directory authorities require IPv4.
-# Run the IPv6 tests in $(ipv6_flavors), if IPv6 is available
-#   - only run IPv6 tests if we can ping6 or ping -6 ::1 (localhost)
-#     we try the syntax for BSD ping6, Linux ping6, and Linux ping -6,
-#     because they're incompatible
+# Run the IPv6 tests in $(ipv6_flavors), unconditionally
+#   - clients don't technically require IPv6, but it's not worth
+#     supporting running this test suite on such systems.
 #   - some IPv6 tests may fail without an IPv6 DNS server
 #     (see #16971 and #17011)
 # Run the mixed tests in $(mixed_flavors), if a tor-stable binary is available
@@ -26718,25 +26719,9 @@ test-network-run: need-chutney-path test-driver $(TESTING_TOR_BINARY) src/tools/
 		echo "Running IPv4 flavors: $(ipv4_flavors)."; \
 		flavors="$$flavors $(ipv4_flavors)"; \
 	fi; \
-	test_network_ipv6=false; \
-	if test -n "$(ipv6_flavors)" || \
-	   test -n "$(ipv6_mixed_flavors)"; then \
-		if ping6 -q -c 1 -o   ::1 >/dev/null 2>&1 || \
-		   ping6 -q -c 1 -W 1 ::1 >/dev/null 2>&1 || \
-		   ping  -6 -c 1 -W 1 ::1 >/dev/null 2>&1; then \
-			test_network_ipv6=true; \
-		fi; \
-	fi; \
 	if test -n "$(ipv6_flavors)"; then \
-		if test "$$test_network_ipv6" = "true"; then \
-			echo "ping6 ::1 or ping ::1 succeeded, running IPv6" \
-			  "flavors: $(ipv6_flavors)."; \
-			flavors="$$flavors $(ipv6_flavors)"; \
-		else \
-			echo "ping6 ::1 and ping ::1 failed, skipping IPv6" \
-			  "flavors: $(ipv6_flavors)."; \
-			skip_flavors="$$skip_flavors $(ipv6_flavors)"; \
-		fi; \
+		echo "Running IPv6 flavors: $(ipv6_flavors)."; \
+		flavors="$$flavors $(ipv6_flavors)"; \
 	fi; \
 	test_network_mixed=false; \
 	if test -n "$(mixed_flavors)" || \
@@ -26757,8 +26742,7 @@ test-network-run: need-chutney-path test-driver $(TESTING_TOR_BINARY) src/tools/
 		fi; \
 	fi; \
 	if test -n "$(ipv6_mixed_flavors)"; then \
-		if test "$$test_network_ipv6" = "true" && \
-		   test "$$test_network_mixed" = "true"; then \
+		if test "$$test_network_mixed" = "true"; then \
 			echo "Running IPv6 mixed flavors:" \
 			  "$(ipv6_mixed_flavors)."; \
 			flavors="$$flavors $(ipv6_mixed_flavors)"; \

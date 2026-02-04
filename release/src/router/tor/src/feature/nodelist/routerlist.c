@@ -556,9 +556,9 @@ router_can_choose_node(const node_t *node, int flags)
   const bool need_desc = (flags & CRN_NEED_DESC) != 0;
   const bool pref_addr = (flags & CRN_PREF_ADDR) != 0;
   const bool direct_conn = (flags & CRN_DIRECT_CONN) != 0;
-  const bool rendezvous_v3 = (flags & CRN_RENDEZVOUS_V3) != 0;
   const bool initiate_ipv6_extend = (flags & CRN_INITIATE_IPV6_EXTEND) != 0;
   const bool need_conflux = (flags & CRN_CONFLUX) != 0;
+  const bool for_hs = (flags & CRN_FOR_HS) != 0;
 
   const or_options_t *options = get_options();
   const bool check_reach =
@@ -588,11 +588,6 @@ router_can_choose_node(const node_t *node, int flags)
    * 0.3.1.0-alpha. */
   if (node_allows_single_hop_exits(node))
     return false;
-  /* Exclude relays that can not become a rendezvous for a hidden service
-   * version 3. */
-  if (rendezvous_v3 &&
-      !node_supports_v3_rendezvous_point(node))
-    return false;
   /* Exclude relay that don't do conflux if requested. */
   if (need_conflux && !node_supports_conflux(node)) {
     return false;
@@ -605,6 +600,10 @@ router_can_choose_node(const node_t *node, int flags)
     return false;
   if (initiate_ipv6_extend && !node_supports_initiating_ipv6_extends(node))
     return false;
+  /* MiddleOnly node should never be used for HS endpoints (IP, RP, HSDir). */
+  if (for_hs && node->is_middle_only) {
+    return false;
+  }
 
   return true;
 }

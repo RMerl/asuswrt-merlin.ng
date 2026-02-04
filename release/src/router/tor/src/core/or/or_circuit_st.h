@@ -81,6 +81,11 @@ struct or_circuit_t {
    * circuit. */
   bool used_legacy_circuit_handshake;
 
+  /** True if we received a version 0 sendme on this circuit, and it came
+   * on a legacy (CREATE_FAST) circuit so we allowed it. We track this
+   * state so we can avoid counting those directory requests for geoip. */
+  bool used_obsolete_sendme;
+
   /** Number of cells that were removed from circuit queue; reset every
    * time when writing buffer stats to disk. */
   uint32_t processed_cells;

@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2021, The Tor Project, Inc. */
+ * Copyright (c) 2007-2025, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -37,6 +37,13 @@ STATIC int32_t channelpadding_get_netflow_inactive_timeout_ms(
                                                            const channel_t *);
 STATIC int channelpadding_send_disable_command(channel_t *);
 STATIC int64_t channelpadding_compute_time_until_pad_for_netflow(channel_t *);
+
+/** Total channel padding delay of delays that exceeded the allowed time
+ *  window since last heartbeat or, if no heartbeat yet, since startup */
+static uint64_t channel_padding_delayed_ms = 0;
+/** Amount of delays that exceeded the allowed time window since
+ *  last heartbeat or, if no heartbeat yet, since startup */
+static uint64_t channel_padding_delayed_count = 0;
 
 /** The total number of pending channelpadding timers */
 static uint64_t total_timers_pending;
@@ -565,11 +572,14 @@ channelpadding_compute_time_until_pad_for_netflow(channel_t *chan)
      * about it entirely.. */
 #define NETFLOW_MISSED_WINDOW (150000 - DFLT_NETFLOW_INACTIVE_KEEPALIVE_HIGH)
     if (ms_till_pad < 0) {
-      int severity = (ms_till_pad < -NETFLOW_MISSED_WINDOW)
-                      ? LOG_NOTICE : LOG_INFO;
-      log_fn(severity, LD_OR,
-              "Channel padding timeout scheduled %"PRId64"ms in the past. ",
-             (-ms_till_pad));
+      if (ms_till_pad < -NETFLOW_MISSED_WINDOW) {
+        log_info(LD_OR,
+                "Channel padding delay of %"PRIu64"ms occurred in the past "
+                "that exceeded the allowed time window.",
+               (-ms_till_pad));
+        channel_padding_delayed_ms -= ms_till_pad;
+        channel_padding_delayed_count += 1;
+      }
       return 0; /* Clock jumped: Send padding now */
     }
 
@@ -796,4 +806,29 @@ channelpadding_decide_to_pad_channel(channel_t *chan)
   } else {
     return CHANNELPADDING_PADLATER;
   }
+}
+
+/* Log a heartbeat message with the average channel padding delay and
+ * the number of occurred delays (that exceeded the allowed time window)
+ * since the previous heartbeat or, if we didn't have a heartbeat yet,
+ * since startup. */
+void
+channelpadding_log_heartbeat(void)
+{
+  /* Whether we had a heartbeat since startup */
+  static uint8_t heartbeat = 0;
+
+  if (channel_padding_delayed_count > 0) {
+    log_notice(LD_OR,
+               "Average channel padding delay of delays that exceeded "
+               "the allowed time window since %s: %"PRIu64"ms "
+               "(Number of delays: %"PRIu64")",
+               heartbeat ? "previous heartbeat" : "startup",
+               (uint64_t)((double)channel_padding_delayed_ms /
+                          channel_padding_delayed_count),
+               channel_padding_delayed_count);
+    channel_padding_delayed_count = 0;
+    channel_padding_delayed_ms = 0;
+  }
+  heartbeat = 1;
 }

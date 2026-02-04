@@ -2876,8 +2876,8 @@ test_util_decompress_dos_impl(compress_method_t method)
   size_t szr, szr2;
   int r;
 
-  const size_t big = 1024*1024;
-  /* one megabyte of 0s. */
+  const size_t big = 5*1024*1024;
+  /* five megabytes of 0s. */
   input = tor_malloc_zero(big);
 
   /* Compress it into "result": it should fail. */
@@ -2934,8 +2934,8 @@ test_util_gzip_compression_bomb(void *arg)
    * In Tor we try not to generate them, and we don't accept them.
    */
   (void) arg;
-  size_t one_million = 1<<20;
-  char *one_mb = tor_malloc_zero(one_million);
+  size_t six_megabytes = 6 * 1024 * 1024;
+  char *buffer = tor_malloc_zero(six_megabytes);
   char *result = NULL;
   size_t result_len = 0;
   tor_compress_state_t *state = NULL;
@@ -2943,7 +2943,7 @@ test_util_gzip_compression_bomb(void *arg)
   /* Make sure we can't produce a compression bomb */
   setup_full_capture_of_logs(LOG_WARN);
   tt_int_op(-1, OP_EQ, tor_compress(&result, &result_len,
-                                    one_mb, one_million,
+                                    buffer, six_megabytes,
                                     ZLIB_METHOD));
   expect_log_msg_containing(
          "We compressed something and got an insanely high "
@@ -2952,20 +2952,20 @@ test_util_gzip_compression_bomb(void *arg)
   teardown_capture_of_logs();
 
   /* Here's a compression bomb that we made manually. */
-  const char compression_bomb[1039] =
-    { 0x78, 0xDA, 0xED, 0xC1, 0x31, 0x01, 0x00, 0x00, 0x00, 0xC2,
-      0xA0, 0xF5, 0x4F, 0x6D, 0x08, 0x5F, 0xA0 /* .... */ };
+  #include "test/compression_bomb.h"
+
   tt_int_op(-1, OP_EQ, tor_uncompress(&result, &result_len,
-                                      compression_bomb, 1039,
-                                      ZLIB_METHOD, 0, LOG_WARN));
+                                      compression_bomb_gzip,
+                                      compression_bomb_gzip_len,
+                                      GZIP_METHOD, 0, LOG_WARN));
 
   /* Now try streaming that. */
-  state = tor_compress_new(0, ZLIB_METHOD, HIGH_COMPRESSION);
+  state = tor_compress_new(0, GZIP_METHOD, HIGH_COMPRESSION);
   tor_compress_output_t r;
-  const char *inp = compression_bomb;
-  size_t inlen = 1039;
+  const char *inp = compression_bomb_gzip;
+  size_t inlen = compression_bomb_gzip_len;
   do {
-    char *outp = one_mb;
+    char *outp = buffer;
     size_t outleft = 4096; /* small on purpose */
     r = tor_compress_process(state, &outp, &outleft, &inp, &inlen, 0);
     tt_int_op(inlen, OP_NE, 0);
@@ -2974,7 +2974,7 @@ test_util_gzip_compression_bomb(void *arg)
   tt_int_op(r, OP_EQ, TOR_COMPRESS_ERROR);
 
  done:
-  tor_free(one_mb);
+  tor_free(buffer);
   tor_compress_free(state);
 }
 

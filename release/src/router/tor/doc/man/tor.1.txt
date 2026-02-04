@@ -2429,6 +2429,15 @@ is non-zero):
     level __notice__ message designed to help developers instrumenting Tor's
     main event loop. (Default: 0)
 
+[[MaxHSDirCacheBytes]] **MaxHSDirCacheBytes** __N__ **bytes**|**KBytes**|**MBytes**|**GBytes**::
+    This option configures a threshold of Hidden Service Directory memory
+    consumption above which your Tor relay will begin to prune the least-frequently
+    accessed hidden service descriptors from the relay's HSDir cache. This pruning used
+    to be done as part of MaxMemInQueues, but it has been decoupled to allow more
+    fine-grained control of descriptor cache size under DDoS conditions. This
+    option defaults to 20% of the MaxMemInQueues size, which itself defaults to
+    an automatically determined value based on system memory. (Default: 20% MaxMemInQueues)
+
 [[MaxMemInQueues]] **MaxMemInQueues**  __N__ **bytes**|**KBytes**|**MBytes**|**GBytes**::
     This option configures a threshold above which Tor will assume that it
     needs to stop queueing or buffering data because it's about to run out of
@@ -2795,17 +2804,16 @@ types of statistics that Tor relays collect and publish:
      +
     A relay is considered overloaded if at least one of these conditions is
     met:
-        - Onionskins are starting to be dropped.
+        - A certain ratio of ntor onionskins are dropped.
         - The OOM was invoked.
+        - TCP Port exhaustion.
 
-        - (Exit only) DNS timeout occurs X% of the time over Y seconds (values
-          controlled by consensus parameters, see param-spec.txt).
      +
     If ExtraInfoStatistics is enabled, it can also put two more specific
     overload lines in the extra-info document if at least one of these
     conditions is met:
-        - TCP Port exhaustion.
         - Connection rate limits have been reached (read and write side).
+        - File descriptors are exhausted.
 
 [[PaddingStatistics]] **PaddingStatistics** **0**|**1**::
     Relays and bridges only.

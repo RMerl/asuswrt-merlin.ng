@@ -89,6 +89,7 @@
  * old transports from the circuitbuild.c subsystem.
  **/
 
+#include "lib/string/printf.h"
 #define PT_PRIVATE
 #include "core/or/or.h"
 #include "feature/client/bridges.h"
@@ -741,6 +742,10 @@ managed_proxy_destroy(managed_proxy_t *mp,
   /* free the outgoing proxy URI */
   tor_free(mp->proxy_uri);
 
+  /* free our version, if any is set. */
+  tor_free(mp->version);
+  tor_free(mp->implementation);
+
   /* do we want to terminate our process if it's still running? */
   if (also_terminate_process && mp->process) {
     /* Note that we do not call process_free(mp->process) here because we let
@@ -1283,15 +1288,8 @@ parse_status_line(const char *line, managed_proxy_t *mp)
     goto done;
   }
 
-  /* We check if we received the TRANSPORT parameter, which is the only
-   * *required* value. */
-  const config_line_t *type = config_line_find(values, "TRANSPORT");
-
-  if (! type) {
-    log_warn(LD_PT, "Managed proxy \"%s\" wrote a STATUS line without "
-                    "TRANSPORT: %s", mp->argv[0], escaped(data));
-    goto done;
-  }
+  /* Handle the different messages. */
+  handle_status_message(values, mp);
 
   /* Prepend the PT name. */
   config_line_prepend(&values, "PT", mp->argv[0]);
@@ -1304,6 +1302,52 @@ parse_status_line(const char *line, managed_proxy_t *mp)
  done:
   config_free_lines(values);
   tor_free(status_message);
+}
+
+STATIC void
+handle_status_message(const config_line_t *values,
+                      managed_proxy_t *mp)
+{
+  if (config_count_key(values, "TYPE") > 1) {
+      log_warn(LD_PT, "Managed proxy \"%s\" has multiple TYPE key which "
+                      "is not allowed.", mp->argv[0]);
+      return;
+  }
+  const config_line_t *message_type = config_line_find(values, "TYPE");
+
+  /* Check if we have a TYPE field? */
+  if (message_type == NULL) {
+    log_debug(LD_PT, "Managed proxy \"%s\" wrote a STATUS line without "
+                     "a defined message TYPE", mp->argv[0]);
+    return;
+  }
+
+  /* Handle VERSION messages. */
+  if (! strcasecmp(message_type->value, "version")) {
+    const config_line_t *version = config_line_find(values, "VERSION");
+    const config_line_t *implementation = config_line_find(values,
+                                                           "IMPLEMENTATION");
+
+    if (version == NULL) {
+      log_warn(LD_PT, "Managed proxy \"%s\" wrote a STATUS TYPE=version line "
+                      "with a missing VERSION field", mp->argv[0]);
+      return;
+    }
+
+    if (implementation == NULL) {
+      log_warn(LD_PT, "Managed proxy \"%s\" wrote a STATUS TYPE=version line "
+                      "with a missing IMPLEMENTATION field", mp->argv[0]);
+      return;
+    }
+
+    tor_free(mp->version);
+    mp->version = tor_strdup(version->value);
+
+    tor_free(mp->implementation);
+    mp->implementation = tor_strdup(implementation->value);
+
+    return;
+  }
 }
 
 /** Return a newly allocated string that tor should place in
@@ -1748,9 +1792,28 @@ pt_get_extra_info_descriptor_string(void)
                              "transport %s %s%s",
                              t->name, addrport,
                              transport_args ? transport_args : "");
+
       tor_free(transport_args);
     } SMARTLIST_FOREACH_END(t);
 
+    /* Set transport-info line. */
+    {
+      char *version = NULL;
+      char *impl = NULL;
+
+      if (mp->version) {
+        tor_asprintf(&version, " version=%s", mp->version);
+      }
+      if (mp->implementation) {
+        tor_asprintf(&impl, " implementation=%s", mp->implementation);
+      }
+      /* Always put in the line even if empty. Else, we don't know to which
+       * transport this applies to. */
+      smartlist_add_asprintf(string_chunks, "transport-info%s%s",
+                             version ? version: "", impl ? impl: "");
+      tor_free(version);
+      tor_free(impl);
+    }
   } SMARTLIST_FOREACH_END(mp);
 
   if (smartlist_len(string_chunks) == 0) {

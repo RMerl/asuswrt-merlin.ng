@@ -16,6 +16,8 @@ void conflux_pool_free_all(void);
 
 origin_circuit_t *conflux_get_circ_for_conn(const entry_connection_t *conn,
                                             time_t now);
+void conflux_mark_all_for_close(const uint8_t *nonce, bool is_client,
+                                int reason);
 
 void conflux_predict_new(time_t now);
 

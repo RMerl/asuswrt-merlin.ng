@@ -31,6 +31,9 @@ reset_mp(managed_proxy_t *mp)
   mp->conf_state = PT_PROTO_LAUNCHED;
   SMARTLIST_FOREACH(mp->transports, transport_t *, t, transport_free(t));
   smartlist_clear(mp->transports);
+
+  tor_free(mp->version);
+  tor_free(mp->implementation);
 }
 
 static void
@@ -140,6 +143,131 @@ test_pt_parsing(void *arg)
   reset_mp(mp);
   smartlist_free(mp->transports);
   tor_free(mp);
+}
+
+static void
+test_pt_status_parsing(void *arg)
+{
+  char line[200];
+  char *test_binary = tor_strdup("test-pt");
+  char *argv[] = {
+    test_binary,
+    NULL,
+  };
+
+  managed_proxy_t *mp = tor_malloc_zero(sizeof(managed_proxy_t));
+  (void)arg;
+  mp->conf_state = PT_PROTO_INFANT;
+  mp->transports = smartlist_new();
+  mp->argv = argv;
+
+  /* STATUS TYPE=version messages. */
+  tt_ptr_op(mp->version, OP_EQ, NULL);
+  tt_ptr_op(mp->implementation, OP_EQ, NULL);
+
+  /* Normal case. */
+  strlcpy(line, "STATUS "
+                "IMPLEMENTATION=xyz "
+                "TYPE=version "
+                "VERSION=\"1.33.7-hax beta\"",
+                sizeof(line));
+  handle_proxy_line(line, mp);
+
+  tt_str_op(mp->version, OP_EQ, "1.33.7-hax beta");
+  tt_str_op(mp->implementation, OP_EQ, "xyz");
+  reset_mp(mp);
+
+  /* Normal case but different case for TYPE value. */
+  strlcpy(line, "STATUS "
+                "IMPLEMENTATION=xyz "
+                "TYPE=vErSiON "
+                "VERSION=\"1.33.7-hax beta\"",
+                sizeof(line));
+  handle_proxy_line(line, mp);
+
+  tt_str_op(mp->version, OP_EQ, "1.33.7-hax beta");
+  tt_str_op(mp->implementation, OP_EQ, "xyz");
+  reset_mp(mp);
+
+  /* IMPLEMENTATION and VERSION set but no TYPE. */
+  strlcpy(line, "STATUS "
+                "IMPLEMENTATION=xyz "
+                "VERSION=\"1.33.7-hax beta\"",
+                sizeof(line));
+  handle_proxy_line(line, mp);
+
+  tt_assert(mp->version == NULL);
+  tt_assert(mp->implementation == NULL);
+  reset_mp(mp);
+
+  /* Multiple TYPE= is not allowed. */
+  strlcpy(line, "STATUS "
+                "IMPLEMENTATION=xyz "
+                "TYPE=version "
+                "VERSION=\"1.33.7-hax beta\" "
+                "TYPE=nothing",
+                sizeof(line));
+  handle_proxy_line(line, mp);
+
+  tt_assert(mp->version == NULL);
+  tt_assert(mp->implementation == NULL);
+  reset_mp(mp);
+
+  /* Multiple TYPE= is not allowed. */
+  strlcpy(line, "STATUS "
+                "IMPLEMENTATION=xyz "
+                "TYPE=version "
+                "VERSION=\"1.33.7-hax beta\" "
+                "TYPE=version",
+                sizeof(line));
+  handle_proxy_line(line, mp);
+
+  tt_assert(mp->version == NULL);
+  tt_assert(mp->implementation == NULL);
+  reset_mp(mp);
+
+  /* Missing VERSION. */
+  strlcpy(line, "STATUS "
+                "TYPE=version "
+                "IMPLEMENTATION=xyz ",
+                sizeof(line));
+  handle_proxy_line(line, mp);
+
+  tt_assert(mp->version == NULL);
+  tt_assert(mp->implementation == NULL);
+  reset_mp(mp);
+
+  /* Many IMPLEMENTATION and VERSION. First found are used. */
+  strlcpy(line, "STATUS "
+                "TYPE=version "
+                "IMPLEMENTATION=xyz "
+                "VERSION=\"1.33.7-hax beta\" "
+                "IMPLEMENTATION=abc "
+                "VERSION=\"2.33.7-hax beta\" ",
+                sizeof(line));
+  handle_proxy_line(line, mp);
+
+  tt_str_op(mp->version, OP_EQ, "1.33.7-hax beta");
+  tt_str_op(mp->implementation, OP_EQ, "xyz");
+  reset_mp(mp);
+
+  /* Control characters. Invalid input. */
+  strlcpy(line, "STATUS "
+                "TYPE=version "
+                "IMPLEMENTATION=xyz\0abc "
+                "VERSION=\"1.33.7-hax beta\"\0.3 ",
+                sizeof(line));
+  handle_proxy_line(line, mp);
+
+  tt_assert(mp->version == NULL);
+  tt_assert(mp->implementation == NULL);
+  reset_mp(mp);
+
+ done:
+  reset_mp(mp);
+  smartlist_free(mp->transports);
+  tor_free(mp);
+  tor_free(test_binary);
 }
 
 static void
@@ -285,7 +413,9 @@ test_pt_get_extrainfo_string(void *arg)
   tt_assert(s);
   tt_str_op(s, OP_EQ,
             "transport hagbard 127.0.0.1:5555\n"
-            "transport celine 127.0.0.1:1723 card=no-enemy\n");
+            "transport-info\n"
+            "transport celine 127.0.0.1:1723 card=no-enemy\n"
+            "transport-info\n");
 
  done:
   /* XXXX clean up better */
@@ -590,6 +720,7 @@ test_get_pt_proxy_uri(void *arg)
 
 struct testcase_t pt_tests[] = {
   PT_LEGACY(parsing),
+  PT_LEGACY(status_parsing),
   PT_LEGACY(protocol),
   { "get_transport_options", test_pt_get_transport_options, TT_FORK,
     NULL, NULL },

@@ -493,6 +493,12 @@ static const char CLIENT_CIPHER_LIST[] =
    * of any cipher we say. */
   "!SSLv2"
   ;
+static char CLIENT_CIPHER_LIST_TLSv13[] =
+#ifndef COCCI
+#include "lib/tls/ciphers_v13.inc"
+#endif
+  ""
+  ;
 #undef CIPHER
 #undef XCIPHER
 
@@ -670,28 +676,73 @@ tor_tls_context_new(crypto_pk_t *identity, unsigned int key_lifetime,
  * or a macro. */
 #if defined(SSL_CTX_set1_groups_list) || defined(HAVE_SSL_CTX_SET1_GROUPS_LIST)
   {
-    const char *list;
-    if (flags & TOR_TLS_CTX_USE_ECDHE_P224)
-      list = "P-224:P-256";
-    else if (flags & TOR_TLS_CTX_USE_ECDHE_P256)
-      list = "P-256:P-224";
-    else
-      list = "P-256:P-224";
-    int r = (int) SSL_CTX_set1_groups_list(result->ctx, list);
-    if (r < 0)
-      goto error;
+    // We'd like to say something like:
+    //    "?X25519MLKEM768:P-256:P-224"
+    // to mean that we prefer X25519MLKEM768 if it is present;
+    // but we do insist on the presence of  P-256 and P-224.
+    //
+    // Unfortunately, we support back to OpenSSL 3.0, which did not provide
+    // any syntax for saying "don't worry if this group isn't supported."
+    // Instead, we have to make this preference list of preference lists.
+    static const struct {
+      // Minimal version with which to try this syntax.
+      // We have to restrict, since older versions of openssl
+      // can misunderstand-but nonetheless accept!-syntaxes
+      // supported by newer versions.  See #41058 for one example.
+      long min_version;
+      const char *groups;
+    } group_lists[] = {
+      // We do use the ? syntax here, since every version of OpenSSL
+      // that supports ML-KEM also supports the ? syntax.
+      // We also use the * and / syntaxes:
+      //   '*' indicates that the client should send these keyshares.
+      //   "/" separates tuples of groups that are "comparably secure".
+      //
+      // Note that we tell the client to send a P-256 keyshare, since until
+      // this commit, our servers didn't accept X25519.
+      //
+      // Also note that until the upstream LibreSSL bug from tor#41134 gets
+      // fixed, the order of groups common between each preference list must
+      // be the same. We can't prefer P-256 in one, and X25519 in another.
+      {
+        OPENSSL_V_SERIES(3,5,0),
+        "?*X25519MLKEM768 / ?SecP256r1MLKEM768 / *P-256:?X25519:P-224"
+      },
+      { 0, "P-256:X25519:P-224" },
+      { 0, "P-256:P-224" },
+    };
+    bool success = false;
+    long our_version = tor_OpenSSL_version_num();
+    for (unsigned j = 0; j < ARRAY_LENGTH(group_lists); ++j) {
+      const char *list = group_lists[j].groups;
+      if (group_lists[j].min_version > our_version) {
+        log_info(LD_NET, "Not trying groups %s because of OpenSSL version.",
+                 list);
+        continue;
+      }
+      int r = (int) SSL_CTX_set1_groups_list(result->ctx, list);
+      if (r == 1) {
+        static bool have_logged_already = false;
+        if (!have_logged_already) {
+          /* say it only once at startup, since the answer won't change */
+          log_notice(LD_NET, "Set list of supported TLS groups to: %s", list);
+          have_logged_already = true;
+        }
+        success = true;
+        break;
+      }
+      log_info(LD_NET, "Group list %s wasn't accepted", list);
+    }
+    if (! success) {
+      log_warn(LD_NET, "No lists of TLS groups were supported. "
+               "Using library defaults");
+    }
   }
 #else /* !(defined(SSL_CTX_set1_groups_list) || defined(HAVE_SSL_CTX_SE...)) */
   if (! is_client) {
     int nid;
     EC_KEY *ec_key;
-    if (flags & TOR_TLS_CTX_USE_ECDHE_P224)
-      nid = NID_secp224r1;
-    else if (flags & TOR_TLS_CTX_USE_ECDHE_P256)
-      nid = NID_X9_62_prime256v1;
-    else
-      nid = NID_tor_default_ecdhe_group;
-    /* Use P-256 for ECDHE. */
+    nid = NID_tor_default_ecdhe_group;
     ec_key = EC_KEY_new_by_curve_name(nid);
     if (ec_key != NULL) /*XXXX Handle errors? */
       SSL_CTX_set_tmp_ecdh(result->ctx, ec_key);
@@ -1094,8 +1145,24 @@ tor_tls_new(tor_socket_t sock, int isServer)
   }
 #endif /* defined(SSL_CTRL_SET_MAX_PROTO_VERSION) */
 
-  if (!SSL_set_cipher_list(result->ssl,
-                     isServer ? SERVER_CIPHER_LIST : CLIENT_CIPHER_LIST)) {
+  /* Contrary to SSL_set_cipher_list(), TLSv1.3 SSL_set_ciphersuites() does NOT
+   * accept the final ':' so we have to strip it out. */
+  size_t TLSv13len = strlen(CLIENT_CIPHER_LIST_TLSv13);
+  if (TLSv13len && CLIENT_CIPHER_LIST_TLSv13[TLSv13len - 1] == ':') {
+    CLIENT_CIPHER_LIST_TLSv13[TLSv13len - 1] = '\0';
+  }
+
+  const bool tls12_ciphers_ok = SSL_set_cipher_list(
+      result->ssl, isServer ? SERVER_CIPHER_LIST : CLIENT_CIPHER_LIST);
+  bool tls13_ciphers_ok = true;
+#ifdef HAVE_SSL_SET_CIPHERSUITES
+  if (!isServer) {
+    tls13_ciphers_ok =
+      SSL_set_ciphersuites(result->ssl, CLIENT_CIPHER_LIST_TLSv13);
+  }
+#endif
+
+  if (!tls12_ciphers_ok || !tls13_ciphers_ok) {
     tls_log_errors(NULL, LOG_WARN, LD_NET, "setting ciphers");
 #ifdef SSL_set_tlsext_host_name
     SSL_set_tlsext_host_name(result->ssl, NULL);

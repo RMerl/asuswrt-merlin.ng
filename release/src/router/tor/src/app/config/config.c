@@ -558,6 +558,7 @@ static const config_var_t option_vars_[] = {
   V(MaxClientCircuitsPending,    POSINT,     "32"),
   V(MaxConsensusAgeForDiffs,     INTERVAL, "0 seconds"),
   VAR("MaxMemInQueues",          MEMUNIT,   MaxMemInQueues_raw, "0"),
+  VAR("MaxHSDirCacheBytes",      MEMUNIT,   MaxHSDirCacheBytes, "0"),
   OBSOLETE("MaxOnionsPending"),
   V(MaxOnionQueueDelay,          MSEC_INTERVAL, "0"),
   V(MaxUnparseableDescSizeToLog, MEMUNIT, "10 MB"),

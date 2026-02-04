@@ -53,9 +53,12 @@ static atomic_counter_t total_compress_allocation;
  * MAX_UNCOMPRESSION_FACTOR. Within those parameters, there's a reasonably
  * large range of possible values. IMO, anything over 8 is probably safe; IMO
  * anything under 50 is probably sufficient.
+ *
+ * 2025-10-01: (ahf) Bumped to 5 MB to avoid the situation described in
+ * tor#40739.
  */
 #define MAX_UNCOMPRESSION_FACTOR 25
-#define CHECK_FOR_COMPRESSION_BOMB_AFTER (1024*64)
+#define CHECK_FOR_COMPRESSION_BOMB_AFTER (5 * 1024 * 1024)
 /** @} */
 
 /** Return true if uncompressing an input of size <b>in_size</b> to an input of
@@ -66,11 +69,13 @@ tor_compress_is_compression_bomb,(size_t size_in, size_t size_out))
   if (size_in == 0 || size_out < CHECK_FOR_COMPRESSION_BOMB_AFTER)
     return 0;
 
-  if (size_out / size_in > MAX_UNCOMPRESSION_FACTOR) {
+  double compression_factor = (double)size_out / size_in;
+  if (compression_factor > MAX_UNCOMPRESSION_FACTOR) {
     log_warn(LD_GENERAL,
              "Detected possible compression bomb with "
-             "input size = %"TOR_PRIuSZ " and output size = %"TOR_PRIuSZ,
-             size_in, size_out);
+             "input size = %"TOR_PRIuSZ" and output size = %"TOR_PRIuSZ" "
+             "(compression factor = %.2f)",
+             size_in, size_out, compression_factor);
     return 1;
   }
 

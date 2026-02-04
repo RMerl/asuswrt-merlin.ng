@@ -25,7 +25,7 @@ typedef enum {
   /** We've served a networkstatus consensus as a directory server. */
   GEOIP_CLIENT_NETWORKSTATUS = 1,
 } geoip_client_action_t;
-/** Indicates either a positive reply or a reason for rejectng a network
+/** Indicates either a positive reply or a reason for rejecting a network
  * status request that will be included in geoip statistics. */
 typedef enum {
   /** Request is answered successfully. */
@@ -41,8 +41,11 @@ typedef enum {
   GEOIP_REJECT_NOT_MODIFIED = 4,
   /** Directory is busy. */
   GEOIP_REJECT_BUSY = 5,
+  /** We began to serve the request, and when we feel we have finished
+   * serving it we will note this with a GEOIP_SUCCESS call too. */
+  GEOIP_SERVED = 6,
 } geoip_ns_response_t;
-#define GEOIP_NS_RESPONSE_NUM 6
+#define GEOIP_NS_RESPONSE_NUM 7
 
 /** Directory requests that we are measuring can be either direct or
  * tunneled. */

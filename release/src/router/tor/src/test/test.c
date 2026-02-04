@@ -221,7 +221,8 @@ test_ntor_handshake(void *arg)
 
   /* shared */
   const curve25519_public_key_t *server_pubkey;
-  uint8_t node_id[20] = "abcdefghijklmnopqrst";
+
+  NONSTRING uint8_t node_id[20] = "abcdefghijklmnopqrst";
 
   (void) arg;
 

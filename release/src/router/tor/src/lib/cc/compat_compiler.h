@@ -79,6 +79,12 @@
 #define FALLTHROUGH
 #endif
 
+#if defined(HAVE_ATTR_NONSTRING)
+#define NONSTRING __attribute__((nonstring))
+#else
+#define NONSTRING
+#endif
+
 /* What GCC do we have? */
 #ifdef __GNUC__
 #define GCC_VERSION (__GNUC__ * 100 + __GNUC_MINOR__)

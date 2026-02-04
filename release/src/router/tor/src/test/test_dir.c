@@ -2072,6 +2072,8 @@ test_dir_measured_bw_kb(void *arg)
   int i;
   const char *lines_pass[] = {
     "node_id=$557365204145532d32353620696e73746561642e bw=1024\n",
+    /* check whether node_id does not need the dollar sign at the start */
+    "node_id=557365204145532d32353620696e73746561642e bw=1024\n",
     "node_id=$557365204145532d32353620696e73746561642e\t  bw=1024 \n",
     " node_id=$557365204145532d32353620696e73746561642e  bw=1024\n",
     "\tnoise\tnode_id=$557365204145532d32353620696e73746561642e  "
@@ -2129,7 +2131,6 @@ test_dir_measured_bw_kb(void *arg)
     " node_id= ",
     "node_id==$557365204145532d32353620696e73746561642e bw==1024\n",
     "node_id=$55736520414552d32353620696e73746561642e bw=1024\n",
-    "node_id=557365204145532d32353620696e73746561642e bw=1024\n",
     "node_id= $557365204145532d32353620696e73746561642e bw=0.23\n",
 
     /* Test that a line with vote=0 will fail too, so that it is ignored. */
@@ -2543,7 +2544,7 @@ test_dir_dirserv_read_measured_bandwidths(void *arg)
             smartlist_len(bw_file_headers));
   /* force bw_file_headers to be bigger than
    * MAX_BW_FILE_HEADER_COUNT_IN_VOTE */
-  char line[8] = "foo=bar\0";
+  NONSTRING char line[8] = "foo=bar\0";
   smartlist_add_strdup(bw_file_headers, line);
   tt_int_op(MAX_BW_FILE_HEADER_COUNT_IN_VOTE, OP_LT,
             smartlist_len(bw_file_headers));
@@ -4449,14 +4450,17 @@ test_dir_bwauth_bw_file_digest256(void *arg)
 
   char *fname = tor_strdup(get_fname("V3BandwidthsFile"));
   /* Initialize to a wrong digest. */
-  uint8_t digest[DIGEST256_LEN] = "01234567890123456789abcdefghijkl";
+  NONSTRING
+    uint8_t digest[DIGEST256_LEN] = "01234567890123456789abcdefghijkl";
 
   /* Digest of an empty string. Initialize to a wrong digest. */
-  char digest_empty_str[DIGEST256_LEN] = "01234567890123456789abcdefghijkl";
+  NONSTRING
+    char digest_empty_str[DIGEST256_LEN] = "01234567890123456789abcdefghijkl";
   crypto_digest256(digest_empty_str, "", 0, DIGEST_SHA256);
 
   /* Digest of the content. Initialize to a wrong digest. */
-  char digest_expected[DIGEST256_LEN] = "01234567890123456789abcdefghijkl";
+  NONSTRING
+    char digest_expected[DIGEST256_LEN] = "01234567890123456789abcdefghijkl";
   crypto_digest256(digest_expected, content, strlen(content), DIGEST_SHA256);
 
   /* When the bandwidth file can not be found. */
@@ -5264,7 +5268,7 @@ test_dir_conn_purpose_to_string(void *data)
   tt_str_op(dir_conn_purpose_to_string(purpose), OP_EQ, expected);
 
   EXPECT_CONN_PURPOSE(DIR_PURPOSE_UPLOAD_DIR, "server descriptor upload");
-  EXPECT_CONN_PURPOSE(DIR_PURPOSE_UPLOAD_VOTE, "server vote upload");
+  EXPECT_CONN_PURPOSE(DIR_PURPOSE_UPLOAD_VOTE, "consensus vote upload");
   EXPECT_CONN_PURPOSE(DIR_PURPOSE_UPLOAD_SIGNATURES,
                       "consensus signature upload");
   EXPECT_CONN_PURPOSE(DIR_PURPOSE_FETCH_SERVERDESC, "server descriptor fetch");

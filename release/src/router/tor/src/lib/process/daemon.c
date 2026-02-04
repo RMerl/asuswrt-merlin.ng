@@ -13,6 +13,7 @@
 
 #ifndef _WIN32
 
+#include "lib/fdio/fdio.h"
 #include "lib/fs/files.h"
 #include "lib/log/log.h"
 #include "lib/thread/threads.h"
@@ -63,7 +64,7 @@ start_daemon(void)
     return 0;
   start_daemon_called = 1;
 
-  if (pipe(daemon_filedes)) {
+  if (tor_pipe_cloexec(daemon_filedes)) {
     /* LCOV_EXCL_START */
     log_err(LD_GENERAL,"pipe failed; exiting. Error was %s", strerror(errno));
     exit(1); // exit ok: during daemonize, pipe failed.

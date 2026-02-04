@@ -62,7 +62,7 @@ extern uint64_t oom_stats_n_bytes_removed_hsdir;
 void dump_cell_pool_usage(int severity);
 size_t packed_cell_mem_cost(void);
 
-int have_been_under_memory_pressure(void);
+bool have_been_under_memory_pressure(void);
 
 /* For channeltls.c */
 void packed_cell_free_(packed_cell_t *cell);
@@ -76,9 +76,9 @@ void cell_queue_append_packed_copy(circuit_t *circ, cell_queue_t *queue,
                                    int exitward, const cell_t *cell,
                                    int wide_circ_ids, int use_stats);
 
-void append_cell_to_circuit_queue(circuit_t *circ, channel_t *chan,
-                                  cell_t *cell, cell_direction_t direction,
-                                  streamid_t fromstream);
+int append_cell_to_circuit_queue(circuit_t *circ, channel_t *chan,
+                                 cell_t *cell, cell_direction_t direction,
+                                 streamid_t fromstream);
 
 void destroy_cell_queue_init(destroy_cell_queue_t *queue);
 void destroy_cell_queue_clear(destroy_cell_queue_t *queue);

@@ -187,9 +187,9 @@ test_rend_token_maps(void *arg)
 {
   or_circuit_t *c1, *c2, *c3, *c4;
   origin_circuit_t *c5;
-  const uint8_t tok1[REND_TOKEN_LEN] = "The cat can't tell y";
-  const uint8_t tok2[REND_TOKEN_LEN] = "ou its name, and it ";
-  const uint8_t tok3[REND_TOKEN_LEN] = "doesn't really care.";
+  NONSTRING const uint8_t tok1[REND_TOKEN_LEN] = "The cat can't tell y";
+  NONSTRING const uint8_t tok2[REND_TOKEN_LEN] = "ou its name, and it ";
+  NONSTRING const uint8_t tok3[REND_TOKEN_LEN] = "doesn't really care.";
   /* -- Adapted from a quote by Fredrik Lundh. */
 
   (void)arg;
@@ -420,7 +420,7 @@ test_hs_circuitmap_isolation(void *arg)
   ed25519_public_key_t intro_pk2 = { {2} }; /* Junk, not important. */
 
   {
-    const uint8_t tok1[REND_TOKEN_LEN] = "bet i got some of th";
+    NONSTRING const uint8_t tok1[REND_TOKEN_LEN] = "bet i got some of th";
 
     circ1 = or_circuit_new(0, NULL);
     tt_assert(circ1);
@@ -442,7 +442,7 @@ test_hs_circuitmap_isolation(void *arg)
   }
 
   {
-    const uint8_t tok2[REND_TOKEN_LEN] = "you dont know anythi";
+    NONSTRING const uint8_t tok2[REND_TOKEN_LEN] = "you dont know anythi";
 
     circ2 = origin_circuit_new();
     tt_assert(circ2);

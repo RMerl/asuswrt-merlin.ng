@@ -16,6 +16,7 @@
 #include "lib/log/util_bug.h"
 #include "lib/string/printf.h"
 
+DISABLE_GCC_WARNING("-Wredundant-decls")
 DISABLE_GCC_WARNING("-Wstrict-prototypes")
 #include <nss.h>
 #include <pk11func.h>
@@ -25,6 +26,7 @@ DISABLE_GCC_WARNING("-Wstrict-prototypes")
 #include <prtypes.h>
 #include <prinit.h>
 ENABLE_GCC_WARNING("-Wstrict-prototypes")
+ENABLE_GCC_WARNING("-Wredundant-decls")
 
 const char *
 crypto_nss_get_version_str(void)

@@ -710,7 +710,6 @@ handle_introduce1(or_circuit_t *client_circ, const uint8_t *request,
                                    RELAY_COMMAND_INTRODUCE2,
                                    (char *) request, request_len, NULL)) {
     relay_increment_intro1_action(INTRO1_CIRCUIT_DEAD);
-    log_warn(LD_PROTOCOL, "Unable to send INTRODUCE2 cell to the service.");
     /* Inform the client that we can't relay the cell. Use the unknown ID
      * status code since it means that we do not know the service. */
     status = TRUNNEL_HS_INTRO_ACK_STATUS_UNKNOWN_ID;

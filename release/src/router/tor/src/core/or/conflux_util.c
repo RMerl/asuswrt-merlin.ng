@@ -33,6 +33,13 @@ int
 circuit_get_package_window(circuit_t *circ,
                            const crypt_path_t *cpath)
 {
+  /* We believe it is possible to get a closed circuit related to the
+   * on_circuit pointer of a connection not being nullified before ending up
+   * here. Else, this can lead to loud bug like experienced in #40908. */
+  if (circ->marked_for_close) {
+    return 0;
+  }
+
   if (circ->conflux) {
     if (CIRCUIT_IS_ORIGIN(circ)) {
       tor_assert_nonfatal(circ->purpose ==
@@ -435,3 +442,33 @@ conflux_validate_legs(const conflux_t *cfx)
     conflux_log_set(LOG_PROTOCOL_WARN, cfx, is_client);
   }
 }
+
+/** Return the nonce for a circuit, for use on the control port */
+const uint8_t *
+conflux_get_nonce(const circuit_t *circ)
+{
+  if (circ->conflux_pending_nonce) {
+    return circ->conflux_pending_nonce;
+  } else if (circ->conflux) {
+    return circ->conflux->nonce;
+  } else {
+    return NULL;
+  }
+}
+
+/** Return the conflux RTT for a circuit, for use on the control port */
+uint64_t
+conflux_get_circ_rtt(const circuit_t *circ)
+{
+  if (circ->conflux) {
+    conflux_leg_t *leg = conflux_get_leg(circ->conflux, circ);
+    if (BUG(!leg)) {
+      return 0;
+    } else {
+      return leg->circ_rtts_usec;
+    }
+  } else {
+    return 0;
+  }
+}
+

@@ -34,6 +34,7 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
+#include "test_common.h"
 #include "tls_crypt.c"
 
 /* Define this function here as dummy since including the ssl_*.c files
@@ -111,8 +112,8 @@ bool
 __wrap_buffer_write_file(const char *filename, const struct buffer *buf)
 {
     const char *pem = BSTR(buf);
-    check_expected(filename);
-    check_expected(pem);
+    check_expected_ptr(filename);
+    check_expected_ptr(pem);
 
     return mock_type(bool);
 }
@@ -120,7 +121,7 @@ __wrap_buffer_write_file(const char *filename, const struct buffer *buf)
 struct buffer
 __wrap_buffer_read_from_file(const char *filename, struct gc_arena *gc)
 {
-    check_expected(filename);
+    check_expected_ptr(filename);
 
     const char *pem_str = mock_ptr_type(const char *);
     struct buffer ret = alloc_buf_gc(strlen(pem_str) + 1, gc);
@@ -673,6 +674,7 @@ test_tls_crypt_v2_write_client_key_file_metadata(void **state)
 int
 main(void)
 {
+    openvpn_unit_test_setup();
     const struct CMUnitTest tests[] = {
         cmocka_unit_test_setup_teardown(tls_crypt_loopback,
                                         test_tls_crypt_setup,

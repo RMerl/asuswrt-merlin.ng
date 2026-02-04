@@ -54,11 +54,9 @@ Generate a self\-signed certificate for the server:
 .INDENT 3.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
-openssl req \-x509 \-newkey ec:<(openssl ecparam \-name secp384r1) \-keyout server.key \-out server.crt \-nodes \-sha256 \-days 3650 \-subj \(aq/CN=server\(aq
-.ft P
-.fi
+.EX
+openssl req \-x509 \-newkey ec \-pkeyopt ec_paramgen_curve:secp384r1 \-keyout server.key \-out server.crt \-nodes \-sha256 \-days 3650 \-subj \(aq/CN=server\(aq
+.EE
 .UNINDENT
 .UNINDENT
 .IP 3. 3
@@ -69,23 +67,19 @@ created certificate:
 .INDENT 3.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 openssl x509 \-fingerprint \-sha256 \-in server.crt \-noout
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
-This output something similar to:
+This outputs something similar to:
 .INDENT 3.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 SHA256 Fingerprint=00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff:00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .IP 4. 3
@@ -93,8 +87,7 @@ Write a server configuration (\fIserver.conf\fP):
 .INDENT 3.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 # The server certificate we created in step 1
 cert server.crt
 key server.key
@@ -122,8 +115,13 @@ explicit\-exit\-notify 1
 
 # Ping every 60s, restart if no data received for 5 minutes
 keepalive 60 300
-.ft P
-.fi
+
+# Uncomment the line below if you want to have persistent IP addresses
+# ifconfig\-pool\-persist  /etc/openvpn/server/ipp.txt
+
+# Uncomment the line below to push a DNS server to clients
+# push \(dqdhcp\-option DNS 1.1.1.1\(dq
+.EE
 .UNINDENT
 .UNINDENT
 .IP 5. 3
@@ -139,13 +137,11 @@ On systemd based distributions move \fIserver.crt\fP, \fIserver.key\fP and
 .INDENT 3.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 sudo mv server.conf server.key server.crt /etc/openvpn/server
 
 sudo systemctl start openvpn\-server@server
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -162,11 +158,9 @@ different name for each client.
 .INDENT 3.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
-openssl req \-x509 \-newkey ec:<(openssl ecparam \-name secp384r1) \-nodes \-sha256 \-days 3650 \-subj \(aq/CN=alice\(aq
-.ft P
-.fi
+.EX
+openssl req \-x509 \-newkey ec \-pkeyopt ec_paramgen_curve:secp384r1 \-keyout \- \-nodes \-sha256 \-days 3650 \-subj \(aq/CN=alice\(aq
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -175,8 +169,7 @@ something like this:
 .INDENT 3.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 \-\-\-\-\-BEGIN PRIVATE KEY\-\-\-\-\-
 [base64 content]
 \-\-\-\-\-END PRIVATE KEY\-\-\-\-\-
@@ -184,8 +177,7 @@ something like this:
 \-\-\-\-\-BEGIN CERTIFICATE\-\-\-\-\-
 [base 64 content]
 \-\-\-\-\-END CERTIFICATE\-\-\-\-\-
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .IP 3. 3
@@ -194,8 +186,7 @@ Create a new client configuration file. In this example we will name the file
 .INDENT 3.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 # The name of your server to connect to
 remote yourserver.example.net
 client
@@ -227,8 +218,7 @@ peer\-fingerprint 00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff:00:11:22:33:44
 # The tun\-mtu of the client should match the server MTU
 tun\-mtu 1400
 dev tun
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .IP 4. 3
@@ -238,11 +228,9 @@ ignore anything that is not between the begin and end markers of the certificate
 .INDENT 3.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 openssl x509 \-fingerprint \-sha256 \-noout \-in alice.ovpn
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -250,11 +238,9 @@ This will again output something like
 .INDENT 3.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 SHA256 Fingerprint=ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00:ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .IP 5. 3
@@ -266,14 +252,12 @@ After adding \fItwo\fP clients the part of configuration would look like this:
 .INDENT 3.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 <peer\-fingerprint>
 ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00:ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00
 99:88:77:66:55:44:33:22:11:00:ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00:88:77:66:55:44:33
-</peer\-fingperint>
-.ft P
-.fi
+</peer\-fingerprint>
+.EE
 .UNINDENT
 .UNINDENT
 .IP 6. 3
@@ -289,8 +273,7 @@ server setup. The end of \fIalice.ovpn\fP file should like:
 .INDENT 3.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 [...]  # Beginning of the file skipped
 </cert>
 
@@ -301,8 +284,7 @@ dev tun
 <ca>
 [contents of the server.crt]
 </ca>
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -372,12 +354,10 @@ On bob:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 openvpn \-\-remote alice.example.com \-\-dev tun1 \e
          \-\-ifconfig 10.4.0.1 10.4.0.2 \-\-verb 9
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -385,12 +365,10 @@ On alice:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 openvpn \-\-remote bob.example.com \-\-dev tun1 \e
          \-\-ifconfig 10.4.0.2 10.4.0.1 \-\-verb 9
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -400,11 +378,9 @@ On bob:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 ping 10.4.0.2
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -412,11 +388,9 @@ On alice:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 ping 10.4.0.1
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -429,12 +403,10 @@ First build a self\-signed certificate on bob and display its fingerprint.
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 openssl req \-x509 \-newkey ec:<(openssl ecparam \-name secp384r1) \-keyout bob.pem \-out bob.pem \-nodes \-sha256 \-days 3650 \-subj \(aq/CN=bob\(aq
 openssl x509 \-noout \-sha256 \-fingerprint \-in bob.pem
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -442,12 +414,10 @@ and the same on alice:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 openssl req \-x509 \-newkey ec:<(openssl ecparam \-name secp384r1) \-keyout alice.pem \-out alice.pem \-nodes \-sha256 \-days 3650 \-subj \(aq/CN=alice\(aq
 openssl x509 \-noout \-sha256 \-fingerprint \-in alice.pem
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -460,13 +430,11 @@ On bob:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 openvpn \-\-ifconfig 10.4.0.1 10.4.0.2 \-\-tls\-server \-\-dev tun \-\-dh none \e
         \-\-cert bob.pem \-\-key bob.pem \-\-cipher AES\-256\-GCM \e
         \-\-peer\-fingerprint \(dq$fingerprint_of_alices_cert\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -474,14 +442,12 @@ On alice:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 openvpn \-\-remote bob.example.com \-\-tls\-client \-\-dev tun1   \e
         \-\-ifconfig 10.4.0.2 10.4.0.1 \-\-cipher AES\-256\-GCM  \e
         \-\-cert alice.pem \-\-key alice.pem                   \e
         \-\-peer\-fingerprint \(dq$fingerprint_of_bobs_cert\(dq
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -491,11 +457,9 @@ On bob:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 ping 10.4.0.2
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -503,11 +467,9 @@ On alice:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 ping 10.4.0.1
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -547,15 +509,13 @@ On bob:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 openvpn \-\-remote alice.example.com \-\-dev tun1    \e
         \-\-ifconfig 10.4.0.1 10.4.0.2             \e
         \-\-tls\-client \-\-ca ca.crt                 \e
         \-\-cert client.crt \-\-key client.key       \e
         \-\-reneg\-sec 60 \-\-verb 5
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -563,15 +523,13 @@ On alice:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 openvpn \-\-remote bob.example.com \-\-dev tun1      \e
         \-\-ifconfig 10.4.0.2 10.4.0.1             \e
         \-\-tls\-server \-\-dh dh1024.pem \-\-ca ca.crt \e
         \-\-cert server.crt \-\-key server.key       \e
         \-\-reneg\-sec 60 \-\-verb 5
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -581,11 +539,9 @@ On bob:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 ping 10.4.0.2
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -593,11 +549,9 @@ On alice:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 ping 10.4.0.1
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -623,11 +577,9 @@ enable routing:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 echo 1 > /proc/sys/net/ipv4/ip_forward
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -644,11 +596,9 @@ On bob:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 route add \-net 10.0.1.0 netmask 255.255.255.0 gw 10.4.0.2
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp
@@ -656,11 +606,9 @@ On alice:
 .INDENT 0.0
 .INDENT 3.5
 .sp
-.nf
-.ft C
+.EX
 route add \-net 10.0.0.0 netmask 255.255.255.0 gw 10.4.0.1
-.ft P
-.fi
+.EE
 .UNINDENT
 .UNINDENT
 .sp

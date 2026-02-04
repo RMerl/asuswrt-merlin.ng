@@ -128,6 +128,8 @@ void hs_ident_dir_conn_free_(hs_ident_dir_conn_t *ident);
 void hs_ident_dir_conn_init(const ed25519_public_key_t *identity_pk,
                             const ed25519_public_key_t *blinded_pk,
                             hs_ident_dir_conn_t *ident);
+hs_ident_dir_conn_t *hs_ident_server_dir_conn_new(
+                              const ed25519_public_key_t *blinded_pk);
 
 /* Edge connection identifier API. */
 hs_ident_edge_conn_t *hs_ident_edge_conn_new(

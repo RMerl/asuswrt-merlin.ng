@@ -675,7 +675,7 @@ unlinked_close_or_free(unlinked_circuits_t *unlinked)
 /** Upon an error condition or a close of an in-use circuit, we must close all
  * linked and unlinked circuits associated with a set. When the last leg of
  * each set is closed, the set is removed from the pool. */
-static void
+void
 conflux_mark_all_for_close(const uint8_t *nonce, bool is_client, int reason)
 {
   /* It is possible that for a nonce we have both an unlinked set and a linked
@@ -1162,10 +1162,22 @@ conflux_launch_leg(const uint8_t *nonce)
   origin_circuit_t *circ =
     circuit_establish_circuit_conflux(nonce, CIRCUIT_PURPOSE_CONFLUX_UNLINKED,
                                       exit, flags);
-  if (!circ) {
+
+  /* The above call to establish a circuit can send us back a closed
+   * circuit if the OOM handler closes this very circuit while in that
+   * function. OOM handler runs everytime we queue a cell on a circuit which
+   * the above function does with the CREATE cell.
+   *
+   * The BUG() checks after are in the same spirit which is that there are so
+   * many things that can happen in that establish circuit function that we
+   * ought to make sure we have a valid nonce and a valid conflux object. */
+  if (!circ || TO_CIRCUIT(circ)->marked_for_close) {
     goto err;
   }
-  tor_assert(TO_CIRCUIT(circ)->conflux_pending_nonce);
+  /* We think this won't happen but it might. The maze is powerful. #41155 */
+  if (BUG(!TO_CIRCUIT(circ)->conflux_pending_nonce || !unlinked->cfx)) {
+    goto err;
+  }
 
   /* At this point, the unlinked object has either a new conflux_t or the one
    * used by a linked set so it is fine to use the cfx from the unlinked object
@@ -1477,8 +1489,11 @@ unlinked_circuit_closed(circuit_t *circ)
   /* If no more legs, opportunistically free the unlinked set. */
   if (smartlist_len(unlinked->legs) == 0) {
     unlinked_pool_del_and_free(unlinked, is_client);
-  } else if (!shutting_down) {
-    /* Launch a new leg for this set to recover. */
+  } else if (!shutting_down && !have_been_under_memory_pressure()) {
+    /* Launch a new leg for this set to recover if we are not shutting down or
+     * if we are not under memory pressure. We must not launch legs under
+     * memory pressure else it can just create a feedback loop of being closed
+     * by the OOM handler and relaunching, rinse and repeat. */
     if (CIRCUIT_IS_ORIGIN(circ)) {
       conflux_launch_leg(nonce);
     }
@@ -2098,7 +2113,10 @@ conflux_pool_init(void)
 void
 conflux_log_set(int loglevel, const conflux_t *cfx, bool is_client)
 {
-  tor_assert(cfx);
+  /* This could be called on a closed circuit. */
+  if (cfx == NULL) {
+    return;
+  }
 
   log_fn(loglevel,
           LD_BUG,

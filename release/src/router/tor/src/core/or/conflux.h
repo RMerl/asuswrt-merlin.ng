@@ -60,7 +60,7 @@ bool conflux_should_multiplex(int relay_command);
 bool conflux_process_cell(conflux_t *cfx, circuit_t *in_circ,
                           crypt_path_t *layer_hint,
                           cell_t *cell);
-conflux_cell_t *conflux_dequeue_cell(conflux_t *cfx);
+conflux_cell_t *conflux_dequeue_cell(circuit_t *circ);
 void conflux_note_cell_sent(conflux_t *cfx, circuit_t *circ,
                             uint8_t relay_command);
 

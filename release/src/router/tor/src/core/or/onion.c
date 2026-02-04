@@ -488,6 +488,10 @@ extended_cell_parse(extended_cell_t *cell_out,
     break;
   case RELAY_COMMAND_EXTENDED2:
     {
+      if (payload_len < 2) {
+        // Prevent underflow below.
+        return -1;
+      }
       cell_out->cell_type = RELAY_COMMAND_EXTENDED2;
       cell_out->created_cell.cell_type = CELL_CREATED2;
       cell_out->created_cell.handshake_len = ntohs(get_uint16(payload));

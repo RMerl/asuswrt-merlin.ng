@@ -2140,6 +2140,10 @@ networkstatus_set_current_consensus(const char *consensus,
     }
     current_md_consensus = c;
     free_consensus = 0; /* avoid free */
+  } else {
+    tor_assert_nonfatal_unreached();
+    result = -2;
+    goto done;
   }
 
   waiting = &consensus_waiting_for_certs[flav];

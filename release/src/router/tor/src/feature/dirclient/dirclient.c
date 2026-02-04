@@ -101,7 +101,7 @@ dir_conn_purpose_to_string(int purpose)
     case DIR_PURPOSE_UPLOAD_DIR:
       return "server descriptor upload";
     case DIR_PURPOSE_UPLOAD_VOTE:
-      return "server vote upload";
+      return "consensus vote upload";
     case DIR_PURPOSE_UPLOAD_SIGNATURES:
       return "consensus signature upload";
     case DIR_PURPOSE_FETCH_SERVERDESC:
@@ -763,6 +763,11 @@ connection_dir_client_request_failed(dir_connection_t *conn)
              "directory server at %s; will retry",
              connection_describe_peer(TO_CONN(conn)));
     connection_dir_download_routerdesc_failed(conn);
+  } else if (conn->base_.purpose == DIR_PURPOSE_UPLOAD_VOTE ||
+             conn->base_.purpose == DIR_PURPOSE_UPLOAD_SIGNATURES) {
+    log_warn(LD_DIR, "Failed to post %s to %s.",
+             dir_conn_purpose_to_string(conn->base_.purpose),
+             connection_describe_peer(TO_CONN(conn)));
   }
 }
 

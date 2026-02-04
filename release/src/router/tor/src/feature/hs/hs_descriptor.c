@@ -155,7 +155,7 @@ static token_rule_t hs_desc_encrypted_v3_token_table[] = {
   T01(str_intro_auth_required, R3_INTRO_AUTH_REQUIRED, GE(1), NO_OBJ),
   T01(str_single_onion, R3_SINGLE_ONION_SERVICE, ARGS, NO_OBJ),
   T01(str_flow_control, R3_FLOW_CONTROL, GE(2), NO_OBJ),
-  T01(str_pow_params, R3_POW_PARAMS, GE(4), NO_OBJ),
+  T0N(str_pow_params, R3_POW_PARAMS, GE(1), NO_OBJ),
   END_OF_TABLE
 };
 
@@ -2098,67 +2098,88 @@ desc_sig_is_valid(const char *b64_sig,
   return ret;
 }
 
-/** Given the token tok for PoW params, decode it as hs_pow_desc_params_t.
- * tok->args MUST contain at least 4 elements Return 0 on success else -1 on
- * failure. */
+/** Given a list of tokens for PoW params, decode it as a v1
+ * hs_pow_desc_params_t.
+ *
+ * Each token's args MUST contain at least 1 element.
+ *
+ * On success, return 0, and set <b>pow_params_out</b> to a new set of
+ * parameters (or to NULL if there were no v1 parameters).  Return -1 on
+ * failure.
+ */
 static int
-decode_pow_params(const directory_token_t *tok,
-                  hs_pow_desc_params_t *pow_params)
+decode_pow_params(const smartlist_t *toks,
+                  hs_pow_desc_params_t **pow_params_out)
 {
+  bool found_v1 = false;
   int ret = -1;
+  tor_assert(pow_params_out);
+  *pow_params_out = NULL;
 
-  tor_assert(tok);
-  tor_assert(tok->n_args >= 4);
-  tor_assert(pow_params);
+  if (!toks)
+    return 0;
 
-  /* Find the type of PoW system being used. */
-  int match = 0;
-  for (int idx = 0; pow_types[idx].identifier; idx++) {
-    if (!strncmp(tok->args[0], pow_types[idx].identifier,
-                 strlen(pow_types[idx].identifier))) {
-      pow_params->type = pow_types[idx].type;
-      match = 1;
-      break;
+  SMARTLIST_FOREACH_BEGIN(toks, const directory_token_t *, tok) {
+    tor_assert(tok->n_args >= 1);
+
+    if (strcmp(tok->args[0], "v1")) {
+      // Unrecognized type; skip it.
+      continue;
     }
-  }
-  if (!match) {
-    log_warn(LD_REND, "Unknown PoW type from descriptor.");
-    goto done;
-  }
 
-  if (base64_decode((char *)pow_params->seed, sizeof(pow_params->seed),
-                    tok->args[1], strlen(tok->args[1])) !=
-      sizeof(pow_params->seed)) {
-    log_warn(LD_REND, "Unparseable seed %s in PoW params",
-             escaped(tok->args[1]));
-    goto done;
-  }
+    if (found_v1) {
+      log_warn(LD_REND, "Duplicate v1 PoW entries in descriptor.");
+      goto done;
+    }
+    found_v1 = true;
+    if (tok->n_args < 4) {
+      log_warn(LD_REND, "Insufficient arguments for v1 PoW entry.");
+      goto done;
+    }
 
-  int ok;
-  unsigned long effort =
+    hs_pow_desc_params_t *pow_params = tor_malloc_zero(sizeof(*pow_params));
+    *pow_params_out = pow_params;
+    pow_params->type = HS_POW_DESC_V1;
+
+    if (base64_decode((char *)pow_params->seed, sizeof(pow_params->seed),
+                      tok->args[1], strlen(tok->args[1])) !=
+        sizeof(pow_params->seed)) {
+      log_warn(LD_REND, "Unparseable seed %s in PoW params",
+               escaped(tok->args[1]));
+      goto done;
+    }
+
+    int ok;
+    unsigned long effort =
       tor_parse_ulong(tok->args[2], 10, 0, UINT32_MAX, &ok, NULL);
-  if (!ok) {
-    log_warn(LD_REND, "Unparseable suggested effort %s in PoW params",
-             escaped(tok->args[2]));
-    goto done;
-  }
-  pow_params->suggested_effort = (uint32_t)effort;
+    if (!ok) {
+      log_warn(LD_REND, "Unparseable suggested effort %s in PoW params",
+               escaped(tok->args[2]));
+      goto done;
+    }
+    pow_params->suggested_effort = (uint32_t)effort;
 
-  /* Parse the expiration time of the PoW params. */
-  time_t expiration_time = 0;
-  if (parse_iso_time_nospace(tok->args[3], &expiration_time)) {
-    log_warn(LD_REND, "Unparseable expiration time %s in PoW params",
-             escaped(tok->args[3]));
-    goto done;
-  }
-  /* Validation of this time is done in client_desc_has_arrived() so we can
-   * trigger a fetch if expired. */
-  pow_params->expiration_time = expiration_time;
+    /* Parse the expiration time of the PoW params. */
+    time_t expiration_time = 0;
+    if (parse_iso_time_nospace(tok->args[3], &expiration_time)) {
+      log_warn(LD_REND, "Unparseable expiration time %s in PoW params",
+               escaped(tok->args[3]));
+      goto done;
+    }
+    /* Validation of this time is done in client_desc_has_arrived() so we can
+     * trigger a fetch if expired. */
+    pow_params->expiration_time = expiration_time;
+
+  } SMARTLIST_FOREACH_END(tok);
 
   /* Success. */
   ret = 0;
 
  done:
+  if (ret < 0 && *pow_params_out) {
+    tor_free(*pow_params_out); // sets it to NULL
+  }
+
   return ret;
 }
 
@@ -2474,15 +2495,13 @@ desc_decode_encrypted_v3(const hs_descriptor_t *desc,
   }
 
   /* Get PoW if any. */
-  tok = find_opt_by_keyword(tokens, R3_POW_PARAMS);
-  if (tok) {
-    hs_pow_desc_params_t *pow_params =
-      tor_malloc_zero(sizeof(hs_pow_desc_params_t));
-    if (decode_pow_params(tok, pow_params)) {
-      tor_free(pow_params);
+  {
+    smartlist_t *pow_toks = find_all_by_keyword(tokens, R3_POW_PARAMS);
+    int r = decode_pow_params(pow_toks, &desc_encrypted_out->pow_params);
+    smartlist_free(pow_toks);
+    if (r < 0) {
       goto err;
     }
-    desc_encrypted_out->pow_params = pow_params;
   }
 
   /* Initialize the descriptor's introduction point list before we start

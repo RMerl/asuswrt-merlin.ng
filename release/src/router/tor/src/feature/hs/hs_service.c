@@ -2203,7 +2203,7 @@ pick_intro_point(unsigned int direct_conn, smartlist_t *exclude_nodes)
   const node_t *node;
   hs_service_intro_point_t *ip = NULL;
   /* Normal 3-hop introduction point flags. */
-  router_crn_flags_t flags = CRN_NEED_UPTIME | CRN_NEED_DESC;
+  router_crn_flags_t flags = CRN_NEED_UPTIME | CRN_NEED_DESC | CRN_FOR_HS;
   /* Single onion flags. */
   router_crn_flags_t direct_flags = flags | CRN_PREF_ADDR | CRN_DIRECT_CONN;
 

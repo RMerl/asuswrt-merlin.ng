@@ -71,6 +71,11 @@
 #define CFX_DRAIN_PCT_MAX (255)
 #define CFX_DRAIN_PCT_DFLT 0
 
+/* For "max_ooo_queue_bytes". */
+#define MAX_OOO_QUEUE_BYTES_MIN (0)
+#define MAX_OOO_QUEUE_BYTES_MAX (INT32_MAX)
+#define MAX_OOO_QUEUE_BYTES_DEFAULT MAX_OOO_QUEUE_BYTES_MAX
+
 /*
  * Cached consensus parameters.
  */
@@ -96,6 +101,10 @@ static double low_exit_threshold_ratio =
 
 static uint8_t cfx_drain_pct = CFX_DRAIN_PCT_DFLT;
 static uint8_t cfx_send_pct = CFX_SEND_PCT_DFLT;
+
+/* The maximum number of bytes allowed in a single OOO queue. Above this value,
+ * the conflux set is closed. */
+static uint32_t max_ooo_queue_bytes = MAX_OOO_QUEUE_BYTES_DEFAULT;
 
 /* Ratio of Exit relays in our consensus supporting conflux. This is computed
  * at every consensus and it is between 0 and 1. */
@@ -178,7 +187,7 @@ conflux_is_enabled(const circuit_t *circ)
         log_warn(LD_GENERAL,
                  "This tor is a relay and ConfluxEnabled is set to 0. "
                  "We would ask you to please write to us on "
-                 "tor-relay@lists.torproject.org or file a bug explaining "
+                 "tor-relays@lists.torproject.org or file a bug explaining "
                  "why you have disabled this option. Without news from you, "
                  "we might end up marking your relay as a BadExit.");
         tor_free(msg);
@@ -251,6 +260,13 @@ conflux_params_get_send_pct(void)
   return cfx_send_pct;
 }
 
+/** Return maximum allowed bytes in a single OOO queue. */
+uint32_t
+conflux_params_get_max_oooq(void)
+{
+  return max_ooo_queue_bytes;
+}
+
 /** Update global conflux related consensus parameter values, every consensus
  * update. */
 void
@@ -304,6 +320,11 @@ conflux_params_new_consensus(const networkstatus_t *ns)
       CFX_DRAIN_PCT_DFLT,
       CFX_DRAIN_PCT_MIN,
       CFX_DRAIN_PCT_MAX);
+
+  max_ooo_queue_bytes = networkstatus_get_param(ns, "cfx_max_oooq_bytes",
+      MAX_OOO_QUEUE_BYTES_DEFAULT,
+      MAX_OOO_QUEUE_BYTES_MIN,
+      MAX_OOO_QUEUE_BYTES_MAX);
 
   count_exit_with_conflux_support(ns);
 }

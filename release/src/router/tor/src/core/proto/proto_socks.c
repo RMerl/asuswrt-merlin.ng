@@ -186,18 +186,15 @@ parse_socks4_request(const uint8_t *raw_data, socks_request_t *req,
   }
 
   if (*is_socks4a) {
-    // We cannot rely on trunnel here, as we want to detect if
-    // we have abnormally long hostname field.
-    const char *hostname = (char *)raw_data + SOCKS4_NETWORK_LEN +
-     usernamelen + 1;
-    size_t hostname_len = (char *)raw_data + datalen - hostname;
-
-    if (hostname_len <= sizeof(req->address)) {
-      const char *trunnel_hostname =
+    const char *trunnel_hostname =
       socks4_client_request_get_socks4a_addr_hostname(trunnel_req);
-
-      if (trunnel_hostname)
-        strlcpy(req->address, trunnel_hostname, sizeof(req->address));
+    if (BUG(!trunnel_hostname)) {
+      res = SOCKS_RESULT_INVALID;
+      goto end;
+    }
+    size_t hostname_len = strlen(trunnel_hostname);
+    if (hostname_len < sizeof(req->address)) {
+      strlcpy(req->address, trunnel_hostname, sizeof(req->address));
     } else {
       log_warn(LD_APP, "socks4: Destaddr too long. Rejecting.");
       res = SOCKS_RESULT_INVALID;

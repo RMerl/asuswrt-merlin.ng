@@ -4503,6 +4503,20 @@ accept *:*</code></pre>
 </p>
 </dd>
 <dt class="hdlist1">
+<a id="MaxHSDirCacheBytes"></a> <strong>MaxHSDirCacheBytes</strong> <em>N</em> <strong>bytes</strong>|<strong>KBytes</strong>|<strong>MBytes</strong>|<strong>GBytes</strong>
+</dt>
+<dd>
+<p>
+    This option configures a threshold of Hidden Service Directory memory
+    consumption above which your Tor relay will begin to prune the least-frequently
+    accessed hidden service descriptors from the relay&#8217;s HSDir cache. This pruning used
+    to be done as part of MaxMemInQueues, but it has been decoupled to allow more
+    fine-grained control of descriptor cache size under DDoS conditions. This
+    option defaults to 20% of the MaxMemInQueues size, which itself defaults to
+    an automatically determined value based on system memory. (Default: 20% MaxMemInQueues)
+</p>
+</dd>
+<dt class="hdlist1">
 <a id="MaxMemInQueues"></a> <strong>MaxMemInQueues</strong>  <em>N</em> <strong>bytes</strong>|<strong>KBytes</strong>|<strong>MBytes</strong>|<strong>GBytes</strong>
 </dt>
 <dd>
@@ -5068,7 +5082,7 @@ types of statistics that Tor relays collect and publish:</p></div>
 <div class="ulist"><ul>
 <li>
 <p>
-Onionskins are starting to be dropped.
+A certain ratio of ntor onionskins are dropped.
 </p>
 </li>
 <li>
@@ -5078,23 +5092,17 @@ The OOM was invoked.
 </li>
 <li>
 <p>
-(Exit only) DNS timeout occurs X% of the time over Y seconds (values
-          controlled by consensus parameters, see param-spec.txt).
-    <br />
-    If ExtraInfoStatistics is enabled, it can also put two more specific
-    overload lines in the extra-info document if at least one of these
-    conditions is met:
-</p>
-</li>
-<li>
-<p>
 TCP Port exhaustion.
 </p>
-</li>
-<li>
-<p>
-Connection rate limits have been reached (read and write side).
-</p>
+<div class="literalblock">
+<div class="content">
+<pre><code> +
+If ExtraInfoStatistics is enabled, it can also put two more specific
+overload lines in the extra-info document if at least one of these
+conditions is met:
+    - Connection rate limits have been reached (read and write side).
+    - File descriptors are exhausted.</code></pre>
+</div></div>
 </li>
 </ul></div>
 </dd>

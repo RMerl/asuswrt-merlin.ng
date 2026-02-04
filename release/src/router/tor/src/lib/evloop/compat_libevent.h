@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2021, The Tor Project, Inc. */
+/* Copyright (c) 2009-2024, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -19,6 +19,7 @@ void configure_libevent_logging(void);
 void suppress_libevent_log_msg(const char *msg);
 
 #define tor_event_new     event_new
+#define tor_event_del     event_del
 #define tor_evtimer_new   evtimer_new
 #define tor_evsignal_new  evsignal_new
 #define tor_evdns_add_server_port(sock, tcp, cb, data) \

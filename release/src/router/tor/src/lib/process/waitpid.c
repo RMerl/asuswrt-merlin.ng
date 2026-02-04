@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2021, The Tor Project, Inc. */
+ * Copyright (c) 2007-2025, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -146,6 +146,7 @@ notify_pending_waitpid_callbacks(void)
   int status = 0;
 
   while ((child = waitpid(-1, &status, WNOHANG)) > 0) {
+    status = WIFEXITED(status) ? WEXITSTATUS(status) : -1;
     notify_waitpid_callback_by_pid(child, status);
     status = 0; /* should be needless */
   }

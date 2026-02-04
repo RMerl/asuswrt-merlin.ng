@@ -74,6 +74,9 @@ struct node_t {
   unsigned int is_middle_only:1;
   unsigned int is_hs_dir:1; /**< True iff this router is a hidden service
                              * directory according to the authorities. */
+  unsigned int strip_guard:1; /**< True iff we should strip the Guard flag. */
+  unsigned int strip_hsdir:1; /**< True iff we should strip the HSDir flag. */
+  unsigned int strip_v2dir:1; /**< True iff we should strip the V2Dir flag. */
 
   /* Local info: warning state. */
 

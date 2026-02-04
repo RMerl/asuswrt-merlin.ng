@@ -521,8 +521,8 @@ protover_get_supported_protocols(void)
 const char *
 protover_get_recommended_client_protocols(void)
 {
-  return "Cons=2 Desc=2 DirCache=2 HSDir=2 HSIntro=4 HSRend=2 "
-         "Link=4-5 Microdesc=2 Relay=2";
+  return "Cons=2 Desc=2 DirCache=2 FlowCtrl=1-2 HSDir=2 HSIntro=4 HSRend=2 "
+         "Link=4-5 Microdesc=2 Relay=2-4";
 }
 
 /** Return the recommended relay protocols list that directory authorities
@@ -530,8 +530,8 @@ protover_get_recommended_client_protocols(void)
 const char *
 protover_get_recommended_relay_protocols(void)
 {
-  return "Cons=2 Desc=2 DirCache=2 HSDir=2 HSIntro=4 HSRend=2 "
-         "Link=4-5 LinkAuth=3 Microdesc=2 Relay=2";
+  return "Cons=2 Desc=2 DirCache=2 FlowCtrl=1-2 HSDir=2 HSIntro=4-5 HSRend=2 "
+         "Link=4-5 LinkAuth=3 Microdesc=2 Relay=2-4";
 }
 
 /** Return the required client protocols list that directory authorities
@@ -539,7 +539,7 @@ protover_get_recommended_relay_protocols(void)
 const char *
 protover_get_required_client_protocols(void)
 {
-  return "Cons=2 Desc=2 Link=4 Microdesc=2 Relay=2";
+  return "Cons=2 Desc=2 FlowCtrl=1 Link=4 Microdesc=2 Relay=2";
 }
 
 /** Return the required relay protocols list that directory authorities
@@ -547,8 +547,8 @@ protover_get_required_client_protocols(void)
 const char *
 protover_get_required_relay_protocols(void)
 {
-  return "Cons=2 Desc=2 DirCache=2 HSDir=2 HSIntro=4 HSRend=2 "
-         "Link=4-5 LinkAuth=3 Microdesc=2 Relay=2";
+  return "Cons=2 Desc=2 DirCache=2 FlowCtrl=1-2 HSDir=2 HSIntro=4-5 HSRend=2 "
+         "Link=4-5 LinkAuth=3 Microdesc=2 Relay=2-4";
 }
 
 /*

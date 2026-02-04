@@ -1078,7 +1078,9 @@ static mainloop_event_t *attach_pending_entry_connections_ev = NULL;
 static void
 connection_edge_about_to_close(edge_connection_t *edge_conn)
 {
-  if (!edge_conn->edge_has_sent_end) {
+  /* Under memory pressure, the OOM handler can close connections without
+   * sending END cell. If we are NOT in that scenario, log loudly. */
+  if (!edge_conn->edge_has_sent_end && !have_been_under_memory_pressure()) {
     connection_t *conn = TO_CONN(edge_conn);
     log_warn(LD_BUG, "(Harmless.) Edge connection (marked at %s:%d) "
              "hasn't sent end yet?",

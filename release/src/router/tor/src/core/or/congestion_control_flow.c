@@ -49,6 +49,33 @@ double cc_stats_flow_xon_outbuf_ma = 0;
  * and strange logic in connection_bucket_get_share(). */
 #define MAX_EXPECTED_CELL_BURST 32
 
+/* This is the grace period that we use to give the edge connection a chance to
+ * reduce its outbuf before we send an XOFF.
+ *
+ * The congestion control spec says:
+ * > If the length of an edge outbuf queue exceeds the size provided in the
+ * > appropriate client or exit XOFF consensus parameter, a
+ * > RELAY_COMMAND_STREAM_XOFF will be sent
+ *
+ * This doesn't directly adapt well to tor, where we process many incoming
+ * messages at once. We may buffer a lot of stream data before giving the
+ * mainloop a chance to flush the the edge connection's outbuf, even if the
+ * edge connection's socket is able to accept more bytes.
+ *
+ * Instead if we detect that we should send an XOFF (as described in the cc
+ * spec), we delay sending an XOFF for `XOFF_GRACE_PERIOD_USEC` microseconds.
+ * This gives the mainloop a chance to flush the buffer to the edge
+ * connection's socket. If this flush causes the outbuf queue to shrink under
+ * our XOFF limit, then we no longer need to send an XOFF. If after
+ * `XOFF_GRACE_PERIOD_USEC` we receive another message and the outbuf queue
+ * still exceeds the XOFF limit, we send an XOFF.
+ *
+ * The value of 5 milliseconds was chosen arbitrarily. In practice it should be
+ * enough time for the edge connection to get a chance to flush, but not too
+ * long to cause excessive buffering.
+ */
+#define XOFF_GRACE_PERIOD_USEC (5000)
+
 /* The following three are for dropmark rate limiting. They define when we
  * scale down our XON, XOFF, and xmit byte counts. Early scaling is beneficial
  * because it limits the ability of spurious XON/XOFF to be sent after large
@@ -459,20 +486,47 @@ flow_control_decide_xoff(edge_connection_t *stream)
 
   if (total_buffered > buffer_limit_xoff) {
     if (!stream->xoff_sent) {
-      log_info(LD_EDGE, "Sending XOFF: %"TOR_PRIuSZ" %d",
-                 total_buffered, buffer_limit_xoff);
-      tor_trace(TR_SUBSYS(cc), TR_EV(flow_decide_xoff_sending), stream);
+      uint64_t now = monotime_absolute_usec();
 
-      cc_stats_flow_xoff_outbuf_ma =
-        stats_update_running_avg(cc_stats_flow_xoff_outbuf_ma,
-                                 total_buffered);
+      if (stream->xoff_grace_period_start_usec == 0) {
+        /* If unset, we haven't begun the XOFF grace period. We need to start.
+         */
+        log_debug(LD_EDGE,
+                  "Exceeded XOFF limit; Beginning grace period: "
+                  "total-buffered=%" TOR_PRIuSZ " xoff-limit=%d",
+                  total_buffered, buffer_limit_xoff);
 
-      circuit_send_stream_xoff(stream);
+        stream->xoff_grace_period_start_usec = now;
+      } else if (now > stream->xoff_grace_period_start_usec +
+                           XOFF_GRACE_PERIOD_USEC) {
+        /* If we've exceeded our XOFF grace period, we need to send an XOFF. */
+        log_info(LD_EDGE,
+                 "Sending XOFF: total-buffered=%" TOR_PRIuSZ
+                 " xoff-limit=%d grace-period-dur=%" PRIu64 "usec",
+                 total_buffered, buffer_limit_xoff,
+                 now - stream->xoff_grace_period_start_usec);
+        tor_trace(TR_SUBSYS(cc), TR_EV(flow_decide_xoff_sending), stream);
 
-      /* Clear the drain rate. It is considered wrong if we
-       * got all the way to XOFF */
-      stream->ewma_drain_rate = 0;
+        cc_stats_flow_xoff_outbuf_ma =
+          stats_update_running_avg(cc_stats_flow_xoff_outbuf_ma,
+                                   total_buffered);
+
+        circuit_send_stream_xoff(stream);
+
+        /* Clear the drain rate. It is considered wrong if we
+         * got all the way to XOFF */
+        stream->ewma_drain_rate = 0;
+
+        /* Unset our grace period. */
+        stream->xoff_grace_period_start_usec = 0;
+      } else {
+        /* Else we're in the XOFF grace period, so don't do anything. */
+      }
     }
+  } else {
+    /* The outbuf length is less than the XOFF limit, so unset our grace
+     * period. */
+    stream->xoff_grace_period_start_usec = 0;
   }
 
   /* If the outbuf has accumulated more than the expected burst limit of

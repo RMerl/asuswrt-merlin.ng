@@ -175,9 +175,8 @@ tor_tls_err_to_string(int err)
  * If <b>server_identity</b> is NULL, this will not generate a server
  * TLS context. If TOR_TLS_CTX_IS_PUBLIC_SERVER is set in <b>flags</b>, use
  * the same TLS context for incoming and outgoing connections, and
- * ignore <b>client_identity</b>. If one of TOR_TLS_CTX_USE_ECDHE_P{224,256}
- * is set in <b>flags</b>, use that ECDHE group if possible; otherwise use
- * the default ECDHE group. */
+ * ignore <b>client_identity</b>.
+ */
 int
 tor_tls_context_init(unsigned flags,
                      crypto_pk_t *client_identity,

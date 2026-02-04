@@ -926,6 +926,11 @@ sandbox_init_filter(void)
     OPEN_DATADIR("approved-routers");
     OPEN_DATADIR_SUFFIX("my-consensus-microdesc", ".tmp");
     OPEN_DATADIR_SUFFIX("my-consensus-ns", ".tmp");
+    if (options->V3BandwidthsFile) {
+      log_notice(LD_GENERAL, "Adding V3BandwidthsFile %s to sandboxing set.",
+                 options->V3BandwidthsFile);
+      OPEN(options->V3BandwidthsFile);
+    }
   }
 
   if (options->ServerDNSResolvConfFile)
@@ -1239,7 +1244,8 @@ run_tor_main_loop(void)
 
   /* launch cpuworkers. Need to do this *after* we've read the onion key. */
   /* launch them always for all tors, now that clients can solve onion PoWs. */
-  cpuworker_init();
+  if (cpuworker_init() == -1)
+    return -1;
 
   consdiffmgr_enable_background_compression();
 

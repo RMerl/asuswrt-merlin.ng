@@ -44,7 +44,9 @@ struct dir_connection_t {
 
   /* Hidden service connection identifier for dir connections: Used by HS
      client-side code to fetch HS descriptors, and by the service-side code to
-     upload descriptors. */
+     upload descriptors. Also used by the HSDir, setting only the blinded key,
+     in order to locate back the descriptor in the cache once the dir stream is
+     closed. */
   struct hs_ident_dir_conn_t *hs_ident;
 
   /** If this is a one-hop connection, tracks the state of the directory guard
@@ -58,6 +60,10 @@ struct dir_connection_t {
    * that's going away and being used on channels instead.  The dirserver still
    * needs this for the incoming side, so it's moved here. */
   uint64_t dirreq_id;
+
+  /** 0 normally, 1 if we're serving a consensus and we're delaying counting
+   * geoip until we've served the final bytes. */
+  bool should_count_geoip_when_finished;
 
 #ifdef MEASUREMENTS_21206
   /** Number of RELAY_DATA cells received. */

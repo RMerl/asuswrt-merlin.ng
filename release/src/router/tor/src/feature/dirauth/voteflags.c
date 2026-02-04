@@ -625,6 +625,17 @@ dirauth_set_routerstatus_from_routerinfo(routerstatus_t *rs,
     rs->is_exit = rs->is_possible_guard = rs->is_hs_dir = rs->is_v2_dir = 0;
   }
 
+  /* Strip rs flags based on node flags. */
+  if (node->strip_guard) {
+    rs->is_possible_guard = 0;
+  }
+  if (node->strip_hsdir) {
+    rs->is_hs_dir = 0;
+  }
+  if (node->strip_v2dir) {
+    rs->is_v2_dir = 0;
+  }
+
   /* Set rs->is_staledesc. */
   rs->is_staledesc =
     (ri->cache_info.published_on + DESC_IS_STALE_INTERVAL) < now;

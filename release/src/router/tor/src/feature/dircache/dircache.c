@@ -26,6 +26,7 @@
 #include "feature/dircommon/directory.h"
 #include "feature/dircommon/fp_pair.h"
 #include "feature/hs/hs_cache.h"
+#include "feature/hs/hs_ident.h"
 #include "feature/nodelist/authcert.h"
 #include "feature/nodelist/networkstatus.h"
 #include "feature/nodelist/routerlist.h"
@@ -34,6 +35,7 @@
 #include "feature/stats/geoip_stats.h"
 #include "feature/stats/rephist.h"
 #include "lib/compress/compress.h"
+#include "lib/crypt_ops/crypto_format.h"
 
 #include "feature/dircache/cached_dir_st.h"
 #include "feature/dircommon/dir_connection_st.h"
@@ -966,12 +968,12 @@ handle_get_current_consensus(dir_connection_t *conn,
     goto done;
   }
 
+  /* Success: we are going to try serving it. */
+  geoip_note_ns_response(GEOIP_SERVED);
+  conn->should_count_geoip_when_finished = 1;
+
   tor_addr_t addr;
   if (tor_addr_parse(&addr, (TO_CONN(conn))->address) >= 0) {
-    geoip_note_client_seen(GEOIP_CLIENT_NETWORKSTATUS,
-                           &addr, NULL,
-                           time(NULL));
-    geoip_note_ns_response(GEOIP_SUCCESS);
     /* Note that a request for a network status has started, so that we
      * can measure the download time later on. */
     if (conn->dirreq_id)
@@ -1380,6 +1382,17 @@ handle_get_hs_descriptor_v3(dir_connection_t *conn,
   /* Found requested descriptor! Pass it to this nice client. */
   write_http_response_header(conn, strlen(desc_str), NO_METHOD, 0);
   connection_buf_add(desc_str, strlen(desc_str), TO_CONN(conn));
+
+  /* We have successfully written the descriptor on the connection outbuf so
+   * save this query identifier into the dir_connection_t in order
+   * to associate it to the descriptor when closing. */
+  {
+    /* Decode blinded key. This is certain to work else
+     * hs_cache_lookup_as_dir() would have failed. */
+    ed25519_public_key_t blinded_key;
+    ed25519_public_from_base64(&blinded_key, pubkey_str);
+    conn->hs_ident = hs_ident_server_dir_conn_new(&blinded_key);
+  }
 
  done:
   return 0;

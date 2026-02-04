@@ -85,7 +85,8 @@ tor_open_cloexec(const char *path, int flags, unsigned mode)
 FILE *
 tor_fopen_cloexec(const char *path, const char *mode)
 {
-  FILE *result = fopen(path, mode);
+  const char *p = sandbox_intern_string(path);
+  FILE *result = fopen(p, mode);
 #ifdef FD_CLOEXEC
   if (result != NULL) {
     if (fcntl(fileno(result), F_SETFD, FD_CLOEXEC) == -1) {

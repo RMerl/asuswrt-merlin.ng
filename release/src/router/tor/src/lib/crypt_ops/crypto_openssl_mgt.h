@@ -49,11 +49,6 @@
 #define OPENSSL_V_SERIES(a,b,c) \
   OPENSSL_VER((a),(b),(c),0,0)
 
-#ifdef OPENSSL_NO_ENGINE
-/* Android's OpenSSL seems to have removed all of its Engine support. */
-#define DISABLE_ENGINES
-#endif
-
 #if OPENSSL_VERSION_NUMBER >= OPENSSL_VER(1,1,0,0,5)
 /* OpenSSL as of 1.1.0pre4 has an "new" thread API, which doesn't require
  * setting up various callbacks.

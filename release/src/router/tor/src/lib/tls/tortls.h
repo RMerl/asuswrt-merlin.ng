@@ -75,8 +75,6 @@ void tor_tls_get_state_description(tor_tls_t *tls, char *buf, size_t sz);
 void tor_tls_free_all(void);
 
 #define TOR_TLS_CTX_IS_PUBLIC_SERVER (1u<<0)
-#define TOR_TLS_CTX_USE_ECDHE_P256   (1u<<1)
-#define TOR_TLS_CTX_USE_ECDHE_P224   (1u<<2)
 
 void tor_tls_init(void);
 void tls_log_errors(tor_tls_t *tls, int severity, int domain,

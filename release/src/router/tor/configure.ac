@@ -4,7 +4,7 @@ dnl Copyright (c) 2007-2019, The Tor Project, Inc.
 dnl See LICENSE for licensing information
 
 AC_PREREQ([2.63])
-AC_INIT([tor],[0.4.8.10])
+AC_INIT([tor],[0.4.8.22])
 AC_CONFIG_SRCDIR([src/app/main/tor_main.c])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -18,7 +18,7 @@ AC_DEFINE_UNQUOTED([CONFIG_FLAGS], ["$configure_flags"], [Flags passed to config
 # version number changes.  Tor uses it to make sure that it
 # only shuts down for missing "required protocols" when those protocols
 # are listed as required by a consensus after this date.
-AC_DEFINE(APPROX_RELEASE_DATE, ["2023-12-08"], # for 0.4.8.10
+AC_DEFINE(APPROX_RELEASE_DATE, ["2026-01-28"], # for 0.4.8.22
           [Approximate date when this software was released. (Updated when the version changes.)])
 
 # "foreign" means we don't follow GNU package layout standards
@@ -568,6 +568,21 @@ CFLAGS="$saved_CFLAGS"
 
 if test "$tor_cv_c_attr_fallthrough" = "yes"; then
   AC_DEFINE(HAVE_ATTR_FALLTHROUGH, [1], [defined if we have the fallthrough attribute.])
+fi
+
+saved_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -Werror"
+AC_CACHE_CHECK([for __attribute__((nonstring))],
+      tor_cv_c_attr_nonstring,
+      [AC_COMPILE_IFELSE(
+         [AC_LANG_PROGRAM([],
+	       [[ __attribute__((nonstring)) const char foo[5] = "abcde"; ]])],
+	 [tor_cv_c_attr_nonstring=yes],
+	 [tor_cv_c_attr_nonstring=no] )])
+CFLAGS="$saved_CFLAGS"
+
+if test "$tor_cv_c_attr_nonstring" = "yes"; then
+  AC_DEFINE(HAVE_ATTR_NONSTRING, [1], [defined if we have the nonstring attribute.])
 fi
 
 TORUSER=_tor
@@ -1126,7 +1141,8 @@ AC_CHECK_FUNCS([ \
 		SSL_get_client_ciphers \
 		SSL_get_client_random \
 		SSL_get_server_random \
-		TLS_method \
+                SSL_set_ciphersuites \
+		TLS_method
 	       ])
 
 dnl Check if OpenSSL structures are opaque
@@ -1473,6 +1489,17 @@ dnl for us, as GCC 4.6 and later do at many optimization levels), then
 dnl we should try to add -fasynchronous-unwind-tables so that our backtrace
 dnl code will work.
 TOR_CHECK_CFLAGS(-fasynchronous-unwind-tables)
+
+# From https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html:
+#
+# Enable code instrumentation to increase program security by checking that
+# target addresses of control-flow transfer instructions are valid. This
+# prevents diverting the flow of control to an unexpected target. This is
+# intended to protect against such threats as Return-oriented Programming
+# (ROP), and similarly call/jmp-oriented programming (COP/JOP).
+TOR_CHECK_CFLAGS(-fcf-protection=full)
+# The equivalent for arm64 (#41139)
+TOR_CHECK_CFLAGS(-mbranch-protection=standard)
 
 dnl ============================================================
 dnl Check for libseccomp

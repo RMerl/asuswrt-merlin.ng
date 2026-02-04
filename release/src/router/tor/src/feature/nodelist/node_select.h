@@ -29,9 +29,9 @@ typedef enum router_crn_flags_t {
   /* On clients, if choosing a node for a direct connection, only provide
    * nodes that satisfy ClientPreferIPv6OR. */
   CRN_PREF_ADDR = 1<<5,
-  /* On clients, only provide nodes with HSRend=2 protocol version which
-   * is required for hidden service version 3. */
-  CRN_RENDEZVOUS_V3 = 1<<6,
+  /* On clients, indicate that we need a HS related circuit (IP, HSDir, or RP).
+   * This is used in order to avoid certain nodes for these purposes. */
+  CRN_FOR_HS = 1<<6,
   /* On clients, only provide nodes that can initiate IPv6 extends. */
   CRN_INITIATE_IPV6_EXTEND = 1<<7,
   /* On clients, only provide nodes that support Conflux (Relay=5). */

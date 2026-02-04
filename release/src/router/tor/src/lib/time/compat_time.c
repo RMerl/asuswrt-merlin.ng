@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2021, The Tor Project, Inc. */
+ * Copyright (c) 2007-2025, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -53,13 +53,15 @@
 #undef HAVE_CLOCK_GETTIME
 #endif
 
-#ifdef TOR_UNIT_TESTS
-/** Delay for <b>msec</b> milliseconds.  Only used in tests. */
+/** Delay for <b>msec</b> milliseconds. */
 void
 tor_sleep_msec(int msec)
 {
 #ifdef _WIN32
   Sleep(msec);
+#elif defined(HAVE_TIME_H)
+  struct timespec ts = {msec / 1000, (msec % 1000) * 1000 * 1000};
+  while (nanosleep(&ts, &ts) == -1 && errno == EINTR);
 #elif defined(HAVE_USLEEP)
   sleep(msec / 1000);
   /* Some usleep()s hate sleeping more than 1 sec */
@@ -71,7 +73,6 @@ tor_sleep_msec(int msec)
   sleep(CEIL_DIV(msec, 1000));
 #endif /* defined(_WIN32) || ... */
 }
-#endif /* defined(TOR_UNIT_TESTS) */
 
 #define ONE_MILLION ((int64_t) (1000 * 1000))
 #define ONE_BILLION ((int64_t) (1000 * 1000 * 1000))

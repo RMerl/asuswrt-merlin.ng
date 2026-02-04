@@ -22,5 +22,6 @@ int tor_fd_setpos(int fd, off_t pos);
 int tor_fd_seekend(int fd);
 int tor_ftruncate(int fd);
 int write_all_to_fd_minimal(int fd, const char *buf, size_t count);
+int tor_pipe_cloexec(int pipefd[2]);
 
 #endif /* !defined(TOR_FDIO_H) */

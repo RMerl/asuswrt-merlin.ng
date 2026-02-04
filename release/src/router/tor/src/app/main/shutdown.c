@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2021, The Tor Project, Inc. */
+ * Copyright (c) 2007-2024, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -19,6 +19,7 @@
 #include "app/main/subsysmgr.h"
 #include "core/mainloop/connection.h"
 #include "core/mainloop/mainloop_pubsub.h"
+#include "core/mainloop/cpuworker.h"
 #include "core/or/channeltls.h"
 #include "core/or/circuitlist.h"
 #include "core/or/circuitmux_ewma.h"
@@ -112,6 +113,7 @@ tor_free_all(int postfork)
   if (!postfork) {
     evdns_shutdown(1);
   }
+  cpuworker_free_all();
   geoip_free_all();
   geoip_stats_free_all();
   routerlist_free_all();

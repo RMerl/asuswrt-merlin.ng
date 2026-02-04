@@ -1822,30 +1822,6 @@ circuit_get_next_by_purpose(origin_circuit_t *start, uint8_t purpose)
   return NULL;
 }
 
-/** We might cannibalize this circuit: Return true if its last hop can be used
- *  as a v3 rendezvous point. */
-static int
-circuit_can_be_cannibalized_for_v3_rp(const origin_circuit_t *circ)
-{
-  if (!circ->build_state) {
-    return 0;
-  }
-
-  extend_info_t *chosen_exit = circ->build_state->chosen_exit;
-  if (BUG(!chosen_exit)) {
-    return 0;
-  }
-
-  const node_t *rp_node = node_get_by_id(chosen_exit->identity_digest);
-  if (rp_node) {
-    if (node_supports_v3_rendezvous_point(rp_node)) {
-      return 1;
-    }
-  }
-
-  return 0;
-}
-
 /** We are trying to create a circuit of purpose <b>purpose</b> and we are
  *  looking for cannibalizable circuits. Return the circuit purpose we would be
  *  willing to cannibalize. */
@@ -1973,13 +1949,6 @@ circuit_find_to_cannibalize(uint8_t purpose_to_produce, extend_info_t *info,
               goto next;
             hop = hop->next;
           } while (hop != circ->cpath);
-        }
-
-        if ((flags & CIRCLAUNCH_IS_V3_RP) &&
-            !circuit_can_be_cannibalized_for_v3_rp(circ)) {
-          log_debug(LD_GENERAL, "Skipping uncannibalizable circuit for v3 "
-                    "rendezvous point.");
-          goto next;
         }
 
         if (!best || (best->build_state->need_uptime && !need_uptime))
@@ -2743,8 +2712,12 @@ circuits_handle_oom(size_t current_allocation)
        * outbuf due to a malicious destination holding off the read on us. */
       if ((conn->type == CONN_TYPE_DIR && conn->linked_conn == NULL) ||
           CONN_IS_EDGE(conn)) {
-        if (!conn->marked_for_close)
+        if (!conn->marked_for_close) {
+          if (CONN_IS_EDGE(conn)) {
+            TO_EDGE_CONN(conn)->end_reason = END_STREAM_REASON_RESOURCELIMIT;
+          }
           connection_mark_for_close(conn);
+        }
         mem_recovered += single_conn_free_bytes(conn);
 
         if (conn->type == CONN_TYPE_DIR) {

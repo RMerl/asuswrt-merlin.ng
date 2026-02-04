@@ -34,6 +34,9 @@ CIRCUIT_IS_CONFLUX(const circuit_t *circ)
   }
 }
 
+const uint8_t *conflux_get_nonce(const circuit_t *circ);
+uint64_t conflux_get_circ_rtt(const circuit_t *circ);
+
 int circuit_get_package_window(circuit_t *circ,
                                const crypt_path_t *cpath);
 bool conflux_can_send(conflux_t *cfx);

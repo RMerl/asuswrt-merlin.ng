@@ -44,9 +44,6 @@ void circuit_build_failed(origin_circuit_t *circ);
 /** Flag to set when the last hop of a circuit doesn't need to be an
  * exit node. */
 #define CIRCLAUNCH_IS_INTERNAL      (1<<3)
-/** Flag to set when we are trying to launch a v3 rendezvous circuit. We need
- *  to apply some additional filters on the node picked. */
-#define CIRCLAUNCH_IS_V3_RP         (1<<4)
 /** Flag to set when we are trying to launch a self-testing circuit to our
  *  IPv6 ORPort. We need to apply some additional filters on the second-last
  *  node in the circuit. (We are both the client and the last node in the

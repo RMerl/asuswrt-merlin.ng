@@ -476,7 +476,7 @@ command_process_relay_cell(cell_t *cell, channel_t *chan)
 {
   const or_options_t *options = get_options();
   circuit_t *circ;
-  int reason, direction;
+  int direction, reason;
   uint32_t orig_delivered_bw = 0;
   uint32_t orig_overhead_bw = 0;
 

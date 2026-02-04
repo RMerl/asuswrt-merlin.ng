@@ -44,6 +44,7 @@
 #include "core/or/congestion_control_st.h"
 #include "core/or/cpath_build_state_st.h"
 #include "core/or/crypt_path_st.h"
+#include "core/or/extend_info_st.h"
 #include "feature/nodelist/node_st.h"
 #include "core/or/origin_circuit_st.h"
 

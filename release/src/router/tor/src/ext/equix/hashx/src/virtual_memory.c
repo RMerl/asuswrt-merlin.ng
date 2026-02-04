@@ -25,38 +25,6 @@
 #endif
 #endif
 
-#ifdef HASHX_WIN
-
-static bool set_privilege(const char* pszPrivilege, BOOL bEnable) {
-	HANDLE           hToken;
-	TOKEN_PRIVILEGES tp;
-	BOOL             status;
-	DWORD            error;
-
-	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES
-		| TOKEN_QUERY, &hToken))
-		return false;
-
-	if (!LookupPrivilegeValue(NULL, pszPrivilege, &tp.Privileges[0].Luid))
-		return false;
-
-	tp.PrivilegeCount = 1;
-
-	if (bEnable)
-		tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-	else
-		tp.Privileges[0].Attributes = 0;
-
-	status = AdjustTokenPrivileges(hToken, FALSE, &tp, 0,
-		(PTOKEN_PRIVILEGES)NULL, 0);
-	error = GetLastError();
-
-	CloseHandle(hToken);
-
-	return status && (error == ERROR_SUCCESS);
-}
-#endif
-
 void* hashx_vm_alloc(size_t bytes) {
 	void* mem;
 #ifdef HASHX_WIN
@@ -91,6 +59,39 @@ bool hashx_vm_rx(void* ptr, size_t bytes) {
 }
 
 #ifdef EQUIX_SUPPORT_HUGEPAGES
+
+#ifdef HASHX_WIN
+
+static bool set_privilege(const char* pszPrivilege, BOOL bEnable) {
+	HANDLE           hToken;
+	TOKEN_PRIVILEGES tp;
+	BOOL             status;
+	DWORD            error;
+
+	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES
+		| TOKEN_QUERY, &hToken))
+		return false;
+
+	if (!LookupPrivilegeValue(NULL, pszPrivilege, &tp.Privileges[0].Luid))
+		return false;
+
+	tp.PrivilegeCount = 1;
+
+	if (bEnable)
+		tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+	else
+		tp.Privileges[0].Attributes = 0;
+
+	status = AdjustTokenPrivileges(hToken, FALSE, &tp, 0,
+		(PTOKEN_PRIVILEGES)NULL, 0);
+	error = GetLastError();
+
+	CloseHandle(hToken);
+
+	return status && (error == ERROR_SUCCESS);
+}
+#endif /* HASHX_WIN */
+
 void* hashx_vm_alloc_huge(size_t bytes) {
 	void* mem;
 #ifdef HASHX_WIN

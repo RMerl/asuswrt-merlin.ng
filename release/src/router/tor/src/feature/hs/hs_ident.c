@@ -62,6 +62,16 @@ hs_ident_dir_conn_free_(hs_ident_dir_conn_t *ident)
   tor_free(ident);
 }
 
+/** Return a newly allocated HS directory connection identifier that is meant
+ * for the server side (HSDir). Only the blinded key is known by the HSDir. */
+hs_ident_dir_conn_t *
+hs_ident_server_dir_conn_new(const ed25519_public_key_t *blinded_pk)
+{
+  hs_ident_dir_conn_t *ident = tor_malloc_zero(sizeof(*ident));
+  ed25519_pubkey_copy(&ident->blinded_pk, blinded_pk);
+  return ident;
+}
+
 /** Initialized the allocated ident object with identity_pk and blinded_pk.
  * None of them can be NULL since a valid directory connection identifier must
  * have all fields set. */

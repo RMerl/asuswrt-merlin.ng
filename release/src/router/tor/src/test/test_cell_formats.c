@@ -32,7 +32,7 @@ static void
 test_cfmt_relay_header(void *arg)
 {
   relay_header_t rh;
-  const uint8_t hdr_1[RELAY_HEADER_SIZE] =
+  NONSTRING const uint8_t hdr_1[RELAY_HEADER_SIZE] =
     "\x03" "\x00\x00" "\x21\x22" "ABCD" "\x01\x03";
   uint8_t hdr_out[RELAY_HEADER_SIZE];
   (void)arg;

@@ -85,8 +85,7 @@ MOCK_DECL(STATIC int, count_acceptable_nodes, (const smartlist_t *nodes,
 STATIC int onion_extend_cpath(origin_circuit_t *circ);
 
 STATIC int
-onion_pick_cpath_exit(origin_circuit_t *circ, extend_info_t *exit_ei,
-                      int is_hs_v3_rp_circuit);
+onion_pick_cpath_exit(origin_circuit_t *circ, extend_info_t *exit_ei);
 STATIC int cpath_build_state_to_crn_flags(const cpath_build_state_t *state);
 STATIC int cpath_build_state_to_crn_ipv6_extend_flag(
                                              const cpath_build_state_t *state,

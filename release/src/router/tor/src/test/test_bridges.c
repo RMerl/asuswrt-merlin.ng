@@ -253,7 +253,7 @@ test_bridges_get_configured_bridge_by_addr_port_digest_digest_only(void *arg)
 {
   char digest[DIGEST_LEN];
   bridge_info_t *bridge;
-  const char fingerprint[HEX_DIGEST_LEN] =
+  NONSTRING const char fingerprint[HEX_DIGEST_LEN] =
     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
   tor_addr_t *addr = tor_malloc(sizeof(tor_addr_t));
   char ret_addr[16];
@@ -321,7 +321,7 @@ test_bridges_get_configured_bridge_by_exact_addr_port_digest_donly(void *arg)
 {
   char digest[DIGEST_LEN];
   bridge_info_t *bridge;
-  const char fingerprint[HEX_DIGEST_LEN] =
+  NONSTRING const char fingerprint[HEX_DIGEST_LEN] =
     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
   tor_addr_t *addr = tor_malloc(sizeof(tor_addr_t));
   uint16_t port = 11111;
@@ -353,7 +353,7 @@ test_bridges_get_configured_bridge_by_exact_addr_port_digest_both(void *arg)
 {
   char digest[DIGEST_LEN];
   bridge_info_t *bridge;
-  const char fingerprint[HEX_DIGEST_LEN] =
+  NONSTRING const char fingerprint[HEX_DIGEST_LEN] =
     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
   tor_addr_t *addr = tor_malloc(sizeof(tor_addr_t));
   uint16_t port = 4444;
@@ -419,7 +419,7 @@ test_bridges_find_bridge_by_digest_known(void *arg)
 {
   char digest1[DIGEST_LEN];
   bridge_info_t *bridge;
-  const char fingerprint[HEX_DIGEST_LEN] =
+  NONSTRING const char fingerprint[HEX_DIGEST_LEN] =
     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
   helper_add_bridges_to_bridgelist(arg);
@@ -616,10 +616,10 @@ test_bridges_node_is_a_configured_bridge(void *arg)
   node_t node_with_digest;
   memset(&node_with_digest, 0, sizeof(node_with_digest));
 
-  const char fingerprint[HEX_DIGEST_LEN] =
+  NONSTRING const char fingerprint[HEX_DIGEST_LEN] =
     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
-  const char fingerprint2[HEX_DIGEST_LEN] =
+  NONSTRING const char fingerprint2[HEX_DIGEST_LEN] =
     "ffffffffffffffffffffffffffffffffffffffff";
 
   base16_decode(node_with_digest.identity, DIGEST_LEN,

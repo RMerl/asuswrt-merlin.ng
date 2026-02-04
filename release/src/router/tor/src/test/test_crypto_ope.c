@@ -28,7 +28,7 @@ test_crypto_ope_consistency(void *arg)
   const int TEST_VALS[] = { 5, 500, 1023, 1024, 1025, 2046, 2047, 2048, 2049,
                             10000, OPE_INPUT_MAX };
   unsigned i;
-  const uint8_t key[32] = "A fixed key, chosen arbitrarily.";
+  NONSTRING const uint8_t key[32] = "A fixed key, chosen arbitrarily.";
 
   ope = crypto_ope_new(key);
   tt_assert(ope);
@@ -56,7 +56,7 @@ test_crypto_ope_oob(void *arg)
   (void)arg;
 
   crypto_ope_t *ope = NULL;
-  const uint8_t key[32] = "A fixed key, chosen arbitrarily.";
+  NONSTRING const uint8_t key[32] = "A fixed key, chosen arbitrarily.";
   ope = crypto_ope_new(key);
 
   tt_u64_op(UINT64_MAX, OP_EQ, crypto_ope_encrypt(ope,INT_MIN));

@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "path": [
+                    "${workspaceFolder}/**"
+                ],
+                "exclude": [
+                    "${workspaceFolder}/dev/amng/kernel-4.1/**",
+                    "${workspaceFolder}/dev/amng/kernel-4.19/**",
+                    "${workspaceFolder}/dev/amng/bcmdrivers/**"
+                ]
+            }
+        }
+    ],
+    "version": 4
+}

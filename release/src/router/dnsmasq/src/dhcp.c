@@ -399,7 +399,7 @@ void dhcp_packet(time_t now, int pxe_fd)
       if (mess->ciaddr.s_addr != 0)
 	dest.sin_addr = mess->ciaddr;
     }
-  if ((is_relay_use_source || mess->giaddr.s_addr) && !is_relay_reply)
+  else if ((is_relay_use_source || mess->giaddr.s_addr) && !is_relay_reply)
     {
       /* Send to BOOTP relay. */
       if (is_relay_use_source)

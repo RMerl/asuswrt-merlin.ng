@@ -12,7 +12,6 @@
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="css/confirm_block.css">
-<link rel="stylesheet" type="text/css" href="device-map/device-map.css">
 <style>
 .FormTable{
  	margin-top:10px;	
@@ -77,9 +76,7 @@
  	hlbr:expression(this.onFocus=this.blur()); /* for IE */
 }
 .current_fw_release_note {
-		color: #FC0;
-        text-decoration: underline;
-        cursor: pointer;
+	color: #FC0;
 }
 
 #rbk_Block{
@@ -361,7 +358,9 @@ function initial(){
 	$("#FWString").append("<span class='current_fw_release_note'>"+FWString+"</span>");	//Untranslated
 
 	if(afwupg_support && webs_update_enable_orig == 1){
-		$(".current_fw_release_note").click({"model_name": "<#Web_Title2#>", "fwver": FWString}, show_current_release_note);		
+		$(".current_fw_release_note").css("cursor", "pointer")
+						.css("text-decoration", "underline")
+						.click({"model_name": "<#Web_Title2#>", "fwver": FWString}, show_current_release_note);
 	}
 
 	if(revertfw_support && RevertFWver != ""){

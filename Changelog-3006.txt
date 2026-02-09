@@ -26,6 +26,7 @@ Asuswrt-Merlin 3006.xxx Changelog
   - FIXED: Missing UPnP settings on models with multiservice
            WAN support.
   - FIXED: ntpd options missing when operating in WISP mode.
+  - FIXED: TrendMicro signatures not updating on RT-BE58_Go.
   - REMOVED: AiCloud support, due to security reasons.
 
 

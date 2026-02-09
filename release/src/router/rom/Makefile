@@ -178,7 +178,7 @@ ifeq ($(RTCONFIG_MERLINUPDATE),y)
 ifeq ($(RTCONFIG_CFGSYNC),y)
 	cp -f webs_scripts/merlin_webs_note.sh $(INSTALLDIR)/usr/sbin/webs_note.sh
 endif
-ifeq ($(or $(RTCONFIG_BWDPI),$(RTCONFIG_BWDPI_DEP)),y)
+ifeq ($(or $(RTCONFIG_BWDPI),$(RTCONFIG_HNS)),y)
 	cp -f webs_scripts/sig2nd_upgrade.sh $(INSTALLDIR)/usr/sbin/sig_upgrade.sh
 	cp -f webs_scripts/sig2nd_update.sh $(INSTALLDIR)/usr/sbin/sig_update.sh
 endif

@@ -375,7 +375,7 @@ function disable_ovpn_client(unit, _this) {
 
 	rebuild_ovpn_eas(unit, 0);
 
-	obj["rc_service"] = "stop_vpnclient" + unit;
+	obj["rc_service"] = "stop_vpnclient" + unit + ";start_vpnrouting" + unit;
 	obj["vpn_clientx_eas"] = document.form.vpn_clientx_eas.value;
 	httpApi.nvramSet(obj);
 
@@ -390,7 +390,7 @@ function enable_ovpn_client(unit, _this) {
 
 	rebuild_ovpn_eas(unit, 1);
 
-	obj["rc_service"] = "start_vpnclient" + unit;
+	obj["rc_service"] = "start_vpnclient" + unit + ";start_vpnrouting" + unit;
 	obj["vpn_clientx_eas"] = document.form.vpn_clientx_eas.value;
 	httpApi.nvramSet(obj);
 
@@ -404,7 +404,7 @@ function disable_wgc_client(unit, _this) {
 		"action_mode": "apply",
 	}
 
-	obj["rc_service"] = "stop_wgc " + unit;
+	obj["rc_service"] = "stop_wgc " + unit + ";start_vpnrouting0";
 	obj["wgc_unit"] = unit;
 	obj["wgc_enable"] = "0";
 	httpApi.nvramSet(obj);
@@ -419,7 +419,7 @@ function enable_wgc_client(unit, _this) {
 		"action_mode": "apply",
 	}
 
-	obj["rc_service"] = "start_wgc " + unit;
+	obj["rc_service"] = "start_wgc " + unit + ";start_vpnrouting0";
 	obj["wgc_unit"] = unit;
 	obj["wgc_enable"] = "1";
 	httpApi.nvramSet(obj);

@@ -20762,7 +20762,7 @@ retry_wps_enr:
 					amvpn_clear_exclusive_dns(i, VPNDIR_PROTO_WIREGUARD);
 					wgc_set_exclusive_dns(i);
 				}
-#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 				amvpn_refresh_wg_bypass_rules();
 #endif
 #endif

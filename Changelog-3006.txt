@@ -1,7 +1,7 @@
 Asuswrt-Merlin 3006.xxx Changelog
 =================================
 
-3006.102.7 (xx-xxx-2026)
+3006.102.7 (22-Feb-2026)
   - NOTE: AiCloud has been removed from Asuswrt-Merlin due
           to its poor security track record.  This also includes
           cloud syncing features such as Asuswebstorage or
@@ -27,6 +27,8 @@ Asuswrt-Merlin 3006.xxx Changelog
            WAN support.
   - FIXED: ntpd options missing when operating in WISP mode.
   - FIXED: TrendMicro signatures not updating on RT-BE58_Go.
+  - FIXED: Starting a client through VPNDirector would fail to
+           update routing rules.
   - REMOVED: AiCloud support, due to security reasons.
 
 

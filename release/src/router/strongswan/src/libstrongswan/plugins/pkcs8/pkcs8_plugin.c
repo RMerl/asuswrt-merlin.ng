@@ -63,7 +63,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *pkcs8_plugin_create()
+PLUGIN_DEFINE(pkcs8)
 {
 	private_pkcs8_plugin_t *this;
 

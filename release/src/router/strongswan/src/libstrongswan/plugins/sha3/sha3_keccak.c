@@ -372,7 +372,6 @@ METHOD(sha3_keccak_t, reset, void,
 	this->rate_index = 0;
 }
 
-
 METHOD(sha3_keccak_t, absorb, void,
 	private_sha3_keccak_t *this, chunk_t data)
 {
@@ -431,8 +430,12 @@ METHOD(sha3_keccak_t, finalize, void,
 		state_lanes[i] ^= buffer_lanes[i];
 	}
 
-	/* Add the second bit of padding */
-	this->state[this->rate - 1] ^= 0x80;
+	/* Add the second bit of padding, do this consistently via state_lanes[] and
+	 * not state[] to avoid that the compiler reorders this due to aliasing
+	 * optimizations */
+	rate_lanes = (this->rate - 1) / sizeof(uint64_t);
+	remainder = (this->rate - 1) % sizeof(uint64_t);
+	state_lanes[rate_lanes] ^= (0x80ULL << remainder * 8);
 
 	/* Switch to the squeezing phase */
 	keccak_f1600_state_permute(this->state);

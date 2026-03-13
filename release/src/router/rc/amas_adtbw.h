@@ -35,6 +35,7 @@
 #define AMAS_ADTBW_DEBUG "/tmp/AMAS_ADTBW_DEBUG"
 #define MACF_UP "%02X:%02X:%02X:%02X:%02X:%02X"
 #define LOG_TITLE_AMAS_ADTBW "amas_adtbw"
+#define CHANSPEC_ALL_JSON_PATH	"/tmp/chanspec_all.json"
 
 #define AMAS_ADTBW_SYSLOG(fmt, arg...) \
 	do { logmessage(LOG_TITLE_AMAS_ADTBW, fmt, ##arg); \

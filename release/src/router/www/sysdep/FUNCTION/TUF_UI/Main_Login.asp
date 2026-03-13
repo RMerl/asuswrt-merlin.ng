@@ -113,12 +113,6 @@ const getQueryString = function(name){
 	var r = window.location.search.substr(1).match(reg);
 	if (r != null) return unescape(r[2]); return null;
 };
-
-function isSupport(_ptn){
-	var ui_support = [<% get_ui_support(); %>][0];
-	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
-}
-
 function loadScript(src, timeout = 2000) {
     return new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -143,6 +137,11 @@ if(ROUTERHOSTNAME !== header_info.host && ROUTERHOSTNAME != "" && isRouterMode){
 	}, 100);
 }
 
+function isSupport(_ptn){
+	var ui_support = [<% get_ui_support(); %>][0];
+	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
+}
+
 if(isSupport("TS_UI"))
 	$('link').last().after('<link rel="stylesheet" type="text/css" href="css/difference.css">');
 
@@ -157,6 +156,53 @@ else
 
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=SG_TeleStand&lang=&kw=&num=";
 var ATEMODE = '<% nvram_get("ATEMODE"); %>';
+
+(()=>{
+	if(isSupport("YEAR20")){
+		const style = document.createElement('style');
+		style.type = 'text/css';
+		style.innerHTML = `
+			.main-field-bg {
+				margin-top:	90px;
+			}
+			.logo-container {
+				flex-direction: column;
+				margin-left: 0;
+			}
+			.logo-rog, .logo-odm{
+				background-position: center 0;
+				background-size: 60%;
+			}
+			.model-name {
+				margin-left: 0;
+			}
+			.form-input {
+				border-bottom: 2px solid #999;
+			}
+			.form-input:focus {
+				border-bottom: 1px solid #E0BE62;
+			}
+			.login-btn-bg, .login-btn-bg:hover {
+				width: 480px;
+				padding: 0 22px;
+				margin: 20px auto 0;
+				float: none;
+				color: #E0BE62;
+				border: 1px solid #E0BE62;
+				background: rgba(49, 42, 29, 0.80);
+				border-radius: 0;
+			}
+			@media screen and (max-width: 1000px){
+				.login-btn-bg, .login-btn-bg:hover{
+					width: auto;
+					margin: 0 10px 0;
+					padding: initial;
+				}
+			}
+		`;
+		document.head.appendChild(style);
+	}
+})();
 
 function initial(){
 	top.name = "";/* reset cache of state.js win.name */

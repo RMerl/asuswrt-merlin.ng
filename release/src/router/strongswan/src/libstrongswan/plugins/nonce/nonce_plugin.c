@@ -59,7 +59,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *nonce_plugin_create()
+PLUGIN_DEFINE(nonce)
 {
 	private_nonce_plugin_t *this;
 

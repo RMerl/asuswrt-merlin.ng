@@ -119,6 +119,8 @@ extern void md5sum(char* output, int counter, ...);
 #define IMAGE_DIR_ID		"3$16"
 #define IMAGE_RATING_ID		"3$300"
 
+#define SQL_QUERY_COUNT_SIZE 4096
+#define SQL_QUERY_SIZE 4096
 /**
  * this is a webdav for a lighttpd plugin
  *
@@ -578,6 +580,56 @@ static int mod_webdav_patch_connection(server *srv, connection *con, plugin_data
 	return 0;
 }
 
+static int bind_params(
+    sqlite3_stmt *stmt,
+    buffer *media_type,
+    buffer *keyword,
+    buffer *parentid,
+    const char *like_path
+) {
+    int param_idx = 1;
+
+    // media_type
+    if (buffer_is_equal_string(media_type, CONST_STR_LEN("1"))) {
+        sqlite3_bind_text(stmt, param_idx++, "i*", -1, SQLITE_STATIC);
+    } else if (buffer_is_equal_string(media_type, CONST_STR_LEN("2"))) {
+        sqlite3_bind_text(stmt, param_idx++, "a*", -1, SQLITE_STATIC);
+    } else if (buffer_is_equal_string(media_type, CONST_STR_LEN("3"))) {
+        sqlite3_bind_text(stmt, param_idx++, "v*", -1, SQLITE_STATIC);
+    } else if (buffer_is_equal_string(media_type, CONST_STR_LEN("0"))) {
+        sqlite3_bind_text(stmt, param_idx++, "i*", -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmt, param_idx++, "a*", -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmt, param_idx++, "v*", -1, SQLITE_STATIC);
+    }
+
+    // keyword
+    if (!buffer_is_empty(keyword)) {
+        char like_buff[256];
+        if (strstr(keyword->ptr, "*") || strstr(keyword->ptr, "?")) {
+            replace_str(keyword->ptr, "*", "%", like_buff, sizeof(like_buff));
+            replace_str(like_buff, "?", "_", like_buff, sizeof(like_buff));
+        } else {
+            snprintf(like_buff, sizeof(like_buff), "%%%s%%", keyword->ptr);
+        }
+        sqlite3_bind_text(stmt, param_idx++, like_buff, -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, param_idx++, like_buff, -1, SQLITE_TRANSIENT);
+    }
+
+    // parentid
+    if (!buffer_is_empty(parentid)) {
+        sqlite3_bind_text(stmt, param_idx++, parentid->ptr, -1, SQLITE_STATIC);
+    }
+
+#if EMBEDDED_EANBLE
+    // like_path
+    if (like_path && strlen(like_path) > 0) {
+        sqlite3_bind_text(stmt, param_idx++, like_path, -1, SQLITE_TRANSIENT);
+    }
+#endif
+
+    return param_idx;
+}
+
 URIHANDLER_FUNC(mod_webdav_uri_handler) {
 	plugin_data *p = p_d;
 
@@ -771,6 +823,10 @@ static int get_thumb_image(char* path, plugin_data *p, char **out){
 	if(path==NULL){
 		return 0;
 	}
+
+	if (!is_safe_path(path)) {
+        return 0;
+    }
 
 #if EMBEDDED_EANBLE
 	char* thumb_dir = (char *)malloc(PATH_MAX);
@@ -2212,24 +2268,39 @@ URIHANDLER_FUNC(mod_webdav_subrequest_handler) {
 		}
 
 		//- start : Avoid SQL injection!
-		if (!buffer_is_empty(start) && 
-		    !is_string_encode_as_integer(start->ptr) &&
-		    atoi(start->ptr) < 0) {
-			Cdbg(DBE, "The paramter start is invalid!");
-			con->http_status = 207;
-			con->file_finished = 1;
-			return HANDLER_FINISHED;
+		if (!buffer_is_empty(start)) {
+			if (!is_string_encode_as_integer(start->ptr)) {
+				Cdbg(DBE, "The parameter start is not a valid integer!");
+				con->http_status = 207;
+				con->file_finished = 1;
+				return HANDLER_FINISHED;
+			}
+
+			int start_val = atoi(start->ptr);
+			if (start_val < 0) {
+				Cdbg(DBE, "The parameter start is negative!");
+				con->http_status = 207;
+				con->file_finished = 1;
+				return HANDLER_FINISHED;
+			}
 		}
 
 		//- end : Avoid SQL injection!
-		if (!buffer_is_empty(end) && 
-		    !is_string_encode_as_integer(end->ptr) &&
-		    atoi(end->ptr) < 0) {
+		if (!buffer_is_empty(end)) {
+			if (!is_string_encode_as_integer(end->ptr)) {
+				Cdbg(DBE, "The parameter end is not a valid integer!");
+				con->http_status = 207;
+				con->file_finished = 1;
+				return HANDLER_FINISHED;
+			}
 
-			Cdbg(DBE, "The paramter end is invalid!");
-			con->http_status = 207;
-			con->file_finished = 1;
-			return HANDLER_FINISHED;
+			int end_val = atoi(end->ptr);
+			if (end_val < 0) {
+				Cdbg(DBE, "The parameter end is negative!");
+				con->http_status = 207;
+				con->file_finished = 1;
+				return HANDLER_FINISHED;
+			}
 		}
 
 		int enable_query_segment = 0;
@@ -3723,10 +3794,10 @@ propmatch_cleanup:
 		
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "FILENAME"))) {
 			buffer_filename = ds->value;
-
+			
 			buffer_urldecode_path(buffer_filename);
-
-			if (buffer_filename->used> 512) {
+			
+			if (buffer_filename->used> 512 || !is_valid_filename(buffer_filename->ptr)) {
 				con->http_status = 400;
 				return HANDLER_FINISHED;
 			}
@@ -3757,7 +3828,7 @@ propmatch_cleanup:
 			pch = strtok(NULL,";");
 		}
 		free(tmp_filename);
-
+		
 		if(toShare==1&&sharelink_save_count+file_count>srv->srvconf.max_sharelink){
 			con->http_status = 405;
 			return HANDLER_FINISHED;
@@ -3765,16 +3836,57 @@ propmatch_cleanup:
 		
 		char auth[100]="\0";	
 		if(con->aidisk_username->used && con->aidisk_passwd->used) {
-			#if NVRAM_ENCRYPT_ENABLE
+#if NVRAM_ENCRYPT_ENABLE
 				snprintf(auth, sizeof(auth), "%s:%s", con->aidisk_username->ptr, nvram_get_http_passwd());
-			#else	
+
+				char *acc_list = nvram_get_acc_list();
+				if (acc_list != NULL) {
+					int len = strlen(acc_list);
+					char *nvram_acc_list = (char *)malloc(sizeof(char) * (len + 1));
+					if (nvram_acc_list != NULL) {
+						memset(nvram_acc_list, 0, len + 1);
+						strncpy(nvram_acc_list, acc_list, len);
+						nvram_acc_list[len] = '\0';
+
+#ifdef APP_IPKG
+						free(acc_list);
+#endif
+						buffer *buffer_name = buffer_init();
+						char *pch = strtok(nvram_acc_list, "<>");
+
+						while (pch != NULL)
+						{
+							//- User Name
+							len = strlen(pch);
+							buffer_copy_string_len(buffer_name, pch, len);
+							buffer_urldecode_path(buffer_name);
+
+							//- User Password
+							pch = strtok(NULL, "<>");
+							if (pch == NULL) break;
+
+							if (buffer_is_equal_string(buffer_name, con->aidisk_username->ptr, strlen(con->aidisk_username->ptr)))
+							{
+								memset(auth, 0, sizeof(auth));
+								snprintf(auth, sizeof(auth), "%s:%s", con->aidisk_username->ptr, pch);
+							}
+
+							//- next
+							pch = strtok(NULL, "<>");
+						}
+
+						free(nvram_acc_list);
+						buffer_free(buffer_name);
+					}
+				}
+#else	
 				snprintf(auth, sizeof(auth), "%s:%s", con->aidisk_username->ptr, con->aidisk_passwd->ptr);
-			#endif
+#endif
 		} else {
 			con->http_status = 400;
 			return HANDLER_FINISHED;
 		}
-
+		
 		char* base64_auth = (char *)ldb_base64_encode(auth, strlen(auth));
 		if (NULL == base64_auth) {
 			con->http_status = 400;
@@ -3799,7 +3911,7 @@ propmatch_cleanup:
 		response_header_overwrite(srv, con, CONST_STR_LEN("Content-Type"), CONST_STR_LEN("text/xml; charset=\"utf-8\""));
 
 		b = buffer_init();
-
+		
 		buffer_copy_string_len(b, CONST_STR_LEN("<?xml version=\"1.0\" encoding=\"utf-8\"?>"));
 		buffer_append_string_len(b,CONST_STR_LEN("<result>"));
 		buffer_append_string_len(b,CONST_STR_LEN("<sharelink>"));
@@ -4502,25 +4614,39 @@ propmatch_cleanup:
 		}
 
 		//- start : Avoid SQL injection!
-		if (!buffer_is_empty(start) && 
-		    !is_string_encode_as_integer(start->ptr) &&
-		    atoi(start->ptr) < 0) {
+		if (!buffer_is_empty(start)) {
+			if (!is_string_encode_as_integer(start->ptr)) {
+				Cdbg(DBE, "The parameter start is not a valid integer!");
+				con->http_status = 207;
+				con->file_finished = 1;
+				return HANDLER_FINISHED;
+			}
 
-			Cdbg(DBE, "The paramter start is invalid!");
-			con->http_status = 207;
-			con->file_finished = 1;
-			return HANDLER_FINISHED;
+			int start_val = atoi(start->ptr);
+			if (start_val < 0) {
+				Cdbg(DBE, "The parameter start is negative!");
+				con->http_status = 207;
+				con->file_finished = 1;
+				return HANDLER_FINISHED;
+			}
 		}
 
 		//- end : Avoid SQL injection!
-		if (!buffer_is_empty(end) && 
-		    !is_string_encode_as_integer(end->ptr) &&
-		    atoi(end->ptr) < 0) {
+		if (!buffer_is_empty(end)) {
+			if (!is_string_encode_as_integer(end->ptr)) {
+				Cdbg(DBE, "The parameter end is not a valid integer!");
+				con->http_status = 207;
+				con->file_finished = 1;
+				return HANDLER_FINISHED;
+			}
 
-			Cdbg(DBE, "The paramter end is invalid!");
-			con->http_status = 207;
-			con->file_finished = 1;
-			return HANDLER_FINISHED;
+			int end_val = atoi(end->ptr);
+			if (end_val < 0) {
+				Cdbg(DBE, "The parameter end is negative!");
+				con->http_status = 207;
+				con->file_finished = 1;
+				return HANDLER_FINISHED;
+			}
 		}
 
 		//- orderby : Avoid SQL injection!
@@ -4548,14 +4674,21 @@ propmatch_cleanup:
 		}
 
 		//- parentid : Avoid SQL injection!
-		if (!buffer_is_empty(parentid) && 
-		    !is_string_encode_as_integer(parentid->ptr) &&
-		    atoi(parentid->ptr) < 0) {
+		if (!buffer_is_empty(parentid)) {
+			if (!is_string_encode_as_integer(parentid->ptr)) {
+				Cdbg(DBE, "The parameter parentid is not a valid integer!");
+				con->http_status = 207;
+				con->file_finished = 1;
+				return HANDLER_FINISHED;
+			}
 
-			Cdbg(DBE, "The paramter parentid is invalid!");
-			con->http_status = 207;
-			con->file_finished = 1;
-			return HANDLER_FINISHED;
+			int parentid_val = atoi(parentid->ptr);
+			if (parentid_val < 0) {
+				Cdbg(DBE, "The parameter parentid is negative!");
+				con->http_status = 207;
+				con->file_finished = 1;
+				return HANDLER_FINISHED;
+			}
 		}
 
 		//- keyword : Avoid SQL injection!
@@ -4583,93 +4716,145 @@ propmatch_cleanup:
 			return HANDLER_FINISHED;	
 		}
 		
-		int rows, i;
-		char **result;
+		int rows=0, i=0;
 		sqlite_int64 plID;
-		char *plpath, *plname, *thumbnail, *resolution;		
-		char sql_query[2048] = "\0";
-		
-		int column_count = 7;
-		sprintf(sql_query, "%s", "SELECT d.ID as ID, "
-		                   "d.PATH as PATH, "
-		                   "d.TITLE as TITLE, "
-		                   "d.SIZE as SIZE, "
-		                   "d.TIMESTAMP as TIMESTAMP, "
-		                   "d.THUMBNAIL as THUMBNAIL, "
-		                   "d.RESOLUTION as RESOLUTION "
-			               "from DETAILS d ");
-		
-		if(!buffer_is_empty(parentid)){
-			sprintf(sql_query, "%s left join OBJECTS o on (o.DETAIL_ID = d.ID)", sql_query);
+		char *plpath, *plname, *thumbnail, *resolution;
+
+		sqlite3_stmt *stmt_count = NULL;
+		sqlite3_stmt *stmt = NULL;
+		char count_query[SQL_QUERY_COUNT_SIZE] = "SELECT COUNT(*) from DETAILS d";
+		char sql_query[SQL_QUERY_SIZE] = "SELECT d.ID as ID, d.PATH as PATH, d.TITLE as TITLE, d.SIZE as SIZE, d.TIMESTAMP as TIMESTAMP, d.THUMBNAIL as THUMBNAIL, d.RESOLUTION as RESOLUTION from DETAILS d";
+		int param_idx = 1;
+
+		if (!buffer_is_empty(parentid)) {
+			strcat(count_query, " left join OBJECTS o on (o.DETAIL_ID = d.ID)");
+    		strcat(sql_query, " left join OBJECTS o on (o.DETAIL_ID = d.ID)");
 		}
-		
-		if( buffer_is_equal_string(media_type, CONST_STR_LEN("1")) ){
-			sprintf(sql_query, "%s where d.MIME glob 'i*'", sql_query);			
+
+		int has_where = 0;
+		if (buffer_is_equal_string(media_type, CONST_STR_LEN("1"))) {
+			strcat(count_query, " where d.MIME glob ?");
+			strcat(sql_query, " where d.MIME glob ?");
+			has_where = 1;
+		} else if (buffer_is_equal_string(media_type, CONST_STR_LEN("2"))) {
+			strcat(count_query, " where d.MIME glob ?");
+			strcat(sql_query, " where d.MIME glob ?");
+			has_where = 1;
+		} else if (buffer_is_equal_string(media_type, CONST_STR_LEN("3"))) {
+			strcat(count_query, " where d.MIME glob ?");
+			strcat(sql_query, " where d.MIME glob ?");
+			has_where = 1;
+		} else if (buffer_is_equal_string(media_type, CONST_STR_LEN("0"))) {
+			strcat(count_query, " where (d.MIME glob ? or d.MIME glob ? or d.MIME glob ?)");
+			strcat(sql_query, " where (d.MIME glob ? or d.MIME glob ? or d.MIME glob ?)");
+			has_where = 1;
 		}
-		else if( buffer_is_equal_string(media_type, CONST_STR_LEN("2")) ){
-			sprintf(sql_query, "%s where d.MIME glob 'a*'", sql_query);
-		}
-		else if( buffer_is_equal_string(media_type, CONST_STR_LEN("3")) ){
-			sprintf(sql_query, "%s where d.MIME glob 'v*'", sql_query);
-		}
-		else if( buffer_is_equal_string(media_type, CONST_STR_LEN("0")) ){
-			sprintf(sql_query, "%s where d.MIME glob 'i*' or d.MIME glob 'a*' or d.MIME glob 'v*'", sql_query);
-		}
-	
-		if(!buffer_is_empty(keyword)){			
-			
-			if(strstr(keyword->ptr, "*")||strstr(keyword->ptr, "?")){
-				char buff[200];
-				replace_str(keyword->ptr, "*", "%", buff, 200);
-				replace_str(buff, "?", "_", buff, 200);
-				sprintf(sql_query, "%s and ( PATH LIKE '%s' or TITLE LIKE '%s' )", sql_query, buff, buff);
+
+		if (!buffer_is_empty(keyword)) {
+			if (has_where) {
+				strcat(count_query, " and (PATH LIKE ? or TITLE LIKE ?)");
+				strcat(sql_query, " and (PATH LIKE ? or TITLE LIKE ?)");
+			} else {
+				strcat(count_query, " where (PATH LIKE ? or TITLE LIKE ?)");
+				strcat(sql_query, " where (PATH LIKE ? or TITLE LIKE ?)");
+				has_where = 1;
 			}
-			else
-				sprintf(sql_query, "%s and ( PATH LIKE '%s%s%s' or TITLE LIKE '%s%s%s' )", sql_query, "%", keyword->ptr, "%", "%", keyword->ptr, "%");
 		}
-		
-		if(!buffer_is_empty(parentid)){
-			sprintf(sql_query, "%s and o.PARENT_ID='%s'", sql_query, parentid->ptr );			
+
+		if (!buffer_is_empty(parentid)) {
+			strcat(count_query, " and o.PARENT_ID=?");
+			strcat(sql_query, " and o.PARENT_ID=?");
 		}
-				
+
 #if EMBEDDED_EANBLE
 		//- Get mount partition
 		char* disk_path = "/mnt/";
-		//DIR *dir;
+		char like_path[128] = {0};
 		if (NULL != (dir = opendir(disk_path))) {
 			struct dirent *de;
 			while(NULL != (de = readdir(dir))) {
 				if ( de->d_name[0] == '.' && de->d_name[1] == '.' && de->d_name[2] == '\0' ) {
-					continue;
-					//- ignore the parent dir
+					continue; // ignore the parent dir
 				}
-
 				if ( de->d_name[0] == '.' ) {
-					continue;
-					//- ignore the hidden file
+					continue; // ignore the hidden file
 				}
 				
-				char partion_path[100] = "\0";
-				sprintf(partion_path, "%s%s", disk_path, de->d_name);
-				
-				//if(strstr( con->physical.path->ptr, partion_path ) && buffer_is_empty(parentid)){
-				if(strstr( con->physical.path->ptr, partion_path )){
-					sprintf(sql_query, "%s and PATH LIKE '%s%s/%s'", sql_query, "%", partion_path, "%");
+				char partion_path[100] = {0};
+				snprintf(partion_path, sizeof(partion_path), "%s%s", disk_path, de->d_name);
+
+				if (strstr(con->physical.path->ptr, partion_path)) {
+					strcat(count_query, " and PATH LIKE ?");
+					strcat(sql_query, " and PATH LIKE ?");
+					size_t len = strlen(partion_path);
+					if (len > 0 && partion_path[len-1] == '/') {
+						snprintf(like_path, sizeof(like_path), "%%%s%%", partion_path);
+					} else {
+						snprintf(like_path, sizeof(like_path), "%%%s/%%", partion_path);
+					}
 					break;
 				}
 			}
 			closedir(dir);
 		}
 #endif
-		
-		Cdbg(DBE, "1. sql_query=%s", sql_query);
-		if( sql_get_table(sql_minidlna, sql_query, &result, &rows, NULL) != SQLITE_OK ){
-			sqlite3_close(sql_minidlna);
-			con->http_status = 207;
+
+		if (!buffer_is_empty(orderby)) {
+			const char *orderby_clause = NULL;
+			if (0 == strcmp(orderby->ptr, "TIMESTAMP")) {
+				orderby_clause = "TIMESTAMP";
+			} else if (0 == strcmp(orderby->ptr, "TITLE")) {
+				orderby_clause = "TITLE";
+			} else if (0 == strcmp(orderby->ptr, "SIZE")) {
+				orderby_clause = "SIZE";
+			}
+
+			if (orderby_clause != NULL) {
+				strcat(sql_query, " ORDER BY ");
+				strcat(sql_query, orderby_clause);
+			}
+		}
+
+		if (strcmp(orderrule->ptr, "ASC") == 0 || strcmp(orderrule->ptr, "DESC") == 0) {
+			strcat(sql_query, " ");
+			strcat(sql_query, orderrule->ptr);
+		} else {
+			strcat(sql_query, " ASC");
+		}
+
+		if (!buffer_is_empty(start) && !buffer_is_empty(end)) {
+			strcat(sql_query, " LIMIT ? OFFSET ?");
+		}
+
+		if (sqlite3_prepare_v2(sql_minidlna, count_query, -1, &stmt_count, NULL) != SQLITE_OK) {
+			// error handling
+			con->http_status = 500;
 			con->file_finished = 1;
-			Cdbg(DBE, "Fail to sql_get_table");
 			return HANDLER_FINISHED;
 		}
+
+		if (sqlite3_prepare_v2(sql_minidlna, sql_query, -1, &stmt, NULL) != SQLITE_OK) {
+			// error handling
+			sqlite3_finalize(stmt_count);
+			con->http_status = 500;
+			con->file_finished = 1;
+			return HANDLER_FINISHED;
+		}
+
+		bind_params(stmt_count, media_type, keyword, parentid, like_path);
+		
+		if (sqlite3_step(stmt_count) == SQLITE_ROW) {
+			rows = sqlite3_column_int(stmt_count, 0);
+		}
+		sqlite3_finalize(stmt_count);
+
+		param_idx = bind_params(stmt, media_type, keyword, parentid, like_path);
+		int limit = atoi(end->ptr);
+		int offset = atoi(start->ptr);
+
+		sqlite3_bind_int(stmt, param_idx++, limit);
+		sqlite3_bind_int(stmt, param_idx++, offset);
+
 		#if 0
 		if( !rows ){
 			sqlite3_free_table(result);
@@ -4719,20 +4904,7 @@ propmatch_cleanup:
 #endif
 		buffer_append_string_len(b, CONST_STR_LEN("\""));
 
-		int query_again = 0;		
-		if(!buffer_is_empty(orderby)){
-			if(!buffer_is_empty(orderrule))
-				sprintf(sql_query, "%s ORDER BY %s %s", sql_query, orderby->ptr, orderrule->ptr);
-			else
-				sprintf(sql_query, "%s ORDER BY %s ASC", sql_query, orderby->ptr);
-			
-			query_again = 1;
-		}
-		
 		if(!buffer_is_empty(start) && !buffer_is_empty(end)){
-			sprintf(sql_query, "%s LIMIT %s, %s", sql_query, start->ptr, end->ptr);
-			query_again = 1;
-
 			//- Start Index
 			buffer_append_string_len(b, CONST_STR_LEN(" qstart=\""));			
 			buffer_append_string_buffer(b, start);
@@ -4747,25 +4919,10 @@ propmatch_cleanup:
 			buffer_append_string(b, qend);
 			buffer_append_string_len(b, CONST_STR_LEN("\""));
 		}
-		
-		Cdbg(DBE, "sql_query=%s, qcount=%s", sql_query, qcount);
-			
-		buffer_append_string_len(b,CONST_STR_LEN(">\n"));
-		
-		if(query_again==1){
-			sqlite3_free_table(result);			
-			if( sql_get_table(sql_minidlna, sql_query, &result, &rows, NULL) != SQLITE_OK ){
-				sqlite3_close(sql_minidlna);
-				con->http_status = 207;
-				con->file_finished = 1;
-				Cdbg(DBE, "Fail to sql_get_table 2");
-				return HANDLER_FINISHED;
-			}
-		}
 
-		Cdbg(DBE, "rows=%d", rows);
+		Cdbg(DBE, "sql_query=%s, qcount=%s", sql_query, qcount);
 		
-		rows++;
+		buffer_append_string_len(b,CONST_STR_LEN(">\n"));
 		
 		char* usbdisk_name;
 #if EMBEDDED_EANBLE
@@ -4789,17 +4946,17 @@ propmatch_cleanup:
 		physical d;					
 		d.path = buffer_init();
 		d.rel_path = buffer_init();
-		
-		for( i=column_count; i<rows*column_count; i+=column_count ){
+
+		while (sqlite3_step(stmt) == SQLITE_ROW) {
 
 			//- ID, PATH, TITLE, SIZE, TIMESTAMP, THUMBNAIL
-			plID = strtoll(result[i], NULL, 10);
-			plpath = result[i+1];
-			plname = result[i+2];
-			thumbnail = result[i+5];
-			resolution = result[i+6];
+			plID = sqlite3_column_int64(stmt, 0);
+			plpath = (const char *)sqlite3_column_text(stmt, 1);
+			plname = (const char *)sqlite3_column_text(stmt, 2);
+			thumbnail = (const char *)sqlite3_column_text(stmt, 5);
+			resolution = (const char *)sqlite3_column_text(stmt, 6);
 			
-			if(!plpath)
+			if(!plpath || !plname || !thumbnail || !resolution)
 				continue;
 
 			int thumb = atoi(thumbnail);
@@ -4912,7 +5069,8 @@ propmatch_cleanup:
 
 		buffer_append_string_len(b,CONST_STR_LEN("</D:multistatus>\n"));
 
-		sqlite3_free_table(result);
+		sqlite3_finalize(stmt);
+
 		/*
 		//- test
 		Cdbg(DBE, "------------------------------");
@@ -5258,13 +5416,21 @@ propmatch_cleanup:
 			return HANDLER_FINISHED;
 		}
 
-		if (!buffer_is_empty(play_id) &&
-		    !is_string_encode_as_integer(play_id->ptr) &&
-		    atoi(play_id->ptr) < 0) {
-			Cdbg(DBE, "The paramter play_id is invalid!");
-			con->http_status = 207;
-			con->file_finished = 1;
-			return HANDLER_FINISHED;
+		if (!buffer_is_empty(play_id)) {
+			if (!is_string_encode_as_integer(play_id->ptr)) {
+				Cdbg(DBE, "The parameter play_id is not a valid integer!");
+				con->http_status = 207;
+				con->file_finished = 1;
+				return HANDLER_FINISHED;
+			}
+
+			int play_id_val = atoi(play_id->ptr);
+			if (play_id_val < 0) {
+				Cdbg(DBE, "The parameter play_id is negative!");
+				con->http_status = 207;
+				con->file_finished = 1;
+				return HANDLER_FINISHED;
+			}
 		}
 
 #ifdef USE_MINIDLNA_DB
@@ -5674,7 +5840,13 @@ propmatch_cleanup:
 						                   &buffer_result_share_link) == 1){
 						buffer_append_string_len(b,CONST_STR_LEN("<file>"));
 						buffer_append_string_len(b,CONST_STR_LEN("<name>"));
-						buffer_append_string(b,de->d_name);
+
+						if (de->d_name!=NULL) {
+							char* escaped_name = xml_escape(de->d_name);
+							buffer_append_string(b, escaped_name);
+							free(escaped_name);
+						}
+
 						buffer_append_string_len(b,CONST_STR_LEN("</name>"));
 						buffer_append_string_len(b,CONST_STR_LEN("<sharelink>"));
 						buffer_append_string_buffer(b,buffer_result_share_link);

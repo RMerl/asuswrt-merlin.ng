@@ -514,7 +514,7 @@ METHOD(netlink_socket_t, netlink_send, status_t,
 	uintptr_t seq;
 	u_int try;
 
-	seq = ref_get(&this->seq);
+	seq = ref_get_nonzero(&this->seq);
 
 	for (try = 0; try <= this->retries; ++try)
 	{
@@ -694,7 +694,6 @@ netlink_socket_t *netlink_socket_create(int protocol, enum_name_t *names,
 			.send_ack = _netlink_send_ack,
 			.destroy = _destroy,
 		},
-		.seq = 200,
 		.mutex = mutex_create(MUTEX_TYPE_RECURSIVE),
 		.socket = socket(AF_NETLINK, SOCK_RAW, protocol),
 		.entries = hashtable_create(hashtable_hash_ptr, hashtable_equals_ptr, 4),

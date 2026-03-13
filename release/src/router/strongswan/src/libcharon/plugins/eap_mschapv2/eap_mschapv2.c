@@ -889,7 +889,7 @@ static status_t process_peer_success(private_eap_mschapv2_t *this,
 	data = in->get_data(in);
 	eap = (eap_mschapv2_header_t*)data.ptr;
 
-	if (data.len < AUTH_RESPONSE_LEN)
+	if (data.len < HEADER_LEN + AUTH_RESPONSE_LEN)
 	{
 		DBG1(DBG_IKE, "received invalid EAP-MS-CHAPv2 message: too short");
 		return FAILED;
@@ -974,7 +974,7 @@ static status_t process_peer_failure(private_eap_mschapv2_t *this,
 	data = in->get_data(in);
 	eap = (eap_mschapv2_header_t*)data.ptr;
 
-	if (data.len < 3) /* we want at least an error code: E=e */
+	if (data.len < HEADER_LEN + 3) /* we want at least an error code: E=e */
 	{
 		DBG1(DBG_IKE, "received invalid EAP-MS-CHAPv2 message: too short");
 		return FAILED;

@@ -1,6 +1,7 @@
 /*
+ * Copyright (C) 2016-2019 Andreas Steffen
+ * Copyright (C) 2015-2020 Tobias Brunner
  * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2016 Andreas Steffen
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -100,6 +101,24 @@ CALLBACK(sa_list, int,
 	return 0;
 }
 
+/**
+ * Print additional key exchanges
+ */
+static void print_ake(hashtable_t *sa)
+{
+	char ake_str[5];
+	int ake;
+
+	for (ake = 1; ake <= 7; ake++)
+	{
+		sprintf(ake_str, "ake%d", ake);
+		if (sa->get(sa, ake_str))
+		{
+			printf("/KE%d_%s", ake, sa->get(sa, ake_str));
+		}
+	}
+}
+
 CALLBACK(child_sas, int,
 	hashtable_t *ike, vici_res_t *res, char *name)
 {
@@ -110,9 +129,18 @@ CALLBACK(child_sas, int,
 	ret = vici_parse_cb(res, NULL, sa_values, sa_list, child);
 	if (ret == 0)
 	{
-		printf("  %s: #%s, reqid %s, %s, %s%s, %s:",
+		printf("  %s: #%s, reqid %s",
 			child->get(child, "name"), child->get(child, "uniqueid"),
-			child->get(child, "reqid"), child->get(child, "state"),
+			child->get(child, "reqid"));
+
+		if (child->get(child, "per-cpu-sas"))
+		{
+			printf(", cpu %s",
+				   child->get(child, "cpu") ?: "-");
+		}
+
+		printf(", %s, %s%s, %s:",
+			child->get(child, "state"),
 			child->get(child, "mode"),
 			child->get(child, "encap") ? "-in-UDP" : "",
 			child->get(child, "protocol"));
@@ -145,6 +173,7 @@ CALLBACK(child_sas, int,
 		{
 			printf("/%s", child->get(child, "dh-group"));
 		}
+		print_ake(child);
 		if (child->get(child, "esn"))
 		{
 			printf("/ESN");
@@ -290,6 +319,7 @@ CALLBACK(ike_sa, int,
 			}
 			printf("/%s", ike->get(ike, "prf-alg"));
 			printf("/%s", ike->get(ike, "dh-group"));
+			print_ake(ike);
 			if (streq(ike->get(ike, "ppk"), "yes"))
 			{
 				printf("/PPK");

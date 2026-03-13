@@ -76,7 +76,6 @@ install-data-local: swanctl.conf
 	test -e "$(DESTDIR)$(swanctldir)/private" || $(INSTALL) -d -m 750 "$(DESTDIR)$(swanctldir)/private" || true
 	test -e "$(DESTDIR)$(swanctldir)/rsa" || $(INSTALL) -d -m 750 "$(DESTDIR)$(swanctldir)/rsa" || true
 	test -e "$(DESTDIR)$(swanctldir)/ecdsa" || $(INSTALL) -d -m 750 "$(DESTDIR)$(swanctldir)/ecdsa" || true
-	test -e "$(DESTDIR)$(swanctldir)/bliss" || $(INSTALL) -d -m 750 "$(DESTDIR)$(swanctldir)/bliss" || true
 	test -e "$(DESTDIR)$(swanctldir)/pkcs8" || $(INSTALL) -d -m 750 "$(DESTDIR)$(swanctldir)/pkcs8" || true
 	test -e "$(DESTDIR)$(swanctldir)/pkcs12" || $(INSTALL) -d -m 750 "$(DESTDIR)$(swanctldir)/pkcs12" || true
 	test -e "$(DESTDIR)$(swanctldir)/swanctl.conf" || $(INSTALL) -m 640 $(srcdir)/swanctl.conf $(DESTDIR)$(swanctldir)/swanctl.conf || true

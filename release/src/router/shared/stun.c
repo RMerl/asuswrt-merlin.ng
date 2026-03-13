@@ -223,8 +223,8 @@ int send_binding_request(unsigned int stun_ip,unsigned short stun_port,unsigned 
     while(1)
     {
         retry_times++;
-        timeout.tv_sec = 5;
-        timeout.tv_usec = 0;
+        timeout.tv_sec = 0;
+        timeout.tv_usec = 500000; //500ms
         FD_ZERO(&fds);
         FD_SET(sockfd,&fds);
         maxfd=sockfd+1;

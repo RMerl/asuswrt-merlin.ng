@@ -368,7 +368,7 @@ METHOD(aead_t, set_key, bool,
 METHOD(aead_t, destroy, void,
 	private_gcm_aead_t *this)
 {
-	this->crypter->destroy(this->crypter);
+	DESTROY_IF(this->crypter);
 	this->iv_gen->destroy(this->iv_gen);
 	memwipe(this->salt, sizeof(this->salt));
 	memwipe(this->h, sizeof(this->h));
@@ -440,7 +440,7 @@ gcm_aead_t *gcm_aead_create(encryption_algorithm_t algo,
 
 	if (!this->crypter)
 	{
-		free(this);
+		destroy(this);
 		return NULL;
 	}
 

@@ -66,7 +66,7 @@ void extlh_link_change_handler(enetx_port_t *port, int linkstatus, int speed, in
 #include "phy_drv_brcm.h"
 #include "phy_macsec_common.h"
 #include "clk_rst.h"
-#if defined(CONFIG_GT7)
+#if defined(CONFIG_GT7) || defined(CONFIG_GS7_PRO_MAX)
 #include "bcmenet_ioctl_phyext84991.h"
 #endif
 
@@ -2370,7 +2370,7 @@ cd_end:
 
         return ret;
     }
-#if defined(CONFIG_GT7)
+#if defined(CONFIG_GT7) || defined(CONFIG_GS7_PRO_MAX)
     case ETHGETEXT84991MIIREG: /* Read MII PHY indirectly connected BCM84991 register */
     case ETHSETEXT84991MIIREG: /* Write MII PHY indirectly connected BCM84991 register */
 	{

@@ -83,7 +83,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *constraints_plugin_create()
+PLUGIN_DEFINE(constraints)
 {
 	private_constraints_plugin_t *this;
 

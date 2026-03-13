@@ -172,7 +172,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *gcrypt_plugin_create()
+PLUGIN_DEFINE(gcrypt)
 {
 	private_gcrypt_plugin_t *this;
 	u_char *dummy[1];

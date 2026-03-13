@@ -40,7 +40,7 @@ networking/streams/stream_tcp.c networking/streams/stream_service_tcp.c \
 pen/pen.c plugins/plugin_loader.c plugins/plugin_feature.c processing/jobs/job.c \
 processing/jobs/callback_job.c processing/processor.c processing/scheduler.c \
 processing/watcher.c resolver/resolver_manager.c resolver/rr_set.c \
-selectors/sec_label.c selectors/traffic_selector.c \
+selectors/sec_label.c selectors/traffic_selector.c selectors/traffic_selector_list.c \
 settings/settings.c settings/settings_types.c \
 settings/settings_parser.y settings/settings_lexer.l utils/cpu_feature.c \
 utils/utils.c utils/chunk.c utils/debug.c utils/enum.c utils/identification.c \
@@ -60,6 +60,12 @@ if !USE_WINDOWS
     threading/semaphore.c \
     networking/streams/stream_unix.c \
     networking/streams/stream_service_unix.c
+endif
+
+if USE_VM_SOCKETS
+  libstrongswan_la_SOURCES += \
+    networking/streams/stream_vsock.c \
+    networking/streams/stream_service_vsock.c
 endif
 
 # private header files
@@ -119,7 +125,7 @@ resolver/rr.h resolver/resolver_manager.h \
 plugins/plugin_loader.h plugins/plugin.h plugins/plugin_feature.h \
 processing/jobs/job.h processing/jobs/callback_job.h processing/processor.h \
 processing/scheduler.h processing/watcher.h \
-selectors/sec_label.h selectors/traffic_selector.h \
+selectors/sec_label.h selectors/traffic_selector.h selectors/traffic_selector_list.h \
 settings/settings.h settings/settings_parser.h threading/thread_value.h \
 threading/thread.h threading/windows/thread.h \
 threading/mutex.h threading/condvar.h threading/spinlock.h threading/semaphore.h \
@@ -133,6 +139,11 @@ utils/utils/strerror.h utils/compat/windows.h utils/compat/apple.h utils/compat/
 utils/utils/atomics.h utils/utils/types.h utils/utils/byteorder.h \
 utils/utils/string.h utils/utils/memory.h utils/utils/tty.h utils/utils/path.h \
 utils/utils/status.h utils/utils/object.h utils/utils/time.h utils/utils/align.h
+if USE_VM_SOCKETS
+  nobase_strongswan_include_HEADERS += \
+    networking/streams/stream_vsock.h \
+    networking/streams/stream_service_vsock.h
+endif
 endif
 
 library.lo :	$(top_builddir)/config.status
@@ -268,13 +279,6 @@ if MONOLITHIC
 SUBDIRS =
 else
 SUBDIRS = .
-endif
-
-# build libnttfft used by some plugins
-######################################
-
-if USE_LIBNTTFFT
-  SUBDIRS += math/libnttfft
 endif
 
 # build plugins with their own Makefile
@@ -672,31 +676,17 @@ if MONOLITHIC
 endif
 endif
 
-if USE_NTRU
-  SUBDIRS += plugins/ntru
-if MONOLITHIC
-  libstrongswan_la_LIBADD += plugins/ntru/libstrongswan-ntru.la
-endif
-endif
-
-if USE_BLISS
-  SUBDIRS += plugins/bliss
-if MONOLITHIC
-  libstrongswan_la_LIBADD += plugins/bliss/libstrongswan-bliss.la
-endif
-endif
-
-if USE_NEWHOPE
-  SUBDIRS += plugins/newhope
-if MONOLITHIC
-  libstrongswan_la_LIBADD += plugins/newhope/libstrongswan-newhope.la
-endif
-endif
-
 if USE_DRBG
   SUBDIRS += plugins/drbg
 if MONOLITHIC
   libstrongswan_la_LIBADD += plugins/drbg/libstrongswan-drbg.la
+endif
+endif
+
+if USE_ML
+  SUBDIRS += plugins/ml
+if MONOLITHIC
+  libstrongswan_la_LIBADD += plugins/ml/libstrongswan-ml.la
 endif
 endif
 
@@ -716,14 +706,3 @@ endif
 
 SUBDIRS += tests
 
-if USE_LIBNTTFFT
-  SUBDIRS += math/libnttfft/tests
-endif
-
-if USE_BLISS
-  SUBDIRS += plugins/bliss/tests
-endif
-
-if USE_NEWHOPE
-  SUBDIRS += plugins/newhope/tests
-endif

@@ -83,7 +83,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * See header
  */
-plugin_t *android_dns_plugin_create()
+PLUGIN_DEFINE(android_dns)
 {
 	private_android_dns_plugin_t *this;
 

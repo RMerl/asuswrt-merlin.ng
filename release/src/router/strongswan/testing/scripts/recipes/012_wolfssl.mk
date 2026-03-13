@@ -2,16 +2,14 @@
 
 PKG = wolfssl
 SRC = https://github.com/wolfSSL/$(PKG).git
-REV = v5.6.4-stable
+REV = v5.8.4-stable
 
 NUM_CPUS := $(shell getconf _NPROCESSORS_ONLN)
 
 CFLAGS = \
 	-DWOLFSSL_PUBLIC_MP \
-	-DWOLFSSL_DES_ECB \
 	-DHAVE_AES_ECB \
-	-DHAVE_ECC_BRAINPOOL \
-	-DWOLFSSL_MIN_AUTH_TAG_SZ=8
+	-DHAVE_ECC_BRAINPOOL
 
 CONFIG_OPTS = \
 	--disable-crypttests \
@@ -28,11 +26,11 @@ CONFIG_OPTS = \
 	--enable-ed25519 \
 	--enable-ed448 \
 	--enable-keygen \
-	--enable-max-rsa-bits=8192 \
-	--enable-md4 \
+	--enable-mlkem \
 	--enable-rsapss \
 	--enable-sha3 \
-	--enable-shake256
+	--enable-shake256 \
+	--with-max-rsa-bits=8192
 
 all: install
 
@@ -41,7 +39,7 @@ all: install
 	@touch $@
 
 .$(PKG)-checkout-$(REV): .$(PKG)-cloned
-	cd $(PKG) && git fetch --tags && git checkout $(REV)
+	cd $(PKG) && git fetch -f --tags && git checkout $(REV)
 	@rm -f .$(PKG)-checkout-* && touch $@
 
 .$(PKG)-built-$(REV): .$(PKG)-checkout-$(REV)

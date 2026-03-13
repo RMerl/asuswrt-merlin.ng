@@ -1,4 +1,5 @@
-﻿:root{
+﻿:root,
+:host{
 	--primary-color: #FF3535;
 	--primary-alpha40: rgba(255, 53, 53, 0.4);
 	--bg-container: #1C1C1E;
@@ -19,7 +20,6 @@
 	--text-default: #EBEBEB;
 	--rog-gradient: 88.88deg, #0A5EDB 20.22%, #DB0A2C 85.8%;
 	--border-radius:0;
-	--border:
 } 
 
 .body_rwd{
@@ -30,6 +30,7 @@
 }
 .container{
 	margin: 0;
+	width: 100%;
 }
 .function_desc_container:before{
 	background: rgba(255,255,255,0.15);
@@ -270,6 +271,9 @@
 }
 .customize_alert .desc{
 	color: #FFFFFF;
+}
+.customize_alert .title{
+	color: #FF3535;
 }
 .del_profile .title{
 	color: #FFFFFF;

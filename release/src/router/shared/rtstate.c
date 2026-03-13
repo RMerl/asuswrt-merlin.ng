@@ -1950,4 +1950,22 @@ int get_ms_idx_by_wan_unit(int wan_unit)
 	else
 		return -1;
 }
+
+int get_ms_num(int wan_unit)
+{
+	int i, ms_wan_unit;
+	char tmp[64], prefix[sizeof("wanXXXXXXXXXX_")];
+	int num = 0;
+
+	for (i = 0; i < WAN_MULTISRV_MAX; i++)
+	{
+		ms_wan_unit = get_ms_wan_unit(wan_unit, i);
+		if (ms_wan_unit == WAN_UNIT_NONE)
+			continue;
+		snprintf(prefix, sizeof(prefix), "wan%d_", ms_wan_unit);
+		if (nvram_get_int(strlcat_r(prefix, "enable", tmp, sizeof(tmp))))
+			num++;
+	}
+	return (num);
+}
 #endif //RTCONFIG_MULTISERVICE_WAN

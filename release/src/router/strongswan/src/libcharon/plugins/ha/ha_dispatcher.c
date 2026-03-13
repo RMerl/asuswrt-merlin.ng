@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2016-2024 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -23,7 +24,7 @@
 #include <processing/jobs/adopt_children_job.h>
 
 typedef struct private_ha_dispatcher_t private_ha_dispatcher_t;
-typedef struct ha_diffie_hellman_t ha_diffie_hellman_t;
+typedef struct ha_key_exchange_t ha_key_exchange_t;
 
 /**
  * Private data of an ha_dispatcher_t object.
@@ -62,14 +63,14 @@ struct private_ha_dispatcher_t {
 };
 
 /**
- * DH implementation for HA synced DH values
+ * KE implementation for HA synced KE shared secrets
  */
-struct ha_diffie_hellman_t {
+struct ha_key_exchange_t {
 
 	/**
-	 * Implements key_exchange_t
+	 * Public interface
 	 */
-	key_exchange_t dh;
+	key_exchange_t ke;
 
 	/**
 	 * Shared secret
@@ -77,49 +78,73 @@ struct ha_diffie_hellman_t {
 	chunk_t secret;
 
 	/**
-	 * Own public value
+	 * Own public value (IKEv1 only)
 	 */
 	chunk_t pub;
 };
 
-METHOD(key_exchange_t, dh_get_shared_secret, bool,
-	ha_diffie_hellman_t *this, chunk_t *secret)
+METHOD(key_exchange_t, ke_get_shared_secret, bool,
+	ha_key_exchange_t *this, chunk_t *secret)
 {
 	*secret = chunk_clone(this->secret);
 	return TRUE;
 }
 
-METHOD(key_exchange_t, dh_get_public_key, bool,
-	ha_diffie_hellman_t *this, chunk_t *value)
+METHOD(key_exchange_t, ke_get_public_key, bool,
+	ha_key_exchange_t *this, chunk_t *value)
 {
 	*value = chunk_clone(this->pub);
 	return TRUE;
 }
 
-METHOD(key_exchange_t, dh_destroy, void,
-	ha_diffie_hellman_t *this)
+METHOD(key_exchange_t, ke_destroy, void,
+	ha_key_exchange_t *this)
 {
 	free(this);
 }
 
 /**
- * Create a HA synced DH implementation
+ * Create a HA synced KE implementation
  */
-static key_exchange_t *ha_diffie_hellman_create(chunk_t secret, chunk_t pub)
+static key_exchange_t *ha_key_exchange_create(chunk_t secret, chunk_t pub)
 {
-	ha_diffie_hellman_t *this;
+	ha_key_exchange_t *this;
 
 	INIT(this,
-		.dh = {
-			.get_shared_secret = _dh_get_shared_secret,
-			.get_public_key = _dh_get_public_key,
-			.destroy = _dh_destroy,
+		.ke = {
+			.get_shared_secret = _ke_get_shared_secret,
+			.get_public_key = _ke_get_public_key,
+			.destroy = _ke_destroy,
 		},
 		.secret = secret,
 		.pub = pub,
 	);
 
-	return &this->dh;
+	return &this->ke;
+}
+
+/**
+ * Add the given KE methods to a proposal
+ */
+static void add_ke_methods_to_proposal(proposal_t *proposal, uint16_t ke_alg,
+									   chunk_t add_kes)
+{
+	int i, count;
+
+	if (ke_alg)
+	{
+		proposal->add_algorithm(proposal, KEY_EXCHANGE_METHOD, ke_alg, 0);
+	}
+	count = min(add_kes.len / sizeof(uint16_t), MAX_ADDITIONAL_KEY_EXCHANGES);
+	for (i = 0; i < count; i++)
+	{
+		ke_alg = ntohs(((uint16_t*)add_kes.ptr)[i]);
+		if (ke_alg)
+		{
+			proposal->add_algorithm(proposal, i + ADDITIONAL_KEY_EXCHANGE_1,
+									ke_alg, 0);
+		}
+	}
 }
 
 /**
@@ -133,9 +158,10 @@ static void process_ike_add(private_ha_dispatcher_t *this, ha_message_t *message
 	ike_sa_t *ike_sa = NULL, *old_sa = NULL;
 	ike_version_t version = IKEV2;
 	uint16_t encr = 0, len = 0, integ = 0, prf = 0, old_prf = PRF_UNDEFINED;
-	uint16_t dh_grp = 0;
+	uint16_t ke_alg = 0;
 	chunk_t nonce_i = chunk_empty, nonce_r = chunk_empty;
 	chunk_t secret = chunk_empty, old_skd = chunk_empty;
+	chunk_t add_secret = chunk_empty, add_kes = chunk_empty;
 	chunk_t dh_local = chunk_empty, dh_remote = chunk_empty, psk = chunk_empty;
 	host_t *other = NULL;
 	bool ok = FALSE;
@@ -147,8 +173,13 @@ static void process_ike_add(private_ha_dispatcher_t *this, ha_message_t *message
 		switch (attribute)
 		{
 			case HA_IKE_ID:
-				ike_sa = ike_sa_create(value.ike_sa_id,
+				ike_sa = charon->ike_sa_manager->checkout(charon->ike_sa_manager,
+														  value.ike_sa_id);
+				if (!ike_sa)
+				{
+					ike_sa = ike_sa_create(value.ike_sa_id,
 						value.ike_sa_id->is_initiator(value.ike_sa_id), version);
+				}
 				break;
 			case HA_IKE_REKEY_ID:
 				old_sa = charon->ike_sa_manager->checkout(charon->ike_sa_manager,
@@ -168,6 +199,9 @@ static void process_ike_add(private_ha_dispatcher_t *this, ha_message_t *message
 				break;
 			case HA_SECRET:
 				secret = value.chunk;
+				break;
+			case HA_ADD_SECRET:
+				add_secret = value.chunk;
 				break;
 			case HA_LOCAL_DH:
 				dh_local = value.chunk;
@@ -196,11 +230,15 @@ static void process_ike_add(private_ha_dispatcher_t *this, ha_message_t *message
 			case HA_ALG_OLD_PRF:
 				old_prf = value.u16;
 				break;
-			case HA_ALG_DH:
-				dh_grp = value.u16;
+			case HA_ALG_KE:
+				ke_alg = value.u16;
+				break;
+			case HA_ALG_ADD_KES:
+				add_kes = value.chunk;
 				break;
 			case HA_AUTH_METHOD:
 				method = value.u16;
+				break;
 			default:
 				break;
 		}
@@ -210,35 +248,52 @@ static void process_ike_add(private_ha_dispatcher_t *this, ha_message_t *message
 	if (ike_sa)
 	{
 		proposal_t *proposal;
-		key_exchange_t *dh;
+		key_exchange_t *ke;
+		array_t *kes = NULL;
+		bool key_update = FALSE;
 
-		proposal = proposal_create(PROTO_IKE, 0);
-		if (integ)
+		proposal = ike_sa->get_proposal(ike_sa);
+		if (!proposal)
 		{
-			proposal->add_algorithm(proposal, INTEGRITY_ALGORITHM, integ, 0);
+			proposal = proposal_create(PROTO_IKE, 0);
+			if (integ)
+			{
+				proposal->add_algorithm(proposal, INTEGRITY_ALGORITHM, integ, 0);
+			}
+			if (encr)
+			{
+				proposal->add_algorithm(proposal, ENCRYPTION_ALGORITHM, encr, len);
+			}
+			if (prf)
+			{
+				proposal->add_algorithm(proposal, PSEUDO_RANDOM_FUNCTION, prf, 0);
+			}
+			add_ke_methods_to_proposal(proposal, ke_alg, add_kes);
 		}
-		if (encr)
+		else
 		{
-			proposal->add_algorithm(proposal, ENCRYPTION_ALGORITHM, encr, len);
-		}
-		if (prf)
-		{
-			proposal->add_algorithm(proposal, PSEUDO_RANDOM_FUNCTION, prf, 0);
-		}
-		if (dh_grp)
-		{
-			proposal->add_algorithm(proposal, KEY_EXCHANGE_METHOD, dh_grp, 0);
+			key_update = TRUE;
 		}
 		charon->bus->set_sa(charon->bus, ike_sa);
-		dh = ha_diffie_hellman_create(secret, dh_local);
+		ke = ha_key_exchange_create(secret, dh_local);
+		array_insert_create(&kes, ARRAY_HEAD, ke);
 		if (ike_sa->get_version(ike_sa) == IKEV2)
 		{
 			keymat_v2_t *keymat_v2 = (keymat_v2_t*)ike_sa->get_keymat(ike_sa);
 
-			ok = keymat_v2->derive_ike_keys(keymat_v2, proposal, dh, nonce_i,
+			if (add_secret.len)
+			{
+				ke = ha_key_exchange_create(add_secret, chunk_empty);
+				array_insert_create(&kes, ARRAY_TAIL, ke);
+			}
+			if (key_update)
+			{
+				old_prf = keymat_v2->get_skd(keymat_v2, &old_skd);
+			}
+			ok = keymat_v2->derive_ike_keys(keymat_v2, proposal, kes, nonce_i,
 							nonce_r, ike_sa->get_id(ike_sa), old_prf, old_skd);
 		}
-		if (ike_sa->get_version(ike_sa) == IKEV1)
+		else if (ike_sa->get_version(ike_sa) == IKEV1)
 		{
 			keymat_v1_t *keymat_v1 = (keymat_v1_t*)ike_sa->get_keymat(ike_sa);
 			shared_key_t *shared = NULL;
@@ -251,12 +306,12 @@ static void process_ike_add(private_ha_dispatcher_t *this, ha_message_t *message
 			if (keymat_v1->create_hasher(keymat_v1, proposal))
 			{
 				ok = keymat_v1->derive_ike_keys(keymat_v1, proposal,
-								dh, dh_remote, nonce_i, nonce_r,
+								ke, dh_remote, nonce_i, nonce_r,
 								ike_sa->get_id(ike_sa), method, shared);
 			}
 			DESTROY_IF(shared);
 		}
-		dh->destroy(dh);
+		array_destroy_offset(kes, offsetof(key_exchange_t, destroy));
 		if (ok)
 		{
 			if (old_sa)
@@ -275,8 +330,11 @@ static void process_ike_add(private_ha_dispatcher_t *this, ha_message_t *message
 				ike_sa->set_other_host(ike_sa, other);
 				other = NULL;
 			}
-			ike_sa->set_state(ike_sa, IKE_CONNECTING);
-			ike_sa->set_proposal(ike_sa, proposal);
+			if (!key_update)
+			{
+				ike_sa->set_state(ike_sa, IKE_CONNECTING);
+				ike_sa->set_proposal(ike_sa, proposal);
+			}
 			this->cache->cache(this->cache, ike_sa, message);
 			message = NULL;
 			charon->ike_sa_manager->checkin(charon->ike_sa_manager, ike_sa);
@@ -284,10 +342,21 @@ static void process_ike_add(private_ha_dispatcher_t *this, ha_message_t *message
 		else
 		{
 			DBG1(DBG_IKE, "HA keymat derivation failed");
-			ike_sa->destroy(ike_sa);
+			if (key_update)
+			{
+				charon->ike_sa_manager->checkin_and_destroy(charon->ike_sa_manager,
+															ike_sa);
+			}
+			else
+			{
+				ike_sa->destroy(ike_sa);
+				charon->bus->set_sa(charon->bus, NULL);
+			}
 		}
-		charon->bus->set_sa(charon->bus, NULL);
-		proposal->destroy(proposal);
+		if (!key_update)
+		{
+			proposal->destroy(proposal);
+		}
 	}
 	if (old_sa)
 	{
@@ -302,13 +371,13 @@ static void process_ike_add(private_ha_dispatcher_t *this, ha_message_t *message
  */
 static void set_conditions(ike_sa_t *ike_sa, ike_condition_t conditions)
 {
-	ike_condition_t i;
+	ike_condition_t i, private = (conditions & COND_PRIVATE_MARKER);
 
-	for (i = 0; i < sizeof(i) * 8; ++i)
+	for (i = 0; i < (sizeof(i) * 8) - 1; ++i)
 	{
-		ike_condition_t cond = (1 << i);
+		ike_condition_t cond = (1 << i) | private;
 
-		ike_sa->set_condition(ike_sa, cond, (conditions & cond) != 0);
+		ike_sa->set_condition(ike_sa, cond, (conditions & cond) == cond);
 	}
 }
 
@@ -317,13 +386,13 @@ static void set_conditions(ike_sa_t *ike_sa, ike_condition_t conditions)
  */
 static void set_extensions(ike_sa_t *ike_sa, ike_extension_t extensions)
 {
-	ike_extension_t i;
+	ike_extension_t i, private = (extensions & EXT_PRIVATE_MARKER);
 
-	for (i = 0; i < sizeof(i) * 8; ++i)
+	for (i = 0; i < (sizeof(i) * 8) - 1; ++i)
 	{
-		ike_extension_t ext = (1 << i);
+		ike_extension_t ext = (1 << i) | private;
 
-		if (extensions & ext)
+		if ((extensions & ext) == ext)
 		{
 			ike_sa->enable_extension(ike_sa, ext);
 		}
@@ -656,12 +725,14 @@ static void process_child_add(private_ha_dispatcher_t *this,
 	uint32_t inbound_spi = 0, outbound_spi = 0;
 	uint16_t inbound_cpi = 0, outbound_cpi = 0;
 	uint8_t mode = MODE_TUNNEL, ipcomp = 0;
-	uint16_t encr = 0, integ = 0, len = 0, dh_grp = 0;
+	uint16_t encr = 0, integ = 0, len = 0, ke_alg = 0;
 	uint16_t esn = NO_EXT_SEQ_NUMBERS;
 	chunk_t nonce_i = chunk_empty, nonce_r = chunk_empty, secret = chunk_empty;
+	chunk_t add_secret = chunk_empty, add_kes = chunk_empty;
 	chunk_t encr_i, integ_i, encr_r, integ_r;
 	linked_list_t *local_ts, *remote_ts;
-	key_exchange_t *dh = NULL;
+	key_exchange_t *ke = NULL;
+	array_t *kes = NULL;
 
 	enumerator = message->create_attribute_enumerator(message);
 	while (enumerator->enumerate(enumerator, &attribute, &value))
@@ -705,8 +776,11 @@ static void process_child_add(private_ha_dispatcher_t *this,
 			case HA_ALG_INTEG:
 				integ = value.u16;
 				break;
-			case HA_ALG_DH:
-				dh_grp = value.u16;
+			case HA_ALG_KE:
+				ke_alg = value.u16;
+				break;
+			case HA_ALG_ADD_KES:
+				add_kes = value.chunk;
 				break;
 			case HA_ESN:
 				esn = value.u16;
@@ -719,6 +793,9 @@ static void process_child_add(private_ha_dispatcher_t *this,
 				break;
 			case HA_SECRET:
 				secret = value.chunk;
+				break;
+			case HA_ADD_SECRET:
+				add_secret = value.chunk;
 				break;
 			default:
 				break;
@@ -743,6 +820,7 @@ static void process_child_add(private_ha_dispatcher_t *this,
 
 	child_sa_create_t data = {
 		.encap = ike_sa->has_condition(ike_sa, COND_NAT_ANY),
+		.cpu = CPU_ID_MAX,
 	};
 	child_sa = child_sa_create(ike_sa->get_my_host(ike_sa),
 							   ike_sa->get_other_host(ike_sa), config, &data);
@@ -759,23 +837,27 @@ static void process_child_add(private_ha_dispatcher_t *this,
 	{
 		proposal->add_algorithm(proposal, ENCRYPTION_ALGORITHM, encr, len);
 	}
-	if (dh_grp)
-	{
-		proposal->add_algorithm(proposal, KEY_EXCHANGE_METHOD, dh_grp, 0);
-	}
+	add_ke_methods_to_proposal(proposal, ke_alg, add_kes);
 	proposal->add_algorithm(proposal, EXTENDED_SEQUENCE_NUMBERS, esn, 0);
+
 	if (secret.len)
 	{
-		dh = ha_diffie_hellman_create(secret, chunk_empty);
+		ke = ha_key_exchange_create(secret, chunk_empty);
+		array_insert_create(&kes, ARRAY_HEAD, ke);
+	}
+	if (add_secret.len)
+	{
+		ke = ha_key_exchange_create(add_secret, chunk_empty);
+		array_insert_create(&kes, ARRAY_TAIL, ke);
 	}
 	if (ike_sa->get_version(ike_sa) == IKEV2)
 	{
 		keymat_v2_t *keymat_v2 = (keymat_v2_t*)ike_sa->get_keymat(ike_sa);
 
-		ok = keymat_v2->derive_child_keys(keymat_v2, proposal, dh,
+		ok = keymat_v2->derive_child_keys(keymat_v2, proposal, kes,
 						nonce_i, nonce_r, &encr_i, &integ_i, &encr_r, &integ_r);
 	}
-	if (ike_sa->get_version(ike_sa) == IKEV1)
+	else if (ike_sa->get_version(ike_sa) == IKEV1)
 	{
 		keymat_v1_t *keymat_v1 = (keymat_v1_t*)ike_sa->get_keymat(ike_sa);
 		uint32_t spi_i, spi_r;
@@ -783,10 +865,10 @@ static void process_child_add(private_ha_dispatcher_t *this,
 		spi_i = initiator ? inbound_spi : outbound_spi;
 		spi_r = initiator ? outbound_spi : inbound_spi;
 
-		ok = keymat_v1->derive_child_keys(keymat_v1, proposal, dh, spi_i, spi_r,
+		ok = keymat_v1->derive_child_keys(keymat_v1, proposal, ke, spi_i, spi_r,
 						nonce_i, nonce_r, &encr_i, &integ_i, &encr_r, &integ_r);
 	}
-	DESTROY_IF(dh);
+	array_destroy_offset(kes, offsetof(key_exchange_t, destroy));
 	if (!ok)
 	{
 		DBG1(DBG_CHD, "HA CHILD_SA key derivation failed");
@@ -1103,7 +1185,7 @@ ha_dispatcher_t *ha_dispatcher_create(ha_socket_t *socket,
 	);
 	lib->processor->queue_job(lib->processor,
 		(job_t*)callback_job_create_with_prio((callback_job_cb_t)dispatch, this,
-				NULL, (callback_job_cancel_t)return_false, JOB_PRIO_CRITICAL));
+				NULL, callback_job_cancel_thread, JOB_PRIO_CRITICAL));
 
 	return &this->public;
 }

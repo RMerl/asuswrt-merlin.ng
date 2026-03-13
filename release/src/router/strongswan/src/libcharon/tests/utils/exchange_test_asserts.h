@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Tobias Brunner
+ * Copyright (C) 2016-2022 Tobias Brunner
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -27,6 +27,7 @@
 #include <bus/listeners/listener.h>
 
 typedef struct listener_hook_assert_t listener_hook_assert_t;
+typedef struct listener_track_sas_assert_t listener_track_sas_assert_t;
 typedef struct listener_message_assert_t listener_message_assert_t;
 typedef struct listener_message_rule_t listener_message_rule_t;
 typedef struct ipsec_sas_assert_t ipsec_sas_assert_t;
@@ -210,6 +211,99 @@ do { \
 } while(FALSE)
 
 /**
+ * Track SAs by following events.
+ */
+struct listener_track_sas_assert_t {
+
+	/**
+	 * Implemented interface
+	 */
+	listener_t listener;
+
+	/**
+	 * Original source file
+	 */
+	const char *file;
+
+	/**
+	 * Source line
+	 */
+	int line;
+
+	/**
+	 * Tracked IKE_SAs.
+	 */
+	array_t *ike_sas;
+
+	/**
+	 * Tracked CHILD_SAs.
+	 */
+	array_t *child_sas;
+};
+
+
+/**
+ * Implementation of listener_t::ike_updown.
+ */
+bool exchange_test_asserts_track_ike_updown(listener_t *this, ike_sa_t *ike_sa,
+											bool up);
+
+/**
+ * Implementation of listener_t::child_updown.
+ */
+bool exchange_test_asserts_track_child_updown(listener_t *this, ike_sa_t *ike_sa,
+											  child_sa_t *child_sa, bool up);
+
+/**
+ * Implementation of listener_t::ike_rekey.
+ */
+bool exchange_test_asserts_track_ike_rekey(listener_t *this, ike_sa_t *old,
+										   ike_sa_t *new);
+
+/**
+ * Implementation of listener_t::child_rekey.
+ */
+bool exchange_test_asserts_track_child_rekey(listener_t *this, ike_sa_t *ike_sa,
+											 child_sa_t *old, child_sa_t *new);
+
+/**
+ * Start tracking SAs via their hooks.
+ */
+#define assert_track_sas_start() \
+do { \
+	listener_track_sas_assert_t _track_sas_listener = { \
+		.listener = { \
+			.ike_updown = exchange_test_asserts_track_ike_updown, \
+			.ike_rekey = exchange_test_asserts_track_ike_rekey, \
+			.child_updown = exchange_test_asserts_track_child_updown, \
+			.child_rekey = exchange_test_asserts_track_child_rekey, \
+		}, \
+		.file = __FILE__, \
+		.line = __LINE__, \
+		.ike_sas = array_create(sizeof(uint32_t), 8), \
+		.child_sas = array_create(sizeof(uint32_t), 8), \
+	}; \
+	exchange_test_helper->add_listener(exchange_test_helper, &_track_sas_listener.listener)
+
+/**
+ * Check if there are the right number of SAs still up.
+ *
+ * @param ike		the expected number of IKE_SAs
+ * @param child		the expected number of CHILD_SAs
+ */
+#define assert_track_sas(ike, child) \
+	charon->bus->remove_listener(charon->bus, &_track_sas_listener.listener); \
+	u_int _up_ike = array_count(_track_sas_listener.ike_sas); \
+	u_int _up_child = array_count(_track_sas_listener.child_sas); \
+	array_destroy(_track_sas_listener.ike_sas); \
+	array_destroy(_track_sas_listener.child_sas); \
+	assert_listener_msg(_up_ike == (ike), &_track_sas_listener, \
+						"%d IKE_SAs without matching down event", _up_ike); \
+	assert_listener_msg(_up_child == (child), &_track_sas_listener, \
+						"%d CHILD_SAs without matching down event", _up_child); \
+} while(FALSE)
+
+/**
  * Rules regarding payloads/notifies to expect/not expect in a message
  */
 struct listener_message_rule_t {
@@ -357,7 +451,7 @@ bool exchange_test_asserts_message(listener_t *this, ike_sa_t *ike_sa,
 		.line = __LINE__, \
 		.incoming = streq(dir, "IN") ? TRUE : FALSE, \
 		.count = c, \
-		.rules = malloc(sizeof(_rules)), \
+		.rules = sizeof(_rules) ? malloc(sizeof(_rules)) : NULL, \
 		.num_rules = countof(_rules), \
 	); \
 	memcpy(_listener->rules, _rules, sizeof(_rules)); \

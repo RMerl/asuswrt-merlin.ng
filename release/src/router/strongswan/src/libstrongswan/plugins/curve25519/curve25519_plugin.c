@@ -82,7 +82,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *curve25519_plugin_create()
+PLUGIN_DEFINE(curve25519)
 {
 	private_curve25519_plugin_t *this;
 

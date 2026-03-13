@@ -70,6 +70,9 @@ struct JFFS_BACKUP_PROFILE_S {
 };
 
 #define sys_reboot() notify_rc("reboot");
+#ifdef RTCONFIG_ENERGY_SAVE
+#define MaxRule_ENERGY_SAVE_SCHED 24
+#endif
 
 extern struct JFFS_BACKUP_PROFILE_S jffs_backup_profile_t[];
 #define JFFS_CFGS_EXCLUDE "/jffs/exclude_lists"
@@ -177,4 +180,7 @@ extern int check_cmd_injection_blacklist(char *para);
 extern int check_xss_blacklist(char* para, int check_www);
 extern int validate_apply_input_value(char *name, char *value);
 extern int detect_vul_scan(void);
+#ifdef RTCONFIG_AI_SERVICE
+extern int set_AI_board_EULA(char *AI_board_EULA, char *from_service);
+#endif
 #endif /* !__WEBAPI_H__ */

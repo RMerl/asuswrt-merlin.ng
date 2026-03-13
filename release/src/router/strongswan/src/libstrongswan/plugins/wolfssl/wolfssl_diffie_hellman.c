@@ -90,12 +90,17 @@ METHOD(key_exchange_t, get_shared_secret, bool,
 	private_wolfssl_diffie_hellman_t *this, chunk_t *secret)
 {
 	word32 len;
+	int ret;
 
 	if (!this->shared_secret.len)
 	{
 		this->shared_secret = chunk_alloc(this->len);
-		if (wc_DhAgree(&this->dh, this->shared_secret.ptr, &len, this->priv.ptr,
-					   this->priv.len, this->other.ptr, this->other.len) != 0)
+		PRIVATE_KEY_UNLOCK();
+		ret = wc_DhAgree(&this->dh, this->shared_secret.ptr, &len,
+						 this->priv.ptr, this->priv.len, this->other.ptr,
+						 this->other.len);
+		PRIVATE_KEY_LOCK();
+		if (ret != 0)
 		{
 			DBG1(DBG_LIB, "DH shared secret computation failed");
 			chunk_free(&this->shared_secret);
@@ -124,12 +129,15 @@ METHOD(key_exchange_t, set_public_key, bool,
 	return TRUE;
 }
 
-METHOD(key_exchange_t, set_private_key, bool,
-	private_wolfssl_diffie_hellman_t *this, chunk_t value)
+#ifdef TESTABLE_KE
+
+METHOD(key_exchange_t, set_seed, bool,
+	private_wolfssl_diffie_hellman_t *this, chunk_t value, drbg_t *drbg)
 {
 	bool success = FALSE;
 	chunk_t g;
 	word32 len;
+	int ret;
 
 	chunk_clear(&this->priv);
 	this->priv = chunk_clone(value);
@@ -138,8 +146,11 @@ METHOD(key_exchange_t, set_private_key, bool,
 	if (wolfssl_mp2chunk(&this->dh.g, &g))
 	{
 		len = this->pub.len;
-		if (wc_DhAgree(&this->dh, this->pub.ptr, &len, this->priv.ptr,
-						 this->priv.len, g.ptr, g.len) == 0)
+		PRIVATE_KEY_UNLOCK();
+		ret = wc_DhAgree(&this->dh, this->pub.ptr, &len, this->priv.ptr,
+						 this->priv.len, g.ptr, g.len);
+		PRIVATE_KEY_LOCK();
+		if (ret == 0)
 		{
 			this->pub.len = len;
 			success = TRUE;
@@ -149,6 +160,8 @@ METHOD(key_exchange_t, set_private_key, bool,
 	free(g.ptr);
 	return success;
 }
+
+#endif /* TESTABLE_KE */
 
 METHOD(key_exchange_t, get_method, key_exchange_method_t,
 	private_wolfssl_diffie_hellman_t *this)
@@ -216,6 +229,7 @@ static wolfssl_diffie_hellman_t *create_generic(key_exchange_method_t group,
 	private_wolfssl_diffie_hellman_t *this;
 	word32 privLen, pubLen;
 	WC_RNG rng;
+	int ret;
 
 	INIT(this,
 		.public = {
@@ -223,7 +237,6 @@ static wolfssl_diffie_hellman_t *create_generic(key_exchange_method_t group,
 				.get_shared_secret = _get_shared_secret,
 				.set_public_key = _set_public_key,
 				.get_public_key = _get_public_key,
-				.set_private_key = _set_private_key,
 				.get_method = _get_method,
 				.destroy = _destroy,
 			},
@@ -231,6 +244,10 @@ static wolfssl_diffie_hellman_t *create_generic(key_exchange_method_t group,
 		.group = group,
 		.len = p.len,
 	);
+
+#ifdef TESTABLE_KE
+	this->public.ke.set_seed = _set_seed;
+#endif
 
 	if (wc_InitDhKey(&this->dh) != 0)
 	{
@@ -255,8 +272,11 @@ static wolfssl_diffie_hellman_t *create_generic(key_exchange_method_t group,
 	privLen = this->priv.len;
 	pubLen = this->pub.len;
 	/* generate my public and private values */
-	if (wc_DhGenerateKeyPair(&this->dh, &rng, this->priv.ptr, &privLen,
-							 this->pub.ptr, &pubLen) != 0)
+	PRIVATE_KEY_UNLOCK();
+	ret = wc_DhGenerateKeyPair(&this->dh, &rng, this->priv.ptr, &privLen,
+							   this->pub.ptr, &pubLen);
+	PRIVATE_KEY_LOCK();
+	if (ret != 0)
 	{
 		wc_FreeRng(&rng);
 		destroy(this);

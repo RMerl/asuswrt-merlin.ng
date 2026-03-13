@@ -317,7 +317,6 @@ httpApi.get_VLAN_port_status = function(mac) {
 				});
 			}
 		}
-
 		return response;
 	}
 
@@ -456,7 +455,7 @@ $.each(meshNodelist, function(idx, meshNode) {
 
 		var oneNode_port_status = httpApi.get_VLAN_port_status(oneNode.macAddress).port_info[oneNode.macAddress];
 		for (var key in oneNode_port_status) {
-			if (key.indexOf("L") == -1) continue;
+			if (key.indexOf("W") == -1 && key.indexOf("L") == -1) continue;
 
 			var oneLanPort = {};
 			var portIndex = 0;
@@ -818,7 +817,8 @@ function gen_VLAN_port_table(port_profile) {
 				port_info.forEach(([key, value]) => {
 					col_count++;
 					var icon_lanport_idx = "";
-					var lanport_idx = port_profile[mesh_mac[i]].port[key].portLabel.replace("L", "");
+					//var lanport_idx = port_profile[mesh_mac[i]].port[key].portLabel.replace("L", "");
+					var lanport_idx = port_profile[mesh_mac[i]].port[key].portLabel.replace("W", "").replace("L", "");
 					if(col_count<=4){
 						
 						var $port_table_td_status = $("<td>").appendTo($port_table_tr_status);
@@ -949,14 +949,16 @@ function gen_VLAN_port_table(port_profile) {
 							}
 						}
 
-						// 1. (cap with bit PHY_PORT_CAP_WAN)
+						// 1. (cap with bit PHY_PORT_CAP_WAN) ==> replace this case with case3
 						//console.log("cap_WAN: "+port_profile[mesh_mac[i]].port[key].detail.cap_support.WAN);
+						/*
 						if(port_profile[mesh_mac[i]].port[key].detail.cap_support.WAN){
 							aggressive_tag = 2;
 							wan_array.push(lanport_idx);
 							if(port_ui_display_txt!="")
 								wan_ui_display.push(port_ui_display_txt);
 						}
+						*/
 
 						// 2. (cap with bit PHY_PORT_CAP_LAN  && with bit PHY_PORT_CAP_WANLAN) && ext_port_id != -1 
 						if(port_profile[mesh_mac[i]].port[key].detail.cap_support.LAN &&
@@ -971,8 +973,10 @@ function gen_VLAN_port_table(port_profile) {
 						// 3. cap with Pri/Sec WAN
 							//PHY_PORT_CAP_DUALWAN_SECONDARY_WAN  (1U << 29)
 							//PHY_PORT_CAP_DUALWAN_PRIMARY_WAN    (1U << 30)
-						if(port_profile[mesh_mac[i]].port[key].detail.cap_support.DUALWAN_SECONDARY_WAN ||
-							port_profile[mesh_mac[i]].port[key].detail.cap_support.DUALWAN_PRIMARY_WAN){
+						if( (port_profile[mesh_mac[i]].port[key].detail.is_on=="1" && port_profile[mesh_mac[i]].port[key].detail.cap_support.DUALWAN_SECONDARY_WAN) ||
+							(port_profile[mesh_mac[i]].port[key].detail.is_on=="1" && port_profile[mesh_mac[i]].port[key].detail.cap_support.DUALWAN_PRIMARY_WAN)
+						)
+						{
 
 							port_profile[mesh_mac[i]].port[key].wans_lanport = '1';
 							wanlan_tag = parseInt(key)+1;
@@ -1022,7 +1026,8 @@ function gen_VLAN_port_table(port_profile) {
 					port_info.forEach(([key, value]) => {
 						col2_count[r]++;
 						var icon_lanport_idx = "";
-						var lanport_idx = port_profile[mesh_mac[i]].port[key].portLabel.replace("L", "");
+						//var lanport_idx = port_profile[mesh_mac[i]].port[key].portLabel.replace("L", "");
+						var lanport_idx = port_profile[mesh_mac[i]].port[key].portLabel.replace("W", "").replace("L", "");
 
 						// Determine the group based on colX_count
 						var row_colStart = Math.floor((col2_count[r] - 1) / 4) * 4 + 1;
@@ -1155,14 +1160,14 @@ function gen_VLAN_port_table(port_profile) {
 								}
 							}
 
-							// 1. cap with bit PHY_PORT_CAP_WAN
+							// 1. cap with bit PHY_PORT_CAP_WAN ==> replace this case with case3
 							//console.log("cap_WAN: "+port_profile[mesh_mac[i]].port[key].detail.cap_support.WAN);
-							if(port_profile[mesh_mac[i]].port[key].detail.cap_support.WAN){
+							/*if(port_profile[mesh_mac[i]].port[key].detail.cap_support.WAN){
 								aggressive_tag = 2;
 								wan_array.push(lanport_idx);
 								if(port_ui_display_txt!="")
 									wan_ui_display.push(port_ui_display_txt);
-							}
+							}*/
 
 							// 2. (cap with bit PHY_PORT_CAP_LAN  && with bit PHY_PORT_CAP_WANLAN) && ext_port_id != -1
 							if(port_profile[mesh_mac[i]].port[key].detail.cap_support.LAN &&
@@ -1177,10 +1182,12 @@ function gen_VLAN_port_table(port_profile) {
 							// 3. cap with Pri/Sec WAN
 							//PHY_PORT_CAP_DUALWAN_SECONDARY_WAN  (1U << 29)
 							//PHY_PORT_CAP_DUALWAN_PRIMARY_WAN    (1U << 30)
-							if(port_profile[mesh_mac[i]].port[key].detail.cap_support.DUALWAN_SECONDARY_WAN ||
-								port_profile[mesh_mac[i]].port[key].detail.cap_support.DUALWAN_PRIMARY_WAN){
-								port_profile[mesh_mac[i]].port[key].wans_lanport = '1';
+							if( (port_profile[mesh_mac[i]].port[key].detail.is_on=="1" && port_profile[mesh_mac[i]].port[key].detail.cap_support.DUALWAN_SECONDARY_WAN) ||
+							(port_profile[mesh_mac[i]].port[key].detail.is_on=="1" && port_profile[mesh_mac[i]].port[key].detail.cap_support.DUALWAN_PRIMARY_WAN)
+							)
+							{
 
+								port_profile[mesh_mac[i]].port[key].wans_lanport = '1';
 								wanlan_tag = parseInt(key)+1;
 								$port_status_note = $("<div>").appendTo($port_status_icon);
 								aggressive_tag = 4;
@@ -1661,7 +1668,8 @@ function collect_Access_mode_from_table_array() {
 
 		const port_info = Object.entries(VLAN_port_status[Object.keys(VLAN_port_status)[y]].port);
 		port_info.forEach(([key, value]) => {		//each port
-			var lanport_idx = VLAN_port_status[Object.keys(VLAN_port_status)[y]].port[key].portLabel.replace("L", "");
+			//var lanport_idx = VLAN_port_status[Object.keys(VLAN_port_status)[y]].port[key].portLabel.replace("L", "");
+			var lanport_idx = VLAN_port_status[Object.keys(VLAN_port_status)[y]].port[key].portLabel.replace("W", "").replace("L", "");
 			if ($("#switch_mode_" + mac_id_str + "_" + lanport_idx).val() == "Access") {
 				for (var z = 0; z < VLAN_Profile_select.length; z++) {
 					if (VLAN_Profile_select[z].vid == $("#switch_vlan_" + mac_id_str + "_" + lanport_idx).val()) {
@@ -1720,7 +1728,8 @@ function getvlanTrunkListPostData() {
 		var TrunkListbyMac = "";
 		const port_info = Object.entries(VLAN_port_status[Object.keys(VLAN_port_status)[y]].port);
 		port_info.forEach(([key, value]) => {		//each port
-			var lanport_idx = VLAN_port_status[Object.keys(VLAN_port_status)[y]].port[key].portLabel.replace("L", "");
+			//var lanport_idx = VLAN_port_status[Object.keys(VLAN_port_status)[y]].port[key].portLabel.replace("L", "");
+			var lanport_idx = VLAN_port_status[Object.keys(VLAN_port_status)[y]].port[key].portLabel.replace("W", "").replace("L", "");
 			if ($("#switch_mode_" + mac_id_str + "_" + lanport_idx).val() == "Trunk" && $("#switch_vlan_" + mac_id_str + "_" + lanport_idx).val() != "all") {
 				for (var z = 0; z < VLAN_Profile_select.length; z++) {
 					TrunkListByLanport = getTrunkListVID($("#switch_vlan_" + mac_id_str + "_" + lanport_idx).val());

@@ -147,8 +147,14 @@ start_wps_method_ob(void)
 	uint32 flags = 0;
 	char word[256], *next;
 	int unit;
+#ifdef RTCONFIG_VIF_ONBOARDING
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+	char wl_prefix[]="wlXXXXXX_";
+	int obvif_subunit = 0;
+#endif
+#endif
 
-#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_CFGSYNC)
+#if defined(RTCONFIG_VIF_ONBOARDING) && !defined(RTCONFIG_AMAS_5G_ONBOARDING)
 	if (nvram_get_int("cfg_obstatus") == OB_TYPE_LOCKED) {
 		unit = 0;
 		wps_band = 0;
@@ -180,8 +186,18 @@ start_wps_method_ob(void)
 			snprintf(prefix, sizeof(prefix), "wl%d", wps_band);
 #ifdef RTCONFIG_VIF_ONBOARDING
 		if (nvram_get_int("wps_via_vif")) {
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+			snprintf(wl_prefix, sizeof(wl_prefix), "wl%d_", wps_band);
+			if (nvram_get_int("re_mode") == 1)
+				obvif_subunit = nvram_get_int(strcat_r(wl_prefix, "obvif_re_subunit", tmp));
+			else
+				obvif_subunit = nvram_get_int(strcat_r(wl_prefix, "obvif_cap_subunit", tmp));
+
+			snprintf(prefix, sizeof(prefix), "wl%d.%d", wps_band, obvif_subunit);
+#else
 			snprintf(prefix, sizeof(prefix), "wl%d.%d", wps_band,
 				(!nvram_get_int("re_mode")) ? nvram_get_int("obvif_cap_subunit"): nvram_get_int("obvif_re_subunit"));
+#endif
 		}
 #endif
 		_dprintf("Prepare to trigger WPS upon radio [%d][%s]\n", wps_band, prefix);
@@ -362,6 +378,12 @@ start_wps_method(void)
 	int len = 4;
 	char ifname[NVRAM_MAX_PARAM_LEN];
 	char word[256], *next;
+#ifdef RTCONFIG_VIF_ONBOARDING
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+	char wl_prefix[]="wlXXXXXX_";
+	int obvif_subunit = 0;
+#endif
+#endif
 	int unit;
 #if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HAS_6G)
 	int band;
@@ -373,7 +395,7 @@ start_wps_method(void)
 	}
 
 	wps_band = nvram_get_int("wps_band_x");
-#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_CFGSYNC)
+#if defined(RTCONFIG_VIF_ONBOARDING) && !defined(RTCONFIG_AMAS_5G_ONBOARDING)
 	if (nvram_get_int("cfg_obstatus") == OB_TYPE_LOCKED) {
 		unit = 0;
 		wps_band = 0;
@@ -405,10 +427,20 @@ start_wps_method(void)
 		snprintf(prefix, sizeof(prefix), "wl%d_", wps_band);
 #ifdef RTCONFIG_VIF_ONBOARDING
 	if (nvram_get_int("wps_via_vif")) {
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+		snprintf(wl_prefix, sizeof(wl_prefix), "wl%d_", wps_band);
+		if (nvram_get_int("re_mode") == 1)
+			obvif_subunit = nvram_get_int(strcat_r(wl_prefix, "obvif_re_subunit", tmp));
+		else
+			obvif_subunit = nvram_get_int(strcat_r(wl_prefix, "obvif_cap_subunit", tmp));
+
+		snprintf(prefix, sizeof(prefix), "wl%d.%d_", wps_band, obvif_subunit);
+#else
 		snprintf(prefix, sizeof(prefix), "wl%d.%d_", wps_band,
 			(!nvram_get_int("re_mode")) ? nvram_get_int("obvif_cap_subunit"): nvram_get_int("obvif_re_subunit"));
 #if 0	// don't unset wps_via_vif settings since it need to be refered in stop_wps_method()
 		nvram_unset("wps_via_vif");
+#endif
 #endif
 	}
 #endif
@@ -557,6 +589,12 @@ stop_wps_method(void)
 #ifdef RTCONFIG_BRCM_HOSTAPD
 	char word[256], *next;
 #endif
+#ifdef RTCONFIG_VIF_ONBOARDING
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+	char wl_prefix[]="wlXXXXXX_";
+	int obvif_subunit = 0;
+#endif
+#endif
 
 	if (getpid()!=1) {
 		notify_rc("stop_wps_method");
@@ -567,6 +605,9 @@ stop_wps_method(void)
 	int retval = rpc_qcsapi_wps_cancel(WIFINAME);
 	if (retval < 0)
 		dbG("rpc_qcsapi_wps_cancel %s error, return: %d\n", WIFINAME, retval);
+#endif
+#if defined(RPBE58)
+	_dprintf("%s:: is_rp_db:%d\n", __func__, rp_mode_db());
 #endif
 
 #ifdef RTCONFIG_BRCM_HOSTAPD
@@ -580,8 +621,18 @@ stop_wps_method(void)
 		if (is_router_mode()) {
 #ifdef RTCONFIG_VIF_ONBOARDING
 			if (nvram_get_int("wps_via_vif")) {
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+				snprintf(wl_prefix, sizeof(wl_prefix), "wl%d", nvram_get_int("wps_band_x"));
+				if (nvram_get_int("re_mode") == 1)
+					obvif_subunit = nvram_get_int(strcat_r(wl_prefix, "_obvif_re_subunit", tmp));
+				else
+					obvif_subunit = nvram_get_int(strcat_r(wl_prefix, "_obvif_cap_subunit", tmp));
+
+				snprintf(prefix, sizeof(prefix), "wl%d.%d", nvram_get_int("wps_band_x"), obvif_subunit);
+#else
 				snprintf(prefix, sizeof(prefix), "wl%d.%d", nvram_get_int("wps_band_x"),
 					(!nvram_get_int("re_mode")) ? nvram_get_int("obvif_cap_subunit"): nvram_get_int("obvif_re_subunit"));
+#endif
 				snprintf(ifname, sizeof(ifname), "%s", nvram_safe_get(strcat_r(prefix, "_ifname", tmp)));
 				mode = nvram_safe_get(strcat_r(prefix, "_mode", tmp));
 
@@ -590,9 +641,14 @@ stop_wps_method(void)
 					snprintf(cmd, sizeof(cmd), "hostapd_cli -p"
 						" %s -i %s wps_cancel", HAPD_DIR, ifname);
 				} else {
+#if defined(NEW_WPA_CLI)
+					snprintf(cmd, sizeof(cmd), "%s -i %s wps_cancel",
+						WPA_CLI_APP, ifname);
+#else
 					snprintf(cmd, sizeof(cmd), "%s -p "
 						"/var/run/%s_wpa_supplicant -i %s wps_cancel",
 						WPA_CLI_APP, prefix, ifname);
+#endif
 				}
 				if (system(cmd) == 0) {
 					wps_config_command = WPS_UI_CMD_NONE;
@@ -615,9 +671,14 @@ stop_wps_method(void)
 					snprintf(cmd, sizeof(cmd), "hostapd_cli -p"
 						" %s -i %s wps_cancel", HAPD_DIR, word);
 				} else {
+#if defined(NEW_WPA_CLI)
+					snprintf(cmd, sizeof(cmd), "%s -i %s wps_cancel",
+						WPA_CLI_APP, word);
+#else
 					snprintf(cmd, sizeof(cmd), "%s -p "
 						"/var/run/%s_wpa_supplicant -i %s wps_cancel",
 						WPA_CLI_APP, prefix, word);
+#endif
 				}
 
 				if (system(cmd) == 0) {
@@ -628,8 +689,18 @@ stop_wps_method(void)
 		} else {
 #ifdef RTCONFIG_VIF_ONBOARDING
 			if (nvram_get_int("wps_via_vif")) { /* use specific ob vif to start wps registrar */
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+				snprintf(wl_prefix, sizeof(wl_prefix), "wl%d", nvram_get_int("wps_band_x"));
+				if (nvram_get_int("re_mode") == 1)
+					obvif_subunit = nvram_get_int(strcat_r(wl_prefix, "_obvif_re_subunit", tmp));
+				else
+					obvif_subunit = nvram_get_int(strcat_r(wl_prefix, "_obvif_cap_subunit", tmp));
+
+				snprintf(prefix, sizeof(prefix), "wl%d.%d", nvram_get_int("wps_band_x"), obvif_subunit);
+#else
 				snprintf(prefix, sizeof(prefix), "wl%d.%d", nvram_get_int("wps_band_x"),
 					(!nvram_get_int("re_mode")) ? nvram_get_int("obvif_cap_subunit"): nvram_get_int("obvif_re_subunit"));
+#endif
 				snprintf(ifname, sizeof(ifname), "%s", nvram_safe_get(strcat_r(prefix, "_ifname", tmp)));
 				mode = nvram_safe_get(strcat_r(prefix, "_mode", tmp));
 				nvram_unset("wps_via_vif");
@@ -654,9 +725,14 @@ stop_wps_method(void)
 				snprintf(cmd, sizeof(cmd), "hostapd_cli -p"
 					" %s -i %s wps_cancel", HAPD_DIR, ifname);
 			} else {
+#if defined(NEW_WPA_CLI)
+				snprintf(cmd, sizeof(cmd), "%s -i %s wps_cancel",
+					WPA_CLI_APP, ifname);
+#else
 				snprintf(cmd, sizeof(cmd), "%s -p "
 					"/var/run/%s_wpa_supplicant -i %s wps_cancel",
 					WPA_CLI_APP, prefix, ifname);
+#endif
 			}
 
 			if (system(cmd) == 0) {
@@ -712,15 +788,25 @@ int start_wps_enr(void)
 
 		switch (wps_method){
 			case WPS_UI_METHOD_PBC:
+#if defined(NEW_WPA_CLI)
+			snprintf(cmd, sizeof(cmd), "%s -i %s wps_pbc",
+				WPA_CLI_APP, ifname);
+#else
 			snprintf(cmd, sizeof(cmd), "%s -p "
 				"/var/run/%s_wpa_supplicant -i %s wps_pbc",
 				WPA_CLI_APP, prefix, ifname);
+#endif
 			break;
 
 			case WPS_UI_METHOD_PIN:
+#if defined(NEW_WPA_CLI)
+			snprintf(cmd, sizeof(cmd), "%s -i %s wps_pin any %s",
+				WPA_CLI_APP, ifname, nvram_safe_get("wps_device_pin"));
+#else
 			snprintf(cmd, sizeof(cmd), "%s -p "
 				"/var/run/%s_wpa_supplicant -i %s wps_pin any %s",
 				WPA_CLI_APP, prefix, ifname, nvram_safe_get("wps_device_pin"));
+#endif
 			break;
 		}
 
@@ -909,11 +995,30 @@ int is_wps_stopped(void)
 	}
 
 #if defined(RPAX56) || defined(RPAX58) || defined(RPBE58)
-	if (nvram_match("btn_wps", "0") && nvram_match("x_Setting", "0") && !pids("obd")) {
-		_dprintf("%s, recover obd/amas_ssd_cd.\n", __func__);
-		nvram_set("no_obd", "0");
-		start_obd();
-		start_conn_diag_ss();
+	if (nvram_match("btn_wps", "0")) {
+		if (nvram_match("re_mode", "0") && nvram_match("x_Setting", "1")) {
+			revert_wlc_settings();
+
+			if (nvram_match("reload_wl", "1")) {
+				nvram_unset("reload_wl");
+				notify_rc("restart_wireless");
+			}
+		}
+
+		if (nvram_match("x_Setting", "0") && !pids("obd")) {
+			_dprintf("%s, recover obd/amas_ssd_cd.\n", __func__);
+			nvram_set("no_obd", "0");
+			start_obd();
+			start_conn_diag_ss();
+		}
+	}
+#endif
+#if defined(RTCONFIG_BCM_CLED) && defined(RTCONFIG_SINGLE_LED)
+	// cled war
+	if (status > 0 && !*nvram_safe_get("bcm_cled_in_wps")) {
+		_dprintf("%s(%d):: reset bcm_cled.\n", __func__, status);
+		nvram_set("bcm_cled_in_wps", "1");
+		bcm_cled_ctrl(BCM_CLED_BLUE, BCM_CLED_STEADY_BLINK);
 	}
 #endif
 

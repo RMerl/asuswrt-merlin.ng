@@ -139,7 +139,29 @@ evutil_secure_rng_init(void)
 static void
 ev_arc4random_buf(void *buf, size_t n)
 {
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126)
+	int fd = open("/dev/urandom", O_RDONLY);
+	if (fd < 0) {
+		abort(); // or other error handling
+	}
+
+	size_t got = 0;
+	while (got < n) {
+		ssize_t res = read(fd, (char *)buf + got, n - got);
+		if (res <= 0) {
+			if (errno == EINTR)
+				continue;
+			close(fd);
+			abort();
+		}
+		got += res;
+	}
+	close(fd);
+#else
 	arc4random_buf(buf, n);
+#endif /*  WIFI7_SDK_20250506 || WIFI8_SDK_20251126 */
+#endif	/* RTCONFIG_HND_ROUTER_BE_4916 */
 }
 
 #endif /* } !_EVENT_HAVE_ARC4RANDOM */

@@ -205,11 +205,29 @@ int main(int argc, char *argv[])
 	/* install routes via XFRM interfaces, if we can use them */
 	lib->settings->set_default_str(lib->settings,
 				"charon-nm.plugins.kernel-netlink.install_routes_xfrmi", "yes");
-	/* bypass IKE traffic from these routes in case traffic selectors conflict */
+	/* use a separate routing table to avoid conflicts with regular charon */
 	lib->settings->set_default_str(lib->settings,
-				"charon-nm.plugins.socket-default.fwmark", "220");
+				"charon-nm.routing_table", "210");
+	/* use the same value as priority (higher than charon's default) */
 	lib->settings->set_default_str(lib->settings,
-				"charon-nm.plugins.kernel-netlink.fwmark", "!220");
+				"charon-nm.routing_table_prio", "210");
+	/* bypass IKE/ESP from these routes in case traffic selectors conflict */
+	lib->settings->set_default_str(lib->settings,
+				"charon-nm.plugins.socket-default.fwmark", "210");
+	lib->settings->set_default_str(lib->settings,
+				"charon-nm.plugins.kernel-netlink.fwmark", "!210");
+
+	/* trigger a DPD to verify the current path is working */
+	lib->settings->set_default_str(lib->settings,
+				"charon-nm.check_current_path", "yes");
+
+	/* fail more quickly so users don't have to wait too long for a new SA */
+	lib->settings->set_default_str(lib->settings,
+				"charon-nm.retransmit_tries", "3");
+	lib->settings->set_default_str(lib->settings,
+				"charon-nm.retransmit_timeout", "2.0");
+	lib->settings->set_default_str(lib->settings,
+				"charon-nm.retransmit_base", "1.4");
 
 	DBG1(DBG_DMN, "Starting charon NetworkManager backend (strongSwan "VERSION")");
 	if (lib->integrity)

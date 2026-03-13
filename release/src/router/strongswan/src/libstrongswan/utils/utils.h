@@ -217,7 +217,7 @@ void utils_deinit();
 /**
  * Ignore result of functions tagged with warn_unused_result attributes
  */
-#define ignore_result(call) { if(call){}; }
+#define ignore_result(call) do { if(call){} } while(0)
 
 #if !defined(HAVE_SIGWAITINFO) && !defined(WIN32)
 /**

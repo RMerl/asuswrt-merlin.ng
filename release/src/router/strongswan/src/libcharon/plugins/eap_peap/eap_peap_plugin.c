@@ -57,7 +57,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *eap_peap_plugin_create()
+PLUGIN_DEFINE(eap_peap)
 {
 	eap_peap_plugin_t *this;
 

@@ -192,6 +192,7 @@ system.acs_dfs = nvram.acs_dfs;
 system.acs_band3 = nvram.acs_band3;
 system.acs_unii4 = nvram.acs_unii4;
 system.acs_ch13 = nvram.acs_ch13;
+system.outdoorModeSupport = isSupport("od_mode");
 system.mloEnabled = (() => {
     let { mloSupport } = system;
     let { mld_enable } = nvram;
@@ -214,19 +215,19 @@ let wlPostfixIndexTransform = {
 };
 system.aMesh = (() => {
     let { wlnband_list, dwb_mode, dwb_band } = nvram;
-    let nBandArray = wlnband_list.split("&#60");
+    let nBandArray = (wlnband_list || "").split("&#60");
     let object = {};
     object.aMeshSupport = isSupport("amas");
     object.aMeshRouterSupport = isSupport("amasRouter");
     object.aMeshPrelinkSupport = isSupport("prelink");
-    object.dwbMode = (()=>{
-        if(system.mloSupport){
+    object.dwbMode = (() => {
+        if (system.mloSupport) {
             return "0";
         }
-                
+
         return nBandArray[dwb_band] ? dwb_mode : "0";
     })();
-    object.dwbBand = nBandArray[dwb_band];    
+    object.dwbBand = nBandArray[dwb_band];
     object.nodeList = (() => {
         let { aMeshSupport, aMeshRouterSupport } = object;
         let list = {};
@@ -247,9 +248,76 @@ system.aMesh = (() => {
     object.channel = (() => {
         let _channel = {};
         if (dwb_mode === "1") {
-            nBandArray.forEach((element) => {
+            (nBandArray || []).forEach((element) => {
                 let postfixIndex = wlPostfixIndexTransform[element];
-                let dwbChannel = (() => httpApi.hookGet(`get_wl_channel_list_${postfixIndex}`) || {})();
+                let dwbChannel = (() => {
+                    let _channel = httpApi.hookGet(`get_wl_channel_list_${postfixIndex}`) || {};
+
+                    // handle channel while CAP & RE intersection of control channels is empty
+                    if (!_channel.chan_20m) {
+                        let chanspecs = httpApi.hookGet(`chanspecs_${postfixIndex}`) || [];
+                        chanspecs.forEach((element) => {
+                            let _ch = element.split("u")[0].split("l")[0].split("/")[0];
+                            if (_ch.indexOf("6g") !== -1) {
+                                _ch = _ch.split("6g")[1];
+                            }
+
+                            if (element.indexOf("u") !== -1 || element.indexOf("l") !== -1 || element.indexOf("/40") !== -1) {
+                                if (_channel.chan_40m === undefined) {
+                                    _channel.chan_40m = {
+                                        chanlist: [],
+                                        chanspec: [],
+                                    };
+                                }
+
+                                _channel.chan_40m.chanlist.push(_ch);
+                                _channel.chan_40m.chanspec.push(element);
+                            } else if (element.indexOf("/80") !== -1) {
+                                if (_channel.chan_80m === undefined) {
+                                    _channel.chan_80m = {
+                                        chanlist: [],
+                                        chanspec: [],
+                                    };
+                                }
+
+                                _channel.chan_80m.chanlist.push(_ch);
+                                _channel.chan_80m.chanspec.push(element);
+                            } else if (element.indexOf("/160") !== -1) {
+                                if (_channel.chan_160m === undefined) {
+                                    _channel.chan_160m = {
+                                        chanlist: [],
+                                        chanspec: [],
+                                    };
+                                }
+
+                                _channel.chan_160m.chanlist.push(_ch);
+                                _channel.chan_160m.chanspec.push(element);
+                            } else if (element.indexOf("/320") !== -1) {
+                                if (_channel.chan_320m === undefined) {
+                                    _channel.chan_320m = {
+                                        chanlist: [],
+                                        chanspec: [],
+                                    };
+                                }
+
+                                _channel.chan_320m.chanlist.push(_ch);
+                                _channel.chan_320m.chanspec.push(element);
+                            } else {
+                                if (_channel.chan_20m === undefined) {
+                                    _channel.chan_20m = {
+                                        chanlist: [],
+                                        chanspec: [],
+                                    };
+                                }
+
+                                _channel.chan_20m.chanlist.push(_ch);
+                                _channel.chan_20m.chanspec.push(element);
+                            }
+                        });
+                    }
+
+                    return _channel;
+                })();
                 _channel[element] = dwbChannel;
             });
 
@@ -270,7 +338,7 @@ system.currentOPMode = (() => {
         ew2: { id: "EW2", desc: "<#OP_RE2G_item#>" },
         ew5: { id: "EW5", desc: "<#OP_RE5G_item#>" },
         hs: { id: "HS", desc: "Hotspot" },
-        wisp: { id: "WISP", desc: `<#OP_WISP_item#>` }
+        wisp: { id: "WISP", desc: `<#OP_WISP_item#>` },
     };
 
     let { sw_mode, wlc_psta, wlc_express } = nvram;
@@ -287,7 +355,7 @@ system.smartConnect = (() => {
     object.version = isSupport("smart_connect_v2") ? "v2" : isSupport("smart_connect") || isSupport("bandstr") ? "v1" : "";
     object.v2Band = (() => {
         const maxLength = 8;
-        let biString = parseInt(smart_connect_selif_x).toString(2);
+        let biString = parseInt(smart_connect_selif_x || "0").toString(2);
         let bandArray = biString.split("");
         while (bandArray.length < maxLength) {
             bandArray.unshift("0");
@@ -301,7 +369,7 @@ system.smartConnect = (() => {
     object.v1Type = isSupport("sdn_mainfh") ? "1" : smart_connect_x;
     object.smartConnectReferenceIndex = (() => {
         if (object.version === "v2") {
-            let _index = object.v2Band.findLastIndex((element) => element === "1");
+            let _index = (object.v2Band || []).findLastIndex((element) => element === "1");
             return referenceArray[_index] || `2g1`;
         } else {
             if (object.v1Type === "1" || object.v1Type === "3") {
@@ -321,7 +389,7 @@ system.smartConnect = (() => {
 system.wlBandSeq = (() => {
     let wlObj = {};
     let { wlnband_list, dwb_mode } = nvram;
-    let nBandArray = wlnband_list.split("&#60");
+    let nBandArray = (wlnband_list || "").split("&#60");
     let curCtrlChannelArray = httpApi.hookGet("wl_control_channel");
     let {
         isBRCMplatform,
@@ -337,15 +405,14 @@ system.wlBandSeq = (() => {
         smartConnect,
         aMesh,
     } = system;
+    const currentOPMode = system?.currentOPMode?.id || "RT";
 
     const _nvram_payload = [];
     const _nvramCharToAscii_payload = [];
     for (let i = 0; i < nBandArray.length; i++) {
         let wlIfIndex = nBandArray[i];
         let wlFronthaulIndex =
-            system.currentOPMode.id == "RE" && (nvram.wlc_band == i || nvram.mlo_rp == "1" || isSupport("concurrep"))
-                ? `${wlIfIndex}.1`
-                : wlIfIndex;
+            currentOPMode == "RE" && (nvram.wlc_band == i || nvram.mlo_rp == "1" || isSupport("concurrep")) ? `${wlIfIndex}.1` : wlIfIndex;
         _nvram_payload.push(`${wlIfIndex}_nmode_x`);
         _nvram_payload.push(`${wlIfIndex}_closed`);
         _nvram_payload.push(`${wlIfIndex}_bw`);
@@ -368,7 +435,7 @@ system.wlBandSeq = (() => {
         _nvram_payload.push(`${wlIfIndex}_key3`);
         _nvram_payload.push(`${wlIfIndex}_key4`);
         _nvram_payload.push(`${wlIfIndex}_phrase_x`);
-        _nvram_payload.push(`${wlIfIndex}_11be`);
+        _nvram_payload.push(`${wlFronthaulIndex}_11be`);
         _nvramCharToAscii_payload.push(`${wlFronthaulIndex}_ssid`);
         _nvramCharToAscii_payload.push(`${wlFronthaulIndex}_wpa_psk`);
     }
@@ -379,9 +446,7 @@ system.wlBandSeq = (() => {
     for (let i = 0; i < nBandArray.length; i++) {
         let wlIfIndex = nBandArray[i];
         let wlFronthaulIndex =
-            system.currentOPMode.id == "RE" && (nvram.wlc_band == i || nvram.mlo_rp == "1" || isSupport("concurrep"))
-                ? `${wlIfIndex}.1`
-                : wlIfIndex;
+            currentOPMode == "RE" && (nvram.wlc_band == i || nvram.mlo_rp == "1" || isSupport("concurrep")) ? `${wlIfIndex}.1` : wlIfIndex;
         let postfixIndex = "";
         let _nvram = httpApi.nvramGet([
             `${wlIfIndex}_nmode_x`,
@@ -406,7 +471,7 @@ system.wlBandSeq = (() => {
             `${wlIfIndex}_key3`,
             `${wlIfIndex}_key4`,
             `${wlIfIndex}_phrase_x`,
-            `${wlIfIndex}_11be`,
+            `${wlFronthaulIndex}_11be`,
         ]);
 
         let _nvramAscii = httpApi.nvramCharToAscii([`${wlFronthaulIndex}_ssid`, `${wlFronthaulIndex}_wpa_psk`]);
@@ -416,9 +481,9 @@ system.wlBandSeq = (() => {
         wlObj[wlIfIndex].name = (() => {
             let wlIfNameObject = {
                 "2g1": "2.4 GHz",
-                "5g1": (() => (nBandArray.find((element) => element === "5g2") === "5g2" ? "5 GHz-1" : "5 GHz"))(),
+                "5g1": (() => ((nBandArray || []).find((element) => element === "5g2") === "5g2" ? "5 GHz-1" : "5 GHz"))(),
                 "5g2": "5 GHz-2",
-                "6g1": (() => (nBandArray.find((element) => element === "6g2") === "6g2" ? "6 GHz-1" : "6 GHz"))(),
+                "6g1": (() => ((nBandArray || []).find((element) => element === "6g2") === "6g2" ? "6 GHz-1" : "6 GHz"))(),
                 "6g2": "6 GHz-2",
             };
 
@@ -426,6 +491,7 @@ system.wlBandSeq = (() => {
         })();
         wlObj[wlIfIndex].postfixHook = postfixIndex;
         wlObj[wlIfIndex].prefixNvram = wlIfIndex;
+        wlObj[wlIfIndex].prefixFronthaulNvram = wlFronthaulIndex;
         wlObj[wlIfIndex].capability = (() => {
             let _cap = httpApi.hookGet(`wl_cap_${postfixIndex}`);
             return _cap ? _cap.trim().split(" ") : [];
@@ -455,7 +521,7 @@ system.wlBandSeq = (() => {
             if (dwb_mode === "1" && channel[wlIfIndex]?.chan_20m?.chanlist?.length > 1) {
                 _channel = (() => {
                     let chanlist = (() => (channel[wlIfIndex].chan_20m ? channel[wlIfIndex].chan_20m.chanlist : []))();
-                    if (chanlist[0] === "0") {
+                    if (chanlist.length > 0 && chanlist[0] === "0") {
                         chanlist.shift();
                     }
 
@@ -494,7 +560,7 @@ system.wlBandSeq = (() => {
                 });
             }
 
-            return _channel.map((element) => element.toString());
+            return (_channel || []).map((element) => element.toString());
         })();
         wlObj[wlIfIndex].curCtrlChannel = curCtrlChannelArray[i];
         wlObj[wlIfIndex].mfpValue = _nvram[`${wlIfIndex}_mfp`];
@@ -510,13 +576,13 @@ system.wlBandSeq = (() => {
             wlObj[wlIfIndex].chanspecs = (() => {
                 if (dwb_mode === "1") {
                     let channel = [];
-                    let dwbChannel = objectDeepCopy(aMesh.channel[wlIfIndex]);
+                    let dwbChannel = objectDeepCopy(aMesh.channel[wlIfIndex]) || {};
                     if (dwbChannel.auto) {
                         delete dwbChannel["auto"];
                     }
 
                     for (let { chanspec } of Object.values(dwbChannel)) {
-                        if (chanspec) {
+                        if (chanspec && Array.isArray(chanspec)) {
                             if (chanspec[0] === "0") {
                                 chanspec.shift();
                             }
@@ -528,9 +594,9 @@ system.wlBandSeq = (() => {
                     return channel;
                 }
 
-                return httpApi.hookGet(`chanspecs_${postfixIndex}`);
+                return httpApi.hookGet(`chanspecs_${postfixIndex}`) || [];
             })();
-            wlObj[wlIfIndex].chanspecs.forEach((element) => {
+            (wlObj[wlIfIndex].chanspecs || []).forEach((element) => {
                 let _ch = element.split("u")[0].split("l")[0].split("/")[0];
                 if (_ch.indexOf("6g") !== -1) {
                     _ch = _ch.split("6g")[1];
@@ -553,7 +619,7 @@ system.wlBandSeq = (() => {
                         return;
                     }
 
-                    if (isIDSku && (wlIfIndex === "5g1" || wlIfIndex === "5g2")) {
+                    if (isIDSku && productId === "GT-BE98" && (wlIfIndex === "5g1" || wlIfIndex === "5g2")) {
                         return;
                     }
 
@@ -577,10 +643,10 @@ system.wlBandSeq = (() => {
                 }
             });
         } else {
-            wlObj[wlIfIndex].chanspecs = (() => {               
-                return httpApi.hookGet(`chanspecs_${postfixIndex}`);
+            wlObj[wlIfIndex].chanspecs = (() => {
+                return httpApi.hookGet(`chanspecs_${postfixIndex}`) || [];
             })();
-            
+
             let wlChannels = wlObj[wlIfIndex].channel;
             for (let element of wlChannels) {
                 // 20 MHz
@@ -625,7 +691,7 @@ system.wlBandSeq = (() => {
                         channelStr = (channelNumber + 4).toString();
                     }
 
-                    if (wlChannels.indexOf(channelStr) !== -1) {
+                    if ((wlChannels || []).indexOf(channelStr) !== -1) {
                         if (wlObj[wlIfIndex].ch40MHz[element] === undefined) {
                             wlObj[wlIfIndex].ch40MHz[element] = [];
                         }
@@ -684,7 +750,7 @@ system.wlBandSeq = (() => {
                     let channelGroupIndex = Math.ceil(channelNumberOperation / 16);
                     let targetPartition = channelPartition[channelGroupIndex];
                     for (let _channel of targetPartition) {
-                        wlChannels.includes(_channel) && bw80count++;
+                        (wlChannels || []).includes(_channel) && bw80count++;
                     }
 
                     if (bw80MaxCount === bw80count) {
@@ -697,10 +763,13 @@ system.wlBandSeq = (() => {
                 }
 
                 // 160 MHz
-                let bw160MHzSupport = isSupport("vht160");
-                if (isIDSku && (wlIfIndex === "5g1" || wlIfIndex === "5g2")) {
-                    bw160MHzSupport = false;
-                }
+                let bw160MHzSupport = (() => {
+                    if (isIDSku && productId === "GT-BE98" && (wlIfIndex === "5g1" || wlIfIndex === "5g2")) {
+                        return false;
+                    }
+
+                    return isSupport("vht160");
+                })();
 
                 if (bw160MHzSupport) {
                     const bw160MaxCount = 8;
@@ -736,7 +805,7 @@ system.wlBandSeq = (() => {
                     let channelGroupIndex = Math.ceil(channelNumberOperation / 32);
                     let targetPartition = channelPartition[channelGroupIndex];
                     for (let _channel of targetPartition) {
-                        wlChannels.includes(_channel) && bw160count++;
+                        (wlChannels || []).includes(_channel) && bw160count++;
                     }
 
                     if (bw160MaxCount === bw160count) {
@@ -751,7 +820,7 @@ system.wlBandSeq = (() => {
 
             // 240 MHz
             if (wlIfIndex === "5g1" || wlIfIndex === "5g2") {
-                let chanspecs = httpApi.hookGet(`chanspecs_${postfixIndex}`);
+                let chanspecs = httpApi.hookGet(`chanspecs_${postfixIndex}`) || [];
                 chanspecs.forEach((element) => {
                     let _ch = element.split("u")[0].split("l")[0].split("/")[0];
                     if (_ch.indexOf("6g") !== -1) {
@@ -774,7 +843,7 @@ system.wlBandSeq = (() => {
             let bw320MHzSupport = isSupport("wifi7");
             if (bw320MHzSupport) {
                 if (wlIfIndex === "6g1" || wlIfIndex === "6g2") {
-                    let chanspecs = httpApi.hookGet(`chanspecs_${postfixIndex}`);
+                    let chanspecs = httpApi.hookGet(`chanspecs_${postfixIndex}`) || [];
                     chanspecs.forEach((element) => {
                         let _ch = element.split("u")[0].split("l")[0].split("/")[0];
                         if (_ch.indexOf("6g") !== -1) {
@@ -805,7 +874,7 @@ system.wlBandSeq = (() => {
             let channel = wlObj[wlIfIndex].channel;
             let pscChannelAll = ["5", "21", "37", "53", "69", "85", "101", "117", "133", "149", "165", "181", "197", "213"];
             pscChannelAll.forEach((element) => {
-                if (channel.indexOf(element) !== -1) {
+                if ((channel || []).indexOf(element) !== -1) {
                     pscChannel.push(element);
                 }
             });
@@ -859,7 +928,7 @@ system.wlBandSeq = (() => {
                 return false;
             }
 
-            if (isIDSku && (wlIfIndex === "5g1" || wlIfIndex === "5g2")) {
+            if (isIDSku && productId === "GT-BE98" && (wlIfIndex === "5g1" || wlIfIndex === "5g2")) {
                 return false;
             }
 
@@ -883,23 +952,23 @@ system.wlBandSeq = (() => {
             return isSupport("11AC");
         })();
         wlObj[wlIfIndex].axSupport = (() => {
-            if (wlObj[wlIfIndex].capability.length !== 0) {
-                return wlObj[wlIfIndex].capability.find((element) => element === "11ax") === "11ax";
+            if ((wlObj[wlIfIndex].capability || []).length !== 0) {
+                return (wlObj[wlIfIndex].capability || []).find((element) => element === "11ax") === "11ax";
             }
 
             return isSupport("11AX");
         })();
         wlObj[wlIfIndex].beSupport = (() => {
-            if (wlObj[wlIfIndex].capability.length !== 0) {
-                return wlObj[wlIfIndex].capability.find((element) => element === "11be") === "11be";
+            if ((wlObj[wlIfIndex].capability || []).length !== 0) {
+                return (wlObj[wlIfIndex].capability || []).find((element) => element === "11be") === "11be";
             }
 
             return isSupport("wifi7");
         })();
-        wlObj[wlIfIndex].acsCH13Support = (() => wlIfIndex === "2g1" && wlObj[wlIfIndex].channel.length > 11)();
+        wlObj[wlIfIndex].acsCH13Support = (() => wlIfIndex === "2g1" && (wlObj[wlIfIndex].channel || []).length > 11)();
         wlObj[wlIfIndex].dfsSupport = (() => {
             if (wlIfIndex === "5g1" || wlIfIndex === "5g2") {
-                return wlObj[wlIfIndex].channel.find((element) => element === "56" || element === "100") !== undefined;
+                return (wlObj[wlIfIndex].channel || []).find((element) => element === "56" || element === "100") !== undefined;
             }
 
             return false;
@@ -907,14 +976,14 @@ system.wlBandSeq = (() => {
 
         wlObj[wlIfIndex].uNII4Support = (() => {
             if (wlIfIndex === "5g1" || wlIfIndex === "5g2") {
-                return wlObj[wlIfIndex].channel.find((element) => element === "173" || element === "177") !== undefined;
+                return (wlObj[wlIfIndex].channel || []).find((element) => element === "173" || element === "177") !== undefined;
             }
 
             return false;
         })();
 
         wlObj[wlIfIndex].wifi7ModeEnabled = (() => {
-            return _nvram[`${wlIfIndex}_11be`] === "1";
+            return _nvram[`${wlFronthaulIndex}_11be`] === "1";
         })();
 
         wlObj[wlIfIndex].wlMode = (() => {
@@ -1027,6 +1096,17 @@ system.wlBandSeq = (() => {
                 delete authMethodObj["radius"];
             }
 
+            if (currentOPMode == "RE") {
+                delete authMethodObj["shared"];
+                delete authMethodObj["wpa"];
+                delete authMethodObj["wpa2"];
+                delete authMethodObj["wpa3"];
+                delete authMethodObj["suite-b"];
+                delete authMethodObj["wpawpa2"];
+                delete authMethodObj["wpa2wpa3"];
+                delete authMethodObj["radius"];
+            }
+
             return authMethodObj;
         })();
 
@@ -1034,22 +1114,22 @@ system.wlBandSeq = (() => {
         wlObj[wlIfIndex].bgProtectSupport = wlIfIndex === "2g1";
         wlObj[wlIfIndex].disable11bSupport = wlIfIndex === "2g1";
         wlObj[wlIfIndex].heFrameSupport = (() => {
-            if (wlObj[wlIfIndex].capability.length !== 0) {
-                return wlObj[wlIfIndex].capability.find((element) => element === "11ax") === "11ax";
+            if ((wlObj[wlIfIndex].capability || []).length !== 0) {
+                return (wlObj[wlIfIndex].capability || []).find((element) => element === "11ax") === "11ax";
             }
 
             return isSupport("11AX");
         })();
         wlObj[wlIfIndex].mboSupport = (() => {
-            if (wlObj[wlIfIndex].capability.length !== 0) {
-                return wlObj[wlIfIndex].capability.find((element) => element === "11ax") === "11ax";
+            if ((wlObj[wlIfIndex].capability || []).length !== 0) {
+                return (wlObj[wlIfIndex].capability || []).find((element) => element === "11ax") === "11ax";
             }
 
             return isSupport("11AX");
         })();
         wlObj[wlIfIndex].twtSupport = (() => {
-            if (wlObj[wlIfIndex].capability.length !== 0) {
-                return wlObj[wlIfIndex].capability.find((element) => element === "11ax") === "11ax";
+            if ((wlObj[wlIfIndex].capability || []).length !== 0) {
+                return (wlObj[wlIfIndex].capability || []).find((element) => element === "11ax") === "11ax";
             }
 
             return isSupport("11AX");
@@ -1059,8 +1139,8 @@ system.wlBandSeq = (() => {
             const referenceArray = ["", "", "", "6g2", "6g1", "5g2", "5g1", "2g1"];
             let { v2Band, version, v1Type } = smartConnect;
             if (version === "v2") {
-                let index = referenceArray.findIndex((element) => element === wlIfIndex);
-                return v2Band[index] === "1";
+                let index = (referenceArray || []).findIndex((element) => element === wlIfIndex);
+                return (v2Band || [])[index] === "1";
             } else {
                 if (v1Type === "1") {
                     return true;
@@ -1164,7 +1244,7 @@ system.client = (() => {
         mapArray.push(key);
     }
 
-    for (let [key, value] of Object.entries(nmp)) {
+    for (let [key, value] of Object.entries(nmp || {})) {
         if (key === "maclist" || key === "ClientAPILevel") {
             continue;
         }
@@ -1263,15 +1343,15 @@ function getTime() {
     let timeMillSec = 0;
     let timezone = "";
     let weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    if (Object.keys(system.time).length === 0 || system.time.timestamp % 60000 === 0) {
+    if (Object.keys(system.time || {}).length === 0 || (system.time && system.time.timestamp % 60000 === 0)) {
         // sync system time per 60 seconds
-        let uptime = httpApi.hookGet("uptime");
+        let uptime = httpApi.hookGet("uptime") || "";
         cachedData.clear(["uptime"]);
         timeArray = uptime.split("(")[0].split(" ");
         // remove timezone and regenerate time string to get timemillisecond to avoid timezone offset issue
-        timezone = timeArray.pop();
+        timezone = timeArray.length > 0 ? timeArray.pop() : "";
         timeArray.join("");
-        bootTime = parseInt(uptime.split("(")[1].split(" ")[0]);
+        bootTime = parseInt(uptime.split("(")[1]?.split(" ")[0] || "0");
         timeMillSec = Date.parse(timeArray);
     } else if (system !== undefined && system.time && system.time.timestamp % 60000 !== 0) {
         timeMillSec = system.time.timestamp + 1000;

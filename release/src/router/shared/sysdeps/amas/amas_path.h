@@ -234,6 +234,7 @@ AUTO_RSSISCORE:
 #define IDLE						0x00
 #define BUSY						0x01
 #define FIN							0x02
+#define READY						0x04
 
 /*Who triggered the behavior of self-optimize*/
 #define OPTMZ_FROM_RE				0x01   	// trigger by amas_bhctrl

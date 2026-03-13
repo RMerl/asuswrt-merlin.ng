@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
     CHECK( pjlib_util_init() );
     pj_caching_pool_init(0, &cp, NULL, 0);
     //CHECK( pjmedia_endpt_create(&cp.factory, NULL, 1, &med_ept) );
-    CHECK( pjmedia_endpt_create(0, &cp.factory, NULL, 1, 0,&med_ept) );
+    CHECK( pjmedia_endpt_create(&cp.factory, NULL, 1, 0, 1, &med_ept) );
 
     pool = pj_pool_create(&cp.factory, "mix", 1000, 1000, NULL);
 

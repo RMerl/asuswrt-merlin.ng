@@ -125,6 +125,7 @@ METHOD(listener_t, ike_updown, bool,
 		child_sa_create_t child = {
 			.if_id_in_def = ike_sa->get_if_id(ike_sa, TRUE),
 			.if_id_out_def = ike_sa->get_if_id(ike_sa, FALSE),
+			.cpu = CPU_ID_MAX,
 		};
 
 		INIT(entry,

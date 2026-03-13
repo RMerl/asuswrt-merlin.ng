@@ -1,0 +1,264 @@
+#include "6766.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_TYPE_DDR4       | \
+            BP_DDR_SPEED_1600_22_22_22    | \
+            BP_DDR_TOTAL_SIZE_2048MB      | \
+            BP_DDR_DEVICE_WIDTH_16        | \
+            BP_DDR_TOTAL_WIDTH_16BIT      | \
+            BP_DDR_6766_DEFAULT)>;
+    };
+
+    sfp1: sfp1 {
+        compatible = "brcm,sfp";
+        pinctrl-name = "default";
+        pinctrl-0 = <&a_slan0_sd_rx_los_pin_4>;
+        mod-def0 = <&bca_extintr 3 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+        i2c-bus = <&i2c1>;
+        status = "okay";
+    };
+};
+
+&i2c1 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&i2c_2_scl_pin_8 &i2c_2_sda_pin_9>;
+    status = "okay";
+};
+
+&led_ctrl {
+    pinctrl-names = "default";
+
+	/* POWER_LED */
+	led0:led_gpio_10 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <10>;
+		active_low;
+		init_low;
+	};
+
+	/* WAN_LED */
+	led1: led_gpio_12 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <12>;
+		active_low;
+	};
+
+	/* WAN_RED_LED */
+	led2: led_gpio_16 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <16>;
+		active_low;
+	};
+
+	/* LAN_LED */
+	led3: led_gpio_14 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <14>;
+		active_low;
+	};
+	
+	/* WLAN_LED */
+	led4: led_gpio_17 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <17>;
+		active_low;
+	};
+
+	/* LED_RED */
+	led5: sw_parallel_led_19 {
+		active_high;
+		brightness = <0>;
+		pinctrl-0 = <&a_per_led_19_pin_19>;
+		status = "okay";
+	};
+
+	/* LED_GREEN */
+	led6: sw_parallel_led_21 {
+		active_high;
+		brightness = <0>;
+		pinctrl-0 = <&a_per_led_21_pin_21>;
+		status = "okay";
+	};
+
+	/* LED_BLUE */
+	led7: sw_parallel_led_4 {
+		active_high;
+		brightness = <0>;
+		pinctrl-0 = <&b_per_led_04_pin_37>;
+		status = "okay";
+	};
+
+	/* LED_RED */
+	led8: sw_parallel_led_29 {
+		active_high;
+		brightness = <0>;
+		pinctrl-0 = <&a_per_led_29_pin_29>;
+		status = "okay";
+	};
+
+	/* LED_GREEN */
+	led9: sw_parallel_led_31 {
+		active_high;
+		brightness = <0>;
+		pinctrl-0 = <&a_per_led_31_pin_31>;
+		status = "okay";
+	};
+
+	/* LED_BLUE */
+	led10: sw_parallel_led_30 {
+		active_high;
+		brightness = <0>;
+		pinctrl-0 = <&a_per_led_30_pin_30>;
+		status = "okay";
+	};
+
+	/* LED_RED */
+	led11: sw_parallel_led_1 {
+		active_high;
+		brightness = <0>;
+		pinctrl-0 = <&b_per_led_01_pin_34>;
+		status = "okay";
+	};
+
+	/* LED_GREEN */
+	led12: sw_parallel_led_3 {
+		active_high;
+		brightness = <0>;
+		pinctrl-0 = <&b_per_led_03_pin_36>;
+		status = "okay";
+	};
+
+	/* LED_BLUE */
+	led13: sw_parallel_led_2 {
+		active_high;
+		brightness = <0>;
+		pinctrl-0 = <&b_per_led_02_pin_35>;
+		status = "okay";
+	};
+
+	/* MUX_SEL | Descriptions
+	      1    | DX_x output DX_x2 / SFP
+	      0    | DX_x output DX_x1 / 84991 (default)
+	 */
+	/* MUX_SEL */
+	led14:led_gpio_7 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <7>;
+		active_low;
+		init_low;
+		label = "MUX_SEL";
+	};
+
+	/* RST_N_MXL */
+	led15:led_gpio_28 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <28>;
+		active_low;
+		init_low;
+	};
+
+	/* USB Power */
+	led16:led_gpio_67 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <67>;
+	};
+};
+
+&legacy_leds {
+};
+
+&nand {
+    pinctrl-0 = <&nand_data_pins &nand_ctrl_pins &nand_wp_b_pin_59>;
+    write-protect = <1>;
+    status = "okay";
+};
+
+&usb_ctrl {
+    pinctrl-names="default";
+    pinctrl-0 = <&usb0_pwr_pins>;
+    status = "okay";
+    xhci-enable;
+    pwron-bias-pull-up;
+};
+
+&usb0_xhci {
+    status = "okay";
+};
+
+&mdio_sf2 {
+    /* Port PHY mapping:
+            port_imp -8# 5- port_sgmii0 <--> phy_serdes0 -  ASM1543 (MUX)
+                                                            |----------- BCM84991
+                                                            |----------- SFP+
+                       # 6- port_sgmii0 <--> phy_serdes1 -- MxL86252C USXGMII1
+                                                            |-- BCM84991
+     */
+
+    phy_cascade0 {
+		reg = <15>;						/* Copper PHY: BCM84991 */
+        shared-ref-clk-mhz = <80>;
+        status = "okay";
+    };
+    phy_serdes0 {
+        phy-handle = <&phy_cascade0>;   /* Copper PHY */
+		trx = <&sfp1>;					/* SFP PHY */
+		phy-combo;						/* combo PHY */
+        status = "okay";
+    };
+
+    /* Enable SerDes1 for MxL86252C USXGMII1 */
+    phy_serdes1 {
+        phy-fixed;
+        shared-ref-clk-mhz = <80>;
+        config-xfi = "10GBase-R";
+        phy-xfi-rx-polarity-inverse;
+        /* reg_extcon = <0x19>; */
+        status = "okay";
+    };
+};
+
+&switch0 {
+    ports {
+        port_sgmii0 {
+            phy-handle = <&phy_serdes0>;
+            status = "okay";
+        };
+
+        port_sgmii1 {
+            phy-handle = <&phy_serdes1>;
+            status = "okay";
+        };
+    };
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+/**********************************************************************/
+/* GPIO: Add one define per GPIO (individual or shared) regulator     */
+/*       - Skip if no GPIO regulators in use                          */
+/**********************************************************************/
+#define PCIE0_REG_GPIO    15    /* PCIE0_PWR_CTRL for vreg_pcie0 node */
+
+#include "../bcm_wlan_regulator.dtsi"
+
+/**********************************************************************/
+/* Shared: Add brcm,supply-names = "vreg-pcieX" for shared PCIe nodes */
+/*         - Skip if not using shared GPIO regulators                 */
+/**********************************************************************/
+
+/**********************************************************************/
+/* PCIe: Add status = "okay" for each PCIe slots of this boiard       */
+/*       - Skip if this is a derivative board (already done in base)  */
+/**********************************************************************/
+&pcie0 {
+    status = "okay";
+};
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)

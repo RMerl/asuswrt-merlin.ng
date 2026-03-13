@@ -3069,7 +3069,7 @@ enum wl_curpower_types {
 
 typedef struct chanspec_txpwr_max {
 	chanspec_t chanspec;   /**< chanspec */
-	uint8 txpwr_max;       /**< max txpwr in all the rates */
+	int8 txpwr_max;        /**< max txpwr in all the rates */
 	uint8 padding;
 } chanspec_txpwr_max_t;
 
@@ -3082,6 +3082,7 @@ typedef struct  wl_chanspec_txpwr_max {
 
 #define WL_CHANSPEC_TXPWR_MAX_VER	1
 #define WL_CHANSPEC_TXPWR_MAX_LEN	(sizeof(wl_chanspec_txpwr_max_t))
+#define WL_CHANSPEC_TXPWR_MAX_MAX_BW	(1<<0)
 
 typedef struct chanspec_reg_txpwr {
 	chanspec_t chanspec;   /**< chanspec */

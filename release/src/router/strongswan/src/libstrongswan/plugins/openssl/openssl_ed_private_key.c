@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Tobias Brunner
+ * Copyright (C) 2018-2025 Tobias Brunner
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -18,7 +18,12 @@
 
 #if OPENSSL_VERSION_NUMBER >= 0x1010100fL && !defined(OPENSSL_NO_EC)
 
+#ifdef OPENSSL_IS_AWSLC
+#include <openssl/x509.h>
+#endif
+
 #include "openssl_ed_private_key.h"
+#include "openssl_util.h"
 
 #include <utils/debug.h>
 
@@ -157,8 +162,6 @@ METHOD(private_key_t, get_fingerprint, bool,
 METHOD(private_key_t, get_encoding, bool,
 	private_private_key_t *this, cred_encoding_type_t type, chunk_t *encoding)
 {
-	u_char *p;
-
 	if (this->engine)
 	{
 		return FALSE;
@@ -171,9 +174,17 @@ METHOD(private_key_t, get_encoding, bool,
 		{
 			bool success = TRUE;
 
-			*encoding = chunk_alloc(i2d_PrivateKey(this->key, NULL));
-			p = encoding->ptr;
-			i2d_PrivateKey(this->key, &p);
+#ifndef OPENSSL_IS_AWSLC
+			*encoding = openssl_i2chunk(PrivateKey, this->key);
+#else
+			/* AWS-LC currently doesn't implement i2d_PrivateKey for EdDSA */
+			PKCS8_PRIV_KEY_INFO *p8 = EVP_PKEY2PKCS8(this->key);
+			if (p8)
+			{
+				*encoding = openssl_i2chunk(PKCS8_PRIV_KEY_INFO, p8);
+				PKCS8_PRIV_KEY_INFO_free(p8);
+			}
+#endif
 
 			if (type == PRIVKEY_PEM)
 			{

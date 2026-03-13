@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2015 Tobias Brunner
+ * Copyright (C) 2009-2025 Tobias Brunner
  * Copyright (C) 2005-2009 Martin Willi
  * Copyright (C) 2005 Jan Hutter
  *
@@ -298,7 +298,7 @@ struct identification_t {
  * - ID_IPV6_ADDR:		2001:0db8:85a3:08d3:1319:8a2e:0370:7345
  * - ID_FQDN:			www.strongswan.org (optionally with a prepended @)
  * - ID_RFC822_ADDR:	alice@wonderland.org
- * - ID_DER_ASN1_DN:	C=CH, O=Linux strongSwan, CN=bob
+ * - ID_DER_ASN1_DN:	C=CH, O=strongSwan Project, CN=bob
  *
  * In favor of pluto, domainnames are prepended with an @, since
  * pluto resolves domainnames without an @ to IPv4 addresses. Since
@@ -325,7 +325,30 @@ struct identification_t {
  * @param string	input string, which will be converted
  * @return			identification_t
  */
-identification_t * identification_create_from_string(char *string);
+identification_t *identification_create_from_string(char *string);
+
+/**
+ * Creates an identification_t object from a string that may contain a regular
+ * expression.
+ *
+ * This function behaves like identification_create_from_string() but also
+ * accepts regular expressions.  So it must only be used to parse
+ * trusted/configured values, never untrusted values received over the network.
+ *
+ * A regular expression must be prefixed by an identity type (supported are
+ * rfc822:, email:, userfqdn:, fqdn:, dns:, and asn1dn:), and it must start
+ * with a caret ('^') and end with a dollar sign ('$') to indicate an anchored
+ * pattern. If the regular expression is invalid, the function returns NULL.
+ *
+ * The regular expression is always matched against the string representation
+ * of other identities and matching is performed case-insensitive.
+ *
+ * @param string 	string to parse, regex must begin with '^' and end with '$'
+ *					and must be  prefixed with a valid identification type
+ * @return 			pointer to newly allocated identification_t object, or NULL
+ * 					if regular expression is invalid
+ */
+identification_t *identification_create_from_string_with_regex(char *string);
 
 /**
  * Creates an identification from a chunk of data, guessing its type.
@@ -333,7 +356,7 @@ identification_t * identification_create_from_string(char *string);
  * @param data		identification data
  * @return			identification_t
  */
-identification_t * identification_create_from_data(chunk_t data);
+identification_t *identification_create_from_data(chunk_t data);
 
 /**
  * Creates an identification_t object from an encoded chunk.
@@ -342,7 +365,8 @@ identification_t * identification_create_from_data(chunk_t data);
  * @param encoded	encoded bytes, such as from identification_t.get_encoding
  * @return			identification_t
  */
-identification_t * identification_create_from_encoding(id_type_t type, chunk_t encoded);
+identification_t *identification_create_from_encoding(id_type_t type,
+													  chunk_t encoded);
 
 /**
  * Creates an identification_t object from a sockaddr struct
@@ -350,7 +374,7 @@ identification_t * identification_create_from_encoding(id_type_t type, chunk_t e
  * @param sockaddr		sockaddr struct which contains family and address
  * @return 				identification_t
  */
-identification_t * identification_create_from_sockaddr(sockaddr_t *sockaddr);
+identification_t *identification_create_from_sockaddr(sockaddr_t *sockaddr);
 
 /**
  * printf hook function for identification_t.
@@ -359,6 +383,7 @@ identification_t * identification_create_from_sockaddr(sockaddr_t *sockaddr);
  *	identification_t *identification
  */
 int identification_printf_hook(printf_hook_data_t *data,
-							printf_hook_spec_t *spec, const void *const *args);
+							   printf_hook_spec_t *spec,
+							   const void *const *args);
 
 #endif /** IDENTIFICATION_H_ @}*/

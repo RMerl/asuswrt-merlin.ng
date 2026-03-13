@@ -57,7 +57,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *blowfish_plugin_create()
+PLUGIN_DEFINE(blowfish)
 {
 	private_blowfish_plugin_t *this;
 

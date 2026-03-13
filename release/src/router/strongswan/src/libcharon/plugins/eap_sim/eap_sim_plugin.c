@@ -81,7 +81,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *eap_sim_plugin_create()
+PLUGIN_DEFINE(eap_sim)
 {
 	private_eap_sim_plugin_t *this;
 

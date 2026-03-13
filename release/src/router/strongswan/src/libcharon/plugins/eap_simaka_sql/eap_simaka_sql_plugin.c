@@ -149,7 +149,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * See header
  */
-plugin_t *eap_simaka_sql_plugin_create()
+PLUGIN_DEFINE(eap_simaka_sql)
 {
 	private_eap_simaka_sql_t *this;
 

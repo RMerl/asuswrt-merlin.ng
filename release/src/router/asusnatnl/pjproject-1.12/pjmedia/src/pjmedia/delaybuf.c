@@ -106,7 +106,7 @@ PJ_DEF(pj_status_t) pjmedia_delay_buf_create( pj_pool_t *pool,
 
     b = PJ_POOL_ZALLOC_T(pool, pjmedia_delay_buf);
 
-    pj_ansi_strncpy(b->obj_name, name, PJ_MAX_OBJ_NAME-1);
+    pj_ansi_strxcpy(b->obj_name, name, PJ_MAX_OBJ_NAME);
 
     b->samples_per_frame = samples_per_frame;
     b->channel_count = channel_count;

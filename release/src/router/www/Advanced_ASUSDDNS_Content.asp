@@ -19,7 +19,7 @@
 <script type="text/javascript" language="JavaScript" src="/validator.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js?v=4"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js?v=5"></script>
 <script type="text/javascript" src="/form.js"></script>
 <style type="text/css">
     * {
@@ -277,23 +277,23 @@ function init(){
 	setTimeout(show_warning_message, 1000);
 
 	if (ddns_enable_x == "1" && ddns_server_x.indexOf("WWW.ASUS.COM") != -1) {
-		const policyStatus = PolicyStatus()
-				.then(data => {
-					if (data.PP == 0 || data.PP_time == "") {
-						const policyModal = new PolicyModalComponent({
-							policy: "PP",
-							policyStatus: data,
-							agreeCallback: () => {
-								location.reload();
-							},
-							knowRiskCallback: () => {
-								alert(`<#ASUS_POLICY_Function_Confirm#>`);
-								location.reload();
-							}
-						});
-						policyModal.show();
-					}
-				});
+        PolicyStatus()
+            .then(data => {
+                if (data.PP < 1) {
+                    const policyModal = new PolicyModalComponent({
+                        policy: "PP",
+                        policyStatus: data,
+                        agreeCallback: () => {
+                            location.reload();
+                        },
+                        knowRiskCallback: () => {
+                            alert(`<#ASUS_POLICY_Function_Confirm#>`);
+                            location.reload();
+                        }
+                    });
+                    policyModal.show();
+                }
+            });
 	}
 
 	if(oauth_auth_status == "2"){
@@ -542,36 +542,36 @@ function get_cert_info(){
 }
 
 function apply_eula_check(){
-	const policyStatus = PolicyStatus()
-			.then(data => {
-				if (document.form.ddns_enable_x.value == "1" && document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1) {
-					if (data.PP == 0 || data.PP_time == "") {
-						const policyModal = new PolicyModalComponent({
-							policy: "PP",
-							policyStatus: data,
-							agreeCallback: () => {
-								$("#policy_popup_modal").remove();
-								applyRule();
-								PolicyStatus();
-							},
-							knowRiskCallback: () => {
-								alert(`<#ASUS_POLICY_Function_Confirm#>`);
-								$("#radio_ddns_enable").removeClass("on");
-								$('input[name="ddns_enable_x"][value="0"]').prop('checked', true);
-								change_common_radio(this, 'LANHostConfig', 'ddns_enable_x', '0')
-								$("#policy_popup_modal").remove();
-								PolicyStatus();
-							}
-						});
-						policyModal.show();
-						return false;
-					} else {
-						applyRule();
-					}
-				} else {
-					applyRule();
-				}
-			});
+    PolicyStatus()
+        .then(data => {
+            if (document.form.ddns_enable_x.value == "1" && document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1) {
+                if (data.PP < 1) {
+                    const policyModal = new PolicyModalComponent({
+                        policy: "PP",
+                        policyStatus: data,
+                        agreeCallback: () => {
+                            $("#policy_popup_modal").remove();
+                            applyRule();
+                            PolicyStatus();
+                        },
+                        knowRiskCallback: () => {
+                            alert(`<#ASUS_POLICY_Function_Confirm#>`);
+                            $("#radio_ddns_enable").removeClass("on");
+                            $('input[name="ddns_enable_x"][value="0"]').prop('checked', true);
+                            change_common_radio(this, 'LANHostConfig', 'ddns_enable_x', '0')
+                            $("#policy_popup_modal").remove();
+                            PolicyStatus();
+                        }
+                    });
+                    policyModal.show();
+                    return false;
+                } else {
+                    applyRule();
+                }
+            } else {
+                applyRule();
+            }
+        });
 }
 
 function applyRule(){
@@ -901,7 +901,7 @@ function change_ddns_setting(v){
 				inputCtrl(document.form.ddns_username_x, 1);
 			inputCtrl(document.form.ddns_passwd_x, 1);
 			var disable_wild = 0;
-			if(v == "WWW.TUNNELBROKER.NET" || v == "DNS.HE.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM" || v == "DYNU.COM")
+			if(v == "WWW.TUNNELBROKER.NET" || v == "DNS.HE.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM" || v == "DYNU.COM" || v == "CLOUDFLARE.COM")
 				var disable_wild = 1;
 			else
 				var disable_wild = 0;
@@ -1334,6 +1334,7 @@ function clear_cert_key(){
 						<option value="WWW.DNSOMATIC.COM" <% nvram_match("ddns_server_x", "WWW.DNSOMATIC.COM","selected"); %>>WWW.DNSOMATIC.COM</option>
 						<option value="DNS.HE.NET" <% nvram_match("ddns_server_x", "DNS.HE.NET","selected"); %>>HE.NET</option>
 						<option value="DYNU.COM" <% nvram_match("ddns_server_x", "DYNU.COM","selected"); %>>DYNU.COM</option>
+						<option value="CLOUDFLARE.COM" <% nvram_match("ddns_server_x", "CLOUDFLARE.COM","selected"); %>>CLOUDFLARE.COM</option>
 						<option value="WWW.TUNNELBROKER.NET" <% nvram_match("ddns_server_x", "WWW.TUNNELBROKER.NET","selected"); %>>WWW.TUNNELBROKER.NET</option>
 						<option value="WWW.NO-IP.COM" <% nvram_match("ddns_server_x", "WWW.NO-IP.COM","selected"); %>>WWW.NO-IP.COM</option>
 						<option value="WWW.ORAY.COM" <% nvram_match("ddns_server_x", "WWW.ORAY.COM","selected"); %>>WWW.ORAY.COM(花生壳)</option>

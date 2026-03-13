@@ -159,6 +159,15 @@ int is_valid_ip6(const char* addr)
 	return (is_valid_ip(addr) == 2) ? 1 : 0;
 }
 
+/* validates if a string is a valid IPv4 address */
+int is_valid_ipv4(const char *addr)
+{
+	struct sockaddr_in sa;
+	int result = inet_pton(AF_INET, addr, &(sa.sin_addr));
+
+	return (result == 1);
+}
+
 int is_ip4_in_use(const char* addr)
 {
 	struct in_addr ipaddr;

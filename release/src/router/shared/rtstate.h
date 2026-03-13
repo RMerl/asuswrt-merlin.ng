@@ -408,6 +408,8 @@ enum {
 	ASUSCTRL_ACS_IGNORE_BAND4 = 12,
 	ASUSCTRL_ID_MODE = 13,
 	ASUSCTRL_BE92U_WAR = 14, //0x4000
+	ASUSCTRL_ARK_SUPPORT = 15, //0x8000
+	ASUSCTRL_ARK_BLOCK = 16, //0x10000
 	ASUSCTRL_MAX
 };
 #endif
@@ -603,6 +605,7 @@ int is_ms_wan_unit(int wan_unit);
 int get_ms_base_unit(int wan_unit);
 int get_ms_wan_unit(int base_wan_unit, int idx);
 int get_ms_idx_by_wan_unit(int wan_unit);
+int get_ms_num(int wan_unit);
 #endif
 
 #endif	/* !__RTSTATE_H__ */

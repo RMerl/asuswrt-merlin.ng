@@ -415,7 +415,7 @@ static peer_cfg_t *build_peer_cfg(private_sql_config_t *this, enumerator_t *e,
 				.reauth_time = reauthtime,
 				.jitter_time = jitter,
 				.over_time = overtime,
-				.no_mobike = !mobike,
+				.options = (mobike ? 0 : OPT_NO_MOBIKE),
 				.dpd = dpd_delay,
 #ifdef ME
 				.mediation = mediation,

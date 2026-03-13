@@ -50,6 +50,7 @@
 #ifndef WOLFSSL_USER_SETTINGS
 	#include <wolfssl/options.h>
 #endif
+#include <wolfssl/wolfcrypt/settings.h>
 
 /* Disable inclusion of the wolfSSL OpenSSL compatibility layer header (if
  * configured) as it is not used by the plugin and causes conflicts */
@@ -77,10 +78,5 @@ typedef union {
 #endif
 } wolfssl_ed_key;
 #endif /* HAVE_ED25519 || HAVE_ED448 */
-
-#undef PARSE_ERROR
-
-/* Eliminate macro conflicts */
-#undef RNG
 
 #endif /* WOLFSSL_PLUGIN_COMMON_H_ */

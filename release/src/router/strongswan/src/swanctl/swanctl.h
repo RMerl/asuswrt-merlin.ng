@@ -87,11 +87,6 @@ extern char *swanctl_dir;
 #define SWANCTL_ECDSADIR "ecdsa"
 
 /**
- * Directory for BLISS private keys
- */
-#define SWANCTL_BLISSDIR "bliss"
-
-/**
  * Directory for PKCS#8 encoded private keys
  */
 #define SWANCTL_PKCS8DIR "pkcs8"

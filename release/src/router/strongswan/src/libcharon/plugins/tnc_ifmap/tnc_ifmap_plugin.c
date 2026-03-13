@@ -111,7 +111,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *tnc_ifmap_plugin_create()
+PLUGIN_DEFINE(tnc_ifmap)
 {
 	private_tnc_ifmap_plugin_t *this;
 

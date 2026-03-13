@@ -118,12 +118,6 @@ static int print()
 					type = CRED_PRIVATE_KEY;
 					subtype = KEY_ED448;
 				}
-				else if (streq(arg, "bliss") ||
-						 streq(arg, "bliss-priv"))
-				{
-					type = CRED_PRIVATE_KEY;
-					subtype = KEY_BLISS;
-				}
 				else if (streq(arg, "ocsp-req"))
 				{
 					type = CRED_CERTIFICATE;
@@ -212,7 +206,7 @@ static void __attribute__ ((constructor))reg()
 		{ print, 'a', "print",
 		"print a credential in a human readable form",
 		{"[--in file|--keyid hex]",
-		 "[--type x509|crl|ac|pub|priv|rsa|ecdsa|ed25519|ed448|bliss|ocsp-req|ocsp-rsp]"},
+		 "[--type x509|crl|ac|pub|priv|rsa|ecdsa|ed25519|ed448|ocsp-req|ocsp-rsp]"},
 		{
 			{"help",	'h', 0, "show usage information"},
 			{"in",		'i', 1, "input file, default: stdin"},

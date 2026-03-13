@@ -480,7 +480,7 @@ ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GS-BE18000 GS-BE12000 GS7_PRO))
 	mkdir -p $(INSTALLDIR)/rom/mxl
 	install -m 0644 mxl/asus282.bin $(INSTALLDIR)/rom/mxl/mxl.bin
 endif
-ifeq ($(BUILD_NAME), GT7)
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT7 GS7_PRO_MAX))
 	mkdir -p $(INSTALLDIR)/rom/mxl
 	install -m 0644 mxl/asus252_gt7.bin $(INSTALLDIR)/rom/mxl/mxl.bin
 endif

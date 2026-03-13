@@ -619,7 +619,7 @@ if(confirm("<#VPN_Fusion_Delete_Alert#>")){
 		var nvramSet_obj = {"action_mode": "apply", "rc_service": "restart_net_and_phy;"};
 
 		//update vlan_trunklist
-		if( vlan_trunklist_orig != "" && specific_data.vlan_rl.vid > 1){	//vid :2~4093
+		if( vlan_trunklist_orig != "" && specific_data.vlan_rl.vid > 1){	//vid :3~4093
 			var updated_vlan_trunklist = rm_vid_from_vlan_trunklist( specific_data.vlan_rl.vid );
 			nvramSet_obj.vlan_trunklist = updated_vlan_trunklist;
 			if(vlan_rl_tmp==""){	//without vid for vlan_trunklist
@@ -1020,7 +1020,7 @@ function gen_vlan_rl(vlanrl_json){
 }
 
 function validForm(){
-	if(!validator.numberRange(document.form.edit_vid, 1, 4093)){
+	if(!validator.numberRange(document.form.edit_vid, 3, 4093)){
 		return false;		
 	}
 
@@ -1044,7 +1044,7 @@ function validForm(){
 
 function validPanelForm(_vid){
 
-	if(!validator.numberRange(document.getElementById("update_vid"), 1, 4093)){
+	if(!validator.numberRange(document.getElementById("update_vid"), 3, 4093)){
 		return false;		
 	}
 

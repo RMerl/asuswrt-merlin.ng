@@ -392,12 +392,19 @@ METHOD(kernel_interface_t, alloc_reqid, status_t,
 		/* search by reqid if given */
 		entry = this->reqids->get(this->reqids, tmpl);
 	}
-	if (entry && entry_equals_selectors(entry, tmpl))
+
+	/* if the IPsec stack supports sequence numbers for acquires, we can
+	 * allocate a new reqid if narrowing occurred (otherwise, we get the same
+	 * reqid back anyway).  if not, we want to reuse the existing reqid of
+	 * the trap polices and explicitly don't want to match the traffic
+	 * selectors.  another case where we want to reuse an existing reqid is
+	 * when labels are used.  because we currently only install policies once
+	 * with the generic label, the reqid has to stay the same even if narrowing
+	 * occurs.  however, in either case we don't want to reuse the reqid if the
+	 * additional selectors (e.g. marks) are different */
+	if (entry && (label || !(get_features(this) & KERNEL_ACQUIRE_SEQ)) &&
+		entry_equals_selectors(entry, tmpl))
 	{
-		/* we don't require a traffic selector match for existing reqids,
-		 * as we want to reuse a reqid for trap-triggered policies that
-		 * got narrowed during negotiation, but we don't want to reuse the
-		 * reqid if the additional selectors (e.g. marks) are different */
 		reqid_entry_destroy(tmpl);
 	}
 	else

@@ -37,6 +37,10 @@ static const uint8_t qmi_services[__QMI_SERVICE_LAST] = {
 };
 #undef __qmi_service
 
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126)
+#pragma GCC diagnostic ignored "-Wdangling-pointer"
+#endif
+
 #ifdef DEBUG_PACKET
 void dump_packet(const char *prefix, void *ptr, int len)
 {

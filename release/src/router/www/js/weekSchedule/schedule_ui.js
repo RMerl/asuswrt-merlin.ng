@@ -59,6 +59,12 @@ ex.
 accesstime_handle_data.json_array_to_string(schedule.Get_Value_AccessTime());
 -->T11667894694Z,T01667894754Z
 */
+if (typeof validator === "undefined") {
+	let script = document.createElement("script");
+	script.type = "text/javascript";
+	script.src = "/validator.js";
+	document.head.appendChild(script);
+}
 if(typeof JS_timeObj != "object"){
 	var JS_timeObj = new Date();
 }
@@ -70,6 +76,7 @@ if(typeof stringSafeGet != "function"){
 var str_Scheduled = stringSafeGet("<#Time_Scheduled#>");
 var str_Scheduled_one_time = stringSafeGet("<#Time_Scheduled_one_time#>");
 var schedule = function(config_set){
+	const thisSchedule = this;
 	var _config = {
 		data_max: 64,
 		schedule_type: "M",
@@ -87,7 +94,10 @@ var schedule = function(config_set){
 		mode: 1,//1:Schedule, 2:Access Time
 		Schedule_suppot: true,
 		AccTime_support: false,
-		AccTime_quickset_callback: null
+		AccTime_quickset_callback: null,
+		hideTitle: false,
+		show_customize_confirm: null,
+		show_customize_alert: null
 	};
 	var _data = {
 		day_struct: [],
@@ -175,6 +185,10 @@ var schedule = function(config_set){
 		}
 		if(config_set.hasOwnProperty("alternate_days") && typeof config_set.alternate_days == "boolean"){
 			_config.alternate_days = config_set.alternate_days;
+			if (_config.alternate_days) {
+				_time_unit_parm.val.hour.start = 22;
+				_time_unit_parm.val.hour.end = 8;
+			}
 		}
 		if(config_set.hasOwnProperty("draggable") && typeof config_set.draggable == "boolean"){
 			_config.draggable = config_set.draggable;
@@ -193,21 +207,35 @@ var schedule = function(config_set){
 					timeset_data.id = _config.rule_id.toString() + num_add_left_pad(((parseInt(timeset_data.weekday)).toString(16).toUpperCase()), 2) +
 								num_add_left_pad(timeset_data.start_hour, 2) + num_add_left_pad(timeset_data.start_min, 2) +
 								num_add_left_pad(timeset_data.end_hour, 2) + num_add_left_pad(timeset_data.end_min, 2);
+						//const isCrossDay = (timeset_data.start_hour * 60 + timeset_data.start_min) >= (timeset_data.end_hour * 60 + timeset_data.end_min);
+						const isCrossDay = false;
 						switch(timeset_data.weekday){
 							case 127 ://Daily
 								timeset_data.title = "Daily";
 								_data.cla_struct["Daily"].push(timeset_data);
 							break;
 							case 62 ://Weekdays
-								timeset_data.title = "Weekdays";
-								_data.cla_struct["Weekdays"].push(timeset_data);
+								if (isCrossDay) {
+									timeset_data.title = get_week_title(timeset_data);
+									_data.cla_struct["Other"].push(timeset_data);
+								}
+								else {
+									timeset_data.title = "Weekdays";
+									_data.cla_struct["Weekdays"].push(timeset_data);
+								}
 							break;
 							case 65 ://Weekend
-								timeset_data.title = "Weekend";
-								_data.cla_struct["Weekend"].push(timeset_data);
+								if (isCrossDay) {
+									timeset_data.title = get_week_title(timeset_data);
+									_data.cla_struct["Other"].push(timeset_data);
+								}
+								else {
+									timeset_data.title = "Weekend";
+									_data.cla_struct["Weekend"].push(timeset_data);
+								}
 							break;
 							default ://Other
-								timeset_data.title = get_week_title(timeset_data.weekday);
+								timeset_data.title = get_week_title(timeset_data);
 								_data.cla_struct["Other"].push(timeset_data);
 							break;
 						}
@@ -265,6 +293,15 @@ var schedule = function(config_set){
 		if(config_set.hasOwnProperty("AccTime_quickset_callback") && typeof config_set.AccTime_quickset_callback == "function"){
 			_config.AccTime_quickset_callback = config_set.AccTime_quickset_callback;
 		}
+		if(config_set.hasOwnProperty("hideTitle") && typeof config_set.hideTitle == "boolean"){
+			_config.hideTitle = config_set.hideTitle;
+		}
+		if(config_set.hasOwnProperty("show_customize_confirm") && typeof config_set.show_customize_confirm == "function"){
+			_config.show_customize_confirm = config_set.show_customize_confirm;
+		}
+		if(config_set.hasOwnProperty("show_customize_alert") && typeof config_set.show_customize_alert == "function"){
+			_config.show_customize_alert = config_set.show_customize_alert;
+		}
 	}
 	this.Get_UI = function(){
 		var $container = $("<div>").addClass("schedule_ui").css({"width":"100%", "height":"100%"});
@@ -282,10 +319,17 @@ var schedule = function(config_set){
 				e.stopPropagation();
 				reset_combination_select_status($(this));
 			}).append(Get_TimeSet_Container()).hide();
-			var rule_count = get_rule_count();
+			const rule_count = get_rule_count();
 			if(rule_count == 0){
 				$schedule_main.find(".schedule_header_container .btn_control_bg").children().filter(".add_icon, .collapse_icon").hide();
+				if (_config.hideTitle) {
+					$schedule_main.find(".schedule_header_container").hide();
+				}
 			}
+			else {
+				$schedule_main.find(".schedule_header_container").show();
+			}
+			$schedule_main.find('[data-component="rule_count"]').html(`${rule_count}/${_config.data_max}`);
 		}
 		if(_config.AccTime_support){
 			var $mode_access_time = $("<div>").attr({"data-viewport":"access_time"}).appendTo($container);
@@ -343,9 +387,54 @@ var schedule = function(config_set){
 			return 1;
 		else
 			return _config.mode;
-	}
+	};
+	this.Update_Data = function(timeString){
+		init_data_obj();
+		const timeArr = schedule_handle_data.string_to_json_array(timeString);
+		$.each(timeArr, function(index, value){
+			let timeset_data = JSON.parse(JSON.stringify(new timeset_attr()));
+			$.extend(true, timeset_data, value);
+			timeset_data.id = _config.rule_id.toString() + num_add_left_pad(((parseInt(timeset_data.weekday)).toString(16).toUpperCase()), 2) +
+						num_add_left_pad(timeset_data.start_hour, 2) + num_add_left_pad(timeset_data.start_min, 2) +
+						num_add_left_pad(timeset_data.end_hour, 2) + num_add_left_pad(timeset_data.end_min, 2);
+				//const isCrossDay = (timeset_data.start_hour * 60 + timeset_data.start_min) >= (timeset_data.end_hour * 60 + timeset_data.end_min);
+				const isCrossDay = false;
+				switch(timeset_data.weekday){
+					case 127 ://Daily
+						timeset_data.title = "Daily";
+						_data.cla_struct["Daily"].push(timeset_data);
+					break;
+					case 62 ://Weekdays
+						if (isCrossDay) {
+							timeset_data.title = get_week_title(timeset_data);
+							_data.cla_struct["Other"].push(timeset_data);
+						}
+						else {
+							timeset_data.title = "Weekdays";
+							_data.cla_struct["Weekdays"].push(timeset_data);
+						}
+					break;
+					case 65 ://Weekend
+						if (isCrossDay) {
+							timeset_data.title = get_week_title(timeset_data);
+							_data.cla_struct["Other"].push(timeset_data);
+						}
+						else {
+							timeset_data.title = "Weekend";
+							_data.cla_struct["Weekend"].push(timeset_data);
+						}
+					break;
+					default ://Other
+						timeset_data.title = get_week_title(timeset_data);
+						_data.cla_struct["Other"].push(timeset_data);
+					break;
+				}
+				_config.rule_id++;
+		});
+	};
 
 	function init_data_obj(){
+		_config.rule_id = 100;
 		init_data_day_struct();
 		init_data_cla_struct();
 	}
@@ -373,7 +462,7 @@ var schedule = function(config_set){
 			$title_bg.addClass("change_mode");
 			if(_config.schedule_type == "W"){
 				$title_bg.addClass("offline");
-				title_text = "<#weekSche_Offtime_Sche#>";
+				title_text = "<#weekSche_Offline_Sche#>";
 			}
 			else if(_config.schedule_type == "M"){
 				$title_bg.addClass("online");
@@ -386,18 +475,20 @@ var schedule = function(config_set){
 		}
 		else{
 			if(_config.schedule_type == "W"){
-				title_text = "<#weekSche_Offtime_Sche#>";
+				title_text = "<#weekSche_Offline_Sche#>";
 			}
 			else if(_config.schedule_type == "M"){
 				title_text = "<#weekSche_Online_Sche#>";
 			}
 		}
 
+		if(_config.hideTitle) title_text = ``;
 		$("<div>").addClass("title").html(title_text).appendTo($title_bg);
 		if(_config.change_schedule_mode)
 			$("<div>").addClass("change_mode_icon").appendTo($title_bg);
 
 		var $btn_control_bg = $("<div>").addClass("btn_control_bg").appendTo($container);
+		$("<div>").attr({'data-component': 'rule_count'}).html(`0/${_config.data_max}`).appendTo($btn_control_bg)
 		$("<div>")
 			.addClass("btn_icon_bg add_icon listview_mode")
 			.attr("title", "Add a new rule")/* untranslated */
@@ -405,6 +496,9 @@ var schedule = function(config_set){
 				e = e || event;
 				e.stopPropagation();
 				if(check_rule_full()){
+					if (typeof _config.show_customize_alert === "function") {
+						_config.show_customize_alert(`<#weekSche_MAX_Num#>`.replace("#MAXNUM", _config.data_max));
+					}
 					/*
 					popupHint.init();
 					var hint = "<#weekSche_MAX_Num#>".replace("#MAXNUM", weekScheduleApi.data_max);
@@ -461,7 +555,7 @@ var schedule = function(config_set){
 
 		$("<div>")
 			.addClass("btn_icon_bg collapse_icon expand listview_mode")
-			.attr("title", "Expand Collapse")/* untranslated */
+			.attr({"title": "Expand Collapse", 'data-component': 'iconExpandCollapse'})/* untranslated */
 			.unbind("click").click(function(e){
 				e = e || event;
 				e.stopPropagation();
@@ -516,9 +610,13 @@ var schedule = function(config_set){
 					display_title = value.title
 						.replace("MON", "<#date_Mon_itemdesc#>").replace("TUE", "<#date_Tue_itemdesc#>").replace("WED", "<#date_Wed_itemdesc#>")
 						.replace("THU", "<#date_Thu_itemdesc#>").replace("FRI", "<#date_Fri_itemdesc#>").replace("SAT", "<#date_Sat_itemdesc#>")
-						.replace("SUN", "<#date_Sun_itemdesc#>");
-				else
+						.replace("SUN", "<#date_Sun_itemdesc#>")
+						.replace("Daily", "<#weekSche_Everyday#>")
+						.replace("Weekdays", "<#weekSche_Weekdays#>")
+						.replace("Weekend", "<#weekSche_Weekend#>");
+				else{
 					display_title = week_group.replace("Daily", "<#weekSche_Everyday#>").replace("Weekdays", "<#weekSche_Weekdays#>").replace("Weekend", "<#weekSche_Weekend#>");
+				}
 				$list_period_title.html(display_title);
 
 				var $list_period_content = $("<div>").addClass("list_period_content").appendTo($list_period_bg);
@@ -544,6 +642,10 @@ var schedule = function(config_set){
 					time_set += " - ";
 					time_set += num_add_left_pad(timeset_data.end_hour, 2) + ":" + num_add_left_pad(timeset_data.end_min, 2);
 				}
+				const isCrossDay = (timeset_data.start_hour * 60 + timeset_data.start_min) >= (timeset_data.end_hour * 60 + timeset_data.end_min);
+				if (isCrossDay) {
+					time_set += `<div class='next_day'>(<#Schedule_Next_Day#>)</div>`;
+				}
 				$time_set_content.html(time_set);
 
 				var $time_switch_bg = $("<div>").addClass("time_switch_bg").appendTo($list_period_content);
@@ -558,6 +660,7 @@ var schedule = function(config_set){
 				$period_switch.click(function(e){
 					e = e || event;
 					e.stopPropagation();
+					let oriTimesetData = schedule_handle_data.json_array_to_string(thisSchedule.Get_Value());
 					$(this).toggleClass("off  on");
 					$list_period_content.toggleClass("off  on");
 					if($(this).hasClass("icon_switch on"))
@@ -566,7 +669,11 @@ var schedule = function(config_set){
 						timeset_data.enable = 0;
 
 					if(_config.icon_switch_callback != null){
-						_config.icon_switch_callback();
+						const parms = {
+							'oriSchedule': oriTimesetData,
+							'currentSchedule': schedule_handle_data.json_array_to_string([timeset_data])
+						}
+						_config.icon_switch_callback(parms);
 					}
 				});
 
@@ -576,19 +683,48 @@ var schedule = function(config_set){
 					.unbind("click").click(function(e){
 						e = e || event;
 						e.stopPropagation();
-						var delete_id = $(this).parents(".list_period_bg").attr("id");
-						var delete_week_group = $(this).parents(".list_period_bg").attr("week_group");
-						delete_array_by_property(_data.cla_struct[delete_week_group], "id", delete_id);
-						var rule_count = get_rule_count();
-						if(rule_count == 0){
-							$(this).closest("[data-viewport=schedule_main]").find(".schedule_header_container .btn_control_bg").children().filter(".add_icon, .collapse_icon").hide();
-							$(this).closest(".schedule_content_container").find("[view_mode=list]").empty().append(Get_Add_New_Component());
+						if (typeof _config.show_customize_confirm === "function") {
+							const iconTrash = this;
+							_config.show_customize_confirm(`<#aicloud_rm_list_confirm#>`, ($popupMsgCntr) => {
+								const $confirm_obj = $popupMsgCntr.find(".popup_container.popup_customize_alert");
+								const okButton = $confirm_obj.find("[data-btn=ok]")[0];
+								if (okButton) {
+									okButton.addEventListener('click', function(e) {
+										removeConfig.call(iconTrash);
+									});
+								}
+							});
 						}
-						else{
-							$(this).parents(".list_period_bg").remove();
+						else {
+							removeConfig.call(this);
 						}
-						if(_config.icon_trash_callback != null){
-							_config.icon_trash_callback();
+
+						function removeConfig() {
+							var delete_id = $(this).parents(".list_period_bg").attr("id");
+							var delete_week_group = $(this).parents(".list_period_bg").attr("week_group");
+							delete_array_by_property(_data.cla_struct[delete_week_group], "id", delete_id);
+							const $schedule_main = $(this).closest("[data-viewport=schedule_main]");
+							const rule_count = get_rule_count();
+							if(rule_count == 0){
+								$schedule_main.find(".schedule_header_container .btn_control_bg").children().filter(".add_icon, .collapse_icon").hide();
+								if (_config.hideTitle) {
+									$schedule_main.find(".schedule_header_container").hide();
+								}
+								$(this).closest(".schedule_content_container").find("[view_mode=list]").empty().append(Get_Add_New_Component());
+							}
+							else{
+								$(this).parents(".list_period_bg").remove();
+								$(this).closest(".schedule_content_container").show();
+							}
+							let oriTimesetData = schedule_handle_data.json_array_to_string(thisSchedule.Get_Value());
+							if(_config.icon_trash_callback != null){
+								const parms = {
+									'oriSchedule': oriTimesetData,
+									'currentSchedule': schedule_handle_data.json_array_to_string([timeset_data])
+								}
+								_config.icon_trash_callback(parms);
+							}
+							$schedule_main.find('[data-component="rule_count"]').html(`${rule_count}/${_config.data_max}`);
 						}
 					}).appendTo($time_trash_bg);
 			});
@@ -625,7 +761,7 @@ var schedule = function(config_set){
 					.addClass("combi_input " + _type + " " + _unit + "")
 					.val(input_obj_value)
 					.attr({"type" : "text", "maxlength" : 2, "autocomplete" : "off", "autocorrect" : "off", "autocapitalize" : "off"})
-					.keypress(function(){
+					.keypress(function(event){
 						reset_combination_select_status($(this).closest(".timeset_container"));
 						return validator.isNumber(this,event);
 					})
@@ -670,10 +806,12 @@ var schedule = function(config_set){
 						}
 
 						if(!_config.alternate_days){
+							/*
 							if((start_hour*60+start_min) > (end_hour*60+end_min)){
 								show_valid_hint("* <#FirewallConfig_URLActiveTime_itemhint#>", $(this));
 								return false;
 							}
+							*/
 							if((end_hour*60+end_min) > 1440){//24:00
 								show_valid_hint("* <#weekSche_End_Time#> : <#weekSche_format_incorrect#>", $(this));
 								return false;
@@ -687,7 +825,12 @@ var schedule = function(config_set){
 						$top_timeset_obj.find(".valid_hint_component").hide().empty();
 						$top_timeset_obj.find(".combi_input").attr("disabled", false);
 						$top_timeset_obj.find(".combination_input_select").attr({"data-control":"activate"}).removeClass("focus");
-
+						if(_config.alternate_days){
+							if((start_hour*60+start_min) >= (end_hour*60+end_min)){
+								const hint = `* <#Schedule_Next_Day_Hint#>`;
+								$top_timeset_obj.find(".valid_hint_component[data-valid_hint='timeset']").html(hint).show();
+							}
+						}
 						$(this).val(num_add_left_pad($(this).val(), 2));
 					})
 					.appendTo($combi_input_select);
@@ -883,6 +1026,12 @@ var schedule = function(config_set){
 			else
 				$top_schedule_ui.find("[data-viewport='schedule_timeset'] .valid_hint_component").hide().empty();
 
+			if(_config.alternate_days){
+				if((start_hour*60+start_min) >= (end_hour*60+end_min)){
+					const hint = `* <#Schedule_Next_Day_Hint#>`;
+					$top_schedule_ui.find("[data-viewport='schedule_timeset'] .valid_hint_component[data-valid_hint='timeset']").html(hint).show();
+				}
+			}
 			var click_weekday_list = $top_schedule_ui.find("[data-viewport=schedule_timeset] .weekdayset_component > div.clicked");
 			var total_weekday = 0;
 			click_weekday_list.each(function(i, obj) {
@@ -896,6 +1045,7 @@ var schedule = function(config_set){
 			else
 				$top_schedule_ui.find(".weekdayset_container .valid_hint_component").hide().empty();
 
+			let oriTimesetData = schedule_handle_data.json_array_to_string(thisSchedule.Get_Value());
 			if(legal_flag){
 				var timeset_id = $top_schedule_ui.find(".schedule_timeset_container").attr("data-timeset-id");
 				var timeset_data = {};
@@ -918,31 +1068,52 @@ var schedule = function(config_set){
 				timeset_data.end_hour = end_hour;
 				timeset_data.end_min = end_min;
 
+				//const isCrossDay = (timeset_data.start_hour * 60 + timeset_data.start_min) >= (timeset_data.end_hour * 60 + timeset_data.end_min);
+				const isCrossDay = false;
 				switch(total_weekday){
 					case 127 ://Daily
 						timeset_data.title = "Daily";
 						_data.cla_struct["Daily"].push(timeset_data);
 					break;
 					case 62 ://Weekdays
-						timeset_data.title = "Weekdays";
-						_data.cla_struct["Weekdays"].push(timeset_data);
+						if (isCrossDay) {
+							timeset_data.title = get_week_title(timeset_data);
+							_data.cla_struct["Other"].push(timeset_data);
+						}
+						else {
+							timeset_data.title = "Weekdays";
+							_data.cla_struct["Weekdays"].push(timeset_data);
+						}
 					break;
 					case 65 ://Weekend
-						timeset_data.title = "Weekend";
-						_data.cla_struct["Weekend"].push(timeset_data);
+						if (isCrossDay) {
+							timeset_data.title = get_week_title(timeset_data);
+							_data.cla_struct["Other"].push(timeset_data);
+						}
+						else {
+							timeset_data.title = "Weekend";
+							_data.cla_struct["Weekend"].push(timeset_data);
+						}
 					break;
 					default ://Other
-						timeset_data.title = get_week_title(total_weekday);
+						timeset_data.title = get_week_title(timeset_data);
 						_data.cla_struct["Other"].push(timeset_data);
 					break;
 				}
+				$top_schedule_ui.find(".schedule_header_container").show();
 				$top_schedule_ui.find(".schedule_content_container [view_mode=list]").empty().append(Get_List_Period_Container());
 				$top_schedule_ui.find("[data-viewport=schedule_main]").show();
 				$top_schedule_ui.find("[data-viewport=schedule_main]").find(".schedule_header_container .btn_control_bg").children().filter(".add_icon, .collapse_icon").show();
 				$top_schedule_ui.find("[data-viewport=schedule_timeset]").hide();
+				const rule_count = get_rule_count();
+				$top_schedule_ui.find('[data-component="rule_count"]').html(`${rule_count}/${_config.data_max}`);
 			}
 			if(_config.btn_save_callback != null){
-				_config.btn_save_callback();
+				const parms = {
+					'oriSchedule': oriTimesetData,
+					'currentSchedule': schedule_handle_data.json_array_to_string([timeset_data])
+				}
+				_config.btn_save_callback(parms);
 			}
 		}).appendTo($action_cntr);
 
@@ -1001,7 +1172,7 @@ var schedule = function(config_set){
 					.addClass("combi_input " + _unit + "")
 					.val(input_obj_value)
 					.attr({"type" : "text", "maxlength" : 2, "autocomplete" : "off", "autocorrect" : "off", "autocapitalize" : "off"})
-					.keypress(function(){
+					.keypress(function(event){
 						reset_combination_select_status($(this).closest(".timeset_container"));
 						return validator.isNumber(this,event);
 					})
@@ -1239,18 +1410,62 @@ var schedule = function(config_set){
 		}
 		return timeset_data;
 	}
-	function get_week_title(_weekNum){
-		var weekNum = parseInt(_weekNum);
-		var weekTitle = "";
+	function get_week_title(timeset_data){
+		let weekNum = parseInt(timeset_data.weekday);
+		let weekTitle = "";
+		let isCrossDay = false;
+		if (
+			typeof timeset_data.start_hour !== "undefined" &&
+			typeof timeset_data.end_hour !== "undefined"
+		) {
+			const start = timeset_data.start_hour * 60 + (timeset_data.start_min || 0);
+			const end = timeset_data.end_hour * 60 + (timeset_data.end_min || 0);
+			isCrossDay = start >= end;
+		}
+		let weekList = [];
 		$.each(_weekday_mapping, function(index, value){
-			var weekday_obj = value;
+			const weekday_obj = value;
 			if(weekNum >> weekday_obj.bitwise & 1){
-				if(weekTitle != "")
-					weekTitle += " / "
-				weekTitle += weekday_obj.text.substr(0,3).toUpperCase();
+				weekList.push(index);
 			}
 		});
-		return weekTitle
+		//if(isCrossDay && weekList.length > 0){
+		if(0){
+			let expandedList = [];
+			weekList.forEach(function(day){
+				expandedList.push(day);
+				const nextDay = (day + 1) % 7;
+				if(expandedList.indexOf(nextDay) === -1){
+					expandedList.push(nextDay);
+				}
+			});
+			expandedList = Array.from(new Set(expandedList)).sort(function(a, b){return a-b;});
+			if(expandedList.length === 7
+				&& expandedList.includes(0) && expandedList.includes(1)
+				&& expandedList.includes(2) && expandedList.includes(3)
+				&& expandedList.includes(4) && expandedList.includes(5)
+				&& expandedList.includes(6)){
+				return "Daily";
+			}
+			else if(expandedList.length === 5
+				&& expandedList.includes(1) && expandedList.includes(2)
+				&& expandedList.includes(3) && expandedList.includes(4)
+				&& expandedList.includes(5)){
+				return "Weekdays";
+			}
+			else if(expandedList.length === 2 && expandedList.includes(0) && expandedList.includes(6)){
+				return "Weekend";
+			}
+			weekTitle = expandedList.map(function(day){
+				return _weekday_mapping[day].text.substring(0,3).toUpperCase();
+			}).join(" / ");
+			return weekTitle;
+		}else{
+			weekTitle = weekList.map(function(day){
+				return _weekday_mapping[day].text.substring(0,3).toUpperCase();
+			}).join(" / ");
+			return weekTitle;
+		}
 	}
 	function init_timeset_data(_obj){
 		reset_combination_select_status(_obj);
@@ -1289,6 +1504,22 @@ var schedule = function(config_set){
 		$top_schedule_ui.find("[data-viewport=schedule_main]").hide();
 		$top_schedule_ui.find("[data-viewport=schedule_timeset]").show();
 		init_timeset_data($top_schedule_ui.find("[data-viewport=schedule_timeset]"));
+
+		if(_config && _config.alternate_days) {
+			const $timeset_cntr = $top_schedule_ui.find(".timeset_container");
+			const start_hour = parseInt($timeset_cntr.find(".combi_input.start.hour").val(), 10);
+			const start_min = parseInt($timeset_cntr.find(".combi_input.start.minute").val(), 10);
+			const end_hour = parseInt($timeset_cntr.find(".combi_input.end.hour").val(), 10);
+			const end_min = parseInt($timeset_cntr.find(".combi_input.end.minute").val(), 10);
+			if((start_hour*60+start_min) >= (end_hour*60+end_min)) {
+				const hint = `* <#Schedule_Next_Day_Hint#>`;
+				$timeset_cntr.find(".valid_hint_component[data-valid_hint='timeset']").html(hint).show();
+			}
+			else {
+				$timeset_cntr.find(".valid_hint_component[data-valid_hint='timeset']").hide().empty();
+			}
+		}
+
 		if(_config.show_timeset_viewport_callback != null){
 			_config.show_timeset_viewport_callback();
 		}
@@ -1390,6 +1621,13 @@ var schedule = function(config_set){
 			if(_timeset_data.weekday >> weekday_bitwise & 1)
 				$(obj).addClass("clicked");
 		});
+		if((_timeset_data.start_hour*60+_timeset_data.start_min) >= (_timeset_data.end_hour*60+_timeset_data.end_min)){
+			const hint = `* <#Schedule_Next_Day_Hint#>`;
+			$top_schedule_ui.find(".valid_hint_component[data-valid_hint='timeset']").html(hint).show();
+		}
+		else {
+			$top_schedule_ui.find(".valid_hint_component[data-valid_hint='timeset']").hide().empty();
+		}
 	}
 };
 var schedule_handle_data = {

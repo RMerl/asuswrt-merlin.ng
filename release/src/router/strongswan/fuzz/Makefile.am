@@ -11,7 +11,7 @@ AM_CPPFLAGS = @CPPFLAGS@ \
 
 fuzz_ldflags = ${libfuzzer} \
 	$(top_builddir)/src/libstrongswan/.libs/libstrongswan.a \
-	-Wl,-Bstatic -lgmp -Wl,-Bdynamic \
+	-Wl,-Bstatic -lcrypto -Wl,-Bdynamic \
 	@FUZZING_LDFLAGS@
 
 pa_tnc_ldflags = \

@@ -238,7 +238,11 @@ typedef struct umem_magtype {
 #if (defined(__PTHREAD_MUTEX_SIZE__) && __PTHREAD_MUTEX_SIZE__ >= 24) || defined(UMEM_PTHREAD_MUTEX_TOO_BIG) || defined(RT4GAC86U)
 #define	UMEM_CPU_CACHE_SIZE	128	/* must be power of 2 */
 #else
+#if defined(WIFI8_SDK_20251126)
+#define	UMEM_CPU_CACHE_SIZE	128	/* must be power of 2 */
+#else
 #define	UMEM_CPU_CACHE_SIZE	64	/* must be power of 2 */
+#endif
 #endif
 #define	UMEM_CPU_PAD		(UMEM_CPU_CACHE_SIZE - sizeof (mutex_t) - \
 	2 * sizeof (uint_t) - 2 * sizeof (void *) - 4 * sizeof (int))

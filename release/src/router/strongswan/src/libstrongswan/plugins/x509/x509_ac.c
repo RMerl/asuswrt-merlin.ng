@@ -1156,7 +1156,7 @@ static void add_groups_from_list(private_x509_ac_t *this, linked_list_t *list)
  */
 x509_ac_t *x509_ac_gen(certificate_type_t type, va_list args)
 {
-	hash_algorithm_t digest_alg = HASH_SHA1;
+	hash_algorithm_t digest_alg = HASH_SHA256;
 	private_x509_ac_t *ac;
 
 	ac = create_empty();

@@ -90,6 +90,29 @@ typedef void bcm_usched_timerscbfn(bcm_usched_handle *handle, void *arg);
 typedef void bcm_usched_fdscbfn(bcm_usched_handle *handle, void *arg,
 	bcm_usched_fds_entry_t *entry);
 
+#if defined(WIFI8_SDK_20251126)
+/**
+ * Callback function for compare
+ *
+ * @param arg1		Pointer of timer data.
+ * @param arg2		Pointer of the data passed for comparision.
+ * @return		Comparision result as an integer less than, equal to, or greter than zero.
+ */
+typedef int bcm_usched_comparefn(void *arg1, void *arg2);
+
+/* structure for holding the timer information sent from user. */
+typedef struct {
+	unsigned long long interval;	/* Timeout interval in microsecs  */
+	short int repeat_flag;		/* Repeat flag indicating if timer needs to be repeated */
+	bcm_usched_timerscbfn *cbfn;	/* User provided callback function */
+	void *arg;			/* Optional data which is passed to callback function */
+	bcm_usched_comparefn *comparefn;	/* User provided optional compare function used
+						 * for matching the timer data
+						 */
+} bcm_usched_timer_entry_t;
+
+#endif
+
 /**
  * Initialize the scheduler. This initializes the memory for the handle and this
  * handle should be used in all the functions

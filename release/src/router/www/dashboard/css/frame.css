@@ -2,33 +2,35 @@
 .page-title {
     font-size: 24px;
     font-weight: bold;
-    color: var(--text-page-title-color);
+    color: var(--page-title-color);
     padding-left: 24px;
 }
-.card {
-    background: linear-gradient(var(--gradient-card-color)) var(--bg-card-color);
-    border-radius: 10px;
-}
 .card-header {
-    font-size: 18px;
-    font-weight: bolder;
+    font-size: 14px;
+    /* font-weight: bolder; */
     text-transform: uppercase;
     background-color: transparent;
     border-bottom: none;
-    color: var(--text-card-title-color);
+    color: var(--text-brand-color);
 }
 .chart-client-value {
-    color: var(--text-value-color);
-    font-size: 28px;
-    font-weight: 500;
+    color: var(--text-caption-color);
+    font-size: 16px;
+    font-weight: 400;
     height: 28px;
 }
-.bg-img{
-    background-color: rgba(var(--color-gradient-card-2));
+
+.card-body .card-body-block {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    background: #f6f6f6;
+    padding: 1rem;
+    gap: 16px;
 }
 
 @media (min-width: 768px) {
     .page-title {
-        padding-left: 15px;
+        padding-left: 13px;
     }
 }

@@ -1,6 +1,7 @@
 [Unit]
 Description=strongSwan IPsec IKEv1/IKEv2 daemon using swanctl
 After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=notify

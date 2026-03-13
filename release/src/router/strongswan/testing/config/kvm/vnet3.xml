@@ -1,4 +1,4 @@
-<network>
+<network ipv6='yes'>
   <name>vnet3</name>
   <uuid>5c537abc-c116-90e9-a0ef-886340d4c356</uuid>
   <forward dev='lo' mode='route'>

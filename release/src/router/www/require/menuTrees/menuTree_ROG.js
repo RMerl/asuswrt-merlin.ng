@@ -76,9 +76,11 @@ define(function(){
 				index: "menu_ParentalControl", 
 				tab: [
 					{url: "AiProtection_WebProtector.asp", tabName: "<#AiProtection_filter#>"},
+					{url: "AiProtection_ContentFilter.asp", tabName: "<#AiProtection_filter#>"},
 					{url: "ParentalControl.asp", tabName: "<#Time_Scheduling#>"},
 					{url: "YandexDNS.asp", tabName: "<#YandexDNS#>"},
 					{url: "adGuard_DNS.asp", tabName: "AdGuard"},
+					{url: "Ark_WebHistory_Content.asp", tabName: "<#Adaptive_History#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -87,7 +89,7 @@ define(function(){
 				index: "menu_GameBoost",
 				tab: [
 					{url: "GameBoost.asp", tabName: "<#Game_acceleration#>"},
-					{url: "QoS_EZQoS.asp", tabName: "<#menu5_3_2#>"},
+					{url: "QoS_EZQoS.asp", tabName: "<#Adaptive_QoS#>"},
 					{url: "QoS_Stats.asp", tabName: "Classification"},
 					{url: "Advanced_QOSUserPrio_Content.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_QOSUserRules_Content.asp", tabName: "__INHERIT__"},
@@ -373,15 +375,8 @@ define(function(){
 					retArray.push("menu_NewDashboard");
 				}
 
-				if(!isSupport("adaptive_qos") && !isSupport("bandwidth_monitor") && !isSupport("dns_dpi")){	
-					for(i=0; i<menuTree.list.length; i++){
-						if(menuTree.list[i].menuName == '<#Adaptive_QoS#>'){
-							menuTree.list[i].menuName = '<#menu5_3_2#>';
-						}
-					}
-				}
-
-				if(!isSupport("dpi_mals") && !isSupport("dpi_cc") && !isSupport("dpi_vp")){
+				if (!isSupport("dpi_mals") && !isSupport("dpi_cc") && !isSupport("dpi_vp") &&
+					!isSupport("ark_mals") && !isSupport("ark_tracker") && !isSupport("ark_adblock")) {
 					retArray.push("menu_AiProtection");
 				}
 				
@@ -506,8 +501,11 @@ define(function(){
 				var retArray = [];
 
 				/* By RC Support */
-				if(!wifiRadar_support){
-					retArray.push("WiFi_Insight.asp");
+
+				if(isSupport("ark_iam")){
+					retArray.push("AiProtection_MaliciousSitesBlocking.asp");
+					retArray.push("AiProtection_InfectedDevicePreventBlock.asp");
+					retArray.push("AiProtection_IntrusionPreventionSystem.asp");
 				}
 
 				if(!isSupport("dpi_mals")){
@@ -551,7 +549,7 @@ define(function(){
 					retArray.push("AdaptiveQoS_Bandwidth_Monitor.asp");
 				}
 
-				if(!isSupport("traffic_analyzer") && !isSupport("dns_dpi")){
+				if(!isSupport("traffic_analyzer") && !isSupport("dns_dpi") && !isSupport("ark_qoe")){
 					retArray.push("TrafficAnalyzer_Statistic.asp");		
 
 					for(i=0;i<menuTree.list.length;i++){
@@ -615,7 +613,7 @@ define(function(){
 					retArray.push("adGuard_DNS.asp");
 				}
 
-				if(!frs_feedback_support) {		
+				if(!frs_feedback_support) {
 					retArray.push("Advanced_Feedback.asp");
 					retArray.push("Feedback_Info.asp");
 				}
@@ -623,13 +621,15 @@ define(function(){
 				if(noftp_support){
 					retArray.push("Advanced_AiDisk_ftp.asp");
 				}
-				
+
 				if(!dualWAN_support){
 					retArray.push("Advanced_WANPort_Content.asp");
 				}
 				else{
 					if(!dualwan_enabled && usb_index == 0){
 						retArray.push("Advanced_WAN_Content.asp");
+						if(dsl_support)
+							retArray.push("Advanced_DSL_Content.asp");
 						if(!gobi_support)
 							retArray.push("Advanced_MobileBroadband_Content.asp");
 						else
@@ -792,10 +792,14 @@ define(function(){
 				if(!isSupport("mtlancfg") || !isSupport("mlo")){
 					retArray.push("MLO.asp");
 				}
-				
+
 				if(isSupport("sdn_mainfh")){
 					retArray.push("Advanced_ACL_Content.asp");
 					retArray.push("Advanced_WSecurity_Content.asp");
+				}
+
+				if(isSupport("UI4")) {
+					retArray.push("Advanced_WMode_Content.asp");
 				}
 
 				if(isSupport("BUSINESS")){
@@ -881,6 +885,22 @@ define(function(){
 					retArray.push("Main_ConnStatus_Content.asp");
 					retArray.push("Advanced_Smart_Connect.asp");
 					retArray.push("DNSDirector.asp");
+				}
+
+				if(isSupport("ark_qoe")){
+					for (i = 0; i < menuTree.list.length; i++) {
+						if (menuTree.list[i].menuName == '<#Adaptive_QoS#>') {
+							menuTree.list[i].menuName = '<#Adaptive_QoE#>';
+						}
+					}
+					replaceTabNameByUrl("menu_BandwidthMonitor", "QoS_EZQoS.asp", "<#Adaptive_QoE#>");
+				}
+
+				if (isSupport("ark_iam")) {
+					retArray.push("AiProtection_WebProtector.asp");
+				} else {
+					retArray.push("AiProtection_ContentFilter.asp");
+                    retArray.push("Ark_WebHistory_Content.asp");
 				}
 
 				/* System Status Changed */

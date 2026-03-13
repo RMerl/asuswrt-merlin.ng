@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019 Tobias Brunner
+ * Copyright (C) 2012-2024 Tobias Brunner
  * Copyright (C) 2011 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -165,6 +165,11 @@ struct private_quick_mode_t {
 	bool delete;
 
 	/**
+	 * Whether the task was aborted
+	 */
+	bool aborted;
+
+	/**
 	 * Negotiated mode, tunnel or transport
 	 */
 	ipsec_mode_t mode;
@@ -270,6 +275,7 @@ static bool install(private_quick_mode_t *this)
 	chunk_t encr_i, encr_r, integ_i, integ_r;
 	linked_list_t *tsi, *tsr, *my_ts, *other_ts;
 	child_sa_t *old = NULL;
+	array_t *kes = NULL;
 
 	this->child_sa->set_proposal(this->child_sa, this->proposal);
 	this->child_sa->set_state(this->child_sa, CHILD_INSTALLING);
@@ -377,8 +383,13 @@ static bool install(private_quick_mode_t *this)
 		return FALSE;
 	}
 
+	if (this->dh)
+	{
+		array_insert_create(&kes, ARRAY_HEAD, this->dh);
+	}
 	charon->bus->child_keys(charon->bus, this->child_sa, this->initiator,
-							this->dh, this->nonce_i, this->nonce_r);
+							kes, this->nonce_i, this->nonce_r);
+	array_destroy(kes);
 
 	my_ts = linked_list_create_from_enumerator(
 				this->child_sa->create_ts_enumerator(this->child_sa, TRUE));
@@ -529,8 +540,8 @@ static traffic_selector_t* select_ts(private_quick_mode_t *this, bool local,
 	linked_list_t *list, *hosts;
 
 	hosts = get_dynamic_hosts(this->ike_sa, local);
-	list = this->config->get_traffic_selectors(this->config,
-											   local, supplied, hosts, TRUE);
+	list = this->config->select_traffic_selectors(this->config, local,
+												  supplied, hosts);
 	hosts->destroy(hosts);
 	if (list->get_first(list, (void**)&ts) == SUCCESS)
 	{
@@ -949,6 +960,13 @@ METHOD(task_t, build_i, status_t,
 		}
 		case QM_NEGOTIATED:
 		{
+			if (this->aborted)
+			{
+				this->ike_sa->queue_task(this->ike_sa,
+				(task_t*)quick_delete_create(this->ike_sa,
+								this->proposal->get_protocol(this->proposal),
+								this->spi_i, TRUE, FALSE));
+			}
 			return SUCCESS;
 		}
 		default:
@@ -1033,7 +1051,7 @@ static void check_for_rekeyed_child(private_quick_mode_t *this, bool responder)
 						this->proposal->equals(this->proposal, proposal))
 					{
 						this->rekey = child_sa->get_spi(child_sa, TRUE);
-						this->child.reqid = child_sa->get_reqid(child_sa);
+						this->child.reqid = child_sa->get_reqid_ref(child_sa);
 						this->child.mark_in = child_sa->get_mark(child_sa,
 																 TRUE).value;
 						this->child.mark_out = child_sa->get_mark(child_sa,
@@ -1429,6 +1447,12 @@ METHOD(quick_mode_t, get_mid, uint32_t,
 	return this->mid;
 }
 
+METHOD(quick_mode_t, get_config, child_cfg_t*,
+	private_quick_mode_t *this)
+{
+	return this->initiator ? this->config : NULL;
+}
+
 METHOD(quick_mode_t, use_reqid, void,
 	private_quick_mode_t *this, uint32_t reqid)
 {
@@ -1462,6 +1486,12 @@ METHOD(quick_mode_t, rekey, void,
 	private_quick_mode_t *this, uint32_t spi)
 {
 	this->rekey = spi;
+}
+
+METHOD(quick_mode_t, abort_, void,
+	private_quick_mode_t *this)
+{
+	this->aborted = TRUE;
 }
 
 METHOD(task_t, migrate, void,
@@ -1516,7 +1546,8 @@ METHOD(task_t, destroy, void,
  * Described in header.
  */
 quick_mode_t *quick_mode_create(ike_sa_t *ike_sa, child_cfg_t *config,
-							traffic_selector_t *tsi, traffic_selector_t *tsr)
+								traffic_selector_t *tsi, traffic_selector_t *tsr,
+								uint32_t seq)
 {
 	private_quick_mode_t *this;
 
@@ -1528,10 +1559,16 @@ quick_mode_t *quick_mode_create(ike_sa_t *ike_sa, child_cfg_t *config,
 				.destroy = _destroy,
 			},
 			.get_mid = _get_mid,
+			.get_config = _get_config,
 			.use_reqid = _use_reqid,
 			.use_marks = _use_marks,
 			.use_if_ids = _use_if_ids,
 			.rekey = _rekey,
+			.abort = _abort_,
+		},
+		.child = {
+			.cpu = CPU_ID_MAX,
+			.seq = seq,
 		},
 		.ike_sa = ike_sa,
 		.initiator = config != NULL,

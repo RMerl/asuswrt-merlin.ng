@@ -24,6 +24,10 @@
 #include <sys/sysinfo.h>       /* for struct sysinfo */
 #include <sys/sysinfo.h>
 
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126)
+#include <bcmstdlib_s.h>
+#endif /* WIFI7_SDK_20250506 || WIFI8_SDK_20251126 */
+
 #ifndef MAX_NVPARSE
 #define MAX_NVPARSE 16
 #endif
@@ -43,6 +47,12 @@
 #define ASUSRT_STACKSIZE        0x200000
 
 extern int doSystem(const char *fmt, ...);
+
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126)
+#define BCME_OK				0	/* Success */
+#define BCME_BADARG			-2	/* Bad Argument */
+#define BCME_BADLEN			-24	/* Bad length */
+#endif /* WIFI7_SDK_20250506 || WIFI8_SDK_20251126 */
 
 /*
  * Reads file and returns contents
@@ -165,6 +175,24 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 	strcat(buf, s2);
 	return buf;
 }	
+
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126)
+/*
+ * A safe version of strcat_r().
+ * @param       buf_len         the length of buffer
+ *
+ * strcat_r() calls strcpy() and strcat() that don't ensure null terminator.
+ * It can have a chance to cause overflow.
+ * To ensure null terminator,
+ * strcat_r_s() always adds null at the end of the buf.
+ */
+static inline char * strcat_r_s(const char *s1, const char *s2, char *buf, size_t buf_len)
+{
+	strlcpy(buf, s1, buf_len);
+	strlcat_s(buf, s2, buf_len);
+	return buf;
+}
+#endif /* WIFI7_SDK_20250506 || WIFI8_SDK_20251126 */
 
 /* Strip trailing CR/NL from string <s> */
 #define strip_new_line(s) ({					\
@@ -478,7 +506,7 @@ do {                                                            \
 		return;         \
 } while (0)
 
-//#define dbg(fmt, args...) do { FILE *fp = fopen("/dev/console", "w"); if (fp) { fprintf(fp, fmt, ## args); fclose(fp); } else fprintf(stderr, fmt, ## args); } while (0)
+#define dbg2(fmt, args...) do { FILE *fp = fopen("/dev/console", "w"); if (fp) { fprintf(fp, fmt, ## args); fclose(fp); } else fprintf(stderr, fmt, ## args); } while (0)
 extern void dbg(const char * format, ...);
 #define dbG(fmt, args...) dbg("%s(0x%04x): " fmt , __FUNCTION__ , __LINE__, ## args)
 
@@ -629,18 +657,20 @@ extern pid_t get_pid_by_name(char *name);
 extern pid_t get_pid_by_thrd_name(char *name);
 extern char *get_process_name_by_pid(const int pid);
 extern char *ether_etoa2(const unsigned char *e, char *a);
-extern char *ATE_FACTORY_MODE_STR();
-extern char *ATE_UPGRADE_MODE_STR();
+extern char *ATE_FACTORY_MODE_STR(void);
+extern char *ATE_UPGRADE_MODE_STR(void);
 extern int hex2str(unsigned char *hex, char *str, int hex_len);
 extern void reset_stacksize(int new_stacksize);
 extern int arpcache(char *tgmac, char *tgip);
 extern int ether_inc(unsigned char *e, const unsigned char n);
+extern int ether_dec(unsigned char *e, const unsigned char n);
 #ifdef RTCONFIG_AMAS
 extern int check_if_exist_ifnames(char *need_check_ifname, char *ifname);
 #endif
-extern long get_sys_uptime();
+extern long get_sys_uptime(void);
 extern void wait_ntp_repeat(unsigned long usec, unsigned int count);
 extern int ping_target_with_size(char *target, unsigned int size, unsigned int count, unsigned int wait_time, double loss_rate);
 extern int parse_ping_content(char *fname, ping_result_t *out);
 extern int replace_literal_newline(char *inputstr, char *output, int buflen);
+
 #endif /* _shutils_h_ */

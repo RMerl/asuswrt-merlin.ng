@@ -428,8 +428,8 @@ METHOD(traffic_selector_t, get_subset, traffic_selector_t*,
 
 	/* we have a match in protocol, port, and address: return it... */
 	subset = traffic_selector_create(protocol, this->type, from_port, to_port);
-	memcpy(subset->from, from, size);
-	memcpy(subset->to, to, size);
+	memcpy(subset->from, from, sizeof(subset->from));
+	memcpy(subset->to, to, sizeof(subset->to));
 	calc_netbits(subset);
 
 	return &subset->public;

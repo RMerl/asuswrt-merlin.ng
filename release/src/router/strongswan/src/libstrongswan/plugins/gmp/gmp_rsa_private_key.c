@@ -157,7 +157,7 @@ static void mpz_clear_sensitive(mpz_t z)
 static status_t compute_prime(drbg_t *drbg, size_t prime_size, bool safe, mpz_t *p, mpz_t *q)
 {
 	chunk_t random_bytes;
-	int count = 0;
+	int count DBG_UNUSED = 0;
 
 	mpz_init(*p);
 	mpz_init(*q);

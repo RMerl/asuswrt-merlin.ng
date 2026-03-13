@@ -72,8 +72,8 @@ key/request is read from \fISTDIN\fR.
 .BI "\-t, \-\-type " type
 Type of the input. One of \fIpub\fR (public key), \fIpriv\fR (private key),
 \fIrsa\fR (RSA private key), \fIecdsa\fR (ECDSA private key),
-\fIed25519\fR (Ed25519 private key), \fIed448\fR (Ed448 private key),
-\fIbliss\fR (BLISS private key) or \fIpkcs10\fR (PKCS#10 certificate request),
+\fIed25519\fR (Ed25519 private key), \fIed448\fR (Ed448 private key) or
+\fIpkcs10\fR (PKCS#10 certificate request),
 defaults to \fIpub\fR.
 .TP
 .BI "\-k, \-\-cakey " file

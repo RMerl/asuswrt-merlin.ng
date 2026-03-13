@@ -257,6 +257,18 @@ mgf1_xof_t *mgf1_xof_create(ext_out_function_t algorithm)
 		case XOF_MGF1_SHA512:
 			hash_alg = HASH_SHA512;
 			break;
+		case XOF_MGF1_SHA3_224:
+			hash_alg = HASH_SHA3_224;
+			break;
+		case XOF_MGF1_SHA3_256:
+			hash_alg = HASH_SHA3_256;
+			break;
+		case XOF_MGF1_SHA3_384:
+			hash_alg = HASH_SHA3_384;
+			break;
+		case XOF_MGF1_SHA3_512:
+			hash_alg = HASH_SHA3_512;
+			break;
 		default:
 			return NULL;
 	}

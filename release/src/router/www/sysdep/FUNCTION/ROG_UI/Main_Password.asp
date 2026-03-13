@@ -232,9 +232,60 @@ var secure_default = (function(){
 	var rc_support = '<% nvram_get("rc_support"); %>';
 	return (rc_support.search("secure_default") == -1) ? false : true;
 })();
-
 var CoBrand = '<% nvram_get("CoBrand"); %>';
 var based_modelid = '<% nvram_get("productid"); %>';
+function isSupport(_ptn){
+	var ui_support = [<% get_ui_support(); %>][0];
+	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
+}
+
+(()=>{
+	if(isSupport("YEAR20")){
+		const style = document.createElement('style');
+		style.type = 'text/css';
+		style.innerHTML = `
+			.logo-container {
+				flex-direction: column;
+				margin-left: 0;
+			}
+			.logo-rog, .logo-odm{
+				background-position: center;
+				background-size: 60%;
+			}
+			.login-title {
+				width: auto;
+				height: 100%;
+				font-size: 48px;
+				color: #BDA158;
+				margin: 0 40px 0 120px;
+			}
+			.form-input {
+				border-bottom: 2px solid #999;
+			}
+			.form-input:focus {
+				border-bottom: 1px solid #E0BE62;
+			}
+			.login-btn-bg, .login-btn-bg:hover {
+				width: 380px;
+				padding: 0 22px;
+				margin: 20px auto 0;
+				float: none;
+				color: #E0BE62;
+				border: 1px solid #E0BE62;
+				background: rgba(49, 42, 29, 0.80);
+				border-radius: 0;
+			}
+			@media screen and (max-width: 1000px){
+				.login-btn-bg, .login-btn-bg:hover{
+					width: auto;
+					margin: 0 10px 0;
+					padding: initial;
+				}
+			}
+		`;
+		document.head.appendChild(style);
+	}
+})();
 
 function initial(){
 	top.name = "";/* reset cache of state.js win.name */

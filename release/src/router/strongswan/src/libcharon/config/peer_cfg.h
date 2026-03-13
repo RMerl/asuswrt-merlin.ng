@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2019 Tobias Brunner
+ * Copyright (C) 2007-2025 Tobias Brunner
  * Copyright (C) 2005-2009 Martin Willi
  * Copyright (C) 2005 Jan Hutter
  *
@@ -25,7 +25,9 @@
 #define PEER_CFG_H_
 
 typedef enum cert_policy_t cert_policy_t;
+typedef enum ocsp_policy_t ocsp_policy_t;
 typedef enum unique_policy_t unique_policy_t;
+typedef enum peer_cfg_option_t peer_cfg_option_t;
 typedef struct peer_cfg_t peer_cfg_t;
 typedef struct peer_cfg_create_t peer_cfg_create_t;
 
@@ -60,6 +62,25 @@ enum cert_policy_t {
  * enum strings for cert_policy_t
  */
 extern enum_name_t *cert_policy_names;
+
+/**
+ * OCSP status request/response sending policy.
+ */
+enum ocsp_policy_t {
+	/** send OCSP status upon OCSP status request */
+	OCSP_SEND_REPLY =    0,
+	/** send OCSP status request */
+	OCSP_SEND_REQUEST =  1,
+	/** request OCSP status and reply to OCSP status requests */
+	OCSP_SEND_BOTH =     2,
+	/** never send OCSP status request or response */
+	OCSP_SEND_NEVER =    3,
+};
+
+/**
+ * enum strings for ocsp_policy_t
+ */
+extern enum_name_t *ocsp_policy_names;
 
 /**
  * Uniqueness of an IKE_SA, used to drop multiple connections with one peer.
@@ -126,6 +147,14 @@ struct peer_cfg_t {
 	 * @return				peer_cfg's name
 	 */
 	char* (*get_name) (peer_cfg_t *this);
+
+	/**
+	 * Check if an option flag is set.
+	 *
+	 * @param option		option flag to check
+	 * @return				TRUE if option flag set, FALSE otherwise
+	 */
+	bool (*has_option)(peer_cfg_t *this, peer_cfg_option_t option);
 
 	/**
 	 * Get the IKE version to use for initiating.
@@ -214,6 +243,13 @@ struct peer_cfg_t {
 	cert_policy_t (*get_cert_policy) (peer_cfg_t *this);
 
 	/**
+	 * Should an OCSP status request/response be sent for this connection?
+	 *
+	 * @return			OCSP sending policy
+	 */
+	ocsp_policy_t (*get_ocsp_policy) (peer_cfg_t *this);
+
+	/**
 	 * How to handle uniqueness of IKE_SAs?
 	 *
 	 * @return			unique policy
@@ -249,27 +285,6 @@ struct peer_cfg_t {
 	 * @return			timeout in s
 	 */
 	uint32_t (*get_over_time)(peer_cfg_t *this);
-
-	/**
-	 * Use MOBIKE (RFC4555) if peer supports it?
-	 *
-	 * @return			TRUE to enable MOBIKE support
-	 */
-	bool (*use_mobike) (peer_cfg_t *this);
-
-	/**
-	 * Use/Accept aggressive mode with IKEv1?.
-	 *
-	 * @return			TRUE to use aggressive mode
-	 */
-	bool (*use_aggressive)(peer_cfg_t *this);
-
-	/**
-	 * Use pull or push mode for mode config?
-	 *
-	 * @return			TRUE to use pull, FALSE to use push mode
-	 */
-	bool (*use_pull_mode)(peer_cfg_t *this);
 
 	/**
 	 * Get the DPD check interval.
@@ -330,13 +345,6 @@ struct peer_cfg_t {
 	 */
 	identification_t *(*get_ppk_id)(peer_cfg_t *this);
 
-	/**
-	 * Whether a PPK is required with this peer.
-	 *
-	 * @return				TRUE, if a PPK is required
-	 */
-	bool (*ppk_required)(peer_cfg_t *this);
-
 #ifdef ME
 	/**
 	 * Is this a mediation connection?
@@ -392,11 +400,33 @@ struct peer_cfg_t {
 };
 
 /**
+ * Option flags that may be set on a peer_cfg_t object.
+ */
+enum peer_cfg_option_t {
+
+	/** Disable MOBIKE (RFC 4555) */
+	OPT_NO_MOBIKE = (1<<0),
+
+	/** Use/accept aggressive mode with IKEv1 */
+	OPT_IKEV1_AGGRESSIVE = (1<<1),
+
+	/** Use IKEv1 modeconfig in push mode (otherwise, pull mode is used) */
+	OPT_IKEV1_PUSH_MODE = (1<<2),
+
+	/** Require a PPK (otherwise, it's optional) */
+	OPT_PPK_REQUIRED = (1<<3),
+};
+
+/**
  * Data passed to the constructor of a peer_cfg_t object.
  */
 struct peer_cfg_create_t {
+	/** Options set for peer_cfg_t */
+	peer_cfg_option_t options;
 	/** Whether to send a certificate payload */
 	cert_policy_t cert_policy;
+	/** Whether to send OCSP status request/response */
+	ocsp_policy_t ocsp_policy;
 	/** Uniqueness of an IKE_SA */
 	unique_policy_t unique;
 	/** How many keying tries should be done before giving up */
@@ -409,12 +439,6 @@ struct peer_cfg_create_t {
 	uint32_t jitter_time;
 	/** Maximum overtime in seconds before closing a rekeying/reauth SA */
 	uint32_t over_time;
-	/** Disable MOBIKE (RFC4555) */
-	bool no_mobike;
-	/** Use/accept aggressive mode with IKEv1 */
-	bool aggressive;
-	/** TRUE to use modeconfig push, FALSE for pull */
-	bool push_mode;
 	/** DPD check interval, 0 to disable */
 	uint32_t dpd;
 	/** DPD timeout interval (IKEv1 only), if 0 default applies */
@@ -425,8 +449,6 @@ struct peer_cfg_create_t {
 	uint32_t if_id_out;
 	/** Postquantum Preshared Key ID (adopted) */
 	identification_t *ppk_id;
-	/** TRUE if a PPK is required, FALSE if it's optional */
-	bool ppk_required;
 #ifdef ME
 	/** TRUE if this is a mediation connection */
 	bool mediation;

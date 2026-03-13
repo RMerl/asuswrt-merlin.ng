@@ -185,22 +185,14 @@ struct rng_test_vector_t {
 struct ke_test_vector_t {
 	/** key exchange method to test */
 	key_exchange_method_t method;
-	/** private key of alice */
-	u_char *priv_a;
-	/** private key of bob */
-	u_char *priv_b;
-	/** length of private keys */
-	size_t priv_len;
-	/** expected public key of alice */
-	u_char *pub_a;
-	/** expected public key of bob */
-	u_char *pub_b;
-	/** size of public keys */
-	size_t pub_len;
+	/** seed from which private key material is derived */
+	chunk_t seed;
+	/** expected public factor of initiator */
+	chunk_t pub_i;
+	/** expected public factor of responder */
+	chunk_t pub_r;
 	/** expected shared secret */
-	u_char *shared;
-	/** size of shared secret */
-	size_t shared_len;
+	chunk_t shared;
 };
 
 /**

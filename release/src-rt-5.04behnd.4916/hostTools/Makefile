@@ -10,7 +10,8 @@ $(MAKECMDGOALS):
 	-cp prebuilt/mkfs.ubifs mtd-utils/
 	-cp prebuilt/ubinize mtd-utils/
 	mkdir -p local_install
-	cp prebuilt/$(BUILD_NAME)/lzop local_install/
+	-cp prebuilt/$(BUILD_NAME)/lzop local_install/
+	-cp prebuilt/make_ext4fs local_install/
 	-cp prebuilt/cmplzma ./cmplzma
 	-cp prebuilt/lzmacmd ./lzmacmd
 	mkdir -p prelink/src

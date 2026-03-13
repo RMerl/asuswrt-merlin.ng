@@ -55,6 +55,15 @@ static inline void *memcpy_noop(void *dst, const void *src, size_t n)
 #define memcpy(d,s,n) memcpy_noop(d,s,n)
 
 /**
+ * Copies n bytes from src to dst if the given condition is 1, or leaves dst
+ * unchanged if it's 0 (but does write to it).
+ *
+ * Runs in constant time, so it's safe to conditionally copy data after a call
+ * to memeq_const() without any branching instructions.
+ */
+void memcpy_cond(void *dst, const void *src, size_t n, uint8_t cond);
+
+/**
  * Calling memmove() with NULL pointers, even with n == 0, results in undefined
  * behavior according to the C standard.  This version is guaranteed to not
  * access the pointers if n is 0.

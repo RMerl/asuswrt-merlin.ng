@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2017 Tobias Brunner
+ * Copyright (C) 2006-2025 Tobias Brunner
  * Copyright (C) 2005-2009 Martin Willi
  * Copyright (C) 2006 Daniel Roethlisberger
  * Copyright (C) 2005 Jan Hutter
@@ -390,6 +390,16 @@ bool libcharon_init();
  * Deinitialize libcharon and destroy the "charon" instance of daemon_t.
  */
 void libcharon_deinit();
+
+/**
+ * Register a custom init function that's called at the end of libcharon_init()
+ * and the start of libcharon_deinit().
+ *
+ * To be called from __attribute__((constructor)) functions.
+ *
+ * @param init				init function
+ */
+void libcharon_init_register(library_init_t init);
 
 /**
  * Register a custom logger constructor.

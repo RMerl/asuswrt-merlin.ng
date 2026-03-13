@@ -974,7 +974,7 @@ static void endpt_on_rx_msg( pjsip_endpoint *endpt,
 	}
 
 	if (mismatch) {
-	    PJ_TODO(ENDPT_REPORT_WHEN_DROPPING_MESSAGE);
+	    //PJ_TODO(ENDPT_REPORT_WHEN_DROPPING_MESSAGE);
 	    PJ_LOG(4,(THIS_FILE, "Dropping response %s from %s:%d because "
 				 "sent-by is mismatch", 
 				 pjsip_rx_data_get_info(rdata),
@@ -1004,7 +1004,7 @@ static void endpt_on_rx_msg( pjsip_endpoint *endpt,
 
 	/* No module is able to handle the request. */
 	if (!handled) {
-	    PJ_TODO(ENDPT_RESPOND_UNHANDLED_REQUEST);
+	    //PJ_TODO(ENDPT_RESPOND_UNHANDLED_REQUEST);
 	    PJ_LOG(4,(THIS_FILE, "Message %s from %s:%d was dropped/unhandled by"
 				 " any modules",
 				 pjsip_rx_data_get_info(rdata),
@@ -1097,9 +1097,9 @@ PJ_DEF(pj_status_t) pjsip_endpt_create_resolver(pjsip_endpoint *endpt,
 						pj_dns_resolver **p_resv)
 {
 #if PJSIP_HAS_RESOLVER
-	int inst_id;
+	//int inst_id;
     PJ_ASSERT_RETURN(endpt && p_resv, PJ_EINVAL);
-	inst_id = endpt->inst_id;
+	//inst_id = endpt->inst_id;
     return pj_dns_resolver_create( endpt->pf, NULL, 0, endpt->timer_heap,
 				   endpt->ioqueue, p_resv);
 #else
@@ -1209,7 +1209,7 @@ PJ_DEF(void) pjsip_endpt_log_error(  pjsip_endpoint *endpt,
     if (len < (int)sizeof(newformat)-30) {
 	pj_str_t errstr;
 
-	pj_ansi_strcpy(newformat, format);
+        pj_ansi_strxcpy(newformat, format, sizeof(newformat));
 	pj_ansi_snprintf(newformat+len, sizeof(newformat)-len-1,
 			 ": [err %d] ", error_code);
 	len += pj_ansi_strlen(newformat+len);

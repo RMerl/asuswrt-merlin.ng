@@ -216,7 +216,7 @@ sender_t * sender_create()
 
 	lib->processor->queue_job(lib->processor,
 		(job_t*)callback_job_create_with_prio((callback_job_cb_t)send_packets,
-			this, NULL, (callback_job_cancel_t)return_false, JOB_PRIO_CRITICAL));
+			this, NULL, callback_job_cancel_thread, JOB_PRIO_CRITICAL));
 
 	return &this->public;
 }

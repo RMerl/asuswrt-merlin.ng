@@ -56,7 +56,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *eap_mschapv2_plugin_create()
+PLUGIN_DEFINE(eap_mschapv2)
 {
 	eap_mschapv2_plugin_t *this;
 

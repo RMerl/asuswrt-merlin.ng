@@ -2425,6 +2425,18 @@ function showClientlistModal(){
     clientlistModal.show();
 }
 
+if (isSupport("AURA_SCHED")) {
+	let script = document.createElement('script');
+	script.type = 'text/javascript';
+	script.src = '/js/ledScheduler.js';
+	script.onload = function() {
+		window.showLedScheduler = function(parms){
+			const ledScheduler = new popupLedScheduler(parms);
+			ledScheduler.show();
+		}
+	};
+	document.head.appendChild(script);
+}
 </script>
 </head>
 

@@ -293,6 +293,7 @@ static int expand_sched_v2_same_w_period(sched_v2_t **sched_v2_list) {
 						continue;
 					}
 					memset(new, 0, sizeof(sched_v2_t));
+					new->type = curr->type;
 					memcpy(&new->value_w, &curr->value_w, sizeof(sched_v2_w_t));
 					new->value_w.day_of_week = (1 << i);
 					snprintf(tmp_rule, sizeof(tmp_rule), "%02x%02d%02d", new->value_w.day_of_week, new->value_w.start_hour, new->value_w.start_minute);
@@ -657,6 +658,13 @@ END:
 	return ret;
 }
 
+
+/*
+	merge_same_period: 
+					 0: expand merged day_of_week to single day_of_week rules
+					 1: merge single day_of_week rules to merged day_of_week rules
+					-1: do nothing
+*/
 int parse_str_v2_to_sched_v2_list(const char *str_sched_v2, sched_v2_t **sched_v2_list, int merge_same_period, int skip_disabled) {
 	int ret = -1;
 	char tmp_str_sched[MAX_NVRAM_SCHED_LEN];
@@ -717,9 +725,9 @@ int parse_str_v2_to_sched_v2_list(const char *str_sched_v2, sched_v2_t **sched_v
 			tmp_sched_v2 = &((*tmp_sched_v2)->next);
 	}
 
-	if (merge_same_period)
+	if (merge_same_period == 1)
 		merge_sched_v2_same_w_period(sched_v2_list);
-	else
+	else if (merge_same_period == 0)
 		expand_sched_v2_same_w_period(sched_v2_list);
 
 	sort_sched_v2_list(sched_v2_list);
@@ -863,7 +871,7 @@ static char *convert_to_str_sched_v2(const char *str_sched, int merge_same_perio
 	//SCHED_DBG("%s", tmp_buf);
 	// merge the schedule string with same period
 	if (!parse_str_v2_to_sched_v2_list(tmp_buf, &sched_v2_list, merge_same_period, 1)) {
-		if (merge_same_period)
+		if (merge_same_period == 1)
 			merge_sched_v2_same_w_period(&sched_v2_list);
 		snprintf(buf, buf_size, "%s", ""); // clean buffer
 		if (!gen_v2_str_from_sched_v2_list(sched_v2_list, buf, buf_size)) {
@@ -1412,6 +1420,155 @@ int check_timesched_is_set(int unit, int subunit) {
 			return 2;
 	}
 	return 0;
+}
+
+#define DAYS_PER_WEEK 7
+#define MINUTES_PER_DAY 1440
+
+char *print_sched_v2_raw_rule(const sched_v2_t *sched_v2, char *buf, int buf_len) {
+	if(!sched_v2 || !buf || buf_len <= 0)
+		return NULL;
+
+	if (sched_v2->type == SCHED_V2_TYPE_DAY)
+		snprintf(buf, buf_len, "%c%d%02d%02d%02d%02d", 
+			get_sched_v2_ctype(sched_v2->type),
+			sched_v2->value_d.enable,
+			sched_v2->value_d.start_hour,
+			sched_v2->value_d.start_minute,
+			sched_v2->value_d.end_hour,
+			sched_v2->value_d.end_minute);
+	else if (sched_v2->type == SCHED_V2_TYPE_WEEK || sched_v2->type == SCHED_V2_TYPE_WEEK_ONLINE)
+		snprintf(buf, buf_len, "%c%d%02X%02d%02d%02d%02d", 
+			get_sched_v2_ctype(sched_v2->type),
+			sched_v2->value_w.enable,
+			sched_v2->value_w.day_of_week,
+			sched_v2->value_w.start_hour,
+			sched_v2->value_w.start_minute,
+			sched_v2->value_w.end_hour,
+			sched_v2->value_w.end_minute);
+	else if (sched_v2->type == SCHED_V2_TYPE_TIMESTAMP)
+		snprintf(buf, buf_len, "%c%lu%c%c%lu%c", 
+			get_sched_v2_ctype(sched_v2->type),
+			sched_v2->value_t.s_flag,
+			sched_v2->value_t.s_ts,
+			sched_v2->value_t.s_z_mark,
+			sched_v2->value_t.e_flag,
+			sched_v2->value_t.e_ts,
+			sched_v2->value_t.e_z_mark);
+	else if (sched_v2->type == SCHED_V2_TYPE_WEEK_EXTEND)
+		;/*snprintf(buf, buf_len, "%c%d%2X%02d%02d%02d%02d", 
+			get_sched_v2_ctype(sched_v2->type),
+			sched_v2->value_w.enable,
+			sched_v2->value_w.day_of_week,
+			sched_v2->value_w.start_hour,
+			sched_v2->value_w.start_minute,
+			sched_v2->value_w.end_hour,
+			sched_v2->value_w.end_minute);*/
+	return buf;
+};
+
+int is_in_schedule(const sched_v2_t* sched_v2, int wday, int hour, int min) {
+    if (!sched_v2->value_w.enable)
+		return 0;
+    if (!((sched_v2->value_w.day_of_week >> wday) & 1))
+		return 0;
+    int start = sched_v2->value_w.start_hour * 60 + sched_v2->value_w.start_minute;
+    int end = sched_v2->value_w.end_hour * 60 + sched_v2->value_w.end_minute;
+    // end_hour==24 and end_minute==0 tread as all day
+    if (sched_v2->value_w.end_hour == 24 && sched_v2->value_w.end_minute == 0) {
+        end = 1440;
+    }
+    int now = hour * 60 + min;
+	//printf("now=%d, start=%d, end=%d\n", now, start, end);
+    return (now >= start && now < end);
+}
+
+int find_sched_v2_next_sched(const char *sched_str, time_t now, int *next_wday, int *next_hour, int *next_minute, char *raw_rule, int raw_rule_size) {
+	int ret = -1;
+	sched_v2_t *sched_v2_list;
+	struct tm *ptm;
+	int wday, hour, min, wday_found = 0;
+	int now_total_min;
+	int next_total_min = 999999;
+	if (!sched_str || !next_wday || !next_hour || !next_minute)
+		return ret;
+
+	SCHED_DBG("sched_str=%s", sched_str);
+	//printf("sched_str=%s\n", sched_str);
+	if (!parse_str_v2_to_sched_v2_list(sched_str, &sched_v2_list, -1, 1)) {
+		sched_v2_t *sched_v2;
+		sched_v2_t *sched_found = NULL;
+		ptm = localtime(&now);
+		wday = ptm->tm_wday;
+		hour = ptm->tm_hour;
+		min = ptm->tm_min;
+		now_total_min = wday * MINUTES_PER_DAY + hour * 60 + min;
+		//printf("wday=%d, hour=%d, min=%d\n", wday, hour, min);
+
+		for (sched_v2 = sched_v2_list; sched_v2 != NULL; sched_v2 = sched_v2->next) {
+			if (!sched_v2->value_w.enable)
+				continue;
+
+			for (int add=0; add<DAYS_PER_WEEK; ++add) {
+				int d = (wday + add) % DAYS_PER_WEEK;
+				//printf("add=%d, d=%d\n", add, d);
+				if ((sched_v2->value_w.day_of_week >> d) & 1) {
+					int sch_start = ((wday + add) * MINUTES_PER_DAY) + sched_v2->value_w.start_hour * 60 + sched_v2->value_w.start_minute;
+					//printf("sch_start=%d, now_total_min=%d, next_total_min=%d\n", sch_start, now_total_min, next_total_min);
+					// find only the schedule in the future (in schedule rule not included)
+					if (sch_start > now_total_min && sch_start < next_total_min) {
+						next_total_min = sch_start;
+						sched_found = sched_v2;
+						wday_found = d;
+						//printf("found sched1, wday_found=%d\n", wday_found);
+					}
+				}
+			}
+		}
+		//const char* weekday_str[] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+		if (sched_found != NULL) {
+			/*printf("The next schedule:\n");
+			//printf("Raw rule: %s\n", schs[idx].raw);
+			printf("excution time: %s %02d:%02d ~ %02d:%02d\n",
+				weekday_str[wday_found],
+				sched_found->value_w.start_hour, sched_found->value_w.start_minute,
+				sched_found->value_w.end_hour, sched_found->value_w.end_minute);*/
+			*next_wday = wday_found;
+			*next_hour = sched_found->value_w.start_hour;
+			*next_minute = sched_found->value_w.start_minute;
+			print_sched_v2_raw_rule(sched_found, raw_rule, raw_rule_size);
+			//printf("found sched2, wday_found=%d, %02d:%02d, raw_rule=%s\n", wday_found, sched_found->value_w.start_hour, sched_found->value_w.start_minute, raw_rule);
+			return 0;
+		} else {
+			// No future schedule. Check if there is in schedule rule.
+			for (sched_v2 = sched_v2_list; sched_v2 != NULL; sched_v2 = sched_v2->next) {
+				if (is_in_schedule(sched_v2, wday, hour, min)) {
+					sched_found = sched_v2;
+					break;
+				}
+			}
+			if (sched_found != NULL) {
+				/*printf("The in schedule rule:\n");
+				//printf("Raw rule: %s\n", schs[cur_idx].raw);
+				printf("execution time: %s %02d:%02d ~ %02d:%02d\n",
+					weekday_str[wday],
+					sched_found->value_w.start_hour, sched_found->value_w.start_minute,
+					sched_found->value_w.end_hour, sched_found->value_w.end_minute);*/
+				*next_wday = wday;
+				*next_hour = sched_found->value_w.start_hour;
+				*next_minute = sched_found->value_w.start_minute;
+				//printf("found sched3, wday_found=%d\n", wday);
+				print_sched_v2_raw_rule(sched_found, raw_rule, raw_rule_size);
+				//printf("found sched3, wday_found=%d, %02d:%02d, raw_rule=%s\n", wday, sched_found->value_w.start_hour, sched_found->value_w.start_minute, raw_rule);
+				return 0;
+			} else {
+				//printf("No schedule found.\n");
+				return ret;
+			}
+		}
+	} else {
+		return ret;
+	}
 }
 
 /*For wireless scheduler*/

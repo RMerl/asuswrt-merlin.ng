@@ -108,6 +108,7 @@ PJ_DEF(pj_status_t) pj_dns_make_query( void *packet,
     /* Done, calculate length */
     *size = p - (pj_uint8_t*)packet;
 
+	(void) query;
     return 0;
 }
 

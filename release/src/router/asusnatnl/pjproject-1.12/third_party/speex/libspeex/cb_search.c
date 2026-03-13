@@ -567,6 +567,7 @@ spx_int32_t *seed
          exc[subvect_size*i+j]+=s*0.03125*shape_cb[ind[i]*subvect_size+j];      
 #endif
    }
+   (void) shape_cb_size;
 }
 
 void noise_codebook_quant(

@@ -86,7 +86,7 @@
             }
         </style>
         <script>
-            let { dwb_mode, dwb_band } = httpApi.nvramGet(["dwb_mode", "dwb_band"]);
+            let { dwb_mode, dwb_band, od_mode } = httpApi.nvramGet(["dwb_mode", "dwb_band", "od_mode"]);
             let nbandListArray = nvram["wlnband_list"].split("&#60");
             let systemManipulable = objectDeepCopy(system);
             let brcmAfcSupport = false;
@@ -127,7 +127,7 @@
                 let afcReturn = httpApi.get_afc_enable();
                 let afc_status = afcReturn.retStatus;
                 const { status = "", message = "" } = afcTable[afc_status] || {};
-                let str_message = message.replace(`%1$@`, maxbw_6g1);
+                let str_message = message.replace(`%@`, maxbw_6g1);
 
                 document.getElementById("afc_status").innerText = status;
                 document.getElementById("afc_err_message").innerText = str_message;
@@ -204,11 +204,11 @@
                         afc_enable,
                         function () {
                             const policyStatus = PolicyStatus().then((data) => {
-                                if (data.PP <= 2 || data.PP_time == "") {
+                                if (data.PP <= 2 || data.PP_read === 0) {
                                     const policyModal = new PolicyModalComponent({
                                         policy: "PP",
                                         policyStatus: data,
-                                        singPPVersion: 4,
+                                        signPPVersion: 4,
                                         agreeCallback: () => {
                                             applyRule();
                                         },
@@ -230,7 +230,7 @@
                             setTimeout(function () {
                                 location.reload();
                             }, restartTime * 1000);
-                        }
+                        },
                     );
 
                     document.querySelectorAll(".setup_afc_help_icon").forEach((element) => {
@@ -401,6 +401,11 @@
 
                     // Extension Channel
                     code += generateExtensionChannel(prefixNvram);
+
+                    // Outdoor Mode for 5 GHz
+                    if (prefixNvram === "5g1" || prefixNvram === "5g2") {
+                        code += generateOutdoorMode(prefixNvram);
+                    }
 
                     // BW320 Channel Range
                     if (prefixNvram === "6g1" || prefixNvram === "6g2") {
@@ -609,6 +614,70 @@
                     bw320ChannelRangeHandler(prefix);
                 } else {
                     extensionChannelHandler(prefix);
+                }
+            }
+
+            function outdoorModeChange(value, obj) {
+                if (value === "1") {
+                    // OUTDOOR MODE ON
+                    let content = `
+                        <ol>
+                            <li><#Outdoor_active_desc_1#></li>
+                            <li><#Outdoor_active_desc_2#></li>
+                            <li><#Outdoor_active_desc_3#></li>
+                            <li><span style="color:#FC0"><#Outdoor_active_desc_4#></span></li>
+                        </ol>
+                    `;
+                    confirm_asus({
+                        title: "<#Outdoor_desc_title#>",
+                        contentA: content,
+                        contentC: "",
+                        left_button: "<#CTL_Cancel#>",
+                        left_button_callback: function () {
+                            // rollback to previous state (outdoor mode OFF)
+                            obj.value = "0";
+                            confirm_cancel();
+                        },
+                        left_button_args: {},
+                        right_button: "<#CTL_ok#>",
+                        right_button_callback: function () {
+                            obj.value = "1";
+                            confirm_cancel();
+                        },
+                        right_button_args: {},
+                        iframe: "",
+                        margin: "0px",
+                        note_display_flag: 0,
+                    });
+                } else {
+                    // OUTDOOR MODE OFF
+                    let content = `
+                        <ol>
+                            <li><#Outdoor_inactive_desc_1#></li>            
+                            <li><#Outdoor_inactive_desc_2#></li>
+                        </ol>
+                    `;
+                    confirm_asus({
+                        title: "<#Outdoor_desc_title#>",
+                        contentA: content,
+                        contentC: "",
+                        left_button: "<#CTL_Cancel#>",
+                        left_button_callback: function () {
+                            // rollback to previous state (outdoor mode ON)
+                            obj.value = "1";
+                            confirm_cancel();
+                        },
+                        left_button_args: {},
+                        right_button: "<#CTL_ok#>",
+                        right_button_callback: function () {
+                            obj.value = "0";
+                            confirm_cancel();
+                        },
+                        right_button_args: {},
+                        iframe: "",
+                        margin: "0px",
+                        note_display_flag: 0,
+                    });
                 }
             }
 
@@ -1736,6 +1805,7 @@
                 } = wlBandSeq[prefixNvram];
                 let bandwidthStringObject = objectDeepCopy(channelBandwidthObject);
                 let autoBandwidthString = bandwidthStringObject.auto.string;
+
                 if (!bw320MHzSupport) {
                     autoBandwidthString = autoBandwidthString.replace("/320", "");
                     delete bandwidthStringObject["320mhz"];
@@ -1761,6 +1831,26 @@
                 }
 
                 bandwidthStringObject.auto.string = `${autoBandwidthString} MHz`;
+
+                //Add (SP mode available) for afc sp mode available
+                if (prefix === "6g1" && systemManipulable.brcmAfcSupport) {
+                    let afcSupportInfo = httpApi.get_afc_info_json();
+                    //console.log(afcSupportInfo.supportedBandwidths);
+                    if(afcSupportInfo.supportedBandwidths.length > 0){
+                        const supportedStrings = afcSupportInfo.supportedBandwidths.map(bw => bw.toString());
+                        
+                        // Matched bandwidth .includes()
+                        for (const key in bandwidthStringObject) {
+                            let obj = bandwidthStringObject[key];
+                            if (afcSupportInfo.supportedBandwidths.includes(obj.string)) {
+                                if (!obj.string.includes("(SP mode available)")) {
+                                    obj.string += " (SP mode available)";
+                                }
+                            }
+                        }
+                        //console.log(bandwidthStringObject);
+                    }
+                }
                 let channelBandwidthSnippet = "";
                 for (let { value, string } of Object.values(bandwidthStringObject)) {
                     channelBandwidthSnippet += `<option value="${value}" ${bandwidthValue === value ? "selected" : ""}>${string}</option>`;
@@ -1772,8 +1862,8 @@
                         <span>
                             <input id="${prefix}_bw160_enable" type="checkbox" onClick="bandwidth160MHzEnable(this.checked, '${prefix}')"
                              ${bw160Value === "1" ? "checked" : ""} ${
-                        bw240Value === "1" ? "checked disabled" : ""
-                    }><#WLANConfig11b_ChannelBW_Enable160M#>
+                                 bw240Value === "1" ? "checked disabled" : ""
+                             }><#WLANConfig11b_ChannelBW_Enable160M#>
                         </span>
                     `;
                 }
@@ -1789,12 +1879,16 @@
                 }
 
                 let bwHintAFC = "";
+                let bwNoteAFC = "";
                 if (brcmAfcSupport && prefixNvram === "6g1") {
                     //afc support
 
                     bwHintAFC += `
                         <a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 28);"><div class="setup_bandwidth_help_icon"></div></a>
                     `;
+                    bwNoteAFC += `
+                        <span style="margin-left: 0px;">To enable Standard Power mode, choose a Channel Bandwidth that includes an AFC-allowed channel. Note that lower bandwidths may limit performance and WiFi efficiency.</span>
+                    `;  //Untranslated
                 }
 
                 return `
@@ -1805,6 +1899,7 @@
                             ${bw160Snippet}
                             ${bw240Snippet}
                             ${bwHintAFC}
+                            ${bwNoteAFC}
                         </td>
                     </tr>
                 `;
@@ -1965,10 +2060,7 @@
                     channelSnippet += `<option value="${chValue}" ${selected}>${element}</option>`;
                 }
 
-                let currentChannelSnippet = `<span id="${prefix}_current_channel" style="margin-left: 10px;display:${
-                    channelValue === "0" ? "" : "none"
-                }"><#wireless_control_channel#>: ${curCtrlChannel}</span>`;
-
+                let currentChannelSnippet = `<span id="${prefix}_current_channel" style="margin-left: 10px"><#wireless_control_channel#>: ${curCtrlChannel}</span>`;
                 let acsCh13Snippet = "";
                 if (prefix === "2g1" && acsCH13Support) {
                     acsCh13Snippet = `
@@ -2029,7 +2121,7 @@
                 }
 
                 let outdoorChannelHintSnippet = "";
-                if (prefix === "5g1" && system.modelName === "ZenWiFi_BD4_Outdoor") {                              
+                if (prefix === "5g1" && system.modelName === "ZenWiFi_BD4_Outdoor") {
                     outdoorChannelHintSnippet = `
                         <div id="${prefix}_outdoor_channel_hint">
                             * <#WLANConfig11b_EChannel_od_restrict_hint#>
@@ -2041,8 +2133,8 @@
                 if (no_zero_wait_dfs_support) {
                     noZeroWaitDfsSnippet += `
                         <div id="${prefix}_zero_dfs_field" style="display:${
-                        parseInt(channelValue) >= 52 && parseInt(channelValue) <= 144 ? "" : "none"
-                    }">
+                            parseInt(channelValue) >= 52 && parseInt(channelValue) <= 144 ? "" : "none"
+                        }">
                             <span>        
                             <#WLANConfig11b_EChannelMixedLonger#>
                             </span>
@@ -2153,6 +2245,31 @@
                         <th><#WLANConfig11b_EChannel_itemname#></th>
                         <td>
                             <select id="${prefix}_extension_channel" class="input_option">${extensionChannelSnippet}</select>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            function generateOutdoorMode(prefix) {
+                let { outdoorModeSupport } = systemManipulable;
+                let displayFlag = outdoorModeSupport ? "" : "none";
+                let outdoorModeSnippet = "";
+
+                outdoorModeSnippet += `<option value="0" ${od_mode === "0" ? "selected" : ""}><#CTL_Disabled#></option>`;
+                outdoorModeSnippet += `<option value="1" ${od_mode === "1" ? "selected" : ""}><#CTL_Enabled#></option>`;
+
+                return `
+                    <tr id="${prefix}_outdoor_mode_field" style="display:${displayFlag}">
+                        <th><#Outdoor_mode#></th>
+                        <td>
+                            <select id="${prefix}_outdoor_mode" class="input_option" onchange="outdoorModeChange(this.value, this)">${outdoorModeSnippet}</select>
+                        </td>
+                    </tr>
+                    <tr id="${prefix}_outdoor_status_field" style="display:${displayFlag}">
+                        <th><#Outdoor_status#></th>
+                        <td>
+                            <div id="${prefix}_outdoor_status">${od_mode === "1" ? "<#Outdoor_active#>" : "<#Status_Inactive#>"}</div>
+                            <div id="${prefix}_outdoor_status_hint" style="color:#fc0;display:${od_mode === "1" ? "" : "none"};"><#Outdoor_status_hint#></div>
                         </td>
                     </tr>
                 `;
@@ -2297,49 +2414,52 @@
                 let currentValue = getWlBandwidthData.current_band["6g1"];
                 if (currentValue === "auto") {
                     // get max key from bandwidth list
+                    /*
                     let maxKey = Math.max(
                         ...Object.keys(getWlBandwidthData["6g1"])
                             .filter((key) => key !== "auto")
-                            .map(Number)
+                            .map(Number),
                     );
-                    return maxKey.toString();
+                    */
+                    return "160/320";
                 }
-
-                return currentValue;
+                else{
+                    return currentValue;
+                }
             }
 
-			const afcTable = [
-					{
-						status: "",
-						message: "",
-					},
-					{
-						status: "<#WiFi_AFC_SPmode#>",
-						message: `<#WiFi_AFC_Status_desc1#>`,
-					},
-					{
-						status: "<#WiFi_AFC_LPImode#>",
-						message: `<#WiFi_AFC_Status_desc2#>`,
-					},
-					{
-						status: "<#WiFi_AFC_LPImode#>",
-						message: `<#WiFi_AFC_Status_desc3#>`,
-					},
-					{
-						status: "<#WiFi_AFC_LPImode#>",
-						message: `<#WiFi_AFC_Status_desc4#>`,
-					},
-					{
-						status: "<#WiFi_AFC_LPImode#>",
-						message: `<#WiFi_AFC_Status_desc5#>`,
-					},
-					{
-						status: "<#WiFi_AFC_LPImode#>",
-						message: `<#WiFi_AFC_Status_desc6#>`,
-					},
-			];
+            const afcTable = [
+                {
+                    status: "",
+                    message: "",
+                },
+                {
+                    status: "<#WiFi_AFC_SPmode#>",
+                    message: `<#WiFi_AFC_Status_desc1#>`,
+                },
+                {
+                    status: "<#WiFi_AFC_LPImode#>",
+                    message: `<#WiFi_AFC_Status_desc2#>`,
+                },
+                {
+                    status: "<#WiFi_AFC_LPImode#>",
+                    message: `<#WiFi_AFC_Status_desc3#>`,
+                },
+                {
+                    status: "<#WiFi_AFC_LPImode#>",
+                    message: `<#WiFi_AFC_Status_desc4#>`,
+                },
+                {
+                    status: "<#WiFi_AFC_LPImode#>",
+                    message: `<#WiFi_AFC_Status_desc5#>`,
+                },
+                {
+                    status: "<#WiFi_AFC_LPImode#>",
+                    message: `<#WiFi_AFC_Status_desc6#>`,
+                },
+            ];
 
-			let maxbw_6g1 = get_max_6g1_bw();
+            let maxbw_6g1 = get_max_6g1_bw();
 
             function generateAFC(prefix) {
                 if (prefix !== "6g1" || !systemManipulable.brcmAfcSupport) {
@@ -2925,7 +3045,8 @@
             }
 
             function apply() {
-                let { wlBandSeq, isKRSku, smartConnect, isBRCMplatform, isMTKplatform, isQCAplatform, aMesh } = systemManipulable;
+                let { wlBandSeq, isKRSku, smartConnect, isBRCMplatform, isMTKplatform, isQCAplatform, aMesh, outdoorModeSupport } =
+                    systemManipulable;
                 let { smartConnectEnable, radioSeqArray, version } = smartConnect;
                 let { dwbBand, dwbMode } = aMesh;
                 let postObject = {};
@@ -3148,7 +3269,7 @@
                             if (smartConnectEnable && joinSmartConnect) {
                                 let is_common_string = check_common_string(
                                     document.getElementById("smart_connect_wpa_key").value,
-                                    "wpa_key"
+                                    "wpa_key",
                                 );
 
                                 if (is_common_string && Object.keys(commonStringError).length === 0) {
@@ -3417,6 +3538,13 @@
                     }
                 }
 
+                if (outdoorModeSupport) {
+                    let opModeElement = document.getElementById(`5g1_outdoor_mode`);
+                    if (opModeElement) {
+                        postObject[`od_mode`] = opModeElement.value;
+                    }
+                }
+
                 if (dwbMode === "1") {
                     let target = document.getElementById("mesh_backhaul_field");
                     if (target && target.style.display !== "none") {
@@ -3657,16 +3785,15 @@
                                                                             }
                                                                         } else {
                                                                             for (let preifx of Object.keys(wlBandSeq)) {
-                                                                                systemManipulable.wlBandSeq[
-                                                                                    preifx
-                                                                                ].joinSmartConnect = false;
+                                                                                systemManipulable.wlBandSeq[preifx].joinSmartConnect =
+                                                                                    false;
                                                                                 ssidHandler(preifx);
                                                                                 wirelessBackhaulHandler(preifx);
                                                                             }
                                                                         }
 
                                                                         document.getElementById("band_separate").style.display = "none";
-                                                                    }
+                                                                    },
                                                                 );
                                                             </script>
                                                         </td>
@@ -3700,7 +3827,7 @@
                                                         id="applyButton"
                                                         class="button_gen"
                                                         value="<#CTL_apply#>"
-                                                        onclick="apply();"
+                                                        onclick="apply()"
                                                     />
                                                 </div>
                                             </td>

@@ -17,6 +17,9 @@
 
 #include <utils/debug.h>
 
+#include <tkm/client.h>
+#include <tkm/constants.h>
+
 #include "tkm_utils.h"
 
 /* Generic variable-length sequence */
@@ -51,4 +54,49 @@ void chunk_to_sequence(const chunk_t * const chunk, void *sequence,
 		seq->size = chunk->len;
 	}
 	memcpy(seq->data, chunk->ptr, seq->size);
+}
+
+bool blob_to_chunk(blob_id_type id, blob_length_type len, chunk_t * const chunk)
+{
+	blob_offset_type offset = 0;
+	bool ret = TRUE;
+
+	*chunk = chunk_alloc(len);
+
+	while (len > 0 && ret)
+	{
+		blob_out_bytes_type blob_data;
+		blob_length_type slice_len = min(len, sizeof(blob_data.data));
+
+		ret = ike_blob_read(id, offset, slice_len, &blob_data) == TKM_OK;
+		memcpy(chunk->ptr + offset, blob_data.data, slice_len);
+		offset += slice_len;
+		len -= slice_len;
+	}
+
+	ike_blob_reset(id);
+
+	return ret;
+}
+
+bool chunk_to_blob(blob_id_type id, const chunk_t * const chunk)
+{
+	blob_length_type len = chunk->len;
+	blob_offset_type offset = 0;
+	bool ret;
+
+	ret = ike_blob_create(id, len) == TKM_OK;
+
+	while (len > 0 && ret)
+	{
+		blob_in_bytes_type blob_data;
+		blob_length_type slice_len = min(len, sizeof(blob_data.data));
+
+		memcpy(blob_data.data, chunk->ptr + offset, slice_len);
+		blob_data.size = slice_len;
+		ret = ike_blob_write(id, offset, blob_data) == TKM_OK;
+		offset += slice_len;
+		len -= slice_len;
+	}
+	return ret;
 }

@@ -23,7 +23,6 @@ CONFIG_OPTS = \
 	--with-random-device=/dev/urandom \
 	--disable-load-warning \
 	--enable-curl \
-	--enable-soup \
 	--enable-ldap \
 	--enable-eap-aka \
 	--enable-eap-aka-3gpp2 \
@@ -64,7 +63,6 @@ CONFIG_OPTS = \
 	--enable-attr-sql \
 	--enable-mediation \
 	--enable-botan \
-	--enable-openssl \
 	--enable-blowfish \
 	--enable-kernel-pfkey \
 	--enable-integrity-test \
@@ -82,14 +80,14 @@ CONFIG_OPTS = \
 	--enable-ctr \
 	--enable-ccm \
 	--enable-gcm \
-	--enable-cmac \
+	--enable-hmac \
 	--enable-chapoly \
 	--enable-ha \
 	--enable-af-alg \
 	--enable-whitelist \
 	--enable-xauth-generic \
 	--enable-xauth-eap \
-	--enable-pkcs8 \
+	--enable-pkcs12 \
 	--enable-unity \
 	--enable-unbound \
 	--enable-ipseckey \
@@ -98,17 +96,23 @@ CONFIG_OPTS = \
 	--enable-cmd \
 	--enable-libipsec \
 	--enable-kernel-libipsec \
+	--enable-stroke \
 	--enable-tkm \
-	--enable-ntru \
 	--enable-lookip \
-	--enable-bliss \
+	--enable-des \
+	--enable-aes \
+	--enable-md5 \
+	--enable-sha1 \
+	--enable-sha2 \
 	--enable-sha3 \
-	--enable-newhope \
+	--enable-gmp \
+	--enable-curve25519 \
 	--enable-systemd \
 	--enable-counters \
 	--enable-save-keys \
-	--enable-python-eggs \
-	--enable-wolfssl
+	--enable-python-wheels \
+	--enable-wolfssl \
+	--enable-ml
 
 export ADA_PROJECT_PATH=/usr/local/ada/lib/gnat
 
@@ -122,11 +126,8 @@ $(PKG): $(TAR)
 	echo "$(SWANVERSION)" > /root/shared/.strongswan-version
 
 configure: $(BUILDDIR)
-	cd $(BUILDDIR) && $(DIR)/configure $(CONFIG_OPTS)
+	[ -n "$(QUICK_REBUILD)" ] || (cd $(BUILDDIR) && $(DIR)/configure $(CONFIG_OPTS))
 
-build: configure
-	cd $(BUILDDIR) && make -j $(NUM_CPUS)
-
-install: build
+install: configure
 	cd $(BUILDDIR) && make -j install && \
 		cd $(DIR)/src/libcharon/plugins/vici/python && python3 setup.py install

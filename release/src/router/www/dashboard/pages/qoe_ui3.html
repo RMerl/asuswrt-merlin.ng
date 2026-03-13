@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html data-asuswrt-theme="rt">
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <link rel="stylesheet" href="../css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="../css/bootstrap-customize.css"/>
+    <link rel="stylesheet" href="../datatables/datatables.min.css">
+    <link rel="stylesheet" href="../datatables/datatables.asuswrt.css">
+    <link rel="stylesheet" href="../css/daterangepicker.css"/>
+    <link rel="stylesheet" href="../css/svg-icon.css"/>
+    <link rel="stylesheet" href="../css/aiProtection.css">
+    <script type="text/javascript" src="../js/jquery.js"></script>
+    <script type="text/javascript" src="../js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="../datatables/datatables.min.js"></script>
+    <script type="text/javascript" src="../js/chart.min.js"></script>
+    <script type="text/javascript" src="../js/chartjs-adapter-date-fns.js"></script>
+    <script type="text/javascript" src="../js/moment.min.js"></script>
+    <script type="text/javascript" src="../js/daterangepicker.js"></script>
+    <script type="text/javascript" src="../js/httpApi.js"></script>
+    <script type="text/javascript" src="../state.js"></script>
+    <script type="text/javascript" src="../help.js"></script>
+    <script type="text/javascript" src="../general.js"></script>
+    <script type="text/javascript" src="../popup.js"></script>
+    <script type="text/javascript" src="../form.js"></script>
+    <script type="text/javascript" src="../js/asus_policy.js?v=5"></script>
+</head>
+<body onload="initial()">
+<style>
+    :root {
+        --color-start: #005eff; /* radar-fill */
+        --color-end: #08faff; /* radar-fill */
+        --color-stroke-start: #4E91FB; /* radar-stroke */
+        --color-stroke-end: #6DF6FA; /* radar-stroke */
+        --slider-fill-start: #4E91FB; /* filled area */
+        --slider-fill-end: #6DF6FA; /* filled area */
+        --slider-track: #e5e7eb; /* unfilled area */
+        --slider-thumb: #dc2626; /* drag handle */
+        --progress: 50%;
+
+        /* Bandwidth row specific semantic tokens */
+        --bandwidth-row-bg: rgba(255, 255, 255, 0.4); /* white-alpha40 */
+        --bandwidth-row-border: var(--neutral-30, #fff);
+        --bandwidth-cell-divider: var(--cell-stroke);
+        --bandwidth-divider-gap: 16px;
+        --toggle-radius: 14px;
+        --toggle-thumb-radius: 50%;
+        --tab-navigation-active-text: var(--black-alpha-100);
+        --tab-navigation-active-primary: var(--primary-60, #C00);
+        --radius-none: 0;
+        --tab-navigation-bg-color: var(--body-bg-color, #ededed);
+        --tab-navigation-hover-bg: var(--black-alpha-3);
+        --tab-navigation-text-color: var(--black-alpha-100);
+        --setting-row-bg: var(--bandwidth-row-bg, #fff);
+        --table-row-text-color: var(--body-text-color);
+        --setting-row-border: var(--bandwidth-row-border);
+        --cell-divider-border: var(--bandwidth-row-border);
+        --divide-stroke-color-default: var(--white-alpha-60);
+        --divider-strong: var(--white-alpha-100);
+        --divider-weak: var(--black-alpha-3);
+        --divider-default: var(--neutral-30);
+    }
+
+    [data-asuswrt-color="dark"] {
+        --tab-navigation-bg-color: var(--body-bg-color, #181818);
+        --tab-navigation-active-text: var(--white-alpha-100);
+        --tab-navigation-active-primary: var(--primary-50, #F00);
+        --tab-navigation-hover-bg: var(--white-alpha-5);
+        --tab-navigation-text-color: var(--white-alpha-100);
+        --setting-row-bg: rgba(24, 24, 24, 0.4);
+        --bandwidth-row-bg: rgba(24, 24, 24, 0.4);
+        --table-row-text-color: var(--white-alpha-100);
+        --bandwidth-row-border: var(--neutral-90, #333);
+        --setting-row-border: var(--bandwidth-row-border);
+        --cell-divider-border: var(--bandwidth-row-border);
+        --divide-stroke-color-default: var(--white-alpha-10);
+        --divider-strong: var(--white-alpha-10);
+        --divider-weak: var(--white-alpha-5);
+        --divider-default: var(--neutral-90);
+    }
+
+    body {
+        font-size: .875rem;
+    }
+
+    /* qoe-icons */
+
+    i[class^='ic-qoe'], i[class*=' ic-qoe'] {
+        mask-image: var(--svg);
+        -webkit-mask-image: var(--svg);
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        -webkit-mask-size: contain;
+        width: 24px;
+        height: 24px;
+        min-width: 24px;
+        background-color: #000000;
+    }
+
+    i.ic-qoe-aibalance {
+        --svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMiIgaGVpZ2h0PSIyMiIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDIyIDIyIj48ZyBjbGlwLXBhdGg9InVybCgjYSkiPjxjaXJjbGUgY3g9IjExIiBjeT0iMTEiIHI9IjEwLjQiIHN0cm9rZT0iIzI2MjYyNiIgc3Ryb2tlLXdpZHRoPSIxLjIiLz48cGF0aCBmaWxsPSIjMjYyNjI2IiBkPSJtMTcuODg3IDkuMzU2LjUyLjE5Mi0uNTIuMTkzYS44NzUuODc1IDAgMCAwLS41MTcuNTE2bC0uMTkyLjUyLS4xOTMtLjUyYS44NzUuODc1IDAgMCAwLS41MTYtLjUxNmwtLjUyLS4xOTMuNTItLjE5MmEuODc0Ljg3NCAwIDAgMCAuNTE2LS41MTdsLjE5My0uNTIuMTkyLjUyYy4wODkuMjQuMjc4LjQyOC41MTcuNTE3Wk0xNS45MDMgNi41NGwxLjAyNC4zNzktMS4wMjQuMzc5YTEuNzIgMS43MiAwIDAgMC0xLjAxNiAxLjAxNmwtLjM3OSAxLjAyNC0uMzc5LTEuMDI0YTEuNzIgMS43MiAwIDAgMC0xLjAxNi0xLjAxNmwtMS4wMjQtLjM3OSAxLjAyNC0uMzc5YTEuNzIgMS43MiAwIDAgMCAxLjAxNi0xLjAxNmwuMzgtMS4wMjQuMzc4IDEuMDI0Yy4xNzQuNDcuNTQ2Ljg0MiAxLjAxNiAxLjAxNloiLz48cGF0aCBmaWxsPSIjMTgxODE4IiBkPSJNNy4zODIgNy40MjhoMi4xM2wzLjM4MiA4LjY1N2gtMi4wMDVsLS43NTEtMS45NzlINi43NTZsLS43NTIgMS45NzlINGwzLjM4Mi04LjY1N1ptMi4xMyA1LjAwOS0xLjA0LTIuODQ1aC0uMDVsLTEuMDQgMi44NDVoMi4xM1ptNC4yNTUtMi40MTJoMS42OTF2Ni4wNmgtMS42OXYtNi4wNloiLz48L2c+PGRlZnM+PGNsaXBQYXRoIGlkPSJhIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMCAwaDIydjIySDB6Ii8+PC9jbGlwUGF0aD48L2RlZnM+PC9zdmc+");
+    }
+
+    i.ic-qoe-streaming {
+        --svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBzdHJva2U9IiMyNjI2MjYiIHN0cm9rZS13aWR0aD0iMS4yIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSI5LjQiLz48cGF0aCBkPSJNMi44IDguNmgxOC40bS05LTUuOHYxOC40TTIuOCAxNWgxOC40bS05LjcyNyA2LjdBMTIuMzc3IDEyLjM3NyAwIDAgMSA2LjggMTJjMC0zLjggMS43MDktNy4yIDQuNC05LjQ3NE0xMi40IDIxLjdhMTIuMzc4IDEyLjM3OCAwIDAgMCA0LjY3My05LjdjMC0zLjgtMS43MDgtNy4yLTQuNC05LjQ3NCIvPjwvZz48L3N2Zz4=");
+    }
+
+    i.ic-qoe-gaming {
+        --svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBjbGlwLXBhdGg9InVybCgjYSkiPjxwYXRoIGZpbGw9IiMyNjI2MjYiIGQ9Ik05LjU4MyAxMS4xNTdINC45NDd2MS4xNjZoNC42MzZ2LTEuMTY2WiIvPjxwYXRoIGZpbGw9IiMyNjI2MjYiIGQ9Ik03Ljg0NCA5LjQwOEg2LjY4NXY0LjY2NWgxLjE2VjkuNDA3Wm04LjUwOCAxLjU2M2MuNDggMCAuODctLjM5Mi44Ny0uODc1YS44NzIuODcyIDAgMCAwLS44Ny0uODc0Yy0uNDggMC0uODcuMzkxLS44Ny44NzRzLjM5Ljg3NS44Ny44NzVabTEuNjM1IDEuNjQ0Yy40OCAwIC44NjktLjM5Mi44NjktLjg3NWEuODcyLjg3MiAwIDAgMC0uODctLjg3NGMtLjQ4IDAtLjg2OS4zOTEtLjg2OS44NzRzLjM5Ljg3NS44Ny44NzVabS0zLjI4IDBjLjQ4IDAgLjg2OS0uMzkyLjg2OS0uODc1YS44NzIuODcyIDAgMCAwLS44Ny0uODc0Yy0uNDggMC0uODY5LjM5MS0uODY5Ljg3NHMuMzkuODc1Ljg3Ljg3NVptMS42NDUgMS42NDVjLjQ4IDAgLjg3LS4zOTIuODctLjg3NmEuODcyLjg3MiAwIDAgMC0uODctLjg3NGMtLjQ4IDAtLjg3LjM5Mi0uODcuODc0IDAgLjQ4NC4zOS44NzUuODcuODc1WiIvPjxyZWN0IHdpZHRoPSIyMC44NjQiIGhlaWdodD0iMTQuMTk5IiB4PSIxLjQ2OSIgeT0iNC42NjciIHN0cm9rZT0iIzI2MjYyNiIgc3Ryb2tlLXdpZHRoPSIxLjIiIHJ4PSI1LjY2NiIvPjwvZz48ZGVmcz48Y2xpcFBhdGggaWQ9ImEiPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0wIDBoMjR2MjRIMHoiLz48L2NsaXBQYXRoPjwvZGVmcz48L3N2Zz4=");
+    }
+
+    i.ic-qoe-wfh {
+        --svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBzdHJva2U9IiMyNjI2MjYiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgc3Ryb2tlLXdpZHRoPSIxLjIiIGNsaXAtcGF0aD0idXJsKCNhKSI+PHBhdGggZD0ibTE2LjIzNSAxMC44ODMtNS45MjEgMi42MjUgNS45MiAyLjgyOCA1LjcxOC0yLjYyNi01LjcxNy0yLjgyOFptNi40MzIgMi44Mjd2Mi41MjQiLz48cGF0aCBkPSJNMTIuNjYxIDE0LjYydjMuMTNjMCAuNDA0LjIwNS44MDguNjEzIDEuMDFsMi4zNDggMS4xMWEuOTM2LjkzNiAwIDAgMCAxLjAyMSAwbDIuNTUyLTEuMjExYTEuMTEgMS4xMSAwIDAgMCAuNjEzLTEuMDF2LTIuODI4TS42NjcgOS45MTZsOC43OS02LjUwM2EyLjE4OCAyLjE4OCAwIDAgMSAyLjU2IDBsOC43OTEgNi41MDNtLTE2LjM1OCAwdjguMDQ1YzAgLjc3Mi41NTYgMS4zMjMgMS4zMzUgMS4zMjNoNC44OTciLz48L2c+PGRlZnM+PGNsaXBQYXRoIGlkPSJhIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMCAwaDI0djI0SDB6Ii8+PC9jbGlwUGF0aD48L2RlZnM+PC9zdmc+");
+    }
+
+    i.ic-qoe-office {
+        --svg: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZyBzdHJva2U9IiMyNjI2MjYiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgc3Ryb2tlLXdpZHRoPSIxLjIiIGNsaXAtcGF0aD0idXJsKCNhKSI+PHBhdGggZD0ibS42NjcgOS45MTYgOC43OS02LjUwM2EyLjE4OCAyLjE4OCAwIDAgMSAyLjU2IDBsOC43OTEgNi41MDNtLTE2LjM1OCAwdjguMDQ1YzAgLjc3Mi41NTYgMS4zMjMgMS4zMzUgMS4zMjNoNC44OTdtMTEuNTcyLTUuNTExaC04Ljc5YS40NDMuNDQzIDAgMCAwLS40NDYuNDQxdjYuMDYyYzAgLjI0My4yLjQ0LjQ0NS40NGg4Ljc5MWEuNDQzLjQ0MyAwIDAgMCAuNDQ1LS40NHYtNi4wNjJhLjQ0Mi40NDIgMCAwIDAtLjQ0NS0uNDRaIi8+PHBhdGggZD0iTTE5LjM2MSAxMS43OWgtMy4wMDVhLjQ0My40NDMgMCAwIDAtLjQ0NS40NHYxLjEwM2MwIC4yNDMuMi40NC40NDYuNDRoMy4wMDRhLjQ0My40NDMgMCAwIDAgLjQ0NS0uNDRWMTIuMjNjMC0uMjQ0LS4yLS40NDEtLjQ0NS0uNDQxWiIvPjxwYXRoIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZD0iTTE5LjAyOCAxNS44NjdIMTYuNThhLjMzMi4zMzIgMCAwIDAtLjMzNC4zMzF2MS4yMTJjMCAuMTgzLjE1LjMzMS4zMzQuMzMxaDIuNDQ4YS4zMzIuMzMyIDAgMCAwIC4zMzQtLjMzdi0xLjIxM2MwLS4xODMtLjE1LS4zMy0uMzM0LS4zM1oiLz48cGF0aCBkPSJNMTMuMTMgMTYuNzVoMy4wMDRtMy4yMjcgMGgzLjIyNyIvPjwvZz48ZGVmcz48Y2xpcFBhdGggaWQ9ImEiPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0wIDBoMjR2MjRIMHoiLz48L2NsaXBQYXRoPjwvZGVmcz48L3N2Zz4=");
+    }
+
+    .qoe-container > .row {
+        flex-direction: column-reverse;
+    }
+
+    .radar-info {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: row;
+        position: relative;
+        z-index: 1;
+        margin-top: 16px;
+    }
+
+    .fn-button-container {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        align-items: center;
+        gap: 8px;
+        justify-content: space-around;
+        margin-top: .5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-panel {
+        height: 90%;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        z-index: 7;
+    }
+
+    .info-panel h2 {
+        margin-top: 0;
+    }
+
+    /* pentagon area animation */
+
+    .svg-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+    }
+
+    .svg-layer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .svg-container svg {
+        width: 100%;
+        height: 100%;
+    }
+
+    .svg-layer svg {
+        animation: none;
+        transform-origin: center center;
+    }
+
+    .svg-layer svg.animate {
+        animation: fadeIn 1s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+        0% {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* end-pentagon area animation */
+
+    /* button animation effects */
+    .mode-button {
+        max-width: 20%;
+        width: 20%;
+        position: relative;
+        padding: 8px 12px;
+        font-size: 14px;
+        background-color: var(--qoe-button-bg-color, #0090d8);
+        border: none;
+        border-radius: var(--global-radius);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .mode-button div {
+        display: flex;
+        flex-shrink: 0;
+        gap: 8px;
+        align-items: center;
+        flex-direction: column;
+        z-index: 6;
+    }
+
+    .mode-button.active {
+        background-color: var(--qoe-button-active-bg-color, #005bb5);
+    }
+
+    .mode-button:hover {
+        transform: scale(1.05);
+    }
+
+    .mode-button i {
+        z-index: 6;
+        background-color: var(--body-text-color);
+    }
+
+    .mode-button-text {
+        max-width: 68px;
+    }
+
+    #chartContainer {
+        position: relative;
+        width: 280px;
+        height: 280px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #glowCanvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    #radarChart {
+        z-index: 5;
+        width: 255px;
+        height: 255px;
+    }
+
+    canvas {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%); /* center canvas completely */
+        background-color: transparent;
+        width: 100%;
+        height: 100%;
+    }
+
+    .circle-animation {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 400px;
+        height: 400px;
+        border: 5px solid rgba(0, 255, 255, 0.3);
+        border-top: 5px solid cyan;
+        border-radius: 50%;
+        animation: spin 3s linear infinite;
+        transform-origin: center center; /* set rotation center */
+        transform: translate(-50%, -50%); /* ensure position */
+    }
+
+    .slider-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .slider-and-btn {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .tuning-controller {
+        width: 100%;
+    }
+
+    #applyBtn {
+        width: 100%;
+        background: var(--qoe-apply-button-bg-color);
+        border: none;
+    }
+
+    #applyBtn:hover {
+        background: var(--qoe-apply-button-hover-bg-color);
+    }
+
+    label {
+        font-weight: bold;
+    }
+
+    .manual-chart-container canvas {
+        cursor: grab;
+    }
+
+    .pentagon-container {
+        position: absolute;
+        width: 280px;
+        height: 280px;
+        z-index: 7;
+        font-size: 0.75rem;
+    }
+
+    .pentagon-container .feature {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        width: max-content;
+    }
+
+    .pentagon-container .feature::before {
+        content: "";
+        display: inline-block;
+        background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDE2IDE2Ij48ZyBpZD0iR3JvdXAiPjxnIGlkPSJhY19jb21tb25fYXJyb3cgbGVmdF9kIj48cGF0aCBpZD0ibGluZV9uX19fX18wXzBfRFdDSEZVT0hPTyIgZmlsbD0iI0ZGMTkyOSIgZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMS45MTE1OCA0LjkxMjgxTDcuNjQ2MzQgMTEuNzk0NUwxMy4zODExIDQuOTEyODFMMS45MTE1OCA0LjkxMjgxWiIgY2xpcC1ydWxlPSJldmVub2RkIiBvcGFjaXR5PSIwLjEiLz48cGF0aCBpZD0iVW5pb25fX19fXzBfMV9UU1JRVVpZUFBVIiBmaWxsPSIjRkYxOTI5IiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik01LjMwODA5IDUuNTVMMy4yODE1NSA1LjU1TDcuNjUyNzEgMTAuODAwNUwxMi4wMjM5IDUuNTVMOS45ODQ1OSA1LjU1TDcuNjQ2MzQgOC4zNTM2Nkw1LjMwODA5IDUuNTVaTTcuNjQ2MzQgMTEuNzk0NUwxLjkxNzk2IDQuOTEyODFMMTMuMzgxMSA0LjkxMjgxTDcuNjQ2MzQgMTEuNzk0NVoiIGNsaXAtcnVsZT0iZXZlbm9kZCIvPjwvZz48L2c+PC9zdmc+") no-repeat center center;
+        background-size: contain;
+        position: absolute;
+        transform: translate(-50%, -50%) scale(1);
+        width: 15px;
+        height: 15px;
+    }
+
+    .pentagon-container .feature {
+        top: 0%;
+        left: 50%;
+    }
+
+    .pentagon-container .feature.feature1::before {
+        top: 20px;
+        left: 50%;
+    }
+
+    .pentagon-container .feature2 {
+        top: 35%;
+        left: 102%;
+    }
+
+    .pentagon-container .feature.feature2::before {
+        top: 4px;
+        left: -13px;
+        transform: rotate(75deg);
+    }
+
+    .pentagon-container .feature3 {
+        top: 90%;
+        left: 83%;
+    }
+
+    .pentagon-container .feature.feature3::before {
+        top: -5px;
+        left: -15px;
+        transform: rotate(140deg);
+    }
+
+    .pentagon-container .feature4 {
+        top: 90%;
+        left: 10%;
+    }
+
+    .pentagon-container .feature.feature4::before {
+        top: -5px;
+        left: 57px;
+        transform: rotate(225deg);
+    }
+
+    .pentagon-container .feature5 {
+        top: 35%;
+        left: -5%;
+    }
+
+    .pentagon-container .feature.feature5::before {
+        top: 3px;
+        left: 52px;
+        transform: rotate(295deg);
+    }
+
+
+    /* slider styles */
+    input[type="range"] {
+        z-index: 10;
+        cursor: pointer;
+        -webkit-appearance: none;
+        width: 100%;
+        height: 8px;
+        border-radius: 4px;
+        background: linear-gradient(
+                to right,
+                var(--slider-fill-start),
+                var(--slider-fill-end) 50%,
+                var(--slider-track) 50%
+        );
+        outline: none;
+        transition: background 0.3s ease;
+    }
+
+    .slider-container input[type="range"]::-webkit-slider-thumb {
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--slider-thumb);
+        box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* drag handle styles */
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--slider-thumb);
+        cursor: pointer;
+        border: 2px solid white;
+        box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--slider-thumb);
+        cursor: pointer;
+        border: none;
+    }
+
+    .slider-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.25rem;
+        padding: 0 4px;
+        font-size: 0.675rem;
+        color: var(--neutral-50);
+        width: 100%;
+    }
+
+    .slider-labels span {
+        text-align: center;
+        width: 2ch;
+    }
+
+    h2, h3, h4, h5, h6 {
+        color: var(--text-subtitle-color);
+    }
+
+
+    #modeTitle {
+        font-style: italic;
+        font-weight: 600;
+    }
+</style>
+<div id="workarea" class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="mt-2">Select a mode that best suits your current network usage.</div>
+            <div class="fn-button-container"></div>
+        </div>
+        <div class="col-6">
+            <div class="info-panel animate-border">
+                <div class="d-flex flex-column gap-3">
+                    <div id="modeTitle"></div>
+                    <div id="modeDescription"></div>
+                </div>
+                <div class="slider-and-btn mt-3">
+                    <div class="tuning-controller">
+                        <label for="tuningSlider"><#AiQoE_Tuning#> <span
+                                id="tuningValue">0</span></label>
+                        <div class="slider-container">
+                            <input type="range" id="tuningSlider" min="-10" max="10" value="0"
+                                   step="1"/>
+                            <div class="slider-labels">
+                                <span>-10</span>
+                                <span>-5</span>
+                                <span>0</span>
+                                <span>5</span>
+                                <span>10</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="radar-info">
+                <div id="chartContainer">
+                    <div class="pentagon-container">
+                        <div class="feature feature1">
+                            <#AiQoE_Bandwidth#>
+                        </div>
+                        <div class="feature feature2">
+                            <#AiQoE_Game#>
+                        </div>
+                        <div class="feature feature3">
+                            <#AiQoE_File#>
+                        </div>
+                        <div class="feature feature4">
+                            <#AiQoE_Multimedia#>
+                        </div>
+                        <div class="feature feature5">
+                            <#AiQoE_RealTime#>
+                        </div>
+                    </div>
+                    <canvas id="radarChart"></canvas>
+                    <!-- pentagon area animation - background animation -->
+                    <svg id="radarAnimate" xmlns="http://www.w3.org/2000/svg"
+                         xmlns:xlink="http://www.w3.org/1999/xlink"
+                         viewBox="0 0 480 480" shape-rendering="geometricPrecision"
+                         text-rendering="geometricPrecision">
+                        <style>
+                            #en8jyOASaeh2 {
+                                animation: en8jyOASaeh2__m 2500ms linear 1 normal forwards;
+                            }
+
+                            @keyframes en8jyOASaeh2__m {
+                                0% {
+                                    d: path('M26.795125,0C26.795125,8.877624,22.477812,16.746885,15.828222,21.62275C11.39329,24.874699,5.920915,26.795125,0,26.795125C-5.966027,26.795125,-11.476654,24.845323,-15.929413,21.548187C-22.521579,16.666883,-26.795125,8.832512,-26.795125,0C-26.795125,-2.827605,-26.357142,-5.552913,-25.545316,-8.111784C-22.108375,-18.945009,-11.970934,-26.795125,0,-26.795125C11.835607,-26.795125,21.878941,-19.121491,25.426194,-8.478031C26.314215,-5.813541,26.795125,-2.962932,26.795125,0Z');
+                                }
+                                15% {
+                                    d: path('M21.518322,4.171018C21.518322,4.171018,15.828222,21.62275,15.828222,21.62275C15.828222,21.62275,0,21.746162,0,21.746162C0,21.746162,-15.929413,21.548187,-15.929413,21.548187C-15.929413,21.548187,-19.931383,7.838382,-19.931383,7.838382C-19.931383,7.838382,-25.293174,-8.10665,-25.293174,-8.10665C-25.293174,-8.10665,0,-26.423744,0,-26.423744C0,-26.423744,25.426194,-8.10665,25.426194,-8.10665C25.426194,-8.10665,21.518322,4.171018,21.518322,4.171018Z');
+                                }
+                                100% {
+                                    d: path('M21.518322,4.171018C21.518322,4.171018,15.828222,21.62275,15.828222,21.62275C15.828222,21.62275,0,21.746162,0,21.746162C0,21.746162,-15.929413,21.548187,-15.929413,21.548187C-15.929413,21.548187,-19.931383,7.838382,-19.931383,7.838382C-19.931383,7.838382,-25.293174,-8.10665,-25.293174,-8.10665C-25.293174,-8.10665,0,-26.423744,0,-26.423744C0,-26.423744,25.426194,-8.10665,25.426194,-8.10665C25.426194,-8.10665,21.518322,4.171018,21.518322,4.171018Z');
+                                }
+                            }
+
+                            #en8jyOASaeh2_ts {
+                                animation: en8jyOASaeh2_ts__ts 2500ms linear 1 normal forwards;
+                            }
+
+                            @keyframes en8jyOASaeh2_ts__ts {
+                                0% {
+                                    transform: translate(240px, 238.419688px) scale(6.017978, 6.017978);
+                                }
+                                10% {
+                                    transform: translate(240px, 238.419688px) scale(6.341645, 6.341645);
+                                }
+                                20% {
+                                    transform: translate(240px, 238.419688px) scale(7.8, 7.8);
+                                }
+                                35% {
+                                    transform: translate(240px, 238.419688px) scale(7.8, 7.8);
+                                }
+                                100% {
+                                    transform: translate(240px, 238.419688px) scale(7.8, 7.8);
+                                }
+                            }
+
+                            #en8jyOASaeh2-stroke {
+                                animation: en8jyOASaeh2-stroke__t 2500ms linear 1 normal forwards;
+                            }
+
+                            @keyframes en8jyOASaeh2-stroke__t {
+                                0% {
+                                    transform: matrix(0.923523, 0.727571, -0.727571, 0.923523, 0.076477, 0.128194);
+                                }
+                                15% {
+                                    transform: matrix(0.923523, 0.727571, -0.727571, 0.923523, 0.076477, 0.128194);
+                                }
+                                35% {
+                                    transform: matrix(0.861171, 0.993623, -0.993623, 0.861171, 0.05585, 0.111905);
+                                }
+                                65% {
+                                    transform: matrix(0.722483, -0.994052, 0.994052, 0.722483, 0.146108, 1.072974);
+                                }
+                                100% {
+                                    transform: matrix(0.722483, -0.994052, 0.994052, 0.722483, 0.146108, 1.072974);
+                                }
+                            }
+
+                            #en8jyOASaeh2-stroke-0 {
+                                animation: en8jyOASaeh2-stroke-0__c 2500ms linear 1 normal forwards;
+                            }
+
+                            @keyframes en8jyOASaeh2-stroke-0__c {
+                                0% {
+                                    stop-color: #00fff8;
+                                }
+                                15% {
+                                    stop-color: #00fff8;
+                                }
+                                35% {
+                                    stop-color: #00fff8;
+                                }
+                                65% {
+                                    stop-color: #08f;
+                                }
+                                100% {
+                                    stop-color: #08f;
+                                }
+                            }
+
+                            #en8jyOASaeh2-stroke-1 {
+                                animation: en8jyOASaeh2-stroke-1__c 2500ms linear 1 normal forwards;
+                            }
+
+                            @keyframes en8jyOASaeh2-stroke-1__c {
+                                0% {
+                                    stop-color: #84a3ff;
+                                }
+                                15% {
+                                    stop-color: #84a3ff;
+                                }
+                                35% {
+                                    stop-color: #3e8cff;
+                                }
+                                65% {
+                                    stop-color: #00fff8;
+                                }
+                                100% {
+                                    stop-color: #00fff8;
+                                }
+                            }
+
+                            #en8jyOASaeh3 {
+                                animation-name: en8jyOASaeh3__m, en8jyOASaeh3_s_p;
+                                animation-duration: 2500ms;
+                                animation-fill-mode: forwards;
+                                animation-timing-function: linear;
+                                animation-direction: normal;
+                                animation-iteration-count: 1;
+                            }
+
+                            @keyframes en8jyOASaeh3__m {
+                                0% {
+                                    d: path('M26.795125,0C26.795125,8.877624,22.477812,16.746885,15.828222,21.62275C11.39329,24.874699,5.920915,26.795125,0,26.795125C-5.966027,26.795125,-11.476654,24.845323,-15.929413,21.548187C-22.521579,16.666883,-26.795125,8.832512,-26.795125,0C-26.795125,-2.827605,-26.357142,-5.552913,-25.545316,-8.111784C-22.108375,-18.945009,-11.970934,-26.795125,0,-26.795125C11.835607,-26.795125,21.878941,-19.121491,25.426194,-8.478031C26.314215,-5.813541,26.795125,-2.962932,26.795125,0Z');
+                                }
+                                10% {
+                                    d: path('M21.518322,4.171018C21.518322,4.171018,15.828222,21.62275,15.828222,21.62275C15.828222,21.62275,0,21.746162,0,21.746162C0,21.746162,-15.929413,21.548187,-15.929413,21.548187C-15.929413,21.548187,-19.931383,7.838382,-19.931383,7.838382C-19.931383,7.838382,-25.293174,-8.10665,-25.293174,-8.10665C-25.293174,-8.10665,0,-26.423744,0,-26.423744C0,-26.423744,25.426194,-8.10665,25.426194,-8.10665C25.426194,-8.10665,21.518322,4.171018,21.518322,4.171018Z');
+                                }
+                                100% {
+                                    d: path('M21.518322,4.171018C21.518322,4.171018,15.828222,21.62275,15.828222,21.62275C15.828222,21.62275,0,21.746162,0,21.746162C0,21.746162,-15.929413,21.548187,-15.929413,21.548187C-15.929413,21.548187,-19.931383,7.838382,-19.931383,7.838382C-19.931383,7.838382,-25.293174,-8.10665,-25.293174,-8.10665C-25.293174,-8.10665,0,-26.423744,0,-26.423744C0,-26.423744,25.426194,-8.10665,25.426194,-8.10665C25.426194,-8.10665,21.518322,4.171018,21.518322,4.171018Z');
+                                }
+                            }
+
+                            @keyframes en8jyOASaeh3_s_p {
+                                0% {
+                                    stroke: url(#en8jyOASaeh3-stroke);
+                                }
+                                30% {
+                                    stroke: url(#en8jyOASaeh3-stroke);
+                                }
+                                50% {
+                                    stroke: url(#en8jyOASaeh3-stroke-g1);
+                                }
+                                80% {
+                                    stroke: url(#en8jyOASaeh3-stroke-g1);
+                                }
+                                100% {
+                                    stroke: url(#en8jyOASaeh3-stroke-g1);
+                                }
+                            }
+
+                            #en8jyOASaeh3_ts {
+                                animation: en8jyOASaeh3_ts__ts 2500ms linear 1 normal forwards;
+                            }
+
+                            @keyframes en8jyOASaeh3_ts__ts {
+                                0% {
+                                    transform: translate(240px, 238.419688px) scale(6.017978, 6.017978);
+                                }
+                                5% {
+                                    transform: translate(240px, 238.419688px) scale(6.017978, 6.017978);
+                                }
+                                15% {
+                                    transform: translate(240px, 238.419688px) scale(6.341645, 6.341645);
+                                }
+                                25% {
+                                    transform: translate(240px, 238.419688px) scale(7.8, 7.8);
+                                }
+                                40% {
+                                    transform: translate(240px, 238.419688px) scale(8.2, 8.2);
+                                }
+                                100% {
+                                    transform: translate(240px, 238.419688px) scale(8.2, 8.2);
+                                }
+                            }
+
+                            #en8jyOASaeh3-stroke-g1 {
+                                animation: en8jyOASaeh3-stroke-g1__t 2500ms linear 1 normal forwards;
+                            }
+
+                            @keyframes en8jyOASaeh3-stroke-g1__t {
+                                0% {
+                                    transform: matrix(0.861171, 0.993623, -0.993623, 0.861171, 0.05585, 0.111905);
+                                }
+                                50% {
+                                    transform: matrix(0.861171, 0.993623, -0.993623, 0.861171, 0.05585, 0.111905);
+                                }
+                                80% {
+                                    transform: matrix(0.722483, -0.994052, 0.994052, 0.722483, 0.146108, 1.072974);
+                                }
+                                100% {
+                                    transform: matrix(0.722483, -0.994052, 0.994052, 0.722483, 0.146108, 1.072974);
+                                }
+                            }
+
+                            #en8jyOASaeh3-stroke-g1-0 {
+                                animation: en8jyOASaeh3-stroke-g1-0__c 2500ms linear 1 normal forwards;
+                            }
+
+                            @keyframes en8jyOASaeh3-stroke-g1-0__c {
+                                0% {
+                                    stop-color: #00fff8;
+                                }
+                                50% {
+                                    stop-color: #00fff8;
+                                }
+                                80% {
+                                    stop-color: #08f;
+                                }
+                                100% {
+                                    stop-color: #08f;
+                                }
+                            }
+
+                            #en8jyOASaeh3-stroke-g1-1 {
+                                animation: en8jyOASaeh3-stroke-g1-1__c 2500ms linear 1 normal forwards;
+                            }
+
+                            @keyframes en8jyOASaeh3-stroke-g1-1__c {
+                                0% {
+                                    stop-color: #0067ff;
+                                }
+                                50% {
+                                    stop-color: #0067ff;
+                                }
+                                80% {
+                                    stop-color: #00fff8;
+                                }
+                                100% {
+                                    stop-color: #00fff8;
+                                }
+                            }
+                        </style>
+
+                        <defs>
+                            <radialGradient id="en8jyOASaeh2-fill" cx="0" cy="0" r="0.5"
+                                            spreadMethod="pad"
+                                            gradientUnits="objectBoundingBox"
+                                            gradientTransform="translate(0.5 0.553384)">
+                                <stop id="en8jyOASaeh2-fill-0" offset="75%"
+                                      stop-color="rgba(255,255,255,0)"/>
+                                <stop id="en8jyOASaeh2-fill-1" offset="100%"
+                                      stop-color="rgba(255,255,255,0.15)"/>
+                            </radialGradient>
+
+                            <linearGradient id="en8jyOASaeh2-stroke" x1="0" y1="0" x2="1" y2="0"
+                                            spreadMethod="pad"
+                                            gradientUnits="objectBoundingBox"
+                                            gradientTransform="matrix(0.923523 0.727571 -0.727571 0.923523 0.076477 0.128194)">
+                                <stop id="en8jyOASaeh2-stroke-0" offset="0%"
+                                      stop-color="#00fff8"/>
+                                <stop id="en8jyOASaeh2-stroke-1" offset="100%"
+                                      stop-color="#84a3ff"/>
+                            </linearGradient>
+
+                            <radialGradient id="en8jyOASaeh3-fill" cx="0" cy="0" r="0.5"
+                                            spreadMethod="pad"
+                                            gradientUnits="objectBoundingBox"
+                                            gradientTransform="translate(0.5 0.553384)">
+                                <stop id="en8jyOASaeh3-fill-0" offset="75%"
+                                      stop-color="rgba(255,255,255,0)"/>
+                                <stop id="en8jyOASaeh3-fill-1" offset="100%"
+                                      stop-color="rgba(255,255,255,0.15)"/>
+                            </radialGradient>
+
+                            <radialGradient id="en8jyOASaeh3-stroke" cx="0" cy="0" r="0.5"
+                                            spreadMethod="pad"
+                                            gradientUnits="objectBoundingBox"
+                                            gradientTransform="translate(0.5 0.5)">
+                                <stop id="en8jyOASaeh3-stroke-0" offset="0%"
+                                      stop-color="#00fff8"/>
+                                <stop id="en8jyOASaeh3-stroke-1" offset="100%"
+                                      stop-color="#0040ff"/>
+                            </radialGradient>
+
+                            <linearGradient id="en8jyOASaeh3-stroke-g1" x1="0.05585"
+                                            y1="0.111905" x2="0.917021" y2="1.105528"
+                                            spreadMethod="pad" gradientUnits="objectBoundingBox"
+                                            gradientTransform="translate(0 0)">
+                                <stop id="en8jyOASaeh3-stroke-g1-0" offset="0%"
+                                      stop-color="#00fff8"/>
+                                <stop id="en8jyOASaeh3-stroke-g1-1" offset="100%"
+                                      stop-color="#0067ff"/>
+                            </linearGradient>
+                        </defs>
+
+                        <g id="en8jyOASaeh2_ts"
+                           transform="translate(240,238.419688) scale(6.017978,6.017978)">
+                            <path id="en8jyOASaeh2"
+                                  d="M26.795125,0c0,8.877624-4.317313,16.746885-10.966903,21.62275C11.39329,24.874699,5.920915,26.795125,0,26.795125c-5.966027,0-11.476654-1.949802-15.929413-5.246938C-22.521579,16.666883,-26.795125,8.832512,-26.795125,0c0-2.827605.437983-5.552913,1.249809-8.111784C-22.108375,-18.945009,-11.970934,-26.795125,0,-26.795125c11.835607,0,21.878941,7.673634,25.426194,18.317094.888021,2.66449,1.368931,5.515099,1.368931,8.478031Z"
+                                  transform="translate(-0.014739,-0.014739)"
+                                  fill="url(#en8jyOASaeh2-fill)"
+                                  stroke="url(#en8jyOASaeh2-stroke)" stroke-width="0.3"/>
+                        </g>
+
+                        <g id="en8jyOASaeh3_ts"
+                           transform="translate(240,238.419688) scale(6.017978,6.017978)">
+                            <path id="en8jyOASaeh3"
+                                  d="M26.795125,0c0,8.877624-4.317313,16.746885-10.966903,21.62275C11.39329,24.874699,5.920915,26.795125,0,26.795125c-5.966027,0-11.476654-1.949802-15.929413-5.246938C-22.521579,16.666883,-26.795125,8.832512,-26.795125,0c0-2.827605.437983-5.552913,1.249809-8.111784C-22.108375,-18.945009,-11.970934,-26.795125,0,-26.795125c11.835607,0,21.878941,7.673634,25.426194,18.317094.888021,2.66449,1.368931,5.515099,1.368931,8.478031Z"
+                                  transform="translate(-0.014739,-0.014739)"
+                                  fill="url(#en8jyOASaeh3-fill)"
+                                  stroke="url(#en8jyOASaeh3-stroke)" stroke-width="0.2"
+                                  stroke-opacity="0.5"/>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 d-flex justify-content-center">
+            <div style="width: 30%">
+                <button id="applyBtn" class="btn btn-primary">
+                    <span><#CTL_apply#></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function initial() {
+
+        function resize_iframe_height() {
+            if ($(parent.document).find("#arklog_iframe").length == "1") {
+                const menu_height = $(parent.document).find("#mainMenu").height();
+                const settingsWindow_height = $(top.document).find("#settingsWindow").height();
+                const margin_bottom = 30;
+                $(parent.document).find("#arklog_iframe").css("height", (Math.max(menu_height, settingsWindow_height) - margin_bottom));
+            }
+        }
+
+        resize_iframe_height();
+    }
+</script>
+<script type="module">
+    import {AsuswrtWidgetLoading, ClientSelector} from "/js/component.module.js";
+    import {ClientList} from '/js/clientlist.module.js';
+
+    function onTabShown(tab) {
+        // Logic to execute when switching tabs, e.g., DataTables adjustments
+        if (tab === 'bandwidth') {
+            if (bwLimiterRuleTable && bwLimiterRuleTable.dataTable) {
+                setTimeout(() => {
+                    bwLimiterRuleTable.dataTable.columns.adjust();
+                }, 50);
+            }
+        }
+    }
+
+    document.querySelectorAll("button.tab-navigation__item").forEach(button => {
+        button.addEventListener("click", () => {
+            document.querySelectorAll("button.tab-navigation__item").forEach(btn => btn.classList.remove("active"));
+            button.classList.add("active");
+            const tab = button.getAttribute("data-tab");
+            document.querySelectorAll(".tab-content").forEach(container => container.style.display = "none");
+            const tabSection = document.getElementById(`tab-section-${tab}`);
+            tabSection.style.display = "block";
+
+            onTabShown(tab);
+        });
+    });
+
+    const widgetloader = new AsuswrtWidgetLoading();
+    document.querySelector('#workarea').appendChild(widgetloader.render());
+
+    const getNvramData = async () => {
+        const data = await httpApi.nvramGet(["ark_qoe_enable", "ark_qoe_profile"], true);
+        const nvramCharToAsciiData = await httpApi.nvramCharToAscii(["ark_qoe_psettings"]);
+        const orig_ark_qoe_psettings = decodeURIComponent(nvramCharToAsciiData.ark_qoe_psettings);
+        const support_ark_qoe_enable = ['0', '1'];
+        const support_ark_qoe_profile = ["ai", "gaming", "streaming", "wfh", "office"];
+        const enableValue = data.ark_qoe_enable.toString();
+        const validatedEnable = support_ark_qoe_enable.includes(enableValue) ? enableValue : support_ark_qoe_enable[0];
+        const validatedProfile = support_ark_qoe_profile.includes(data.ark_qoe_profile) ? data.ark_qoe_profile : support_ark_qoe_profile[0];
+        const validatePsettingsRange = (psettings) => {
+            const parts = psettings.split("<");
+            if (parts.length !== 5) return false;
+            return parts.every(part => {
+                const num = parseInt(part);
+                return num >= -10 && num <= 10 && !isNaN(num);
+            });
+        };
+
+        const validatedPsettings = validatePsettingsRange(orig_ark_qoe_psettings)
+            ? orig_ark_qoe_psettings
+            : "0<0<0<0<0";
+        return {
+            orig_ark_qoe_enable: validatedEnable,
+            orig_ark_qoe_profile: validatedProfile,
+            orig_ark_qoe_psettings_array: validatedPsettings.split("<"),
+        }
+    }
+
+    class qoeModeButton {
+        constructor(props) {
+            const {
+                text = '',
+                active = false,
+            } = props;
+            this.element = document.createElement('div');
+            const template = document.createElement('template');
+            this.element.className = 'mode-button';
+            if (active) {
+                this.element.classList.add('active');
+            }
+            template.innerHTML = text;
+            this.element.appendChild(template.content.cloneNode(true));
+            return this.element;
+        }
+    }
+
+    getNvramData().then(nvramData => {
+        const orig_ark_qoe_enable = nvramData.orig_ark_qoe_enable || "0";
+        const orig_ark_qoe_profile = nvramData.orig_ark_qoe_profile || "ai";
+        const orig_ark_qoe_psettings_array = nvramData.orig_ark_qoe_psettings_array || ["0", "0", "0", "0", "0"];
+
+        const modes = [
+            {
+                title: "<#AiQoE_mode_balance#>",
+                text: `<i class="ic-qoe-aibalance"></i><div class="mode-button-text"><#AiQoE_mode_balance#></div>`,
+                mode: "ai",
+                value: orig_ark_qoe_psettings_array[0],
+                desc: `<#AiQoE_mode_balance_desc#>`,
+                radarSet: [70, 80, 50, 60, 50],
+                splitLine: true,
+                nodeFormula: x => [Math.max(0, 4 - (x / 10)), Math.max(0, 4 + (x / 10)), Math.max(1, 2 - (x / 10)), 3, Math.max(0, 3 + (x / 10))],
+            },
+            {
+                title: "<#AiQoE_mode_gaming#>",
+                text: `<i class="ic-qoe-gaming"></i><div class="mode-button-text"><#AiQoE_mode_gaming#></div>`,
+                mode: "gaming",
+                value: orig_ark_qoe_psettings_array[1],
+                desc: `<#AiQoE_mode_gaming_desc#>`,
+                radarSet: [50, 95, 30, 40, 85],
+                splitLine: true,
+                nodeFormula: x => [Math.max(0, 2 - (x / 10)), Math.max(0, 5 + (x / 10)), Math.max(1, 1 - (x / 10)), 2, Math.max(0, 3 + (x / 10))],
+            },
+            {
+                title: "<#AiQoE_mode_streaming#>",
+                text: `<i class="ic-qoe-streaming"></i><div class="mode-button-text"><#AiQoE_mode_streaming#></div>`,
+                mode: "streaming",
+                value: orig_ark_qoe_psettings_array[2],
+                desc: `<#AiQoE_mode_streaming_desc#>`,
+                radarSet: [90, 50, 40, 80, 60],
+                splitLine: true,
+                nodeFormula: x => [Math.max(0, 3 - (x / 10)), 3, 1, Math.max(0, 5 + (x / 10)), 2],
+            },
+            {
+                title: "<#AiQoE_mode_wfh#>",
+                text: `<i class="ic-qoe-wfh"></i><div class="mode-button-text"><#AiQoE_mode_wfh#></div>`,
+                mode: "wfh",
+                value: orig_ark_qoe_psettings_array[3],
+                desc: `<#AiQoE_mode_wfh_desc#>`,
+                radarSet: [60, 40, 80, 50, 70],
+                splitLine: true,
+                nodeFormula: x => [Math.max(0, 3 - (x / 10)), Math.max(0, 3 + (x / 10)), Math.max(1, 3 - (x / 10)), 3, Math.max(0, 4 + (x / 10))],
+            },
+            {
+                title: "<#AiQoE_mode_office#>",
+                text: `<i class="ic-qoe-office"></i><div class="mode-button-text"><#AiQoE_mode_office#></div>`,
+                mode: "office",
+                value: orig_ark_qoe_psettings_array[4],
+                desc: `<#AiQoE_mode_office_desc#>`,
+                radarSet: [50, 30, 90, 45, 60],
+                splitLine: false,
+                nodeFormula: x => [Math.max(0, 3 - (x / 10)), 1, Math.max(0, 4 - (x / 10)), 3, Math.max(0, 5 + (x / 10))],
+            },
+        ]
+        const thisMode = modes.find(m => m.mode === orig_ark_qoe_profile);
+        thisMode.active = true;
+
+        const title = document.getElementById("modeTitle");
+        const description = document.getElementById("modeDescription");
+        const slider = document.getElementById("tuningSlider");
+        const sliderValue = document.getElementById("tuningValue");
+        title.textContent = thisMode.title;
+        description.textContent = thisMode.desc;
+        slider.value = thisMode.value;
+        sliderValue.innerText = thisMode.value;
+        updateSliderBackground(slider);
+
+        modes.forEach(m => {
+            const btn = new qoeModeButton({
+                text: m.text,
+                active: m.active,
+            });
+            btn.setAttribute("data-mode", m.mode);
+            btn.addEventListener("click", () => {
+                const buttons = document.querySelectorAll(".mode-button");
+                buttons.forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                modes.forEach(m => m.active = false);
+                m.active = true;
+
+                const title = document.getElementById("modeTitle");
+                const description = document.getElementById("modeDescription");
+                const slider = document.getElementById("tuningSlider");
+                const sliderValue = document.getElementById("tuningValue");
+                title.textContent = m.title;
+                description.textContent = m.desc;
+
+                radarChart.data.datasets[0].data = m.nodeFormula(0).map(dara => {
+                    return dara * 0.6; // adjust point size
+                });
+                radarChart.data.datasets[1].data = m.nodeFormula(0).map(dara => {
+                    return dara * 0.8; // adjust point size
+                });
+                radarChart.data.datasets[2].data = m.nodeFormula(0);
+                radarChart.update();
+
+                slider.value = m.value;
+                slider.dispatchEvent(new Event('input'));
+                sliderValue.innerText = m.value;
+
+                replayAnimation(svgLayer1Id);
+            });
+            m.btn = btn;
+            document.querySelector('.fn-button-container').append(btn);
+            // if (m.splitLine) {
+            //     const splitLine = document.createElement('div');
+            //     splitLine.className = 'split-line';
+            //     document.querySelector('.button-container').append(splitLine);
+            // }
+        })
+
+        const svgLayer1Id = 'radarAnimate';
+
+        function replayAnimation(svgId) {
+            const svg = document.getElementById(svgId);
+            if (!svg) return;
+
+            const parent = svg.parentNode;
+            const clone = svg.cloneNode(true);
+
+            // remove original SVG and reinsert to force trigger CSS animation
+            parent.removeChild(svg);
+            parent.appendChild(clone);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            replayAnimation(svgLayer1Id);
+        });
+
+        const labels = ['Bandwidth Utilization', 'Game', 'File Transfer', 'Multimedia', 'Real-Time'];
+
+        Chart.register({
+            id: 'centerLinesPlugin',
+            afterDatasetsDraw(chart) {
+                const {ctx, chartArea, scales} = chart;
+                const r = scales.r;
+                const numberOfPoints = 5;
+
+                ctx.save();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)'; // dashed line color
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]); // dashed line style [line length, gap length]
+
+                for (let i = 0; i < numberOfPoints; i++) {
+                    // calculate angle: first point at top (-90 degrees), then clockwise distribution
+                    const angle = (Math.PI * 2 / numberOfPoints) * i - Math.PI / 2;
+                    const x = r.xCenter + Math.cos(angle) * r.drawingArea;
+                    const y = r.yCenter + Math.sin(angle) * r.drawingArea;
+
+                    ctx.beginPath();
+                    ctx.moveTo(r.xCenter, r.yCenter);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+        });
+
+        const ctx = document.getElementById('radarChart').getContext('2d');
+
+        // get CSS variable values
+        const style = getComputedStyle(document.documentElement);
+        const colorStart = style.getPropertyValue('--color-start').trim();
+        const colorEnd = style.getPropertyValue('--color-end').trim();
+
+        // create center radial gradient
+        const gradient = ctx.createLinearGradient(
+            120, 120,
+            240, 240
+        );
+        gradient.addColorStop(0, colorStart); // center color
+        gradient.addColorStop(0.5, '#c3fff5'); // center color
+        gradient.addColorStop(1, colorEnd);   // outer color
+
+        let radarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '',
+                        data: thisMode.nodeFormula(thisMode.value).map(data => {
+                            return data * 0.6;
+                        }),
+                        borderColor: '#ffffff',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 0,
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
+                        hoverBackgroundColor: 'transparent',
+                        hoverBorderColor: 'transparent'
+                    },
+                    {
+                        label: '',
+                        data: thisMode.nodeFormula(thisMode.value).map(data => {
+                            return data * 0.8;
+                        }),
+                        borderColor: '#ffffff',
+                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 0,
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
+                        hoverBackgroundColor: 'transparent',
+                        hoverBorderColor: 'transparent'
+                    },
+                    {
+                        label: '',
+                        data: thisMode.nodeFormula(thisMode.value),
+                        borderColor: '#ffffff',
+                        backgroundColor: gradient,
+                        borderWidth: 2,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#f5f5f5',
+                        pointBorderWidth: 1,
+                        pointRadius: 3,
+                        pointHoverRadius: 5
+                    },]
+            },
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 7,
+                        ticks: {
+                            stepSize: 1,
+                            display: false,
+                            backdropColor: 'transparent'
+                        },
+                        grid: {
+                            display: false,
+                            color: 'transparent'
+                        },
+                        angleLines: {
+                            display: false,
+                            color: 'transparent'
+                        },
+                        pointLabels: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        filter: function (tooltipItem) {
+                            // only show tooltip for third dataset (index === 2)
+                            return tooltipItem.datasetIndex === 2;
+                        },
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#ddd',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        padding: 10,
+                        displayColors: false,
+                        callbacks: {
+                            label: function (context) {
+                                return 'Value: ' + context.parsed.r;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        window.modes = modes;
+
+        function updateSliderValue(event) {
+            const target = event?.target || document.getElementById("tuningSlider");
+            const value = target.value;
+            let x = parseInt(value);
+            document.getElementById("tuningValue").innerText = x;
+            applySliderValue(x);
+            updateSliderBackground(target);
+        }
+
+        function applySliderValue(x) {
+            const mode = modes.filter(m => m.active)[0];
+            if (mode) {
+                radarChart.data.datasets[0].data = mode.nodeFormula(x).map(data => {
+                    return data * 0.6;
+                });
+                radarChart.data.datasets[1].data = mode.nodeFormula(x).map(data => {
+                    return data * 0.8;
+                });
+                radarChart.data.datasets[2].data = mode.nodeFormula(x);
+                radarChart.update();
+            }
+        }
+
+        document.getElementById('tuningSlider').addEventListener('input', updateSliderValue);
+
+        function updateSliderBackground(sliderEl) {
+            const min = Number(sliderEl.min);
+            const max = Number(sliderEl.max);
+            const val = Number(sliderEl.value);
+            const percent = ((val - min) / (max - min)) * 100;
+
+            sliderEl.style.background = `linear-gradient(to right,
+                var(--slider-fill-start) 0%,
+                var(--slider-fill-end) ${percent}%,
+                var(--slider-track) ${percent}%,
+                var(--slider-track) 100%)`;
+        }
+
+        // apply_btn click event
+        const applyBtn = document.getElementById("applyBtn");
+        applyBtn.addEventListener("click", function () {
+            applyQoE()
+        });
+
+        var apply_obj = {
+            "action_mode": "apply",
+            "rc_service": "restart_ark",
+        }
+
+        function applyQoE() {
+            let hasActive = true;
+            const set_qoe_profile = find_profile();
+            if (set_qoe_profile) {
+
+                const sliderValue = parseInt(document.getElementById("tuningSlider").value);
+                const modeaArray = modes.map((m, i) => m.active ? sliderValue : orig_ark_qoe_psettings_array[i]);
+
+                const set_qoe_psettings = modeaArray.join("<");
+                apply_obj["qos_enable"] = "0";
+                apply_obj["qos_type"] = "4";
+                apply_obj["ark_qoe_enable"] = (hasActive == true) ? "1" : "0";
+                apply_obj["ark_qoe_profile"] = set_qoe_profile;
+                apply_obj["ark_qoe_psettings"] = set_qoe_psettings;
+                httpApi.nvramSet(apply_obj);
+                top.showLoading(3);
+                setTimeout(() => {
+                    location.reload();
+                }, 3000);
+            }
+        }
+
+        function find_profile() {
+            const mode = modes.filter(m => m.active)[0];
+            if (mode) {
+                return mode.mode;
+            } else {
+                alert(`Please select a mode.`);  //Untranslated
+                return false;
+            }
+        }
+    }).then(() => {
+        widgetloader.hide();
+    })
+
+</script>
+</body>
+</html>

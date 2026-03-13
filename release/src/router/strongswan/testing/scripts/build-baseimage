@@ -9,32 +9,20 @@ DIR=$(dirname `readlink -f $0`)
 [ `id -u` -eq 0 ] || die "You must be root to run $0"
 running_any $STRONGSWANHOSTS && die "Please stop test environment before running $0"
 
-check_commands debootstrap mkfs.ext3 partprobe qemu-img qemu-nbd sfdisk
+check_commands debootstrap mkfs.ext3 blockdev qemu-img qemu-nbd sfdisk
 
 # package includes/excludes
-INC=automake,autoconf,libtool,bison,flex,gperf,pkg-config,gettext,less,locales
+INC=automake,autoconf,libtool,bison,flex,gperf,pkg-config,less,locales
 INC=$INC,build-essential,libgmp-dev,libldap2-dev,libcurl4-openssl-dev,ethtool
 INC=$INC,libxml2-dev,libtspi-dev,libsqlite3-dev,openssh-server,tcpdump,psmisc
 INC=$INC,openssl,vim,sqlite3,conntrack,gdb,cmake,libltdl-dev,wget,gnupg,man-db
-INC=$INC,libboost-thread-dev,libboost-system-dev,git,iperf,htop,valgrind,strace
+INC=$INC,libboost-thread-dev,libboost-system-dev,git,iperf3,htop,valgrind,strace
 INC=$INC,gnat,gprbuild,acpid,acpi-support-base,libldns-dev,libunbound-dev
-INC=$INC,dnsutils,libsoup2.4-dev,ca-certificates,unzip,libsystemd-dev
-INC=$INC,python3,python3-setuptools,python3-dev,python3-daemon,python3-venv,
+INC=$INC,bind9-dnsutils,ca-certificates,unzip,libsystemd-dev
+INC=$INC,python3,python3-setuptools,python3-build,python3-dev,python3-daemon,python3-venv,
 INC=$INC,apt-transport-https,libjson-c-dev,libxslt1-dev,libapache2-mod-wsgi-py3
-INC=$INC,libxerces-c-dev,rsyslog
+INC=$INC,libxerces-c-dev,rsyslog,ncat,socat,libiptc-dev,binutils-dev
 case "$BASEIMGSUITE" in
-buster)
-	INC=$INC,iptables-dev
-	;;
-*)
-	INC=$INC,libiptc-dev
-	;;
-esac
-case "$BASEIMGSUITE" in
-buster)
-	INC=$INC,libahven7-dev,libxmlada-schema8-dev,libgmpada8-dev
-	INC=$INC,libalog4-dev,dbus-user-session
-	;;
 bullseye)
 	INC=$INC,libahven9-dev,libxmlada-schema10-dev,libgmpada10-dev
 	INC=$INC,libalog6-dev,dbus-user-session
@@ -44,10 +32,14 @@ bullseye)
 	;;
 bookworm)
 	INC=$INC,libahven11-dev,libxmlada-schema12-dev,libgmpada12-dev
-	INC=$INC,libalog8-dev,dbus-user-session
+	INC=$INC,libalog8-dev,dbus-user-session,pipx
 	# workaround for dependency issue gdb -> libsource-highlight4v5 -> virtual
 	# package (libboost-regex1.74.0-icu67), which debootstrap can't resolve (#878961)
 	INC=$INC,libboost-regex1.74.0
+	;;
+trixie)
+	INC=$INC,libahven-dev,libxmlada-schema-dev,libgmpada-dev
+	INC=$INC,libalog-dev,dbus-user-session,pipx,systemd-dev
 	;;
 *)
 	echo_warn "Package list for '$BASEIMGSUITE' might has to be updated"
@@ -60,7 +52,7 @@ APT1="libgcrypt20-dev traceroute iptables"
 APT="tmux"
 # additional services to disable
 case "$BASEIMGSUITE" in
-bookworm)
+bookworm|trixie)
 	;;
 *)
 	SERVICES="$SERVICES systemd-timesyncd"
@@ -86,6 +78,9 @@ log_action "Connecting image to NBD device $NBDEV"
 execute "qemu-nbd -c $NBDEV $BASEIMG"
 do_on_exit qemu-nbd -d $NBDEV
 
+# wait for disk to become ready with newer QEMU versions
+sleep 1
+
 log_action "Partitioning disk"
 sfdisk /dev/nbd0 >>$LOGFILE 2>&1 << EOF
 ;
@@ -97,7 +92,7 @@ then
 else
 	log_status 0
 fi
-partprobe $NBDEV
+blockdev --rereadpt $NBDEV
 
 log_action "Creating ext3 filesystem"
 execute "mkfs.ext3 $NBDPARTITION"
@@ -125,13 +120,13 @@ EOF
 execute_chroot "locale-gen"
 
 log_action "Downloading signing key for custom apt repo"
-execute_chroot "wget -q $BASEIMGEXTKEY -O /tmp/key"
+execute_chroot "wget -q $BASEIMGEXTKEY -O /tmp/strongswan.key"
 log_action "Installing signing key for custom apt repo"
-execute_chroot "apt-key add /tmp/key"
+execute_chroot "mv /tmp/strongswan.key /etc/apt/keyrings/"
 
 log_action "Enabling custom apt repo"
 cat > $LOOPDIR/etc/apt/sources.list.d/strongswan.list << EOF
-deb $BASEIMGEXTREPO $BASEIMGSUITE main
+deb [signed-by=/etc/apt/keyrings/strongswan.key] $BASEIMGEXTREPO $BASEIMGSUITE main
 EOF
 log_status $?
 

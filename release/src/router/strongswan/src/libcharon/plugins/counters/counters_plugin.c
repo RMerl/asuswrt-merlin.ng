@@ -83,7 +83,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * Described in header
  */
-plugin_t *counters_plugin_create()
+PLUGIN_DEFINE(counters)
 {
 	private_counters_plugin_t *this;
 

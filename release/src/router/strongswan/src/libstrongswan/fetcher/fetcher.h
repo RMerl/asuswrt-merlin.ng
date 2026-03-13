@@ -70,12 +70,6 @@ enum fetcher_option_t {
 	FETCH_REQUEST_HEADER,
 
 	/**
-	 * Use HTTP Version 1.0 instead of 1.1.
-	 * No additional argument is needed.
-	 */
-	FETCH_HTTP_VERSION_1_0,
-
-	/**
 	 * Timeout to use for fetch, in seconds.
 	 * Additional argument is u_int
 	 */

@@ -133,7 +133,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *random_plugin_create()
+PLUGIN_DEFINE(random)
 {
 	private_random_plugin_t *this;
 	char *urandom_file, *random_file;

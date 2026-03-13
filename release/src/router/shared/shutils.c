@@ -79,6 +79,10 @@
 #define STR_REALLOC		0x1				/* Reallocate the buffer as required */
 #define STR_INC			64				/* Growth increment */
 
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126)
+#define RSIZE_MAX (SIZE_MAX >> 1u)
+#endif /* WIFI7_SDK_20250506 || WIFI8_SDK_20251126 */
+
 unsigned char	used_shift='C';
 
 typedef struct {
@@ -275,8 +279,7 @@ int _eval(char *const argv[], const char *path, int timeout, int *ppid)
 	setenv("USER", nvram_get("http_username")? : "admin", 1);
 #endif
 #ifdef HND_ROUTER
-	p = nvram_safe_get("env_path");
-	snprintf(s, sizeof(s), "%s%s/sbin:/bin:/usr/sbin:/usr/bin:/opt/sbin:/opt/bin", *p ? p : "", *p ? ":" : "");
+	snprintf(s, sizeof(s), "/sbin:/bin:/usr/sbin:/usr/bin:/opt/sbin:/opt/bin");
 	p = getenv("PATH");
 	if (p == NULL || strcmp(p, s) != 0)
 		setenv("PATH", s, 1);
@@ -380,8 +383,7 @@ EXIT:
 
 	// execute command
 #ifndef HND_ROUTER
-	p = nvram_safe_get("env_path");
-	snprintf(s, sizeof(s), "%s%s/sbin:/bin:/usr/sbin:/usr/bin:/opt/sbin:/opt/bin", *p ? p : "", *p ? ":" : "");
+	snprintf(s, sizeof(s), "/sbin:/bin:/usr/sbin:/usr/bin:/opt/sbin:/opt/bin");
 	p = getenv("PATH");
 	if (p == NULL || strcmp(p, s) != 0)
 		setenv("PATH", s, 1);
@@ -772,6 +774,48 @@ int ether_inc(unsigned char *e, const unsigned char n)
 		if (c) {
 			ret = (e[3] >= 0xff) ? -1 : 0;
 			e[3] += 1;
+		}
+	}
+
+	return (ret);
+}
+
+/*
+ * Decrease Ethernet address e with n
+ */
+int ether_dec(unsigned char *e, const unsigned char n)
+{
+	int b = 0;
+	int ret = 0;
+
+	// Handle borrow from e[5]
+	if (e[5] < n) {
+		e[5] = (256 + e[5]) - n;
+		b = 1;
+	} else {
+		e[5] -= n;
+		b = 0;
+	}
+
+	if (b) {
+		// Need to borrow from e[4]
+		if (e[4] == 0) {
+			e[4] = 255;
+			b = 1;
+		} else {
+			e[4] -= 1;
+			b = 0;
+		}
+
+		if (b) {
+			// Need to borrow from e[3]
+			if (e[3] == 0) {
+				e[3] = 255;
+				ret = -1;  // Indicate underflow error
+			} else {
+				e[3] -= 1;
+				ret = 0;
+			}
 		}
 	}
 
@@ -3174,3 +3218,166 @@ int replace_literal_newline(char *inputstr, char *output, int buflen)
 	}
 	return 1;
 }
+
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126)
+/*
+ * memcpy_s - secure memcpy
+ * dest : pointer to the object to copy to
+ * destsz : size of the destination buffer
+ * src : pointer to the object to copy from
+ * n : number of bytes to copy
+ * Return Value : zero on success and non-zero on error
+ * Also on error, if dest is not a null pointer and destsz not greater
+ * than RSIZE_MAX, writes destsz zero bytes into the dest object.
+ */
+int
+BCMPOSTTRAPFN(memcpy_s)(void *dest, size_t destsz, const void *src, size_t n)
+{
+	int err = BCME_OK;
+	char *d = dest;
+	const char *s = src;
+
+	if ((!d) || ((d + destsz) < d)) {
+		err = BCME_BADARG;
+		goto exit;
+	}
+
+	if (destsz > RSIZE_MAX) {
+		err = BCME_BADLEN;
+		goto exit;
+	}
+
+	if (destsz < n) {
+		bzero(dest, destsz);
+		err = BCME_BADLEN;
+		goto exit;
+	}
+
+	if ((!s) || ((s + n) < s)) {
+		bzero(dest, destsz);
+		err = BCME_BADARG;
+		goto exit;
+	}
+
+	/* overlap checking between dest and src */
+	if (!(((d + destsz) <= s) || (d >= (s + n)))) {
+		bzero(dest, destsz);
+		err = BCME_BADARG;
+		goto exit;
+	}
+
+	(void)memcpy(dest, src, n);
+exit:
+	return err;
+}
+
+#endif /* WIFI7_SDK_20250506 || WIFI8_SDK_20251126 */
+
+
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126)
+/*
+ * memset_s - secure memset
+ * dest : pointer to the object to be set
+ * destsz : size of the destination buffer
+ * c : byte value
+ * n : number of bytes to be set
+ * Return Value : zero on success and non-zero on error
+ * Also on error, if dest is not a null pointer and destsz not greater
+ * than RSIZE_MAX, writes destsz bytes with value c into the dest object.
+ */
+int
+BCMPOSTTRAPFN(memset_s)(void *dest, size_t destsz, int c, size_t n)
+{
+	int err = BCME_OK;
+	if ((!dest) || (((char *)dest + destsz) < (char *)dest)) {
+		err = BCME_BADARG;
+		goto exit;
+	}
+
+	if (destsz > RSIZE_MAX) {
+		err = BCME_BADLEN;
+		goto exit;
+	}
+
+	if (destsz < n) {
+		(void)memset(dest, c, destsz);
+		err = BCME_BADLEN;
+		goto exit;
+	}
+
+	(void)memset(dest, c, n);
+exit:
+	return err;
+}
+#endif /* WIFI7_SDK_20250506 || WIFI8_SDK_20251126 */
+
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126)
+#ifndef MIN
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
+/**
+ * strlcat_s - Concatenate a %NUL terminated string with a sized buffer
+ * @dest: Where to concatenate the string to
+ * @src: Where to copy the string from
+ * @size: size of destination buffer
+ * return: string length of created string (i.e. the initial length of dest plus the length of src)
+ *         not including the NUL char, up until size
+ *
+ * Unlike strncat(), strlcat() take the full size of the buffer (not just the number of bytes to
+ * copy) and guarantee to NUL-terminate the result (even when there's nothing to concat).
+ * If the length of dest string concatinated with the src string >= size, truncation occurs.
+ *
+ * Compatible with *BSD: the result is always a valid NUL-terminated string that fits in the buffer
+ * (unless, of course, the buffer size is zero).
+ *
+ * If either src or dest is not NUL-terminated, dest[size-1] will be set to NUL.
+ * If size < strlen(dest) + strlen(src), dest[size-1] will be set to NUL.
+ * If size == 0, dest[0] will be set to NUL.
+ */
+size_t
+strlcat_s(char *dest, const char *src, size_t size)
+{
+	char *d = dest;
+	const char *s = src;	/* point to the start of the src string */
+	size_t n = size;
+	size_t dlen;
+	size_t bytes_to_copy = 0;
+
+	if (dest == NULL) {
+		return 0;
+	}
+
+	/* set d to point to the end of dest string (up to size) */
+	while (n != 0 && *d != '\0') {
+		d++;
+		n--;
+	}
+	dlen = (size_t)(d - dest);
+
+	if (s != NULL) {
+		size_t slen = 0;
+
+		/* calculate src len in case it's not null-terminated */
+		n = size;
+		while (n-- != 0 && *(s + slen) != '\0') {
+			++slen;
+		}
+
+		n = size - dlen;	/* maximum num of chars to copy */
+		if (n != 0) {
+			/* copy relevant chars (until end of src buf or given size is reached) */
+			bytes_to_copy = MIN(slen - (size_t)(s - src), n - 1);
+			(void)memcpy(d, s, bytes_to_copy);
+			d += bytes_to_copy;
+		}
+	}
+	if (n == 0 && dlen != 0) {
+		--d;	/* nothing to copy, but NUL-terminate dest anyway */
+	}
+	*d = '\0';	/* NUL-terminate dest */
+
+	return (dlen + bytes_to_copy);
+}
+#endif /* WIFI7_SDK_20250506 || WIFI8_SDK_20251126 */
+

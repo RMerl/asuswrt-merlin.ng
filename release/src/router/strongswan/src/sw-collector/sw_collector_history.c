@@ -378,7 +378,7 @@ end:
 METHOD(sw_collector_history_t, merge_installed_packages, bool,
 	private_sw_collector_history_t *this)
 {
-	uint32_t sw_id, count = 0;
+	uint32_t sw_id, count DBG_UNUSED = 0;
 	char *package, *arch, *version, *v1, *name, *n1;
 	bool installed, success = FALSE;
 	sw_collector_dpkg_t *dpkg;

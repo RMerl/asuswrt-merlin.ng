@@ -59,7 +59,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *sqlite_plugin_create()
+PLUGIN_DEFINE(sqlite)
 {
 	private_sqlite_plugin_t *this;
 #if SQLITE_VERSION_NUMBER >= 3005000 && DEBUG_LEVEL >= 2

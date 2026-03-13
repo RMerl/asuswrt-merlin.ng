@@ -656,8 +656,8 @@ METHOD(receiver_t, del_esp_cb, void,
 METHOD(receiver_t, destroy, void,
 	private_receiver_t *this)
 {
-	this->rng->destroy(this->rng);
-	this->hasher->destroy(this->hasher);
+	DESTROY_IF(this->rng);
+	DESTROY_IF(this->hasher);
 	this->esp_cb_mutex->destroy(this->esp_cb_mutex);
 	free(this);
 }
@@ -717,15 +717,14 @@ receiver_t *receiver_create()
 	if (!this->hasher)
 	{
 		DBG1(DBG_NET, "creating cookie hasher failed, no hashers supported");
-		free(this);
+		destroy(this);
 		return NULL;
 	}
 	this->rng = lib->crypto->create_rng(lib->crypto, RNG_STRONG);
 	if (!this->rng)
 	{
 		DBG1(DBG_NET, "creating cookie RNG failed, no RNG supported");
-		this->hasher->destroy(this->hasher);
-		free(this);
+		destroy(this);
 		return NULL;
 	}
 	if (!this->rng->get_bytes(this->rng, SECRET_LENGTH, this->secret))
@@ -738,7 +737,7 @@ receiver_t *receiver_create()
 
 	lib->processor->queue_job(lib->processor,
 		(job_t*)callback_job_create_with_prio((callback_job_cb_t)receive_packets,
-			this, NULL, (callback_job_cancel_t)return_false, JOB_PRIO_CRITICAL));
+			this, NULL, callback_job_cancel_thread, JOB_PRIO_CRITICAL));
 
 	return &this->public;
 }

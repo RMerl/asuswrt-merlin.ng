@@ -80,6 +80,11 @@ enum notify_type_t {
 	TEMPORARY_FAILURE = 43,
 	CHILD_SA_NOT_FOUND = 44,
 
+	/* multiple key exchanges, RFC 9370 */
+	STATE_NOT_FOUND = 47,
+	/* No more per-resource CHILD_SAs, RFC 9611 */
+	TS_MAX_QUEUE = 48,
+
 	/* IKE-ME, private use */
 	ME_CONNECT_FAILED = 8192,
 
@@ -154,19 +159,34 @@ enum notify_type_t {
 	FRAGMENTATION_SUPPORTED = 16430,
 	/* Signature Hash Algorithms, RFC 7427 */
 	SIGNATURE_HASH_ALGORITHMS = 16431,
+
 	/* Use Postquantum Preshared Key, RFC 8784 */
 	USE_PPK = 16435,
 	/* Postquantum Preshared Key Identity, RFC 8784 */
 	PPK_IDENTITY = 16436,
 	/* No Postquantum Preshared Key Auth, RFC 8784 */
 	NO_PPK_AUTH = 16437,
+	/* IKEv2 Intermediate Exchanges, RFC 9242 */
+	INTERMEDIATE_EXCHANGE_SUPPORTED = 16438,
+
+	/* multiple key exchanges, RFC 9370 */
+	ADDITIONAL_KEY_EXCHANGE = 16441,
+	/* IP-TFS/AGGFRAG, RFC 9347 */
+	USE_AGGFRAG = 16442,
+
+	/* Resource info for CHILD_SAs, RFC 9611 */
+	SA_RESOURCE_INFO = 16444,
+
 	/* IKEv1 initial contact */
 	INITIAL_CONTACT_IKEV1 = 24578,
+
 	/* IKEv1 DPD */
 	DPD_R_U_THERE = 36136,
 	DPD_R_U_THERE_ACK = 36137,
+
 	/* IKEv1 Cisco High Availability */
 	UNITY_LOAD_BALANCE = 40501,
+
 	/* BEET mode, not even a draft yet. private use */
 	USE_BEET_MODE = 40961,
 	/* IKE-ME, private use */

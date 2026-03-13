@@ -103,8 +103,10 @@ METHOD(key_exchange_t, get_public_key, bool,
 	return FALSE;
 }
 
-METHOD(key_exchange_t, set_private_key, bool,
-	private_curve25519_dh_t *this, chunk_t value)
+#ifdef TESTABLE_KE
+
+METHOD(key_exchange_t, set_seed, bool,
+	private_curve25519_dh_t *this, chunk_t value, drbg_t *drbg)
 {
 	if (value.len != CURVE25519_KEY_SIZE)
 	{
@@ -112,6 +114,8 @@ METHOD(key_exchange_t, set_private_key, bool,
 	}
 	return this->drv->set_key(this->drv, value.ptr);
 }
+
+#endif /* TESTABLE_KE */
 
 METHOD(key_exchange_t, get_shared_secret, bool,
 	private_curve25519_dh_t *this, chunk_t *secret)
@@ -157,13 +161,16 @@ curve25519_dh_t *curve25519_dh_create(key_exchange_method_t group)
 				.get_shared_secret = _get_shared_secret,
 				.set_public_key = _set_public_key,
 				.get_public_key = _get_public_key,
-				.set_private_key = _set_private_key,
 				.get_method = _get_method,
 				.destroy = _destroy,
 			},
 		},
 		.drv = curve25519_drv_probe(),
 	);
+
+#ifdef TESTABLE_KE
+	this->public.ke.set_seed = _set_seed;
+#endif
 
 	if (!this->drv)
 	{

@@ -221,7 +221,7 @@ struct wl_sync_nvram {
 #define IPSEC_UPLOAD_FILE       "/tmp/server_ipsec_file/server_ipsec.tgz"
 #endif
 
-#define CRC_LEN 8
+#define HTTPD_CRC_LEN 8
 
 #ifdef RTCONFIG_WIREGUARD
 #define WG_DIR_CONF    "/etc/wg"
@@ -257,7 +257,7 @@ typedef struct asus_token_table asus_token_t;
 struct asus_token_table{
 	char useragent[1024];
 	char token[33];
-	char ipaddr[16];
+	char ipaddr[64];
 	char login_timestampstr[32];
 	char host[64];
 	time_t last_login_timestamp;
@@ -449,6 +449,7 @@ typedef struct uaddr {
 extern uaddr *uaddr_ston(const usockaddr *u, uaddr *uip);
 extern uaddr *uaddr_pton(const char *src, uaddr *uip);
 extern char *uaddr_ntop(const uaddr *uip, char *dst, size_t cnt);
+extern char *safe_uaddr_ntop(const uaddr *uip, char *dst, size_t cnt);
 extern unsigned int uaddr_addr(uaddr *uip);
 extern int uaddr_is_unspecified(uaddr *uip);
 extern int uaddr_is_localhost(uaddr *uip);
@@ -490,9 +491,6 @@ extern int check_AiMesh_whitelist(char *page);
 extern int ej_get_dnsprivacy_presets(int eid, webs_t wp, int argc, char_t **argv);
 #endif
 extern void __validate_apply_set_wl_var(char *nv, char *val) __attribute__((weak));
-#ifdef RTCONFIG_BWDPI
-extern int check_bwdpi_status_app_name(char *name);
-#endif
 
 /* web-*.c */
 extern int ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit);
@@ -515,7 +513,9 @@ extern unsigned int login_ip; // the logined ip
 extern unsigned int app_login_ip; // the app logined ip
 extern char cookies_buf[4096];
 extern unsigned int login_ip_tmp; /* IPv6 compat */
+extern uaddr login_uip;
 extern uaddr login_uip_tmp;
+extern uaddr app_login_uip; // the app log ip
 extern time_t login_timestamp_cache;
 extern int hook_get_json;
 extern char wl_band_list[8][8];
@@ -584,7 +584,7 @@ extern int change_location(char *lang);
 #ifdef RTCONFIG_WTF_REDEEM
 extern void wtfast_gen_partnercode(char *str, size_t size);
 #endif
-extern void update_wlan_log_sig(int *sig);
+extern void update_wlan_log_sig(int sig);
 extern void system_cmd_test(char *system_cmd, char *SystemCmd, int len);
 extern void do_feedback_mail_cgi(char *url, FILE *stream);
 extern void do_dfb_log_file(char *url, FILE *stream);
@@ -605,7 +605,7 @@ extern int is_captcha_match(char *catpch);
 #if defined(RTCONFIG_AURALED) \
         || defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) \
         || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) \
-        || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI)
+        || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI)
 extern void httpd_switch_ledg(int action);
 #endif
 #ifdef RTCONFIG_SAVE_WL_NVRAM_BOTH
@@ -648,9 +648,26 @@ extern int check_lock_status(time_t *dt);
 extern void check_lock_state();
 extern int gen_asus_token_cookie(char *asus_token, int asus_token_len, char *token_cookie, int cookie_len);
 extern void gen_random_string_v2(char *out, size_t len);
-extern int json_object_get_string_to_double(json_object *source_obj, char *target, char *output, int len);
+extern int json_object_get_string_to_double(struct json_object *obj, const char *key, char *buf, size_t buf_size);
 #ifdef RTCONFIG_BCM_AFC
 extern int find_afc_challenge(char *id, char *challenge);
 #endif
 extern int nvram_modify_log(char *name, char *new, char *old, struct json_object *nvram_modify_obj);
+extern int get_file_md5(char *file, char *out, int len);
+extern void handle_nvram_modify_log(struct json_object *activity_obj);
+#ifdef RTCONFIG_AI_SERVICE
+extern int ej_is_ai_ssh_default(int eid, webs_t wp, int argc, char **argv);
+extern void do_ai_chpass_cgi(char *url, FILE *stream);
+extern void do_get_ai_docker_images_info_cgi(char *url, FILE *stream);
+extern void do_get_ai_docker_container_info_cgi(char *url, FILE *stream);
+extern void do_ai_board_slm_cgi(char *url, FILE *stream);
+extern void do_set_AI_board_EULA_cgi(char *url, FILE *stream);
+#endif
+
+#if defined(WIFI8_SDK_20251126)
+#define WL_BSS_INFO_SDK_VER wl_bss_info_v109_1_t
+#else
+#define WL_BSS_INFO_SDK_VER wl_bss_info_107_t
+#endif
+
 #endif /* _httpd_h_ */

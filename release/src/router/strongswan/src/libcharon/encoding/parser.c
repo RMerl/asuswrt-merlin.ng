@@ -399,8 +399,16 @@ METHOD(parser_t, parse_payload, status_t,
 		header_length = pld->get_header_length(pld);
 
 		rule = &(this->rules[rule_number]);
-		DBG2(DBG_ENC, "  parsing rule %d %N",
-			 rule_number, encoding_type_names, rule->type);
+		if (rule->type < PAYLOAD_LIST)
+		{
+			DBG2(DBG_ENC, "  parsing rule %d %N",
+				 rule_number, encoding_type_names, rule->type);
+		}
+		else
+		{
+			DBG2(DBG_ENC, "  parsing rule %d LIST of %N",
+				 rule_number, payload_type_names, rule->type - PAYLOAD_LIST);
+		}
 		switch ((int)rule->type)
 		{
 			case U_INT_4:

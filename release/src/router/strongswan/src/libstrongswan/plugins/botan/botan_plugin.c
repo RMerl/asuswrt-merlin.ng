@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Tobias Brunner
+ * Copyright (C) 2018-2024 Tobias Brunner
  * Copyright (C) 2018 Andreas Steffen
  *
  * Copyright (C) 2018 René Korthaus
@@ -32,6 +32,7 @@
 #include "botan_diffie_hellman.h"
 #include "botan_hmac.h"
 #include "botan_kdf.h"
+#include "botan_kem.h"
 #include "botan_rsa_public_key.h"
 #include "botan_rsa_private_key.h"
 #include "botan_ec_diffie_hellman.h"
@@ -104,9 +105,11 @@ METHOD(plugin_t, get_features, int,
 #endif
 
 		/* crypters */
-#if defined(BOTAN_HAS_AES) && defined(BOTAN_HAS_MODE_CBC)
+#if defined(BOTAN_HAS_AES)
 		PLUGIN_REGISTER(CRYPTER, botan_crypter_create),
-#ifdef BOTAN_HAS_AES
+			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_ECB, 16),
+			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_ECB, 24),
+			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_ECB, 32),
 	#ifdef BOTAN_HAS_MODE_CBC
 			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CBC, 16),
 			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CBC, 24),
@@ -117,7 +120,6 @@ METHOD(plugin_t, get_features, int,
 			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CFB, 24),
 			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CFB, 32),
 	#endif
-#endif
 #endif
 
 		/* AEAD */
@@ -359,6 +361,13 @@ METHOD(plugin_t, get_features, int,
 			PLUGIN_PROVIDE(HASHER, HASH_IDENTITY),
 #endif
 
+#ifdef BOTAN_HAS_ML_KEM
+		PLUGIN_REGISTER(KE, botan_kem_create),
+			PLUGIN_PROVIDE(KE, ML_KEM_512),
+			PLUGIN_PROVIDE(KE, ML_KEM_768),
+			PLUGIN_PROVIDE(KE, ML_KEM_1024),
+#endif
+
 		/* random numbers */
 #if BOTAN_HAS_SYSTEM_RNG
 #if BOTAN_HAS_HMAC_DRBG
@@ -382,7 +391,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * Described in header
  */
-plugin_t *botan_plugin_create()
+PLUGIN_DEFINE(botan)
 {
 	private_botan_plugin_t *this;
 

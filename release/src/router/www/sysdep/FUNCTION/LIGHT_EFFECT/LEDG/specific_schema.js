@@ -98,7 +98,7 @@ const gradient_color_GTBE19000AI_night = {//GT-BE19000AI/GT-BE19000/GT-BE96_AI
 	"id10": { "color": [10,0,0,12,0,3,10,0,12,10,0,12], "left": 261 },
 	"id11": { "color": [12,0,6,12,0,3,12,0,1,12,0,1], "left": 290 }
 };
-const GS7PRO_SERIES = ["GS7_PRO", "GS-BE18000", "GS-BE12000"];
+const GS7PRO_SERIES = ["GS7_PRO", "GS-BE18000", "GS-BE12000", "GS7_PRO_MAX"];
 function retune_gradient_color(parm){
 	var gradient_color_temp = gradient_color;
 	if(parm.ledg_group == 5){//GS-AX3000 GS-AX5400
@@ -215,4 +215,23 @@ function retune_wave_color(parm){
 		}
 	}
 	return ledg_rgb;
+}
+function get_default_static_color(parm) {
+	const yellowRGB = parm.isNight
+		? "10,7,1,10,7,1,10,7,1"
+		: "128,90,12,128,90,12,128,90,12";
+	const specialModels = ["GT-BE96", "GT-BE98", "GT-BE25000", "GT-BE98_PRO"];
+	if (
+		parm &&
+		parm.CoBrand == "20" &&
+		(
+			specialModels.includes(parm.productid) ||
+			specialModels.includes(parm.odmpid)
+		) &&
+		parm.mode == "2"
+	) {
+		return yellowRGB;
+	}
+	const key = parm.isNight ? "ledg_night_rgb" + parm.mode : "ledg_rgb" + parm.mode;
+	return httpApi.nvramDefaultGet([key])[key];
 }

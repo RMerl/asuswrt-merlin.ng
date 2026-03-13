@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <style>
+        /* Header Section */
+        .header-section {
+            background: linear-gradient(135deg, #e8f4f86e 0%, #d8e8f56e 100%);
+            padding: 40px 0;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .header-title {
+            font-size: 2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .header-subtitle {
+            color: var(--text-info-02-color);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        /* Level Visual Header */
+        .level-visual-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .level-visual-item {
+            text-align: center;
+            flex: 1;
+            position: relative;
+        }
+
+        .level-visual-item::after {
+            content: '';
+            position: absolute;
+            right: -30%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 60%;
+            height: 150px;
+            background: url('../images/game_acceleration/ga-banner-arrow.png') no-repeat center;
+            background-size: contain;
+        }
+
+        .level-visual-item:last-child::after {
+            display: none;
+        }
+
+        .level-visual-icon {
+            max-width: 200px;
+            height: 100px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .level-visual-icon img {
+            max-width: 100%;
+        }
+
+        .level-label {
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            font-family: 'rog';
+        }
+
+        /* Level Cards */
+
+        .level-header {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #e0e6ed;
+        }
+
+        .level-number {
+            background: var(--primary-80);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-right: 15px;
+            font-family: 'rog';
+        }
+
+        .level-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .level-content {
+            padding: 25px;
+        }
+
+        /* Feature Items */
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 1rem;
+        }
+
+        .feature-icon {
+            width: 220px;
+            height: 150px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feature-icon img {
+            max-width: 80%;
+            object-fit: contain;
+        }
+
+        .feature-content {
+            flex: 1;
+        }
+
+        .feature-name {
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .feature-name span {
+            font-weight: 600;
+            font-style: italic;
+        }
+
+        .feature-name span::before {
+            content: '/';
+            color: var(--primary-60);
+            margin-right: 10px;
+            font-size: 1.3rem;
+        }
+
+        .feature-name > div {
+            display: flex;
+            gap: 15px;
+        }
+
+        .feature-description {
+            color: var(--text-info-02-color);
+            line-height: 1.6;
+            font-size: 0.95rem;
+            margin-left: 15px;
+        }
+
+        .faq-badge {
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+
+        .faq-badge:hover {
+            text-decoration: underline;
+        }
+
+
+        /* Responsive */
+        @media (max-width: 576px) {
+            .feature-icon {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-title {
+                font-size: 1.5rem;
+            }
+
+            .level-visual-container {
+                gap: 20px;
+            }
+
+            .feature-item {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* Divider */
+        .divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, #e0e6ed 0%, #e0e6ed 80%, transparent 100%);
+            margin: 5px 0 10px 15px;
+        }
+    </style>
+</head>
+<body>
+<div class="d-flex align-items-center mb-3">
+    <div class="page-title"><#Game_acceleration#></div>
+</div>
+<!-- Header Section -->
+<div class="header-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6">
+                <h1 class="header-title"><#Game_Boost_acceleration#></h1>
+                <p class="header-subtitle">
+                    <#Game_Boost_acceleration_desc#>
+                </p>
+            </div>
+            <div class="col-lg-6">
+                <div class="level-visual-container">
+                    <div class="level-visual-item">
+                        <div class="level-visual-icon">
+                            <img src="../images/game_acceleration/ga-banner-level-1.png">
+                        </div>
+                        <div class="level-label"><#AiProtection_level_th#> 1</div>
+                    </div>
+                    <div class="level-visual-item">
+                        <div class="level-visual-icon">
+                            <img src="../images/Model_product.png">
+                        </div>
+                        <div class="level-label"><#AiProtection_level_th#> 2</div>
+                    </div>
+                    <div class="level-visual-item">
+                        <div class="level-visual-icon">
+                            <img src="../images/game_acceleration/ga-banner-level-3.png">
+                        </div>
+                        <div class="level-label"><#AiProtection_level_th#> 3</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <!-- Level 1 Section -->
+    <div class="card mb-3">
+        <div class="level-header">
+            <span class="level-number"><#AiProtection_level_th#> 1</span>
+            <h2 class="level-title"><#Game_Ark_Devices_identification#></h2>
+        </div>
+        <div class="level-content">
+            <div class="row">
+                <div class="col-12">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <img src="../images/game_acceleration/ga-banner-level-1.png">
+                        </div>
+                        <div class="feature-content">
+                            <div class="feature-name">
+                                <span><#Game_devices#></span>
+                            </div>
+                            <div class="divider"></div>
+                            <p class="feature-description">
+                                <#Game_Ark_Devices_identification_desc#>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="feature-item" id="feature-rog-first">
+                        <div class="feature-icon">
+                            <img src="../images/game_acceleration/ga-rog-first.png">
+                        </div>
+                        <div class="feature-content">
+                            <div class="feature-name">
+                                <span>ROG First</span>
+                                <a target="_blank" href="#" class="faq-badge">| FAQ |</a>
+                            </div>
+                            <div class="divider"></div>
+                            <p class="feature-description">
+                                <#Game_Ark_First_desc#>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Level 2 Section -->
+    <div class="card mb-3">
+        <div class="level-header">
+            <span class="level-number"><#AiProtection_level_th#> 2</span>
+            <h2 class="level-title"><#Game_Packet_Prio#></h2>
+        </div>
+        <div class="level-content">
+            <div class="row">
+                <div class="col-12">
+                    <div class="feature-item" id="feature-game-boost">
+                        <div class="feature-icon">
+                            <img src="../images/Model_product.png">
+                        </div>
+                        <div class="feature-content">
+                            <div class="feature-name">
+                                <span>Game Boost</span>
+                                <div>
+                                    <a target="_blank" href="#" class="faq-badge">| FAQ |</a>
+                                </div>
+                            </div>
+                            <div class="divider"></div>
+                            <p class="feature-description">
+                                <#Game_Ark_Boost_desc#>
+                            </p>
+                        </div>
+                        <div class="feature-settings">
+                            <button class="btn btn-outline-primary" onclick="pageRedirect('qoe')">Go to Settings
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Level 3 Section -->
+    <div class="card mb-3">
+        <div class="level-header">
+            <span class="level-number"><#AiProtection_level_th#> 3</span>
+            <h2 class="level-title">Gaming Server Acceleration</h2>
+        </div>
+        <div class="level-content">
+            <div class="row">
+                <div class="col-12">
+                    <div class="feature-item" id="feature-gtnet">
+                        <div class="feature-icon">
+                            <img src="../images/game_acceleration/ga-gtbooster.png">
+                        </div>
+                        <div class="feature-content">
+                            <div class="feature-name">
+                                <span>GTNet</span>
+                                <div>
+                                    <a target="_blank" href="#" class="faq-badge">| FAQ |</a>
+                                </div>
+                            </div>
+                            <div class="divider"></div>
+                            <p class="feature-description">
+                                <#Game_Ark_GTNet_desc1#>
+                                <br>
+                                <#Game_Ark_GTNet_desc2#>
+                            </p>
+                        </div>
+                        <div class="feature-settings">
+                            <button id="gtnet-setting-btn" class="btn btn-outline-primary">Go to Settings</button>
+                        </div>
+                    </div>
+                    <div class="feature-item d-none" id="feature-outfox">
+                        <div class="feature-icon">
+                            <img>
+                        </div>
+                        <div class="feature-content">
+                            <div class="feature-name">
+                                <span>Outfox&reg;</span>
+                            </div>
+                            <div class="divider"></div>
+                            <p class="feature-description">
+                                An optimized gaming network that improves performance by routing your traffic to provide
+                                a faster, more stable path to your game’s server. To get an exclusive, free 90-day trial
+                                simply register for Outfox and download the application to your PC.
+                            </p>
+                        </div>
+                        <div class="feature-settings">
+                            <button class="btn btn-outline-primary">Go to Settings</button>
+                        </div>
+                    </div>
+                    <div class="feature-item d-none" id="feature-uu">
+                        <div class="feature-icon">
+                            <img>
+                        </div>
+                        <div class="feature-content">
+                            <div class="feature-name">
+                                <span>网易UU加速器</span>
+                                <div>
+                                    <a target="_blank" href="https://uu.163.com/router/" class="faq-badge">| FAQ |</a>
+                                </div>
+                            </div>
+                            <div class="divider"></div>
+                            <p class="feature-description">
+                                UU路由器插件为三大主机PS4、Switch、Xbox One提供加速。可实现多台主机同时加速，NAT类型All
+                                Open。畅享全球联机超快感！
+                            </p>
+                        </div>
+                        <div class="feature-settings">
+                            <button class="btn btn-outline-primary">Go to Settings</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="module">
+    async function isSupport(_ptn) {
+        try {
+            let ui_support = await httpApi.hookGet("get_ui_support");
+            return ui_support[_ptn] ? ui_support[_ptn] : 0;
+        } catch (error) {
+            console.error('Failed to get UI support:', error);
+            return 0;
+        }
+    }
+
+    (async function () {
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
+        }
+
+        const uu_support = await isSupport("uu_accel");
+        const outfox_support = await isSupport("outfox");
+
+        const label_mac = system.labelMac;
+        const lang = system.language.currentLang;
+        const config = {
+            'rog-first': {
+                'faq': `https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang=${lang}&kw=&num=153`,
+            },
+            'game-boost': {
+                'faq': `https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang=${lang}&kw=&num=206`,
+            },
+            'gtnet': {
+                'faq': `https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang=${lang}&kw=&num=207`,
+                'settings-page': 'https://nw-dlcdnet.asus.com/support/forward.html?model=&type=GTNet&lang=&kw=&num=',
+                'pp': 'https://nw-dlcdnet.asus.com/support/forward.html?model=&type=GTNet_PP&lang=&kw=&num=',
+            }
+        }
+
+        if (uu_support) {
+            const uuElement = document.querySelector("#feature-uu");
+            const uuImg = document.querySelector("#feature-uu img");
+            const uuSettingsLink = document.querySelector("#feature-uu .feature-settings>button");
+            const gtnetElement = document.querySelector("#feature-gtnet");
+
+            if (uuElement) uuElement.classList.remove("d-none");
+            if (uuImg) {
+                uuImg.src = "../images/uu_accelerator.png";
+                uuImg.setAttribute("onerror", "this.style.display='none'");
+            }
+            if (uuSettingsLink) {
+                uuSettingsLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const _mac = label_mac.toLowerCase();
+                    window.open('https://router.uu.163.com/asus/pc.html#/acce?gwSn=' + _mac + '&type=asuswrt', '_blank');
+                });
+            }
+            if (gtnetElement) gtnetElement.classList.add("d-none");
+        }
+
+        if (outfox_support) {
+            const outfoxElement = document.querySelector("#feature-outfox");
+            const outfoxImg = document.querySelector("#feature-outfox img");
+            const outfoxSettingsLink = document.querySelector("#feature-outfox .feature-settings>button");
+
+            if (outfoxElement) outfoxElement.classList.remove("d-none");
+            if (outfoxImg) {
+                outfoxImg.src = "../images/outfox_dark.png";
+                outfoxImg.setAttribute("onerror", "this.style.display='none'");
+            }
+            if (outfoxSettingsLink) {
+                outfoxSettingsLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const productid = httpApi.hookGet("productid");
+                    const odmpid = httpApi.hookGet("odmpid");
+                    const outfox_code = httpApi.nvramGet(["outfox_code"]).outfox_code;
+                    const support_site_modelid = (odmpid && odmpid.trim() !== "") ? odmpid : productid;
+                    const outfox_site = 'https://getoutfox.com/asus?code=' + outfox_code + '&utm_source=asus&utm_medium=affiliate&utm_campaign=' + support_site_modelid + '&utm_content=router_cta';
+                    window.open(outfox_site, '_blank');
+                });
+            }
+        }
+
+        // Set FAQ links with null checks
+        const rogFirstFaq = document.querySelector("#feature-rog-first .faq-badge");
+        const gameBoostFaq = document.querySelector("#feature-game-boost .faq-badge");
+        const gtnetFaq = document.querySelector("#feature-gtnet .faq-badge");
+
+
+        if (rogFirstFaq) rogFirstFaq.href = config['rog-first'].faq;
+        if (gameBoostFaq) gameBoostFaq.href = config['game-boost'].faq;
+        if (gtnetFaq && !uu_support) {
+            const gtnetSettingsBtn = document.querySelector("#gtnet-setting-btn");
+            const gtnetDesc = document.querySelector("#feature-gtnet .feature-description");
+            gtnetFaq.href = config['gtnet'].faq;
+            gtnetSettingsBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.open(config['gtnet']['settings-page'], '_blank');
+            });
+
+            const ppUrl = config['gtnet']['pp'];
+            // Save original HTML
+            const originalHtml = gtnetDesc.innerHTML;
+            // Create a temporary container to parse the HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = originalHtml;
+
+            // Function to process nodes recursively
+            function processNode(node) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    const parts = node.textContent.split(/\[aa\](.*?)\[\/aa\]/g);
+                    if (parts.length === 1) return node.cloneNode();
+                    const frag = document.createDocumentFragment();
+                    for (let i = 0; i < parts.length; i++) {
+                        if (i % 2 === 0) {
+                            frag.appendChild(document.createTextNode(parts[i]));
+                        } else {
+                            const a = document.createElement('a');
+                            a.target = "_blank";
+                            a.href = ppUrl;
+                            a.style.textDecoration = "underline";
+                            a.style.cursor = "pointer";
+                            a.textContent = parts[i];
+                            frag.appendChild(a);
+                        }
+                    }
+                    return frag;
+                } else if (node.nodeType === Node.ELEMENT_NODE) {
+                    const el = node.cloneNode(false);
+                    node.childNodes.forEach(child => {
+                        el.appendChild(processNode(child));
+                    });
+                    return el;
+                }
+                return document.createTextNode('');
+            }
+
+            // Clear and rebuild gtnetDesc
+            gtnetDesc.innerHTML = '';
+            tempDiv.childNodes.forEach(child => {
+                gtnetDesc.appendChild(processNode(child));
+            });
+        }
+    })();
+</script>
+</body>
+</html>

@@ -2,8 +2,10 @@
 SUBDIRS =
 
 if USE_LEGACY_SYSTEMD
+if USE_FILE_CONFIG
 if USE_CHARON
   SUBDIRS += systemd-starter
+endif
 endif
 endif
 

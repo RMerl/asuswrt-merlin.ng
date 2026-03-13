@@ -410,7 +410,7 @@ void start_wl(void)
 			p = lan_ifnames;
 			while ((ifname = strsep(&p, " ")) != NULL) {
 				while (*ifname == ' ') ++ifname;
-				if (*ifname == 0) break;
+				if (*ifname == 0) continue;
 
 				unit = -1; subunit = -1;
 
@@ -426,7 +426,7 @@ void start_wl(void)
 						continue; /* Ignore dsiabled WL VIF */
 				}
 				// get the instance number of the wl i/f
-				else if (wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit)))
+				else if (wl_probe(ifname) || wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit)))
 					continue;
 
 				is_client |= wl_client(unit, subunit) && nvram_get_int(wl_nvname("radio", unit, 0));
@@ -1792,7 +1792,7 @@ void start_lan(void)
 			p = lan_ifnames;
 			while ((ifname = strsep(&p, " ")) != NULL) {
 				while (*ifname == ' ') ++ifname;
-				if (*ifname == 0) break;
+				if (*ifname == 0) continue;
 				SKIP_ABSENT_FAKE_IFACE(ifname);
 #ifdef CONFIG_BCMWL5
 				unit = -1; subunit = -1;
@@ -1979,9 +1979,41 @@ void start_lan(void)
 #ifdef HND_ROUTER
 				if (!strcmp(ifname, wan_if_eth()))
 					set_hwaddr(ifname, (const char *) get_lan_hwaddr());
-#if (defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(BCM6750) && !defined(BCM63178)) || defined(RTBE86U)
+#if (defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(BCM6750) && !defined(BCM63178)) || defined(RTBE86U) || defined(RTCONFIG_BCM_EXT_SWITCH_RTK)
+#if defined(RTCONFIG_BCM_EXT_SWITCH_RTK)
+				else if (!strncmp(ifname, "eth", 3) && isdigit(ifname[3])) {
+					// eth1: lan_hwaddr - 0, eth2: lan_hwaddr - 1, eth3: lan_hwaddr - 2, etc.
+					int eth_num;
+					unsigned char mac[ETHER_ADDR_LEN];
+					char mac_str[32];
+					
+					eth_num = atoi(ifname + 3);
+					
+					// Validate eth_num and get base MAC address
+					if (eth_num > 0 && ether_atoe(get_lan_hwaddr(), mac)) {
+						if (eth_num > 1) {
+							// Decrement MAC address, check for errors
+							if (ether_dec(mac, eth_num - 1) < 0) {
+								// Underflow error, use original behavior
+								set_hwaddr(ifname, (const char *) get_lan_hwaddr());
+							} else {
+								ether_etoa(mac, mac_str);
+								set_hwaddr(ifname, mac_str);
+							}
+						} else {
+							// eth1 or eth0: use base MAC without decrement
+							ether_etoa(mac, mac_str);
+							set_hwaddr(ifname, mac_str);
+						}
+					} else {
+						// Fallback to original behavior if eth_num invalid or MAC parsing fails
+						set_hwaddr(ifname, (const char *) get_lan_hwaddr());
+					}
+				}
+#else
 				else if (!strncmp(ifname, "eth", 3) && (wl_probe(ifname) < 0))
 					set_hwaddr(ifname, (const char *) get_lan_hwaddr());
+#endif
 #endif
 #endif
 #if defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(XC5) || defined(RTBE86U)
@@ -2805,9 +2837,9 @@ _dprintf("nat_rule: stop_nat_rules 1.\n");
 
 #if defined(RPBE58) || defined(RTBE58_GO)
 #if defined(RPBE58)
-	if (client_mode() && !nvram_match("force_mlo", "1")) {
+	if ((client_mode() && !nvram_match("re_mode", "1")) && !nvram_match("force_mlo", "1")) {
 #else 
-	if (client_mode() && nvram_match("mlo_off", "1")) {
+	if ((client_mode() && !nvram_match("re_mode", "1")) && nvram_match("mlo_off", "1")) {
 #endif
 		mlo_down();
 		nvram_set("5gbh_war", "0");
@@ -2945,7 +2977,7 @@ void stop_lan(void)
 			p = lan_ifnames;
 			while ((ifname = strsep(&p, " ")) != NULL) {
 				while (*ifname == ' ') ++ifname;
-				if (*ifname == 0) break;
+				if (*ifname == 0) continue;
 				SKIP_ABSENT_FAKE_IFACE(ifname);
 #ifdef RTCONFIG_BLINK_LED
 				disable_wifi_bled(ifname);
@@ -4190,6 +4222,9 @@ static int radio_join(int idx, int unit, int subunit, void *param)
 	char ifname[16];
 
 	int *unit_filter = param;
+#if defined(RPBE58) || defined(RTBE58_GO)
+	if (!nvram_match("force_radio_join", "1"))	return 0;
+#endif
 	if (*unit_filter >= 0 && *unit_filter != unit) return 0;
 
 	if (!nvram_get_int(wl_nvname("radio", unit, 0)) || !wl_client(unit, subunit)) return 0;
@@ -4223,8 +4258,8 @@ static int radio_join(int idx, int unit, int subunit, void *param)
 				stacheck = stacheck_connect;
 			}
 			else {
-#ifdef CONFIG_BCMWL5
-				if (!repeater_mode())
+#if defined(CONFIG_BCMWL5) && !defined(RTCONFIG_BRCM_HOSTAPD)
+				if (sw_mode() != SW_MODE_REPEATER)
 					break;
 
 				if (!strlen(nvram_safe_get(wl_nvname("ssid", unit, subunit)))
@@ -4631,7 +4666,7 @@ lan_up(char *lan_ifname)
 			p = wl_ifnames;
 			while ((ifname = strsep(&p, " ")) != NULL) {
 				while (*ifname == ' ') ++ifname;
-				if (*ifname == 0) break;
+				if (*ifname == 0) continue;
 				SKIP_ABSENT_FAKE_IFACE(ifname);
 
 				if (guest_wlif(ifname) && !get_ifname_unit(ifname, &unit, &subunit)) {
@@ -4909,7 +4944,7 @@ lan_down(char *lan_ifname)
 			p = wl_ifnames;
 			while ((ifname = strsep(&p, " ")) != NULL) {
 				while (*ifname == ' ') ++ifname;
-				if (*ifname == 0) break;
+				if (*ifname == 0) continue;
 				SKIP_ABSENT_FAKE_IFACE(ifname);
 
 				if (guest_wlif(ifname) && !get_ifname_unit(ifname, &unit, &subunit)) {
@@ -5052,7 +5087,7 @@ void stop_lan_wl(void)
 		p = wl_ifnames;
 		while ((ifname = strsep(&p, " ")) != NULL) {
 			while (*ifname == ' ') ++ifname;
-			if (*ifname == 0) break;
+			if (*ifname == 0) continue;
 			SKIP_ABSENT_FAKE_IFACE(ifname);
 #ifdef RTCONFIG_BLINK_LED
 			disable_wifi_bled(ifname);
@@ -5083,7 +5118,7 @@ void stop_lan_wl(void)
 				if (get_ifname_unit(ifname, &unit, &subunit) < 0)
 					continue;
 			}
-			else if (wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit)))
+			else if (wl_probe(ifname) || wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit)))
 				continue;
 
 			if (strncmp(ifname, "wl", 2) == 0)
@@ -5366,7 +5401,9 @@ void start_lan_wl(void)
 	wlconf_pre();
 #endif
 #endif
-
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_VIF_ONBOARDING) && defined(RTCONFIG_AMAS_5G_ONBOARDING)
+	set_onboarding_vif_ifnames();
+#endif
 
 	check_wps_enable();
 
@@ -5410,7 +5447,7 @@ void start_lan_wl(void)
 			p = wl_ifnames;
 			while ((ifname = strsep(&p, " ")) != NULL) {
 				while (*ifname == ' ') ++ifname;
-				if (*ifname == 0) break;
+				if (*ifname == 0) continue;
 				SKIP_ABSENT_FAKE_IFACE(ifname);
 #ifdef CONFIG_BCMWL5
 				unit = -1; subunit = -1;
@@ -5425,7 +5462,7 @@ void start_lan_wl(void)
 					if (subunit != -1)
 						wl_vif_hwaddr_set(ifname);
 				}
-				else if (wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit))) {
+				else if (wl_probe(ifname) || wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit))) {
 					continue;
 				}
 #endif
@@ -6036,7 +6073,7 @@ void restart_wl(void)
 		p = wl_ifnames;
 		while ((ifname = strsep(&p, " ")) != NULL) {
 			while (*ifname == ' ') ++ifname;
-			if (*ifname == 0) break;
+			if (*ifname == 0) continue;
 			SKIP_ABSENT_FAKE_IFACE(ifname);
 
 			unit = -1; subunit = -1;
@@ -6053,7 +6090,7 @@ void restart_wl(void)
 					continue; /* Ignore dsiabled WL VIF */
 			}
 			// get the instance number of the wl i/f
-			else if (wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit)))
+			else if (wl_probe(ifname) || wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit)))
 				continue;
 
 			is_client |= wl_client(unit, subunit) && nvram_get_int(wl_nvname("radio", unit, 0));
@@ -6169,6 +6206,10 @@ void lanaccess_mssid(const char *limited_ifname, int mode)
 	strlcpy(lifname, limited_ifname, sizeof(lifname));
 
 #if defined(RTCONFIG_MULTILAN_CFG)
+#if defined(RTBE58_GO)
+	if (nvram_match("x_Setting", "0"))
+		return;
+#endif
 	if (is_ap_group_if(lifname))
 		return;
 #endif	// defined(RTCONFIG_MULTILAN_CFG)
@@ -6282,7 +6323,7 @@ void CP_lanaccess_wl(void)
 			//_dprintf("[John]%s\n", wl_ifnames);
 			while ((ifname = strsep(&p, " ")) != NULL) {
 				while (*ifname == ' ') ++ifname;
-				if (*ifname == 0) break;
+				if (*ifname == 0) continue;
 				SKIP_ABSENT_FAKE_IFACE(ifname);
 
 				snprintf(nv, sizeof(nv) - 1, "%s_lanaccess", wif_to_vif(ifname));
@@ -6325,7 +6366,7 @@ void lanaccess_wl(void)
 #elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	if (is_rtl8372_boardid())
 		start_rtkmonitor();
-#elif defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#elif defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 	start_mxlmonitor();
 #endif
 
@@ -6341,7 +6382,7 @@ void lanaccess_wl(void)
 		p = wl_ifnames;
 		while ((ifname = strsep(&p, " ")) != NULL) {
 			while (*ifname == ' ') ++ifname;
-			if (*ifname == 0) break;
+			if (*ifname == 0) continue;
 			SKIP_ABSENT_FAKE_IFACE(ifname);
 
 			/* AP isolate */
@@ -6518,7 +6559,7 @@ void lanaccess_wl(void)
 		p = wl_ifnames;
 		while ((ifname = strsep(&p, " ")) != NULL) {
 			while (*ifname == ' ') ++ifname;
-			if (*ifname == 0) break;
+			if (*ifname == 0) continue;
 			SKIP_ABSENT_FAKE_IFACE(ifname);
 
 			lanaccess_mssid(ifname, 1);
@@ -6594,13 +6635,16 @@ void restart_wireless(void)
 	nvram_set_int("led_status", LED_RESTART_WL);
 #endif
 	nvram_set_int("wlready", 0);
+#ifdef RTCONFIG_AMAS
+	nvram_set_int("amas_ready", 0);
+#endif
 
 #if defined(RTCONFIG_HND_ROUTER_BE_4916) && defined(RTCONFIG_MLO)
 #if defined(RPBE58) || defined(RTBE58_GO)
 #if defined(RPBE58)
-	if (client_mode() && !nvram_match("force_mlo", "1")) {
+	if ((client_mode() && !nvram_match("re_mode", "1")) && !nvram_match("force_mlo", "1")) {
 #else 
-	if (client_mode() && nvram_match("mlo_off", "1")) {
+	if ((client_mode() && !nvram_match("re_mode", "1")) && nvram_match("mlo_off", "1")) {
 #endif
 		mlo_down();
 		nvram_set("5gbh_war", "0");
@@ -6731,7 +6775,7 @@ void restart_wireless(void)
 		wl_defaults_wps();
 	}
 
-#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(RTBE58_GO) || defined(RPBE58)
 	reload_wl_check();
 #endif
 
@@ -6843,16 +6887,13 @@ void restart_wireless(void)
 	if (nvram_get_int("channel_plan"))
 		start_amas_lanctrl();
 #endif
+	logmessage("AMAS", "restart amas service success\n");
+	nvram_set_int("amas_ready", 1);
 #endif
 
 #ifndef RTCONFIG_DHDAP
 	restart_wl();
 	lanaccess_wl();
-#endif
-	nvram_set("reload_svc_radio", "1");
-#ifndef RTCONFIG_QCA
-	nvram_set_int("wlready", 1);
-	timecheck();
 #endif
 
 #ifdef RTCONFIG_WIRELESSREPEATER
@@ -6971,10 +7012,6 @@ void restart_wireless(void)
 		qtn_monitor_main();
 	}
 #endif
-	file_unlock(lock);
-#if defined(RTCONFIG_CONCURRENTREPEATER)
-	nvram_set_int("led_status", LED_RESTART_WL_DONE);
-#endif
 
 #ifdef RTCONFIG_WIFI_SON
 	if (sw_mode() != SW_MODE_REPEATER && nvram_match("wifison_ready", "1")) {
@@ -7030,6 +7067,16 @@ void restart_wireless(void)
 	send_event_to_cfgmnt(EID_RC_RESTART_WIRELESS);
 #endif
 	restore_wan_ebtables_rules();
+
+	nvram_set("reload_svc_radio", "1");
+#ifndef RTCONFIG_QCA
+	nvram_set_int("wlready", 1);
+	timecheck();
+#endif
+	file_unlock(lock);
+#if defined(RTCONFIG_CONCURRENTREPEATER)
+	nvram_set_int("led_status", LED_RESTART_WL_DONE);
+#endif
 }
 
 #ifdef RTCONFIG_BCM_7114
@@ -7460,28 +7507,64 @@ int start_qtn(void)
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_VIF_ONBOARDING)
 void set_onboarding_vif_status()
 {
-	char prefix[] = "wlXXXXXXXXXX_", tmp[64];
-	int unit = WL_2G_BAND;
-	char wl_radio[] = "wlXXXX_radio";
+	char prefix[sizeof("wlXXXXX_")], wl_radio[sizeof("wlXXXX_radio")], tmp[64], wl_ifnames[64], word[16], *next;
+	int unit = 0;
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+	char wl_prefix[sizeof("wlXXXXX_")];
+	int nband_type = 0;
+#endif
 
-	if (nvram_get_int("re_mode") == 1)
-		snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
-	else
-	{
-		/* not router mode or ap mode, return it */
-		if (!is_router_mode() && !access_point_mode())
-			return;
-		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-	}
+	if (nvram_get_int("re_mode") == 0 && !is_router_mode() && !access_point_mode())
+		return;
 
-	if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae") || nvram_match(strcat_r(prefix, "closed", tmp), "1")) {
-		snprintf(wl_radio, sizeof(wl_radio), "wl%d_radio", unit);
-		if (nvram_get_int(wl_radio)) //radio on
-			nvram_set_int("obvif_bss", 1);
-		else //radio off
+	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+
+	foreach (word, wl_ifnames, next) {
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+		snprintf(wl_prefix, sizeof(wl_prefix), "wl%d_", unit);
+		nband_type = nvram_get_int(strcat_r(wl_prefix, "nband_type", tmp));
+		/* skip none 2g & 5g band based on nband_type */
+		if (nband_type < 0 || nband_type > 3 || nband_type == 2) {
+			unit++;
+			continue;
+		}
+#else
+		if (unit != WL_2G_BAND) {
+			unit++;
+			continue;
+		}
+#endif
+
+		if (nvram_get_int("re_mode") == 1)
+			snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
+		else
+			snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+
+		if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae") || nvram_match(strcat_r(prefix, "closed", tmp), "1")) {
+			snprintf(wl_radio, sizeof(wl_radio), "wl%d_radio", unit);
+			if (nvram_get_int(wl_radio)) //radio on
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+				nvram_set_int(strcat_r(wl_prefix, "obvif_bss", tmp), 1);
+#else
+				nvram_set_int("obvif_bss", 1);
+#endif
+			else
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+				nvram_set_int(strcat_r(wl_prefix, "obvif_bss", tmp), 0);
+#else
+				nvram_set_int("obvif_bss", 0);
+#endif
+		}
+		else
+		{
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+			nvram_set_int(strcat_r(wl_prefix, "obvif_bss", tmp), 0);
+#else
 			nvram_set_int("obvif_bss", 0);
+#endif
+		}
+
+		unit++;
 	}
-	else
-		nvram_set_int("obvif_bss", 0);
 }
 #endif

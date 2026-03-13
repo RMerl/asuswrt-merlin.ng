@@ -30,6 +30,24 @@ config ICP201XX_I2C
 	depends on ICP201XX
 	depends on I2C
 
+config CMP201
+	tristate "CoretronicMEMS CMP201 pressure and temperature sensor"
+	depends on I2C
+	select REGMAP
+	select CMP201_I2C
+	help
+	  Support for the CoretronicMEMS CMP201 digital barometric pressure sensor.
+	  It can be accessed over I2C bus.
+
+	  To compile this driver as a module, choose M here: the core module
+	  will be called cmp201 and you will also get cmp201-i2c.
+
+config CMP201_I2C
+	tristate
+	depends on CMP201
+	depends on I2C
+	select REGMAP_I2C
+
 config BMP280
 	tristate "Bosch Sensortec BMP180/BMP280 pressure sensor I2C driver"
 	depends on (I2C || SPI_MASTER)

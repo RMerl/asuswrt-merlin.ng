@@ -213,7 +213,7 @@ static inline void ike_names(proposal_t *proposal, const char **enc,
  */
 static algo_map_t esp_encr[] = {
 	{ ENCR_NULL,          -1, "NULL"                    },
-	{ ENCR_3DES,          -1, "TripleDes-CBC [RFC2451]" },
+	{ ENCR_3DES,          -1, "TripleDES-CBC [RFC2451]" },
 	{ ENCR_AES_CBC,       -1, "AES-CBC [RFC3602]"       },
 	{ ENCR_AES_CTR,       -1, "AES-CTR [RFC3686]"       },
 	{ ENCR_DES,           -1, "DES-CBC [RFC2405]"       },

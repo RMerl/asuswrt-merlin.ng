@@ -23,7 +23,7 @@
 
 #include "tkm.h"
 #include "tkm_nonceg.h"
-#include "tkm_diffie_hellman.h"
+#include "tkm_key_exchange.h"
 #include "tkm_kernel_ipsec.h"
 
 /* declare test suite constructors */
@@ -75,11 +75,11 @@ static bool test_runner_init(bool init)
 		lib->plugins->add_static_features(lib->plugins, "tkm-tests", features,
 										  countof(features), TRUE, NULL, NULL);
 
-		lib->settings->set_int(lib->settings, "%s.dh_mapping.%d", 1,
+		lib->settings->set_int(lib->settings, "%s.ke_mapping.%d", 1,
 							   lib->ns, MODP_3072_BIT);
-		lib->settings->set_int(lib->settings, "%s.dh_mapping.%d", 2,
+		lib->settings->set_int(lib->settings, "%s.ke_mapping.%d", 2,
 							   lib->ns, MODP_4096_BIT);
-		register_dh_mapping();
+		register_ke_mapping();
 
 		plugin_loader_add_plugindirs(BUILDDIR "/src/libstrongswan/plugins",
 									 PLUGINS);
@@ -100,7 +100,7 @@ static bool test_runner_init(bool init)
 		result = FALSE;
 	}
 
-	destroy_dh_mapping();
+	destroy_ke_mapping();
 	libcharon_deinit();
 	return result;
 }

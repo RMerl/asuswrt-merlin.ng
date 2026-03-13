@@ -65,15 +65,39 @@
 	-webkit-box-shadow: 15px 15px 10px #333;
 	box-shadow: 15px 15px 10px #333;
 }
+.perNode_app_table{
+	width: 740px;
+	position: absolute;
+	left: 50%;
+	margin-top: 30px;
+	margin-left: -370px;
+}
+
+.perNode_nohover:hover{
+	background-color: #21333e;
+	*background-color: #21333e;
+}
 </style>
 <script>
-var faq_href1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=146";
 var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=147";
 var faq_href3 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=148";
-
+if(typeof re_mode === 'undefined'){
+	var re_mode = '<% nvram_get("re_mode"); %>';
+}
 function initial(){
-	show_menu();
-	document.getElementById("faq1").href=faq_href1;
+	if(re_mode == "1"){
+		$("#FormTitle").addClass("perNode_app_table");
+		$(".submenuBlock").css("margin-top", "initial");
+		show_loading_obj();
+	}
+	else{
+		$("#content_table").addClass("content");
+		$("#FormTitle").addClass("printerServer_table content_bg");
+		show_menu();
+	}
+
+	$("#FormTitle").css("display", "");
+
 	document.getElementById("faq2").href=faq_href2;
 	document.getElementById("faq3").href=faq_href3;
 }
@@ -112,7 +136,7 @@ function showMethod(flag1, flag2){
 <input type="hidden" name="usb_printer" value="<% nvram_get("usb_printer"); %>">
 </form>
 
-<table class="content" align="center" cellspacing="0" style="margin:auto;">
+<table id="content_table" align="center" cellspacing="0" style="margin:auto;">
   <tr>
 	<td width="17">&nbsp;</td>
 	
@@ -127,7 +151,7 @@ function showMethod(flag1, flag2){
 		<br>
 
 <!--=====Beginning of Main Content=====-->
-<div class="printerServer_table content_bg" id="FormTitle">
+<div id="FormTitle" style="display:none;">
 <table class="w-100">
   <tr>
   	<td class="formfonttitle text-start"><#Network_Printer_Server#>
@@ -136,9 +160,6 @@ function showMethod(flag1, flag2){
   </tr> 
   <tr>
   	<td><div class="splitLine"></div></td>
-  </tr>
-  <tr>
-   	<td><div class="formfontdesc text-start"><#Network_Printer_desc#></div></td> 
   </tr>
   <tr>
    	<td>
@@ -153,10 +174,6 @@ function showMethod(flag1, flag2){
 									<div class="padding">
 										<div class="">
 											<ul class="text-start px-2">
-												<li class="d-flex align-items-center justify-content-space-between border-bottom py-2">
-													<a id="faq1" href="" target="_blank" class="text-decoration-none" style="text-decoration:underline;font-size:14px;font-weight:bolder;"><#asus_ez_print_share#> FAQ</a>&nbsp;&nbsp;
-													<a href="http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Printer.zip" class="text-decoration-none btn_subusage" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FC0"><#Download_now#></a>
-												</li>
 												<li class="d-flex align-items-center justify-content-space-between border-bottom py-2" style="">
 													<a id="faq2" href="" target="_blank" class="text-decoration-none" style="text-decoration:underline;font-size:14px;font-weight:bolder;"><#LPR_print_share#> FAQ (Windows)</a>&nbsp;&nbsp;
 												</li>

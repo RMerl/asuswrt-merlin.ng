@@ -157,7 +157,7 @@ static bool read_triplets(private_eap_sim_file_triplets_t *this, char *path)
 {
 	char line[512];
 	FILE *file;
-	int i, nr = 0;
+	int i, nr DBG_UNUSED = 0;
 
 	file = fopen(path, "r");
 	if (file == NULL)
@@ -208,7 +208,7 @@ static bool read_triplets(private_eap_sim_file_triplets_t *this, char *path)
 					parse_token(triplet->kc, token, SIM_KC_LEN);
 					continue;
 				default:
-					break;;
+					break;
 			}
 			break;
 		}

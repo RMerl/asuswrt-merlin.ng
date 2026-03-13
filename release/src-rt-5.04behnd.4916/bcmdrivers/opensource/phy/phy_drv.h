@@ -273,6 +273,13 @@ typedef struct phy_dev_s
     void *sw_port;
     struct phy_dev_s *cascade_next;
     struct phy_dev_s *cascade_prev;
+#ifdef CONFIG_BCM_PHY_COMBO   /* combo PHY support */
+	struct phy_dev_s *cascade_ext;
+	struct phy_dev_s *cascade_i2c;
+	int i2c_dev_inactive;
+	int combo_phy_los_state;		/* store the current LOS state, skip further LOS configuration is configuration isn't changed */
+	int los_init;					/* used to configure the LOS at the first time */
+#endif
     dt_handle_t dt_handle;
     dt_gpio_desc gpiod_phy_power;
     dt_gpio_desc gpiod_phy_reset;
@@ -326,6 +333,9 @@ typedef struct phy_dev_s
 #define PHY_FLAG_ON_MEZZANINE                   (1<<19)
 #define PHY_FLAG_SHARED_CLOCK_BOOTSTRAP         (1<<20)
 #define PHY_FLAG_IGNORE_PKGID                   (1<<21)
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+#define PHY_FLAG_COMBO                          (1<<22)
+#endif
 
 #define PhyIsPortConnectedToExternalSwitch(phy) (((phy)->flag & PHY_FLAG_TO_EXTSW)?1:0)
 #define PhyIsExtPhyId(phy)                      (((phy)->flag & PHY_FLAG_EXTPHY)?1:0)
@@ -336,6 +346,9 @@ typedef struct phy_dev_s
 #define PhyIsPowerSetEnabled(phy)               (((phy)->flag & PHY_FLAG_POWER_SET_ENABLED)?1:0)
 #define PhySetSharedRefClk(phy)                 ((phy)->flag |= PHY_FLAG_SHARED_REF_CLK_SET)
 #define PhyIsPackageIdIgnored(phy)              (((phy)->flag & PHY_FLAG_IGNORE_PKGID) > 0)
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+#define PhyIsCombo(phy)							((phy)->flag & PHY_FLAG_COMBO)
+#endif
 
 #define PHY_MAC_LINK_VALID  (1<<31)
 
@@ -627,6 +640,10 @@ typedef struct phy_drv_s
     //int (*configured_inter_phy_types_get)(phy_dev_t *phy_dev, inter_phy_types_dir_t if_dir, uint32_t *types);
     int (*common_inter_phy_types_get)(phy_dev_t *phy_dev, uint32_t *types);
     int (*phyid_get)(phy_dev_t *phy_dev, uint32_t *phyid);
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+	int (*los_set)(phy_dev_t *phy_dev, uint32_t value); /* combo PHY */
+	int (*serdes_init)(phy_dev_t *phy_dev);
+#endif
     int (*init)(phy_dev_t *phy_dev);
     int (*link_change_register)(phy_dev_t *phy_dev);
     int (*link_change_unregister)(phy_dev_t *phy_dev);
@@ -776,6 +793,17 @@ static inline phy_dev_t *cascade_phy_get_first(phy_dev_t *phy_dev)
     return phy;
 }
 
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+static inline phy_dev_t *cascade_phy_get_last(phy_dev_t *phy_dev)
+{
+	phy_dev_t *phy;
+	if (!phy_dev) return NULL;
+	for(phy=cascade_phy_get_first(phy_dev); /* find first then find last */
+		phy->cascade_next && !(phy->cascade_next->flag & PHY_FLAG_NOT_PRESENTED);
+		phy=phy->cascade_next);
+	return phy;
+}
+#else
 static inline phy_dev_t *cascade_phy_get_last(phy_dev_t *phy_dev)
 {
     phy_dev_t *phy;
@@ -786,6 +814,7 @@ static inline phy_dev_t *cascade_phy_get_last(phy_dev_t *phy_dev)
         phy=phy->cascade_next);
     return phy;
 }
+#endif
 
 static inline int phy_bus_read(phy_dev_t *phy_dev, uint16_t reg, uint16_t *val)
 {

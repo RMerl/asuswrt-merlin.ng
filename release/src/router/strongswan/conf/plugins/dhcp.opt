@@ -36,3 +36,13 @@ charon.plugins.dhcp.interface
 	Interface name the plugin uses for address allocation. The default is to
 	bind to any (0.0.0.0) and let the system decide which way to route the
 	packets to the DHCP server.
+
+charon.plugins.dhcp.interface_receive = charon.plugins.dhcp.interface
+	Interface name the plugin uses to bind its receive socket.
+
+	Interface name the plugin uses to bind its receive socket. The default is
+	to use the same interface as the send socket. Set it to the empty string
+	to avoid binding the receive socket to any interface while the send socket
+	is bound to one. If the	server runs on the same host and the send socket is
+	bound to an interface, it might be necessary to set this to `lo` or the
+	empty string.

@@ -1,0 +1,38 @@
+#! /bin/bash
+
+while getopts "i:d:" opt
+do
+	case "$opt" in
+	i)
+		INTERFACE=${OPTARG}
+		;;
+	d)
+		DB=${OPTARG}
+	esac
+done
+shift $((OPTIND-1))
+
+# start tcpdump in the background
+if [ -n "$INTERFACE" ]
+then
+	tcpdump -l --immediate-mode -i $INTERFACE not port ssh and not port domain >/tmp/tcpdump.log 2>/tmp/tcpdump.err.log &
+fi
+
+# setup ramdisk for databases
+if [ -n "$DB" ]
+then
+	mkdir -p $DB
+	mount -t ramfs -o size=5m ramfs $DB
+	chgrp www-data $DB
+	chmod g+w $DB
+fi
+
+# flush conntrack table
+conntrack -F >/dev/null 2>&1
+
+# flush IPsec state
+ip xfrm state flush
+ip xfrm policy flush
+
+# remove leak detective log
+rm -f $LEAK_DETECTIVE_LOG

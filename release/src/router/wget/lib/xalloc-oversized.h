@@ -47,7 +47,8 @@
 #if 7 <= __GNUC__ && !defined __clang__ && PTRDIFF_MAX < SIZE_MAX
 # define xalloc_oversized(n, s) \
    __builtin_mul_overflow_p (n, s, (ptrdiff_t) 1)
-#elif 5 <= __GNUC__ && !defined __ICC && PTRDIFF_MAX < SIZE_MAX
+#elif 5 <= __GNUC__ && !defined __clang__ && !defined __ICC \
+      && PTRDIFF_MAX < SIZE_MAX
 # define xalloc_oversized(n, s) \
    (__builtin_constant_p (n) && __builtin_constant_p (s) \
     ? __xalloc_oversized (n, s) \

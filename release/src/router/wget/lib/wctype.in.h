@@ -478,9 +478,9 @@ towupper
 #    if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #     define iswblank rpl_iswblank
 #    endif
-_GL_FUNCDECL_RPL (iswblank, int, (wint_t wc));
+_GL_FUNCDECL_RPL (iswblank, int, (wint_t wc), );
 #   else
-_GL_FUNCDECL_SYS (iswblank, int, (wint_t wc));
+_GL_FUNCDECL_SYS (iswblank, int, (wint_t wc), );
 #   endif
 #  endif
 
@@ -490,7 +490,7 @@ _GL_FUNCDECL_SYS (iswblank, int, (wint_t wc));
 #     undef iswdigit
 #     define iswdigit rpl_iswdigit
 #    endif
-_GL_FUNCDECL_RPL (iswdigit, int, (wint_t wc));
+_GL_FUNCDECL_RPL (iswdigit, int, (wint_t wc), );
 #   endif
 #  endif
 
@@ -500,7 +500,7 @@ _GL_FUNCDECL_RPL (iswdigit, int, (wint_t wc));
 #     undef iswpunct
 #     define iswpunct rpl_iswpunct
 #    endif
-_GL_FUNCDECL_RPL (iswpunct, int, (wint_t wc));
+_GL_FUNCDECL_RPL (iswpunct, int, (wint_t wc), );
 #   endif
 #  endif
 
@@ -510,7 +510,7 @@ _GL_FUNCDECL_RPL (iswpunct, int, (wint_t wc));
 #     undef iswxdigit
 #     define iswxdigit rpl_iswxdigit
 #    endif
-_GL_FUNCDECL_RPL (iswxdigit, int, (wint_t wc));
+_GL_FUNCDECL_RPL (iswxdigit, int, (wint_t wc), );
 #   endif
 #  endif
 
@@ -659,12 +659,12 @@ typedef void *rpl_wctype_t;
 #   undef wctype
 #   define wctype rpl_wctype
 #  endif
-_GL_FUNCDECL_RPL (wctype, wctype_t, (const char *name)
+_GL_FUNCDECL_RPL (wctype, wctype_t, (const char *name),
                                     _GL_ARG_NONNULL ((1)));
 _GL_CXXALIAS_RPL (wctype, wctype_t, (const char *name));
 # else
 #  if !@HAVE_WCTYPE_T@
-_GL_FUNCDECL_SYS (wctype, wctype_t, (const char *name)
+_GL_FUNCDECL_SYS (wctype, wctype_t, (const char *name),
                                     _GL_ARG_NONNULL ((1)));
 #  endif
 _GL_CXXALIAS_SYS (wctype, wctype_t, (const char *name));
@@ -689,11 +689,11 @@ _GL_WARN_ON_USE (wctype, "wctype is unportable - "
 #   undef iswctype
 #   define iswctype rpl_iswctype
 #  endif
-_GL_FUNCDECL_RPL (iswctype, int, (wint_t wc, wctype_t desc));
+_GL_FUNCDECL_RPL (iswctype, int, (wint_t wc, wctype_t desc), );
 _GL_CXXALIAS_RPL (iswctype, int, (wint_t wc, wctype_t desc));
 # else
 #  if !@HAVE_WCTYPE_T@
-_GL_FUNCDECL_SYS (iswctype, int, (wint_t wc, wctype_t desc));
+_GL_FUNCDECL_SYS (iswctype, int, (wint_t wc, wctype_t desc), );
 #  endif
 _GL_CXXALIAS_SYS (iswctype, int, (wint_t wc, wctype_t desc));
 # endif
@@ -741,12 +741,12 @@ typedef void *rpl_wctrans_t;
 #   undef wctrans
 #   define wctrans rpl_wctrans
 #  endif
-_GL_FUNCDECL_RPL (wctrans, wctrans_t, (const char *name)
+_GL_FUNCDECL_RPL (wctrans, wctrans_t, (const char *name),
                                       _GL_ARG_NONNULL ((1)));
 _GL_CXXALIAS_RPL (wctrans, wctrans_t, (const char *name));
 # else
 #  if !@HAVE_WCTRANS_T@
-_GL_FUNCDECL_SYS (wctrans, wctrans_t, (const char *name)
+_GL_FUNCDECL_SYS (wctrans, wctrans_t, (const char *name),
                                       _GL_ARG_NONNULL ((1)));
 #  endif
 _GL_CXXALIAS_SYS (wctrans, wctrans_t, (const char *name));
@@ -771,11 +771,11 @@ _GL_WARN_ON_USE (wctrans, "wctrans is unportable - "
 #   undef towctrans
 #   define towctrans rpl_towctrans
 #  endif
-_GL_FUNCDECL_RPL (towctrans, wint_t, (wint_t wc, wctrans_t desc));
+_GL_FUNCDECL_RPL (towctrans, wint_t, (wint_t wc, wctrans_t desc), );
 _GL_CXXALIAS_RPL (towctrans, wint_t, (wint_t wc, wctrans_t desc));
 # else
 #  if !@HAVE_WCTRANS_T@
-_GL_FUNCDECL_SYS (towctrans, wint_t, (wint_t wc, wctrans_t desc));
+_GL_FUNCDECL_SYS (towctrans, wint_t, (wint_t wc, wctrans_t desc), );
 #  endif
 _GL_CXXALIAS_SYS (towctrans, wint_t, (wint_t wc, wctrans_t desc));
 # endif

@@ -1,8 +1,10 @@
-# float_h.m4 serial 14
+# float_h.m4
+# serial 15
 dnl Copyright (C) 2007, 2009-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 AC_DEFUN([gl_FLOAT_H],
 [
@@ -52,6 +54,31 @@ changequote([,])dnl
       fi
       ;;
   esac
+
+  dnl Test for completeness w.r.t. ISO C 23.
+  REPLACE_FLOAT_SNAN=0
+  AC_CACHE_CHECK([whether float.h conforms to ISO C23],
+    [gl_cv_header_float_h_isoc23],
+    [AC_COMPILE_IFELSE(
+       [AC_LANG_PROGRAM(
+          [[#include <float.h>
+            int x[] = { FLT_DECIMAL_DIG, DBL_DECIMAL_DIG, LDBL_DECIMAL_DIG };
+            float maxf = FLT_NORM_MAX;
+            double maxd = DBL_NORM_MAX;
+            long double maxl = LDBL_NORM_MAX;
+          ]],
+          [[float sf = FLT_SNAN;
+            double sd = DBL_SNAN;
+            long double sl = LDBL_SNAN;
+            return (sf != 0) + (sd != 0) + (sl != 0);
+          ]])],
+       [gl_cv_header_float_h_isoc23=yes],
+       [gl_cv_header_float_h_isoc23=no])
+    ])
+  if test $gl_cv_header_float_h_isoc23 != yes; then
+    GL_GENERATE_FLOAT_H=true
+    REPLACE_FLOAT_SNAN=1
+  fi
 
   dnl Test against glibc-2.7 Linux/SPARC64 bug.
   REPLACE_ITOLD=0

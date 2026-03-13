@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnulib 4.0.0.2567\n"
 "Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
-"POT-Creation-Date: 2024-03-10 15:09+0100\n"
+"POT-Creation-Date: 2024-11-10 22:29+0100\n"
 "PO-Revision-Date: 2020-05-28 21:40+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv-list@lists.sourceforge.net>\n"
@@ -23,7 +23,7 @@ msgstr ""
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: lib/error.c:194
+#: lib/error.c:208
 msgid "Unknown system error"
 msgstr "Okänt systemfel"
 
@@ -148,12 +148,12 @@ msgstr "kan inte notera aktuell arbetskatalog"
 msgid "failed to return to initial working directory"
 msgstr "kunde inte återvända till den ursprungliga arbetskatalogen"
 
-#: lib/os2-spawn.c:45
+#: lib/os2-spawn.c:51
 #, c-format
 msgid "_open_osfhandle failed"
 msgstr "_open_osfhandle misslyckades"
 
-#: lib/os2-spawn.c:82
+#: lib/os2-spawn.c:88
 #, c-format
 msgid "cannot restore fd %d: dup2 failed"
 msgstr "kan inte återställa fb %d: dup2 misslyckades"
@@ -259,22 +259,22 @@ msgstr "Ensam ) eller \\)"
 msgid "No previous regular expression"
 msgstr "Inget föregående reguljärt uttryck"
 
-#: lib/spawn-pipe.c:216 lib/spawn-pipe.c:219
+#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221
 #, c-format
 msgid "cannot create pipe"
 msgstr "kan inte skapa rör"
 
-#: lib/spawn-pipe.c:596 lib/wait-process.c:291 lib/wait-process.c:365
+#: lib/spawn-pipe.c:599 lib/wait-process.c:326 lib/wait-process.c:400
 #, c-format
 msgid "%s subprocess failed"
 msgstr "%s-underprocess misslyckades"
 
-#: lib/wait-process.c:232 lib/wait-process.c:264 lib/wait-process.c:326
+#: lib/wait-process.c:267 lib/wait-process.c:299 lib/wait-process.c:361
 #, c-format
 msgid "%s subprocess"
 msgstr "%s-underprocess"
 
-#: lib/wait-process.c:283 lib/wait-process.c:355
+#: lib/wait-process.c:318 lib/wait-process.c:390
 #, c-format
 msgid "%s subprocess got fatal signal %d"
 msgstr "%s-underprocess fick ödesdiger signal %d"

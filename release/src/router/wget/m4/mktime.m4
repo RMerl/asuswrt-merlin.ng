@@ -1,9 +1,10 @@
-# serial 39
-dnl Copyright (C) 2002-2003, 2005-2007, 2009-2024 Free Software Foundation,
-dnl Inc.
+# mktime.m4
+# serial 41
+dnl Copyright (C) 2002-2003, 2005-2007, 2009-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl From Jim Meyering.
 
@@ -315,4 +316,22 @@ AC_DEFUN([gl_FUNC_MKTIME_INTERNAL], [
 ])
 
 # Prerequisites of lib/mktime.c.
-AC_DEFUN([gl_PREREQ_MKTIME], [:])
+AC_DEFUN([gl_PREREQ_MKTIME], [
+  AC_CACHE_CHECK([spelling of daylight variable],
+    [gl_cv_var___daylight],
+    [for gl_cv_var___daylight in __daylight daylight _daylight 1; do
+       test $gl_cv_var___daylight = 1 && break
+       AC_LINK_IFELSE(
+         [AC_LANG_PROGRAM(
+            [[#include <time.h>
+            ]],
+            [[return $gl_cv_var___daylight;]])
+         ],
+         [break])
+     done])
+  AS_CASE([$gl_cv_var___daylight],
+    [__daylight], [],
+    [AC_DEFINE_UNQUOTED([__daylight], [$gl_cv_var___daylight],
+       [Define to an expression equivalent to <time.h> daylight
+        if <time.h> __daylight does not already do that.])])
+])

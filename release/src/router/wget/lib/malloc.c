@@ -23,22 +23,26 @@
 #include <stdlib.h>
 
 #include <errno.h>
-
-#include "xalloc-oversized.h"
+#include <stdckdint.h>
 
 /* Allocate an N-byte block of memory from the heap, even if N is 0.  */
 
 void *
 rpl_malloc (size_t n)
 {
+#if !HAVE_MALLOC_0_NONNULL
   if (n == 0)
     n = 1;
+#endif
 
-  if (xalloc_oversized (n, 1))
+#if !HAVE_MALLOC_PTRDIFF
+  ptrdiff_t signed_n;
+  if (ckd_add (&signed_n, n, 0))
     {
       errno = ENOMEM;
       return NULL;
     }
+#endif
 
   void *result = malloc (n);
 

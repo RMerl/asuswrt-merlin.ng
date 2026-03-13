@@ -17,14 +17,14 @@
 
 /* Written by Paul Eggert <eggert@twinsun.com> */
 
+#include <config.h>
+
 /* Without this pragma, gcc 4.7.0 20111124 mistakenly suggests that
    the quoting_options_from_style function might be candidate for
    attribute 'pure'  */
-#if (__GNUC__ == 4 && 6 <= __GNUC_MINOR__) || 4 < __GNUC__
+#if _GL_GNUC_PREREQ (4, 6)
 # pragma GCC diagnostic ignored "-Wsuggest-attribute=pure"
 #endif
-
-#include <config.h>
 
 #include "quotearg.h"
 #include "quote.h"
@@ -260,7 +260,6 @@ quotearg_buffer_restyled (char *buffer, size_t buffersize,
   bool backslash_escapes = false;
   bool unibyte_locale = MB_CUR_MAX == 1;
   bool elide_outer_quotes = (flags & QA_ELIDE_OUTER_QUOTES) != 0;
-  bool pending_shell_escape_end = false;
   bool encountered_single_quote = false;
   bool all_c_and_shell_quote_compat = true;
 
@@ -303,7 +302,8 @@ quotearg_buffer_restyled (char *buffer, size_t buffersize,
       } \
     while (0)
 
- process_input:
+ process_input: ;
+  bool pending_shell_escape_end = false;
 
   switch (quoting_style)
     {

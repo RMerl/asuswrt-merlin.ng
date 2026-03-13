@@ -46,7 +46,7 @@
 /* Get imalloc. */
 #include <ialloc.h>
 
-#include <intprops.h>
+#include <stdckdint.h>
 
 #include <string.h>
 
@@ -143,7 +143,7 @@ base32_encode_alloc (const char *in, idx_t inlen, char **out)
      Treat negative INLEN as overflow, for better compatibility with
      pre-2021-08-27 API, which used size_t.  */
   idx_t in_over_5 = inlen / 5 + (inlen % 5 != 0), outlen;
-  if (! INT_MULTIPLY_OK (in_over_5, 8, &outlen) || inlen < 0)
+  if (ckd_mul (&outlen, in_over_5, 8) || inlen < 0)
     {
       *out = NULL;
       return 0;

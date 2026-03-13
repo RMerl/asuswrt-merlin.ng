@@ -1,8 +1,10 @@
-# mbrtoc32.m4 serial 18
+# mbrtoc32.m4
+# serial 21
 dnl Copyright (C) 2014-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 AC_DEFUN([gl_FUNC_MBRTOC32],
 [
@@ -26,6 +28,7 @@ AC_DEFUN([gl_FUNC_MBRTOC32],
     else
       gl_MBRTOC32_EMPTY_INPUT
       gl_MBRTOC32_C_LOCALE
+      gl_MBRTOC32_UTF8_LOCALE
       case "$gl_cv_func_mbrtoc32_empty_input" in
         *yes) ;;
         *) AC_DEFINE([MBRTOC32_EMPTY_INPUT_BUG], [1],
@@ -38,6 +41,15 @@ AC_DEFUN([gl_FUNC_MBRTOC32],
         *) AC_DEFINE([MBRTOC32_IN_C_LOCALE_MAYBE_EILSEQ], [1],
              [Define if the mbrtoc32 function may signal encoding errors in the C locale.])
            REPLACE_MBRTOC32=1
+           ;;
+      esac
+      case "$gl_cv_func_mbrtoc32_utf8_locale_works" in
+        *yes) ;;
+        *) AC_DEFINE([MBRTOC32_MULTIBYTE_LOCALE_BUG], [1],
+             [Define if the mbrtoc32 function does not accept the input bytes one-by-one.])
+           REPLACE_MBRTOC32=1
+           dnl Our replacement mbrtoc32 can handle UTF-8, but not GB18030.
+           LOCALE_ZH_CN=none
            ;;
       esac
     fi
@@ -162,6 +174,53 @@ AC_DEFUN([gl_MBRTOC32_C_LOCALE],
     ])
 ])
 
+dnl Test whether mbrtoc32 works when it's fed the bytes one-by-one in an UTF-8
+dnl locale.
+
+AC_DEFUN([gl_MBRTOC32_UTF8_LOCALE],
+[
+  AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
+  AC_CACHE_CHECK([whether mbrtoc32 works in an UTF-8 locale],
+    [gl_cv_func_mbrtoc32_utf8_locale_works],
+    [AC_RUN_IFELSE(
+       [AC_LANG_PROGRAM(
+          [[#include <locale.h>
+            #ifdef __HAIKU__
+             #include <stdint.h>
+            #endif
+            #include <uchar.h>
+          ]], [[
+            char *locale = setlocale (LC_ALL, "en_US.UTF-8");
+            if (locale)
+              {
+                /* This test fails on Cygwin 3.5.3.  */
+                mbstate_t state = { 0, };
+                char32_t uc = 0xDEADBEEF;
+                /* \360\237\220\203 = U+0001F403 */
+                if (mbrtoc32 (&uc, "\360", 1, &state) != (size_t)-2)
+                  return 1;
+                if (mbrtoc32 (&uc, "\237", 1, &state) != (size_t)-2)
+                  return 2;
+                if (mbrtoc32 (&uc, "\220", 1, &state) != (size_t)-2)
+                  return 3;
+                if (mbrtoc32 (&uc, "\203", 1, &state) != 1)
+                  return 4;
+                if (uc != 0x0001F403)
+                  return 5;
+              }
+            return 0;
+          ]])],
+       [gl_cv_func_mbrtoc32_utf8_locale_works=yes],
+       [gl_cv_func_mbrtoc32_utf8_locale_works=no],
+       [case "$host_os" in
+                   # Guess no on Cygwin.
+          cygwin*) gl_cv_func_mbrtoc32_utf8_locale_works="guessing no" ;;
+          *)       gl_cv_func_mbrtoc32_utf8_locale_works="$gl_cross_guess_normal" ;;
+        esac
+       ])
+    ])
+])
+
 dnl Test whether mbrtoc32 works not worse than mbrtowc.
 dnl Result is HAVE_WORKING_MBRTOC32.
 
@@ -172,7 +231,7 @@ AC_DEFUN([gl_MBRTOC32_SANITYCHECK],
   AC_REQUIRE([gl_CHECK_FUNC_MBRTOC32])
   AC_REQUIRE([gt_LOCALE_FR])
   AC_REQUIRE([gt_LOCALE_ZH_CN])
-  AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
+  AC_REQUIRE([AC_CANONICAL_HOST])
   if test $GNULIBHEADERS_OVERRIDE_CHAR32_T = 1 || test $gl_cv_func_mbrtoc32 = no; then
     HAVE_WORKING_MBRTOC32=0
   else
@@ -262,5 +321,6 @@ int main ()
 
 # Prerequisites of lib/mbrtoc32.c and lib/lc-charset-dispatch.c.
 AC_DEFUN([gl_PREREQ_MBRTOC32], [
+  AC_REQUIRE([gl_C32RTOMB_SANITYCHECK])
   :
 ])

@@ -49,6 +49,10 @@ extern "C" {
    argv[].  It is a NULL-terminated array.  prog_argv[0] should normally be
    identical to prog_path.
 
+   dll_dirs is, on Windows platforms, a NULL-terminated list of directories
+   that contain DLLs needed to execute the program, or NULL if none is needed.
+   On other platforms, always pass NULL.
+
    If directory is not NULL, the subprocess is started in that directory.  If
    prog_path is a relative file name, it resolved before changing to that
    directory.  The current directory of the current process remains unchanged.
@@ -96,6 +100,7 @@ extern "C" {
 extern pid_t create_pipe_out (const char *progname,
                               const char *prog_path,
                               const char * const *prog_argv,
+                              const char * const *dll_dirs,
                               const char *directory,
                               const char *prog_stdout, bool null_stderr,
                               bool slave_process, bool exit_on_error,
@@ -111,6 +116,7 @@ extern pid_t create_pipe_out (const char *progname,
 extern pid_t create_pipe_in (const char *progname,
                              const char *prog_path,
                              const char * const *prog_argv,
+                             const char * const *dll_dirs,
                              const char *directory,
                              const char *prog_stdin, bool null_stderr,
                              bool slave_process, bool exit_on_error,
@@ -141,6 +147,7 @@ extern pid_t create_pipe_in (const char *progname,
 extern pid_t create_pipe_bidi (const char *progname,
                                const char *prog_path,
                                const char * const *prog_argv,
+                               const char * const *dll_dirs,
                                const char *directory,
                                bool null_stderr,
                                bool slave_process, bool exit_on_error,

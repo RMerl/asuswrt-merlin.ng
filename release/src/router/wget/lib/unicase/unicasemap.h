@@ -29,6 +29,11 @@
 #include "unicase.h"
 #include "uninorm.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 extern uint8_t *
        u8_casemap (const uint8_t *s, size_t n,
                    casing_prefix_context_t prefix_context,
@@ -58,3 +63,8 @@ extern uint32_t *
                     size_t offset_in_rule, /* offset in 'struct special_casing_rule' */
                     uninorm_t nf,
                     uint32_t *resultbuf, size_t *lengthp);
+
+
+#ifdef __cplusplus
+}
+#endif

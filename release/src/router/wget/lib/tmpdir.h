@@ -16,6 +16,11 @@
 
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /* Path search algorithm, for tmpnam, tmpfile, etc.  If DIR is
    non-null and exists, uses it; otherwise uses the first of $TMPDIR,
    P_tmpdir, /tmp that exists.  Copies into TMPL a template suitable
@@ -23,3 +28,8 @@
    doesn't exist, none of the searched dirs exists, or there's not
    enough space in TMPL. */
 extern int path_search (char *tmpl, size_t tmpl_len, const char *dir, const char *pfx, bool try_tmpdir);
+
+
+#ifdef __cplusplus
+}
+#endif

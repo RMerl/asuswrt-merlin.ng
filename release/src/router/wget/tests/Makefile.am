@@ -139,10 +139,27 @@ EXTRA_DIST = FTPServer.pm FTPTest.pm HTTPServer.pm HTTPTest.pm \
 
 check_PROGRAMS = unit-tests
 unit_tests_SOURCES = unit-tests.c unit-tests.h
-LDADD = ../src/libunittest.a ../lib/libgnu.a $(GETADDRINFO_LIB) $(HOSTENT_LIB)\
- $(INET_NTOP_LIB) $(LIBSOCKET) $(LIB_CLOCK_GETTIME) $(LIB_CRYPTO)\
- $(LIB_NANOSLEEP) $(LIB_POSIX_SPAWN) $(LIB_SELECT) $(LIBICONV) $(LIBINTL)\
- $(LIBTHREAD) $(LIBUNISTRING) $(SERVENT_LIB)
+LDADD = ../src/libunittest.a ../lib/libgnu.a \
+ $(CLOCK_TIME_LIB) \
+ $(GETADDRINFO_LIB) \
+ $(GETRANDOM_LIB) \
+ $(HARD_LOCALE_LIB) \
+ $(HOSTENT_LIB) \
+ $(INET_NTOP_LIB) \
+ $(LIBSOCKET) \
+ $(LIBTHREAD) \
+ $(LIB_CRYPTO) \
+ $(LIBC32CONV) \
+ $(LIBICONV) \
+ $(LIBINTL) \
+ $(LIBUNISTRING) \
+ $(MBRTOWC_LIB) \
+ $(NANOSLEEP_LIB) \
+ $(POSIX_SPAWN_LIB) \
+ $(PTHREAD_SIGMASK_LIB) \
+ $(SELECT_LIB) \
+ $(SERVENT_LIB) \
+ $(SETLOCALE_NULL_LIB)
 AM_CPPFLAGS = -I$(top_builddir)/lib -I$(top_srcdir)/lib \
  -I$(top_srcdir)/src -DLOCALEDIR=\"$(localedir)\"
 AM_CFLAGS = $(WERROR_CFLAGS) $(WARN_CFLAGS)

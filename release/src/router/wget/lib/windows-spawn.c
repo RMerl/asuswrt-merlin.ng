@@ -38,6 +38,7 @@
 #include <process.h>
 
 #include "findprog.h"
+#include "windows-path.h"
 
 /* Don't assume that UNICODE is not defined.  */
 #undef STARTUPINFO
@@ -244,7 +245,7 @@ compose_command (const char * const *argv)
 }
 
 char *
-compose_envblock (const char * const *envp)
+compose_envblock (const char * const *envp, const char *new_PATH)
 {
   /* This is a bit hairy, because we don't have a lock that would prevent other
      threads from making modifications in ENVP.  So, just make sure we don't
@@ -257,8 +258,11 @@ compose_envblock (const char * const *envp)
     size_t total_size = 0;
     const char * const *ep;
     const char *p;
+    if (new_PATH != NULL)
+      total_size += strlen (new_PATH) + 1;
     for (ep = envp; (p = *ep) != NULL; ep++)
-      total_size += strlen (p) + 1;
+      if (!(new_PATH != NULL && strncmp (p, "PATH=", 5) == 0))
+        total_size += strlen (p) + 1;
     size_t envblock_size = total_size;
 
     /* Allocate the block of memory.  */
@@ -269,34 +273,42 @@ compose_envblock (const char * const *envp)
         return NULL;
       }
     size_t envblock_used = 0;
-    for (ep = envp; (p = *ep) != NULL; ep++)
+    if (new_PATH != NULL)
       {
-        size_t size = strlen (p) + 1;
-        if (envblock_used + size > envblock_size)
-          {
-            /* Other threads did modifications.  Need more memory.  */
-            envblock_size += envblock_size / 2;
-            if (envblock_used + size > envblock_size)
-              envblock_size = envblock_used + size;
-
-            char *new_envblock = (char *) realloc (envblock, envblock_size + 1);
-            if (new_envblock == NULL)
-              {
-                free (envblock);
-                errno = ENOMEM;
-                return NULL;
-              }
-            envblock = new_envblock;
-          }
-        memcpy (envblock + envblock_used, p, size);
+        size_t size = strlen (new_PATH) + 1;
+        memcpy (envblock + envblock_used, new_PATH, size);
         envblock_used += size;
-        if (envblock[envblock_used - 1] != '\0')
-          {
-            /* Other threads did modifications.  Restart.  */
-            free (envblock);
-            goto retry;
-          }
       }
+    for (ep = envp; (p = *ep) != NULL; ep++)
+      if (!(new_PATH != NULL && strncmp (p, "PATH=", 5) == 0))
+        {
+          size_t size = strlen (p) + 1;
+          if (envblock_used + size > envblock_size)
+            {
+              /* Other threads did modifications.  Need more memory.  */
+              envblock_size += envblock_size / 2;
+              if (envblock_used + size > envblock_size)
+                envblock_size = envblock_used + size;
+
+              char *new_envblock =
+                (char *) realloc (envblock, envblock_size + 1);
+              if (new_envblock == NULL)
+                {
+                  free (envblock);
+                  errno = ENOMEM;
+                  return NULL;
+                }
+              envblock = new_envblock;
+            }
+          memcpy (envblock + envblock_used, p, size);
+          envblock_used += size;
+          if (envblock[envblock_used - 1] != '\0')
+            {
+              /* Other threads did modifications.  Restart.  */
+              free (envblock);
+              goto retry;
+            }
+        }
     envblock[envblock_used] = '\0';
     return envblock;
   }
@@ -548,30 +560,24 @@ convert_CreateProcess_error (DWORD error)
     case ERROR_INVALID_NAME:
     case ERROR_DIRECTORY:
       return ENOENT;
-      break;
 
     case ERROR_ACCESS_DENIED:
     case ERROR_SHARING_VIOLATION:
       return EACCES;
-      break;
 
     case ERROR_OUTOFMEMORY:
       return ENOMEM;
-      break;
 
     case ERROR_BUFFER_OVERFLOW:
     case ERROR_FILENAME_EXCED_RANGE:
       return ENAMETOOLONG;
-      break;
 
     case ERROR_BAD_FORMAT:
     case ERROR_BAD_EXE_FORMAT:
       return ENOEXEC;
-      break;
 
     default:
       return EINVAL;
-      break;
     }
 }
 
@@ -579,6 +585,7 @@ intptr_t
 spawnpvech (int mode,
             const char *progname, const char * const *argv,
             const char * const *envp,
+            const char * const *dll_dirs,
             const char *currdir,
             HANDLE stdin_handle, HANDLE stdout_handle, HANDLE stderr_handle)
 {
@@ -606,11 +613,23 @@ spawnpvech (int mode,
 
   /* Copy *ENVP into a contiguous block of memory.  */
   char *envblock;
-  if (envp == NULL)
+  if (envp == NULL && !(dll_dirs != NULL && dll_dirs[0] != NULL))
     envblock = NULL;
   else
     {
-      envblock = compose_envblock (envp);
+      if (envp == NULL)
+        /* Documentation:
+           <https://learn.microsoft.com/en-us/cpp/c-runtime-library/environ-wenviron>  */
+        envp = (const char **) _environ;
+      char *new_PATH = NULL;
+      if (dll_dirs != NULL && dll_dirs[0] != NULL)
+        {
+          new_PATH = extended_PATH (dll_dirs);
+          if (new_PATH == NULL)
+            goto out_of_memory_2;
+        }
+      envblock = compose_envblock (envp, new_PATH);
+      free (new_PATH);
       if (envblock == NULL)
         goto out_of_memory_2;
     }

@@ -90,6 +90,10 @@ void exit(int status)
 		libc_exit(status);
 	}
 }
+// Work-around linker issue "multiple definition of `getaddrinfo'"
+#ifdef _WIN32
+__attribute__ ((weak))
+#endif
 int getaddrinfo(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res)
 {
 	if (fuzzing) {
@@ -120,7 +124,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	if (setjmp(jmpbuf)) {
 		cleanup();
 		goto done;
-          }
+	}
 
 	main_wget(sizeof(argv)/sizeof(argv[0]), argv);
 

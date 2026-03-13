@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnulib-4.0.0.2567\n"
 "Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
-"POT-Creation-Date: 2024-03-10 15:09+0100\n"
+"POT-Creation-Date: 2024-11-10 22:29+0100\n"
 "PO-Revision-Date: 2022-02-19 23:11+0100\n"
 "Last-Translator: Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>\n"
 "Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
@@ -32,7 +32,7 @@ msgstr ""
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: lib/error.c:194
+#: lib/error.c:208
 msgid "Unknown system error"
 msgstr "Eroare de sistem necunoscută"
 
@@ -168,12 +168,12 @@ msgstr "nu s-a putut înregistra directorul de lucru curent"
 msgid "failed to return to initial working directory"
 msgstr "întoarcerea la directorul de lucru inițial a eșuat"
 
-#: lib/os2-spawn.c:45
+#: lib/os2-spawn.c:51
 #, c-format
 msgid "_open_osfhandle failed"
 msgstr "_open_osfhandle a eșuat"
 
-#: lib/os2-spawn.c:82
+#: lib/os2-spawn.c:88
 #, c-format
 msgid "cannot restore fd %d: dup2 failed"
 msgstr "nu se poate restaura fd %d: dup2 a eșuat"
@@ -279,22 +279,22 @@ msgstr ") sau \\) fără pereche"
 msgid "No previous regular expression"
 msgstr "Nu există o expresie regulată precedentă"
 
-#: lib/spawn-pipe.c:216 lib/spawn-pipe.c:219
+#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221
 #, c-format
 msgid "cannot create pipe"
 msgstr "nu se poate crea linia de conectare"
 
-#: lib/spawn-pipe.c:596 lib/wait-process.c:291 lib/wait-process.c:365
+#: lib/spawn-pipe.c:599 lib/wait-process.c:326 lib/wait-process.c:400
 #, c-format
 msgid "%s subprocess failed"
 msgstr "subprocesul %s a eșuat"
 
-#: lib/wait-process.c:232 lib/wait-process.c:264 lib/wait-process.c:326
+#: lib/wait-process.c:267 lib/wait-process.c:299 lib/wait-process.c:361
 #, c-format
 msgid "%s subprocess"
 msgstr "subprocesul %s"
 
-#: lib/wait-process.c:283 lib/wait-process.c:355
+#: lib/wait-process.c:318 lib/wait-process.c:390
 #, c-format
 msgid "%s subprocess got fatal signal %d"
 msgstr "subprocesul %s a primit semnalul fatal %d"

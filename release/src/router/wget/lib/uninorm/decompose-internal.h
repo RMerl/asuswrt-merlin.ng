@@ -19,6 +19,11 @@
 
 #include "unitypes.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /* Variant of uc_decomposition that does not produce the 'tag'.  */
 extern int
        uc_compat_decomposition (ucs4_t uc, ucs4_t *decomposition);
@@ -34,3 +39,8 @@ struct ucs4_with_ccc
 extern void
        gl_uninorm_decompose_merge_sort_inplace (struct ucs4_with_ccc *src, size_t n,
                                                 struct ucs4_with_ccc *tmp);
+
+
+#ifdef __cplusplus
+}
+#endif

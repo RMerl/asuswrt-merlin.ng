@@ -9,13 +9,13 @@
 # Domagoj Margan <sartrum@gmail.com>, 2010-2011.
 # Vedran Miletić <rivanvx@gmail.com>, 2010-2011.
 # Tomislav Krznar <tomislav.krznar@gmail.com>, 2012.
-# Božidar Putanec <bozidarp@yahoo.com>, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023.
+# Božidar Putanec <bozidarp@yahoo.com>, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU wget-1.21.4\n"
 "Report-Msgid-Bugs-To: bug-wget@gnu.org\n"
-"POT-Creation-Date: 2024-03-10 15:08+0100\n"
-"PO-Revision-Date: 2023-05-26 20:49-0700\n"
+"POT-Creation-Date: 2024-11-10 22:29+0100\n"
+"PO-Revision-Date: 2024-04-20 17:42-0700\n"
 "Last-Translator: Božidar Putanec <bozidarp@yahoo.com>\n"
 "Language-Team: Croatian <lokalizacija@linux.hr>\n"
 "Language: hr\n"
@@ -25,7 +25,7 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Vim\n"
 
 #: src/connect.c:201
 #, c-format
@@ -394,12 +394,12 @@ msgstr "Prijenos podataka je prekinut\n"
 msgid "File %s already there; not retrieving.\n"
 msgstr "Datoteka %s već postoji -- ne preuzima se\n"
 
-#: src/ftp.c:1955 src/http.c:4364
+#: src/ftp.c:1955 src/http.c:4359
 #, c-format
 msgid "(try:%2d)"
 msgstr "(pokušaj:%2d)"
 
-#: src/ftp.c:2047 src/http.c:4794
+#: src/ftp.c:2047 src/http.c:4789
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s]\n"
@@ -408,7 +408,7 @@ msgstr ""
 "%s (%s) - zapisano na standardni izlaz %s[%s]\n"
 "\n"
 
-#: src/ftp.c:2048 src/http.c:4795
+#: src/ftp.c:2048 src/http.c:4790
 #, c-format
 msgid ""
 "%s (%s) - %s saved [%s]\n"
@@ -418,7 +418,7 @@ msgstr ""
 "\n"
 
 #: src/ftp.c:2108 src/main.c:2178 src/metalink.c:1133 src/recur.c:511
-#: src/recur.c:750 src/retr.c:1303
+#: src/recur.c:750 src/retr.c:1243
 #, c-format
 msgid "Removing %s.\n"
 msgstr "Uklanja se %s\n"
@@ -463,7 +463,7 @@ msgstr ""
 
 #: src/ftp.c:2324
 msgid "Invalid name of the symlink, skipping.\n"
-msgstr "Nevaljano ime simboličke poveznice -- preskače\n"
+msgstr "Nevaljano ime simbolične poveznice -- preskače\n"
 
 #: src/ftp.c:2353
 #, c-format
@@ -471,19 +471,19 @@ msgid ""
 "Already have correct symlink %s -> %s\n"
 "\n"
 msgstr ""
-"Već postoji ispravna simbolička poveznica %s -> %s\n"
+"Već postoji ispravna simbolična poveznica %s -> %s\n"
 "\n"
 
 #: src/ftp.c:2362
 #, c-format
 msgid "Creating symlink %s -> %s\n"
-msgstr "Kreira se simbolička poveznica %s -> %s\n"
+msgstr "Kreira se simbolična poveznica %s -> %s\n"
 
 #: src/ftp.c:2372
 #, c-format
 msgid "Symlinks not supported, skipping symlink %s.\n"
 msgstr ""
-"Simboličke poveznice (simveza) nisu podržane -- preskače se simveza %s\n"
+"Simbolične poveznice (simveza) nisu podržane -- preskače se simveza %s\n"
 
 #: src/ftp.c:2387
 #, c-format
@@ -722,7 +722,7 @@ msgstr "neuspjeh: vrijeme je isteklo\n"
 msgid "%s: Cannot resolve incomplete link %s.\n"
 msgstr "%s: nepotpuni hyperlink %s nije moguće razriješiti\n"
 
-#: src/html-url.c:944
+#: src/html-url.c:945
 #, c-format
 msgid "%s: Invalid URL %s: %s\n"
 msgstr "%s: nevaljani URL %s: %s\n"
@@ -780,7 +780,7 @@ msgstr ""
 "Nije uspjelo pročitati odgovor proxy-a: %s.\n"
 "   \n"
 
-#: src/http.c:2183 src/http.c:3460 src/http.c:4590
+#: src/http.c:2183 src/http.c:3460 src/http.c:4585
 #, c-format
 msgid "%s ERROR %d: %s.\n"
 msgstr "%s GREŠKA %d: %s.\n"
@@ -918,50 +918,50 @@ msgstr "Duljina: "
 msgid "ignored"
 msgstr "zanemareno"
 
-#: src/http.c:4272
+#: src/http.c:4266
 msgid "Warning: wildcards not supported in HTTP.\n"
 msgstr "Upozorenje: HTTP ne podržava višeznačnike (wildcards)\n"
 
-#: src/http.c:4354
+#: src/http.c:4349
 msgid "Spider mode enabled. Check if remote file exists.\n"
 msgstr "Spider je omogućen. Provjerite postoji li datoteka na serveru.\n"
 
-#: src/http.c:4447
+#: src/http.c:4442
 #, c-format
 msgid "Cannot write to %s (%s).\n"
 msgstr "Nije moguće pisati u %s (%s)\n"
 
-#: src/http.c:4469
+#: src/http.c:4464
 msgid "Required attribute missing from Header received.\n"
 msgstr "Obvezni atribut manjkaju u preuzetom zaglavlju\n"
 
-#: src/http.c:4474
+#: src/http.c:4469
 msgid "Username/Password Authentication Failed.\n"
 msgstr "Autentifikacija korisnik/lozinka nije uspjela\n"
 
-#: src/http.c:4480
+#: src/http.c:4475
 msgid "Cannot write to WARC file.\n"
 msgstr "U WARC datoteku nije moguće pisati\n"
 
-#: src/http.c:4486
+#: src/http.c:4481
 msgid "Cannot write to temporary WARC file.\n"
 msgstr "U privremenu WARC datoteku nije moguće pisati\n"
 
-#: src/http.c:4491
+#: src/http.c:4486
 msgid "Unable to establish SSL connection.\n"
 msgstr "Nije moguće uspostaviti SSL poveznicu\n"
 
-#: src/http.c:4497
+#: src/http.c:4492
 #, c-format
 msgid "Cannot unlink %s (%s).\n"
 msgstr "Poveznicu %s (%s) nije moguće ukloniti\n"
 
-#: src/http.c:4507
+#: src/http.c:4502
 #, c-format
 msgid "ERROR: Redirection (%d) without location.\n"
 msgstr "GREŠKA: Preusmjeravanje (%d) bez cilja (adrese).\n"
 
-#: src/http.c:4529
+#: src/http.c:4524
 msgid ""
 "Could not find Metalink data in HTTP response. Downloading file using HTTP "
 "GET.\n"
@@ -969,23 +969,23 @@ msgstr ""
 "Nema Metalink podataka u HTTP odgovoru. Datoteka se preuzima pomoću HTTP "
 "GET.\n"
 
-#: src/http.c:4538
+#: src/http.c:4533
 msgid "Metalink headers found. Switching to Metalink mode.\n"
 msgstr "Nađeno je Metalink zaglavlje. Prelazi se na Metalink način rada.\n"
 
-#: src/http.c:4579
+#: src/http.c:4574
 msgid "Remote file does not exist -- broken link!!!\n"
 msgstr "Datoteka ne postoji na serveru -- nevaljani hyperlink!!!\n"
 
-#: src/http.c:4607
+#: src/http.c:4602
 msgid "Last-modified header missing -- time-stamps turned off.\n"
 msgstr "Manjka Last-modified zaglavlje -- vremenske oznake se isključuju\n"
 
-#: src/http.c:4615
+#: src/http.c:4610
 msgid "Last-modified header invalid -- time-stamp ignored.\n"
 msgstr "Nevaljano Last-modified zaglavlje -- vremenska oznaka je zanemarena\n"
 
-#: src/http.c:4645
+#: src/http.c:4640
 #, c-format
 msgid ""
 "Server file no newer than local file %s -- not retrieving.\n"
@@ -994,16 +994,16 @@ msgstr ""
 "Lokalna datoteka %s je novija od one na serveru -- ne preuzima se\n"
 "\n"
 
-#: src/http.c:4653
+#: src/http.c:4648
 #, c-format
 msgid "The sizes do not match (local %s) -- retrieving.\n"
 msgstr "Veličine se ne slažu (lokalno %s) -- preuzimamo\n"
 
-#: src/http.c:4662
+#: src/http.c:4657
 msgid "Remote file is newer, retrieving.\n"
 msgstr "Datoteka na serveru je novija -- preuzima se\n"
 
-#: src/http.c:4680
+#: src/http.c:4675
 msgid ""
 "Remote file exists and could contain links to other resources -- "
 "retrieving.\n"
@@ -1013,7 +1013,7 @@ msgstr ""
 "preuzima se\n"
 "\n"
 
-#: src/http.c:4686
+#: src/http.c:4681
 msgid ""
 "Remote file exists but does not contain any link -- not retrieving.\n"
 "\n"
@@ -1021,7 +1021,7 @@ msgstr ""
 "Datoteka na serveru postoji, ali nema nikakvih poveznica -- ne preuzima se\n"
 "\n"
 
-#: src/http.c:4695
+#: src/http.c:4690
 msgid ""
 "Remote file exists and could contain further links,\n"
 "but recursion is disabled -- not retrieving.\n"
@@ -1031,7 +1031,7 @@ msgstr ""
 "ali rekurzija je onemogućena -- ne preuzima se\n"
 "\n"
 
-#: src/http.c:4701
+#: src/http.c:4696
 msgid ""
 "Remote file exists.\n"
 "\n"
@@ -1039,12 +1039,12 @@ msgstr ""
 "Datoteka na serveru postoji\n"
 "\n"
 
-#: src/http.c:4710
+#: src/http.c:4705
 #, c-format
 msgid "%s URL: %s %2d %s\n"
 msgstr "%s URL: %s %2d %s\n"
 
-#: src/http.c:4758
+#: src/http.c:4753
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s/%s]\n"
@@ -1053,7 +1053,7 @@ msgstr ""
 "%s (%s) - zapisano na standardni izlaz %s[%s/%s]\n"
 "\n"
 
-#: src/http.c:4759
+#: src/http.c:4754
 #, c-format
 msgid ""
 "%s (%s) - %s saved [%s/%s]\n"
@@ -1062,27 +1062,27 @@ msgstr ""
 "%s (%s) - %s spremljeno [%s/%s]\n"
 "\n"
 
-#: src/http.c:4825
+#: src/http.c:4820
 #, c-format
 msgid "%s (%s) - Connection closed at byte %s. "
 msgstr "%s (%s) - Veza zatvorena na bajtu %s "
 
-#: src/http.c:4848
+#: src/http.c:4843
 #, c-format
 msgid "%s (%s) - Read error at byte %s (%s)."
 msgstr "%s (%s) - Greška čitanja na bajtu %s (%s)"
 
-#: src/http.c:4857
+#: src/http.c:4852
 #, c-format
 msgid "%s (%s) - Read error at byte %s/%s (%s). "
 msgstr "%s (%s) - Greška čitanja na bajtu %s/%s (%s) "
 
-#: src/http.c:5114
+#: src/http.c:5108
 #, c-format
 msgid "Unsupported quality of protection '%s'.\n"
 msgstr "Nepodržana kvaliteta zaštite „%s“\n"
 
-#: src/http.c:5119
+#: src/http.c:5113
 #, c-format
 msgid "Unsupported algorithm '%s'.\n"
 msgstr "Nepodržani algoritam „%s“\n"
@@ -1241,31 +1241,31 @@ msgstr ""
 msgid "Encoding %s isn't valid\n"
 msgstr "Kodiranje %s nije valjano\n"
 
-#: src/iri.c:140 src/url.c:1612
+#: src/iri.c:140 src/url.c:1619
 #, c-format
 msgid "Conversion from %s to %s isn't supported\n"
 msgstr "Konverzija iz %s u %s nije podržana\n"
 
-#: src/iri.c:180 src/url.c:1642
+#: src/iri.c:180 src/url.c:1649
 msgid "Incomplete or invalid multibyte sequence encountered\n"
 msgstr "Pronađena je nepotpuna ili nevaljana višebajtna sekvencija\n"
 
 # Weird, we got an unspecified error
-#: src/iri.c:200 src/url.c:1659
+#: src/iri.c:206 src/url.c:1666
 #, c-format
 msgid "Unhandled errno %d\n"
 msgstr "Neobrađena greška %d\n"
 
-#: src/iri.c:237
+#: src/iri.c:243
 msgid "locale_to_utf8: locale is unset\n"
 msgstr "locale_to_utf8(): locale nije instaliran\n"
 
-#: src/iri.c:283 src/iri.c:298
+#: src/iri.c:289 src/iri.c:304
 #, c-format
 msgid "idn_encode failed (%d): %s\n"
 msgstr "idn_encode() je završila neuspješno (%d): %s\n"
 
-#: src/iri.c:290
+#: src/iri.c:296
 #, c-format
 msgid "Failed to convert to lower: %d: %s\n"
 msgstr ""
@@ -1437,16 +1437,12 @@ msgstr ""
 "       --retry-connrefused         ponovo pokuša ako je spajanje odbijeno\n"
 
 #: src/main.c:651
-#, fuzzy
-#| msgid ""
-#| "       --retry-on-http-error=ERRORS    comma-separated list of HTTP "
-#| "errors to retry\n"
 msgid ""
 "       --retry-on-host-error       consider host errors as non-fatal, "
 "transient errors\n"
 msgstr ""
-"       --retry-on-http-error=POPIS     zarezom odvojeni POPIS HTTP greški\n"
-"                                        za ponovni pokušaj\n"
+"       --retry-on-host-error       smatrajte pogreške hosta nefatalnim,\n"
+"                                     prolaznim pogreškama\n"
 
 #: src/main.c:653
 msgid ""
@@ -3070,22 +3066,22 @@ msgstr "Nastavljamo u pozadini, PID %lu\n"
 msgid "Output will be written to %s.\n"
 msgstr "Izlazni podaci bit će spremljeni u %s\n"
 
-#: src/mswindows.c:323
+#: src/mswindows.c:334
 #, c-format
 msgid "fake_fork_child() failed\n"
 msgstr "fake_fork_child() je završila neuspješno\n"
 
-#: src/mswindows.c:331
+#: src/mswindows.c:342
 #, c-format
 msgid "fake_fork() failed\n"
 msgstr "fake_fork() je završila neuspješno\n"
 
-#: src/mswindows.c:460 src/mswindows.c:467
+#: src/mswindows.c:471 src/mswindows.c:478
 #, c-format
 msgid "%s: Couldn't find usable socket driver.\n"
 msgstr "%s: nije moguće pronaći upotrebljivi drajver utičnice\n"
 
-#: src/mswindows.c:647
+#: src/mswindows.c:658
 #, c-format
 msgid "ioctl() failed.  The socket could not be set as blocking.\n"
 msgstr ""
@@ -3142,14 +3138,14 @@ msgid "OpenSSL: unimplemented 'secure-protocol' option value %d\n"
 msgstr "OpenSSL: vrijednost opcije %d „secure-protocol“ nije implementirana\n"
 
 #: src/openssl.c:295
-#, fuzzy, c-format
-#| msgid "Your OpenSSL version is too old to support TLS 1.3\n"
+#, c-format
 msgid "Your OpenSSL version does not support option '%s'.\n"
-msgstr "Vaša OpenSSL inačica je prestara i ne podržava TLS 1.3\n"
+msgstr "Vaša OpenSSL inačica ne podržava opciju ‘%s’.\n"
 
 #: src/openssl.c:296
 msgid "Rebuilding Wget and/or OpenSSL may help in this situation.\n"
 msgstr ""
+"Ponovna izgradnja Wget i/ili OpenSSL bi mogla pomoći u ovoj situaciji\n"
 
 #: src/openssl.c:341
 #, c-format
@@ -3299,7 +3295,7 @@ msgstr "Greška u proxy URL adresi %s: mora biti HTTP\n"
 msgid "%d redirections exceeded.\n"
 msgstr "%d: prekoračen je broj preusmjerenja\n"
 
-#: src/retr.c:1327
+#: src/retr.c:1344
 msgid ""
 "Giving up.\n"
 "\n"
@@ -3307,7 +3303,7 @@ msgstr ""
 "Završeno.\n"
 "\n"
 
-#: src/retr.c:1327
+#: src/retr.c:1344
 msgid ""
 "Retrying.\n"
 "\n"
@@ -3341,55 +3337,51 @@ msgstr[2] ""
 "Pronađeno je %d nevažećih poveznica.\n"
 "\n"
 
-#: src/url.c:688
+#: src/url.c:695
 msgid "No error"
 msgstr "Nema greške"
 
-#: src/url.c:689
-#, fuzzy
-#| msgid "Unsupported scheme %s"
+#: src/url.c:696
 msgid "Unsupported scheme"
 msgstr "Nepodržana shema %s"
 
-#: src/url.c:690
+#: src/url.c:697
 msgid "HTTPS support not compiled in"
 msgstr "HTTPS podrška nije uključena pri kompiliranju"
 
-#: src/url.c:691
-#, fuzzy
-#| msgid "HTTPS support not compiled in"
+#: src/url.c:698
 msgid "FTPS support not compiled in"
-msgstr "HTTPS podrška nije uključena pri kompiliranju"
+msgstr "FTPS podrška nije uključena pri kompiliranju"
 
-#: src/url.c:692
+#: src/url.c:699
 msgid "Scheme missing"
 msgstr "Nema sheme"
 
-#: src/url.c:693
+#: src/url.c:700
 msgid "Invalid host name"
 msgstr "Nevaljano ime hosta"
 
-#: src/url.c:694
+#: src/url.c:701
 msgid "Bad port number"
 msgstr "Nevaljani broj porta"
 
-#: src/url.c:695
+#: src/url.c:702
 msgid "Invalid user name"
 msgstr "Nevaljano korisničko ime"
 
-#: src/url.c:696
+#: src/url.c:703
 msgid "Unterminated IPv6 numeric address"
 msgstr "Nepotpuna IPv6 numerička adresa"
 
-#: src/url.c:697
+#: src/url.c:704
 msgid "IPv6 addresses not supported"
 msgstr "IPv6 adrese nisu podržane"
 
-#: src/url.c:698
+#: src/url.c:705
 msgid "Invalid IPv6 numeric address"
 msgstr "Nevaljana IPv6 numerička adresa"
 
-#: src/url.c:1645
+#: src/url.c:1652
 msgid "Unconvertable multibyte sequence encountered\n"
 msgstr "Pronađena je višebajtna sekvencija koju nije moguće konvertirati\n"
 
@@ -3419,7 +3411,7 @@ msgstr "Nastavljamo u pozadini, PID %d.\n"
 #: src/utils.c:551
 #, c-format
 msgid "Failed to unlink symlink %s: %s\n"
-msgstr "Nije uspjelo ukloniti simboličku poveznicu %s: %s\n"
+msgstr "Nije uspjelo ukloniti simboličnu poveznicu %s: %s\n"
 
 #: src/utils.c:872
 #, c-format
@@ -3462,22 +3454,22 @@ msgstr ""
 "Pokušavamo otvoriti datoteku %s koja se promijenila od zadnje provjere.\n"
 "Sigurnosna provjera nije uspjela.\n"
 
-#: src/utils.c:2443
+#: src/utils.c:2479
 #, c-format
 msgid "Invalid regular expression %s, PCRE2 error %d\n"
 msgstr "Nevaljani regularni izraz %s, PCRE greška %d\n"
 
-#: src/utils.c:2460 src/utils.c:2483
+#: src/utils.c:2496 src/utils.c:2519
 #, c-format
 msgid "Invalid regular expression %s, %s\n"
 msgstr "Nevaljani regularni izraz %s, %s\n"
 
-#: src/utils.c:2513 src/utils.c:2535 src/utils.c:2559
+#: src/utils.c:2549 src/utils.c:2571 src/utils.c:2595
 #, c-format
 msgid "Error while matching %s: %d\n"
 msgstr "Greška pri usporedbi %s: %d\n"
 
-#: src/utils.c:2852
+#: src/utils.c:2888
 #, c-format
 msgid "Skipping key with wrong size (%d/%d): %s\n"
 msgstr "Preskače se ključ pogrešne veličine (%d/%d): %s\n"
@@ -3498,11 +3490,11 @@ msgstr "Greška pri dupliciranju deskriptora WARC datoteke\n"
 msgid "Error opening GZIP stream to WARC file.\n"
 msgstr "Greška otvaranja GZIP stream u WARC datoteci\n"
 
-#: src/warc.c:830
+#: src/warc.c:833
 msgid "Error writing warcinfo record to WARC file.\n"
 msgstr "Greška u pisanju warcinfo zapisa u WARC datoteku\n"
 
-#: src/warc.c:893
+#: src/warc.c:884
 #, c-format
 msgid ""
 "Opening WARC file %s.\n"
@@ -3511,24 +3503,24 @@ msgstr ""
 "Otvara se WARC datoteka %s\n"
 "\n"
 
-#: src/warc.c:899
+#: src/warc.c:890
 #, c-format
 msgid "Error opening WARC file %s.\n"
 msgstr "Greška pri otvaranju WARC datoteke %s\n"
 
-#: src/warc.c:1095
+#: src/warc.c:1086
 msgid "CDX file does not list original urls. (Missing column 'a'.)\n"
 msgstr "U CDX datoteci nema popisa originalnih URL-ova. (Nema stupca „a“)\n"
 
-#: src/warc.c:1098
+#: src/warc.c:1089
 msgid "CDX file does not list checksums. (Missing column 'k'.)\n"
 msgstr "U CDX datoteci nema popisa kontrolnih suma. (Nema stupca „k“)\n"
 
-#: src/warc.c:1101
+#: src/warc.c:1092
 msgid "CDX file does not list record ids. (Missing column 'u'.)\n"
 msgstr "U CDX datoteci nema popisa identifikatora. (Nema stupca „u“)\n"
 
-#: src/warc.c:1125
+#: src/warc.c:1116
 #, c-format
 msgid ""
 "Loaded %d record from CDX.\n"
@@ -3541,32 +3533,32 @@ msgstr[1] "Učitana su %d zapisa iz CDX\n"
 msgstr[2] "Učitano je %d zapisa iz CDX\n"
 
 # deduplication > eliminira duplikate, pametno dupliciranje
-#: src/warc.c:1171
+#: src/warc.c:1162
 #, c-format
 msgid "Could not read CDX file %s for deduplication.\n"
 msgstr "CDX datoteku %s nije moguće pročitati za deduplikaciju\n"
 
-#: src/warc.c:1181
+#: src/warc.c:1172
 msgid "Could not open temporary WARC manifest file.\n"
 msgstr "Privremenu WARC manifest datoteku nije moguće otvoriti\n"
 
-#: src/warc.c:1191
+#: src/warc.c:1182
 msgid "Could not open temporary WARC log file.\n"
 msgstr "Privremenu WARC dnevničku datoteku (dnevnik) nije moguće otvoriti\n"
 
-#: src/warc.c:1200
+#: src/warc.c:1191
 msgid "Could not open WARC file.\n"
 msgstr "WARC datoteku nije moguće otvoriti\n"
 
-#: src/warc.c:1209
+#: src/warc.c:1200
 msgid "Could not open CDX file for output.\n"
 msgstr "CDX datoteku nije moguće otvoriti za ispis\n"
 
-#: src/warc.c:1239
+#: src/warc.c:1230
 msgid "Could not open temporary WARC file.\n"
 msgstr "Privremenu WARC datoteku nije moguće otvoriti\n"
 
-#: src/warc.c:1515
+#: src/warc.c:1508
 msgid "Found exact match in CDX file. Saving revisit record to WARC.\n"
 msgstr ""
 "Pronađeno točno podudaranje u CDX datoteci; pronađeni zapis sprema se u "

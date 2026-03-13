@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wget 1.8.1\n"
 "Report-Msgid-Bugs-To: bug-wget@gnu.org\n"
-"POT-Creation-Date: 2024-03-10 15:08+0100\n"
+"POT-Creation-Date: 2024-11-10 22:29+0100\n"
 "PO-Revision-Date: 2002-03-18 03:11\n"
 "Last-Translator: Yassen Roussev <slona@bulgaria.com>\n"
 "Language-Team: Bulgarian <bg@bulgaria.com>\n"
@@ -409,19 +409,19 @@ msgstr "Трансферът бе прекъснат.\n"
 msgid "File %s already there; not retrieving.\n"
 msgstr "Файлът `%s' е вече тук, няма да го тегля.\n"
 
-#: src/ftp.c:1955 src/http.c:4364
+#: src/ftp.c:1955 src/http.c:4359
 #, c-format
 msgid "(try:%2d)"
 msgstr "(опит:%2d)"
 
-#: src/ftp.c:2047 src/http.c:4794
+#: src/ftp.c:2047 src/http.c:4789
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s]\n"
 "\n"
 msgstr ""
 
-#: src/ftp.c:2048 src/http.c:4795
+#: src/ftp.c:2048 src/http.c:4790
 #, fuzzy, c-format
 #| msgid ""
 #| "%s (%s) - `%s' saved [%ld]\n"
@@ -434,7 +434,7 @@ msgstr ""
 "\n"
 
 #: src/ftp.c:2108 src/main.c:2178 src/metalink.c:1133 src/recur.c:511
-#: src/recur.c:750 src/retr.c:1303
+#: src/recur.c:750 src/retr.c:1243
 #, c-format
 msgid "Removing %s.\n"
 msgstr "Премахвам %s.\n"
@@ -757,7 +757,7 @@ msgstr "неуспя: %s.\n"
 msgid "%s: Cannot resolve incomplete link %s.\n"
 msgstr "%s: Не мога да изасня несъвършенния линк %s.\n"
 
-#: src/html-url.c:944
+#: src/html-url.c:945
 #, fuzzy, c-format
 #| msgid "%s: Invalid specification `%s'\n"
 msgid "%s: Invalid URL %s: %s\n"
@@ -813,7 +813,7 @@ msgstr "Използване на вече установена връзка к�
 msgid "Failed reading proxy response: %s\n"
 msgstr "Неуспех при запис на HTTP искане: %s.\n"
 
-#: src/http.c:2183 src/http.c:3460 src/http.c:4590
+#: src/http.c:2183 src/http.c:3460 src/http.c:4585
 #, c-format
 msgid "%s ERROR %d: %s.\n"
 msgstr "%s ГРЕШКА: %d: %s.\n"
@@ -938,80 +938,80 @@ msgstr "Дължина: "
 msgid "ignored"
 msgstr "игнориран"
 
-#: src/http.c:4272
+#: src/http.c:4266
 msgid "Warning: wildcards not supported in HTTP.\n"
 msgstr "Внимание: уайлдкардс не се поддържат в HTTP.\n"
 
-#: src/http.c:4354
+#: src/http.c:4349
 msgid "Spider mode enabled. Check if remote file exists.\n"
 msgstr ""
 
-#: src/http.c:4447
+#: src/http.c:4442
 #, fuzzy, c-format
 #| msgid "Cannot write to `%s' (%s).\n"
 msgid "Cannot write to %s (%s).\n"
 msgstr "Немога да запиша върху `%s' (%s).\n"
 
-#: src/http.c:4469
+#: src/http.c:4464
 msgid "Required attribute missing from Header received.\n"
 msgstr ""
 
-#: src/http.c:4474
+#: src/http.c:4469
 msgid "Username/Password Authentication Failed.\n"
 msgstr ""
 
-#: src/http.c:4480
+#: src/http.c:4475
 #, fuzzy
 #| msgid "Cannot write to `%s' (%s).\n"
 msgid "Cannot write to WARC file.\n"
 msgstr "Немога да запиша върху `%s' (%s).\n"
 
-#: src/http.c:4486
+#: src/http.c:4481
 msgid "Cannot write to temporary WARC file.\n"
 msgstr ""
 
-#: src/http.c:4491
+#: src/http.c:4486
 msgid "Unable to establish SSL connection.\n"
 msgstr "Немога да установя SSL връзка.\n"
 
-#: src/http.c:4497
+#: src/http.c:4492
 #, fuzzy, c-format
 #| msgid "Cannot write to `%s' (%s).\n"
 msgid "Cannot unlink %s (%s).\n"
 msgstr "Немога да запиша върху `%s' (%s).\n"
 
-#: src/http.c:4507
+#: src/http.c:4502
 #, c-format
 msgid "ERROR: Redirection (%d) without location.\n"
 msgstr "ГРЕШКА: Пре-адресация (%d) без установен адрес.\n"
 
-#: src/http.c:4529
+#: src/http.c:4524
 msgid ""
 "Could not find Metalink data in HTTP response. Downloading file using HTTP "
 "GET.\n"
 msgstr ""
 
-#: src/http.c:4538
+#: src/http.c:4533
 msgid "Metalink headers found. Switching to Metalink mode.\n"
 msgstr ""
 
-#: src/http.c:4579
+#: src/http.c:4574
 msgid "Remote file does not exist -- broken link!!!\n"
 msgstr ""
 
-#: src/http.c:4607
+#: src/http.c:4602
 msgid "Last-modified header missing -- time-stamps turned off.\n"
 msgstr ""
 "Заглавката съдържаща информация относно последна промяна липсва -- полето за "
 "дата се изключва.\n"
 
-#: src/http.c:4615
+#: src/http.c:4610
 msgid "Last-modified header invalid -- time-stamp ignored.\n"
 msgstr ""
 "Заглавката съдържаща информация относно последна промяна е невалиднa -- "
 "полето за дата се игнорира.\n"
 
-#: src/http.c:4645
+#: src/http.c:4640
 #, fuzzy, c-format
 #| msgid ""
 #| "Server file no newer than local file `%s' -- not retrieving.\n"
@@ -1021,17 +1021,17 @@ msgid ""
 "\n"
 msgstr "Файлът на сървъра не е по-нов от този на диска `%s' -- спирам.\n"
 
-#: src/http.c:4653
+#: src/http.c:4648
 #, fuzzy, c-format
 #| msgid "The sizes do not match (local %ld) -- retrieving.\n"
 msgid "The sizes do not match (local %s) -- retrieving.\n"
 msgstr "Големините не съвпадат (местен %ld) -- продължавам.\n"
 
-#: src/http.c:4662
+#: src/http.c:4657
 msgid "Remote file is newer, retrieving.\n"
 msgstr "Файлът на сървъра е по-нов, продължавам.\n"
 
-#: src/http.c:4680
+#: src/http.c:4675
 #, fuzzy
 #| msgid ""
 #| "Remote file is newer than local file `%s' -- retrieving.\n"
@@ -1042,7 +1042,7 @@ msgid ""
 "\n"
 msgstr "Файлът на сървъра е по-нов от местния `%s' -- започвам да тeгля.\n"
 
-#: src/http.c:4686
+#: src/http.c:4681
 #, fuzzy
 #| msgid "Remote file no newer than local file `%s' -- not retrieving.\n"
 msgid ""
@@ -1050,14 +1050,14 @@ msgid ""
 "\n"
 msgstr "Файлът от сървъра не е по-нов от местния `%s' -- не продължавам.\n"
 
-#: src/http.c:4695
+#: src/http.c:4690
 msgid ""
 "Remote file exists and could contain further links,\n"
 "but recursion is disabled -- not retrieving.\n"
 "\n"
 msgstr ""
 
-#: src/http.c:4701
+#: src/http.c:4696
 #, fuzzy
 #| msgid "Remote file is newer, retrieving.\n"
 msgid ""
@@ -1065,20 +1065,20 @@ msgid ""
 "\n"
 msgstr "Файлът на сървъра е по-нов, продължавам.\n"
 
-#: src/http.c:4710
+#: src/http.c:4705
 #, fuzzy, c-format
 #| msgid "%s ERROR %d: %s.\n"
 msgid "%s URL: %s %2d %s\n"
 msgstr "%s ГРЕШКА: %d: %s.\n"
 
-#: src/http.c:4758
+#: src/http.c:4753
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s/%s]\n"
 "\n"
 msgstr ""
 
-#: src/http.c:4759
+#: src/http.c:4754
 #, fuzzy, c-format
 #| msgid ""
 #| "%s (%s) - `%s' saved [%ld/%ld]\n"
@@ -1090,30 +1090,30 @@ msgstr ""
 "%s (%s) - `%s' записан [%ld/%ld]\n"
 "\n"
 
-#: src/http.c:4825
+#: src/http.c:4820
 #, fuzzy, c-format
 #| msgid "%s (%s) - Connection closed at byte %ld. "
 msgid "%s (%s) - Connection closed at byte %s. "
 msgstr "%s (%s) - Връзката бе преустановена при байт %ld. "
 
-#: src/http.c:4848
+#: src/http.c:4843
 #, fuzzy, c-format
 #| msgid "%s (%s) - Read error at byte %ld (%s)."
 msgid "%s (%s) - Read error at byte %s (%s)."
 msgstr "%s (%s) - Грешка при четене, байт %ld (%s)."
 
-#: src/http.c:4857
+#: src/http.c:4852
 #, fuzzy, c-format
 #| msgid "%s (%s) - Read error at byte %ld/%ld (%s). "
 msgid "%s (%s) - Read error at byte %s/%s (%s). "
 msgstr "%s (%s) - Грешка при четене, байт %ld/%ld (%s). "
 
-#: src/http.c:5114
+#: src/http.c:5108
 #, c-format
 msgid "Unsupported quality of protection '%s'.\n"
 msgstr ""
 
-#: src/http.c:5119
+#: src/http.c:5113
 #, c-format
 msgid "Unsupported algorithm '%s'.\n"
 msgstr ""
@@ -1257,30 +1257,30 @@ msgstr ""
 msgid "Encoding %s isn't valid\n"
 msgstr ""
 
-#: src/iri.c:140 src/url.c:1612
+#: src/iri.c:140 src/url.c:1619
 #, c-format
 msgid "Conversion from %s to %s isn't supported\n"
 msgstr ""
 
-#: src/iri.c:180 src/url.c:1642
+#: src/iri.c:180 src/url.c:1649
 msgid "Incomplete or invalid multibyte sequence encountered\n"
 msgstr ""
 
-#: src/iri.c:200 src/url.c:1659
+#: src/iri.c:206 src/url.c:1666
 #, c-format
 msgid "Unhandled errno %d\n"
 msgstr ""
 
-#: src/iri.c:237
+#: src/iri.c:243
 msgid "locale_to_utf8: locale is unset\n"
 msgstr ""
 
-#: src/iri.c:283 src/iri.c:298
+#: src/iri.c:289 src/iri.c:304
 #, c-format
 msgid "idn_encode failed (%d): %s\n"
 msgstr ""
 
-#: src/iri.c:290
+#: src/iri.c:296
 #, fuzzy, c-format
 #| msgid "couldn't connect to %s:%hu: %s\n"
 msgid "Failed to convert to lower: %d: %s\n"
@@ -2774,22 +2774,22 @@ msgstr "Продължавам на заден план, pid %d.\n"
 msgid "Output will be written to %s.\n"
 msgstr "Резултатът ще бъде записван в `%s'.\n"
 
-#: src/mswindows.c:323
+#: src/mswindows.c:334
 #, c-format
 msgid "fake_fork_child() failed\n"
 msgstr ""
 
-#: src/mswindows.c:331
+#: src/mswindows.c:342
 #, c-format
 msgid "fake_fork() failed\n"
 msgstr ""
 
-#: src/mswindows.c:460 src/mswindows.c:467
+#: src/mswindows.c:471 src/mswindows.c:478
 #, c-format
 msgid "%s: Couldn't find usable socket driver.\n"
 msgstr "%s: Немога да намеря подходящ TCP/IP драйвер.\n"
 
-#: src/mswindows.c:647
+#: src/mswindows.c:658
 #, c-format
 msgid "ioctl() failed.  The socket could not be set as blocking.\n"
 msgstr ""
@@ -2991,7 +2991,7 @@ msgstr "Грешка при прокси УРЛ %s: Трябва да е HTTP.\n
 msgid "%d redirections exceeded.\n"
 msgstr "%d пре-адресациите бяха твърде много.\n"
 
-#: src/retr.c:1327
+#: src/retr.c:1344
 msgid ""
 "Giving up.\n"
 "\n"
@@ -2999,7 +2999,7 @@ msgstr ""
 "Отказвам се.\n"
 "\n"
 
-#: src/retr.c:1327
+#: src/retr.c:1344
 msgid ""
 "Retrying.\n"
 "\n"
@@ -3024,57 +3024,57 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/url.c:688
+#: src/url.c:695
 #, fuzzy
 #| msgid "Unknown error"
 msgid "No error"
 msgstr "Непозната грешка"
 
-#: src/url.c:689
+#: src/url.c:696
 msgid "Unsupported scheme"
 msgstr ""
 
-#: src/url.c:690
+#: src/url.c:697
 #, fuzzy
 #| msgid "%s: debug support not compiled in.\n"
 msgid "HTTPS support not compiled in"
 msgstr "%s: поддръжката на \"debug\" не е компилирана.\n"
 
-#: src/url.c:691
+#: src/url.c:698
 #, fuzzy
 #| msgid "%s: debug support not compiled in.\n"
 msgid "FTPS support not compiled in"
 msgstr "%s: поддръжката на \"debug\" не е компилирана.\n"
 
-#: src/url.c:692
+#: src/url.c:699
 msgid "Scheme missing"
 msgstr ""
 
-#: src/url.c:693
+#: src/url.c:700
 msgid "Invalid host name"
 msgstr ""
 
-#: src/url.c:694
+#: src/url.c:701
 msgid "Bad port number"
 msgstr ""
 
-#: src/url.c:695
+#: src/url.c:702
 msgid "Invalid user name"
 msgstr ""
 
-#: src/url.c:696
+#: src/url.c:703
 msgid "Unterminated IPv6 numeric address"
 msgstr ""
 
-#: src/url.c:697
+#: src/url.c:704
 msgid "IPv6 addresses not supported"
 msgstr ""
 
-#: src/url.c:698
+#: src/url.c:705
 msgid "Invalid IPv6 numeric address"
 msgstr ""
 
-#: src/url.c:1645
+#: src/url.c:1652
 msgid "Unconvertable multibyte sequence encountered\n"
 msgstr ""
 
@@ -3145,23 +3145,23 @@ msgid ""
 "failed.\n"
 msgstr ""
 
-#: src/utils.c:2443
+#: src/utils.c:2479
 #, c-format
 msgid "Invalid regular expression %s, PCRE2 error %d\n"
 msgstr ""
 
-#: src/utils.c:2460 src/utils.c:2483
+#: src/utils.c:2496 src/utils.c:2519
 #, c-format
 msgid "Invalid regular expression %s, %s\n"
 msgstr ""
 
-#: src/utils.c:2513 src/utils.c:2535 src/utils.c:2559
+#: src/utils.c:2549 src/utils.c:2571 src/utils.c:2595
 #, fuzzy, c-format
 #| msgid "Error writing to `%s': %s\n"
 msgid "Error while matching %s: %d\n"
 msgstr "Грешка при запис на `%s': %s\n"
 
-#: src/utils.c:2852
+#: src/utils.c:2888
 #, c-format
 msgid "Skipping key with wrong size (%d/%d): %s\n"
 msgstr ""
@@ -3182,36 +3182,36 @@ msgstr ""
 msgid "Error opening GZIP stream to WARC file.\n"
 msgstr ""
 
-#: src/warc.c:830
+#: src/warc.c:833
 msgid "Error writing warcinfo record to WARC file.\n"
 msgstr ""
 
-#: src/warc.c:893
+#: src/warc.c:884
 #, c-format
 msgid ""
 "Opening WARC file %s.\n"
 "\n"
 msgstr ""
 
-#: src/warc.c:899
+#: src/warc.c:890
 #, fuzzy, c-format
 #| msgid "Error parsing proxy URL %s: %s.\n"
 msgid "Error opening WARC file %s.\n"
 msgstr "Грешка при транслирането на прокси УРЛ %s: %s\n"
 
-#: src/warc.c:1095
+#: src/warc.c:1086
 msgid "CDX file does not list original urls. (Missing column 'a'.)\n"
 msgstr ""
 
-#: src/warc.c:1098
+#: src/warc.c:1089
 msgid "CDX file does not list checksums. (Missing column 'k'.)\n"
 msgstr ""
 
-#: src/warc.c:1101
+#: src/warc.c:1092
 msgid "CDX file does not list record ids. (Missing column 'u'.)\n"
 msgstr ""
 
-#: src/warc.c:1125
+#: src/warc.c:1116
 #, c-format
 msgid ""
 "Loaded %d record from CDX.\n"
@@ -3222,34 +3222,34 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/warc.c:1171
+#: src/warc.c:1162
 #, c-format
 msgid "Could not read CDX file %s for deduplication.\n"
 msgstr ""
 
-#: src/warc.c:1181
+#: src/warc.c:1172
 msgid "Could not open temporary WARC manifest file.\n"
 msgstr ""
 
-#: src/warc.c:1191
+#: src/warc.c:1182
 msgid "Could not open temporary WARC log file.\n"
 msgstr ""
 
-#: src/warc.c:1200
+#: src/warc.c:1191
 msgid "Could not open WARC file.\n"
 msgstr ""
 
-#: src/warc.c:1209
+#: src/warc.c:1200
 #, fuzzy
 #| msgid "Could not find proxy host.\n"
 msgid "Could not open CDX file for output.\n"
 msgstr "Немога да намеря прокси хоста.\n"
 
-#: src/warc.c:1239
+#: src/warc.c:1230
 msgid "Could not open temporary WARC file.\n"
 msgstr ""
 
-#: src/warc.c:1515
+#: src/warc.c:1508
 msgid "Found exact match in CDX file. Saving revisit record to WARC.\n"
 msgstr ""
 
@@ -3562,8 +3562,8 @@ msgstr ""
 #~ "Рекурсивен трансфер:\n"
 #~ "  -r,  --recursive             рекурсивен \"web-suck\" -- използвайте "
 #~ "внимателно! .\n"
-#~ "  -l,  --level=НОМЕР           максимална \"дълбочина\" при \"web-"
-#~ "suck\" (inf/0 за безкрайна).\n"
+#~ "  -l,  --level=НОМЕР           максимална \"дълбочина\" при \"web-suck\" "
+#~ "(inf/0 за безкрайна).\n"
 #~ "       --delete-after          изтриване на файлове след като са "
 #~ "изтеглени (местно).\n"
 #~ "  -k,  --convert-links         преобразува несвързани линкове в "

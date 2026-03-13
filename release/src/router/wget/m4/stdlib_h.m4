@@ -1,8 +1,10 @@
-# stdlib_h.m4 serial 77
+# stdlib_h.m4
+# serial 82
 dnl Copyright (C) 2007-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 AC_DEFUN_ONCE([gl_STDLIB_H],
 [
@@ -36,7 +38,7 @@ AC_DEFUN_ONCE([gl_STDLIB_H],
   dnl On Solaris 10, in UTF-8 locales, its value is 3 but needs to be 4.
   dnl Fortunately, we can do this because on this platform MB_LEN_MAX is 5.
   AC_REQUIRE([AC_CANONICAL_HOST])
-  AC_REQUIRE([gt_LOCALE_FR_UTF8])
+  AC_REQUIRE([gt_LOCALE_EN_UTF8])
   AC_CACHE_CHECK([whether MB_CUR_MAX is correct],
     [gl_cv_macro_MB_CUR_MAX_good],
     [
@@ -44,13 +46,13 @@ AC_DEFUN_ONCE([gl_STDLIB_H],
       dnl is present.
 changequote(,)dnl
       case "$host_os" in
-                  # Guess no on Solaris.
-        solaris*) gl_cv_macro_MB_CUR_MAX_good="guessing no" ;;
-                  # Guess yes otherwise.
-        *)        gl_cv_macro_MB_CUR_MAX_good="guessing yes" ;;
+                           # Guess no on Solaris and Haiku.
+        solaris* | haiku*) gl_cv_macro_MB_CUR_MAX_good="guessing no" ;;
+                           # Guess yes otherwise.
+        *)                 gl_cv_macro_MB_CUR_MAX_good="guessing yes" ;;
       esac
 changequote([,])dnl
-      if test $LOCALE_FR_UTF8 != none; then
+      if test "$LOCALE_EN_UTF8" != none; then
         AC_RUN_IFELSE(
           [AC_LANG_SOURCE([[
 #include <locale.h>
@@ -58,7 +60,7 @@ changequote([,])dnl
 int main ()
 {
   int result = 0;
-  if (setlocale (LC_ALL, "$LOCALE_FR_UTF8") != NULL)
+  if (setlocale (LC_ALL, "$LOCALE_EN_UTF8") != NULL)
     {
       if (MB_CUR_MAX < 4)
         result |= 1;
@@ -109,6 +111,7 @@ AC_DEFUN([gl_STDLIB_H_REQUIRE_DEFAULTS],
 [
   m4_defun(GL_MODULE_INDICATOR_PREFIX[_STDLIB_H_MODULE_INDICATOR_DEFAULTS], [
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB__EXIT])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_ABORT_DEBUG])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_ALIGNED_ALLOC])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_ATOLL])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_CALLOC_GNU])
@@ -138,12 +141,12 @@ AC_DEFUN([gl_STDLIB_H_REQUIRE_DEFAULTS],
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_RANDOM])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_RANDOM_R])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_REALLOCARRAY])
-    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_REALLOC_GNU])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_REALLOC_POSIX])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_REALPATH])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_RPMATCH])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_SECURE_GETENV])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_SETENV])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_STACK_TRACE])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_STRTOD])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_STRTOF])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_STRTOL])
@@ -217,6 +220,7 @@ AC_DEFUN([gl_STDLIB_H_DEFAULTS],
   HAVE_UNLOCKPT=1;           AC_SUBST([HAVE_UNLOCKPT])
   HAVE_DECL_UNSETENV=1;      AC_SUBST([HAVE_DECL_UNSETENV])
   REPLACE__EXIT=0;           AC_SUBST([REPLACE__EXIT])
+  REPLACE_ABORT=0;           AC_SUBST([REPLACE_ABORT])
   REPLACE_ALIGNED_ALLOC=0;   AC_SUBST([REPLACE_ALIGNED_ALLOC])
   REPLACE_CALLOC_FOR_CALLOC_GNU=0;    AC_SUBST([REPLACE_CALLOC_FOR_CALLOC_GNU])
   REPLACE_CALLOC_FOR_CALLOC_POSIX=0;  AC_SUBST([REPLACE_CALLOC_FOR_CALLOC_POSIX])
@@ -243,7 +247,6 @@ AC_DEFUN([gl_STDLIB_H_DEFAULTS],
   REPLACE_RAND=0;            AC_SUBST([REPLACE_RAND])
   REPLACE_RANDOM=0;          AC_SUBST([REPLACE_RANDOM])
   REPLACE_RANDOM_R=0;        AC_SUBST([REPLACE_RANDOM_R])
-  REPLACE_REALLOC_FOR_REALLOC_GNU=0;    AC_SUBST([REPLACE_REALLOC_FOR_REALLOC_GNU])
   REPLACE_REALLOC_FOR_REALLOC_POSIX=0;  AC_SUBST([REPLACE_REALLOC_FOR_REALLOC_POSIX])
   REPLACE_REALLOCARRAY=0;    AC_SUBST([REPLACE_REALLOCARRAY])
   REPLACE_REALPATH=0;        AC_SUBST([REPLACE_REALPATH])
@@ -258,4 +261,5 @@ AC_DEFUN([gl_STDLIB_H_DEFAULTS],
   REPLACE_STRTOULL=0;        AC_SUBST([REPLACE_STRTOULL])
   REPLACE_UNSETENV=0;        AC_SUBST([REPLACE_UNSETENV])
   REPLACE_WCTOMB=0;          AC_SUBST([REPLACE_WCTOMB])
+  CAN_PRINT_STACK_TRACE=0;   AC_SUBST([CAN_PRINT_STACK_TRACE])
 ])

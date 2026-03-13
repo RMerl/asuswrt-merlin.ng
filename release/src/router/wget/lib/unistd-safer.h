@@ -17,6 +17,11 @@
 
 /* Written by Paul Eggert and Eric Blake.  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 int dup_safer (int);
 int fd_safer (int);
 int pipe_safer (int[2]);
@@ -28,4 +33,9 @@ int fd_safer_flag (int, int);
 
 #if GNULIB_PIPE2_SAFER
 int pipe2_safer (int[2], int);
+#endif
+
+
+#ifdef __cplusplus
+}
 #endif

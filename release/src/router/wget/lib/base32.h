@@ -27,7 +27,7 @@
 #include <idx.h>
 
 /* Pacify GCC in isubase32.  */
-#if defined __GNUC__ && 4 < __GNUC__ + (3 <= __GNUC_MINOR__)
+#if 4 < __GNUC__ + (3 <= __GNUC_MINOR__) && !defined __clang__
 # pragma GCC diagnostic ignored "-Wtype-limits"
 #endif
 

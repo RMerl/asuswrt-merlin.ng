@@ -282,7 +282,7 @@ rpl_fd_isset (SOCKET fd, fd_set * set)
 #  endif
 _GL_FUNCDECL_RPL (pselect, int,
                   (int, fd_set *restrict, fd_set *restrict, fd_set *restrict,
-                   struct timespec const *restrict, const sigset_t *restrict));
+                   struct timespec const *restrict, const sigset_t *restrict), );
 _GL_CXXALIAS_RPL (pselect, int,
                   (int, fd_set *restrict, fd_set *restrict, fd_set *restrict,
                    struct timespec const *restrict, const sigset_t *restrict));
@@ -290,7 +290,7 @@ _GL_CXXALIAS_RPL (pselect, int,
 #  if !@HAVE_PSELECT@
 _GL_FUNCDECL_SYS (pselect, int,
                   (int, fd_set *restrict, fd_set *restrict, fd_set *restrict,
-                   struct timespec const *restrict, const sigset_t *restrict));
+                   struct timespec const *restrict, const sigset_t *restrict), );
 #  endif
 /* Need to cast, because on AIX 7, the second, third, fourth argument may be
                         void *restrict,   void *restrict,   void *restrict.  */
@@ -319,7 +319,7 @@ _GL_WARN_ON_USE (pselect, "pselect is not portable - "
 #  endif
 _GL_FUNCDECL_RPL (select, int,
                   (int, fd_set *restrict, fd_set *restrict, fd_set *restrict,
-                   struct timeval *restrict));
+                   struct timeval *restrict), );
 _GL_CXXALIAS_RPL (select, int,
                   (int, fd_set *restrict, fd_set *restrict, fd_set *restrict,
                    timeval *restrict));
@@ -328,10 +328,14 @@ _GL_CXXALIAS_SYS (select, int,
                   (int, fd_set *restrict, fd_set *restrict, fd_set *restrict,
                    timeval *restrict));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (select);
+# endif
 #elif @HAVE_WINSOCK2_H@
-# undef select
-# define select select_used_without_requesting_gnulib_module_select
+# if !GNULIB_SELECT
+#  undef select
+#  define select select_used_without_requesting_gnulib_module_select
+# endif
 #elif defined GNULIB_POSIXCHECK
 # undef select
 # if HAVE_RAW_DECL_SELECT

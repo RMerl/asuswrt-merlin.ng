@@ -26,6 +26,7 @@
 #include <unistd.h>
 
 #include "glthread/lock.h"
+#include "glthread/once.h"
 #include "thread-optim.h"
 #include "sig-handler.h"
 

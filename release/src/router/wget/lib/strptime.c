@@ -713,7 +713,7 @@ __strptime_internal (rp, fmt, tm, decided, era_cnt LOCALE_PARAM)
               }
             if (val > 1200)
               return NULL;
-#if defined _LIBC || HAVE_TM_GMTOFF
+#if defined _LIBC || HAVE_STRUCT_TM_TM_GMTOFF
             tm->tm_gmtoff = (val * 3600) / 100;
             if (neg)
               tm->tm_gmtoff = -tm->tm_gmtoff;

@@ -27,6 +27,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /* Describe a just-created or just-renamed destination file.  */
 struct F_triple
 {
@@ -46,5 +51,10 @@ extern void triple_free (void *x);
 extern size_t triple_hash_no_name (void const *x, size_t table_size)
   _GL_ATTRIBUTE_PURE;
 extern bool triple_compare (void const *x, void const *y);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

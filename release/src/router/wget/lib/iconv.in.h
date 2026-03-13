@@ -48,7 +48,7 @@
 #   define iconv_open rpl_iconv_open
 #  endif
 _GL_FUNCDECL_RPL (iconv_open, iconv_t,
-                  (const char *tocode, const char *fromcode)
+                  (const char *tocode, const char *fromcode),
                   _GL_ARG_NONNULL ((1, 2)));
 _GL_CXXALIAS_RPL (iconv_open, iconv_t,
                   (const char *tocode, const char *fromcode));
@@ -87,7 +87,7 @@ _GL_FUNCDECL_RPL (iconv, size_t,
                   (iconv_t cd,
                    @ICONV_CONST@ char **restrict inbuf,
                    size_t *restrict inbytesleft,
-                   char **restrict outbuf, size_t *restrict outbytesleft));
+                   char **restrict outbuf, size_t *restrict outbytesleft), );
 _GL_CXXALIAS_RPL (iconv, size_t,
                   (iconv_t cd,
                    @ICONV_CONST@ char **restrict inbuf,
@@ -119,7 +119,7 @@ _GL_WARN_ON_USE (iconv, "iconv is not working correctly everywhere - "
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #   define iconv_close rpl_iconv_close
 #  endif
-_GL_FUNCDECL_RPL (iconv_close, int, (iconv_t cd));
+_GL_FUNCDECL_RPL (iconv_close, int, (iconv_t cd), );
 _GL_CXXALIAS_RPL (iconv_close, int, (iconv_t cd));
 # else
 _GL_CXXALIAS_SYS (iconv_close, int, (iconv_t cd));

@@ -205,11 +205,11 @@ typedef int nl_item;
 #   undef nl_langinfo
 #   define nl_langinfo rpl_nl_langinfo
 #  endif
-_GL_FUNCDECL_RPL (nl_langinfo, char *, (nl_item item));
+_GL_FUNCDECL_RPL (nl_langinfo, char *, (nl_item item), );
 _GL_CXXALIAS_RPL (nl_langinfo, char *, (nl_item item));
 # else
 #  if !@HAVE_NL_LANGINFO@
-_GL_FUNCDECL_SYS (nl_langinfo, char *, (nl_item item));
+_GL_FUNCDECL_SYS (nl_langinfo, char *, (nl_item item), );
 #  endif
 _GL_CXXALIAS_SYS (nl_langinfo, char *, (nl_item item));
 # endif

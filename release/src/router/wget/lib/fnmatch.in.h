@@ -86,7 +86,7 @@
 #  endif
 #  define GNULIB_defined_fnmatch_function 1
 _GL_FUNCDECL_RPL (fnmatch, int,
-                  (const char *pattern, const char *name, int flags)
+                  (const char *pattern, const char *name, int flags),
                   _GL_ARG_NONNULL ((1, 2)));
 _GL_CXXALIAS_RPL (fnmatch, int,
                   (const char *pattern, const char *name, int flags));
@@ -94,7 +94,7 @@ _GL_CXXALIAS_RPL (fnmatch, int,
 #  if !@HAVE_FNMATCH@
 #   define GNULIB_defined_fnmatch_function 1
 _GL_FUNCDECL_SYS (fnmatch, int,
-                  (const char *pattern, const char *name, int flags)
+                  (const char *pattern, const char *name, int flags),
                   _GL_ARG_NONNULL ((1, 2)));
 #  endif
 _GL_CXXALIAS_SYS (fnmatch, int,

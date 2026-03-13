@@ -1,4 +1,248 @@
+2024-11-10  Darshit Shah  <darnir@gnu.org>
+
+	version 1.25.0
+	* NEWS: Record release date.
+
+2024-11-10  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* NEWS: Update for release 1.25.0
+
+2024-11-10  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Fix CVE-2024-10524 (drop support for shorthand URLs)
+	* doc/wget.texi: Add documentation for removed support for shorthand URLs.
+	* src/html-url.c (src/html-url.c): Call maybe_prepend_scheme.
+	* src/main.c (main): Likewise.
+	* src/retr.c (getproxy): Likewise.
+	* src/url.c: Rename definition of rewrite_shorthand_url to maybe_prepend_scheme,
+	  add new function is_valid_port.
+	* src/url.h: Rename declaration of rewrite_shorthand_url to maybe_prepend_scheme.
+
+	Reported-by: Goni Golan <gonig@jfrog.com>
+
+2024-11-10  Darshit Shah  <darnir@gnu.org>
+
+	* contrib/make-release: Fix missing variables
+
+	* doc/wget.texi: Document the new non-blocking read feature
+
+	Revert "* configure.ac: Remove searching for makeinfo (breaks doc/ build)"
+	This reverts commit 04053a7c1e31ec848d503282d510c99545b6ae16.
+
+2024-11-10  Darshit Shah  <darnir@gnu.org>
+
+	Fix a static analysis false positive
+	Clang's static analyzer believes that it is possible for a realloc
+	request to return NULL. However, the `xrealloc` implementation used
+	in Wget will trigger a program crash if enough memory couldn't be
+	found. I'm not sure why the analyzer isn't able to see that. But let's
+	pacify it by asserting here that xrealloc will always return a non-null
+
+	 * src/wget.h (DO_REALLOC): Assert that xrealloc will always return
+	   non-null
+
+2024-11-10  Darshit Shah  <darnir@gnu.org>
+
+	Fix returning uninitialized variable
+	* src/retr.c (retrieve_from_file): Remove a dead store to status
+	  (retrieve_from_url_list): Initialize status to a default of RETROK
+
+2024-11-10  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* fuzz/wget_options_fuzzer.c: Work around issue "multiple definition of getaddrinfo"
+
+2024-11-10  Darshit Shah  <darnir@gnu.org>
+
+	Fix build error on MingW
+	Gnulib does not currently implement the `F_GETFL` and `F_SETFL` flags on
+	mingw. As a result building Wget failed on Windows. We don't currently
+	have a good solution to this problem and Windows users of Wget will not
+	get the new functionality of non-blocking file I/O reads. The current
+	solution is simply to provide a Windows specific no-op stub
+
+	 * src/mswindows.c (set_fd_nonblocking): Provide an empty stub function
+	   for Windows systems
+	 * src/mswindows.h (set_fd_nonblocking): Export the function so it is
+	   available in util.c where it is needed
+	 * src/util.c (set_fd_nonblocking): New function to set a fd as
+	   O_NONBLOCK on non-Windows, non-MSDOS systems
+	   (wget_read_from_file): Split the O_NONBLOCK code into
+	   set_fd_nonblocking and make all file I/O non-blocking, not just stdin
+
+2024-11-10  Sam James  <sam@gentoo.org>  (tiny change)
+
+	init: fix -Warray-bounds in setval_internal_tilde
+	>= GCC 12 reports an instance of -Warray-bounds in setval_internal_tilde
+	with the default -DNDEBUG:
+	```
+	In function ‘setval_internal_tilde’,
+	    inlined from ‘run_wgetrc’ at init.c:710:16:
+	init.c:940:17: error: array subscript [0, 167] is outside array bounds of ‘const struct <anonymous>[168]’ [-Werror=array-bounds=]
+	  940 |   if (((commands[comind].action == cmd_file) ||
+	      |         ~~~~~~~~^~~~~~~~
+	init.c: In function ‘run_wgetrc’:
+	init.c:135:3: note: while referencing ‘commands’
+	  135 | } commands[] = {
+	      |   ^~~~~~~~
+	```
+
+	setval_internal_tilde calls setval_internal and stores the result in ret;
+	setval_internal *does* check for if comind is out-of-bounds, but we only
+	check that *after* dereferencing commands[comind]. Swap the order in the
+	if() to fix that so we only dereference if we know it's safe.
+
+	ChangeLog:
+
+		* src/init.c (setval_internal_tilde): Check 'ret' earlier.
+
+2024-11-10  Darshit Shah  <darnir@gnu.org>
+
+	src/utils.h: Include wget.h before stdlib.h
+	* src/utils.h: wget.h includes config.h which should be included before
+	    any other header files. So swap the order of includes
+
+2024-11-10  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* README: Replace FSF address with URL
+
+	* configure.ac: Remove searching for makeinfo (breaks doc/ build)
+
+	* bootstrap: Update from gnulib
+
+	* gnulib: Update
+
+	* src/http.c (http_loop): Remove unused code
+
+	* configure.ac: Drop -Wc99-c11-compat and -Wuseless-cast for manywarnings
+
+2024-11-01  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* Makefile.am: Fix check-coverage from tarball
+
+	* Makefile.am: Fix creating coverage reports
+
+	* .gitlab-ci.yml: Remove tags to fix CI
+
+2024-10-31  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/utils.c (compile_posix_regex): Remove redundant casts
+
+2024-10-27  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/utils.h (strlcpy): Use restrict keywords
+
+	* src/hash.c: Include config.h in STANDALONE mode
+
+2024-06-09  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/http.c (http_loop): Fix memory leak
+
+	* src/retr.c (retrieve_from_url_list): Fix memory leak
+
+2024-06-02  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/retr.c (retrieve_from_file): Fix memleak
+
+	* src/warc.c (warc_close): Fix memleak
+
+	* src/warc.c (warc_start_new_file): Simplify code
+
+	* src/httpc.c (http_loop): Fix memleak
+
+	* src/init.c (cleanup): Do not close stdout on exit
+
+	* src/iri.c (do_conversion): Initialize memory from realloc()
+
+	* src/warc.c (warc_write_end_record): Check warc_write_ok (fix use-after-free)"
+
+	* src/wget.h (DO_REALLOC): Initialize realloc'ed memory to help valgrind
+
+	* src/utils.c (run_with_timeout): Set SIGALRM handler before setjmp() (reported by valgrind)
+
+	* fuzz/wget_options_fuzzer.c: Fix indentation
+
+2024-06-02  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Properly re-implement userinfo parsing (rfc2396)
+	* src/url.c (url_skip_credentials): Properly re-implement userinfo parsing (rfc2396)
+
+	The reason why the implementation is based on RFC 2396, an outdated standard,
+	is that the whole file is based on that RFC, and mixing standard here might be
+	dangerous.
+
+2024-05-24  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* fuzz/Makefile.am (oss-fuzz): Add -lgmp
+
+2024-05-12  Darshit Shah  <darnir@gnu.org>
+
+	Support continious reading from stdin pipes
+	Rather than reading from stdin only once, leave the pipe open until the
+	other end closes it and keep reading from the file after each set of
+	URLs is read
+
+	* src/html-url.h(get_urls_file): Update prototype to add additional
+	  param
+	* src/html-url.c(get_urls_file): Pass through read_again to
+	  wget_read_from_file.
+	* src/retr.c(retrieve_from_file): Split the function into two. Introduce
+	  `retrieve_from_url_list` that actually performs the retrieval.
+	  Also, if `url_list` returns that the fd has been left open, then
+	  continue reading from it until the fd is closed.
+	  (retrieve_from_url_list): New function that does the retrieval from
+	  a list of URLs that was read from a file.
+	* src/utils.c(wget_read_from_file): Rename old function `wget_read_file`
+	  to this.
+	  Accept an additional output parameter that states whether the fd was
+	  left open and if we should continue reading from it after the current
+	  set of URLs have been processed
+	  (wget_read_file): Write it as a new wrapper function around
+	  `wget_read_from_file` to maintain API comptability across other users
+
+2024-04-27  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* gnulib: Update
+
+2024-04-20  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Update gnulib link libraries
+	* fuzz/Makefile.am: Update gnulib link libraries.
+	* src/Makefile.am: Likewise.
+	* tests/Makefile.am: Likewise.
+
+2024-04-16  Sam James  <sam@gentoo.org>  (tiny change)
+
+	Fix libproxy build with --disable-debug
+	The definition of debug_logprintf in src/log.c is guarded by ENABLE_DEBUG
+	(although its prototype is unconditionally available in src/log.h).
+
+	The uses of debug_logprintf in src/retr.c aren't guarded by ENABLE_DEBUG.
+
+	Use the DEBUGP macro which is designed for this purpose.
+
+	* src/retr.c (getproxy): Use DEBUGP macro.
+
+	Fixes: https://gitlab.com/gnuwget/wget/-/issues/19
+
+2024-03-16  Darshit Shah  <darnir@gnu.org>
+
+	Add a new testcase for pathconf truncation
+	* testenv/Test-recursive-pathmax.py: Add a new testcase. This test tries
+	  to check that Wget allows downloading long filenames as far as allowed
+	  by the OS and filesystem.
+
+2024-03-11  Darshit Shah  <darnir@gnu.org>
+
+	* contrib/make-release: Automatically build and update online documentation
+
 2024-03-10  Darshit Shah  <darnir@gnu.org>
+
+	* contrib/make-release: More minor fixes
+
+	maint: post-release administrivia
+	* NEWS: Add header line for next release.
+	* .prev-version: Record previous version.
+	* cfg.mk (old_NEWS_hash): Auto-update.
 
 	version 1.24.5
 	* NEWS: Record release date.

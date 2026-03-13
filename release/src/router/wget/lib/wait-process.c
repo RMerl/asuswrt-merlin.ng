@@ -50,6 +50,41 @@
 
 #endif
 
+#ifdef __KLIBC__
+# include <dlfcn.h>
+
+# undef waitpid
+
+/* Replacement of waitpid() to support spawn2() of LIBCx which is the kLIBC
+   extension library. See for details:
+   <https://github.com/bitwiseworks/libcx/blob/master/src/spawn/libcx/spawn2.h#L194>.
+   */
+static pid_t
+klibc_waitpid (pid_t pid, int *statusp, int options)
+{
+  static pid_t (*waitpid_pfn) (pid_t, int *, int) = NULL;
+
+  if (waitpid_pfn == NULL)
+    {
+      void *libcx_handle;
+
+      /* Try to use waitpid() of LIBCx first if available because it can
+         process the return value of spawn-family of kLIBC as well as spawn2()
+         of LIBCx.  */
+      libcx_handle = dlopen ("libcx0", RTLD_LAZY);
+      if (libcx_handle != NULL)
+        waitpid_pfn = dlsym (libcx_handle, "_waitpid");
+      /* If not available, falls back to waitpid() of kLIBC.  */
+      if (waitpid_pfn == NULL)
+        waitpid_pfn = waitpid;
+    }
+
+  return waitpid_pfn (pid, statusp, options);
+}
+
+# define waitpid klibc_waitpid
+#endif
+
 
 /* Type of an entry in the slaves array.
    The 'used' bit determines whether this entry is currently in use.

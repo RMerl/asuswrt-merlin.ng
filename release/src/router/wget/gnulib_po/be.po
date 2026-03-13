@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: coreutils 5.0.91\n"
 "Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
-"POT-Creation-Date: 2024-03-10 15:09+0100\n"
+"POT-Creation-Date: 2024-11-10 22:29+0100\n"
 "PO-Revision-Date: 2003-10-30 01:10+0200\n"
 "Last-Translator: Ales Nyakhaychyk <nab@mail.by>\n"
 "Language-Team: Belarusian <i18n@mova.org>\n"
@@ -20,7 +20,7 @@ msgstr ""
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: KBabel 1.0.2\n"
 
-#: lib/error.c:194
+#: lib/error.c:208
 msgid "Unknown system error"
 msgstr "Невядомая сыстэмная памылка"
 
@@ -157,12 +157,12 @@ msgstr "немагчыма вярнуцца ў пачатковую працоў
 msgid "failed to return to initial working directory"
 msgstr "немагчыма вярнуцца ў пачатковую працоўную тэчку"
 
-#: lib/os2-spawn.c:45
+#: lib/os2-spawn.c:51
 #, c-format
 msgid "_open_osfhandle failed"
 msgstr ""
 
-#: lib/os2-spawn.c:82
+#: lib/os2-spawn.c:88
 #, c-format
 msgid "cannot restore fd %d: dup2 failed"
 msgstr ""
@@ -277,22 +277,22 @@ msgstr ""
 msgid "No previous regular expression"
 msgstr "памылка ў пошуку звычайнага выразу"
 
-#: lib/spawn-pipe.c:216 lib/spawn-pipe.c:219
+#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221
 #, fuzzy, c-format
 msgid "cannot create pipe"
 msgstr "немагчыма стварыць лучыва %s"
 
-#: lib/spawn-pipe.c:596 lib/wait-process.c:291 lib/wait-process.c:365
+#: lib/spawn-pipe.c:599 lib/wait-process.c:326 lib/wait-process.c:400
 #, fuzzy, c-format
 msgid "%s subprocess failed"
 msgstr "%s: збой seek"
 
-#: lib/wait-process.c:232 lib/wait-process.c:264 lib/wait-process.c:326
+#: lib/wait-process.c:267 lib/wait-process.c:299 lib/wait-process.c:361
 #, fuzzy, c-format
 msgid "%s subprocess"
 msgstr "%s: збой seek"
 
-#: lib/wait-process.c:283 lib/wait-process.c:355
+#: lib/wait-process.c:318 lib/wait-process.c:390
 #, fuzzy, c-format
 msgid "%s subprocess got fatal signal %d"
 msgstr "%s: збой seek"

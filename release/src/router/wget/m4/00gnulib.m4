@@ -1,8 +1,10 @@
-# 00gnulib.m4 serial 9
+# 00gnulib.m4
+# serial 9
 dnl Copyright (C) 2009-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl This file must be named something that sorts before all other
 dnl gnulib-provided .m4 files.  It is needed until the clang fix has

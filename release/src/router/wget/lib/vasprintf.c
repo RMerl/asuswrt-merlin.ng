@@ -25,6 +25,7 @@
 
 #include <errno.h>
 #include <limits.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include "vasnprintf.h"
@@ -37,12 +38,21 @@ vasprintf (char **resultp, const char *format, va_list args)
   if (result == NULL)
     return -1;
 
+#if PTRDIFF_MAX > INT_MAX
   if (length > INT_MAX)
     {
       free (result);
-      errno = EOVERFLOW;
+      errno = (length > PTRDIFF_MAX ? ENOMEM : EOVERFLOW);
       return -1;
     }
+#else
+  if (length > PTRDIFF_MAX)
+    {
+      free (result);
+      errno = ENOMEM;
+      return -1;
+    }
+#endif
 
   *resultp = result;
   /* Return the number of resulting bytes, excluding the trailing NUL.  */

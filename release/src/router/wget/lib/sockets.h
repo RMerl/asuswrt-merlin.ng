@@ -25,6 +25,10 @@
  #error "Please include config.h first."
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define SOCKETS_1_0 0x0001
 #define SOCKETS_1_1 0x0101
 #define SOCKETS_2_0 0x0002
@@ -42,6 +46,11 @@ int gl_sockets_cleanup (void)
   _GL_ATTRIBUTE_CONST
 #endif
   ;
+
+#ifdef __cplusplus
+}
+#endif
+
 
 /* This function is useful it you create a socket using gnulib's
    Winsock wrappers but needs to pass on the socket handle to some

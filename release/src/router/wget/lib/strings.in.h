@@ -61,7 +61,7 @@ extern "C" {
   /* Find the index of the least-significant set bit.  */
 #if @GNULIB_FFS@
 # if !@HAVE_FFS@
-_GL_FUNCDECL_SYS (ffs, int, (int i));
+_GL_FUNCDECL_SYS (ffs, int, (int i), );
 # endif
 _GL_CXXALIAS_SYS (ffs, int, (int i));
 _GL_CXXALIASWARN (ffs);

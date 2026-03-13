@@ -31,6 +31,11 @@
 #include <windows.h>
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /* Prepares an argument vector before calling spawn().
 
    Note that spawn() does not by itself call the command interpreter
@@ -83,9 +88,11 @@ extern char * compose_command (const char * const *argv)
 /* Composes the block of memory that contains the environment variables.
    ENVP must contain an environment (a NULL-terminated array of string of the
    form VARIABLE=VALUE).
+   NEW_PATH must be a string of the form PATH=VALUE, or NULL if the PATH
+   environment variable from this process is suitable for the child process.
    Returns a freshly allocated block of memory.  In case of memory allocation
    failure, NULL is returned, with errno set.  */
-extern char * compose_envblock (const char * const *envp)
+extern char * compose_envblock (const char * const *envp, const char *new_PATH)
   _GL_ATTRIBUTE_MALLOC _GL_ATTRIBUTE_DEALLOC_FREE;
 
 
@@ -171,6 +178,9 @@ extern int convert_CreateProcess_error (DWORD error);
    ENVP is the NULL-terminated set of environment variable assignments, or NULL
    to inherit the initial environ variable assignments from the caller and
    ignore all calls to putenv(), setenv(), unsetenv() done in the caller.
+   DLL_DIRS is, on Windows platforms, a NULL-terminated list of directories
+   that contain DLLs needed to execute the program, or NULL if none is needed.
+   On other platforms, always pass NULL.
    CURRDIR is the directory in which to start the program, or NULL to inherit
    the working directory from the caller.
    STDIN_HANDLE, STDOUT_HANDLE, STDERR_HANDLE are the handles to use for the
@@ -183,8 +193,14 @@ extern int convert_CreateProcess_error (DWORD error);
 extern intptr_t spawnpvech (int mode,
                             const char *progname, const char * const *argv,
                             const char * const *envp,
+                            const char * const *dll_dirs,
                             const char *currdir,
                             HANDLE stdin_handle, HANDLE stdout_handle,
                             HANDLE stderr_handle);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _WINDOWS_SPAWN_H */

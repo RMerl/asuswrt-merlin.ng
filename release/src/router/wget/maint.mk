@@ -124,8 +124,10 @@ release_archive_dir ?= ../release
 # If RELEASE_TYPE is undefined, but RELEASE is, use its second word.
 # But overwrite VERSION.
 ifdef RELEASE
-  VERSION := $(word 1, $(RELEASE))
-  RELEASE_TYPE ?= $(word 2, $(RELEASE))
+  ifeq ($(origin RELEASE),command line)
+    VERSION := $(word 1,$(RELEASE))
+    RELEASE_TYPE ?= $(word 2,$(RELEASE))
+  endif
 endif
 
 # Validate and return $(RELEASE_TYPE), or die.
@@ -538,13 +540,16 @@ sc_require_config_h_first:
 	fi
 
 # Generated headers that override system headers.
-# Keep sorted.
+# These are documented in gnulib-tool.texi.  Keep sorted.
+# sed -n -e 's/^@item[[:space:]]\{1,\}@code{\([^}]\{1,\}\)}$/\1/p' $GNULIB_SRCDIR/doc/gnulib-tool.texi  | sort -u
 gl_prefer_angle_bracket_headers_ ?= \
   alloca.h		\
   arpa/inet.h		\
   assert.h		\
+  byteswap.h		\
   ctype.h		\
   dirent.h		\
+  endian.h		\
   errno.h		\
   error.h		\
   fcntl.h		\
@@ -560,9 +565,10 @@ gl_prefer_angle_bracket_headers_ ?= \
   locale.h		\
   malloc.h		\
   math.h		\
+  mntent.h		\
   monetary.h		\
-  netdb.h		\
   net/if.h		\
+  netdb.h		\
   netinet/in.h		\
   omp.h			\
   poll.h		\
@@ -581,7 +587,6 @@ gl_prefer_angle_bracket_headers_ ?= \
   stdlib.h		\
   string.h		\
   strings.h		\
-  sysexits.h		\
   sys/file.h		\
   sys/ioctl.h		\
   sys/msg.h		\
@@ -596,8 +601,10 @@ gl_prefer_angle_bracket_headers_ ?= \
   sys/times.h		\
   sys/types.h		\
   sys/uio.h		\
+  sys/un.h		\
   sys/utsname.h		\
   sys/wait.h		\
+  sysexits.h		\
   termios.h		\
   threads.h		\
   time.h		\
@@ -854,6 +861,24 @@ sc_obsolete_symbols:
 	halt='do not use HAVE''_FCNTL_H or O'_NDELAY			\
 	  $(_sc_search_regexp)
 
+# Prohibit BSD4.3/SysV u_char, u_short, u_int and u_long usage.
+sc_unsigned_char:
+	@prohibit=u''_char \
+	halt='don'\''t use u''_char; instead use unsigned char'	\
+	  $(_sc_search_regexp)
+sc_unsigned_short:
+	@prohibit=u''_short \
+	halt='don'\''t use u''_short; instead use unsigned short' \
+	  $(_sc_search_regexp)
+sc_unsigned_int:
+	@prohibit=u''_int \
+	halt='don'\''t use u''_int; instead use unsigned int' \
+	  $(_sc_search_regexp)
+sc_unsigned_long:
+	@prohibit=u''_long \
+	halt='don'\''t use u''_long; instead use unsigned long'	\
+	  $(_sc_search_regexp)
+
 # FIXME: warn about definitions of EXIT_FAILURE, EXIT_SUCCESS, STREQ
 
 # Each nonempty ChangeLog line must start with a year number, or a TAB.
@@ -1021,6 +1046,13 @@ sc_GFDL_version:
 	@prohibit='$(_GFDL_regexp)'					\
 	halt='GFDL vN, N!=3'						\
 	  $(_sc_search_regexp)
+
+# Look out for FSF postal addresses -- use URLs instead:
+# https://www.gnu.org/prep/maintain/html_node/License-Notices-for-Code.html
+sc_fsf_postal:
+	@prohibit='(Mass Ave|Massachusetts Ave|Temple Pl|Franklin St|Milk St)' \
+	halt='use license URLs instead of FSF postal address' \
+	 $(_sc_search_regexp)
 
 # Don't use Texinfo's @acronym{}.
 # https://lists.gnu.org/r/bug-gnulib/2010-03/msg00321.html
@@ -1484,7 +1516,7 @@ vc-diff-check:
 rel-files = $(DIST_ARCHIVES)
 
 gnulib-version = $$(cd $(gnulib_dir)				\
-                    && { git describe || git rev-parse --short=10 HEAD; } )
+                    && { git describe 2> /dev/null || git rev-parse --short=10 HEAD; } )
 bootstrap-tools ?= autoconf,automake,gnulib
 
 gpgv = $$(gpgv2 --version >/dev/null && echo gpgv2 || echo gpgv)
@@ -1746,7 +1778,7 @@ refresh-po:
 
 # Indentation
 
-indent_args ?= -ppi 1
+indent_args ?= --ignore-profile --preprocessor-indentation 1
 C_SOURCES ?= $$($(VC_LIST_EXCEPT) | grep '\.[ch]\(.in\)\?$$')
 INDENT_SOURCES ?= $(C_SOURCES)
 exclude_file_name_regexp--indent ?= $(exclude_file_name_regexp--sc_indent)
@@ -1866,7 +1898,7 @@ _gl_tight_scope: $(bin_PROGRAMS)
 	for sig in 1 2 3 13 15; do					\
 	  eval "trap 'v=`expr $$sig + 128`; (exit $$v); exit $$v' $$sig"; \
 	done;								\
-	src=`for f in $(SOURCES); do					\
+	src=`for f in $(sort $(SOURCES)); do				\
 	       test -f $$f && d= || d=$(srcdir)/; echo $$d$$f; done`;	\
 	hdr=`for f in $(_gl_TS_headers); do				\
 	       test -f $$f && d= || d=$(srcdir)/; echo $$d$$f; done`;	\

@@ -1,8 +1,10 @@
-# sched_h.m4 serial 15
+# sched_h.m4
+# serial 16
 dnl Copyright (C) 2008-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl Written by Bruno Haible.
 
@@ -14,7 +16,8 @@ AC_DEFUN_ONCE([gl_SCHED_H],
 
   AC_REQUIRE([AC_CANONICAL_HOST])
 
-  AC_CHECK_HEADERS_ONCE([sys/cdefs.h])
+  AC_REQUIRE([gl_CHECK_HEADER_SYS_CDEFS_H])
+
   AC_CHECK_HEADERS([sched.h], [], [],
     [[#if HAVE_SYS_CDEFS_H
        #include <sys/cdefs.h>
@@ -55,13 +58,6 @@ AC_DEFUN_ONCE([gl_SCHED_H],
     esac
   fi
   AC_SUBST([HAVE_STRUCT_SCHED_PARAM])
-
-  if test "$ac_cv_header_sys_cdefs_h" = yes; then
-    HAVE_SYS_CDEFS_H=1
-  else
-    HAVE_SYS_CDEFS_H=0
-  fi
-  AC_SUBST([HAVE_SYS_CDEFS_H])
 
   dnl Ensure the type pid_t gets defined.
   AC_REQUIRE([AC_TYPE_PID_T])

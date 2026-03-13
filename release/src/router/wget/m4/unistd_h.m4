@@ -1,8 +1,10 @@
-# unistd_h.m4 serial 95
+# unistd_h.m4
+# serial 96
 dnl Copyright (C) 2006-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl Written by Simon Josefsson, Bruno Haible.
 
@@ -247,6 +249,7 @@ AC_DEFUN([gl_UNISTD_H_DEFAULTS],
   REPLACE_GETPAGESIZE=0;             AC_SUBST([REPLACE_GETPAGESIZE])
   REPLACE_GETPASS=0;                 AC_SUBST([REPLACE_GETPASS])
   REPLACE_GETPASS_FOR_GETPASS_GNU=0; AC_SUBST([REPLACE_GETPASS_FOR_GETPASS_GNU])
+  REPLACE_GETUSERSHELL=0;            AC_SUBST([REPLACE_GETUSERSHELL])
   REPLACE_ISATTY=0;                  AC_SUBST([REPLACE_ISATTY])
   REPLACE_LCHOWN=0;                  AC_SUBST([REPLACE_LCHOWN])
   REPLACE_LINK=0;                    AC_SUBST([REPLACE_LINK])

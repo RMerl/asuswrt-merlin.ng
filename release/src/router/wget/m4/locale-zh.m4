@@ -1,8 +1,10 @@
-# locale-zh.m4 serial 18
+# locale-zh.m4
+# serial 20
 dnl Copyright (C) 2003, 2005-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl From Bruno Haible.
 
@@ -21,6 +23,7 @@ AC_DEFUN_ONCE([gt_LOCALE_ZH_CN],
 #endif
 #include <stdlib.h>
 #include <string.h>
+#include <wchar.h>
 struct tm t;
 char buf[16];
 int main ()
@@ -79,6 +82,19 @@ int main ()
      single wide character.  This excludes the GB2312 and GBK encodings.  */
   if (mblen ("\203\062\332\066", 5) != 4)
     return 1;
+  /* Check whether mbrtowc accept this character one byte at a time.
+     This excludes NetBSD 10.0.  */
+  if (sizeof (wchar_t) > 2)
+    {
+      wchar_t wc;
+      mbstate_t state;
+      memset (&state, 0, sizeof (state));
+      if (!(mbrtowc (&wc, "\203", 1, &state) == (size_t)(-2)
+            && mbrtowc (&wc, "\062", 1, &state) == (size_t)(-2)
+            && mbrtowc (&wc, "\332", 1, &state) == (size_t)(-2)
+            && mbrtowc (&wc, "\066", 1, &state) == 1))
+        return 1;
+    }
   return 0;
 #endif
 }
@@ -86,10 +102,11 @@ int main ()
     if AC_TRY_EVAL([ac_link]) && test -s conftest$ac_exeext; then
       case "$host_os" in
         # Handle native Windows specially, because there setlocale() interprets
-        # "ar" as "Arabic" or "Arabic_Saudi Arabia.1256",
+        # "ar" or "ara" as "Arabic" or "Arabic_Saudi Arabia.1256",
+        # "en" or "eng" as "English" or "English_United States.1252",
         # "fr" or "fra" as "French" or "French_France.1252",
         # "ge"(!) or "deu"(!) as "German" or "German_Germany.1252",
-        # "ja" as "Japanese" or "Japanese_Japan.932",
+        # "ja" or "jpn" as "Japanese" or "Japanese_Japan.932",
         # and similar.
         mingw* | windows*)
           # Test for the hypothetical native Windows locale name.

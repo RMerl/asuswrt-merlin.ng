@@ -33,6 +33,6 @@ reallocarray (void *ptr, size_t nmemb, size_t size)
       return NULL;
     }
 
-  /* Rely on the semantics of GNU realloc.  */
+  /* Call realloc, setting errno to ENOMEM on failure.  */
   return realloc (ptr, nbytes);
 }

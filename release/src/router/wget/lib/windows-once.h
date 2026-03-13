@@ -25,13 +25,14 @@
 
 typedef struct
         {
-          volatile int inited;
+          volatile LONG inited;
+          volatile LONG num_threads;
           volatile LONG started;
           CRITICAL_SECTION lock;
         }
         glwthread_once_t;
 
-#define GLWTHREAD_ONCE_INIT { -1, -1 }
+#define GLWTHREAD_ONCE_INIT { -1, 0, -1 }
 
 #ifdef __cplusplus
 extern "C" {

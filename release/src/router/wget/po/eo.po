@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU wget 1.21.3\n"
 "Report-Msgid-Bugs-To: bug-wget@gnu.org\n"
-"POT-Creation-Date: 2024-03-10 15:08+0100\n"
+"POT-Creation-Date: 2024-11-10 22:29+0100\n"
 "PO-Revision-Date: 2023-01-08 14:53-0300\n"
 "Last-Translator: Felipe Castro <fefcas@gmail.com>\n"
 "Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
@@ -384,12 +384,12 @@ msgstr "Transporto de datumoj estas ĉesigita.\n"
 msgid "File %s already there; not retrieving.\n"
 msgstr "La dosiero %s jam estas ĉi tie; ĝi ne estos elŝutita.\n"
 
-#: src/ftp.c:1955 src/http.c:4364
+#: src/ftp.c:1955 src/http.c:4359
 #, c-format
 msgid "(try:%2d)"
 msgstr "(provo:%2d)"
 
-#: src/ftp.c:2047 src/http.c:4794
+#: src/ftp.c:2047 src/http.c:4789
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s]\n"
@@ -398,7 +398,7 @@ msgstr ""
 "%s (%s) - skribita al ĉefeligo %s[%s]\n"
 "\n"
 
-#: src/ftp.c:2048 src/http.c:4795
+#: src/ftp.c:2048 src/http.c:4790
 #, c-format
 msgid ""
 "%s (%s) - %s saved [%s]\n"
@@ -408,7 +408,7 @@ msgstr ""
 "\n"
 
 #: src/ftp.c:2108 src/main.c:2178 src/metalink.c:1133 src/recur.c:511
-#: src/recur.c:750 src/retr.c:1303
+#: src/recur.c:750 src/retr.c:1243
 #, c-format
 msgid "Removing %s.\n"
 msgstr "Ni forviŝas %s.\n"
@@ -712,7 +712,7 @@ msgstr "fiasko: limtempo finiĝis.\n"
 msgid "%s: Cannot resolve incomplete link %s.\n"
 msgstr "%s: ne eblis solvigi nekompletan ligilon %s.\n"
 
-#: src/html-url.c:944
+#: src/html-url.c:945
 #, c-format
 msgid "%s: Invalid URL %s: %s\n"
 msgstr "%s: malvalida URL %s: %s\n"
@@ -767,7 +767,7 @@ msgstr "Ni reuzas ekzistantan konekton al %s:%d.\n"
 msgid "Failed reading proxy response: %s\n"
 msgstr "Fiasko dum lego de prokurila respondo: %s\n"
 
-#: src/http.c:2183 src/http.c:3460 src/http.c:4590
+#: src/http.c:2183 src/http.c:3460 src/http.c:4585
 #, c-format
 msgid "%s ERROR %d: %s.\n"
 msgstr "%s ERARO %d: %s.\n"
@@ -898,50 +898,50 @@ msgstr "Grando: "
 msgid "ignored"
 msgstr "preteratentita"
 
-#: src/http.c:4272
+#: src/http.c:4266
 msgid "Warning: wildcards not supported in HTTP.\n"
 msgstr "Averto: ĵokeroj ne estas subtenataj en HTTP.\n"
 
-#: src/http.c:4354
+#: src/http.c:4349
 msgid "Spider mode enabled. Check if remote file exists.\n"
 msgstr "Arenea reĝimo ebligita. Kontrolu ĉu fora dosiero ekzistas.\n"
 
-#: src/http.c:4447
+#: src/http.c:4442
 #, c-format
 msgid "Cannot write to %s (%s).\n"
 msgstr "Ne eblas skribi al %s (%s).\n"
 
-#: src/http.c:4469
+#: src/http.c:4464
 msgid "Required attribute missing from Header received.\n"
 msgstr "Mankas postulata atributo el Kaplinio 'received'.\n"
 
-#: src/http.c:4474
+#: src/http.c:4469
 msgid "Username/Password Authentication Failed.\n"
 msgstr "Aŭtentikigo de uzantnomo/pasvorto fiaskis.\n"
 
-#: src/http.c:4480
+#: src/http.c:4475
 msgid "Cannot write to WARC file.\n"
 msgstr "Ne eblas skribi al dosiero WARC.\n"
 
-#: src/http.c:4486
+#: src/http.c:4481
 msgid "Cannot write to temporary WARC file.\n"
 msgstr "Ne eblas skribi al provizora dosiero WARC.\n"
 
-#: src/http.c:4491
+#: src/http.c:4486
 msgid "Unable to establish SSL connection.\n"
 msgstr "Ne eblas starigi SSL-konekton.\n"
 
-#: src/http.c:4497
+#: src/http.c:4492
 #, c-format
 msgid "Cannot unlink %s (%s).\n"
 msgstr "Ne eblas forigi %s (%s).\n"
 
-#: src/http.c:4507
+#: src/http.c:4502
 #, c-format
 msgid "ERROR: Redirection (%d) without location.\n"
 msgstr "ERARO: redirektigo (%d) sen loko.\n"
 
-#: src/http.c:4529
+#: src/http.c:4524
 msgid ""
 "Could not find Metalink data in HTTP response. Downloading file using HTTP "
 "GET.\n"
@@ -949,24 +949,24 @@ msgstr ""
 "Ne eblis trovi datumaron Metalink en respondo HTTP. Ni elŝutas la dosieron "
 "uzante HTTP GET.\n"
 
-#: src/http.c:4538
+#: src/http.c:4533
 msgid "Metalink headers found. Switching to Metalink mode.\n"
 msgstr "Kapoj Metalink estis trovataj. Ni ŝaltas la reĝimon Metalink.\n"
 
-#: src/http.c:4579
+#: src/http.c:4574
 msgid "Remote file does not exist -- broken link!!!\n"
 msgstr "Fora dosiero ne ekzistas -- fuŝa ligo!!!\n"
 
-#: src/http.c:4607
+#: src/http.c:4602
 msgid "Last-modified header missing -- time-stamps turned off.\n"
 msgstr "Mankas ĉapo 'last-modified' -- temp-indikoj estas malaktivitaj.\n"
 
-#: src/http.c:4615
+#: src/http.c:4610
 msgid "Last-modified header invalid -- time-stamp ignored.\n"
 msgstr ""
 "Malvalida ĉapo 'last-modified' -- temp-indikoj estas preteratentitaj.\n"
 
-#: src/http.c:4645
+#: src/http.c:4640
 #, c-format
 msgid ""
 "Server file no newer than local file %s -- not retrieving.\n"
@@ -975,16 +975,16 @@ msgstr ""
 "Servila dosiero ne estas pli nova ol loka %s -- ni ne elŝutas.\n"
 "\n"
 
-#: src/http.c:4653
+#: src/http.c:4648
 #, c-format
 msgid "The sizes do not match (local %s) -- retrieving.\n"
 msgstr "La grandoj ne interkongruas (loka %s) -- ni elŝutas.\n"
 
-#: src/http.c:4662
+#: src/http.c:4657
 msgid "Remote file is newer, retrieving.\n"
 msgstr "Fora dosiero estas pli nova, ni elŝutas.\n"
 
-#: src/http.c:4680
+#: src/http.c:4675
 msgid ""
 "Remote file exists and could contain links to other resources -- "
 "retrieving.\n"
@@ -994,7 +994,7 @@ msgstr ""
 "elŝutas.\n"
 "\n"
 
-#: src/http.c:4686
+#: src/http.c:4681
 msgid ""
 "Remote file exists but does not contain any link -- not retrieving.\n"
 "\n"
@@ -1002,7 +1002,7 @@ msgstr ""
 "Fora dosiero ekzistas sed enhavas neniun ligon -- ni ne elŝutas.\n"
 "\n"
 
-#: src/http.c:4695
+#: src/http.c:4690
 msgid ""
 "Remote file exists and could contain further links,\n"
 "but recursion is disabled -- not retrieving.\n"
@@ -1012,7 +1012,7 @@ msgstr ""
 "sed rikuro estas malaktivita -- ni ne elŝutas.\n"
 "\n"
 
-#: src/http.c:4701
+#: src/http.c:4696
 msgid ""
 "Remote file exists.\n"
 "\n"
@@ -1020,12 +1020,12 @@ msgstr ""
 "Fora dosiero ekzistas.\n"
 "\n"
 
-#: src/http.c:4710
+#: src/http.c:4705
 #, c-format
 msgid "%s URL: %s %2d %s\n"
 msgstr "URL %s: %s %2d %s\n"
 
-#: src/http.c:4758
+#: src/http.c:4753
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s/%s]\n"
@@ -1034,7 +1034,7 @@ msgstr ""
 "%s (%s) - skribita al ĉefeligujo %s[%s/%s]\n"
 "\n"
 
-#: src/http.c:4759
+#: src/http.c:4754
 #, c-format
 msgid ""
 "%s (%s) - %s saved [%s/%s]\n"
@@ -1043,27 +1043,27 @@ msgstr ""
 "%s (%s) - %s konservita [%s/%s]\n"
 "\n"
 
-#: src/http.c:4825
+#: src/http.c:4820
 #, c-format
 msgid "%s (%s) - Connection closed at byte %s. "
 msgstr "%s (%s) - Konekto fermita ĉe la bajto %s. "
 
-#: src/http.c:4848
+#: src/http.c:4843
 #, c-format
 msgid "%s (%s) - Read error at byte %s (%s)."
 msgstr "%s (%s) - Leg-eraro ĉe la bajto %s (%s)."
 
-#: src/http.c:4857
+#: src/http.c:4852
 #, c-format
 msgid "%s (%s) - Read error at byte %s/%s (%s). "
 msgstr "%s (%s) - Leg-eraro ĉe la bajto %s/%s (%s). "
 
-#: src/http.c:5114
+#: src/http.c:5108
 #, c-format
 msgid "Unsupported quality of protection '%s'.\n"
 msgstr "Nesubtenata eco de protekto '%s'.\n"
 
-#: src/http.c:5119
+#: src/http.c:5113
 #, c-format
 msgid "Unsupported algorithm '%s'.\n"
 msgstr "Nesubtenata algoritmo '%s'.\n"
@@ -1206,30 +1206,30 @@ msgstr ""
 msgid "Encoding %s isn't valid\n"
 msgstr "Enkodigo %s ne validas\n"
 
-#: src/iri.c:140 src/url.c:1612
+#: src/iri.c:140 src/url.c:1619
 #, c-format
 msgid "Conversion from %s to %s isn't supported\n"
 msgstr "Konverto de %s al %s ne estas subtenata\n"
 
-#: src/iri.c:180 src/url.c:1642
+#: src/iri.c:180 src/url.c:1649
 msgid "Incomplete or invalid multibyte sequence encountered\n"
 msgstr "Malkompleta aŭ malvalida plurbajta sekvo estis trovata\n"
 
-#: src/iri.c:200 src/url.c:1659
+#: src/iri.c:206 src/url.c:1666
 #, c-format
 msgid "Unhandled errno %d\n"
 msgstr "Netraktita errno %d\n"
 
-#: src/iri.c:237
+#: src/iri.c:243
 msgid "locale_to_utf8: locale is unset\n"
 msgstr "locale_to_utf8: lokaĵaro ne estas difinita\n"
 
-#: src/iri.c:283 src/iri.c:298
+#: src/iri.c:289 src/iri.c:304
 #, c-format
 msgid "idn_encode failed (%d): %s\n"
 msgstr "idn_encode fiaskis (%d): %s\n"
 
-#: src/iri.c:290
+#: src/iri.c:296
 #, c-format
 msgid "Failed to convert to lower: %d: %s\n"
 msgstr "Ni fiaskis konverti minusklen: %d: %s\n"
@@ -2116,8 +2116,8 @@ msgid ""
 "       --retr-symlinks             when recursing, get linked-to files (not "
 "dir)\n"
 msgstr ""
-"       --retr-symlinks             dum rikuro, preni dosierojn 'linked-"
-"to' (ne ujo)\n"
+"       --retr-symlinks             dum rikuro, preni dosierojn 'linked-to' "
+"(ne ujo)\n"
 
 #: src/main.c:923
 msgid "FTPS options:\n"
@@ -2977,22 +2977,22 @@ msgstr "Ni daŭrigas fone, pid %lu.\n"
 msgid "Output will be written to %s.\n"
 msgstr "Eligo estos skribita al %s.\n"
 
-#: src/mswindows.c:323
+#: src/mswindows.c:334
 #, c-format
 msgid "fake_fork_child() failed\n"
 msgstr "fake_fork_child() fiaskis\n"
 
-#: src/mswindows.c:331
+#: src/mswindows.c:342
 #, c-format
 msgid "fake_fork() failed\n"
 msgstr "fake_fork() fiaskis\n"
 
-#: src/mswindows.c:460 src/mswindows.c:467
+#: src/mswindows.c:471 src/mswindows.c:478
 #, c-format
 msgid "%s: Couldn't find usable socket driver.\n"
 msgstr "%s: ne eblis trovi uzeblan ing-pelilon.\n"
 
-#: src/mswindows.c:647
+#: src/mswindows.c:658
 #, c-format
 msgid "ioctl() failed.  The socket could not be set as blocking.\n"
 msgstr "ioctl() fiaskis.  La ingo ne povis esti difinata kiel blokantan.\n"
@@ -3192,7 +3192,7 @@ msgstr "Eraro en prokurila URL %s: devas esti HTTP.\n"
 msgid "%d redirections exceeded.\n"
 msgstr "%d rediktegij troigi.\n"
 
-#: src/retr.c:1327
+#: src/retr.c:1344
 msgid ""
 "Giving up.\n"
 "\n"
@@ -3200,7 +3200,7 @@ msgstr ""
 "Ni rezignas.\n"
 "\n"
 
-#: src/retr.c:1327
+#: src/retr.c:1344
 msgid ""
 "Retrying.\n"
 "\n"
@@ -3231,55 +3231,55 @@ msgstr[1] ""
 "Ni trovis %d fuŝajn ligojn.\n"
 "\n"
 
-#: src/url.c:688
+#: src/url.c:695
 msgid "No error"
 msgstr "Sen eraro"
 
-#: src/url.c:689
+#: src/url.c:696
 #, fuzzy
 #| msgid "Unsupported scheme %s"
 msgid "Unsupported scheme"
 msgstr "Nesubtenata ŝablono %s"
 
-#: src/url.c:690
+#: src/url.c:697
 msgid "HTTPS support not compiled in"
 msgstr "Subteno al HTTPS ne estas enkompilita"
 
-#: src/url.c:691
+#: src/url.c:698
 #, fuzzy
 #| msgid "HTTPS support not compiled in"
 msgid "FTPS support not compiled in"
 msgstr "Subteno al HTTPS ne estas enkompilita"
 
-#: src/url.c:692
+#: src/url.c:699
 msgid "Scheme missing"
 msgstr "Mankas skemo"
 
-#: src/url.c:693
+#: src/url.c:700
 msgid "Invalid host name"
 msgstr "Malvalida retnoda nomo"
 
-#: src/url.c:694
+#: src/url.c:701
 msgid "Bad port number"
 msgstr "Malĝusta pordnumero"
 
-#: src/url.c:695
+#: src/url.c:702
 msgid "Invalid user name"
 msgstr "Malvalida uzantnomo"
 
-#: src/url.c:696
+#: src/url.c:703
 msgid "Unterminated IPv6 numeric address"
 msgstr "Nedifinita IPv6 numera adreso"
 
-#: src/url.c:697
+#: src/url.c:704
 msgid "IPv6 addresses not supported"
 msgstr "IPv6 adreso ne eltenebla"
 
-#: src/url.c:698
+#: src/url.c:705
 msgid "Invalid IPv6 numeric address"
 msgstr "Malvalida IPv6 numera adreso"
 
-#: src/url.c:1645
+#: src/url.c:1652
 msgid "Unconvertable multibyte sequence encountered\n"
 msgstr "Nekonvertebla plurbajta sekvo estis trovata\n"
 
@@ -3348,22 +3348,22 @@ msgstr ""
 "Ni provas malfermi la dosieron %s sed ĝi ŝanĝis ekde la lasta kontrolo. "
 "Sekureca kontrolo fiaskis.\n"
 
-#: src/utils.c:2443
+#: src/utils.c:2479
 #, c-format
 msgid "Invalid regular expression %s, PCRE2 error %d\n"
 msgstr "Malvalida regul-esprimo %s, eraro PCRE2 %d\n"
 
-#: src/utils.c:2460 src/utils.c:2483
+#: src/utils.c:2496 src/utils.c:2519
 #, c-format
 msgid "Invalid regular expression %s, %s\n"
 msgstr "Malvalida regul-esprimo %s, %s\n"
 
-#: src/utils.c:2513 src/utils.c:2535 src/utils.c:2559
+#: src/utils.c:2549 src/utils.c:2571 src/utils.c:2595
 #, c-format
 msgid "Error while matching %s: %d\n"
 msgstr "Eraro dum kongruo al %s: %d\n"
 
-#: src/utils.c:2852
+#: src/utils.c:2888
 #, c-format
 msgid "Skipping key with wrong size (%d/%d): %s\n"
 msgstr "Ni preterpasas ŝlosilon kun malĝusta grando (%d/%d): %s\n"
@@ -3384,11 +3384,11 @@ msgstr "Eraro dum duobligo de dosier-identigilo de WARC.\n"
 msgid "Error opening GZIP stream to WARC file.\n"
 msgstr "Eraro dum malfermo de fluo GZIP al dosiero WARC.\n"
 
-#: src/warc.c:830
+#: src/warc.c:833
 msgid "Error writing warcinfo record to WARC file.\n"
 msgstr "Eraro dum skribo de rikordo warcinfo al dosiero WARC.\n"
 
-#: src/warc.c:893
+#: src/warc.c:884
 #, c-format
 msgid ""
 "Opening WARC file %s.\n"
@@ -3397,24 +3397,24 @@ msgstr ""
 "Malfermo de la dosiero WARC %s.\n"
 "\n"
 
-#: src/warc.c:899
+#: src/warc.c:890
 #, c-format
 msgid "Error opening WARC file %s.\n"
 msgstr "Eraro dum malfermo de la dosiero WARK %s.\n"
 
-#: src/warc.c:1095
+#: src/warc.c:1086
 msgid "CDX file does not list original urls. (Missing column 'a'.)\n"
 msgstr "Dosiero CDX ne listigas originalajr URL-ojn. (Mankas kolumno 'a'.)\n"
 
-#: src/warc.c:1098
+#: src/warc.c:1089
 msgid "CDX file does not list checksums. (Missing column 'k'.)\n"
 msgstr "Dosiero CDX ne listigas kontrolsumojn. (Mankas kolumno 'k'.)\n"
 
-#: src/warc.c:1101
+#: src/warc.c:1092
 msgid "CDX file does not list record ids. (Missing column 'u'.)\n"
 msgstr "Dosiero CDX ne listigas id de rikordoj. (Mankas kolumno 'k'.)\n"
 
-#: src/warc.c:1125
+#: src/warc.c:1116
 #, c-format
 msgid ""
 "Loaded %d record from CDX.\n"
@@ -3429,32 +3429,32 @@ msgstr[1] ""
 "Ni ŝargis je %d rikordoj el CDX.\n"
 "\n"
 
-#: src/warc.c:1171
+#: src/warc.c:1162
 #, c-format
 msgid "Could not read CDX file %s for deduplication.\n"
 msgstr "Ne eblis legi dosieron CDX %s por multobligo.\n"
 
-#: src/warc.c:1181
+#: src/warc.c:1172
 msgid "Could not open temporary WARC manifest file.\n"
 msgstr "Ne eblis malfermi provizoran dosieron WARC de manifesto.\n"
 
-#: src/warc.c:1191
+#: src/warc.c:1182
 msgid "Could not open temporary WARC log file.\n"
 msgstr "Ne eblis malfermi provizoran dosieron WARC de protokolo.\n"
 
-#: src/warc.c:1200
+#: src/warc.c:1191
 msgid "Could not open WARC file.\n"
 msgstr "Ne eblis malfermi dosieron WARC.\n"
 
-#: src/warc.c:1209
+#: src/warc.c:1200
 msgid "Could not open CDX file for output.\n"
 msgstr "Ne eblis malfermi dosieron CDX por eligo.\n"
 
-#: src/warc.c:1239
+#: src/warc.c:1230
 msgid "Could not open temporary WARC file.\n"
 msgstr "Ne eblis provizoran dosieron WARC.\n"
 
-#: src/warc.c:1515
+#: src/warc.c:1508
 msgid "Found exact match in CDX file. Saving revisit record to WARC.\n"
 msgstr ""
 "Estis trovata ĝusta kongruo en dosiero CDX. Ni konservas revizitan rikordon "

@@ -33,6 +33,8 @@ as that of the covered work.  */
 
 #ifndef STANDALONE
 # include "wget.h"
+#else
+# include "config.h"
 #endif
 
 #include <stdio.h>

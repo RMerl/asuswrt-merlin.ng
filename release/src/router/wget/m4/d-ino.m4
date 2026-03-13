@@ -1,16 +1,14 @@
+# d-ino.m4
 # serial 22
+dnl Copyright (C) 1997, 1999-2001, 2003-2004, 2006-2007, 2009-2024 Free Software Foundation, Inc.
+dnl This file is free software; the Free Software Foundation
+dnl gives unlimited permission to copy and/or distribute it,
+dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl From Jim Meyering.
 dnl
 dnl Check whether struct dirent has a member named d_ino.
-dnl
-
-# Copyright (C) 1997, 1999-2001, 2003-2004, 2006-2007, 2009-2024 Free Software
-# Foundation, Inc.
-
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
 
 AC_DEFUN([gl_CHECK_TYPE_STRUCT_DIRENT_D_INO],
   [AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles

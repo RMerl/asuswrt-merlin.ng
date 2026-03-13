@@ -1,6 +1,6 @@
 #!/bin/sh
 # Print a version string.
-scriptversion=2022-07-09.08; # UTC
+scriptversion=2024-07-04.10; # UTC
 
 # Copyright (C) 2007-2024 Free Software Foundation, Inc.
 #
@@ -219,7 +219,7 @@ fi
 printf %s "$v"
 
 # Local variables:
-# eval: (add-hook 'before-save-hook 'time-stamp)
+# eval: (add-hook 'before-save-hook 'time-stamp nil t)
 # time-stamp-start: "scriptversion="
 # time-stamp-format: "%:y-%02m-%02d.%02H"
 # time-stamp-time-zone: "UTC0"

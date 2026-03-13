@@ -117,7 +117,7 @@ mbrtoc32 (char32_t *pwc, const char *s, size_t n, mbstate_t *ps)
   if (ps == NULL)
     ps = &internal_state;
 
-# if HAVE_WORKING_MBRTOC32
+# if HAVE_WORKING_MBRTOC32 && HAVE_WORKING_C32RTOMB && !MBRTOC32_MULTIBYTE_LOCALE_BUG
   /* mbrtoc32() may produce different values for wc than mbrtowc().  Therefore
      use mbrtoc32().  */
 

@@ -33,6 +33,11 @@ _GL_INLINE_HEADER_BEGIN
 # define BITROTATE_INLINE _GL_INLINE
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 #ifdef UINT64_MAX
 /* Given an unsigned 64-bit argument X, return the value corresponding
    to rotating the bits N steps to the left.  N must be between 1 and
@@ -134,6 +139,11 @@ rotr8 (uint8_t x, int n)
 {
   return (((unsigned int) x >> n) | ((unsigned int) x << (8 - n))) & UINT8_MAX;
 }
+
+
+#ifdef __cplusplus
+}
+#endif
 
 _GL_INLINE_HEADER_END
 

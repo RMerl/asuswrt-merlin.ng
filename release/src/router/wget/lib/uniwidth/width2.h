@@ -1,6 +1,6 @@
 /* DO NOT EDIT! GENERATED AUTOMATICALLY! */
 /* Width 2 property of Unicode characters.  */
-/* Generated automatically by gen-uni-tables.c for Unicode 15.1.0.  */
+/* Generated automatically by gen-uni-tables.c for Unicode 16.0.0.  */
 
 /* Copyright (C) 2000-2024 Free Software Foundation, Inc.
 

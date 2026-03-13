@@ -1,8 +1,10 @@
-# error_h.m4 serial 4
+# error_h.m4
+# serial 5
 dnl Copyright (C) 1996-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl From Bruno Haible.
 dnl Provide a working <error.h>.
@@ -110,12 +112,15 @@ AC_DEFUN_ONCE([gl_ERROR_H],
     esac
   fi
 
-  if test $HAVE_ERROR = 0 || test $REPLACE_ERROR = 1 \
-     || test $HAVE_ERROR_AT_LINE = 0 || test $REPLACE_ERROR_AT_LINE = 1; then
-    COMPILE_ERROR_C=1
-  else
-    COMPILE_ERROR_C=0
-  fi
+  m4_ifdef([gl_HAVE_MODULE_VERROR],
+    [COMPILE_ERROR_C=1],
+    [if test $HAVE_ERROR = 0 || test $REPLACE_ERROR = 1 \
+        || test $HAVE_ERROR_AT_LINE = 0 \
+        || test $REPLACE_ERROR_AT_LINE = 1; then
+       COMPILE_ERROR_C=1
+     else
+       COMPILE_ERROR_C=0
+     fi])
 
   AC_SUBST([HAVE_ERROR])
   AC_SUBST([HAVE_ERROR_AT_LINE])

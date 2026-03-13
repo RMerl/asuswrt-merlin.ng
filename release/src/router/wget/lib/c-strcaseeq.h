@@ -19,6 +19,11 @@
 #include "c-strcase.h"
 #include "c-ctype.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /* STRCASEEQ allows to optimize string comparison with a small literal string.
      STRCASEEQ (s, "UTF-8", 'U','T','F','-','8',0,0,0,0)
    is semantically equivalent to
@@ -178,4 +183,9 @@ strcaseeq0 (const char *s1, const char *s2, char s20, char s21, char s22, char s
 #define STRCASEEQ(s1,s2,s20,s21,s22,s23,s24,s25,s26,s27,s28) \
   (c_strcasecmp (s1, s2) == 0)
 
+#endif
+
+
+#ifdef __cplusplus
+}
 #endif

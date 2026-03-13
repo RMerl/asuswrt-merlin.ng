@@ -31,9 +31,9 @@ dnl Process this file with autoconf to produce a configure script.
 dnl
 
 dnl Error if AX_CODE_COVERAGE if missing (like on the 1.21 release).
-dnl m4_pattern_forbid([^_?AX_])
-dnl m4_pattern_allow([AX_CHECK_GNU_MAKE_HEADLINE])
-dnl m4_pattern_allow([_AX_CODE_COVERAGE_GCOV_PROG_WITH])
+m4_pattern_forbid([^_?AX_])
+m4_pattern_allow([AX_CHECK_GNU_MAKE_HEADLINE])
+m4_pattern_allow([_AX_CODE_COVERAGE_GCOV_PROG_WITH])
 
 AC_INIT([wget],[m4_esyscmd(build-aux/git-version-gen .tarball-version)],[bug-wget@gnu.org])
 AC_PREREQ([2.64])
@@ -336,7 +336,7 @@ AC_CHECK_TYPES(sig_atomic_t, [], [], [
 AM_ICONV
 gl_INIT
 
-dnl AX_CODE_COVERAGE
+AX_CODE_COVERAGE
 
 dnl
 dnl Checks for library functions.
@@ -398,6 +398,8 @@ if test -n "$WARN_CFLAGS"; then
     nw="$nw -Wnested-externs" # Stylistic choice and we do use it in hsts code
     nw="$nw -Wc90-c99-compat" # gcc-12, we use C99
     nw="$nw -Wlong-long" # gcc-12, we use C99
+    nw="$nw -Wc99-c11-compat" # gnulib is at C11
+    nw="$nw -Wuseless-cast" # gcc-14 warns about it (pretty useless for portable code)
     if test "$cross_compiling" = yes; then
       nw="$nw -Wformat"
     fi

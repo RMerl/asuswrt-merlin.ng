@@ -128,7 +128,7 @@ char *uri_merge (const char *, const char *);
 
 int mkalldirs (const char *);
 
-char *rewrite_shorthand_url (const char *);
+char *maybe_prepend_scheme (const char *);
 bool schemes_are_similar_p (enum url_scheme a, enum url_scheme b);
 
 bool are_urls_equal (const char *u1, const char *u2);

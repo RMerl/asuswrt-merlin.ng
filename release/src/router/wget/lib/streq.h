@@ -21,6 +21,11 @@
 
 #include <string.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /* STREQ_OPT allows to optimize string comparison with a small literal string.
      STREQ_OPT (s, "EUC-KR", 'E', 'U', 'C', '-', 'K', 'R', 0, 0, 0)
    is semantically equivalent to
@@ -171,6 +176,11 @@ streq0 (const char *s1, const char *s2, char s20, char s21, char s22, char s23, 
 #define STREQ_OPT(s1,s2,s20,s21,s22,s23,s24,s25,s26,s27,s28) \
   (strcmp (s1, s2) == 0)
 
+#endif
+
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* _GL_STREQ_H */

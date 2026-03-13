@@ -15,6 +15,11 @@
    You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /* Set the 'FD_CLOEXEC' flag of DESC if VALUE is true,
    or clear the flag if VALUE is false.
    Return 0 on success, or -1 on error with 'errno' set.
@@ -32,3 +37,8 @@ int set_cloexec_flag (int desc, bool value);
    be duplicated.  */
 
 int dup_cloexec (int fd);
+
+
+#ifdef __cplusplus
+}
+#endif

@@ -30,6 +30,7 @@ lib/af_alg.h
 lib/alloca.c
 lib/alloca.in.h
 lib/arg-nonnull.h
+lib/arpa_inet.c
 lib/arpa_inet.in.h
 lib/array-mergesort.h
 lib/asnprintf.c
@@ -50,6 +51,7 @@ lib/bitrotate.c
 lib/bitrotate.h
 lib/btoc32.c
 lib/btowc.c
+lib/byteswap.c
 lib/byteswap.in.h
 lib/c++defs.h
 lib/c-ctype.c
@@ -178,6 +180,8 @@ lib/gettimeofday.c
 lib/gl_openssl.h
 lib/glthread/lock.c
 lib/glthread/lock.h
+lib/glthread/once.c
+lib/glthread/once.h
 lib/glthread/threadlib.c
 lib/group-member.c
 lib/hard-locale.c
@@ -299,6 +303,8 @@ lib/printf-args.h
 lib/printf-parse.c
 lib/printf-parse.h
 lib/pselect.c
+lib/pthread-once.c
+lib/pthread.in.h
 lib/pthread_sigmask.c
 lib/quote.h
 lib/quotearg.c
@@ -383,6 +389,7 @@ lib/stdio-impl.h
 lib/stdio-read.c
 lib/stdio-write.c
 lib/stdio.in.h
+lib/stdlib.c
 lib/stdlib.in.h
 lib/stpcpy.c
 lib/str-two-way.h
@@ -526,6 +533,7 @@ lib/vasnprintf.h
 lib/vasprintf.c
 lib/verify.h
 lib/vsnprintf.c
+lib/vsnzprintf.c
 lib/w32sock.h
 lib/wait-process.c
 lib/wait-process.h
@@ -543,6 +551,8 @@ lib/windows-mutex.c
 lib/windows-mutex.h
 lib/windows-once.c
 lib/windows-once.h
+lib/windows-path.c
+lib/windows-path.h
 lib/windows-recmutex.c
 lib/windows-recmutex.h
 lib/windows-rwlock.c

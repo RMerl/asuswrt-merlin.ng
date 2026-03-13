@@ -3,7 +3,7 @@
 # controlled .prev-version file, automate the procedure by which we record
 # the date, release-type and version string in the NEWS file.  That commit
 # will serve to identify the release, so apply a signed tag to it as well.
-VERSION=2018-03-07.03 # UTC
+VERSION=2024-07-04.10 # UTC
 
 # Note: this is a bash script (could be zsh or dash)
 
@@ -171,7 +171,7 @@ git tag -s -m "$pkg $ver" v$ver HEAD || die 'git tag failed'
 
 # Local variables:
 # indent-tabs-mode: nil
-# eval: (add-hook 'before-save-hook 'time-stamp)
+# eval: (add-hook 'before-save-hook 'time-stamp nil t)
 # time-stamp-start: "VERSION="
 # time-stamp-format: "%:y-%02m-%02d.%02H"
 # time-stamp-time-zone: "UTC0"

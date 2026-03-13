@@ -28,6 +28,8 @@
 #ifndef _@GUARD_PREFIX@_FLOAT_H
 #define _@GUARD_PREFIX@_FLOAT_H
 
+/* ============================ ISO C99 support ============================ */
+
 /* 'long double' properties.  */
 
 #if defined __i386__ && (defined __BEOS__ || defined __OpenBSD__)
@@ -178,6 +180,156 @@ extern const union gl_long_double_union gl_LDBL_MAX;
 #  define LDBL_EPSILON 2.46519032881566189191165176650870696773e-32L /* 2^-105 */
 # endif
 #endif
+
+/* ============================ ISO C11 support ============================ */
+
+/* 'float' properties */
+
+#ifndef FLT_HAS_SUBNORM
+# define FLT_HAS_SUBNORM 1
+#endif
+#ifndef FLT_DECIMAL_DIG
+/* FLT_MANT_DIG = 24 => FLT_DECIMAL_DIG = 9 */
+# define FLT_DECIMAL_DIG ((int)(FLT_MANT_DIG * 0.3010299956639812 + 2))
+#endif
+#if defined _AIX && !defined __GNUC__
+/* On AIX, the value of FLT_TRUE_MIN in /usr/include/float.h is a 'double',
+   not a 'float'.  */
+# undef FLT_TRUE_MIN
+#endif
+#ifndef FLT_TRUE_MIN
+/* FLT_MIN / 2^(FLT_MANT_DIG-1) */
+# define FLT_TRUE_MIN (FLT_MIN / 8388608.0f)
+#endif
+
+/* 'double' properties */
+
+#ifndef DBL_HAS_SUBNORM
+# define DBL_HAS_SUBNORM 1
+#endif
+#ifndef DBL_DECIMAL_DIG
+/* DBL_MANT_DIG = 53 => DBL_DECIMAL_DIG = 17 */
+# define DBL_DECIMAL_DIG ((int)(DBL_MANT_DIG * 0.3010299956639812 + 2))
+#endif
+#ifndef DBL_TRUE_MIN
+/* DBL_MIN / 2^(DBL_MANT_DIG-1) */
+# define DBL_TRUE_MIN (DBL_MIN / 4503599627370496.0)
+#endif
+
+/* 'long double' properties */
+
+#ifndef LDBL_HAS_SUBNORM
+# define LDBL_HAS_SUBNORM 1
+#endif
+#ifndef LDBL_DECIMAL_DIG
+/* LDBL_MANT_DIG = 53 => LDBL_DECIMAL_DIG = 17 */
+/* LDBL_MANT_DIG = 64 => LDBL_DECIMAL_DIG = 21 */
+/* LDBL_MANT_DIG = 106 => LDBL_DECIMAL_DIG = 33 */
+/* LDBL_MANT_DIG = 113 => LDBL_DECIMAL_DIG = 36 */
+# define LDBL_DECIMAL_DIG ((int)(LDBL_MANT_DIG * 0.3010299956639812 + 2))
+#endif
+#ifndef LDBL_TRUE_MIN
+/* LDBL_MIN / 2^(LDBL_MANT_DIG-1) */
+# if LDBL_MANT_DIG == 53
+#  define LDBL_TRUE_MIN (LDBL_MIN / 4503599627370496.0L)
+# elif LDBL_MANT_DIG == 64
+#  if defined __i386__ && (defined __FreeBSD__ || defined __DragonFly__)
+/* Work around FreeBSD/x86 problem mentioned above.  */
+extern const union gl_long_double_union gl_LDBL_TRUE_MIN;
+#   define LDBL_TRUE_MIN (gl_LDBL_TRUE_MIN.ld)
+#  else
+#   define LDBL_TRUE_MIN (LDBL_MIN / 9223372036854775808.0L)
+#  endif
+# elif LDBL_MANT_DIG == 106
+#  define LDBL_TRUE_MIN (LDBL_MIN / 40564819207303340847894502572032.0L)
+# elif LDBL_MANT_DIG == 113
+#  define LDBL_TRUE_MIN (LDBL_MIN / 5192296858534827628530496329220096.0L)
+# endif
+#endif
+
+/* ============================ ISO C23 support ============================ */
+
+/* 'float' properties */
+
+#ifndef FLT_IS_IEC_60559
+# if defined __m68k__
+#  define FLT_IS_IEC_60559 0
+# else
+#  define FLT_IS_IEC_60559 1
+# endif
+#endif
+#ifndef FLT_NORM_MAX
+# define FLT_NORM_MAX FLT_MAX
+#endif
+#ifndef FLT_SNAN
+/* For sh, beware of <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111814>.  */
+# if ((__GNUC__ + (__GNUC_MINOR__ >= 3) > 3) || defined __clang__) && !defined __sh__
+#  define FLT_SNAN __builtin_nansf ("")
+# else
+typedef union { unsigned int word[1]; float value; } gl_FLT_SNAN_t;
+extern gl_FLT_SNAN_t gl_FLT_SNAN;
+#  define FLT_SNAN (gl_FLT_SNAN.value)
+#  define GNULIB_defined_FLT_SNAN 1
+# endif
+#endif
+
+/* 'double' properties */
+
+#ifndef DBL_IS_IEC_60559
+# if defined __m68k__
+#  define DBL_IS_IEC_60559 0
+# else
+#  define DBL_IS_IEC_60559 1
+# endif
+#endif
+#ifndef DBL_NORM_MAX
+# define DBL_NORM_MAX DBL_MAX
+#endif
+#ifndef DBL_SNAN
+/* For sh, beware of <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111814>.  */
+# if ((__GNUC__ + (__GNUC_MINOR__ >= 3) > 3) || defined __clang__) && !defined __sh__
+#  define DBL_SNAN __builtin_nans ("")
+# else
+typedef union { unsigned long long word[1]; double value; } gl_DBL_SNAN_t;
+extern gl_DBL_SNAN_t gl_DBL_SNAN;
+#  define DBL_SNAN (gl_DBL_SNAN.value)
+#  define GNULIB_defined_DBL_SNAN 1
+# endif
+#endif
+
+/* 'long double' properties */
+
+#ifndef LDBL_IS_IEC_60559
+# if defined __m68k__
+#  define LDBL_IS_IEC_60559 0
+# elif LDBL_MANT_DIG == 53 || LDBL_MANT_DIG == 113
+#  define LDBL_IS_IEC_60559 1
+# else
+#  define LDBL_IS_IEC_60559 0
+# endif
+#endif
+#ifndef LDBL_NORM_MAX
+# define LDBL_NORM_MAX LDBL_MAX
+#endif
+#ifndef LDBL_SNAN
+/* For sh, beware of <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111814>.  */
+# if ((__GNUC__ + (__GNUC_MINOR__ >= 3) > 3) || defined __clang__) && !defined __sh__
+#  define LDBL_SNAN __builtin_nansl ("")
+# else
+#  if LDBL_MANT_DIG == 53
+typedef union { unsigned long long word[1]; long double value; } gl_LDBL_SNAN_t;
+#  elif defined __m68k__
+typedef union { unsigned int word[3]; long double value; } gl_LDBL_SNAN_t;
+#  else
+typedef union { unsigned long long word[2]; long double value; } gl_LDBL_SNAN_t;
+#  endif
+extern gl_LDBL_SNAN_t gl_LDBL_SNAN;
+#  define LDBL_SNAN (gl_LDBL_SNAN.value)
+#  define GNULIB_defined_LDBL_SNAN 1
+# endif
+#endif
+
+/* ================================= Other ================================= */
 
 #if @REPLACE_ITOLD@
 /* Pull in a function that fixes the 'int' to 'long double' conversion

@@ -46,18 +46,93 @@ struct dirent
   char d_type;
   char d_name[1];
 };
-/* Possible values for 'd_type'.  */
-#  define DT_UNKNOWN 0
-#  define DT_FIFO    1          /* FIFO */
-#  define DT_CHR     2          /* character device */
-#  define DT_DIR     4          /* directory */
-#  define DT_BLK     6          /* block device */
-#  define DT_REG     8          /* regular file */
-#  define DT_LNK    10          /* symbolic link */
-#  define DT_SOCK   12          /* socket */
-#  define DT_WHT    14          /* whiteout */
 #  define GNULIB_defined_struct_dirent 1
 # endif
+#endif
+
+/* 'd_type' macros specified in GNU, i.e., POSIX.1-2024 plus DT_WHT,
+   but not (yet) DT_MQ, DT_SEM, DT_SHM, DT_TMO.
+   These macros can be useful even on platforms that do not support
+   d_type or the corresponding file types.
+   The values of these macros are all in the 'unsigned char' range.
+   Default to the Linux values which are also popular elsewhere,
+   and check that all macros have distinct values.  */
+#ifndef DT_UNKNOWN
+# define DT_UNKNOWN 0
+#endif
+#ifndef DT_FIFO
+# define DT_FIFO  1 /* FIFO */
+#endif
+#ifndef DT_CHR
+# define DT_CHR   2 /* character device */
+#endif
+#ifndef DT_DIR
+# define DT_DIR   4 /* directory */
+#endif
+#ifndef DT_BLK
+# define DT_BLK   6 /* block device */
+#endif
+#ifndef DT_REG
+# define DT_REG   8 /* regular file */
+#endif
+#ifndef DT_LNK
+# define DT_LNK  10 /* symbolic link */
+#endif
+#ifndef DT_SOCK
+# define DT_SOCK 12 /* socket */
+#endif
+#ifndef DT_WHT
+# define DT_WHT  14 /* whiteout */
+#endif
+static_assert (DT_UNKNOWN != DT_FIFO && DT_UNKNOWN != DT_CHR
+               && DT_UNKNOWN != DT_BLK && DT_UNKNOWN != DT_REG
+               && DT_UNKNOWN != DT_LNK && DT_UNKNOWN != DT_SOCK
+               && DT_UNKNOWN != DT_WHT
+               && DT_FIFO != DT_CHR && DT_FIFO != DT_BLK && DT_FIFO != DT_REG
+               && DT_FIFO != DT_LNK && DT_FIFO != DT_SOCK && DT_FIFO != DT_WHT
+               && DT_CHR != DT_BLK && DT_CHR != DT_REG && DT_CHR != DT_LNK
+               && DT_CHR != DT_SOCK && DT_CHR != DT_WHT
+               && DT_BLK != DT_REG && DT_BLK != DT_LNK && DT_BLK != DT_SOCK
+               && DT_BLK != DT_WHT
+               && DT_REG != DT_LNK && DT_REG != DT_SOCK && DT_REG != DT_WHT
+               && DT_LNK != DT_SOCK && DT_LNK != DT_WHT
+               && DT_SOCK != DT_WHT);
+
+/* Other optional information about a directory entry.  */
+#define _GL_DT_NOTDIR 0x100   /* Not a directory */
+
+/* Conversion between S_IF* and DT_* file types.  */
+#if ! (defined IFTODT && defined DTTOIF)
+# include <sys/stat.h>
+# ifdef S_ISWHT
+#  define _GL_DIRENT_S_ISWHT(mode) S_ISWHT(mode)
+# else
+#  define _GL_DIRENT_S_ISWHT(mode) 0
+# endif
+# ifdef S_IFWHT
+#  define _GL_DIRENT_S_IFWHT S_IFWHT
+# else
+#  define _GL_DIRENT_S_IFWHT (DT_WHT << 12) /* just a guess */
+# endif
+#endif
+/* Conversion from a 'stat' mode to a DT_* value.  */
+#ifndef IFTODT
+# define IFTODT(mode) \
+   (S_ISREG (mode) ? DT_REG : S_ISDIR (mode) ? DT_DIR \
+    : S_ISLNK (mode) ? DT_LNK : S_ISBLK (mode) ? DT_BLK \
+    : S_ISCHR (mode) ? DT_CHR : S_ISFIFO (mode) ? DT_FIFO \
+    : S_ISSOCK (mode) ? DT_SOCK \
+    : _GL_DIRENT_S_ISWHT (mode) ? DT_WHT : DT_UNKNOWN)
+#endif
+/* Conversion from a DT_* value to a 'stat' mode.  */
+#ifndef DTTOIF
+# define DTTOIF(dirtype) \
+   ((dirtype) == DT_REG ? S_IFREG : (dirtype) == DT_DIR ? S_IFDIR \
+    : (dirtype) == DT_LNK ? S_IFLNK : (dirtype) == DT_BLK ? S_IFBLK \
+    : (dirtype) == DT_CHR ? S_IFCHR :  dirtype == DT_FIFO ? S_IFIFO \
+    : (dirtype) == DT_SOCK ? S_IFSOCK \
+    : (dirtype) == DT_WHT ? _GL_DIRENT_S_IFWHT \
+    : (dirtype) << 12 /* just a guess */)
 #endif
 
 #if !@DIR_HAS_FD_MEMBER@
@@ -78,7 +153,7 @@ typedef struct gl_directory DIR;
    that can be freed by passing them as the Ith argument to the
    function F.  */
 #ifndef _GL_ATTRIBUTE_DEALLOC
-# if __GNUC__ >= 11
+# if __GNUC__ >= 11 && !defined __clang__
 #  define _GL_ATTRIBUTE_DEALLOC(f, i) __attribute__ ((__malloc__ (f, i)))
 # else
 #  define _GL_ATTRIBUTE_DEALLOC(f, i)
@@ -122,11 +197,11 @@ typedef struct gl_directory DIR;
 #   define closedir rpl_closedir
 #   define GNULIB_defined_closedir 1
 #  endif
-_GL_FUNCDECL_RPL (closedir, int, (DIR *dirp) _GL_ARG_NONNULL ((1)));
+_GL_FUNCDECL_RPL (closedir, int, (DIR *dirp), _GL_ARG_NONNULL ((1)));
 _GL_CXXALIAS_RPL (closedir, int, (DIR *dirp));
 # else
 #  if !@HAVE_CLOSEDIR@
-_GL_FUNCDECL_SYS (closedir, int, (DIR *dirp) _GL_ARG_NONNULL ((1)));
+_GL_FUNCDECL_SYS (closedir, int, (DIR *dirp), _GL_ARG_NONNULL ((1)));
 #  endif
 _GL_CXXALIAS_SYS (closedir, int, (DIR *dirp));
 # endif
@@ -147,14 +222,14 @@ _GL_WARN_ON_USE (closedir, "closedir is not portable - "
 #   define GNULIB_defined_opendir 1
 #  endif
 _GL_FUNCDECL_RPL (opendir, DIR *,
-                  (const char *dir_name)
+                  (const char *dir_name),
                   _GL_ARG_NONNULL ((1))
                   _GL_ATTRIBUTE_MALLOC _GL_ATTRIBUTE_DEALLOC (closedir, 1));
 _GL_CXXALIAS_RPL (opendir, DIR *, (const char *dir_name));
 # else
-#  if !@HAVE_OPENDIR@ || __GNUC__ >= 11
+#  if !@HAVE_OPENDIR@ || (__GNUC__ >= 11 && !defined __clang__)
 _GL_FUNCDECL_SYS (opendir, DIR *,
-                  (const char *dir_name)
+                  (const char *dir_name),
                   _GL_ARG_NONNULL ((1))
                   _GL_ATTRIBUTE_MALLOC _GL_ATTRIBUTE_DEALLOC (closedir, 1));
 #  endif
@@ -162,11 +237,12 @@ _GL_CXXALIAS_SYS (opendir, DIR *, (const char *dir_name));
 # endif
 _GL_CXXALIASWARN (opendir);
 #else
-# if @GNULIB_CLOSEDIR@ && !GNULIB_defined_DIR && __GNUC__ >= 11 && !defined opendir
+# if @GNULIB_CLOSEDIR@ && !GNULIB_defined_DIR \
+     && (__GNUC__ >= 11 && !defined __clang__) && !defined opendir
 /* For -Wmismatched-dealloc: Associate opendir with closedir or
    rpl_closedir.  */
 _GL_FUNCDECL_SYS (opendir, DIR *,
-                  (const char *dir_name)
+                  (const char *dir_name),
                   _GL_ARG_NONNULL ((1))
                   _GL_ATTRIBUTE_MALLOC _GL_ATTRIBUTE_DEALLOC (closedir, 1));
 # endif
@@ -185,11 +261,11 @@ _GL_WARN_ON_USE (opendir, "opendir is not portable - "
 #   undef readdir
 #   define readdir rpl_readdir
 #  endif
-_GL_FUNCDECL_RPL (readdir, struct dirent *, (DIR *dirp) _GL_ARG_NONNULL ((1)));
+_GL_FUNCDECL_RPL (readdir, struct dirent *, (DIR *dirp), _GL_ARG_NONNULL ((1)));
 _GL_CXXALIAS_RPL (readdir, struct dirent *, (DIR *dirp));
 # else
 #  if !@HAVE_READDIR@
-_GL_FUNCDECL_SYS (readdir, struct dirent *, (DIR *dirp) _GL_ARG_NONNULL ((1)));
+_GL_FUNCDECL_SYS (readdir, struct dirent *, (DIR *dirp), _GL_ARG_NONNULL ((1)));
 #  endif
 _GL_CXXALIAS_SYS (readdir, struct dirent *, (DIR *dirp));
 # endif
@@ -208,11 +284,11 @@ _GL_WARN_ON_USE (readdir, "readdir is not portable - "
 #   undef rewinddir
 #   define rewinddir rpl_rewinddir
 #  endif
-_GL_FUNCDECL_RPL (rewinddir, void, (DIR *dirp) _GL_ARG_NONNULL ((1)));
+_GL_FUNCDECL_RPL (rewinddir, void, (DIR *dirp), _GL_ARG_NONNULL ((1)));
 _GL_CXXALIAS_RPL (rewinddir, void, (DIR *dirp));
 # else
 #  if !@HAVE_REWINDDIR@
-_GL_FUNCDECL_SYS (rewinddir, void, (DIR *dirp) _GL_ARG_NONNULL ((1)));
+_GL_FUNCDECL_SYS (rewinddir, void, (DIR *dirp), _GL_ARG_NONNULL ((1)));
 #  endif
 _GL_CXXALIAS_SYS (rewinddir, void, (DIR *dirp));
 # endif
@@ -234,7 +310,7 @@ _GL_WARN_ON_USE (rewinddir, "rewinddir is not portable - "
 #   undef dirfd
 #   define dirfd rpl_dirfd
 #  endif
-_GL_FUNCDECL_RPL (dirfd, int, (DIR *) _GL_ARG_NONNULL ((1)));
+_GL_FUNCDECL_RPL (dirfd, int, (DIR *), _GL_ARG_NONNULL ((1)));
 _GL_CXXALIAS_RPL (dirfd, int, (DIR *));
 
 # else
@@ -245,7 +321,7 @@ static inline int (dirfd) (DIR *dp) { return dirfd (dp); }
 #   undef dirfd
 #  endif
 #  if !(@HAVE_DECL_DIRFD@ || defined dirfd)
-_GL_FUNCDECL_SYS (dirfd, int, (DIR *) _GL_ARG_NONNULL ((1)));
+_GL_FUNCDECL_SYS (dirfd, int, (DIR *), _GL_ARG_NONNULL ((1)));
 #  endif
 _GL_CXXALIAS_SYS (dirfd, int, (DIR *));
 # endif
@@ -270,24 +346,26 @@ _GL_WARN_ON_USE (dirfd, "dirfd is unportable - "
 #   define fdopendir rpl_fdopendir
 #  endif
 _GL_FUNCDECL_RPL (fdopendir, DIR *,
-                  (int fd)
+                  (int fd),
                   _GL_ATTRIBUTE_MALLOC _GL_ATTRIBUTE_DEALLOC (closedir, 1));
 _GL_CXXALIAS_RPL (fdopendir, DIR *, (int fd));
 # else
-#  if !@HAVE_FDOPENDIR@ || !@HAVE_DECL_FDOPENDIR@ || __GNUC__ >= 11
+#  if !@HAVE_FDOPENDIR@ || !@HAVE_DECL_FDOPENDIR@ \
+      || (__GNUC__ >= 11 && !defined __clang__)
 _GL_FUNCDECL_SYS (fdopendir, DIR *,
-                  (int fd)
+                  (int fd),
                   _GL_ATTRIBUTE_MALLOC _GL_ATTRIBUTE_DEALLOC (closedir, 1));
 #  endif
 _GL_CXXALIAS_SYS (fdopendir, DIR *, (int fd));
 # endif
 _GL_CXXALIASWARN (fdopendir);
 #else
-# if @GNULIB_CLOSEDIR@ && __GNUC__ >= 11 && !defined fdopendir
+# if @GNULIB_CLOSEDIR@ \
+     && (__GNUC__ >= 11 && !defined __clang__) && !defined fdopendir
 /* For -Wmismatched-dealloc: Associate fdopendir with closedir or
    rpl_closedir.  */
 _GL_FUNCDECL_SYS (fdopendir, DIR *,
-                  (int fd)
+                  (int fd),
                   _GL_ATTRIBUTE_MALLOC _GL_ATTRIBUTE_DEALLOC (closedir, 1));
 # endif
 # if defined GNULIB_POSIXCHECK
@@ -308,7 +386,7 @@ _GL_WARN_ON_USE (fdopendir, "fdopendir is unportable - "
 _GL_FUNCDECL_SYS (scandir, int,
                   (const char *dir, struct dirent ***namelist,
                    int (*filter) (const struct dirent *),
-                   int (*cmp) (const struct dirent **, const struct dirent **))
+                   int (*cmp) (const struct dirent **, const struct dirent **)),
                   _GL_ARG_NONNULL ((1, 2, 4)));
 # endif
 /* Need to cast, because on glibc systems, the fourth parameter is
@@ -330,7 +408,7 @@ _GL_WARN_ON_USE (scandir, "scandir is unportable - "
 /* Compare two 'struct dirent' entries alphabetically.  */
 # if !@HAVE_ALPHASORT@
 _GL_FUNCDECL_SYS (alphasort, int,
-                  (const struct dirent **, const struct dirent **)
+                  (const struct dirent **, const struct dirent **),
                   _GL_ATTRIBUTE_PURE
                   _GL_ARG_NONNULL ((1, 2)));
 # endif

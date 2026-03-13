@@ -1,4 +1,11 @@
-# serial 25
+# getcwd-path-max.m4
+# serial 26
+dnl Copyright (C) 2003-2007, 2009-2024 Free Software Foundation, Inc.
+dnl This file is free software; the Free Software Foundation
+dnl gives unlimited permission to copy and/or distribute it,
+dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
+
 # Check for several getcwd bugs with long file names.
 # If so, arrange to compile the wrapper function.
 
@@ -6,16 +13,11 @@
 # I've heard that this is due to a Linux kernel bug, and that it has
 # been fixed between 2.4.21-pre3 and 2.4.21-pre4.
 
-# Copyright (C) 2003-2007, 2009-2024 Free Software Foundation, Inc.
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
-
 # From Jim Meyering
 
 AC_DEFUN([gl_FUNC_GETCWD_PATH_MAX],
 [
-  AC_CHECK_DECLS_ONCE([getcwd])
+  AC_CHECK_DECLS_ONCE([getcwd, alarm])
   AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
   AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
   AC_CHECK_HEADERS_ONCE([unistd.h])
@@ -34,6 +36,9 @@ AC_DEFUN([gl_FUNC_GETCWD_PATH_MAX],
 # include <unistd.h>
 #else
 # include <direct.h>
+#endif
+#if HAVE_DECL_ALARM
+# include <signal.h>
 #endif
 #include <string.h>
 #include <limits.h>
@@ -90,16 +95,30 @@ main ()
 #else
   char buf[PATH_MAX * (DIR_NAME_SIZE / DOTDOTSLASH_LEN + 1)
            + DIR_NAME_SIZE + BUF_SLOP];
-  char *cwd = getcwd (buf, PATH_MAX);
+  char *cwd;
   size_t initial_cwd_len;
   size_t cwd_len;
-  int fail = 0;
-  size_t n_chdirs = 0;
+  int fail;
+  size_t n_chdirs;
 
+# if HAVE_DECL_ALARM
+  /* This test makes some buggy getcwd implementations take a long time, e.g.
+     on NAS devices
+     <https://lists.gnu.org/archive/html/bug-gnulib/2024-03/msg00444.html>
+     and in sandboxed environments <https://bugs.gentoo.org/447970>.
+     Give up after 5 seconds; a getcwd slower than that isn't worth using
+     anyway.  */
+  signal (SIGALRM, SIG_DFL);
+  alarm (5);
+# endif
+
+  cwd = getcwd (buf, PATH_MAX);
   if (cwd == NULL)
     exit (10);
 
   cwd_len = initial_cwd_len = strlen (cwd);
+  fail = 0;
+  n_chdirs = 0;
 
   while (1)
     {

@@ -28,6 +28,12 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include <process.h>
+#include <dlfcn.h>
+#if HAVE_LIBCX_SPAWN2_H
+# include <libcx/spawn2.h>
+#endif
+
 #include "cloexec.h"
 #include <error.h>
 #include "gettext.h"
@@ -151,4 +157,87 @@ prepare_spawn (const char * const *argv, char **mem_to_free)
   new_argv[1 + argc] = NULL;
 
   return new_argv;
+}
+
+int
+spawnpvech (int mode,
+            const char *progname, const char * const *argv,
+            const char * const *envp,
+            const char *currdir,
+            int new_stdin, int new_stdout, int new_stderr)
+{
+#if HAVE_LIBCX_SPAWN2_H
+  static int (*libcx_spawn2) (int mode,
+                              const char *name, const char * const argv[],
+                              const char *cwd, const char * const envp[],
+                              const int stdfds[]) = NULL;
+  static int libcx_spawn2_loaded = -1;
+#else
+  static int libcx_spawn2_loaded = 0;
+#endif
+
+  int saved_stdin = STDIN_FILENO;
+  int saved_stdout = STDOUT_FILENO;
+  int saved_stderr = STDERR_FILENO;
+  int ret = -1;
+
+#if HAVE_LIBCX_SPAWN2_H
+  if (libcx_spawn2_loaded == -1)
+    {
+      void *libcx_handle;
+
+      libcx_handle = dlopen ("libcx0", RTLD_LAZY);
+      if (libcx_handle != NULL)
+        libcx_spawn2 = dlsym (libcx_handle, "_spawn2");
+
+      libcx_spawn2_loaded = libcx_handle != NULL && libcx_spawn2 != NULL;
+    }
+#endif
+
+  if (!(libcx_spawn2_loaded
+        || (currdir == NULL || strcmp (currdir, ".") == 0)))
+    {
+      errno = EINVAL;
+      return -1;
+    }
+
+  /* Save standard file handles.  */
+  /* 0 means no changes. This is a behavior of spawn2().  */
+  if (new_stdin != 0)
+    saved_stdin = dup_safer_noinherit (STDIN_FILENO);
+
+  if (!(new_stdout == 0 || new_stdout == 1))
+    saved_stdout = dup_safer_noinherit (STDOUT_FILENO);
+
+  if (!(new_stderr == 0 || new_stderr == 2))
+    saved_stderr = dup_safer_noinherit (STDERR_FILENO);
+
+  if ((saved_stdin == STDIN_FILENO || dup2 (new_stdin, STDIN_FILENO) >= 0)
+      && (saved_stdout == STDOUT_FILENO
+          || dup2 (new_stdout, STDOUT_FILENO) >= 0)
+      && (saved_stderr == STDERR_FILENO
+          || dup2 (new_stderr, STDERR_FILENO) >= 0))
+    {
+      if (!libcx_spawn2_loaded
+          || (currdir == NULL || strcmp (currdir, ".") == 0))
+        ret = spawnvpe (mode, progname, (char * const *) argv,
+                        (char * const *) envp);
+#if HAVE_LIBCX_SPAWN2_H
+      else
+        ret = libcx_spawn2 (mode | P_2_THREADSAFE, progname, argv, currdir,
+                            envp, NULL);
+#endif
+    }
+
+  /* Restores standard file handles.  */
+  if (saved_stderr > STDERR_FILENO)
+    undup_safer_noinherit (saved_stderr, STDERR_FILENO);
+
+  if (saved_stdout > STDOUT_FILENO)
+    undup_safer_noinherit (saved_stdout, STDOUT_FILENO);
+
+  if (saved_stdin > STDIN_FILENO)
+    undup_safer_noinherit (saved_stdin, STDIN_FILENO);
+
+  return ret;
 }

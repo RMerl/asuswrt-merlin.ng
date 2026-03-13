@@ -28,6 +28,7 @@
 typedef struct
         {
           glwthread_initguard_t guard; /* protects the initialization */
+          DWORD owner;
           CRITICAL_SECTION lock;
         }
         glwthread_mutex_t;

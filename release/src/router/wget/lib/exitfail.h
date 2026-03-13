@@ -15,4 +15,14 @@
    You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 extern int volatile exit_failure;
+
+
+#ifdef __cplusplus
+}
+#endif

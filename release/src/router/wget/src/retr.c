@@ -1177,80 +1177,19 @@ bail:
   return result;
 }
 
-/* Find the URLs in the file and call retrieve_url() for each of them.
-   If HTML is true, treat the file as HTML, and construct the URLs
-   accordingly.
-
-   If opt.recursive is set, call retrieve_tree() for each file.  */
-
-uerr_t
-retrieve_from_file (const char *file, bool html, int *count)
+static uerr_t retrieve_from_url_list(struct urlpos *url_list, int *count, struct iri *iri)
 {
+  struct urlpos *cur_url;
   uerr_t status;
-  struct urlpos *url_list, *cur_url;
-  struct iri *iri = iri_new();
-
-  char *input_file, *url_file = NULL;
-  const char *url = file;
 
   status = RETROK;             /* Suppose everything is OK.  */
-  *count = 0;                  /* Reset the URL count.  */
-
-  /* sXXXav : Assume filename and links in the file are in the locale */
-  set_uri_encoding (iri, opt.locale, true);
-  set_content_encoding (iri, opt.locale);
-
-  if (url_valid_scheme (url))
-    {
-      int dt,url_err;
-      struct url *url_parsed = url_parse (url, &url_err, iri, true);
-      if (!url_parsed)
-        {
-          logprintf (LOG_NOTQUIET, "%s: %s.\n", url, url_error (url_err));
-          iri_free (iri);
-          return URLERROR;
-        }
-
-      if (!opt.base_href)
-        opt.base_href = xstrdup (url);
-
-      status = retrieve_url (url_parsed, url, &url_file, NULL, NULL, &dt,
-                             false, iri, true);
-      url_free (url_parsed);
-
-      if (!url_file || (status != RETROK))
-        return status;
-
-      if (dt & TEXTHTML)
-        html = true;
-
-#ifdef ENABLE_IRI
-      /* If we have a found a content encoding, use it.
-       * ( == is okay, because we're checking for identical object) */
-      if (iri->content_encoding != opt.locale)
-          set_uri_encoding (iri, iri->content_encoding, false);
-#endif
-
-      /* Reset UTF-8 encode status */
-      iri->utf8_encode = opt.enable_iri;
-      xfree (iri->orig_url);
-
-      input_file = url_file;
-    }
-  else
-    input_file = (char *) file;
-
-  url_list = (html ? get_urls_html (input_file, NULL, NULL, iri)
-              : get_urls_file (input_file));
-
-  xfree (url_file);
 
   for (cur_url = url_list; cur_url; cur_url = cur_url->next, ++*count)
     {
       char *filename = NULL, *new_file = NULL, *proxy;
       int dt = 0;
-      struct iri *tmpiri = iri_dup (iri);
-      struct url *parsed_url = NULL;
+      struct iri *tmpiri;
+      struct url *parsed_url;
 
       if (cur_url->ignore_when_downloading)
         continue;
@@ -1261,6 +1200,7 @@ retrieve_from_file (const char *file, bool html, int *count)
           break;
         }
 
+      tmpiri = iri_dup (iri);
       parsed_url = url_parse (cur_url->url->url, NULL, tmpiri, true);
 
       proxy = getproxy (cur_url->url);
@@ -1310,6 +1250,83 @@ Removing file due to --delete-after in retrieve_from_file():\n"));
       xfree (filename);
       iri_free (tmpiri);
     }
+  return status;
+}
+
+/* Find the URLs in the file and call retrieve_url() for each of them.
+   If HTML is true, treat the file as HTML, and construct the URLs
+   accordingly.
+
+   If opt.recursive is set, call retrieve_tree() for each file.  */
+
+uerr_t
+retrieve_from_file (const char *file, bool html, int *count)
+{
+  uerr_t status;
+  struct urlpos *url_list, *cur_url;
+  struct iri *iri = iri_new();
+
+  char *input_file, *url_file = NULL;
+  const char *url = file;
+
+  *count = 0;                  /* Reset the URL count.  */
+
+  /* sXXXav : Assume filename and links in the file are in the locale */
+  set_uri_encoding (iri, opt.locale, true);
+  set_content_encoding (iri, opt.locale);
+
+  if (url_valid_scheme (url))
+    {
+      int dt,url_err;
+      struct url *url_parsed = url_parse (url, &url_err, iri, true);
+      if (!url_parsed)
+        {
+          logprintf (LOG_NOTQUIET, "%s: %s.\n", url, url_error (url_err));
+          iri_free (iri);
+          return URLERROR;
+        }
+
+      if (!opt.base_href)
+        opt.base_href = xstrdup (url);
+
+      status = retrieve_url (url_parsed, url, &url_file, NULL, NULL, &dt,
+                             false, iri, true);
+      url_free (url_parsed);
+
+      if (!url_file || (status != RETROK))
+        {
+          iri_free (iri);
+          return status;
+        }
+
+      if (dt & TEXTHTML)
+        html = true;
+
+#ifdef ENABLE_IRI
+      /* If we have a found a content encoding, use it.
+       * ( == is okay, because we're checking for identical object) */
+      if (iri->content_encoding != opt.locale)
+          set_uri_encoding (iri, iri->content_encoding, false);
+#endif
+
+      /* Reset UTF-8 encode status */
+      iri->utf8_encode = opt.enable_iri;
+      xfree (iri->orig_url);
+
+      input_file = url_file;
+    }
+  else
+    input_file = (char *) file;
+
+  bool read_again = false;
+  do {
+    url_list = (html ? get_urls_html (input_file, NULL, NULL, iri)
+                : get_urls_file (input_file, &read_again));
+
+    status = retrieve_from_url_list(url_list, count, iri);
+  } while (read_again);
+
+  xfree (url_file);
 
   /* Free the linked list of URL-s.  */
   free_urlpos (url_list);
@@ -1498,21 +1515,21 @@ getproxy (struct url *u)
       pxProxyFactory *pf = px_proxy_factory_new ();
       if (!pf)
         {
-          debug_logprintf ("Allocating memory for libproxy failed");
+          DEBUGP (("Allocating memory for libproxy failed"));
          return NULL;
         }
 
-      debug_logprintf ("asking libproxy about url '%s'\n", u->url);
+      DEBUGP (("asking libproxy about url '%s'\n", u->url));
       char **proxies = px_proxy_factory_get_proxies (pf, u->url);
       if (proxies)
         {
           if (proxies[0])
             {
-              debug_logprintf ("libproxy suggest to use '%s'\n", proxies[0]);
+              DEBUGP (("libproxy suggest to use '%s'\n", proxies[0]));
               if (strcmp (proxies[0], "direct://") != 0)
                 {
                   proxy = xstrdup (proxies[0]);
-                  debug_logprintf ("libproxy setting to use '%s'\n", proxy);
+                  DEBUGP (("libproxy setting to use '%s'\n", proxy));
                 }
             }
 
@@ -1529,7 +1546,7 @@ getproxy (struct url *u)
 
   /* Handle shorthands.  `rewritten_storage' is a kludge to allow
      getproxy() to return static storage. */
-  rewritten_url = rewrite_shorthand_url (proxy);
+  rewritten_url = maybe_prepend_scheme (proxy);
   if (rewritten_url)
     return rewritten_url;
 

@@ -1,5 +1,17 @@
 GNU Wget NEWS -- history of user-visible changes.
 
+* Noteworthy changes in release 1.25.0 (2024-11-10) [stable]
+
+** [Breaking change] Drop support for shorthand FTP URLs (CVE-2024-10524)
+
+** [Breaking change] Switch to continuous reading from stdin pipes
+
+** Reimplement user-info parsing based on RFC 2396
+
+** Fix a build issue with libproxy and --disable-debug
+
+
+
 * Noteworthy changes in release 1.24.5 (2024-03-10) [stable]
 
 ** Fix how subdomain matches are checked for HSTS.

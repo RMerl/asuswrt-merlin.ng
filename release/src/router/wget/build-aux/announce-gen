@@ -35,13 +35,13 @@
 eval 'exec perl -wSx "$0" "$@"'
      if 0;
 
-my $VERSION = '2023-12-29 18:26'; # UTC
+my $VERSION = '2024-07-17 02:16'; # UTC
 # The definition above must lie within the first 8 lines in order
 # for the Emacs time-stamp write hook (at end) to update it.
 # If you change this file with Emacs, please let the write hook
 # do its job.  Otherwise, update this string manually.
 
-my $copyright_year = '2022';
+(my $copyright_year = $VERSION) =~ s/^(\d*)-.*$/$1/;
 
 use strict;
 use Getopt::Long;
@@ -102,6 +102,7 @@ The following are optional:
    --help             display this help and exit
    --version          output version information and exit
 
+Send patches and bug reports to <bug-gnulib\@gnu.org>.
 EOF
     }
   exit $exit_code;
@@ -695,7 +696,7 @@ EOF
 ## perl-label-offset: -2
 ## perl-extra-newline-before-brace: t
 ## perl-merge-trailing-else: nil
-## eval: (add-hook 'before-save-hook 'time-stamp)
+## eval: (add-hook 'before-save-hook 'time-stamp nil t)
 ## time-stamp-line-limit: 50
 ## time-stamp-start: "my $VERSION = '"
 ## time-stamp-format: "%:y-%02m-%02d %02H:%02M"

@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wget-1.21.4\n"
 "Report-Msgid-Bugs-To: bug-wget@gnu.org\n"
-"POT-Creation-Date: 2024-03-10 15:08+0100\n"
+"POT-Creation-Date: 2024-11-10 22:29+0100\n"
 "PO-Revision-Date: 2023-10-29 19:27+0100\n"
 "Last-Translator: Ask Hjorth Larsen <asklarsen@gmail.com>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
@@ -387,12 +387,12 @@ msgstr "Dataoverførsel afbrudt.\n"
 msgid "File %s already there; not retrieving.\n"
 msgstr "Filen %s findes allerede, hentes ikke.\n"
 
-#: src/ftp.c:1955 src/http.c:4364
+#: src/ftp.c:1955 src/http.c:4359
 #, c-format
 msgid "(try:%2d)"
 msgstr "(forsøg:%2d)"
 
-#: src/ftp.c:2047 src/http.c:4794
+#: src/ftp.c:2047 src/http.c:4789
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s]\n"
@@ -401,7 +401,7 @@ msgstr ""
 "%s (%s) — skrevet til standard-uddata %s[%s]\n"
 "\n"
 
-#: src/ftp.c:2048 src/http.c:4795
+#: src/ftp.c:2048 src/http.c:4790
 #, c-format
 msgid ""
 "%s (%s) - %s saved [%s]\n"
@@ -411,7 +411,7 @@ msgstr ""
 "\n"
 
 #: src/ftp.c:2108 src/main.c:2178 src/metalink.c:1133 src/recur.c:511
-#: src/recur.c:750 src/retr.c:1303
+#: src/recur.c:750 src/retr.c:1243
 #, c-format
 msgid "Removing %s.\n"
 msgstr "Fjerner %s.\n"
@@ -719,7 +719,7 @@ msgstr "mislykkedes: tiden udløb.\n"
 msgid "%s: Cannot resolve incomplete link %s.\n"
 msgstr "%s: kan ikke løse ukomplet lænke %s.\n"
 
-#: src/html-url.c:944
+#: src/html-url.c:945
 #, c-format
 msgid "%s: Invalid URL %s: %s\n"
 msgstr "%s: Ugyldig URL %s: %s\n"
@@ -774,7 +774,7 @@ msgstr "Genbruger eksisterende forbindelse til %s:%d.\n"
 msgid "Failed reading proxy response: %s\n"
 msgstr "Fejl ved læsning af svar fra proxy: %s\n"
 
-#: src/http.c:2183 src/http.c:3460 src/http.c:4590
+#: src/http.c:2183 src/http.c:3460 src/http.c:4585
 #, c-format
 msgid "%s ERROR %d: %s.\n"
 msgstr "%s FEJL %d: %s.\n"
@@ -905,73 +905,73 @@ msgstr "Længde: "
 msgid "ignored"
 msgstr "ignoreret"
 
-#: src/http.c:4272
+#: src/http.c:4266
 msgid "Warning: wildcards not supported in HTTP.\n"
 msgstr "Advarsel: jokertegn ikke understøttet i HTTP.\n"
 
-#: src/http.c:4354
+#: src/http.c:4349
 msgid "Spider mode enabled. Check if remote file exists.\n"
 msgstr "Edderkoptilstand aktiveret. Kontrollér om fjernfilen findes.\n"
 
-#: src/http.c:4447
+#: src/http.c:4442
 #, c-format
 msgid "Cannot write to %s (%s).\n"
 msgstr "Kan ikke skrive til %s (%s).\n"
 
-#: src/http.c:4469
+#: src/http.c:4464
 msgid "Required attribute missing from Header received.\n"
 msgstr "Der mangler en nødvendig attribut fra modtagne toptekst.\n"
 
-#: src/http.c:4474
+#: src/http.c:4469
 msgid "Username/Password Authentication Failed.\n"
 msgstr "Godkendelse via brugernavn/adgangskode mislykkedes.\n"
 
-#: src/http.c:4480
+#: src/http.c:4475
 msgid "Cannot write to WARC file.\n"
 msgstr "Kan ikke skrive til WARC-fil.\n"
 
-#: src/http.c:4486
+#: src/http.c:4481
 msgid "Cannot write to temporary WARC file.\n"
 msgstr "Kan ikke skrive til midlertidig WARC-fil.\n"
 
-#: src/http.c:4491
+#: src/http.c:4486
 msgid "Unable to establish SSL connection.\n"
 msgstr "Kunne ikke etablere SSL-forbindelse.\n"
 
-#: src/http.c:4497
+#: src/http.c:4492
 #, c-format
 msgid "Cannot unlink %s (%s).\n"
 msgstr "Kan ikke aflinke %s (%s).\n"
 
-#: src/http.c:4507
+#: src/http.c:4502
 #, c-format
 msgid "ERROR: Redirection (%d) without location.\n"
 msgstr "FEJL: Omdirigering (%d) uden nyt sted.\n"
 
-#: src/http.c:4529
+#: src/http.c:4524
 msgid ""
 "Could not find Metalink data in HTTP response. Downloading file using HTTP "
 "GET.\n"
 msgstr ""
 "Kunne ikke finde Metalink-data i HTTP-svar. Henter filen med HTTP GET.\n"
 
-#: src/http.c:4538
+#: src/http.c:4533
 msgid "Metalink headers found. Switching to Metalink mode.\n"
 msgstr "Fandt Metalink-toptekster. Skifter til Metalink-tilstand.\n"
 
-#: src/http.c:4579
+#: src/http.c:4574
 msgid "Remote file does not exist -- broken link!!!\n"
 msgstr "Fjernfilen findes ikke — ødelagt henvisning!!!\n"
 
-#: src/http.c:4607
+#: src/http.c:4602
 msgid "Last-modified header missing -- time-stamps turned off.\n"
 msgstr "Last-modified toptekst mangler — tidsstempling slås fra.\n"
 
-#: src/http.c:4615
+#: src/http.c:4610
 msgid "Last-modified header invalid -- time-stamp ignored.\n"
 msgstr "Last-modified toptekst ugyldig — tidsstempel ignoreret.\n"
 
-#: src/http.c:4645
+#: src/http.c:4640
 #, c-format
 msgid ""
 "Server file no newer than local file %s -- not retrieving.\n"
@@ -980,16 +980,16 @@ msgstr ""
 "Serverfil ikke nyere end lokal fil %s — hentes ikke.\n"
 "\n"
 
-#: src/http.c:4653
+#: src/http.c:4648
 #, c-format
 msgid "The sizes do not match (local %s) -- retrieving.\n"
 msgstr "Størrelserne er forskellige (lokal %s) — hentes.\n"
 
-#: src/http.c:4662
+#: src/http.c:4657
 msgid "Remote file is newer, retrieving.\n"
 msgstr "Fil på server er nyere — hentes.\n"
 
-#: src/http.c:4680
+#: src/http.c:4675
 msgid ""
 "Remote file exists and could contain links to other resources -- "
 "retrieving.\n"
@@ -999,7 +999,7 @@ msgstr ""
 "henter.\n"
 "\n"
 
-#: src/http.c:4686
+#: src/http.c:4681
 msgid ""
 "Remote file exists but does not contain any link -- not retrieving.\n"
 "\n"
@@ -1007,7 +1007,7 @@ msgstr ""
 "Fjernfil findes, men indeholder ingen henvisninger — henter ikke.\n"
 "\n"
 
-#: src/http.c:4695
+#: src/http.c:4690
 msgid ""
 "Remote file exists and could contain further links,\n"
 "but recursion is disabled -- not retrieving.\n"
@@ -1017,7 +1017,7 @@ msgstr ""
 "men rekursion er deaktiveret — henter ikke.\n"
 "\n"
 
-#: src/http.c:4701
+#: src/http.c:4696
 msgid ""
 "Remote file exists.\n"
 "\n"
@@ -1025,12 +1025,12 @@ msgstr ""
 "Fjernfilen findes.\n"
 "\n"
 
-#: src/http.c:4710
+#: src/http.c:4705
 #, c-format
 msgid "%s URL: %s %2d %s\n"
 msgstr "%s URL %s %2d %s\n"
 
-#: src/http.c:4758
+#: src/http.c:4753
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s/%s]\n"
@@ -1039,7 +1039,7 @@ msgstr ""
 "%s (%s) — skrevet til standard-uddata %s[%s/%s]\n"
 "\n"
 
-#: src/http.c:4759
+#: src/http.c:4754
 #, c-format
 msgid ""
 "%s (%s) - %s saved [%s/%s]\n"
@@ -1048,27 +1048,27 @@ msgstr ""
 "%s (%s) — %s gemt [%s/%s]\n"
 "\n"
 
-#: src/http.c:4825
+#: src/http.c:4820
 #, c-format
 msgid "%s (%s) - Connection closed at byte %s. "
 msgstr "%s (%s) — Forbindelse lukket ved byte %s. "
 
-#: src/http.c:4848
+#: src/http.c:4843
 #, c-format
 msgid "%s (%s) - Read error at byte %s (%s)."
 msgstr "%s (%s) — Læsefejl ved byte %s (%s)."
 
-#: src/http.c:4857
+#: src/http.c:4852
 #, c-format
 msgid "%s (%s) - Read error at byte %s/%s (%s). "
 msgstr "%s (%s) — Læsefejl ved byte %s/%s (%s). "
 
-#: src/http.c:5114
+#: src/http.c:5108
 #, c-format
 msgid "Unsupported quality of protection '%s'.\n"
 msgstr "Beskyttelseskvalitet “%s” er ikke understøttet.\n"
 
-#: src/http.c:5119
+#: src/http.c:5113
 #, c-format
 msgid "Unsupported algorithm '%s'.\n"
 msgstr "Algoritmen “%s” er ikke understøttet.\n"
@@ -1212,31 +1212,31 @@ msgstr ""
 msgid "Encoding %s isn't valid\n"
 msgstr "Kodningen %s er ikke gyldig\n"
 
-#: src/iri.c:140 src/url.c:1612
+#: src/iri.c:140 src/url.c:1619
 #, c-format
 msgid "Conversion from %s to %s isn't supported\n"
 msgstr "Konvertering fra %s til %s understøttes ikke\n"
 
-#: src/iri.c:180 src/url.c:1642
+#: src/iri.c:180 src/url.c:1649
 msgid "Incomplete or invalid multibyte sequence encountered\n"
 msgstr "Ufuldstændig eller ugyldig flerbytesekvens fundet\n"
 
-#: src/iri.c:200 src/url.c:1659
+#: src/iri.c:206 src/url.c:1666
 #, c-format
 msgid "Unhandled errno %d\n"
 msgstr "Ubehandlet fejlnr %d\n"
 
-#: src/iri.c:237
+#: src/iri.c:243
 msgid "locale_to_utf8: locale is unset\n"
 msgstr "locale_to_utf8: regionsinformation (locale) er ikke angivet\n"
 
-#: src/iri.c:283 src/iri.c:298
+#: src/iri.c:289 src/iri.c:304
 #, c-format
 msgid "idn_encode failed (%d): %s\n"
 msgstr "idn_encode mislykkedes (%d): %s\n"
 
 # lower case ~ små bogstaver velsagtens?  Det er en meningsfuld fejl i forbindelse med unicode-kodning
-#: src/iri.c:290
+#: src/iri.c:296
 #, c-format
 msgid "Failed to convert to lower: %d: %s\n"
 msgstr "Kunne ikke konvertere til små: %d: %s\n"
@@ -2977,22 +2977,22 @@ msgstr "Fortsætter i baggrunden, pid %lu.\n"
 msgid "Output will be written to %s.\n"
 msgstr "Uddata vil blive skrevet til %s.\n"
 
-#: src/mswindows.c:323
+#: src/mswindows.c:334
 #, c-format
 msgid "fake_fork_child() failed\n"
 msgstr "fake_fork_child() mislykkedes\n"
 
-#: src/mswindows.c:331
+#: src/mswindows.c:342
 #, c-format
 msgid "fake_fork() failed\n"
 msgstr "fake_fork() mislykkedes\n"
 
-#: src/mswindows.c:460 src/mswindows.c:467
+#: src/mswindows.c:471 src/mswindows.c:478
 #, c-format
 msgid "%s: Couldn't find usable socket driver.\n"
 msgstr "%s: Fandt ingen brugbar sokkel-driver.\n"
 
-#: src/mswindows.c:647
+#: src/mswindows.c:658
 #, c-format
 msgid "ioctl() failed.  The socket could not be set as blocking.\n"
 msgstr "ioctl() mislykkedes.  Soklen kunne ikke indstilles som blokerende.\n"
@@ -3201,7 +3201,7 @@ msgstr "Fejl i proxy URL %s: Skal være HTTP.\n"
 msgid "%d redirections exceeded.\n"
 msgstr "%d omdirigeringer overskredet.\n"
 
-#: src/retr.c:1327
+#: src/retr.c:1344
 msgid ""
 "Giving up.\n"
 "\n"
@@ -3209,7 +3209,7 @@ msgstr ""
 "Giver op.\n"
 "\n"
 
-#: src/retr.c:1327
+#: src/retr.c:1344
 msgid ""
 "Retrying.\n"
 "\n"
@@ -3240,53 +3240,53 @@ msgstr[1] ""
 "Fandt %d ødelagte henvisninger.\n"
 "\n"
 
-#: src/url.c:688
+#: src/url.c:695
 msgid "No error"
 msgstr "Ingen fejl"
 
 # scheme?
-#: src/url.c:689
+#: src/url.c:696
 msgid "Unsupported scheme"
 msgstr "Skema ikke understøttet"
 
-#: src/url.c:690
+#: src/url.c:697
 msgid "HTTPS support not compiled in"
 msgstr "Understøttelse af HTTPS er ikke kompileret med"
 
-#: src/url.c:691
+#: src/url.c:698
 msgid "FTPS support not compiled in"
 msgstr "Understøttelse af FTPS er ikke kompileret med"
 
 # scheme?
-#: src/url.c:692
+#: src/url.c:699
 msgid "Scheme missing"
 msgstr "Skema mangler"
 
-#: src/url.c:693
+#: src/url.c:700
 msgid "Invalid host name"
 msgstr "Værtsnavnet er ugyldigt"
 
-#: src/url.c:694
+#: src/url.c:701
 msgid "Bad port number"
 msgstr "Ugyldigt portnummer"
 
-#: src/url.c:695
+#: src/url.c:702
 msgid "Invalid user name"
 msgstr "Ugyldigt brugernavn"
 
-#: src/url.c:696
+#: src/url.c:703
 msgid "Unterminated IPv6 numeric address"
 msgstr "Uafsluttet numerisk IPv6-adresse"
 
-#: src/url.c:697
+#: src/url.c:704
 msgid "IPv6 addresses not supported"
 msgstr "IPv6-adresser understøttes ikke"
 
-#: src/url.c:698
+#: src/url.c:705
 msgid "Invalid IPv6 numeric address"
 msgstr "Ugyldig numerisk IPv6-adresse"
 
-#: src/url.c:1645
+#: src/url.c:1652
 msgid "Unconvertable multibyte sequence encountered\n"
 msgstr "Ukonverterbar flerbytesekvens fundet\n"
 
@@ -3354,22 +3354,22 @@ msgstr ""
 "Forsøger at finde åben filen %s, men den er ændret siden sidste kontrol. "
 "Sikkerhedskontrol fejlet.\n"
 
-#: src/utils.c:2443
+#: src/utils.c:2479
 #, c-format
 msgid "Invalid regular expression %s, PCRE2 error %d\n"
 msgstr "Ugyldigt regulært udtryk %s, PCRE2-fejl %d\n"
 
-#: src/utils.c:2460 src/utils.c:2483
+#: src/utils.c:2496 src/utils.c:2519
 #, c-format
 msgid "Invalid regular expression %s, %s\n"
 msgstr "Ugyldigt regulært udtryk %s, %s\n"
 
-#: src/utils.c:2513 src/utils.c:2535 src/utils.c:2559
+#: src/utils.c:2549 src/utils.c:2571 src/utils.c:2595
 #, c-format
 msgid "Error while matching %s: %d\n"
 msgstr "Fejl ved match af %s: %d\n"
 
-#: src/utils.c:2852
+#: src/utils.c:2888
 #, c-format
 msgid "Skipping key with wrong size (%d/%d): %s\n"
 msgstr "Springer nøgle med forkert størrelse over (%d/%d): %s\n"
@@ -3390,11 +3390,11 @@ msgstr "Fejl ved duplikering af WARC-fils fildeskriptor.\n"
 msgid "Error opening GZIP stream to WARC file.\n"
 msgstr "Fejl ved åbning af GZIP-strøm til WARC-filen.\n"
 
-#: src/warc.c:830
+#: src/warc.c:833
 msgid "Error writing warcinfo record to WARC file.\n"
 msgstr "Fejl ved skrivning af warcinfo-post til WARC-fil.\n"
 
-#: src/warc.c:893
+#: src/warc.c:884
 #, c-format
 msgid ""
 "Opening WARC file %s.\n"
@@ -3403,25 +3403,25 @@ msgstr ""
 "Åbner WARC-filen %s.\n"
 "\n"
 
-#: src/warc.c:899
+#: src/warc.c:890
 #, c-format
 msgid "Error opening WARC file %s.\n"
 msgstr "Fejl ved åbning af WARC-filen %s.\n"
 
-#: src/warc.c:1095
+#: src/warc.c:1086
 msgid "CDX file does not list original urls. (Missing column 'a'.)\n"
 msgstr ""
 "CDX-filen indeholder ikke oprindelige URL'er. (Mangler kolonnen “a”.)\n"
 
-#: src/warc.c:1098
+#: src/warc.c:1089
 msgid "CDX file does not list checksums. (Missing column 'k'.)\n"
 msgstr "CDX-filen indeholder ikke kontrolsummer. (Mangler kolonnen “k”.)\n"
 
-#: src/warc.c:1101
+#: src/warc.c:1092
 msgid "CDX file does not list record ids. (Missing column 'u'.)\n"
 msgstr "CDX-filen indeholder ikke post-id'er. (Mangler kolonnen “u”.)\n"
 
-#: src/warc.c:1125
+#: src/warc.c:1116
 #, c-format
 msgid ""
 "Loaded %d record from CDX.\n"
@@ -3436,32 +3436,32 @@ msgstr[1] ""
 "Indlæste %d poster fra CDX.\n"
 "\n"
 
-#: src/warc.c:1171
+#: src/warc.c:1162
 #, c-format
 msgid "Could not read CDX file %s for deduplication.\n"
 msgstr "Kunne ikke læse CDX-filen %s til deduplikering.\n"
 
-#: src/warc.c:1181
+#: src/warc.c:1172
 msgid "Could not open temporary WARC manifest file.\n"
 msgstr "Kunne ikke åbne midlertidig WARC-manifestfil.\n"
 
-#: src/warc.c:1191
+#: src/warc.c:1182
 msgid "Could not open temporary WARC log file.\n"
 msgstr "Kunne ikke åbne midlertidig WARC-logfil.\n"
 
-#: src/warc.c:1200
+#: src/warc.c:1191
 msgid "Could not open WARC file.\n"
 msgstr "Kunne ikke åbne WARC-fil.\n"
 
-#: src/warc.c:1209
+#: src/warc.c:1200
 msgid "Could not open CDX file for output.\n"
 msgstr "Kunne ikke åbne CDX-fil til udskrift.\n"
 
-#: src/warc.c:1239
+#: src/warc.c:1230
 msgid "Could not open temporary WARC file.\n"
 msgstr "Kunne ikke åbne midlertidig WARC-fil.\n"
 
-#: src/warc.c:1515
+#: src/warc.c:1508
 msgid "Found exact match in CDX file. Saving revisit record to WARC.\n"
 msgstr "Fandt eksakt match i CDX-fil. Gemmer “revisit”-post til WARC.\n"
 

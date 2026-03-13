@@ -310,6 +310,17 @@ cleanup:
   /* We failed, return.  */
 }
 
+
+/*
+ * This is the corresponding Windows implementation of
+ * set_fd_nonblocking() function in utils.c
+ * Currently it is an empty no-op. Maybe, we will get to
+ * implementing a nice solution one day
+ */
+void
+set_fd_nonblocking(const int fd)
+{}
+
 /* This is the corresponding Windows implementation of the
    fork_to_background() function in utils.c.  */
 bool

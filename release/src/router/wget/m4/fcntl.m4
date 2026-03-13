@@ -1,8 +1,10 @@
-# fcntl.m4 serial 11
+# fcntl.m4
+# serial 12
 dnl Copyright (C) 2009-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 # For now, this module ensures that fcntl()
 # - supports F_DUPFD correctly
@@ -82,7 +84,7 @@ AC_DEFUN([gl_FUNC_FCNTL],
     esac
 
     dnl Many systems lack F_DUPFD_CLOEXEC.
-    dnl NetBSD 9.0 declares F_DUPFD_CLOEXEC but it works only like F_DUPFD.
+    dnl NetBSD 10.0 declares F_DUPFD_CLOEXEC but it works only like F_DUPFD.
     AC_CACHE_CHECK([whether fcntl understands F_DUPFD_CLOEXEC],
       [gl_cv_func_fcntl_f_dupfd_cloexec],
       [AC_RUN_IFELSE(

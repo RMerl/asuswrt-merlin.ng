@@ -6,22 +6,25 @@
 # Anthony Fok <anthony@thizlinux.com>, 2002.
 # Funda Wang <fundawang@linux.net.cn>, 2004, 2005.
 # Ji ZhengYu <zhengyuji@gmail.com>, 2009, 2010.
+# Mingye Wang <arthur200126@gmail.com>, 2024.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: gnulib 2.0.0.3462.e9796\n"
+"Project-Id-Version: gnulib 4.0.0.2567\n"
 "Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
-"POT-Creation-Date: 2024-03-10 15:09+0100\n"
-"PO-Revision-Date: 2010-02-26 09:54+0800\n"
-"Last-Translator: Ji ZhengYu <zhengyuji@gmail.com>\n"
+"POT-Creation-Date: 2024-11-10 22:29+0100\n"
+"PO-Revision-Date: 2024-09-03 15:45+0800\n"
+"Last-Translator: Mingye Wang (Artoria2e5) <arthur200126@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
+"X-Generator: Poedit 3.5\n"
 
-#: lib/error.c:194
+#: lib/error.c:208
 msgid "Unknown system error"
 msgstr "未知的系统错误"
 
@@ -102,34 +105,29 @@ msgid "Unknown error"
 msgstr "未知错误"
 
 #: lib/getopt.c:282
-#, fuzzy, c-format
-#| msgid "%s: option '%s' is ambiguous\n"
+#, c-format
 msgid "%s: option '%s%s' is ambiguous\n"
-msgstr "%s: 选项\"%s\"歧义\n"
+msgstr "%s: 选项\"%s%s\"歧义\n"
 
 #: lib/getopt.c:288
-#, fuzzy, c-format
-#| msgid "%s: option '%s' is ambiguous\n"
+#, c-format
 msgid "%s: option '%s%s' is ambiguous; possibilities:"
-msgstr "%s: 选项\"%s\"歧义\n"
+msgstr "%s: 选项\"%s%s\"歧义；有可能是："
 
 #: lib/getopt.c:322
-#, fuzzy, c-format
-#| msgid "%s: unrecognized option '%c%s'\n"
+#, c-format
 msgid "%s: unrecognized option '%s%s'\n"
-msgstr "%s: 无法识别的选项\"%c%s\"\n"
+msgstr "%s: 无法识别的选项\"%s%s\"\n"
 
 #: lib/getopt.c:348
-#, fuzzy, c-format
-#| msgid "%s: option '%c%s' doesn't allow an argument\n"
+#, c-format
 msgid "%s: option '%s%s' doesn't allow an argument\n"
-msgstr "%s: 选项\"%c%s\"不要参数\n"
+msgstr "%s: 选项\"%s%s\"不要参数\n"
 
 #: lib/getopt.c:363
-#, fuzzy, c-format
-#| msgid "%s: option '%s' requires an argument\n"
+#, c-format
 msgid "%s: option '%s%s' requires an argument\n"
-msgstr "%s: 选项\"%s\"必须带参数\n"
+msgstr "%s: 选项\"%s%s\"必须带参数\n"
 
 #: lib/getopt.c:624
 #, c-format
@@ -151,12 +149,12 @@ msgstr "无法记录当前工作的目录"
 msgid "failed to return to initial working directory"
 msgstr "返回到初始工作目录失败"
 
-#: lib/os2-spawn.c:45
+#: lib/os2-spawn.c:51
 #, c-format
 msgid "_open_osfhandle failed"
 msgstr "_open_osfhandle 失败"
 
-#: lib/os2-spawn.c:82
+#: lib/os2-spawn.c:88
 #, c-format
 msgid "cannot restore fd %d: dup2 failed"
 msgstr "无法恢复文件描述符 %d: dup2 失败"
@@ -203,9 +201,8 @@ msgid "Invalid regular expression"
 msgstr "正则表达式无效"
 
 #: lib/regcomp.c:131
-#, fuzzy
 msgid "Invalid collation character"
-msgstr "无效的重组字符"
+msgstr "无效的排列字符"
 
 #: lib/regcomp.c:134
 msgid "Invalid character class name"
@@ -220,10 +217,8 @@ msgid "Invalid back reference"
 msgstr "无效的向后索引"
 
 #: lib/regcomp.c:143
-#, fuzzy
-#| msgid "Unmatched [ or [^"
 msgid "Unmatched [, [^, [:, [., or [="
-msgstr "[ 或 [^ 不匹配"
+msgstr "未匹配的 [， [^， [:， [.，或 [="
 
 #: lib/regcomp.c:146
 msgid "Unmatched ( or \\("
@@ -265,22 +260,22 @@ msgstr ") 或 \\) 不匹配"
 msgid "No previous regular expression"
 msgstr "没有前次正则表达式"
 
-#: lib/spawn-pipe.c:216 lib/spawn-pipe.c:219
+#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221
 #, c-format
 msgid "cannot create pipe"
 msgstr "无法创建管道"
 
-#: lib/spawn-pipe.c:596 lib/wait-process.c:291 lib/wait-process.c:365
+#: lib/spawn-pipe.c:599 lib/wait-process.c:326 lib/wait-process.c:400
 #, c-format
 msgid "%s subprocess failed"
 msgstr "%s 子进程错误"
 
-#: lib/wait-process.c:232 lib/wait-process.c:264 lib/wait-process.c:326
+#: lib/wait-process.c:267 lib/wait-process.c:299 lib/wait-process.c:361
 #, c-format
 msgid "%s subprocess"
 msgstr "%s 子进程"
 
-#: lib/wait-process.c:283 lib/wait-process.c:355
+#: lib/wait-process.c:318 lib/wait-process.c:390
 #, c-format
 msgid "%s subprocess got fatal signal %d"
 msgstr "%s 子进程获得终结信号 %d"
@@ -297,7 +292,6 @@ msgstr "内存用尽"
 #~ msgid "ambiguous argument %s for %s"
 #~ msgstr "%2$s 的参数 %1$s 有歧义"
 
-#, c-format
 #~ msgid "Valid arguments are:"
 #~ msgstr "有效的参数为："
 
@@ -308,10 +302,6 @@ msgstr "内存用尽"
 #, c-format
 #~ msgid "%.*s: ARGP_HELP_FMT parameter requires a value"
 #~ msgstr "%.*s: ARGP_HELP_FMT 参数需要一个值"
-
-#, c-format
-#~ msgid "%.*s: ARGP_HELP_FMT parameter must be positive"
-#~ msgstr "%.*s: ARGP_HELP_FMT 参数必须为正值"
 
 #, c-format
 #~ msgid "%.*s: Unknown ARGP_HELP_FMT parameter"
@@ -338,7 +328,7 @@ msgstr "内存用尽"
 #~ msgstr "[选项...]"
 
 #, c-format
-#~ msgid "Try `%s --help' or `%s --usage' for more information.\n"
+#~ msgid "Try '%s --help' or '%s --usage' for more information.\n"
 #~ msgstr "请尝试执行“%s --help”或“%s --usage”来获取更多信息。\n"
 
 #, c-format
@@ -352,16 +342,16 @@ msgstr "内存用尽"
 #~ msgstr "显示一份简洁的用法信息"
 
 #~ msgid "NAME"
-#~ msgstr "NAME"
+#~ msgstr "名称"
 
 #~ msgid "set the program name"
 #~ msgstr "设定程序名称"
 
 #~ msgid "SECS"
-#~ msgstr "SECS"
+#~ msgstr "秒数"
 
 #~ msgid "hang for SECS seconds (default 3600)"
-#~ msgstr "挂起 SECS 秒（默认 3600 秒）"
+#~ msgstr "挂起 <秒数> 秒（默认 3600 秒）"
 
 #~ msgid "print program version"
 #~ msgstr "打印程序版本"
@@ -374,7 +364,61 @@ msgstr "内存用尽"
 #~ msgstr "%s：参数太多\n"
 
 #~ msgid "(PROGRAM ERROR) Option should have been recognized!?"
-#~ msgstr "（程序错误）未知的选项！？"
+#~ msgstr "（程序错误）应该被识别但没有被的选项！？"
+
+#, c-format
+#~ msgid "%u bitset_allocs, %u freed (%.2f%%).\n"
+#~ msgstr "%u bitset_allocs 次分配, %u 已释放 (%.2f%%).\n"
+
+#, c-format
+#~ msgid "%u bitset_sets, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset_sets 次设置, %u 已缓存 (%.2f%%)\n"
+
+#, c-format
+#~ msgid "%u bitset_resets, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset_resets 次重置，%u 已缓存（%.2f%%）\n"
+
+#, c-format
+#~ msgid "%u bitset_tests, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset_tests 次读取, %u 已缓存 (%.2f%%)\n"
+
+#, c-format
+#~ msgid "%u bitset_lists\n"
+#~ msgstr "%u bitset_lists 个列表\n"
+
+#~ msgid "count log histogram\n"
+#~ msgstr "次数 log 直方图\n"
+
+#~ msgid "size log histogram\n"
+#~ msgstr "大小 log 直方图\n"
+
+#~ msgid "density histogram\n"
+#~ msgstr "密度直方图\n"
+
+#, c-format
+#~ msgid ""
+#~ "Bitset statistics:\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Bitset 统计信息：\n"
+#~ "\n"
+
+#, c-format
+#~ msgid "Accumulated runs = %u\n"
+#~ msgstr "累计运行次数 = %u\n"
+
+#~ msgid "cannot read stats file"
+#~ msgstr "无法读取 stats 文件"
+
+#, c-format
+#~ msgid "bad stats file size\n"
+#~ msgstr "坏的 stats 文件大小\n"
+
+#~ msgid "cannot write stats file"
+#~ msgstr "无法写入 stats 文件"
+
+#~ msgid "cannot open stats file for writing"
+#~ msgstr "无法打开 stats 文件进行写入"
 
 #~ msgid "program error"
 #~ msgstr "程序错误"
@@ -382,7 +426,6 @@ msgstr "内存用尽"
 #~ msgid "stack overflow"
 #~ msgstr "堆栈溢出"
 
-#, c-format
 #~ msgid "cannot find a temporary directory, try setting $TMPDIR"
 #~ msgstr "无法找到一个临时目录，请尝试设置 $TMPDIR 环境变量"
 
@@ -409,36 +452,60 @@ msgstr "内存用尽"
 #~ msgstr "保留 %s 的权限"
 
 #, c-format
-#~ msgid "error while opening \"%s\" for reading"
+#~ msgid "error while opening %s for reading"
 #~ msgstr "打开“%s”读取数据时发生错误"
 
 #, c-format
-#~ msgid "cannot open backup file \"%s\" for writing"
+#~ msgid "cannot open backup file %s for writing"
 #~ msgstr "无法打开备份文件“%s”写入数据"
 
 #, c-format
-#~ msgid "error reading \"%s\""
+#~ msgid "error reading %s"
 #~ msgstr "读入“%s”时错误"
 
 #, c-format
-#~ msgid "error writing \"%s\""
+#~ msgid "error writing %s"
 #~ msgstr "写入“%s”时错误"
 
 #, c-format
-#~ msgid "error after reading \"%s\""
+#~ msgid "error after reading %s"
 #~ msgstr "读入“%s”后错误"
 
-#, c-format
 #~ msgid "fdopen() failed"
 #~ msgstr "fdopen() 错误"
 
-#, c-format
-#~ msgid "C# compiler not found, try installing pnet"
-#~ msgstr "未找到 C# 编译器，尝试安装 pnet"
+#~ msgid "C# compiler not found, try installing mono"
+#~ msgstr "未找到 C# 编译器，请尝试安装 mono"
 
-#, c-format
-#~ msgid "C# virtual machine not found, try installing pnet"
-#~ msgstr "未找到 C# 虚拟机，尝试安装 pnet"
+#~ msgid "C# virtual machine not found, try installing mono"
+#~ msgstr "未找到 C# 虚拟机，请尝试安装 mono"
+
+#~ msgid "unbalanced ["
+#~ msgstr "[ 不匹配"
+
+#~ msgid "invalid character class"
+#~ msgstr "无效的字符类名"
+
+#~ msgid "character class syntax is [[:space:]], not [:space:]"
+#~ msgstr "字符类的语法是 [[:space:]]，而不是 [:space:]"
+
+#~ msgid "unfinished \\ escape"
+#~ msgstr "不完整的 \\ 转义"
+
+#~ msgid "invalid content of \\{\\}"
+#~ msgstr "\\{\\} 的内容无效"
+
+#~ msgid "regular expression too big"
+#~ msgstr "正则表达式太大"
+
+#~ msgid "unbalanced ("
+#~ msgstr "( 不匹配"
+
+#~ msgid "no syntax specified"
+#~ msgstr "没有指定语法"
+
+#~ msgid "unbalanced )"
+#~ msgstr ") 不匹配"
 
 #~ msgid "regular empty file"
 #~ msgstr "一般空文件"
@@ -449,20 +516,8 @@ msgstr "内存用尽"
 #~ msgid "directory"
 #~ msgstr "目录"
 
-#~ msgid "block special file"
-#~ msgstr "块特殊文件"
-
-#~ msgid "character special file"
-#~ msgstr "字符特殊文件"
-
-#~ msgid "fifo"
-#~ msgstr "先进先出"
-
 #~ msgid "symbolic link"
 #~ msgstr "符号链接"
-
-#~ msgid "socket"
-#~ msgstr "套接字"
 
 #~ msgid "message queue"
 #~ msgstr "消息队列"
@@ -476,30 +531,54 @@ msgstr "内存用尽"
 #~ msgid "typed memory object"
 #~ msgstr "标准内存对象"
 
+#~ msgid "block special file"
+#~ msgstr "块特殊文件"
+
+#~ msgid "character special file"
+#~ msgstr "字符特殊文件"
+
+#~ msgid "contiguous data"
+#~ msgstr "连续数据"
+
+#~ msgid "fifo"
+#~ msgstr "先进先出"
+
+#~ msgid "door"
+#~ msgstr "门"
+
+#~ msgid "multiplexed block special file"
+#~ msgstr "多路复用块特殊文件"
+
+#~ msgid "multiplexed character special file"
+#~ msgstr "多路复用字符特殊文件"
+
+#~ msgid "multiplexed file"
+#~ msgstr "多路复用文件"
+
+#~ msgid "named file"
+#~ msgstr "命名文件"
+
+#~ msgid "network special file"
+#~ msgstr "网络特殊文件"
+
+#~ msgid "migrated file with data"
+#~ msgstr "有数据的已迁移文件"
+
+#~ msgid "migrated file without data"
+#~ msgstr "无数据的已迁移文件"
+
+#~ msgid "port"
+#~ msgstr "端口"
+
+#~ msgid "socket"
+#~ msgstr "套接字"
+
 #~ msgid "weird file"
 #~ msgstr "古怪文件"
 
-#, c-format
-#~ msgid "%s: option '--%s' doesn't allow an argument\n"
-#~ msgstr "%s: 选项\"--%s\"不要参数\n"
-
-#, c-format
-#~ msgid "%s: unrecognized option '--%s'\n"
-#~ msgstr "%s: 无法识别的选项\"--%s\"\n"
-
-#, c-format
-#~ msgid "%s: option '-W %s' is ambiguous\n"
-#~ msgstr "%s: 选项\"-W %s\"有歧义\n"
-
-#, c-format
-#~ msgid "%s: option '-W %s' doesn't allow an argument\n"
-#~ msgstr "%s: 选项\"-W %s\"不要带参数\n"
-
-#, c-format
 #~ msgid "invalid source_version argument to compile_java_class"
 #~ msgstr "compile_java_class 的 source_version 参数无效"
 
-#, c-format
 #~ msgid "invalid target_version argument to compile_java_class"
 #~ msgstr "compile_java_class 的 target_version 参数无效"
 
@@ -511,17 +590,19 @@ msgstr "内存用尽"
 #~ msgid "error while writing \"%s\" file"
 #~ msgstr "正在写入“%s”文件时发生错误"
 
-#, c-format
 #~ msgid "Java compiler not found, try installing gcj or set $JAVAC"
 #~ msgstr "未找到 Java 编译器，尝试安装 gcj 或是设置 $JAVAC"
 
-#, c-format
 #~ msgid "Java virtual machine not found, try installing gij or set $JAVA"
 #~ msgstr "未找到 Java 虚拟机，尝试安装 gij 或是设置 $JAVA"
 
 #, c-format
 #~ msgid "%s subprocess I/O error"
 #~ msgstr "%s 子进程输入/输出错误"
+
+#, c-format
+#~ msgid "cannot stat %s"
+#~ msgstr "无法 stat %s"
 
 #, c-format
 #~ msgid "cannot change permissions of %s"
@@ -531,11 +612,9 @@ msgstr "内存用尽"
 #~ msgid "cannot create directory %s"
 #~ msgstr "无法创建目录 %s"
 
-#, c-format
 #~ msgid "Failed to open /dev/zero for read"
 #~ msgstr "无法以读方式打开 /dev/zero"
 
-#, c-format
 #~ msgid "creation of reading thread failed"
 #~ msgstr "读线程创建错误"
 
@@ -559,7 +638,6 @@ msgstr "内存用尽"
 #~ msgid "subprocess %s terminated with exit code %d"
 #~ msgstr "子进程 %s 由退出码 %d 终止"
 
-#, c-format
 #~ msgid "creation of threads failed"
 #~ msgstr "线程创建失败"
 
@@ -649,9 +727,8 @@ msgstr "内存用尽"
 #~ msgid "Virtual timer expired"
 #~ msgstr "虚拟计时器过期"
 
-#, fuzzy
 #~ msgid "Profiling timer expired"
-#~ msgstr "数据计时器过期"
+#~ msgstr "性能分析计时器已过期"
 
 #~ msgid "Window changed"
 #~ msgstr "窗口改变"
@@ -691,6 +768,18 @@ msgstr "内存用尽"
 #~ msgid "Unknown signal %d"
 #~ msgstr "未知信号 %d"
 
+#~ msgid "Execution times (seconds)"
+#~ msgstr "执行时间（秒）"
+
+#~ msgid "CPU user"
+#~ msgstr "CPU 用户"
+
+#~ msgid "CPU system"
+#~ msgstr "CPU 系统"
+
+#~ msgid "wall clock"
+#~ msgstr "墙钟（现实世界时间）"
+
 #~ msgid "iconv function not usable"
 #~ msgstr "iconv 函数无法使用"
 
@@ -717,7 +806,6 @@ msgstr "内存用尽"
 #~ msgid "invalid spec"
 #~ msgstr "无效的 spec"
 
-#, c-format
 #~ msgid "unable to display error message"
 #~ msgstr "无法显示错误信息"
 
@@ -732,20 +820,15 @@ msgstr "内存用尽"
 #~ msgid "(C)"
 #~ msgstr "(C)"
 
+#, c-format
 #~ msgid ""
-#~ "\n"
-#~ "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl."
-#~ "html>.\n"
+#~ "License GPLv3+: GNU GPL version 3 or later <%s>.\n"
 #~ "This is free software: you are free to change and redistribute it.\n"
 #~ "There is NO WARRANTY, to the extent permitted by law.\n"
-#~ "\n"
 #~ msgstr ""
-#~ "\n"
-#~ "授权协议 GPLv3+: GNU GPL 版本 3 或更新版本 <http://gnu.org/licenses/gpl."
-#~ "html>\n"
+#~ "授权协议 GPLv3+: GNU GPL 版本 3 或更新版本 <%s>\n"
 #~ "这是自由软件：您可以自由的更改并重新发布它。\n"
 #~ "在法律允许的范围内，没有任何担保。\n"
-#~ "\n"
 
 #, c-format
 #~ msgid "Written by %s.\n"
@@ -822,12 +905,8 @@ msgstr "内存用尽"
 #~ "%s、%s、和其他人编写。\n"
 
 #, c-format
-#~ msgid ""
-#~ "\n"
-#~ "Report bugs to: %s\n"
-#~ msgstr ""
-#~ "\n"
-#~ "请向 %s 报告错误。向 <i18n-zh@googlegroups.com> 报告翻译错误。\n"
+#~ msgid "Report bugs to: %s\n"
+#~ msgstr "请向 %s 报告错误。向 <i18n-zh@googlegroups.com> 报告翻译错误。\n"
 
 #, c-format
 #~ msgid "Report %s bugs to: %s\n"
@@ -838,11 +917,11 @@ msgstr "内存用尽"
 #~ msgstr "%s 主页: <%s>\n"
 
 #, c-format
-#~ msgid "%s home page: <http://www.gnu.org/software/%s/>\n"
-#~ msgstr "%s 主页: <http://www.gnu.org/software/%s/>\n"
+#~ msgid "General help using GNU software: <%s>\n"
+#~ msgstr "GNU 软件的通用帮助: <%s>\n"
 
-#~ msgid "General help using GNU software: <http://www.gnu.org/gethelp/>\n"
-#~ msgstr "GNU 软件的通用帮助: <http://www.gnu.org/gethelp/>\n"
+#~ msgid "failed to set file descriptor text/binary mode"
+#~ msgstr "无法设置文件描述符的文本/二进制模式"
 
 #~ msgid "stdin"
 #~ msgstr "标准输入"
@@ -860,11 +939,9 @@ msgstr "内存用尽"
 #~ msgid "failed to reopen %s with mode %s"
 #~ msgstr "无法以 %2$s 模式重新打开 %1$s"
 
-#, c-format
 #~ msgid "string comparison failed"
 #~ msgstr "字符串比较出现错误"
 
-#, c-format
 #~ msgid "Set LC_ALL='C' to work around the problem."
 #~ msgstr "请设定 LC_ALL='C' 避免问题出现。"
 
@@ -872,21 +949,41 @@ msgstr "内存用尽"
 #~ msgid "The strings compared were %s and %s."
 #~ msgstr "要比较的字符串为 %s 和 %s。"
 
-#, c-format
 #~ msgid "cannot perform formatted output"
 #~ msgstr "无法执行格式化输出"
 
+#~ msgid "standard file descriptors"
+#~ msgstr "标准文件描述符"
+
 #, c-format
-#~ msgid "invalid %s%s argument `%s'"
+#~ msgid "invalid %s%s argument '%s'"
 #~ msgstr "%s%s 参数‘%s’无效"
 
 #, c-format
-#~ msgid "invalid suffix in %s%s argument `%s'"
+#~ msgid "invalid suffix in %s%s argument '%s'"
 #~ msgstr "%s%s 参数‘%s’的后缀无效"
 
 #, c-format
-#~ msgid "%s%s argument `%s' too large"
+#~ msgid "%s%s argument '%s' too large"
 #~ msgstr "%s%s 参数‘%s’太长"
+
+#~ msgid "%.*s: ARGP_HELP_FMT parameter must be positive"
+#~ msgstr "%.*s: ARGP_HELP_FMT 参数必须为正值"
+
+#~ msgid "%s: option '--%s' doesn't allow an argument\n"
+#~ msgstr "%s: 选项\"--%s\"不要参数\n"
+
+#~ msgid "%s: unrecognized option '--%s'\n"
+#~ msgstr "%s: 无法识别的选项\"--%s\"\n"
+
+#~ msgid "%s: option '-W %s' is ambiguous\n"
+#~ msgstr "%s: 选项\"-W %s\"有歧义\n"
+
+#~ msgid "%s: option '-W %s' doesn't allow an argument\n"
+#~ msgstr "%s: 选项\"-W %s\"不要带参数\n"
+
+#~ msgid "%s home page: <http://www.gnu.org/software/%s/>\n"
+#~ msgstr "%s 主页: <http://www.gnu.org/software/%s/>\n"
 
 #~ msgid "%s: illegal option -- %c\n"
 #~ msgstr "%s：非法选项 -- %c\n"

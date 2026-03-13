@@ -60,6 +60,53 @@
 # include <ws2tcpip.h>
 #endif
 
+#if !(@HAVE_DECL_HTONL@ || @HAVE_DECL_HTONS@ || @HAVE_DECL_NTOHL@ || @HAVE_DECL_NTOHS@)
+# include <endian.h>
+#endif
+
+_GL_INLINE_HEADER_BEGIN
+#ifndef _GL_ARPA_INET_INLINE
+# define _GL_ARPA_INET_INLINE _GL_INLINE
+#endif
+
+
+/* Host to network byte order. */
+
+#if !@HAVE_DECL_HTONS@
+_GL_ARPA_INET_INLINE uint16_t
+htons (uint16_t value)
+{
+  return htobe16 (value);
+}
+#endif
+
+#if !@HAVE_DECL_HTONL@
+_GL_ARPA_INET_INLINE uint32_t
+htonl (uint32_t value)
+{
+  return htobe32 (value);
+}
+#endif
+
+/* Network to host byte order.  */
+
+#if !@HAVE_DECL_NTOHS@
+_GL_ARPA_INET_INLINE uint16_t
+ntohs (uint16_t value)
+{
+  return htobe16 (value);
+}
+#endif
+
+#if !@HAVE_DECL_NTOHL@
+_GL_ARPA_INET_INLINE uint32_t
+ntohl (uint32_t value)
+{
+  return htobe32 (value);
+}
+#endif
+
+
 /* The definitions of _GL_FUNCDECL_RPL etc. are copied here.  */
 
 /* The definition of _GL_ARG_NONNULL is copied here.  */
@@ -90,7 +137,7 @@
 #  endif
 _GL_FUNCDECL_RPL (inet_ntop, const char *,
                   (int af, const void *restrict src,
-                   char *restrict dst, socklen_t cnt)
+                   char *restrict dst, socklen_t cnt),
                   _GL_ARG_NONNULL ((2, 3)));
 _GL_CXXALIAS_RPL (inet_ntop, const char *,
                   (int af, const void *restrict src,
@@ -99,7 +146,7 @@ _GL_CXXALIAS_RPL (inet_ntop, const char *,
 #  if !@HAVE_DECL_INET_NTOP@
 _GL_FUNCDECL_SYS (inet_ntop, const char *,
                   (int af, const void *restrict src,
-                   char *restrict dst, socklen_t cnt)
+                   char *restrict dst, socklen_t cnt),
                   _GL_ARG_NONNULL ((2, 3)));
 #  endif
 /* Need to cast, because on NonStop Kernel, the fourth parameter is
@@ -126,14 +173,14 @@ _GL_WARN_ON_USE (inet_ntop, "inet_ntop is unportable - "
 #   define inet_pton rpl_inet_pton
 #  endif
 _GL_FUNCDECL_RPL (inet_pton, int,
-                  (int af, const char *restrict src, void *restrict dst)
+                  (int af, const char *restrict src, void *restrict dst),
                   _GL_ARG_NONNULL ((2, 3)));
 _GL_CXXALIAS_RPL (inet_pton, int,
                   (int af, const char *restrict src, void *restrict dst));
 # else
 #  if !@HAVE_DECL_INET_PTON@
 _GL_FUNCDECL_SYS (inet_pton, int,
-                  (int af, const char *restrict src, void *restrict dst)
+                  (int af, const char *restrict src, void *restrict dst),
                   _GL_ARG_NONNULL ((2, 3)));
 #  endif
 _GL_CXXALIAS_SYS (inet_pton, int,
@@ -150,6 +197,7 @@ _GL_WARN_ON_USE (inet_pton, "inet_pton is unportable - "
 # endif
 #endif
 
+_GL_INLINE_HEADER_END
 
 #endif /* _@GUARD_PREFIX@_ARPA_INET_H */
 #endif /* _@GUARD_PREFIX@_ARPA_INET_H */

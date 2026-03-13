@@ -89,11 +89,11 @@ clean-lcov:
 
 check-coverage: clean clean-lcov
 	$(MAKE) CFLAGS="$(CFLAGS) --coverage" LDFLAGS="$(LDFLAGS) --coverage"
-	lcov --capture --initial --directory src/ --output-file $(LCOV_INFO)
+	lcov --capture --initial --ignore-errors source,range --directory src/ --output-file $(LCOV_INFO)
 	$(MAKE) CFLAGS="$(CFLAGS) --coverage" LDFLAGS="$(LDFLAGS) --coverage" VALGRIND_TESTS=0 check
-	lcov --capture --directory src/ --output-file $(LCOV_INFO)
-	lcov --remove $(LCOV_INFO) --ignore-errors unused '/usr/include/*' '*/lib/*' -o $(LCOV_INFO)
-	genhtml --prefix . --ignore-errors source --ignore-errors unmapped $(LCOV_INFO) --legend --title "Wget" --output-directory=lcov
+	lcov --capture --ignore-errors source,range --directory src/ --output-file $(LCOV_INFO)
+	lcov --remove $(LCOV_INFO) --ignore-errors source,range,unused '/usr/include/*' '*/lib/*' '*/src/css.l' -o $(LCOV_INFO)
+	genhtml --prefix . --ignore-errors source,range,unmapped $(LCOV_INFO) --legend --title "Wget" --output-directory=lcov
 	@echo
 	@echo "You can now view the coverage report with 'xdg-open lcov/index.html'"
 
@@ -101,9 +101,9 @@ fuzz-coverage: clean clean-lcov
 	$(MAKE) -C lib
 	$(MAKE) -C src CFLAGS="$(CFLAGS) --coverage" LDFLAGS="$(LDFLAGS) --coverage"
 	$(MAKE) -C fuzz check CFLAGS="$(CFLAGS) --coverage" LDFLAGS="$(LDFLAGS) --coverage"
-	lcov --capture --initial --directory fuzz --directory src --output-file $(LCOV_INFO)
-	lcov --capture --directory fuzz --directory src --output-file $(LCOV_INFO)
-	lcov --remove $(LCOV_INFO) '/usr/include/*' '*/lib/*' -o $(LCOV_INFO)
-	genhtml --prefix . --ignore-errors source $(LCOV_INFO) --legend --title "Wget-fuzz" --output-directory=lcov
+	lcov --capture --initial --ignore-errors source,range --directory fuzz --directory src --output-file $(LCOV_INFO)
+	lcov --capture --ignore-errors source,range --directory fuzz --directory src --output-file $(LCOV_INFO)
+	lcov --remove $(LCOV_INFO) --ignore-errors source,range '/usr/include/*' '*/lib/*' '*/src/css.l' -o $(LCOV_INFO)
+	genhtml --prefix . --ignore-errors source,range $(LCOV_INFO) --legend --title "Wget-fuzz" --output-directory=lcov
 	@echo
 	@echo "You can now view the coverage report with 'xdg-open lcov/index.html'"

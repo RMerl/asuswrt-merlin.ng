@@ -80,7 +80,7 @@
 #define _@GUARD_PREFIX@_STDINT_H
 
 /* Get SCHAR_MIN, SCHAR_MAX, UCHAR_MAX, INT_MIN, INT_MAX,
-   LONG_MIN, LONG_MAX, ULONG_MAX, _GL_INTEGER_WIDTH.  */
+   LONG_MIN, LONG_MAX, ULONG_MAX, CHAR_BIT, _GL_INTEGER_WIDTH.  */
 #include <limits.h>
 
 /* Override WINT_MIN and WINT_MAX if gnulib's <wchar.h> or <wctype.h> overrides
@@ -189,6 +189,10 @@ typedef __int64 gl_int64_t;
 #   define int64_t gl_int64_t
 #   define GL_INT64_T
 #  else
+/* Verify that 'long long' has exactly 64 bits.  */
+typedef _gl_verify_int64_bits[
+        _STDINT_MAX (1, sizeof (long long) * CHAR_BIT, 0ll) >> 31 >> 31 == 1
+        ? 1 : -1];
 #   undef int64_t
 typedef long long int gl_int64_t;
 #   define int64_t gl_int64_t
@@ -210,6 +214,11 @@ typedef unsigned __int64 gl_uint64_t;
 #   define uint64_t gl_uint64_t
 #   define GL_UINT64_T
 #  else
+/* Verify that 'unsigned long long' has exactly 64 bits.  */
+typedef _gl_verify_uint64_bits[
+        _STDINT_MAX (0, sizeof (unsigned long long) * CHAR_BIT, 0ull)
+        >> 31 >> 31 >> 1 == 1
+        ? 1 : -1];
 #   undef uint64_t
 typedef unsigned long long int gl_uint64_t;
 #   define uint64_t gl_uint64_t

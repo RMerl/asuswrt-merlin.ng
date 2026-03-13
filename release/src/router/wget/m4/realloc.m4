@@ -1,53 +1,22 @@
-# realloc.m4 serial 29
+# realloc.m4
+# serial 39
 dnl Copyright (C) 2007, 2009-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
-# This is adapted with modifications from upstream Autoconf here:
-# https://git.savannah.gnu.org/cgit/autoconf.git/tree/lib/autoconf/functions.m4?id=v2.70#n1455
-AC_DEFUN([_AC_FUNC_REALLOC_IF],
+# An an experimental option, the user can request a sanitized realloc()
+# implementation, i.e. one that aborts upon undefined behaviour,
+# by setting
+#   gl_cv_func_realloc_sanitize=yes
+# at configure time.
+AC_DEFUN([gl_FUNC_REALLOC_SANITIZED],
 [
-  AC_REQUIRE([AC_CANONICAL_HOST])dnl for cross-compiles
-  AC_CACHE_CHECK([whether realloc (0, 0) returns nonnull],
-    [ac_cv_func_realloc_0_nonnull],
-    [AC_RUN_IFELSE(
-       [AC_LANG_PROGRAM(
-          [[#include <stdlib.h>
-          ]],
-          [[void *p = realloc (0, 0);
-            void * volatile vp = p;
-            int result = !vp;
-            free (p);
-            return result;]])
-       ],
-       [ac_cv_func_realloc_0_nonnull=yes],
-       [ac_cv_func_realloc_0_nonnull=no],
-       [case "$host_os" in
-          # Guess yes on platforms where we know the result.
-          *-gnu* | freebsd* | netbsd* | openbsd* | bitrig* \
-          | gnu* | *-musl* | midipix* | midnightbsd* \
-          | hpux* | solaris* | cygwin* | mingw* | windows* | msys* )
-            ac_cv_func_realloc_0_nonnull="guessing yes" ;;
-          # If we don't know, obey --enable-cross-guesses.
-          *) ac_cv_func_realloc_0_nonnull="$gl_cross_guess_normal" ;;
-        esac
-       ])
-    ])
-  AS_CASE([$ac_cv_func_realloc_0_nonnull], [*yes], [$1], [$2])
-])# AC_FUNC_REALLOC
-
-# gl_FUNC_REALLOC_GNU
-# -------------------
-# Replace realloc if it is not compatible with GNU libc.
-AC_DEFUN([gl_FUNC_REALLOC_GNU],
-[
-  AC_REQUIRE([gl_STDLIB_H_DEFAULTS])
-  AC_REQUIRE([gl_FUNC_REALLOC_POSIX])
-  if test $REPLACE_REALLOC_FOR_REALLOC_GNU = 0; then
-    _AC_FUNC_REALLOC_IF([], [REPLACE_REALLOC_FOR_REALLOC_GNU=1])
-  fi
-])# gl_FUNC_REALLOC_GNU
+  AC_CACHE_CHECK([whether realloc should abort upon undefined behaviour],
+    [gl_cv_func_realloc_sanitize],
+    [test -n "$gl_cv_func_realloc_sanitize" || gl_cv_func_realloc_sanitize=no])
+])
 
 # gl_FUNC_REALLOC_POSIX
 # ---------------------
@@ -58,7 +27,59 @@ AC_DEFUN([gl_FUNC_REALLOC_POSIX],
 [
   AC_REQUIRE([gl_STDLIB_H_DEFAULTS])
   AC_REQUIRE([gl_FUNC_MALLOC_POSIX])
-  if test $REPLACE_MALLOC_FOR_MALLOC_POSIX = 1; then
+  AC_REQUIRE([gl_FUNC_REALLOC_SANITIZED])
+  if test "$gl_cv_func_realloc_sanitize" != no; then
     REPLACE_REALLOC_FOR_REALLOC_POSIX=1
+    AC_DEFINE([NEED_SANITIZED_REALLOC], [1],
+      [Define to 1 if realloc should abort upon undefined behaviour.])
+  else
+    REPLACE_REALLOC_FOR_REALLOC_POSIX=$REPLACE_MALLOC_FOR_MALLOC_POSIX
   fi
+])
+
+# gl_FUNC_REALLOC_0_NONNULL
+# -------------------------
+# Replace realloc if realloc (..., 0) returns null.
+# Modules that use this macro directly or indirectly should depend
+# on extensions-aix, so that _LINUX_SOURCE_COMPAT gets defined
+# before this macro gets invoked.  This helps if !(__VEC__ || __AIXVEC),
+# and doesn't hurt otherwise.
+AC_DEFUN([gl_FUNC_REALLOC_0_NONNULL],
+[
+  AC_REQUIRE([gl_STDLIB_H_DEFAULTS])
+  AC_REQUIRE([AC_CANONICAL_HOST])dnl for cross-compiles
+  AC_REQUIRE([gl_FUNC_REALLOC_POSIX])
+  AC_CACHE_CHECK([whether realloc (..., 0) returns nonnull],
+    [gl_cv_func_realloc_0_nonnull],
+    [AC_RUN_IFELSE(
+       [AC_LANG_PROGRAM(
+          [[#include <stdlib.h>
+            /* Use prealloc to test; "volatile" prevents the compiler
+               from optimizing the realloc call away.  */
+            void *(*volatile prealloc) (void *, size_t) = realloc;]],
+          [[void *p = prealloc (0, 0);
+            int result = !p;
+            p = prealloc (p, 0);
+            result |= !p;
+            free (p);
+            return result;]])],
+       [gl_cv_func_realloc_0_nonnull=yes],
+       [gl_cv_func_realloc_0_nonnull=no],
+       [AS_CASE([$host_os],
+          [# Guess yes on platforms where we know the result.
+           freebsd* | netbsd* | openbsd* | darwin* | bitrig* \
+           | *-musl* | midipix* | midnightbsd* \
+           | hpux* | solaris* | cygwin*],
+            [gl_cv_func_realloc_0_nonnull="guessing yes"],
+          [# Guess as follows if we don't know.
+           gl_cv_func_realloc_0_nonnull=$gl_cross_guess_normal])])])
+  AS_CASE([$gl_cv_func_realloc_0_nonnull],
+    [*yes],
+      [AC_DEFINE([HAVE_REALLOC_0_NONNULL], [1],
+         [Define to 1 if realloc (..., 0) returns nonnull.])],
+    [AS_CASE([$gl_cv_func_realloc_sanitize,$gl_cv_malloc_ptrdiff,$gl_cv_func_malloc_posix,$host],
+       [yes,*,*,* | *,no,*,* | *,*,*no,* | *,*,*,aarch64c-*-freebsd*],
+         [REPLACE_REALLOC_FOR_REALLOC_POSIX=1],
+       [# Optimize for common case of glibc 2.1.1+ and compatibles.
+        REPLACE_REALLOC_FOR_REALLOC_POSIX=2])])
 ])

@@ -436,12 +436,6 @@ typedef struct re_dfa_t re_dfa_t;
 #define re_string_skip_bytes(pstr,idx) ((pstr)->cur_idx += (idx))
 #define re_string_set_index(pstr,idx) ((pstr)->cur_idx = (idx))
 
-#ifdef _LIBC
-# define MALLOC_0_IS_NONNULL 1
-#elif !defined MALLOC_0_IS_NONNULL
-# define MALLOC_0_IS_NONNULL 0
-#endif
-
 #ifndef MAX
 # define MAX(a,b) ((a) < (b) ? (b) : (a))
 #endif

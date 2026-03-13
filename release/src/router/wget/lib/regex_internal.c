@@ -937,8 +937,7 @@ re_node_set_alloc (re_node_set *set, Idx size)
   set->alloc = size;
   set->nelem = 0;
   set->elems = re_malloc (Idx, size);
-  if (__glibc_unlikely (set->elems == NULL)
-      && (MALLOC_0_IS_NONNULL || size != 0))
+  if (__glibc_unlikely (set->elems == NULL))
     return REG_ESPACE;
   return REG_NOERROR;
 }

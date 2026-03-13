@@ -1,9 +1,10 @@
-# fflush.m4 serial 19
-
-# Copyright (C) 2007-2024 Free Software Foundation, Inc.
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
+# fflush.m4
+# serial 20
+dnl Copyright (C) 2007-2024 Free Software Foundation, Inc.
+dnl This file is free software; the Free Software Foundation
+dnl gives unlimited permission to copy and/or distribute it,
+dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl From Eric Blake
 
@@ -79,8 +80,9 @@ AC_DEFUN([gl_FUNC_FFLUSH_STDIN],
        [gl_cv_func_fflush_stdin=yes],
        [gl_cv_func_fflush_stdin=no],
        [case "$host_os" in
-                             # Guess no on native Windows.
-          mingw* | windows*) gl_cv_func_fflush_stdin="guessing no" ;;
+                             # Guess no on NetBSD, OpenBSD, native Windows.
+          netbsd* | openbsd* | mingw* | windows*)
+                             gl_cv_func_fflush_stdin="guessing no" ;;
           *)                 gl_cv_func_fflush_stdin=cross ;;
         esac
        ])
@@ -92,8 +94,8 @@ AC_DEFUN([gl_FUNC_FFLUSH_STDIN],
     *)    gl_func_fflush_stdin='(-1)' ;;
   esac
   AC_DEFINE_UNQUOTED([FUNC_FFLUSH_STDIN], [$gl_func_fflush_stdin],
-    [Define to 1 if fflush is known to work on stdin as per POSIX.1-2008,
-     0 if fflush is known to not work, -1 if unknown.])
+    [Define to 1 if fflush is known to work on stdin as per POSIX.1-2008
+     or later, 0 if fflush is known to not work, -1 if unknown.])
 ])
 
 # Prerequisites of lib/fflush.c.

@@ -35,7 +35,7 @@
 #ifdef WORDS_BIGENDIAN
 # define SWAP(n) (n)
 #else
-# define SWAP(n) bswap_64 (n)
+# define SWAP(n) u64bswap (n)
 #endif
 
 #if ! HAVE_OPENSSL_SHA512

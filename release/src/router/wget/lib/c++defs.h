@@ -93,11 +93,27 @@
 # define _GL_EXTERN_C extern
 #endif
 
-/* _GL_FUNCDECL_RPL (func, rettype, parameters_and_attributes);
+/* _GL_EXTERN_C_FUNC declaration;
+   performs the declaration of a function with C linkage.  */
+#if defined __cplusplus
+# define _GL_EXTERN_C_FUNC extern "C"
+#else
+/* In C mode, omit the 'extern' keyword, because attributes in bracket syntax
+   are not allowed between 'extern' and the return type (see gnulib-common.m4).
+ */
+# define _GL_EXTERN_C_FUNC
+#endif
+
+/* _GL_FUNCDECL_RPL (func, rettype, parameters, [attributes]);
    declares a replacement function, named rpl_func, with the given prototype,
    consisting of return type, parameters, and attributes.
-   Example:
-     _GL_FUNCDECL_RPL (open, int, (const char *filename, int flags, ...)
+   Although attributes are optional, the comma before them is required
+   for portability to C17 and earlier.  The attribute _GL_ATTRIBUTE_NOTHROW,
+   if needed, must be placed after the _GL_FUNCDECL_RPL invocation,
+   at the end of the declaration.
+   Examples:
+     _GL_FUNCDECL_RPL (free, void, (void *ptr), ) _GL_ATTRIBUTE_NOTHROW;
+     _GL_FUNCDECL_RPL (open, int, (const char *filename, int flags, ...),
                                   _GL_ARG_NONNULL ((1)));
 
    Note: Attributes, such as _GL_ATTRIBUTE_DEPRECATED, are supported in front
@@ -106,20 +122,24 @@
      [[...]] extern "C" <declaration>;
    is invalid syntax in C++.)
  */
-#define _GL_FUNCDECL_RPL(func,rettype,parameters_and_attributes) \
-  _GL_FUNCDECL_RPL_1 (rpl_##func, rettype, parameters_and_attributes)
-#define _GL_FUNCDECL_RPL_1(rpl_func,rettype,parameters_and_attributes) \
-  _GL_EXTERN_C rettype rpl_func parameters_and_attributes
+#define _GL_FUNCDECL_RPL(func,rettype,parameters,...) \
+  _GL_FUNCDECL_RPL_1 (rpl_##func, rettype, parameters, __VA_ARGS__)
+#define _GL_FUNCDECL_RPL_1(rpl_func,rettype,parameters,...) \
+  _GL_EXTERN_C_FUNC __VA_ARGS__ rettype rpl_func parameters
 
-/* _GL_FUNCDECL_SYS (func, rettype, parameters_and_attributes);
+/* _GL_FUNCDECL_SYS (func, rettype, parameters, [attributes]);
    declares the system function, named func, with the given prototype,
    consisting of return type, parameters, and attributes.
-   Example:
-     _GL_FUNCDECL_SYS (open, int, (const char *filename, int flags, ...)
-                                  _GL_ARG_NONNULL ((1)));
+   Although attributes are optional, the comma before them is required
+   for portability to C17 and earlier.  The attribute _GL_ATTRIBUTE_NOTHROW,
+   if needed, must be placed after the _GL_FUNCDECL_RPL invocation,
+   at the end of the declaration.
+   Examples:
+     _GL_FUNCDECL_SYS (getumask, mode_t, (void), ) _GL_ATTRIBUTE_NOTHROW;
+     _GL_FUNCDECL_SYS (posix_openpt, int, (int flags), _GL_ATTRIBUTE_NODISCARD);
  */
-#define _GL_FUNCDECL_SYS(func,rettype,parameters_and_attributes) \
-  _GL_EXTERN_C rettype func parameters_and_attributes
+#define _GL_FUNCDECL_SYS(func,rettype,parameters,...) \
+  _GL_EXTERN_C_FUNC __VA_ARGS__ rettype func parameters
 
 /* _GL_CXXALIAS_RPL (func, rettype, parameters);
    declares a C++ alias called GNULIB_NAMESPACE::func
@@ -297,7 +317,7 @@
     _GL_WARN_ON_USE (func, \
                      "The symbol ::" #func " refers to the system function. " \
                      "Use " #namespace "::" #func " instead.")
-# elif __GNUC__ >= 3 && GNULIB_STRICT_CHECKING
+# elif (__GNUC__ >= 3 || defined __clang__) && GNULIB_STRICT_CHECKING
 #  define _GL_CXXALIASWARN_2(func,namespace) \
      extern __typeof__ (func) func
 # else

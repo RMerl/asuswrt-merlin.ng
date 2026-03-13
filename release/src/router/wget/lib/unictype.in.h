@@ -575,7 +575,8 @@ enum
   UC_JOINING_GROUP_HANIFI_ROHINGYA_PA,       /* Hanifi_Rohingya_Pa */
   UC_JOINING_GROUP_HANIFI_ROHINGYA_KINNA_YA, /* Hanifi_Rohingya_Kinna_Ya */
   UC_JOINING_GROUP_THIN_YEH,                 /* Thin_Yeh */
-  UC_JOINING_GROUP_VERTICAL_TAIL             /* Vertical_Tail */
+  UC_JOINING_GROUP_VERTICAL_TAIL,            /* Vertical_Tail */
+  UC_JOINING_GROUP_KASHMIRI_YEH              /* Kashmiri_Yeh */
 };
 
 /* Return the name of a joining group.  */
@@ -650,6 +651,7 @@ extern @GNULIB_UNICTYPE_PROPERTY_GRAPHEME_BASE_DLL_VARIABLE@ const uc_property_t
 extern @GNULIB_UNICTYPE_PROPERTY_GRAPHEME_EXTEND_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_GRAPHEME_EXTEND;
 extern @GNULIB_UNICTYPE_PROPERTY_OTHER_GRAPHEME_EXTEND_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_OTHER_GRAPHEME_EXTEND;
 extern @GNULIB_UNICTYPE_PROPERTY_GRAPHEME_LINK_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_GRAPHEME_LINK;
+extern @GNULIB_UNICTYPE_PROPERTY_MODIFIER_COMBINING_MARK_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_MODIFIER_COMBINING_MARK;
 /* Bidi.  */
 extern @GNULIB_UNICTYPE_PROPERTY_BIDI_CONTROL_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_BIDI_CONTROL;
 extern @GNULIB_UNICTYPE_PROPERTY_BIDI_LEFT_TO_RIGHT_DLL_VARIABLE@ const uc_property_t UC_PROPERTY_BIDI_LEFT_TO_RIGHT;
@@ -801,6 +803,8 @@ extern bool uc_is_property_grapheme_extend (ucs4_t uc)
 extern bool uc_is_property_other_grapheme_extend (ucs4_t uc)
        _UC_ATTRIBUTE_CONST;
 extern bool uc_is_property_grapheme_link (ucs4_t uc)
+       _UC_ATTRIBUTE_CONST;
+extern bool uc_is_property_modifier_combining_mark (ucs4_t uc)
        _UC_ATTRIBUTE_CONST;
 extern bool uc_is_property_bidi_control (ucs4_t uc)
        _UC_ATTRIBUTE_CONST;

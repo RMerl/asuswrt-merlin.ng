@@ -46,10 +46,14 @@
 # endif
 #endif
 
+#if defined __clang__
+  /* clang really only groks GNU C 4.2, regardless of its value of __GNUC__.  */
+# undef __GNUC_PREREQ
+# define __GNUC_PREREQ(maj, min) ((maj) < 4 + ((min) <= 2))
+#endif
 #ifndef __GNUC_PREREQ
-# if defined __GNUC__ && defined __GNUC_VERSION__
-# define __GNUC_PREREQ(maj, min) \
-        ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
+# if defined __GNUC__ && defined __GNUC_MINOR__
+#  define __GNUC_PREREQ(maj, min) ((maj) < __GNUC__ + ((min) <= __GNUC_MINOR__))
 # else
 #  define __GNUC_PREREQ(maj, min) 0
 # endif

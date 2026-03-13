@@ -298,6 +298,11 @@ strerror_override (int errnum)
       return "Invalid or incomplete multibyte or wide character";
 # endif
 
+# if GNULIB_defined_ESOCKTNOSUPPORT
+    case ESOCKTNOSUPPORT:
+      return "Socket type not supported";
+# endif
+
     default:
       return NULL;
     }

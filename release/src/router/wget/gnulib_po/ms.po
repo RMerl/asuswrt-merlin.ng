@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  coreutils 5.0.90\n"
 "Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
-"POT-Creation-Date: 2024-03-10 15:09+0100\n"
+"POT-Creation-Date: 2024-11-10 22:29+0100\n"
 "PO-Revision-Date: 2003-08-10 16:00+0800\n"
 "Last-Translator: Hasbullah Bin Pit <sebol@ikhlas.com>\n"
 "Language-Team: Malay <translation-team-ms@lists.sourceforge.net>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 
-#: lib/error.c:194
+#: lib/error.c:208
 msgid "Unknown system error"
 msgstr "Ralat sistem yang tidak diketahui"
 
@@ -153,12 +153,12 @@ msgstr "gagal untuk kembali ke direktori kerja pemulaan"
 msgid "failed to return to initial working directory"
 msgstr "gagal untuk kembali ke direktori kerja pemulaan"
 
-#: lib/os2-spawn.c:45
+#: lib/os2-spawn.c:51
 #, c-format
 msgid "_open_osfhandle failed"
 msgstr ""
 
-#: lib/os2-spawn.c:82
+#: lib/os2-spawn.c:88
 #, c-format
 msgid "cannot restore fd %d: dup2 failed"
 msgstr ""
@@ -273,22 +273,22 @@ msgstr ""
 msgid "No previous regular expression"
 msgstr "ralat pada carian ungkapan biasa (regexp)"
 
-#: lib/spawn-pipe.c:216 lib/spawn-pipe.c:219
+#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221
 #, fuzzy, c-format
 msgid "cannot create pipe"
 msgstr "tak boleh mencipta pautan %s"
 
-#: lib/spawn-pipe.c:596 lib/wait-process.c:291 lib/wait-process.c:365
+#: lib/spawn-pipe.c:599 lib/wait-process.c:326 lib/wait-process.c:400
 #, fuzzy, c-format
 msgid "%s subprocess failed"
 msgstr "fail istimewa blok"
 
-#: lib/wait-process.c:232 lib/wait-process.c:264 lib/wait-process.c:326
+#: lib/wait-process.c:267 lib/wait-process.c:299 lib/wait-process.c:361
 #, fuzzy, c-format
 msgid "%s subprocess"
 msgstr "fail istimewa blok"
 
-#: lib/wait-process.c:283 lib/wait-process.c:355
+#: lib/wait-process.c:318 lib/wait-process.c:390
 #, fuzzy, c-format
 msgid "%s subprocess got fatal signal %d"
 msgstr "fail istimewa blok"

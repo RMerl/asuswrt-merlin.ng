@@ -25,6 +25,11 @@
 
 #include "unitypes.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /* Determine whether a character is "cased" according to the Unicode Standard,
    <https://www.unicode.org/versions/Unicode5.0.0/ch03.pdf>, section 3.13,
    definition D120.  */
@@ -39,3 +44,8 @@ extern bool
 extern bool
        uc_is_case_ignorable (ucs4_t uc)
        _UC_ATTRIBUTE_CONST;
+
+
+#ifdef __cplusplus
+}
+#endif

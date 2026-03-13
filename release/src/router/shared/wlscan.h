@@ -163,7 +163,7 @@ struct bss_ie_hdr {
 };
 extern struct bss_ie_hdr bss_ie;
 
-#define MAX_NUMBER_OF_APINFO	128
+#define MAX_NUMBER_OF_APINFO	384
 
 #ifdef CONFIG_BCMWL5
 /* 802.11i/WPA RSN IE parsing utilities */
@@ -212,8 +212,10 @@ typedef struct apinfo apinf_t;
 #define WIF "eth1"
 #if defined(RTBE58_GO)
 #define WLC_SCAN_RESULT_BUF_LEN	64 * 1024 * 3
+#elif defined(RPBE58)
+#define WLC_SCAN_RESULT_BUF_LEN 64 * 1024 * 2
 #else
-#define WLC_SCAN_RESULT_BUF_LEN	64 * 1024
+#define WLC_SCAN_RESULT_BUF_LEN	255 * 1024
 #endif
 extern char buf[WLC_IOCTL_MAXLEN];
 

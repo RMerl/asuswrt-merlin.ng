@@ -86,7 +86,7 @@ else
 CFLAGS += -I$(SRCBASE)/shared
 endif
 
-ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
+ifeq ($(RTCONFIG_MXL_826XX),y)
 CFLAGS += -I$(SRCBASE)/router/shared/sysdeps/broadcom/
 endif
 
@@ -170,6 +170,10 @@ ifeq ($(BUILD_NAME), GT7)
 CFLAGS += -DCONFIG_GT7
 endif
 
+ifeq ($(BUILD_NAME), GS7_PRO_MAX)
+CFLAGS += -DCONFIG_GS7_PRO_MAX
+endif
+
 ifeq ($(RTCONFIG_RGBLED),y)
 CFLAGS += -I$(TOP)/i2c-tools-3.1.2/include/linux
 endif
@@ -200,6 +204,12 @@ CFLAGS += -DWIFI7_SDK_20250122
 endif
 endif
 
+ifeq ($(HND_ROUTER_BE_4916), y)
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126))
+CFLAGS += -DCONFIG_PASN
+endif
+endif
+
 OBJS = shutils.o defaults.o model.o rtstate.o boardapi.o
 OBJS += network_utility.o
 OBJS += misc.o version.o files.o strings.o process.o
@@ -215,6 +225,9 @@ OBJS += scripts.o
 OBJS += llist.o
 ifeq ($(RTCONFIG_HNS),y)
 OBJS += hns_utils.o
+endif
+ifeq ($(RTCONFIG_GTBOOSTER),y)
+OBJS += $(if $(wildcard ark_utils.c),ark_utils.o,prebuild/ark_utils.o)
 endif
 ifeq ($(RTCONFIG_MULTILAN_CFG),y)
 OBJS += mtlan_utils.o
@@ -445,6 +458,10 @@ ifeq ($(RTCONFIG_LP5523),y)
 OBJS += lp5523led.o
 endif
 
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126))
+OBJS += qosmap_utils.o
+endif
+
 ifeq ($(RTCONFIG_AMAS),y)
 CFLAGS += -I$(TOP)/shared/sysdeps/amas
 ifeq ($(RTCONFIG_DWB),y)
@@ -504,7 +521,7 @@ endif
 ifeq ($(and $(BR63),$(NEW_SWITCH_ORDER)),y)
 CFLAGS += -DNEW_SWITCH_ORDER
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
+ifeq ($(RTCONFIG_MXL_826XX),y)
 OBJS += fid_vlan.o br_vlan.o mxl_port_vlan.o mxl_tag_vlan.o hal_chipid.o
 endif
 endif
@@ -576,7 +593,7 @@ ifeq ($(or $(RTCONFIG_GEARUPPLUGIN), $(RTCONFIG_UUPLUGIN)), y)
 OBJS += $(if $(wildcard uu_utils.c),uu_utils.o,prebuild/uu_utils.o)
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
+ifeq ($(RTCONFIG_MXL_826XX),y)
 CFLAGS += -I$(TOP)/libhostapi/switch_hostapi/src \
 	  -I$(TOP)/libhostapi/switch_hostapi/include/gpy \
 	  -I$(TOP)/libhostapi/switch_hostapi/include/gswip
@@ -636,7 +653,7 @@ ifeq ($(wildcard $(SRCBASE)/router/aaews/*.c),)
 	cp -f $(TOP)/aaews/prebuild/$(BUILD_NAME)/aae_ipc.o ./
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
+ifeq ($(RTCONFIG_MXL_826XX),y)
 br_vlan.o:
 ifneq ($(wildcard ./prebuild/br_vlan.o),)
 	@-cp -f ./prebuild/br_vlan.o .

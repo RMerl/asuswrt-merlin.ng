@@ -7,7 +7,9 @@ int wait_event(sem_t* sem);
 int set_event(sem_t* sem);
 #endif
 int init_event(sem_t* sem);
+#if 0
 int set_waiting_event( sem_t* sem);
+#endif
 //int set_event_alert(sem_t* sem);
 //int wait_event(pthread_t tid, void** res );
 int wait_event(sem_t* se);

@@ -89,7 +89,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * Plugin constructor
  */
-plugin_t *error_notify_plugin_create()
+PLUGIN_DEFINE(error_notify)
 {
 	private_error_notify_plugin_t *this;
 

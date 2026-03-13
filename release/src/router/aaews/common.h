@@ -1,7 +1,7 @@
 #ifndef _CMD_COMMON_H
 #define _CMD_COMMON_H
 
-#include <shared.h>
+#include "shared.h"
 #ifdef RTCONFIG_LIBASUSLOG
 #include "libasuslog.h"
 #endif

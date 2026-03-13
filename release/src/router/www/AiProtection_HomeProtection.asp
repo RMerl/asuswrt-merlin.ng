@@ -19,7 +19,7 @@
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script type="text/javascript" src="/js/asus_policy.js?v=4"></script>
+<script type="text/javascript" src="/js/asus_policy.js?v=5"></script>
 <style>
 *{
 	box-sizing: content-box;

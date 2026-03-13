@@ -61,7 +61,7 @@ METHOD(plugin_t, get_features, int,
 /*
  * see header file
  */
-plugin_t *socket_default_plugin_create()
+PLUGIN_DEFINE(socket_default)
 {
 	private_socket_default_plugin_t *this;
 

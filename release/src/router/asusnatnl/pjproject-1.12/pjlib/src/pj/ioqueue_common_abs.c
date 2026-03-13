@@ -31,6 +31,7 @@
 #include <memwatch.h>
 #endif
 
+#undef THIS_FILE
 #define THIS_FILE "ioq_common_abs.c"
 
 #define PENDING_RETRY	2

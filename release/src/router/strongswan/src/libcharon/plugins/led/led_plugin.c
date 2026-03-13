@@ -82,7 +82,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * Plugin constructor
  */
-plugin_t *led_plugin_create()
+PLUGIN_DEFINE(led)
 {
 	private_led_plugin_t *this;
 

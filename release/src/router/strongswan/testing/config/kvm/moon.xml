@@ -1,9 +1,9 @@
 <domain type='kvm'>
   <name>moon</name>
   <uuid>b5e00ad3-1c81-3b2a-7f66-cdf8727b3c65</uuid>
-  <memory unit='MiB'>128</memory>
-  <currentMemory unit='MiB'>128</currentMemory>
-  <vcpu placement='static'>1</vcpu>
+  <memory unit='MiB'>150</memory>
+  <currentMemory unit='MiB'>150</currentMemory>
+  <vcpu placement='static'>4</vcpu>
   <os>
     <type arch='x86_64' machine='pc'>hvm</type>
 	<kernel>/var/run/kvm-swan-kernel</kernel>

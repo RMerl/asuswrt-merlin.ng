@@ -731,6 +731,7 @@ PJ_DEF(pj_status_t) pjmedia_codec_ipp_deinit(void)
     if (!codec_mgr) {
 	pj_pool_release(ipp_factory.pool);
 	ipp_factory.pool = NULL;
+	pj_mutex_unlock(ipp_factory.mutex);
 	return PJ_EINVALIDOP;
     }
 
@@ -739,7 +740,9 @@ PJ_DEF(pj_status_t) pjmedia_codec_ipp_deinit(void)
 						  &ipp_factory.base);
     
     /* Destroy mutex. */
+    pj_mutex_unlock(ipp_factory.mutex);
     pj_mutex_destroy(ipp_factory.mutex);
+    ipp_factory.mutex = NULL;
 
     /* Destroy pool. */
     pj_pool_release(ipp_factory.pool);

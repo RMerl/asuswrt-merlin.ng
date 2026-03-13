@@ -693,7 +693,10 @@ enum {
 #define GIF_PREFIXLEN  0x0002  /* return prefix length */
 #define GIF_PREFIX     0x0004  /* return prefix, not addr */
 
-#define EXTEND_AIHOME_API_LEVEL		22
+/*
+ * 23: Add / fine tune skip_modify_flag in apply.cgi
+ */
+#define EXTEND_AIHOME_API_LEVEL		23
 
 #define EXTEND_HTTPD_AIHOME_VER		0
 
@@ -1587,7 +1590,7 @@ enum led_id {
 	IND_BT,
 	IND_PA,
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
 	LED_GROUP1_RED,
 	LED_GROUP1_GREEN,
 	LED_GROUP1_BLUE,
@@ -1598,7 +1601,7 @@ enum led_id {
 	LED_GROUP3_RED,
 	LED_GROUP3_GREEN,
 	LED_GROUP3_BLUE,
-#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE96) && !defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE96) && !defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 	LED_GROUP4_RED,
 	LED_GROUP4_GREEN,
 	LED_GROUP4_BLUE,
@@ -1616,7 +1619,7 @@ enum led_id {
 #endif
 #endif
 #endif
-#if defined(DSL_AX82U) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if defined(DSL_AX82U) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 	LED_WIFI,
 #endif
 #if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
@@ -1794,7 +1797,7 @@ enum wl_band_id {
 	WL_5G_BAND = 0,
 	WL_5G_2_BAND = 1,
 	WL_2G_BAND = 2,
-#elif defined(GS7_PRO)
+#elif defined(GS7_PRO) || defined(GS7_PRO_MAX)
 	WL_5G_BAND = 1,
 	WL_5G_2_BAND = 0,
 	WL_2G_BAND = 2,
@@ -2194,10 +2197,22 @@ static inline int access_point_mode(void)
 	return __access_point_mode(sw_mode());
 }
 
+static inline int dpsr_mode();
+static inline int psr_mode();
+static inline int rp_mode();
+static inline int re_mode(void);
+
 #if defined(RTCONFIG_WIRELESSREPEATER)
 static inline int __repeater_mode(int sw_mode)
 {
-	return (sw_mode == SW_MODE_REPEATER);
+	if (re_mode())
+		return 0;
+
+	return (sw_mode == SW_MODE_REPEATER
+#ifdef RTCONFIG_PROXYSTA
+		|| psr_mode() || dpsr_mode() || rp_mode()
+#endif
+		);
 }
 static inline int repeater_mode(void)
 {
@@ -2297,6 +2312,11 @@ static inline int dpsta_mode()
 	return 0;
 }
 #endif
+
+static inline int rp_mode_db()
+{
+	return ((sw_mode() == SW_MODE_AP) && (nvram_get_int("wlc_psta") == 2) && (nvram_get_int("wlc_dpsta") == 2) && nvram_get_int("mlo_mb") == 0 && nvram_match("re_mode", "0"));
+}
 
 static inline int rp_mode()
 {
@@ -3516,7 +3536,7 @@ extern uint32_t hnd_get_phy_speed(int port, int offs, unsigned int regv, unsigne
 extern uint32_t hnd_get_phy_duplex(int port, int offs, unsigned int regv, unsigned int pmdv);
 extern uint64_t hnd_get_phy_mib(int port, int offs, char *type);
 #endif
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 extern uint32_t mxl_get_phy_status(int port);
 extern uint32_t mxl_get_phy_speed(int port);
 extern uint32_t mxl_get_phy_duplex(int port);
@@ -4580,8 +4600,32 @@ static inline int turbo_led_control(__attribute__ ((unused)) int onoff) { return
 static inline int boost_led_control(__attribute__ ((unused)) int onoff) { return 0; }
 #endif
 
+#if defined(RTCONFIG_LED_SCHED)
+static inline int led_sched_off(void) { return nvram_match("led_off_sched", "1"); }
+#else
+static inline int led_sched_off(void) { return 0; }
+#endif
+
+#if defined(RTCONFIG_LED_NIGHT_SCHED)
+static inline int led_night_mode_sched_on(void) { return nvram_match("single_led_night_mode_sched", "1"); }
+#else
+static inline int led_night_mode_sched_on(void) { return 0; }
+#endif
+
+#if defined(RTCONFIG_AURA_SCHED)
+static inline int aura_sched_off(void) { return nvram_match("ledg_scheme_sched", "0"); }
+#else
+static inline int aura_sched_off(void) { return 0; }
+#endif
+
+#if defined(RTCONFIG_AURA_NIGHT_SCHED)
+static inline int aura_night_mode_sched_on(void) { return nvram_match("ledg_night_mode_sched", "1"); }
+#else
+static inline int aura_night_mode_sched_on(void) { return 0; }
+#endif
+
 #if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))
-static inline int inhibit_led_on(void) { return !nvram_get_int("AllLED"); }
+static inline int inhibit_led_on(void) { return (!nvram_get_int("AllLED") || led_sched_off()); }
 #else
 static inline int inhibit_led_on(void) { return 0; }
 #endif
@@ -4890,6 +4934,8 @@ extern int calc_afc_cold_reboot();
 extern int wl_get_afc_info(char *ifname, char *chanspec);
 extern int wl_afc_status();
 extern int valid_afc_uncertainty_range(char *x, char *y, char *z);
+extern int valid_wifi_location(const char *lat_str, const char *lon_str);
+extern int is_wifi_lat_lon_empty();
 extern void afc_dumplog(const char *fmt, ...);
 extern double AFC_MeshPathLoss(int rssi, int tx, int channel, int band, int is_wired);
 extern void get_afc_info_json(char *bw);
@@ -4907,6 +4953,10 @@ extern void afcd_harness_config(int mode);  // sysdeps
 /* add nt_center 2nd stage event */
 #define CC_EVENT_JSON   "/jffs/ccevent.json"
 #define CC_EVENT_LOCK   "ccevent_lock"
+
+#if defined(RTCONFIG_GTBOOSTER)
+#include <ark_common.h>
+#endif
 
 /* hns_utils.c */
 #if defined(RTCONFIG_HNS)
@@ -5422,7 +5472,7 @@ extern void firmware_downgrade_check(uint32_t sf);
 #define ANTLED_SCHEME_RSSI              2
 #endif
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
 enum {
 	LEDG_QIS_RUN = 1,
 	LEDG_QIS_FINISH
@@ -5569,7 +5619,7 @@ enum {
 	WLIF_5G2 = 0,
 	WLIF_6G	 = 1,
 	WLIF_6G2 = 2,
-#elif defined(BT10) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#elif defined(BT10) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 	WLIF_5G2 = 0,
 	WLIF_6G	 = 0,
 	WLIF_5G1 = 1,
@@ -5757,6 +5807,7 @@ enum{
 	ASUS_PP_CONFIG_TRANSFER = 5,
 	ASUS_PP_DDNS = 6,
 	ASUS_PP_AFC = 7,
+	ASUS_PP_LICENSE_UPDATE_V5 = 8,
 	ASUS_PP_MAX
 };
 
@@ -5764,6 +5815,7 @@ struct ASUS_PP_table {
 	char *name;
 	char *version;
 	int id;
+	int force_sign;
 };
 extern struct ASUS_PP_table ASUS_PP_t[];
 
@@ -5771,6 +5823,7 @@ extern int webapi_get_b(const int id, char *buf, size_t len);
 extern int get_ASUS_privacy_policy_state(const int id);
 extern int get_ASUS_privacy_policy(void);
 extern int get_ASUS_privacy_policy_ver(const int id);
+extern void init_asus_pp_eula(void);
 
 extern int adjust_62_nv_list(char *name);
 
@@ -5778,7 +5831,7 @@ extern char *get_ddns_macaddr(void);
 extern char *rfctime(const time_t *timep, char *ts_string, int len);
 extern void update_ntp_ts(time_t bf_time, int ntp_diff_ts);
 
-#if defined(RTCONFIG_PRESSURE_SENSOR)
+#if defined(RTCONFIG_PRESSURE_SENSOR) || defined(RTCONFIG_PRESSURE_SENSOR_CMP201)
 #define PRESSURE_LEN 		(16)
 #endif
 
@@ -5829,4 +5882,20 @@ enum {
 };
 #endif
 
+/* definition for wlX_nband_type */
+enum bandAttribute {
+	BAND_ATTR_2G = 0,
+	BAND_ATTR_5G = 1,
+	BAND_ATTR_5GL = 2,
+	BAND_ATTR_5GH = 3,
+	BAND_ATTR_6G = 4,
+	BAND_ATTR_6GL = 5,
+	BAND_ATTR_6GH = 6
+};
+
+extern int safe_do_system(const char *fmt, ...);
+extern int safe_fork_do_system(const char *fmt, ...);
+extern int safe_do_system_to_file(const char *outfile, int append, const char *fmt, ...);
+
+extern int is_safe_app_name(const char *app_name);
 #endif	/* !__SHARED_H__ */

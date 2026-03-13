@@ -1,0 +1,482 @@
+#
+# Broadcom Linux Router WL firmware Makefile
+#
+# Copyright (C) 2025, Broadcom. All Rights Reserved.
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+# SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+# OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+# CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+#
+# <<Broadcom-WL-IPTag/Dual:>>
+#
+# $Id: Makefile.fw 861666 2025-09-26 00:04:55Z $
+#
+
+PCIEFD_EMBED_HEADER_TEMPLATE	:= $(SRCBASE_DHD)/shared/rtecdc_router.h.in
+PCIEFD_EMBED_HEADER		:= $(SRCBASE_DHD)/shared/rtecdc_router.h
+PCIEFD_IMAGE_DIR		:= $(SRCBASE_DHD)/dongle/bin
+
+ifeq ($(PCIEFD_TARGETS_LIST),)
+PCIEFD_TARGETS_LIST :=
+
+# All firmware targets must be defined here
+PCIEFD_TARGETS_LIST		+= 6726b0 6718a0
+ifneq ($(RELEASE_DONGLE_FW),)
+PCIEFD_RELEASE_LIST             := $(PCIEFD_TARGETS_LIST)
+endif # RELEASE_DONGLE_FW
+
+# 676x SOC chips only support wifi7 PCIe dongle
+ifneq ($(filter 676%,$(BRCM_CHIP)),)
+PCIEFD_TARGETS_LIST		:= 6726b0
+endif
+
+#ifdef WL_EAP
+ifeq ($(BCA_HND_EAP),y)
+PCIEFD_TARGETS_LIST := 43740b0 43840a0
+endif
+#endif
+endif # PCIEFD_TARGETS_LIST
+
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-BE86U GS-BE18000 GS7_PRO GT7 GS7_PRO_MAX))
+PCIEFD_TARGETS_LIST             := 6726b0
+else
+PCIEFD_TARGETS_LIST             := 6718a0
+ifeq ($(BUILD_6726B0),y)
+    PCIEFD_TARGETS_LIST         += 6726b0
+endif
+endif
+
+FLAVORS_LIST :=
+# FLAVORS_LIST construction, no particular order
+ifeq ($(BUILD_BRCM_MFGTEST_FIRMWARE),y)
+	FLAVORS_LIST += mfgtest
+endif
+	FLAVORS_LIST += release
+ifeq ($(WLTEST),1)
+	FLAVORS_LIST := mfgtest
+endif
+
+### Start of customization
+
+# Lists can be customized here, eg :
+# PCIEFD_TARGETS_LIST := 6726b0
+# FLAVORS_LIST := mfgtest debug release
+
+### End of customization
+
+### Start of dorel963xx specific handling
+
+ifneq ($(RELEASE_DONGLE_FW),)
+DONGLE_SRC_DIR := main/src
+DONGLE_BIN_DIR := main/src/dongle/bin
+
+# pciefd list to release
+# PCIEFD_TARGETS_LIST must be the full list
+PCIEFD_TARGETS_LIST := $(PCIEFD_RELEASE_LIST)
+ifeq ($(strip $(PCIEFD_TARGETS_LIST)),)
+$(error PCIEFD_TARGETS_LIST is empty!)
+endif
+FLAVORS_LIST := mfgtest release
+endif # RELEASE_DONGLE_FW
+
+### end of dorel963xx specific handling
+
+# obj-list expands to e.g. '6726b0-obj'
+obj-list			:= $(patsubst %,%-obj,$(PCIEFD_TARGETS_LIST))
+
+# obj-pciefd expands to e.g. '6726b0-obj-release 6726b0-obj-mfgtest'
+apply-flavor = $(foreach flavor,$(FLAVORS_LIST),$(target)-$(flavor))
+obj-pciefd			:= $(foreach target,$(obj-list),$(apply-flavor))
+
+# others lists are build by replacing 'obj' with specific keywords
+clean-pciefd			:= $(subst obj,clean,$(obj-pciefd))
+version-pciefd			:= $(subst obj,version,$(obj-pciefd))
+
+# ---------------------
+# 6726b0 target
+FW_6726b0_SRCBASE		:= $(abspath $(SRCBASE)/../../main/src)
+FW_6726b0_CHIPID		:= 6726b0
+FW_6726b0_BUILD_PREFIX		:= $(FW_6726b0_CHIPID)-ram
+FW_6726b0_MAKE_PATH		:= $(FW_6726b0_SRCBASE)/dongle/make/wl
+FW_6726b0_BUILD_PATH		:= $(FW_6726b0_SRCBASE)/../build/dongle/$(FW_6726b0_BUILD_PREFIX)
+FW_6726b0_OS_PATH		:= $(FW_6726b0_SRCBASE)/../components/threadx
+ifeq ($(USE_MENTOR),1)
+FW_6726b0_COMPILER		:= arm-none-eabi
+else
+FW_6726b0_COMPILER		:= arm-buildroot-linux-gnueabi
+endif
+
+fw_options :=
+ifeq ($(BUILD_WLAN_TESTBED_AP),y)
+	fw_options := $(fw_options)_testbedap
+else ifeq ($(CONFIG_AIRIQ),y)
+	fw_options := $(fw_options)_airiq
+endif
+
+ifeq ($(BUILD_BCM_WLMLO),y)
+	fw_options := $(fw_options)_mlo
+	ifeq ($(BUILD_BCM_WLMLO_NOPCAP),y)
+		fw_options := $(fw_options)_nopcap
+	endif
+endif
+
+FW_6726b0_TARGET_mfgtest	:= config_pcie_fdap_mfgtest
+FW_6726b0_TARGET_release	:= config_pcie_fdap_release$(fw_options)
+FW_6726b0_TARGET_debug		:= config_pcie_fdap_debug$(fw_options)
+FW_6726b0_TARGET_internal	:= config_pcie_fdap_internal$(fw_options)
+
+#ifdef WL_EAP
+
+# ---------------------
+# 43740b0 target
+FW_43740b0_SRCBASE		:= $(abspath $(SRCBASE)/../../main/src)
+FW_43740b0_CHIPID		:= 43740b0
+FW_43740b0_BUILD_PREFIX		:= $(FW_43740b0_CHIPID)-ram
+FW_43740b0_MAKE_PATH		:= $(FW_43740b0_SRCBASE)/dongle/make/wl
+FW_43740b0_BUILD_PATH		:= $(FW_43740b0_SRCBASE)/../build/dongle/$(FW_43740b0_BUILD_PREFIX)
+FW_43740b0_OS_PATH		:= $(FW_43740b0_SRCBASE)/../components/threadx
+ifeq ($(USE_MENTOR),1)
+FW_43740b0_COMPILER		:= arm-none-eabi
+else
+FW_43740b0_COMPILER		:= arm-buildroot-linux-gnueabi
+endif
+
+FW_43740b0_TARGET_mfgtest	:= config_pcie_fdap_mfgtest
+FW_43740b0_TARGET_release	:= config_pcie_fdap_release$(fw_options)
+FW_43740b0_TARGET_debug		:= config_pcie_fdap_debug$(fw_options)
+FW_43740b0_TARGET_internal	:= config_pcie_fdap_internal$(fw_options)
+
+#endif /* WL_EAP */
+
+# ---------------------
+# 6718a0 target
+FW_6718a0_SRCBASE		:= $(abspath $(SRCBASE)/../../main/src)
+FW_6718a0_CHIPID		:= 6718a0
+FW_6718a0_BUILD_PREFIX		:= $(FW_6718a0_CHIPID)-ram
+FW_6718a0_MAKE_PATH		:= $(FW_6718a0_SRCBASE)/dongle/make/wl
+FW_6718a0_BUILD_PATH		:= $(FW_6718a0_SRCBASE)/../build/dongle/$(FW_6718a0_BUILD_PREFIX)
+FW_6718a0_OS_PATH		:= $(FW_6718a0_SRCBASE)/../components/threadx
+ifeq ($(USE_MENTOR),1)
+FW_6718a0_COMPILER		:= arm-none-eabi
+else
+FW_6718a0_COMPILER		:= arm-buildroot-linux-gnueabi
+endif
+
+fw_options :=
+ifeq ($(CONFIG_AIRIQ),y)
+	fw_options := $(fw_options)_airiq
+endif
+
+ifeq ($(BUILD_BCM_WLMLO),y)
+	fw_options := $(fw_options)_mlo
+endif
+
+FW_6718a0_TARGET_mfgtest	:= config_pcie_fdap_mfgtest
+FW_6718a0_TARGET_release	:= config_pcie_fdap_release$(fw_options)
+FW_6718a0_TARGET_debug		:= config_pcie_fdap_debug$(fw_options)
+FW_6718a0_TARGET_internal	:= config_pcie_fdap_internal$(fw_options)
+
+#ifdef WL_EAP
+# ---------------------
+# 43840a0 target
+FW_43840a0_SRCBASE		:= $(abspath $(SRCBASE)/../../main/src)
+FW_43840a0_CHIPID		:= 43840a0
+FW_43840a0_BUILD_PREFIX		:= $(FW_43840a0_CHIPID)-ram
+FW_43840a0_MAKE_PATH		:= $(FW_43840a0_SRCBASE)/dongle/make/wl
+FW_43840a0_BUILD_PATH		:= $(FW_43840a0_SRCBASE)/../build/dongle/$(FW_43840a0_BUILD_PREFIX)
+FW_43840a0_OS_PATH		:= $(FW_43840a0_SRCBASE)/../components/threadx
+ifeq ($(USE_MENTOR),1)
+FW_43840a0_COMPILER		:= arm-none-eabi
+else
+FW_43840a0_COMPILER		:= arm-buildroot-linux-gnueabi
+endif
+
+FW_43840a0_TARGET_mfgtest	:= config_pcie_fdap_mfgtest
+FW_43840a0_TARGET_release	:= config_pcie_fdap_release$(fw_options)
+FW_43840a0_TARGET_debug		:= config_pcie_fdap_debug$(fw_options)
+FW_43840a0_TARGET_internal	:= config_pcie_fdap_internal$(fw_options)
+
+#endif /* WL_EAP */
+
+# ---------------------
+# All rules start here
+.PHONY: $(obj-pciefd)
+
+# target specific override to remove all CFLAGS that are inherited from router Make
+$(obj-pciefd): CFLAGS=
+
+# obj-pciefd expands to e.g. '6726b0-obj-release 6726b0-obj-mfgtest'
+# The below rule is executed for each of these targets, so e.g. for '6726b0-obj-release'.
+# On each invocation of this rule, it builds one dongle firmware image and
+# copies it into a DHD directory. This rule does *not* build the DHD itself.
+$(obj-pciefd):
+	@# R_TEMP expands 'chipset-obj-flavor' to e.g. 'chipset flavor'
+	@# R_CHIP expands to chipset e.g. '6726b0'
+	@# R_FLAVOR expands flavor to e.g. 'release'
+	@# FW_$(R_CHIP)_OS_PATH expands to e.g. '.../main/components/threadx'
+	@#
+	$(eval R_TEMP := $(subst -obj-, ,$@))
+	$(eval R_CHIP := $(word 1, $(R_TEMP)))
+	$(eval R_FLAVOR := $(word 2, $(R_TEMP)))
+	$(eval FIRMWARE := $(FW_$(R_CHIP)_TARGET_$(R_FLAVOR)))
+	$(eval COMPILER := $(FW_$(R_CHIP)_COMPILER))
+	@# The following snippet will generate a file named '.tcchked' in the respective firmware build directory using the phony target tcchk as in
+	@#   'make ... -C .../main/src/dongle/make/wl 6726b0-ram/config_pcie_fdap_internal/tcchk'
+	@#
+	@if [ -d $(FW_$(R_CHIP)_SRCBASE)/wl/sys ] && [ -d $(FW_$(R_CHIP)_OS_PATH) ]; then \
+	if [ ! -e $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/.tcchked ]; then \
+		if [ "$(findstring threadx,$(FW_$(R_CHIP)_OS_PATH))" = "threadx" ]; then \
+			$(MAKE) CLM_BLOBS="$(R_CLM_BLOBS)" CROSS_COMPILE=$(COMPILER) -C $(FW_$(R_CHIP)_MAKE_PATH) $(FW_$(R_CHIP)_BUILD_PREFIX)/$(FIRMWARE)/tcchk TCPATHCHK=0; \
+		else \
+			install -d $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE); \
+			touch $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/.tcchked; \
+		fi \
+	fi \
+	fi
+
+	@# FW_$(R_CHIP)_SRCBASE expands to e.g. '.../main/src'
+	@# FW_$(R_CHIP)_TARGET expands to e.g. 'config_pcie_fdap_internal'
+	@# PCIEFD_IMAGE_DIR expands to e.g. 'main/src/dongle/bin'
+	@# PCIEFD_EMBED_HEADER expands to e.g. 'main/src/shared/rtecdc_router.h'
+	@# SRCBASE_DHD expands to e.g. 'main/src'
+	@# FW_$(R_CHIP)_BUILD_PATH expands to e.g. '.../main/build/dongle/6726b0-ram'
+
+	@# The following snippet builds the firmware for a single chip
+	@if [ -d $(FW_$(R_CHIP)_SRCBASE)/wl/sys ]; then \
+	if [ -d $(FW_$(R_CHIP)_OS_PATH) ] && [ -e $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/.tcchked ]; then \
+		if [ -d $(FW_$(R_CHIP)_BUILD_PATH)/.prebuilt ]; then \
+			if [ ! -e $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/tx_thread_initialize.o ]; then \
+				cp -rpf $(FW_$(R_CHIP)_BUILD_PATH)/.prebuilt/* $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE); \
+			fi \
+		fi && \
+		if [ -f $(FW_$(R_CHIP)_BUILD_PATH)/.prebuilt/$(R_FLAVOR)/avs.o ]; then \
+			cp -u $(FW_$(R_CHIP)_BUILD_PATH)/.prebuilt/$(R_FLAVOR)/avs.o $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/$(R_FLAVOR); \
+		fi && \
+		$(MAKE) CROSS_COMPILE=$(COMPILER) -C $(FW_$(R_CHIP)_MAKE_PATH) $(FW_$(R_CHIP)_BUILD_PREFIX)/$(FIRMWARE) && \
+		if [ -e $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/rtecdc_$(FW_$(R_CHIP)_CHIPID).h ]; then \
+			mkdir -p $(PCIEFD_IMAGE_DIR)/$(FW_$(R_CHIP)_CHIPID)/$(R_FLAVOR) && \
+			cp $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/rtecdc.bin $(PCIEFD_IMAGE_DIR)/$(FW_$(R_CHIP)_CHIPID)/$(R_FLAVOR) && \
+			cp $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/rtecdc.map $(PCIEFD_IMAGE_DIR)/$(FW_$(R_CHIP)_CHIPID)/$(R_FLAVOR) && \
+			cp $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/logstrs.bin $(PCIEFD_IMAGE_DIR)/$(FW_$(R_CHIP)_CHIPID)/$(R_FLAVOR) && \
+			if [ "$(CMWIFI)" == "y" ]; then \
+				ln -sf $(R_FLAVOR)/rtecdc.bin $(PCIEFD_IMAGE_DIR)/$(FW_$(R_CHIP)_CHIPID)/rtecdc.bin; \
+				ln -sf $(R_FLAVOR)/rtecdc.map $(PCIEFD_IMAGE_DIR)/$(FW_$(R_CHIP)_CHIPID)/rtecdc.map; \
+				ln -sf $(R_FLAVOR)/logstrs.bin $(PCIEFD_IMAGE_DIR)/$(FW_$(R_CHIP)_CHIPID)/logstrs.bin; \
+			fi && \
+			mkdir -p $(SRCBASE_DHD)/shared/$(R_FLAVOR) && \
+			cp $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/rtecdc_$(FW_$(R_CHIP)_CHIPID).h $(SRCBASE_DHD)/shared/$(R_FLAVOR)/ && \
+			echo "#include <rtecdc_$(FW_$(R_CHIP)_CHIPID).h>" >> $(PCIEFD_EMBED_HEADER).tmp.$(FW_$(R_CHIP)_CHIPID) && \
+			echo "#define DLIMAGE_$(FW_$(R_CHIP)_CHIPID)" >> $(PCIEFD_EMBED_HEADER).tmp.$(FW_$(R_CHIP)_CHIPID); \
+		fi && \
+		if [ $(lastword $(FLAVORS_LIST)) == $(R_FLAVOR) ]; then \
+			if [ -e $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/wlc_clm_data.c ]; then \
+				echo "$(R_CHIP): clm copy is performed only for this flavor ($(R_FLAVOR))"; \
+				if [ -d $(FW_$(R_CHIP)_SRCBASE)/wl/clm/src ]; then \
+					cp $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/wlc_clm_data.c $(FW_$(R_CHIP)_SRCBASE)/wl/clm/src/wlc_clm_data_$(R_CHIP).c; \
+				else \
+					cp $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/wlc_clm_data.c $(FW_$(R_CHIP)_SRCBASE)/../components/clm-api/src/wlc_clm_data_$(R_CHIP).c; \
+				fi \
+			fi && \
+			if [ -e $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/wlc_clm_data_inc.c ]; then \
+				if [ -d $(FW_$(R_CHIP)_SRCBASE)/wl/clm/src ]; then \
+					cp $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/wlc_clm_data_inc.c $(FW_$(R_CHIP)_SRCBASE)/wl/clm/src/wlc_clm_data_inc_$(R_CHIP).c; \
+				else \
+					cp $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/wlc_clm_data_inc.c $(FW_$(R_CHIP)_SRCBASE)/../components/clm-api/include/wlc_clm_data_inc_$(R_CHIP).c; \
+				fi \
+			fi && \
+			if [ -e $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/wlc_clm_data_$(R_CHIP)_inc.c ]; then \
+				cp $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/wlc_clm_data_$(R_CHIP)_inc.c $(FW_$(R_CHIP)_SRCBASE)/wl/clm/src/wlc_clm_data_$(R_CHIP)_inc.c.GEN; \
+			fi \
+		else \
+			echo "$(R_CHIP): clm copy is bypassed for this flavor ($(R_FLAVOR)) as only required once per chipset only"; \
+		fi && \
+		if [ ! -d $(FW_$(R_CHIP)_BUILD_PATH)/.prebuilt ]; then \
+			(cd $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE) && find * \( -name "tx_*.*" -o -name "txe_*.*" \) | cpio -pdm $(FW_$(R_CHIP)_BUILD_PATH)/.prebuilt); \
+		fi && \
+		if [ -f $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/avs.o ]; then \
+			mkdir -p $(FW_$(R_CHIP)_BUILD_PATH)/.prebuilt/$(R_FLAVOR) && \
+			cp $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/avs.o $(FW_$(R_CHIP)_BUILD_PATH)/.prebuilt/$(R_FLAVOR)/; \
+		fi \
+		else \
+		if [ -e $(SRCBASE_DHD)/shared/rtecdc_$(FW_$(R_CHIP)_CHIPID).h ]; then \
+			echo "#include <rtecdc_$(FW_$(R_CHIP)_CHIPID).h>" >> $(PCIEFD_EMBED_HEADER).tmp.$(FW_$(R_CHIP)_CHIPID) && \
+			echo "#define DLIMAGE_$(FW_$(R_CHIP)_CHIPID)" >> $(PCIEFD_EMBED_HEADER).tmp.$(FW_$(R_CHIP)_CHIPID); \
+		fi \
+	fi \
+	fi
+
+	@# release dongle firmware: save files to be released to $(FW_RELEASE_DIR) and $(FW_RELEASE_MFGDIR) passed down by dorel963xx
+	@#	1. wlc_clm_data*.c
+	@#	2. [.prebuilt] objects
+	@#	3. rtecdc.[bin/exe]_$(FIRMWARE) (e.g. rtecdc.bin_config_pcie_fdap_release_airiq_mlo for 'release' tarballs)
+	@#	4. rtecdc_router.h when finished at the end
+	@#
+	@# rename rtecdc.bin_$(FIRMWARE) if exists back to rtecdc.bin when doing normal customer build (non release)
+	@#
+	if [ "$(RELEASE_DONGLE_FW)" == "1" ]; then \
+		[ -e $(FW_$(R_CHIP)_SRCBASE)/wl/clm/src/wlc_clm_data_$(R_CHIP).c ] && \
+		mkdir -p $(FW_RELEASE_DIR)/main/src/wl/clm/src && \
+		cp -f $(FW_$(R_CHIP)_SRCBASE)/wl/clm/src/wlc_clm_data_$(R_CHIP).c $(FW_RELEASE_DIR)/main/src/wl/clm/src/wlc_clm_data_$(R_CHIP).c; \
+		[ -e $(FW_$(R_CHIP)_SRCBASE)/../components/clm-api/src/wlc_clm_data_$(R_CHIP).c ] && \
+		mkdir -p $(FW_RELEASE_DIR)/main/components/clm-api/src && \
+		cp -f $(FW_$(R_CHIP)_SRCBASE)/../components/clm-api/src/wlc_clm_data_$(R_CHIP).c $(FW_RELEASE_DIR)/main/components/clm-api/src/wlc_clm_data_$(R_CHIP).c; \
+		[ -e $(FW_$(R_CHIP)_SRCBASE)/wl/clm/src/wlc_clm_data_inc_$(R_CHIP).c ] && \
+		mkdir -p $(FW_RELEASE_DIR)/main/src/wl/clm/src && \
+		cp -f $(FW_$(R_CHIP)_SRCBASE)/wl/clm/src/wlc_clm_data_inc_$(R_CHIP).c $(FW_RELEASE_DIR)/main/src/wl/clm/src/wlc_clm_data_inc_$(R_CHIP).c; \
+		[ -e $(FW_$(R_CHIP)_SRCBASE)/../components/clm-api/include/wlc_clm_data_inc_$(R_CHIP).c ] && \
+		mkdir -p $(FW_RELEASE_DIR)/main/components/clm-api/include && \
+		cp -f $(FW_$(R_CHIP)_SRCBASE)/../components/clm-api/include/wlc_clm_data_inc_$(R_CHIP).c $(FW_RELEASE_DIR)/main/components/clm-api/include/wlc_clm_data_inc_$(R_CHIP).c; \
+		[ -d $(FW_$(R_CHIP)_BUILD_PATH)/.prebuilt ] && \
+		mkdir -p $(FW_RELEASE_DIR)/main/build/dongle/$(FW_$(R_CHIP)_BUILD_PREFIX)/.prebuilt && \
+		cp -rpf $(FW_$(R_CHIP)_BUILD_PATH)/.prebuilt/* $(FW_RELEASE_DIR)/main/build/dongle/$(FW_$(R_CHIP)_BUILD_PREFIX)/.prebuilt; \
+		if [ "$(R_FLAVOR)" == "release" ]; then \
+			mkdir -p $(FW_RELEASE_DIR)/$(DONGLE_BIN_DIR)/$(FW_$(R_CHIP)_CHIPID)/$(R_FLAVOR) && \
+			cp $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/rtecdc.bin $(FW_RELEASE_DIR)/$(DONGLE_BIN_DIR)/$(FW_$(R_CHIP)_CHIPID)/$(R_FLAVOR)/rtecdc.bin_$(FIRMWARE) && \
+			cp $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/rtecdc.exe $(FW_RELEASE_DIR)/$(DONGLE_BIN_DIR)/$(FW_$(R_CHIP)_CHIPID)/$(R_FLAVOR)/rtecdc.exe_$(FIRMWARE); \
+		fi && \
+		if [ "$(R_FLAVOR)" == "mfgtest" ]; then \
+			mkdir -p $(FW_RELEASE_MFGDIR)/$(DONGLE_BIN_DIR)/$(FW_$(R_CHIP)_CHIPID)/$(R_FLAVOR) && \
+			cp $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/rtecdc.bin $(FW_RELEASE_MFGDIR)/$(DONGLE_BIN_DIR)/$(FW_$(R_CHIP)_CHIPID)/$(R_FLAVOR) && \
+			cp $(FW_$(R_CHIP)_BUILD_PATH)/$(FIRMWARE)/rtecdc.exe $(FW_RELEASE_MFGDIR)/$(DONGLE_BIN_DIR)/$(FW_$(R_CHIP)_CHIPID)/$(R_FLAVOR); \
+		fi; \
+	else \
+		if [ -e $(PCIEFD_IMAGE_DIR)/$(FW_$(R_CHIP)_CHIPID)/$(R_FLAVOR)/rtecdc.bin_$(FIRMWARE) ]; then \
+			cp -f $(PCIEFD_IMAGE_DIR)/$(FW_$(R_CHIP)_CHIPID)/$(R_FLAVOR)/rtecdc.bin_$(FIRMWARE) $(PCIEFD_IMAGE_DIR)/$(FW_$(R_CHIP)_CHIPID)/$(R_FLAVOR)/rtecdc.bin; \
+		fi \
+	fi
+
+.PHONY: $(clean-pciefd)
+
+$(clean-pciefd): CFLAGS=
+
+# $(clean-pciefd) expands to e.g. '6726b0-clean-release'
+$(clean-pciefd):
+	$(eval R_TEMP := $(subst -clean-, ,$@))
+	$(eval R_CHIP := $(word 1, $(R_TEMP)))
+	$(eval R_FLAVOR := $(word 2, $(R_TEMP)))
+	$(eval FIRMWARE := $(FW_$(R_CHIP)_TARGET_$(R_FLAVOR)))
+	@# FW_$(R_CHIP)_MAKE_PATH expands to e.g. '.../main/src/dongle/make/wl'
+	@# FW_$(R_CHIP)_BUILD_PREFIX expands to e.g. '6726b0-ram'
+	@# FW_$(R_CHIP)_TARGET expands to e.g. 'config_pcie_fdap_internal'
+	@# below snippet executes e.g. 'make ... -C main/src/dongle/make/wl 6726b0-ram/config_pcie_fdap_internal/clean'
+	@if [ -d $(FW_$(R_CHIP)_SRCBASE)/wl/sys ]; then \
+		if [ -d $(FW_$(R_CHIP)_OS_PATH) ]; then \
+			$(MAKE) CROSS_COMPILE=$(COMPILER) -C $(FW_$(R_CHIP)_MAKE_PATH) $(FW_$(R_CHIP)_BUILD_PREFIX)/$(FIRMWARE)/clean; \
+			$(MAKE) -C $(FW_$(R_CHIP)_SRCBASE)/include ; \
+		fi \
+	fi
+
+.PHONY: $(version-pciefd)
+$(version-pciefd): CFLAGS =
+$(version-pciefd):
+	$(eval R_TEMP := $(subst -version-, ,$@))
+	$(eval R_CHIP := $(word 1, $(R_TEMP)))
+	$(eval R_FLAVOR := $(word 2, $(R_TEMP)))
+	@if [ -d $(FW_$(R_CHIP)_SRCBASE)/wl/sys ]; then \
+	  if [ -d $(FW_$(R_CHIP)_OS_PATH) ]; then \
+	    $(MAKE) -C $(FW_$(R_CHIP)_SRCBASE)/include REUSE_VERSION=1; \
+	  fi \
+	fi
+
+.PHONY: pciefd-cleangen
+pciefd-cleangen:
+	@if [ -f $(FW_$(lastword $(PCIEFD_TARGETS_LIST))_SRCBASE)/wl/sys/wlc.c ]; then \
+	  $(RM) -rf  $(PCIEFD_IMAGE_DIR) && \
+	  $(RM) -f  $(PCIEFD_EMBED_HEADER) $(PCIEFD_EMBED_HEADER).tmp.* && \
+	  cp $(PCIEFD_EMBED_HEADER_TEMPLATE) $(PCIEFD_EMBED_HEADER); \
+	  echo "#ifdef BCMEMBEDIMAGE" >> $(PCIEFD_EMBED_HEADER); \
+	fi
+
+ifeq ($(BCA_CPEROUTER),y)
+# get pciefd from $1, rtecdc_router.h
+define wlan_pciefd_from_hdr
+$(shell sed -r -n 's/^#define DLIMAGE_(\S+).*/\1/p' $1 2>/dev/null | sort -u)
+endef
+
+# generate rtecdc_router.h ($2) from template rtecdc_router.h.in ($1) and pciefd list ($3)
+define wlan_make_rtecdc_router_h
+@cp -fv $1 $2
+@echo Add chip id $3 to $2
+@for i in $3; do \
+	echo "#include <rtecdc_$${i}.h>" >> $2; \
+	echo "#define DLIMAGE_$${i}" >> $2; \
+done
+@echo "#endif" >> $2
+endef
+
+ifneq ($(ALREADY_HAVE_RTECDC),)
+STASHED_HDR  := $(ALREADY_HAVE_RTECDC)/rtecdc_router.h
+STASHED_FW   := $(call wlan_pciefd_from_hdr,$(STASHED_HDR))
+BUILD_FW     := $(filter-out $(STASHED_FW),$(PCIEFD_TARGETS_LIST))
+COPY_FW      := $(filter-out $(BUILD_FW),$(PCIEFD_TARGETS_LIST))
+obj-list-build := $(patsubst %,%-obj,$(BUILD_FW))
+obj-pciefd := $(foreach target,$(obj-list-build),$(apply-flavor))
+build-pciefd := $(obj-pciefd)
+else
+build-pciefd := $(obj-pciefd)
+endif
+
+.PHONY: pciefd
+pciefd: pciefd-cleangen $(build-pciefd)
+	$(call wlan_make_rtecdc_router_h,$(PCIEFD_EMBED_HEADER_TEMPLATE),$(PCIEFD_EMBED_HEADER),$(PCIEFD_TARGETS_LIST))
+ifneq ($(strip $(ALREADY_HAVE_RTECDC)),)
+	@mkdir -p $(PCIEFD_IMAGE_DIR)
+	@echo "Copy stashed fw $(COPY_FW) to $(PCIEFD_IMAGE_DIR)"
+	@for i in $(COPY_FW); do \
+		cp -frpv $(ALREADY_HAVE_RTECDC)/$$i $(PCIEFD_IMAGE_DIR)/; \
+	done
+ifneq ($(strip $(BUILD_FW)),)
+	@echo "Stash fw $(BUILD_FW) to $(ALREADY_HAVE_RTECDC)"
+	@for i in $(BUILD_FW); do \
+		if [ -e $(PCIEFD_IMAGE_DIR)/$$i ]; then \
+			rsync -a $(PCIEFD_IMAGE_DIR)/$$i $(ALREADY_HAVE_RTECDC)/; \
+		fi; \
+	done
+	$(call wlan_make_rtecdc_router_h,$(PCIEFD_EMBED_HEADER_TEMPLATE),$(STASHED_HDR).$$PPID,$(STASHED_FW) $(BUILD_FW))
+	@mv -fv $(STASHED_HDR).$$PPID $(STASHED_HDR)
+endif # BUILD_FW
+endif # ALREADY_HAVE_RTECDC
+ifneq ($(RELEASE_DONGLE_FW),)
+	@# for dongle firmware release to save rtecdc_router.h
+	@if [ -f $(PCIEFD_EMBED_HEADER) ]; then \
+		mkdir -p $(FW_RELEASE_DIR)/$(DONGLE_SRC_DIR)/shared && \
+		cp $(PCIEFD_EMBED_HEADER) $(FW_RELEASE_DIR)/$(DONGLE_SRC_DIR)/shared; \
+	fi
+endif # RELEASE_DONGLE_FW
+else # !BCA_CPEROUTER
+pciefd: pciefd-cleangen $(obj-pciefd)
+	@# PCIEFD_EMBED_HEADER expands to '.../dhd/src/shared/rtecdc_router.h'
+	@for i in $(wildcard $(PCIEFD_EMBED_HEADER).tmp.*) ; do \
+		cat $${i} >> $(PCIEFD_EMBED_HEADER); \
+		$(RM) -f $${i}; \
+	done
+	@if [ -f $(PCIEFD_EMBED_HEADER) ]; then echo "#endif" >> $(PCIEFD_EMBED_HEADER); fi
+endif # BCA_CPEROUTER
+
+.PHONY: pciefd-clean
+pciefd-clean: pciefd-cleangen $(clean-pciefd)
+
+.PHONY: pciefd-install
+pciefd-install:
+	# Nothing to be done here
+	@true
+
+.PHONY: pciefd-version
+pciefd-version: $(version-pciefd)
+
+# This comment block must stay at the bottom of the file.
+# Local Variables:
+# mode: makefile-gmake
+# fill-column: 80
+# End:
+#
+# vim: filetype=make sw=2 tw=80 cc=+1 noet

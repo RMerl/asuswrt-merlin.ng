@@ -54,24 +54,35 @@ END_TEST
 
 START_TEST(test_return_functions)
 {
+	void *(*test_ptr)(char*,int,void*,int,char*);
+	bool (*test_bool)(char*,int,void*,int,char*);
+	status_t (*test_status)(char*,int,void*,int,char*);
+	void (*test_void)(char*,int,void*,int,char*);
+
 	ck_assert(return_null() == NULL);
-	ck_assert(return_null("asdf", 5, NULL, 1, "qwer") == NULL);
+	test_ptr = (void*)return_null;
+	ck_assert(test_ptr("asdf", 5, NULL, 1, "qwer") == NULL);
 
 	ck_assert(return_true() == TRUE);
-	ck_assert(return_true("asdf", 5, NULL, 1, "qwer") == TRUE);
+	test_bool = (void*)return_true;
+	ck_assert(test_bool("asdf", 5, NULL, 1, "qwer") == TRUE);
 
 	ck_assert(return_false() == FALSE);
-	ck_assert(return_false("asdf", 5, NULL, 1, "qwer") == FALSE);
+	test_bool = (void*)return_false;
+	ck_assert(test_bool("asdf", 5, NULL, 1, "qwer") == FALSE);
 
 	ck_assert(return_failed() == FAILED);
-	ck_assert(return_failed("asdf", 5, NULL, 1, "qwer") == FAILED);
+	test_status = (void*)return_failed;
+	ck_assert(test_status("asdf", 5, NULL, 1, "qwer") == FAILED);
 
 	ck_assert(return_success() == SUCCESS);
-	ck_assert(return_success("asdf", 5, NULL, 1, "qwer") == SUCCESS);
+	test_status = (void*)return_success;
+	ck_assert(test_status("asdf", 5, NULL, 1, "qwer") == SUCCESS);
 
 	/* just make sure this works */
 	nop();
-	nop("asdf", 5, NULL, 1, "qwer");
+	test_void = (void*)nop;
+	test_void("asdf", 5, NULL, 1, "qwer");
 }
 END_TEST
 
@@ -242,6 +253,26 @@ START_TEST(test_round)
 	ck_assert_int_eq(round_down(3, 4), 0);
 	ck_assert_int_eq(round_down(4, 4), 4);
 	ck_assert_int_eq(round_down(5, 4), 4);
+}
+END_TEST
+
+/*******************************************************************************
+ * ref_get/put
+ */
+
+START_TEST(test_refs)
+{
+	refcount_t r = 0xfffffffe;
+
+	ck_assert_int_eq(ref_cur(&r), 0xfffffffe);
+	ck_assert_int_eq(ref_get(&r), 0xffffffff);
+	ck_assert_int_eq(ref_get_nonzero(&r), 1);
+	ck_assert_int_eq(ref_get_nonzero(&r), 2);
+	ck_assert_int_eq(ref_cur(&r), 2);
+	ck_assert(!ref_put(&r));
+	ck_assert_int_eq(ref_cur(&r), 1);
+	ck_assert(ref_put(&r));
+	ck_assert_int_eq(ref_cur(&r), 0);
 }
 END_TEST
 
@@ -505,6 +536,40 @@ START_TEST(test_memeq_const)
 {
 	ck_assert(memeq_const(memeq_data[_i].a, memeq_data[_i].b,
 						  memeq_data[_i].n) == memeq_data[_i].res);
+}
+END_TEST
+
+/*******************************************************************************
+ * memcpy_cond
+ */
+
+#define MEMCPY_COND_DEF "abcdef"
+static struct {
+	char *a;
+	size_t n;
+	uint8_t cond;
+	char *res;
+} memcpy_cond_data[] = {
+	{NULL, 0, 0, NULL},
+	{NULL, 0, 1, NULL},
+	{"foobar", 6, 0, MEMCPY_COND_DEF},
+	{"foobar", 6, 1, "foobar"},
+	{"foobar", 3, 0, MEMCPY_COND_DEF},
+	{"foobar", 3, 1, "foodef"},
+	{"\0bar", 4, 0, MEMCPY_COND_DEF},
+	{"\0bar", 4, 1, "\0baref"},
+	/* unpredictable results if condition is not 0 or 1 */
+	{"foobar", 6, 5, "bkkfev"},
+};
+
+START_TEST(test_memcpy_cond)
+{
+	char buf[BUF_LEN] = MEMCPY_COND_DEF;
+
+	memcpy_cond(buf, memcpy_cond_data[_i].a, memcpy_cond_data[_i].n,
+				memcpy_cond_data[_i].cond);
+	ck_assert(memeq(buf, memcpy_cond_data[_i].res ?: MEMCPY_COND_DEF,
+					sizeof(MEMCPY_COND_DEF)));
 }
 END_TEST
 
@@ -1094,6 +1159,41 @@ START_TEST(test_mark_from_string)
 END_TEST
 
 /*******************************************************************************
+ * allocate_unique_marks
+ */
+
+static struct {
+	uint32_t in;
+	uint32_t out;
+	uint32_t exp_in;
+	uint32_t exp_out;
+} unique_mark_data[] = {
+	{0, 0, 0, 0 },
+	{42, 42, 42, 42 },
+	{42, 1337, 42, 1337 },
+	/* each call increases the internal counter by 1 or 2*/
+	{MARK_UNIQUE, 42, 1, 42 },
+	{42, MARK_UNIQUE, 42, 2 },
+	{MARK_UNIQUE_DIR, 42, 3, 42 },
+	{42, MARK_UNIQUE_DIR, 42, 4 },
+	{MARK_UNIQUE, MARK_UNIQUE, 5, 5 },
+	{MARK_UNIQUE_DIR, MARK_UNIQUE, 6, 7 },
+	{MARK_UNIQUE, MARK_UNIQUE_DIR, 8, 9 },
+	{MARK_UNIQUE_DIR, MARK_UNIQUE_DIR, 10, 11 },
+};
+
+START_TEST(test_allocate_unique_marks)
+{
+	uint32_t mark_in = unique_mark_data[_i].in,
+			 mark_out = unique_mark_data[_i].out;
+
+	allocate_unique_marks(&mark_in, &mark_out);
+	ck_assert_int_eq(mark_in, unique_mark_data[_i].exp_in);
+	ck_assert_int_eq(mark_out, unique_mark_data[_i].exp_out);
+}
+END_TEST
+
+/*******************************************************************************
  * if_id_from_string
  */
 
@@ -1197,11 +1297,6 @@ static struct {
 	{KEY_ECDSA,  384, { SIGN_ECDSA_WITH_SHA384_DER, SIGN_ECDSA_WITH_SHA512_DER,
 						SIGN_UNKNOWN }},
 	{KEY_ECDSA,  512, { SIGN_ECDSA_WITH_SHA512_DER, SIGN_UNKNOWN }},
-	{KEY_BLISS,  128, { SIGN_BLISS_WITH_SHA2_256, SIGN_BLISS_WITH_SHA2_384,
-						SIGN_BLISS_WITH_SHA2_512, SIGN_UNKNOWN }},
-	{KEY_BLISS,  192, { SIGN_BLISS_WITH_SHA2_384, SIGN_BLISS_WITH_SHA2_512,
-						SIGN_UNKNOWN }},
-	{KEY_BLISS,  256, { SIGN_BLISS_WITH_SHA2_512, SIGN_UNKNOWN }},
 };
 
 START_TEST(test_signature_schemes_for_key)
@@ -1261,6 +1356,10 @@ Suite *utils_suite_create()
 	tcase_add_test(tc, test_round);
 	suite_add_tcase(s, tc);
 
+	tc = tcase_create("refcount");
+	tcase_add_test(tc, test_refs);
+	suite_add_tcase(s, tc);
+
 	tc = tcase_create("string helper");
 	tcase_add_loop_test(tc, test_streq, 0, countof(streq_data));
 	tcase_add_loop_test(tc, test_strneq, 0, countof(strneq_data));
@@ -1279,6 +1378,10 @@ Suite *utils_suite_create()
 	tc = tcase_create("memeq");
 	tcase_add_loop_test(tc, test_memeq, 0, countof(memeq_data));
 	tcase_add_loop_test(tc, test_memeq_const, 0, countof(memeq_data));
+	suite_add_tcase(s, tc);
+
+	tc = tcase_create("memcpy_cond");
+	tcase_add_loop_test(tc, test_memcpy_cond, 0, countof(memcpy_cond_data));
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("memstr");
@@ -1327,6 +1430,10 @@ Suite *utils_suite_create()
 
 	tc = tcase_create("mark_from_string");
 	tcase_add_loop_test(tc, test_mark_from_string, 0, countof(mark_data));
+	suite_add_tcase(s, tc);
+
+	tc = tcase_create("allocate_unique_marks");
+	tcase_add_loop_test(tc, test_allocate_unique_marks, 0, countof(unique_mark_data));
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("if_id_from_string");

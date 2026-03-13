@@ -195,7 +195,7 @@ extern unsigned char *get_wlmacstr_by_unit(char *unit);
 #define DPP_PSK_SAE_AKM	"dpp+psk+sae"
 
 #if defined(RTCONFIG_HND_ROUTER_BE_4916)
-#if defined(WIFI7_SDK_20250122)
+#if defined(WIFI7_SDK_20250122) || defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126)
 // Internal akm value bitflags
 #define HAPD_AKM_OPEN			0x0u
 #define HAPD_AKM_WEP			0x1u
@@ -220,11 +220,88 @@ extern unsigned char *get_wlmacstr_by_unit(char *unit);
 #define HAPD_AKM_PASN			0x10000u
 #endif /* CONFIG_PASN */
 
+#endif /* WIFI7_SDK_20250122 || defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126) */
+#endif	/* RTCONFIG_HND_ROUTER_BE_4916 */
+
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126)
+
+#define HAPD_AKM_HAS_SAE(akm)		((akm) & (HAPD_AKM_WPA3_SAE | HAPD_AKM_WPA3_SAE_FT | \
+						HAPD_AKM_WPA3_SAE_EXT | HAPD_AKM_WPA3_SAE_FT_EXT))
+
+// Security type
+#define	HAPD_SEC_OPEN			0	// Open Security system
+#define	HAPD_SEC_WPA			1	// IEEE 802.11i/D3.0
+#define HAPD_SEC_WPA2			2	// Full  IEEE 802.11i/RSN
+
+// Set of accepted key management algorithms WPA-PSK, WPA-EAP, or both
+#define HAPD_KEY_MGMT_WPA			"WPA-PSK"
+#define HAPD_KEY_MGMT_EAP			"WPA-EAP"
+#define HAPD_KEY_MGMT_WPA_PSK_FT		"WPA-PSK FT-PSK"
+#define HAPD_KEY_MGMT_FT_PSK			"FT-PSK"
+#define HAPD_KEY_MGMT_EAP_FT			"WPA-EAP FT-EAP"
+#define HAPD_KEY_MGMT_WPA_SHA256		"WPA-PSK-SHA256"
+#define HAPD_KEY_MGMT_WPA_SHA256_PSK		"WPA-PSK-SHA256 WPA-PSK"
+#define HAPD_KEY_MGMT_EAP_SHA256		"WPA-EAP-SHA256"
+#define HAPD_KEY_MGMT_EAP_SHA256_FT		"WPA-EAP-SHA256 FT-EAP"
+#define HAPD_KEY_MGMT_SAE			"SAE"
+#define HAPD_KEY_MGMT_SAE_DPP			"SAE DPP"
+#define HAPD_KEY_MGMT_WPA_PSK_SAE		"WPA-PSK SAE"
+#define HAPD_KEY_MGMT_WPA_PSK_SAE_DPP		"WPA-PSK SAE DPP"
+#define HAPD_KEY_MGMT_WPA_SHA256_SAE		"WPA-PSK-SHA256 SAE"
+#define HAPD_KEY_MGMT_WPA_SHA256_SAE_DPP	"WPA-PSK-SHA256 SAE DPP"
+#define HAPD_KEY_MGMT_WPA_FT_PSK_SAE		"WPA-PSK FT-PSK SAE"
+#define HAPD_KEY_MGMT_WPA_FT_SHA256_SAE		"WPA-PSK-SHA256 FT-PSK SAE"
+#define HAPD_KEY_MGMT_FT_SAE			"FT-SAE"
+#define HAPD_KEY_MGMT_OSEN			"OSEN"
+#define HAPD_KEY_MGMT_DPP			"DPP"
+#define HAPD_KEY_MGMT_SUITE_B                   "WPA-EAP-SUITE-B-192"
+#define HAPD_KEY_MGMT_EAP_EAP_SHA256		"WPA-EAP WPA-EAP-SHA256"
+#define HAPD_KEY_MGMT_EAP_FT_EAP_SHA256		"WPA-EAP FT-EAP WPA-EAP-SHA256"
+#define HAPD_KEY_MGMT_OWE			"OWE"
+#define HAPD_KEY_MGMT_SAE_EXT                   "SAE-EXT-KEY"
+#define HAPD_KEY_MGMT_FT_SAE_EXT                "FT-SAE-EXT-KEY"
+#ifdef CONFIG_PASN
+#define HAPD_KEY_MGMT_SAE_PASN			"SAE PASN"
+#define HAPD_KEY_MGMT_SAE_EXT_PASN		"SAE SAE-EXT-KEY PASN"
+#endif /* CONFIG_PASN */
+
 #define HAPD_MFP_OFF			0	// PMF Off
 #define HAPD_MFP_CAP			1	// PMF Capable
 #define HAPD_MFP_REQ			2	// PMF Required
-#endif /* WIFI7_SDK_20250122 */
-#endif	/* RTCONFIG_HND_ROUTER_BE_4916 */
+
+#define	HAPD_CIPHER_SUITE_CCMP		"CCMP"
+#define	HAPD_CIPHER_SUITE_TKIP		"TKIP"
+#define	HAPD_CIPHER_SUITE_SUITE_B	"GCMP-256"
+#define HAPD_CIPHER_SUITE_GCMP_256	"GCMP-256"
+
+// Wps states
+#define	HAPD_WPS_DISABLED		0
+#define	HAPD_WPS_UNCONFIGURED		1
+#define HAPD_WPS_CONFIGURED		2
+
+// Wps configuration methods
+#define HAPD_WPS_CONFIG_LABEL		0x0004	/* Label */
+#define HAPD_WPS_CONFIG_DISPLAY		0x0008	/* Display */
+#define HAPD_WPS_CONFIG_PBC		0x0080	/* Push btn either physical or virtual */
+#define HAPD_WPS_CONFIG_KEYPAD		0x0100	/* Keypad */
+#define HAPD_WPS_CONFIG_VPBC		0x0280	/* Virtual push button */
+#define HAPD_WPS_CONFIG_PHYPBC		0x0480	/* Physical push button */
+#define HAPD_WPS_CONFIG_VPIN		0x2008	/* Virtual display pin */
+#define HAPD_WPS_CONFIG_PHYPIN		0x4008	/* Physical display pin */
+
+#define HAPD_WPS_CONFIG_LABEL_STR	"label "
+#define HAPD_WPS_CONFIG_DISPLAY_STR	"display "
+#define HAPD_WPS_CONFIG_PBC_STR		"push_button "
+#define HAPD_WPS_CONFIG_KEYPAD_STR	"keypad "
+#define HAPD_WPS_CONFIG_VPBC_STR	"virtual_push_button "
+#define HAPD_WPS_CONFIG_PHYPBC_STR	"physical_push_button "
+#define HAPD_WPS_CONFIG_VPIN_STR	"virtual_display "
+#define HAPD_WPS_CONFIG_PHYPIN_STR	"physical_display "
+
+// Wps device pin default value
+#define HAPD_WPS_DEVICE_PIN_DEFAULT_VAL	"12345670"
+#define HAPD_WPS_DEVICE_PIN_LEN		8
+#endif /* defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126) */
 
 // WPS states to update the UI
 typedef enum wlif_wps_ui_status_code_id {
@@ -312,12 +389,19 @@ typedef struct wlif_bss {
 	char nvifname[IFNAMSIZ];	// Nvifname of type wlx, wlx.y etc
 } wlif_bss_t;
 
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126)
+typedef enum wpa_connection_type {
+	WPA_CONNECTION_TYPE_WPS = 0,	/* WPS Onboarding */
+	WPA_CONNECTION_TYPE_DPP = 1	/* DPP Onboarding */
+} wpa_connection_type_t;
+#endif /* WIFI7_SDK_20250506 || defined(WIFI8_SDK_20251126) */
+
 /* Return TRUE if ap is already configured otherwise retuns FALSE */
 bool wl_wlif_does_ap_needs_to_be_configured(char *ifname);
 /* Sets the AP state to configured */
 void wl_wlif_set_ap_as_configured(char *ifname);
 /* Gets the status code from the wps_proc_status nvram value */
-int wl_wlif_get_wps_status_code();
+int wl_wlif_get_wps_status_code(void);
 /* Updates the nvram value of wps_proc_status which is used to update ui */
 void wl_wlif_update_wps_ui(wlif_wps_ui_status_code_id_t idx);
 /* Updates the nvram value of dpp_status which is used to update ui */
@@ -348,6 +432,11 @@ int wl_wlif_map_configure_backhaul_sta_interface(wlif_bss_t *bss, wlif_wps_nw_cr
 int wl_wlif_wps_map_timeout();
 #endif	/* MULTIAP */
 void wl_ascii_str_to_hex_str(char *ascii_str, uint16 ascii_len, char *hex_str, uint16 hex_len);
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126)
+/* Apply the credentials on the supplicants network block based on the network ID */
+void  wl_wlif_apply_creds_to_supplicant(char *ifname, unsigned long int network_id,
+	wpa_connection_type_t connection_type);
+#endif /* WIFI7_SDK_20250506 || defined(WIFI8_SDK_20251126) */
 #ifdef RTCONFIG_HND_ROUTER_AX
 /* Applies DPP credentials to the interface provided in bss */
 int wl_wlif_apply_dpp_creds(wlif_bss_t *bss, wlif_dpp_creds_t *dpp_creds);
@@ -420,6 +509,28 @@ double get_wifi_maxpower(int target_unit);
 #if defined(RTCONFIG_HND_ROUTER_BE_4916)
 extern int wl_wlif_get_wlan_ifnames(char *ret_buf, size_t ret_buf_len, int band_needle);
 #endif	/* RTCONFIG_HND_ROUTER_BE_4916 */
+
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126)
+void hapd_wpasupp_get_security_details_mrsno(char *nv_ifname, int *out_akm, int mrsno, bool rsno,
+	bool rsnop);
+/* Helper fn to derive key_mgmt for hostapd from akm nvram */
+void hapd_wpasupp_get_key_mgmt(char *nv_ifname, int fbt_enabled, int akm, char *key_mgmt);
+/* Helper fn to prepare r0kh string */
+int wl_wlif_prepare_r0kh_string(char *nv_ifname, char *out_val, int out_sz);
+/* Helper fn to prepare r1kh string */
+int wl_wlif_prepare_r1kh_string(char *nv_ifname, char *out_val, int out_sz);
+/* Helper fn to check if wps is possible */
+bool wl_wlif_is_wps_possible(char *nv_ifname);
+/* Helper fn to get the wps state */
+int wl_wlif_get_wps_state(char *nv_ifname, char *out_val, int out_sz);
+/* Helper fn to get wps config method */
+int wl_wlif_get_wpsconfig_method(char *nvname, char *out_val, int out_sz);
+int is_saepk_enabled(char *nv_ifname);
+bool hapd_wpasupp_hex_validate(const char *s);
+int hapd_mfp_conv_fn(char *nv_ifname, char *cfg_arr_nvname, char **ph, char *out, int sz);
+int wpa_supp_key_mgmt_conv_fn(char *nv_ifname, char *cfg_arr_nvname,
+		char **placeholder, char *out_val, int out_sz);
+#endif /* WIFI7_SDK_20250506 || defined(WIFI8_SDK_20251126) */
 
 #if defined(RTCONFIG_HND_ROUTER_BE_4916)
 #define QOSMGMT_LSA_API_VER 3u

@@ -916,6 +916,86 @@
 #endif
 
 
+/**
+ * Prohibit the use of unsafe string functions such as strcpy(), strncpy(),
+ * strcat(), and vsprintf().
+ */
+#ifndef PJ_BAN_UNSAFE_STR_FUNCS
+#   define PJ_BAN_UNSAFE_STR_FUNCS  0
+#endif
+
+/**
+ * Prohibit the use of strcpy() and pj_ansi_strcpy(), use pj_ansi_strxcpy()
+ * instead.
+ */
+#ifndef PJ_BAN_STRCPY
+#   define PJ_BAN_STRCPY            PJ_BAN_UNSAFE_STR_FUNCS
+#endif
+
+/**
+ * Prohibit the use of strncpy() and pj_ansi_strncpy(), use pj_ansi_strxcpy()
+ * instead.
+ */
+#ifndef PJ_BAN_STRNCPY
+#   define PJ_BAN_STRNCPY           PJ_BAN_UNSAFE_STR_FUNCS
+#endif
+
+/**
+ * Prohibit the use of strcat() and pj_ansi_strcat(), use pj_ansi_strxcat()
+ * instead.
+ */
+#ifndef PJ_BAN_STRCAT
+#   define PJ_BAN_STRCAT            PJ_BAN_UNSAFE_STR_FUNCS
+#endif
+
+/**
+ * Prohibit the use of vsprintf() and pj_ansi_vsprintf(),
+ * use pj_ansi_vsnprintf() instead.
+ */
+#ifndef PJ_BAN_VSPRINTF
+#   define PJ_BAN_VSPRINTF          PJ_BAN_UNSAFE_STR_FUNCS
+#endif
+
+/**
+ * Prohibit the use of unsafe string functions such as strcpy(), strncpy(),
+ * strcat(), and vsprintf().
+ */
+#ifndef PJ_BAN_UNSAFE_STR_FUNCS
+#   define PJ_BAN_UNSAFE_STR_FUNCS  0
+#endif
+
+/**
+ * Prohibit the use of strcpy() and pj_ansi_strcpy(), use pj_ansi_strxcpy()
+ * instead.
+ */
+#ifndef PJ_BAN_STRCPY
+#   define PJ_BAN_STRCPY            PJ_BAN_UNSAFE_STR_FUNCS
+#endif
+
+/**
+ * Prohibit the use of strncpy() and pj_ansi_strncpy(), use pj_ansi_strxcpy()
+ * instead.
+ */
+#ifndef PJ_BAN_STRNCPY
+#   define PJ_BAN_STRNCPY           PJ_BAN_UNSAFE_STR_FUNCS
+#endif
+
+/**
+ * Prohibit the use of strcat() and pj_ansi_strcat(), use pj_ansi_strxcat()
+ * instead.
+ */
+#ifndef PJ_BAN_STRCAT
+#   define PJ_BAN_STRCAT            PJ_BAN_UNSAFE_STR_FUNCS
+#endif
+
+/**
+ * Prohibit the use of vsprintf() and pj_ansi_vsprintf(),
+ * use pj_ansi_vsnprintf() instead.
+ */
+#ifndef PJ_BAN_VSPRINTF
+#   define PJ_BAN_VSPRINTF          PJ_BAN_UNSAFE_STR_FUNCS
+#endif
+
 /*
  * Types of QoS backend implementation.
  */

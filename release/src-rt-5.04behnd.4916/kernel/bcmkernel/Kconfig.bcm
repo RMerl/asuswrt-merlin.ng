@@ -2382,6 +2382,10 @@ config BCM_PHY_XPHY
 	depends on BCM_SELECTIVE_PHYS
 	default n
 
+config BCM_PHY_COMBO
+	bool "Combo PHY Support"
+	default n
+
 config BCM_MACSEC
 	bool "MACsec HW offload support"
 	default n

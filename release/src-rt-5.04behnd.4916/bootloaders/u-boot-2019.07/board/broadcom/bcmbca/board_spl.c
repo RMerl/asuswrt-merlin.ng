@@ -394,7 +394,7 @@ void PowerCLEDOn(void)
 }
 #endif
 
-#if defined(RTBE96U) || defined(GTBE96) || defined(GTBE98) || defined(GTBE98PRO) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(RTBE82M) || defined(RTBE86U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE88U) || defined(GT7)
+#if defined(RTBE96U) || defined(GTBE96) || defined(GTBE98) || defined(GTBE98PRO) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(RTBE82M) || defined(RTBE86U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE88U) || defined(GT7) || defined(GS7_PRO_MAX)
 void PowerLEDOn(void)
 {
     volatile uint32_t *GPIO_DIR = (void *)(0xff800500);
@@ -404,7 +404,7 @@ void PowerLEDOn(void)
     volatile uint32_t *reg_gpio_dir;
     volatile uint32_t *reg_gpio_data;
     uint32_t val32;
-#if defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+#if defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GS7_PRO_MAX)
     int gpio = 10;
 #elif defined(RTBE82M)
     int gpio = 7;
@@ -565,7 +565,7 @@ void board_init_f(ulong dummy)
 #if defined(XD4PRO) || defined(XT8PRO) || defined(BT12) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(BM68) || defined(XT8_V2) || defined(ET8PRO) || defined(ET8_V2)
 	PowerCLEDOn();
 #endif
-#if defined(RTBE96U) || defined(GTBE96) || defined(GTBE98) || defined(GTBE98PRO) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(RTBE82M) || defined(RTBE86U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE88U) || defined(GT7)
+#if defined(RTBE96U) || defined(GTBE96) || defined(GTBE98) || defined(GTBE98PRO) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(RTBE82M) || defined(RTBE86U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE88U) || defined(GT7) || defined(GS7_PRO_MAX)
 	PowerLEDOn();
 #endif
 #if defined(GTBE19000AI) || defined(GTBE96_AI)

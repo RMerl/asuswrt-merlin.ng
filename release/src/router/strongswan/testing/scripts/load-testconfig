@@ -19,6 +19,8 @@ DIR=$(dirname `readlink -f $0`)
 . $DIR/function.sh
 SSHCONF="-F $DIR/../ssh_config"
 
+set -e
+
 ##########################################################################
 # load-testconfig requires a testname as an argument
 #
@@ -133,16 +135,20 @@ done
 source $TESTDIR/test.conf
 
 ##########################################################################
-# copy test specific configurations to uml hosts
+# copy test specific configurations to hosts
 #
+
+WAIT_FOR=()
 
 if [ -d $TESTDIR/hosts ]
 then
 	for host in `ls $TESTDIR/hosts`
 	do
 		eval HOSTLOGIN=root@\$ipv4_${host}
-		scp $SSHCONF -r $TESTDIR/hosts/$host/etc $HOSTLOGIN:/ > /dev/null 2>&1
+		tar -chf - -C $TESTDIR/hosts/$host etc | ssh $SSHCONF $HOSTLOGIN 'tar --overwrite -xhmf - -C /' &
+		WAIT_FOR+=($!)
 	done
+	wait ${WAIT_FOR[@]}
 fi
 
 

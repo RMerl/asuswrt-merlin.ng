@@ -230,7 +230,7 @@ ipsec_event_relay_t *ipsec_event_relay_create()
 
 	lib->processor->queue_job(lib->processor,
 		(job_t*)callback_job_create((callback_job_cb_t)handle_events, this,
-			NULL, (callback_job_cancel_t)return_false));
+			NULL, callback_job_cancel_thread));
 
 	return &this->public;
 }

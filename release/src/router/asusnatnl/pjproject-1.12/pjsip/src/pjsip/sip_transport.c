@@ -259,7 +259,8 @@ PJ_DEF(pj_status_t) pjsip_transport_register_type( unsigned tp_flag,
 
     transport_names[i].type = (pjsip_transport_type_e)i;
     transport_names[i].port = (pj_uint16_t)def_port;
-    pj_ansi_strcpy(transport_names[i].name_buf, tp_name);
+    pj_ansi_strxcpy(transport_names[i].name_buf, tp_name,
+                    sizeof(transport_names[i].name_buf));
     transport_names[i].name = pj_str(transport_names[i].name_buf);
     transport_names[i].flag = tp_flag;
 
@@ -604,7 +605,7 @@ PJ_DEF(char*) pjsip_rx_data_get_info(pjsip_rx_data *rdata)
     if (rdata->msg_info.info)
 	return rdata->msg_info.info;
 
-    pj_ansi_strcpy(obj_name, "rdata");
+    pj_ansi_strxcpy(obj_name, "rdata", sizeof(obj_name));
     pj_ansi_snprintf(obj_name+5, sizeof(obj_name)-5, "%p", rdata);
 
     rdata->msg_info.info = get_msg_info(rdata->tp_info.pool, obj_name,
@@ -991,6 +992,7 @@ static pj_status_t destroy_transport( pjsip_tpmgr *mgr,
 	pj_hash_set(NULL, mgr->table, &key2, key_len, hval, NULL);
 
     pj_lock_release(mgr->lock);
+    pj_lock_release(tp->lock);
 
     /* Destroy. */
     return tp->destroy(tp);
@@ -1014,8 +1016,8 @@ PJ_DEF(pj_status_t) pjsip_transport_shutdown(pjsip_transport *tp)
 
     /* Do nothing if transport is being shutdown already */
     if (tp->is_shutdown) {
-	pj_lock_release(tp->lock);
 	pj_lock_release(mgr->lock);
+	pj_lock_release(tp->lock);
 	return PJ_SUCCESS;
     }
 
@@ -1034,8 +1036,8 @@ PJ_DEF(pj_status_t) pjsip_transport_shutdown(pjsip_transport *tp)
 	pjsip_transport_dec_ref(tp);
     }
 
-    pj_lock_release(tp->lock);
     pj_lock_release(mgr->lock);
+    pj_lock_release(tp->lock);
 
     return status;
 }
@@ -1353,6 +1355,8 @@ PJ_DEF(pj_status_t) pjsip_tpmgr_destroy( pjsip_tpmgr *mgr )
 	PJ_LOG(3,(THIS_FILE, "Warning: %d transmit buffer(s) not freed!",
 		  pj_atomic_get(mgr->tdata_counter)));
     }
+    
+    pj_atomic_destroy(mgr->tdata_counter);
 #endif
 
     return PJ_SUCCESS;
@@ -1587,6 +1591,7 @@ PJ_DEF(pj_status_t) pjsip_tpmgr_acquire_transport(pjsip_tpmgr *mgr,
 					  NULL, tp);
 }
 
+#if 0
 static void dump_bin(const char *buf, unsigned len)
 {
 	unsigned i;
@@ -1609,6 +1614,7 @@ static void dump_bin(const char *buf, unsigned len)
 	}
 	PJ_LOG(3,(THIS_FILE, "end dump"));
 }
+#endif
 
 /*
  * pjsip_tpmgr_acquire_transport2()

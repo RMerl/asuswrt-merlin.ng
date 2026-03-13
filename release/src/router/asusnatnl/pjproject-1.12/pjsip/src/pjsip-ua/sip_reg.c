@@ -793,6 +793,9 @@ static void schedule_registration ( pjsip_regc *regc, pj_int32_t expiration )
     if (regc->auto_reg && expiration > 0) {
         pj_time_val delay = { 0, 0};
 
+        pj_timer_heap_cancel_if_active(pjsip_endpt_get_timer_heap(regc->endpt),
+                                       &regc->timer, 0);
+
         delay.sec = expiration - regc->delay_before_refresh;
         if (regc->expires != PJSIP_REGC_EXPIRATION_NOT_SPECIFIED && 
             delay.sec > (pj_int32_t)regc->expires) 
@@ -820,6 +823,8 @@ pjsip_regc_set_delay_before_refresh( pjsip_regc *regc,
     if (delay > regc->expires)
         return PJ_ETOOBIG;
 
+    pj_lock_acquire(regc->lock);
+
     if (regc->delay_before_refresh != delay)
     {
         regc->delay_before_refresh = delay;
@@ -833,6 +838,8 @@ pjsip_regc_set_delay_before_refresh( pjsip_regc *regc,
             schedule_registration(regc, regc->expires);
         }
     }
+
+    pj_lock_release(regc->lock);
 
     return PJ_SUCCESS;
 }

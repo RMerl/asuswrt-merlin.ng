@@ -1,8 +1,6 @@
 #ifndef __SM_H__
 #define __SM_H__
 
-#include <shared.h>
-
 #define SM_DEBUG_FILE	"/tmp/SM_DEBUG"
 
 #define NMP_CONV_TYPE_FILE			"/usr/networkmap/nmp_conv_type.js"

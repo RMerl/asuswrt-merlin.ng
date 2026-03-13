@@ -71,7 +71,6 @@ METHOD(plugin_t, get_features, int,
 				PLUGIN_SDEPEND(PRIVKEY, KEY_RSA),
 				PLUGIN_SDEPEND(PRIVKEY, KEY_ECDSA),
 				PLUGIN_SDEPEND(PRIVKEY, KEY_DSA),
-				PLUGIN_SDEPEND(PRIVKEY, KEY_BLISS),
 				PLUGIN_SDEPEND(PRIVKEY, KEY_ED25519),
 				PLUGIN_SDEPEND(PRIVKEY, KEY_ED448),
 				PLUGIN_SDEPEND(CERT_DECODE, CERT_ANY),
@@ -93,7 +92,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *stroke_plugin_create()
+PLUGIN_DEFINE(stroke)
 {
 	private_stroke_plugin_t *this;
 

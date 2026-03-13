@@ -24,12 +24,14 @@
 #define PRELINK_LIST_JSON_PATH	"/tmp/prelink.json"
 #define UNKNOWN_MODEL_NAME	"Unknown"
 #ifdef ONBOARDING_VIA_VIF
-#define TIMEOUT_FOR_VIF_CHECK		60	//sec
+#define TIMEOUT_FOR_VIF_CHECK		15	//sec
 #define TIMEOUT_CONFIG_SYNC		60	//sec
 #endif
 #ifdef BCM_BSD
 #define STOP_BSD_STATUS_PATH	"/tmp/bsdstatus"
 #endif
+#define ONBOARDING_VERSION		1
+#define INVALID_RSSI		-100
 
 enum onboardingType {
 	OB_TYPE_OFF = 1,
@@ -70,6 +72,8 @@ enum onboardingFailResult {
 #ifdef ONBOARDING_VIA_VIF
 	OB_VIF_CHECK_FAIL = 9,		/* fail for vif check */
 #endif
+	OB_WPS_WRONG_OB_BAND = 10,		/* fail for wps wrong ob band */
+	OB_GET_MAC_FAIL = 11,		/* fail for get mac */
 	OB_FAIL_MAX
 };
 
@@ -99,11 +103,16 @@ enum vsieType {
 #if defined(RTCONFIG_AMAS_WDS) && defined(RTCONFIG_BHCOST_OPT)
 	VSIE_TYPE_WDS =23,
 #endif
+	VSIE_TYPE_OB_VERSION = 24,
+	VSIE_TYPE_BAND_INDEX = 25,
+	VSIE_TYPE_CHANNEL = 26,
 	VSIE_TYPE_MISC_INFO = 27,
 	VSIE_TYPE_MLO = 28,
 	VSIE_TYPE_MLO_BAND = 29,
 	VSIE_TYPE_MAC = 30,
 	VSIE_TYPE_AP_FOLLOW_MAC = 31,
+	VSIE_TYPE_5G_OB_BAND = 32,
+	VSIE_TYPE_5G_CHANNEL_LIST = 33,
 	VSIE_TYPE_MAX
 };
 
@@ -147,6 +156,7 @@ extern void cm_updatePrelinkStatus(char *reMac, int status);
 extern void update_vsie_info();
 #ifdef ONBOARDING_VIA_VIF
 extern int cm_checkOnboardingViaVif(char *mac);
+extern int cm_checkOnboardingVifCapability(char *mac, int bandIndex);
 extern int cm_waitOnboardingVifReady(char *mac);
 extern void *cm_upOnboardingVif(void *args);
 extern void cm_computeVifDownTimeout(int rTime, int cTimeout, int tTimeout);
@@ -154,6 +164,11 @@ extern void cm_updateVifUpStatus(int status);
 extern int cm_obVifDownUp(int action);
 #endif
 extern char *cm_getNewReModelName(char *reMac, char *newReMac, char *modelName, int modelNameLen);
+extern char *cm_getObWlPrefix(char *prefix, int prefixLen);
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+extern int cm_getSuppObBandIndex();
+extern void cm_getExec5gObBandIndex(char *obViaMac, int *dutBandIndex, int *newDutBandIndex, int newDut5gNum);
+#endif
 
 #endif /* __CFG_ONBOARDING_H__ */
 /* End of cfg_onboarding.h */

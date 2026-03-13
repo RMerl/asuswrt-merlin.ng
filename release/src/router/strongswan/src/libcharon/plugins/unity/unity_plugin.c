@@ -104,7 +104,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *unity_plugin_create()
+PLUGIN_DEFINE(unity)
 {
 	private_unity_plugin_t *this;
 

@@ -38,6 +38,7 @@
 #define WEVENT_GENERIC_MSG	 "{\""WEVENT_PREFIX"\":{\""EVENT_ID"\":\"%d\"}}"
 #define WEVENT_MAC_IFNAME_MSG	 "{\""WEVENT_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""MAC_ADDR"\":\"%s\",\""IF_NAME"\":\"%s\"}}"
 #define WEVENT_VSIE_MSG	 "{\""WEVENT_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""VSIE"\":\"%s\"}}"
+#define WEVENT_VSIE_IFNAME_MSG	 "{\""WEVENT_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""VSIE"\":\"%s\",\""IF_NAME"\":\"%s\"}}"
 #define HTTPD_GENERIC_MSG	 "{\""HTTPD_PREFIX"\":{\""EVENT_ID"\":\"%d\"}}"
 #define HTTPD_SLAVE_MSG	"{\""HTTPD_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""SLAVE_MAC"\":\"%s\"}}"
 #define HTTPD_SLAVE_LIST_MSG	"{\""HTTPD_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""SLAVE_MAC"\":%s}}"

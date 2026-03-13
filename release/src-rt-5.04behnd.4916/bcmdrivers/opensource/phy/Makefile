@@ -556,6 +556,10 @@ ifeq ($(strip ${BRCM_CHIP}),6766)
     ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), GT7))
     EXTRA_CFLAGS += -DCONFIG_GT7
     endif
+
+    ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), GS7_PRO_MAX))
+    EXTRA_CFLAGS += -DCONFIG_GS7_PRO_MAX
+    endif
 endif
 
 ifeq ($(strip ${BRCM_CHIP}),6764)

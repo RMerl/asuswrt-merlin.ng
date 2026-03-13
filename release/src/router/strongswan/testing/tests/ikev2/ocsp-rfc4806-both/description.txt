@@ -1,0 +1,15 @@
+By setting <b>revocation = strict</b> in swanctl.conf, a <b>strict</b> CRL policy
+is enforced on both roadwarrior <b>carol</b> and gateway <b>moon</b>.
+<p/>
+Based on RFC 4806, both <b>carol</b> and <b>moon</b> send an OCSP request via an
+IKEv2 CERTREQ payload to their peer which in turn requests online status information
+on its own certificate from the OCSP server <b>winnetou</b> on behalf of the other
+peer. The OCSP server <b>winnetou</b> possesses an OCSP signer certificate containing
+an <b>OCSPSigning</b> Extended Key Usage (EKU) flag issued by the strongSwan CA.
+<p/>
+<b>carol</b>'s certificate includes an <b>OCSP URI</b> in an authority information
+access extension pointing to <b>winnetou</b>. Therefore no special authorities
+section information is needed in carol's swanctl.conf.
+<p/>
+<b>carol</b> can successfully initiate an IPsec connection to <b>moon</b> since
+the status of both certificates is <b>good</b>.

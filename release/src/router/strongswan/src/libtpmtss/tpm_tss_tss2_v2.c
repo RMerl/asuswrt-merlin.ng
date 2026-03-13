@@ -814,7 +814,7 @@ static bool init_pcr_selection(private_tpm_tss_tss2_t *this, uint32_t pcrs,
 	/* initialize the PCR Selection structure,*/
 	pcr_sel->count = 1;
 	pcr_sel->pcrSelections[0].hash = hash_alg_to_tpm_alg_id(alg);
-;
+
 	pcr_sel->pcrSelections[0].sizeofSelect = 3;
 	pcr_sel->pcrSelections[0].pcrSelect[0] = 0;
 	pcr_sel->pcrSelections[0].pcrSelect[1] = 0;

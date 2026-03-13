@@ -157,7 +157,7 @@ static void stream_on_destroy(void *obj)
 {
 	natnl_stream *stream = (natnl_stream*)obj;
 	pj_pool_t *pool;
-	recv_buff *rb = NULL;
+	//recv_buff *rb = NULL;
 
 	// Free the data are still in the list.
 	/*while (!pj_list_empty(&stream->rbuff)) {

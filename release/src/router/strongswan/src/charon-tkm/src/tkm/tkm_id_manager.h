@@ -34,8 +34,8 @@ typedef enum tkm_context_kind_t tkm_context_kind_t;
 enum tkm_context_kind_t {
 	/** Nonce context */
 	TKM_CTX_NONCE,
-	/** Diffie-Hellman context */
-	TKM_CTX_DH,
+	/** Key Exchange context */
+	TKM_CTX_KE,
 	/** Certificate chain context */
 	TKM_CTX_CC,
 	/** IKE SA context */
@@ -44,6 +44,8 @@ enum tkm_context_kind_t {
 	TKM_CTX_AE,
 	/** ESP SA context */
 	TKM_CTX_ESA,
+	/** Blob context */
+	TKM_CTX_BLOB,
 
 	/** helper to determine the number of elements in this enum */
 	TKM_CTX_MAX,

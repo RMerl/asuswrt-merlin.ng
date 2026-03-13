@@ -97,7 +97,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *xauth_pam_plugin_create()
+PLUGIN_DEFINE(xauth_pam)
 {
 	private_xauth_pam_plugin_t *this;
 

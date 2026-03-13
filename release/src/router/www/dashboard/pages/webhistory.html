@@ -7,8 +7,8 @@
         <link rel="stylesheet" href="css/clients.css" />
     </head>
     <body>
-        <div class="d-flex align-items-center">
-            <div class="page-title py-3"><#Traffic_Analyzer#></div>
+        <div class="d-flex align-items-center mb-3">
+            <div class="page-title"><#Traffic_Analyzer#></div>
             <div role="icon" class="icon-size-24 icon-add-chart ms-3" onclick="addCard()"></div>
         </div>
         <div class="row">
@@ -117,15 +117,15 @@
         </div>
 
         <script>
-            let webHsArray = [];
-            let pageCount = 1;
+            var webHsArray = [];
+            var pageCount = 1;
 
-            let _time = 0;
+            var _time = 0;
             (function init() {
                 getHistoryData();
             })();
 
-            let time = new Date().getTime();
+            var time = new Date().getTime();
             function getHistoryData() {
                 const MAX_QUERY_LIMIT = 200;
                 $.ajax({

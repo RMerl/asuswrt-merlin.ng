@@ -230,6 +230,9 @@ METHOD(cert_payload_t, get_cert, certificate_t*,
 		case ENC_CRL:
 			type = CERT_X509_CRL;
 			break;
+		case ENC_OCSP_CONTENT:
+			type = CERT_X509_OCSP_RESPONSE;
+			break;
 		default:
 			return NULL;
 	}
@@ -338,6 +341,9 @@ cert_payload_t *cert_payload_create_from_cert(payload_type_t type,
 			break;
 		case CERT_X509_AC:
 			this->encoding = ENC_X509_ATTRIBUTE;
+			break;
+		case CERT_X509_OCSP_RESPONSE:
+			this->encoding = ENC_OCSP_CONTENT;
 			break;
 		default:
 			DBG1(DBG_ENC, "embedding %N certificate in payload failed",

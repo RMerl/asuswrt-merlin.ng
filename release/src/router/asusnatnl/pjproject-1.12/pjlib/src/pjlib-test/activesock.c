@@ -99,7 +99,6 @@ static pj_status_t udp_echo_srv_create(pj_pool_t *pool,
 				       struct udp_echo_srv **p_srv)
 {
     struct udp_echo_srv *srv;
-    pj_sock_t sock_fd = PJ_INVALID_SOCKET;
     pj_sockaddr addr;
     int addr_len;
     pj_activesock_cb activesock_cb;
@@ -117,7 +116,6 @@ static pj_status_t udp_echo_srv_create(pj_pool_t *pool,
     status = pj_activesock_create_udp(pool, &addr, NULL, ioqueue, &activesock_cb, 
 				      srv, &srv->asock, &addr);
     if (status != PJ_SUCCESS) {
-	pj_sock_close(sock_fd);
 	udp_echo_err("pj_activesock_create()", status);
 	return status;
     }
@@ -135,6 +133,7 @@ static pj_status_t udp_echo_srv_create(pj_pool_t *pool,
 
 
     *p_srv = srv;
+	(void) addr_len;
     return PJ_SUCCESS;
 }
 

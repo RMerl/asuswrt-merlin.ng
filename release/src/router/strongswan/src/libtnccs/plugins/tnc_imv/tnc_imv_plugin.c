@@ -65,7 +65,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *tnc_imv_plugin_create()
+PLUGIN_DEFINE(tnc_imv)
 {
 	private_tnc_imv_plugin_t *this;
 

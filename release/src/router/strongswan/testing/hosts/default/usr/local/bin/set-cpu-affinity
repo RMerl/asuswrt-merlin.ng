@@ -1,0 +1,28 @@
+#!/bin/bash
+#
+# Sets the CPU affiniy of the IRQ handling inbound messages on the given
+# network interface
+
+IFACE=$1
+AFFINITY=$2
+
+if [ -z "$IFACE" -o -z "$AFFINITY" ]
+then
+	exit 1
+fi
+
+PCI_ADDR=$(ethtool -i ${IFACE} | grep bus-info | sed -e 's/bus-info: //')
+if [ -z "$PCI_ADDR" ]
+then
+	exit 2
+fi
+
+IRQ=$(grep "MSIX-${PCI_ADDR}.*input" /proc/interrupts | awk -F ':' '{print $1}' | awk '{print $1}')
+if [ -z "$IRQ" ]
+then
+	exit 3
+fi
+
+PREV=$(cat /proc/irq/${IRQ}/smp_affinity_list)
+echo "Setting affinity for IRQ ${IRQ} of ${IFACE}@${PCI_ADDR} to ${AFFINITY}, was ${PREV}"
+echo ${AFFINITY} > /proc/irq/${IRQ}/smp_affinity_list

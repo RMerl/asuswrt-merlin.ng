@@ -124,36 +124,36 @@ int bdmf_sg_csum(struct sk_buff *skb, runner_sg_desc_t *sg_desc_p)
     {
         case IPPROTO_TCP:
         {
-            struct tcphdr *th= hdrs.l4hdr;
-
-            /* pseudo hdr fix portion (w/o length) */
-            th->check = bcm_gso_l4_csum((struct gso_hdrs *)&hdrs, 0, IPPROTO_TCP, 0);
-            sg_desc_p->pseudo_hdr_csum = th->check ^ 0xFFFF;
-            BDMF_TRACE_DBG("Psuedo_hdr_csum: 0x%02x, in le", sg_desc_p->pseudo_hdr_csum);
+            /* Linux sets th->check = ~pseudo_header for CHECKSUM_PARTIAL.
+             * Don't modify the packet (important for cloned SKBs).
+             * Set pseudo_hdr_csum = 0 and let hardware calculate over existing packet.
+             * 
+             * Hardware: result = 0 + checksum(L4_hdr_with_csum=~pseudo + payload)
+             *                  = checksum(L4_hdr_with_csum=~pseudo + payload)
+             * 
+             * When hardware writes result to checksum field and recalculates:
+             * final = pseudo + checksum(L4_hdr_with_csum=result + payload)
+             * This should work out correctly.
+             */
+            sg_desc_p->pseudo_hdr_csum = 0;
             sg_desc_p->csum_sop = hdrs.l4hdr - hdrs.ethhdr;
             sg_desc_p->csum_offset = OFFSETOF(tcphdr, check);
             sg_desc_p->is_csum_offload = 1;
-
-            /* insert len at check filed as it was not included in pseudo_hdr calculation */
-            th->check = htons(hdrs.data_payload_len + hdrs.l4hdrlen);
+            BDMF_TRACE_DBG("TCP csum offload: pseudo_hdr_csum 0x%04x, csum_sop %u\n",
+                          sg_desc_p->pseudo_hdr_csum, sg_desc_p->csum_sop);
             break;
         }
 
         case IPPROTO_UDP:
         {
-            struct udphdr *uh= hdrs.l4hdr;
-
-            /* pseudo hdr fix portion (w/o length) */
-            uh->check = bcm_gso_l4_csum((struct gso_hdrs *)&hdrs, 0, IPPROTO_UDP, 0);
-            sg_desc_p->pseudo_hdr_csum = uh->check ^ 0xFFFF;
-            BDMF_TRACE_DBG("Psuedo_hdr_csum: 0x%02x, in le", sg_desc_p->pseudo_hdr_csum);
+            /* Same for UDP - set pseudo_hdr_csum = 0, don't modify packet */
+            sg_desc_p->pseudo_hdr_csum = 0;
             sg_desc_p->csum_sop = hdrs.l4hdr - hdrs.ethhdr;
             sg_desc_p->csum_offset = OFFSETOF(udphdr, check);
             sg_desc_p->is_csum_offload = 1;
             sg_desc_p->is_udp = 1;
-
-            /* insert len at check filed as it was not included in pseudo_hdr calculation */
-            uh->check = htons(hdrs.data_payload_len + hdrs.l4hdrlen);
+            BDMF_TRACE_DBG("UDP csum offload: pseudo_hdr_csum 0x%04x, csum_sop %u\n",
+                          sg_desc_p->pseudo_hdr_csum, sg_desc_p->csum_sop);
             break;
         }
 

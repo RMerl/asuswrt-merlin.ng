@@ -88,6 +88,16 @@ then
   $CERTUTIL -d . -A -t "CT,," -n "Old Sub CA" -i $CERTDIR/old/$SUBCA \
             -f passwd.txt
 fi
+if [ -s $CERTDIR/older/$ROOTCA ]
+then
+  $CERTUTIL -d . -A -t "CT,," -n "Older Root CA" -i $CERTDIR/older/$ROOTCA \
+            -f passwd.txt
+fi
+if [ -s $CERTDIR/older/$SUBCA ]
+then
+  $CERTUTIL -d . -A -t "CT,," -n "Older Sub CA" -i $CERTDIR/older/$SUBCA \
+            -f passwd.txt
+fi
  
 ##############################################################################
 # Move the generated credentials to the correct place and delete the build dir 

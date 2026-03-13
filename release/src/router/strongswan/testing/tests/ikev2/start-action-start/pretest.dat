@@ -1,0 +1,6 @@
+moon::iptables-restore < /etc/iptables.rules
+sun::iptables-restore < /etc/iptables.rules
+sun::systemctl start strongswan
+sun::expect-connection four-start-child
+moon::systemctl start strongswan
+moon::sleep 3

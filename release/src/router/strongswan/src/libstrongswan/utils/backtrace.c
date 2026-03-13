@@ -870,7 +870,7 @@ static inline int backtrace_win(void **frames, int count)
 	HANDLE process, thread;
 	DWORD machine;
 	CONTEXT context;
-	int got = 0;
+	volatile int got = 0;
 
 	memset(&frame, 0, sizeof(frame));
 	memset(&context, 0, sizeof(context));

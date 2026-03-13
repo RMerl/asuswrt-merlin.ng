@@ -70,7 +70,7 @@ METHOD(options_t, from, bool,
 	char **newargv;
 	chunk_t src, line, token;
 	bool good = TRUE;
-	int linepos = 0;
+	int linepos DBG_UNUSED = 0;
 	FILE *fd;
 
 	/* avoid endless loops with recursive --optionsfrom arguments */

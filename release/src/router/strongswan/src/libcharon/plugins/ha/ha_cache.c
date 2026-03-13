@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2015-2024 Tobias Brunner
  * Copyright (C) 2010 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -70,9 +71,9 @@ struct private_ha_cache_t {
 typedef struct {
 	/* segment this entry is associate to */
 	u_int segment;
-	/* ADD message */
-	ha_message_t *add;
-	/* list of updates UPDATE message */
+	/* list of ADD messages */
+	linked_list_t *add;
+	/* list of UPDATE messages */
 	linked_list_t *updates;
 	/* last initiator mid */
 	ha_message_t *midi;
@@ -83,27 +84,27 @@ typedef struct {
 } entry_t;
 
 /**
- * Create a entry with an add message
+ * Create a entry
  */
-static entry_t *entry_create(ha_message_t *add)
+static entry_t *entry_create()
 {
 	entry_t *entry;
 
 	INIT(entry,
-		.add = add,
+		.add = linked_list_create(),
 		.updates = linked_list_create(),
 	);
 	return entry;
 }
 
 /**
- * clean up a entry
+ * Clean up a entry
  */
 static void entry_destroy(entry_t *entry)
 {
 	entry->updates->destroy_offset(entry->updates,
-									offsetof(ha_message_t, destroy));
-	entry->add->destroy(entry->add);
+								   offsetof(ha_message_t, destroy));
+	entry->add->destroy_offset(entry->add, offsetof(ha_message_t, destroy));
 	DESTROY_IF(entry->midi);
 	DESTROY_IF(entry->midr);
 	DESTROY_IF(entry->iv);
@@ -119,12 +120,13 @@ METHOD(ha_cache_t, cache, void,
 	switch (message->get_type(message))
 	{
 		case HA_IKE_ADD:
-			entry = entry_create(message);
-			entry = this->cache->put(this->cache, ike_sa, entry);
-			if (entry)
+			entry = this->cache->get(this->cache, ike_sa);
+			if (!entry)
 			{
-				entry_destroy(entry);
+				entry = entry_create();
+				this->cache->put(this->cache, ike_sa, entry);
 			}
+			entry->add->insert_last(entry->add, message);
 			break;
 		case HA_IKE_UPDATE:
 			entry = this->cache->get(this->cache, ike_sa);
@@ -305,7 +307,7 @@ static void rekey_segment(private_ha_cache_t *this, u_int segment)
 METHOD(ha_cache_t, resync, void,
 	private_ha_cache_t *this, u_int segment)
 {
-	enumerator_t *enumerator, *updates;
+	enumerator_t *enumerator, *messages;
 	ike_sa_t *ike_sa;
 	entry_t *entry;
 	ha_message_t *message;
@@ -318,13 +320,18 @@ METHOD(ha_cache_t, resync, void,
 	{
 		if (entry->segment == segment)
 		{
-			this->socket->push(this->socket, entry->add);
-			updates = entry->updates->create_enumerator(entry->updates);
-			while (updates->enumerate(updates, &message))
+			messages = entry->add->create_enumerator(entry->add);
+			while (messages->enumerate(messages, &message))
 			{
 				this->socket->push(this->socket, message);
 			}
-			updates->destroy(updates);
+			messages->destroy(messages);
+			messages = entry->updates->create_enumerator(entry->updates);
+			while (messages->enumerate(messages, &message))
+			{
+				this->socket->push(this->socket, message);
+			}
+			messages->destroy(messages);
 			if (entry->midi)
 			{
 				this->socket->push(this->socket, entry->midi);

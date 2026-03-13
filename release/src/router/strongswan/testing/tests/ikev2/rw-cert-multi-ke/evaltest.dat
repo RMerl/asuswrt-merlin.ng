@@ -1,0 +1,32 @@
+carol::swanctl --list-sas --raw 2> /dev/null::home.*version=2 state=ESTABLISHED local-host=192.168.0.100 local-port=4500 local-id=carol@strongswan.org remote-host=192.168.0.1 remote-port=4500 remote-id=moon.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=MODP_2048 ake1=CURVE_25519.*child-sas.*home.*state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[192.168.0.100/32] remote-ts=\[10.1.0.0/16]::YES
+dave:: swanctl --list-sas --raw 2> /dev/null::home.*version=2 state=ESTABLISHED local-host=192.168.0.200 local-port=4500 local-id=dave@strongswan.org remote-host=192.168.0.1 remote-port=4500 remote-id=moon.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=MODP_3072 ake1=ECP_384.*child-sas.*home.*state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[192.168.0.200/32] remote-ts=\[10.1.0.0/16]::YES
+moon:: swanctl --list-sas --ike-id 1 --raw 2> /dev/null::rw.*version=2 state=ESTABLISHED local-host=192.168.0.1 local-port=4500 local-id=moon.strongswan.org remote-host=192.168.0.100 remote-port=4500 remote-id=carol@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=MODP_2048 ake1=CURVE_25519.*child-sas.*net.*reqid=1 state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.1.0.0/16] remote-ts=\[192.168.0.100/32]::YES
+moon:: swanctl --list-sas --ike-id 2 --raw 2> /dev/null::rw.*version=2 state=ESTABLISHED local-host=192.168.0.1 local-port=4500 local-id=moon.strongswan.org remote-host=192.168.0.200 remote-port=4500 remote-id=dave@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=MODP_3072 ake1=ECP_384.*child-sas.*net.*reqid=2 state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.1.0.0/16] remote-ts=\[192.168.0.200/32]::YES
+alice::ping -c 1 192.168.0.100::64 bytes from 192.168.0.100: icmp_.eq=1::YES
+alice::ping -c 1 192.168.0.200::64 bytes from 192.168.0.200: icmp_.eq=1::YES
+# rekey with carol from moon (original responder), first the IKE_SA then the CHILD_SA using the new IKE_SA
+moon::swanctl --rekey --ike-id 1
+moon::sleep 1
+alice::ping -c 1 192.168.0.100::64 bytes from 192.168.0.100: icmp_.eq=1::YES
+moon::swanctl --rekey --child-id 1
+moon::sleep 1
+alice::ping -c 1 192.168.0.100::64 bytes from 192.168.0.100: icmp_.eq=1::YES
+# rekey from dave (original initiator)
+dave::swanctl --rekey --ike home
+dave::sleep 1
+alice::ping -c 1 192.168.0.200::64 bytes from 192.168.0.200: icmp_.eq=1::YES
+dave::swanctl --rekey --child home
+dave::sleep 1
+alice::ping -c 1 192.168.0.200::64 bytes from 192.168.0.200: icmp_.eq=1::YES
+moon::tcpdump::IP moon.strongswan.org > carol.strongswan.org: ESP::YES
+moon::tcpdump::IP carol.strongswan.org > moon.strongswan.org: ESP::YES
+moon::tcpdump::IP moon.strongswan.org > dave.strongswan.org: ESP::YES
+moon::tcpdump::IP dave.strongswan.org > moon.strongswan.org: ESP::YES
+moon:: swanctl --list-sas --ike-id 3 --raw 2> /dev/null::rw.*version=2 state=ESTABLISHED local-host=192.168.0.1 local-port=4500 local-id=moon.strongswan.org remote-host=192.168.0.100 remote-port=4500 remote-id=carol@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=MODP_2048 ake1=CURVE_25519.*child-sas.*net.*reqid=1 state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128 dh-group=MODP_2048 ake1=CURVE_25519.*local-ts=\[10.1.0.0/16] remote-ts=\[192.168.0.100/32]::YES
+moon:: swanctl --list-sas --ike-id 4 --raw 2> /dev/null::rw.*version=2 state=ESTABLISHED local-host=192.168.0.1 local-port=4500 local-id=moon.strongswan.org remote-host=192.168.0.200 remote-port=4500 remote-id=dave@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=MODP_3072 ake1=ECP_384.*child-sas.*net.*reqid=2 state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128 dh-group=MODP_3072 ake1=ECP_384.*local-ts=\[10.1.0.0/16] remote-ts=\[192.168.0.200/32]::YES
+# from the rekeyings with carol
+moon::cat /var/log/daemon.log::parsed IKE_INTERMEDIATE request 1 \[ KE \]::2
+moon::cat /var/log/daemon.log::parsed IKE_FOLLOWUP_KE response 1 \[ KE \]::2
+# from the rekeyings with dave
+moon::cat /var/log/daemon.log::parsed IKE_FOLLOWUP_KE request 4 \[ KE N(ADD_KE) \]::1
+moon::cat /var/log/daemon.log::parsed IKE_FOLLOWUP_KE request 1 \[ KE N(ADD_KE) \]::1

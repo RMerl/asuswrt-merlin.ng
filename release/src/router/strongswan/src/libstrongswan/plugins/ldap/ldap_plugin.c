@@ -59,7 +59,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *ldap_plugin_create()
+PLUGIN_DEFINE(ldap)
 {
 	private_ldap_plugin_t *this;
 

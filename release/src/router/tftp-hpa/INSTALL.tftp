@@ -1,0 +1,36 @@
+Specific installation instructions
+==================================
+
+In addition to what is described in the INSTALL file, the following
+specifics apply to the tftp-hpa package:
+
+The tftp-hpa package supports the following options to ./configure:
+
+  --without-tcpwrappers
+	Disables the use of the tcp wrapper library.  This is
+	recommended, for performance reasons, on high-use sites.
+	Kernel-based firewalling is, in general, a better alternative.
+
+  --without-remap
+	Disables the use of regular-expression-based filename
+	remapping (the -m option to tftpd).
+
+  --without-readline
+	Disables the use of the readline command-line editing library
+	in the tftp client.
+
+The default prefix for the tftp-hpa package is /usr, with the tftp
+client installing as /usr/bin/tftp and the tftpd server installing as
+/usr/sbin/in.tftpd on most systems.  This can be overridden by setting
+--bindir and --sbindir.
+
+"make install" supports specifying an INSTALLROOT, which points to
+what will be the root of the filesystem at runtime; this is typically
+used when preparing packages for package-management systems.
+
+You almost certainly will need GNU make to build tftp-hpa.  If you
+don't already have it, you can find GNU make at:
+
+    ftp://ftp.gnu.org/pub/make/
+or
+    ftp://mirrors.kernel.org/gnu/make/

@@ -49,12 +49,12 @@
 }
 </style>
 <script type="text/javascript" src="/js/jquery.js"></script>
-<script language="JavaScript" type="text/JavaScript" src="/js/httpApi.js"></script>
-<script language="JavaScript" type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" language="JavaScript" src="/help.js"></script>
-<script language="JavaScript" type="text/javascript" src="/general.js"></script>
-<script language="JavaScript" type="text/javascript" src="/popup.js"></script>
-<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
+<script type="text/javascript" src="/state.js"></script>
+<script type="text/javascript" src="/help.js"></script>
+<script type="text/javascript" src="/general.js"></script>
+<script type="text/javascript" src="/popup.js"></script>
+<script type="text/javascript" src="/validator.js"></script>
 <script>
 <% wl_get_parameter(); %>
 
@@ -66,7 +66,7 @@ var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq
 function initial(){
 	show_menu();
 
-	regen_band(document.form.wl_unit);
+	renderWirelessBandAndMacAddress();
 	if(lantiq_support){
 		checkWLReady();
 		var mode_desc = ["<#WLANConfig11b_x_APMode_option2#>"];
@@ -91,9 +91,9 @@ function initial(){
 		document.getElementById("submitBtn").style.display = "none";
 	}
 	else if (band60g_support && '<% nvram_get("wl_unit"); %>' == '3') {
-		document.getElementById("wl_2g_mac").style.display = "none";
-		document.getElementById("wl_5g_mac").style.display = "none";
-		document.getElementById("wl_5g_mac_2").style.display = "none";
+		document.querySelectorAll('[data-band]').forEach(function(row) {
+			row.style.display = "none";
+		});
 		document.getElementById("wds_mode_field").style.display = "none";
 		document.getElementById("wds_wdsapply_field").style.display = "none";
 		document.getElementById("wl_wdslist_Block").style.display = "none";
@@ -107,19 +107,9 @@ function initial(){
 	else{
 		show_wl_wdslist();
 	}
-		
-	if(!band5g_support){
-		document.getElementById("wl_5g_mac").style.display = "none";
-		document.getElementById("wl_unit_field").style.display = "none";
-	}
-	
-	if(wl_info.band5g_2_support || wl_info.band6g_support){
-		if(band6g_support){
-			document.getElementById("5g2_title").innerHTML = "6 GHz MAC";
-		}
 
-		document.getElementById("wl_5g_mac_2").style.display = "";
-		document.getElementById("wl_5g_mac_th1").innerHTML = "5 GHz-1 MAC";
+	if(DUT_SUPPORT_WLBANDS.length <= 1){
+		document.getElementById("wl_unit_field").style.display = "none";
 	}
 
 	$("#redirect_to_setup")
@@ -285,7 +275,7 @@ function showLANIPList(){
 	var show_name = "";
 	var show_title = "";
 	if(wds_aplist != ""){
-        wds_aplist = JSON.parse(wds_aplist);
+		wds_aplist = JSON.parse(wds_aplist);
 		for(var i = 0; i < wds_aplist.length ; i++){
 			wds_aplist[i][0] = htmlEnDeCode.htmlEncode(decodeURIComponent(wds_aplist[i][0]));
 			if(wds_aplist[i][0] && wds_aplist[i][0].length > 12)
@@ -389,6 +379,103 @@ function checkWLReady(){
 	    }
   	});
 }
+function renderWirelessBandAndMacAddress(){
+	const nvram = httpApi.nvramGet(["wl_unit"]);
+	const routerMac = httpApi.nvramGet([
+		"wl0_hwaddr",
+		"wl1_hwaddr",
+		"wl2_hwaddr",
+		"wl3_hwaddr",
+		"wl4_hwaddr"
+	]);
+	const capInfo = isSupport("sdn_mainfh")
+		? (httpApi.hookGet("get_cfg_clientlist")[0] || {})
+		: {};
+
+	const BAND_TO_AP_MAPPING = {
+		'2G': 'ap2g',
+		'5G': 'ap5g',
+		'5G1': 'ap5g',
+		'5G2': 'ap5g1',
+		'6G': 'ap6g',
+		'6G1': 'ap6g',
+		'6G2': 'ap6g1'
+	};
+
+	function getMainFHMac(bandName) {
+		const apKey = BAND_TO_AP_MAPPING[bandName];
+		if (!apKey) return '';
+
+		const apSsid = capInfo[`${apKey}_ssid_fh`];
+		if (!apSsid) return '';
+
+		return capInfo[`${apKey}_fh`] || '';
+	}
+
+	function getMacForBand(band) {
+		if (isSupport("sdn_mainfh")) {
+			return getMainFHMac(band.band);
+		}
+		return routerMac["wl" + band.unit + "_hwaddr"];
+	}
+
+	function createMacRowElement(band) {
+		const mac = getMacForBand(band) || '<#Status_Inactive#>';
+		const tr = document.createElement('tr');
+		tr.id = 'wl_' + band.band.toLowerCase() + '_mac';
+		tr.setAttribute('data-band', band.band);
+		tr.setAttribute('data-unit', band.unit);
+
+		const th = document.createElement('th');
+		const labelId = 'label_wl' + band.unit + '_hwaddr';
+		th.id = labelId;
+		th.textContent = band.text + ' MAC';
+
+		const td = document.createElement('td');
+		const input = document.createElement('input');
+		input.type = 'text';
+		input.maxLength = 17;
+		input.className = 'input_20_table';
+		input.id = 'wl' + band.unit + '_hwaddr';
+		input.name = 'wl' + band.unit + '_hwaddr';
+		input.value = mac;
+		input.readOnly = true;
+		input.setAttribute('aria-label', band.text + ' MAC Address');
+		input.setAttribute('aria-readonly', 'true');
+		input.setAttribute('aria-labelledby', labelId);
+		input.setAttribute('autocorrect', 'off');
+		input.setAttribute('autocapitalize', 'off');
+
+		td.appendChild(input);
+		tr.appendChild(th);
+		tr.appendChild(td);
+		return tr;
+	}
+
+	const wlSelect = document.querySelector('select[name="wl_unit"]');
+	if (wlSelect) {
+		wlSelect.innerHTML = '';
+		wlSelect.setAttribute('aria-label', `<#Interface#>`);
+		DUT_SUPPORT_WLBANDS.forEach(function(band) {
+			const option = document.createElement('option');
+			option.value = band.unit;
+			option.textContent = band.text;
+			option.selected = (String(nvram.wl_unit) === String(band.unit));
+			wlSelect.appendChild(option);
+		});
+	}
+
+	const wlBandMac = document.querySelector('tr[id="wl_band_mac"]');
+	if (wlBandMac) {
+		const parent = wlBandMac.parentNode;
+		const referenceNode = wlBandMac.nextSibling;
+		parent.removeChild(wlBandMac);
+		DUT_SUPPORT_WLBANDS.forEach(function(band) {
+			const macRow = createMacRowElement(band);
+			parent.insertBefore(macRow, referenceNode);
+		});
+	}
+}
 </script>
 </head>
 
@@ -461,24 +548,7 @@ function checkWLReady(){
 											<td colspan="2"><#t2BC#></td>
 										</tr>
 										</thead>		  
-										<tr id="wl_2g_mac">
-											<th>2.4 GHz MAC</th>
-											<td>
-												<input type="text" maxlength="17" class="input_20_table" id="wl0_hwaddr" name="wl0_hwaddr" value="<% nvram_get("wl0_hwaddr"); %>" readonly autocorrect="off" autocapitalize="off">
-											</td>		
-										</tr>					
-										<tr id="wl_5g_mac">
-											<th id="wl_5g_mac_th1">5 GHz MAC</th>
-											<td>
-												<input type="text" maxlength="17" class="input_20_table" id="wl1_hwaddr" name="wl1_hwaddr" value="<% nvram_get("wl1_hwaddr"); %>" readonly autocorrect="off" autocapitalize="off">
-											</td>		
-										</tr>	
-										<tr id="wl_5g_mac_2" style="display:none">
-											<th id="5g2_title">5 GHz-2 MAC</th>
-											<td>
-												<input type="text" maxlength="17" class="input_20_table" id="wl2_hwaddr" name="wl2_hwaddr" value="<% nvram_get("wl2_hwaddr"); %>" readonly autocorrect="off" autocapitalize="off">
-											</td>		
-										</tr>			  
+										<tr id="wl_band_mac"></tr>
 										<tr id="wl_unit_field">
 											<th><#Interface#></th>
 											<td>

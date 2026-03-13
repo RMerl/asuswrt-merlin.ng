@@ -67,7 +67,7 @@ static pjsip_uri *create_uri14( pj_pool_t *pool );
 static pjsip_uri *create_uri15( pj_pool_t *pool );
 static pjsip_uri *create_uri16( pj_pool_t *pool );
 static pjsip_uri *create_uri17( pj_pool_t *pool );
-static pjsip_uri *create_uri18( pj_pool_t *pool );
+//static pjsip_uri *create_uri18( pj_pool_t *pool );
 static pjsip_uri *create_uri25( pj_pool_t *pool );
 static pjsip_uri *create_uri26( pj_pool_t *pool );
 static pjsip_uri *create_uri27( pj_pool_t *pool );

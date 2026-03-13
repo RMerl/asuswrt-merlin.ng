@@ -163,7 +163,9 @@ struct pj_tcp_session
 static void sess_shutdown(pj_tcp_session *sess,
 			  pj_status_t status);
 static void do_destroy(pj_tcp_session *sess);
+#if 0
 static void send_refresh(pj_tcp_session *sess, int lifetime);
+#endif
 static pj_status_t stun_on_send_msg(pj_stun_session *sess,
 				    void *token,
 				    const void *pkt,
@@ -502,10 +504,12 @@ PJ_DEF(pj_status_t) pj_tcp_session_destroy( pj_tcp_session *sess,
 {
     PJ_ASSERT_RETURN(sess, PJ_EINVAL);
 
-    if (last_err != PJ_SUCCESS && sess->last_status == PJ_SUCCESS)
-	sess->last_status = last_err;
-	if (!sess->partial_destroy)
+    if (last_err != PJ_SUCCESS && sess->last_status == PJ_SUCCESS) {
+		sess->last_status = last_err;
+	}
+	if (!sess->partial_destroy) {
 		pj_tcp_session_set_state(sess, PJ_TCP_STATE_DISCONNECTED);
+	}
     sess_shutdown(sess, PJ_SUCCESS);
     return PJ_SUCCESS;
 }
@@ -756,6 +760,7 @@ PJ_DEF(pj_status_t) pj_tcp_session_set_credential(pj_tcp_session *sess,
     return PJ_SUCCESS;
 }
 
+#if 0
 /*
  * Send REFRESH
  */
@@ -800,6 +805,7 @@ on_error:
 	sess_shutdown(sess, status);
     }
 }
+#endif
 
 void dumpH(const unsigned char *buff, int len, int send) 
 {
@@ -906,6 +912,7 @@ PJ_DEF(pj_status_t) pj_tcp_session_on_rx_pkt(pj_tcp_session *sess,
 		//DumpPacket(pkt, pkt_len, 0, 5);
 
 		status = PJ_SUCCESS;
+		(void) options;
 #else
 		/* This looks like STUN, give it to the STUN session */
 		unsigned options;
@@ -1009,7 +1016,7 @@ static pj_status_t stun_on_send_msg(pj_stun_session *stun,
 				   dst_addr, addr_len);
 }
 
-
+#if 0
 /*
  * Handle failed ALLOCATE or REFRESH request. This may switch to alternate
  * server if we have one.
@@ -1066,6 +1073,7 @@ static void on_session_fail( pj_tcp_session *sess,
 
     } while (0);
 }
+#endif
 
 /*
  * Notification on completion of DNS SRV resolution.
@@ -1184,7 +1192,7 @@ PJ_DEF(void) pj_tcp_session_set_stun_session_user_data(pj_tcp_session *tcp_sess,
 PJ_DEF(char *) pj_tcp_session_get_object_name(void *user_data)
 {
 	pj_tcp_session *tcp_sess = (pj_tcp_session *)user_data;
-	return tcp_sess == NULL ? "NULL" : tcp_sess->obj_name;
+	return tcp_sess == NULL ? "NULL" : (char *)tcp_sess->obj_name;
 }
 
 PJ_DEF(void *) pj_tcp_session_get_tcp_sock(void *user_data)
@@ -1208,7 +1216,7 @@ PJ_DEF(void) pj_tcp_session_set_partial_destroy(void *user_data, pj_bool_t value
 PJ_DEF(void **) pj_tcp_session_get_asock(void *user_data)
 {
 	pj_tcp_session *tcp_sess = (pj_tcp_session *)user_data;
-	return &tcp_sess->asock;
+	return (void **)&tcp_sess->asock;
 }
 
 PJ_DEF(void *) pj_tcp_session_set_asock(void *user_data, void *value)

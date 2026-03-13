@@ -842,7 +842,7 @@ struct pj_mutex_t
 	int         inst_id;
 };
  */
-PJ_DECL(void) pj_mutex_dump(char *prefix, pj_mutex_t *mutex);
+PJ_DECL(void) pj_mutex_dump(const char *prefix, pj_mutex_t *mutex);
 
 /**
  * @}

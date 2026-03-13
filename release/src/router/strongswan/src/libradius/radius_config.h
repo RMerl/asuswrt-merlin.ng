@@ -108,6 +108,7 @@ struct radius_config_t {
  *
  * @param name				server name
  * @param address			server address
+ * @param source			optional source address
  * @param auth_port			server port for authentication
  * @param acct_port			server port for accounting
  * @param nas_identifier	NAS-Identifier to use with this server
@@ -118,7 +119,7 @@ struct radius_config_t {
  * @param timeout			retransmission timeout
  * @param base				base to calculate retransmission timeout
  */
-radius_config_t *radius_config_create(char *name, char *address,
+radius_config_t *radius_config_create(char *name, char *address, char *source,
 									  uint16_t auth_port, uint16_t acct_port,
 									  char *nas_identifier, char *secret,
 									  int sockets, int preference,

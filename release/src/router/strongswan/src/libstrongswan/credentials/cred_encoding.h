@@ -149,11 +149,6 @@ enum cred_encoding_part_t {
 	CRED_PART_EDDSA_PUB_ASN1_DER,
 	/** a DER encoded EdDSA private key */
 	CRED_PART_EDDSA_PRIV_ASN1_DER,
-	/** a DER encoded BLISS public key */
-	CRED_PART_BLISS_PUB_ASN1_DER,
-	/** a DER encoded BLISS private key */
-	CRED_PART_BLISS_PRIV_ASN1_DER,
-
 	CRED_PART_END,
 };
 

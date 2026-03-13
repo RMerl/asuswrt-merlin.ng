@@ -1,8 +1,47 @@
 -include $(SRCBASE)/router/.config
 
+ifeq ($(HND_ROUTER_BE_4916),y)
+-include $(HND_SRC)/sdk_profile.mak
+endif
+
+ifeq ($(HND_ROUTER),y)
+TOOLCHAIN_ARCH_TYPE := arm-buildroot-linux-gnueabi
+# TOOLCHAIN_PREFIX := arm-buildroot-linux-gnueabi-
+TOOLCHAIN_FOLDER := arm-buildroot-linux-gnueabi-
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126))
+ifeq ($(PROFILE_KARCH),armhfp)
+TOOLCHAIN_ARCH_TYPE := arm-buildroot-linux-gnueabihf
+# TOOLCHAIN_PREFIX := arm-buildroot-linux-gnueabihf-
+TOOLCHAIN_FOLDER := arm-buildroot-linux-gnueabihf-
+TOOLCHAIN_ARCH_TYPE:= arm-buildroot-linux-gnueabihf
+TOOLCHAIN_TOLDER := crosstools-arm_hf-gcc-13.2-linux-5.15-glibc-2.38-binutils-2.41
+endif
+ifeq ($(PROFILE_KARCH),aarch64)
+TOOLCHAIN_ARCH_TYPE := arm-buildroot-linux-gnueabihf
+# TOOLCHAIN_PREFIX := arm-buildroot-linux-gnueabihf-
+TOOLCHAIN_FOLDER := arm-buildroot-linux-gnueabihf-
+TOOLCHAIN_ARCH_TYPE:= arm-buildroot-linux-gnueabihf
+TOOLCHAIN_TOLDER := crosstools-arm_hf-gcc-13.2-linux-5.15-glibc-2.38-binutils-2.41
+endif
+endif
+endif
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126))
+ifeq ($(PROFILE_KARCH),aarch64)
+TOOLCHAIN_ARCH_TYPE := aarch64-buildroot-linux-gnu
+# TOOLCHAIN_PREFIX := aarch64-buildroot-linux-gnu-
+TOOLCHAIN_FOLDER := aarch64-buildroot-linux-gnu-
+TOOLCHAIN_TOLDER := crosstools-aarch64-gcc-13.2-linux-5.15-glibc-2.38-binutils-2.41
+endif
+endif
+
 ifeq ($(HND_ROUTER),y)
 ifeq ($(or $(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916)),y)
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126))
+export LINUXDIR := $(SRCBASE)/kernel/linux-5.15
+else
 export LINUXDIR := $(SRCBASE)/kernel/linux-4.19
+endif
 else
 export LINUXDIR := $(SRCBASE)/kernel/linux-4.1
 endif
@@ -26,6 +65,13 @@ export EXTRACFLAGS := -DBCMWPA2 -DBCMARM -fno-delete-null-pointer-checks -marm
  endif
 endif
 
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126))
+ifeq ($(PROFILE_KARCH),aarch64)
+export PRIVATE_EXTRACFLAGS := $(BRCM_COMMON_CFLAGS) -DHND_ROUTER -DLINUX26 -DLINUX_2_6_36 -DCONFIG_BCMWL5
+export EXTRACFLAGS := -DHND_ROUTER -DCONFIG_BCMWL5
+endif
+endif
+
  ifeq ($(HND_ROUTER),y)
  ifeq ($(HND_ROUTER_AX),y)
 export PLATFORM_ARCH := arm-glibc
@@ -42,12 +88,21 @@ export CONFIGURE_64 := ./configure LD=$(CROSS_COMPILE)ld --host=aarch64-buildroo
 export HOSTCONFIG_64 := linux-aarch64 -DL_ENDIAN -march=armv8-a -fomit-frame-pointer -mabi=lp64 -ffixed-r8 -D__ARM_ARCH_8A__
 endif
 else ifeq ($(HND_ROUTER_BE_4916),y) # ifeq ($(HND_ROUTER_AX_6756),y), BE_4916
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126))
+export CROSS_COMPILE := /opt/toolchains/$(TOOLCHAIN_TOLDER)/usr/bin/$(TOOLCHAIN_ARCH_TYPE)-
+export CROSS_COMPILER := $(CROSS_COMPILE)
+export CONFIGURE := ./configure LD=$(CROSS_COMPILE)ld --host=$(TOOLCHAIN_ARCH_TYPE)
+export TOOLS := /opt/toolchains/$(TOOLCHAIN_TOLDER)
+export TOP_PLATFORM := $(SRCBASE)/router-sysdep
+export ARCH := arm
+else # not WIFI7_SDK_20250506 and not WIFI8_SDK_20251126
 export CROSS_COMPILE := /opt/toolchains/crosstools-arm_softfp-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1/usr/bin/arm-buildroot-linux-gnueabi-
 export CROSS_COMPILER := $(CROSS_COMPILE)
 export CONFIGURE := ./configure LD=$(CROSS_COMPILE)ld --host=arm-buildroot-linux-gnueabi
 export TOOLS := /opt/toolchains/crosstools-arm_softfp-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1
 export TOP_PLATFORM := $(SRCBASE)/router-sysdep
 export ARCH := arm
+endif
 else # ifeq ($(HND_ROUTER_AX_6756),y), not 6756, not 4916
 export CROSS_COMPILE := /opt/toolchains/crosstools-arm-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1/usr/bin/arm-buildroot-linux-gnueabi-
 export CROSS_COMPILER := $(CROSS_COMPILE)

@@ -244,6 +244,11 @@ GPON_ONU_TYPE=GPON_HGU
 # BUILD_EPON_SDK is not set
 
 #
+# PHY Combo Feature Selection
+#
+# BRCM_DRIVER_PHY_COMBO is not set
+
+#
 # Ethernet, Switch, and VLAN Selection
 #
 BRCM_DRIVER_ETHERNET=m

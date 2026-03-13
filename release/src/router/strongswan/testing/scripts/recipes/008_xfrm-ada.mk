@@ -2,7 +2,7 @@
 
 PKG = xfrm-ada
 SRC = https://git.codelabs.ch/git/$(PKG).git
-REV = v0.1
+REV = e0590c6bb3c6a5b7f2edd8f95dce9e8c77e22230
 
 PREFIX = /usr/local/ada
 

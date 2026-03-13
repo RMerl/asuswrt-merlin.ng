@@ -201,6 +201,14 @@ kdf_t *openssl_kdf_create(key_derivation_function_t algo, va_list args)
 		.key = chunk_clone(chunk_from_str("00000000000000000000000000000000")),
 	);
 
+	/* also generate a salt (as if none was provided, i.e. zeroes of hash length)
+	 * as OpenSSL 3.5.1+ won't accept NULL anymore */
+	if (algo == KDF_PRF && this->hasher)
+	{
+		this->salt = chunk_copy_pad(chunk_alloc(get_length(this)),
+									chunk_empty, 0);
+	}
+
 	if (!this->hasher ||
 		!get_bytes(this, algo == KDF_PRF ? get_length(this) : sizeof(buf), buf))
 	{

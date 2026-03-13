@@ -1642,7 +1642,7 @@ function network_set_wan_info(){
 		});
 	}
 	else if(isSwMode("ap")){
-		var connect_proto_array = {"dhcp":"<#BOP_ctype_title1#>", "static": "<#BOP_ctype_title5#>", "pppoe": "PPPoE","pptp": "PPTP","l2tp": "L2TP"};
+		var connect_proto_array = {"dhcp":"<#BOP_ctype_dhcp_title1#>", "static": "<#BOP_ctype_title5#>", "pppoe": "PPPoE","pptp": "PPTP","l2tp": "L2TP"};
 		var connect_info = new connect_attr();
 		connect_info.status = "connect";
 		connect_info.status_title = "<#WLANConfig11b_x_APMode_itemname#>";
@@ -2959,7 +2959,7 @@ function display_manage_block(){
 									$("#aimesh_hint_msg").empty().show()
 										.append(popup_hint_api.get_component_text())
 										.append(popup_hint_api.get_component_action());
-									let hintText = led_night_mode_control.support ? `<#AiMesh_System_LED_NM_Hint#>` : `The main switch System LED control will also be toggled.`;/* untranslated */
+									let hintText = led_night_mode_control.support ? `<#AiMesh_System_LED_NM_Hint#>` : `<#AiMesh_System_LED_Hint#>`;
 									hintText += `<br><#Setting_factorydefault_hint2#>`;
 									$("#aimesh_hint_msg .hint_text").html(hintText);
 									$("#aimesh_hint_msg #action_canacl").show().unbind("click").click(function(e) {
@@ -3187,7 +3187,7 @@ function display_manage_block(){
 					$("#aimesh_hint_msg").empty().show()
 						.append(popup_hint_api.get_component_text())
 						.append(popup_hint_api.get_component_action());
-					let hintText = led_night_mode_control.support ? `<#AiMesh_System_LED_NM_Hint#>` : `The main switch System LED control will also be toggled.`;/* untranslated */
+					let hintText = led_night_mode_control.support ? `<#AiMesh_System_LED_NM_Hint#>` : `<#AiMesh_System_LED_Hint#>`;
 					hintText += `<br><#Setting_factorydefault_hint2#>`;
 					$("#aimesh_hint_msg .hint_text").html(hintText);
 					$("#aimesh_hint_msg #action_canacl").show().unbind("click").click(function(e) {
@@ -5513,7 +5513,7 @@ $(document).ready(initial_AiMesh);
 							<#Connectiontype#>
 						</div>
 						<div id="wan_connect_type" class="connect_info_text">
-							<#BOP_ctype_title1#>
+							<#BOP_ctype_dhcp_title1#>
 						</div>
 					</div>
 				</div>
@@ -5545,7 +5545,7 @@ $(document).ready(initial_AiMesh);
 							<#Connectiontype#>
 						</div>
 						<div id="wan_connect_type" class="connect_info_text">
-							<#BOP_ctype_title1#>
+							<#BOP_ctype_dhcp_title1#>
 						</div>
 					</div>
 				</div>

@@ -138,11 +138,3 @@ cd /etc/ca/monster
 # generate CRL for strongSwan Monster Root CA
 pki --signcrl --cakey strongswanKey.pem --cacert strongswanCert.pem \
     > ${ROOT}/strongswan_monster.crl
-
-##
-# strongSwan BlISS Root CA
-cd /etc/ca/bliss
-
-# generate CRL for strongSwan BLISS Root CA
-pki --signcrl --cakey strongswan_blissKey.der --cacert strongswan_blissCert.der \
-    --lifetime 30 --digest sha3_512 > ${ROOT}/strongswan_bliss.crl

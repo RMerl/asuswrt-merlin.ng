@@ -251,11 +251,27 @@
 .backhaul_info .common_content_bg, .backhaul_info .common_title_content_bg .content_bg{
 	background: #F5F5F5;
 }
-.manage_switch_led .switch.off, .manage_switch_wifi .switch.off{
+.manage_switch_led .switch.off,
+.manage_switch_wifi .switch.off,
+.manage_switch_led_night_mode .switch.off{
 	background: #818181;
 }
-.manage_switch_led .switch.on, .manage_switch_wifi .switch.on{
+.manage_switch_led .switch.on,
+.manage_switch_wifi .switch.on,
+.manage_switch_led_night_mode .switch.on{
 	background: #006CE1;
+}
+.manage_switch_led .schedule-wrapper:before,
+.manage_switch_led_night_mode .schedule-wrapper:before {
+	border-right: 1px solid #DCDCDC;
+}
+.manage_switch_led .schedule,
+.manage_switch_led_night_mode .schedule{
+	background-color: #666666;
+}
+.manage_switch_led .schedule.active,
+.manage_switch_led_night_mode .schedule.active{
+	background-color: #006CE1;
 }
 .manage_common_title{
 	color: #262626;

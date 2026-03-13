@@ -65,6 +65,7 @@
  *    simultaneously, only one will succeed and the rest will get the error.
  *
  */
+#undef THIS_FILE
 #define THIS_FILE   "ioq_select"
 
 /*

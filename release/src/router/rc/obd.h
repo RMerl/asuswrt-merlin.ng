@@ -77,7 +77,7 @@ static int msglevel = 0;//OBD_DEBUG_ERROR | OBD_DEBUG_INFO | OBD_DEBUG_EVENT | O
 	} while (0)
 
 #define OBD_PRINT(fmt, arg...) \
-	do { _\
+	do { \
 		dbg("OBD(%d) %lu: "fmt, getpid(), uptime(), ##arg); \
 	} while (0)
 
@@ -94,7 +94,10 @@ struct scanned_bss {
 	unsigned char RSSI;
 #if defined(RTCONFIG_AMAS_WDS) && defined(RTCONFIG_BHCOST_OPT)
 	int wds;
-#endif	
+#endif
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+	int ob_band;
+#endif
 };
 
 // sysdeps prototype
@@ -103,7 +106,14 @@ void obd_final(int clean_vsie);
 void obd_save_para();
 void obd_start_active_scan();
 struct scanned_bss *obd_get_bss_scan_result();
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+void obd_start_wps_enrollee(int unit);
+#if 0
+int obd_check_valid_5g_channels(int channel);
+#endif
+#else
 void obd_start_wps_enrollee();
+#endif
 void obd_add_probe_req_vsie(int unit, int len, unsigned char *ie_data);
 void obd_del_probe_req_vsie(int unit, int len, unsigned char *ie_data);
 

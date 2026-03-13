@@ -186,13 +186,13 @@ METHOD(recommendations_t, have_recommendation, bool,
 						if (final_rec != TNC_IMV_ACTION_RECOMMENDATION_ALLOW)
 						{
 							final_rec = entry->rec;
-						};
+						}
 						break;
 					case TNC_IMV_ACTION_RECOMMENDATION_NO_ACCESS:
 						if (final_rec == TNC_IMV_ACTION_RECOMMENDATION_NO_RECOMMENDATION)
 						{
 							final_rec = entry->rec;
-						};
+						}
 						break;
 					case TNC_IMV_ACTION_RECOMMENDATION_NO_RECOMMENDATION:
 						break;

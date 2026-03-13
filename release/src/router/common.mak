@@ -229,3 +229,71 @@ endif
 #	else
 SIZECHECK = @$(SIZE) $@
 #	endif
+#
+
+ifeq ($(HND_ROUTER_BE_4916),y)
+-include $(HND_SRC)/sdk_profile.mak
+endif
+
+TOOLCHAIN_ARCH_TYPE := arm-buildroot-linux-gnueabi
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506))
+ifeq ($(PROFILE_KARCH),armhfp)
+TOOLCHAIN_ARCH_TYPE := arm-buildroot-linux-gnueabihf
+endif
+endif
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506))
+ifeq ($(PROFILE_KARCH),aarch64)
+TOOLCHAIN_ARCH_TYPE := arm-buildroot-linux-gnueabihf
+endif
+endif
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126))
+ifeq ($(PROFILE_KARCH),armhfp)
+TOOLCHAIN_ARCH_TYPE := arm-buildroot-linux-gnueabihf
+endif
+endif
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126))
+ifeq ($(PROFILE_KARCH),aarch64)
+TOOLCHAIN_ARCH_TYPE := aarch64-buildroot-linux-gnu
+endif
+endif
+
+LD-LINUX_SO_TYPE :=
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506))
+ifeq ($(PROFILE_KARCH),armhfp)
+LD-LINUX_SO_TYPE := -armhf
+endif
+endif
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506))
+ifeq ($(PROFILE_KARCH),aarch64)
+LD-LINUX_SO_TYPE := -armhf
+endif
+endif
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126))
+ifeq ($(PROFILE_KARCH),armhfp)
+LD-LINUX_SO_TYPE := -armhf
+endif
+endif
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126))
+ifeq ($(PROFILE_KARCH),aarch64)
+LD-LINUX_SO_TYPE := -aarch64
+endif
+endif
+
+LIB_ARCH :=
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126))
+ifeq ($(PROFILE_KARCH),aarch64)
+LIB_ARCH := 64
+else
+LIB_ARCH :=
+endif
+endif
+

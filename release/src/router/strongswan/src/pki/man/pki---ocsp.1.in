@@ -16,8 +16,12 @@ pki \-\-ocsp \- OCSP request parser and OCSP responder.
 .BI \-\-respond
 .OP \-\-in file
 .BI \-\-cacert\~ file
-.BI \-\-key\~ file
-.OP \-\-cert file
+.RB [ \-\-key
+.IR file | \fB\-\-keyid\fR
+.IB hex ]
+.RB [ \-\-cert
+.IR file | \fB\-\-certid\fR
+.IB hex ]
 .OP \-\-index file
 .OP \-\-lifetime minutes
 .OP \-\-digest digest
@@ -80,8 +84,16 @@ trust chain. Can be used multiple times.
 .BI "\-k, \-\-key " file
 OCSP signer key. Can be used multiple times.
 .TP
+.BI "\-K, \-\-keyid " hex
+Smartcard or TPM 2.0 OCSP signer key object handle. Can be used
+multiple times.
+.TP
 .BI "\-c, \-\-cert " file
 OCSP signer certificate (if it is not a CA certificate). Can be used
+multiple times.
+.TP
+.BI "\-X, \-\-certid " hex
+Smartcard or TPM 2.0 OCSP signer certificate object handle.  Can be used
 multiple times.
 .TP
 .BI "\-x, \-\-index " file

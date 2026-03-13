@@ -3111,9 +3111,10 @@ PJ_DEF(pj_status_t) pjsua_call_dump( pjsua_inst_id inst_id,
     len = 0;
 
     print_call(inst_id, indent, call_id, tmp, sizeof(tmp));
-    
-    if (len + 3 > maxlen) len = maxlen - 3;
-    pj_ansi_strncpy(buffer, tmp, len);
+
+    len = (int)pj_ansi_strlen(tmp);
+    if (len + 3 > (int)maxlen) len = maxlen - 3;
+    pj_memcpy(buffer, tmp, len);
 
     p += len;
     *p++ = '\r';
@@ -3699,7 +3700,7 @@ static void pjsua_call_on_forked( pjsip_inv_session *inv,
     PJ_UNUSED_ARG(inv);
     PJ_UNUSED_ARG(e);
 
-    PJ_TODO(HANDLE_FORKED_DIALOG);
+    //PJ_TODO(HANDLE_FORKED_DIALOG);
 }
 
 
@@ -4580,6 +4581,8 @@ static void pjsua_call_on_tsx_state_changed(pjsip_inv_session *inv,
 	/* Process MESSAGE request */
 	pjsua_im_process_pager(call->index, &inv->dlg->remote.info_str,
 			       &inv->dlg->local.info_str, rdata);
+	(void) msg;
+	(void) status;
 
     }
     else if (tsx->role == PJSIP_ROLE_UAC &&

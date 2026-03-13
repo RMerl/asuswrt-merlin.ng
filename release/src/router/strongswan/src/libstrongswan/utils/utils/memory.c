@@ -90,6 +90,27 @@ bool memeq_const(const void *x, const void *y, size_t len)
 	return !bad;
 }
 
+/*
+ * Described in header
+ */
+void memcpy_cond(void *dst, const void *src, size_t n, uint8_t cond)
+{
+	uint8_t *a;
+	const uint8_t *b;
+	size_t i;
+
+	a = (uint8_t*)dst;
+	b = (const uint8_t*)src;
+
+	/* either 0xff or 0 */
+	cond = -cond;
+
+	for (i = 0; i < n; i++)
+	{
+		a[i] ^= cond & (a[i] ^ b[i]);
+	}
+}
+
 /**
  * Described in header.
  */

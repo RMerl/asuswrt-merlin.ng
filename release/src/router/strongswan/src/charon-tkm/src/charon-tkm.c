@@ -37,7 +37,7 @@
 
 #include "tkm.h"
 #include "tkm_nonceg.h"
-#include "tkm_diffie_hellman.h"
+#include "tkm_key_exchange.h"
 #include "tkm_keymat.h"
 #include "tkm_listener.h"
 #include "tkm_kernel_ipsec.h"
@@ -318,9 +318,9 @@ int main(int argc, char *argv[])
 	lib->plugins->add_static_features(lib->plugins, "tkm-backend", features,
 			countof(features), TRUE, NULL, NULL);
 
-	if (!register_dh_mapping())
+	if (!register_ke_mapping())
 	{
-		DBG1(DBG_DMN, "no DH group mapping defined - aborting %s", dmn_name);
+		DBG1(DBG_DMN, "no KE group mapping defined - aborting %s", dmn_name);
 		goto deinit;
 	}
 
@@ -410,7 +410,7 @@ int main(int argc, char *argv[])
 	lib->encoding->remove_encoder(lib->encoding, tkm_encoder_encode);
 
 deinit:
-	destroy_dh_mapping();
+	destroy_ke_mapping();
 	destroy_ca_mapping();
 	libcharon_deinit();
 	tkm_deinit();

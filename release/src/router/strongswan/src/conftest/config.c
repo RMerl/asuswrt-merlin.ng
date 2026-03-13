@@ -265,7 +265,7 @@ static peer_cfg_t *load_peer_config(private_config_t *this,
 		.cert_policy = CERT_ALWAYS_SEND,
 		.unique = UNIQUE_NO,
 		.keyingtries = 1,
-		.no_mobike = TRUE,
+		.options = OPT_NO_MOBIKE,
 	};
 
 	ike_cfg = load_ike_config(this, settings, config);

@@ -46,7 +46,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *eap_dynamic_plugin_create()
+PLUGIN_DEFINE(eap_dynamic)
 {
 	eap_dynamic_plugin_t *this;
 

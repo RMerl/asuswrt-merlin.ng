@@ -45,17 +45,15 @@ enum hash_algorithm_t {
 	HASH_IDENTITY		= 5,
 	/* use private use range for algorithms not defined/permitted by RFC 7427 */
 	HASH_UNKNOWN 		= 1024,
-	HASH_MD2 			= 1025,
-	HASH_MD4			= 1026,
-	HASH_MD5 			= 1027,
-	HASH_SHA224			= 1028,
-	HASH_SHA3_224		= 1029,
-	HASH_SHA3_256		= 1030,
-	HASH_SHA3_384		= 1031,
-	HASH_SHA3_512		= 1032
+	HASH_MD4			= 1025,
+	HASH_MD5 			= 1026,
+	HASH_SHA224			= 1027,
+	HASH_SHA3_224		= 1028,
+	HASH_SHA3_256		= 1029,
+	HASH_SHA3_384		= 1030,
+	HASH_SHA3_512		= 1031
 };
 
-#define HASH_SIZE_MD2		16
 #define HASH_SIZE_MD4		16
 #define HASH_SIZE_MD5		16
 #define HASH_SIZE_SHA1		20

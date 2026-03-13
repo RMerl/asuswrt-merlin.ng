@@ -32,6 +32,7 @@ typedef struct child_cfg_create_t child_cfg_create_t;
 
 #include <library.h>
 #include <selectors/traffic_selector.h>
+#include <selectors/traffic_selector_list.h>
 #include <crypto/proposal/proposal.h>
 #include <kernel/kernel_ipsec.h>
 
@@ -119,26 +120,53 @@ struct child_cfg_t {
 								 traffic_selector_t *ts);
 
 	/**
-	 * Get a list of traffic selectors to use for the CHILD_SA.
+	 * Get a list of configured traffic selectors to use for the CHILD_SA.
 	 *
-	 * The config contains two set of traffic selectors, one for the local
+	 * The config contains two sets of traffic selectors, one for the local
 	 * side, one for the remote side.
+	 *
+	 * Some traffic selectors may be "dynamic", meaning they are narrowed down
+	 * to a specific address (host-to-host or virtual-IP setups). Use the
+	 * \p hosts parameter to narrow such traffic selectors to an address.
+	 *
+	 * Returned list and its traffic selectors must be destroyed after use.
+	 *
+	 * Note that this method does not log anything. If logging is required, use
+	 * select_traffic_selectors() without passing supplied traffic selectors.
+	 *
+	 * @param local			TRUE for TS on local side, FALSE for remote
+	 * @param hosts			addresses to use for narrowing "dynamic" TS', host_t
+	 * @return				list containing the traffic selectors
+	 */
+	linked_list_t *(*get_traffic_selectors)(child_cfg_t *this, bool local,
+											linked_list_t *hosts);
+
+	/**
+	 * Select a list of traffic selectors to use for the CHILD_SA.
+	 *
+	 * The config contains two sets of traffic selectors, one for the local
+	 * side, one for the remote side.
+	 *
 	 * If a list with traffic selectors is supplied, these are used to narrow
-	 * down the traffic selector list to the greatest common divisor.
-	 * Some traffic selector may be "dynamic", meaning they are narrowed down
-	 * to a specific address (host-to-host or virtual-IP setups). Use
-	 * the "host" parameter to narrow such traffic selectors to that address.
-	 * Resulted list and its traffic selectors must be destroyed after use.
+	 * down the traffic selector list to the greatest common subset.
+	 *
+	 * Some traffic selectors may be "dynamic", meaning they are narrowed down
+	 * to a specific address (host-to-host or virtual-IP setups). Use the
+	 * \p hosts parameter to narrow such traffic selectors to an address.
+	 *
+	 * Returned list and its traffic selectors must be destroyed after use.
+	 *
+	 * Details about the selection process are logged and an alert is triggered
+	 * if narrowing occurred.
 	 *
 	 * @param local			TRUE for TS on local side, FALSE for remote
 	 * @param supplied		list with TS to select from, or NULL
 	 * @param hosts			addresses to use for narrowing "dynamic" TS', host_t
-	 * @param log			FALSE to avoid logging details about the selection
 	 * @return				list containing the traffic selectors
 	 */
-	linked_list_t *(*get_traffic_selectors)(child_cfg_t *this, bool local,
-											linked_list_t *supplied,
-											linked_list_t *hosts, bool log);
+	linked_list_t *(*select_traffic_selectors)(child_cfg_t *this, bool local,
+											   linked_list_t *supplied,
+											   linked_list_t *hosts);
 
 	/**
 	 * Get the updown script to run for the CHILD_SA.
@@ -386,6 +414,12 @@ enum child_cfg_option_t {
 
 	/** Disable copying the ECN header field in tunnel mode */
 	OPT_NO_COPY_ECN = (1<<8),
+
+	/** Enable per-CPU CHILD_SAs */
+	OPT_PER_CPU_SAS = (1<<9),
+
+	/** Enable UDP encapsulation for per-CPU CHILD_SAs */
+	OPT_PER_CPU_SAS_ENCAP = (1<<10),
 };
 
 /**
@@ -448,5 +482,22 @@ struct child_cfg_create_t {
  * @return					child_cfg_t object
  */
 child_cfg_t *child_cfg_create(char *name, child_cfg_create_t *data);
+
+/**
+ * Select and narrow traffic selectors in the given traffic selector list.
+ * Refer to child_cfg_t::select_traffic_selectors() for details, the difference
+ * is that this can work with external traffic selector lists.
+ *
+ * @param this				config to use
+ * @param local				TRUE for TS on local side, FALSE for remote (also
+ *							used for logging)
+ * @param list				traffic selectors to use instead of those in config
+ * @param supplied			list with TS to select from, or NULL
+ * @param hosts				addresses to use for narrowing "dynamic" TS', host_t
+ * @return					list containing the traffic selectors
+ */
+linked_list_t *child_cfg_select_ts(child_cfg_t *this, bool local,
+								   traffic_selector_list_t *list,
+								   linked_list_t *supplied, linked_list_t *hosts);
 
 #endif /** CHILD_CFG_H_ @}*/

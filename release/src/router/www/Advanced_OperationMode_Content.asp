@@ -374,7 +374,10 @@ function close_guest_unit(_unit, _subunit){
 }
 
 function saveMode(){
-	const OP_sdn_change_mode_desc1 = `<#OP_sdn_change_mode_desc1#>`.replace(`#FUNCTIONS`, `<#AiProtection_title#>, <#vpnc_title#>, <#BOP_isp_heart_item#>, <#EzQoS_type_QoS#>`);
+	let OP_sdn_change_mode_desc1 = `<#OP_sdn_change_mode_desc1#>`.replace(`#FUNCTIONS`, `<#AiProtection_title#>, <#vpnc_title#>, <#BOP_isp_heart_item#>, <#EzQoS_type_QoS#>`);
+	if (ark_qoe_support) {
+	    OP_sdn_change_mode_desc1 = `<#OP_sdn_change_mode_desc1#>`.replace(`#FUNCTIONS`, `<#AiProtection_title#>, <#vpnc_title#>, <#BOP_isp_heart_item#>, <#Adaptive_QoE#>`);
+	}
 	const OP_sdn_change_mode_desc2 = `<#OP_sdn_change_mode_desc2#>`.replace(`#GUESTNAMING`, Guest_Network_naming);
 	const OP_sdn_change_mode_desc3 = `<#OP_sdn_change_mode_desc3#>`;
 	let sdn_change_mode_hint = `${OP_sdn_change_mode_desc1}\n${OP_sdn_change_mode_desc2}\n${OP_sdn_change_mode_desc3}\n<#Setting_factorydefault_hint2#>`;

@@ -83,7 +83,6 @@ static bool derive_key(hash_algorithm_t hash, chunk_t unicode, chunk_t salt,
 	}
 	switch (hash)
 	{
-		case HASH_MD2:
 		case HASH_MD5:
 		case HASH_SHA1:
 		case HASH_SHA224:

@@ -129,7 +129,7 @@ ifeq ($(RTCONFIG_TRUSTZONE),y)
 LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
+ifeq ($(RTCONFIG_MXL_826XX),y)
 LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 
@@ -165,7 +165,7 @@ $(WSLIB):
 	make libws.so
 
 
-$(TARGET):  main.o  $(WSLIB_OBJS) $(OBJS_MAIN) 
+$(TARGET):  $(WSLIB_OBJS) $(OBJS_MAIN) 
 	$(CXX) -fPIC $(CFLAGS) $(LDFLAGS) $(LIBS) -o $@ $^ 
 
 %.o: %.c

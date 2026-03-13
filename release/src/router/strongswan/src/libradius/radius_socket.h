@@ -90,6 +90,7 @@ struct radius_socket_t {
  * Create a radius_socket instance.
  *
  * @param address	server name
+ * @param source	optional source address
  * @param auth_port	server port for authentication
  * @param acct_port	server port for accounting
  * @param secret	RADIUS secret
@@ -97,8 +98,9 @@ struct radius_socket_t {
  * @param timeout	retransmission timeout
  * @param base		base to calculate retransmission timeout
  */
-radius_socket_t *radius_socket_create(char *address, uint16_t auth_port,
-									  uint16_t acct_port, chunk_t secret,
-									  u_int tries, double timeout, double base);
+radius_socket_t *radius_socket_create(char *address, char *source,
+									  uint16_t auth_port, uint16_t acct_port,
+									  chunk_t secret, u_int tries,
+									  double timeout, double base);
 
 #endif /** RADIUS_SOCKET_H_ @}*/

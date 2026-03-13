@@ -25,7 +25,7 @@
 #define MULTICAST_BIT  0x0001
 #define UNIQUE_OUI_BIT 0x0002
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI)
 extern int cled_gpio[];
 #endif
 
@@ -825,7 +825,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 			LED_WAN,
 			LED_ID_MAX
 		};
-#ifdef RTCONFIG_PRESSURE_SENSOR
+#if defined(RTCONFIG_PRESSURE_SENSOR) || defined(RTCONFIG_PRESSURE_SENSOR_CMP201)
 		static enum led_id blue_led[] = {
 			LED_AFC,
 			LED_ID_MAX
@@ -1052,6 +1052,45 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 
 #if defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
 	case MODEL_GSBE18000:
+		{
+			static enum led_id white_led[] = {
+				LED_POWER,
+				LED_WAN_NORMAL,
+				LED_WIFI,
+				LED_LAN,
+				LED_ID_MAX
+			};
+			static enum led_id red_led[] = {
+				LED_WAN,
+				LED_GROUP1_RED,
+				LED_GROUP2_RED,
+				LED_GROUP3_RED,
+				LED_ID_MAX
+			};
+			static enum led_id green_led[] = {
+				LED_GROUP1_GREEN,
+				LED_GROUP2_GREEN,
+				LED_GROUP3_GREEN,
+				LED_ID_MAX
+			};
+			static enum led_id blue_led[] = {
+				LED_GROUP1_BLUE,
+				LED_GROUP2_BLUE,
+				LED_GROUP3_BLUE,
+				LED_ID_MAX
+			};
+
+			all_led[LED_COLOR_WHITE] = white_led;
+			all_led[LED_COLOR_RED] = red_led;
+			all_led[LED_COLOR_GREEN] = green_led;
+			all_led[LED_COLOR_BLUE] = blue_led;
+			LEDGroupReset(LED_ON);
+		}
+		break;
+#endif
+
+#if defined(GS7_PRO_MAX)
+	case MODEL_GS7_PRO_MAX:
 		{
 			static enum led_id white_led[] = {
 				LED_POWER,
@@ -2799,7 +2838,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		return setAllSpecificColorLedOn(LED_COLOR_PURPLE);
 	}
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI)
 	else if (!strcmp(command, "Set_Red1LedOn")) {
 		setAllLedOff();
 		cled_set(cled_gpio[0], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
@@ -2826,7 +2865,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		setAntennaGroupOn();
 		puts("1");
 		return 0;
-#elif !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GT10) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO)
+#elif !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GT10) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GS7_PRO_MAX)
 	} else if (!strcmp(command, "Set_Red4LedOn")) {
 #ifdef GT7
 		setAllRedLedOn();
@@ -2866,7 +2905,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		led_control(LED_GROUP3_GREEN, LED_ON);
 		puts("1");
 		return 0;
-#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO)
+#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GS7_PRO_MAX)
 	} else if (!strcmp(command, "Set_Green4LedOn")) {
 #ifdef GT7
 		setAllGreenLedOn();
@@ -2906,7 +2945,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		led_control(LED_GROUP3_BLUE, LED_ON);
 		puts("1");
 		return 0;
-#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO)
+#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTBE98) && !defined(GTAX6000) && !defined(GT10) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GS7_PRO_MAX)
 	} else if (!strcmp(command, "Set_Blue4LedOn")) {
 #ifdef GT7
 		setAllBlueLedOn();
@@ -4472,7 +4511,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 	}
 #endif
 
-#ifdef RTCONFIG_PRESSURE_SENSOR
+#if defined(RTCONFIG_PRESSURE_SENSOR) || defined(RTCONFIG_PRESSURE_SENSOR_CMP201)
 	else if (!strcmp(command, "Get_PressureOffset")) {
 		get_pressure_offset();
 		return 0;
@@ -5255,7 +5294,7 @@ int ate_dev_status(void)
 			ate_wl_band++;
 			continue;
 		}
-#if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(BT10) || defined(GT10) || defined(RTAX9000) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(BT10) || defined(GT10) || defined(RTAX9000) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 		// override ate_wl_band since wifi radio sequence is not habitual
 		if (wl_get_band(word) == WLC_BAND_2G)
 			ate_wl_band = 1;

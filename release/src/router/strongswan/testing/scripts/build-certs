@@ -12,7 +12,7 @@ running_any $STRONGSWANHOSTS && die "Please stop test environment before running
 SRCUID=${SUDO_UID:-$(id -u)}
 SRCGID=${SUDO_GID:-$(id -g)}
 
-check_commands partprobe qemu-img qemu-nbd bindfs
+check_commands blockdev qemu-img qemu-nbd bindfs
 
 load_qemu_nbd
 
@@ -22,7 +22,9 @@ mkdir -p $IMGDIR
 log_action "Connecting root image to NBD device $NBDEV"
 execute "qemu-nbd -c $NBDEV $ROOTIMG"
 do_on_exit qemu-nbd -d $NBDEV
-partprobe $NBDEV
+# wait for disk to become ready with newer QEMU versions
+sleep 1
+blockdev --rereadpt $NBDEV
 
 log_action "Mounting $NBDPARTITION to $LOOPDIR"
 execute "mount $NBDPARTITION $LOOPDIR"

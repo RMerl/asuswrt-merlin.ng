@@ -234,7 +234,6 @@ static CK_MECHANISM_PTR algo_to_mechanism(hash_algorithm_t algo, size_t *size)
 		CK_MECHANISM mechanism;
 		size_t size;
 	} mappings[] = {
-		{HASH_MD2,		{CKM_MD2,		NULL, 0},	HASH_SIZE_MD2},
 		{HASH_MD5,		{CKM_MD5,		NULL, 0},	HASH_SIZE_MD5},
 		{HASH_SHA1,		{CKM_SHA_1,		NULL, 0},	HASH_SIZE_SHA1},
 		{HASH_SHA256,	{CKM_SHA256,	NULL, 0},	HASH_SIZE_SHA256},

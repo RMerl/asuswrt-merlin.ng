@@ -1,0 +1,423 @@
+.\" -*- nroff -*- --------------------------------------------------------- *
+.\"  
+.\" Copyright (c) 1990, 1993, 1994
+.\"     The Regents of the University of California.  All rights reserved.
+.\"
+.\" Copyright 2001-2009 H. Peter Anvin - All Rights Reserved
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. Neither the name of the University nor the names of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\"----------------------------------------------------------------------- */
+.TH TFTPD 8 "14 September 2009" "tftp-hpa @@VERSION@@" "System Manager's Manual"
+.SH NAME
+.B tftpd
+\- Trivial File Transfer Protocol server
+.SH SYNOPSIS
+.B in.tftpd
+.RI [ options... ]
+.I directory...
+.SH DESCRIPTION
+.B tftpd
+is a server for the Trivial File Transfer Protocol.  The TFTP
+protocol is extensively used to support remote booting of diskless
+devices.  The server is normally started by
+.BR inetd ,
+but can also run standalone.
+.PP
+.SH OPTIONS
+.TP
+\fB\-\-ipv4\fP, \fB\-4\fP
+Connect with IPv4 only, even if IPv6 support was compiled in.
+.TP
+\fB\-\-ipv6\fP, \fB\-6\fP
+Connect with IPv6 only, if compiled in.
+.TP
+\fB\-l\fP, \fB\-\-listen\fP
+Run the server in standalone (listen) mode, rather than run from
+.BR inetd .
+In listen mode, the
+.B \-\-timeout
+option is ignored, and the
+.B \-\-address
+option can be used to specify a specific local address or port to
+listen to.
+.TP
+\fB\-\-foreground\fP, \fB\-L\fP
+Similar to
+.B \-\-listen
+but do not detach from the foreground process.  Implies
+.BR \-\-listen .
+.TP
+\fB\-\-address\fP \fI[address][:port]\fP, \fB\-a\fP \fI[address][:port]\fP
+Specify a specific
+.I address
+and
+.I port
+to listen to when called with the
+.B \-\-listen
+or
+.B \-\-foreground
+option.  The default is to listen to the
+.I tftp
+port specified in
+.I /etc/services
+on all local addresses.
+
+.B Please note:
+Numeric IPv6 adresses must be enclosed in square brackets
+to avoid ambiguity with the optional port information.
+.TP
+\fB\-\-create\fP, \fB\-c\fP
+Allow new files to be created.  By default,
+.B tftpd
+will only allow upload of files that already exist.  Files are created
+with default permissions allowing anyone to read or write them, unless
+the
+.B \-\-permissive
+or
+.B \-\-umask
+options are specified.
+.TP
+\fB\-\-secure\fP, \fB\-s\fP
+Change root directory on startup.  This means the remote host does not
+need to pass along the directory as part of the transfer, and may add
+security.  When
+.B \-\-secure
+is specified, exactly one
+.I directory
+should be specified on the command line.  The use of this option is
+recommended for security as well as compatibility with some boot ROMs
+which cannot be easily made to include a directory name in its request.
+.TP
+\fB\-\-user\fP \fIusername\fP, \fB\-u\fP \fIusername\fP
+Specify the username which
+.B tftpd
+will run as; the default is "nobody".  The user ID, group ID, and (if
+possible on the platform) the supplementary group IDs will be set to
+the ones specified in the system permission database for this
+username.
+.TP
+\fB\-\-umask\fP \fIumask\fP, \fB\-U\fP \fIumask\fP
+Sets the \fIumask\fP for newly created files to the specified value.
+The default is zero (anyone can read or write) if the
+.B \-\-permissive
+option is not specified, or inherited from the invoking process if
+.B \-\-permissive
+is specified.
+.TP
+\fB\-\-permissive\fP, \fB\-p\fP
+Perform no additional permissions checks above the normal
+system-provided access controls for the user specified via the
+.B \-\-user
+option.
+.TP
+\fB\-\-pidfile\fP \fIpidfile\fP, \fB\-P\fP \fIpidfile\fP
+When run in standalone mode, write the process ID of the listening
+server into \fIpidfile\fP.  On normal termination (SIGTERM or SIGINT)
+the pid file is automatically removed.
+.TP
+\fB\-\-timeout\fP \fItimeout\fP, \fB\-t\fP \fItimeout\fP
+When run from
+.B inetd
+this specifies how long, in seconds, to wait for a second connection
+before terminating the server.
+.B inetd
+will then respawn the server when another request comes in.  The
+default is 900 (15 minutes.)
+.TP
+\fB\-\-retransmit\fP \fItimeout, \fP\fB\-T\fP \fItimeout\fP
+Determine the default timeout, in microseconds, before the first
+packet is retransmitted.  This can be modified by the client if the
+.B timeout
+or
+.B utimeout
+option is negotiated.  The default is 1000000 (1 second.)
+.TP
+\fB\-\-mapfile\fP \fIremap-file\fP, \fB\-m\fP \fIremap-file\fP
+Specify the use of filename remapping.  The
+.I remap-file
+is a file containing the remapping rules.  See the section on filename
+remapping below.  This option may not be compiled in, see the output of
+.B "in.tftpd \-V"
+to verify whether or not it is available.
+.TP
+\fB\-\-verbose\fP, \fB\-v\fP
+Increase the logging verbosity of
+.BR tftpd .
+This flag can be specified multiple times for even higher verbosity.
+.TP
+\fB\-\-verbosity\fP \fIvalue\fP
+Set the verbosity value to \fIvalue\fP.
+.TP
+\fB\-\-refuse\fP \fItftp-option\fP, \fB\-r\fP \fItftp-option\fP
+Indicate that a specific RFC 2347 TFTP option should never be
+accepted.
+.TP
+\fB\-\-blocksize\fP \fImax-block-size\fP, \fB\-B\fP \fImax-block-size\fP
+Specifies the maximum permitted block size.  The permitted range for
+this parameter is from 512 to 65464.  Some embedded clients request
+large block sizes and yet do not handle fragmented packets correctly;
+for these clients, it is recommended to set this value to the smallest
+MTU on your network minus 32 bytes (20 bytes for IP, 8 for UDP, and 4
+for TFTP; less if you use IP options on your network.)  For example,
+on a standard Ethernet (MTU 1500) a value of 1468 is reasonable.
+.TP
+\fB\-\-port-range\fP \fIport:port\fP, \fB\-R\fP \fIport:port\fP
+Force the server port number (the Transaction ID) to be in the
+specified range of port numbers.
+.TP
+\fB\-\-version\fP, \fB\-V\fP
+Print the version number and configuration to standard output, then
+exit gracefully.
+.SH "RFC 2347 OPTION NEGOTIATION"
+This version of
+.B tftpd
+supports RFC 2347 option negotation.  Currently implemented options
+are:
+.TP
+\fBblksize\fP (RFC 2348)
+Set the transfer block size to anything less than or equal to the
+specified option.  This version of
+.B tftpd
+can support any block size up to the theoretical maximum of 65464
+bytes.
+.TP
+\fBblksize2\fP (nonstandard)
+Set the transfer block size to anything less than or equal to the
+specified option, but restrict the possible responses to powers of 2.
+The maximum is 32768 bytes (the largest power of 2 less than or equal
+to 65464.)
+.TP
+\fBtsize\fP (RFC 2349)
+Report the size of the file that is about to be transferred.  This
+version of
+.B tftpd
+only supports the
+.B tsize
+option for binary (octet) mode transfers.
+.TP
+\fBtimeout\fP (RFC 2349)
+Set the time before the server retransmits a packet, in seconds.
+.TP
+\fButimeout\fP (nonstandard)
+Set the time before the server retransmits a packet, in microseconds.
+.TP
+\fBrollover\fP (nonstandard)
+Set the block number to resume at after a block number rollover.  The
+default and recommended value is zero.
+.PP
+The
+.B \-\-refuse
+option can be used to disable specific options; this may be necessary
+to work around bugs in specific TFTP client implementations.  For
+example, some TFTP clients have been found to request the
+.B blksize
+option, but crash with an error if they actually get the option
+accepted by the server.
+.SH "FILENAME REMAPPING"
+The
+.B \-\-mapfile
+option specifies a file which contains filename remapping rules.  Each
+non-comment line (comments begin with hash marks,
+.BR # )
+contains an
+.IR operation ,
+specified below; a
+.IR regex ,
+a regular expression in the style of
+.BR egrep ;
+and optionally a
+.IR "replacement pattern" .
+The operation indicated by
+.I operation
+is performed if the
+.I regex
+matches all or part of the filename.  Rules are processed from the top
+down, and by default, all rules are processed even if there is a
+match.
+.PP
+The
+.I operation
+can be any combination of the following letters:
+.TP
+.B r
+Replace the substring matched by
+.I regex
+by the
+.IR "replacement pattern" .
+The replacement pattern may contain escape sequences; see below.
+.TP
+.B g
+Repeat this rule until it no longer matches.  This is always used with
+.BR r .
+.TP
+.B i
+Match the
+.I regex
+case-insensitively.  By default it is case sensitive.
+.TP
+.B e
+If this rule matches, end rule processing after executing the rule.
+.TP
+.B s
+If this rule matches, start rule processing over from the very first
+rule after executing this rule.
+.TP
+.B a
+If this rule matches, refuse the request and send an access denied
+error to the client.
+.TP
+.B G
+This rule applies to GET (RRQ) requests only.
+.TP
+.B P
+This rule applies to PUT (WRQ) requests only.
+.TP
+.B ~
+Inverse the sense of this rule, i.e. execute the
+.I operation
+only if the
+.I regex
+.I doesn't
+match.  Cannot used together with 
+.BR r .
+.PP
+The following escape sequences are recognized as part of the
+.IR "replacement pattern" :
+.TP
+\fB\\0\fP
+The entire string matched by the
+.IR regex .
+.TP
+\fB\\1\fP to \fB\\9\fP
+The strings matched by each of the first nine parenthesized
+subexpressions, \\( ... \\), of the
+.I regex
+pattern.
+.TP
+\fB\\i\fP
+The IP address of the requesting host, in dotted-quad notation
+(e.g. 192.0.2.169).
+.TP
+\fB\\x\fP
+The IP address of the requesting host, in hexadecimal notation
+(e.g. C00002A9).
+.TP
+\fB\\\\\fP
+Literal backslash.
+.TP
+\fB\\\fP\fIwhitespace\fP
+Literal whitespace.
+.TP
+\fB\\#\fP
+Literal hash mark.
+.TP
+\fB\\U\fP
+Turns all subsequent letters to upper case.
+.TP
+\fB\\L\fP
+Turns all subsequent letters to lower case.
+.TP
+\fB\\E\fP
+Cancels the effect of \fB\\U\fP or \fB\\L\fP.
+.PP
+If the mapping file is changed, you need to send
+.B SIGHUP
+to any outstanding
+.B tftpd
+process.
+.SH "SECURITY"
+The use of TFTP services does not require an account or password on
+the server system.  Due to the lack of authentication information,
+.B tftpd
+will allow only publicly readable files (o+r) to be accessed, unless the
+.B \-\-permissive
+option is specified.  Files may be written only if they already exist
+and are publicly writable, unless the
+.B \-\-create
+option is specified.  Note that this extends the concept of ``public''
+to include all users on all hosts that can be reached through the
+network; this may not be appropriate on all systems, and its
+implications should be considered before enabling TFTP service.
+Typically, some kind of firewall or packet-filter solution should be
+employed.  If appropriately compiled (see the output of
+.BR  "in.tftpd \-\-version" )
+.B tftpd
+will query the
+.BR hosts_access (5)
+database for access control information.  This may be slow; sites
+requiring maximum performance may want to compile without this option
+and rely on firewalling or kernel-based packet filters instead.
+.PP
+The server should be set to run as the user with the lowest possible
+privilege; please see the
+.B \-\-user
+flag.  It is probably a good idea to set up a specific user account for
+.BR tftpd ,
+rather than letting it run as "nobody", to guard against privilege
+leaks between applications.
+.PP
+Access to files can, and should, be restricted by invoking
+.B tftpd
+with a list of directories by including pathnames as server program
+arguments on the command line.  In this case access is restricted to
+files whole names are prefixed by one of the given directories.  If
+possible, it is recommended that the
+.B \-\-secure
+flag is used to set up a chroot() environment for the server to run in
+once a connection has been set up.
+.PP
+Finally, the filename remapping
+.RB ( \-\-mapfile
+flag) support can be used to provide a limited amount of additional
+access control.
+.SH "CONFORMING TO"
+RFC 1123,
+.IR "Requirements for Internet Hosts \- Application and Support" .
+.br
+RFC 1350,
+.IR "The TFTP Protocol (revision 2)" .
+.br
+RFC 2347,
+.IR "TFTP Option Extension" .
+.br
+RFC 2348,
+.IR "TFTP Blocksize Option" .
+.br
+RFC 2349,
+.IR "TFTP Timeout Interval and Transfer Size Options" .
+.SH "AUTHOR"
+This version of
+.B tftpd
+is maintained by H. Peter Anvin <hpa@zytor.com>.  It was derived from,
+but has substantially diverged from, an OpenBSD source base, with
+added patches by Markus Gutschke and Gero Kulhman.
+.SH "SEE ALSO"
+.BR tftp (1),
+.BR egrep (1),
+.BR umask (2),
+.BR hosts_access (5),
+.BR regex (7),
+.BR inetd (8).

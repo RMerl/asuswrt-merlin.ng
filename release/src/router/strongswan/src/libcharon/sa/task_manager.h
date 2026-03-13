@@ -202,9 +202,10 @@ struct task_manager_t {
 	 *
 	 * @param cfg			CHILD_SA config to establish
 	 * @param args			optional arguments for the initiation
+	 * @param child_sa		optional CHILD_SA when recreating (instead of args)
 	 */
 	void (*queue_child)(task_manager_t *this, child_cfg_t *cfg,
-						child_init_args_t *args);
+						child_init_args_t *args, child_sa_t *child_sa);
 
 	/**
 	 * Queue CHILD_SA rekeying tasks.

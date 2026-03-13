@@ -49,6 +49,8 @@ enum builder_part_t {
 	BUILD_FROM_FILE,
 	/** unix socket of a ssh/pgp agent, char* */
 	BUILD_AGENT_SOCKET,
+	/** user to access a ssh/pgp agent socket, char* */
+	BUILD_AGENT_USER,
 	/** An arbitrary blob of data, chunk_t */
 	BUILD_BLOB,
 	/** DER encoded ASN.1 blob, chunk_t */

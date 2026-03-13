@@ -55,11 +55,6 @@ struct private_winhttp_fetcher_t {
 	chunk_t request;
 
 	/**
-	 * HTTP version string to use
-	 */
-	LPWSTR version;
-
-	/**
 	 * Optional HTTP headers, as allocated LPWSTR
 	 */
 	linked_list_t *headers;
@@ -264,7 +259,7 @@ METHOD(fetcher_t, fetch, status_t,
 		connection = WinHttpConnect(this->session, host, port, 0);
 		if (connection)
 		{
-			request = WinHttpOpenRequest(connection, method, path, this->version,
+			request = WinHttpOpenRequest(connection, method, path, NULL,
 										 WINHTTP_NO_REFERER,
 										 WINHTTP_DEFAULT_ACCEPT_TYPES, flags);
 			if (request)
@@ -334,9 +329,6 @@ METHOD(fetcher_t, set_option, bool,
 		case FETCH_REQUEST_HEADER:
 			supported = append_header(this, va_arg(args, char*));
 			break;
-		case FETCH_HTTP_VERSION_1_0:
-			this->version = L"HTTP/1.0";
-			break;
 		case FETCH_TIMEOUT:
 			this->timeout = va_arg(args, u_int) * 1000;
 			break;
@@ -359,7 +351,10 @@ METHOD(fetcher_t, set_option, bool,
 METHOD(fetcher_t, destroy, void,
 	private_winhttp_fetcher_t *this)
 {
-	WinHttpCloseHandle(this->session);
+	if (this->session)
+	{
+		WinHttpCloseHandle(this->session);
+	}
 	this->headers->destroy_function(this->headers, free);
 	free(this);
 }
@@ -378,7 +373,6 @@ winhttp_fetcher_t *winhttp_fetcher_create()
 				.destroy = _destroy,
 			},
 		},
-		.version = L"HTTP/1.1",
 		.cb = fetcher_default_callback,
 		.headers = linked_list_create(),
 		.session = WinHttpOpen(L"strongSwan WinHTTP fetcher",
@@ -389,7 +383,7 @@ winhttp_fetcher_t *winhttp_fetcher_create()
 
 	if (!this->session)
 	{
-		free(this);
+		destroy(this);
 		return NULL;
 	}
 

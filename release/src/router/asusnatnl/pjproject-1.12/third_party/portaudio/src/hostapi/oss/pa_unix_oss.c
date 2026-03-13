@@ -699,6 +699,9 @@ static PaError IsFormatSupported( struct PaUtilHostApiRepresentation *hostApi,
     if( tempDevHandle >= 0 )
         close( tempDevHandle );
 
+    (void) deviceName;
+    (void) inputSampleFormat;
+    (void) outputSampleFormat;
     return result;
 }
 
@@ -829,6 +832,7 @@ static PaError OpenDevices( const char *idevName, const char *odevName, int *ide
     }
 
 error:
+    (void) duplex;
     return result;
 }
 
@@ -1723,6 +1727,7 @@ static void *PaOSS_AudioThreadProc( void *userData )
     pthread_cleanup_pop( 1 );
 
 error:
+    (void) result;
     pthread_exit( NULL );
 }
 

@@ -36,7 +36,7 @@
 #include <shutils.h>
 #include <rc.h>
 
-#if defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 #define LEDG_WAIT	30
 #else
 #define LEDG_WAIT	20
@@ -247,6 +247,7 @@ ledbtn_main(int argc, char *argv[])
 	signal(SIGUSR1, phystatus_reset);
 #endif
 
+	LED_status = nvram_get_int("AllLED");
 	ledbtn_init();
 	ledbtn_alarmtimer();
 

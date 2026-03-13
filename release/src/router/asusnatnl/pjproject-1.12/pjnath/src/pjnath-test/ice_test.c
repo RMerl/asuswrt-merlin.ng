@@ -613,42 +613,42 @@ int ice_test(void)
 	struct test_cfg	 ua2;
     } sess_cfg[] = 
     {
-	/*  Role    comp#   host?   stun?   turn?   flag?  ans_del snd_del des_del */
+	/*  Role    comp#   host?   stun?   turn?   ipv6?   flag?  ans_del snd_del des_del */
 	{
 	    "hosts candidates only",
 	    0xFFFF,
-	    {ROLE1, 1,	    YES,    NO,	    NO,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}},
-	    {ROLE2, 1,	    YES,    NO,	    NO,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}}
+	    {ROLE1, 1,	    YES,    NO,	    NO,	    NO,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}},
+	    {ROLE2, 1,	    YES,    NO,	    NO,	    NO,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}}
 	},
 	{
 	    "host and srflxes",
 	    0xFFFF,
-	    {ROLE1, 1,	    YES,    YES,    NO,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}},
-	    {ROLE2, 1,	    YES,    YES,    NO,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}}
+	    {ROLE1, 1,	    YES,    YES,    NO,	    NO,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}},
+	    {ROLE2, 1,	    YES,    YES,    NO,	    NO,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}}
 	},
 	{
 	    "host vs relay",
 	    0xFFFF,
-	    {ROLE1, 1,	    YES,    NO,    NO,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}},
-	    {ROLE2, 1,	    NO,     NO,    YES,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}}
+	    {ROLE1, 1,	    YES,    NO,    NO,	    NO,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}},
+	    {ROLE2, 1,	    NO,     NO,    YES,	    NO,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}}
 	},
 	{
 	    "relay vs host",
 	    0xFFFF,
-	    {ROLE1, 1,	    NO,	    NO,   YES,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}},
-	    {ROLE2, 1,	   YES,     NO,    NO,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}}
+	    {ROLE1, 1,	    NO,	    NO,   YES,	    NO,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}},
+	    {ROLE2, 1,	   YES,     NO,    NO,	    NO,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}}
 	},
 	{
 	    "relay vs relay",
 	    0xFFFF,
-	    {ROLE1, 1,	    NO,	    NO,   YES,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}},
-	    {ROLE2, 1,	    NO,     NO,   YES,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}}
+	    {ROLE1, 1,	    NO,	    NO,   YES,	    NO,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}},
+	    {ROLE2, 1,	    NO,     NO,   YES,	    NO,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}}
 	},
 	{
 	    "all candidates",
 	    0xFFFF,
-	    {ROLE1, 1,	   YES,	   YES,   YES,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}},
-	    {ROLE2, 1,	   YES,    YES,   YES,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}}
+	    {ROLE1, 1,	   YES,	   YES,   YES,	    NO,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}},
+	    {ROLE2, 1,	   YES,    YES,   YES,	    NO,	    NO,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}}
 	},
     };
 
@@ -665,9 +665,9 @@ int ice_test(void)
 	{
 	    "Basic with host candidates",
 	    0x0,
-	    /*  Role    comp#   host?   stun?   turn?   flag?  ans_del snd_del des_del */
-	    {ROLE1,	1,	YES,     NO,	    NO,	    0,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}},
-	    {ROLE2,	1,	YES,     NO,	    NO,	    0,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}}
+	    /*  Role    comp#   host?   stun?   turn?   ipv6?   flag?  ans_del snd_del des_del */
+	    {ROLE1,	1,	YES,     NO,	    NO,	    NO,	    0,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}},
+	    {ROLE2,	1,	YES,     NO,	    NO,	    NO,	    0,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}}
 	};
 
 	rc = perform_test(cfg.title, &stun_cfg, cfg.server_flag, 
@@ -690,9 +690,9 @@ int ice_test(void)
 	{
 	    "Basic with srflx candidates",
 	    0xFFFF,
-	    /*  Role    comp#   host?   stun?   turn?   flag?  ans_del snd_del des_del */
-	    {ROLE1,	1,	YES,    YES,	    NO,	    0,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}},
-	    {ROLE2,	1,	YES,    YES,	    NO,	    0,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}}
+	    /*  Role    comp#   host?   stun?   turn?   ipv6?   flag?  ans_del snd_del des_del */
+	    {ROLE1,	1,	YES,    YES,	    NO,	    NO,	    0,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}},
+	    {ROLE2,	1,	YES,    YES,	    NO,	    NO,	    0,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}}
 	};
 
 	rc = perform_test(cfg.title, &stun_cfg, cfg.server_flag, 
@@ -716,9 +716,9 @@ int ice_test(void)
 	{
 	    "Basic with relay candidates",
 	    0xFFFF,
-	    /*  Role    comp#   host?   stun?   turn?   flag?  ans_del snd_del des_del */
-	    {ROLE1,	1,	 NO,     NO,	  YES,	    0,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}},
-	    {ROLE2,	1,	 NO,     NO,	  YES,	    0,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}}
+	    /*  Role    comp#   host?   stun?   turn?   ipv6?   flag?  ans_del snd_del des_del */
+	    {ROLE1,	1,	 NO,     NO,	  YES,	    0,	    0,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}},
+	    {ROLE2,	1,	 NO,     NO,	  YES,	    0,	    0,	    0,	    0,	    0, {PJ_SUCCESS, PJ_SUCCESS}}
 	};
 
 	rc = perform_test(cfg.title, &stun_cfg, cfg.server_flag, 
@@ -742,9 +742,9 @@ int ice_test(void)
 	{
 	    "STUN resolution failure",
 	    0x0,
-	    /*  Role    comp#   host?   stun?   turn?   flag?  ans_del snd_del des_del */
-	    {ROLE1,	2,	 NO,    YES,	    NO,	    0,	    0,	    0,	    0, {PJNATH_ESTUNTIMEDOUT, -1}},
-	    {ROLE2,	2,	 NO,    YES,	    NO,	    0,	    0,	    0,	    0, {PJNATH_ESTUNTIMEDOUT, -1}}
+	    /*  Role    comp#   host?   stun?   turn?   turn?   flag?  ans_del snd_del des_del */
+	    {ROLE1,	2,	 NO,    YES,	    NO,	    NO,	    0,	    0,	    0,	    0, {PJNATH_ESTUNTIMEDOUT, -1}},
+	    {ROLE2,	2,	 NO,    YES,	    NO,	    NO,	    0,	    0,	    0,	    0, {PJNATH_ESTUNTIMEDOUT, -1}}
 	};
 
 	rc = perform_test(cfg.title, &stun_cfg, cfg.server_flag, 
@@ -768,9 +768,9 @@ int ice_test(void)
 	{
 	    "TURN allocation failure",
 	    0xFFFF,
-	    /*  Role    comp#   host?   stun?   turn?   flag?  ans_del snd_del des_del */
-	    {ROLE1,	2,	 NO,    NO,	YES, WRONG_TURN,    0,	    0,	    0, {PJ_STATUS_FROM_STUN_CODE(401), -1}},
-	    {ROLE2,	2,	 NO,    NO,	YES, WRONG_TURN,    0,	    0,	    0, {PJ_STATUS_FROM_STUN_CODE(401), -1}}
+	    /*  Role    comp#   host?   stun?   turn?   ipv6?   flag?  ans_del snd_del des_del */
+	    {ROLE1,	2,	 NO,    NO,	YES, WRONG_TURN,    0,    0,	    0,	    0, {PJ_STATUS_FROM_STUN_CODE(401), -1}},
+	    {ROLE2,	2,	 NO,    NO,	YES, WRONG_TURN,    0,    0,	    0,	    0, {PJ_STATUS_FROM_STUN_CODE(401), -1}}
 	};
 
 	rc = perform_test(cfg.title, &stun_cfg, cfg.server_flag, 
@@ -794,9 +794,9 @@ int ice_test(void)
 	{
 	    "STUN failure, testing TURN deallocation",
 	    0xFFFF & (~(CREATE_STUN_SERVER)),
-	    /*  Role    comp#   host?   stun?   turn?   flag?  ans_del snd_del des_del */
-	    {ROLE1,	2,	 YES,    YES,	YES,	0,    0,	    0,	    0, {PJNATH_ESTUNTIMEDOUT, -1}},
-	    {ROLE2,	2,	 YES,    YES,	YES,	0,    0,	    0,	    0, {PJNATH_ESTUNTIMEDOUT, -1}}
+	    /*  Role    comp#   host?   stun?   turn?   ipv6?   flag?  ans_del snd_del des_del */
+	    {ROLE1,	2,	 YES,    YES,	YES,	0,	0,    0,	    0,	    0, {PJNATH_ESTUNTIMEDOUT, -1}},
+	    {ROLE2,	2,	 YES,    YES,	YES,	0,	0,    0,	    0,	    0, {PJNATH_ESTUNTIMEDOUT, -1}}
 	};
 
 	rc = perform_test(cfg.title, &stun_cfg, cfg.server_flag, 

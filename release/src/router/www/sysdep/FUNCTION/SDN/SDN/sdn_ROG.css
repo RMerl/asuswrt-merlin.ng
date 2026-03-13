@@ -343,7 +343,7 @@
 	background-image: url(/images/New_ui/SDN/rog_theme/Notification/wifi_mlo.svg);
 }
 .feature_desc_container .title{
-	color: #FF3535;
+	color: #FF3535 !important;
 }
 .feature_desc_container .desc{
 	color: #ebebeb;

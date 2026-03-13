@@ -1,4 +1,5 @@
-﻿:root{
+﻿:root,
+:host{
 	--primary-color: #FF9E1B;
 	--primary-alpha40: rgba(255,170,50,0.4);
 	--bg-container: #1C1C1D;
@@ -256,6 +257,9 @@
 }
 .customize_alert .desc{
 	color: #FFFFFF;
+}
+.customize_alert .title{
+	color: #FF9E1B;
 }
 .del_profile .title{
 	color: #FFFFFF;

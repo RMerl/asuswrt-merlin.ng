@@ -113,6 +113,9 @@ CFLAGS += -I$(TOP_PLATFORM)/bcm_flashutil -I$(HND_SRC)/userspace/public/include 
 ifeq ($(BRCM_CHIP),6764)
 CFLAGS += -DCHIP_BCM6764
 endif
+ifeq ($(BRCM_CHIP),6813)
+CFLAGS += -DCHIP_BCM6813
+endif
 else
 LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -L$(TOP_PLATFORM)/bcm_flashutil -lbcm_flashutil -L$(TOP_PLATFORM)/bcm_util $(if $(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),-lbcm_util,-lbcm_crc) -L$(TOP_PLATFORM)/bcm_boardctl -lbcm_boardctl
 endif
@@ -130,7 +133,13 @@ LDFLAGS += -L$(WPA_SUPPLICANT_DIR)/wpa_supplicant -L$(INSTALLDIR)/wpa_supplicant
 WPS_PBCD := wps_pbcd
 ifeq ($(or $(RTCONFIG_WIFI6E),$(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916),$(RTCONFIG_BCM_502L07P2)),y)
 ifeq ($(RC_HOSTAPD_BE),y)
-ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250122)
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126)
+OBJS_WPS_PBCD := $(if $(wildcard sysdeps/broadcom/wps_pbcd_be_6.3.0_17.10.515.0.c),wps_pbcd_be_6.3.0_17.10.515.0.o,prebuild/wps_pbcd_be_6.3.0_17.10.515.0.o)
+OBJS_WPS_PBCD += $(if $(wildcard sysdeps/broadcom/hostapd_config_be_6.3.0_17.10.515.0.c),hostapd_config_be_6.3.0_17.10.515.0.o,prebuild/hostapd_config_be_6.3.0_17.10.515.0.o)
+else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506)
+OBJS_WPS_PBCD := $(if $(wildcard sysdeps/broadcom/wps_pbcd_be_6.2.0_25.438.64.0.c),wps_pbcd_be_6.2.0_25.438.64.0.o,prebuild/wps_pbcd_be_6.2.0_25.438.64.0.o)
+OBJS_WPS_PBCD += $(if $(wildcard sysdeps/broadcom/hostapd_config_be_6.2.0_25.438.64.0.c),hostapd_config_be_6.2.0_25.438.64.0.o,prebuild/hostapd_config_be_6.2.0_25.438.64.0.o)
+else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250122)
 OBJS_WPS_PBCD := $(if $(wildcard sysdeps/broadcom/wps_pbcd_be_369_39041.c),wps_pbcd_be_369_39041.o,prebuild/wps_pbcd_be_369_39041.o)
 OBJS_WPS_PBCD += $(if $(wildcard sysdeps/broadcom/hostapd_config_be_369_39041.c),hostapd_config_be_369_39041.o,prebuild/hostapd_config_be_369_39041.o)
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
@@ -207,6 +216,15 @@ endif
 ifeq ($(RTCONFIG_HTTPS),y)
 CFLAGS += -I$(TOP)/openssl/include
 LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl $(if $(RTCONFIG_OPENSSL11),-lpthread,)
+endif
+
+ifeq ($(RTCONFIG_GTBOOSTER),y)
+CFLAGS += -I$(TOP)/sqlite
+CFLAGS += -I$(TOP)/ark
+CFLAGS += -I$(TOP)/json-c
+LDFLAGS += -L$(TOP)/ark -lark_db
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+LDFLAGS += -L$(TOP)/sqlite/.libs -lsqlite3
 endif
 
 ifeq ($(RTCONFIG_HNS),y)
@@ -389,6 +407,10 @@ CFLAGS += -DWIFI7_SDK_20241007
 endif
 ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250122)
 CFLAGS += -DWIFI7_SDK_20250122
+endif
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126))
+# don't need -DWIFI7_SDK_20250506, move to src-rt/Makefile
+CFLAGS += -I$(HND_SRC)/router-sysdep/bcm_flashutil/
 endif
 endif
 
@@ -687,9 +709,12 @@ OBJS += arpreq.o
 OBJS += psta_monitor.o
 endif
 
-
 ifeq ($(RTCONFIG_NBR_RPT),y)
 OBJS += nbr_monitor.o
+endif
+
+ifeq ($(and $(RTCONFIG_BCMWL6),$(RTCONFIG_WISP)),y)
+OBJS += wlcmon.o
 endif
 
 ifeq ($(or $(RTCONFIG_BCMWL6),$(RTCONFIG_LANTIQ),$(RTCONFIG_QCA),$(RTCONFIG_REALTEK),$(RTCONFIG_RALINK)),y)
@@ -804,6 +829,10 @@ ifeq ($(RTCONFIG_HNS),y)
 OBJS += hns.o
 endif
 
+ifeq ($(RTCONFIG_GTBOOSTER),y)
+OBJS += ark.o
+endif
+
 ifeq ($(RTCONFIG_BWDPI),y)
 OBJS += bwdpi.o
 OBJS += bwdpi_check.o
@@ -865,6 +894,10 @@ endif
 
 ifeq ($(RTCONFIG_PRESSURE_SENSOR),y)
 OBJS += pressure.o
+endif
+
+ifeq ($(RTCONFIG_PRESSURE_SENSOR_CMP201),y)
+OBJS += cmp-pressure.o
 endif
 
 ifeq ($(RTCONFIG_SMARTHAUL),y)
@@ -1068,7 +1101,11 @@ endif
 ifeq ($(RTCONFIG_BRCM_HOSTAPD),y)
 ifeq ($(or $(RTCONFIG_WIFI6E),$(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916),$(RTCONFIG_BCM_502L07P2)),y)
 ifeq ($(RC_HOSTAPD_BE),y)
-ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250122)
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126)
+OBJS += $(if $(wildcard sysdeps/broadcom/hostapd_config_be_6.3.0_17.10.515.0.c),hostapd_config_be_6.3.0_17.10.515.0.o,prebuild/hostapd_config_be_6.3.0_17.10.515.0.o)
+else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506)
+OBJS += $(if $(wildcard sysdeps/broadcom/hostapd_config_be_6.2.0_25.438.64.0.c),hostapd_config_be_6.2.0_25.438.64.0.o,prebuild/hostapd_config_be_6.2.0_25.438.64.0.o)
+else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250122)
 OBJS += $(if $(wildcard sysdeps/broadcom/hostapd_config_be_369_39041.c),hostapd_config_be_369_39041.o,prebuild/hostapd_config_be_369_39041.o)
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
 OBJS += $(if $(wildcard sysdeps/broadcom/hostapd_config_be_369_1808.c),hostapd_config_be_369_1808.o,prebuild/hostapd_config_be_369_1808.o)
@@ -1188,10 +1225,10 @@ ifeq ($(BUILD_NAME), GT10)
 export GT10=y
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-AX6000 GT10 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GS-BE18000 GS-BE12000 GS7_PRO GT7 GT-BE96_AI))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-AX6000 GT10 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GS-BE18000 GS-BE12000 GS7_PRO GT7 GS7_PRO_MAX GT-BE96_AI))
 LDFLAGS += -lm
 OBJS += ledg.o
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-AX6000 GT10 GS-BE18000 GS-BE12000 GS7_PRO GT7))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-AX6000 GT10 GS-BE18000 GS-BE12000 GS7_PRO GT7 GS7_PRO_MAX))
 OBJS += ledbtn.o
 CFLAGS += -DSW_LEDBTN
 endif
@@ -1209,10 +1246,10 @@ endif
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 RT-BE58U TUF-BE3600 RT-BE58U_V2 TUF-BE3600_V2 RT-BE55 RT-BE92U RT-BE95U RT-BE82U TUF-BE82 RT-BE58U_PRO GT-BE19000AI GT-BE96_AI))
 OBJS += rtkmonitor.o
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
+ifeq ($(RTCONFIG_MXL_826XX),y)
 OBJS += mxlmonitor.o
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT7))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT7 GS7_PRO_MAX))
 OBJS += ext84991.o
 endif
 
@@ -1275,7 +1312,7 @@ OBJS += es-ti.o
 endif
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
+ifeq ($(RTCONFIG_MXL_826XX),y)
 CFLAGS += -I$(TOP)/libhostapi/switch_hostapi/src \
 	  -I$(TOP)/libhostapi/switch_hostapi/include/gpy \
 	  -I$(TOP)/libhostapi/switch_hostapi/include/gswip \
@@ -1284,7 +1321,7 @@ LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 
 ifeq ($(RTCONFIG_BCM_AFC),y)
-OBJS += bcm_afc.o afc_coldreboot_monitor.o afc_heartbeat.o
+OBJS += bcm_afc.o afc_coldreboot_monitor.o afc_heartbeat.o afc_data_collector.o
 BCMAFC_OBJS += bcm_afc.o
 endif
 
@@ -1336,6 +1373,10 @@ endif
 
 ifeq ($(RTCONFIG_PRESSURE_SENSOR),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc pressure
+endif
+
+ifeq ($(RTCONFIG_PRESSURE_SENSOR_CMP201),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc cmp-pressure
 endif
 
 ifeq ($(RTCONFIG_SMARTHAUL),y)
@@ -1432,6 +1473,10 @@ endif
 
 ifeq ($(RTCONFIG_NBR_RPT),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc nbr_monitor
+endif
+
+ifeq ($(and $(RTCONFIG_BCMWL6),$(RTCONFIG_WISP)),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc wlcmon
 endif
 
 ifeq ($(or $(RTCONFIG_BCMWL6),$(RTCONFIG_LANTIQ),$(RTCONFIG_QCA),$(RTCONFIG_REALTEK),$(RTCONFIG_RALINK)),y)
@@ -1535,10 +1580,10 @@ endif
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 GT-BE19000 RT-BE58U TUF-BE3600 RT-BE58U_V2 TUF-BE3600_V2 RT-BE55 RT-BE92U RT-BE95U RT-BE82U TUF-BE82 RT-BE58U_PRO GT-BE19000AI GT-BE96_AI))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rtkmonitor
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
+ifeq ($(RTCONFIG_MXL_826XX),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc mxlmonitor
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT7))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT7 GS7_PRO_MAX))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ext84991
 endif
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE92U))
@@ -1596,12 +1641,18 @@ ifeq ($(RTCONFIG_APP_PREINSTALLED)$(RTCONFIG_APP_NETINSTALLED),y)
 endif
 endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc restart_wireless
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE92U))
+	@cd $(INSTALLDIR)/sbin && ln -sf rc restart_rtl8372
+endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc wpasupp
 	@cd $(INSTALLDIR)/sbin && ln -sf rc wlconf_pre
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX55 RT-AX1800 RT-AX58U_V2 RT-AX3000N BR63 GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 RT-BE58U_V2 TUF-BE3600_V2 RT-BE55 GT-BE19000 RT-BE92U RT-BE95U RT-BE82U TUF-BE82 RT-BE58U_PRO GT-BE19000AI RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7 GT-BE96_AI))
+ifeq ($(and $(CONFIG_BCMWL5),$(RTCONFIG_WIFI7)),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc wl_scb
+endif
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX55 RT-AX1800 RT-AX58U_V2 RT-AX3000N BR63 GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 RT-BE58U_V2 TUF-BE3600_V2 RT-BE55 GT-BE19000 RT-BE92U RT-BE95U RT-BE82U TUF-BE82 RT-BE58U_PRO GT-BE19000AI RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7 GS7_PRO_MAX GT-BE96_AI))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc config_switch
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 RT-BE58U_V2 TUF-BE3600_V2 GT-BE19000 RT-BE92U RT-BE95U RT-BE82U TUF-BE82 RT-BE58U_PRO GT-BE19000AI GT-BE96_AI GT7))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT-BE98 GT-BE98_PRO GT-BE96 RT-BE58U TUF-BE3600 RT-BE58U_V2 TUF-BE3600_V2 GT-BE19000 RT-BE92U RT-BE95U RT-BE82U TUF-BE82 RT-BE58U_PRO GT-BE19000AI GT-BE96_AI GT7 GS7_PRO_MAX))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc config_extwan
 	@cd $(INSTALLDIR)/sbin && ln -sf rc reset_extwan
 endif
@@ -1894,9 +1945,9 @@ ifeq ($(RTCONFIG_EXTPHY_BCM84880),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc get_ext_phy_id
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-AX6000 GT10 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GS-BE18000 GS-BE12000 GS7_PRO GT7 GT-BE96_AI))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-AX6000 GT10 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GS-BE18000 GS-BE12000 GS7_PRO GT7 GS7_PRO_MAX GT-BE96_AI))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ledg
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-AX6000 GT10 GS-BE18000 GS-BE12000 GS7_PRO GT7))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-AX6000 GT10 GS-BE18000 GS-BE12000 GS7_PRO GT7 GS7_PRO_MAX))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ledbtn
 endif
 endif
@@ -1997,6 +2048,7 @@ endif
 ifeq ($(RTCONFIG_BCM_AFC),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc afc_coldreboot_monitor
 	@cd $(INSTALLDIR)/sbin && ln -sf rc afc_heartbeat
+	@cd $(INSTALLDIR)/sbin && ln -sf rc afc_data_collector
 endif
 
 ifeq ($(RTCONFIG_MOCA),y)
@@ -2426,6 +2478,13 @@ pressure.o:
 endif
 endif
 
+ifeq ($(RTCONFIG_PRESSURE_SENSOR_CMP201),y)
+ifneq ($(wildcard ./prebuild/cmp-pressure.o),)
+cmp-pressure.o:
+	@-cp -f ./prebuild/cmp-pressure.o .
+endif
+endif
+
 ifeq ($(RTCONFIG_SMARTHAUL),y)
 ifneq ($(wildcard ./prebuild/smarthaul.o),)
 smarthaul.o:
@@ -2485,7 +2544,7 @@ endif
 endif
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-AX6000 GT10 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GS-BE18000 GS-BE12000 GS7_PRO GT7 GT-BE96_AI))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-AX6000 GT10 GT-BE98_PRO GT-BE96 GT-BE19000 GT-BE19000AI GS-BE18000 GS-BE12000 GS7_PRO GT7 GS7_PRO_MAX GT-BE96_AI))
 ifneq ($(wildcard ./prebuild/ledg.o),)
 ledg.o:
 	@-cp -f ./prebuild/ledg.o .
@@ -2503,13 +2562,13 @@ rtkmonitor.o:
 	@-cp -f ./prebuild/rtkmonitor.o .
 endif
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
+ifeq ($(RTCONFIG_MXL_826XX),y)
 ifneq ($(wildcard ./prebuild/mxlmonitor.o),)
 mxlmonitor.o:
 	@-cp -f ./prebuild/mxlmonitor.o .
 endif
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT7))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT7 GS7_PRO_MAX))
 ifneq ($(wildcard ./prebuild/ext84991.o),)
 ext84991.o:
 	@-cp -f ./prebuild/ext84991.o .
@@ -2581,6 +2640,10 @@ ifneq ($(wildcard ./prebuild/afc_coldreboot_monitor.o),)
 afc_coldreboot_monitor.o:
 	@-cp -f ./prebuild/afc_coldreboot_monitor.o .
 endif
+ifneq ($(wildcard ./prebuild/afc_data_collector.o),)
+afc_data_collector.o:
+	@-cp -f ./prebuild/afc_data_collector.o .
+endif
 endif
 
 ifeq ($(RTCONFIG_ENERGY_SAVE),y)
@@ -2610,6 +2673,13 @@ ifeq ($(RTCONFIG_AFC_POSITIONING),y)
 ifneq ($(wildcard ./prebuild/afc_positioning.o),)
 afc_positioning.o:
 	@-cp -f ./prebuild/afc_positioning.o .
+endif
+endif
+
+ifeq ($(RTCONFIG_GTBOOSTER),y)
+ifneq ($(wildcard ./prebuild/ark.o),)
+ark.o:
+	@-cp -f ./prebuild/ark.o .
 endif
 endif
 

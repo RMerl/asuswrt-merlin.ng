@@ -85,7 +85,8 @@ struct pjsip_transaction
     pj_pool_t		       *pool;           /**< Pool owned by the tsx. */
     pjsip_module	       *tsx_user;	/**< Transaction user.	    */
     pjsip_endpoint	       *endpt;          /**< Endpoint instance.     */
-    pj_mutex_t		       *mutex;          /**< Mutex for this tsx.    */
+    pj_bool_t			terminating;	/**< terminate() was called */
+    pj_grp_lock_t	       *grp_lock;       /**< Transaction grp lock.  */
     pj_mutex_t		       *mutex_b;	/**< Second mutex to avoid
 						     deadlock. It is used to
 						     protect timer.	    */
@@ -181,6 +182,10 @@ PJ_DECL(unsigned) pjsip_tsx_layer_get_tsx_count(int inst_id);
  * Find a transaction with the specified key. The transaction key normally
  * is created by calling #pjsip_tsx_create_key() from an incoming message.
  *
+ * IMPORTANT: To prevent deadlock, application should use
+ * #pjsip_tsx_layer_find_tsx2() instead which only adds a reference to
+ * the transaction instead of locking it.
+ *
  * @param inst_id   The instance id of pjsua.
  * @param key	    The key string to find the transaction.
  * @param lock	    If non-zero, transaction will be locked before the
@@ -193,6 +198,22 @@ PJ_DECL(unsigned) pjsip_tsx_layer_get_tsx_count(int inst_id);
 PJ_DECL(pjsip_transaction*) pjsip_tsx_layer_find_tsx( int inst_id,
 							  const pj_str_t *key,
 						      pj_bool_t lock );
+
+/**
+ * Find a transaction with the specified key. The transaction key normally
+ * is created by calling #pjsip_tsx_create_key() from an incoming message.
+ *
+ * @param key	    The key string to find the transaction.
+ * @param add_ref   If non-zero, transaction's reference will be added
+ *		    by one before the function returns, to make sure that
+ * 		    it's not deleted by other threads.
+ *
+ * @return	    The matching transaction instance, or NULL if transaction
+ *		    can not be found.
+ */
+PJ_DECL(pjsip_transaction*) pjsip_tsx_layer_find_tsx2( int inst_id,
+                               const pj_str_t *key,
+						       pj_bool_t add_ref );
 
 /**
  * Create, initialize, and register a new transaction as UAC from the 
@@ -220,6 +241,30 @@ PJ_DECL(pj_status_t) pjsip_tsx_create_uac( int inst_id,
 					   pjsip_transaction **p_tsx);
 
 /**
+ * Variant of pjsip_tsx_create_uac() with additional parameter to specify
+ * the group lock to use. Group lock can be used to synchronize locking
+ * among several objects to prevent deadlock, and to synchronize the
+ * lifetime of objects sharing the same group lock.
+ *
+ * See pjsip_tsx_create_uac() for general info about this function.
+ *
+ * @param tsx_user  Module to be registered as transaction user of the new
+ *		    transaction, which will receive notification from the
+ *		    transaction via on_tsx_state() callback.
+ * @param tdata     The outgoing request message.
+ * @param grp_lock  Optional group lock to use by this transaction. If
+ * 		    the value is NULL, the transaction will create its
+ * 		    own group lock.
+ * @param p_tsx	    On return will contain the new transaction instance.
+ *
+ * @return          PJ_SUCCESS if successfull.
+ */
+PJ_DECL(pj_status_t) pjsip_tsx_create_uac2(pjsip_module *tsx_user,
+					   pjsip_tx_data *tdata,
+					   pj_grp_lock_t *grp_lock,
+					   pjsip_transaction **p_tsx);
+
+/**
  * Create, initialize, and register a new transaction as UAS from the
  * specified incoming request in \c rdata. After calling this function,
  * application MUST call #pjsip_tsx_recv_msg() so that transaction
@@ -237,6 +282,29 @@ PJ_DECL(pj_status_t) pjsip_tsx_create_uas( pjsip_module *tsx_user,
 					   pjsip_rx_data *rdata,
 					   pjsip_transaction **p_tsx );
 
+/**
+ * Variant of pjsip_tsx_create_uas() with additional parameter to specify
+ * the group lock to use. Group lock can be used to synchronize locking
+ * among several objects to prevent deadlock, and to synchronize the
+ * lifetime of objects sharing the same group lock.
+ *
+ * See pjsip_tsx_create_uas() for general info about this function.
+ *
+ * @param tsx_user  Module to be registered as transaction user of the new
+ *		    transaction, which will receive notification from the
+ *		    transaction via on_tsx_state() callback.
+ * @param rdata     The received incoming request.
+ * @param grp_lock  Optional group lock to use by this transaction. If
+ * 		    the value is NULL, the transaction will create its
+ * 		    own group lock.
+ * @param p_tsx	    On return will contain the new transaction instance.
+ *
+ * @return	    PJ_SUCCESS if successfull.
+ */
+PJ_DECL(pj_status_t) pjsip_tsx_create_uas2(pjsip_module *tsx_user,
+					   pjsip_rx_data *rdata,
+					   pj_grp_lock_t *grp_lock,
+					   pjsip_transaction **p_tsx );
 
 /**
  * Lock/bind transaction to a specific transport/listener. This is optional,

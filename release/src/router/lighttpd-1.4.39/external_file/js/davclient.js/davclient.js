@@ -393,7 +393,7 @@ global.davlib = new function() {
             'topath' - the path to move the resource to
             'overwrite' - whether or not to fail when the resource
                     already exists (optional)
-        */        
+        */
         var request = this._getRequest('MOVE', path, handler, context);
         var tourl = this._generateUrl(topath); 
         

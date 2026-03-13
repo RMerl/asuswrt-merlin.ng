@@ -107,8 +107,6 @@ enum auth_rule_t {
 	AUTH_RULE_RSA_STRENGTH,
 	/** required ECDSA public key strength, u_int in bits */
 	AUTH_RULE_ECDSA_STRENGTH,
-	/** required BLISS public key strength, u_int in bits */
-	AUTH_RULE_BLISS_STRENGTH,
 	/** required signature scheme, signature_params_t* */
 	AUTH_RULE_SIGNATURE_SCHEME,
 	/** required signature scheme for IKE authentication, signature_params_t* */
@@ -134,9 +132,14 @@ enum auth_rule_t {
 };
 
 /**
- * enum name for auth_rule_t.
+ * Names for auth_rule_t (upper case).
  */
 extern enum_name_t *auth_rule_names;
+
+/**
+ * Names for auth_rule_t (lower case, without "rule_" or "helper_" prefix).
+ */
+extern enum_name_t *auth_rule_names_lower;
 
 /**
  * Authentication/Authorization round.

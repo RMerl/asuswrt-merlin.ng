@@ -311,6 +311,45 @@ START_TEST(test_from_string)
 }
 END_TEST
 
+START_TEST(test_from_string_with_regex)
+{
+	identification_t *id;
+
+	id = identification_create_from_string_with_regex("fqdn:^vpn.*\\.strongswan\\.org$");
+	ck_assert(id);
+	ck_assert_int_eq(ID_FQDN, id->get_type(id));
+	ck_assert_chunk_eq(chunk_from_str("^vpn.*\\.strongswan\\.org$"), id->get_encoding(id));
+	id->destroy(id);
+
+	id = identification_create_from_string_with_regex("email:^.+@strongswan\\.org$");
+	ck_assert(id);
+	ck_assert_int_eq(ID_RFC822_ADDR, id->get_type(id));
+	ck_assert_chunk_eq(chunk_from_str("^.+@strongswan\\.org$"), id->get_encoding(id));
+	id->destroy(id);
+
+	id = identification_create_from_string_with_regex("asn1dn:^.+CN=.+@strongswan\\.org$");
+	ck_assert(id);
+	ck_assert_int_eq(ID_DER_ASN1_DN, id->get_type(id));
+	ck_assert_chunk_eq(chunk_from_str("^.+CN=.+@strongswan\\.org$"), id->get_encoding(id));
+	id->destroy(id);
+
+	/* invalid regex */
+	ck_assert(!identification_create_from_string_with_regex("fqdn:^[+\\.strongswan\\.org$"));
+
+	/* ignored if pre-/suffix is missing or the type is unsupported */
+	id = identification_create_from_string_with_regex("fqdn:[+\\.strongswan\\.org$");
+	ck_assert(id);
+	id->destroy(id);
+	id = identification_create_from_string_with_regex("fqdn:^[+\\.strongswan\\.org");
+	ck_assert(id);
+	id->destroy(id);
+	id = identification_create_from_string_with_regex("keyid:^[+\\.strongswan\\.org$");
+	ck_assert(id);
+	ck_assert_int_eq(ID_KEY_ID, id->get_type(id));
+	id->destroy(id);
+}
+END_TEST
+
 /*******************************************************************************
  * printf_hook
  */
@@ -458,6 +497,22 @@ START_TEST(test_printf_hook_width)
 }
 END_TEST
 
+START_TEST(test_printf_hook_regex)
+{
+	identification_t *a;
+	char buf[128];
+
+	a = identification_create_from_string_with_regex("fqdn:^vpn.+\\.strongswan\\.org$");
+	snprintf(buf, sizeof(buf), "%Y", a);
+	ck_assert_str_eq("^vpn.+\\.strongswan\\.org$", buf);
+	snprintf(buf, sizeof(buf), "%30Y", a);
+	ck_assert_str_eq("      ^vpn.+\\.strongswan\\.org$", buf);
+	snprintf(buf, sizeof(buf), "%-*Y", 30, a);
+	ck_assert_str_eq("^vpn.+\\.strongswan\\.org$      ", buf);
+	a->destroy(a);
+}
+END_TEST
+
 /*******************************************************************************
  * equals
  */
@@ -587,6 +642,30 @@ START_TEST(test_equals_fqdn)
 }
 END_TEST
 
+START_TEST(test_equals_regex)
+{
+	identification_t *a, *b;
+
+	a = identification_create_from_string_with_regex("fqdn:^vpn.*\\.strongswan\\.org$");
+	b = identification_create_from_string_with_regex("fqdn:^vpn.*\\.strongswan\\.org$");
+	ck_assert(a->equals(a, b));
+	ck_assert(b->equals(b, a));
+	b->destroy(b);
+	b = identification_create_from_string_with_regex("fqdn:^vpn.+\\.strongswan\\.org$");
+	ck_assert(!a->equals(a, b));
+	ck_assert(!b->equals(b, a));
+	b->destroy(b);
+
+	b = identification_create_from_string("fqdn:^vpn.*\\.strongswan\\.org$");
+	ck_assert_int_eq(a->get_type(a), b->get_type(b));
+	ck_assert_chunk_eq(a->get_encoding(a), b->get_encoding(b));
+	ck_assert(!a->equals(a, b));
+	ck_assert(!b->equals(b, a));
+	b->destroy(b);
+	a->destroy(a);
+}
+END_TEST
+
 START_TEST(test_equals_empty)
 {
 	identification_t *a;
@@ -604,7 +683,7 @@ START_TEST(test_equals_empty)
 		case ID_FQDN:
 			ck_assert(!id_equals(a, "moon.strongswan.org"));
 			break;
-		case ID_USER_FQDN:
+		case ID_RFC822_ADDR:
 			ck_assert(!id_equals(a, "moon@strongswan.org"));
 			break;
 		case ID_IPV6_ADDR:
@@ -786,7 +865,7 @@ START_TEST(test_matches_binary)
 }
 END_TEST
 
-START_TEST(test_matches_range)
+START_TEST(test_matches_range_addr)
 {
 	identification_t *a, *b;
 
@@ -869,6 +948,242 @@ START_TEST(test_matches_range)
 }
 END_TEST
 
+START_TEST(test_matches_range_subnet)
+{
+	identification_t *a, *b;
+
+	/* IPv4 subnets */
+	a = identification_create_from_string("192.168.1.0/24");
+	ck_assert(a->get_type(a) == ID_IPV4_ADDR_SUBNET);
+	ck_assert(id_matches(a, "%any", ID_MATCH_ANY));
+	ck_assert(id_matches(a, "0.0.0.0/0", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(id_matches(a, "192.168.1.1", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "192.168.1.2", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "192.168.1.1/32", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "192.168.1.0/32", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "192.168.1.0/24", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "192.168.0.0/24", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "192.168.0.0/16", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "192.168.1.1-192.168.1.1", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "192.168.1.0-192.168.1.255", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "192.168.0.0-192.168.255.255", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "foo@bar", ID_MATCH_NONE));
+
+	/* Malformed IPv4 subnet and range encoding */
+	b = identification_create_from_encoding(ID_IPV4_ADDR_SUBNET, chunk_empty);
+	ck_assert(a->matches(a, b) == ID_MATCH_NONE);
+	b->destroy(b);
+	b = identification_create_from_encoding(ID_IPV4_ADDR_RANGE, chunk_empty);
+	ck_assert(a->matches(a, b) == ID_MATCH_NONE);
+	b->destroy(b);
+	b = identification_create_from_encoding(ID_IPV4_ADDR_RANGE,
+			chunk_from_chars(0xc0,0xa8,0x01,0x28,0xc0,0xa8,0x01,0x00));
+	ck_assert(a->matches(a, b) == ID_MATCH_NONE);
+	b->destroy(b);
+	a->destroy(a);
+
+	a = identification_create_from_string("192.168.1.1/32");
+	ck_assert(id_matches(a, "%any", ID_MATCH_ANY));
+	ck_assert(id_matches(a, "0.0.0.0/0", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(id_matches(a, "192.168.1.1/32", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "192.168.1.1/31", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "192.168.1.1", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "192.168.1.2", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "192.168.1.0/24", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "192.168.1.0-192.168.1.0", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "192.168.1.1-192.168.1.1", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "192.168.1.0-192.168.1.1", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "192.168.1.1-192.168.1.2", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "192.168.0.0-192.168.1.255", ID_MATCH_ONE_WILDCARD));
+	a->destroy(a);
+
+	/* IPv6 subnets */
+	a = identification_create_from_string("fec0::0/64");
+	ck_assert(a->get_type(a) == ID_IPV6_ADDR_SUBNET);
+	ck_assert(id_matches(a, "%any", ID_MATCH_ANY));
+	ck_assert(id_matches(a, "::/0", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(id_matches(a, "fec0::1", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "fec0::2", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "fec0::1/128", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "fec0::/128", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "fec0::/64", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "fec0::/48", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "fec1::/48", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "fec0::-fec0::1", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "fec0::-fec0::ffff:ffff:ffff:ffff", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "fec0::-fec0::f:ffff:ffff:ffff:ffff", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "fec0::4001-fec0::4ffe", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "feb0::1-fec0::0", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "foo@bar", ID_MATCH_NONE));
+
+	/* Malformed IPv6 subnet and range encoding */
+	b = identification_create_from_encoding(ID_IPV6_ADDR_SUBNET, chunk_empty);
+	ck_assert(a->matches(a, b) == ID_MATCH_NONE);
+	b->destroy(b);
+	b = identification_create_from_encoding(ID_IPV6_ADDR_RANGE, chunk_empty);
+	ck_assert(a->matches(a, b) == ID_MATCH_NONE);
+	b->destroy(b);
+	b = identification_create_from_encoding(ID_IPV6_ADDR_RANGE,
+			chunk_from_chars(0xfe,0xc0,0x00,0x00,0x00,0x00,0x00,0x00,
+							 0x00,0x00,0x00,0x00,0x00,0x00,0x4f,0xff,
+							 0xfe,0xc0,0x00,0x00,0x00,0x00,0x00,0x00,
+							 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01 ));
+	ck_assert(a->matches(a, b) == ID_MATCH_NONE);
+	b->destroy(b);
+	a->destroy(a);
+
+	a = identification_create_from_string("fec0::1/128");
+	ck_assert(a->get_type(a) == ID_IPV6_ADDR_SUBNET);
+	ck_assert(id_matches(a, "%any", ID_MATCH_ANY));
+	ck_assert(id_matches(a, "::/0", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(id_matches(a, "fec0::1", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "fec0::2", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "fec0::1/128", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "fec0::/128", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "fec0::/64", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "fec1::/48", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "fec0::0-fec0::0", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "fec0::1-fec0::1", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "fec0::0-fec0::1", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "fec0::1-fec0::2", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "fec0::-fec0::ffff:ffff:ffff:ffff", ID_MATCH_ONE_WILDCARD));
+	a->destroy(a);
+
+	/* Malformed IPv4 subnet encoding */
+	a = identification_create_from_encoding(ID_IPV4_ADDR_SUBNET, chunk_empty);
+	ck_assert(id_matches(a, "192.168.1.1", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "0.0.0.0/0", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "0.0.0.0-255.255.255.255", ID_MATCH_NONE));
+	a->destroy(a);
+
+	/* Malformed IPv6 subnet encoding */
+	a = identification_create_from_encoding(ID_IPV6_ADDR_SUBNET, chunk_empty);
+	ck_assert(id_matches(a, "fec0::1", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "::/0", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "::-ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", ID_MATCH_NONE));
+	a->destroy(a);
+}
+END_TEST
+
+START_TEST(test_matches_range_range)
+{
+	identification_t *a, *b;
+
+	/* IPv4 ranges */
+	a = identification_create_from_string("192.168.1.0-192.168.1.255");
+	ck_assert(a->get_type(a) == ID_IPV4_ADDR_RANGE);
+	ck_assert(id_matches(a, "%any", ID_MATCH_ANY));
+	ck_assert(id_matches(a, "0.0.0.0/0", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(id_matches(a, "192.168.1.1", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "192.168.1.1/32", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "192.168.1.0/24", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "192.168.0.0/24", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "192.168.0.0/16", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "192.168.1.1-192.168.1.1", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "192.168.1.0-192.168.1.255", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "192.168.0.0-192.168.255.255", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "192.168.0.240-192.168.1.0", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "foo@bar", ID_MATCH_NONE));
+
+	/* Malformed IPv4 subnet and range encoding */
+	b = identification_create_from_encoding(ID_IPV4_ADDR_SUBNET, chunk_empty);
+	ck_assert(a->matches(a, b) == ID_MATCH_NONE);
+	b->destroy(b);
+	b = identification_create_from_encoding(ID_IPV4_ADDR_RANGE, chunk_empty);
+	ck_assert(a->matches(a, b) == ID_MATCH_NONE);
+	b->destroy(b);
+	b = identification_create_from_encoding(ID_IPV4_ADDR_RANGE,
+			chunk_from_chars(0xc0,0xa8,0x01,0x28,0xc0,0xa8,0x01,0x00));
+	ck_assert(a->matches(a, b) == ID_MATCH_NONE);
+	b->destroy(b);
+	a->destroy(a);
+
+	a = identification_create_from_string("192.168.1.1-192.168.1.1");
+	ck_assert(a->get_type(a) == ID_IPV4_ADDR_RANGE);
+	ck_assert(id_matches(a, "%any", ID_MATCH_ANY));
+	ck_assert(id_matches(a, "0.0.0.0/0", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(id_matches(a, "192.168.1.1", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "192.168.1.2", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "192.168.1.1/32", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "192.168.1.0/32", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "192.168.1.0/24", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "192.168.0.0/24", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "192.168.1.1-192.168.1.1", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "192.168.1.0-192.168.1.0", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "192.168.1.1-192.168.1.1", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "192.168.1.0-192.168.1.1", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "192.168.1.1-192.168.1.2", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "192.168.0.0-192.168.1.255", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "foo@bar", ID_MATCH_NONE));
+	a->destroy(a);
+
+	/* IPv6 ranges */
+	a = identification_create_from_string("fec0::-fec0::ffff:ffff:ffff:ffff");
+	ck_assert(a->get_type(a) == ID_IPV6_ADDR_RANGE);
+	ck_assert(id_matches(a, "%any", ID_MATCH_ANY));
+	ck_assert(id_matches(a, "::/0", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(id_matches(a, "fec0::1", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "fec0::1/128", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "fec0::/128", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "fec0::/64", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "fec0::/48", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "fec1::/48", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "fec0::-fec0::1", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "fec0::-fec0::ffff:ffff:ffff:ffff", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "fec0::-fec0::f:ffff:ffff:ffff:ffff", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "fec0::4001-fec0::4ffe", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "feb0::1-fec0::0", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "foo@bar", ID_MATCH_NONE));
+
+	/* Malformed IPv6 subnet and range encoding */
+	b = identification_create_from_encoding(ID_IPV6_ADDR_SUBNET, chunk_empty);
+	ck_assert(a->matches(a, b) == ID_MATCH_NONE);
+	b->destroy(b);
+	b = identification_create_from_encoding(ID_IPV6_ADDR_RANGE, chunk_empty);
+	ck_assert(a->matches(a, b) == ID_MATCH_NONE);
+	b->destroy(b);
+	b = identification_create_from_encoding(ID_IPV6_ADDR_RANGE,
+			chunk_from_chars(0xfe,0xc0,0x00,0x00,0x00,0x00,0x00,0x00,
+							 0x00,0x00,0x00,0x00,0x00,0x00,0x4f,0xff,
+							 0xfe,0xc0,0x00,0x00,0x00,0x00,0x00,0x00,
+							 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01 ));
+	ck_assert(a->matches(a, b) == ID_MATCH_NONE);
+	b->destroy(b);
+	a->destroy(a);
+
+	a = identification_create_from_string("fec0::1-fec0::1");
+	ck_assert(a->get_type(a) == ID_IPV6_ADDR_RANGE);
+	ck_assert(id_matches(a, "%any", ID_MATCH_ANY));
+	ck_assert(id_matches(a, "::/0", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(id_matches(a, "fec0::1", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "fec0::2", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "fec0::1/128", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "fec0::/128", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "fec0::/64", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "fec1::/48", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "fec0::0-fec0::0", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "fec0::1-fec0::1", ID_MATCH_PERFECT));
+	ck_assert(id_matches(a, "fec0::0-fec0::1", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "fec0::1-fec0::2", ID_MATCH_ONE_WILDCARD));
+	ck_assert(id_matches(a, "fec0::-fec0::ffff:ffff:ffff:ffff", ID_MATCH_ONE_WILDCARD));
+	a->destroy(a);
+
+	/* Malformed IPv4 range encoding */
+	a = identification_create_from_encoding(ID_IPV4_ADDR_RANGE, chunk_empty);
+	ck_assert(id_matches(a, "192.168.1.1", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "0.0.0.0/0", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "0.0.0.0-255.255.255.255", ID_MATCH_NONE));
+	a->destroy(a);
+
+	/* Malformed IPv6 range encoding */
+	a = identification_create_from_encoding(ID_IPV6_ADDR_RANGE, chunk_empty);
+	ck_assert(id_matches(a, "fec0::1", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "::/0", ID_MATCH_NONE));
+	ck_assert(id_matches(a, "::-ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", ID_MATCH_NONE));
+	a->destroy(a);
+}
+END_TEST
+
 START_TEST(test_matches_string)
 {
 	identification_t *a;
@@ -904,6 +1219,78 @@ START_TEST(test_matches_string)
 }
 END_TEST
 
+static bool regex_matches(identification_t *a, char *b_regex, id_match_t expected)
+{
+	identification_t *b;
+	id_match_t match;
+
+	b = identification_create_from_string_with_regex(b_regex);
+	ck_assert_msg(b, "'%s' is invalid", b_regex);
+	match = a->matches(a, b);
+	b->destroy(b);
+	return match == expected;
+}
+
+START_TEST(test_matches_regex)
+{
+	identification_t *a;
+
+	a = identification_create_from_string("moon@strongswan.org");
+
+	ck_assert(regex_matches(a, "email:^moon@strongswan.org$", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(regex_matches(a, "email:^moon@strongswan\\.org$", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(regex_matches(a, "email:^MOON@strongswan\\.org$", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(regex_matches(a, "email:^(moon|sun)@strongswan\\.org$", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(regex_matches(a, "email:^moon@strongswan\\.or$", ID_MATCH_NONE));
+	ck_assert(regex_matches(a, "email:^.+@strongswan\\.org$", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(regex_matches(a, "email:^moon@.*.org$", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(regex_matches(a, "email:^.+$", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(regex_matches(a, "email:^$", ID_MATCH_NONE));
+	a->destroy(a);
+
+	a = identification_create_from_string("vpn1.strongswan.org");
+
+	ck_assert(regex_matches(a, "fqdn:^vpn1\\.strongswan\\.org$", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(regex_matches(a, "fqdn:^VPN1\\.strongswan\\.org$", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(regex_matches(a, "fqdn:^strongswan\\.org$", ID_MATCH_NONE));
+	ck_assert(regex_matches(a, "fqdn:^.*\\.strongswan\\.org$", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(regex_matches(a, "fqdn:^vpn[0-9]\\.strongswan\\.org$", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(regex_matches(a, "fqdn:^vpn[[:digit:]]\\.strongswan\\.org$", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(regex_matches(a, "fqdn:^[^0-9]+[0-9]+\\.strongswan\\.org$", ID_MATCH_MAX_WILDCARDS));
+	a->destroy(a);
+
+	a = identification_create_from_string("C=CH, O=strongSwan, CN=vpn1.strongswan.org");
+
+	ck_assert(regex_matches(a, "asn1dn:^.*CN=.*\\.strongswan\\.org$", ID_MATCH_MAX_WILDCARDS));
+	ck_assert(regex_matches(a, "asn1dn:^.*CN=vpn[0-9]\\.strongswan\\.org$", ID_MATCH_MAX_WILDCARDS));
+	a->destroy(a);
+
+	a = identification_create_from_string("fqdn:^vpn1\\.strongswan\\.org$");
+
+	ck_assert(regex_matches(a, "fqdn:^vpn1\\.strongswan\\.org$", ID_MATCH_NONE));
+	ck_assert(regex_matches(a, "vpn1.strongswan.org", ID_MATCH_NONE));
+	ck_assert(regex_matches(a, "%any", ID_MATCH_ANY));
+	a->destroy(a);
+
+	a = identification_create_from_string_with_regex("fqdn:^vpn1\\.strongswan\\.org$");
+
+	ck_assert(regex_matches(a, "fqdn:^vpn1\\.strongswan\\.org$", ID_MATCH_NONE));
+	ck_assert(regex_matches(a, "vpn1.strongswan.org", ID_MATCH_NONE));
+	ck_assert(regex_matches(a, "%any", ID_MATCH_ANY));
+	a->destroy(a);
+
+	/* internal buffer for matched identities is BUF_LEN-1, do a suffix match
+	 * as it would fail if the buffer was too small anyway otherwise */
+	a = identification_create_from_string("moon@strongswan.org                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           ");
+	ck_assert(regex_matches(a, "email:^moon@strongswan.org.*$", ID_MATCH_MAX_WILDCARDS));
+	a->destroy(a);
+
+	a = identification_create_from_string("moon@strongswan.org                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ");
+	ck_assert(regex_matches(a, "email:^moon@strongswan.org.*$", ID_MATCH_NONE));
+	a->destroy(a);
+}
+END_TEST
+
 START_TEST(test_matches_empty)
 {
 	identification_t *a;
@@ -921,7 +1308,7 @@ START_TEST(test_matches_empty)
 		case ID_FQDN:
 			ck_assert(id_matches(a, "moon.strongswan.org", ID_MATCH_NONE));
 			break;
-		case ID_USER_FQDN:
+		case ID_RFC822_ADDR:
 			ck_assert(id_matches(a, "moon@strongswan.org", ID_MATCH_NONE));
 			break;
 		case ID_IPV6_ADDR:
@@ -975,7 +1362,7 @@ START_TEST(test_matches_empty_reverse)
 		case ID_FQDN:
 			ck_assert(id_matches_rev(a, "moon.strongswan.org", ID_MATCH_NONE));
 			break;
-		case ID_USER_FQDN:
+		case ID_RFC822_ADDR:
 			ck_assert(id_matches_rev(a, "moon@strongswan.org", ID_MATCH_NONE));
 			break;
 		case ID_IPV6_ADDR:
@@ -1069,6 +1456,23 @@ START_TEST(test_hash_dn)
 }
 END_TEST
 
+START_TEST(test_hash_regex)
+{
+	identification_t *a, *b;
+
+	a = identification_create_from_string_with_regex("fqdn:^vpn1\\.strongswan\\.org$");
+	b = identification_create_from_string_with_regex("fqdn:^vpn1\\.strongswan\\.org$");
+	ck_assert_int_eq(a->hash(a, 0), b->hash(b, 0));
+	b->destroy(b);
+	b = identification_create_from_string("fqdn:^vpn1\\.strongswan\\.org$");
+	ck_assert_int_eq(a->get_type(a), b->get_type(b));
+	ck_assert_chunk_eq(a->get_encoding(a), b->get_encoding(b));
+	ck_assert(a->hash(a, 0) != b->hash(b, 0));
+	b->destroy(b);
+	a->destroy(a);
+}
+END_TEST
+
 START_TEST(test_hash_inc)
 {
 	identification_t *a;
@@ -1128,25 +1532,38 @@ END_TEST
  * wildcards
  */
 
-static bool id_contains_wildcards(char *string)
+static bool check_id_contains_wildcards(identification_t *id)
 {
-	identification_t *id;
 	bool contains;
 
-	id = identification_create_from_string(string);
 	contains = id->contains_wildcards(id);
 	id->destroy(id);
 	return contains;
 }
 
+static bool id_contains_wildcards(char *str)
+{
+	return check_id_contains_wildcards(identification_create_from_string(str));
+}
+
 START_TEST(test_contains_wildcards)
 {
+	identification_t *id;
+
 	ck_assert(id_contains_wildcards("%any"));
 	ck_assert(id_contains_wildcards("C=*, O=strongSwan, CN=gw"));
 	ck_assert(id_contains_wildcards("C=CH, O=strongSwan, CN=*"));
 	ck_assert(id_contains_wildcards("*@strongswan.org"));
 	ck_assert(id_contains_wildcards("*.strongswan.org"));
 	ck_assert(!id_contains_wildcards("C=**, O=a*, CN=*a"));
+	/* not actual regexes as the wrong constructor is used */
+	ck_assert(!id_contains_wildcards("fqdn:^vpn1\\.strongswan\\.org$"));
+	ck_assert(id_contains_wildcards("fqdn:^vpn.*\\.strongswan\\.org$"));
+	/* no regex due to missing type prefix */
+	id = identification_create_from_string_with_regex("^vpn1\\.strongswan\\.org$");
+	ck_assert(!check_id_contains_wildcards(id));
+	id = identification_create_from_string_with_regex("fqdn:^vpn1\\.strongswan\\.org$");
+	ck_assert(check_id_contains_wildcards(id));
 }
 END_TEST
 
@@ -1156,7 +1573,7 @@ END_TEST
 
 START_TEST(test_clone)
 {
-	identification_t *a, *b;
+	identification_t *a, *b, *c;
 	chunk_t a_enc, b_enc;
 
 	a = identification_create_from_string("moon@strongswan.org");
@@ -1164,11 +1581,30 @@ START_TEST(test_clone)
 	b = a->clone(a);
 	ck_assert(b != NULL);
 	ck_assert(a != b);
+	ck_assert_int_eq(a->get_type(a), b->get_type(b));
 	b_enc = b->get_encoding(b);
 	ck_assert(a_enc.ptr != b_enc.ptr);
 	ck_assert(chunk_equals(a_enc, b_enc));
 	a->destroy(a);
 	b->destroy(b);
+
+	a = identification_create_from_string_with_regex("fqdn:^vpn.+\\.strongswan\\.org$");
+	a_enc = a->get_encoding(a);
+	b = a->clone(a);
+	ck_assert(b != NULL);
+	ck_assert(a != b);
+	ck_assert_int_eq(a->get_type(a), b->get_type(b));
+	b_enc = b->get_encoding(b);
+	ck_assert(a_enc.ptr != b_enc.ptr);
+	ck_assert(chunk_equals(a_enc, b_enc));
+	ck_assert_int_eq(0, a_enc.ptr[a_enc.len]);
+	ck_assert_int_eq(0, b_enc.ptr[b_enc.len]);
+	c = identification_create_from_string("vpn1.strongswan.org");
+	ck_assert_int_eq(ID_MATCH_MAX_WILDCARDS, c->matches(c, a));
+	ck_assert_int_eq(ID_MATCH_MAX_WILDCARDS, c->matches(c, b));
+	a->destroy(a);
+	b->destroy(b);
+	c->destroy(c);
 }
 END_TEST
 
@@ -1184,11 +1620,13 @@ Suite *identification_suite_create()
 	tcase_add_test(tc, test_from_data);
 	tcase_add_test(tc, test_from_sockaddr);
 	tcase_add_loop_test(tc, test_from_string, 0, countof(string_data));
+	tcase_add_test(tc, test_from_string_with_regex);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("printf_hook");
 	tcase_add_test(tc, test_printf_hook);
 	tcase_add_test(tc, test_printf_hook_width);
+	tcase_add_test(tc, test_printf_hook_regex);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("equals");
@@ -1196,6 +1634,7 @@ Suite *identification_suite_create()
 	tcase_add_test(tc, test_equals_any);
 	tcase_add_test(tc, test_equals_binary);
 	tcase_add_test(tc, test_equals_fqdn);
+	tcase_add_test(tc, test_equals_regex);
 	tcase_add_loop_test(tc, test_equals_empty, ID_ANY, ID_KEY_ID + 1);
 	suite_add_tcase(s, tc);
 
@@ -1204,8 +1643,11 @@ Suite *identification_suite_create()
 	tcase_add_loop_test(tc, test_matches_two_ou, 0, countof(rdn_matching));
 	tcase_add_test(tc, test_matches_any);
 	tcase_add_test(tc, test_matches_binary);
-	tcase_add_test(tc, test_matches_range);
+	tcase_add_test(tc, test_matches_range_addr);
+	tcase_add_test(tc, test_matches_range_subnet);
+	tcase_add_test(tc, test_matches_range_range);
 	tcase_add_test(tc, test_matches_string);
+	tcase_add_test(tc, test_matches_regex);
 	tcase_add_loop_test(tc, test_matches_empty, ID_ANY, ID_KEY_ID + 1);
 	tcase_add_loop_test(tc, test_matches_empty_reverse, ID_ANY, ID_KEY_ID + 1);
 	suite_add_tcase(s, tc);
@@ -1214,6 +1656,7 @@ Suite *identification_suite_create()
 	tcase_add_test(tc, test_hash);
 	tcase_add_test(tc, test_hash_any);
 	tcase_add_test(tc, test_hash_dn);
+	tcase_add_test(tc, test_hash_regex);
 	tcase_add_test(tc, test_hash_inc);
 	suite_add_tcase(s, tc);
 

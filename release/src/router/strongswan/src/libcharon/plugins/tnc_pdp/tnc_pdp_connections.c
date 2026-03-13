@@ -210,7 +210,7 @@ METHOD(tnc_pdp_connections_t, add, void,
 	/* schedule timeout checking */
 	lib->scheduler->schedule_job_ms(lib->scheduler,
 				(job_t*)callback_job_create((callback_job_cb_t)check_timeouts,
-					this, NULL, (callback_job_cancel_t)return_false),
+					this, NULL, callback_job_cancel_thread),
 				this->timeout * 1000);
 
 	dbg_nas_user(nas_id, user_name, FALSE, "created");

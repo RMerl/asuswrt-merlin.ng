@@ -430,7 +430,10 @@ METHOD(generator_t, get_chunk, chunk_t,
 {
 	chunk_t data;
 
-	*lenpos = (uint32_t*)(this->buffer + this->header_length_offset);
+	if (lenpos)
+	{
+		*lenpos = (uint32_t*)(this->buffer + this->header_length_offset);
+	}
 	data = chunk_create(this->buffer, get_length(this));
 	if (this->debug)
 	{
@@ -463,8 +466,16 @@ METHOD(generator_t, generate_payload, void,
 	{
 		if (this->debug)
 		{
-			DBG2(DBG_ENC, "  generating rule %d %N",
-				 i, encoding_type_names, rules[i].type);
+			if (rules[i].type < PAYLOAD_LIST)
+			{
+				DBG2(DBG_ENC, "  generating rule %d %N",
+					 i, encoding_type_names, rules[i].type);
+			}
+			else
+			{
+				DBG2(DBG_ENC, "  generating rule %d LIST of %N",
+					 i, payload_type_names, rules[i].type - PAYLOAD_LIST);
+			}
 		}
 		switch ((int)rules[i].type)
 		{

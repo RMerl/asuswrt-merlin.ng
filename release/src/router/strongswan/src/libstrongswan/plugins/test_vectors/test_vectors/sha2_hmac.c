@@ -17,7 +17,9 @@
 #include <crypto/crypto_tester.h>
 
 /**
- * SHA-256, SHA384, SHA512 hmac test vectors from RFC 4868
+ * SHA-256, SHA384, SHA512 HMAC test vectors from RFC 4868, except the ones with
+ * key size 4, which are problematic for implementations that enforce a minimum
+ * key size (e.g. in FIPS mode).
  */
 prf_test_vector_t sha256_hmac_p1 = {
 	.alg = PRF_HMAC_SHA2_256, .key_size = 20, .len = 8,
@@ -78,28 +80,11 @@ signer_test_vector_t sha512_hmac_s1 = {
 			  "\x23\xda\x3e\x92\x43\x9e\x59\x0e\x43\xe7\x61\xb3\x3e\x91\x0f\xb8"
 };
 
-prf_test_vector_t sha256_hmac_p2 = {
-	.alg = PRF_HMAC_SHA2_256, .key_size = 4, .len = 28,
-	.key	= "Jefe",
-	.seed	= "what do ya want for nothing?",
-	.out	= "\x5b\xdc\xc1\x46\xbf\x60\x75\x4e\x6a\x04\x24\x26\x08\x95\x75\xc7"
-			  "\x5a\x00\x3f\x08\x9d\x27\x39\x83\x9d\xec\x58\xb9\x64\xec\x38\x43"
-};
-
 signer_test_vector_t sha256_hmac_s2 = {
 	.alg = AUTH_HMAC_SHA2_256_128, .len = 28,
 	.key	= "JefeJefeJefeJefeJefeJefeJefeJefe",
 	.data	= "what do ya want for nothing?",
 	.mac	= "\x16\x7f\x92\x85\x88\xc5\xcc\x2e\xef\x8e\x30\x93\xca\xa0\xe8\x7c"
-};
-
-prf_test_vector_t sha384_hmac_p2 = {
-	.alg = PRF_HMAC_SHA2_384, .key_size = 4, .len = 28,
-	.key	= "Jefe",
-	.seed	= "what do ya want for nothing?",
-	.out	= "\xaf\x45\xd2\xe3\x76\x48\x40\x31\x61\x7f\x78\xd2\xb5\x8a\x6b\x1b"
-			  "\x9c\x7e\xf4\x64\xf5\xa0\x1b\x47\xe4\x2e\xc3\x73\x63\x22\x44\x5e"
-			  "\x8e\x22\x40\xca\x5e\x69\xe2\xc7\x8b\x32\x39\xec\xfa\xb2\x16\x49"
 };
 
 signer_test_vector_t sha384_hmac_s2 = {
@@ -110,16 +95,6 @@ signer_test_vector_t sha384_hmac_s2 = {
 			  "\xb2\x8c\x0b\x59\x4c\xfb\x18\x4d"
 };
 
-prf_test_vector_t sha512_hmac_p2 = {
-	.alg = PRF_HMAC_SHA2_512, .key_size = 4, .len = 28,
-	.key	= "Jefe",
-	.seed	= "what do ya want for nothing?",
-	.out	= "\x16\x4b\x7a\x7b\xfc\xf8\x19\xe2\xe3\x95\xfb\xe7\x3b\x56\xe0\xa3"
-			  "\x87\xbd\x64\x22\x2e\x83\x1f\xd6\x10\x27\x0c\xd7\xea\x25\x05\x54"
-			  "\x97\x58\xbf\x75\xc0\x5a\x99\x4a\x6d\x03\x4f\x65\xf8\xf0\xe6\xfd"
-			  "\xca\xea\xb1\xa3\x4d\x4a\x6b\x4b\x63\x6e\x07\x0a\x38\xbc\xe7\x37"
-};
-
 signer_test_vector_t sha512_hmac_s2 = {
 	.alg = AUTH_HMAC_SHA2_512_256, .len = 28,
 	.key	= "JefeJefeJefeJefeJefeJefeJefeJefeJefeJefeJefeJefeJefeJefeJefeJefe",
@@ -128,7 +103,7 @@ signer_test_vector_t sha512_hmac_s2 = {
 			  "\x1c\x17\x3b\x2a\x93\x62\xc1\x5d\xf2\x35\xdf\xb2\x51\xb1\x54\x54"
 };
 
-prf_test_vector_t sha256_hmac_p3 = {
+prf_test_vector_t sha256_hmac_p2 = {
 	.alg = PRF_HMAC_SHA2_256, .key_size = 20, .len = 50,
 	.key	= "\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"
 			  "\xaa\xaa\xaa\xaa",
@@ -151,7 +126,7 @@ signer_test_vector_t sha256_hmac_s3 = {
 	.mac	= "\xcd\xcb\x12\x20\xd1\xec\xcc\xea\x91\xe5\x3a\xba\x30\x92\xf9\x62"
 };
 
-prf_test_vector_t sha384_hmac_p3 = {
+prf_test_vector_t sha384_hmac_p2 = {
 	.alg = PRF_HMAC_SHA2_384, .key_size = 20, .len = 50,
 	.key	= "\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"
 			  "\xaa\xaa\xaa\xaa",
@@ -177,7 +152,7 @@ signer_test_vector_t sha384_hmac_s3 = {
 			  "\x55\x4a\x50\x81\x84\xa0\xc3\x16"
 };
 
-prf_test_vector_t sha512_hmac_p3 = {
+prf_test_vector_t sha512_hmac_p2 = {
 	.alg = PRF_HMAC_SHA2_512, .key_size = 20, .len = 50,
 	.key	= "\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"
 			  "\xaa\xaa\xaa\xaa",
@@ -205,7 +180,7 @@ signer_test_vector_t sha512_hmac_s3 = {
 			  "\xb9\xf9\xb0\x51\x0c\x87\xe4\x9e\x58\x6c\xc9\xbf\x96\x17\x33\xd8"
 };
 
-prf_test_vector_t sha256_hmac_p4 = {
+prf_test_vector_t sha256_hmac_p3 = {
 	.alg = PRF_HMAC_SHA2_256, .key_size = 25, .len = 50,
 	.key	= "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10"
 			  "\x11\x12\x13\x14\x15\x16\x17\x18\x19",
@@ -217,7 +192,7 @@ prf_test_vector_t sha256_hmac_p4 = {
 			  "\x85\xf0\xfa\xa3\xe5\x78\xf8\x07\x7a\x2e\x3f\xf4\x67\x29\x66\x5b"
 };
 
-prf_test_vector_t sha384_hmac_p4 = {
+prf_test_vector_t sha384_hmac_p3 = {
 	.alg = PRF_HMAC_SHA2_384, .key_size = 25, .len = 50,
 	.key	= "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10"
 			  "\x11\x12\x13\x14\x15\x16\x17\x18\x19",
@@ -230,7 +205,7 @@ prf_test_vector_t sha384_hmac_p4 = {
 			  "\x68\x01\xdd\x23\xc4\xa7\xd6\x79\xcc\xf8\xa3\x86\xc6\x74\xcf\xfb"
 };
 
-prf_test_vector_t sha512_hmac_p4 = {
+prf_test_vector_t sha512_hmac_p3 = {
 	.alg = PRF_HMAC_SHA2_512, .key_size = 25, .len = 50,
 	.key	= "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10"
 			  "\x11\x12\x13\x14\x15\x16\x17\x18\x19",
@@ -244,7 +219,7 @@ prf_test_vector_t sha512_hmac_p4 = {
 			  "\xa5\xf1\x97\x41\x12\x0c\x4f\x2d\xe2\xad\xeb\xeb\x10\xa2\x98\xdd"
 };
 
-prf_test_vector_t sha256_hmac_p5 = {
+prf_test_vector_t sha256_hmac_p4 = {
 	.alg = PRF_HMAC_SHA2_256, .key_size = 131, .len = 54,
 	.key	= "\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"
 			  "\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"
@@ -260,7 +235,7 @@ prf_test_vector_t sha256_hmac_p5 = {
 			  "\x8e\x0b\xc6\x21\x37\x28\xc5\x14\x05\x46\x04\x0f\x0e\xe3\x7f\x54"
 };
 
-prf_test_vector_t sha384_hmac_p5 = {
+prf_test_vector_t sha384_hmac_p4 = {
 	.alg = PRF_HMAC_SHA2_384, .key_size = 131, .len = 54,
 	.key	= "\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"
 			  "\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"
@@ -277,7 +252,7 @@ prf_test_vector_t sha384_hmac_p5 = {
 			  "\x0c\x2e\xf6\xab\x40\x30\xfe\x82\x96\x24\x8d\xf1\x63\xf4\x49\x52"
 };
 
-prf_test_vector_t sha512_hmac_p5 = {
+prf_test_vector_t sha512_hmac_p4 = {
 	.alg = PRF_HMAC_SHA2_512, .key_size = 131, .len = 54,
 	.key	= "\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"
 			  "\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"
@@ -295,7 +270,7 @@ prf_test_vector_t sha512_hmac_p5 = {
 			  "\x95\xe6\x4f\x73\xf6\x3f\x0a\xec\x8b\x91\x5a\x98\x5d\x78\x65\x98"
 };
 
-prf_test_vector_t sha256_hmac_p6 = {
+prf_test_vector_t sha256_hmac_p5 = {
 	.alg = PRF_HMAC_SHA2_256, .key_size = 131, .len = 152,
 	.key	= "\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"
 			  "\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"
@@ -313,7 +288,7 @@ prf_test_vector_t sha256_hmac_p6 = {
 			  "\xbf\xdc\x63\x64\x4f\x07\x13\x93\x8a\x7f\x51\x53\x5c\x3a\x35\xe2"
 };
 
-prf_test_vector_t sha384_hmac_p6 = {
+prf_test_vector_t sha384_hmac_p5 = {
 	.alg = PRF_HMAC_SHA2_384, .key_size = 131, .len = 152,
 	.key	= "\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"
 			  "\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"
@@ -332,7 +307,7 @@ prf_test_vector_t sha384_hmac_p6 = {
 			  "\xa6\x78\xcc\x31\xe7\x99\x17\x6d\x38\x60\xe6\x11\x0c\x46\x52\x3e"
 };
 
-prf_test_vector_t sha512_hmac_p6 = {
+prf_test_vector_t sha512_hmac_p5 = {
 	.alg = PRF_HMAC_SHA2_512, .key_size = 131, .len = 152,
 	.key	= "\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"
 			  "\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"

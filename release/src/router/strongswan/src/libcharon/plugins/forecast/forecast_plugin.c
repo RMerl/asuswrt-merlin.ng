@@ -93,7 +93,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * Plugin constructor
  */
-plugin_t *forecast_plugin_create()
+PLUGIN_DEFINE(forecast)
 {
 	private_forecast_plugin_t *this;
 

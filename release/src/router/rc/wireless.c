@@ -317,9 +317,8 @@ int wlcscan_main(void)
 	CLIENT *clnt;
 	char host[18];
 #endif
-#ifdef __CONFIG_DHDAP__
+#ifdef HND_ROUTER
 	char tmp[100], prefix[]="wlXXXXXXX_";
-	int is_dhd = 0;
 #endif
 
 #if defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
@@ -392,11 +391,14 @@ int wlcscan_main(void)
 #endif
 	{	
 		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
-#ifdef __CONFIG_DHDAP__
-		is_dhd = !dhd_probe(word);
+#ifdef HND_ROUTER
 		snprintf(prefix, sizeof(prefix), "wl%d_", i);
-		if (is_dhd && !nvram_match(strcat_r(prefix, "mode", tmp), "wds"))
+		if (!nvram_get_int("escan_dis") && !nvram_match(strcat_r(prefix, "mode", tmp), "wds"))
+#if defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
+			wlcscan_core_escan(apscan_file, word);
+#else
 			wlcscan_core_escan(APSCAN_INFO, word);
+#endif
 		else
 #endif
 		{

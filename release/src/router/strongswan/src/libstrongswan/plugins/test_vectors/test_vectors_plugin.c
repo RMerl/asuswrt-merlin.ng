@@ -161,6 +161,7 @@ METHOD(plugin_t, get_features, int,
 	static plugin_feature_t f[] = {
 		PLUGIN_NOOP,
 			PLUGIN_PROVIDE(CUSTOM, "test-vectors"),
+				PLUGIN_SDEPEND(DRBG, DRBG_CTR_AES256),
 	};
 	*features = f;
 	return countof(f);
@@ -175,7 +176,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *test_vectors_plugin_create()
+PLUGIN_DEFINE(test_vectors)
 {
 	private_test_vectors_plugin_t *this;
 	int i;

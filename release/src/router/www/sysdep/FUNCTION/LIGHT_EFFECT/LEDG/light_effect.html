@@ -10,7 +10,7 @@
 <script >
 var ui_lang = httpApi.nvramGet(["preferred_lang"]).preferred_lang;
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=166";
-var model_info = httpApi.nvramGet(["productid", "CoBrand"]);
+var model_info = httpApi.nvramGet(["productid", "CoBrand", "odmpid"]);
 const support_gaming = (isSupport("open_nat") && isSupport("SDN_PRIORITY")) ? true : false;
 const sdn_naming = (()=>{
 	if(typeof Guest_Network_naming != "string"){
@@ -30,7 +30,8 @@ const sdn_naming = (()=>{
 		return Guest_Network_naming;
 	}
 })();
-
+const is_Web_iframe = (($(top.document).find("#mainMenu").length > 0) || (top.webWrapper)) ? true : false;
+let theme = "";
 $(function(){
 	var getUrlParameter = function getUrlParameter(param){
 		var url_parm = window.location.search.substring(1);
@@ -46,8 +47,8 @@ $(function(){
 		return "";
 	};
 
-	let theme = getUrlParameter("current_theme").toLowerCase();
-	if(theme == "white"){
+	theme = getUrlParameter("current_theme").toLowerCase();
+	if(theme == "white" || theme == "rog"){
 		$('link[href*="/light_effect/light_effect_' + theme + '.css"]').remove();
 		$('link').last().after('<link rel="stylesheet" type="text/css" href="/light_effect/light_effect_' + theme + '.css">');
 	}
@@ -55,18 +56,27 @@ $(function(){
 	if(isSupport("antled")){
 		$('<script />', { type : 'text/javascript', src : "/light_effect/antenna.js"}).appendTo('head');
 	}
+	if (isSupport('AURA_SCHED')) {
+		$('<script />', { type : 'text/javascript', src : "/js/ledScheduler.js"}).appendTo('head');
+	}
 	if(isSupport("rog")){
 		$("#light_effect_bg .light_effect_mask").addClass("rog");
+		if(theme === '') {
+			if ($('link[href="/light_effect/light_effect_rog.css"]').length === 0) {
+				$('link').last().after('<link rel="stylesheet" type="text/css" href="/light_effect/light_effect_rog.css">');
+			}
+		}
 	}
 
 	if(support_gaming){
 		setTimeout(function(){
-			if(theme == "" && model_info.productid.substr(0,2) == "GT"){
+			theme = theme.toUpperCase();
+			if(theme == "" && isSupport("ROG_UI")){
 				theme = "ROG";
 			}
 			$('<script />', { type : 'text/javascript', src : "/RWD_UI/rwd_component.js"}).appendTo('head');
 			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component.css">');
-			if(theme == "WHITE" || theme == "ROG"){
+			if(theme == "WHITE" || theme == "ROG" || theme == "TUF"){
 				$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_' + theme + '.css">');
 			}
 			$("#light_effect_bg").before(
@@ -118,7 +128,29 @@ if(support_night_mode){
 	scheme_item_post["Night_Mode"] = false;
 	scheme_item_post["LED_Night_Set"] = JSON.parse(JSON.stringify(scheme_item_post.LED_Set));
 }
+const supportAuraNightSched = (() => {
+	return support_night_mode && isSupport("AURA_NIGHT_SCHED");
+})();
 function initial_led_control() {
+	try {
+		if (window.parent && window.parent !== window) {
+			const parentDoc = window.parent.document;
+			const parentHtml = parentDoc.documentElement || parentDoc.querySelector('html');
+			if (parentHtml) {
+				var currentHtml = document.documentElement || document.querySelector('html');
+				var themeAttrs = ['data-asuswrt-color', 'data-asuswrt-theme', 'data-asuswrt-style'];
+				themeAttrs.forEach(function(attr) {
+					var value = parentHtml.getAttribute(attr);
+					if (value) {
+						currentHtml.setAttribute(attr, value);
+					}
+				});
+			}
+		}
+	} catch (e) {
+		console.log('Cannot inherit theme attributes from parent:', e.message);
+	}
+
 	if(!support_night_mode){
 		$("#ledg_night_mode_switch").remove();
 	}
@@ -156,9 +188,6 @@ function initial_led_control() {
 	$light_effect_bg = $("#light_effect_bg");
 	$hue_bar = $("#hue_bar");
 	$hue_slider = $("#hue_slider");
-	if($("#light_effect_setting #ledg_scheme_switch .schedule").css("display") != "none"){
-		$("#light_effect_setting #ledg_scheme_switch .switch").css("right", "20%");
-	}
 
 	if(!isMobile()) {
 		$hue_bar.mousedown(function(e) {
@@ -200,24 +229,58 @@ function initial_led_control() {
 		var AllLED = httpApi.nvramGet(["AllLED"]).AllLED;
 		if(AllLED == "1"){
 			$("#ledg_scheme_switch .switch").toggleClass("off on").promise().done(function(){
-				var switch_status = $("#ledg_scheme_switch .switch").hasClass("on");
-				lightl_effect_animate.clear($light_effect_bg);
-				if(switch_status){
-					$(".light_effect_setting_bg .switch_off").show();
-					scheme_item_post.Mode = $("#light_effect_setting .scheme_bg.active").attr("Mode");
-					set_scheme_mode();
+				const $ledgSwitch = $(this);
+				const switch_status = $ledgSwitch.hasClass("on");
+				if (switch_status) {
+					const ledgSchedHint = typeof getLedgScheduleHint === 'function'
+						? getLedgScheduleHint({ "type": "aura", "text": `<#BoostKey_Aura_RGB#>` , "switchStatus": switch_status ? "1" : "0" })
+						: { show: false, hint: "" };
+					if (ledgSchedHint.show) {
+						show_customize_confirm(ledgSchedHint.hint);
+						const $confirm_obj = $(".popup_container.popup_customize_alert");
+						$confirm_obj.find("[data-btn=ok]")
+							.click(()=>{
+								post_ledg();
+							});
+						$confirm_obj.find("[data-btn=cancel]")
+							.click(()=>{
+								$ledgSwitch.toggleClass("off on");
+							});
+						return;
+					}
 				}
-				else{
-					$(".light_effect_setting_bg .switch_off").hide();
-					scheme_item_post.Mode = "0";
-					$light_effect_bg.removeClass().addClass("light_effect_bg");
-					$light_effect_bg.css("background", "initial");
-				}
+				post_ledg();
 
-				var postData = {"ledg_scheme": scheme_item_post.Mode};
-				httpApi.set_ledg(postData);
-				if(isSupport("antled")){
-					antenna_switch_enable(switch_status);
+				function post_ledg() {
+					lightl_effect_animate.clear($light_effect_bg);
+					if(switch_status){
+						$(".light_effect_setting_bg .switch_off").show();
+						scheme_item_post.Mode = $("#light_effect_setting .scheme_bg.active").attr("Mode");
+						set_scheme_mode();
+					}
+					else{
+						$(".light_effect_setting_bg .switch_off").hide();
+						scheme_item_post.Mode = "0";
+						$light_effect_bg.removeClass().addClass("light_effect_bg");
+						$light_effect_bg.css("background", "initial");
+					}
+
+					var postData = {"ledg_scheme": scheme_item_post.Mode};
+					httpApi.set_ledg(postData);
+					if(isSupport("antled")){
+						antenna_switch_enable(switch_status);
+					}
+					if (isSupport('AURA_SCHED')) {
+						const auraConfig = httpApi.nvramCharToAscii(['aura_timesched', 'aura_sched'], true);
+						const aura_timesched = decodeURIComponent(auraConfig.aura_timesched || '0');
+						const aura_sched = decodeURIComponent(auraConfig.aura_sched || '');
+						updateScheduleActive({
+							schedSelector: "#ledg_scheme_switch .schedule",
+							timesched: aura_timesched,
+							sched: aura_sched,
+							switchSelector: "#ledg_scheme_switch .switch"
+						});
+					}
 				}
 			});
 		}
@@ -229,13 +292,45 @@ function initial_led_control() {
 			e = e || event;
 			e.stopPropagation();
 			$(this).toggleClass("off on").promise().done(function(){
-				let switch_status = $(this).hasClass("on");
-				lightl_effect_animate.clear($light_effect_bg);
-				scheme_item_post.Night_Mode = switch_status;
-				set_scheme_mode();
-				let postData = {"ledg_scheme": scheme_item_post.Mode};
-				postData["ledg_night_mode"] = (switch_status) ? "1" : "0";
-				httpApi.set_ledg(postData);
+				const $ledgSwitch = $(this);
+				const switch_status = $ledgSwitch.hasClass("on");
+				const ledgSchedHint = typeof getLedgScheduleHint === 'function'
+					? getLedgScheduleHint({ "type": "aura_night", "text": `<#BoostKey_Aura_NightMode#>`, "switchStatus": switch_status ? "1" : "0" })
+					: { show: false, hint: "" };
+				if (ledgSchedHint.show) {
+					show_customize_confirm(ledgSchedHint.hint);
+					const $confirm_obj = $(".popup_container.popup_customize_alert");
+					$confirm_obj.find("[data-btn=ok]")
+						.click(()=>{
+							post_ledg();
+						});
+					$confirm_obj.find("[data-btn=cancel]")
+						.click(()=>{
+							$ledgSwitch.toggleClass("off on");
+						});
+					return;
+				}
+				post_ledg();
+
+				function post_ledg() {
+					lightl_effect_animate.clear($light_effect_bg);
+					scheme_item_post.Night_Mode = switch_status;
+					set_scheme_mode();
+					let postData = {"ledg_scheme": scheme_item_post.Mode};
+					postData["ledg_night_mode"] = (switch_status) ? "1" : "0";
+					httpApi.set_ledg(postData);
+					if (supportAuraNightSched) {
+						const auraNightConfig = httpApi.nvramCharToAscii(['aura_night_timesched', 'aura_night_sched'], true);
+						const aura_night_timesched = decodeURIComponent(auraNightConfig.aura_night_timesched || '0');
+						const aura_night_sched = decodeURIComponent(auraNightConfig.aura_night_sched || '');
+						updateScheduleActive({
+							schedSelector: "#ledg_night_mode_switch .schedule",
+							timesched: aura_night_timesched,
+							sched: aura_night_sched,
+							switchSelector: "#ledg_night_mode_switch .switch"
+						});
+					}
+				}
 			});
 		}).addClass(()=>{return ((ledg_night_mode == "1") ? "on" : "off");});
 	}
@@ -344,13 +439,24 @@ function initial_led_control() {
 				var mode = $("#light_effect_setting .scheme_list_bg .scheme_bg.active").attr("mode");
 				scheme_item_post.Mode = mode;
 				let rgb_parm = {};
-				let ledg_rgb = httpApi.nvramDefaultGet(["ledg_rgb" + mode + ""])["ledg_rgb" + mode + ""];
+				let ledg_rgb = get_default_static_color({
+					CoBrand: model_info.CoBrand,
+					productid: model_info.productid,
+					odmpid: model_info.odmpid,
+					mode: mode
+				});
 				if(mode == "6"){
 					ledg_rgb = retune_wave_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrand});
 				}
 				rgb_parm["ledg_rgb"] = ledg_rgb;
 				if(support_night_mode){
-					let ledg_night_rgb = httpApi.nvramDefaultGet(["ledg_night_rgb" + mode + ""])["ledg_night_rgb" + mode + ""];
+					let ledg_night_rgb = get_default_static_color({
+						CoBrand: model_info.CoBrand,
+						productid: model_info.productid,
+						odmpid: model_info.odmpid,
+						mode: mode,
+						isNight: true
+					});
 					if(mode == "6"){
 						ledg_night_rgb = retune_wave_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrand, "night":scheme_item_post.Night_Mode})
 					}
@@ -391,7 +497,7 @@ function initial_led_control() {
 	}
 	else{
 		if(ledg_scheme != "0"){
-			if($("#light_effect_setting .scheme_list_bg .setting_scheme .scheme_bg[mode=" + ledg_scheme + "]").length == 0){
+			if($("#light_effect_setting .scheme_list_bg .setting_scheme .scheme_bg[mode='" + ledg_scheme + "']").length == 0){
 				ledg_scheme = httpApi.nvramDefaultGet(["ledg_scheme"]).ledg_scheme;
 			}
 		}
@@ -427,7 +533,7 @@ function initial_led_control() {
 		scheme_item_post.Mode = ledg_scheme;
 	}
 
-	$("#light_effect_setting .scheme_list_bg .setting_scheme .scheme_bg[mode=" + scheme_item_post.Mode + "]").addClass("active");
+	$("#light_effect_setting .scheme_list_bg .setting_scheme .scheme_bg[mode='" + scheme_item_post.Mode + "']").addClass("active");
 	if(ledg_scheme == "0") {
 		$("#ledg_scheme_switch .switch").addClass("off");
 		lightl_effect_animate.clear($light_effect_bg);
@@ -476,6 +582,86 @@ function initial_led_control() {
 	var retune_slider_w = parseInt(($hue_bar.width() / 270) * cur_slider_w);
 	if(retune_slider_w > cur_slider_w)
 		$hue_slider.css({"width": retune_slider_w});
+
+	if (isSupport('AURA_SCHED')) {
+		if ($("#ledg_scheme_switch .schedule-wrapper").css("display") != "none") {
+			$("#ledg_scheme_switch .schedule, #ledg_night_mode_switch .schedule").unbind("click").click(function(e){
+				e = e || event;
+				e.stopPropagation();
+				const schedMode = $(this).attr("schedMode");
+				theme = theme.toUpperCase();
+				if(theme == "") {
+					if (isSupport("ROG_UI")) {
+						theme = "ROG";
+					}
+					else if(top.webWrapper || isSupport("UI4")){
+						theme = "WHITE";
+					}
+				}
+				const showLedSchedulerFn = (typeof top !== "undefined" && typeof top.showLedScheduler === "function")
+					? top.showLedScheduler
+					: (typeof showLedScheduler === "function" ? showLedScheduler : null);
+
+				if (is_Web_iframe) {
+					if (showLedSchedulerFn) {
+						showLedSchedulerFn({
+							'theme': theme,
+							'schedMode': schedMode,
+							'hide_btn_back_container': true,
+							'popupTitle': `<#Schedule_Aura_Scheduler#>`,
+							'ledClassType': 'aura',
+							'isMobile': isMobile()
+						});
+					}
+				}
+				else {
+					if (showLedSchedulerFn) {
+						showLedSchedulerFn({
+							'theme': theme,
+							'schedMode': schedMode,
+							'hide_btn_back_container': true,
+							'popupTitle': `<#Schedule_Aura_Scheduler#>`,
+							'ledClassType': 'aura',
+							'isMobile': isMobile()
+						});
+					}
+					/*
+					switch_mode("schedule");
+					const auraScheduler = new AuraScheduler({
+						'theme':theme,
+						'schedMode':schedMode
+					});
+					$("#schedule_bg").empty().off().append(auraScheduler.render());
+					*/
+				}
+			});
+			const nvramArr = supportAuraNightSched
+				? ['aura_timesched', 'aura_sched', 'aura_night_timesched', 'aura_night_sched']
+				: ['aura_timesched', 'aura_sched'];
+			const auraConfig = httpApi.nvramCharToAscii(nvramArr, true);
+			const aura_timesched = decodeURIComponent(auraConfig.aura_timesched || '0');
+			const aura_sched = decodeURIComponent(auraConfig.aura_sched || '');
+			updateScheduleActive({
+				schedSelector: "#ledg_scheme_switch .schedule",
+				timesched: aura_timesched,
+				sched: aura_sched,
+				switchSelector: "#ledg_scheme_switch .switch"
+			});
+			if (supportAuraNightSched) {
+				const aura_night_timesched = decodeURIComponent(auraConfig.aura_night_timesched || '0');
+				const aura_night_sched = decodeURIComponent(auraConfig.aura_night_sched || '');
+				updateScheduleActive({
+					schedSelector: "#ledg_night_mode_switch .schedule",
+					timesched: aura_night_timesched,
+					sched: aura_night_sched,
+					switchSelector: "#ledg_night_mode_switch .switch"
+				});
+			}
+		}
+	}
+	else {
+		$("#ledg_scheme_switch .schedule-wrapper, #ledg_night_mode_switch .schedule-wrapper").remove();
+	}
 }
 function set_scheme_mode(){
 	const mode = scheme_item_post.Mode;
@@ -935,7 +1121,49 @@ function switch_mode(_type){
 function is_night_mode(){
 	return ((support_night_mode && scheme_item_post.Night_Mode) ? true : false);
 }
+function showLedScheduler(parms){
+	const ledScheduler = new popupLedScheduler(parms);
+	ledScheduler.show();
+}
+function updateScheduleActive({
+	schedSelector,
+	timesched,
+	sched,
+	switchSelector,
+	enabledRuleCheck = (ruleStr) => {
+		if (!ruleStr) return false;
+		return ruleStr.split('<').some(rule => rule.length > 1 && rule[1] === '1');
+	}
+}) {
+	if (enabledRuleCheck(sched)) {
+		$(schedSelector).addClass('active');
+	} else {
+		$(schedSelector).removeClass('active');
+	}
+}
 $(document).ready(initial_led_control);
+top.addEventListener('ledSchedulerClosed', function() {
+	const auraConfig = httpApi.nvramCharToAscii(['aura_timesched', 'aura_sched'], true);
+	const aura_timesched = decodeURIComponent(auraConfig.aura_timesched || '0');
+	const aura_sched = decodeURIComponent(auraConfig.aura_sched || '');
+	updateScheduleActive({
+		schedSelector: "#ledg_scheme_switch .schedule",
+		timesched: aura_timesched,
+		sched: aura_sched,
+		switchSelector: "#ledg_scheme_switch .switch"
+	});
+	if (typeof supportAuraNightSched !== "undefined" && supportAuraNightSched) {
+		const auraNightConfig = httpApi.nvramCharToAscii(['aura_night_timesched', 'aura_night_sched'], true);
+		const aura_night_timesched = decodeURIComponent(auraNightConfig.aura_night_timesched || '0');
+		const aura_night_sched = decodeURIComponent(auraNightConfig.aura_night_sched || '');
+		updateScheduleActive({
+			schedSelector: "#ledg_night_mode_switch .schedule",
+			timesched: aura_night_timesched,
+			sched: aura_night_sched,
+			switchSelector: "#ledg_night_mode_switch .switch"
+		});
+	}
+});
 </script>
 <body style="margin:initial;">
 <div class="light_effect_bg" id="light_effect_bg" mode_group="panel">
@@ -951,13 +1179,22 @@ $(document).ready(initial_led_control);
 <div class="light_effect_setting_bg" id="light_effect_setting" mode_group="panel">
 	<div class="settings_container">
 		<div id="ledg_scheme_switch" class="setting_enable_bg">
-			<div class="text"><span>Aura RGB</span></div>
+			<div class="text"><span><#BoostKey_Aura_RGB#></span></div>
 			<div class="switch"></div>
-			<div class="schedule"></div>
+			<div class='schedule-wrapper'>
+				<div class="ic-schedule-container">
+					<div class="schedule" schedMode='aura'></div>
+				</div>
+			</div>
 		</div>
 		<div id="ledg_night_mode_switch" class="setting_enable_bg switch_off">
 			<div class="text"><span><#BoostKey_Aura_NightMode#></span></div>
 			<div class="switch"></div>
+			<div class='schedule-wrapper'>
+				<div class="ic-schedule-container">
+					<div class="schedule" schedMode='auraNight'></div>
+				</div>
+			</div>
 		</div>
 	</div>
 	<div class="switch_off">
@@ -1044,4 +1281,6 @@ $(document).ready(initial_led_control);
 		</div>
 	</div>
 </div>
+
+<div class="light_effect_bg" id="schedule_bg" mode_group="schedule" style="display:none;"></div>
 </body>

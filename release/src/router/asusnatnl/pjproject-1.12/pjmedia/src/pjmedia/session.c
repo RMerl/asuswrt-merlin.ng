@@ -64,7 +64,7 @@ static const pj_str_t ID_RTPMAP = { "rtpmap", 6 };
 static const pj_str_t ID_TELEPHONE_EVENT = { "telephone-event", 15 };
 
 static const pj_str_t STR_INACTIVE = { "inactive", 8 };
-static const pj_str_t STR_SENDRECV = { "sendrecv", 8 };
+//static const pj_str_t STR_SENDRECV = { "sendrecv", 8 };
 static const pj_str_t STR_SENDONLY = { "sendonly", 8 };
 static const pj_str_t STR_RECVONLY = { "recvonly", 8 };
 

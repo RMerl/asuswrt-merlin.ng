@@ -119,7 +119,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *medsrv_plugin_create()
+PLUGIN_DEFINE(medsrv)
 {
 	private_medsrv_plugin_t *this;
 

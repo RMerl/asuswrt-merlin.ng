@@ -650,6 +650,7 @@ static pj_status_t start_async_read(struct udp_transport *tp)
 	}
     }
 
+	(void) ioqueue;
     return PJ_SUCCESS;
 }
 

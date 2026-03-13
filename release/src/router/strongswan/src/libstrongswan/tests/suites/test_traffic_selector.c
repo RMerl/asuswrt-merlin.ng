@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Tobias Brunner
+ * Copyright (C) 2015-2025 Tobias Brunner
  * Copyright (C) 2015 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -18,6 +18,7 @@
 #include "test_suite.h"
 
 #include <selectors/traffic_selector.h>
+#include <selectors/traffic_selector_list.h>
 
 
 static void verify(const char *str, const char *alt, traffic_selector_t *ts)
@@ -814,6 +815,199 @@ START_TEST(test_printf_hook_hash)
 }
 END_TEST
 
+/**
+ * Create a linked list of either traffic selectors or hosts from a
+ * comma-separated list.
+ */
+static linked_list_t *create_list(char *str, bool hosts)
+{
+	linked_list_t *list = linked_list_create();
+	enumerator_t *enumerator;
+	char *item;
+	void *obj;
+
+	enumerator = enumerator_create_token(str, " ", "");
+	while (enumerator->enumerate(enumerator, &item))
+	{
+		if (hosts)
+		{
+			obj = host_create_from_string(item, 0);
+		}
+		else if (streq(item, "dynamic"))
+		{
+			obj = traffic_selector_create_dynamic(0, 0, 65535);
+		}
+		else
+		{
+			obj = traffic_selector_create_from_cidr(item, 0, 0, 65535);
+		}
+		list->insert_last(list, obj);
+	}
+	enumerator->destroy(enumerator);
+	return list;
+}
+
+struct {
+	char *ts;
+	char *hosts;
+	char *get;
+	char *get_force;
+} list_get_tests[] = {
+	{ "dynamic", NULL, "dynamic", "dynamic" },
+	{ "dynamic", "10.0.1.1", "10.0.1.1/32", "10.0.1.1/32" },
+	{ "dynamic", "10.0.1.1 192.168.0.1",
+		"10.0.1.1/32 192.168.0.1/32", "10.0.1.1/32 192.168.0.1/32" },
+	{ "0.0.0.0/0", "10.0.1.1", "0.0.0.0/0", "10.0.1.1/32" },
+	{ "0.0.0.0/0", "10.0.1.1  192.168.0.1",
+		"0.0.0.0/0", "10.0.1.1/32 192.168.0.1/32" },
+	{ "10.0.1.0/24", "10.0.1.1", "10.0.1.0/24", "10.0.1.1/32" },
+	{ "10.0.2.0/24", "10.0.1.1", "10.0.2.0/24", "" },
+	{ "10.0.2.0/24", "10.0.1.1 10.0.2.1", "10.0.2.0/24", "10.0.2.1/32" },
+	/* two dynamic TS are not treated as duplicates */
+	{ "dynamic dynamic", NULL, "dynamic dynamic", "dynamic dynamic" },
+	{ "dynamic dynamic", "10.0.1.1", "10.0.1.1/32", "10.0.1.1/32" },
+	{ "dynamic dynamic", "10.0.1.1 192.168.0.1",
+		"10.0.1.1/32 192.168.0.1/32", "10.0.1.1/32 192.168.0.1/32" },
+	{ "0.0.0.0/0 0.0.0.0/0", "10.0.1.1", "0.0.0.0/0", "10.0.1.1/32" },
+	{ "0.0.0.0/0 0.0.0.0/0", "10.0.1.1  192.168.0.1",
+		"0.0.0.0/0", "10.0.1.1/32 192.168.0.1/32" },
+	{ "10.0.1.0/24 10.0.1.0/24", NULL, "10.0.1.0/24", "10.0.1.0/24" },
+	{ "10.0.1.1/32 10.0.1.0/24", NULL, "10.0.1.0/24", "10.0.1.0/24" },
+	{ "10.0.1.0/24 10.0.1.1/32", NULL, "10.0.1.0/24", "10.0.1.0/24" },
+	{ "10.0.1.0/24 10.0.2.0/24", NULL,
+		"10.0.1.0/24 10.0.2.0/24", "10.0.1.0/24 10.0.2.0/24" },
+	{ "10.0.1.0/24 10.0.2.0/24", "10.0.1.1",
+		"10.0.1.0/24 10.0.2.0/24", "10.0.1.1/32" },
+	{ "10.0.1.0/24 10.0.2.0/24", "10.0.1.1 10.0.2.1",
+		"10.0.1.0/24 10.0.2.0/24", "10.0.1.1/32 10.0.2.1/32" },
+};
+
+START_TEST(test_list_get)
+{
+	traffic_selector_list_t *ts;
+	linked_list_t *list, *hosts, *result;
+
+	list = create_list(list_get_tests[_i].ts, FALSE);
+	ts = traffic_selector_list_create_from_enumerator(list->create_enumerator(list));
+	hosts = list_get_tests[_i].hosts ? create_list(list_get_tests[_i].hosts, TRUE) : NULL;
+
+	result = ts->get(ts, hosts, FALSE);
+	verify_list(list_get_tests[_i].get, NULL, result);
+
+	result = ts->get(ts, hosts, TRUE);
+	verify_list(list_get_tests[_i].get_force, NULL, result);
+
+	DESTROY_OFFSET_IF(hosts, offsetof(host_t, destroy));
+	list->destroy_offset(list, offsetof(traffic_selector_t, destroy));
+	ts->destroy(ts);
+}
+END_TEST
+
+struct {
+	char *ts;
+	char *hosts;
+	char *supplied;
+	char *select;
+	char *select_force;
+	bool narrowed;
+} list_select_tests[] = {
+	{ "dynamic", NULL, NULL, "dynamic", "dynamic", FALSE },
+	{ "dynamic", NULL, "10.0.1.0/24", "", "", TRUE },
+	{ "dynamic", "10.0.1.1", "0.0.0.0/0", "10.0.1.1/32", "10.0.1.1/32", FALSE },
+	{ "dynamic", "10.0.1.1", "10.0.1.1/32", "10.0.1.1/32", "10.0.1.1/32", FALSE },
+	{ "dynamic", "10.0.1.1 192.168.0.1", "10.0.1.0/24",
+		"10.0.1.1/32", "10.0.1.1/32", TRUE },
+	{ "dynamic", "10.0.1.1 192.168.0.1", "10.0.1.0/24 192.168.0.0/24",
+		"10.0.1.1/32 192.168.0.1/32", "10.0.1.1/32 192.168.0.1/32", FALSE },
+	{ "0.0.0.0/0", NULL, "0.0.0.0/0", "0.0.0.0/0", "0.0.0.0/0", FALSE },
+	{ "0.0.0.0/0", "10.0.1.1", "0.0.0.0/0", "0.0.0.0/0", "10.0.1.1/32", FALSE },
+	{ "0.0.0.0/0", NULL, "10.0.1.0/24", "10.0.1.0/24", "10.0.1.0/24", TRUE },
+	{ "0.0.0.0/0", NULL, "10.0.1.0/24 10.0.2.0/24",
+		"10.0.1.0/24 10.0.2.0/24", "10.0.1.0/24 10.0.2.0/24", TRUE },
+	{ "0.0.0.0/0", NULL, "10.0.2.0/24 10.0.1.0/24",
+		"10.0.2.0/24 10.0.1.0/24", "10.0.2.0/24 10.0.1.0/24", TRUE },
+	{ "10.0.1.0/24", NULL, "0.0.0.0/0", "10.0.1.0/24", "10.0.1.0/24", FALSE },
+	{ "10.0.1.0/24", "10.0.1.1", "0.0.0.0/0", "10.0.1.0/24", "10.0.1.1/32", FALSE },
+	{ "10.0.1.0/24 10.0.2.0/24", NULL, "0.0.0.0/0",
+		"10.0.1.0/24 10.0.2.0/24", "10.0.1.0/24 10.0.2.0/24", FALSE },
+	{ "10.0.2.0/24 10.0.1.0/24", NULL, "0.0.0.0/0",
+		"10.0.2.0/24 10.0.1.0/24", "10.0.2.0/24 10.0.1.0/24", FALSE },
+	{ "10.0.1.0/24 10.0.2.0/24", NULL, "10.0.2.0/24 10.0.1.0/24",
+		"10.0.1.0/24 10.0.2.0/24", "10.0.1.0/24 10.0.2.0/24", FALSE },
+	{ "10.0.1.0/24 10.0.2.0/24", NULL, "10.0.1.1/32 10.0.1.0/24",
+		"10.0.1.0/24", "10.0.1.0/24", TRUE },
+	{ "10.0.1.0/24 10.0.2.0/24", NULL, "10.0.2.1/32 10.0.1.0/24",
+		"10.0.1.0/24 10.0.2.1/32", "10.0.1.0/24 10.0.2.1/32", TRUE },
+};
+
+START_TEST(test_list_select)
+{
+	traffic_selector_list_t *ts;
+	linked_list_t *list, *hosts, *supplied, *result;
+	bool narrowed = FALSE;
+
+	list = create_list(list_select_tests[_i].ts, FALSE);
+	ts = traffic_selector_list_create_from_enumerator(list->create_enumerator(list));
+	hosts = list_select_tests[_i].hosts ? create_list(list_select_tests[_i].hosts, TRUE) : NULL;
+	supplied = list_select_tests[_i].supplied ? create_list(list_select_tests[_i].supplied, FALSE) : NULL;
+
+	result = ts->select(ts, supplied, hosts, FALSE, &narrowed);
+	verify_list(list_select_tests[_i].select, NULL, result);
+	ck_assert(narrowed == list_select_tests[_i].narrowed);
+
+	result = ts->select(ts, supplied, hosts, TRUE, &narrowed);
+	verify_list(list_select_tests[_i].select_force, NULL, result);
+	ck_assert(narrowed == list_select_tests[_i].narrowed);
+
+	DESTROY_OFFSET_IF(hosts, offsetof(host_t, destroy));
+	DESTROY_OFFSET_IF(supplied, offsetof(traffic_selector_t, destroy));
+	list->destroy_offset(list, offsetof(traffic_selector_t, destroy));
+	ts->destroy(ts);
+}
+END_TEST
+
+START_TEST(test_list_equals)
+{
+	traffic_selector_list_t *ts1, *ts2;
+
+	ts1 = traffic_selector_list_create();
+	ts2 = traffic_selector_list_create();
+	ck_assert(ts1->equals(ts1, ts2));
+
+	ts1->add(ts1, traffic_selector_create_from_cidr("10.0.1.0/24", 0, 0, 65535));
+	ck_assert(!ts1->equals(ts1, ts2));
+
+	ts2->add(ts2, traffic_selector_create_from_cidr("10.0.1.0/24", 0, 0, 65535));
+	ck_assert(ts1->equals(ts1, ts2));
+
+	ts1->destroy(ts1);
+	ts2->destroy(ts2);
+}
+END_TEST
+
+START_TEST(test_list_clone)
+{
+	traffic_selector_list_t *ts1, *ts2;
+
+	ts1 = traffic_selector_list_create();
+	ts2 = ts1->clone(ts1);
+	ck_assert(ts1->equals(ts1, ts2));
+	ts2->destroy(ts2);
+
+	ts1->add(ts1, traffic_selector_create_from_cidr("10.0.1.0/24", 0, 0, 65535));
+	ts2 = ts1->clone(ts1);
+	ck_assert(ts1->equals(ts1, ts2));
+	ts2->destroy(ts2);
+
+	ts1->add(ts1, traffic_selector_create_from_cidr("10.0.1.0/24", 0, 0, 65535));
+	ts2 = ts1->clone(ts1);
+	ck_assert(ts1->equals(ts1, ts2));
+
+	ts1->destroy(ts1);
+	ts2->destroy(ts2);
+}
+END_TEST
+
 Suite *traffic_selector_suite_create()
 {
 	Suite *s;
@@ -888,6 +1082,13 @@ Suite *traffic_selector_suite_create()
 	tc = tcase_create("printf hook");
 	tcase_add_test(tc, test_printf_hook_null);
 	tcase_add_test(tc, test_printf_hook_hash);
+	suite_add_tcase(s, tc);
+
+	tc = tcase_create("list");
+	tcase_add_loop_test(tc, test_list_get, 0, 0/*countof(list_get_tests)*/);
+	tcase_add_loop_test(tc, test_list_select, 0, countof(list_select_tests));
+	tcase_add_test(tc, test_list_equals);
+	tcase_add_test(tc, test_list_clone);
 	suite_add_tcase(s, tc);
 
 	return s;

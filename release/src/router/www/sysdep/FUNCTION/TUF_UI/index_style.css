@@ -767,7 +767,7 @@ width:122px;
 }
 .faq-filter-block{
 	position: absolute;
-	margin: -200px 100px 0 0;
+	margin-top: -230px;
 	width: 300px;
 	border: 1px solid #474747;
 	height: 200px;

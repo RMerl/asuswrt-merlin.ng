@@ -80,8 +80,12 @@ CFLAGS += -I$(TOP)/ateed/
 LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
+ifeq ($(RTCONFIG_MXL_826XX),y)
 LDFLAGS += -L$(TOP)/libhostapi -lhostapi
+endif
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126))
+LDFLAGS += -L$(STAGEDIR)/usr/lib/
 endif
 
 OBJS	=	main.o utility.o prelogin.o ftpcmdio.o postlogin.o privsock.o \
@@ -93,11 +97,10 @@ OBJS	=	main.o utility.o prelogin.o ftpcmdio.o postlogin.o privsock.o \
     ssl.o sslslave.o ptracesandbox.o ftppolicy.o sysutil.o sysdeputil.o \
     seccompsandbox.o
 
-
 .c.o:
 	$(CC) -c $*.c $(CFLAGS) $(IFLAGS)
 
-vsftpd: $(OBJS) 
+vsftpd: $(OBJS)
 	$(CC) -o vsftpd $(OBJS) $(LINK) $(LDFLAGS) $(LIBS)
 
 install:

@@ -120,7 +120,7 @@ extern void init_check_wifi_channel(void);
 
 /* roamast-PLATFORM.c */
 #ifndef CONFIG_BCMWL5
-extern void rast_send_beacon_request(int bssidx, int vifidx, struct ether_addr *sta);
+extern void rast_send_beacon_request(int bssidx, int vifidx, struct ether_addr *sta, int bcn_mode);
 #endif
 
 /* wps-PLATFORM.c */

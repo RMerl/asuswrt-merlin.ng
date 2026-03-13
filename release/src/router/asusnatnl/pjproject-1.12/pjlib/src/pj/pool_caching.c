@@ -18,6 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
  */
 #include <pj/pool.h>
+#include <pj/assert.h>
 #include <pj/log.h>
 #include <pj/string.h>
 #include <pj/assert.h>
@@ -56,6 +57,7 @@ PJ_DEF(void) pj_caching_pool_init( int inst_id, pj_caching_pool *cp,
 {
     int i;
     pj_pool_t *pool;
+    pj_status_t status;
 
     PJ_CHECK_STACK();
 
@@ -81,7 +83,10 @@ PJ_DEF(void) pj_caching_pool_init( int inst_id, pj_caching_pool *cp,
 	//printf("inst_id=%d\n", cp->factory.inst_id);
     //modified by Charles
     pool = pj_pool_create_on_buf(inst_id, "cachingpool", cp->pool_buf, 2*sizeof(cp->pool_buf));
-    pj_lock_create_simple_mutex(pool, "cachingpool", &cp->lock);
+    status = pj_lock_create_simple_mutex(pool, "cachingpool", &cp->lock);
+    /* This mostly serves to silent coverity warning about unchecked 
+     * return value. There's not much we can do if it fails. */
+    PJ_ASSERT_ON_FAIL(status==PJ_SUCCESS, return);
 	//printf("%p\n", ((pj_mutex_t *)cp->lock));
 }
 

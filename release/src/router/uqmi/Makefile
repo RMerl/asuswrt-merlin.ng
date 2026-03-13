@@ -3,6 +3,7 @@ SBINDIR  = $(PREFIX)/sbin
 DESTDIR  = 
 CFLAGS   = -Os -ggdb -Wall -Werror --std=gnu99 -Wmissing-declarations $(EXTRACFLAGS) # -Wno-enum-conversion 
 CFLAGS  += -ffunction-sections -fdata-sections
+CFLAGS  += -D$(ASUSWRT_BRCM_SDK_VERSION)
 LDFLAGS  = $(EXTRALDFLAGS)
 LDFLAGS += -Wl,--gc-sections
 

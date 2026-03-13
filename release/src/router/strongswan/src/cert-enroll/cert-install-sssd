@@ -53,13 +53,26 @@ if [ -s old/$SUBCA ]
 then
   cp old/$SUBCA $LDAP_TLS_CACERTDIR/$OLDSUBCA
 fi
+if [ -s older/$ROOTCA ]
+then
+  cp older/$ROOTCA $LDAP_TLS_CACERTDIR/$OLDERROOTCA
+fi
+if [ -s older/$SUBCA ]
+then
+  cp older/$SUBCA $LDAP_TLS_CACERTDIR/$OLDERSUBCA
+fi
 
 rm -f $LDAP_TLS_CACERTDIR/*.0
 
 /usr/bin/openssl rehash $LDAP_TLS_CACERTDIR
 
 ##############################################################################
-# Restart the SSSD systemd service
+# Restart the SSSD daemon
 #
-/usr/bin/systemctl restart sssd.service
+if [ -f /usr/bin/systemctl ]
+then
+  /usr/bin/systemctl restart sssd.service
+else
+  /etc/init.d/sssd restart
+fi
 exit 0

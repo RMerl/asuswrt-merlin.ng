@@ -19,6 +19,67 @@ if(typeof stringSafeGet != "function"){
 		return str.replace(new RegExp("&#39;", 'g'), "'");
 	}
 }
+
+if (typeof htmlEnDeCode === 'undefined') {
+	var htmlEnDeCode = (function() {
+		let charToEntityRegex,
+			entityToCharRegex,
+			charToEntity,
+			entityToChar;
+
+		function resetCharacterEntities() {
+			charToEntity = {};
+			entityToChar = {};
+			// add the default set
+			addCharacterEntities({
+				'&amp;'	 :   '&',
+				'&gt;'	  :   '>',
+				'&lt;'	  :   '<',
+				'&quot;'	:   '"',
+				'&#39;'	 :   "'"
+			});
+		}
+
+		function addCharacterEntities(newEntities) {
+			let charKeys = [],
+				entityKeys = [],
+				key, echar;
+			for (key in newEntities) {
+				echar = newEntities[key];
+				entityToChar[key] = echar;
+				charToEntity[echar] = key;
+				charKeys.push(echar);
+				entityKeys.push(key);
+			}
+			charToEntityRegex = new RegExp('(' + charKeys.join('|') + ')', 'g');
+			entityToCharRegex = new RegExp('(' + entityKeys.join('|') + '|&#[0-9]{1,5};' + ')', 'g');
+		}
+
+		function htmlEncode(value){
+			let htmlEncodeReplaceFn = function(match, capture) {
+				return charToEntity[capture];
+			};
+
+			return (!value) ? value : String(value).replace(charToEntityRegex, htmlEncodeReplaceFn);
+		}
+
+		function htmlDecode(value) {
+			let htmlDecodeReplaceFn = function(match, capture) {
+				return (capture in entityToChar) ? entityToChar[capture] : String.fromCharCode(parseInt(capture.substr(2), 10));
+			};
+
+			return (!value) ? value : String(value).replace(entityToCharRegex, htmlDecodeReplaceFn);
+		}
+
+		resetCharacterEntities();
+
+		return {
+			htmlEncode: htmlEncode,
+			htmlDecode: htmlDecode
+		};
+	})();
+}
+
 var ip_RegExp = {
 	"IPv4" : "^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$",
 	"IPv4_CIDR" : "^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$",
@@ -35,7 +96,7 @@ jQuery.fn.show_validate_hint = function(hintStr){
 
 		resize_iframe_height();
 }
-function Get_Component_Customize_Alert(_text){
+function Get_Component_Customize_Alert(_text, instance = null) {
 	var $popup_content_container = $("<div>").addClass("popup_content_container");
 
 	var $customize_alert = $("<div>").addClass("customize_alert");
@@ -49,12 +110,16 @@ function Get_Component_Customize_Alert(_text){
 	$ok.unbind("click").click(function(e){
 		e = e || event;
 		e.stopPropagation();
-		close_popup_customize_alert();
+		if (instance) {
+			instance._close_popup_customize_alert();
+		} else {
+			close_popup_customize_alert();
+		}
 	});
 
 	return $popup_content_container;
 }
-function Get_Component_Customize_Confirm(_text){
+function Get_Component_Customize_Confirm(_text, instance = null) {
 	let $popup_content_container = $("<div>").addClass("popup_content_container");
 
 	let $customize_confirm = $("<div>").addClass("customize_alert confirm").appendTo($popup_content_container);
@@ -64,14 +129,22 @@ function Get_Component_Customize_Confirm(_text){
 		.unbind("click").click(function(e){
 			e = e || event;
 			e.stopPropagation();
-			close_popup_customize_alert();
+			if (instance) {
+				instance._close_popup_customize_alert();
+			} else {
+				close_popup_customize_alert();
+			}
 		}).appendTo($action_btn_container);
 
 	$("<div>").attr({"data-btn":"cancel"}).addClass("cancel btn").html("<#CTL_Cancel#>")
 		.unbind("click").click(function(e){
 			e = e || event;
 			e.stopPropagation();
-			close_popup_customize_alert();
+			if (instance) {
+				instance._close_popup_customize_alert();
+			} else {
+				close_popup_customize_alert();
+			}
 		}).appendTo($action_btn_container);
 
 	return $popup_content_container;
@@ -1075,6 +1148,39 @@ function resize_iframe_height(_preheight){
 		var margin_bottom = 30;
 		$(parent.document).find(".rwd_iframe").css("height", (Math.max(menu_height, container_height, pop_height) + margin_bottom));
 	}
+
+	if (isSupport("UI4")) {
+		if($(parent.document).find("#settingsWindow").length == "1"){
+			const $settingsWindow = $(parent.document).find("#settingsWindow");
+			const currentSettingsHeight = $settingsWindow[0].offsetHeight;
+
+			let hasPopup = false;
+			let actualHeight = 0;
+
+			$(".popup_container").each(function(index){
+				if($(this).css("display") == "flex"){
+					hasPopup = true;
+					actualHeight = Math.max(actualHeight, $(this)[0].scrollHeight);
+				}
+			});
+
+			if(hasPopup && actualHeight > 0){
+				if(actualHeight > currentSettingsHeight){
+					if(!window.originalSettingsWindowHeight){
+						window.originalSettingsWindowHeight = $settingsWindow.css("height") || currentSettingsHeight + 'px';
+					}
+
+					const newHeight = actualHeight + 50;
+					$settingsWindow.css("height", newHeight + "px");
+				}
+			}
+			else{
+				if(window.originalSettingsWindowHeight){
+					$settingsWindow.css("height", window.originalSettingsWindowHeight);
+				}
+			}
+		}
+	}
 }
 function showLoading_RWD(seconds, flag){
 	if (isSupport("UI4") && businessLoader) {
@@ -1144,8 +1250,20 @@ function close_popup_customize_alert(){
 	resize_iframe_height();
 }
 function adjust_popup_container_top(_obj, _offsetHeight){
+	const getScrollTop = () => {
+		if(isSupport("UI4")){
+			return top.document.querySelector("article.main-content").scrollTop;
+		}
+		else if (top.webWrapper) {
+			return top.window.pageYOffset || top.document.documentElement.scrollTop || top.document.body.scrollTop || 0
+		}
+		else {
+			return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+		}
+	};
+
 	$(_obj).css({top: ""});
-	var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+	var scrollTop = getScrollTop();
 	var parent_scrollTop = parent.window.pageYOffset || parent.document.documentElement.scrollTop || parent.document.body.scrollTop || 0;
 	if(scrollTop == 0 && parent_scrollTop != 0)
 		parent_scrollTop = parent_scrollTop - 200;

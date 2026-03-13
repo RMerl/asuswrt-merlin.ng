@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2022-2025 Tobias Brunner
  * Copyright (C) 2006-2009 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -38,22 +39,20 @@ struct private_acquire_job_t {
 	/**
 	 * Data from the acquire
 	 */
-	kernel_acquire_data_t data;
+	kernel_acquire_data_t *data;
 };
 
 METHOD(job_t, destroy, void,
 	private_acquire_job_t *this)
 {
-	DESTROY_IF(this->data.src);
-	DESTROY_IF(this->data.dst);
-	DESTROY_IF(this->data.label);
+	kernel_acquire_data_destroy(this->data);
 	free(this);
 }
 
 METHOD(job_t, execute, job_requeue_t,
 	private_acquire_job_t *this)
 {
-	charon->traps->acquire(charon->traps, this->reqid, &this->data);
+	charon->traps->acquire(charon->traps, this->reqid, this->data);
 	return JOB_REQUEUE_NONE;
 }
 
@@ -79,21 +78,8 @@ acquire_job_t *acquire_job_create(uint32_t reqid, kernel_acquire_data_t *data)
 			},
 		},
 		.reqid = reqid,
-		.data = *data,
+		.data = kernel_acquire_data_clone(data),
 	);
-
-	if (this->data.src)
-	{
-		this->data.src = this->data.src->clone(this->data.src);
-	}
-	if (this->data.dst)
-	{
-		this->data.dst = this->data.dst->clone(this->data.dst);
-	}
-	if (this->data.label)
-	{
-		this->data.label = this->data.label->clone(this->data.label);
-	}
 
 	return &this->public;
 }

@@ -136,6 +136,7 @@ static int
 	*Y++ = WordToHword(v,Np);   /* Deposit output */
 	time += dtb;		    /* Move to next sample by time increment */
     }
+    (void) endTime;
     return (Y - Ystart);            /* Return number of output samples */
 }
 
@@ -282,6 +283,7 @@ static int SrcUp(const RES_HWORD X[], RES_HWORD Y[], double pFactor,
 	*Y++ = WordToHword(v,NLpScl);   /* strip guard bits, deposit output */
 	time += dtb;		/* Move to next sample by time increment */
     }
+    (void) endTime;
     return (Y - Ystart);        /* Return the number of output samples */
 }
 
@@ -327,6 +329,7 @@ static int SrcUD(const RES_HWORD X[], RES_HWORD Y[], double pFactor,
 	*Y++ = WordToHword(v,NLpScl);   /* strip guard bits, deposit output */
 	time += dtb;		/* Move to next sample by time increment */
     }
+    (void) endTime;
     return (Y - Ystart);        /* Return the number of output samples */
 }
 

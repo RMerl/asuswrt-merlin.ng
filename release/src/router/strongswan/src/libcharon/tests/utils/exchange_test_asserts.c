@@ -106,6 +106,129 @@ bool exchange_test_asserts_child_rekey(listener_t *listener, ike_sa_t *ike_sa,
 }
 
 /**
+ * Track SAs via updown event.
+ */
+static void track_sa_updown(listener_track_sas_assert_t *this, char *event,
+							array_t *sas, uint32_t id, bool up)
+{
+	uint32_t existing;
+	bool found = FALSE;
+	int i;
+
+	if (up)
+	{
+		for (i = 0; i < array_count(sas); i++)
+		{
+			array_get(sas, i, &existing);
+			assert_listener_msg(id != existing, this, "duplicate %s(up) event "
+								"for SA %u", event, id);
+		}
+		array_insert(sas, ARRAY_TAIL, &id);
+	}
+	else
+	{
+		for (i = 0; i < array_count(sas); i++)
+		{
+			array_get(sas, i, &existing);
+			if (id == existing)
+			{
+				array_remove(sas, i, NULL);
+				found = TRUE;
+				break;
+			}
+		}
+		assert_listener_msg(found, this, "%s(down) event for unknown SA %u",
+							event, id);
+	}
+}
+
+/**
+ * Track SAs via a rekey event.
+ */
+static void track_sa_rekey(listener_track_sas_assert_t *this, char *event,
+						   array_t *sas, uint32_t old_id, uint32_t new_id)
+{
+	uint32_t existing;
+	bool found = FALSE;
+	int i;
+
+	for (i = 0; i < array_count(sas); i++)
+	{
+		array_get(sas, i, &existing);
+		if (old_id == existing)
+		{
+			array_remove(sas, i, NULL);
+			found = TRUE;
+			break;
+		}
+	}
+	assert_listener_msg(found, this, "%s() event for unknown old SA %u", event,
+						old_id);
+
+	for (i = 0; i < array_count(sas); i++)
+	{
+		array_get(sas, i, &existing);
+		assert_listener_msg(new_id != existing, this, "%s() event for "
+							"already up new SA %u", event, new_id);
+	}
+	array_insert(sas, ARRAY_TAIL, &new_id);
+}
+
+/*
+ * Described in header
+ */
+bool exchange_test_asserts_track_ike_updown(listener_t *listener,
+											ike_sa_t *ike_sa, bool up)
+{
+	listener_track_sas_assert_t *this = (listener_track_sas_assert_t*)listener;
+
+	track_sa_updown(this, "ike_updown", this->ike_sas,
+					ike_sa->get_unique_id(ike_sa), up);
+	return TRUE;
+}
+
+/*
+ * Described in header
+ */
+bool exchange_test_asserts_track_child_updown(listener_t *listener,
+											  ike_sa_t *ike_sa,
+											  child_sa_t *child_sa, bool up)
+{
+	listener_track_sas_assert_t *this = (listener_track_sas_assert_t*)listener;
+
+	track_sa_updown(this, "child_updown", this->child_sas,
+					child_sa->get_unique_id(child_sa), up);
+	return TRUE;
+}
+
+/*
+ * Described in header
+ */
+bool exchange_test_asserts_track_ike_rekey(listener_t *listener, ike_sa_t *old,
+										   ike_sa_t *new)
+{
+	listener_track_sas_assert_t *this = (listener_track_sas_assert_t*)listener;
+
+	track_sa_rekey(this, "ike_rekey", this->ike_sas, old->get_unique_id(old),
+				   new->get_unique_id(new));
+	return TRUE;
+}
+
+/*
+ * Described in header
+ */
+bool exchange_test_asserts_track_child_rekey(listener_t *listener,
+											 ike_sa_t *ike_sa, child_sa_t *old,
+											 child_sa_t *new)
+{
+	listener_track_sas_assert_t *this = (listener_track_sas_assert_t*)listener;
+
+	track_sa_rekey(this, "child_rekey", this->child_sas, old->get_unique_id(old),
+				   new->get_unique_id(new));
+	return TRUE;
+}
+
+/**
  * Assert a given message rule
  */
 static void assert_message_rule(listener_message_assert_t *this, message_t *msg,

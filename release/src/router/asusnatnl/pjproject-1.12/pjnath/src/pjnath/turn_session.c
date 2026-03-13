@@ -599,7 +599,7 @@ PJ_DEF(pj_status_t) pj_turn_session_set_server( pj_turn_session *sess,
     status = pj_inet_pton(sess->af, domain, 
 			  pj_sockaddr_get_addr(&tmp_addr));
     is_ip_addr = (status == PJ_SUCCESS);
-	snprintf(sess->srv_name, sizeof(sess->srv_name), "%.*s", domain->slen, domain->ptr);
+	snprintf(sess->srv_name, sizeof(sess->srv_name), "%.*s", (int)domain->slen, domain->ptr);
 
     if (!is_ip_addr && resolver) {
 	/* Resolve with DNS SRV resolution, and fallback to DNS A resolution

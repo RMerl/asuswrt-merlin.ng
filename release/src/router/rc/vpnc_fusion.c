@@ -1774,7 +1774,8 @@ int start_vpnc_by_unit(const int unit)
 					fprintf(fp, "tx_only ");
 				fprintf(fp, "demand\n");
 			}
-			fprintf(fp, "persist\n");
+			else
+				fprintf(fp, "persist\n");
 		}
 
 		fprintf(fp, "holdoff %d\n", nvram_get_int(strlcat_r(prefix, "pppoe_holdoff", tmp, sizeof(tmp))) ?: 10);

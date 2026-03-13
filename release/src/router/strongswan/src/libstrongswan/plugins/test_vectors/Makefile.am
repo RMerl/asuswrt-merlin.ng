@@ -37,7 +37,6 @@ libstrongswan_test_vectors_la_SOURCES = \
 	test_vectors/rc5.c \
 	test_vectors/serpent_cbc.c \
 	test_vectors/twofish_cbc.c \
-	test_vectors/md2.c \
 	test_vectors/md4.c \
 	test_vectors/md5.c \
 	test_vectors/md5_hmac.c \
@@ -54,6 +53,7 @@ libstrongswan_test_vectors_la_SOURCES = \
 	test_vectors/ecpbp.c \
 	test_vectors/curve25519.c \
 	test_vectors/curve448.c \
+	test_vectors/ml_kem.c \
 	test_vectors/drbg_ctr.c \
 	test_vectors/drbg_hmac.c \
 	test_vectors/rng.c

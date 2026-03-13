@@ -49,9 +49,9 @@ struct esa_info_t {
 	isa_id_type isa_id;
 
 	/**
-	 * Responder SPI of child SA.
+	 * Local SPI of child SA.
 	 */
-	esp_spi_type spi_r;
+	esp_spi_type spi_l;
 
 	/**
 	 * Initiator nonce.
@@ -70,9 +70,9 @@ struct esa_info_t {
 	bool is_encr_r;
 
 	/**
-	 * Diffie-Hellman context id.
+	 * Key Exchange context ids.
 	 */
-	dh_id_type dh_id;
+	ke_ids_type ke_ids;
 
 };
 

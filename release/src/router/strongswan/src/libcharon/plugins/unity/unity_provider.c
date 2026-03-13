@@ -159,8 +159,7 @@ METHOD(attribute_provider_t, create_attribute_enumerator, enumerator_t*,
 	enumerator = peer_cfg->create_child_cfg_enumerator(peer_cfg);
 	while (enumerator->enumerate(enumerator, &child_cfg))
 	{
-		current = child_cfg->get_traffic_selectors(child_cfg, TRUE, NULL, NULL,
-												   FALSE);
+		current = child_cfg->get_traffic_selectors(child_cfg, TRUE, NULL);
 		while (current->remove_first(current, (void**)&ts) == SUCCESS)
 		{
 			if (use_ts(ts))

@@ -1,0 +1,38 @@
+charon.iptfs {}
+	Global settings for IP-TFS (RFC 9347). The Linux kernel supports this mode
+	since 6.14. However, it currently only supports aggregation/fragmentation of
+	tunneled IP packets in ESP/AGGFRAG packets. It doesn't yet support other
+	IP-TFS features like sending packets at a constant rate or congestion control.
+
+charon.iptfs.drop_time = 1000000
+	Time in microseconds to wait for out-of-order packets when processing
+	inbound traffic.
+
+charon.iptfs.reorder_window = 3
+	Number of packets that may arrive out of order when processing inbound
+	traffic.
+
+charon.iptfs.init_delay = 0
+	Time in microseconds to wait for subsequent packets to aggregate together
+	when sending outbound traffic. Only relevant if no packets are already
+	queued to be sent.
+
+charon.iptfs.max_queue_size = 1048576
+	Maximum number of bytes allowed to be queued for sending on the tunnel
+	(default 1 MiB). If the queue is full, packets are dropped.
+
+charon.iptfs.packet_size = 0
+	Maximum outer packet size (layer 3) when sending packets. The default of 0
+	will use the PMTU as packet size. Note that the kernel currently doesn't
+	pad smaller packets.
+
+charon.iptfs.accept_fragments = yes
+	Whether fragments of inner packets across multiple AGGFRAG payloads are
+	accepted. This is an IKEv2 option, so if the peer doesn't adhere to this
+	request and still sends such fragments, they will be processed by the
+	kernel.
+
+charon.iptfs.dont_frag = no
+	Force disabling fragmenting inner packets across multiple AGGFRAG payloads
+	when sending outbound traffic (fragmentation is automatically disabled if
+	the peer indicates that it doesn't support handling such packets).

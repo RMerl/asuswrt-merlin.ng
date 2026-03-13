@@ -81,7 +81,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * Plugin constructor
  */
-plugin_t *connmark_plugin_create()
+PLUGIN_DEFINE(connmark)
 {
 	private_connmark_plugin_t *this;
 

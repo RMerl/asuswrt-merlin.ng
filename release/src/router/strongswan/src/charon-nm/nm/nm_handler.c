@@ -195,7 +195,7 @@ nm_handler_t *nm_handler_create()
 		.public = {
 			.handler = {
 				.handle = _handle,
-				.release = nop,
+				.release = (void*)nop,
 				.create_attribute_enumerator = _create_attribute_enumerator,
 			},
 			.create_enumerator = _create_enumerator,

@@ -9,7 +9,7 @@ running_any $STRONGSWANHOSTS && die "Please stop test environment before running
 
 [ -n "$1" ] || die "$0 <image to mount: base|root|<guest>>"
 
-check_commands partprobe qemu-nbd
+check_commands blockdev qemu-nbd
 
 load_qemu_nbd
 
@@ -42,7 +42,9 @@ root)
 esac
 
 do_on_exit qemu-nbd -d $NBDEV
-partprobe $NBDEV
+# wait for disk to become ready with newer QEMU versions
+sleep 1
+blockdev --rereadpt $NBDEV
 
 log_action "Mounting $NBDPARTITION to $LOOPDIR"
 execute "mount $NBDPARTITION $LOOPDIR"
@@ -68,4 +70,4 @@ echo
 fi
 
 export debian_chroot="$1"
-chroot $LOOPDIR /bin/bash -i
+chroot $LOOPDIR /bin/bash -l

@@ -27,6 +27,18 @@
 .system_settings_bg .switch:before, .popup_hint_bg .switch_ctl_bg .switch:before{
 	background: #FFFFFF;
 }
+.system_settings_bg.led .schedule-wrapper:before,
+.system_settings_bg.led_night_mode .schedule-wrapper:before {
+	border-right: 1px solid #DCDCDC;
+}
+.system_settings_bg.led .schedule,
+.system_settings_bg.led_night_mode .schedule{
+	background-color: #666666;
+}
+.system_settings_bg.led .schedule.active,
+.system_settings_bg.led_night_mode .schedule.active{
+	background-color: #006CE1;
+}
 .system_settings_bg .bubble_icon{
 	background: url(/images/New_ui/amesh/white_theme/cards_usage.svg) no-repeat;
 }

@@ -75,7 +75,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *drbg_plugin_create()
+PLUGIN_DEFINE(drbg)
 {
 	private_drbg_plugin_t *this;
 

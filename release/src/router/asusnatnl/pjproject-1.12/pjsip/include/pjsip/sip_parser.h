@@ -428,6 +428,11 @@ PJ_DECL(void) pjsip_concat_param_imp(pj_str_t *param, pj_pool_t *pool,
 			     	     int sepchar);
 PJ_DECL(void) pjsip_parse_end_hdr_imp ( pj_scanner *scanner );
 
+/* Parse generic array header */
+PJ_DECL(void) pjsip_parse_generic_array_hdr_imp(pjsip_generic_array_hdr *hdr,
+						pj_scanner *scanner);
+
+
 PJ_END_DECL
 
 #endif	/* __PJSIP_SIP_PARSER_H__ */

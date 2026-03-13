@@ -67,6 +67,8 @@ struct kernel_ipsec_sa_id_t {
 struct kernel_ipsec_add_sa_t {
 	/** Reqid */
 	uint32_t reqid;
+	/** Optional sequence number associated with the acquire triggering the SA */
+	uint32_t seq;
 	/** Mode (tunnel, transport...) */
 	ipsec_mode_t mode;
 	/** List of source traffic selectors */
@@ -93,6 +95,8 @@ struct kernel_ipsec_add_sa_t {
 	uint16_t ipcomp;
 	/** CPI for IPComp */
 	uint16_t cpi;
+	/** Optional CPU ID, must be CPU_ID_MAX if not used */
+	uint32_t cpu;
 	/** TRUE to enable UDP encapsulation for NAT traversal */
 	bool encap;
 	/** HW offload mode */
@@ -109,6 +113,8 @@ struct kernel_ipsec_add_sa_t {
 	bool copy_ecn;
 	/** Whether to copy the DSCP header field to/from the outer header */
 	dscp_copy_t copy_dscp;
+	/** TRUE if the peer doesn't support receiving fragments in AGGFRAG pkts */
+	bool iptfs_dont_frag;
 	/** TRUE if initiator of the exchange creating the SA */
 	bool initiator;
 	/** TRUE if this is an inbound SA */
@@ -182,6 +188,8 @@ struct kernel_ipsec_manage_policy_t {
 	uint32_t manual_prio;
 	/** HW offload mode */
 	hw_offload_t hw_offload;
+	/** Enable per-CPU acquires */
+	bool pcpu_acquires;
 	/** Source address of the SA(s) tied to this policy */
 	host_t *src;
 	/** Destination address of the SA(s) tied to this policy */

@@ -136,6 +136,12 @@ endif
 ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250122)
 CFLAGS += -DWIFI7_SDK_20250122
 endif
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506)
+CFLAGS += -DWIFI7_SDK_20250506
+endif
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126)
+CFLAGS += -DWIFI8_SDK_20251126
+endif
 endif
 
 OBJS = httpd.o cgi.o ej.o 
@@ -405,13 +411,23 @@ endif
 CFLAGS += -I$(TOP)/libwebapi
 LIBS += -L$(TOP)/libwebapi -lwebapi
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
+ifeq ($(RTCONFIG_MXL_826XX),y)
 LIBS += -L$(TOP)/libhostapi -lhostapi
 endif
 
 ifeq ($(RTCONFIG_BCM_AFC),y)
 CFLAGS += -I$(TOP)/libcbor-0.11/src -I$(TOP)/libcbor-0.11 -I$(TOP)/jansson-2.7/src -I$(TOP)/libjwt/include -I$(TOP)/curl-7.21.7/include
 LIBS += -L$(TOP)/libcbor-0.11/src -lcbor -L$(TOP)/jansson-2.7/src/.libs -ljansson -L$(TOP)/libjwt/libjwt/.libs -ljwt -L$(TOP)/curl-7.21.7/lib/.libs -lcurl
+endif
+
+ifeq ($(RTCONFIG_GTBOOSTER),y)
+CFLAGS += -I$(TOP)/ark
+LIBS += -L$(TOP)/ark -lark_db
+endif
+
+ifeq ($(RTCONFIG_AI_SERVICE),y)
+CFLAGS += -I$(TOP)/curl-7.21.7/include
+LIBS += -L$(TOP)/curl-7.21.7/lib/.libs -lcurl
 endif
 
 all: httpd #test_apps

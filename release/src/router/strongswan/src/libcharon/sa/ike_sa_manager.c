@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2022 Tobias Brunner
+ * Copyright (C) 2008-2024 Tobias Brunner
  * Copyright (C) 2005-2011 Martin Willi
  * Copyright (C) 2005 Jan Hutter
  *
@@ -677,14 +677,15 @@ static void remove_entry(private_ike_sa_manager_t *this, entry_t *entry)
 }
 
 /**
- * Remove the entry at the current enumerator position.
+ * Remove the entry at the current enumerator position. This only works for a
+ * single concurrent thread.
  */
 static void remove_entry_at(private_enumerator_t *this)
 {
 	this->entry = NULL;
 	if (this->current)
 	{
-		table_item_t *current = this->current;
+		table_item_t *current = this->current, *prev;
 
 		ignore_result(ref_put(&this->manager->total_sa_count));
 		this->current = this->prev;
@@ -695,7 +696,22 @@ static void remove_entry_at(private_enumerator_t *this)
 		}
 		else
 		{
-			this->manager->ike_sa_table[this->row] = current->next;
+			/* we started from the beginning of the row, but while we waited
+			 * for the entry in flush(), one or more entries might have been
+			 * added, start from the beginning again in either case */
+			prev = this->manager->ike_sa_table[this->row];
+			if (prev != current)
+			{
+				while (prev->next != current)
+				{
+					prev = prev->next;
+				}
+				prev->next = current->next;
+			}
+			else
+			{
+				this->manager->ike_sa_table[this->row] = current->next;
+			}
 			unlock_single_segment(this->manager, this->segment);
 		}
 		free(current);
@@ -1151,6 +1167,7 @@ static status_t check_and_put_init_hash(private_ike_sa_manager_t *this,
 	spi = get_spi(this);
 	if (!spi)
 	{
+		mutex->unlock(mutex);
 		return FAILED;
 	}
 
@@ -1561,7 +1578,9 @@ METHOD(ike_sa_manager_t, checkout_by_config, ike_sa_t*,
 			continue;
 		}
 		if (entry->ike_sa->get_state(entry->ike_sa) == IKE_DELETING ||
-			entry->ike_sa->get_state(entry->ike_sa) == IKE_REKEYED)
+			entry->ike_sa->get_state(entry->ike_sa) == IKE_REKEYED ||
+			entry->ike_sa->has_condition(entry->ike_sa, COND_REDIRECTED) ||
+			ike_sa_is_delete_queued(entry->ike_sa))
 		{	/* skip IKE_SAs which are not usable, wake other waiting threads */
 			entry->condvar->signal(entry->condvar);
 			continue;

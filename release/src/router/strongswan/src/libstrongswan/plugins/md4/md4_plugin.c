@@ -56,7 +56,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *md4_plugin_create()
+PLUGIN_DEFINE(md4)
 {
 	private_md4_plugin_t *this;
 

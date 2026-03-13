@@ -386,7 +386,9 @@ PJ_DEF(pj_status_t) pjmedia_codec_speex_deinit(void)
 						  &spx_factory.base);
     
     /* Destroy mutex. */
+    pj_mutex_unlock(spx_factory.mutex);
     pj_mutex_destroy(spx_factory.mutex);
+    spx_factory.mutex = NULL;
 
     /* Destroy pool. */
     pj_pool_release(spx_factory.pool);

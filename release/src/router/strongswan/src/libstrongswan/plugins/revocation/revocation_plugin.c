@@ -94,7 +94,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *revocation_plugin_create()
+PLUGIN_DEFINE(revocation)
 {
 	private_revocation_plugin_t *this;
 

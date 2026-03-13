@@ -3,7 +3,7 @@ function open_rename_window(file_name, uhref, isdir){
 	
 	var $modalWindow = $("div#modalWindow");
 	g_modal_url = '/smb/css/rename.html?o='+file_name+'&f='+uhref+'&d='+isdir;		
-				
+	
 	g_modal_window_width = 500;
 	g_modal_window_height = 80;
 	$('#jqmMsg').css("display", "none");

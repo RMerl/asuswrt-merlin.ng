@@ -111,7 +111,7 @@ void libtnccs_deinit(void)
 static bool load_imcvs_from_config(char *filename, bool is_imc)
 {
 	bool success = FALSE;
-	int line_nr = 0;
+	int line_nr DBG_UNUSED = 0;
 	chunk_t *src, line;
 	char *label;
 

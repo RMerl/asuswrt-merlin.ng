@@ -585,12 +585,12 @@ static struct dlg_set *find_dlg_set_for_msg( pjsip_rx_data *rdata )
 			     pjsip_get_invite_method(), rdata);
 
 	/* Lookup the INVITE transaction */
-	tsx = pjsip_tsx_layer_find_tsx(inst_id, &key, PJ_TRUE);
+	tsx = pjsip_tsx_layer_find_tsx2(inst_id, &key, PJ_TRUE);
 
 	/* We should find the dialog attached to the INVITE transaction */
 	if (tsx) {
 	    dlg = (pjsip_dialog*) tsx->mod_data[mod_ua[inst_id].mod.id];
-	    pj_mutex_unlock(tsx->mutex);
+	    pj_grp_lock_dec_ref(tsx->grp_lock);
 
 	    /* Dlg may be NULL on some extreme condition
 	     * (e.g. during debugging where initially there is a dialog)
@@ -963,7 +963,7 @@ static void print_dialog( const char *title,
 
     len = pjsip_hdr_print_on(dlg->remote.info, userinfo, sizeof(userinfo));
     if (len < 0)
-	pj_ansi_strcpy(userinfo, "<--uri too long-->");
+        pj_ansi_strxcpy(userinfo, "<--uri too long-->", sizeof(userinfo));
     else
 	userinfo[len] = '\0';
     
@@ -973,7 +973,7 @@ static void print_dialog( const char *title,
 							     "est"),
 		      userinfo);
     if (len < 1 || len >= (int)size) {
-	pj_ansi_strcpy(buf, "<--uri too long-->");
+        pj_ansi_strxcpy(buf, "<--uri too long-->", size);
     } else
 	buf[len] = '\0';
 }

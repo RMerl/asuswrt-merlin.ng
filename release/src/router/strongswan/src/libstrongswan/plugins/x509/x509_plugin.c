@@ -95,7 +95,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *x509_plugin_create()
+PLUGIN_DEFINE(x509)
 {
 	private_x509_plugin_t *this;
 

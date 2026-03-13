@@ -629,7 +629,6 @@ fi
 
 if [ "$BUILD_NAME" == "GT-BE19000AI" ] || [ "$BUILD_NAME" == "GT-BE96_AI" ]; then
 	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/extra/wl.ko
-	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/cdrom
 	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/mtd
 fi
 

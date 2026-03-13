@@ -101,7 +101,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * Plugin constructor.
  */
-plugin_t *dhcp_plugin_create()
+PLUGIN_DEFINE(dhcp)
 {
 	private_dhcp_plugin_t *this;
 

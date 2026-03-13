@@ -51,12 +51,8 @@ if [ -n "$TRUSTZONE" ]; then
         LDFLAGS+=" -L$router_dir/ateed/ -latee"
 fi
 
-RTBE82M=`cat ../shared/version.h | grep "RT-BE82M"`
-GSBE18000=`cat ../shared/version.h | grep "GS-BE18000"`
-GSBE12000=`cat ../shared/version.h | grep "GS-BE12000"`
-GS7_PRO=`cat ../shared/version.h | grep "GS7_PRO"`
-GT7=`cat ../shared/version.h | grep "GT7"`
-if [ -n "$RTBE82M" ] || [ -n "$GSBE18000" ] || [ -n "$GSBE12000" ] || [ -n "$GS7_PRO" ] || [ -n "$GT7" ]; then
+MXL_826XX=`cat ../.config |grep "RTCONFIG_MXL_826XX=y"`
+if [ -n "$MXL_826XX" ]; then
 	LDFLAGS+=" -L$router_dir/libhostapi/ -lhostapi"
 fi
 

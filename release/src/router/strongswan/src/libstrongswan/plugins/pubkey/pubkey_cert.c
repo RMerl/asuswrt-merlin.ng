@@ -201,13 +201,6 @@ METHOD(certificate_t, destroy, void,
 	}
 }
 
-METHOD(pubkey_cert_t, set_subject, void,
-	private_pubkey_cert_t *this, identification_t *subject)
-{
-	DESTROY_IF(this->subject);
-	this->subject = subject->clone(subject);
-}
-
 /*
  * see header file
  */
@@ -234,7 +227,6 @@ static pubkey_cert_t *pubkey_cert_create(public_key_t *key,
 				.get_ref = _get_ref,
 				.destroy = _destroy,
 			},
-			.set_subject = _set_subject,
 		},
 		.ref = 1,
 		.key = key,

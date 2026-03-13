@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2018 Tobias Brunner
+ * Copyright (C) 2006-2020 Tobias Brunner
  * Copyright (C) 2005-2010 Martin Willi
  * Copyright (C) 2006 Daniel Roethlisberger
  * Copyright (C) 2005 Jan Hutter
@@ -400,6 +400,86 @@ static payload_order_t create_child_sa_r_order[] = {
 	{PLV2_FRAGMENT,					0},
 };
 
+/**
+ * Message rule for IKE_INTERMEDIATE from initiator.
+ */
+static payload_rule_t ike_intermediate_i_rules[] = {
+/*	payload type					min	max						encr	suff */
+	{PLV2_FRAGMENT,					0,	1,						TRUE,	TRUE},
+	{PLV2_NOTIFY,					0,	MAX_NOTIFY_PAYLOADS,	TRUE,	FALSE},
+	{PLV2_KEY_EXCHANGE,				0,	1,						TRUE,	FALSE},
+};
+
+/**
+ * payload order for IKE_INTERMEDIATE initiator
+ */
+static payload_order_t ike_intermediate_i_order[] = {
+/*	payload type					notify type */
+	{PLV2_KEY_EXCHANGE,				0},
+	{PLV2_NOTIFY,					0},
+	{PLV2_FRAGMENT,					0},
+};
+
+/**
+ * Message rule for IKE_INTERMEDIATE from responder.
+ */
+static payload_rule_t ike_intermediate_r_rules[] = {
+/*	payload type					min	max						encr	suff */
+	{PLV2_FRAGMENT,					0,	1,						TRUE,	TRUE},
+	{PLV2_NOTIFY,					0,	MAX_NOTIFY_PAYLOADS,	TRUE,	TRUE},
+	{PLV2_KEY_EXCHANGE,				0,	1,						TRUE,	FALSE},
+};
+
+/**
+ * payload order for IKE_INTERMEDIATE responder
+ */
+static payload_order_t ike_intermediate_r_order[] = {
+/*	payload type					notify type */
+	{PLV2_KEY_EXCHANGE,				0},
+	{PLV2_NOTIFY,					0},
+	{PLV2_FRAGMENT,					0},
+};
+
+/**
+ * Message rule for IKE_FOLLOWUP_KE from initiator.
+ */
+static payload_rule_t ike_followup_ke_i_rules[] = {
+/*	payload type					min	max						encr	suff */
+	{PLV2_FRAGMENT,					0,	1,						TRUE,	TRUE},
+	{PLV2_NOTIFY,					0,	MAX_NOTIFY_PAYLOADS,	TRUE,	FALSE},
+	{PLV2_KEY_EXCHANGE,				1,	1,						TRUE,	FALSE},
+};
+
+/**
+ * payload order for IKE_FOLLOWUP_KE initiator
+ */
+static payload_order_t ike_followup_ke_i_order[] = {
+/*	payload type					notify type */
+	{PLV2_KEY_EXCHANGE,				0},
+	{PLV2_NOTIFY,					0},
+	{PLV2_FRAGMENT,					0},
+};
+
+/**
+ * Message rule for IKE_FOLLOWUP_KE from responder.
+ */
+static payload_rule_t ike_followup_ke_r_rules[] = {
+/*	payload type					min	max						encr	suff */
+	{PLV2_FRAGMENT,					0,	1,						TRUE,	TRUE},
+	{PLV2_NOTIFY,					0,	MAX_NOTIFY_PAYLOADS,	TRUE,	TRUE},
+	{PLV2_KEY_EXCHANGE,				1,	1,						TRUE,	FALSE},
+};
+
+/**
+ * payload order for IKE_FOLLOWUP_KE responder
+ */
+static payload_order_t ike_followup_ke_r_order[] = {
+/*	payload type					notify type */
+	{PLV2_KEY_EXCHANGE,				0},
+	{PLV2_NOTIFY,					0},
+	{PLV2_FRAGMENT,					0},
+};
+
 #ifdef ME
 /**
  * Message rule for ME_CONNECT from initiator.
@@ -766,6 +846,22 @@ static message_rule_t message_rules[] = {
 	{CREATE_CHILD_SA,	FALSE,	TRUE,
 		countof(create_child_sa_r_rules), create_child_sa_r_rules,
 		countof(create_child_sa_r_order), create_child_sa_r_order,
+	},
+	{IKE_INTERMEDIATE,	TRUE,	TRUE,
+		countof(ike_intermediate_i_rules), ike_intermediate_i_rules,
+		countof(ike_intermediate_i_order), ike_intermediate_i_order,
+	},
+	{IKE_INTERMEDIATE,			FALSE,	TRUE,
+		countof(ike_intermediate_r_rules), ike_intermediate_r_rules,
+		countof(ike_intermediate_r_order), ike_intermediate_r_order,
+	},
+	{IKE_FOLLOWUP_KE,	TRUE,	TRUE,
+		countof(ike_followup_ke_i_rules), ike_followup_ke_i_rules,
+		countof(ike_followup_ke_i_order), ike_followup_ke_i_order,
+	},
+	{IKE_FOLLOWUP_KE,	FALSE,	TRUE,
+		countof(ike_followup_ke_r_rules), ike_followup_ke_r_rules,
+		countof(ike_followup_ke_r_order), ike_followup_ke_r_order,
 	},
 #ifdef ME
 	{ME_CONNECT,		TRUE,	TRUE,
@@ -1888,6 +1984,82 @@ METHOD(message_t, generate, status_t,
 	return SUCCESS;
 }
 
+METHOD(message_t, get_plain, bool,
+	private_message_t *this, chunk_t *plain)
+{
+	generator_t *generator, *enc_generator;
+	enumerator_t *enumerator;
+	ike_header_t *ike_header;
+	payload_t *payload;
+	encrypted_payload_t *encrypted;
+	chunk_t int_auth_a, enc_header, int_auth_p;
+	struct {
+		uint8_t next_payload;
+		uint8_t flags;
+		uint16_t length;
+	} __attribute__((packed)) header = {};
+	uint32_t *lenpos;
+
+	if (this->major_version == IKEV1_MAJOR_VERSION ||
+		this->exchange_type != IKE_INTERMEDIATE)
+	{
+		return FALSE;
+	}
+
+	/* we expect to be called after the message has either been parsed
+	 * or already generated once, so we don't modify payload order */
+	generator = generator_create_no_dbg();
+	ike_header = create_header(this);
+	payload = (payload_t*)ike_header;
+	/* for parsed messages the payloads were already extracted from the
+	 * encrypted payload, if there were any unprotected paylaods we wouldn't
+	 * know. lets assume there aren't any (also for sent messages) */
+	payload->set_next_type(payload, PLV2_ENCRYPTED);
+
+	generator->generate_payload(generator, payload);
+	int_auth_a = generator->get_chunk(generator, &lenpos);
+
+	enc_generator = generator_create_no_dbg();
+	this->payloads->get_first(this->payloads, (void**)&payload);
+	if (payload && payload->get_type(payload) == PLV2_ENCRYPTED)
+	{
+		/* we have to generate only the contents of this payload,
+		 * not the payload itself, the header is added manually */
+		encrypted = (encrypted_payload_t*)payload;
+
+		encrypted->generate_payloads(encrypted, enc_generator);
+
+		header.next_payload = payload->get_next_type(payload);
+	}
+	else
+	{
+		/* as mentioned above, assume all received payloads were contained in an
+		 * encrypted payload */
+		enumerator = create_payload_enumerator(this);
+		while (enumerator->enumerate(enumerator, &payload))
+		{
+			enc_generator->generate_payload(enc_generator, payload);
+		}
+		enumerator->destroy(enumerator);
+
+		header.next_payload = this->first_payload;
+	}
+	int_auth_p = enc_generator->get_chunk(enc_generator, NULL);
+
+	/* flags are currently no copied, but the critical bit and the reserved
+	 * bits MUST be zero for encrypted payloads, so that's what we assume */
+	enc_header = chunk_from_thing(header);
+	header.length = htons(enc_header.len + int_auth_p.len);
+
+	htoun32(lenpos, int_auth_a.len + enc_header.len + int_auth_p.len);
+	*plain = chunk_cat("ccc", int_auth_a, enc_header, int_auth_p);
+
+	enc_generator->destroy(enc_generator);
+	generator->destroy(generator);
+	ike_header->destroy(ike_header);
+	return TRUE;
+}
+
 /**
  * Creates a (basic) clone of the given message
  */
@@ -1928,7 +2100,7 @@ static message_t *create_fragment(private_message_t *this, payload_type_t next,
 		 * or transaction messages. */
 		ike_sa = charon->bus->get_sa(charon->bus);
 		if (ike_sa && (peer_cfg = ike_sa->get_peer_cfg(ike_sa)) &&
-			peer_cfg->use_aggressive(peer_cfg))
+			peer_cfg->has_option(peer_cfg, OPT_IKEV1_AGGRESSIVE))
 		{
 			message->set_exchange_type(message, AGGRESSIVE);
 		}
@@ -1994,15 +2166,10 @@ METHOD(message_t, fragment, status_t,
 	host_t *src, *dst;
 	chunk_t data;
 	status_t status;
-	uint32_t *lenpos;
 	size_t len;
 
 	src = this->packet->get_source(this->packet);
 	dst = this->packet->get_destination(this->packet);
-	if (!frag_len)
-	{
-		frag_len = (src->get_family(src) == AF_INET) ? 576 : 1280;
-	}
 	/* frag_len is the complete IP datagram length, account for overhead (we
 	 * assume no IP options/extension headers are used) */
 	REDUCE_FRAG_LEN(frag_len, (src->get_family(src) == AF_INET) ? 20 : 40);
@@ -2031,7 +2198,7 @@ METHOD(message_t, fragment, status_t,
 			DESTROY_IF(generator);
 			return status;
 		}
-		data = generator->get_chunk(generator, &lenpos);
+		data = generator->get_chunk(generator, NULL);
 		len = data.len + (encrypted ? encrypted->get_length(encrypted) : 0);
 	}
 
@@ -2087,10 +2254,10 @@ METHOD(message_t, fragment, status_t,
 		}
 		next = encrypted->payload_interface.get_next_type((payload_t*)encrypted);
 		encrypted->generate_payloads(encrypted, generator);
-		data = generator->get_chunk(generator, &lenpos);
+		data = generator->get_chunk(generator, NULL);
 		if (!is_encoded(this))
 		{
-			encrypted->destroy(encrypted);
+			this->payloads->insert_last(this->payloads, encrypted);
 		}
 		aead = keymat->get_aead(keymat, FALSE);
 		/* overhead for the encrypted fragment payload */
@@ -3040,6 +3207,7 @@ message_t *message_create_from_packet(packet_t *packet)
 			.get_fragments = _get_fragments,
 			.get_metadata = _get_metadata,
 			.set_metadata = _set_metadata,
+			.get_plain = _get_plain,
 			.destroy = _destroy,
 		},
 		.exchange_type = EXCHANGE_TYPE_UNDEFINED,

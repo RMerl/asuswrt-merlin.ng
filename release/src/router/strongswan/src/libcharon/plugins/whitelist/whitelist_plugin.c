@@ -89,7 +89,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * Plugin constructor
  */
-plugin_t *whitelist_plugin_create()
+PLUGIN_DEFINE(whitelist)
 {
 	private_whitelist_plugin_t *this;
 

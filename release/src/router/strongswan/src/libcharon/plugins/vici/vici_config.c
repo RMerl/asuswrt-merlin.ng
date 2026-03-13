@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2019 Tobias Brunner
+ * Copyright (C) 2015-2024 Tobias Brunner
  * Copyright (C) 2015-2018 Andreas Steffen
  * Copyright (C) 2014 Martin Willi
  *
@@ -49,10 +49,17 @@
 #include <collections/array.h>
 #include <collections/hashtable.h>
 #include <collections/linked_list.h>
+#include <sa/ikev2/tasks/child_create.h>
+#include <sa/ikev1/tasks/quick_mode.h>
 
 #include <pubkey_cert.h>
 
 #include <stdio.h>
+
+/**
+ *  Maximum proposal length
+ */
+#define MAX_PROPOSAL_LEN   2048
 
 /**
  * Magic value for an undefined lifetime
@@ -288,6 +295,7 @@ static void free_cert_data(cert_data_t *data)
 typedef struct {
 	request_data_t *request;
 	auth_cfg_t *cfg;
+	array_t *pubkeys;
 	uint32_t round;
 } auth_data_t;
 
@@ -296,6 +304,7 @@ typedef struct {
  */
 static void free_auth_data(auth_data_t *data)
 {
+	array_destroy(data->pubkeys);
 	DESTROY_IF(data->cfg);
 	free(data);
 }
@@ -305,15 +314,13 @@ static void free_auth_data(auth_data_t *data)
  */
 typedef struct {
 	request_data_t *request;
+	peer_cfg_option_t options;
 	uint32_t version;
-	bool aggressive;
 	bool encap;
-	bool mobike;
 	bool send_certreq;
-	bool pull;
 	identification_t *ppk_id;
-	bool ppk_required;
 	cert_policy_t send_cert;
+	ocsp_policy_t ocsp;
 	uint64_t dpd_delay;
 	uint64_t dpd_timeout;
 	fragmentation_t fragmentation;
@@ -410,6 +417,11 @@ static void log_auth(auth_cfg_t *auth)
 }
 
 /**
+ * Helper macro to check if an option flag is set
+ */
+#define has_opt(cfg, opt) ({ ((cfg)->options & (opt)) == (opt); })
+
+/**
  * Log parsed peer data
  */
 static void log_peer_data(peer_data_t *data)
@@ -425,10 +437,12 @@ static void log_peer_data(peer_data_t *data)
 	DBG2(DBG_CFG, "  remote_port = %u", data->remote_port);
 	DBG2(DBG_CFG, "  send_certreq = %u", data->send_certreq);
 	DBG2(DBG_CFG, "  send_cert = %N", cert_policy_names, data->send_cert);
+	DBG2(DBG_CFG, "  ocsp = %N", ocsp_policy_names, data->ocsp);
 	DBG2(DBG_CFG, "  ppk_id = %Y",  data->ppk_id);
-	DBG2(DBG_CFG, "  ppk_required = %u",  data->ppk_required);
-	DBG2(DBG_CFG, "  mobike = %u", data->mobike);
-	DBG2(DBG_CFG, "  aggressive = %u", data->aggressive);
+	DBG2(DBG_CFG, "  ppk_required = %u", has_opt(data, OPT_PPK_REQUIRED));
+	DBG2(DBG_CFG, "  mobike = %u", !has_opt(data, OPT_NO_MOBIKE));
+	DBG2(DBG_CFG, "  aggressive = %u", has_opt(data, OPT_IKEV1_AGGRESSIVE));
+	DBG2(DBG_CFG, "  pull = %u", !has_opt(data, OPT_IKEV1_PUSH_MODE));
 	DBG2(DBG_CFG, "  dscp = 0x%.2x", data->dscp);
 	DBG2(DBG_CFG, "  encap = %u", data->encap);
 	DBG2(DBG_CFG, "  dpd_delay = %llu", data->dpd_delay);
@@ -522,7 +536,6 @@ static void log_child_data(child_data_t *data, char *name)
 {
 	child_cfg_create_t *cfg DBG_UNUSED = &data->cfg;
 
-#define has_opt(opt) ({ (cfg->options & (opt)) == (opt); })
 	DBG2(DBG_CFG, "  child %s:", name);
 	DBG2(DBG_CFG, "   rekey_time = %llu", cfg->lifetime.time.rekey);
 	DBG2(DBG_CFG, "   life_time = %llu", cfg->lifetime.time.life);
@@ -534,12 +547,13 @@ static void log_child_data(child_data_t *data, char *name)
 	DBG2(DBG_CFG, "   life_packets = %llu", cfg->lifetime.packets.life);
 	DBG2(DBG_CFG, "   rand_packets = %llu", cfg->lifetime.packets.jitter);
 	DBG2(DBG_CFG, "   updown = %s", cfg->updown);
-	DBG2(DBG_CFG, "   hostaccess = %u", has_opt(OPT_HOSTACCESS));
-	DBG2(DBG_CFG, "   ipcomp = %u", has_opt(OPT_IPCOMP));
+	DBG2(DBG_CFG, "   hostaccess = %u", has_opt(cfg, OPT_HOSTACCESS));
+	DBG2(DBG_CFG, "   ipcomp = %u", has_opt(cfg, OPT_IPCOMP));
 	DBG2(DBG_CFG, "   mode = %N%s", ipsec_mode_names, cfg->mode,
-		 has_opt(OPT_PROXY_MODE) ? "_PROXY" : "");
-	DBG2(DBG_CFG, "   policies = %u", !has_opt(OPT_NO_POLICIES));
-	DBG2(DBG_CFG, "   policies_fwd_out = %u", has_opt(OPT_FWD_OUT_POLICIES));
+		 has_opt(cfg, OPT_PROXY_MODE) ? "_PROXY" : "");
+	DBG2(DBG_CFG, "   policies = %u", !has_opt(cfg, OPT_NO_POLICIES));
+	DBG2(DBG_CFG, "   policies_fwd_out = %u",
+		 has_opt(cfg, OPT_FWD_OUT_POLICIES));
 	if (data->replay_window != REPLAY_UNDEFINED)
 	{
 		DBG2(DBG_CFG, "   replay_window = %u", data->replay_window);
@@ -555,7 +569,7 @@ static void log_child_data(child_data_t *data, char *name)
 	DBG2(DBG_CFG, "   if_id_out = %u", cfg->if_id_out);
 	DBG2(DBG_CFG, "   mark_in = %u/%u",
 		 cfg->mark_in.value, cfg->mark_in.mask);
-	DBG2(DBG_CFG, "   mark_in_sa = %u", has_opt(OPT_MARK_IN_SA));
+	DBG2(DBG_CFG, "   mark_in_sa = %u", has_opt(cfg, OPT_MARK_IN_SA));
 	DBG2(DBG_CFG, "   mark_out = %u/%u",
 		 cfg->mark_out.value, cfg->mark_out.mask);
 	DBG2(DBG_CFG, "   set_mark_in = %u/%u",
@@ -569,10 +583,13 @@ static void log_child_data(child_data_t *data, char *name)
 	DBG2(DBG_CFG, "   proposals = %#P", data->proposals);
 	DBG2(DBG_CFG, "   local_ts = %#R", data->local_ts);
 	DBG2(DBG_CFG, "   remote_ts = %#R", data->remote_ts);
+	DBG2(DBG_CFG, "   per_cpu_sas = %s",
+		 has_opt(cfg, OPT_PER_CPU_SAS_ENCAP) ? "encap" :
+		 has_opt(cfg, OPT_PER_CPU_SAS) ? "1" : "0");
 	DBG2(DBG_CFG, "   hw_offload = %N", hw_offload_names, cfg->hw_offload);
-	DBG2(DBG_CFG, "   sha256_96 = %u", has_opt(OPT_SHA256_96));
-	DBG2(DBG_CFG, "   copy_df = %u", !has_opt(OPT_NO_COPY_DF));
-	DBG2(DBG_CFG, "   copy_ecn = %u", !has_opt(OPT_NO_COPY_ECN));
+	DBG2(DBG_CFG, "   sha256_96 = %u", has_opt(cfg, OPT_SHA256_96));
+	DBG2(DBG_CFG, "   copy_df = %u", !has_opt(cfg, OPT_NO_COPY_DF));
+	DBG2(DBG_CFG, "   copy_ecn = %u", !has_opt(cfg, OPT_NO_COPY_ECN));
 	DBG2(DBG_CFG, "   copy_dscp = %N", dscp_copy_names, cfg->copy_dscp);
 }
 
@@ -593,11 +610,39 @@ static void free_child_data(child_data_t *data)
 }
 
 /**
+ * Add the default proposals for the given protocol.  We currently prefer AEAD
+ * for ESP but not for IKE.
+ */
+static void add_default_proposals(linked_list_t *list, protocol_id_t proto)
+{
+	proposal_t *first, *second;
+
+	if (proto == PROTO_IKE)
+	{
+		first = proposal_create_default(proto);
+		second = proposal_create_default_aead(proto);
+	}
+	else
+	{
+		first = proposal_create_default_aead(proto);
+		second = proposal_create_default(proto);
+	}
+	if (first)
+	{
+		list->insert_last(list, first);
+	}
+	if (second)
+	{
+		list->insert_last(list, second);
+	}
+}
+
+/**
  * Common proposal parsing
  */
 static bool parse_proposal(linked_list_t *list, protocol_id_t proto, chunk_t v)
 {
-	char buf[BUF_LEN];
+	char buf[MAX_PROPOSAL_LEN];
 	proposal_t *proposal;
 
 	if (!vici_stringify(v, buf, sizeof(buf)))
@@ -606,16 +651,7 @@ static bool parse_proposal(linked_list_t *list, protocol_id_t proto, chunk_t v)
 	}
 	if (strcaseeq("default", buf))
 	{
-		proposal = proposal_create_default(proto);
-		if (proposal)
-		{
-			list->insert_last(list, proposal);
-		}
-		proposal = proposal_create_default_aead(proto);
-		if (proposal)
-		{
-			list->insert_last(list, proposal);
-		}
+		add_default_proposals(list, proto);
 		return TRUE;
 	}
 	proposal = proposal_create_from_string(proto, buf);
@@ -868,6 +904,7 @@ CALLBACK(parse_mode, bool,
 		{ "tunnel",				MODE_TUNNEL		},
 		{ "transport",			MODE_TRANSPORT	},
 		{ "transport_proxy",	MODE_TRANSPORT	},
+		{ "iptfs",				MODE_IPTFS		},
 		{ "beet",				MODE_BEET		},
 		{ "drop",				MODE_DROP		},
 		{ "pass",				MODE_PASS		},
@@ -887,23 +924,72 @@ CALLBACK(parse_mode, bool,
 }
 
 /**
+ * Macro to parse an option flag, add it if parsed value is either TRUE or FALSE.
+ */
+#define PARSE_OPTION(out, opt, v, add_if_true) \
+	bool val; \
+	if (parse_bool(&val, v)) { \
+		if (val == add_if_true)	{ \
+			*out |= opt; \
+		} \
+		return TRUE; \
+	} \
+	return FALSE;
+
+/**
+ * Enable a peer_cfg_option_t, the flag controls whether the option is enabled
+ * if the parsed value is TRUE or FALSE.
+ */
+static bool parse_peer_option(peer_cfg_option_t *out, peer_cfg_option_t opt,
+							  chunk_t v, bool add_if_true)
+{
+	PARSE_OPTION(out, opt, v, add_if_true)
+}
+
+/**
+ * Parse OPT_NO_MOBIKE option
+ */
+CALLBACK(parse_opt_mobike, bool,
+	peer_cfg_option_t *out, chunk_t v)
+{
+	return parse_peer_option(out, OPT_NO_MOBIKE, v, FALSE);
+}
+
+/**
+ * Parse OPT_IKEV1_AGGRESSIVE option
+ */
+CALLBACK(parse_opt_aggr, bool,
+	peer_cfg_option_t *out, chunk_t v)
+{
+	return parse_peer_option(out, OPT_IKEV1_AGGRESSIVE, v, TRUE);
+}
+
+/**
+ * Parse OPT_IKEV1_PUSH_MODE option
+ */
+CALLBACK(parse_opt_pull, bool,
+	peer_cfg_option_t *out, chunk_t v)
+{
+	return parse_peer_option(out, OPT_IKEV1_PUSH_MODE, v, FALSE);
+}
+
+/**
+ * Parse OPT_PPK_REQUIRED option
+ */
+CALLBACK(parse_opt_ppk_req, bool,
+	peer_cfg_option_t *out, chunk_t v)
+{
+	return parse_peer_option(out, OPT_PPK_REQUIRED, v, TRUE);
+}
+
+/**
  * Enable a child_cfg_option_t, the flag controls whether the option is enabled
  * if the parsed value is TRUE or FALSE.
  */
 static bool parse_option(child_cfg_option_t *out, child_cfg_option_t opt,
 						 chunk_t v, bool add_if_true)
 {
-	bool val;
-
-	if (parse_bool(&val, v))
-	{
-		if (val == add_if_true)
-		{
-			*out |= opt;
-		}
-		return TRUE;
-	}
-	return FALSE;
+	PARSE_OPTION(out, opt, v, add_if_true)
 }
 
 /**
@@ -976,6 +1062,25 @@ CALLBACK(parse_opt_copy_ecn, bool,
 	child_cfg_option_t *out, chunk_t v)
 {
 	return parse_option(out, OPT_NO_COPY_ECN, v, FALSE);
+}
+
+/**
+ * Parse OPT_PER_CPU_SAS option
+ */
+CALLBACK(parse_opt_cpus, bool,
+	child_cfg_option_t *out, chunk_t v)
+{
+	enum_map_t map[] = {
+		{ "encap",	OPT_PER_CPU_SAS|OPT_PER_CPU_SAS_ENCAP	},
+	};
+	int d;
+
+	if (parse_map(map, countof(map), &d, v))
+	{
+		*out |= d;
+		return TRUE;
+	}
+	return parse_option(out, OPT_PER_CPU_SAS, v, TRUE);
 }
 
 /**
@@ -1101,7 +1206,7 @@ CALLBACK(parse_uint32_bin, bool,
 CALLBACK(parse_uint64, bool,
 	uint64_t *out, chunk_t v)
 {
-	char buf[16], *end;
+	char buf[32], *end;
 	unsigned long long l;
 
 	if (!vici_stringify(v, buf, sizeof(buf)))
@@ -1189,15 +1294,15 @@ CALLBACK(parse_time32, bool,
 CALLBACK(parse_bytes, bool,
 	uint64_t *out, chunk_t v)
 {
-	char buf[16], *end;
-	unsigned long long l;
+	char buf[32], *end;
+	unsigned long long l, ll;
 
 	if (!vici_stringify(v, buf, sizeof(buf)))
 	{
 		return FALSE;
 	}
 
-	l = strtoull(buf, &end, 0);
+	l = ll = strtoull(buf, &end, 0);
 	while (*end == ' ')
 	{
 		end++;
@@ -1206,15 +1311,15 @@ CALLBACK(parse_bytes, bool,
 	{
 		case 'g':
 		case 'G':
-			l *= 1024;
+			ll *= 1024;
 			/* fall */
 		case 'm':
 		case 'M':
-			l *= 1024;
+			ll *= 1024;
 			/* fall */
 		case 'k':
 		case 'K':
-			l *= 1024;
+			ll *= 1024;
 			end++;
 			break;
 		case '\0':
@@ -1226,7 +1331,7 @@ CALLBACK(parse_bytes, bool,
 	{
 		return FALSE;
 	}
-	*out = l;
+	*out = (ll < l) ? UINT64_MAX : ll;
 	return TRUE;
 }
 
@@ -1351,8 +1456,7 @@ CALLBACK(parse_auth, bool,
 	if (strpfx(buf, "ike:") ||
 		strpfx(buf, "pubkey") ||
 		strpfx(buf, "rsa") ||
-		strpfx(buf, "ecdsa") ||
-		strpfx(buf, "bliss"))
+		strpfx(buf, "ecdsa"))
 	{
 		cfg->add(cfg, AUTH_RULE_AUTH_CLASS, AUTH_CLASS_PUBKEY);
 		cfg->add_pubkey_constraints(cfg, buf, TRUE);
@@ -1405,13 +1509,15 @@ CALLBACK(parse_auth, bool,
  */
 static bool parse_id(auth_cfg_t *cfg, auth_rule_t rule, chunk_t v)
 {
+	identification_t *id;
 	char buf[BUF_LEN];
 
-	if (!vici_stringify(v, buf, sizeof(buf)))
+	if (!vici_stringify(v, buf, sizeof(buf)) ||
+		!(id = identification_create_from_string_with_regex(buf)))
 	{
 		return FALSE;
 	}
-	cfg->add(cfg, rule, identification_create_from_string(buf));
+	cfg->add(cfg, rule, id);
 	return TRUE;
 }
 
@@ -1547,15 +1653,35 @@ CALLBACK(parse_cacerts, bool,
 CALLBACK(parse_pubkeys, bool,
 	auth_data_t *auth, chunk_t v)
 {
-	certificate_t *cert;
+	/* because we don't have an identity yet, just store the blob to parse/wrap
+	 * the key later */
+	array_insert_create_value(&auth->pubkeys, sizeof(chunk_t),
+							  ARRAY_TAIL, &v);
+	return TRUE;
+}
 
-	cert = lib->creds->create(lib->creds, CRED_CERTIFICATE, CERT_TRUSTED_PUBKEY,
-							  BUILD_BLOB, v, BUILD_END);
-	if (cert)
+/**
+ * Create raw public key certificates associated with the given identity and
+ * add them to the config.
+ */
+static bool parse_and_add_pubkeys(auth_data_t *auth, identification_t *id)
+{
+	certificate_t *cert;
+	chunk_t pubkey;
+	bool id_usable = id && id->get_type(id) != ID_ANY;
+
+	while (array_remove(auth->pubkeys, ARRAY_HEAD, &pubkey))
 	{
-		return add_cert(auth, AUTH_RULE_SUBJECT_CERT, cert);
+		cert = lib->creds->create(lib->creds, CRED_CERTIFICATE,
+								  CERT_TRUSTED_PUBKEY, BUILD_BLOB, pubkey,
+								  id_usable ? BUILD_SUBJECT : BUILD_END,
+								  id, BUILD_END);
+		if (!cert || !add_cert(auth, AUTH_RULE_SUBJECT_CERT, cert))
+		{
+			return FALSE;
+		}
 	}
-	return FALSE;
+	return TRUE;
 }
 
 /**
@@ -1667,6 +1793,28 @@ CALLBACK(parse_send_cert, bool,
 		{ "ifasked",	CERT_SEND_IF_ASKED	},
 		{ "always",		CERT_ALWAYS_SEND	},
 		{ "never",		CERT_NEVER_SEND		},
+	};
+	int d;
+
+	if (parse_map(map, countof(map), &d, v))
+	{
+		*out = d;
+		return TRUE;
+	}
+	return FALSE;
+}
+
+/**
+ * Parse an ocsp_policy_t
+ */
+CALLBACK(parse_ocsp, bool,
+	ocsp_policy_t *out, chunk_t v)
+{
+	enum_map_t map[] = {
+		{ "both",		OCSP_SEND_BOTH		},
+		{ "reply",		OCSP_SEND_REPLY		},
+		{ "request",	OCSP_SEND_REQUEST	},
+		{ "never",		OCSP_SEND_NEVER		},
 	};
 	int d;
 
@@ -1809,6 +1957,7 @@ CALLBACK(child_kv, bool,
 		{ "if_id_out",			parse_if_id,		&child->cfg.if_id_out				},
 		{ "label",				parse_label,		&child->cfg.label					},
 		{ "label_mode",			parse_label_mode,	&child->cfg.label_mode				},
+		{ "per_cpu_sas",		parse_opt_cpus,		&child->cfg.options					},
 	};
 
 	return parse_rules(rules, countof(rules), name, value,
@@ -1868,17 +2017,18 @@ CALLBACK(peer_kv, bool,
 {
 	parse_rule_t rules[] = {
 		{ "version",		parse_uint32,		&peer->version				},
-		{ "aggressive",		parse_bool,			&peer->aggressive			},
-		{ "pull",			parse_bool,			&peer->pull					},
+		{ "aggressive",		parse_opt_aggr,		&peer->options				},
+		{ "pull",			parse_opt_pull,		&peer->options				},
 		{ "dscp",			parse_dscp,			&peer->dscp					},
 		{ "encap",			parse_bool,			&peer->encap				},
-		{ "mobike",			parse_bool,			&peer->mobike				},
+		{ "mobike",			parse_opt_mobike,	&peer->options				},
 		{ "dpd_delay",		parse_time,			&peer->dpd_delay			},
 		{ "dpd_timeout",	parse_time,			&peer->dpd_timeout			},
 		{ "fragmentation",	parse_frag,			&peer->fragmentation		},
 		{ "childless",		parse_childless,	&peer->childless			},
 		{ "send_certreq",	parse_bool,			&peer->send_certreq			},
 		{ "send_cert",		parse_send_cert,	&peer->send_cert			},
+		{ "ocsp",			parse_ocsp,			&peer->ocsp					},
 		{ "keyingtries",	parse_uint32,		&peer->keyingtries			},
 		{ "unique",			parse_unique,		&peer->unique				},
 		{ "local_port",		parse_uint32,		&peer->local_port			},
@@ -1888,7 +2038,7 @@ CALLBACK(peer_kv, bool,
 		{ "over_time",		parse_time,			&peer->over_time			},
 		{ "rand_time",		parse_time,			&peer->rand_time			},
 		{ "ppk_id",			parse_peer_id,		&peer->ppk_id				},
-		{ "ppk_required",	parse_bool,			&peer->ppk_required			},
+		{ "ppk_required",	parse_opt_ppk_req,	&peer->options				},
 		{ "if_id_in",		parse_if_id,		&peer->if_id_in				},
 		{ "if_id_out",		parse_if_id,		&peer->if_id_out			},
 #ifdef ME
@@ -2102,16 +2252,7 @@ CALLBACK(children_sn, bool,
 	}
 	if (child.proposals->get_count(child.proposals) == 0)
 	{
-		proposal = proposal_create_default_aead(PROTO_ESP);
-		if (proposal)
-		{
-			child.proposals->insert_last(child.proposals, proposal);
-		}
-		proposal = proposal_create_default(PROTO_ESP);
-		if (proposal)
-		{
-			child.proposals->insert_last(child.proposals, proposal);
-		}
+		add_default_proposals(child.proposals, PROTO_ESP);
 	}
 
 	check_lifetimes(&child.cfg.lifetime);
@@ -2161,11 +2302,8 @@ CALLBACK(peer_sn, bool,
 		enumerator_t *enumerator;
 		linked_list_t *auths;
 		auth_data_t *auth, *current;
-		auth_rule_t rule;
 		certificate_t *cert;
-		pubkey_cert_t *pubkey_cert;
 		identification_t *id;
-		bool default_id = FALSE;
 
 		INIT(auth,
 			.request = peer->request,
@@ -2179,29 +2317,23 @@ CALLBACK(peer_sn, bool,
 		}
 		id = auth->cfg->get(auth->cfg, AUTH_RULE_IDENTITY);
 
-		enumerator = auth->cfg->create_enumerator(auth->cfg);
-		while (enumerator->enumerate(enumerator, &rule, &cert))
+		if (!parse_and_add_pubkeys(auth, id))
 		{
-			if (rule == AUTH_RULE_SUBJECT_CERT && !default_id)
+			free_auth_data(auth);
+			return FALSE;
+		}
+
+		if (!id)
+		{
+			cert = auth->cfg->get(auth->cfg, AUTH_RULE_SUBJECT_CERT);
+			if (cert)
 			{
-				if (id == NULL)
-				{
-					id = cert->get_subject(cert);
-					DBG1(DBG_CFG, "  id not specified, defaulting to"
-								  " cert subject '%Y'", id);
-					auth->cfg->add(auth->cfg, AUTH_RULE_IDENTITY, id->clone(id));
-					default_id = TRUE;
-				}
-				else if (cert->get_type(cert) == CERT_TRUSTED_PUBKEY &&
-						 id->get_type(id) != ID_ANY)
-				{
-					/* set the subject of all raw public keys to the id */
-					pubkey_cert = (pubkey_cert_t*)cert;
-					pubkey_cert->set_subject(pubkey_cert, id);
-				}
+				id = cert->get_subject(cert);
+				DBG1(DBG_CFG, "  id not specified, defaulting to"
+							  " cert subject '%Y'", id);
+				auth->cfg->add(auth->cfg, AUTH_RULE_IDENTITY, id->clone(id));
 			}
 		}
-		enumerator->destroy(enumerator);
 
 		auths = strcasepfx(name, "local") ? peer->local : peer->remote;
 		enumerator = auths->create_enumerator(auths);
@@ -2232,7 +2364,7 @@ static void run_start_action(private_vici_config_t *this, peer_cfg_t *peer_cfg,
 
 	if (action & ACTION_TRAP)
 	{
-		DBG1(DBG_CFG, "installing '%s'", child_cfg->get_name(child_cfg));
+		DBG1(DBG_CFG, "vici installing '%s'", child_cfg->get_name(child_cfg));
 		switch (child_cfg->get_mode(child_cfg))
 		{
 			case MODE_PASS:
@@ -2249,7 +2381,7 @@ static void run_start_action(private_vici_config_t *this, peer_cfg_t *peer_cfg,
 
 	if (action & ACTION_START)
 	{
-		DBG1(DBG_CFG, "initiating '%s'", child_cfg->get_name(child_cfg));
+		DBG1(DBG_CFG, "vici initiating '%s'", child_cfg->get_name(child_cfg));
 		charon->controller->initiate(charon->controller,
 					peer_cfg->get_ref(peer_cfg), child_cfg->get_ref(child_cfg),
 					NULL, NULL, 0, 0, FALSE);
@@ -2257,25 +2389,214 @@ static void run_start_action(private_vici_config_t *this, peer_cfg_t *peer_cfg,
 }
 
 /**
- * Undo start actions associated with a child config
+ * Type to keep track of unique IDs and names of CHILD_SAs to terminate.
  */
-static void clear_start_action(private_vici_config_t *this, char *peer_name,
-							   child_cfg_t *child_cfg)
+typedef struct {
+	uint32_t id;
+	char *name;
+} child_name_id_t;
+
+/**
+ * Get the child config of the given task depending on its type.
+ */
+static child_cfg_t *get_task_config(task_t *task, task_type_t type)
+{
+	child_create_t *child_create = (child_create_t*)task;
+
+	if (type == TASK_QUICK_MODE)
+	{
+		quick_mode_t *quick_mode = (quick_mode_t*)task;
+		return quick_mode->get_config(quick_mode);
+	}
+	return child_create->get_config(child_create);
+}
+
+/**
+ * Abort the given child-creating task depending on its type.
+ */
+static void abort_child_task(task_t *task, task_type_t type)
+{
+	child_create_t *child_create = (child_create_t*)task;
+
+	if (type == TASK_QUICK_MODE)
+	{
+		quick_mode_t *quick_mode = (quick_mode_t*)task;
+		return quick_mode->abort(quick_mode);
+	}
+	return child_create->abort(child_create);
+}
+
+/**
+ * Check if there are child-creating tasks queued that should be aborted, as
+ * well as if there are any others that should prevent the deletion of the
+ * IKE_SA.
+ */
+static void check_queued_tasks(ike_sa_t *ike_sa, hashtable_t *to_terminate,
+							   bool *others)
+{
+	enumerator_t *enumerator;
+	child_cfg_t *cfg;
+	task_t *task;
+	task_type_t type = TASK_CHILD_CREATE;
+
+	if (ike_sa->get_version(ike_sa) == IKEV1)
+	{
+		type = TASK_QUICK_MODE;
+	}
+
+	/* if we find an active task, we can't remove it as there is no way to
+	 * abort an exchange (i.e. the peer will have created the SA even if we
+	 * don't process the response). so we instruct the task to immediately
+	 * delete the CHILD_SA once it's created */
+	enumerator = ike_sa->create_task_enumerator(ike_sa, TASK_QUEUE_ACTIVE);
+	while (enumerator->enumerate(enumerator, &task))
+	{
+		if (task->get_type(task) == type)
+		{
+			cfg = get_task_config(task, type);
+			if (to_terminate->get(to_terminate, cfg->get_name(cfg)))
+			{
+				DBG1(DBG_CFG, "vici aborting %N task for CHILD_SA '%s'",
+					 task_type_names, type, cfg->get_name(cfg));
+				abort_child_task(task, type);
+			}
+			else
+			{
+				*others = TRUE;
+			}
+		}
+	}
+	enumerator->destroy(enumerator);
+
+	/* for the queued tasks, we just remove any that use a config that is to
+	 * be terminated, but also note if there are others */
+	enumerator = ike_sa->create_task_enumerator(ike_sa, TASK_QUEUE_QUEUED);
+	while (enumerator->enumerate(enumerator, &task))
+	{
+		if (task->get_type(task) == type)
+		{
+			cfg = get_task_config(task, type);
+			if (to_terminate->get(to_terminate, cfg->get_name(cfg)))
+			{
+				DBG1(DBG_CFG, "vici removing %N task for CHILD_SA '%s'",
+					 task_type_names, type, cfg->get_name(cfg));
+				ike_sa->remove_task(ike_sa, enumerator);
+				task->destroy(task);
+			}
+			else
+			{
+				*others = TRUE;
+			}
+		}
+	}
+	enumerator->destroy(enumerator);
+}
+
+/**
+ * Terminate given CHILD_SAs and optionally terminate any IKE_SA without other
+ * children.
+ */
+static void terminate_for_action(private_vici_config_t *this, char *peer_name,
+								 hashtable_t *to_terminate, bool delete_ike)
 {
 	enumerator_t *enumerator, *children;
 	child_sa_t *child_sa;
 	ike_sa_t *ike_sa;
-	uint32_t id = 0, others;
+	child_name_id_t child_id;
+	uint32_t id;
 	array_t *ids = NULL, *ikeids = NULL;
+	bool others;
+
+	enumerator = charon->controller->create_ike_sa_enumerator(
+													charon->controller, TRUE);
+	while (enumerator->enumerate(enumerator, &ike_sa))
+	{
+		if (!streq(ike_sa->get_name(ike_sa), peer_name))
+		{
+			continue;
+		}
+
+		others = FALSE;
+		children = ike_sa->create_child_sa_enumerator(ike_sa);
+		while (children->enumerate(children, &child_sa))
+		{
+			if (child_sa->get_state(child_sa) != CHILD_DELETING &&
+				child_sa->get_state(child_sa) != CHILD_DELETED &&
+				!to_terminate->get(to_terminate, child_sa->get_name(child_sa)))
+			{
+				others = TRUE;
+				break;
+			}
+		}
+		children->destroy(children);
+
+		check_queued_tasks(ike_sa, to_terminate, &others);
+
+		if (delete_ike && !others)
+		{
+			/* found no children/tasks or only matching, delete IKE_SA */
+			id = ike_sa->get_unique_id(ike_sa);
+			array_insert_create_value(&ikeids, sizeof(id),
+									  ARRAY_TAIL, &id);
+			continue;
+		}
+
+		/* otherwise, delete only the matching CHILD_SAs */
+		children = ike_sa->create_child_sa_enumerator(ike_sa);
+		while (children->enumerate(children, &child_sa))
+		{
+			child_id.name = child_sa->get_name(child_sa);
+
+			if (child_sa->get_state(child_sa) != CHILD_DELETING &&
+				child_sa->get_state(child_sa) != CHILD_DELETED &&
+				to_terminate->get(to_terminate, child_id.name))
+			{
+				child_id.id = child_sa->get_unique_id(child_sa);
+				child_id.name = strdup(child_id.name);
+				array_insert_create_value(&ids, sizeof(child_id),
+										  ARRAY_TAIL, &child_id);
+			}
+		}
+		children->destroy(children);
+	}
+	enumerator->destroy(enumerator);
+
+	while (array_remove(ids, ARRAY_HEAD, &child_id))
+	{
+		DBG1(DBG_CFG, "vici closing CHILD_SA '%s' #%u", child_id.name,
+			 child_id.id);
+		charon->controller->terminate_child(charon->controller,
+											child_id.id, NULL, NULL, 0, 0);
+		free(child_id.name);
+	}
+	array_destroy(ids);
+
+	while (array_remove(ikeids, ARRAY_HEAD, &id))
+	{
+		DBG1(DBG_CFG, "vici closing IKE_SA '%s' #%u", peer_name, id);
+		charon->controller->terminate_ike(charon->controller, id,
+										  FALSE, NULL, NULL, 0, 0);
+	}
+	array_destroy(ikeids);
+}
+
+/**
+ * Clear the start action associated with the given child config. To reduce the
+ * overhead when terminating active SAs, only collect the name.
+ *
+ * Note: The lock must be unlocked when calling this.
+ */
+static void clear_start_action(private_vici_config_t *this, char *peer_name,
+							   child_cfg_t *child_cfg, hashtable_t *to_terminate)
+{
 	action_t action;
 	char *name;
 
 	name = child_cfg->get_name(child_cfg);
 	action = child_cfg->get_start_action(child_cfg);
-
 	if (action & ACTION_TRAP)
 	{
-		DBG1(DBG_CFG, "uninstalling '%s'", name);
+		DBG1(DBG_CFG, "vici uninstalling '%s'", name);
 		switch (child_cfg->get_mode(child_cfg))
 		{
 			case MODE_PASS:
@@ -2288,111 +2609,51 @@ static void clear_start_action(private_vici_config_t *this, char *peer_name,
 				break;
 		}
 	}
-
 	if (action & ACTION_START)
 	{
-		enumerator = charon->controller->create_ike_sa_enumerator(
-													charon->controller, TRUE);
-		while (enumerator->enumerate(enumerator, &ike_sa))
-		{
-			if (!streq(ike_sa->get_name(ike_sa), peer_name))
-			{
-				continue;
-			}
-			others = id = 0;
-			children = ike_sa->create_child_sa_enumerator(ike_sa);
-			while (children->enumerate(children, &child_sa))
-			{
-				if (child_sa->get_state(child_sa) != CHILD_DELETING &&
-					child_sa->get_state(child_sa) != CHILD_DELETED)
-				{
-					if (streq(name, child_sa->get_name(child_sa)))
-					{
-						id = child_sa->get_unique_id(child_sa);
-					}
-					else
-					{
-						others++;
-					}
-				}
-			}
-			children->destroy(children);
-
-			if (!ike_sa->get_child_count(ike_sa) || (id && !others))
-			{
-				/* found no children or only matching, delete IKE_SA */
-				id = ike_sa->get_unique_id(ike_sa);
-				array_insert_create_value(&ikeids, sizeof(id),
-										  ARRAY_TAIL, &id);
-			}
-			else
-			{
-				children = ike_sa->create_child_sa_enumerator(ike_sa);
-				while (children->enumerate(children, &child_sa))
-				{
-					if (streq(name, child_sa->get_name(child_sa)))
-					{
-						id = child_sa->get_unique_id(child_sa);
-						array_insert_create_value(&ids, sizeof(id),
-												  ARRAY_TAIL, &id);
-					}
-				}
-				children->destroy(children);
-			}
-		}
-		enumerator->destroy(enumerator);
-
-		if (array_count(ids))
-		{
-			while (array_remove(ids, ARRAY_HEAD, &id))
-			{
-				DBG1(DBG_CFG, "closing '%s' #%u", name, id);
-				charon->controller->terminate_child(charon->controller,
-													id, NULL, NULL, 0, 0);
-			}
-			array_destroy(ids);
-		}
-		if (array_count(ikeids))
-		{
-			while (array_remove(ikeids, ARRAY_HEAD, &id))
-			{
-				DBG1(DBG_CFG, "closing IKE_SA #%u", id);
-				charon->controller->terminate_ike(charon->controller, id,
-												  FALSE, NULL, NULL, 0, 0);
-			}
-			array_destroy(ikeids);
-		}
+		to_terminate->put(to_terminate, name, name);
 	}
 }
 
 /**
- * Run or undo a start actions associated with a child config
+ * Clear start actions associated with a list of child configs, optionally
+ * deletes empty IKE_SAs.
  */
-static void handle_start_action(private_vici_config_t *this,
-								peer_cfg_t *peer_cfg, child_cfg_t *child_cfg,
-								bool undo)
+static void clear_start_actions(private_vici_config_t *this,
+								peer_cfg_t *peer_cfg, array_t *child_cfgs,
+								bool delete_ike)
 {
+	enumerator_t *enumerator;
+	hashtable_t *to_terminate;
+	child_cfg_t *child_cfg;
+	char *peer_name;
+
 	this->handling_actions = TRUE;
 	this->lock->unlock(this->lock);
 
-	if (undo)
+	to_terminate = hashtable_create(hashtable_hash_str,
+									hashtable_equals_str, 8);
+	peer_name = peer_cfg->get_name(peer_cfg);
+
+	enumerator = array_create_enumerator(child_cfgs);
+	while (enumerator->enumerate(enumerator, &child_cfg))
 	{
-		clear_start_action(this, peer_cfg->get_name(peer_cfg), child_cfg);
+		clear_start_action(this, peer_name, child_cfg, to_terminate);
 	}
-	else
-	{
-		run_start_action(this, peer_cfg, child_cfg);
-	}
+	enumerator->destroy(enumerator);
+
+	terminate_for_action(this, peer_name, to_terminate, delete_ike);
+	to_terminate->destroy(to_terminate);
 
 	this->lock->write_lock(this->lock);
 	this->handling_actions = FALSE;
 }
 
 /**
- * Run or undo start actions associated with all child configs of a peer config
+ * Run start actions associated with a list of child configs.
  */
-static void handle_start_actions(private_vici_config_t *this,
-								 peer_cfg_t *peer_cfg, bool undo)
+static void run_start_actions(private_vici_config_t *this,
+							  peer_cfg_t *peer_cfg, array_t *child_cfgs)
 {
 	enumerator_t *enumerator;
 	child_cfg_t *child_cfg;
@@ -2400,22 +2661,39 @@ static void handle_start_actions(private_vici_config_t *this,
 	this->handling_actions = TRUE;
 	this->lock->unlock(this->lock);
 
-	enumerator = peer_cfg->create_child_cfg_enumerator(peer_cfg);
+	enumerator = array_create_enumerator(child_cfgs);
 	while (enumerator->enumerate(enumerator, &child_cfg))
 	{
-		if (undo)
-		{
-			clear_start_action(this, peer_cfg->get_name(peer_cfg), child_cfg);
-		}
-		else
-		{
-			run_start_action(this, peer_cfg, child_cfg);
-		}
+		run_start_action(this, peer_cfg, child_cfg);
 	}
 	enumerator->destroy(enumerator);
 
 	this->lock->write_lock(this->lock);
 	this->handling_actions = FALSE;
+}
+
+/**
+ * Run or undo start actions for all child configs of the given peer config
+ * after it has changed.
+ */
+static void handle_start_actions(private_vici_config_t *this,
+								 peer_cfg_t *peer_cfg, bool undo)
+{
+	array_t *child_cfgs;
+
+	child_cfgs = array_create(0, 0);
+	array_insert_enumerator(child_cfgs, ARRAY_TAIL,
+							peer_cfg->create_child_cfg_enumerator(peer_cfg));
+	if (undo)
+	{
+		/* the peer config has changed, so allow IKE_SAs to get terminated */
+		clear_start_actions(this, peer_cfg, child_cfgs, TRUE);
+	}
+	else
+	{
+		run_start_actions(this, peer_cfg, child_cfgs);
+	}
+	array_destroy(child_cfgs);
 }
 
 /**
@@ -2426,13 +2704,31 @@ static void replace_children(private_vici_config_t *this,
 {
 	enumerator_t *enumerator;
 	child_cfg_t *child;
-	bool added;
+	array_t *to_run = NULL, *to_clear = NULL;
+	bool added, any_to_initiate = FALSE;
 
 	enumerator = to->replace_child_cfgs(to, from);
 	while (enumerator->enumerate(enumerator, &child, &added))
 	{
-		handle_start_action(this, to, child, !added);
+		if (added)
+		{
+			array_insert_create(&to_run, ARRAY_TAIL, child);
+
+			if (child->get_start_action(child) & ACTION_START)
+			{
+				any_to_initiate = TRUE;
+			}
+		}
+		else
+		{
+			array_insert_create(&to_clear, ARRAY_TAIL, child);
+		}
 	}
+	/* keep empty IKE_SAs only if we are to initiate any CHILD_SAs */
+	clear_start_actions(this, to, to_clear, !any_to_initiate);
+	run_start_actions(this, to, to_run);
+	array_destroy(to_clear);
+	array_destroy(to_run);
 	enumerator->destroy(enumerator);
 }
 
@@ -2494,10 +2790,9 @@ CALLBACK(config_sn, bool,
 		.vips = linked_list_create(),
 		.children = linked_list_create(),
 		.proposals = linked_list_create(),
-		.mobike = TRUE,
 		.send_certreq = TRUE,
-		.pull = TRUE,
 		.send_cert = CERT_SEND_IF_ASKED,
+		.ocsp = OCSP_SEND_REPLY,
 		.version = IKE_ANY,
 		.remote_port = IKEV2_UDP_PORT,
 		.fragmentation = FRAGMENTATION_YES,
@@ -2543,16 +2838,7 @@ CALLBACK(config_sn, bool,
 	}
 	if (peer.proposals->get_count(peer.proposals) == 0)
 	{
-		proposal = proposal_create_default(PROTO_IKE);
-		if (proposal)
-		{
-			peer.proposals->insert_last(peer.proposals, proposal);
-		}
-		proposal = proposal_create_default_aead(PROTO_IKE);
-		if (proposal)
-		{
-			peer.proposals->insert_last(peer.proposals, proposal);
-		}
+		add_default_proposals(peer.proposals, PROTO_IKE);
 	}
 	if (!peer.local_addrs)
 	{
@@ -2646,6 +2932,8 @@ CALLBACK(config_sn, bool,
 		.remote = peer.remote_addrs,
 		.remote_port = peer.remote_port,
 		.no_certreq = !peer.send_certreq,
+		.ocsp_certreq = peer.ocsp == OCSP_SEND_BOTH ||
+						peer.ocsp == OCSP_SEND_REQUEST,
 		.force_encap = peer.encap,
 		.fragmentation = peer.fragmentation,
 		.childless = peer.childless,
@@ -2654,20 +2942,18 @@ CALLBACK(config_sn, bool,
 	ike_cfg = ike_cfg_create(&ike);
 
 	cfg = (peer_cfg_create_t){
+		.options = peer.options,
 		.cert_policy = peer.send_cert,
+		.ocsp_policy = peer.ocsp,
 		.unique = peer.unique,
 		.keyingtries = peer.keyingtries,
 		.rekey_time = peer.rekey_time,
 		.reauth_time = peer.reauth_time,
 		.jitter_time = peer.rand_time,
 		.over_time = peer.over_time,
-		.no_mobike = !peer.mobike,
-		.aggressive = peer.aggressive,
-		.push_mode = !peer.pull,
 		.dpd = peer.dpd_delay,
 		.dpd_timeout = peer.dpd_timeout,
 		.ppk_id = peer.ppk_id ? peer.ppk_id->clone(peer.ppk_id) : NULL,
-		.ppk_required = peer.ppk_required,
 		.if_id_in = peer.if_id_in,
 		.if_id_out = peer.if_id_out,
 	};
@@ -2767,6 +3053,7 @@ CALLBACK(unload_conn, vici_message_t*,
 	cfg = this->conns->remove(this->conns, conn_name);
 	if (cfg)
 	{
+		DBG1(DBG_CFG, "removed vici connection: %s", cfg->get_name(cfg));
 		handle_start_actions(this, cfg, TRUE);
 		cfg->destroy(cfg);
 	}

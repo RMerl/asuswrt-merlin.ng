@@ -61,6 +61,8 @@
 #define CFG_STR_NOTIFY_RESULT	"notify_result"
 #define CFG_STR_IP			"ip"
 #define CFG_STR_RSSI		"rssi"
+#define CFG_STR_RSSI_5G	"rssi_5g"
+#define CFG_STR_RSSI_5G2	"rssi_5g2"
 #define CFG_STR_TYPE		"type"
 #define CFG_STR_STATUS		"status"
 #define CFG_STR_ID			"id"
@@ -81,6 +83,8 @@
 #define CFG_STR_PATH_V3	"re_path_v3"
 #endif
 #define CFG_STR_CHANNEL	"channel"
+#define CFG_STR_CHANNEL_5G	"channel_5g"
+#define CFG_STR_CHANNEL_5G2	"channel_5g2"
 #define CFG_STR_BW	"bw"
 #define CFG_STR_NCTRLSB	"nctrlsb"
 #define CFG_STR_FWSTATUS	"fwStatus"
@@ -246,6 +250,12 @@
 #define CFG_STR_PLC_STATUS		"plc_status"
 #define CFG_STR_FINDCAP_STATUS		"findcap_status"
 #define CFG_STR_MODE			"mode"
+#define CFG_STR_BAND_INDEX		"band_index"
+#define CFG_STR_BAND_INDEX_NEW		"band_index_new"
+#ifdef RTCONFIG_AMAS_5G_ONBOARDING
+#define CFG_STR_5G_OB			"5g_ob"
+#define CFG_STR_5G_BAND_NUM		"5g_band_num"
+#endif
 #define CFG_BAND_INDEX_VERSION		"bandindex_version"
 #define CFG_BAND_TYPE		"BAND_TYPE"
 #define CFG_STR_UNIT 	"unit"

@@ -26,8 +26,18 @@ charon.filelog.<name>.flush_line = no
 	Enabling this option disables block buffering and enables line buffering.
 
 charon.filelog.<name>.ike_name = no
-	Prefix each log entry with the connection name and a unique numerical
-	identifier for each IKE_SA.
+	Add the connection name and a unique numerical identifier for the current
+	IKE_SA to each log entry if available.
+
+charon.filelog.<name>.json = no
+	If enabled, each log entry is written to the file as a JSON object.
+
+	Enables writing each log entry as a JSON object to the file. The properties
+	are "time" (if `time_format` is set), "thread", "group", "level" and "msg".
+	Newlines, double quotes and backslashes are escaped in the latter. If
+	`ike_name` is enabled, "ikesa-uniqueid" and "ikesa-name" are added to the
+	object if available. The `log_level` option does not apply if this is
+	enabled.
 
 charon.filelog.<name>.log_level = no
 	Add the log level of each message after the subsystem (e.g. [IKE2]).
@@ -36,9 +46,10 @@ charon.filelog.<name>.time_format
 	Prefix each log entry with a timestamp. The option accepts a format string
 	as passed to **strftime**(3).
 
-charon.filelog.<name>.time_add_ms = no
-	Adds the milliseconds within the current second after the timestamp
-	(separated by a dot, so _time_format_ should end with %S or %T).
+charon.filelog.<name>.time_precision =
+	Add the milliseconds (_ms_) or microseconds (_us_) within the current second
+	after the timestamp (separated by a dot, so _time_format_ should end
+	with %S or %T). By default, nothing is added.
 
 charon.syslog {}
 	Section to define syslog loggers, see LOGGER CONFIGURATION in

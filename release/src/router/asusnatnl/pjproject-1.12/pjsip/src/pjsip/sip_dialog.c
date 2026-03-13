@@ -109,9 +109,10 @@ on_error:
     return status;
 }
 
-static void destroy_dialog( pjsip_dialog *dlg )
+static void destroy_dialog( pjsip_dialog *dlg, pj_bool_t unlock_mutex )
 {
     if (dlg->mutex_) {
+        if (unlock_mutex) pj_mutex_unlock(dlg->mutex_);
 	pj_mutex_destroy(dlg->mutex_);
 	dlg->mutex_ = NULL;
     }
@@ -304,7 +305,7 @@ PJ_DEF(pj_status_t) pjsip_dlg_create_uac( int inst_id,
     return PJ_SUCCESS;
 
 on_error:
-    destroy_dialog(dlg);
+    destroy_dialog(dlg, PJ_FALSE);
     return status;
 }
 
@@ -369,8 +370,9 @@ PJ_DEF(pj_status_t) pjsip_dlg_create_uas(   int inst_id,
     len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
 			  dlg->local.info->uri, tmp.ptr, TMP_LEN);
     if (len < 1) {
-	pj_ansi_strcpy(tmp.ptr, "<-error: uri too long->");
-	tmp.slen = pj_ansi_strlen(tmp.ptr);
+        tmp.slen=pj_ansi_strxcpy(tmp.ptr, "<-error: uri too long->", TMP_LEN);
+        if (tmp.slen < 0)
+            tmp.slen = pj_ansi_strlen(tmp.ptr);
     } else
 	tmp.slen = len;
 
@@ -423,8 +425,9 @@ PJ_DEF(pj_status_t) pjsip_dlg_create_uas(   int inst_id,
     len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
 			  dlg->remote.info->uri, tmp.ptr, TMP_LEN);
     if (len < 1) {
-	pj_ansi_strcpy(tmp.ptr, "<-error: uri too long->");
-	tmp.slen = pj_ansi_strlen(tmp.ptr);
+        tmp.slen=pj_ansi_strxcpy(tmp.ptr, "<-error: uri too long->", TMP_LEN);
+        if (tmp.slen<0)
+            tmp.slen = pj_ansi_strlen(tmp.ptr);
     } else
 	tmp.slen = len;
 
@@ -546,7 +549,7 @@ PJ_DEF(pj_status_t) pjsip_dlg_create_uas(   int inst_id,
     /* Put this dialog in rdata's mod_data */
     rdata->endpt_info.mod_data[ua->id] = dlg;
 
-    PJ_TODO(DIALOG_APP_TIMER);
+    //PJ_TODO(DIALOG_APP_TIMER);
 
     /* Feed the first request to the transaction. */
     pjsip_tsx_recv_msg(tsx, rdata);
@@ -563,7 +566,7 @@ on_error:
 	--dlg->tsx_count;
     }
 
-    destroy_dialog(dlg);
+    destroy_dialog(dlg, PJ_FALSE);
     return status;
 }
 
@@ -720,7 +723,7 @@ PJ_DEF(pj_status_t) pjsip_dlg_fork( const pjsip_dialog *first_dlg,
     return PJ_SUCCESS;
 
 on_error:
-    destroy_dialog(dlg);
+    destroy_dialog(dlg, PJ_FALSE);
     return status;
 }
 
@@ -728,7 +731,8 @@ on_error:
 /*
  * Destroy dialog.
  */
-static pj_status_t unregister_and_destroy_dialog( pjsip_dialog *dlg )
+static pj_status_t unregister_and_destroy_dialog( pjsip_dialog *dlg,
+						  pj_bool_t unlock_mutex )
 {
     pj_status_t status;
 
@@ -752,7 +756,7 @@ static pj_status_t unregister_and_destroy_dialog( pjsip_dialog *dlg )
     PJ_LOG(5,(dlg->obj_name, "Dialog destroyed"));
 
     /* Destroy this dialog. */
-    destroy_dialog(dlg);
+    destroy_dialog(dlg, unlock_mutex);
 
     return PJ_SUCCESS;
 }
@@ -769,7 +773,7 @@ PJ_DEF(pj_status_t) pjsip_dlg_terminate( pjsip_dialog *dlg )
     /* MUST not have pending transactions. */
     PJ_ASSERT_RETURN(dlg->tsx_count==0, PJ_EINVALIDOP);
 
-    return unregister_and_destroy_dialog(dlg);
+    return unregister_and_destroy_dialog(dlg, PJ_FALSE);
 }
 
 
@@ -885,7 +889,11 @@ PJ_DEF(void) pjsip_dlg_dec_lock(pjsip_dialog *dlg)
     if (dlg->sess_count==0 && dlg->tsx_count==0) {
 	pj_mutex_unlock(dlg->mutex_);
 	pj_mutex_lock(dlg->mutex_);
-	unregister_and_destroy_dialog(dlg);
+	/* We are holding the dialog mutex here, so before we destroy
+	 * the dialog, make sure that we unlock it first to avoid
+	 * undefined behaviour on some platforms. See ticket #1886.
+	 */
+	unregister_and_destroy_dialog(dlg, PJ_TRUE);
     } else {
 	pj_mutex_unlock(dlg->mutex_);
     }
@@ -1201,8 +1209,9 @@ PJ_DEF(pj_status_t) pjsip_dlg_send_request( pjsip_dialog *dlg,
         int tsx_count;
 
         status = pjsip_tsx_create_uac(inst_id, dlg->ua, tdata, &tsx);
-        if (status != PJ_SUCCESS)
+        if (status != PJ_SUCCESS) {
             goto on_error;
+        }
 
 	    /* Set transport selector */
 	    status = pjsip_tsx_set_transport(tsx, &dlg->tp_sel);
@@ -1771,6 +1780,8 @@ static void dlg_update_routeset(pjsip_dialog *dlg, const pjsip_rx_data *rdata)
 	dlg->route_set_frozen = PJ_TRUE;
 	PJ_LOG(5,(dlg->obj_name, "Route-set frozen"));
     }
+
+    (void) msg_cseq;
 }
 
 

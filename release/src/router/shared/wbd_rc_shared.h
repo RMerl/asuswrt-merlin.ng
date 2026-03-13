@@ -34,6 +34,14 @@
 #define WBD_WEAK_STA_POLICY_FLAG_TX_RATE	0x00000008	/* Tx Rate */
 #define WBD_WEAK_STA_POLICY_FLAG_TX_FAIL	0x00000010	/* Tx Failure */
 
+#if defined(WIFI8_SDK_20251126)
+/* bit masks for WBD strong_sta_policy flags */
+#define WBD_STRONG_STA_POLICY_FLAG_RULE		0x00000001	/* logic AND chk */
+#define WBD_STRONG_STA_POLICY_FLAG_ACTIVE_STA	0x00000002	/* Active STA */
+#define WBD_STRONG_STA_POLICY_FLAG_RSSI		0x00000004	/* RSSI & Hysterisis */
+
+#endif
+
 /* Rules and Threshold parameters for finding weak clients */
 typedef struct wbd_weak_sta_policy {
 	int t_idle_rate;	/* data rate threshold to measure STA is idle */
@@ -120,5 +128,24 @@ extern int wbd_weak_sta_identification(struct ether_addr *sta_mac,
 /* Disable a BSS if it is a backhaul BSS */
 extern int disable_map_bh_bss(char *name, char *ifname, int bsscfg_idx);
 /* ----------------------------- WBD shared Routines --------------------------------- */
+
+#if defined(WIFI8_SDK_20251126)
+/* Rules and Threshold parameters for finding strong clients */
+typedef struct wbd_strong_sta_policy {
+	int t_idle_rate;	/* data rate threshold to measure STA is idle */
+	int t_rssi;		/* STA RSSI threshold */
+	int t_hysterisis;	/* RSSI Hysterisis threshold */
+	uint32 flags;		/* extension flags (Rules) type : WBD_STRONG_STA_POLICY_FLAG_XXX */
+} wbd_strong_sta_policy_t;
+
+/* Associated STA Metrics, which are used to identify strong client in BSD or Controller */
+typedef struct wbd_strong_sta_metrics {
+	int idle_rate;		/* data rate to measure STA is idle */
+	int rssi;		/* STA RSSI */
+	int last_strong_rssi;	/* Last RSSI reported when STA was Strong */
+	int hysterisis;		/* RSSI Hysterisis */
+} wbd_strong_sta_metrics_t;
+
+#endif
 
 #endif /* _WBD_RC_SHARED_H_ */

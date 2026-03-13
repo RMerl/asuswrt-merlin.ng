@@ -471,7 +471,7 @@ int main (int argc, char **argv)
 		{
 			DBG1(DBG_APP, "!! Your strongswan.conf contains manual plugin load options for charon.");
 			DBG1(DBG_APP, "!! This is recommended for experts only, see");
-			DBG1(DBG_APP, "!! https://docs.strongswan.org/docs/5.9/plugins/pluginLoad.html");
+			DBG1(DBG_APP, "!! https://docs.strongswan.org/docs/latest/plugins/pluginLoad.html");
 		}
 	}
 

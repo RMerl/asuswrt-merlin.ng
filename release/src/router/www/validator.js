@@ -2051,7 +2051,7 @@ var validator = {
 
 		ssid_obj.parent().children().remove(".hint");
 		len = this.lengthInUtf8(ssid);
-		if(len > 32){
+		if(len >= 32){
 			hintStr = "<#JS_max_ssid#>";
 			showHint = 1;
 		}

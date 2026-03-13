@@ -183,9 +183,9 @@ String.prototype.strReverse = function() {
 };
 
 var is_AA_sku = (function(){
-        var ttc = '<% nvram_get("territory_code"); %>';
-        return (ttc.search("AA") == -1) ? false : true;
-})();	
+	var ttc = '<% nvram_get("territory_code"); %>';
+	return (ttc.search("AA") == -1) ? false : true;
+})();
 var is_KR_sku = (function(){
 	var ttc = '<% nvram_get("territory_code"); %>';
 	return (ttc.search("KR") == -1) ? false : true;
@@ -201,13 +201,60 @@ var timeZoneObj;
 var productid = '<% nvram_get("productid"); %>';
 var wans_mode = '<% nvram_get("wans_mode"); %>';
 var reboot_time = parseInt("<% get_default_reboot_time(); %>");
+var gobi_support = isSupport("gobi");
+var secure_default = isSupport("secure_default");
 function isSupport(_ptn){
 	var ui_support = [<% get_ui_support(); %>][0];
 	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
 }
 
-var gobi_support = isSupport("gobi");
-var secure_default = isSupport("secure_default");
+(()=>{
+	if(isSupport("YEAR20")){
+		const style = document.createElement('style');
+		style.type = 'text/css';
+		style.innerHTML = `
+			.logo-container {
+				flex-direction: column;
+				margin-left: 0;
+			}
+			.logo-rog, .logo-odm{
+				background-position: center;
+				background-size: 60%;
+			}
+			.login-title {
+				width: auto;
+				height: 100%;
+				font-size: 48px;
+				color: #BDA158;
+				margin: 0 40px 0 120px;
+			}
+			.form-input {
+				border-bottom: 2px solid #999;
+			}
+			.form-input:focus {
+				border-bottom: 1px solid #E0BE62;
+			}
+			.login-btn-bg, .login-btn-bg:hover {
+				width: 380px;
+				padding: 0 22px;
+				margin: 20px auto 0;
+				float: none;
+				color: #E0BE62;
+				border: 1px solid #E0BE62;
+				background: rgba(49, 42, 29, 0.80);
+				border-radius: 0;
+			}
+			@media screen and (max-width: 1000px){
+				.login-btn-bg, .login-btn-bg:hover{
+					width: auto;
+					margin: 0 10px 0;
+					padding: initial;
+				}
+			}
+		`;
+		document.head.appendChild(style);
+	}
+})();
 
 function initial(){
 	top.name = "";/* reset cache of state.js win.name */

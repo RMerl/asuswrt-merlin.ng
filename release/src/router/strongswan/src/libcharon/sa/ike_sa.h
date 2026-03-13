@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2020 Tobias Brunner
+ * Copyright (C) 2006-2024 Tobias Brunner
  * Copyright (C) 2006 Daniel Roethlisberger
  * Copyright (C) 2005-2009 Martin Willi
  * Copyright (C) 2005 Jan Hutter
@@ -80,6 +80,8 @@ typedef struct ike_sa_t ike_sa_t;
 
 /**
  * Extensions (or optional features) the peer supports
+ *
+ * Private extensions can be defined by using the EXT_PRIVATE_MARKER marker.
  */
 enum ike_extension_t {
 
@@ -161,7 +163,7 @@ enum ike_extension_t {
 	EXT_IKE_MESSAGE_ID_SYNC = (1<<14),
 
 	/**
-	 * Postquantum Preshared Keys, draft-ietf-ipsecme-qr-ikev2
+	 * Postquantum Preshared Keys, RFC 8784
 	 */
 	EXT_PPK = (1<<15),
 
@@ -169,10 +171,22 @@ enum ike_extension_t {
 	 * Responder accepts childless IKE_SAs, RFC 6023
 	 */
 	EXT_IKE_CHILDLESS = (1<<16),
+
+	/**
+	 * IKEv2 Intermediate Exchange, RFC 9242
+	 */
+	EXT_IKE_INTERMEDIATE = (1<<17),
+
+	/**
+	 * MSB marker to separate private extensions
+	 */
+	EXT_PRIVATE_MARKER = (1<<31),
 };
 
 /**
  * Conditions of an IKE_SA, change during its lifetime
+ *
+ * Private conditions can be defined by using the COND_PRIVATE_MARKER marker.
  */
 enum ike_condition_t {
 
@@ -250,6 +264,16 @@ enum ike_condition_t {
 	 * All authentication rounds have been completed successfully
 	 */
 	COND_AUTHENTICATED = (1<<14),
+
+	/**
+	 * An OCSP status request was received
+	 */
+	COND_OCSP_REQUEST = (1<<15),
+
+	/**
+	 * MSB marker to separate private conditions
+	 */
+	COND_PRIVATE_MARKER = (1<<31),
 };
 
 /**
@@ -382,12 +406,16 @@ extern enum_name_t *ike_sa_state_names;
 struct child_init_args_t {
 	/** Reqid to use for CHILD_SA, 0 to assign automatically */
 	uint32_t reqid;
+	/** Optional CPU ID to use for CHILD_SA, CPU_ID_MAX if unspecified */
+	uint32_t cpu;
 	/** Optional source of triggering packet */
 	traffic_selector_t *src;
 	/** Optional destination of triggering packet */
 	traffic_selector_t *dst;
 	/** Optional security label of triggering packet */
 	sec_label_t *label;
+	/** Optional sequence number associated with the acquire triggering the SA */
+	uint32_t seq;
 };
 
 /**
@@ -1256,7 +1284,7 @@ struct ike_sa_t {
  * @param ike_sa_id		ike_sa_id_t to associate with new IKE_SA/ISAKMP_SA
  * @param initiator		TRUE to create this IKE_SA as initiator
  * @param version		IKE version of this SA
- * @return			ike_sa_t object
+ * @return				ike_sa_t object
  */
 ike_sa_t *ike_sa_create(ike_sa_id_t *ike_sa_id, bool initiator,
 						ike_version_t version);
@@ -1266,16 +1294,24 @@ ike_sa_t *ike_sa_create(ike_sa_id_t *ike_sa_id, bool initiator,
  * parameters or the authentication method prevent it.
  *
  * @param this			IKE_SA to check
- * @return			TRUE if active reauthentication is possible
+ * @return				TRUE if active reauthentication is possible
  */
 bool ike_sa_can_reauthenticate(ike_sa_t *this);
+
+/**
+ * Check if a task to delete this IKE_SA is queued.
+ *
+ * @param this			IKE_SA to check
+ * @return				TRUE if a task is queued
+ */
+bool ike_sa_is_delete_queued(ike_sa_t *this);
 
 /**
  * Get hosts, virtual or physical, for deriving dynamic traffic selectors.
  *
  * @param this			IKE_SA to retrieve addresses from
  * @param local			TRUE to get local hosts
- * @return			list of hosts (internal objects)
+ * @return				list of hosts (internal objects)
  */
 linked_list_t *ike_sa_get_dynamic_hosts(ike_sa_t *this, bool local);
 

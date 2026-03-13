@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Tobias Brunner
+ * Copyright (C) 2015-2020 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -237,13 +237,13 @@ static bool set_aead_keys(private_keymat_v2_t *this, uint16_t enc_alg,
 }
 
 METHOD(keymat_v2_t, derive_ike_keys, bool,
-	private_keymat_v2_t *this, proposal_t *proposal, key_exchange_t *dh,
+	private_keymat_v2_t *this, proposal_t *proposal, array_t *kes,
 	chunk_t nonce_i, chunk_t nonce_r, ike_sa_id_t *id,
 	pseudo_random_function_t rekey_function, chunk_t rekey_skd)
 {
-	chunk_t skeyseed = chunk_empty, secret, full_nonce, fixed_nonce;
-	chunk_t prf_plus_seed, spi_i, spi_r, keymat = chunk_empty;
-	chunk_t sk_ei = chunk_empty, sk_er = chunk_empty;
+	chunk_t skeyseed = chunk_empty, secret, add_secret = chunk_empty;
+	chunk_t full_nonce, fixed_nonce, prf_plus_seed, spi_i, spi_r;
+	chunk_t keymat = chunk_empty, sk_ei = chunk_empty, sk_er = chunk_empty;
 	chunk_t sk_ai = chunk_empty, sk_ar = chunk_empty, sk_pi, sk_pr;
 	kdf_t *prf = NULL, *prf_plus = NULL;
 	uint16_t prf_alg, key_size, enc_alg, enc_size, int_alg;
@@ -261,6 +261,7 @@ METHOD(keymat_v2_t, derive_ike_keys, bool,
 		return FALSE;
 	}
 	this->prf_alg = prf_alg;
+	DESTROY_IF(this->prf);
 	this->prf = lib->crypto->create_prf(lib->crypto, this->prf_alg);
 	if (!this->prf)
 	{
@@ -279,6 +280,8 @@ METHOD(keymat_v2_t, derive_ike_keys, bool,
 			 ENCRYPTION_ALGORITHM);
 		return FALSE;
 	}
+	DESTROY_IF(this->aead_in);
+	DESTROY_IF(this->aead_out);
 	if (!encryption_algorithm_is_aead(enc_alg))
 	{
 		if (!proposal->get_algorithm(proposal, INTEGRITY_ALGORITHM, &int_alg,
@@ -299,13 +302,15 @@ METHOD(keymat_v2_t, derive_ike_keys, bool,
 		return FALSE;
 	}
 
-	if (!dh->get_shared_secret(dh, &secret))
+	if (!key_exchange_concat_secrets(kes, &secret, &add_secret))
 	{
 		return FALSE;
 	}
-	DBG4(DBG_IKE, "shared Diffie Hellman secret %B", &secret);
+	DBG4(DBG_IKE, "key exchange secret %B", &secret);
+	DBG4(DBG_IKE, "additional key exchange secret %B", &add_secret);
 	/* full nonce is used as seed for PRF+ ... */
 	full_nonce = chunk_cat("cc", nonce_i, nonce_r);
+	DBG4(DBG_IKE, "nonces %B", &full_nonce);
 	/* but the PRF may need a fixed key which only uses the first bytes of
 	 * the nonces. */
 	switch (prf_alg)
@@ -339,6 +344,7 @@ METHOD(keymat_v2_t, derive_ike_keys, bool,
 				 key_derivation_function_names, KDF_PRF,
 				 pseudo_random_function_names, this->prf_alg);
 			chunk_clear(&secret);
+			chunk_clear(&add_secret);
 			chunk_free(&full_nonce);
 			chunk_free(&fixed_nonce);
 			return FALSE;
@@ -362,11 +368,12 @@ METHOD(keymat_v2_t, derive_ike_keys, bool,
 				 key_derivation_function_names, KDF_PRF,
 				 pseudo_random_function_names, rekey_function);
 			chunk_clear(&secret);
+			chunk_clear(&add_secret);
 			chunk_free(&full_nonce);
 			chunk_free(&fixed_nonce);
 			return FALSE;
 		}
-		secret = chunk_cat("sc", secret, full_nonce);
+		secret = chunk_cat("scc", secret, full_nonce, add_secret);
 		if (prf->set_param(prf, KDF_PARAM_KEY, secret) &&
 			prf->set_param(prf, KDF_PARAM_SALT, rekey_skd) &&
 			prf->allocate_bytes(prf, 0, &skeyseed))
@@ -377,6 +384,7 @@ METHOD(keymat_v2_t, derive_ike_keys, bool,
 	}
 	DBG4(DBG_IKE, "SKEYSEED %B", &skeyseed);
 	chunk_clear(&secret);
+	chunk_clear(&add_secret);
 	chunk_free(&fixed_nonce);
 	DESTROY_IF(prf);
 
@@ -411,6 +419,7 @@ METHOD(keymat_v2_t, derive_ike_keys, bool,
 	{
 		goto failure;
 	}
+	chunk_clear(&this->skd);
 	chunk_split(keymat, "ammmmaa", key_size, &this->skd, sk_ai.len, &sk_ai,
 				sk_ar.len, &sk_ar, sk_ei.len, &sk_ei, sk_er.len, &sk_er,
 				key_size, &sk_pi, key_size, &sk_pr);
@@ -432,6 +441,8 @@ METHOD(keymat_v2_t, derive_ike_keys, bool,
 	/* SK_pi/SK_pr used for authentication => stored for later */
 	DBG4(DBG_IKE, "Sk_pi secret %B", &sk_pi);
 	DBG4(DBG_IKE, "Sk_pr secret %B", &sk_pr);
+	chunk_clear(&this->skp_build);
+	chunk_clear(&this->skp_verify);
 	if (this->initiator)
 	{
 		this->skp_build = sk_pi;
@@ -523,12 +534,13 @@ METHOD(keymat_v2_t, derive_ike_keys_ppk, bool,
 }
 
 METHOD(keymat_v2_t, derive_child_keys, bool,
-	private_keymat_v2_t *this, proposal_t *proposal, key_exchange_t *dh,
+	private_keymat_v2_t *this, proposal_t *proposal, array_t *kes,
 	chunk_t nonce_i, chunk_t nonce_r, chunk_t *encr_i, chunk_t *integ_i,
 	chunk_t *encr_r, chunk_t *integ_r)
 {
 	uint16_t enc_alg, int_alg, enc_size = 0, int_size = 0;
-	chunk_t seed, secret = chunk_empty, keymat = chunk_empty;
+	chunk_t seed, secret = chunk_empty, add_secret = chunk_empty;
+	chunk_t keymat = chunk_empty;
 	kdf_t *prf_plus;
 
 	if (proposal->get_algorithm(proposal, ENCRYPTION_ALGORITHM,
@@ -595,15 +607,16 @@ METHOD(keymat_v2_t, derive_child_keys, bool,
 		int_size /= 8;
 	}
 
-	if (dh)
+	if (kes)
 	{
-		if (!dh->get_shared_secret(dh, &secret))
+		if (!key_exchange_concat_secrets(kes, &secret, &add_secret))
 		{
 			return FALSE;
 		}
-		DBG4(DBG_CHD, "DH secret %B", &secret);
+		DBG4(DBG_CHD, "key exchange secret %B", &secret);
+		DBG4(DBG_CHD, "additional key exchange secret %B", &add_secret);
 	}
-	seed = chunk_cata("scc", secret, nonce_i, nonce_r);
+	seed = chunk_cata("sccs", secret, nonce_i, nonce_r, add_secret);
 	DBG4(DBG_CHD, "seed %B", &seed);
 
 	prf_plus = lib->crypto->create_kdf(lib->crypto, KDF_PRF_PLUS, this->prf_alg);
@@ -656,10 +669,31 @@ METHOD(keymat_t, get_aead, aead_t*,
 	return in ? this->aead_in : this->aead_out;
 }
 
+METHOD(keymat_v2_t, get_int_auth, bool,
+	private_keymat_v2_t *this, bool verify, chunk_t data, chunk_t prev,
+	chunk_t *auth)
+{
+	chunk_t skp;
+
+	skp = verify ? this->skp_verify : this->skp_build;
+
+	DBG3(DBG_IKE, "IntAuth_N-1 %B", &prev);
+	DBG3(DBG_IKE, "IntAuth_A|P %B", &data);
+	DBG4(DBG_IKE, "SK_p %B", &skp);
+	if (!this->prf->set_key(this->prf, skp) ||
+		!this->prf->allocate_bytes(this->prf, prev, NULL) ||
+		!this->prf->allocate_bytes(this->prf, data, auth))
+	{
+		return FALSE;
+	}
+	DBG3(DBG_IKE, "IntAuth_N = prf(Sk_px, data) %B", auth);
+	return TRUE;
+}
+
 METHOD(keymat_v2_t, get_auth_octets, bool,
 	private_keymat_v2_t *this, bool verify, chunk_t ike_sa_init,
-	chunk_t nonce, chunk_t ppk, identification_t *id, char reserved[3],
-	chunk_t *octets, array_t *schemes)
+	chunk_t nonce, chunk_t int_auth, chunk_t ppk, identification_t *id,
+	char reserved[3], chunk_t *octets, array_t *schemes)
 {
 	chunk_t chunk, idx;
 	chunk_t skp_ppk = chunk_empty;
@@ -690,8 +724,9 @@ METHOD(keymat_v2_t, get_auth_octets, bool,
 		return FALSE;
 	}
 	chunk_clear(&skp_ppk);
-	*octets = chunk_cat("ccm", ike_sa_init, nonce, chunk);
-	DBG3(DBG_IKE, "octets = message + nonce + prf(Sk_px, IDx') %B", octets);
+	*octets = chunk_cat("ccmc", ike_sa_init, nonce, chunk, int_auth);
+	DBG3(DBG_IKE, "octets = message + nonce + prf(Sk_px, IDx') + IntAuth %B",
+		 octets);
 	return TRUE;
 }
 
@@ -702,9 +737,9 @@ METHOD(keymat_v2_t, get_auth_octets, bool,
 #define IKEV2_KEY_PAD_LENGTH 17
 
 METHOD(keymat_v2_t, get_psk_sig, bool,
-	private_keymat_v2_t *this, bool verify, chunk_t ike_sa_init, chunk_t nonce,
-	chunk_t secret, chunk_t ppk, identification_t *id, char reserved[3],
-	chunk_t *sig)
+	private_keymat_v2_t *this, bool verify, chunk_t ike_sa_init,
+	chunk_t nonce, chunk_t int_auth, chunk_t secret, chunk_t ppk,
+	identification_t *id, char reserved[3], chunk_t *sig)
 {
 	chunk_t skp_ppk = chunk_empty, key = chunk_empty, octets = chunk_empty;
 	chunk_t key_pad;
@@ -722,8 +757,8 @@ METHOD(keymat_v2_t, get_psk_sig, bool,
 			secret = skp_ppk;
 		}
 	}
-	if (!get_auth_octets(this, verify, ike_sa_init, nonce, ppk, id, reserved,
-						 &octets, NULL))
+	if (!get_auth_octets(this, verify, ike_sa_init, nonce, int_auth, ppk, id,
+						 reserved, &octets, NULL))
 	{
 		goto failure;
 	}
@@ -749,7 +784,6 @@ failure:
 	chunk_free(&octets);
 	chunk_free(&key);
 	return success;
-
 }
 
 METHOD(keymat_v2_t, hash_algorithm_supported, bool,
@@ -805,6 +839,7 @@ keymat_v2_t *keymat_v2_create(bool initiator)
 			.derive_ike_keys_ppk = _derive_ike_keys_ppk,
 			.derive_child_keys = _derive_child_keys,
 			.get_skd = _get_skd,
+			.get_int_auth = _get_int_auth,
 			.get_auth_octets = _get_auth_octets,
 			.get_psk_sig = _get_psk_sig,
 			.add_hash_algorithm = _add_hash_algorithm,

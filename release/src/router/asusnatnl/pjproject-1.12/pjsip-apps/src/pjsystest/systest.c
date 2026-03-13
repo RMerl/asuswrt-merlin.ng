@@ -90,8 +90,8 @@ static gui_menu root_menu = {
 
 PJ_INLINE(char *) add_path(const char *path, const char *fname)
 {
-    strncpy(fpath, path, PATH_LENGTH);
-    strncat(fpath, fname, PATH_LENGTH);
+    pj_ansi_strxcpy(fpath, path, PATH_LENGTH);
+    pj_ansi_strxcat(fpath, fname, PATH_LENGTH);
     return fpath;
 }
 
@@ -128,12 +128,11 @@ static void systest_perror(const char *title, pj_status_t status)
     if (status != PJ_SUCCESS)
 	pj_strerror(status, errmsg, sizeof(errmsg));
     else
-	errmsg[0] = '\0';
+        pj_ansi_strxcpy(errmsg, "No error", sizeof(errmsg));
     
-    strcpy(themsg, title);
-    strncat(themsg, errmsg, sizeof(themsg)-1);
-    themsg[sizeof(themsg)-1] = '\0';
-
+    pj_ansi_strxcpy(themsg, title, sizeof(themsg));
+    pj_ansi_strxcat(themsg, ": ", sizeof(themsg));
+    pj_ansi_strxcat(themsg, errmsg, sizeof(themsg));
     gui_msgbox("Error", themsg, WITH_OK);
 }
 
@@ -148,7 +147,7 @@ test_item_t *systest_alloc_test_item(const char *title)
 
     ti = &test_items[test_item_count++];
     pj_bzero(ti, sizeof(*ti));
-    pj_ansi_strcpy(ti->title, title);
+    pj_ansi_strxcpy(ti->title, title, sizeof(ti->title));
 
     return ti;
 }
@@ -250,14 +249,14 @@ on_return:
 
     if (status != PJ_SUCCESS) {
 	systest_perror("Sorry we encounter error when initializing "
-		       "the tone generator: ", status);
+                       "the tone generator", status);
 	ti->success = PJ_FALSE;
 	pj_strerror(status, ti->reason, sizeof(ti->reason));
     } else {
 	key = gui_msgbox(title, "Is the audio okay?", WITH_YESNO);
 	ti->success = (key == KEY_YES);
 	if (!ti->success)
-	    pj_ansi_strcpy(ti->reason, USER_ERROR);
+            pj_ansi_strxcpy(ti->reason, USER_ERROR, sizeof(ti->reason));
     }
     return;
 }
@@ -341,7 +340,7 @@ on_return:
 	key = gui_msgbox(title, "Is the audio okay?", WITH_YESNO);
 	ti->success = (key == KEY_YES);
 	if (!ti->success)
-	    pj_ansi_strcpy(ti->reason, USER_ERROR);
+            pj_ansi_strxcpy(ti->reason, USER_ERROR, sizeof(ti->reason));
     }
     return;
 }
@@ -446,7 +445,7 @@ on_return:
 	pj_pool_release(pool);
 
     if (status != PJ_SUCCESS) {
-	systest_perror("Sorry we encountered an error: ", status);
+        systest_perror("Sorry we encountered an error", status);
 	ti->success = PJ_FALSE;
 	pj_strerror(status, ti->reason, sizeof(ti->reason));
     } else {
@@ -460,7 +459,7 @@ on_return:
 			     "or playback problem.",
 			     WAV_REC_OUT_PATH);
 	    gui_msgbox(title, textbuf, WITH_OK);
-	    pj_ansi_strcpy(ti->reason, USER_ERROR);
+            pj_ansi_strxcpy(ti->reason, USER_ERROR, sizeof(ti->reason));
 	}
     }
 }
@@ -547,7 +546,8 @@ static void systest_audio_test(void)
     pjsua_set_snd_dev(0, systest.rec_id, systest.play_id);
 
     /* Analyze the result! */
-    strcpy(textbuf, "Here are the audio statistics:\r\n");
+    pj_ansi_strxcpy(textbuf, "Here are the audio statistics:\r\n", 
+                    sizeof(textbuf));
     textbufpos = strlen(textbuf);
 
     if (result.rec.frame_cnt==0) {
@@ -638,7 +638,7 @@ static void systest_audio_test(void)
     }
 
     ti->success = PJ_TRUE;
-    pj_ansi_strncpy(ti->reason, textbuf, sizeof(ti->reason));
+    pj_ansi_strxcpy(ti->reason, textbuf, sizeof(ti->reason));
     ti->reason[sizeof(ti->reason)-1] = '\0';
 }
 
@@ -881,7 +881,7 @@ on_return:
 	pjsua_recorder_destroy(0, rec_id);
 
     if (status != PJ_SUCCESS) {
-	systest_perror("Sorry we encountered an error: ", status);
+        systest_perror("Sorry we encountered an error", status);
 	ti->success = PJ_FALSE;
 	pj_strerror(status, ti->reason, sizeof(ti->reason));
     } else if (key != KEY_YES) {
@@ -912,7 +912,7 @@ on_return:
 	key = gui_msgbox(title, msg, WITH_OK);
 
 	ti->success = PJ_TRUE;
-	pj_ansi_strncpy(ti->reason, msg, sizeof(ti->reason));
+        pj_ansi_strxcpy(ti->reason, msg, sizeof(ti->reason));
 	ti->reason[sizeof(ti->reason)-1] = '\0';
     }
 }
@@ -1038,13 +1038,13 @@ on_return:
 
 
     if (status != PJ_SUCCESS) {
-	systest_perror("Sorry we encountered an error: ", status);
+        systest_perror("Sorry we encountered an error", status);
 	ti->success = PJ_FALSE;
 	pj_strerror(status, ti->reason, sizeof(ti->reason));
     } else if (key == KEY_YES) {
 	ti->success = PJ_FALSE;
 	if (!ti->success) {
-	    pj_ansi_strcpy(ti->reason, USER_ERROR);
+            pj_ansi_strxcpy(ti->reason, USER_ERROR, sizeof(ti->reason));
 	}
     } else {
 	char msg[200];
@@ -1052,7 +1052,7 @@ on_return:
 	pj_ansi_snprintf(msg, sizeof(msg), "Test succeeded.\r\n");
 
 	ti->success = PJ_TRUE;
-	pj_ansi_strncpy(ti->reason, msg, sizeof(ti->reason));
+        pj_ansi_strxcpy(ti->reason, msg, sizeof(ti->reason));
 	ti->reason[sizeof(ti->reason)-1] = '\0';
     }
 }
@@ -1080,7 +1080,7 @@ static void systest_list_audio_devs()
 	key = gui_msgbox(title, 
 			 "No audio devices are found", WITH_OK);
 	ti->success = PJ_FALSE;
-	pj_ansi_strcpy(ti->reason, "No device found");
+        pj_ansi_strxcpy(ti->reason, "No device found", sizeof(ti->reason));
 	return;
     }
 
@@ -1093,7 +1093,7 @@ static void systest_list_audio_devs()
 
 	status = pjmedia_aud_dev_get_info(i, &info);
 	if (status != PJ_SUCCESS) {
-	    systest_perror("Error retrieving device info: ", status);
+            systest_perror("Error retrieving device info", status);
 	    ti->success = PJ_FALSE;
 	    pj_strerror(status, ti->reason, sizeof(ti->reason));
 	    return;
@@ -1108,6 +1108,8 @@ static void systest_list_audio_devs()
 
     ti->reason[len] = '\0';
     key = gui_msgbox(title, ti->reason, WITH_OK);
+    
+    (void)key;
 
     ti->success = PJ_TRUE;
 }
@@ -1196,9 +1198,10 @@ static void systest_display_settings(void)
     len = strlen(textbuf);
 
     ti->success = PJ_TRUE;
-    pj_ansi_strncpy(ti->reason, textbuf, sizeof(ti->reason));
+    pj_ansi_strxcpy(ti->reason, textbuf, sizeof(ti->reason));
     ti->reason[sizeof(ti->reason)-1] = '\0';
     key = gui_msgbox(title, textbuf, WITH_OK);
+    (void) key;
 
 }
 
@@ -1211,7 +1214,7 @@ int systest_init(void)
 
     status = pjsua_create();
     if (status != PJ_SUCCESS) {
-	systest_perror("Sorry we've had error in pjsua_create(): ", status);
+        systest_perror("Sorry we've had error in pjsua_create()", status);
 	return status;
     }
 
@@ -1241,14 +1244,14 @@ int systest_init(void)
     status = pjsua_init(0, &systest.ua_cfg, &log_cfg, &systest.media_cfg);
     if (status != PJ_SUCCESS) {
 	pjsua_destroy(0);
-	systest_perror("Sorry we've had error in pjsua_init(): ", status);
+        systest_perror("Sorry we've had error in pjsua_init()", status);
 	return status;
     }
 
     status = pjsua_start(0);
     if (status != PJ_SUCCESS) {
 	pjsua_destroy(0);
-	systest_perror("Sorry we've had error in pjsua_start(): ", status);
+        systest_perror("Sorry we've had error in pjsua_start()", status);
 	return status;
     }
 

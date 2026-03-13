@@ -134,12 +134,16 @@ METHOD(key_exchange_t, get_public_key, bool,
 	return TRUE;
 }
 
-METHOD(key_exchange_t, set_private_key, bool,
-	private_botan_diffie_hellman_t *this, chunk_t value)
+#ifdef TESTABLE_KE
+
+METHOD(key_exchange_t, set_seed, bool,
+	private_botan_diffie_hellman_t *this, chunk_t value, drbg_t *drbg)
 {
 	chunk_clear(&this->shared_secret);
 	return load_private_key(this, value);
 }
+
+#endif /* TESTABLE_KE */
 
 METHOD(key_exchange_t, get_shared_secret, bool,
 	private_botan_diffie_hellman_t *this, chunk_t *secret)
@@ -186,13 +190,16 @@ static botan_diffie_hellman_t *create_generic(key_exchange_method_t group,
 				.get_shared_secret = _get_shared_secret,
 				.set_public_key = _set_public_key,
 				.get_public_key = _get_public_key,
-				.set_private_key = _set_private_key,
 				.get_method = _get_method,
 				.destroy = _destroy,
 			},
 		},
 		.group = group,
 	);
+
+#ifdef TESTABLE_KE
+	this->public.ke.set_seed = _set_seed;
+#endif
 
 	if (!chunk_to_botan_mp(p, &this->p))
 	{

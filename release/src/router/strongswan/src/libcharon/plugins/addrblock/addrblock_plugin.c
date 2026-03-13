@@ -94,7 +94,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *addrblock_plugin_create()
+PLUGIN_DEFINE(addrblock)
 {
 	private_addrblock_plugin_t *this;
 

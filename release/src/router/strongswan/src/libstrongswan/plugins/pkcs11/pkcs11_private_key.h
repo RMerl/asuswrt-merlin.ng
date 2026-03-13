@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011 Tobias Brunner
  * Copyright (C) 2010 Martin Willi
+ * Copyright (C) 2024 Andreas Steffen
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -61,6 +62,7 @@ pkcs11_private_key_t *pkcs11_private_key_connect(key_type_t type, va_list args);
  * @param lib			PKCS#11 library of the token the key resides on
  * @param slot			slot of the token
  * @param scheme		signature scheme
+ * @param params		optional signature scheme parameters
  * @param type			key type
  * @param keylen		key length in bits
  * @param hash			hash algorithm to apply first (HASH_UNKNOWN if none)
@@ -68,6 +70,7 @@ pkcs11_private_key_t *pkcs11_private_key_connect(key_type_t type, va_list args);
 CK_MECHANISM_PTR pkcs11_signature_scheme_to_mech(pkcs11_library_t *lib,
 												 CK_SLOT_ID slot,
 												 signature_scheme_t scheme,
+												 void *params,
 												 key_type_t type, size_t keylen,
 												 hash_algorithm_t *hash);
 

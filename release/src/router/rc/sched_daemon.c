@@ -95,6 +95,18 @@ static void task_hns_alive(struct timer_entry *timer, void *data);
 #if defined(RTCONFIG_BCM_AFC) && defined(RTCONFIG_AFC_POSITIONING)
 static void task_afc_pos_retry(struct timer_entry *timer, void *data);
 #endif
+#ifdef RTCONFIG_GTBOOSTER
+static void task_ark_signature(struct timer_entry *timer, void *data);
+static void task_ark_alive(struct timer_entry *timer, void *data);
+static void task_ark_protection(struct timer_entry *timer, void *data);
+static void task_ark_history(struct timer_entry *timer, void *data);
+#endif
+#if defined(RTCONFIG_AURA_SCHED) || defined(RTCONFIG_AURA_NIGHT_SCHED)
+static void task_aura_sched(struct timer_entry *timer, void *data);
+#endif
+#if defined(RTCONFIG_LED_SCHED) || defined(RTCONFIG_LED_NIGHT_SCHED)
+static void task_led_sched(struct timer_entry *timer, void *data);
+#endif
 ///////////////////////////////////// task prototype /////////////////////////////////////
 
 ///////////////////////////////////// signal handler prototype /////////////////////////////////////
@@ -132,8 +144,20 @@ static struct task_table sd_task_t[] =
         {SIGALRM, 0, task_hns_event_cc, 0, PERIOD_10_SEC},
         {SIGALRM, 0, task_hns_alive, 0, PERIOD_30_SEC},
 #endif
+#ifdef RTCONFIG_GTBOOSTER
+        {SIGALRM, 0, task_ark_signature, 0, PERIOD_86400_SEC},
+        {SIGALRM, 0, task_ark_alive, 0, PERIOD_120_SEC},
+        {SIGALRM, 0, task_ark_protection, 0, PERIOD_120_SEC},
+        {SIGALRM, 0, task_ark_history, 0, PERIOD_120_SEC},
+#endif
 #if defined(RTCONFIG_BCM_AFC) && defined(RTCONFIG_AFC_POSITIONING)
         {SIGALRM, 0, task_afc_pos_retry, 0, PERIOD_600_SEC},
+#endif
+#if defined(RTCONFIG_AURA_SCHED) || defined(RTCONFIG_AURA_NIGHT_SCHED)
+        {SIGALRM, 0, task_aura_sched, 0, PERIOD_10_SEC},
+#endif
+#if defined(RTCONFIG_LED_SCHED) || defined(RTCONFIG_LED_NIGHT_SCHED)
+        {SIGALRM, 0, task_led_sched, 0, PERIOD_10_SEC},
 #endif
         {SIGUSR1, 0, sched_daemon_sigusr1, 0, 0},
         {SIGUSR2, 0, sched_daemon_sigusr2, 0, 0},
@@ -184,6 +208,18 @@ static void task_hns_protection(void);
 static void task_hns_signature(void);
 static void task_hns_event_cc(void);
 static void task_hns_alive(void);
+#endif
+#ifdef RTCONFIG_GTBOOSTER
+static void task_ark_signature(void);
+static void task_ark_alive(void);
+static void task_ark_protection(void);
+static void task_ark_history(void);
+#endif
+#if defined(RTCONFIG_AURA_SCHED) || defined(RTCONFIG_AURA_NIGHT_SCHED)
+static void task_aura_sched(void);
+#endif
+#if defined(RTCONFIG_LED_SCHED) || defined(RTCONFIG_LED_NIGHT_SCHED)
+static void task_led_sched(void);
 #endif
 ///////////////////////////////////// task prototype /////////////////////////////////////
 
@@ -324,6 +360,12 @@ static void sched_daemon(int sig)
 #ifdef RTCONFIG_HNS
 	task_hns_alive();
 #endif
+#if defined(RTCONFIG_AURA_SCHED) || defined(RTCONFIG_AURA_NIGHT_SCHED)
+	task_aura_sched();
+#endif
+#if defined(RTCONFIG_LED_SCHED) || defined(RTCONFIG_LED_NIGHT_SCHED)
+	task_led_sched();
+#endif
 
 /*======== The following is for period 120 seconds ========*/
 	if (period_120_sec)
@@ -332,6 +374,11 @@ static void sched_daemon(int sig)
 #ifdef RTCONFIG_HNS
 	task_hns_history();
 	task_hns_protection();
+#endif
+#ifdef RTCONFIG_GTBOOSTER
+	task_ark_alive();
+	task_ark_protection();
+	task_ark_history();
 #endif
 
 /*======== The following is for period 600 seconds ========*/
@@ -359,6 +406,9 @@ static void sched_daemon(int sig)
 #endif
 #ifdef RTCONFIG_HNS
 	task_hns_signature();
+#endif
+#ifdef RTCONFIG_GTBOOSTER
+	task_ark_signature();
 #endif
 }
 #endif
@@ -1176,6 +1226,60 @@ static void task_hns_alive(void)
 }
 #endif
 
+#ifdef RTCONFIG_GTBOOSTER
+#ifdef USE_TIMERUTIL
+static void task_ark_signature(struct timer_entry *timer, void *data)
+#else
+static void task_ark_signature(void)
+#endif
+{
+	ark_sig_update_flow();
+
+#ifdef USE_TIMERUTIL
+	mod_timer(timer, PERIOD_86400_SEC);
+#endif
+}
+
+#ifdef USE_TIMERUTIL
+static void task_ark_alive(struct timer_entry *timer, void *data)
+#else
+static void task_ark_alive(void)
+#endif
+{
+	check_ark_alive_service();
+
+#ifdef USE_TIMERUTIL
+	mod_timer(timer, PERIOD_120_SEC);
+#endif
+}
+
+#ifdef USE_TIMERUTIL
+static void task_ark_protection(struct timer_entry *timer, void *data)
+#else
+static void task_ark_protection(void)
+#endif
+{
+	exe_ark_protection();
+
+#ifdef USE_TIMERUTIL
+	mod_timer(timer, PERIOD_120_SEC);
+#endif
+}
+
+#ifdef USE_TIMERUTIL
+static void task_ark_history(struct timer_entry *timer, void *data)
+#else
+static void task_ark_history(void)
+#endif
+{
+	exe_ark_history();
+
+#ifdef USE_TIMERUTIL
+	mod_timer(timer, PERIOD_120_SEC);
+#endif
+}
+#endif
+
 #if defined(RTCONFIG_BCM_AFC) && defined(RTCONFIG_AFC_POSITIONING)
 #ifdef USE_TIMERUTIL
 static void task_afc_pos_retry(struct timer_entry *timer, void *data)
@@ -1205,6 +1309,11 @@ static void task_afc_pos_retry(void)
 	if (nvram_get_int("re_mode") == 1 && nvram_get_int("cfg_alive") == 0)
 		goto AFC_POS_RETRY_END;
 
+	if (nvram_match("wifi_pos_stop_retry", "1")) {
+		SCHED_DAEMON_DBG("There is wifi_pos_stop_retry marked with wifi_pos_error(%s). Skip afc positioning.", nvram_safe_get("wifi_pos_error"));
+		goto AFC_POS_RETRY_END;
+	}
+
 	if (!check_afc_nvram())
 		trigger_afc_positioning("silent");
 
@@ -1214,6 +1323,233 @@ AFC_POS_RETRY_END:
 #endif
 }
 #endif // #if defined(RTCONFIG_BCM_AFC) && defined(RTCONFIG_AFC_POSITIONING)
+
+#if defined(RTCONFIG_AURA_SCHED) || defined(RTCONFIG_AURA_NIGHT_SCHED)
+#define AURA_SCHED_OFF 0
+#define AURA_SCHED_NIGHT 1
+#define AURA_SCHED_NOT_MATCHED 2
+
+static int current_aura_mode = -1;
+
+#ifdef USE_TIMERUTIL
+static void task_aura_sched(struct timer_entry *timer, void *data)
+#else
+static void task_aura_sched(void)
+#endif
+{
+	int aura_mode = -1;
+	int AllLED = nvram_get_int("AllLED");
+
+	if (AllLED == 0) {
+		SCHED_DAEMON_DBG("AllLED is OFF");
+		//logmessage("aura scheduler", "Aura scheduler is OFF.");
+		//current_aura_mode = -1;
+		goto AURA_SCHED_END;
+	}
+#ifdef RTCONFIG_AURA_SCHED
+	int aura_timesched = 0;
+	char aura_sched[256];
+	aura_timesched = nvram_get_int("aura_timesched");
+	if (aura_timesched > 0) {
+		snprintf(aura_sched, sizeof(aura_sched), "%s", nvram_safe_get("aura_sched"));
+		if (strlen(aura_sched) > 0 && check_sched_v2_on_off(aura_sched)) {
+			aura_mode = AURA_SCHED_OFF;
+		} else {
+			aura_mode = AURA_SCHED_NOT_MATCHED;
+		}
+	}
+#endif
+
+#ifdef RTCONFIG_AURA_NIGHT_SCHED
+	int aura_night_timesched = 0;
+	char aura_night_sched[256];
+	aura_night_timesched = nvram_get_int("aura_night_timesched");
+	if (aura_night_timesched > 0) {
+		snprintf(aura_night_sched, sizeof(aura_night_sched), "%s", nvram_safe_get("aura_night_sched"));
+		if (strlen(aura_night_sched) > 0 && check_sched_v2_on_off(aura_night_sched)) {
+			aura_mode = AURA_SCHED_NIGHT;
+		} else {
+			if (aura_mode != AURA_SCHED_OFF)
+				aura_mode = AURA_SCHED_NOT_MATCHED;
+		}
+	}
+#endif
+
+	if (aura_mode != current_aura_mode) {
+		if (aura_mode == AURA_SCHED_OFF) {
+			SCHED_DAEMON_DBG("Aura scheduler is OFF");
+			logmessage("aura scheduler", "Aura scheduler is OFF.");
+
+			nvram_set("ledg_scheme_sched", "0");
+			nvram_set("ledg_night_mode_sched", "0");
+			nvram_set("aura_off_sched_in_effect", "1");
+			nvram_set("aura_night_sched_in_effect", "");
+			kill_pidfile_s("/var/run/ledg.pid", SIGTSTP);
+		} else if (aura_mode == AURA_SCHED_NIGHT) {
+			SCHED_DAEMON_DBG("Aura scheduler is NIGHT");
+			logmessage("aura scheduler", "Aura scheduler is NIGHT.");
+
+			nvram_set("ledg_scheme_sched", "1");
+			nvram_set("ledg_night_mode_sched", "1");
+			nvram_set("aura_off_sched_in_effect", "");
+			nvram_set("aura_night_sched_in_effect", "1");
+			kill_pidfile_s("/var/run/ledg.pid", SIGTSTP);
+		} else {
+			SCHED_DAEMON_DBG("Aura scheduler is not matched");
+			logmessage("aura scheduler", "Aura scheduler is not matched.");
+
+			nvram_set("ledg_scheme_sched", "-1");
+			nvram_set("ledg_night_mode_sched", "-1");
+			nvram_set("aura_off_sched_in_effect", "");
+			nvram_set("aura_night_sched_in_effect", "");
+			kill_pidfile_s("/var/run/ledg.pid", SIGTSTP);
+		}
+		current_aura_mode = aura_mode;
+	}
+
+AURA_SCHED_END:
+#ifdef USE_TIMERUTIL
+	mod_timer(timer, PERIOD_10_SEC);
+#endif
+}
+#endif
+
+#if defined(RTCONFIG_LED_SCHED) || defined(RTCONFIG_LED_NIGHT_SCHED)
+#define LED_SCHED_OFF 0
+#define LED_SCHED_NIGHT 1
+#define LED_SCHED_NOT_MATCHED 2
+
+static int current_led_mode = -1;
+static int old_single_led_night_mode = -1;
+#ifdef USE_TIMERUTIL
+static void task_led_sched(struct timer_entry *timer, void *data)
+#else
+static void task_led_sched(void)
+#endif
+{
+	int led_mode = -1;
+	int AllLED = nvram_get_int("AllLED");
+	int led_val = nvram_get_int("led_val");
+	int current_single_led_night_mode = nvram_get_int("single_led_night_mode");
+
+	if (AllLED == 0) {
+		SCHED_DAEMON_DBG("AllLED is OFF");
+		//logmessage("aura scheduler", "Aura scheduler is OFF.");
+		//current_led_mode = -1;
+		if (nvram_get_int("led_off_sched") >= 0) {
+			nvram_set("led_off_sched", "-1");
+		}
+		goto LED_SCHED_END;
+	}
+
+	if (led_val == 0) {
+		SCHED_DAEMON_DBG("led_val is OFF");
+		//logmessage("aura scheduler", "Aura scheduler is OFF.");
+		//current_led_mode = -1;
+		if (nvram_get_int("led_off_sched") >= 0) {
+			nvram_set("led_off_sched", "-1");
+		}
+		goto LED_SCHED_END;
+	}
+
+#ifdef RTCONFIG_LED_SCHED
+	int led_timesched = 0;
+	char led_sched[256];
+	led_timesched = nvram_get_int("led_timesched");
+	if (led_timesched > 0) {
+		snprintf(led_sched, sizeof(led_sched), "%s", nvram_safe_get("led_sched"));
+		if (strlen(led_sched) > 0 && check_sched_v2_on_off(led_sched)) {
+			led_mode = LED_SCHED_OFF;
+		} else {
+			led_mode = LED_SCHED_NOT_MATCHED;
+		}
+	}
+#endif
+
+#ifdef RTCONFIG_LED_NIGHT_SCHED
+	int led_night_timesched = 0;
+	char led_night_sched[256];
+	led_night_timesched = nvram_get_int("led_night_timesched");
+	if (led_night_timesched > 0) {
+		snprintf(led_night_sched, sizeof(led_night_sched), "%s", nvram_safe_get("led_night_sched"));
+		if (strlen(led_night_sched) > 0 && check_sched_v2_on_off(led_night_sched)) {
+			led_mode = LED_SCHED_NIGHT;
+		} else {
+			if (led_mode != LED_SCHED_OFF)
+				led_mode = LED_SCHED_NOT_MATCHED;
+		}
+	}
+#endif
+
+	if (led_mode != current_led_mode) {
+		if (led_mode == LED_SCHED_OFF) {
+			int led_off_status = -1;
+			SCHED_DAEMON_DBG("LED scheduler is OFF");
+			logmessage("led scheduler", "LED scheduler is OFF.");
+
+			nvram_set("led_off_sched", "1");
+			nvram_set("single_led_night_mode_sched", "0");
+			nvram_set("led_off_sched_in_effect", "1");
+			nvram_set("led_night_sched_in_effect", "");
+			led_off_status = setAllLedOff();
+			if (led_off_status != 0) {
+				SCHED_DAEMON_DBG("Failed to set led off. err=%d", led_off_status);
+				logmessage("led scheduler", "Failed to set led off. err=%d", led_off_status);
+			}
+		} else if (led_mode == LED_SCHED_NIGHT) {
+			SCHED_DAEMON_DBG("LED scheduler is NIGHT");
+			logmessage("led scheduler", "LED scheduler is NIGHT.");
+
+			if (nvram_get_int("AllLED") == 1 && nvram_get_int("led_val") == 1) {
+				setAllLedNormal();
+				/*int led_on_status = setAllLedOn();
+				if (led_on_status != 0) {
+					SCHED_DAEMON_DBG("Failed to set led on. err=%d", led_on_status);
+					logmessage("led scheduler", "Failed to set led on. err=%d", led_on_status);
+				}*/
+			}
+			nvram_set("led_off_sched", "0");
+			nvram_set("single_led_night_mode_sched", "1");
+			nvram_set("led_off_sched_in_effect", "");
+			nvram_set("led_night_sched_in_effect", "1");
+		} else {
+			SCHED_DAEMON_DBG("LED scheduler is not matched");
+			logmessage("led scheduler", "LED scheduler is not matched.");
+
+			nvram_set("led_off_sched", "-1");
+			nvram_set("single_led_night_mode_sched", "-1");
+			nvram_set("led_off_sched_in_effect", "");
+			nvram_set("led_night_sched_in_effect", "");
+			if (nvram_get_int("AllLED") == 1 && nvram_get_int("led_val") == 1) {
+				setAllLedNormal();
+				/*int led_on_status = setAllLedOn();
+				if (led_on_status != 0) {
+					SCHED_DAEMON_DBG("Failed to set led on. err=%d", led_on_status);
+					logmessage("led scheduler", "Failed to set led on. err=%d", led_on_status);
+				}*/
+			}
+		}
+		current_led_mode = led_mode;
+	}
+
+	// Special case: When Single LED Night Mode is turned ON by user,
+	if (old_single_led_night_mode <= 0 && current_single_led_night_mode == 1) {
+		if (nvram_get_int("led_off_sched_in_effect") == 1 && 
+			nvram_get_int("single_led_night_mode_sched") == -1 && 
+			nvram_get_int("led_off_sched") == -1) {
+			SCHED_DAEMON_DBG("Single LED Night Mode is ON, call setAllLedNormal().");
+			//logmessage("led scheduler", "Single LED Night Mode is ON, turn off all LEDs.");
+			setAllLedNormal();
+		}
+	}
+	old_single_led_night_mode = current_single_led_night_mode;
+
+LED_SCHED_END:
+#ifdef USE_TIMERUTIL
+	mod_timer(timer, PERIOD_10_SEC);
+#endif
+}
+#endif
 
 #ifdef USE_TIMERUTIL
 static void sched_daemon_sigusr1(struct timer_entry *timer, void *data)

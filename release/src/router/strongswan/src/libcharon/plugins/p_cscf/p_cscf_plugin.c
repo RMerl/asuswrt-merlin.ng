@@ -83,7 +83,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * See header
  */
-plugin_t *p_cscf_plugin_create()
+PLUGIN_DEFINE(p_cscf)
 {
 	private_p_cscf_plugin_t *this;
 

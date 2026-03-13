@@ -39,11 +39,6 @@ struct ctr_ipsec_crypter_t {
 
 /**
  * Create a ctr_ipsec_crypter instance.
- */
-ctr_ipsec_crypter_t *ctr_ipsec_crypter_create();
-
-/**
- * Create a ctr_ipsec_crypter instance.
  *
  * @param key_size		key size in bytes
  * @param algo			algorithm to implement, a counter mode

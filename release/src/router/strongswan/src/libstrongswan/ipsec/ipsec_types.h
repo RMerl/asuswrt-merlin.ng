@@ -51,7 +51,9 @@ enum ipsec_mode_t {
 	/** passthrough policy for traffic without an IPsec SA */
 	MODE_PASS,
 	/** drop policy discarding traffic */
-	MODE_DROP
+	MODE_DROP,
+	/** IP-TFS mode, tunnel mode with aggregation/fragmentation */
+	MODE_IPTFS,
 };
 
 /**
@@ -243,6 +245,18 @@ enum mark_op_t {
 bool mark_from_string(const char *value, mark_op_t ops, mark_t *mark);
 
 /**
+ * Allocate up to two unique marks depending on the given values.
+ *
+ * If the given values are MARK_UNIQUE, the values get replaced by a single
+ * unique mark. If the given values are MARK_UNIQUE_DIR, the values get
+ * replaced by a single unique mark for each direction.
+ *
+ * @param[out] in	inbound interface ID
+ * @param[out] out	outbound interface ID
+ */
+void allocate_unique_marks(uint32_t *in, uint32_t *out);
+
+/**
  * Special interface ID values to allocate a unique ID for each CHILD_SA/dir
  */
 #define IF_ID_UNIQUE (0xFFFFFFFF)
@@ -265,5 +279,10 @@ bool if_id_from_string(const char *value, uint32_t *if_id);
  * @param[out] out	outbound interface ID
  */
 void allocate_unique_if_ids(uint32_t *in, uint32_t *out);
+
+/**
+ * Maximum CPU ID (used if no CPU ID specified).
+ */
+#define CPU_ID_MAX UINT32_MAX
 
 #endif /** IPSEC_TYPES_H_ @}*/

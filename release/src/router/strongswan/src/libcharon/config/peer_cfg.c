@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2019 Tobias Brunner
+ * Copyright (C) 2007-2025 Tobias Brunner
  * Copyright (C) 2005-2009 Martin Willi
  * Copyright (C) 2005 Jan Hutter
  *
@@ -32,6 +32,13 @@ ENUM(cert_policy_names, CERT_ALWAYS_SEND, CERT_NEVER_SEND,
 	"CERT_NEVER_SEND",
 );
 
+ENUM(ocsp_policy_names, OCSP_SEND_REPLY, OCSP_SEND_NEVER,
+	"OCSP_SEND_REPLY",
+	"OCSP_SEND_REQUEST",
+	"OCSP_SEND_BOTH",
+	"OCSP_SEND_NEVER",
+);
+
 ENUM(unique_policy_names, UNIQUE_NEVER, UNIQUE_KEEP,
 	"UNIQUE_NEVER",
 	"UNIQUE_NO",
@@ -62,6 +69,11 @@ struct private_peer_cfg_t {
 	char *name;
 
 	/**
+	 * Options
+	 */
+	peer_cfg_option_t options;
+
+	/**
 	 * IKE config associated to this peer config
 	 */
 	ike_cfg_t *ike_cfg;
@@ -82,6 +94,11 @@ struct private_peer_cfg_t {
 	cert_policy_t cert_policy;
 
 	/**
+	 * should we send OCSP status request/response
+	 */
+	ocsp_policy_t ocsp_policy;
+
+	/**
 	 * uniqueness of an IKE_SA
 	 */
 	unique_policy_t unique;
@@ -90,21 +107,6 @@ struct private_peer_cfg_t {
 	 * number of tries after giving up if peer does not respond
 	 */
 	uint32_t keyingtries;
-
-	/**
-	 * enable support for MOBIKE
-	 */
-	bool use_mobike;
-
-	/**
-	 * Use aggressive mode?
-	 */
-	bool aggressive;
-
-	/**
-	 * Use pull or push in mode config?
-	 */
-	bool pull_mode;
 
 	/**
 	 * Time before starting rekeying
@@ -171,11 +173,6 @@ struct private_peer_cfg_t {
 	 */
 	identification_t *ppk_id;
 
-	/**
-	 * Whether a PPK is required
-	 */
-	bool ppk_required;
-
 #ifdef ME
 	/**
 	 * Is this a mediation connection?
@@ -199,6 +196,12 @@ METHOD(peer_cfg_t, get_name, char*,
 	private_peer_cfg_t *this)
 {
 	return this->name;
+}
+
+METHOD(peer_cfg_t, has_option, bool,
+	private_peer_cfg_t *this, peer_cfg_option_t option)
+{
+	return this->options & option;
 }
 
 METHOD(peer_cfg_t, get_ike_version, ike_version_t,
@@ -411,7 +414,7 @@ static u_int get_ts_match(child_cfg_t *cfg, bool local,
 	}
 
 	/* fetch configured TS list, narrowing dynamic TS */
-	cfg_list = cfg->get_traffic_selectors(cfg, local, NULL, hosts, TRUE);
+	cfg_list = cfg->select_traffic_selectors(cfg, local, NULL, hosts);
 
 	/* use a round counter to rate leading TS with higher priority */
 	round = sup_list->get_count(sup_list);
@@ -495,6 +498,12 @@ METHOD(peer_cfg_t, get_cert_policy, cert_policy_t,
 	return this->cert_policy;
 }
 
+METHOD(peer_cfg_t, get_ocsp_policy, ocsp_policy_t,
+	private_peer_cfg_t *this)
+{
+	return this->ocsp_policy;
+}
+
 METHOD(peer_cfg_t, get_unique_policy, unique_policy_t,
 	private_peer_cfg_t *this)
 {
@@ -539,24 +548,6 @@ METHOD(peer_cfg_t, get_over_time, uint32_t,
 	private_peer_cfg_t *this)
 {
 	return this->over_time;
-}
-
-METHOD(peer_cfg_t, use_mobike, bool,
-	private_peer_cfg_t *this)
-{
-	return this->use_mobike;
-}
-
-METHOD(peer_cfg_t, use_aggressive, bool,
-	private_peer_cfg_t *this)
-{
-	return this->aggressive;
-}
-
-METHOD(peer_cfg_t, use_pull_mode, bool,
-	private_peer_cfg_t *this)
-{
-	return this->pull_mode;
 }
 
 METHOD(peer_cfg_t, get_dpd, uint32_t,
@@ -628,12 +619,6 @@ METHOD(peer_cfg_t, get_ppk_id, identification_t*,
 	private_peer_cfg_t *this)
 {
 	return this->ppk_id;
-}
-
-METHOD(peer_cfg_t, ppk_required, bool,
-	private_peer_cfg_t *this)
-{
-	return this->ppk_required;
 }
 
 #ifdef ME
@@ -739,22 +724,20 @@ METHOD(peer_cfg_t, equals, bool,
 		return FALSE;
 	}
 	return (
+		this->options == other->options &&
 		get_ike_version(this) == get_ike_version(other) &&
 		this->cert_policy == other->cert_policy &&
+		this->ocsp_policy == other->ocsp_policy &&
 		this->unique == other->unique &&
 		this->keyingtries == other->keyingtries &&
-		this->use_mobike == other->use_mobike &&
 		this->rekey_time == other->rekey_time &&
 		this->reauth_time == other->reauth_time &&
 		this->jitter_time == other->jitter_time &&
 		this->over_time == other->over_time &&
 		this->dpd == other->dpd &&
-		this->aggressive == other->aggressive &&
-		this->pull_mode == other->pull_mode &&
 		auth_cfg_equal(this, other) &&
 		this->if_id_in == other->if_id_in &&
 		this->if_id_out == other->if_id_out &&
-		this->ppk_required == other->ppk_required &&
 		id_equal(this->ppk_id, other->ppk_id)
 #ifdef ME
 		&& this->mediation == other->mediation &&
@@ -820,6 +803,7 @@ peer_cfg_t *peer_cfg_create(char *name, ike_cfg_t *ike_cfg,
 	INIT(this,
 		.public = {
 			.get_name = _get_name,
+			.has_option = _has_option,
 			.get_ike_version = _get_ike_version,
 			.get_ike_cfg = _get_ike_cfg,
 			.add_child_cfg = _add_child_cfg,
@@ -828,14 +812,12 @@ peer_cfg_t *peer_cfg_create(char *name, ike_cfg_t *ike_cfg,
 			.create_child_cfg_enumerator = _create_child_cfg_enumerator,
 			.select_child_cfg = _select_child_cfg,
 			.get_cert_policy = _get_cert_policy,
+			.get_ocsp_policy = _get_ocsp_policy,
 			.get_unique_policy = _get_unique_policy,
 			.get_keyingtries = _get_keyingtries,
 			.get_rekey_time = _get_rekey_time,
 			.get_reauth_time = _get_reauth_time,
 			.get_over_time = _get_over_time,
-			.use_mobike = _use_mobike,
-			.use_aggressive = _use_aggressive,
-			.use_pull_mode = _use_pull_mode,
 			.get_dpd = _get_dpd,
 			.get_dpd_timeout = _get_dpd_timeout,
 			.add_virtual_ip = _add_virtual_ip,
@@ -846,7 +828,6 @@ peer_cfg_t *peer_cfg_create(char *name, ike_cfg_t *ike_cfg,
 			.create_auth_cfg_enumerator = _create_auth_cfg_enumerator,
 			.get_if_id = _get_if_id,
 			.get_ppk_id = _get_ppk_id,
-			.ppk_required = _ppk_required,
 			.equals = (void*)_equals,
 			.get_ref = _get_ref,
 			.destroy = _destroy,
@@ -857,25 +838,23 @@ peer_cfg_t *peer_cfg_create(char *name, ike_cfg_t *ike_cfg,
 #endif /* ME */
 		},
 		.name = strdup(name),
+		.options = data->options,
 		.ike_cfg = ike_cfg,
 		.child_cfgs = linked_list_create(),
 		.lock = rwlock_create(RWLOCK_TYPE_DEFAULT),
 		.cert_policy = data->cert_policy,
+		.ocsp_policy = data->ocsp_policy,
 		.unique = data->unique,
 		.keyingtries = data->keyingtries,
 		.rekey_time = data->rekey_time,
 		.reauth_time = data->reauth_time,
 		.jitter_time = data->jitter_time,
 		.over_time = data->over_time,
-		.use_mobike = !data->no_mobike,
-		.aggressive = data->aggressive,
-		.pull_mode = !data->push_mode,
 		.dpd = data->dpd,
 		.dpd_timeout = data->dpd_timeout,
 		.if_id_in = data->if_id_in,
 		.if_id_out = data->if_id_out,
 		.ppk_id = data->ppk_id,
-		.ppk_required = data->ppk_required,
 		.vips = linked_list_create(),
 		.pools = linked_list_create(),
 		.local_auth = linked_list_create(),

@@ -84,6 +84,9 @@ charon.plugins.eap-radius.secret =
 charon.plugins.eap-radius.server =
 	IP/Hostname of RADIUS server.
 
+charon.plugins.eap-radius.source =
+	Optional specific source IP to use.
+
 charon.plugins.eap-radius.retransmit_base = 1.4
 	Base to use for calculating exponential back off.
 
@@ -96,12 +99,12 @@ charon.plugins.eap-radius.retransmit_tries = 4
 charon.plugins.eap-radius.servers {}
 	Section to specify multiple RADIUS servers.
 
-	Section to specify multiple RADIUS servers. The **nas_identifier**,
-	**secret**, **sockets** and **port** (or **auth_port**) options can be
-	specified for each server. A server's IP/Hostname can be configured using
-	the **address** option. The **acct_port** [1813] option can be used to
-	specify the port used for RADIUS accounting. For each RADIUS server a
-	priority can be specified using the **preference** [0] option. The
+	Section to specify multiple RADIUS servers. The **source**,
+	**nas_identifier**,	**secret**, **sockets** and **port** (or **auth_port**)
+	options can be specified for each server. A server's IP/Hostname can be
+	configured using the **address** option. The **acct_port** [1813] option can
+	be used to specify the port used for RADIUS accounting. For each RADIUS
+	server a priority can be specified using the **preference** [0] option. The
 	retransmission time for each server can set set using **retransmit_base**,
 	**retransmit_timeout** and **retransmit_tries**.
 

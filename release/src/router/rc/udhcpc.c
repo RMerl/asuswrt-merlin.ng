@@ -359,7 +359,7 @@ _dprintf("%s(%d): ifunit=%d, if=%s.\n", __func__, getpid(), ifunit, wan_ifname);
 		strlcpy(autowan_detected_ifname, nvram_safe_get("autowan_detected_ifname"), sizeof(autowan_detected_ifname));
 
 		if(strcmp(autowan_detected_ifname, "") && strcmp(autowan_detected_ifname, wan_ifname)){
-			_dprintf("%s(%lu): auto_wanport: Had detected the WAN interface. skip bounding of %s.\n", __func__, getpid(), wan_ifname);
+			_dprintf("%s(%d): auto_wanport: Had detected the WAN interface. skip bounding of %s.\n", __func__, getpid(), wan_ifname);
 			return -1;
 		}
 
@@ -371,17 +371,17 @@ _dprintf("%s(%d): ifunit=%d, if=%s.\n", __func__, getpid(), ifunit, wan_ifname);
 			strlcpy(lan_ip, nvram_safe_get("lan_ipaddr"), sizeof(lan_ip));
 			strlcpy(lan_net, nvram_safe_get("lan_netmask"), sizeof(lan_net));
 
-			_dprintf("%s(%lu): auto_wanport: Get gateway %s & apply to %s first.\n", __func__, getpid(), gateway, lan_ifname);
+			_dprintf("%s(%d): auto_wanport: Get gateway %s & apply to %s first.\n", __func__, getpid(), gateway, lan_ifname);
 			ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
 			ifconfig(lan_ifname, IFUP, getenv("ip"), getenv("subnet"));
 
-			_dprintf("%s(%lu): auto_wanport: send a ping to gateway for ARP.\n", __func__, getpid());
+			_dprintf("%s(%d): auto_wanport: send a ping to gateway for ARP.\n", __func__, getpid());
 			eval("ping", "-W1", "-c1", gateway);
 
 			memset(gateway_mac, 0, sizeof(gateway_mac));
 			get_mac_from_ip(gateway, gateway_mac, sizeof(gateway_mac));
 			if(!gateway_mac[0]){
-				_dprintf("%s(%lu): auto_wanport: Fail to get gateway_mac.\n", __func__, getpid());
+				_dprintf("%s(%d): auto_wanport: Fail to get gateway_mac.\n", __func__, getpid());
 				ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
 				ifconfig(lan_ifname, IFUP, lan_ip, lan_net);
 
@@ -389,11 +389,11 @@ _dprintf("%s(%d): ifunit=%d, if=%s.\n", __func__, getpid(), ifunit, wan_ifname);
 
 				return -1;
 			}
-			_dprintf("%s(%lu): auto_wanport: Got gateway's MAC %s.\n", __func__, getpid(), gateway_mac);
+			_dprintf("%s(%d): auto_wanport: Got gateway's MAC %s.\n", __func__, getpid(), gateway_mac);
 
 			br_no = get_br_port_no_from_mac(gateway_mac);
 			if(br_no < 0){
-				_dprintf("%s(%lu): auto_wanport: Cannot get gateway's br_no.\n", __func__, getpid());
+				_dprintf("%s(%d): auto_wanport: Cannot get gateway's br_no.\n", __func__, getpid());
 				ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
 				ifconfig(lan_ifname, IFUP, lan_ip, lan_net);
 
@@ -401,7 +401,7 @@ _dprintf("%s(%d): ifunit=%d, if=%s.\n", __func__, getpid(), ifunit, wan_ifname);
 
 				return -1;
 			}
-			_dprintf("%s(%lu): auto_wanport: Got gateway's br_no %d.\n", __func__, getpid(), br_no);
+			_dprintf("%s(%d): auto_wanport: Got gateway's br_no %d.\n", __func__, getpid(), br_no);
 
 			if(get_autoif_from_br_port_no(br_no, if_name, sizeof(if_name)) < 0){
 				ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
@@ -411,21 +411,21 @@ _dprintf("%s(%d): ifunit=%d, if=%s.\n", __func__, getpid(), ifunit, wan_ifname);
 
 				if(get_if_from_br_port_no(br_no, if_name, sizeof(if_name)) == NULL)
 					return -1;
-				_dprintf("%s(%lu): auto_wanport: The port(%s) of the DHCP source isn't AUTO_WANPORT...\n", __func__, getpid(), if_name);
+				_dprintf("%s(%d): auto_wanport: The port(%s) of the DHCP source isn't AUTO_WANPORT...\n", __func__, getpid(), if_name);
 
 				return -1;
 			}
-			_dprintf("%s(%lu): auto_wanport: Got gateway's if %s.\n", __func__, getpid(), if_name);
+			_dprintf("%s(%d): auto_wanport: Got gateway's if %s.\n", __func__, getpid(), if_name);
 
 			wan_ifname = if_name;
 
-			_dprintf("%s(%lu): auto_wanport: restore the LAN IP of router.\n", __func__, getpid());
+			_dprintf("%s(%d): auto_wanport: restore the LAN IP of router.\n", __func__, getpid());
 			ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
 			ifconfig(lan_ifname, IFUP, lan_ip, lan_net);
 
 			add_lan_routes(lan_ifname);
 
-			_dprintf("%s(%lu): auto_wanport: Choose the WAN interface %s because of DHCP.\n", __func__, getpid(), wan_ifname);
+			_dprintf("%s(%d): auto_wanport: Choose the WAN interface %s because of DHCP.\n", __func__, getpid(), wan_ifname);
 			set_auto_wanport(wan_ifname, 1);
 
 			return 0;
@@ -1358,6 +1358,7 @@ _dprintf("%s: IFUP.\n", __FUNCTION__);
 	lan_up(lan_ifname);
 
 	_dprintf("%s: done\n", __FUNCTION__);
+	logmessage("udhcpc", "bound_lan %s with IP/netmask %s/%s", lan_ifname, nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
 	return 0;
 }
 

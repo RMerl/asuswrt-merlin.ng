@@ -46,7 +46,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *tnccs_11_plugin_create()
+PLUGIN_DEFINE(tnccs_11)
 {
 	tnccs_11_plugin_t *this;
 

@@ -88,6 +88,7 @@ int msg_err_test(void)
 	msg = pjsip_parse_msg(0, pool, test_entries[i].msg,
 			      strlen(test_entries[i].msg), &err_list);
 
+
 	e = err_list.next;
 	while (e != &err_list) {
 	    PJ_LOG(3,(THIS_FILE, 
@@ -97,6 +98,7 @@ int msg_err_test(void)
 		      e->hname.ptr));
 	    e = e->next;
 	}
+	(void) msg;
     }
 
     pj_pool_release(pool);

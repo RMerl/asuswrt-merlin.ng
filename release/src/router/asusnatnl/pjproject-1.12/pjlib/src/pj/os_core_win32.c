@@ -541,7 +541,7 @@ PJ_DEF(pj_status_t) pj_thread_create( pj_pool_t *pool,
     if (strchr(thread_name, '%')) {
 	pj_ansi_snprintf(rec->obj_name, PJ_MAX_OBJ_NAME, thread_name, rec);
     } else {
-	pj_ansi_strncpy(rec->obj_name, thread_name, PJ_MAX_OBJ_NAME);
+        pj_ansi_strxcpy(rec->obj_name, thread_name, PJ_MAX_OBJ_NAME);
 	rec->obj_name[PJ_MAX_OBJ_NAME-1] = '\0';
     }
 
@@ -853,18 +853,25 @@ PJ_DEF(pj_atomic_value_t) pj_atomic_add_and_get( pj_atomic_t *atomic_var,
  */
 PJ_DEF(pj_status_t) pj_thread_local_alloc(long *index)
 {
+    DWORD tls_index;
     PJ_ASSERT_RETURN(index != NULL, PJ_EINVAL);
 
     //Can't check stack because this function is called in the
     //beginning before main thread is initialized.
     //PJ_CHECK_STACK();
 
-    *index = TlsAlloc();
+#if defined(PJ_WIN32_WINPHONE8) && PJ_WIN32_WINPHONE8
+    tls_index = TlsAllocRT();
+#else
+    tls_index = TlsAlloc();
+#endif
 
-    if (*index == TLS_OUT_OF_INDEXES)
+    if (tls_index == TLS_OUT_OF_INDEXES)
         return PJ_RETURN_OS_ERROR(GetLastError());
-    else
+    else {
+        *index = (long)tls_index;
         return PJ_SUCCESS;
+    }
 }
 
 /*
@@ -932,7 +939,7 @@ static pj_status_t init_mutex(int inst_id, pj_mutex_t *mutex, const char *name)
     if (strchr(name, '%')) {
 	pj_ansi_snprintf(mutex->obj_name, PJ_MAX_OBJ_NAME, name, mutex);
     } else {
-	pj_ansi_strncpy(mutex->obj_name, name, PJ_MAX_OBJ_NAME);
+        pj_ansi_strxcpy(mutex->obj_name, name, PJ_MAX_OBJ_NAME);
 	mutex->obj_name[PJ_MAX_OBJ_NAME-1] = '\0';
     }
 
@@ -1167,7 +1174,7 @@ int                 inst_id;
 };
 */
 
-PJ_DEF(void) pj_mutex_dump(char *prefix, pj_mutex_t *mutex)
+PJ_DEF(void) pj_mutex_dump(const char *prefix, pj_mutex_t *mutex)
 {
 	PJ_LOG(6,(mutex->obj_name, "\n prefix=[%s]\n mutexp=[%p]\n crit=[%llu]\n mutex_size=[%llu]\n obj_name=[%s]\n nesting_level=[%d]\n owner=[%p]\n inst_id=[%d]",
 		prefix,
@@ -1235,7 +1242,7 @@ PJ_DEF(pj_status_t) pj_sem_create( pj_pool_t *pool,
     if (strchr(name, '%')) {
 	pj_ansi_snprintf(sem->obj_name, PJ_MAX_OBJ_NAME, name, sem);
     } else {
-	pj_ansi_strncpy(sem->obj_name, name, PJ_MAX_OBJ_NAME);
+        pj_ansi_strxcpy(sem->obj_name, name, PJ_MAX_OBJ_NAME);
 	sem->obj_name[PJ_MAX_OBJ_NAME-1] = '\0';
     }
 
@@ -1377,7 +1384,7 @@ PJ_DEF(pj_status_t) pj_event_create( pj_pool_t *pool,
     if (strchr(name, '%')) {
 	pj_ansi_snprintf(event->obj_name, PJ_MAX_OBJ_NAME, name, event);
     } else {
-	pj_ansi_strncpy(event->obj_name, name, PJ_MAX_OBJ_NAME);
+        pj_ansi_strxcpy(event->obj_name, name, PJ_MAX_OBJ_NAME);
 	event->obj_name[PJ_MAX_OBJ_NAME-1] = '\0';
     }
 

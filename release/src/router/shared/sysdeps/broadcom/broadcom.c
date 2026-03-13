@@ -350,7 +350,11 @@ int get_psta_status(int unit)
 #endif
 
 #ifdef RTCONFIG_BRCM_HOSTAPD
+#if defined(NEW_WPA_CLI)
+	snprintf(cmd, sizeof(cmd), "wpa_cli-2.7 -i %s status | grep wpa_state | cut -d\"=\" -f2", ifname);
+#else
 	snprintf(cmd, sizeof(cmd), "wpa_cli-2.7 -i %s -p /var/run/%swpa_supplicant/ status | grep wpa_state | cut -d\"=\" -f2", ifname, prefix);
+#endif
 	memset(buf, 0, sizeof(buf));
 
 	pfp = popen(cmd, "r");
@@ -863,9 +867,6 @@ char *get_scb_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int sta_
 	int ret = 0;
 	char link_stats[MLO_MINBUFFER] = {0};
 
-	if(!isMloConnectionMode())
-		goto END;
-
 	memset(sta_mac, 0, sta_mac_len);
 	ret = mlo_info_get(ap_ifname, link_stats, sta_mac, mld_mac, mlo_active, GET_SCB_MAC);
 
@@ -878,7 +879,7 @@ char *get_scb_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int sta_
 	else {
 		MLO_API_DBG("Get SCB MAC is %s\n", sta_mac);
 	}
-END:
+
 	return sta_mac;
 }
 
@@ -886,9 +887,6 @@ char *get_mld_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int mld_
 {
 	int ret = 0;
 	char link_stats[MLO_MINBUFFER] = {0};
-
-	if(!isMloConnectionMode())
-		goto END;
 
 	memset(mld_mac, 0, mld_mac_len);
 	ret = mlo_info_get(ap_ifname, link_stats, sta_mac, mld_mac, mlo_active, GET_MLD_MAC);
@@ -902,7 +900,7 @@ char *get_mld_mac_by_sta(char *ap_ifname, char *sta_mac, char *mld_mac, int mld_
 	else {
 		MLO_API_DBG("Get MLD MAC is %s\n", mld_mac);
 	}
-END:
+
 	return mld_mac;
 }
 
@@ -910,9 +908,6 @@ char *get_mlo_link_stats(char *ap_ifname, char *sta_mac, char *link_stats, int *
 {
 	int ret = 0;
 	char mld_mac[MLO_MEDBUFFER] = {0};
-
-	if(!isMloConnectionMode())
-		goto END;
 
 	ret = mlo_info_get(ap_ifname, link_stats, sta_mac, mld_mac, mlo_active, GET_LINK_STATS);
 
@@ -925,7 +920,7 @@ char *get_mlo_link_stats(char *ap_ifname, char *sta_mac, char *link_stats, int *
 	else {
 		MLO_API_DBG("API get MLO active_link_map is %s\n", link_stats);
 	}
-END:
+
 	return link_stats;
 }
 
@@ -1645,7 +1640,7 @@ get_uplinkports_linkrate(char *ifname)
 {
 	return rtk_get_uplinkports_linkrate(ifname);
 }
-#elif !defined(RTCONFIG_MOCA) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(GTBE19000) && !defined(RTBE92U) && !defined(RTBE95U)  && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GTBE19000AI) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7) && !defined(GTBE96_AI)\
+#elif !defined(RTCONFIG_MOCA) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(GTBE19000) && !defined(RTBE92U) && !defined(RTBE95U)  && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GTBE19000AI) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7) && !defined(GS7_PRO_MAX) && !defined(GTBE96_AI)\
 && (defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM4912) || defined(BCM6756) || defined(RTCONFIG_HND_ROUTER_BE_4916) || defined(BCM4906_504) || defined(RTCONFIG_MULTIWAN_IF))
 unsigned int
 get_uplinkports_linkrate(char *ifname)
@@ -1743,11 +1738,11 @@ get_uplinkports_linkrate(char *ifname)
                 sprintf(wan_ifname, "%s", nvram_safe_get("wan_ifname"));
 
         foreach(word, wan_ifname, next){
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7) || defined(GS7_PRO_MAX)
 		if (!strcmp(word, "vlan4094")) {
 			for (i = 0; i < port_mapping.count; i++) {
 				if (!strcmp(word, port_mapping.port[i].ifname) && port_mapping.port[i].ext_port_id != -1) {
-#ifdef GT7
+#if defined(GT7) || defined(GS7_PRO_MAX)
 					ret = mxl_get_phy_status(port_mapping.port[i].ext_port_id);
 #else
 					ret = rtk_get_phy_status(port_mapping.port[i].ext_port_id);
@@ -1763,11 +1758,11 @@ get_uplinkports_linkrate(char *ifname)
 			sprintf(out_buf, "W0=X;");
 			lrate[0] = 0;
 		} else {
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7) || defined(GS7_PRO_MAX)
 			if (!strcmp(word, "vlan4094")) {
 				for (i = 0; i < port_mapping.count; i++) {
 					if (!strcmp(word, port_mapping.port[i].ifname) && port_mapping.port[i].ext_port_id != -1) {
-#ifdef GT7
+#if defined(GT7) || defined(GS7_PRO_MAX)
 						ret = mxl_get_phy_speed(port_mapping.port[i].ext_port_id);
 #else
 						ret = rtk_get_phy_speed(port_mapping.port[i].ext_port_id);
@@ -1795,14 +1790,14 @@ get_uplinkports_linkrate(char *ifname)
 	// original WAN port
         if(re_mode()) {
 		if (!strncmp(nvram_safe_get("amas_ifname"), "eth", 3)
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7) || defined(GS7_PRO_MAX)
 			|| !strncmp(nvram_safe_get("amas_ifname"), "vlan4094", 8)
 #endif
 		)
 			sprintf(pif[0], "%s", nvram_safe_get("amas_ifname"));
 	}
 	else if(*nvram_safe_get("wan_ifname")
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7) || defined(GS7_PRO_MAX)
 		&& (strncmp(nvram_safe_get("wan_ifname"), "vlan4094", 8) || strncmp(nvram_safe_get("wan_ifname"), "eth1", 4))
 #endif
 	)
@@ -1823,7 +1818,7 @@ get_uplinkports_linkrate(char *ifname)
 
 	// LAN ports
 	len = strlen(out_buf);
-#if defined(GTAXE11000) || defined(GTAX6000) || defined(RTAX88U_PRO) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(ET12) || defined(XT12) || defined(RTAX86U) || defined(RTAX68U) || defined(RTAX86U_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(RTBE88U) || defined(RTBE86U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(BQ16) || defined(BQ16_PRO) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI)
+#if defined(GTAXE11000) || defined(GTAX6000) || defined(RTAX88U_PRO) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(ET12) || defined(XT12) || defined(RTAX86U) || defined(RTAX68U) || defined(RTAX86U_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(RTBE88U) || defined(RTBE86U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(BQ16) || defined(BQ16_PRO) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI)
 	foreach(word, lanports_seq, next)
 #else
 	foreach(word, nvram_safe_get("wired_ifnames"), next)
@@ -1837,14 +1832,14 @@ get_uplinkports_linkrate(char *ifname)
 			break;
 		}
 		sprintf(pif[i], "%s", word);	// here the report follows lan_ifnames
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI)
 #if defined(GTBE19000AI) || defined(GTBE96_AI)
 		if (is_rtl8372_boardid())
 #endif
 		if (!strcmp(word, "eth1") || !strcmp(word, "vlan4094")) {
 			for (j = 0; j < port_mapping.count; j++) {
 				if (!strcmp(word, port_mapping.port[j].ifname) && port_mapping.port[j].ext_port_id != -1) {
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 					ret = mxl_get_phy_status(port_mapping.port[j].ext_port_id);
 #else
 					ret = rtk_get_phy_status(port_mapping.port[j].ext_port_id);
@@ -1867,7 +1862,7 @@ get_uplinkports_linkrate(char *ifname)
 			if (!strcmp(word, "eth1") || !strcmp(word, "vlan4094")) {
 				for (j = 0; j < port_mapping.count; j++) {
 					if (!strcmp(word, port_mapping.port[j].ifname) && port_mapping.port[j].ext_port_id != -1) {
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 						ret = mxl_get_phy_speed(port_mapping.port[j].ext_port_id);
 #else
 						ret = rtk_get_phy_speed(port_mapping.port[j].ext_port_id);
@@ -2151,12 +2146,19 @@ void update_macfilter_relist()
 		foreach (word, wl_ifnames, next) {
 			SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
 
-#ifdef RTCONFIG_AMAS
-			if (nvram_get_int("re_mode") == 1)
-				snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
+			if (get_fh_if_prefix_by_unit(unit, prefix, sizeof(prefix))) {
+				trim_space(prefix);
+				strncat(prefix, "_", 1);
+			}
 			else
+			{
+#ifdef RTCONFIG_AMAS
+				if (nvram_get_int("re_mode") == 1)
+					snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
+				else
 #endif
-				snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+					snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+			}
 
 			strlcpy(wlif_name, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(wlif_name));
 			maclist = (struct maclist *)maclist_buf;
@@ -3200,6 +3202,20 @@ void get_phy_port_mapping(phy_port_mapping *port_mapping)
 		.port[4] = { .phy_port_id = 4, .ext_port_id = 3, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 2500, .ifname = "eth1", .flag = (0 | PHY_PORT_FLAG_BYPASS_CABLE_DIAG), .seq_no = -1, .ui_display = "2.5G LAN-4" },
 		.port[5] = { .phy_port_id = 5, .ext_port_id = 8, .label_name = "L5", .cap = PHY_PORT_CAP_LAN | PHY_PORT_CAP_WANLAN, .max_rate = 10000, .ifname = "eth1", .flag = (0 | PHY_PORT_FLAG_BYPASS_CABLE_DIAG), .seq_no = -1, .ui_display = "10G LAN-5" },
 		.port[6] = { .phy_port_id = -1, .ext_port_id = -1, .label_name = "U1", .cap = PHY_PORT_CAP_USB, .max_rate = 5000, .ifname = NULL, .flag = 0, .seq_no = -1, .ui_display = NULL },
+#elif defined(GS7_PRO_MAX)
+		.count = 8,
+		.port[0] = { .phy_port_id = 0, .ext_port_id = -1, .label_name = "W0", .cap = PHY_PORT_CAP_WAN | PHY_PORT_CAP_WANLAN | PHY_PORT_CAP_GAME, .max_rate = 10000, .ifname = "eth0", .flag = (0 | PHY_PORT_FLAG_BYPASS_CABLE_DIAG), .seq_no = -1, .ui_display = "10G WAN/LAN-5" },
+		.port[1] = { .phy_port_id = 1, .ext_port_id = 1, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 2500, .ifname = "eth1", .flag = (0 | PHY_PORT_FLAG_BYPASS_CABLE_DIAG), .seq_no = -1, .ui_display = "2.5G LAN-1" },
+		.port[2] = { .phy_port_id = 2, .ext_port_id = 0, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 2500, .ifname = "eth1", .flag = (0 | PHY_PORT_FLAG_BYPASS_CABLE_DIAG), .seq_no = -1, .ui_display = "2.5G LAN-2" },
+		.port[3] = { .phy_port_id = 3, .ext_port_id = 3, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 2500, .ifname = "eth1", .flag = (0 | PHY_PORT_FLAG_BYPASS_CABLE_DIAG), .seq_no = -1, .ui_display = "2.5G LAN-3" },
+		.port[4] = { .phy_port_id = 4, .ext_port_id = 2, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 2500, .ifname = "eth1", .flag = (0 | PHY_PORT_FLAG_BYPASS_CABLE_DIAG), .seq_no = -1, .ui_display = "2.5G LAN-4" },
+		.port[5] = { .phy_port_id = 5, .ext_port_id = 4, .label_name = "L5", .cap = PHY_PORT_CAP_LAN | PHY_PORT_CAP_WANLAN, .max_rate = 2500, .ifname = "vlan4094", .flag = (0 | PHY_PORT_FLAG_BYPASS_CABLE_DIAG), .seq_no = -1, .ui_display = "2.5G WAN/LAN-5" },
+#ifdef EXT_10G_AS_WAN
+		.port[6] = { .phy_port_id = 6, .ext_port_id = 12, .label_name = "L6", .cap = PHY_PORT_CAP_LAN | PHY_PORT_CAP_WANLAN | PHY_PORT_CAP_GAME, .max_rate = 10000, .ifname = "eth1", .flag = (0 | PHY_PORT_FLAG_BYPASS_CABLE_DIAG | PHY_PORT_FLAG_CANNOT_USE_AS_WAN), .seq_no = -1, .ui_display = "10G WAN/LAN-6" },
+#else
+		.port[6] = { .phy_port_id = 6, .ext_port_id = 12, .label_name = "L6", .cap = PHY_PORT_CAP_LAN | PHY_PORT_CAP_GAME, .max_rate = 10000, .ifname = "eth1", .flag = (0 | PHY_PORT_FLAG_BYPASS_CABLE_DIAG | PHY_PORT_FLAG_CANNOT_USE_AS_WAN), .seq_no = -1, .ui_display = "10G LAN-6" },
+#endif
+		.port[7] = { .phy_port_id = -1, .ext_port_id = -1, .label_name = "U1", .cap = PHY_PORT_CAP_USB, .max_rate = 5000, .ifname = NULL, .flag = 0, .seq_no = -1, .ui_display = NULL },
 #else
 		#error "port_mapping is not defined."
 #endif

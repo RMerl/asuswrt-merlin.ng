@@ -26,7 +26,6 @@ static struct {
 	int key_size;
 	signature_scheme_t scheme;
 } schemes[] = {
-	{ 0, SIGN_ECDSA_WITH_SHA1_DER },
 	{ 0, SIGN_ECDSA_WITH_SHA256_DER },
 	{ 0, SIGN_ECDSA_WITH_SHA384_DER },
 	{ 0, SIGN_ECDSA_WITH_SHA512_DER },
@@ -413,7 +412,8 @@ START_TEST(test_load_reject_explicit_params)
 	if (privkey)
 	{
 		privkey->destroy(privkey);
-		warn("ECDSA private key with explicit parameters not rejected");
+		warn("ECDSA private key with explicit parameters not rejected%s",
+			 pubkey ? "" : ", but at least the public key was");
 	}
 }
 END_TEST

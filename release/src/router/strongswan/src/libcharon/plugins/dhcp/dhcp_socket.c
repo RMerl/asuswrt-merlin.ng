@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2012-2018 Tobias Brunner
+ * Copyright (C) 2023 Dan James <sddj@me.com>
+ * Copyright (C) 2012-2024 Tobias Brunner
  * Copyright (C) 2010 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -19,13 +20,20 @@
 
 #include <unistd.h>
 #include <errno.h>
-#include <string.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/udp.h>
+
+#if !defined(__APPLE__) && !defined(__FreeBSD__)
+#include <string.h>
 #include <linux/if_arp.h>
-#include <linux/if_ether.h>
 #include <linux/filter.h>
+#else
+#include <net/bpf.h>
+#include <net/ethernet.h>
+#include <net/if.h>
+#include <net/if_arp.h>
+#endif /* !defined(__APPLE__) && !defined(__FreeBSD__) */
 
 #include <collections/linked_list.h>
 #include <utils/identification.h>
@@ -35,6 +43,7 @@
 
 #include <daemon.h>
 #include <processing/jobs/callback_job.h>
+#include <network/pf_handler.h>
 
 #define DHCP_SERVER_PORT 67
 #define DHCP_CLIENT_PORT 68
@@ -93,9 +102,9 @@ struct private_dhcp_socket_t {
 	int send;
 
 	/**
-	 * DHCP receive socket
+	 * BPF handler to receive DHCP messages
 	 */
-	int receive;
+	pf_handler_t *pf_handler;
 
 	/**
 	 * Do we use per-identity or random leases (and MAC addresses)
@@ -178,7 +187,7 @@ typedef struct __attribute__((packed)) {
 	uint32_t your_address;
 	uint32_t server_address;
 	uint32_t gateway_address;
-	char client_hw_addr[6];
+	uint8_t client_hw_addr[6];
 	char client_hw_padding[10];
 	char server_hostname[64];
 	char boot_filename[128];
@@ -199,14 +208,14 @@ static inline bool is_broadcast(host_t *host)
 /**
  * Prepare a DHCP message for a given transaction
  */
-static int prepare_dhcp(private_dhcp_socket_t *this,
+static size_t prepare_dhcp(private_dhcp_socket_t *this,
 						dhcp_transaction_t *transaction,
 						dhcp_message_type_t type, dhcp_t *dhcp)
 {
 	chunk_t chunk;
 	identification_t *identity;
 	dhcp_option_t *option;
-	int optlen = 0, remaining;
+	size_t optlen = 0, remaining;
 	uint32_t id;
 
 	memset(dhcp, 0, sizeof(*dhcp));
@@ -281,7 +290,7 @@ static int prepare_dhcp(private_dhcp_socket_t *this,
  * Send a DHCP message with given options length
  */
 static bool send_dhcp(private_dhcp_socket_t *this,
-					  dhcp_transaction_t *transaction, dhcp_t *dhcp, int optlen)
+					  dhcp_transaction_t *transaction, dhcp_t *dhcp, size_t optlen)
 {
 	host_t *dst;
 	ssize_t len;
@@ -304,7 +313,7 @@ static bool discover(private_dhcp_socket_t *this,
 {
 	dhcp_option_t *option;
 	dhcp_t dhcp;
-	int optlen;
+	size_t optlen;
 
 	optlen = prepare_dhcp(this, transaction, DHCP_DISCOVER, &dhcp);
 
@@ -340,7 +349,7 @@ static bool request(private_dhcp_socket_t *this,
 	dhcp_t dhcp;
 	host_t *offer, *server;
 	chunk_t chunk;
-	int optlen;
+	size_t optlen;
 
 	optlen = prepare_dhcp(this, transaction, DHCP_REQUEST, &dhcp);
 
@@ -483,7 +492,7 @@ METHOD(dhcp_socket_t, release, void,
 	dhcp_t dhcp;
 	host_t *release, *server;
 	chunk_t chunk;
-	int optlen;
+	size_t optlen;
 
 	optlen = prepare_dhcp(this, transaction, DHCP_RELEASE, &dhcp);
 
@@ -517,7 +526,7 @@ METHOD(dhcp_socket_t, release, void,
 /**
  * Handle a DHCP OFFER
  */
-static void handle_offer(private_dhcp_socket_t *this, dhcp_t *dhcp, int optlen)
+static void handle_offer(private_dhcp_socket_t *this, dhcp_t *dhcp, size_t optlen)
 {
 	dhcp_transaction_t *transaction = NULL;
 	enumerator_t *enumerator;
@@ -551,7 +560,7 @@ static void handle_offer(private_dhcp_socket_t *this, dhcp_t *dhcp, int optlen)
 
 	if (transaction)
 	{
-		int optsize, optpos = 0, pos;
+		size_t optsize, optpos = 0, pos;
 		dhcp_option_t *option;
 
 		while (optlen > sizeof(dhcp_option_t))
@@ -596,7 +605,7 @@ static void handle_offer(private_dhcp_socket_t *this, dhcp_t *dhcp, int optlen)
 /**
  * Handle a DHCP ACK
  */
-static void handle_ack(private_dhcp_socket_t *this, dhcp_t *dhcp, int optlen)
+static void handle_ack(private_dhcp_socket_t *this, dhcp_t *dhcp)
 {
 	dhcp_transaction_t *transaction;
 	enumerator_t *enumerator;
@@ -618,33 +627,31 @@ static void handle_ack(private_dhcp_socket_t *this, dhcp_t *dhcp, int optlen)
 }
 
 /**
- * Receive DHCP responses
+ * Complete DHCP packet
  */
-static bool receive_dhcp(private_dhcp_socket_t *this, int fd,
-						 watcher_event_t event)
+struct __attribute__((packed)) dhcp_packet_t {
+	struct ip ip;
+	struct udphdr udp;
+	dhcp_t dhcp;
+};
+typedef struct dhcp_packet_t dhcp_packet_t;
+
+CALLBACK(receive_dhcp, void,
+	private_dhcp_socket_t *this, char *if_name, int if_index, chunk_t mac,
+	int fd, chunk_t pkt)
 {
-	struct sockaddr_ll addr;
-	socklen_t addr_len = sizeof(addr);
-	struct __attribute__((packed)) {
-		struct iphdr ip;
-		struct udphdr udp;
-		dhcp_t dhcp;
-	} packet;
-	int optlen, origoptlen, optsize, optpos = 0;
-	ssize_t len;
+	dhcp_packet_t *packet = (dhcp_packet_t*)pkt.ptr;
+	size_t optlen, origoptlen, optpos = 0, optsize;
 	dhcp_option_t *option;
 
-	len = recvfrom(fd, &packet, sizeof(packet), MSG_DONTWAIT,
-					(struct sockaddr*)&addr, &addr_len);
-
-	if (len >= sizeof(struct iphdr) + sizeof(struct udphdr) +
+	if (pkt.len >= sizeof(struct ip) + sizeof(struct udphdr) +
 		offsetof(dhcp_t, options))
 	{
-		origoptlen = optlen = len - sizeof(struct iphdr) +
-					 sizeof(struct udphdr) + offsetof(dhcp_t, options);
+		origoptlen = optlen = pkt.len - sizeof(struct ip) +
+							  sizeof(struct udphdr) + offsetof(dhcp_t, options);
 		while (optlen > sizeof(dhcp_option_t))
 		{
-			option = (dhcp_option_t*)&packet.dhcp.options[optpos];
+			option = (dhcp_option_t*)&packet->dhcp.options[optpos];
 			optsize = sizeof(dhcp_option_t) + option->len;
 			if (option->type == DHCP_OPTEND || optlen < optsize)
 			{
@@ -655,10 +662,10 @@ static bool receive_dhcp(private_dhcp_socket_t *this, int fd,
 				switch (option->data[0])
 				{
 					case DHCP_OFFER:
-						handle_offer(this, &packet.dhcp, origoptlen);
+						handle_offer(this, &packet->dhcp, origoptlen);
 						break;
 					case DHCP_ACK:
-						handle_ack(this, &packet.dhcp, origoptlen);
+						handle_ack(this, &packet->dhcp);
 					default:
 						break;
 				}
@@ -668,7 +675,6 @@ static bool receive_dhcp(private_dhcp_socket_t *this, int fd,
 			optpos += optsize;
 		}
 	}
-	return TRUE;
 }
 
 METHOD(dhcp_socket_t, destroy, void,
@@ -682,11 +688,6 @@ METHOD(dhcp_socket_t, destroy, void,
 	{
 		close(this->send);
 	}
-	if (this->receive > 0)
-	{
-		lib->watcher->remove(lib->watcher, this->receive);
-		close(this->receive);
-	}
 	this->mutex->destroy(this->mutex);
 	this->condvar->destroy(this->condvar);
 	this->discover->destroy_offset(this->discover,
@@ -695,31 +696,10 @@ METHOD(dhcp_socket_t, destroy, void,
 								offsetof(dhcp_transaction_t, destroy));
 	this->completed->destroy_offset(this->completed,
 								offsetof(dhcp_transaction_t, destroy));
+	DESTROY_IF(this->pf_handler);
 	DESTROY_IF(this->rng);
 	DESTROY_IF(this->dst);
 	free(this);
-}
-
-/**
- * Bind a socket to a particular interface name
- */
-static bool bind_to_device(int fd, char *iface)
-{
-	struct ifreq ifreq = {};
-
-	if (strlen(iface) > sizeof(ifreq.ifr_name))
-	{
-		DBG1(DBG_CFG, "name for DHCP interface too long: '%s'", iface);
-		return FALSE;
-	}
-	memcpy(ifreq.ifr_name, iface, sizeof(ifreq.ifr_name));
-	if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &ifreq, sizeof(ifreq)))
-	{
-		DBG1(DBG_CFG, "binding DHCP socket to '%s' failed: %s",
-			 iface, strerror(errno));
-		return FALSE;
-	}
-	return TRUE;
 }
 
 /**
@@ -736,31 +716,28 @@ dhcp_socket_t *dhcp_socket_create()
 		},
 	};
 	socklen_t addr_len;
-	char *iface;
+	char *iface, *iface_receive;
 	int on = 1, rcvbuf = 0;
+
+#if !defined(__APPLE__) && !defined(__FreeBSD__)
+	const size_t skip_ip4 = sizeof(struct iphdr);
+	const size_t skip_udp = skip_ip4 + sizeof(struct udphdr);
 	struct sock_filter dhcp_filter_code[] = {
-		BPF_STMT(BPF_LD+BPF_B+BPF_ABS,
-				 offsetof(struct iphdr, protocol)),
+		BPF_STMT(BPF_LD+BPF_B+BPF_ABS, offsetof(struct iphdr, protocol)),
 		BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, IPPROTO_UDP, 0, 16),
-		BPF_STMT(BPF_LD+BPF_H+BPF_ABS, sizeof(struct iphdr) +
-				 offsetof(struct udphdr, source)),
+		BPF_STMT(BPF_LD+BPF_H+BPF_ABS, skip_ip4 + offsetof(struct udphdr, source)),
 		BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, DHCP_SERVER_PORT, 0, 14),
-		BPF_STMT(BPF_LD+BPF_H+BPF_ABS, sizeof(struct iphdr) +
-				 offsetof(struct udphdr, dest)),
+		BPF_STMT(BPF_LD+BPF_H+BPF_ABS, skip_ip4 + offsetof(struct udphdr, dest)),
 		BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, DHCP_CLIENT_PORT, 2, 0),
 		BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, DHCP_SERVER_PORT, 1, 0),
 		BPF_JUMP(BPF_JMP+BPF_JA, 10, 0, 0),
-		BPF_STMT(BPF_LD+BPF_B+BPF_ABS, sizeof(struct iphdr) +
-				 sizeof(struct udphdr) + offsetof(dhcp_t, opcode)),
+		BPF_STMT(BPF_LD+BPF_B+BPF_ABS, skip_udp + offsetof(dhcp_t, opcode)),
 		BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, BOOTREPLY, 0, 8),
-		BPF_STMT(BPF_LD+BPF_B+BPF_ABS, sizeof(struct iphdr) +
-				 sizeof(struct udphdr) + offsetof(dhcp_t, hw_type)),
+		BPF_STMT(BPF_LD+BPF_B+BPF_ABS, skip_udp + offsetof(dhcp_t, hw_type)),
 		BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, ARPHRD_ETHER, 0, 6),
-		BPF_STMT(BPF_LD+BPF_B+BPF_ABS, sizeof(struct iphdr) +
-				 sizeof(struct udphdr) + offsetof(dhcp_t, hw_addr_len)),
+		BPF_STMT(BPF_LD+BPF_B+BPF_ABS, skip_udp + offsetof(dhcp_t, hw_addr_len)),
 		BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, 6, 0, 4),
-		BPF_STMT(BPF_LD+BPF_W+BPF_ABS, sizeof(struct iphdr) +
-				 sizeof(struct udphdr) + offsetof(dhcp_t, magic_cookie)),
+		BPF_STMT(BPF_LD+BPF_W+BPF_ABS, skip_udp + offsetof(dhcp_t, magic_cookie)),
 		BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, 0x63825363, 0, 2),
 		BPF_STMT(BPF_LD+BPF_W+BPF_LEN, 0),
 		BPF_STMT(BPF_RET+BPF_A, 0),
@@ -770,6 +747,38 @@ dhcp_socket_t *dhcp_socket_create()
 		sizeof(dhcp_filter_code) / sizeof(struct sock_filter),
 		dhcp_filter_code,
 	};
+#else
+	const size_t skip_eth = sizeof(struct ether_header);
+	const size_t skip_ip4 = skip_eth + sizeof(struct ip);
+	const size_t skip_udp = skip_ip4 + sizeof(struct udphdr);
+	struct bpf_insn instructions[] = {
+		BPF_STMT(BPF_LD+BPF_B+BPF_ABS, skip_eth + offsetof(struct ip, ip_p)),
+		BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, IPPROTO_UDP, 0, 16),
+		BPF_STMT(BPF_LD+BPF_H+BPF_ABS, skip_ip4 + offsetof(struct udphdr, uh_sport)),
+		BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, DHCP_SERVER_PORT, 0, 14),
+		BPF_STMT(BPF_LD+BPF_H+BPF_ABS, skip_ip4 + offsetof(struct udphdr, uh_dport)),
+		BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, DHCP_CLIENT_PORT, 2, 0),
+		BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, DHCP_SERVER_PORT, 1, 0),
+		BPF_JUMP(BPF_JMP+BPF_JA, 10, 0, 0),
+		BPF_STMT(BPF_LD+BPF_B+BPF_ABS, skip_udp + offsetof(dhcp_t, opcode)),
+		BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, BOOTREPLY, 0, 8),
+		BPF_STMT(BPF_LD+BPF_B+BPF_ABS, skip_udp + offsetof(dhcp_t, hw_type)),
+		BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, ARPHRD_ETHER, 0, 6),
+		BPF_STMT(BPF_LD+BPF_B+BPF_ABS, skip_udp + offsetof(dhcp_t, hw_addr_len)),
+		BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, 6, 0, 4),
+		BPF_STMT(BPF_LD+BPF_W+BPF_ABS, skip_udp + offsetof(dhcp_t, magic_cookie)),
+		BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, 0x63825363, 0, 2),
+		BPF_STMT(BPF_LD+BPF_W+BPF_LEN, 0),
+		BPF_STMT(BPF_RET+BPF_A, 0),
+		BPF_STMT(BPF_RET+BPF_K, 0),
+	};
+	struct bpf_program dhcp_filter = {
+		sizeof(instructions) / sizeof(struct bpf_insn),
+		&instructions[0],
+	};
+	/* 0 receive buffer is not accepted */
+	rcvbuf = 1;
+#endif /* !defined(__APPLE__) && !defined(__FreeBSD__) */
 
 	INIT(this,
 		.public = {
@@ -800,8 +809,11 @@ dhcp_socket_t *dhcp_socket_create()
 	this->dst = host_create_from_string(lib->settings->get_str(lib->settings,
 								"%s.plugins.dhcp.server", "255.255.255.255",
 								lib->ns), DHCP_SERVER_PORT);
-	iface = lib->settings->get_str(lib->settings, "%s.plugins.dhcp.interface",
-								   NULL, lib->ns);
+	iface = lib->settings->get_str(lib->settings,
+								"%s.plugins.dhcp.interface", NULL, lib->ns);
+	iface_receive = lib->settings->get_str(lib->settings,
+								"%s.plugins.dhcp.interface_receive", NULL,
+								lib->ns) ?: iface;
 	if (!this->dst)
 	{
 		DBG1(DBG_CFG, "configured DHCP server address invalid");
@@ -864,25 +876,16 @@ dhcp_socket_t *dhcp_socket_create()
 		return NULL;
 	}
 
-	this->receive = socket(AF_PACKET, SOCK_DGRAM, htons(ETH_P_IP));
-	if (this->receive == -1)
+	this->pf_handler = pf_handler_create("DHCP", iface_receive, receive_dhcp,
+										 this, &dhcp_filter);
+	if (!this->pf_handler)
 	{
-		DBG1(DBG_NET, "opening DHCP receive socket failed: %s", strerror(errno));
-		destroy(this);
-		return NULL;
-	}
-	if (setsockopt(this->receive, SOL_SOCKET, SO_ATTACH_FILTER,
-				   &dhcp_filter, sizeof(dhcp_filter)) < 0)
-	{
-		DBG1(DBG_CFG, "installing DHCP socket filter failed: %s",
-			 strerror(errno));
 		destroy(this);
 		return NULL;
 	}
 	if (iface)
 	{
-		if (!bind_to_device(this->send, iface) ||
-			!bind_to_device(this->receive, iface))
+		if (!bind_to_device(this->send, iface))
 		{
 			destroy(this);
 			return NULL;
@@ -907,9 +910,6 @@ dhcp_socket_t *dhcp_socket_create()
 			return NULL;
 		}
 	}
-
-	lib->watcher->add(lib->watcher, this->receive, WATCHER_READ,
-					  (watcher_cb_t)receive_dhcp, this);
 
 	return &this->public;
 }

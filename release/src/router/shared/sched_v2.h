@@ -162,6 +162,7 @@ extern int check_sched_v2_on_off(const char *sched_str);
 extern int check_expire_on_off(const char *sched_str);
 extern int check_sched_v2_mode(const char *sched_str);
 extern int check_timesched_is_set(int unit, int subunit);
+extern int find_sched_v2_next_sched(const char *sched_str, time_t now, int *next_wday, int *next_hour, int *next_minute, char *raw_rule, int raw_rule_size);
 extern void convert_wl_sched_v1_to_sched_v2();
 extern void convert_pc_sched_v1_to_sched_v2();
 

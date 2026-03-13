@@ -83,7 +83,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * See header
  */
-plugin_t *osx_attr_plugin_create()
+PLUGIN_DEFINE(osx_attr)
 {
 	private_osx_attr_plugin_t *this;
 

@@ -1221,8 +1221,8 @@ static int pjsip_contact_hdr_print( pjsip_contact_hdr *hdr, char *buf,
 	char *endbuf = buf + size;
 
 	copy_advance(buf, (*hname));
-	*buf++ = ':';
-	*buf++ = ' ';
+	copy_advance_char_check(buf, ':');
+	copy_advance_char_check(buf, ' ');
 
 	printed = pjsip_uri_print(PJSIP_URI_IN_CONTACT_HDR, hdr->uri, 
 				  buf, endbuf-buf);

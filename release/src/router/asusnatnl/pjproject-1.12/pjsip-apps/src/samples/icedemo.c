@@ -240,7 +240,8 @@ static void cb_on_rx_data(pj_ice_strans *ice_st,
  */
 static void cb_on_ice_complete(pj_ice_strans *ice_st, 
 			       pj_ice_strans_op op,
-			       pj_status_t status)
+			       pj_status_t status,
+				   pj_sockaddr *turn_mapped_addr)
 {
     const char *opname = 
 	(op==PJ_ICE_STRANS_OP_INIT? "initialization" :
@@ -259,9 +260,9 @@ static void cb_on_ice_complete(pj_ice_strans *ice_st,
 }
 
 /* log callback to write to file */
-static void log_func(int inst_id, int level, const char *data, int len)
+static void log_func(int inst_id, int level, const char *data, int len, int flush)
 {
-    pj_log_write(inst_id, level, data, len, 0);
+    pj_log_write(inst_id, level, data, len, flush);
     if (icedemo.log_fhnd) {
 	if (fwrite(data, len, 1, icedemo.log_fhnd) != 1)
 	    return;
@@ -784,16 +785,18 @@ static void icedemo_input_remote(void)
 		    goto on_error;
 		}
 
-		strcpy(comp0_addr, ip);
+                pj_ansi_strxcpy(comp0_addr, ip, sizeof(comp0_addr));
 	    }
 	    break;
 	case 'a':
 	    {
 		char *attr = strtok(line+2, ": \t\r\n");
 		if (strcmp(attr, "ice-ufrag")==0) {
-		    strcpy(icedemo.rem.ufrag, attr+strlen(attr)+1);
+                    pj_ansi_strxcpy(icedemo.rem.ufrag, attr+strlen(attr)+1,
+                                    sizeof(icedemo.rem.ufrag));
 		} else if (strcmp(attr, "ice-pwd")==0) {
-		    strcpy(icedemo.rem.pwd, attr+strlen(attr)+1);
+                    pj_ansi_strxcpy(icedemo.rem.pwd, attr+strlen(attr)+1,
+                                    sizeof(icedemo.rem.pwd));
 		} else if (strcmp(attr, "rtcp")==0) {
 		    char *val = attr+strlen(attr)+1;
 		    int af, cnt;

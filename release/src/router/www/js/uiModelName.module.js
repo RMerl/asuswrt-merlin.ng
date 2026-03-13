@@ -1,4 +1,4 @@
-const LOCAL_DATA = {
+﻿const LOCAL_DATA = {
 	"LYRA_VOICE": [
 		{
 			"lang": "*",
@@ -180,6 +180,13 @@ const LOCAL_DATA = {
 			"CoBrand": "*"
 		}
 	],
+	"GT-BE96_AI": [
+		{
+			"lang": "CN",
+			"uiModelName": "ROG 八爪鱼7 AI",
+			"CoBrand": "*"
+		}
+	],
 	"TUF-BE3600": [
 		{
 			"lang": "CN",
@@ -197,7 +204,14 @@ const LOCAL_DATA = {
 	"TUF_3600": [
 		{
 			"lang": "CN",
-			"uiModelName": "TUF GAMING 小旋风",
+			"uiModelName": "TUF GAMING 小旋风 WiFi7",
+			"CoBrand": "*"
+		}
+	],
+	"TUF_3600_V2": [
+		{
+			"lang": "CN",
+			"uiModelName": "TUF GAMING 小旋风 V2 WiFi7",
 			"CoBrand": "*"
 		}
 	],
@@ -232,7 +246,38 @@ const LOCAL_DATA = {
 	"GS7": [
 		{
 			"lang": "CN",
+			"uiModelName": "ROG 魔盒 透视版",
+			"CoBrand": "17"
+		},
+		{
+			"lang": "CN",
+			"uiModelName": "ROG 魔盒 初音未来版",
+			"CoBrand": "18"
+		},
+		{
+			"lang": "CN",
 			"uiModelName": "ROG 魔盒",
+			"CoBrand": "*"
+		}
+	],
+	"GS7_Pro": [
+		{
+			"lang": "CN",
+			"uiModelName": "ROG 魔盒 Pro",
+			"CoBrand": "*"
+		}
+	],
+	"GS7_Magic": [
+		{
+			"lang": "CN",
+			"uiModelName": "ROG 魔盒 Magic",
+			"CoBrand": "*"
+		}
+	],
+	"GS7_Air": [
+		{
+			"lang": "CN",
+			"uiModelName": "ROG 魔盒 Air",
 			"CoBrand": "*"
 		}
 	],
@@ -264,6 +309,20 @@ const LOCAL_DATA = {
 		{
 			"lang": "CN",
 			"uiModelName": "RT-AX57 青春版",
+			"CoBrand": "*"
+		}
+	],
+	"RP-BE58": [
+		{
+			"lang": "CN",
+			"uiModelName": "小飞侠组网超人 WiFi7",
+			"CoBrand": "*"
+		}
+	],
+	"GS-BE7200X": [
+		{
+			"lang": "CN",
+			"uiModelName": "ROG 魔盒 X",
 			"CoBrand": "*"
 		}
 	]

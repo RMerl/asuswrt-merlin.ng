@@ -127,7 +127,8 @@ METHOD(pts_file_meas_t, check, bool,
 	enumerator_t *enumerator, *e;
 	entry_t *entry;
 	chunk_t hash;
-	int count_ok = 0, count_not_found = 0, count_differ = 0;
+	int count_ok DBG_UNUSED = 0, count_not_found DBG_UNUSED = 0;
+	int count_differ DBG_UNUSED = 0;
 	status_t status;
 
 	enumerator = this->list->create_enumerator(this->list);

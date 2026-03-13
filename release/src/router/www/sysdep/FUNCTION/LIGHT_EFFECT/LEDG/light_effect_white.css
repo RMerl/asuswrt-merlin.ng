@@ -16,6 +16,15 @@
 .setting_enable_bg .switch.on:before {
 	background: rgb(255, 255, 255);
 }
+.setting_enable_bg .schedule-wrapper:before {
+	border-right: 1px solid rgb(0 0 0 / 60%);
+}
+.setting_enable_bg .schedule {
+	background-color: #666666;
+}
+.setting_enable_bg .schedule.active {
+	background-color: #006CE1;
+}
 .setting_scheme .scheme_bg:hover:before{
 	content: "";
 	position: absolute;

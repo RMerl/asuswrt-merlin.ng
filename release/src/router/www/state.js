@@ -8,8 +8,21 @@ var based_modelid = '<% nvram_get("productid"); %>';
 var odmpid = '<% nvram_get("odmpid"); %>';
 var support_site_modelid = (odmpid == "")? based_modelid : odmpid;
 
-if(isSupport("TS_UI") || (based_modelid=="GS7" && CoBrand =="18"))
-	document.write('<link rel="stylesheet" type="text/css" href="/css/difference.css"></link>');
+if(isSupport("TS_UI") || (based_modelid=="GS7" && CoBrand =="18")) {
+    document.write('<link rel="stylesheet" type="text/css" href="/css/difference.css"></link>');
+}
+if (!isSupport("UI4") && isSupport("gtbooster")) {
+    let theme = 'rt';
+    if (isSupport("ROG_UI")) {
+        theme = "rog";
+    } else if (isSupport("TS_UI")) {
+        theme = "ts";
+    } else if (isSupport("TUF_UI")) {
+        theme = "tuf";
+    }
+    document.documentElement.setAttribute('data-asuswrt-theme', theme);
+    document.documentElement.setAttribute('data-asuswrt-color', 'dark');
+}
 
 /* String splice function */
 String.prototype.splice = function( idx, rem, s ) {
@@ -442,6 +455,47 @@ var wl_info = {
 	})()
 };
 
+var DUT_SUPPORT_WLBANDS = (() => {
+	const BAND_DEFINITIONS = [
+		{ bit: 1, band: "2G", text: "2.4 GHz", unit: get_wl_unit_by_band("2G") },
+		{ bit: 2, band: "5G", text: "5 GHz", unit: get_wl_unit_by_band("5G") },
+		{ bit: 4, band: "5G1", text: "5 GHz-1", unit: get_wl_unit_by_band("5G1") },
+		{ bit: 8, band: "5G2", text: "5 GHz-2", unit: get_wl_unit_by_band("5G2") },
+		{ bit: 16, band: "6G", text: "6 GHz", unit: get_wl_unit_by_band("6G") },
+		{ bit: 32, band: "6G1", text: "6 GHz-1", unit: get_wl_unit_by_band("6G1") },
+		{ bit: 64, band: "6G2", text: "6 GHz-2", unit: get_wl_unit_by_band("6G2") },
+	];
+
+	return (() => {
+		if (isSupport("noWiFi")) return [];
+
+		const availableBands = BAND_DEFINITIONS.filter(bandItem => bandItem.unit !== "");
+		const has5G2 = availableBands.some(bandItem => bandItem.band === "5G2");
+		const has6G2 = availableBands.some(bandItem => bandItem.band === "6G2");
+		const finalBands = [];
+		availableBands.forEach(bandItem => {
+			let shouldKeep = true;
+			if (has5G2) {
+				if (bandItem.band === "5G") shouldKeep = false;
+			} else {
+				if (bandItem.band === "5G1") shouldKeep = false;
+			}
+
+			if (has6G2) {
+				if (bandItem.band === "6G") shouldKeep = false;
+			} else {
+				if (bandItem.band === "6G1") shouldKeep = false;
+			}
+
+			if (shouldKeep) {
+				finalBands.push(bandItem);
+			}
+		});
+
+		return finalBands;
+	})();
+})();
+
 function get_band_name_by_wl_unit(wl_unit){
 	var wlnband_list = `<% nvram_get("wlnband_list"); %>`.split("&#60");
 
@@ -500,7 +554,9 @@ if(isSupport("UI4") && !parent.webWrapper){
 		"aidisk/popModifyAccount.asp", 
 		"aidisk/popModifyFolder.asp",
 		"multi_wan.html",
-		"adguard_dns.html"
+		"adguard_dns.html",
+        "mlo.html",
+        'pages/ark_log.html'
 	];
 
 	for(var i in rwdPageSupport){whiteList.push(rwdPageSupport[i].path)}
@@ -645,7 +701,8 @@ var bwdpi_vp_support = isSupport("dpi_vp");
 var bwdpi_webFilter_support = isSupport("webs_filter");
 var bwdpi_webHistory_support = isSupport("web_history");
 var bwdpi_bwMonitor_support = isSupport("bandwidth_monitor");
-var adaptiveqos_support = isSupport("adaptive_qos");
+var ark_qoe_support = isSupport("ark_qoe");
+var adaptiveqos_support = (ark_qoe_support > 0) ? 0 : isSupport("adaptive_qos");
 var ipsec_srv_support = isSupport("ipsec_srv");
 var ipsec_cli_support = isSupport("ipsec_cli");
 //var traffic_analyzer_support = isSupport("traffic_analyzer");
@@ -2154,8 +2211,7 @@ function show_footer(){
 	var saq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=174";
 	footer_code += '&nbsp|&nbsp<a id="faq_bottom" href="'+saq_href+'" target="_blank" style="font-weight: bolder;text-decoration:underline;cursor:pointer;">FAQ</a>';
 	footer_code += '</td>';
-	footer_code += '<td width="270" id="bottom_help_FAQ" align="right" style="font-family:Arial, Helvetica, sans-serif;">&nbsp&nbsp<input type="text" id="FAQ_input" class="input_FAQ_table" maxlength="40" onKeyPress="submitenter(this,event);" autocorrect="off" autocapitalize="off" onkeyup="filterFAQ();"></td>';
-	footer_code += '<div id="faq-block" class="faq-filter-block" style="display:none"></div>';
+	footer_code += '<td width="270" id="bottom_help_FAQ" align="right" style="font-family:Arial, Helvetica, sans-serif;position:relative">&nbsp&nbsp<input type="text" id="FAQ_input" class="input_FAQ_table" maxlength="40" onKeyPress="submitenter(this,event);" autocorrect="off" autocapitalize="off" onkeyup="filterFAQ();"><div id="faq-block" class="faq-filter-block" style="display:none"></div></td>';
 	footer_code += '</td>';
 	footer_code += '<td width="30" align="left"><div id="bottom_help_FAQ_icon" class="bottom_help_FAQ_icon" style="cursor:pointer;margin-left:3px;" target="_blank" onClick="search_supportsite();"></div></td>';
 	footer_code += '</tr></table></div>\n';
@@ -2207,7 +2263,7 @@ function genFAQList(_str){
 				var name = Object.values(faq_data)[i].name;
 				var _name = Object.values(faq_data)[i].name.toUpperCase();
 				var link = Object.values(faq_data)[i].link;
-				if(isSupport("mtlancfg") !== -1){
+				if(isSupport("mtlancfg") !== -1 && link === "Guest_network.asp"){
 					link = "SDN.asp";
 				}
 				
@@ -5212,31 +5268,80 @@ function showWlHintContainer(_parm){
 }
 
 function checkPolicy() {
-    const policyStatus = PolicyStatus()
-        .then(data => {
-            if (data.EULA == "0") {
-                const policyModal = new PolicyUpdateModalComponent({
-                    policyStatus: data,
-                    securityUpdate: 1,
-                    websUpdate: 1,
-                });
-                policyModal.show();
-            } else if (data.EULA == 1 && ((data.PP == 1 && data.PP_time != "") || (data.PP == 0 && data.PP_time == ""))) {
-                const policyModal = new PolicyModalComponent({
-                    policyStatus: data,
-                    policy: 'PP',
-                    securityUpdate: 1,
-                    websUpdate: 1,
-                });
-                policyModal.show();
-            } else if (data.TM == 1 && data.TM_time == '') {
-                const policyModal = new PolicyModalComponent({
-                    policyStatus: data,
-                    policy: "TM"
-                });
-                policyModal.show();
-            }
+	var arkMigrationPromise;
+	if (isSupport("gtbooster") >= 2) {
+		arkMigrationPromise = fetch('/get_ark_migration_done.cgi')
+			.then(function (response) {
+				return response.json();
+			})
+			.catch(function () {
+				return {};
+			});
+	}
+
+	PolicyStatus()
+		.then(data => {
+			if (data.isFetchDone) {
+				if (data.EULA_read === 0 && data.EULA_force_sign === 1) {
+					const policyModal = new PolicyUpdateModalComponent({
+						policyStatus: data,
+						securityUpdate: 1,
+						websUpdate: 1,
+					});
+					policyModal.show();
+				} else if (data.EULA_read === 1 && data.PP_read === 0 && (data.PP === "" || (data.PP >= 0 && data.PP_force_sign === 1))) {
+					const policyModal = new PolicyModalComponent({
+						policyStatus: data,
+						policy: 'PP',
+						securityUpdate: 1,
+						websUpdate: 1,
+						signPPVersion: (data.ASUS_PP_support >= 5) ? data.ASUS_PP_support : 0,
+					});
+					policyModal.show();
+				} else if (data.TM == 1 && data.TM_time == '') {
+					const policyModal = new PolicyModalComponent({
+						policyStatus: data,
+						policy: "TM"
+					});
+					policyModal.show();
+				}
+			}
+			if (typeof arkMigrationPromise !== 'undefined') {
+				showArkMigrationNotification(arkMigrationPromise);
+			}
         });
+}
+
+function showArkMigrationNotification(arkMigrationPromise) {
+    arkMigrationPromise.then(function(data) {
+        if (data.ark_migration_done != 2) return;
+
+        const policyModal = top.document.querySelector('#policy_popup_modal');
+        if (policyModal) {
+            var observer = new MutationObserver(function() {
+                if (!top.document.querySelector('#policy_popup_modal')) {
+                    observer.disconnect();
+                    showArkMigrationNotification(Promise.resolve(data));
+                }
+            });
+            observer.observe(top.document.body, { childList: true, subtree: true });
+        } else {
+			const functionList = [`<#AiProtection_filter#> (Web)`, `<#FamilyContentBlock#> (App)`, `<#Adaptive_QoS#>`];
+			if(gameMode_support){
+				functionList.push(`<#Gear_Accelerator#> (Web)`)
+				functionList.push(`<#GB_mobile#> (App)`)
+			}
+            var notification = new NotificationModalComponent({
+                id: 'ark_migration_notification',
+                title: '<#Notice#>',
+                message: `<p><#ArkMigrationNote_1#></p><p>[<#ArkMigrationNote#>] <#ArkMigrationNote_2#></p>`.replace('%@', functionList.join(' / ')),
+                closeCallback: function() {
+                    fetch('/set_ark_migration_done.cgi').catch(function() {});
+                },
+            });
+            notification.show();
+        }
+    });
 }
 
 if (
@@ -5288,7 +5393,7 @@ setTimeout(() => {
 		!(window.appInterface ||
 			(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.appInterface)
 		)
-	){		
+	){
 		const scripts = top.document.head.getElementsByTagName('script');
 		let scriptFound = {
 			asusNotice: false,
@@ -5372,3 +5477,16 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}, (parent.webWrapper ? 1000 : 300));
 });
+
+(()=>{
+	if(isSupport("YEAR20")){
+		const style = document.createElement('style');
+		style.type = 'text/css';
+		style.innerHTML = `
+			.menu_Split {
+				background: none !important;
+			}
+		`;
+		document.head.appendChild(style);
+	}
+})();

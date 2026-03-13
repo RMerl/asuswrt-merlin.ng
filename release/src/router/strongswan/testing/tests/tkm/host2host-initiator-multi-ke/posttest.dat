@@ -1,0 +1,4 @@
+moon::service charon-tkm stop
+moon::killall tkm_keymanager
+moon::rm -f /tmp/swanctl.conf /tmp/tkm.rpc.ike /tmp/tkm.rpc.ees /tmp/tkm.log
+sun::systemctl stop strongswan

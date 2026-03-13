@@ -22219,6 +22219,9 @@ fi;
     OGG_CFLAGS="-I$prefix/include"
   fi
 
+  export
+  OGG_LIBS=""
+
   echo "$as_me:$LINENO: checking for Ogg" >&5
 echo $ECHO_N "checking for Ogg... $ECHO_C" >&6
   no_ogg=""

@@ -177,7 +177,7 @@ METHOD(enumerator_t, crl_enumerate, bool,
 		revoked = sk_X509_REVOKED_value(this->stack, this->i);
 		if (serial)
 		{
-			*serial = openssl_asn1_str2chunk(
+			*serial = openssl_asn1_int2chunk(
 									X509_REVOKED_get0_serialNumber(revoked));
 		}
 		if (date)

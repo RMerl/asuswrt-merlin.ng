@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Tobias Brunner
+ * Copyright (C) 2023-2024 Tobias Brunner
  * Copyright (C) 2009 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -56,12 +56,13 @@ static void run_test(key_exchange_method_t method, int rounds)
 				method);
 		return;
 	}
-	assert(r[0]->get_public_key(r[0], &rpublic[0]));
 	for (round = 1; round < rounds; round++)
 	{
 		r[round] = lib->crypto->create_ke(lib->crypto, method);
-		assert(r[round]->get_public_key(r[round], &rpublic[round]));
 	}
+
+	/* make sure to use the method call order documented in the
+	 * key_exchange_t header file */
 
 	printf("%N:\t", key_exchange_method_names, method);
 
@@ -73,12 +74,14 @@ static void run_test(key_exchange_method_t method, int rounds)
 	}
 	printf("A = g^a/s: %8.1f", rounds / end_timing(&timing));
 
+	start_timing(&timing);
 	for (round = 0; round < rounds; round++)
 	{
 		assert(r[round]->set_public_key(r[round], lpublic[round]));
+		assert(r[round]->get_public_key(r[round], &rpublic[round]));
 		assert(r[round]->get_shared_secret(r[round], &rsecret[round]));
-		chunk_free(&lpublic[round]);
 	}
+	printf(" | S = A^b/s: %8.1f", rounds / end_timing(&timing));
 
 	start_timing(&timing);
 	for (round = 0; round < rounds; round++)
@@ -93,6 +96,7 @@ static void run_test(key_exchange_method_t method, int rounds)
 		assert(chunk_equals(rsecret[round], lsecret[round]));
 		chunk_free(&lsecret[round]);
 		chunk_free(&rsecret[round]);
+		chunk_free(&lpublic[round]);
 		chunk_free(&rpublic[round]);
 		l[round]->destroy(l[round]);
 		r[round]->destroy(r[round]);

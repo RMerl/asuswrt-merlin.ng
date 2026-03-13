@@ -28,48 +28,39 @@ typedef struct {
 	key_type_t key;
 }hasher_oid_t;
 
+/* make sure to adjust offsets in constructor when changing this array */
 static hasher_oid_t oids[] = {
-	{ OID_MD2, HASH_MD2, KEY_ANY },                                /*  0 */
-	{ OID_MD5, HASH_MD5, KEY_ANY },                                /*  1 */
-	{ OID_SHA1, HASH_SHA1, KEY_ANY },                              /*  2 */
-	{ OID_SHA224, HASH_SHA224, KEY_ANY },                          /*  3 */
-	{ OID_SHA256, HASH_SHA256, KEY_ANY },                          /*  4 */
-	{ OID_SHA384, HASH_SHA384, KEY_ANY },                          /*  5 */
-	{ OID_SHA512, HASH_SHA512, KEY_ANY },                          /*  6 */
-	{ OID_SHA3_224, HASH_SHA3_224, KEY_ANY },                      /*  7 */
-	{ OID_SHA3_256, HASH_SHA3_256, KEY_ANY },                      /*  8 */
-	{ OID_SHA3_384, HASH_SHA3_384, KEY_ANY },                      /*  9 */
-	{ OID_SHA3_512, HASH_SHA3_512, KEY_ANY },                      /* 10 */
-	{ OID_UNKNOWN, HASH_UNKNOWN, KEY_ANY },                        /* 11 */
-	{ OID_MD2_WITH_RSA, HASH_MD2, KEY_RSA },                       /* 12 */
-	{ OID_MD5_WITH_RSA, HASH_MD5, KEY_RSA },                       /* 13 */
-	{ OID_SHA1_WITH_RSA, HASH_SHA1, KEY_RSA },                     /* 14 */
-	{ OID_SHA224_WITH_RSA, HASH_SHA224, KEY_RSA },                 /* 15 */
-	{ OID_SHA256_WITH_RSA, HASH_SHA256, KEY_RSA },                 /* 16 */
-	{ OID_SHA384_WITH_RSA, HASH_SHA384, KEY_RSA },                 /* 17 */
-	{ OID_SHA512_WITH_RSA, HASH_SHA512, KEY_RSA },                 /* 18 */
-	{ OID_RSASSA_PKCS1V15_WITH_SHA3_224, HASH_SHA3_224, KEY_RSA }, /* 19 */
-	{ OID_RSASSA_PKCS1V15_WITH_SHA3_256, HASH_SHA3_256, KEY_RSA }, /* 20 */
-	{ OID_RSASSA_PKCS1V15_WITH_SHA3_384, HASH_SHA3_384, KEY_RSA }, /* 21 */
-	{ OID_RSASSA_PKCS1V15_WITH_SHA3_512, HASH_SHA3_512, KEY_RSA }, /* 22 */
-	{ OID_UNKNOWN, HASH_UNKNOWN, KEY_RSA },                        /* 23 */
-	{ OID_ED25519, HASH_IDENTITY, KEY_ED25519 },                   /* 24 */
-	{ OID_UNKNOWN, HASH_UNKNOWN, KEY_ED25519 },                    /* 25 */
-	{ OID_ED448, HASH_IDENTITY, KEY_ED448 },                       /* 26 */
-	{ OID_UNKNOWN, HASH_UNKNOWN, KEY_ED448 },                      /* 27 */
-	{ OID_ECDSA_WITH_SHA1, HASH_SHA1, KEY_ECDSA },                 /* 28 */
-	{ OID_ECDSA_WITH_SHA256, HASH_SHA256, KEY_ECDSA },             /* 29 */
-	{ OID_ECDSA_WITH_SHA384, HASH_SHA384, KEY_ECDSA },             /* 30 */
-	{ OID_ECDSA_WITH_SHA512, HASH_SHA512, KEY_ECDSA },             /* 31 */
-	{ OID_UNKNOWN, HASH_UNKNOWN, KEY_ECDSA },                      /* 32 */
-	{ OID_BLISS_WITH_SHA2_256, HASH_SHA256, KEY_BLISS },           /* 33 */
-	{ OID_BLISS_WITH_SHA2_384, HASH_SHA384, KEY_BLISS },           /* 34 */
-	{ OID_BLISS_WITH_SHA2_512, HASH_SHA512, KEY_BLISS },           /* 35 */
-	{ OID_BLISS_WITH_SHA3_256, HASH_SHA3_256, KEY_BLISS },         /* 36 */
-	{ OID_BLISS_WITH_SHA3_384, HASH_SHA3_384, KEY_BLISS },         /* 37 */
-	{ OID_BLISS_WITH_SHA3_512, HASH_SHA3_512, KEY_BLISS },         /* 38 */
-	{ OID_UNKNOWN, HASH_UNKNOWN, KEY_BLISS },                      /* 39 */
-
+	{ OID_MD5, HASH_MD5, KEY_ANY },                                /*  0 */
+	{ OID_SHA1, HASH_SHA1, KEY_ANY },                              /*  1 */
+	{ OID_SHA224, HASH_SHA224, KEY_ANY },                          /*  2 */
+	{ OID_SHA256, HASH_SHA256, KEY_ANY },                          /*  3 */
+	{ OID_SHA384, HASH_SHA384, KEY_ANY },                          /*  4 */
+	{ OID_SHA512, HASH_SHA512, KEY_ANY },                          /*  5 */
+	{ OID_SHA3_224, HASH_SHA3_224, KEY_ANY },                      /*  6 */
+	{ OID_SHA3_256, HASH_SHA3_256, KEY_ANY },                      /*  7 */
+	{ OID_SHA3_384, HASH_SHA3_384, KEY_ANY },                      /*  8 */
+	{ OID_SHA3_512, HASH_SHA3_512, KEY_ANY },                      /*  9 */
+	{ OID_UNKNOWN, HASH_UNKNOWN, KEY_ANY },                        /* 10 */
+	{ OID_MD5_WITH_RSA, HASH_MD5, KEY_RSA },                       /* 11 */
+	{ OID_SHA1_WITH_RSA, HASH_SHA1, KEY_RSA },                     /* 12 */
+	{ OID_SHA224_WITH_RSA, HASH_SHA224, KEY_RSA },                 /* 13 */
+	{ OID_SHA256_WITH_RSA, HASH_SHA256, KEY_RSA },                 /* 14 */
+	{ OID_SHA384_WITH_RSA, HASH_SHA384, KEY_RSA },                 /* 15 */
+	{ OID_SHA512_WITH_RSA, HASH_SHA512, KEY_RSA },                 /* 16 */
+	{ OID_RSASSA_PKCS1V15_WITH_SHA3_224, HASH_SHA3_224, KEY_RSA }, /* 17 */
+	{ OID_RSASSA_PKCS1V15_WITH_SHA3_256, HASH_SHA3_256, KEY_RSA }, /* 18 */
+	{ OID_RSASSA_PKCS1V15_WITH_SHA3_384, HASH_SHA3_384, KEY_RSA }, /* 19 */
+	{ OID_RSASSA_PKCS1V15_WITH_SHA3_512, HASH_SHA3_512, KEY_RSA }, /* 20 */
+	{ OID_UNKNOWN, HASH_UNKNOWN, KEY_RSA },                        /* 21 */
+	{ OID_ED25519, HASH_IDENTITY, KEY_ED25519 },                   /* 22 */
+	{ OID_UNKNOWN, HASH_UNKNOWN, KEY_ED25519 },                    /* 23 */
+	{ OID_ED448, HASH_IDENTITY, KEY_ED448 },                       /* 24 */
+	{ OID_UNKNOWN, HASH_UNKNOWN, KEY_ED448 },                      /* 25 */
+	{ OID_ECDSA_WITH_SHA1, HASH_SHA1, KEY_ECDSA },                 /* 26 */
+	{ OID_ECDSA_WITH_SHA256, HASH_SHA256, KEY_ECDSA },             /* 27 */
+	{ OID_ECDSA_WITH_SHA384, HASH_SHA384, KEY_ECDSA },             /* 28 */
+	{ OID_ECDSA_WITH_SHA512, HASH_SHA512, KEY_ECDSA },             /* 29 */
+	{ OID_UNKNOWN, HASH_UNKNOWN, KEY_ECDSA },                      /* 30 */
 };
 
 START_TEST(test_hasher_from_oid)
@@ -116,12 +107,6 @@ static struct {
 	{ SIGN_ECDSA_256,             HASH_SHA256     },
 	{ SIGN_ECDSA_384,             HASH_SHA384     },
 	{ SIGN_ECDSA_521,             HASH_SHA512     },
-	{ SIGN_BLISS_WITH_SHA2_256,   HASH_SHA256     },
-	{ SIGN_BLISS_WITH_SHA2_384,   HASH_SHA384     },
-	{ SIGN_BLISS_WITH_SHA2_512,   HASH_SHA512     },
-	{ SIGN_BLISS_WITH_SHA3_256,   HASH_SHA3_256   },
-	{ SIGN_BLISS_WITH_SHA3_384,   HASH_SHA3_384   },
-	{ SIGN_BLISS_WITH_SHA3_512,   HASH_SHA3_512   },
 	{ SIGN_ED25519,               HASH_IDENTITY   },
 	{ SIGN_ED448,                 HASH_IDENTITY   },
 	{ 30,						  HASH_UNKNOWN    },
@@ -187,32 +172,32 @@ typedef struct {
 	size_t length;
 }hasher_auth_t;
 
+/* make sure to adjust offsets in constructor when changing this array */
 static hasher_auth_t auths[] = {
-	{ AUTH_UNDEFINED, HASH_MD2, 0 },
-	{ AUTH_UNDEFINED, HASH_MD4, 0 },
-	{ AUTH_UNDEFINED, HASH_SHA224, 0 },
-	{ AUTH_UNDEFINED, 9, 0 },
-	{ AUTH_UNDEFINED, HASH_UNKNOWN, 0 },
-	{ AUTH_HMAC_MD5_96, HASH_MD5, 12 },
-	{ AUTH_HMAC_SHA1_96, HASH_SHA1, 12 },
-	{ AUTH_HMAC_SHA2_256_96, HASH_SHA256, 12 },
-	{ AUTH_HMAC_MD5_128, HASH_MD5, 16 },
-	{ AUTH_HMAC_SHA1_128, HASH_SHA1, 16 },
-	{ AUTH_HMAC_SHA2_256_128, HASH_SHA256, 16 },
-	{ AUTH_HMAC_SHA1_160, HASH_SHA1, 20 },
-	{ AUTH_HMAC_SHA2_384_192, HASH_SHA384, 24 },
-	{ AUTH_HMAC_SHA2_256_256, HASH_SHA256, 32 },
-	{ AUTH_HMAC_SHA2_512_256, HASH_SHA512, 32 },
-	{ AUTH_HMAC_SHA2_384_384, HASH_SHA384, 48 },
-	{ AUTH_HMAC_SHA2_512_512, HASH_SHA512, 64 },
-	{ AUTH_AES_CMAC_96, HASH_UNKNOWN, 0 },
-	{ AUTH_AES_128_GMAC, HASH_UNKNOWN, 0 },
-	{ AUTH_AES_192_GMAC, HASH_UNKNOWN, 0 },
-	{ AUTH_AES_256_GMAC, HASH_UNKNOWN, 0 },
-	{ AUTH_AES_XCBC_96, HASH_UNKNOWN, 0 },
-	{ AUTH_DES_MAC, HASH_UNKNOWN, 0 },
-	{ AUTH_CAMELLIA_XCBC_96, HASH_UNKNOWN, 0 },
-	{ 0, HASH_UNKNOWN, 0 }
+	{ AUTH_UNDEFINED, HASH_MD4, 0 },             /*  0 */
+	{ AUTH_UNDEFINED, HASH_SHA224, 0 },          /*  1 */
+	{ AUTH_UNDEFINED, 9, 0 },                    /*  2 */
+	{ AUTH_UNDEFINED, HASH_UNKNOWN, 0 },         /*  3 */
+	{ AUTH_HMAC_MD5_96, HASH_MD5, 12 },          /*  4 */
+	{ AUTH_HMAC_SHA1_96, HASH_SHA1, 12 },        /*  5 */
+	{ AUTH_HMAC_SHA2_256_96, HASH_SHA256, 12 },  /*  6 */
+	{ AUTH_HMAC_MD5_128, HASH_MD5, 16 },         /*  7 */
+	{ AUTH_HMAC_SHA1_128, HASH_SHA1, 16 },       /*  8 */
+	{ AUTH_HMAC_SHA2_256_128, HASH_SHA256, 16 }, /*  9 */
+	{ AUTH_HMAC_SHA1_160, HASH_SHA1, 20 },       /* 10 */
+	{ AUTH_HMAC_SHA2_384_192, HASH_SHA384, 24 }, /* 11 */
+	{ AUTH_HMAC_SHA2_256_256, HASH_SHA256, 32 }, /* 12 */
+	{ AUTH_HMAC_SHA2_512_256, HASH_SHA512, 32 }, /* 13 */
+	{ AUTH_HMAC_SHA2_384_384, HASH_SHA384, 48 }, /* 14 */
+	{ AUTH_HMAC_SHA2_512_512, HASH_SHA512, 64 }, /* 15 */
+	{ AUTH_AES_CMAC_96, HASH_UNKNOWN, 0 },       /* 16 */
+	{ AUTH_AES_128_GMAC, HASH_UNKNOWN, 0 },      /* 17 */
+	{ AUTH_AES_192_GMAC, HASH_UNKNOWN, 0 },      /* 18 */
+	{ AUTH_AES_256_GMAC, HASH_UNKNOWN, 0 },      /* 19 */
+	{ AUTH_AES_XCBC_96, HASH_UNKNOWN, 0 },       /* 20 */
+	{ AUTH_DES_MAC, HASH_UNKNOWN, 0 },           /* 21 */
+	{ AUTH_CAMELLIA_XCBC_96, HASH_UNKNOWN, 0 },  /* 22 */
+	{ 0, HASH_UNKNOWN, 0 }                       /* 23 */
 };
 
 START_TEST(test_hasher_from_integrity)
@@ -250,7 +235,6 @@ static hasher_ikev2_t ikev2[] = {
 	{ HASH_SHA384,   TRUE  },
 	{ HASH_SHA512,   TRUE  },
 	{ HASH_UNKNOWN,  FALSE },
-	{ HASH_MD2,      FALSE },
 	{ HASH_MD4,      FALSE },
 	{ HASH_MD5,      FALSE },
 	{ HASH_SHA224,   FALSE },
@@ -275,15 +259,15 @@ Suite *hasher_suite_create()
 	s = suite_create("hasher");
 
 	tc = tcase_create("from_oid");
-	tcase_add_loop_test(tc, test_hasher_from_oid, 0, 28);
+	tcase_add_loop_test(tc, test_hasher_from_oid, 0, 26);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("to_oid");
-	tcase_add_loop_test(tc, test_hasher_to_oid, 0, 12);
+	tcase_add_loop_test(tc, test_hasher_to_oid, 0, 11);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("sig_to_oid");
-	tcase_add_loop_test(tc, test_hasher_sig_to_oid, 11, countof(oids));
+	tcase_add_loop_test(tc, test_hasher_sig_to_oid, 10, countof(oids));
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("from_sig_scheme");
@@ -296,11 +280,11 @@ Suite *hasher_suite_create()
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("from_integrity");
-	tcase_add_loop_test(tc, test_hasher_from_integrity, 4, countof(auths));
+	tcase_add_loop_test(tc, test_hasher_from_integrity, 3, countof(auths));
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("to_integrity");
-	tcase_add_loop_test(tc, test_hasher_to_integrity, 0, 17);
+	tcase_add_loop_test(tc, test_hasher_to_integrity, 0, 16);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("for_ikev2");

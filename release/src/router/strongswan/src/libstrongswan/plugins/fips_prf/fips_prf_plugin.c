@@ -59,7 +59,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *fips_prf_plugin_create()
+PLUGIN_DEFINE(fips_prf)
 {
 	private_fips_prf_plugin_t *this;
 

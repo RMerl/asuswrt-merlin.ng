@@ -3528,7 +3528,7 @@ static int load_niihau(firmware_t *firmware)
     master_addr = get_base_phy_addr(phy_map_with_base); /* select the min PHY address for broadcast operation */
 	mphy_non_master_base_map = mphy_base_map & ~(1 << master_addr);
 
-#ifdef GT7 /* fake to override */
+#if defined(GT7) || defined(GS7_PRO_MAX) /* fake to override */
     phy_map |= (1 << 0x19);
     mphy_base_map |= (1 << 0x19);
     phy_map_with_base |= (1 << 0x19);
@@ -3672,7 +3672,7 @@ static void phy_config_shared_ref_clk(phy_dev_t *phy_dev)
         case 80:
             v16 |= 1;
             phy_bus_c45_write(phy_dev, 0x1e, 0x80a8, v16);
-#ifdef GT7 /* fake to override */
+#if defined(GT7) || defined(GS7_PRO_MAX) /* fake to override */
 {
             uint32_t addr_old = phy_dev->addr;
             phy_dev->addr = 0x19;
@@ -3727,7 +3727,7 @@ static int _phy_shared_clock_set(phy_dev_t *phy_dev)
         udelay(2000);
         phy_bus_c45_write(phy_dev, 0x1e, 0x8000, 0x8004);
         udelay(2000);
-#ifdef GT7 /* fake to override */
+#if defined(GT7) || defined(GS7_PRO_MAX) /* fake to override */
 {
         uint32_t addr_old = phy_dev->addr;
         phy_dev->addr = 0x19;

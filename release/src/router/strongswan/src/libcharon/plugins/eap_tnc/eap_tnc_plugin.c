@@ -59,7 +59,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *eap_tnc_plugin_create()
+PLUGIN_DEFINE(eap_tnc)
 {
 	eap_tnc_plugin_t *this;
 

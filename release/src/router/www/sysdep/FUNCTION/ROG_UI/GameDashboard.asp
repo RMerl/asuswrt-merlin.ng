@@ -1111,6 +1111,18 @@ function showClientlistModal() {
 	const clientlistModal = new ClientlistModel();
 	clientlistModal.show();
 }
+if (isSupport("AURA_SCHED")) {
+	let script = document.createElement('script');
+	script.type = 'text/javascript';
+	script.src = '/js/ledScheduler.js';
+	script.onload = function() {
+		window.showLedScheduler = function(parms){
+			const ledScheduler = new popupLedScheduler(parms);
+			ledScheduler.show();
+		}
+	};
+	document.head.appendChild(script);
+}
 </script>
 </head>
 
@@ -1294,10 +1306,7 @@ function showClientlistModal() {
 																$ledg_html.find(".logo_container")
 																	.css({"width":"18vw", "background-position-y":"50%"});
 															}
-															const support_night_mode = (()=>{
-																return ((based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000" || based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI") ? true : false);
-															})();
-															if(support_night_mode){
+															if(isSupport("ledg_night_mode")){
 																$ledg_html.find(".light_effect_mask").css({
 																	"width":"102%",
 																	"margin-left":"-1%",

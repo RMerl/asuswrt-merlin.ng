@@ -1,0 +1,56 @@
+moon::cat /var/log/daemon.log::vici initiating 'one-start'::YES
+moon::cat /var/log/daemon.log::vici initiating 'two-start-.'::2
+moon::cat /var/log/daemon.log::vici initiating 'four-start-.'::4
+moon::cat /var/log/daemon.log::vici initiating 'one-start-child'::YES
+moon::cat /var/log/daemon.log::vici initiating 'two-start-child-.'::2
+moon::cat /var/log/daemon.log::vici initiating 'four-start-child-.'::4
+moon::mv /etc/swanctl/swanctl-update.conf /etc/swanctl/conf.d/
+moon::systemctl reload strongswan
+moon::sleep 3
+moon::cat /var/log/daemon.log::replaced vici connection: one-start::YES
+moon::cat /var/log/daemon.log::vici closing IKE_SA 'one-start'::YES
+moon::cat /var/log/daemon.log::replaced vici connection: two-start::YES
+moon::cat /var/log/daemon.log::vici closing IKE_SA 'two-start'::YES
+moon::cat /var/log/daemon.log::replaced vici connection: four-start::YES
+moon::cat /var/log/daemon.log::vici closing IKE_SA 'four-start'::YES
+moon::cat /var/log/daemon.log::updated vici connection: one-start-child::YES
+moon::cat /var/log/daemon.log::vici closing IKE_SA 'one-start-child'::NO
+moon::cat /var/log/daemon.log::vici closing CHILD_SA 'one-start-child'::YES
+moon::cat /var/log/daemon.log::updated vici connection: two-start-child::YES
+moon::cat /var/log/daemon.log::vici closing IKE_SA 'two-start-child'::NO
+moon::cat /var/log/daemon.log::vici closing CHILD_SA 'two-start-child-.'::2
+moon::cat /var/log/daemon.log::updated vici connection: four-start-child::YES
+moon::cat /var/log/daemon.log::vici closing IKE_SA 'four-start-child'::NO
+moon::cat /var/log/daemon.log::vici closing CHILD_SA 'four-start-child-.'::4
+moon::cat /var/log/daemon.log::vici initiating 'one-start'::2
+moon::cat /var/log/daemon.log::vici initiating 'two-start-.'::4
+moon::cat /var/log/daemon.log::vici initiating 'four-start-.'::8
+moon::cat /var/log/daemon.log::vici initiating 'one-start-child'::2
+moon::cat /var/log/daemon.log::vici initiating 'two-start-child-.'::4
+moon::cat /var/log/daemon.log::vici initiating 'four-start-child-.'::8
+moon::rm /etc/swanctl/conf.d/*
+moon::mv /etc/swanctl/swanctl-remove.conf /etc/swanctl/conf.d/
+moon::systemctl reload strongswan
+moon::sleep 3
+moon::cat /var/log/daemon.log::removed vici connection: one-start::YES
+moon::cat /var/log/daemon.log::vici closing IKE_SA 'one-start'::2
+moon::cat /var/log/daemon.log::removed vici connection: two-start::YES
+moon::cat /var/log/daemon.log::vici closing IKE_SA 'two-start'::2
+moon::cat /var/log/daemon.log::removed vici connection: four-start::YES
+moon::cat /var/log/daemon.log::vici closing IKE_SA 'four-start'::2
+moon::cat /var/log/daemon.log::updated vici connection: one-start-child::2
+moon::cat /var/log/daemon.log::vici closing IKE_SA 'one-start-child'::YES
+moon::cat /var/log/daemon.log::updated vici connection: two-start-child::2
+moon::cat /var/log/daemon.log::vici closing IKE_SA 'two-start-child'::NO
+moon::cat /var/log/daemon.log::vici closing CHILD_SA 'two-start-child-1' #..::NO
+moon::cat /var/log/daemon.log::vici closing CHILD_SA 'two-start-child-2' #..::YES
+moon::cat /var/log/daemon.log::updated vici connection: four-start-child::2
+moon::cat /var/log/daemon.log::vici closing IKE_SA 'four-start-child'::NO
+moon::cat /var/log/daemon.log::vici closing CHILD_SA 'four-start-child-.'::8
+# only the last one here should change
+moon::cat /var/log/daemon.log::vici initiating 'one-start'::2
+moon::cat /var/log/daemon.log::vici initiating 'two-start-.'::4
+moon::cat /var/log/daemon.log::vici initiating 'four-start-.'::8
+moon::cat /var/log/daemon.log::vici initiating 'one-start-child'::2
+moon::cat /var/log/daemon.log::vici initiating 'two-start-child-.'::4
+moon::cat /var/log/daemon.log::vici initiating 'four-start-child-.'::10

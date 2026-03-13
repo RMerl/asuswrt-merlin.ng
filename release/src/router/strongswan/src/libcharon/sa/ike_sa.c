@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2020 Tobias Brunner
+ * Copyright (C) 2006-2024 Tobias Brunner
  * Copyright (C) 2006 Daniel Roethlisberger
  * Copyright (C) 2005-2009 Martin Willi
  * Copyright (C) 2005 Jan Hutter
@@ -188,14 +188,24 @@ struct private_ike_sa_t {
 	identification_t *other_id;
 
 	/**
-	 * set of extensions the peer supports
+	 * Set of extensions the peer supports
 	 */
 	ike_extension_t extensions;
 
 	/**
-	 * set of condition flags currently enabled for this IKE_SA
+	 * Set of private xtensions the peer supports
+	 */
+	ike_extension_t private_extensions;
+
+	/**
+	 * Set of condition flags currently enabled for this IKE_SA
 	 */
 	ike_condition_t conditions;
+
+	/**
+	 * Set of private condition flags currently enabled for this IKE_SA
+	 */
+	ike_condition_t private_conditions;
 
 	/**
 	 * Array containing the child sa's of the current IKE_SA.
@@ -328,6 +338,30 @@ struct attribute_entry_t {
 };
 
 /**
+ * Determine the fragment size based on the address family of the remote host.
+ */
+static void determine_fragment_size(private_ike_sa_t *this)
+{
+	int family;
+
+	family = this->other_host->get_family(this->other_host);
+
+	this->fragment_size = lib->settings->get_int(lib->settings,
+			"%s.fragment_size_v%hhu", 0, lib->ns, (family == AF_INET ? 4 : 6));
+
+	if (!this->fragment_size)
+	{
+		this->fragment_size = lib->settings->get_int(lib->settings,
+			"%s.fragment_size", 1280, lib->ns);
+	}
+
+	if (!this->fragment_size)
+	{
+		this->fragment_size = (family == AF_INET) ? 576 : 1280;
+	}
+}
+
+/**
  * get the time of the latest traffic processed by the kernel
  */
 static time_t get_use_time(private_ike_sa_t* this, bool inbound)
@@ -345,14 +379,18 @@ static time_t get_use_time(private_ike_sa_t* this, bool inbound)
 		use_time = this->stats[STAT_OUTBOUND];
 	}
 
-	enumerator = array_create_enumerator(this->child_sas);
-	while (enumerator->enumerate(enumerator, &child_sa))
+	/* only consider IPsec traffic if we use UDP-encapsulation and they take
+	 * the same path */
+	if (this->public.has_condition(&this->public, COND_NAT_ANY))
 	{
-		child_sa->get_usestats(child_sa, inbound, &current, NULL, NULL);
-		use_time = max(use_time, current);
+		enumerator = array_create_enumerator(this->child_sas);
+		while (enumerator->enumerate(enumerator, &child_sa))
+		{
+			child_sa->get_usestats(child_sa, inbound, &current, NULL, NULL);
+			use_time = max(use_time, current);
+		}
+		enumerator->destroy(enumerator);
 	}
-	enumerator->destroy(enumerator);
-
 	return use_time;
 }
 
@@ -415,6 +453,7 @@ METHOD(ike_sa_t, set_other_host, void,
 {
 	DESTROY_IF(this->other_host);
 	this->other_host = other;
+	determine_fragment_size(this);
 }
 
 METHOD(ike_sa_t, get_redirected_from, host_t*,
@@ -726,29 +765,42 @@ METHOD(ike_sa_t, set_ike_cfg, void,
 METHOD(ike_sa_t, enable_extension, void,
 	private_ike_sa_t *this, ike_extension_t extension)
 {
-	this->extensions |= extension;
+	ike_extension_t *ptr;
+	ptr = (extension & EXT_PRIVATE_MARKER) ? &this->private_extensions
+										   : &this->extensions;
+	*ptr |= (extension & ~EXT_PRIVATE_MARKER);
 }
 
 METHOD(ike_sa_t, supports_extension, bool,
 	private_ike_sa_t *this, ike_extension_t extension)
 {
-	return (this->extensions & extension) != FALSE;
+	ike_extension_t *ptr;
+	ptr = (extension & EXT_PRIVATE_MARKER) ? &this->private_extensions
+										   : &this->extensions;
+	return (*ptr & extension) != 0;
 }
 
 METHOD(ike_sa_t, has_condition, bool,
 	private_ike_sa_t *this, ike_condition_t condition)
 {
-	return (this->conditions & condition) != FALSE;
+	ike_condition_t *ptr;
+	ptr = (condition & COND_PRIVATE_MARKER) ? &this->private_conditions
+										    : &this->conditions;
+	return (*ptr & condition) != 0;
 }
 
 METHOD(ike_sa_t, set_condition, void,
 	private_ike_sa_t *this, ike_condition_t condition, bool enable)
 {
+	ike_condition_t *ptr;
+
 	if (has_condition(this, condition) != enable)
 	{
+		ptr = (condition & COND_PRIVATE_MARKER) ? &this->private_conditions
+											    : &this->conditions;
 		if (enable)
 		{
-			this->conditions |= condition;
+			*ptr |= (condition & ~COND_PRIVATE_MARKER);
 			switch (condition)
 			{
 				case COND_NAT_HERE:
@@ -770,7 +822,7 @@ METHOD(ike_sa_t, set_condition, void,
 		}
 		else
 		{
-			this->conditions &= ~condition;
+			*ptr &= ~(condition & ~COND_PRIVATE_MARKER);
 			switch (condition)
 			{
 				case COND_NAT_HERE:
@@ -1576,7 +1628,7 @@ METHOD(ike_sa_t, initiate, status_t,
 	if (child_cfg)
 	{
 		/* normal IKE_SA with CHILD_SA */
-		this->task_manager->queue_child(this->task_manager, child_cfg, args);
+		this->task_manager->queue_child(this->task_manager, child_cfg, args, NULL);
 #ifdef ME
 		if (this->peer_cfg->get_mediated_by(this->peer_cfg))
 		{
@@ -1726,10 +1778,27 @@ METHOD(ike_sa_t, get_if_id, uint32_t,
 	return inbound ? this->if_id_in : this->if_id_out;
 }
 
+/**
+ * Sort CHILD_SAs by config and CPU ID so SAs without ID are enumerated first.
+ */
+static int child_sa_sort(const void *a_pub, const void *b_pub, void *user)
+{
+	child_sa_t *a = (child_sa_t*)a_pub, *b = (child_sa_t*)b_pub;
+	child_cfg_t *cfg = a->get_config(a);
+
+	if (!cfg->equals(cfg, b->get_config(b)))
+	{	/* use the unique IDs of unrelated SAs to maintain insertion order */
+		return a->get_unique_id(a) - b->get_unique_id(b);
+	}
+	/* otherwise use the CPU ID, making sure an SA without ID comes first */
+	return a->get_cpu(a) == CPU_ID_MAX ? -1 : a->get_cpu(a) - b->get_cpu(b);
+}
+
 METHOD(ike_sa_t, add_child_sa, void,
 	private_ike_sa_t *this, child_sa_t *child_sa)
 {
 	array_insert_create(&this->child_sas, ARRAY_TAIL, child_sa);
+	array_sort(this->child_sas, child_sa_sort, NULL);
 	charon->child_sa_manager->add(charon->child_sa_manager,
 								  child_sa, &this->public);
 }
@@ -2012,12 +2081,13 @@ static bool is_child_queued(private_ike_sa_t *this, task_queue_t queue)
 				this->version == IKEV1 ? TASK_QUICK_MODE : TASK_CHILD_CREATE);
 }
 
-/**
- * Check if any tasks to delete the IKE_SA are queued in the given queue.
+/*
+ * Described in header
  */
-static bool is_delete_queued(private_ike_sa_t *this, task_queue_t queue)
+bool ike_sa_is_delete_queued(ike_sa_t *ike_sa)
 {
-	return is_task_queued(this, queue,
+	private_ike_sa_t *this = (private_ike_sa_t*)ike_sa;
+	return is_task_queued(this, TASK_QUEUE_QUEUED,
 				this->version == IKEV1 ? TASK_ISAKMP_DELETE : TASK_IKE_DELETE);
 }
 
@@ -2066,20 +2136,12 @@ static status_t reestablish_children(private_ike_sa_t *this, ike_sa_t *new,
 		}
 		if (action & ACTION_START)
 		{
-			child_init_args_t args = {
-				.reqid = child_sa->get_reqid_ref(child_sa),
-				.label = child_sa->get_label(child_sa),
-			};
 			child_cfg = child_sa->get_config(child_sa);
 			DBG1(DBG_IKE, "restarting CHILD_SA %s",
 				 child_cfg->get_name(child_cfg));
 			other->task_manager->queue_child(other->task_manager,
 											 child_cfg->get_ref(child_cfg),
-											 &args);
-			if (args.reqid)
-			{
-				charon->kernel->release_reqid(charon->kernel, args.reqid);
-			}
+											 NULL, child_sa);
 		}
 	}
 	enumerator->destroy(enumerator);
@@ -2101,7 +2163,7 @@ METHOD(ike_sa_t, reestablish, status_t,
 	bool restart = FALSE;
 	status_t status = FAILED;
 
-	if (is_delete_queued(this, TASK_QUEUE_QUEUED))
+	if (ike_sa_is_delete_queued((ike_sa_t*)this))
 	{	/* don't reestablish IKE_SAs that have explicitly been deleted in the
 		 * mean time */
 		return FAILED;
@@ -2279,6 +2341,9 @@ static bool redirect_established(private_ike_sa_t *this, identification_t *to)
 	{
 		return FALSE;
 	}
+	/* mark the SA so it won't get reused even though it's established */
+	set_condition(this, COND_REDIRECTED, TRUE);
+
 	new_priv = (private_ike_sa_t*)new;
 	new->set_peer_cfg(new, this->peer_cfg);
 	new_priv->redirected_from = this->other_host->clone(this->other_host);
@@ -2504,7 +2569,7 @@ METHOD(ike_sa_t, retransmit, status_t,
 			DBG1(DBG_IKE, "proper IKE_SA delete failed, peer not responding");
 			if (has_condition(this, COND_REAUTHENTICATING) &&
 				!lib->settings->get_bool(lib->settings,
-									"%s.make_before_break", FALSE, lib->ns))
+									"%s.make_before_break", TRUE, lib->ns))
 			{
 				DBG1(DBG_IKE, "delete during reauthentication failed, "
 					 "trying to reestablish IKE_SA anyway");
@@ -2891,7 +2956,9 @@ METHOD(ike_sa_t, inherit_pre, void,
 
 	/* apply extensions and conditions with a few exceptions */
 	this->extensions = other->extensions;
+	this->private_extensions = other->private_extensions;
 	this->conditions = other->conditions;
+	this->private_conditions = other->private_conditions;
 	this->conditions &= ~COND_STALE;
 	this->conditions &= ~COND_REAUTHENTICATING;
 }
@@ -2907,14 +2974,10 @@ METHOD(ike_sa_t, inherit_post, void,
 	host_t *vip;
 
 	/* apply hosts and ids */
-	this->my_host->destroy(this->my_host);
-	this->other_host->destroy(this->other_host);
-	this->my_id->destroy(this->my_id);
-	this->other_id->destroy(this->other_id);
-	this->my_host = other->my_host->clone(other->my_host);
-	this->other_host = other->other_host->clone(other->other_host);
-	this->my_id = other->my_id->clone(other->my_id);
-	this->other_id = other->other_id->clone(other->other_id);
+	set_my_host(this, other->my_host->clone(other->my_host));
+	set_other_host(this, other->other_host->clone(other->other_host));
+	set_my_id(this, other->my_id->clone(other->my_id));
+	set_other_id(this, other->other_id->clone(other->other_id));
 	this->if_id_in = other->if_id_in;
 	this->if_id_out = other->if_id_out;
 
@@ -2954,8 +3017,6 @@ METHOD(ike_sa_t, inherit_post, void,
 		array_insert(this->attributes, ARRAY_TAIL, &entry);
 	}
 
-	/* inherit all conditions */
-	this->conditions = other->conditions;
 	if (this->conditions & COND_NAT_HERE)
 	{
 		send_keepalive(this, FALSE);
@@ -3202,17 +3263,6 @@ ike_sa_t * ike_sa_create(ike_sa_id_t *ike_sa_id, bool initiator,
 			.queue_task = _queue_task,
 			.queue_task_delayed = _queue_task_delayed,
 			.adopt_child_tasks = _adopt_child_tasks,
-#ifdef ME
-			.act_as_mediation_server = _act_as_mediation_server,
-			.get_server_reflexive_host = _get_server_reflexive_host,
-			.set_server_reflexive_host = _set_server_reflexive_host,
-			.get_connect_id = _get_connect_id,
-			.initiate_mediation = _initiate_mediation,
-			.initiate_mediated = _initiate_mediated,
-			.relay = _relay,
-			.callback = _callback,
-			.respond = _respond,
-#endif /* ME */
 		},
 		.ike_sa_id = ike_sa_id->clone(ike_sa_id),
 		.version = version,
@@ -3229,7 +3279,7 @@ ike_sa_t * ike_sa_create(ike_sa_id_t *ike_sa_id, bool initiator,
 		.my_auths = array_create(0, 0),
 		.other_auths = array_create(0, 0),
 		.attributes = array_create(sizeof(attribute_entry_t), 0),
-		.unique_id = ref_get(&unique_id),
+		.unique_id = ref_get_nonzero(&unique_id),
 		.keepalive_interval = lib->settings->get_time(lib->settings,
 								"%s.keep_alive", KEEPALIVE_INTERVAL, lib->ns),
 		.keepalive_dpd_margin = lib->settings->get_time(lib->settings,
@@ -3238,11 +3288,21 @@ ike_sa_t * ike_sa_create(ike_sa_id_t *ike_sa_id, bool initiator,
 								"%s.retry_initiate_interval", 0, lib->ns),
 		.flush_auth_cfg = lib->settings->get_bool(lib->settings,
 								"%s.flush_auth_cfg", FALSE, lib->ns),
-		.fragment_size = lib->settings->get_int(lib->settings,
-								"%s.fragment_size", 1280, lib->ns),
 		.follow_redirects = lib->settings->get_bool(lib->settings,
 								"%s.follow_redirects", TRUE, lib->ns),
 	);
+
+#ifdef ME
+	this->public.act_as_mediation_server = _act_as_mediation_server;
+	this->public.get_server_reflexive_host = _get_server_reflexive_host;
+	this->public.set_server_reflexive_host = _set_server_reflexive_host;
+	this->public.get_connect_id = _get_connect_id;
+	this->public.initiate_mediation = _initiate_mediation;
+	this->public.initiate_mediated = _initiate_mediated;
+	this->public.relay = _relay;
+	this->public.callback = _callback;
+	this->public.respond = _respond;
+#endif /* ME */
 
 	if (version == IKEV2)
 	{	/* always supported with IKEv2 */

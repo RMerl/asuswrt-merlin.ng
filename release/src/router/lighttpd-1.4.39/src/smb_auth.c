@@ -4825,4 +4825,52 @@ size_t safe_strncpy(char *dst, const char *src, size_t size) {
     snprintf(dst, size, "%s", src);
     return strnlen(dst, size);
 }
+
+char* xml_escape(const char* src) {
+	if (!src) return NULL;
+    size_t len = strlen(src);
+    //- Estimated maximum length (each character could become 6 characters, e.g. ")
+    size_t max_len = len * 6 + 1;
+    char* dst = (char*)malloc(max_len);
+	if (!dst) return NULL;
+    char* p = dst;
+    for (size_t i = 0; i < len; ++i) {
+        switch (src[i]) {
+            case '&': strcpy(p, "&amp;"); p += 5; break;
+            case '<': strcpy(p, "&lt;"); p += 4; break;
+            case '>': strcpy(p, "&gt;"); p += 4; break;
+            case '"': strcpy(p, "&quot;"); p += 6; break;
+            case '\'': strcpy(p, "&apos;"); p += 6; break;
+            default: *p++ = src[i]; break;
+        }
+    }
+    *p = '\0';
+    return dst;
+}
+
+int is_safe_path(const char* path) {
+	//- Disallow absolute paths
+    if (path == NULL || *path == '\0') return 0;
+    //- Disallow path traversal
+    if (strstr(path, "..")) return 0;
+    //- Allow only safe characters (including spaces)
+    for (const char* p = path; *p; ++p) {
+        // if (!(isalnum(*p) || *p == '_' || *p == '-' || *p == '.' || *p == '/')) {
+		if (!(isalnum((unsigned char)*p) || *p == '_' || *p == '-' || *p == '.' || *p == '/' || *p == ' ')) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int is_valid_filename(const char* filename) {
+	if (!filename) return 0;
+    for (const unsigned char* p = (const unsigned char*)filename; *p; ++p) {
+        if (*p < 0x20 || *p == 0x7F) return 0; //- Control characters
+        if (*p == '/' || *p == '\\' || *p == ':' || *p == '*' ||
+            *p == '?' || *p == '"' || *p == '<' || *p == '>' || *p == '|')
+            return 0; //- Not allowed file character
+    }
+    return 1;
+}
 #endif

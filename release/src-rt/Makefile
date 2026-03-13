@@ -315,7 +315,11 @@ else
 include ./make.hndrt
 endif
 ifeq ($(or $(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916)),y)
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126))
+export LINUXDIR := $(HND_SRC)/kernel/linux-5.15
+else
 export LINUXDIR := $(HND_SRC)/kernel/linux-4.19
+endif
 else
 export LINUXDIR := $(HND_SRC)/kernel/linux-4.1
 endif
@@ -369,6 +373,14 @@ ifneq ($(BRCM_CHIP),4908)
 export CFLAGS += -D$(MODEL)
 endif
 export $(MODEL):=y
+endif
+
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126))
+CFLAGS += -D$(ASUSWRT_BRCM_SDK_VERSION)
+endif
+
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506)
+CFLAGS += -DNEW_WPA_CLI
 endif
 
 ifneq ($(filter-out n,$(and $(HND_ROUTER_AX_6756),$(BCM_MFG)) $(and $(HND_ROUTER_BE_4916),$(BCM_MFG)) $(WL_TEST)),)
@@ -2000,6 +2012,8 @@ define RouterOptions
 	if [ "$(SW_CTRL_ALLLED)" = "y" ]; then \
 		sed -i "/RTCONFIG_SW_CTRL_ALLLED/d" $(1); \
 		echo "RTCONFIG_SW_CTRL_ALLLED=y" >>$(1); \
+		sed -i "/RTCONFIG_LED_SCHED\>/d" $(1); \
+		echo "RTCONFIG_LED_SCHED=y" >>$(1); \
 	fi;
 	if [ "$(BTN_TURBO)" = "y" ]; then \
 		sed -i "/RTCONFIG_TURBO_BTN/d" $(1); \
@@ -2970,6 +2984,8 @@ define RouterOptions
 	if [ "$(TS_UI)" = "y" ]; then \
 		sed -i "/RTCONFIG_TS_UI/d" $(1); \
 		echo "RTCONFIG_TS_UI=y" >>$(1); \
+		sed -i "/RTCONFIG_NETOOL/d" $(1); \
+		echo "RTCONFIG_NETOOL=y" >>$(1); \
 	fi;
 	if [ "$(ADGUARDDNS)" = "y" ]; then \
 		sed -i "/RTCONFIG_ADGUARDDNS/d" $(1); \
@@ -2999,6 +3015,10 @@ define RouterOptions
 	else \
 		echo "# RTCONFIG_ROG_UI is not set" >>$(1); \
 	fi;
+    if [ "$(YEAR20)" = "y" ]; then \
+        sed -i "/RTCONFIG_YEAR20/d" $(1); \
+        echo "RTCONFIG_YEAR20=y" >>$(1); \
+    fi;
 	if [ "$(GS_UI)" = "y" ]; then \
 		sed -i "/RTCONFIG_GS_UI/d" $(1); \
 		echo "RTCONFIG_GS_UI=y" >>$(1); \
@@ -3021,6 +3041,12 @@ define RouterOptions
 	if [ "$(TUF_UI)" = "y" ]; then \
 		sed -i "/RTCONFIG_TUF_UI/d" $(1); \
 		echo "RTCONFIG_TUF_UI=y" >>$(1); \
+		sed -i "/RTCONFIG_NETOOL/d" $(1); \
+		echo "RTCONFIG_NETOOL=y" >>$(1); \
+	fi;
+	if [ "$(PROART_UI)" = "y" ]; then \
+		sed -i "/RTCONFIG_PROART_UI/d" $(1); \
+		echo "RTCONFIG_PROART_UI=y" >>$(1); \
 	fi;
 	if [ "$(DASHBOARD)" = "y" ]; then \
 		sed -i "/RTCONFIG_DASHBOARD/d" $(1); \
@@ -3080,6 +3106,10 @@ define RouterOptions
 		sed -i "/RTCONFIG_N18UTXBF/d" $(1); \
 		echo "RTCONFIG_N18UTXBF=y" >>$(1); \
 	fi;
+	if [ "$(GTBOOSTER)" = "y" ]; then \
+		sed -i "/RTCONFIG_GTBOOSTER\>/d" $(1); \
+		echo "RTCONFIG_GTBOOSTER=y" >>$(1); \
+	fi;
 	if [ "$(HNS)" = "y" ]; then \
 		sed -i "/RTCONFIG_HNS\>/d" $(1); \
 		echo "RTCONFIG_HNS=y" >>$(1); \
@@ -3093,6 +3123,12 @@ define RouterOptions
 	if [ "$(PRESSURE_SENSOR)" = "y" ]; then \
 		sed -i "/RTCONFIG_PRESSURE_SENSOR/d" $(1); \
 		echo "RTCONFIG_PRESSURE_SENSOR=y" >>$(1); \
+	fi;
+	sed -i "/RTCONFIG_PRESSURE_SENSOR_CMP201/d" $(1); \
+	if [ "$(PRESSURE_SENSOR_CMP201)" = "y" ]; then \
+		echo "RTCONFIG_PRESSURE_SENSOR_CMP201=y" >>$(1); \
+	else \
+		echo "# RTCONFIG_PRESSURE_SENSOR_CMP201 is not set" >>$(1); \
 	fi;
 	if [ "$(SMARTHAUL)" = "y" ]; then \
                 sed -i "/RTCONFIG_SMARTHAUL/d" $(1); \
@@ -3407,6 +3443,10 @@ define RouterOptions
 		echo "# RTCONFIG_EXT_RTL8370MB is not set" >>$(1); \
 		sed -i "/RTCONFIG_EXT_BCM53134/d" $(1); \
 		echo "# RTCONFIG_EXT_BCM53134 is not set" >>$(1); \
+	fi;
+	if [ "$(BCM_EXT_SWITCH_RTK)" = "y" ]; then \
+		sed -i "/RTCONFIG_BCM_EXT_SWITCH_RTK/d" $(1); \
+		echo "RTCONFIG_BCM_EXT_SWITCH_RTK=y" >>$(1); \
 	fi;
 	if [ "$(RTL_UMGMT)" = "y" ]; then \
 		sed -i "/RTCONFIG_RTL_UMGMT/d" $(1); \
@@ -4273,6 +4313,12 @@ define RouterOptions
 		else \
 			echo "# RTCONFIG_DIS_HASH_KEY_GEN_CHECK is not set" >>$(1); \
 		fi; \
+		sed -i "/RTCONFIG_AMAS_5G_ONBOARDING/d" $(1); \
+		if [ "$(AMAS_5G_OB)" = "y" ]; then \
+			echo "RTCONFIG_AMAS_5G_ONBOARDING=y" >>$(1); \
+		else \
+			echo "# RTCONFIG_AMAS_5G_ONBOARDING is not set" >>$(1); \
+		fi; \
 	fi;
 	sed -i "/RTCONFIG_BATMAN_ADV/d" $(1); \
 	if [ "$(BATMAN)" = "y" ]; then \
@@ -5018,6 +5064,14 @@ define RouterOptions
 	if [ "$(AURALED)" = "y" ]; then \
 		sed -i "/RTCONFIG_AURALED/d" $(1); \
 		echo "RTCONFIG_AURALED=y" >>$(1); \
+		sed -i "/RTCONFIG_AURA_SCHED/d" $(1); \
+		echo "RTCONFIG_AURA_SCHED=y" >>$(1); \
+	fi;
+	if [ "$(AURALED_NIGHT)" = "y" ]; then \
+		sed -i "/RTCONFIG_AURALED_NIGHT/d" $(1); \
+		echo "RTCONFIG_AURALED_NIGHT=y" >>$(1); \
+		sed -i "/RTCONFIG_AURA_NIGHT_SCHED/d" $(1); \
+		echo "RTCONFIG_AURA_NIGHT_SCHED=y" >>$(1); \
 	fi;
         if [ "$(AURALED_NIGHT)" = "y" ]; then \
                 sed -i "/RTCONFIG_AURALED_NIGHT/d" $(1); \
@@ -5026,6 +5080,8 @@ define RouterOptions
 	if [ "$(SINGLE_LED_NIGHT)" = "y" ]; then \
 		sed -i "/RTCONFIG_SINGLE_LED_NIGHT_MODE/d" $(1); \
 		echo "RTCONFIG_SINGLE_LED_NIGHT_MODE=y" >>$(1); \
+		sed -i "/RTCONFIG_LED_NIGHT_SCHED/d" $(1); \
+		echo "RTCONFIG_LED_NIGHT_SCHED=y" >>$(1); \
 	else \
 		echo "# RTCONFIG_SINGLE_LED_NIGHT_MODE is not set" >>$(1); \
 	fi;
@@ -5036,6 +5092,10 @@ define RouterOptions
 	if [ "$(MLO_DEFAULT_ACTIVE)" = "y" ]; then \
 		sed -i "/RTCONFIG_MLO_DEFAULT_ACTIVE\>/d" $(1); \
 		echo "RTCONFIG_MLO_DEFAULT_ACTIVE=y" >>$(1); \
+	fi;
+	if [ "$(RE_MLO_VSIE_ACTIVE)" = "y" ]; then \
+		sed -i "/RTCONFIG_RE_MLO_VSIE_ACTIVE\>/d" $(1); \
+		echo "RTCONFIG_RE_MLO_VSIE_ACTIVE=y" >>$(1); \
 	fi;
 	if [ "$(NO_AIDISK)" = "y" ]; then \
 		sed -i "/RTCONFIG_NO_AIDISK/d" $(1); \
@@ -5061,6 +5121,30 @@ define RouterOptions
 	if [ "$(SECURE_BY_DEFAULT)" = "y" ]; then \
 		sed -i "/RTCONFIG_SECURE_BY_DEFAULT\>/d" $(1); \
 		echo "RTCONFIG_SECURE_BY_DEFAULT=y" >>$(1); \
+	fi;
+	if [ "$(AURA_SCHED)" = "y" ]; then \
+		sed -i "/RTCONFIG_AURA_SCHED\>/d" $(1); \
+		echo "RTCONFIG_AURA_SCHED=y" >>$(1); \
+	fi;
+	if [ "$(AURA_NIGHT_SCHED)" = "y" ]; then \
+		sed -i "/RTCONFIG_AURA_NIGHT_SCHED\>/d" $(1); \
+		echo "RTCONFIG_AURA_NIGHT_SCHED=y" >>$(1); \
+	fi;
+	if [ "$(LED_SCHED)" = "y" ]; then \
+		sed -i "/RTCONFIG_LED_SCHED\>/d" $(1); \
+		echo "RTCONFIG_LED_SCHED=y" >>$(1); \
+	fi;
+	if [ "$(LED_NIGHT_SCHED)" = "y" ]; then \
+		sed -i "/RTCONFIG_LED_NIGHT_SCHED\>/d" $(1); \
+		echo "RTCONFIG_LED_NIGHT_SCHED=y" >>$(1); \
+	fi;
+	if [ "$(BUILD_NAME)" = "RT-BE82M" ] || [ "$(BUILD_NAME)" = "GS-BE18000" ] || [ "$(BUILD_NAME)" = "GS-BE12000" ] || [ "$(BUILD_NAME)" = "GS7_PRO" ] || [ "$(BUILD_NAME)" = "GT7" ] || [ "$(BUILD_NAME)" = "GS7_PRO_MAX" ]; then \
+		sed -i "/RTCONFIG_MXL_826XX\>/d" $(1); \
+                echo "RTCONFIG_MXL_826XX=y" >>$(1); \
+	fi;
+	if [ "$(ASUSWRT_BRCM_SDK_VERSION)" = "WIFI7_SDK_20231126" ] || [ "$(ASUSWRT_BRCM_SDK_VERSION)" = "WIFI7_SDK_20241007" ]; then \
+		sed -i "/RTCONFIG_VLANCTL\>/d" $(1); \
+		echo "RTCONFIG_VLANCTL=y" >>$(1); \
 	fi;
 	$(call platformRouterOptions, $(1))
 endef
@@ -5194,18 +5278,6 @@ define BusyboxOptions
 			echo "CONFIG_FLOCK=y" >>$(1); \
 		fi; \
 	else \
-		sed -i "/CONFIG_FEATURE_MOUNT_LOOP/d" $(1); \
-		echo "# CONFIG_FEATURE_MOUNT_LOOP is not set" >>$(1); \
-		sed -i "/CONFIG_FEATURE_DEVFS/d" $(1); \
-		echo "# CONFIG_FEATURE_DEVFS is not set" >>$(1); \
-		sed -i "/CONFIG_FEATURE_MOUNT_LABEL/d" $(1); \
-		echo "# CONFIG_FEATURE_MOUNT_LABEL is not set" >>$(1); \
-		sed -i "/CONFIG_FEATURE_MOUNT_FSTAB/d" $(1); \
-		echo "# CONFIG_FEATURE_MOUNT_FSTAB is not set" >>$(1); \
-		sed -i "/CONFIG_VOLUMEID/d" $(1); \
-		echo "# CONFIG_VOLUMEID is not set" >>$(1); \
-		sed -i "/CONFIG_BLKID/d" $(1); \
-		echo "# CONFIG_BLKID is not set" >>$(1); \
 		sed -i "/CONFIG_SWAPONOFF/d" $(1); \
 		echo "# CONFIG_SWAPONOFF is not set" >>$(1); \
 		sed -i "/CONFIG_TRUE/d" $(1); \
@@ -5462,6 +5534,10 @@ define BusyboxOptions
 		echo "CONFIG_LSOF=y" >>$(1); \
 		sed -i "/CONFIG_FEATURE_PS_LONG/d" $(1); \
 		echo "CONFIG_FEATURE_PS_LONG=y" >>$(1); \
+		sed -i "/CONFIG_SEQ/d" $(1); \
+		echo "CONFIG_SEQ=y" >>$(1); \
+		sed -i "/CONFIG_XXD/d" $(1); \
+		echo "CONFIG_XXD=y" >>$(1); \
 	fi;
 	if [ "$(HND_ROUTER_AX_6756)" = "y" ] || [ "$(HND_ROUTER_BE_4916)" = "y" ]; then \
 		sed -i "/CONFIG_SHA256SUM/d" $(1); \
@@ -6358,6 +6434,12 @@ fi;
 		sed -i "/CONFIG_BCM_EXT_SWITCH_TYPE/d" $(1); \
 		echo "CONFIG_BCM_EXT_SWITCH_TYPE=53134" >>$(1); \
 	fi; \
+	sed -i "/CONFIG_BCM_EXT_SWITCH_RTK/d" $(1); \
+	if [ "$(BCM_EXT_SWITCH_RTK)" = "y" ]; then \
+		echo "CONFIG_BCM_EXT_SWITCH_RTK=y" >>$(1); \
+	else \
+		echo "# CONFIG_BCM_EXT_SWITCH_RTK is not set" >>$(1); \
+	fi; \
 	sed -i "/CONFIG_LINUX_MTD/d" $(1); \
 	if [ "$(LINUX_MTD)" = "" ]; then \
 		echo "CONFIG_LINUX_MTD=32" >>$(1); \
@@ -6469,6 +6551,11 @@ fi;
 	if [ "$(DEBUGFS)" = "y" ]; then \
 		sed -i "/CONFIG_DEBUG_FS/d" $(1); \
 		echo "CONFIG_DEBUG_FS=y" >>$(1); \
+		if [ "$(ASUSWRT_BRCM_SDK_VERSION)" = "WIFI7_SDK_20250506" ] || [ "$(ASUSWRT_BRCM_SDK_VERSION)" = "WIFI8_SDK_20251126" ]; then \
+		echo "CONFIG_DEBUG_FS_ALLOW_ALL=y" >>$(1); \
+		echo "# CONFIG_DEBUG_FS_DISALLOW_MOUNT is not set" >>$(1); \
+		echo "# CONFIG_DEBUG_FS_ALLOW_NONE is not set" >>$(1); \
+		fi; \
 		sed -i "/CONFIG_USB_MON/d" $(1); \
 		echo "CONFIG_USB_MON=m" >>$(1); \
 		if [ "$(ARM)" = "y" ]; then \
@@ -6484,6 +6571,9 @@ fi;
 			echo "# CONFIG_LKDTM is not set" >>$(1); \
 			sed -i "/CONFIG_DYNAMIC_DEBUG/d" $(1); \
 			echo "# CONFIG_DYNAMIC_DEBUG is not set" >>$(1); \
+			if [ "$(ASUSWRT_BRCM_SDK_VERSION)" = "WIFI7_SDK_20250506" ] || [ "$(ASUSWRT_BRCM_SDK_VERSION)" = "WIFI8_SDK_20251126" ]; then \
+			echo "# CONFIG_DYNAMIC_DEBUG_CORE is not set" >>$(1); \
+			fi; \
 		fi; \
 	fi; \
 	if [ "$(BONDING)" = "y" ]; then \
@@ -6841,6 +6931,14 @@ fi;
 		sed -i "/CONFIG_CRC8 is not set\>/d" $(1); \
 		echo "CONFIG_CRC8=y" >>$(1); \
 	fi;
+	sed -i "/CONFIG_CMP201/d" $(1); \
+	if [ "$(PRESSURE_SENSOR_CMP201)" = "y" ]; then \
+		echo "CONFIG_CMP201=y" >>$(1); \
+		echo "CONFIG_CMP201_I2C=y" >>$(1); \
+	else \
+		echo "# CONFIG_CMP201 is not set" >>$(1); \
+		echo "# CONFIG_CMP201_I2C is not set" >>$(1); \
+	fi;
 	if [ "$(FLASH_TYPE)" = "EMMC" ]; then \
 		sed -i "/CONFIG_SYSFS_DEPRECATED/d" $(1); \
 		echo "# CONFIG_SYSFS_DEPRECATED is not set" >>$(1); \
@@ -6853,23 +6951,60 @@ fi;
 		sed -i "/CONFIG_BCM_PHY_BLACKFIN_B0/d" $(1); \
 		echo "# CONFIG_BCM_PHY_BLACKFIN_B0 is not set" >>$(1); \
 	fi;
-	if [ "$(BUILD_NAME)" = "RT-BE82M" ] || [ "$(BUILD_NAME)" = "GS-BE18000" ] || [ "$(BUILD_NAME)" = "GS-BE12000" ] || [ "$(BUILD_NAME)" = "GS7_PRO" ] || [ "$(BUILD_NAME)" = "GT7" ]; then \
+	if [ "$(BUILD_NAME)" = "RT-BE82M" ] || [ "$(BUILD_NAME)" = "GS-BE18000" ] || [ "$(BUILD_NAME)" = "GS-BE12000" ] || [ "$(BUILD_NAME)" = "GS7_PRO" ] || [ "$(BUILD_NAME)" = "GT7" ] || [ "$(BUILD_NAME)" = "GS7_PRO_MAX" ]; then \
 		sed -i "/CONFIG_BCM_PHY_BLACKFIN_B0/d" $(1); \
 		echo "# CONFIG_BCM_PHY_BLACKFIN_B0 is not set" >>$(1); \
 		sed -i "/CONFIG_BCM_PHY_LANAI_A0/d" $(1); \
 		echo "# CONFIG_BCM_PHY_LANAI_A0 is not set" >>$(1); \
-		sed -i "/CONFIG_BCM_PHY_XPHY/d" $(1); \
-		echo "# CONFIG_BCM_PHY_XPHY is not set" >>$(1); \
-		if [ "$(BUILD_NAME)" = "GT7" ]; then \
+		if [ "$(BUILD_NAME)" = "GT7" ] || [ "$(BUILD_NAME)" = "GS7_PRO_MAX" ]; then \
 			sed -i "/CONFIG_BCM_PHY_NIIHAU_A0/d" $(1); \
 			echo "CONFIG_BCM_PHY_NIIHAU_A0=y" >>$(1); \
 		fi; \
+		sed -i "/CONFIG_BCM_PHY_XPHY/d" $(1); \
+		if [ "$(ASUSWRT_BRCM_SDK_VERSION)" = "WIFI7_SDK_20250506" ] || [ "$(ASUSWRT_BRCM_SDK_VERSION)" = "WIFI8_SDK_20251126" ]; then \
+			echo "# CONFIG_BCM_PHY_XPHY_16 is not set" >>$(1); \
+			echo "# CONFIG_BCM_PHY_XPHY_8 is not set" >>$(1); \
+		else \
+			echo "# CONFIG_BCM_PHY_XPHY is not set" >>$(1); \
+		fi; \
+		if [ "$(BUILD_NAME)" = "GS7_PRO_MAX" ]; then \
+			sed -i "/CONFIG_BCM_PHY_COMBO/d" $(1); \
+			echo "CONFIG_BCM_PHY_COMBO=y" >>$(1); \
+		fi; \
 	fi;
-	if [ "$(BUILD_NAME)" = "GS-BE18000" ] || [ "$(BUILD_NAME)" = "GS-BE12000" ] || [ "$(BUILD_NAME)" = "GS7_PRO" ] || [ "$(BUILD_NAME)" = "GT7" ]; then \
-		sed -i "/CONFIG_BCM6766_2G/d" $(1); \
-		echo "CONFIG_BCM6766_2G=y" >>$(1); \
-		sed -i "/CONFIG_VMSPLIT_2G_OPT/d" $(1); \
-		echo "CONFIG_VMSPLIT_2G_OPT=y" >>$(1); \
+	if [ "$(ASUSWRT_BRCM_SDK_VERSION)" = "WIFI7_SDK_20250506" ] || [ "$(ASUSWRT_BRCM_SDK_VERSION)" = "WIFI8_SDK_20251126" ]; then \
+		sed -i "/CONFIG_RTBE82M/d" $(1); \
+		if [ "$(BUILD_NAME)" = "RT-BE82M" ]; then \
+			echo "CONFIG_RTBE82M=y" >>$(1); \
+		else \
+			echo "# CONFIG_RTBE82M is not set" >>$(1); \
+		fi;\
+		sed -i "/CONFIG_BT10/d" $(1); \
+		if [ "$(BUILD_NAME)" = "BT10" ]; then \
+			echo "CONFIG_BT10=y" >>$(1); \
+		else \
+			echo "# CONFIG_BT10 is not set" >>$(1); \
+		fi; \
+	else \
+		if [ "$(HND_ROUTER_BE_4916)" = "y" ] && [ "$(BUILD_NAME)" != "GS7_PRO_MAX" ]; then \
+			sed -i "/CONFIG_BCM_PHY_COMBO/d" $(1); \
+			echo "# CONFIG_BCM_PHY_COMBO is not set" >>$(1); \
+		fi; \
+	fi;
+	if [ "$(BRCM_CHIP)" = "6766" ]; then \
+		if [ "$(ASUSWRT_BRCM_SDK_VERSION)" != "WIFI7_SDK_20250506" ] && ([ "$(BUILD_NAME)" = "GS-BE18000" ] || [ "$(BUILD_NAME)" = "GS-BE12000" ] || [ "$(BUILD_NAME)" = "GS7_PRO" ] || [ "$(BUILD_NAME)" = "GT7" ] || [ "$(BUILD_NAME)" = "GS7_PRO_MAX" ]); then \
+			sed -i "/CONFIG_BCM6766_2G/d" $(1); \
+			echo "CONFIG_BCM6766_2G=y" >>$(1); \
+			sed -i "/CONFIG_VMSPLIT_2G/d" $(1); \
+			echo "# CONFIG_VMSPLIT_2G is not set" >>$(1); \
+			sed -i "/CONFIG_VMSPLIT_2G_OPT/d" $(1); \
+			echo "CONFIG_VMSPLIT_2G_OPT=y" >>$(1); \
+			sed -i "/CONFIG_PAGE_OFFSET/d" $(1); \
+			echo "CONFIG_PAGE_OFFSET=0x90000000" >>$(1); \
+		else \
+			sed -i "/CONFIG_BCM6766_2G/d" $(1); \
+			echo "# CONFIG_BCM6766_2G is not set" >>$(1); \
+		fi; \
 	fi;
 	$(call platformKernelConfig, $(1))
 	$(call extraKernelConfig, $(1))
@@ -7004,6 +7139,14 @@ else ifeq ($(BCMWL6A),y)
 
  else
 	@cp $(LINUXDIR)/config_base.6a $(LINUXDIR)/config_$(lowercase_B)
+ endif
+ ifeq ($(BCM_EXT_SWITCH_RTK),y)
+  ifeq ($(BUILD_NAME),RT-BE58U)
+	@if [ -f $(LINUXDIR)/../dts/6765/RT-BE58U.dts.bcmext ]; then \
+		echo "Switching to RT-BE58U.dts.bcmext for RTK switch..."; \
+		cp -f $(LINUXDIR)/../dts/6765/RT-BE58U.dts.bcmext $(LINUXDIR)/../dts/6765/RT-BE58U.dts; \
+	fi
+  endif
  endif
 else
 	@if [ "$(RALINK)" = "y" ]; then \
@@ -7192,7 +7335,7 @@ ET10 et10 XD4S xd4s:
 	$(call save_src_config,$@,_CFG)
 	$(MAKE) bin
 
-ET12 et12 XT12 xt12 XD4PRO xd4pro XT8PRO xt8pro BM68 bm68 XT8_V2 xt8_v2 ET8PRO et8pro ET8_V2 et8_v2 GT10 gt10 XD6_V2 xd6_v2 BR63 br63 BC109 bc109 BC105 bc105 EBG19 ebg19 EBG15 ebg15 BT12 bt12 BT10 bt10 BQ16 bq16 BQ16_PRO bq16_pro XC5 xc5 eba63 GS7_PRO gs7_pro GT7 gt7:
+ET12 et12 XT12 xt12 XD4PRO xd4pro XT8PRO xt8pro BM68 bm68 XT8_V2 xt8_v2 ET8PRO et8pro ET8_V2 et8_v2 GT10 gt10 XD6_V2 xd6_v2 BR63 br63 BC109 bc109 BC105 bc105 EBG19 ebg19 EBG15 ebg15 BT12 bt12 BT10 bt10 BQ16 bq16 BQ16_PRO bq16_pro XC5 xc5 eba63 GS7_PRO gs7_pro GT7 gt7 GS7_PRO_MAX gs7_pro_max:
 	$(call save_src_config, $@,_CFG)
 ifeq ($(or $(HND_ROUTER_AX_675x),$(HND_ROUTER_AX)),y)
 	@echo "Copy router-sysdep.$(lowercase_B) content"

@@ -37,7 +37,9 @@
 #endif /* linux */
 
 #include <netinet/in.h>
+#if !defined(WIFI8_SDK_20251126)
 #include <UdpLib.h>
+#endif
 
 /* Comment out the next line if debug strings are not needed */
 /* #define U_DEBUG */

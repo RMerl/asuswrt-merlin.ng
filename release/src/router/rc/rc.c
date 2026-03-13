@@ -607,12 +607,6 @@ static int rctest_main(int argc, char *argv[])
 		}
 	}
 #endif
-	else if (strcmp(argv[1], "apmx_apgx_to_wlxy") == 0) {
-		apmx_apgx_to_wlxy();
-	}
-	else if (strcmp(argv[1], "sync_apg_ifnames_to_jffs") == 0) {
-		sync_apg_ifnames_to_jffs();
-	}
 	else if (strcmp(argv[1], "check_sdn_ifcap")==0) {
 		create_sdn_ifcap();
 		if (check_wifi_band_cap(argv[2]) == 0)
@@ -1585,6 +1579,82 @@ static int rctest_main(int argc, char *argv[])
 			}
 		}
 	}
+	else if (strcmp(argv[1], "find_next_sched")==0) {
+		struct json_object *next_sched_obj = json_object_new_object();
+
+		time_t now = time(NULL);
+		int next_wday, next_hour, next_minute;
+		char next_raw_rule[13];
+		int next_raw_rule_size = sizeof(next_raw_rule);
+		char sched_buf[1024] = {0};
+		char led_sched[256] = {0};
+		char led_night_sched[256] = {0};
+		char aura_sched[256] = {0};
+		char aura_night_sched[256] = {0};
+		int sched_buf_len = 0;
+
+#ifdef RTCONFIG_LED_SCHED
+		if (nvram_get_int("led_timesched")) {
+			snprintf(led_sched, sizeof(led_sched), "%s", nvram_safe_get("led_sched"));
+			if (led_sched[0] != '\0')
+				sched_buf_len += snprintf(sched_buf+sched_buf_len, sizeof(sched_buf)-sched_buf_len, "<%s", led_sched);
+		}
+#endif
+
+#ifdef RTCONFIG_LED_NIGHT_SCHED
+		if (nvram_get_int("led_night_timesched")) {
+			snprintf(led_night_sched, sizeof(led_night_sched), "%s", nvram_safe_get("led_night_sched"));
+			if (led_night_sched[0] != '\0')
+				sched_buf_len += snprintf(sched_buf+sched_buf_len, sizeof(sched_buf)-sched_buf_len, "<%s", led_night_sched);
+		}
+#endif
+
+#ifdef RTCONFIG_AURA_SCHED
+		if (nvram_get_int("aura_timesched")) {
+			snprintf(aura_sched, sizeof(aura_sched), "%s", nvram_safe_get("aura_sched"));
+			if (aura_sched[0] != '\0')
+				sched_buf_len += snprintf(sched_buf+sched_buf_len, sizeof(sched_buf)-sched_buf_len, "<%s", aura_sched);
+		}
+#endif
+
+#ifdef RTCONFIG_AURA_NIGHT_SCHED
+		if (nvram_get_int("aura_night_timesched")) {
+			snprintf(aura_night_sched, sizeof(aura_night_sched), "%s", nvram_safe_get("aura_night_sched"));
+			if (aura_night_sched[0] != '\0')
+				sched_buf_len += snprintf(sched_buf+sched_buf_len, sizeof(sched_buf)-sched_buf_len, "<%s", aura_night_sched);
+		}
+#endif
+
+		// find out next schedule or current schedule
+		if (find_sched_v2_next_sched(sched_buf, now, &next_wday, &next_hour, &next_minute, next_raw_rule, next_raw_rule_size) == 0) {
+			int buf[8];
+			char *sched_type = NULL;
+			//printf("raw : %s\nCurrent time: %s, next schedule: wday=%d %02d:%02d\n", next_raw_rule, ctime(&now), next_wday, next_hour, next_minute);
+
+			if (strstr(led_sched, next_raw_rule))
+				sched_type = "led";
+			else if(strstr(led_night_sched, next_raw_rule))
+				sched_type = "led_night";
+			else if(strstr(aura_sched, next_raw_rule))
+				sched_type = "aura";
+			else if(strstr(aura_night_sched, next_raw_rule))
+				sched_type = "aura_night";
+			if (sched_type) {
+				json_object_object_add(next_sched_obj, "sched_type", json_object_new_string(sched_type));
+				json_object_object_add(next_sched_obj, "next_raw_rule", json_object_new_string(next_raw_rule));
+				snprintf(buf, sizeof(buf), "%d", next_wday);
+				json_object_object_add(next_sched_obj, "next_wday", json_object_new_string(buf));
+				snprintf(buf, sizeof(buf), "%d", next_hour);
+				json_object_object_add(next_sched_obj, "next_hour", json_object_new_string(buf));
+				snprintf(buf, sizeof(buf), "%d", next_minute);
+				json_object_object_add(next_sched_obj, "next_minute", json_object_new_string(buf));
+			}
+		}
+
+		printf("%s\n", json_object_to_json_string(next_sched_obj));
+		if (next_sched_obj)
+			json_object_put(next_sched_obj);
+	}
 #ifdef RTCONFIG_GRE
 	else if (strcmp(argv[1], "l2gre") == 0) {
 		int unit;
@@ -1619,6 +1689,12 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "sdn_del") == 0) {
 		remove_sdn();
 	}
+#if defined(RTCONFIG_VIF_ONBOARDING) && defined(RTCONFIG_AMAS_5G_ONBOARDING)
+	else if (strcmp(argv[1], "get_avl_obvif_subunit") == 0) {
+		int unit = atoi(argv[2]);
+		_dprintf("subunit: %d\n", get_avl_obvif_subunit_by_unit(unit));
+	}
+#endif
 #endif
 #ifdef RTCONFIG_MULTIWAN_IF
 	else if (strcmp(argv[1], "mtwan_status")==0) {
@@ -2239,6 +2315,11 @@ static int rctest_main(int argc, char *argv[])
 		else if (strcmp(argv[1], "rdpd_loading") == 0) {
 			printf("ret = %d\n", pd_loading_test());
 		}
+#if defined(RTCONFIG_SW_BTN)
+		else if (strcmp(argv[1], "reload") == 0) {
+			reload_wl_od();
+		}
+#endif
 #endif
 #if defined(RTCONFIG_KNV_BACKUP) || defined(RTCONFIG_NV_BACKUP2)
 		else if (strcmp(argv[1], "diff_knv") == 0) {
@@ -2387,13 +2468,18 @@ static int rctest_main(int argc, char *argv[])
 			printf("ret = %d\n", __setup_vlan(vid, 0, mask));
 		}
 #endif
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 		else if (strcmp(argv[1], "mxl_fw_check") == 0) {
 			stop_mxlmonitor();
 			mxl_fw_check();
 		}
 		else if (strcmp(argv[1], "mem_leak_dbg") == 0) {
 			memleakdbg();
+		}
+#endif
+#if defined(RTCONFIG_AMAS)
+		else if (strcmp(argv[1], "check_wlx_nband_type") == 0) {
+			check_wlx_nband_type();
 		}
 #endif
 		else {
@@ -3078,6 +3164,9 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_AI_SERVICE
 	{ "ai_response_check",		ai_response_check_main		},
 #endif
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_WISP)
+	{ "wlcmon",			wlcmon_main			},
+#endif
 #ifdef RTCONFIG_CONNTRACK
 	{ "pctime",			pctime_main			},
 #endif
@@ -3231,10 +3320,10 @@ static const applets_t applets[] = {
 	{ "firmware_enc_crc",		firmware_enc_crc_main		},
 	{ "fw_check",			fw_check_main			},
 #endif
-#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
+#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
 	{ "ledg",			ledg_main			},
 #endif
-#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 	{ "ledbtn",			ledbtn_main			},
 #endif
 #if defined(DSL_AX82U)
@@ -3246,10 +3335,10 @@ static const applets_t applets[] = {
 #if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	{ "rtkmonitor",			rtkmonitor_main			},
 #endif
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 	{ "mxlmonitor",			mxlmonitor_main			},
 #endif
-#if defined(GT7)
+#if defined(GT7) || defined(GS7_PRO_MAX)
 	{ "ext84991",			ext84991_main			},
 #endif
 #if defined(RTBE92U)
@@ -3373,7 +3462,9 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_PRESSURE_SENSOR
 	{ "pressure",			pressure_main		},
 #endif
-
+#ifdef RTCONFIG_PRESSURE_SENSOR_CMP201
+	{ "cmp-pressure",		cmp_pressure_main	},
+#endif
 #ifdef RTCONFIG_SMARTHAUL
 	{ "smarthaul",                   smarthaul_main           },
 #endif
@@ -3387,6 +3478,7 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_BCM_AFC
 	{ "afc_coldreboot_monitor",	afc_coldreboot_monitor_main	},
 	{ "afc_heartbeat",		afc_heartbeat_main		},
+	{ "afc_data_collector",		afc_dc_main			},
 #endif
 #ifdef RTCONFIG_ENERGY_SAVE
 	{ "esd",				esd_main		},
@@ -3872,6 +3964,10 @@ void __rc_get_mtlan_by_idx(const char *idx_name, const int idx, const int is_rm)
 }
 #endif
 
+#if defined(CONFIG_BCMWL5) && defined(RTCONFIG_WIFI7)
+extern void wl_scb(void);
+#endif
+
 extern void gen_spcmd(char *);
 int main(int argc, char **argv)
 {
@@ -3967,6 +4063,12 @@ int main(int argc, char **argv)
 #if defined(RTCONFIG_PRESSURE_SENSOR)
 	if(!strcmp(base, "pressure")) {
 		return pressure_main(argc, argv);
+	}
+#endif
+
+#if defined(RTCONFIG_PRESSURE_SENSOR_CMP201)
+	if(!strcmp(base, "cmp-pressure")) {
+		return cmp_pressure_main(argc, argv);
 	}
 #endif
 
@@ -4384,13 +4486,19 @@ int main(int argc, char **argv)
 
 		return 0;
 	}
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI)
+#if defined(CONFIG_BCMWL5) && defined(RTCONFIG_WIFI7)
+	if (!strcmp(base, "wl_scb")) {
+		wl_scb();
+		return 0;
+	}
+#endif
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI)
 	else if (!strcmp(base, "config_switch")) {
 		config_switch();
 		return 0;
 	}
 #endif
-#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG) && (defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U)) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7)
+#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG) && (defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U)) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7) || defined(GS7_PRO_MAX)
 	else if (!strcmp(base, "config_extwan")) {
 		config_extwan();
 		return 0;
@@ -5641,6 +5749,41 @@ _dprintf("LED_NOMOBILE=%d, LED_2G_YELLOW=%d, LED_3G_BLUE=%d, LED_4G_WHITE=%d.\n"
 	}
 #endif
 #endif
+#ifdef RTBE92U
+	if (!strcmp(base, "restart_rtl8372")) {
+		int lock_rtl8372 = file_lock("restart_rtl8372");
+		int count_rmmod = 10;
+
+		stop_rtkmonitor();
+
+		while (module_loaded("rtl8372") && (--count_rmmod >= 0)) {
+			system("rtkswitch 45");
+			system("rmmod rtl8372");
+			sleep(3);
+		}
+
+		f_write_string("/sys/class/leds/led_gpio_11/brightness", "255", 0, 0);
+		usleep(40*1000);
+		f_write_string("/sys/class/leds/led_gpio_11/brightness", "0", 0, 0);
+		system("insmod rtl8372");
+		int count_war = 10;
+		while (((rtkswitch_serdes_status() & 0xff) == 0xe0) && (--count_war >= 0)) {
+			dbg("status NG. reinit...\n");
+			system("rtkswitch 451");
+			sleep(3);
+		}
+
+		if (!hnd_boardid_cmp("RT-BE92U_N"))
+			system("rtkswitch 452");
+
+		start_rtkmonitor();
+
+		file_unlock(lock_rtl8372);
+
+		return 0;
+	}
+#endif
+
 	printf("Unknown applet: %s\n", base);
 	return 0;
 }

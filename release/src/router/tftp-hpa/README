@@ -1,0 +1,27 @@
+This is tftp-hpa, a conglomerate of a number of versions of the BSD
+TFTP code, changed around to port to a whole collection of operating
+systems.  The goal is to work on any reasonably modern Unix with
+sockets.
+
+The tftp-hpa series is maintained by H. Peter Anvin <hpa@zytor.com>.
+
+The latest version of this collection can be found at:
+
+    ftp://ftp.kernel.org/pub/software/network/tftp/
+
+See the file CHANGES for a list of changes between versions.
+
+
+Please see the INSTALL and INSTALL.tftp files for compilation and
+installation instructions.
+
+===> IMPORTANT: IF YOU ARE UPGRADING FROM ANOTHER TFTP SERVER, OR FROM
+===> A VERSION OF TFTP-HPA OLDER THAN 0.17 SEE THE FILE
+===> "README.security" FOR IMPORTANT SECURITY MODEL CHANGES!
+
+
+This software can be discussed on the SYSLINUX mailing list.  To
+subscribe, go to the list subscription page at:
+
+   http://www.zytor.com/mailman/listinfo/syslinux
+

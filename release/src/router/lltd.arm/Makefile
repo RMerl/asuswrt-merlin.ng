@@ -243,6 +243,9 @@ else ifeq ($(BUILD_NAME), GS7_PRO)
 else ifeq ($(BUILD_NAME), GT7)
 	install icon.gt7.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.gt7.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), GS7_PRO_MAX)
+	install icon.gs7_pro_max.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.gs7_pro_max.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), GT-BE96_AI)
 	install icon.gtbe96_ai.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.gtbe96_ai.ico $(INSTALLDIR)/usr/sbin/icon.large.ico

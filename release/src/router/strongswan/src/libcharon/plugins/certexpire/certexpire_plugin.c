@@ -89,7 +89,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * Plugin constructor
  */
-plugin_t *certexpire_plugin_create()
+PLUGIN_DEFINE(certexpire)
 {
 	private_certexpire_plugin_t *this;
 

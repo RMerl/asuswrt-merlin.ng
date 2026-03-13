@@ -78,7 +78,8 @@ static job_requeue_t run(nm_backend_t *this)
 /**
  * Cancel the GLib Main Event Loop
  */
-static bool cancel(nm_backend_t *this)
+CALLBACK(cancel, bool,
+	nm_backend_t *this)
 {
 	if (this->loop)
 	{
@@ -152,7 +153,7 @@ static bool nm_backend_init()
 
 	lib->processor->queue_job(lib->processor,
 		(job_t*)callback_job_create_with_prio((callback_job_cb_t)run, this,
-				NULL, (callback_job_cancel_t)cancel, JOB_PRIO_CRITICAL));
+				NULL, cancel, JOB_PRIO_CRITICAL));
 	return TRUE;
 }
 

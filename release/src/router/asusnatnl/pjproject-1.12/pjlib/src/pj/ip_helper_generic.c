@@ -276,7 +276,7 @@ static pj_status_t if_enum_by_af(int af, unsigned *p_cnt, pj_sockaddr ifs[])
 	struct sockaddr *ad;
 	int rc;
 
-	strncpy(ifreq.ifr_name, if_list[i].if_name, IFNAMSIZ);
+        pj_ansi_strxcpy(ifreq.ifr_name, if_list[i].if_name, IFNAMSIZ);
 
 	TRACE_((THIS_FILE, " checking interface %s", ifreq.ifr_name));
 
@@ -525,7 +525,6 @@ PJ_DEF(pj_status_t) pj_all_physical_addresses(char *local_mac, pj_uint32_t *loca
 		// get MAC address
 		if(ioctl(sock, SIOCGIFHWADDR, r) < 0)
 		{
-			int oserr = pj_get_netos_error();
 			PJ_LOG(4, (THIS_FILE, " pj_all_physical_addresses() ioctl(SIOCGIFHWADDR) failed: %s", get_os_errmsg()));
 			pj_sock_close(sock);
 			free(ifr);
@@ -565,7 +564,7 @@ PJ_DEF(pj_status_t) pj_all_physical_addresses(char *local_mac, pj_uint32_t *loca
 		return PJ_ETOOSMALL;
 	}
 
-	memset(local_mac, 0, sizeof(local_mac));
+	memset(local_mac, 0, *local_mac_len);
 	memcpy(local_mac, mac_addrs, mac_addrs_len);
 	*local_mac_len = mac_addrs_len;
 	return status;
@@ -631,7 +630,7 @@ PJ_DEF(pj_status_t) pj_get_physical_address_by_ip(int af,
 	{  
 		struct ifreq *r = &ifr[i];
 		struct ifreq iff = *r;
-		struct sockaddr_in *sin = (struct sockaddr_in*)&r->ifr_addr;  
+		//struct sockaddr_in *sin = (struct sockaddr_in*)&r->ifr_addr;  
 		struct sockaddr *ad = &r->ifr_addr;
     	PJ_LOG(4, (THIS_FILE, "pj_get_physical_address_by_ip() ifr_addr=%s, addr=%s", get_addr(ad), get_addr(&addr)));
 		if (!strcmp(r->ifr_name, "lo"))  
@@ -687,8 +686,7 @@ PJ_DEF(pj_status_t) pj_get_physical_address_by_ip(int af,
 		{
 			// get MAC address  
 			if(ioctl(sock, SIOCGIFHWADDR, r) < 0)  
-			{  
-				int oserr = pj_get_netos_error();                                                                                             
+			{                                                                                 
 				PJ_LOG(4, (THIS_FILE, " pj_get_physical_address_by_ip() ioctl(SIOCGIFHWADDR) failed: %s", get_os_errmsg()));
 				pj_sock_close(sock);
 				free(ifr);
@@ -980,7 +978,7 @@ PJ_DEF(pj_status_t) pj_get_physical_address_by_ip(int af,
 PJ_DEF(pj_status_t) pj_physical_address(char *local_addr, char *local_mac, pj_uint32_t *local_mac_len) {
 	pj_sockaddr      s_addr;
 	unsigned char    mac[6];
-	unsigned long    mac_len = sizeof(mac);
+	uint32_t    mac_len = sizeof(mac);
 	pj_status_t      status = PJ_SUCCESS;
 
 	PJ_ASSERT_RETURN(local_mac && local_mac_len, PJ_EINVAL);
@@ -997,7 +995,7 @@ PJ_DEF(pj_status_t) pj_physical_address(char *local_addr, char *local_mac, pj_ui
 	{
 		pj_str_t addr = pj_str(local_addr);
 		// convert address string to pj_sock_addr
-		status = pj_sockaddr_in_set_str_addr(&s_addr, &addr);
+		status = pj_sockaddr_in_set_str_addr((pj_sockaddr_in *)&s_addr, &addr);
 		if (status != PJ_SUCCESS)
 			return status;
 	}

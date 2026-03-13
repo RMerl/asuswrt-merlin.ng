@@ -202,7 +202,7 @@ static bool add_key_values(vici_req_t *req, settings_t *cfg, char *section)
 static bool add_sections(vici_req_t *req, settings_t *cfg, char *section)
 {
 	enumerator_t *enumerator;
-	char *name, buf[256];
+	char *name, buf[1024];
 	bool ret = TRUE;
 
 	enumerator = cfg->create_section_enumerator(cfg, section);
@@ -236,7 +236,7 @@ static bool load_conn(vici_conn_t *conn, settings_t *cfg,
 	vici_req_t *req;
 	vici_res_t *res;
 	bool ret = TRUE;
-	char buf[BUF_LEN];
+	char buf[1024];
 
 	snprintf(buf, sizeof(buf), "%s.%s", "connections", section);
 

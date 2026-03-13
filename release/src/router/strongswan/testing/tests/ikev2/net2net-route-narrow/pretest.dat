@@ -1,0 +1,9 @@
+sun::iptables-restore < /etc/iptables.rules
+moon::iptables-restore < /etc/iptables.rules
+sun::systemctl start strongswan
+moon::systemctl start strongswan
+sun::expect-connection gw-gw
+moon::expect-connection gw-gw
+bob::ping -c 3 -W 1 -i 0.2 PH_IP_ALICE
+bob::sleep 0.5
+bob::ping -c 3 -W 1 -i 0.2 PH_IP_VENUS

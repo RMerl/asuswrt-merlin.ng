@@ -45,7 +45,7 @@ The latest feature is an
 .B Online Certificate Status Protocol
 (OCSP) responder as defined by RFC 6960, interoperating with an
 .B OpenXPKI
-server by directly accessing its internal certificate datebase.
+server by directly accessing its internal certificate database.
 .
 .SH "COMMANDS"
 .

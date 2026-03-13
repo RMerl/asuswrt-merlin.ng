@@ -574,7 +574,7 @@ METHOD(bus_t, message, void,
 }
 
 METHOD(bus_t, ike_keys, void,
-	private_bus_t *this, ike_sa_t *ike_sa, key_exchange_t *dh,
+	private_bus_t *this, ike_sa_t *ike_sa, array_t *kes,
 	chunk_t dh_other, chunk_t nonce_i, chunk_t nonce_r,
 	ike_sa_t *rekey, shared_key_t *shared, auth_method_t method)
 {
@@ -591,7 +591,7 @@ METHOD(bus_t, ike_keys, void,
 			continue;
 		}
 		entry->calling++;
-		keep = entry->listener->ike_keys(entry->listener, ike_sa, dh, dh_other,
+		keep = entry->listener->ike_keys(entry->listener, ike_sa, kes, dh_other,
 										 nonce_i, nonce_r, rekey, shared,
 										 method);
 		entry->calling--;
@@ -639,7 +639,7 @@ METHOD(bus_t, ike_derived_keys, void,
 
 METHOD(bus_t, child_keys, void,
 	private_bus_t *this, child_sa_t *child_sa, bool initiator,
-	key_exchange_t *dh, chunk_t nonce_i, chunk_t nonce_r)
+	array_t *kes, chunk_t nonce_i, chunk_t nonce_r)
 {
 	enumerator_t *enumerator;
 	ike_sa_t *ike_sa;
@@ -658,7 +658,7 @@ METHOD(bus_t, child_keys, void,
 		}
 		entry->calling++;
 		keep = entry->listener->child_keys(entry->listener, ike_sa,
-								child_sa, initiator, dh, nonce_i, nonce_r);
+								child_sa, initiator, kes, nonce_i, nonce_r);
 		entry->calling--;
 		if (!keep)
 		{

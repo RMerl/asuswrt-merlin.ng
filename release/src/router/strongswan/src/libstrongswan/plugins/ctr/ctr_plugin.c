@@ -70,7 +70,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *ctr_plugin_create()
+PLUGIN_DEFINE(ctr)
 {
 	private_ctr_plugin_t *this;
 

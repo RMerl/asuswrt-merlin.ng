@@ -41,7 +41,7 @@ extern "C" {
 	typedef struct rtsp_method
 	{
 		rtsp_method_e id;	    /**< Method ID, from \a rtsp_method_e. */
-		char	   *name;    /**< Method name, which will always contain the
+		const char	   *name;    /**< Method name, which will always contain the
 						 method string. */
 		int         name_len;   /**< The length of method name.*/
 	} rtsp_method;
@@ -82,4 +82,4 @@ extern "C" {
 }
 #endif
 
-#endif AA_RTSP_H
+#endif

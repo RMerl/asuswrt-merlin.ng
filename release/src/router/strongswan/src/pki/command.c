@@ -213,50 +213,52 @@ void command_register(command_t command)
 int command_usage(char *error)
 {
 	FILE *out = stdout;
-	int i, indent = 0;
+	int i;
 
 	if (error)
 	{
 		out = stderr;
-		fprintf(out, "Error: %s\n", error);
 	}
-	fprintf(out, "strongSwan %s PKI tool\n", VERSION);
+	fprintf(out, "strongSwan %s PKI tool", VERSION);
 
 	if (active == help_idx)
 	{
-		fprintf(out, "loaded plugins: %s\n",
+		fprintf(out, "\nloaded plugins: %s\nusage:\n"
+				"  pki command [options]\ncommands:\n",
 				lib->plugins->loaded_plugins(lib->plugins));
-	}
-
-	fprintf(out, "usage:\n");
-	if (active == help_idx)
-	{
 		for (i = 0; i < MAX_COMMANDS && cmds[i].cmd; i++)
 		{
-			fprintf(out, "  pki --%-7s (-%c)  %s\n",
+			fprintf(out, "  --%-7s (-%c)  %s\n",
 					cmds[i].cmd, cmds[i].op, cmds[i].description);
 		}
 	}
 	else
 	{
+		fprintf(out, " (--%s/-%c)\n%s\nusage:\n",
+				cmds[active].cmd, cmds[active].op, cmds[active].description);
 		for (i = 0; i < MAX_LINES && cmds[active].line[i]; i++)
 		{
 			if (i == 0)
 			{
-				indent = fprintf(out, "  pki --%s ", cmds[active].cmd);
-				fprintf(out, "%s\n", cmds[active].line[i]);
+				fprintf(out, "  pki --%s %s\n", cmds[active].cmd,
+						cmds[active].line[i]);
 			}
 			else
 			{
-				fprintf(out, "%*s%s\n", indent, "", cmds[active].line[i]);
+				fprintf(out, "    %s\n", cmds[active].line[i]);
 			}
 		}
+		fprintf(out, "options:\n");
 		for (i = 0; cmds[active].options[i].name; i++)
 		{
-			fprintf(out, "        --%-15s (-%c)  %s\n",
+			fprintf(out, "  --%-15s (-%c)  %s\n",
 					cmds[active].options[i].name, cmds[active].options[i].op,
 					cmds[active].options[i].desc);
 		}
+	}
+	if (error)
+	{
+		fprintf(out, "error: %s\n", error);
 	}
 	return error != NULL;
 }
@@ -265,7 +267,7 @@ int command_usage(char *error)
 /**
  * Show usage information
  */
-static int help(int c, char *v[])
+static int help()
 {
 	return command_usage(NULL);
 }

@@ -72,7 +72,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *rdrand_plugin_create()
+PLUGIN_DEFINE(rdrand)
 {
 	private_rdrand_plugin_t *this;
 

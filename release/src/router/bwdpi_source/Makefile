@@ -183,6 +183,10 @@ ifeq ($(BWDPI_BCM6813), y)
 	@cp include/tdts/sysdeps/bcm4916-tmcfg.h include/tdts/tmcfg.h -f                     # bcm4916
 	@cp include/udb/sysdeps/bcm4916-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # bcm4916
 	@cp bin/bcm4916/* bin/ -rf                                                           # bcm4916
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126)
+	@echo "skip WIFI8_SDK_20251126: only support 64bit"
+	@rm bin/libshn_*.so
+endif
 else ifeq ($(BWDPI_BCM6766), y)
 	@cp include/tdts/sysdeps/bcm6766-tmcfg.h include/tdts/tmcfg.h -f                     # bcm6766
 	@cp include/udb/sysdeps/bcm6766-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # bcm6766
@@ -437,7 +441,11 @@ else
 endif
 else ifeq ($(RTCONFIG_HND_ROUTER_BE_4916),y)
 ifeq ($(BWDPI_BCM6813), y)
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126)
+	echo "skip WIFI8_SDK_20251126: only support 64bit"
+else
 	@cp -f modules/bcm4916/* RC_INDEP/
+endif
 else ifeq ($(BWDPI_BCM6766), y)
 	@cp -f modules/bcm6766/* RC_INDEP/
 else ifeq ($(BWDPI_BCM6764), y)

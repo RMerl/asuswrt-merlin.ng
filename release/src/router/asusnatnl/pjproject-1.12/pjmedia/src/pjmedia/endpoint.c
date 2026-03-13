@@ -41,7 +41,7 @@ static const pj_str_t STR_IP4 = { "IP4", 3};
 static const pj_str_t STR_IP6 = { "IP6", 3};
 static const pj_str_t STR_RTP_AVP = { "RTP/AVP", 7 };
 static const pj_str_t STR_DTLS_SCTP = { "DTLS/SCTP", 9 };
-static const pj_str_t STR_RTP_SCTP = { "RTP/SCTP", 8 };
+//static const pj_str_t STR_RTP_SCTP = { "RTP/SCTP", 8 };
 static const pj_str_t STR_SDP_NAME = { "pjmedia", 7 };
 static const pj_str_t STR_SENDRECV = { "sendrecv", 8 };
 
@@ -608,11 +608,11 @@ PJ_DEF(pj_status_t) pjmedia_endpt_create_application_sdp( pjmedia_endpt *endpt,
 					      pjmedia_sdp_session **p_sdp )
 {
     pj_time_val tv;
-    unsigned i;
+    //unsigned i;
     const pj_sockaddr *addr0;
     pjmedia_sdp_session *sdp;
     pjmedia_sdp_media *m;
-    pjmedia_sdp_attr *attr;
+    //pjmedia_sdp_attr *attr;
 
     /* Sanity check arguments */
     PJ_ASSERT_RETURN(endpt && pool && p_sdp && stream_cnt, PJ_EINVAL);

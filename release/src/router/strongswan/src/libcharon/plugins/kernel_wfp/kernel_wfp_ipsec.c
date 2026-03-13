@@ -1637,7 +1637,9 @@ static u_int hash_trap(trap_t *trap)
 static void acquire(private_kernel_wfp_ipsec_t *this, UINT64 filter_id,
 					traffic_selector_t *src, traffic_selector_t *dst)
 {
-	kernel_acquire_data_t data = {};
+	kernel_acquire_data_t data = {
+		.cpu = CPU_ID_MAX,
+	};
 	uint32_t reqid = 0;
 	trap_t *trap, key = {
 		.filter_id = filter_id,

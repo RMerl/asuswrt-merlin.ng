@@ -20,6 +20,7 @@ lib-$(CONFIG_FREERAMDISK)       += freeramdisk.o
 lib-$(CONFIG_FSCK_MINIX)        += fsck_minix.o
 lib-$(CONFIG_GETOPT)            += getopt.o
 lib-$(CONFIG_HEXDUMP)           += hexdump.o
+lib-$(CONFIG_XXD)               += hexdump_xxd.o
 lib-$(CONFIG_HWCLOCK)           += hwclock.o
 lib-$(CONFIG_IPCRM)             += ipcrm.o
 lib-$(CONFIG_IPCS)              += ipcs.o

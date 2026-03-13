@@ -99,7 +99,7 @@ PJ_DEF(pj_status_t) pj_turn_listener_create_tcp(pj_turn_srv *srv,
 	goto on_error;
     
     /* Create info */
-    pj_ansi_strcpy(tcp_lis->base.info, "TCP:");
+    pj_ansi_strxcpy(tcp_lis->base.info, "TCP:", sizeof(tcp_lis->base.info));
     pj_sockaddr_print(&tcp_lis->base.addr, tcp_lis->base.info+4, 
 		      sizeof(tcp_lis->base.info)-4, 3);
 

@@ -232,7 +232,7 @@ static pj_status_t add_dev (struct alsa_factory *af, const char *dev_name)
     pj_bzero(adi, sizeof(*adi));
 
     /* Set device name */
-    strncpy(adi->name, dev_name, sizeof(adi->name));
+    pj_ansi_strxcpy(adi->name, dev_name, sizeof(adi->name));
 
     /* Check the number of playback channels */
     adi->output_count = (pb_result>=0) ? 1 : 0;
@@ -244,7 +244,7 @@ static pj_status_t add_dev (struct alsa_factory *af, const char *dev_name)
     adi->default_samples_per_sec = 8000;
 
     /* Driver name */
-    strcpy(adi->driver, "ALSA");
+    pj_ansi_strxcpy(adi->driver, "ALSA", sizeof(adi->driver));
 
     ++af->dev_cnt;
 

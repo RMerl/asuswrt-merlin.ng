@@ -360,7 +360,7 @@
 	background-image: url(/images/New_ui/SDN/tuf_theme/Notification/wifi_mlo.svg);
 }
 .feature_desc_container .title{
-	color: var(--primary-color);
+	color: var(--primary-color) !important;
 }
 .feature_desc_container .desc{
 	color: #ebebeb;

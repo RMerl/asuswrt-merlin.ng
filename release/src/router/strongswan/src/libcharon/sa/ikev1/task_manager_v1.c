@@ -402,7 +402,7 @@ static bool mode_config_expected(private_task_manager_t *this)
 	peer_cfg = this->ike_sa->get_peer_cfg(this->ike_sa);
 	if (peer_cfg)
 	{
-		if (peer_cfg->use_pull_mode(peer_cfg))
+		if (!peer_cfg->has_option(peer_cfg, OPT_IKEV1_PUSH_MODE))
 		{
 			enumerator = peer_cfg->create_pool_enumerator(peer_cfg);
 			if (!enumerator->enumerate(enumerator, &pool))
@@ -1009,7 +1009,7 @@ static status_t process_request(private_task_manager_t *this,
 					break;
 				}
 				task = (task_t *)quick_mode_create(this->ike_sa, NULL,
-												   NULL, NULL);
+												   NULL, NULL, 0);
 				this->passive_tasks->insert_last(this->passive_tasks, task);
 				break;
 			case INFORMATIONAL_V1:
@@ -1563,7 +1563,7 @@ METHOD(task_manager_t, queue_ike, void,
 		queue_task(this, (task_t*)isakmp_cert_pre_create(this->ike_sa, TRUE));
 	}
 	peer_cfg = this->ike_sa->get_peer_cfg(this->ike_sa);
-	if (peer_cfg->use_aggressive(peer_cfg))
+	if (peer_cfg->has_option(peer_cfg, OPT_IKEV1_AGGRESSIVE))
 	{
 		if (!has_queued(this, TASK_AGGRESSIVE_MODE))
 		{
@@ -1691,18 +1691,31 @@ METHOD(task_manager_t, queue_mobike, void,
 }
 
 METHOD(task_manager_t, queue_child, void,
-	private_task_manager_t *this, child_cfg_t *cfg, child_init_args_t *args)
+	private_task_manager_t *this, child_cfg_t *cfg, child_init_args_t *args,
+	child_sa_t *child_sa)
 {
 	quick_mode_t *task;
+	uint32_t reqid;
 
-	if (args)
+	if (child_sa)
 	{
-		task = quick_mode_create(this->ike_sa, cfg, args->src, args->dst);
+		task = quick_mode_create(this->ike_sa, cfg, NULL, NULL, 0);
+		reqid = child_sa->get_reqid_ref(child_sa);
+		if (reqid)
+		{
+			task->use_reqid(task, reqid);
+			charon->kernel->release_reqid(charon->kernel, reqid);
+		}
+	}
+	else if (args)
+	{
+		task = quick_mode_create(this->ike_sa, cfg, args->src, args->dst,
+								 args->seq);
 		task->use_reqid(task, args->reqid);
 	}
 	else
 	{
-		task = quick_mode_create(this->ike_sa, cfg, NULL, NULL);
+		task = quick_mode_create(this->ike_sa, cfg, NULL, NULL, 0);
 	}
 	queue_task(this, &task->task);
 }
@@ -1816,7 +1829,7 @@ METHOD(task_manager_t, queue_child_rekey, void,
 			child_sa->set_state(child_sa, CHILD_REKEYING);
 			cfg = child_sa->get_config(child_sa);
 			task = quick_mode_create(this->ike_sa, cfg->get_ref(cfg),
-				get_first_ts(child_sa, TRUE), get_first_ts(child_sa, FALSE));
+				get_first_ts(child_sa, TRUE), get_first_ts(child_sa, FALSE), 0);
 			reqid = child_sa->get_reqid_ref(child_sa);
 			if (reqid)
 			{

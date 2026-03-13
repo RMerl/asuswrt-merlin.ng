@@ -92,11 +92,6 @@ MONSTER_CDP="http://crl.strongswan.org/strongswan_monster.crl"
 MONSTER_CA_RSA_SIZE="8192"
 MONSTER_EE_RSA_SIZE="4096"
 #
-BLISS_DIR="${CA_DIR}/bliss"
-BLISS_KEY="${BLISS_DIR}/strongswan_blissKey.der"
-BLISS_CERT="${BLISS_DIR}/strongswan_blissCert.der"
-BLISS_CDP="http://crl.strongswan.org/strongswan_bliss.crl"
-#
 RSA_SIZE="3072"
 IPSEC_DIR="etc/ipsec.d"
 SWANCTL_DIR="etc/swanctl"
@@ -118,7 +113,6 @@ mkdir -p ${RFC3779_DIR}/certs
 mkdir -p ${SHA3_RSA_DIR}/certs
 mkdir -p ${ED25519_DIR}/certs
 mkdir -p ${MONSTER_DIR}/certs
-mkdir -p ${BLISS_DIR}/certs
 
 ################################################################################
 # strongSwan Root CA                                                           #
@@ -176,9 +170,9 @@ do
 done
 
 # Put DER-encoded moon private key and Root CA certificate into tkm scenarios
-for t in host2host-initiator host2host-responder host2host-xfrmproxy \
-         multi-level-ca net2net-initiator net2net-xfrmproxy xfrmproxy-expire \
-         xfrmproxy-rekey
+for t in host2host-initiator host2host-initiator-multi-ke host2host-responder \
+         host2host-responder-multi-ke host2host-xfrmproxy multi-level-ca \
+         net2net-initiator net2net-xfrmproxy xfrmproxy-expire xfrmproxy-rekey
 do
   TEST="${TEST_DIR}/tkm/${t}"
   mkdir -p ${TEST}/hosts/moon/${TKM_DIR}
@@ -362,7 +356,7 @@ openssl pkcs12 -export -inkey ${HOST_KEY} -in ${HOST_CERT} -name "sun" \
         -certpbe aes-128-cbc -macalg sha256 -passout "pass:IxjQVCF3JGI+MoPi" > ${SUN_PKCS12}
 
 # Put a PKCS#12 copy into the botan/net2net-pkcs12 scenario
-for t in botan/net2net-pkcs12 openssl-ikev2/net2net-pkcs12
+for t in botan/net2net-pkcs12
 do
   TEST="${TEST_DIR}/${t}"
   mkdir -p ${TEST}/hosts/moon/${SWANCTL_DIR}/pkcs12
@@ -675,7 +669,7 @@ cp ${TEST_CERT} ${CA_DIR}/certs/${SERIAL}.pem
 
 # Put a copy into the following ikev2 scenarios
 for t in ocsp-timeouts-good ocsp-disabled ocsp-no-signer-cert ocsp-root-cert \
-         ocsp-untrusted-cert
+         ocsp-untrusted-cert ocsp-rfc4806-signer ocsp-rfc4806-both
 do
   TEST="${TEST_DIR}/ikev2/${t}"
   mkdir -p ${TEST}/hosts/carol/${SWANCTL_DIR}/rsa
@@ -707,12 +701,15 @@ pki --self --type rsa --in ${TEST_KEY} --flag ocspSigning \
     --dn "C=CH, O=${PROJECT}, OU=${OU}, CN=${CN}" \
     --outform pem > ${TEST_CERT}
 
-# Copy self-signed OCSP Signing certificate to ikev2/ocsp-local-cert scenario
-TEST="${TEST_DIR}/ikev2/ocsp-local-cert"
-mkdir -p ${TEST}/hosts/carol/${SWANCTL_DIR}/x509ocsp
-mkdir -p ${TEST}/hosts/moon/${SWANCTL_DIR}/x509ocsp
-cp ${TEST_CERT} ${TEST}/hosts/carol/${SWANCTL_DIR}/x509ocsp
-cp ${TEST_CERT} ${TEST}/hosts/moon/${SWANCTL_DIR}/x509ocsp
+# Put a copy into the following ikev2 scenarios
+for t in ocsp-local-cert ocsp-rfc4806-local
+do
+  TEST="${TEST_DIR}/ikev2/${t}"
+  mkdir -p ${TEST}/hosts/carol/${SWANCTL_DIR}/x509ocsp
+  mkdir -p ${TEST}/hosts/moon/${SWANCTL_DIR}/x509ocsp
+  cp ${TEST_CERT} ${TEST}/hosts/carol/${SWANCTL_DIR}/x509ocsp
+  cp ${TEST_CERT} ${TEST}/hosts/moon/${SWANCTL_DIR}/x509ocsp
+done
 
 # Generate mars virtual server certificate
 TEST="${TEST_DIR}/ha/both-active"
@@ -736,8 +733,8 @@ mkdir -p ${TEST}/hosts/alice/${SWANCTL_DIR}/x509
 cp ${TEST_KEY}  ${TEST}/hosts/alice/${SWANCTL_DIR}/rsa
 cp ${TEST_CERT} ${TEST}/hosts/alice/${SWANCTL_DIR}/x509
 
-# Put a copy into the ha/active-passive and swanctl/redirect-active scenarios
-for t in ha/active-passive ikev2/redirect-active
+# Put a copy into the ha/active-passive, ha/active-passive-multi-ke and swanctl/redirect-active scenarios
+for t in ha/active-passive ha/active-passive-multi-ke ikev2/redirect-active
 do
   TEST="${TEST_DIR}/${t}"
   for h in alice moon
@@ -765,13 +762,6 @@ pki --issue --cakey ${CA_KEY} --cacert ${CA_CERT} --crl ${CA_CDP} --type rsa \
     --outform pem > ${TEST_CERT}
 cp ${TEST_CERT} ${CA_DIR}/certs/${SERIAL}.pem
 
-# Put a copy in the openssl-ikev2/critical extension scenario
-TEST="${TEST_DIR}/openssl-ikev2/critical-extension"
-mkdir -p ${TEST}/hosts/moon/${SWANCTL_DIR}/rsa
-mkdir -p ${TEST}/hosts/moon/${SWANCTL_DIR}/x509
-cp ${TEST_KEY} ${TEST}/hosts/moon/${SWANCTL_DIR}/rsa
-cp ${TEST_CERT} ${TEST}/hosts/moon/${SWANCTL_DIR}/x509
-
 # Generate sun certificate with an unsupported critical X.509 extension
 TEST="${TEST_DIR}/ikev2/critical-extension"
 TEST_KEY="${TEST}/hosts/sun/${SWANCTL_DIR}/rsa/sunKey.pem"
@@ -787,13 +777,6 @@ pki --issue --cakey ${CA_KEY} --cacert ${CA_CERT} --crl ${CA_CDP} --type rsa \
     --critical 1.3.6.1.4.1.36906.1 --flag serverAuth \
     --outform pem > ${TEST_CERT}
 cp ${TEST_CERT} ${CA_DIR}/certs/${SERIAL}.pem
-
-# Put a copy in the openssl-ikev2/critical extension scenario
-TEST="${TEST_DIR}/openssl-ikev2/critical-extension"
-mkdir -p ${TEST}/hosts/sun/${SWANCTL_DIR}/rsa
-mkdir -p ${TEST}/hosts/sun/${SWANCTL_DIR}/x509
-cp ${TEST_KEY} ${TEST}/hosts/sun/${SWANCTL_DIR}/rsa
-cp ${TEST_CERT} ${TEST}/hosts/sun/${SWANCTL_DIR}/x509
 
 # Generate winnetou server certificate
 HOST_KEY="${CA_DIR}/winnetouKey.pem"
@@ -1156,10 +1139,10 @@ pki --self --type ecdsa --in ${ECDSA_KEY} \
     --dn "C=CH, O=${PROJECT}, CN=strongSwan EC Root CA" \
     --outform pem > ${ECDSA_CERT}
 
-# Put a copy in the openssl-ikev2/ecdsa-certs scenario
+# Put a copy in the ikev2/ecdsa-certs scenario
 for t in ecdsa-certs ecdsa-pkcs8
 do
-  TEST="${TEST_DIR}/openssl-ikev2/${t}"
+  TEST="${TEST_DIR}/ikev2/${t}"
   for h in moon carol dave
   do
     mkdir -p ${TEST}/hosts/${h}/${SWANCTL_DIR}/x509ca
@@ -1168,7 +1151,7 @@ do
 done
 
 # Generate a moon ECDSA 521 bit certificate
-TEST="${TEST_DIR}/openssl-ikev2/ecdsa-certs"
+TEST="${TEST_DIR}/ikev2/ecdsa-certs"
 MOON_KEY="${TEST}/hosts/moon/${SWANCTL_DIR}/ecdsa/moonKey.pem"
 MOON_CERT="${TEST}/hosts/moon/${SWANCTL_DIR}/x509/moonCert.pem"
 CN="moon.strongswan.org"
@@ -1210,8 +1193,8 @@ pki --issue --cakey ${ECDSA_KEY} --cacert ${ECDSA_CERT} --type ecdsa \
     --crl ${ECDSA_CDP} --outform pem > ${DAVE_CERT}
 cp ${DAVE_CERT} ${ECDSA_DIR}/certs/${SERIAL}.pem
 
-# Put CA and EE certificate copies in the openssl-ikev2/ecdsa-pkcs8 scenario
-TEST="${TEST_DIR}/openssl-ikev2/ecdsa-pkcs8"
+# Put CA and EE certificate copies in the ikev2/ecdsa-pkcs8 scenario
+TEST="${TEST_DIR}/ikev2/ecdsa-pkcs8"
 mkdir -p ${TEST}/hosts/moon/${SWANCTL_DIR}/x509
 mkdir -p ${TEST}/hosts/carol/${SWANCTL_DIR}/x509
 mkdir -p ${TEST}/hosts/dave/${SWANCTL_DIR}/x509
@@ -1236,8 +1219,8 @@ mkdir -p ${TEST}/hosts/dave/${SWANCTL_DIR}/pkcs8
 openssl pkcs8 -in ${DAVE_KEY} -nocrypt -topk8  -v2 aes128 \
               -passout "pass:OJlNZBx+80dLh4wC6fw5LmBd" -out ${TEST_KEY}
 
-# Put CA and EE certificate copies in the openssl-ikev1/ecdsa-certs scenario
-TEST="${TEST_DIR}/openssl-ikev1/ecdsa-certs"
+# Put CA and EE certificate copies in the ikev1/ecdsa-certs scenario
+TEST="${TEST_DIR}/ikev1/ecdsa-certs"
 cd ${TEST}/hosts/moon/${SWANCTL_DIR}
 mkdir -p ecdsa x509 x509ca
 cp ${MOON_KEY}   ecdsa
@@ -1422,8 +1405,8 @@ pki --issue --cakey ${SHA3_RSA_KEY} --cacert ${SHA3_RSA_CERT} --type rsa \
     --crl ${SHA3_RSA_CDP} --digest sha3_256 --outform pem > ${MOON_CERT}
 cp ${MOON_CERT} ${SHA3_RSA_DIR}/certs/${SERIAL}.pem
 
-# Put a copy in the botan openssl-ikev2 and wolfssl net2net-sha3-rsa-cert scenarios
-for d in botan openssl-ikev2 wolfssl
+# Put a copy in the botan and wolfssl net2net-sha3-rsa-cert scenarios
+for d in botan wolfssl
 do
   TEST="${TEST_DIR}/${d}/net2net-sha3-rsa-cert"
   cd ${TEST}/hosts/moon/${SWANCTL_DIR}
@@ -1639,93 +1622,6 @@ pki --issue --cakey ${MONSTER_KEY} --cacert ${MONSTER_CERT} --type rsa \
 cp ${TEST_CERT} ${MONSTER_DIR}/certs/${SERIAL}.pem
 
 ################################################################################
-# Bliss CA                                                                     #
-################################################################################
-
-# Generate BLISS Root CA with 192 bit security strength
-pki --gen  --type bliss --size 4 > ${BLISS_KEY}
-pki --self --type bliss --in ${BLISS_KEY} --digest sha3_512 \
-    --not-before "${START}" --not-after "${CA_END}" --ca \
-    --dn "C=CH, O=${PROJECT}, CN=strongSwan BLISS Root CA" > ${BLISS_CERT}
-
-# Put a copy in the following scenarios
-for t in rw-newhope-bliss rw-ntru-bliss
-do
-  TEST="${TEST_DIR}/ikev2/${t}"
-  for h in moon carol dave
-  do
-    mkdir -p ${TEST}/hosts/${h}/${SWANCTL_DIR}/x509ca
-    cp ${BLISS_CERT} ${TEST}/hosts/${h}/${SWANCTL_DIR}/x509ca
-  done
-done
-
-# Generate a carol BLISS certificate with 128 bit security strength
-TEST="${TEST_DIR}/ikev2/rw-newhope-bliss"
-TEST_KEY="${TEST}/hosts/carol/${SWANCTL_DIR}/bliss/carolKey.der"
-TEST_CERT="${TEST}/hosts/carol/${SWANCTL_DIR}/x509/carolCert.der"
-CN="carol@strongswan.org"
-SERIAL="01"
-mkdir -p ${TEST}/hosts/carol/${SWANCTL_DIR}/bliss
-mkdir -p ${TEST}/hosts/carol/${SWANCTL_DIR}/x509
-pki --gen --type bliss --size 1 > ${TEST_KEY}
-pki --issue --cakey ${BLISS_KEY} --cacert ${BLISS_CERT} --type bliss \
-    --in ${TEST_KEY} --not-before "${START}" --not-after "${EE_END}" --san ${CN} \
-    --serial ${SERIAL} --dn "C=CH, O=${PROJECT}, OU=BLISS I, CN=${CN}" \
-    --crl ${BLISS_CDP} --digest sha3_512 > ${TEST_CERT}
-cp ${TEST_CERT} ${BLISS_DIR}/certs/${SERIAL}.der
-
-# Put a copy in the ikev2/rw-ntru-bliss scenario
-TEST="${TEST_DIR}/ikev2/rw-ntru-bliss"
-mkdir -p ${TEST}/hosts/carol/${SWANCTL_DIR}/bliss
-mkdir -p ${TEST}/hosts/carol/${SWANCTL_DIR}/x509
-cp ${TEST_KEY} ${TEST}/hosts/carol/${SWANCTL_DIR}/bliss
-cp ${TEST_CERT} ${TEST}/hosts/carol/${SWANCTL_DIR}/x509
-
-# Generate a dave BLISS certificate with 160 bit security strength
-TEST="${TEST_DIR}/ikev2/rw-newhope-bliss"
-TEST_KEY="${TEST}/hosts/dave/${SWANCTL_DIR}/bliss/daveKey.der"
-TEST_CERT="${TEST}/hosts/dave/${SWANCTL_DIR}/x509/daveCert.der"
-CN="dave@strongswan.org"
-SERIAL="02"
-mkdir -p ${TEST}/hosts/dave/${SWANCTL_DIR}/bliss
-mkdir -p ${TEST}/hosts/dave/${SWANCTL_DIR}/x509
-pki --gen --type bliss --size 3 > ${TEST_KEY}
-pki --issue --cakey ${BLISS_KEY} --cacert ${BLISS_CERT} --type bliss \
-    --in ${TEST_KEY} --not-before "${START}" --not-after "${EE_END}" --san ${CN} \
-    --serial ${SERIAL} --dn "C=CH, O=${PROJECT}, OU=BLISS III, CN=${CN}" \
-    --crl ${BLISS_CDP} --digest sha3_512 > ${TEST_CERT}
-cp ${TEST_CERT} ${BLISS_DIR}/certs/${SERIAL}.der
-
-# Put a copy in the ikev2/rw-ntru-bliss scenario
-TEST="${TEST_DIR}/ikev2/rw-ntru-bliss"
-mkdir -p ${TEST}/hosts/dave/${SWANCTL_DIR}/bliss
-mkdir -p ${TEST}/hosts/dave/${SWANCTL_DIR}/x509
-cp ${TEST_KEY} ${TEST}/hosts/dave/${SWANCTL_DIR}/bliss
-cp ${TEST_CERT} ${TEST}/hosts/dave/${SWANCTL_DIR}/x509
-
-# Generate a moon BLISS certificate with 192 bit security strength
-TEST="${TEST_DIR}/ikev2/rw-newhope-bliss"
-TEST_KEY="${TEST}/hosts/moon/${SWANCTL_DIR}/bliss/moonKey.der"
-TEST_CERT="${TEST}/hosts/moon/${SWANCTL_DIR}/x509/moonCert.der"
-CN="moon.strongswan.org"
-SERIAL="03"
-mkdir -p ${TEST}/hosts/moon/${SWANCTL_DIR}/bliss
-mkdir -p ${TEST}/hosts/moon/${SWANCTL_DIR}/x509
-pki --gen --type bliss --size 4 > ${TEST_KEY}
-pki --issue --cakey ${BLISS_KEY} --cacert ${BLISS_CERT} --type bliss \
-    --in ${TEST_KEY} --not-before "${START}" --not-after "${EE_END}" --san ${CN} \
-    --serial ${SERIAL} --dn "C=CH, O=${PROJECT}, OU=BLISS IV, CN=${CN}" \
-    --crl ${BLISS_CDP} --digest sha3_512 > ${TEST_CERT}
-cp ${TEST_CERT} ${BLISS_DIR}/certs/${SERIAL}.der
-
-# Put a copy in the ikev2/rw-ntru-bliss scenario
-TEST="${TEST_DIR}/ikev2/rw-ntru-bliss"
-mkdir -p ${TEST}/hosts/moon/${SWANCTL_DIR}/bliss
-mkdir -p ${TEST}/hosts/moon/${SWANCTL_DIR}/x509
-cp ${TEST_KEY} ${TEST}/hosts/moon/${SWANCTL_DIR}/bliss
-cp ${TEST_CERT} ${TEST}/hosts/moon/${SWANCTL_DIR}/x509
-
-################################################################################
 # SQL Data                                                                     #
 ################################################################################
 
@@ -1916,9 +1812,9 @@ done
 # TKM CA ID mapping                                                            #
 ################################################################################
 
-for t in host2host-initiator host2host-responder host2host-xfrmproxy \
-         multi-level-ca net2net-initiator net2net-xfrmproxy xfrmproxy-expire \
-         xfrmproxy-rekey
+for t in host2host-initiator host2host-initiator-multi-ke host2host-responder \
+         host2host-responder-multi-ke host2host-xfrmproxy multi-level-ca \
+         net2net-initiator net2net-xfrmproxy xfrmproxy-expire xfrmproxy-rekey
 do
   for h in moon
   do

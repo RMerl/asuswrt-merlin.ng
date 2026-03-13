@@ -147,7 +147,7 @@ METHOD(plugin_t, destroy, void, private_eap_aka_3gpp_t *this)
 /**
  * See header
  */
-plugin_t *eap_aka_3gpp_plugin_create()
+PLUGIN_DEFINE(eap_aka_3gpp)
 {
 	private_eap_aka_3gpp_t *this;
 

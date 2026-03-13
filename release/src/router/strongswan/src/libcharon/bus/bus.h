@@ -30,6 +30,7 @@ typedef struct bus_t bus_t;
 #include <stdarg.h>
 
 #include <utils/debug.h>
+#include <collections/array.h>
 #include <sa/ike_sa.h>
 #include <sa/child_sa.h>
 #include <processing/jobs/job.h>
@@ -123,7 +124,7 @@ enum alert_t {
 	/** traffic selectors do not match, arguments are two linked_list_t
 	 *  containing traffic_selector_t for initiator and for responder */
 	ALERT_TS_MISMATCH,
-	/** traffic selectors have been narrowed by the peer, arguments are
+	/** traffic selectors have been narrowed by us or the peer, arguments are
 	 *  an int (TRUE for local TS), a linked_list_t* (final TS list), and the
 	 *  child_cfg_t*. */
 	ALERT_TS_NARROWED,
@@ -348,7 +349,7 @@ struct bus_t {
 	 * IKE_SA keymat hook.
 	 *
 	 * @param ike_sa	IKE_SA this keymat belongs to
-	 * @param dh		diffie hellman shared secret
+	 * @param kes		array of key_exchange_t*
 	 * @param dh_other	others DH public value (IKEv1 only)
 	 * @param nonce_i	initiator's nonce
 	 * @param nonce_r	responder's nonce
@@ -356,7 +357,7 @@ struct bus_t {
 	 * @param shared	shared key used for key derivation (IKEv1-PSK only)
 	 * @param method	auth method for key derivation (IKEv1-non-PSK only)
 	 */
-	void (*ike_keys)(bus_t *this, ike_sa_t *ike_sa, key_exchange_t *dh,
+	void (*ike_keys)(bus_t *this, ike_sa_t *ike_sa, array_t *kes,
 					 chunk_t dh_other, chunk_t nonce_i, chunk_t nonce_r,
 					 ike_sa_t *rekey, shared_key_t *shared,
 					 auth_method_t method);
@@ -381,12 +382,12 @@ struct bus_t {
 	 *
 	 * @param child_sa	CHILD_SA this keymat is used for
 	 * @param initiator	initiator of the CREATE_CHILD_SA exchange
-	 * @param dh		diffie hellman shared secret
+	 * @param kes		array of key_exchange_t*, or NULL
 	 * @param nonce_i	initiator's nonce
 	 * @param nonce_r	responder's nonce
 	 */
 	void (*child_keys)(bus_t *this, child_sa_t *child_sa, bool initiator,
-					   key_exchange_t *dh, chunk_t nonce_i, chunk_t nonce_r);
+					   array_t *kes, chunk_t nonce_i, chunk_t nonce_r);
 
 	/**
 	 * CHILD_SA derived keys hook.

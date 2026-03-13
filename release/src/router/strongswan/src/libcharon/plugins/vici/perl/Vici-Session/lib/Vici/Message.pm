@@ -245,7 +245,7 @@ None by default.
 
 =head1 SEE ALSO
 
-strongSwan Documentation:  https://docs.strongswan.org/docs/5.9/plugins/vici.html
+strongSwan Documentation:  https://docs.strongswan.org/docs/latest/plugins/vici.html
 
 =head1 AUTHOR
 

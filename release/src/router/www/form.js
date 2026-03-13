@@ -127,7 +127,10 @@ function adjust_panel_block_top(_objID, _offsetHeight) {
 		}
 	};
 	const scrollTop = getScrollTop();
-	document.getElementById(_objID).style.top = (scrollTop + _offsetHeight) + "px";
+	const el = document.getElementById(_objID);
+	if (el) {
+		el.style.setProperty('top', (scrollTop + _offsetHeight) + 'px', 'important');
+	}
 }
 
 var FAQ_List = "";
@@ -182,7 +185,7 @@ function show_feature_desc(_text1, _text2, _text3){
   var text_tmp1 = (_text1)? _text1 : "";
   var text_tmp2 = (_text2)? _text2 : "";
   var text_tmp3 = (_text3)? _text3 : "";
-  $(".container").addClass("blur_effect");
+  $(".container, .rwd-page-container").addClass("blur_effect");
   if($(".popup_container.popup_element").css("display") == "flex"){
     $(".popup_container.popup_element").addClass("blur_effect");
   }
@@ -198,7 +201,7 @@ function show_feature_desc(_text1, _text2, _text3){
 
     function close_popup(){
       $(".popup_element_second").hide();
-      $(".container, .qis_container").removeClass("blur_effect");
+      $(".container, .qis_container, .rwd-page-container").removeClass("blur_effect");
       $(".popup_container.popup_element").removeClass().addClass("popup_container popup_element").empty();
     }
 

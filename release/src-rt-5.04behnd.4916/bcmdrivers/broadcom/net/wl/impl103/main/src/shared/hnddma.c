@@ -2280,6 +2280,8 @@ dma_txsuspend(hnddma_t *dmah)
 		if (DMA_PUQ_QREMAP(di)) {
 			dma_common_t *dmac = di->dmacommon;
 			W_REG(di->osh, dmac->suspflush_grpsel, (di->q_index / 96));
+			/* Use readback to add delay for the group select. */
+			BCM_REFERENCE(R_REG(di->osh, dmac->suspflush_grpsel));
 		}
 
 		OR_REG(di->osh, di->suspreq, di->q_index_mask);
@@ -2306,6 +2308,8 @@ dma_txresume(hnddma_t *dmah)
 		if (DMA_PUQ_QREMAP(di)) {
 			dma_common_t *dmac = di->dmacommon;
 			W_REG(di->osh, dmac->suspflush_grpsel, (di->q_index / 96));
+			/* Use readback to add delay for the group select. */
+			BCM_REFERENCE(R_REG(di->osh, dmac->suspflush_grpsel));
 		}
 
 		AND_REG(di->osh, di->suspreq, ~di->q_index_mask);
@@ -2330,6 +2334,8 @@ dma_txsuspended(hnddma_t *dmah)
 		if (DMA_PUQ_QREMAP(di)) {
 			dma_common_t *dmac = di->dmacommon;
 			W_REG(di->osh, dmac->suspflush_grpsel, (di->q_index / 96));
+			/* Use readback to add delay for the group select. */
+			BCM_REFERENCE(R_REG(di->osh, dmac->suspflush_grpsel));
 		}
 
 		return ((R_REG(di->osh, di->suspreq) & di->q_index_mask) != 0);
@@ -2356,6 +2362,8 @@ dma_txflush(hnddma_t *dmah)
 		if (DMA_PUQ_QREMAP(di)) {
 			dma_common_t *dmac = di->dmacommon;
 			W_REG(di->osh, dmac->suspflush_grpsel, (di->q_index / 96));
+			/* Use readback to add delay for the group select. */
+			BCM_REFERENCE(R_REG(di->osh, dmac->suspflush_grpsel));
 		}
 
 		OR_REG(di->osh, di->flushreq, di->q_index_mask);
@@ -2384,6 +2392,8 @@ dma_txflush_clear(hnddma_t *dmah)
 		if (DMA_PUQ_QREMAP(di)) {
 			dma_common_t *dmac = di->dmacommon;
 			W_REG(di->osh, dmac->suspflush_grpsel, (di->q_index / 96));
+			/* Use readback to add delay for the group select. */
+			BCM_REFERENCE(R_REG(di->osh, dmac->suspflush_grpsel));
 		}
 
 		AND_REG(di->osh, di->flushreq, ~di->q_index_mask);

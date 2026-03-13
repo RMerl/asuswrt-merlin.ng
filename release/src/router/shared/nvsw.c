@@ -25,6 +25,8 @@
 #define	BTNSW_LED_ONOFF		2
 #define	BTNSW_WIFI_ONOFF	3
 #define	BTNSW_VPN_ONOFF		4
+#define	BTNSW_SDN_ONOFF		5
+#define	BTNSW_OD_ONOFF		6
 #endif
 
 static int nvsw_switching_val;	// this value is valid during init time

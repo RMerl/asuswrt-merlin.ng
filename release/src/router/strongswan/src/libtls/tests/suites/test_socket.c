@@ -587,7 +587,7 @@ static void start_echo_server(echo_server_config_t *config)
 
 	lib->processor->queue_job(lib->processor, (job_t*)
 				callback_job_create((void*)serve_echo, config, NULL,
-									(callback_job_cancel_t)return_false));
+									callback_job_cancel_thread));
 }
 
 /**

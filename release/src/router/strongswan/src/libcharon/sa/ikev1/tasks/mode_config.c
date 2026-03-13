@@ -189,7 +189,7 @@ static bool accept_push(private_mode_config_t *this)
 	vip = enumerator->enumerate(enumerator, &host);
 	enumerator->destroy(enumerator);
 
-	return vip && !config->use_pull_mode(config);
+	return vip && config->has_option(config, OPT_IKEV1_PUSH_MODE);
 }
 
 /**

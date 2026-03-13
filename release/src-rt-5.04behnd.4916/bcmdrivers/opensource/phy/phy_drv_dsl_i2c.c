@@ -121,8 +121,13 @@ static int phy_i2c_module_detect_cb(int bus, void *opticaldet_desc)
         mutex_lock(&i2c_mutex);
         phy_i2c_priv->sfp_mod_in = 1;
         mutex_unlock(&i2c_mutex);
+//        printk(KERN_DEBUG "\n ****** %s:%d phy_i2c[%p] sfp_mod_in[%d] ****** \n", __FUNCTION__, __LINE__, phy_i2c, phy_i2c_priv->sfp_mod_in);
         rc = 1;
     }
+//    else
+//    {
+//        printk(KERN_DEBUG "\n ****** %s:%d phy_i2c IS NULL ****** \n", __FUNCTION__, __LINE__);
+//    }
 	
     return rc;
 }
@@ -138,8 +143,13 @@ static int phy_i2c_module_remove_cb(int bus)
         mutex_lock(&i2c_mutex);
         phy_i2c_priv->sfp_mod_in = 0;
         mutex_unlock(&i2c_mutex);
+//        printk(KERN_DEBUG "\n ****** %s:%d phy_i2c[%p] sfp_mod_in[%d] ****** \n", __FUNCTION__, __LINE__, phy_i2c, phy_i2c_priv->sfp_mod_in);
         rc = 1;
     }
+//    else
+//    {
+//        printk(KERN_DEBUG "\n ****** %s:%d phy_i2c IS NULL ****** \n", __FUNCTION__, __LINE__);
+//    }
 
     return rc;
 }
@@ -154,6 +164,7 @@ int phy_drv_dsl_i2c_create_lock(phy_dev_t *phy_dev)
     phy_serdes_t *phy_serdes;
     phy_i2c_priv_t *i2c_priv;
     static int phy_i2c_num = 0;
+//    printk("\n ************%s:%d  phy_dev [%p] ***************\n", __FUNCTION__, __LINE__, phy_dev );
 
     mutex_lock(&i2c_mutex);
 
@@ -184,7 +195,20 @@ int phy_drv_dsl_i2c_create_lock(phy_dev_t *phy_dev)
 
     i2c_phy = phy_dev_add(PHY_TYPE_I2C_PHY, bus_num, 0);
 
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+    phy_dev->cascade_i2c = i2c_phy; /* combo phy - backup i2c dev */
+    if(PhyIsCombo(phy_dev))
+    {
+        phy_dev->cascade_i2c = i2c_phy; /* combo phy - backup i2c dev */
+        if(!phy_dev->i2c_dev_inactive)
+            phy_dev->cascade_next = i2c_phy;
+    }
+    else
+        phy_dev->cascade_next = i2c_phy;
+//    printk("\n ****** %s:%d phy_dev[%p] i2c_dev_inactive[%d] cascade_next[%p] cascade_i2c[%p] ****** \n", __FUNCTION__, __LINE__, phy_dev, phy_dev->i2c_dev_inactive, phy_dev->cascade_next, phy_dev->cascade_i2c);
+#else
     phy_dev->cascade_next = i2c_phy;
+#endif
     i2c_phy->cascade_prev = phy_dev;
     i2c_phy->flag = PHY_FLAG_NOT_PRESENTED|PHY_FLAG_DYNAMIC;
     i2c_phy->bus_drv = bus_drv_get(BUS_TYPE_DSL_I2C);
@@ -324,9 +348,21 @@ static int phy_i2c_writable(phy_dev_t *phy_i2c)
 
 int phy_i2c_module_detect(phy_dev_t *phy_dev)
 {
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+    phy_dev_t *phy_i2c;
+#else
     phy_dev_t *phy_i2c = phy_dev->cascade_next;
+#endif
     phy_i2c_priv_t *phy_i2c_priv;
     int rc = 0;
+
+
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+    if(PhyIsCombo(phy_dev))
+        phy_i2c = phy_dev->cascade_i2c;
+    else
+        phy_i2c = phy_dev->cascade_next;
+#endif
 
     if (phy_i2c == NULL) return 0;
 
@@ -341,8 +377,19 @@ int phy_i2c_module_detect(phy_dev_t *phy_dev)
 void phy_i2c_module_type_detect(phy_dev_t *phy_dev)
 {
     uint16_t v16;
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+    phy_dev_t *phy_i2c;
+#else
     phy_dev_t *phy_i2c = phy_dev->cascade_next;
+#endif
     phy_i2c_priv_t *phy_i2c_priv;
+
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+    if(PhyIsCombo(phy_dev))
+        phy_i2c = phy_dev->cascade_i2c;
+    else
+        phy_i2c = phy_dev->cascade_next;
+#endif
 
     if (phy_i2c == NULL) return;
     phy_i2c_priv = phy_i2c->priv;

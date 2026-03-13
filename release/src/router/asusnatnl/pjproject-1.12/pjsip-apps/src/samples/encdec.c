@@ -236,7 +236,7 @@ int main(int argc, char *argv[])
     pj_caching_pool_init(0, &cp, NULL, 0);
 
 //    CHECK( pjmedia_endpt_create(&cp.factory, NULL, 1, &mept) );
-    CHECK( pjmedia_endpt_create(0, &cp.factory, NULL, 1, 0, &mept) );
+    CHECK( pjmedia_endpt_create(&cp.factory, NULL, 1, 0, 1, &mept) );
 
     /* Register all codecs */
 #if PJMEDIA_HAS_G711_CODEC

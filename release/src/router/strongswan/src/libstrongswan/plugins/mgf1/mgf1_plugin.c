@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Andreas Steffen
+ * Copyright (C) 2016-2023 Andreas Steffen
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -53,6 +53,14 @@ METHOD(plugin_t, get_features, int,
 				PLUGIN_DEPENDS(HASHER, HASH_SHA384),
 			PLUGIN_PROVIDE(XOF, XOF_MGF1_SHA512),
 				PLUGIN_DEPENDS(HASHER, HASH_SHA512),
+			PLUGIN_PROVIDE(XOF, XOF_MGF1_SHA3_224),
+				PLUGIN_DEPENDS(HASHER, HASH_SHA3_224),
+			PLUGIN_PROVIDE(XOF, XOF_MGF1_SHA3_256),
+				PLUGIN_DEPENDS(HASHER, HASH_SHA3_256),
+			PLUGIN_PROVIDE(XOF, XOF_MGF1_SHA3_384),
+				PLUGIN_DEPENDS(HASHER, HASH_SHA3_384),
+			PLUGIN_PROVIDE(XOF, XOF_MGF1_SHA3_512),
+				PLUGIN_DEPENDS(HASHER, HASH_SHA3_512),
 	};
 	*features = f;
 	return countof(f);
@@ -67,7 +75,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *mgf1_plugin_create()
+PLUGIN_DEFINE(mgf1)
 {
 	private_mgf1_plugin_t *this;
 

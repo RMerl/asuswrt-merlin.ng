@@ -2,6 +2,9 @@ include ../.config
 
 EXEC = networkmap
 OBJS = JSON_checker.o function.o connections.o sm.o download.o shared_func.o protect_name.o networkmap.o
+OBJS += amas/cfg_client_lookup.o
+
+CFLAGS += -I$(TOP)/networkmap/amas
 
 ifeq ($(HND_ROUTER),y)
 CFLAGS += -Werror=return-type -Werror=uninitialized -Wno-date-time 
@@ -169,9 +172,10 @@ ifeq ($(RTCONFIG_TRUSTZONE),y)
 LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
+ifeq ($(RTCONFIG_MXL_826XX),y)
 LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
+
 
 ifneq ($(AC2900),y)
 ifeq ($(wildcard $(SRCBASE)/router/networkmap/*.c),)
@@ -257,3 +261,13 @@ endif
 else
 	rm -rf *.o $(EXEC) *~
 endif
+
+
+nmp-amas:
+	$(MAKE) -C amas
+
+nmp-amas-install:
+	$(MAKE) -C amas install
+
+nmp-amas-clean:
+	$(MAKE) -C amas clean

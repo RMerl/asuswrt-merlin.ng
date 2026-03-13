@@ -1,4 +1,5 @@
-﻿:root{
+﻿:root,
+:host{
 	--icon-color: #B9C5D4;
 }
 .body_rwd{
@@ -404,6 +405,33 @@
 	min-height: 63px;
 	height: auto;
 }
+.profile_setting_item.icon_item > .title,
+.profile_setting_item.icon_item > .input_container{
+	display: flex;
+	align-items: center;
+}
+.profile_setting_item.icon_item .help_icon{
+	margin-left: 6px;
+	background-size: 110%;
+	min-width: 40px;
+	min-height: 40px;
+}
+.profile_setting_item.icon_item .help_icon{
+	min-width: 30px;
+	min-height: 30px;
+	background-size: cover;
+}
+.profile_title_item.icon_item .help_icon,
+.profile_setting_item.icon_item .title > .help_icon{
+	min-width: 24px;
+	min-height: 24px;
+	width: 24px;
+	height: 24px;
+	margin-left: 6px;
+	margin-top: 0px;
+	margin-right: 0px;
+	-webkit-mask-size: cover;
+}
 .profile_setting_two_item{
 	background-color: rgb(35, 52, 62);
 	min-width: 360px;
@@ -602,13 +630,19 @@
 	border: 1px outset rgba(37, 151, 255, 0.2);
 	box-shadow: 0px 2px 3px 0px rgb(20 50 80 / 5%);
 	border-radius: 5px;
-	line-height: 40px;
+	line-height: 100%;
 	color: rgb(255, 255, 255);
 	font-size: 16px;
 	font-weight: 500;
 	letter-spacing: 1.25px;
 	text-align: center;
 	cursor: pointer;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	word-break: break-all;
+	white-space: normal;
+	overflow-wrap: break-word;
 }
 .action_container .btn_container.valid_fail{
 	cursor: not-allowed;
@@ -805,7 +839,9 @@
 .del_profile .action_btn_container .btn{
 	width: 117px;
 	height: 38px;
-	line-height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	font-size: 14px;
 	font-weight: 500;
 	text-align: center;
@@ -824,6 +860,12 @@
 	font-size: 16px;
 	font-weight: 600;
 	height: auto;
+}
+.customize_alert .title{
+	color: #ffffff;
+	font-size: 18px;
+	font-weight: 700;
+	margin-bottom: 6px;
 }
 .del_profile .title{
 	height: 40px;
@@ -847,6 +889,16 @@
 .del_profile .action_btn_container .cancel,
 .customize_alert.confirm .action_btn_container .cancel{
 	background: rgb(37 151 255);
+	color: #ffffff;
+}
+.customize_alert.confirm {
+	background-color: initial !important;
+	border: initial !important;
+	color: initial !important;
+	box-shadow: initial !important;
+}
+.customize_alert a{
+	text-decoration: underline;
 	color: #ffffff;
 }
 .textInput,
@@ -1721,7 +1773,7 @@
 }
 @media (max-width: 575px) {
 	.mobile{
-		display: block !important;
+		display: flex !important;
 	}
 	.desktop{
 		display: none;

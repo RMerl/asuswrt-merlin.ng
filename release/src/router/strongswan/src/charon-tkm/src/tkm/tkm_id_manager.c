@@ -20,14 +20,15 @@
 #include <utils/debug.h>
 #include <threading/rwlock.h>
 
-ENUM_BEGIN(tkm_context_kind_names, TKM_CTX_NONCE, TKM_CTX_ESA,
+ENUM_BEGIN(tkm_context_kind_names, TKM_CTX_NONCE, TKM_CTX_BLOB,
 	"NONCE_CONTEXT",
 	"DH_CONTEXT",
 	"CC_CONTEXT",
 	"ISA_CONTEXT",
 	"AE_CONTEXT",
-	"ESA_CONTEXT");
-ENUM_END(tkm_context_kind_names, TKM_CTX_ESA);
+	"ESA_CONTEXT",
+	"BLOB_CONTEXT");
+ENUM_END(tkm_context_kind_names, TKM_CTX_BLOB);
 
 typedef struct private_tkm_id_manager_t private_tkm_id_manager_t;
 

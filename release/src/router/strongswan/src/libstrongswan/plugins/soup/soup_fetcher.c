@@ -56,11 +56,6 @@ struct private_soup_fetcher_t {
 	u_int timeout;
 
 	/**
-	 * HTTP request version
-	 */
-	SoupHTTPVersion version;
-
-	/**
 	 * Fetcher callback function
 	 */
 	fetcher_callback_t cb;
@@ -71,36 +66,13 @@ struct private_soup_fetcher_t {
 	u_int *result;
 };
 
-/**
- * Data to pass to soup callback
- */
-typedef struct {
-	fetcher_callback_t cb;
-	void *user;
-	SoupSession *session;
-} cb_data_t;
-
-/**
- * Soup callback invoking our callback
- */
-static void soup_cb(SoupMessage *message, SoupBuffer *chunk, cb_data_t *data)
-{
-	if (!data->cb(data->user, chunk_create((u_char*)chunk->data, chunk->length)))
-	{
-		soup_session_cancel_message(data->session, message,
-									SOUP_STATUS_CANCELLED);
-	}
-}
-
 METHOD(fetcher_t, fetch, status_t,
 	private_soup_fetcher_t *this, char *uri, void *userdata)
 {
 	SoupMessage *message;
 	status_t status = FAILED;
-	cb_data_t data = {
-		.cb = this->cb,
-		.user = userdata,
-	};
+	GBytes *request_body, *res;
+	SoupSession *session;
 
 	message = soup_message_new(this->method, uri);
 	if (!message)
@@ -113,32 +85,43 @@ METHOD(fetcher_t, fetch, status_t,
 	}
 	if (this->type)
 	{
-		soup_message_set_request(message, this->type, SOUP_MEMORY_STATIC,
-								 this->data.ptr, this->data.len);
+		request_body = g_bytes_new_static(this->data.ptr, this->data.len);
+		soup_message_set_request_body_from_bytes(message, this->type,
+												 request_body);
+		g_bytes_unref(request_body);
 	}
-	soup_message_set_http_version(message, this->version);
-	soup_message_body_set_accumulate(message->response_body, FALSE);
-	g_signal_connect(message, "got-chunk", G_CALLBACK(soup_cb), &data);
-	data.session = soup_session_new();
-	g_object_set(G_OBJECT(data.session),
-				 SOUP_SESSION_TIMEOUT, (guint)this->timeout, NULL);
+	session = soup_session_new_with_options("timeout", (guint)this->timeout,
+											NULL);
 
 	DBG2(DBG_LIB, "sending http request to '%s'...", uri);
-	soup_session_send_message(data.session, message);
+	res = soup_session_send_and_read(session, message, NULL, NULL);
 	if (this->result)
 	{
-		*this->result = message->status_code;
+		*this->result = soup_message_get_status(message);
 	}
-	if (SOUP_STATUS_IS_SUCCESSFUL(message->status_code))
+	if (SOUP_STATUS_IS_SUCCESSFUL(soup_message_get_status(message)))
 	{
 		status = SUCCESS;
 	}
 	else if (!this->result)
 	{	/* only log an error if the code is not returned */
-		DBG1(DBG_LIB, "HTTP request failed: %s", message->reason_phrase);
+		DBG1(DBG_LIB, "HTTP request failed: %s",
+			 soup_message_get_reason_phrase(message));
+	}
+	if (res)
+	{
+		gpointer data;
+		gsize data_len;
+
+		data = g_bytes_unref_to_data(res, &data_len);
+		if (!this->cb(userdata, chunk_create(data, data_len)))
+		{
+			status = FAILED;
+		}
+		g_free(data);
 	}
 	g_object_unref(G_OBJECT(message));
-	g_object_unref(G_OBJECT(data.session));
+	g_object_unref(G_OBJECT(session));
 	return status;
 }
 
@@ -157,9 +140,6 @@ METHOD(fetcher_t, set_option, bool,
 			break;
 		case FETCH_REQUEST_TYPE:
 			this->type = va_arg(args, char*);
-			break;
-		case FETCH_HTTP_VERSION_1_0:
-			this->version = SOUP_HTTP_1_0;
 			break;
 		case FETCH_TIMEOUT:
 			this->timeout = va_arg(args, u_int);
@@ -200,7 +180,6 @@ soup_fetcher_t *soup_fetcher_create()
 			},
 		},
 		.method = SOUP_METHOD_GET,
-		.version = SOUP_HTTP_1_1,
 		.timeout = DEFAULT_TIMEOUT,
 		.cb = fetcher_default_callback,
 	);

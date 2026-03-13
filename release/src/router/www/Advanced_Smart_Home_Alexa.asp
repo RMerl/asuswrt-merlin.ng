@@ -17,7 +17,7 @@
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js?v=4"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js?v=5"></script>
 <style>
 .div_table{
 	display:table;
@@ -213,7 +213,7 @@ function tag_control() {
 		obj.onclick = function () {
 			const policyStatus = PolicyStatus()
 					.then(data => {
-						if (data.PP == 0 || data.PP_time == '') {
+						if (data.PP < 1) {
 							const policyModal = new PolicyModalComponent({
 								policy: "PP",
 								policyStatus: data,
@@ -299,7 +299,7 @@ function get_activation_code(){
 
 	const policyStatus = PolicyStatus()
 			.then(data => {
-				if (data.PP == 0 || data.PP_time == '') {
+				if (data.PP < 1) {
 					const policyModal = new PolicyModalComponent({
 						policy: "PP",
 						policyStatus: data,

@@ -108,6 +108,7 @@ static void* thread_proc(pj_uint32_t *pcounter)
     }
 
     TRACE__((THIS_FILE, "     thread %d quitting..", id));
+    (void) id;
     return NULL;
 }
 

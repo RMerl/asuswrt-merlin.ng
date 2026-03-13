@@ -906,7 +906,8 @@ static pj_bool_t pres_on_rx_request(pjsip_rx_data *rdata)
     status = pjsip_uri_print(PJSIP_URI_IN_REQ_URI, dlg->remote.info->uri,
 			     uapres->remote, PJSIP_MAX_URL_SIZE);
     if (status < 1)
-	pj_ansi_strcpy(uapres->remote, "<-- url is too long-->");
+        pj_ansi_strxcpy(uapres->remote, "<-- url is too long-->",
+                        PJSIP_MAX_URL_SIZE);
     else
 	uapres->remote[status] = '\0';
 

@@ -229,6 +229,6 @@ int test_main(void)
                   id, pj_exception_id_name(0, id)));
     }
     PJ_END(0);
-
+    (void) i;
     return -1;
 }

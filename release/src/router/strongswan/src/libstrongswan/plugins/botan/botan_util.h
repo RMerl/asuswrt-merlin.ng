@@ -45,6 +45,17 @@
 bool chunk_to_botan_mp(chunk_t value, botan_mp_t *mp);
 
 /**
+ * Callback for botan_pubkey_view_*() to convert the data to an allocated
+ * chunk.
+ *
+ * @param ctx		pointer to the resulting chunk
+ * @param data		"viewed" data
+ * @param len		length of data
+ * @return			0 if successful
+ */
+int botan_view_to_chunk(botan_view_ctx ctx, const uint8_t *data, size_t len);
+
+/**
  * Get the Botan string identifier for the given hash algorithm.
  *
  * @param hash		hash algorithm

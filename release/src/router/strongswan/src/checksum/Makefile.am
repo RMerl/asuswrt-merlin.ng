@@ -48,11 +48,6 @@ if USE_RADIUS
   libs += $(DESTDIR)$(ipseclibdir)/libradius.so
 endif
 
-if USE_LIBNTTFFT
-  deps += $(top_builddir)/src/libstrongswan/math/libnttfft/libnttfft.la
-  libs += $(DESTDIR)$(ipseclibdir)/libnttfft.so
-endif
-
 if USE_LIBPTTLS
   deps += $(top_builddir)/src/libpttls/libpttls.la
   libs += $(DESTDIR)$(ipseclibdir)/libpttls.so

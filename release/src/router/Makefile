@@ -3589,8 +3589,8 @@ libmnl-1.0.4-configure:
 libmnl-1.0.4-install:
 	install -D libmnl-1.0.4/src/.libs/libmnl.so.0.2.0 $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0.2.0
 	cd $(INSTALLDIR)/libmnl-1.0.4/usr/lib/ && \
-	ln -sf libmnl.so.0.2.0 libmnl.so && \
-	ln -sf libmnl.so.0.2.0 libmnl.so.0
+		ln -sf libmnl.so.0.2.0 libmnl.so && \
+		ln -sf libmnl.so.0.2.0 libmnl.so.0
 	$(STRIP) $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0.2.0
 
 libmnl-1.0.4-clean:
@@ -3782,12 +3782,19 @@ else
 HOSTCONFIG_OPENSSL:= $(HOSTCONFIG)
 endif
 
+ifeq ($(HND_ROUTER_BE_4916),y)
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126))
+HOSTCONFIG_OPENSSL:= linux-aarch64
+endif
+endif
+
 openssl-1.1/Makefile:
 	cd openssl-1.1 && \
 	./Configure $(HOSTCONFIG_OPENSSL) --prefix=/usr --openssldir=/etc --cross-compile-prefix=' ' \
 	$(if $(filter y,$(RTCONFIG_SFP) $(RTCONFIG_4M_SFP) $(RTCONFIG_8M_SFP)),-Os,-O2) \
 	$(if $(RTCONFIG_DEBUG),-g) \
 	-ffunction-sections -fdata-sections -Wl,--gc-sections \
+	$(if $(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126),$(if $(filter $(PROFILE_KARCH),armhfp),no-asm,)) \
 	shared $(OPENSSL_CIPHERS) no-err no-async --api=1.0.0 \
 	no-aria no-sm2 no-sm3 no-sm4 \
 	--with-rand-seed=devrandom \
@@ -6156,13 +6163,26 @@ lldpd-1.0.11-clean:
 	[ ! -f lldpd-1.0.11/libevent/Makefile ] || $(MAKE) -C lldpd-1.0.11/libevent clean
 	@rm -f lldpd-1.0.11/libevent/Makefile
 
+ifeq ($(HND_ROUTER_BE_4916),y)
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506))
+LIBEVENT_EXT_PKG += -DRTCONFIG_HND_ROUTER_BE_4916 -DWIFI7_SDK_20250506
+# LIBEVENT_EXT_PKG += -DARC4RANDOM_DISABLED
+LIBEVENT_EXT_PKG2 += ac_cv_func_arc4random=no ac_cv_func_arc4random_buf=no
+endif
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126))
+LIBEVENT_EXT_PKG += -DRTCONFIG_HND_ROUTER_BE_4916 -DWIFI8_SDK_20251126
+# LIBEVENT_EXT_PKG += -DARC4RANDOM_DISABLED
+LIBEVENT_EXT_PKG2 += ac_cv_func_arc4random=no ac_cv_func_arc4random_buf=no
+endif
+endif
+
 libevent-2.0.21: libevent-2.0.21/Makefile
 	$(MAKE) -C $@ $(PARALLEL_BUILD) && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libevent.la
 
 libevent-2.0.21/Makefile:
 	( cd libevent-2.0.21 && autoreconf -i -f ; \
-		CFLAGS="$(CFLAGS) -Os -Wall $(EXTRACFLAGS) -I$(STAGEDIR)/usr/include" \
-		LDFLAGS="-L$(STAGEDIR)/usr/lib" \
+		CFLAGS="$(CFLAGS) -Os -Wall $(EXTRACFLAGS) $(LIBEVENT_EXT_PKG) -I$(STAGEDIR)/usr/include" \
+		LDFLAGS="-L$(STAGEDIR)/usr/lib" $(LIBEVENT_EXT_PKG2) \
 		$(CONFIGURE) --prefix=/usr --bindir=/usr/sbin --libdir=/usr/lib \
 		--disable-openssl --disable-debug-mode \
 	)
@@ -7586,6 +7606,9 @@ openpam/Makefile:
 	( cd openpam ; \
 		LDFLAGS=-ldl \
 		$(CONFIGURE) \
+		--prefix=$(STAGEDIR)/usr \
+		--bindir=$(STAGEDIR)/usr/sbin \
+		--libdir=$(STAGEDIR)/usr/lib \
 		--without-doc --with-pam-unix \
 	)
 
@@ -7776,7 +7799,7 @@ else
 endif
 	@touch $@
 
-lighttpd-1.4.39: shared $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) libpasswd libdisk samba-3.5.8 pcre-8.31 libxml2 sqlite libexif openssl curl $(if $(RTCONFIG_PERMISSION_MANAGEMENT),PMS_DBapis) $(if $(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7),libhostapi,) lighttpd-1.4.39/stamp-h1
+lighttpd-1.4.39: shared $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) libpasswd libdisk samba-3.5.8 pcre-8.31 libxml2 sqlite libexif openssl curl $(if $(RTCONFIG_PERMISSION_MANAGEMENT),PMS_DBapis) $(if $(RTCONFIG_MXL_826XX),libhostapi) lighttpd-1.4.39/stamp-h1
 	$(MAKE) -C lighttpd-1.4.39 $(PARALLEL_BUILD)
 
 lighttpd-1.4.39-install:
@@ -8170,6 +8193,7 @@ curl/Makefile: curl/configure
 		--disable-manual --disable-libcurl-option $(if $(RTCONFIG_IPV6),--enable-ipv6,--disable-ipv6) \
 		--disable-threaded-resolver --disable-ntlm-wb \
 		--disable-doh --disable-netrc --disable-dnsshuffle \
+		--without-libpsl \
 		$(if $(RTCONFIG_TR069),--with-libssh2=$(STAGEDIR)/usr,--without-zlib) \
 		$(if $(RTCONFIG_OPENSSL11)$(RTCONFIG_OPENSSL10),--with-ssl=$(TOP)/openssl --with-ca-fallback,--without-ssl) \
 		$(if $(RTCONFIG_MBEDTLS),--with-mbedtls=$(STAGEDIR)/usr,--without-mbedtls) \
@@ -8935,10 +8959,21 @@ wget/Makefile: wget/Makefile.in
 		LDFLAGS="$(EXTRALDFLAGS) -Wl,--gc-sections -L$(STAGEDIR)/usr/lib -pthread"
 
 wget: openssl zlib wget/Makefile
+ifeq ($(AUTOMAKE_117),yes)
 	$(MAKE) -C $@ $(PARALLEL_BUILD)
+else
+	$(MAKE) -C $@ $(PARALLEL_BUILD) ACLOCAL=true \
+          AUTOMAKE=true \
+          AUTOCONF=true \
+          AUTOHEADER=true
+endif
 
 wget-clean:
+ifeq ($(AUTOMAKE_117),yes)
 	[ ! -f wget/Makefile ] || $(MAKE) -C wget distclean
+else
+	[ ! -f wget/Makefile ] || $(MAKE) -C wget clean
+endif
 	@rm -f wget/Makefile
 
 wget-install:

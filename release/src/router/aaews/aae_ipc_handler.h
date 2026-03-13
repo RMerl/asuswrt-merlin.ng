@@ -7,8 +7,8 @@ typedef struct _CM_CTRL {
   int socketTCPSend;              /* used to send/rcv TCP frame */
   int socketUdpSendRcv;           /* used to send/rcv UDP frame */
   int socketIpcSendRcv;   /* used to send/rcv frame from IPC */
-  struct in_addr ownAddr;         /* IP address of ethernet interface */
-  struct in_addr broadcastAddr;   /* broadcast address of ethernet interface */
+  //struct in_addr ownAddr;         /* IP address of ethernet interface */
+  //struct in_addr broadcastAddr;   /* broadcast address of ethernet interface */
   char brIfMac[32];   /* br0 mac address */
   pid_t pid;                      /* CM task PID */
   unsigned char *publicKey;       /* used to save public key for CM */

@@ -28,7 +28,7 @@
 #include <bcmnvram.h>
 #include <shutils.h>
 #include <shared.h>
-
+#include <webapi.h>
 #ifdef TRANSLATE_ON_FLY
 #include <json_object.h>
 

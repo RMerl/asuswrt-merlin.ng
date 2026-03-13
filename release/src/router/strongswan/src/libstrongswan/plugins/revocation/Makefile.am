@@ -12,6 +12,7 @@ endif
 
 libstrongswan_revocation_la_SOURCES = \
 	revocation_plugin.h revocation_plugin.c \
+	revocation_fetcher.h revocation_fetcher.c \
 	revocation_validator.h revocation_validator.c
 
 libstrongswan_revocation_la_LDFLAGS = -module -avoid-version

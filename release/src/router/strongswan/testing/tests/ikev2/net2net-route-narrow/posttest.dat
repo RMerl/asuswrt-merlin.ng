@@ -1,0 +1,5 @@
+sun::swanctl --terminate --ike gw-gw 2> /dev/null
+sun::systemctl stop strongswan
+moon::systemctl stop strongswan
+sun::iptables-restore < /etc/iptables.flush
+moon::iptables-restore < /etc/iptables.flush

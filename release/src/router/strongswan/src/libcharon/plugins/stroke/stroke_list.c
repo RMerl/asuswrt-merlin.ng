@@ -566,7 +566,8 @@ METHOD(stroke_list_t, status, void,
 			fprintf(out, "%12s:  %s...%s  %N", peer_cfg->get_name(peer_cfg),
 					my_addr, other_addr, ike_version_names, ike_version);
 
-			if (ike_version == IKEV1 && peer_cfg->use_aggressive(peer_cfg))
+			if (ike_version == IKEV1 &&
+				peer_cfg->has_option(peer_cfg, OPT_IKEV1_AGGRESSIVE))
 			{
 				fprintf(out, " Aggressive");
 			}
@@ -584,10 +585,9 @@ METHOD(stroke_list_t, status, void,
 			children = peer_cfg->create_child_cfg_enumerator(peer_cfg);
 			while (children->enumerate(children, &child_cfg))
 			{
-				my_ts = child_cfg->get_traffic_selectors(child_cfg, TRUE,
-														 NULL, NULL, FALSE);
+				my_ts = child_cfg->get_traffic_selectors(child_cfg, TRUE, NULL);
 				other_ts = child_cfg->get_traffic_selectors(child_cfg, FALSE,
-															NULL, NULL, FALSE);
+															NULL);
 				fprintf(out, "%12s:   child:  %#R === %#R %N",
 						child_cfg->get_name(child_cfg),	my_ts, other_ts,
 						ipsec_mode_names, child_cfg->get_mode(child_cfg));
@@ -620,10 +620,8 @@ METHOD(stroke_list_t, status, void,
 			fprintf(out, "Shunted Connections:\n");
 			first = FALSE;
 		}
-		my_ts = child_cfg->get_traffic_selectors(child_cfg, TRUE, NULL,
-												 NULL, FALSE);
-		other_ts = child_cfg->get_traffic_selectors(child_cfg, FALSE, NULL,
-													NULL, FALSE);
+		my_ts = child_cfg->get_traffic_selectors(child_cfg, TRUE, NULL);
+		other_ts = child_cfg->get_traffic_selectors(child_cfg, FALSE, NULL);
 		fprintf(out, "%12s:  %#R === %#R %N\n",
 				child_cfg->get_name(child_cfg),	my_ts, other_ts,
 				ipsec_mode_names, child_cfg->get_mode(child_cfg));

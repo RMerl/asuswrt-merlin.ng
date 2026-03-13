@@ -476,6 +476,8 @@ function openLink(s){
 			tourl = "https://ipv6.he.net/certification/register.php";
 		else if (document.form.ddns_server_x.value == 'DYNU.COM')
 			tourl = "https://www.dynu.com/ControlPanel/CreateAccount";
+                else if (document.form.ddns_server_x.value == 'CLOUDFLARE.COM')
+                        tourl = "https://dash.cloudflare.com/sign-up";
 		else if (document.form.ddns_server_x.value == 'WWW.TUNNELBROKER.NET')
 			tourl = "https://www.tunnelbroker.net/register.php";
 		else if (document.form.ddns_server_x.value == 'WWW.ASUS.COM')

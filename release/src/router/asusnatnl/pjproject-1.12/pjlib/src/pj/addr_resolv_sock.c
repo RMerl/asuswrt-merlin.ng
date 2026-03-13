@@ -149,7 +149,8 @@ PJ_DEF(pj_status_t) pj_getaddrinfo(int af, const pj_str_t *nodename,
 		    continue;
 
 		/* Store canonical name */
-		pj_ansi_strcpy(ai[i].ai_canonname, nodecopy);
+                pj_ansi_strxcpy(ai[i].ai_canonname, nodecopy, 
+                                sizeof(ai[i].ai_canonname));
 		
 		/* Store address */
 		PJ_ASSERT_ON_FAIL(sizeof(*addr) <= sizeof(pj_sockaddr),
@@ -192,11 +193,11 @@ PJ_DEF(pj_status_t) pj_getaddrinfo(int af, const pj_str_t *nodename,
 
 	/* Store canonical name (possibly truncating the name) */
 	if (res->ai_canonname) {
-	    pj_ansi_strncpy(ai[i].ai_canonname, res->ai_canonname,
-			    sizeof(ai[i].ai_canonname));
-	    ai[i].ai_canonname[sizeof(ai[i].ai_canonname)-1] = '\0';
+            pj_ansi_strxcpy(ai[i].ai_canonname, res->ai_canonname,
+                                  sizeof(ai[i].ai_canonname));
 	} else {
-	    pj_ansi_strcpy(ai[i].ai_canonname, nodecopy);
+            pj_ansi_strxcpy(ai[i].ai_canonname, nodecopy,
+                            sizeof(ai[i].ai_canonname));
 	}
 
 	/* Store address */
@@ -271,8 +272,8 @@ PJ_DEF(pj_status_t) pj_getaddrinfo(int af, const pj_str_t *nodename,
 	pj_bzero(ai, max_count * sizeof(pj_addrinfo));
 
 	for (i=0; he.h_addr_list[i] && *count<max_count; ++i) {
-	    pj_ansi_strncpy(ai[*count].ai_canonname, he.h_name,
-			    sizeof(ai[*count].ai_canonname));
+            pj_ansi_strxcpy(ai[*count].ai_canonname, he.h_name,
+                                  sizeof(ai[*count].ai_canonname));
 		ai[*count].ai_canonname[sizeof(ai[*count].ai_canonname)-1] = '\0';
 
 		ai[*count].ai_addr.ipv4.sin_family = PJ_AF_INET;

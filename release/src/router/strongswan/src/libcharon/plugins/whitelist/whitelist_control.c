@@ -93,18 +93,50 @@ static void list(private_whitelist_control_t *this,
 }
 
 /**
+ * Information about a client connection.
+ */
+typedef struct {
+	private_whitelist_control_t *this;
+	whitelist_msg_t msg;
+	size_t read;
+} whitelist_conn_t;
+
+/**
  * Dispatch a received message
  */
-static bool on_accept(private_whitelist_control_t *this, stream_t *stream)
+CALLBACK(on_read, bool,
+	whitelist_conn_t *conn, stream_t *stream)
 {
+	private_whitelist_control_t *this = conn->this;
 	identification_t *id;
-	whitelist_msg_t msg;
+	ssize_t len;
 
-	while (stream->read_all(stream, &msg, sizeof(msg)))
+	while (TRUE)
 	{
-		msg.id[sizeof(msg.id) - 1] = 0;
-		id = identification_create_from_string(msg.id);
-		switch (ntohl(msg.type))
+		while (conn->read < sizeof(conn->msg))
+		{
+			len = stream->read(stream, (char*)&conn->msg + conn->read,
+							   sizeof(conn->msg) - conn->read, FALSE);
+			if (len <= 0)
+			{
+				if (errno == EWOULDBLOCK)
+				{
+					return TRUE;
+				}
+				if (len != 0)
+				{
+					DBG1(DBG_CFG, "whitelist socket error: %s", strerror(errno));
+				}
+				stream->destroy(stream);
+				free(conn);
+				return FALSE;
+			}
+			conn->read += len;
+		}
+
+		conn->msg.id[sizeof(conn->msg.id) - 1] = 0;
+		id = identification_create_from_string(conn->msg.id);
+		switch (ntohl(conn->msg.type))
 		{
 			case WHITELIST_ADD:
 				this->listener->add(this->listener, id);
@@ -129,9 +161,22 @@ static bool on_accept(private_whitelist_control_t *this, stream_t *stream)
 				break;
 		}
 		id->destroy(id);
+		conn->read = 0;
 	}
 
-	return FALSE;
+	return TRUE;
+}
+
+CALLBACK(on_accept, bool,
+	private_whitelist_control_t *this, stream_t *stream)
+{
+	whitelist_conn_t *conn;
+
+	INIT(conn,
+		.this = this,
+	);
+	stream->on_read(stream, on_read, conn);
+	return TRUE;
 }
 
 METHOD(whitelist_control_t, destroy, void,

@@ -339,9 +339,16 @@ static private_wolfssl_ec_private_key_t *create_empty(void)
 		.ref = 1,
 	);
 
-	if (wc_InitRng(&this->rng) < 0)
+	if (wc_ecc_init(&this->ec) != 0)
 	{
-		DBG1(DBG_LIB, "RNG init failed");
+		DBG1(DBG_LIB, "EC private key initialization failed");
+		free(this);
+		return NULL;
+	}
+	if (wc_InitRng(&this->rng) != 0)
+	{
+		DBG1(DBG_LIB, "RNG initialization for EC private key failed");
+		wc_ecc_free(&this->ec);
 		free(this);
 		return NULL;
 	}

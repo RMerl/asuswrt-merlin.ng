@@ -68,16 +68,27 @@ struct test_configuration_t {
  * The configs array must be terminated with a NULL element. The following
  * environment variables are currently supported:
  *
- * - TESTS_VERBOSITY: Numerical loglevel for debug log
+ * - TESTS_VERBOSITY: Numerical loglevel for debug log (all groups)
+ * - TESTS_VERBOSITY_<GROUP>: Numerical loglevel for debug log
+ * - TESTS_TIMING: Show timing information for each test case and iteration
  * - TESTS_STRONGSWAN_CONF: Specify a path to a custom strongswan.conf
  * - TESTS_PLUGINS: Specify an explicit list of plugins to load
  * - TESTS_RUNNERS: Run specific test runners only
  * - TESTS_SUITES: Run specific test suites only
  * - TESTS_SUITES_EXCLUDE: Don't run specific test suites
+ * - TESTS_CASES: Run specific test cases only
+ * - TESTS_CASES_EXCLUDE: Don't run specific test cases
+ * - TESTS_FUNCTIONS: Run specific test functions only
+ * - TESTS_FUNCTIONS_EXCLUDE: Don't run specific test functions
+ * - TESTS_ITERATIONS: List of iterations of loop-based functions to run only
+ * - TESTS_NO_IPV6: Disable IPv6 test cases
  * - TESTS_REDUCED_KEYLENGTHS: Test minimal keylengths for public key tests only
  *
  * Please note that TESTS_PLUGINS actually must be implemented by the init
  * callback function, as plugin loading is delegated.
+ *
+ * Note that TESTS_NO_IPV6 and TESTS_REDUCED_KEYLENGTHS have to be implemented
+ * appropriately by test suites.
  *
  * EXIT_SUCCESS is returned right away if TESTS_RUNNERS is defined but the name
  * passed to this function is not contained in it.

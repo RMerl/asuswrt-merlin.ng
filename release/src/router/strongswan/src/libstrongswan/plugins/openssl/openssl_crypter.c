@@ -102,8 +102,8 @@ static char* lookup_algorithm(uint16_t ikev2_algo, size_t *key_size)
 /**
  * Do the actual en/decryption in an EVP context
  */
-static bool crypt(private_openssl_crypter_t *this, chunk_t data, chunk_t iv,
-				  chunk_t *dst, int enc)
+static bool crypt_data(private_openssl_crypter_t *this, chunk_t data, chunk_t iv,
+					   chunk_t *dst, int enc)
 {
 	EVP_CIPHER_CTX *ctx;
 	int len;
@@ -149,13 +149,13 @@ static bool crypt(private_openssl_crypter_t *this, chunk_t data, chunk_t iv,
 METHOD(crypter_t, decrypt, bool,
 	private_openssl_crypter_t *this, chunk_t data, chunk_t iv, chunk_t *dst)
 {
-	return crypt(this, data, iv, dst, 0);
+	return crypt_data(this, data, iv, dst, 0);
 }
 
 METHOD(crypter_t, encrypt, bool,
 	private_openssl_crypter_t *this, chunk_t data, chunk_t iv, chunk_t *dst)
 {
-	return crypt(this, data, iv, dst, 1);
+	return crypt_data(this, data, iv, dst, 1);
 }
 
 METHOD(crypter_t, get_block_size, size_t,

@@ -106,7 +106,7 @@ struct private_certexpire_export_t {
  */
 typedef struct {
 	/** certificate subject as subjectAltName or CN of a DN */
-	char id[128];
+	char id[256];
 	/** list of expiration dates, 0 if no certificate */
 	time_t expire[MAX_TRUSTCHAIN_LENGTH];
 } entry_t;

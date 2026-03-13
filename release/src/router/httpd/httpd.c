@@ -95,6 +95,8 @@ typedef unsigned int __u32;   // 1225 ham
 #include <libasuslog.h>
 #endif
 
+#include <webapi.h>
+
 /* A multi-family sockaddr. */
 struct usockaddr {
 	union {
@@ -265,6 +267,9 @@ void add_ifttt_flag(void);
 extern int save_iptv_port(char *isp);
 #endif
 
+extern int get_file_md5(char *file, char *out, int len);
+extern int get_string_md5(const char *input_string, char *out, int len);
+
 int check_current_ip_is_lan_or_wan();
 
 /* added by Joey */
@@ -289,6 +294,8 @@ int login_error_status = 0;
 char cloud_file[256];
 char indexpage[128];
 
+static char cached_extendno[256] = {0};
+static char cached_extendno_md5[33] = {0};
 
 /* Added by Joey for handle one people at the same time */
 unsigned int login_ip = 0; // IPv6 compat: the logined ip
@@ -298,6 +305,7 @@ time_t login_timestamp=0; // the timestamp of the logined ip
 time_t login_timestamp_tmp=0; // the timestamp of the current session.
 unsigned int login_ip_tmp = 0; // IPv6 compat: the ip of the current session.
 uaddr login_uip_tmp = {0}; // the ip of the current session.
+uaddr app_login_uip = {0}; // the app log ip
 usockaddr login_usa_tmp = {0};
 //Add by Andy for handle the login block mechanism by LAN/WAN
 time_t login_timestamp_tmp_wan=0; // the timestamp of the current session.
@@ -375,7 +383,7 @@ void Debug2File(const char *path, const char *fmt, ...)
 		fprintf(stderr, "Open %s Error!\n", path);
 }
 #else
-void Debug2String(int level, char *path, int conlog, int showtime, unsigned filesize, char *function_name, int function_line, const char *fmt, ...)
+void Debug2String(int level, char *path, int conlog, int showtime, unsigned filesize, const char *function_name, int function_line, const char *fmt, ...)
 {
 	int max_log = 5;
 	int len = 0, str_end = 0;
@@ -1168,7 +1176,7 @@ int append_etag_header(char *file, char *extra_header, char *if_none_match, char
 	int ret = 0, status = 200;
 	int etag_header_flag = 0, safariAgent = 0;
 	time_t now = time(NULL);
-	char md5String[35] = {0}, timebuf[100] = {0}, etag_header[512] = {0};
+	char md5String[128] = {0}, timebuf[100] = {0};
 
 	strlcpy(title, "OK", title_len);
 
@@ -1182,8 +1190,24 @@ int append_etag_header(char *file, char *extra_header, char *if_none_match, char
 
 			strftime( timebuf, sizeof(timebuf), RFC1123FMT, gmtime( &now ) );
 
+			if(etag_header_flag == 2) {
+				char *extendno = nvram_safe_get("extendno");
+				if (extendno && strlen(extendno) > 0) {
+					if (strcmp(cached_extendno, extendno) != 0) {
+						strlcpy(cached_extendno, extendno, sizeof(cached_extendno));
+						if (get_string_md5(extendno, cached_extendno_md5, sizeof(cached_extendno_md5)) != 0) {
+							cached_extendno_md5[0] = '\0';
+						}
+					}
+
+					if (cached_extendno_md5[0] != '\0') {
+						strlcat(md5String, cached_extendno_md5, sizeof(md5String));
+					}
+				}
+			}
+
 			if(strstr(file, ".js"))
-				sprintf(md5String, "%s%s", md5String, nvram_get("preferred_lang"));
+				strlcat(md5String, nvram_safe_get("preferred_lang"), sizeof(md5String));
 
 			if(etag_header_flag==2 && extra_header){
 				strlcpy(final_header, extra_header, final_header_len);
@@ -1232,6 +1256,7 @@ handle_request(void)
 	char id_local[32],prouduct_id[32];
 #endif
 	char inviteCode[512];
+	char uip_tmp[128] = {0}, *temp_ip_str = NULL;
 
 	/* Initialize the request variables. */
 	auth_result = 1;
@@ -1420,6 +1445,8 @@ handle_request(void)
 
 	slowloris_check();
 
+	temp_ip_str = safe_uaddr_ntop(&login_uip_tmp, uip_tmp, sizeof(uip_tmp));
+
 	if ( strcasecmp( method, "get" ) != 0 && strcasecmp(method, "post") != 0 && strcasecmp(method, "head") != 0 ) {
 		send_error( 501, "Not Implemented", (char*) 0, "That method is not implemented." );
 		return;
@@ -1436,7 +1463,7 @@ handle_request(void)
 		return;
 	}
 
-	if(HTS == 1 && strcmp(inet_ntoa(login_usa_tmp.sa_in.sin_addr), "127.0.0.1")){ //allow tunnel pass
+	if(HTS == 1 && strcmp(temp_ip_str, "127.0.0.1")){ //allow tunnel pass
 		snprintf(inviteCode, sizeof(inviteCode), "<meta http-equiv=\"refresh\" content=\"0; https://%s:%d\">\r\n", gethost(), nvram_get_int("https_lanport"));
 		send_page( 307, "Temporary Redirect", (char*) 0, inviteCode, 0);
 		return;
@@ -1539,7 +1566,7 @@ handle_request(void)
 // _dprintf("[httpd] file: %s\n", file);
         }
 #endif
-	HTTPD_DBG("IP(%s), file = %s\nUser-Agent: %s\n", inet_ntoa(login_usa_tmp.sa_in.sin_addr), file, user_agent);
+	HTTPD_DBG("IP(%s), file = %s\nUser-Agent: %s\n", temp_ip_str, file, user_agent);
 	mime_exception = 0;
 	do_referer = 0;
 
@@ -1626,7 +1653,7 @@ handle_request(void)
 #if defined(RTCONFIG_AURALED) \
 	|| defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) \
 	|| defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) || defined(GTBE96) \
-	|| defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI)
+	|| defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI)
 				httpd_switch_ledg(LEDG_QIS_FINISH);
 #endif
 				if ((mime_exception&MIME_EXCEPTION_NOAUTH_FIRST)&&!x_Setting) {
@@ -1679,6 +1706,7 @@ handle_request(void)
 							&& !strstr(url, ".js")
 							&& !strstr(url, ".css")
 							&& !strstr(url, ".gif")
+							&& !strstr(url, ".webp")
 							&& !strstr(url, ".png")) {
 #if defined(RTCONFIG_WIRELESSREPEATER) || defined(RTCONFIG_CONCURRENTREPEATER)					 
 						if (nvram_match("x_Setting", "0") && (strstr(url, "start_apply2.htm") || strstr(url, "apscan.asp") || strstr(url, "data:image/")))
@@ -1865,6 +1893,11 @@ char *uaddr_ntop(const uaddr *uip, char *dst, size_t cnt)
 	return (char *)inet_ntop(uip->family, &uip->in, dst, cnt);
 }
 
+char *safe_uaddr_ntop(const uaddr *uip, char *dst, size_t cnt)
+{
+	return ((char *)inet_ntop(uip->family, &uip->in, dst, cnt))?:"";
+}
+
 /* IPv6 compat */
 unsigned int uaddr_addr(uaddr *uip)
 {
@@ -1977,6 +2010,7 @@ void app_http_login(uaddr *uip)
 		return;
 
 	app_login_ip = uaddr_addr(uip); /* IPv6 compat */
+	app_login_uip = *uip;
 
 	snprintf(tmp, sizeof(tmp), "%lu", uptime());
 	nvram_set("app_login_timestamp", tmp);
@@ -2516,13 +2550,17 @@ void check_alive()
 		check_alive_count = 0;
 	}
 	else if(check_alive_count > 20){
-		struct in_addr ip_addr, temp_ip_addr, app_temp_ip_addr;
-		ip_addr.s_addr = login_ip;
-		app_temp_ip_addr.s_addr = app_login_ip;
-		temp_ip_addr.s_addr = login_ip_tmp;
+
+		char tmp1[128] = {0}, *login_ip_str = NULL;
+		char tmp2[128] = {0}, *temp_ip_str = NULL;
+		char tmp3[128] = {0}, *app_ip_str = NULL;
+
+		login_ip_str = safe_uaddr_ntop(&login_uip, tmp1, sizeof(tmp1));
+		app_ip_str = safe_uaddr_ntop(&app_login_uip, tmp2, sizeof(tmp2));
+		temp_ip_str = safe_uaddr_ntop(&login_uip_tmp, tmp3, sizeof(tmp3));
 		//dbg("slow_post_read_count(%d) > 3\n", slow_post_read_count);
-		HTTPD_FB_DEBUG("login_ip = %s(%lu), app_login_ip = %s(%lu)\n", inet_ntoa(ip_addr), login_ip, inet_ntoa(app_temp_ip_addr), app_login_ip);
-		HTTPD_FB_DEBUG("login_ip_tmp = %s(%lu), url = %s\n", inet_ntoa(temp_ip_addr), login_ip_tmp, url);
+		HTTPD_FB_DEBUG("login_ip = %s(%lu), app_login_ip = %s(%lu)\n", login_ip_str, login_ip, app_ip_str, app_login_ip);
+		HTTPD_FB_DEBUG("login_ip_tmp = %s(%lu), url = %s\n", temp_ip_str, login_ip_tmp, url);
 		logmessage("HTTPD", "waitting 10 minitues and restart\n");
 		check_lock_state();
 		notify_rc("restart_httpd");
@@ -2953,8 +2991,9 @@ void start_ssl(int http_port)
 			/* Backup certificates if httpds initialization successful. */
 			if (save)
 				save_cert();
-
+#ifdef RTCONFIG_IPSEC
 			prn_cert_info(HTTPD_CERT);
+#endif
 			/* Unset reload flag if set */
 #if defined(RTCONFIG_IPV6)
 			if (!http_ipv6_only && nvram_get("httpds_reload_cert"))

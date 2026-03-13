@@ -55,8 +55,7 @@ METHOD(vici_builder_t, add, void,
 	private_vici_builder_t *this, vici_type_t type, ...)
 {
 	va_list args;
-	char *name = NULL;
-	chunk_t value = chunk_empty;
+	chunk_t name = chunk_empty, value = chunk_empty;
 
 	va_start(args, type);
 	switch (type)
@@ -67,10 +66,10 @@ METHOD(vici_builder_t, add, void,
 			break;
 		case VICI_LIST_START:
 		case VICI_SECTION_START:
-			name = va_arg(args, char*);
+			name = chunk_from_str(va_arg(args, char*));
 			break;
 		case VICI_KEY_VALUE:
-			name = va_arg(args, char*);
+			name = chunk_from_str(va_arg(args, char*));
 			value = va_arg(args, chunk_t);
 			break;
 		case VICI_LIST_ITEM:
@@ -83,6 +82,13 @@ METHOD(vici_builder_t, add, void,
 	}
 	va_end(args);
 
+	if (name.len > 0xff)
+	{
+		DBG1(DBG_ENC, "vici name exceeds size limit (%zu > %u)",
+			 name.len, 0xff);
+		this->error++;
+		return;
+	}
 	if (value.len > 0xffff)
 	{
 		DBG1(DBG_ENC, "vici value exceeds size limit (%zu > %u)",
@@ -102,18 +108,18 @@ METHOD(vici_builder_t, add, void,
 	switch (type)
 	{
 		case VICI_SECTION_START:
-			this->writer->write_data8(this->writer, chunk_from_str(name));
+			this->writer->write_data8(this->writer, name);
 			this->section++;
 			break;
 		case VICI_SECTION_END:
 			this->section--;
 			break;
 		case VICI_KEY_VALUE:
-			this->writer->write_data8(this->writer, chunk_from_str(name));
+			this->writer->write_data8(this->writer, name);
 			this->writer->write_data16(this->writer, value);
 			break;
 		case VICI_LIST_START:
-			this->writer->write_data8(this->writer, chunk_from_str(name));
+			this->writer->write_data8(this->writer, name);
 			this->list = TRUE;
 			break;
 		case VICI_LIST_ITEM:

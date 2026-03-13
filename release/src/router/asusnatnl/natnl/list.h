@@ -73,7 +73,7 @@ natnl_list_t *natnl_list_create2(int inst_id, int call_id,
 void *natnl_list_add(natnl_list_t *list, void *obj, int copy);
 void *natnl_list_add2(natnl_list_t *list, void *obj, int copy, int check_exists);
 void *natnl_list_get(natnl_list_t *list, void *obj);
-void *natnl_list_get_at2(natnl_list_t *list, int i, int debug, char *prefix);
+void *natnl_list_get_at2(natnl_list_t *list, int i, int debug, const char *prefix);
 void *natnl_list_get_at(natnl_list_t *list, int i);
 int natnl_list_get_index(natnl_list_t *list, void *obj);
 //natnl_list_t *natnl_list_copy(int inst_id, int call_id, natnl_list_t *src, int use_pool);

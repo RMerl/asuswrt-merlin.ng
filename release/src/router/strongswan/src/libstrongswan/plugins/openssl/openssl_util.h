@@ -58,6 +58,15 @@ bool openssl_compute_shared_key(EVP_PKEY *priv, EVP_PKEY *pub, chunk_t *shared);
 bool openssl_fingerprint(EVP_PKEY *key, cred_encoding_type_t type, chunk_t *fp);
 
 /**
+ * Wrap the given OpenSSL private key in a type-specific private key object.
+ *
+ * @param key		key object to wrap
+ * @param engine	TRUE if key can't be accessed directly
+ * @returns			created object or NULL if key type is not supported
+ */
+private_key_t *openssl_wrap_private_key(EVP_PKEY *key, bool engine);
+
+/**
  * Concatenates two bignums into a chunk, thereby enforcing the length of
  * a single BIGNUM, if necessary, by prepending it with zeros.
  *
@@ -124,6 +133,14 @@ chunk_t openssl_asn1_obj2chunk(const ASN1_OBJECT *asn1);
  * @return			chunk, pointing into asn1 string
  */
 chunk_t openssl_asn1_str2chunk(const ASN1_STRING *asn1);
+
+/**
+ * Convert an OpenSSL ASN1_INTEGER to a chunk.
+ *
+ * @param asn1		asn1 integer to convert
+ * @return			chunk, pointing into asn1 integer
+ */
+chunk_t openssl_asn1_int2chunk(const ASN1_INTEGER *asn1);
 
 /**
  * Convert an openssl X509_NAME to a identification_t of type ID_DER_ASN1_DN.

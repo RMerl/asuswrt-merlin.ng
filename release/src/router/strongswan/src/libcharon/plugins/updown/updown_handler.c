@@ -220,7 +220,7 @@ updown_handler_t *updown_handler_create()
 			.handler = {
 				.handle = _handle,
 				.release = _release,
-				.create_attribute_enumerator = enumerator_create_empty,
+				.create_attribute_enumerator = (void*)enumerator_create_empty,
 			},
 			.create_dns_enumerator = _create_dns_enumerator,
 			.destroy = _destroy,

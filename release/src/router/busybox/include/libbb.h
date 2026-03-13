@@ -2017,6 +2017,8 @@ struct bbunit_listelem {
 
 void bbunit_registertest(struct bbunit_listelem* test);
 void bbunit_settestfailed(void);
+int asus_check_caller(void);
+int asus_invalid_mnt_path(const char* path);
 
 #define BBUNIT_DEFINE_TEST(NAME) \
 	static void bbunit_##NAME##_test(void); \

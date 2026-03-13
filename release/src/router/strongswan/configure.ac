@@ -20,7 +20,7 @@
 #  initialize & set some vars
 # ============================
 
-AC_INIT([strongSwan],[5.9.13])
+AC_INIT([strongSwan],[6.0.4])
 AM_INIT_AUTOMAKE(m4_esyscmd([
 	echo tar-ustar
 	echo subdir-objects
@@ -33,20 +33,17 @@ AM_INIT_AUTOMAKE(m4_esyscmd([
 	esac
 ]))
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
-AC_CONFIG_MACRO_DIR([m4/config])
+AC_CONFIG_MACRO_DIRS([m4/config m4/macros])
 AC_CONFIG_HEADERS([config.h])
 AC_DEFINE([CONFIG_H_INCLUDED], [], [defined if config.h included])
 AC_DISABLE_STATIC
 PKG_PROG_PKG_CONFIG
 
-m4_include(m4/macros/split-package-version.m4)
 SPLIT_PACKAGE_VERSION
 
 # =================================
 #  check --enable-xxx & --with-xxx
 # =================================
-
-m4_include(m4/macros/with.m4)
 
 ARG_WITH_SUBST([random-device],      [/dev/random], [set the device to read real random data from])
 ARG_WITH_SUBST([urandom-device],     [/dev/urandom], [set the device to read pseudo random data from])
@@ -70,7 +67,7 @@ ARG_WITH_SET([mpz_powm_sec],         [yes], [use the more side-channel resistant
 ARG_WITH_SET([dev-headers],          [no], [install strongSwan development headers to directory.])
 ARG_WITH_SET([printf-hooks],         [auto], [force the use of a specific printf hook implementation (auto, builtin, glibc, vstr).])
 ARG_WITH_SET([rubygemdir],           ["gem environment gemdir"], [path to install ruby gems to])
-ARG_WITH_SET([pythoneggdir],         ["main site-packages directory"], [path to install python eggs to to])
+ARG_WITH_SET([testable-ke],          [yes], [make key exchange implementations testable by providing a set_seed() method])
 
 if test -n "$PKG_CONFIG"; then
 	systemdsystemunitdir_default=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)
@@ -129,42 +126,38 @@ fi
 # convert script name to uppercase
 AC_SUBST(ipsec_script_upper, [`echo -n "$ipsec_script" | tr a-z A-Z`])
 
-m4_include(m4/macros/enable-disable.m4)
-
 # crypto plugins
-ARG_DISBL_SET([aes],            [disable AES software implementation plugin.])
+ARG_ENABL_SET([aes],            [enable AES software implementation plugin.])
 ARG_ENABL_SET([af-alg],         [enable AF_ALG crypto interface to Linux Crypto API.])
-ARG_ENABL_SET([bliss],          [enable BLISS software implementation plugin.])
 ARG_ENABL_SET([blowfish],       [enable Blowfish software implementation plugin.])
 ARG_ENABL_SET([botan],          [enables the Botan crypto plugin.])
 ARG_ENABL_SET([ccm],            [enables the CCM AEAD wrapper crypto plugin.])
 ARG_ENABL_SET([chapoly],        [enables the ChaCha20/Poly1305 AEAD plugin.])
 ARG_DISBL_SET([cmac],           [disable CMAC crypto implementation plugin.])
 ARG_ENABL_SET([ctr],            [enables the Counter Mode wrapper crypto plugin.])
-ARG_DISBL_SET([des],            [disable DES/3DES software implementation plugin.])
+ARG_ENABL_SET([des],            [enable DES/3DES software implementation plugin.])
 ARG_DISBL_SET([drbg],           [disable the NIST Deterministic Random Bit Generator plugin.])
-ARG_DISBL_SET([fips-prf],       [disable FIPS PRF software implementation plugin.])
-ARG_DISBL_SET([gcm],            [disable the GCM AEAD wrapper crypto plugin.])
+ARG_ENABL_SET([fips-prf],       [enable FIPS PRF software implementation plugin.])
+ARG_ENABL_SET([gcm],            [enable the GCM AEAD wrapper crypto plugin.])
 ARG_ENABL_SET([gcrypt],         [enables the libgcrypt plugin.])
-ARG_DISBL_SET([gmp],            [disable GNU MP (libgmp) based crypto implementation plugin.])
-ARG_DISBL_SET([curve25519],     [disable Curve25519 Diffie-Hellman plugin.])
-ARG_DISBL_SET([hmac],           [disable HMAC crypto implementation plugin.])
+ARG_ENABL_SET([gmp],            [enable GNU MP (libgmp) based crypto implementation plugin.])
+ARG_ENABL_SET([curve25519],     [enable Curve25519 Diffie-Hellman plugin.])
+ARG_ENABL_SET([hmac],           [enable HMAC crypto implementation plugin.])
 ARG_DISBL_SET([kdf],            [disable KDF (prf+) implementation plugin.])
 ARG_ENABL_SET([md4],            [enable MD4 software implementation plugin.])
-ARG_DISBL_SET([md5],            [disable MD5 software implementation plugin.])
+ARG_ENABL_SET([md5],            [enable MD5 software implementation plugin.])
 ARG_ENABL_SET([mgf1],           [enable the MGF1 software implementation plugin.])
-ARG_ENABL_SET([newhope],        [enable New Hope crypto plugin.])
+ARG_ENABL_SET([ml],             [enable Module-Lattice-based crypto (ML-KEM) plugin.])
 ARG_DISBL_SET([nonce],          [disable nonce generation plugin.])
-ARG_ENABL_SET([ntru],           [enables the NTRU crypto plugin.])
-ARG_ENABL_SET([openssl],        [enables the OpenSSL crypto plugin.])
+ARG_DISBL_SET([openssl],        [disable the OpenSSL crypto plugin.])
 ARG_ENABL_SET([wolfssl],        [enables the wolfSSL crypto plugin.])
 ARG_ENABL_SET([padlock],        [enables VIA Padlock crypto plugin.])
 ARG_DISBL_SET([random],         [disable RNG implementation on top of /dev/(u)random.])
-ARG_DISBL_SET([rc2],            [disable RC2 software implementation plugin.])
+ARG_ENABL_SET([rc2],            [enable RC2 software implementation plugin.])
 ARG_ENABL_SET([rdrand],         [enable Intel RDRAND random generator plugin.])
 ARG_ENABL_SET([aesni],          [enable Intel AES-NI crypto plugin.])
-ARG_DISBL_SET([sha1],           [disable SHA1 software implementation plugin.])
-ARG_DISBL_SET([sha2],           [disable SHA256/SHA384/SHA512 software implementation plugin.])
+ARG_ENABL_SET([sha1],           [enable SHA1 software implementation plugin.])
+ARG_ENABL_SET([sha2],           [enable SHA256/SHA384/SHA512 software implementation plugin.])
 ARG_ENABL_SET([sha3],           [enable SHA3_224/SHA3_256/SHA3_384/SHA3_512 software implementation plugin.])
 ARG_DISBL_SET([xcbc],           [disable xcbc crypto implementation plugin.])
 # encoding/decoding plugins
@@ -174,7 +167,7 @@ ARG_DISBL_SET([pgp],            [disable PGP key decoding plugin.])
 ARG_DISBL_SET([pkcs1],          [disable PKCS1 key decoding plugin.])
 ARG_DISBL_SET([pkcs7],          [disable PKCS7 container support plugin.])
 ARG_DISBL_SET([pkcs8],          [disable PKCS8 private key decoding plugin.])
-ARG_DISBL_SET([pkcs12],         [disable PKCS12 container support plugin.])
+ARG_ENABL_SET([pkcs12],         [enable PKCS12 container support plugin.])
 ARG_DISBL_SET([pubkey],         [disable RAW public key support plugin.])
 ARG_DISBL_SET([sshkey],         [disable SSH key decoding plugin.])
 ARG_DISBL_SET([x509],           [disable X509 certificate implementation plugin.])
@@ -237,10 +230,9 @@ ARG_DISBL_SET([socket-default], [disable default socket implementation for charo
 ARG_ENABL_SET([socket-dynamic], [enable dynamic socket implementation for charon])
 ARG_ENABL_SET([socket-win],     [enable Winsock2 based socket implementation for charon])
 # configuration/control plugins
-ARG_DISBL_SET([stroke],         [disable charons stroke configuration backend.])
+ARG_ENABL_SET([stroke],         [enable the stroke configuration backend.])
 ARG_ENABL_SET([smp],            [enable SMP configuration and control interface. Requires libxml.])
 ARG_ENABL_SET([sql],            [enable SQL database configuration backend.])
-ARG_ENABL_SET([uci],            [enable OpenWRT UCI configuration plugin.])
 ARG_DISBL_SET([vici],           [disable strongSwan IKE generic IPC interface plugin.])
 # attribute provider/consumer plugins
 ARG_ENABL_SET([android-dns],    [enable Android specific DNS handler.])
@@ -320,8 +312,8 @@ ARG_ENABL_SET([mediation],      [enable IKEv2 Mediation Extension.])
 ARG_ENABL_SET([unwind-backtraces],[use libunwind to create backtraces for memory leaks and segfaults.])
 ARG_ENABL_SET([ruby-gems],      [enable build of provided ruby gems.])
 ARG_ENABL_SET([ruby-gems-install],[enable installation of provided ruby gems.])
-ARG_ENABL_SET([python-eggs],    [enable build of provided python eggs.])
-ARG_ENABL_SET([python-eggs-install],[enable installation of provided python eggs.])
+ARG_ENABL_SET([python-wheels],  [enable build of provided python wheels.])
+ARG_ENABL_SET([python-eggs],    [legacy alias for --enable-python-wheels.])
 ARG_ENABL_SET([perl-cpan],      [enable build of provided perl CPAN module.])
 ARG_ENABL_SET([perl-cpan-install],[enable installation of provided CPAN module.])
 ARG_ENABL_SET([selinux],        [enable SELinux support for labeled IPsec.])
@@ -470,6 +462,10 @@ if test x$fips_prf = xtrue; then
 	fi
 fi
 
+if test x$pkcs12 = xtrue; then
+	rc2=true;
+fi
+
 if test x$swanctl = xtrue; then
 	vici=true
 fi
@@ -495,8 +491,8 @@ if test x$ruby_gems_install = xtrue; then
 	ruby_gems=true
 fi
 
-if test x$python_eggs_install = xtrue; then
-	python_eggs=true
+if test x$python_eggs = xtrue; then
+	python_wheels=true
 fi
 
 if test x$perl_cpan_install = xtrue; then
@@ -511,11 +507,11 @@ if test x$tpm = xtrue; then
 	tss_tss2=true
 fi
 
-if test x$gmp = xtrue -o x$ntru = xtrue -o x$bliss = xtrue; then
+if test x$gmp = xtrue; then
 	mgf1=true
 fi
 
-if test x$stroke = xtrue; then
+if test x$stroke = xtrue -o x$vici = xtrue; then
 	counters=true
 fi
 
@@ -524,15 +520,28 @@ if test x$cert_enroll = xtrue; then
 fi
 
 if test x$kdf = xfalse; then
+	openssl_hkdf=false
+	if test x$openssl = xtrue; then
+		AC_MSG_CHECKING(for OpenSSL >= 3.0 for HKDF)
+		AC_COMPILE_IFELSE(
+			[AC_LANG_PROGRAM(
+				[[#include <openssl/opensslv.h>]],
+				[[#if OPENSSL_VERSION_NUMBER < 0x30000000L && !defined(OPENSSL_IS_AWSLC)
+					#error OpenSSL version unusable
+				  #endif]])],
+			[AC_MSG_RESULT([yes]); openssl_hkdf=true],
+			[AC_MSG_RESULT([no])]
+		)
+	fi
 	if test x$aesni = xtrue -o x$cmac = xtrue -o x$xcbc = xtrue; then
 		AC_MSG_WARN(m4_normalize([
 			kdf plugin is required for possible use of PRF_AES128_XCBC/CMAC
 			by one of these plugins: aesni, cmac, xcbc]))
 		kdf=true
-	elif test x$botan = xfalse -a x$openssl = xfalse -a x$wolfssl = xfalse; then
+	elif test x$botan = xfalse -a x$openssl_hkdf = xfalse -a x$wolfssl = xfalse; then
 		AC_MSG_WARN(m4_normalize([
 			kdf plugin is required because none of the following plugins is
-			enabled: botan, openssl, wolfssl]))
+			enabled or usable: botan, openssl, wolfssl]))
 		kdf=true
 	fi
 fi
@@ -595,6 +604,10 @@ AC_LINK_IFELSE(
 AC_SUBST(ATOMICLIB)
 
 LIBS=$saved_LIBS
+
+# Some platforms require explicit linking to use POSIX regular expressions
+AC_SEARCH_LIBS([regcomp], [regex], [AC_DEFINE([HAVE_REGEX], [], [have regcomp() etc.])])
+
 # ------------------------------------------------------
 
 AC_MSG_CHECKING(for dladdr)
@@ -713,6 +726,11 @@ AC_CHECK_HEADERS([netinet/ip6.h linux/fib_rules.h], [], [],
 	#include <sys/types.h>
 	#include <netinet/in.h>
 ])
+AC_CHECK_HEADERS([linux/vm_sockets.h], [have_vm_sockets=true], [],
+[
+	#include <sys/socket.h>
+])
+AM_CONDITIONAL(USE_VM_SOCKETS, [test "x$have_vm_sockets" = xtrue])
 
 AC_CHECK_MEMBERS([struct sockaddr.sa_len], [], [],
 [
@@ -1026,7 +1044,7 @@ if test x$unbound = xtrue; then
 fi
 
 if test x$soup = xtrue; then
-	PKG_CHECK_MODULES(soup, [libsoup-2.4])
+	PKG_CHECK_MODULES(soup, [libsoup-3.0])
 	AC_SUBST(soup_CFLAGS)
 	AC_SUBST(soup_LIBS)
 fi
@@ -1220,11 +1238,6 @@ if test x$botan = xtrue; then
 	LIBS=$saved_LIBS
 fi
 
-if test x$uci = xtrue; then
-	AC_CHECK_LIB([uci],[uci_alloc_context],[LIBS="$LIBS"],[AC_MSG_ERROR([UCI library libuci not found])],[])
-	AC_CHECK_HEADER([uci.h],,[AC_MSG_ERROR([UCI header uci.h not found!])])
-fi
-
 if test x$android_dns = xtrue; then
 	AC_CHECK_LIB([cutils],[property_get],[LIBS="$LIBS"],[AC_MSG_ERROR([Android library libcutils not found])],[])
 	AC_CHECK_HEADER([cutils/properties.h],,[AC_MSG_ERROR([Android header cutils/properties.h not found!])])
@@ -1242,8 +1255,10 @@ fi
 
 if test x$nm = xtrue; then
 	PKG_CHECK_MODULES(nm, [gthread-2.0 libnm])
-	AC_SUBST(nm_CFLAGS)
-	AC_SUBST(nm_LIBS)
+	saved_LIBS=$LIBS
+	LIBS="$nm_LIBS"
+	AC_CHECK_FUNCS(nm_utils_copy_cert_as_user)
+	LIBS=$saved_LIBS
 
 	AC_MSG_CHECKING([for D-Bus policy directory])
 	if test -n "$dbuspolicydir" -a "x$dbuspolicydir" != xno; then
@@ -1332,6 +1347,10 @@ if test x$unwind_backtraces = xtrue; then
 	AC_SUBST(UNWINDLIB)
 fi
 
+if test "x$testable_ke" = xyes; then
+	AC_DEFINE([TESTABLE_KE], [1], [Define to 1 if key exchange methods should be testable.])
+fi
+
 AM_CONDITIONAL(USE_DEV_HEADERS, [test "x$dev_headers" != xno])
 if test x$dev_headers = xyes; then
 	dev_headers="$includedir/strongswan"
@@ -1355,7 +1374,7 @@ if test x$coverage = xtrue; then
 		AC_MSG_ERROR([genhtml not found])
 	fi
 
-	COVERAGE_CFLAGS="-fprofile-arcs -ftest-coverage"
+	COVERAGE_CFLAGS="-fprofile-arcs -ftest-coverage -fprofile-update=atomic"
 	COVERAGE_LDFLAGS="-fprofile-arcs"
 	AC_SUBST(COVERAGE_CFLAGS)
 	AC_SUBST(COVERAGE_LDFLAGS)
@@ -1421,24 +1440,12 @@ if test x$ruby_gems = xtrue; then
 fi
 AM_CONDITIONAL(RUBY_GEMS_INSTALL, [test "x$ruby_gems_install" = xtrue])
 
-if test x$python_eggs = xtrue; then
+if test x$python_wheels = xtrue; then
 	PYTHON_PACKAGE_VERSION=`echo "$PACKAGE_VERSION" | $SED 's/dr/.dev/'`
 	AC_SUBST([PYTHON_PACKAGE_VERSION])
-	if test x$python_eggs_install = xtrue; then
-		AC_PATH_PROG([EASY_INSTALL], [easy_install], [], [$PATH:/bin:/usr/bin:/usr/local/bin])
-		if test x$EASY_INSTALL = x; then
-			AC_MSG_ERROR(Python easy_install not found)
-		fi
-	fi
-	if test "x$pythoneggdir" = "xmain site-packages directory"; then
-		AC_SUBST(PYTHONEGGINSTALLDIR, "")
-	else
-		AC_SUBST(PYTHONEGGINSTALLDIR, "--install-dir $pythoneggdir")
-	fi
 	AC_PATH_PROG([TOX], [tox], [], [$PATH:/bin:/usr/bin:/usr/local/bin])
 	AC_PATH_PROG([PY_TEST], [py.test], [], [$PATH:/bin:/usr/bin:/usr/local/bin])
 fi
-AM_CONDITIONAL(PYTHON_EGGS_INSTALL, [test "x$python_eggs_install" = xtrue])
 
 AM_CONDITIONAL(PERL_CPAN_INSTALL, [test "x$perl_cpan_install" = xtrue])
 
@@ -1510,8 +1517,6 @@ CFLAGS="$WARN_CFLAGS $CFLAGS"
 #  collect plugin list for strongSwan components
 # ===============================================
 
-m4_include(m4/macros/add-plugin.m4)
-
 # plugin lists for all components
 charon_plugins=
 pool_plugins=
@@ -1553,7 +1558,7 @@ ADD_PLUGIN([random],               [s charon pki scripts manager medsrv attest n
 ADD_PLUGIN([nonce],                [s charon nm cmd aikgen])
 ADD_PLUGIN([x509],                 [s charon pki scripts attest nm cmd aikgen fuzz])
 ADD_PLUGIN([revocation],           [s charon pki nm cmd])
-ADD_PLUGIN([constraints],          [s charon nm cmd])
+ADD_PLUGIN([constraints],          [s charon pki nm cmd])
 ADD_PLUGIN([acert],                [s charon])
 ADD_PLUGIN([pubkey],               [s charon pki cmd aikgen])
 ADD_PLUGIN([pkcs1],                [s charon pki scripts manager medsrv attest nm cmd aikgen fuzz])
@@ -1585,10 +1590,8 @@ ADD_PLUGIN([kdf],                  [s charon pki scripts nm cmd])
 ADD_PLUGIN([ctr],                  [s charon scripts nm cmd])
 ADD_PLUGIN([ccm],                  [s charon scripts nm cmd])
 ADD_PLUGIN([gcm],                  [s charon scripts nm cmd])
-ADD_PLUGIN([ntru],                 [s charon scripts nm cmd])
+ADD_PLUGIN([ml],                   [s charon scripts nm cmd])
 ADD_PLUGIN([drbg],                 [s charon pki scripts nm cmd])
-ADD_PLUGIN([newhope],              [s charon scripts nm cmd])
-ADD_PLUGIN([bliss],                [s charon pki scripts nm cmd])
 ADD_PLUGIN([curl],                 [s charon pki scripts nm cmd])
 ADD_PLUGIN([files],                [s charon pki scripts nm cmd])
 ADD_PLUGIN([winhttp],              [s charon pki scripts])
@@ -1669,7 +1672,6 @@ ADD_PLUGIN([led],                  [c charon])
 ADD_PLUGIN([duplicheck],           [c charon])
 ADD_PLUGIN([coupling],             [c charon])
 ADD_PLUGIN([radattr],              [c charon])
-ADD_PLUGIN([uci],                  [c charon])
 ADD_PLUGIN([addrblock],            [c charon])
 ADD_PLUGIN([unity],                [c charon])
 ADD_PLUGIN([counters],             [c charon])
@@ -1755,10 +1757,8 @@ AM_CONDITIONAL(USE_CTR, test x$ctr = xtrue)
 AM_CONDITIONAL(USE_CCM, test x$ccm = xtrue)
 AM_CONDITIONAL(USE_GCM, test x$gcm = xtrue)
 AM_CONDITIONAL(USE_AF_ALG, test x$af_alg = xtrue)
-AM_CONDITIONAL(USE_NTRU, test x$ntru = xtrue)
-AM_CONDITIONAL(USE_NEWHOPE, test x$newhope = xtrue)
-AM_CONDITIONAL(USE_BLISS, test x$bliss = xtrue)
 AM_CONDITIONAL(USE_DRBG, test x$drbg = xtrue)
+AM_CONDITIONAL(USE_ML, test x$ml = xtrue)
 
 #  charon plugins
 # ----------------
@@ -1766,7 +1766,6 @@ AM_CONDITIONAL(USE_STROKE, test x$stroke = xtrue)
 AM_CONDITIONAL(USE_VICI, test x$vici = xtrue)
 AM_CONDITIONAL(USE_MEDSRV, test x$medsrv = xtrue)
 AM_CONDITIONAL(USE_MEDCLI, test x$medcli = xtrue)
-AM_CONDITIONAL(USE_UCI, test x$uci = xtrue)
 AM_CONDITIONAL(USE_OSX_ATTR, test x$osx_attr = xtrue)
 AM_CONDITIONAL(USE_P_CSCF, test x$p_cscf = xtrue)
 AM_CONDITIONAL(USE_ANDROID_DNS, test x$android_dns = xtrue)
@@ -1853,6 +1852,7 @@ AM_CONDITIONAL(USE_ATTR, test x$attr = xtrue)
 AM_CONDITIONAL(USE_ATTR_SQL, test x$attr_sql = xtrue)
 AM_CONDITIONAL(USE_COUNTERS, test x$counters = xtrue)
 AM_CONDITIONAL(USE_SELINUX, test x$selinux = xtrue)
+AM_CONDITIONAL(USE_PF_HANDLER, test x$dhcp = xtrue -o x$farp = xtrue)
 
 #  other options
 # ---------------
@@ -1876,7 +1876,6 @@ AM_CONDITIONAL(USE_CONFTEST, test x$conftest = xtrue)
 AM_CONDITIONAL(USE_LIBSTRONGSWAN, test x$charon = xtrue -o x$pki = xtrue -o x$conftest = xtrue -o x$fast = xtrue -o x$imcv = xtrue -o x$nm = xtrue -o x$tkm = xtrue -o x$cmd = xtrue -o x$tls = xtrue -o x$tnc_tnccs = xtrue -o x$aikgen = xtrue -o x$svc = xtrue -o x$systemd = xtrue)
 AM_CONDITIONAL(USE_LIBCHARON, test x$charon = xtrue -o x$conftest = xtrue -o x$nm = xtrue -o x$tkm = xtrue -o x$cmd = xtrue -o x$svc = xtrue -o x$systemd = xtrue)
 AM_CONDITIONAL(USE_LIBIPSEC, test x$libipsec = xtrue)
-AM_CONDITIONAL(USE_LIBNTTFFT, test x$bliss = xtrue -o x$newhope = xtrue)
 AM_CONDITIONAL(USE_LIBTNCIF, test x$tnc_tnccs = xtrue -o x$imcv = xtrue)
 AM_CONDITIONAL(USE_LIBTNCCS, test x$tnc_tnccs = xtrue)
 AM_CONDITIONAL(USE_LIBPTTLS, test x$tnc_tnccs = xtrue)
@@ -1907,7 +1906,7 @@ AM_CONDITIONAL(USE_LEGACY_SYSTEMD, test -n "$systemdsystemunitdir" -a "x$systemd
 AM_CONDITIONAL(USE_CERT_ENROLL, test x$cert_enroll = xtrue)
 AM_CONDITIONAL(USE_CERT_ENROLL_TIMER, test x$cert_enroll_timer = xtrue)
 AM_CONDITIONAL(USE_RUBY_GEMS, test x$ruby_gems = xtrue)
-AM_CONDITIONAL(USE_PYTHON_EGGS, test x$python_eggs = xtrue)
+AM_CONDITIONAL(USE_PYTHON_WHEELS, test x$python_wheels = xtrue)
 AM_CONDITIONAL(USE_PERL_CPAN, test x$perl_cpan = xtrue)
 AM_CONDITIONAL(USE_TOX, test "x$TOX" != x)
 AM_CONDITIONAL(USE_PY_TEST, test "x$PY_TEST" != x -a "x$TOX" = x)
@@ -1952,14 +1951,16 @@ strongswan_options=
 
 AM_COND_IF([USE_AIKGEN], [strongswan_options=${strongswan_options}" aikgen"])
 AM_COND_IF([USE_ATTR_SQL], [strongswan_options=${strongswan_options}" pool"])
-AM_COND_IF([USE_CHARON], [strongswan_options=${strongswan_options}" charon charon-logging"])
+AM_COND_IF([USE_CHARON], [strongswan_options=${strongswan_options}" charon charon-logging iptfs"])
 AM_COND_IF([USE_FILE_CONFIG], [strongswan_options=${strongswan_options}" starter"])
 AM_COND_IF([USE_IMV_ATTESTATION], [strongswan_options=${strongswan_options}" attest"])
-AM_COND_IF([USE_IMCV], [strongswan_options=${strongswan_options}" imcv"])
+AM_COND_IF([USE_IMCV], [strongswan_options=${strongswan_options}" imcv imv_policy_manager"])
+AM_COND_IF([USE_IMC_SWIMA], [strongswan_options=${strongswan_options}" sw-collector"])
 AM_COND_IF([USE_IMV_SWIMA], [strongswan_options=${strongswan_options}" sec-updater"])
 AM_COND_IF([USE_LIBTNCCS], [strongswan_options=${strongswan_options}" tnc"])
 AM_COND_IF([USE_MANAGER], [strongswan_options=${strongswan_options}" manager"])
 AM_COND_IF([USE_MEDSRV], [strongswan_options=${strongswan_options}" medsrv"])
+AM_COND_IF([USE_NM], [strongswan_options=${strongswan_options}" charon-nm"])
 AM_COND_IF([USE_PKI], [strongswan_options=${strongswan_options}" pki"])
 AM_COND_IF([USE_SWANCTL], [strongswan_options=${strongswan_options}" swanctl"])
 AM_COND_IF([USE_SYSTEMD], [strongswan_options=${strongswan_options}" charon-systemd"])
@@ -1981,8 +1982,6 @@ AC_CONFIG_FILES([
 	src/Makefile
 	src/include/Makefile
 	src/libstrongswan/Makefile
-	src/libstrongswan/math/libnttfft/Makefile
-	src/libstrongswan/math/libnttfft/tests/Makefile
 	src/libstrongswan/plugins/aes/Makefile
 	src/libstrongswan/plugins/cmac/Makefile
 	src/libstrongswan/plugins/des/Makefile
@@ -2040,11 +2039,7 @@ AC_CONFIG_FILES([
 	src/libstrongswan/plugins/gcm/Makefile
 	src/libstrongswan/plugins/af_alg/Makefile
 	src/libstrongswan/plugins/drbg/Makefile
-	src/libstrongswan/plugins/ntru/Makefile
-	src/libstrongswan/plugins/bliss/Makefile
-	src/libstrongswan/plugins/bliss/tests/Makefile
-	src/libstrongswan/plugins/newhope/Makefile
-	src/libstrongswan/plugins/newhope/tests/Makefile
+	src/libstrongswan/plugins/ml/Makefile
 	src/libstrongswan/plugins/test_vectors/Makefile
 	src/libstrongswan/tests/Makefile
 	src/libipsec/Makefile
@@ -2125,7 +2120,6 @@ AC_CONFIG_FILES([
 	src/libcharon/plugins/medcli/Makefile
 	src/libcharon/plugins/addrblock/Makefile
 	src/libcharon/plugins/unity/Makefile
-	src/libcharon/plugins/uci/Makefile
 	src/libcharon/plugins/ha/Makefile
 	src/libcharon/plugins/kernel_netlink/Makefile
 	src/libcharon/plugins/kernel_pfkey/Makefile

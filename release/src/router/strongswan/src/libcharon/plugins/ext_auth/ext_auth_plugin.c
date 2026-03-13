@@ -136,7 +136,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * Plugin constructor
  */
-plugin_t *ext_auth_plugin_create()
+PLUGIN_DEFINE(ext_auth)
 {
 	private_ext_auth_plugin_t *this;
 

@@ -1,0 +1,56 @@
+Starting in version 0.27, tftp-hpa has the option of a "use Unix
+permissions" mode.  In this mode, tftpd can access any file accessible
+by the tftpd effective user, specified via the -u option.  This means
+that files no longer need to be set to o+r or o+w.
+
+If file creation is enabled (via the -c option), the -p option also
+changes the default umask from 0 (anyone can read or write) to
+"unchanged" (inherited from the calling process.)  The -U option can
+be used to override the default umask; this is recommended.
+
+The sanest setup, from a security standpoint, for tftpd to run in is
+probably the following:
+
+1. Create a separate "tftpd" user and group only used for tftpd;
+2. Have all your boot files in a single directory tree (usually called 
+   /tftpboot).
+3. Specify "-p -u tftpd -s /tftpboot" on the tftpd command line; if
+   you want clients to be able to create files use
+   "-p -c -U 002 -u tftpd -s /tftpboot" (replace 002 with whatever
+   umask is appropriate for your setup.)
+
+	       =======================================
+
+Starting in version 0.17, tftp-hpa operates in genuine "wait" mode,
+which means that an in.tftpd process hangs around for some time after
+the last service request has arrived.  This speeds up servicing a
+subsequent request, which apparently has been a problem in the past,
+resulting in "request storms" as the client keeps retrying, resulting
+in multiple connections on the server which the client has already
+abandoned.
+
+This also means that spawning tftp via tcpd is useless (in fact, this
+indirection seems to be part of the reason for these "request
+storms.")  Instead, tftp-hpa supports calling the tcpwrapper library
+directly.  Thus, if your /etc/inetd.conf looks like this (all on one
+line):
+
+tftp	dgram	udp	wait	root	/usr/sbin/tcpd
+/usr/sbin/in.tftpd -s /tftpboot -r blksize
+
+... it's better to change to ...
+
+tftp	dgram	udp	wait	root	/usr/sbin/in.tftpd
+in.tftpd -s /tftpboot -r blksize
+
+You should make sure that you are using "wait" option in tftpd; you
+also need to have tftpd spawned as root in order for chroot (-s) to
+work.  tftpd automatically drops privilege and changes user ID to
+"nobody" by default; the appropriate user ID for tftpd can be
+specified with the -u option (e.g. "-u tftpuser").
+
+If you are running a busy boot server, I would suggest to instead use
+kernel-based firewalling rules, and to compile tftpd without
+tcpwrapper support, in order to provide significantly better
+performance.  To do so, specify the --without-tcpwrappers option to
+configure when compiling; see the INSTALL.tftp file for more information.

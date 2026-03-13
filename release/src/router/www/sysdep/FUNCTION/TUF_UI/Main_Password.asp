@@ -90,10 +90,6 @@ String.prototype.strReverse = function() {
 	//strReversed = strOrig.revstring();
 };
 
-function isSupport(_ptn){
-	var ui_support = [<% get_ui_support(); %>][0];
-	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
-}
 var CoBrand = '<% nvram_get("CoBrand"); %>';
 
 var is_AA_sku = (function(){
@@ -110,16 +106,67 @@ var is_SG_sku = (function(){
 })();
 var isIE8 = navigator.userAgent.search("MSIE 8") > -1; 
 var isIE9 = navigator.userAgent.search("MSIE 9") > -1; 
-
 var secure_default = (function(){
 	var rc_support = '<% nvram_get("rc_support"); %>';
 	return (rc_support.search("secure_default") == -1) ? false : true;
 })();
+function isSupport(_ptn){
+	var ui_support = [<% get_ui_support(); %>][0];
+	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
+}
 
 if(isSupport("TS_UI")){
 	$('link').last().after('<link rel="stylesheet" type="text/css" href="css/difference.css">');
 	$(".form-input").css("")
 }
+
+(()=>{
+	if(isSupport("YEAR20")){
+		const style = document.createElement('style');
+		style.type = 'text/css';
+		style.innerHTML = `
+			.logo-container {
+				flex-direction: column;
+				margin-left: 0;
+			}
+			.logo-rog, .logo-odm{
+				background-position: center;
+				background-size: 60%;
+			}
+			.login-title {
+				width: auto;
+				height: 100%;
+				font-size: 48px;
+				color: #BDA158;
+				margin: 0 40px 0 120px;
+			}
+			.form-input {
+				border-bottom: 2px solid #999;
+			}
+			.form-input:focus {
+				border-bottom: 1px solid #E0BE62;
+			}
+			.login-btn-bg, .login-btn-bg:hover {
+				width: 380px;
+				padding: 0 22px;
+				margin: 20px auto 0;
+				float: none;
+				color: #E0BE62;
+				border: 1px solid #E0BE62;
+				background: rgba(49, 42, 29, 0.80);
+				border-radius: 0;
+			}
+			@media screen and (max-width: 1000px){
+				.login-btn-bg, .login-btn-bg:hover{
+					width: auto;
+					margin: 0 10px 0;
+					padding: initial;
+				}
+			}
+		`;
+		document.head.appendChild(style);
+	}
+})();
 
 function initial(){
 	top.name = "";/* reset cache of state.js win.name */

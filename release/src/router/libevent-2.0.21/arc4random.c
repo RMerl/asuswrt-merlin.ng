@@ -477,7 +477,13 @@ arc4random(void)
 }
 #endif
 
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126)
+void
+#else
 ARC4RANDOM_EXPORT void
+#endif /*  WIFI7_SDK_20250506 || WIFI8_SDK_20251126 */
+#endif	/* RTCONFIG_HND_ROUTER_BE_4916 */
 arc4random_buf(void *_buf, size_t n)
 {
 	unsigned char *buf = _buf;

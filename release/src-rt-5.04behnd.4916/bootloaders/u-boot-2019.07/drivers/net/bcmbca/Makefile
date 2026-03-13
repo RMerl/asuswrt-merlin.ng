@@ -91,7 +91,7 @@ endif
 
 obj-$(CONFIG_BCMBCA_SYSPORT_V1) += bcmbca_sysport_v1.o
 ifndef CONFIG_BCMBCA_IKOS
-obj-$(CONFIG_BCMBCA_SYSPORT_V2) += bcmbca_sysport_v2.o
+obj-$(CONFIG_BCMBCA_SYSPORT_V2) += $(if $(wildcard $(srctree)/drivers/net/bcmbca/bcmbca_sysport_v2.c),bcmbca_sysport_v2.o,bcmbca_sysport_v2_preb.o)
 endif
 obj-$(CONFIG_BCMBCA_SF2_GMAC) += bcm-sf2-eth-gmac.o
 
@@ -119,3 +119,6 @@ obj-$(CONFIG_BCMBCA_PHY) += phy/
 
 $(obj)/bcmbca_xrdp_eth_preb.o:
 	cp $(srctree)/drivers/net/bcmbca/bcmbca_xrdp_eth.o $(obj)/bcmbca_xrdp_eth_preb.o
+
+$(obj)/bcmbca_sysport_v2_preb.o:
+	cp $(srctree)/drivers/net/bcmbca/bcmbca_sysport_v2.o $(obj)/bcmbca_sysport_v2_preb.o

@@ -2,6 +2,8 @@
 	width: 100%;
 	height: 100%;
 	color: #FFFFFF;
+	line-height: 180%;
+	font-family: Arial, Helvetica, sans-serif, "Microsoft JhengHei";
 }
 .schedule_header_container{
 	position: relative;
@@ -195,15 +197,21 @@
 	font-size: 26px;
 	font-weight: 600;
 }
+.time_set_content .next_day {
+	font-size: 14px;
+	margin-left: 6px;
+	margin-top: 8px;
+	line-height: initial !important
+}
 .schedule_content_container .time_switch_bg{
 	position: absolute;
-	right: 12%;
+	right: 60px;
 	top: 10px;
 }
 .schedule_content_container .time_trash_bg{
 	position: absolute;
-	right: 2%;
-	top: 8px;
+	right: 12px;
+	top: 9px;
 }
 .schedule_timeset_container,
 .accesstime_container .timeset_container{
@@ -259,7 +267,7 @@
 	justify-content: space-evenly;
 }
 .sche_action_container > div{
-	flex-basis: 40%;
+	flex-basis: 42%;
 	height: 38px;
 	box-shadow: 0px 2px 3px 0px rgb(20 50 80 / 5%);
 	border-radius: 8px;
@@ -473,8 +481,10 @@
 }
 .weekdayset_component{
 	display: flex;
-	justify-content: space-evenly;
+	justify-content: space-between;
 	padding: 8px 0 16px 0;
+	width: 90%;
+	margin: auto;
 }
 .weekdayset_component > div{
 	position: relative;
@@ -696,7 +706,13 @@
 }
 @media (min-width: 992px) {
 	.schedule_timeset_container .timeset_container .hr_mins_container,
-	.accesstime_container .timeset_container .hr_mins_container{
+	.accesstime_container .timeset_container .hr_mins_container,
+	.all_day_component,
+	.schedule_timeset_container .valid_hint_component,
+	.accesstime_container .valid_hint_component{
 		width: 95%;
+	}
+	.weekdayset_container .valid_hint_component{
+		width: 90%;
 	}
 }

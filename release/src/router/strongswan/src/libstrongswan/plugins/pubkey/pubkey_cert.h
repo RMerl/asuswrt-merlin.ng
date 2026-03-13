@@ -36,13 +36,6 @@ struct pubkey_cert_t {
 	 * Implements certificate_t.
 	 */
 	certificate_t interface;
-
-	/**
-	 * Set the subject of the trusted public key.
-	 *
-	 * @param subject	subject to be set
-	 */
-	void (*set_subject)(pubkey_cert_t *this, identification_t *subject);
 };
 
 /**

@@ -1,4 +1,6 @@
 /*
+ * Copyright (C) 2024 Tobias Brunner
+ *
  * Copyright (C) 2018 René Korthaus
  * Copyright (C) 2018 Konstantinos Kolelis
  * Copyright (C) 2018 Tobias Hommel
@@ -49,10 +51,77 @@ struct private_botan_crypter_t {
 	chunk_t	key;
 
 	/**
+	 * Algorithm identifier
+	 */
+	encryption_algorithm_t alg;
+
+	/**
 	 * The cipher name
 	 */
 	const char* cipher_name;
 };
+
+/**
+ * Do the actual en/decryption in ECB, which requires a separate "raw" API.
+ */
+static bool crypt_ecb(private_botan_crypter_t *this, uint8_t *in, uint8_t *out,
+					  size_t len, uint32_t init_flag)
+{
+	botan_block_cipher_t cipher;
+	size_t blocks = len / AES_BLOCK_SIZE;
+	bool success = FALSE;
+
+	if (len % AES_BLOCK_SIZE)
+	{
+		return FALSE;
+	}
+
+	if (botan_block_cipher_init(&cipher, this->cipher_name) ||
+		botan_block_cipher_set_key(cipher, this->key.ptr, this->key.len))
+	{
+		return FALSE;
+	}
+
+	if (init_flag == BOTAN_CIPHER_INIT_FLAG_ENCRYPT)
+	{
+		success = !botan_block_cipher_encrypt_blocks(cipher, in, out, blocks);
+	}
+	else
+	{
+		success = !botan_block_cipher_decrypt_blocks(cipher, in, out, blocks);
+	}
+	botan_block_cipher_destroy(cipher);
+	return success;
+}
+
+/**
+ * Do the actual en/decryption for modes other than ECB.
+ */
+static bool crypt_modes(private_botan_crypter_t *this, chunk_t iv, uint8_t *in,
+						uint8_t *out, size_t len, uint32_t init_flag)
+{
+	botan_cipher_t cipher;
+	size_t output_written = 0;
+	size_t input_consumed = 0;
+	bool success = FALSE;
+
+	if (botan_cipher_init(&cipher, this->cipher_name, init_flag))
+	{
+		return FALSE;
+	}
+
+	if (!botan_cipher_set_key(cipher, this->key.ptr, this->key.len) &&
+		!botan_cipher_start(cipher, iv.ptr, iv.len) &&
+		!botan_cipher_update(cipher, BOTAN_CIPHER_UPDATE_FLAG_FINAL, out,
+							 len, &output_written, in, len, &input_consumed) &&
+		(output_written == input_consumed))
+	{
+		success = TRUE;
+	}
+
+	botan_cipher_destroy(cipher);
+	return success;
+}
 
 /**
  * Do the actual en/decryption
@@ -60,11 +129,7 @@ struct private_botan_crypter_t {
 static bool crypt(private_botan_crypter_t *this, chunk_t data, chunk_t iv,
 				  chunk_t *dst, uint32_t init_flag)
 {
-	botan_cipher_t cipher;
-	size_t output_written = 0;
-	size_t input_consumed = 0;
 	uint8_t *in, *out;
-	bool success = FALSE;
 
 	in = data.ptr;
 	if (dst)
@@ -77,23 +142,11 @@ static bool crypt(private_botan_crypter_t *this, chunk_t data, chunk_t iv,
 		out = data.ptr;
 	}
 
-	if (botan_cipher_init(&cipher, this->cipher_name, init_flag))
+	if (this->alg == ENCR_AES_ECB)
 	{
-		return FALSE;
+		return crypt_ecb(this, in, out, data.len, init_flag);
 	}
-
-	if (!botan_cipher_set_key(cipher, this->key.ptr, this->key.len) &&
-		!botan_cipher_start(cipher, iv.ptr, iv.len) &&
-		!botan_cipher_update(cipher, BOTAN_CIPHER_UPDATE_FLAG_FINAL, out,
-							 data.len, &output_written, in, data.len,
-							 &input_consumed) &&
-		(output_written == input_consumed))
-	{
-		success = TRUE;
-	}
-
-	botan_cipher_destroy(cipher);
-	return success;
+	return crypt_modes(this, iv, in, out, data.len, init_flag);
 }
 
 METHOD(crypter_t, decrypt, bool,
@@ -101,7 +154,6 @@ METHOD(crypter_t, decrypt, bool,
 {
 	return crypt(this, data, iv, dst, BOTAN_CIPHER_INIT_FLAG_DECRYPT);
 }
-
 
 METHOD(crypter_t, encrypt, bool,
 	private_botan_crypter_t *this, chunk_t data, chunk_t iv, chunk_t *dst)
@@ -118,7 +170,7 @@ METHOD(crypter_t, get_block_size, size_t,
 METHOD(crypter_t, get_iv_size, size_t,
 	private_botan_crypter_t *this)
 {
-	return AES_BLOCK_SIZE;
+	return this->alg == ENCR_AES_ECB ? 0 : AES_BLOCK_SIZE;
 }
 
 METHOD(crypter_t, get_key_size, size_t,
@@ -161,10 +213,31 @@ botan_crypter_t *botan_crypter_create(encryption_algorithm_t algo,
 				.destroy = _destroy,
 			},
 		},
+		.alg = algo,
 	);
 
 	switch (algo)
 	{
+		case ENCR_AES_ECB:
+			switch (key_size)
+			{
+				case 16:
+					/* AES 128 */
+					this->cipher_name = "AES-128";
+					break;
+				case 24:
+					/* AES-192 */
+					this->cipher_name = "AES-192";
+					break;
+				case 32:
+					/* AES-256 */
+					this->cipher_name = "AES-256";
+					break;
+				default:
+					free(this);
+					return NULL;
+			}
+			break;
 		case ENCR_AES_CBC:
 			switch (key_size)
 			{

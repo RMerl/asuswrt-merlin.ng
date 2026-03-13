@@ -191,7 +191,7 @@ METHOD(enumerator_t, enumerate_dns, bool,
 	VA_ARGS_VGET(args, type, data);
 	*type = INTERNAL_IP4_DNS;
 	*data = chunk_empty;
-	this->venumerate = return_false;
+	this->venumerate = (void*)return_false;
 	return TRUE;
 }
 

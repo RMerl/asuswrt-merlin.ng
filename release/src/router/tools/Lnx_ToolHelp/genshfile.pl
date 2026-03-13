@@ -60,6 +60,7 @@ sub excludelist {
 	if ($fn eq "chart.min.js") { return 1; }
 	if ($fn eq "Captive_Portal_template.js") { return 1; }
 	if ($fn eq "qrcode.min.js") { return 1; }
+	if ($fn eq "ark-app-list.json") { return 1; }
 	return 0;
 }
 

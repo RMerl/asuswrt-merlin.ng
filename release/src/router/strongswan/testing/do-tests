@@ -41,7 +41,10 @@ TESTRESULTSHTML=$TODAYDIR/all.html
 INDEX=$TODAYDIR/index.html
 DEFAULTTESTSDIR=$TESTDIR/testing/tests
 
+GUEST_OUTPUT_DIR=/var/cache/testing-results
 SOURCEIP_ROUTING_TABLE=220
+
+export LEAK_DETECTIVE_LOG=/var/log/leak-detective.log
 
 testnumber="0"
 failed_cnt="0"
@@ -49,26 +52,67 @@ passed_cnt="0"
 subdir_cnt="0"
 
 ##############################################################################
-# parse optional arguments
+# parse arguments
 #
-while getopts "vt" opt
-do
-	case "$opt" in
-	v)
+function usage()
+{
+cat << EOF
+Usage:
+  ${0##*/} [-h] [-v|-t] [-i|-e] [TESTDIRS]
+    --help              (-h)  show usage information
+    --verbose           (-v)  show complete logs on errors (implies -t)
+    --timestamps        (-t)  show timestamps in console.log
+    --pre               (-i)  run pretest script only (single test only)
+    --post              (-e)  run posttest script only (single test only)
+    --no-leaks [daemon] (-n)  disable leak detective in commands (e.g. swanctl)
+                              and optionally the daemon as well
+
+    TESTDIRS  list of test directories (relative to testing/tests).
+              wildcards (*) are supported. default is to run all tests.
+EOF
+}
+
+TESTDIRS=()
+
+while [ $# -gt 0 ]; do
+	case $1 in
+	-h|--help)
+		usage
+		exit
+		;;
+	-v|--verbose)
 		verbose=YES
 		timestamps=YES
 		;;
-	t)
+	-t|--timestamps)
 		timestamps=YES
 		;;
+	-i|--pre)
+		pretest_only=YES
+		;;
+	-e|--post)
+		posttest_only=YES
+		;;
+	-n|--no-leaks)
+		export LEAK_DETECTIVE_DISABLE=1
+		if [[ "$2" =~ d(aemon)? ]]; then
+			export LEAK_DETECTIVE_DISABLE_DAEMON=1
+			shift
+		fi
+		;;
+	*)
+		TESTDIRS+=("$1")
+		;;
 	esac
-done
-shift $((OPTIND-1))
 
+	shift
+done
 
 function print_time()
 {
-	[ "$timestamps" == "YES" ] && echo "$(date +%T.%N) ~ "
+	[ "$timestamps" == "YES" ] && \
+		logtime=$(date +"%s.%N") && \
+		echo "$(date -d "0 +${logtime} sec -${teststart_ns} sec"  +%S.%N) [$(date -d @${logtime} +%T.%N)] ~ "
 }
 
 ##############################################################################
@@ -133,14 +177,7 @@ done
 #
 
 [ -f $SHAREDDIR/.strongswan-version ] && SWANVERSION=`cat $SHAREDDIR/.strongswan-version`
-KERNELVERSION=`ssh $SSHCONF root@\$ipv4_winnetou uname -r 2>/dev/null`
-
-# check if tcpdump supports --immediate-mode
-ssh $SSHCONF root@$ipv4_winnetou tcpdump --immediate-mode -c 1 >/dev/null 2>&1
-if [ $? -eq 0 ]
-then
-	TCPDUMP_IM=--immediate-mode
-fi
+KERNELVERSION=`ssh $SSHCONF root@\$ipv4_winnetou uname -rv | cut -d ' ' -f 1,2 2>/dev/null`
 
 ##############################################################################
 # create header for the results html file
@@ -221,9 +258,9 @@ trap abort_tests INT
 ##############################################################################
 # enter specific test directory
 #
-if [ $# -gt 0 ]
+if [ "${#TESTDIRS[@]}" -gt 0 ]
 then
-    TESTS=$(printf "%s\n" $* | sort -u)
+    TESTS=$(printf "%s\n" "${TESTDIRS[@]}" | sort -u)
 else
     TESTS=$(ls $DEFAULTTESTSDIR)
 fi
@@ -308,7 +345,8 @@ do
 	testname=$SUBDIR/$name
 	log_action " $testnumber $testname:"
 
-	teststart=$(date +%s)
+	teststart_ns=$(date +"%s.%N")
+	teststart=$(date -d "@$teststart_ns" +"%s")
 
 	if [ ! -d $DEFAULTTESTSDIR/${testname} ]
 	then
@@ -329,84 +367,75 @@ do
 
 	TESTDIR=$TESTSDIR/${testname}
 
-	##########################################################################
-	# copy test specific configurations to hosts and clear log files
-	#
-
-	DBDIR=/etc/db.d
-
-	$DIR/scripts/load-testconfig $testname
 	unset RADIUSHOSTS
 	unset DBHOSTS
 	unset IPV6
 	unset SWANCTL
-	source $TESTDIR/test.conf
+	source $DEFAULTTESTSDIR/${testname}/test.conf
 
+	DBDIR=/etc/db.d
+	STATUS="passed"
+
+	function stop_tcpdump
+	{
+		# wait for packets to get processed, but don't wait longer than 1s
+		eval ssh $SSHCONF root@\$ipv4_${1} "\"i=100; while [ \\\$i -gt 0 ]; do pkill -USR1 tcpdump; tail -1 /tmp/tcpdump.err.log | perl -n -e '/(\\d+).*?(\\d+)/; exit (\\\$1 == \\\$2)' || break; sleep 0.01; i=\\\$((\\\$i-1)); done;\""
+		echo "$(print_time)${1}# killall tcpdump" >> $CONSOLE_LOG
+		eval ssh $SSHCONF root@\$ipv4_${1} "\"killall tcpdump; while true; do killall -q -0 tcpdump || break; sleep 0.01; done;\""
+		eval TDUP_${1}="false"
+		echo "" >> $CONSOLE_LOG
+	}
+
+############################################################################
+# skip this whole pretest block if we only execute the posttest script
+#
+if [ "$posttest_only" == "YES" ]
+then
+	echo -n "(pre).."
+else
 
 	##########################################################################
-	# run tcpdump in the background
+	# copy test specific configurations to hosts and clear log files
 	#
 
-	if [ "$TCPDUMPHOSTS" != "" ]
-	then
-	    echo -e "TCPDUMP\n" >> $CONSOLE_LOG 2>&1
+	$DIR/scripts/load-testconfig $testname
 
-	    for host_iface in $TCPDUMPHOSTS
-	    do
-		host=`echo $host_iface | awk -F ":" '{print $1}'`
-		iface=`echo $host_iface | awk -F ":" '{if ($2 != "") { print $2 } else { printf("eth0") }}'`
-		tcpdump_cmd="tcpdump -l $TCPDUMP_IM -i $iface not port ssh and not port domain >/tmp/tcpdump.log 2>/tmp/tcpdump.err.log &"
-		echo "$(print_time)${host}# $tcpdump_cmd" >> $CONSOLE_LOG
-		ssh $SSHCONF root@`eval echo \\\$ipv4_$host '$tcpdump_cmd'`
+	##########################################################################
+	# clean up and initialize test hosts
+	#
+
+	declare -A INIT_OPTIONS=()
+
+	for host in $TCPDUMPHOSTS
+	do
+		# all hosts currently capture on eth0
+		INIT_OPTIONS[${host}]="${INIT_OPTIONS[${host}]} -i eth0"
 		eval TDUP_${host}="true"
-	    done
-	fi
-
-	##########################################################################
-	# create database directory in RAM
-	#
+	done
 
 	for host in $DBHOSTS
 	do
+		INIT_OPTIONS[${host}]="${INIT_OPTIONS[${host}]} -d $DBDIR"
+	done
+
+	# initialize hosts in parallel
+	WAIT_FOR=()
+
+	for host in $STRONGSWANHOSTS
+	do
 		eval HOSTLOGIN=root@\$ipv4_${host}
-	    ssh $SSHCONF $HOSTLOGIN "mkdir -p $DBDIR; mount -t ramfs -o size=5m ramfs $DBDIR" >/dev/null 2>&1
-	    ssh $SSHCONF $HOSTLOGIN "chgrp www-data $DBDIR; chmod g+w $DBDIR" >/dev/null 2>&1
+		ssh $SSHCONF $HOSTLOGIN /usr/local/bin/init-test ${INIT_OPTIONS[${host}]} &
+		WAIT_FOR+=($!)
 	done
 
-	##########################################################################
-	# flush conntrack table on all hosts
-	#
-
-	for host in $STRONGSWANHOSTS
-	do
-		ssh $SSHCONF root@`eval echo \\\$ipv4_$host` 'conntrack -F' >/dev/null 2>&1
-	done
-
-	##########################################################################
-	# remove leak detective log on all hosts
-	#
-
-	export LEAK_DETECTIVE_LOG=/var/log/leak-detective.log
-	for host in $STRONGSWANHOSTS
-	do
-		ssh $SSHCONF root@`eval echo \\\$ipv4_$host` 'rm -f $LEAK_DETECTIVE_LOG' >/dev/null 2>&1
-	done
-
-	##########################################################################
-	# flush IPsec state on all hosts
-	#
-
-	for host in $STRONGSWANHOSTS
-	do
-		ssh $SSHCONF root@`eval echo \\\$ipv4_$host` 'ip xfrm state flush; ip xfrm policy flush' >/dev/null 2>&1
-	done
+	wait ${WAIT_FOR[@]}
 
 	##########################################################################
 	# execute pre-test commands
 	#
 
 	echo -n "pre.."
-	echo -e "\nPRE-TEST\n" >> $CONSOLE_LOG 2>&1
+	echo -e "PRE-TEST\n" >> $CONSOLE_LOG 2>&1
 
 	eval `awk -F "::" '{
 		if ($0 ~ /^#.*/)
@@ -421,20 +450,17 @@ do
 		}
 	}' $TESTDIR/pretest.dat` >> $CONSOLE_LOG 2>&1
 
+fi
+############################################################################
 
-	##########################################################################
-	# stop tcpdump
-	#
 
-	function stop_tcpdump {
-	    # wait for packets to get processed, but don't wait longer than 1s
-	    eval ssh $SSHCONF root@\$ipv4_${1} "\"i=100; while [ \\\$i -gt 0 ]; do pkill -USR1 tcpdump; tail -1 /tmp/tcpdump.err.log | perl -n -e '/(\\d+).*?(\\d+)/; exit (\\\$1 == \\\$2)' || break; sleep 0.01; i=\\\$((\\\$i-1)); done;\""
-	    echo "$(print_time)${1}# killall tcpdump" >> $CONSOLE_LOG
-	    eval ssh $SSHCONF root@\$ipv4_${1} "\"killall tcpdump; while true; do killall -q -0 tcpdump || break; sleep 0.01; done;\""
-	    eval TDUP_${1}="false"
-	    echo "" >> $CONSOLE_LOG
-	}
-
+############################################################################
+# skip this whole test block if we only execute the pre- or posttest script
+#
+if [ "$pretest_only" == "YES" -o "$posttest_only" == "YES" ]
+then
+	echo -n "(test).."
+else
 
 	##########################################################################
 	# get and evaluate test results
@@ -442,8 +468,6 @@ do
 
 	echo -n "test.."
 	echo -e "\nTEST\n" >> $CONSOLE_LOG 2>&1
-
-	STATUS="passed"
 
 	eval `awk -F "::" '{
 		host=$1
@@ -507,9 +531,80 @@ do
 
 
 	##########################################################################
-	# log statusall and listall output
-	# get copies of ipsec.conf, ipsec.secrets
+	# collect test results from hosts
+	#
+
+	COLLECT_OPTIONS_BASE="-t $SOURCEIP_ROUTING_TABLE"
+
+	if [ $name = "net2net-ip4-in-ip6-ikev2" -o $name = "net2net-ip6-in-ip4-ikev2" ]
+	then
+		COLLECT_OPTIONS_BASE="$COLLECT_OPTIONS_BASE -4 -6"
+		IPROUTE_DSP="ip (-6) route list table $SOURCEIP_ROUTING_TABLE"
+		IPTABLES_DSP="iptables -L ; ip6tables -L"
+		IPTABLES_SAVE_DSP="iptables-save ; ip6tables-save"
+	elif [ -n "$IPV6" ]
+	then
+		COLLECT_OPTIONS_BASE="$COLLECT_OPTIONS_BASE -6"
+		IPROUTE_DSP="ip -6 route list table $SOURCEIP_ROUTING_TABLE"
+		IPTABLES_DSP="ip6tables -L"
+		IPTABLES_SAVE_DSP="ip6tables-save"
+	else
+		COLLECT_OPTIONS_BASE="$COLLECT_OPTIONS_BASE -4"
+		IPROUTE_DSP="ip route list table $SOURCEIP_ROUTING_TABLE"
+		IPTABLES_DSP="iptables -L"
+		IPTABLES_SAVE_DSP="iptables-save"
+	fi
+
+	declare -A COLLECT_OPTIONS=()
+
+	for host in $IPSECHOSTS
+	do
+		COLLECT_OPTIONS[${host}]="${COLLECT_OPTIONS[${host}]} -i"
+		if [ -z "$SWANCTL" ]
+		then
+			COLLECT_OPTIONS[${host}]="${COLLECT_OPTIONS[${host}]} -l"
+		fi
+	done
+
+	for host in $DBHOSTS
+	do
+		COLLECT_OPTIONS[${host}]="${COLLECT_OPTIONS[${host}]} -d"
+	done
+
+	for host in $RADIUSHOSTS
+	do
+		COLLECT_OPTIONS[${host}]="${COLLECT_OPTIONS[${host}]} -r"
+	done
+
+	# collect test results in parallel, copy them afterwards
+	WAIT_FOR=()
+
+	for host in ${!COLLECT_OPTIONS[@]}
+	do
+		eval HOSTLOGIN=root@\$ipv4_${host}
+		ssh $SSHCONF $HOSTLOGIN /usr/local/bin/collect-results \
+			$COLLECT_OPTIONS_BASE ${COLLECT_OPTIONS[${host}]} ${GUEST_OUTPUT_DIR} &
+		WAIT_FOR+=($!)
+	done
+
+	test ${#WAIT_FOR[@]} -gt 0 && wait ${WAIT_FOR[@]}
+
+	WAIT_FOR=()
+
+	for host in ${!COLLECT_OPTIONS[@]}
+	do
+		eval HOSTLOGIN=root@\$ipv4_${host}
+		ssh $SSHCONF $HOSTLOGIN "tar -cf - -C ${GUEST_OUTPUT_DIR} ." | tar -xf - -C $TESTRESULTDIR/ &
+		WAIT_FOR+=($!)
+	done
+
+	test ${#WAIT_FOR[@]} -gt 0 && wait ${WAIT_FOR[@]}
+
+	chmod a+r $TESTRESULTDIR/*
+
+	##########################################################################
 	# create index.html for the given test case
+	#
 
 	cat > $TESTRESULTDIR/index.html <<@EOF
 <html>
@@ -534,102 +629,16 @@ do
     <img src="../../images/$DIAGRAM" alt="$VIRTHOSTS">
 @EOF
 
-	IPTABLES_CMD_V4="echo -e '=== filter table ==='; iptables  -v -n -L; echo -e '\n=== nat table ==='; iptables  -v -n -t nat -L; echo -e '\n=== mangle table ==='; iptables  -v -n -t mangle -L"
-	IPTABLES_CMD_V6="echo -e '=== filter table ==='; ip6tables -v -n -L; echo -e '\n=== nat table ==='; ip6tables -v -n -t nat -L; echo -e '\n=== mangle table ==='; ip6tables -v -n -t mangle -L"
-
-	if [ -n "$IPV6" ]
-	then
-	    IPROUTE_CMD="ip -6 route list table $SOURCEIP_ROUTING_TABLE"
-	    IPROUTE_DSP=$IPROUTE_CMD
-	    IPTABLES_CMD="$IPTABLES_CMD_V6"
-	    IPTABLES_DSP="ip6tables -L"
-	    IPTABLES_SAVE_CMD="ip6tables-save"
-	    IPTABLES_SAVE_DSP="ip6tables-save"
-	else
-	    IPROUTE_CMD="ip route list table $SOURCEIP_ROUTING_TABLE"
-	    IPROUTE_DSP=$IPROUTE_CMD
-	    IPTABLES_CMD="$IPTABLES_CMD_V4"
-	    IPTABLES_DSP="iptables -L"
-	    IPTABLES_SAVE_CMD="iptables-save"
-	    IPTABLES_SAVE_DSP="iptables-save"
-	fi
-
-	if [ $name = "net2net-ip4-in-ip6-ikev2" -o $name = "net2net-ip6-in-ip4-ikev2" ]
-	then
-	    IPROUTE_CMD="ip route list table $SOURCEIP_ROUTING_TABLE; echo; ip -6 route list table $SOURCEIP_ROUTING_TABLE"
-	    IPROUTE_DSP="ip (-6) route list table $SOURCEIP_ROUTING_TABLE"
-	    IPTABLES_CMD="$IPTABLES_CMD_V4; echo; $IPTABLES_CMD_V6"
-	    IPTABLES_DSP="iptables -L ; ip6tables -L"
-	    IPTABLES_SAVE_CMD="iptables-save; echo; ip6tables-save"
-	    IPTABLES_SAVE_DSP="iptables-save ; ip6tables-save"
-	fi
-
-	for host in $DBHOSTS
-	do
-	    eval HOSTLOGIN=root@\$ipv4_${host}
-
-		scp $SSHCONF $HOSTLOGIN:/etc/db.d/ipsec.sql \
-		    $TESTRESULTDIR/${host}.ipsec.sql  > /dev/null 2>&1
-	done
-
 	for host in $IPSECHOSTS
 	do
-	    eval HOSTLOGIN=root@\$ipv4_${host}
-
-		scp $SSHCONF $HOSTLOGIN:/etc/strongswan.conf \
-		    $TESTRESULTDIR/${host}.strongswan.conf  > /dev/null 2>&1
-		if [  -n "$SWANCTL" ]
+	    if [ -n "$SWANCTL" ]
 		then
-			scp $SSHCONF $HOSTLOGIN:/etc/swanctl/swanctl.conf \
-			$TESTRESULTDIR/${host}.swanctl.conf  > /dev/null 2>&1
-
-			for subsys in conns algs certs pools authorities sas pols
-			do
-				ssh $SSHCONF $HOSTLOGIN swanctl --list-$subsys \
-					> $TESTRESULTDIR/${host}.swanctl.$subsys 2>/dev/null
-			done
-
-			ssh $SSHCONF $HOSTLOGIN swanctl --stats \
-				> $TESTRESULTDIR/${host}.swanctl.stats 2>/dev/null
-
-			echo "" >> $TESTRESULTDIR/${host}.swanctl.sas
+			echo >> $TESTRESULTDIR/${host}.swanctl.sas
 			cat $TESTRESULTDIR/${host}.swanctl.pols >> \
 				$TESTRESULTDIR/${host}.swanctl.sas
 			cat $TESTRESULTDIR/${host}.swanctl.algs >> \
 				$TESTRESULTDIR/${host}.swanctl.stats
-		else
-		    for file in ipsec.conf ipsec.secrets
-		    do
-				scp $SSHCONF $HOSTLOGIN:/etc/$file \
-			    $TESTRESULTDIR/${host}.$file  > /dev/null 2>&1
-		    done
 
-		    for command in statusall listall
-		    do
-				ssh $SSHCONF $HOSTLOGIN ipsec $command \
-			    > $TESTRESULTDIR/${host}.$command 2>/dev/null
-		    done
-		fi
-
-		if (! [ -f $TESTRESULTDIR/${host}.ipsec.sql ] ) then
-			scp $SSHCONF $HOSTLOGIN:/etc/ipsec.d/ipsec.sql \
-				$TESTRESULTDIR/${host}.ipsec.sql  > /dev/null 2>&1
-		fi
-
-	    ssh $SSHCONF $HOSTLOGIN ip -s xfrm policy \
-		    > $TESTRESULTDIR/${host}.ip.policy 2>/dev/null
-	    ssh $SSHCONF $HOSTLOGIN ip -s xfrm state \
-		    > $TESTRESULTDIR/${host}.ip.state 2>/dev/null
-	    ssh $SSHCONF $HOSTLOGIN $IPROUTE_CMD \
-		    > $TESTRESULTDIR/${host}.ip.route 2>/dev/null
-	    ssh $SSHCONF $HOSTLOGIN $IPTABLES_CMD \
-		    > $TESTRESULTDIR/${host}.iptables 2>/dev/null
-		ssh $SSHCONF $HOSTLOGIN $IPTABLES_SAVE_CMD \
-		    > $TESTRESULTDIR/${host}.iptables-save 2>/dev/null
-	    chmod a+r $TESTRESULTDIR/*
-
-		if [ -n "$SWANCTL" ]
-		then
 		    cat >> $TESTRESULTDIR/index.html <<@EOF
     <h3>$host</h3>
       <table border="0" cellspacing="0" width="600">
@@ -705,18 +714,6 @@ do
 
 	for host in $RADIUSHOSTS
 	do
-	    eval HOSTLOGIN=root@\$ipv4_${host}
-
-		for file in clients.conf radiusd.conf proxy.conf users sites-enabled/default sites-enabled/inner-tunnel mods-enabled/eap
-	    do
-		scp $SSHCONF $HOSTLOGIN:/etc/freeradius/3.0/$file \
-		    $TESTRESULTDIR/${host}.$(basename $file) > /dev/null 2>&1
-	    done
-
-	    scp $SSHCONF $HOSTLOGIN:/var/log/freeradius/radius.log \
-		$TESTRESULTDIR/${host}.radius.log  > /dev/null 2>&1
-
-	    chmod a+r $TESTRESULTDIR/*
 	    cat >> $TESTRESULTDIR/index.html <<@EOF
     <h3>$host</h3>
       <table border="0" cellspacing="0" width="600">
@@ -770,6 +767,17 @@ do
 </html>
 @EOF
 
+fi
+############################################################################
+
+
+############################################################################
+# skip this whole posttest block if we only execute the pretest script
+#
+if [ "$pretest_only" == "YES" ]
+then
+	echo -n "(post)"
+else
 
 	##########################################################################
 	# execute post-test commands
@@ -886,6 +894,19 @@ do
 
 	$DIR/scripts/restore-defaults $testname
 
+	##########################################################################
+	# remove any charon.pid files that still may exist
+	#
+
+	for host in $IPSECHOSTS
+	do
+	    eval HOSTLOGIN=root@\$ipv4_${host}
+	    ssh $SSHCONF $HOSTLOGIN 'if [ -f /var/run/charon.pid ]; then rm /var/run/charon.pid; echo "    removed charon.pid on `hostname`"; fi'
+	done
+
+fi
+############################################################################
+
 
 	##########################################################################
 	# set counters
@@ -932,18 +953,10 @@ do
   </tr>
 @EOF
 
-
 	##########################################################################
-	# remove any charon.pid files that still may exist
+	# exit if aborted or running only pre-/posttest scripts
 	#
-
-	for host in $IPSECHOSTS
-	do
-	    eval HOSTLOGIN=root@\$ipv4_${host}
-	    ssh $SSHCONF $HOSTLOGIN 'if [ -f /var/run/charon.pid ]; then rm /var/run/charon.pid; echo "    removed charon.pid on `hostname`"; fi'
-	done
-
-	if [ -n "$aborted" ]
+	if [ -n "$aborted" -o "$pretest_only" == "YES" -o "$posttest_only" == "YES" ]
 	then
 	    break 2
 	fi

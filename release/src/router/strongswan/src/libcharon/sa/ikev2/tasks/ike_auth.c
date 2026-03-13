@@ -82,6 +82,21 @@ struct private_ike_auth_t {
 	packet_t *other_packet;
 
 	/**
+	 * IntAuth data from IKE_INTERMEDIATE exchanges: IntAuth_i | IntAuth_r | MID
+	 */
+	chunk_t int_auth;
+
+	/**
+	 * Pointer for IntAuth_i into int_auth
+	 */
+	chunk_t int_auth_i;
+
+	/**
+	 * Pointer for IntAuth_r into int_auth
+	 */
+	chunk_t int_auth_r;
+
+	/**
 	 * Reserved bytes of ID payload
 	 */
 	char reserved[3];
@@ -191,6 +206,61 @@ static status_t collect_other_init_data(private_ike_auth_t *this,
 	/* keep a copy of the received packet */
 	this->other_packet = message->get_packet(message);
 	return NEED_MORE;
+}
+
+/**
+ * Collect IntAuth data for IKE_INTERMEDIATE exchanges.
+ */
+static status_t collect_int_auth_data(private_ike_auth_t *this, bool verify,
+									  message_t *message)
+{
+	keymat_v2_t *keymat;
+	chunk_t int_auth_ap, prev = chunk_empty, int_auth;
+
+	if (!message->get_plain(message, &int_auth_ap))
+	{
+		return FAILED;
+	}
+	if (this->int_auth.len)
+	{
+		prev = this->initiator != verify ? this->int_auth_i : this->int_auth_r;
+	}
+	keymat = (keymat_v2_t*)this->ike_sa->get_keymat(this->ike_sa);
+	if (!keymat->get_int_auth(keymat, verify, int_auth_ap, prev, &int_auth))
+	{
+		chunk_free(&int_auth_ap);
+		return FAILED;
+	}
+	chunk_free(&int_auth_ap);
+
+	if (!this->int_auth.len)
+	{	/* IntAuth consists of IntAuth_i | IntAuth_r | MID */
+		this->int_auth = chunk_alloc(int_auth.len * 2 + sizeof(uint32_t));
+		this->int_auth_i = chunk_create(this->int_auth.ptr, int_auth.len);
+		memset(this->int_auth.ptr, 0, this->int_auth.len);
+		prev = this->int_auth_i;
+	}
+	else if (!this->int_auth_r.len)
+	{
+		this->int_auth_r = chunk_create(this->int_auth.ptr + int_auth.len,
+										int_auth.len);
+		prev = this->int_auth_r;
+	}
+	memcpy(prev.ptr, int_auth.ptr, int_auth.len);
+	chunk_free(&int_auth);
+	return NEED_MORE;
+}
+
+/**
+ * Set the MID in the IntAuth data to that of the first IKE_AUTH message.
+ */
+static void set_ike_auth_mid(private_ike_auth_t *this, message_t *message)
+{
+	if (this->int_auth.len)
+	{
+		htoun32(this->int_auth.ptr + this->int_auth.len - sizeof(uint32_t),
+				message->get_message_id(message));
+	}
 }
 
 /**
@@ -442,6 +512,121 @@ static bool update_cfg_candidates(private_ike_auth_t *this, bool strict)
 }
 
 /**
+ * Check if the given auth config is for EAP.
+ */
+static bool is_eap_cfg(auth_cfg_t *cfg)
+{
+	return cfg &&
+		((uintptr_t)cfg->get(cfg, AUTH_RULE_EAP_TYPE) != EAP_NAK ||
+		 (uintptr_t)cfg->get(cfg, AUTH_RULE_EAP_VENDOR) != 0);
+}
+
+/**
+ * Switch configurations until we find an alternative with EAP authentication.
+ */
+static bool find_eap_cfg(private_ike_auth_t *this, auth_cfg_t **cand)
+{
+	do
+	{
+		if (!is_eap_cfg(*cand))
+		{
+			DBG1(DBG_IKE, "peer requested EAP, config unacceptable");
+		}
+		this->peer_cfg->destroy(this->peer_cfg);
+		this->peer_cfg = NULL;
+		if (!update_cfg_candidates(this, FALSE))
+		{
+			return FALSE;
+		}
+		*cand = get_auth_cfg(this, FALSE);
+	}
+	while (!is_eap_cfg(*cand));
+
+	return TRUE;
+}
+
+/**
+ * Copy EAP-specific rules to another auth config. Copying the EAP-Identity is
+ * optional.
+ */
+static void copy_eap_cfg(auth_cfg_t *src, auth_cfg_t *dst, bool copy_eap_id)
+{
+	identification_t *id;
+
+	/* copy over the EAP specific rules for authentication */
+	dst->add(dst, AUTH_RULE_EAP_TYPE,
+			 src->get(src, AUTH_RULE_EAP_TYPE));
+	dst->add(dst, AUTH_RULE_EAP_VENDOR,
+			 src->get(src, AUTH_RULE_EAP_VENDOR));
+	id = (identification_t*)src->get(src, AUTH_RULE_AAA_IDENTITY);
+	if (id)
+	{
+		dst->add(dst, AUTH_RULE_AAA_IDENTITY, id->clone(id));
+	}
+	if (copy_eap_id)
+	{
+		id = (identification_t*)src->get(src, AUTH_RULE_EAP_IDENTITY);
+		if (id)
+		{
+			dst->add(dst, AUTH_RULE_EAP_IDENTITY, id->clone(id));
+		}
+	}
+}
+
+/**
+ * Find an alternative EAP config that matches the EAP-Identity we received.
+ */
+static bool find_alternative_eap_cfg(private_ike_auth_t *this)
+{
+	auth_cfg_t *cfg, *cand;
+	identification_t *eap_id, *id;
+
+	/* clear current auth round, but copy IKE and EAP identities we received
+	 * from the peer */
+	cfg = this->ike_sa->get_auth_cfg(this->ike_sa, FALSE);
+	eap_id = cfg->get(cfg, AUTH_RULE_EAP_IDENTITY);
+	eap_id = eap_id->clone(eap_id);
+	id = cfg->get(cfg, AUTH_RULE_IDENTITY);
+	id = id->clone(id);
+
+	cfg->purge(cfg, FALSE);
+	cfg->add(cfg, AUTH_RULE_EAP_IDENTITY, eap_id);
+	cfg->add(cfg, AUTH_RULE_IDENTITY, id);
+
+	cand = get_auth_cfg(this, FALSE);
+	while (TRUE)
+	{
+		/* the log messages here are similar to those in auth_cfg_t */
+		id = cand->get(cand, AUTH_RULE_EAP_IDENTITY);
+		if (!id)
+		{
+			DBG1(DBG_CFG, "constraint check failed: no EAP identity required, "
+				 "but '%Y' (%N) received",
+				 eap_id, id_type_names, eap_id->get_type(eap_id));
+		}
+		else if (!eap_id->matches(eap_id, id))
+		{
+			DBG1(DBG_CFG, "constraint check failed: EAP identity '%Y'"
+				 " (%N) required, not matched by '%Y' (%N)",
+				 id, id_type_names, id->get_type(id),
+				 eap_id, id_type_names, eap_id->get_type(eap_id));
+		}
+		else
+		{
+			break;
+		}
+		if (!find_eap_cfg(this, &cand))
+		{
+			return FALSE;
+		}
+	}
+	/* copy over the EAP-specific rules for the alternative config, except
+	 * the identity we already received from the peer */
+	copy_eap_cfg(cand, cfg, FALSE);
+	return TRUE;
+}
+
+/**
  * Currently defined PPK_ID types
  */
 #define PPK_ID_OPAQUE 1
@@ -494,7 +679,7 @@ static bool get_ppk(private_ike_auth_t *this, identification_t *ppk_id)
 	key = lib->credmgr->get_shared(lib->credmgr, SHARED_PPK, ppk_id, NULL);
 	if (!key)
 	{
-		if (this->peer_cfg->ppk_required(this->peer_cfg))
+		if (this->peer_cfg->has_option(this->peer_cfg, OPT_PPK_REQUIRED))
 		{
 			DBG1(DBG_CFG, "PPK required but no PPK found for '%Y'", ppk_id);
 			return FALSE;
@@ -519,7 +704,7 @@ static bool get_ppk_i(private_ike_auth_t *this)
 
 	if (!this->ike_sa->supports_extension(this->ike_sa, EXT_PPK))
 	{
-		if (this->peer_cfg->ppk_required(this->peer_cfg))
+		if (this->peer_cfg->has_option(this->peer_cfg, OPT_PPK_REQUIRED))
 		{
 			DBG1(DBG_CFG, "PPK required but peer does not support PPK");
 			return FALSE;
@@ -530,7 +715,7 @@ static bool get_ppk_i(private_ike_auth_t *this)
 	ppk_id = this->peer_cfg->get_ppk_id(this->peer_cfg);
 	if (!ppk_id)
 	{
-		if (this->peer_cfg->ppk_required(this->peer_cfg))
+		if (this->peer_cfg->has_option(this->peer_cfg, OPT_PPK_REQUIRED))
 		{
 			DBG1(DBG_CFG, "PPK required but no PPK_ID configured");
 			return FALSE;
@@ -552,7 +737,7 @@ static bool get_ppk_r(private_ike_auth_t *this, message_t *msg)
 
 	if (!this->ike_sa->supports_extension(this->ike_sa, EXT_PPK))
 	{
-		if (this->peer_cfg->ppk_required(this->peer_cfg))
+		if (this->peer_cfg->has_option(this->peer_cfg, OPT_PPK_REQUIRED))
 		{
 			DBG1(DBG_CFG, "PPK required but peer does not support PPK");
 			return FALSE;
@@ -563,7 +748,7 @@ static bool get_ppk_r(private_ike_auth_t *this, message_t *msg)
 	notify = msg->get_notify(msg, PPK_IDENTITY);
 	if (!notify || !parse_ppk_identity(notify, &ppk_id))
 	{
-		if (this->peer_cfg->ppk_required(this->peer_cfg))
+		if (this->peer_cfg->has_option(this->peer_cfg, OPT_PPK_REQUIRED))
 		{
 			DBG1(DBG_CFG, "PPK required but no PPK_IDENTITY received");
 			return FALSE;
@@ -582,6 +767,41 @@ static bool get_ppk_r(private_ike_auth_t *this, message_t *msg)
 	result = get_ppk(this, ppk_id);
 	ppk_id->destroy(ppk_id);
 	return result;
+}
+
+/**
+ * Determine a default local identity if none is configured.
+ */
+static identification_t *determine_default_id(char *id_name, ike_sa_t *ike_sa,
+											  auth_cfg_t *cfg)
+{
+	identification_t *id = NULL;
+	certificate_t *cert;
+	host_t *me;
+
+	cert = cfg->get(cfg, AUTH_RULE_SUBJECT_CERT);
+	if (cert)
+	{
+		id = cert->get_subject(cert);
+		if (id && id->get_type(id) != ID_ANY && id->get_type(id) != ID_KEY_ID)
+		{
+			DBG1(DBG_CFG, "no %s configured, default to cert subject '%Y'",
+				 id_name, id);
+			id = id->clone(id);
+		}
+		else
+		{
+			id = NULL;
+		}
+	}
+
+	if (!id)
+	{
+		me = ike_sa->get_my_host(ike_sa);
+		id = identification_create_from_sockaddr(me->get_sockaddr(me));
+		DBG1(DBG_CFG, "no %s configured, default to IP address %Y", id_name, id);
+	}
+	return id;
 }
 
 METHOD(task_t, build_i, status_t,
@@ -627,6 +847,8 @@ METHOD(task_t, build_i, status_t,
 			charon->bus->alert(charon->bus, ALERT_LOCAL_AUTH_FAILED);
 			return FAILED;
 		}
+		/* set MID in IntAuth data if used */
+		set_ike_auth_mid(this, message);
 	}
 
 	if (!this->do_another_auth && !this->my_auth)
@@ -663,12 +885,10 @@ METHOD(task_t, build_i, status_t,
 		cfg->merge(cfg, get_auth_cfg(this, TRUE), TRUE);
 		idi = cfg->get(cfg, AUTH_RULE_IDENTITY);
 		if (!idi || idi->get_type(idi) == ID_ANY)
-		{	/* ID_ANY is invalid as IDi, use local IP address instead */
-			host_t *me;
-
-			DBG1(DBG_CFG, "no IDi configured, fall back on IP address");
-			me = this->ike_sa->get_my_host(this->ike_sa);
-			idi = identification_create_from_sockaddr(me->get_sockaddr(me));
+		{
+			/* ID_ANY is invalid as IDi, either default to the subject DN or
+			 * the IP address */
+			idi = determine_default_id("IDi", this->ike_sa, cfg);
 			cfg->add(cfg, AUTH_RULE_IDENTITY, idi);
 		}
 		this->ike_sa->set_my_id(this->ike_sa, idi->clone(idi));
@@ -700,6 +920,10 @@ METHOD(task_t, build_i, status_t,
 			charon->bus->alert(charon->bus, ALERT_LOCAL_AUTH_FAILED);
 			return FAILED;
 		}
+		if (this->int_auth.ptr && this->my_auth->set_int_auth)
+		{
+			this->my_auth->set_int_auth(this->my_auth, this->int_auth);
+		}
 	}
 	/* for authentication methods that return NEED_MORE, the PPK will be reset
 	 * in process_i() for messages without PPK_ID notify, so we always set it
@@ -707,7 +931,7 @@ METHOD(task_t, build_i, status_t,
 	if (this->ppk.ptr && this->my_auth->use_ppk)
 	{
 		this->my_auth->use_ppk(this->my_auth, this->ppk,
-							!this->peer_cfg->ppk_required(this->peer_cfg));
+				!this->peer_cfg->has_option(this->peer_cfg, OPT_PPK_REQUIRED));
 	}
 	switch (this->my_auth->build(this->my_auth, message))
 	{
@@ -751,6 +975,8 @@ METHOD(task_t, post_build_i, status_t,
 	{
 		case IKE_SA_INIT:
 			return collect_my_init_data(this, message);
+		case IKE_INTERMEDIATE:
+			return collect_int_auth_data(this, FALSE, message);
 		default:
 			return NEED_MORE;
 	}
@@ -767,6 +993,8 @@ METHOD(task_t, process_r, status_t,
 	{
 		case IKE_SA_INIT:
 			return collect_other_init_data(this, message);
+		case IKE_INTERMEDIATE:
+			return collect_int_auth_data(this, TRUE, message);
 		case IKE_AUTH:
 			break;
 		default:
@@ -808,6 +1036,8 @@ METHOD(task_t, process_r, status_t,
 		{
 			this->initial_contact = TRUE;
 		}
+		/* set MID in IntAuth data if used */
+		set_ike_auth_mid(this, message);
 		this->first_auth = TRUE;
 	}
 
@@ -835,37 +1065,15 @@ METHOD(task_t, process_r, status_t,
 			}
 		}
 		if (!message->get_payload(message, PLV2_AUTH))
-		{	/* before authenticating with EAP, we need a EAP config */
+		{
+			/* before authenticating with EAP, we need an EAP config */
 			cand = get_auth_cfg(this, FALSE);
-			while (!cand || (
-					(uintptr_t)cand->get(cand, AUTH_RULE_EAP_TYPE) == EAP_NAK &&
-					(uintptr_t)cand->get(cand, AUTH_RULE_EAP_VENDOR) == 0))
-			{	/* peer requested EAP, but current config does not match */
-				DBG1(DBG_IKE, "peer requested EAP, config unacceptable");
-				this->peer_cfg->destroy(this->peer_cfg);
-				this->peer_cfg = NULL;
-				if (!update_cfg_candidates(this, FALSE))
-				{
-					this->authentication_failed = TRUE;
-					return NEED_MORE;
-				}
-				cand = get_auth_cfg(this, FALSE);
-			}
-			/* copy over the EAP specific rules for authentication */
-			cfg->add(cfg, AUTH_RULE_EAP_TYPE,
-					 cand->get(cand, AUTH_RULE_EAP_TYPE));
-			cfg->add(cfg, AUTH_RULE_EAP_VENDOR,
-					 cand->get(cand, AUTH_RULE_EAP_VENDOR));
-			id = (identification_t*)cand->get(cand, AUTH_RULE_EAP_IDENTITY);
-			if (id)
+			if (!is_eap_cfg(cand) && !find_eap_cfg(this, &cand))
 			{
-				cfg->add(cfg, AUTH_RULE_EAP_IDENTITY, id->clone(id));
+				this->authentication_failed = TRUE;
+				return NEED_MORE;
 			}
-			id = (identification_t*)cand->get(cand, AUTH_RULE_AAA_IDENTITY);
-			if (id)
-			{
-				cfg->add(cfg, AUTH_RULE_AAA_IDENTITY, id->clone(id));
-			}
+			copy_eap_cfg(cand, cfg, TRUE);
 		}
 
 		/* verify authentication data */
@@ -878,6 +1086,10 @@ METHOD(task_t, process_r, status_t,
 		{
 			this->authentication_failed = TRUE;
 			return NEED_MORE;
+		}
+		if (this->int_auth.ptr && this->other_auth->set_int_auth)
+		{
+			this->other_auth->set_int_auth(this->other_auth, this->int_auth);
 		}
 	}
 	if (message->get_payload(message, PLV2_AUTH) &&
@@ -893,6 +1105,8 @@ METHOD(task_t, process_r, status_t,
 			this->other_auth->use_ppk(this->other_auth, this->ppk, FALSE);
 		}
 	}
+
+retry_eap_auth:
 	switch (this->other_auth->process(this->other_auth, message))
 	{
 		case SUCCESS:
@@ -905,6 +1119,13 @@ METHOD(task_t, process_r, status_t,
 				break;
 			}
 			return NEED_MORE;
+		case INVALID_ARG:
+			/* EAP-Identity didn't match, try to find an alternative config */
+			if (find_alternative_eap_cfg(this))
+			{
+				goto retry_eap_auth;
+			}
+			/* fall-through */
 		default:
 			this->authentication_failed = TRUE;
 			return NEED_MORE;
@@ -1010,13 +1231,10 @@ METHOD(task_t, build_r, status_t,
 		if (id->get_type(id) == ID_ANY)
 		{	/* no IDr received, apply configured ID */
 			if (!id_cfg || id_cfg->contains_wildcards(id_cfg))
-			{	/* no ID configured, use local IP address */
-				host_t *me;
-
-				DBG1(DBG_CFG, "no IDr configured, fall back on IP address");
-				me = this->ike_sa->get_my_host(this->ike_sa);
-				id_cfg = identification_create_from_sockaddr(
-														me->get_sockaddr(me));
+			{
+				/* no ID configured, fallback to either the subject DN or
+				 * the IP address */
+				id_cfg = determine_default_id("IDr", this->ike_sa, cfg);
 				cfg->add(cfg, AUTH_RULE_IDENTITY, id_cfg);
 			}
 			this->ike_sa->set_my_id(this->ike_sa, id_cfg->clone(id_cfg));
@@ -1066,6 +1284,10 @@ METHOD(task_t, build_r, status_t,
 			if (!this->my_auth)
 			{
 				goto local_auth_failed;
+			}
+			if (this->int_auth.ptr && this->my_auth->set_int_auth)
+			{
+				this->my_auth->set_int_auth(this->my_auth, this->int_auth);
 			}
 		}
 	}
@@ -1189,6 +1411,8 @@ METHOD(task_t, post_build_r, status_t,
 	{
 		case IKE_SA_INIT:
 			return collect_my_init_data(this, message);
+		case IKE_INTERMEDIATE:
+			return collect_int_auth_data(this, FALSE, message);
 		default:
 			return NEED_MORE;
 	}
@@ -1269,6 +1493,8 @@ METHOD(task_t, process_i, status_t,
 				this->ike_sa->enable_extension(this->ike_sa, EXT_MULTIPLE_AUTH);
 			}
 			return collect_other_init_data(this, message);
+		case IKE_INTERMEDIATE:
+			return collect_int_auth_data(this, TRUE, message);
 		case IKE_AUTH:
 			break;
 		default:
@@ -1373,6 +1599,11 @@ METHOD(task_t, process_i, status_t,
 				if (!this->other_auth)
 				{
 					goto peer_auth_failed;
+				}
+				if (this->int_auth.ptr && this->other_auth->set_int_auth)
+				{
+					this->other_auth->set_int_auth(this->other_auth,
+												   this->int_auth);
 				}
 			}
 			else
@@ -1528,6 +1759,9 @@ METHOD(task_t, migrate, void,
 	clear_ppk(this);
 	chunk_free(&this->my_nonce);
 	chunk_free(&this->other_nonce);
+	chunk_free(&this->int_auth);
+	this->int_auth_i = chunk_empty;
+	this->int_auth_r = chunk_empty;
 	DESTROY_IF(this->my_packet);
 	DESTROY_IF(this->other_packet);
 	DESTROY_IF(this->peer_cfg);
@@ -1556,6 +1790,7 @@ METHOD(task_t, destroy, void,
 	clear_ppk(this);
 	chunk_free(&this->my_nonce);
 	chunk_free(&this->other_nonce);
+	chunk_free(&this->int_auth);
 	DESTROY_IF(this->my_packet);
 	DESTROY_IF(this->other_packet);
 	DESTROY_IF(this->my_auth);

@@ -146,7 +146,7 @@ install:
 	install -D $(PKG_BUILD_DIR)/codepages/upcase.dat $(INSTALLDIR)/usr/share/samba/codepages/upcase.dat
 ifeq ($(RTCONFIG_BCMARM), y)
 ifeq ($(HND_ROUTER),y)
-	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/lib/libresolv.so.2 $(INSTALLDIR)/usr/lib/libresolv.so.2
+	install -D $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/lib/libresolv.so.2 $(INSTALLDIR)/usr/lib/libresolv.so.2
 else
 	install -D $(shell dirname $(shell which $(CXX)))/../lib/libresolv.so.0 $(INSTALLDIR)/usr/lib/libresolv.so.0
 endif

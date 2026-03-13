@@ -37,7 +37,7 @@
  */
 #include "pool_signature.h"
 
-static int umem_inited = 0;
+//static int umem_inited = 0;
 
 
 static void *default_block_alloc(pj_pool_factory *factory, pj_size_t size)

@@ -48,7 +48,8 @@ encoding/payloads/fragment_payload.c encoding/payloads/fragment_payload.h \
 kernel/kernel_interface.c kernel/kernel_interface.h \
 kernel/kernel_ipsec.c kernel/kernel_ipsec.h \
 kernel/kernel_net.c kernel/kernel_net.h \
-kernel/kernel_listener.h kernel/kernel_handler.c kernel/kernel_handler.h \
+kernel/kernel_listener.c kernel/kernel_listener.h \
+kernel/kernel_handler.c kernel/kernel_handler.h \
 network/receiver.c network/receiver.h network/sender.c network/sender.h \
 network/socket.c network/socket.h \
 network/socket_manager.c network/socket_manager.h \
@@ -145,6 +146,11 @@ endif
 if USE_SYSLOG
   libcharon_la_SOURCES += \
     bus/listeners/sys_logger.c bus/listeners/sys_logger.h
+endif
+
+if USE_PF_HANDLER
+  libcharon_la_SOURCES += \
+    network/pf_handler.c network/pf_handler.h
 endif
 
 daemon.lo :		$(top_builddir)/config.status
@@ -661,13 +667,6 @@ if USE_RADATTR
   SUBDIRS += plugins/radattr
 if MONOLITHIC
   libcharon_la_LIBADD += plugins/radattr/libstrongswan-radattr.la
-endif
-endif
-
-if USE_UCI
-  SUBDIRS += plugins/uci
-if MONOLITHIC
-  libcharon_la_LIBADD += plugins/uci/libstrongswan-uci.la
 endif
 endif
 

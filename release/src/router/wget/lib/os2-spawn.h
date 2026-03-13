@@ -30,4 +30,10 @@ extern void undup_safer_noinherit (int tempfd, int origfd);
 extern const char ** prepare_spawn (const char * const *argv,
                                     char **mem_to_free);
 
+/* Creates a subprocess.  */
+extern int spawnpvech (int mode, const char *progname,
+                       const char * const *argv, const char * const *envp,
+                       const char *currdir,
+                       int stdin_fd, int stdout_fd, int stderr_fd);
+
 #endif /* _OS2_SPAWN_H */

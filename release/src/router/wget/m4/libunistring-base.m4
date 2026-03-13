@@ -1,8 +1,10 @@
-# libunistring-base.m4 serial 8
+# libunistring-base.m4
+# serial 9
 dnl Copyright (C) 2010-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl From Paolo Bonzini and Bruno Haible.
 
@@ -152,6 +154,10 @@ dnl gl_LIBUNISTRING_VERSION_CMP([VERSION])
 dnl Expands to a shell statement that evaluates to true if LIBUNISTRING_VERSION
 dnl is less than the VERSION argument.
 AC_DEFUN([gl_LIBUNISTRING_VERSION_CMP],
+[dnl VERSION = 999.9 means to evaluates to true always, i.e. to ignore
+dnl the installed libunistring regardless of its version.
+m4_if([$1], [999.9],
+[true],
 [ { test "$HAVE_LIBUNISTRING" != yes \
     || {
          dnl AS_LITERAL_IF exists and works fine since autoconf-2.59 at least.
@@ -189,7 +195,7 @@ AC_DEFUN([gl_LIBUNISTRING_VERSION_CMP],
                }
            ])
        }
-  }])
+  }])])
 
 dnl gl_LIBUNISTRING_ARG_OR_ZERO([ARG], [ORIG]) expands to ARG if it is not the
 dnl same as ORIG, otherwise to 0.

@@ -1,13 +1,15 @@
-# readlink.m4 serial 17
+# readlink.m4
+# serial 18
 dnl Copyright (C) 2003, 2007, 2009-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 AC_DEFUN([gl_FUNC_READLINK],
 [
   AC_REQUIRE([gl_UNISTD_H_DEFAULTS])
-  AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
+  AC_REQUIRE([AC_CANONICAL_HOST])
   AC_CHECK_FUNCS_ONCE([readlink])
   if test $ac_cv_func_readlink = no; then
     HAVE_READLINK=0
@@ -17,9 +19,13 @@ AC_DEFUN([gl_FUNC_READLINK],
       [AC_COMPILE_IFELSE(
          [AC_LANG_PROGRAM(
            [[#include <unistd.h>
-      /* Cause compilation failure if original declaration has wrong type.  */
-      ssize_t readlink (const char *, char *, size_t);]])],
+             /* Cause compilation failure if original declaration has
+                wrong type.  */
+             ssize_t readlink (const char *, char *, size_t);
+           ]])
+         ],
          [gl_cv_decl_readlink_works=yes], [gl_cv_decl_readlink_works=no])])
+
     dnl Solaris 9 ignores trailing slash.
     dnl FreeBSD 7.2 dereferences only one level of links with trailing slash.
     AC_CACHE_CHECK([whether readlink handles trailing slash correctly],
@@ -30,8 +36,11 @@ AC_DEFUN([gl_FUNC_READLINK],
        AC_RUN_IFELSE(
          [AC_LANG_PROGRAM(
            [[#include <unistd.h>
-]], [[char buf[20];
-      return readlink ("conftest.lnk2/", buf, sizeof buf) != -1;]])],
+           ]],
+           [[char buf[20];
+             return readlink ("conftest.lnk2/", buf, sizeof buf) != -1;
+           ]])
+         ],
          [gl_cv_func_readlink_trailing_slash=yes],
          [gl_cv_func_readlink_trailing_slash=no],
          [case "$host_os" in
@@ -70,8 +79,11 @@ AC_DEFUN([gl_FUNC_READLINK],
        AC_RUN_IFELSE(
          [AC_LANG_PROGRAM(
            [[#include <unistd.h>
-]], [[char c;
-      return readlink ("conftest.link", &c, 1) != 1;]])],
+           ]],
+           [[char c;
+             return readlink ("conftest.link", &c, 1) != 1;
+           ]])
+         ],
          [gl_cv_func_readlink_truncate=yes],
          [gl_cv_func_readlink_truncate=no],
          [case "$host_os" in
@@ -99,6 +111,14 @@ AC_DEFUN([gl_FUNC_READLINK],
       *)
         AC_DEFINE([READLINK_TRUNCATE_BUG], [1], [Define to 1 if readlink
           sets errno instead of truncating a too-long link.])
+        REPLACE_READLINK=1
+        ;;
+    esac
+
+    dnl On Cygwin 3.3.6, readlink("/dev/null") returns "\\Device\\Null", which
+    dnl is unusable.
+    case "$host_os" in
+      cygwin*)
         REPLACE_READLINK=1
         ;;
     esac

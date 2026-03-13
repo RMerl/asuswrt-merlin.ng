@@ -25,6 +25,11 @@
 
 #include <stdlib.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 #if GNULIB_FILENAMECAT
 char *file_name_concat (char const *dir, char const *base,
                         char **base_in_result)
@@ -35,3 +40,8 @@ char *file_name_concat (char const *dir, char const *base,
 char *mfile_name_concat (char const *dir, char const *base,
                          char **base_in_result)
   _GL_ATTRIBUTE_MALLOC _GL_ATTRIBUTE_DEALLOC_FREE;
+
+
+#ifdef __cplusplus
+}
+#endif

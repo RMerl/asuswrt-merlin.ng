@@ -198,7 +198,6 @@ PRINTF_FETCHARGS (va_list args, arguments *a)
         if (ap->a.a_string == NULL)
           ap->a.a_string = "(NULL)";
         break;
-#if HAVE_WCHAR_T
       case TYPE_WIDE_STRING:
         ap->a.a_wide_string = va_arg (args, const wchar_t *);
         /* A null pointer is an invalid argument for "%ls", but in practice
@@ -216,7 +215,6 @@ PRINTF_FETCHARGS (va_list args, arguments *a)
             ap->a.a_wide_string = wide_null_string;
           }
         break;
-#endif
       case TYPE_POINTER:
         ap->a.a_pointer = va_arg (args, void *);
         break;

@@ -665,7 +665,7 @@ __spawni (pid_t *pid, const char *prog_filename,
     envblock = NULL;
   else
     {
-      envblock = compose_envblock (envp);
+      envblock = compose_envblock (envp, NULL);
       if (envblock == NULL)
         {
           free (command);

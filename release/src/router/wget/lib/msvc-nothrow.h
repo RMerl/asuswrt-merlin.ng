@@ -35,12 +35,20 @@
 /* Get original declaration of _get_osfhandle.  */
 # include <io.h>
 
+# ifdef __cplusplus
+extern "C" {
+# endif
+
 # if HAVE_MSVC_INVALID_PARAMETER_HANDLER
 
 /* Override _get_osfhandle.  */
 extern intptr_t _gl_nothrow_get_osfhandle (int fd);
 #  define _get_osfhandle _gl_nothrow_get_osfhandle
 
+# endif
+
+# ifdef __cplusplus
+}
 # endif
 
 #endif

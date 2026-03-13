@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wget 1.21\n"
 "Report-Msgid-Bugs-To: bug-wget@gnu.org\n"
-"POT-Creation-Date: 2024-03-10 15:08+0100\n"
+"POT-Creation-Date: 2024-11-10 22:29+0100\n"
 "PO-Revision-Date: 2021-03-22 20:42+0100\n"
 "Last-Translator: Milo Casagrande <milo@milo.name>\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
@@ -397,12 +397,12 @@ msgstr "Trasferimento dati interrotto.\n"
 msgid "File %s already there; not retrieving.\n"
 msgstr "Il file %s è già presente, non viene scaricato.\n"
 
-#: src/ftp.c:1955 src/http.c:4364
+#: src/ftp.c:1955 src/http.c:4359
 #, c-format
 msgid "(try:%2d)"
 msgstr "(tentativo:%2d)"
 
-#: src/ftp.c:2047 src/http.c:4794
+#: src/ftp.c:2047 src/http.c:4789
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s]\n"
@@ -411,7 +411,7 @@ msgstr ""
 "%s (%s) - scritto su stdout %s[%s]\n"
 "\n"
 
-#: src/ftp.c:2048 src/http.c:4795
+#: src/ftp.c:2048 src/http.c:4790
 #, c-format
 msgid ""
 "%s (%s) - %s saved [%s]\n"
@@ -421,7 +421,7 @@ msgstr ""
 "\n"
 
 #: src/ftp.c:2108 src/main.c:2178 src/metalink.c:1133 src/recur.c:511
-#: src/recur.c:750 src/retr.c:1303
+#: src/recur.c:750 src/retr.c:1243
 #, c-format
 msgid "Removing %s.\n"
 msgstr "Rimozione di %s.\n"
@@ -734,7 +734,7 @@ msgstr "non riuscito: tempo scaduto.\n"
 msgid "%s: Cannot resolve incomplete link %s.\n"
 msgstr "%s: impossibile risolvere il collegamento incompleto %s.\n"
 
-#: src/html-url.c:944
+#: src/html-url.c:945
 #, c-format
 msgid "%s: Invalid URL %s: %s\n"
 msgstr "%s: URL non valido %s: %s\n"
@@ -789,7 +789,7 @@ msgstr "Riutilizzo della connessione esistente a %s:%d.\n"
 msgid "Failed reading proxy response: %s\n"
 msgstr "Lettura della risposta del proxy non riuscita: %s.\n"
 
-#: src/http.c:2183 src/http.c:3460 src/http.c:4590
+#: src/http.c:2183 src/http.c:3460 src/http.c:4585
 #, c-format
 msgid "%s ERROR %d: %s.\n"
 msgstr "%s ERRORE %d: %s.\n"
@@ -922,50 +922,50 @@ msgstr "Lunghezza: "
 msgid "ignored"
 msgstr "ignorato"
 
-#: src/http.c:4272
+#: src/http.c:4266
 msgid "Warning: wildcards not supported in HTTP.\n"
 msgstr "Attenzione: i metacaratteri non sono supportati in HTTP.\n"
 
-#: src/http.c:4354
+#: src/http.c:4349
 msgid "Spider mode enabled. Check if remote file exists.\n"
 msgstr "Modalità spider abilitata. Controllare se il file remoto esiste.\n"
 
-#: src/http.c:4447
+#: src/http.c:4442
 #, c-format
 msgid "Cannot write to %s (%s).\n"
 msgstr "Impossibile scrivere in %s (%s).\n"
 
-#: src/http.c:4469
+#: src/http.c:4464
 msgid "Required attribute missing from Header received.\n"
 msgstr "Manca un attributo richiesto nello header ricevuto.\n"
 
-#: src/http.c:4474
+#: src/http.c:4469
 msgid "Username/Password Authentication Failed.\n"
 msgstr "Autenticazione nome utente/password non riuscita.\n"
 
-#: src/http.c:4480
+#: src/http.c:4475
 msgid "Cannot write to WARC file.\n"
 msgstr "Impossibile scrivere nel file WARC.\n"
 
-#: src/http.c:4486
+#: src/http.c:4481
 msgid "Cannot write to temporary WARC file.\n"
 msgstr "Impossibile scrivere nel file WARC temporaneo.\n"
 
-#: src/http.c:4491
+#: src/http.c:4486
 msgid "Unable to establish SSL connection.\n"
 msgstr "Impossibile stabilire una connessione SSL.\n"
 
-#: src/http.c:4497
+#: src/http.c:4492
 #, c-format
 msgid "Cannot unlink %s (%s).\n"
 msgstr "Impossibile rimuovere %s (%s).\n"
 
-#: src/http.c:4507
+#: src/http.c:4502
 #, c-format
 msgid "ERROR: Redirection (%d) without location.\n"
 msgstr "ERRORE: ridirezione (%d) senza posizione di destinazione.\n"
 
-#: src/http.c:4529
+#: src/http.c:4524
 msgid ""
 "Could not find Metalink data in HTTP response. Downloading file using HTTP "
 "GET.\n"
@@ -973,25 +973,25 @@ msgstr ""
 "Impossibile trovare dati Metalink nella risposta HTTP. Il file viene "
 "scaricato con HTTP GET.\n"
 
-#: src/http.c:4538
+#: src/http.c:4533
 msgid "Metalink headers found. Switching to Metalink mode.\n"
 msgstr "Trovata intestazione Metalink: attivata la modalità Metalink.\n"
 
 # FIXME
-#: src/http.c:4579
+#: src/http.c:4574
 msgid "Remote file does not exist -- broken link!!!\n"
 msgstr "Il file remoto non esiste -- collegamento rotto!\n"
 
-#: src/http.c:4607
+#: src/http.c:4602
 msgid "Last-modified header missing -- time-stamps turned off.\n"
 msgstr "Intestazione Last-modified mancante -- time-stamp disattivati.\n"
 
-#: src/http.c:4615
+#: src/http.c:4610
 msgid "Last-modified header invalid -- time-stamp ignored.\n"
 msgstr "Intestazione Last-modified non valido -- time-stamp ignorato.\n"
 
 # Perché "server file" e non "remote file"? C'è differenza?
-#: src/http.c:4645
+#: src/http.c:4640
 #, c-format
 msgid ""
 "Server file no newer than local file %s -- not retrieving.\n"
@@ -999,16 +999,16 @@ msgid ""
 msgstr ""
 "Il file del server è più vecchio del file locale %s -- non viene scaricato.\n"
 
-#: src/http.c:4653
+#: src/http.c:4648
 #, c-format
 msgid "The sizes do not match (local %s) -- retrieving.\n"
 msgstr "Le dimensioni non coincidono (locale %s) -- scaricamento in corso.\n"
 
-#: src/http.c:4662
+#: src/http.c:4657
 msgid "Remote file is newer, retrieving.\n"
 msgstr "Il file remoto è più recente, scaricamento in corso.\n"
 
-#: src/http.c:4680
+#: src/http.c:4675
 msgid ""
 "Remote file exists and could contain links to other resources -- "
 "retrieving.\n"
@@ -1017,14 +1017,14 @@ msgstr ""
 "Il file remoto esiste e potrebbe contenere collegamenti ad altre risorse -- "
 "scaricamento in corso.\n"
 
-#: src/http.c:4686
+#: src/http.c:4681
 msgid ""
 "Remote file exists but does not contain any link -- not retrieving.\n"
 "\n"
 msgstr ""
 "Il file remoto esiste ma non contiene collegamenti -- non viene scaricato.\n"
 
-#: src/http.c:4695
+#: src/http.c:4690
 msgid ""
 "Remote file exists and could contain further links,\n"
 "but recursion is disabled -- not retrieving.\n"
@@ -1033,18 +1033,18 @@ msgstr ""
 "Il file remoto esiste e potrebbe contenere ulteriori collegamenti,\n"
 "ma la ricorsione è disabilitata -- non viene scaricato.\n"
 
-#: src/http.c:4701
+#: src/http.c:4696
 msgid ""
 "Remote file exists.\n"
 "\n"
 msgstr "Il file remoto esiste.\n"
 
-#: src/http.c:4710
+#: src/http.c:4705
 #, c-format
 msgid "%s URL: %s %2d %s\n"
 msgstr "%s URL: %s %2d %s\n"
 
-#: src/http.c:4758
+#: src/http.c:4753
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s/%s]\n"
@@ -1053,7 +1053,7 @@ msgstr ""
 "%s (%s) - scritto su stdout %s[%s/%s]\n"
 "\n"
 
-#: src/http.c:4759
+#: src/http.c:4754
 #, c-format
 msgid ""
 "%s (%s) - %s saved [%s/%s]\n"
@@ -1062,27 +1062,27 @@ msgstr ""
 "%s (%s) - %s salvato [%s/%s]\n"
 "\n"
 
-#: src/http.c:4825
+#: src/http.c:4820
 #, c-format
 msgid "%s (%s) - Connection closed at byte %s. "
 msgstr "%s (%s) - Connessione chiusa al byte %s. "
 
-#: src/http.c:4848
+#: src/http.c:4843
 #, c-format
 msgid "%s (%s) - Read error at byte %s (%s)."
 msgstr "%s (%s) - Errore di lettura al byte %s (%s)."
 
-#: src/http.c:4857
+#: src/http.c:4852
 #, c-format
 msgid "%s (%s) - Read error at byte %s/%s (%s). "
 msgstr "%s (%s) - Errore di lettura al byte %s/%s (%s). "
 
-#: src/http.c:5114
+#: src/http.c:5108
 #, c-format
 msgid "Unsupported quality of protection '%s'.\n"
 msgstr "Qualità di protezione \"%s\" non gestita.\n"
 
-#: src/http.c:5119
+#: src/http.c:5113
 #, c-format
 msgid "Unsupported algorithm '%s'.\n"
 msgstr "Algoritmo \"%s\" non supportato.\n"
@@ -1231,30 +1231,30 @@ msgstr ""
 msgid "Encoding %s isn't valid\n"
 msgstr "Codifica %s non valida\n"
 
-#: src/iri.c:140 src/url.c:1612
+#: src/iri.c:140 src/url.c:1619
 #, c-format
 msgid "Conversion from %s to %s isn't supported\n"
 msgstr "Conversione da %s a %s non supportata\n"
 
-#: src/iri.c:180 src/url.c:1642
+#: src/iri.c:180 src/url.c:1649
 msgid "Incomplete or invalid multibyte sequence encountered\n"
 msgstr "Incontrata sequenza multibyte incompleta o non valida\n"
 
-#: src/iri.c:200 src/url.c:1659
+#: src/iri.c:206 src/url.c:1666
 #, c-format
 msgid "Unhandled errno %d\n"
 msgstr "Codice di errore %d non gestito\n"
 
-#: src/iri.c:237
+#: src/iri.c:243
 msgid "locale_to_utf8: locale is unset\n"
 msgstr "locale_to_utf8: locale non impostata\n"
 
-#: src/iri.c:283 src/iri.c:298
+#: src/iri.c:289 src/iri.c:304
 #, c-format
 msgid "idn_encode failed (%d): %s\n"
 msgstr "idn_encode non riuscita (%d): %s\n"
 
-#: src/iri.c:290
+#: src/iri.c:296
 #, c-format
 msgid "Failed to convert to lower: %d: %s\n"
 msgstr "Conversione in minuscolo non riuscita: %d: %s\n"
@@ -3123,22 +3123,22 @@ msgstr "Prosecuzione in background, pid %lu.\n"
 msgid "Output will be written to %s.\n"
 msgstr "L'output sarà scritto su %s.\n"
 
-#: src/mswindows.c:323
+#: src/mswindows.c:334
 #, c-format
 msgid "fake_fork_child() failed\n"
 msgstr "fake_fork_child() non riuscita\n"
 
-#: src/mswindows.c:331
+#: src/mswindows.c:342
 #, c-format
 msgid "fake_fork() failed\n"
 msgstr "fake_fork() non riuscita\n"
 
-#: src/mswindows.c:460 src/mswindows.c:467
+#: src/mswindows.c:471 src/mswindows.c:478
 #, c-format
 msgid "%s: Couldn't find usable socket driver.\n"
 msgstr "%s: impossibile trovare un driver per i socket utilizzabile.\n"
 
-#: src/mswindows.c:647
+#: src/mswindows.c:658
 #, c-format
 msgid "ioctl() failed.  The socket could not be set as blocking.\n"
 msgstr ""
@@ -3362,7 +3362,7 @@ msgstr "Errore nell'URL del proxy %s: deve essere HTTP.\n"
 msgid "%d redirections exceeded.\n"
 msgstr "superate %d ridirezioni.\n"
 
-#: src/retr.c:1327
+#: src/retr.c:1344
 msgid ""
 "Giving up.\n"
 "\n"
@@ -3370,7 +3370,7 @@ msgstr ""
 "Rinuncio.\n"
 "\n"
 
-#: src/retr.c:1327
+#: src/retr.c:1344
 msgid ""
 "Retrying.\n"
 "\n"
@@ -3397,57 +3397,57 @@ msgid_plural ""
 msgstr[0] "Trovato %d collegamento rotto.\n"
 msgstr[1] "Trovati %d collegamenti rotti.\n"
 
-#: src/url.c:688
+#: src/url.c:695
 msgid "No error"
 msgstr "Nessun errore"
 
-#: src/url.c:689
+#: src/url.c:696
 #, fuzzy
 #| msgid "Unsupported scheme %s"
 msgid "Unsupported scheme"
 msgstr "Schema %s non gestito"
 
 # FIXME
-#: src/url.c:690
+#: src/url.c:697
 msgid "HTTPS support not compiled in"
 msgstr "Gestione di HTTPS non compilata"
 
 # FIXME
-#: src/url.c:691
+#: src/url.c:698
 #, fuzzy
 #| msgid "HTTPS support not compiled in"
 msgid "FTPS support not compiled in"
 msgstr "Gestione di HTTPS non compilata"
 
-#: src/url.c:692
+#: src/url.c:699
 msgid "Scheme missing"
 msgstr "Schema mancante"
 
-#: src/url.c:693
+#: src/url.c:700
 msgid "Invalid host name"
 msgstr "Nome dell'host non valido"
 
-#: src/url.c:694
+#: src/url.c:701
 msgid "Bad port number"
 msgstr "Numero di porta non valido"
 
-#: src/url.c:695
+#: src/url.c:702
 msgid "Invalid user name"
 msgstr "Nome utente non valido"
 
-#: src/url.c:696
+#: src/url.c:703
 msgid "Unterminated IPv6 numeric address"
 msgstr "Indirizzo numerico IPv6 non terminato"
 
-#: src/url.c:697
+#: src/url.c:704
 msgid "IPv6 addresses not supported"
 msgstr "Indirizzo IPv6 non supportato"
 
-#: src/url.c:698
+#: src/url.c:705
 msgid "Invalid IPv6 numeric address"
 msgstr "Indirizzo numerico IPv6 non valido"
 
-#: src/url.c:1645
+#: src/url.c:1652
 msgid "Unconvertable multibyte sequence encountered\n"
 msgstr "Incontrata sequenza multibyte non convertibile\n"
 
@@ -3517,22 +3517,22 @@ msgstr ""
 "Tentativo di apertura del file %s, ma è stato modificato dall'ultimo "
 "controllo. Controllo di sicurezza non riuscito.\n"
 
-#: src/utils.c:2443
+#: src/utils.c:2479
 #, c-format
 msgid "Invalid regular expression %s, PCRE2 error %d\n"
 msgstr "Espressione regolare %s non valida, errore PCRE2 %d\n"
 
-#: src/utils.c:2460 src/utils.c:2483
+#: src/utils.c:2496 src/utils.c:2519
 #, c-format
 msgid "Invalid regular expression %s, %s\n"
 msgstr "Espressione regolare %s non valida, %s\n"
 
-#: src/utils.c:2513 src/utils.c:2535 src/utils.c:2559
+#: src/utils.c:2549 src/utils.c:2571 src/utils.c:2595
 #, c-format
 msgid "Error while matching %s: %d\n"
 msgstr "Errore cercando la corrispondenza %s: %d\n"
 
-#: src/utils.c:2852
+#: src/utils.c:2888
 #, c-format
 msgid "Skipping key with wrong size (%d/%d): %s\n"
 msgstr "Chiave con dimensione errata saltata (%d/%d): %s\n"
@@ -3553,11 +3553,11 @@ msgstr "Errore nel duplicare il descrittore file del file WARC.\n"
 msgid "Error opening GZIP stream to WARC file.\n"
 msgstr "Errore nell'aprire lo stream GZIP verso il file WARC.\n"
 
-#: src/warc.c:830
+#: src/warc.c:833
 msgid "Error writing warcinfo record to WARC file.\n"
 msgstr "Errore nello scrivere il record warcinfo sul file WARC.\n"
 
-#: src/warc.c:893
+#: src/warc.c:884
 #, c-format
 msgid ""
 "Opening WARC file %s.\n"
@@ -3566,24 +3566,24 @@ msgstr ""
 "Apertura file WARC %s.\n"
 "\n"
 
-#: src/warc.c:899
+#: src/warc.c:890
 #, c-format
 msgid "Error opening WARC file %s.\n"
 msgstr "Errore nell'aprire il file WARC %s.\n"
 
-#: src/warc.c:1095
+#: src/warc.c:1086
 msgid "CDX file does not list original urls. (Missing column 'a'.)\n"
 msgstr "Il file CDX non riporta gli URL originali (colonna \"a\" mancante).\n"
 
-#: src/warc.c:1098
+#: src/warc.c:1089
 msgid "CDX file does not list checksums. (Missing column 'k'.)\n"
 msgstr "Il file CDX non riporta i checksum (colonna \"k\" mancante).\n"
 
-#: src/warc.c:1101
+#: src/warc.c:1092
 msgid "CDX file does not list record ids. (Missing column 'u'.)\n"
 msgstr "Il file CDX non riporta gli ID dei record (colonna \"u\" mancante).\n"
 
-#: src/warc.c:1125
+#: src/warc.c:1116
 #, c-format
 msgid ""
 "Loaded %d record from CDX.\n"
@@ -3594,32 +3594,32 @@ msgid_plural ""
 msgstr[0] "Caricato %d record da CDX.\n"
 msgstr[1] "Caricati %d record da CDX.\n"
 
-#: src/warc.c:1171
+#: src/warc.c:1162
 #, c-format
 msgid "Could not read CDX file %s for deduplication.\n"
 msgstr "Impossibile leggere il file CDX %s per de-duplicazione.\n"
 
-#: src/warc.c:1181
+#: src/warc.c:1172
 msgid "Could not open temporary WARC manifest file.\n"
 msgstr "Impossibile aprire il file manifest WARC temporaneo.\n"
 
-#: src/warc.c:1191
+#: src/warc.c:1182
 msgid "Could not open temporary WARC log file.\n"
 msgstr "Impossibile aprire il file di registro WARC temporaneo.\n"
 
-#: src/warc.c:1200
+#: src/warc.c:1191
 msgid "Could not open WARC file.\n"
 msgstr "Impossibile aprire il file WARC.\n"
 
-#: src/warc.c:1209
+#: src/warc.c:1200
 msgid "Could not open CDX file for output.\n"
 msgstr "Impossibile aprire il file CDX per l'output.\n"
 
-#: src/warc.c:1239
+#: src/warc.c:1230
 msgid "Could not open temporary WARC file.\n"
 msgstr "Impossibile aprire il file WARC temporaneo.\n"
 
-#: src/warc.c:1515
+#: src/warc.c:1508
 msgid "Found exact match in CDX file. Saving revisit record to WARC.\n"
 msgstr ""
 "Trovata corrispondenza esatta nel file CDX. Salvataggio record su WARC.\n"

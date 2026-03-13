@@ -36,7 +36,7 @@ _GL_EXTERN_INLINE
 wint_t
 btoc32 (int c)
 {
-#if HAVE_WORKING_MBRTOC32 && !_GL_WCHAR_T_IS_UCS4
+#if HAVE_WORKING_MBRTOC32 && HAVE_WORKING_C32RTOMB && !_GL_WCHAR_T_IS_UCS4
   /* The char32_t encoding of a multibyte character may be different than its
      wchar_t encoding.  */
   if (c != EOF)

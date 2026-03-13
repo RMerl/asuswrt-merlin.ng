@@ -314,8 +314,8 @@ for text files.  Here is an example:
 ftp://host/directory/file;type=a
 @end example
 
-Two alternative variants of @sc{url} specification are also supported,
-because of historical (hysterical?) reasons and their widespreaded use.
+The two alternative variants of @sc{url} specifications are no longer
+supported because of security considerations:
 
 @sc{ftp}-only syntax (supported by @code{NcFTP}):
 @example
@@ -327,12 +327,8 @@ host:/dir/file
 host[:port]/dir/file
 @end example
 
-These two alternative forms are deprecated, and may cease being
-supported in the future.
-
-If you do not understand the difference between these notations, or do
-not know which one to use, just use the plain ordinary format you use
-with your favorite browser, like @code{Lynx} or @code{Netscape}.
+These two alternative forms have been deprecated long time ago,
+and support is removed with version 1.22.0.
 
 @c man begin OPTIONS
 
@@ -512,6 +508,13 @@ If the @var{file} is an external one, the document will be automatically
 treated as @samp{html} if the Content-Type matches @samp{text/html}.
 Furthermore, the @var{file}'s location will be implicitly used as base
 href if none was specified.
+
+If the @var{file} is a local file, on systems that support it, it will be
+opened with the @code{O_NONBLOCK} flag to allow non-blocking reads from the
+file. @samp{Wget} will attempt to continue reading from the file until
+EOF is reached or it is closed. This allows one to stream a list of files
+for retrieval where the list is dynamically generated during the execution
+of the process. Currently, this feature is not available on Windows platforms.
 
 @cindex input-metalink
 @item --input-metalink=@var{file}

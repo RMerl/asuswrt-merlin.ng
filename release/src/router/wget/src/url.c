@@ -41,6 +41,7 @@ as that of the covered work.  */
 #include "url.h"
 #include "host.h"  /* for is_valid_ipv6_address */
 #include "c-strcase.h"
+#include "c-ctype.h"
 
 #ifdef HAVE_ICONV
 # include <iconv.h>
@@ -526,12 +527,39 @@ scheme_leading_string (enum url_scheme scheme)
 static const char *
 url_skip_credentials (const char *url)
 {
-  /* Look for '@' that comes before terminators, such as '/', '?',
-     '#', or ';'.  */
-  const char *p = (const char *)strpbrk (url, "@/?#;");
-  if (!p || *p != '@')
-    return url;
-  return p + 1;
+  /*
+   * This whole file implements https://www.rfc-editor.org/rfc/rfc2396 .
+   * RFC 2396 is outdated since 2005 and needs a rewrite or a thorough re-visit.
+   *
+   * The RFC says
+   * server        = [ [ userinfo "@" ] hostport ]
+   * userinfo      = *( unreserved | escaped | ";" | ":" | "&" | "=" | "+" | "$" | "," )
+   * unreserved    = alphanum | mark
+   * mark          = "-" | "_" | "." | "!" | "~" | "*" | "'" | "(" | ")"
+   */
+  static const char *allowed = "-_.!~*'();:&=+$,";
+
+  for (const char *p = url; *p; p++)
+    {
+      if (c_isalnum(*p))
+        continue;
+
+      if (strchr(allowed, *p))
+        continue;
+
+      if (*p == '%' && c_isxdigit(p[1]) && c_isxdigit(p[2]))
+        {
+          p += 2;
+          continue;
+        }
+
+      if (*p == '@')
+        return p + 1;
+
+      break;
+    }
+
+  return url;
 }
 
 /* Parse credentials contained in [BEG, END).  The region is expected
@@ -566,60 +594,39 @@ parse_credentials (const char *beg, const char *end, char **user, char **passwd)
   return true;
 }
 
-/* Used by main.c: detect URLs written using the "shorthand" URL forms
-   originally popularized by Netscape and NcFTP.  HTTP shorthands look
-   like this:
-
-   www.foo.com[:port]/dir/file   -> http://www.foo.com[:port]/dir/file
-   www.foo.com[:port]            -> http://www.foo.com[:port]
-
-   FTP shorthands look like this:
-
-   foo.bar.com:dir/file          -> ftp://foo.bar.com/dir/file
-   foo.bar.com:/absdir/file      -> ftp://foo.bar.com//absdir/file
-
-   If the URL needs not or cannot be rewritten, return NULL.  */
-
-char *
-rewrite_shorthand_url (const char *url)
+static bool is_valid_port(const char *p)
 {
-  const char *p;
-  char *ret;
+  unsigned port = (unsigned) atoi (p);
+  if (port == 0 || port > 65535)
+    return false;
 
+  int digits = strspn (p, "0123456789");
+  return digits && (p[digits] == '/' || p[digits] == '\0');
+}
+
+/* Prepend "http://" to url if scheme is missing, otherwise return NULL. */
+char *
+maybe_prepend_scheme (const char *url)
+{
   if (url_scheme (url) != SCHEME_INVALID)
     return NULL;
 
-  /* Look for a ':' or '/'.  The former signifies NcFTP syntax, the
-     latter Netscape.  */
-  p = strpbrk (url, ":/");
+  const char *p = strchr (url, ':');
   if (p == url)
     return NULL;
 
   /* If we're looking at "://", it means the URL uses a scheme we
      don't support, which may include "https" when compiled without
-     SSL support.  Don't bogusly rewrite such URLs.  */
+     SSL support.  Don't bogusly prepend "http://" to such URLs.  */
   if (p && p[0] == ':' && p[1] == '/' && p[2] == '/')
     return NULL;
 
-  if (p && *p == ':')
-    {
-      /* Colon indicates ftp, as in foo.bar.com:path.  Check for
-         special case of http port number ("localhost:10000").  */
-      int digits = strspn (p + 1, "0123456789");
-      if (digits && (p[1 + digits] == '/' || p[1 + digits] == '\0'))
-        goto http;
+  if (p && p[0] == ':' && !is_valid_port (p + 1))
+    return NULL;
 
-      /* Turn "foo.bar.com:path" to "ftp://foo.bar.com/path". */
-      if ((ret = aprintf ("ftp://%s", url)) != NULL)
-        ret[6 + (p - url)] = '/';
-    }
-  else
-    {
-    http:
-      /* Just prepend "http://" to URL. */
-      ret = aprintf ("http://%s", url);
-    }
-  return ret;
+
+  fprintf(stderr, "Prepended http:// to '%s'\n", url);
+  return aprintf ("http://%s", url);
 }
 
 static void split_path (const char *, char **, char **);

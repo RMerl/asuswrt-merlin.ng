@@ -1,8 +1,10 @@
-# sockpfaf.m4 serial 10
+# sockpfaf.m4
+# serial 11
 dnl Copyright (C) 2004, 2006, 2009-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl Test for some common socket protocol families (PF_INET, PF_INET6, ...)
 dnl and some common address families (AF_INET, AF_INET6, ...).
@@ -63,6 +65,13 @@ AC_DEFUN([gl_SOCKET_FAMILY_UNIX],
   AC_REQUIRE([gl_SYS_SOCKET_H])
   AC_CHECK_HEADERS_ONCE([sys/un.h])
 
+  dnl Windows versions released after 2017 may have support for AF_UNIX.
+  dnl Including it requires types from <winsock2.h> to be defined.
+  dnl <https://devblogs.microsoft.com/commandline/af_unix-comes-to-windows/>.
+  if test "$ac_cv_header_winsock2_h" = yes; then
+    AC_CHECK_HEADERS([afunix.h], [], [], [#include <winsock2.h>])
+  fi
+
   AC_CACHE_CHECK([for UNIX domain sockets],
     [gl_cv_socket_unix],
     [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
@@ -74,6 +83,9 @@ AC_DEFUN([gl_SOCKET_FAMILY_UNIX],
 #endif
 #ifdef HAVE_WINSOCK2_H
 #include <winsock2.h>
+#endif
+#ifdef HAVE_AFUNIX_H
+#include <afunix.h>
 #endif]],
 [[int x = AF_UNIX; struct sockaddr_un y;
  if (&x && &y) return 0;]])],

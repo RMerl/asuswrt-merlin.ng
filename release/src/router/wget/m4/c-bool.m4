@@ -1,9 +1,12 @@
-# Check for bool that conforms to C2023.
-
+# c-bool.m4
+# serial 3
 dnl Copyright 2022-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
+
+# Check for bool that conforms to C2023.
 
 AC_DEFUN([gl_C_BOOL],
 [
@@ -27,12 +30,23 @@ AC_DEFUN([gl_C_BOOL],
   dnl The "zz" puts this toward config.h's end, to avoid potential
   dnl collisions with other definitions.
   dnl If 'bool', 'true' and 'false' do not work, arrange for them to work.
-  dnl In C, this means including <stdbool.h> if it is not already included.
+  dnl Hardcode the known configuration results for GCC and clang, so that
+  dnl a configuration made with the C compiler works also with the C++ compiler
+  dnl and vice versa.
+  dnl The seemingly redundant parentheses are necessary for MSVC 14.
+  dnl "Arrange for them to work", in C, means including <stdbool.h> if it is
+  dnl not already included.
   dnl However, if the preprocessor mistakenly treats 'true' as 0,
   dnl define it to a bool expression equal to 1; this is needed in
   dnl Sun C++ 5.11 (Oracle Solaris Studio 12.2, 2010) and older.
   AH_VERBATIM([zzbool],
-[#ifndef HAVE_C_BOOL
+[#if !(defined __cplusplus \
+      ? 1 \
+      : (defined __clang__ \
+         ? __STDC_VERSION__ >= 202000L && __clang_major__ >= 15 \
+         : (defined __GNUC__ \
+            ? __STDC_VERSION__ >= 202000L && __GNUC__ >= 13 \
+            : defined HAVE_C_BOOL)))
 # if !defined __cplusplus && !defined __bool_true_false_are_defined
 #  if HAVE_STDBOOL_H
 #   include <stdbool.h>

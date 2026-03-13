@@ -19,7 +19,12 @@
 /* Written by Jim Meyering.  */
 
 #ifndef SAVE_CWD_H
-# define SAVE_CWD_H 1
+#define SAVE_CWD_H 1
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 struct saved_cwd
   {
@@ -30,5 +35,10 @@ struct saved_cwd
 int save_cwd (struct saved_cwd *cwd);
 int restore_cwd (const struct saved_cwd *cwd);
 void free_cwd (struct saved_cwd *cwd);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SAVE_CWD_H */

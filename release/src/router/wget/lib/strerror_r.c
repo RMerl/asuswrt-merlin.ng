@@ -34,7 +34,7 @@
 
 #include "strerror-override.h"
 
-#if STRERROR_R_CHAR_P
+#if STRERROR_R_CHAR_P && !defined _AIX
 
 # if HAVE___XPG_STRERROR_R
 _GL_EXTERN_C int __xpg_strerror_r (int errnum, char *buf, size_t buflen);
@@ -159,7 +159,10 @@ strerror_r (int errnum, char *buf, size_t buflen)
     int ret;
     int saved_errno = errno;
 
-#if STRERROR_R_CHAR_P
+    /* Due to the '#undef strerror_r' above, on AIX, we're always using
+       the POSIX-compatible strerror_r function, regardless whether
+       _LINUX_SOURCE_COMPAT is defined or not.  */
+#if STRERROR_R_CHAR_P && !defined _AIX
 
     {
       ret = 0;

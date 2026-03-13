@@ -20,12 +20,49 @@
 /* Provide public ATTRIBUTE_* names for the private _GL_ATTRIBUTE_*
    macros used within Gnulib.  */
 
-/* These attributes can be placed in two ways:
-     - At the start of a declaration (i.e. even before storage-class
-       specifiers!); then they apply to all entities that are declared
-       by the declaration.
-     - Immediately after the name of an entity being declared by the
-       declaration; then they apply to that entity only.  */
+/* The placement of these attributes depends on the kind of declaration
+   and, in some cases, also on the programming language (C vs. C++).
+
+   In function declarations and function definitions:
+
+     * ATTRIBUTE_NOTHROW must come after the parameter list.
+
+     * The macros
+         ATTRIBUTE_CONST
+         ATTRIBUTE_PURE
+         DEPRECATED
+         MAYBE_UNUSED
+         NODISCARD
+         REPRODUCIBLE
+         UNSEQUENCED
+       must come before the return type, and more precisely:
+         - In a function declaration/definition without a storage-class
+           specifier: at the beginning of the declaration/definition.
+         - In a function declaration/definition with a storage-class
+           specifier:
+             - In C: before the storage-class specifier.
+             - In C++: between the storage-class specifier and the return type.
+
+     * The other macros can be placed
+         - Either
+             - In a function declaration/definition without a storage-class
+               specifier: at the beginning of the declaration/definition.
+             - In a function declaration/definition with a storage-class
+               specifier: between the storage-class specifier and the return
+               type.
+        - Or after the parameter list,
+          ∙ but after ATTRIBUTE_NOTHROW if present.
+
+   In other declarations, such as variable declarations:
+
+     * Either
+         - In C: before the storage-class specifier.
+         - In C++: between the storage-class specifier and the return type.
+       Then they apply to all entities that are declared by the declaration.
+
+     * Or immediately after the name of an entity being declared by the
+       declaration.  Then they apply to that entity only.
+ */
 
 #ifndef _GL_ATTRIBUTE_H
 #define _GL_ATTRIBUTE_H
@@ -49,8 +86,9 @@
    _GL_ATTRIBUTE_MALLOC, _GL_ATTRIBUTE_MAY_ALIAS, _GL_ATTRIBUTE_MAYBE_UNUSED,
    _GL_ATTRIBUTE_NODISCARD, _GL_ATTRIBUTE_NOINLINE, _GL_ATTRIBUTE_NONNULL,
    _GL_ATTRIBUTE_NONSTRING, _GL_ATTRIBUTE_NOTHROW, _GL_ATTRIBUTE_PACKED,
-   _GL_ATTRIBUTE_PURE, _GL_ATTRIBUTE_RETURNS_NONNULL,
-   _GL_ATTRIBUTE_SENTINEL.  */
+   _GL_ATTRIBUTE_PURE, _GL_ATTRIBUTE_REPRODUCIBLE,
+   _GL_ATTRIBUTE_RETURNS_NONNULL, _GL_ATTRIBUTE_SENTINEL,
+   _GL_ATTRIBUTE_UNSEQUENCED.  */
 #if !_GL_CONFIG_H_INCLUDED
  #error "Please include config.h first."
 #endif
@@ -88,7 +126,7 @@
    is the size of the returned memory block.
    ATTRIBUTE_ALLOC_SIZE ((M, N)) - Multiply the Mth and Nth arguments
    to determine the size of the returned memory block.  */
-/* Applies to: function, pointer to function, function types.  */
+/* Applies to: functions, pointer to functions, function types.  */
 #define ATTRIBUTE_ALLOC_SIZE(args) _GL_ATTRIBUTE_ALLOC_SIZE (args)
 
 /* ATTRIBUTE_DEALLOC (F, I) declares that the function returns pointers
@@ -170,7 +208,7 @@
 /* Attributes regarding debugging information emitted by the compiler.  */
 
 /* Omit the function from stack traces when debugging.  */
-/* Applies to: function.  */
+/* Applies to: functions.  */
 #define ATTRIBUTE_ARTIFICIAL _GL_ATTRIBUTE_ARTIFICIAL
 
 /* Make the entity visible to debuggers etc., even with '-fwhole-program'.  */
@@ -192,24 +230,63 @@
 
 /* Always inline the function, and report an error if the compiler
    cannot inline.  */
-/* Applies to: function.  */
+/* Applies to: functions.  */
 #define ATTRIBUTE_ALWAYS_INLINE _GL_ATTRIBUTE_ALWAYS_INLINE
 
-/* It is OK for a compiler to omit duplicate calls with the same arguments.
+/* It is OK for a compiler to move calls to the function and to omit
+   calls to the function if another call has the same arguments or the
+   result is not used.
    This attribute is safe for a function that neither depends on
-   nor affects observable state, and always returns exactly once -
-   e.g., does not loop forever, and does not call longjmp.
-   (This attribute is stricter than ATTRIBUTE_PURE.)  */
+   nor affects state, and always returns exactly once -
+   e.g., does not raise an exception, call longjmp, or loop forever.
+   (This attribute is stricter than ATTRIBUTE_PURE because the
+   function cannot observe state.  It is stricter than UNSEQUENCED
+   because the function must return exactly once and cannot depend on
+   state addressed by its arguments.)  */
 /* Applies to: functions.  */
 #define ATTRIBUTE_CONST _GL_ATTRIBUTE_CONST
 
-/* It is OK for a compiler to omit duplicate calls with the same
-   arguments if observable state is not changed between calls.
-   This attribute is safe for a function that does not affect
-   observable state, and always returns exactly once.
-   (This attribute is looser than ATTRIBUTE_CONST.)  */
+/* It is OK for a compiler to move calls to the function and to omit duplicate
+   calls to the function with the same arguments, so long as the state
+   addressed by its arguments is the same.
+   This attribute is safe for a function that is effectless, idempotent,
+   stateless, and independent; see ISO C 23 § 6.7.12.7 for a definition of
+   these terms.
+   (This attribute is stricter than REPRODUCIBLE because the function
+   must be stateless and independent.  It is looser than ATTRIBUTE_CONST
+   because the function need not return exactly once and can depend
+   on state addressed by its arguments.)
+   See also <https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2956.htm> and
+   <https://stackoverflow.com/questions/76847905/>.  */
+/* Applies to: functions, pointer to functions, function type.  */
+#define UNSEQUENCED _GL_ATTRIBUTE_UNSEQUENCED
+
+/* It is OK for a compiler to move calls to the function and to omit
+   calls to the function if another call has the same arguments or the
+   result is not used, and if observable state is the same.
+   This attribute is safe for a function that does not affect observable state
+   and always returns exactly once.
+   (This attribute is looser than ATTRIBUTE_CONST because the function
+   can depend on observable state.  It is stricter than REPRODUCIBLE
+   because the function must return exactly once and cannot affect
+   state addressed by its arguments.)  */
 /* Applies to: functions.  */
 #define ATTRIBUTE_PURE _GL_ATTRIBUTE_PURE
+
+/* It is OK for a compiler to move calls to the function and to omit duplicate
+   calls to the function with the same arguments, so long as the state
+   addressed by its arguments is the same and is updated in time for
+   the rest of the program.
+   This attribute is safe for a function that is effectless and idempotent; see
+   ISO C 23 § 6.7.12.7 for a definition of these terms.
+   (This attribute is looser than UNSEQUENCED because the function need
+   not be stateless and idempotent.  It is looser than ATTRIBUTE_PURE
+   because the function need not return exactly once and can affect
+   state addressed by its arguments.)
+   See also <https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2956.htm> and
+   <https://stackoverflow.com/questions/76847905/>.  */
+/* Applies to: functions, pointer to functions, function type.  */
+#define REPRODUCIBLE _GL_ATTRIBUTE_REPRODUCIBLE
 
 /* The function is rarely executed.  */
 /* Applies to: functions.  */

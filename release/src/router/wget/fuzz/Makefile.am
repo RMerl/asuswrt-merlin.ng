@@ -3,10 +3,26 @@ AM_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir) -I$(top_builddir)/lib -I$(top_srcd
  $(CODE_COVERAGE_CPPFLAGS) \
  -DSRCDIR=\"$(abs_srcdir)\"
 LDADD = ../lib/libgnu.a \
- $(GETADDRINFO_LIB) $(HOSTENT_LIB) $(INET_NTOP_LIB) $(INET_PTON_LIB) \
- $(LIBSOCKET) $(LIB_CLOCK_GETTIME) $(LIB_CRYPTO) $(LIB_GETLOGIN) $(LIB_NANOSLEEP) $(LIB_POLL) \
- $(LIB_POSIX_SPAWN) $(LIB_PTHREAD_SIGMASK) $(LIB_SELECT) $(LIBICONV) $(LIBINTL) \
- $(LIBMULTITHREAD) $(LIBTHREAD) $(SERVENT_LIB) @INTL_MACOSX_LIBS@ \
+ $(CLOCK_TIME_LIB) \
+ $(GETADDRINFO_LIB) \
+ $(GETRANDOM_LIB) \
+ $(HARD_LOCALE_LIB) \
+ $(HOSTENT_LIB) \
+ $(INET_NTOP_LIB) \
+ $(LIBSOCKET) \
+ $(LIBTHREAD) \
+ $(LIB_CRYPTO) \
+ $(LIBC32CONV) \
+ $(LIBICONV) \
+ $(LIBINTL) \
+ $(LIBUNISTRING) \
+ $(MBRTOWC_LIB) \
+ $(NANOSLEEP_LIB) \
+ $(POSIX_SPAWN_LIB) \
+ $(PTHREAD_SIGMASK_LIB) \
+ $(SELECT_LIB) \
+ $(SERVENT_LIB) \
+ $(SETLOCALE_NULL_LIB) \
  $(FUZZ_LIBS) $(CODE_COVERAGE_LIBS)
 
 WGET_TESTS = \
@@ -93,7 +109,7 @@ clean-local:
 
 oss-fuzz:
 	if test "$$OUT" != ""; then \
-	XLIBS="-lpsl -lgnutls -lhogweed -lnettle -lidn2 -lunistring -lz"; \
+	XLIBS="-lpsl -lgnutls -lhogweed -lnettle -lgmp -lidn2 -lunistring -lz"; \
 	for ccfile in wget*_fuzzer.c; do \
 	fuzzer=$$(basename $$ccfile .c); \
 	$$CC $$CFLAGS -I$(top_srcdir)/src -I$(top_srcdir) -I$(top_srcdir)/lib \

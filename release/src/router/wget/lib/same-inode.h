@@ -30,6 +30,11 @@ _GL_INLINE_HEADER_BEGIN
 # define SAME_INODE_INLINE _GL_INLINE
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /* True if A and B point to structs with st_dev and st_ino members
    that are known to represent the same file.
 
@@ -79,6 +84,11 @@ psame_inode (struct stat const *a, struct stat const *b)
 {
   return PSAME_INODE (a, b);
 }
+
+
+#ifdef __cplusplus
+}
+#endif
 
 _GL_INLINE_HEADER_END
 

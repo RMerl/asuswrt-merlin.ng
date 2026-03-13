@@ -78,6 +78,21 @@ static int utimensat_works_really;
 static int lutimensat_works_really;
 #endif /* HAVE_UTIMENSAT || HAVE_FUTIMENS */
 
+static bool
+is_valid_timespec (struct timespec const *timespec)
+{
+  return (timespec->tv_nsec == UTIME_NOW
+          || timespec->tv_nsec == UTIME_OMIT
+          || (0 <= timespec->tv_nsec && timespec->tv_nsec < TIMESPEC_HZ));
+}
+
+static bool
+is_valid_timespecs (struct timespec const timespec[2])
+{
+  return (is_valid_timespec (&timespec[0])
+          && is_valid_timespec (&timespec[1]));
+}
+
 /* Validate the requested timestamps.  Return 0 if the resulting
    timespec can be used for utimensat (after possibly modifying it to
    work around bugs in utimensat).  Return a positive value if the
@@ -90,14 +105,7 @@ validate_timespec (struct timespec timespec[2])
 {
   int result = 0;
   int utime_omit_count = 0;
-  if ((timespec[0].tv_nsec != UTIME_NOW
-       && timespec[0].tv_nsec != UTIME_OMIT
-       && ! (0 <= timespec[0].tv_nsec
-             && timespec[0].tv_nsec < TIMESPEC_HZ))
-      || (timespec[1].tv_nsec != UTIME_NOW
-          && timespec[1].tv_nsec != UTIME_OMIT
-          && ! (0 <= timespec[1].tv_nsec
-                && timespec[1].tv_nsec < TIMESPEC_HZ)))
+  if (!is_valid_timespecs (timespec))
     {
       errno = EINVAL;
       return -1;
@@ -220,7 +228,7 @@ fdutimens (int fd, char const *file, struct timespec const timespec[2])
   if (0 <= utimensat_works_really)
     {
       int result;
-# if __linux__ || __sun
+# if defined __linux__ || defined __sun || defined __NetBSD__
       /* As recently as Linux kernel 2.6.32 (Dec 2009), several file
          systems (xfs, ntfs-3g) have bugs with a single UTIME_OMIT,
          but work if both times are either explicitly specified or
@@ -230,6 +238,7 @@ fdutimens (int fd, char const *file, struct timespec const timespec[2])
          where UTIME_OMIT would have worked.
 
          The same bug occurs in Solaris 11.1 (Apr 2013).
+         The same bug occurs in NetBSD 10.0 (May 2024).
 
          FIXME: Simplify this in 2024, when these file system bugs are
          no longer common on Gnulib target platforms.  */
@@ -440,7 +449,7 @@ fdutimens (int fd, char const *file, struct timespec const timespec[2])
 #  endif
         if (futimes (fd, t) == 0)
           {
-#  if __linux__ && __GLIBC__
+#  if defined __linux__ && defined __GLIBC__
             /* Work around a longstanding glibc bug, still present as
                of 2010-12-27.  On older Linux kernels that lack both
                utimensat and utimes, glibc's futimes rounds instead of
@@ -519,8 +528,20 @@ fdutimens (int fd, char const *file, struct timespec const timespec[2])
    TIMESPEC[0] and TIMESPEC[1], respectively.  */
 int
 utimens (char const *file, struct timespec const timespec[2])
+#undef utimens
 {
+#if HAVE_UTIMENS
+  /* NetBSD's native utimens() does not fulfil the Gnulib expectations:
+     At least in NetBSD 10.0, it does not validate the timespec argument.  */
+  if (timespec != NULL && !is_valid_timespecs (timespec))
+    {
+      errno = EINVAL;
+      return -1;
+    }
+  return utimens (file, timespec);
+#else
   return fdutimens (-1, file, timespec);
+#endif
 }
 
 /* Set the access and modification timestamps of FILE to be
@@ -529,7 +550,18 @@ utimens (char const *file, struct timespec const timespec[2])
    changing symlink timestamps, but FILE was a symlink.  */
 int
 lutimens (char const *file, struct timespec const timespec[2])
+#undef lutimens
 {
+#if HAVE_LUTIMENS
+  /* NetBSD's native lutimens() does not fulfil the Gnulib expectations:
+     At least in NetBSD 10.0, it does not validate the timespec argument.  */
+  if (timespec != NULL && !is_valid_timespecs (timespec))
+    {
+      errno = EINVAL;
+      return -1;
+    }
+  return lutimens (file, timespec);
+#else
   struct timespec adjusted_timespec[2];
   struct timespec *ts = timespec ? adjusted_timespec : NULL;
   int adjustment_needed = 0;
@@ -549,11 +581,11 @@ lutimens (char const *file, struct timespec const timespec[2])
      fdutimens' worry about buggy NFS clients.  But we do have to
      worry about bogus return values.  */
 
-#if HAVE_UTIMENSAT
+# if HAVE_UTIMENSAT
   if (0 <= lutimensat_works_really)
     {
       int result;
-# if __linux__ || __sun
+#  if defined __linux__ || defined __sun || defined __NetBSD__
       /* As recently as Linux kernel 2.6.32 (Dec 2009), several file
          systems (xfs, ntfs-3g) have bugs with a single UTIME_OMIT,
          but work if both times are either explicitly specified or
@@ -563,6 +595,7 @@ lutimens (char const *file, struct timespec const timespec[2])
          UTIME_OMIT would have worked.
 
          The same bug occurs in Solaris 11.1 (Apr 2013).
+         The same bug occurs in NetBSD 10.0 (May 2024).
 
          FIXME: Simplify this for Linux in 2016 and for Solaris in
          2024, when file system bugs are no longer common.  */
@@ -577,9 +610,9 @@ lutimens (char const *file, struct timespec const timespec[2])
           /* Note that st is good, in case utimensat gives ENOSYS.  */
           adjustment_needed++;
         }
-# endif
+#  endif
       result = utimensat (AT_FDCWD, file, ts, AT_SYMLINK_NOFOLLOW);
-# ifdef __linux__
+#  ifdef __linux__
       /* Work around a kernel bug:
          https://bugzilla.redhat.com/show_bug.cgi?id=442352
          https://bugzilla.redhat.com/show_bug.cgi?id=449910
@@ -589,7 +622,7 @@ lutimens (char const *file, struct timespec const timespec[2])
          are no longer in common use.  */
       if (0 < result)
         errno = ENOSYS;
-# endif
+#  endif
       if (result == 0 || errno != ENOSYS)
         {
           utimensat_works_really = 1;
@@ -598,7 +631,7 @@ lutimens (char const *file, struct timespec const timespec[2])
         }
     }
   lutimensat_works_really = -1;
-#endif /* HAVE_UTIMENSAT */
+# endif /* HAVE_UTIMENSAT */
 
   /* The platform lacks an interface to set file timestamps with
      nanosecond resolution, so do the best we can, discarding any
@@ -614,7 +647,7 @@ lutimens (char const *file, struct timespec const timespec[2])
 
   /* On Linux, lutimes is a thin wrapper around utimensat, so there is
      no point trying lutimes if utimensat failed with ENOSYS.  */
-#if HAVE_LUTIMES && !HAVE_UTIMENSAT
+# if HAVE_LUTIMES && !HAVE_UTIMENSAT
   {
     struct timeval timeval[2];
     struct timeval *t;
@@ -634,7 +667,7 @@ lutimens (char const *file, struct timespec const timespec[2])
     if (result == 0 || errno != ENOSYS)
       return result;
   }
-#endif /* HAVE_LUTIMES && !HAVE_UTIMENSAT */
+# endif /* HAVE_LUTIMES && !HAVE_UTIMENSAT */
 
   /* Out of luck for symlinks, but we still handle regular files.  */
   if (!(adjustment_needed || REPLACE_FUNC_STAT_FILE) && lstat (file, &st))
@@ -643,4 +676,5 @@ lutimens (char const *file, struct timespec const timespec[2])
     return fdutimens (-1, file, ts);
   errno = ENOSYS;
   return -1;
+#endif
 }

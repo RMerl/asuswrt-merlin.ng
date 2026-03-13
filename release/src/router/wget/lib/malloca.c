@@ -93,7 +93,7 @@ mmalloca (size_t n)
   /* Out of memory.  */
   return NULL;
 #else
-# if !MALLOC_0_IS_NONNULL
+# if !HAVE_MALLOC_0_NONNULL
   if (n == 0)
     n = 1;
 # endif

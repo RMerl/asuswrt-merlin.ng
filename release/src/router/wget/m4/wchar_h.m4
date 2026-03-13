@@ -1,13 +1,14 @@
-dnl A placeholder for ISO C99 <wchar.h>, for platforms that have issues.
-
+# wchar_h.m4
+# serial 65
 dnl Copyright (C) 2007-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
+
+dnl A placeholder for ISO C99 <wchar.h>, for platforms that have issues.
 
 dnl Written by Eric Blake.
-
-# wchar_h.m4 serial 63
 
 AC_DEFUN_ONCE([gl_WCHAR_H],
 [
@@ -256,6 +257,7 @@ AC_DEFUN([gl_WCHAR_H_DEFAULTS],
   REPLACE_WCSWIDTH=0;   AC_SUBST([REPLACE_WCSWIDTH])
   REPLACE_WCSFTIME=0;   AC_SUBST([REPLACE_WCSFTIME])
   REPLACE_WCSCMP=0;     AC_SUBST([REPLACE_WCSCMP])
+  REPLACE_WCSNCAT=0;    AC_SUBST([REPLACE_WCSNCAT])
   REPLACE_WCSNCMP=0;    AC_SUBST([REPLACE_WCSNCMP])
   REPLACE_WCSSTR=0;     AC_SUBST([REPLACE_WCSSTR])
   REPLACE_WCSTOK=0;     AC_SUBST([REPLACE_WCSTOK])

@@ -16,9 +16,14 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef QUOTE_H_
-# define QUOTE_H_ 1
+#define QUOTE_H_ 1
 
-# include <stddef.h>
+#include <stddef.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 /* The quoting options used by quote_n and quote.  Its type is incomplete,
    so it's useful only in expressions like '&quote_quoting_options'.  */
@@ -42,5 +47,10 @@ char const *quote_n (int n, char const *arg);
 /* Return an unambiguous printable representation of ARG, suitable for
    diagnostics.  */
 char const *quote (char const *arg);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* !QUOTE_H_ */

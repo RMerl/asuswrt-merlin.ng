@@ -1,8 +1,10 @@
-# mbsrtowcs.m4 serial 17
+# mbsrtowcs.m4
+# serial 19
 dnl Copyright (C) 2008-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 AC_DEFUN([gl_FUNC_MBSRTOWCS],
 [
@@ -50,7 +52,7 @@ AC_DEFUN([gl_MBSRTOWCS_WORKS],
 [
   AC_REQUIRE([AC_PROG_CC])
   AC_REQUIRE([gt_LOCALE_FR])
-  AC_REQUIRE([gt_LOCALE_FR_UTF8])
+  AC_REQUIRE([gt_LOCALE_EN_UTF8])
   AC_REQUIRE([gt_LOCALE_JA])
   AC_REQUIRE([gt_LOCALE_ZH_CN])
   AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
@@ -69,7 +71,7 @@ changequote(,)dnl
           gl_cv_func_mbsrtowcs_works="guessing yes" ;;
       esac
 changequote([,])dnl
-      if test $LOCALE_FR != none || test $LOCALE_FR_UTF8 != none || test $LOCALE_JA != none || test $LOCALE_ZH_CN != none; then
+      if test $LOCALE_FR != none || test "$LOCALE_EN_UTF8" != none || test $LOCALE_JA != none || test $LOCALE_ZH_CN != none; then
         AC_RUN_IFELSE(
           [AC_LANG_SOURCE([[
 #include <locale.h>
@@ -94,8 +96,8 @@ int main ()
     }
   /* Test whether the function works when started with a conversion state
      in non-initial state.  This fails on HP-UX 11.11 and Solaris 10.  */
-  if (strcmp ("$LOCALE_FR_UTF8", "none") != 0
-      && setlocale (LC_ALL, "$LOCALE_FR_UTF8") != NULL)
+  if (strcmp ("$LOCALE_EN_UTF8", "none") != 0
+      && setlocale (LC_ALL, "$LOCALE_EN_UTF8") != NULL)
     {
       const char input[] = "B\303\274\303\237er";
       mbstate_t state;

@@ -1,8 +1,10 @@
-# strndup.m4 serial 23
+# strndup.m4
+# serial 24
 dnl Copyright (C) 2002-2003, 2005-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 AC_DEFUN([gl_FUNC_STRNDUP],
 [
@@ -19,7 +21,8 @@ AC_DEFUN([gl_FUNC_STRNDUP],
 
   if test $ac_cv_func_strndup = yes; then
     HAVE_STRNDUP=1
-    # AIX 4.3.3, AIX 5.1 have a function that fails to add the terminating '\0'.
+    dnl AIX 5.1 has a function that fails to add the terminating '\0'.
+    dnl AIX 7.3 has a function that does not support a zero length.
     AC_CACHE_CHECK([for working strndup], [gl_cv_func_strndup_works],
       [AC_RUN_IFELSE([
          AC_LANG_PROGRAM([[#include <string.h>
@@ -31,23 +34,24 @@ AC_DEFUN([gl_FUNC_STRNDUP],
   #endif
   char *strndup (const char *, size_t);
 #endif
-  int result;
-  char *s;
-  s = strndup ("some longer string", 15);
-  free (s);
-  s = strndup ("shorter string", 13);
-  result = s[13] != '\0';
-  free (s);
+  int result = 0;
+  {
+    char *s = strndup ("some longer string", 15);
+    free (s);
+    s = strndup ("shorter string", 13);
+    if (s[13] != '\0')
+      result |= 1;
+    free (s);
+  }
+  if (strndup (NULL, 0) == NULL)
+    result |= 2;
   return result;]])],
          [gl_cv_func_strndup_works=yes],
          [gl_cv_func_strndup_works=no],
-         [
-changequote(,)dnl
-          case $host_os in
-            aix | aix[3-6]*) gl_cv_func_strndup_works="guessing no";;
-            *)               gl_cv_func_strndup_works="guessing yes";;
+         [case $host_os in
+            aix*) gl_cv_func_strndup_works="guessing no";;
+            *)    gl_cv_func_strndup_works="guessing yes";;
           esac
-changequote([,])dnl
          ])])
     case $gl_cv_func_strndup_works in
       *no) REPLACE_STRNDUP=1 ;;

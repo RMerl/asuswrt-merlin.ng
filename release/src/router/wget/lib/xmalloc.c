@@ -64,7 +64,7 @@ void *
 xrealloc (void *p, size_t s)
 {
   void *r = realloc (p, s);
-  if (!r && (!p || s))
+  if (!r)
     xalloc_die ();
   return r;
 }
@@ -82,7 +82,7 @@ void *
 xreallocarray (void *p, size_t n, size_t s)
 {
   void *r = reallocarray (p, n, s);
-  if (!r && (!p || (n && s)))
+  if (!r)
     xalloc_die ();
   return r;
 }

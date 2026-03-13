@@ -20,7 +20,7 @@
 #include <stdio.h>
 
 #include <errno.h>
-#include "intprops.h"
+#include <stdckdint.h>
 
 /* Get lseek.  */
 #include <unistd.h>
@@ -97,7 +97,7 @@ ftello (FILE *fp)
 
       /* Compute pos + buffered, with overflow check.  */
       off_t sum;
-      if (! INT_ADD_OK (pos, buffered, &sum))
+      if (ckd_add (&sum, pos, buffered))
         {
           errno = EOVERFLOW;
           return -1;

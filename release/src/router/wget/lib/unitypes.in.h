@@ -20,6 +20,11 @@
 /* Get uint8_t, uint16_t, uint32_t.  */
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /* Type representing a Unicode character.  */
 typedef uint32_t ucs4_t;
 
@@ -56,6 +61,11 @@ typedef uint32_t ucs4_t;
 # else
 #  define _UC_RESTRICT
 # endif
+#endif
+
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* _UNITYPES_H */

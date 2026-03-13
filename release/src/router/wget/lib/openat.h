@@ -33,6 +33,11 @@
 
 _GL_INLINE_HEADER_BEGIN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 #if !HAVE_OPENAT
 
 int openat_permissive (int fd, char const *file, int flags, mode_t mode,
@@ -121,6 +126,11 @@ lstatat (int fd, char const *name, struct stat *st)
    since access rights on symlinks are of limited utility.  Likewise,
    wrappers are not provided for accessat or euidaccessat, so as to
    avoid dragging in -lgen on some platforms.  */
+
+
+#ifdef __cplusplus
+}
+#endif
 
 _GL_INLINE_HEADER_END
 

@@ -1,4 +1,4 @@
-This is wget.info, produced by makeinfo version 7.1 from wget.texi.
+This is wget.info, produced by makeinfo version 7.1.1 from wget.texi.
 
 This file documents the GNU Wget utility for downloading network data.
 
@@ -18,7 +18,7 @@ END-INFO-DIR-ENTRY
 
 File: wget.info,  Node: Top,  Next: Overview,  Prev: (dir),  Up: (dir)
 
-Wget 1.24.5
+Wget 1.25.0
 ***********
 
 This file documents the GNU Wget utility for downloading network data.
@@ -198,8 +198,8 @@ systems, and is thus useful for text files.  Here is an example:
 
      ftp://host/directory/file;type=a
 
-   Two alternative variants of URL specification are also supported,
-because of historical (hysterical?)  reasons and their widespreaded use.
+   The two alternative variants of URL specifications are no longer
+supported because of security considerations:
 
    FTP-only syntax (supported by ‘NcFTP’):
      host:/dir/file
@@ -207,12 +207,8 @@ because of historical (hysterical?)  reasons and their widespreaded use.
    HTTP-only syntax (introduced by ‘Netscape’):
      host[:port]/dir/file
 
-   These two alternative forms are deprecated, and may cease being
-supported in the future.
-
-   If you do not understand the difference between these notations, or
-do not know which one to use, just use the plain ordinary format you use
-with your favorite browser, like ‘Lynx’ or ‘Netscape’.
+   These two alternative forms have been deprecated long time ago, and
+support is removed with version 1.22.0.
 
    ---------- Footnotes ----------
 
@@ -377,6 +373,14 @@ File: wget.info,  Node: Logging and Input File Options,  Next: Download Options,
      treated as ‘html’ if the Content-Type matches ‘text/html’.
      Furthermore, the FILE's location will be implicitly used as base
      href if none was specified.
+
+     If the FILE is a local file, on systems that support it, it will be
+     opened with the ‘O_NONBLOCK’ flag to allow non-blocking reads from
+     the file.  ‘Wget’ will attempt to continue reading from the file
+     until EOF is reached or it is closed.  This allows one to stream a
+     list of files for retrieval where the list is dynamically generated
+     during the execution of the process.  Currently, this feature is
+     not available on Windows platforms.
 
 ‘--input-metalink=FILE’
      Downloads files covered in local Metalink FILE.  Metalink version 3
@@ -3820,8 +3824,8 @@ File: wget.info,  Node: Distribution,  Next: Web Site,  Prev: Proxies,  Up: Vari
 
 Like all GNU utilities, the latest version of Wget can be found at the
 master GNU archive site ftp.gnu.org, and its mirrors.  For example, Wget
-1.24.5 can be found at
-<https://ftp.gnu.org/pub/gnu/wget/wget-1.24.5.tar.gz>
+1.25.0 can be found at
+<https://ftp.gnu.org/pub/gnu/wget/wget-1.25.0.tar.gz>
 
 
 File: wget.info,  Node: Web Site,  Next: Mailing Lists,  Prev: Distribution,  Up: Various
@@ -4764,7 +4768,7 @@ Concept Index
 * backing up files:                      Download Options.    (line 107)
 * bandwidth, limit:                      Download Options.    (line 330)
 * base for relative links in input file: Logging and Input File Options.
-                                                              (line 111)
+                                                              (line 119)
 * bind address:                          Download Options.    (line   6)
 * bind DNS address:                      Download Options.    (line  11)
 * bug reports:                           Reporting Bugs.      (line   6)
@@ -4836,7 +4840,7 @@ Concept Index
 * following ftp links:                   FTP Links.           (line   6)
 * following links:                       Following Links.     (line   6)
 * force html:                            Logging and Input File Options.
-                                                              (line 104)
+                                                              (line 112)
 * ftp authentication:                    FTP Options.         (line   6)
 * ftp password:                          FTP Options.         (line   6)
 * ftp time-stamping:                     FTP Time-Stamping Internals.
@@ -4868,7 +4872,7 @@ Concept Index
 * input-file:                            Logging and Input File Options.
                                                               (line  46)
 * input-metalink:                        Logging and Input File Options.
-                                                              (line  69)
+                                                              (line  77)
 * Internet Relay Chat:                   Internet Relay Chat. (line   6)
 * invoking:                              Invoking.            (line   6)
 * IP address, client:                    Download Options.    (line   6)
@@ -4877,7 +4881,7 @@ Concept Index
 * iri support:                           Download Options.    (line 558)
 * Keep-Alive, turning off:               HTTP Options.        (line  59)
 * keep-badhash:                          Logging and Input File Options.
-                                                              (line  73)
+                                                              (line  81)
 * latest version:                        Distribution.        (line   6)
 * limit bandwidth:                       Download Options.    (line 330)
 * link conversion:                       Recursive Retrieval Options.
@@ -4891,9 +4895,9 @@ Concept Index
                                                               (line   6)
 * mailing list:                          Mailing Lists.       (line   6)
 * metalink-index:                        Logging and Input File Options.
-                                                              (line  85)
+                                                              (line  93)
 * metalink-over-http:                    Logging and Input File Options.
-                                                              (line  78)
+                                                              (line  86)
 * mirroring:                             Very Advanced Usage. (line   6)
 * no parent:                             Directory-Based Limits.
                                                               (line  43)
@@ -4916,7 +4920,7 @@ Concept Index
 * portability:                           Portability.         (line   6)
 * POST:                                  HTTP Options.        (line 262)
 * preferred-location:                    Logging and Input File Options.
-                                                              (line  93)
+                                                              (line 101)
 * progress indicator:                    Download Options.    (line 189)
 * proxies:                               Proxies.             (line   6)
 * proxy:                                 Download Options.    (line 391)
@@ -4966,7 +4970,7 @@ Concept Index
 * signal handling:                       Signals.             (line   6)
 * spanning hosts:                        Spanning Hosts.      (line   6)
 * specify config:                        Logging and Input File Options.
-                                                              (line 124)
+                                                              (line 132)
 * spider:                                Download Options.    (line 279)
 * SSL:                                   HTTPS (SSL/TLS) Options.
                                                               (line   6)
@@ -5029,64 +5033,64 @@ Concept Index
 * wildcards, reject:                     Types of Files.      (line  39)
 * Windows file names:                    Download Options.    (line 434)
 * xattr:                                 Logging and Input File Options.
-                                                              (line  97)
+                                                              (line 105)
 
 
 
 Tag Table:
-Node: Top745
-Node: Overview2074
-Node: Invoking5745
-Node: URL Format6605
-Ref: URL Format-Footnote-19280
-Node: Option Syntax9386
-Node: Basic Startup Options12159
-Node: Logging and Input File Options13015
-Node: Download Options18619
-Node: Directory Options48090
-Node: HTTP Options50935
-Node: HTTPS (SSL/TLS) Options71558
-Node: FTP Options84659
-Node: Recursive Retrieval Options91716
-Node: Recursive Accept/Reject Options101735
-Node: Exit Status105938
-Node: Recursive Download106970
-Node: Following Links110207
-Node: Spanning Hosts111173
-Node: Types of Files113433
-Node: Directory-Based Limits118317
-Node: Relative Links121571
-Node: FTP Links122417
-Node: Time-Stamping123308
-Node: Time-Stamping Usage124980
-Node: HTTP Time-Stamping Internals126851
-Ref: HTTP Time-Stamping Internals-Footnote-1128191
-Node: FTP Time-Stamping Internals128394
-Node: Startup File129880
-Node: Wgetrc Location130815
-Node: Wgetrc Syntax131663
-Node: Wgetrc Commands132428
-Node: Sample Wgetrc148962
-Node: Examples154989
-Node: Simple Usage155350
-Node: Advanced Usage156797
-Node: Very Advanced Usage160608
-Node: Various162144
-Node: Proxies162849
-Node: Distribution165804
-Node: Web Site166148
-Node: Mailing Lists166444
-Node: Internet Relay Chat168180
-Node: Reporting Bugs168475
-Node: Portability171192
-Node: Signals172835
-Node: Appendices173542
-Node: Robot Exclusion173888
-Node: Security Considerations177732
-Node: Contributors178936
-Node: Copying this manual184878
-Node: GNU Free Documentation License185118
-Node: Concept Index210274
+Node: Top747
+Node: Overview2076
+Node: Invoking5747
+Node: URL Format6607
+Ref: URL Format-Footnote-19065
+Node: Option Syntax9171
+Node: Basic Startup Options11944
+Node: Logging and Input File Options12800
+Node: Download Options18884
+Node: Directory Options48355
+Node: HTTP Options51200
+Node: HTTPS (SSL/TLS) Options71823
+Node: FTP Options84924
+Node: Recursive Retrieval Options91981
+Node: Recursive Accept/Reject Options102000
+Node: Exit Status106203
+Node: Recursive Download107235
+Node: Following Links110472
+Node: Spanning Hosts111438
+Node: Types of Files113698
+Node: Directory-Based Limits118582
+Node: Relative Links121836
+Node: FTP Links122682
+Node: Time-Stamping123573
+Node: Time-Stamping Usage125245
+Node: HTTP Time-Stamping Internals127116
+Ref: HTTP Time-Stamping Internals-Footnote-1128456
+Node: FTP Time-Stamping Internals128659
+Node: Startup File130145
+Node: Wgetrc Location131080
+Node: Wgetrc Syntax131928
+Node: Wgetrc Commands132693
+Node: Sample Wgetrc149227
+Node: Examples155254
+Node: Simple Usage155615
+Node: Advanced Usage157062
+Node: Very Advanced Usage160873
+Node: Various162409
+Node: Proxies163114
+Node: Distribution166069
+Node: Web Site166413
+Node: Mailing Lists166709
+Node: Internet Relay Chat168445
+Node: Reporting Bugs168740
+Node: Portability171457
+Node: Signals173100
+Node: Appendices173807
+Node: Robot Exclusion174153
+Node: Security Considerations177997
+Node: Contributors179201
+Node: Copying this manual185143
+Node: GNU Free Documentation License185383
+Node: Concept Index210539
 
 End Tag Table
 

@@ -1,10 +1,10 @@
-# serial 75
-
-# Copyright (C) 1996-2001, 2003-2024 Free Software Foundation, Inc.
-#
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
+# regex.m4
+# serial 78
+dnl Copyright (C) 1996-2001, 2003-2024 Free Software Foundation, Inc.
+dnl This file is free software; the Free Software Foundation
+dnl gives unlimited permission to copy and/or distribute it,
+dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl Initially derived from code in GNU grep.
 dnl Mostly written by Jim Meyering.
@@ -40,16 +40,16 @@ AC_DEFUN([gl_REGEX],
             #include <limits.h>
             #include <string.h>
 
-            #if defined M_CHECK_ACTION || HAVE_DECL_ALARM
+            #if HAVE_MALLOC_H
+            # include <malloc.h> /* defines M_CHECK_ACTION on glibc */
+            #endif
+
+            #if defined __HAIKU__ || defined M_CHECK_ACTION || HAVE_DECL_ALARM
             # include <signal.h>
             # include <unistd.h>
             #endif
 
-            #if HAVE_MALLOC_H
-            # include <malloc.h>
-            #endif
-
-            #ifdef M_CHECK_ACTION
+            #if defined __HAIKU__ || defined M_CHECK_ACTION
             /* Exit with distinguishable exit code.  */
             static void sigabrt_no_core (int sig) { raise (SIGTERM); }
             #endif
@@ -67,6 +67,9 @@ AC_DEFUN([gl_REGEX],
 #if HAVE_DECL_ALARM
             signal (SIGALRM, SIG_DFL);
             alarm (2);
+#endif
+#ifdef __HAIKU__
+            signal (SIGABRT, sigabrt_no_core);
 #endif
 #ifdef M_CHECK_ACTION
             signal (SIGABRT, sigabrt_no_core);
@@ -389,7 +392,6 @@ AC_DEFUN([gl_PREREQ_REGEX],
   AC_REQUIRE([AC_C_INLINE])
   AC_REQUIRE([AC_C_RESTRICT])
   AC_REQUIRE([AC_TYPE_MBSTATE_T])
-  AC_REQUIRE([gl_EEMALLOC])
   AC_CHECK_HEADERS([libintl.h])
   AC_CHECK_FUNCS_ONCE([isblank iswctype])
   AC_CHECK_DECLS([isblank], [], [], [[#include <ctype.h>]])

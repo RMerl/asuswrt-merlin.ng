@@ -101,6 +101,11 @@ _GL_INLINE_HEADER_BEGIN
 # define MBITER_INLINE _GL_INLINE _GL_ATTRIBUTE_ALWAYS_INLINE
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 struct mbiter_multi
 {
   const char *limit;    /* pointer to end of string */
@@ -262,6 +267,11 @@ typedef struct mbiter_multi mbi_iterator_t;
 
 /* Copying an iterator.  */
 #define mbi_copy mbiter_multi_copy
+
+
+#ifdef __cplusplus
+}
+#endif
 
 _GL_INLINE_HEADER_END
 

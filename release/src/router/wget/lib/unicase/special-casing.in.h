@@ -25,6 +25,11 @@
 
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /* A special casing context.
    A context is negated through x -> -x.  */
 enum
@@ -67,3 +72,8 @@ struct special_casing_rule
 
 extern const struct special_casing_rule *
        gl_unicase_special_lookup (const char *str, size_t len);
+
+
+#ifdef __cplusplus
+}
+#endif

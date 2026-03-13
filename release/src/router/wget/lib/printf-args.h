@@ -28,13 +28,8 @@
 # define PRINTF_FETCHARGS printf_fetchargs
 #endif
 
-/* Get size_t.  */
+/* Get size_t, wchar_t.  */
 #include <stddef.h>
-
-/* Get wchar_t.  */
-#if HAVE_WCHAR_T
-# include <stddef.h>
-#endif
 
 /* Get wint_t.  */
 #if HAVE_WINT_T
@@ -89,9 +84,7 @@ typedef enum
   TYPE_WIDE_CHAR,
 #endif
   TYPE_STRING,
-#if HAVE_WCHAR_T
   TYPE_WIDE_STRING,
-#endif
   TYPE_POINTER,
   TYPE_COUNT_SCHAR_POINTER,
   TYPE_COUNT_SHORT_POINTER,
@@ -154,9 +147,7 @@ typedef struct
     wint_t                      a_wide_char;
 #endif
     const char*                 a_string;
-#if HAVE_WCHAR_T
     const wchar_t*              a_wide_string;
-#endif
     void*                       a_pointer;
     signed char *               a_count_schar_pointer;
     short *                     a_count_short_pointer;

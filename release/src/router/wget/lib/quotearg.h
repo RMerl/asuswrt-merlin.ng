@@ -19,14 +19,19 @@
 /* Written by Paul Eggert <eggert@twinsun.com> */
 
 #ifndef QUOTEARG_H_
-# define QUOTEARG_H_ 1
+#define QUOTEARG_H_ 1
 
 /* This file uses _GL_ATTRIBUTE_MALLOC, _GL_ATTRIBUTE_RETURNS_NONNULL.  */
-# if !_GL_CONFIG_H_INCLUDED
-#  error "Please include config.h first."
-# endif
+#if !_GL_CONFIG_H_INCLUDED
+# error "Please include config.h first."
+#endif
 
-# include <stdlib.h>
+#include <stdlib.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 /* Basic quoting styles.  For each style, an example is given on the
    input strings "simple", "\0 \t\n'\"\033?""?/\\", and "a:b", using
@@ -80,7 +85,8 @@ enum quoting_style
 
     /* Quote names for the shell if they contain shell metacharacters
        or other problematic characters (ls --quoting-style=shell-escape).
-       Non printable characters are quoted using the $'...' syntax,
+       Non printable characters are quoted using the $'...' syntax
+       <https://www.gnu.org/software/bash/manual/html_node/ANSI_002dC-Quoting.html>,
        which originated in ksh93 and is widely supported by most shells,
        and proposed for inclusion in POSIX.
 
@@ -95,7 +101,8 @@ enum quoting_style
 
     /* Quote names for the shell even if they would normally not
        require quoting (ls --quoting-style=shell-escape).
-       Non printable characters are quoted using the $'...' syntax,
+       Non printable characters are quoted using the $'...' syntax
+       <https://www.gnu.org/software/bash/manual/html_node/ANSI_002dC-Quoting.html>,
        which originated in ksh93 and is widely supported by most shells,
        and proposed for inclusion in POSIX.  Behaves like
        shell_escape_quoting_style if QA_ELIDE_OUTER_QUOTES is in effect.
@@ -253,7 +260,11 @@ enum quoting_flags
 
     /* Omit the surrounding quote characters if no escaped characters
        are encountered.  Note that if no other character needs
-       escaping, then neither does the escape character.  */
+       escaping, then neither does the escape character.
+       *Attention!*  This flag is unsupported in combination with the styles
+       shell_escape_quoting_style and shell_escape_always_quoting_style
+       (because in this situation it cannot handle strings that start
+       with a non-printable character).  */
     QA_ELIDE_OUTER_QUOTES = 0x02,
 
     /* In the c_quoting_style and c_maybe_quoting_style, split ANSI
@@ -264,9 +275,9 @@ enum quoting_flags
   };
 
 /* For now, --quoting-style=literal is the default, but this may change.  */
-# ifndef DEFAULT_QUOTING_STYLE
-#  define DEFAULT_QUOTING_STYLE literal_quoting_style
-# endif
+#ifndef DEFAULT_QUOTING_STYLE
+# define DEFAULT_QUOTING_STYLE literal_quoting_style
+#endif
 
 /* Names of quoting styles and their corresponding values.  */
 extern char const *const quoting_style_args[];
@@ -432,5 +443,10 @@ char *quotearg_custom_mem (char const *left_quote,
 
 /* Free any dynamically allocated memory.  */
 void quotearg_free (void);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* !QUOTEARG_H_ */

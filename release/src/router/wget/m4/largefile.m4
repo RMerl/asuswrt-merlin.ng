@@ -1,10 +1,13 @@
+# largefile.m4
+# serial 2
+dnl Copyright 1992-1996, 1998-2024 Free Software Foundation, Inc.
+dnl This file is free software; the Free Software Foundation
+dnl gives unlimited permission to copy and/or distribute it,
+dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
+
 # Enable large files on systems where this is not the default.
 # Enable support for files on Linux file systems with 64-bit inode numbers.
-
-# Copyright 1992-1996, 1998-2024 Free Software Foundation, Inc.
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
 
 # The following macro works around a problem in Autoconf's AC_FUNC_FSEEKO:
 # It does not set _LARGEFILE_SOURCE=1 on HP-UX/ia64 32-bit, although this
@@ -24,9 +27,20 @@ AC_DEFUN([gl_SET_LARGEFILE_SOURCE],
  ]])
 )
 
+dnl Remove AC_SYS_YEAR2038_RECOMMENDED if unpatched Autoconf 2.72 or earlier.
+dnl Autoconf 2.72 still uses -n32, which is not a C preprocessor option,
+dnl and which was useful only on IRIX which is no longer supported.
+dnl This should be fixed in Autoconf 2.73.
+m4_ifdef([AC_SYS_YEAR2038_RECOMMENDED],
+  [m4_bmatch(m4_ifdef([_AC_SYS_LARGEFILE_OPTIONS],
+               [m4_defn([_AC_SYS_LARGEFILE_OPTIONS])],
+               ["-n32"]),
+     ["-n32"],
+       [m4_undefine([AC_SYS_YEAR2038_RECOMMENDED])])])
+
 m4_ifndef([AC_SYS_YEAR2038_RECOMMENDED], [
-# Support AC_SYS_YEAR2038_RECOMMENDED and related macros, even if
-# Autoconf 2.71 or earlier.  This code is taken from Autoconf master.
+# Fix up AC_SYS_YEAR2038_RECOMMENDED and related macros, even if
+# unpatched Autoconf 2.72 or earlier.  This code is taken from Autoconf master.
 
 # _AC_SYS_YEAR2038_TEST_CODE
 # --------------------------
@@ -75,7 +89,7 @@ m4_define([_AC_SYS_YEAR2038_OPTIONS], m4_normalize(
 # If you change this macro you may also need to change
 # _AC_SYS_YEAR2038_OPTIONS.
 AC_DEFUN([_AC_SYS_YEAR2038_PROBE],
-[AC_CACHE_CHECK([for $CC option for timestamps after 2038],
+[AC_CACHE_CHECK([for $CC option to support timestamps after 2038],
   [ac_cv_sys_year2038_opts],
   [ac_save_CPPFLAGS="$CPPFLAGS"
   ac_opt_found=no
@@ -205,7 +219,6 @@ m4_define([_AC_SYS_LARGEFILE_OPTIONS], m4_normalize(
     ["none needed"]                   dnl Most current systems
     ["-D_FILE_OFFSET_BITS=64"]        dnl X/Open LFS spec
     ["-D_LARGE_FILES=1"]              dnl 32-bit AIX 4.2.1+, 32-bit z/OS
-    ["-n32"]                          dnl 32-bit IRIX 6, SGI cc (obsolete)
 ))
 
 # _AC_SYS_LARGEFILE_PROBE
@@ -222,25 +235,25 @@ m4_define([_AC_SYS_LARGEFILE_OPTIONS], m4_normalize(
 # If you change this macro you may also need to change
 # _AC_SYS_LARGEFILE_OPTIONS.
 AC_DEFUN([_AC_SYS_LARGEFILE_PROBE],
-[AC_CACHE_CHECK([for $CC option to enable large file support],
+[AC_CACHE_CHECK([for $CC option to support large files],
   [ac_cv_sys_largefile_opts],
-  [ac_save_CC="$CC"
+  [ac_save_CPPFLAGS=$CPPFLAGS
   ac_opt_found=no
   for ac_opt in _AC_SYS_LARGEFILE_OPTIONS; do
     AS_IF([test x"$ac_opt" != x"none needed"],
-      [CC="$ac_save_CC $ac_opt"])
+      [CPPFLAGS="$ac_save_CPPFLAGS $ac_opt"])
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([_AC_SYS_LARGEFILE_TEST_CODE])],
      [AS_IF([test x"$ac_opt" = x"none needed"],
 	[# GNU/Linux s390x and alpha need _FILE_OFFSET_BITS=64 for wide ino_t.
-	 CC="$CC -DFTYPE=ino_t"
+	 CPPFLAGS="$CPPFLAGS -DFTYPE=ino_t"
 	 AC_COMPILE_IFELSE([], [],
-	   [CC="$CC -D_FILE_OFFSET_BITS=64"
+	   [CPPFLAGS="$CPPFLAGS -D_FILE_OFFSET_BITS=64"
 	    AC_COMPILE_IFELSE([], [ac_opt='-D_FILE_OFFSET_BITS=64'])])])
       ac_cv_sys_largefile_opts=$ac_opt
       ac_opt_found=yes])
     test $ac_opt_found = no || break
   done
-  CC="$ac_save_CC"
+  CPPFLAGS=$ac_save_CPPFLAGS
   dnl Gnulib implements large file support for native Windows, based on the
   dnl variables WINDOWS_64_BIT_OFF_T, WINDOWS_64_BIT_ST_SIZE.
   m4_ifdef([gl_LARGEFILE], [
@@ -269,9 +282,6 @@ AS_CASE([$ac_cv_sys_largefile_opts],
   ["-D_LARGE_FILES=1"],
     [AC_DEFINE([_LARGE_FILES], [1],
       [Define to 1 on platforms where this makes off_t a 64-bit type.])],
-
-  ["-n32"],
-    [CC="$CC -n32"],
 
   [AC_MSG_ERROR(
     [internal error: bad value for \$ac_cv_sys_largefile_opts])])

@@ -21,10 +21,20 @@
 
 #include "pathmax.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /* On systems without PATH_MAX, presume that chdir accepts
    arbitrarily long directory names.  */
 #ifndef PATH_MAX
 # define chdir_long(Dir) chdir (Dir)
 #else
 int chdir_long (char *dir);
+#endif
+
+
+#ifdef __cplusplus
+}
 #endif

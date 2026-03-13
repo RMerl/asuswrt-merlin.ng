@@ -1,12 +1,14 @@
-# getcwd.m4 - check for working getcwd that is compatible with glibc
-
-# Copyright (C) 2001, 2003-2007, 2009-2024 Free Software Foundation, Inc.
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
+# getcwd.m4
+# serial 22
+dnl Copyright (C) 2001, 2003-2007, 2009-2024 Free Software Foundation, Inc.
+dnl This file is free software; the Free Software Foundation
+dnl gives unlimited permission to copy and/or distribute it,
+dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 # Written by Paul Eggert.
-# serial 22
+
+# Check for working getcwd that is compatible with glibc
 
 AC_DEFUN([gl_FUNC_GETCWD_NULL],
   [

@@ -21,8 +21,18 @@
 
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /* Compute a hash code for a NUL-terminated string starting at X,
    and return the hash code modulo TABLESIZE.
    The result is platform dependent: it depends on the size of the 'size_t'
    type and on the signedness of the 'char' type.  */
 extern size_t hash_pjw (void const *x, size_t tablesize) _GL_ATTRIBUTE_PURE;
+
+
+#ifdef __cplusplus
+}
+#endif

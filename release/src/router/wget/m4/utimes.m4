@@ -5,6 +5,7 @@ dnl Copyright (C) 2003-2005, 2009-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 # See if we need to work around bugs in glibc's implementation of
 # utimes from 2003-07-12 to 2003-09-17.

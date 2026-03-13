@@ -117,7 +117,7 @@
 
 #if @GNULIB_WAITPID@
 # if defined _WIN32 && ! defined __CYGWIN__
-_GL_FUNCDECL_SYS (waitpid, pid_t, (pid_t pid, int *statusp, int options));
+_GL_FUNCDECL_SYS (waitpid, pid_t, (pid_t pid, int *statusp, int options), );
 # endif
 /* Need to cast, because on Cygwin, the second parameter is
                                                 __wait_status_ptr_t statusp.  */

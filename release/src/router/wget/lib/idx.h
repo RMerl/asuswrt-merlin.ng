@@ -111,6 +111,11 @@
        help producing good code and good warnings.  The type 'idx_t' could
        then be typedef'ed to a range type that is signed after promotion.  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /* In the future, idx_t could be typedef'ed to a signed range type.
    The clang "extended integer types", supported in Clang 11 or newer
    <https://clang.llvm.org/docs/LanguageExtensions.html#extended-integer-types>,
@@ -130,5 +135,10 @@ typedef ptrdiff_t idx_t;
 /* So far no need has been found for an IDX_WIDTH macro.
    Perhaps there should be another macro IDX_VALUE_BITS that does not
    count the sign bit and is therefore one less than PTRDIFF_WIDTH.  */
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _IDX_H */

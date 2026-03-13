@@ -20,6 +20,7 @@
 #include <wchar.h>
 
 /* Internal state used by the functions mbsrtowcs() and mbsnrtowcs().  */
+extern mbstate_t _gl_mbsrtowcs_state;
 mbstate_t _gl_mbsrtowcs_state
 /* The state must initially be in an "initial state"; so, zero-initialize it.
    On most systems, putting it into BSS is sufficient.  Not so on Mac OS X 10.3,

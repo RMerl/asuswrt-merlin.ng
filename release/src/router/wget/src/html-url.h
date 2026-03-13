@@ -48,7 +48,7 @@ struct map_context {
   struct urlpos *head;          /* List of URLs that is being built. */
 };
 
-struct urlpos *get_urls_file (const char *);
+struct urlpos *get_urls_file (const char *, bool *);
 struct urlpos *get_urls_html (const char *, const char *, bool *, struct iri *);
 struct urlpos *get_urls_html_fm (const char *, const struct file_memory *, const char *, bool *, struct iri *);
 struct urlpos *append_url (const char *, int, int, struct map_context *);

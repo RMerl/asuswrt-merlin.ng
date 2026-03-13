@@ -168,7 +168,7 @@ struct lconv
 #   undef localeconv
 #   define localeconv rpl_localeconv
 #  endif
-_GL_FUNCDECL_RPL (localeconv, struct lconv *, (void));
+_GL_FUNCDECL_RPL (localeconv, struct lconv *, (void), );
 _GL_CXXALIAS_RPL (localeconv, struct lconv *, (void));
 # else
 _GL_CXXALIAS_SYS (localeconv, struct lconv *, (void));
@@ -177,8 +177,10 @@ _GL_CXXALIAS_SYS (localeconv, struct lconv *, (void));
 _GL_CXXALIASWARN (localeconv);
 # endif
 #elif @REPLACE_STRUCT_LCONV@
-# undef localeconv
-# define localeconv localeconv_used_without_requesting_gnulib_module_localeconv
+# if !GNULIB_LOCALECONV
+#  undef localeconv
+#  define localeconv localeconv_used_without_requesting_gnulib_module_localeconv
+# endif
 #elif defined GNULIB_POSIXCHECK
 # undef localeconv
 # if HAVE_RAW_DECL_LOCALECONV
@@ -195,7 +197,7 @@ _GL_WARN_ON_USE (localeconv,
 #   define setlocale rpl_setlocale
 #   define GNULIB_defined_setlocale 1
 #  endif
-_GL_FUNCDECL_RPL (setlocale, char *, (int category, const char *locale));
+_GL_FUNCDECL_RPL (setlocale, char *, (int category, const char *locale), );
 _GL_CXXALIAS_RPL (setlocale, char *, (int category, const char *locale));
 # else
 _GL_CXXALIAS_SYS (setlocale, char *, (int category, const char *locale));
@@ -224,7 +226,7 @@ _GL_WARN_ON_USE (setlocale, "setlocale works differently on native Windows - "
 #   define GNULIB_defined_newlocale 1
 #  endif
 _GL_FUNCDECL_RPL (newlocale, locale_t,
-                  (int category_mask, const char *name, locale_t base)
+                  (int category_mask, const char *name, locale_t base),
                   _GL_ARG_NONNULL ((2)));
 _GL_CXXALIAS_RPL (newlocale, locale_t,
                   (int category_mask, const char *name, locale_t base));
@@ -257,7 +259,7 @@ _GL_WARN_ON_USE (newlocale, "newlocale is not portable");
 #    define duplocale rpl_duplocale
 #    define GNULIB_defined_duplocale 1
 #   endif
-_GL_FUNCDECL_RPL (duplocale, locale_t, (locale_t locale) _GL_ARG_NONNULL ((1)));
+_GL_FUNCDECL_RPL (duplocale, locale_t, (locale_t locale), _GL_ARG_NONNULL ((1)));
 _GL_CXXALIAS_RPL (duplocale, locale_t, (locale_t locale));
 #  else
 _GL_CXXALIAS_SYS (duplocale, locale_t, (locale_t locale));
@@ -286,7 +288,7 @@ _GL_WARN_ON_USE (duplocale, "duplocale is buggy on some glibc systems - "
 #   define freelocale rpl_freelocale
 #   define GNULIB_defined_freelocale 1
 #  endif
-_GL_FUNCDECL_RPL (freelocale, void, (locale_t locale) _GL_ARG_NONNULL ((1)));
+_GL_FUNCDECL_RPL (freelocale, void, (locale_t locale), _GL_ARG_NONNULL ((1)));
 _GL_CXXALIAS_RPL (freelocale, void, (locale_t locale));
 # else
 #  if @HAVE_FREELOCALE@

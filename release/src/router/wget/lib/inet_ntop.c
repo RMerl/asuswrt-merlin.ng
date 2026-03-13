@@ -117,7 +117,7 @@ inet_ntop (int af, const void *restrict src,
  *      'dst' (as a const)
  * notes:
  *      (1) uses no statics
- *      (2) takes a u_char* not an in_addr as input
+ *      (2) takes a 'unsigned char *' not an in_addr as input
  * author:
  *      Paul Vixie, 1996.
  */

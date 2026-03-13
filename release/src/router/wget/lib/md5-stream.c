@@ -132,10 +132,3 @@ process_partial_block:
   free (buffer);
   return 0;
 }
-
-/*
- * Hey Emacs!
- * Local Variables:
- * coding: utf-8
- * End:
- */

@@ -1,8 +1,10 @@
-# vsnprintf.m4 serial 7
+# vsnprintf.m4
+# serial 7
 dnl Copyright (C) 2002-2004, 2007-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl Libintl 0.17 will replace vsnprintf only if it does not support %1$s,
 dnl but defers to any gnulib vsnprintf replacements.  Therefore, gnulib

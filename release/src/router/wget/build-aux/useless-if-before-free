@@ -36,13 +36,13 @@
 eval 'exec perl -wSx "$0" "$@"'
      if 0;
 
-my $VERSION = '2022-01-27 18:51'; # UTC
+my $VERSION = '2024-07-17 02:10'; # UTC
 # The definition above must lie within the first 8 lines in order
 # for the Emacs time-stamp write hook (at end) to update it.
 # If you change this file with Emacs, please let the write hook
 # do its job.  Otherwise, update this string manually.
 
-my $copyright_year = '2022';
+(my $copyright_year = $VERSION) =~ s/^(\d*)-.*$/$1/;
 
 use strict;
 use warnings;
@@ -98,6 +98,7 @@ and "kfree" calls in the linux kernel sources:
 
     git ls-files -z |xargs -0 $ME --name=kfree
 
+Send patches and bug reports to <bug-gnulib\@gnu.org>.
 EOF
     }
   exit $exit_code;
@@ -106,7 +107,7 @@ EOF
 sub is_NULL ($)
 {
   my ($expr) = @_;
-  return ($expr eq 'NULL' || $expr eq '0');
+  return ($expr eq 'NULL' || $expr eq 'nullptr' || $expr eq '0');
 }
 
 {
@@ -211,7 +212,7 @@ free=xfree
 git grep -l -z "$free *(" \
   | xargs -0 useless-if-before-free -l --name="$free" \
   | xargs -0 perl -0x3b -pi -e \
-   's/\bif\s*\(\s*(\S+?)(?:\s*!=\s*(?:0|NULL))?\s*\)\s+('"$free"'\s*\((?:\s*\([^)]+\))?\s*\1\s*\)\s*;)/$2/s'
+   's/\bif\s*\(\s*(\S+?)(?:\s*!=\s*(?:0|NULL|nullptr))?\s*\)\s+('"$free"'\s*\((?:\s*\([^)]+\))?\s*\1\s*\)\s*;)/$2/s'
 
 # Use the following to remove redundant uses of kfree inside braces.
 # Note that -0777 puts perl in slurp-whole-file mode;
@@ -220,7 +221,7 @@ free=kfree
 git grep -l -z "$free *(" \
   | xargs -0 useless-if-before-free -l --name="$free" \
   | xargs -0 perl -0777 -pi -e \
-     's/\bif\s*\(\s*(\S+?)(?:\s*!=\s*(?:0|NULL))?\s*\)\s*\{\s*('"$free"'\s*\((?:\s*\([^)]+\))?\s*\1\s*\);)\s*\}[^\n]*$/$2/gms'
+     's/\bif\s*\(\s*(\S+?)(?:\s*!=\s*(?:0|NULL|nullptr))?\s*\)\s*\{\s*('"$free"'\s*\((?:\s*\([^)]+\))?\s*\1\s*\);)\s*\}[^\n]*$/$2/gms'
 
 Be careful that the result of the above transformation is valid.
 If the matched string is followed by "else", then obviously, it won't be.
@@ -231,7 +232,7 @@ EOF
 ## Local Variables:
 ## mode: perl
 ## indent-tabs-mode: nil
-## eval: (add-hook 'before-save-hook 'time-stamp)
+## eval: (add-hook 'before-save-hook 'time-stamp nil t)
 ## time-stamp-line-limit: 50
 ## time-stamp-start: "my $VERSION = '"
 ## time-stamp-format: "%:y-%02m-%02d %02H:%02M"

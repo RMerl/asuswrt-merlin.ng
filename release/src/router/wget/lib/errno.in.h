@@ -133,7 +133,7 @@
 
 /* These are intentionally the same values as the WSA* error numbers, defined
    in <winsock2.h>.  */
-#  define ESOCKTNOSUPPORT 10044  /* not required by POSIX */
+#  define ESOCKTNOSUPPORT 10044
 #  define EPFNOSUPPORT    10046  /* not required by POSIX */
 #  define ESHUTDOWN       10058  /* not required by POSIX */
 #  define ETOOMANYREFS    10059  /* not required by POSIX */
@@ -270,9 +270,16 @@
 #  define GNULIB_defined_ENOTRECOVERABLE 1
 # endif
 
+/* On LynxOS, the macro EILSEQ is not defined.  */
 # ifndef EILSEQ
 #  define EILSEQ 2015
 #  define GNULIB_defined_EILSEQ 1
+# endif
+
+/* On Haiku, the macro ESOCKTNOSUPPORT is not defined.  */
+# ifndef ESOCKTNOSUPPORT
+#  define ESOCKTNOSUPPORT 2016
+#  define GNULIB_defined_ESOCKTNOSUPPORT 1
 # endif
 
 #endif /* _@GUARD_PREFIX@_ERRNO_H */

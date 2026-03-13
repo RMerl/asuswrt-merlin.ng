@@ -327,6 +327,9 @@ warc_write_block_from_file (FILE *data_in)
 static bool
 warc_write_end_record (void)
 {
+  if (!warc_write_ok)
+    return warc_write_ok;
+
   if (warc_write_buffer ("\r\n\r\n", 4) != 4)
     {
       warc_write_ok = false;
@@ -859,9 +862,6 @@ warc_start_new_file (bool meta)
   const char *extension = "warc";
 #endif
 
-  int base_filename_length;
-  char *new_filename;
-
   if (opt.warc_filename == NULL)
     return false;
 
@@ -873,35 +873,26 @@ warc_start_new_file (bool meta)
 
   warc_current_file_number++;
 
-  base_filename_length = strlen (opt.warc_filename);
-  /* filename format:  base + "-" + 5 digit serial number + ".warc.gz" */
-  new_filename = xmalloc (base_filename_length + 1 + 5 + 8 + 1);
-
-  warc_current_filename = new_filename;
-
   /* If max size is enabled, we add a serial number to the file names. */
   if (meta)
-    sprintf (new_filename, "%s-meta.%s", opt.warc_filename, extension);
+    warc_current_filename = aprintf ("%s-meta.%s", opt.warc_filename, extension);
   else if (opt.warc_maxsize > 0)
-    {
-      sprintf (new_filename, "%s-%05d.%s", opt.warc_filename,
-               warc_current_file_number, extension);
-    }
+      warc_current_filename = aprintf ("%s-%05d.%s", opt.warc_filename, warc_current_file_number, extension);
   else
-    sprintf (new_filename, "%s.%s", opt.warc_filename, extension);
+    warc_current_filename = aprintf ("%s.%s", opt.warc_filename, extension);
 
-  logprintf (LOG_VERBOSE, _("Opening WARC file %s.\n\n"), quote (new_filename));
+  logprintf (LOG_VERBOSE, _("Opening WARC file %s.\n\n"), quote (warc_current_filename));
 
   /* Open the WARC file. */
-  warc_current_file = fopen (new_filename, "wb+");
+  warc_current_file = fopen (warc_current_filename, "wb+");
   if (warc_current_file == NULL)
     {
       logprintf (LOG_NOTQUIET, _("Error opening WARC file %s.\n"),
-                 quote (new_filename));
+                 quote (warc_current_filename));
       return false;
     }
 
-  if (! warc_write_warcinfo_record (new_filename))
+  if (! warc_write_warcinfo_record (warc_current_filename))
     return false;
 
   /* Add warcinfo uuid to manifest. */
@@ -1285,6 +1276,8 @@ warc_close (void)
       fclose (warc_log_fp);
       log_set_warc_log_fp (NULL);
     }
+
+  xfree (warc_current_filename);
 }
 
 /* Creates a temporary file for writing WARC output.

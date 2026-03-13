@@ -74,5 +74,6 @@ void ws_percenttitle (double);
 char *ws_mypath (void);
 void windows_main (char **);
 void set_windows_fd_as_blocking_socket (int);
+void set_fd_nonblocking(const int);
 
 #endif /* MSWINDOWS_H */

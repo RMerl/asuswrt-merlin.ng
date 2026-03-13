@@ -157,6 +157,11 @@ _GL_INLINE_HEADER_BEGIN
 # define MBCHAR_INLINE _GL_INLINE
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /* The longest multibyte characters, nowadays, are 4 bytes long.
    Regardless of the values of MB_CUR_MAX and MB_LEN_MAX.  */
 #define MBCHAR_BUF_SIZE 4
@@ -366,6 +371,11 @@ is_basic (char c)
     }
 }
 
+#endif
+
+
+#ifdef __cplusplus
+}
 #endif
 
 _GL_INLINE_HEADER_END

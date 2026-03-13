@@ -1,25 +1,32 @@
 /* Error handler for noninteractive utilities
-   Copyright (C) 1990-1998, 2000-2007, 2009-2024 Free Software Foundation, Inc.
+   Copyright (C) 1990-2024 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
-   This file is free software: you can redistribute it and/or modify
-   it under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of the
-   License, or (at your option) any later version.
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
 
-   This file is distributed in the hope that it will be useful,
+   The GNU C Library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU Lesser General Public License for more details.
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
 
-   You should have received a copy of the GNU Lesser General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, see
+   <https://www.gnu.org/licenses/>.  */
 
 /* Written by David MacKenzie <djm@gnu.ai.mit.edu>.  */
 
 #if !_LIBC
 # include <config.h>
 # define _GL_NO_INLINE_ERROR
+# define __error_internal(status, err, fmt, args, flags) \
+                  verror (status, err, fmt, args)
+# define __error_at_line_internal(status, err, file, line, fmt, args, flags) \
+                  verror_at_line (status, err, file, line, fmt, args)
+# define error_tail(status, err, fmt, args, flags) \
+        error_tail (status, err, fmt, args)
 #endif
 
 #include <error.h>
@@ -85,7 +92,7 @@ extern void __error_at_line (int status, int errnum, const char *file_name,
 # undef putc
 # define putc(c, fp) _IO_putc (c, fp)
 
-# include <bits/libc-lock.h>
+# include <libc-lock.h>
 
 #else /* not _LIBC */
 
@@ -123,6 +130,13 @@ int strerror_r (int errnum, char *buf, size_t buflen);
 # if GNULIB_STRERROR_R_POSIX || HAVE_STRERROR_R || defined strerror_r
 #  define __strerror_r strerror_r
 # endif /* GNULIB_STRERROR_R_POSIX || HAVE_STRERROR_R || defined strerror_r */
+
+# if GNULIB_defined_verror
+#  undef verror
+# endif
+# if GNULIB_defined_verror_at_line
+#  undef verror_at_line
+# endif
 #endif  /* not _LIBC */
 
 #if !_LIBC
@@ -151,8 +165,8 @@ flush_stdout (void)
 #if !_LIBC
   int stdout_fd;
 
-# if GNULIB_FREOPEN_SAFER
-  /* Use of gnulib's freopen-safer module normally ensures that
+# if GNULIB_FREOPEN_SAFER || GNULIB_XSTDOPEN
+  /* Gnulib's freopen-safer and/or xstdopen modules normally ensure that
        fileno (stdout) == 1
      whenever stdout is open.  */
   stdout_fd = STDOUT_FILENO;
@@ -202,75 +216,18 @@ print_errno_message (int errnum)
 }
 
 static void _GL_ATTRIBUTE_FORMAT_PRINTF_STANDARD (3, 0) _GL_ARG_NONNULL ((3))
-error_tail (int status, int errnum, const char *message, va_list args)
+error_tail (int status, int errnum, const char *message, va_list args,
+            unsigned int mode_flags)
 {
 #if _LIBC
-  if (_IO_fwide (stderr, 0) > 0)
-    {
-      size_t len = strlen (message) + 1;
-      wchar_t *wmessage = NULL;
-      mbstate_t st;
-      size_t res;
-      const char *tmp;
-      bool use_malloc = false;
-
-      while (1)
-        {
-          if (__libc_use_alloca (len * sizeof (wchar_t)))
-            wmessage = (wchar_t *) alloca (len * sizeof (wchar_t));
-          else
-            {
-              if (!use_malloc)
-                wmessage = NULL;
-
-              wchar_t *p = (wchar_t *) realloc (wmessage,
-                                                len * sizeof (wchar_t));
-              if (p == NULL)
-                {
-                  free (wmessage);
-                  fputws_unlocked (L"out of memory\n", stderr);
-                  return;
-                }
-              wmessage = p;
-              use_malloc = true;
-            }
-
-          memset (&st, '\0', sizeof (st));
-          tmp = message;
-
-          res = mbsrtowcs (wmessage, &tmp, len, &st);
-          if (res != len)
-            break;
-
-          if (__builtin_expect (len >= SIZE_MAX / sizeof (wchar_t) / 2, 0))
-            {
-              /* This really should not happen if everything is fine.  */
-              res = (size_t) -1;
-              break;
-            }
-
-          len *= 2;
-        }
-
-      if (res == (size_t) -1)
-        {
-          /* The string cannot be converted.  */
-          if (use_malloc)
-            {
-              free (wmessage);
-              use_malloc = false;
-            }
-          wmessage = (wchar_t *) L"???";
-        }
-
-      __vfwprintf (stderr, wmessage, args);
-
-      if (use_malloc)
-        free (wmessage);
-    }
-  else
+  int ret = __vfxprintf (stderr, message, args, mode_flags);
+  if (ret < 0 && errno == ENOMEM && _IO_fwide (stderr, 0) > 0)
+    /* Leave a trace in case the heap allocation of the message string
+       failed.  */
+    fputws_unlocked (L"out of memory\n", stderr);
+#else
+  vfprintf (stderr, message, args);
 #endif
-    vfprintf (stderr, message, args);
 
   ++error_message_count;
   if (errnum)
@@ -291,16 +248,14 @@ error_tail (int status, int errnum, const char *message, va_list args)
    If ERRNUM is nonzero, print its corresponding system error message.
    Exit with status STATUS if it is nonzero.  */
 void
-error (int status, int errnum, const char *message, ...)
+__error_internal (int status, int errnum, const char *message,
+                  va_list args, unsigned int mode_flags)
 {
-  va_list args;
-
-#if defined _LIBC && defined __libc_ptf_call
+#if defined _LIBC
   /* We do not want this call to be cut short by a thread
      cancellation.  Therefore disable cancellation for now.  */
   int state = PTHREAD_CANCEL_ENABLE;
-  __libc_ptf_call (pthread_setcancelstate, (PTHREAD_CANCEL_DISABLE, &state),
-                   0);
+  __pthread_setcancelstate (PTHREAD_CANCEL_DISABLE, &state);
 #endif
 
   flush_stdout ();
@@ -318,16 +273,21 @@ error (int status, int errnum, const char *message, ...)
 #endif
     }
 
-  va_start (args, message);
-  error_tail (status, errnum, message, args);
-  va_end (args);
+  error_tail (status, errnum, message, args, mode_flags);
 
 #ifdef _LIBC
   _IO_funlockfile (stderr);
-# ifdef __libc_ptf_call
-  __libc_ptf_call (pthread_setcancelstate, (state, NULL), 0);
-# endif
+  __pthread_setcancelstate (state, NULL);
 #endif
+}
+
+void
+error (int status, int errnum, const char *message, ...)
+{
+  va_list ap;
+  va_start (ap, message);
+  __error_internal (status, errnum, message, ap, 0);
+  va_end (ap);
 }
 
 /* Sometimes we want to have at most one error per line.  This
@@ -335,11 +295,10 @@ error (int status, int errnum, const char *message, ...)
 int error_one_per_line;
 
 void
-error_at_line (int status, int errnum, const char *file_name,
-               unsigned int line_number, const char *message, ...)
+__error_at_line_internal (int status, int errnum, const char *file_name,
+                          unsigned int line_number, const char *message,
+                          va_list args, unsigned int mode_flags)
 {
-  va_list args;
-
   if (error_one_per_line)
     {
       static const char *old_file_name;
@@ -358,12 +317,11 @@ error_at_line (int status, int errnum, const char *file_name,
       old_line_number = line_number;
     }
 
-#if defined _LIBC && defined __libc_ptf_call
+#if defined _LIBC
   /* We do not want this call to be cut short by a thread
      cancellation.  Therefore disable cancellation for now.  */
   int state = PTHREAD_CANCEL_ENABLE;
-  __libc_ptf_call (pthread_setcancelstate, (PTHREAD_CANCEL_DISABLE, &state),
-                   0);
+  __pthread_setcancelstate (PTHREAD_CANCEL_DISABLE, &state);
 #endif
 
   flush_stdout ();
@@ -389,16 +347,23 @@ error_at_line (int status, int errnum, const char *file_name,
            file_name, line_number);
 #endif
 
-  va_start (args, message);
-  error_tail (status, errnum, message, args);
-  va_end (args);
+  error_tail (status, errnum, message, args, mode_flags);
 
 #ifdef _LIBC
   _IO_funlockfile (stderr);
-# ifdef __libc_ptf_call
-  __libc_ptf_call (pthread_setcancelstate, (state, NULL), 0);
-# endif
+  __pthread_setcancelstate (state, NULL);
 #endif
+}
+
+void
+error_at_line (int status, int errnum, const char *file_name,
+               unsigned int line_number, const char *message, ...)
+{
+  va_list ap;
+  va_start (ap, message);
+  __error_at_line_internal (status, errnum, file_name, line_number,
+                            message, ap, 0);
+  va_end (ap);
 }
 
 #ifdef _LIBC

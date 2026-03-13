@@ -18,7 +18,7 @@ ifneq ($(CMWIFI),)
 CFLAGS += -I$(WL_CMWIFI_DIR)/libs/wlcsm/include
 endif
 LDFLAGS += $(EXTRA_LDFLAGS)
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
+ifeq ($(RTCONFIG_MXL_826XX),y)
 LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 
@@ -38,7 +38,7 @@ ifneq ($(PREBUILT_BCMBIN),1)
 $(PROGS): $(OBJS)
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 else
-$(PROGS): $(OBJS)
+$(PROGS):
 	cp -f $(TOP_PLATFORM)/$(shell pwd | sed 's/\(.*router-sysdep\/\)//')/$(PRBM_DIR)/$@ ./
 endif
 

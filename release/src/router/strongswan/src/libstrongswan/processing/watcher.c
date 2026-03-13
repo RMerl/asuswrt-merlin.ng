@@ -189,7 +189,7 @@ static void update_and_unlock(private_watcher_t *this)
 
 	if (error)
 	{
-		DBG1(DBG_JOB, "notifying watcher failed: %s", strerror(error));
+		DBG1(DBG_WCH, "notifying watcher failed: %s", strerror(error));
 	}
 }
 
@@ -251,13 +251,13 @@ static void notify_end(notify_data_t *data)
 
 	if (removed)
 	{
-		DBG3(DBG_JOB, "removed fd %d[%s%s] from watcher after callback", data->fd,
+		DBG3(DBG_WCH, "removed fd %d[%s%s] from watcher after callback", data->fd,
 			 data->event & WATCHER_READ ? "r" : "",
 			 data->event & WATCHER_WRITE ? "w" : "");
 	}
 	else if (updated)
 	{
-		DBG3(DBG_JOB, "updated fd %d[%s%s] to %d[%s%s] after callback", data->fd,
+		DBG3(DBG_WCH, "updated fd %d[%s%s] to %d[%s%s] after callback", data->fd,
 			 (updated | data->event) & WATCHER_READ ? "r" : "",
 			 (updated | data->event) & WATCHER_WRITE ? "w" : "", data->fd,
 			 updated & WATCHER_READ ? "r" : "",
@@ -291,7 +291,7 @@ static void notify(private_watcher_t *this, entry_t *entry,
 
 	this->jobs->insert_last(this->jobs,
 					callback_job_create_with_prio((void*)notify_async, data,
-						(void*)notify_end, (callback_job_cancel_t)return_false,
+						(void*)notify_end, callback_job_cancel_thread,
 						JOB_PRIO_CRITICAL));
 }
 
@@ -417,7 +417,7 @@ static job_requeue_t watch(private_watcher_t *this)
 #if DEBUG_LEVEL >= 3
 	if (logbuf[0])
 	{
-		DBG3(DBG_JOB, "observing fds:%s", logbuf);
+		DBG3(DBG_WCH, "observing fds:%s", logbuf);
 	}
 #endif
 
@@ -429,7 +429,7 @@ static job_requeue_t watch(private_watcher_t *this)
 		ssize_t len;
 		job_t *job;
 
-		DBG2(DBG_JOB, "watcher is observing %d fds", count-1);
+		DBG2(DBG_WCH, "watcher is observing %d fds", count-1);
 		thread_cleanup_push((void*)activate_all, this);
 		old = thread_cancelability(TRUE);
 
@@ -455,14 +455,14 @@ static job_requeue_t watch(private_watcher_t *this)
 					{
 						if (errno != EAGAIN && errno != EWOULDBLOCK)
 						{
-							DBG1(DBG_JOB, "reading watcher notify failed: %s",
+							DBG1(DBG_WCH, "reading watcher notify failed: %s",
 								 strerror(errno));
 						}
 						break;
 					}
 				}
 				this->pending = FALSE;
-				DBG2(DBG_JOB, "watcher got notification, rebuilding");
+				DBG2(DBG_WCH, "watcher got notification, rebuilding");
 				break;
 			}
 
@@ -506,7 +506,7 @@ static job_requeue_t watch(private_watcher_t *this)
 #if DEBUG_LEVEL >= 2
 			if (logbuf[0])
 			{
-				DBG2(DBG_JOB, "events on fds:%s", logbuf);
+				DBG2(DBG_WCH, "events on fds:%s", logbuf);
 			}
 #endif
 
@@ -525,7 +525,7 @@ static job_requeue_t watch(private_watcher_t *this)
 		{
 			if (!this->pending && errno != EINTR)
 			{	/* complain only if no pending updates */
-				DBG1(DBG_JOB, "watcher poll() error: %s", strerror(errno));
+				DBG1(DBG_WCH, "watcher poll() error: %s", strerror(errno));
 			}
 			break;
 		}
@@ -546,7 +546,7 @@ METHOD(watcher_t, add, void,
 		.data = data,
 	);
 
-	DBG3(DBG_JOB, "adding fd %d[%s%s] to watcher", fd,
+	DBG3(DBG_WCH, "adding fd %d[%s%s] to watcher", fd,
 		 events & WATCHER_READ ? "r" : "",
 		 events & WATCHER_WRITE ? "w" : "");
 
@@ -559,7 +559,7 @@ METHOD(watcher_t, add, void,
 
 		lib->processor->queue_job(lib->processor,
 			(job_t*)callback_job_create_with_prio((void*)watch, this,
-				NULL, (callback_job_cancel_t)return_false, JOB_PRIO_CRITICAL));
+				NULL, callback_job_cancel_thread, JOB_PRIO_CRITICAL));
 	}
 	else
 	{
@@ -605,7 +605,7 @@ METHOD(watcher_t, remove_, void,
 	{
 		update_and_unlock(this);
 
-		DBG3(DBG_JOB, "removed fd %d[%s%s] from watcher", fd,
+		DBG3(DBG_WCH, "removed fd %d[%s%s] from watcher", fd,
 			 found & WATCHER_READ ? "r" : "",
 			 found & WATCHER_WRITE ? "w" : "");
 	}

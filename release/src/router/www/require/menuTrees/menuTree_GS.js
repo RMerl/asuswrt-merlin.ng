@@ -87,9 +87,11 @@ define(function(){
 				index: "menu_ParentalControl", 
 				tab: [
 					{url: "AiProtection_WebProtector.asp", tabName: "<#AiProtection_filter#>"},
+					{url: "AiProtection_ContentFilter.asp", tabName: "<#AiProtection_filter#>"},
 					{url: "ParentalControl.asp", tabName: "<#Time_Scheduling#>"},
 					{url: "YandexDNS.asp", tabName: "<#YandexDNS#>"},
 					{url: "adGuard_DNS.asp", tabName: "AdGuard"},
+					{url: "Ark_WebHistory_Content.asp", tabName: "<#Adaptive_History#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -130,7 +132,7 @@ define(function(){
 				index: "menu_BandwidthMonitor",
 				tab: [
 						{url: "AdaptiveQoS_Bandwidth_Monitor.asp", tabName: "<#Bandwidth_monitor#>"},
-						{url: "QoS_EZQoS.asp", tabName: "<#menu5_3_2#>"},
+						{url: "QoS_EZQoS.asp", tabName: "<#Adaptive_QoS#>"},
 						{url: "AdaptiveQoS_WebHistory.asp", tabName: "<#Adaptive_History#>"},
 						{url: "Main_Spectrum_Content.asp", tabName: "<#Spectrum_title#>"},
 						{url: "Advanced_QOSUserPrio_Content.asp", tabName: "__INHERIT__"},
@@ -359,15 +361,8 @@ define(function(){
 					retArray.push("menu_NewDashboard");
 				}
 
-				if(!isSupport("adaptive_qos") && !isSupport("bandwidth_monitor") && !isSupport("dns_dpi")){	
-					for(i=0; i<menuTree.list.length; i++){
-						if(menuTree.list[i].menuName == '<#Adaptive_QoS#>'){
-							menuTree.list[i].menuName = '<#menu5_3_2#>';
-						}
-					}
-				}
-
-				if(!isSupport("dpi_mals") && !isSupport("dpi_cc") && !isSupport("dpi_vp")){
+				if (!isSupport("dpi_mals") && !isSupport("dpi_cc") && !isSupport("dpi_vp") &&
+					!isSupport("ark_mals") && !isSupport("ark_tracker") && !isSupport("ark_adblock")) {
 					retArray.push("menu_AiProtection");
 				}
 				
@@ -499,6 +494,13 @@ define(function(){
 				var retArray = [];
 
 				/* By RC Support */
+
+				if(isSupport("ark_iam")){
+					retArray.push("AiProtection_MaliciousSitesBlocking.asp");
+					retArray.push("AiProtection_InfectedDevicePreventBlock.asp");
+					retArray.push("AiProtection_IntrusionPreventionSystem.asp");
+				}
+
 				if(!isSupport("dpi_mals")){
 					retArray.push("AiProtection_MaliciousSitesBlocking.asp");
 				}
@@ -540,7 +542,7 @@ define(function(){
 					retArray.push("AdaptiveQoS_Bandwidth_Monitor.asp");
 				}
 
-				if(!isSupport("traffic_analyzer") && !isSupport("dns_dpi")){
+				if(!isSupport("traffic_analyzer") && !isSupport("dns_dpi") && !isSupport("ark_qoe")){
 					retArray.push("TrafficAnalyzer_Statistic.asp");		
 
 					for(i=0;i<menuTree.list.length;i++){
@@ -602,28 +604,38 @@ define(function(){
 				if(noftp_support){
 					retArray.push("Advanced_AiDisk_ftp.asp");
 				}
-				
+
 				if(!dualWAN_support){
 					retArray.push("Advanced_WANPort_Content.asp");
-					retArray.push("Advanced_Modem_Content.asp");
-					retArray.push("Advanced_MobileBroadband_Content.asp");
 				}
 				else{
 					if(!dualwan_enabled && usb_index == 0){
 						retArray.push("Advanced_WAN_Content.asp");
+						if(dsl_support)
+							retArray.push("Advanced_DSL_Content.asp");
+
+						if(!gobi_support){
+							replaceTabNameByUrl("menu_WAN", "Advanced_Modem_Content.asp", "<#menu5_3_1#>");
+						}
+						else{
+							replaceTabNameByUrl("menu_WAN", "Advanced_MobileBroadband_Content.asp", "<#menu5_3_1#>");
+						}
+					}
+
+					if(usb_index < 0){
+						retArray.push("Advanced_MobileBroadband_Content.asp");
+						retArray.push("Advanced_Modem_Content.asp");
+					}
+					else{
 						if(!gobi_support)
 							retArray.push("Advanced_MobileBroadband_Content.asp");
 						else
 							retArray.push("Advanced_Modem_Content.asp");
 					}
-					else{
-						retArray.push("Advanced_MobileBroadband_Content.asp");
-						retArray.push("Advanced_Modem_Content.asp");
-					}
 				}
 
 				if(!SwitchCtrl_support){
-					retArray.push("Advanced_SwitchCtrl_Content.asp");		
+					retArray.push("Advanced_SwitchCtrl_Content.asp");
 				}
 
 				if(!tr069_support){
@@ -667,7 +679,7 @@ define(function(){
 				}
 
 				if(hwmodeSwitch_support){
-					retArray.push("Advanced_OperationMode_Content.asp");		
+					retArray.push("Advanced_OperationMode_Content.asp");
 				}
 
 				if(noiptv_support){
@@ -759,10 +771,14 @@ define(function(){
 				if(!isSupport("mtlancfg") || !isSupport("mlo")){
 					retArray.push("MLO.asp");
 				}
-				
+
 				if(isSupport("sdn_mainfh")){
 					retArray.push("Advanced_ACL_Content.asp");
 					retArray.push("Advanced_WSecurity_Content.asp");
+				}
+
+				if(isSupport("UI4")) {
+					retArray.push("Advanced_WMode_Content.asp");
 				}
 
 				if(isSupport("BUSINESS")){
@@ -850,6 +866,22 @@ define(function(){
 					retArray.push("DNSFilter.asp");
 				}
 
+				if(isSupport("ark_qoe")){
+					for (i = 0; i < menuTree.list.length; i++) {
+						if (menuTree.list[i].menuName == '<#Adaptive_QoS#>') {
+							menuTree.list[i].menuName = '<#Adaptive_QoE#>';
+						}
+					}
+					replaceTabNameByUrl("menu_BandwidthMonitor", "QoS_EZQoS.asp", "<#Adaptive_QoE#>");
+				}
+
+				if (isSupport("ark_iam")) {
+					retArray.push("AiProtection_WebProtector.asp");
+				} else {
+					retArray.push("AiProtection_ContentFilter.asp");
+                    retArray.push("Ark_WebHistory_Content.asp");
+				}
+
 				/* System Status Changed */
 				// --
 
@@ -879,6 +911,41 @@ define(function(){
 				return retArray;
 			}
 		}
+	}
+
+	function removeTabByUrl(idx, url){
+		for(var i in menuTree.list){
+			if(menuTree.list[i].index == idx){
+				for(var j in menuTree.list[i].tab){
+					if(menuTree.list[i].tab[j].url == url){
+						menuTree.list[i].tab.splice(j, 1);
+					}
+				}
+			}
+		}
+	}
+
+	function replaceTabNameByUrl(idx, url, tabName){
+		for(var i in menuTree.list){
+			if(menuTree.list[i].index == idx){
+				for(var j in menuTree.list[i].tab){
+					if(menuTree.list[i].tab[j].url == url){
+						menuTree.list[i].tab[j].tabName = tabName;
+					}
+				}
+			}
+		}
+	}
+
+	if(usb_index !== -1){
+		menuTree.list.filter(function(item, index, array){
+			if(item.index == "menu_APP"){
+				item.tab.filter(function(item2, index2, array2){
+					if(item2.url == "Advanced_Modem_Content.asp")
+						item.tab.splice(index2, 1);
+				});
+			}
+		});
 	}
 
 	return menuTree;

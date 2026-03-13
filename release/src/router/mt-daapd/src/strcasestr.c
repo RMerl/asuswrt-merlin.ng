@@ -7,7 +7,11 @@
 #if !HAVE_STRCASESTR
 /* case-independent string matching, similar to strstr but
  * matching */
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126)
+char * strcasestr(const char* haystack, const char* needle) {
+#else
 char * strcasestr(char* haystack, char* needle) {
+#endif
   int i;
   int nlength = strlen (needle);
   int hlength = strlen (haystack);

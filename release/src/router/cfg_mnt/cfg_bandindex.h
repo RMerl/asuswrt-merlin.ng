@@ -17,16 +17,6 @@
 
 #define BANDINDEX_VERSION	BIT(0)
 
-enum bandAttribute {
-	BAND_ATTR_2G = 0,
-	BAND_ATTR_5G = 1,
-	BAND_ATTR_5GL = 2,
-	BAND_ATTR_5GH = 3,
-	BAND_ATTR_6G = 4,
-    BAND_ATTR_6GL = 5,
-    BAND_ATTR_6GH = 6
-};
-
 extern void cm_addBandIndex(json_object *outRoot);
 extern void cm_updateBandInfoByMac(char *mac, json_object *chanspecObj);
 extern int cm_findBandAttrByMac(char *mac, int unit);

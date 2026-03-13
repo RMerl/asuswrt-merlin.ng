@@ -233,7 +233,7 @@ static int ocsp()
 	ocsp_responder_t *index_responder = NULL;
 	linked_list_t *responses = NULL;
 	array_t *index_responders = NULL;
-	chunk_t encoding = chunk_empty, nonce = chunk_empty;
+	chunk_t encoding = chunk_empty, nonce = chunk_empty, handle = chunk_empty;
 	chunk_t issuerNameHash, issuerKeyHash, serialNumber;
 	hash_algorithm_t hashAlgorithm = HASH_SHA1, digest = HASH_UNKNOWN;
 	signature_params_t *scheme = NULL;
@@ -257,15 +257,15 @@ static int ocsp()
 	{
 		switch (command_getopt(&arg))
 		{
-			case 'h':
+			case 'h':       /* --help */
 				goto usage;
-			case 'i':
+			case 'i':       /* --in */
 				file = arg;
 				continue;
-			case 'r':
+			case 'r':       /* --respond */
 				op = OP_RESPOND;
 				continue;
-			case 'k':
+			case 'k':       /* --key */
 				key = lib->creds->create(lib->creds,
 										 CRED_PRIVATE_KEY, KEY_ANY,
 										 BUILD_FROM_FILE, arg, BUILD_END);
@@ -276,7 +276,20 @@ static int ocsp()
 				}
 				creds->add_key(creds, key);
 				continue;
-			case 'c':
+			case 'K':       /* --keyid */
+				handle = chunk_from_hex(chunk_create(arg, strlen(arg)), NULL);
+				key = lib->creds->create(lib->creds,
+										 CRED_PRIVATE_KEY, KEY_ANY,
+										 BUILD_PKCS11_KEYID, handle, BUILD_END);
+				chunk_free(&handle);
+				if (!key)
+				{
+					DBG1(DBG_APP, "attaching to private key handle %s failed", arg);
+					goto usage;
+				}
+				creds->add_key(creds, key);
+				continue;
+			case 'c':       /* --cert */
 				cert = lib->creds->create(lib->creds,
 										  CRED_CERTIFICATE, CERT_X509,
 										  BUILD_FROM_FILE, arg, BUILD_END);
@@ -287,7 +300,20 @@ static int ocsp()
 				}
 				creds->add_cert(creds, TRUE, cert);
 				continue;
-			case 'C':
+			case 'X':       /* --certid */
+				handle = chunk_from_hex(chunk_create(arg, strlen(arg)), NULL);
+				cert = lib->creds->create(lib->creds,
+										  CRED_CERTIFICATE, CERT_X509,
+										  BUILD_PKCS11_KEYID, handle, BUILD_END);
+				chunk_free(&handle);
+				if (!cert)
+				{
+					DBG1(DBG_APP, "attaching to certificate handle %s failed", arg);
+					goto usage;
+				}
+				creds->add_cert(creds, TRUE, cert);
+				continue;
+			case 'C':       /* --cacert */
 				DESTROY_IF(cacert);
 				cacert = lib->creds->create(lib->creds,
 											CRED_CERTIFICATE, CERT_X509,
@@ -299,7 +325,7 @@ static int ocsp()
 				}
 				cacert = creds->add_cert_ref(creds, TRUE, cacert);
 				continue;
-			case 'l':
+			case 'l':       /* --lifetime */
 				lifetime = atoi(arg) * 60;
 				if (!lifetime)
 				{
@@ -307,21 +333,21 @@ static int ocsp()
 					goto usage;
 				}
 				continue;
-			case 'g':
+			case 'g':       /* --digest */
 				if (!enum_from_name(hash_algorithm_short_names, arg, &digest))
 				{
 					error = "invalid --digest type";
 					goto usage;
 				}
 				continue;
-			case 'R':
+			case 'R':       /* --rsa-padding */
 				if (!parse_rsa_padding(arg, &pss))
 				{
 					error = "invalid RSA padding";
 					goto usage;
 				}
 				continue;
-			case 'x':
+			case 'x':       /* --help */
 				if (!cacert)
 				{
 					error = "--index must follow --cacert of corresponding CA";
@@ -598,7 +624,7 @@ static void __attribute__ ((constructor))reg()
 {
 	command_register((command_t) {
 		ocsp, 'o', "ocsp", "OCSP responder",
-		{"[--in file] [--respond] [--cert file]+ [--key file]+ ",
+		{"[--in file] [--respond] [--cert file|--certid hex]+ [--key file|--keyid hex]+ ",
 		 "[--cacert file [--index file]]+",
 		 "[--digest md5|sha1|sha224|sha256|sha384|sha512|sha3_224|sha3_256|sha3_384|sha3_512]",
 		 "[--rsa-padding pkcs1|pss] [--lifetime minutes]"},
@@ -607,7 +633,9 @@ static void __attribute__ ((constructor))reg()
 			{"respond",       'r', 0, "respond to OCSP request with OCSP response"},
 			{"in",            'i', 1, "input file, default: stdin"},
 			{"key",           'k', 1, "path to OCSP signing private key (can be used multiple times)"},
+			{"keyid",         'K', 1, "smartcard or TPM private key object handle (can be used multiple times)"},
 			{"cert",          'c', 1, "path to OCSP signing certificate (can be used multiple times"},
+			{"certid",        'X', 1, "smartcard or TPM certificate object handle (can be used multiple times)" },
 			{"cacert",        'C', 1, "CA certificate (can be used multiple times"},
 			{"index",         'x', 1, "OpenSSL-style index.txt to check status of certificates"},
 			{"digest",        'g', 1, "digest for signature creation, default: key-specific"},

@@ -136,7 +136,7 @@ static void process_payloads(private_ike_mobike_t *this, message_t *message)
 
 				peer_cfg = this->ike_sa->get_peer_cfg(this->ike_sa);
 				if (!this->initiator &&
-					peer_cfg && !peer_cfg->use_mobike(peer_cfg))
+					peer_cfg && peer_cfg->has_option(peer_cfg, OPT_NO_MOBIKE))
 				{
 					DBG1(DBG_IKE, "peer supports MOBIKE, but disabled in config");
 				}

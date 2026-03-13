@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011-2016 Tobias Brunner
  * Copyright (C) 2010 Martin Willi
+ * Copyright (C) 2024 Andreas Steffen
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -144,6 +145,7 @@ static bool is_mechanism_supported(pkcs11_library_t *p11, CK_SLOT_ID slot,
 CK_MECHANISM_PTR pkcs11_signature_scheme_to_mech(pkcs11_library_t *p11,
 												 CK_SLOT_ID slot,
 												 signature_scheme_t scheme,
+												 void *params,
 												 key_type_t type, size_t keylen,
 												 hash_algorithm_t *hash)
 {
@@ -174,6 +176,8 @@ CK_MECHANISM_PTR pkcs11_signature_scheme_to_mech(pkcs11_library_t *p11,
 		 KEY_RSA, 0,										  HASH_SHA1},
 		{SIGN_RSA_EMSA_PKCS1_MD5,		{CKM_MD5_RSA_PKCS,		NULL, 0},
 		 KEY_RSA, 0,									   HASH_UNKNOWN},
+		{SIGN_RSA_EMSA_PSS,				{CKM_RSA_PKCS_PSS,      NULL, 0},
+		 KEY_RSA, 0,									   HASH_UNKNOWN},
 		{SIGN_ECDSA_WITH_NULL,			{CKM_ECDSA,				NULL, 0},
 		 KEY_ECDSA, 0,									   HASH_UNKNOWN},
 		{SIGN_ECDSA_WITH_SHA1_DER,		{CKM_ECDSA_SHA1,		NULL, 0},
@@ -191,6 +195,11 @@ CK_MECHANISM_PTR pkcs11_signature_scheme_to_mech(pkcs11_library_t *p11,
 		{SIGN_ECDSA_521,				{CKM_ECDSA,				NULL, 0},
 		 KEY_ECDSA, 521,									HASH_SHA512},
 	};
+
+	CK_MECHANISM_PTR mechanism;
+	CK_RSA_PKCS_PSS_PARAMS *rsa_pkcs_pss_params;
+	rsa_pss_params_t *rsa_pss_params;
+	hash_algorithm_t hash_alg = HASH_UNKNOWN;
 	int i;
 
 	for (i = 0; i < countof(mappings); i++)
@@ -204,11 +213,145 @@ CK_MECHANISM_PTR pkcs11_signature_scheme_to_mech(pkcs11_library_t *p11,
 			{
 				continue;
 			}
+			mechanism = malloc_thing(CK_MECHANISM);
+			*mechanism = mappings[i].mechanism;
+
+			if (scheme == SIGN_RSA_EMSA_PSS)
+			{
+				rsa_pss_params = (rsa_pss_params_t*)params;
+				INIT(rsa_pkcs_pss_params,
+					.sLen = rsa_pss_params->salt_len
+				);
+
+				if (lib->settings->get_bool(lib->settings,
+						"%s.plugins.pkcs11.use_rsa_pss_hashers", FALSE, lib->ns))
+				{
+					switch (rsa_pss_params->hash)
+					{
+						case HASH_SHA256:
+							mechanism->mechanism = CKM_SHA256_RSA_PKCS_PSS;
+							break;
+						case HASH_SHA384:
+							mechanism->mechanism = CKM_SHA384_RSA_PKCS_PSS;
+							break;
+						case HASH_SHA512:
+							mechanism->mechanism =  CKM_SHA512_RSA_PKCS_PSS;
+							break;
+						case HASH_SHA224:
+							mechanism->mechanism =  CKM_SHA224_RSA_PKCS_PSS;
+							break;
+						case HASH_SHA1:
+							mechanism->mechanism =  CKM_SHA1_RSA_PKCS_PSS;
+							break;
+						case HASH_SHA3_256:
+							mechanism->mechanism =  CKM_SHA3_256_RSA_PKCS_PSS;
+							break;
+						case HASH_SHA3_384:
+							mechanism->mechanism =  CKM_SHA3_384_RSA_PKCS_PSS;
+							break;
+						case HASH_SHA3_512:
+							mechanism->mechanism =  CKM_SHA3_512_RSA_PKCS_PSS;
+							break;
+						case HASH_SHA3_224:
+							mechanism->mechanism =  CKM_SHA3_224_RSA_PKCS_PSS;
+							break;
+						default:
+							free(rsa_pkcs_pss_params);
+							free(mechanism);
+							return NULL;
+					}
+					if (!is_mechanism_supported(p11, slot, mechanism))
+					{
+						/* revert to external hashing */
+						mechanism->mechanism =  CKM_RSA_PKCS_PSS;
+						hash_alg = rsa_pss_params->hash;
+					}
+				}
+				else
+				{
+					/* use external hashing */
+					hash_alg = rsa_pss_params->hash;
+				}
+				switch (rsa_pss_params->hash)
+				{
+					case HASH_SHA256:
+						rsa_pkcs_pss_params->hashAlg = CKM_SHA256;
+						break;
+					case HASH_SHA384:
+						rsa_pkcs_pss_params->hashAlg = CKM_SHA384;
+						break;
+					case HASH_SHA512:
+						rsa_pkcs_pss_params->hashAlg = CKM_SHA512;
+						break;
+					case HASH_SHA224:
+						rsa_pkcs_pss_params->hashAlg = CKM_SHA224;
+						break;
+					case HASH_SHA1:
+						rsa_pkcs_pss_params->hashAlg = CKM_SHA_1;
+						break;
+					case HASH_SHA3_256:
+						rsa_pkcs_pss_params->hashAlg = CKM_SHA3_256;
+						break;
+					case HASH_SHA3_384:
+						rsa_pkcs_pss_params->hashAlg = CKM_SHA3_384;
+						break;
+					case HASH_SHA3_512:
+						rsa_pkcs_pss_params->hashAlg = CKM_SHA3_512;
+						break;
+					case HASH_SHA3_224:
+						rsa_pkcs_pss_params->hashAlg = CKM_SHA3_224;
+						break;
+					default:
+						free(rsa_pkcs_pss_params);
+						free(mechanism);
+						return NULL;
+				}
+				switch (rsa_pss_params->mgf1_hash)
+				{
+					case HASH_SHA256:
+						rsa_pkcs_pss_params->mgf = CKG_MGF1_SHA256;
+						break;
+					case HASH_SHA384:
+						rsa_pkcs_pss_params->mgf = CKG_MGF1_SHA384;
+						break;
+					case HASH_SHA512:
+						rsa_pkcs_pss_params->mgf = CKG_MGF1_SHA512;
+						break;
+					case HASH_SHA224:
+						rsa_pkcs_pss_params->mgf = CKG_MGF1_SHA224;
+						break;
+					case HASH_SHA1:
+						rsa_pkcs_pss_params->mgf = CKG_MGF1_SHA1;
+						break;
+					case HASH_SHA3_256:
+						rsa_pkcs_pss_params->mgf = CKG_MGF1_SHA3_256;
+						break;
+					case HASH_SHA3_384:
+						rsa_pkcs_pss_params->mgf = CKG_MGF1_SHA3_384;
+						break;
+					case HASH_SHA3_512:
+						rsa_pkcs_pss_params->mgf = CKG_MGF1_SHA3_512;
+						break;
+					case HASH_SHA3_224:
+						rsa_pkcs_pss_params->mgf = CKG_MGF1_SHA3_224;
+						break;
+					default:
+						free(rsa_pkcs_pss_params);
+						free(mechanism);
+						return NULL;
+				}
+				mechanism->pParameter = rsa_pkcs_pss_params;
+				mechanism->ulParameterLen = sizeof(CK_RSA_PKCS_PSS_PARAMS);
+			}
+			else
+			{
+				hash_alg = mappings[i].hash;
+			}
 			if (hash)
 			{
-				*hash = mappings[i].hash;
+				*hash = hash_alg;
 			}
-			return &mappings[i].mechanism;
+			return mechanism;
 		}
 	}
 	return NULL;
@@ -286,10 +429,11 @@ METHOD(private_key_t, sign, bool,
 	CK_RV rv;
 	hash_algorithm_t hash_alg;
 	chunk_t hash = chunk_empty;
+	bool success = FALSE;
 
 	mechanism = pkcs11_signature_scheme_to_mech(this->lib, this->slot, scheme,
-												this->type, get_keysize(this),
-												&hash_alg);
+												params, this->type,
+												get_keysize(this), &hash_alg);
 	if (!mechanism)
 	{
 		DBG1(DBG_LIB, "signature scheme %N not supported",
@@ -301,19 +445,19 @@ METHOD(private_key_t, sign, bool,
 	if (rv != CKR_OK)
 	{
 		DBG1(DBG_CFG, "opening PKCS#11 session failed: %N", ck_rv_names, rv);
-		return FALSE;
+		goto end;
 	}
 	rv = this->lib->f->C_SignInit(session, mechanism, this->object);
 	if (this->reauth && !reauth(this, session))
 	{
 		this->lib->f->C_CloseSession(session);
-		return FALSE;
+		goto end;
 	}
 	if (rv != CKR_OK)
 	{
 		this->lib->f->C_CloseSession(session);
 		DBG1(DBG_LIB, "C_SignInit() failed: %N", ck_rv_names, rv);
-		return FALSE;
+		goto end;
 	}
 	if (hash_alg != HASH_UNKNOWN)
 	{
@@ -324,7 +468,7 @@ METHOD(private_key_t, sign, bool,
 		{
 			DESTROY_IF(hasher);
 			this->lib->f->C_CloseSession(session);
-			return FALSE;
+			goto end;
 		}
 		hasher->destroy(hasher);
 		switch (scheme)
@@ -357,7 +501,7 @@ METHOD(private_key_t, sign, bool,
 	{
 		DBG1(DBG_LIB, "C_Sign() failed: %N", ck_rv_names, rv);
 		free(buf);
-		return FALSE;
+		goto end;
 	}
 	switch (scheme)
 	{
@@ -382,7 +526,12 @@ METHOD(private_key_t, sign, bool,
 			*signature = chunk_create(buf, len);
 			break;
 	}
-	return TRUE;
+	success = TRUE;
+
+end:
+	free(mechanism->pParameter);
+	free(mechanism);
+	return success;
 }
 
 METHOD(private_key_t, decrypt, bool,

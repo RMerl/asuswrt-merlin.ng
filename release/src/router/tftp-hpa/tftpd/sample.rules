@@ -1,0 +1,33 @@
+#
+# Sample rule file for the -m (remapping option)
+#
+# This file has three fields: operation, regex, remapping
+#
+# The operation is a combination of the following letters:
+#
+# r - rewrite the matched string with the remapping pattern
+# i - case-insensitive matching
+# g - repeat until no match (used with "r")
+# e - exit (with success) if we match this pattern, do not process
+#     subsequent rules
+# s - start over from the first rule if we match this pattern
+# a - abort (refuse the request) if we match this rule
+# G - this rule applies to TFTP GET requests only
+# P - this rule applies to TFTP PUT requests only
+#
+# The regex is a regular expression in the style of egrep(1).
+#
+# The remapping is a pattern, all characters are verbatim except \
+# \0 copies the full string that matched the regex
+# \1..\9 copies the 9 first (..) expressions in the regex
+# \\ is an escaped \
+#
+# "#" begins a comment, unless \-escaped
+#
+ri	^[a-z]:				# Remove "drive letters"
+rg	\\		/		# Convert backslashes to slashes
+rg	\#		@		# Convert hash marks to @ signs
+rg	/../		/..no../	# Convert /../ to /..no../
+e	^ok/				# These are always ok
+r	^[^/]		/tftpboot/\0	# Convert non-absolute files
+a	\.pvt$				# Reject requests for private files

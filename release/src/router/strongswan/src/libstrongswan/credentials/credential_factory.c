@@ -117,7 +117,7 @@ METHOD(credential_factory_t, create, void*,
 	entry_t *entry;
 	va_list args;
 	void *construct = NULL;
-	int failures = 0;
+	int failures DBG_UNUSED = 0;
 	uintptr_t level;
 	enum_name_t *names DBG_UNUSED;
 
@@ -140,6 +140,8 @@ METHOD(credential_factory_t, create, void*,
 	this->recursive->set(this->recursive, (void*)level + 1);
 
 	this->lock->read_lock(this->lock);
+	/* push this in case of a timeout during unit tests */
+	thread_cleanup_push((thread_cleanup_t)this->lock->unlock, this->lock);
 	enumerator = this->constructors->create_enumerator(this->constructors);
 	while (enumerator->enumerate(enumerator, &entry))
 	{
@@ -159,7 +161,7 @@ METHOD(credential_factory_t, create, void*,
 		}
 	}
 	enumerator->destroy(enumerator);
-	this->lock->unlock(this->lock);
+	thread_cleanup_pop(TRUE);
 
 	if (!construct && !level)
 	{

@@ -265,6 +265,7 @@ float vbr_analysis(VBRState *vbr, spx_word16_t *sig, int len, int pitch, float p
 
    /*printf ("VBR: %f %f %f %d %f\n", (float)(log_energy-log(vbr->average_energy+MIN_ENERGY)), non_st, voicing, va, vbr->noise_level);*/
 
+   (void) va;
    return qual;
 }
 

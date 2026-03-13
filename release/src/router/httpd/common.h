@@ -51,7 +51,7 @@
 
 /* DEBUG FUNCTION */
 #ifdef RTCONFIG_LIBASUSLOG
-extern void Debug2String(int level, char *path, int conlog, int showtime, unsigned filesize, char *function_name, int function_line, const char *fmt, ...);
+extern void Debug2String(int level, char *path, int conlog, int showtime, unsigned filesize, const char *function_name, int function_line, const char *fmt, ...);
 extern void security2log(int level, char *path, int conlog, int showtime, unsigned filesize, const char *fmt, ...);
 #define HTTPD_DBG(fmt, arg...) do {\
 	int save_errno = errno; \

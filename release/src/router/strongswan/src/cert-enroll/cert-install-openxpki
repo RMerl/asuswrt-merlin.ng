@@ -54,6 +54,14 @@ if [ -s old/$SUBCA ]
 then
   cp old/$SUBCA $OPENXPKI_TLS/chain/$OLDSUBCA
 fi
+if [ -s older/$ROOTCA ]
+then
+  cp older/$ROOTCA $OPENXPKI_TLS/chain/$OLDERROOTCA
+fi
+if [ -s older/$SUBCA ]
+then
+  cp older/$SUBCA $OPENXPKI_TLS/chain/$OLDERSUBCA
+fi
 
 rm -f $OPENXPKI_TLS/chain/*.0
 

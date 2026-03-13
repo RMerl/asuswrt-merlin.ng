@@ -4031,7 +4031,7 @@ _ACEOF
 { echo "$as_me:$LINENO: checking memory alignment" >&5
 echo $ECHO_N "checking memory alignment... $ECHO_C" >&6; }
 case $target in
-    sparc64-* | ia64-* | x86_64-* )
+    sparc64-* | ia64-* | x86_64-* | arm64-* | aarch64-* | mips64* )
 	cat >>confdefs.h <<\_ACEOF
 #define PJ_POOL_ALIGNMENT 8
 _ACEOF

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Tobias Brunner
+ * Copyright (C) 2014-2025 Tobias Brunner
  * Copyright (C) 2013 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -34,6 +34,29 @@ static transform_type_t tfs[] = {
 	KEY_EXCHANGE_METHOD,
 };
 
+static FILE *active_transforms;
+
+START_SETUP(setup)
+{
+	char *path;
+
+	path = getenv("TESTS_ACTIVE_TRANSFORMS");
+	if (path)
+	{
+		active_transforms = fopen(path, "a");
+	}
+}
+END_SETUP
+
+START_TEARDOWN(teardown)
+{
+	if (active_transforms)
+	{
+		fclose(active_transforms);
+	}
+}
+END_TEARDOWN
+
 START_TEST(test_vectors)
 {
 	enumerator_t *enumerator;
@@ -47,11 +70,15 @@ START_TEST(test_vectors)
 	{
 		ck_assert_msg(success, "test vector for %N from '%s' plugin failed",
 					  transform_get_enum_names(tfs[_i]), alg, plugin);
+		if (active_transforms)
+		{
+			fprintf(active_transforms, "%N[%s]\n",
+					transform_get_enum_names(tfs[_i]), alg, plugin);
+		}
 	}
 	thread_cleanup_pop(TRUE);
 }
 END_TEST
-
 
 Suite *vectors_suite_create()
 {
@@ -61,6 +88,7 @@ Suite *vectors_suite_create()
 	s = suite_create("vectors");
 
 	tc = tcase_create("transforms");
+	tcase_add_checked_fixture(tc, setup, teardown);
 	tcase_add_loop_test(tc, test_vectors, 0, countof(tfs));
 	tcase_set_timeout(tc, 30);
 	suite_add_tcase(s, tc);

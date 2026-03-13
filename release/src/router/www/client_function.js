@@ -235,7 +235,7 @@ var client_convRSSI = function(val) {
 
 var ipState = new Array();
 ipState["Static"] = "<#BOP_ctype_title5#>";
-ipState["DHCP"] = "<#BOP_ctype_title1#>";
+ipState["DHCP"] = "<#BOP_ctype_dhcp_title1#>";
 ipState["Manual"] = "<#Clientlist_IPMAC_Binding#>";
 ipState["OffLine"] = "<#Clientlist_OffLine_Hint#>";
 

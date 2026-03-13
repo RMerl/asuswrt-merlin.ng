@@ -143,6 +143,28 @@ static struct {
 	{ PROTO_IKE, "aes128-sha256-modp3072", "aes128-sha256-modp3072", "aes128-sha256-modp3072" },
 	{ PROTO_IKE, "aes128-sha256-modp3072", "aes128-sha256-modp3072-none", "aes128-sha256-modp3072" },
 	{ PROTO_IKE, "aes128-sha256-modp3072-none", "aes128-sha256-modp3072", "aes128-sha256-modp3072" },
+	{ PROTO_IKE, "aes128-sha256-modp3072-ke1_modp3072",
+				 "aes128-sha256-modp3072-ke1_modp3072", NULL },
+	{ PROTO_IKE, "aes128-sha256-modp3072-ecp256-ecp384-ke1_modp3072-ke1_ecp256-ke1_ecp384-ke2_modp3072-ke2_ecp256-ke2_ecp384",
+				 "aes128-sha256-modp3072-ecp256-ecp384-ke1_modp3072-ke1_ecp256-ke1_ecp384-ke2_modp3072-ke2_ecp256-ke2_ecp384",
+				 "aes128-sha256-modp3072-ke1_ecp256-ke2_ecp384" },
+	{ PROTO_IKE, "aes128-sha256-modp3072-ke1_modp3072-ke1_none",
+				 "aes128-sha256-modp3072-ke1_modp3072-ke1_none",
+				 "aes128-sha256-modp3072" },
+	{ PROTO_IKE, "aes128-sha256-modp3072-ke1_modp3072-ke1_none-ke2_modp3072-ke2_none",
+				 "aes128-sha256-modp3072-ke1_modp3072-ke1_none-ke2_modp3072-ke2_none",
+				 "aes128-sha256-modp3072" },
+	{ PROTO_IKE, "aes128-sha256-modp3072-ke1_modp3072-ke1_ecp256",
+				 "aes128-sha256-modp3072-ke1_modp3072-ke1_ecp256",
+				 "aes128-sha256-modp3072-ke1_ecp256" },
+	{ PROTO_IKE, "aes128-sha256-modp3072-ke1_modp3072-ke1_ecp256",
+				 "aes128-sha256-modp3072-ke1_ecp256",
+				 "aes128-sha256-modp3072-ke1_ecp256" },
+	{ PROTO_IKE, "aes128-sha256-modp3072-ke1_ecp256",
+				 "aes128-sha256-modp3072-ke1_modp3072-ke1_ecp256",
+				 "aes128-sha256-modp3072-ke1_ecp256" },
+	{ PROTO_IKE, "aes128-sha256-ecp256-ke1_modp3072",
+				 "aes128-sha256-modp3072-ecp256-ke1_ecp256-ke2_ecp384", NULL },
 };
 
 START_TEST(test_select)
@@ -474,6 +496,20 @@ START_TEST(test_unknown_transform_types_select_success)
 }
 END_TEST
 
+START_TEST(test_proposal_has_additional_ke)
+{
+	proposal_t *proposal;
+
+	proposal = proposal_create_from_string(PROTO_IKE, "aes128-sha256-ecp256");
+	ck_assert(!proposal_has_additional_ke(proposal));
+	proposal->destroy(proposal);
+
+	proposal = proposal_create_from_string(PROTO_IKE, "aes128-sha256-modp3072-ke1_ecp256");
+	ck_assert(proposal_has_additional_ke(proposal));
+	proposal->destroy(proposal);
+}
+END_TEST
+
 START_TEST(test_chacha20_poly1305_key_length)
 {
 	proposal_t *proposal;
@@ -573,6 +609,10 @@ Suite *proposal_suite_create()
 	tcase_add_test(tc, test_unknown_transform_types_select_fail);
 	tcase_add_test(tc, test_unknown_transform_types_select_fail_subtype);
 	tcase_add_test(tc, test_unknown_transform_types_select_success);
+	suite_add_tcase(s, tc);
+
+	tc = tcase_create("proposal_has_additional_ke");
+	tcase_add_test(tc, test_proposal_has_additional_ke);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("chacha20/poly1305");

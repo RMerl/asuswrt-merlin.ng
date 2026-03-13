@@ -529,7 +529,7 @@ PJ_DEF(pj_status_t) pjsip_auth_clt_clone( pj_pool_t *pool,
      * re-authenticate itself on the next request because it has lost the
      * cached authentication headers.
      */
-    PJ_TODO(FULL_CLONE_OF_AUTH_CLIENT_SESSION);
+    //PJ_TODO(FULL_CLONE_OF_AUTH_CLIENT_SESSION);
 
     return PJ_SUCCESS;
 }
@@ -955,6 +955,7 @@ PJ_DEF(pj_status_t) pjsip_auth_clt_init_req( pjsip_auth_clt_sess *sess,
 	}
     }
 
+	(void) method;
     return PJ_SUCCESS;
 }
 

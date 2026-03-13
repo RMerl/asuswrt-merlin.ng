@@ -1,0 +1,5 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each to gateway <b>moon</b>.
+The gateway requests an EAP-Identity and uses it to select an appropriate connection.
+Based on <b>dave</b>'s identity, the gateway requests an <i>EAP-TLS</i> certificate-based
+client authentication. For <b>carol</b>, the gateway switches to a default config
+that uses the <i>EAP-MD5</i> password-based client authentication method.

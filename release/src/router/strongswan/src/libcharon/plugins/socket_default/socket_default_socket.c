@@ -595,7 +595,7 @@ METHOD(socket_t, sender, status_t,
 	}
 
 	memset(&msg, 0, sizeof(struct msghdr));
-	msg.msg_name = dst->get_sockaddr(dst);;
+	msg.msg_name = dst->get_sockaddr(dst);
 	msg.msg_namelen = *dst->get_sockaddr_len(dst);
 	iov.iov_base = data.ptr;
 	iov.iov_len = data.len;
@@ -900,16 +900,8 @@ socket_default_socket_t *socket_default_socket_create()
 		}
 	}
 
-	/* we allocate IPv6 sockets first as that will reserve randomly allocated
-	 * ports also for IPv4. On OS X, we have to do it the other way round
-	 * for the same effect. */
-#ifdef __APPLE__
 	open_socketpair(this, AF_INET, &this->ipv4, &this->ipv4_natt, "IPv4");
 	open_socketpair(this, AF_INET6, &this->ipv6, &this->ipv6_natt, "IPv6");
-#else /* !__APPLE__ */
-	open_socketpair(this, AF_INET6, &this->ipv6, &this->ipv6_natt, "IPv6");
-	open_socketpair(this, AF_INET, &this->ipv4, &this->ipv4_natt, "IPv4");
-#endif /* __APPLE__ */
 
 	if (this->ipv4 == -1 && this->ipv6 == -1)
 	{

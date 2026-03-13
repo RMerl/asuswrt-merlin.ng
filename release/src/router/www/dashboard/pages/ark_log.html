@@ -1,0 +1,916 @@
+﻿<!DOCTYPE html>
+<html data-asuswrt-theme="rt">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
+    <meta HTTP-EQUIV="Expires" CONTENT="-1">
+    <link rel="shortcut icon" href="images/favicon.png">
+    <link rel="icon" href="images/favicon.png">
+    <title><#Web_Title#> - <#Adaptive_History#></title>
+    <link rel="stylesheet" href="../css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="../css/bootstrap-customize.css"/>
+    <link rel="stylesheet" href="../datatables/datatables.min.css">
+    <link rel="stylesheet" href="../datatables/datatables.asuswrt.css">
+    <link rel="stylesheet" href="../css/daterangepicker.css"/>
+    <link rel="stylesheet" href="../css/svg-icon.css"/>
+
+    <script type="text/javascript" src="../js/jquery.js"></script>
+    <script type="text/javascript" src="../js/moment.min.js"></script>
+    <script type="text/javascript" src="../js/daterangepicker.js"></script>
+    <script type="text/javascript" src="../datatables/datatables.min.js"></script>
+    <script type="text/javascript" src="../js/httpApi.js"></script>
+    <script type="text/javascript" src="../state.js"></script>
+    <script type="text/javascript" src="../help.js"></script>
+    <script type="text/javascript" src="../general.js"></script>
+    <script type="text/javascript" src="../popup.js"></script>
+    <script type="text/javascript" src="../form.js"></script>
+
+</head>
+<style>
+
+    html::-webkit-scrollbar {
+        display: block;
+        width: 4px;
+        height: 4px;
+        padding: 2px;
+    }
+
+    html::-webkit-scrollbar-thumb {
+        background-color: #7775;
+        border-radius: 20px;
+    }
+
+    html::-webkit-scrollbar-thumb:hover {
+        background-color: #7777;
+    }
+
+    html::-webkit-scrollbar-track:hover {
+        background-color: #5555;
+    }
+
+    body {
+        background-color: transparent;
+    }
+
+    table {
+        font-size: 0.875rem;
+    }
+
+    .split-line {
+        background: #32393B;
+        background: -webkit-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%);
+        background: -o-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%);
+        background: linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%);
+        height: 2px;
+        margin: 1px 0;
+    }
+
+    .input-date-selector {
+        position: relative;
+    }
+
+    .input-date-selector .icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        pointer-events: none;
+    }
+
+    .input-date-selector input {
+        padding-left: 40px;
+    }
+
+    .icon {
+        display: block;
+        box-sizing: border-box;
+        background-color: currentColor;
+        mask-size: cover;
+        mask-position: center;
+        mask-repeat: no-repeat;
+        -webkit-mask-size: cover;
+        -webkit-mask-position: center;
+        -webkit-mask-repeat: no-repeat;
+        mask-image: var(--svg);
+        -webkit-mask-image: var(--svg);
+        flex-shrink: 0;
+    }
+
+    .input-date-selector .icon {
+        background-color: var(--textbox-color);
+    }
+
+    .icon-delete, .icon-export-file {
+        background-color: var(--textbox-color);
+    }
+
+    .daterangepicker {
+        color: var(--black-alpha-100);
+    }
+
+    /* Modal Dialog Styles */
+    .shadow-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-float {
+        background: var(--card-bg, #fff);
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        min-width: 400px;
+        max-width: 90%;
+        overflow: hidden;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    .card-header-float {
+        background: var(--primary-color, #1a73e8);
+        color: #fff;
+        padding: 20px 24px;
+        font-size: 1.25rem;
+        font-weight: 600;
+        border-bottom: none;
+    }
+
+    .card-body-float {
+        padding: 24px;
+        color: var(--text-color, #333);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        min-height: 80px;
+    }
+
+    .card-footer-float {
+        padding: 16px 24px;
+        background: var(--card-footer-bg, #f8f9fa);
+        border-top: 1px solid var(--border-color, #e0e0e0);
+        gap: 12px;
+    }
+
+    .btn-regular,
+    .btn-confirm {
+        padding: 10px 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        user-select: none;
+        min-width: 80px;
+    }
+
+    .btn-regular {
+        background: var(--btn-secondary-bg, #fff);
+        color: var(--btn-secondary-color, #666);
+        border: 1px solid var(--border-color, #ddd);
+    }
+
+    .btn-regular:hover {
+        background: var(--btn-secondary-hover-bg, #f5f5f5);
+        border-color: var(--border-hover-color, #999);
+    }
+
+    .btn-regular:active {
+        transform: scale(0.98);
+    }
+
+    .btn-confirm {
+        background: var(--btn-danger-bg, #dc3545);
+        color: #fff;
+        border: 1px solid var(--btn-danger-bg, #dc3545);
+    }
+
+    .btn-confirm:hover {
+        background: var(--btn-danger-hover-bg, #c82333);
+        border-color: var(--btn-danger-hover-bg, #c82333);
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4);
+    }
+
+    .btn-confirm:active {
+        transform: scale(0.98);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .card-float {
+            min-width: 320px;
+            max-width: 95%;
+        }
+
+        .card-header-float {
+            font-size: 1.1rem;
+            padding: 16px 20px;
+        }
+
+        .card-body-float {
+            padding: 20px;
+            font-size: 0.9rem;
+        }
+
+        .card-footer-float {
+            padding: 12px 20px;
+        }
+
+        .btn-regular,
+        .btn-confirm {
+            padding: 8px 20px;
+            font-size: 0.85rem;
+            min-width: 70px;
+        }
+    }
+
+    #content_title, .split-line {
+        display: none;
+    }
+</style>
+<body onload="initial()">
+<div id="TopBanner"></div>
+<div id="Loading" class="popup_bg"></div>
+<div id="whiteThemeWrapper" class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-12">
+            <div id="content_title" class="formfonttitle"><#Adaptive_History#>
+            </div>
+            <div class="split-line my-2"></div>
+            <div class="formfontdesc">
+                <#Adaptive_History_desc#>
+            </div>
+        </div>
+        <div class="col-12 mt-3 mb-2 d-flex">
+            <div class="col-6"><#Adaptive_History#></div>
+            <div class="col-6">
+                <div align="center" class="left"
+                     style="width:94px; float:left; cursor:pointer;"
+                     id="ark_log_enable"></div>
+            </div>
+        </div>
+        <div class="card col-12" id="log_field">
+            <div id="ark_log_content"></div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function initial() {
+
+        if (top.webWrapper) {
+            const link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = "../css/business-white.css";
+            document.head.appendChild(link);
+            document.querySelector("#content_title").style.display = 'none';
+            document.querySelector(".split-line").style.display = 'none';
+            document.querySelector("body").style.visibility = 'visible';
+        } else {
+            document.querySelector("#content_title").style.display = 'block';
+            document.querySelector(".split-line").style.display = 'block';
+        }
+
+        function resize_iframe_height() {
+            if ($(parent.document).find("#arklog_iframe").length == "1") {
+                const menu_height = $(parent.document).find("#mainMenu").height();
+                const settingsWindow_height = $(top.document).find("#settingsWindow").height();
+                const margin_bottom = 30;
+                $(parent.document).find("#arklog_iframe").css("height", (Math.max(menu_height, settingsWindow_height) - margin_bottom));
+            }
+        }
+
+        resize_iframe_height();
+    }
+</script>
+<script type="module">
+
+
+    var current_page = window.location.pathname.split("/").pop();
+    var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
+
+    import {ClientList} from '../js/clientlist.module.js';
+    import {ToggleButton} from "../js/component.module.js";
+
+    const _nvram = {
+        ...httpApi.nvramGet([
+            "ark_log_enable",
+        ], true)
+    };
+
+    const enableToggleBtn = document.getElementById('ark_log_enable');
+    if (enableToggleBtn) {
+        const toggle = new ToggleButton(_nvram.ark_log_enable === '1', true, {
+            label: `<#Adaptive_History#> Toggle`,
+        });
+        toggle.setOnChange(function (active) {
+            switch_control(active);
+        });
+        enableToggleBtn.appendChild(toggle.render());
+    }
+
+    function switch_control(_status) {
+        top.showLoading();
+        applyRule(_status);
+    }
+
+    function applyRule(value) {
+        httpApi.nvramSet({
+            "ark_log_enable": value ? '1' : '0',
+            "action_mode": "apply",
+            "rc_service": "restart_ark",
+        }, () => {
+            if(value){
+                document.getElementById('log_field').style.display = 'block';
+            } else {
+                document.getElementById('log_field').style.display = 'none';
+            }
+            top.hideLoading();
+        })
+    }
+
+    async function initializeClientList() {
+        let clientList = window.clientList || new ClientList();
+        if (!window.clientList) {
+            window.clientList = clientList;
+            await clientList.init();
+        }
+    }
+
+    async function init() {
+        await initializeClientList();
+        const div = document.getElementById(`ark_log_content`);
+        const logTableCard = new LogTableCard(div, 'ark_log_datatable');
+        logTableCard.init();
+    }
+
+    // Sanitize CSV values to prevent CSV injection attacks
+    function sanitizeForCsv(value) {
+        if (typeof value !== 'string') {
+            return value;
+        }
+
+        // Dangerous characters that could trigger formula execution in Excel/LibreOffice
+        const dangerousChars = ['=', '+', '-', '@', '\t', '\r', '|'];
+
+        let sanitized = value;
+
+        // If starts with dangerous character, prefix with single quote to neutralize
+        // This preserves the original data while preventing formula execution
+        if (dangerousChars.some(char => sanitized.startsWith(char))) {
+            sanitized = "'" + sanitized;
+        }
+
+        // Escape double quotes (CSV standard)
+        sanitized = sanitized.replace(/"/g, '""');
+
+        // Always wrap in double quotes for maximum safety
+        sanitized = `"${sanitized}"`;
+
+        return sanitized;
+    }
+
+    class LogTableCard {
+        constructor(targetElement, tableId) {
+            this.targetElement = targetElement;
+            this.tableId = tableId;
+            this.element = null;
+            this.data = [];
+            this.columns = [];
+            this.exportId = 'ark_log_content';
+            this.mac = '';  // MAC address filter
+
+            const today = new Date();
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 6);
+            this.startDate = Math.floor(weekAgo / 1000);
+            this.endDate = Math.floor(today / 1000);
+        }
+
+        getFileName() {
+            // Generate filename with date range: web-history-YYYYMMDD-YYYYMMDD.csv
+            // If MAC filter is applied: web-history-YYYYMMDD-YYYYMMDD-MAC.csv
+            const startDate = new Date(this.startDate * 1000);
+            const endDate = new Date(this.endDate * 1000);
+
+            const formatDate = (date) => {
+                const yyyy = date.getFullYear();
+                const MM = String(date.getMonth() + 1).padStart(2, '0');
+                const dd = String(date.getDate()).padStart(2, '0');
+                return `${yyyy}${MM}${dd}`;
+            };
+
+            let fileName = `web-history-${formatDate(startDate)}-${formatDate(endDate)}`;
+
+            // Add MAC address to filename if filtering by MAC
+            if (this.mac && this.mac.trim()) {
+                // Remove colons and convert to lowercase for filename
+                const macSuffix = this.mac.trim().replace(/:/g, '').toLowerCase();
+                fileName += `-${macSuffix}`;
+            }
+
+            return `${fileName}.csv`;
+        }
+
+        generateHTML() {
+            let code = `
+                <div class="card-body">
+                    <table id="${this.tableId}" class="table align-middle table-responsive mt-2 mb-2">
+                    </table>
+                </div>
+                <div class="card-footer d-flex justify-content-end align-items-center">
+                    <div role="icon" class="icon-size-24 icon-delete me-3 " title="<#CTL_del#>" data-bind="empty_db"></div>
+                    <div role="icon" class="csv-export-btn icon-size-24 icon-export-file me-3" title="<#CTL_onlysave#>" id="ark_log_erase"></div>
+                </div>`;
+
+            return code;
+        }
+
+        bindEvents() {
+            const self = this;
+            const emptyDbButton = this.element.querySelector("[data-bind='empty_db']");
+            if (emptyDbButton) {
+
+                emptyDbButton.addEventListener("click", function () {
+                    self.eraseDB();
+                });
+            }
+
+            this.element.querySelector('.csv-export-btn').addEventListener("click", () => {
+                this.exportCsv();
+            });
+        }
+
+        eraseDB() {
+            const self = this;
+            let template = `
+        <div class="d-flex justify-content-center mt-5">
+            <div class="card-float">
+                <div class="card-body-float">
+                    <#AiProtection_event_del_confirm#>
+                </div>
+                <div class="d-flex justify-content-end card-footer-float">
+                    <div class="text-center btn-regular db_erase_cancel">
+                        <div><#CTL_Cancel#></div>
+                    </div>
+                    <div class="text-center btn-confirm db_erase_confirm">
+                        <div><#CTL_ok#></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+            let element = document.createElement("div");
+            element.className = "shadow-bg";
+            element.innerHTML = template;
+            document.body.appendChild(element);
+
+            element.querySelector(".db_erase_cancel").addEventListener("click", function () {
+                document.body.removeChild(element);
+            });
+
+            element.querySelector(".db_erase_confirm").addEventListener("click", function () {
+                // Disable buttons to prevent double-clicking
+                const confirmBtn = element.querySelector(".db_erase_confirm");
+                const cancelBtn = element.querySelector(".db_erase_cancel");
+                confirmBtn.style.pointerEvents = 'none';
+                cancelBtn.style.pointerEvents = 'none';
+                confirmBtn.style.opacity = '0.5';
+
+                fetch(`/delArkLog.cgi`, {method: "POST"})
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.statusCode !== "0") {
+                            throw new Error(`Server error! response: ${data}`);
+                        }
+
+                        // Remove dialog
+                        document.body.removeChild(element);
+
+                        // Reload table data
+                        const table = $(`#${self.tableId}`).DataTable();
+                        if (table) {
+                            table.ajax.reload(null, false); // Keep current page
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error deleting database:", error);
+
+                        // Re-enable buttons on error
+                        confirmBtn.style.pointerEvents = '';
+                        cancelBtn.style.pointerEvents = '';
+                        confirmBtn.style.opacity = '';
+
+                        // Show error in dialog instead of removing it
+                        const bodyFloat = element.querySelector('.card-body-float');
+                        bodyFloat.innerHTML = `
+                            <div style="color: #f00; margin-top: 10px;">
+                                Failed to clear database. Please try again.
+                            </div>
+                        `;
+                    });
+            });
+        }
+
+        exportCsv() {
+            const self = this;
+
+            // Build API URL with optional MAC parameter (only if MAC is not empty)
+            const macParam = (self.mac && self.mac.trim()) ? `&mac=${self.mac.trim()}` : '';
+
+            // Fetch all data from the API
+            fetch(`/getArkLog.cgi?starttime=${self.startDate}&endtime=${self.endDate}${macParam}`)
+                .then(res => res.json())
+                .then(dataResult => {
+                    const allClientSet = window.clientList;
+
+                    function formatDate(date) {
+                        const yyyy = date.getFullYear();
+                        const MM = String(date.getMonth() + 1).padStart(2, '0');
+                        const dd = String(date.getDate()).padStart(2, '0');
+                        const HH = String(date.getHours()).padStart(2, '0');
+                        const mm = String(date.getMinutes()).padStart(2, '0');
+                        const ss = String(date.getSeconds()).padStart(2, '0');
+                        return `${yyyy}/${MM}/${dd} ${HH}:${mm}:${ss}`;
+                    }
+
+                    let aTag = document.createElement("a");
+
+                    // Get column headers and sanitize them
+                    const headers = this.columns
+                        .filter(col => col.data !== null)
+                        .map(col => {
+                            const title = col.title || col;
+                            // Clean HTML tags from headers
+                            const cleanTitle = typeof title === 'string' ? title.replace(/<[^>]*>/g, '') : title;
+                            // Sanitize headers to prevent CSV injection
+                            return sanitizeForCsv(cleanTitle);
+                        });
+                    let content = headers.join(',') + "\n";
+
+                    // Process and format all data
+                    const formatData = dataResult.map(item => {
+                        const mac = item.mac.toUpperCase();
+                        const client = allClientSet.findClientByMac(mac) || null;
+                        const client_name = client?.nickName || client?.name || mac.toUpperCase();
+                        item.mac = mac;
+                        item.format_timestamp = formatDate(new Date(item.timestamp * 1000));
+                        item.client_name = client_name;
+                        item.client = client;
+                        return item;
+                    });
+
+                    // Build CSV content
+                    for (let item of formatData) {
+                        const row = [];
+                        this.columns.forEach((col) => {
+                            const dataKey = col.data;
+                            let value = "";
+
+                            if (dataKey) {
+                                // If render function exists, use rendered data
+                                if (col.render && typeof col.render === 'function') {
+                                    // For MAC address field, use original MAC address directly
+                                    if (dataKey === 'mac') {
+                                        value = item[dataKey] || "";
+                                    } else {
+                                        value = col.render(item[dataKey], 'export', item);
+                                    }
+                                } else {
+                                    value = item[dataKey] || "";
+                                }
+                            } else {
+                                // Skip columns without data
+                                return;
+                            }
+
+                            // Clean HTML tags, keep text content only
+                            if (typeof value === 'string') {
+                                value = value.replace(/<[^>]*>/g, '');
+                                // Prevent CSV injection attacks
+                                value = sanitizeForCsv(value);
+                            }
+
+                            row.push(value);
+                        });
+
+                        if (row.length > 0) {
+                            content += row.join(",") + "\n";
+                        }
+                    }
+
+                    // Add UTF-8 BOM for Excel to recognize encoding correctly
+                    const BOM = '\uFEFF';
+                    const csvContent = BOM + content;
+
+                    // Generate filename with date range
+                    const fileName = this.getFileName();
+
+                    let mimeType = "text/csv;charset=utf-8";
+                    if (navigator.msSaveBlob) {
+                        return navigator.msSaveBlob(new Blob([csvContent], {type: mimeType}), fileName);
+                    } else if ("download" in aTag) {
+                        const blob = new Blob([csvContent], {type: mimeType});
+                        const url = URL.createObjectURL(blob);
+                        const exportId = this.exportId;
+                        aTag.href = url;
+                        aTag.setAttribute("download", fileName);
+                        document.getElementById(exportId).appendChild(aTag);
+                        aTag.click();
+                        setTimeout(() => {
+                            document.getElementById(exportId).removeChild(aTag);
+                            URL.revokeObjectURL(url);
+                        }, 66);
+                        return true;
+                    } else {
+                        const exportId = this.exportId;
+                        let f = document.createElement("iframe");
+                        document.getElementById(exportId).appendChild(f);
+                        f.src = "data:" + mimeType + "," + encodeURIComponent(csvContent);
+                        setTimeout(() => {
+                            document.getElementById(exportId).removeChild(f);
+                        }, 333);
+                        return true;
+                    }
+                })
+                .catch(error => {
+                    console.error('Failed to export CSV:', error);
+                    alert('Failed to export CSV. Please try again.');
+                });
+        }
+
+        initDataTable() {
+            const tableId = this.tableId;
+
+            // Ensure existing DataTable is destroyed
+            if ($.fn.DataTable.isDataTable(`#${tableId}`)) {
+                $(`#${tableId}`).DataTable().destroy();
+            }
+
+            const clinetDiv = function (data, type, row) {
+                let targetValue = data;
+                let targetName = "";
+                if (row.client !== null && row.client !== undefined) {
+                    targetName = (row.client.nickName !== "") ? row.client.nickName : row.client.name;
+                    return `<div class="client-name-group">
+                                        <div class="client-name">${targetName}</div>
+                                        <div class="client-info">${data}</div>
+                                    </div>`;
+                } else {
+                    return `<div class="client-name">${targetValue}</div>`;
+                }
+            }
+
+            const columns = [
+                {
+                    title: '<#diskUtility_time#>',
+                    data: 'format_timestamp',
+                    name: 'timestamp',
+                    className: 'dt-head-left dt-body-left',
+                },
+                {
+                    title: `<#Client_Name#> / <#PPPConnection_x_MacAddressForISP_itemname#>`,
+                    data: 'mac',
+                    name: 'mac',
+                    render: clinetDiv
+                },
+                {
+                    title: `Action`,
+                    data: 'action',
+                    name: 'action',
+                },
+                {title: `<#Domain_Name#>`, data: 'domain', name: 'domain'},
+            ]
+
+            // Store columns for CSV export
+            this.columns = columns;
+
+            const self = this;
+
+            // Initialize DataTable
+            const table = $(`#${tableId}`).DataTable({
+                processing: true,
+                serverSide: true,
+                dom: `<"row"<"col-sm-6"l><"col-sm-6"<"d-flex justify-content-end gap-2"<"#mac-filter-container"><"#daterange-container">>>>rtip`,
+                ajax: (data, callback, settings) => {
+
+                    const page = Math.floor(data.start / data.length) + 1;
+                    const num = data.length;
+                    const sortBy = data.order[0]?.name || 'timestamp';
+                    const sortOrder = data.order[0]?.dir || 'desc';
+
+                    // Build API URLs with optional MAC parameter (only if MAC is not empty)
+                    const macParam = (self.mac && self.mac.trim()) ? `&mac=${self.mac.trim()}` : '';
+
+                    // Call two APIs in parallel
+                    Promise.all([
+                        // Get total count
+                        fetch(`/getArkLogCount.cgi?starttime=${self.startDate}&endtime=${self.endDate}${macParam}`).then(res => res.json()),
+                        // Get current page data
+                        fetch(`/getArkLog.cgi?starttime=${self.startDate}&endtime=${self.endDate}&page=${page}&num=${num}&sortBy=${sortBy}&sortOrder=${sortOrder}${macParam}`).then(res => res.json())
+                    ]).then(([countResult, dataResult]) => {
+
+                        const allClientSet = window.clientList;
+
+                        function formatDate(date) {
+                            const yyyy = date.getFullYear();
+                            const MM = String(date.getMonth() + 1).padStart(2, '0');
+                            const dd = String(date.getDate()).padStart(2, '0');
+                            const HH = String(date.getHours()).padStart(2, '0');
+                            const mm = String(date.getMinutes()).padStart(2, '0');
+                            const ss = String(date.getSeconds()).padStart(2, '0');
+                            return `${yyyy}/${MM}/${dd} ${HH}:${mm}:${ss}`;
+                        }
+
+                        const formatData = dataResult.map(item => {
+                            const mac = item.mac.toUpperCase();
+                            const client = allClientSet.findClientByMac(mac) || null;
+                            const client_name = client?.nickName || client?.name || mac.toUpperCase();
+                            item.mac = mac;
+                            item.format_timestamp = formatDate(new Date(item.timestamp * 1000));
+                            item.client_name = client_name;
+                            item.client = client;
+                            return item;
+                        })
+
+                        // Return format needed by DataTables
+                        callback({
+                            draw: data.draw,
+                            recordsTotal: countResult.count,
+                            recordsFiltered: countResult.count,
+                            data: formatData
+                        });
+                    }).catch(error => {
+                        console.error('Failed to load data:', error);
+                        callback({
+                            draw: data.draw,
+                            recordsTotal: 0,
+                            recordsFiltered: 0,
+                            data: []
+                        });
+                    });
+                },
+                columns: columns,
+                responsive: true,
+                pageLength: 5,
+                lengthMenu: [5, 10, 25, 50],
+                order: [[0, 'desc']], // Sort by time in descending order
+                language: {
+                    info: `_START_ - _END_ <#Table_Info_NoData#>`,
+                    infoEmpty: `<#Table_Info_NoData#>`,
+                    infoFiltered: "(<#Table_Info_FilterData#>)",
+                    emptyTable: `<#No_Data_In_Table#>`,
+                    lengthMenu: `<div class="d-flex align-items-center gap-2"><div><#Rows_Per_Page#>:</div><div>_MENU_</div></div>`,
+                    search: '',
+                    paginate: {
+                        first: '<svg width="24" height="24" viewBox="0 0 24 24"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z"/></svg>',
+                        previous: '<svg width="24" height="24" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>',
+                        next: '<svg width="24" height="24" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>',
+                        last: '<svg width="24" height="24" viewBox="0 0 24 24"><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z"/></svg>'
+                    }
+                },
+                drawCallback: () => {
+                    // Fix colspan for empty table, including on resize
+                    setTimeout(() => {
+                        const emptyCell = this.element.querySelector('.dt-empty');
+                        if (emptyCell) {
+                            const visibleColumns = this.element.querySelectorAll(`#${tableId} thead th:not(.dtr-hidden)`).length;
+                            emptyCell.setAttribute('colspan', visibleColumns || columns.length);
+                        }
+                    }, 10);
+                },
+                layout: {
+                    topStart: 'pageLength',
+                    topEnd: '',
+                    bottomStart: ['info'],
+                    bottomEnd: {
+                        paging: {
+                            numbers: 0
+                        }
+                    }
+                },
+                // initComplete: (settings, json) => {
+                //     const search = this.element.querySelector('.dt-search');
+                //     if (search) {
+                //         const search_icon = document.createElement('div');
+                //         search_icon.classList.add('search-icon');
+                //         search_icon.innerHTML = '<i class="icon icon-search icon-size-24"></i>';
+                //         search.prepend(search_icon);
+                //     }
+                //     const search_input = this.element.querySelector('.dt-search .dt-input');
+                //     if (search_input) {
+                //         search_input.classList.add("border-0");
+                //     }
+                // },
+            });
+
+            // MAC filter input
+            $('#mac-filter-container').html(
+                `<input type="text" id="mac-filter" class="form-control" placeholder="<#MAC_Address#>" style="width: 180px; display: inline-block;" />`
+            );
+
+            // Date range picker
+            $('#daterange-container').html(
+                `<div class="input-date-selector">
+                    <i class="icon icon-calendar icon-size-24"></i>
+                    <input type="text" id="daterange" class="form-control" style="width: 250px; display: inline-block;" />
+                </div>`
+            );
+
+            // MAC filter event - debounce input
+            let macFilterTimeout;
+            $('#mac-filter').on('input', function() {
+                const macValue = $(this).val().trim();
+                clearTimeout(macFilterTimeout);
+                macFilterTimeout = setTimeout(function() {
+                    self.mac = macValue.toLowerCase();
+                    table.ajax.reload();
+                }, 500);  // 500ms debounce
+            });
+
+            // Date range picker
+            $('#daterange').daterangepicker({
+                startDate: new Date(self.startDate * 1000),
+                endDate: new Date(self.endDate * 1000),
+                autoApply: true,
+                locale: {
+                    format: 'YYYY/MM/DD',
+                    separator: ' - '
+                },
+                opens: "left",
+                parentEl: '#feature_info'
+            }, function (startDate, endDate) {
+                self.startDate = startDate.unix();
+                self.endDate = endDate.unix();
+
+                table.ajax.reload();
+            });
+        }
+
+        render() {
+            const div = document.createElement('div');
+            div.className = "col-12 my-3";
+            const card = document.createElement('div');
+            card.className = "pt-2 h-100";
+            card.innerHTML = this.generateHTML();
+            div.appendChild(card);
+
+            if (this.element) {
+                this.element.replaceWith(div);
+            } else {
+                this.targetElement.append(div);
+            }
+
+            this.element = div;
+            this.bindEvents();
+
+            setTimeout(() => {
+                this.initDataTable();
+            }, 100);
+        }
+
+        init() {
+            this.render();
+        }
+    }
+
+    init();
+
+
+</script>
+</body>
+</html>

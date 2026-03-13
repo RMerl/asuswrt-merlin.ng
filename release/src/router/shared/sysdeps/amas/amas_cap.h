@@ -11,5 +11,6 @@
 #define LED_AURA		BIT(4)
 #define LED_NIGHT_MODE		BIT(5)
 #define CENTRAL_LED_ON_OFF		BIT(6)
+#define AURALED_NIGHT_MODE		BIT(7)
 
 #endif // __AMAS_CAP_H__

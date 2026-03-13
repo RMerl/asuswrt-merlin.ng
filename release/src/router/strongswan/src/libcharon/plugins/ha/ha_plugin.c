@@ -213,7 +213,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * Plugin constructor
  */
-plugin_t *ha_plugin_create()
+PLUGIN_DEFINE(ha)
 {
 	private_ha_plugin_t *this;
 

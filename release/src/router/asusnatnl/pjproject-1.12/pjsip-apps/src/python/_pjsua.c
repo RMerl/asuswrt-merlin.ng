@@ -3865,7 +3865,7 @@ static PyObject *py_pj_parse_simple_sip(PyObject *pSelf, PyObject *pArgs)
         return NULL;
     }
     
-    strncpy(tmp, arg_uri, sizeof(tmp));
+    pj_ansi_strxcpy(tmp, arg_uri, sizeof(tmp));
     tmp[sizeof(tmp)-1] = '\0';
 
     pool = pjsua_pool_create("py_pj_parse_simple_sip", 512, 512);

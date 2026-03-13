@@ -60,7 +60,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *mysql_plugin_create()
+PLUGIN_DEFINE(mysql)
 {
 	private_mysql_plugin_t *this;
 

@@ -51,7 +51,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *eap_md5_plugin_create()
+PLUGIN_DEFINE(eap_md5)
 {
 	eap_md5_plugin_t *this;
 

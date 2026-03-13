@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2019 Tobias Brunner
+ * Copyright (C) 2015-2024 Tobias Brunner
  * Copyright (C) 2011 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -48,6 +48,13 @@ struct quick_mode_t {
 	uint32_t (*get_mid)(quick_mode_t *this);
 
 	/**
+	 * Get the child config of this task as initiator.
+	 *
+	 * @return				config for the CHILD_SA, NULL as responder
+	 */
+	child_cfg_t *(*get_config)(quick_mode_t *this);
+
+	/**
 	 * Use a specific reqid to install this CHILD_SA.
 	 *
 	 * This must only be called with dynamically allocated reqids (i.e. from
@@ -80,6 +87,12 @@ struct quick_mode_t {
 	 * @param spi			spi of SA to rekey
 	 */
 	void (*rekey)(quick_mode_t *this, uint32_t spi);
+
+	/**
+	 * Mark this active task as being aborted, i.e. cause a deletion of the
+	 * created CHILD_SA immediately after its successful creation.
+	 */
+	void (*abort)(quick_mode_t *this);
 };
 
 /**
@@ -89,9 +102,11 @@ struct quick_mode_t {
  * @param config		child_cfg if task initiator, NULL if responder
  * @param tsi			source of triggering packet, or NULL
  * @param tsr			destination of triggering packet, or NULL
+ * @param seq			optional sequence number of triggering acquire, or 0
  * @return				task to handle by the task_manager
  */
 quick_mode_t *quick_mode_create(ike_sa_t *ike_sa, child_cfg_t *config,
-							traffic_selector_t *tsi, traffic_selector_t *tsr);
+								traffic_selector_t *tsi, traffic_selector_t *tsr,
+								uint32_t seq);
 
 #endif /** QUICK_MODE_H_ @}*/

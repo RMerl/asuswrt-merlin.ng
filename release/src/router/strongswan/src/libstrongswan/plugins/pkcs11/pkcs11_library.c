@@ -668,27 +668,54 @@ static void free_attrs(object_enumerator_t *this)
 }
 
 /**
+ * Make sure the type and length of an unwrapped EC_POINT is valid.
+ *
+ * We assume the smallest curve we support is prime192v1 and that the length
+ * of a coordinate is a multiple of 4 bytes (step from prime192v1 to secp224r1),
+ */
+static inline bool valid_ec_point_type_and_len(u_char type, size_t len)
+{
+	size_t min_len = 24, min_multiple = 4;
+
+	switch (type)
+	{
+		case 0x04:
+			/* uncompressed points have two coordinates */
+			min_len <<= 1;
+			min_multiple <<= 1;
+			/* fall-through */
+		case 0x02:
+		case 0x03:
+			/* compressed points */
+			return len > min_len && (len % min_multiple) == 0;
+		default:
+			return FALSE;
+	}
+}
+
+/**
  * CKA_EC_POINT is encoded as ASN.1 octet string, we can't handle that and
  * some tokens actually return them even unwrapped.
  *
  * Because ASN1_OCTET_STRING is 0x04 and uncompressed EC_POINTs also begin with
  * 0x04 (compressed ones with 0x02 or 0x03) there will be an attempt to parse
  * unwrapped uncompressed EC_POINTs.  This will fail in most cases as the length
- * will not be correct, however, there is a small chance that the key's first
- * byte denotes the correct length.  Checking the first byte of the key should
- * further reduce the risk of false positives, though.
+ * will not be correct, however, there is a small chance that the point's first
+ * byte denotes the correct length.  Checking the first byte of the point and
+ * its length should further reduce the risk of false positives, though.
  *
  * The original memory is freed if the value is unwrapped.
  */
 static void unwrap_ec_point(chunk_t *data)
 {
-	chunk_t wrapped, unwrapped;
+	chunk_t wrapped, wrapper, point;
 
-	wrapped = unwrapped = *data;
-	if (asn1_unwrap(&unwrapped, &unwrapped) == ASN1_OCTET_STRING &&
-		unwrapped.len && unwrapped.ptr[0] >= 0x02 && unwrapped.ptr[0] <= 0x04)
+	wrapped = wrapper = *data;
+	if (asn1_unwrap(&wrapper, &point) == ASN1_OCTET_STRING &&
+		!wrapper.len && point.len > 1 &&
+		valid_ec_point_type_and_len(point.ptr[0], point.len - 1))
 	{
-		*data = chunk_clone(unwrapped);
+		*data = chunk_clone(point);
 		free(wrapped.ptr);
 	}
 }
@@ -1170,6 +1197,7 @@ pkcs11_library_t *pkcs11_library_create(char *name, char *file, bool os_locking)
 	if (!this->handle)
 	{
 		DBG1(DBG_CFG, "opening PKCS#11 library failed: %s", dlerror());
+		free(this->name);
 		free(this);
 		return NULL;
 	}
@@ -1177,6 +1205,7 @@ pkcs11_library_t *pkcs11_library_create(char *name, char *file, bool os_locking)
 	if (!initialize(this, name, file, os_locking))
 	{
 		dlclose(this->handle);
+		free(this->name);
 		free(this);
 		return NULL;
 	}

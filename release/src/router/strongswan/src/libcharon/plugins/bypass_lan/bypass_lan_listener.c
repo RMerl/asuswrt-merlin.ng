@@ -227,7 +227,7 @@ METHOD(kernel_listener_t, roam, bool,
 {
 	lib->processor->queue_job(lib->processor,
 			(job_t*)callback_job_create((callback_job_cb_t)update_bypass, this,
-									NULL, (callback_job_cancel_t)return_false));
+									NULL, callback_job_cancel_thread));
 	return TRUE;
 }
 
@@ -269,7 +269,7 @@ METHOD(bypass_lan_listener_t, reload_interfaces, void,
 	this->mutex->unlock(this->mutex);
 	lib->processor->queue_job(lib->processor,
 			(job_t*)callback_job_create((callback_job_cb_t)update_bypass, this,
-									NULL, (callback_job_cancel_t)return_false));
+									NULL, callback_job_cancel_thread));
 }
 
 METHOD(bypass_lan_listener_t, destroy, void,

@@ -231,6 +231,26 @@ static int dsl_merlin16_xfi_rx_polarity_set(phy_dev_t *phy_dev, int inverse)
     return dsl_merlin16_xfi_polarity_set(phy_dev, inverse, 0);
 }
 
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+static int phy_drv_serdes_146class_los_lock(phy_dev_t *phy_dev, uint32_t value)
+{
+    phy_dev_t *sa__ = phy_dev; /*  phy_serdes_t srds_access_t phy_dev->priv */
+
+//    printk(KERN_DEBUG "\n ****** %s:%d sa__[%p] phy_dev[%p] value[%d] ****** \n", __FUNCTION__, __LINE__, sa__, phy_dev, value);
+    if(!phy_dev->los_init || (phy_dev->combo_phy_los_state != value))
+    {
+        phy_dev->los_init = 1;
+        phy_dev->combo_phy_los_state = value;
+        if (value)
+            wr_ext_los_en(1);
+        else
+            wr_ext_los_en(0);
+    }
+
+    return 0;
+}
+#endif
+
 static int dsl_merlin16_priv_fun_lock(phy_dev_t *phy_dev, int op_code, va_list ap)
 {
     phy_serdes_t *phy_serdes = phy_dev->priv;
@@ -336,6 +356,17 @@ static int _phy_temp_get(phy_dev_t *phy_dev, int16_t *temp)
 	return 0;
 }
 
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+static int merlin_serdes_init(phy_dev_t *phy_dev)
+{
+    mutex_lock(&serdes_mutex);
+    merlin16_serdes_init(phy_dev);
+    mutex_unlock(&serdes_mutex);
+
+    return 0;
+}
+#endif
+
 phy_drv_t phy_drv_serdes_146class =
 {
     .init = phy_drv_serdes_146class_init_lock,
@@ -346,6 +377,9 @@ phy_drv_t phy_drv_serdes_146class =
     .speed_set = dsl_serdes_cfg_speed_set_lock,
     .caps_get = dsl_serdes_caps_get,
     .caps_set = dsl_serdes_caps_set_lock,
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+    .serdes_init = merlin_serdes_init,
+#endif	
     .config_speed_get = dsl_serdes_speed_get,
     .priv_fun = dsl_merlin16_priv_fun_lock,
     .power_set = phy_dsl_serdes_power_set_lock,
@@ -355,6 +389,9 @@ phy_drv_t phy_drv_serdes_146class =
     .dev_add = phy_dsl_serdes_dev_add_lock,
     .dt_priv = phy_dsl_serdes_dt_priv,
     .leds_init = dsl_phy_leds_init,
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+    .los_set = phy_drv_serdes_146class_los_lock,
+#endif
     .diag = _phy_diag_lock,
     .c45_read = serdes_access_read,
     .c45_write = serdes_access_write,
@@ -474,7 +511,11 @@ static int dsl_merlin16_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_dup
     rc = merlin_speed_set(phy_dev, speed, duplex);
 
     phy_serdes->inited = 3;
+#ifdef CONFIG_BCM_PHY_COMBO	/* copper PHY support - debug only change to 1 for debug purpose */
     phy_serdes->print_log = 0;
+#else
+    phy_serdes->print_log = 0;
+#endif
     return rc;
 }
 

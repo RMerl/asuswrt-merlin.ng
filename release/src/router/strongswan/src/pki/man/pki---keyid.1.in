@@ -53,8 +53,8 @@ Smartcard or TPM private key object handle in hex format with an optional
 .TP
 .BI "\-t, \-\-type " type
 Type of input. One of \fIpriv\fR (private key), \fIrsa\fR (RSA private key),
-\fIecdsa\fR (ECDSA private key), \fIbliss\fR (BLISS private key),
-\fIpub\fR (public key), \fIpkcs10\fR (PKCS#10 certificate request),
+\fIecdsa\fR (ECDSA private key), \fIpub\fR (public key),
+\fIpkcs10\fR (PKCS#10 certificate request),
 \fIx509\fR (X.509 certificate), defaults to \fIpriv\fR.
 .TP
 .BI "\-I, \-\-id " id-type

@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2010-2025 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -63,7 +64,6 @@ struct plugin_t {
 	void (*destroy)(plugin_t *this);
 };
 
-
 /**
  * Plugin constructor function definition.
  *
@@ -74,5 +74,12 @@ struct plugin_t {
  * @return				plugin_t instance
  */
 typedef plugin_t *(*plugin_constructor_t)(void);
+
+/**
+ * Macro to simplify defining a plugin version and constructor.
+ */
+#define PLUGIN_DEFINE(name) \
+	const char *name##_plugin_version = VERSION; \
+	plugin_t *name##_plugin_create()
 
 #endif /** PLUGIN_H_ @}*/

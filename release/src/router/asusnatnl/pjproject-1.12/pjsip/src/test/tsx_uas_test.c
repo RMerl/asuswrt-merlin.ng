@@ -225,12 +225,12 @@ static void send_response_timer( pj_timer_heap_t *timer_heap,
     if (status != PJ_SUCCESS) {
 	// Some tests do expect failure!
 	//PJ_LOG(3,(THIS_FILE,"    error: timer unable to send response"));
-	pj_mutex_unlock(tsx->mutex);
+	pj_grp_lock_release(tsx->grp_lock);
 	pjsip_tx_data_dec_ref(r->tdata);
 	return;
     }
 
-    pj_mutex_unlock(tsx->mutex);
+    pj_grp_lock_release(tsx->grp_lock);
 }
 
 /* Utility to send response. */
@@ -313,7 +313,7 @@ static void terminate_our_tsx(int status_code)
     }
 
     pjsip_tsx_terminate(tsx, status_code);
-    pj_mutex_unlock(tsx->mutex);
+    pj_grp_lock_release(tsx->grp_lock);
 }
 
 #if 0	/* Unused for now */
@@ -1130,6 +1130,7 @@ static pj_bool_t on_rx_message(pjsip_rx_data *rdata)
 	    test_num=11, code1 = 100, code2 = 200;
 	else
 	    test_num=12, code1 = 200, code2 = 0;
+	(void) test_num;
 
 	if (rdata->msg_info.msg->type == PJSIP_REQUEST_MSG) {
 
@@ -1259,7 +1260,7 @@ static int perform_test( char *target_uri, char *from_uri,
 	tsx = pjsip_tsx_layer_find_tsx(0, &tsx_key, PJ_TRUE);
 	if (tsx) {
 	    pjsip_tsx_terminate(tsx, PJSIP_SC_REQUEST_TERMINATED);
-	    pj_mutex_unlock(tsx->mutex);
+	    pj_grp_lock_release(tsx->grp_lock);
 	    flush_events(1000);
 	}
 	pjsip_tx_data_dec_ref(tdata);

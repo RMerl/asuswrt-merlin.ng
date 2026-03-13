@@ -136,7 +136,7 @@ extern int cm_getReMacByIp(CM_CLIENT_TABLE *clientTbl, char *reIp, char *reMac, 
 extern int cm_getReTrafficMacByIp(CM_CLIENT_TABLE *clientTbl, char *reIp, char *reMac, int macLen);
 extern int cm_getReIpByReMac(CM_CLIENT_TABLE *clientTbl, char *reMac, char *reIp, int ipLen);
 extern int cm_getReTrafficMacByReMac(CM_CLIENT_TABLE *clientTbl, char *reMac, char *reTrafficMac, int macLen);
-extern int cm_getReMacBy2gMac(CM_CLIENT_TABLE *clientTbl, char *mac2g, char *reMac, int macLen);
+extern int cm_getReMacByMac(CM_CLIENT_TABLE *clientTbl, char *mac, char *reMac, int macLen);
 #ifdef ONBOARDING_VIA_VIF
 extern int cm_checkObVifReListUpdate(char *newReMac);
 extern int cm_getObVifReByNewReMac(char *newReMac, char *obReMac, int macLen);

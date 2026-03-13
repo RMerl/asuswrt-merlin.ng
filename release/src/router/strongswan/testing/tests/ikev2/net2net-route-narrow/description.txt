@@ -1,0 +1,11 @@
+A trap policy on gateway <b>sun</b> will trigger SAs to gateway <b>moon</b>
+that connect the subnets behind the two gateways. Based on the received traffic
+selector from the triggering packet, gateway <b>moon</b> narrows down the
+traffic selectors to one of two options.
+Subsequent pings issued by client <b>bob</b> behind gateway <b>sun</b> to
+<b>alice</b> and <b>venus</b> located behind gateway <b>moon</b> trigger the
+trap policy and lead to the automatic establishment of the subnet-to-subnet
+tunnels.
+<p/>
+The updown script automatically inserts iptables-based firewall rules
+that let pass the tunneled traffic.

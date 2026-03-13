@@ -1,0 +1,16 @@
+# make sure inbound packets trigger IRQ on the right CPU
+sun::set-cpu-affinity eth0 0
+sun::iptables-restore < /etc/iptables.rules
+moon::iptables-restore < /etc/iptables.rules
+sun::systemctl start strongswan
+moon::systemctl start strongswan
+sun::expect-connection gw-gw
+moon::expect-connection gw-gw
+# allow UDP encap from any source to 4500
+moon::iptables -A INPUT  -i eth0 -p udp --dport 4500 -j ACCEPT
+moon::iptables -A OUTPUT -o eth0 -p udp --dport 4500 -j ACCEPT
+sun:: iptables -A INPUT  -i eth0 -p udp --dport 4500 -j ACCEPT
+sun:: iptables -A OUTPUT -o eth0 -p udp --dport 4500 -j ACCEPT
+# trigger the creation of the fallback SA, use -I so no UDP socket is used to
+# determine the source address and trigger the acqurie (this packet is lost)
+moon::ping -c 1 -W 1 -I PH_IP_MOON PH_IP_SUN

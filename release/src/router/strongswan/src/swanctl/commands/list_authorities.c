@@ -97,7 +97,7 @@ static int list_authorities(vici_conn_t *conn)
 	vici_req_t *req;
 	vici_res_t *res;
 	command_format_options_t format = COMMAND_FORMAT_NONE;
-	char *arg, *ca_name = NULL;;
+	char *arg, *ca_name = NULL;
 	int ret = 0;
 
 	while (TRUE)

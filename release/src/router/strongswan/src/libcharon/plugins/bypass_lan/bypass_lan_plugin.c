@@ -90,7 +90,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * Plugin constructor
  */
-plugin_t *bypass_lan_plugin_create()
+PLUGIN_DEFINE(bypass_lan)
 {
 	private_bypass_lan_plugin_t *this;
 

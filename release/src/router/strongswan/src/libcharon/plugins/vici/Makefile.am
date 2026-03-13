@@ -80,7 +80,7 @@ if USE_RUBY_GEMS
 SUBDIRS += ruby
 endif
 
-if USE_PYTHON_EGGS
+if USE_PYTHON_WHEELS
 SUBDIRS += python
 endif
 

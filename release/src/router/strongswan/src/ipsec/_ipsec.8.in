@@ -277,16 +277,12 @@ command.
 .TP
 .B "\-\-version"
 returns the version in the form of
-.B Linux strongSwan U<strongSwan userland version>/K<Linux kernel version>
-if strongSwan uses the native NETKEY IPsec stack of the Linux kernel it is
-running on.
+.BR "strongSwan U<strongSwan userland version>/K<kernel version>" .
 .
 .TP
 .B "\-\-versioncode"
 returns the version number in the form of
-.B U<strongSwan userland version>/K<Linux kernel version>
-if strongSwan uses the native NETKEY IPsec stack of the Linux kernel it is
-running on.
+.BR "U<strongSwan userland version>/K<kernel version>" .
 .
 .TP
 .B "\-\-copyright"

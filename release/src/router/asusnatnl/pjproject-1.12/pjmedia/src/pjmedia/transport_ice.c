@@ -154,7 +154,7 @@ static void ice_on_turn_allocated(pj_ice_strans *ice_st,
 
 static pj_status_t ice_on_stun_binding_complete(pj_ice_strans *ice_st,
 										 pj_sockaddr *local_addr, 
-										 int ip_chagned_type);
+										 natnl_addr_changed_type ip_chagned_type);
 
 static pj_status_t ice_on_tcp_server_binding_complete(pj_ice_strans *ice_st,
 											 pj_sockaddr *external_addr,
@@ -188,8 +188,8 @@ static const pj_str_t STR_IP6		= { "IP6", 3 };
 static const pj_str_t STR_RTCP		= { "rtcp", 4 };
 static const pj_str_t STR_BANDW_RR	= { "RR", 2 };
 static const pj_str_t STR_BANDW_RS	= { "RS", 2 };
-static const pj_str_t STR_X_ADAPTER3	= { "X-adapter3", 10};
-static const pj_str_t STR_FINGERPRINT	= { "fingerprint", 11 };
+//static const pj_str_t STR_X_ADAPTER3	= { "X-adapter3", 10};
+//static const pj_str_t STR_FINGERPRINT	= { "fingerprint", 11 };
 
 enum {
     COMP_RTP = 1,
@@ -238,7 +238,8 @@ PJ_DEF(pj_status_t) pjmedia_ice_create2(pjmedia_endpt *endpt,
     tp_ice->af = cfg->af;
     tp_ice->options = options;
     tp_ice->comp_cnt = comp_cnt;
-    pj_ansi_strncpy(tp_ice->base.name, pool->obj_name, PJ_MAX_OBJ_NAME);
+    pj_ansi_strxcpy(tp_ice->base.name, pool->obj_name, 
+                    sizeof(tp_ice->base.name));
 	pj_memset(&tp_ice->base, 0, sizeof(pjmedia_transport)); // DEAN
     tp_ice->base.op = &transport_ice_op;
 	tp_ice->base.type = PJMEDIA_TRANSPORT_TYPE_ICE;
@@ -327,8 +328,9 @@ static int print_sdp_cand_attr(char *buffer, int max_len,
 			    pj_sockaddr_print(&cand->addr, ipaddr, 
 					      sizeof(ipaddr), 0),
 			    (unsigned)pj_sockaddr_get_port(&cand->addr));
-    if (len < 1 || len >= max_len)
+    if (len < 1 || len >= max_len) {
 	return -1;
+	}
 
 	switch (cand->type) {
 	case PJ_ICE_CAND_TYPE_HOST:
@@ -352,14 +354,18 @@ static int print_sdp_cand_attr(char *buffer, int max_len,
 	len2 = -1;
 	break;
     }
-    if (len2 < 1 || len2 >= max_len)
+    if (len2 < 1 || len2 >= max_len) {
 	return -1;
+	}
 
 	len3 = 0;
 	// tcptype
 	if (cand->tcp_type > PJ_ICE_CAND_TCP_TYPE_NONE) {
 		char *tcptype = "";
 		switch(cand->tcp_type) {
+			case PJ_ICE_CAND_TCP_TYPE_NONE:
+				tcptype = "none";
+				break;
 			case PJ_ICE_CAND_TCP_TYPE_ACTIVE:
 				tcptype = "active";
 				break;
@@ -515,7 +521,7 @@ static void retrieve_remote_turn_attr(struct transport_ice *tp_ice,
 	if (inv_cid && inv_cid->slen > 0)
 	{
 		memset(tmp, 0, sizeof(tmp));
-		sprintf(tmp, "z.%.*s", inv_cid->slen, inv_cid->ptr);
+		sprintf(tmp, "z.%.*s", (int)inv_cid->slen, inv_cid->ptr);
 		pj_strdup2(tp_ice->pool, &username, tmp);
 	}
 
@@ -1484,7 +1490,7 @@ static pj_status_t transport_media_create(pjmedia_transport *tp,
 	// if it is UAS, retrieve remote turn attribute and save it to remo_turn config
 	if ((tp_ice->base.use_turn_flag & TURN_FLAG_USE_UAC_TURN) > 0 && 
 		ice_role == PJ_ICE_SESS_ROLE_CONTROLLED)
-		retrieve_remote_turn_attr(tp_ice, rem_sdp->media[media_index], &rem_sdp->inv_cid);
+		retrieve_remote_turn_attr(tp_ice, rem_sdp->media[media_index], (pj_str_t *)&rem_sdp->inv_cid);
 
     status = pj_ice_strans_init_ice(tp_ice->ice_st, ice_role, NULL, NULL);
 
@@ -1542,37 +1548,37 @@ static pj_status_t transport_encode_sdp(pjmedia_transport *tp,
 			userid = pjmedia_sdp_attr_find2(rem_sdp->media[0]->attr_count, 
 				rem_sdp->media[0]->attr, "X-adapter1", NULL);
 			if (userid == NULL)
-				pjmedia_transport_set_remote_userid(&tp_ice->base, "", 0);
+				pjmedia_transport_set_remote_userid(&tp_ice->base, "");
 			else
 				pjmedia_transport_set_remote_userid(&tp_ice->base, 
-				userid->value.ptr, userid->value.slen);
+				userid->value.ptr);
 
 			// device id
 			deviceid = pjmedia_sdp_attr_find2(rem_sdp->media[0]->attr_count, 
 				rem_sdp->media[0]->attr, "X-adapter2", NULL);
 			if (deviceid == NULL)
-				pjmedia_transport_set_remote_deviceid(&tp_ice->base, "", 0);
+				pjmedia_transport_set_remote_deviceid(&tp_ice->base, "");
 			else
 				pjmedia_transport_set_remote_deviceid(&tp_ice->base, 
-				deviceid->value.ptr, deviceid->value.slen);
+				deviceid->value.ptr);
 
 			// turn server
 			turnsrv = pjmedia_sdp_attr_find2(rem_sdp->media[0]->attr_count, 
 				rem_sdp->media[0]->attr, "X-adapter3", NULL);
 			if (turnsrv == NULL)
-				pjmedia_transport_set_remote_turnsvr(&tp_ice->base, "", 0);
+				pjmedia_transport_set_remote_turnsvr(&tp_ice->base, "");
 			else
 				pjmedia_transport_set_remote_turnsvr(&tp_ice->base, 
-				turnsrv->value.ptr, turnsrv->value.slen);
+				turnsrv->value.ptr);
 
 			// turn password
 			turnpwd = pjmedia_sdp_attr_find2(rem_sdp->media[0]->attr_count, 
 				rem_sdp->media[0]->attr, "X-adapter4", NULL);
 			if (turnpwd == NULL)
-				pjmedia_transport_set_remote_turnpwd(&tp_ice->base, "", 0);
+				pjmedia_transport_set_remote_turnpwd(&tp_ice->base, "");
 			else
 				pjmedia_transport_set_remote_turnpwd(&tp_ice->base, 
-				turnpwd->value.ptr, turnpwd->value.slen);
+				turnpwd->value.ptr);
 		}
 	}
 	
@@ -1592,7 +1598,7 @@ static pj_status_t transport_encode_sdp(pjmedia_transport *tp,
 
 		// user id
 		memset(userid, 0, sizeof(userid));
-		pjmedia_transport_get_local_userid(&tp_ice->base, userid);
+		pjmedia_transport_get_local_userid(&tp_ice->base, userid, sizeof(userid));
 		my_attr = PJ_POOL_ALLOC_T(sdp_pool, pjmedia_sdp_attr);
 		pj_strdup2(sdp_pool, &my_attr->name, "X-adapter1");
 		pj_strdup2(sdp_pool, &my_attr->value, userid);
@@ -1603,7 +1609,7 @@ static pj_status_t transport_encode_sdp(pjmedia_transport *tp,
 
 		// device id
 		memset(deviceid, 0, sizeof(deviceid));
-		pjmedia_transport_get_local_deviceid(&tp_ice->base, deviceid);
+		pjmedia_transport_get_local_deviceid(&tp_ice->base, deviceid, sizeof(deviceid));
 		my_attr = PJ_POOL_ALLOC_T(sdp_pool, pjmedia_sdp_attr);
 		pj_strdup2(sdp_pool, &my_attr->name, "X-adapter2");
 		pj_strdup2(sdp_pool, &my_attr->value, deviceid);
@@ -1614,7 +1620,7 @@ static pj_status_t transport_encode_sdp(pjmedia_transport *tp,
 
 		// turn server
 		memset(turnsrv, 0, sizeof(turnsrv));
-		pjmedia_transport_get_local_turnsrv(&tp_ice->base, turnsrv);
+		pjmedia_transport_get_local_turnsrv(&tp_ice->base, turnsrv, sizeof(turnsrv));
 		my_attr = PJ_POOL_ALLOC_T(sdp_pool, pjmedia_sdp_attr);
 		pj_strdup2(sdp_pool, &my_attr->name, "X-adapter3");
 		pj_strdup2(sdp_pool, &my_attr->value, turnsrv);
@@ -1625,7 +1631,7 @@ static pj_status_t transport_encode_sdp(pjmedia_transport *tp,
 
 		// turn password
 		memset(turnpwd, 0, sizeof(turnpwd));
-		pjmedia_transport_get_local_turnpwd(&tp_ice->base, turnpwd);
+		pjmedia_transport_get_local_turnpwd(&tp_ice->base, turnpwd, sizeof(turnpwd));
 		my_attr = PJ_POOL_ALLOC_T(sdp_pool, pjmedia_sdp_attr);
 		pj_strdup2(sdp_pool, &my_attr->name, "X-adapter4");
 		pj_strdup2(sdp_pool, &my_attr->value, turnpwd);
@@ -1665,7 +1671,7 @@ static pj_status_t transport_encode_sdp(pjmedia_transport *tp,
 
 		// nat type 
 		memset(nat_type, 0, sizeof(nat_type));
-		pjmedia_transport_get_local_nattype(&tp_ice->base, nat_type);
+		pjmedia_transport_get_local_nattype(&tp_ice->base, nat_type, sizeof(nat_type));
 		my_attr = PJ_POOL_ALLOC_T(sdp_pool, pjmedia_sdp_attr);
 		pj_strdup2(sdp_pool, &my_attr->name, "nat-type");
 		pj_strdup2(sdp_pool, &my_attr->value, nat_type);
@@ -1673,6 +1679,7 @@ static pj_status_t transport_encode_sdp(pjmedia_transport *tp,
 		pjmedia_sdp_attr_add(&sdp_local->media[media_index]->attr_count,
 			sdp_local->media[media_index]->attr,
 			my_attr);
+		(void) len;
 	}
 #endif
     if (tp_ice->initial_sdp) {
@@ -1915,7 +1922,7 @@ static pj_status_t transport_media_start(pjmedia_transport *tp,
 		// if it is UAS, retrieve remote turn attribute and save it to remo_turn config
 		if ((tp_ice->base.use_turn_flag & TURN_FLAG_USE_UAC_TURN) > 0 && 
 			tp_ice->rem_offer_state.local_role == PJ_ICE_SESS_ROLE_CONTROLLED)
-			retrieve_remote_turn_attr(tp_ice, sdp_local->media[media_index], &sdp_local->inv_cid);
+			retrieve_remote_turn_attr(tp_ice, sdp_local->media[media_index], (pj_str_t *)&sdp_local->inv_cid);
 
 	    status = pj_ice_strans_init_ice(tp_ice->ice_st, 
 					    tp_ice->rem_offer_state.local_role,
@@ -1985,8 +1992,9 @@ static pj_status_t transport_get_info(pjmedia_transport *tp,
 
     /* Get RTP default address */
     status = pj_ice_strans_get_def_cand(tp_ice->ice_st, 1, &cand);
-    if (status != PJ_SUCCESS)
+    if (status != PJ_SUCCESS) {
 	return status;
+	}
 
 	if (pj_sockaddr_has_addr(&cand.addr))
     	pj_sockaddr_cp(&info->sock_info.rtp_addr_name, &cand.addr);
@@ -2318,7 +2326,7 @@ static void ice_on_turn_allocated(pj_ice_strans *ice_st, pj_sockaddr_t *turn_srv
 /* STUN binding complete */
 static pj_status_t ice_on_stun_binding_complete(pj_ice_strans *ice_st,
 										 pj_sockaddr *local_addr,  
-										 int ip_chagned_type)
+										 natnl_addr_changed_type ip_chagned_type)
 {
 	struct transport_ice *tp_ice;
 
@@ -2327,7 +2335,7 @@ static pj_status_t ice_on_stun_binding_complete(pj_ice_strans *ice_st,
 	if (tp_ice->cb.on_stun_binding_complete)
 		(*tp_ice->cb.on_stun_binding_complete)(&tp_ice->base, 
 							local_addr, ip_chagned_type);
-
+	return PJ_SUCCESS;
 }
 
 static pj_status_t ice_on_tcp_server_binding_complete(pj_ice_strans *ice_st,

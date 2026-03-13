@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Tobias Brunner
+ * Copyright (C) 2020-2023 Tobias Brunner
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -50,6 +50,7 @@ struct private_xof_t {
 	 */
 	EVP_MD_CTX *ctx;
 
+#if OPENSSL_VERSION_NUMBER < 0x30300000L
 	/**
 	 * Current seed
 	 */
@@ -59,6 +60,7 @@ struct private_xof_t {
 	 * Offset into generated data
 	 */
 	size_t offset;
+#endif
 };
 
 METHOD(xof_t, get_type, ext_out_function_t,
@@ -67,17 +69,33 @@ METHOD(xof_t, get_type, ext_out_function_t,
 	return this->algorithm;
 }
 
+/**
+ * Initialize the EVP_MD_CTX with the given seed
+ */
+static bool init_md(private_xof_t *this, chunk_t seed)
+{
+	return EVP_DigestInit_ex(this->ctx, this->md, NULL) == 1 &&
+		   EVP_DigestUpdate(this->ctx, seed.ptr, seed.len) == 1;
+}
+
 METHOD(xof_t, get_bytes, bool,
 	private_xof_t *this, size_t out_len, uint8_t *buffer)
 {
 	bool success = FALSE;
-	chunk_t data;
 
+#if OPENSSL_VERSION_NUMBER >= 0x30300000L
+	/* this API is available since 3.2.0 */
+	if (EVP_DigestSqueeze(this->ctx, buffer, out_len) == 1)
+	{
+		success = TRUE;
+	}
+#else /* OPENSSL_VERSION_NUMBER */
 	/* we can call EVP_DigestFinalXOF() only once, so to support an arbitrary
 	 * number of calls to get_bytes(), we request all the data we already
 	 * requested previously and just ignore what we already handed out */
-	if (EVP_DigestInit_ex(this->ctx, this->md, NULL) == 1 &&
-		EVP_DigestUpdate(this->ctx, this->seed.ptr, this->seed.len) == 1)
+	chunk_t data;
+
+	if (init_md(this, this->seed))
 	{
 		data = chunk_alloc(out_len + this->offset);
 		if (EVP_DigestFinalXOF(this->ctx, data.ptr, data.len) == 1)
@@ -88,6 +106,7 @@ METHOD(xof_t, get_bytes, bool,
 		}
 		chunk_clear(&data);
 	}
+#endif /* OPENSSL_VERSION_NUMBER */
 	return success;
 }
 
@@ -113,17 +132,23 @@ METHOD(xof_t, get_seed_size, size_t,
 METHOD(xof_t, set_seed, bool,
 	private_xof_t *this, chunk_t seed)
 {
+#if OPENSSL_VERSION_NUMBER >= 0x30300000L
+	return init_md(this, seed);
+#else
 	chunk_clear(&this->seed);
 	this->seed = chunk_clone(seed);
 	this->offset = 0;
 	return TRUE;
+#endif
 }
 
 METHOD(xof_t, destroy, void,
 	private_xof_t *this)
 {
-	EVP_MD_CTX_free(this->ctx);
+#if OPENSSL_VERSION_NUMBER < 0x30300000L
 	chunk_clear(&this->seed);
+#endif
+	EVP_MD_CTX_free(this->ctx);
 	free(this);
 }
 

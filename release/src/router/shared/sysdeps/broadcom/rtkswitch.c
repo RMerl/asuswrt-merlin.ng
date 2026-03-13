@@ -41,11 +41,23 @@ typedef struct {
 	unsigned int mode;
 } testmode;
 
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
+typedef struct {
+	unsigned int pm1;
+	unsigned int pm2;
+	unsigned int pm3;
+	unsigned int pm4;
+} regop;
+#endif
+
 int rtkswitch_port_stat(int port);
 int rtkswitch_port_mactable(int port);
 int rtkswitch_testmode(int val, int val2, int val3);
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
+int rtkswitch_regop(int val, int val2, int val3, int val4, int val5);
+#endif
 
-int rtkswitch_ioctl(int val, int val2, int val3)
+int rtkswitch_ioctl(int val, int val2, int val3, int val4, int val5)
 {
 	int fd;
 	int value = 0;
@@ -77,6 +89,15 @@ int rtkswitch_ioctl(int val, int val2, int val3)
 	case 26:	// IOL 2.5G mode6
 	case 27:	// IOL 2.5G mode7
 			return rtkswitch_testmode(val, val2, val3);
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
+	case 80:	// rtl8373_setAsicReg
+	case 81:	// rtl8373_getAsicReg
+	case 82:	// rtk_port_phyReg_set
+	case 83:	// rtk_port_phyReg_get
+	case 84:	// rtk_rtl8373_sds_reg_write
+	case 85:	// rtk_rtl8373_sds_reg_read
+			return rtkswitch_regop(val, val2, val3, val4, val5);
+#endif
 	case 2:		/* Dump MAC status of specified LAN port */
 	case 3:		/* Get link status of the specified LAN port */
 	case 4:		/* Get link status of LAN ports */
@@ -93,7 +114,8 @@ int rtkswitch_ioctl(int val, int val2, int val3)
 	case 99:
 	case 100:
 #endif
-	case 36:	/* Set Vlan VID. */
+	case 36:	/* Set Vlan VID. or CVLAN in qinq case*/
+	case 35:	/* Set Vlan VID. SVLAN*/
 	case 37:	/* Set Vlan PRIO. */
 	case 38:	/* Initialize VLAN. Cherry Cho added in 2011/7/15. */
 	case 380:	/* Set port VlanFilter */
@@ -103,6 +125,9 @@ int rtkswitch_ioctl(int val, int val2, int val3)
 	case 3900:	/* Create VLAN w/o pvid, w/o cpu port, need to specify vlanid first, by 36 */
 	case 3901:	/* reset VLAN. need to specify vlanid first, by 36 */
 	case 3902:	/* Create VLAN w/o setting pvid, w/ cpu ports in mbr/untag , need to specify vlanid first, by 36 */
+	case 3903:	/* slvan setup example */
+	case 3904:	/* slvan basic setup for bcm_vlan_extswitch */
+	case 3905:	/* Create vlan by portinfo, need to specify vlanid first, by 36 */
 	case 391:	/* Set specified port PVID,PRIV, need to specify vlanid first, by 36 */
 	case 3911:	/* Set specified ports PVID, need to specify vlanid first, by 36 */
 	case 392:	/* Get specified port PVID */
@@ -170,14 +195,18 @@ int rtkswitch_ioctl(int val, int val2, int val3)
 	case 451:	/* workaround serdes port link down */
 	case 452:	/* workaround switch ports link down */
 	case 49:	/* disable l2 learning */
+	case 490:	/* disable lan ports and cpu port l2 learning */
 	case 491:	/* dump drop reason register pre */
 	case 492:	/* dump drop reason register post */
+	case 494:	/* force ivl_en=1 on current vlan_vid (set via case 36) */
+	case 495:	/* get current vlan_vid ivl_en / mbr / untag */
 	case 50:	/* get FlowControlJumboMode */
 	case 52:	/* Get Jumbo threhsold(enable/disable) */
 	case 54:	/* Get Jumbo size for Jumbo mode flow control*/
 	case 60:	/* Get permitted port isolation portmask */
 	//case 63:	/* Get all ports isolation EFID */
 	case 70:        /* Get TxDelay, RxDelay */
+	case 77:	/* dump full L2 table for all ports (diagnose SVL/IVL MAC learning) */
 	case 902:       /* Get phy testmode x(1, 4) */
 		p = NULL;
 #if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
@@ -228,9 +257,13 @@ int config_rtkswitch(int argc, char *argv[])
 	int val;
 	int val2 = 0;
 	int val3 = 0;
+	int val4 = 0;
+	int val5 = 0;
 	char *cmd = NULL;
 	char *cmd2 = NULL;
 	char *cmd3 = NULL;
+	char *cmd4 = NULL;
+	char *cmd5 = NULL;
 
 #if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	if (!is_rtl8372_boardid())
@@ -243,15 +276,23 @@ int config_rtkswitch(int argc, char *argv[])
 	if (argc >= 3)
 		cmd2 = argv[2];
 	if (argc >= 4)
-                cmd3 = argv[3];
+		cmd3 = argv[3];
+	if (argc >= 5)
+		cmd4 = argv[4];
+	if (argc >= 6)
+		cmd5 = argv[5];
 
 	val = (int) strtol(cmd, NULL, 0);
 	if (cmd2)
 		val2 = (int) strtol(cmd2, NULL, 0);
 	if (cmd3)
 		val3 = (int) strtol(cmd3, NULL, 0);
+	if (cmd4)
+		val4 = (int) strtol(cmd4, NULL, 0);
+	if (cmd5)
+		val5 = (int) strtol(cmd5, NULL, 0);
 
-	return rtkswitch_ioctl(val, val2, val3);
+	return rtkswitch_ioctl(val, val2, val3, val4, val5);
 }
 
 /* Get link status of LAN ports */
@@ -391,6 +432,33 @@ int rtkswitch_testmode(int val, int val2, int val3)
 
 	return 0;
 }
+
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
+int rtkswitch_regop(int val, int val2, int val3, int val4, int val5)
+{
+        int fd;
+        regop ro;
+
+        fd = open("/dev/rtkswitch", O_RDONLY);
+        if (fd < 0) {
+                perror("/dev/rtkswitch");
+        } else {
+                memset(&ro, 0, sizeof(ro));
+                ro.pm1 = val2;
+                ro.pm2 = val3;
+                ro.pm3 = val4;
+                ro.pm4 = val5;
+                if (ioctl(fd, val, &ro) < 0) {
+                        perror("rtkswitch ioctl");
+                        close(fd);
+                }
+
+                close(fd);
+        }
+
+        return 0;
+}
+#endif
 
 int rtkswitch_port_duplex(int port)
 {

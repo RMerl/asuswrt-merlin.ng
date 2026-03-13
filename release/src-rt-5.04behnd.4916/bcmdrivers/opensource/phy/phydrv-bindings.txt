@@ -142,6 +142,7 @@ Required properties for external endpoint PHY node:
                 "5G:256,0x2345,789,0x2345;"
                 "10G:256,0x2345,789,0x2345;"
 
+- phy-combo:    Indicate if this is a combo port which supports copper and optic
 
 For external endpoint PHY node with phy-mode set to "rgmii" on devices using RGMII pad control (63138, 63148, 63158) 
 following optional properties should be set.

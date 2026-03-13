@@ -156,7 +156,7 @@ METHOD(pt_tls_dispatcher_t, dispatch, void,
 		lib->processor->queue_job(lib->processor,
 				(job_t*)callback_job_create_with_prio((callback_job_cb_t)handle,
 										connection, (void*)cleanup,
-										(callback_job_cancel_t)return_false,
+										callback_job_cancel_thread,
 										JOB_PRIO_CRITICAL));
 	}
 }

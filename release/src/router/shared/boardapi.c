@@ -212,7 +212,7 @@ static const struct led_btn_table_s {
 	{ "led_red_gpio",	&led_gpio_table[LED_RED] },
 	{ "led_white_gpio",	&led_gpio_table[LED_WHITE] },
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 	{ "led_group1_red_gpio",	&led_gpio_table[LED_GROUP1_RED] },
 	{ "led_group1_green_gpio",	&led_gpio_table[LED_GROUP1_GREEN] },
 	{ "led_group1_blue_gpio",	&led_gpio_table[LED_GROUP1_BLUE] },
@@ -223,7 +223,7 @@ static const struct led_btn_table_s {
 	{ "led_group3_red_gpio",	&led_gpio_table[LED_GROUP3_RED] },
 	{ "led_group3_green_gpio",	&led_gpio_table[LED_GROUP3_GREEN] },
 	{ "led_group3_blue_gpio",	&led_gpio_table[LED_GROUP3_BLUE] },
-#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTAX6000) && !defined(GT10) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7)
+#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTAX6000) && !defined(GT10) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7) && !defined(GS7_PRO_MAX)
 	{ "led_group4_red_gpio",	&led_gpio_table[LED_GROUP4_RED] },
 	{ "led_group4_green_gpio",	&led_gpio_table[LED_GROUP4_GREEN] },
 	{ "led_group4_blue_gpio",	&led_gpio_table[LED_GROUP4_BLUE] },
@@ -338,7 +338,7 @@ static const struct led_btn_table_s {
 	{ "btn_bt_indicator_gpio",        &led_gpio_table[IND_BT] },
 	{ "btn_pa_indicator_gpio",    &led_gpio_table[IND_PA] },
 #endif
-#if defined(DSL_AX82U) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if defined(DSL_AX82U) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 	{ "led_wifi_gpio",		&led_gpio_table[LED_WIFI] },
 #endif
 #if defined(GTAXE16000) || defined(GTAX11000_PRO)
@@ -837,7 +837,7 @@ int set_pwr_usb(int boolOn) {
 		system("sw 0xff800554 0");
 		system("sw 0xff800558 0x4050");
 		system("sw 0xff80055c 0x21");
-#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 		/* set pinmux of GPIO 67 as 4 to enable GPIO mode */
 		system("sw 0xff800554 0");
 		system("sw 0xff800558 0x4043");
@@ -978,6 +978,8 @@ int button_pressed(int which)
 		gpio_value = get_gpio(use_gpio&0xff);
 
 		//_dprintf("use_gpio: %x gpio_value: %x\n", use_gpio, gpio_value);
+		if (gpio_value == -1)
+			return 0;	// invalid state, return no-pressed
 
 		if((use_gpio&GPIO_ACTIVE_LOW)==0) // active high case
 			return gpio_value==0 ? 0 : 1;
@@ -1078,9 +1080,9 @@ int do_led_control(int which, int mode)
 	}
 #endif
 
-#if (defined(RTAX9000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RTBE58_GO) || defined(RTBE92U) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)) && !defined(RTCONFIG_BCM_MFG)
+#if (defined(RTAX9000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RTBE58_GO) || defined(RTBE92U) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)) && !defined(RTCONFIG_BCM_MFG)
 	if ((which == LED_WAN_NORMAL) && (mode == LED_ON)) {
-#if defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTBE58_GO) || defined(RTBE55) || defined(GT7)
+#if defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTBE58_GO) || defined(RTBE55) || defined(GT7) || defined(GS7_PRO_MAX)
 		if (hnd_get_phy_status("eth0") == 0)
 #elif defined(RTBE82M)
 		if (!mxl_get_phy_status(0))
@@ -1098,6 +1100,22 @@ int do_led_control(int which, int mode)
 	get_gpio_values_once(0);
 	use_gpio = led_gpio_table[which];
 	gpio_nr = use_gpio & 0xFF;
+
+#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
+	if (nvram_match("AllLED", "0") && nvram_match("asus_mfg", "0") && (mode == LED_ON)
+		&& (which != PWR_USB)
+#if defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI)
+		&& (which != ES_RESET)
+		&& (which != ES_SOP0)
+		&& (which != ES_SOP1)
+		&& (which != ES_SOP2)
+		&& (which != PWR_SWITCH)
+#endif
+	) {
+		dbg2("skip turning on LED %d (0x%x)\n", gpio_nr, gpio_nr);
+		return 0;
+	}
+#endif
 
 #if defined(RTCONFIG_ETRON_XHCI_USB3_LED)
 	if (which == LED_USB3 && nvram_match("led_usb3_gpio", "etron")) {
@@ -1358,7 +1376,7 @@ int lanport_status(void)
 	return rtkswitch_lanPorts_phyStatus();
 #elif defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTCONFIG_BCM_502L07P2) || defined(BCM4912) || defined(BCM6756) || defined(RTCONFIG_HND_ROUTER_BE_4916) || defined(BCM4906_504) || defined(RTCONFIG_MULTIWAN_IF)
 	int status = 0;
-#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7)
+#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7) && !defined(GS7_PRO_MAX)
 	char word[16] = {0};
 	char *next = NULL;
 	foreach(word, nvram_safe_get("lan_ifnames"), next) {
@@ -1375,8 +1393,8 @@ int lanport_status(void)
 		status |= hnd_get_phy_status(word);
 	}
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI)
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 	status |= mxl_lan_phy_status();
 #else
 #if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
@@ -1494,15 +1512,15 @@ int lanport_ctrl(int ctrl)
 		system("/usr/bin/switch_cli GSW_MDIO_DATA_WRITE nAddressDev=5 nAddressReg=0 nData=0x1c00");
 	}
 	return 1;
-#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(EBG19) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(EBG19) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 	if (ctrl)
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 		mxlswitch_LanPort_linkUp();
 #else
 		rtkswitch_LanPort_linkUp();
 #endif
 	else
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 		mxlswitch_LanPort_linkDown();
 #else
 		rtkswitch_LanPort_linkDown();

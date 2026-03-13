@@ -502,7 +502,7 @@ static void stop_timer(pjsip_inv_session *inv)
 static void pjsip_timer_deinit_module(pjsip_endpoint *endpt)
 {
 	int inst_id = pjsip_endpt_get_inst_id(endpt);
-    PJ_TODO(provide_initialized_flag_for_each_endpoint);
+    //PJ_TODO(provide_initialized_flag_for_each_endpoint);
     is_initialized[inst_id] = PJ_FALSE;
 }
 
@@ -1035,8 +1035,9 @@ PJ_DEF(pj_status_t) pjsip_timer_update_resp(pjsip_inv_session *inv,
 	int inst_id;
 
     /* Check if Session Timers is supported */
-    if ((inv->options & PJSIP_INV_SUPPORT_TIMER) == 0)
+    if ((inv->options & PJSIP_INV_SUPPORT_TIMER) == 0) {
 	return PJ_SUCCESS;
+	}
 
 	inst_id = inv->pool->factory->inst_id;
 

@@ -275,9 +275,10 @@ PJ_DEF(pj_status_t) pjsip_tcp_transport_start3(
     pj_memcpy(&listener->qos_params, &cfg->qos_params,
 	      sizeof(cfg->qos_params));
 
-    pj_ansi_strcpy(listener->factory.obj_name, "tcplis");
+    pj_ansi_strxcpy(listener->factory.obj_name, "tcptp", 
+                    sizeof(listener->factory.obj_name));
 
-    status = pj_lock_create_recursive_mutex(pool, "tcplis", 
+    status = pj_lock_create_recursive_mutex(pool, listener->factory.obj_name, 
 					    &listener->factory.lock);
     if (status != PJ_SUCCESS)
 	goto on_error;

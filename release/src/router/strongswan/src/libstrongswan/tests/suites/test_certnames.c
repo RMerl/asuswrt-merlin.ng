@@ -68,15 +68,15 @@ static char keydata[] = {
 /**
  * Issue a certificate with permitted/excluded name constraints
  */
-static certificate_t* create_cert(certificate_t *ca, char *subject, char *san,
-								x509_flag_t flags, identification_t *permitted,
-								identification_t *excluded)
+static certificate_t* create_cert_lists(certificate_t *ca, char *subject,
+										linked_list_t *sans, x509_flag_t flags,
+										linked_list_t *permitted,
+										linked_list_t *excluded)
 {
 	private_key_t *privkey;
 	public_key_t *pubkey;
 	certificate_t *cert;
 	identification_t *id;
-	linked_list_t *plist, *elist, *sans;
 
 	privkey = lib->creds->create(lib->creds, CRED_PRIVATE_KEY, KEY_RSA,
 								 BUILD_BLOB_ASN1_DER, chunk_from_thing(keydata),
@@ -84,6 +84,39 @@ static certificate_t* create_cert(certificate_t *ca, char *subject, char *san,
 	ck_assert(privkey);
 	pubkey = privkey->get_public_key(privkey);
 	ck_assert(pubkey);
+
+	id = identification_create_from_string(subject);
+	cert = lib->creds->create(lib->creds, CRED_CERTIFICATE, CERT_X509,
+						BUILD_SIGNING_KEY, privkey,
+						BUILD_PUBLIC_KEY, pubkey,
+						BUILD_SUBJECT, id,
+						BUILD_X509_FLAG, flags,
+						BUILD_SIGNING_CERT, ca,
+						BUILD_SUBJECT_ALTNAMES, sans,
+						BUILD_PERMITTED_NAME_CONSTRAINTS, permitted,
+						BUILD_EXCLUDED_NAME_CONSTRAINTS, excluded,
+						BUILD_END);
+	ck_assert(cert);
+	id->destroy(id);
+	sans->destroy_offset(sans, offsetof(identification_t, destroy));
+	permitted->destroy_offset(permitted, offsetof(identification_t, destroy));
+	excluded->destroy_offset(excluded, offsetof(identification_t, destroy));
+	privkey->destroy(privkey);
+	pubkey->destroy(pubkey);
+
+	return cert;
+}
+
+/**
+ * Issue a certificate with single values
+ */
+static certificate_t* create_cert(certificate_t *ca, char *subject, char *san,
+								  x509_flag_t flags, identification_t *permitted,
+								  identification_t *excluded)
+{
+	linked_list_t *plist, *elist, *sans;
+	identification_t *id;
+
 	plist = linked_list_create();
 	if (permitted)
 	{
@@ -100,26 +133,7 @@ static certificate_t* create_cert(certificate_t *ca, char *subject, char *san,
 		id = identification_create_from_string(san);
 		sans->insert_last(sans, id);
 	}
-	id = identification_create_from_string(subject);
-	cert = lib->creds->create(lib->creds, CRED_CERTIFICATE, CERT_X509,
-						BUILD_SIGNING_KEY, privkey,
-						BUILD_PUBLIC_KEY, pubkey,
-						BUILD_SUBJECT, id,
-						BUILD_X509_FLAG, flags,
-						BUILD_SIGNING_CERT, ca,
-						BUILD_SUBJECT_ALTNAMES, sans,
-						BUILD_PERMITTED_NAME_CONSTRAINTS, plist,
-						BUILD_EXCLUDED_NAME_CONSTRAINTS, elist,
-						BUILD_END);
-	ck_assert(cert);
-	id->destroy(id);
-	sans->destroy_offset(sans, offsetof(identification_t, destroy));
-	plist->destroy_offset(plist, offsetof(identification_t, destroy));
-	elist->destroy_offset(elist, offsetof(identification_t, destroy));
-	privkey->destroy(privkey);
-	pubkey->destroy(pubkey);
-
-	return cert;
+	return create_cert_lists(ca, subject, sans, flags, plist, elist);
 }
 
 /**
@@ -188,26 +202,29 @@ START_TEST(test_permitted_dn)
 END_TEST
 
 static struct {
-	id_type_t ctype;
 	char *cdata;
 	char *subject;
 	bool good;
 } permitted_san[] = {
-	{ ID_FQDN, ".strongswan.org", "test.strongswan.org", TRUE },
-	{ ID_FQDN, "strongswan.org", "test.strongswan.org", TRUE },
-	{ ID_FQDN, "a.b.c.strongswan.org", "d.a.b.c.strongswan.org", TRUE },
-	{ ID_FQDN, "a.b.c.strongswan.org", "a.b.c.d.strongswan.org", FALSE },
-	{ ID_FQDN, "strongswan.org", "strongswan.org.com", FALSE },
-	{ ID_FQDN, ".strongswan.org", "strongswan.org", FALSE },
-	{ ID_FQDN, "strongswan.org", "nostrongswan.org", FALSE },
-	{ ID_FQDN, "strongswan.org", "swan.org", FALSE },
-	{ ID_FQDN, "strongswan.org", "swan.org", FALSE },
-	{ ID_RFC822_ADDR, "tester@strongswan.org", "tester@strongswan.org", TRUE },
-	{ ID_RFC822_ADDR, "tester@strongswan.org", "atester@strongswan.org", FALSE },
-	{ ID_RFC822_ADDR, "strongswan.org", "tester@strongswan.org", TRUE },
-	{ ID_RFC822_ADDR, "strongswan.org", "tester@test.strongswan.org", FALSE },
-	{ ID_RFC822_ADDR, ".strongswan.org", "tester@test.strongswan.org", TRUE },
-	{ ID_RFC822_ADDR, ".strongswan.org", "tester@strongswan.org", FALSE },
+	{ ".strongswan.org", "test.strongswan.org", TRUE },
+	{ "strongswan.org", "test.strongswan.org", TRUE },
+	{ "a.b.c.strongswan.org", "d.a.b.c.strongswan.org", TRUE },
+	{ "a.b.c.strongswan.org", "a.b.c.d.strongswan.org", FALSE },
+	{ "strongswan.org", "strongswan.org.com", FALSE },
+	{ ".strongswan.org", "strongswan.org", FALSE },
+	{ "strongswan.org", "nostrongswan.org", FALSE },
+	{ "strongswan.org", "swan.org", FALSE },
+	{ "strongswan.org", "swan.org", FALSE },
+	{ "tester@strongswan.org", "tester@strongswan.org", TRUE },
+	{ "tester@strongswan.org", "atester@strongswan.org", FALSE },
+	{ "email:strongswan.org", "tester@strongswan.org", TRUE },
+	{ "email:strongswan.org", "tester@test.strongswan.org", FALSE },
+	{ "email:.strongswan.org", "tester@test.strongswan.org", TRUE },
+	{ "email:.strongswan.org", "tester@strongswan.org", FALSE },
+	{ "192.168.1.0/24", "192.168.1.10", TRUE },
+	{ "192.168.1.0/24", "192.168.2.10", FALSE },
+	{ "fec0::/64", "fec0::10", TRUE },
+	{ "fec0::/64", "fec1::10", FALSE },
 };
 
 START_TEST(test_permitted_san)
@@ -215,8 +232,7 @@ START_TEST(test_permitted_san)
 	certificate_t *ca, *sj;
 	identification_t *id;
 
-	id = identification_create_from_encoding(permitted_san[_i].ctype,
-									chunk_from_str(permitted_san[_i].cdata));
+	id = identification_create_from_string(permitted_san[_i].cdata);
 	ca = create_cert(NULL, "CN=CA", NULL, X509_CA, id, NULL);
 	sj = create_cert(ca, "CN=SJ", permitted_san[_i].subject, 0, NULL, NULL);
 
@@ -259,26 +275,29 @@ START_TEST(test_excluded_dn)
 END_TEST
 
 static struct {
-	id_type_t ctype;
 	char *cdata;
 	char *subject;
 	bool good;
 } excluded_san[] = {
-	{ ID_FQDN, ".strongswan.org", "test.strongswan.org", FALSE },
-	{ ID_FQDN, "strongswan.org", "test.strongswan.org", FALSE },
-	{ ID_FQDN, "a.b.c.strongswan.org", "d.a.b.c.strongswan.org", FALSE },
-	{ ID_FQDN, "a.b.c.strongswan.org", "a.b.c.d.strongswan.org", TRUE },
-	{ ID_FQDN, "strongswan.org", "strongswan.org.com", TRUE },
-	{ ID_FQDN, ".strongswan.org", "strongswan.org", TRUE },
-	{ ID_FQDN, "strongswan.org", "nostrongswan.org", TRUE },
-	{ ID_FQDN, "strongswan.org", "swan.org", TRUE },
-	{ ID_FQDN, "strongswan.org", "swan.org", TRUE },
-	{ ID_RFC822_ADDR, "tester@strongswan.org", "tester@strongswan.org", FALSE },
-	{ ID_RFC822_ADDR, "tester@strongswan.org", "atester@strongswan.org", TRUE },
-	{ ID_RFC822_ADDR, "strongswan.org", "tester@strongswan.org", FALSE },
-	{ ID_RFC822_ADDR, "strongswan.org", "tester@test.strongswan.org", TRUE },
-	{ ID_RFC822_ADDR, ".strongswan.org", "tester@test.strongswan.org", FALSE },
-	{ ID_RFC822_ADDR, ".strongswan.org", "tester@strongswan.org", TRUE },
+	{ ".strongswan.org", "test.strongswan.org", FALSE },
+	{ "strongswan.org", "test.strongswan.org", FALSE },
+	{ "a.b.c.strongswan.org", "d.a.b.c.strongswan.org", FALSE },
+	{ "a.b.c.strongswan.org", "a.b.c.d.strongswan.org", TRUE },
+	{ "strongswan.org", "strongswan.org.com", TRUE },
+	{ ".strongswan.org", "strongswan.org", TRUE },
+	{ "strongswan.org", "nostrongswan.org", TRUE },
+	{ "strongswan.org", "swan.org", TRUE },
+	{ "strongswan.org", "swan.org", TRUE },
+	{ "tester@strongswan.org", "tester@strongswan.org", FALSE },
+	{ "tester@strongswan.org", "atester@strongswan.org", TRUE },
+	{ "email:strongswan.org", "tester@strongswan.org", FALSE },
+	{ "email:strongswan.org", "tester@test.strongswan.org", TRUE },
+	{ "email:.strongswan.org", "tester@test.strongswan.org", FALSE },
+	{ "email:.strongswan.org", "tester@strongswan.org", TRUE },
+	{ "192.168.1.0/24", "192.168.1.10", FALSE },
+	{ "192.168.1.0/24", "192.168.2.10", TRUE },
+	{ "fec0::/64", "fec0::10", FALSE },
+	{ "fec0::/64", "fec1::10", TRUE },
 };
 
 START_TEST(test_excluded_san)
@@ -286,8 +305,7 @@ START_TEST(test_excluded_san)
 	certificate_t *ca, *sj;
 	identification_t *id;
 
-	id = identification_create_from_encoding(excluded_san[_i].ctype,
-									chunk_from_str(excluded_san[_i].cdata));
+	id = identification_create_from_string(excluded_san[_i].cdata);
 	ca = create_cert(NULL, "CN=CA", NULL, X509_CA, NULL, id);
 	sj = create_cert(ca, "CN=SJ", excluded_san[_i].subject, 0, NULL, NULL);
 
@@ -298,33 +316,45 @@ START_TEST(test_excluded_san)
 }
 END_TEST
 
+/**
+ * Create an identity if the given string is not NULL
+ */
+static identification_t *create_test_id(char *id)
+{
+	return id ? identification_create_from_string(id) : NULL;
+}
+
 static struct {
 	char *caconst;
 	char *imconst;
 	char *subject;
 	bool good;
-} permitted_dninh[] = {
+} permitted_dn_levels[] = {
 	{ "C=CH", "C=CH, O=strongSwan", "C=CH, O=strongSwan, CN=tester", TRUE },
+	{ "C=CH", NULL, "C=CH, O=strongSwan, CN=tester", TRUE },
+	{ NULL, "C=CH, O=strongSwan", "C=CH, O=strongSwan, CN=tester", TRUE },
 	{ "C=CH", "C=DE, O=strongSwan", "C=CH, O=strongSwan, CN=tester", FALSE },
+	{ "C=CH", "C=DE", "C=DE, O=strongSwan, CN=tester", FALSE },
 	{ "C=CH, O=strongSwan", "C=CH", "C=CH", FALSE },
+	{ "C=CH, O=strongSwan, CN=Intermediate", NULL, "C=CH", FALSE },
 };
 
-START_TEST(test_permitted_dninh)
+START_TEST(test_permitted_dn_levels)
 {
 	certificate_t *ca, *im, *sj;
 	identification_t *id;
 
-	id = identification_create_from_string(permitted_dninh[_i].caconst);
+	id = create_test_id(permitted_dn_levels[_i].caconst);
 	ca = create_cert(NULL, "C=CH, O=strongSwan, CN=CA", NULL, X509_CA, id, NULL);
-	id = identification_create_from_string(permitted_dninh[_i].imconst);
+	id = create_test_id(permitted_dn_levels[_i].imconst);
 	im = create_cert(ca, "C=CH, O=strongSwan, CN=IM", NULL, X509_CA, id, NULL);
-	sj = create_cert(im, permitted_dninh[_i].subject, NULL, 0, NULL, NULL);
+	sj = create_cert(im, permitted_dn_levels[_i].subject, NULL, 0, NULL, NULL);
 
 	creds->add_cert(creds, TRUE, ca);
 	creds->add_cert(creds, FALSE, im);
 	creds->add_cert(creds, FALSE, sj);
 
-	ck_assert(check_trust(sj->get_subject(sj)) == permitted_dninh[_i].good);
+	ck_assert(check_trust(sj->get_subject(sj)) == permitted_dn_levels[_i].good);
 }
 END_TEST
 
@@ -333,28 +363,301 @@ static struct {
 	char *imconst;
 	char *subject;
 	bool good;
-} excluded_dninh[] = {
-	{ "C=CH, O=strongSwan", "C=CH", "C=DE", TRUE },
-	{ "C=CH, O=strongSwan", "C=DE", "C=CH", FALSE },
-	{ "C=CH", "C=CH, O=strongSwan", "C=CH, O=strongSwan, CN=tester", FALSE },
+} permitted_san_levels[] = {
+	{ "strongswan.org", NULL, "strongswan.org", TRUE },
+	{ "strongswan.org", NULL, "vpn.strongswan.org", TRUE },
+	{ "strongswan.org", NULL, "strongswan.com", FALSE },
+	{ NULL, "strongswan.org", "strongswan.org", TRUE },
+	{ NULL, "strongswan.org", "strongswan.com", FALSE },
+	{ "strongswan.org", "strongswan.org", "strongswan.org", TRUE },
+	{ "strongswan.org", "strongswan.com", "strongswan.com", FALSE },
+	{ "strongswan.org", "vpn.strongswan.org", "strongswan.org", FALSE },
+	{ "strongswan.org", "vpn.strongswan.org", "vpn.strongswan.org", TRUE },
+	{ "strongswan.org", "vpn.strongswan.org", "a.vpn.strongswan.org", TRUE },
+	{ "strongswan.org", NULL, "tester@strongswan.org", TRUE },
+	{ "tester@strongswan.org", NULL, "tester@strongswan.org", TRUE },
+	{ "email:strongswan.org", NULL, "tester@strongswan.org", TRUE },
+	{ "email:strongswan.org", NULL, "tester@strongswan.com", FALSE },
+	{ "email:strongswan.org", "tester@strongswan.org", "tester@strongswan.org", TRUE },
+	{ "email:strongswan.org", "tester@strongswan.org", "alice@strongswan.org", FALSE },
+	{ "email:strongswan.org", "strongswan.org", "vpn.strongswan.org", TRUE },
+	{ "192.168.1.0/24", NULL, "192.168.1.10", TRUE },
+	{ "192.168.1.0/24", NULL, "192.168.2.10", FALSE },
+	{ "192.168.1.0/24", "192.168.2.0/24", "192.168.1.10", FALSE },
+	{ "192.168.1.0/24", "192.168.1.0/28", "192.168.1.10", TRUE },
+	{ "192.168.1.0/24", "192.168.1.16/28", "192.168.1.10", FALSE },
+	{ "fec0::/64", NULL, "fec0::10", TRUE },
+	{ "fec0::/64", NULL, "fec1::10", FALSE },
+	{ "fec0::/64", "fec1::/64", "fec1::10", FALSE },
+	{ "fec0::/64", "fec0::/123", "fec0::10", TRUE },
+	{ "fec0::/64", "fec0::20/123", "fec0::10", FALSE },
 };
 
-START_TEST(test_excluded_dninh)
+START_TEST(test_permitted_san_levels)
 {
 	certificate_t *ca, *im, *sj;
 	identification_t *id;
 
-	id = identification_create_from_string(excluded_dninh[_i].caconst);
-	ca = create_cert(NULL, "C=CH, O=strongSwan, CN=CA", NULL, X509_CA, NULL, id);
-	id = identification_create_from_string(excluded_dninh[_i].imconst);
-	im = create_cert(ca, "C=DE, CN=IM", NULL, X509_CA, NULL, id);
-	sj = create_cert(im, excluded_dninh[_i].subject, NULL, 0, NULL, NULL);
+	id = create_test_id(permitted_san_levels[_i].caconst);
+	ca = create_cert(NULL, "CN=CA", NULL, X509_CA, id, NULL);
+	id = create_test_id(permitted_san_levels[_i].imconst);
+	im = create_cert(ca, "CN=IM", NULL, X509_CA, id, NULL);
+	sj = create_cert(im, "CN=EE", permitted_san_levels[_i].subject, 0, NULL, NULL);
 
 	creds->add_cert(creds, TRUE, ca);
 	creds->add_cert(creds, FALSE, im);
 	creds->add_cert(creds, FALSE, sj);
 
-	ck_assert(check_trust(sj->get_subject(sj)) == excluded_dninh[_i].good);
+	ck_assert(check_trust(sj->get_subject(sj)) == permitted_san_levels[_i].good);
+}
+END_TEST
+
+static struct {
+	char *caconst;
+	char *imconst;
+	char *subject;
+	bool good;
+} excluded_dn_levels[] = {
+	{ "C=CH, O=strongSwan", "C=CH", "C=DE", TRUE },
+	{ "C=CH, O=strongSwan", "C=CH", "C=CH", FALSE },
+	{ "C=CH, O=strongSwan", "C=DE", "C=CH", TRUE },
+	{ "C=CH, O=strongSwan", "C=DE", "C=DE", FALSE },
+	{ "C=CH, O=strongSwan", "C=DE", "C=CH, O=strongSwan", FALSE },
+	{ NULL, "C=CH", "C=CH, O=strongSwan", FALSE },
+	{ "C=CH", NULL, "C=CH, O=strongSwan", FALSE },
+	{ "C=CH", "C=CH, O=strongSwan", "C=CH, O=strongSwan, CN=tester", FALSE },
+	{ "C=DE", NULL, "C=CH, O=strongSwan, CN=tester", FALSE },
+};
+
+START_TEST(test_excluded_dn_levels)
+{
+	certificate_t *ca, *im, *sj;
+	identification_t *id;
+
+	id = create_test_id(excluded_dn_levels[_i].caconst);
+	ca = create_cert(NULL, "C=CH, O=strongSwan, CN=CA", NULL, X509_CA, NULL, id);
+	id = create_test_id(excluded_dn_levels[_i].imconst);
+	im = create_cert(ca, "C=DE, CN=IM", NULL, X509_CA, NULL, id);
+	sj = create_cert(im, excluded_dn_levels[_i].subject, NULL, 0, NULL, NULL);
+
+	creds->add_cert(creds, TRUE, ca);
+	creds->add_cert(creds, FALSE, im);
+	creds->add_cert(creds, FALSE, sj);
+
+	ck_assert(check_trust(sj->get_subject(sj)) == excluded_dn_levels[_i].good);
+}
+END_TEST
+
+static struct {
+	char *caconst;
+	char *imconst;
+	char *subject;
+	bool good;
+} excluded_san_levels[] = {
+	{ "strongswan.org", NULL, "strongswan.org", FALSE },
+	{ "strongswan.org", NULL, "strongswan.com", TRUE },
+	{ NULL, "strongswan.org", "strongswan.org", FALSE },
+	{ NULL, "strongswan.org", "strongswan.com", TRUE },
+	{ "strongswan.org", NULL, "test.strongswan.org", FALSE },
+	{ "test.strongswan.org", NULL, "test.strongswan.org", FALSE },
+	{ "test.strongswan.org", NULL, "strongswan.org", TRUE },
+	{ "test.strongswan.org", "strongswan.org", "strongswan.org", FALSE },
+	{ "test.strongswan.org", "strongswan.org", "test.strongswan.org", FALSE },
+	{ "test.strongswan.org", "test.strongswan.org", "test.strongswan.org", FALSE },
+	{ "strongswan.org", NULL, "tester@strongswan.org", TRUE },
+	{ "tester@strongswan.org", NULL, "tester@strongswan.org", FALSE },
+	{ "tester@strongswan.org", NULL, "alice@strongswan.org", TRUE },
+	{ "email:strongswan.org", NULL, "tester@strongswan.org", FALSE },
+	{ "email:strongswan.org", NULL, "tester@strongswan.com", TRUE },
+	{ "email:strongswan.org", "email:strongswan.com", "tester@strongswan.org", FALSE },
+	{ "email:strongswan.org", "email:strongswan.com", "tester@strongswan.com", FALSE },
+	{ "strongswan.org", "email:strongswan.com", "tester@strongswan.com", FALSE },
+	{ "192.168.1.0/24", NULL, "192.168.1.10", FALSE },
+	{ "192.168.1.0/24", NULL, "192.168.2.10", TRUE },
+	{ "192.168.1.0/24", "192.168.0.0/16", "192.168.2.10", FALSE },
+	{ "fec0::/64", NULL, "fec0::10", FALSE },
+	{ "fec0::/64", NULL, "fec1::10", TRUE },
+	{ "fec0::/64", "fec1::/12", "fec1::10", FALSE },
+};
+
+START_TEST(test_excluded_san_levels)
+{
+	certificate_t *ca, *im, *sj;
+	identification_t *id;
+
+	id = create_test_id(excluded_san_levels[_i].caconst);
+	ca = create_cert(NULL, "CN=CA", NULL, X509_CA, NULL, id);
+	id = create_test_id(excluded_san_levels[_i].imconst);
+	im = create_cert(ca, "CN=IM", NULL, X509_CA, NULL, id);
+	sj = create_cert(im, "CN=EE", excluded_san_levels[_i].subject, 0, NULL, NULL);
+
+	creds->add_cert(creds, TRUE, ca);
+	creds->add_cert(creds, FALSE, im);
+	creds->add_cert(creds, FALSE, sj);
+
+	ck_assert(check_trust(sj->get_subject(sj)) == excluded_san_levels[_i].good);
+}
+END_TEST
+
+/**
+ * Add an identity to the given list if not NULL
+ */
+static void add_identity_to_list(linked_list_t *list, char *idstr)
+{
+	identification_t *id;
+
+	if (idstr)
+	{
+		id = identification_create_from_string(idstr);
+		list->insert_last(list, id);
+	}
+}
+
+/**
+ * Create a certificate with potentially multiple constraints/SANs
+ */
+static certificate_t *create_cert_multi(certificate_t *ca, char *subject,
+										x509_flag_t flags,
+										char *san1, char *san2,
+										char *pconst1, char *pconst2,
+										char *econst1, char *econst2)
+{
+	linked_list_t *sans, *permitted, *excluded;
+
+	sans = linked_list_create();
+	add_identity_to_list(sans, san1);
+	add_identity_to_list(sans, san2);
+
+	permitted = linked_list_create();
+	add_identity_to_list(permitted, pconst1);
+	add_identity_to_list(permitted, pconst2);
+
+	excluded = linked_list_create();
+	add_identity_to_list(excluded, econst1);
+	add_identity_to_list(excluded, econst2);
+
+	return create_cert_lists(ca, subject, sans, flags, permitted, excluded);
+}
+
+static struct {
+	char *caconst1;
+	char *caconst2;
+	char *imconst1;
+	char *imconst2;
+	char *san1;
+	char *san2;
+	bool good;
+} permitted_san_multi[] = {
+	{ "strongswan.org", "strongswan.com", NULL, NULL, "vpn.strongswan.org", NULL, TRUE },
+	{ "strongswan.org", "strongswan.com", NULL, NULL, "vpn.strongswan.com", NULL, TRUE },
+	{ "strongswan.org", "strongswan.com", NULL, NULL, "vpn.strongswan.org", "vpn.strongswan.com", TRUE },
+	{ NULL, NULL, "strongswan.org", "strongswan.com", "vpn.strongswan.org", NULL, TRUE },
+	{ NULL, NULL, "strongswan.org", "strongswan.com", "vpn.strongswan.com", NULL, TRUE },
+	{ NULL, NULL, "strongswan.org", "strongswan.com", "vpn.strongswan.org", "vpn.strongswan.com", TRUE },
+	{ "strongswan.org", "strongswan.com", "strongswan.org", NULL, "vpn.strongswan.org", NULL, TRUE },
+	{ "strongswan.org", "strongswan.com", "vpn.strongswan.org", NULL, "vpn.strongswan.org", NULL, TRUE },
+	{ "strongswan.org", "strongswan.com", "vpn.strongswan.org", NULL, "vpn.strongswan.org", NULL, TRUE },
+	{ "strongswan.org", "strongswan.com", "vpn.strongswan.org", NULL, "vpn.strongswan.org", "vpn.strongswan.com", FALSE },
+	{ "strongswan.org", "strongswan.com", "strongswan.com", NULL, "vpn.strongswan.org", "vpn.strongswan.com", FALSE },
+	{ "strongswan.org", "strongswan.com", "strongswan.org", NULL, "vpn.strongswan.com", NULL, FALSE },
+	{ "strongswan.org", "strongswan.com", "strongswan.com", NULL, "vpn.strongswan.org", NULL, FALSE },
+	{ "strongswan.org", "strongswan.com", "strongswan.com", NULL, "vpn.strongswan.com", NULL, TRUE },
+	{ "strongswan.org", "strongswan.com", "strongswan.net", NULL, "vpn.strongswan.com", NULL, FALSE },
+	{ "strongswan.org", "strongswan.com", "strongswan.net", NULL, "vpn.strongswan.org", NULL, FALSE },
+	{ "strongswan.org", "strongswan.com", "strongswan.net", NULL, "vpn.strongswan.net", NULL, FALSE },
+	{ "strongswan.org", "email:strongswan.org", NULL, NULL, "vpn.strongswan.org", NULL, TRUE },
+	{ "strongswan.org", "email:strongswan.org", NULL, NULL, "tester@strongswan.org", NULL, TRUE },
+	{ "strongswan.org", "email:strongswan.org", NULL, NULL, "vpn.strongswan.org", "tester@strongswan.org", TRUE },
+	{ "strongswan.org", "email:strongswan.org", "strongswan.org", NULL, "vpn.strongswan.org", NULL, TRUE },
+	{ "strongswan.org", "email:strongswan.org", "strongswan.org", NULL, "tester@strongswan.org", NULL, TRUE },
+	{ "strongswan.org", "email:strongswan.org", "strongswan.org", NULL, "vpn.strongswan.org", "tester@strongswan.org", TRUE },
+	{ "strongswan.org", "email:strongswan.org", "strongswan.org", "email:strongswan.com", "vpn.strongswan.org", NULL, TRUE },
+	{ "strongswan.org", "email:strongswan.org", "strongswan.org", "email:strongswan.com", "tester@strongswan.org", NULL, FALSE },
+	{ "strongswan.org", "email:strongswan.org", "strongswan.org", "email:strongswan.com", "vpn.strongswan.org", "tester@strongswan.org", FALSE },
+	{ "strongswan.org", "email:strongswan.org", "email:strongswan.org", NULL, "vpn.strongswan.org", NULL, TRUE },
+	{ "strongswan.org", "email:strongswan.org", "email:strongswan.org", NULL, "tester@strongswan.org", NULL, TRUE },
+	{ "strongswan.org", "email:strongswan.org", "email:strongswan.org", NULL, "vpn.strongswan.org", "tester@strongswan.org", TRUE },
+	{ "strongswan.org", "email:strongswan.org", "email:strongswan.org", "strongswan.com", "vpn.strongswan.org", NULL, FALSE },
+	{ "strongswan.org", "email:strongswan.org", "email:strongswan.org", "strongswan.com", "tester@strongswan.org", NULL, TRUE },
+	{ "strongswan.org", "email:strongswan.org", "email:strongswan.org", "strongswan.com", "vpn.strongswan.org", "tester@strongswan.org", FALSE },
+};
+
+START_TEST(test_permitted_san_multi)
+{
+	certificate_t *ca, *im, *sj;
+
+
+	ca = create_cert_multi(NULL, "CN=CA", X509_CA, NULL, NULL,
+						   permitted_san_multi[_i].caconst1,
+						   permitted_san_multi[_i].caconst2, NULL, NULL);
+	im = create_cert_multi(ca, "CN=IM", X509_CA, NULL, NULL,
+						   permitted_san_multi[_i].imconst1,
+						   permitted_san_multi[_i].imconst2, NULL, NULL);
+	sj = create_cert_multi(im, "CN=EE", 0,
+						   permitted_san_multi[_i].san1,
+						   permitted_san_multi[_i].san2, NULL, NULL, NULL, NULL);
+
+	creds->add_cert(creds, TRUE, ca);
+	creds->add_cert(creds, FALSE, im);
+	creds->add_cert(creds, FALSE, sj);
+
+	ck_assert(check_trust(sj->get_subject(sj)) == permitted_san_multi[_i].good);
+}
+END_TEST
+
+static struct {
+	char *caconst1;
+	char *caconst2;
+	char *imconst1;
+	char *imconst2;
+	char *san1;
+	char *san2;
+	bool good;
+} excluded_san_multi[] = {
+	{ "strongswan.org", "strongswan.com", NULL, NULL, "vpn.strongswan.org", NULL, FALSE },
+	{ "strongswan.org", "strongswan.com", NULL, NULL, "tester@strongswan.org", NULL, TRUE },
+	{ "strongswan.org", "strongswan.com", NULL, NULL, "vpn.strongswan.com", NULL, FALSE },
+	{ "strongswan.org", "strongswan.com", NULL, NULL, "vpn.strongswan.net", NULL, TRUE },
+	{ "strongswan.org", "strongswan.com", NULL, NULL, "vpn.strongswan.org", "vpn.strongswan.com", FALSE },
+	{ "strongswan.org", "strongswan.com", NULL, NULL, "vpn.strongswan.org", "vpn.strongswan.net", FALSE },
+	{ "strongswan.org", NULL, NULL, NULL, "vpn.strongswan.org", "vpn.strongswan.com", FALSE },
+	{ "strongswan.org", NULL, NULL, NULL, "vpn.strongswan.com", "vpn.strongswan.org", FALSE },
+	{ NULL, NULL, "strongswan.org", "strongswan.com", "vpn.strongswan.org", NULL, FALSE },
+	{ NULL, NULL, "strongswan.org", "strongswan.com", "vpn.strongswan.com", NULL, FALSE },
+	{ NULL, NULL, "strongswan.org", "strongswan.com", "vpn.strongswan.net", NULL, TRUE },
+	{ NULL, NULL, "strongswan.org", "strongswan.com", "vpn.strongswan.org", "vpn.strongswan.com", FALSE },
+	{ "strongswan.org", "strongswan.com", "strongswan.net", NULL, "vpn.strongswan.net", NULL, FALSE },
+	{ "strongswan.net", NULL, "strongswan.org", "strongswan.com", "vpn.strongswan.net", NULL, FALSE },
+	{ "strongswan.net", NULL, "strongswan.org", "strongswan.com", "vpn.strongswan.org", NULL, FALSE },
+	{ "strongswan.net", NULL, "strongswan.org", "strongswan.com", "vpn.strongswan.com", NULL, FALSE },
+	{ "vpn.strongswan.org", "vpn.strongswan.com", "strongswan.org", NULL, "a.strongswan.org", NULL, FALSE },
+	{ "vpn.strongswan.org", "vpn.strongswan.com", "strongswan.org", NULL, "vpn.strongswan.com", NULL, FALSE },
+	{ "vpn.strongswan.org", "vpn.strongswan.com", "strongswan.org", NULL, "a.strongswan.com", NULL, TRUE },
+	{ "vpn.strongswan.org", "vpn.strongswan.com", "strongswan.org", "strongswan.com", "a.strongswan.com", NULL, FALSE },
+	{ "strongswan.org", "email:strongswan.org", NULL, NULL, "vpn.strongswan.org", NULL, FALSE },
+	{ "strongswan.org", "email:strongswan.org", NULL, NULL, "tester@strongswan.org", NULL, FALSE },
+};
+
+START_TEST(test_excluded_san_multi)
+{
+	certificate_t *ca, *im, *sj;
+
+
+	ca = create_cert_multi(NULL, "CN=CA", X509_CA, NULL, NULL, NULL, NULL,
+						   excluded_san_multi[_i].caconst1,
+						   excluded_san_multi[_i].caconst2);
+	im = create_cert_multi(ca, "CN=IM", X509_CA, NULL, NULL, NULL, NULL,
+						   excluded_san_multi[_i].imconst1,
+						   excluded_san_multi[_i].imconst2);
+	sj = create_cert_multi(im, "CN=EE", 0,
+						   excluded_san_multi[_i].san1,
+						   excluded_san_multi[_i].san2, NULL, NULL, NULL, NULL);
+
+	creds->add_cert(creds, TRUE, ca);
+	creds->add_cert(creds, FALSE, im);
+	creds->add_cert(creds, FALSE, sj);
+
+	ck_assert(check_trust(sj->get_subject(sj)) == excluded_san_multi[_i].good);
 }
 END_TEST
 
@@ -385,14 +688,34 @@ Suite *certnames_suite_create()
 	tcase_add_loop_test(tc, test_excluded_san, 0, countof(excluded_san));
 	suite_add_tcase(s, tc);
 
-	tc = tcase_create("permitted DN name constraint inherit");
+	tc = tcase_create("permitted DN name constraints multilevel");
 	tcase_add_checked_fixture(tc, setup, teardown);
-	tcase_add_loop_test(tc, test_permitted_dninh, 0, countof(permitted_dninh));
+	tcase_add_loop_test(tc, test_permitted_dn_levels, 0, countof(permitted_dn_levels));
 	suite_add_tcase(s, tc);
 
-	tc = tcase_create("excluded DN name constraint inherit");
+	tc = tcase_create("permitted subjectAltName constraints multilevel");
 	tcase_add_checked_fixture(tc, setup, teardown);
-	tcase_add_loop_test(tc, test_excluded_dninh, 0, countof(excluded_dninh));
+	tcase_add_loop_test(tc, test_permitted_san_levels, 0, countof(permitted_san_levels));
+	suite_add_tcase(s, tc);
+
+	tc = tcase_create("excluded DN name constraints multilevel");
+	tcase_add_checked_fixture(tc, setup, teardown);
+	tcase_add_loop_test(tc, test_excluded_dn_levels, 0, countof(excluded_dn_levels));
+	suite_add_tcase(s, tc);
+
+	tc = tcase_create("excluded subjectAltName constraints multilevel");
+	tcase_add_checked_fixture(tc, setup, teardown);
+	tcase_add_loop_test(tc, test_excluded_san_levels, 0, countof(excluded_san_levels));
+	suite_add_tcase(s, tc);
+
+	tc = tcase_create("permitted subjectAltName constraints multivalue");
+	tcase_add_checked_fixture(tc, setup, teardown);
+	tcase_add_loop_test(tc, test_permitted_san_multi, 0, countof(permitted_san_multi));
+	suite_add_tcase(s, tc);
+
+	tc = tcase_create("excluded subjectAltName constraints multivalue");
+	tcase_add_checked_fixture(tc, setup, teardown);
+	tcase_add_loop_test(tc, test_excluded_san_multi, 0, countof(excluded_san_multi));
 	suite_add_tcase(s, tc);
 
 	return s;

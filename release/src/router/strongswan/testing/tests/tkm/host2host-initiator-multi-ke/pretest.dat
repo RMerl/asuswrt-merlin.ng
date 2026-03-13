@@ -1,0 +1,11 @@
+moon::rm /etc/swanctl/rsa/*
+# swanctl.conf is not generated as tkm_cfgtool doesn't support multiple KEs yet
+moon::tkm_cfgtool -c /etc/tkm/tkm.conf -i /tmp/swanctl.conf -t /etc/tkm/tkm.bin -s /usr/local/share/tkm/tkmconfig.xsd
+moon::cat /etc/swanctl/swanctl.conf
+moon::tkm_keymanager -c /etc/tkm/tkm.bin -k /etc/tkm/moonKey.der -r /etc/tkm/strongswanCert.der:1 >/tmp/tkm.log 2>&1 &
+moon::expect-file /tmp/tkm.rpc.ike
+moon::service charon-tkm start
+sun::systemctl start strongswan
+sun::expect-connection host-host
+moon::expect-connection conn1
+moon::swanctl --initiate --child conn1 2> /dev/null

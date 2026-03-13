@@ -124,7 +124,7 @@ enum {
     ETHWIRESPEEDGET,
     ETHWIRESPEEDSET,
     ETHCTLTXFIR,
-#if defined(CONFIG_GT7)
+#if defined(CONFIG_GT7) || defined(CONFIG_GS7_PRO_MAX)
     ETHGETEXT84991MIIREG,
     ETHSETEXT84991MIIREG,
     ETHGETEXT84991PHYPWR,
@@ -261,7 +261,7 @@ struct ethctl_data {
     int rep;
     int spd;
     txfir_t txfir;
-#if defined(CONFIG_GT7)
+#if defined(CONFIG_GT7) || defined(CONFIG_GS7_PRO_MAX)
     int speed;
     int duplex;
     int cfgSpeed;
@@ -312,7 +312,7 @@ enum {
 };
 #define ETHCTL_FLAG_ANY_SERDES  (ETHCTL_FLAG_ACCESS_SERDES|ETHCTL_FLAG_ACCESS_10GSERDES)
 
-#if defined(CONFIG_GT7)
+#if defined(CONFIG_GT7) || defined(CONFIG_GS7_PRO_MAX)
 /* PHY indirectly connected BCM84991 Access */
 enum {
     ETHCTL_FLAG_ACCESS_PHYEXT84991_EXT          = 0,

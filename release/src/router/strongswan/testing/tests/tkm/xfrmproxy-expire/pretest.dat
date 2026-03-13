@@ -2,6 +2,8 @@ sun::systemctl start strongswan
 moon::rm /etc/swanctl/rsa/*
 moon::tkm_cfgtool -c /etc/tkm/tkm.conf -i /etc/swanctl/swanctl.conf -t /etc/tkm/tkm.bin -s /usr/local/share/tkm/tkmconfig.xsd
 moon::cat /etc/swanctl/swanctl.conf
+# disable randomization to avoid issues with our low rekey time
+moon::sed -i '/rekey_time=./arand_time=0' /etc/swanctl/swanctl.conf
 moon::tkm_keymanager -c /etc/tkm/tkm.bin -k /etc/tkm/moonKey.der -r /etc/tkm/strongswanCert.der:1 >/tmp/tkm.log 2>&1 &
 moon::expect-file /tmp/tkm.rpc.ike
 moon::service charon-tkm start

@@ -57,6 +57,7 @@
 #include "openssl_ed_public_key.h"
 #include "openssl_ed_private_key.h"
 #include "openssl_xof.h"
+#include "openssl_kem.h"
 
 #ifndef FIPS_MODE
 #define FIPS_MODE 0
@@ -289,28 +290,7 @@ static private_key_t *openssl_private_key_load(key_type_t type, va_list args)
 	if (blob.ptr)
 	{
 		key = d2i_AutoPrivateKey(NULL, (const u_char**)&blob.ptr, blob.len);
-		if (key)
-		{
-			switch (EVP_PKEY_base_id(key))
-			{
-#ifndef OPENSSL_NO_RSA
-				case EVP_PKEY_RSA:
-					return openssl_rsa_private_key_create(key, FALSE);
-#endif
-#ifndef OPENSSL_NO_ECDSA
-				case EVP_PKEY_EC:
-					return openssl_ec_private_key_create(key, FALSE);
-#endif
-#if OPENSSL_VERSION_NUMBER >= 0x1010100fL && !defined(OPENSSL_NO_EC)
-				case EVP_PKEY_ED25519:
-				case EVP_PKEY_ED448:
-					return openssl_ed_private_key_create(key, FALSE);
-#endif /* OPENSSL_VERSION_NUMBER */
-				default:
-					EVP_PKEY_free(key);
-					break;
-			}
-		}
+		return openssl_wrap_private_key(key, FALSE);
 	}
 	return NULL;
 }
@@ -420,9 +400,6 @@ METHOD(plugin_t, get_features, int,
 			PLUGIN_PROVIDE(CRYPTER, ENCR_NULL, 0),
 		/* hashers */
 		PLUGIN_REGISTER(HASHER, openssl_hasher_create),
-#ifndef OPENSSL_NO_MD2
-			PLUGIN_PROVIDE(HASHER, HASH_MD2),
-#endif
 #ifndef OPENSSL_NO_MD4
 			PLUGIN_PROVIDE(HASHER, HASH_MD4),
 #endif
@@ -494,8 +471,11 @@ METHOD(plugin_t, get_features, int,
 			PLUGIN_PROVIDE(SIGNER, AUTH_HMAC_SHA2_512_256),
 			PLUGIN_PROVIDE(SIGNER, AUTH_HMAC_SHA2_512_512),
 #endif
-#if OPENSSL_VERSION_NUMBER >= 0x10101000L
-		/* HKDF is available since 1.1.0, expand-only mode only since 1.1.1 */
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L || \
+	defined (OPENSSL_IS_AWSLC)
+		/* HKDF is available since 1.1.0, expand-only mode only since 1.1.1,
+		 * but 3.0.0 is required to support larger MODP groups and nonces
+		 * with its 2048 byte buffer size */
 		PLUGIN_REGISTER(KDF, openssl_kdf_create),
 			PLUGIN_PROVIDE(KDF, KDF_PRF),
 			PLUGIN_PROVIDE(KDF, KDF_PRF_PLUS),
@@ -548,6 +528,14 @@ METHOD(plugin_t, get_features, int,
 			PLUGIN_PROVIDE(KE, MODP_768_BIT),
 			PLUGIN_PROVIDE(KE, MODP_CUSTOM),
 #endif
+#if (OPENSSL_VERSION_NUMBER >= 0x30500000L && !defined(OPENSSL_NO_ML_KEM)) || \
+	defined(OPENSSL_IS_AWSLC)
+		/* ML-KEM key exchanges */
+		PLUGIN_REGISTER(KE, openssl_kem_create),
+			PLUGIN_PROVIDE(KE, ML_KEM_512),
+			PLUGIN_PROVIDE(KE, ML_KEM_768),
+			PLUGIN_PROVIDE(KE, ML_KEM_1024),
+#endif /* OPENSSL_IS_AWSLC */
 #ifndef OPENSSL_NO_RSA
 		/* RSA private/public key loading */
 		PLUGIN_REGISTER(PRIVKEY, openssl_rsa_private_key_load, TRUE),
@@ -658,21 +646,29 @@ METHOD(plugin_t, get_features, int,
 		/* EdDSA private/public key loading */
 		PLUGIN_REGISTER(PUBKEY, openssl_ed_public_key_load, TRUE),
 			PLUGIN_PROVIDE(PUBKEY, KEY_ED25519),
+#ifndef OPENSSL_IS_AWSLC
 			PLUGIN_PROVIDE(PUBKEY, KEY_ED448),
+#endif
 		PLUGIN_REGISTER(PRIVKEY, openssl_ed_private_key_load, TRUE),
 			PLUGIN_PROVIDE(PRIVKEY, KEY_ED25519),
+#ifndef OPENSSL_IS_AWSLC
 			PLUGIN_PROVIDE(PRIVKEY, KEY_ED448),
+#endif
 		PLUGIN_REGISTER(PRIVKEY_GEN, openssl_ed_private_key_gen, FALSE),
 			PLUGIN_PROVIDE(PRIVKEY_GEN, KEY_ED25519),
+#ifndef OPENSSL_IS_AWSLC
 			PLUGIN_PROVIDE(PRIVKEY_GEN, KEY_ED448),
+#endif
 		PLUGIN_PROVIDE(PRIVKEY_SIGN, SIGN_ED25519),
-		PLUGIN_PROVIDE(PRIVKEY_SIGN, SIGN_ED448),
 		PLUGIN_PROVIDE(PUBKEY_VERIFY, SIGN_ED25519),
+#ifndef OPENSSL_IS_AWSLC
+		PLUGIN_PROVIDE(PRIVKEY_SIGN, SIGN_ED448),
 		PLUGIN_PROVIDE(PUBKEY_VERIFY, SIGN_ED448),
+#endif
 		/* register a pro forma identity hasher, never instantiated */
 		PLUGIN_REGISTER(HASHER, return_null),
 			PLUGIN_PROVIDE(HASHER, HASH_IDENTITY),
-#endif /* OPENSSL_VERSION_NUMBER && !OPENSSL_NO_EC */
+#endif /* OPENSSL_VERSION_NUMBER && !OPENSSL_NO_EC && !OPENSSL_IS_AWSLC */
 		/* generic key loader */
 		PLUGIN_REGISTER(PRIVKEY, openssl_private_key_load, TRUE),
 			PLUGIN_PROVIDE(PRIVKEY, KEY_ANY),
@@ -705,8 +701,10 @@ METHOD(plugin_t, get_features, int,
 		PLUGIN_REGISTER(KE, openssl_x_diffie_hellman_create),
 			/* available since 1.1.0a, but we require 1.1.1 features */
 			PLUGIN_PROVIDE(KE, CURVE_25519),
+#ifndef OPENSSL_IS_AWSLC
 			/* available since 1.1.1 */
 			PLUGIN_PROVIDE(KE, CURVE_448),
+#endif /* OPENSSL_IS_AWSLC */
 #endif /* OPENSSL_VERSION_NUMBER && !OPENSSL_NO_ECDH */
 	};
 	static plugin_feature_t f[countof(f_base) + countof(f_ecdh) + countof(f_xdh)] = {};
@@ -774,7 +772,7 @@ static int concat_ossl_providers(OSSL_PROVIDER *provider, void *cbdata)
 /*
  * see header file
  */
-plugin_t *openssl_plugin_create()
+PLUGIN_DEFINE(openssl)
 {
 	private_openssl_plugin_t *this;
 	int fips_mode;

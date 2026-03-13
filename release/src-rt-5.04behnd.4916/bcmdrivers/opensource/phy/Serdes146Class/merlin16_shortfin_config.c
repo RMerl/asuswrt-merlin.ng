@@ -1586,9 +1586,20 @@ int merlin16_serdes_init(phy_dev_t *phy_dev)
         merlin_load_firmware(phy_dev);
     }
 
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+    if (!PhyIsCombo(phy_dev) && phy_serdes->signal_detect_gpio != -1) /* only for pure SFP interface */
+    {
+//        printk("\n\n\n ******%s:%d sa_[%p] ****** \n\n\n", __FUNCTION__, __LINE__, sa__);
+        if (wr_ext_los_en(1))
+            print_log("wr_ext_los_en(1) returns error\n");
+        else
+            print_log("wr_ext_los_en(1) returns success !!!!!! \n");
+    }
+#else
     if (phy_serdes->signal_detect_gpio != -1)
         if (wr_ext_los_en(1))
-            print_log("wr_ext_los_en() returns error\n");
+            print_log("wr_ext_los_en(1) returns error\n");
+#endif
 
     /* Set default 1G speed to fully exercise hardware status */
     phy_serdes->config_speed = PHY_SPEED_1000;

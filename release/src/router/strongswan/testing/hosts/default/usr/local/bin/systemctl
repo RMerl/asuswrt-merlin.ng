@@ -3,6 +3,9 @@
 # LEAK_DETECTIVE_LOG is set for automated runs, however, this is not passed
 # to a process started via systemctl. This wrapper is used to set the variable
 # for the strongswan.service unit.
+# Similar for LEAK_DETECTIVE_DISABLE. However, we don't pass that along
+# directly, to be able to run the daemon with it while still improving the
+# performance when collecting results etc.
 
 ORIG=/bin/systemctl
 CONF=/lib/systemd/system/strongswan.service
@@ -11,7 +14,9 @@ if [[ "$2" != "strongswan" ]]; then
 	exec $ORIG "$@"
 fi
 
-if [[ "$1" == "start" && -n $LEAK_DETECTIVE_LOG ]]; then
+if [[ "$1" == "start" && -n $LEAK_DETECTIVE_DISABLE_DAEMON ]]; then
+	sed -i "s:Type=:Environment=LEAK_DETECTIVE_DISABLE=$LEAK_DETECTIVE_DISABLE_DAEMON\nType=:" $CONF 2>/dev/null
+elif [[ "$1" == "start" && -n $LEAK_DETECTIVE_LOG ]]; then
 	sed -i "s:Type=:Environment=LEAK_DETECTIVE_LOG=$LEAK_DETECTIVE_LOG\nType=:" $CONF 2>/dev/null
 fi
 
@@ -20,6 +25,7 @@ STATUS=$?
 
 if [[ "$1" == "stop" ]]; then
 	sed -i '/LEAK_DETECTIVE_LOG/d' $CONF 2>/dev/null
+	sed -i '/LEAK_DETECTIVE_DISABLE/d' $CONF 2>/dev/null
 fi
 
 exit $STATUS

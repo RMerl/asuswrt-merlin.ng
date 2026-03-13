@@ -89,7 +89,11 @@
 #ifdef AFC_ENABLED
 #define FT_AFC BIT_ULL(46)
 #endif
+#define FT_AURA BIT_ULL(47)
 
+#if defined(RTCONFIG_MULTILAN_CFG)
+#define FT_VLAN_TRUNK_ISO_RL BIT_ULL(48)
+#endif
 /* service */
 #define RESTART_WIRELESS		"restart_wireless"
 #define CHPASS		"chpass"
@@ -118,9 +122,7 @@
 #define RESTART_BW_LIMIT	"restart_qos;restart_firewall"
 #endif
 #define RESTART_HTTPD	"restart_httpd"
-#ifdef RTCONFIG_AMAS_SYNC_LEDG
 #define RESTART_LEDG   "restart_ledg"
-#endif
 #ifdef RTCONFIG_AMAS_CHANNEL_PLAN
 #define RESTART_CHANNEL_PLAN	"restart_channel_plan"
 #endif
@@ -186,6 +188,7 @@ static struct feature_mapping_s feature_mapping_list[] __attribute__ ((unused)) 
 	{ "ap_wifi_rl", FT_AP_WIFI_RL, RESTART_WIRELESS },
 	{ "ap_lanif_rl", FT_AP_LANIF_RL, RESTART_NET_AND_PHY },
 	{ "vlan_rl", FT_VLAN_RL, RESTART_APG },
+	{ "vlan_trunk_iso_rl", FT_VLAN_TRUNK_ISO_RL, RESTART_APG},
 	{ "sdn_rl", FT_SDN_RL, RESTART_APG },
 	{ "subnet_rl", FT_SUBNET_RL, NULL },
 	{ "vlan_trunk_rl", FT_VLAN_TRUNK_RL, RESTART_NET_AND_PHY },
@@ -213,6 +216,7 @@ static struct feature_mapping_s feature_mapping_list[] __attribute__ ((unused)) 
 #ifdef AFC_ENABLED
 	{ "afc", 	FT_AFC,	RESTART_AFC },
 #endif
+	{ "aura",	FT_AURA,	RESTART_LEDG },
 	{ NULL, 0, NULL }
 };
 
@@ -609,6 +613,7 @@ enum {
 	SUBFT_VLAN_TRUNK_RL,
 	SUBFT_SDN_RL,
 	SUBFT_VLAN_RL,
+	SUBFT_VLAN_TRUNK_ISO_RL,
 	SUBFT_RADIUS_LIST,
 	SUBFT_SUBNET_RL,
 	SUBFT_APGROUP_PARAM_0, 
@@ -783,6 +788,36 @@ enum {
 	SUBFT_AFC,
 #endif
 
+	/* sub feature for aura schedule */
+	SUBFT_AURA_SCHED,
+
+	/* sub feature for aura night schedule */
+	SUBFT_AURA_NIGHT_SCHED,
+
+	/* sub feature for led schedule */
+	SUBFT_LED_SCHED,
+
+	/* sub feature for led night schedule */
+	SUBFT_LED_NIGHT_SCHED,
+
+	/* sub feature for aura led night mode */
+	SUBFT_AURALED_NIGHT_MODE,
+
+	/* sub feature for aura led */
+	SUBFT_AURALED,
+
+	/* sub feature for led schedule synchronize*/
+	SUBFT_LED_SCHED_SYNC,
+
+	/* sub feature for led night mode schedule synchronize*/
+	SUBFT_LED_NIGHT_SCHED_SYNC,
+
+	/* sub feature for aura schedule synchronize*/
+	SUBFT_AURA_SCHED_SYNC,
+
+	/* sub feature for aura night mode schedule synchronize*/
+	SUBFT_AURA_NIGHT_SCHED_SYNC,
+
 	SUBFT_MAX
 };
 
@@ -940,6 +975,7 @@ static struct subfeature_mapping_s subfeature_mapping_list[] __attribute__ ((unu
 	{ "ap_wifi_rl", SUBFT_AP_WIFI_RL, FT_AP_WIFI_RL },
 	{ "ap_lanif_rl", SUBFT_AP_LANIF_RL, FT_AP_LANIF_RL },
 	{ "vlan_rl", SUBFT_VLAN_RL, FT_VLAN_RL },
+	{ "vlan_trunk_iso_rl", SUBFT_VLAN_TRUNK_ISO_RL, FT_VLAN_TRUNK_ISO_RL},
 	{ "sdn_rl", SUBFT_SDN_RL, FT_SDN_RL },
 	{ "subnet_rl", SUBFT_SUBNET_RL, FT_SUBNET_RL },
 	{ "vlan_trunk_rl",  SUBFT_VLAN_TRUNK_RL, FT_VLAN_TRUNK_RL },
@@ -1289,6 +1325,36 @@ static struct subfeature_mapping_s subfeature_mapping_list[] __attribute__ ((unu
 	/* afc */
 	{ "afc",	SUBFT_AFC,	FT_AFC },
 #endif
+
+	/* aura schedule */
+	{ "aura_sched",	SUBFT_AURA_SCHED,	FT_MISC },
+
+	/* aura night schedule */
+	{ "aura_night_sched",	SUBFT_AURA_NIGHT_SCHED,	FT_MISC },
+
+	/* led schedule */
+	{ "led_sched",	SUBFT_LED_SCHED,	FT_MISC },
+
+	/* led night schedule */
+	{ "led_night_sched",	SUBFT_LED_NIGHT_SCHED,	FT_MISC },
+
+	/* aura led night mode */
+	{ "aura_night_mode",	SUBFT_AURALED_NIGHT_MODE,	FT_AURA },
+
+	/* aura led */
+	{ "aura_led",	SUBFT_AURALED,	FT_AURA },
+
+	/* led schedule synchronize */
+	{ "led_sched_sync",	SUBFT_LED_SCHED_SYNC,	FT_MISC },
+
+	/* led night schedule synchronize */
+	{ "led_night_sched_sync",	SUBFT_LED_NIGHT_SCHED_SYNC,	FT_MISC },
+
+	/* aura schedule synchronize */
+	{ "aura_sched_sync",	SUBFT_AURA_SCHED_SYNC,	FT_MISC },
+
+	/* aura night schedule synchronize */
+	{ "aura_night_sched_sync",	SUBFT_AURA_NIGHT_SCHED_SYNC,	FT_MISC },
 
 	/* END */
 	{ NULL, 0, 0}
@@ -2171,6 +2237,7 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 	{ "ap_wifi_rl", FT_AP_WIFI_RL, SUBFT_AP_WIFI_RL, "",	0,	0},
 	{ "ap_lanif_rl", FT_AP_LANIF_RL, SUBFT_AP_LANIF_RL, "",	0,	0},
 	{ "vlan_rl", FT_VLAN_RL, SUBFT_VLAN_RL, "",	0,	0},
+	{ "vlan_trunk_iso_rl", FT_VLAN_TRUNK_ISO_RL, SUBFT_VLAN_TRUNK_ISO_RL, "", 0, 0},
 	{ "sdn_rl", FT_SDN_RL, SUBFT_SDN_RL, "",	0,	0},
 	{ "subnet_rl", FT_SUBNET_RL, SUBFT_SUBNET_RL, "",	0,	0},
 	{ "vlan_trunk_rl", FT_VLAN_TRUNK_RL, SUBFT_VLAN_TRUNK_RL, "",	0,	0},
@@ -3801,7 +3868,41 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 #endif
 
 	/* led night mode */
-	{ "single_led_night_mode", FT_MISC, SUBFT_LED_NIGHT_MODE,		"0"},
+	{ "single_led_night_mode", FT_MISC, SUBFT_LED_NIGHT_MODE,	"0",	0,	0},
+
+	/* aura schedule */
+	{ "aura_timesched", FT_MISC, SUBFT_AURA_SCHED,	"0",	0,	0},
+	{ "aura_sched", FT_MISC, SUBFT_AURA_SCHED,	"",	0,	0},
+
+	/* aura night schedule */
+	{ "aura_night_timesched", FT_MISC, SUBFT_AURA_NIGHT_SCHED,	"0",	0,	0},
+	{ "aura_night_sched", FT_MISC, SUBFT_AURA_NIGHT_SCHED,	"",	0,	0},
+
+	/* led schedule */
+	{ "led_timesched", FT_MISC, SUBFT_LED_SCHED,	"0",	0,	0},
+	{ "led_sched", FT_MISC, SUBFT_LED_SCHED,	"",	0,	0},
+
+	/* led night schedule */
+	{ "led_night_timesched", FT_MISC, SUBFT_LED_NIGHT_SCHED,	"0",	0,	0},
+	{ "led_night_sched", FT_MISC, SUBFT_LED_NIGHT_SCHED,	"",	0,	0},
+
+	/* aura led night mode */
+	{ "ledg_night_mode", FT_AURA, SUBFT_AURALED_NIGHT_MODE,	"0",	0,	0},
+
+	/* aura led*/
+	{ "ledg_scheme", FT_AURA, SUBFT_AURALED,	"2",	0,	0},
+
+	/* led schedule synchronize */
+	{ "led_off_sched", FT_MISC, SUBFT_LED_SCHED_SYNC,	"-1",	0,	0},
+
+	/* led night schedule synchronize */
+	{ "single_led_night_mode_sched", FT_MISC, SUBFT_LED_NIGHT_SCHED_SYNC,	"-1",	0,	0},
+
+	/* aura schedule synchronize */
+	{ "ledg_scheme_sched", FT_MISC, SUBFT_AURA_SCHED_SYNC,	"-1",	0,	0},
+
+	/* aura night schedule synchronize */
+	{ "ledg_night_mode_sched", FT_MISC, SUBFT_AURA_NIGHT_SCHED_SYNC,	"-1",	0,	0},
 
 	/* END */
 	{ NULL, 0, 0,		NULL,	0,	0}
@@ -3817,6 +3918,24 @@ static int cap_common_subft[] __attribute__ ((unused)) = {
 #if defined(RTCONFIG_SINGLE_LED_NIGHT_MODE)
 	SUBFT_LED_NIGHT_MODE,
 #endif
+#if defined(RTCONFIG_AURALED_NIGHT)
+	SUBFT_AURALED_NIGHT_MODE,
+#endif
+#if defined(RTCONFIG_AURALED)
+	SUBFT_AURALED,
+#endif
+#if defined(RTCONFIG_LED_SCHED)
+	SUBFT_LED_SCHED_SYNC,
+#endif
+#if defined(RTCONFIG_LED_NIGHT_SCHED)
+	SUBFT_LED_NIGHT_SCHED_SYNC,
+#endif
+#if defined(RTCONFIG_AURA_SCHED)
+	SUBFT_AURA_SCHED_SYNC,
+#endif
+#if defined(RTCONFIG_AURA_NIGHT_SCHED)
+	SUBFT_AURA_NIGHT_SCHED_SYNC,
+#endif
 	SUBFT_END
 };
 
@@ -3824,6 +3943,21 @@ static int cap_common_subft[] __attribute__ ((unused)) = {
 static int cap_private_subft[] __attribute__ ((unused)) = {
 #if defined(RTCONFIG_SINGLE_LED_NIGHT_MODE)
 	SUBFT_LED_NIGHT_MODE,
+#endif
+#if defined(RTCONFIG_AURALED_NIGHT)
+	SUBFT_AURALED_NIGHT_MODE,
+#endif
+#if defined(RTCONFIG_LED_SCHED)
+	SUBFT_LED_SCHED_SYNC,
+#endif
+#if defined(RTCONFIG_LED_NIGHT_SCHED)
+	SUBFT_LED_NIGHT_SCHED_SYNC,
+#endif
+#if defined(RTCONFIG_AURA_SCHED)
+	SUBFT_AURA_SCHED_SYNC,
+#endif
+#if defined(RTCONFIG_AURA_NIGHT_SCHED)
+	SUBFT_AURA_NIGHT_SCHED_SYNC,
 #endif
 	SUBFT_END
 };

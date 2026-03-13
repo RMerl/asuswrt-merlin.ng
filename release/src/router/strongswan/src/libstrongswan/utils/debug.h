@@ -43,6 +43,8 @@ enum debug_t {
 	DBG_CHD,
 	/** job processing */
 	DBG_JOB,
+	/** file descriptor watcher */
+	DBG_WCH,
 	/** configuration backends */
 	DBG_CFG,
 	/** kernel interface */

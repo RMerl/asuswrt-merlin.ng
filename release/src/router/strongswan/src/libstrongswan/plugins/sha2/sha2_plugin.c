@@ -59,7 +59,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *sha2_plugin_create()
+PLUGIN_DEFINE(sha2)
 {
 	private_sha2_plugin_t *this;
 

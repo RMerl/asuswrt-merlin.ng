@@ -1,0 +1,10 @@
+The two gateways <b>moon</b> and <b>sun</b> are configured to use per-CPU
+CHILD_SAs in order to improve performance. Using the <b>taskset</b> utility
+pings are sent from different CPUs triggering the creation of additional SA
+via the installed trap policy. The first ping triggers the creation of a
+fallback SA that's used while per-CPU SAs are created for later packets. Note
+that responses sent from the peer may create per-CPU SAs that are not triggered
+by local acquires.
+<p>
+The updown script automatically inserts iptables-based firewall rules
+that let pass the tunneled traffic.

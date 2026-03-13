@@ -1,0 +1,32 @@
+﻿.description{
+	color: #181818;
+}
+.card-bg{
+	background-color: #FFF;
+}
+.card-lv1{
+	color: #181818;
+}
+.card-lv1-bg, .canvas-bg{
+	background-color: transparent;
+}
+.event-hit, .count-hit, .no-data{
+	color: #181818;
+}
+.description-title, .event-title, .list-margin, .event-count, .list-count, .table-cell, .detail-content{
+	color: #181818;
+}
+.bar-cal{
+	background-color:#181818;
+}
+.page-title{
+	color: #181818;
+}
+.table-cell::before{
+	color: #181818;
+}
+@media (min-width: 721px){
+	.table-header div{
+		color: #181818;
+	}
+}

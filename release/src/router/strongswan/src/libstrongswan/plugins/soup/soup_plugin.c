@@ -62,7 +62,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *soup_plugin_create()
+PLUGIN_DEFINE(soup)
 {
 	private_soup_plugin_t *this;
 

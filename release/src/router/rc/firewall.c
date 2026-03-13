@@ -4845,6 +4845,16 @@ TRACE_PT("writing Parental Control\n");
 			fprintf(fp, "-A %s -i %s -p icmp -j %s\n", "INPUT_PING", wan_if, logdrop);
 			if (strcmp(wanx_if, wan_if) && inet_addr_(wanx_ip) && dualwan_unit__nonusbif(wan_unit))
 				fprintf(fp, "-A %s -i %s -p icmp -j %s\n", "INPUT_PING", wanx_if, logdrop);
+#if defined(RTCONFIG_BCM_EXT_SWITCH_RTK)
+			if (nvram_get_int("user1_vlan") > 0)
+				fprintf(fp, "-A %s -i vlan%d -p icmp -j ACCEPT\n", "INPUT_PING", nvram_get_int("user1_vlan"));
+			if (nvram_get_int("user2_vlan") > 0)
+				fprintf(fp, "-A %s -i vlan%d -p icmp -j ACCEPT\n", "INPUT_PING", nvram_get_int("user2_vlan"));
+			if (nvram_get_int("user3_vlan") > 0)
+				fprintf(fp, "-A %s -i vlan%d -p icmp -j ACCEPT\n", "INPUT_PING", nvram_get_int("user3_vlan"));
+			if (nvram_get_int("user4_vlan") > 0)
+				fprintf(fp, "-A %s -i vlan%d -p icmp -j ACCEPT\n", "INPUT_PING", nvram_get_int("user4_vlan"));
+#endif
 		}
 
 #ifdef RTCONFIG_IPSEC
@@ -8376,6 +8386,17 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 		eval("iptables", "-t", "mangle", "-A", "PREROUTING", "-i", wan_if, "-p", "udp", "--dport", "53", "!", "-d", lan_ip, "-j", "DROP");
 	}
 #endif
+#endif
+
+#if defined(WIFI7_SDK_20231126) && defined(RTCONFIG_TCODE) && defined(CHIP_BCM6813)
+	/*
+	 * workaround:
+	 * After update binaries into SDK from CS00012358314, incoming tcp connections without timestamp option will fail, this issue only happens in China
+	 * only focus on 5.04.L04p3 / CN/01 / BCM6813
+	 */
+	if (is_CN_sku()) {
+		eval("iptables", "-t", "mangle", "-A", "INPUT", "-p", "tcp", "-m", "tcp", "!", "--tcp-option", "8", "-j", "SKIPLOG");
+	}
 #endif
 
 }

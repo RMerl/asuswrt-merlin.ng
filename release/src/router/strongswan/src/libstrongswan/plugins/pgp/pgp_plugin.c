@@ -72,7 +72,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *pgp_plugin_create()
+PLUGIN_DEFINE(pgp)
 {
 	private_pgp_plugin_t *this;
 

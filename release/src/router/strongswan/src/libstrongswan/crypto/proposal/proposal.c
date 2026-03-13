@@ -21,6 +21,7 @@
 #include "proposal.h"
 
 #include <collections/array.h>
+#include <collections/hashtable.h>
 #include <utils/identification.h>
 
 #include <crypto/transform.h>
@@ -316,15 +317,16 @@ METHOD(proposal_t, promote_transform, bool,
  */
 static bool select_algo(private_proposal_t *this, proposal_t *other,
 						transform_type_t type, proposal_selection_flag_t flags,
-						bool log, uint16_t *alg, uint16_t *ks)
+						hashtable_t *kes, bool log, uint16_t *alg, uint16_t *ks)
 {
 	enumerator_t *e1, *e2;
 	uint16_t alg1, alg2, ks1, ks2;
 	bool found = FALSE, optional = FALSE;
 
-	if (type == KEY_EXCHANGE_METHOD)
+	if (is_ke_transform(type))
 	{
-		optional = this->protocol == PROTO_ESP || this->protocol == PROTO_AH;
+		optional = this->protocol == PROTO_ESP || this->protocol == PROTO_AH ||
+				   type != KEY_EXCHANGE_METHOD;
 	}
 
 	e1 = create_enumerator(this, type);
@@ -358,9 +360,13 @@ static bool select_algo(private_proposal_t *this, proposal_t *other,
 
 	e1->destroy(e1);
 	e1 = create_enumerator(this, type);
-	/* compare algs, order of algs in "first" is preferred */
+	/* compare algs, order of algs in "e1" is preferred */
 	while (!found && e1->enumerate(e1, &alg1, &ks1))
 	{
+		if (is_ke_transform(type) && kes->get(kes, (void*)(uintptr_t)alg1))
+		{
+			continue;
+		}
 		e2->destroy(e2);
 		e2 = other->create_enumerator(other, type);
 		while (e2->enumerate(e2, &alg2, &ks2))
@@ -390,6 +396,23 @@ static bool select_algo(private_proposal_t *this, proposal_t *other,
 }
 
 /**
+ * Hash an algorithm identifier
+ */
+static u_int hash_alg(const void *key)
+{
+	uint16_t alg = (uint16_t)(uintptr_t)key;
+	return chunk_hash(chunk_from_thing(alg));
+}
+
+/**
+ * Compare two algorithm identifiers
+ */
+static bool equals_alg(const void *key, const void *other_key)
+{
+	return (uint16_t)(uintptr_t)key == (uint16_t)(uintptr_t)other_key;
+}
+
+/**
  * Select algorithms from the given proposals, if selected is given, the result
  * is stored there and errors are logged.
  */
@@ -397,9 +420,12 @@ static bool select_algos(private_proposal_t *this, proposal_t *other,
 						 proposal_t *selected, proposal_selection_flag_t flags)
 {
 	transform_type_t type;
+	hashtable_t *kes;
 	array_t *types;
 	bool skip_integrity = FALSE;
 	int i;
+
+	kes = hashtable_create(hash_alg, equals_alg, 8);
 
 	types = merge_types(this, (private_proposal_t*)other);
 	for (i = 0; i < array_count(types); i++)
@@ -411,11 +437,12 @@ static bool select_algos(private_proposal_t *this, proposal_t *other,
 		{
 			continue;
 		}
-		if (type == KEY_EXCHANGE_METHOD && (flags & PROPOSAL_SKIP_KE))
+		if (is_ke_transform(type) && (flags & PROPOSAL_SKIP_KE))
 		{
 			continue;
 		}
-		if (select_algo(this, other, type, flags, selected != NULL, &alg, &ks))
+		if (select_algo(this, other, type, flags, kes, selected != NULL,
+						&alg, &ks))
 		{
 			if (alg == 0 && type != EXTENDED_SEQUENCE_NUMBERS)
 			{	/* 0 is "valid" for extended sequence numbers, for other
@@ -425,6 +452,10 @@ static bool select_algos(private_proposal_t *this, proposal_t *other,
 			if (selected)
 			{
 				selected->add_algorithm(selected, type, alg, ks);
+			}
+			if (is_ke_transform(type))
+			{
+				kes->put(kes, (void*)(uintptr_t)alg, (void*)(uintptr_t)alg);
 			}
 			if (type == ENCRYPTION_ALGORITHM &&
 				encryption_algorithm_is_aead(alg))
@@ -441,10 +472,12 @@ static bool select_algos(private_proposal_t *this, proposal_t *other,
 					 type);
 			}
 			array_destroy(types);
+			kes->destroy(kes);
 			return FALSE;
 		}
 	}
 	array_destroy(types);
+	kes->destroy(kes);
 	return TRUE;
 }
 
@@ -604,7 +637,7 @@ METHOD(proposal_t, clone_, proposal_t*,
 		{
 			continue;
 		}
-		if (entry->type == KEY_EXCHANGE_METHOD && (flags & PROPOSAL_SKIP_KE))
+		if (is_ke_transform(entry->type) && (flags & PROPOSAL_SKIP_KE))
 		{
 			continue;
 		}
@@ -849,7 +882,7 @@ static int print_alg(private_proposal_t *this, printf_hook_data_t *data,
 	enumerator = array_create_enumerator(this->transforms);
 	while (enumerator->enumerate(enumerator, &entry))
 	{
-		char *prefix = "/";
+		char *prefix = "/", ake_prefix[5] = "";
 
 		if (type != entry->type)
 		{
@@ -860,14 +893,19 @@ static int print_alg(private_proposal_t *this, printf_hook_data_t *data,
 			prefix = "";
 			*first = FALSE;
 		}
+		if (is_ke_transform(type) && type != KEY_EXCHANGE_METHOD)
+		{
+			sprintf(ake_prefix, "KE%d_", type - ADDITIONAL_KEY_EXCHANGE_1 + 1);
+		}
 		if (names)
 		{
-			written += print_in_hook(data, "%s%N", prefix, names, entry->alg);
+			written += print_in_hook(data, "%s%s%N", prefix, ake_prefix,
+									 names, entry->alg);
 		}
 		else
 		{
-			written += print_in_hook(data, "%sUNKNOWN_%u_%u", prefix,
-									 entry->type, entry->alg);
+			written += print_in_hook(data, "%s%sUNKNOWN_%u_%u", prefix,
+									 ake_prefix, entry->type, entry->alg);
 		}
 		if (entry->key_size)
 		{
@@ -978,15 +1016,97 @@ proposal_t *proposal_create(protocol_id_t protocol, uint8_t number)
 }
 
 /**
+ * Add supported KE methods to proposal
+ */
+static void add_supported_ke_methods(private_proposal_t *this)
+{
+	enumerator_t *enumerator;
+	key_exchange_method_t ke;
+	const char *plugin_name;
+
+	/* Round 1 adds ECC with at least 128 bit security strength */
+	enumerator = lib->crypto->create_ke_enumerator(lib->crypto);
+	while (enumerator->enumerate(enumerator, &ke, &plugin_name))
+	{
+		switch (ke)
+		{
+			case ECP_256_BIT:
+			case ECP_384_BIT:
+			case ECP_521_BIT:
+			case ECP_256_BP:
+			case ECP_384_BP:
+			case ECP_512_BP:
+			case CURVE_25519:
+			case CURVE_448:
+				add_algorithm(this, KEY_EXCHANGE_METHOD, ke, 0);
+				break;
+			default:
+				break;
+		}
+	}
+	enumerator->destroy(enumerator);
+
+	/* Round 2 adds other algorithms with at least 128 bit security strength */
+	enumerator = lib->crypto->create_ke_enumerator(lib->crypto);
+	while (enumerator->enumerate(enumerator, &ke, &plugin_name))
+	{
+		switch (ke)
+		{
+			case MODP_3072_BIT:
+			case MODP_4096_BIT:
+			case MODP_6144_BIT:
+			case MODP_8192_BIT:
+				add_algorithm(this, KEY_EXCHANGE_METHOD, ke, 0);
+				break;
+			default:
+				break;
+		}
+	}
+	enumerator->destroy(enumerator);
+
+	/* Round 3 adds algorithms with less than 128 bit security strength */
+	enumerator = lib->crypto->create_ke_enumerator(lib->crypto);
+	while (enumerator->enumerate(enumerator, &ke, &plugin_name))
+	{
+		switch (ke)
+		{
+			case MODP_NULL:
+				/* only for testing purposes */
+				break;
+			case MODP_768_BIT:
+			case MODP_1024_BIT:
+			case MODP_1536_BIT:
+				/* weak */
+				break;
+			case MODP_1024_160:
+			case MODP_2048_224:
+			case MODP_2048_256:
+				/* RFC 5114 primes are of questionable source */
+				break;
+			case ECP_224_BIT:
+			case ECP_224_BP:
+			case ECP_192_BIT:
+				/* rarely used */
+				break;
+			case MODP_2048_BIT:
+				add_algorithm(this, KEY_EXCHANGE_METHOD, ke, 0);
+				break;
+			default:
+				break;
+		}
+	}
+	enumerator->destroy(enumerator);
+}
+
+/**
  * Add supported IKE algorithms to proposal
  */
-static bool proposal_add_supported_ike(private_proposal_t *this, bool aead)
+static bool add_supported_ike(private_proposal_t *this, bool aead)
 {
 	enumerator_t *enumerator;
 	encryption_algorithm_t encryption;
 	integrity_algorithm_t integrity;
 	pseudo_random_function_t prf;
-	key_exchange_method_t group;
 	const char *plugin_name;
 
 	if (aead)
@@ -1177,83 +1297,7 @@ static bool proposal_add_supported_ike(private_proposal_t *this, bool aead)
 	}
 	enumerator->destroy(enumerator);
 
-	/* Round 1 adds ECC and NTRU algorithms with at least 128 bit security strength */
-	enumerator = lib->crypto->create_ke_enumerator(lib->crypto);
-	while (enumerator->enumerate(enumerator, &group, &plugin_name))
-	{
-		switch (group)
-		{
-			case ECP_256_BIT:
-			case ECP_384_BIT:
-			case ECP_521_BIT:
-			case ECP_256_BP:
-			case ECP_384_BP:
-			case ECP_512_BP:
-			case CURVE_25519:
-			case CURVE_448:
-			case NTRU_128_BIT:
-			case NTRU_192_BIT:
-			case NTRU_256_BIT:
-			case NH_128_BIT:
-				add_algorithm(this, KEY_EXCHANGE_METHOD, group, 0);
-				break;
-			default:
-				break;
-		}
-	}
-	enumerator->destroy(enumerator);
-
-	/* Round 2 adds other algorithms with at least 128 bit security strength */
-	enumerator = lib->crypto->create_ke_enumerator(lib->crypto);
-	while (enumerator->enumerate(enumerator, &group, &plugin_name))
-	{
-		switch (group)
-		{
-			case MODP_3072_BIT:
-			case MODP_4096_BIT:
-			case MODP_6144_BIT:
-			case MODP_8192_BIT:
-				add_algorithm(this, KEY_EXCHANGE_METHOD, group, 0);
-				break;
-			default:
-				break;
-		}
-	}
-	enumerator->destroy(enumerator);
-
-	/* Round 3 adds algorithms with less than 128 bit security strength */
-	enumerator = lib->crypto->create_ke_enumerator(lib->crypto);
-	while (enumerator->enumerate(enumerator, &group, &plugin_name))
-	{
-		switch (group)
-		{
-			case MODP_NULL:
-				/* only for testing purposes */
-				break;
-			case MODP_768_BIT:
-			case MODP_1024_BIT:
-			case MODP_1536_BIT:
-				/* weak */
-				break;
-			case MODP_1024_160:
-			case MODP_2048_224:
-			case MODP_2048_256:
-				/* RFC 5114 primes are of questionable source */
-				break;
-			case ECP_224_BIT:
-			case ECP_224_BP:
-			case ECP_192_BIT:
-			case NTRU_112_BIT:
-				/* rarely used */
-				break;
-			case MODP_2048_BIT:
-				add_algorithm(this, KEY_EXCHANGE_METHOD, group, 0);
-				break;
-			default:
-				break;
-		}
-	}
-	enumerator->destroy(enumerator);
+	add_supported_ke_methods(this);
 
 	return TRUE;
 }
@@ -1268,7 +1312,7 @@ proposal_t *proposal_create_default(protocol_id_t protocol)
 	switch (protocol)
 	{
 		case PROTO_IKE:
-			if (!proposal_add_supported_ike(this, FALSE))
+			if (!add_supported_ike(this, FALSE))
 			{
 				destroy(this);
 				return NULL;
@@ -1284,6 +1328,9 @@ proposal_t *proposal_create_default(protocol_id_t protocol)
 			add_algorithm(this, INTEGRITY_ALGORITHM,  AUTH_HMAC_SHA1_96,       0);
 			add_algorithm(this, INTEGRITY_ALGORITHM,  AUTH_AES_XCBC_96,        0);
 			add_algorithm(this, EXTENDED_SEQUENCE_NUMBERS, NO_EXT_SEQ_NUMBERS, 0);
+			/* add all supported KE methods, but make them optional */
+			add_supported_ke_methods(this);
+			add_algorithm(this, KEY_EXCHANGE_METHOD, KE_NONE, 0);
 			break;
 		case PROTO_AH:
 			add_algorithm(this, INTEGRITY_ALGORITHM,  AUTH_HMAC_SHA2_256_128,  0);
@@ -1292,6 +1339,9 @@ proposal_t *proposal_create_default(protocol_id_t protocol)
 			add_algorithm(this, INTEGRITY_ALGORITHM,  AUTH_HMAC_SHA1_96,       0);
 			add_algorithm(this, INTEGRITY_ALGORITHM,  AUTH_AES_XCBC_96,        0);
 			add_algorithm(this, EXTENDED_SEQUENCE_NUMBERS, NO_EXT_SEQ_NUMBERS, 0);
+			/* add all supported KE methods, but make them optional */
+			add_supported_ke_methods(this);
+			add_algorithm(this, KEY_EXCHANGE_METHOD, KE_NONE, 0);
 			break;
 		default:
 			break;
@@ -1310,7 +1360,7 @@ proposal_t *proposal_create_default_aead(protocol_id_t protocol)
 	{
 		case PROTO_IKE:
 			this = (private_proposal_t*)proposal_create(protocol, 0);
-			if (!proposal_add_supported_ike(this, TRUE))
+			if (!add_supported_ike(this, TRUE))
 			{
 				destroy(this);
 				return NULL;
@@ -1324,6 +1374,9 @@ proposal_t *proposal_create_default_aead(protocol_id_t protocol)
 			add_algorithm(this, ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV16, 192);
 			add_algorithm(this, ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV16, 256);
 			add_algorithm(this, EXTENDED_SEQUENCE_NUMBERS, NO_EXT_SEQ_NUMBERS, 0);
+			/* add all supported KE methods, but make them optional */
+			add_supported_ke_methods(this);
+			add_algorithm(this, KEY_EXCHANGE_METHOD, KE_NONE, 0);
 			return &this->public;
 		case PROTO_AH:
 		default:
@@ -1419,4 +1472,28 @@ proposal_t *proposal_select(linked_list_t *configured, linked_list_t *supplied,
 		DBG1(DBG_CFG, "configured proposals: %#P", configured);
 	}
 	return selected;
+}
+
+/*
+ * Described in header
+ */
+bool proposal_has_additional_ke(proposal_t *public)
+{
+	private_proposal_t *this = (private_proposal_t*)public;
+	enumerator_t *enumerator;
+	entry_t *entry;
+	bool found = FALSE;
+
+	enumerator = array_create_enumerator(this->transforms);
+	while (enumerator->enumerate(enumerator, &entry))
+	{
+		if (entry->type != KEY_EXCHANGE_METHOD &&
+			is_ke_transform(entry->type))
+		{
+			found = TRUE;
+			break;
+		}
+	}
+	enumerator->destroy(enumerator);
+	return found;
 }

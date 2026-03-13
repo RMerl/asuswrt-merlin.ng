@@ -111,6 +111,7 @@ struct stainfo {
 	char conn_if[16];
 	int conn_if_idx;
 	int conn_if_vidx;
+	int rssi;
 	//time_t last_update;
 	struct stainfo *next;
 };

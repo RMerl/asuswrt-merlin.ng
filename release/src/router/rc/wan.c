@@ -4514,6 +4514,10 @@ NOIP:
 	}
 #endif
 
+#ifdef RTCONFIG_GTBOOSTER
+	wan_start_ark_engine(wan_unit);
+#endif
+
 #ifdef RTCONFIG_HNS
 	wan_start_hns_engine(wan_unit);
 #endif

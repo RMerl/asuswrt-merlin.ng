@@ -256,12 +256,12 @@ static void __attribute__ ((constructor))reg()
 {
 	command_register((command_t) {
 		verify, 'v', "verify",
-		"verify a certificate using the CA certificate",
-		{"[--in file] [--cacert file] [--crl file]"},
+		"verify a certificate using one or more CA certificates",
+		{"[--in file] [--cacert file]+ [--crl file]"},
 		{
 			{"help",	'h', 0, "show usage information"},
 			{"in",		'i', 1, "X.509 certificate to verify, default: stdin"},
-			{"cacert",	'c', 1, "CA certificate for trustchain verification"},
+			{"cacert",	'c', 1, "CA certificate(s) for trustchain verification"},
 			{"crl",		'l', 1, "CRL for trustchain verification"},
 			{"online",	'o', 0, "enable online CRL/OCSP revocation checking"},
 		}

@@ -250,6 +250,10 @@ static int parse_serdes_parameters(phy_dev_t *phy_dev, const dt_handle_t handle)
     phy_dev->core_index = dt_property_read_u32_default(handle, "serdes-core", 0);
     phy_dev->lane_index = dt_property_read_u32_default(handle, "serdes-lane", 0);
     phy_dev->inter_phy_types = parse_inter_phy_types(handle);
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+    phy_dev->flag |= dt_property_read_bool(handle, "phy-combo") ? PHY_FLAG_COMBO: 0;
+//    printk("\n ************%s:%d phy_dev [%p] flag[0x%x] ***************\n", __FUNCTION__, __LINE__, phy_dev, phy_dev->flag );
+#endif
     parse_usxgmii_parameters(phy_dev, handle);
 
     return 0;
@@ -335,6 +339,8 @@ static phy_dev_t *phy_dev_dt_probe(const dt_handle_t handle)
         printk("Failed to create phy device: %d:%d\n", phy_type, addr);
         goto Exit;
     }
+//	else
+//		printk("\n ****** %s:%d add PHY dev[%p] ****** \n", __FUNCTION__, __LINE__, phy_dev);
 
     phy_dev->bus_drv = bus_drv_get_by_str(dt_property_read_string(dt_parent(handle), "bus-type"));
     phy_dev->eee = !dt_property_read_bool(handle, "caps-no-eee");
@@ -381,14 +387,27 @@ static phy_dev_t *phy_dev_dt_probe(const dt_handle_t handle)
         goto Exit;
     }
 
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+	phy_dev->los_init = 0;
+#endif
+
     if (phy_dev_next)
     {
         phy_dev_next->cascade_prev = phy_dev;
         phy_dev->cascade_next = phy_dev_next;
+#ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
+        if(PhyIsCombo(phy_dev))
+        {
+            phy_dev->cascade_ext = phy_dev_next;	/* backup ext PHY dev */
+            phy_dev->cascade_i2c = NULL;			/* init i2c dev to NULL */
+            phy_dev->i2c_dev_inactive = 1;			/* i2c dev is inactive */
+//            printk("\n ************%s:%d with phy_dev_next prev store ext p [%p] phy_dev [%p] flag[0x%x] next [%p] i2c_dev_inactive[%d] ***************\n", __FUNCTION__, __LINE__, phy_dev_next->cascade_prev, phy_dev, phy_dev->flag, phy_dev->cascade_next, phy_dev->i2c_dev_inactive );
+        }
+#endif
     }
 
 Done:
-    printk("Registered phy device: %s:0x%x\n", phy_dev->phy_drv->name, addr);
+    printk("Registered phy device: %s:0x%x, phy_dev [%p] \n", phy_dev->phy_drv->name, addr, phy_dev);
 
 Exit:
     return phy_dev;

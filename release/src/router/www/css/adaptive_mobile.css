@@ -48,6 +48,7 @@ body{
     background-color: #1E2B3C;
 }
 .card-lv1{
+    color: #FFF;
     margin: 8px 0;
     padding: 16px 12px;
 }
@@ -105,6 +106,9 @@ body{
 .bar-cal{
     background-color:#FC0;
 }
+.page-title{
+    color: #FFF;
+}
 .event-count, .list-count, .page-title, .no-data{
     font-size: 18px;
 }
@@ -149,7 +153,6 @@ body{
 }
 .time-stamp{
     color: #2597FF;
-   
 }
 .chart-title{
     padding: 12px 8px;

@@ -201,7 +201,7 @@ pts_ima_bios_list_t* pts_ima_bios_list_create(tpm_tss_t *tpm, char *file,
 											  pts_meas_algorithms_t algo)
 {
 	private_pts_ima_bios_list_t *this;
-	uint32_t pcr, event_type, event_len, seek_len, count = 1;
+	uint32_t pcr, event_type, event_len, seek_len, count DBG_UNUSED = 1;
 	uint32_t buf_len = 8192;
 	uint8_t event_buf[buf_len];
 	hash_algorithm_t hash_alg;

@@ -60,7 +60,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *agent_plugin_create()
+PLUGIN_DEFINE(agent)
 {
 	private_agent_plugin_t *this;
 
@@ -68,6 +68,13 @@ plugin_t *agent_plugin_create()
 	if (!lib->caps->keep(lib->caps, CAP_DAC_OVERRIDE))
 	{
 		DBG1(DBG_DMN, "agent plugin requires CAP_DAC_OVERRIDE capability");
+		return NULL;
+	}
+	/* required to switch user/group to access ssh-agent socket */
+	if (!lib->caps->keep(lib->caps, CAP_SETUID) ||
+		!lib->caps->keep(lib->caps, CAP_SETGID))
+	{
+		DBG1(DBG_DMN, "agent plugin requires CAP_SETUID/CAP_SETGID capability");
 		return NULL;
 	}
 

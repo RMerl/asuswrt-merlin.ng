@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2017 Tobias Brunner
- * Copyright (C) 2016 Andreas Steffen
+ * Copyright (C) 2016-2023 Andreas Steffen
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -43,6 +43,14 @@ enum ext_out_function_t {
 	XOF_MGF1_SHA384,
 	/** RFC 8017 PKCS#1 */
 	XOF_MGF1_SHA512,
+	/** RFC 8017 PKCS#1 */
+	XOF_MGF1_SHA3_224,
+	/** RFC 8017 PKCS#1 */
+	XOF_MGF1_SHA3_256,
+	/** RFC 8017 PKCS#1 */
+	XOF_MGF1_SHA3_384,
+	/** RFC 8017 PKCS#1 */
+	XOF_MGF1_SHA3_512,
 	/** FIPS 202 */
 	XOF_SHAKE_128,
 	/** FIPS 202 */

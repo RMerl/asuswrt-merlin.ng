@@ -1443,22 +1443,21 @@ static void set_from_proposal_v1(private_proposal_substructure_t *this,
 }
 
 /**
- * Add an IKEv2 proposal to the substructure
+ * Encode all transforms of the given type
  */
-static void set_from_proposal_v2(private_proposal_substructure_t *this,
-								 proposal_t *proposal)
+static void encode_transforms_v2(private_proposal_substructure_t *this,
+								 proposal_t *proposal, transform_type_t type)
 {
 	transform_substructure_t *transform;
-	uint16_t alg, key_size;
 	enumerator_t *enumerator;
+	uint16_t alg, key_size;
 
-	/* encryption algorithm is only available in ESP */
-	enumerator = proposal->create_enumerator(proposal, ENCRYPTION_ALGORITHM);
+	enumerator = proposal->create_enumerator(proposal, type);
 	while (enumerator->enumerate(enumerator, &alg, &key_size))
 	{
-		transform = transform_substructure_create_type(PLV2_TRANSFORM_SUBSTRUCTURE,
-												ENCRYPTION_ALGORITHM, alg);
-		if (key_size)
+		transform = transform_substructure_create_type(
+										PLV2_TRANSFORM_SUBSTRUCTURE, type, alg);
+		if (type == ENCRYPTION_ALGORITHM && key_size)
 		{
 			transform->add_transform_attribute(transform,
 				transform_attribute_create_value(PLV2_TRANSFORM_ATTRIBUTE,
@@ -1467,46 +1466,26 @@ static void set_from_proposal_v2(private_proposal_substructure_t *this,
 		add_transform_substructure(this, transform);
 	}
 	enumerator->destroy(enumerator);
+}
 
-	/* integrity algorithms */
-	enumerator = proposal->create_enumerator(proposal, INTEGRITY_ALGORITHM);
-	while (enumerator->enumerate(enumerator, &alg, &key_size))
-	{
-		transform = transform_substructure_create_type(PLV2_TRANSFORM_SUBSTRUCTURE,
-												INTEGRITY_ALGORITHM, alg);
-		add_transform_substructure(this, transform);
-	}
-	enumerator->destroy(enumerator);
-
-	/* prf algorithms */
-	enumerator = proposal->create_enumerator(proposal, PSEUDO_RANDOM_FUNCTION);
-	while (enumerator->enumerate(enumerator, &alg, &key_size))
-	{
-		transform = transform_substructure_create_type(PLV2_TRANSFORM_SUBSTRUCTURE,
-												PSEUDO_RANDOM_FUNCTION, alg);
-		add_transform_substructure(this, transform);
-	}
-	enumerator->destroy(enumerator);
-
-	/* dh groups */
-	enumerator = proposal->create_enumerator(proposal, KEY_EXCHANGE_METHOD);
-	while (enumerator->enumerate(enumerator, &alg, NULL))
-	{
-		transform = transform_substructure_create_type(PLV2_TRANSFORM_SUBSTRUCTURE,
-												KEY_EXCHANGE_METHOD, alg);
-		add_transform_substructure(this, transform);
-	}
-	enumerator->destroy(enumerator);
-
-	/* extended sequence numbers */
-	enumerator = proposal->create_enumerator(proposal, EXTENDED_SEQUENCE_NUMBERS);
-	while (enumerator->enumerate(enumerator, &alg, NULL))
-	{
-		transform = transform_substructure_create_type(PLV2_TRANSFORM_SUBSTRUCTURE,
-												EXTENDED_SEQUENCE_NUMBERS, alg);
-		add_transform_substructure(this, transform);
-	}
-	enumerator->destroy(enumerator);
+/**
+ * Add an IKEv2 proposal to the substructure
+ */
+static void set_from_proposal_v2(private_proposal_substructure_t *this,
+								 proposal_t *proposal)
+{
+	encode_transforms_v2(this, proposal, ENCRYPTION_ALGORITHM);
+	encode_transforms_v2(this, proposal, INTEGRITY_ALGORITHM);
+	encode_transforms_v2(this, proposal, PSEUDO_RANDOM_FUNCTION);
+	encode_transforms_v2(this, proposal, KEY_EXCHANGE_METHOD);
+	encode_transforms_v2(this, proposal, ADDITIONAL_KEY_EXCHANGE_1);
+	encode_transforms_v2(this, proposal, ADDITIONAL_KEY_EXCHANGE_2);
+	encode_transforms_v2(this, proposal, ADDITIONAL_KEY_EXCHANGE_3);
+	encode_transforms_v2(this, proposal, ADDITIONAL_KEY_EXCHANGE_4);
+	encode_transforms_v2(this, proposal, ADDITIONAL_KEY_EXCHANGE_5);
+	encode_transforms_v2(this, proposal, ADDITIONAL_KEY_EXCHANGE_6);
+	encode_transforms_v2(this, proposal, ADDITIONAL_KEY_EXCHANGE_7);
+	encode_transforms_v2(this, proposal, EXTENDED_SEQUENCE_NUMBERS);
 }
 
 /**

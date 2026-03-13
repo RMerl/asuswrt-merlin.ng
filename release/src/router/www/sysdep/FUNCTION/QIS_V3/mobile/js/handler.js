@@ -1153,12 +1153,24 @@ apply.getLink = function(){
 				return 'psk';
 		}
 	}());
-
+	const crypto = systemVariable.selectedAP.encryption.toLowerCase();
 	var key = systemVariable.selectedAP.thekey;
-	obj['rc_service'] = (selected_unit == 0) ? 'start_wpasupp_qis 0' : 'start_wpasupp_qis 1';
-	obj['wlc' + selected_unit + '_ssid'] = ssid;
-	obj['wlc' + selected_unit + '_auth_mode'] = auth_mode;
-	obj['wlc' + selected_unit + '_wpa_psk'] = key;
+
+	const odmpid = httpApi.nvramGet(["odmpid"]).odmpid;
+	if (["RT-BE58_Go", "RT-BE3600_Go"].includes(odmpid)) {
+		obj['rc_service'] = 'restart_wpasupp';
+		obj['wlc_ssid'] = ssid;
+		obj['wlc_auth_mode'] = auth_mode;
+		obj['wlc_wpa_psk'] = key;
+		obj['wlc_crypto'] = crypto;
+		obj['wlc_band'] = selected_unit;
+	}
+	else {
+		obj['rc_service'] = (selected_unit == 0) ? 'start_wpasupp_qis 0' : 'start_wpasupp_qis 1';
+		obj['wlc' + selected_unit + '_ssid'] = ssid;
+		obj['wlc' + selected_unit + '_auth_mode'] = auth_mode;
+		obj['wlc' + selected_unit + '_wpa_psk'] = key;
+	}
 
 	setTimeout(function(){
 		httpApi.nvramSet(obj, apply.getWLCPreLinkState);
@@ -1200,8 +1212,14 @@ apply.getWLCPreLinkState = function (){
 
 		var obj = {
 			"action_mode": "apply",
-			"rc_service": `stop_wpasupp_qis ${testBand}`,
-			"wlc0_ssid": ""
+			[`wlc${testBand}_ssid`]: ""
+		}
+		const odmpid = httpApi.nvramGet(["odmpid"]).odmpid;
+		if (["RT-BE58_Go", "RT-BE3600_Go"].includes(odmpid)) {
+			obj["rc_service"] = `stop_wpasupp`;
+		}
+		else {
+			obj["rc_service"] = `stop_wpasupp_qis ${testBand}`;
 		}
 
 		httpApi.nvramSet(obj, function(){
@@ -3204,8 +3222,9 @@ goTo.rtMode = function(){
 	qisPostData.wlc_band = "";
 	qisPostData.mlo_rp = 0;
 	qisPostData.mlo_mb = 0;
-	
+
 	systemVariable.opMode = "RT";
+	handle_mld_enable(systemVariable.opMode);
 	if(isSupport("amas")){
 		postDataModel.insert(aimeshObj);
 		qisPostData.cfg_master = "1";
@@ -3246,6 +3265,7 @@ goTo.rpMode = function(){
 	}
 	
 	systemVariable.opMode = "RP";
+	handle_mld_enable(systemVariable.opMode);
 	if(isSupport("amas")){
 		postDataModel.insert(aimeshObj);
 		qisPostData.cfg_master = "0";
@@ -3256,6 +3276,7 @@ goTo.rpMode = function(){
 };
 
 goTo.wispMode = function(){
+	postDataModel.remove(wispObj);
 	postDataModel.insert(wispObj);
 
 	if(typeof login_mac_str == 'function' && systemVariable.macClone){
@@ -3269,6 +3290,7 @@ goTo.wispMode = function(){
 	}
 
 	systemVariable.opMode = "WISP";
+	handle_mld_enable(systemVariable.opMode);
 
 	$("#wlInputField").html("")
 	goTo.siteSurvey();
@@ -3282,6 +3304,7 @@ goTo.apMode = function(){
 	qisPostData.mlo_mb = 0;
 	
 	systemVariable.opMode = "AP";
+	handle_mld_enable(systemVariable.opMode);
 	if(isSupport("amas")){
 		postDataModel.insert(aimeshObj);
 		qisPostData.cfg_master = "1";
@@ -3303,6 +3326,7 @@ goTo.mbMode = function(){
 		qisPostData.wlc_dpsta = 0;
 	}
 	systemVariable.opMode = "MB";
+	handle_mld_enable(systemVariable.opMode);
 	if(isSupport("amas")){
 		postDataModel.insert(aimeshObj);
 		qisPostData.cfg_master = "0";
@@ -4686,7 +4710,7 @@ goTo.Finish = function(){
 
 	sendMessageToSiteManager();
 
-	if(isSupport("GUNDAM_UI") || isSupport("TS_UI") || isSupport("GS7_MIKU")) $("#gdContainer").show()
+	if(isSupport("GUNDAM_UI") || isSupport("TS_UI") || isSupport("GS7_MIKU") || isSupport("YEAR20")) $("#gdContainer").show()
 
 	if(!isSwMode("MB")){
 		$("#wirelessFinishFiled").append($("#wlInputField"));
@@ -4773,6 +4797,16 @@ goTo.Finish = function(){
 							.appendTo($("#gundam_page"));
 
 						$("#GD-content").append($("<div>").attr({"class": "GD-wait"}).append($("<div>").attr({"id": "GD-status"}).html("<#Excute_processing#>")));
+					}
+
+					if(isSupport("YEAR20")){
+						$("#gundam_page").empty();
+						$("<div>")
+							.addClass("GD-content YEAR20-bg")
+							.attr("id", "GD-content")
+							.appendTo($("#gundam_page"));
+
+						$("#GD-content").append($("<div>").attr({"class": "GD-wait", "id": "GD-wait_button"}).append($("<div>").attr({"id": "GD-status"}).html("<#Excute_processing#>")));
 					}
 
 					$("#GD-status").html("<#QKSet_finishpre_rebootnow#>");
@@ -5498,9 +5532,9 @@ goTo.EULA = function(){
 		apply.Policy();
 		return
 	}
-	const policyStatus = PolicyStatus()
+	PolicyStatus()
 		.then(data => {
-			if (data.EULA == "1") {
+			if (data.EULA_read == 1) {
 				goTo.PP();
 			} else {
 				const policy_page = document.querySelector('#policy_page');
@@ -5521,7 +5555,7 @@ goTo.PP = function () {
 		return
 	}
 
-	const policyStatus = PolicyStatus()
+	PolicyStatus()
 		.then(data => {
 			const policy_page = document.querySelector('#policy_page');
 			const qisPolicyPageComponent = new QisPolicyPageComponent({

@@ -1,48 +1,30 @@
+<!DOCTYPE html>
 <html>
-	<iframe id="settingsWindow" style="
-		width: 100%;
-	" src="/Advanced_Wireless_Content.asp"></iframe>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0,  user-scalable=no" />
+    </head>
+
+    <body>
+        <div class="d-flex align-items-center mb-3">
+            <div class="page-title"><#Settings#></div>
+        </div>
+		<div class="row">
+            <div class="col-12 mb-3">
+				<div class="card card-cut-none pt-2 h-100">
+					<iframe id="settingsWindow" style="width: 100%; height: 100vh;" src="/Advanced_Default_Content.asp"></iframe>
+				</div>
+			</div>
+        </div>
+	</body>
 
 	<script>
-		var Session = Session || (function(){
-			var win = window.top || window;
-			try{
-				var store = (win.name ? JSON.parse(win.name) : {});
-				function Save() {
-					win.name = JSON.stringify(store);
-				}
-
-				if (window.addEventListener) window.addEventListener("unload", Save, false);
-				else if (window.attachEvent) window.attachEvent("onunload", Save);
-				else window.onunload = Save;
-
-				return {
-					set: function(name, value) {
-						store[name] = value;
-					},
-					get: function(name) {
-						return (store[name] ? store[name] : undefined);
-					},
-					clear: function() { store = {}; },
-					dump: function() { return JSON.stringify(store); }
-				};
-			}
-			catch(e){
-				win.name = ""; /* reset cache */
-				return {
-					set: function(){},
-					get: function(){},
-					clear: function(){},
-					dump: function(){}
-				};
-			}
-		})();
-
 		var webWrapper = true;
-		let targetPage = urlParameter.get("page");
+		var targetPage = urlParameter.get("tab");
 		if (targetPage === "" || targetPage === undefined || targetPage == null) {
 			let lastPage = Session.get("lastPage") || "";
-			if(lastPage == "index.html") lastPage = "";
+			if(lastPage == "index.html" || !lastPage.split(".")[1]) lastPage = "";
 
 			if (lastPage !== "" && lastPage !== undefined) {
 				targetPage = lastPage;
@@ -51,8 +33,12 @@
 			}
 		} else {
 			Session.set("lastPage", targetPage);
-			location.href = isMultisiteApp() ? "/index.html?url=settings&current_theme=white&mapp=true" : "/index.html?url=settings&current_theme=white"
+            const state = null;
+            const title = "";
+            const newUrl = "index.html";
+            history.replaceState(state, title, newUrl);
 		}
+
 		var currentPage = $('#settingsWindow').attr('src').replace("/", "");
 		if (currentPage != targetPage) $('#settingsWindow').attr({'src': "/" + targetPage})
 
@@ -92,7 +78,6 @@
 
 			var iframe = $("#settingsWindow").contents();
 			iframe.find(".formfonttitle").parent().addClass("p-0 m-0");
-			iframe.find("#whiteThemeWrapper table").css({"width": "100%"});
 
 			// top banner
 			iframe.find("#TopBanner").hide()
@@ -116,37 +101,33 @@
 			iframe.find("#Advanced_Smart_Home_Alexa_menu").remove()
 			iframe.find("#Advanced_VPNServer_Content_menu").remove()
 			// submenu
-			iframe.find("#tabMenu").parent().css({
-				"text-align": "center"
-			})
-
+			iframe.find("#tabMenu").parent().css({"text-align": "center"})
 			iframe.find("#tabMenu table").css({
 				"width": "100%",
 				"border-spacing": "0px"
 			})
-
-			iframe.find(".tab").parent().css({
-				"border-bottom": "solid 4px #dcdcdc"
-			})
-
-			iframe.find(".tabClicked").parent().css({
-				"border-bottom": "solid 4px #006ce1"
-			})
-
-			iframe.find("#FormTitle").attr({
-				"width": "100%"
-			})
-
+			iframe.find(".tab").parent().css({"border-bottom": "solid 4px #dcdcdc"})
+			iframe.find(".tabClicked").parent().css({"border-bottom": "solid 4px var(--primary-70)"})
+			iframe.find("#FormTitle").attr({"width": "100%"})
+			iframe.find('#whiteThemeWrapper table').attr('width', '100%');
+			iframe.find('td[width="17"]').remove();
+			iframe.find('td[width="20"]').remove();
+			iframe.find('td[width="10"]').remove();
 			iframe.find(".formfonttitle").hide()
 			iframe.find(".splitLine").hide()
 			iframe.find(".button_gen_dis").removeClass("button_gen_dis").addClass("button_gen")
 			iframe.find(".hint-color").removeClass("hint-color").addClass("warning_desc")
 
 			// footer
-			iframe.find("#footer").hide()
+			iframe.find("#footer").hide();
+			iframe.find('.bg-shadow-right').on('click', function(){
+				if($(this).css('position') == "absolute") $(this).hide();
+			});
 		}
 
 		function setupBusinessUI(){
+			var iframe = $("#settingsWindow").contents();
+
 			findColorAndReplace("color", "FFFFFF", "006CE1");
 			findColorAndReplace("color", "FFCC00", "006CE1");
 			setTimeout(function(){findColorAndReplace("color", "FFCC00", "e10000");}, 500);
@@ -155,20 +136,50 @@
 			findColorAndReplace("background-color", "4D595D", "transparent");
 
 			if(theme.toLocaleUpperCase() == "WHITE"){
-				$("#settingsWindow").contents().find('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_' + theme.toLocaleUpperCase() + '.css">');
+				iframe.find('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/RWD_UI/rwd_component_' + theme.toLocaleUpperCase() + '.css">');
 			}
 
-			setupWrapper();
-
-			// content
-			$("#settingsWindow").contents().find("#FormTitle").parent().parent().parent().parent()
+			iframe.find("#FormTitle").parent().parent().parent().parent()
 				.wrap( "<div id='whiteThemeWrapper'></div>")
 
+			setupWrapper();
 			setTimeout(function(){
-				$("#settingsWindow").contents().find("body").hide().css("visibility", "visible").fadeIn();
-			}, 100);
+				iframe.find("body").hide().css("visibility", "visible").fadeIn();
+			}, 1);
 
-			$("#settingsWindow").contents().find("body").addClass("scaleBody")
+			iframe.find("body").addClass("scaleBody");
+
+			iframe.find("#tabMenu table:first tr:first").prepend(`
+				<td id="menu_setting">
+					<div class="tabClicked">
+						<div id="tabMoreIcon"></div>
+					</div>
+				</td>
+			`);
+
+			iframe.find("#menu_setting").on('click', function(){
+				var settingsMenu = $("#settingsWindow").contents().find('.bg-shadow-right');
+
+				if (settingsMenu.is(':visible')) {
+					settingsMenu.hide();
+					$("#settingsWindow").contents().find('.tab').hide();
+				} else {
+					settingsMenu.show()
+					$("#settingsWindow").contents().find('.tab').show();
+					$("#settingsWindow").contents().find(".bg-shadow-right").css({
+						"top": `${$("#settingsWindow").contents().find(".submenuBlock").height()+10}px`
+					});
+				}
+			});
+		}
+
+		document.getElementById('settingsWindow').onload = function () {
+			if (top.loader) {
+                if(top.loader.isShow()) {
+                    top.loader.hide();
+                    top.loader = null;
+                }
+			}
 		}
 		
 		window.addEventListener('message', event => {
@@ -177,14 +188,28 @@
 				if (iframe) {
                     const footer = (navigator.userAgent.match(/ASUSMultiSiteManager/) || navigator.userAgent.match(/ASUSExpertSiteManager/)) ? 100 : 20;
                     const iframeHeight = event.data.height + footer;
-                    let headerHeight = 0;
-                    if (document.querySelector('header')) {
-                        headerHeight = document.querySelector('header').scrollHeight;
-                    }
-                    const windowHeight = top.window.innerHeight - headerHeight * 2 - footer;
-                    iframe.style.height = `${Math.max(iframeHeight, windowHeight * 1.13)}px`
+					const remHeight = 16;
+					const headerHeight = document.querySelector('header').scrollHeight;
+					const paddinHeight = remHeight * 2;
+					const pageTitleHeight = document.querySelector('.page-title').scrollHeight;
+					const footerHeight = remHeight / 2;
+
+                    const windowHeight = top.window.innerHeight - headerHeight - paddinHeight - pageTitleHeight - footerHeight;
+                    iframe.style.height = `${Math.max(iframeHeight, windowHeight)}px`;
+
+					if($("#settingsWindow").contents().find(".textarea_ssh_table")) {
+						const logMenuHeight = $("#settingsWindow").contents().find(".submenuBlock").height();
+						const logAreaHeight = $("#settingsWindow").contents().find(".FormTitle").height();
+						var logCurrentHeight = logAreaHeight + logMenuHeight;
+
+						if($("#settingsWindow").height() > logCurrentHeight){
+							$("#settingsWindow").contents().find(".textarea_ssh_table").css({
+								"height": `${$("#settingsWindow").contents().find(".textarea_ssh_table").height() + windowHeight - logCurrentHeight}px`
+							});
+						}
+					}
 				}
 			}
-		}, 1000);
+		});
 	</script>
 </html>

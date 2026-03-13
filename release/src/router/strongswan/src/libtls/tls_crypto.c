@@ -2774,6 +2774,7 @@ METHOD(enumerator_t, private_key_enumerate, bool,
 	VA_ARGS_VGET(args, key_out, auth_out);
 
 	DESTROY_IF(this->key);
+	this->key = NULL;
 	DESTROY_IF(this->auth);
 	this->auth = auth_cfg_create();
 

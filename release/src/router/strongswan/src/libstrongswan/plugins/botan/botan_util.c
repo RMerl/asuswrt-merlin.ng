@@ -51,6 +51,26 @@ bool chunk_to_botan_mp(chunk_t value, botan_mp_t *mp)
 /*
  * Described in header
  */
+int botan_view_to_chunk(botan_view_ctx ctx, const uint8_t *data, size_t len)
+{
+	chunk_t *chunk = (chunk_t*)ctx;
+
+	*chunk = chunk_clone(chunk_create((u_char*)data, len));
+	return 0;
+}
+
+/**
+ * Version of the above for PEM version of the view functions.
+ */
+static int botan_view_str_to_chunk(botan_view_ctx ctx, const char *data,
+								   size_t len)
+{
+	return botan_view_to_chunk(ctx, (const uint8_t*)data, len);
+}
+
+/*
+ * Described in header
+ */
 const char *botan_get_hash(hash_algorithm_t hash)
 {
 	switch (hash)
@@ -121,18 +141,8 @@ bool botan_get_encoding(botan_pubkey_t pubkey, cred_encoding_type_t type,
 	bool success = FALSE;
 
 	encoding->len = 0;
-	if (botan_pubkey_export(pubkey, NULL, &encoding->len,
-							BOTAN_PRIVKEY_EXPORT_FLAG_DER)
-		!= BOTAN_FFI_ERROR_INSUFFICIENT_BUFFER_SPACE)
+	if (botan_pubkey_view_der(pubkey, encoding, botan_view_to_chunk))
 	{
-		return FALSE;
-	}
-
-	*encoding = chunk_alloc(encoding->len);
-	if (botan_pubkey_export(pubkey, encoding->ptr, &encoding->len,
-							BOTAN_PRIVKEY_EXPORT_FLAG_DER))
-	{
-		chunk_free(encoding);
 		return FALSE;
 	}
 
@@ -182,28 +192,12 @@ bool botan_get_encoding(botan_pubkey_t pubkey, cred_encoding_type_t type,
 bool botan_get_privkey_encoding(botan_privkey_t key, cred_encoding_type_t type,
 								chunk_t *encoding)
 {
-	uint32_t format = BOTAN_PRIVKEY_EXPORT_FLAG_DER;
-
 	switch (type)
 	{
 		case PRIVKEY_PEM:
-			format = BOTAN_PRIVKEY_EXPORT_FLAG_PEM;
-			/* fall-through */
+			return !botan_privkey_view_pem(key, encoding, botan_view_str_to_chunk);
 		case PRIVKEY_ASN1_DER:
-			encoding->len = 0;
-			if (botan_privkey_export(key, NULL, &encoding->len, format)
-				!= BOTAN_FFI_ERROR_INSUFFICIENT_BUFFER_SPACE)
-			{
-				return FALSE;
-			}
-			*encoding = chunk_alloc(encoding->len);
-			if (botan_privkey_export(key, encoding->ptr, &encoding->len,
-									 format))
-			{
-				chunk_free(encoding);
-				return FALSE;
-			}
-			return TRUE;
+			return !botan_privkey_view_der(key, encoding, botan_view_to_chunk);
 		default:
 			return FALSE;
 	}

@@ -16,6 +16,7 @@ options = \
 	options/charon-systemd.opt \
 	options/imcv.opt \
 	options/imv_policy_manager.opt \
+	options/iptfs.opt \
 	options/manager.opt \
 	options/medsrv.opt \
 	options/pki.opt \
@@ -31,7 +32,6 @@ plugins = \
 	plugins/android_log.opt \
 	plugins/attr.opt \
 	plugins/attr-sql.opt \
-	plugins/bliss.opt \
 	plugins/botan.opt \
 	plugins/bypass-lan.opt \
 	plugins/certexpire.opt \
@@ -77,7 +77,6 @@ plugins = \
 	plugins/kernel-pfroute.opt \
 	plugins/load-tester.opt \
 	plugins/lookip.opt \
-	plugins/ntru.opt \
 	plugins/openssl.opt \
 	plugins/openxpki.opt \
 	plugins/osx-attr.opt \

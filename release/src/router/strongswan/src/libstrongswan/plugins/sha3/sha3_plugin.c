@@ -65,7 +65,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *sha3_plugin_create()
+PLUGIN_DEFINE(sha3)
 {
 	private_sha3_plugin_t *this;
 
@@ -81,4 +81,3 @@ plugin_t *sha3_plugin_create()
 
 	return &this->public.plugin;
 }
-

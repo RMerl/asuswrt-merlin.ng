@@ -86,8 +86,8 @@ struct private_aead_t {
 /**
  * Do the actual en/decryption in an EVP context
  */
-static bool crypt(private_aead_t *this, chunk_t data, chunk_t assoc, chunk_t iv,
-				  u_char *out, int enc)
+static bool crypt_data(private_aead_t *this, chunk_t data, chunk_t assoc,
+					   chunk_t iv, u_char *out, int enc)
 {
 	EVP_CIPHER_CTX *ctx;
 	u_char nonce[NONCE_LEN];
@@ -155,7 +155,7 @@ METHOD(aead_t, encrypt, bool,
 		*encrypted = chunk_alloc(plain.len + this->icv_size);
 		out = encrypted->ptr;
 	}
-	return crypt(this, plain, assoc, iv, out, 1);
+	return crypt_data(this, plain, assoc, iv, out, 1);
 }
 
 METHOD(aead_t, decrypt, bool,
@@ -176,7 +176,7 @@ METHOD(aead_t, decrypt, bool,
 		*plain = chunk_alloc(encrypted.len);
 		out = plain->ptr;
 	}
-	return crypt(this, encrypted, assoc, iv, out, 0);
+	return crypt_data(this, encrypted, assoc, iv, out, 0);
 }
 
 METHOD(aead_t, get_block_size, size_t,

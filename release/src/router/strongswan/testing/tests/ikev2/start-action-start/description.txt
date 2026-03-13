@@ -1,0 +1,3 @@
+This scenario tests <b>start_action=start</b> and its behavior when reloading the
+config.  To distinguish the different CHILD_SAs, arbitrary TCP ports are used in
+the traffic selectors.

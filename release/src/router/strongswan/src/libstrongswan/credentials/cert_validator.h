@@ -90,6 +90,16 @@ struct cert_validator_t {
 	bool (*validate_online)(cert_validator_t *this, certificate_t *subject,
 							certificate_t *issuer, u_int pathlen, bool anchor,
 							auth_cfg_t *auth);
+
+	/**
+	 * Do OCSP checking for the given certificate.
+	 *
+	 * @param subject		subject certificate to check
+	 * @param issuer		issuer of subject
+	 * @return				a valid OCSP response, NULL otherwise
+	 */
+	certificate_t* (*ocsp)(cert_validator_t *this, certificate_t *subject,
+						   certificate_t *issuer);
 };
 
 #endif /** CERT_VALIDATOR_H_ @}*/

@@ -958,6 +958,22 @@ var Get_Component_WirelessInput = function(wlArray){
 	wlArray.forEach(function(wl, idx){
 		var wirelessAP = httpApi.nvramCharToAscii(["wl" + wl.ifname + "_ssid", "wl" + wl.ifname + "_wpa_psk", "wl" + wl.ifname + "_auth_mode_x"]);
 
+		if (systemVariable.isDefault && wl.ifname !== '') {
+			const wl_def_ap_ifnames = httpApi.nvramGet(["wl_def_ap_ifnames"]).wl_def_ap_ifnames;
+			if (wl_def_ap_ifnames !== "") {
+				const wl_unit = `wl${wl.ifname}`;
+				const items = wl_def_ap_ifnames.split(" ");
+				for (let item of items) {
+					if (item.startsWith(wl_unit)) {
+						def_wirelessAP = httpApi.nvramCharToAscii([`${item}_ssid`, `${item}_wpa_psk`, `${item}_auth_mode_x`]);
+						wirelessAP[`wl${wl.ifname}_ssid`] = def_wirelessAP[`${item}_ssid`];
+						wirelessAP[`wl${wl.ifname}_wpa_psk`] = def_wirelessAP[`${item}_wpa_psk`];
+						wirelessAP[`wl${wl.ifname}_auth_mode_x`] = def_wirelessAP[`${item}_auth_mode_x`];
+					}
+				}
+			}
+		}
+
 		if(isSupport("sdn_mainfh") && !systemVariable.isDefault){
 			const main_fh_info = get_sdn_main_fh_info();
 			const band_name = get_band_by_wl_unit(wl.ifname);
@@ -973,8 +989,8 @@ var Get_Component_WirelessInput = function(wlArray){
 
 			const specific_main_fh_info = main_fh_info.find(item => item.band & band_value);
 			if(specific_main_fh_info != undefined){
-				wirelessAP["wl" + wl.ifname + "_ssid"] = specific_main_fh_info["ssid"];
-				wirelessAP["wl" + wl.ifname + "_wpa_psk"] = specific_main_fh_info["psk"];
+				wirelessAP["wl" + wl.ifname + "_ssid"] = encodeURIComponent(specific_main_fh_info["ssid"]);
+				wirelessAP["wl" + wl.ifname + "_wpa_psk"] = encodeURIComponent(specific_main_fh_info["psk"]);
 			}
 			else{
 				wirelessAP["wl" + wl.ifname + "_ssid"] = "";
@@ -1026,7 +1042,7 @@ var Get_Component_WirelessInput = function(wlArray){
 				.attr({
 					"id": "wireless_ssid_" + wl.ifname,
 					"type": "text",
-					"maxlength": "33",
+					"maxlength": "32",
 					"class": "textInput wlInput",
 					"autocomplete": "off",
 					"autocorrect": "off",
@@ -1111,7 +1127,7 @@ var Get_Component_WirelessInput_MLO = function(wlArray){
 			.attr({
 				"id": "wireless_ssid_" + wlArray.ifname,
 				"type": "text",
-				"maxlength": "33",
+				"maxlength": "32",
 				"class": "textInput wlInput",
 				"autocomplete": "off",
 				"autocorrect": "off",
@@ -1418,7 +1434,7 @@ function handleSysDep(){
 		$("#gdContainer").append($("<div>").attr({"class": "GD-wait"}).append($("<div>").attr({"id": "GD-status"}).html("<#Excute_processing#>")));
 	}
 
-	if(isSupport("GS7_MIKU")){
+	if(isSupport("GS7_MIKU") || isSupport("YEAR20")){
 		$("#summary_page").append($("<div>").attr({"id": "gdContainer", "class": "gundam-footer-field"}).hide())
 		$("#gdContainer").html('');
 		$(".headerBar").css("height", "72px");
@@ -1430,6 +1446,7 @@ function handleSysDep(){
 		$('#wifi6e_legacy_hint_summary').remove();
 
 		$("#mlo_enable_checkbox").change(function(e){
+			return;
 			var curStatus = $(this).prop("checked");
 	
 			if(curStatus){
@@ -1441,7 +1458,6 @@ function handleSysDep(){
 					qisPostData["mlo_rp"] = "0";
 					qisPostData["mlo_mb"] = "1";
 				}
-
 				qisPostData["mld_enable"] = "1";
 				qisPostData["wlc_dpsta"] = "2";
 				qisPostData["wlc_band"] = httpApi.nvramGet(["mlo_map"]).mlo_map.replace("wl", "");
@@ -1673,6 +1689,16 @@ function setupWLCNvram(apProfileID) {
 				qisPostData["wlc" + unit + "_crypto"] = "aes+gcmp256";
 			}
 		}
+		else if(authentication == "WPA2-WPA3-Personal" && encryption == "AES"){
+			qisPostData["wlc" + unit + "_auth_mode"] = "psk2sae";
+			qisPostData["wlc" + unit + "_crypto"] = "aes";
+			qisPostData["wlc" + unit + "_wep"] = "0";
+		}
+		else if(isSupport('wifi7') && authentication == "Enhanced Open" && encryption == "AES"){
+			qisPostData["wlc" + unit + "_auth_mode"] = "owe";
+			qisPostData["wlc" + unit + "_crypto"] = "aes";
+			qisPostData["wlc" + unit + "_wep"] = "0";
+		}
 		else if(authentication == "WPA-WPA2-Enterprise"){
 			qisPostData["wlc" + unit + "_auth_mode"] = "wpawpa2";
 			if(encryption == "AES")
@@ -1685,6 +1711,12 @@ function setupWLCNvram(apProfileID) {
 			qisPostData["wlc" + unit + "_auth_mode"] = "wpa2";
 			qisPostData["wlc" + unit + "_crypto"] = "aes";
 			qisPostData["wlc" + unit + "_wep"] = "0";
+		}
+		else if(authentication == "OWE" && (encryption == "AES" || encryption == "AES+GCMP256")){
+			qisPostData["wlc" + unit + "_auth_mode"] = "owe";
+			qisPostData["wlc" + unit + "_crypto"] = "aes";
+			qisPostData["wlc" + unit + "_wep"] = "0";
+			encryption = "NONE";
 		}
 		else{
 			qisPostData["wlc" + unit + "_auth_mode"] = "psk2";
@@ -3129,4 +3161,30 @@ function get_sdn_main_fh_info(){
 		main_fh_info = [{"ssid":"", "auth":"open", "psk":"", "band":""}];
 	}
 	return main_fh_info;
+}
+function handle_mld_enable(mode) {
+	if (!isSupport("mlo")) return;
+
+	if (mode === "RT" || mode === "AP") {
+		if (isSwModeChanged()) {
+			postDataModel.insert(mloObj);
+			qisPostData.mld_enable = httpApi.nvramDefaultGet(["mld_enable"]).mld_enable || "0";
+		}
+	}
+	else if (mode === "RP" || mode === "MB" || mode === "WISP") {
+		let needInsert = false;
+		if (isSwModeChanged()) {
+			needInsert = true;
+		}
+		else {
+			const current_mld_enable = httpApi.nvramGet(["mld_enable"]).mld_enable || "0";
+			if (current_mld_enable == "1") {
+				needInsert = true;
+			}
+		}
+		if (needInsert) {
+			postDataModel.insert(mloObj);
+			qisPostData.mld_enable = "0";
+		}
+	}
 }

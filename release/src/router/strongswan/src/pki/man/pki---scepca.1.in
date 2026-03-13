@@ -115,7 +115,7 @@ RA cert "C=CH, O=strongSwan Project, CN=SCEP RA"
 RA cert is trusted, valid until Aug 10 15:51:34 2023, 'myra.crt'
 .EE
 .PP
-The trusthworthiness of the root CA certificate has to be established manually by
+The trustworthiness of the root CA certificate has to be established manually by
 verifying the SHA256 or SHA1 fingerprint of the DER-encoded certificate that is
 e.g. listed on the official PKI website or by some other means.
 .P

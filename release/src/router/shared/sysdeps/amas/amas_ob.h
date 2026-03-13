@@ -140,6 +140,7 @@ static struct time_mapping_s time_mapping_list[] = {
 	{ "GS-BE12000", 50,	120,	60},
 	{ "GS7_PRO",	50,	120,	60},
 	{ "GT7",	50,	120,	60},
+	{ "GS7_PRO_MAX",50,	120,	60},
 	{ "GT-BE96_AI", 90,    120,     60},
 	/* END */
 	{ NULL, 0, 0, 0 }

@@ -13,7 +13,7 @@
 #define UFWD_TIMEOUT        20
 #define UFWD_APP_TIMEOUT    "3600"
 #define UFWD_USER_TIMEOUT   "3600"
-#define UFWD_NFQ_MARK       "0x80000000"
+#define UFWD_NFQ_MARK       "0x40000000"
 #define UFWD_CPUNUM         TMP_HNS"CPUNUM"
 #define UFWD_HNS_PATH       "/usr/hns/"
 #define UFWD_WAITING        10
@@ -126,6 +126,7 @@ extern int check_hns_switch();
 extern int check_hns_setting();
 extern void check_hns_alive_service();
 extern int HNSisSupport(const char *name);
+extern void HNS_disable_fun_bit();
 
 /* HNS DB */
 extern void exe_hns_history();

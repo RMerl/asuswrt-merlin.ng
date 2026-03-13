@@ -148,7 +148,7 @@ function initial(){
 			default_apps_array = default_apps_array.del(default_apps_array.getIndexByValue2D("AiDisk")[0]);
 	}
 
-	if(!printer_support || noprinter_support || re_mode == "1"){
+	if(!printer_support || noprinter_support){
 		if(default_apps_array.getIndexByValue2D("<#Network_Printer_Server#>") != -1)
 			default_apps_array = default_apps_array.del(default_apps_array.getIndexByValue2D("<#Network_Printer_Server#>")[0]);
 	}
@@ -554,7 +554,6 @@ function show_apps(){
 			htmlcode += '<div id="'+default_apps_array[i][3]+'" class="app_list" style="cursor:pointer" onclick="location.href=\''+ default_apps_array[i][1] +'\';"></div>';
 		htmlcode += '</td><td class="app_table_radius_right" style="width:350px;">\n';
 		if(i == 3 && wan_unit_orig != usb_index && usb_index != -1){
-			console.log("2 need to change wan unit!");
 			htmlcode += '<div class="app_name"><a style="text-decoration: underline; cursor:pointer;" onclick="go_modem_page('+usb_index+');">'+ default_apps_array[i][0] + '</a></div>\n';
 		}
 		else{

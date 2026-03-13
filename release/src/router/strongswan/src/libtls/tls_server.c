@@ -444,7 +444,7 @@ static status_t process_client_hello(private_tls_server_t *this,
 	if (this->tls->get_version_max(this->tls) >= TLS_1_3 && !this->hashsig.len)
 	{
 		DBG1(DBG_TLS, "no %N extension received", tls_extension_names,
-			 TLS_MISSING_EXTENSION);
+			 TLS_EXT_SIGNATURE_ALGORITHMS);
 		this->alert->add(this->alert, TLS_FATAL, TLS_MISSING_EXTENSION);
 		return NEED_MORE;
 	}

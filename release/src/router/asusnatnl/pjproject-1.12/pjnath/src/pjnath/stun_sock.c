@@ -381,7 +381,7 @@ PJ_DEF(pj_status_t) pj_stun_sock_start( pj_stun_sock *stun_sock,
 
     pj_grp_lock_acquire(stun_sock->grp_lock);
 
-	snprintf(stun_sock->srv_name, sizeof(stun_sock->srv_name), "%.*s:%d", domain->slen, domain->ptr, default_port);
+	snprintf(stun_sock->srv_name, sizeof(stun_sock->srv_name), "%.*s:%d", (int)domain->slen, domain->ptr, default_port);
 
     /* Check whether the domain contains IP address */
     stun_sock->srv_addr.addr.sa_family = (pj_uint16_t)stun_sock->af;
@@ -570,7 +570,7 @@ static void dns_srv_resolver_cb(void *user_data,
     pj_assert(rec->count);
     pj_assert(rec->entry[0].server.addr_count);
 
-    PJ_TODO(SUPPORT_IPV6_IN_RESOLVER);
+    //PJ_TODO(SUPPORT_IPV6_IN_RESOLVER);
     pj_assert(stun_sock->af == pj_AF_INET());
 
     /* Set the address */
@@ -747,8 +747,9 @@ PJ_DEF(pj_status_t) pj_stun_sock_sendto( pj_stun_sock *stun_sock,
 	return PJ_EINVALIDOP;
     }
 
-    if (send_key==NULL)
-	send_key = &stun_sock->send_key;
+    if (send_key==NULL) {
+		send_key = &stun_sock->send_key;
+	}
 
 	size = pkt_len;
 
@@ -921,7 +922,7 @@ static void sess_on_request_complete(pj_stun_session *sess,
 		/*
 		 * Find out which interface is used to send to the server.
 		 */
-		status = get_local_interface(&stun_sock->srv_addr, &((pj_sockaddr_in *)(&stun_sock->current_local_addr))->sin_addr);
+		status = get_local_interface((pj_sockaddr_in *)&stun_sock->srv_addr, &((pj_sockaddr_in *)(&stun_sock->current_local_addr))->sin_addr);
 		PJ_LOG(6,(stun_sock->obj_name, 
 			"Current Local address: %s",
 			pj_sockaddr_print(&stun_sock->current_local_addr,

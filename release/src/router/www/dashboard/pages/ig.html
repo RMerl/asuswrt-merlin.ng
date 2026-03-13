@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0,  user-scalable=no" />
+		<link rel="stylesheet" href="/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="/css/architecture.css" />
+		<link rel="stylesheet" href="/css/color-table.css" />
+		<link rel="stylesheet" href="/datatables/datatables.min.css">
+		<link rel="stylesheet" href="/datatables/datatables.asuswrt.css">
+		<link rel="stylesheet" href="/form_style.css">
+	</head>
+	<style>
+		.form-check-label {
+			margin-top: 3px;
+		}
+		.form-check-input {
+			margin-top: 5px;
+		}
+		textarea::-webkit-scrollbar {
+			width: 10px;
+			height: 10px;
+		}
+		textarea::-webkit-scrollbar-thumb {
+			background-color: #7775;
+			border-radius: 20px;
+		}
+		textarea::-webkit-scrollbar-thumb:hover {
+			background-color: #7777;
+		}
+		textarea::-webkit-scrollbar-track:hover {
+			background-color: #5555;
+		}
+		textarea:focus {
+			border-color: var(--bs-border-color) !important;
+			box-shadow: none !important;
+			outline: none !important;
+		}
+		i.previous, i.next {
+			display: block;
+			mask-repeat: no-repeat;
+			mask-position: center;
+			mask-size: contain;
+			-webkit-mask-repeat: no-repeat;
+			-webkit-mask-position: center;
+			-webkit-mask-size: contain;
+		}
+		i.previous {
+			--previous-svg: url("data:image/svg+xml,%3Csvg width='8' height='12' viewBox='0 0 8 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M.527 6l6-6h.946l-6 6 6 6h-.946l-6-6z' fill='%234D4D4D'/%3E%3C/svg%3E");
+			mask-image: var(--previous-svg);
+			-webkit-mask-image: var(--previous-svg);
+		}
+		i.next {
+			--next-svg: url("data:image/svg+xml,%3Csvg width='8' height='12' viewBox='0 0 8 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7.042 6l-6-6H.096l6 6-6 6h.946l6-6z' fill='%23006CE1'/%3E%3C/svg%3E");
+			mask-image: var(--next-svg);
+			-webkit-mask-image: var(--next-svg);
+		}
+		.icon-help-container {
+			width: 32px;
+			height: 32px;
+			display: flex;
+			justify-content: center;
+			align-items: flex-start;
+			cursor: pointer;
+		}
+		div.icon-circle-mask {
+			width: 32px;
+			height: 32px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+		.popup_container .popup_title_container > .close_btn {
+			background-color: transparent;
+			border: 2px solid RGB(var(--color-icon-default));
+			font-size: 20px;
+			line-height: 20px;
+			color: RGB(var(--color-icon-default));
+		}
+		.w-30 {
+			width: 30% !important;
+			min-width: 120px !important;
+		}
+		.alert {
+			padding: .5rem .5rem;
+		}
+		.alert-danger {
+			background-color: #FFF1E8;
+			border: 0.5px solid #c74200;
+			color: #181818;
+			font-weight: bolder;
+		}
+	</style>
+	<body>
+		<div class="row rwd-page-container">
+			<div class="col-12 mb-3 fs-6">
+				<div class="card pt-2 h-100">
+					<div class="card-body">
+						<div class="fs-6 d-flex align-items-start justify-content-start gap-2">
+							<span role="heading" aria-level="1"><#Instant_Guard_desc#></span>
+							<span id="showFeatureDesc" class="icon-help-container" role="button" tabindex="0" aria-label="<#NewFeatureAbout#>">
+								<i class="icon-help icon-size-24" role="icon" aria-hidden="true" style="display: inline-block;"></i>
+							</span>
+						</div>
+						<hr>
+						<div class="d-flex align-items-center mb-3 fs-6">
+							<div class="w-30">
+								<span><#Instant_Guard_title#></span>
+							</div>
+							<div class="flex-grow-1 d-flex justify-content-end justify-content-md-start">
+								<div id="enableIGToggleBtn"></div>
+							</div>
+						</div>
+						<div id="ig_enable_section">
+							<div class="d-flex align-items-center mb-3 fs-6">
+								<div class="w-30">
+									<span><#WLANAuthentication11a_ExAuthDBIPAddr_itemname#></span>
+								</div>
+								<div class="flex-grow-1 d-flex justify-content-end justify-content-md-start">
+									<span id="ig_server_address" class="text-break">--</span>
+								</div>
+							</div>
+							<div class="d-flex align-items-center mb-3 fs-6">
+								<div class="w-30">
+									<span><#vpn_access#></span>
+								</div>
+								<div class="flex-grow-1 d-flex justify-content-end justify-content-md-start">
+									<div class="d-flex align-items-center gap-3">
+										<div class="form-check form-check-inline">
+											<input class="form-check-input" type="radio" name="vpn_access" id="vpn_server_client_access_internet" value="1">
+											<label class="form-check-label" for="vpn_server_client_access_internet">Internet only</label>
+										</div>
+										<div class="form-check form-check-inline">
+											<input class="form-check-input" type="radio" name="vpn_access" id="vpn_server_client_access_both" value="0">
+											<label class="form-check-label" for="vpn_server_client_access_both"><#vpn_access_WANLAN#></label>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="alert alert-danger" role="alert">
+								The access setting will be applied to both IPSec VPN and Instant Guard.
+							</div>
+							<hr>
+							<div class="mb-3 fs-6"><#PPPConnection_x_WANLink_itemname#></div>
+							<div class="col-12">
+								<div id="connStatusContainer" style="width: 100%">
+									<table id="connStatusTable"></table>
+								</div>
+							</div>
+							<hr>
+							<div class="mb-3 fs-6">
+								<label for="textarea" class="form-label"><#System_Log#></label>
+								<textarea
+									class="form-control"
+									id="ipsec_view_log_panel"
+									rows="12"
+									readonly
+									style="
+										font-family: 'Courier New', Courier, monospace;
+										font-size: 12px;
+										background-color: transparent;
+										color: var(--text-regular-color);
+										resize: none;
+									"
+									><% nvram_dump("ipsec.log",""); %></textarea>
+							</div>
+							<div class="d-flex justify-content-start align-items-center">
+								<div role="button icon" class="icon-size-24 icon-refresh me-3" aria-label="<#CTL_renew#>" tabindex="0" onclick="refresh_log()"></div>
+								<div role="button icon" class="icon-size-24 icon-delete me-3" aria-label="<#CTL_clear#>" tabindex="0" onclick="clear_log()"></div>
+								<div role="button icon" class="icon-size-24 icon-export-file me-3" aria-label="<#btn_Export#>" tabindex="0" onclick="export_log();"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="popup_container popup_element_second"></div>
+		<script src="/js/jquery.js"></script>
+		<script src="/js/httpApi.js"></script>
+		<script src="/datatables/datatables.min.js"></script>
+		<script src="/state.js"></script>
+		<script src="/popup.js"></script>
+		<script src="/form.js"></script>
+		<script>
+			let current_page = "Advanced_Instant_Guard.asp";
+			let faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
+			let faq_index_tmp2 = get_faq_index(FAQ_List, current_page, 2);
+			const theme = window.parent.document.documentElement.getAttribute('data-asuswrt-theme');
+			if (theme) {
+				document.documentElement.setAttribute('data-asuswrt-theme', theme);
+			}
+			const color = window.parent.document.documentElement.getAttribute('data-asuswrt-color');
+			if (color) {
+				document.documentElement.setAttribute('data-asuswrt-color', color);
+			}
+			let connStatusTableOrder = null;
+			let connStatusDataTable = null;
+			let ipsecInterval = null;
+			function startIpsecInterval() {
+				if (!ipsecInterval) {
+					ipsecInterval = setInterval(function(){
+						update_ipsec_conn();
+					}, 5000);
+				}
+			}
+			function stopIpsecInterval() {
+				if (ipsecInterval) {
+					clearInterval(ipsecInterval);
+					ipsecInterval = null;
+				}
+			}
+			function updateIGSection() {
+				const nvramValue = httpApi.nvramGet(["ipsec_ig_enable", "ddns_enable_x", "ddns_hostname_x", "ipsec_block_intranet"], true);
+				if (nvramValue.ipsec_ig_enable === "1") {
+					$("#ig_enable_section").show();
+					update_ipsec_conn();
+					stopIpsecInterval();
+					startIpsecInterval();
+				} else {
+					$("#ig_enable_section").hide();
+					stopIpsecInterval();
+				}
+
+				const ipsec_block_intranet = nvramValue.ipsec_block_intranet || "0";
+				if (ipsec_block_intranet === "1") {
+					$("#vpn_server_client_access_internet").prop("checked", true);
+				} else {
+					$("#vpn_server_client_access_both").prop("checked", true);
+				}
+				if(nvramValue.ddns_enable_x == "1" && nvramValue.ddns_hostname_x != "")
+					$("#ig_server_address").html(nvramValue.ddns_hostname_x);
+			}
+			function createConnStatusTable(data){
+				if (connStatusDataTable) {
+					try {
+						connStatusTableOrder = connStatusDataTable.order();
+						connStatusDataTable.destroy();
+					} catch (e) {
+						console.log('DataTable destroy error:', e);
+					}
+				}
+
+				const columns = [
+					{
+						id: "remoteIP",
+						title: 'Remote IP',
+						data: "remoteIP",
+						className: 'dt-head-left dt-body-left',
+						width: '160px',
+					},
+					{
+						id: "clientStatus",
+						title: `<#statusTitle_Client#>`,
+						data: "clientStatus",
+						className: 'dt-head-left dt-body-left',
+						width: '20%'
+					},
+					{
+						id: "accessTime",
+						title: `<#Access_Time#>`,
+						data: "accessTime",
+						className: 'dt-head-left dt-body-left',
+						width: '20%'
+					},
+					{
+						id: "clientDevice",
+						title: `<#Clientlist_device#>`,
+						data: "clientDevice",
+						className: 'dt-head-left dt-body-left',
+						width: '20%'
+					},
+					{
+						id: "pskAuthTime",
+						title: 'PSKRAUTHTIME',
+						data: "pskAuthTime",
+						className: 'dt-head-left dt-body-left',
+						width: '20%'
+					},
+				];
+
+				const connStatusTable = document.getElementById('connStatusTable');
+				connStatusDataTable = $('#connStatusTable').DataTable({
+					data: data,
+					columns: columns,
+					paging: true,
+					destroy: false,
+					pageLength: 5,
+					scrollX: true,
+					fixedColumns: {
+						leftColumns: 1,
+					},
+					info: true,
+					scrollCollapse: false,
+					lengthMenu: [5, 10, 15, 20],
+					ordering: true,
+					order: connStatusTableOrder || [],
+					columnDefs: [
+						{
+							targets: 0,
+							type: 'numeric',
+							render: function(data, type, row) {
+								if (type === 'sort') {
+									if (!data || typeof data !== 'string') return 0;
+									try {
+										var m = data.split('.');
+										if (m.length !== 4) return 0;
+										return (parseInt(m[0],10) << 24) + (parseInt(m[1],10) << 16) + (parseInt(m[2],10) << 8) + parseInt(m[3],10);
+									} catch (e) {
+										console.warn('IP sorting error:', e);
+										return 0;
+									}
+								}
+								return data;
+							}
+						},
+						{
+							targets: [2, 4],
+							type: 'numeric',
+							render: function(data, type, row) {
+								if (type === 'sort') {
+									if (!data || typeof data !== 'string') return 0;
+									try {
+										var timeValue = parseInt(data);
+										if (isNaN(timeValue)) return 0;
+										if (data.includes('hours')) {
+											return timeValue * 3600;
+										} else if (data.includes('minutes')) {
+											return timeValue * 60;
+										} else if (data.includes('seconds')) {
+											return timeValue;
+										}
+										return timeValue;
+									} catch (e) {
+										console.warn('Time parsing error:', e);
+										return 0;
+									}
+								}
+								return data;
+							}
+						}
+					],
+					language: {
+						info: `_START_-_END_ of _TOTAL_ <#Clientlist_device#>`,
+						lengthMenu: `<div class="d-flex align-items-center gap-2"><div>Rows Per Page:</div><div>_MENU_</div></div>`,
+						search: '',
+						paginate: {
+							first: '',
+							previous: '<i class="previous"></i>',
+							next: '<i class="next"></i>',
+							last: '',
+						},
+						emptyTable: `<#IPConnection_VSList_Norule#>`
+					},
+					layout: {
+						topStart: null,
+						topEnd: null,
+						bottomStart: ['info', { paging: { numbers: 0 } }, 'pageLength'],
+						bottomEnd: {}
+					},
+				});
+				connStatusDataTable.on('order.dt', function() {
+					connStatusTableOrder = connStatusDataTable.order();
+				});
+
+				connStatusDataTable.on('draw.dt', function() {
+					var table = connStatusDataTable;
+					var dataCount = table.data().count();
+					var $wrapper = $(table.table().container());
+					if (dataCount === 0) {
+						$wrapper.find('.dt-info, .dt-paging, .dt-length').hide();
+					} else {
+						$wrapper.find('.dt-info, .dt-paging, .dt-length').show();
+					}
+				});
+
+				connStatusDataTable.clear().rows.add(data).draw();
+
+				return connStatusDataTable;
+			}
+			function update_ipsec_conn() {
+				const statusText = ["", "<#Connected#>", "<#Connecting_str#>", "<#Connecting_str#>"];
+				const get_ipsec_conn = httpApi.hookGet("get_ipsec_conn", true);
+				const tableDataArr = [];
+				get_ipsec_conn.forEach(function(item, index, array){
+					if(item[1] != undefined){
+						const itemRow = item[1].split('<');
+						for(let i = 0; i < itemRow.length; i += 1) {
+							if(itemRow[i] != "") {
+								const itemCol = itemRow[i].split('>');
+								if(itemCol[6] && itemCol[6].indexOf("IG") != -1){
+									const device = itemCol[7] && itemCol[7] !== "" ? itemCol[7] : itemCol[3];
+									tableDataArr.push({
+										remoteIP: itemCol[0] || '',
+										clientStatus: statusText[itemCol[1]] || '',
+										accessTime: itemCol[2] || '',
+										clientDevice: device || '',
+										pskAuthTime: itemCol[4] || ''
+									});
+								}
+							}
+						}
+					}
+				});
+
+				createConnStatusTable(tableDataArr);
+			}
+			function refresh_log() {
+				$.ajax({
+					url: '/ajax_ipsec_log.xml',
+					dataType: 'xml',
+					timeout: 10000,
+					success: (xml) => {
+						const ipsecXML = xml.getElementsByTagName("ipsec");
+						const ipsec_log = ipsecXML[0]?.textContent || '';
+						$("#ipsec_view_log_panel").val(ipsec_log).prop('readonly', true);
+					},
+					error: (xhr, status, error) => {
+						console.warn('Log refresh failed:', status, error);
+						$("#ipsec_view_log_panel").val(`<#vpn_ipsec_update_cert_fail#>`);
+						if (status === 'timeout' || status === 'error') {
+							setTimeout(refresh_log, 2000);
+						}
+					}
+				});
+			}
+			function clear_log() {
+				httpApi.clean_ipsec_log(function(){
+					const textarea = document.getElementById('ipsec_view_log_panel');
+					if (textarea) textarea.value = '';
+				});
+			}
+			function export_log() {
+				location.href = "/ipsec.log";
+			}
+
+			$(document).ready(function() {
+				waitForContainerAndInit();
+
+				$("#showFeatureDesc").on("click", function() {
+					show_feature_desc(`<#HOWTOSETUP#>`, `How to share secure connection to friends or family via Instant Guard app?`)
+				});
+
+				$("input[name='vpn_access']").on("change", function() {
+					const ipsec_ig_enable = httpApi.nvramGet(["ipsec_ig_enable"])["ipsec_ig_enable"];
+					if(ipsec_ig_enable == "1"){
+						const vpn_server_client_access = $("input[name='vpn_access']:checked").val();
+						httpApi.nvramSet({
+							"action_mode" : "apply",
+							"ipsec_block_intranet" : vpn_server_client_access,
+							"rc_service" : "restart_firewall"
+						});
+					}
+				});
+
+				function waitForContainerAndInit() {
+					const container = document.getElementById('connStatusContainer');
+					if (container && container.offsetWidth > 0) {
+						updateIGSection();
+					} else {
+						requestAnimationFrame(waitForContainerAndInit);
+					}
+				}
+			});
+		</script>
+		<script type="module">
+			import {ToggleButton} from "/js/component.module.js";
+			const ipsec_ig_enable = httpApi.nvramGet(["ipsec_ig_enable"], true).ipsec_ig_enable === "1";
+			const enableIGToggleBtn = document.getElementById('enableIGToggleBtn');
+			if (enableIGToggleBtn) {
+				const toggle = new ToggleButton(ipsec_ig_enable, true, {
+					label: `<#Instant_Guard_title#>`
+				});
+				toggle.setOnChange(function(active) {
+					if(!active) {
+						const confirmFlag = confirm(stringSafeGet(`Turn off feature will make all Instant Guard clients disconnect. You can turn on the feature again by clicking connection button on Instant Guard app.\n<#Setting_factorydefault_hint2#>`));
+						if(!confirmFlag){
+							toggle.enable();
+							return false;
+						}
+					}
+					const postData = {"ipsec_ig_enable": active ? "1" : "0", "do_rc": 1};
+					httpApi.set_ig_config(postData);
+					showLoading(3);
+					setTimeout(function(){
+						let reloadInterval = setInterval(function(){
+							if (typeof businessLoader !== 'undefined' && !businessLoader.isShow()) {
+								updateIGSection();
+								clearInterval(reloadInterval);
+							}
+						}, 10);
+					}, 3*1000);
+				});
+				enableIGToggleBtn.appendChild(toggle.render());
+			}
+		</script>
+	</body>
+</html>

@@ -85,11 +85,18 @@ ifeq ($(RTCONFIG_ROG_UI), y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/white_04.gif
 endif
 
+ifeq ($(RTCONFIG_YEAR20), y)
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/YEAR20/* $(INSTALLDIR)/www/
+endif
+
 ifeq ($(RTCONFIG_GS_UI), y)
 	cp -rfL $(TOP)/www/sysdep/FUNCTION/GS_UI/* $(INSTALLDIR)/www/
 endif
 
-ifeq ($(RTCONFIG_TUF_UI), y)
+ifeq ($(RTCONFIG_RT_TUF_UI), y)
+	mkdir -p $(INSTALLDIR)/TUF_UI
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/TUF_UI/* $(INSTALLDIR)/TUF_UI
+else ifeq ($(RTCONFIG_TUF_UI), y)
 	cp -rfL $(TOP)/www/sysdep/FUNCTION/TUF_UI/* $(INSTALLDIR)/www/
 	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/white_04.gif
 endif
@@ -243,9 +250,9 @@ ifneq ($(or $(RTCONFIG_PPTPD),$(RTCONFIG_ACCEL_PPTPD),$(RTCONFIG_OPENVPN),$(RTCO
 	rm -rf $(INSTALLDIR)/www/images/New_ui/VPN
 endif
 
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AX82U RT-AX82U_V2 DSL-AX82U GT-AXE11000 GT-AC2900 GT-AX11000 GS-AX3000 GS-AX5400 \
-	TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GS-AX6000 GT-AX6000 GT10 TUF-AX6000 GS7 GS-BE7200X GS-BE18000 GS-BE12000 GS7_PRO \
-	GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI))
+ifeq ($(or $(filter $(BUILD_NAME), RT-AX82U RT-AX82U_V2 DSL-AX82U GT-AXE11000 GT-AC2900 GT-AX11000 GS-AX3000 GS-AX5400 \
+	TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-BE98 GT-BE98_PRO GS-AX6000 GT-AX6000 GT10 TUF-AX6000 GS7 GS-BE7200X GS-BE18000 GS-BE12000 GS7_PRO GS7_PRO_MAX \
+	GT-BE96 GT-BE19000 GT-BE19000AI GT-BE96_AI), $(filter y, $(RTCONFIG_AURALED))),)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/light_effect
 	rm -rf $(INSTALLDIR)/www/device-map/router_light_effect.asp
 else
@@ -273,9 +280,14 @@ ifeq ($(RTCONFIG_UI4),y)
 else
 	rm -rf $(INSTALLDIR)/www/images/New_ui/light_effect/light_effect_mask_UI4.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/light_effect/light_effect_mask_rog_UI4.png
+	rm -rf $(INSTALLDIR)/www/light_effect/light_effect_v4.css
 endif
 	rm -rf $(INSTALLDIR)/www/light_effect/sysdep_css
 endif
+endif
+ifneq ($(or $(filter y,$(RTCONFIG_AURA_SCHED)),$(filter y,$(RTCONFIG_LED_SCHED))),y)
+	rm -rf $(INSTALLDIR)/www/js/ledScheduler.js
+	rm -rf $(INSTALLDIR)/www/images/New_ui/icon-time.svg
 endif
 
 ifeq ($(RTCONFIG_MULTISERVICE_WAN),y)
@@ -301,16 +313,56 @@ endif
 	chmod -x `find $(INSTALLDIR)/www/ -name "*.htc"`
 	chmod -x `find $(INSTALLDIR)/www/ -name "*.dict"`
 
-ifneq ($(RTCONFIG_DASHBOARD), y)
-	rm -rf $(INSTALLDIR)/www/dashboard
+ifeq ($(RTCONFIG_GTBOOSTER), y)
+	mkdir -p $(INSTALLDIR)/www/pages
+	cp $(TOP)/www/dashboard/pages/ark_log.html $(INSTALLDIR)/www/pages/ark_log.html -rf
+	cp $(TOP)/www/dashboard/pages/qoe_ui3.html $(INSTALLDIR)/www/pages/qoe_ui3.html -rf
+	cp $(TOP)/www/dashboard/pages/aiprotection_info.html $(INSTALLDIR)/www/pages/aiprotection_info.html -rf
+	cp $(TOP)/www/dashboard/datatables $(INSTALLDIR)/www/datatables -rf
+	cp $(TOP)/www/dashboard/css/bootstrap.min.css $(INSTALLDIR)/www/css/bootstrap.min.css
+	cp $(TOP)/www/dashboard/css/bootstrap-customize.css $(INSTALLDIR)/www/css/bootstrap-customize.css
+	cp $(TOP)/www/dashboard/css/daterangepicker.css $(INSTALLDIR)/www/css/daterangepicker.css
+	cp $(TOP)/www/dashboard/css/svg-icon.css $(INSTALLDIR)/www/css/svg-icon.css
+	cp $(TOP)/www/dashboard/css/aiProtection.css $(INSTALLDIR)/www/css/aiProtection.css
+	cp $(TOP)/www/dashboard/js/bootstrap.bundle.min.js $(INSTALLDIR)/www/js/bootstrap.bundle.min.js
+	cp $(TOP)/www/dashboard/js/chart.min.js $(INSTALLDIR)/www/js/chart.min.js
+	cp $(TOP)/www/dashboard/js/chartjs-adapter-date-fns.js $(INSTALLDIR)/www/js/chartjs-adapter-date-fns.js
+	cp $(TOP)/www/dashboard/js/clientlist.module.js $(INSTALLDIR)/www/js/clientlist.module.js
+	cp $(TOP)/www/dashboard/js/component.module.js $(INSTALLDIR)/www/js/component.module.js
+	cp $(TOP)/www/dashboard/js/component-styles.module.js $(INSTALLDIR)/www/js/component-styles.module.js
+	cp $(TOP)/www/dashboard/js/daterangepicker.js $(INSTALLDIR)/www/js/daterangepicker.js
+	cp $(TOP)/www/dashboard/js/moment.min.js $(INSTALLDIR)/www/js/moment.min.js
+	cp $(TOP)/www/dashboard/js/utils.module.js $(INSTALLDIR)/www/js/utils.module.js
+	cp $(TOP)/www/dashboard/js/aiprotection.module.js $(INSTALLDIR)/www/js/aiprotection.module.js
+	cp $(TOP)/www/dashboard/images/New_ui/Home_Protection_Scenario_white.svg $(INSTALLDIR)/www/images/New_ui/Home_Protection_Scenario_white.svg
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/ARK_UI/* $(INSTALLDIR)/www/
+ifeq ($(RTCONFIG_TUF_UI),y)
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/ARK_UI/* $(INSTALLDIR)/TUF_UI
+endif
+ifeq ($(RTCONFIG_ROG_UI),y)
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/ARK_UI/* $(INSTALLDIR)/ROG_UI
+endif
+ifeq ($(RTCONFIG_TS_UI),y)
+	cp -rfL $(TOP)/www/sysdep/FUNCTION/ARK_UI/* $(INSTALLDIR)/TS_UI
+endif
 else
+	-rm -rf $(INSTALLDIR)/www/pages/qoe.html
+	-rm -rf $(INSTALLDIR)/www/ark-app-list.json
+	-rm -rf $(INSTALLDIR)/www/pages/ark_log.html
+	-rm -rf $(INSTALLDIR)/www/Ark_WebHistory_Content.asp
+endif
+
+
+ifeq ($(RTCONFIG_DASHBOARD), y)
 	cp -rf $(INSTALLDIR)/www/dashboard/index.html $(INSTALLDIR)/www/index.html
 	cp -rf $(INSTALLDIR)/www/dashboard/pages $(INSTALLDIR)/www/
+ifneq ($(and $(RTCONFIG_IPSEC),$(RTCONFIG_INSTANT_GUARD)), y)
+	rm -rf $(INSTALLDIR)/www/pages/ig.html
+endif
 	cp -rf $(INSTALLDIR)/www/dashboard/js/* $(INSTALLDIR)/www/js/
 	cp -rf $(INSTALLDIR)/www/dashboard/ajax/* $(INSTALLDIR)/www/ajax/
 	cp -rf $(INSTALLDIR)/www/dashboard/css/* $(INSTALLDIR)/www/css/
 	cp -rf $(INSTALLDIR)/www/dashboard/images/* $(INSTALLDIR)/www/images/
-	rm -rf $(INSTALLDIR)/www/dashboard
 endif
 
 ifeq ($(RTCONFIG_AUTODICT), y)
@@ -598,7 +650,6 @@ ifneq ($(RTCONFIG_DNSQUERY_INTERCEPT),y)
 	rm -rf $(INSTALLDIR)/www/AdaptiveQoS_WebHistory.asp
 	rm -rf $(INSTALLDIR)/www/AiProtection_HomeSecurity.asp
 	rm -rf $(INSTALLDIR)/www/AiProtection_Group.asp
-	rm -rf $(INSTALLDIR)/www/AiProtection_HomeProtection.asp
 	rm -rf $(INSTALLDIR)/www/AiProtection_WebProtector.asp
 	rm -rf $(INSTALLDIR)/www/AiProtection_InfectedDevicePreventBlock.asp
 	rm -rf $(INSTALLDIR)/www/AiProtection_InfectedDevicePreventBlock_m.asp
@@ -607,6 +658,7 @@ ifneq ($(RTCONFIG_DNSQUERY_INTERCEPT),y)
 	rm -rf $(INSTALLDIR)/www/AiProtection_MaliciousSitesBlocking.asp
 	rm -rf $(INSTALLDIR)/www/AiProtection_MaliciousSitesBlocking_m.asp
 	rm -rf $(INSTALLDIR)/www/css/adaptive_mobile.css
+	rm -rf $(INSTALLDIR)/www/css/adaptive_mobile_WHITE.css
 	rm -rf $(INSTALLDIR)/www/images/New_ui/QoS_quick
 	rm -rf $(INSTALLDIR)/www/images/New_ui/infected.svg
 	rm -rf $(INSTALLDIR)/www/images/New_ui/IPS.svg
@@ -635,10 +687,7 @@ ifneq ($(RTCONFIG_DNSQUERY_INTERCEPT),y)
 	rm -rf $(INSTALLDIR)/www/getIPSDetailEvent.asp
 	rm -rf $(INSTALLDIR)/www/getIPSEvent.asp
 	rm -rf $(INSTALLDIR)/www/getNonIPSChart.asp
-	rm -rf $(INSTALLDIR)/www/js/Chart.js
-	rm -rf $(INSTALLDIR)/www/images/New_ui/HomeProtection.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/TimeLimits.png
-	rm -rf $(INSTALLDIR)/www/images/New_ui/Web_Apps_Restriction.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/AiProtection_01.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/AiProtection_02.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/AiProtection_03.png
@@ -649,6 +698,16 @@ ifneq ($(RTCONFIG_DNSQUERY_INTERCEPT),y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/app_icons
 endif
 endif
+endif
+ifneq ($(RTCONFIG_GTBOOSTER),y)
+ifneq ($(RTCONFIG_BWDPI)$(RTCONFIG_BWDPI_DEP),y)
+ifneq ($(RTCONFIG_HNS),y)
+	rm -rf $(INSTALLDIR)/www/AiProtection_HomeProtection.asp
+	rm -rf $(INSTALLDIR)/www/images/New_ui/HomeProtection.png
+endif
+endif
+	rm -rf $(INSTALLDIR)/www/AiProtection_ContentFilter.asp
+	rm -rf $(INSTALLDIR)/www/images/New_ui/Web_Apps_Restriction.png
 endif
 
 ifneq ($(RTCONFIG_ADBLOCK),y)
@@ -1092,7 +1151,6 @@ ifneq ($(RTCONFIG_USB_WAN_BACKUP), y)
 endif
 
 ifneq ($(RTCONFIG_DNSQUERY_INTERCEPT),y)
-	rm -rf $(INSTALLDIR)/www/datatables
 	rm -rf $(INSTALLDIR)/www/getWanTraffic_Dns.asp
 	rm -rf $(INSTALLDIR)/www/getAppTraffic_Dns.asp
 endif
@@ -1117,9 +1175,11 @@ ifeq ($(RTCONFIG_NO_AIDISK), y)
 	rm -rf $(INSTALLDIR)/www/aidisk/Aidisk-3.asp
 	rm -rf $(INSTALLDIR)/www/aidisk/Aidisk-4.asp
 	rm -rf $(INSTALLDIR)/www/aidisk/Aidisk-1_help.asp
-	rm -rf $(INSTALLDIR)/www/images/New_ui/aidisk
+	rm -rf $(INSTALLDIR)/www/images/New_ui/aidisk/step[123].png
 	rm -rf $(INSTALLDIR)/www/aidisk.asp
 endif
+
+	rm -rf $(INSTALLDIR)/www/dashboard
 
 # Legacy files no longer used by Asuswrt-Merlin
 	rm -rf $(INSTALLDIR)/www/tm.svg

@@ -61,7 +61,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *chapoly_plugin_create()
+PLUGIN_DEFINE(chapoly)
 {
 	private_chapoly_plugin_t *this;
 

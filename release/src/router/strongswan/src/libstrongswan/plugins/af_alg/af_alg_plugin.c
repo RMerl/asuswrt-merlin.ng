@@ -92,7 +92,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *af_alg_plugin_create()
+PLUGIN_DEFINE(af_alg)
 {
 	private_af_alg_plugin_t *this;
 

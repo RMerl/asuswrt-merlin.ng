@@ -439,8 +439,8 @@ function initial(){
 			$('#turbo_qam_hint').click(function(){openHint(3,33);});
 		}
 
-+		// hide 802.11b for non-2.4 GHz unit
-+		document.getElementById("wl_plcphdr_field").style.display = "none";
+		// hide 802.11b for non-2.4 GHz unit
+		document.getElementById("wl_plcphdr_field").style.display = "none";
 	}
 	else if(is_unit_60g(wl_unit_value)){ // 60GHz up
 		inputCtrl(document.form.wl_user_rssi_option, 0);

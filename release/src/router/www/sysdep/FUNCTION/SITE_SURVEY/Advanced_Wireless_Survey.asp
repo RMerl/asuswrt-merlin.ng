@@ -175,7 +175,7 @@ function showSiteTable(){
 				htmlCode += '<tr>';
 
 				//ssid
-				ssid_str=decodeURIComponent(handle_show_str(aplist[i][1]));
+				ssid_str = htmlEnDeCode.htmlEncode(decodeURIComponent(aplist[i][1]));
 				if (ssid_str == "")
 					ssid_str = `<span style="text-decoration:underline;font-style:italic;color:${spanColor}">[hidden]</span>`;
 

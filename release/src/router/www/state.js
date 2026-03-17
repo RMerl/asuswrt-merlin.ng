@@ -298,7 +298,7 @@ var isSwMode = function(mode){
 	}
 	else ui_sw_mode = "rt"; // Router
 
-	return (ui_sw_mode.search(mode) !== -1);
+	return (ui_sw_mode.search(mode.toLowerCase()) !== -1);
 }
 
 var INDEXPAGE = "<% rel_index_page(); %>";

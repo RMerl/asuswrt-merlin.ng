@@ -749,8 +749,8 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 			fprintf(fp, "except-interface=lo\n");
 			fprintf(fp, "enable-ra\n"
 				"ra-param=%s,%d,%d\n"
+				"quiet-ra\n",
 				, pmtl->nw_t.ifname, 10, ra_lifetime);
-
 			if (v6_prefix[0] && v6_prefix_length <= 104)
 			{
 				if (share_subnet) {

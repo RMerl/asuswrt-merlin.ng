@@ -1164,7 +1164,9 @@
         <nav class="tab-navigation p-0">
             <button class="tab-navigation__item active" data-tab="aiqoe"><#Adaptive_QoE#></button>
             <span class="tab-navigation__divider"></span>
-            <button class="tab-navigation__item " data-tab="bandwidth"><#Bandwidth_Limiter#></button>
+            <button class="tab-navigation__item" data-tab="bandwidth"><#Bandwidth_Limiter#></button>
+            <span class="tab-navigation__divider"></span>
+            <button class="tab-navigation__item" data-tab="cake">Cake</button>
         </nav>
     </div>
     <div id="tab-section-aiqoe" class="qoe-container tab-content">
@@ -1626,6 +1628,66 @@
             </div>
         </div>
     </div>
+
+    <div id="tab-section-cake" class="container tab-content pt-5" style="display: none;">
+        <div class="row">
+            <div class="col-12 col-md-6">
+                <h2>Cake</h2>
+                <div class="switch-div">
+                    <div class="switch-div-title">CAKE</div>
+                    <div id="enable_cake_btn" class="toggle-button with-text">
+                        <div class="toggle-button-handle"></div>
+                    </div>
+                </div>
+
+                <div class="setting-row mt-3">
+                    <div class="bandwidth-cell">
+                        <label for="cake_upload">Upload (Mbps)</label>
+                        <input id="cake_upload" class="input form-control ms-3" type="number" min="0" step="0.01" placeholder="Upload">
+                    </div>
+                </div>
+
+                <div class="setting-row mt-2">
+                    <div class="bandwidth-cell">
+                        <label for="cake_download">Download (Mbps)</label>
+                        <input id="cake_download" class="input form-control ms-3" type="number" min="0" step="0.01" placeholder="Download">
+                    </div>
+                </div>
+
+                <div class="setting-row mt-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bandwidth-cell">
+                            <label for="cake_overhead">Packet Overhead</label>
+                            <input id="cake_overhead" class="input form-control ms-3" type="number" min="0" step="1" placeholder="Overhead">
+                        </div>
+                        <div class="bandwidth-cell">
+                            <label for="cake_mpu">MPU</label>
+                            <input id="cake_mpu" class="input form-control ms-3" type="number" min="0" step="1" placeholder="MPU">
+                        </div>
+                        <div class="bandwidth-cell">
+                            <label for="cake_atm">Mode</label>
+                            <select id="cake_atm" class="form-select ms-3" style="width:8rem;">
+                                <option value="0">Normal</option>
+                                <option value="1">ATM</option>
+                                <option value="2">PTM</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACK Filter, Diffserv and Flows UI removed (unused) -->
+
+                <div class="d-flex justify-content-start mt-3">
+                    <button id="cake_apply_btn" class="btn btn-primary">Apply</button>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <h4>Description</h4>
+                <p>Configure the CAKE (Common Applications Kept Enhanced) queuing discipline. Set upload and download shaping.</p>
+            </div>
+        </div>
+    </div>
+
 </div>
 <script src="/js/chart.min.js"></script>
 <script src="/js/chartjs-adapter-date-fns.js"></script>
@@ -2640,7 +2702,7 @@
     });
 
     const bwInputs = document.querySelectorAll('.setting-cell--input-group input')
-    bwInputs.forEach(input => {
+    for (let i = 0; i < bwInputs.length; i++) { const input = bwInputs[i];
         input.addEventListener('input', function () {
             let value = this.value;
 
@@ -2667,8 +2729,105 @@
 
             this.value = value;
         });
-    })
+    }
 
     /* End Bandwidth Limiter */
 
+    /* Cake UI: initialize and apply */
+    (function () {
+        const enableBtn = document.getElementById("enable_cake_btn");
+        const uploadInput = document.getElementById("cake_upload");
+        const downloadInput = document.getElementById("cake_download");
+        
+        const applyBtn = document.getElementById("cake_apply_btn");
+
+        if (!enableBtn || !applyBtn) return;
+
+        // stored values we want to preserve when applying
+        let stored_mpu = "0", stored_overhead = "0", stored_atm = "0";
+        const overheadInput = document.getElementById("cake_overhead");
+        const mpuInput = document.getElementById("cake_mpu");
+        const atmSelect = document.getElementById("cake_atm");
+
+        async function loadCakeSettings() {
+            try {
+                const data = await httpApi.nvramGet([
+                    "qos_enable",
+                    "qos_type",
+                    "qos_obw",
+                    "qos_ibw",
+                    "qos_mpu",
+                    "qos_overhead",
+                    "qos_atm"
+                ], true);
+
+                const isCake = (data.qos_enable == "1" && data.qos_type == "9");
+                enableBtn.classList.toggle('active', isCake);
+
+                if (uploadInput) {
+                    const obw = parseInt(data.qos_obw, 10) || 0;
+                    uploadInput.value = (obw / 1024).toFixed(2);
+                }
+
+                if (downloadInput) {
+                    const ibw = parseInt(data.qos_ibw, 10) || 0;
+                    downloadInput.value = (ibw / 1024).toFixed(2);
+                }
+
+                stored_mpu = data.qos_mpu || stored_mpu;
+                stored_overhead = data.qos_overhead || stored_overhead;
+                stored_atm = data.qos_atm || stored_atm;
+
+                if (overheadInput) overheadInput.value = stored_overhead;
+                if (mpuInput) mpuInput.value = stored_mpu;
+                if (atmSelect) atmSelect.value = stored_atm || "0";
+            } catch (e) {
+                console.warn('Failed to load CAKE nvram keys', e);
+            }
+        }
+
+        enableBtn.addEventListener('click', () => {
+            enableBtn.classList.toggle('active');
+            if (!enableBtn.classList.contains('active')) {
+                httpApi.nvramSet({
+                    "qos_enable": "0",
+                    "action_mode": "apply",
+                    "rc_service": "restart_qos;restart_ark"
+                });
+                showLoading(3);
+            }
+        });
+
+        applyBtn.addEventListener('click', () => {
+            const enabled = enableBtn.classList.contains('active');
+
+            const ulVal = (uploadInput && uploadInput.value) ? Number(uploadInput.value) : 0;
+            const dlVal = (downloadInput && downloadInput.value) ? Number(downloadInput.value) : 0;
+
+            const payload = {
+                "action_mode": "apply",
+                "rc_service": "restart_qos;restart_ark",
+                "qos_enable": enabled ? "1" : "0",
+                "qos_type": enabled ? "9" : "0",
+                "qos_obw": String(Math.round(ulVal * 1024)),
+                "qos_ibw": String(Math.round(dlVal * 1024)),
+                "qos_mpu": (mpuInput && mpuInput.value) ? String(mpuInput.value) : stored_mpu || "0",
+                "qos_overhead": (overheadInput && overheadInput.value) ? String(overheadInput.value) : stored_overhead || "0",
+                "qos_atm": (atmSelect && atmSelect.value) ? String(atmSelect.value) : stored_atm || "0"
+            };
+
+            // When enabling CAKE, also disable ARK features
+            if (enabled) {
+                payload["ark_qoe_enable"] = "0";
+                payload["ark_limiter_enable"] = "0";
+            }
+
+            httpApi.nvramSet(payload);
+            showLoading(3);
+            setTimeout(() => { location.reload(); }, 3000);
+        });
+
+        // load current settings now
+        loadCakeSettings();
+    })();
 </script>

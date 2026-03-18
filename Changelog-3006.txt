@@ -1,6 +1,18 @@
 Asuswrt-Merlin 3006.xxx Changelog
 =================================
 
+3006.102.7_2 (xx-xxx-2026)
+  - NEW: Added Cake support for GT-BE19000AI (implemented the
+         missing webui to configure it).
+  - UPDATED: Merged GPL 102_39848 (RT-BE92U only).
+  - UPDATED: curl to 8.17 (backport from 102_39848).
+  - UPDATED: wget to 1.25 (backport from 102_39848).
+  - FIXED: Security issue on the Site Survey page
+           (reported by Sasha Romijn).
+  - FIXED: dnsmasq log noise for IPv6 on Guest Network Pro.
+  - FIXED: NTPD settings missing on Wifi 6 models.
+
+
 3006.102.7 (22-Feb-2026)
   - NOTE: AiCloud has been removed from Asuswrt-Merlin due
           to its poor security track record.  This also includes

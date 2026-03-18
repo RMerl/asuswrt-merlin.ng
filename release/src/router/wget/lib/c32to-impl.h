@@ -53,7 +53,7 @@ FUNC (wint_t wc)
   else
     return wc;
 
-#elif HAVE_WORKING_MBRTOC32             /* glibc, Android */
+#elif HAVE_WORKING_MBRTOC32 && HAVE_WORKING_C32RTOMB /* glibc, Android */
   /* mbrtoc32() is essentially defined by the system libc.  */
 
 # if _GL_WCHAR_T_IS_UCS4
@@ -73,11 +73,22 @@ FUNC (wint_t wc)
   /* The wchar_t encoding is UTF-16.
      The char32_t encoding is UCS-4.  */
 
+# if defined _WIN32 && !defined __CYGWIN__
+  /* On native Windows, in the UTF-8 locale, towlower and towupper are
+     lacking (at least) the mappings for ISO-8859-1 characters, such as
+     0x00C9 <-> 0x00E9.  Since it is expensive to test whether the locale
+     encoding is UTF-8, ignore the system's WCHAR_FUNC altogether.  */
+  if (wc != WEOF)
+    return UCS_FUNC (wc);
+  else
+    return wc;
+# else
   if (wc == WEOF || wc == (wchar_t) wc)
     /* wc is in the range for the tow* functions.  */
     return WCHAR_FUNC (wc);
   else
     return UCS_FUNC (wc);
+# endif
 
 #else /* macOS, FreeBSD, NetBSD, OpenBSD, HP-UX, Solaris, Minix, Android */
   /* char32_t and wchar_t are equivalent.  */

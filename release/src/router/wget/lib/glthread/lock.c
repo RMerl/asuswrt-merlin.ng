@@ -240,8 +240,6 @@ glthread_recursive_lock_destroy (gl_recursive_lock_t *lock)
   return 0;
 }
 
-/* -------------------------- gl_once_t datatype -------------------------- */
-
 #endif
 
 /* ========================================================================= */
@@ -694,46 +692,6 @@ glthread_recursive_lock_destroy_multithreaded (gl_recursive_lock_t *lock)
   if (lock->owner != (pthread_t) 0)
     return EBUSY;
   return pthread_mutex_destroy (&lock->mutex);
-}
-
-# endif
-
-/* -------------------------- gl_once_t datatype -------------------------- */
-
-static const pthread_once_t fresh_once = PTHREAD_ONCE_INIT;
-
-int
-glthread_once_singlethreaded (pthread_once_t *once_control)
-{
-  /* We don't know whether pthread_once_t is an integer type, a floating-point
-     type, a pointer type, or a structure type.  */
-  char *firstbyte = (char *)once_control;
-  if (*firstbyte == *(const char *)&fresh_once)
-    {
-      /* First time use of once_control.  Invert the first byte.  */
-      *firstbyte = ~ *(const char *)&fresh_once;
-      return 1;
-    }
-  else
-    return 0;
-}
-
-# if !(PTHREAD_IN_USE_DETECTION_HARD || USE_POSIX_THREADS_WEAK)
-
-int
-glthread_once_multithreaded (pthread_once_t *once_control,
-                             void (*init_function) (void))
-{
-  int err = pthread_once (once_control, init_function);
-  if (err == ENOSYS)
-    {
-      /* This happens on FreeBSD 11: The pthread_once function in libc returns
-         ENOSYS.  */
-      if (glthread_once_singlethreaded (once_control))
-        init_function ();
-      return 0;
-    }
-  return err;
 }
 
 # endif

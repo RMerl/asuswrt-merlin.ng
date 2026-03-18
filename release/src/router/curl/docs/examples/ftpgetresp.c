@@ -30,8 +30,7 @@
  * in a separate file using our own callback!
  * </DESC>
  */
-static size_t
-write_response(void *ptr, size_t size, size_t nmemb, void *data)
+static size_t write_response(void *ptr, size_t size, size_t nmemb, void *data)
 {
   FILE *writehere = (FILE *)data;
   return fwrite(ptr, size, nmemb, writehere);
@@ -47,18 +46,31 @@ int main(void)
   FILE *ftpfile;
   FILE *respfile;
 
-  /* local file name to store the file as */
-  ftpfile = fopen(FTPBODY, "wb"); /* b is binary, needed on win32 */
+  res = curl_global_init(CURL_GLOBAL_ALL);
+  if(res)
+    return (int)res;
 
-  /* local file name to store the FTP server's response lines in */
-  respfile = fopen(FTPHEADERS, "wb"); /* b is binary, needed on win32 */
+  /* local filename to store the file as */
+  ftpfile = fopen(FTPBODY, "wb"); /* b is binary, needed on Windows */
+  if(!ftpfile) {
+    curl_global_cleanup();
+    return 1;
+  }
+
+  /* local filename to store the FTP server's response lines in */
+  respfile = fopen(FTPHEADERS, "wb"); /* b is binary, needed on Windows */
+  if(!respfile) {
+    fclose(ftpfile);
+    curl_global_cleanup();
+    return 1;
+  }
 
   curl = curl_easy_init();
   if(curl) {
     /* Get a file listing from sunet */
     curl_easy_setopt(curl, CURLOPT_URL, "ftp://ftp.example.com/");
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, ftpfile);
-    /* If you intend to use this on windows with a libcurl DLL, you must use
+    /* If you intend to use this on Windows with a libcurl DLL, you must use
        CURLOPT_WRITEFUNCTION as well */
     curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, write_response);
     curl_easy_setopt(curl, CURLOPT_HEADERDATA, respfile);
@@ -75,5 +87,7 @@ int main(void)
   fclose(ftpfile); /* close the local file */
   fclose(respfile); /* close the response file */
 
-  return 0;
+  curl_global_cleanup();
+
+  return (int)res;
 }

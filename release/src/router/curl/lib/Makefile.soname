@@ -21,7 +21,9 @@
 # SPDX-License-Identifier: curl
 #
 ###########################################################################
+# Shared between CMakeLists.txt and Makefile.am
 
+# Keep in sync with CURL_LIBCURL_VERSIONED_SYMBOLS_SONAME in configure.ac
 VERSIONCHANGE=12
 VERSIONADD=0
 VERSIONDEL=8

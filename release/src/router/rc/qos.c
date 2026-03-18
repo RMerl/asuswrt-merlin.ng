@@ -511,12 +511,6 @@ void del_iQosRules(void)
 #ifdef RTCONFIG_IPV6
 	eval("ip6tables", "-t", "mangle", "-F");
 #endif
-
-#if 0
-#ifdef RTCONFIG_BCMARM
-	remove_codel_patch();
-#endif
-#endif
 }
 
 static int add_qos_rules(char *pcWANIF)
@@ -2809,39 +2803,6 @@ void ForceDisableWLan_bw(void)
 	}
 	QOSDBG("[BWLIT] ALL Guest Netwok of Bandwidth Limiter has been Didabled.\n");
 }
-
-#if 0
-#ifdef RTCONFIG_BCMARM
-void set_codel_patch(void)
-{
-	int sched;
-
-	if (nvram_get_int("qos_type") != 1)
-		return;
-
-	sched = nvram_get_int("qos_sched");
-
-	if (!f_exists("/var/lock/qostc") &&
-	    ((sched == 1) || (sched == 2))) {
-		eval("touch", "/var/lock/qostc");
-		mount("/usr/sbin/faketc", "/usr/sbin/tc", NULL, MS_BIND, NULL);
-		logmessage("qos", "Applying codel patch");
-	}
-}
-
-#if 0
-void remove_codel_patch(void)
-{
-	if (f_exists("/var/lock/qostc")) {
-		umount2("/usr/sbin/tc",MNT_DETACH);
-		unlink("/var/lock/qostc");
-		logmessage("qos", "Removing codel patch");
-	}
-}
-#endif
-#endif
-
-#endif
 
 #ifdef HND_ROUTER
 

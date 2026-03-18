@@ -55,14 +55,14 @@ https
 HTTPS sec-cookie, HTTP redirect, same name cookie, redirect back
 </name>
 <command>
-https://attack.invalid:%HTTPSPORT/a/b/%TESTNUMBER -k -c %LOGDIR/cookie%TESTNUMBER --resolve attack.invalid:%HTTPSPORT:%HOSTIP --resolve attack.invalid:%HTTPPORT:%HOSTIP -L
+https://attack.invalid:%HTTPSPORT/a/b/%TESTNUMBER --insecure -c %LOGDIR/cookie%TESTNUMBER --resolve attack.invalid:%HTTPSPORT:%HOSTIP --resolve attack.invalid:%HTTPPORT:%HOSTIP -L
 </command>
 </client>
 
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /a/b/%TESTNUMBER HTTP/1.1
 Host: attack.invalid:%HTTPSPORT
 User-Agent: curl/%VERSION

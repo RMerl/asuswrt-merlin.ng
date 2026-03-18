@@ -31,7 +31,10 @@
 int main(void)
 {
   CURL *curl;
-  CURLcode res;
+
+  CURLcode res = curl_global_init(CURL_GLOBAL_ALL);
+  if(res)
+    return (int)res;
 
   curl = curl_easy_init();
   if(curl) {
@@ -41,10 +44,10 @@ int main(void)
     curl_easy_setopt(curl, CURLOPT_ALTSVC, "altsvc.txt");
 
     /* restrict which HTTP versions to use alternatives */
-    curl_easy_setopt(curl, CURLOPT_ALTSVC_CTRL, (long)
-                     CURLALTSVC_H1|CURLALTSVC_H2|CURLALTSVC_H3);
+    curl_easy_setopt(curl, CURLOPT_ALTSVC_CTRL,
+                     CURLALTSVC_H1 | CURLALTSVC_H2 | CURLALTSVC_H3);
 
-    /* Perform the request, res will get the return code */
+    /* Perform the request, res gets the return code */
     res = curl_easy_perform(curl);
     /* Check for errors */
     if(res != CURLE_OK)
@@ -54,5 +57,6 @@ int main(void)
     /* always cleanup */
     curl_easy_cleanup(curl);
   }
-  return 0;
+  curl_global_cleanup();
+  return (int)res;
 }

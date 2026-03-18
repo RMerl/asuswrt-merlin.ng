@@ -26,14 +26,11 @@
 
 #include "curl_setup.h"
 
-#if defined(USE_CURL_NTLM_CORE)
+#ifdef USE_CURL_NTLM_CORE
 
-#if defined(USE_OPENSSL)
-#  include <openssl/ssl.h>
-#elif defined(USE_WOLFSSL)
-#  include <wolfssl/options.h>
-#  include <wolfssl/openssl/ssl.h>
-#endif
+#include "vauth/vauth.h"
+
+struct ntlmdata;
 
 /* Helpers to generate function byte arguments in little endian order */
 #define SHORTPAIR(x) ((int)((x) & 0xff)), ((int)(((x) >> 8) & 0xff))
@@ -50,7 +47,7 @@ CURLcode Curl_ntlm_core_mk_lm_hash(const char *password,
 CURLcode Curl_ntlm_core_mk_nt_hash(const char *password,
                                    unsigned char *ntbuffer /* 21 bytes */);
 
-#if !defined(USE_WINDOWS_SSPI)
+#ifndef USE_WINDOWS_SSPI
 
 CURLcode Curl_hmac_md5(const unsigned char *key, unsigned int keylen,
                        const unsigned char *data, unsigned int datalen,

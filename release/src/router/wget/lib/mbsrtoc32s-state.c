@@ -20,6 +20,7 @@
 #include <wchar.h>
 
 /* Internal state used by the functions mbsrtoc32s() and mbsnrtoc32s().  */
+extern mbstate_t _gl_mbsrtoc32s_state;
 mbstate_t _gl_mbsrtoc32s_state
 /* The state must initially be in an "initial state"; so, zero-initialize it.
    On most systems, putting it into BSS is sufficient.  Not so on Mac OS X 10.3,

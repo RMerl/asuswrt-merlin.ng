@@ -1,5 +1,5 @@
-# intlmacosx.m4 serial 9 (gettext-0.22.3)
-dnl Copyright (C) 2004-2014, 2016, 2019-2023 Free Software Foundation, Inc.
+# intlmacosx.m4 serial 10 (gettext-0.23)
+dnl Copyright (C) 2004-2014, 2016, 2019-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -20,7 +20,7 @@ AC_DEFUN([gt_INTL_MACOSX],
   dnl Check for API introduced in Mac OS X 10.4.
   AC_CACHE_CHECK([for CFPreferencesCopyAppValue],
     [gt_cv_func_CFPreferencesCopyAppValue],
-    [gt_save_LIBS="$LIBS"
+    [gt_saved_LIBS="$LIBS"
      LIBS="$LIBS -Wl,-framework -Wl,CoreFoundation"
      AC_LINK_IFELSE(
        [AC_LANG_PROGRAM(
@@ -28,7 +28,7 @@ AC_DEFUN([gt_INTL_MACOSX],
           [[CFPreferencesCopyAppValue(NULL, NULL)]])],
        [gt_cv_func_CFPreferencesCopyAppValue=yes],
        [gt_cv_func_CFPreferencesCopyAppValue=no])
-     LIBS="$gt_save_LIBS"])
+     LIBS="$gt_saved_LIBS"])
   if test $gt_cv_func_CFPreferencesCopyAppValue = yes; then
     AC_DEFINE([HAVE_CFPREFERENCESCOPYAPPVALUE], [1],
       [Define to 1 if you have the Mac OS X function CFPreferencesCopyAppValue in the CoreFoundation framework.])
@@ -43,7 +43,7 @@ AC_DEFUN([gt_INTL_MACOSX],
   dnl CFPreferencesCopyAppValue still returns, namely ll_CC where ll is the
   dnl first among the preferred languages and CC is the territory.
   AC_CACHE_CHECK([for CFLocaleCopyPreferredLanguages], [gt_cv_func_CFLocaleCopyPreferredLanguages],
-    [gt_save_LIBS="$LIBS"
+    [gt_saved_LIBS="$LIBS"
      LIBS="$LIBS -Wl,-framework -Wl,CoreFoundation"
      AC_LINK_IFELSE(
        [AC_LANG_PROGRAM(
@@ -51,7 +51,7 @@ AC_DEFUN([gt_INTL_MACOSX],
           [[CFLocaleCopyPreferredLanguages();]])],
        [gt_cv_func_CFLocaleCopyPreferredLanguages=yes],
        [gt_cv_func_CFLocaleCopyPreferredLanguages=no])
-     LIBS="$gt_save_LIBS"])
+     LIBS="$gt_saved_LIBS"])
   if test $gt_cv_func_CFLocaleCopyPreferredLanguages = yes; then
     AC_DEFINE([HAVE_CFLOCALECOPYPREFERREDLANGUAGES], [1],
       [Define to 1 if you have the Mac OS X function CFLocaleCopyPreferredLanguages in the CoreFoundation framework.])

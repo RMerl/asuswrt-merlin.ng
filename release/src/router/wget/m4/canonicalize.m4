@@ -1,10 +1,12 @@
-# canonicalize.m4 serial 39
+# canonicalize.m4
+# serial 40
 
 dnl Copyright (C) 2003-2007, 2009-2024 Free Software Foundation, Inc.
 
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 # Provides canonicalize_file_name and canonicalize_filename_mode, but does
 # not provide or fix realpath.
@@ -112,7 +114,7 @@ AC_DEFUN([gl_FUNC_REALPATH_WORKS],
             result |= 2;
           free (name);
         }
-        /* This test fails on Cygwin 2.9.  */
+        /* This test fails on macOS 14, Cygwin 2.9.  */
         #if HAVE_LSTAT
         {
           char *name = realpath ("conftest.l/../conftest.a", NULL);
@@ -121,7 +123,7 @@ AC_DEFUN([gl_FUNC_REALPATH_WORKS],
           free (name);
         }
         #endif
-        /* This test fails on Mac OS X 10.13, OpenBSD 6.0.  */
+        /* This test fails on macOS 14, OpenBSD 6.0.  */
         {
           char *name = realpath ("conftest.a/", NULL);
           if (name != NULL)
@@ -162,6 +164,8 @@ AC_DEFUN([gl_FUNC_REALPATH_WORKS],
         *-gnu* | gnu*)     gl_cv_func_realpath_works="guessing yes" ;;
                            # Guess 'nearly' on musl systems.
         *-musl*)           gl_cv_func_realpath_works="guessing nearly" ;;
+                           # Guess no on macOS.
+        darwin*)           gl_cv_func_realpath_works="guessing no" ;;
                            # Guess no on Cygwin.
         cygwin*)           gl_cv_func_realpath_works="guessing no" ;;
                            # Guess no on native Windows.

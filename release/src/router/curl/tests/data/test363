@@ -21,7 +21,7 @@ Content-Length: 9
 
 contents
 </data>
-<connect>
+<connect crlf="headers"t>
 HTTP/1.1 200 Mighty fine indeed
 
 </connect>
@@ -43,7 +43,7 @@ contents
 # Client-side
 <client>
 <features>
-debug
+Debug
 proxy
 </features>
 <server>
@@ -67,14 +67,14 @@ http://test.%TESTNUMBER:%HTTPPORT/we/want/that/page/%TESTNUMBER -p -x %HOSTIP:%P
 #
 # Verify data after the test has been "shot"
 <verify>
-<proxy>
+<proxy crlf="headers">
 CONNECT test.%TESTNUMBER:%HTTPPORT HTTP/1.1
 Host: test.%TESTNUMBER:%HTTPPORT
 User-Agent: curl/%VERSION
 Proxy-Connection: Keep-Alive
 
 </proxy>
-<protocol nonewline="yes">
+<protocol crlf="yes" nonewline="yes">
 POST /we/want/that/page/%TESTNUMBER HTTP/1.1
 Host: test.%TESTNUMBER:%HTTPPORT
 User-Agent: curl/%VERSION

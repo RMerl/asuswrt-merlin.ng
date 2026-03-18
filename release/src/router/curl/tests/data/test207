@@ -48,7 +48,7 @@ http://%HOSTIP:%HTTPPORT/%TESTNUMBER
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION
@@ -58,13 +58,8 @@ Accept: */*
 
 # curl: (18) transfer closed with outstanding read data remaining
 # 18 == CURLE_PARTIAL_FILE
-# 56 == CURLE_RECV_ERROR
 <errorcode>
-%if hyper
-56
-%else
 18
-%endif
 </errorcode>
 </verify>
 </testcase>

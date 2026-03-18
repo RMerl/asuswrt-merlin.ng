@@ -25,22 +25,26 @@
  *
  ***************************************************************************/
 
-#include "curl_setup.h"
+#include "../curl_setup.h"
 
 #if defined(HAVE_GSSAPI) && defined(USE_KERBEROS5)
 
 #include <curl/curl.h>
 
-#include "vauth/vauth.h"
-#include "curl_sasl.h"
-#include "urldata.h"
-#include "curl_gssapi.h"
-#include "sendf.h"
-#include "curl_printf.h"
+#include "vauth.h"
+#include "../curl_sasl.h"
+#include "../urldata.h"
+#include "../curl_gssapi.h"
+#include "../sendf.h"
 
 /* The last #include files should be: */
-#include "curl_memory.h"
-#include "memdebug.h"
+#include "../curl_memory.h"
+#include "../memdebug.h"
+
+#if defined(__GNUC__) && defined(__APPLE__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
 
 /*
  * Curl_auth_is_gssapi_supported()
@@ -65,10 +69,10 @@ bool Curl_auth_is_gssapi_supported(void)
  * Parameters:
  *
  * data        [in]     - The session handle.
- * userp       [in]     - The user name.
+ * userp       [in]     - The username.
  * passwdp     [in]     - The user's password.
  * service     [in]     - The service type such as http, smtp, pop or imap.
- * host        [in[     - The host name.
+ * host        [in[     - The hostname.
  * mutual_auth [in]     - Flag specifying whether or not mutual authentication
  *                        is enabled.
  * chlg        [in]     - Optional challenge message.
@@ -91,14 +95,15 @@ CURLcode Curl_auth_create_gssapi_user_message(struct Curl_easy *data,
   OM_uint32 major_status;
   OM_uint32 minor_status;
   OM_uint32 unused_status;
-  gss_buffer_desc spn_token = GSS_C_EMPTY_BUFFER;
   gss_buffer_desc input_token = GSS_C_EMPTY_BUFFER;
   gss_buffer_desc output_token = GSS_C_EMPTY_BUFFER;
 
-  (void) userp;
-  (void) passwdp;
+  (void)userp;
+  (void)passwdp;
 
   if(!krb5->spn) {
+    gss_buffer_desc spn_token = GSS_C_EMPTY_BUFFER;
+
     /* Generate our SPN */
     char *spn = Curl_auth_build_spn(service, NULL, host);
     if(!spn)
@@ -128,7 +133,7 @@ CURLcode Curl_auth_create_gssapi_user_message(struct Curl_easy *data,
       infof(data, "GSSAPI handshake failure (empty challenge message)");
       return CURLE_BAD_CONTENT_ENCODING;
     }
-    input_token.value = (void *) Curl_bufref_ptr(chlg);
+    input_token.value = CURL_UNCONST(Curl_bufref_ptr(chlg));
     input_token.length = Curl_bufref_len(chlg);
   }
 
@@ -158,7 +163,7 @@ CURLcode Curl_auth_create_gssapi_user_message(struct Curl_easy *data,
     gss_release_buffer(&unused_status, &output_token);
   }
   else
-    Curl_bufref_set(out, mutual_auth? "": NULL, 0, NULL);
+    Curl_bufref_set(out, mutual_auth ? "": NULL, 0, NULL);
 
   return result;
 }
@@ -205,7 +210,7 @@ CURLcode Curl_auth_create_gssapi_security_message(struct Curl_easy *data,
   }
 
   /* Setup the challenge "input" security buffer */
-  input_token.value = (void *) Curl_bufref_ptr(chlg);
+  input_token.value = CURL_UNCONST(Curl_bufref_ptr(chlg));
   input_token.length = Curl_bufref_len(chlg);
 
   /* Decrypt the inbound challenge and obtain the qop */
@@ -220,13 +225,15 @@ CURLcode Curl_auth_create_gssapi_security_message(struct Curl_easy *data,
   /* Not 4 octets long so fail as per RFC4752 Section 3.1 */
   if(output_token.length != 4) {
     infof(data, "GSSAPI handshake failure (invalid security data)");
+    gss_release_buffer(&unused_status, &output_token);
     return CURLE_BAD_CONTENT_ENCODING;
   }
 
   /* Extract the security layer and the maximum message size */
   indata = output_token.value;
   sec_layer = indata[0];
-  max_size = (indata[1] << 16) | (indata[2] << 8) | indata[3];
+  max_size = ((unsigned int)indata[1] << 16) |
+             ((unsigned int)indata[2] << 8) | indata[3];
 
   /* Free the challenge as it is not required anymore */
   gss_release_buffer(&unused_status, &output_token);
@@ -242,7 +249,7 @@ CURLcode Curl_auth_create_gssapi_security_message(struct Curl_easy *data,
   /* Process the maximum message size the server can receive */
   if(max_size > 0) {
     /* The server has told us it supports a maximum receive buffer, however, as
-       we don't require one unless we are encrypting data, we tell the server
+       we do not require one unless we are encrypting data, we tell the server
        our receive buffer is zero. */
     max_size = 0;
   }
@@ -309,7 +316,8 @@ void Curl_auth_cleanup_gssapi(struct kerberos5data *krb5)
 
   /* Free our security context */
   if(krb5->context != GSS_C_NO_CONTEXT) {
-    gss_delete_sec_context(&minor_status, &krb5->context, GSS_C_NO_BUFFER);
+    Curl_gss_delete_sec_context(&minor_status, &krb5->context,
+                                GSS_C_NO_BUFFER);
     krb5->context = GSS_C_NO_CONTEXT;
   }
 
@@ -319,5 +327,9 @@ void Curl_auth_cleanup_gssapi(struct kerberos5data *krb5)
     krb5->spn = GSS_C_NO_NAME;
   }
 }
+
+#if defined(__GNUC__) && defined(__APPLE__)
+#pragma GCC diagnostic pop
+#endif
 
 #endif /* HAVE_GSSAPI && USE_KERBEROS5 */

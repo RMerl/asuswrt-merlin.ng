@@ -19,15 +19,11 @@ swsclose
 #
 # Client-side
 <client>
-# hyper doesn't grok HTTP/0.9
-<features>
-!hyper
-</features>
 <server>
 http
 </server>
 <name>
-HTTP GET with a invalid HTTP/1 response line start
+HTTP GET with an invalid HTTP/1 response line start
 </name>
 <command>
 http://%HOSTIP:%HTTPPORT/%TESTNUMBER --http0.9
@@ -37,7 +33,7 @@ http://%HOSTIP:%HTTPPORT/%TESTNUMBER --http0.9
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION

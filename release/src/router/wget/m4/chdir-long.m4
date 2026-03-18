@@ -1,15 +1,16 @@
-#serial 17
+# chdir-long.m4
+# serial 17
+dnl Copyright (C) 2004-2007, 2009-2024 Free Software Foundation, Inc.
+dnl This file is free software; the Free Software Foundation
+dnl gives unlimited permission to copy and/or distribute it,
+dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 # Use Gnulib's robust chdir function.
 # It can handle arbitrarily long directory names, which means
 # that when it is given the name of an existing directory, it
 # never fails with ENAMETOOLONG.
 # Arrange to compile chdir-long.c only on systems that define PATH_MAX.
-
-dnl Copyright (C) 2004-2007, 2009-2024 Free Software Foundation, Inc.
-dnl This file is free software; the Free Software Foundation
-dnl gives unlimited permission to copy and/or distribute it,
-dnl with or without modifications, as long as this notice is preserved.
 
 # Written by Jim Meyering.
 

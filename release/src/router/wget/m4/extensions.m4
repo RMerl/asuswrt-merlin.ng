@@ -1,10 +1,12 @@
-# serial 23  -*- Autoconf -*-
-# Enable extensions on systems that normally disable them.
+# extensions.m4
+# serial 25  -*- Autoconf -*-
+dnl Copyright (C) 2003, 2006-2024 Free Software Foundation, Inc.
+dnl This file is free software; the Free Software Foundation
+dnl gives unlimited permission to copy and/or distribute it,
+dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
-# Copyright (C) 2003, 2006-2024 Free Software Foundation, Inc.
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
+# Enable extensions on systems that normally disable them.
 
 dnl Define to empty for the benefit of Autoconf 2.69 and earlier, so that
 dnl AC_USE_SYSTEM_EXTENSIONS (below) can be used unchanged from Autoconf 2.70+.
@@ -229,4 +231,15 @@ AC_DEFUN_ONCE([gl_USE_SYSTEM_EXTENSIONS],
         [Define to enable the declarations of ISO C 11 types and functions.])
       ;;
   esac
+
+  dnl On OpenSolaris derivatives, the include files contains a couple of
+  dnl declarations that are only activated with an explicit
+  dnl -D__STDC_WANT_LIB_EXT1__.
+  AH_VERBATIM([USE_ISO_C_23_ANNEX_K_EXTENSIONS],
+[/* Define to enable the declarations of ISO C 23 Annex K types and functions.  */
+#if !(defined __STDC_WANT_LIB_EXT1__ && __STDC_WANT_LIB_EXT1__)
+#undef/**/__STDC_WANT_LIB_EXT1__
+#define __STDC_WANT_LIB_EXT1__ 1
+#endif
+])
 ])

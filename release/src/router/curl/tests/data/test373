@@ -3,7 +3,7 @@
 <keywords>
 HTTP
 HTTP GET
-chunked transfer encoding
+chunked Transfer-Encoding
 </keywords>
 </info>
 
@@ -32,7 +32,7 @@ X-Control: swsclose
 
 </data>
 
-<datacheck>
+<datacheck crlf="headers">
 HTTP/1.1 200 OK
 Date: Thu, 22 Jul 2010 11:22:33 GMT
 Connection: close
@@ -64,7 +64,7 @@ http://%HOSTIP:%HTTPPORT/chunked-transfer-encoding/%TESTNUMBER
 </client>
 
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /chunked-transfer-encoding/%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION

@@ -34,11 +34,12 @@
 #ifndef __cplusplus
 # if (201112 <= __STDC_VERSION__ \
       || (!defined __STRICT_ANSI__ \
-          && (4 < __GNUC__ + (6 <= __GNUC_MINOR__) || 5 <= __clang_major__)))
+          && ((4 < __GNUC__ + (6 <= __GNUC_MINOR__) && !defined __clang__) \
+              || 5 <= __clang_major__)))
 #  define _GL_HAVE__STATIC_ASSERT 1
 # endif
 # if (202311 <= __STDC_VERSION__ \
-      || (!defined __STRICT_ANSI__ && 9 <= __GNUC__))
+      || (!defined __STRICT_ANSI__ && 9 <= __GNUC__ && !defined __clang__))
 #  define _GL_HAVE__STATIC_ASSERT1 1
 # endif
 #endif
@@ -215,7 +216,7 @@ template <int w>
 # define _GL_VERIFY(R, DIAGNOSTIC, ...) \
     extern int (*_GL_GENSYM (_gl_verify_function) (void)) \
       [_GL_VERIFY_TRUE (R, DIAGNOSTIC)]
-# if 4 < __GNUC__ + (6 <= __GNUC_MINOR__)
+# if 4 < __GNUC__ + (6 <= __GNUC_MINOR__) && !defined __clang__
 #  pragma GCC diagnostic ignored "-Wnested-externs"
 # endif
 #endif
@@ -259,11 +260,22 @@ template <int w>
       && (!defined __cplusplus \
           || (__cpp_static_assert < 201411 \
               && __GNUG__ < 6 && __clang_major__ < 6 && _MSC_VER < 1910)))
-#  if defined __cplusplus && _MSC_VER >= 1900 && !defined __clang__
+#  if (defined __cplusplus && defined __GNUG__ && __GNUG__ < 6 \
+       && __cplusplus == 201103L && !defined __clang__)
+/* g++ >= 4.7, < 6 with option -std=c++11 or -std=gnu++11 supports the
+   two-arguments static_assert but not the one-argument static_assert, and
+   it does not support _Static_assert.
+   We have to play preprocessor tricks to distinguish the two cases.  */
+#   define _GL_SA1(a1) static_assert ((a1), "static assertion failed")
+#   define _GL_SA2 static_assert
+#   define _GL_SA3 static_assert
+#   define _GL_SA_PICK(x1,x2,x3,x4,...) x4
+#   define static_assert(...) _GL_SA_PICK(__VA_ARGS__,_GL_SA3,_GL_SA2,_GL_SA1) (__VA_ARGS__)
+#  elif defined __cplusplus && _MSC_VER >= 1900 && !defined __clang__
 /* MSVC 14 in C++ mode supports the two-arguments static_assert but not
    the one-argument static_assert, and it does not support _Static_assert.
    We have to play preprocessor tricks to distinguish the two cases.
-   Since the MSVC preprocessor is not ISO C compliant (see above),.
+   Since the MSVC preprocessor is not ISO C compliant (see above),
    the solution is specific to MSVC.  */
 #   define _GL_EXPAND(x) x
 #   define _GL_SA1(a1) static_assert ((a1), "static assertion failed")
@@ -294,7 +306,7 @@ template <int w>
 #ifndef _GL_HAS_BUILTIN_UNREACHABLE
 # if defined __clang_major__ && __clang_major__ < 5
 #  define _GL_HAS_BUILTIN_UNREACHABLE 0
-# elif 4 < __GNUC__ + (5 <= __GNUC_MINOR__)
+# elif 4 < __GNUC__ + (5 <= __GNUC_MINOR__) && !defined __clang__
 #  define _GL_HAS_BUILTIN_UNREACHABLE 1
 # elif defined __has_builtin
 #  define _GL_HAS_BUILTIN_UNREACHABLE __has_builtin (__builtin_unreachable)

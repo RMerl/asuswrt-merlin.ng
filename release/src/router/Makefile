@@ -9069,8 +9069,15 @@ GeoIP-1.6.2-clean:
 	-@[ ! -f GeoIP-1.6.2/Makefile ] || $(MAKE) -C GeoIP-1.6.2 distclean
 	@rm -f GeoIP-1.6.2/stamp-h1
 
+AUTOMAKE_117 := $(shell automake --version 2>/dev/null | head -n1 | grep -q '1\.17' && echo yes)
+
 wget/Makefile.in: wget/Makefile.am
+ifeq ($(AUTOMAKE_117),yes)
+	@echo "==> automake 1.17 detected, running autoreconf"
 	cd wget && autoreconf -fi
+else
+	@echo "==> automake 1.17 NOT found, skip autoreconf"
+endif
 
 wget/Makefile: wget/Makefile.in
 	cd wget && $(CONFIGURE) \

@@ -1,7 +1,7 @@
 Asuswrt-Merlin 3006.xxx Changelog
 =================================
 
-3006.102.7_2 (xx-xxx-2026)
+3006.102.7_2 (24-Mar-2026)
   - NEW: Added Cake support for GT-BE19000AI (implemented the
          missing webui to configure it).
   - UPDATED: Merged GPL 102_39848 (RT-BE92U only).

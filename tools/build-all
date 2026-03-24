@@ -19,7 +19,7 @@ export BUILDREV=1
 
 # rsync tree from central source tree before build.
 # If set to "btrfs", then "cp --reflink" is used instead of rsync.
-#RSYNC_TREE=y
+RSYNC_TREE=y
 
 # Combined RT-AC68U image?
 COMBINED=y
@@ -95,7 +95,7 @@ BRANCH_BE96=main
 BRANCH_GTBE98_PRO=main
 BRANCH_BE88=main
 BRANCH_BE86=main
-BRANCH_BE92=main
+BRANCH_BE92=3006.102_39848
 BRANCH_BE58_GO=rt-be58_go
 BRANCH_GTBE19000AI=asuswrt6
 
@@ -332,112 +332,136 @@ echo "--- $(date +%R) - Launching all builds"
 if [ "$BGTBE19000AI" = "y" ]; then
 	build_fw amng.gtbe19000ai release/src-rt-5.04behnd.4916 gt-be19000ai &
 fi
+sleep 15
 
 if [ "$BBE58GO" = "y" ]; then
 	build_fw amng.be58go release/src-rt-5.04behnd.4916 rt-be58_go &
+	sleep 15
 fi
 
 if [ "$BBE92" = "y" ]; then
 	build_fw amng.be92 release/src-rt-5.04behnd.4916 rt-be92u &
+	sleep 15
 fi
 
 if [ "$BBE88" = "y" ]; then
 	build_fw amng.be88 release/src-rt-5.04behnd.4916 rt-be88u &
+	sleep 15
 fi
-
 if [ "$BBE86" = "y" ]; then
 	build_fw amng.be86 release/src-rt-5.04behnd.4916 rt-be86u &
+	sleep 15
 fi
 
 if [ "$BGTBE98PRO" = "y" ]; then
 	build_fw amng.gtbe98pro release/src-rt-5.04behnd.4916 gt-be98_pro &
+	sleep 15
 fi
 
 if [ "$BBE96" = "y" ]; then
         build_fw amng.be96 release/src-rt-5.04behnd.4916 rt-be96u &
+	sleep 15
 fi
 
 if [ "$BGTAX6000" = "y" ]; then
 	build_fw amng.gtax6000 release/src-rt-5.04axhnd.675x gt-ax6000 &
+	sleep 15
 fi
 
 if [ "$BXT12" = "y" ]; then
 	build_fw amng.xt12 release/src-rt-5.04axhnd.675x xt12 &
+	sleep 15
 fi
 
 if [ "$BAX86_PRO" = "y" ]; then
 	build_fw amng.ax86pro release/src-rt-5.04axhnd.675x rt-ax86u_pro &
+	sleep 15
 fi
 
 if [ "$BAX88_PRO" = "y" ]; then
 	build_fw amng.ax88pro release/src-rt-5.04axhnd.675x rt-ax88u_pro &
+	sleep 15
 fi
 
 if [ "$BGTAX11000_PRO" = "y" ]; then
 	build_fw amng.gtax11000pro release/src-rt-5.04axhnd.675x gt-ax11000_pro &
+	sleep 15
 fi
 
 if [ "$BGTAXE16000" = "y" ]; then
 	build_fw amng.gtaxe16000 release/src-rt-5.04axhnd.675x gt-axe16000 &
+	sleep 15
 fi
 
 if [ "$BAC86" = "y" ]; then
 	build_fw amng.ac86 release/src-rt-5.02hnd rt-ac86u &
+	sleep 15
 fi
 
 if [ "$BGTAC2900" = "y" ]; then
 	build_fw amng.gt2900 release/src-rt-5.02hnd gt-ac2900 &
+	sleep 15
 fi
 
 if [ "$BAX88" = "y" ]; then
 	build_fw amng.ax88 release/src-rt-5.02axhnd rt-ax88u &
+	sleep 15
 fi
 
 if [ "$BGTAX11000" = "y" ]; then
 	build_fw amng.gtax11000 release/src-rt-5.02axhnd gt-ax11000 &
+	sleep 15
 fi
 
 if [ "$BGTAXE11000" = "y" ]; then
 	build_fw amng.gtaxe11000 release/src-rt-5.02L.07p2axhnd gt-axe11000 &
+	sleep 15
 fi
 
 if [ "$BAC68V4" = "y" ]; then
 	build_fw amng.ac68v4 release/src-rt-5.02L.07p2axhnd rt-ac68u_v4 &
+	sleep 15
 fi
 
 if [ "$BAX58" = "y" ]; then
 	build_fw amng.ax58 release/src-rt-5.02axhnd.675x rt-ax58u &
+	sleep 15
 fi
 
 if [ "$BAX56" = "y" ]; then
 	build_fw amng.ax56 release/src-rt-5.02axhnd.675x rt-ax56u &
+	sleep 15
 fi
 
 if [ "$BAX86" = "y" ]; then
 	build_fw amng.ax86 release/src-rt-5.02L.07p2axhnd rt-ax86u &
+	sleep 15
 fi
 
 if [ "$BAX68" = "y" ]; then
 	build_fw amng.ax68 release/src-rt-5.02L.07p2axhnd rt-ax68u &
+	sleep 15
 fi
 
 if [ "$BAC68" = "y" ]; then
 	build_fw amng.ac68 release/src-rt-6.x.4708 rt-ac68u &
+	sleep 15
 fi
 
 if [ "$BAC3100" = "y" ]; then
 	build_fw amng.ac3100 release/src-rt-7.14.114.x/src rt-ac3100 &
+	sleep 15
 fi
 
 if [ "$BAC88" = "y" ]; then
 	build_fw amng.ac88 release/src-rt-7.14.114.x/src rt-ac88u &
+	sleep 15
 fi
 
 if [ "$BAC5300" = "y" ]; then
 	build_fw amng.ac5300 release/src-rt-7.14.114.x/src rt-ac5300 &
+	sleep 15
 fi
-
-sleep 5\
 
 echo "--- $(date +%R) - All builds launched, please wait..."
 

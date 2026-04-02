@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -44,8 +43,10 @@ time_t now_usec = 0;       /* GLOBAL */
 void
 update_now(const time_t system_time)
 {
-    const int forward_threshold = 86400; /* threshold at which to dampen forward jumps */
-    const int backward_trigger  = 10;  /* backward jump must be >= this many seconds before we adjust */
+    /* threshold at which to dampen forward jumps */
+    const int forward_threshold = 86400;
+    /* backward jump must be >= this many seconds before we adjust */
+    const int backward_trigger = 10;
     time_t real_time = system_time + now_adj;
 
     if (real_time > now)
@@ -82,9 +83,7 @@ const char *
 tv_string(const struct timeval *tv, struct gc_arena *gc)
 {
     struct buffer out = alloc_buf_gc(64, gc);
-    buf_printf(&out, "[%" PRIi64 "/%ld]",
-               (int64_t)tv->tv_sec,
-               (long)tv->tv_usec);
+    buf_printf(&out, "[%" PRIi64 "/%ld]", (int64_t)tv->tv_sec, (long)tv->tv_usec);
     return BSTR(&out);
 }
 
@@ -96,40 +95,32 @@ tv_string(const struct timeval *tv, struct gc_arena *gc)
 const char *
 tv_string_abs(const struct timeval *tv, struct gc_arena *gc)
 {
-    return time_string((time_t) tv->tv_sec,
-                       (long) tv->tv_usec,
-                       true,
-                       gc);
+    return time_string(tv->tv_sec, tv->tv_usec, true, gc);
 }
 
 /* format a time_t as ascii, or use current time if 0 */
 
 const char *
-time_string(time_t t, int usec, bool show_usec, struct gc_arena *gc)
+time_string(time_t t, tv_usec_t usec, bool show_usec, struct gc_arena *gc)
 {
     struct buffer out = alloc_buf_gc(64, gc);
     struct timeval tv;
 
-    if (t)
-    {
-        tv.tv_sec = t;
-        tv.tv_usec = usec;
-    }
-    else
+    if (!t)
     {
         gettimeofday(&tv, NULL);
+        t = tv.tv_sec;
+        usec = tv.tv_usec;
     }
 
-    t = tv.tv_sec;
     struct tm *tm = localtime(&t);
 
-    buf_printf(&out, "%04d-%02d-%02d %02d:%02d:%02d",
-               tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
-               tm->tm_hour, tm->tm_min, tm->tm_sec);
+    buf_printf(&out, "%04d-%02d-%02d %02d:%02d:%02d", tm->tm_year + 1900, tm->tm_mon + 1,
+               tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
 
-    if (show_usec && tv.tv_usec)
+    if (show_usec && usec)
     {
-        buf_printf(&out, " us=%ld", (long)tv.tv_usec);
+        buf_printf(&out, " us=%ld", (long)usec);
     }
 
     return BSTR(&out);
@@ -195,9 +186,7 @@ time_test(void)
         t = time(NULL);
         gettimeofday(&tv, NULL);
 #if 1
-        msg(M_INFO, "t=%" PRIi64 " s=%" PRIi64 " us=%ld",
-            (int64_t)t,
-            (int64_t)tv.tv_sec,
+        msg(M_INFO, "t=%" PRIi64 " s=%" PRIi64 " us=%ld", (int64_t)t, (int64_t)tv.tv_sec,
             (long)tv.tv_usec);
 #endif
     }

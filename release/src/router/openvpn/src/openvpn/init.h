@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef INIT_H
@@ -32,10 +31,6 @@
  */
 #define BASE_N_EVENTS 5
 
-void context_clear(struct context *c);
-
-void context_clear_1(struct context *c);
-
 void context_clear_2(struct context *c);
 
 void context_init_1(struct context *c);
@@ -46,8 +41,8 @@ bool init_static(void);
 
 void uninit_static(void);
 
-#define IVM_LEVEL_1 (1<<0)
-#define IVM_LEVEL_2 (1<<1)
+#define IVM_LEVEL_1 (1 << 0)
+#define IVM_LEVEL_2 (1 << 1)
 void init_verb_mute(struct context *c, unsigned int flags);
 
 void init_options_dev(struct options *options);
@@ -62,9 +57,8 @@ bool possibly_become_daemon(const struct options *options);
 
 void pre_setup(const struct options *options);
 
-void init_instance_handle_signals(struct context *c, const struct env_set *env, const unsigned int flags);
-
-void init_instance(struct context *c, const struct env_set *env, const unsigned int flags);
+void init_instance_handle_signals(struct context *c, const struct env_set *env,
+                                  const unsigned int flags);
 
 /**
  * Query for private key and auth-user-pass username/passwords.
@@ -73,18 +67,27 @@ void init_query_passwords(const struct context *c);
 
 bool do_route(const struct options *options, struct route_list *route_list,
               struct route_ipv6_list *route_ipv6_list, const struct tuntap *tt,
-              const struct plugin_list *plugins, struct env_set *es,
-              openvpn_net_ctx_t *ctx);
+              const struct plugin_list *plugins, struct env_set *es, openvpn_net_ctx_t *ctx);
 
 void close_instance(struct context *c);
 
-bool do_test_crypto(const struct options *o);
+void do_test_crypto(struct context *o);
 
 void context_gc_free(struct context *c);
 
-bool do_up(struct context *c,
-           bool pulled_options,
-           unsigned int option_types_found);
+bool do_up(struct context *c, bool pulled_options, unsigned int option_types_found);
+
+/**
+ * @brief A simplified version of the do_up() function. This function is called
+ *        after receiving a successful PUSH_UPDATE message. It closes and reopens
+ *        the TUN device to apply the updated options.
+ *
+ * @param c The context structure.
+ * @param option_types_found The options found in the PUSH_UPDATE message.
+ * @return true on success.
+ * @return false on error.
+ */
+bool do_update(struct context *c, unsigned int option_types_found);
 
 unsigned int pull_permission_mask(const struct context *c);
 
@@ -92,18 +95,21 @@ const char *format_common_name(struct context *c, struct gc_arena *gc);
 
 void reset_coarse_timers(struct context *c);
 
-bool do_deferred_options(struct context *c, const unsigned int found);
+/*
+ * Handle non-tun-related pulled options.
+ * Set `is_update` param to true to skip NCP check.
+ */
+bool do_deferred_options(struct context *c, const unsigned int found, const bool is_update);
 
-void inherit_context_child(struct context *dest,
-                           const struct context *src);
+void inherit_context_child(struct context *dest, const struct context *src,
+                           struct link_socket *sock);
 
-void inherit_context_top(struct context *dest,
-                         const struct context *src);
+void inherit_context_top(struct context *dest, const struct context *src);
 
-#define CC_GC_FREE          (1<<0)
-#define CC_USR1_TO_HUP      (1<<1)
-#define CC_HARD_USR1_TO_HUP (1<<2)
-#define CC_NO_CLOSE         (1<<3)
+#define CC_GC_FREE          (1 << 0)
+#define CC_USR1_TO_HUP      (1 << 1)
+#define CC_HARD_USR1_TO_HUP (1 << 2)
+#define CC_NO_CLOSE         (1 << 3)
 
 void close_context(struct context *c, int sig, unsigned int flags);
 
@@ -111,9 +117,9 @@ struct context_buffers *init_context_buffers(const struct frame *frame);
 
 void free_context_buffers(struct context_buffers *b);
 
-#define ISC_ERRORS (1<<0)
-#define ISC_SERVER (1<<1)
-#define ISC_ROUTE_ERRORS (1<<2)
+#define ISC_ERRORS       (1 << 0)
+#define ISC_SERVER       (1 << 1)
+#define ISC_ROUTE_ERRORS (1 << 2)
 void initialization_sequence_completed(struct context *c, const unsigned int flags);
 
 #ifdef ENABLE_MANAGEMENT
@@ -124,7 +130,7 @@ bool open_management(struct context *c);
 
 void close_management(void);
 
-void management_show_net_callback(void *arg, const int msglevel);
+void management_show_net_callback(void *arg, const msglvl_t msglevel);
 
 #endif
 

@@ -2,7 +2,7 @@
  *  openvpnmsica -- Custom Action DLL to provide OpenVPN-specific support to MSI packages
  *                  https://community.openvpn.net/openvpn/wiki/OpenVPNMSICA
  *
- *  Copyright (C) 2018-2024 Simon Rozman <simon@rozman.si>
+ *  Copyright (C) 2018-2026 Simon Rozman <simon@rozman.si>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -14,8 +14,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -32,7 +31,7 @@
 #pragma comment(lib, "msi.lib")
 #endif
 #include <stdio.h>
-#include <tchar.h>
+#include <wchar.h>
 
 
 DWORD openvpnmsica_thread_data_idx = TLS_OUT_OF_INDEXES;
@@ -42,10 +41,7 @@ DWORD openvpnmsica_thread_data_idx = TLS_OUT_OF_INDEXES;
  * DLL entry point
  */
 BOOL WINAPI
-DllMain(
-    _In_ HINSTANCE hinstDLL,
-    _In_ DWORD dwReason,
-    _In_ LPVOID lpReserved)
+DllMain(_In_ HINSTANCE hinstDLL, _In_ DWORD dwReason, _In_ LPVOID lpReserved)
 {
     UNREFERENCED_PARAMETER(hinstDLL);
     UNREFERENCED_PARAMETER(lpReserved);
@@ -59,12 +55,13 @@ DllMain(
             {
                 return FALSE;
             }
-        /* Fall through. */
+            /* Fall through. */
 
         case DLL_THREAD_ATTACH:
         {
             /* Create thread local storage data. */
-            struct openvpnmsica_thread_data *s = (struct openvpnmsica_thread_data *)calloc(1, sizeof(struct openvpnmsica_thread_data));
+            struct openvpnmsica_thread_data *s = (struct openvpnmsica_thread_data *)calloc(
+                1, sizeof(struct openvpnmsica_thread_data));
             if (s == NULL)
             {
                 return FALSE;
@@ -108,7 +105,8 @@ x_msg_va(const unsigned int flags, const char *format, va_list arglist)
     /* Secure last error before it is overridden. */
     DWORD dwResult = (flags & M_ERRNO) != 0 ? GetLastError() : ERROR_SUCCESS;
 
-    struct openvpnmsica_thread_data *s = (struct openvpnmsica_thread_data *)TlsGetValue(openvpnmsica_thread_data_idx);
+    struct openvpnmsica_thread_data *s =
+        (struct openvpnmsica_thread_data *)TlsGetValue(openvpnmsica_thread_data_idx);
     if (s->hInstall == 0)
     {
         /* No MSI session, no fun. */
@@ -160,22 +158,19 @@ x_msg_va(const unsigned int flags, const char *format, va_list arglist)
         MsiRecordSetInteger(hRecordProg, 3, dwResult);
 
         /* Field 4: The Windows error description. */
-        LPTSTR szErrMessage = NULL;
-        if (FormatMessage(
-                FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
-                0,
-                dwResult,
-                0,
-                (LPTSTR)&szErrMessage,
-                0,
-                NULL) && szErrMessage)
+        LPWSTR szErrMessage = NULL;
+        if (FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER
+                              | FORMAT_MESSAGE_IGNORE_INSERTS,
+                          0, dwResult, 0, (LPWSTR)&szErrMessage, 0, NULL)
+            && szErrMessage)
         {
-            /* Trim trailing whitespace. Set terminator after the last non-whitespace character. This prevents excessive trailing line breaks. */
+            /* Trim trailing whitespace. Set terminator after the last non-whitespace character.
+             * This prevents excessive trailing line breaks. */
             for (size_t i = 0, i_last = 0;; i++)
             {
                 if (szErrMessage[i])
                 {
-                    if (!_istspace(szErrMessage[i]))
+                    if (!iswspace(szErrMessage[i]))
                     {
                         i_last = i + 1;
                     }
@@ -191,6 +186,7 @@ x_msg_va(const unsigned int flags, const char *format, va_list arglist)
         }
     }
 
-    MsiProcessMessage(s->hInstall, (flags & M_WARN) ? INSTALLMESSAGE_INFO : INSTALLMESSAGE_ERROR, hRecordProg);
+    MsiProcessMessage(s->hInstall, (flags & M_WARN) ? INSTALLMESSAGE_INFO : INSTALLMESSAGE_ERROR,
+                      hRecordProg);
     MsiCloseHandle(hRecordProg);
 }

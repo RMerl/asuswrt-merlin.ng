@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -40,9 +39,7 @@ interval_init(struct interval *top, int horizon, int refresh)
 }
 
 bool
-event_timeout_trigger(struct event_timeout *et,
-                      struct timeval *tv,
-                      const int et_const_retry)
+event_timeout_trigger(struct event_timeout *et, struct timeval *tv, const int et_const_retry)
 {
     if (!et->defined)
     {
@@ -50,13 +47,12 @@ event_timeout_trigger(struct event_timeout *et,
     }
 
     bool ret = false;
-    time_t wakeup = event_timeout_remaining(et);
+    interval_t wakeup = event_timeout_remaining(et);
 
     if (wakeup <= 0)
     {
 #if INTERVAL_DEBUG
-        dmsg(D_INTERVAL, "EVENT event_timeout_trigger (%d) etcr=%d", et->n,
-             et_const_retry);
+        dmsg(D_INTERVAL, "EVENT event_timeout_trigger (%d) etcr=%d", et->n, et_const_retry);
 #endif
         if (et_const_retry < 0)
         {
@@ -73,8 +69,8 @@ event_timeout_trigger(struct event_timeout *et,
     if (tv && wakeup < tv->tv_sec)
     {
 #if INTERVAL_DEBUG
-        dmsg(D_INTERVAL, "EVENT event_timeout_wakeup (%d/%d) etcr=%d",
-             (int) wakeup, et->n, et_const_retry);
+        dmsg(D_INTERVAL, "EVENT event_timeout_wakeup (%d/%d) etcr=%d", (int)wakeup, et->n,
+             et_const_retry);
 #endif
         tv->tv_sec = wakeup;
         tv->tv_usec = 0;

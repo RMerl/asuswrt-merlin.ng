@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /*
@@ -45,8 +44,7 @@ extern const struct session_id x_session_id_zero;
 #define SID_SIZE (sizeof(x_session_id_zero.id))
 
 static inline bool
-session_id_equal(const struct session_id *sid1,
-                 const struct session_id *sid2)
+session_id_equal(const struct session_id *sid1, const struct session_id *sid2)
 {
     return !memcmp(sid1->id, sid2->id, SID_SIZE);
 }

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef SCHEDULE_H
@@ -43,8 +42,8 @@
 
 struct schedule_entry
 {
-    struct timeval tv;           /* wakeup time */
-    unsigned int pri;            /* random treap priority */
+    struct timeval tv;             /* wakeup time */
+    unsigned int pri;              /* random treap priority */
     struct schedule_entry *parent; /* treap (btree) links */
     struct schedule_entry *lt;
     struct schedule_entry *gt;
@@ -53,7 +52,7 @@ struct schedule_entry
 struct schedule
 {
     struct schedule_entry *earliest_wakeup; /* cached earliest wakeup */
-    struct schedule_entry *root;          /* the root of the treap (btree) */
+    struct schedule_entry *root;            /* the root of the treap (btree) */
 };
 
 /* Public functions */
@@ -82,22 +81,29 @@ void schedule_remove_node(struct schedule *s, struct schedule_entry *e);
 
 /* Public inline functions */
 
-/*
- * Add a struct schedule_entry (whose storage is managed by
- * caller) to the btree.  tv signifies the wakeup time for
- * a future event.  sigma is a time interval measured
- * in microseconds -- the event window being represented
- * starts at (tv - sigma) and ends at (tv + sigma).
- * Event signaling can occur anywere within this interval.
- * Making the interval larger makes the scheduler more efficient,
- * while making it smaller results in more precise scheduling.
- * The caller should treat the passed struct schedule_entry as
- * an opaque object.
+/**
+ * Add a struct schedule_entry to the scheduler btree or
+ * update an existing entry with a new wakeup time.
+ *
+ * @p sigma is only used when the entry is already present
+ * in the schedule. If the originally scheduled time and the new
+ * time are within @p sigma microseconds of each other then the
+ * entry is not rescheduled and will occur at the original time.
+ * When adding a new entry @p sigma will be ignored.
+ *
+ * @param s     scheduler tree
+ * @param e     entry to add to the schedule
+ * @param tv    wakeup time for the entry
+ * @param sigma window size for the event in microseconds
+ *
+ * @note The caller should treat @p e as opaque data. Only
+ * the scheduler functions should change the object. The
+ * caller is expected to manage the memory for the object
+ * and must only free it once it has been removed from the
+ * schedule.
  */
 static inline void
-schedule_add_entry(struct schedule *s,
-                   struct schedule_entry *e,
-                   const struct timeval *tv,
+schedule_add_entry(struct schedule *s, struct schedule_entry *e, const struct timeval *tv,
                    unsigned int sigma)
 {
     if (!IN_TREE(e) || !sigma || !tv_within_sigma(tv, &e->tv, sigma))
@@ -115,8 +121,7 @@ schedule_add_entry(struct schedule *s,
  * is randomized every time an entry is re-added).
  */
 static inline struct schedule_entry *
-schedule_get_earliest_wakeup(struct schedule *s,
-                             struct timeval *wakeup)
+schedule_get_earliest_wakeup(struct schedule *s, struct timeval *wakeup)
 {
     struct schedule_entry *ret;
 

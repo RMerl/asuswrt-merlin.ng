@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -55,15 +54,12 @@ schedule_entry_debug_info(const char *caller, const struct schedule_entry *e)
     struct gc_arena gc = gc_new();
     if (e)
     {
-        dmsg(D_SCHEDULER, "SCHEDULE: %s wakeup=[%s] pri=%u",
-             caller,
-             tv_string_abs(&e->tv, &gc),
+        dmsg(D_SCHEDULER, "SCHEDULE: %s wakeup=[%s] pri=%u", caller, tv_string_abs(&e->tv, &gc),
              e->pri);
     }
     else
     {
-        dmsg(D_SCHEDULER, "SCHEDULE: %s NULL",
-             caller);
+        dmsg(D_SCHEDULER, "SCHEDULE: %s NULL", caller);
     }
     gc_free(&gc);
 }
@@ -72,7 +68,7 @@ schedule_entry_debug_info(const char *caller, const struct schedule_entry *e)
 static inline void
 schedule_set_pri(struct schedule_entry *e)
 {
-    e->pri = random();
+    e->pri = (unsigned int)random();
     if (e->pri < 1)
     {
         e->pri = 1;
@@ -85,8 +81,7 @@ schedule_set_pri(struct schedule_entry *e)
  * that keys do not collide.
  */
 static inline int
-schedule_entry_compare(const struct schedule_entry *e1,
-                       const struct schedule_entry *e2)
+schedule_entry_compare(const struct schedule_entry *e1, const struct schedule_entry *e2)
 {
     if (e1->tv.tv_sec < e2->tv.tv_sec)
     {
@@ -361,12 +356,11 @@ schedule_add_modify(struct schedule *s, struct schedule_entry *e)
 
     if (s->root)
     {
-        schedule_insert(s, e);   /* trivial insert into tree */
+        schedule_insert(s, e); /* trivial insert into tree */
     }
     else
     {
         s->root = e; /* tree was empty, we are the first element */
-
     }
     /* This is the magic of the randomized treap algorithm which
      * keeps the tree balanced.  Move the node up the tree until
@@ -447,12 +441,8 @@ schedule_find_earliest_wakeup(struct schedule *s)
  * internally consistent.
  */
 int
-schedule_debug_entry(const struct schedule_entry *e,
-                     int depth,
-                     int *count,
-                     struct timeval *least,
-                     const struct timeval *min,
-                     const struct timeval *max)
+schedule_debug_entry(const struct schedule_entry *e, int depth, int *count, struct timeval *least,
+                     const struct timeval *min, const struct timeval *max)
 {
     struct gc_arena gc = gc_new();
     int maxdepth = depth;
@@ -494,13 +484,13 @@ schedule_debug_entry(const struct schedule_entry *e,
             *least = e->tv;
         }
 
-        d = schedule_debug_entry(e->lt, depth+1, count, least, min, &e->tv);
+        d = schedule_debug_entry(e->lt, depth + 1, count, least, min, &e->tv);
         if (d > maxdepth)
         {
             maxdepth = d;
         }
 
-        d = schedule_debug_entry(e->gt, depth+1, count, least, &e->tv, max);
+        d = schedule_debug_entry(e->gt, depth + 1, count, least, &e->tv, max);
         if (d > maxdepth)
         {
             maxdepth = d;
@@ -577,14 +567,8 @@ schedule_verify(struct schedule *s)
 
     if (e)
     {
-        printf("Verification Phase  count=%d maxlev=%d sru=%d ins=%d coll=%d ls=%d l=%s",
-               count,
-               maxlev,
-               zz.sru,
-               zz.ins,
-               zz.coll,
-               zz.lsteps,
-               tv_string(&e->tv, &gc));
+        printf("Verification Phase  count=%d maxlev=%d sru=%d ins=%d coll=%d ls=%d l=%s", count,
+               maxlev, zz.sru, zz.ins, zz.coll, zz.lsteps, tv_string(&e->tv, &gc));
 
         if (!tv_eq(&least, &e->tv))
         {
@@ -605,11 +589,11 @@ schedule_randomize_array(struct schedule_entry **array, int size)
     for (i = 0; i < size; ++i)
     {
         const int src = get_random() % size;
-        struct schedule_entry *tmp = array [i];
+        struct schedule_entry *tmp = array[i];
         if (i != src)
         {
-            array [i] = array [src];
-            array [src] = tmp;
+            array[i] = array[src];
+            array[src] = tmp;
         }
     }
 }
@@ -626,14 +610,10 @@ schedule_print_work(struct schedule_entry *e, int indent)
     if (e)
     {
         printf("%s [%u] e=" ptr_format ", p=" ptr_format " lt=" ptr_format " gt=" ptr_format "\n",
-               tv_string(&e->tv, &gc),
-               e->pri,
-               (ptr_type)e,
-               (ptr_type)e->parent,
-               (ptr_type)e->lt,
+               tv_string(&e->tv, &gc), e->pri, (ptr_type)e, (ptr_type)e->parent, (ptr_type)e->lt,
                (ptr_type)e->gt);
-        schedule_print_work(e->lt, indent+1);
-        schedule_print_work(e->gt, indent+1);
+        schedule_print_work(e->lt, indent + 1);
+        schedule_print_work(e->gt, indent + 1);
     }
     else
     {

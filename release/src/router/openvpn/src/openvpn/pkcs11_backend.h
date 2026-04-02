@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Fox Crypto B.V. <openvpn@foxcrypto.com>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -18,12 +18,12 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
- * @file PKCS #11 SSL library-specific backend
+ * @file
+ * PKCS #11 SSL library-specific backend
  */
 
 #ifndef PKCS11_BACKEND_H_
@@ -56,8 +56,7 @@ char *pkcs11_certificate_dn(pkcs11h_certificate_t certificate, struct gc_arena *
  *
  * @return              1 on failure, 0 on success
  */
-int pkcs11_certificate_serial(pkcs11h_certificate_t certificate, char *serial,
-                              size_t serial_len);
+int pkcs11_certificate_serial(pkcs11h_certificate_t certificate, char *serial, size_t serial_len);
 
 /**
  * Load PKCS #11 Certificate's information into the given TLS context
@@ -67,8 +66,7 @@ int pkcs11_certificate_serial(pkcs11h_certificate_t certificate, char *serial,
  *
  * @return              1 on failure, 0 on success
  */
-int pkcs11_init_tls_session(pkcs11h_certificate_t certificate,
-                            struct tls_root_ctx *const ssl_ctx);
+int pkcs11_init_tls_session(pkcs11h_certificate_t certificate, struct tls_root_ctx *const ssl_ctx);
 
 #endif /* defined(ENABLE_PKCS11) */
 #endif /* PKCS11_BACKEND_H_ */

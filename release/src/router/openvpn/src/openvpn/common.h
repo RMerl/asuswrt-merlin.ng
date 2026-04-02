@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,18 +17,19 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <stdint.h>
+
 /*
  * Statistics counters and associated printf format.
  */
 typedef uint64_t counter_type;
-#define counter_format  "%" PRIu64
+#define counter_format "%" PRIu64
 
 /*
  * Time intervals
@@ -38,17 +39,17 @@ typedef int interval_t;
 /*
  * Used as an upper bound for timeouts.
  */
-#define BIG_TIMEOUT  (60*60*24*7)  /* one week (in seconds) */
+#define BIG_TIMEOUT (60 * 60 * 24 * 7) /* one week (in seconds) */
 
 /*
  * Printf formats for special types
  */
 #ifdef _WIN64
-#define ptr_format              "0x%016" PRIx64
+#define ptr_format "0x%016" PRIx64
 #else
-#define ptr_format              "0x%08lx"
+#define ptr_format "0x%08lx"
 #endif
-#define fragment_header_format  "0x%08x"
+#define fragment_header_format "0x%08x"
 
 /* these are used to cast the arguments
  * and MUST match the formats above */
@@ -95,6 +96,7 @@ typedef unsigned long ptr_type;
 /*
  * Script security warning
  */
-#define SCRIPT_SECURITY_WARNING "WARNING: External program may not be called unless '--script-security 2' or higher is enabled. See --help text or man page for detailed info."
+#define SCRIPT_SECURITY_WARNING \
+    "WARNING: External program may not be called unless '--script-security 2' or higher is enabled. See --help text or man page for detailed info."
 
 #endif /* ifndef COMMON_H */

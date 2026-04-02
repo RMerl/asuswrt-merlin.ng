@@ -205,8 +205,12 @@ Command examples:
 
   kill Test-Client -- kill the client instance having a
                       common name of "Test-Client".
-  kill 1.2.3.4:4000 -- kill the client instance having a
-                       source address and port of 1.2.3.4:4000
+  kill tcp:1.2.3.4:4000 -- kill the client instance having a
+                           source address, port and proto of
+                           tcp:1.2.3.4:4000
+
+  Note that kill by address won't work for IPv6-connected
+  clients yet, so rely on kill by CN or CID instead.
 
 Use the "status" command to see which clients are connected.
 
@@ -299,6 +303,19 @@ COMMAND -- password and username
 
     username "Auth" foo
     password "Auth" bar
+
+  Example 3:
+
+    >PASSWORD:Need 'Auth' username
+
+  OpenVPN needs a --auth-user-pass username.  The
+  management interface client should respond:
+
+    username "Auth" foo
+
+  In this case the user should not be prompted for a password.
+  Support for such username-only prompting is conditional on the
+  client announcing a version >= 4.
 
   The username/password itself can be in quotes, and special
   characters such as double quote or backslash must be escaped,
@@ -487,6 +504,15 @@ client or show the current OpenVPN and Management Interface versions.
 Command examples:
   version 2  -- Change management version of client to 2 (default = 1)
   version    -- Show the version of OpenVPN and its Management Interface
+
+Note: Until version 3, no response was generated when client sets its
+version. This was fixed starting version 4: clients should expect
+"SUCCESS: .. " message only when setting the version to >= 4.
+
+Minimum client version required for certain features is listed below:
+    >PK_SIGN:[base64]           -- version 2 or greater
+    >PK_SIGN:[base64],[alg]     -- version 3 or greater
+    >PASSWORD:Need 'Auth' username -- version 4 or greater
 
 COMMAND -- auth-retry
 ---------------------
@@ -1024,6 +1050,35 @@ This capability is intended to allow the use of certificates
 stored outside of the filesystem (e.g. in Mac OS X Keychain)
 with OpenVPN via the management interface.
 
+COMMAND -- push-update-broad (OpenVPN 2.7 or higher)
+----------------------------------------------------
+Send a message to every connected client to update options at runtime.
+The updatable options are: "block-ipv6", "block-outside-dns", "dhcp-option",
+"dns", "ifconfig", "ifconfig-ipv6", "redirect-gateway", "redirect-private",
+"route", "route-gateway", "route-ipv6", "route-metric", "topology",
+"tun-mtu", "keepalive". When a valid option is pushed, the receiving client will
+delete every previous value and set new value, so the update of the option will
+not be incremental even when theoretically possible (ex. with "redirect-gateway").
+The '-' symbol in front of an option means the option should be removed.
+When an option is used with '-', it cannot take any parameter.
+The '?' symbol in front of an option means the option's update is optional
+so if the client do not support it, that option will just be ignored without
+making fail the entire command. The '-' and '?' symbols can be used together.
+
+Option Format Ex.
+  `-?option`, `-option`, `?option parameters` are valid formats,
+  `?-option` is not a valid format.
+
+Example
+  push-update-broad "route 10.10.10.1 255.255.255.255, -dns, ?tun-mtu 1400"
+
+COMMAND -- push-update-cid (OpenVPN 2.7 or higher)
+----------------------------------------------------
+Same as push-update-broad but you must target a single client using client id.
+
+Example
+  push-update-cid 42 "route 10.10.10.1 255.255.255.255, -dns, ?tun-mtu 1400"
+
 OUTPUT FORMAT
 -------------
 
@@ -1320,14 +1375,20 @@ request.
 
 OpenVPN's --static-challenge option is used to provide the
 challenge text to OpenVPN and indicate whether or not the response
-should be echoed.
+should be echoed and how the response should be combined with the
+password.
 
 When credentials are needed and the --static-challenge option is
 used, the management interface will send:
 
-  >PASSWORD:Need 'Auth' username/password SC:<ECHO>,<TEXT>
+  >PASSWORD:Need 'Auth' username/password SC:<flag>,<TEXT>
 
-  ECHO: "1" if response should be echoed, "0" to not echo
+  flag: an integer whose least significant bit is the ECHO flag and
+        the next significant bit is the FORMAT flag.
+        ECHO = (flag & 0x1) is 1 if response should be echoed, 0 to not echo
+        FORMAT = (flag & 0x2) is 1 if response should be concatenated with
+        password as plain text, 0 if response and password should be encoded
+        as described below. Thus flag could take values 0, 1, 2, or 3.
   TEXT: challenge text that should be shown to the user to
       facilitate their response
 
@@ -1342,8 +1403,9 @@ should be echoed.
 
 The management interface client in this case should add the static
 challenge text to the auth dialog followed by a field for the user to
-enter a response.  Then the management interface client should pack the
-password and response together into an encoded password and send:
+enter a response. If flag = 0 or 1 (i.e., FORMAT=0), the management
+interface client should pack the password and response together into
+an encoded password and send:
 
   username "Auth" <username>
   password "Auth" "SCRV1:<password_base64>:<response_base64>"
@@ -1354,6 +1416,12 @@ is the base 64 encoding of the password entered by the user, and
 the user. The <password_base64> and/or the <response_base64> can be
 empty strings.
 
+If flag = 2 or 3 (i.e., FORMAT=1), the client should simply concatenate
+password and response with no separator and send:
+
+  username "Auth" <username>
+  password "Auth" "<password><response>"
+
 (As in all username/password responses described in the "COMMAND --
 password and username" section above, the username can be in quotes,
 and special characters such as double quotes or backslashes must be
@@ -1361,10 +1429,15 @@ escaped. See the "Command Parsing" section above for more info.)
 
 For example, if user "foo" entered "bar" as the password and 8675309
 as the PIN, the following management interface commands should be
-issued:
+issued if flag = 0 or 1 (i.e., FORMAT = 0):
 
   username "Auth" foo
   password "Auth" "SCRV1:YmFy:ODY3NTMwOQ=="
 
   ("YmFy" is the base 64 encoding of "bar" and "ODY3NTMwOQ==" is the
    base 64 encoding of "8675309".)
+
+or, if flag = 2 or 3 (i.e., FORMAT = 1):
+
+  username "Auth" foo
+  password "Auth" "bar8675309"

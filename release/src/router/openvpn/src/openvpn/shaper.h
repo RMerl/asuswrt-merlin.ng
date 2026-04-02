@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef SHAPER_H
@@ -37,10 +36,10 @@
  * the output direction.
  */
 
-#define SHAPER_MIN 100          /* bytes per second */
+#define SHAPER_MIN 100 /* bytes per second */
 #define SHAPER_MAX 100000000
 
-#define SHAPER_MAX_TIMEOUT 10   /* seconds */
+#define SHAPER_MAX_TIMEOUT 10 /* seconds */
 
 #define SHAPER_USE_FP
 
@@ -89,12 +88,6 @@ shaper_init(struct shaper *s, int bytes_per_second)
     shaper_reset_wakeup(s);
 }
 
-static inline int
-shaper_current_bandwidth(struct shaper *s)
-{
-    return s->bytes_per_second;
-}
-
 /*
  * Returns traffic shaping delay in microseconds relative to current
  * time, or 0 if no delay.
@@ -132,11 +125,12 @@ shaper_wrote_bytes(struct shaper *s, int nbytes)
     /* compute delay in microseconds */
     tv.tv_sec = 0;
 #ifdef SHAPER_USE_FP
-    tv.tv_usec = min_int((int)((double)max_int(nbytes, 100) * s->factor), (SHAPER_MAX_TIMEOUT*1000000));
+    tv.tv_usec =
+        min_int((int)((double)max_int(nbytes, 100) * s->factor), (SHAPER_MAX_TIMEOUT * 1000000));
 #else
     tv.tv_usec = s->bytes_per_second
-                 ? min_int(max_int(nbytes, 100) * s->factor, (SHAPER_MAX_TIMEOUT*1000000))
-                 : 0;
+                     ? min_int(max_int(nbytes, 100) * s->factor, (SHAPER_MAX_TIMEOUT * 1000000))
+                     : 0;
 #endif
 
     if (tv.tv_usec)
@@ -145,11 +139,9 @@ shaper_wrote_bytes(struct shaper *s, int nbytes)
         tv_add(&s->wakeup, &tv);
 
 #ifdef SHAPER_DEBUG
-        dmsg(D_SHAPER_DEBUG, "SHAPER shaper_wrote_bytes bytes=%d delay=%ld sec=%" PRIi64 " usec=%ld",
-             nbytes,
-             (long)tv.tv_usec,
-             (int64_t)s->wakeup.tv_sec,
-             (long)s->wakeup.tv_usec);
+        dmsg(D_SHAPER_DEBUG,
+             "SHAPER shaper_wrote_bytes bytes=%d delay=%ld sec=%" PRIi64 " usec=%ld", nbytes,
+             (long)tv.tv_usec, (int64_t)s->wakeup.tv_sec, (long)s->wakeup.tv_usec);
 #endif
     }
 }

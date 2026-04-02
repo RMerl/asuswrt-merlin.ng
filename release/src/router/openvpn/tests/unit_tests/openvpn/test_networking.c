@@ -2,7 +2,8 @@
 #include "syshead.h"
 #include "networking.h"
 
-#include <assert.h>
+#include <setjmp.h>
+#include <cmocka.h>
 
 static char *iface = "ovpn-dummy0";
 
@@ -27,7 +28,7 @@ net__iface_type(const char *name, const char *type)
     int ret = net_iface_type(NULL, name, ret_type);
     if (ret == 0)
     {
-        assert(strcmp(type, ret_type) == 0);
+        assert_string_equal(type, ret_type);
     }
 
     return ret;
@@ -110,12 +111,10 @@ net__route_v4_add(const char *dst_str, int prefixlen, int metric)
     printf("\n");
 
     return net_route_v4_add(NULL, &dst, prefixlen, NULL, iface, 0, metric);
-
 }
 
 static int
-net__route_v4_add_gw(const char *dst_str, int prefixlen, const char *gw_str,
-                     int metric)
+net__route_v4_add_gw(const char *dst_str, int prefixlen, const char *gw_str, int metric)
 {
     in_addr_t dst, gw;
     int ret;
@@ -140,8 +139,7 @@ net__route_v4_add_gw(const char *dst_str, int prefixlen, const char *gw_str,
     dst = ntohl(dst);
     gw = ntohl(gw);
 
-    printf("CMD: ip route add %s/%d dev %s via %s", dst_str, prefixlen, iface,
-           gw_str);
+    printf("CMD: ip route add %s/%d dev %s via %s", dst_str, prefixlen, iface, gw_str);
     if (metric > 0)
     {
         printf(" metric %d", metric);
@@ -176,12 +174,10 @@ net__route_v6_add(const char *dst_str, int prefixlen, int metric)
     printf("\n");
 
     return net_route_v6_add(NULL, &dst, prefixlen, NULL, iface, 0, metric);
-
 }
 
 static int
-net__route_v6_add_gw(const char *dst_str, int prefixlen, const char *gw_str,
-                     int metric)
+net__route_v6_add_gw(const char *dst_str, int prefixlen, const char *gw_str, int metric)
 {
     struct in6_addr dst, gw;
     int ret;
@@ -203,8 +199,7 @@ net__route_v6_add_gw(const char *dst_str, int prefixlen, const char *gw_str,
         return -1;
     }
 
-    printf("CMD: ip -6 route add %s/%d dev %s via %s", dst_str, prefixlen,
-           iface, gw_str);
+    printf("CMD: ip -6 route add %s/%d dev %s via %s", dst_str, prefixlen, iface, gw_str);
     if (metric > 0)
     {
         printf(" metric %d", metric);
@@ -271,10 +266,10 @@ main(int argc, char *argv[])
 
         /* following tests are standalone and do not print any CMD= */
         case 8:
-            assert(net__iface_new("dummy0815", "dummy") == 0);
-            assert(net__iface_type("dummy0815", "dummy") == 0);
-            assert(net__iface_del("dummy0815") == 0);
-            assert(net__iface_type("dummy0815", NULL) == -ENODEV);
+            assert_int_equal(net__iface_new("dummy0815", "dummy"), 0);
+            assert_int_equal(net__iface_type("dummy0815", "dummy"), 0);
+            assert_int_equal(net__iface_del("dummy0815"), 0);
+            assert_int_equal(net__iface_type("dummy0815", NULL), -ENODEV);
             return 0;
 
         default:

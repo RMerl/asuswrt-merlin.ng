@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Technologies, Inc. <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Technologies, Inc. <sales@openvpn.net>
  *  Copyright (C) 2010      Fabian Knittel <fabian.knittel@lettink.de>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -18,8 +18,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef VLAN_H
@@ -32,13 +31,10 @@
 struct multi_context;
 struct multi_instance;
 
-int16_t
-vlan_decapsulate(const struct context *c, struct buffer *buf);
+int16_t vlan_decapsulate(const struct context *c, struct buffer *buf);
 
-bool
-vlan_is_tagged(const struct buffer *buf);
+bool vlan_is_tagged(const struct buffer *buf);
 
-void
-vlan_process_outgoing_tun(struct multi_context *m, struct multi_instance *mi);
+void vlan_process_outgoing_tun(struct multi_context *m, struct multi_instance *mi);
 
 #endif /* VLAN_H */

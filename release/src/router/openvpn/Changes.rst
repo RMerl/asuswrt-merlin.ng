@@ -1,1148 +1,433 @@
-Overview of changes in 2.6.19
-=============================
+Overview of changes in 2.7.1
+============================
 Bugfixes
 --------
-- ``make dist`` would fail to pack unit_tests/openvpn/test_common.h,
-  breaking ``make check`` on the tarball if cmocka is installed.  Fix.
+- Fix usage of ``--lport`` inside a ``<connection>`` block - this got
+  broken with the multi-socket patchset (GH OpenVPN/openvpn#995)
 
-Overview of changes in 2.6.18
-=============================
+- Do not try to run auto-pam unit test when cross-compiling.
 
-New features / User visible changes
------------------------------------
-- disable DCO if ``--bind-dev`` option is given (no support for this in
-  the old out-of-kernel Linux DCO implementation)
+- Do not break private-key passphrases of length >= 64
+  (GH OpenVPN/openvpn#993)
 
-- on Windows, if using ``--ip-win32 netsh`` and not using the interactive
-  service, IPv4 addresses would be installed as "permanent", possibly
-  causing problems later on with using that IPv4 address on a different
-  interface.  Change to "store=active".  (GH: #915)
+- Fix obscure ASSERT() crash on TCP connects with TAP and no ip config.
 
+- Make DCO work on FreeBSD systems that have no IPv4 support in kernel
+  (FreeBSD PR 286263)
 
-Code maintenance / Compat changes
----------------------------------
-- backport fixes needed to build unit tests with cmocka 2.0.0 and -Werror
-  (some parts of the old API have been deprecated and would raise warnings)
+- Make DCO work on Linux on big endian systems (namely, MIPS and PowerPC)
+  (GH OpenVPN/ovpn-dco#96)
 
-- backport "ensure that all unit tests use unbuffered stdout+stderr" change,
-  otherwise we get no output at all if a unit test crashes
+New features
+------------
+- Add a new ``username-only`` flag argument to ``--auth-user-pass`` which
+  will now make OpenVPN only query for username and send a dummy password
+  to the server.  This is only useful if auth schemes are used on the
+  server side that will do some sort of external challenge base on username,
+  and not password authentication.  See discussion in GH OpenVPN/openvpn#501
+  (starting Jan 30, 2024).
 
-- add explicit error message for failing read in multi_process_file_closed()
-  (reported by SRL)
+- Increase default sizing of internal hash maps to ``4 * --max-clients``.
+  The default used to be ``256`` with a ``--max-clients`` default of
+  1024 - this is bad for performance, while the memory savings are
+  minimal.  On a very memory constrained system, reduce ``--max-clients``.
 
-- test framework: permit overriding the openvpn binary called
+Long-term code maintenance
+--------------------------
+- Work on OpenSSL 4.0 API support, reducing use of ASN1_STRING members.
 
-- configure.ac: remove use of PKCS11_HELPER_LIBS in mbedTLS checks
-  (old code, purpose unclear, effects non-useful)
+- Remove obsolete OpenSSL 1.0.x support code from unit tests.
 
-- configure.ac: try to use pkg-config to detect mbedTLS
+- Improve documentation of management client versioning, replace magic
+  numbers in the code with an enum type.
 
+- Fixup responses to management interface ``version`` command (for >= 4).
 
-Documentation updates
----------------------
-- improve pull-filter documentation, emphasizing possible problems if
-  used as a naive security measure (reported by SRLabs).
+- Make ``--enable-async-push`` work on FreeBSD 15 (which has native
+  inotify support, and consequently no libinotify.pc anymore)
 
+- Adjust some code parts to new "const" handling on string function
+  returns (ISO C23, as implemented by glibc 2.43 and newer).
 
-Bugfixes
---------
-- p2mp server: fix incorrect file descriptor handling on "inotify" FD
-  during a SIGUSR1 restart (GH: #966)
-
-- management interface: fix bug where ``--management-forget-disconnect``
-  and ``--management-signal`` could be executed even if password authentication
-  to managment interface was still pending (Zeropath finding)
-
-- repair client-side interaction on reconnect between DCO event handling
-  and ``--persist-tun`` - after a ping timeout and reconnect, the DCO
-  event handler would not be armed, and the next ping timeout would not
-  be received by userland, causing non-working connections with nothing
-  in the openvpn log (Linux and FreeBSD only, GH: #947)
-
-- prevent crash on invalid server-ipv6 argument, calling freeaddrinfo()
-  with a NULL pointer.  This only affects OpenBSD.  (Klemens Nanni).
+- Remove erroneous usage of ``M_ERR | M_ERRNO`` throughout the code.
 
 
-Overview of changes in 2.6.17
-=============================
-Bugfixes
---------
-- Windows/interactive service: fix erroneous exit on error that could be
-  used by a local Windows users to achieve a local denial-of-service
-  (CVE-2025-13751)
+User-visible Changes
+--------------------
+- When compiled with the AWS-LC SSL library, using ``--tls-cert-profile``
+  will now print a run-time warning - the library does not support it,
+  so it would silently do nothing.
 
-Security hardening
-------------------
-- Windows/interactive service: improve service pipe robustness against
-  file access races (uuid) and access by unauthorized processes (ACL).
+- Systemd unit files: change LimitNPROC to TasksMax and increase limit
+  (GH: OpenVPN/openvpn#929)
 
-- upgrade bundled build instruction (vcpkg and patch) for pkcs11-helper
-  to 1.31, fixing a parser bug
+- Documentation improvements.
+
+- port-share: log incoming connections at ``verb 3``, not on ``error``
+  level anymore (GH: OpenVPN/openvpn#976).
 
 
-Overview of changes in 2.6.16
-=============================
-Code maintenance / Compat changes
----------------------------------
-- adapt to new "encrypt-then-mac" cipher suites in OpenSSL 3.6.0 - these
-  need special handling which we don't do, so the t_lpback self-test
-  failed on them.  Exclude from list of allowed ciphers, as there is no
-  strong reason today to make OpenVPN use these.
+Overview of changes in 2.7
+==========================
+New features
+------------
+Multi-socket support for servers
+    OpenVPN servers now can listen on multiple sockets at the same time.
+    Multiple ``--local`` statements in the configuration can be used to
+    configure this. This way the same server can e.g. listen for UDP
+    and TCP connections at the same time, or listen on multiple addresses
+    and/or ports.
 
-- fix various compile-time warnings
+Client implementations for DNS options sent by server for Linux/BSD/macOS
+    Linux, BSD and macOS versions of OpenVPN now ship with a per-platform
+    default ``--dns-updown`` script that implements proper handling of
+    DNS configuration sent by the server.  The scripts should work on
+    systems that use ``systemd`` or ``resolveconf`` to manage the DNS
+    setup, as well as raw ``/etc/resolv.conf`` files. However, the exact
+    features supported will depend on the configuration method.
+    On Linux and MacOS this should usually make split-DNS configurations
+    supported out-of-the-box now.
 
-Documentation updates
----------------------
-- fix outdated and non-HTTPS URLs throughout the tree (doxygen, warnings,
-  manpage, ...)
+    Note that this new script will not be used by default if a ``--up``
+    script is already in use to reduce problems with
+    backwards compatibility.
 
-Bugfixes
---------
-- Fix memcmp check for the hmac verification in the 3way handshake.
-  This bug renders the HMAC based protection against state exhaustion on
-  receiving spoofed TLS handshake packets in the OpenVPN server inefficient.
-  CVE: 2025-13086
+    See documentation for ``--dns-updown`` and ``--dns`` for more details.
 
-- fix invalid pointer creation in tls_pre_decrypt() - technically this is
-  a memory over-read issue, in practice, the compilers optimize it away
-  so no negative effects could be observed.
+New client implementation for DNS options sent by server for Windows
+    The Windows client now uses NRPT (Name Resolution Policy Table) to
+    handle DNS configurations. This adds support for split-DNS and DNSSEC
+    and improves the compatbility with local DNS resolvers. Requires the
+    interactive service.
 
-- Windows: in the interactive service, fix the "undo DNS config" handling.
+On Windows the ``block-local`` flag is now enforced with WFP filters.
+    The ``block-local`` flag to ``--redirect-gateway`` and
+    ``--redirect-private`` is now also enforced via the Windows Firewall,
+    making sure packets can't be sent to the local network.
+    This provides stronger protection against TunnelCrack-style attacks.
 
-- Windows: in the interactive service, disallow using of "stdin" for the
-  config file, unless the caller is authorized OpenVPN Administrator
+Windows network adapters are now generated on demand
+    This means that on systems that run multiple OpenVPN connections at
+    the same time the users don't need to manually create enough network
+    adapters anymore (in addition to the ones created by the installer).
 
-- Windows: in the interactive service, change all netsh calls to use
-  interface index and not interface name - sidesteps all possible attack
-  avenues with special characters in interface names.
+Windows automatic service now runs as an unpriviledged user
+    All tasks that need privileges are now delegated to the interactive
+    service.
+    **NOTE** this has the risk of breaking existing setups if the
+    Windows certificate store is used (cryptoapi), and the certificates
+    are not readable for ``NT SERVICE\OpenVPNService``.
 
-- Windows: in the interactive service, improve error handling in
-  some "unlikely to happen" paths.
+Support for new version of Linux DCO module
+    OpenVPN DCO module is moving upstream and being merged into the
+    main Linux kernel. For this process some API changes were required.
+    OpenVPN 2.7 will only support the new API. The new module is called
+    ``ovpn``. Out-of-tree builds for older kernels are available. Please
+    see the release announcements for futher information.
 
-- auth plugin/script handling: properly check for errors in creation on
-  $auth_failed_reason_file (arf).
+Support for server mode in win-dco driver
+    On Windows the win-dco driver can now be used in server setups.
 
-- for incoming TCP connections, close-on-exec option was applied to
-  the wrong socket fd, leaking socket FDs to child processes.
+Support for TLS client floating in DCO implementations
+    The kernel modules will detect clients floating to a new IP address
+    and notify userland so both data packets (kernel) and TLS packets
+    (sent by userland) can reach the new client IP.
+    (Actual support depends on recent-enough kernel implementation)
 
-- sitnl: set close-on-exec flag on netlink socket
+Enforcement of AES-GCM usage limit
+    OpenVPN will now enforce the usage limits on AES-GCM with the same
+    confidentiality margin as TLS 1.3 does. This mean that renegotiation will
+    be triggered after roughly 2^28 to 2^31 packets depending of the packet
+    size. More details about usage limit of AES-GCM can be found here:
 
-- ssl_mbedtls: fix missing perf_pop() call (optional performance profiling)
+    https://datatracker.ietf.org/doc/draft-irtf-cfrg-aead-limits/
+
+Epoch data keys and packet format
+    This introduces the epoch data format for AEAD data channel
+    ciphers in TLS mode ciphers. This new data format has a number of
+    improvements over the standard "DATA_V2" format.
+
+    - AEAD tag at the end of packet which is more hardware implementation
+      friendly
+    - Automatic key switchover when cipher usage limits are hit, similar to
+      the epoch data keys in (D)TLS 1.3
+    - 64 bit instead of 32 bit packet ids to allow the data channel to be
+      ready for 10 GBit/s without having frequent renegotiation
+    - IV constructed with XOR instead of concatenation to not have (parts) of
+      the real IV on the wire
+
+Support for Epoch data channel on Windows, using the win-dco driver (2.8.0+)
+
+Default ciphers in ``--data-ciphers``
+    Ciphers in ``--data-ciphers`` can contain the string DEFAULT that is
+    replaced by the default ciphers used by OpenVPN, making it easier to
+    add an allowed cipher without having to spell out the default ciphers.
+
+TLS alerts
+    OpenVPN 2.7 will send out TLS alerts to peers informing them if the TLS
+    session shuts down or when the TLS implementation informs the peer about
+    an error in the TLS session (e.g. mismatching TLS versions). This improves
+    the user experience as the client shows an error instead of running into
+    a timeout when the server just stops responding completely.
+
+Support for tun/tap via unix domain socket and lwipovpn support
+    To allow better testing and emulating a full client with a full
+    network stack OpenVPN now allows a program executed to provide
+    a tun/tap device instead of opening a device.
+
+    The co-developed lwipovpn program based on lwIP stack allows to
+    simulate full IP stack. An OpenVPN client using
+    ``--dev-node unix:/path/to/lwipovpn`` can emulate a full client that
+    can be pinged, can serve a website and more without requiring any
+    elevated permission. This can make testing OpenVPN much easier.
+
+    For more details see
+    `lwipovpn on Github <https://github.com/OpenVPN/lwipovpn>`_.
+
+Allow overriding username with ``--override-username``
+    This is intended to allow using ``--auth-gen-token`` in scenarios where the
+    clients use certificates and multi-factor authentication.  This will
+    also generate a ``push "auth-token-user newusername"`` directive in
+    push replies.
+
+``--port-share`` now properly supports IPv6
+    Issues with logging of IPv6 addresses were fixed. The feature now allows
+    IPv6 connections towards the proxy receiver.
+
+Support for Haiku OS
+
+TLS1.3 support with mbedTLS (requires mbedTLS >= 3.6.4)
+
+PUSH_UPDATE client support
+    It is now possible to update parts of the client-side configuration
+    (IP address, routes, MTU, DNS) by sending a new server-to-client
+    control message, ``PUSH_UPDATE,<options>``.
+    See also: https://openvpn.github.io/openvpn-rfc/openvpn-wire-protocol.html
+    NOTE: PUSH_UPDATE client support is currently disabled if DCO
+    is active (on all platforms).
+
+PUSH_UPDATE server support (minimal)
+    New management interface commands ``push-update-broad`` and
+    ``push-update-cid`` to send PUSH_UPDATE option updates to all
+    clients ("there is a new DNS server") or only a specific client ID
+    ("privileges have changed, here's a new IP address").  See
+    doc/management-notes.txt
+    NOTE: PUSH_UPDATE server support is currently disabled if DCO
+    is active (on all platforms).
+
+Support for user-defined routing tables on Linux
+    See the ``--route-table`` option in the manpage
+
+PQE support for WolfSSL
+
+Two new environment variables have been introduced to communicate desired
+    default gateway redirection to plugins like Network Manager,
+    ``route_redirect_gateway_ipv4`` and ``route_redirect_gateway_ipv6``.
+    See the "Environmental Variables" section in the man page
+
+Improved logging of service events/errors to event log on Windows.
+
+"Recursive Routing" check is now more granular, and will only drop
+   packets-in-tunnel if destination IP, protocol and port matches with
+   those needed to reach the VPN server.  With that change, you can now
+   use policies that direct "everything that is not OpenVPN" into the
+   tunnel, and have IP packets to the VPN server address arrive as
+   expected (no such policies are currently installed by OpenVPN)
+   (GH: OpenVPN/openvpn#669).
+
+COPYING: license details only relevant to our Windows installers have
+   been updated and moved to the openvpn-build repo
+
+Improved BYTECOUNT support - more strictly adhere to timing interval
+   requested, correctly support client and server counters with Linux and
+   Windows DCO offloading.
+
+Improve compatibility with OpenSSL 3.6.0 (do not fail t_lpback selftest)
+
+New option ``--tls-crypt-v2-max-age n`` to check tls-crypt-v2 timestamps
+   (When a client is older than n days or has no timestamp, the server
+    will reject it)
+
+mbedTLS 4 support has been added.
+   Note that with mbedTLS 4 algorithms need to be translated to
+   mbedTLS 4 internal IDs by OpenVPN, and some names might be
+   missing.
 
 
-Overview of changes in 2.6.15
-=============================
-New features / User visible changes
------------------------------------
-- on Windows, do not use "wmic.exe" any longer to set DNS search domain
-  (discontinued by Microsoft), use "powershell" fragment instead.
+Deprecated features
+-------------------
+``secret`` support has been removed (by default).
+    static key mode (non-TLS) is no longer considered "good and secure enough"
+    for today's requirements.  Use TLS mode instead.  If deploying a PKI CA
+    is considered "too complicated", using ``--peer-fingerprint`` makes
+    TLS mode about as easy as using ``--secret``.
 
-- on Windows, logging to the windows event log has been improved
-  (and logging of GetLastError() strings repaired).  To make this work,
-  a new "openvpnmsgserv.dll" library is now installed and registered.
+    This mode can still be enabled by using
+    ``--allow-deprecated-insecure-static-crypto`` but will be removed in
+    OpenVPN 2.8.
 
-- DNS domain names are now strictly validated with a positive-list of
-  allowed characters (including UTF-8 high-bit-set bytes) before being
-  handed to powershell.
+Support for wintun Windows driver has been removed.
+    OpenVPN 2.6 added support for the new dco-win driver, so it supported
+    three different device drivers: dco-win, wintun, and tap-windows6.
+    OpenVPN 2.7 now drops the support for wintun driver. By default
+    all modern configs should be supported by dco-win driver. In all
+    other cases OpenVPN will fall back automatically to tap-windows6
+    driver.
+
+NTLMv1 authentication support for HTTP proxies has been removed.
+    This is considered an insecure method of authentication that uses
+    obsolete crypto algorithms.
+    NTLMv2 support is still available, but will be removed in a future
+    release.
+    When configured to authenticate with NTLMv1 (``ntlm`` keyword in
+    ``--http-proxy``) OpenVPN will try NTLMv2 instead.
+
+``persist-key`` option has been enabled by default.
+    All the keys will be kept in memory across restart.
+
+OpenSSL 1.0.2 support has been removed.
+    Support for building with OpenSSL 1.0.2 has been removed. The minimum
+    supported OpenSSL version is now 1.1.0.
+
+mbedTLS 2.x support has been removed
+    Support for building with mbedTLS 2.x has been removed (it is out
+    of support since March 2025, and the necessary compatibility code
+    is making maintenance and support for mbedTLS 4.x hard).
+    The minimum supported mbedTLS version is now 3.2.1.
+
+Compression on send has been removed.
+    OpenVPN 2.7 will never compress data before sending. Decompression of
+    received data is still supported.
+    ``--allow-compression yes`` is now an alias for
+    ``--allow-compression asym``.
+
+``--memstats`` feature removed
+    The ``--memstats`` option was largely undocumented and there is no known
+    user of this feature.  This feature provided very limited statistics
+    (number of users, link bytes read/written) and we do not except any
+    usage because of this.
+
+Using ``--push`` in a mode that is not ``--mode server`` will now print a
+    clear warning that this is an unsupported operation and might cause
+    negotiation failures.
+
+``--reneg-bytes`` and ``--reneg-packets`` do not work in DCO mode, and will
+    now print an appropriate warning.
+
+On-connect resolving of ``--remote`` addresses in ``--tcp-server`` mode
+    was not working since 2.4, so the code was completely removed.
+
+
+User-visible Changes
+--------------------
+- Default for ``--topology`` changed to ``subnet`` for ``--mode server``.
+  Previous releases always used ``net30`` as default. This only affects
+  configs with ``--mode server`` or ``--server`` (the latter implies the
+  former), and ``--dev tun``, and only if IPv4 is enabled.
+  Note that this changes the semantics of ``--ifconfig``, so if you have
+  manual settings for that in your config but not set ``--topology``
+  your config might fail to parse with the new version. Just adding
+  ``--topology net30`` to the config should fix the problem.
+  By default ``--topology`` is pushed from server to client.
+
+- ``--x509-username-field`` will no longer automatically convert fieldnames to
+  uppercase. This was deprecated since OpenVPN 2.4, and has now been removed.
+
+- ``--dh none`` is now the default if ``--dh`` is not specified. Modern TLS
+  implementations will prefer ECDH and other more modern algorithms anyway.
+  And finite field Diffie Hellman is in the proces of being deprecated
+  (see draft-ietf-tls-deprecate-obsolete-kex)
+
+- ``--lport 0`` does not imply ``--bind`` anymore.
+
+- ``--redirect-gateway`` now works correctly if the VPN remote is not
+  reachable by the default gateway.
+
+- ``--show-gateway`` now supports querying the gateway for IPv4 addresses.
+
+- ``--static-challenge`` option now has a third parameter ``format`` that
+  can change how password and challenge response should be combined.
+
+- ``--key`` and ``--cert`` now accept URIs implemented in OpenSSL 3 as well as
+  optional OpenSSL 3 providers loaded using ``--providers`` option.
+
+- ``--cryptoapicert`` now supports issuer name as well as Windows CA template
+  name or OID as selector string.
+
+- TLS handshake debugging information contains much more details now when
+  using recent versions of OpenSSL.
+
+- The ``IV_PLAT_VER`` variable sent by Windows clients now contains the
+  full Windows build version to make it possible to determine the
+  Windows 10 or Windows 11 version used.
+
+- The ``--windows-driver`` option to select between various windows
+  drivers will no longer do anything - it's kept so existing configs
+  will not become invalid, but it is ignored with a warning.  The default
+  is now ``ovpn-dco`` if all options used are compatible with DCO, with
+  a fallback to ``tap-windows6``.  To force TAP (for example because a
+  server pushes DCO incompatible options), use the ``--disable-dco``
+  option.
 
 - Apply more checks to incoming TLS handshake packets before creating
   new state - namely, verify message ID / acked ID for "valid range for
   an initial packet".  This fixes a problem with clients that float
   very early but send control channel packet from the pre-float IP
-  (Github: OpenVPN/openvpn#704), backported from 2.7_beta1.
+  (Github: OpenVPN/openvpn#704).
 
-- backport handling of client float notifications on FreeBSD 14/STABLE DCO
-  (see https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=289303)
+- Use of ``--dh dh2048.pem`` in all sample configs has been replaced
+  with ``--dh none``.  The ``dh2048.pem`` file has been removed.
 
-- update GPL license text to latest version from FSF
+- The startup delay in ``t_client.sh`` has been reduced from 3s to 1s,
+  making a noticeable difference for setups with many tests.
 
-- on Linux, on interfaces where applicable, OpenVPN explicitly configures
+- Changed from using ``uncrustify`` for code formatting and pre-commit checks
+  to ``clang-format``.  This reformatted quite a bit of code, and requires
+  that regular committers change their pre-commit checks accordingly.
+
+- On Linux, on interfaces where applicable, OpenVPN explicitly configures
   the broadcast address again.  This was dropped for 2.6.0 "because
   computers are smart and can do it themselves", but the kernel netlink
   interface isn't, and will install "0.0.0.0".  This does not normally
   matter, but for broadcast-based applications that get the address to
-  use from "ifconfig", this change repairs functionality.
-
-
-Code maintenance
-----------------
-- remove a few extra newline characters at the end of rarely-seen log lines
-
-- replace assert() calls in the code with OpenVPN ASSERT() calls
-  (not subject to -DNDEBUG, plus better logging on the actual cause)
-
-- remove "dh 20248.pem" from all sample configurations, remove "dh2048.pem"
-  file from source tree - OpenSSL 3.5 Seclevel=3 considers this "not
-  secure enough" and OpenVPN has not needed an explit DH file in a long while.
-
-- properly handle "old Linux DCO" enum definitions conflicting with
-  "new Linux DCO" kernel headers (uapi/linux/if_link.h)
-
-- fix stdint.h related build errors on Fedora 42
-
-- GHA: update dependencies, pin CMake version
-
-- fix MBEDTLS_DEPRECATED_REMOVED build errors (improve compatibility with
-  recent versions of mbedTLS)
-
-
-Documentation Updates
----------------------
-- improve ``--tmp-dir`` documentation
-
-
-Bugfixes
---------
-- dco-win: fix a possible "out of scope" access on access to the
-  "OVERLAPPED" Structure (backport of master commit f60a493)
-
-- bring back configuring of broadcast address on Linux tun/tap interface
-  (see above)
-
-
-Overview of changes in 2.6.14
-=============================
-Security fixes
---------------
-- CVE-2025-2704 fix possible ASSERT() on OpenVPN servers using --tls-crypt-v2
-
-  Security scope: OpenVPN servers between 2.6.1 and 2.6.13 using
-  --tls-crypt-v2 can be made to abort with an ASSERT() message by
-  sending a particular combination of authenticated and malformed packets.
-
-  To trigger the bug, a valid tls-crypt-v2 client key is needed, or
-  network observation of a handshake with a valid tls-crypt-v2 client key
-
-  No crypto integrity is violated, no data is leaked, and no remote
-  code execution is possible.
-
-  This bug does not affect OpenVPN clients.
-
-  (Bug found by internal QA at OpenVPN Inc)
-
-
-Code maintenance
-----------------
-- fix compatibility with mbedTLS 2.28.10+ and 3.6.3+: security "hardening"
-  on the mbedTLS side (adding verification of the server certificate
-  *hostname* inside mbedTLS) broke OpenVPN, as OpenVPN does not use
-  hostname-based verification.  Disable mbedTLS "feature".
-
-- fix compilation warnings for mbedTLS builds related to "enc"
-  enum/integer mismatch.
-
-- Github Action builds: drop Ubuntu 20.04 builds, upgrade various packages
-
-Bug fixes
----------
-- Linux DCO: repair source IP selection for --multihome (Qingfang Deng)
-
-Overview of changes in 2.6.13
-=============================
-New features
-------------
-- on non-windows clients (MacOS, Linux, Unix) send "release" string from
-  uname() call as IV_PLAT_VER= to server - while highly OS specific this
-  is still helpful to keep track of OS versions used on the client side
-  (GH #637)
-
-- Windows: protect cached username, password and token in client memory
-  (using the CryptProtectMemory() windows API
-
-- Windows: use new API to get dco-win driver version from driver
-  (newly introduced non-exclusive control device)  (GH: ovpn-dco-win #76)
-
-- Linux: pass --timeout=0 argument to systemd-ask-password, to avoid
-  default timeout of 90 seconds ("console prompting also has no timeout")
-  (GH #649)
-
-
-Bug fixes
----------
-- fix potentially unaligned access in drop_if_recursive_routing on
-  Linux (ASAN)
-
-- correct documentation for port-share journal
-
-- fix logging of IPv6 addresses in port-share journal
-
-- fix various typos in messages, documentation, comments and examples
-  (GH #442, GH #644)
-
-- FreeBSD DCO: fix memory leaks in nvlist handling (GH #636)
-
-- route handling: correctly handle case of "route installation fails"
-  in the face of an already-existing route - previously, OpenVPN would
-  remove the "other" route on exit, incorrectly changing system state.
-
-- fix generation of warning messages for overlapping --local/--remote
-  and --ifconfig addresses
-
-- purge proxy authentication credentials from memory after use
-  (if --auth-nocache is in use)
-
-- fix missing space in various (long and wrapped) msg() calls
-
-
-Code maintenance
-----------------
-- improve documentation/examples for <peer-fingerprint> feature
-
-- simplify Github Action macOS build setup
-
-- update Github Action macOS runners (remove macOS 12, add macOS 15)
-
-- fix a number of uninitialized "struct user_pass" local variables
-  (no impact beyond "compiler warning", but future-proofing the code)
-
-
-Security fixes
---------------
-- improve server-side handling of clients sending usernames or passwords
-  longer than USER_PASS_LEN - this would not result in a crash, buffer
-  overflow or other security issues, but the server would then misparse
-  incoming IV_* variables and produce misleading error messages.
-
-
-Overview of changes in 2.6.12
-=============================
-Bug fixes
----------
-- the fix for CVE-2024-5594 (refuse control channel messages with
-  nonprintable characters) was too strict, breaking user configurations
-  with AUTH_FAIL messages having trailing CR/NL characters.  This often
-  happens if the AUTH_FAIL reason is set by a script.  Strip those before
-  testing the command buffer (Github: #568).  Also, add unit test.
-
-- Http-proxy: fix bug preventing proxy credentials caching (Trac: #1187)
-
-Code maintenance
-----------------
-- try to detect LZO installation with pkg-config (= on many systems
-  manually setting LZO_CFLAGS/LZO_LIBS should no longer be necessary)
-
-Overview of changes in 2.6.11
-=============================
-Security fixes
---------------
-- CVE-2024-4877: Windows: harden interactive service pipe.
-  Security scope: a malicious process with "some" elevated privileges
-  (SeImpersonatePrivilege) could open the pipe a second time, tricking
-  openvn GUI into providing user credentials (tokens), getting full
-  access to the account openvpn-gui.exe runs as.
-  (Zeze with TeamT5)
-
-- CVE-2024-5594: control channel: refuse control channel messages with
-  nonprintable characters in them.  Security scope: a malicious openvpn
-  peer can send garbage to openvpn log, or cause high CPU load.
-  (Reynir Björnsson)
-
-- CVE-2024-28882: only call schedule_exit() once (on a given peer).
-  Security scope: an authenticated client can make the server "keep the
-  session" even when the server has been told to disconnect this client
-  (Reynir Björnsson)
-
-New features
-------------
-- Windows Crypto-API: Implement Windows CA template match for searching
-  certificates in windows crypto store.
-
-- support pre-created DCO interface on FreeBSD (OpenVPN would fail to
-  set ifmode p2p/subnet otherwise)
-
-Bugfixes
---------
-- fix connect timeout when using SOCKS proxies (trac #328, github #267)
-
-- work around LibreSSL crashing on OpenBSD 7.5 when enumerating ciphers
-  (LibreSSL bug, already fixed upstream, but not backported to OpenBSD 7.5,
-  see also https://github.com/libressl/openbsd/issues/150)
-
-- Add bracket in fingerprint message and do not warn about missing
-  verification (github #516)
-
-Documentation
--------------
-- remove "experimental" denotation for --fast-io
-
-- correctly document ifconfig_* variables passed to scripts (script-options.rst)
-
-- documentation: make section levels consistent
-
-- samples: Update sample configurations
-   remove compression & old cipher settings, add more informative comments
-
-Code maintenance
-----------------
-- remove usage of <lzoutils.h> header & macro, discouraged by upstream
-
-- only run coverity scans in OpenVPN/OpenVPN repository (= do not spam
-  owners of cloned repos with "cannot run this" messages)
-
-- replace macOS 11 github runners with macOS 14
-
-- remove some unused code in misc.c (leftover from commit 3a4fb1)
-
-- phase2_tcp_server: fix Coverity issue 'Dereference after null check'
-  - the code itself was correct, just doing needless checks
-
-- Use snprintf instead of sprintf for get_ssl_library_version
-  - the code itself was correct, but macOS clang dislikes sprintf()
-
-
-Overview of changes in 2.6.10
-=============================
-Security fixes
---------------
-- CVE-2024-27459: Windows: fix a possible stack overflow in the
-  interactive service component which might lead to a local privilege
-  escalation.
-  Reported-by: Vladimir Tokarev <vtokarev@microsoft.com>
-
-- CVE-2024-24974: Windows: disallow access to the interactive service
-  pipe from remote computers.
-  Reported-by: Vladimir Tokarev <vtokarev@microsoft.com>
-
-- CVE-2024-27903: Windows: disallow loading of plugins from untrusted
-  installation paths, which could be used to attack openvpn.exe via
-  a malicious plugin.  Plugins can now only be loaded from the OpenVPN
-  install directory, the Windows system directory, and possibly from
-  a directory specified by HKLM\SOFTWARE\OpenVPN\plugin_dir.
-  Reported-by: Vladimir Tokarev <vtokarev@microsoft.com>
-
-Bug fixes
----------
-- Windows: if the win-dco driver is used (default) and the GUI requests
-  use of a proxy server, the connection would fail.  Disable DCO in
-  this case.  (Github: #522)
-
-- Compression: minor bugfix in checking option consistency vs. compiled-in
-  algorithm support
-
-- systemd unit files: remove obsolete syslog.target
-
-User visible changes
---------------------
-- Update copyright notices to 2024
-
-New features
-------------
-- t_client.sh can now run pre-tests and skip a test block if needed
-  (e.g. skip NTLM proxy tests if SSL library does not support MD4)
-
-Documentation
--------------
-- remove license warnings about mbedTLS linking (README.mbedtls)
-
-- update documentation references in systemd unit files
-
-- sample config files: remove obsolete tls-*.conf files
-
-- document that auth-user-pass may be inlined
-
-
-Overview of changes in 2.6.9
-============================
-
-Security fixes
---------------
-- Windows Installer: fix CVE 2023-7235 where installing to a non-default
-  directory could lead to a local privilege escalation.
-  Reported by Will Dormann <will.dormann@analygence.com>.
-
-New features
-------------
-- add support for building with mbedTLS 3.x.x
-
-- new option "--force-tls-key-material-export" to only accept clients
-  that can do TLS keying material export to generate session keys
-  (mostly an internal option to better deal with TLS 1.0 PRF failures).
-
-- Windows: bump vcpkg-ports/pkcs11-helper to 1.30
-
-- Log incoming SSL alerts in easier to understand form and move logging
-  from "--verb 8" to "--verb 3".
-
-- protocol_dump(): add support for printing "--tls-crypt" packets
-
-
-User visible changes
---------------------
-- license change is now complete, and all code has been re-licensed
-  under the new license (still GPLv2, but with new linking exception
-  for Apache2 licensed code).  See COPYING for details.
-
-  Code that could not be re-licensed has been removed or rewritten.
-
-- the original code for the "--tls-export-cert" feature has been removed
-  (due to the re-licensing effort) and rewritten without looking at the
-  original code.  Feature-compatibility has been tested by other developers,
-  looking at both old and new code and documentation, so there *should*
-  not be a user-visible change here.
-
-- IPv6 route addition/deletion are now logged on the same level (3) as
-  for IPv4.  Previously IPv6 was always logged at "--verb 1".
-
-- better handling of TLS 1.0 PRF failures in the underlying SSL library
-  (e.g. on some FIPS builds) - this is now reported on startup, and
-  clients before 2.6.0 that can not use TLS EKM to generate key material
-  are rejected by the server.  Also, error messages are improved to see
-  what exactly failed.
-
-- packaged sample-keys renewed (old keys due to expire in October 2024)
-
-
-Bug fixes / Code cleanup
-------------------------
-- Windows GUI: always update tray icon on state change (Github: #669)
-  (for persistent connection profiles, "connecting" state would not show)
-
-- FreeBSD: for servers with multiple clients, reporting of peer traffic
-  statistics would fail due to insufficient buffer space (Github: #487)
-
-- make interaction between "--http-proxy-user-pass" and "--http-proxy"
-  more consistent
-
-- doc: improve documentation on "--http-proxy-user-pass"
-
-- doc: improve documentation for IV_ variables and IV_PROTO bits
-
-- doc: improve documentation on CMake requirements
-
-- fix various coverity-reported complains (signed/unsigned comparison etc),
-  none of them actual bugs
-
-- NTLMv2: increase phase 2 buffers so things actually work
-
-- NTLM: add extra buffer size verification checks
-
-- doc: improve documentation on "--tls-crypt-v2-verify"
-
-- autoconf on Linux: improve error reporting for missing libraries - in
-  case the problem came due to missing "pkg-config" the previous error
-  was misleading.  Now clearly report that Linux builds require "pkg-config"
-  and abort if not found.
-
-- MacOS X: fix "undefined behaviour" found by UBSAN in get_default_gateway()
-  (IV_HWADDR), using getifaddrs(3) instead of old and convoluted
-  SIOCGIFCONF API.
-
-- OpenSolaris: correctly implement get_default_gateway() (IV_HWADDR), using
-  SIOCGIFHWADDR instead of SIOCGIFCONF API.
-
-- OpenBSD: work around route socket issue in get_default_gateway()
-  ("--show-gateway") where RA_IFP must not be set on the query message,
-  otherwise kernel will return EINVAL.
-
-- doc: improve documentation of --x509-track
-
-- bugfix: in UDP mode when exceeding "--max-clients", OpenVPN would
-  incorrectly close the connection to "peer-id 0".  Fix by correctly
-  initializing peer_id with MAX_PEER_ID.
-
-- Windows: do not attempt to delete DNS or WINS servers if they are not set
-
-- configure: get rid of AC_TYPE_SIGNAL macro (unused)
-
-- Linux DCO: add missing check for nl_socket_alloc() failure
-
-- bugfix: check_session_buf_not_used() was not working as planned
-
-- remove dead test code for TEST_GET_DEFAULT_GATEWAY (use "--show-gateway")
-
-- doc: better document "--tls-exit" option
-
-- Github Actions: clean up LibreSSL builds
-
-
-
-Overview of changes in 2.6.8
-============================
-
-Bug fixes / Code cleanup
-------------------------
-- SIGSEGV crash: Do not check key_state buffers that are in S_UNDEF state
-  (Github #449) - the new sanity check function introduced in 2.6.7
-  sometimes tried to use a NULL pointer after an unsuccessful TLS handshake
-
-- Windows: --dns option did not work when tap-windows6 driver was used,
-  because internal flag for "apply DNS option to DHCP server" wasn't set
-  (Github #447)
-
-- Windows: fix status/log file permissions, caused by regression after
-  changing to CMake build system (Github: #454, Trac: #1430)
-
-- Windows: fix --chdir failures, also caused by error in CMake build system
-  (Github #448)
-
-- doc: fix typos in documentation
-
-User visible changes
---------------------
-- Windows: print warning if pushed options require DHCP (e.g. DOMAIN-SEARCH)
-  and driver in use does not use DHCP (wintun, dco).
-
-
-Overview of changes in 2.6.7
-============================
-
-Bug fixes / Code cleanup
-------------------------
-- CVE-2023-46850 OpenVPN versions between 2.6.0 and 2.6.6 incorrectly use
-  a send buffer after it has been free()d in some circumstances, causing
-  some free()d memory to be sent to the peer.  All configurations using TLS
-  (e.g. not using --secret) are affected by this issue.
-  (found while tracking down CVE-2023-46849 / Github #400, #417)
-
-- CVE-2023-46849 OpenVPN versions between 2.6.0 and 2.6.6 incorrectly
-  restore "--fragment" configuration in some circumstances, leading to
-  a division by zero when "--fragment" is used.  On platforms where
-  division by zero is fatal, this will cause an OpenVPN crash.
-
-  Reported by Niccolo Belli <niccolo.belli@linuxsystems.it> and WIPocket
-  (Github #400, #417).
-
-- cleanup bits and pieces of documentation
-
-- cleanup code to remove strlen() related warnings in buf_catrunc()
-
-- DCO on Linux: fix NULL-pointer crash if "--multihome" is used together
-  with "--proto tcp"
-
-- work around build fails caused by LibreSSL not longer having engine support
-
-
-User visible changes
---------------------
-- DCO: warn if DATA_V1 packets are sent by the other side - this a hard
-  incompatibility between a 2.6.x client connecting to a 2.4.0-2.4.4 server,
-  and the only fix is to use "--disable-dco".
-
-- Remove OpenSSL Engine method for loading a key.  This had to be removed
-  because the original author did not agree to relicensing the code with
-  the new linking exception added.  This was a somewhat obsolete feature
-  anyway as it only worked with OpenSSL 1.x, which is end-of-support.
-
-- add warning if p2p NCP client connects to a p2mp server - this is a
-  combination that used to work without cipher negotiation (pre 2.6 on
-  both ends), but would fail in non-obvious ways with 2.6 to 2.6.
-
-- add warning to "--show-groups" that not all supported groups are listed
-  (this is due the internal enumeration in OpenSSL being a bit weird,
-  omitting X448 and X25519 curves).
-
-- "--dns": remove support for "exclude-domains" argument
-  (this was a new 2.6 option, with no backend support implemented yet
-  on any platform, and it turns out that no platform supported it at all -
-  so remove option again)
-
-- warn user if INFO control message too long, do not forward to management
-  client (safeguard against protocol-violating server implementations)
-
-
-New features
-------------
-- DCO-WIN: get and log driver version (for easier debugging).
-
-- print "peer temporary key details" in TLS handshake
-
-- log OpenSSL errors on failure to set certificate, for example if the
-  algorithms used are in acceptable to OpenSSL (misleading message would
-  be printed in cryptoapi / pkcs#11 scenarios)
-
-- add CMake build system for MinGW and MSVC builds
-
-- remove old MSVC build system
-
-- improve cmocka unit test building for Windows
-
-
-Overview of changes in 2.6.6
-============================
-
-User visible changes
---------------------
-- OCC exit messages are now logged more visibly
-  (Github #391)
-
-- OpenSSL error messages are now logged with more details (for example,
-  when loading a provider fails, which .so was tried, and why did it fail)
-  (Github #361)
-
-- print a more user-friendly message when tls-crypt-v2 client auth fails
-
-- packaging now includes all documentation in the tarball
-
-
-New features
-------------
-- set WINS server via interactive service - this adds support for
-  "dhcp-option WINS 192.0.2.1" for DCO + wintun interfaces where no
-  DHCP server is used (Github #373).
-
-Bug fixes / Code cleanup
-------------------------
-- route.c was sometimes ignoring return values of add_route3()
-  (found by coverity)
-
-- ntlm: clarify use of buffer in case of truncated NTLM challenge,
-  no actual code change (reported by Trial of Bits, TOB-OVPN-14)
-
-- pkcs11_openssl.c: disable unused code (found by coverity)
-
-- options.c: do not hide variable from parent scope (found by coverity)
-
-- configure: fix typo in LIBCAPNG_CFALGS (Github #371)
-
-- ignore IPv6 route deletion request on Android, reduce IPv4 route-related
-  message verbosity on Android
-
-- manage.c: document missing KID parameter of "client-pending-auth"
-  (new addition in da083c3b (2.6.2)) in manage interface help text
-
-- vpn-network-options.rst: fix typo of "dhcp-option" (Github #313)
-
-- tun.c/windows: quote WMIC call to set DHCP/DNS domain with hyphen
-  (Github #363)
-
-- fix CR_RESPONSE management message using wrong key_id
-
-- work around false positive compiler warnings with MinGW 12
-
-- work around false positive compiler warnings with GCC 12.2.0
-
-- fix more compiler warnings on FreeBSD
-
-- test_tls_crypt: improve cmocka testing portability
-
-- dco-linux: fix counter print format (signed/unsigned)
-
-- packaging: include everything that is needed for a MSVC build in tarballs
-  (Github #344)
-
-
-Overview of changes in 2.6.5
-============================
-
-User visible changes
---------------------
-- tapctl (windows): generate driver-specific names (if using tapctl to
-  create additional tap/wintun/dco devices, and not using --name)
-  (Github #337)
-
-- interactive service (windows): do not force target desktop for
-  openvpn.exe - this has no impact for normal use, but enables running
-  of OpenVPN in a scripted way when no user is logged on (for example,
-  via task scheduler) (Github OpenVPN/openvpn-gui#626)
-
-Bug fixes
----------
-- fix use-after-free with EVP_CIPHER_free
-
-- fix building with MSVC from release tarball (missing version.m4.in)
-
-- dco-win: repair use of --dev-node to select specific DCO drivers
-  (Github #336)
-
-- fix missing malloc() return check in dco_freebsd.c
-
-- windows: correctly handle unicode names for "exit event"
-
-- fix memleak in client-connect example plugin
-
-- fix fortify build problem in keying-material-exporter-demo plugin
-
-- fix memleak in dco_linux.c/dco_get_peer_stats_multi() - this will
-  leak a small amount of memory every 15s on DCO enabled servers,
-  leading to noticeable memory waste for long-running processes.
-
-- dco_linux.c: properly close dco version file (fd leak)
-
-
-Overview of changes in 2.6.4
-============================
-
-User visible changes
---------------------
-- License amendment: all NEW commits fall under a modified license that
-  explicitly permits linking with Apache2 libraries (mbedTLS, OpenSSL) -
-  see COPYING for details.  Existing code will fall under the new license
-  as soon as all contributors have agreed to the change - work ongoing.
-
-New features
-------------
-- DCO: support kernel-triggered key rotation (avoid IV reuse after 2^32
-  packets).  This is the userland side, accepting a message from kernel,
-  and initiating a TLS renegotiation.  As of release, only implemented in
-  FreeBSD kernel.
-
-Bug fixes
----------
-- fix pkcs#11 usage with OpenSSL 3.x and PSS signing (Github #323)
-
-- fix compile error on TARGET_ANDROID
-
-- fix typo in help text
-
-- manpage updates (--topology)
-
-- encoding of non-ASCII windows error messages in log + management fixed
-  (use UTF8 "as for everything else", not ANSI codepages)  (Github #319)
-
-
-Overview of changes in 2.6.3
-============================
-
-New features
-------------
-- Windows: support setting DNS domain in configurations without DHCP
-  (typically wintun or windco drivers), see GH OpenVPN/openvpn#306.
-
-Bug fixes
----------
-- fix possible crash with Linux client on reconnect on TLS errors
-  (needs either "--status file" or active management interface to trigger)
-
-- fix incorrect formatting in .rst documents
-
-- Windows .msi installer: ensure interactive service stays enabled after
-  silent reinstall, see GH OpenVPN/openvpn-build#348, #349 and #351
-
-- Windows installer: repair querying install path info for easyrsa-start.bat
-  on some Windows language versions, see GH OpenVPN/openvpn-build#352.
-
-- Windows DCO driver: use correct crypto library so it loads on x86,
-  see GH OpenVPN/ovpn-dco-win#43
-
-
-
-Overview of changes in 2.6.2
-============================
-
-New features
-------------
-- implement byte counter statistics for DCO Linux (p2mp server and client)
-
-- implement byte counter statistics for DCO Windows (client only)
-
-- '--dns server <n> address ...' now permits up to 8 v4 or v6 addresses
-
-- fix a few cases of possibly undefined behaviour detected by ASAN
-
-- add more unit tests for Windows cryptoapi interface
-
-
-Bug fixes
----------
-- sending of AUTH_PENDING and INFO_PRE messages fixed (OpenVPN/openvpn#256)
-
-- Windows: do not treat "setting IPv6 interface metric failed" as fatal
-  error on "block-dns" install - this can happen if IPv6 is disabled on
-  the interface and is not harmful in itself (GH #294)
-
-- fix '--inactive' if DCO is in use
-  NOTE: on FreeBSD, this is not working yet (missing per-peer stats)
-
-- DCO-Linux: do not print errno on netlink errors (errno is not set by NL)
-
-- SOCKS client: improve error reporting on server disconnects
-
-- DCO-Linux: fix lockups due to netlink buffer overflows on high
-  client connect/disconnect activity.  See "User visible changes" for
-  more details of this.
-
-- fix some uses of the OpenSSL3 API for non-default providers
-  (enable use of quantum-crypto OpenSSL provider)
-
-- fix memory leak of approx. 1600 bytes per incoming initial TLS packet
-
-- fix bug when using ECDSA signatures with OpenSSL 3.0.x and pkcs11-helper
-  (data format conversion was not done properly)
-
-- fix 'make distcheck' - unexpected side effect of 'subdir-objects'
-
-- fix ASSERT() with dynamic tls-crypt and --tls-crypt-v2 (GH #272)
-
-
-User visible changes
---------------------
-- print (kernel) DCO version on startup - helpful for getting a more
-  complete picture of the environment in use.
-
-- New control packets flow for data channel offloading on Linux.
-  2.6.2+ changes the way OpenVPN control packets are handled on
-  Linux when DCO is active, fixing the lockups observed with 2.6.0/2.6.1
-  under high client connect/disconnect activity.
-  This is an *INCOMPATIBLE* change and therefore an ovpn-dco kernel
-  module older than v0.2.20230323 (commit ID 726fdfe0fa21) will not
-  work anymore and must be upgraded.  The kernel module was renamed to
-  "ovpn-dco-v2.ko" in order to highlight this change and ensure that
-  users and userspace software could easily understand which version
-  is loaded.  Attempting to use the old ovpn-dco with 2.6.2+ will
-  lead to disabling DCO at runtime.
-
-- The ``client-pending-auth`` management command now requires also the
-  key id. The management version has been changed to 5 to indicate this change.
-
-- A client will now refuse a connection if pushed compression settings
-  will contradict the setting of ``allow-compression`` as this almost
-  always results in a non-working connection.
-
-
-Overview of changes in 2.6.1
-============================
-
-New features
-------------
-- Dynamic TLS Crypt
-  When both peers are OpenVPN 2.6.1+, OpenVPN will dynamically create
-  a tls-crypt key that is used for renegotiation. This ensure that only the
-  previously authenticated peer can do trigger renegotiation and complete
-  renegotiations.
-
-- CryptoAPI (Windows): support issuer name as a selector.
-  Certificate selection string can now specify a partial
-  issuer name string as "--cryptoapicert ISSUER:<string>" where
-  <string> is matched as a substring of the issuer (CA) name in
-  the certificate.
-
-
-User visible changes
---------------------
-- on crypto initialization, move old "quite verbose" messages to --verb 4
-  and only print a more compact summary about crypto and timing parameters
-  by default
-
-- configure now enables DCO build by default on FreeBSD and Linux, which
-  brings in a default dependency for libnl-genl (for Linux distributions
-  that are too old to have this library, use "configure --disable-dco")
-
-- make "configure --help" output more consistent
-
-- CryptoAPI (Windows): remove support code for OpenSSL before 3.0.1
-  (this will not affect official OpenVPN for Windows installers, as they
-  will always be built with OpenSSL 3.0.x)
-
-- CryptoAPI (Windows): log the selected certificate's name
-
-- "configure" now uses "subdir-objects", for automake >= 1.16
-  (less warnings for recent-enough automake versions, will change
-  the way .o files are created)
-
-
-Bugfixes / minor improvements
------------------------------
-- fixed old IPv6 ifconfig race condition for FreeBSD 12.4 (trac #1226)
-
-- fix compile-time breakage related to DCO defines on FreeBSD 14
-
-- enforce minimum packet size for "--fragment" (avoid division by zero)
-
-- some alignment fixes to avoid unaligned memory accesses, which will
-  bring problems on some architectures (Sparc64, some ARM versions) -
-  found by USAN clang checker
-
-- windows source code fixes to reduce number of compile time warnings
-  (eventual goal is to be able to compile with -Werror on MinGW), mostly
-  related to signed/unsigned char * conversions, printf() format specifiers
-  and unused variables.
-
-- avoid endless loop on logging with --management + --verb 6+
-
-- build (but not run) unit tests on MinGW cross compiles, and run them
-  when building with GitHub Actions.
-
-- add unit test for parts of cryptoapi.c
-
-- add debug logging to help with diagnosing windows driver selection
-
-- disable DCO if proxy config is set via management interface
-
-- do not crash on Android if run without --management
-
-- improve documentation about cipher negotiation and OpenVPN3
-
-- for x86 windows builds, use proper calling conventions for dco-win
-  (__stdcall)
-
-- differentiate "dhcp-option ..." options into "needs an interface with
-  true DHCP service" (tap-windows) and "can also be installed by IPAPI
-  or service, and can be used on non-DHCP interfaces" (wintun, dco-win)
-
-- windows interactive service: fix possible double-free if "--block-dns"
-  installation fails due to "security products" interfering
-  (Github OpenVPN/openvpn#232)
-
-- "make dist": package ovpn_dco_freebsd.h to permit building from tarballs
-  on FreeBSD 14
-
-
-Overview of changes in 2.6.0, relative to 2.6_rc2
-=================================================
-
-(See below for changes in 2.6 relative to 2.5)
-
-New features
-------------
-- no new features relative to 2.6_rc2
-
-User-Visible Changes
---------------------
-- no user-visible changes relative to 2.6_rc2
-
-Bugfixes / minor improvements
------------------------------
-- repair handling of "route already exists" errors for Linux/sitnl builds,
-  which would lead to erroneous attempts to remove routes later on, possibly
-  removing "non openvpn installed" routes.
-
-- repair error handling for Linux/iproute2 builds - this was ignoring
-  all errors on route installation, causing issues on route removal.
-
-- improve logging (errors and debug messages) for route handling on Windows
-
-- print warning if pkcs11-id or pkcs11-id-management options are used but
-  no pkcs11-providers has been selected
-
-- openvpnmsica: improve handling of win-dco driver (use MSM now)
-
-- for Linux/DCO builds, increase libnl buffer size to reduce propability
-  of ENOBUFS occurance if kernel-to-userland netlink queue overruns
-  (bandaid fix)
-
-- re-enable use of suid binaries in scripts run by OpenVPN - new
-  capability-handling code was too strict and cleared all capabilities,
-  breaking users' use of "sudo" (etc) in scripts (Github OpenVPN/openvpn#220).
-
-
-Overview of changes in 2.6_rc2
-==============================
-New features
-------------
-- ``remote-entry-get`` management command will now show enabled/disabled
-  status for each connection entry
-
-- report ``CONNECTED,ROUTE_ERROR`` to management GUI if connection to
-  server succeeds but not all routes can be installed (Windows and
-  Linux/Netlink only, so far)
-
-- add rate limiter for incoming "initial handshake packets", enabled by
-  default with a limit of 100 packets per 10 seconds.  New option
-  ``--connect-freq-initial`` to configure values.  This change makes
-  OpenVPN servers uninteresting as an UDP reflection DDoS engine.
-
-User-Visible Changes
---------------------
-- OCC (options compatibility check) log messages are considered obsolete
-  and are only shown on loglevel 7 or higher now
-
-- copyright line has been updated in all files to "xxx-2023"
-
-- include peer-id=nn in multi prefix for DCO servers if loglevel is 7+
-  (helps with DCO debugging)
-
-Bugfixes / minor improvements
------------------------------
-- improve documentation on no-longer-supported options
-
-- reduce amount of log messages about "dco_update_keys: peer_id=-1"
-
-- undo FreeBSD "ipv6 ifconfig" workaround for FreeBSD 12.4 and up (Trac 1226)
-
-- fix signal handling issues where a SIGUSR1 "restart" signal could overwrite
-  a SIGTERM/SIGINT "please end!" signal already queued, making OpenVPN hard
-  to stop (Trac 311, Trac 639, GH issue #205)
-
-- fix signal handling issues on windows, where OpenVPN could not be
-  interrupted by ctrl-c when sleep()ing between connection attempts
-
-- use IPAPI for IPv6 route installation on Windows, if OpenVPN runs without
-  service pipe ("run as admin from cmd.exe")
-
-- fix spurious DCO log messages about "peer-id unknown to OpenVPN: -1"
-
-- on Windows, repair wintun buffer cleanup on program end
-
-
-Overview of changes in 2.6_rc1
-==============================
-
-New features
-------------
-Support unlimited number of connection entries and remote entries
-
-New management commands to enumerate and list remote entries
-    Use ``remote-entry-count`` and ``remote-entry-get``
-    commands from the management interface to get the number of
-    remote entries and the entries themselves.
-
-
-Bugfixes / minor improvements
------------------------------
-Improve DCO-related logging in many places.
-
-DCO/Linux robustness fixes.
-
-DCO/Linux TCP crashbug (recvfrom(-1) endless loop) worked around - root
-    cause has not been found, but the condition is detected and the
-    offending client is removed, instead of crashing the server.
-
-Rename internal TLS state TM_UNTRUSTED to TM_INITIAL, always start new
-    peer handshake (new connect or renegotiation) in TM_INITIAL state.
-
-Upgrade Windows build environment to MSVC 2022
-
-Make management password check constant time
-
-Repair keepalive and mss setting in DCO peer-to-peer mode.
-
-Persist DCO client data channel traffic stats on restart (Windows only).
-
-Do not include auth-token in pulled option digest.
-
-Reduce default restart pause (--connect-retry) to 1 second.
-
-Deprecate NTLMv1 proxy auth method.
-
-Fix possible buffer-overrun in command line and ccd/ argument parsing.
-
-Fix memleak if creating deferred auth control files fails
-
-
-Overview of changes in 2.6_beta2
-================================
-
-New features
-------------
-Transport statistics (bytes in/out) for DCO environments
-    With DCO, OpenVPN userland will not see data packets and can not
-    count them, thus, no statistics.  This feature implements server-side
-    statistics for FreeBSD+DCO and client-side statistics for Windows+DCO,
-    Linux and FreeBSD client will follow.
-
-pkcs11-helper updates
-    improve shared library loading on Windows, so "copy .dll to application
-    directory" recipes should no longer be necessary for pkcs#11 providers
-
-Bugfixes / minor improvements
------------------------------
-- add proper documentation for tls-crypt-v2 metadata limits, and better
-  error messages when these are exceeded
-
-- trigger SIGUSR1 if dco_update_keys() fails - this is, when OpenVPN
-  userland and kernel side key handling gets out of sync, restart instance
-  to recover.
-
-- improve logging for DCO key update handling
-
-- ignore incoming client connects while server is being shutdown
-  (Github: OpenVPN/openvpn#189)
-
-- disable DCO for p2p modes with no crypto or --secret pre-shared key
-  (= everything that is not TLS)
-
-- fix endianness issues for TLS cookie handling and unit test
-
+  use from "ifconfig", this change repairs functionality (this has
+  been backported to 2.6.15, but is not in earlier 2.6 versions).
+
+- ``max-routes-per-client 0`` used to be silently upgraded to ``1``.  This
+  now produces an error.
+
+- ``ifconfig`` and ``ifconfig-ipv6`` values are now stored in pre-connect
+  options cache, and will be restored to pre-connect values on reconnects
+  if the server stops pushing the respective option.
+
+- ``tapctl.exe`` helper binary on Windows has been reworked to improve
+  help texts (making clear that it can not only do TAP-Adapters but
+  Win-DCO as well), add printing of the hwid to all adapter outputs, and
+  change the default adapter type created to ``ovpn-dco``.
+
+- The default for ``multihome`` egress interface handling has changed.
+  2.7.0 will default to ipi_ifindex=0, that is, leave the decision to the
+  routing/policy setup of the operating system.  The pre-2.7 behaviour
+  (force egress = ingress interface) can be achieved with the new
+  ``--multihome same-interface`` sub-option.
+
+- Windows ``openvpn.exe`` binary manifest now sets code page UTF8 - which
+  has no direct effect on OpenVPN itself, but this repairs OpenSSL file
+  loading for key/cert files with non-ASCII characters in their file names
+  (GH: OpenVPN/openvpn#920).
+
+- The ``test-crypto`` option no longer requires a ``--secret`` argument and
+  will automatically generate a random key.
+
+- The configure-time option ``--enable-x509-alt-username`` is no longer
+  conditional, and always-on (GH: OpenVPN/openvpn#917).
+
+
+Deprecated features
+-------------------
+``--opt-verify`` feature removed
+    This option was already deprecated and it is now being converted to a
+    no-op. Using this option will only print a warning.
 
 
 Overview of changes in 2.6
@@ -1157,6 +442,13 @@ instead: https://github.com/OpenVPN/openvpn/issues
 
 New features
 ------------
+Support unlimited number of connection entries and remote entries
+
+New management commands to enumerate and list remote entries
+    Use ``remote-entry-count`` and ``remote-entry-get``
+    commands from the management interface to get the number of
+    remote entries and the entries themselves.
+
 Keying Material Exporters (RFC 5705) based key generation
     As part of the cipher negotiation OpenVPN will automatically prefer
     the RFC5705 based key material generation to the current custom
@@ -1262,6 +554,12 @@ Tun MTU can be pushed
     directive ``--tun-mtu-max`` has been introduced to increase the maximum
     pushable MTU size (defaults to 1600).
 
+Dynamic TLS Crypt
+    When both peers are OpenVPN 2.6.1+, OpenVPN will dynamically create
+    a tls-crypt key that is used for renegotiation. This ensure that only the
+    previously authenticated peer can do trigger renegotiation and complete
+    renegotiations.
+
 Improved control channel packet size control (``max-packet-size``)
     The size of control channel is no longer tied to
     ``--link-mtu``/``--tun-mtu`` and can be set using ``--max-packet-size``.
@@ -1362,6 +660,16 @@ User-visible Changes
   peer or earlier, use the new ``--compat-mode`` option if you need
   compatibility with older versions. See the manual page on the
   ``--compat-mode`` for details.
+
+- The ``client-pending-auth`` management command now requires also the
+  key id. The management version has been changed to 5 to indicate this change.
+
+- (OpenVPN 2.6.2) A client will now refuse a connection if pushed compression
+  settings will contradict the setting of allow-compression as this almost
+  always results in a non-working connection.
+
+- The "kill" by addr management command now requires also the protocol
+  as string e.g. "udp", "tcp".
 
 Common errors with OpenSSL 3.0 and OpenVPN 2.6
 ----------------------------------------------
@@ -1592,7 +900,7 @@ Improved support for pending authentication
     wait for the second factor authentication to complete.
 
     This feature currently requires usage of the managent interface
-    on both client and server side. See the `management-notes.txt`
+    on both client and server side. See the ``management-notes.txt``
     ``client-pending-auth`` and ``cr-response`` commands for more
     details.
 
@@ -1611,7 +919,7 @@ Support building of .msi installers for Windows
 Allow unicode search string in ``--cryptoapicert`` option (Windows)
 
 Support IPv4 configs with /31 netmasks now
-    (By no longer trying to configure ``broadcast x.x.x.x'' in
+    (By no longer trying to configure ``broadcast x.x.x.x`` in
     ifconfig calls, /31 support "just works")
 
 New option ``--block-ipv6`` to reject all IPv6 packets (ICMPv6)

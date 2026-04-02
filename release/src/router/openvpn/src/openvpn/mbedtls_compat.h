@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2023 Fox Crypto B.V. <openvpn@foxcrypto.com>
+ *  Copyright (C) 2023-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,17 +17,14 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
- * @file mbedtls compatibility stub
- *
- * This file provide compatibility stubs for the mbedtls libraries
- * prior to version 3. This version made most fields in structs private
- * and requires accessor functions to be used. For earlier versions, we
- * implement the accessor functions here.
+ * @file
+ * mbedtls compatibility stub.
+ * This file provides compatibility stubs to handle API differences between
+ * different versions of Mbed TLS.
  */
 
 #ifndef MBEDTLS_COMPAT_H_
@@ -37,200 +34,203 @@
 
 #include "errlevel.h"
 
-#include <mbedtls/cipher.h>
-#include <mbedtls/ctr_drbg.h>
-#include <mbedtls/dhm.h>
-#include <mbedtls/ecp.h>
-#include <mbedtls/md.h>
-#include <mbedtls/pem.h>
+#include <mbedtls/asn1.h>
 #include <mbedtls/pk.h>
-#include <mbedtls/ssl.h>
-#include <mbedtls/version.h>
-#include <mbedtls/x509_crt.h>
 
-#if HAVE_MBEDTLS_PSA_CRYPTO_H
-    #include <psa/crypto.h>
-#endif
-
-#if MBEDTLS_VERSION_NUMBER >= 0x03000000
-typedef uint16_t mbedtls_compat_group_id;
+#if MBEDTLS_VERSION_NUMBER < 0x04000000
+#include <mbedtls/ctr_drbg.h>
+#include "crypto_mbedtls_legacy.h"
 #else
-typedef mbedtls_ecp_group_id mbedtls_compat_group_id;
+#include <mbedtls/oid.h>
+#endif /* MBEDTLS_VERSION_NUMBER < 0x04000000 */
+
+#ifdef HAVE_PSA_CRYPTO_H
+#include <psa/crypto.h>
 #endif
 
 static inline void
 mbedtls_compat_psa_crypto_init(void)
 {
-#if HAVE_MBEDTLS_PSA_CRYPTO_H && defined(MBEDTLS_PSA_CRYPTO_C)
+#if defined(HAVE_PSA_CRYPTO_H) && defined(MBEDTLS_PSA_CRYPTO_C)
     if (psa_crypto_init() != PSA_SUCCESS)
     {
         msg(M_FATAL, "mbedtls: psa_crypto_init() failed");
     }
 #else
     return;
-#endif /* HAVE_MBEDTLS_PSA_CRYPTO_H && defined(MBEDTLS_PSA_CRYPTO_C) */
-}
-
-static inline mbedtls_compat_group_id
-mbedtls_compat_get_group_id(const mbedtls_ecp_curve_info *curve_info)
-{
-#if MBEDTLS_VERSION_NUMBER >= 0x03000000
-    return curve_info->tls_id;
-#else
-    return curve_info->grp_id;
 #endif
 }
 
-/*
- * In older versions of mbedtls, mbedtls_ctr_drbg_update() did not return an
- * error code, and it was deprecated in favor of mbedtls_ctr_drbg_update_ret()
- * which does.
- *
- * In mbedtls 3, this function was removed and mbedtls_ctr_drbg_update() returns
- * an error code.
- */
-static inline int
-mbedtls_compat_ctr_drbg_update(mbedtls_ctr_drbg_context *ctx,
-                               const unsigned char *additional,
-                               size_t add_len)
+#if MBEDTLS_VERSION_NUMBER >= 0x04000000
+typedef struct
 {
-#if HAVE_MBEDTLS_CTR_DRBG_UPDATE_RET
-    return mbedtls_ctr_drbg_update_ret(ctx, additional, add_len);
-#elif MBEDTLS_VERSION_NUMBER < 0x03020100
-    mbedtls_ctr_drbg_update(ctx, additional, add_len);
+    const char *name;
+    uint16_t tls_id;
+} mbedtls_ecp_curve_info;
+
+static inline int
+mbedtls_oid_get_attr_short_name(const mbedtls_asn1_buf *oid, const char **desc)
+{
+    /* The relevant OIDs all have equal length. */
+    if (oid->tag != MBEDTLS_ASN1_OID || oid->len != strlen(MBEDTLS_OID_AT_CN))
+    {
+        *desc = NULL;
+        return -1;
+    }
+
+    if (memcmp(oid->p, MBEDTLS_OID_AT_CN, oid->len) == 0)
+    {
+        *desc = "CN";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_AT_SUR_NAME, oid->len) == 0)
+    {
+        *desc = "SN";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_AT_SERIAL_NUMBER, oid->len) == 0)
+    {
+        *desc = "serialNumber";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_AT_COUNTRY, oid->len) == 0)
+    {
+        *desc = "C";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_AT_LOCALITY, oid->len) == 0)
+    {
+        *desc = "L";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_AT_STATE, oid->len) == 0)
+    {
+        *desc = "ST";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_AT_ORGANIZATION, oid->len) == 0)
+    {
+        *desc = "O";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_AT_ORG_UNIT, oid->len) == 0)
+    {
+        *desc = "OU";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_AT_TITLE, oid->len) == 0)
+    {
+        *desc = "title";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_AT_POSTAL_ADDRESS, oid->len) == 0)
+    {
+        *desc = "postalAddress";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_AT_POSTAL_CODE, oid->len) == 0)
+    {
+        *desc = "postalCode";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_AT_GIVEN_NAME, oid->len) == 0)
+    {
+        *desc = "GN";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_AT_INITIALS, oid->len) == 0)
+    {
+        *desc = "initials";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_AT_GENERATION_QUALIFIER, oid->len) == 0)
+    {
+        *desc = "generationQualifier";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_AT_UNIQUE_IDENTIFIER, oid->len) == 0)
+    {
+        *desc = "uniqueIdentifier";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_AT_DN_QUALIFIER, oid->len) == 0)
+    {
+        *desc = "dnQualifier";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_AT_PSEUDONYM, oid->len) == 0)
+    {
+        *desc = "pseudonym";
+    }
+    else
+    {
+        *desc = NULL;
+        return -1;
+    }
     return 0;
-#else
-    return mbedtls_ctr_drbg_update(ctx, additional, add_len);
-#endif /* HAVE_MBEDTLS_CTR_DRBG_UPDATE_RET */
 }
 
 static inline int
-mbedtls_compat_pk_check_pair(const mbedtls_pk_context *pub, const mbedtls_pk_context *prv,
-                             int (*f_rng)(void *, unsigned char *, size_t), void *p_rng)
+mbedtls_oid_get_extended_key_usage(const mbedtls_asn1_buf *oid, const char **desc)
 {
-#if MBEDTLS_VERSION_NUMBER < 0x03020100
-    return mbedtls_pk_check_pair(pub, prv);
-#else
-    return mbedtls_pk_check_pair(pub, prv, f_rng, p_rng);
-#endif /* MBEDTLS_VERSION_NUMBER < 0x03020100 */
-}
+    /* The relevant OIDs all have equal length. */
+    if (oid->tag != MBEDTLS_ASN1_OID || oid->len != strlen(MBEDTLS_OID_SERVER_AUTH))
+    {
+        *desc = NULL;
+        return -1;
+    }
 
+    if (memcmp(oid->p, MBEDTLS_OID_SERVER_AUTH, oid->len) == 0)
+    {
+        *desc = "TLS Web Server Authentication";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_CLIENT_AUTH, oid->len) == 0)
+    {
+        *desc = "TLS Web Client Authentication";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_CODE_SIGNING, oid->len) == 0)
+    {
+        *desc = "Code Signing";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_EMAIL_PROTECTION, oid->len) == 0)
+    {
+        *desc = "E-mail Protection";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_TIME_STAMPING, oid->len) == 0)
+    {
+        *desc = "Time Stamping";
+    }
+    else if (memcmp(oid->p, MBEDTLS_OID_OCSP_SIGNING, oid->len) == 0)
+    {
+        *desc = "OCSP Signing";
+    }
+    else
+    {
+        *desc = NULL;
+        return -1;
+    }
+
+    return 0;
+}
+#endif /* MBEDTLS_VERSION_NUMBER >= 0x04000000 */
+
+/* Some functions that operate on private keys use randomness to protect against
+ * side channels. In Mbed TLS 4, they automatically use the RNG in the PSA
+ * library, but in Mbed TLS 3, they require them as explicit arguments. */
 static inline int
 mbedtls_compat_pk_parse_key(mbedtls_pk_context *ctx,
                             const unsigned char *key, size_t keylen,
-                            const unsigned char *pwd, size_t pwdlen,
-                            int (*f_rng)(void *, unsigned char *, size_t), void *p_rng)
+                            const unsigned char *pwd, size_t pwdlen)
 {
-#if MBEDTLS_VERSION_NUMBER < 0x03020100
+#if MBEDTLS_VERSION_NUMBER >= 0x04000000
     return mbedtls_pk_parse_key(ctx, key, keylen, pwd, pwdlen);
 #else
-    return mbedtls_pk_parse_key(ctx, key, keylen, pwd, pwdlen, f_rng, p_rng);
-#endif
+    return mbedtls_pk_parse_key(ctx, key, keylen, pwd, pwdlen, mbedtls_ctr_drbg_random, rand_ctx_get());
+#endif /* MBEDTLS_VERSION_NUMBER < 0x04000000 */
 }
 
 static inline int
-mbedtls_compat_pk_parse_keyfile(mbedtls_pk_context *ctx,
-                                const char *path, const char *password,
-                                int (*f_rng)(void *, unsigned char *, size_t), void *p_rng)
+mbedtls_compat_pk_parse_keyfile(mbedtls_pk_context *ctx, const char *path, const char *password)
 {
-#if MBEDTLS_VERSION_NUMBER < 0x03020100
+#if MBEDTLS_VERSION_NUMBER >= 0x04000000
     return mbedtls_pk_parse_keyfile(ctx, path, password);
 #else
-    return mbedtls_pk_parse_keyfile(ctx, path, password, f_rng, p_rng);
-#endif
-}
-
-#if MBEDTLS_VERSION_NUMBER < 0x03020100
-typedef enum {
-    MBEDTLS_SSL_VERSION_UNKNOWN, /*!< Context not in use or version not yet negotiated. */
-    MBEDTLS_SSL_VERSION_TLS1_0 = 0x0301, /*!< (D)TLS 1.0 */
-    MBEDTLS_SSL_VERSION_TLS1_1 = 0x0302, /*!< (D)TLS 1.1 */
-    MBEDTLS_SSL_VERSION_TLS1_2 = 0x0303, /*!< (D)TLS 1.2 */
-    MBEDTLS_SSL_VERSION_TLS1_3 = 0x0304, /*!< (D)TLS 1.3 */
-} mbedtls_ssl_protocol_version;
-
-static inline void
-mbedtls_ssl_conf_min_tls_version(mbedtls_ssl_config *conf, mbedtls_ssl_protocol_version tls_version)
-{
-    int major = (tls_version >> 8) & 0xff;
-    int minor = tls_version & 0xff;
-    mbedtls_ssl_conf_min_version(conf, major, minor);
-}
-
-static inline void
-mbedtls_ssl_conf_max_tls_version(mbedtls_ssl_config *conf, mbedtls_ssl_protocol_version tls_version)
-{
-    int major = (tls_version >> 8) & 0xff;
-    int minor = tls_version & 0xff;
-    mbedtls_ssl_conf_max_version(conf, major, minor);
-}
-
-static inline void
-mbedtls_ssl_conf_groups(mbedtls_ssl_config *conf, mbedtls_compat_group_id *groups)
-{
-    mbedtls_ssl_conf_curves(conf, groups);
-}
-
-static inline size_t
-mbedtls_cipher_info_get_block_size(const mbedtls_cipher_info_t *cipher)
-{
-    return (size_t)cipher->block_size;
-}
-
-static inline size_t
-mbedtls_cipher_info_get_iv_size(const mbedtls_cipher_info_t *cipher)
-{
-    return (size_t)cipher->iv_size;
-}
-
-static inline size_t
-mbedtls_cipher_info_get_key_bitlen(const mbedtls_cipher_info_t *cipher)
-{
-    return (size_t)cipher->key_bitlen;
-}
-
-static inline mbedtls_cipher_mode_t
-mbedtls_cipher_info_get_mode(const mbedtls_cipher_info_t *cipher)
-{
-    return cipher->mode;
-}
-
-static inline const char *
-mbedtls_cipher_info_get_name(const mbedtls_cipher_info_t *cipher)
-{
-    return cipher->name;
-}
-
-static inline mbedtls_cipher_type_t
-mbedtls_cipher_info_get_type(const mbedtls_cipher_info_t *cipher)
-{
-    return cipher->type;
-}
-
-static inline size_t
-mbedtls_dhm_get_bitlen(const mbedtls_dhm_context *ctx)
-{
-    return 8 * ctx->len;
-}
-
-static inline const mbedtls_md_info_t *
-mbedtls_md_info_from_ctx(const mbedtls_md_context_t *ctx)
-{
-    return ctx->md_info;
-}
-
-static inline const unsigned char *
-mbedtls_pem_get_buffer(const mbedtls_pem_context *ctx, size_t *buf_size)
-{
-    *buf_size = ctx->buflen;
-    return ctx->buf;
+    return mbedtls_pk_parse_keyfile(ctx, path, password, mbedtls_ctr_drbg_random, rand_ctx_get());
+#endif /* MBEDTLS_VERSION_NUMBER < 0x04000000 */
 }
 
 static inline int
-mbedtls_x509_crt_has_ext_type(const mbedtls_x509_crt *ctx, int ext_type)
+mbedtls_compat_pk_check_pair(const mbedtls_pk_context *pub, const mbedtls_pk_context *prv)
 {
-    return ctx->ext_types & ext_type;
+#if MBEDTLS_VERSION_NUMBER >= 0x04000000
+    return mbedtls_pk_check_pair(pub, prv);
+#else
+    return mbedtls_pk_check_pair(pub, prv, mbedtls_ctr_drbg_random, rand_ctx_get());
+#endif /* MBEDTLS_VERSION_NUMBER < 0x04000000 */
 }
-#endif /* MBEDTLS_VERSION_NUMBER < 0x03020100 */
 
 #endif /* MBEDTLS_COMPAT_H_ */

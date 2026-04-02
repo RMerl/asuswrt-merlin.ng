@@ -17,8 +17,8 @@
 #
 #  tapctl -- Utility to manipulate TUN/TAP interfaces on Windows
 #
-#  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
-#  Copyright (C) 2018-2024 Simon Rozman <simon@rozman.si>
+#  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+#  Copyright (C) 2018-2026 Simon Rozman <simon@rozman.si>
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License version 2
@@ -30,8 +30,7 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License along
-#  with this program; if not, write to the Free Software Foundation, Inc.,
-#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#  with this program; if not, see <https://www.gnu.org/licenses/>.
 #
 
 #
@@ -209,8 +208,8 @@ am__define_uniq_tagged_files = \
   unique=`for i in $$list; do \
     if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
   done | $(am__uniquify_input)`
-am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/build/ltrc.inc \
-	$(top_srcdir)/depcomp
+am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/depcomp \
+	$(top_srcdir)/ltrc.inc
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
@@ -235,6 +234,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
 DL_LIBS = @DL_LIBS@
+DNS_UPDOWN_TYPE = @DNS_UPDOWN_TYPE@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -294,6 +294,10 @@ OPTIONAL_CRYPTO_LIBS = @OPTIONAL_CRYPTO_LIBS@
 OPTIONAL_DL_LIBS = @OPTIONAL_DL_LIBS@
 OPTIONAL_INOTIFY_CFLAGS = @OPTIONAL_INOTIFY_CFLAGS@
 OPTIONAL_INOTIFY_LIBS = @OPTIONAL_INOTIFY_LIBS@
+OPTIONAL_LIBCAPNG_CFLAGS = @OPTIONAL_LIBCAPNG_CFLAGS@
+OPTIONAL_LIBCAPNG_LIBS = @OPTIONAL_LIBCAPNG_LIBS@
+OPTIONAL_LIBNL_GENL_CFLAGS = @OPTIONAL_LIBNL_GENL_CFLAGS@
+OPTIONAL_LIBNL_GENL_LIBS = @OPTIONAL_LIBNL_GENL_LIBS@
 OPTIONAL_LZ4_CFLAGS = @OPTIONAL_LZ4_CFLAGS@
 OPTIONAL_LZ4_LIBS = @OPTIONAL_LZ4_LIBS@
 OPTIONAL_LZO_CFLAGS = @OPTIONAL_LZO_CFLAGS@
@@ -301,11 +305,13 @@ OPTIONAL_LZO_LIBS = @OPTIONAL_LZO_LIBS@
 OPTIONAL_PKCS11_HELPER_CFLAGS = @OPTIONAL_PKCS11_HELPER_CFLAGS@
 OPTIONAL_PKCS11_HELPER_LIBS = @OPTIONAL_PKCS11_HELPER_LIBS@
 OPTIONAL_SELINUX_LIBS = @OPTIONAL_SELINUX_LIBS@
+OPTIONAL_SYSTEMD_CFLAGS = @OPTIONAL_SYSTEMD_CFLAGS@
 OPTIONAL_SYSTEMD_LIBS = @OPTIONAL_SYSTEMD_LIBS@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 P11KIT_CFLAGS = @P11KIT_CFLAGS@
 P11KIT_LIBS = @P11KIT_LIBS@
+P11TOOL = @P11TOOL@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -327,11 +333,14 @@ RC = @RC@
 ROUTE = @ROUTE@
 RST2HTML = @RST2HTML@
 RST2MAN = @RST2MAN@
+SCRIPTDIR = @SCRIPTDIR@
 SED = @SED@
 SELINUX_LIBS = @SELINUX_LIBS@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 SOCKETS_LIBS = @SOCKETS_LIBS@
+SOFTHSM2_MODULE = @SOFTHSM2_MODULE@
+SOFTHSM2_UTIL = @SOFTHSM2_UTIL@
 STRIP = @STRIP@
 SYSTEMD_ASK_PASSWORD = @SYSTEMD_ASK_PASSWORD@
 SYSTEMD_UNIT_DIR = @SYSTEMD_UNIT_DIR@
@@ -398,6 +407,7 @@ psdir = @psdir@
 runstatedir = @runstatedir@
 sampledir = @sampledir@
 sbindir = @sbindir@
+scriptdir = @scriptdir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
@@ -439,7 +449,7 @@ all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .mc .o .obj .rc
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/build/ltrc.inc $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/ltrc.inc $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -459,7 +469,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__maybe_remake_depfiles)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__maybe_remake_depfiles);; \
 	esac;
-$(top_srcdir)/build/ltrc.inc $(am__empty):
+$(top_srcdir)/ltrc.inc $(am__empty):
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh

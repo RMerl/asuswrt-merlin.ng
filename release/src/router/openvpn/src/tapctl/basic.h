@@ -2,8 +2,8 @@
  *  basic -- Basic macros
  *           https://community.openvpn.net/openvpn/wiki/Tapctl
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2018-2024 Simon Rozman <simon@rozman.si>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2018-2026 Simon Rozman <simon@rozman.si>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -15,28 +15,27 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef BASIC_H
 #define BASIC_H
 
-#ifdef _UNICODE
-#define PRIsLPTSTR      "ls"
-#define PRIsLPOLESTR    "ls"
-#else
-#define PRIsLPTSTR      "s"
-#define PRIsLPOLESTR    "ls"
+/* We do not support non-unicode builds */
+#ifndef UNICODE
+#define UNICODE
 #endif
-#define PRIXGUID        "{%08lX-%04hX-%04hX-%02hhX%02hhX-%02hhX%02hhX%02hhX%02hhX%02hhX%02hhX}"
-#define PRIGUID_PARAM(g) \
-    (g).Data1, (g).Data2, (g).Data3, (g).Data4[0], (g).Data4[1], (g).Data4[2], (g).Data4[3], (g).Data4[4], (g).Data4[5], (g).Data4[6], (g).Data4[7]
-#define PRIGUID_PARAM_REF(g) \
-    &(g).Data1, &(g).Data2, &(g).Data3, &(g).Data4[0], &(g).Data4[1], &(g).Data4[2], &(g).Data4[3], &(g).Data4[4], &(g).Data4[5], &(g).Data4[6], &(g).Data4[7]
 
-#define __L(q)          L ## q
-#define _L(q)           __L(q)
+#define PRIXGUID "{%08lX-%04hX-%04hX-%02hhX%02hhX-%02hhX%02hhX%02hhX%02hhX%02hhX%02hhX}"
+#define PRIGUID_PARAM(g)                                                                     \
+    (g).Data1, (g).Data2, (g).Data3, (g).Data4[0], (g).Data4[1], (g).Data4[2], (g).Data4[3], \
+        (g).Data4[4], (g).Data4[5], (g).Data4[6], (g).Data4[7]
+#define PRIGUID_PARAM_REF(g)                                                         \
+    &(g).Data1, &(g).Data2, &(g).Data3, &(g).Data4[0], &(g).Data4[1], &(g).Data4[2], \
+        &(g).Data4[3], &(g).Data4[4], &(g).Data4[5], &(g).Data4[6], &(g).Data4[7]
+
+#define __L(q) L##q
+#define _L(q)  __L(q)
 
 #ifndef _In_
 #define _In_

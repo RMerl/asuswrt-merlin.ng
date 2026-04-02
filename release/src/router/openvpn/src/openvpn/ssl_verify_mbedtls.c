@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Fox Crypto B.V. <openvpn@foxcrypto.com>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -18,12 +18,12 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
- * @file Control Channel Verification Module mbed TLS backend
+ * @file
+ * Control Channel Verification Module mbed TLS backend
  */
 
 #ifdef HAVE_CONFIG_H
@@ -34,22 +34,29 @@
 
 #if defined(ENABLE_CRYPTO_MBEDTLS)
 
+#include <mbedtls/version.h>
+
+#if MBEDTLS_VERSION_NUMBER < 0x04000000
+#include "crypto_mbedtls_legacy.h"
+#include <mbedtls/bignum.h>
+#include <mbedtls/sha1.h>
+#else
 #include "crypto_mbedtls.h"
+#endif
+
 #include "mbedtls_compat.h"
+
 #include "ssl_verify.h"
 #include <mbedtls/asn1.h>
 #include <mbedtls/error.h>
-#include <mbedtls/bignum.h>
 #include <mbedtls/oid.h>
-#include <mbedtls/sha1.h>
 
 #define MAX_SUBJECT_LENGTH 256
 
 int
-verify_callback(void *session_obj, mbedtls_x509_crt *cert, int cert_depth,
-                uint32_t *flags)
+verify_callback(void *session_obj, mbedtls_x509_crt *cert, int cert_depth, uint32_t *flags)
 {
-    struct tls_session *session = (struct tls_session *) session_obj;
+    struct tls_session *session = (struct tls_session *)session_obj;
     struct gc_arena gc = gc_new();
 
     ASSERT(cert);
@@ -71,8 +78,7 @@ verify_callback(void *session_obj, mbedtls_x509_crt *cert, int cert_depth,
          * Clearing these flags relies on verify_cert will later rejecting a
          * certificate that has no matching fingerprint.
          */
-        uint32_t flags_ignore = MBEDTLS_X509_BADCERT_NOT_TRUSTED
-                                | MBEDTLS_X509_BADCERT_EXPIRED
+        uint32_t flags_ignore = MBEDTLS_X509_BADCERT_NOT_TRUSTED | MBEDTLS_X509_BADCERT_EXPIRED
                                 | MBEDTLS_X509_BADCERT_FUTURE;
         *flags = *flags & ~flags_ignore;
     }
@@ -85,9 +91,9 @@ verify_callback(void *session_obj, mbedtls_x509_crt *cert, int cert_depth,
         char *subject = x509_get_subject(cert, &gc);
         char *serial = backend_x509_get_serial(cert, &gc);
 
-        ret = mbedtls_x509_crt_verify_info(errstr, sizeof(errstr)-1, "", *flags);
-        if (ret <= 0 && !openvpn_snprintf(errstr, sizeof(errstr),
-                                          "Could not retrieve error string, flags=%" PRIx32, *flags))
+        ret = mbedtls_x509_crt_verify_info(errstr, sizeof(errstr) - 1, "", *flags);
+        if (ret <= 0
+            && !checked_snprintf(errstr, sizeof(errstr), "Could not retrieve error string, flags=%" PRIx32, *flags))
         {
             errstr[0] = '\0';
         }
@@ -98,13 +104,15 @@ verify_callback(void *session_obj, mbedtls_x509_crt *cert, int cert_depth,
 
         if (subject)
         {
-            msg(D_TLS_ERRORS, "VERIFY ERROR: depth=%d, subject=%s, serial=%s: %s",
-                cert_depth, subject, serial ? serial : "<not available>", errstr);
+            msg(D_TLS_ERRORS, "VERIFY ERROR: depth=%d, subject=%s, serial=%s: %s", cert_depth,
+                subject, serial ? serial : "<not available>", errstr);
         }
         else
         {
-            msg(D_TLS_ERRORS, "VERIFY ERROR: depth=%d, (could not extract X509 "
-                "subject string from certificate): %s", cert_depth, errstr);
+            msg(D_TLS_ERRORS,
+                "VERIFY ERROR: depth=%d, (could not extract X509 "
+                "subject string from certificate): %s",
+                cert_depth, errstr);
         }
 
         /* Leave flags set to non-zero to indicate that the cert is not ok */
@@ -122,25 +130,26 @@ verify_callback(void *session_obj, mbedtls_x509_crt *cert, int cert_depth,
     return 0;
 }
 
-#ifdef ENABLE_X509ALTUSERNAME
-#warning "X509 alt user name not yet supported for mbed TLS"
-#endif
+/* not supported for mbedTLS yet */
+bool
+x509_username_field_ext_supported(const char *fieldname)
+{
+    return false;
+}
 
 result_t
-backend_x509_get_username(char *cn, int cn_len,
-                          char *x509_username_field, mbedtls_x509_crt *cert)
+backend_x509_get_username(char *cn, size_t cn_len, char *x509_username_field, mbedtls_x509_crt *cert)
 {
     mbedtls_x509_name *name;
 
-    ASSERT( cn != NULL );
+    ASSERT(cn != NULL);
 
     name = &cert->subject;
 
     /* Find common name */
     while (name != NULL)
     {
-        if (0 == memcmp(name->oid.p, MBEDTLS_OID_AT_CN,
-                        MBEDTLS_OID_SIZE(MBEDTLS_OID_AT_CN)))
+        if (0 == memcmp(name->oid.p, MBEDTLS_OID_AT_CN, MBEDTLS_OID_SIZE(MBEDTLS_OID_AT_CN)))
         {
             break;
         }
@@ -157,29 +166,156 @@ backend_x509_get_username(char *cn, int cn_len,
     /* Found, extract CN */
     if (cn_len > name->val.len)
     {
-        memcpy( cn, name->val.p, name->val.len );
+        memcpy(cn, name->val.p, name->val.len);
         cn[name->val.len] = '\0';
     }
     else
     {
-        memcpy( cn, name->val.p, cn_len);
-        cn[cn_len-1] = '\0';
+        memcpy(cn, name->val.p, cn_len);
+        cn[cn_len - 1] = '\0';
     }
 
     return SUCCESS;
 }
+
+#if MBEDTLS_VERSION_NUMBER >= 0x04000000
+/* Mbed TLS 4 has no function to print the certificate serial number and does
+ * not expose the bignum functions anymore. So in order to write the serial
+ * number as a decimal string, we implement bignum % 10 and bignum / 10. */
+static char
+bignum_mod_10(const uint8_t *bignum, size_t bignum_length)
+{
+    int result = 0;
+    for (size_t i = 0; i < bignum_length; i++)
+    {
+        result = (result * 256) % 10;
+        result = (result + bignum[i]) % 10;
+    }
+    return (char)result;
+}
+
+/* Divide bignum by 10 rounded down, in place. */
+static void
+bignum_div_10(uint8_t *bignum, size_t *bignum_length)
+{
+    /*
+     * Some intuition for the algorithm below:
+     *
+     * We want to calculate
+     *
+     *     (bignum[0] * 256^n + bignum[1] * 256^(n-1) + ... + bignum[n]) / 10.
+     *
+     * Let remainder = bignum[0] % 10 and carry = remainder * 256.
+     * Then we can write the above as
+     *
+     *     (bignum[0] / 10) * 256^n
+     *       + ((carry + bignum[1]) * 256^(n-1) + ... + bignum[n]) / 10.
+     *
+     * So now we have the first byte of our result. The second byte will be
+     * (carry + bignum[1]) / 10. Note that this fits into one byte because
+     * 0 <= remainder < 10. We calculate the next remainder and carry as
+     * remainder = (carry + bignum[1]) % 10 and carry = remainder * 256 and
+     * move on to the next byte until we are done.
+     */
+    size_t new_length = 0;
+    int carry = 0;
+    for (size_t i = 0; i < *bignum_length; i++)
+    {
+        uint8_t next_byte = (uint8_t)((bignum[i] + carry) / 10);
+        int remainder = (bignum[i] + carry) % 10;
+        carry = remainder * 256;
+
+        /* Write the byte unless it's a leading zero. */
+        if (new_length != 0 || next_byte != 0)
+        {
+            bignum[new_length++] = next_byte;
+        }
+    }
+    *bignum_length = new_length;
+}
+
+/* Write the decimal representation of bignum to out, if enough space is available.
+ * Returns the number of bytes needed in out, or 0 on error. To calculate the
+ * necessary buffer size, the function can be called with out = NULL. */
+static size_t
+write_bignum(char *out, size_t out_size, const uint8_t *bignum, size_t bignum_length)
+{
+    if (bignum_length == 0)
+    {
+        /* We want out to be "0". */
+        if (out != NULL)
+        {
+            if (out_size >= 2)
+            {
+                out[0] = '0';
+                out[1] = '\0';
+            }
+            else if (out_size > 0)
+            {
+                out[0] = '\0';
+            }
+        }
+        return 2;
+    }
+
+    uint8_t *bignum_copy = malloc(bignum_length);
+    if (bignum_copy == NULL)
+    {
+        return 0;
+    }
+    memcpy(bignum_copy, bignum, bignum_length);
+
+    size_t bytes_needed = 0;
+    size_t bytes_written = 0;
+    while (bignum_length > 0)
+    {
+        /* We're writing the digits in reverse order. We put them in the right order later. */
+        char digit = bignum_mod_10(bignum_copy, bignum_length);
+        if (out != NULL && bytes_written < out_size - 1)
+        {
+            out[bytes_written++] = '0' + (char)digit;
+        }
+        bytes_needed += 1;
+        bignum_div_10(bignum_copy, &bignum_length);
+    }
+
+    if (out != NULL)
+    {
+        if (bytes_written == bytes_needed)
+        {
+            /* We had space for all digits. Now reverse them. */
+            for (size_t i = 0; i < bytes_written / 2; i++)
+            {
+                char tmp = out[i];
+                out[i] = out[bytes_written - 1 - i];
+                out[bytes_written - 1 - i] = tmp;
+            }
+            out[bytes_written] = '\0';
+        }
+        else if (out_size > 0)
+        {
+            out[0] = '\0';
+        }
+    }
+    bytes_needed += 1;
+
+    free(bignum_copy);
+    return bytes_needed;
+}
+#endif /* MBEDTLS_VERSION_NUMBER >= 0x04000000 */
 
 char *
 backend_x509_get_serial(mbedtls_x509_crt *cert, struct gc_arena *gc)
 {
     char *buf = NULL;
     size_t buflen = 0;
+
+#if MBEDTLS_VERSION_NUMBER < 0x04000000
     mbedtls_mpi serial_mpi = { 0 };
 
     /* Transform asn1 integer serial into mbed TLS MPI */
     mbedtls_mpi_init(&serial_mpi);
-    if (!mbed_ok(mbedtls_mpi_read_binary(&serial_mpi, cert->serial.p,
-                                         cert->serial.len)))
+    if (!mbed_ok(mbedtls_mpi_read_binary(&serial_mpi, cert->serial.p, cert->serial.len)))
     {
         msg(M_WARN, "Failed to retrieve serial from certificate.");
         goto end;
@@ -200,6 +336,21 @@ backend_x509_get_serial(mbedtls_x509_crt *cert, struct gc_arena *gc)
 end:
     mbedtls_mpi_free(&serial_mpi);
     return buf;
+#else
+    buflen = write_bignum(NULL, 0, cert->serial.p, cert->serial.len);
+    if (buflen == 0)
+    {
+        msg(M_WARN, "Failed to write serial to string.");
+        return NULL;
+    }
+    buf = gc_malloc(buflen, true, gc);
+    if (write_bignum(buf, buflen, cert->serial.p, cert->serial.len) != buflen)
+    {
+        msg(M_WARN, "Failed to write serial to string.");
+        return NULL;
+    }
+    return buf;
+#endif /* MBEDTLS_VERSION_NUMBER < 0x04000000 */
 }
 
 char *
@@ -210,7 +361,7 @@ backend_x509_get_serial_hex(mbedtls_x509_crt *cert, struct gc_arena *gc)
 
     buf = gc_malloc(len, true, gc);
 
-    if (mbedtls_x509_serial_gets(buf, len-1, &cert->serial) < 0)
+    if (mbedtls_x509_serial_gets(buf, len - 1, &cert->serial) < 0)
     {
         buf = NULL;
     }
@@ -231,10 +382,10 @@ backend_x509_write_pem(openvpn_x509_cert_t *cert, const char *filename)
      * headers and footer */
     struct buffer pem = alloc_buf_gc(cert->raw.len * 3 + 100, &gc);
 
-    struct buffer der = {};
+    struct buffer der = { 0 };
     buf_set_read(&der, cert->raw.p, cert->raw.len);
 
-    if (!crypto_pem_encode("CERTIFICATE", &pem,  &der, &gc))
+    if (!crypto_pem_encode("CERTIFICATE", &pem, &der, &gc))
     {
         goto err;
     }
@@ -247,15 +398,18 @@ backend_x509_write_pem(openvpn_x509_cert_t *cert, const char *filename)
     gc_free(&gc);
     return SUCCESS;
 err:
-    msg(D_TLS_DEBUG_LOW, "Error writing X509 certificate to file %s",
-        filename);
+    msg(D_TLS_DEBUG_LOW, "Error writing X509 certificate to file %s", filename);
     gc_free(&gc);
     return FAILURE;
 }
 
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
+
 static struct buffer
-x509_get_fingerprint(const mbedtls_md_info_t *md_info, mbedtls_x509_crt *cert,
-                     struct gc_arena *gc)
+x509_get_fingerprint(const mbedtls_md_info_t *md_info, mbedtls_x509_crt *cert, struct gc_arena *gc)
 {
     const size_t md_size = mbedtls_md_get_size(md_info);
     struct buffer fingerprint = alloc_buf_gc(md_size, gc);
@@ -264,29 +418,31 @@ x509_get_fingerprint(const mbedtls_md_info_t *md_info, mbedtls_x509_crt *cert,
     return fingerprint;
 }
 
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
 struct buffer
 x509_get_sha1_fingerprint(mbedtls_x509_crt *cert, struct gc_arena *gc)
 {
-    return x509_get_fingerprint(mbedtls_md_info_from_type(MBEDTLS_MD_SHA1),
-                                cert, gc);
+    return x509_get_fingerprint(mbedtls_md_info_from_type(MBEDTLS_MD_SHA1), cert, gc);
 }
 
 struct buffer
 x509_get_sha256_fingerprint(mbedtls_x509_crt *cert, struct gc_arena *gc)
 {
-    return x509_get_fingerprint(mbedtls_md_info_from_type(MBEDTLS_MD_SHA256),
-                                cert, gc);
+    return x509_get_fingerprint(mbedtls_md_info_from_type(MBEDTLS_MD_SHA256), cert, gc);
 }
 
 char *
 x509_get_subject(mbedtls_x509_crt *cert, struct gc_arena *gc)
 {
-    char tmp_subject[MAX_SUBJECT_LENGTH] = {0};
+    char tmp_subject[MAX_SUBJECT_LENGTH] = { 0 };
     char *subject = NULL;
 
     int ret = 0;
 
-    ret = mbedtls_x509_dn_gets( tmp_subject, MAX_SUBJECT_LENGTH-1, &cert->subject );
+    ret = mbedtls_x509_dn_gets(tmp_subject, MAX_SUBJECT_LENGTH - 1, &cert->subject);
     if (ret > 0)
     {
         /* Allocate the required space for the subject */
@@ -305,9 +461,9 @@ do_setenv_x509(struct env_set *es, const char *name, char *value, int depth)
     string_mod(value, CC_ANY, CC_CRLF, '?');
     msg(D_X509_ATTR, "X509 ATTRIBUTE name='%s' value='%s' depth=%d", name, value, depth);
     name_expand_size = 64 + strlen(name);
-    name_expand = (char *) malloc(name_expand_size);
+    name_expand = (char *)malloc(name_expand_size);
     check_malloc_return(name_expand);
-    openvpn_snprintf(name_expand, name_expand_size, "X509_%d_%s", depth, name);
+    snprintf(name_expand, name_expand_size, "X509_%d_%s", depth, name);
     setenv_str(es, name_expand, value);
     free(name_expand);
 }
@@ -318,8 +474,7 @@ asn1_buf_to_c_string(const mbedtls_asn1_buf *orig, struct gc_arena *gc)
     size_t i;
     char *val;
 
-    if (!(orig->tag == MBEDTLS_ASN1_UTF8_STRING
-          || orig->tag == MBEDTLS_ASN1_PRINTABLE_STRING
+    if (!(orig->tag == MBEDTLS_ASN1_UTF8_STRING || orig->tag == MBEDTLS_ASN1_PRINTABLE_STRING
           || orig->tag == MBEDTLS_ASN1_IA5_STRING))
     {
         /* Only support C-string compatible types */
@@ -333,15 +488,15 @@ asn1_buf_to_c_string(const mbedtls_asn1_buf *orig, struct gc_arena *gc)
             return string_alloc("ERROR: embedded null value", gc);
         }
     }
-    val = gc_malloc(orig->len+1, false, gc);
+    val = gc_malloc(orig->len + 1, false, gc);
     memcpy(val, orig->p, orig->len);
     val[orig->len] = '\0';
     return val;
 }
 
 static void
-do_setenv_name(struct env_set *es, const struct x509_track *xt,
-               const mbedtls_x509_crt *cert, int depth, struct gc_arena *gc)
+do_setenv_name(struct env_set *es, const struct x509_track *xt, const mbedtls_x509_crt *cert,
+               int depth, struct gc_arena *gc)
 {
     const mbedtls_x509_name *xn;
     for (xn = &cert->subject; xn != NULL; xn = xn->next)
@@ -357,7 +512,8 @@ do_setenv_name(struct env_set *es, const struct x509_track *xt,
 }
 
 void
-x509_track_add(const struct x509_track **ll_head, const char *name, int msglevel, struct gc_arena *gc)
+x509_track_add(const struct x509_track **ll_head, const char *name, msglvl_t msglevel,
+               struct gc_arena *gc)
 {
     struct x509_track *xt;
     ALLOC_OBJ_CLEAR_GC(xt, struct x509_track, gc);
@@ -372,8 +528,8 @@ x509_track_add(const struct x509_track **ll_head, const char *name, int msglevel
 }
 
 void
-x509_setenv_track(const struct x509_track *xt, struct env_set *es,
-                  const int depth, mbedtls_x509_crt *cert)
+x509_setenv_track(const struct x509_track *xt, struct env_set *es, const int depth,
+                  mbedtls_x509_crt *cert)
 {
     struct gc_arena gc = gc_new();
     while (xt)
@@ -395,8 +551,8 @@ x509_setenv_track(const struct x509_track *xt, struct env_set *es,
                     cert_hash = x509_get_sha256_fingerprint(cert, &gc);
                 }
 
-                fingerprint = format_hex_ex(BPTR(&cert_hash),
-                                            BLEN(&cert_hash), 0, 1 | FHE_CAPS, ":", &gc);
+                fingerprint =
+                    format_hex_ex(BPTR(&cert_hash), BLEN(&cert_hash), 0, 1 | FHE_CAPS, ":", &gc);
                 do_setenv_x509(es, xt->name, fingerprint, depth);
             }
             else
@@ -426,29 +582,27 @@ x509_setenv(struct env_set *es, int cert_depth, mbedtls_x509_crt *cert)
 
     while (name != NULL)
     {
-        char name_expand[64+8];
+        char name_expand[64 + 8];
         const char *shortname;
 
-        if (0 == mbedtls_oid_get_attr_short_name(&name->oid, &shortname) )
+        if (0 == mbedtls_oid_get_attr_short_name(&name->oid, &shortname))
         {
-            openvpn_snprintf(name_expand, sizeof(name_expand), "X509_%d_%s",
-                             cert_depth, shortname);
+            snprintf(name_expand, sizeof(name_expand), "X509_%d_%s", cert_depth, shortname);
         }
         else
         {
-            openvpn_snprintf(name_expand, sizeof(name_expand), "X509_%d_\?\?",
-                             cert_depth);
+            snprintf(name_expand, sizeof(name_expand), "X509_%d_\?\?", cert_depth);
         }
 
         for (i = 0; i < name->val.len; i++)
         {
-            if (i >= (int) sizeof( s ) - 1)
+            if (i >= (int)sizeof(s) - 1)
             {
                 break;
             }
 
             c = name->val.p[i];
-            if (c < 32 || c == 127 || ( c > 128 && c < 160 ) )
+            if (c < 32 || c == 127 || (c > 128 && c < 160))
             {
                 s[i] = '?';
             }
@@ -482,15 +636,13 @@ x509_verify_ns_cert_type(mbedtls_x509_crt *cert, const int usage)
 }
 
 result_t
-x509_verify_cert_ku(mbedtls_x509_crt *cert, const unsigned *const expected_ku,
-                    int expected_len)
+x509_verify_cert_ku(mbedtls_x509_crt *cert, const unsigned int *const expected_ku, size_t expected_len)
 {
     msg(D_HANDSHAKE, "Validating certificate key usage");
 
     if (!mbedtls_x509_crt_has_ext_type(cert, MBEDTLS_X509_EXT_KEY_USAGE))
     {
-        msg(D_TLS_ERRORS,
-            "ERROR: Certificate does not have key usage extension");
+        msg(D_TLS_ERRORS, "ERROR: Certificate does not have key usage extension");
         return FAILURE;
     }
 
@@ -501,10 +653,9 @@ x509_verify_cert_ku(mbedtls_x509_crt *cert, const unsigned *const expected_ku,
     }
 
     result_t fFound = FAILURE;
-    for (size_t i = 0; SUCCESS != fFound && i<expected_len; i++)
+    for (size_t i = 0; SUCCESS != fFound && i < expected_len; i++)
     {
-        if (expected_ku[i] != 0
-            && 0 == mbedtls_x509_crt_check_key_usage(cert, expected_ku[i]))
+        if (expected_ku[i] != 0 && 0 == mbedtls_x509_crt_check_key_usage(cert, expected_ku[i]))
         {
             fFound = SUCCESS;
         }
@@ -542,10 +693,10 @@ x509_verify_cert_eku(mbedtls_x509_crt *cert, const char *const expected_oid)
             char oid_num_str[1024];
             const char *oid_str;
 
-            if (0 == mbedtls_oid_get_extended_key_usage( oid, &oid_str ))
+            if (0 == mbedtls_oid_get_extended_key_usage(oid, &oid_str))
             {
-                msg(D_HANDSHAKE, "++ Certificate has EKU (str) %s, expects %s",
-                    oid_str, expected_oid);
+                msg(D_HANDSHAKE, "++ Certificate has EKU (str) %s, expects %s", oid_str,
+                    expected_oid);
                 if (!strcmp(expected_oid, oid_str))
                 {
                     fFound = SUCCESS;
@@ -553,11 +704,10 @@ x509_verify_cert_eku(mbedtls_x509_crt *cert, const char *const expected_oid)
                 }
             }
 
-            if (0 < mbedtls_oid_get_numeric_string( oid_num_str,
-                                                    sizeof(oid_num_str), oid))
+            if (0 < mbedtls_oid_get_numeric_string(oid_num_str, sizeof(oid_num_str), oid))
             {
-                msg(D_HANDSHAKE, "++ Certificate has EKU (oid) %s, expects %s",
-                    oid_num_str, expected_oid);
+                msg(D_HANDSHAKE, "++ Certificate has EKU (oid) %s, expects %s", oid_num_str,
+                    expected_oid);
                 if (!strcmp(expected_oid, oid_num_str))
                 {
                     fFound = SUCCESS;
@@ -575,7 +725,7 @@ bool
 tls_verify_crl_missing(const struct tls_options *opt)
 {
     if (opt->crl_file && !(opt->ssl_flags & SSLF_CRL_VERIFY_DIR)
-        && (opt->ssl_ctx.crl == NULL || opt->ssl_ctx.crl->version == 0))
+        && (opt->ssl_ctx->crl == NULL || opt->ssl_ctx->crl->version == 0))
     {
         return true;
     }

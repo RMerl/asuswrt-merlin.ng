@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2016-2024 Selva Nair <selva.nair@gmail.com>
+ *  Copyright (C) 2016-2026 Selva Nair <selva.nair@gmail.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,26 +17,29 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifdef _WIN32
 
-#ifndef OPENVPN_BLOCK_DNS_H
-#define OPENVPN_BLOCK_DNS_H
+#ifndef WFP_BLOCK_H
+#define WFP_BLOCK_H
+
+#include <windef.h>
+#include <iphlpapi.h>
+#include <ws2tcpip.h>
 
 /* Any value less than 5 should work fine. 3 is chosen without any real reason. */
-#define BLOCK_DNS_IFACE_METRIC 3
+#define WFP_BLOCK_IFACE_METRIC 3
 
-typedef void (*block_dns_msg_handler_t) (DWORD err, const char *msg);
-
-DWORD
-delete_block_dns_filters(HANDLE engine);
+typedef void (*wfp_block_msg_handler_t)(DWORD err, const char *msg);
 
 DWORD
-add_block_dns_filters(HANDLE *engine, int iface_index, const WCHAR *exe_path,
-                      block_dns_msg_handler_t msg_handler_callback);
+delete_wfp_block_filters(HANDLE engine);
+
+DWORD
+add_wfp_block_filters(HANDLE *engine, int iface_index, const WCHAR *exe_path,
+                      wfp_block_msg_handler_t msg_handler_callback, BOOL dns_only);
 
 /**
  * Return interface metric value for the specified interface index.
@@ -48,8 +51,7 @@ add_block_dns_filters(HANDLE *engine, int iface_index, const WCHAR *exe_path,
  *
  * @return positive interface metric on success or -1 on error
  */
-int
-get_interface_metric(const NET_IFINDEX index, const ADDRESS_FAMILY family, int *is_auto);
+int get_interface_metric(const NET_IFINDEX index, const ADDRESS_FAMILY family, int *is_auto);
 
 /**
  * Sets interface metric value for specified interface index.
@@ -62,8 +64,7 @@ get_interface_metric(const NET_IFINDEX index, const ADDRESS_FAMILY family, int *
  */
 
 DWORD
-set_interface_metric(const NET_IFINDEX index, const ADDRESS_FAMILY family,
-                     const ULONG metric);
+set_interface_metric(const NET_IFINDEX index, const ADDRESS_FAMILY family, const ULONG metric);
 
-#endif /* ifndef OPENVPN_BLOCK_DNS_H */
+#endif /* ifndef WFP_BLOCK_H */
 #endif /* ifdef _WIN32 */

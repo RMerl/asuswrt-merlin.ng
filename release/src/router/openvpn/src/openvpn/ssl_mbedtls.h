@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Fox Crypto B.V. <openvpn@foxcrypto.com>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -18,12 +18,12 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
- * @file Control Channel mbed TLS Backend
+ * @file
+ * Control Channel mbed TLS Backend
  */
 
 #ifndef SSL_MBEDTLS_H_
@@ -39,23 +39,24 @@
 #include <pkcs11-helper-1.0/pkcs11h-certificate.h>
 #endif
 
-#include "mbedtls_compat.h"
-
 typedef struct _buffer_entry buffer_entry;
 
-struct _buffer_entry {
+struct _buffer_entry
+{
     size_t length;
     uint8_t *data;
     buffer_entry *next_block;
 };
 
-typedef struct {
+typedef struct
+{
     size_t data_start;
     buffer_entry *first_block;
     buffer_entry *last_block;
 } endless_buffer;
 
-typedef struct {
+typedef struct
+{
     endless_buffer in;
     endless_buffer out;
 } bio_ctx;
@@ -67,34 +68,40 @@ typedef struct {
  *
  * @param sign_ctx  The context for the signing function.
  * @param src       The data to be signed,
- * @param src_len   The length of src, in bytes.
+ * @param src_size  The length of src, in bytes.
  * @param dst       The destination buffer for the signature.
- * @param dst_len   The length of the destination buffer.
+ * @param dst_size  The length of the destination buffer.
  *
  * @return true if signing succeeded, false otherwise.
  */
-typedef bool (*external_sign_func)(
-    void *sign_ctx, const void *src, size_t src_size,
-    void *dst, size_t dst_size);
+typedef bool (*external_sign_func)(void *sign_ctx, const void *src, size_t src_size, void *dst,
+                                   size_t dst_size);
 
 /** Context used by external_pkcs1_sign() */
-struct external_context {
+struct external_context
+{
     size_t signature_length;
     external_sign_func sign;
     void *sign_ctx;
 };
 
-#ifdef HAVE_EXPORT_KEYING_MATERIAL
-/** struct to cache TLS secrets for keying material exporter (RFC 5705).
- * The constants (64 and 48) are inherent to TLS version and
- * the whole keying material export will likely change when they change */
-struct tls_key_cache {
+#if !defined(MBEDTLS_SSL_KEYING_MATERIAL_EXPORT)
+/**
+ * struct to cache TLS secrets for keying material exporter (RFC 5705).
+ * Not needed if the library itself implements the keying material exporter.
+ *
+ * The constants 64 and 48 are inherent to TLS 1.2. For TLS 1.3, it is not
+ * possible to obtain the exporter master secret from mbed TLS. */
+struct tls_key_cache
+{
     unsigned char client_server_random[64];
     mbedtls_tls_prf_types tls_prf_type;
     unsigned char master_secret[48];
 };
-#else  /* ifdef HAVE_EXPORT_KEYING_MATERIAL */
-struct tls_key_cache { };
+#else /* !defined(MBEDTLS_SSL_KEYING_MATERIAL_EXPORT) */
+struct tls_key_cache
+{
+};
 #endif
 
 /**
@@ -103,30 +110,34 @@ struct tls_key_cache { };
  *
  * Either \c priv_key_pkcs11 or \c priv_key must be filled in.
  */
-struct tls_root_ctx {
-    bool initialised;           /**< True if the context has been initialised */
+struct tls_root_ctx
+{
+    bool initialised; /**< True if the context has been initialised */
 
-    int endpoint;               /**< Whether or not this is a server or a client */
+    int endpoint;     /**< Whether or not this is a server or a client */
 
-    mbedtls_dhm_context *dhm_ctx;       /**< Diffie-Helmann-Merkle context */
-    mbedtls_x509_crt *crt_chain;        /**< Local Certificate chain */
-    mbedtls_x509_crt *ca_chain;         /**< CA chain for remote verification */
-    mbedtls_pk_context *priv_key;       /**< Local private key */
-    mbedtls_x509_crl *crl;              /**< Certificate Revocation List */
-    time_t crl_last_mtime;              /**< CRL last modification time */
-    off_t crl_last_size;                /**< size of last loaded CRL */
-#ifdef ENABLE_PKCS11
-    pkcs11h_certificate_t pkcs11_cert;  /**< PKCS11 certificate */
+#if MBEDTLS_VERSION_NUMBER < 0x04000000
+    mbedtls_dhm_context *dhm_ctx;          /**< Diffie-Helmann-Merkle context */
 #endif
-    struct external_context external_key; /**< External key context */
-    int *allowed_ciphers;       /**< List of allowed ciphers for this connection */
-    mbedtls_compat_group_id *groups;     /**< List of allowed groups for this connection */
+    mbedtls_x509_crt *crt_chain;           /**< Local Certificate chain */
+    mbedtls_x509_crt *ca_chain;            /**< CA chain for remote verification */
+    mbedtls_pk_context *priv_key;          /**< Local private key */
+    mbedtls_x509_crl *crl;                 /**< Certificate Revocation List */
+    time_t crl_last_mtime;                 /**< CRL last modification time */
+    off_t crl_last_size;                   /**< size of last loaded CRL */
+#ifdef ENABLE_PKCS11
+    pkcs11h_certificate_t pkcs11_cert;     /**< PKCS11 certificate */
+#endif
+    struct external_context external_key;  /**< External key context */
+    int *allowed_ciphers;                  /**< List of allowed ciphers for this connection */
+    uint16_t *groups;                      /**< List of allowed groups for this connection */
     mbedtls_x509_crt_profile cert_profile; /**< Allowed certificate types */
 };
 
-struct key_state_ssl {
-    mbedtls_ssl_config *ssl_config;     /**< mbedTLS global ssl config */
-    mbedtls_ssl_context *ctx;           /**< mbedTLS connection context */
+struct key_state_ssl
+{
+    mbedtls_ssl_config *ssl_config; /**< mbedTLS global ssl config */
+    mbedtls_ssl_context *ctx;       /**< mbedTLS connection context */
     bio_ctx *bio_ctx;
 
     struct tls_key_cache tls_key_cache;
@@ -142,8 +153,7 @@ struct key_state_ssl {
  *
  * @return                      0 if successful, 1 if an error occurred.
  */
-int tls_ctx_use_external_signing_func(struct tls_root_ctx *ctx,
-                                      external_sign_func sign_func,
+int tls_ctx_use_external_signing_func(struct tls_root_ctx *ctx, external_sign_func sign_func,
                                       void *sign_ctx);
 
 static inline void

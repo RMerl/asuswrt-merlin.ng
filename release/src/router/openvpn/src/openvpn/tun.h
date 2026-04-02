@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef TUN_H
@@ -39,22 +38,28 @@
 #include "proto.h"
 #include "misc.h"
 #include "networking.h"
-#include "ring_buffer.h"
 #include "dco.h"
 
-#ifdef _WIN32
-#define WINTUN_COMPONENT_ID "wintun"
-#define DCO_WIN_REFERENCE_STRING "ovpn-dco"
-
-enum windows_driver_type {
+enum tun_driver_type
+{
     WINDOWS_DRIVER_UNSPECIFIED,
     WINDOWS_DRIVER_TAP_WINDOWS6,
-    WINDOWS_DRIVER_WINTUN,
-    WINDOWS_DRIVER_DCO
+    DRIVER_GENERIC_TUNTAP,
+    /** using an AF_UNIX socket to pass packets from/to an external program.
+     *  This is always defined. We error out if a user tries to open this type
+     *  of backend on unsupported platforms. */
+    DRIVER_AFUNIX,
+    DRIVER_NULL,
+    DRIVER_DCO,
+    /** macOS internal tun driver */
+    DRIVER_UTUN
 };
+
+#ifdef _WIN32
+#define DCO_WIN_REFERENCE_STRING "ovpn-dco"
 #endif
 
-#if defined(_WIN32) || defined(TARGET_ANDROID)
+#if defined(_WIN32) || defined(TARGET_ANDROID) || defined(DHCP_UNIT_TEST)
 
 #define TUN_ADAPTER_INDEX_INVALID ((DWORD)-1)
 
@@ -63,21 +68,20 @@ enum windows_driver_type {
 #define IPW32_SET_ADAPTIVE_TRY_NETSH    20
 
 /* bit flags for DHCP options */
-#define DHCP_OPTIONS_DHCP_OPTIONAL (1<<0)
-#define DHCP_OPTIONS_DHCP_REQUIRED (1<<1)
+#define DHCP_OPTIONS_DHCP_OPTIONAL (1 << 0)
+#define DHCP_OPTIONS_DHCP_REQUIRED (1 << 1)
 
-struct tuntap_options {
+struct tuntap_options
+{
     /* --ip-win32 options */
     bool ip_win32_defined;
 
-    bool disable_dco;
-
-#define IPW32_SET_MANUAL       0   /* "--ip-win32 manual" */
-#define IPW32_SET_NETSH        1   /* "--ip-win32 netsh" */
-#define IPW32_SET_IPAPI        2   /* "--ip-win32 ipapi" */
-#define IPW32_SET_DHCP_MASQ    3   /* "--ip-win32 dynamic" */
-#define IPW32_SET_ADAPTIVE     4   /* "--ip-win32 adaptive" */
-#define IPW32_SET_N            5
+#define IPW32_SET_MANUAL    0 /* "--ip-win32 manual" */
+#define IPW32_SET_NETSH     1 /* "--ip-win32 netsh" */
+#define IPW32_SET_IPAPI     2 /* "--ip-win32 ipapi" */
+#define IPW32_SET_DHCP_MASQ 3 /* "--ip-win32 dynamic" */
+#define IPW32_SET_ADAPTIVE  4 /* "--ip-win32 adaptive" */
+#define IPW32_SET_N         5
     int ip_win32_type;
 
 #ifdef _WIN32
@@ -96,14 +100,14 @@ struct tuntap_options {
 
     int dhcp_options;
 
-    const char *domain;      /* DOMAIN (15) */
+    const char *domain;        /* DOMAIN (15) */
 
     const char *netbios_scope; /* NBS (47) */
 
-    int netbios_node_type;   /* NBT 1,2,4,8 (46) */
+    uint8_t netbios_node_type; /* NBT 1,2,4,8 (46) */
 
-#define N_DHCP_ADDR 4        /* Max # of addresses allowed for
-                              * DNS, WINS, etc. */
+/* Max # of addresses allowed for  DNS, WINS, etc. */
+#define N_DHCP_ADDR 4
 
     /* DNS (6) */
     in_addr_t dns[N_DHCP_ADDR];
@@ -145,22 +149,16 @@ struct tuntap_options {
 
 #elif defined(TARGET_LINUX)
 
-struct tuntap_options {
+struct tuntap_options
+{
     int txqueuelen;
-    bool disable_dco;
-};
-
-#elif defined(TARGET_FREEBSD)
-
-struct tuntap_options {
-    bool disable_dco;
 };
 
 #else  /* if defined(_WIN32) || defined(TARGET_ANDROID) */
 
-struct tuntap_options {
+struct tuntap_options
+{
     int dummy; /* not used */
-    bool disable_dco; /* not used, but removes the need in #ifdefs */
 };
 
 #endif /* if defined(_WIN32) || defined(TARGET_ANDROID) */
@@ -168,6 +166,18 @@ struct tuntap_options {
 /*
  * Define a TUN/TAP dev.
  */
+#ifndef WIN32
+typedef struct afunix_context
+{
+    pid_t childprocess;
+} afunix_context_t;
+
+#else /* ifndef WIN32 */
+typedef struct
+{
+    int dummy;
+} afunix_context_t;
+#endif
 
 struct tuntap
 {
@@ -177,14 +187,24 @@ struct tuntap
 #define TUNNEL_TOPOLOGY(tt) ((tt) ? ((tt)->topology) : TOP_UNDEF)
     int topology; /* one of the TOP_x values */
 
+    /** The backend driver that used for this tun/tap device. This can be
+     * one of the various windows drivers, "normal" tun/tap, utun, dco, ...
+     */
+    enum tun_driver_type backend_driver;
+
+    /** if the internal variables related to ifconfig of this struct have
+     * been set up. This does NOT mean ifconfig has been called */
     bool did_ifconfig_setup;
+
+    /** if the internal variables related to ifconfig-ipv6 of this struct have
+     * been set up. This does NOT mean ifconfig has been called */
     bool did_ifconfig_ipv6_setup;
 
-    bool persistent_if;         /* if existed before, keep on program end */
+    bool persistent_if;            /* if existed before, keep on program end */
 
     struct tuntap_options options; /* options set on command line */
 
-    char *actual_name; /* actual name of TUN/TAP dev, usually including unit number */
+    char *actual_name;             /* actual name of TUN/TAP dev, usually including unit number */
 
     /* ifconfig parameters */
     in_addr_t local;
@@ -196,7 +216,8 @@ struct tuntap
 
 #ifdef _WIN32
     HANDLE hand;
-    OVERLAPPED dco_new_peer_ov; /* used for async NEW_PEER dco call, which might wait for TCP connect */
+    /* used for async NEW_PEER dco call, which might wait for TCP connect */
+    OVERLAPPED dco_new_peer_ov;
     struct overlapped_io reads;
     struct overlapped_io writes;
     struct rw_handle rw_handle;
@@ -212,13 +233,8 @@ struct tuntap
      * ~0 if undefined */
     DWORD adapter_index;
 
-    enum windows_driver_type windows_driver;
     int standby_iter;
 
-    HANDLE wintun_send_ring_handle;
-    HANDLE wintun_receive_ring_handle;
-    struct tun_ring *wintun_send_ring;
-    struct tun_ring *wintun_receive_ring;
 #else  /* ifdef _WIN32 */
     int fd; /* file descriptor for TUN/TAP dev */
 #endif /* ifdef _WIN32 */
@@ -227,13 +243,11 @@ struct tuntap
     int ip_fd;
 #endif
 
-#ifdef HAVE_NET_IF_UTUN_H
-    bool is_utun;
-#endif
     /* used for printing status info only */
     unsigned int rwflags_debug;
 
     dco_context_t dco;
+    afunix_context_t afunix;
 };
 
 static inline bool
@@ -246,81 +260,61 @@ tuntap_defined(const struct tuntap *tt)
 #endif
 }
 
-#ifdef _WIN32
-static inline bool
-tuntap_is_wintun(struct tuntap *tt)
-{
-    return tt && tt->windows_driver == WINDOWS_DRIVER_WINTUN;
-}
-
-static inline bool
-tuntap_ring_empty(struct tuntap *tt)
-{
-    return tuntap_is_wintun(tt) && (tt->wintun_send_ring->head == tt->wintun_send_ring->tail);
-}
-#endif
-
 /*
  * Function prototypes
  */
 
-void open_tun(const char *dev, const char *dev_type, const char *dev_node,
-              struct tuntap *tt, openvpn_net_ctx_t *ctx);
+void open_tun(const char *dev, const char *dev_type, const char *dev_node, struct tuntap *tt,
+              openvpn_net_ctx_t *ctx);
 
 void close_tun(struct tuntap *tt, openvpn_net_ctx_t *ctx);
 
-void tun_open_device(struct tuntap *tt, const char *dev_node,
-                     const char **device_guid, struct gc_arena *gc);
+void tun_open_device(struct tuntap *tt, const char *dev_node, const char **device_guid,
+                     struct gc_arena *gc);
 
 void close_tun_handle(struct tuntap *tt);
 
-int write_tun(struct tuntap *tt, uint8_t *buf, int len);
+ssize_t write_tun(struct tuntap *tt, uint8_t *buf, int len);
 
-int read_tun(struct tuntap *tt, uint8_t *buf, int len);
+ssize_t read_tun(struct tuntap *tt, uint8_t *buf, int len);
 
-void tuncfg(const char *dev, const char *dev_type, const char *dev_node,
-            int persist_mode, const char *username,
-            const char *groupname, const struct tuntap_options *options,
+#ifdef ENABLE_FEATURE_TUN_PERSIST
+void tuncfg(const char *dev, const char *dev_type, const char *dev_node, int persist_mode,
+            const char *username, const char *groupname, const struct tuntap_options *options,
             openvpn_net_ctx_t *ctx);
+#endif
 
-const char *guess_tuntap_dev(const char *dev,
-                             const char *dev_type,
-                             const char *dev_node,
+const char *guess_tuntap_dev(const char *dev, const char *dev_type, const char *dev_node,
                              struct gc_arena *gc);
 
-struct tuntap *init_tun(const char *dev,        /* --dev option */
-                        const char *dev_type,   /* --dev-type option */
-                        int topology,           /* one of the TOP_x values */
-                        const char *ifconfig_local_parm,           /* --ifconfig parm 1 */
-                        const char *ifconfig_remote_netmask_parm,  /* --ifconfig parm 2 */
-                        const char *ifconfig_ipv6_local_parm,      /* --ifconfig parm 1 / IPv6 */
-                        int ifconfig_ipv6_netbits_parm,            /* --ifconfig parm 1 / bits */
-                        const char *ifconfig_ipv6_remote_parm,     /* --ifconfig parm 2 / IPv6 */
-                        struct addrinfo *local_public,
-                        struct addrinfo *remote_public,
-                        const bool strict_warn,
-                        struct env_set *es,
-                        openvpn_net_ctx_t *ctx,
+struct tuntap *init_tun(const char *dev,                          /* --dev option */
+                        const char *dev_type,                     /* --dev-type option */
+                        int topology,                             /* one of the TOP_x values */
+                        const char *ifconfig_local_parm,          /* --ifconfig parm 1 */
+                        const char *ifconfig_remote_netmask_parm, /* --ifconfig parm 2 */
+                        const char *ifconfig_ipv6_local_parm,     /* --ifconfig parm 1 / IPv6 */
+                        int ifconfig_ipv6_netbits_parm,           /* --ifconfig parm 1 / bits */
+                        const char *ifconfig_ipv6_remote_parm,    /* --ifconfig parm 2 / IPv6 */
+                        struct addrinfo *local_public, struct addrinfo *remote_public,
+                        const bool strict_warn, struct env_set *es, openvpn_net_ctx_t *ctx,
                         struct tuntap *tt);
 
-void init_tun_post(struct tuntap *tt,
-                   const struct frame *frame,
+void init_tun_post(struct tuntap *tt, const struct frame *frame,
                    const struct tuntap_options *options);
 
-void do_ifconfig_setenv(const struct tuntap *tt,
-                        struct env_set *es);
+void do_ifconfig_setenv(const struct tuntap *tt, struct env_set *es);
 
 /**
  * do_ifconfig - configure the tunnel interface
  *
  * @param tt        the tuntap interface context
  * @param ifname    the human readable interface name
- * @param mtu       the MTU value to set the interface to
+ * @param tun_mtu   the MTU value to set the interface to
  * @param es        the environment to be used when executing the commands
  * @param ctx       the networking API opaque context
  */
-void do_ifconfig(struct tuntap *tt, const char *ifname, int tun_mtu,
-                 const struct env_set *es, openvpn_net_ctx_t *ctx);
+void do_ifconfig(struct tuntap *tt, const char *ifname, int tun_mtu, const struct env_set *es,
+                 openvpn_net_ctx_t *ctx);
 
 /**
  * undo_ifconfig - undo configuration of the tunnel interface
@@ -336,15 +330,17 @@ int dev_type_enum(const char *dev, const char *dev_type);
 
 const char *dev_type_string(const char *dev, const char *dev_type);
 
-const char *ifconfig_options_string(const struct tuntap *tt, bool remote, bool disable, struct gc_arena *gc);
+const char *ifconfig_options_string(const struct tuntap *tt, bool remote, bool disable,
+                                    struct gc_arena *gc);
 
 bool is_tun_p2p(const struct tuntap *tt);
 
-void check_subnet_conflict(const in_addr_t ip,
-                           const in_addr_t netmask,
-                           const char *prefix);
-
 void warn_on_use_of_common_subnets(openvpn_net_ctx_t *ctx);
+
+/**
+ * Return a string representation of the tun backed driver type
+ */
+const char *print_tun_backend_driver(enum tun_driver_type driver);
 
 /*
  * Should ifconfig be called before or after
@@ -354,11 +350,15 @@ void warn_on_use_of_common_subnets(openvpn_net_ctx_t *ctx);
 #define IFCONFIG_BEFORE_TUN_OPEN 0
 #define IFCONFIG_AFTER_TUN_OPEN  1
 
-#define IFCONFIG_DEFAULT         IFCONFIG_AFTER_TUN_OPEN
+#define IFCONFIG_DEFAULT IFCONFIG_AFTER_TUN_OPEN
 
 static inline int
-ifconfig_order(void)
+ifconfig_order(struct tuntap *tt)
 {
+    if (tt->backend_driver == DRIVER_AFUNIX)
+    {
+        return IFCONFIG_BEFORE_TUN_OPEN;
+    }
 #if defined(TARGET_LINUX)
     return IFCONFIG_AFTER_TUN_OPEN;
 #elif defined(TARGET_SOLARIS)
@@ -373,18 +373,22 @@ ifconfig_order(void)
     return IFCONFIG_AFTER_TUN_OPEN;
 #elif defined(TARGET_ANDROID)
     return IFCONFIG_BEFORE_TUN_OPEN;
-#else  /* if defined(TARGET_LINUX) */
+#else /* if defined(TARGET_LINUX) */
     return IFCONFIG_DEFAULT;
 #endif
 }
 
-#define ROUTE_BEFORE_TUN 0
-#define ROUTE_AFTER_TUN 1
+#define ROUTE_BEFORE_TUN    0
+#define ROUTE_AFTER_TUN     1
 #define ROUTE_ORDER_DEFAULT ROUTE_AFTER_TUN
 
 static inline int
-route_order(void)
+route_order(struct tuntap *tt)
 {
+    if (tt->backend_driver == DRIVER_AFUNIX)
+    {
+        return ROUTE_BEFORE_TUN;
+    }
 #if defined(TARGET_ANDROID)
     return ROUTE_BEFORE_TUN;
 #else
@@ -398,7 +402,7 @@ route_order(void)
 struct tap_reg
 {
     const char *guid;
-    enum windows_driver_type windows_driver;
+    enum tun_driver_type windows_driver;
     struct tap_reg *next;
 };
 
@@ -436,16 +440,15 @@ const IP_ADAPTER_INFO *get_adapter(const IP_ADAPTER_INFO *ai, DWORD index);
 
 bool is_adapter_up(const struct tuntap *tt, const IP_ADAPTER_INFO *list);
 
-bool is_ip_in_adapter_subnet(const IP_ADAPTER_INFO *ai, const in_addr_t ip, in_addr_t *highest_netmask);
+bool is_ip_in_adapter_subnet(const IP_ADAPTER_INFO *ai, const in_addr_t ip,
+                             in_addr_t *highest_netmask);
 
-DWORD adapter_index_of_ip(const IP_ADAPTER_INFO *list,
-                          const in_addr_t ip,
-                          int *count,
+DWORD adapter_index_of_ip(const IP_ADAPTER_INFO *list, const in_addr_t ip, int *count,
                           in_addr_t *netmask);
 
-void show_tap_win_adapters(int msglev, int warnlev);
+void show_tap_win_adapters(msglvl_t msglevel, msglvl_t warnlevel);
 
-void show_adapters(int msglev);
+void show_adapters(msglvl_t msglevel);
 
 void tap_allow_nonadmin_access(const char *dev_node);
 
@@ -500,74 +503,6 @@ tuntap_abort(int status)
 
 int tun_write_win32(struct tuntap *tt, struct buffer *buf);
 
-static inline ULONG
-wintun_ring_packet_align(ULONG size)
-{
-    return (size + (WINTUN_PACKET_ALIGN - 1)) & ~(WINTUN_PACKET_ALIGN - 1);
-}
-
-static inline ULONG
-wintun_ring_wrap(ULONG value)
-{
-    return value & (WINTUN_RING_CAPACITY - 1);
-}
-
-static inline void
-read_wintun(struct tuntap *tt, struct buffer *buf)
-{
-    struct tun_ring *ring = tt->wintun_send_ring;
-    ULONG head = ring->head;
-    ULONG tail = ring->tail;
-    ULONG content_len;
-    struct TUN_PACKET *packet;
-    ULONG aligned_packet_size;
-
-    *buf = tt->reads.buf_init;
-    buf->len = 0;
-
-    if ((head >= WINTUN_RING_CAPACITY) || (tail >= WINTUN_RING_CAPACITY))
-    {
-        msg(M_INFO, "Wintun: ring capacity exceeded");
-        buf->len = -1;
-        return;
-    }
-
-    if (head == tail)
-    {
-        /* nothing to read */
-        return;
-    }
-
-    content_len = wintun_ring_wrap(tail - head);
-    if (content_len < sizeof(struct TUN_PACKET_HEADER))
-    {
-        msg(M_INFO, "Wintun: incomplete packet header in send ring");
-        buf->len = -1;
-        return;
-    }
-
-    packet = (struct TUN_PACKET *) &ring->data[head];
-    if (packet->size > WINTUN_MAX_PACKET_SIZE)
-    {
-        msg(M_INFO, "Wintun: packet too big in send ring");
-        buf->len = -1;
-        return;
-    }
-
-    aligned_packet_size = wintun_ring_packet_align(sizeof(struct TUN_PACKET_HEADER) + packet->size);
-    if (aligned_packet_size > content_len)
-    {
-        msg(M_INFO, "Wintun: incomplete packet in send ring");
-        buf->len = -1;
-        return;
-    }
-
-    buf_write(buf, packet->data, packet->size);
-
-    head = wintun_ring_wrap(head + aligned_packet_size);
-    ring->head = head;
-}
-
 static inline bool
 is_ip_packet_valid(const struct buffer *buf)
 {
@@ -595,69 +530,10 @@ is_ip_packet_valid(const struct buffer *buf)
     return true;
 }
 
-static inline int
-write_wintun(struct tuntap *tt, struct buffer *buf)
-{
-    struct tun_ring *ring = tt->wintun_receive_ring;
-    ULONG head = ring->head;
-    ULONG tail = ring->tail;
-    ULONG aligned_packet_size;
-    ULONG buf_space;
-    struct TUN_PACKET *packet;
-
-    /* wintun marks ring as corrupted (overcapacity) if it receives invalid IP packet */
-    if (!is_ip_packet_valid(buf))
-    {
-        msg(D_LOW, "write_wintun(): drop invalid IP packet");
-        return 0;
-    }
-
-    if ((head >= WINTUN_RING_CAPACITY) || (tail >= WINTUN_RING_CAPACITY))
-    {
-        msg(M_INFO, "write_wintun(): head/tail value is over capacity");
-        return -1;
-    }
-
-    aligned_packet_size = wintun_ring_packet_align(sizeof(struct TUN_PACKET_HEADER) + BLEN(buf));
-    buf_space = wintun_ring_wrap(head - tail - WINTUN_PACKET_ALIGN);
-    if (aligned_packet_size > buf_space)
-    {
-        msg(M_INFO, "write_wintun(): ring is full");
-        return 0;
-    }
-
-    /* copy packet size and data into ring */
-    packet = (struct TUN_PACKET * )&ring->data[tail];
-    packet->size = BLEN(buf);
-    memcpy(packet->data, BPTR(buf), BLEN(buf));
-
-    /* move ring tail */
-    ring->tail = wintun_ring_wrap(tail + aligned_packet_size);
-    if (ring->alertable != 0)
-    {
-        SetEvent(tt->rw_handle.write);
-    }
-
-    return BLEN(buf);
-}
-
-static inline int
-write_tun_buffered(struct tuntap *tt, struct buffer *buf)
-{
-    if (tt->windows_driver == WINDOWS_DRIVER_WINTUN)
-    {
-        return write_wintun(tt, buf);
-    }
-    else
-    {
-        return tun_write_win32(tt, buf);
-    }
-}
-
 static inline bool
 tuntap_is_dco_win(struct tuntap *tt)
 {
-    return tt && tt->windows_driver == WINDOWS_DRIVER_DCO;
+    return tt && tt->backend_driver == DRIVER_DCO;
 }
 
 static inline bool
@@ -665,9 +541,6 @@ tuntap_is_dco_win_timeout(struct tuntap *tt, int status)
 {
     return tuntap_is_dco_win(tt) && (status < 0) && (openvpn_errno() == ERROR_NETNAME_DELETED);
 }
-
-const char *
-print_windows_driver(enum windows_driver_type windows_driver);
 
 #else  /* ifdef _WIN32 */
 
@@ -724,10 +597,7 @@ tun_event_handle(const struct tuntap *tt)
 }
 
 static inline void
-tun_set(struct tuntap *tt,
-        struct event_set *es,
-        unsigned int rwflags,
-        void *arg,
+tun_set(struct tuntap *tt, struct event_set *es, unsigned int rwflags, void *arg,
         unsigned int *persistent)
 {
     if (!tuntap_defined(tt) || tuntap_is_dco_win(tt))
@@ -745,13 +615,12 @@ tun_set(struct tuntap *tt,
         }
     }
 #ifdef _WIN32
-    if (tt->windows_driver == WINDOWS_DRIVER_TAP_WINDOWS6 && (rwflags & EVENT_READ))
+    if (tt->backend_driver == WINDOWS_DRIVER_TAP_WINDOWS6 && (rwflags & EVENT_READ))
     {
         tun_read_queue(tt, 0);
     }
 #endif
     tt->rwflags_debug = rwflags;
-
 }
 
 const char *tun_stat(const struct tuntap *tt, unsigned int rwflags, struct gc_arena *gc);
@@ -763,4 +632,9 @@ is_tun_type_set(const struct tuntap *tt)
     return tt && tt->type != DEV_TYPE_UNDEF;
 }
 
+static inline void
+open_tun_null(struct tuntap *tt)
+{
+    tt->actual_name = string_alloc("null", NULL);
+}
 #endif /* TUN_H */

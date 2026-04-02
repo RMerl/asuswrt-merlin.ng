@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Fox Crypto B.V. <openvpn@foxcrypto.com>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -18,12 +18,12 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
- * @file Data Channel Cryptography SSL library-specific backend interface
+ * @file
+ * Data Channel Cryptography SSL library-specific backend interface
  */
 
 #ifndef CRYPTO_BACKEND_H_
@@ -32,31 +32,40 @@
 #ifdef ENABLE_CRYPTO_OPENSSL
 #include "crypto_openssl.h"
 #endif
+
 #ifdef ENABLE_CRYPTO_MBEDTLS
+#include <mbedtls/version.h>
+#if MBEDTLS_VERSION_NUMBER < 0x04000000
+#include "crypto_mbedtls_legacy.h"
+#else
 #include "crypto_mbedtls.h"
 #endif
+#endif
+
 #include "basic.h"
 #include "buffer.h"
 
-/* TLS uses a tag of 128 bytes, let's do the same for OpenVPN */
+/* TLS uses a tag of 128 bits, let's do the same for OpenVPN */
 #define OPENVPN_AEAD_TAG_LENGTH 16
 
 /* Maximum cipher block size (bytes) */
 #define OPENVPN_MAX_CIPHER_BLOCK_SIZE 32
 
 /* Maximum HMAC digest size (bytes) */
-#define OPENVPN_MAX_HMAC_SIZE   64
+#define OPENVPN_MAX_HMAC_SIZE 64
 
 /** Types referencing specific message digest hashing algorithms */
-typedef enum {
+typedef enum
+{
     MD_SHA1,
     MD_SHA256
 } hash_algo_type;
 
 /** Struct used in cipher name translation table */
-typedef struct {
-    const char *openvpn_name;   /**< Cipher name used by OpenVPN */
-    const char *lib_name;       /**< Cipher name used by crypto library */
+typedef struct
+{
+    const char *openvpn_name; /**< Cipher name used by OpenVPN */
+    const char *lib_name;     /**< Cipher name used by crypto library */
 } cipher_name_pair;
 
 /** Cipher name translation table */
@@ -122,8 +131,8 @@ void show_available_engines(void);
  *
  * @return true iff PEM encode succeeded.
  */
-bool crypto_pem_encode(const char *name, struct buffer *dst,
-                       const struct buffer *src, struct gc_arena *gc);
+bool crypto_pem_encode(const char *name, struct buffer *dst, const struct buffer *src,
+                       struct gc_arena *gc);
 
 /**
  * Decode a PEM buffer to binary data.
@@ -134,8 +143,7 @@ bool crypto_pem_encode(const char *name, struct buffer *dst,
  *
  * @return true iff PEM decode succeeded.
  */
-bool crypto_pem_decode(const char *name, struct buffer *dst,
-                       const struct buffer *src);
+bool crypto_pem_decode(const char *name, struct buffer *dst, const struct buffer *src);
 
 /*
  *
@@ -156,17 +164,6 @@ bool crypto_pem_decode(const char *name, struct buffer *dst,
  * @return              \c 1 on success, \c 0 on failure
  */
 int rand_bytes(uint8_t *output, int len);
-
-/**
- * Encrypt the given block, using DES ECB mode
- *
- * @param key           DES key to use.
- * @param src           Buffer containing the 8-byte source.
- * @param dst           Buffer containing the 8-byte destination
- */
-void cipher_des_encrypt_ecb(const unsigned char key[DES_KEY_LENGTH],
-                            unsigned char src[DES_KEY_LENGTH],
-                            unsigned char dst[DES_KEY_LENGTH]);
 
 /*
  *
@@ -349,8 +346,8 @@ void cipher_ctx_free(cipher_ctx_t *ctx);
  * @param enc           Whether to encrypt or decrypt (either
  *                      \c OPENVPN_OP_ENCRYPT or \c OPENVPN_OP_DECRYPT).
  */
-void cipher_ctx_init(cipher_ctx_t *ctx, const uint8_t *key,
-                     const char *cipername, crypto_operation_t enc);
+void cipher_ctx_init(cipher_ctx_t *ctx, const uint8_t *key, const char *ciphername,
+                     crypto_operation_t enc);
 
 /**
  * Returns the size of the IV used by the cipher, in bytes, or 0 if no IV is
@@ -368,7 +365,7 @@ int cipher_ctx_iv_length(const cipher_ctx_t *ctx);
  *
  * @param ctx           The cipher's context
  * @param tag           The buffer to write computed tag in.
- * @param tag_size      The tag buffer size, in bytes.
+ * @param tag_len       The tag buffer size, in bytes.
  */
 int cipher_ctx_get_tag(cipher_ctx_t *ctx, uint8_t *tag, int tag_len);
 
@@ -458,8 +455,7 @@ int cipher_ctx_update_ad(cipher_ctx_t *ctx, const uint8_t *src, int src_len);
  *
  * @return              \c 0 on failure, \c 1 on success.
  */
-int cipher_ctx_update(cipher_ctx_t *ctx, uint8_t *dst, int *dst_len,
-                      uint8_t *src, int src_len);
+int cipher_ctx_update(cipher_ctx_t *ctx, uint8_t *dst, int *dst_len, uint8_t *src, int src_len);
 
 /**
  * Pads the final cipher block using PKCS padding, and output to the destination
@@ -486,8 +482,8 @@ int cipher_ctx_final(cipher_ctx_t *ctx, uint8_t *dst, int *dst_len);
  *
  * @return              \c 0 on failure, \c 1 on success.
  */
-int cipher_ctx_final_check_tag(cipher_ctx_t *ctx, uint8_t *dst, int *dst_len,
-                               uint8_t *tag, size_t tag_len);
+int cipher_ctx_final_check_tag(cipher_ctx_t *ctx, uint8_t *dst, int *dst_len, uint8_t *tag,
+                               size_t tag_len);
 
 
 /*
@@ -610,7 +606,7 @@ int md_ctx_size(const md_ctx_t *ctx);
  * @param src           Buffer to digest. May not be NULL.
  * @param src_len       The length of the incoming buffer.
  */
-void md_ctx_update(md_ctx_t *ctx, const uint8_t *src, int src_len);
+void md_ctx_update(md_ctx_t *ctx, const uint8_t *src, size_t src_len);
 
 /*
  * Output the message digest to the given buffer.
@@ -727,7 +723,7 @@ const char *translate_cipher_name_to_openvpn(const char *cipher_name);
  *
  * @return              true if successful, false on any error
  */
-bool ssl_tls1_PRF(const uint8_t *seed, int seed_len, const uint8_t *secret,
-                  int secret_len, uint8_t *output, int output_len);
+bool ssl_tls1_PRF(const uint8_t *seed, size_t seed_len, const uint8_t *secret, size_t secret_len,
+                  uint8_t *output, size_t output_len);
 
 #endif /* CRYPTO_BACKEND_H_ */

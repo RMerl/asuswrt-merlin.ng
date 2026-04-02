@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef SIG_H
@@ -27,8 +26,8 @@
 #include "status.h"
 #include "win32.h"
 
-#define SIG_SOURCE_SOFT 0
-#define SIG_SOURCE_HARD 1
+#define SIG_SOURCE_SOFT              0
+#define SIG_SOURCE_HARD              1
 /* CONNECTION_FAILED is also a "soft" status,
  * It is thrown if a connection attempt fails
  */
@@ -67,7 +66,7 @@ void post_init_signal_catch(void);
 
 void restore_signal_state(void);
 
-void print_signal(const struct signal_info *si, const char *title, int msglevel);
+void print_signal(const struct signal_info *si, const char *title, msglvl_t msglevel);
 
 void print_status(struct context *c, struct status_output *so);
 
@@ -81,7 +80,12 @@ void register_signal(struct signal_info *si, int sig, const char *text);
 
 void process_explicit_exit_notification_timer_wakeup(struct context *c);
 
-void signal_reset(struct signal_info *si);
+/**
+ * Clear the signal if its current value equals signum. If signum is
+ * zero the signal is cleared independent of its current value.
+ * @returns the current value of the signal.
+ */
+int signal_reset(struct signal_info *si, int signum);
 
 static inline void
 halt_non_edge_triggered_signals(void)

@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Fox Crypto B.V. <openvpn@foxcrypto.com>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -18,8 +18,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -29,6 +28,8 @@
 #include "syshead.h"
 
 #include "options_util.h"
+
+#include "push.h"
 
 const char *
 parse_auth_failed_temp(struct options *o, const char *reason)
@@ -97,4 +98,200 @@ parse_auth_failed_temp(struct options *o, const char *reason)
     }
     gc_free(&gc);
     return message;
+}
+
+bool
+valid_integer(const char *str, bool positive)
+{
+    char *endptr;
+    long long i = strtoll(str, &endptr, 10);
+
+    if (i < INT_MIN || (positive && i < 0) || *endptr != '\0' || i > INT_MAX)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
+int
+positive_atoi(const char *str, msglvl_t msglevel)
+{
+    char *endptr;
+    long long i = strtoll(str, &endptr, 10);
+
+    if (i < 0 || *endptr != '\0' || i > INT_MAX)
+    {
+        msg(msglevel, "Cannot parse argument '%s' as non-negative integer", str);
+        i = 0;
+    }
+
+    return (int)i;
+}
+
+bool
+positive_atoll(const char *str, int64_t *value, const char *name, msglvl_t msglevel)
+{
+    char *endptr;
+    long long ll = strtoll(str, &endptr, 10);
+
+    if (ll < 0 || *endptr != '\0')
+    {
+        msg(msglevel, "%s: Cannot parse '%s' as non-negative integer", name, str);
+        return false;
+    }
+
+    *value = (int64_t)ll;
+    return true;
+}
+
+int
+atoi_warn(const char *str, msglvl_t msglevel)
+{
+    char *endptr;
+    long long i = strtoll(str, &endptr, 10);
+
+    if (i < INT_MIN || *endptr != '\0' || i > INT_MAX)
+    {
+        msg(msglevel, "Cannot parse argument '%s' as integer", str);
+        i = 0;
+    }
+
+    return (int)i;
+}
+
+bool
+atoi_constrained(const char *str, int *value, const char *name, int min, int max, msglvl_t msglevel)
+{
+    ASSERT(min < max);
+
+    char *endptr;
+    long long i = strtoll(str, &endptr, 10);
+    if (i < INT_MIN || *endptr != '\0' || i > INT_MAX)
+    {
+        msg(msglevel, "%s: Cannot parse '%s' as integer", name, str);
+        return false;
+    }
+    if (i < min || i > max)
+    {
+        if (max == INT_MAX) /* nicer message for common case */
+        {
+            msg(msglevel, "%s: Must be an integer >= %d, not %lld",
+                name, min, i);
+        }
+        else
+        {
+            msg(msglevel, "%s: Must be an integer between %d and %d, not %lld",
+                name, min, max, i);
+        }
+        return false;
+    }
+
+    *value = (int)i;
+    return true;
+}
+
+static const char *updatable_options[] = { "block-ipv6", "block-outside-dns",
+                                           "dhcp-option", "dns",
+                                           "ifconfig", "ifconfig-ipv6",
+                                           "push-continuation", "redirect-gateway",
+                                           "redirect-private", "route",
+                                           "route-gateway", "route-ipv6",
+                                           "route-metric", "topology",
+                                           "tun-mtu", "keepalive" };
+
+bool
+check_push_update_option_flags(char *line, int *i, unsigned int *flags)
+{
+    *flags = 0;
+    bool opt_is_updatable = false;
+    char c = line[*i];
+
+    /* We check for '?' and '-' and
+     * if they are present we skip them.
+     */
+    if (c == '-')
+    {
+        if (!(line)[*i + 1])
+        {
+            return false;
+        }
+        *flags |= PUSH_OPT_TO_REMOVE;
+        c = (line)[++(*i)];
+    }
+    if (c == '?')
+    {
+        if (!(line)[*i + 1] || (line)[*i + 1] == '-')
+        {
+            return false;
+        }
+        *flags |= PUSH_OPT_OPTIONAL;
+        c = (line)[++(*i)];
+    }
+
+    size_t len = strlen(&line[*i]);
+    int count = sizeof(updatable_options) / sizeof(char *);
+    for (int j = 0; j < count; ++j)
+    {
+        size_t opt_len = strlen(updatable_options[j]);
+        if (len < opt_len)
+        {
+            continue;
+        }
+        if (!strncmp(&line[*i], updatable_options[j], opt_len)
+            && (!line[*i + opt_len] || line[*i + opt_len] == ' '))
+        {
+            opt_is_updatable = true;
+            break;
+        }
+    }
+
+    if (!opt_is_updatable)
+    {
+        if (*flags & PUSH_OPT_OPTIONAL)
+        {
+            msg(D_PUSH, "Pushed dispensable option is not updatable: '%s'. Ignoring.", line);
+        }
+        else
+        {
+            msg(M_WARN, "Pushed option is not updatable: '%s'.", line);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool
+apply_pull_filter(const struct options *o, char *line)
+{
+    if (!o->pull_filter_list)
+    {
+        return true;
+    }
+
+    struct pull_filter *f;
+
+    for (f = o->pull_filter_list->head; f; f = f->next)
+    {
+        if (f->type == PUF_TYPE_ACCEPT && strncmp(line, f->pattern, f->size) == 0)
+        {
+            msg(D_LOW, "Pushed option accepted by filter: '%s'", line);
+            return true;
+        }
+        else if (f->type == PUF_TYPE_IGNORE && strncmp(line, f->pattern, f->size) == 0)
+        {
+            msg(D_PUSH, "Pushed option removed by filter: '%s'", line);
+            *line = '\0';
+            return true;
+        }
+        else if (f->type == PUF_TYPE_REJECT && strncmp(line, f->pattern, f->size) == 0)
+        {
+            msg(M_WARN, "Pushed option rejected by filter: '%s'.", line);
+            return false;
+        }
+    }
+    return true;
 }

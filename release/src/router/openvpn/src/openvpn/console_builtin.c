@@ -5,9 +5,9 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *  Copyright (C) 2014-2015  David Sommerseth <davids@redhat.com>
- *  Copyright (C) 2016-2024 David Sommerseth <davids@openvpn.net>
+ *  Copyright (C) 2016-2026 David Sommerseth <davids@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -19,8 +19,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /*
@@ -68,11 +67,10 @@ get_console_input_win32(const char *prompt, const bool echo, char *input, const 
 
     HANDLE in = GetStdHandle(STD_INPUT_HANDLE);
     int orig_stderr = get_orig_stderr(); /* guaranteed to be always valid */
-    if ((in == INVALID_HANDLE_VALUE)
-        || win32_service_interrupt(&win32_signal)
-        || (_write(orig_stderr, prompt, strlen(prompt)) == -1))
+    if ((in == INVALID_HANDLE_VALUE) || win32_service_interrupt(&win32_signal)
+        || (_write(orig_stderr, prompt, (unsigned int)strlen(prompt)) == -1))
     {
-        msg(M_WARN|M_ERRNO, "get_console_input_win32(): unexpected error");
+        msg(M_WARN | M_ERRNO, "get_console_input_win32(): unexpected error");
         return false;
     }
 
@@ -136,7 +134,7 @@ get_console_input_win32(const char *prompt, const bool echo, char *input, const 
     return false;
 }
 
-#endif   /* _WIN32 */
+#endif /* _WIN32 */
 
 
 #ifdef HAVE_TERMIOS_H
@@ -166,7 +164,7 @@ open_tty(const bool write)
 /**
  * Closes the TTY FILE pointer, but only if it is not a stdin/stderr FILE object.
  *
- * @params fp     FILE pointer to close
+ * @param fp     FILE pointer to close
  *
  */
 static void
@@ -178,16 +176,16 @@ close_tty(FILE *fp)
     }
 }
 
-#endif   /* HAVE_TERMIOS_H */
+#endif /* HAVE_TERMIOS_H */
 
 
 /**
  *  Core function for getting input from console
  *
- *  @params prompt    The prompt to present to the user
- *  @params echo      Should the user see what is being typed
- *  @params input     Pointer to the buffer used to save the user input
- *  @params capacity  Size of the input buffer
+ *  @param prompt    The prompt to present to the user
+ *  @param echo      Should the user see what is being typed
+ *  @param input     Pointer to the buffer used to save the user input
+ *  @param capacity  Size of the input buffer
  *
  *  @returns Returns True if user input was gathered
  */
@@ -210,15 +208,17 @@ get_console_input(const char *prompt, const bool echo, char *input, const int ca
      * (in which case neither stdin or stderr are connected to a tty and
      * /dev/tty can not be open()ed anymore)
      */
-    if (!isatty(0) && !isatty(2) )
+    if (!isatty(0) && !isatty(2))
     {
-        int fd = open( "/dev/tty", O_RDWR );
+        int fd = open("/dev/tty", O_RDWR);
         if (fd < 0)
         {
-            msg(M_FATAL, "neither stdin nor stderr are a tty device and you have neither a "
+            msg(M_FATAL,
+                "neither stdin nor stderr are a tty device and you have neither a "
                 "controlling tty nor systemd - can't ask for '%s'.  If you used --daemon, "
                 "you need to use --askpass to make passphrase-protected keys work, and you "
-                "can not use --auth-nocache.", prompt );
+                "can not use --auth-nocache.",
+                prompt);
         }
         close(fd);
     }
@@ -264,7 +264,6 @@ get_console_input(const char *prompt, const bool echo, char *input, const int ca
     return ret;
 }
 
-
 /**
  * @copydoc query_user_exec()
  *
@@ -286,8 +285,8 @@ query_user_exec_builtin(void)
     /* Loop through configured query_user slots */
     for (i = 0; i < QUERY_USER_NUMSLOTS && query_user[i].response != NULL; i++)
     {
-        if (!get_console_input(query_user[i].prompt, query_user[i].echo,
-                               query_user[i].response, query_user[i].response_len) )
+        if (!get_console_input(query_user[i].prompt, query_user[i].echo, query_user[i].response,
+                               query_user[i].response_len))
         {
             /* Force the final result state to failed on failure */
             ret = false;

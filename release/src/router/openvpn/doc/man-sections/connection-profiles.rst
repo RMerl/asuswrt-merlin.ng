@@ -39,7 +39,6 @@ Here is an example of connection profile usage::
    http-proxy 192.168.0.8 8080
    </connection>
 
-   persist-key
    persist-tun
    pkcs12 client.p12
    remote-cert-tls server
@@ -59,7 +58,7 @@ block:
 ``http-proxy-option``, ``key-direction``, ``link-mtu``, ``local``,
 ``lport``, ``mssfix``, ``mtu-disc``, ``nobind``, ``port``, ``proto``,
 ``remote``, ``rport``, ``socks-proxy``, ``tls-auth``, ``tls-crypt``,
-``tun-mtu and``, ``tun-mtu-extra``.
+``tls-crypt-v2``, ``tun-mtu and``, ``tun-mtu-extra``.
 
 A defaulting mechanism exists for specifying options to apply to all
 ``<connection>`` profiles. If any of the above options (with the

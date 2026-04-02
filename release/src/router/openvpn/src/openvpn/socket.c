@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -42,12 +41,24 @@
 
 #include "memdbg.h"
 
+bool
+sockets_read_residual(const struct context *c)
+{
+    for (int i = 0; i < c->c1.link_sockets_num; i++)
+    {
+        if (c->c2.link_sockets[i]->stream_buf.residual_fully_formed)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 /*
  * Convert sockflags/getaddr_flags into getaddr_flags
  */
 static unsigned int
-sf2gaf(const unsigned int getaddr_flags,
-       const unsigned int sockflags)
+sf2gaf(const unsigned int getaddr_flags, const unsigned int sockflags)
 {
     if (sockflags & SF_HOST_RANDOMIZE)
     {
@@ -63,10 +74,9 @@ sf2gaf(const unsigned int getaddr_flags,
  * Functions related to the translation of DNS names to IP addresses.
  */
 static int
-get_addr_generic(sa_family_t af, unsigned int flags, const char *hostname,
-                 void *network, unsigned int *netbits,
-                 int resolve_retry_seconds, struct signal_info *sig_info,
-                 int msglevel)
+get_addr_generic(sa_family_t af, unsigned int flags, const char *hostname, void *network,
+                 unsigned int *netbits, int resolve_retry_seconds, struct signal_info *sig_info,
+                 msglvl_t msglevel)
 {
     char *endp, *sep, *var_host = NULL;
     struct addrinfo *ai = NULL;
@@ -94,9 +104,7 @@ get_addr_generic(sa_family_t af, unsigned int flags, const char *hostname,
             break;
 
         default:
-            msg(M_WARN,
-                "Unsupported AF family passed to getaddrinfo for %s (%d)",
-                hostname, af);
+            msg(M_WARN, "Unsupported AF family passed to getaddrinfo for %s (%d)", hostname, af);
             goto out;
     }
 
@@ -108,8 +116,7 @@ get_addr_generic(sa_family_t af, unsigned int flags, const char *hostname,
     var_host = strdup(hostname);
     if (!var_host)
     {
-        msg(M_NONFATAL | M_ERRNO,
-            "Can't allocate hostname buffer for getaddrinfo");
+        msg(M_NONFATAL | M_ERRNO, "Can't allocate hostname buffer for getaddrinfo");
         goto out;
     }
 
@@ -120,19 +127,25 @@ get_addr_generic(sa_family_t af, unsigned int flags, const char *hostname,
         bits = strtoul(sep + 1, &endp, 10);
         if ((*endp != '\0') || (bits > max_bits))
         {
-            msg(msglevel, "IP prefix '%s': invalid '/bits' spec (%s)", hostname,
-                sep + 1);
+            msg(msglevel, "IP prefix '%s': invalid '/bits' spec (%s)", hostname, sep + 1);
             goto out;
         }
         *sep = '\0';
     }
 
-    ret = openvpn_getaddrinfo(flags & ~GETADDR_HOST_ORDER, var_host, NULL,
-                              resolve_retry_seconds, sig_info, af, &ai);
+    ret = openvpn_getaddrinfo(flags & ~GETADDR_HOST_ORDER, var_host, NULL, resolve_retry_seconds,
+                              sig_info, af, &ai);
     if ((ret == 0) && network)
     {
         struct in6_addr *ip6;
         in_addr_t *ip4;
+
+        if (af != ai->ai_family)
+        {
+            msg(msglevel, "Can't parse %s as IPv%d address", var_host, (af == AF_INET) ? 4 : 6);
+            ret = -1;
+            goto out;
+        }
 
         switch (af)
         {
@@ -153,15 +166,14 @@ get_addr_generic(sa_family_t af, unsigned int flags, const char *hostname,
 
             default:
                 /* can't get here because 'af' was previously checked */
-                msg(M_WARN,
-                    "Unsupported AF family for %s (%d)", var_host, af);
+                msg(M_WARN, "Unsupported AF family for %s (%d)", var_host, af);
                 goto out;
         }
     }
 
     if (netbits)
     {
-        *netbits = bits;
+        *netbits = (unsigned int)bits;
     }
 
     /* restore '/' separator, if any */
@@ -180,19 +192,15 @@ out:
 }
 
 in_addr_t
-getaddr(unsigned int flags,
-        const char *hostname,
-        int resolve_retry_seconds,
-        bool *succeeded,
+getaddr(unsigned int flags, const char *hostname, int resolve_retry_seconds, bool *succeeded,
         struct signal_info *sig_info)
 {
-    in_addr_t addr;
+    in_addr_t addr = { 0 };
     int status;
 
-    status = get_addr_generic(AF_INET, flags, hostname, &addr, NULL,
-                              resolve_retry_seconds, sig_info,
-                              M_WARN);
-    if (status==0)
+    status = get_addr_generic(AF_INET, flags, hostname, &addr, NULL, resolve_retry_seconds,
+                              sig_info, M_WARN);
+    if (status == 0)
     {
         if (succeeded)
         {
@@ -211,16 +219,16 @@ getaddr(unsigned int flags,
 }
 
 bool
-get_ipv6_addr(const char *hostname, struct in6_addr *network,
-              unsigned int *netbits, int msglevel)
+get_ipv6_addr(const char *hostname, struct in6_addr *network, unsigned int *netbits,
+              msglvl_t msglevel)
 {
-    if (get_addr_generic(AF_INET6, GETADDR_RESOLVE, hostname, network, netbits,
-                         0, NULL, msglevel) < 0)
+    if (get_addr_generic(AF_INET6, GETADDR_RESOLVE, hostname, network, netbits, 0, NULL, msglevel)
+        < 0)
     {
         return false;
     }
 
-    return true;                /* parsing OK, values set */
+    return true; /* parsing OK, values set */
 }
 
 static inline bool
@@ -245,25 +253,19 @@ streqnull(const char *a, const char *b)
  * otherwise. (like getaddrinfo)
  */
 static int
-get_cached_dns_entry(struct cached_dns_entry *dns_cache,
-                     const char *hostname,
-                     const char *servname,
-                     int ai_family,
-                     int resolve_flags,
-                     struct addrinfo **ai)
+get_cached_dns_entry(struct cached_dns_entry *dns_cache, const char *hostname, const char *servname,
+                     int ai_family, unsigned int resolve_flags, struct addrinfo **ai)
 {
     struct cached_dns_entry *ph;
-    int flags;
+    unsigned int flags;
 
     /* Only use flags that are relevant for the structure */
     flags = resolve_flags & GETADDR_CACHE_MASK;
 
     for (ph = dns_cache; ph; ph = ph->next)
     {
-        if (streqnull(ph->hostname, hostname)
-            && streqnull(ph->servname, servname)
-            && ph->ai_family == ai_family
-            && ph->flags == flags)
+        if (streqnull(ph->hostname, hostname) && streqnull(ph->servname, servname)
+            && ph->ai_family == ai_family && ph->flags == flags)
         {
             *ai = ph->ai;
             return 0;
@@ -274,28 +276,19 @@ get_cached_dns_entry(struct cached_dns_entry *dns_cache,
 
 
 static int
-do_preresolve_host(struct context *c,
-                   const char *hostname,
-                   const char *servname,
-                   const int af,
-                   const int flags)
+do_preresolve_host(struct context *c, const char *hostname, const char *servname, const int af,
+                   const unsigned int flags)
 {
     struct addrinfo *ai;
     int status;
 
-    if (get_cached_dns_entry(c->c1.dns_cache,
-                             hostname,
-                             servname,
-                             af,
-                             flags,
-                             &ai) == 0)
+    if (get_cached_dns_entry(c->c1.dns_cache, hostname, servname, af, flags, &ai) == 0)
     {
         /* entry already cached, return success */
         return 0;
     }
 
-    status = openvpn_getaddrinfo(flags, hostname, servname,
-                                 c->options.resolve_retry_seconds, NULL,
+    status = openvpn_getaddrinfo(flags, hostname, servname, c->options.resolve_retry_seconds, NULL,
                                  af, &ai);
     if (status == 0)
     {
@@ -322,7 +315,6 @@ do_preresolve_host(struct context *c,
         }
 
         gc_addspecial(ai, &gc_freeaddrinfo_callback, &c->gc);
-
     }
     return status;
 }
@@ -330,21 +322,18 @@ do_preresolve_host(struct context *c,
 void
 do_preresolve(struct context *c)
 {
-    int i;
     struct connection_list *l = c->options.connection_list;
-    const unsigned int preresolve_flags = GETADDR_RESOLVE
-                                          |GETADDR_UPDATE_MANAGEMENT_STATE
-                                          |GETADDR_MENTION_RESOLVE_RETRY
-                                          |GETADDR_FATAL;
+    const unsigned int preresolve_flags = GETADDR_RESOLVE | GETADDR_UPDATE_MANAGEMENT_STATE
+                                          | GETADDR_MENTION_RESOLVE_RETRY | GETADDR_FATAL;
 
 
-    for (i = 0; i < l->len; ++i)
+    for (int i = 0; i < l->len; ++i)
     {
         int status;
         const char *remote;
-        int flags = preresolve_flags;
+        unsigned int flags = preresolve_flags;
 
-        struct connection_entry *ce = c->options.connection_list->array[i];
+        struct connection_entry *ce = l->array[i];
 
         if (proto_is_dgram(ce->proto))
         {
@@ -368,8 +357,7 @@ do_preresolve(struct context *c)
         /* HTTP remote hostname does not need to be resolved */
         if (!ce->http_proxy_options)
         {
-            status = do_preresolve_host(c, remote, ce->remote_port,
-                                        ce->af, flags);
+            status = do_preresolve_host(c, remote, ce->remote_port, ce->af, flags);
             if (status != 0)
             {
                 goto err;
@@ -379,11 +367,8 @@ do_preresolve(struct context *c)
         /* Preresolve proxy */
         if (ce->http_proxy_options)
         {
-            status = do_preresolve_host(c,
-                                        ce->http_proxy_options->server,
-                                        ce->http_proxy_options->port,
-                                        ce->af,
-                                        preresolve_flags);
+            status = do_preresolve_host(c, ce->http_proxy_options->server,
+                                        ce->http_proxy_options->port, ce->af, preresolve_flags);
 
             if (status != 0)
             {
@@ -393,11 +378,8 @@ do_preresolve(struct context *c)
 
         if (ce->socks_proxy_server)
         {
-            status = do_preresolve_host(c,
-                                        ce->socks_proxy_server,
-                                        ce->socks_proxy_port,
-                                        ce->af,
-                                        flags);
+            status =
+                do_preresolve_host(c, ce->socks_proxy_server, ce->socks_proxy_port, ce->af, flags);
             if (status != 0)
             {
                 goto err;
@@ -408,15 +390,23 @@ do_preresolve(struct context *c)
         {
             flags |= GETADDR_PASSIVE;
             flags &= ~GETADDR_RANDOMIZE;
-            status = do_preresolve_host(c, ce->local, ce->local_port,
-                                        ce->af, flags);
-            if (status != 0)
+
+            for (int j = 0; j < ce->local_list->len; j++)
             {
-                goto err;
+                struct local_entry *le = ce->local_list->array[j];
+
+                if (!le->local)
+                {
+                    continue;
+                }
+
+                status = do_preresolve_host(c, le->local, le->port, ce->af, flags);
+                if (status != 0)
+                {
+                    goto err;
+                }
             }
-
         }
-
     }
     return;
 
@@ -424,499 +414,70 @@ err:
     throw_signal_soft(SIGHUP, "Preresolving failed");
 }
 
-/*
- * Translate IPv4/IPv6 addr or hostname into struct addrinfo
- * If resolve error, try again for resolve_retry_seconds seconds.
- */
-int
-openvpn_getaddrinfo(unsigned int flags,
-                    const char *hostname,
-                    const char *servname,
-                    int resolve_retry_seconds,
-                    struct signal_info *sig_info,
-                    int ai_family,
-                    struct addrinfo **res)
-{
-    struct addrinfo hints;
-    int status;
-    struct signal_info sigrec = {0};
-    int msglevel = (flags & GETADDR_FATAL) ? M_FATAL : D_RESOLVE_ERRORS;
-    struct gc_arena gc = gc_new();
-    const char *print_hostname;
-    const char *print_servname;
-
-    ASSERT(res);
-
-    ASSERT(hostname || servname);
-    ASSERT(!(flags & GETADDR_HOST_ORDER));
-
-    if (servname)
-    {
-        print_servname = servname;
-    }
-    else
-    {
-        print_servname = "";
-    }
-
-    if (flags & GETADDR_MSG_VIRT_OUT)
-    {
-        msglevel |= M_MSG_VIRT_OUT;
-    }
-
-    if ((flags & (GETADDR_FATAL_ON_SIGNAL|GETADDR_WARN_ON_SIGNAL))
-        && !sig_info)
-    {
-        sig_info = &sigrec;
-    }
-
-    /* try numeric ipv6 addr first */
-    CLEAR(hints);
-    hints.ai_family = ai_family;
-    hints.ai_flags = AI_NUMERICHOST;
-
-    if (flags & GETADDR_PASSIVE)
-    {
-        hints.ai_flags |= AI_PASSIVE;
-    }
-
-    if (flags & GETADDR_DATAGRAM)
-    {
-        hints.ai_socktype = SOCK_DGRAM;
-    }
-    else
-    {
-        hints.ai_socktype = SOCK_STREAM;
-    }
-
-    status = getaddrinfo(hostname, servname, &hints, res);
-
-    if (status != 0) /* parse as numeric address failed? */
-    {
-        const int fail_wait_interval = 5; /* seconds */
-        /* Add +4 to cause integer division rounding up (1 + 4) = 5, (0+4)/5=0 */
-        int resolve_retries = (flags & GETADDR_TRY_ONCE) ? 1 :
-                              ((resolve_retry_seconds + 4)/ fail_wait_interval);
-        const char *fmt;
-        int level = 0;
-
-        if (hostname && (flags & GETADDR_RANDOMIZE))
-        {
-            hostname = hostname_randomize(hostname, &gc);
-        }
-
-        if (hostname)
-        {
-            print_hostname = hostname;
-        }
-        else
-        {
-            print_hostname = "undefined";
-        }
-
-        fmt = "RESOLVE: Cannot resolve host address: %s:%s (%s)";
-        if ((flags & GETADDR_MENTION_RESOLVE_RETRY)
-            && !resolve_retry_seconds)
-        {
-            fmt = "RESOLVE: Cannot resolve host address: %s:%s (%s) "
-                  "(I would have retried this name query if you had "
-                  "specified the --resolv-retry option.)";
-        }
-
-        if (!(flags & GETADDR_RESOLVE) || status == EAI_FAIL)
-        {
-            msg(msglevel, "RESOLVE: Cannot parse IP address: %s:%s (%s)",
-                print_hostname, print_servname, gai_strerror(status));
-            goto done;
-        }
-
-#ifdef ENABLE_MANAGEMENT
-        if (flags & GETADDR_UPDATE_MANAGEMENT_STATE)
-        {
-            if (management)
-            {
-                management_set_state(management,
-                                     OPENVPN_STATE_RESOLVE,
-                                     NULL,
-                                     NULL,
-                                     NULL,
-                                     NULL,
-                                     NULL);
-            }
-        }
-#endif
-
-        /*
-         * Resolve hostname
-         */
-        while (true)
-        {
-#ifndef _WIN32
-            /* force resolv.conf reload */
-            res_init();
-#endif
-            /* try hostname lookup */
-            hints.ai_flags &= ~AI_NUMERICHOST;
-            dmsg(D_SOCKET_DEBUG,
-                 "GETADDRINFO flags=0x%04x ai_family=%d ai_socktype=%d",
-                 flags, hints.ai_family, hints.ai_socktype);
-            status = getaddrinfo(hostname, servname, &hints, res);
-
-            if (sig_info)
-            {
-                get_signal(&sig_info->signal_received);
-                if (sig_info->signal_received) /* were we interrupted by a signal? */
-                {
-                    /* why are we overwriting SIGUSR1 ? */
-                    if (sig_info->signal_received == SIGUSR1) /* ignore SIGUSR1 */
-                    {
-                        msg(level,
-                            "RESOLVE: Ignored SIGUSR1 signal received during "
-                            "DNS resolution attempt");
-                        signal_reset(sig_info);
-                    }
-                    else
-                    {
-                        /* turn success into failure (interrupted syscall) */
-                        if (0 == status)
-                        {
-                            ASSERT(res);
-                            freeaddrinfo(*res);
-                            *res = NULL;
-                            status = EAI_AGAIN; /* = temporary failure */
-                            errno = EINTR;
-                        }
-                        goto done;
-                    }
-                }
-            }
-
-            /* success? */
-            if (0 == status)
-            {
-                break;
-            }
-
-            /* resolve lookup failed, should we
-             * continue or fail? */
-            level = msglevel;
-            if (resolve_retries > 0)
-            {
-                level = D_RESOLVE_ERRORS;
-            }
-
-            msg(level,
-                fmt,
-                print_hostname,
-                print_servname,
-                gai_strerror(status));
-
-            if (--resolve_retries <= 0)
-            {
-                goto done;
-            }
-
-            management_sleep(fail_wait_interval);
-        }
-
-        ASSERT(res);
-
-        /* hostname resolve succeeded */
-
-        /*
-         * Do not choose an IP Addresse by random or change the order *
-         * of IP addresses, doing so will break RFC 3484 address selection *
-         */
-    }
-    else
-    {
-        /* IP address parse succeeded */
-        if (flags & GETADDR_RANDOMIZE)
-        {
-            msg(M_WARN,
-                "WARNING: ignoring --remote-random-hostname because the "
-                "hostname is an IP address");
-        }
-    }
-
-done:
-    if (sig_info && sig_info->signal_received)
-    {
-        int level = 0;
-        if (flags & GETADDR_FATAL_ON_SIGNAL)
-        {
-            level = M_FATAL;
-        }
-        else if (flags & GETADDR_WARN_ON_SIGNAL)
-        {
-            level = M_WARN;
-        }
-        msg(level, "RESOLVE: signal received during DNS resolution attempt");
-    }
-
-    gc_free(&gc);
-    return status;
-}
-
-/*
- * We do our own inet_aton because the glibc function
- * isn't very good about error checking.
- */
-int
-openvpn_inet_aton(const char *dotted_quad, struct in_addr *addr)
-{
-    unsigned int a, b, c, d;
-
-    CLEAR(*addr);
-    if (sscanf(dotted_quad, "%u.%u.%u.%u", &a, &b, &c, &d) == 4)
-    {
-        if (a < 256 && b < 256 && c < 256 && d < 256)
-        {
-            addr->s_addr = htonl(a<<24 | b<<16 | c<<8 | d);
-            return OIA_IP; /* good dotted quad */
-        }
-    }
-    if (string_class(dotted_quad, CC_DIGIT|CC_DOT, 0))
-    {
-        return OIA_ERROR; /* probably a badly formatted dotted quad */
-    }
-    else
-    {
-        return OIA_HOSTNAME; /* probably a hostname */
-    }
-}
-
-bool
-ip_addr_dotted_quad_safe(const char *dotted_quad)
-{
-    /* verify non-NULL */
-    if (!dotted_quad)
-    {
-        return false;
-    }
-
-    /* verify length is within limits */
-    if (strlen(dotted_quad) > 15)
-    {
-        return false;
-    }
-
-    /* verify that all chars are either numeric or '.' and that no numeric
-     * substring is greater than 3 chars */
-    {
-        int nnum = 0;
-        const char *p = dotted_quad;
-        int c;
-
-        while ((c = *p++))
-        {
-            if (c >= '0' && c <= '9')
-            {
-                ++nnum;
-                if (nnum > 3)
-                {
-                    return false;
-                }
-            }
-            else if (c == '.')
-            {
-                nnum = 0;
-            }
-            else
-            {
-                return false;
-            }
-        }
-    }
-
-    /* verify that string will convert to IP address */
-    {
-        struct in_addr a;
-        return openvpn_inet_aton(dotted_quad, &a) == OIA_IP;
-    }
-}
-
-bool
-ipv6_addr_safe(const char *ipv6_text_addr)
-{
-    /* verify non-NULL */
-    if (!ipv6_text_addr)
-    {
-        return false;
-    }
-
-    /* verify length is within limits */
-    if (strlen(ipv6_text_addr) > INET6_ADDRSTRLEN)
-    {
-        return false;
-    }
-
-    /* verify that string will convert to IPv6 address */
-    {
-        struct in6_addr a6;
-        return inet_pton( AF_INET6, ipv6_text_addr, &a6 ) == 1;
-    }
-}
-
-static bool
-dns_addr_safe(const char *addr)
-{
-    if (addr)
-    {
-        const size_t len = strlen(addr);
-        return len > 0 && len <= 255 && string_class(addr, CC_ALNUM|CC_DASH|CC_DOT, 0);
-    }
-    else
-    {
-        return false;
-    }
-}
-
-bool
-ip_or_dns_addr_safe(const char *addr, const bool allow_fqdn)
-{
-    if (ip_addr_dotted_quad_safe(addr))
-    {
-        return true;
-    }
-    else if (allow_fqdn)
-    {
-        return dns_addr_safe(addr);
-    }
-    else
-    {
-        return false;
-    }
-}
-
-bool
-mac_addr_safe(const char *mac_addr)
-{
-    /* verify non-NULL */
-    if (!mac_addr)
-    {
-        return false;
-    }
-
-    /* verify length is within limits */
-    if (strlen(mac_addr) > 17)
-    {
-        return false;
-    }
-
-    /* verify that all chars are either alphanumeric or ':' and that no
-     * alphanumeric substring is greater than 2 chars */
-    {
-        int nnum = 0;
-        const char *p = mac_addr;
-        int c;
-
-        while ((c = *p++))
-        {
-            if ( (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') )
-            {
-                ++nnum;
-                if (nnum > 2)
-                {
-                    return false;
-                }
-            }
-            else if (c == ':')
-            {
-                nnum = 0;
-            }
-            else
-            {
-                return false;
-            }
-        }
-    }
-
-    /* error-checking is left to script invoked in lladdr.c */
-    return true;
-}
-
 static int
 socket_get_sndbuf(socket_descriptor_t sd)
 {
-#if defined(SOL_SOCKET) && defined(SO_SNDBUF)
     int val;
-    socklen_t len;
+    socklen_t len = sizeof(val);
 
-    len = sizeof(val);
-    if (getsockopt(sd, SOL_SOCKET, SO_SNDBUF, (void *) &val, &len) == 0
-        && len == sizeof(val))
+    if (getsockopt(sd, SOL_SOCKET, SO_SNDBUF, (void *)&val, &len) == 0 && len == sizeof(val))
     {
         return val;
     }
-#endif
     return 0;
 }
 
 static void
 socket_set_sndbuf(socket_descriptor_t sd, int size)
 {
-#if defined(SOL_SOCKET) && defined(SO_SNDBUF)
-    if (setsockopt(sd, SOL_SOCKET, SO_SNDBUF, (void *) &size, sizeof(size)) != 0)
+    if (setsockopt(sd, SOL_SOCKET, SO_SNDBUF, (void *)&size, sizeof(size)) != 0)
     {
         msg(M_WARN, "NOTE: setsockopt SO_SNDBUF=%d failed", size);
     }
-#endif
 }
 
 static int
 socket_get_rcvbuf(socket_descriptor_t sd)
 {
-#if defined(SOL_SOCKET) && defined(SO_RCVBUF)
     int val;
-    socklen_t len;
+    socklen_t len = sizeof(val);
 
-    len = sizeof(val);
-    if (getsockopt(sd, SOL_SOCKET, SO_RCVBUF, (void *) &val, &len) == 0
-        && len == sizeof(val))
+    if (getsockopt(sd, SOL_SOCKET, SO_RCVBUF, (void *)&val, &len) == 0 && len == sizeof(val))
     {
         return val;
     }
-#endif
     return 0;
 }
 
-static bool
+static void
 socket_set_rcvbuf(socket_descriptor_t sd, int size)
 {
-#if defined(SOL_SOCKET) && defined(SO_RCVBUF)
-    if (setsockopt(sd, SOL_SOCKET, SO_RCVBUF, (void *) &size, sizeof(size)) != 0)
+    if (setsockopt(sd, SOL_SOCKET, SO_RCVBUF, (void *)&size, sizeof(size)) != 0)
     {
         msg(M_WARN, "NOTE: setsockopt SO_RCVBUF=%d failed", size);
-        return false;
     }
-    return true;
-#endif
 }
 
-static void
-socket_set_buffers(socket_descriptor_t fd, const struct socket_buffer_size *sbs)
+void
+socket_set_buffers(socket_descriptor_t fd, const struct socket_buffer_size *sbs, bool reduce_size)
 {
     if (sbs)
     {
         const int sndbuf_old = socket_get_sndbuf(fd);
         const int rcvbuf_old = socket_get_rcvbuf(fd);
 
-        if (sbs->sndbuf)
+        if (sbs->sndbuf && (reduce_size || sndbuf_old < sbs->sndbuf))
         {
             socket_set_sndbuf(fd, sbs->sndbuf);
         }
 
-        if (sbs->rcvbuf)
+        if (sbs->rcvbuf && (reduce_size || rcvbuf_old < sbs->rcvbuf))
         {
             socket_set_rcvbuf(fd, sbs->rcvbuf);
         }
 
-        msg(D_OSBUF, "Socket Buffers: R=[%d->%d] S=[%d->%d]",
-            rcvbuf_old,
-            socket_get_rcvbuf(fd),
-            sndbuf_old,
-            socket_get_sndbuf(fd));
+        msg(D_OSBUF, "Socket Buffers: R=[%d->%d] S=[%d->%d]", rcvbuf_old, socket_get_rcvbuf(fd),
+            sndbuf_old, socket_get_sndbuf(fd));
     }
 }
 
@@ -928,7 +489,7 @@ static bool
 socket_set_tcp_nodelay(socket_descriptor_t sd, int state)
 {
 #if defined(_WIN32) || (defined(IPPROTO_TCP) && defined(TCP_NODELAY))
-    if (setsockopt(sd, IPPROTO_TCP, TCP_NODELAY, (void *) &state, sizeof(state)) != 0)
+    if (setsockopt(sd, IPPROTO_TCP, TCP_NODELAY, (void *)&state, sizeof(state)) != 0)
     {
         msg(M_WARN, "NOTE: setsockopt TCP_NODELAY=%d failed", state);
         return false;
@@ -938,7 +499,7 @@ socket_set_tcp_nodelay(socket_descriptor_t sd, int state)
         dmsg(D_OSBUF, "Socket flags: TCP_NODELAY=%d succeeded", state);
         return true;
     }
-#else  /* if defined(_WIN32) || (defined(IPPROTO_TCP) && defined(TCP_NODELAY)) */
+#else /* if defined(_WIN32) || (defined(IPPROTO_TCP) && defined(TCP_NODELAY)) */
     msg(M_WARN, "NOTE: setsockopt TCP_NODELAY=%d failed (No kernel support)", state);
     return false;
 #endif
@@ -947,8 +508,8 @@ socket_set_tcp_nodelay(socket_descriptor_t sd, int state)
 static inline void
 socket_set_mark(socket_descriptor_t sd, int mark)
 {
-#if defined(TARGET_LINUX) && HAVE_DECL_SO_MARK
-    if (mark && setsockopt(sd, SOL_SOCKET, SO_MARK, (void *) &mark, sizeof(mark)) != 0)
+#if defined(TARGET_LINUX)
+    if (mark && setsockopt(sd, SOL_SOCKET, SO_MARK, (void *)&mark, sizeof(mark)) != 0)
     {
         msg(M_WARN, "NOTE: setsockopt SO_MARK=%d failed", mark);
     }
@@ -970,12 +531,12 @@ socket_set_flags(socket_descriptor_t sd, unsigned int sockflags)
 }
 
 bool
-link_socket_update_flags(struct link_socket *ls, unsigned int sockflags)
+link_socket_update_flags(struct link_socket *sock, unsigned int sockflags)
 {
-    if (ls && socket_defined(ls->sd))
+    if (sock && socket_defined(sock->sd))
     {
-        ls->sockflags |= sockflags;
-        return socket_set_flags(ls->sd, ls->sockflags);
+        sock->sockflags |= sockflags;
+        return socket_set_flags(sock->sd, sock->sockflags);
     }
     else
     {
@@ -984,13 +545,13 @@ link_socket_update_flags(struct link_socket *ls, unsigned int sockflags)
 }
 
 void
-link_socket_update_buffer_sizes(struct link_socket *ls, int rcvbuf, int sndbuf)
+link_socket_update_buffer_sizes(struct link_socket *sock, int rcvbuf, int sndbuf)
 {
-    if (ls && socket_defined(ls->sd))
+    if (sock && socket_defined(sock->sd))
     {
-        ls->socket_buffer_sizes.sndbuf = sndbuf;
-        ls->socket_buffer_sizes.rcvbuf = rcvbuf;
-        socket_set_buffers(ls->sd, &ls->socket_buffer_sizes);
+        sock->socket_buffer_sizes.sndbuf = sndbuf;
+        sock->socket_buffer_sizes.rcvbuf = rcvbuf;
+        socket_set_buffers(sock->sd, &sock->socket_buffer_sizes, true);
     }
 }
 
@@ -1007,7 +568,8 @@ create_socket_tcp(struct addrinfo *addrinfo)
     ASSERT(addrinfo);
     ASSERT(addrinfo->ai_socktype == SOCK_STREAM);
 
-    if ((sd = socket(addrinfo->ai_family, addrinfo->ai_socktype, addrinfo->ai_protocol)) < 0)
+    if ((sd = socket(addrinfo->ai_family, addrinfo->ai_socktype, addrinfo->ai_protocol))
+        == SOCKET_UNDEFINED)
     {
         msg(M_ERR, "Cannot create TCP socket");
     }
@@ -1016,8 +578,7 @@ create_socket_tcp(struct addrinfo *addrinfo)
     /* set SO_REUSEADDR on socket */
     {
         int on = 1;
-        if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR,
-                       (void *) &on, sizeof(on)) < 0)
+        if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, (void *)&on, sizeof(on)) < 0)
         {
             msg(M_ERR, "TCP: Cannot setsockopt SO_REUSEADDR on TCP socket");
         }
@@ -1039,7 +600,8 @@ create_socket_udp(struct addrinfo *addrinfo, const unsigned int flags)
     ASSERT(addrinfo);
     ASSERT(addrinfo->ai_socktype == SOCK_DGRAM);
 
-    if ((sd = socket(addrinfo->ai_family, addrinfo->ai_socktype, addrinfo->ai_protocol)) < 0)
+    if ((sd = socket(addrinfo->ai_family, addrinfo->ai_socktype, addrinfo->ai_protocol))
+        == SOCKET_UNDEFINED)
     {
         msg(M_ERR, "UDP: Cannot create UDP/UDP6 socket");
     }
@@ -1050,31 +612,29 @@ create_socket_udp(struct addrinfo *addrinfo, const unsigned int flags)
         if (addrinfo->ai_family == AF_INET)
         {
 #if defined(HAVE_IN_PKTINFO) && defined(HAVE_IPI_SPEC_DST)
-            if (setsockopt(sd, SOL_IP, IP_PKTINFO,
-                           (void *)&pad, sizeof(pad)) < 0)
+            if (setsockopt(sd, SOL_IP, IP_PKTINFO, (void *)&pad, sizeof(pad)) < 0)
             {
                 msg(M_ERR, "UDP: failed setsockopt for IP_PKTINFO");
             }
 #elif defined(IP_RECVDSTADDR)
-            if (setsockopt(sd, IPPROTO_IP, IP_RECVDSTADDR,
-                           (void *)&pad, sizeof(pad)) < 0)
+            if (setsockopt(sd, IPPROTO_IP, IP_RECVDSTADDR, (void *)&pad, sizeof(pad)) < 0)
             {
                 msg(M_ERR, "UDP: failed setsockopt for IP_RECVDSTADDR");
             }
-#else  /* if defined(HAVE_IN_PKTINFO) && defined(HAVE_IPI_SPEC_DST) */
+#else /* if defined(HAVE_IN_PKTINFO) && defined(HAVE_IPI_SPEC_DST) */
 #error ENABLE_IP_PKTINFO is set without IP_PKTINFO xor IP_RECVDSTADDR (fix syshead.h)
 #endif
         }
         else if (addrinfo->ai_family == AF_INET6)
         {
 #ifndef IPV6_RECVPKTINFO /* Some older Darwin platforms require this */
-            if (setsockopt(sd, IPPROTO_IPV6, IPV6_PKTINFO,
-                           (void *)&pad, sizeof(pad)) < 0)
+            if (setsockopt(sd, IPPROTO_IPV6, IPV6_PKTINFO, (void *)&pad, sizeof(pad)) < 0)
 #else
-            if (setsockopt(sd, IPPROTO_IPV6, IPV6_RECVPKTINFO,
-                           (void *)&pad, sizeof(pad)) < 0)
+            if (setsockopt(sd, IPPROTO_IPV6, IPV6_RECVPKTINFO, (void *)&pad, sizeof(pad)) < 0)
 #endif
-            { msg(M_ERR, "UDP: failed setsockopt for IPV6_RECVPKTINFO");}
+            {
+                msg(M_ERR, "UDP: failed setsockopt for IPV6_RECVPKTINFO");
+            }
         }
     }
 #endif /* if ENABLE_IP_PKTINFO */
@@ -1094,17 +654,20 @@ bind_local(struct link_socket *sock, const sa_family_t ai_family)
     {
         if (sock->socks_proxy && sock->info.proto == PROTO_UDP)
         {
-            socket_bind(sock->ctrl_sd, sock->info.lsa->bind_local,
-                        ai_family, "SOCKS", false);
+            socket_bind(sock->ctrl_sd, sock->info.lsa->bind_local, ai_family, "SOCKS", false);
         }
         else
         {
-            socket_bind(sock->sd, sock->info.lsa->bind_local,
-                        ai_family,
-                        "TCP/UDP", sock->info.bind_ipv6_only);
+            socket_bind(sock->sd, sock->info.lsa->bind_local, ai_family, "TCP/UDP",
+                        sock->info.bind_ipv6_only);
         }
     }
 }
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
 
 static void
 create_socket(struct link_socket *sock, struct addrinfo *addr)
@@ -1140,7 +703,7 @@ create_socket(struct link_socket *sock, struct addrinfo *addr)
     sock->info.af = addr->ai_family;
 
     /* set socket buffers based on --sndbuf and --rcvbuf options */
-    socket_set_buffers(sock->sd, &sock->socket_buffer_sizes);
+    socket_set_buffers(sock->sd, &sock->socket_buffer_sizes, true);
 
     /* set socket to --mark packets with given value */
     socket_set_mark(sock->sd, sock->mark);
@@ -1149,16 +712,21 @@ create_socket(struct link_socket *sock, struct addrinfo *addr)
     if (sock->bind_dev)
     {
         msg(M_INFO, "Using bind-dev %s", sock->bind_dev);
-        if (setsockopt(sock->sd, SOL_SOCKET, SO_BINDTODEVICE, sock->bind_dev, strlen(sock->bind_dev) + 1) != 0)
+        if (setsockopt(sock->sd, SOL_SOCKET, SO_BINDTODEVICE, sock->bind_dev,
+                       strlen(sock->bind_dev) + 1)
+            != 0)
         {
-            msg(M_WARN|M_ERRNO, "WARN: setsockopt SO_BINDTODEVICE=%s failed", sock->bind_dev);
+            msg(M_WARN | M_ERRNO, "WARN: setsockopt SO_BINDTODEVICE=%s failed", sock->bind_dev);
         }
-
     }
 #endif
 
     bind_local(sock, addr->ai_family);
 }
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 #ifdef TARGET_ANDROID
 static void
@@ -1188,9 +756,7 @@ protect_fd_nonlocal(int fd, const struct sockaddr *addr)
  * Functions used for establishing a TCP stream connection.
  */
 static void
-socket_do_listen(socket_descriptor_t sd,
-                 const struct addrinfo *local,
-                 bool do_listen,
+socket_do_listen(socket_descriptor_t sd, const struct addrinfo *local, bool do_listen,
                  bool do_set_nonblock)
 {
     struct gc_arena gc = gc_new();
@@ -1215,9 +781,7 @@ socket_do_listen(socket_descriptor_t sd,
 }
 
 socket_descriptor_t
-socket_do_accept(socket_descriptor_t sd,
-                 struct link_socket_actual *act,
-                 const bool nowait)
+socket_do_accept(socket_descriptor_t sd, struct link_socket_actual *act, const bool nowait)
 {
     /* af_addr_size WILL return 0 in this case if AFs other than AF_INET
      * are compiled because act is empty here.
@@ -1265,7 +829,8 @@ socket_do_accept(socket_descriptor_t sd,
     /* only valid if we have remote_len_af!=0 */
     else if (remote_len_af && remote_len != remote_len_af)
     {
-        msg(D_LINK_ERRORS, "TCP: Received strange incoming connection with unknown address length=%d", remote_len);
+        msg(D_LINK_ERRORS,
+            "TCP: Received strange incoming connection with unknown address length=%d", remote_len);
         openvpn_close_socket(new_sd);
         new_sd = SOCKET_UNDEFINED;
     }
@@ -1282,23 +847,16 @@ static void
 tcp_connection_established(const struct link_socket_actual *act)
 {
     struct gc_arena gc = gc_new();
-    msg(M_INFO, "TCP connection established with %s",
-        print_link_socket_actual(act, &gc));
+    msg(M_INFO, "TCP connection established with %s", print_link_socket_actual(act, &gc));
     gc_free(&gc);
 }
 
 static socket_descriptor_t
-socket_listen_accept(socket_descriptor_t sd,
-                     struct link_socket_actual *act,
-                     const char *remote_dynamic,
-                     const struct addrinfo *local,
-                     bool do_listen,
-                     bool nowait,
-                     volatile int *signal_received)
+socket_listen_accept(socket_descriptor_t sd, struct link_socket_actual *act,
+                     const struct addrinfo *local, bool do_listen,
+                     bool nowait, volatile int *signal_received)
 {
     struct gc_arena gc = gc_new();
-    /* struct openvpn_sockaddr *remote = &act->dest; */
-    struct openvpn_sockaddr remote_verify = act->dest;
     socket_descriptor_t new_sd = SOCKET_UNDEFINED;
 
     CLEAR(*act);
@@ -1315,7 +873,7 @@ socket_listen_accept(socket_descriptor_t sd,
         tv.tv_sec = 0;
         tv.tv_usec = 0;
 
-        status = select(sd + 1, &reads, NULL, NULL, &tv);
+        status = openvpn_select(sd + 1, &reads, NULL, NULL, &tv);
 
         get_signal(signal_received);
         if (*signal_received)
@@ -1339,32 +897,7 @@ socket_listen_accept(socket_descriptor_t sd,
 
         if (socket_defined(new_sd))
         {
-            struct addrinfo *ai = NULL;
-            if (remote_dynamic)
-            {
-                openvpn_getaddrinfo(0, remote_dynamic, NULL, 1, NULL,
-                                    remote_verify.addr.sa.sa_family, &ai);
-            }
-
-            if (ai && !addrlist_match(&remote_verify, ai))
-            {
-                msg(M_WARN,
-                    "TCP NOTE: Rejected connection attempt from %s due to --remote setting",
-                    print_link_socket_actual(act, &gc));
-                if (openvpn_close_socket(new_sd))
-                {
-                    msg(M_ERR, "TCP: close socket failed (new_sd)");
-                }
-                freeaddrinfo(ai);
-            }
-            else
-            {
-                if (ai)
-                {
-                    freeaddrinfo(ai);
-                }
-                break;
-            }
+            break;
         }
         management_sleep(1);
     }
@@ -1381,10 +914,7 @@ socket_listen_accept(socket_descriptor_t sd,
 }
 
 void
-socket_bind(socket_descriptor_t sd,
-            struct addrinfo *local,
-            int ai_family,
-            const char *prefix,
+socket_bind(socket_descriptor_t sd, struct addrinfo *local, int ai_family, const char *prefix,
             bool ipv6only)
 {
     struct gc_arena gc = gc_new();
@@ -1411,33 +941,30 @@ socket_bind(socket_descriptor_t sd,
     }
     if (!cur)
     {
-        msg(M_FATAL, "%s: Socket bind failed: Addr to bind has no %s record",
-            prefix, addr_family_name(ai_family));
+        msg(M_FATAL, "%s: Socket bind failed: Addr to bind has no %s record", prefix,
+            addr_family_name(ai_family));
     }
 
     if (ai_family == AF_INET6)
     {
-        int v6only = ipv6only ? 1 : 0;  /* setsockopt must have an "int" */
+        int v6only = ipv6only ? 1 : 0; /* setsockopt must have an "int" */
 
         msg(M_INFO, "setsockopt(IPV6_V6ONLY=%d)", v6only);
-        if (setsockopt(sd, IPPROTO_IPV6, IPV6_V6ONLY, (void *) &v6only, sizeof(v6only)))
+        if (setsockopt(sd, IPPROTO_IPV6, IPV6_V6ONLY, (void *)&v6only, sizeof(v6only)))
         {
-            msg(M_NONFATAL|M_ERRNO, "Setting IPV6_V6ONLY=%d failed", v6only);
+            msg(M_NONFATAL | M_ERRNO, "Setting IPV6_V6ONLY=%d failed", v6only);
         }
     }
-    if (bind(sd, cur->ai_addr, cur->ai_addrlen))
+    if (openvpn_bind(sd, cur->ai_addr, cur->ai_addrlen))
     {
-        msg(M_FATAL | M_ERRNO, "%s: Socket bind failed on local address %s",
-            prefix,
+        msg(M_FATAL | M_ERRNO, "%s: Socket bind failed on local address %s", prefix,
             print_sockaddr_ex(local->ai_addr, ":", PS_SHOW_PORT, &gc));
     }
     gc_free(&gc);
 }
 
 int
-openvpn_connect(socket_descriptor_t sd,
-                const struct sockaddr *remote,
-                int connect_timeout,
+openvpn_connect(socket_descriptor_t sd, const struct sockaddr *remote, int connect_timeout,
                 volatile int *signal_received)
 {
     int status = 0;
@@ -1445,7 +972,6 @@ openvpn_connect(socket_descriptor_t sd,
 #ifdef TARGET_ANDROID
     protect_fd_nonlocal(sd, remote);
 #endif
-
     set_nonblock(sd);
     status = connect(sd, remote, af_addr_size(remote->sa_family));
     if (status)
@@ -1458,7 +984,7 @@ openvpn_connect(socket_descriptor_t sd,
 #else
         status == EINPROGRESS
 #endif
-        )
+    )
     {
         while (true)
         {
@@ -1476,7 +1002,7 @@ openvpn_connect(socket_descriptor_t sd,
             tv.tv_sec = (connect_timeout > 0) ? 1 : 0;
             tv.tv_usec = 0;
 
-            status = select(sd + 1, NULL, &writes, NULL, &tv);
+            status = openvpn_select(sd + 1, NULL, &writes, NULL, &tv);
 #endif
             if (signal_received)
             {
@@ -1513,7 +1039,7 @@ openvpn_connect(socket_descriptor_t sd,
                 socklen_t len;
 
                 len = sizeof(val);
-                if (getsockopt(sd, SOL_SOCKET, SO_ERROR, (void *) &val, &len) == 0
+                if (getsockopt(sd, SOL_SOCKET, SO_ERROR, (void *)&val, &len) == 0
                     && len == sizeof(val))
                 {
                     status = val;
@@ -1538,43 +1064,31 @@ set_actual_address(struct link_socket_actual *actual, struct addrinfo *ai)
 
     if (ai->ai_family == AF_INET)
     {
-        actual->dest.addr.in4 =
-            *((struct sockaddr_in *) ai->ai_addr);
+        actual->dest.addr.in4 = *((struct sockaddr_in *)ai->ai_addr);
     }
     else if (ai->ai_family == AF_INET6)
     {
-        actual->dest.addr.in6 =
-            *((struct sockaddr_in6 *) ai->ai_addr);
+        actual->dest.addr.in6 = *((struct sockaddr_in6 *)ai->ai_addr);
     }
     else
     {
         ASSERT(0);
     }
-
 }
 
 static void
-socket_connect(socket_descriptor_t *sd,
-               const struct sockaddr *dest,
-               const int connect_timeout,
+socket_connect(socket_descriptor_t *sd, const struct sockaddr *dest, const int connect_timeout,
                struct signal_info *sig_info)
 {
     struct gc_arena gc = gc_new();
     int status;
 
-    msg(M_INFO, "Attempting to establish TCP connection with %s",
-        print_sockaddr(dest, &gc));
+    msg(M_INFO, "Attempting to establish TCP connection with %s", print_sockaddr(dest, &gc));
 
 #ifdef ENABLE_MANAGEMENT
     if (management)
     {
-        management_set_state(management,
-                             OPENVPN_STATE_TCP_CONNECT,
-                             NULL,
-                             NULL,
-                             NULL,
-                             NULL,
-                             NULL);
+        management_set_state(management, OPENVPN_STATE_TCP_CONNECT, NULL, NULL, NULL, NULL, NULL);
     }
 #endif
 
@@ -1589,19 +1103,16 @@ socket_connect(socket_descriptor_t *sd,
 
     if (status)
     {
-
-        msg(D_LINK_ERRORS, "TCP: connect to %s failed: %s",
-            print_sockaddr(dest, &gc), strerror(status));
+        msg(D_LINK_ERRORS, "TCP: connect to %s failed: %s", print_sockaddr(dest, &gc),
+            strerror(status));
 
         openvpn_close_socket(*sd);
         *sd = SOCKET_UNDEFINED;
         register_signal(sig_info, SIGUSR1, "connection-failed");
-        sig_info->source = SIG_SOURCE_CONNECTION_FAILED;
     }
     else
     {
-        msg(M_INFO, "TCP connection established with %s",
-            print_sockaddr(dest, &gc));
+        msg(M_INFO, "TCP connection established with %s", print_sockaddr(dest, &gc));
     }
 
 done:
@@ -1614,15 +1125,12 @@ done:
  * such as TCP.
  */
 
-static void
-stream_buf_init(struct stream_buf *sb, struct buffer *buf,
-                const unsigned int sockflags, const int proto);
+static void stream_buf_init(struct stream_buf *sb, struct buffer *buf, const unsigned int sockflags,
+                            const int proto);
 
-static void
-stream_buf_close(struct stream_buf *sb);
+static void stream_buf_close(struct stream_buf *sb);
 
-static bool
-stream_buf_added(struct stream_buf *sb, int length_added);
+static bool stream_buf_added(struct stream_buf *sb, int length_added);
 
 /* For stream protocols, allocate a buffer to build up packet.
  * Called after frame has been finalized. */
@@ -1640,20 +1148,21 @@ socket_frame_init(const struct frame *frame, struct link_socket *sock)
     if (link_socket_connection_oriented(sock))
     {
 #ifdef _WIN32
-        stream_buf_init(&sock->stream_buf,
-                        &sock->reads.buf_init,
-                        sock->sockflags,
+        stream_buf_init(&sock->stream_buf, &sock->reads.buf_init, sock->sockflags,
                         sock->info.proto);
 #else
         alloc_buf_sock_tun(&sock->stream_buf_data, frame);
 
-        stream_buf_init(&sock->stream_buf,
-                        &sock->stream_buf_data,
-                        sock->sockflags,
+        stream_buf_init(&sock->stream_buf, &sock->stream_buf_data, sock->sockflags,
                         sock->info.proto);
 #endif
     }
 }
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
 
 static void
 resolve_bind_local(struct link_socket *sock, const sa_family_t af)
@@ -1663,8 +1172,7 @@ resolve_bind_local(struct link_socket *sock, const sa_family_t af)
     /* resolve local address if undefined */
     if (!sock->info.lsa->bind_local)
     {
-        int flags = GETADDR_RESOLVE | GETADDR_WARN_ON_SIGNAL
-                    |GETADDR_FATAL | GETADDR_PASSIVE;
+        unsigned int flags = GETADDR_RESOLVE | GETADDR_WARN_ON_SIGNAL | GETADDR_FATAL | GETADDR_PASSIVE;
         int status;
 
         if (proto_is_dgram(sock->info.proto))
@@ -1673,24 +1181,33 @@ resolve_bind_local(struct link_socket *sock, const sa_family_t af)
         }
 
         /* will return AF_{INET|INET6}from local_host */
-        status = get_cached_dns_entry(sock->dns_cache,
-                                      sock->local_host,
-                                      sock->local_port,
-                                      af,
-                                      flags,
-                                      &sock->info.lsa->bind_local);
+        status = get_cached_dns_entry(sock->dns_cache, sock->local_host, sock->local_port, af,
+                                      flags, &sock->info.lsa->bind_local);
 
         if (status)
         {
-            status = openvpn_getaddrinfo(flags, sock->local_host, sock->local_port, 0,
-                                         NULL, af, &sock->info.lsa->bind_local);
+            status = openvpn_getaddrinfo(flags, sock->local_host, sock->local_port, 0, NULL, af,
+                                         &sock->info.lsa->bind_local);
         }
 
-        if (status !=0)
+        if (status != 0)
         {
-            msg(M_FATAL, "getaddrinfo() failed for local \"%s:%s\": %s",
-                sock->local_host, sock->local_port,
-                gai_strerror(status));
+            msg(M_FATAL, "getaddrinfo() failed for local \"%s:%s\": %s", sock->local_host,
+                sock->local_port, gai_strerror(status));
+        }
+
+        /* the address family returned by openvpn_getaddrinfo() should be
+         * taken into consideration only if we really passed an hostname
+         * to resolve. Otherwise its value is not useful to us and may
+         * actually break our socket, i.e. when it returns AF_INET
+         * but our remote is v6 only.
+         */
+        if (sock->local_host)
+        {
+            /* the resolved 'local entry' might have a different family than
+             * what was globally configured
+             */
+            sock->info.af = sock->info.lsa->bind_local->ai_family;
         }
     }
 
@@ -1698,10 +1215,7 @@ resolve_bind_local(struct link_socket *sock, const sa_family_t af)
 }
 
 static void
-resolve_remote(struct link_socket *sock,
-               int phase,
-               const char **remote_dynamic,
-               struct signal_info *sig_info)
+resolve_remote(struct link_socket *sock, int phase, struct signal_info *sig_info)
 {
     volatile int *signal_received = sig_info ? &sig_info->signal_received : NULL;
     struct gc_arena gc = gc_new();
@@ -1711,7 +1225,8 @@ resolve_remote(struct link_socket *sock,
     {
         if (sock->remote_host)
         {
-            unsigned int flags = sf2gaf(GETADDR_RESOLVE|GETADDR_UPDATE_MANAGEMENT_STATE, sock->sockflags);
+            unsigned int flags =
+                sf2gaf(GETADDR_RESOLVE | GETADDR_UPDATE_MANAGEMENT_STATE, sock->sockflags);
             int retry = 0;
             int status = -1;
             struct addrinfo *ai;
@@ -1758,15 +1273,12 @@ resolve_remote(struct link_socket *sock,
             }
 
 
-            status = get_cached_dns_entry(sock->dns_cache,
-                                          sock->remote_host,
-                                          sock->remote_port,
-                                          sock->info.af,
-                                          flags, &ai);
+            status = get_cached_dns_entry(sock->dns_cache, sock->remote_host, sock->remote_port,
+                                          sock->info.af, flags, &ai);
             if (status)
             {
-                status = openvpn_getaddrinfo(flags, sock->remote_host, sock->remote_port,
-                                             retry, sig_info, sock->info.af, &ai);
+                status = openvpn_getaddrinfo(flags, sock->remote_host, sock->remote_port, retry,
+                                             sig_info, sock->info.af, &ai);
             }
 
             if (status == 0)
@@ -1774,19 +1286,14 @@ resolve_remote(struct link_socket *sock,
                 sock->info.lsa->remote_list = ai;
                 sock->info.lsa->current_remote = ai;
 
-                dmsg(D_SOCKET_DEBUG,
-                     "RESOLVE_REMOTE flags=0x%04x phase=%d rrs=%d sig=%d status=%d",
-                     flags,
-                     phase,
-                     retry,
-                     signal_received ? *signal_received : -1,
-                     status);
+                dmsg(D_SOCKET_DEBUG, "RESOLVE_REMOTE flags=0x%04x phase=%d rrs=%d sig=%d status=%d",
+                     flags, phase, retry, signal_received ? *signal_received : -1, status);
             }
             if (signal_received && *signal_received)
             {
                 goto done;
             }
-            if (status!=0)
+            if (status != 0)
             {
                 if (signal_received)
                 {
@@ -1803,25 +1310,19 @@ resolve_remote(struct link_socket *sock,
     {
         msg(M_INFO, "TCP/UDP: Preserving recently used remote address: %s",
             print_link_socket_actual(&sock->info.lsa->actual, &gc));
-        if (remote_dynamic)
-        {
-            *remote_dynamic = NULL;
-        }
     }
     else
     {
         CLEAR(sock->info.lsa->actual);
         if (sock->info.lsa->current_remote)
         {
-            set_actual_address(&sock->info.lsa->actual,
-                               sock->info.lsa->current_remote);
+            set_actual_address(&sock->info.lsa->actual, sock->info.lsa->current_remote);
         }
     }
 
 done:
     gc_free(&gc);
 }
-
 
 
 struct link_socket *
@@ -1832,21 +1333,56 @@ link_socket_new(void)
     ALLOC_OBJ_CLEAR(sock, struct link_socket);
     sock->sd = SOCKET_UNDEFINED;
     sock->ctrl_sd = SOCKET_UNDEFINED;
+    sock->ev_arg.type = EVENT_ARG_LINK_SOCKET;
+    sock->ev_arg.u.sock = sock;
+
     return sock;
 }
 
 void
-link_socket_init_phase1(struct context *c, int mode)
+link_socket_init_phase1(struct context *c, int sock_index, int mode)
 {
-    struct link_socket *sock = c->c2.link_socket;
+    struct link_socket *sock = c->c2.link_sockets[sock_index];
     struct options *o = &c->options;
     ASSERT(sock);
 
+    const char *host = o->ce.local_list->array[sock_index]->local;
+    const char *port = o->ce.local_list->array[sock_index]->port;
+    int proto = o->ce.local_list->array[sock_index]->proto;
     const char *remote_host = o->ce.remote;
     const char *remote_port = o->ce.remote_port;
 
-    sock->local_host = o->ce.local;
-    sock->local_port = o->ce.local_port;
+    if (remote_host)
+    {
+        proto = o->ce.proto;
+    }
+
+    /* If --lport is specified in a client connection block,
+     * it takes precedence over the global setting. */
+    if (o->mode == MODE_POINT_TO_POINT && o->ce.local_port_defined)
+    {
+        port = o->ce.local_port;
+    }
+
+    if (c->mode == CM_CHILD_TCP || c->mode == CM_CHILD_UDP)
+    {
+        struct link_socket *tmp_sock = NULL;
+        if (c->mode == CM_CHILD_TCP)
+        {
+            tmp_sock = (struct link_socket *)c->c2.accept_from;
+        }
+        else if (c->mode == CM_CHILD_UDP)
+        {
+            tmp_sock = c->c2.link_sockets[0];
+        }
+
+        host = tmp_sock->local_host;
+        port = tmp_sock->local_port;
+        proto = tmp_sock->info.proto;
+    }
+
+    sock->local_host = host;
+    sock->local_port = port;
     sock->remote_host = remote_host;
     sock->remote_port = remote_port;
     sock->dns_cache = c->c1.dns_cache;
@@ -1864,19 +1400,20 @@ link_socket_init_phase1(struct context *c, int mode)
     sock->socket_buffer_sizes.sndbuf = o->sndbuf;
 
     sock->sockflags = o->sockflags;
+
 #if PORT_SHARE
     if (o->port_share_host && o->port_share_port)
     {
         sock->sockflags |= SF_PORT_SHARE;
     }
 #endif
+
     sock->mark = o->mark;
     sock->bind_dev = o->bind_dev;
-
-    sock->info.proto = o->ce.proto;
+    sock->info.proto = proto;
     sock->info.af = o->ce.af;
     sock->info.remote_float = o->ce.remote_float;
-    sock->info.lsa = &c->c1.link_socket_addr;
+    sock->info.lsa = &c->c1.link_socket_addrs[sock_index];
     sock->info.bind_ipv6_only = o->ce.bind_ipv6_only;
     sock->info.ipchange_command = o->ipchange;
     sock->info.plugins = c->plugins;
@@ -1941,7 +1478,7 @@ link_socket_init_phase1(struct context *c, int mode)
         {
             resolve_bind_local(sock, sock->info.af);
         }
-        resolve_remote(sock, 1, NULL, NULL);
+        resolve_remote(sock, 1, NULL);
     }
 }
 
@@ -1968,7 +1505,7 @@ static void
 linksock_print_addr(struct link_socket *sock)
 {
     struct gc_arena gc = gc_new();
-    const int msglevel = (sock->mode == LS_MODE_TCP_ACCEPT_FROM) ? D_INIT_MEDIUM : M_INFO;
+    const msglvl_t msglevel = (sock->mode == LS_MODE_TCP_ACCEPT_FROM) ? D_INIT_MEDIUM : M_INFO;
 
     /* print local address */
     if (sock->bind_local)
@@ -1987,8 +1524,7 @@ linksock_print_addr(struct link_socket *sock)
         }
         ASSERT(cur);
         msg(msglevel, "%s link local (bound): %s",
-            proto2ascii(sock->info.proto, sock->info.af, true),
-            print_sockaddr(cur->ai_addr, &gc));
+            proto2ascii(sock->info.proto, sock->info.af, true), print_sockaddr(cur->ai_addr, &gc));
     }
     else
     {
@@ -1997,44 +1533,31 @@ linksock_print_addr(struct link_socket *sock)
     }
 
     /* print active remote address */
-    msg(msglevel, "%s link remote: %s",
-        proto2ascii(sock->info.proto, sock->info.af, true),
-        print_link_socket_actual_ex(&sock->info.lsa->actual,
-                                    ":",
-                                    PS_SHOW_PORT_IF_DEFINED,
-                                    &gc));
+    msg(msglevel, "%s link remote: %s", proto2ascii(sock->info.proto, sock->info.af, true),
+        print_link_socket_actual_ex(&sock->info.lsa->actual, ":", PS_SHOW_PORT_IF_DEFINED, &gc));
     gc_free(&gc);
 }
 
 static void
-phase2_tcp_server(struct link_socket *sock, const char *remote_dynamic,
-                  struct signal_info *sig_info)
+phase2_tcp_server(struct link_socket *sock, struct signal_info *sig_info)
 {
     ASSERT(sig_info);
     volatile int *signal_received = &sig_info->signal_received;
     switch (sock->mode)
     {
         case LS_MODE_DEFAULT:
-            sock->sd = socket_listen_accept(sock->sd,
-                                            &sock->info.lsa->actual,
-                                            remote_dynamic,
-                                            sock->info.lsa->bind_local,
-                                            true,
-                                            false,
-                                            signal_received);
+            sock->sd =
+                socket_listen_accept(sock->sd, &sock->info.lsa->actual,
+                                     sock->info.lsa->bind_local, true, false,
+                                     signal_received);
             break;
 
         case LS_MODE_TCP_LISTEN:
-            socket_do_listen(sock->sd,
-                             sock->info.lsa->bind_local,
-                             true,
-                             false);
+            socket_do_listen(sock->sd, sock->info.lsa->bind_local, true, false);
             break;
 
         case LS_MODE_TCP_ACCEPT_FROM:
-            sock->sd = socket_do_accept(sock->sd,
-                                        &sock->info.lsa->actual,
-                                        false);
+            sock->sd = socket_do_accept(sock->sd, &sock->info.lsa->actual, false);
             if (!socket_defined(sock->sd))
             {
                 register_signal(sig_info, SIGTERM, "socket-undefined");
@@ -2055,10 +1578,8 @@ phase2_tcp_client(struct link_socket *sock, struct signal_info *sig_info)
     bool proxy_retry = false;
     do
     {
-        socket_connect(&sock->sd,
-                       sock->info.lsa->current_remote->ai_addr,
-                       get_server_poll_remaining_time(sock->server_poll_timeout),
-                       sig_info);
+        socket_connect(&sock->sd, sock->info.lsa->current_remote->ai_addr,
+                       get_server_poll_remaining_time(sock->server_poll_timeout), sig_info);
 
         if (sig_info->signal_received)
         {
@@ -2067,21 +1588,14 @@ phase2_tcp_client(struct link_socket *sock, struct signal_info *sig_info)
 
         if (sock->http_proxy)
         {
-            proxy_retry = establish_http_proxy_passthru(sock->http_proxy,
-                                                        sock->sd,
-                                                        sock->proxy_dest_host,
-                                                        sock->proxy_dest_port,
-                                                        sock->server_poll_timeout,
-                                                        &sock->stream_buf.residual,
-                                                        sig_info);
+            proxy_retry = establish_http_proxy_passthru(
+                sock->http_proxy, sock->sd, sock->proxy_dest_host, sock->proxy_dest_port,
+                sock->server_poll_timeout, &sock->stream_buf.residual, sig_info);
         }
         else if (sock->socks_proxy)
         {
-            establish_socks_proxy_passthru(sock->socks_proxy,
-                                           sock->sd,
-                                           sock->proxy_dest_host,
-                                           sock->proxy_dest_port,
-                                           sock->server_poll_timeout,
+            establish_socks_proxy_passthru(sock->socks_proxy, sock->sd, sock->proxy_dest_host,
+                                           sock->proxy_dest_port, sock->server_poll_timeout,
                                            sig_info);
         }
         if (proxy_retry)
@@ -2091,28 +1605,21 @@ phase2_tcp_client(struct link_socket *sock, struct signal_info *sig_info)
         }
 
     } while (proxy_retry);
-
 }
 
 static void
 phase2_socks_client(struct link_socket *sock, struct signal_info *sig_info)
 {
-    socket_connect(&sock->ctrl_sd,
-                   sock->info.lsa->current_remote->ai_addr,
-                   get_server_poll_remaining_time(sock->server_poll_timeout),
-                   sig_info);
+    socket_connect(&sock->ctrl_sd, sock->info.lsa->current_remote->ai_addr,
+                   get_server_poll_remaining_time(sock->server_poll_timeout), sig_info);
 
     if (sig_info->signal_received)
     {
         return;
     }
 
-    establish_socks_proxy_udpassoc(sock->socks_proxy,
-                                   sock->ctrl_sd,
-                                   sock->sd,
-                                   &sock->socks_relay.dest,
-                                   sock->server_poll_timeout,
-                                   sig_info);
+    establish_socks_proxy_udpassoc(sock->socks_proxy, sock->ctrl_sd, &sock->socks_relay.dest,
+                                   sock->server_poll_timeout, sig_info);
 
     if (sig_info->signal_received)
     {
@@ -2130,20 +1637,30 @@ phase2_socks_client(struct link_socket *sock, struct signal_info *sig_info)
         sock->info.lsa->remote_list = NULL;
     }
 
-    resolve_remote(sock, 1, NULL, sig_info);
+    resolve_remote(sock, 1, sig_info);
 }
 
 #if defined(_WIN32)
 static void
-create_socket_dco_win(struct context *c, struct link_socket *sock,
-                      struct signal_info *sig_info)
+create_socket_dco_win(struct context *c, struct link_socket *sock, struct signal_info *sig_info)
 {
+    /* in P2P mode we must have remote resolved at this point */
+    struct addrinfo *remoteaddr = sock->info.lsa->current_remote;
+    if ((c->options.mode == MODE_POINT_TO_POINT) && (!remoteaddr))
+    {
+        return;
+    }
+
     if (!c->c1.tuntap)
     {
         struct tuntap *tt;
-        ALLOC_OBJ(tt, struct tuntap);
+        ALLOC_OBJ_CLEAR(tt, struct tuntap);
 
-        *tt = create_dco_handle(c->options.dev_node, &c->gc);
+        tt->backend_driver = DRIVER_DCO;
+        tt->options.msg_channel = c->options.msg_channel;
+
+        const char *device_guid = NULL; /* not used */
+        tun_open_device(tt, c->options.dev_node, &device_guid, &c->gc);
 
         /* Ensure we can "safely" cast the handle to a socket */
         static_assert(sizeof(sock->sd) == sizeof(tt->hand), "HANDLE and SOCKET size differs");
@@ -2151,12 +1668,14 @@ create_socket_dco_win(struct context *c, struct link_socket *sock,
         c->c1.tuntap = tt;
     }
 
-    dco_create_socket(c->c1.tuntap->hand, &c->c1.tuntap->dco_new_peer_ov,
-                      sock->info.lsa->current_remote,
-                      sock->bind_local, sock->info.lsa->bind_local,
-                      get_server_poll_remaining_time(sock->server_poll_timeout),
-                      sig_info);
-
+    if (c->options.mode == MODE_SERVER)
+    {
+        dco_mp_start_vpn(c->c1.tuntap->hand, sock);
+    }
+    else
+    {
+        dco_p2p_new_peer(c->c1.tuntap->hand, &c->c1.tuntap->dco_new_peer_ov, sock, sig_info);
+    }
     sock->sockflags |= SF_DCO_WIN;
 
     if (sig_info->signal_received)
@@ -2171,14 +1690,12 @@ create_socket_dco_win(struct context *c, struct link_socket *sock,
 
 /* finalize socket initialization */
 void
-link_socket_init_phase2(struct context *c)
+link_socket_init_phase2(struct context *c, struct link_socket *sock)
 {
-    struct link_socket *sock = c->c2.link_socket;
     const struct frame *frame = &c->c2.frame;
     struct signal_info *sig_info = c->sig;
 
-    const char *remote_dynamic = NULL;
-    struct signal_info sig_save = {0};
+    struct signal_info sig_save = { 0 };
 
     ASSERT(sock);
     ASSERT(sig_info);
@@ -2186,40 +1703,26 @@ link_socket_init_phase2(struct context *c)
     if (sig_info->signal_received)
     {
         sig_save = *sig_info;
-        signal_reset(sig_info);
+        sig_save.signal_received = signal_reset(sig_info, 0);
     }
 
     /* initialize buffers */
     socket_frame_init(frame, sock);
 
-    /*
-     * Pass a remote name to connect/accept so that
-     * they can test for dynamic IP address changes
-     * and throw a SIGUSR1 if appropriate.
-     */
-    if (sock->resolve_retry_seconds)
-    {
-        remote_dynamic = sock->remote_host;
-    }
-
     /* Second chance to resolv/create socket */
-    resolve_remote(sock, 2, &remote_dynamic,  sig_info);
+    resolve_remote(sock, 2, sig_info);
 
     /* If a valid remote has been found, create the socket with its addrinfo */
+#if defined(_WIN32)
+    if (dco_enabled(&c->options))
+    {
+        create_socket_dco_win(c, sock, sig_info);
+        goto done;
+    }
+#endif
     if (sock->info.lsa->current_remote)
     {
-#if defined(_WIN32)
-        if (dco_enabled(&c->options))
-        {
-            create_socket_dco_win(c, sock, sig_info);
-            goto done;
-        }
-        else
-#endif
-        {
-            create_socket(sock, sock->info.lsa->current_remote);
-        }
-
+        create_socket(sock, sock->info.lsa->current_remote);
     }
 
     /* If socket has not already been created create it now */
@@ -2228,7 +1731,7 @@ link_socket_init_phase2(struct context *c)
         /* If we have no --remote and have still not figured out the
          * protocol family to use we will use the first of the bind */
 
-        if (sock->bind_local  && !sock->remote_host && sock->info.lsa->bind_local)
+        if (sock->bind_local && !sock->remote_host && sock->info.lsa->bind_local)
         {
             /* Warn if this is because neither v4 or v6 was specified
              * and we should not connect a remote */
@@ -2238,7 +1741,6 @@ link_socket_init_phase2(struct context *c)
                     addr_family_name(sock->info.lsa->bind_local->ai_family));
                 sock->info.af = sock->info.lsa->bind_local->ai_family;
             }
-
             create_socket(sock, sock->info.lsa->bind_local);
         }
     }
@@ -2258,12 +1760,11 @@ link_socket_init_phase2(struct context *c)
 
     if (sock->info.proto == PROTO_TCP_SERVER)
     {
-        phase2_tcp_server(sock, remote_dynamic, sig_info);
+        phase2_tcp_server(sock, sig_info);
     }
     else if (sock->info.proto == PROTO_TCP_CLIENT)
     {
         phase2_tcp_client(sock, sig_info);
-
     }
     else if (sock->info.proto == PROTO_UDP && sock->socks_proxy)
     {
@@ -2357,7 +1858,8 @@ setenv_trusted(struct env_set *es, const struct link_socket_info *info)
 }
 
 static void
-ipchange_fmt(const bool include_cmd, struct argv *argv, const struct link_socket_info *info, struct gc_arena *gc)
+ipchange_fmt(const bool include_cmd, struct argv *argv, const struct link_socket_info *info,
+             struct gc_arena *gc)
 {
     const char *host = print_sockaddr_ex(&info->lsa->actual.dest.addr.sa, " ", PS_SHOW_PORT, gc);
     if (include_cmd)
@@ -2369,13 +1871,11 @@ ipchange_fmt(const bool include_cmd, struct argv *argv, const struct link_socket
     {
         argv_printf(argv, "%s", host);
     }
-
 }
 
 void
 link_socket_connection_initiated(struct link_socket_info *info,
-                                 const struct link_socket_actual *act,
-                                 const char *common_name,
+                                 const struct link_socket_actual *act, const char *common_name,
                                  struct env_set *es)
 {
     struct gc_arena gc = gc_new();
@@ -2391,7 +1891,8 @@ link_socket_connection_initiated(struct link_socket_info *info,
         {
             buf_printf(&out, "[%s] ", common_name);
         }
-        buf_printf(&out, "Peer Connection Initiated with %s", print_link_socket_actual(&info->lsa->actual, &gc));
+        buf_printf(&out, "Peer Connection Initiated with %s",
+                   print_link_socket_actual(&info->lsa->actual, &gc));
         msg(M_INFO, "%s", BSTR(&out));
     }
 
@@ -2403,7 +1904,8 @@ link_socket_connection_initiated(struct link_socket_info *info,
     {
         struct argv argv = argv_new();
         ipchange_fmt(false, &argv, info, &gc);
-        if (plugin_call(info->plugins, OPENVPN_PLUGIN_IPCHANGE, &argv, NULL, es) != OPENVPN_PLUGIN_FUNC_SUCCESS)
+        if (plugin_call(info->plugins, OPENVPN_PLUGIN_IPCHANGE, &argv, NULL, es)
+            != OPENVPN_PLUGIN_FUNC_SUCCESS)
         {
             msg(M_WARN, "WARNING: ipchange plugin call failed");
         }
@@ -2424,8 +1926,7 @@ link_socket_connection_initiated(struct link_socket_info *info,
 }
 
 void
-link_socket_bad_incoming_addr(struct buffer *buf,
-                              const struct link_socket_info *info,
+link_socket_bad_incoming_addr(struct buffer *buf, const struct link_socket_info *info,
                               const struct link_socket_actual *from_addr)
 {
     struct gc_arena gc = gc_new();
@@ -2437,8 +1938,7 @@ link_socket_bad_incoming_addr(struct buffer *buf,
         case AF_INET6:
             msg(D_LINK_ERRORS,
                 "TCP/UDP: Incoming packet rejected from %s[%d], expected peer address: %s (allow this incoming source address/port by removing --remote or adding --float)",
-                print_link_socket_actual(from_addr, &gc),
-                (int)from_addr->dest.addr.sa.sa_family,
+                print_link_socket_actual(from_addr, &gc), (int)from_addr->dest.addr.sa.sa_family,
                 print_sockaddr_ex(info->lsa->remote_list->ai_addr, ":", PS_SHOW_PORT, &gc));
             /* print additional remote addresses */
             for (ai = info->lsa->remote_list->ai_next; ai; ai = ai->ai_next)
@@ -2463,16 +1963,16 @@ link_socket_current_remote(const struct link_socket_info *info)
 {
     const struct link_socket_addr *lsa = info->lsa;
 
-/*
- * This logic supports "redirect-gateway" semantic, which
- * makes sense only for PF_INET routes over PF_INET endpoints
- *
- * Maybe in the future consider PF_INET6 endpoints also ...
- * by now just ignore it
- *
- * For --remote entries with multiple addresses this
- * only return the actual endpoint we have successfully connected to
- */
+    /*
+     * This logic supports "redirect-gateway" semantic, which
+     * makes sense only for PF_INET routes over PF_INET endpoints
+     *
+     * Maybe in the future consider PF_INET6 endpoints also ...
+     * by now just ignore it
+     *
+     * For --remote entries with multiple addresses this
+     * only return the actual endpoint we have successfully connected to
+     */
     if (lsa->actual.dest.addr.sa.sa_family != AF_INET)
     {
         return IPV4_INVALID_ADDR;
@@ -2484,8 +1984,7 @@ link_socket_current_remote(const struct link_socket_info *info)
     }
     else if (lsa->current_remote)
     {
-        return ntohl(((struct sockaddr_in *)lsa->current_remote->ai_addr)
-                     ->sin_addr.s_addr);
+        return ntohl(((struct sockaddr_in *)lsa->current_remote->ai_addr)->sin_addr.s_addr);
     }
     else
     {
@@ -2498,12 +1997,12 @@ link_socket_current_remote_ipv6(const struct link_socket_info *info)
 {
     const struct link_socket_addr *lsa = info->lsa;
 
-/* This logic supports "redirect-gateway" semantic,
- * for PF_INET6 routes over PF_INET6 endpoints
- *
- * For --remote entries with multiple addresses this
- * only return the actual endpoint we have successfully connected to
- */
+    /* This logic supports "redirect-gateway" semantic,
+     * for PF_INET6 routes over PF_INET6 endpoints
+     *
+     * For --remote entries with multiple addresses this
+     * only return the actual endpoint we have successfully connected to
+     */
     if (lsa->actual.dest.addr.sa.sa_family != AF_INET6)
     {
         return NULL;
@@ -2534,20 +2033,16 @@ socket_stat(const struct link_socket *s, unsigned int rwflags, struct gc_arena *
     {
         if (rwflags & EVENT_READ)
         {
-            buf_printf(&out, "S%s",
-                       (s->rwflags_debug & EVENT_READ) ? "R" : "r");
+            buf_printf(&out, "S%s", (s->rwflags_debug & EVENT_READ) ? "R" : "r");
 #ifdef _WIN32
-            buf_printf(&out, "%s",
-                       overlapped_io_state_ascii(&s->reads));
+            buf_printf(&out, "%s", overlapped_io_state_ascii(&s->reads));
 #endif
         }
         if (rwflags & EVENT_WRITE)
         {
-            buf_printf(&out, "S%s",
-                       (s->rwflags_debug & EVENT_WRITE) ? "W" : "w");
+            buf_printf(&out, "S%s", (s->rwflags_debug & EVENT_WRITE) ? "W" : "w");
 #ifdef _WIN32
-            buf_printf(&out, "%s",
-                       overlapped_io_state_ascii(&s->writes));
+            buf_printf(&out, "%s", overlapped_io_state_ascii(&s->writes));
 #endif
         }
     }
@@ -2563,20 +2058,24 @@ socket_stat(const struct link_socket *s, unsigned int rwflags, struct gc_arena *
  * stream connection.
  */
 
+/**
+ * resets the stream buffer to be set up for the next round of
+ * reassembling a packet
+ *
+ * But still leaves the current packet in \c sb->buf to be potentially
+ * read.
+ */
 static inline void
 stream_buf_reset(struct stream_buf *sb)
 {
     dmsg(D_STREAM_DEBUG, "STREAM: RESET");
     sb->residual_fully_formed = false;
     sb->buf = sb->buf_init;
-    buf_reset(&sb->next);
     sb->len = -1;
 }
 
 static void
-stream_buf_init(struct stream_buf *sb,
-                struct buffer *buf,
-                const unsigned int sockflags,
+stream_buf_init(struct stream_buf *sb, struct buffer *buf, const unsigned int sockflags,
                 const int proto)
 {
     sb->buf_init = *buf;
@@ -2585,71 +2084,89 @@ stream_buf_init(struct stream_buf *sb,
     sb->residual = alloc_buf(sb->maxlen);
     sb->error = false;
 #if PORT_SHARE
-    sb->port_share_state = ((sockflags & SF_PORT_SHARE) && (proto == PROTO_TCP_SERVER))
-                           ? PS_ENABLED
-                           : PS_DISABLED;
+    sb->port_share_state =
+        ((sockflags & SF_PORT_SHARE) && (proto == PROTO_TCP_SERVER)) ? PS_ENABLED : PS_DISABLED;
 #endif
     stream_buf_reset(sb);
 
     dmsg(D_STREAM_DEBUG, "STREAM: INIT maxlen=%d", sb->maxlen);
 }
 
-static inline void
-stream_buf_set_next(struct stream_buf *sb)
+/**
+ * Return a buffer that is backed by the same backend as sb->buf that
+ * determines where the next read should be done by also having the
+ * right offset into \c sb->buf.
+ * @param sb the stream buffer from which to construct the next buffer
+ */
+static inline struct buffer
+stream_buf_get_next(struct stream_buf *sb)
 {
     /* set up 'next' for next i/o read */
-    sb->next = sb->buf;
-    sb->next.offset = sb->buf.offset + sb->buf.len;
-    sb->next.len = (sb->len >= 0 ? sb->len : sb->maxlen) - sb->buf.len;
-    dmsg(D_STREAM_DEBUG, "STREAM: SET NEXT, buf=[%d,%d] next=[%d,%d] len=%d maxlen=%d",
-         sb->buf.offset, sb->buf.len,
-         sb->next.offset, sb->next.len,
-         sb->len, sb->maxlen);
-    ASSERT(sb->next.len > 0);
-    ASSERT(buf_safe(&sb->buf, sb->next.len));
+    struct buffer next;
+    next = sb->buf;
+    next.offset = sb->buf.offset + sb->buf.len;
+    next.len = (sb->len >= 0 ? sb->len : sb->maxlen) - sb->buf.len;
+    dmsg(D_STREAM_DEBUG, "STREAM: GET NEXT, buf=[%d,%d] next=[%d,%d] len=%d maxlen=%d",
+         sb->buf.offset, sb->buf.len, next.offset, next.len, sb->len, sb->maxlen);
+    ASSERT(next.len > 0);
+    ASSERT(buf_safe(&sb->buf, next.len));
+    return next;
 }
 
+/**
+ * Sets the parameter buf to the current buffer of \c sb->buf.
+ * This function assumes that caller already checked if the packet in \c sb->buf
+ * is fully assembled.
+ *
+ * @param sb    stream buffer to operate on
+ * @param buf   buffer to point to the contents of buf
+ */
 static inline void
 stream_buf_get_final(struct stream_buf *sb, struct buffer *buf)
 {
-    dmsg(D_STREAM_DEBUG, "STREAM: GET FINAL len=%d",
-         buf_defined(&sb->buf) ? sb->buf.len : -1);
+    dmsg(D_STREAM_DEBUG, "STREAM: GET FINAL len=%d", buf_defined(&sb->buf) ? sb->buf.len : -1);
     ASSERT(buf_defined(&sb->buf));
     *buf = sb->buf;
 }
 
-static inline void
-stream_buf_get_next(struct stream_buf *sb, struct buffer *buf)
-{
-    dmsg(D_STREAM_DEBUG, "STREAM: GET NEXT len=%d",
-         buf_defined(&sb->next) ? sb->next.len : -1);
-    ASSERT(buf_defined(&sb->next));
-    *buf = sb->next;
-}
-
 bool
-stream_buf_read_setup_dowork(struct link_socket *sock)
+stream_buf_read_setup_dowork(struct stream_buf *sb)
 {
-    if (sock->stream_buf.residual.len && !sock->stream_buf.residual_fully_formed)
+    if (sb->residual.len && !sb->residual_fully_formed)
     {
-        ASSERT(buf_copy(&sock->stream_buf.buf, &sock->stream_buf.residual));
-        ASSERT(buf_init(&sock->stream_buf.residual, 0));
-        sock->stream_buf.residual_fully_formed = stream_buf_added(&sock->stream_buf, 0);
+        ASSERT(buf_copy(&sb->buf, &sb->residual));
+        ASSERT(buf_init(&sb->residual, 0));
+        sb->residual_fully_formed = stream_buf_added(sb, 0);
         dmsg(D_STREAM_DEBUG, "STREAM: RESIDUAL FULLY FORMED [%s], len=%d",
-             sock->stream_buf.residual_fully_formed ? "YES" : "NO",
-             sock->stream_buf.residual.len);
+             sb->residual_fully_formed ? "YES" : "NO", sb->residual.len);
     }
 
-    if (!sock->stream_buf.residual_fully_formed)
-    {
-        stream_buf_set_next(&sock->stream_buf);
-    }
-    return !sock->stream_buf.residual_fully_formed;
+    return !sb->residual_fully_formed;
 }
 
+/**
+ * This will determine if \c sb->buf contains a full packet. It will also
+ * move anything in \c sb->buf beyond a full packet to \c sb->residual.
+ *
+ * The first time the function is called with a valid buffer and port sharing
+ * is enabled, the function will also determine if the buffer contains
+ * OpenVPN protocol data and store the result in \c sb->port_share_state.
+ *
+ * If a packet outside the allowed range is detected, the error state
+ * on \c sb is set.
+ *
+ * Since the buffer in \c sb->buf is modified from the outside (via
+ * \c stream_buf_get_next) the parameter \p length_added needs to be set
+ * to the amount of bytes that have been written to this buffer. If the
+ * buffer was not modified but should still be analysed and potentially
+ * split to \c sb->residual, the parameter \p length_added should be 0.
+ *
+ * @param sb the stream buffer
+ * @param length_added The length that has been added to \c sb->buf
+ * @return true if \c sb->buf contains fully reassembled packet
+ */
 static bool
-stream_buf_added(struct stream_buf *sb,
-                 int length_added)
+stream_buf_added(struct stream_buf *sb, int length_added)
 {
     dmsg(D_STREAM_DEBUG, "STREAM: ADD length_added=%d", length_added);
     if (length_added > 0)
@@ -2659,7 +2176,7 @@ stream_buf_added(struct stream_buf *sb,
 
     /* if length unknown, see if we can get the length prefix from
      * the head of the buffer */
-    if (sb->len < 0 && sb->buf.len >= (int) sizeof(packet_size_type))
+    if (sb->len < 0 && sb->buf.len >= (int)sizeof(packet_size_type))
     {
         packet_size_type net_size;
 
@@ -2668,7 +2185,7 @@ stream_buf_added(struct stream_buf *sb,
         {
             if (!is_openvpn_protocol(&sb->buf))
             {
-                msg(D_STREAM_ERRORS, "Non-OpenVPN client protocol detected");
+                msg(D_PS_PROXY, "Non-OpenVPN client protocol detected");
                 sb->port_share_state = PS_FOREIGN;
                 sb->error = true;
                 return false;
@@ -2685,7 +2202,9 @@ stream_buf_added(struct stream_buf *sb,
 
         if (sb->len < 1 || sb->len > sb->maxlen)
         {
-            msg(M_WARN, "WARNING: Bad encapsulated packet length from peer (%d), which must be > 0 and <= %d -- please ensure that --tun-mtu or --link-mtu is equal on both peers -- this condition could also indicate a possible active attack on the TCP link -- [Attempting restart...]", sb->len, sb->maxlen);
+            msg(M_WARN,
+                "WARNING: Bad encapsulated packet length from peer (%d), which must be > 0 and <= %d -- please ensure that --tun-mtu or --link-mtu is equal on both peers -- this condition could also indicate a possible active attack on the TCP link -- [Attempting restart...]",
+                sb->len, sb->maxlen);
             stream_buf_reset(sb);
             sb->error = true;
             return false;
@@ -2702,14 +2221,12 @@ stream_buf_added(struct stream_buf *sb,
             ASSERT(buf_copy_excess(&sb->residual, &sb->buf, sb->len));
         }
         dmsg(D_STREAM_DEBUG, "STREAM: ADD returned TRUE, buf_len=%d, residual_len=%d",
-             BLEN(&sb->buf),
-             BLEN(&sb->residual));
+             BLEN(&sb->buf), BLEN(&sb->residual));
         return true;
     }
     else
     {
         dmsg(D_STREAM_DEBUG, "STREAM: ADD returned FALSE (have=%d need=%d)", sb->buf.len, sb->len);
-        stream_buf_set_next(sb);
         return false;
     }
 }
@@ -2734,489 +2251,11 @@ socket_listen_event_handle(struct link_socket *s)
         init_net_event_win32(&s->listen_handle, FD_ACCEPT, s->sd, 0);
     }
     return &s->listen_handle;
-#else  /* ifdef _WIN32 */
+#else /* ifdef _WIN32 */
     return s->sd;
 #endif
 }
 
-/*
- * Format IP addresses in ascii
- */
-
-const char *
-print_sockaddr_ex(const struct sockaddr *sa,
-                  const char *separator,
-                  const unsigned int flags,
-                  struct gc_arena *gc)
-{
-    struct buffer out = alloc_buf_gc(128, gc);
-    bool addr_is_defined = false;
-    char hostaddr[NI_MAXHOST] = "";
-    char servname[NI_MAXSERV] = "";
-    int status;
-
-    socklen_t salen = 0;
-    switch (sa->sa_family)
-    {
-        case AF_INET:
-            if (!(flags & PS_DONT_SHOW_FAMILY))
-            {
-                buf_puts(&out, "[AF_INET]");
-            }
-            salen = sizeof(struct sockaddr_in);
-            addr_is_defined = ((struct sockaddr_in *) sa)->sin_addr.s_addr != 0;
-            break;
-
-        case AF_INET6:
-            if (!(flags & PS_DONT_SHOW_FAMILY))
-            {
-                buf_puts(&out, "[AF_INET6]");
-            }
-            salen = sizeof(struct sockaddr_in6);
-            addr_is_defined = !IN6_IS_ADDR_UNSPECIFIED(&((struct sockaddr_in6 *) sa)->sin6_addr);
-            break;
-
-        case AF_UNSPEC:
-            if (!(flags & PS_DONT_SHOW_FAMILY))
-            {
-                return "[AF_UNSPEC]";
-            }
-            else
-            {
-                return "";
-            }
-
-        default:
-            ASSERT(0);
-    }
-
-    status = getnameinfo(sa, salen, hostaddr, sizeof(hostaddr),
-                         servname, sizeof(servname), NI_NUMERICHOST | NI_NUMERICSERV);
-
-    if (status!=0)
-    {
-        buf_printf(&out, "[nameinfo() err: %s]", gai_strerror(status));
-        return BSTR(&out);
-    }
-
-    if (!(flags & PS_DONT_SHOW_ADDR))
-    {
-        if (addr_is_defined)
-        {
-            buf_puts(&out, hostaddr);
-        }
-        else
-        {
-            buf_puts(&out, "[undef]");
-        }
-    }
-
-    if ((flags & PS_SHOW_PORT) || (flags & PS_SHOW_PORT_IF_DEFINED))
-    {
-        if (separator)
-        {
-            buf_puts(&out, separator);
-        }
-
-        buf_puts(&out, servname);
-    }
-
-    return BSTR(&out);
-}
-
-const char *
-print_link_socket_actual(const struct link_socket_actual *act, struct gc_arena *gc)
-{
-    return print_link_socket_actual_ex(act, ":", PS_SHOW_PORT|PS_SHOW_PKTINFO, gc);
-}
-
-#ifndef IF_NAMESIZE
-#define IF_NAMESIZE 16
-#endif
-
-const char *
-print_link_socket_actual_ex(const struct link_socket_actual *act,
-                            const char *separator,
-                            const unsigned int flags,
-                            struct gc_arena *gc)
-{
-    if (act)
-    {
-        struct buffer out = alloc_buf_gc(128, gc);
-        buf_printf(&out, "%s", print_sockaddr_ex(&act->dest.addr.sa, separator, flags, gc));
-#if ENABLE_IP_PKTINFO
-        char ifname[IF_NAMESIZE] = "[undef]";
-
-        if ((flags & PS_SHOW_PKTINFO) && addr_defined_ipi(act))
-        {
-            switch (act->dest.addr.sa.sa_family)
-            {
-                case AF_INET:
-                {
-                    struct openvpn_sockaddr sa;
-                    CLEAR(sa);
-                    sa.addr.in4.sin_family = AF_INET;
-#if defined(HAVE_IN_PKTINFO) && defined(HAVE_IPI_SPEC_DST)
-                    sa.addr.in4.sin_addr = act->pi.in4.ipi_spec_dst;
-                    if_indextoname(act->pi.in4.ipi_ifindex, ifname);
-#elif defined(IP_RECVDSTADDR)
-                    sa.addr.in4.sin_addr = act->pi.in4;
-                    ifname[0] = 0;
-#else  /* if defined(HAVE_IN_PKTINFO) && defined(HAVE_IPI_SPEC_DST) */
-#error ENABLE_IP_PKTINFO is set without IP_PKTINFO xor IP_RECVDSTADDR (fix syshead.h)
-#endif
-                    buf_printf(&out, " (via %s%%%s)",
-                               print_sockaddr_ex(&sa.addr.sa, separator, 0, gc),
-                               ifname);
-                }
-                break;
-
-                case AF_INET6:
-                {
-                    struct sockaddr_in6 sin6;
-                    char buf[INET6_ADDRSTRLEN] = "[undef]";
-                    CLEAR(sin6);
-                    sin6.sin6_family = AF_INET6;
-                    sin6.sin6_addr = act->pi.in6.ipi6_addr;
-                    if_indextoname(act->pi.in6.ipi6_ifindex, ifname);
-                    if (getnameinfo((struct sockaddr *)&sin6, sizeof(struct sockaddr_in6),
-                                    buf, sizeof(buf), NULL, 0, NI_NUMERICHOST) == 0)
-                    {
-                        buf_printf(&out, " (via %s%%%s)", buf, ifname);
-                    }
-                    else
-                    {
-                        buf_printf(&out, " (via [getnameinfo() err]%%%s)", ifname);
-                    }
-                }
-                break;
-            }
-        }
-#endif /* if ENABLE_IP_PKTINFO */
-        return BSTR(&out);
-    }
-    else
-    {
-        return "[NULL]";
-    }
-}
-
-/*
- * Convert an in_addr_t in host byte order
- * to an ascii dotted quad.
- */
-const char *
-print_in_addr_t(in_addr_t addr, unsigned int flags, struct gc_arena *gc)
-{
-    struct in_addr ia;
-    struct buffer out = alloc_buf_gc(64, gc);
-
-    if (addr || !(flags & IA_EMPTY_IF_UNDEF))
-    {
-        CLEAR(ia);
-        ia.s_addr = (flags & IA_NET_ORDER) ? addr : htonl(addr);
-
-        buf_printf(&out, "%s", inet_ntoa(ia));
-    }
-    return BSTR(&out);
-}
-
-/*
- * Convert an in6_addr in host byte order
- * to an ascii representation of an IPv6 address
- */
-const char *
-print_in6_addr(struct in6_addr a6, unsigned int flags, struct gc_arena *gc)
-{
-    struct buffer out = alloc_buf_gc(64, gc);
-    char tmp_out_buf[64];       /* inet_ntop wants pointer to buffer */
-
-    if (memcmp(&a6, &in6addr_any, sizeof(a6)) != 0
-        || !(flags & IA_EMPTY_IF_UNDEF))
-    {
-        inet_ntop(AF_INET6, &a6, tmp_out_buf, sizeof(tmp_out_buf)-1);
-        buf_printf(&out, "%s", tmp_out_buf );
-    }
-    return BSTR(&out);
-}
-
-/*
- * Convert an in_port_t in host byte order to a string
- */
-const char *
-print_in_port_t(in_port_t port, struct gc_arena *gc)
-{
-    struct buffer buffer = alloc_buf_gc(8, gc);
-    buf_printf(&buffer, "%hu", port);
-    return BSTR(&buffer);
-}
-
-#ifndef UINT8_MAX
-#define UINT8_MAX 0xff
-#endif
-
-/* add some offset to an ipv6 address
- * (add in steps of 8 bits, taking overflow into next round)
- */
-struct in6_addr
-add_in6_addr( struct in6_addr base, uint32_t add )
-{
-    int i;
-
-    for (i = 15; i>=0 && add > 0; i--)
-    {
-        register int carry;
-        register uint32_t h;
-
-        h = (unsigned char) base.s6_addr[i];
-        base.s6_addr[i] = (h+add) & UINT8_MAX;
-
-        /* using explicit carry for the 8-bit additions will catch
-         * 8-bit and(!) 32-bit overruns nicely
-         */
-        carry = ((h & 0xff)  + (add & 0xff)) >> 8;
-        add = (add>>8) + carry;
-    }
-    return base;
-}
-
-/* set environmental variables for ip/port in *addr */
-void
-setenv_sockaddr(struct env_set *es, const char *name_prefix, const struct openvpn_sockaddr *addr, const unsigned int flags)
-{
-    char name_buf[256];
-
-    char buf[128];
-    switch (addr->addr.sa.sa_family)
-    {
-        case AF_INET:
-            if (flags & SA_IP_PORT)
-            {
-                openvpn_snprintf(name_buf, sizeof(name_buf), "%s_ip", name_prefix);
-            }
-            else
-            {
-                openvpn_snprintf(name_buf, sizeof(name_buf), "%s", name_prefix);
-            }
-
-            setenv_str(es, name_buf, inet_ntoa(addr->addr.in4.sin_addr));
-
-            if ((flags & SA_IP_PORT) && addr->addr.in4.sin_port)
-            {
-                openvpn_snprintf(name_buf, sizeof(name_buf), "%s_port", name_prefix);
-                setenv_int(es, name_buf, ntohs(addr->addr.in4.sin_port));
-            }
-            break;
-
-        case AF_INET6:
-            if (IN6_IS_ADDR_V4MAPPED( &addr->addr.in6.sin6_addr ))
-            {
-                struct in_addr ia;
-                memcpy(&ia.s_addr, &addr->addr.in6.sin6_addr.s6_addr[12],
-                       sizeof(ia.s_addr));
-                openvpn_snprintf(name_buf, sizeof(name_buf), "%s_ip", name_prefix);
-                openvpn_snprintf(buf, sizeof(buf), "%s", inet_ntoa(ia) );
-            }
-            else
-            {
-                openvpn_snprintf(name_buf, sizeof(name_buf), "%s_ip6", name_prefix);
-                getnameinfo(&addr->addr.sa, sizeof(struct sockaddr_in6),
-                            buf, sizeof(buf), NULL, 0, NI_NUMERICHOST);
-            }
-            setenv_str(es, name_buf, buf);
-
-            if ((flags & SA_IP_PORT) && addr->addr.in6.sin6_port)
-            {
-                openvpn_snprintf(name_buf, sizeof(name_buf), "%s_port", name_prefix);
-                setenv_int(es, name_buf, ntohs(addr->addr.in6.sin6_port));
-            }
-            break;
-    }
-}
-
-void
-setenv_in_addr_t(struct env_set *es, const char *name_prefix, in_addr_t addr, const unsigned int flags)
-{
-    if (addr || !(flags & SA_SET_IF_NONZERO))
-    {
-        struct openvpn_sockaddr si;
-        CLEAR(si);
-        si.addr.in4.sin_family = AF_INET;
-        si.addr.in4.sin_addr.s_addr = htonl(addr);
-        setenv_sockaddr(es, name_prefix, &si, flags);
-    }
-}
-
-void
-setenv_in6_addr(struct env_set *es,
-                const char *name_prefix,
-                const struct in6_addr *addr,
-                const unsigned int flags)
-{
-    if (!IN6_IS_ADDR_UNSPECIFIED(addr) || !(flags & SA_SET_IF_NONZERO))
-    {
-        struct openvpn_sockaddr si;
-        CLEAR(si);
-        si.addr.in6.sin6_family = AF_INET6;
-        si.addr.in6.sin6_addr = *addr;
-        setenv_sockaddr(es, name_prefix, &si, flags);
-    }
-}
-
-void
-setenv_link_socket_actual(struct env_set *es,
-                          const char *name_prefix,
-                          const struct link_socket_actual *act,
-                          const unsigned int flags)
-{
-    setenv_sockaddr(es, name_prefix, &act->dest, flags);
-}
-
-/*
- * Convert protocol names between index and ascii form.
- */
-
-struct proto_names {
-    const char *short_form;
-    const char *display_form;
-    sa_family_t proto_af;
-    int proto;
-};
-
-/* Indexed by PROTO_x */
-static const struct proto_names proto_names[] = {
-    {"proto-uninitialized", "proto-NONE", AF_UNSPEC, PROTO_NONE},
-    /* try IPv4 and IPv6 (client), bind dual-stack (server) */
-    {"udp",         "UDP", AF_UNSPEC, PROTO_UDP},
-    {"tcp-server",  "TCP_SERVER", AF_UNSPEC, PROTO_TCP_SERVER},
-    {"tcp-client",  "TCP_CLIENT", AF_UNSPEC, PROTO_TCP_CLIENT},
-    {"tcp",         "TCP", AF_UNSPEC, PROTO_TCP},
-    /* force IPv4 */
-    {"udp4",        "UDPv4", AF_INET, PROTO_UDP},
-    {"tcp4-server", "TCPv4_SERVER", AF_INET, PROTO_TCP_SERVER},
-    {"tcp4-client", "TCPv4_CLIENT", AF_INET, PROTO_TCP_CLIENT},
-    {"tcp4",        "TCPv4", AF_INET, PROTO_TCP},
-    /* force IPv6 */
-    {"udp6",        "UDPv6", AF_INET6, PROTO_UDP},
-    {"tcp6-server", "TCPv6_SERVER", AF_INET6, PROTO_TCP_SERVER},
-    {"tcp6-client", "TCPv6_CLIENT", AF_INET6, PROTO_TCP_CLIENT},
-    {"tcp6",        "TCPv6", AF_INET6, PROTO_TCP},
-};
-
-int
-ascii2proto(const char *proto_name)
-{
-    int i;
-    for (i = 0; i < SIZE(proto_names); ++i)
-    {
-        if (!strcmp(proto_name, proto_names[i].short_form))
-        {
-            return proto_names[i].proto;
-        }
-    }
-    return -1;
-}
-
-sa_family_t
-ascii2af(const char *proto_name)
-{
-    int i;
-    for (i = 0; i < SIZE(proto_names); ++i)
-    {
-        if (!strcmp(proto_name, proto_names[i].short_form))
-        {
-            return proto_names[i].proto_af;
-        }
-    }
-    return 0;
-}
-
-const char *
-proto2ascii(int proto, sa_family_t af, bool display_form)
-{
-    unsigned int i;
-    for (i = 0; i < SIZE(proto_names); ++i)
-    {
-        if (proto_names[i].proto_af == af && proto_names[i].proto == proto)
-        {
-            if (display_form)
-            {
-                return proto_names[i].display_form;
-            }
-            else
-            {
-                return proto_names[i].short_form;
-            }
-        }
-    }
-
-    return "[unknown protocol]";
-}
-
-const char *
-proto2ascii_all(struct gc_arena *gc)
-{
-    struct buffer out = alloc_buf_gc(256, gc);
-    int i;
-
-    for (i = 0; i < SIZE(proto_names); ++i)
-    {
-        if (i)
-        {
-            buf_printf(&out, " ");
-        }
-        buf_printf(&out, "[%s]", proto_names[i].short_form);
-    }
-    return BSTR(&out);
-}
-
-const char *
-addr_family_name(int af)
-{
-    switch (af)
-    {
-        case AF_INET:  return "AF_INET";
-
-        case AF_INET6: return "AF_INET6";
-    }
-    return "AF_UNSPEC";
-}
-
-/*
- * Given a local proto, return local proto
- * if !remote, or compatible remote proto
- * if remote.
- *
- * This is used for options compatibility
- * checking.
- *
- * IPv6 and IPv4 protocols are comptabile but OpenVPN
- * has always sent UDPv4, TCPv4 over the wire. Keep these
- * strings for backward compatibility
- */
-const char *
-proto_remote(int proto, bool remote)
-{
-    ASSERT(proto >= 0 && proto < PROTO_N);
-    if (proto == PROTO_UDP)
-    {
-        return "UDPv4";
-    }
-
-    if ( (remote && proto == PROTO_TCP_CLIENT)
-         || (!remote && proto == PROTO_TCP_SERVER))
-    {
-        return "TCPv4_SERVER";
-    }
-    if ( (remote && proto == PROTO_TCP_SERVER)
-         || (!remote && proto == PROTO_TCP_CLIENT))
-    {
-        return "TCPv4_CLIENT";
-    }
-
-    ASSERT(0);
-    return ""; /* Make the compiler happy */
-}
 
 /*
  * Bad incoming address lengths that differ from what
@@ -3225,9 +2264,9 @@ proto_remote(int proto, bool remote)
 void
 bad_address_length(int actual, int expected)
 {
-    msg(M_FATAL, "ERROR: received strange incoming packet with an address length of %d -- we only accept address lengths of %d.",
-        actual,
-        expected);
+    msg(M_FATAL,
+        "ERROR: received strange incoming packet with an address length of %d -- we only accept address lengths of %d.",
+        actual, expected);
 }
 
 /*
@@ -3235,8 +2274,7 @@ bad_address_length(int actual, int expected)
  */
 
 int
-link_socket_read_tcp(struct link_socket *sock,
-                     struct buffer *buf)
+link_socket_read_tcp(struct link_socket *sock, struct buffer *buf)
 {
     int len = 0;
 
@@ -3249,17 +2287,16 @@ link_socket_read_tcp(struct link_socket *sock,
          */
         if (sock->sd == SOCKET_UNDEFINED)
         {
-            msg(M_INFO, "BUG: link_socket_read_tcp(): sock->sd==-1, reset client instance" );
-            sock->stream_reset = true;              /* reset client instance */
-            return buf->len = 0;                    /* nothing to read */
+            msg(M_INFO, "BUG: link_socket_read_tcp(): sock->sd==-1, reset client instance");
+            sock->stream_reset = true; /* reset client instance */
+            return buf->len = 0;       /* nothing to read */
         }
 
 #ifdef _WIN32
         sockethandle_t sh = { .s = sock->sd };
         len = sockethandle_finalize(sh, &sock->reads, buf, NULL);
 #else
-        struct buffer frag;
-        stream_buf_get_next(&sock->stream_buf, &frag);
+        struct buffer frag = stream_buf_get_next(&sock->stream_buf);
         len = recv(sock->sd, BPTR(&frag), BLEN(&frag), MSG_NOSIGNAL);
 #endif
 
@@ -3294,24 +2331,23 @@ link_socket_read_tcp(struct link_socket *sock,
  * both IPv4 and IPv6 destination addresses, plus padding (see RFC 2292)
  */
 #if defined(HAVE_IN_PKTINFO) && defined(HAVE_IPI_SPEC_DST)
-#define PKTINFO_BUF_SIZE max_int( CMSG_SPACE(sizeof(struct in6_pktinfo)), \
-                                  CMSG_SPACE(sizeof(struct in_pktinfo)) )
+#define PKTINFO_BUF_SIZE \
+    max_int(CMSG_SPACE(sizeof(struct in6_pktinfo)), CMSG_SPACE(sizeof(struct in_pktinfo)))
 #else
-#define PKTINFO_BUF_SIZE max_int( CMSG_SPACE(sizeof(struct in6_pktinfo)), \
-                                  CMSG_SPACE(sizeof(struct in_addr)) )
+#define PKTINFO_BUF_SIZE \
+    max_int(CMSG_SPACE(sizeof(struct in6_pktinfo)), CMSG_SPACE(sizeof(struct in_addr)))
 #endif
 
 static socklen_t
-link_socket_read_udp_posix_recvmsg(struct link_socket *sock,
-                                   struct buffer *buf,
+link_socket_read_udp_posix_recvmsg(struct link_socket *sock, struct buffer *buf,
                                    struct link_socket_actual *from)
 {
     struct iovec iov;
     uint8_t pktinfo_buf[PKTINFO_BUF_SIZE];
-    struct msghdr mesg;
+    struct msghdr mesg = { 0 };
     socklen_t fromlen = sizeof(from->dest.addr);
 
-    ASSERT(sock->sd >= 0);                      /* can't happen */
+    ASSERT(sock->sd >= 0); /* can't happen */
 
     iov.iov_base = BPTR(buf);
     iov.iov_len = buf_forward_capacity_total(buf);
@@ -3327,43 +2363,42 @@ link_socket_read_udp_posix_recvmsg(struct link_socket *sock,
         struct cmsghdr *cmsg;
         fromlen = mesg.msg_namelen;
         cmsg = CMSG_FIRSTHDR(&mesg);
-        if (cmsg != NULL
-            && CMSG_NXTHDR(&mesg, cmsg) == NULL
+        if (cmsg != NULL && CMSG_NXTHDR(&mesg, cmsg) == NULL
 #if defined(HAVE_IN_PKTINFO) && defined(HAVE_IPI_SPEC_DST)
-            && cmsg->cmsg_level == SOL_IP
-            && cmsg->cmsg_type == IP_PKTINFO
-            && cmsg->cmsg_len >= CMSG_LEN(sizeof(struct in_pktinfo)) )
+            && cmsg->cmsg_level == SOL_IP && cmsg->cmsg_type == IP_PKTINFO
+            && cmsg->cmsg_len >= CMSG_LEN(sizeof(struct in_pktinfo)))
 #elif defined(IP_RECVDSTADDR)
-            && cmsg->cmsg_level == IPPROTO_IP
-            && cmsg->cmsg_type == IP_RECVDSTADDR
-            && cmsg->cmsg_len >= CMSG_LEN(sizeof(struct in_addr)) )
-#else  /* if defined(HAVE_IN_PKTINFO) && defined(HAVE_IPI_SPEC_DST) */
+            && cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_RECVDSTADDR
+            && cmsg->cmsg_len >= CMSG_LEN(sizeof(struct in_addr)))
+#else /* if defined(HAVE_IN_PKTINFO) && defined(HAVE_IPI_SPEC_DST) */
 #error ENABLE_IP_PKTINFO is set without IP_PKTINFO xor IP_RECVDSTADDR (fix syshead.h)
 #endif
         {
 #if defined(HAVE_IN_PKTINFO) && defined(HAVE_IPI_SPEC_DST)
-            struct in_pktinfo *pkti = (struct in_pktinfo *) CMSG_DATA(cmsg);
-            from->pi.in4.ipi_ifindex = pkti->ipi_ifindex;
+            struct in_pktinfo *pkti = (struct in_pktinfo *)CMSG_DATA(cmsg);
+            from->pi.in4.ipi_ifindex =
+                (sock->sockflags & SF_PKTINFO_COPY_IIF) ? pkti->ipi_ifindex : 0;
             from->pi.in4.ipi_spec_dst = pkti->ipi_spec_dst;
 #elif defined(IP_RECVDSTADDR)
-            from->pi.in4 = *(struct in_addr *) CMSG_DATA(cmsg);
-#else  /* if defined(HAVE_IN_PKTINFO) && defined(HAVE_IPI_SPEC_DST) */
+            from->pi.in4 = *(struct in_addr *)CMSG_DATA(cmsg);
+#else /* if defined(HAVE_IN_PKTINFO) && defined(HAVE_IPI_SPEC_DST) */
 #error ENABLE_IP_PKTINFO is set without IP_PKTINFO xor IP_RECVDSTADDR (fix syshead.h)
 #endif
         }
-        else if (cmsg != NULL
-                 && CMSG_NXTHDR(&mesg, cmsg) == NULL
-                 && cmsg->cmsg_level == IPPROTO_IPV6
-                 && cmsg->cmsg_type == IPV6_PKTINFO
-                 && cmsg->cmsg_len >= CMSG_LEN(sizeof(struct in6_pktinfo)) )
+        else if (cmsg != NULL && CMSG_NXTHDR(&mesg, cmsg) == NULL
+                 && cmsg->cmsg_level == IPPROTO_IPV6 && cmsg->cmsg_type == IPV6_PKTINFO
+                 && cmsg->cmsg_len >= CMSG_LEN(sizeof(struct in6_pktinfo)))
         {
-            struct in6_pktinfo *pkti6 = (struct in6_pktinfo *) CMSG_DATA(cmsg);
-            from->pi.in6.ipi6_ifindex = pkti6->ipi6_ifindex;
+            struct in6_pktinfo *pkti6 = (struct in6_pktinfo *)CMSG_DATA(cmsg);
+            from->pi.in6.ipi6_ifindex =
+                (sock->sockflags & SF_PKTINFO_COPY_IIF) ? pkti6->ipi6_ifindex : 0;
             from->pi.in6.ipi6_addr = pkti6->ipi6_addr;
         }
         else if (cmsg != NULL)
         {
-            msg(M_WARN, "CMSG received that cannot be parsed (cmsg_level=%d, cmsg_type=%d, cmsg=len=%d)", (int)cmsg->cmsg_level, (int)cmsg->cmsg_type, (int)cmsg->cmsg_len );
+            msg(M_WARN,
+                "CMSG received that cannot be parsed (cmsg_level=%d, cmsg_type=%d, cmsg=len=%d)",
+                (int)cmsg->cmsg_level, (int)cmsg->cmsg_type, (int)cmsg->cmsg_len);
         }
     }
 
@@ -3372,15 +2407,14 @@ link_socket_read_udp_posix_recvmsg(struct link_socket *sock,
 #endif /* if ENABLE_IP_PKTINFO */
 
 int
-link_socket_read_udp_posix(struct link_socket *sock,
-                           struct buffer *buf,
+link_socket_read_udp_posix(struct link_socket *sock, struct buffer *buf,
                            struct link_socket_actual *from)
 {
     socklen_t fromlen = sizeof(from->dest.addr);
     socklen_t expectedlen = af_addr_size(sock->info.af);
     addr_zero_host(&from->dest);
 
-    ASSERT(sock->sd >= 0);                      /* can't happen */
+    ASSERT(sock->sd >= 0); /* can't happen */
 
 #if ENABLE_IP_PKTINFO
     /* Both PROTO_UDPv4 and PROTO_UDPv6 */
@@ -3390,8 +2424,10 @@ link_socket_read_udp_posix(struct link_socket *sock,
     }
     else
 #endif
-    buf->len = recvfrom(sock->sd, BPTR(buf), buf_forward_capacity(buf), 0,
-                        &from->dest.addr.sa, &fromlen);
+    {
+        buf->len = recvfrom(sock->sd, BPTR(buf), buf_forward_capacity(buf), 0, &from->dest.addr.sa,
+                            &fromlen);
+    }
     /* FIXME: won't do anything when sock->info.af == AF_UNSPEC */
     if (buf->len >= 0 && expectedlen && fromlen != expectedlen)
     {
@@ -3406,10 +2442,8 @@ link_socket_read_udp_posix(struct link_socket *sock,
  * Socket Write Routines
  */
 
-int
-link_socket_write_tcp(struct link_socket *sock,
-                      struct buffer *buf,
-                      struct link_socket_actual *to)
+ssize_t
+link_socket_write_tcp(struct link_socket *sock, struct buffer *buf, struct link_socket_actual *to)
 {
     packet_size_type len = BLEN(buf);
     dmsg(D_STREAM_DEBUG, "STREAM: WRITE %d offset=%d", (int)len, buf->offset);
@@ -3419,15 +2453,18 @@ link_socket_write_tcp(struct link_socket *sock,
 #ifdef _WIN32
     return link_socket_write_win32(sock, buf, to);
 #else
-    return link_socket_write_tcp_posix(sock, buf, to);
+    return link_socket_write_tcp_posix(sock, buf);
 #endif
 }
 
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
 #if ENABLE_IP_PKTINFO
 
-size_t
-link_socket_write_udp_posix_sendmsg(struct link_socket *sock,
-                                    struct buffer *buf,
+ssize_t
+link_socket_write_udp_posix_sendmsg(struct link_socket *sock, struct buffer *buf,
                                     struct link_socket_actual *to)
 {
     struct iovec iov;
@@ -3455,19 +2492,19 @@ link_socket_write_udp_posix_sendmsg(struct link_socket *sock,
             cmsg->cmsg_type = IP_PKTINFO;
             {
                 struct in_pktinfo *pkti;
-                pkti = (struct in_pktinfo *) CMSG_DATA(cmsg);
+                pkti = (struct in_pktinfo *)CMSG_DATA(cmsg);
                 pkti->ipi_ifindex = to->pi.in4.ipi_ifindex;
                 pkti->ipi_spec_dst = to->pi.in4.ipi_spec_dst;
                 pkti->ipi_addr.s_addr = 0;
             }
 #elif defined(IP_RECVDSTADDR)
-            ASSERT( CMSG_SPACE(sizeof(struct in_addr)) <= sizeof(pktinfo_buf) );
+            ASSERT(CMSG_SPACE(sizeof(struct in_addr)) <= sizeof(pktinfo_buf));
             mesg.msg_controllen = CMSG_SPACE(sizeof(struct in_addr));
             cmsg = CMSG_FIRSTHDR(&mesg);
             cmsg->cmsg_len = CMSG_LEN(sizeof(struct in_addr));
             cmsg->cmsg_level = IPPROTO_IP;
             cmsg->cmsg_type = IP_RECVDSTADDR;
-            *(struct in_addr *) CMSG_DATA(cmsg) = to->pi.in4;
+            *(struct in_addr *)CMSG_DATA(cmsg) = to->pi.in4;
 #else  /* if defined(HAVE_IN_PKTINFO) && defined(HAVE_IPI_SPEC_DST) */
 #error ENABLE_IP_PKTINFO is set without IP_PKTINFO xor IP_RECVDSTADDR (fix syshead.h)
 #endif /* if defined(HAVE_IN_PKTINFO) && defined(HAVE_IPI_SPEC_DST) */
@@ -3480,7 +2517,7 @@ link_socket_write_udp_posix_sendmsg(struct link_socket *sock,
             mesg.msg_name = &to->dest.addr.sa;
             mesg.msg_namelen = sizeof(struct sockaddr_in6);
 
-            ASSERT( CMSG_SPACE(sizeof(struct in6_pktinfo)) <= sizeof(pktinfo_buf) );
+            ASSERT(CMSG_SPACE(sizeof(struct in6_pktinfo)) <= sizeof(pktinfo_buf));
             mesg.msg_control = pktinfo_buf;
             mesg.msg_controllen = CMSG_SPACE(sizeof(struct in6_pktinfo));
             mesg.msg_flags = 0;
@@ -3489,13 +2526,14 @@ link_socket_write_udp_posix_sendmsg(struct link_socket *sock,
             cmsg->cmsg_level = IPPROTO_IPV6;
             cmsg->cmsg_type = IPV6_PKTINFO;
 
-            pkti6 = (struct in6_pktinfo *) CMSG_DATA(cmsg);
+            pkti6 = (struct in6_pktinfo *)CMSG_DATA(cmsg);
             pkti6->ipi6_ifindex = to->pi.in6.ipi6_ifindex;
             pkti6->ipi6_addr = to->pi.in6.ipi6_addr;
             break;
         }
 
-        default: ASSERT(0);
+        default:
+            ASSERT(0);
     }
     return sendmsg(sock->sd, &mesg, 0);
 }
@@ -3534,7 +2572,7 @@ socket_recv_queue(struct link_socket *sock, int maxsize)
         }
         else if (proto_is_tcp(sock->info.proto))
         {
-            stream_buf_get_next(&sock->stream_buf, &sock->reads.buf);
+            sock->reads.buf = stream_buf_get_next(&sock->stream_buf);
         }
         else
         {
@@ -3554,8 +2592,8 @@ socket_recv_queue(struct link_socket *sock, int maxsize)
 
         if (socket_is_dco_win(sock))
         {
-            status = ReadFile((HANDLE)sock->sd, wsabuf[0].buf, wsabuf[0].len,
-                              &sock->reads.size, &sock->reads.overlapped);
+            status = ReadFile((HANDLE)sock->sd, wsabuf[0].buf, wsabuf[0].len, &sock->reads.size,
+                              &sock->reads.overlapped);
             /* Readfile status is inverted from WSARecv */
             status = !status;
         }
@@ -3563,28 +2601,15 @@ socket_recv_queue(struct link_socket *sock, int maxsize)
         {
             sock->reads.addr_defined = true;
             sock->reads.addrlen = sizeof(sock->reads.addr6);
-            status = WSARecvFrom(
-                sock->sd,
-                wsabuf,
-                1,
-                &sock->reads.size,
-                &sock->reads.flags,
-                (struct sockaddr *) &sock->reads.addr,
-                &sock->reads.addrlen,
-                &sock->reads.overlapped,
-                NULL);
+            status = WSARecvFrom(sock->sd, wsabuf, 1, &sock->reads.size, &sock->reads.flags,
+                                 (struct sockaddr *)&sock->reads.addr, &sock->reads.addrlen,
+                                 &sock->reads.overlapped, NULL);
         }
         else if (proto_is_tcp(sock->info.proto))
         {
             sock->reads.addr_defined = false;
-            status = WSARecv(
-                sock->sd,
-                wsabuf,
-                1,
-                &sock->reads.size,
-                &sock->reads.flags,
-                &sock->reads.overlapped,
-                NULL);
+            status = WSARecv(sock->sd, wsabuf, 1, &sock->reads.size, &sock->reads.flags,
+                             &sock->reads.overlapped, NULL);
         }
         else
         {
@@ -3607,8 +2632,7 @@ socket_recv_queue(struct link_socket *sock, int maxsize)
             sock->reads.status = 0;
 
             dmsg(D_WIN32_IO, "WIN32 I/O: Socket Receive immediate return [%d,%d]",
-                 (int) wsabuf[0].len,
-                 (int) sock->reads.size);
+                 (int)wsabuf[0].len, (int)sock->reads.size);
         }
         else
         {
@@ -3617,8 +2641,7 @@ socket_recv_queue(struct link_socket *sock, int maxsize)
             {
                 sock->reads.iostate = IOSTATE_QUEUED;
                 sock->reads.status = status;
-                dmsg(D_WIN32_IO, "WIN32 I/O: Socket Receive queued [%d]",
-                     (int) wsabuf[0].len);
+                dmsg(D_WIN32_IO, "WIN32 I/O: Socket Receive queued [%d]", (int)wsabuf[0].len);
             }
             else /* error occurred */
             {
@@ -3626,8 +2649,7 @@ socket_recv_queue(struct link_socket *sock, int maxsize)
                 ASSERT(SetEvent(sock->reads.overlapped.hEvent));
                 sock->reads.iostate = IOSTATE_IMMEDIATE_RETURN;
                 sock->reads.status = status;
-                dmsg(D_WIN32_IO, "WIN32 I/O: Socket Receive error [%d]: %s",
-                     (int) wsabuf[0].len,
+                dmsg(D_WIN32_IO, "WIN32 I/O: Socket Receive error [%d]: %s", (int)wsabuf[0].len,
                      strerror_win32(status, &gc));
                 gc_free(&gc);
             }
@@ -3659,12 +2681,11 @@ socket_send_queue(struct link_socket *sock, struct buffer *buf, const struct lin
 
         if (socket_is_dco_win(sock))
         {
-            status = WriteFile((HANDLE)sock->sd, wsabuf[0].buf, wsabuf[0].len,
-                               &sock->writes.size, &sock->writes.overlapped);
+            status = WriteFile((HANDLE)sock->sd, wsabuf[0].buf, wsabuf[0].len, &sock->writes.size,
+                               &sock->writes.overlapped);
 
             /* WriteFile status is inverted from WSASendTo */
             status = !status;
-
         }
         else if (proto_is_udp(sock->info.proto))
         {
@@ -3681,30 +2702,17 @@ socket_send_queue(struct link_socket *sock, struct buffer *buf, const struct lin
                 sock->writes.addrlen = sizeof(sock->writes.addr);
             }
 
-            status = WSASendTo(
-                sock->sd,
-                wsabuf,
-                1,
-                &sock->writes.size,
-                sock->writes.flags,
-                (struct sockaddr *) &sock->writes.addr,
-                sock->writes.addrlen,
-                &sock->writes.overlapped,
-                NULL);
+            status = WSASendTo(sock->sd, wsabuf, 1, &sock->writes.size, sock->writes.flags,
+                               (struct sockaddr *)&sock->writes.addr, sock->writes.addrlen,
+                               &sock->writes.overlapped, NULL);
         }
         else if (proto_is_tcp(sock->info.proto))
         {
             /* destination address for TCP writes was established on connection initiation */
             sock->writes.addr_defined = false;
 
-            status = WSASend(
-                sock->sd,
-                wsabuf,
-                1,
-                &sock->writes.size,
-                sock->writes.flags,
-                &sock->writes.overlapped,
-                NULL);
+            status = WSASend(sock->sd, wsabuf, 1, &sock->writes.size, sock->writes.flags,
+                             &sock->writes.overlapped, NULL);
         }
         else
         {
@@ -3721,9 +2729,8 @@ socket_send_queue(struct link_socket *sock, struct buffer *buf, const struct lin
 
             sock->writes.status = 0;
 
-            dmsg(D_WIN32_IO, "WIN32 I/O: Socket Send immediate return [%d,%d]",
-                 (int) wsabuf[0].len,
-                 (int) sock->writes.size);
+            dmsg(D_WIN32_IO, "WIN32 I/O: Socket Send immediate return [%d,%d]", (int)wsabuf[0].len,
+                 (int)sock->writes.size);
         }
         else
         {
@@ -3733,8 +2740,7 @@ socket_send_queue(struct link_socket *sock, struct buffer *buf, const struct lin
             {
                 sock->writes.iostate = IOSTATE_QUEUED;
                 sock->writes.status = status;
-                dmsg(D_WIN32_IO, "WIN32 I/O: Socket Send queued [%d]",
-                     (int) wsabuf[0].len);
+                dmsg(D_WIN32_IO, "WIN32 I/O: Socket Send queued [%d]", (int)wsabuf[0].len);
             }
             else /* error occurred */
             {
@@ -3743,8 +2749,7 @@ socket_send_queue(struct link_socket *sock, struct buffer *buf, const struct lin
                 sock->writes.iostate = IOSTATE_IMMEDIATE_RETURN;
                 sock->writes.status = status;
 
-                dmsg(D_WIN32_IO, "WIN32 I/O: Socket Send error [%d]: %s",
-                     (int) wsabuf[0].len,
+                dmsg(D_WIN32_IO, "WIN32 I/O: Socket Send error [%d]: %s", (int)wsabuf[0].len,
                      strerror_win32(status, &gc));
 
                 gc_free(&gc);
@@ -3754,11 +2759,99 @@ socket_send_queue(struct link_socket *sock, struct buffer *buf, const struct lin
     return sock->writes.iostate;
 }
 
+void
+read_sockaddr_from_overlapped(struct overlapped_io *io, struct sockaddr *dst, int overlapped_ret)
+{
+    if (overlapped_ret >= 0 && io->addr_defined)
+    {
+        /* TODO(jjo): streamline this mess */
+        /* in this func we don't have relevant info about the PF_ of this
+         * endpoint, as link_socket_actual will be zero for the 1st received packet
+         *
+         * Test for inets PF_ possible sizes
+         */
+        switch (io->addrlen)
+        {
+            case sizeof(struct sockaddr_in):
+            case sizeof(struct sockaddr_in6):
+            /* TODO(jjo): for some reason (?) I'm getting 24,28 for AF_INET6
+             * under _WIN32*/
+            case sizeof(struct sockaddr_in6) - 4:
+                break;
+
+            default:
+                bad_address_length(io->addrlen, af_addr_size(io->addr.sin_family));
+        }
+
+        switch (io->addr.sin_family)
+        {
+            case AF_INET:
+                memcpy(dst, &io->addr, sizeof(struct sockaddr_in));
+                break;
+
+            case AF_INET6:
+                memcpy(dst, &io->addr6, sizeof(struct sockaddr_in6));
+                break;
+        }
+    }
+    else
+    {
+        CLEAR(*dst);
+    }
+}
+
+/**
+ * @brief Extracts a sockaddr from a packet payload.
+ *
+ * Reads a sockaddr structure from the start of the packet buffer and writes it to `dst`.
+ *
+ * @param[in] buf Packet buffer containing the payload.
+ * @param[out] dst Destination buffer for the extracted sockaddr.
+ * @return Length of the extracted sockaddr
+ */
+static int
+read_sockaddr_from_packet(struct buffer *buf, struct sockaddr *dst)
+{
+    int sa_len = 0;
+
+    const struct sockaddr *sa = (const struct sockaddr *)BPTR(buf);
+    switch (sa->sa_family)
+    {
+        case AF_INET:
+            sa_len = sizeof(struct sockaddr_in);
+            if (buf_len(buf) < sa_len)
+            {
+                msg(M_FATAL,
+                    "ERROR: received incoming packet with too short length of %d -- must be at least %d.",
+                    buf_len(buf), sa_len);
+            }
+            memcpy(dst, sa, sa_len);
+            buf_advance(buf, sa_len);
+            break;
+
+        case AF_INET6:
+            sa_len = sizeof(struct sockaddr_in6);
+            if (buf_len(buf) < sa_len)
+            {
+                msg(M_FATAL,
+                    "ERROR: received incoming packet with too short length of %d -- must be at least %d.",
+                    buf_len(buf), sa_len);
+            }
+            memcpy(dst, sa, sa_len);
+            buf_advance(buf, sa_len);
+            break;
+
+        default:
+            msg(M_FATAL, "ERROR: received incoming packet with invalid address family %d.",
+                sa->sa_family);
+    }
+
+    return sa_len;
+}
+
 /* Returns the number of bytes successfully read */
 int
-sockethandle_finalize(sockethandle_t sh,
-                      struct overlapped_io *io,
-                      struct buffer *buf,
+sockethandle_finalize(sockethandle_t sh, struct overlapped_io *io, struct buffer *buf,
                       struct link_socket_actual *from)
 {
     int ret = -1;
@@ -3827,45 +2920,14 @@ sockethandle_finalize(sockethandle_t sh,
             ASSERT(0);
     }
 
-    /* return from address if requested */
+    if (from && ret > 0 && sh.is_handle && sh.prepend_sa)
+    {
+        ret -= read_sockaddr_from_packet(buf, &from->dest.addr.sa);
+    }
+
     if (!sh.is_handle && from)
     {
-        if (ret >= 0 && io->addr_defined)
-        {
-            /* TODO(jjo): streamline this mess */
-            /* in this func we don't have relevant info about the PF_ of this
-             * endpoint, as link_socket_actual will be zero for the 1st received packet
-             *
-             * Test for inets PF_ possible sizes
-             */
-            switch (io->addrlen)
-            {
-                case sizeof(struct sockaddr_in):
-                case sizeof(struct sockaddr_in6):
-                /* TODO(jjo): for some reason (?) I'm getting 24,28 for AF_INET6
-                 * under _WIN32*/
-                case sizeof(struct sockaddr_in6)-4:
-                    break;
-
-                default:
-                    bad_address_length(io->addrlen, af_addr_size(io->addr.sin_family));
-            }
-
-            switch (io->addr.sin_family)
-            {
-                case AF_INET:
-                    from->dest.addr.in4 = io->addr;
-                    break;
-
-                case AF_INET6:
-                    from->dest.addr.in6 = io->addr6;
-                    break;
-            }
-        }
-        else
-        {
-            CLEAR(from->dest.addr);
-        }
+        read_sockaddr_from_overlapped(io, &from->dest.addr.sa, ret);
     }
 
     if (buf)
@@ -3882,10 +2944,7 @@ sockethandle_finalize(sockethandle_t sh,
  */
 
 unsigned int
-socket_set(struct link_socket *s,
-           struct event_set *es,
-           unsigned int rwflags,
-           void *arg,
+socket_set(struct link_socket *s, struct event_set *es, unsigned int rwflags, void *arg,
            unsigned int *persistent)
 {
     if (s)
@@ -3965,20 +3024,15 @@ create_socket_unix(void)
 }
 
 void
-socket_bind_unix(socket_descriptor_t sd,
-                 struct sockaddr_un *local,
-                 const char *prefix)
+socket_bind_unix(socket_descriptor_t sd, struct sockaddr_un *local, const char *prefix)
 {
     struct gc_arena gc = gc_new();
     const mode_t orig_umask = umask(0);
 
-    if (bind(sd, (struct sockaddr *) local, sizeof(struct sockaddr_un)))
+    if (bind(sd, (struct sockaddr *)local, sizeof(struct sockaddr_un)))
     {
-        msg(M_FATAL | M_ERRNO,
-            "%s: Socket bind[%d] failed on unix domain socket %s",
-            prefix,
-            (int)sd,
-            sockaddr_unix_name(local, "NULL"));
+        msg(M_FATAL | M_ERRNO, "%s: Socket bind[%d] failed on unix domain socket %s", prefix,
+            (int)sd, sockaddr_unix_name(local, "NULL"));
     }
 
     umask(orig_umask);
@@ -3986,14 +3040,13 @@ socket_bind_unix(socket_descriptor_t sd,
 }
 
 socket_descriptor_t
-socket_accept_unix(socket_descriptor_t sd,
-                   struct sockaddr_un *remote)
+socket_accept_unix(socket_descriptor_t sd, struct sockaddr_un *remote)
 {
     socklen_t remote_len = sizeof(struct sockaddr_un);
     socket_descriptor_t ret;
 
     CLEAR(*remote);
-    ret = accept(sd, (struct sockaddr *) remote, &remote_len);
+    ret = accept(sd, (struct sockaddr *)remote, &remote_len);
     if (ret >= 0)
     {
         /* set socket file descriptor to not pass across execs, so that
@@ -4004,10 +3057,9 @@ socket_accept_unix(socket_descriptor_t sd,
 }
 
 int
-socket_connect_unix(socket_descriptor_t sd,
-                    struct sockaddr_un *remote)
+socket_connect_unix(socket_descriptor_t sd, struct sockaddr_un *remote)
 {
-    int status = connect(sd, (struct sockaddr *) remote, sizeof(struct sockaddr_un));
+    int status = connect(sd, (struct sockaddr *)remote, sizeof(struct sockaddr_un));
     if (status)
     {
         status = openvpn_errno();
@@ -4033,7 +3085,7 @@ socket_delete_unix(const struct sockaddr_un *local)
 }
 
 bool
-unix_socket_get_peer_uid_gid(const socket_descriptor_t sd, int *uid, int *gid)
+unix_socket_get_peer_uid_gid(const socket_descriptor_t sd, uid_t *uid, gid_t *gid)
 {
 #ifdef HAVE_GETPEEREID
     uid_t u;

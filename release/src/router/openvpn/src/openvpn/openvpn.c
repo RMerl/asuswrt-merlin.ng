@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -32,6 +31,7 @@
 #include "multi.h"
 #include "win32.h"
 #include "platform.h"
+#include "string.h"
 
 #include "memdbg.h"
 
@@ -60,9 +60,10 @@ tunnel_point_to_point(struct context *c)
 
     /* set point-to-point mode */
     c->mode = CM_P2P;
-
-    /* initialize tunnel instance */
-    init_instance_handle_signals(c, c->es, CC_HARD_USR1_TO_HUP);
+    /* initialize tunnel instance, avoid SIGHUP when config is stdin since
+     * re-reading the config from stdin will not work */
+    bool stdin_config = c->options.config && (strcmp(c->options.config, "stdin") == 0);
+    init_instance_handle_signals(c, c->es, stdin_config ? 0 : CC_HARD_USR1_TO_HUP);
     if (IS_SIG(c))
     {
         return;
@@ -71,8 +72,6 @@ tunnel_point_to_point(struct context *c)
     /* main event loop */
     while (true)
     {
-        perf_push(PERF_EVENT_LOOP);
-
         /* process timers, TLS, etc. */
         pre_select(c);
         P2P_CHECK_SIG();
@@ -84,15 +83,12 @@ tunnel_point_to_point(struct context *c)
         /* timeout? */
         if (c->c2.event_set_status == ES_TIMEOUT)
         {
-            perf_pop();
             continue;
         }
 
         /* process the I/O which triggered select */
-        process_io(c);
+        process_io(c, c->c2.link_sockets[0]);
         P2P_CHECK_SIG();
-
-        perf_pop();
     }
 
     persist_client_stats(c);
@@ -118,8 +114,7 @@ init_early(struct context *c)
      * printing depends on it */
     for (int j = 1; j < MAX_PARMS && c->options.providers.names[j]; j++)
     {
-        c->options.providers.providers[j] =
-            crypto_load_provider(c->options.providers.names[j]);
+        c->options.providers.providers[j] = crypto_load_provider(c->options.providers.names[j]);
     }
 }
 
@@ -128,8 +123,7 @@ uninit_early(struct context *c)
 {
     for (int j = 1; j < MAX_PARMS && c->options.providers.providers[j]; j++)
     {
-        crypto_unload_provider(c->options.providers.names[j],
-                               c->options.providers.providers[j]);
+        crypto_unload_provider(c->options.providers.names[j], c->options.providers.providers[j]);
     }
     net_ctx_free(&c->net_ctx);
 }
@@ -155,8 +149,7 @@ uninit_early(struct context *c)
  * @param argc - Commandline argument count.
  * @param argv - Commandline argument values.
  */
-static
-int
+static int
 openvpn_main(int argc, char *argv[])
 {
     struct context c;
@@ -192,7 +185,6 @@ openvpn_main(int argc, char *argv[])
             context_clear_all_except_first_time(&c);
 
             /* static signal info object */
-            CLEAR(siginfo_static);
             c.sig = &siginfo_static;
 
             /* initialize garbage collector scoped to context object */
@@ -210,7 +202,7 @@ openvpn_main(int argc, char *argv[])
 #endif
 
             /* initialize options to default state */
-            init_options(&c.options, true);
+            init_options(&c.options);
 
             /* parse command line options, and read configuration file */
             parse_argv(&c.options, argc, argv, M_USAGE, OPT_P_DEFAULT, NULL, c.es);
@@ -266,17 +258,18 @@ openvpn_main(int argc, char *argv[])
             pre_setup(&c.options);
 
             /* test crypto? */
-            if (do_test_crypto(&c.options))
+            if (c.options.test_crypto)
             {
+                do_test_crypto(&c);
                 break;
             }
 
             /* Query passwords before becoming a daemon if we don't use the
              * management interface to get them. */
-#ifdef ENABLE_MANAGEMENT
             if (!(c.options.management_flags & MF_QUERY_PASSWORDS))
-#endif
-            init_query_passwords(&c);
+            {
+                init_query_passwords(&c);
+            }
 
             /* become a daemon if --daemon */
             if (c.first_time)
@@ -332,15 +325,13 @@ openvpn_main(int argc, char *argv[])
 
                 /* pass restart status to management subsystem */
                 signal_restart_status(c.sig);
-            }
-            while (c.sig->signal_received == SIGUSR1);
+            } while (signal_reset(c.sig, SIGUSR1) == SIGUSR1);
 
             env_set_destroy(c.es);
             uninit_options(&c.options);
             gc_reset(&c.gc);
             uninit_early(&c);
-        }
-        while (c.sig->signal_received == SIGHUP);
+        } while (signal_reset(c.sig, SIGHUP) == SIGHUP);
     }
 
     context_gc_free(&c);
@@ -365,7 +356,7 @@ wmain(int argc, wchar_t *wargv[])
     int ret;
     int i;
 
-    if ((argv = calloc(argc+1, sizeof(char *))) == NULL)
+    if ((argv = calloc(argc + 1, sizeof(char *))) == NULL)
     {
         return 1;
     }

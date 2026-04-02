@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef _PLUGIN_AUTH_PAM_UTILS__H
@@ -35,11 +34,10 @@
  *  @param searchfor     needle to search for in the haystack
  *  @param replacewith   when a match is found, replace needle with this string
  *
- *  @return Returns NULL when any parameter is NULL or the worst-case result is to large ( >= SIZE_MAX).
- *          Otherwise it returns a pointer to a new buffer containing the modified input
+ *  @return Returns NULL when any parameter is NULL or the worst-case result is to large ( >=
+ * SIZE_MAX). Otherwise it returns a pointer to a new buffer containing the modified input
  */
-char *
-searchandreplace(const char *tosearch, const char *searchfor, const char *replacewith);
+char *searchandreplace(const char *tosearch, const char *searchfor, const char *replacewith);
 
 /**
  * Given an environmental variable name, search
@@ -48,10 +46,10 @@ searchandreplace(const char *tosearch, const char *searchfor, const char *replac
  * @param name  Environment variable to look up
  * @param envp  Environment variable table with all key/value pairs
  *
- * @return Returns a pointer to the value of the environment variable if found, otherwise NULL is returned.
+ * @return Returns a pointer to the value of the environment variable if found, otherwise NULL is
+ * returned.
  */
-const char *
-get_env(const char *name, const char *envp[]);
+const char *get_env(const char *name, const char *envp[]);
 
 /**
  * Return the length of a string array
@@ -59,7 +57,6 @@ get_env(const char *name, const char *envp[]);
  * @param array   Pointer to the array to calculate size of
  *
  */
-int
-string_array_len(const char *array[]);
+int string_array_len(const char *array[]);
 
 #endif

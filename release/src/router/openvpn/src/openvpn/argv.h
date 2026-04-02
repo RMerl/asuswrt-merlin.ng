@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  *
  *
  *  A printf-like function (that only recognizes a subset of standard printf
@@ -32,7 +31,8 @@
 
 #include "buffer.h"
 
-struct argv {
+struct argv
+{
     struct gc_arena gc;
     size_t capacity;
     size_t argc;
@@ -47,30 +47,30 @@ const char *argv_str(const struct argv *a, struct gc_arena *gc, const unsigned i
 
 struct argv argv_insert_head(const struct argv *a, const char *head);
 
-void argv_msg(const int msglev, const struct argv *a);
+void argv_msg(const msglvl_t msglevel, const struct argv *a);
 
-void argv_msg_prefix(const int msglev, const struct argv *a, const char *prefix);
+void argv_msg_prefix(const msglvl_t msglevel, const struct argv *a, const char *prefix);
 
 void argv_parse_cmd(struct argv *a, const char *s);
 
 bool argv_printf(struct argv *a, const char *format, ...)
 #ifdef __GNUC__
 #if __USE_MINGW_ANSI_STDIO
-__attribute__ ((format(gnu_printf, 2, 3)))
+    __attribute__((format(gnu_printf, 2, 3)))
 #else
-__attribute__ ((format(__printf__, 2, 3)))
+    __attribute__((format(__printf__, 2, 3)))
 #endif
 #endif
-;
+    ;
 
 bool argv_printf_cat(struct argv *a, const char *format, ...)
 #ifdef __GNUC__
 #if __USE_MINGW_ANSI_STDIO
-__attribute__ ((format(gnu_printf, 2, 3)))
+    __attribute__((format(gnu_printf, 2, 3)))
 #else
-__attribute__ ((format(__printf__, 2, 3)))
+    __attribute__((format(__printf__, 2, 3)))
 #endif
 #endif
-;
+    ;
 
 #endif /* ifndef ARGV_H */

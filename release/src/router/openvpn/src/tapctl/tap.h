@@ -2,7 +2,7 @@
  *  tapctl -- Utility to manipulate TUN/TAP adapters on Windows
  *            https://community.openvpn.net/openvpn/wiki/Tapctl
  *
- *  Copyright (C) 2018-2024 Simon Rozman <simon@rozman.si>
+ *  Copyright (C) 2018-2026 Simon Rozman <simon@rozman.si>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -14,8 +14,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef TAP_H
@@ -38,7 +37,7 @@
  *                      description of the device. This pointer is optional and can be NULL.
  *
  * @param szHwId        A pointer to a NULL-terminated string that supplies the hardware id
- *                      of the device (e.g. "root\\tap0901", "Wintun").
+ *                      of the device (e.g. "root\\tap0901").
  *
  * @param pbRebootRequired  A pointer to a BOOL flag. If the device requires a system restart,
  *                      this flag is set to TRUE. Otherwise, the flag is left unmodified. This
@@ -50,12 +49,8 @@
  * @return ERROR_SUCCESS on success; Win32 error code otherwise
  **/
 DWORD
-tap_create_adapter(
-    _In_opt_ HWND hwndParent,
-    _In_opt_ LPCTSTR szDeviceDescription,
-    _In_ LPCTSTR szHwId,
-    _Inout_ LPBOOL pbRebootRequired,
-    _Out_ LPGUID pguidAdapter);
+tap_create_adapter(_In_opt_ HWND hwndParent, _In_opt_ LPCWSTR szDeviceDescription,
+                   _In_ LPCWSTR szHwId, _Inout_ LPBOOL pbRebootRequired, _Out_ LPGUID pguidAdapter);
 
 
 /**
@@ -77,10 +72,8 @@ tap_create_adapter(
  * @return ERROR_SUCCESS on success; Win32 error code otherwise
  **/
 DWORD
-tap_delete_adapter(
-    _In_opt_ HWND hwndParent,
-    _In_ LPCGUID pguidAdapter,
-    _Inout_ LPBOOL pbRebootRequired);
+tap_delete_adapter(_In_opt_ HWND hwndParent, _In_ LPCGUID pguidAdapter,
+                   _Inout_ LPBOOL pbRebootRequired);
 
 
 /**
@@ -104,11 +97,8 @@ tap_delete_adapter(
  * @return ERROR_SUCCESS on success; Win32 error code otherwise
  **/
 DWORD
-tap_enable_adapter(
-    _In_opt_ HWND hwndParent,
-    _In_ LPCGUID pguidAdapter,
-    _In_ BOOL bEnable,
-    _Inout_ LPBOOL pbRebootRequired);
+tap_enable_adapter(_In_opt_ HWND hwndParent, _In_ LPCGUID pguidAdapter, _In_ BOOL bEnable,
+                   _Inout_ LPBOOL pbRebootRequired);
 
 
 /**
@@ -124,10 +114,7 @@ tap_enable_adapter(
  * @return ERROR_SUCCESS on success; Win32 error code otherwise
  **/
 DWORD
-tap_set_adapter_name(
-    _In_ LPCGUID pguidAdapter,
-    _In_ LPCTSTR szName,
-    _In_ BOOL bSilent);
+tap_set_adapter_name(_In_ LPCGUID pguidAdapter, _In_ LPCWSTR szName, _In_ BOOL bSilent);
 
 
 /**
@@ -135,11 +122,11 @@ tap_set_adapter_name(
  */
 struct tap_adapter_node
 {
-    GUID guid;             /** Adapter GUID */
-    LPTSTR szzHardwareIDs; /** Device hardware ID(s) */
-    LPTSTR szName;         /** Adapter name */
+    GUID guid;                      /**< Adapter GUID */
+    LPWSTR szzHardwareIDs;          /**< Device hardware ID(s) */
+    LPWSTR szName;                  /**< Adapter name */
 
-    struct tap_adapter_node *pNext; /** Pointer to next adapter */
+    struct tap_adapter_node *pNext; /**< Pointer to next adapter */
 };
 
 
@@ -163,10 +150,8 @@ struct tap_adapter_node
  * @return ERROR_SUCCESS on success; Win32 error code otherwise
  */
 DWORD
-tap_list_adapters(
-    _In_opt_ HWND hwndParent,
-    _In_opt_ LPCTSTR szzHwIDs,
-    _Out_ struct tap_adapter_node **ppAdapterList);
+tap_list_adapters(_In_opt_ HWND hwndParent, _In_opt_ LPCWSTR szzHwIDs,
+                  _Out_ struct tap_adapter_node **ppAdapterList);
 
 
 /**
@@ -174,8 +159,6 @@ tap_list_adapters(
  *
  * @param pAdapterList  A pointer to the first adapter in the list to free.
  */
-void
-tap_free_adapter_list(
-    _In_ struct tap_adapter_node *pAdapterList);
+void tap_free_adapter_list(_In_ struct tap_adapter_node *pAdapterList);
 
 #endif /* ifndef TAP_H */

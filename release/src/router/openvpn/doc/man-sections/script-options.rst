@@ -8,9 +8,13 @@ the OpenVPN process.
 Script Order of Execution
 -------------------------
 
+#. ``--dns-updown``
+
+   Executed after TCP/UDP socket bind and TUN/TAP open, before ``--up``.
+
 #. ``--up``
 
-   Executed after TCP/UDP socket bind and TUN/TAP open.
+   Executed after TCP/UDP socket bind and TUN/TAP open, after ``--dns-updown``.
 
 #. ``--tls-verify``
 
@@ -38,9 +42,13 @@ Script Order of Execution
 
    Executed in ``--mode server`` mode on client instance shutdown.
 
+#. ``--dns-updown``
+
+   Executed before TCP/UDP and TUN/TAP close, before ``--down``.
+
 #. ``--down``
 
-   Executed after TCP/UDP and TUN/TAP close.
+   Executed after TCP/UDP and TUN/TAP close, after ``--dns-updown``.
 
 #. ``--learn-address``
 
@@ -141,7 +149,7 @@ SCRIPT HOOKS
   :code:`auth_pending_file`. The first line must be the timeout in
   seconds, the required method on the second line (e.g. crtext) and
   third line must be the EXTRA as documented in the
-  ``client-pending-auth`` section of `doc/management.txt`.
+  ``client-pending-auth`` section of ``doc/management.txt``.
 
   This directive is designed to enable a plugin-style interface for
   extending OpenVPN's authentication capabilities.
@@ -171,7 +179,7 @@ SCRIPT HOOKS
         client-crresponse cmd
 
   OpenVPN will write the response of the client into a temporary file.
-  The filename will be passed as an argument to ``cmd``, and the file will be
+  The filename will be passed as an argument to ``cmd``, and the file will
   automatically deleted by OpenVPN after the script returns.
 
   The response is passed as is from the client. The script needs to check
@@ -232,6 +240,31 @@ SCRIPT HOOKS
 
   The ``--client-disconnect`` command is not passed any extra arguments
   (only those arguments specified in cmd, if any).
+
+--dns-updown cmd
+  Run command ``cmd``, instead of the default DNS up/down command that comes
+  with openvpn. If ``cmd`` is ``disable`` the ``--dns-updown`` command is not run.
+
+  If you write your own command, please make sure to ignore ``--dns``
+  server profiles that cannot be applied. Port, DNSSEC and secure transport
+  settings need to be adhered to. If split DNS is not possible a full redirect
+  can be used as a fallback. If not all of the server addresses or search domains
+  can be configured, apply them in the order they are listed in.
+
+  Note that ``--dns-updown`` is not supported on all platforms. On Windows DNS
+  will always be set by the service. On Android DNS will be passed via management
+  interface.
+
+  Note that DNS-related ``--dhcp-option``\ s might be converted so that they are
+  available to this hook if no ``--dns`` options exist. If any ``--dns server``
+  option is present, DNS-related ``--dhcp-option``\ s will always be ignored.
+  If an ``--up`` script is defined, foreign_option env vars will be generated
+  from ``--dns`` options and passed to the script. The default ``--dns-updown``
+  command is not run if an ``--up`` script is defined. Both is done for backward
+  compatibility. In case you want to run the ``--dns-updown`` command even if
+  there is an ``--up`` defined, you can define a custom command or use ``force``
+  as ``cmd`` to run the default command. No DNS env vars will be passed to ``--up``
+  in this case.
 
 --down cmd
   Run command ``cmd`` after TUN/TAP device close (post ``--user`` UID
@@ -538,8 +571,8 @@ characters for each string type will be converted to underbar ('\_').
     a filename, etc.
 
 *Q: Can string remapping be disabled?*
-    Yes, by using the ``--no-name-remapping`` option, however this
-    should be considered an advanced option.
+    No.  The options ``--no-name-remapping`` and ``--compat-names`` have
+    been removed in 2.5 because they were considered too insecure.
 
 Here is a brief rundown of OpenVPN's current string types and the
 permitted character class for each string:
@@ -555,7 +588,7 @@ permitted character class for each string:
 
 *--auth-user-pass username*
    Same as Common Name, with one exception:
-   starting with OpenVPN 2.0.1, the username is passed to the
+   The username is passed to the
    :code:`OPENVPN_PLUGIN_AUTH_USER_PASS_VERIFY` plugin in its raw form,
    without string remapping.
 
@@ -564,11 +597,9 @@ permitted character class for each string:
    a character which will cause the C library isprint() function to
    return true.
 
-*--client-config-dir filename as derived from common name or`username*
-   Alphanumeric, underbar ('\_'), dash ('-'), and dot ('.') except for "."
-   or ".." as standalone strings. As of v2.0.1-rc6, the at ('@') character
-   has been added as well for compatibility with the common name character
-   class.
+*--client-config-dir filename as derived from common name or username*
+   Alphanumeric, underbar ('\_'), dash ('-'), at ('@'), and dot ('.')
+   except for "." or ".." as standalone strings.
 
 *Environmental variable names*
    Alphanumeric or underbar ('\_').
@@ -587,7 +618,7 @@ Environmental Variables
 Once set, a variable is persisted indefinitely until it is reset by a
 new value or a restart,
 
-As of OpenVPN 2.0-beta12, in server mode, environmental variables set by
+In server mode, environmental variables set by
 OpenVPN are scoped according to the client objects they are associated
 with, so there should not be any issues with scripts having access to
 stale, previously set variables which refer to different client
@@ -659,7 +690,7 @@ instances.
     names). Set prior to ``--up`` or ``--down`` script execution.
 
 :code:`dns_*`
-    The ``--dns`` configuration options will be made available to script
+    The ``--dns`` configuration options will be made available to ``--dns-updown``
     execution through this set of environment variables. Variables appear
     only if the corresponding option has a value assigned. For the semantics
     of each individual variable, please refer to the documentation for ``--dns``.
@@ -828,7 +859,7 @@ instances.
 
 :code:`route_ipv6_{parm}_{n}`
     A set of variables which define each IPv6 route to be added, and are
-    set prior to **--up** script execution.
+    set prior to ``--up`` script execution.
 
     ``parm`` will be one of :code:`network`, :code:`gateway` or
     :code:`metric`. ``route_ipv6_network_{n}`` contains :code:`netmask`
@@ -840,6 +871,14 @@ instances.
     If the network or gateway are resolvable DNS names, their IP address
     translations will be recorded rather than their names as denoted on the
     command line or configuration file.
+
+:code:`route_redirect_gateway_ipv4`
+
+:code:`route_redirect_gateway_ipv6`
+    Set to :code:`1` if the corresponding default gateway should be redirected
+    into the tunnel, and to :code:`2` if also the local LAN segment should be
+    blocked (:code:`block-local`).  Not set otherwise.  Set prior to ``--up`` script
+    execution.
 
 :code:`script_context`
     Set to "init" or "restart" prior to up/down script execution. For more

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /*
@@ -34,7 +33,8 @@
 struct openvpn_sockaddr;
 struct link_socket_actual;
 
-struct socks_proxy_info {
+struct socks_proxy_info
+{
     bool defined;
 
     char server[128];
@@ -42,30 +42,26 @@ struct socks_proxy_info {
     char authfile[256];
 };
 
-struct socks_proxy_info *socks_proxy_new(const char *server,
-                                         const char *port,
+struct socks_proxy_info *socks_proxy_new(const char *server, const char *port,
                                          const char *authfile);
 
 void socks_proxy_close(struct socks_proxy_info *sp);
 
 void establish_socks_proxy_passthru(struct socks_proxy_info *p,
-                                    socket_descriptor_t sd,  /* already open to proxy */
-                                    const char *host,        /* openvpn server remote */
-                                    const char *servname,          /* openvpn server port */
+                                    socket_descriptor_t sd, /* already open to proxy */
+                                    const char *host,       /* openvpn server remote */
+                                    const char *servname,   /* openvpn server port */
                                     struct event_timeout *server_poll_timeout,
                                     struct signal_info *sig_info);
 
 void establish_socks_proxy_udpassoc(struct socks_proxy_info *p,
-                                    socket_descriptor_t ctrl_sd,  /* already open to proxy */
-                                    socket_descriptor_t udp_sd,
+                                    socket_descriptor_t ctrl_sd, /* already open to proxy */
                                     struct openvpn_sockaddr *relay_addr,
                                     struct event_timeout *server_poll_timeout,
                                     struct signal_info *sig_info);
 
-void socks_process_incoming_udp(struct buffer *buf,
-                                struct link_socket_actual *from);
+void socks_process_incoming_udp(struct buffer *buf, struct link_socket_actual *from);
 
-int socks_process_outgoing_udp(struct buffer *buf,
-                               const struct link_socket_actual *to);
+int socks_process_outgoing_udp(struct buffer *buf, const struct link_socket_actual *to);
 
 #endif /* ifndef SOCKS_H */

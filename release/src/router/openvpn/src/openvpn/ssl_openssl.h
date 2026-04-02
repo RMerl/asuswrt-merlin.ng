@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Fox Crypto B.V. <openvpn@foxcrypto.com>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -18,12 +18,12 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
- * @file Control Channel OpenSSL Backend
+ * @file
+ * Control Channel OpenSSL Backend
  */
 
 #ifndef SSL_OPENSSL_H_
@@ -36,17 +36,19 @@
  * Structure that wraps the TLS context. Contents differ depending on the
  * SSL library used.
  */
-struct tls_root_ctx {
+struct tls_root_ctx
+{
     SSL_CTX *ctx;
     time_t crl_last_mtime;
     off_t crl_last_size;
 };
 
-struct key_state_ssl {
-    SSL *ssl;                   /* SSL object -- new obj created for each new key */
-    BIO *ssl_bio;                       /* read/write plaintext from here */
-    BIO *ct_in;                 /* write ciphertext to here */
-    BIO *ct_out;                        /* read ciphertext from here */
+struct key_state_ssl
+{
+    SSL *ssl;     /* SSL object -- new obj created for each new key */
+    BIO *ssl_bio; /* read/write plaintext from here */
+    BIO *ct_in;   /* write ciphertext to here */
+    BIO *ct_out;  /* read ciphertext from here */
 };
 
 /**

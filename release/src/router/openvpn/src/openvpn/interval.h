@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /*
@@ -75,8 +74,7 @@ interval_test(struct interval *top)
     }
 
     if (top->last_action + top->horizon > local_now
-        || top->last_test_true + top->refresh <= local_now
-        || trigger)
+        || top->last_test_true + top->refresh <= local_now || trigger)
     {
         top->last_test_true = local_now;
 #if INTERVAL_DEBUG
@@ -135,9 +133,9 @@ interval_action(struct interval *top)
 
 struct event_timeout
 {
-    bool defined;       /**< This timeout is active */
-    interval_t n;       /**< periodic interval for periodic timeouts */
-    time_t last;        /**< time of last event */
+    bool defined; /**< This timeout is active */
+    interval_t n; /**< periodic interval for periodic timeouts */
+    time_t last;  /**< time of last event */
 };
 
 static inline bool
@@ -218,7 +216,7 @@ event_timeout_modify_wakeup(struct event_timeout *et, interval_t n)
 static inline interval_t
 event_timeout_remaining(struct event_timeout *et)
 {
-    return (interval_t) ((et->last + et->n) - now);
+    return (interval_t)((et->last + et->n) - now);
 }
 
 #define ETT_DEFAULT (-1)
@@ -255,19 +253,18 @@ event_timeout_remaining(struct event_timeout *et)
  * @param et_const_retry    see above
  * @return                  if the timeout has triggered and event has been reset
  */
-bool event_timeout_trigger(struct event_timeout *et,
-                           struct timeval *tv,
-                           int et_const_retry);
+bool event_timeout_trigger(struct event_timeout *et, struct timeval *tv, int et_const_retry);
 
 /*
  * Measure time intervals in microseconds
  */
 
-#define USEC_TIMER_MAX      60 /* maximum interval size in seconds */
+#define USEC_TIMER_MAX 60 /* maximum interval size in seconds */
 
 #define USEC_TIMER_MAX_USEC (USEC_TIMER_MAX * 1000000)
 
-struct usec_timer {
+struct usec_timer
+{
     struct timeval start;
     struct timeval end;
 };

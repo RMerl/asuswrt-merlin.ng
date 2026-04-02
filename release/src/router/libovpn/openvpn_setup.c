@@ -314,7 +314,6 @@ int ovpn_write_server_config(ovpn_sconf_t *sconf, int unit) {
 	if (sconf->auth_mode == OVPN_AUTH_TLS) {
 		fprintf(fp_client, "client\n");
 		if (sconf->if_type == OVPN_IF_TUN) {
-			fprintf(fp, "topology subnet\n");
 			fprintf(fp, "server %s %s\n", sconf->network, sconf->netmask);
 #ifdef RTCONFIG_IPV6
 			if (ipv6_enabled() && sconf->ipv6_enable == 1) {

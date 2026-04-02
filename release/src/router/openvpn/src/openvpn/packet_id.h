@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /*
@@ -35,14 +34,20 @@
 #include "error.h"
 #include "otime.h"
 
-#if 1
 /*
- * These are the types that members of
- * a struct packet_id_net are converted
- * to for network transmission.
+ * These are the types that members of a struct packet_id_net are converted
+ * to for network transmission and for saving to a persistent file.
+ *
+ * Note: data epoch data uses a 64 bit packet ID
+ * compromised of 16 bit epoch and 48 bit per-epoch packet counter.
+ * These are ephemeral and are never saved to a file.
  */
 typedef uint32_t packet_id_type;
-#define PACKET_ID_MAX UINT32_MAX
+#define PACKET_ID_MAX       UINT32_MAX
+#define PACKET_ID_EPOCH_MAX 0x0000ffffffffffffull
+/** Mask of the bits that contain the 48-bit of the per-epoch packet
+ * counter in the packet id*/
+#define PACKET_ID_MASK      0x0000ffffffffffffull
 typedef uint32_t net_time_t;
 
 /*
@@ -64,39 +69,20 @@ typedef uint32_t net_time_t;
 /* convert a net_time_t in network order to a time_t in host order */
 #define ntohtime(x) ((time_t)ntohl(x))
 
-#else  /* if 1 */
-
-/*
- * DEBUGGING ONLY.
- * Make packet_id_type and net_time_t small
- * to test wraparound logic and corner cases.
- */
-
-typedef uint8_t packet_id_type;
-typedef uint16_t net_time_t;
-
-#define PACKET_ID_WRAP_TRIGGER 0x80
-
-#define htonpid(x) (x)
-#define ntohpid(x) (x)
-#define htontime(x) htons((net_time_t)x)
-#define ntohtime(x) ((time_t)ntohs(x))
-
-#endif /* if 1 */
 
 /*
  * Printf formats for special types
  */
-#define packet_id_format "%u"
-typedef unsigned int packet_id_print_type;
+#define packet_id_format "%" PRIu64
+typedef uint64_t packet_id_print_type;
 
 /*
  * Maximum allowed backtrack in
  * sequence number due to packets arriving
  * out of order.
  */
-#define MIN_SEQ_BACKTRACK 0
-#define MAX_SEQ_BACKTRACK 65536
+#define MIN_SEQ_BACKTRACK     0
+#define MAX_SEQ_BACKTRACK     65536
 #define DEFAULT_SEQ_BACKTRACK 64
 
 /*
@@ -104,8 +90,8 @@ typedef unsigned int packet_id_print_type;
  * seconds due to packets arriving
  * out of order.
  */
-#define MIN_TIME_BACKTRACK 0
-#define MAX_TIME_BACKTRACK 600
+#define MIN_TIME_BACKTRACK     0
+#define MAX_TIME_BACKTRACK     600
 #define DEFAULT_TIME_BACKTRACK 15
 
 /*
@@ -126,14 +112,14 @@ CIRC_LIST(seq_list, time_t);
  */
 struct packet_id_rec
 {
-    time_t last_reap;         /* last call of packet_id_reap */
-    time_t time;              /* highest time stamp received */
-    packet_id_type id;        /* highest sequence number received */
-    int seq_backtrack;        /* set from --replay-window */
-    int time_backtrack;       /* set from --replay-window */
-    int max_backtrack_stat;   /* maximum backtrack seen so far */
-    bool initialized;         /* true if packet_id_init was called */
-    struct seq_list *seq_list; /* packet-id "memory" */
+    time_t last_reap;            /* last call of packet_id_reap */
+    time_t time;                 /* highest time stamp received */
+    uint64_t id;                 /* highest sequence number received */
+    uint64_t seq_backtrack;      /* set from --replay-window */
+    int time_backtrack;          /* set from --replay-window */
+    uint64_t max_backtrack_stat; /* maximum backtrack seen so far */
+    bool initialized;            /* true if packet_id_init was called */
+    struct seq_list *seq_list;   /* packet-id "memory" */
     const char *name;
     int unit;
 };
@@ -146,16 +132,16 @@ struct packet_id_persist
 {
     const char *filename;
     int fd;
-    time_t time;           /* time stamp */
-    packet_id_type id;     /* sequence number */
+    time_t time;       /* time stamp */
+    packet_id_type id; /* sequence number */
     time_t time_last_written;
     packet_id_type id_last_written;
 };
 
 struct packet_id_persist_file_image
 {
-    time_t time;           /* time stamp */
-    packet_id_type id;     /* sequence number */
+    time_t time;       /* time stamp */
+    packet_id_type id; /* sequence number */
 };
 
 /*
@@ -164,7 +150,7 @@ struct packet_id_persist_file_image
  */
 struct packet_id_send
 {
-    packet_id_type id;
+    uint64_t id;
     time_t time;
 };
 
@@ -174,8 +160,13 @@ struct packet_id_send
  * sequence number.  A long packet-id
  * includes a timestamp as well.
  *
+ * An epoch packet-id is a 16 bit epoch
+ * counter plus a 48 per-epoch packet-id.
+ *
+ *
  * Long packet-ids are used as IVs for
- * CFB/OFB ciphers.
+ * CFB/OFB ciphers and for control channel
+ * messages.
  *
  * This data structure is always sent
  * over the net in network byte order,
@@ -191,9 +182,16 @@ struct packet_id_send
  * 64 bit platforms use a
  * 64 bit time_t.
  */
+
+/**
+ * Data structure for describing the packet id that is received/send to the
+ * network. This struct does not match the on wire format.
+ */
 struct packet_id_net
 {
-    packet_id_type id;
+    /* converted to packet_id_type on non-epoch data ids, does not contain
+     * the epoch but is a flat id */
+    uint64_t id;
     time_t time; /* converted to net_time_t before transmission */
 };
 
@@ -203,17 +201,22 @@ struct packet_id
     struct packet_id_rec rec;
 };
 
-void packet_id_init(struct packet_id *p, int seq_backtrack, int time_backtrack, const char *name, int unit);
+void packet_id_init(struct packet_id *p, int seq_backtrack, int time_backtrack, const char *name,
+                    int unit);
 
 void packet_id_free(struct packet_id *p);
 
+/**
+ * Move the packet id recv structure from \c src to \c dest. \c src will
+ * be reinitialised. \c dest will be freed before the move.
+ */
+void packet_id_move_recv(struct packet_id_rec *dest, struct packet_id_rec *src);
+
 /* should we accept an incoming packet id ? */
-bool packet_id_test(struct packet_id_rec *p,
-                    const struct packet_id_net *pin);
+bool packet_id_test(struct packet_id_rec *p, const struct packet_id_net *pin);
 
 /* change our current state to reflect an accepted packet id */
-void packet_id_add(struct packet_id_rec *p,
-                   const struct packet_id_net *pin);
+void packet_id_add(struct packet_id_rec *p, const struct packet_id_net *pin);
 
 /* expire TIME_BACKTRACK sequence numbers */
 void packet_id_reap(struct packet_id_rec *p);
@@ -257,8 +260,7 @@ bool packet_id_read(struct packet_id_net *pin, struct buffer *buf, bool long_for
  *
  * @return true if successful, false otherwise.
  */
-bool packet_id_write(struct packet_id_send *p, struct buffer *buf,
-                     bool long_form, bool prepend);
+bool packet_id_write(struct packet_id_send *p, struct buffer *buf, bool long_form, bool prepend);
 
 /*
  * Inline functions.
@@ -278,6 +280,11 @@ packet_id_persist_enabled(const struct packet_id_persist *p)
     return p->fd >= 0;
 }
 
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
+
 /* transfer packet_id -> packet_id_persist */
 static inline void
 packet_id_persist_save_obj(struct packet_id_persist *p, const struct packet_id *pid)
@@ -288,6 +295,10 @@ packet_id_persist_save_obj(struct packet_id_persist *p, const struct packet_id *
         p->id = pid->rec.id;
     }
 }
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 /**
  * Reset the current send packet id to its initial state.
@@ -304,7 +315,8 @@ reset_packet_id_send(struct packet_id_send *p)
     p->id = 0;
 }
 
-const char *packet_id_net_print(const struct packet_id_net *pin, bool print_timestamp, struct gc_arena *gc);
+const char *packet_id_net_print(const struct packet_id_net *pin, bool print_timestamp,
+                                struct gc_arena *gc);
 
 static inline int
 packet_id_size(bool long_form)
@@ -318,23 +330,6 @@ packet_id_close_to_wrapping(const struct packet_id_send *p)
     return p->id >= PACKET_ID_WRAP_TRIGGER;
 }
 
-static inline bool
-check_timestamp_delta(time_t remote, unsigned int max_delta)
-{
-    unsigned int abs;
-    const time_t local_now = now;
-
-    if (local_now >= remote)
-    {
-        abs = local_now - remote;
-    }
-    else
-    {
-        abs = remote - local_now;
-    }
-    return abs <= max_delta;
-}
-
 static inline void
 packet_id_reap_test(struct packet_id_rec *p)
 {
@@ -343,5 +338,24 @@ packet_id_reap_test(struct packet_id_rec *p)
         packet_id_reap(p);
     }
 }
+
+/**
+ * Writes the packet ID containing both the epoch and the packet id to the
+ * buffer specified by buf.
+ * @param p         packet id send structure to use for the packet id
+ * @param epoch     epoch to write to the packet
+ * @param buf       buffer to write the packet id/epoch to
+ * @return          false if the packet id space is exhausted and cannot be written
+ */
+bool packet_id_write_epoch(struct packet_id_send *p, uint16_t epoch, struct buffer *buf);
+
+/**
+ * Reads the packet ID containing both the epoch and the per-epoch counter
+ * from the buf.  Will return 0 as epoch id if there is any error.
+ * @param p       packet_id struct to populate with the on-wire counter
+ * @param buf     buffer to read the packet id from.
+ * @return        0 for an error/invalid id, epoch otherwise
+ */
+uint16_t packet_id_read_epoch(struct packet_id_net *p, struct buffer *buf);
 
 #endif /* PACKET_ID_H */

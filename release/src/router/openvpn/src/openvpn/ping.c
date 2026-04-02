@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -39,10 +38,8 @@
  *
  * PING_STRING_SIZE must be sizeof (ping_string)
  */
-const uint8_t ping_string[] = {
-    0x2a, 0x18, 0x7b, 0xf3, 0x64, 0x1e, 0xb4, 0xcb,
-    0x07, 0xed, 0x2d, 0x0a, 0x98, 0x1f, 0xc7, 0x48
-};
+const uint8_t ping_string[] = { 0x2a, 0x18, 0x7b, 0xf3, 0x64, 0x1e, 0xb4, 0xcb,
+                                0x07, 0xed, 0x2d, 0x0a, 0x98, 0x1f, 0xc7, 0x48 };
 
 void
 trigger_ping_timeout_signal(struct context *c)
@@ -51,8 +48,7 @@ trigger_ping_timeout_signal(struct context *c)
     switch (c->options.ping_rec_timeout_action)
     {
         case PING_EXIT:
-            msg(M_INFO, "%sInactivity timeout (--ping-exit), exiting",
-                format_common_name(c, &gc));
+            msg(M_INFO, "%sInactivity timeout (--ping-exit), exiting", format_common_name(c, &gc));
             register_signal(c->sig, SIGTERM, "ping-exit");
             break;
 

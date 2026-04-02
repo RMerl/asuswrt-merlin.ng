@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Fox Crypto B.V. <openvpn@foxcrypto.com>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -18,12 +18,12 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
- * @file Control Channel Verification Module library-specific backend interface
+ * @file
+ * Control Channel Verification Module library-specific backend interface
  */
 
 #ifndef SSL_VERIFY_BACKEND_H_
@@ -32,7 +32,11 @@
 /**
  * Result of verification function
  */
-typedef enum { SUCCESS = 0, FAILURE = 1 } result_t;
+typedef enum
+{
+    SUCCESS = 0,
+    FAILURE = 1
+} result_t;
 
 /*
  * Backend support functions.
@@ -94,8 +98,7 @@ char *x509_get_subject(openvpn_x509_cert_t *cert, struct gc_arena *gc);
  *
  * @return              a string containing the certificate fingerprint
  */
-struct buffer x509_get_sha1_fingerprint(openvpn_x509_cert_t *cert,
-                                        struct gc_arena *gc);
+struct buffer x509_get_sha1_fingerprint(openvpn_x509_cert_t *cert, struct gc_arena *gc);
 
 /**
  * Retrieve the certificate's SHA256 fingerprint.
@@ -105,13 +108,12 @@ struct buffer x509_get_sha1_fingerprint(openvpn_x509_cert_t *cert,
  *
  * @return              a string containing the certificate fingerprint
  */
-struct buffer x509_get_sha256_fingerprint(openvpn_x509_cert_t *cert,
-                                          struct gc_arena *gc);
+struct buffer x509_get_sha256_fingerprint(openvpn_x509_cert_t *cert, struct gc_arena *gc);
 
 /*
  * Retrieve the certificate's username from the specified field.
  *
- * If the field is prepended with ext: and ENABLE_X509ALTUSERNAME is enabled,
+ * If the field is prepended with ext: is enabled,
  * it will be loaded from an X.509 extension
  *
  * @param cn                    Buffer to return the common name in.
@@ -121,17 +123,14 @@ struct buffer x509_get_sha256_fingerprint(openvpn_x509_cert_t *cert,
  *
  * @return              \c FAILURE, \c or SUCCESS
  */
-result_t backend_x509_get_username(char *common_name, int cn_len,
-                                   char *x509_username_field, openvpn_x509_cert_t *peer_cert);
+result_t backend_x509_get_username(char *common_name, size_t cn_len, char *x509_username_field,
+                                   openvpn_x509_cert_t *peer_cert);
 
-#ifdef ENABLE_X509ALTUSERNAME
 /**
  * Return true iff the supplied extension field is supported by the
  * --x509-username-field option.
  */
 bool x509_username_field_ext_supported(const char *extname);
-
-#endif
 
 /*
  * Return the certificate's serial number in decimal string representation.
@@ -157,8 +156,7 @@ char *backend_x509_get_serial(openvpn_x509_cert_t *cert, struct gc_arena *gc);
  * @return              String representation of the certificate's serial number
  *                      in hex notation, or NULL on error.
  */
-char *backend_x509_get_serial_hex(openvpn_x509_cert_t *cert,
-                                  struct gc_arena *gc);
+char *backend_x509_get_serial_hex(openvpn_x509_cert_t *cert, struct gc_arena *gc);
 
 /*
  * Write the certificate to the file in PEM format.
@@ -168,8 +166,7 @@ char *backend_x509_get_serial_hex(openvpn_x509_cert_t *cert,
  *
  * @return              \c FAILURE, \c or SUCCESS
  */
-result_t backend_x509_write_pem(openvpn_x509_cert_t *cert,
-                                const char *filename);
+result_t backend_x509_write_pem(openvpn_x509_cert_t *cert, const char *filename);
 
 /*
  * Save X509 fields to environment, using the naming convention:
@@ -194,7 +191,7 @@ void x509_setenv(struct env_set *es, int cert_depth, openvpn_x509_cert_t *cert);
  *
  */
 void x509_track_add(const struct x509_track **ll_head, const char *name,
-                    int msglevel, struct gc_arena *gc);
+                    msglvl_t msglevel, struct gc_arena *gc);
 
 /*
  * Save X509 fields to environment, using the naming convention:
@@ -216,8 +213,8 @@ void x509_track_add(const struct x509_track **ll_head, const char *name,
  * @param cert_depth    Depth of the certificate
  * @param cert          Certificate to set the environment for
  */
-void x509_setenv_track(const struct x509_track *xt, struct env_set *es,
-                       const int depth, openvpn_x509_cert_t *x509);
+void x509_setenv_track(const struct x509_track *xt, struct env_set *es, const int depth,
+                       openvpn_x509_cert_t *x509);
 
 /*
  * Check X.509 Netscape certificate type field, if available.
@@ -243,7 +240,7 @@ result_t x509_verify_ns_cert_type(openvpn_x509_cert_t *cert, const int usage);
  *                      if key usage is not enabled, or the values do not match.
  */
 result_t x509_verify_cert_ku(openvpn_x509_cert_t *x509, const unsigned *const expected_ku,
-                             int expected_len);
+                             size_t expected_len);
 
 /*
  * Verify X.509 extended key usage extension field.

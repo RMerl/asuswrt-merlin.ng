@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef MEMDBG_H
@@ -39,7 +38,8 @@
  * from uninitialized data, we need to untaint it before use --
  * otherwise we will get a lot of useless warnings.
  *
- *   valgrind --tool=memcheck --error-limit=no --suppressions=debug/valgrind-suppress --gen-suppressions=yes ./openvpn ...
+ *   valgrind --tool=memcheck --error-limit=no --suppressions=debug/valgrind-suppress
+ * --gen-suppressions=yes ./openvpn ...
  */
 
 #ifdef USE_VALGRIND
@@ -48,7 +48,7 @@
 
 #define VALGRIND_MAKE_READABLE(addr, len)
 
-#else  /* ifdef USE_VALGRIND */
+#else /* ifdef USE_VALGRIND */
 
 #define VALGRIND_MAKE_READABLE(addr, len)
 
@@ -86,7 +86,8 @@
 
 #include <dmalloc.h>
 
-#define openvpn_dmalloc(file, line, size) dmalloc_malloc((file), (line), (size), DMALLOC_FUNC_MALLOC, 0, 0)
+#define openvpn_dmalloc(file, line, size) \
+    dmalloc_malloc((file), (line), (size), DMALLOC_FUNC_MALLOC, 0, 0)
 
 /*
  * This #define will put the line number of the log

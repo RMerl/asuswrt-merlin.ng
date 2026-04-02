@@ -1,6 +1,12 @@
 Windows-Specific Options
 -------------------------
 
+These options are considered unknown on non-Windows platforms, resulting
+in fatal error (except ``--route-method``). You may want to use
+``--setenv opt`` or ``--ignore-unknown-option`` to ignore said error.
+Note that pushing unknown options from server does not trigger fatal
+errors.
+
 --allow-nonadmin TAP-adapter
   (Standalone) Set ``TAP-adapter`` to allow access from non-administrative
   accounts. If ``TAP-adapter`` is omitted, all TAP adapters on the system
@@ -15,12 +21,6 @@ Windows-Specific Options
   option prevents any application from accessing TCP or UDP port 53 except
   one inside the tunnel. It uses Windows Filtering Platform (WFP) and
   works on Windows Vista or later.
-
-  This option is considered unknown on non-Windows platforms and
-  unsupported on Windows XP, resulting in fatal error. You may want to use
-  ``--setenv opt`` or ``--ignore-unknown-option`` (not suitable for
-  Windows XP) to ignore said error. Note that pushing unknown options from
-  server does not trigger fatal errors.
 
 --cryptoapicert select-string
   *(Windows/OpenSSL Only)* Load the certificate and private key from the
@@ -252,9 +252,3 @@ Windows-Specific Options
   otherwise it defaulted to :code:`C:\\WINDOWS`. It is not needed to use
   the ``env`` keyword any more, and it will just be ignored. A warning is
   logged when this is found in the configuration file.
-
---windows-driver drv
-  Specifies which tun driver to use. Values are :code:`ovpn-dco` (default),
-  :code:`tap-windows6` and :code:`wintun`. :code:`ovpn-dco` and :code:`wintun`
-  require ``--dev tun``. :code:`wintun` also requires OpenVPN process to run
-  elevated, or be invoked using the Interactive Service.

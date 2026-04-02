@@ -618,18 +618,6 @@ engine engine-name
 are supported by OpenSSL.</p>
 </td></tr>
 <tr><td class="option-group">
-<kbd><span class="option">--fast-io</span></kbd></td>
-<td><p class="first">Optimize TUN/TAP/UDP I/O writes by avoiding a call to
-poll/epoll/select prior to the write operation. The purpose of such a
-call would normally be to block until the device or socket is ready to
-accept the write. Such blocking is unnecessary on some platforms which
-don't support write blocking on UDP sockets or TUN/TAP devices. In such
-cases, one can optimize the event loop by avoiding the poll/epoll/select
-call, improving CPU efficiency by 5% to 10%.</p>
-<p class="last">This option can only be used on non-Windows systems, when <tt class="docutils literal"><span class="pre">--proto</span>
-udp</tt> is specified, and when <tt class="docutils literal"><span class="pre">--shaper</span></tt> is <em>NOT</em> specified.</p>
-</td></tr>
-<tr><td class="option-group">
 <kbd><span class="option">--group <var>group</var></span></kbd></td>
 <td>Similar to the <tt class="docutils literal"><span class="pre">--user</span></tt> option, this option changes the group ID of
 the OpenVPN process to <tt class="docutils literal">group</tt> after initialization.</td></tr>
@@ -638,7 +626,7 @@ the OpenVPN process to <tt class="docutils literal">group</tt> after initializat
 </tr>
 <tr><td>&nbsp;</td><td><p class="first">Valid syntax:</p>
 <pre class="literal-block">
-ignore-unknown-options opt1 opt2 opt3 ... optN
+ignore-unknown-option opt1 opt2 opt3 ... optN
 </pre>
 <p>When one of options <tt class="docutils literal">opt1 ... optN</tt> is encountered in the configuration
 file the configuration file parsing does not fail if this OpenVPN version
@@ -701,16 +689,6 @@ number of concurrent clients is high.</p>
 <kbd><span class="option">--nice <var>n</var></span></kbd></td>
 <td>Change process priority after initialization (<tt class="docutils literal">n</tt> greater than 0 is
 lower priority, <tt class="docutils literal">n</tt> less than zero is higher priority).</td></tr>
-<tr><td class="option-group">
-<kbd><span class="option">--persist-key</span></kbd></td>
-<td><p class="first">Don't re-read key files across <code>SIGUSR1</code> or <tt class="docutils literal"><span class="pre">--ping-restart</span></tt>.</p>
-<p>This option can be combined with <tt class="docutils literal"><span class="pre">--user</span></tt> to allow restarts
-triggered by the <code>SIGUSR1</code> signal. Normally if you drop root
-privileges in OpenVPN, the daemon cannot be restarted since it will now
-be unable to re-read protected key files.</p>
-<p class="last">This option solves the problem by persisting keys across <code>SIGUSR1</code>
-resets, so they don't need to be re-read.</p>
-</td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--providers <var>providers</var></span></kbd></td>
 </tr>
@@ -795,7 +773,7 @@ in the SELinux Reference Policies) you will have to allow many things
 required only during initialization.</p>
 <p class="last">Like with chroot, complications can result when scripts or restarts are
 executed after the setcon operation, which is why you should really
-consider using the <tt class="docutils literal"><span class="pre">--persist-key</span></tt> and <tt class="docutils literal"><span class="pre">--persist-tun</span></tt> options.</p>
+consider using the <tt class="docutils literal"><span class="pre">--persist-tun</span></tt> option.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--status <var>args</var></span></kbd></td>
@@ -842,17 +820,20 @@ This option does not require a peer to function, and therefore can be
 specified without <tt class="docutils literal"><span class="pre">--dev</span></tt> or <tt class="docutils literal"><span class="pre">--remote</span></tt>.</p>
 <p>The typical usage of <tt class="docutils literal"><span class="pre">--test-crypto</span></tt> would be something like this:</p>
 <pre class="literal-block">
-openvpn --test-crypto --secret key
+openvpn --test-crypto
 </pre>
 <p>or</p>
 <pre class="literal-block">
-openvpn --test-crypto --secret key --verb 9
+openvpn --test-crypto --verb 9
 </pre>
-<p class="last">This option is very useful to test OpenVPN after it has been ported to a
+<p>This option is very useful to test OpenVPN after it has been ported to a
 new platform, or to isolate problems in the compiler, OpenSSL crypto
 library, or OpenVPN's crypto code. Since it is a self-test mode,
 problems with encryption and authentication can be debugged
 independently of network and tunnel issues.</p>
+<p class="last">Older versions of OpenVPN used the <tt class="docutils literal"><span class="pre">--secret</span></tt> argument to specify a
+static key for this test. Newer version generate a random key for the
+test.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--tmp-dir <var>dir</var></span></kbd></td>
@@ -1010,16 +991,11 @@ configured in a compatible way between both the local and remote side.</p>
 <tr><td>&nbsp;</td><td><p class="first">As described in the <tt class="docutils literal"><span class="pre">--compress</span></tt> option, compression is a potentially
 dangerous option.  This option allows controlling the behaviour of
 OpenVPN when compression is used and allowed.</p>
-<p>Valid syntaxes:</p>
-<pre class="literal-block">
-allow-compression
-allow-compression mode
-</pre>
 <p>The <tt class="docutils literal">mode</tt> argument can be one of the following values:</p>
 <dl class="last docutils">
 <dt><code>asym</code></dt>
-<dd>OpenVPN will only <em>decompress downlink packets</em> but <em>not compress
-uplink packets</em>.  This also allows migrating to disable compression
+<dd>OpenVPN will only <em>decompress incoming packets</em> but <em>not compress
+outgoing packets</em>.  This also allows migrating to disable compression
 when changing both server and client configurations to remove
 compression at the same time is not a feasible option.</dd>
 <dt><code>no</code>  (default)</dt>
@@ -1027,7 +1003,9 @@ compression at the same time is not a feasible option.</dd>
 is enabled, OpenVPN will additionally also refuse compression
 framing (stub).</dd>
 <dt><code>yes</code></dt>
-<dd>OpenVPN will send and receive compressed packets.</dd>
+<dd><strong>DEPRECATED</strong> This option is an alias for <code>asym</code>. Previously
+it did enable compression for outgoing packets, but OpenVPN never
+compresses packets on send now.</dd>
 </dl>
 </td></tr>
 <tr><td class="option-group">
@@ -1068,9 +1046,7 @@ counterpart. This can avoid MTU/frame size warnings.</li>
 configured on the data channel, however, later versions usually
 ignored this directive in favour of a negotiated cipher.
 Starting with 2.6.0, this option is always ignored in TLS mode
-when it comes to configuring the cipher and will only control the
-cipher for <tt class="docutils literal"><span class="pre">--secret</span></tt> pre-shared-key mode (note: this mode is
-deprecated and strictly not recommended).</p>
+when it comes to configuring the cipher.</p>
 <p>If you wish to specify the cipher to use on the data channel,
 please see <tt class="docutils literal"><span class="pre">--data-ciphers</span></tt> (for regular negotiation) and
 <tt class="docutils literal"><span class="pre">--data-ciphers-fallback</span></tt> (for a fallback option when the
@@ -1115,13 +1091,16 @@ the server will automatically add <tt class="docutils literal"><span class="pre"
 configuration if supported by the client and otherwise switch to <tt class="docutils literal"><span class="pre">comp-lzo</span> no</tt>
 and add <tt class="docutils literal"><span class="pre">--push</span> <span class="pre">comp-lzo</span></tt> to the client specific configuration.</p>
 <p><strong>*Security Considerations*</strong></p>
-<p class="last">Compression and encryption is a tricky combination. If an attacker knows
+<p>Compression and encryption is a tricky combination. If an attacker knows
 or is able to control (parts of) the plain-text of packets that contain
 secrets, the attacker might be able to extract the secret if compression
 is enabled. See e.g. the <em>CRIME</em> and <em>BREACH</em> attacks on TLS and
 <em>VORACLE</em> on VPNs which also leverage to break encryption. If you are not
 entirely sure that the above does not apply to your traffic, you are
 advised to <em>not</em> enable compression.</p>
+<p class="last">For this reason compression support was removed from current versions
+of OpenVPN. It will still decompress compressed packets received via
+a VPN connection but it will never compress any outgoing packets.</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--comp-lzo <var>mode</var></span></kbd></td>
@@ -1129,45 +1108,21 @@ advised to <em>not</em> enable compression.</p>
 <tr><td>&nbsp;</td><td><p class="first"><strong>DEPRECATED</strong> Enable LZO compression algorithm.  Compression is
 generally not recommended.  VPN tunnels which uses compression are
 suspectible to the VORALCE attack vector.</p>
-<p>Use LZO compression -- may add up to 1 byte per packet for incompressible
-data. <tt class="docutils literal">mode</tt> may be <code>yes</code>, <code>no</code>, or <code>adaptive</code>
-(default).</p>
-<p>In a server mode setup, it is possible to selectively turn compression
-on or off for individual clients.</p>
-<p>First, make sure the client-side config file enables selective
-compression by having at least one <tt class="docutils literal"><span class="pre">--comp-lzo</span></tt> directive, such as
-<tt class="docutils literal"><span class="pre">--comp-lzo</span> no</tt>. This will turn off compression by default, but allow
-a future directive push from the server to dynamically change the
-<code>on</code>/<code>off</code>/<code>adaptive</code> setting.</p>
-<p>Next in a <tt class="docutils literal"><span class="pre">--client-config-dir</span></tt> file, specify the compression setting
-for the client, for example:</p>
-<pre class="literal-block">
-comp-lzo yes
-push &quot;comp-lzo yes&quot;
-</pre>
-<p class="last">The first line sets the <tt class="docutils literal"><span class="pre">comp-lzo</span></tt> setting for the server side of the
-link, the second sets the client side.</p>
+<p>Allows the other side of the connection to use LZO compression. Due
+to difference in packet format this may add 1 additional byte per packet.
+With current versions of OpenVPN no actual compression will happen.</p>
+<p class="last"><tt class="docutils literal">mode</tt> may be <code>yes</code>, <code>no</code>, or <code>adaptive</code>
+but there is no actual change in behavior anymore.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--comp-noadapt</span></kbd></td>
-<td><p class="first"><strong>DEPRECATED</strong> When used in conjunction with <tt class="docutils literal"><span class="pre">--comp-lzo</span></tt>, this option
-will disable OpenVPN's adaptive compression algorithm. Normally, adaptive
-compression is enabled with <tt class="docutils literal"><span class="pre">--comp-lzo</span></tt>.</p>
-<p class="last">Adaptive compression tries to optimize the case where you have
-compression enabled, but you are sending predominantly incompressible
-(or pre-compressed) packets over the tunnel, such as an FTP or rsync
-transfer of a large, compressed file. With adaptive compression, OpenVPN
-will periodically sample the compression process to measure its
-efficiency. If the data being sent over the tunnel is already
-compressed, the compression efficiency will be very low, triggering
-openvpn to disable compression for a period of time until the next
-re-sample test.</p>
-</td></tr>
+<td><strong>DEPRECATED</strong> This option does not have any effect anymore since current
+versions of OpenVPN never compress outgoing packets.</td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--key-direction</span></kbd></td>
 </tr>
 <tr><td>&nbsp;</td><td>Alternative way of specifying the optional direction parameter for the
-<tt class="docutils literal"><span class="pre">--tls-auth</span></tt> and <tt class="docutils literal"><span class="pre">--secret</span></tt> options. Useful when using inline files
+<tt class="docutils literal"><span class="pre">--tls-auth</span></tt> option. Useful when using inline files
 (See section on inline files).</td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--data-ciphers <var>cipher-list</var></span></kbd></td>
@@ -1188,8 +1143,13 @@ available on all platforms.
 E.g. <code>AES-256-GCM:AES-128-GCM:?CHACHA20-POLY1305</code> would only enable
 Chacha20-Poly1305 if the underlying SSL library (and its configuration)
 supports it.</p>
+<p>Starting with OpenVPN 2.7 the special keyword <code>DEFAULT</code> can be used
+in the string and is replaced by the default ciphers.  This can be used to
+add an additional allowed cipher to the allowed ciphers, e.g.
+<code>DEFAULT:AES-192-CBC</code> to use the default ciphers but also allow
+<code>AES-192-CBC</code>.</p>
 <p>Cipher negotiation is enabled in client-server mode only. I.e. if
-<tt class="docutils literal"><span class="pre">--mode</span></tt> is set to <cite>server</cite> (server-side, implied by setting
+<tt class="docutils literal"><span class="pre">--mode</span></tt> is set to <tt class="docutils literal">server</tt> (server-side, implied by setting
 <tt class="docutils literal"><span class="pre">--server</span></tt> ), or if <tt class="docutils literal"><span class="pre">--pull</span></tt> is specified (client-side, implied by
 setting <tt class="docutils literal"><span class="pre">--client</span></tt>).</p>
 <p>If no common cipher is found during cipher negotiation, the connection
@@ -1213,48 +1173,11 @@ connect to peers that are running OpenVPN 2.3 or older versions, and
 have been configured with <tt class="docutils literal"><span class="pre">--enable-small</span></tt>
 (typically used on routers or other embedded devices).</p>
 </td></tr>
-<tr><td class="option-group">
-<kbd><span class="option">--secret <var>args</var></span></kbd></td>
-<td><p class="first"><strong>DEPRECATED</strong> Enable Static Key encryption mode (non-TLS). Use pre-shared secret
-<tt class="docutils literal">file</tt> which was generated with <tt class="docutils literal"><span class="pre">--genkey</span></tt>.</p>
-<p>Valid syntaxes:</p>
-<pre class="literal-block">
-secret file
-secret file direction
-</pre>
-<p>The optional <tt class="docutils literal">direction</tt> parameter enables the use of 4 distinct keys
-(HMAC-send, cipher-encrypt, HMAC-receive, cipher-decrypt), so that each
-data flow direction has a different set of HMAC and cipher keys. This
-has a number of desirable security properties including eliminating
-certain kinds of DoS and message replay attacks.</p>
-<p>When the <tt class="docutils literal">direction</tt> parameter is omitted, 2 keys are used
-bidirectionally, one for HMAC and the other for encryption/decryption.</p>
-<p>The <tt class="docutils literal">direction</tt> parameter should always be complementary on either
-side of the connection, i.e. one side should use <code>0</code> and the other
-should use <code>1</code>, or both sides should omit it altogether.</p>
-<p>The <tt class="docutils literal">direction</tt> parameter requires that <tt class="docutils literal">file</tt> contains a 2048 bit
-key. While pre-1.5 versions of OpenVPN generate 1024 bit key files, any
-version of OpenVPN which supports the <tt class="docutils literal">direction</tt> parameter, will also
-support 2048 bit key file generation using the <tt class="docutils literal"><span class="pre">--genkey</span></tt> option.</p>
-<p>Static key encryption mode has certain advantages, the primary being
-ease of configuration.</p>
-<p>There are no certificates or certificate authorities or complicated
-negotiation handshakes and protocols. The only requirement is that you
-have a pre-existing secure channel with your peer (such as <tt class="docutils literal">ssh</tt>) to
-initially copy the key. This requirement, along with the fact that your
-key never changes unless you manually generate a new one, makes it
-somewhat less secure than TLS mode (see below). If an attacker manages
-to steal your key, everything that was ever encrypted with it is
-compromised. Contrast that to the perfect forward secrecy features of
-TLS mode (using Diffie Hellman key exchange), where even if an attacker
-was able to steal your private key, he would gain no information to help
-him decrypt past sessions.</p>
-<p class="last">Another advantageous aspect of Static Key encryption mode is that it is
-a handshake-free protocol without any distinguishing signature or
-feature (such as a header or protocol handshake sequence) that would
-mark the ciphertext packets as being generated by OpenVPN. Anyone
-eavesdropping on the wire would see nothing but random-looking data.</p>
-</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--allow-deprecated-insecure-static-crypto</span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td><strong>DEPRECATED</strong> This allow using OpenVPN without TLS. This is deprecated
+and will be removed in OpenVPN 2.8.</td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--tran-window <var>n</var></span></kbd></td>
 </tr>
@@ -1347,7 +1270,9 @@ auth-user-pass
 auth-user-pass up
 </pre>
 <p>If <tt class="docutils literal">up</tt> is present, it must be a file containing username/password on 2
-lines. If the password line is missing, OpenVPN will prompt for one.</p>
+lines or a flag named <code>username-only</code> to indicate no password
+should be prompted for. In the former case, if the password line is missing
+in the file, OpenVPN will prompt for one.</p>
 <p>If <tt class="docutils literal">up</tt> is omitted, username/password will be prompted from the
 console.</p>
 <p>This option can also be inlined</p>
@@ -1359,6 +1284,18 @@ username
 </pre>
 <p>where password is optional, and will be prompted from the console if
 missing.</p>
+<p>The <code>username-only</code> flag is meant to be used with SSO authentication.
+In this case the user will be asked for a username but not password. Instead,
+a dummy password <code>[[BLANK]]</code> is generated internally and submitted to
+the server. See management-notes.txt for how this option affects username/password
+prompt via the management interface. For the console, it simply eliminates
+the password prompt.</p>
+<p>The <code>username-only</code> flag cannot be used along with embedding username and/or
+password in the config file, or while reading them from an external file. In
+such cases, if only username is relevant and no password prompt is desired, a
+dummy password like 'no_passsword' should be embedded as well. This flag is also
+incompatible with the <tt class="docutils literal"><span class="pre">--static-challenge</span></tt> option and legacy <tt class="docutils literal">dynamic challenge</tt>
+protocol.</p>
 <p class="last">The server configuration must specify an <tt class="docutils literal"><span class="pre">--auth-user-pass-verify</span></tt>
 script to verify the username/password provided by the client.</p>
 </td></tr>
@@ -1406,15 +1343,19 @@ tls-client
 packet addresses (not ports), and is useful in cases where routes or
 ifconfig settings pushed to the client would create an IP numbering
 conflict.</p>
+<p>Valid syntax:</p>
+<pre class="literal-block">
+client-nat snat|dnat network netmask alias
+</pre>
 <p>Examples:</p>
 <pre class="literal-block">
-client-nat snat 192.168.0.0/255.255.0.0
-client-nat dnat 10.64.0.0/255.255.0.0
+client-nat snat 192.168.0.0 255.255.0.0 10.64.0.0
+client-nat dnat 10.64.0.0 255.255.0.0 192.168.0.0
 </pre>
-<p><tt class="docutils literal">network/netmask</tt> (for example <code>192.168.0.0/255.255.0.0</code>) defines
-the local view of a resource from the client perspective, while
-<tt class="docutils literal">alias/netmask</tt> (for example <code>10.64.0.0/255.255.0.0</code>) defines the
-remote view from the server perspective.</p>
+<p><tt class="docutils literal">network</tt> and <tt class="docutils literal">netmask</tt> (for example <code>192.168.0.0
+255.255.0.0</code>) define the local view of a resource from the client
+perspective, while <tt class="docutils literal">alias</tt> (for example <code>10.64.0.0</code>) defines the
+remote view from the server perspective using the same netmask.</p>
 <p>Use <code>snat</code> (source NAT) for resources owned by the client and
 <code>dnat</code> (destination NAT) for remote resources.</p>
 <p class="last">Set <tt class="docutils literal"><span class="pre">--verb</span> 6</tt> for debugging info showing the transformation of
@@ -1530,10 +1471,14 @@ inactive n bytes
 <p>If the optional <tt class="docutils literal">bytes</tt> parameter is included, exit if less than
 <tt class="docutils literal">bytes</tt> of combined in/out traffic are produced on the tun/tap device
 in <tt class="docutils literal">n</tt> seconds.</p>
-<p class="last">In any case, OpenVPN's internal ping packets (which are just keepalives)
+<p>In any case, OpenVPN's internal ping packets (which are just keepalives)
 and TLS control packets are not considered &quot;activity&quot;, nor are they
 counted as traffic, as they are used internally by OpenVPN and are not
 an indication of actual user activity.</p>
+<p class="last">NOTE: on FreeBSD with DCO, due to platform limits, the previous paragraph
+is not correct.  In that case, encapsulation overhead and keepalives are
+counted, so using this feature needs a sufficiently-high <tt class="docutils literal">bytes</tt> value to
+take these extra numbers into account.</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--proto-force <var>p</var></span></kbd></td>
@@ -1627,6 +1572,7 @@ to the <tt class="docutils literal">AUTH_PENDING</tt> message.</li>
 <li>bit 7: The client is capable of sending exit notification via control channel using <tt class="docutils literal">EXIT</tt> message. Also, the client is accepting the protocol-flags pushed option for the EKM capability</li>
 <li>bit 8: The client is capable of accepting <tt class="docutils literal">AUTH_FAILED,TEMP</tt> messages</li>
 <li>bit 9: The client is capable of dynamic tls-crypt</li>
+<li>bit 10: The client is capable of data epoch keys</li>
 </ul>
 </dd>
 <dt><code>IV_NCP=2</code></dt>
@@ -1685,8 +1631,8 @@ re-installations and upgrades.</dd>
 This may be set by the client UI/GUI using <tt class="docutils literal"><span class="pre">--setenv</span></tt>.
 On Windows systems it is automatically determined by openvpn
 itself.  On other platforms OpenVPN will default to sending
-the information returned by the <cite>uname()</cite> system call in
-the <cite>release</cite> field, which is usually the currently running
+the information returned by the <tt class="docutils literal">uname()</tt> system call in
+the <tt class="docutils literal">release</tt> field, which is usually the currently running
 kernel version.  This is highly system specific, though.</dd>
 <dt><code>UV_&lt;name&gt;=&lt;value&gt;</code></dt>
 <dd>Client environment variables whose names start with
@@ -1795,12 +1741,15 @@ is <code>120</code>. This timeout includes proxy and TCP connect timeouts.</td><
 <tr><td>&nbsp;</td><td><p class="first">Enable static challenge/response protocol</p>
 <p>Valid syntax:</p>
 <pre class="literal-block">
-static-challenge text echo
+static-challenge text echo [format]
 </pre>
 <p>The <tt class="docutils literal">text</tt> challenge text is presented to the user which describes what
 information is requested.  The <tt class="docutils literal">echo</tt> flag indicates if the user's
 input should be echoed on the screen.  Valid <tt class="docutils literal">echo</tt> values are
-<code>0</code> or <code>1</code>.</p>
+<code>0</code> or <code>1</code>. The optional <tt class="docutils literal">format</tt> indicates whether
+the password and response should be combined using the SCRV1 protocol
+(<tt class="docutils literal">format</tt> = <code>scrv1</code>) or simply concatenated (<tt class="docutils literal">format</tt> = <code>concat</code>).
+<code>scrv1</code> is the default.</p>
 <p class="last">See management-notes.txt in the OpenVPN distribution for a description of
 the OpenVPN challenge/response protocol.</p>
 </td></tr>
@@ -1820,7 +1769,7 @@ and password on 2 lines can be given, or <code>stdin</code> to prompt from
 console. Its content can also be specified in the config file with the
 <tt class="docutils literal"><span class="pre">--http-proxy-user-pass</span></tt> option (See <a class="reference internal" href="#inline-file-support">INLINE FILE SUPPORT</a>).</p>
 <p>The last optional argument is an <tt class="docutils literal"><span class="pre">auth-method</span></tt> which should be one
-of <code>none</code>, <code>basic</code>, or <code>ntlm</code>.</p>
+of <code>none</code>, <code>basic</code>, or <code>ntlm2</code>.</p>
 <p>HTTP Digest authentication is supported as well, but only via the
 <code>auto</code> or <code>auto-nct</code> flags (below).  This must replace
 the <tt class="docutils literal">authfile</tt> argument.</p>
@@ -1832,7 +1781,7 @@ username/password credentials, if required. This flag exists on OpenVPN
 automatically determine the authentication method, but to reject weak
 authentication protocols such as HTTP Basic Authentication.</p>
 <p>Examples:</p>
-<pre class="last literal-block">
+<pre class="literal-block">
 # no authentication
 http-proxy proxy.example.net 3128
 # basic authentication, load credentials from file
@@ -1855,6 +1804,9 @@ username
 password
 &lt;/http-proxy-user-pass&gt;
 </pre>
+<p class="last">Note that support for NTLMv1 proxies was removed with OpenVPN 2.7.
+<code>ntlm</code> now is an alias for <code>ntlm2</code>; i.e. OpenVPN will always
+attempt to use NTLMv2 authentication.</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--http-proxy-user-pass <var>userpass</var></span></kbd></td>
@@ -1975,7 +1927,7 @@ used instead.  These two cases are a workaround for behaviour in
 OpenVPN 3.  If this workaround is not needed these two cases should
 be handled in the same way as <code>Invalid</code>.</dd>
 </dl>
-<p class="last"><strong>Warning:</strong> Use this feature only if you want your authentication
+<p><strong>Warning:</strong> Use this feature only if you want your authentication
 method called on every verification. Since the external authentication
 is called it needs to also indicate a success or failure of the
 authentication. It is strongly recommended to return an authentication
@@ -1984,6 +1936,11 @@ external-auth option unless the client could authenticate in another
 acceptable way (e.g. client certificate), otherwise returning success
 will lead to authentication bypass (as does returning success on a wrong
 password from a script).</p>
+<p class="last"><strong>Note:</strong> the username for <tt class="docutils literal"><span class="pre">--auth-gen-token</span></tt> can be overridden by
+<tt class="docutils literal"><span class="pre">--override-username</span></tt>. In this case the client will be pushed also the
+<tt class="docutils literal"><span class="pre">--auth-token-user</span></tt> option and an auth token that is valid for that
+username instead of the original username that the client authenticated
+with.</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--auth-gen-token-secret <var>file</var></span></kbd></td>
@@ -2032,9 +1989,18 @@ dropped it's root privileges.</p>
 <p>One of the useful properties of this option is that it allows client
 configuration files to be conveniently created, edited, or removed while
 the server is live, without needing to restart the server.</p>
-<p class="last">The following options are legal in a client-specific context: <tt class="docutils literal"><span class="pre">--push</span></tt>,
+<p>The following options are legal in a client-specific context: <tt class="docutils literal"><span class="pre">--push</span></tt>,
 <tt class="docutils literal"><span class="pre">--push-reset</span></tt>, <tt class="docutils literal"><span class="pre">--push-remove</span></tt>, <tt class="docutils literal"><span class="pre">--iroute</span></tt>, <tt class="docutils literal"><span class="pre">--ifconfig-push</span></tt>,
 <tt class="docutils literal"><span class="pre">--vlan-pvid</span></tt> and <tt class="docutils literal"><span class="pre">--config</span></tt>.</p>
+<p class="last"><strong>Note:</strong> OpenVPN uses the CN exactly as written in the certificate.
+But since this is a file access the filesystem might interfere.
+Importantly OpenVPN will consider two CNs that only differ in case as
+different names but a case-insensitive filesystem (like you might
+encounter on Windows or macOS) will treat them as the same. When you
+generate your certificates make sure that the CNs are sufficiently
+different to not cause issues. When trusting an external CA note that
+this is a potential attack vector via maliciously generated
+certificates that exploit this issue.</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--client-to-client</span></kbd></td>
@@ -2186,13 +2152,16 @@ config file which encloses <tt class="docutils literal">local</tt>, so that the 
 route it to the server's TUN/TAP interface.</p>
 <p>OpenVPN's internal client IP address selection algorithm works as
 follows:</p>
-<ol class="last arabic simple">
+<ol class="arabic simple">
 <li>Use <tt class="docutils literal"><span class="pre">--client-connect</span> script</tt> generated file for static IP
 (first choice).</li>
 <li>Use <tt class="docutils literal"><span class="pre">--client-config-dir</span></tt> file for static IP (next choice).</li>
 <li>Use <tt class="docutils literal"><span class="pre">--ifconfig-pool</span></tt> allocation for dynamic IP (last
 choice).</li>
 </ol>
+<p class="last">When DCO is enabled and the IP is not in contained in the network specified
+by <tt class="docutils literal"><span class="pre">--ifconfig</span></tt>, OpenVPN will install a /32 host route for the <tt class="docutils literal">local</tt>
+IP address.</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--ifconfig-ipv6-push <var>args</var></span></kbd></td>
@@ -2201,13 +2170,18 @@ choice).</li>
 configuration, see <tt class="docutils literal"><span class="pre">--client-config-dir</span></tt> and <tt class="docutils literal"><span class="pre">--ifconfig-push</span></tt> for
 more details.</p>
 <p>Valid syntax:</p>
-<pre class="last literal-block">
+<pre class="literal-block">
 ifconfig-ipv6-push ipv6addr/bits ipv6remote
 </pre>
+<p class="last">When DCO is enabled and the IP is not in contained in the network specified
+by <tt class="docutils literal"><span class="pre">--ifconfig-ipv6</span></tt>, OpenVPN will install a /128 host route for the
+<tt class="docutils literal">ipv6addr</tt> IP address.</p>
 </td></tr>
-<tr><td class="option-group">
-<kbd><span class="option">--multihome</span></kbd></td>
-<td><p class="first">Configure a multi-homed UDP server. This option needs to be used when a
+</tbody>
+</table>
+<dl class="docutils">
+<dt>--multihome [same-interface]</dt>
+<dd><p class="first">Configure a multi-homed UDP server. This option needs to be used when a
 server has more than one IP address (e.g. multiple interfaces, or
 secondary IP addresses), and is not using <tt class="docutils literal"><span class="pre">--local</span></tt> to force binding
 to one specific address only. This option will add some extra lookups to
@@ -2219,15 +2193,26 @@ default.</p>
 <dt><em>Notes:</em></dt>
 <dd><ul class="first last simple">
 <li>This option is only relevant for UDP servers.</li>
-<li>If you do an IPv6+IPv4 dual-stack bind on a Linux machine with
-multiple IPv4 address, connections to IPv4 addresses will not
-work right on kernels before 3.15, due to missing kernel
-support for the IPv4-mapped case (some distributions have
-ported this to earlier kernel versions, though).</li>
+<li>Starting with 2.7.0, OpenVPN will ignore the incoming interface of
+the packet, and leave selection of the outgoing interface to the
+normal routing/policy mechanisms of the OS (&quot;set ipi_ifindex=0&quot;).</li>
+<li>if the <tt class="docutils literal"><span class="pre">same-interface</span></tt> flag is added, OpenVPN will copy the
+incoming interface index to the outgoing interface index,
+trying to send the packet out over the same interface where it came
+in on (= restoring earlier OpenVPN behaviour). This might not work
+if there are no usable routes on that interface.</li>
+<li>the *BSD systems use a different API for IPv4 that does not provide
+the interface index anyway (IP_RECVDSTADDR), so there the difference
+applies only to IPv6.</li>
 </ul>
 </dd>
 </dl>
-</td></tr>
+</dd>
+</dl>
+<table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
 <tr><td class="option-group">
 <kbd><span class="option">--iroute <var>args</var></span></kbd></td>
 <td><p class="first">Generate an internal route to a specific client. The <tt class="docutils literal">netmask</tt>
@@ -2275,7 +2260,7 @@ iroute-ipv6 ipv6addr/bits
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--max-clients <var>n</var></span></kbd></td>
 </tr>
-<tr><td>&nbsp;</td><td>Limit server to a maximum of <tt class="docutils literal">n</tt> concurrent clients.</td></tr>
+<tr><td>&nbsp;</td><td>Limit server to a maximum of <tt class="docutils literal">n</tt> concurrent clients. Defaults to 1024.</td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--max-routes-per-client <var>n</var></span></kbd></td>
 </tr>
@@ -2290,17 +2275,36 @@ client.</p>
 <p class="last">Note that this directive affects OpenVPN's internal routing table, not
 the kernel routing table.</p>
 </td></tr>
-<tr><td class="option-group">
-<kbd><span class="option">--opt-verify</span></kbd></td>
-<td><p class="first"><strong>DEPRECATED</strong> Clients that connect with options that are incompatible with
-those of the server will be disconnected.</p>
-<p>Options that will be compared for compatibility include <tt class="docutils literal"><span class="pre">dev-type</span></tt>,
-<tt class="docutils literal"><span class="pre">link-mtu</span></tt>, <tt class="docutils literal"><span class="pre">tun-mtu</span></tt>, <tt class="docutils literal">proto</tt>, <tt class="docutils literal">ifconfig</tt>,
-<tt class="docutils literal"><span class="pre">comp-lzo</span></tt>, <tt class="docutils literal">fragment</tt>, <tt class="docutils literal">keydir</tt>, <tt class="docutils literal">cipher</tt>,
-<tt class="docutils literal">auth</tt>, <tt class="docutils literal">keysize</tt>, <tt class="docutils literal">secret</tt>, <tt class="docutils literal"><span class="pre">no-replay</span></tt>,
-<tt class="docutils literal"><span class="pre">tls-auth</span></tt>, <tt class="docutils literal"><span class="pre">key-method</span></tt>, <tt class="docutils literal"><span class="pre">tls-server</span></tt>
-and <tt class="docutils literal"><span class="pre">tls-client</span></tt>.</p>
-<p class="last">This option requires that <tt class="docutils literal"><span class="pre">--disable-occ</span></tt> NOT be used.</p>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--override-username <var>username</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td><p class="first">Sets the username of a connection to the specified username.  This username
+will also be used by <tt class="docutils literal"><span class="pre">--auth-gen-token</span></tt>. However, the overridden
+username comes only into effect <em>after</em> the <tt class="docutils literal"><span class="pre">--client-config-dir</span></tt> has been
+read and the <tt class="docutils literal"><span class="pre">--auth-user-pass-verify</span></tt> and <tt class="docutils literal"><span class="pre">--client-connect</span></tt> scripts
+have been run.</p>
+<p>Also <tt class="docutils literal"><span class="pre">--username-as-common-name</span></tt> will use the client provided username
+as common-name. It is recommended to avoid the use of the
+<tt class="docutils literal"><span class="pre">--override-username</span></tt> option if the option <tt class="docutils literal"><span class="pre">--username-as-common-name</span></tt>
+is being used.</p>
+<p>The changed username will be picked up by the status output and also by
+the <tt class="docutils literal"><span class="pre">--auth-gen-token</span></tt> option. It will also be pushed to the client
+using <tt class="docutils literal"><span class="pre">--auth-token-user</span></tt> if <tt class="docutils literal"><span class="pre">--auth-gen-token</span></tt> is enabled.</p>
+<p>Internally on all subsequent renegotiations the client provided username
+will be replaced by the username provided by <tt class="docutils literal"><span class="pre">--override-username</span></tt>.
+If the client changes to a username that is different from both the initial
+and the overridden username, the client will be rejected.</p>
+<p>Special care should be taken that both the initial username of the client
+and the overridden username are handled correctly when using
+<tt class="docutils literal"><span class="pre">--override-username</span></tt> and the related options to avoid
+authentication/authorisation bypasses.</p>
+<p>This option is mainly intended for use cases that use certificates and
+multi factor authentication and therefore do not provide a username that
+can be used for <tt class="docutils literal"><span class="pre">--auth-gen-token</span></tt> to allow providing a username in
+these scenarios.</p>
+<p class="last">If the <tt class="docutils literal"><span class="pre">--auth-token</span></tt> directive is pushed by another script/plugin or
+management interface, consider also generating and pushing
+<tt class="docutils literal"><span class="pre">--auth-token-user</span></tt>.</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--port-share <var>args</var></span></kbd></td>
@@ -2336,13 +2340,15 @@ would effectively allow a compromised server to execute arbitrary code
 on the client. Other options such as TLS or MTU parameters cannot be
 pushed because the client needs to know them before the connection to the
 server can be initiated.</p>
-<p class="last">This is a partial list of options which can currently be pushed:
+<p>This is a partial list of options which can currently be pushed:
 <tt class="docutils literal"><span class="pre">--route</span></tt>, <tt class="docutils literal"><span class="pre">--route-gateway</span></tt>, <tt class="docutils literal"><span class="pre">--route-delay</span></tt>,
 <tt class="docutils literal"><span class="pre">--redirect-gateway</span></tt>, <tt class="docutils literal"><span class="pre">--ip-win32</span></tt>, <tt class="docutils literal"><span class="pre">--dhcp-option</span></tt>, <tt class="docutils literal"><span class="pre">--dns</span></tt>,
 <tt class="docutils literal"><span class="pre">--inactive</span></tt>, <tt class="docutils literal"><span class="pre">--ping</span></tt>, <tt class="docutils literal"><span class="pre">--ping-exit</span></tt>, <tt class="docutils literal"><span class="pre">--ping-restart</span></tt>,
-<tt class="docutils literal"><span class="pre">--setenv</span></tt>, <tt class="docutils literal"><span class="pre">--auth-token</span></tt>, <tt class="docutils literal"><span class="pre">--persist-key</span></tt>, <tt class="docutils literal"><span class="pre">--persist-tun</span></tt>,
+<tt class="docutils literal"><span class="pre">--setenv</span></tt>, <tt class="docutils literal"><span class="pre">--auth-token</span></tt>, <tt class="docutils literal"><span class="pre">--persist-tun</span></tt>,
 <tt class="docutils literal"><span class="pre">--echo</span></tt>, <tt class="docutils literal"><span class="pre">--comp-lzo</span></tt>, <tt class="docutils literal"><span class="pre">--socket-flags</span></tt>, <tt class="docutils literal"><span class="pre">--sndbuf</span></tt>,
 <tt class="docutils literal"><span class="pre">--rcvbuf</span></tt>, <tt class="docutils literal"><span class="pre">--session-timeout</span></tt></p>
+<p class="last">Note: using <tt class="docutils literal"><span class="pre">--push</span></tt> requires OpenVPN to run in <tt class="docutils literal"><span class="pre">--mode</span> server</tt> (or
+using of one of <tt class="docutils literal"><span class="pre">--server</span></tt>, <tt class="docutils literal"><span class="pre">--server-bridge</span></tt> helper directives).</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--push-remove <var>opt</var></span></kbd></td>
@@ -2692,17 +2698,17 @@ $ openvpn --tls-crypt-v2 v2crypt-server.key --genkey tls-crypt-v2-client v2crypt
 </pre>
 <ul class="last">
 <li><p class="first">Generating <em>Shared Secret Keys</em>
-Generate a shared secret, for use with the <tt class="docutils literal"><span class="pre">--secret</span></tt>, <tt class="docutils literal"><span class="pre">--tls-auth</span></tt>
+Generate a shared secret, for use with the <tt class="docutils literal"><span class="pre">--tls-auth</span></tt>
 or <tt class="docutils literal"><span class="pre">--tls-crypt</span></tt> options.</p>
 <p>Syntax:</p>
 <pre class="literal-block">
-$ openvpn --genkey secret|tls-crypt|tls-auth keyfile
+$ openvpn --genkey tls-crypt|tls-auth keyfile
 </pre>
-<p>The key is saved in <tt class="docutils literal">keyfile</tt>. All three variants (<tt class="docutils literal"><span class="pre">--secret</span></tt>,
-<tt class="docutils literal"><span class="pre">tls-crypt</span></tt> and <tt class="docutils literal"><span class="pre">tls-auth</span></tt>) generate the same type of key. The
-aliases are added for convenience.</p>
-<p>If using this for <tt class="docutils literal"><span class="pre">--secret</span></tt>, this file must be shared with the peer
-over a pre-existing secure channel such as <tt class="docutils literal">scp</tt>(1).</p>
+<p>The key is saved in <tt class="docutils literal">keyfile</tt>. Both variants (<tt class="docutils literal"><span class="pre">tls-crypt</span></tt> and
+<tt class="docutils literal"><span class="pre">tls-auth</span></tt>) generate the same type of key. The aliases are added for
+convenience.</p>
+<p>This file must be shared with the peer over a pre-existing secure
+channel such as <tt class="docutils literal">scp</tt>(1).</p>
 </li>
 <li><p class="first">Generating <em>TLS Crypt v2 Server key</em>
 Generate a <tt class="docutils literal"><span class="pre">--tls-crypt-v2</span></tt> key to be used by an OpenVPN server.
@@ -2768,17 +2774,24 @@ lifetime of a key to be expressed as a number of bytes
 encrypted/decrypted, a number of packets, or a number of seconds. A key
 renegotiation will be forced if any of these three criteria are met by
 either peer.</p>
-<p class="last">If using ciphers with cipher block sizes less than 128-bits,
+<p>If using ciphers with cipher block sizes less than 128-bits,
 <tt class="docutils literal"><span class="pre">--reneg-bytes</span></tt> is set to 64MB by default, unless it is explicitly
 disabled by setting the value to <code>0</code>, but this is
 <strong>HIGHLY DISCOURAGED</strong> as this is designed to add some protection against
 the SWEET32 attack vector. For more information see the <tt class="docutils literal"><span class="pre">--cipher</span></tt>
 option.</p>
+<p class="last">When data channel offload (DCO) is enabled, this option is ignored. DCO
+does not support configurable renegotiation thresholds; automatic key
+renegotiation mechanisms are sufficient for modern ciphers.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--reneg-pkts <var>n</var></span></kbd></td>
-<td>Renegotiate data channel key after <strong>n</strong> packets sent and received
-(disabled by default).</td></tr>
+<td><p class="first">Renegotiate data channel key after <strong>n</strong> packets sent and received
+(disabled by default).</p>
+<p class="last">When data channel offload (DCO) is enabled, this option is ignored. DCO
+does not support configurable renegotiation thresholds; automatic key
+renegotiation mechanisms are sufficient for modern ciphers.</p>
+</td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--reneg-sec <var>args</var></span></kbd></td>
 </tr>
@@ -2889,11 +2902,19 @@ for more information.</p>
 OpenVPN will log the usual warning in the logs if the relevant CRL is
 missing, but the connection will be allowed.</p>
 </td></tr>
-<tr><td class="option-group">
-<kbd><span class="option">--cert <var>file</var></span></kbd></td>
-<td><p class="first">Local peer's signed certificate in .pem format -- must be signed by a
-certificate authority whose certificate is in <tt class="docutils literal"><span class="pre">--ca</span> file</tt>. Each peer
-in an OpenVPN link running in TLS mode should have its own certificate
+</tbody>
+</table>
+<dl class="docutils">
+<dt>--cert file|uri</dt>
+<dd><p class="first">Local peer's signed certificate in .pem format or as a URI -- must be
+signed by a certificate authority whose certificate is in <tt class="docutils literal"><span class="pre">--ca</span> file</tt>
+in the peer configuration. URI is supported only when built with
+OpenSSL 3.0 or later and any required providers are loaded. Types
+of URIs supported and their syntax depends on providers. OpenSSL has
+internal support for &quot;<a class="reference external" href="file:/absolute/path">file:/absolute/path</a>&quot; URI in which case the scheme
+&quot;file:&quot; is optional, and any file format recognized by OpenSSL (e.g., PEM,
+PKCS12) is supported. PKCS#11 URI (RFC 7512) is supported by pkcs11-provider.</p>
+<p>Each peer in an OpenVPN link running in TLS mode should have its own certificate
 and private key file. In addition, each certificate should have been
 signed by the key of a certificate authority whose public key resides in
 the <tt class="docutils literal"><span class="pre">--ca</span></tt> certificate authority file. You can easily make your own
@@ -2918,7 +2939,12 @@ authority key from its configuration file such as
 <code>/usr/share/ssl/openssl.cnf</code> -- note also that for certificate
 authority functions, you must set up the files <code>index.txt</code> (may be
 empty) and <code>serial</code> (initialize to <code>01</code>).</p>
-</td></tr>
+</dd>
+</dl>
+<table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--crl-verify <var>args</var></span></kbd></td>
 </tr>
@@ -2963,14 +2989,19 @@ privileges to read the file.</dd>
 </td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--dh <var>file</var></span></kbd></td>
-<td><p class="first">File containing Diffie Hellman parameters in .pem format (required for
-<tt class="docutils literal"><span class="pre">--tls-server</span></tt> only).</p>
-<p>Set <tt class="docutils literal">file</tt> to <code>none</code> to disable Diffie Hellman key exchange (and
-use ECDH only). Note that this requires peers to be using an SSL library
-that supports ECDH TLS cipher suites (e.g. OpenSSL 1.0.1+, or
-mbed TLS 2.0+).</p>
-<p class="last">Use <tt class="docutils literal">openssl dhparam <span class="pre">-out</span> dh2048.pem 2048</tt> to generate 2048-bit DH
-parameters. Diffie Hellman parameters may be considered public.</p>
+<td><p class="first">File containing finite field Diffie Hellman parameters in .pem format (used
+by <tt class="docutils literal"><span class="pre">--tls-server</span></tt> only).</p>
+<p>Set <tt class="docutils literal">file</tt> to <code>none</code> to disable fine field Diffie Hellman
+key exchange (and to only use ECDH or newer hybrid key agreement algorithms
+like X25519MLKEM768 instead).
+Note that this requires peers to be using an SSL library that supports
+ECDH TLS cipher suites (e.g. OpenSSL 1.0.1+, or mbed TLS 2.0+). Starting
+with 2.7.0, this is the same as not specifying <tt class="docutils literal"><span class="pre">--dh</span></tt> at all.</p>
+<p>Diffie Hellman parameters can be generated using
+<tt class="docutils literal">openssl dhparam <span class="pre">-out</span> dh2048.pem 2048</tt> but it is recommended to
+use <tt class="docutils literal">none</tt> as finite field Diffie Hellman have been replaced
+by more modern variants like ECDH.</p>
+<p class="last">Diffie Hellman parameters may be considered public.</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--ecdh-curve <var>name</var></span></kbd></td>
@@ -3003,11 +3034,30 @@ maintain continuity of transmission of tunnel data.</p>
 <p class="last">The <tt class="docutils literal"><span class="pre">--hand-window</span></tt> parameter also controls the amount of time that
 the OpenVPN client repeats the pull request until it times out.</p>
 </td></tr>
-<tr><td class="option-group">
-<kbd><span class="option">--key <var>file</var></span></kbd></td>
-<td>Local peer's private key in .pem format. Use the private key which was
-generated when you built your peer's certificate (see <tt class="docutils literal"><span class="pre">--cert</span> file</tt>
-above).</td></tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>--key file|uri</dt>
+<dd>Local peer's private key in .pem format or a URI. Use the private key
+which was generated when you built your peer's certificate (see
+<tt class="docutils literal"><span class="pre">--cert</span> file</tt> above). URI is supported only when built with OpenSSL 3.0
+or later and any required providers are loaded. (See <tt class="docutils literal"><span class="pre">--cert</span></tt> for more details).</dd>
+</dl>
+<table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--ns-cert-type <var>type</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td><p class="first"><strong>DEPRECATED</strong> The <tt class="docutils literal"><span class="pre">--remote-cert-tls</span></tt> option should be used instead.
+The option is still available since it can't be silently ignored and needs
+updates to certificates and configs on both sides of the connection.
+However it should not be used for new clients or servers. It depends on the
+deprecated <tt class="docutils literal">nsCertType</tt> certificate field.</p>
+<p>Might not work depending on the TLS library used.</p>
+<p class="last">Will be removed in a future release.</p>
+</td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--pkcs12 <var>file</var></span></kbd></td>
 <td>Specify a PKCS #12 file containing local private key, local certificate,
@@ -3088,8 +3138,20 @@ incorrect HMAC signature can be dropped immediately without response.</p>
 generated by <tt class="docutils literal"><span class="pre">--genkey</span></tt>.</p>
 <p>Older versions (up to OpenVPN 2.3) supported a freeform passphrase file.
 This is no longer supported in newer versions (v2.4+).</p>
-<p>See the <tt class="docutils literal"><span class="pre">--secret</span></tt> option for more information on the optional
-<tt class="docutils literal">direction</tt> parameter.</p>
+<p>The optional <tt class="docutils literal">direction</tt> parameter enables the use of 2 distinct keys
+(HMAC-send, HMAC-receive), so that each
+data flow direction has a different HMAC key. This has a number of desirable
+security properties including eliminating certain kinds of DoS and message
+replay attacks.</p>
+<p>When the <tt class="docutils literal">direction</tt> parameter is omitted, the same key is used
+bidirectionally.</p>
+<p>The <tt class="docutils literal">direction</tt> parameter should always be complementary on either
+side of the connection, i.e. one side should use <code>0</code> and the other
+should use <code>1</code>, or both sides should omit it altogether.</p>
+<p>The <tt class="docutils literal">direction</tt> parameter requires that <tt class="docutils literal">file</tt> contains a 2048 bit
+key. While pre-1.5 versions of OpenVPN generate 1024 bit key files, any
+version of OpenVPN which supports the <tt class="docutils literal">direction</tt> parameter, will also
+support 2048 bit key file generation using the <tt class="docutils literal"><span class="pre">--genkey</span></tt> option.</p>
 <p><tt class="docutils literal"><span class="pre">--tls-auth</span></tt> is recommended when you are running OpenVPN in a mode
 where it is listening for packets from any IP address, such as when
 <tt class="docutils literal"><span class="pre">--remote</span></tt> is not specified, or <tt class="docutils literal"><span class="pre">--remote</span></tt> is specified with
@@ -3144,7 +3206,7 @@ These groups are allowed to be used in signatures and key exchange.</p>
 might need to add them here. If you do not force the ecdh curve
 by using <tt class="docutils literal"><span class="pre">--ecdh-curve</span></tt>, the groups for ecdh will also be picked
 from this list.</p>
-<p>OpenVPN maps the curve name <cite>secp256r1</cite> to <cite>prime256v1</cite> to allow
+<p>OpenVPN maps the curve name <tt class="docutils literal">secp256r1</tt> to <tt class="docutils literal">prime256v1</tt> to allow
 specifying the same tls-groups option for mbedTLS and OpenSSL.</p>
 <p class="last">Warning: this option not only affects elliptic curve certificates
 but also the key exchange in TLS 1.3 and using this option improperly
@@ -3158,7 +3220,7 @@ will disable TLS 1.3.</p>
 <p>The following profiles are supported:</p>
 <dl class="docutils">
 <dt><code>insecure</code></dt>
-<dd>Identical for mbed TLS to <cite>legacy</cite></dd>
+<dd>Identical for mbed TLS to <code>legacy</code></dd>
 <dt><code>legacy</code> (default)</dt>
 <dd>SHA1 and newer, RSA 2048-bit+, any elliptic curve.</dd>
 <dt><code>preferred</code></dt>
@@ -3184,7 +3246,7 @@ ensure that your keys already comply.</p>
 </tbody>
 </table>
 <dl class="docutils">
-<dt><em>WARNING:</em> <tt class="docutils literal"><span class="pre">--tls-ciphers</span></tt>, <tt class="docutils literal"><span class="pre">--tls-ciphersuites</span></tt> and <tt class="docutils literal"><span class="pre">tls-groups</span></tt></dt>
+<dt><em>WARNING:</em> <tt class="docutils literal"><span class="pre">--tls-cipher</span></tt>, <tt class="docutils literal"><span class="pre">--tls-ciphersuites</span></tt> and <tt class="docutils literal"><span class="pre">tls-groups</span></tt></dt>
 <dd>These options are expert features, which - if used correctly - can
 improve the security of your VPN connection. But it is also easy to
 unwittingly use them to carefully align a gun with your foot, or just
@@ -3197,7 +3259,7 @@ break your connection. Use with care!</dd>
 <tr><td class="option-group">
 <kbd><span class="option">--tls-cipher <var>l</var></span></kbd></td>
 <td><p class="first">A list <tt class="docutils literal">l</tt> of allowable TLS ciphers delimited by a colon (&quot;<code>:</code>&quot;).</p>
-<p>These setting can be used to ensure that certain cipher suites are used
+<p>This setting can be used to ensure that certain cipher suites are used
 (or not used) for the TLS connection. OpenVPN uses TLS to secure the
 control channel, over which the keys that are used to protect the actual
 VPN traffic are exchanged.</p>
@@ -3205,7 +3267,7 @@ VPN traffic are exchanged.</p>
 translation) simply supplied to the crypto library. Please see the
 OpenSSL and/or mbed TLS documentation for details on the cipher list
 interpretation.</p>
-<p>For OpenSSL, the <tt class="docutils literal"><span class="pre">--tls-cipher</span></tt> is used for TLS 1.2 and below.</p>
+<p>For OpenSSL, the <tt class="docutils literal"><span class="pre">--tls-cipher</span></tt> option is used for TLS 1.2 and below.</p>
 <p>Use <tt class="docutils literal"><span class="pre">--show-tls</span></tt> to see a list of TLS ciphers supported by your crypto
 library.</p>
 <p class="last">The default for <tt class="docutils literal"><span class="pre">--tls-cipher</span></tt> is to use mbed TLS's default cipher list
@@ -3218,7 +3280,7 @@ using OpenSSL.</p>
 </tr>
 <tr><td>&nbsp;</td><td><p class="first">Same as <tt class="docutils literal"><span class="pre">--tls-cipher</span></tt> but for TLS 1.3 and up. mbed TLS has no
 TLS 1.3 support yet and only the <tt class="docutils literal"><span class="pre">--tls-cipher</span></tt> setting is used.</p>
-<p class="last">The default for <cite>--tls-ciphersuites</cite> is to use the crypto library's
+<p class="last">The default for <tt class="docutils literal"><span class="pre">--tls-ciphersuites</span></tt> is to use the crypto library's
 default.</p>
 </td></tr>
 <tr><td class="option-group">
@@ -3311,6 +3373,11 @@ contains the client metadata.</li>
 <p class="last">The command can reject the connection by exiting with a non-zero exit
 code.</p>
 </td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--tls-crypt-v2-max-age <var>n</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Reject tls-crypt-v2 client keys that are older than n days or have
+no timestamp.</td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--tls-exit</span></kbd></td>
 <td>Exit on TLS negotiation failure. This option can be useful when you only
@@ -3494,11 +3561,13 @@ x509-username-field [ext:]fieldname [[ext:]fieldname...]
 either of the following:</p>
 <pre class="literal-block">
 x509-username-field emailAddress
+x509-username-field 1.2.840.113549.1.9.1
 x509-username-field ext:subjectAltName
 x509-username-field CN serialNumber
 </pre>
-<p>The first example uses the value of the <code>emailAddress</code> attribute
-in the certificate's Subject field as the username. The second example
+<p>The first two examples use the value of the <code>emailAddress</code> attribute
+in the certificate's Subject field as the username, where the first example
+uses the name while the second example uses the oid. The third example
 uses the <code>ext:</code> prefix to signify that the X.509 extension
 <tt class="docutils literal">fieldname</tt> <code>subjectAltName</code> be searched for an rfc822Name
 (email) field to be used as the username. In cases where there are
@@ -3510,11 +3579,6 @@ hexadecimal representation of the certificate's <code>serialNumber</code>.</p>
 against the chosen <tt class="docutils literal">fieldname</tt> instead of the Common Name.</p>
 <p>Only the <code>subjectAltName</code> and <code>issuerAltName</code> X.509
 extensions and <code>serialNumber</code> X.509 attribute are supported.</p>
-<p><strong>Please note:</strong> This option has a feature which will convert an
-all-lowercase <tt class="docutils literal">fieldname</tt> to uppercase characters, e.g.,
-<code>ou</code> -&gt; <code>OU</code>. A mixed-case <tt class="docutils literal">fieldname</tt> or one having the
-<code>ext:</code> prefix will be left as-is. This automatic upcasing feature is
-deprecated and will be removed in a future release.</p>
 <p class="last">Non-compliant symbols are being replaced with the <code>_</code> symbol, same as
 the field separator, so concatenating multiple fields with such or <code>_</code>
 symbols can potentially lead to username collisions.</p>
@@ -3644,12 +3708,12 @@ In 2.6 and later the default is changed to
 and still had some quirks. Its main goal was &quot;upgrade to AES-256-GCM when possible&quot;.
 An OpenVPN 2.4 client that is built against a crypto library that supports AES in GCM
 mode and does not have <tt class="docutils literal"><span class="pre">--ncp-disable</span></tt> will always announce support for
-<cite>AES-256-GCM</cite> and <cite>AES-128-GCM</cite> to a server by sending <code>IV_NCP=2</code>.</p>
+<tt class="docutils literal"><span class="pre">AES-256-GCM</span></tt> and <tt class="docutils literal"><span class="pre">AES-128-GCM</span></tt> to a server by sending <code>IV_NCP=2</code>.</p>
 <p>This only causes a problem if <tt class="docutils literal"><span class="pre">--ncp-ciphers</span></tt> option has been changed from the
 default of <code>AES-256-GCM:AES-128-GCM</code> to a value that does not include
-these two ciphers. When an OpenVPN server tries to use <cite>AES-256-GCM</cite> or
-<cite>AES-128-GCM</cite> the connection will then fail. It is therefore recommended to
-always have the <cite>AES-256-GCM</cite> and <cite>AES-128-GCM</cite> ciphers to the <tt class="docutils literal"><span class="pre">--ncp-ciphers</span></tt>
+these two ciphers. When an OpenVPN server tries to use <tt class="docutils literal"><span class="pre">AES-256-GCM</span></tt> or
+<tt class="docutils literal"><span class="pre">AES-128-GCM</span></tt> the connection will then fail. It is therefore recommended to
+always have the <tt class="docutils literal"><span class="pre">AES-256-GCM</span></tt> and <tt class="docutils literal"><span class="pre">AES-128-GCM</span></tt> ciphers to the <tt class="docutils literal"><span class="pre">--ncp-ciphers</span></tt>
 options to avoid this behaviour.</p>
 </div>
 <div class="section" id="openvpn-3-clients">
@@ -3658,7 +3722,7 @@ options to avoid this behaviour.</p>
 do not have a configurable <tt class="docutils literal"><span class="pre">--ncp-ciphers</span></tt> or <tt class="docutils literal"><span class="pre">--data-ciphers</span></tt> option. Newer
 versions by default disable legacy AES-CBC, BF-CBC, and DES-CBC ciphers.
 These clients will always announce support for all their supported AEAD ciphers
-(<cite>AES-256-GCM</cite>, <cite>AES-128-GCM</cite> and in newer versions also <cite>Chacha20-Poly1305</cite>).</p>
+(<tt class="docutils literal"><span class="pre">AES-256-GCM</span></tt>, <tt class="docutils literal"><span class="pre">AES-128-GCM</span></tt> and in newer versions also <tt class="docutils literal"><span class="pre">Chacha20-Poly1305</span></tt>).</p>
 <p>To support OpenVPN 3.x based clients at least one of these ciphers needs to be
 included in the server's <tt class="docutils literal"><span class="pre">--data-ciphers</span></tt> option.</p>
 </div>
@@ -3676,12 +3740,12 @@ cipher used by the client is necessary.</p>
 </div>
 <div class="section" id="openvpn-2-4-server">
 <h3>OpenVPN 2.4 server</h3>
-<p>When a client indicates support for <cite>AES-128-GCM</cite> and <cite>AES-256-GCM</cite>
+<p>When a client indicates support for <tt class="docutils literal"><span class="pre">AES-128-GCM</span></tt> and <tt class="docutils literal"><span class="pre">AES-256-GCM</span></tt>
 (with <tt class="docutils literal">IV_NCP=2</tt>) an OpenVPN 2.4 server will send the first
 cipher of the <tt class="docutils literal"><span class="pre">--ncp-ciphers</span></tt> to the OpenVPN client regardless of what
 the cipher is. To emulate the behaviour of an OpenVPN 2.4 client as close
 as possible and have compatibility to a setup that depends on this quirk,
-adding  <cite>AES-128-GCM</cite> and <cite>AES-256-GCM</cite> to the client's <tt class="docutils literal"><span class="pre">--data-ciphers</span></tt>
+adding <tt class="docutils literal"><span class="pre">AES-128-GCM</span></tt> and <tt class="docutils literal"><span class="pre">AES-256-GCM</span></tt> to the client's <tt class="docutils literal"><span class="pre">--data-ciphers</span></tt>
 option is required. OpenVPN 2.5+ will only announce the <tt class="docutils literal">IV_NCP=2</tt> flag if
 those ciphers are present.</p>
 </div>
@@ -3699,10 +3763,10 @@ cipher used by the server is necessary.</p>
 </div>
 <div class="section" id="blowfish-in-cbc-mode-bf-cbc-deprecation">
 <h3>Blowfish in CBC mode (BF-CBC) deprecation</h3>
-<p>The <tt class="docutils literal"><span class="pre">--cipher</span></tt> option defaulted to <cite>BF-CBC</cite> in OpenVPN 2.4 and older
+<p>The <tt class="docutils literal"><span class="pre">--cipher</span></tt> option defaulted to <tt class="docutils literal"><span class="pre">BF-CBC</span></tt> in OpenVPN 2.4 and older
 version. The default was never changed to ensure backwards compatibility.
 In OpenVPN 2.5 this behaviour has now been changed so that if the <tt class="docutils literal"><span class="pre">--cipher</span></tt>
-is not explicitly set it does not allow the weak <cite>BF-CBC</cite> cipher any more
+is not explicitly set it does not allow the weak <tt class="docutils literal"><span class="pre">BF-CBC</span></tt> cipher any more
 and needs to explicitly added as <tt class="docutils literal"><span class="pre">--cipher</span> <span class="pre">BFC-CBC</span></tt> or added to
 <tt class="docutils literal"><span class="pre">--data-ciphers</span></tt>.</p>
 <p>We strongly recommend to switching away from BF-CBC to a
@@ -3818,14 +3882,29 @@ is not reliable. It is recommended to set tun-mtu with enough headroom
 instead.</p>
 </td></tr>
 <tr><td class="option-group">
-<kbd><span class="option">--local <var>host</var></span></kbd></td>
-<td>Local host name or IP address for bind. If specified, OpenVPN will bind
-to this address only. If unspecified, OpenVPN will bind to all
-interfaces.</td></tr>
+<kbd><span class="option">--local <var>args</var></span></kbd></td>
+<td><p class="first">Valid syntax:</p>
+<pre class="literal-block">
+local host|* [port] [protocol]
+</pre>
+<p>Local host name or IP address and port for bind. If specified, OpenVPN will bind
+to this address. If unspecified, OpenVPN will bind to all interfaces.
+'*' can be used as hostname and means 'any host' (OpenVPN will listen on what
+is returned by the OS).
+On a client, or in point-to-point mode, this can only be specified once (1 socket).</p>
+<p class="last">On an OpenVPN setup running as <tt class="docutils literal"><span class="pre">--server</span></tt>, this can be specified multiple times
+to open multiple listening sockets on different addresses and/or different ports.
+In order to specify multiple listen ports without specifying an address, use '*'
+to signal &quot;use what the operating system gives you as default&quot;, for
+&quot;all IPv4 addresses&quot; use &quot;0.0.0.0&quot;, for &quot;all IPv6 addresses&quot; use '::'.
+<tt class="docutils literal"><span class="pre">--local</span></tt> implies <tt class="docutils literal"><span class="pre">--bind</span></tt>.</p>
+</td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--lport <var>port</var></span></kbd></td>
-<td>Set local TCP/UDP port number or name. Cannot be used together with
-<tt class="docutils literal"><span class="pre">--nobind</span></tt> option.</td></tr>
+<td>Set default TCP/UDP port number. Cannot be used together with
+<tt class="docutils literal"><span class="pre">--nobind</span></tt> option.  A port number of <tt class="docutils literal">0</tt> is only honoured to
+achieve &quot;bind() to a random assigned port number&quot; if a bind-to IP
+address is specified with <tt class="docutils literal"><span class="pre">--local</span></tt>.</td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--mark <var>value</var></span></kbd></td>
 <td>Mark encrypted packets being sent with <tt class="docutils literal">value</tt>. The mark value can be
@@ -3924,10 +4003,7 @@ option.</td></tr>
 <td><p class="first">Ping remote over the TCP/UDP control channel if no packets have been
 sent for at least <tt class="docutils literal">n</tt> seconds (specify <tt class="docutils literal"><span class="pre">--ping</span></tt> on both peers to
 cause ping packets to be sent in both directions since OpenVPN ping
-packets are not echoed like IP ping packets). When used in one of
-OpenVPN's secure modes (where <tt class="docutils literal"><span class="pre">--secret</span></tt>, <tt class="docutils literal"><span class="pre">--tls-server</span></tt> or
-<tt class="docutils literal"><span class="pre">--tls-client</span></tt> is specified), the ping packet will be
-cryptographically secure.</p>
+packets are not echoed like IP ping packets).</p>
 <p>This option has two intended uses:</p>
 <ol class="arabic simple">
 <li>Compatibility with stateful firewalls. The periodic ping will ensure
@@ -3977,7 +4053,7 @@ server configuration. To disable the 120 second default, set
 <tt class="docutils literal"><span class="pre">--ping-restart</span> 0</tt> on the client.</p>
 <p>See the signals section below for more information on <code>SIGUSR1</code>.</p>
 <p>Note that the behavior of <tt class="docutils literal">SIGUSR1</tt> can be modified by the
-<tt class="docutils literal"><span class="pre">--persist-tun</span></tt>, <tt class="docutils literal"><span class="pre">--persist-key</span></tt>, <tt class="docutils literal"><span class="pre">--persist-local-ip</span></tt> and
+<tt class="docutils literal"><span class="pre">--persist-tun</span></tt>, <tt class="docutils literal"><span class="pre">--persist-local-ip</span></tt> and
 <tt class="docutils literal"><span class="pre">--persist-remote-ip</span></tt> options.</p>
 <p class="last">Also note that <tt class="docutils literal"><span class="pre">--ping-exit</span></tt> and <tt class="docutils literal"><span class="pre">--ping-restart</span></tt> are mutually
 exclusive and cannot be used together.</p>
@@ -4050,8 +4126,7 @@ out-of-order packet sequence, and will deliver such packets in the same
 order they were received to the TCP/IP protocol stack, provided they
 satisfy several constraints.</p>
 <ol class="loweralpha simple">
-<li>The packet cannot be a replay (unless <tt class="docutils literal"><span class="pre">--no-replay</span></tt> is
-specified, which disables replay protection altogether).</li>
+<li>The packet cannot be a replay.</li>
 <li>If a packet arrives out of order, it will only be accepted if
 the difference between its sequence number and the highest sequence
 number received so far is less than <tt class="docutils literal">n</tt>.</li>
@@ -4102,8 +4177,7 @@ the remote peer), so that if an OpenVPN session is stopped and
 restarted, it will reject any replays of packets which were already
 received by the prior session.</p>
 <p class="last">This option only makes sense when replay protection is enabled (the
-default) and you are using either <tt class="docutils literal"><span class="pre">--secret</span></tt> (shared-secret key mode)
-or TLS mode with <tt class="docutils literal"><span class="pre">--tls-auth</span></tt>.</p>
+default) and you are using TLS mode with <tt class="docutils literal"><span class="pre">--tls-auth</span></tt>.</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--session-timeout <var>n</var></span></kbd></td>
@@ -4258,7 +4332,7 @@ desired device type needs to be specified with <tt class="docutils literal"><spa
 <tt class="docutils literal"><span class="pre">--dev-type</span> tap</tt>.</p>
 <p class="last">On Windows, only the names <code>tun</code> and <code>tap</code> are supported.
 Selection among multiple installed drivers or driver instances is done
-with <tt class="docutils literal"><span class="pre">--dev-node</span></tt> and <tt class="docutils literal"><span class="pre">--windows-driver</span></tt>.</p>
+with <tt class="docutils literal"><span class="pre">--dev-node</span></tt>.</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--dev-node <var>node</var></span></kbd></td>
@@ -4279,10 +4353,18 @@ enclosed by braces. The <tt class="docutils literal"><span class="pre">--show-ad
 also be used to enumerate all available TAP-Win32 adapters and will show
 both the network connections control panel name and the GUID for each
 TAP-Win32 adapter.</p>
-<p class="last">On other platforms, <tt class="docutils literal"><span class="pre">--dev-node</span> node</tt> will influence the naming of the
+<p>On other platforms, <tt class="docutils literal"><span class="pre">--dev-node</span> node</tt> will influence the naming of the
 created tun/tap device, if supported on that platform.  If OpenVPN cannot
 figure out whether <tt class="docutils literal">node</tt> is a TUN or TAP device based on the name,
 you should also specify <tt class="docutils literal"><span class="pre">--dev-type</span> tun</tt> or <tt class="docutils literal"><span class="pre">--dev-type</span> tap</tt>.</p>
+<p>If <tt class="docutils literal">node</tt> starts with the string <tt class="docutils literal">unix:</tt> openvpn will treat the rest
+of the argument as a program.
+OpenVPN will start the program and create a temporary unix domain socket that
+will be passed to the program together with the tun configuration as
+environment variables.  The temporary unix domain socket  will be be passed
+in the environment variable <code>TUNTAP_SOCKET_FD</code>.</p>
+<p class="last">This <tt class="docutils literal">unix:</tt> mode is designed mainly to use with the lwipovpn network
+emulator (<a class="reference external" href="https://github.com/OpenVPN/lwipovpn">https://github.com/OpenVPN/lwipovpn</a>).</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--dev-type <var>device-type</var></span></kbd></td>
@@ -4297,8 +4379,7 @@ or <code>tap</code>.</td></tr>
 <tr><td>&nbsp;</td><td><p class="first">Set additional network parameters on supported platforms. May be specified
 on the client or pushed from the server. On Windows these options are
 handled by the <tt class="docutils literal"><span class="pre">tap-windows6</span></tt> driver by default or directly by OpenVPN
-if dhcp is disabled or the <tt class="docutils literal">wintun</tt> driver is in use. The
-<tt class="docutils literal">OpenVPN for Android</tt> client also handles them internally.</p>
+if dhcp is disabled. The <tt class="docutils literal">OpenVPN for Android</tt> client also handles them internally.</p>
 <p>On all other platforms these options are only saved in the client's
 environment under the name <code>foreign_option_{n}</code> before the
 <tt class="docutils literal"><span class="pre">--up</span></tt> script is called. A plugin or an <tt class="docutils literal"><span class="pre">--up</span></tt> script must be used to
@@ -4461,8 +4542,15 @@ Only applied to TAP devices.</td></tr>
 <kbd><span class="option">--persist-tun</span></kbd></td>
 <td><p class="first">Don't close and reopen TUN/TAP device or run up/down scripts across
 <code>SIGUSR1</code> or <tt class="docutils literal"><span class="pre">--ping-restart</span></tt> restarts.</p>
-<p class="last"><code>SIGUSR1</code> is a restart signal similar to <code>SIGHUP</code>, but which
+<p><code>SIGUSR1</code> is a restart signal similar to <code>SIGHUP</code>, but which
 offers finer-grained control over reset options.</p>
+<p>On Linux, this option can be useful when OpenVPN is not executed as
+root and the CAP_NET_ADMIN has not been granted, because the process
+would otherwise not be allowed to bring the interface down and back up.</p>
+<p class="last">Alongside the above, using <tt class="docutils literal"><span class="pre">--persist-tun</span></tt> allows the tunnel interface
+to retain all IP/route settings, thus allowing the user to implement
+any advanced traffic leaking protection (please note that for full
+protection, extra route/firewall rules must be in place).</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--redirect-gateway <var>flags</var></span></kbd></td>
@@ -4506,7 +4594,11 @@ not be available on non-Windows clients).</dd>
 <dt><code>block-local</code></dt>
 <dd>Block access to local LAN when the tunnel is active, except for
 the LAN gateway itself. This is accomplished by routing the local
-LAN (except for the LAN gateway address) into the tunnel.</dd>
+LAN (except for the LAN gateway address) into the tunnel.
+On Windows WFP filters are added in addition to the routes which
+block access to resources not routed through the VPN adapter.
+Push this flag to protect against TunnelCrack type of attacks
+(see: <a class="reference external" href="https://tunnelcrack.mathyvanhoef.com/">https://tunnelcrack.mathyvanhoef.com/</a>).</dd>
 <dt><code>ipv6</code></dt>
 <dd>Redirect IPv6 routing into the tunnel. This works similar to
 the <code>def1</code> flag, that is, more specific IPv6 routes are added
@@ -4522,6 +4614,15 @@ unicast space.</dd>
 </tr>
 <tr><td>&nbsp;</td><td>Like <tt class="docutils literal"><span class="pre">--redirect-gateway</span></tt>, but omit actually changing the default gateway.
 Useful when pushing private subnets.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--route-table <var>id</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td><p class="first">Specify a default table id for use with --route.
+By default, OpenVPN installs routes in the main routing
+table of the operating system, but with this option,
+a user defined routing table can be used instead.</p>
+<p class="last">(Supported on Linux only, on other platforms this is a no-op).</p>
+</td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--route <var>args</var></span></kbd></td>
 <td><p class="first">Add route to routing table after connection is established. Multiple
@@ -4591,13 +4692,20 @@ to come up before adding routes.</p>
 </tr>
 <tr><td>&nbsp;</td><td><p class="first">Setup IPv6 routing in the system to send the specified IPv6 network into
 OpenVPN's <em>tun</em>.</p>
-<p>Valid syntax:</p>
+<p>Valid syntaxes:</p>
 <pre class="literal-block">
-route-ipv6 ipv6addr/bits [gateway] [metric]
+route-ipv6 ipv6addr/bits
+route-ipv6 ipv6addr/bits gateway
+route-ipv6 ipv6addr/bits gateway metric
 </pre>
-<p class="last">The gateway parameter is only used for IPv6 routes across <em>tap</em> devices,
+<dl class="last docutils">
+<dt><tt class="docutils literal">gateway</tt></dt>
+<dd>Only used for IPv6 routes across <em>tap</em> devices,
 and if missing, the <tt class="docutils literal">ipv6remote</tt> field from <tt class="docutils literal"><span class="pre">--ifconfig-ipv6</span></tt> or
-<tt class="docutils literal"><span class="pre">--route-ipv6-gateway</span></tt> is used.</p>
+<tt class="docutils literal"><span class="pre">--route-ipv6-gateway</span></tt> is used.</dd>
+<dt><tt class="docutils literal">metric</tt></dt>
+<dd>default taken from <tt class="docutils literal"><span class="pre">--route-metric</span></tt> if set, otherwise <code>0</code>.</dd>
+</dl>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--route-gateway <var>arg</var></span></kbd></td>
@@ -4646,26 +4754,25 @@ pushed to clients. Like the <tt class="docutils literal"><span class="pre">--dev
 always be compatible between client and server.</p>
 <p><tt class="docutils literal">mode</tt> can be one of:</p>
 <dl class="docutils">
+<dt><code>subnet</code></dt>
+<dd>Use a subnet rather than a point-to-point topology by
+configuring the tun interface with a local IP address and subnet mask,
+similar to the topology used in <tt class="docutils literal"><span class="pre">--dev</span> tap</tt> and ethernet bridging
+mode. This mode allocates a single IP address per connecting client and
+works on Windows as well. This is the default.</dd>
 <dt><code>net30</code></dt>
 <dd>Use a point-to-point topology, by allocating one /30 subnet
 per client. This is designed to allow point-to-point semantics when some
-or all of the connecting clients might be Windows systems. This is the
-default.</dd>
+or all of the connecting clients might be Windows systems.</dd>
 <dt><code>p2p</code></dt>
 <dd>Use a point-to-point topology where the remote endpoint of
 the client's tun interface always points to the local endpoint of the
 server's tun interface. This mode allocates a single IP address per
 connecting client. Only use when none of the connecting clients are
 Windows systems.</dd>
-<dt><code>subnet</code></dt>
-<dd>Use a subnet rather than a point-to-point topology by
-configuring the tun interface with a local IP address and subnet mask,
-similar to the topology used in <tt class="docutils literal"><span class="pre">--dev</span> tap</tt> and ethernet bridging
-mode. This mode allocates a single IP address per connecting client and
-works on Windows as well.</dd>
 </dl>
 <p class="last"><em>Note:</em> Using <tt class="docutils literal"><span class="pre">--topology</span> subnet</tt> changes the interpretation of the
-arguments of <tt class="docutils literal"><span class="pre">--ifconfig</span></tt> to mean &quot;address netmask&quot;, no longer &quot;local
+arguments of <tt class="docutils literal"><span class="pre">--ifconfig</span></tt> to mean &quot;address netmask&quot;, and not &quot;local
 remote&quot;.</p>
 </td></tr>
 <tr><td class="option-group">
@@ -4695,7 +4802,7 @@ packets larger than <tt class="docutils literal"><span class="pre">tun-mtu</span
 (like macOS) limit received packets to the same size as the MTU.</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
-<kbd><span class="option">--tun-max-mtu <var>maxmtu</var></span></kbd></td>
+<kbd><span class="option">--tun-mtu-max <var>maxmtu</var></span></kbd></td>
 </tr>
 <tr><td>&nbsp;</td><td>This configures the maximum MTU size that a server can push to <tt class="docutils literal">maxmtu</tt>,
 by configuring the internal buffers to allow at least this packet size.
@@ -4778,7 +4885,7 @@ ip link add vrf_external type vrf table 1023
 ip link set master vrf_external dev eth0
 </pre>
 <p>Any prefixes configured on <code>eth0</code> will be moved from the :code`main`
-routing table into routing table <cite>1023</cite></p>
+routing table into routing table <code>1023</code></p>
 </div>
 <div class="section" id="vrf-setup-with-ifupdown">
 <h3>VRF setup with ifupdown</h3>
@@ -4828,8 +4935,11 @@ the OpenVPN process.</p>
 <div class="section" id="script-order-of-execution">
 <h2>Script Order of Execution</h2>
 <ol class="arabic">
+<li><p class="first"><tt class="docutils literal"><span class="pre">--dns-updown</span></tt></p>
+<p>Executed after TCP/UDP socket bind and TUN/TAP open, before <tt class="docutils literal"><span class="pre">--up</span></tt>.</p>
+</li>
 <li><p class="first"><tt class="docutils literal"><span class="pre">--up</span></tt></p>
-<p>Executed after TCP/UDP socket bind and TUN/TAP open.</p>
+<p>Executed after TCP/UDP socket bind and TUN/TAP open, after <tt class="docutils literal"><span class="pre">--dns-updown</span></tt>.</p>
 </li>
 <li><p class="first"><tt class="docutils literal"><span class="pre">--tls-verify</span></tt></p>
 <p>Executed when we have a still untrusted remote peer.</p>
@@ -4851,8 +4961,11 @@ some number of seconds after as defined by the <strong>--route-delay</strong> op
 <li><p class="first"><tt class="docutils literal"><span class="pre">--client-disconnect</span></tt></p>
 <p>Executed in <tt class="docutils literal"><span class="pre">--mode</span> server</tt> mode on client instance shutdown.</p>
 </li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">--dns-updown</span></tt></p>
+<p>Executed before TCP/UDP and TUN/TAP close, before <tt class="docutils literal"><span class="pre">--down</span></tt>.</p>
+</li>
 <li><p class="first"><tt class="docutils literal"><span class="pre">--down</span></tt></p>
-<p>Executed after TCP/UDP and TUN/TAP close.</p>
+<p>Executed after TCP/UDP and TUN/TAP close, after <tt class="docutils literal"><span class="pre">--dns-updown</span></tt>.</p>
 </li>
 <li><p class="first"><tt class="docutils literal"><span class="pre">--learn-address</span></tt></p>
 <p>Executed in <tt class="docutils literal"><span class="pre">--mode</span> server</tt> mode whenever an IPv4 address/route or MAC
@@ -4946,7 +5059,7 @@ pending authentication by writing to the file specified by the
 <code>auth_pending_file</code>. The first line must be the timeout in
 seconds, the required method on the second line (e.g. crtext) and
 third line must be the EXTRA as documented in the
-<tt class="docutils literal"><span class="pre">client-pending-auth</span></tt> section of <cite>doc/management.txt</cite>.</p>
+<tt class="docutils literal"><span class="pre">client-pending-auth</span></tt> section of <tt class="docutils literal">doc/management.txt</tt>.</p>
 <p>This directive is designed to enable a plugin-style interface for
 extending OpenVPN's authentication capabilities.</p>
 <p>To protect against a client passing a maliciously formed username or
@@ -4974,7 +5087,7 @@ client-crresponse cmd
 </pre>
 </blockquote>
 <p>OpenVPN will write the response of the client into a temporary file.
-The filename will be passed as an argument to <tt class="docutils literal">cmd</tt>, and the file will be
+The filename will be passed as an argument to <tt class="docutils literal">cmd</tt>, and the file will
 automatically deleted by OpenVPN after the script returns.</p>
 <p>The response is passed as is from the client. The script needs to check
 itself if the input is valid, e.g. if the input is valid base64 encoding.</p>
@@ -5028,6 +5141,30 @@ where some of the related client-connect functions returned an error
 status.</p>
 <p class="last">The <tt class="docutils literal"><span class="pre">--client-disconnect</span></tt> command is not passed any extra arguments
 (only those arguments specified in cmd, if any).</p>
+</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--dns-updown <var>cmd</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td><p class="first">Run command <tt class="docutils literal">cmd</tt>, instead of the default DNS up/down command that comes
+with openvpn. If <tt class="docutils literal">cmd</tt> is <tt class="docutils literal">disable</tt> the <tt class="docutils literal"><span class="pre">--dns-updown</span></tt> command is not run.</p>
+<p>If you write your own command, please make sure to ignore <tt class="docutils literal"><span class="pre">--dns</span></tt>
+server profiles that cannot be applied. Port, DNSSEC and secure transport
+settings need to be adhered to. If split DNS is not possible a full redirect
+can be used as a fallback. If not all of the server addresses or search domains
+can be configured, apply them in the order they are listed in.</p>
+<p>Note that <tt class="docutils literal"><span class="pre">--dns-updown</span></tt> is not supported on all platforms. On Windows DNS
+will always be set by the service. On Android DNS will be passed via management
+interface.</p>
+<p class="last">Note that DNS-related <tt class="docutils literal"><span class="pre">--dhcp-option</span></tt>s might be converted so that they are
+available to this hook if no <tt class="docutils literal"><span class="pre">--dns</span></tt> options exist. If any <tt class="docutils literal"><span class="pre">--dns</span> server</tt>
+option is present, DNS-related <tt class="docutils literal"><span class="pre">--dhcp-option</span></tt>s will always be ignored.
+If an <tt class="docutils literal"><span class="pre">--up</span></tt> script is defined, foreign_option env vars will be generated
+from <tt class="docutils literal"><span class="pre">--dns</span></tt> options and passed to the script. The default <tt class="docutils literal"><span class="pre">--dns-updown</span></tt>
+command is not run if an <tt class="docutils literal"><span class="pre">--up</span></tt> script is defined. Both is done for backward
+compatibility. In case you want to run the <tt class="docutils literal"><span class="pre">--dns-updown</span></tt> command even if
+there is an <tt class="docutils literal"><span class="pre">--up</span></tt> defined, you can define a custom command or use <tt class="docutils literal">force</tt>
+as <tt class="docutils literal">cmd</tt> to run the default command. No DNS env vars will be passed to <tt class="docutils literal"><span class="pre">--up</span></tt>
+in this case.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--down <var>cmd</var></span></kbd></td>
@@ -5305,8 +5442,8 @@ coding of strings from untrusted sources to be passed as parameters to
 scripts, saved in the environment, used as a common name, translated to
 a filename, etc.</dd>
 <dt><em>Q: Can string remapping be disabled?</em></dt>
-<dd>Yes, by using the <tt class="docutils literal"><span class="pre">--no-name-remapping</span></tt> option, however this
-should be considered an advanced option.</dd>
+<dd>No.  The options <tt class="docutils literal"><span class="pre">--no-name-remapping</span></tt> and <tt class="docutils literal"><span class="pre">--compat-names</span></tt> have
+been removed in 2.5 because they were considered too insecure.</dd>
 </dl>
 <p>Here is a brief rundown of OpenVPN's current string types and the
 permitted character class for each string:</p>
@@ -5320,18 +5457,16 @@ to return true.</dd>
 <dd>Alphanumeric, underbar ('_'), dash ('-'), dot ('.'), and at ('&#64;').</dd>
 <dt><em>--auth-user-pass username</em></dt>
 <dd>Same as Common Name, with one exception:
-starting with OpenVPN 2.0.1, the username is passed to the
+The username is passed to the
 <code>OPENVPN_PLUGIN_AUTH_USER_PASS_VERIFY</code> plugin in its raw form,
 without string remapping.</dd>
 <dt><em>--auth-user-pass password</em></dt>
 <dd>Any &quot;printable&quot; character except CR or LF. Printable is defined to be
 a character which will cause the C library isprint() function to
 return true.</dd>
-<dt><em>--client-config-dir filename as derived from common name or`username</em></dt>
-<dd>Alphanumeric, underbar ('_'), dash ('-'), and dot ('.') except for &quot;.&quot;
-or &quot;..&quot; as standalone strings. As of v2.0.1-rc6, the at ('&#64;') character
-has been added as well for compatibility with the common name character
-class.</dd>
+<dt><em>--client-config-dir filename as derived from common name or username</em></dt>
+<dd>Alphanumeric, underbar ('_'), dash ('-'), at ('&#64;'), and dot ('.')
+except for &quot;.&quot; or &quot;..&quot; as standalone strings.</dd>
 <dt><em>Environmental variable names</em></dt>
 <dd>Alphanumeric or underbar ('_').</dd>
 <dt><em>Environmental variable values</em></dt>
@@ -5345,7 +5480,7 @@ character class for that string type will be remapped to underbar
 <h2>Environmental Variables</h2>
 <p>Once set, a variable is persisted indefinitely until it is reset by a
 new value or a restart,</p>
-<p>As of OpenVPN 2.0-beta12, in server mode, environmental variables set by
+<p>In server mode, environmental variables set by
 OpenVPN are scoped according to the client objects they are associated
 with, so there should not be any issues with scripts having access to
 stale, previously set variables which refer to different client
@@ -5404,7 +5539,7 @@ exists. Set prior to <tt class="docutils literal"><span class="pre">--up</span><
 netsh.exe calls which sometimes just do not work right with interface
 names). Set prior to <tt class="docutils literal"><span class="pre">--up</span></tt> or <tt class="docutils literal"><span class="pre">--down</span></tt> script execution.</dd>
 <dt><code>dns_*</code></dt>
-<dd><p class="first">The <tt class="docutils literal"><span class="pre">--dns</span></tt> configuration options will be made available to script
+<dd><p class="first">The <tt class="docutils literal"><span class="pre">--dns</span></tt> configuration options will be made available to <tt class="docutils literal"><span class="pre">--dns-updown</span></tt>
 execution through this set of environment variables. Variables appear
 only if the corresponding option has a value assigned. For the semantics
 of each individual variable, please refer to the documentation for <tt class="docutils literal"><span class="pre">--dns</span></tt>.</p>
@@ -5546,7 +5681,7 @@ command line or configuration file.</p>
 </dd>
 <dt><code>route_ipv6_{parm}_{n}</code></dt>
 <dd><p class="first">A set of variables which define each IPv6 route to be added, and are
-set prior to <strong>--up</strong> script execution.</p>
+set prior to <tt class="docutils literal"><span class="pre">--up</span></tt> script execution.</p>
 <p><tt class="docutils literal">parm</tt> will be one of <code>network</code>, <code>gateway</code> or
 <code>metric</code>. <tt class="docutils literal">route_ipv6_network_{n}</tt> contains <code>netmask</code>
 as <code>/nnn</code>, unlike IPv4 where it is passed in a separate environment
@@ -5556,6 +5691,14 @@ variable.</p>
 translations will be recorded rather than their names as denoted on the
 command line or configuration file.</p>
 </dd>
+</dl>
+<p><code>route_redirect_gateway_ipv4</code></p>
+<dl class="docutils">
+<dt><code>route_redirect_gateway_ipv6</code></dt>
+<dd>Set to <code>1</code> if the corresponding default gateway should be redirected
+into the tunnel, and to <code>2</code> if also the local LAN segment should be
+blocked (<code>block-local</code>).  Not set otherwise.  Set prior to <tt class="docutils literal"><span class="pre">--up</span></tt> script
+execution.</dd>
 <dt><code>script_context</code></dt>
 <dd>Set to &quot;init&quot; or &quot;restart&quot; prior to up/down script execution. For more
 information, see documentation for <tt class="docutils literal"><span class="pre">--up</span></tt>.</dd>
@@ -5877,6 +6020,11 @@ authentication.</dd>
 </div>
 <div class="section" id="windows-specific-options">
 <h2>Windows-Specific Options</h2>
+<p>These options are considered unknown on non-Windows platforms, resulting
+in fatal error (except <tt class="docutils literal"><span class="pre">--route-method</span></tt>). You may want to use
+<tt class="docutils literal"><span class="pre">--setenv</span> opt</tt> or <tt class="docutils literal"><span class="pre">--ignore-unknown-option</span></tt> to ignore said error.
+Note that pushing unknown options from server does not trigger fatal
+errors.</p>
 <table class="docutils option-list" frame="void" rules="none">
 <col class="option" />
 <col class="description" />
@@ -5894,16 +6042,10 @@ directive can only be used by an administrator.</td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--block-outside-dns</span></kbd></td>
 </tr>
-<tr><td>&nbsp;</td><td><p class="first">Block DNS servers on other network adapters to prevent DNS leaks. This
+<tr><td>&nbsp;</td><td>Block DNS servers on other network adapters to prevent DNS leaks. This
 option prevents any application from accessing TCP or UDP port 53 except
 one inside the tunnel. It uses Windows Filtering Platform (WFP) and
-works on Windows Vista or later.</p>
-<p class="last">This option is considered unknown on non-Windows platforms and
-unsupported on Windows XP, resulting in fatal error. You may want to use
-<tt class="docutils literal"><span class="pre">--setenv</span> opt</tt> or <tt class="docutils literal"><span class="pre">--ignore-unknown-option</span></tt> (not suitable for
-Windows XP) to ignore said error. Note that pushing unknown options from
-server does not trigger fatal errors.</p>
-</td></tr>
+works on Windows Vista or later.</td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--cryptoapicert <var>select-string</var></span></kbd></td>
 </tr>
@@ -6123,13 +6265,6 @@ otherwise it defaulted to <code>C:\\WINDOWS</code>. It is not needed to use
 the <tt class="docutils literal">env</tt> keyword any more, and it will just be ignored. A warning is
 logged when this is found in the configuration file.</p>
 </td></tr>
-<tr><td class="option-group" colspan="2">
-<kbd><span class="option">--windows-driver <var>drv</var></span></kbd></td>
-</tr>
-<tr><td>&nbsp;</td><td>Specifies which tun driver to use. Values are <code>ovpn-dco</code> (default),
-<code>tap-windows6</code> and <code>wintun</code>. <code>ovpn-dco</code> and <code>wintun</code>
-require <tt class="docutils literal"><span class="pre">--dev</span> tun</tt>. <code>wintun</code> also requires OpenVPN process to run
-elevated, or be invoked using the Interactive Service.</td></tr>
 </tbody>
 </table>
 </div>
@@ -6147,13 +6282,16 @@ towards the gateway (if the protocol in question is enabled).</p>
 <p>Valid syntax:</p>
 <pre class="literal-block">
 --show-gateway
+--show-gateway IPv4-target
 --show-gateway IPv6-target
 </pre>
-<p class="last">For IPv6 this queries the route towards ::/128, or the specified IPv6
-target address if passed as argument.
-For IPv4 on Linux, Windows, MacOS and BSD it looks for a 0.0.0.0/0 route.
-If there are more specific routes, the result will not always be matching
-the route of the IPv4 packets to the VPN gateway.</p>
+<p>For IPv4 it looks for a 0.0.0.0/0 route, or the specified IPv4 address
+if the target can be parsed as an IPv4 address.
+For IPv6 this queries the route towards ::/128, or the specified IPv6
+target address if the argument is an IPv6 address.</p>
+<p class="last">Adding a target is helpful for diagnostics to see if OpenVPN will do
+the right thing if there are more specific IPv4/IPv6 routes to a
+VPN server.</p>
 </td></tr>
 </tbody>
 </table>
@@ -6175,7 +6313,8 @@ address table to <tt class="docutils literal">v</tt>.</p>
 <pre class="literal-block">
 hash-size r v
 </pre>
-<p class="last">By default, both tables are sized at 256 buckets.</p>
+<p class="last">By default, both tables are sized at 4 times <tt class="docutils literal"><span class="pre">--max-clients</span></tt> buckets.
+With the default of 1024 of <tt class="docutils literal"><span class="pre">--max-clients</span></tt> this gives 4096 buckets.</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--bcast-buffers <var>n</var></span></kbd></td>
@@ -6262,8 +6401,21 @@ longer supported</p>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--client-cert-not-required</span></kbd></td>
 </tr>
-<tr><td>&nbsp;</td><td>Removed in OpenVPN 2.5.  This should be replaxed with
+<tr><td>&nbsp;</td><td>Removed in OpenVPN 2.5.  This should be replaced with
 <tt class="docutils literal"><span class="pre">--verify-client-cert</span> none</tt>.</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--fast-io</span></kbd></td>
+<td>Ignored since OpenVPN 2.7. This option became broken due to changes
+to the event loop.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--http-proxy-retry</span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Removed in OpenVPN 2.4.  All retries are controlled by <tt class="docutils literal"><span class="pre">--max-connect-retry</span></tt>.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--http-proxy-timeout</span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Removed in OpenVPN 2.4.  Connection timeout is controlled by
+<tt class="docutils literal"><span class="pre">--connect-timeout</span></tt>.</td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--ifconfig-pool-linear</span></kbd></td>
 </tr>
@@ -6279,6 +6431,9 @@ was also only needed when the remote side was older than OpenVPN 2.0.</td></tr>
 <tr><td>&nbsp;</td><td>Removed in OpenVPN 2.6.  The built-in packet filtering (pf) functionality
 has been removed.</td></tr>
 <tr><td class="option-group">
+<kbd><span class="option">--max-routes</span></kbd></td>
+<td>Removed in OpenVPN 2.4.  The limit was removed.</td></tr>
+<tr><td class="option-group">
 <kbd><span class="option">--ncp-disable</span></kbd></td>
 <td>Removed in OpenVPN 2.6.  This option mainly served a role as debug option
 when NCP was first introduced.  It should no longer be necessary.</td></tr>
@@ -6288,17 +6443,29 @@ when NCP was first introduced.  It should no longer be necessary.</td></tr>
 VPN tunnel security.  This has been a NOOP option since OpenVPN 2.4.</td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--no-replay</span></kbd></td>
-<td>Removed in OpenVPN 2.5.  This option should not be used as it weakens the
-VPN tunnel security.</td></tr>
-<tr><td class="option-group">
-<kbd><span class="option">--ns-cert-type</span></kbd></td>
-<td>Removed in OpenVPN 2.5.  The <tt class="docutils literal">nsCertType</tt> field is no longer supported
-in recent SSL/TLS libraries.  If your certificates does not include <em>key
-usage</em> and <em>extended key usage</em> fields, they must be upgraded and the
-<tt class="docutils literal"><span class="pre">--remote-cert-tls</span></tt> option should be used instead.</td></tr>
+<td>Removed in OpenVPN 2.7.  This option should not be used as it weakens the
+VPN tunnel security.  Previously we claimed to have removed this in
+OpenVPN 2.5, but this wasn't actually the case.</td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--prng</span></kbd></td>
 <td>Removed in OpenVPN 2.6.  We now always use the PRNG of the SSL library.</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--persist-key</span></kbd></td>
+<td>Ignored since OpenVPN 2.7. Keys are now always persisted across restarts.</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">--opt-verify</span></kbd></td>
+<td>Removed in OpenVPN 2.7.  This option does not make sense anymore as option
+strings may not match due to the introduction of parameters negotiation.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--socks-proxy-retry</span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Removed in OpenVPN 2.4.  All retries are controlled by <tt class="docutils literal"><span class="pre">--max-connect-retry</span></tt>.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--windows-driver</span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Removed in OpenVPN 2.7. OpenVPN will always use ovpn-dco as the default
+driver on Windows. It will fall back to tap-windows6 if options are used
+that are incompatible with ovpn-dco.</td></tr>
 </tbody>
 </table>
 </div>
@@ -6338,7 +6505,6 @@ remote 198.19.36.99 443 tcp
 http-proxy 192.168.0.8 8080
 &lt;/connection&gt;
 
-persist-key
 persist-tun
 pkcs12 client.p12
 remote-cert-tls server
@@ -6356,7 +6522,7 @@ block:</p>
 <tt class="docutils literal"><span class="pre">http-proxy-option</span></tt>, <tt class="docutils literal"><span class="pre">key-direction</span></tt>, <tt class="docutils literal"><span class="pre">link-mtu</span></tt>, <tt class="docutils literal">local</tt>,
 <tt class="docutils literal">lport</tt>, <tt class="docutils literal">mssfix</tt>, <tt class="docutils literal"><span class="pre">mtu-disc</span></tt>, <tt class="docutils literal">nobind</tt>, <tt class="docutils literal">port</tt>, <tt class="docutils literal">proto</tt>,
 <tt class="docutils literal">remote</tt>, <tt class="docutils literal">rport</tt>, <tt class="docutils literal"><span class="pre">socks-proxy</span></tt>, <tt class="docutils literal"><span class="pre">tls-auth</span></tt>, <tt class="docutils literal"><span class="pre">tls-crypt</span></tt>,
-<tt class="docutils literal"><span class="pre">tun-mtu</span> and</tt>, <tt class="docutils literal"><span class="pre">tun-mtu-extra</span></tt>.</p>
+<tt class="docutils literal"><span class="pre">tls-crypt-v2</span></tt>, <tt class="docutils literal"><span class="pre">tun-mtu</span> and</tt>, <tt class="docutils literal"><span class="pre">tun-mtu-extra</span></tt>.</p>
 <p>A defaulting mechanism exists for specifying options to apply to all
 <tt class="docutils literal">&lt;connection&gt;</tt> profiles. If any of the above options (with the
 exception of <tt class="docutils literal">remote</tt> ) appear outside of a <tt class="docutils literal">&lt;connection&gt;</tt> block,
@@ -6372,7 +6538,7 @@ declared in all <tt class="docutils literal">&lt;connection&gt;</tt> blocks belo
 <h1>INLINE FILE SUPPORT</h1>
 <p>OpenVPN allows including files in the main configuration for the <tt class="docutils literal"><span class="pre">--ca</span></tt>,
 <tt class="docutils literal"><span class="pre">--cert</span></tt>, <tt class="docutils literal"><span class="pre">--dh</span></tt>, <tt class="docutils literal"><span class="pre">--extra-certs</span></tt>, <tt class="docutils literal"><span class="pre">--key</span></tt>, <tt class="docutils literal"><span class="pre">--pkcs12</span></tt>,
-<tt class="docutils literal"><span class="pre">--secret</span></tt>, <tt class="docutils literal"><span class="pre">--crl-verify</span></tt>, <tt class="docutils literal"><span class="pre">--http-proxy-user-pass</span></tt>, <tt class="docutils literal"><span class="pre">--tls-auth</span></tt>,
+<tt class="docutils literal"><span class="pre">--crl-verify</span></tt>, <tt class="docutils literal"><span class="pre">--http-proxy-user-pass</span></tt>, <tt class="docutils literal"><span class="pre">--tls-auth</span></tt>,
 <tt class="docutils literal"><span class="pre">--auth-gen-token-secret</span></tt>, <tt class="docutils literal"><span class="pre">--peer-fingerprint</span></tt>, <tt class="docutils literal"><span class="pre">--tls-crypt</span></tt>,
 <tt class="docutils literal"><span class="pre">--tls-crypt-v2</span></tt>, <tt class="docutils literal"><span class="pre">--verify-hash</span></tt> and <tt class="docutils literal"><span class="pre">--auth-user-pass</span></tt> options.</p>
 <p>Each inline file started by the line <tt class="docutils literal">&lt;option&gt;</tt> and ended by the line
@@ -6397,12 +6563,11 @@ for example with OpenSSL by running <code>openssl base64 -in input.p12</code></p
 re-read the configuration file (if any), and reopen TUN/TAP and network
 connections.</dd>
 <dt><code>SIGUSR1</code></dt>
-<dd><p class="first">Like <code>SIGHUP`</code>, except don't re-read configuration file, and
+<dd><p class="first">Like <code>SIGHUP</code>, except don't re-read configuration file, and
 possibly don't close and reopen TUN/TAP device, re-read key files,
 preserve local IP address/port, or preserve most recently authenticated
-remote IP address/port based on <tt class="docutils literal"><span class="pre">--persist-tun</span></tt>, <tt class="docutils literal"><span class="pre">--persist-key</span></tt>,
-<tt class="docutils literal"><span class="pre">--persist-local-ip</span></tt> and <tt class="docutils literal"><span class="pre">--persist-remote-ip</span></tt> options respectively
-(see above).</p>
+remote IP address/port based on <tt class="docutils literal"><span class="pre">--persist-tun</span></tt>, <tt class="docutils literal"><span class="pre">--persist-local-ip</span></tt>
+and <tt class="docutils literal"><span class="pre">--persist-remote-ip</span></tt> options respectively (see above).</p>
 <p>This signal may also be internally generated by a timeout condition,
 governed by the <tt class="docutils literal"><span class="pre">--ping-restart</span></tt> option.</p>
 <p class="last">This signal, when combined with <tt class="docutils literal"><span class="pre">--persist-remote-ip</span></tt>, may be sent
@@ -6466,7 +6631,7 @@ repository.</p>
 </div>
 <div class="section" id="copyright">
 <h1>COPYRIGHT</h1>
-<p>Copyright (C) 2002-2020 OpenVPN Inc This program is free software; you
+<p>Copyright (C) 2002-2025 OpenVPN Inc This program is free software; you
 can redistribute it and/or modify it under the terms of the GNU General
 Public License version 2 as published by the Free Software Foundation.</p>
 </div>

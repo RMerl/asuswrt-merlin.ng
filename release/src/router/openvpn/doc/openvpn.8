@@ -322,18 +322,6 @@ If \fBengine\-name\fP is specified, use a specific crypto engine. Use the
 \fB\-\-show\-engines\fP standalone option to list the crypto engines which
 are supported by OpenSSL.
 .TP
-.B  \-\-fast\-io
-Optimize TUN/TAP/UDP I/O writes by avoiding a call to
-poll/epoll/select prior to the write operation. The purpose of such a
-call would normally be to block until the device or socket is ready to
-accept the write. Such blocking is unnecessary on some platforms which
-don\(aqt support write blocking on UDP sockets or TUN/TAP devices. In such
-cases, one can optimize the event loop by avoiding the poll/epoll/select
-call, improving CPU efficiency by 5% to 10%.
-.sp
-This option can only be used on non\-Windows systems, when \fB\-\-proto
-udp\fP is specified, and when \fB\-\-shaper\fP is \fINOT\fP specified.
-.TP
 .BI \-\-group \ group
 Similar to the \fB\-\-user\fP option, this option changes the group ID of
 the OpenVPN process to \fBgroup\fP after initialization.
@@ -344,7 +332,7 @@ Valid syntax:
 .INDENT 3.5
 .sp
 .EX
-ignore\-unknown\-options opt1 opt2 opt3 ... optN
+ignore\-unknown\-option opt1 opt2 opt3 ... optN
 .EE
 .UNINDENT
 .UNINDENT
@@ -419,17 +407,6 @@ number of concurrent clients is high.
 .BI \-\-nice \ n
 Change process priority after initialization (\fBn\fP greater than 0 is
 lower priority, \fBn\fP less than zero is higher priority).
-.TP
-.B  \-\-persist\-key
-Don\(aqt re\-read key files across \fBSIGUSR1\fP or \fB\-\-ping\-restart\fP\&.
-.sp
-This option can be combined with \fB\-\-user\fP to allow restarts
-triggered by the \fBSIGUSR1\fP signal. Normally if you drop root
-privileges in OpenVPN, the daemon cannot be restarted since it will now
-be unable to re\-read protected key files.
-.sp
-This option solves the problem by persisting keys across \fBSIGUSR1\fP
-resets, so they don\(aqt need to be re\-read.
 .TP
 .BI \-\-providers \ providers
 Load the list of (OpenSSL) providers. This is mainly useful for using an
@@ -530,7 +507,7 @@ required only during initialization.
 .sp
 Like with chroot, complications can result when scripts or restarts are
 executed after the setcon operation, which is why you should really
-consider using the \fB\-\-persist\-key\fP and \fB\-\-persist\-tun\fP options.
+consider using the \fB\-\-persist\-tun\fP option.
 .TP
 .BI \-\-status \ args
 Write operational status to \fBfile\fP every \fBn\fP seconds. \fBn\fP defaults
@@ -590,7 +567,7 @@ The typical usage of \fB\-\-test\-crypto\fP would be something like this:
 .INDENT 3.5
 .sp
 .EX
-openvpn \-\-test\-crypto \-\-secret key
+openvpn \-\-test\-crypto
 .EE
 .UNINDENT
 .UNINDENT
@@ -600,7 +577,7 @@ or
 .INDENT 3.5
 .sp
 .EX
-openvpn \-\-test\-crypto \-\-secret key \-\-verb 9
+openvpn \-\-test\-crypto \-\-verb 9
 .EE
 .UNINDENT
 .UNINDENT
@@ -610,6 +587,10 @@ new platform, or to isolate problems in the compiler, OpenSSL crypto
 library, or OpenVPN\(aqs crypto code. Since it is a self\-test mode,
 problems with encryption and authentication can be debugged
 independently of network and tunnel issues.
+.sp
+Older versions of OpenVPN used the \fB\-\-secret\fP argument to specify a
+static key for this test. Newer version generate a random key for the
+test.
 .TP
 .BI \-\-tmp\-dir \ dir
 Specify a directory \fBdir\fP for temporary files instead of the default
@@ -754,23 +735,12 @@ As described in the \fB\-\-compress\fP option, compression is a potentially
 dangerous option.  This option allows controlling the behaviour of
 OpenVPN when compression is used and allowed.
 .sp
-Valid syntaxes:
-.INDENT 7.0
-.INDENT 3.5
-.sp
-.EX
-allow\-compression
-allow\-compression mode
-.EE
-.UNINDENT
-.UNINDENT
-.sp
 The \fBmode\fP argument can be one of the following values:
 .INDENT 7.0
 .TP
 .B \fBasym\fP
-OpenVPN will only \fIdecompress downlink packets\fP but \fInot compress
-uplink packets\fP\&.  This also allows migrating to disable compression
+OpenVPN will only \fIdecompress incoming packets\fP but \fInot compress
+outgoing packets\fP\&.  This also allows migrating to disable compression
 when changing both server and client configurations to remove
 compression at the same time is not a feasible option.
 .TP
@@ -780,7 +750,9 @@ is enabled, OpenVPN will additionally also refuse compression
 framing (stub).
 .TP
 .B \fByes\fP
-OpenVPN will send and receive compressed packets.
+\fBDEPRECATED\fP This option is an alias for \fBasym\fP\&. Previously
+it did enable compression for outgoing packets, but OpenVPN never
+compresses packets on send now.
 .UNINDENT
 .TP
 .BI \-\-auth \ alg
@@ -826,9 +798,7 @@ Before 2.4.0, this option was used to select the cipher to be
 configured on the data channel, however, later versions usually
 ignored this directive in favour of a negotiated cipher.
 Starting with 2.6.0, this option is always ignored in TLS mode
-when it comes to configuring the cipher and will only control the
-cipher for \fB\-\-secret\fP pre\-shared\-key mode (note: this mode is
-deprecated and strictly not recommended).
+when it comes to configuring the cipher.
 .sp
 If you wish to specify the cipher to use on the data channel,
 please see \fB\-\-data\-ciphers\fP (for regular negotiation) and
@@ -889,58 +859,30 @@ is enabled. See e.g. the \fICRIME\fP and \fIBREACH\fP attacks on TLS and
 \fIVORACLE\fP on VPNs which also leverage to break encryption. If you are not
 entirely sure that the above does not apply to your traffic, you are
 advised to \fInot\fP enable compression.
+.sp
+For this reason compression support was removed from current versions
+of OpenVPN. It will still decompress compressed packets received via
+a VPN connection but it will never compress any outgoing packets.
 .TP
 .BI \-\-comp\-lzo \ mode
 \fBDEPRECATED\fP Enable LZO compression algorithm.  Compression is
 generally not recommended.  VPN tunnels which uses compression are
 suspectible to the VORALCE attack vector.
 .sp
-Use LZO compression \-\- may add up to 1 byte per packet for incompressible
-data. \fBmode\fP may be \fByes\fP, \fBno\fP, or \fBadaptive\fP
-(default).
+Allows the other side of the connection to use LZO compression. Due
+to difference in packet format this may add 1 additional byte per packet.
+With current versions of OpenVPN no actual compression will happen.
 .sp
-In a server mode setup, it is possible to selectively turn compression
-on or off for individual clients.
-.sp
-First, make sure the client\-side config file enables selective
-compression by having at least one \fB\-\-comp\-lzo\fP directive, such as
-\fB\-\-comp\-lzo no\fP\&. This will turn off compression by default, but allow
-a future directive push from the server to dynamically change the
-\fBon\fP/\fBoff\fP/\fBadaptive\fP setting.
-.sp
-Next in a \fB\-\-client\-config\-dir\fP file, specify the compression setting
-for the client, for example:
-.INDENT 7.0
-.INDENT 3.5
-.sp
-.EX
-comp\-lzo yes
-push \(dqcomp\-lzo yes\(dq
-.EE
-.UNINDENT
-.UNINDENT
-.sp
-The first line sets the \fBcomp\-lzo\fP setting for the server side of the
-link, the second sets the client side.
+\fBmode\fP may be \fByes\fP, \fBno\fP, or \fBadaptive\fP
+but there is no actual change in behavior anymore.
 .TP
 .B  \-\-comp\-noadapt
-\fBDEPRECATED\fP When used in conjunction with \fB\-\-comp\-lzo\fP, this option
-will disable OpenVPN\(aqs adaptive compression algorithm. Normally, adaptive
-compression is enabled with \fB\-\-comp\-lzo\fP\&.
-.sp
-Adaptive compression tries to optimize the case where you have
-compression enabled, but you are sending predominantly incompressible
-(or pre\-compressed) packets over the tunnel, such as an FTP or rsync
-transfer of a large, compressed file. With adaptive compression, OpenVPN
-will periodically sample the compression process to measure its
-efficiency. If the data being sent over the tunnel is already
-compressed, the compression efficiency will be very low, triggering
-openvpn to disable compression for a period of time until the next
-re\-sample test.
+\fBDEPRECATED\fP This option does not have any effect anymore since current
+versions of OpenVPN never compress outgoing packets.
 .TP
 .B  \-\-key\-direction
 Alternative way of specifying the optional direction parameter for the
-\fB\-\-tls\-auth\fP and \fB\-\-secret\fP options. Useful when using inline files
+\fB\-\-tls\-auth\fP option. Useful when using inline files
 (See section on inline files).
 .TP
 .BI \-\-data\-ciphers \ cipher\-list
@@ -964,8 +906,14 @@ E.g. \fBAES\-256\-GCM:AES\-128\-GCM:?CHACHA20\-POLY1305\fP would only enable
 Chacha20\-Poly1305 if the underlying SSL library (and its configuration)
 supports it.
 .sp
+Starting with OpenVPN 2.7 the special keyword \fBDEFAULT\fP can be used
+in the string and is replaced by the default ciphers.  This can be used to
+add an additional allowed cipher to the allowed ciphers, e.g.
+\fBDEFAULT:AES\-192\-CBC\fP to use the default ciphers but also allow
+\fBAES\-192\-CBC\fP\&.
+.sp
 Cipher negotiation is enabled in client\-server mode only. I.e. if
-\fB\-\-mode\fP is set to \fIserver\fP (server\-side, implied by setting
+\fB\-\-mode\fP is set to \fBserver\fP (server\-side, implied by setting
 \fB\-\-server\fP ), or if \fB\-\-pull\fP is specified (client\-side, implied by
 setting \fB\-\-client\fP).
 .sp
@@ -992,59 +940,9 @@ connect to peers that are running OpenVPN 2.3 or older versions, and
 have been configured with \fB\-\-enable\-small\fP
 (typically used on routers or other embedded devices).
 .TP
-.BI \-\-secret \ args
-\fBDEPRECATED\fP Enable Static Key encryption mode (non\-TLS). Use pre\-shared secret
-\fBfile\fP which was generated with \fB\-\-genkey\fP\&.
-.sp
-Valid syntaxes:
-.INDENT 7.0
-.INDENT 3.5
-.sp
-.EX
-secret file
-secret file direction
-.EE
-.UNINDENT
-.UNINDENT
-.sp
-The optional \fBdirection\fP parameter enables the use of 4 distinct keys
-(HMAC\-send, cipher\-encrypt, HMAC\-receive, cipher\-decrypt), so that each
-data flow direction has a different set of HMAC and cipher keys. This
-has a number of desirable security properties including eliminating
-certain kinds of DoS and message replay attacks.
-.sp
-When the \fBdirection\fP parameter is omitted, 2 keys are used
-bidirectionally, one for HMAC and the other for encryption/decryption.
-.sp
-The \fBdirection\fP parameter should always be complementary on either
-side of the connection, i.e. one side should use \fB0\fP and the other
-should use \fB1\fP, or both sides should omit it altogether.
-.sp
-The \fBdirection\fP parameter requires that \fBfile\fP contains a 2048 bit
-key. While pre\-1.5 versions of OpenVPN generate 1024 bit key files, any
-version of OpenVPN which supports the \fBdirection\fP parameter, will also
-support 2048 bit key file generation using the \fB\-\-genkey\fP option.
-.sp
-Static key encryption mode has certain advantages, the primary being
-ease of configuration.
-.sp
-There are no certificates or certificate authorities or complicated
-negotiation handshakes and protocols. The only requirement is that you
-have a pre\-existing secure channel with your peer (such as \fBssh\fP) to
-initially copy the key. This requirement, along with the fact that your
-key never changes unless you manually generate a new one, makes it
-somewhat less secure than TLS mode (see below). If an attacker manages
-to steal your key, everything that was ever encrypted with it is
-compromised. Contrast that to the perfect forward secrecy features of
-TLS mode (using Diffie Hellman key exchange), where even if an attacker
-was able to steal your private key, he would gain no information to help
-him decrypt past sessions.
-.sp
-Another advantageous aspect of Static Key encryption mode is that it is
-a handshake\-free protocol without any distinguishing signature or
-feature (such as a header or protocol handshake sequence) that would
-mark the ciphertext packets as being generated by OpenVPN. Anyone
-eavesdropping on the wire would see nothing but random\-looking data.
+.B  \-\-allow\-deprecated\-insecure\-static\-crypto
+\fBDEPRECATED\fP This allow using OpenVPN without TLS. This is deprecated
+and will be removed in OpenVPN 2.8.
 .TP
 .BI \-\-tran\-window \ n
 Transition window \-\- our old key can live this many seconds after a new
@@ -1141,7 +1039,9 @@ auth\-user\-pass up
 .UNINDENT
 .sp
 If \fBup\fP is present, it must be a file containing username/password on 2
-lines. If the password line is missing, OpenVPN will prompt for one.
+lines or a flag named \fBusername\-only\fP to indicate no password
+should be prompted for. In the former case, if the password line is missing
+in the file, OpenVPN will prompt for one.
 .sp
 If \fBup\fP is omitted, username/password will be prompted from the
 console.
@@ -1161,6 +1061,20 @@ username
 .sp
 where password is optional, and will be prompted from the console if
 missing.
+.sp
+The \fBusername\-only\fP flag is meant to be used with SSO authentication.
+In this case the user will be asked for a username but not password. Instead,
+a dummy password \fB[[BLANK]]\fP is generated internally and submitted to
+the server. See management\-notes.txt for how this option affects username/password
+prompt via the management interface. For the console, it simply eliminates
+the password prompt.
+.sp
+The \fBusername\-only\fP flag cannot be used along with embedding username and/or
+password in the config file, or while reading them from an external file. In
+such cases, if only username is relevant and no password prompt is desired, a
+dummy password like \(aqno_passsword\(aq should be embedded as well. This flag is also
+incompatible with the \fB\-\-static\-challenge\fP option and legacy \fBdynamic challenge\fP
+protocol.
 .sp
 The server configuration must specify an \fB\-\-auth\-user\-pass\-verify\fP
 script to verify the username/password provided by the client.
@@ -1217,21 +1131,31 @@ packet addresses (not ports), and is useful in cases where routes or
 ifconfig settings pushed to the client would create an IP numbering
 conflict.
 .sp
+Valid syntax:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.EX
+client\-nat snat|dnat network netmask alias
+.EE
+.UNINDENT
+.UNINDENT
+.sp
 Examples:
 .INDENT 7.0
 .INDENT 3.5
 .sp
 .EX
-client\-nat snat 192.168.0.0/255.255.0.0
-client\-nat dnat 10.64.0.0/255.255.0.0
+client\-nat snat 192.168.0.0 255.255.0.0 10.64.0.0
+client\-nat dnat 10.64.0.0 255.255.0.0 192.168.0.0
 .EE
 .UNINDENT
 .UNINDENT
 .sp
-\fBnetwork/netmask\fP (for example \fB192.168.0.0/255.255.0.0\fP) defines
-the local view of a resource from the client perspective, while
-\fBalias/netmask\fP (for example \fB10.64.0.0/255.255.0.0\fP) defines the
-remote view from the server perspective.
+\fBnetwork\fP and \fBnetmask\fP (for example \fB192.168.0.0
+255.255.0.0\fP) define the local view of a resource from the client
+perspective, while \fBalias\fP (for example \fB10.64.0.0\fP) defines the
+remote view from the server perspective using the same netmask.
 .sp
 Use \fBsnat\fP (source NAT) for resources owned by the client and
 \fBdnat\fP (destination NAT) for remote resources.
@@ -1378,6 +1302,11 @@ In any case, OpenVPN\(aqs internal ping packets (which are just keepalives)
 and TLS control packets are not considered \(dqactivity\(dq, nor are they
 counted as traffic, as they are used internally by OpenVPN and are not
 an indication of actual user activity.
+.sp
+NOTE: on FreeBSD with DCO, due to platform limits, the previous paragraph
+is not correct.  In that case, encapsulation overhead and keepalives are
+counted, so using this feature needs a sufficiently\-high \fBbytes\fP value to
+take these extra numbers into account.
 .TP
 .BI \-\-proto\-force \ p
 When iterating through connection profiles, only consider profiles using
@@ -1502,6 +1431,8 @@ bit 7: The client is capable of sending exit notification via control channel us
 bit 8: The client is capable of accepting \fBAUTH_FAILED,TEMP\fP messages
 .IP \(bu 2
 bit 9: The client is capable of dynamic tls\-crypt
+.IP \(bu 2
+bit 10: The client is capable of data epoch keys
 .UNINDENT
 .TP
 .B \fBIV_NCP=2\fP
@@ -1575,8 +1506,8 @@ The version of the operating system, e.g. 6.1 for Windows 7.
 This may be set by the client UI/GUI using \fB\-\-setenv\fP\&.
 On Windows systems it is automatically determined by openvpn
 itself.  On other platforms OpenVPN will default to sending
-the information returned by the \fIuname()\fP system call in
-the \fIrelease\fP field, which is usually the currently running
+the information returned by the \fBuname()\fP system call in
+the \fBrelease\fP field, which is usually the currently running
 kernel version.  This is highly system specific, though.
 .TP
 .B \fBUV_<name>=<value>\fP
@@ -1703,7 +1634,7 @@ Valid syntax:
 .INDENT 3.5
 .sp
 .EX
-static\-challenge text echo
+static\-challenge text echo [format]
 .EE
 .UNINDENT
 .UNINDENT
@@ -1711,7 +1642,10 @@ static\-challenge text echo
 The \fBtext\fP challenge text is presented to the user which describes what
 information is requested.  The \fBecho\fP flag indicates if the user\(aqs
 input should be echoed on the screen.  Valid \fBecho\fP values are
-\fB0\fP or \fB1\fP\&.
+\fB0\fP or \fB1\fP\&. The optional \fBformat\fP indicates whether
+the password and response should be combined using the SCRV1 protocol
+(\fBformat\fP = \fBscrv1\fP) or simply concatenated (\fBformat\fP = \fBconcat\fP).
+\fBscrv1\fP is the default.
 .sp
 See management\-notes.txt in the OpenVPN distribution for a description of
 the OpenVPN challenge/response protocol.
@@ -1727,7 +1661,7 @@ console. Its content can also be specified in the config file with the
 \fB\-\-http\-proxy\-user\-pass\fP option (See \fI\%INLINE FILE SUPPORT\fP).
 .sp
 The last optional argument is an \fBauth\-method\fP which should be one
-of \fBnone\fP, \fBbasic\fP, or \fBntlm\fP\&.
+of \fBnone\fP, \fBbasic\fP, or \fBntlm2\fP\&.
 .sp
 HTTP Digest authentication is supported as well, but only via the
 \fBauto\fP or \fBauto\-nct\fP flags (below).  This must replace
@@ -1771,6 +1705,10 @@ password
 .EE
 .UNINDENT
 .UNINDENT
+.sp
+Note that support for NTLMv1 proxies was removed with OpenVPN 2.7.
+\fBntlm\fP now is an alias for \fBntlm2\fP; i.e. OpenVPN will always
+attempt to use NTLMv2 authentication.
 .TP
 .BI \-\-http\-proxy\-user\-pass \ userpass
 Overwrite the username/password information for \fB\-\-http\-proxy\fP\&. If specified
@@ -1924,6 +1862,12 @@ external\-auth option unless the client could authenticate in another
 acceptable way (e.g. client certificate), otherwise returning success
 will lead to authentication bypass (as does returning success on a wrong
 password from a script).
+.sp
+\fBNote:\fP the username for \fB\-\-auth\-gen\-token\fP can be overridden by
+\fB\-\-override\-username\fP\&. In this case the client will be pushed also the
+\fB\-\-auth\-token\-user\fP option and an auth token that is valid for that
+username instead of the original username that the client authenticated
+with.
 .TP
 .BI \-\-auth\-gen\-token\-secret \ file
 Specifies a file that holds a secret for the HMAC used in
@@ -1973,6 +1917,16 @@ the server is live, without needing to restart the server.
 The following options are legal in a client\-specific context: \fB\-\-push\fP,
 \fB\-\-push\-reset\fP, \fB\-\-push\-remove\fP, \fB\-\-iroute\fP, \fB\-\-ifconfig\-push\fP,
 \fB\-\-vlan\-pvid\fP and \fB\-\-config\fP\&.
+.sp
+\fBNote:\fP OpenVPN uses the CN exactly as written in the certificate.
+But since this is a file access the filesystem might interfere.
+Importantly OpenVPN will consider two CNs that only differ in case as
+different names but a case\-insensitive filesystem (like you might
+encounter on Windows or macOS) will treat them as the same. When you
+generate your certificates make sure that the CNs are sufficiently
+different to not cause issues. When trusting an external CA note that
+this is a potential attack vector via maliciously generated
+certificates that exploit this issue.
 .TP
 .B  \-\-client\-to\-client
 Because the OpenVPN server mode handles multiple clients through a
@@ -2175,6 +2129,10 @@ Use \fB\-\-client\-config\-dir\fP file for static IP (next choice).
 Use \fB\-\-ifconfig\-pool\fP allocation for dynamic IP (last
 choice).
 .UNINDENT
+.sp
+When DCO is enabled and the IP is not in contained in the network specified
+by \fB\-\-ifconfig\fP, OpenVPN will install a /32 host route for the \fBlocal\fP
+IP address.
 .TP
 .BI \-\-ifconfig\-ipv6\-push \ args
 for \fB\-\-client\-config\-dir\fP per\-client static IPv6 interface
@@ -2190,8 +2148,14 @@ ifconfig\-ipv6\-push ipv6addr/bits ipv6remote
 .EE
 .UNINDENT
 .UNINDENT
+.sp
+When DCO is enabled and the IP is not in contained in the network specified
+by \fB\-\-ifconfig\-ipv6\fP, OpenVPN will install a /128 host route for the
+\fBipv6addr\fP IP address.
+.UNINDENT
+.INDENT 0.0
 .TP
-.B  \-\-multihome
+.B \-\-multihome [same\-interface]
 Configure a multi\-homed UDP server. This option needs to be used when a
 server has more than one IP address (e.g. multiple interfaces, or
 secondary IP addresses), and is not using \fB\-\-local\fP to force binding
@@ -2207,13 +2171,23 @@ default.
 .IP \(bu 2
 This option is only relevant for UDP servers.
 .IP \(bu 2
-If you do an IPv6+IPv4 dual\-stack bind on a Linux machine with
-multiple IPv4 address, connections to IPv4 addresses will not
-work right on kernels before 3.15, due to missing kernel
-support for the IPv4\-mapped case (some distributions have
-ported this to earlier kernel versions, though).
+Starting with 2.7.0, OpenVPN will ignore the incoming interface of
+the packet, and leave selection of the outgoing interface to the
+normal routing/policy mechanisms of the OS (\(dqset ipi_ifindex=0\(dq).
+.IP \(bu 2
+if the \fBsame\-interface\fP flag is added, OpenVPN will copy the
+incoming interface index to the outgoing interface index,
+trying to send the packet out over the same interface where it came
+in on (= restoring earlier OpenVPN behaviour). This might not work
+if there are no usable routes on that interface.
+.IP \(bu 2
+the *BSD systems use a different API for IPv4 that does not provide
+the interface index anyway (IP_RECVDSTADDR), so there the difference
+applies only to IPv6.
 .UNINDENT
 .UNINDENT
+.UNINDENT
+.INDENT 0.0
 .TP
 .BI \-\-iroute \ args
 Generate an internal route to a specific client. The \fBnetmask\fP
@@ -2273,7 +2247,7 @@ iroute\-ipv6 ipv6addr/bits
 .UNINDENT
 .TP
 .BI \-\-max\-clients \ n
-Limit server to a maximum of \fBn\fP concurrent clients.
+Limit server to a maximum of \fBn\fP concurrent clients. Defaults to 1024.
 .TP
 .BI \-\-max\-routes\-per\-client \ n
 Allow a maximum of \fBn\fP internal routes per client (default
@@ -2288,18 +2262,40 @@ client.
 Note that this directive affects OpenVPN\(aqs internal routing table, not
 the kernel routing table.
 .TP
-.B  \-\-opt\-verify
-\fBDEPRECATED\fP Clients that connect with options that are incompatible with
-those of the server will be disconnected.
+.BI \-\-override\-username \ username
+Sets the username of a connection to the specified username.  This username
+will also be used by \fB\-\-auth\-gen\-token\fP\&. However, the overridden
+username comes only into effect \fIafter\fP the \fB\-\-client\-config\-dir\fP has been
+read and the \fB\-\-auth\-user\-pass\-verify\fP and \fB\-\-client\-connect\fP scripts
+have been run.
 .sp
-Options that will be compared for compatibility include \fBdev\-type\fP,
-\fBlink\-mtu\fP, \fBtun\-mtu\fP, \fBproto\fP, \fBifconfig\fP,
-\fBcomp\-lzo\fP, \fBfragment\fP, \fBkeydir\fP, \fBcipher\fP,
-\fBauth\fP, \fBkeysize\fP, \fBsecret\fP, \fBno\-replay\fP,
-\fBtls\-auth\fP, \fBkey\-method\fP, \fBtls\-server\fP
-and \fBtls\-client\fP\&.
+Also \fB\-\-username\-as\-common\-name\fP will use the client provided username
+as common\-name. It is recommended to avoid the use of the
+\fB\-\-override\-username\fP option if the option \fB\-\-username\-as\-common\-name\fP
+is being used.
 .sp
-This option requires that \fB\-\-disable\-occ\fP NOT be used.
+The changed username will be picked up by the status output and also by
+the \fB\-\-auth\-gen\-token\fP option. It will also be pushed to the client
+using \fB\-\-auth\-token\-user\fP if \fB\-\-auth\-gen\-token\fP is enabled.
+.sp
+Internally on all subsequent renegotiations the client provided username
+will be replaced by the username provided by \fB\-\-override\-username\fP\&.
+If the client changes to a username that is different from both the initial
+and the overridden username, the client will be rejected.
+.sp
+Special care should be taken that both the initial username of the client
+and the overridden username are handled correctly when using
+\fB\-\-override\-username\fP and the related options to avoid
+authentication/authorisation bypasses.
+.sp
+This option is mainly intended for use cases that use certificates and
+multi factor authentication and therefore do not provide a username that
+can be used for \fB\-\-auth\-gen\-token\fP to allow providing a username in
+these scenarios.
+.sp
+If the \fB\-\-auth\-token\fP directive is pushed by another script/plugin or
+management interface, consider also generating and pushing
+\fB\-\-auth\-token\-user\fP\&.
 .TP
 .BI \-\-port\-share \ args
 Share OpenVPN TCP with another service
@@ -2346,9 +2342,12 @@ This is a partial list of options which can currently be pushed:
 \fB\-\-route\fP, \fB\-\-route\-gateway\fP, \fB\-\-route\-delay\fP,
 \fB\-\-redirect\-gateway\fP, \fB\-\-ip\-win32\fP, \fB\-\-dhcp\-option\fP, \fB\-\-dns\fP,
 \fB\-\-inactive\fP, \fB\-\-ping\fP, \fB\-\-ping\-exit\fP, \fB\-\-ping\-restart\fP,
-\fB\-\-setenv\fP, \fB\-\-auth\-token\fP, \fB\-\-persist\-key\fP, \fB\-\-persist\-tun\fP,
+\fB\-\-setenv\fP, \fB\-\-auth\-token\fP, \fB\-\-persist\-tun\fP,
 \fB\-\-echo\fP, \fB\-\-comp\-lzo\fP, \fB\-\-socket\-flags\fP, \fB\-\-sndbuf\fP,
 \fB\-\-rcvbuf\fP, \fB\-\-session\-timeout\fP
+.sp
+Note: using \fB\-\-push\fP requires OpenVPN to run in \fB\-\-mode server\fP (or
+using of one of \fB\-\-server\fP, \fB\-\-server\-bridge\fP helper directives).
 .TP
 .BI \-\-push\-remove \ opt
 Selectively remove all \fB\-\-push\fP options matching \(dqopt\(dq from the option
@@ -2775,7 +2774,7 @@ $ openvpn \-\-tls\-crypt\-v2 v2crypt\-server.key \-\-genkey tls\-crypt\-v2\-clie
 .INDENT 7.0
 .IP \(bu 2
 Generating \fIShared Secret Keys\fP
-Generate a shared secret, for use with the \fB\-\-secret\fP, \fB\-\-tls\-auth\fP
+Generate a shared secret, for use with the \fB\-\-tls\-auth\fP
 or \fB\-\-tls\-crypt\fP options.
 .sp
 Syntax:
@@ -2783,17 +2782,17 @@ Syntax:
 .INDENT 3.5
 .sp
 .EX
-$ openvpn \-\-genkey secret|tls\-crypt|tls\-auth keyfile
+$ openvpn \-\-genkey tls\-crypt|tls\-auth keyfile
 .EE
 .UNINDENT
 .UNINDENT
 .sp
-The key is saved in \fBkeyfile\fP\&. All three variants (\fB\-\-secret\fP,
-\fBtls\-crypt\fP and \fBtls\-auth\fP) generate the same type of key. The
-aliases are added for convenience.
+The key is saved in \fBkeyfile\fP\&. Both variants (\fBtls\-crypt\fP and
+\fBtls\-auth\fP) generate the same type of key. The aliases are added for
+convenience.
 .sp
-If using this for \fB\-\-secret\fP, this file must be shared with the peer
-over a pre\-existing secure channel such as \fBscp\fP(1).
+This file must be shared with the peer over a pre\-existing secure
+channel such as \fBscp\fP(1).
 .IP \(bu 2
 Generating \fITLS Crypt v2 Server key\fP
 Generate a \fB\-\-tls\-crypt\-v2\fP key to be used by an OpenVPN server.
@@ -2880,10 +2879,18 @@ disabled by setting the value to \fB0\fP, but this is
 \fBHIGHLY DISCOURAGED\fP as this is designed to add some protection against
 the SWEET32 attack vector. For more information see the \fB\-\-cipher\fP
 option.
+.sp
+When data channel offload (DCO) is enabled, this option is ignored. DCO
+does not support configurable renegotiation thresholds; automatic key
+renegotiation mechanisms are sufficient for modern ciphers.
 .TP
 .BI \-\-reneg\-pkts \ n
 Renegotiate data channel key after \fBn\fP packets sent and received
 (disabled by default).
+.sp
+When data channel offload (DCO) is enabled, this option is ignored. DCO
+does not support configurable renegotiation thresholds; automatic key
+renegotiation mechanisms are sufficient for modern ciphers.
 .TP
 .BI \-\-reneg\-sec \ args
 Renegotiate data channel key after at most \fBmax\fP seconds
@@ -3014,11 +3021,20 @@ for more information.
 Similar to the \fB\-\-crl\-verify\fP option, CRLs are not mandatory \-
 OpenVPN will log the usual warning in the logs if the relevant CRL is
 missing, but the connection will be allowed.
+.UNINDENT
+.INDENT 0.0
 .TP
-.BI \-\-cert \ file
-Local peer\(aqs signed certificate in .pem format \-\- must be signed by a
-certificate authority whose certificate is in \fB\-\-ca file\fP\&. Each peer
-in an OpenVPN link running in TLS mode should have its own certificate
+.B \-\-cert file|uri
+Local peer\(aqs signed certificate in .pem format or as a URI \-\- must be
+signed by a certificate authority whose certificate is in \fB\-\-ca file\fP
+in the peer configuration. URI is supported only when built with
+OpenSSL 3.0 or later and any required providers are loaded. Types
+of URIs supported and their syntax depends on providers. OpenSSL has
+internal support for \(dq\fI\%file:/absolute/path\fP\(dq URI in which case the scheme
+\(dqfile:\(dq is optional, and any file format recognized by OpenSSL (e.g., PEM,
+PKCS12) is supported. PKCS#11 URI (RFC 7512) is supported by pkcs11\-provider.
+.sp
+Each peer in an OpenVPN link running in TLS mode should have its own certificate
 and private key file. In addition, each certificate should have been
 signed by the key of a certificate authority whose public key resides in
 the \fB\-\-ca\fP certificate authority file. You can easily make your own
@@ -3055,6 +3071,8 @@ authority key from its configuration file such as
 \fB/usr/share/ssl/openssl.cnf\fP \-\- note also that for certificate
 authority functions, you must set up the files \fBindex.txt\fP (may be
 empty) and \fBserial\fP (initialize to \fB01\fP).
+.UNINDENT
+.INDENT 0.0
 .TP
 .BI \-\-crl\-verify \ args
 Check peer certificate against a Certificate Revocation List.
@@ -3120,16 +3138,22 @@ privileges to read the file.
 .UNINDENT
 .TP
 .BI \-\-dh \ file
-File containing Diffie Hellman parameters in .pem format (required for
-\fB\-\-tls\-server\fP only).
+File containing finite field Diffie Hellman parameters in .pem format (used
+by \fB\-\-tls\-server\fP only).
 .sp
-Set \fBfile\fP to \fBnone\fP to disable Diffie Hellman key exchange (and
-use ECDH only). Note that this requires peers to be using an SSL library
-that supports ECDH TLS cipher suites (e.g. OpenSSL 1.0.1+, or
-mbed TLS 2.0+).
+Set \fBfile\fP to \fBnone\fP to disable fine field Diffie Hellman
+key exchange (and to only use ECDH or newer hybrid key agreement algorithms
+like X25519MLKEM768 instead).
+Note that this requires peers to be using an SSL library that supports
+ECDH TLS cipher suites (e.g. OpenSSL 1.0.1+, or mbed TLS 2.0+). Starting
+with 2.7.0, this is the same as not specifying \fB\-\-dh\fP at all.
 .sp
-Use \fBopenssl dhparam \-out dh2048.pem 2048\fP to generate 2048\-bit DH
-parameters. Diffie Hellman parameters may be considered public.
+Diffie Hellman parameters can be generated using
+\fBopenssl dhparam \-out dh2048.pem 2048\fP but it is recommended to
+use \fBnone\fP as finite field Diffie Hellman have been replaced
+by more modern variants like ECDH.
+.sp
+Diffie Hellman parameters may be considered public.
 .TP
 .BI \-\-ecdh\-curve \ name
 Specify the curve to use for elliptic curve Diffie Hellman. Available
@@ -3158,11 +3182,27 @@ maintain continuity of transmission of tunnel data.
 .sp
 The \fB\-\-hand\-window\fP parameter also controls the amount of time that
 the OpenVPN client repeats the pull request until it times out.
+.UNINDENT
+.INDENT 0.0
 .TP
-.BI \-\-key \ file
-Local peer\(aqs private key in .pem format. Use the private key which was
-generated when you built your peer\(aqs certificate (see \fB\-\-cert file\fP
-above).
+.B \-\-key file|uri
+Local peer\(aqs private key in .pem format or a URI. Use the private key
+which was generated when you built your peer\(aqs certificate (see
+\fB\-\-cert file\fP above). URI is supported only when built with OpenSSL 3.0
+or later and any required providers are loaded. (See \fB\-\-cert\fP for more details).
+.UNINDENT
+.INDENT 0.0
+.TP
+.BI \-\-ns\-cert\-type \ type
+\fBDEPRECATED\fP The \fB\-\-remote\-cert\-tls\fP option should be used instead.
+The option is still available since it can\(aqt be silently ignored and needs
+updates to certificates and configs on both sides of the connection.
+However it should not be used for new clients or servers. It depends on the
+deprecated \fBnsCertType\fP certificate field.
+.sp
+Might not work depending on the TLS library used.
+.sp
+Will be removed in a future release.
 .TP
 .BI \-\-pkcs12 \ file
 Specify a PKCS #12 file containing local private key, local certificate,
@@ -3276,8 +3316,23 @@ generated by \fB\-\-genkey\fP\&.
 Older versions (up to OpenVPN 2.3) supported a freeform passphrase file.
 This is no longer supported in newer versions (v2.4+).
 .sp
-See the \fB\-\-secret\fP option for more information on the optional
-\fBdirection\fP parameter.
+The optional \fBdirection\fP parameter enables the use of 2 distinct keys
+(HMAC\-send, HMAC\-receive), so that each
+data flow direction has a different HMAC key. This has a number of desirable
+security properties including eliminating certain kinds of DoS and message
+replay attacks.
+.sp
+When the \fBdirection\fP parameter is omitted, the same key is used
+bidirectionally.
+.sp
+The \fBdirection\fP parameter should always be complementary on either
+side of the connection, i.e. one side should use \fB0\fP and the other
+should use \fB1\fP, or both sides should omit it altogether.
+.sp
+The \fBdirection\fP parameter requires that \fBfile\fP contains a 2048 bit
+key. While pre\-1.5 versions of OpenVPN generate 1024 bit key files, any
+version of OpenVPN which supports the \fBdirection\fP parameter, will also
+support 2048 bit key file generation using the \fB\-\-genkey\fP option.
 .sp
 \fB\-\-tls\-auth\fP is recommended when you are running OpenVPN in a mode
 where it is listening for packets from any IP address, such as when
@@ -3346,7 +3401,7 @@ might need to add them here. If you do not force the ecdh curve
 by using \fB\-\-ecdh\-curve\fP, the groups for ecdh will also be picked
 from this list.
 .sp
-OpenVPN maps the curve name \fIsecp256r1\fP to \fIprime256v1\fP to allow
+OpenVPN maps the curve name \fBsecp256r1\fP to \fBprime256v1\fP to allow
 specifying the same tls\-groups option for mbedTLS and OpenSSL.
 .sp
 Warning: this option not only affects elliptic curve certificates
@@ -3361,7 +3416,7 @@ The following profiles are supported:
 .INDENT 7.0
 .TP
 .B \fBinsecure\fP
-Identical for mbed TLS to \fIlegacy\fP
+Identical for mbed TLS to \fBlegacy\fP
 .TP
 .B \fBlegacy\fP (default)
 SHA1 and newer, RSA 2048\-bit+, any elliptic curve.
@@ -3395,7 +3450,7 @@ ensure that your keys already comply.
 .UNINDENT
 .INDENT 0.0
 .TP
-.B \fIWARNING:\fP \fB\-\-tls\-ciphers\fP, \fB\-\-tls\-ciphersuites\fP and \fBtls\-groups\fP
+.B \fIWARNING:\fP \fB\-\-tls\-cipher\fP, \fB\-\-tls\-ciphersuites\fP and \fBtls\-groups\fP
 These options are expert features, which \- if used correctly \- can
 improve the security of your VPN connection. But it is also easy to
 unwittingly use them to carefully align a gun with your foot, or just
@@ -3406,7 +3461,7 @@ break your connection. Use with care!
 .BI \-\-tls\-cipher \ l
 A list \fBl\fP of allowable TLS ciphers delimited by a colon (\(dq\fB:\fP\(dq).
 .sp
-These setting can be used to ensure that certain cipher suites are used
+This setting can be used to ensure that certain cipher suites are used
 (or not used) for the TLS connection. OpenVPN uses TLS to secure the
 control channel, over which the keys that are used to protect the actual
 VPN traffic are exchanged.
@@ -3416,7 +3471,7 @@ translation) simply supplied to the crypto library. Please see the
 OpenSSL and/or mbed TLS documentation for details on the cipher list
 interpretation.
 .sp
-For OpenSSL, the \fB\-\-tls\-cipher\fP is used for TLS 1.2 and below.
+For OpenSSL, the \fB\-\-tls\-cipher\fP option is used for TLS 1.2 and below.
 .sp
 Use \fB\-\-show\-tls\fP to see a list of TLS ciphers supported by your crypto
 library.
@@ -3430,7 +3485,7 @@ using OpenSSL.
 Same as \fB\-\-tls\-cipher\fP but for TLS 1.3 and up. mbed TLS has no
 TLS 1.3 support yet and only the \fB\-\-tls\-cipher\fP setting is used.
 .sp
-The default for \fI\-\-tls\-ciphersuites\fP is to use the crypto library\(aqs
+The default for \fB\-\-tls\-ciphersuites\fP is to use the crypto library\(aqs
 default.
 .TP
 .B  \-\-tls\-client
@@ -3540,6 +3595,10 @@ contains the client metadata.
 .sp
 The command can reject the connection by exiting with a non\-zero exit
 code.
+.TP
+.BI \-\-tls\-crypt\-v2\-max\-age \ n
+Reject tls\-crypt\-v2 client keys that are older than n days or have
+no timestamp.
 .TP
 .B  \-\-tls\-exit
 Exit on TLS negotiation failure. This option can be useful when you only
@@ -3789,14 +3848,16 @@ either of the following:
 .sp
 .EX
 x509\-username\-field emailAddress
+x509\-username\-field 1.2.840.113549.1.9.1
 x509\-username\-field ext:subjectAltName
 x509\-username\-field CN serialNumber
 .EE
 .UNINDENT
 .UNINDENT
 .sp
-The first example uses the value of the \fBemailAddress\fP attribute
-in the certificate\(aqs Subject field as the username. The second example
+The first two examples use the value of the \fBemailAddress\fP attribute
+in the certificate\(aqs Subject field as the username, where the first example
+uses the name while the second example uses the oid. The third example
 uses the \fBext:\fP prefix to signify that the X.509 extension
 \fBfieldname\fP \fBsubjectAltName\fP be searched for an rfc822Name
 (email) field to be used as the username. In cases where there are
@@ -3810,12 +3871,6 @@ against the chosen \fBfieldname\fP instead of the Common Name.
 .sp
 Only the \fBsubjectAltName\fP and \fBissuerAltName\fP X.509
 extensions and \fBserialNumber\fP X.509 attribute are supported.
-.sp
-\fBPlease note:\fP This option has a feature which will convert an
-all\-lowercase \fBfieldname\fP to uppercase characters, e.g.,
-\fBou\fP \-> \fBOU\fP\&. A mixed\-case \fBfieldname\fP or one having the
-\fBext:\fP prefix will be left as\-is. This automatic upcasing feature is
-deprecated and will be removed in a future release.
 .sp
 Non\-compliant symbols are being replaced with the \fB_\fP symbol, same as
 the field separator, so concatenating multiple fields with such or \fB_\fP
@@ -3954,13 +4009,13 @@ The negotiation support in OpenVPN 2.4 was the first iteration of the implementa
 and still had some quirks. Its main goal was \(dqupgrade to AES\-256\-GCM when possible\(dq.
 An OpenVPN 2.4 client that is built against a crypto library that supports AES in GCM
 mode and does not have \fB\-\-ncp\-disable\fP will always announce support for
-\fIAES\-256\-GCM\fP and \fIAES\-128\-GCM\fP to a server by sending \fBIV_NCP=2\fP\&.
+\fBAES\-256\-GCM\fP and \fBAES\-128\-GCM\fP to a server by sending \fBIV_NCP=2\fP\&.
 .sp
 This only causes a problem if \fB\-\-ncp\-ciphers\fP option has been changed from the
 default of \fBAES\-256\-GCM:AES\-128\-GCM\fP to a value that does not include
-these two ciphers. When an OpenVPN server tries to use \fIAES\-256\-GCM\fP or
-\fIAES\-128\-GCM\fP the connection will then fail. It is therefore recommended to
-always have the \fIAES\-256\-GCM\fP and \fIAES\-128\-GCM\fP ciphers to the \fB\-\-ncp\-ciphers\fP
+these two ciphers. When an OpenVPN server tries to use \fBAES\-256\-GCM\fP or
+\fBAES\-128\-GCM\fP the connection will then fail. It is therefore recommended to
+always have the \fBAES\-256\-GCM\fP and \fBAES\-128\-GCM\fP ciphers to the \fB\-\-ncp\-ciphers\fP
 options to avoid this behaviour.
 .SS OpenVPN 3 clients
 .sp
@@ -3968,7 +4023,7 @@ Clients based on the OpenVPN 3.x library (\fI\%https://github.com/openvpn/openvp
 do not have a configurable \fB\-\-ncp\-ciphers\fP or \fB\-\-data\-ciphers\fP option. Newer
 versions by default disable legacy AES\-CBC, BF\-CBC, and DES\-CBC ciphers.
 These clients will always announce support for all their supported AEAD ciphers
-(\fIAES\-256\-GCM\fP, \fIAES\-128\-GCM\fP and in newer versions also \fIChacha20\-Poly1305\fP).
+(\fBAES\-256\-GCM\fP, \fBAES\-128\-GCM\fP and in newer versions also \fBChacha20\-Poly1305\fP).
 .sp
 To support OpenVPN 3.x based clients at least one of these ciphers needs to be
 included in the server\(aqs \fB\-\-data\-ciphers\fP option.
@@ -3986,12 +4041,12 @@ If the client is 2.3 or older and has been configured with the
 cipher used by the client is necessary.
 .SS OpenVPN 2.4 server
 .sp
-When a client indicates support for \fIAES\-128\-GCM\fP and \fIAES\-256\-GCM\fP
+When a client indicates support for \fBAES\-128\-GCM\fP and \fBAES\-256\-GCM\fP
 (with \fBIV_NCP=2\fP) an OpenVPN 2.4 server will send the first
 cipher of the \fB\-\-ncp\-ciphers\fP to the OpenVPN client regardless of what
 the cipher is. To emulate the behaviour of an OpenVPN 2.4 client as close
 as possible and have compatibility to a setup that depends on this quirk,
-adding  \fIAES\-128\-GCM\fP and \fIAES\-256\-GCM\fP to the client\(aqs \fB\-\-data\-ciphers\fP
+adding \fBAES\-128\-GCM\fP and \fBAES\-256\-GCM\fP to the client\(aqs \fB\-\-data\-ciphers\fP
 option is required. OpenVPN 2.5+ will only announce the \fBIV_NCP=2\fP flag if
 those ciphers are present.
 .SS OpenVPN 2.3 and older servers (and servers with \fB\-\-ncp\-disable\fP)
@@ -4008,10 +4063,10 @@ If the server is 2.3 or older and  has been configured with the
 cipher used by the server is necessary.
 .SS Blowfish in CBC mode (BF\-CBC) deprecation
 .sp
-The \fB\-\-cipher\fP option defaulted to \fIBF\-CBC\fP in OpenVPN 2.4 and older
+The \fB\-\-cipher\fP option defaulted to \fBBF\-CBC\fP in OpenVPN 2.4 and older
 version. The default was never changed to ensure backwards compatibility.
 In OpenVPN 2.5 this behaviour has now been changed so that if the \fB\-\-cipher\fP
-is not explicitly set it does not allow the weak \fIBF\-CBC\fP cipher any more
+is not explicitly set it does not allow the weak \fBBF\-CBC\fP cipher any more
 and needs to explicitly added as \fB\-\-cipher BFC\-CBC\fP or added to
 \fB\-\-data\-ciphers\fP\&.
 .sp
@@ -4145,14 +4200,35 @@ for IPv6) and dynamically negotiated data channel cipher, this option
 is not reliable. It is recommended to set tun\-mtu with enough headroom
 instead.
 .TP
-.BI \-\-local \ host
-Local host name or IP address for bind. If specified, OpenVPN will bind
-to this address only. If unspecified, OpenVPN will bind to all
-interfaces.
+.BI \-\-local \ args
+Valid syntax:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.EX
+local host|* [port] [protocol]
+.EE
+.UNINDENT
+.UNINDENT
+.sp
+Local host name or IP address and port for bind. If specified, OpenVPN will bind
+to this address. If unspecified, OpenVPN will bind to all interfaces.
+\(aq*\(aq can be used as hostname and means \(aqany host\(aq (OpenVPN will listen on what
+is returned by the OS).
+On a client, or in point\-to\-point mode, this can only be specified once (1 socket).
+.sp
+On an OpenVPN setup running as \fB\-\-server\fP, this can be specified multiple times
+to open multiple listening sockets on different addresses and/or different ports.
+In order to specify multiple listen ports without specifying an address, use \(aq*\(aq
+to signal \(dquse what the operating system gives you as default\(dq, for
+\(dqall IPv4 addresses\(dq use \(dq0.0.0.0\(dq, for \(dqall IPv6 addresses\(dq use \(aq::\(aq.
+\fB\-\-local\fP implies \fB\-\-bind\fP\&.
 .TP
 .BI \-\-lport \ port
-Set local TCP/UDP port number or name. Cannot be used together with
-\fB\-\-nobind\fP option.
+Set default TCP/UDP port number. Cannot be used together with
+\fB\-\-nobind\fP option.  A port number of \fB0\fP is only honoured to
+achieve \(dqbind() to a random assigned port number\(dq if a bind\-to IP
+address is specified with \fB\-\-local\fP\&.
 .TP
 .BI \-\-mark \ value
 Mark encrypted packets being sent with \fBvalue\fP\&. The mark value can be
@@ -4274,10 +4350,7 @@ Set the TOS field of the tunnel packet to what the payload\(aqs TOS is.
 Ping remote over the TCP/UDP control channel if no packets have been
 sent for at least \fBn\fP seconds (specify \fB\-\-ping\fP on both peers to
 cause ping packets to be sent in both directions since OpenVPN ping
-packets are not echoed like IP ping packets). When used in one of
-OpenVPN\(aqs secure modes (where \fB\-\-secret\fP, \fB\-\-tls\-server\fP or
-\fB\-\-tls\-client\fP is specified), the ping packet will be
-cryptographically secure.
+packets are not echoed like IP ping packets).
 .sp
 This option has two intended uses:
 .INDENT 7.0
@@ -4341,7 +4414,7 @@ server configuration. To disable the 120 second default, set
 See the signals section below for more information on \fBSIGUSR1\fP\&.
 .sp
 Note that the behavior of \fBSIGUSR1\fP can be modified by the
-\fB\-\-persist\-tun\fP, \fB\-\-persist\-key\fP, \fB\-\-persist\-local\-ip\fP and
+\fB\-\-persist\-tun\fP, \fB\-\-persist\-local\-ip\fP and
 \fB\-\-persist\-remote\-ip\fP options.
 .sp
 Also note that \fB\-\-ping\-exit\fP and \fB\-\-ping\-restart\fP are mutually
@@ -4428,8 +4501,7 @@ order they were received to the TCP/IP protocol stack, provided they
 satisfy several constraints.
 .INDENT 7.0
 .IP a. 3
-The packet cannot be a replay (unless \fB\-\-no\-replay\fP is
-specified, which disables replay protection altogether).
+The packet cannot be a replay.
 .IP b. 3
 If a packet arrives out of order, it will only be accepted if
 the difference between its sequence number and the highest sequence
@@ -4491,8 +4563,7 @@ restarted, it will reject any replays of packets which were already
 received by the prior session.
 .sp
 This option only makes sense when replay protection is enabled (the
-default) and you are using either \fB\-\-secret\fP (shared\-secret key mode)
-or TLS mode with \fB\-\-tls\-auth\fP\&.
+default) and you are using TLS mode with \fB\-\-tls\-auth\fP\&.
 .TP
 .BI \-\-session\-timeout \ n
 Raises \fBSIGTERM\fP for the client instance after \fBn\fP seconds since
@@ -4677,7 +4748,7 @@ desired device type needs to be specified with \fB\-\-dev\-type tun\fP or
 .sp
 On Windows, only the names \fBtun\fP and \fBtap\fP are supported.
 Selection among multiple installed drivers or driver instances is done
-with \fB\-\-dev\-node\fP and \fB\-\-windows\-driver\fP\&.
+with \fB\-\-dev\-node\fP\&.
 .TP
 .BI \-\-dev\-node \ node
 This is a highly system dependent option to influence tun/tap driver
@@ -4704,6 +4775,16 @@ On other platforms, \fB\-\-dev\-node node\fP will influence the naming of the
 created tun/tap device, if supported on that platform.  If OpenVPN cannot
 figure out whether \fBnode\fP is a TUN or TAP device based on the name,
 you should also specify \fB\-\-dev\-type tun\fP or \fB\-\-dev\-type tap\fP\&.
+.sp
+If \fBnode\fP starts with the string \fBunix:\fP openvpn will treat the rest
+of the argument as a program.
+OpenVPN will start the program and create a temporary unix domain socket that
+will be passed to the program together with the tun configuration as
+environment variables.  The temporary unix domain socket  will be be passed
+in the environment variable \fBTUNTAP_SOCKET_FD\fP\&.
+.sp
+This \fBunix:\fP mode is designed mainly to use with the lwipovpn network
+emulator (\fI\%https://github.com/OpenVPN/lwipovpn\fP).
 .TP
 .BI \-\-dev\-type \ device\-type
 Which device type are we using? \fBdevice\-type\fP should be \fBtun\fP
@@ -4715,8 +4796,7 @@ or \fBtap\fP\&.
 Set additional network parameters on supported platforms. May be specified
 on the client or pushed from the server. On Windows these options are
 handled by the \fBtap\-windows6\fP driver by default or directly by OpenVPN
-if dhcp is disabled or the \fBwintun\fP driver is in use. The
-\fBOpenVPN for Android\fP client also handles them internally.
+if dhcp is disabled. The \fBOpenVPN for Android\fP client also handles them internally.
 .sp
 On all other platforms these options are only saved in the client\(aqs
 environment under the name \fBforeign_option_{n}\fP before the
@@ -4911,6 +4991,15 @@ Don\(aqt close and reopen TUN/TAP device or run up/down scripts across
 .sp
 \fBSIGUSR1\fP is a restart signal similar to \fBSIGHUP\fP, but which
 offers finer\-grained control over reset options.
+.sp
+On Linux, this option can be useful when OpenVPN is not executed as
+root and the CAP_NET_ADMIN has not been granted, because the process
+would otherwise not be allowed to bring the interface down and back up.
+.sp
+Alongside the above, using \fB\-\-persist\-tun\fP allows the tunnel interface
+to retain all IP/route settings, thus allowing the user to implement
+any advanced traffic leaking protection (please note that for full
+protection, extra route/firewall rules must be in place).
 .TP
 .BI \-\-redirect\-gateway \ flags
 Automatically execute routing commands to cause all outgoing IP traffic
@@ -4965,6 +5054,10 @@ not be available on non\-Windows clients).
 Block access to local LAN when the tunnel is active, except for
 the LAN gateway itself. This is accomplished by routing the local
 LAN (except for the LAN gateway address) into the tunnel.
+On Windows WFP filters are added in addition to the routes which
+block access to resources not routed through the VPN adapter.
+Push this flag to protect against TunnelCrack type of attacks
+(see: \fI\%https://tunnelcrack.mathyvanhoef.com/\fP).
 .TP
 .B \fBipv6\fP
 Redirect IPv6 routing into the tunnel. This works similar to
@@ -4980,6 +5073,14 @@ Do not redirect IPv4 traffic \- typically used in the flag pair
 .BI \-\-redirect\-private \ flags
 Like \fB\-\-redirect\-gateway\fP, but omit actually changing the default gateway.
 Useful when pushing private subnets.
+.TP
+.BI \-\-route\-table \ id
+Specify a default table id for use with \-\-route.
+By default, OpenVPN installs routes in the main routing
+table of the operating system, but with this option,
+a user defined routing table can be used instead.
+.sp
+(Supported on Linux only, on other platforms this is a no\-op).
 .TP
 .BI \-\-route \ args
 Add route to routing table after connection is established. Multiple
@@ -5069,19 +5170,27 @@ to come up before adding routes.
 Setup IPv6 routing in the system to send the specified IPv6 network into
 OpenVPN\(aqs \fItun\fP\&.
 .sp
-Valid syntax:
+Valid syntaxes:
 .INDENT 7.0
 .INDENT 3.5
 .sp
 .EX
-route\-ipv6 ipv6addr/bits [gateway] [metric]
+route\-ipv6 ipv6addr/bits
+route\-ipv6 ipv6addr/bits gateway
+route\-ipv6 ipv6addr/bits gateway metric
 .EE
 .UNINDENT
 .UNINDENT
-.sp
-The gateway parameter is only used for IPv6 routes across \fItap\fP devices,
+.INDENT 7.0
+.TP
+.B \fBgateway\fP
+Only used for IPv6 routes across \fItap\fP devices,
 and if missing, the \fBipv6remote\fP field from \fB\-\-ifconfig\-ipv6\fP or
 \fB\-\-route\-ipv6\-gateway\fP is used.
+.TP
+.B \fBmetric\fP
+default taken from \fB\-\-route\-metric\fP if set, otherwise \fB0\fP\&.
+.UNINDENT
 .TP
 .BI \-\-route\-gateway \ arg
 Specify a default \fIgateway\fP for use with \fB\-\-route\fP\&.
@@ -5134,11 +5243,17 @@ always be compatible between client and server.
 \fBmode\fP can be one of:
 .INDENT 7.0
 .TP
+.B \fBsubnet\fP
+Use a subnet rather than a point\-to\-point topology by
+configuring the tun interface with a local IP address and subnet mask,
+similar to the topology used in \fB\-\-dev tap\fP and ethernet bridging
+mode. This mode allocates a single IP address per connecting client and
+works on Windows as well. This is the default.
+.TP
 .B \fBnet30\fP
 Use a point\-to\-point topology, by allocating one /30 subnet
 per client. This is designed to allow point\-to\-point semantics when some
-or all of the connecting clients might be Windows systems. This is the
-default.
+or all of the connecting clients might be Windows systems.
 .TP
 .B \fBp2p\fP
 Use a point\-to\-point topology where the remote endpoint of
@@ -5146,17 +5261,10 @@ the client\(aqs tun interface always points to the local endpoint of the
 server\(aqs tun interface. This mode allocates a single IP address per
 connecting client. Only use when none of the connecting clients are
 Windows systems.
-.TP
-.B \fBsubnet\fP
-Use a subnet rather than a point\-to\-point topology by
-configuring the tun interface with a local IP address and subnet mask,
-similar to the topology used in \fB\-\-dev tap\fP and ethernet bridging
-mode. This mode allocates a single IP address per connecting client and
-works on Windows as well.
 .UNINDENT
 .sp
 \fINote:\fP Using \fB\-\-topology subnet\fP changes the interpretation of the
-arguments of \fB\-\-ifconfig\fP to mean \(dqaddress netmask\(dq, no longer \(dqlocal
+arguments of \fB\-\-ifconfig\fP to mean \(dqaddress netmask\(dq, and not \(dqlocal
 remote\(dq.
 .TP
 .BI \-\-tun\-mtu \ args
@@ -5196,7 +5304,7 @@ Note: Depending on the platform, the operating system allows one to receive
 packets larger than \fBtun\-mtu\fP (e.g. Linux and FreeBSD) but other platforms
 (like macOS) limit received packets to the same size as the MTU.
 .TP
-.BI \-\-tun\-max\-mtu \ maxmtu
+.BI \-\-tun\-mtu\-max \ maxmtu
 This configures the maximum MTU size that a server can push to \fBmaxmtu\fP,
 by configuring the internal buffers to allow at least this packet size.
 The default for \fBmaxmtu\fP is 1600. Currently, only increasing beyond 1600
@@ -5288,7 +5396,7 @@ ip link set master vrf_external dev eth0
 .UNINDENT
 .sp
 Any prefixes configured on \fBeth0\fP will be moved from the :code\(gamain\(ga
-routing table into routing table \fI1023\fP
+routing table into routing table \fB1023\fP
 .SS VRF setup with ifupdown
 .sp
 For Debian based Distributions \fBifupdown2\fP provides an almost drop\-in
@@ -5347,50 +5455,58 @@ the OpenVPN process.
 .SS Script Order of Execution
 .INDENT 0.0
 .IP 1. 4
+\fB\-\-dns\-updown\fP
+.sp
+Executed after TCP/UDP socket bind and TUN/TAP open, before \fB\-\-up\fP\&.
+.IP 2. 4
 \fB\-\-up\fP
 .sp
-Executed after TCP/UDP socket bind and TUN/TAP open.
-.IP 2. 4
+Executed after TCP/UDP socket bind and TUN/TAP open, after \fB\-\-dns\-updown\fP\&.
+.IP 3. 4
 \fB\-\-tls\-verify\fP
 .sp
 Executed when we have a still untrusted remote peer.
-.IP 3. 4
+.IP 4. 4
 \fB\-\-ipchange\fP
 .sp
 Executed after connection authentication, or remote IP address change.
-.IP 4. 4
+.IP 5. 4
 \fB\-\-client\-connect\fP
 .sp
 Executed in \fB\-\-mode server\fP mode immediately after client
 authentication.
-.IP 5. 4
+.IP 6. 4
 \fB\-\-route\-up\fP
 .sp
 Executed after connection authentication, either immediately after, or
 some number of seconds after as defined by the \fB\-\-route\-delay\fP option.
-.IP 6. 4
+.IP 7. 4
 \fB\-\-route\-pre\-down\fP
 .sp
 Executed right before the routes are removed.
-.IP 7. 4
+.IP 8. 4
 \fB\-\-client\-disconnect\fP
 .sp
 Executed in \fB\-\-mode server\fP mode on client instance shutdown.
-.IP 8. 4
+.IP 9. 4
+\fB\-\-dns\-updown\fP
+.sp
+Executed before TCP/UDP and TUN/TAP close, before \fB\-\-down\fP\&.
+.IP 10. 4
 \fB\-\-down\fP
 .sp
-Executed after TCP/UDP and TUN/TAP close.
-.IP 9. 4
+Executed after TCP/UDP and TUN/TAP close, after \fB\-\-dns\-updown\fP\&.
+.IP 11. 4
 \fB\-\-learn\-address\fP
 .sp
 Executed in \fB\-\-mode server\fP mode whenever an IPv4 address/route or MAC
 address is added to OpenVPN\(aqs internal routing table.
-.IP 10. 4
+.IP 12. 4
 \fB\-\-auth\-user\-pass\-verify\fP
 .sp
 Executed in \fB\-\-mode server\fP mode on new client connections, when the
 client is still untrusted.
-.IP 11. 4
+.IP 13. 4
 \fB\-\-client\-crresponse\fP
 .INDENT 4.0
 .INDENT 3.5
@@ -5490,7 +5606,7 @@ pending authentication by writing to the file specified by the
 \fBauth_pending_file\fP\&. The first line must be the timeout in
 seconds, the required method on the second line (e.g. crtext) and
 third line must be the EXTRA as documented in the
-\fBclient\-pending\-auth\fP section of \fIdoc/management.txt\fP\&.
+\fBclient\-pending\-auth\fP section of \fBdoc/management.txt\fP\&.
 .sp
 This directive is designed to enable a plugin\-style interface for
 extending OpenVPN\(aqs authentication capabilities.
@@ -5529,7 +5645,7 @@ client\-crresponse cmd
 .UNINDENT
 .sp
 OpenVPN will write the response of the client into a temporary file.
-The filename will be passed as an argument to \fBcmd\fP, and the file will be
+The filename will be passed as an argument to \fBcmd\fP, and the file will
 automatically deleted by OpenVPN after the script returns.
 .sp
 The response is passed as is from the client. The script needs to check
@@ -5590,6 +5706,31 @@ status.
 .sp
 The \fB\-\-client\-disconnect\fP command is not passed any extra arguments
 (only those arguments specified in cmd, if any).
+.TP
+.BI \-\-dns\-updown \ cmd
+Run command \fBcmd\fP, instead of the default DNS up/down command that comes
+with openvpn. If \fBcmd\fP is \fBdisable\fP the \fB\-\-dns\-updown\fP command is not run.
+.sp
+If you write your own command, please make sure to ignore \fB\-\-dns\fP
+server profiles that cannot be applied. Port, DNSSEC and secure transport
+settings need to be adhered to. If split DNS is not possible a full redirect
+can be used as a fallback. If not all of the server addresses or search domains
+can be configured, apply them in the order they are listed in.
+.sp
+Note that \fB\-\-dns\-updown\fP is not supported on all platforms. On Windows DNS
+will always be set by the service. On Android DNS will be passed via management
+interface.
+.sp
+Note that DNS\-related \fB\-\-dhcp\-option\fPs might be converted so that they are
+available to this hook if no \fB\-\-dns\fP options exist. If any \fB\-\-dns server\fP
+option is present, DNS\-related \fB\-\-dhcp\-option\fPs will always be ignored.
+If an \fB\-\-up\fP script is defined, foreign_option env vars will be generated
+from \fB\-\-dns\fP options and passed to the script. The default \fB\-\-dns\-updown\fP
+command is not run if an \fB\-\-up\fP script is defined. Both is done for backward
+compatibility. In case you want to run the \fB\-\-dns\-updown\fP command even if
+there is an \fB\-\-up\fP defined, you can define a custom command or use \fBforce\fP
+as \fBcmd\fP to run the default command. No DNS env vars will be passed to \fB\-\-up\fP
+in this case.
 .TP
 .BI \-\-down \ cmd
 Run command \fBcmd\fP after TUN/TAP device close (post \fB\-\-user\fP UID
@@ -5938,8 +6079,8 @@ scripts, saved in the environment, used as a common name, translated to
 a filename, etc.
 .TP
 .B \fIQ: Can string remapping be disabled?\fP
-Yes, by using the \fB\-\-no\-name\-remapping\fP option, however this
-should be considered an advanced option.
+No.  The options \fB\-\-no\-name\-remapping\fP and \fB\-\-compat\-names\fP have
+been removed in 2.5 because they were considered too insecure.
 .UNINDENT
 .sp
 Here is a brief rundown of OpenVPN\(aqs current string types and the
@@ -5957,7 +6098,7 @@ Alphanumeric, underbar (\(aq_\(aq), dash (\(aq\-\(aq), dot (\(aq.\(aq), and at (
 .TP
 .B \fI\-\-auth\-user\-pass username\fP
 Same as Common Name, with one exception:
-starting with OpenVPN 2.0.1, the username is passed to the
+The username is passed to the
 \fBOPENVPN_PLUGIN_AUTH_USER_PASS_VERIFY\fP plugin in its raw form,
 without string remapping.
 .TP
@@ -5966,11 +6107,9 @@ Any \(dqprintable\(dq character except CR or LF. Printable is defined to be
 a character which will cause the C library isprint() function to
 return true.
 .TP
-.B \fI\-\-client\-config\-dir filename as derived from common name or\(gausername\fP
-Alphanumeric, underbar (\(aq_\(aq), dash (\(aq\-\(aq), and dot (\(aq.\(aq) except for \(dq.\(dq
-or \(dq..\(dq as standalone strings. As of v2.0.1\-rc6, the at (\(aq@\(aq) character
-has been added as well for compatibility with the common name character
-class.
+.B \fI\-\-client\-config\-dir filename as derived from common name or username\fP
+Alphanumeric, underbar (\(aq_\(aq), dash (\(aq\-\(aq), at (\(aq@\(aq), and dot (\(aq.\(aq)
+except for \(dq.\(dq or \(dq..\(dq as standalone strings.
 .TP
 .B \fIEnvironmental variable names\fP
 Alphanumeric or underbar (\(aq_\(aq).
@@ -5987,7 +6126,7 @@ character class for that string type will be remapped to underbar
 Once set, a variable is persisted indefinitely until it is reset by a
 new value or a restart,
 .sp
-As of OpenVPN 2.0\-beta12, in server mode, environmental variables set by
+In server mode, environmental variables set by
 OpenVPN are scoped according to the client objects they are associated
 with, so there should not be any issues with scripts having access to
 stale, previously set variables which refer to different client
@@ -6059,7 +6198,7 @@ netsh.exe calls which sometimes just do not work right with interface
 names). Set prior to \fB\-\-up\fP or \fB\-\-down\fP script execution.
 .TP
 .B \fBdns_*\fP
-The \fB\-\-dns\fP configuration options will be made available to script
+The \fB\-\-dns\fP configuration options will be made available to \fB\-\-dns\-updown\fP
 execution through this set of environment variables. Variables appear
 only if the corresponding option has a value assigned. For the semantics
 of each individual variable, please refer to the documentation for \fB\-\-dns\fP\&.
@@ -6244,6 +6383,16 @@ variable.
 If the network or gateway are resolvable DNS names, their IP address
 translations will be recorded rather than their names as denoted on the
 command line or configuration file.
+.UNINDENT
+.sp
+\fBroute_redirect_gateway_ipv4\fP
+.INDENT 0.0
+.TP
+.B \fBroute_redirect_gateway_ipv6\fP
+Set to \fB1\fP if the corresponding default gateway should be redirected
+into the tunnel, and to \fB2\fP if also the local LAN segment should be
+blocked (\fBblock\-local\fP).  Not set otherwise.  Set prior to \fB\-\-up\fP script
+execution.
 .TP
 .B \fBscript_context\fP
 Set to \(dqinit\(dq or \(dqrestart\(dq prior to up/down script execution. For more
@@ -6600,6 +6749,12 @@ authentication.
 .UNINDENT
 .UNINDENT
 .SS Windows\-Specific Options
+.sp
+These options are considered unknown on non\-Windows platforms, resulting
+in fatal error (except \fB\-\-route\-method\fP). You may want to use
+\fB\-\-setenv opt\fP or \fB\-\-ignore\-unknown\-option\fP to ignore said error.
+Note that pushing unknown options from server does not trigger fatal
+errors.
 .INDENT 0.0
 .TP
 .BI \-\-allow\-nonadmin \ TAP\-adapter
@@ -6616,12 +6771,6 @@ Block DNS servers on other network adapters to prevent DNS leaks. This
 option prevents any application from accessing TCP or UDP port 53 except
 one inside the tunnel. It uses Windows Filtering Platform (WFP) and
 works on Windows Vista or later.
-.sp
-This option is considered unknown on non\-Windows platforms and
-unsupported on Windows XP, resulting in fatal error. You may want to use
-\fB\-\-setenv opt\fP or \fB\-\-ignore\-unknown\-option\fP (not suitable for
-Windows XP) to ignore said error. Note that pushing unknown options from
-server does not trigger fatal errors.
 .TP
 .BI \-\-cryptoapicert \ select\-string
 \fI(Windows/OpenSSL Only)\fP Load the certificate and private key from the
@@ -6884,12 +7033,6 @@ define \fB\-\-win\-sys env\fP to use the SystemRoot environment variable,
 otherwise it defaulted to \fBC:\e\eWINDOWS\fP\&. It is not needed to use
 the \fBenv\fP keyword any more, and it will just be ignored. A warning is
 logged when this is found in the configuration file.
-.TP
-.BI \-\-windows\-driver \ drv
-Specifies which tun driver to use. Values are \fBovpn\-dco\fP (default),
-\fBtap\-windows6\fP and \fBwintun\fP\&. \fBovpn\-dco\fP and \fBwintun\fP
-require \fB\-\-dev tun\fP\&. \fBwintun\fP also requires OpenVPN process to run
-elevated, or be invoked using the Interactive Service.
 .UNINDENT
 .SS Standalone Debug Options
 .INDENT 0.0
@@ -6904,16 +7047,20 @@ Valid syntax:
 .sp
 .EX
 \-\-show\-gateway
+\-\-show\-gateway IPv4\-target
 \-\-show\-gateway IPv6\-target
 .EE
 .UNINDENT
 .UNINDENT
 .sp
+For IPv4 it looks for a 0.0.0.0/0 route, or the specified IPv4 address
+if the target can be parsed as an IPv4 address.
 For IPv6 this queries the route towards ::/128, or the specified IPv6
-target address if passed as argument.
-For IPv4 on Linux, Windows, MacOS and BSD it looks for a 0.0.0.0/0 route.
-If there are more specific routes, the result will not always be matching
-the route of the IPv4 packets to the VPN gateway.
+target address if the argument is an IPv6 address.
+.sp
+Adding a target is helpful for diagnostics to see if OpenVPN will do
+the right thing if there are more specific IPv4/IPv6 routes to a
+VPN server.
 .UNINDENT
 .SS Advanced Expert Options
 .sp
@@ -6935,7 +7082,8 @@ hash\-size r v
 .UNINDENT
 .UNINDENT
 .sp
-By default, both tables are sized at 256 buckets.
+By default, both tables are sized at 4 times \fB\-\-max\-clients\fP buckets.
+With the default of 1024 of \fB\-\-max\-clients\fP this gives 4096 buckets.
 .TP
 .BI \-\-bcast\-buffers \ n
 Allocate \fBn\fP buffers for broadcast datagrams (default \fB256\fP).
@@ -7015,8 +7163,19 @@ longer supported
 .INDENT 0.0
 .TP
 .B  \-\-client\-cert\-not\-required
-Removed in OpenVPN 2.5.  This should be replaxed with
+Removed in OpenVPN 2.5.  This should be replaced with
 \fB\-\-verify\-client\-cert none\fP\&.
+.TP
+.B  \-\-fast\-io
+Ignored since OpenVPN 2.7. This option became broken due to changes
+to the event loop.
+.TP
+.B  \-\-http\-proxy\-retry
+Removed in OpenVPN 2.4.  All retries are controlled by \fB\-\-max\-connect\-retry\fP\&.
+.TP
+.B  \-\-http\-proxy\-timeout
+Removed in OpenVPN 2.4.  Connection timeout is controlled by
+\fB\-\-connect\-timeout\fP\&.
 .TP
 .B  \-\-ifconfig\-pool\-linear
 Removed in OpenVPN 2.5.  This should be replaced with \fB\-\-topology p2p\fP\&.
@@ -7030,6 +7189,9 @@ was also only needed when the remote side was older than OpenVPN 2.0.
 Removed in OpenVPN 2.6.  The built\-in packet filtering (pf) functionality
 has been removed.
 .TP
+.B  \-\-max\-routes
+Removed in OpenVPN 2.4.  The limit was removed.
+.TP
 .B  \-\-ncp\-disable
 Removed in OpenVPN 2.6.  This option mainly served a role as debug option
 when NCP was first introduced.  It should no longer be necessary.
@@ -7039,17 +7201,27 @@ Removed in OpenVPN 2.5.  This option should not be used as it weakens the
 VPN tunnel security.  This has been a NOOP option since OpenVPN 2.4.
 .TP
 .B  \-\-no\-replay
-Removed in OpenVPN 2.5.  This option should not be used as it weakens the
-VPN tunnel security.
-.TP
-.B  \-\-ns\-cert\-type
-Removed in OpenVPN 2.5.  The \fBnsCertType\fP field is no longer supported
-in recent SSL/TLS libraries.  If your certificates does not include \fIkey
-usage\fP and \fIextended key usage\fP fields, they must be upgraded and the
-\fB\-\-remote\-cert\-tls\fP option should be used instead.
+Removed in OpenVPN 2.7.  This option should not be used as it weakens the
+VPN tunnel security.  Previously we claimed to have removed this in
+OpenVPN 2.5, but this wasn\(aqt actually the case.
 .TP
 .B  \-\-prng
 Removed in OpenVPN 2.6.  We now always use the PRNG of the SSL library.
+.TP
+.B  \-\-persist\-key
+Ignored since OpenVPN 2.7. Keys are now always persisted across restarts.
+.TP
+.B  \-\-opt\-verify
+Removed in OpenVPN 2.7.  This option does not make sense anymore as option
+strings may not match due to the introduction of parameters negotiation.
+.TP
+.B  \-\-socks\-proxy\-retry
+Removed in OpenVPN 2.4.  All retries are controlled by \fB\-\-max\-connect\-retry\fP\&.
+.TP
+.B  \-\-windows\-driver
+Removed in OpenVPN 2.7. OpenVPN will always use ovpn\-dco as the default
+driver on Windows. It will fall back to tap\-windows6 if options are used
+that are incompatible with ovpn\-dco.
 .UNINDENT
 .SH CONNECTION PROFILES
 .sp
@@ -7094,7 +7266,6 @@ remote 198.19.36.99 443 tcp
 http\-proxy 192.168.0.8 8080
 </connection>
 
-persist\-key
 persist\-tun
 pkcs12 client.p12
 remote\-cert\-tls server
@@ -7117,7 +7288,7 @@ block:
 \fBhttp\-proxy\-option\fP, \fBkey\-direction\fP, \fBlink\-mtu\fP, \fBlocal\fP,
 \fBlport\fP, \fBmssfix\fP, \fBmtu\-disc\fP, \fBnobind\fP, \fBport\fP, \fBproto\fP,
 \fBremote\fP, \fBrport\fP, \fBsocks\-proxy\fP, \fBtls\-auth\fP, \fBtls\-crypt\fP,
-\fBtun\-mtu and\fP, \fBtun\-mtu\-extra\fP\&.
+\fBtls\-crypt\-v2\fP, \fBtun\-mtu and\fP, \fBtun\-mtu\-extra\fP\&.
 .sp
 A defaulting mechanism exists for specifying options to apply to all
 \fB<connection>\fP profiles. If any of the above options (with the
@@ -7134,7 +7305,7 @@ declared in all \fB<connection>\fP blocks below it.
 .sp
 OpenVPN allows including files in the main configuration for the \fB\-\-ca\fP,
 \fB\-\-cert\fP, \fB\-\-dh\fP, \fB\-\-extra\-certs\fP, \fB\-\-key\fP, \fB\-\-pkcs12\fP,
-\fB\-\-secret\fP, \fB\-\-crl\-verify\fP, \fB\-\-http\-proxy\-user\-pass\fP, \fB\-\-tls\-auth\fP,
+\fB\-\-crl\-verify\fP, \fB\-\-http\-proxy\-user\-pass\fP, \fB\-\-tls\-auth\fP,
 \fB\-\-auth\-gen\-token\-secret\fP, \fB\-\-peer\-fingerprint\fP, \fB\-\-tls\-crypt\fP,
 \fB\-\-tls\-crypt\-v2\fP, \fB\-\-verify\-hash\fP and \fB\-\-auth\-user\-pass\fP options.
 .sp
@@ -7167,12 +7338,11 @@ re\-read the configuration file (if any), and reopen TUN/TAP and network
 connections.
 .TP
 .B \fBSIGUSR1\fP
-Like \fBSIGHUP\(ga\fP, except don\(aqt re\-read configuration file, and
+Like \fBSIGHUP\fP, except don\(aqt re\-read configuration file, and
 possibly don\(aqt close and reopen TUN/TAP device, re\-read key files,
 preserve local IP address/port, or preserve most recently authenticated
-remote IP address/port based on \fB\-\-persist\-tun\fP, \fB\-\-persist\-key\fP,
-\fB\-\-persist\-local\-ip\fP and \fB\-\-persist\-remote\-ip\fP options respectively
-(see above).
+remote IP address/port based on \fB\-\-persist\-tun\fP, \fB\-\-persist\-local\-ip\fP
+and \fB\-\-persist\-remote\-ip\fP options respectively (see above).
 .sp
 This signal may also be internally generated by a timeout condition,
 governed by the \fB\-\-ping\-restart\fP option.
@@ -7235,7 +7405,7 @@ For more information on the LZO real\-time compression library see:
 \fI\%https://www.oberhumer.com/opensource/lzo/\fP
 .SH COPYRIGHT
 .sp
-Copyright (C) 2002\-2020 OpenVPN Inc This program is free software; you
+Copyright (C) 2002\-2025 OpenVPN Inc This program is free software; you
 can redistribute it and/or modify it under the terms of the GNU General
 Public License version 2 as published by the Free Software Foundation.
 .SH AUTHORS

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef OPENVPN_LZO_H
@@ -57,19 +56,19 @@
 extern const struct compress_alg lzo_alg;
 
 /**************************************************************************/
-/** @name LZO library interface defines *//** @{ *//***********************/
-#define LZO_COMPRESS    lzo1x_1_15_compress
+/** @name LZO library interface defines */ /** @{ */ /***********************/
+#define LZO_COMPRESS   lzo1x_1_15_compress
 /**< LZO library compression function.
  *
  *   Use \c lzo1x_1_15_compress because it
  *   is described as faster than the
  *   standard routine, although it does
  *   need a bit more memory. */
-#define LZO_WORKSPACE   LZO1X_1_15_MEM_COMPRESS
+#define LZO_WORKSPACE  LZO1X_1_15_MEM_COMPRESS
 /**< The size in bytes of the memory
  *   %buffer required by the LZO library
  *   compression algorithm. */
-#define LZO_DECOMPRESS  lzo1x_decompress_safe
+#define LZO_DECOMPRESS lzo1x_decompress_safe
 /**< LZO library decompression function.
  *
  *   Use safe decompress because it
@@ -79,26 +78,30 @@ extern const struct compress_alg lzo_alg;
  *   verify the integrity of incoming
  *   packets, you might want to consider
  *   using the non-safe version. */
-/** @} name LZO library interface *//**************************************/
+/** @} name LZO library interface */ /**************************************/
 
 
 /**************************************************************************/
-/** @name Adaptive compression defines *//** @{ *//************************/
-#define AC_SAMP_SEC    2        /**< Number of seconds in a sample period. */
-#define AC_MIN_BYTES   1000     /**< Minimum number of bytes a sample
-                                 *   period must contain for it to be
-                                 *   evaluated. */
-#define AC_SAVE_PCT    5        /**< Minimum size reduction percentage
-                                 *   below which compression will be
-                                 *   turned off. */
-#define AC_OFF_SEC     60       /**< Seconds to wait after compression has
-                                 *   been turned off before retesting. */
-/** @} name Adaptive compression defines *//*******************************/
+/** @name Adaptive compression defines */ /** @{ */ /************************/
+#define AC_SAMP_SEC 2                               /**< Number of seconds in a sample period. */
+#define AC_MIN_BYTES                                                                      \
+    1000                                            /**< Minimum number of bytes a sample \
+                                                     *   period must contain for it to be \
+                                                     *   evaluated. */
+#define AC_SAVE_PCT                                                                        \
+    5                                               /**< Minimum size reduction percentage \
+                                                     *   below which compression will be   \
+                                                     *   turned off. */
+#define AC_OFF_SEC                                                                             \
+    60                                              /**< Seconds to wait after compression has \
+                                                     *   been turned off before retesting. */
+/** @} name Adaptive compression defines */         /*******************************/
 
 /**
  * Adaptive compression state.
  */
-struct lzo_adaptive_compress {
+struct lzo_adaptive_compress
+{
     bool compress_state;
     time_t next;
     int n_total;

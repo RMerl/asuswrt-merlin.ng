@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2016-2021 Fox Crypto B.V. <openvpn@foxcrypto.com>
+ *  Copyright (C) 2016-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -44,18 +43,76 @@ test_buffer_strprefix(void **state)
     assert_false(strprefix("12", "123"));
 }
 
-#define testsep ","
+#define testsep   ","
 #define testnosep ""
-#define teststr1 "one"
-#define teststr2 "two"
-#define teststr3 "three"
-#define teststr4 "four"
+#define teststr1  "one"
+#define teststr2  "two"
+#define teststr3  "three"
 
-#define assert_buf_equals_str(buf, str) \
+#define assert_buf_equals_str(buf, str)       \
     assert_int_equal(BLEN(buf), strlen(str)); \
     assert_memory_equal(BPTR(buf), str, BLEN(buf));
 
-struct test_buffer_list_aggregate_ctx {
+static void
+test_buffer_printf_catrunc(void **state)
+{
+    struct gc_arena gc = gc_new();
+    struct buffer buf = alloc_buf_gc(16, &gc);
+
+    buf_printf(&buf, "%d", 123);
+    buf_printf(&buf, "%s", "some text, too long to fit");
+    assert_buf_equals_str(&buf, "123some text, t");
+
+    buf_catrunc(&buf, "...");
+    assert_buf_equals_str(&buf, "123some text...");
+
+    buf_catrunc(&buf, "some other text, much too long to fit");
+    assert_buf_equals_str(&buf, "123some text...");
+
+    buf_catrunc(&buf, "something else"); /* exactly right */
+    assert_buf_equals_str(&buf, "1something else");
+
+    buf_catrunc(&buf, "something other"); /* 1 byte too long */
+    assert_buf_equals_str(&buf, "1something else");
+
+    gc_free(&gc);
+}
+
+static void
+test_buffer_format_hex_ex(void **state)
+{
+    const int input_size = 10;
+    const uint8_t input[] = { 0x01, 0x00, 0xff, 0x10, 0xff, 0x00, 0xf0, 0x0f, 0x09, 0x0a };
+    char *output;
+    struct gc_arena gc = gc_new();
+
+    int maxoutput = 0;
+    unsigned int blocksize = 5;
+    char *separator = " ";
+    output = format_hex_ex(input, input_size, maxoutput, blocksize, separator, &gc);
+    assert_string_equal(output, "0100ff10ff 00f00f090a");
+
+    maxoutput = 14;
+    output = format_hex_ex(input, input_size, maxoutput, blocksize, separator, &gc);
+    assert_string_equal(output, "0100[more...]");
+
+    maxoutput = 11;
+    output = format_hex_ex(input, input_size, maxoutput, blocksize, separator, &gc);
+    assert_string_equal(output, "0[more...]");
+
+    maxoutput = 10;
+    output = format_hex_ex(input, input_size, maxoutput, blocksize, separator, &gc);
+    assert_string_equal(output, "0100ff10f");
+
+    maxoutput = 9;
+    output = format_hex_ex(input, input_size, maxoutput, blocksize, separator, &gc);
+    assert_string_equal(output, "0100ff10");
+
+    gc_free(&gc);
+}
+
+struct test_buffer_list_aggregate_ctx
+{
     struct buffer_list *empty;
     struct buffer_list *one_two_three;
     struct buffer_list *zero_length_strings;
@@ -65,7 +122,7 @@ struct test_buffer_list_aggregate_ctx {
 static int
 test_buffer_list_setup(void **state)
 {
-    struct test_buffer_list_aggregate_ctx *ctx  = calloc(1, sizeof(*ctx));
+    struct test_buffer_list_aggregate_ctx *ctx = calloc(1, sizeof(*ctx));
     ctx->empty = buffer_list_new();
 
     ctx->one_two_three = buffer_list_new();
@@ -130,8 +187,7 @@ test_buffer_list_aggregate_separator_two(void **state)
     /* Aggregate the first two elements
      * (add 1 to max_len to test if "three" is not sneaked in too)
      */
-    buffer_list_aggregate_separator(ctx->one_two_three, strlen(expected) + 1,
-                                    testsep);
+    buffer_list_aggregate_separator(ctx->one_two_three, strlen(expected) + 1, testsep);
     assert_int_equal(ctx->one_two_three->size, 2);
     struct buffer *buf = buffer_list_peek(ctx->one_two_three);
     assert_buf_equals_str(buf, expected);
@@ -143,11 +199,10 @@ test_buffer_list_aggregate_separator_all(void **state)
     struct test_buffer_list_aggregate_ctx *ctx = *state;
 
     /* Aggregate all */
-    buffer_list_aggregate_separator(ctx->one_two_three, 1<<16, testsep);
+    buffer_list_aggregate_separator(ctx->one_two_three, 1 << 16, testsep);
     assert_int_equal(ctx->one_two_three->size, 1);
     struct buffer *buf = buffer_list_peek(ctx->one_two_three);
-    assert_buf_equals_str(buf,
-                          teststr1 testsep teststr2 testsep teststr3 testsep);
+    assert_buf_equals_str(buf, teststr1 testsep teststr2 testsep teststr3 testsep);
 }
 
 static void
@@ -156,7 +211,7 @@ test_buffer_list_aggregate_separator_nosep(void **state)
     struct test_buffer_list_aggregate_ctx *ctx = *state;
 
     /* Aggregate all */
-    buffer_list_aggregate_separator(ctx->one_two_three, 1<<16, testnosep);
+    buffer_list_aggregate_separator(ctx->one_two_three, 1 << 16, testnosep);
     assert_int_equal(ctx->one_two_three->size, 1);
     struct buffer *buf = buffer_list_peek(ctx->one_two_three);
     assert_buf_equals_str(buf, teststr1 teststr2 teststr3);
@@ -169,7 +224,7 @@ test_buffer_list_aggregate_separator_zerolen(void **state)
     struct buffer_list *bl_zerolen = ctx->zero_length_strings;
 
     /* Aggregate all */
-    buffer_list_aggregate_separator(bl_zerolen, 1<<16, testnosep);
+    buffer_list_aggregate_separator(bl_zerolen, 1 << 16, testnosep);
     assert_int_equal(bl_zerolen->size, 1);
     struct buffer *buf = buffer_list_peek(bl_zerolen);
     assert_buf_equals_str(buf, "");
@@ -182,7 +237,7 @@ test_buffer_list_aggregate_separator_emptybuffers(void **state)
     struct buffer_list *bl_emptybuffers = ctx->empty_buffers;
 
     /* Aggregate all */
-    buffer_list_aggregate_separator(bl_emptybuffers, 1<<16, testnosep);
+    buffer_list_aggregate_separator(bl_emptybuffers, 1 << 16, testnosep);
     assert_int_equal(bl_emptybuffers->size, 1);
     struct buffer *buf = buffer_list_peek(bl_emptybuffers);
     assert_int_equal(BLEN(buf), 0);
@@ -286,11 +341,12 @@ test_character_class(void **state)
     assert_string_equal(buf, "There.is...a.nice......year.old.tr..ee.");
 
     strcpy(buf, "There is \x01 a 'nice' \"1234\"\n year old \ntr\x7f ee!");
-    assert_false(string_mod(buf, CC_ALPHA|CC_DIGIT|CC_NEWLINE|CC_SINGLE_QUOTE, CC_DOUBLE_QUOTE|CC_BLANK, '.'));
+    assert_false(string_mod(buf, CC_ALPHA | CC_DIGIT | CC_NEWLINE | CC_SINGLE_QUOTE,
+                            CC_DOUBLE_QUOTE | CC_BLANK, '.'));
     assert_string_equal(buf, "There.is...a.'nice'..1234.\n.year.old.\ntr..ee.");
 
     strcpy(buf, "There is a \\'nice\\' \"1234\" [*] year old \ntree!");
-    assert_false(string_mod(buf, CC_PRINT, CC_BACKSLASH|CC_ASTERISK, '.'));
+    assert_false(string_mod(buf, CC_PRINT, CC_BACKSLASH | CC_ASTERISK, '.'));
     assert_string_equal(buf, "There is a .'nice.' \"1234\" [.] year old .tree!");
 }
 
@@ -302,7 +358,7 @@ test_character_string_mod_buf(void **state)
 
     struct buffer buf = alloc_buf_gc(1024, &gc);
 
-    const char test1[] =  "There is a nice 1234\x00 year old tree!";
+    const char test1[] = "There is a nice 1234\x00 year old tree!";
     buf_write(&buf, test1, sizeof(test1));
 
     /* allow the null bytes and string but not the ! */
@@ -330,8 +386,9 @@ test_snprintf(void **state)
 
     /* Instead of trying to trick the compiler here, disable the warnings
      * for this unit test. We know that the results will be truncated
-     * and we want to test that */
-#if defined(__GNUC__)
+     * and we want to test that. Note we need the clang as clang-cl (msvc) does
+     * not define __GNUC__ like it does under UNIX(-like) platforms */
+#if defined(__GNUC__) || defined(__clang__)
 /* some clang version do not understand -Wformat-truncation, so ignore the
  * warning to avoid warnings/errors (-Werror) about unknown pragma/option */
 #if defined(__clang__)
@@ -359,12 +416,98 @@ test_snprintf(void **state)
     assert_int_equal(ret, 10);
     assert_int_equal(buf[9], '\0');
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic pop
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
 #endif
+}
+
+static void
+test_checked_snprintf(void **state)
+{
+    char buf[10];
+    assert_true(checked_snprintf(buf, sizeof(buf), "%s", "Hello"));
+    assert_true(checked_snprintf(buf, sizeof(buf), "%s", "Hello Foo"));
+    assert_false(checked_snprintf(buf, sizeof(buf), "%s", "Hello Foo!"));
+    assert_false(checked_snprintf(buf, sizeof(buf), "%s", "Hello World!"));
+}
+
+void
+test_buffer_chomp(void **state)
+{
+    struct gc_arena gc = gc_new();
+    struct buffer buf = alloc_buf_gc(1024, &gc);
+
+    const char test1[] = "There is a nice 1234 year old tree!\n\r";
+    buf_write(&buf, test1, sizeof(test1));
+    buf_chomp(&buf);
+    /* Check that our own method agrees */
+    assert_true(string_check_buf(&buf, CC_PRINT | CC_NULL, CC_CRLF));
+    assert_string_equal(BSTR(&buf), "There is a nice 1234 year old tree!");
+
+    struct buffer buf2 = alloc_buf_gc(1024, &gc);
+    const char test2[] = "CR_RESPONSE,MTIx\x0a\x00";
+    buf_write(&buf2, test2, sizeof(test2));
+    buf_chomp(&buf2);
+
+    buf_chomp(&buf2);
+    /* Check that our own method agrees */
+    assert_true(string_check_buf(&buf2, CC_PRINT | CC_NULL, CC_CRLF));
+    assert_string_equal(BSTR(&buf2), "CR_RESPONSE,MTIx");
+
+    gc_free(&gc);
+}
+
+/* for building long texts */
+#define A_TIMES_256 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAO"
+
+void
+test_buffer_parse(void **state)
+{
+    struct gc_arena gc = gc_new();
+    struct buffer buf = alloc_buf_gc(1024, &gc);
+    char line[512];
+    bool status;
+    const char test1[] = A_TIMES_256 "EOL\n" A_TIMES_256 "EOF";
+
+    /* line buffer bigger than actual line */
+    assert_true(buf_write(&buf, test1, sizeof(test1)));
+    status = buf_parse(&buf, '\n', line, sizeof(line));
+    assert_true(status);
+    assert_string_equal(line, A_TIMES_256 "EOL");
+    status = buf_parse(&buf, '\n', line, sizeof(line));
+    assert_true(status);
+    assert_string_equal(line, A_TIMES_256 "EOF");
+
+    /* line buffer exactly same size as actual line + terminating \0 */
+    buf_reset_len(&buf);
+    assert_true(buf_write(&buf, test1, sizeof(test1)));
+    status = buf_parse(&buf, '\n', line, 260);
+    assert_true(status);
+    assert_string_equal(line, A_TIMES_256 "EOL");
+    status = buf_parse(&buf, '\n', line, 260);
+    assert_true(status);
+    assert_string_equal(line, A_TIMES_256 "EOF");
+
+    /* line buffer smaller than actual line */
+    buf_reset_len(&buf);
+    assert_true(buf_write(&buf, test1, sizeof(test1)));
+    status = buf_parse(&buf, '\n', line, 257);
+    assert_true(status);
+    assert_string_equal(line, A_TIMES_256);
+    status = buf_parse(&buf, '\n', line, 257);
+    assert_true(status);
+    assert_string_equal(line, "EOL");
+    status = buf_parse(&buf, '\n', line, 257);
+    assert_true(status);
+    assert_string_equal(line, A_TIMES_256);
+    status = buf_parse(&buf, '\n', line, 257);
+    assert_true(status);
+    assert_string_equal(line, "EOF");
+
+    gc_free(&gc);
 }
 
 int
@@ -373,33 +516,31 @@ main(void)
     openvpn_unit_test_setup();
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_buffer_strprefix),
+        cmocka_unit_test(test_buffer_printf_catrunc),
+        cmocka_unit_test(test_buffer_format_hex_ex),
         cmocka_unit_test_setup_teardown(test_buffer_list_aggregate_separator_empty,
-                                        test_buffer_list_setup,
-                                        test_buffer_list_teardown),
+                                        test_buffer_list_setup, test_buffer_list_teardown),
         cmocka_unit_test_setup_teardown(test_buffer_list_aggregate_separator_noop,
-                                        test_buffer_list_setup,
-                                        test_buffer_list_teardown),
+                                        test_buffer_list_setup, test_buffer_list_teardown),
         cmocka_unit_test_setup_teardown(test_buffer_list_aggregate_separator_two,
-                                        test_buffer_list_setup,
-                                        test_buffer_list_teardown),
+                                        test_buffer_list_setup, test_buffer_list_teardown),
         cmocka_unit_test_setup_teardown(test_buffer_list_aggregate_separator_all,
-                                        test_buffer_list_setup,
-                                        test_buffer_list_teardown),
+                                        test_buffer_list_setup, test_buffer_list_teardown),
         cmocka_unit_test_setup_teardown(test_buffer_list_aggregate_separator_nosep,
-                                        test_buffer_list_setup,
-                                        test_buffer_list_teardown),
+                                        test_buffer_list_setup, test_buffer_list_teardown),
         cmocka_unit_test_setup_teardown(test_buffer_list_aggregate_separator_zerolen,
-                                        test_buffer_list_setup,
-                                        test_buffer_list_teardown),
+                                        test_buffer_list_setup, test_buffer_list_teardown),
         cmocka_unit_test_setup_teardown(test_buffer_list_aggregate_separator_emptybuffers,
-                                        test_buffer_list_setup,
-                                        test_buffer_list_teardown),
+                                        test_buffer_list_setup, test_buffer_list_teardown),
         cmocka_unit_test(test_buffer_free_gc_one),
         cmocka_unit_test(test_buffer_free_gc_two),
         cmocka_unit_test(test_buffer_gc_realloc),
         cmocka_unit_test(test_character_class),
         cmocka_unit_test(test_character_string_mod_buf),
-        cmocka_unit_test(test_snprintf)
+        cmocka_unit_test(test_snprintf),
+        cmocka_unit_test(test_checked_snprintf),
+        cmocka_unit_test(test_buffer_chomp),
+        cmocka_unit_test(test_buffer_parse)
     };
 
     return cmocka_run_group_tests_name("buffer", tests, NULL, NULL);

@@ -160,7 +160,6 @@ typedef struct ovpn_sconf {
 	char local6[64];
 	char remote6[64];
 	int verb;	//verbosity
-	ovpn_auth_t auth_mode;	//authentication mode: static, tls
 	int useronly;	//client certificte not required
 	int userauth;
 
@@ -180,7 +179,7 @@ typedef struct ovpn_sconf {
 	char ccd_val[2048];
 
 //Data Channel Encryption Options:
-	int direction;	//key-direction of secret or tls-auth (hmac)
+	int direction;	//key-direction of tls-auth (hmac)
 	int tlscrypt;	//Encrypt and authenticate all control channel packets.
 	char digest[32]; //HMAC message digest algorithm: e.g. SHA1, RSA-SHA512, ecdsa-with-SHA1
 	char ncp_ciphers[256];

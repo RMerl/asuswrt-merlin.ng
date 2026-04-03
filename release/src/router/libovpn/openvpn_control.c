@@ -581,9 +581,6 @@ void ovpn_start_server(int unit) {
 		return;
 	}
 
-	if (sconf->auth_mode == OVPN_AUTH_STATIC)
-		update_ovpn_status(OVPN_TYPE_SERVER, unit, OVPN_STS_RUNNING, OVPN_ERRNO_NONE);
-
 	ovpn_setup_server_watchdog(sconf, unit);
 
 	// Update running ovpn client tables

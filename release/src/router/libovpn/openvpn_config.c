@@ -551,12 +551,6 @@ ovpn_sconf_t *ovpn_get_sconf(int unit){
 
 	snprintf(sconf->if_name, sizeof (sconf->if_name), "%s%d", buffer, unit + OVPN_SERVER_BASEIF);
 
-	if (!strcmp(nvram_pf_safe_get(prefix, "crypt"), "secret"))
-		sconf->auth_mode = OVPN_AUTH_STATIC;
-	else
-		sconf->auth_mode = OVPN_AUTH_TLS;
-
-
 	strlcpy(sconf->network, nvram_pf_safe_get(prefix, "sn"), sizeof(sconf->network));
 	strlcpy(sconf->netmask,	nvram_pf_safe_get(prefix, "nm"), sizeof(sconf->netmask));
 #ifdef RTCONFIG_IPV6

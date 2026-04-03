@@ -1658,7 +1658,13 @@
                     <div class="d-flex align-items-center gap-3">
                         <div class="bandwidth-cell">
                             <label for="cake_overhead">Packet Overhead</label>
-                            <input id="cake_overhead" class="input form-control ms-3" type="number" min="0" step="1" placeholder="Overhead">
+                            <div class="d-flex align-items-center" style="gap:0px;">
+                                <input id="cake_overhead" class="input form-control" type="number" min="0" step="1" placeholder="Overhead" style="width:6rem; margin-right:0px;">
+                                <button id="cake_overhead_pull_arrow" type="button" class="btn btn-light" style="border:1px solid #ccc; padding:0.25rem 0.4rem; margin-left:0px; min-width:2rem; height:2rem; display:flex; align-items:center; justify-content:center;" aria-label="Overhead presets" title="Select a preset for your connection type (ATM/VDSL/Cable etc)">
+                                    <span id="cake_overhead_pull_arrow_icon" style="font-size:0.8rem;">▾</span>
+                                </button>
+                                <div id="cake_overhead_presets_list" style="margin-top:25px; display:none; position:absolute; z-index:1000; background:#fff; border:1px solid #ccc; border-radius:4px; max-height:200px; overflow:auto;"></div>
+                            </div>
                         </div>
                         <div class="bandwidth-cell">
                             <label for="cake_mpu">MPU</label>
@@ -1674,8 +1680,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- ACK Filter, Diffserv and Flows UI removed (unused) -->
 
                 <div class="d-flex justify-content-start mt-3">
                     <button id="cake_apply_btn" class="btn btn-primary">Apply</button>
@@ -2735,6 +2739,19 @@
 
     /* Cake UI: initialize and apply */
     (function () {
+        const overheadPresets = [
+            {atm: "1", overhead: "48", mpu: "0", label: "Conservative default"},
+            {atm: "0", overhead: "42", mpu: "84", label: "Ethernet with VLAN"},
+            {atm: "0", overhead: "18", mpu: "64", label: "Cable (DOCSIS)"},
+            {atm: "0", overhead: "27", mpu: "0", label: "PPPoE VDSL"},
+            {atm: "1", overhead: "32", mpu: "0", label: "RFC2684/RFC1483 Bridged LLC/Snap"},
+            {atm: "1", overhead: "32", mpu: "0", label: "ADSL PPPoE VC/Mux"},
+            {atm: "1", overhead: "40", mpu: "0", label: "ADSL PPPoE LLC/Snap"},
+            {atm: "0", overhead: "19", mpu: "0", label: "VDSL Bridged/IPoE"},
+            {atm: "2", overhead: "30", mpu: "0", label: "VDSL2 PPPoE PTM"},
+            {atm: "2", overhead: "22", mpu: "0", label: "VDSL2 Bridged PTM"}
+        ];
+
         const enableBtn = document.getElementById("enable_cake_btn");
         const uploadInput = document.getElementById("cake_upload");
         const downloadInput = document.getElementById("cake_download");
@@ -2748,6 +2765,81 @@
         const overheadInput = document.getElementById("cake_overhead");
         const mpuInput = document.getElementById("cake_mpu");
         const atmSelect = document.getElementById("cake_atm");
+        const overheadPresetButton = document.getElementById("cake_overhead_pull_arrow");
+        const overheadPresetList = document.getElementById("cake_overhead_presets_list");
+
+        function setCakeOverheadPreset(index) {
+            if (index < 0 || index >= overheadPresets.length) return;
+            const preset = overheadPresets[index];
+            if (overheadInput) overheadInput.value = preset.overhead;
+            if (mpuInput) mpuInput.value = preset.mpu;
+            if (atmSelect) atmSelect.value = preset.atm;
+            stored_overhead = preset.overhead;
+            stored_mpu = preset.mpu;
+            stored_atm = preset.atm;
+            if (overheadPresetList) overheadPresetList.style.display = 'none';
+            if (overheadPresetButton) {
+                const icon = overheadPresetButton.querySelector('#cake_overhead_pull_arrow_icon');
+                if (icon) icon.textContent = '▾';
+            }
+        }
+
+        function buildCakeOverheadPresetList() {
+            if (!overheadPresetList) return;
+            overheadPresetList.innerHTML = '';
+            overheadPresets.forEach((preset, index) => {
+                const entry = document.createElement('div');
+                entry.className = 'dropdown-item';
+                entry.textContent = preset.label;
+                entry.style.padding = '5px 10px';
+                entry.style.cursor = 'pointer';
+                entry.addEventListener('click', () => setCakeOverheadPreset(index));
+                overheadPresetList.appendChild(entry);
+            });
+        }
+
+        function updateOverheadPresetVisibility() {
+            if (!overheadInput || !mpuInput || !atmSelect) return;
+            const currentOverhead = String(overheadInput.value || "");
+            const currentMpu = String(mpuInput.value || "");
+            const currentAtm = String(atmSelect.value || "");
+            const matchIndex = overheadPresets.findIndex(preset =>
+                preset.overhead === currentOverhead && preset.mpu === currentMpu && preset.atm === currentAtm
+            );
+            if (overheadPresetButton) {
+                const icon = overheadPresetButton.querySelector('#cake_overhead_pull_arrow_icon');
+                if (icon) icon.textContent = (matchIndex >= 0) ? '▾' : '▾';
+            }
+            // no real select here, just information state.
+        }
+
+        function bindCakeOverheadPresetInputListeners() {
+            if (overheadPresetButton) {
+                overheadPresetButton.addEventListener('click', (event) => {
+                    if (!overheadPresetList) return;
+                    event.stopPropagation();
+                    const isOpen = overheadPresetList.style.display === 'block';
+                    overheadPresetList.style.display = isOpen ? 'none' : 'block';
+                    const icon = overheadPresetButton.querySelector('#cake_overhead_pull_arrow_icon');
+                    if (icon) icon.textContent = isOpen ? '▾' : '▴';
+                });
+            }
+
+            document.addEventListener('click', () => {
+                if (overheadPresetList && overheadPresetList.style.display === 'block') {
+                    overheadPresetList.style.display = 'none';
+                    if (overheadPresetButton) {
+                        const icon = overheadPresetButton.querySelector('#cake_overhead_pull_arrow_icon');
+                        if (icon) icon.textContent = '▾';
+                    }
+                }
+            });
+            if (overheadPresetList) overheadPresetList.addEventListener('click', (e) => e.stopPropagation());
+
+            if (overheadInput) overheadInput.addEventListener('input', () => { updateOverheadPresetVisibility(); });
+            if (mpuInput) mpuInput.addEventListener('input', () => { updateOverheadPresetVisibility(); });
+            if (atmSelect) atmSelect.addEventListener('change', () => { updateOverheadPresetVisibility(); });
+        }
 
         async function loadCakeSettings() {
             try {
@@ -2781,6 +2873,7 @@
                 if (overheadInput) overheadInput.value = stored_overhead;
                 if (mpuInput) mpuInput.value = stored_mpu;
                 if (atmSelect) atmSelect.value = stored_atm || "0";
+                updateOverheadPresetVisibility();
             } catch (e) {
                 console.warn('Failed to load CAKE nvram keys', e);
             }
@@ -2827,6 +2920,8 @@
             setTimeout(() => { location.reload(); }, 3000);
         });
 
+        buildCakeOverheadPresetList();
+        bindCakeOverheadPresetInputListeners();
         // load current settings now
         loadCakeSettings();
     })();

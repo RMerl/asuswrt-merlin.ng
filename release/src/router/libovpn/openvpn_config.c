@@ -580,8 +580,6 @@ ovpn_sconf_t *ovpn_get_sconf(int unit){
 	strlcpy(sconf->cipher, nvram_pf_safe_get(prefix, "cipher"), sizeof (sconf->cipher));
 	strlcpy(sconf->digest, nvram_pf_safe_get(prefix, "digest"), sizeof (sconf->digest));
 
-	strlcpy(sconf->comp, nvram_pf_safe_get(prefix, "comp"), sizeof (sconf->comp));
-
 	sconf->verb = nvram_pf_get_int(prefix, "verb");
 
 	sconf->push_lan = nvram_pf_get_int(prefix, "client_access");

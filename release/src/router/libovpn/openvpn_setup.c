@@ -419,23 +419,6 @@ int ovpn_write_server_config(ovpn_sconf_t *sconf, int unit) {
 		fprintf(fp_client, "auth %s\n", sconf->digest);
 	}
 
-	// Compression
-	if (strcmp(sconf->comp, "-1")) {
-		if (!strncmp(sconf->comp, "lz4", 3)) {
-			fprintf(fp, "compress %s\n", sconf->comp);
-			fprintf(fp_client, "compress %s\n", sconf->comp);
-		} else if (!strcmp(sconf->comp, "yes")) {
-			fprintf(fp, "compress lzo\n");
-			fprintf(fp_client, "compress lzo\n");
-		} else if (!strcmp(sconf->comp, "adaptive")) {
-			fprintf(fp, "comp-lzo adaptive\n");
-			fprintf(fp_client, "comp-lzo adaptive\n");
-		} else if (!strcmp(sconf->comp, "no")) {
-			fprintf(fp, "compress\n");	// Disable, but client can override if desired
-			fprintf(fp_client, "compress\n");
-		}
-	}
-
 	fprintf(fp, "keepalive 15 60\n");
 	fprintf(fp_client, "keepalive 15 60\n");
 

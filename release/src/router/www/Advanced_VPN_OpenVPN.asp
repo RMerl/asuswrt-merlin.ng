@@ -958,7 +958,6 @@ function update_visibility(){
 		ccd = 0;
 	else
 		ccd = getRadioValue(document.form.vpn_server_ccd);
-	comp = document.form.vpn_server_comp.value;
 
 	showhide("server_authhmac", (auth != "secret"));
 	showhide("server_snnm", ((auth == "tls") && (iface == "tun")));
@@ -1876,19 +1875,6 @@ function handle_ipv6_submit_settings(){
 												<td>
 													<select name="vpn_server_cipher" class="input_option" onChange="update_cipher();"></select>
 													<span id="cipher_hint" class="hint-color">(Default : BF-CBC)</span>
-												</td>
-											</tr>
-											<tr>
-												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,18);"><#vpn_openvpn_Compression#></a></th>
-												<td>
-													<select name="vpn_server_comp" class="input_option" onclick="update_visibility();">
-														<option value="-1" <% nvram_match("vpn_server_comp","-1","selected"); %> ><#WLANConfig11b_WirelessCtrl_buttonname#></option>
-														<option value="no" <% nvram_match("vpn_server_comp","no","selected"); %> ><#wl_securitylevel_0#></option>
-														<option value="yes" <% nvram_match("vpn_server_comp","yes","selected"); %> >LZO</option>
-														<option value="adaptive" <% nvram_match("vpn_server_comp","adaptive","selected"); %> > LZO Adaptive</option>
-														<option value="lz4" <% nvram_match("vpn_server_comp","lz4","selected"); %> >LZ4</option>
-														<option value="lz4-v2" <% nvram_match("vpn_server_comp","lz4-v2","selected"); %> >LZ4-V2</option>
-													</select>
 												</td>
 											</tr>
 											<tr>

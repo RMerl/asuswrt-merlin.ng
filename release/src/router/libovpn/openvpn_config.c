@@ -501,13 +501,13 @@ ovpn_cconf_t *ovpn_get_cconf(int unit) {
 	cconf->direction = nvram_pf_get_int(prefix, "hmac");
 	switch (cconf->direction) {
 		case 3:
-			cconf->tlscrypt = 1;
+			cconf->tlscrypt = OVPN_TLS_CRYPT_V1;
 			break;
 		case 4:
-			cconf->tlscrypt = 2;
+			cconf->tlscrypt = OVPN_TLS_CRYPT_V2;
 			break;
 		default:
-			cconf->tlscrypt = 0;
+			cconf->tlscrypt = OVPN_TLS_CRYPT_NONE;
 	}
 
 	cconf->verify_x509_type = nvram_pf_get_int(prefix, "tlsremote");
@@ -584,7 +584,16 @@ ovpn_sconf_t *ovpn_get_sconf(int unit){
 	sconf->push_dns = nvram_pf_get_int(prefix, "pdns");
 
 	sconf->direction = nvram_pf_get_int(prefix, "hmac");
-	sconf->tlscrypt = (sconf->direction == 3 ? 1 : 0);
+	switch (sconf->direction) {
+		case 3:
+			sconf->tlscrypt = OVPN_TLS_CRYPT_V1;
+			break;
+		case 4:
+			sconf->tlscrypt = OVPN_TLS_CRYPT_V2;
+			break;
+		default:
+			sconf->tlscrypt = OVPN_TLS_CRYPT_NONE;
+	}
 
 	sconf->userauth = nvram_pf_get_int(prefix, "userpass_auth");
 	sconf->useronly = nvram_pf_get_int(prefix, "igncrt");

@@ -86,12 +86,6 @@ typedef enum ovpn_if{
 }ovpn_if_t;
 
 
-typedef enum ovpn_auth{
-	OVPN_AUTH_STATIC = 0,
-	OVPN_AUTH_TLS
-}ovpn_auth_t;
-
-
 // Rule priority reservations, 200 rules for 5 clients each (OVPN and WG)
 #define VPNDIR_PRIO_MAX_RULES 200
 #define VPNDIR_PRIO_BASE 10000

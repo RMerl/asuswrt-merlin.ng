@@ -468,11 +468,6 @@ ovpn_cconf_t *ovpn_get_cconf(int unit) {
 		cconf->if_type = OVPN_IF_TUN;
 	snprintf(cconf->if_name, sizeof (cconf->if_name), "%s%d", buffer, unit + OVPN_CLIENT_BASE);
 
-	if (!strcmp(nvram_pf_safe_get(prefix, "crypt"), "secret"))
-		cconf->auth_mode = OVPN_AUTH_STATIC;
-	else
-		cconf->auth_mode = OVPN_AUTH_TLS;
-
 	cconf->bridge = nvram_pf_get_int(prefix, "bridge");
 	cconf->nat = nvram_pf_get_int(prefix, "nat");
 

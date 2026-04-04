@@ -121,7 +121,6 @@ typedef struct ovpn_cconf {
 	char gateway[16];
 	int verb;	//verbosity
 	char comp[16];	//LZO/LZ4 compression
-	ovpn_auth_t auth_mode;	//authentication mode: static, tls
 	int userauth;	//username, password
 	int useronly;	//client certificte not required
 	char username[64];

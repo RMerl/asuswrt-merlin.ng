@@ -576,8 +576,7 @@ int ovpn_write_client_config(ovpn_cconf_t *cconf, int unit) {
 
 	chmod(buffer, S_IRUSR|S_IWUSR);
 	fprintf(fp, "daemon ovpn-client%d\n", unit);
-	if (cconf->auth_mode == OVPN_AUTH_TLS )
-		fprintf(fp, "client\n");
+	fprintf(fp, "client\n");
 	fprintf(fp, "dev %s\n", cconf->if_name);
 	fprintf(fp, "txqueuelen 1000\n");
 	fprintf(fp, "proto %s\n", cconf->proto);
@@ -586,13 +585,6 @@ int ovpn_write_client_config(ovpn_cconf_t *cconf, int unit) {
 		fprintf(fp, "fast-io\n");
 
 	fprintf(fp, "remote %s %d\n", cconf->addr, cconf->port);
-	if (cconf->auth_mode == OVPN_AUTH_STATIC) {
-		fprintf(fp, "ifconfig %s ", cconf->local);
-		if (cconf->if_type == OVPN_IF_TUN)
-			fprintf(fp, "%s\n", cconf->remote);
-		else if (cconf->if_type == OVPN_IF_TAP)
-			fprintf(fp, "%s\n", cconf->netmask);
-	}
 	if (cconf->retry)
 		fprintf(fp, "connect-retry-max %d\n", cconf->retry);
 
@@ -615,14 +607,8 @@ int ovpn_write_client_config(ovpn_cconf_t *cconf, int unit) {
 	}
 
 	// cipher
-	if (cconf->auth_mode == OVPN_AUTH_TLS) {
-		if (*cconf->ncp_ciphers)
-			fprintf(fp, "data-ciphers %s\n", cconf->ncp_ciphers);
-	} else {	// OVPN_AUTH_STATIC
-		if (strcmp(cconf->cipher, "default")) {
-			fprintf(fp, "cipher %s\n", cconf->cipher);
-		}
-	}
+	if (*cconf->ncp_ciphers)
+		fprintf(fp, "data-ciphers %s\n", cconf->ncp_ciphers);
 
 	if (strcmp(cconf->digest, "default"))
 		fprintf(fp, "auth %s\n", cconf->digest);
@@ -636,63 +622,57 @@ int ovpn_write_client_config(ovpn_cconf_t *cconf, int unit) {
 	if (cconf->if_type == OVPN_IF_TUN)
 		fprintf(fp, "route-noexec\n");
 
-	if (cconf->auth_mode == OVPN_AUTH_TLS) {
-		if (cconf->reneg >= 0)
-			fprintf(fp, "reneg-sec %d\n", cconf->reneg);
+	if (cconf->reneg >= 0)
+		fprintf(fp, "reneg-sec %d\n", cconf->reneg);
 
-		if ((cconf->direction >= 0) && ovpn_key_exists(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_STATIC)) {
-			if (cconf->tlscrypt == 1)
-				fprintf(fp, "tls-crypt static.key\n");
-			else if (cconf->tlscrypt == 2)
-				fprintf(fp, "tls-crypt-v2 static.key\n");
-			else {
-				fprintf(fp, "tls-auth static.key");
-				if (cconf->direction < 2)
-					fprintf(fp, " %d", cconf->direction);
-				fprintf(fp, "\n");
-			}
+	if ((cconf->direction >= 0) && ovpn_key_exists(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_STATIC)) {
+		if (cconf->tlscrypt == 1)
+			fprintf(fp, "tls-crypt static.key\n");
+		else if (cconf->tlscrypt == 2)
+			fprintf(fp, "tls-crypt-v2 static.key\n");
+		else {
+			fprintf(fp, "tls-auth static.key");
+			if (cconf->direction < 2)
+				fprintf(fp, " %d", cconf->direction);
+			fprintf(fp, "\n");
 		}
-
-		if (ovpn_key_exists(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_CA))
-			fprintf(fp, "ca ca.crt\n");
-
-		if (!(cconf->useronly && cconf->userauth)) {
-			if (ovpn_key_exists(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_CERT))
-				fprintf(fp, "cert client.crt\n");
-			if (ovpn_key_exists(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_KEY))
-				fprintf(fp, "key client.key\n");
-		}
-
-		if (cconf->verify_x509_type) {
-			fprintf(fp, "verify-x509-name \"%s\" ",  cconf->verify_x509_name);
-			switch(cconf->verify_x509_type) {
-				case 1:
-					fprintf(fp, "name\n");
-					break;
-				case 2:
-					fprintf(fp, "name-prefix\n");
-					break;
-				case 3:
-					fprintf(fp, "subject\n");
-					break;
-				default:
-					fprintf(fp, "name\n");
-					break;
-			}
-		}
-		if (cconf->userauth)
-			fprintf(fp, "auth-user-pass auth\n");
-
-		if (ovpn_key_exists(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_CRL))
-			fprintf(fp, "crl-verify crl.pem\n");
-
-		if (ovpn_key_exists(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_EXTRA))
-			fprintf(fp, "extra-certs extra.pem\n");
 	}
-	else if (cconf->auth_mode == OVPN_AUTH_STATIC) {
-		if (ovpn_key_exists(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_STATIC))
-			fprintf(fp, "secret static.key\n");
+
+	if (ovpn_key_exists(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_CA))
+		fprintf(fp, "ca ca.crt\n");
+
+	if (!(cconf->useronly && cconf->userauth)) {
+		if (ovpn_key_exists(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_CERT))
+			fprintf(fp, "cert client.crt\n");
+		if (ovpn_key_exists(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_KEY))
+			fprintf(fp, "key client.key\n");
 	}
+
+	if (cconf->verify_x509_type) {
+		fprintf(fp, "verify-x509-name \"%s\" ",  cconf->verify_x509_name);
+		switch(cconf->verify_x509_type) {
+			case 1:
+				fprintf(fp, "name\n");
+				break;
+			case 2:
+				fprintf(fp, "name-prefix\n");
+				break;
+			case 3:
+				fprintf(fp, "subject\n");
+				break;
+			default:
+				fprintf(fp, "name\n");
+				break;
+		}
+	}
+	if (cconf->userauth)
+		fprintf(fp, "auth-user-pass auth\n");
+
+	if (ovpn_key_exists(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_CRL))
+		fprintf(fp, "crl-verify crl.pem\n");
+
+	if (ovpn_key_exists(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_EXTRA))
+		fprintf(fp, "extra-certs extra.pem\n");
 
 	sprintf(buffer, "/etc/openvpn/client%d/ovpn-up", unit);
 	symlink("/sbin/rc", buffer);
@@ -728,28 +708,26 @@ void ovpn_write_client_keys(ovpn_cconf_t *cconf, int unit) {
 	char buffer[64];
 	FILE *fp;
 
-	if (cconf->auth_mode == OVPN_AUTH_TLS) {
-		ovpn_write_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_CA);
-		ovpn_write_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_CRL);
-		ovpn_write_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_EXTRA);
+	ovpn_write_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_CA);
+	ovpn_write_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_CRL);
+	ovpn_write_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_EXTRA);
 
-		if (!(cconf->useronly && cconf->userauth)) {
-			ovpn_write_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_KEY);
-			ovpn_write_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_CERT);
-		}
-		if (cconf->userauth) {
-			sprintf(buffer, "/etc/openvpn/client%d/auth", unit);
-			fp = fopen(buffer, "w");
-			if (fp) {
-				fprintf(fp, "%s\n", cconf->username);
-				fprintf(fp, "%s\n", cconf->password);
-				fclose(fp);
-				chmod(buffer, S_IRUSR|S_IWUSR);
-			}
+	if (!(cconf->useronly && cconf->userauth)) {
+		ovpn_write_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_KEY);
+		ovpn_write_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_CERT);
+	}
+	if (cconf->userauth) {
+		sprintf(buffer, "/etc/openvpn/client%d/auth", unit);
+		fp = fopen(buffer, "w");
+		if (fp) {
+			fprintf(fp, "%s\n", cconf->username);
+			fprintf(fp, "%s\n", cconf->password);
+			fclose(fp);
+			chmod(buffer, S_IRUSR|S_IWUSR);
 		}
 	}
 
-	if (cconf->auth_mode == OVPN_AUTH_STATIC || (cconf->auth_mode == OVPN_AUTH_TLS && cconf->direction >= 0))
+	if (cconf->direction >= 0)
 		ovpn_write_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_STATIC);
 }
 

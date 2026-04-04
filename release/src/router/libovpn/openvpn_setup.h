@@ -21,4 +21,9 @@ extern void ovpn_write_dh(ovpn_sconf_t *sconf, int unit);
 extern int ovpn_is_clientcert_valid(int unit);
 extern void write_ovpn_server_dnsmasq_config(FILE* dnsmasq_conf);
 extern void write_ovpn_client_dnsmasq_config(FILE* dnsmasq_conf);
+extern void ovpn_write_server_client_config(ovpn_sconf_t *sconf, int unit);
+extern void ovpn_write_static_key(ovpn_sconf_t *sconf, int unit);
 #endif
+
+#define OVPN_PEM_HEADER_CRYPT_V1 "-----BEGIN OpenVPN Static key V1"
+#define OVPN_PEM_HEADER_CRYPT_V2 "-----BEGIN OpenVPN tls-crypt-v2 server key"

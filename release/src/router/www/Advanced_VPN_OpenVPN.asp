@@ -945,6 +945,7 @@ function update_visibility(){
 	showhide("server_range", ((dhcp == 0) && (iface == "tap")));
 	showhide("server_igncrt", (userpass == 1));
 	update_visibility_ipv6();
+	showhide("Hint_tls_crypt_v2_client", (hmac == 4));
 }
 
 function edit_Keys() {
@@ -1735,7 +1736,9 @@ function handle_ipv6_submit_settings(){
 														<option value="0" <% nvram_match("vpn_server_hmac","0","selected"); %> >Incoming Auth (0)</option>
 														<option value="1" <% nvram_match("vpn_server_hmac","1","selected"); %> >Outgoing Auth (1)</option>
 														<option value="3" <% nvram_match("vpn_server_hmac","3","selected"); %> >Encrypt channel</option>
+														<option value="4" <% nvram_match("vpn_server_hmac","4","selected"); %> >Encrypt channel V2</option>
 													</select>
+													<span id="Hint_tls_crypt_v2_client" style="display:none;"><br>You must manually generate client keys signed with the new server key.</span>
 												</td>
 											</tr>
 											<tr>

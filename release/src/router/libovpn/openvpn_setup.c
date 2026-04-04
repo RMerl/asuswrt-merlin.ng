@@ -501,14 +501,17 @@ int ovpn_write_server_config(ovpn_sconf_t *sconf, int unit) {
 	}
 
 	// tls-crypt/tls-auth
-	if (sconf->tlscrypt)
-		fprintf(fp, "tls-crypt static.key\n");
-	else if (sconf->direction != -1) {
-		fprintf(fp, "tls-auth static.key");
-
-		if (sconf->direction < 2)
-			fprintf(fp, " %d", sconf->direction);
-		fprintf(fp, "\n");
+	if ((sconf->direction >= 0) && ovpn_key_exists(OVPN_TYPE_SERVER, unit, OVPN_SERVER_STATIC)) {
+		if (sconf->tlscrypt == OVPN_TLS_CRYPT_V1)
+			fprintf(fp, "tls-crypt static.key\n");
+		else if (sconf->tlscrypt == OVPN_TLS_CRYPT_V2)
+			fprintf(fp, "tls-crypt-v2 static.key\n");
+		else {
+			fprintf(fp, "tls-auth static.key");
+			if (sconf->direction < 2)
+				fprintf(fp, " %d", sconf->direction);
+			fprintf(fp, "\n");
+		}
 	}
 
 	if (sconf->userauth) {
@@ -626,9 +629,9 @@ int ovpn_write_client_config(ovpn_cconf_t *cconf, int unit) {
 		fprintf(fp, "reneg-sec %d\n", cconf->reneg);
 
 	if ((cconf->direction >= 0) && ovpn_key_exists(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_STATIC)) {
-		if (cconf->tlscrypt == 1)
+		if (cconf->tlscrypt == OVPN_TLS_CRYPT_V1)
 			fprintf(fp, "tls-crypt static.key\n");
-		else if (cconf->tlscrypt == 2)
+		else if (cconf->tlscrypt == OVPN_TLS_CRYPT_V2)
 			fprintf(fp, "tls-crypt-v2 static.key\n");
 		else {
 			fprintf(fp, "tls-auth static.key");
@@ -736,6 +739,7 @@ void ovpn_write_server_keys(ovpn_sconf_t *sconf, int unit) {
 	char buffer[64], buffer2[8000];
 	FILE *fp, *fp_client;
 	int valid_client_cert = 0;
+	char *keytype;
 
 	// Need to append inline key/certs
 	sprintf(buffer, "/etc/openvpn/server%d/client.ovpn", unit);
@@ -851,28 +855,51 @@ void ovpn_write_server_keys(ovpn_sconf_t *sconf, int unit) {
 			ovpn_write_key(OVPN_TYPE_SERVER, unit, OVPN_SERVER_STATIC);
 		} else {
 			ovpn_get_runtime_filename(OVPN_TYPE_SERVER, unit, OVPN_SERVER_STATIC, buffer, sizeof(buffer));
-			eval("openvpn", "--genkey", "secret", buffer);
+
+			switch (sconf->direction) {
+				case 0:
+				case 1:
+				case 2:
+					keytype = "tls-auth";
+					break;
+				case 3:
+					keytype = "tls-crypt";
+					break;
+				case 4:
+					keytype = "tls-crypt-v2-server";
+					break;
+				default:
+					keytype = "tls-auth";
+			}
+			eval("openvpn", "--genkey", keytype, buffer);
 			sleep(2);
 			set_ovpn_key(OVPN_TYPE_SERVER, unit, OVPN_SERVER_STATIC, NULL, buffer);
 		}
 
-		if (sconf->direction == 3)
-			fprintf(fp_client, "<tls-crypt>\n");
-		else
-			fprintf(fp_client, "<tls-auth>\n");
-
-		fprintf(fp_client, "%s\n", get_ovpn_key(OVPN_TYPE_SERVER, unit, OVPN_SERVER_STATIC, buffer2, sizeof(buffer2)));
-
-		if (sconf->direction == 3)
-			fprintf(fp_client, "</tls-crypt>\n");
-		else
-			fprintf(fp_client, "</tls-auth>\n");
+		switch (sconf->direction) {
+			case 0:
+			case 1:
+			case 2:
+				fprintf(fp_client, "<tls-auth>\n");
+				fprintf(fp_client, "%s\n", get_ovpn_key(OVPN_TYPE_SERVER, unit, OVPN_SERVER_STATIC, buffer2, sizeof(buffer2)));
+				fprintf(fp_client, "</tls-auth>\n");
+				break;
+			case 3:
+				fprintf(fp_client, "<tls-crypt>\n");
+				fprintf(fp_client, "%s\n", get_ovpn_key(OVPN_TYPE_SERVER, unit, OVPN_SERVER_STATIC, buffer2, sizeof(buffer2)));
+				fprintf(fp_client, "</tls-crypt>\n");
+				break;
+			case 4:
+				fprintf(fp_client, "<tls-crypt-v2>\n");
+				fprintf(fp_client, "    Insert client key here\n");
+				fprintf(fp_client, "</tls-crypt-v2>\n");
+				break;
+		}
 
 		if (sconf->direction == 1)
 			fprintf(fp_client, "key-direction 0\n");
 		else if (sconf->direction == 0)
 			fprintf(fp_client, "key-direction 1\n");
-
 	}
 
 	fclose(fp_client);

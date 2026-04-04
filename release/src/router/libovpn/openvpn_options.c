@@ -572,6 +572,7 @@ add_option (char *p[], int line, int unit)
 			return VPN_UPLOAD_NEED_STATIC;
 		}
 	}
+#if 0
 	else if (streq (p[0], "secret") && p[1])
 	{
 		nvram_pf_set(prefix, "crypt", "secret");
@@ -584,6 +585,7 @@ add_option (char *p[], int line, int unit)
 			return VPN_UPLOAD_NEED_STATIC;
 		}
 	}
+#endif
 	else if (streq (p[0], "auth-user-pass"))
 	{
 		nvram_pf_set(prefix, "userauth", "1");

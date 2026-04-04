@@ -93,19 +93,6 @@ var enforce_ori = "<% nvram_get("vpn_client_enforce"); %>";
 var policy_ori = "<% nvram_get("vpn_client_rgw"); %>";
 var dnsmode_ori = "<% nvram_get("vpn_client_adns"); %>";
 
-var ciphersarray = [
-		["AES-128-CBC"],
-		["AES-192-CBC"],
-		["AES-256-CBC"],
-		["BF-CBC"],
-		["CAST5-CBC"],
-		["DES-CBC"],
-		["DES-EDE3-CBC"],
-		["DES-EDE-CBC"],
-		["DESX-CBC"],
-		["IDEA-CBC"]
-];
-
 var digestsarray = [
 		["DSA"],
 		["DSA-SHA"],
@@ -172,12 +159,6 @@ function initial()
 	add_option(document.form.vpn_client_unit, "4: <% nvram_get("vpn_client4_desc"); %>", "4", (openvpn_unit == 4));
 	add_option(document.form.vpn_client_unit, "5: <% nvram_get("vpn_client5_desc"); %>", "5", (openvpn_unit == 5));
 
-	// Cipher list
-	free_options(document.form.vpn_client_cipher);
-	currentcipher = "<% nvram_get("vpn_client_cipher"); %>";
-	add_option(document.form.vpn_client_cipher, "Default","default",(currentcipher.toLowerCase() == "default"));
-	add_option(document.form.vpn_client_cipher, "None","none",(currentcipher.toLowerCase() == "none"));
-
 	// Digest list
 	free_options(document.form.vpn_client_digest);
 	currentdigest = "<% nvram_get("vpn_client_digest"); %>";
@@ -188,12 +169,6 @@ function initial()
 	// (imported ovpn can result in this being tun3, for example)
 	currentiface = "<% nvram_get("vpn_client_if"); %>";
 	setRadioValue(document.form.vpn_client_if_x, currentiface.substring(0,3).toLowerCase());
-
-	for(var i = 0; i < ciphersarray.length; i++){
-		add_option(document.form.vpn_client_cipher,
-			ciphersarray[i][0], ciphersarray[i][0],
-			(currentcipher.toLowerCase() == ciphersarray[i][0].toLowerCase()));
-	}
 
 	for(var i = 0; i < digestsarray.length; i++){
 		add_option(document.form.vpn_client_digest,
@@ -281,18 +256,14 @@ function setTLSTable(unit) {
 
 
 function update_visibility(){
-	auth = document.form.vpn_client_crypt.value;
-	iface = document.form.vpn_client_if_x.value;
-	bridge = getRadioValue(document.form.vpn_client_bridge);
-	nat = getRadioValue(document.form.vpn_client_nat);
-	hmac = document.form.vpn_client_hmac.value;
-	rgw = document.form.vpn_client_rgw.value;
-	tlsremote = document.form.vpn_client_tlsremote.value;
-	userauth = (getRadioValue(document.form.vpn_client_userauth) == 1) && (auth == 'tls') ? 1 : 0;
-	useronly = userauth && getRadioValue(document.form.vpn_client_useronly);
-
-	showhide("client_userauth", (auth == "tls"));
-	showhide("client_hmac", (auth == "tls"));
+	var iface = document.form.vpn_client_if_x.value;
+	var bridge = getRadioValue(document.form.vpn_client_bridge);
+	var nat = getRadioValue(document.form.vpn_client_nat);
+	var hmac = document.form.vpn_client_hmac.value;
+	var rgw = document.form.vpn_client_rgw.value;
+	var tlsremote = document.form.vpn_client_tlsremote.value;
+	var userauth = getRadioValue(document.form.vpn_client_userauth);
+	var useronly = (userauth && getRadioValue(document.form.vpn_client_useronly));
 
 	showhide("client_username", userauth);
 	showhide("client_password", userauth);
@@ -304,25 +275,16 @@ function update_visibility(){
 	showhide("client_bridge_warn_text", (bridge == 0));
 	showhide("client_nat", ((iface == "tun") || (bridge == 0)));
 
-	showhide("client_nat_warn_text", (((nat == 0) || (auth == "secret" && iface == "tun"))));
+	showhide("client_nat_warn_text", (nat == 0));
 
-	showhide("client_local_1", (iface == "tun" && auth == "secret"));
-	showhide("client_local_2", (iface == "tap" && (bridge == 0 && auth == "secret")));
-
-	showhide("client_adns", (auth == "tls"));
-	showhide("client_reneg", (auth == "tls"));
 	showhide("client_gateway_label", (iface == "tap" && rgw > 0));
 	showhide("vpn_client_gw", (iface == "tap" && rgw > 0));
-	showhide("client_tlsremote", (auth == "tls"));
 
-	showhide("vpn_client_cn", ((auth == "tls") && (tlsremote > 0)));
-	showhide("client_cn_label", ((auth == "tls") && (tlsremote > 0)));
+	showhide("vpn_client_cn", (tlsremote > 0));
+	showhide("client_cn_label", (tlsremote > 0));
 	showhide("clientlist_Block", (rgw == 2));
 	showhide("selectiveTable", (rgw == 2));
 	showhide("client_enforce", (rgw != 0));
-
-	showhide("ncp_ciphers", (auth == "tls"));
-	showhide("client_cipher", (auth == "secret"));
 }
 
 
@@ -1072,13 +1034,6 @@ function refreshVPNIP() {
 							<td colspan="2">Authentication Settings</td>
 						</tr>
 					</thead>
-					<tr>
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,7);"><#vpn_openvpn_Auth#></a></th>
-						<td>
-							<input type="radio" name="vpn_client_crypt" class="input" value="tls" <% nvram_match_x("", "vpn_client_crypt", "tls", "checked"); %>>TLS
-							<input type="radio" name="vpn_client_crypt" class="input" value="secret" <% nvram_match_x("", "vpn_client_crypt", "secret", "checked"); %>>Static Key
-						</td>
-					</tr>
 					<tr id="client_userauth">
 						<th>Username/Password Authentication</th>
 						<td>
@@ -1127,14 +1082,6 @@ function refreshVPNIP() {
 						<th>Data ciphers</th>
 						<td>
 							<input type="text" maxlength="127" class="input_32_table" name="vpn_client_ncp_ciphers" value="<% nvram_get("vpn_client_ncp_ciphers"); %>" autocorrect="off" autocapitalize="off" spellcheck="false">
-						</td>
-					</tr>
-					<tr id="client_cipher">
-						<th>Cipher</th>
-						<td>
-							<select name="vpn_client_cipher" class="input_option">
-								<option value="<% nvram_get("vpn_client_cipher"); %>" selected><% nvram_get("vpn_client_cipher"); %></option>
-							</select>
 						</td>
 					</tr>
 					<tr id="client_hmac">

@@ -487,8 +487,6 @@ ovpn_cconf_t *ovpn_get_cconf(int unit) {
 	strlcpy(cconf->comp, nvram_pf_safe_get(prefix, "comp"), sizeof (cconf->comp));
 
 	strlcpy(cconf->ncp_ciphers, nvram_pf_safe_get(prefix, "ncp_ciphers"), sizeof (cconf->ncp_ciphers));
-	strlcpy(cconf->cipher, nvram_pf_safe_get(prefix, "cipher"), sizeof(cconf->cipher));
-
 	strlcpy(cconf->digest, nvram_pf_safe_get(prefix, "digest"), sizeof(cconf->digest));
 
 	cconf->redirect_gateway = nvram_pf_get_int(prefix, "rgw");
@@ -566,7 +564,6 @@ ovpn_sconf_t *ovpn_get_sconf(int unit){
 	sconf->port = nvram_pf_get_int(prefix, "port");
 
 	strlcpy(sconf->ncp_ciphers, nvram_pf_safe_get(prefix, "ncp_ciphers"), sizeof (sconf->ncp_ciphers));
-	strlcpy(sconf->cipher, nvram_pf_safe_get(prefix, "cipher"), sizeof (sconf->cipher));
 	strlcpy(sconf->digest, nvram_pf_safe_get(prefix, "digest"), sizeof (sconf->digest));
 
 	sconf->verb = nvram_pf_get_int(prefix, "verb");

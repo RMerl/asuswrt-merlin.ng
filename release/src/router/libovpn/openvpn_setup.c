@@ -337,7 +337,6 @@ int ovpn_write_server_config(ovpn_sconf_t *sconf, int unit) {
 #endif
 			fprintf(fp, "proto udp4\n");
 		fprintf(fp, "multihome\n");
-		fprintf(fp, "fast-io\n");
 	} else {
 #ifdef RTCONFIG_IPV6
 		if (ipv6_enabled())
@@ -561,15 +560,11 @@ int ovpn_write_client_config(ovpn_cconf_t *cconf, int unit) {
 	fprintf(fp, "txqueuelen 1000\n");
 	fprintf(fp, "proto %s\n", cconf->proto);
 
-	if (!strcmp(cconf->proto, "udp"))
-		fprintf(fp, "fast-io\n");
-
 	fprintf(fp, "remote %s %d\n", cconf->addr, cconf->port);
 	if (cconf->retry)
 		fprintf(fp, "connect-retry-max %d\n", cconf->retry);
 
 	fprintf(fp, "nobind\n");
-	fprintf(fp, "persist-key\n");
 	fprintf(fp, "persist-tun\n");
 
 	if (strcmp(cconf->comp, "-1")) {

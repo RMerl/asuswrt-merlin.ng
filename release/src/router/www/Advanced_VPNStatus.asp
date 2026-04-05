@@ -536,6 +536,7 @@ function display_wg_data(){
 		switch (unit) {
 			case 1:
 				client_state = "<% sysinfo("wgcstatus.1"); %>";
+				client_enabled = "<% nvram_get("wgc1_enable"); %>";
 				tmp = "<% nvram_get("wgc1_ep_addr"); %>";
 				client_server = " ("+ tmp.shorter(42) +
 				                " - port <% nvram_get("wgc1_ep_port"); %>)";
@@ -548,6 +549,7 @@ function display_wg_data(){
 				break;
 			case 2:
 				client_state = "<% sysinfo("wgcstatus.2"); %>";
+				client_enabled = "<% nvram_get("wgc2_enable"); %>";
 				tmp = "<% nvram_get("wgc2_ep_addr"); %>";
 				client_server = " ("+ tmp.shorter(42) +
 				                " - port <% nvram_get("wgc2_ep_port"); %>)";
@@ -560,6 +562,7 @@ function display_wg_data(){
 				break;
 			case 3:
 				client_state = "<% sysinfo("wgcstatus.3"); %>";
+				client_enabled = "<% nvram_get("wgc3_enable"); %>";
 				tmp = "<% nvram_get("wgc3_ep_addr"); %>";
 				client_server = " ("+ tmp.shorter(42) +
 				                " - port <% nvram_get("wgc3_ep_port"); %>)";
@@ -572,6 +575,7 @@ function display_wg_data(){
 				break;
 			case 4:
 				client_state = "<% sysinfo("wgcstatus.4"); %>";
+				client_enabled = "<% nvram_get("wgc4_enable"); %>";
 				tmp = "<% nvram_get("wgc4_ep_addr"); %>";
 				client_server = " ("+ tmp.shorter(42) +
 				                " - port <% nvram_get("wgc4_ep_port"); %>)";
@@ -584,6 +588,7 @@ function display_wg_data(){
 				break;
 			case 5:
 				client_state = "<% sysinfo("wgcstatus.5"); %>";
+				client_enabled = "<% nvram_get("wgc5_enable"); %>";
 				tmp = "<% nvram_get("wgc5_ep_addr"); %>";
 				client_server = " ("+ tmp.shorter(42) +
 				                " - port <% nvram_get("wgc5_ep_port"); %>)";
@@ -596,13 +601,16 @@ function display_wg_data(){
 				break;
 		}
 
-		switch (client_state) {
+		switch (client_enabled) {
 			case "0":
 				document.getElementById("wgclient"+unit+"_Block_Running").innerHTML = client_desc + state_clnt_disc;
 				showhide("wgclient"+unit, 0);
 				break;
 			case "1":
-				document.getElementById("wgclient"+unit+"_Block_Running").innerHTML = client_desc + state_clnt_ced + client_server;
+				if (client_state == "0")
+					document.getElementById("wgclient"+unit+"_Block_Running").innerHTML = client_desc + state_clnt_err + client_server;
+				else
+					document.getElementById("wgclient"+unit+"_Block_Running").innerHTML = client_desc + state_clnt_ced + client_server;
 				get_wgc_data(unit, "wgclient"+unit+"_Block", local_ip, remote_ip);
 				showhide("wgclient"+unit, 1);
 				break;

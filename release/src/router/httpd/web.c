@@ -3201,6 +3201,35 @@ ej_vpn_crt_client(int eid, webs_t wp, int argc, char **argv) {
 
 	return 0;
 }
+
+static int
+ej_ovpn_generate_client_key(int eid, webs_t wp, int argc, char **argv) {
+	char buffer[4096];
+	int unit;
+	char *key;
+	int retVal;
+	json_object *root;
+
+	root = json_object_new_object();
+
+	unit = nvram_get_int("vpn_server_unit");
+	if (unit < 1 || unit > OVPN_SERVER_MAX) {
+		return 0;
+	}
+
+	key = ovpn_generate_client_key(OVPN_TYPE_SERVER, unit, buffer, sizeof(buffer));
+	if (!key) {
+		json_object_object_add(root, "client_key", json_object_new_string("Error: Failed to generate client key"));
+		retVal = websWrite(wp, "%s", json_object_to_json_string(root));
+		json_object_put(root);
+		return retVal;
+	}
+
+	json_object_object_add(root, "client_key", json_object_new_string(key));
+	retVal = websWrite(wp, "%s", json_object_to_json_string(root));
+	json_object_put(root);
+	return retVal;
+}
 #endif
 
 //2008.08 magic {
@@ -42243,6 +42272,7 @@ struct ej_handler ej_handlers[] = {
 	{ "vpn_client_get_parameter", ej_vpn_client_get_parameter},
 	{ "vpn_crt_server", ej_vpn_crt_server},
 	{ "vpn_crt_client", ej_vpn_crt_client},
+	{ "ovpn_generate_client_key", ej_ovpn_generate_client_key},
 #endif
 	{ "nvram_clean_get", ej_nvram_clean_get},
 	{ "check_pw", ej_check_pw},

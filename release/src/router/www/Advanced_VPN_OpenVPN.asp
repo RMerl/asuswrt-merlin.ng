@@ -76,12 +76,28 @@
 	white-space: pre;
 	overflow-wrap: normal;
 }
+.clientKeyPanel{
+	width:600px;
+	margin-top:400px;
+	margin-left:380px;
+	position:absolute;
+	border-radius: 5px;
+	z-index:200;
+	background-color:#2B373B;
+	box-shadow: 3px 3px 10px #000;
+	display:none;
+}
+
 </style>
 <script>
 window.onresize = function() {
 	if(document.getElementById("tlsKey_panel") != null){
 		if(document.getElementById("tlsKey_panel").style.display == "block")
 			cal_panel_block("tlsKey_panel", 0.15);
+	}
+	if(document.getElementById("clientKey_panel") != null){
+		if(document.getElementById("clientKey_panel").style.display == "block")
+			cal_panel_block("clientKey_panel", 0.15);
 	}
 }
 
@@ -952,9 +968,10 @@ function change_vpn_unit(val){
 function update_visibility(){
 	var iface = document.form.vpn_server_if.value;
 	var hmac = document.form.vpn_server_hmac.value;
-	userpass = getRadioValue(document.form.vpn_server_userpass_auth);
+	var userpass = getRadioValue(document.form.vpn_server_userpass_auth);
 	var dhcp = getRadioValue(document.form.vpn_server_dhcp);
 	var ccd = getRadioValue(document.form.vpn_server_ccd);
+	var hmac_orig = '<% nvram_get("vpn_server_hmac"); %>';
 
 	showhide("server_snnm", (iface == "tun"));
 	showhide("server_c2c", ccd);
@@ -965,7 +982,8 @@ function update_visibility(){
 	showhide("server_range", ((dhcp == 0) && (iface == "tap")));
 	showhide("server_igncrt", (userpass == 1));
 	update_visibility_ipv6();
-	showhide("Hint_tls_crypt_v2_client", (hmac == 4));
+	showhide("Hint_tls_crypt_v2_client", (hmac == 4 && hmac_orig == 4 && service_state == '2'));
+	showhide("generate_crypt_v2_key", (hmac == 4 && hmac_orig == 4 && service_state == '2'));
 }
 
 function edit_Keys() {
@@ -1161,6 +1179,44 @@ function save_keys() {
 	document.openvpnTLSKeyForm.submit();
 	cancel_Key_panel();
 }
+
+function generate_client_key() {
+	var result = httpApi.hookGet("ovpn_generate_client_key", true);
+	var key = result.client_key;
+
+	if (key && key.indexOf("Error") === -1) {
+		document.getElementById("clientKey_textarea").value = key;
+		show_clientKey_panel();
+	} else {
+		alert("Error generating client key: " + (key || "Unknown error"));
+	}
+}
+
+async function copy_clientKey() {
+    const textarea = document.getElementById("clientKey_textarea");
+
+    try {
+        await navigator.clipboard.writeText(textarea.value);
+		document.getElementById("key_copied_notice").style.display="";
+		setTimeout(hide_copied_key_notice, 5000);
+    } catch (err) {
+        alert("Failed to copy client key to clipboard");
+    }
+}
+
+function hide_copied_key_notice(){
+	$("#key_copied_notice").fadeOut(300);
+}
+
+function show_clientKey_panel() {
+	cal_panel_block("clientKey_panel", 0.15);
+	$("#clientKey_panel").fadeIn(300);
+}
+
+function close_clientKey_panel() {
+	$("#clientKey_panel").fadeOut(300);
+}
+
 /* Advanced Setting end */ 
 
 function update_vpn_client_state() {
@@ -1458,13 +1514,31 @@ function handle_ipv6_submit_settings(){
 				<div style="margin-top:5px; justify-content: center; display:flex; flex-direction:row; gap:0.5em;">
 					<input class="button_gen" type="button" onclick="cancel_Key_panel();" value="<#CTL_Cancel#>">
 					<input class="button_gen" type="button" onclick="save_keys();" value="<#CTL_onlysave#>">	
-				</div>					
+				</div>
 			</td>
 		</tr>
 	</form>
 	</table>
 	<!--===================================Ending of tls Content===========================================-->			
 </div>
+
+<div id="clientKey_panel" class="clientKeyPanel">
+	<!--===================================Beginning of Client Key Content===========================================-->
+	<div style="padding: 30px; padding-top: 10px;">
+		<div>OpenVPN TLS-Crypt-V2 Client Key</div>
+		<div style="padding-top:20px; padding-bottom:20px;">Copy this key to your client's configuration file (inside <span style="color:#FFCC00;">&lt;tls-crypt-v2&gt;</span>...<span style="color:#FFCC00;">&lt;/tls-crypt-v2&gt;</span> tags)</div>
+		<textarea rows="20" class="textarea_ssh_table textarea_ssh_font" id="clientKey_textarea" cols="65" readonly spellcheck="false"></textarea>
+		<div style="margin-top:20px; justify-content: center; display:flex; flex-direction:row; gap:0.5em;">
+			<input class="button_gen" type="button" onclick="copy_clientKey();" value="Copy">
+			<input class="button_gen" type="button" onclick="close_clientKey_panel();" value="Close">
+		</div>
+		<div style="margin-top:10px; height:1.2em; justify-content: center; display:flex; flex-direction:row;">
+			<span id="key_copied_notice" style="display:none;color:#FFCC00;margin-top:5px;">Key copied to clipboard!</span>
+		</div>
+	</div>
+	<!--===================================Ending of Client Key Content===========================================-->
+</div>
+
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 
@@ -1759,7 +1833,9 @@ function handle_ipv6_submit_settings(){
 														<option value="3" <% nvram_match("vpn_server_hmac","3","selected"); %> >Encrypt channel</option>
 														<option value="4" <% nvram_match("vpn_server_hmac","4","selected"); %> >Encrypt channel V2</option>
 													</select>
-													<span id="Hint_tls_crypt_v2_client" style="display:none;"><br>You must manually generate client keys signed with the new server key.</span>
+													<input id="generate_crypt_v2_key" class="button_gen" style="margin-left:15px;" type="button" onclick="generate_client_key();" value="Generate Client Key"></span>
+													<span id="Hint_tls_crypt_v2_client" style="display:none;"><br>You must generate a client key for each client. </span>
+
 												</td>
 											</tr>
 											<tr>

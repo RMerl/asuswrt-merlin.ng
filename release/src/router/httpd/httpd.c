@@ -1120,6 +1120,7 @@ int max_lock_time = MAX_LOGIN_BLOCK_TIME;
 
 struct etag_filter_table etag_filter_table[] = {
     {".cgi",0},
+    {".asp",0},
     {"client.ovpn",0},
     {"chanspec.js",0},
     {"client_function.js",0},

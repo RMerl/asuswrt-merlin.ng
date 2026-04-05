@@ -1237,3 +1237,36 @@ void ovpn_write_static_key(ovpn_sconf_t *sconf, int unit) {
 	}
 	ovpn_write_key(OVPN_TYPE_SERVER, unit, OVPN_SERVER_STATIC);
 }
+
+/* Generate tls-crypt-v2 client key from server key */
+char* ovpn_generate_client_key(ovpn_type_t type, int unit, char *buffer, int len) {
+	char server_key_file[256];
+	char client_key_file[256];
+	FILE *fp;
+	char cmd[512];
+	int ret;
+
+	ovpn_get_runtime_filename(OVPN_TYPE_SERVER, unit, OVPN_SERVER_STATIC, server_key_file, sizeof(server_key_file));
+
+	snprintf(client_key_file, sizeof(client_key_file), "/tmp/ovpn_client_key_%d", unit);
+
+	if (eval("openvpn", "--tls-crypt-v2", server_key_file, "--genkey", "tls-crypt-v2-client", client_key_file) != 0) {
+		logmessage("openvpn", "Failed to generate tls-crypt-v2 client key for server %d", unit);
+		unlink(client_key_file);
+		return NULL;
+	}
+
+	fp = fopen(client_key_file, "r");
+	if (!fp) {
+		logmessage("openvpn", "Failed to read generated client key file for server %d", unit);
+		unlink(client_key_file);
+		return NULL;
+	}
+
+	size_t read_len = fread(buffer, 1, len - 1, fp);
+	buffer[read_len] = '\0';
+	fclose(fp);
+	unlink(client_key_file);
+
+	return buffer;
+}

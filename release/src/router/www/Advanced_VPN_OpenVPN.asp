@@ -120,22 +120,6 @@ else
 
 var openvpnd_connected_clients = [];
 var openvpn_clientlist_array = decodeURIComponent('<% nvram_char_to_ascii("", "vpn_server_ccd_val"); %>');
-var ciphersarray = [
-	["AES-128-CBC"],
-	["AES-192-CBC"],
-	["AES-256-CBC"],
-	["BF-CBC"],
-	["CAST5-CBC"],
-	["CAMELLIA-128-CBC"],
-	["CAMELLIA-192-CBC"],
-	["CAMELLIA-256-CBC"],
-	["DES-CBC"],
-	["DES-EDE-CBC"],
-	["DES-EDE3-CBC"],
-	["DESX-CBC"],
-	["IDEA-CBC"],
-	["SEED-CBC"]
-];
 
 var hmacarray = [
         ["MD 5", "MD5"],
@@ -159,7 +143,6 @@ var faq_href_port_forwarding = "https://nw-dlcdnet.asus.com/support/forward.html
 
 function initial(){
 	var current_server_igncrt = "<% nvram_get("vpn_server_igncrt"); %>";
-	var currentcipher = "<% nvram_get("vpn_server_cipher"); %>";
 	var currentdigest = "<% nvram_get("vpn_server_digest"); %>";
 
 	show_menu();
@@ -171,17 +154,8 @@ function initial(){
 
 	showopenvpnd_clientlist();
 	formShowAndHide(vpn_server_enable, "openvpn");
-
-	/*Advanced Setting start */
 	allowed_openvpn_clientlist();
 	
-	//generate select option of cipher list
-	add_option(document.form.vpn_server_cipher, "Default","default",(currentcipher == "default"));
-	add_option(document.form.vpn_server_cipher, "None","none",(currentcipher == "none"));	
-	for(var i = 0; i < ciphersarray.length; i += 1){
-		add_option(document.form.vpn_server_cipher, ciphersarray[i][0], ciphersarray[i][0], (currentcipher == ciphersarray[i][0]));
-	}
-
 	//generate select option of auth digests list
 	add_option(document.form.vpn_server_digest, "Default","default",(currentdigest == "default"));
 	add_option(document.form.vpn_server_digest, "None","none",(currentdigest == "none"));
@@ -194,7 +168,6 @@ function initial(){
 
 	updateCRTValue();
 	enable_server_igncrt(current_server_igncrt);
-	update_cipher();
 	update_digest();
 	/*Advanced Setting end */
 
@@ -1243,12 +1216,6 @@ function vpnServerTlsKeysize(_obj) {
 	setRadioValue(document.form.vpn_server_tls_keysize_basic, _obj.value);
 }
 
-function update_cipher() {
-	$("#cipher_hint").css("display", "none");
-	var cipher = document.form.vpn_server_cipher.value;
-	if(cipher == "default")
-		$("#cipher_hint").css("display", "");
-}
 function update_digest() {
 	$("#digest_hint").css("display", "none");
 	var digest = document.form.vpn_server_digest.value;
@@ -1892,13 +1859,6 @@ function handle_ipv6_submit_settings(){
 												<th>Data ciphers</th>
 												<td>
 													<input type="text" maxlength="127" class="input_32_table" name="vpn_server_ncp_ciphers" value="<% nvram_get("vpn_server_ncp_ciphers"); %>" autocorrect="off" autocapitalize="off" spellcheck="false">
-												</td>
-											</tr>
-											<tr id="server_cipher">
-												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,17);">Cipher</a></th>
-												<td>
-													<select name="vpn_server_cipher" class="input_option" onChange="update_cipher();"></select>
-													<span id="cipher_hint" class="hint-color">(Default : BF-CBC)</span>
 												</td>
 											</tr>
 											<tr>

@@ -1,6 +1,45 @@
 Asuswrt-Merlin 3006.xxx Changelog
 =================================
 
+3006.102.8 (xx-xxx-2026)
+  - NOTE: There has been important changes to OpenVPN, some
+          necessary with the update to OpenVPN 2.7.  Make
+          sure you read the details below, especially if
+          running an OpenVPN server with deprecated features
+          that have now been removed.
+
+  - NEW: Added tls-crypt V2 authentication support to OpenVPN
+         servers.  Don't forget to generate a client key for
+         each client that will connect to you.  The keys can
+         be generated from the webui, after you have started
+         the server with TLS control set to "Encrypt Channel
+         V2".  A new button will appear that can generate
+         a new client key each time you click on it.
+  - UPDATED: OpenVPN to 2.7.1.
+  - CHANGED: VPN Status page can now detect running but
+             non-connected WireGuard client tunnels, and
+             report them as being in an error state.
+  - FIXED: Some webui pages may fail to properly show recent
+           changes after clicking on Apply (an outdated
+           cached version would be shown instead).  Fixed by
+           disabling ETag support for all .asp files.
+  - REMOVED: Support for secret static key authentication
+             from both OpenVPN clients and servers.  Deprecated
+             since 2.7.0, and considered outdated in terms of
+             security.
+  - REMOVED: Compression support from OpenVPN server.  Update
+             your client configs if you were using it.
+             Client support is still available for backward
+             compatibility with old remote server setups,
+             but expect it to be removed from OpenVPN 2.8.
+             If for some reason you absolutely need it for
+             your server (despite the security implications),
+             you can still enable it through the Custom settings.
+  - REMOVED: Some obsolete/non-working OpenVPN settings such
+             as fast-io (no longer working with 2.7) or data
+             cipher (were replaced with NCP a few years ago).
+
+
 3006.102.7_2 (24-Mar-2026)
   - NEW: Added Cake support for GT-BE19000AI (implemented the
          missing webui to configure it).

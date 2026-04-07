@@ -1,6 +1,56 @@
 Asuswrt-Merlin Changelog
 ========================
 
+3004.388.12 (xx-xxx-2026)
+  - NOTE: There has been important changes to OpenVPN, some
+          necessary with the update to OpenVPN 2.7.  Make
+          sure you read the details below, especially if
+          running an OpenVPN server with deprecated features
+          that have now been removed.
+
+  - NEW: Added tls-crypt V2 authentication support to OpenVPN
+         servers.  Don't forget to generate a client key for
+         each client that will connect to you.  The keys can
+         be generated from the webui, after you have started
+         the server with TLS control set to "Encrypt Channel
+         V2".  A new button will appear that can generate
+         a new client key each time you click on it.
+  - UPDATED: dnsmasq to 2.93-test2 (includes a couple of DNSSEC
+             fixes over 2.92)
+  - UPDATED: OpenVPN to 2.7.1.
+  - UPDATED: tor to 0.4.8.22.
+  - UPDATED: curl to 8.17 (backport from 102_39848).
+  - UPDATED: wget to 1.25 (backport from 102_39848).
+  - CHANGED: Added new 2024 DNSSEC trust anchor, which will
+             start being used in October 2026.
+  - CHANGED: VPN Status page can now detect running but
+             non-connected WireGuard client tunnels, and
+             report them as being in an error state.
+  - FIXED: Multiple minor CVE for OpenSSL 1.1: CVE-2025-68160,
+           CVE-2025-69418, CVE-2025-69419, CVE-2025-69420,
+           CVE-2025-69421, CVE-2026-22795 and CVE-2026-22796
+           (backports by RSDNTWK)
+  - FIXED: Starting a client through VPNDirector would fail to
+           update routing rules.
+  - FIXED: Security issue on the Site Survey page
+           (reported by Sasha Romijn).
+  - REMOVED: Support for secret static key authentication
+             from both OpenVPN clients and servers.  Deprecated
+             since 2.7.0, and considered outdated in terms of
+             security.
+  - REMOVED: Compression support from OpenVPN server.  Update
+             your client configs if you were using it.
+             Client support is still available for backward
+             compatibility with old remote server setups,
+             but expect it to be removed from OpenVPN 2.8.
+             If for some reason you absolutely need it for
+             your server (despite the security implications),
+             you can still enable it through the Custom settings.
+  - REMOVED: Some obsolete/non-working OpenVPN settings such
+             as fast-io (no longer working with 2.7) or data
+             cipher (were replaced with NCP a few years ago).
+
+
 3004.388.11 (26-Dec-2025)
   - NOTE: AiCloud has been removed from Asuswrt-Merlin due
           to its poor security track record.  This also includes

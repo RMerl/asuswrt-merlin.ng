@@ -66,7 +66,7 @@ SYSTEM REQUIREMENTS:
   (1) TUN and/or TAP driver to allow user-space programs to control
       a virtual point-to-point IP or Ethernet device.
       See TUN/TAP Driver References section below for more info.
-  (2a) OpenSSL library, necessary for encryption, version 1.0.2 or higher
+  (2a) OpenSSL library, necessary for encryption, version 1.1.0 or higher
       required, available from https://www.openssl.org/
       or
   (2b) mbed TLS library, an alternative for encryption, version 2.0 or higher
@@ -262,6 +262,16 @@ TUN/TAP Driver References:
   You need a TUN/TAP kernel driver for OpenVPN to work:
 
     https://web.archive.org/web/20250504214754/http://www.whiteboard.ne.jp/~admin2/tuntap/
+
+* Haiku:
+
+   Haiku can't yet dynamically create TUN/TAP devices, so you need to manually
+   create one before running openvpn:
+
+     # ifconfig tun/0 up
+
+   A standard reference the dev as "tun" in your config is all that's needed
+   to use the tunnel device.
 
 * Windows
 

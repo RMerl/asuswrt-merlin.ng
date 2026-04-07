@@ -21,12 +21,12 @@
 #             packet encryption, packet authentication, and
 #             packet compression.
 #
-#  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+#  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
 #
 
 #  SPDX-License-Identifier: GPL-2.0-only
 #
-#  Copyright (C) 2020-2024 OpenVPN Inc <sales@openvpn.net>
+#  Copyright (C) 2020-2026 OpenVPN Inc <sales@openvpn.net>
 #
 
 am__is_gnu_make = { \
@@ -143,7 +143,7 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.plugins \
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = ${SHELL} '/home/flichtenheld/openvpn/community/openvpn-build/src/openvpn/missing' aclocal-1.16
 AMTAR = $${TAR-tar}
-AM_DEFAULT_VERBOSITY = 1
+AM_DEFAULT_VERBOSITY = 0
 AR = ar
 AS = as
 AUTOCONF = ${SHELL} '/home/flichtenheld/openvpn/community/openvpn-build/src/openvpn/missing' autoconf
@@ -152,7 +152,7 @@ AUTOMAKE = ${SHELL} '/home/flichtenheld/openvpn/community/openvpn-build/src/open
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -Wall -Wno-stringop-truncation -g -O2 -std=c99 
+CFLAGS = -g -O2 -std=c11 -Wno-stringop-truncation -Wstrict-prototypes -Wold-style-definition -Wconversion -Wno-sign-conversion -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter -Wimplicit-fallthrough=2
 CMOCKA_CFLAGS = 
 CMOCKA_LIBS = -lcmocka 
 CPP = gcc -E
@@ -164,6 +164,7 @@ DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
 DLLTOOL = false
 DL_LIBS = -ldl
+DNS_UPDOWN_TYPE = systemd
 DSYMUTIL = 
 DUMPBIN = 
 ECHO_C = 
@@ -193,7 +194,7 @@ LIBNL_GENL_LIBS =
 LIBOBJS = 
 LIBPAM_CFLAGS = 
 LIBPAM_LIBS = -lpam
-LIBS =  -lcap-ng 
+LIBS = 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LIPO = 
 LN_S = ln -s
@@ -216,13 +217,17 @@ OBJEXT = o
 OPENSSL_CFLAGS = 
 OPENSSL_LIBS = -lssl -lcrypto 
 OPENVPN_VERSION_MAJOR = 2
-OPENVPN_VERSION_MINOR = 6
-OPENVPN_VERSION_PATCH = .19
+OPENVPN_VERSION_MINOR = 7
+OPENVPN_VERSION_PATCH = .1
 OPTIONAL_CRYPTO_CFLAGS =  
 OPTIONAL_CRYPTO_LIBS =  -lssl -lcrypto 
 OPTIONAL_DL_LIBS = -ldl
 OPTIONAL_INOTIFY_CFLAGS = 
 OPTIONAL_INOTIFY_LIBS = 
+OPTIONAL_LIBCAPNG_CFLAGS = 
+OPTIONAL_LIBCAPNG_LIBS = -lcap-ng 
+OPTIONAL_LIBNL_GENL_CFLAGS = 
+OPTIONAL_LIBNL_GENL_LIBS = 
 OPTIONAL_LZ4_CFLAGS = 
 OPTIONAL_LZ4_LIBS = 
 OPTIONAL_LZO_CFLAGS = 
@@ -230,18 +235,20 @@ OPTIONAL_LZO_LIBS =
 OPTIONAL_PKCS11_HELPER_CFLAGS = 
 OPTIONAL_PKCS11_HELPER_LIBS = 
 OPTIONAL_SELINUX_LIBS = 
+OPTIONAL_SYSTEMD_CFLAGS = 
 OPTIONAL_SYSTEMD_LIBS = 
 OTOOL = 
 OTOOL64 = 
 P11KIT_CFLAGS = 
 P11KIT_LIBS = 
+P11TOOL = 
 PACKAGE = openvpn
 PACKAGE_BUGREPORT = openvpn-users@lists.sourceforge.net
 PACKAGE_NAME = OpenVPN
-PACKAGE_STRING = OpenVPN 2.6.19
+PACKAGE_STRING = OpenVPN 2.7.1
 PACKAGE_TARNAME = openvpn
 PACKAGE_URL = 
-PACKAGE_VERSION = 2.6.19
+PACKAGE_VERSION = 2.7.1
 PATH_SEPARATOR = :
 PKCS11_HELPER_CFLAGS = 
 PKCS11_HELPER_LIBS = 
@@ -256,11 +263,14 @@ RC =
 ROUTE = /usr/sbin/route
 RST2HTML = rst2html
 RST2MAN = rst2man
+SCRIPTDIR = 
 SED = /usr/bin/sed
 SELINUX_LIBS = -lselinux
 SET_MAKE = 
 SHELL = /bin/bash
 SOCKETS_LIBS =  -lresolv
+SOFTHSM2_MODULE = 
+SOFTHSM2_UTIL = 
 STRIP = strip
 SYSTEMD_ASK_PASSWORD = /usr/bin/systemd-ask-password
 SYSTEMD_UNIT_DIR = 
@@ -268,10 +278,10 @@ TAP_CFLAGS =
 TAP_WIN_COMPONENT_ID = tap0901
 TAP_WIN_MIN_MAJOR = 9
 TAP_WIN_MIN_MINOR = 9
-TEST_CFLAGS =     -I$(top_srcdir)/include 
-TEST_LDFLAGS =  -lssl -lcrypto    -lcmocka 
+TEST_CFLAGS =       -I$(top_srcdir)/include 
+TEST_LDFLAGS =  -lssl -lcrypto   -lcap-ng    -lcmocka 
 TMPFILES_DIR = 
-VERSION = 2.6.19
+VERSION = 2.7.1
 WINDMC = no
 WOLFSSL_CFLAGS = 
 WOLFSSL_INCLUDEDIR = 
@@ -327,6 +337,7 @@ psdir = ${docdir}
 runstatedir = ${localstatedir}/run
 sampledir = $(docdir)/sample
 sbindir = ${exec_prefix}/sbin
+scriptdir = ${pkglibexecdir}
 sharedstatedir = ${prefix}/com
 srcdir = .
 sysconfdir = ${prefix}/etc

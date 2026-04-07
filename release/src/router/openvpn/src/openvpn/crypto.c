@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Fox Crypto B.V. <openvpn@foxcrypto.com>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -18,18 +18,21 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
+#include <inttypes.h>
+
 #include "syshead.h"
 #include <string.h>
 
 #include "crypto.h"
+#include "crypto_epoch.h"
+#include "packet_id.h"
 #include "error.h"
 #include "integer.h"
 #include "platform.h"
@@ -60,11 +63,17 @@
  */
 
 static void
-openvpn_encrypt_aead(struct buffer *buf, struct buffer work,
-                     struct crypto_options *opt)
+openvpn_encrypt_aead(struct buffer *buf, struct buffer work, struct crypto_options *opt)
 {
     struct gc_arena gc;
     int outlen = 0;
+    const bool use_epoch_data_format = opt->flags & CO_EPOCH_DATA_KEY_FORMAT;
+
+    if (use_epoch_data_format)
+    {
+        epoch_check_send_iterate(opt);
+    }
+
     const struct key_ctx *ctx = &opt->key_ctx_bi.encrypt;
     uint8_t *mac_out = NULL;
     const int mac_len = OPENVPN_AEAD_TAG_LENGTH;
@@ -78,7 +87,7 @@ openvpn_encrypt_aead(struct buffer *buf, struct buffer work,
     /* Prepare IV */
     {
         struct buffer iv_buffer;
-        uint8_t iv[OPENVPN_MAX_IV_LENGTH] = {0};
+        uint8_t iv[OPENVPN_MAX_IV_LENGTH] = { 0 };
         const int iv_len = cipher_ctx_iv_length(ctx->cipher);
 
         ASSERT(iv_len >= OPENVPN_AEAD_MIN_IV_LEN && iv_len <= OPENVPN_MAX_IV_LENGTH);
@@ -86,44 +95,65 @@ openvpn_encrypt_aead(struct buffer *buf, struct buffer work,
         buf_set_write(&iv_buffer, iv, iv_len);
 
         /* IV starts with packet id to make the IV unique for packet */
-        if (!packet_id_write(&opt->packet_id.send, &iv_buffer, false, false))
+        if (use_epoch_data_format)
         {
-            msg(D_CRYPT_ERRORS, "ENCRYPT ERROR: packet ID roll over");
-            goto err;
+            /* Note this does not check aead_usage_limit but can overstep it by
+             * a few extra blocks in one extra write. This is not affecting the
+             * security margin as these extra blocks are on a completely
+             * different order of magnitude than the security margin.
+             * The next iteration/call to epoch_check_send_iterate will
+             * iterate the epoch
+             */
+            if (!packet_id_write_epoch(&opt->packet_id.send, ctx->epoch, &iv_buffer))
+            {
+                msg(D_CRYPT_ERRORS, "ENCRYPT ERROR: packet ID roll over");
+                goto err;
+            }
+        }
+        else
+        {
+            if (!packet_id_write(&opt->packet_id.send, &iv_buffer, false, false))
+            {
+                msg(D_CRYPT_ERRORS, "ENCRYPT ERROR: packet ID roll over");
+                goto err;
+            }
+        }
+        /* Write packet id part of IV to work buffer */
+        ASSERT(buf_write(&work, iv, buf_len(&iv_buffer)));
+
+        /* This generates the IV by XORing the implicit part of the IV
+         * with the packet id already written to the iv buffer */
+        for (int i = 0; i < iv_len; i++)
+        {
+            iv[i] = iv[i] ^ ctx->implicit_iv[i];
         }
 
-        /* Remainder of IV consists of implicit part (unique per session) */
-        ASSERT(buf_write(&iv_buffer, ctx->implicit_iv, ctx->implicit_iv_len));
-        ASSERT(iv_buffer.len == iv_len);
-
-        /* Write explicit part of IV to work buffer */
-        ASSERT(buf_write(&work, iv, iv_len - ctx->implicit_iv_len));
         dmsg(D_PACKET_CONTENT, "ENCRYPT IV: %s", format_hex(iv, iv_len, 0, &gc));
 
         /* Init cipher_ctx with IV.  key & keylen are already initialized */
         ASSERT(cipher_ctx_reset(ctx->cipher, iv));
     }
 
-    /* Reserve space for authentication tag */
-    mac_out = buf_write_alloc(&work, mac_len);
-    ASSERT(mac_out);
-
     dmsg(D_PACKET_CONTENT, "ENCRYPT FROM: %s", format_hex(BPTR(buf), BLEN(buf), 80, &gc));
 
     /* Buffer overflow check */
-    if (!buf_safe(&work, buf->len + cipher_ctx_block_size(ctx->cipher)))
+    if (!buf_safe(&work, buf->len + mac_len + cipher_ctx_block_size(ctx->cipher)))
     {
-        msg(D_CRYPT_ERRORS,
-            "ENCRYPT: buffer size error, bc=%d bo=%d bl=%d wc=%d wo=%d wl=%d",
-            buf->capacity, buf->offset, buf->len, work.capacity, work.offset,
-            work.len);
+        msg(D_CRYPT_ERRORS, "ENCRYPT: buffer size error, bc=%d bo=%d bl=%d wc=%d wo=%d wl=%d",
+            buf->capacity, buf->offset, buf->len, work.capacity, work.offset, work.len);
         goto err;
     }
 
     /* For AEAD ciphers, authenticate Additional Data, including opcode */
-    ASSERT(cipher_ctx_update_ad(ctx->cipher, BPTR(&work), BLEN(&work) - mac_len));
-    dmsg(D_PACKET_CONTENT, "ENCRYPT AD: %s",
-         format_hex(BPTR(&work), BLEN(&work) - mac_len, 0, &gc));
+    ASSERT(cipher_ctx_update_ad(ctx->cipher, BPTR(&work), BLEN(&work)));
+    dmsg(D_PACKET_CONTENT, "ENCRYPT AD: %s", format_hex(BPTR(&work), BLEN(&work), 0, &gc));
+
+    if (!use_epoch_data_format)
+    {
+        /* Reserve space for authentication tag */
+        mac_out = buf_write_alloc(&work, mac_len);
+        ASSERT(mac_out);
+    }
 
     /* Encrypt packet ID, payload */
     ASSERT(cipher_ctx_update(ctx->cipher, BEND(&work), &outlen, BPTR(buf), BLEN(buf)));
@@ -132,6 +162,19 @@ openvpn_encrypt_aead(struct buffer *buf, struct buffer work,
     /* Flush the encryption buffer */
     ASSERT(cipher_ctx_final(ctx->cipher, BEND(&work), &outlen));
     ASSERT(buf_inc_len(&work, outlen));
+
+    /* update number of plaintext blocks encrypted. Use the (x + (n-1))/n trick
+     * to round up the result to the number of blocks used */
+    const int blocksize = AEAD_LIMIT_BLOCKSIZE;
+    opt->key_ctx_bi.encrypt.plaintext_blocks += (BLEN(&work) + (blocksize - 1)) / blocksize;
+
+    /* if the tag is at end the end, allocate it now */
+    if (use_epoch_data_format)
+    {
+        /* Reserve space for authentication tag */
+        mac_out = buf_write_alloc(&work, mac_len);
+        ASSERT(mac_out);
+    }
 
     /* Write authentication tag */
     ASSERT(cipher_ctx_get_tag(ctx->cipher, mac_out, mac_len));
@@ -151,8 +194,7 @@ err:
 }
 
 static void
-openvpn_encrypt_v1(struct buffer *buf, struct buffer work,
-                   struct crypto_options *opt)
+openvpn_encrypt_v1(struct buffer *buf, struct buffer work, struct crypto_options *opt)
 {
     struct gc_arena gc;
     gc_init(&gc);
@@ -166,7 +208,7 @@ openvpn_encrypt_v1(struct buffer *buf, struct buffer work,
         /* Do Encrypt from buf -> work */
         if (ctx->cipher)
         {
-            uint8_t iv_buf[OPENVPN_MAX_IV_LENGTH] = {0};
+            uint8_t iv_buf[OPENVPN_MAX_IV_LENGTH] = { 0 };
             const int iv_size = cipher_ctx_iv_length(ctx->cipher);
             int outlen;
 
@@ -186,8 +228,7 @@ openvpn_encrypt_v1(struct buffer *buf, struct buffer work,
                 /* Put packet ID in plaintext buffer */
                 if (packet_id_initialized(&opt->packet_id)
                     && !packet_id_write(&opt->packet_id.send, buf,
-                                        opt->flags & CO_PACKET_ID_LONG_FORM,
-                                        true))
+                                        opt->flags & CO_PACKET_ID_LONG_FORM, true))
                 {
                     msg(D_CRYPT_ERRORS, "ENCRYPT ERROR: packet ID roll over");
                     goto err;
@@ -212,8 +253,7 @@ openvpn_encrypt_v1(struct buffer *buf, struct buffer work,
             ASSERT(buf_write(&work, iv_buf, iv_size));
             dmsg(D_PACKET_CONTENT, "ENCRYPT IV: %s", format_hex(iv_buf, iv_size, 0, &gc));
 
-            dmsg(D_PACKET_CONTENT, "ENCRYPT FROM: %s",
-                 format_hex(BPTR(buf), BLEN(buf), 80, &gc));
+            dmsg(D_PACKET_CONTENT, "ENCRYPT FROM: %s", format_hex(BPTR(buf), BLEN(buf), 80, &gc));
 
             /* cipher_ctx was already initialized with key & keylen */
             ASSERT(cipher_ctx_reset(ctx->cipher, iv_buf));
@@ -221,13 +261,9 @@ openvpn_encrypt_v1(struct buffer *buf, struct buffer work,
             /* Buffer overflow check */
             if (!buf_safe(&work, buf->len + cipher_ctx_block_size(ctx->cipher)))
             {
-                msg(D_CRYPT_ERRORS, "ENCRYPT: buffer size error, bc=%d bo=%d bl=%d wc=%d wo=%d wl=%d cbs=%d",
-                    buf->capacity,
-                    buf->offset,
-                    buf->len,
-                    work.capacity,
-                    work.offset,
-                    work.len,
+                msg(D_CRYPT_ERRORS,
+                    "ENCRYPT: buffer size error, bc=%d bo=%d bl=%d wc=%d wo=%d wl=%d cbs=%d",
+                    buf->capacity, buf->offset, buf->len, work.capacity, work.offset, work.len,
                     cipher_ctx_block_size(ctx->cipher));
                 goto err;
             }
@@ -241,14 +277,13 @@ openvpn_encrypt_v1(struct buffer *buf, struct buffer work,
             ASSERT(buf_inc_len(&work, outlen));
 
             /* For all CBC mode ciphers, check the last block is complete */
-            ASSERT(cipher_ctx_mode(ctx->cipher) != OPENVPN_MODE_CBC
-                   || outlen == iv_size);
+            ASSERT(cipher_ctx_mode(ctx->cipher) != OPENVPN_MODE_CBC || outlen == iv_size);
         }
-        else                            /* No Encryption */
+        else /* No Encryption */
         {
             if (packet_id_initialized(&opt->packet_id)
-                && !packet_id_write(&opt->packet_id.send, buf,
-                                    opt->flags & CO_PACKET_ID_LONG_FORM, true))
+                && !packet_id_write(&opt->packet_id.send, buf, opt->flags & CO_PACKET_ID_LONG_FORM,
+                                    true))
             {
                 msg(D_CRYPT_ERRORS, "ENCRYPT ERROR: packet ID roll over");
                 goto err;
@@ -269,7 +304,7 @@ openvpn_encrypt_v1(struct buffer *buf, struct buffer work,
         if (ctx->hmac)
         {
             hmac_ctx_reset(ctx->hmac);
-            hmac_ctx_update(ctx->hmac, hmac_start, BEND(&work) - hmac_start);
+            hmac_ctx_update(ctx->hmac, hmac_start, (int)(BEND(&work) - hmac_start));
             hmac_ctx_final(ctx->hmac, mac_out);
             dmsg(D_PACKET_CONTENT, "ENCRYPT HMAC: %s",
                  format_hex(mac_out, hmac_ctx_size(ctx->hmac), 80, &gc));
@@ -277,8 +312,7 @@ openvpn_encrypt_v1(struct buffer *buf, struct buffer work,
 
         *buf = work;
 
-        dmsg(D_PACKET_CONTENT, "ENCRYPT TO: %s",
-             format_hex(BPTR(&work), BLEN(&work), 80, &gc));
+        dmsg(D_PACKET_CONTENT, "ENCRYPT TO: %s", format_hex(BPTR(&work), BLEN(&work), 80, &gc));
     }
 
     gc_free(&gc);
@@ -292,8 +326,7 @@ err:
 }
 
 void
-openvpn_encrypt(struct buffer *buf, struct buffer work,
-                struct crypto_options *opt)
+openvpn_encrypt(struct buffer *buf, struct buffer work, struct crypto_options *opt)
 {
     if (buf->len > 0 && opt)
     {
@@ -308,16 +341,68 @@ openvpn_encrypt(struct buffer *buf, struct buffer work,
     }
 }
 
+uint64_t
+cipher_get_aead_limits(const char *ciphername)
+{
+    if (!cipher_kt_mode_aead(ciphername))
+    {
+        return 0;
+    }
+
+    if (cipher_kt_name(ciphername) == cipher_kt_name("CHACHA20-POLY1305"))
+    {
+        return 0;
+    }
+
+    /* Assume all other ciphers require the limit */
+
+    /* We focus here on the equation
+     *
+     *       q + s <= p^(1/2) * 2^(129/2) - 1
+     *
+     * as is the one that is limiting us.
+     *
+     *  With p = 2^-57 this becomes
+     *
+     *      q + s <= (2^36 - 1)
+     *
+     */
+    uint64_t rs = (1ull << 36) - 1;
+
+    return rs;
+}
+
 bool
-crypto_check_replay(struct crypto_options *opt,
-                    const struct packet_id_net *pin, const char *error_prefix,
-                    struct gc_arena *gc)
+crypto_check_replay(struct crypto_options *opt, const struct packet_id_net *pin, uint16_t epoch,
+                    const char *error_prefix, struct gc_arena *gc)
 {
     bool ret = false;
-    packet_id_reap_test(&opt->packet_id.rec);
-    if (packet_id_test(&opt->packet_id.rec, pin))
+    struct packet_id_rec *recv;
+
+    if (epoch == 0 || opt->key_ctx_bi.decrypt.epoch == epoch)
     {
-        packet_id_add(&opt->packet_id.rec, pin);
+        recv = &opt->packet_id.rec;
+    }
+    else if (epoch == opt->epoch_retiring_data_receive_key.epoch)
+    {
+        recv = &opt->epoch_retiring_key_pid_recv;
+    }
+    else
+    {
+        /* We have an epoch that is neither current or old recv key but
+         * is authenticated, ie we need to move to a new current recv key */
+        msg(D_GENKEY,
+            "Received data packet with new epoch %d. Updating "
+            "receive key",
+            epoch);
+        epoch_replace_update_recv_key(opt, epoch);
+        recv = &opt->packet_id.rec;
+    }
+
+    packet_id_reap_test(recv);
+    if (packet_id_test(recv, pin))
+    {
+        packet_id_add(recv, pin);
         if (opt->pid_persist && (opt->flags & CO_PACKET_ID_LONG_FORM))
         {
             packet_id_persist_save_obj(opt->pid_persist, &opt->packet_id);
@@ -328,8 +413,9 @@ crypto_check_replay(struct crypto_options *opt,
     {
         if (!(opt->flags & CO_MUTE_REPLAY_WARNINGS))
         {
-            msg(D_REPLAY_ERRORS, "%s: bad packet ID (may be a replay): %s -- "
-                "see the man page entry for --no-replay and --replay-window for "
+            msg(D_REPLAY_ERRORS,
+                "%s: bad packet ID (may be a replay): %s -- "
+                "see the man page entry for --replay-window for "
                 "more info or silence this warning with --mute-replay-warnings",
                 error_prefix, packet_id_net_print(pin, true, gc));
         }
@@ -346,26 +432,30 @@ crypto_check_replay(struct crypto_options *opt,
  * On success, buf is set to point to plaintext, true is returned.
  */
 static bool
-openvpn_decrypt_aead(struct buffer *buf, struct buffer work,
-                     struct crypto_options *opt, const struct frame *frame,
-                     const uint8_t *ad_start)
+openvpn_decrypt_aead(struct buffer *buf, struct buffer work, struct crypto_options *opt,
+                     const struct frame *frame, const uint8_t *ad_start)
 {
     static const char error_prefix[] = "AEAD Decrypt error";
     struct packet_id_net pin = { 0 };
-    const struct key_ctx *ctx = &opt->key_ctx_bi.decrypt;
-    uint8_t *tag_ptr = NULL;
-    int outlen;
     struct gc_arena gc;
-
     gc_init(&gc);
+
+    struct key_ctx *ctx = &opt->key_ctx_bi.decrypt;
+    const bool use_epoch_data_format = opt->flags & CO_EPOCH_DATA_KEY_FORMAT;
+    if (!use_epoch_data_format && cipher_decrypt_verify_fail_exceeded(ctx))
+    {
+        CRYPT_DROP("Decryption failed verification limit reached.");
+    }
+
+    const int tag_size = OPENVPN_AEAD_TAG_LENGTH;
+
 
     ASSERT(opt);
     ASSERT(frame);
     ASSERT(buf->len > 0);
     ASSERT(ctx->cipher);
 
-    dmsg(D_PACKET_CONTENT, "DECRYPT FROM: %s",
-         format_hex(BPTR(buf), BLEN(buf), 80, &gc));
+    dmsg(D_PACKET_CONTENT, "DECRYPT FROM: %s", format_hex(BPTR(buf), BLEN(buf), 80, &gc));
 
     ASSERT(ad_start >= buf->data && ad_start <= BPTR(buf));
 
@@ -374,20 +464,67 @@ openvpn_decrypt_aead(struct buffer *buf, struct buffer work,
     /* IV and Packet ID required for this mode */
     ASSERT(packet_id_initialized(&opt->packet_id));
 
+    /* Ensure that the packet size is long enough */
+    int min_packet_len = packet_id_size(false) + tag_size + 1;
+
+    if (use_epoch_data_format)
+    {
+        min_packet_len += sizeof(uint32_t);
+    }
+
+    if (buf->len < min_packet_len)
+    {
+        CRYPT_ERROR("missing IV info, missing tag or no payload");
+    }
+
+    uint16_t epoch = 0;
     /* Combine IV from explicit part from packet and implicit part from context */
     {
         uint8_t iv[OPENVPN_MAX_IV_LENGTH] = { 0 };
         const int iv_len = cipher_ctx_iv_length(ctx->cipher);
-        const size_t packet_iv_len = iv_len - ctx->implicit_iv_len;
 
-        ASSERT(ctx->implicit_iv_len <= iv_len);
-        if (buf->len + ctx->implicit_iv_len < iv_len)
+        /* Read packet id. For epoch data format also lookup the epoch key
+         * to be able to use the implicit IV of the correct decryption key */
+        if (use_epoch_data_format)
         {
-            CRYPT_ERROR("missing IV info");
+            /* packet ID format is 16 bit epoch + 48 per epoch packet-counter */
+            const size_t packet_iv_len = sizeof(uint64_t);
+
+            /* copy the epoch-counter part into the IV */
+            memcpy(iv, BPTR(buf), packet_iv_len);
+
+            epoch = packet_id_read_epoch(&pin, buf);
+            if (epoch == 0)
+            {
+                CRYPT_ERROR("error reading packet-id");
+            }
+            ctx = epoch_lookup_decrypt_key(opt, epoch);
+            if (!ctx)
+            {
+                CRYPT_ERROR("data packet with unknown epoch");
+            }
+            else if (cipher_decrypt_verify_fail_exceeded(ctx))
+            {
+                CRYPT_DROP("Decryption failed verification limit reached");
+            }
+        }
+        else
+        {
+            const size_t packet_iv_len = packet_id_size(false);
+            /* Packet ID form is a 32 bit packet counter */
+            memcpy(iv, BPTR(buf), packet_iv_len);
+            if (!packet_id_read(&pin, buf, false))
+            {
+                CRYPT_ERROR("error reading packet-id");
+            }
         }
 
-        memcpy(iv, BPTR(buf), packet_iv_len);
-        memcpy(iv + packet_iv_len, ctx->implicit_iv, ctx->implicit_iv_len);
+        /* This generates the IV by XORing the implicit part of the IV
+         * with the packet id already written to the iv buffer */
+        for (int i = 0; i < iv_len; i++)
+        {
+            iv[i] = iv[i] ^ ctx->implicit_iv[i];
+        }
 
         dmsg(D_PACKET_CONTENT, "DECRYPT IV: %s", format_hex(iv, iv_len, 0, &gc));
 
@@ -398,27 +535,24 @@ openvpn_decrypt_aead(struct buffer *buf, struct buffer work,
         }
     }
 
-    /* Read packet ID from packet */
-    if (!packet_id_read(&pin, buf, false))
+    const int ad_size = (int)(BPTR(buf) - ad_start);
+
+    uint8_t *tag_ptr = NULL;
+    int data_len = 0;
+
+    if (use_epoch_data_format)
     {
-        CRYPT_ERROR("error reading packet-id");
+        data_len = BLEN(buf) - tag_size;
+        tag_ptr = BPTR(buf) + data_len;
+    }
+    else
+    {
+        tag_ptr = BPTR(buf);
+        ASSERT(buf_advance(buf, tag_size));
+        data_len = BLEN(buf);
     }
 
-    /* keep the tag value to feed in later */
-    const int tag_size = OPENVPN_AEAD_TAG_LENGTH;
-    if (buf->len < tag_size)
-    {
-        CRYPT_ERROR("missing tag");
-    }
-    tag_ptr = BPTR(buf);
-    ASSERT(buf_advance(buf, tag_size));
     dmsg(D_PACKET_CONTENT, "DECRYPT MAC: %s", format_hex(tag_ptr, tag_size, 0, &gc));
-
-    if (buf->len < 1)
-    {
-        CRYPT_ERROR("missing payload");
-    }
-
     dmsg(D_PACKET_CONTENT, "DECRYPT FROM: %s", format_hex(BPTR(buf), BLEN(buf), 0, &gc));
 
     /* Buffer overflow check (should never fail) */
@@ -427,35 +561,36 @@ openvpn_decrypt_aead(struct buffer *buf, struct buffer work,
         CRYPT_ERROR("potential buffer overflow");
     }
 
-    {
-        /* feed in tag and the authenticated data */
-        const int ad_size = BPTR(buf) - ad_start - tag_size;
-        ASSERT(cipher_ctx_update_ad(ctx->cipher, ad_start, ad_size));
-        dmsg(D_PACKET_CONTENT, "DECRYPT AD: %s",
-             format_hex(BPTR(buf) - ad_size - tag_size, ad_size, 0, &gc));
-    }
+    /* feed in tag and the authenticated data */
+    ASSERT(cipher_ctx_update_ad(ctx->cipher, ad_start, ad_size));
+    dmsg(D_PACKET_CONTENT, "DECRYPT AD: %s", format_hex(ad_start, ad_size, 0, &gc));
 
     /* Decrypt and authenticate packet */
-    if (!cipher_ctx_update(ctx->cipher, BPTR(&work), &outlen, BPTR(buf),
-                           BLEN(buf)))
+    int outlen;
+    if (!cipher_ctx_update(ctx->cipher, BPTR(&work), &outlen, BPTR(buf), data_len))
     {
-        CRYPT_ERROR("cipher update failed");
+        CRYPT_ERROR("packet decryption failed");
     }
+
     ASSERT(buf_inc_len(&work, outlen));
-    if (!cipher_ctx_final_check_tag(ctx->cipher, BPTR(&work) + outlen,
-                                    &outlen, tag_ptr, tag_size))
+    if (!cipher_ctx_final_check_tag(ctx->cipher, BPTR(&work) + outlen, &outlen, tag_ptr, tag_size))
     {
-        CRYPT_ERROR("cipher final failed");
+        ctx->failed_verifications++;
+        CRYPT_DROP("packet tag authentication failed");
     }
     ASSERT(buf_inc_len(&work, outlen));
 
-    dmsg(D_PACKET_CONTENT, "DECRYPT TO: %s",
-         format_hex(BPTR(&work), BLEN(&work), 80, &gc));
+    dmsg(D_PACKET_CONTENT, "DECRYPT TO: %s", format_hex(BPTR(&work), BLEN(&work), 80, &gc));
 
-    if (!crypto_check_replay(opt, &pin, error_prefix, &gc))
+    if (!crypto_check_replay(opt, &pin, epoch, error_prefix, &gc))
     {
         goto error_exit;
     }
+
+    /* update number of plaintext blocks decrypted. Use the (x + (n-1))/n trick
+     * to round up the result to the number of blocks used. */
+    const int blocksize = AEAD_LIMIT_BLOCKSIZE;
+    opt->key_ctx_bi.decrypt.plaintext_blocks += (BLEN(&work) + (blocksize - 1)) / blocksize;
 
     *buf = work;
 
@@ -478,8 +613,8 @@ error_exit:
  * On success, buf is set to point to plaintext, true is returned.
  */
 static bool
-openvpn_decrypt_v1(struct buffer *buf, struct buffer work,
-                   struct crypto_options *opt, const struct frame *frame)
+openvpn_decrypt_v1(struct buffer *buf, struct buffer work, struct crypto_options *opt,
+                   const struct frame *frame)
 {
     static const char error_prefix[] = "Authenticate/Decrypt packet error";
     struct gc_arena gc;
@@ -491,8 +626,7 @@ openvpn_decrypt_v1(struct buffer *buf, struct buffer work,
         struct packet_id_net pin;
         bool have_pin = false;
 
-        dmsg(D_PACKET_CONTENT, "DECRYPT FROM: %s",
-             format_hex(BPTR(buf), BLEN(buf), 80, &gc));
+        dmsg(D_PACKET_CONTENT, "DECRYPT FROM: %s", format_hex(BPTR(buf), BLEN(buf), 80, &gc));
 
         /* Verify the HMAC */
         if (ctx->hmac)
@@ -517,7 +651,7 @@ openvpn_decrypt_v1(struct buffer *buf, struct buffer work,
             /* Compare locally computed HMAC with packet HMAC */
             if (memcmp_constant_time(local_hmac, BPTR(buf), hmac_len))
             {
-                CRYPT_ERROR("packet HMAC authentication failed");
+                CRYPT_DROP("packet HMAC authentication failed");
             }
 
             ASSERT(buf_advance(buf, hmac_len));
@@ -551,31 +685,30 @@ openvpn_decrypt_v1(struct buffer *buf, struct buffer work,
             /* ctx->cipher was already initialized with key & keylen */
             if (!cipher_ctx_reset(ctx->cipher, iv_buf))
             {
-                CRYPT_ERROR("cipher init failed");
+                CRYPT_ERROR("decrypt initialization failed");
             }
 
             /* Buffer overflow check (should never happen) */
             if (!buf_safe(&work, buf->len + cipher_ctx_block_size(ctx->cipher)))
             {
-                CRYPT_ERROR("potential buffer overflow");
+                CRYPT_ERROR("packet too big to decrypt");
             }
 
             /* Decrypt packet ID, payload */
             if (!cipher_ctx_update(ctx->cipher, BPTR(&work), &outlen, BPTR(buf), BLEN(buf)))
             {
-                CRYPT_ERROR("cipher update failed");
+                CRYPT_ERROR("packet decryption failed");
             }
             ASSERT(buf_inc_len(&work, outlen));
 
             /* Flush the decryption buffer */
             if (!cipher_ctx_final(ctx->cipher, BPTR(&work) + outlen, &outlen))
             {
-                CRYPT_ERROR("cipher final failed");
+                CRYPT_DROP("packet authentication failed, dropping.");
             }
             ASSERT(buf_inc_len(&work, outlen));
 
-            dmsg(D_PACKET_CONTENT, "DECRYPT TO: %s",
-                 format_hex(BPTR(&work), BLEN(&work), 80, &gc));
+            dmsg(D_PACKET_CONTENT, "DECRYPT TO: %s", format_hex(BPTR(&work), BLEN(&work), 80, &gc));
 
             /* Get packet ID from plaintext buffer or IV, depending on cipher mode */
             {
@@ -583,7 +716,8 @@ openvpn_decrypt_v1(struct buffer *buf, struct buffer work,
                 {
                     if (packet_id_initialized(&opt->packet_id))
                     {
-                        if (!packet_id_read(&pin, &work, BOOL_CAST(opt->flags & CO_PACKET_ID_LONG_FORM)))
+                        if (!packet_id_read(&pin, &work,
+                                            BOOL_CAST(opt->flags & CO_PACKET_ID_LONG_FORM)))
                         {
                             CRYPT_ERROR("error reading CBC packet-id");
                         }
@@ -623,7 +757,7 @@ openvpn_decrypt_v1(struct buffer *buf, struct buffer work,
             }
         }
 
-        if (have_pin && !crypto_check_replay(opt, &pin, error_prefix, &gc))
+        if (have_pin && !crypto_check_replay(opt, &pin, 0, error_prefix, &gc))
         {
             goto error_exit;
         }
@@ -642,9 +776,8 @@ error_exit:
 
 
 bool
-openvpn_decrypt(struct buffer *buf, struct buffer work,
-                struct crypto_options *opt, const struct frame *frame,
-                const uint8_t *ad_start)
+openvpn_decrypt(struct buffer *buf, struct buffer work, struct crypto_options *opt,
+                const struct frame *frame, const uint8_t *ad_start)
 {
     bool ret = false;
 
@@ -667,9 +800,7 @@ openvpn_decrypt(struct buffer *buf, struct buffer work,
 }
 
 unsigned int
-calculate_crypto_overhead(const struct key_type *kt,
-                          unsigned int pkt_id_size,
-                          bool occ)
+calculate_crypto_overhead(const struct key_type *kt, unsigned int pkt_id_size, bool occ)
 {
     unsigned int crypto_overhead = 0;
 
@@ -718,9 +849,8 @@ calculate_crypto_overhead(const struct key_type *kt,
 unsigned int
 crypto_max_overhead(void)
 {
-    return packet_id_size(true) + OPENVPN_MAX_IV_LENGTH
-           +OPENVPN_MAX_CIPHER_BLOCK_SIZE
-           +max_int(OPENVPN_MAX_HMAC_SIZE, OPENVPN_AEAD_TAG_LENGTH);
+    return packet_id_size(true) + OPENVPN_MAX_IV_LENGTH + OPENVPN_MAX_CIPHER_BLOCK_SIZE
+           + max_int(OPENVPN_MAX_HMAC_SIZE, OPENVPN_AEAD_TAG_LENGTH);
 }
 
 static void
@@ -728,12 +858,13 @@ warn_insecure_key_type(const char *ciphername)
 {
     if (cipher_kt_insecure(ciphername))
     {
-        msg(M_WARN, "WARNING: INSECURE cipher (%s) with block size less than 128"
+        msg(M_WARN,
+            "WARNING: INSECURE cipher (%s) with block size less than 128"
             " bit (%d bit).  This allows attacks like SWEET32.  Mitigate by "
             "using a --cipher with a larger block size (e.g. AES-256-CBC). "
             "Support for these insecure ciphers will be removed in "
-            "OpenVPN 2.7.",
-            ciphername, cipher_kt_block_size(ciphername)*8);
+            "OpenVPN 2.8.",
+            ciphername, cipher_kt_block_size(ciphername) * 8);
     }
 }
 
@@ -741,8 +872,8 @@ warn_insecure_key_type(const char *ciphername)
  * Build a struct key_type.
  */
 void
-init_key_type(struct key_type *kt, const char *ciphername,
-              const char *authname, bool tls_mode, bool warn)
+init_key_type(struct key_type *kt, const char *ciphername, const char *authname, bool tls_mode,
+              bool warn)
 {
     bool aead_cipher = false;
 
@@ -760,12 +891,11 @@ init_key_type(struct key_type *kt, const char *ciphername,
 
         /* check legal cipher mode */
         aead_cipher = cipher_kt_mode_aead(kt->cipher);
-        if (!(cipher_kt_mode_cbc(kt->cipher)
-              || (tls_mode && aead_cipher)
+        if (!(cipher_kt_mode_cbc(kt->cipher) || (tls_mode && aead_cipher)
 #ifdef ENABLE_OFB_CFB_MODE
               || (tls_mode && cipher_kt_mode_ofb_cfb(kt->cipher))
 #endif
-              ))
+                  ))
         {
             msg(M_FATAL, "Cipher '%s' mode not supported", ciphername);
         }
@@ -784,9 +914,9 @@ init_key_type(struct key_type *kt, const char *ciphername,
         if (warn)
         {
             msg(M_WARN, "******* WARNING *******: '--cipher none' was specified. "
-                "This means NO encryption will be performed and tunnelled "
-                "data WILL be transmitted in clear text over the network! "
-                "PLEASE DO RECONSIDER THIS SETTING!");
+                        "This means NO encryption will be performed and tunnelled "
+                        "data WILL be transmitted in clear text over the network! "
+                        "PLEASE DO RECONSIDER THIS SETTING!");
         }
     }
     kt->digest = authname;
@@ -811,77 +941,139 @@ init_key_type(struct key_type *kt, const char *ciphername,
         if (warn)
         {
             msg(M_WARN, "******* WARNING *******: '--auth none' was specified. "
-                "This means no authentication will be performed on received "
-                "packets, meaning you CANNOT trust that the data received by "
-                "the remote side have NOT been manipulated. "
-                "PLEASE DO RECONSIDER THIS SETTING!");
+                        "This means no authentication will be performed on received "
+                        "packets, meaning you CANNOT trust that the data received by "
+                        "the remote side have NOT been manipulated. "
+                        "PLEASE DO RECONSIDER THIS SETTING!");
         }
+    }
+}
+
+/**
+ * Update the implicit IV for a key_ctx based on TLS session ids and cipher
+ * used.
+ *
+ * Note that the implicit IV is based on the HMAC key of the \c key parameter,
+ * but only in AEAD modes where the HMAC key is not used for an actual HMAC.
+ *
+ * @param ctx                   Encrypt/decrypt key context
+ * @param key                   key parameters holding the key and hmac/
+ *                              implicit iv used to calculate implicit IV
+ */
+static void
+key_ctx_update_implicit_iv(struct key_ctx *ctx, const struct key_parameters *key)
+{
+    /* Only use implicit IV in AEAD cipher mode, where HMAC key is not used */
+    if (cipher_ctx_mode_aead(ctx->cipher))
+    {
+        size_t impl_iv_len = 0;
+        size_t impl_iv_offset = 0;
+        ASSERT(cipher_ctx_iv_length(ctx->cipher) >= OPENVPN_AEAD_MIN_IV_LEN);
+
+        /* Epoch keys use XOR of full IV length with the packet id to generate
+         * IVs. Old data format uses concatenation instead (XOR with 0 for the
+         * first 4 bytes (sizeof(packet_id_type) */
+        if (key->epoch)
+        {
+            impl_iv_len = cipher_ctx_iv_length(ctx->cipher);
+            impl_iv_offset = 0;
+        }
+        else
+        {
+            impl_iv_len = cipher_ctx_iv_length(ctx->cipher) - sizeof(packet_id_type);
+            impl_iv_offset = sizeof(packet_id_type);
+        }
+        ASSERT(impl_iv_offset + impl_iv_len <= OPENVPN_MAX_IV_LENGTH);
+        ASSERT(impl_iv_len <= MAX_HMAC_KEY_LENGTH);
+        ASSERT(impl_iv_len <= key->hmac_size);
+        CLEAR(ctx->implicit_iv);
+        memcpy(ctx->implicit_iv + impl_iv_offset, key->hmac, impl_iv_len);
     }
 }
 
 /* given a key and key_type, build a key_ctx */
 void
-init_key_ctx(struct key_ctx *ctx, const struct key *key,
-             const struct key_type *kt, int enc,
-             const char *prefix)
+init_key_ctx(struct key_ctx *ctx, const struct key_parameters *key, const struct key_type *kt,
+             int enc, const char *prefix)
 {
     struct gc_arena gc = gc_new();
     CLEAR(*ctx);
     if (cipher_defined(kt->cipher))
     {
-
+        ASSERT(key->cipher_size >= cipher_kt_key_size(kt->cipher));
         ctx->cipher = cipher_ctx_new();
         cipher_ctx_init(ctx->cipher, key->cipher, kt->cipher, enc);
 
         const char *ciphername = cipher_kt_name(kt->cipher);
-        msg(D_CIPHER_INIT, "%s: Cipher '%s' initialized with %d bit key",
-            prefix, ciphername, cipher_kt_key_size(kt->cipher) * 8);
+        msg(D_CIPHER_INIT, "%s: Cipher '%s' initialized with %d bit key", prefix, ciphername,
+            cipher_kt_key_size(kt->cipher) * 8);
 
         dmsg(D_SHOW_KEYS, "%s: CIPHER KEY: %s", prefix,
              format_hex(key->cipher, cipher_kt_key_size(kt->cipher), 0, &gc));
-        dmsg(D_CRYPTO_DEBUG, "%s: CIPHER block_size=%d iv_size=%d",
-             prefix, cipher_kt_block_size(kt->cipher),
-             cipher_kt_iv_size(kt->cipher));
+        dmsg(D_CRYPTO_DEBUG, "%s: CIPHER block_size=%d iv_size=%d", prefix,
+             cipher_kt_block_size(kt->cipher), cipher_kt_iv_size(kt->cipher));
         warn_insecure_key_type(ciphername);
     }
+
     if (md_defined(kt->digest))
     {
+        ASSERT(key->hmac_size >= md_kt_size(kt->digest));
         ctx->hmac = hmac_ctx_new();
         hmac_ctx_init(ctx->hmac, key->hmac, kt->digest);
 
-        msg(D_CIPHER_INIT,
-            "%s: Using %d bit message hash '%s' for HMAC authentication",
-            prefix, md_kt_size(kt->digest) * 8, md_kt_name(kt->digest));
+        msg(D_CIPHER_INIT, "%s: Using %d bit message hash '%s' for HMAC authentication", prefix,
+            md_kt_size(kt->digest) * 8, md_kt_name(kt->digest));
 
         dmsg(D_SHOW_KEYS, "%s: HMAC KEY: %s", prefix,
              format_hex(key->hmac, md_kt_size(kt->digest), 0, &gc));
 
-        dmsg(D_CRYPTO_DEBUG, "%s: HMAC size=%d block_size=%d",
-             prefix,
-             md_kt_size(kt->digest),
+        dmsg(D_CRYPTO_DEBUG, "%s: HMAC size=%d block_size=%d", prefix, md_kt_size(kt->digest),
              hmac_ctx_size(ctx->hmac));
-
     }
+    ctx->epoch = key->epoch;
     gc_free(&gc);
 }
 
 void
-init_key_ctx_bi(struct key_ctx_bi *ctx, const struct key2 *key2,
-                int key_direction, const struct key_type *kt, const char *name)
+init_key_bi_ctx_send(struct key_ctx *ctx, const struct key_parameters *key_params,
+                     const struct key_type *kt, const char *name)
 {
     char log_prefix[128] = { 0 };
+
+    snprintf(log_prefix, sizeof(log_prefix), "Outgoing %s", name);
+    init_key_ctx(ctx, key_params, kt, OPENVPN_OP_ENCRYPT, log_prefix);
+    key_ctx_update_implicit_iv(ctx, key_params);
+    ctx->epoch = key_params->epoch;
+}
+
+void
+init_key_bi_ctx_recv(struct key_ctx *ctx, const struct key_parameters *key_params,
+                     const struct key_type *kt, const char *name)
+{
+    char log_prefix[128] = { 0 };
+
+    snprintf(log_prefix, sizeof(log_prefix), "Incoming %s", name);
+    init_key_ctx(ctx, key_params, kt, OPENVPN_OP_DECRYPT, log_prefix);
+    key_ctx_update_implicit_iv(ctx, key_params);
+    ctx->epoch = key_params->epoch;
+}
+
+void
+init_key_ctx_bi(struct key_ctx_bi *ctx, const struct key2 *key2, int key_direction,
+                const struct key_type *kt, const char *name)
+{
     struct key_direction_state kds;
 
     key_direction_state_init(&kds, key_direction);
 
-    openvpn_snprintf(log_prefix, sizeof(log_prefix), "Outgoing %s", name);
-    init_key_ctx(&ctx->encrypt, &key2->keys[kds.out_key], kt,
-                 OPENVPN_OP_ENCRYPT, log_prefix);
+    struct key_parameters send_key;
+    struct key_parameters recv_key;
 
-    openvpn_snprintf(log_prefix, sizeof(log_prefix), "Incoming %s", name);
-    init_key_ctx(&ctx->decrypt, &key2->keys[kds.in_key], kt,
-                 OPENVPN_OP_DECRYPT, log_prefix);
+    key_parameters_from_key(&send_key, &key2->keys[kds.out_key]);
+    key_parameters_from_key(&recv_key, &key2->keys[kds.in_key]);
 
+    init_key_bi_ctx_send(&ctx->encrypt, &send_key, kt, name);
+    init_key_bi_ctx_recv(&ctx->decrypt, &recv_key, kt, name);
     ctx->initialized = true;
 }
 
@@ -899,7 +1091,9 @@ free_key_ctx(struct key_ctx *ctx)
         hmac_ctx_free(ctx->hmac);
         ctx->hmac = NULL;
     }
-    ctx->implicit_iv_len = 0;
+    CLEAR(ctx->implicit_iv);
+    ctx->plaintext_blocks = 0;
+    ctx->epoch = 0;
 }
 
 void
@@ -907,6 +1101,7 @@ free_key_ctx_bi(struct key_ctx_bi *ctx)
 {
     free_key_ctx(&ctx->encrypt);
     free_key_ctx(&ctx->decrypt);
+    ctx->initialized = false;
 }
 
 static bool
@@ -943,84 +1138,61 @@ check_key(struct key *key, const struct key_type *kt)
     return true;
 }
 
-void
-check_replay_consistency(const struct key_type *kt, bool packet_id)
-{
-    ASSERT(kt);
-
-    if (!packet_id && (cipher_kt_mode_ofb_cfb(kt->cipher)
-                       || cipher_kt_mode_aead(kt->cipher)))
-    {
-        msg(M_FATAL, "--no-replay cannot be used with a CFB, OFB or AEAD mode cipher");
-    }
-}
-
 /*
- * Generate a random key.  If key_type is provided, make
- * sure generated key is valid for key_type.
+ * Generate a random key.
  */
-void
-generate_key_random(struct key *key, const struct key_type *kt)
+static void
+generate_key_random(struct key *key)
 {
     int cipher_len = MAX_CIPHER_KEY_LENGTH;
     int hmac_len = MAX_HMAC_KEY_LENGTH;
 
     struct gc_arena gc = gc_new();
 
-    do
+    CLEAR(*key);
+    if (!rand_bytes(key->cipher, cipher_len) || !rand_bytes(key->hmac, hmac_len))
     {
-        CLEAR(*key);
-        if (kt)
-        {
-            cipher_len = cipher_kt_key_size(kt->cipher);
+        msg(M_FATAL, "ERROR: Random number generator cannot obtain entropy for key generation");
+    }
 
-            int kt_hmac_length = md_kt_size(kt->digest);
-
-            if (kt->digest && kt_hmac_length > 0 && kt_hmac_length <= hmac_len)
-            {
-                hmac_len = kt_hmac_length;
-            }
-        }
-        if (!rand_bytes(key->cipher, cipher_len)
-            || !rand_bytes(key->hmac, hmac_len))
-        {
-            msg(M_FATAL, "ERROR: Random number generator cannot obtain entropy for key generation");
-        }
-
-        dmsg(D_SHOW_KEY_SOURCE, "Cipher source entropy: %s", format_hex(key->cipher, cipher_len, 0, &gc));
-        dmsg(D_SHOW_KEY_SOURCE, "HMAC source entropy: %s", format_hex(key->hmac, hmac_len, 0, &gc));
-
-    } while (kt && !check_key(key, kt));
+    dmsg(D_SHOW_KEY_SOURCE, "Cipher source entropy: %s",
+         format_hex(key->cipher, cipher_len, 0, &gc));
+    dmsg(D_SHOW_KEY_SOURCE, "HMAC source entropy: %s", format_hex(key->hmac, hmac_len, 0, &gc));
 
     gc_free(&gc);
 }
 
 static void
-key_print(const struct key *key,
-          const struct key_type *kt,
-          const char *prefix)
+key_print(const struct key *key, const struct key_type *kt, const char *prefix)
 {
     struct gc_arena gc = gc_new();
-    dmsg(D_SHOW_KEY_SOURCE, "%s (cipher, %s, %d bits): %s",
-         prefix, cipher_kt_name(kt->cipher), cipher_kt_key_size(kt->cipher) * 8,
+    dmsg(D_SHOW_KEY_SOURCE, "%s (cipher, %s, %d bits): %s", prefix, cipher_kt_name(kt->cipher),
+         cipher_kt_key_size(kt->cipher) * 8,
          format_hex(key->cipher, cipher_kt_key_size(kt->cipher), 0, &gc));
-    dmsg(D_SHOW_KEY_SOURCE, "%s (hmac, %s, %d bits): %s",
-         prefix, md_kt_name(kt->digest), md_kt_size(kt->digest) * 8,
-         format_hex(key->hmac, md_kt_size(kt->digest), 0, &gc));
+    dmsg(D_SHOW_KEY_SOURCE, "%s (hmac, %s, %d bits): %s", prefix, md_kt_name(kt->digest),
+         md_kt_size(kt->digest) * 8, format_hex(key->hmac, md_kt_size(kt->digest), 0, &gc));
     gc_free(&gc);
 }
 /**
  * Prints the keys in a key2 structure.
  */
 void
-key2_print(const struct key2 *k,
-           const struct key_type *kt,
-           const char *prefix0,
+key2_print(const struct key2 *k, const struct key_type *kt, const char *prefix0,
            const char *prefix1)
 {
     ASSERT(k->n == 2);
     key_print(&k->keys[0], kt, prefix0);
     key_print(&k->keys[1], kt, prefix1);
+}
+
+void
+key_parameters_from_key(struct key_parameters *key_params, const struct key *key)
+{
+    CLEAR(*key_params);
+    memcpy(key_params->cipher, key->cipher, MAX_CIPHER_KEY_LENGTH);
+    key_params->cipher_size = MAX_CIPHER_KEY_LENGTH;
+    memcpy(key_params->hmac, key->hmac, MAX_HMAC_KEY_LENGTH);
+    key_params->hmac_size = MAX_HMAC_KEY_LENGTH;
 }
 
 void
@@ -1043,18 +1215,14 @@ test_crypto(struct crypto_options *co, struct frame *frame)
         cipher_ctx_t *cipher = co->key_ctx_bi.encrypt.cipher;
         if (cipher_ctx_mode_aead(cipher))
         {
-            size_t impl_iv_len = cipher_ctx_iv_length(cipher) - sizeof(packet_id_type);
             ASSERT(cipher_ctx_iv_length(cipher) <= OPENVPN_MAX_IV_LENGTH);
             ASSERT(cipher_ctx_iv_length(cipher) >= OPENVPN_AEAD_MIN_IV_LEN);
 
             /* Generate dummy implicit IV */
-            ASSERT(rand_bytes(co->key_ctx_bi.encrypt.implicit_iv,
-                              OPENVPN_MAX_IV_LENGTH));
-            co->key_ctx_bi.encrypt.implicit_iv_len = impl_iv_len;
+            ASSERT(rand_bytes(co->key_ctx_bi.encrypt.implicit_iv, OPENVPN_MAX_IV_LENGTH));
 
-            memcpy(co->key_ctx_bi.decrypt.implicit_iv,
-                   co->key_ctx_bi.encrypt.implicit_iv, OPENVPN_MAX_IV_LENGTH);
-            co->key_ctx_bi.decrypt.implicit_iv_len = impl_iv_len;
+            memcpy(co->key_ctx_bi.decrypt.implicit_iv, co->key_ctx_bi.encrypt.implicit_iv,
+                   OPENVPN_MAX_IV_LENGTH);
         }
     }
 
@@ -1119,11 +1287,9 @@ print_key_filename(const char *str, bool is_inline)
 }
 
 void
-crypto_read_openvpn_key(const struct key_type *key_type,
-                        struct key_ctx_bi *ctx, const char *key_file,
-                        bool key_inline, const int key_direction,
-                        const char *key_name, const char *opt_name,
-                        struct key2 *keydata)
+crypto_read_openvpn_key(const struct key_type *key_type, struct key_ctx_bi *ctx,
+                        const char *key_file, bool key_inline, const int key_direction,
+                        const char *key_name, const char *opt_name, struct key2 *keydata)
 {
     struct key2 key2;
     struct key_direction_state kds;
@@ -1137,7 +1303,8 @@ crypto_read_openvpn_key(const struct key_type *key_type,
 
     if (key2.n != 2)
     {
-        msg(M_ERR, "File '%s' does not have OpenVPN Static Key format.  Using "
+        msg(M_ERR,
+            "File '%s' does not have OpenVPN Static Key format.  Using "
             "free-form passphrase file is not supported anymore.",
             print_key_filename(key_file, key_inline));
     }
@@ -1158,6 +1325,18 @@ crypto_read_openvpn_key(const struct key_type *key_type,
     secure_memzero(&key2, sizeof(key2));
 }
 
+void
+generate_test_crypto_random_key(const struct key_type *key_type, struct key_ctx_bi *ctx,
+                                const char *key_name)
+{
+    struct key2 key2;
+    key2.n = 2;
+    generate_key_random(&key2.keys[0]);
+    generate_key_random(&key2.keys[1]);
+    init_key_ctx_bi(ctx, &key2, KEY_DIRECTION_BIDIRECTIONAL, key_type, key_name);
+}
+
+
 /* header and footer for static key file */
 static const char static_key_head[] = "-----BEGIN OpenVPN Static key V1-----";
 static const char static_key_foot[] = "-----END OpenVPN Static key V1-----";
@@ -1176,7 +1355,7 @@ read_key_file(struct key2 *key2, const char *file, const unsigned int flags)
     struct gc_arena gc = gc_new();
     struct buffer in;
     int size;
-    uint8_t hex_byte[3] = {0, 0, 0};
+    uint8_t hex_byte[3] = { 0, 0, 0 };
 
     /* parse info */
     const unsigned char *cp;
@@ -1186,22 +1365,22 @@ read_key_file(struct key2 *key2, const char *file, const unsigned int flags)
     int match = 0;
 
     /* output */
-    uint8_t *out = (uint8_t *) &key2->keys;
+    uint8_t *out = (uint8_t *)&key2->keys;
     const int keylen = sizeof(key2->keys);
     int count = 0;
 
     /* parse states */
-#define PARSE_INITIAL        0
-#define PARSE_HEAD           1
-#define PARSE_DATA           2
-#define PARSE_DATA_COMPLETE  3
-#define PARSE_FOOT           4
-#define PARSE_FINISHED       5
+#define PARSE_INITIAL       0
+#define PARSE_HEAD          1
+#define PARSE_DATA          2
+#define PARSE_DATA_COMPLETE 3
+#define PARSE_FOOT          4
+#define PARSE_FINISHED      5
     int state = PARSE_INITIAL;
 
     /* constants */
-    const int hlen = strlen(static_key_head);
-    const int flen = strlen(static_key_foot);
+    const int hlen = (int)strlen(static_key_head);
+    const int flen = (int)strlen(static_key_foot);
     const int onekeylen = sizeof(key2->keys[0]);
 
     CLEAR(*key2);
@@ -1212,7 +1391,9 @@ read_key_file(struct key2 *key2, const char *file, const unsigned int flags)
      */
     if (flags & RKF_INLINE) /* 'file' is a string containing ascii representation of key */
     {
-        size = strlen(file) + 1;
+        size_t buf_size = strlen(file) + 1;
+        ASSERT(buf_size <= INT_MAX);
+        size = (int)buf_size;
         buf_set_read(&in, (const uint8_t *)file, size);
     }
     else /* 'file' is a filename which refers to a file containing the ascii key */
@@ -1292,8 +1473,8 @@ read_key_file(struct key2 *key2, const char *file, const unsigned int flags)
                     hex_byte[hb_index++] = c;
                     if (hb_index == 2)
                     {
-                        unsigned int u;
-                        ASSERT(sscanf((const char *)hex_byte, "%x", &u) == 1);
+                        uint8_t u;
+                        ASSERT(sscanf((const char *)hex_byte, "%" SCNx8, &u) == 1);
                         *out++ = u;
                         hb_index = 0;
                         if (++count == keylen)
@@ -1308,11 +1489,9 @@ read_key_file(struct key2 *key2, const char *file, const unsigned int flags)
                 }
                 else
                 {
-                    msg(M_FATAL,
-                        (isprint(c) ? printable_char_fmt : unprintable_char_fmt),
-                        c, line_num,
-                        print_key_filename(file, flags & RKF_INLINE), count,
-                        onekeylen, keylen);
+                    msg(M_FATAL, (isprint(c) ? printable_char_fmt : unprintable_char_fmt), c,
+                        line_num, print_key_filename(file, flags & RKF_INLINE), count, onekeylen,
+                        keylen);
                 }
             }
             ++line_index;
@@ -1326,22 +1505,21 @@ read_key_file(struct key2 *key2, const char *file, const unsigned int flags)
      */
     key2->n = count / onekeylen;
 
-    ASSERT(key2->n >= 0 && key2->n <= (int) SIZE(key2->keys));
+    ASSERT(key2->n >= 0 && key2->n <= (int)SIZE(key2->keys));
 
     if (flags & RKF_MUST_SUCCEED)
     {
         if (!key2->n)
         {
-            msg(M_FATAL, "Insufficient key material or header text not found in file '%s' (%d/%d/%d bytes found/min/max)",
-                print_key_filename(file, flags & RKF_INLINE), count, onekeylen,
-                keylen);
+            msg(M_FATAL,
+                "Insufficient key material or header text not found in file '%s' (%d/%d/%d bytes found/min/max)",
+                print_key_filename(file, flags & RKF_INLINE), count, onekeylen, keylen);
         }
 
         if (state != PARSE_FINISHED)
         {
             msg(M_FATAL, "Footer text not found in file '%s' (%d/%d/%d bytes found/min/max)",
-                print_key_filename(file, flags & RKF_INLINE), count, onekeylen,
-                keylen);
+                print_key_filename(file, flags & RKF_INLINE), count, onekeylen, keylen);
         }
     }
 
@@ -1397,15 +1575,10 @@ write_key_file(const int nkeys, const char *filename)
         char *fmt;
 
         /* generate random bits */
-        generate_key_random(&key, NULL);
+        generate_key_random(&key);
 
         /* format key as ascii */
-        fmt = format_hex_ex((const uint8_t *)&key,
-                            sizeof(key),
-                            0,
-                            bytes_per_line,
-                            "\n",
-                            &gc);
+        fmt = format_hex_ex((const uint8_t *)&key, sizeof(key), 0, bytes_per_line, "\n", &gc);
 
         /* write to holding buffer */
         buf_printf(&out, "%s\n", fmt);
@@ -1418,7 +1591,7 @@ write_key_file(const int nkeys, const char *filename)
     buf_printf(&out, "%s\n", static_key_foot);
 
     /* write key file to stdout if no filename given */
-    if (!filename || strcmp(filename, "")==0)
+    if (!filename || strcmp(filename, "") == 0)
     {
         printf("%.*s\n", BLEN(&out), BPTR(&out));
     }
@@ -1443,15 +1616,20 @@ must_have_n_keys(const char *filename, const char *option, const struct key2 *ke
     if (key2->n < n)
     {
 #ifdef ENABLE_SMALL
-        msg(M_FATAL, "Key file '%s' used in --%s contains insufficient key material [keys found=%d required=%d]", filename, option, key2->n, n);
+        msg(M_FATAL,
+            "Key file '%s' used in --%s contains insufficient key material [keys found=%d required=%d]",
+            filename, option, key2->n, n);
 #else
-        msg(M_FATAL, "Key file '%s' used in --%s contains insufficient key material [keys found=%d required=%d] -- try generating a new key file with '" PACKAGE " --genkey secret [file]', or use the existing key file in bidirectional mode by specifying --%s without a key direction parameter", filename, option, key2->n, n, option);
+        msg(M_FATAL,
+            "Key file '%s' used in --%s contains insufficient key material [keys found=%d required=%d] -- try generating a new key file with '" PACKAGE
+            " --genkey secret [file]', or use the existing key file in bidirectional mode by specifying --%s without a key direction parameter",
+            filename, option, key2->n, n, option);
 #endif
     }
 }
 
 int
-ascii2keydirection(int msglevel, const char *str)
+ascii2keydirection(msglvl_t msglevel, const char *str)
 {
     if (!str)
     {
@@ -1541,91 +1719,10 @@ verify_fix_key2(struct key2 *key2, const struct key_type *kt, const char *shared
         /* This should be a very improbable failure */
         if (!check_key(&key2->keys[i], kt))
         {
-            msg(M_FATAL, "Key #%d in '%s' is bad.  Try making a new key with --genkey.",
-                i+1, shared_secret_file);
+            msg(M_FATAL, "Key #%d in '%s' is bad.  Try making a new key with --genkey.", i + 1,
+                shared_secret_file);
         }
     }
-}
-
-/* given a key and key_type, write key to buffer */
-bool
-write_key(const struct key *key, const struct key_type *kt,
-          struct buffer *buf)
-{
-    ASSERT(cipher_kt_key_size(kt->cipher) <= MAX_CIPHER_KEY_LENGTH
-           && md_kt_size(kt->digest) <= MAX_HMAC_KEY_LENGTH);
-
-    const uint8_t cipher_length = cipher_kt_key_size(kt->cipher);
-    if (!buf_write(buf, &cipher_length, 1))
-    {
-        return false;
-    }
-
-    uint8_t hmac_length = md_kt_size(kt->digest);
-
-    if (!buf_write(buf, &hmac_length, 1))
-    {
-        return false;
-    }
-    if (!buf_write(buf, key->cipher, cipher_kt_key_size(kt->cipher)))
-    {
-        return false;
-    }
-    if (!buf_write(buf, key->hmac, hmac_length))
-    {
-        return false;
-    }
-
-    return true;
-}
-
-/*
- * Given a key_type and buffer, read key from buffer.
- * Return: 1 on success
- *        -1 read failure
- *         0 on key length mismatch
- */
-int
-read_key(struct key *key, const struct key_type *kt, struct buffer *buf)
-{
-    uint8_t cipher_length;
-    uint8_t hmac_length;
-
-    CLEAR(*key);
-    if (!buf_read(buf, &cipher_length, 1))
-    {
-        goto read_err;
-    }
-    if (!buf_read(buf, &hmac_length, 1))
-    {
-        goto read_err;
-    }
-
-    if (cipher_length != cipher_kt_key_size(kt->cipher) || hmac_length != md_kt_size(kt->digest))
-    {
-        goto key_len_err;
-    }
-
-    if (!buf_read(buf, key->cipher, cipher_length))
-    {
-        goto read_err;
-    }
-    if (!buf_read(buf, key->hmac, hmac_length))
-    {
-        goto read_err;
-    }
-
-    return 1;
-
-read_err:
-    msg(D_TLS_ERRORS, "TLS Error: error reading key from remote");
-    return -1;
-
-key_len_err:
-    msg(D_TLS_ERRORS,
-        "TLS Error: key length mismatch, local cipher/hmac %d/%d, remote cipher/hmac %d/%d",
-        cipher_kt_key_size(kt->cipher), md_kt_size(kt->digest), cipher_length, hmac_length);
-    return 0;
 }
 
 void
@@ -1650,9 +1747,7 @@ get_random(void)
 void
 print_cipher(const char *ciphername)
 {
-    printf("%s  (%d bit key, ",
-           cipher_kt_name(ciphername),
-           cipher_kt_key_size(ciphername) * 8);
+    printf("%s  (%d bit key, ", cipher_kt_name(ciphername), cipher_kt_key_size(ciphername) * 8);
 
     if (cipher_kt_block_size(ciphername) == 1)
     {
@@ -1738,14 +1833,13 @@ write_pem_key_file(const char *filename, const char *pem_name)
         goto cleanup;
     }
     buf_set_read(&server_key_buf, (void *)&server_key, sizeof(server_key));
-    if (!crypto_pem_encode(pem_name, &server_key_pem,
-                           &server_key_buf, &gc))
+    if (!crypto_pem_encode(pem_name, &server_key_pem, &server_key_buf, &gc))
     {
         msg(M_WARN, "ERROR: could not PEM-encode key");
         goto cleanup;
     }
 
-    if (!filename || strcmp(filename, "")==0)
+    if (!filename || strcmp(filename, "") == 0)
     {
         printf("%.*s", BLEN(&server_key_pem), BPTR(&server_key_pem));
     }
@@ -1781,8 +1875,7 @@ generate_ephemeral_key(struct buffer *key, const char *key_name)
 }
 
 bool
-read_pem_key_file(struct buffer *key, const char *pem_name,
-                  const char *key_file, bool key_inline)
+read_pem_key_file(struct buffer *key, const char *pem_name, const char *key_file, bool key_inline)
 {
     bool ret = false;
     struct buffer key_pem = { 0 };
@@ -1793,8 +1886,7 @@ read_pem_key_file(struct buffer *key, const char *pem_name,
         key_pem = buffer_read_from_file(key_file, &gc);
         if (!buf_valid(&key_pem))
         {
-            msg(M_WARN, "ERROR: failed to read %s file (%s)",
-                pem_name, key_file);
+            msg(M_WARN, "ERROR: failed to read %s file (%s)", pem_name, key_file);
             goto cleanup;
         }
     }
@@ -1829,11 +1921,10 @@ check_tls_prf_working(void)
     const char *seed = "tls1-prf-test";
     const char *secret = "tls1-prf-test-secret";
     uint8_t out[8];
-    uint8_t expected_out[] = { 'q', 'D', '\xfe', '%', '@', 's', 'u', '\x95' };
+    uint8_t expected_out[] = { 'q', 'D', 0xfe, '%', '@', 's', 'u', 0x95 };
 
-    int ret = ssl_tls1_PRF((uint8_t *)seed, (int) strlen(seed),
-                           (uint8_t *)secret, (int) strlen(secret),
-                           out, sizeof(out));
+    int ret = ssl_tls1_PRF((uint8_t *)seed, strlen(seed), (uint8_t *)secret,
+                           strlen(secret), out, sizeof(out));
 
     return (ret && memcmp(out, expected_out, sizeof(out)) == 0);
 }

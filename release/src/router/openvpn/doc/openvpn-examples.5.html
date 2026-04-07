@@ -389,7 +389,7 @@ setup.</p>
 <h2>Server setup</h2>
 <ol class="arabic">
 <li><p class="first">Install openvpn</p>
-<p>Compile from source-code (see <cite>INSTALL</cite> file) or install via a distribution (apt/yum/ports)
+<p>Compile from source-code (see <tt class="docutils literal">INSTALL</tt> file) or install via a distribution (apt/yum/ports)
 or via installer (Windows).</p>
 </li>
 <li><p class="first">Generate a self-signed certificate for the server:</p>
@@ -408,7 +408,7 @@ openssl x509 -fingerprint -sha256 -in server.crt -noout
 SHA256 Fingerprint=00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff:00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff
 </pre>
 </li>
-<li><p class="first">Write a server configuration (<cite>server.conf</cite>):</p>
+<li><p class="first">Write a server configuration (<tt class="docutils literal">server.conf</tt>):</p>
 <pre class="literal-block">
 # The server certificate we created in step 1
 cert server.crt
@@ -450,8 +450,8 @@ keepalive 60 300
 <li><dl class="first docutils">
 <dt>Start the server.</dt>
 <dd><ul class="first last">
-<li><p class="first">On systemd based distributions move <cite>server.crt</cite>, <cite>server.key</cite> and
-<cite>server.conf</cite> to <code>/etc/openvpn/server</code> and start it via systemctl</p>
+<li><p class="first">On systemd based distributions move <tt class="docutils literal">server.crt</tt>, <tt class="docutils literal">server.key</tt> and
+<tt class="docutils literal">server.conf</tt> to <tt class="docutils literal">/etc/openvpn/server</tt> and start it via systemctl:</p>
 <pre class="literal-block">
 sudo mv server.conf server.key server.crt /etc/openvpn/server
 
@@ -488,7 +488,7 @@ something like this:</p>
 </pre>
 </li>
 <li><p class="first">Create a new client configuration file. In this example we will name the file
-<cite>alice.ovpn</cite>:</p>
+<tt class="docutils literal">alice.ovpn</tt>:</p>
 <pre class="literal-block">
 # The name of your server to connect to
 remote yourserver.example.net
@@ -529,12 +529,12 @@ ignore anything that is not between the begin and end markers of the certificate
 <pre class="literal-block">
 openssl x509 -fingerprint -sha256 -noout -in alice.ovpn
 </pre>
-<p>This will again output something like</p>
+<p>This will again output something like:</p>
 <pre class="literal-block">
 SHA256 Fingerprint=ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00:ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00
 </pre>
 </li>
-<li><p class="first">Edit the <cite>server.conf</cite> configuration file and add this new client
+<li><p class="first">Edit the <tt class="docutils literal">server.conf</tt> configuration file and add this new client
 fingerprint as additional line  between <code>&lt;peer-fingerprint&gt;</code>
 and <code>&lt;/peer-fingerprint&gt;</code></p>
 <p>After adding <em>two</em> clients the part of configuration would look like this:</p>
@@ -547,12 +547,12 @@ ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00:ff:ee:dd:cc:bb:aa:99:88:77:66:55
 </li>
 <li><p class="first">(optional) if the client is an older client that does not support the
 <code>peer-fingerprint</code> (e.g. OpenVPN 2.5 and older, OpenVPN Connect 3.3
-and older), the client config <cite>alice.ovpn</cite> can be modified to still work with
+and older), the client config <tt class="docutils literal">alice.ovpn</tt> can be modified to still work with
 these clients.</p>
 <p>Remove the line starting with <code>peer-fingerprint</code>. Then
 add a new <code>&lt;ca&gt;</code> section at the end of the configuration file
-with the contents of the <code>server.crt</code> created in step 2 of the
-server setup. The end of <cite>alice.ovpn</cite> file should like:</p>
+with the contents of the <tt class="docutils literal">server.crt</tt> created in step 2 of the
+server setup. The end of <tt class="docutils literal">alice.ovpn</tt> file should look like:</p>
 <pre class="literal-block">
 [...]  # Beginning of the file skipped
 &lt;/cert&gt;
@@ -689,7 +689,7 @@ ping 10.4.0.2
 <pre class="literal-block">
 ping 10.4.0.1
 </pre>
-<p>Note: This example use a elliptic curve (<cite>secp384</cite>), which allows
+<p>Note: This example use a elliptic curve (<tt class="docutils literal">secp384</tt>), which allows
 <tt class="docutils literal"><span class="pre">--dh</span></tt> to be set to <tt class="docutils literal">none</tt>.</p>
 </div>
 <div class="section" id="example-3-a-tunnel-with-full-pki-and-tls-based-security">

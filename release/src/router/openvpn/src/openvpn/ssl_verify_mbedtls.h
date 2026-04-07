@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2010-2021 Fox Crypto B.V. <openvpn@foxcrypto.com>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2010-2026 Sentyron B.V. <openvpn@sentyron.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -18,12 +18,12 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
- * @file Control Channel Verification Module mbed TLS backend
+ * @file
+ * Control Channel Verification Module mbed TLS backend
  */
 
 #ifndef SSL_VERIFY_MBEDTLS_H_
@@ -69,8 +69,7 @@ typedef mbedtls_x509_crt openvpn_x509_cert_t;
  *
  * @return The return value is 0 unless a fatal error occurred.
  */
-int verify_callback(void *session_obj, mbedtls_x509_crt *cert, int cert_depth,
-                    uint32_t *flags);
+int verify_callback(void *session_obj, mbedtls_x509_crt *cert, int cert_depth, uint32_t *flags);
 
 /** @} name Function for authenticating a new connection from a remote OpenVPN peer */
 

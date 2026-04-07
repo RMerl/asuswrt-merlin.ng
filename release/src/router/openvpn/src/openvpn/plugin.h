@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /*
@@ -42,17 +41,20 @@
 
 #define MAX_PLUGINS 16
 
-struct plugin_option {
+struct plugin_option
+{
     const char *so_pathname;
     const char **argv;
 };
 
-struct plugin_option_list {
+struct plugin_option_list
+{
     int n;
     struct plugin_option plugins[MAX_PLUGINS];
 };
 
-struct plugin {
+struct plugin
+{
     bool initialized;
     const char *so_pathname;
     unsigned int plugin_type_mask;
@@ -106,45 +108,35 @@ struct plugin_return
 
 struct plugin_option_list *plugin_option_list_new(struct gc_arena *gc);
 
-bool plugin_option_list_add(struct plugin_option_list *list, char **p,
-                            struct gc_arena *gc);
+bool plugin_option_list_add(struct plugin_option_list *list, char **p, struct gc_arena *gc);
 
 #ifndef ENABLE_SMALL
-void plugin_option_list_print(const struct plugin_option_list *list, int msglevel);
+void plugin_option_list_print(const struct plugin_option_list *list, msglvl_t msglevel);
 
 #endif
 
 struct plugin_list *plugin_list_init(const struct plugin_option_list *list);
 
-void plugin_list_open(struct plugin_list *pl,
-                      const struct plugin_option_list *list,
-                      struct plugin_return *pr,
-                      const struct env_set *es,
-                      const int init_point);
+void plugin_list_open(struct plugin_list *pl, const struct plugin_option_list *list,
+                      struct plugin_return *pr, const struct env_set *es, const int init_point);
 
 struct plugin_list *plugin_list_inherit(const struct plugin_list *src);
 
-int plugin_call_ssl(const struct plugin_list *pl,
-                    const int type,
-                    const struct argv *av,
-                    struct plugin_return *pr,
-                    struct env_set *es,
-                    int current_cert_depth,
-                    openvpn_x509_cert_t *current_cert
-                    );
+int plugin_call_ssl(const struct plugin_list *pl, const int type, const struct argv *av,
+                    struct plugin_return *pr, struct env_set *es, int current_cert_depth,
+                    openvpn_x509_cert_t *current_cert);
 
 void plugin_list_close(struct plugin_list *pl);
 
 bool plugin_defined(const struct plugin_list *pl, const int type);
 
-void plugin_return_get_column(const struct plugin_return *src,
-                              struct plugin_return *dest,
+void plugin_return_get_column(const struct plugin_return *src, struct plugin_return *dest,
                               const char *colname);
 
 void plugin_return_free(struct plugin_return *pr);
 
 #ifdef ENABLE_DEBUG
-void plugin_return_print(const int msglevel, const char *prefix, const struct plugin_return *pr);
+void plugin_return_print(const msglvl_t msglevel, const char *prefix, const struct plugin_return *pr);
 
 #endif
 
@@ -174,8 +166,14 @@ plugin_return_init(struct plugin_return *pr)
 }
 
 #else  /* ifdef ENABLE_PLUGIN */
-struct plugin_list { int dummy; };
-struct plugin_return { int dummy; };
+struct plugin_list
+{
+    int dummy;
+};
+struct plugin_return
+{
+    int dummy;
+};
 
 static inline bool
 plugin_defined(const struct plugin_list *pl, const int type)
@@ -184,14 +182,9 @@ plugin_defined(const struct plugin_list *pl, const int type)
 }
 
 static inline int
-plugin_call_ssl(const struct plugin_list *pl,
-                const int type,
-                const struct argv *av,
-                struct plugin_return *pr,
-                struct env_set *es,
-                int current_cert_depth,
-                openvpn_x509_cert_t *current_cert
-                )
+plugin_call_ssl(const struct plugin_list *pl, const int type, const struct argv *av,
+                struct plugin_return *pr, struct env_set *es, int current_cert_depth,
+                openvpn_x509_cert_t *current_cert)
 {
     return 0;
 }
@@ -199,11 +192,8 @@ plugin_call_ssl(const struct plugin_list *pl,
 #endif /* ENABLE_PLUGIN */
 
 static inline int
-plugin_call(const struct plugin_list *pl,
-            const int type,
-            const struct argv *av,
-            struct plugin_return *pr,
-            struct env_set *es)
+plugin_call(const struct plugin_list *pl, const int type, const struct argv *av,
+            struct plugin_return *pr, struct env_set *es)
 {
     return plugin_call_ssl(pl, type, av, pr, es, -1, NULL);
 }

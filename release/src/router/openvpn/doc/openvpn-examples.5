@@ -47,7 +47,7 @@ setup.
 .IP 1. 3
 Install openvpn
 .sp
-Compile from source\-code (see \fIINSTALL\fP file) or install via a distribution (apt/yum/ports)
+Compile from source\-code (see \fBINSTALL\fP file) or install via a distribution (apt/yum/ports)
 or via installer (Windows).
 .IP 2. 3
 Generate a self\-signed certificate for the server:
@@ -83,7 +83,7 @@ SHA256 Fingerprint=00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff:00:11:22:33:4
 .UNINDENT
 .UNINDENT
 .IP 4. 3
-Write a server configuration (\fIserver.conf\fP):
+Write a server configuration (\fBserver.conf\fP):
 .INDENT 3.0
 .INDENT 3.5
 .sp
@@ -132,8 +132,8 @@ Add at least one client as described in the client section.
 .B Start the server.
 .INDENT 7.0
 .IP \(bu 2
-On systemd based distributions move \fIserver.crt\fP, \fIserver.key\fP and
-\fIserver.conf\fP to \fB/etc/openvpn/server\fP and start it via systemctl
+On systemd based distributions move \fBserver.crt\fP, \fBserver.key\fP and
+\fBserver.conf\fP to \fB/etc/openvpn/server\fP and start it via systemctl:
 .INDENT 3.0
 .INDENT 3.5
 .sp
@@ -182,7 +182,7 @@ something like this:
 .UNINDENT
 .IP 3. 3
 Create a new client configuration file. In this example we will name the file
-\fIalice.ovpn\fP:
+\fBalice.ovpn\fP:
 .INDENT 3.0
 .INDENT 3.5
 .sp
@@ -234,7 +234,7 @@ openssl x509 \-fingerprint \-sha256 \-noout \-in alice.ovpn
 .UNINDENT
 .UNINDENT
 .sp
-This will again output something like
+This will again output something like:
 .INDENT 3.0
 .INDENT 3.5
 .sp
@@ -244,7 +244,7 @@ SHA256 Fingerprint=ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00:ff:ee:dd:cc:b
 .UNINDENT
 .UNINDENT
 .IP 5. 3
-Edit the \fIserver.conf\fP configuration file and add this new client
+Edit the \fBserver.conf\fP configuration file and add this new client
 fingerprint as additional line  between \fB<peer\-fingerprint>\fP
 and \fB</peer\-fingerprint>\fP
 .sp
@@ -263,13 +263,13 @@ ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00:ff:ee:dd:cc:bb:aa:99:88:77:66:55
 .IP 6. 3
 (optional) if the client is an older client that does not support the
 \fBpeer\-fingerprint\fP (e.g. OpenVPN 2.5 and older, OpenVPN Connect 3.3
-and older), the client config \fIalice.ovpn\fP can be modified to still work with
+and older), the client config \fBalice.ovpn\fP can be modified to still work with
 these clients.
 .sp
 Remove the line starting with \fBpeer\-fingerprint\fP\&. Then
 add a new \fB<ca>\fP section at the end of the configuration file
 with the contents of the \fBserver.crt\fP created in step 2 of the
-server setup. The end of \fIalice.ovpn\fP file should like:
+server setup. The end of \fBalice.ovpn\fP file should look like:
 .INDENT 3.0
 .INDENT 3.5
 .sp
@@ -473,7 +473,7 @@ ping 10.4.0.1
 .UNINDENT
 .UNINDENT
 .sp
-Note: This example use a elliptic curve (\fIsecp384\fP), which allows
+Note: This example use a elliptic curve (\fBsecp384\fP), which allows
 \fB\-\-dh\fP to be set to \fBnone\fP\&.
 .SS Example 3: A tunnel with full PKI and TLS\-based security
 .sp

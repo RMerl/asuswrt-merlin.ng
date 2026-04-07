@@ -584,18 +584,19 @@ void ovpn_start_server(int unit) {
 		return;
 	}
 
-	// Write config files
-	ovpn_write_server_config(sconf, unit);
-
 	// Write key/certs
 	ovpn_write_server_keys(sconf, unit);
+
+	// Write config files
+	ovpn_write_server_config(sconf, unit);
+	ovpn_write_server_client_config(sconf, unit);
 
 	// Format client file so Windows Notepad can edit it
 	sprintf(buffer, "/etc/openvpn/server%d/client.ovpn", unit);
 	eval("/usr/bin/unix2dos", buffer);
 
-        // Setup firewall
-        ovpn_setup_server_fw(sconf, unit);
+	// Setup firewall
+	ovpn_setup_server_fw(sconf, unit);
 
 	// Run postconf custom script on it if it exists
 	sprintf(buffer, "openvpnserver%d", unit);
@@ -610,9 +611,6 @@ void ovpn_start_server(int unit) {
 		free(sconf);
 		return;
 	}
-
-	if (sconf->auth_mode == OVPN_AUTH_STATIC)
-		update_ovpn_status(OVPN_TYPE_SERVER, unit, OVPN_STS_RUNNING, OVPN_ERRNO_NONE);
 
 	ovpn_setup_server_watchdog(sconf, unit);
 

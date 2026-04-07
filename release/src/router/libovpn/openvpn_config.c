@@ -468,11 +468,6 @@ ovpn_cconf_t *ovpn_get_cconf(int unit) {
 		cconf->if_type = OVPN_IF_TUN;
 	snprintf(cconf->if_name, sizeof (cconf->if_name), "%s%d", buffer, unit + OVPN_CLIENT_BASE);
 
-	if (!strcmp(nvram_pf_safe_get(prefix, "crypt"), "secret"))
-		cconf->auth_mode = OVPN_AUTH_STATIC;
-	else
-		cconf->auth_mode = OVPN_AUTH_TLS;
-
 	cconf->bridge = nvram_pf_get_int(prefix, "bridge");
 	cconf->nat = nvram_pf_get_int(prefix, "nat");
 
@@ -492,8 +487,6 @@ ovpn_cconf_t *ovpn_get_cconf(int unit) {
 	strlcpy(cconf->comp, nvram_pf_safe_get(prefix, "comp"), sizeof (cconf->comp));
 
 	strlcpy(cconf->ncp_ciphers, nvram_pf_safe_get(prefix, "ncp_ciphers"), sizeof (cconf->ncp_ciphers));
-	strlcpy(cconf->cipher, nvram_pf_safe_get(prefix, "cipher"), sizeof(cconf->cipher));
-
 	strlcpy(cconf->digest, nvram_pf_safe_get(prefix, "digest"), sizeof(cconf->digest));
 
 	cconf->redirect_gateway = nvram_pf_get_int(prefix, "rgw");
@@ -506,13 +499,13 @@ ovpn_cconf_t *ovpn_get_cconf(int unit) {
 	cconf->direction = nvram_pf_get_int(prefix, "hmac");
 	switch (cconf->direction) {
 		case 3:
-			cconf->tlscrypt = 1;
+			cconf->tlscrypt = OVPN_TLS_CRYPT_V1;
 			break;
 		case 4:
-			cconf->tlscrypt = 2;
+			cconf->tlscrypt = OVPN_TLS_CRYPT_V2;
 			break;
 		default:
-			cconf->tlscrypt = 0;
+			cconf->tlscrypt = OVPN_TLS_CRYPT_NONE;
 	}
 
 	cconf->verify_x509_type = nvram_pf_get_int(prefix, "tlsremote");
@@ -551,12 +544,6 @@ ovpn_sconf_t *ovpn_get_sconf(int unit){
 
 	snprintf(sconf->if_name, sizeof (sconf->if_name), "%s%d", buffer, unit + OVPN_SERVER_BASE);
 
-	if (!strcmp(nvram_pf_safe_get(prefix, "crypt"), "secret"))
-		sconf->auth_mode = OVPN_AUTH_STATIC;
-	else
-		sconf->auth_mode = OVPN_AUTH_TLS;
-
-
 	strlcpy(sconf->network, nvram_pf_safe_get(prefix, "sn"), sizeof(sconf->network));
 	strlcpy(sconf->netmask,	nvram_pf_safe_get(prefix, "nm"), sizeof(sconf->netmask));
 #ifdef RTCONFIG_IPV6
@@ -577,10 +564,7 @@ ovpn_sconf_t *ovpn_get_sconf(int unit){
 	sconf->port = nvram_pf_get_int(prefix, "port");
 
 	strlcpy(sconf->ncp_ciphers, nvram_pf_safe_get(prefix, "ncp_ciphers"), sizeof (sconf->ncp_ciphers));
-	strlcpy(sconf->cipher, nvram_pf_safe_get(prefix, "cipher"), sizeof (sconf->cipher));
 	strlcpy(sconf->digest, nvram_pf_safe_get(prefix, "digest"), sizeof (sconf->digest));
-
-	strlcpy(sconf->comp, nvram_pf_safe_get(prefix, "comp"), sizeof (sconf->comp));
 
 	sconf->verb = nvram_pf_get_int(prefix, "verb");
 
@@ -597,7 +581,16 @@ ovpn_sconf_t *ovpn_get_sconf(int unit){
 	sconf->push_dns = nvram_pf_get_int(prefix, "pdns");
 
 	sconf->direction = nvram_pf_get_int(prefix, "hmac");
-	sconf->tlscrypt = (sconf->direction == 3 ? 1 : 0);
+	switch (sconf->direction) {
+		case 3:
+			sconf->tlscrypt = OVPN_TLS_CRYPT_V1;
+			break;
+		case 4:
+			sconf->tlscrypt = OVPN_TLS_CRYPT_V2;
+			break;
+		default:
+			sconf->tlscrypt = OVPN_TLS_CRYPT_NONE;
+	}
 
 	sconf->userauth = nvram_pf_get_int(prefix, "userpass_auth");
 	sconf->useronly = nvram_pf_get_int(prefix, "igncrt");

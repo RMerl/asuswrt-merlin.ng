@@ -110,4 +110,3 @@ if (_GENERATE_MAN_DOC)
 endif ()
 
 add_custom_target(documentation ALL DEPENDS ${ALL_DOCS})
-

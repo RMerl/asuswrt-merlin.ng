@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2024 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2026 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -17,8 +17,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *  with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /*
@@ -37,18 +36,18 @@
 /*
  * Windows route methods
  */
-#define ROUTE_METHOD_ADAPTIVE  0  /* try IP helper first then route.exe */
-#define ROUTE_METHOD_IPAPI     1  /* use IP helper API */
-#define ROUTE_METHOD_EXE       2  /* use route.exe */
-#define ROUTE_METHOD_SERVICE   3  /* use the privileged Windows service */
-#define ROUTE_METHOD_MASK      3
+#define ROUTE_METHOD_ADAPTIVE 0 /* try IP helper first then route.exe */
+#define ROUTE_METHOD_IPAPI    1 /* use IP helper API */
+#define ROUTE_METHOD_EXE      2 /* use route.exe */
+#define ROUTE_METHOD_SERVICE  3 /* use the privileged Windows service */
+#define ROUTE_METHOD_MASK     3
 #endif
 
 /*
  * Route add/delete flags (must stay clear of ROUTE_METHOD bits)
  */
-#define ROUTE_DELETE_FIRST  (1<<2)
-#define ROUTE_REF_GW        (1<<3)
+#define ROUTE_DELETE_FIRST (1 << 2)
+#define ROUTE_REF_GW       (1 << 3)
 
 struct route_bypass
 {
@@ -60,101 +59,116 @@ struct route_bypass
 struct route_special_addr
 {
     /* bits indicating which members below are defined */
-#define RTSA_REMOTE_ENDPOINT  (1<<0)
-#define RTSA_REMOTE_HOST      (1<<1)
-#define RTSA_DEFAULT_METRIC   (1<<2)
+#define RTSA_REMOTE_ENDPOINT (1 << 0)
+#define RTSA_REMOTE_HOST     (1 << 1)
+#define RTSA_DEFAULT_METRIC  (1 << 2)
     unsigned int flags;
 
     in_addr_t remote_endpoint;
     in_addr_t remote_host;
     int remote_host_local; /* TLA_x value */
     struct route_bypass bypass;
+    int table_id;
     int default_metric;
 };
 
-struct route_option {
+struct route_option
+{
     struct route_option *next;
     const char *network;
     const char *netmask;
     const char *gateway;
+    int table_id;
     const char *metric;
 };
 
 /* redirect-gateway flags */
-#define RG_ENABLE         (1<<0)
-#define RG_LOCAL          (1<<1)
-#define RG_DEF1           (1<<2)
-#define RG_BYPASS_DHCP    (1<<3)
-#define RG_BYPASS_DNS     (1<<4)
-#define RG_REROUTE_GW     (1<<5)
-#define RG_AUTO_LOCAL     (1<<6)
-#define RG_BLOCK_LOCAL    (1<<7)
+#define RG_ENABLE      (1u << 0)
+#define RG_LOCAL       (1u << 1)
+#define RG_DEF1        (1u << 2)
+#define RG_BYPASS_DHCP (1u << 3)
+#define RG_BYPASS_DNS  (1u << 4)
+#define RG_REROUTE_GW  (1u << 5)
+#define RG_AUTO_LOCAL  (1u << 6)
+#define RG_BLOCK_LOCAL (1u << 7)
 
-struct route_option_list {
+struct route_option_list
+{
     unsigned int flags; /* RG_x flags */
     struct route_option *routes;
     struct gc_arena *gc;
 };
 
-struct route_ipv6_option {
+struct route_ipv6_option
+{
     struct route_ipv6_option *next;
-    const char *prefix;         /* e.g. "2001:db8:1::/64" */
-    const char *gateway;        /* e.g. "2001:db8:0::2" */
-    const char *metric;         /* e.g. "5" */
+    const char *prefix;  /* e.g. "2001:db8:1::/64" */
+    const char *gateway; /* e.g. "2001:db8:0::2" */
+    const char *metric;  /* e.g. "5" */
+    int table_id;
 };
 
-struct route_ipv6_option_list {
-    unsigned int flags;         /* RG_x flags, see route_option-list */
+struct route_ipv6_option_list
+{
+    unsigned int flags; /* RG_x flags, see route_option-list */
     struct route_ipv6_option *routes_ipv6;
     struct gc_arena *gc;
 };
 
-struct route_ipv4 {
-#define RT_DEFINED        (1<<0)
-#define RT_ADDED          (1<<1)
-#define RT_METRIC_DEFINED (1<<2)
+struct route_ipv4
+{
+#define RT_DEFINED        (1u << 0)
+#define RT_ADDED          (1u << 1)
+#define RT_METRIC_DEFINED (1u << 2)
     struct route_ipv4 *next;
     unsigned int flags;
     const struct route_option *option;
     in_addr_t network;
     in_addr_t netmask;
     in_addr_t gateway;
+    int table_id;
     int metric;
 };
 
-struct route_ipv6 {
+struct route_ipv6
+{
     struct route_ipv6 *next;
-    unsigned int flags;                         /* RT_ flags, see route_ipv4 */
+    unsigned int flags; /* RT_ flags, see route_ipv4 */
     struct in6_addr network;
     unsigned int netbits;
     struct in6_addr gateway;
     int metric;
+    int table_id;
     /* gateway interface */
 #ifdef _WIN32
-    DWORD adapter_index;        /* interface or ~0 if undefined */
+    DWORD adapter_index; /* interface or ~0 if undefined */
 #else
-    char *iface;                /* interface name (null terminated) */
+    char *iface; /* interface name (null terminated) */
 #endif
 };
 
 
-struct route_gateway_address {
+struct route_gateway_address
+{
     in_addr_t addr;
     in_addr_t netmask;
 };
 
-struct route_gateway_info {
-#define RGI_ADDR_DEFINED     (1<<0)  /* set if gateway.addr defined */
-#define RGI_NETMASK_DEFINED  (1<<1)  /* set if gateway.netmask defined */
-#define RGI_HWADDR_DEFINED   (1<<2)  /* set if hwaddr is defined */
-#define RGI_IFACE_DEFINED    (1<<3)  /* set if iface is defined */
-#define RGI_OVERFLOW         (1<<4)  /* set if more interface addresses than will fit in addrs */
-#define RGI_ON_LINK          (1<<5)
+struct route_gateway_info
+{
+#define RGI_ADDR_DEFINED    (1 << 0) /* set if gateway.addr defined */
+#define RGI_NETMASK_DEFINED (1 << 1) /* set if gateway.netmask defined */
+#define RGI_HWADDR_DEFINED  (1 << 2) /* set if hwaddr is defined */
+#define RGI_IFACE_DEFINED   (1 << 3) /* set if iface is defined */
+#define RGI_OVERFLOW        (1 << 4) /* set if more interface addresses than will fit in addrs */
+#define RGI_ON_LINK         (1 << 5)
     unsigned int flags;
 
     /* gateway interface */
 #ifdef _WIN32
     DWORD adapter_index; /* interface or ~0 if undefined */
+#elif defined(TARGET_HAIKU)
+    char iface[PATH_MAX]; /* iface names are full /dev path with driver name */
 #else
     char iface[16]; /* interface name (null terminated), may be empty */
 #endif
@@ -167,17 +181,19 @@ struct route_gateway_info {
 
     /* address/netmask pairs bound to interface */
 #define RGI_N_ADDRESSES 8
-    int n_addrs; /* len of addrs, may be 0 */
+    int n_addrs;                                         /* len of addrs, may be 0 */
     struct route_gateway_address addrs[RGI_N_ADDRESSES]; /* local addresses attached to iface */
 };
 
-struct route_ipv6_gateway_address {
+struct route_ipv6_gateway_address
+{
     struct in6_addr addr_ipv6;
     int netbits_ipv6;
 };
 
-struct route_ipv6_gateway_info {
-/* RGI_ flags used as in route_gateway_info */
+struct route_ipv6_gateway_info
+{
+    /* RGI_ flags used as in route_gateway_info */
     unsigned int flags;
 
     /* gateway interface */
@@ -186,7 +202,12 @@ struct route_ipv6_gateway_info {
 #else
     /* non linux platform don't have this constant defined */
 #ifndef IFNAMSIZ
+#if defined(TARGET_HAIKU)
+/* iface names are full /dev path with driver name */
+#define IFNAMSIZ PATH_MAX
+#else
 #define IFNAMSIZ 16
+#endif
 #endif
     char iface[IFNAMSIZ]; /* interface name (null terminated), may be empty */
 #endif
@@ -199,115 +220,125 @@ struct route_ipv6_gateway_info {
 
     /* address/netmask pairs bound to interface */
 #define RGI_N_ADDRESSES 8
-    int n_addrs; /* len of addrs, may be 0 */
-    struct route_ipv6_gateway_address addrs[RGI_N_ADDRESSES]; /* local addresses attached to iface */
+    int n_addrs;                /* len of addrs, may be 0 */
+    struct route_ipv6_gateway_address
+        addrs[RGI_N_ADDRESSES]; /* local addresses attached to iface */
 };
 
-struct route_list {
-#define RL_DID_REDIRECT_DEFAULT_GATEWAY (1<<0)
-#define RL_DID_LOCAL                    (1<<1)
-#define RL_ROUTES_ADDED                 (1<<2)
+struct route_list
+{
+#define RL_DID_REDIRECT_DEFAULT_GATEWAY (1u << 0)
+#define RL_DID_LOCAL                    (1u << 1)
+#define RL_ROUTES_ADDED                 (1u << 2)
     unsigned int iflags;
 
     struct route_special_addr spec;
     struct route_gateway_info rgi;
-    unsigned int flags;   /* RG_x flags */
+    struct route_gateway_info ngi; /* net_gateway */
+    unsigned int flags;            /* RG_x flags */
     struct route_ipv4 *routes;
     struct gc_arena gc;
 };
 
-struct route_ipv6_list {
-    unsigned int iflags;                /* RL_ flags, see route_list */
+struct route_ipv6_list
+{
+    unsigned int iflags;                  /* RL_ flags, see route_list */
 
-    unsigned int spec_flags;            /* RTSA_ flags, route_special_addr */
+    unsigned int spec_flags;              /* RTSA_ flags, route_special_addr */
     struct in6_addr remote_endpoint_ipv6; /* inside tun */
-    struct in6_addr remote_host_ipv6;   /* --remote address */
+    struct in6_addr remote_host_ipv6;     /* --remote address */
     int default_metric;
 
     struct route_ipv6_gateway_info rgi6;
-    unsigned int flags;                 /* RG_x flags, see route_option_list */
+    struct route_ipv6_gateway_info ngi6; /* net_gateway_ipv6 */
+    unsigned int flags;                  /* RG_x flags, see route_option_list */
     struct route_ipv6 *routes_ipv6;
     struct gc_arena gc;
 };
 
 /* internal OpenVPN route */
-struct iroute {
+struct iroute
+{
     in_addr_t network;
     int netbits;
     struct iroute *next;
 };
 
-struct iroute_ipv6 {
+struct iroute_ipv6
+{
     struct in6_addr network;
     unsigned int netbits;
     struct iroute_ipv6 *next;
 };
 
+/**
+ * Get the decision whether to block traffic to local networks while the VPN
+ * is connected. This definitely returns false when not redirecting the gateway
+ * or when the 'block-local' flag is not set. Also checks for other
+ * prerequisites to redirect local networks into the tunnel.
+ *
+ * @param rl const pointer to the struct route_list to base the decision on.
+ *
+ * @return boolean indicating whether local traffic should be blocked.
+ */
+bool block_local_needed(const struct route_list *rl);
+
 struct route_option_list *new_route_option_list(struct gc_arena *a);
 
 struct route_ipv6_option_list *new_route_ipv6_option_list(struct gc_arena *a);
 
-struct route_option_list *clone_route_option_list(const struct route_option_list *src, struct gc_arena *a);
+struct route_option_list *clone_route_option_list(const struct route_option_list *src,
+                                                  struct gc_arena *a);
 
-struct route_ipv6_option_list *clone_route_ipv6_option_list(const struct route_ipv6_option_list *src, struct gc_arena *a);
+struct route_ipv6_option_list *clone_route_ipv6_option_list(
+    const struct route_ipv6_option_list *src, struct gc_arena *a);
 
-void copy_route_option_list(struct route_option_list *dest, const struct route_option_list *src, struct gc_arena *a);
+void copy_route_option_list(struct route_option_list *dest, const struct route_option_list *src,
+                            struct gc_arena *a);
 
 void copy_route_ipv6_option_list(struct route_ipv6_option_list *dest,
-                                 const struct route_ipv6_option_list *src,
-                                 struct gc_arena *a);
+                                 const struct route_ipv6_option_list *src, struct gc_arena *a);
 
-void route_ipv6_clear_host_bits( struct route_ipv6 *r6 );
+void route_ipv6_clear_host_bits(struct route_ipv6 *r6);
 
-bool add_route_ipv6(struct route_ipv6 *r, const struct tuntap *tt, unsigned int flags, const struct env_set *es, openvpn_net_ctx_t *ctx);
+bool add_route_ipv6(struct route_ipv6 *r, const struct tuntap *tt, unsigned int flags,
+                    const struct env_set *es, openvpn_net_ctx_t *ctx);
 
-void delete_route_ipv6(const struct route_ipv6 *r, const struct tuntap *tt, unsigned int flags, const struct env_set *es, openvpn_net_ctx_t *ctx);
+void delete_route_ipv6(const struct route_ipv6 *r, const struct tuntap *tt,
+                       const struct env_set *es, openvpn_net_ctx_t *ctx);
 
 bool add_route(struct route_ipv4 *r, const struct tuntap *tt, unsigned int flags,
                const struct route_gateway_info *rgi, const struct env_set *es,
                openvpn_net_ctx_t *ctx);
 
-void add_route_to_option_list(struct route_option_list *l,
-                              const char *network,
-                              const char *netmask,
-                              const char *gateway,
-                              const char *metric);
+void add_route_to_option_list(struct route_option_list *l, const char *network, const char *netmask,
+                              const char *gateway, const char *metric, int table_id);
 
-void add_route_ipv6_to_option_list(struct route_ipv6_option_list *l,
-                                   const char *prefix,
-                                   const char *gateway,
-                                   const char *metric);
+void add_route_ipv6_to_option_list(struct route_ipv6_option_list *l, const char *prefix,
+                                   const char *gateway, const char *metric, int table_id);
 
-bool init_route_list(struct route_list *rl,
-                     const struct route_option_list *opt,
-                     const char *remote_endpoint,
-                     int default_metric,
-                     in_addr_t remote_host,
-                     struct env_set *es,
-                     openvpn_net_ctx_t *ctx);
+bool init_route_list(struct route_list *rl, const struct route_option_list *opt,
+                     const char *remote_endpoint, int default_metric, in_addr_t remote_host,
+                     struct env_set *es, openvpn_net_ctx_t *ctx);
 
-bool init_route_ipv6_list(struct route_ipv6_list *rl6,
-                          const struct route_ipv6_option_list *opt6,
-                          const char *remote_endpoint,
-                          int default_metric,
-                          const struct in6_addr *remote_host,
-                          struct env_set *es,
+bool init_route_ipv6_list(struct route_ipv6_list *rl6, const struct route_ipv6_option_list *opt6,
+                          const char *remote_endpoint, int default_metric,
+                          const struct in6_addr *remote_host, struct env_set *es,
                           openvpn_net_ctx_t *ctx);
 
-void route_list_add_vpn_gateway(struct route_list *rl,
-                                struct env_set *es,
-                                const in_addr_t addr);
+void route_list_add_vpn_gateway(struct route_list *rl, struct env_set *es, const in_addr_t addr);
 
-bool add_routes(struct route_list *rl, struct route_ipv6_list *rl6,
-                const struct tuntap *tt, unsigned int flags,
-                const struct env_set *es, openvpn_net_ctx_t *ctx);
+bool add_routes(struct route_list *rl, struct route_ipv6_list *rl6, const struct tuntap *tt,
+                unsigned int flags, const struct env_set *es, openvpn_net_ctx_t *ctx);
 
-void delete_routes(struct route_list *rl,
-                   struct route_ipv6_list *rl6,
-                   const struct tuntap *tt,
-                   unsigned int flags,
-                   const struct env_set *es,
-                   openvpn_net_ctx_t *ctx);
+void delete_routes(struct route_list *rl, struct route_ipv6_list *rl6, const struct tuntap *tt,
+                   unsigned int flags, const struct env_set *es, openvpn_net_ctx_t *ctx);
+
+void delete_routes_v4(struct route_list *rl, const struct tuntap *tt, unsigned int flags,
+                      const struct env_set *es, openvpn_net_ctx_t *ctx);
+
+void delete_routes_v6(struct route_ipv6_list *rl6, const struct tuntap *tt, unsigned int flags,
+                      const struct env_set *es, openvpn_net_ctx_t *ctx);
 
 void setenv_routes(struct env_set *es, const struct route_list *rl);
 
@@ -315,15 +346,19 @@ void setenv_routes_ipv6(struct env_set *es, const struct route_ipv6_list *rl6);
 
 bool is_special_addr(const char *addr_str);
 
-void get_default_gateway(struct route_gateway_info *rgi,
-                         openvpn_net_ctx_t *ctx);
+/**
+ * @brief Retrieves the best gateway for a given destination based on the routing table.
+ *
+ * @param rgi  Pointer to a struct to store the gateway information.
+ * @param dest Destination IP address in host byte order.
+ * @param ctx  Pointer to a platform-specific network context struct.
+ */
+void get_default_gateway(struct route_gateway_info *rgi, in_addr_t dest, openvpn_net_ctx_t *ctx);
 
-void get_default_gateway_ipv6(struct route_ipv6_gateway_info *rgi,
-                              const struct in6_addr *dest,
+void get_default_gateway_ipv6(struct route_ipv6_gateway_info *rgi, const struct in6_addr *dest,
                               openvpn_net_ctx_t *ctx);
 
-void print_default_gateway(const int msglevel,
-                           const struct route_gateway_info *rgi,
+void print_default_gateway(const msglvl_t msglevel, const struct route_gateway_info *rgi,
                            const struct route_ipv6_gateway_info *rgi6);
 
 /*
@@ -338,20 +373,19 @@ void print_default_gateway(const int msglevel,
 int test_local_addr(const in_addr_t addr, const struct route_gateway_info *rgi);
 
 #ifndef ENABLE_SMALL
-void print_route_options(const struct route_option_list *rol,
-                         int level);
+void print_route_options(const struct route_option_list *rol, msglvl_t msglevel);
 
 #endif
 
-void print_routes(const struct route_list *rl, int level);
+void print_routes(const struct route_list *rl, msglvl_t msglevel);
 
 #ifdef _WIN32
 
-void show_routes(int msglev);
+void show_routes(msglvl_t msglevel);
 
 bool test_routes(const struct route_list *rl, const struct tuntap *tt);
 
-#else  /* ifdef _WIN32 */
+#else /* ifdef _WIN32 */
 static inline bool
 test_routes(const struct route_list *rl, const struct tuntap *tt)
 {
@@ -370,7 +404,7 @@ netbits_to_netmask(const int netbits)
     in_addr_t mask = 0;
     if (netbits > 0 && netbits <= addrlen)
     {
-        mask = IPV4_NETMASK_HOST << (addrlen-netbits);
+        mask = IPV4_NETMASK_HOST << (addrlen - netbits);
     }
     return mask;
 }
@@ -393,5 +427,18 @@ route_did_redirect_default_gateway(const struct route_list *rl)
 {
     return rl && BOOL_CAST(rl->iflags & RL_DID_REDIRECT_DEFAULT_GATEWAY);
 }
+
+
+/**
+ * check whether an IPv6 host address is covered by a given network/bits
+ * @param network the network address
+ * @param bits the network mask
+ * @param host the host address to be checked if it is contained by the network
+ *
+ * @return true if the host address is covered by the network with the given
+ *         network mask by bits
+ */
+bool
+ipv6_net_contains_host(const struct in6_addr *network, unsigned int bits, const struct in6_addr *host);
 
 #endif /* ifndef ROUTE_H */

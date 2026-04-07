@@ -5,7 +5,7 @@
 #             packet encryption, packet authentication, and
 #             packet compression.
 #
-#  Copyright (C) 2022-2024 OpenVPN Inc <sales@openvpn.net>
+#  Copyright (C) 2022-2026 OpenVPN Inc <sales@openvpn.net>
 #  Copyright (C) 2022-2022 Lev Stipakov <lev@lestisoftware.fi>
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -18,8 +18,7 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License along
-#  with this program; if not, write to the Free Software Foundation, Inc.,
-#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#  with this program; if not, see <https://www.gnu.org/licenses/>.
 #
 
 # Usage: ./parse-version.m4.py m4file [directory]
@@ -61,4 +60,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

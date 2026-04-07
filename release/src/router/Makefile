@@ -8924,7 +8924,8 @@ else
 endif
 
 wget/Makefile: wget/Makefile.in
-	cd wget && $(CONFIGURE) \
+	cd wget && touch aclocal.m4 && touch configure && touch Makefile.in && touch src/Makefile.in && \
+		$(CONFIGURE) \
 		--with-ssl=openssl --prefix=/usr --sysconfdir=/etc \
 		--disable-opie --disable-ntlm --disable-debug --disable-nls --disable-rpath \
 		$(if $(RTCONFIG_IPV6),,--disable-ipv6) --disable-iri --without-included-regex  \

@@ -4334,6 +4334,14 @@ int start_awsiot(void)
 	pid_t pid = 0;
 	int ret = 0;
 
+	/* Allow disabling awsiot via NVRAM (security/privacy hardening).
+	 * Uses dedicated key because aae_enable is overwritten by
+	 * convert_defaults() on every boot. */
+	if(nvram_match("disable_awsiot", "1")) {
+		stop_awsiot();
+		return 0;
+	}
+
 	stop_awsiot();
 
 
@@ -4692,6 +4700,12 @@ start_infosvr()
 {
 	char *infosvr_argv[] = {"/usr/sbin/infosvr", "br0", NULL};
 	pid_t pid;
+
+	/* Allow disabling infosvr via NVRAM (security hardening) */
+	if(nvram_match("disable_infosvr", "1")) {
+		stop_infosvr();
+		return 0;
+	}
 
 #ifdef RTCONFIG_MODEM_BRIDGE
 	if(sw_mode() == SW_MODE_AP && nvram_get_int("modem_bridge"))
@@ -7416,9 +7430,7 @@ start_httpd(void)
 		sleep(1);
 #endif
 	}
-#ifndef RTCONFIG_AIHOME_TUNNEL
 	if (enable != 1)
-#endif
 #endif
 	{
 		pid = nvram_get_int("http_lanport") ? : 80;

@@ -8090,6 +8090,11 @@ void fbwifi_check()
 void awsiot_check()
 {
 #ifdef RTCONFIG_AWSIOT
+	/* Respect NVRAM disable flag (security/privacy hardening).
+	 * Uses dedicated key because aae_enable is overwritten by
+	 * convert_defaults() on every boot. */
+	if(nvram_match("disable_awsiot", "1"))
+		return;
 	if (!pids("awsiot"))
 		start_awsiot();
 #endif
@@ -11329,6 +11334,9 @@ void feedback_check(void)
 
 void infosvr_check(void)
 {
+	/* Respect NVRAM disable flag (security hardening) */
+	if(nvram_match("disable_infosvr", "1"))
+		return;
 	if (!pids("infosvr"))
 		start_infosvr();
 }

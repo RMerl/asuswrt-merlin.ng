@@ -505,19 +505,17 @@ static int select_detect_band()
 	char tmp[64] = {0}, tmp2[16] = {0};
 
 	if (nvram_get_int("wlcscan_ssid_rssi_state") == 0) {
+		pid_t scan_pid;
 		if (!done_2g) {
-			snprintf(tmp2, sizeof(tmp2), "wlc0_ssid");
-			snprintf(tmp, sizeof(tmp), "wlcscan_ssid_rssi 0 %s &", nvram_safe_get(tmp2));
-			system(tmp);
+			char *scan_argv[] = {"wlcscan_ssid_rssi", "0", nvram_safe_get("wlc0_ssid"), NULL};
+			_eval(scan_argv, NULL, 0, &scan_pid);
 		}
 		else {
-			snprintf(tmp2, sizeof(tmp2), "wlc1_ssid");
-			snprintf(tmp, sizeof(tmp), "wlcscan_ssid_rssi 1 %s &", nvram_safe_get(tmp2));
-			system(tmp);
+			char *scan_argv[] = {"wlcscan_ssid_rssi", "1", nvram_safe_get("wlc1_ssid"), NULL};
+			_eval(scan_argv, NULL, 0, &scan_pid);
 #if defined(RPAC92)
-			snprintf(tmp3, sizeof(tmp3), "wlc2_ssid");
-			snprintf(tmp, sizeof(tmp), "wlcscan_ssid_rssi 2 %s &", nvram_safe_get(tmp3));
-			system(tmp);
+			char *scan_argv2[] = {"wlcscan_ssid_rssi", "2", nvram_safe_get("wlc2_ssid"), NULL};
+			_eval(scan_argv2, NULL, 0, &scan_pid);
 #endif
 		}
 	}
@@ -655,9 +653,12 @@ static void detect_conn_link_zone()
 			band = 1;
 		}
 		if (nvram_get_int("wlcscan_ssid_rssi_state") == 0) {
+			pid_t scan_pid;
+			char band_str[4];
 			snprintf(tmp2, sizeof(tmp2), "wlc%d_ssid", band);
-			snprintf(tmp, sizeof(tmp), "wlcscan_ssid_rssi %d %s &", band, nvram_safe_get(tmp2));
-			system(tmp);
+			snprintf(band_str, sizeof(band_str), "%d", band);
+			char *scan_argv[] = {"wlcscan_ssid_rssi", band_str, nvram_safe_get(tmp2), NULL};
+			_eval(scan_argv, NULL, 0, &scan_pid);
 		}
 		else if (nvram_get_int("wlcscan_ssid_rssi_state") == 2) { // Finished
 			nvram_set_int("wlcscan_ssid_rssi_state", 0);

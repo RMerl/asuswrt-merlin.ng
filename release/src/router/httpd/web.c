@@ -5264,8 +5264,12 @@ int validate_apply(webs_t wp, json_object *root)
 
 				/* change cfg_ver when setting changed */
 				memset(cfg_ver, 0, sizeof(cfg_ver));
-				srand(time(NULL));
-				snprintf(cfg_ver, sizeof(cfg_ver), "%d%d", rand(), rand());
+				{
+					unsigned int r1 = 0, r2 = 0;
+					f_read("/dev/urandom", &r1, sizeof(r1));
+					f_read("/dev/urandom", &r2, sizeof(r2));
+					snprintf(cfg_ver, sizeof(cfg_ver), "%u%u", r1, r2);
+				}
 				nvram_set("cfg_ver", cfg_ver);
 				cfg_changed = 1;
 
@@ -7586,6 +7590,10 @@ static int login_state_hook(int eid, webs_t wp, int argc, char_t **argv)
 				return 0;
 			}
 		}
+
+		/* Validate ip_str contains only IP-safe characters */
+		if(strspn(ip_str, "0123456789abcdefABCDEF.:") != strlen(ip_str))
+			return 0;
 
 		snprintf(line, sizeof(line), "ip neigh show to %s dev %s 2>/dev/null", ip_str, lan_ifname);
 		fp = popen(line, "r");
@@ -13388,7 +13396,7 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 		if(!strcmp(current_url, "Main_Netstat_Content.asp") && (
 			strncasecmp(system_cmd, "netstat", 7) == 0
 		)){
-			strncpy(SystemCmd, system_cmd, sizeof(SystemCmd));
+			strlcpy(SystemCmd, system_cmd, sizeof(SystemCmd));
 		}
 		else if(!strcmp(current_url, "Main_Analysis_Content.asp") && (
 			   strncasecmp(system_cmd, "ping", 4) == 0
@@ -13445,10 +13453,10 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 					snprintf(tmp, sizeof(tmp), "-i %s", wan);
 				snprintf(SystemCmd, sizeof(SystemCmd), "%s %s %s", system_cmd, tmp, p + 1);
 			} else {
-				strncpy(SystemCmd, system_cmd, sizeof(SystemCmd));
+				strlcpy(SystemCmd, system_cmd, sizeof(SystemCmd));
 			}
 #else
-			strncpy(SystemCmd, system_cmd, sizeof(SystemCmd));
+			strlcpy(SystemCmd, system_cmd, sizeof(SystemCmd));
 #endif
 		}
 		else if(!strcmp(current_url, "Main_WOL_Content.asp") && (
@@ -13476,9 +13484,9 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 #endif
 #endif
 
-			strncpy(SystemCmd, system_cmd, sizeof(SystemCmd));
+			strlcpy(SystemCmd, system_cmd, sizeof(SystemCmd));
 #if defined(XD4S) || defined(RTCONFIG_MT798X)
-			strcat(SystemCmd," -b");
+			strlcat(SystemCmd," -b", sizeof(SystemCmd));
 #endif			
 			sys_script("syscmd.sh");
 
@@ -13887,6 +13895,10 @@ wps_finish:
 			}
 		}
 
+		/* Validate PIN: digits only, 4-8 chars */
+		if(!pincode || strlen(pincode) < 4 || strlen(pincode) > 8 || strspn(pincode, "0123456789") != strlen(pincode))
+			goto APPLY_FINISH;
+
 		snprintf(command, 128, "%s %d %s", action_mode, modem_unit, pincode);
 		notify_rc(command);
 
@@ -13909,6 +13921,13 @@ wps_finish:
 
 		nvram_set("g3err_pin", g3err_pin);
 
+		/* Validate PUK: digits only, 4-8 chars */
+		if(!puk || strlen(puk) < 4 || strlen(puk) > 8 || strspn(puk, "0123456789") != strlen(puk))
+			goto APPLY_FINISH;
+		/* Validate new PIN: digits only, 4-8 chars */
+		if(!newpin || strlen(newpin) < 4 || strlen(newpin) > 8 || strspn(newpin, "0123456789") != strlen(newpin))
+			goto APPLY_FINISH;
+
 		snprintf(command, 128, "%s %d %s %s", action_mode, modem_unit, puk, newpin);
 		notify_rc(command);
 	}
@@ -13923,6 +13942,10 @@ wps_finish:
 		if(strlen(act_node) <= 0 || get_path_by_node(act_node, act_port_path, 8) == NULL){
 			goto APPLY_FINISH;
 		}
+
+		/* Validate PIN: digits only, 4-8 chars */
+		if(!pincode || strlen(pincode) < 4 || strlen(pincode) > 8 || strspn(pincode, "0123456789") != strlen(pincode))
+			goto APPLY_FINISH;
 
 		snprintf(command, 128, "%s %d %s", action_mode, modem_unit, pincode);
 		notify_rc(command);
@@ -13939,6 +13962,13 @@ wps_finish:
 		if(strlen(act_node) <= 0 || get_path_by_node(act_node, act_port_path, 8) == NULL){
 			goto APPLY_FINISH;
 		}
+
+		/* Validate PIN: digits only, 4-8 chars */
+		if(!pincode || strlen(pincode) < 4 || strlen(pincode) > 8 || strspn(pincode, "0123456789") != strlen(pincode))
+			goto APPLY_FINISH;
+		/* Validate new PIN: digits only, 4-8 chars */
+		if(!newpin || strlen(newpin) < 4 || strlen(newpin) > 8 || strspn(newpin, "0123456789") != strlen(newpin))
+			goto APPLY_FINISH;
 
 		snprintf(command, 128, "%s %d %s %s", action_mode, modem_unit, pincode, newpin);
 		notify_rc(command);
@@ -13960,6 +13990,10 @@ wps_finish:
 		char *simdetect;
 
 		simdetect = get_cgi_json("simdetect", root);
+		/* Validate simdetect: must be "0" or "1" only */
+		if(!simdetect || (strcmp(simdetect, "0") && strcmp(simdetect, "1")))
+			goto APPLY_FINISH;
+
 		snprintf(command, 128, "%s %s", action_mode, simdetect);
 		notify_rc(command);
 		websApply(wp, "Restarting.asp");
@@ -28573,7 +28607,7 @@ struct mime_handler mime_handlers[] =
 #endif
 #endif
 	{ "wlc_status.json", "application/json", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
-	{ "get_webdavInfo.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_webdavInfo_asp, NULL },
+	{ "get_webdavInfo.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_webdavInfo_asp, do_auth },
 	{ "appGet_image_path.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_appGet_image_path_cgi, NULL },
 	{ "login.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_login_cgi, NULL },
 	{ "login_v2.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_login_v2_cgi, NULL },
@@ -28591,7 +28625,7 @@ struct mime_handler mime_handlers[] =
 	{ "update_cloudstatus.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
 	{ "update_applist.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
 	{ "update_appstate.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
-	{ "WAN_info.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
+	{ "WAN_info.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
 	{ "detwan.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_detwan_cgi, do_auth },
 	{ "message.htm", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
 	{ "fonts/*.ttf", "application/x-font-ttf", cache_object, NULL, do_file, NULL },
@@ -28601,7 +28635,7 @@ struct mime_handler mime_handlers[] =
 	{ "findasus.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_findasus_cgi, do_auth },
 	{ "find_device.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
 #endif
-	{ "blocking_request.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_blocking_request_cgi, NULL },
+	{ "blocking_request.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_blocking_request_cgi, do_auth },
 	{ "blocking.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_blocking_cgi, do_auth },
 	{ "get_timezone.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_timezone_cgi, do_auth },
 #if defined(RTCONFIG_HNS) || defined(RTCONFIG_BWDPI)
@@ -28758,10 +28792,10 @@ struct mime_handler mime_handlers[] =
 #if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA) || defined(RTCONFIG_GOOGLE_ASST)
 	{ "get_IFTTTPincode.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_IFTTTPincode_cgi, do_auth },
 	{ "send_IFTTTPincode.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_send_IFTTTPincode_cgi, do_auth },
-	{ "get_IFTTTtoken.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_IFTTTtoken_cgi, NULL },
+	{ "get_IFTTTtoken.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_IFTTTtoken_cgi, do_auth },
 	{ "alexa_block_internet.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_alexa_block_internet_cgi, do_auth },
 #endif
-	{ "asus_ally_device.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_asus_ally_device_cgi, NULL },
+	{ "asus_ally_device.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_asus_ally_device_cgi, do_auth },
 #ifdef RTCONFIG_NOTIFICATION_CENTER
 	{ "nc_new_wifi_notice.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_nc_new_wifi_notice_cgi, do_auth },
 	{ "nc_exist_wifi_notice.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_nc_exist_wifi_notice_cgi, do_auth },
@@ -28852,7 +28886,7 @@ struct mime_handler mime_handlers[] =
 #endif
 #ifdef RTCONFIG_IG_SITE2SITE
 	{ "get_ig_s2s_sharelink.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_ig_s2s_sharelink_cgi, do_auth },
-	{ "enable_ig_s2s_client.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_enable_ig_s2s_client_cgi, do_auth },
+	{ "enable_ig_s2s_client.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_enable_ig_s2s_client_cgi, NULL },
 	{ "enable_ig_s2s_server.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_enable_ig_s2s_server_cgi, NULL },
 	{ "ig_s2s_link.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_ig_s2s_link_cgi, do_auth },
 	{ "enable_wireguard_client.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_enable_wireguard_client_cgi, do_auth },

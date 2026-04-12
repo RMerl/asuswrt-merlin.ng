@@ -1649,19 +1649,40 @@ int start_vpnc_by_unit(const int unit)
 	}
 	else if (VPNC_PROTO_NORDVPN == prof->protocol)
 	{
-		char cmd[256] = {0};
+		char idx_str[8], unit_str[8];
+		/* Sanitize region to prevent shell injection (security hardening) */
+		if(strpbrk(prof->config.tpvpn.region, "'\";&|`$(){}[]\\!#~")) {
+			_dprintf("[%s]NordVPN region contains unsafe characters, aborting.\n", __FUNCTION__);
+			return -1;
+		}
 		_dprintf("[%s]Start to connect NordVPN(%d).\n", __FUNCTION__, prof->config.tpvpn.tpvpn_idx);
-		snprintf(cmd, sizeof(cmd), "nordvpn setconf '%s' %d %d &", prof->config.tpvpn.region, prof->config.tpvpn.tpvpn_idx, unit);
-		system(cmd);
+		snprintf(idx_str, sizeof(idx_str), "%d", prof->config.tpvpn.tpvpn_idx);
+		snprintf(unit_str, sizeof(unit_str), "%d", unit);
+		{
+			char *argv[] = {"nordvpn", "setconf", prof->config.tpvpn.region, idx_str, unit_str, NULL};
+			pid_t vpn_pid;
+			_eval(argv, NULL, 0, &vpn_pid);
+		}
 		return 0;
 	}
 #endif
 	else if (VPNC_PROTO_HMA == prof->protocol)
 	{
-		char cmd[256] = {0};
+		char idx_str[8], unit_str[8];
+		/* Sanitize region and conntype to prevent shell injection (security hardening) */
+		if(strpbrk(prof->config.tpvpn.region, "'\";&|`$(){}[]\\!#~") ||
+		   strpbrk(prof->config.tpvpn.conntype, "'\";&|`$(){}[]\\!#~")) {
+			_dprintf("[%s]HMA region/conntype contains unsafe characters, aborting.\n", __FUNCTION__);
+			return -1;
+		}
 		_dprintf("[%s]Start to connect HMA(%d).\n", __FUNCTION__, prof->config.tpvpn.tpvpn_idx);
-		snprintf(cmd, sizeof(cmd), "hmavpn setconf '%s' '%s' %d %d &", prof->config.tpvpn.region, prof->config.tpvpn.conntype, prof->config.tpvpn.tpvpn_idx, unit);
-		system(cmd);
+		snprintf(idx_str, sizeof(idx_str), "%d", prof->config.tpvpn.tpvpn_idx);
+		snprintf(unit_str, sizeof(unit_str), "%d", unit);
+		{
+			char *argv[] = {"hmavpn", "setconf", prof->config.tpvpn.region, prof->config.tpvpn.conntype, idx_str, unit_str, NULL};
+			pid_t vpn_pid;
+			_eval(argv, NULL, 0, &vpn_pid);
+		}
 		return 0;
 	}
 	else
@@ -1676,7 +1697,7 @@ int start_vpnc_by_unit(const int unit)
 	// Run PPTP/L2TP
 	if (VPNC_PROTO_PPTP == prof->protocol || VPNC_PROTO_L2TP == prof->protocol)
 	{
-		mask = umask(0000);
+		mask = umask(0077);
 
 		/* Generate options file */
 		if (!(fp = fopen(options, "w")))

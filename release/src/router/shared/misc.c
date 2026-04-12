@@ -6644,14 +6644,11 @@ int find_clientlist_groupid(char *groupid_list, char *groupname, char *groupid, 
 
 int gen_random_num(int max, int seed_ext)
 {
-	int ret;
+	unsigned int rval = 0;
 
-	srand(uptime() + seed_ext);
-	ret = rand() % max;
-
-        printf("%d\n", ret);
-
-	return ret;
+	(void)seed_ext;
+	f_read("/dev/urandom", &rval, sizeof(rval));
+	return (int)(rval % (unsigned int)max);
 }
 
 void gen_random_string(char *out, size_t len)

@@ -28,6 +28,7 @@ int sendm_main(int argc, char **argv)
 	to_mail = nvram_safe_get("to_mail");
 
 	if ((fp = fopen(EMAIL_CONF, "w+")) != NULL) {
+		fchmod(fileno(fp), 0600);
 		fprintf(fp, "SMTP_SERVER = '%s'\n", mta);
 		fprintf(fp, "SMTP_PORT = '%s'\n", mport);
 		fprintf(fp, "MY_NAME = '%s'\n", myname);
@@ -52,8 +53,15 @@ int sendm_main(int argc, char **argv)
 	}
 	fclose(fp);
 
+	/* Sanitize subject and recipient to prevent shell injection.
+	 * Reject any value containing shell metacharacters. */
+	if(strpbrk(ns, "'\";&|`$(){}[]\\#~\n\r") || strpbrk(to_mail, "'\";&|`$(){}[]\\#~\n\r")) {
+		logmessage("sendm", "Rejected: subject or recipient contains unsafe characters");
+		return -1;
+	}
+
 	memset(cmd_buf, 0, sizeof(cmd_buf));
-	sprintf(cmd_buf, "cat %s | email -c %s -s '%s' '%s'", SEND_CONTENT, EMAIL_CONF, ns, to_mail);
+	snprintf(cmd_buf, sizeof(cmd_buf), "cat %s | email -c %s -s '%s' '%s'", SEND_CONTENT, EMAIL_CONF, ns, to_mail);
 
 	return system(cmd_buf);
 }

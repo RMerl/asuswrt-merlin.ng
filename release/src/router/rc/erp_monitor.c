@@ -329,6 +329,15 @@ static int erp_check_arp_stat(int model)
 
 	/* check ipv6 client for IPv6 */
 	eval("mkdir", "-p", ERP_FOLDER);
+	/* Validate lan_ifname: alphanumeric, dot, and hyphen only */
+	{
+		const char *_lan_if = nvram_safe_get("lan_ifname");
+		if(strspn(_lan_if, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-") != strlen(_lan_if) || strlen(_lan_if) == 0)
+		{
+			ERP_DBG("invalid lan_ifname, skipping ipv6 neigh\n");
+			return 0;
+		}
+	}
 	doSystem("ip -f inet6 neigh show dev %s > %s", nvram_safe_get("lan_ifname"), ERP_IPV6_ARP);
 
 	if ((fp = fopen(ERP_IPV6_ARP, "r")) != NULL)

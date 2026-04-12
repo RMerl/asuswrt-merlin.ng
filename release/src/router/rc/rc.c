@@ -5846,6 +5846,29 @@ void exe_eu_wa_rr(void){
 		return;
 	}
 
+	/* Validate country codes: alphanumeric only, 2-4 chars */
+	if(strlen(tmp_country_cdoe) < 2 || strlen(tmp_country_cdoe) > 4 ||
+	   strspn(tmp_country_cdoe, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789") != strlen(tmp_country_cdoe))
+	{
+		_dprintf("invalid tmp country code\n");
+		return;
+	}
+	{
+		const char *_ori_cc = nvram_safe_get(ccode);
+		if(strlen(_ori_cc) < 2 || strlen(_ori_cc) > 4 ||
+		   strspn(_ori_cc, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789") != strlen(_ori_cc))
+		{
+			_dprintf("invalid original country code\n");
+			return;
+		}
+	}
+
+	/* Validate interface name: alphanumeric and dot only */
+	if(strspn(ifname, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.") != strlen(ifname) || strlen(ifname) == 0)
+	{
+		_dprintf("invalid interface name\n");
+		return;
+	}
 
 	snprintf(cmd_down,sizeof(cmd_up),"wl -i %s down",ifname);
 	snprintf(cmd2,sizeof(cmd2),"wl -i %s spect 0",ifname);
@@ -5854,30 +5877,30 @@ void exe_eu_wa_rr(void){
 	snprintf(cmd_cc_tmp,sizeof(cmd_cc_tmp),"wl -i %s country %s",ifname,tmp_country_cdoe);
 	snprintf(cmd_cc_ori,sizeof(cmd_cc_ori),"wl -i %s country %s",ifname,nvram_safe_get(ccode));
 
-	system(cmd_down);
+	eval("wl", "-i", ifname, "down");
 	//_dprintf("%s\n",cmd_down);
 	sleep(1);
-	system(cmd_cc_tmp);
+	eval("wl", "-i", ifname, "country", tmp_country_cdoe);
 	//_dprintf("%s\n",cmd_cc_tmp);
 	sleep(1);
-	system(cmd_up);
+	eval("wl", "-i", ifname, "up");
 	//_dprintf("%s\n",cmd_up);
 	sleep(1);
 
 	//_dprintf("%s\n",cmd_down);
-	system(cmd_down);
+	eval("wl", "-i", ifname, "down");
 	sleep(1);
 	//_dprintf("%s\n",cmd2);
-	system(cmd2);
+	eval("wl", "-i", ifname, "spect", "0");
 	sleep(1);
 	//_dprintf("%s\n",cmd3);
-	system(cmd3);
+	eval("wl", "-i", ifname, "radar", "0");
 	sleep(1);
 	//_dprintf("%s\n",cmd_cc_ori);
-	system(cmd_cc_ori);
-	sleep(1);	
+	eval("wl", "-i", ifname, "country", (char *)nvram_safe_get(ccode));
+	sleep(1);
 	//_dprintf("%s\n",cmd_up);
-	system(cmd_up);
+	eval("wl", "-i", ifname, "up");
 	sleep(1);
 	//_dprintf("%s\n",);
 	notify_rc("restart_acsd");

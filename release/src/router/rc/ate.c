@@ -2392,7 +2392,10 @@ Get_SD_Card_Info(void)
 		return 1;
 	}
 
-	sprintf(check_cmd, "test_disk2 %s &> /var/sd_info.txt", nvram_safe_get("usb_path3_fs_path0"));
+	const char *fs_path = nvram_safe_get("usb_path3_fs_path0");
+	if(strpbrk(fs_path, ";&|`$(){}[]\\#~\n\r\"'"))
+		return 1;
+	snprintf(check_cmd, sizeof(check_cmd), "test_disk2 %s &> /var/sd_info.txt", fs_path);
 	system(check_cmd);
 
 	if ((fp = fopen("/var/sd_info.txt", "r")) != NULL) {

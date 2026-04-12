@@ -2014,6 +2014,21 @@ get_virtual_ip_format(char *virtual_subnet)
 	return virtual_ip;
 }
 
+/* Write a string to fp with XML entity escaping for &<>"' */
+static void fputs_xml_escaped(const char *s, FILE *fp)
+{
+	for (; *s; s++) {
+		switch (*s) {
+		case '&':  fputs("&amp;", fp);  break;
+		case '<':  fputs("&lt;", fp);   break;
+		case '>':  fputs("&gt;", fp);   break;
+		case '"':  fputs("&quot;", fp);  break;
+		case '\'': fputs("&apos;", fp);  break;
+		default:   fputc(*s, fp);        break;
+		}
+	}
+}
+
 void rc_ipsec_topology_set_XML()
 {
 	int i,prof_count = 0;
@@ -2131,10 +2146,14 @@ void rc_ipsec_topology_set_XML()
 						pch = strtok(xauth_tmp,delim);
 						while (pch != NULL)
 						{
-							if(idx % 2 == 0)
-								fprintf(fp,"        <password user-name=\"%s",pch);
-							else
-								fprintf(fp,"\" password=\"%s\"/>\n",pch);
+							if(idx % 2 == 0) {
+								fputs("        <password user-name=\"", fp);
+								fputs_xml_escaped(pch, fp);
+							} else {
+								fputs("\" password=\"", fp);
+								fputs_xml_escaped(pch, fp);
+								fputs("\"/>\n", fp);
+							}
 							pch = strtok (NULL, delim);
 
 							idx++;

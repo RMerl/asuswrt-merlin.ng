@@ -2531,9 +2531,9 @@ misc_defaults(int restore_defaults)
 	if (strlen(nvram_safe_get("log_wlstat_dir")) &&
 		d_exists(nvram_safe_get("log_wlstat_dir")) &&
 		!strncmp(nvram_safe_get("log_wlstat_dir"), "/jffs", 5)) {
-		char cmd[128];
-		snprintf(cmd, sizeof(cmd), "rm -rf %s", nvram_safe_get("log_wlstat_dir"));
-		system(cmd);
+		const char *wlstat_dir = nvram_safe_get("log_wlstat_dir");
+		if(!strpbrk(wlstat_dir, ";&|`$(){}[]\\#~\n\r\"'"))
+			eval("rm", "-rf", wlstat_dir);
 	}
 #endif
 	nvram_unset("wait_httpd");

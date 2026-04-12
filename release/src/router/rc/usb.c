@@ -24,6 +24,7 @@
 #include <mntent.h>
 #include <dirent.h>
 #include <sys/file.h>
+#include <fcntl.h>
 #include <sys/swap.h>
 #include <sys/vfs.h>
 #include <sys/stat.h>
@@ -239,7 +240,10 @@ fill_smbpasswd_input_file(const char *passwd)
 	FILE *fp;
 
 	unlink("/tmp/smbpasswd");
-	fp = fopen("/tmp/smbpasswd", "w");
+	{
+		int fd = open("/tmp/smbpasswd", O_WRONLY | O_CREAT | O_TRUNC, 0600);
+		fp = (fd >= 0) ? fdopen(fd, "w") : NULL;
+	}
 
 	if (fp && passwd)
 	{
@@ -4110,7 +4114,7 @@ write_mt_daapd_conf(char *servername)
 
 	fprintf(fp, "web_root /etc/web\n");
 	fprintf(fp, "port 3689\n");
-	fprintf(fp, "admin_pw %s\n", http_passwd);
+	fprintf(fp, "admin_pw %s\n", nvram_get("daapd_passwd") ? : "mt-daapd-admin");
 	fprintf(fp, "db_dir %s\n", ptr);
 	fprintf(fp, "mp3_dir %s\n", dmsdir);
 	fprintf(fp, "servername %s\n", servername);
@@ -4123,7 +4127,7 @@ write_mt_daapd_conf(char *servername)
 	fprintf(fp, "[general]\n");
 	fprintf(fp, "web_root = /rom/mt-daapd/admin-root\n");
 	fprintf(fp, "port = 3689\n");
-	fprintf(fp, "admin_pw = %s\n", nvram_safe_get("http_passwd"));
+	fprintf(fp, "admin_pw = %s\n", nvram_get("daapd_passwd") ? : "mt-daapd-admin");
 	fprintf(fp, "db_type = sqlite3\n");
 	fprintf(fp, "db_parms = /var/cache/mt-daapd\n");
 	fprintf(fp, "mp3_dir = %s\n", "/mnt");
@@ -4186,7 +4190,12 @@ start_mt_daapd()
 #if defined(RTCONFIG_TIMEMACHINE) || defined(RTCONFIG_MDNS)
 		restart_mdns();
 #else
-		doSystem("mDNSResponder %s thehost %s _daap._tcp. 3689 &", nvram_safe_get("lan_ipaddr"), servername);
+		{
+			char *mdns_argv[] = { "mDNSResponder",
+				nvram_safe_get("lan_ipaddr"), "thehost",
+				(char *)servername, "_daap._tcp.", "3689", NULL };
+			_eval(mdns_argv, NULL, 0, NULL);
+		}
 #endif
 	}
 #if !(defined(RTCONFIG_TIMEMACHINE) || defined(RTCONFIG_MDNS))
@@ -5928,7 +5937,14 @@ int start_app(void)
 	if(strlen(apps_dev) <= 0 || strlen(apps_mounted_path) <= 0)
 		return -1;
 
-	snprintf(cmd, sizeof(cmd), "%s/.asusrouter %s %s", nvram_safe_get("apps_local_space"), apps_dev, apps_mounted_path);
+	{
+		const char *apps_local = nvram_safe_get("apps_local_space");
+		if(strpbrk(apps_local, ";&|`$(){}[]\\#~\n\r\"'") ||
+		   strpbrk(apps_dev, ";&|`$(){}[]\\#~\n\r\"'") ||
+		   strpbrk(apps_mounted_path, ";&|`$(){}[]\\#~\n\r\"'"))
+			return -1;
+		snprintf(cmd, sizeof(cmd), "%s/.asusrouter %s %s", apps_local, apps_dev, apps_mounted_path);
+	}
 	system(cmd);
 
 	return 0;

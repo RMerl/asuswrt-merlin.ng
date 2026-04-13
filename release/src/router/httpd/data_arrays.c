@@ -1043,7 +1043,7 @@ int ej_connlist_array(int eid, webs_t wp, int argc, char **argv) {
 		if (strchr(line, '[')) {
 			parsed = sscanf(line,
 			         "%3s "
-                     "[%47[^]]]:%d "
+			         "[%47[^]]]:%d "
 			         "[%47[^]]]:%d"
 			         "%14s%*[ \t]",
 			         proto, address, &port1, dest, &port2, state);

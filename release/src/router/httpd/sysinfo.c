@@ -233,7 +233,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 #else
                                 tmp = strstr(buffer, "system type");
                                 if (tmp)
-                                        sscanf(tmp, "system type  :  %[^\n]", result);
+                                        sscanf(tmp, "system type  :  %2047[^\n]", result);
 #endif
 				free(buffer);
 			}
@@ -263,7 +263,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 			{
 				tmp = nvram_safe_get("clkfreq");
 				if (*tmp)
-					sscanf(tmp,"%[^,]s", result);
+					sscanf(tmp,"%2047[^,]s", result);
 				else
 					strcpy(result, "???");
 			}
@@ -476,7 +476,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				tmp = strstr(buffer, "bl_version=");
 
 				if (tmp) {
-					sscanf(tmp, "bl_version=%s", result);
+					sscanf(tmp, "bl_version=%2047s", result);
 				} else {
 					snprintf(result, sizeof result, "%s", nvram_get("bl_version"));
 				}

@@ -16,6 +16,7 @@ Asuswrt-Merlin 3006.xxx Changelog
          V2".  A new button will appear that can generate
          a new client key each time you click on it.
   - UPDATED: OpenVPN to 2.7.1.
+  - UPDATED: OpenSSL to 3.0.20 (GT-BE19000AI)
   - CHANGED: VPN Status page can now detect running but
              non-connected WireGuard client tunnels, and
              report them as being in an error state.
@@ -23,6 +24,8 @@ Asuswrt-Merlin 3006.xxx Changelog
            changes after clicking on Apply (an outdated
            cached version would be shown instead).  Fixed by
            disabling ETag support for all .asp files.
+  - FIXED: Cannot disable wifi 6 mode on Wifi 6 models (upstream
+           issue)
   - REMOVED: Support for secret static key authentication
              from both OpenVPN clients and servers.  Deprecated
              since 2.7.0, and considered outdated in terms of

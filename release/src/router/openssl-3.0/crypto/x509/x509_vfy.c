@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2023 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2026 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -993,6 +993,7 @@ static int check_cert(X509_STORE_CTX *ctx)
                 goto done;
         }
 
+        ctx->current_crl = NULL;
         X509_CRL_free(crl);
         X509_CRL_free(dcrl);
         crl = NULL;
@@ -1176,6 +1177,8 @@ static int check_delta_base(X509_CRL *delta, X509_CRL *base)
     if (ASN1_INTEGER_cmp(delta->base_crl_number, base->crl_number) > 0)
         return 0;
     /* Delta CRL number must exceed full CRL number */
+    if (delta->crl_number == NULL)
+        return 0;
     return ASN1_INTEGER_cmp(delta->crl_number, base->crl_number) > 0;
 }
 
@@ -2813,7 +2816,7 @@ static int dane_match(X509_STORE_CTX *ctx, X509 *cert, int depth)
             if (matched || dane->mdpth < 0) {
                 dane->mdpth = depth;
                 dane->mtlsa = t;
-                OPENSSL_free(dane->mcert);
+                X509_free(dane->mcert);
                 dane->mcert = cert;
                 X509_up_ref(cert);
             }

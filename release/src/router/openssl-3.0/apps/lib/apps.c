@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2025 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2026 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -195,8 +195,13 @@ int app_passwd(const char *arg1, const char *arg2, char **pass1, char **pass2)
     }
     if (arg2 != NULL) {
         *pass2 = app_get_pass(arg2, same ? 2 : 0);
-        if (*pass2 == NULL)
+        if (*pass2 == NULL) {
+            if (pass1 != NULL) {
+                clear_free(*pass1);
+                *pass1 = NULL;
+            }
             return 0;
+        }
     } else if (pass2 != NULL) {
         *pass2 = NULL;
     }
@@ -266,15 +271,15 @@ static char *app_get_pass(const char *arg, int keepbio)
             }
         } else {
             /* argument syntax error; do not reveal too much about arg */
-            tmp = strchr(arg, ':');
-            if (tmp == NULL || tmp - arg > PASS_SOURCE_SIZE_MAX)
+            const char *arg_ptr = strchr(arg, ':');
+            if (arg_ptr == NULL || arg_ptr - arg > PASS_SOURCE_SIZE_MAX)
                 BIO_printf(bio_err,
                     "Invalid password argument, missing ':' within the first %d chars\n",
                     PASS_SOURCE_SIZE_MAX + 1);
             else
                 BIO_printf(bio_err,
                     "Invalid password argument, starting with \"%.*s\"\n",
-                    (int)(tmp - arg + 1), arg);
+                    (int)(arg_ptr - arg + 1), arg);
             return NULL;
         }
     }

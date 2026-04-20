@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2025 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2001-2026 The OpenSSL Project Authors. All Rights Reserved.
  * Copyright Siemens AG 2018-2020
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
@@ -1329,7 +1329,11 @@ int OSSL_HTTP_proxy_connect(BIO *bio, const char *server, const char *port,
     }
     BIO_push(fbio, bio);
 
-    BIO_printf(fbio, "CONNECT %s:%s " HTTP_1_0 "\r\n", server, port);
+    /* Add square brackets around a naked IPv6 address */
+    if (server[0] != '[' && strchr(server, ':') != NULL)
+        BIO_printf(fbio, "CONNECT [%s]:%s " HTTP_1_0 "\r\n", server, port);
+    else
+        BIO_printf(fbio, "CONNECT %s:%s " HTTP_1_0 "\r\n", server, port);
 
     /*
      * Workaround for broken proxies which would otherwise close

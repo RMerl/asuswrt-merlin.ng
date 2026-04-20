@@ -801,12 +801,12 @@ function parseOpenVPNClients(client_status){		//192.168.123.82:46954 10.8.0.6 pi
 function showOpenVPNClients(uname){
 	var statusmenu = "";
 	var statustitle = "";
-	statustitle += "<div style=\"text-decoration:underline;\">VPN IP ( Remote IP )</div>";
+	statustitle += "<div> VPN and Remote IP</div>";
 	_caption = statustitle;
 	
 	for (i = 0; i < openvpnd_connected_clients.length; i++){
 		if(uname == openvpnd_connected_clients[i].username){		
-				statusmenu += "<div>"+openvpnd_connected_clients[i].VPNIP+" \t( "+openvpnd_connected_clients[i].remoteIP+" )</div>";
+				statusmenu += "<div>"+openvpnd_connected_clients[i].VPNIP+"\n"+openvpnd_connected_clients[i].remoteIP+"</div>";
 		}				
 	}
 	

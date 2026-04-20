@@ -261,7 +261,7 @@ function parseOVPNStatus(text, block, ipaddress, ripaddress){
 			switch (fields[1])
 			{
 			case "CLIENT_LIST":
-				clientTableHeaders = fields.slice(2,fields.length-1);
+				clientTableHeaders = fields.slice(2,fields.length);
 				break;
 			case "ROUTING_TABLE":
 				routeTableHeaders = fields.slice(2,fields.length-1);
@@ -271,7 +271,7 @@ function parseOVPNStatus(text, block, ipaddress, ripaddress){
 			}
 			break;
 		case "CLIENT_LIST":
-			clientTableEntries[clientPtr++] = fields.slice(1,fields.length-1);
+			clientTableEntries[clientPtr++] = fields.slice(1,fields.length);
 			break;
 		case "ROUTING_TABLE":
 			routeTableEntries[routePtr++] = fields.slice(1,fields.length-1);
@@ -304,15 +304,15 @@ function parseOVPNStatus(text, block, ipaddress, ripaddress){
 		code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table"><thead><tr><td colspan="6">Clients</td></tr></thead><tr>';
 
 // Headers
-		// Common Name, Username
-		code +='<th style="width:25%;text-align:left;">' + clientTableHeaders[0] + '<br><span style="color: cyan; background: transparent;">' + clientTableHeaders[8] + '</span></th>';
+		// Username, Common Name
+		code +='<th style="width:25%;text-align:left;">' + clientTableHeaders[8] + '<br><span style="color: cyan; background: transparent;">' + clientTableHeaders[0] + '</span></th>';
 		// Real IPv4, merged with Virtual IPv4
-		code +='<th style="width:20%;text-align:left;">' + clientTableHeaders[1] + '<br><span style="color: cyan; background: transparent;">' + clientTableHeaders[2] + '</span></th>';
+		code +='<th style="width:26%;text-align:left;">' + clientTableHeaders[1] + '<br><span style="color: cyan; background: transparent;">' + clientTableHeaders[2] + '</span></th>';
 		// dl/up amount
-		code +='<th style="width:16%;text-align:left;">' + clientTableHeaders[4].replace("Bytes","MBytes") + '</th>';
-		code +='<th style="width:16%;text-align:left;">' + clientTableHeaders[5].replace("Bytes","MBytes") + '</th>';
+		code +='<th style="width:15%;text-align:left;">' + clientTableHeaders[4].replace("Bytes","MBytes") + '</th>';
+		code +='<th style="width:15%;text-align:left;">' + clientTableHeaders[5].replace("Bytes","MBytes") + '</th>';
 		// Connected since
-		code +='<th style="width:23%;text-align:left;">' + clientTableHeaders[6] + '</th>';
+		code +='<th style="width:19%;text-align:left;">' + clientTableHeaders[6] + '<br><span style="color: cyan; background: transparent;">' + clientTableHeaders[11] + '</span></th>';
 		code += '</tr>';
 
 // Clients
@@ -323,14 +323,14 @@ function parseOVPNStatus(text, block, ipaddress, ripaddress){
 			if (clientTableEntries[i][8] == "UNDEF") {
 				clientTableEntries[i][8] = "";
 			}
-			code += '<td style="vertical-align:top; white-space:nowrap; text-align:left;">' + clientTableEntries[i][0] + '<br><span style="color: cyan; background: transparent;">' + clientTableEntries[i][8] +'</span></td>';
+			code += '<td style="vertical-align:top; white-space:nowrap; text-align:left;">' + clientTableEntries[i][8] + '<br><span style="color: cyan; background: transparent;">' + clientTableEntries[i][0] +'</span></td>';
 			// Real IP, Virtual IP
 			code += '<td style="vertical-align:top; text-align:left;">' + clientTableEntries[i][1] + '<br><span style="color: cyan; background: transparent;">' + clientTableEntries[i][2] +'</span></td>';
 			// dl/up amount
 			code += '<td style="vertical-align:top; text-align:left;">' + Number(clientTableEntries[i][4]/1024/1024).toFixed(2).toLocaleString() + '</td>';
 			code += '<td style="vertical-align:top; text-align:left;">' + Number(clientTableEntries[i][5]/1024/1024).toFixed(2).toLocaleString() + '</td>';
 			// Connected Since
-			code += '<td style="vertical-align:top; text-align:left;">' + clientTableEntries[i][6] + '</td>';
+			code += '<td style="vertical-align:top; text-align:left;">' + clientTableEntries[i][6] + '<br><span style="color: cyan; background: transparent;">' + clientTableEntries[i][11] +'</span></td>';
 			code += '</tr>';
 		}
 		code += '</table><br>';

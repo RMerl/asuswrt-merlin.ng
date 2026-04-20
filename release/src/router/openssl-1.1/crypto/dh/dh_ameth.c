@@ -681,15 +681,20 @@ static int dh_cms_set_shared_info(EVP_PKEY_CTX *pctx, CMS_RecipientInfo *ri)
     int keylen, plen;
     const EVP_CIPHER *kekcipher;
     EVP_CIPHER_CTX *kekctx;
+    const ASN1_OBJECT *aoid;
+    const void *parameter = NULL;
+    int ptype = 0;
 
     if (!CMS_RecipientInfo_kari_get0_alg(ri, &alg, &ukm))
         goto err;
+
+    X509_ALGOR_get0(&aoid, &ptype, &parameter, alg);
 
     /*
      * For DH we only have one OID permissible. If ever any more get defined
      * we will need something cleverer.
      */
-    if (OBJ_obj2nid(alg->algorithm) != NID_id_smime_alg_ESDH) {
+    if (OBJ_obj2nid(aoid) != NID_id_smime_alg_ESDH) {
         DHerr(DH_F_DH_CMS_SET_SHARED_INFO, DH_R_KDF_PARAMETER_ERROR);
         goto err;
     }
@@ -700,11 +705,11 @@ static int dh_cms_set_shared_info(EVP_PKEY_CTX *pctx, CMS_RecipientInfo *ri)
     if (EVP_PKEY_CTX_set_dh_kdf_md(pctx, EVP_sha1()) <= 0)
         goto err;
 
-    if (alg->parameter->type != V_ASN1_SEQUENCE)
+    if (ptype != V_ASN1_SEQUENCE)
         goto err;
 
-    p = alg->parameter->value.sequence->data;
-    plen = alg->parameter->value.sequence->length;
+    p = ASN1_STRING_get0_data(parameter);
+    plen = ASN1_STRING_length(parameter);
     kekalg = d2i_X509_ALGOR(NULL, &p, plen);
     if (!kekalg)
         goto err;

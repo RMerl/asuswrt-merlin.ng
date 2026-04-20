@@ -1583,6 +1583,11 @@ function wifi7_mode(obj){
 	}
 }
 
+function he_frame_mode(obj) {
+	if (obj.value == '0' && (is_unit_5g(wl_unit_value) || is_unit_5g_2(wl_unit_value))) {
+		document.form.acs_dfs.value = 0;
+	}
+}
 function regen_mode(){	//please sync to initial() : //Change wireless mode help desc
 	var _nmode_x = '<% nvram_get("wl_nmode_x"); %>';
 	if(is_unit_24g(wl_unit_value)){

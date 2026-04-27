@@ -191,7 +191,7 @@ extract_x509_extension(X509 *cert, char *fieldname, char *out, size_t size)
  * to contain result is grounds for error).
  */
 static result_t
-extract_x509_field_ssl(X509_NAME *x509, const char *field_name, char *out, size_t size)
+extract_x509_field_ssl(const X509_NAME *x509, const char *field_name, char *out, size_t size)
 {
     int lastpos = -1;
     int tmp = -1;
@@ -209,7 +209,12 @@ extract_x509_field_ssl(X509_NAME *x509, const char *field_name, char *out, size_
     do
     {
         lastpos = tmp;
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
         tmp = X509_NAME_get_index_by_OBJ(x509, field_name_obj, lastpos);
+#else
+        /* OpenSSL 1.1.x has the argument as non-const */
+        tmp = X509_NAME_get_index_by_OBJ((X509_NAME *)x509, field_name_obj, lastpos);
+#endif
     } while (tmp > -1);
 
     ASN1_OBJECT_free(field_name_obj);
@@ -255,21 +260,23 @@ backend_x509_get_username(char *common_name, size_t cn_len, char *x509_username_
     }
     else if (strcmp(LN_serialNumber, x509_username_field) == 0)
     {
-        ASN1_INTEGER *asn1_i = X509_get_serialNumber(peer_cert);
-        struct gc_arena gc = gc_new();
-        char *serial = format_hex_ex(ASN1_STRING_get0_data(asn1_i), ASN1_STRING_length(asn1_i), 0, 1 | FHE_CAPS, NULL, &gc);
+        const ASN1_INTEGER *asn1_i = X509_get_serialNumber(peer_cert);
+
+        BIGNUM *bn_serial = ASN1_INTEGER_to_BN(asn1_i, NULL);
+        char *serial = BN_bn2hex(bn_serial);
+        BN_free(bn_serial);
 
         if (!serial || cn_len <= strlen(serial) + 2)
         {
-            gc_free(&gc);
+            OPENSSL_free(serial);
             return FAILURE;
         }
         snprintf(common_name, cn_len, "0x%s", serial);
-        gc_free(&gc);
+        OPENSSL_free(serial);
     }
     else
     {
-        X509_NAME *x509_subject_name = X509_get_subject_name(peer_cert);
+        const X509_NAME *x509_subject_name = X509_get_subject_name(peer_cert);
         if (x509_subject_name == NULL)
         {
             msg(D_TLS_ERRORS, "X509 subject name is NULL");
@@ -310,8 +317,16 @@ char *
 backend_x509_get_serial_hex(openvpn_x509_cert_t *cert, struct gc_arena *gc)
 {
     const ASN1_INTEGER *asn1_i = X509_get_serialNumber(cert);
+    BIGNUM *bn_serial = ASN1_INTEGER_to_BN(asn1_i, NULL);
+    int len_serial = BN_num_bytes(bn_serial);
+    unsigned char *buf = malloc(len_serial);
+    BN_bn2binpad(bn_serial, buf, len_serial);
 
-    return format_hex_ex(ASN1_STRING_get0_data(asn1_i), ASN1_STRING_length(asn1_i), 0, 1, ":", gc);
+    char *ret = format_hex_ex(buf, len_serial, 0, 1, ":", gc);
+    free(buf);
+    BN_free(bn_serial);
+
+    return ret;
 }
 
 result_t
@@ -457,7 +472,12 @@ void
 x509_setenv_track(const struct x509_track *xt, struct env_set *es, const int depth, X509 *x509)
 {
     struct gc_arena gc = gc_new();
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+    /* OpenSSL 1.1.x APIs all take non-const arguments */
     X509_NAME *x509_name = X509_get_subject_name(x509);
+#else
+    const X509_NAME *x509_name = X509_get_subject_name(x509);
+#endif
     const char nullc = '\0';
 
     while (xt)
@@ -491,10 +511,10 @@ x509_setenv_track(const struct x509_track *xt, struct env_set *es, const int dep
                     int i = X509_NAME_get_index_by_NID(x509_name, xt->nid, -1);
                     if (i >= 0)
                     {
-                        X509_NAME_ENTRY *ent = X509_NAME_get_entry(x509_name, i);
+                        const X509_NAME_ENTRY *ent = X509_NAME_get_entry(x509_name, i);
                         if (ent)
                         {
-                            ASN1_STRING *val = X509_NAME_ENTRY_get_data(ent);
+                            const ASN1_STRING *val = X509_NAME_ENTRY_get_data(ent);
                             unsigned char *buf = NULL;
                             if (ASN1_STRING_to_UTF8(&buf, val) >= 0)
                             {
@@ -508,7 +528,11 @@ x509_setenv_track(const struct x509_track *xt, struct env_set *es, const int dep
                         i = X509_get_ext_by_NID(x509, xt->nid, -1);
                         if (i >= 0)
                         {
+#if OPENSSL_VERSION_NUMBER < 0x40000000L
                             X509_EXTENSION *ext = X509_get_ext(x509, i);
+#else
+                            const X509_EXTENSION *ext = X509_get_ext(x509, i);
+#endif
                             if (ext)
                             {
                                 BIO *bio = BIO_new(BIO_s_mem());
@@ -544,51 +568,43 @@ x509_setenv_track(const struct x509_track *xt, struct env_set *es, const int dep
 void
 x509_setenv(struct env_set *es, int cert_depth, openvpn_x509_cert_t *peer_cert)
 {
-    int i, n;
-    int fn_nid;
-    ASN1_OBJECT *fn;
-    ASN1_STRING *val;
-    X509_NAME_ENTRY *ent;
-    const char *objbuf;
-    unsigned char *buf = NULL;
-    char *name_expand;
-    size_t name_expand_size;
-    X509_NAME *x509 = X509_get_subject_name(peer_cert);
+    const X509_NAME *x509 = X509_get_subject_name(peer_cert);
 
-    n = X509_NAME_entry_count(x509);
-    for (i = 0; i < n; ++i)
+    int n = X509_NAME_entry_count(x509);
+    for (int i = 0; i < n; ++i)
     {
-        ent = X509_NAME_get_entry(x509, i);
+        const X509_NAME_ENTRY *ent = X509_NAME_get_entry(x509, i);
         if (!ent)
         {
             continue;
         }
-        fn = X509_NAME_ENTRY_get_object(ent);
+        const ASN1_OBJECT *fn = X509_NAME_ENTRY_get_object(ent);
         if (!fn)
         {
             continue;
         }
-        val = X509_NAME_ENTRY_get_data(ent);
+        const ASN1_STRING *val = X509_NAME_ENTRY_get_data(ent);
         if (!val)
         {
             continue;
         }
-        fn_nid = OBJ_obj2nid(fn);
+        int fn_nid = OBJ_obj2nid(fn);
         if (fn_nid == NID_undef)
         {
             continue;
         }
-        objbuf = OBJ_nid2sn(fn_nid);
+        const char *objbuf = OBJ_nid2sn(fn_nid);
         if (!objbuf)
         {
             continue;
         }
+        unsigned char *buf = NULL;
         if (ASN1_STRING_to_UTF8(&buf, val) < 0)
         {
             continue;
         }
-        name_expand_size = 64 + strlen(objbuf);
-        name_expand = (char *)malloc(name_expand_size);
+        size_t name_expand_size = 64 + strlen(objbuf);
+        char *name_expand = malloc(name_expand_size);
         check_malloc_return(name_expand);
         snprintf(name_expand, name_expand_size, "X509_%d_%s", cert_depth, objbuf);
         string_mod(name_expand, CC_PRINT, CC_CRLF, '_');
@@ -609,22 +625,27 @@ x509_verify_ns_cert_type(openvpn_x509_cert_t *peer_cert, const int usage)
     if (usage == NS_CERT_CHECK_CLIENT)
     {
         /*
-         * Unfortunately, X509_check_purpose() does some weird thing that
+         * Unfortunately, X509_check_purpose() before OpenSSL 4.0 does some weird thing that
          * prevent it to take a const argument
          */
         result_t result =
             X509_check_purpose(peer_cert, X509_PURPOSE_SSL_CLIENT, 0) ? SUCCESS : FAILURE;
-
         /*
-         * old versions of OpenSSL allow us to make the less strict check we used to
-         * do. If this less strict check pass, warn user that this might not be the
-         * case when its distribution will update to OpenSSL 1.1
+         * Note that we did not check for netscape certificate type here but
+         * instead a general SSL/TLS client purpose. These nscert attributes
+         * might stop being accepted by TLS libraries in the future.
+         * Currently, OpenSSL 4.0 and aws-lc 1.9.0 still consider nscert client
+         * as acceptable.
+         *
+         * So in case that this check failed, we now check if this is caused
+         * by the check above no longer recognising nscert attributes.
          */
         if (result == FAILURE)
         {
             ASN1_BIT_STRING *ns;
             ns = X509_get_ext_d2i(peer_cert, NID_netscape_cert_type, NULL, NULL);
-            result = (ns && ASN1_STRING_length(ns) > 0 && (ASN1_STRING_get0_data(ns)[0] & NS_SSL_CLIENT)) ? SUCCESS : FAILURE;
+            // bit 0 is to check if certificate is the client certificate
+            result = ASN1_BIT_STRING_get_bit(ns, 0) ? SUCCESS : FAILURE;
             if (result == SUCCESS)
             {
                 msg(M_WARN, "X509: Certificate is a client certificate yet it's purpose "
@@ -637,22 +658,27 @@ x509_verify_ns_cert_type(openvpn_x509_cert_t *peer_cert, const int usage)
     if (usage == NS_CERT_CHECK_SERVER)
     {
         /*
-         * Unfortunately, X509_check_purpose() does some weird thing that
+         * Unfortunately, X509_check_purpose() before OpenSSL 4.0 does some weird thing that
          * prevent it to take a const argument
          */
         result_t result =
             X509_check_purpose(peer_cert, X509_PURPOSE_SSL_SERVER, 0) ? SUCCESS : FAILURE;
 
         /*
-         * old versions of OpenSSL allow us to make the less strict check we used to
-         * do. If this less strict check pass, warn user that this might not be the
-         * case when its distribution will update to OpenSSL 1.1
+         * Note that we did not check for netscape certificate type here but
+         * instead a general SSL/TLS server purpose. These nscert attributes
+         * might stop being accepted by TLS libraries in the future.
+         * Currently, OpenSSL 4.0 and aws-lc 1.9.0 still consider nscert server
+         * as acceptable.
+         *
+         * So in case that this check failed, we now check if this is caused
+         * by the check above no longer recognising nscert attributes.
          */
         if (result == FAILURE)
         {
-            ASN1_BIT_STRING *ns;
-            ns = X509_get_ext_d2i(peer_cert, NID_netscape_cert_type, NULL, NULL);
-            result = (ns && ASN1_STRING_length(ns) > 0 && (ASN1_STRING_get0_data(ns)[0] & NS_SSL_SERVER)) ? SUCCESS : FAILURE;
+            ASN1_BIT_STRING *ns = X509_get_ext_d2i(peer_cert, NID_netscape_cert_type, NULL, NULL);
+            // Server bit is 1 for ASN1_BIT_STRING_get_bit
+            result = ASN1_BIT_STRING_get_bit(ns, 1) ? SUCCESS : FAILURE;
             if (result == SUCCESS)
             {
                 msg(M_WARN, "X509: Certificate is a server certificate yet it's purpose "
@@ -782,23 +808,7 @@ tls_verify_crl_missing(const struct tls_options *opt)
         return false;
     }
 
-    X509_STORE *store = SSL_CTX_get_cert_store(opt->ssl_ctx->ctx);
-    if (!store)
-    {
-        crypto_msg(M_FATAL, "Cannot get certificate store");
-    }
-
-    STACK_OF(X509_OBJECT) *objs = X509_STORE_get0_objects(store);
-    for (int i = 0; i < sk_X509_OBJECT_num(objs); i++)
-    {
-        X509_OBJECT *obj = sk_X509_OBJECT_value(objs, i);
-        ASSERT(obj);
-        if (X509_OBJECT_get_type(obj) == X509_LU_CRL)
-        {
-            return false;
-        }
-    }
-    return true;
+    return opt->ssl_ctx->crls == NULL || sk_X509_CRL_num(opt->ssl_ctx->crls) == 0;
 }
 
 #endif /* defined(ENABLE_CRYPTO_OPENSSL) */

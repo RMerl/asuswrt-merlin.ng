@@ -3,16 +3,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.20.1: https://docutils.sourceforge.io/" />
+<meta name="generator" content="Docutils 0.22.3: https://docutils.sourceforge.io/" />
 <title>openvpn</title>
 <style type="text/css">
 
 /*
 :Author: David Goodger (goodger@python.org)
-:Id: $Id: html4css1.css 8954 2022-01-20 10:10:25Z milde $
+:Id: $Id: html4css1.css 9511 2024-01-13 09:50:07Z milde $
 :Copyright: This stylesheet has been placed in the public domain.
 
 Default cascading style sheet for the HTML output of Docutils.
+Despite the name, some widely supported CSS2 features are used.
 
 See https://docutils.sourceforge.io/docs/howto/html-stylesheets.html for how to
 customize this style sheet.
@@ -275,7 +276,7 @@ pre.literal-block, pre.doctest-block, pre.math, pre.code {
   margin-left: 2em ;
   margin-right: 2em }
 
-pre.code .ln { color: grey; } /* line numbers */
+pre.code .ln { color: gray; } /* line numbers */
 pre.code, code { background-color: #eeeeee }
 pre.code .comment, code .comment { color: #5C6576 }
 pre.code .keyword, code .keyword { color: #3B0D06; font-weight: bold }
@@ -301,7 +302,7 @@ span.option {
 span.pre {
   white-space: pre }
 
-span.problematic {
+span.problematic, pre.problematic {
   color: red }
 
 span.section-subtitle {
@@ -462,11 +463,11 @@ context.</p>
 <p>In many cases, the <tt class="docutils literal">dir</tt> parameter can point to an empty directory,
 however complications can result when scripts or restarts are executed
 after the chroot operation.</p>
-<p class="last">Note: The SSL library will probably need /dev/urandom to be available
+<p class="last">Note: The SSL library will probably need <tt class="docutils literal">/dev/urandom</tt> to be available
 inside the chroot directory <tt class="docutils literal">dir</tt>. This is because SSL libraries
 occasionally need to collect fresh randomness. Newer linux kernels and some
 BSDs implement a getrandom() or getentropy() syscall that removes the
-need for /dev/urandom to be available.</p>
+need for <tt class="docutils literal">/dev/urandom</tt> to be available.</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--compat-mode <var>version</var></span></kbd></td>
@@ -578,20 +579,10 @@ are non-fatal.</p>
 <p>Note: as soon as OpenVPN has daemonized, it can not ask for usernames,
 passwords, or key pass phrases anymore. This has certain consequences,
 namely that using a password-protected private key will fail unless the
-<tt class="docutils literal"><span class="pre">--askpass</span></tt> option is used to tell OpenVPN to ask for the pass phrase
-(this requirement is new in v2.3.7, and is a consequence of calling
-daemon() before initializing the crypto layer).</p>
+<tt class="docutils literal"><span class="pre">--askpass</span></tt> option is used to tell OpenVPN to ask for the pass phrase.</p>
 <p class="last">Further, using <tt class="docutils literal"><span class="pre">--daemon</span></tt> together with <tt class="docutils literal"><span class="pre">--auth-user-pass</span></tt> (entered
 on console) and <tt class="docutils literal"><span class="pre">--auth-nocache</span></tt> will fail as soon as key
 renegotiation (and reauthentication) occurs.</p>
-</td></tr>
-<tr><td class="option-group">
-<kbd><span class="option">--disable-dco</span></kbd></td>
-<td><p class="first">Disable &quot;data channel offload&quot; (DCO).</p>
-<p>On Linux don't use the ovpn-dco device driver, but rather rely on the
-legacy tun module.</p>
-<p class="last">You may want to use this option if your server needs to allow clients
-older than version 2.4 to connect.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--disable-occ</span></kbd></td>
@@ -732,27 +723,20 @@ variables (potentially unsafe).</dd>
 <p>OpenVPN releases before v2.3 also supported a <tt class="docutils literal">method</tt> flag which
 indicated how OpenVPN should call external commands and scripts. This
 could be either <code>execve</code> or <code>system</code>. As of OpenVPN 2.3, this
-flag is no longer accepted. In most *nix environments the execve()
-approach has been used without any issues.</p>
+flag is no longer accepted.</p>
 <p>Some directives such as <tt class="docutils literal"><span class="pre">--up</span></tt> allow options to be passed to the
 external script. In these cases make sure the script name does not
 contain any spaces or the configuration parser will choke because it
 can't determine where the script name ends and script options start.</p>
-<p>To run scripts in Windows in earlier OpenVPN versions you needed to
-either add a full path to the script interpreter which can parse the
-script or use the <tt class="docutils literal">system</tt> flag to run these scripts. As of OpenVPN
-2.3 it is now a strict requirement to have full path to the script
+<p>On Windoes it is a strict requirement to have the full path to the script
 interpreter when running non-executables files. This is not needed for
 executable files, such as .exe, .com, .bat or .cmd files. For example,
-if you have a Visual Basic script, you must use this syntax now:</p>
+if you have a Visual Basic script, you must use this syntax:</p>
 <pre class="literal-block">
 --up 'C:\\Windows\\System32\\wscript.exe C:\\Program\ Files\\OpenVPN\\config\\my-up-script.vbs'
 </pre>
-<p>Please note the single quote marks and the escaping of the backslashes
-(\) and the space character.</p>
-<p class="last">The reason the support for the <code>system</code> flag was removed is due to
-the security implications with shell expansions when executing scripts
-via the <code>system()</code> call.</p>
+<p class="last">Please note the single quote marks and the escaping of the backslashes
+(<tt class="docutils literal">\\</tt>) and the space character.</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--setcon <var>context</var></span></kbd></td>
@@ -4968,7 +4952,7 @@ some number of seconds after as defined by the <strong>--route-delay</strong> op
 <p>Executed after TCP/UDP and TUN/TAP close, after <tt class="docutils literal"><span class="pre">--dns-updown</span></tt>.</p>
 </li>
 <li><p class="first"><tt class="docutils literal"><span class="pre">--learn-address</span></tt></p>
-<p>Executed in <tt class="docutils literal"><span class="pre">--mode</span> server</tt> mode whenever an IPv4 address/route or MAC
+<p>Executed in <tt class="docutils literal"><span class="pre">--mode</span> server</tt> mode whenever an IP address/route or MAC
 address is added to OpenVPN's internal routing table.</p>
 </li>
 <li><p class="first"><tt class="docutils literal"><span class="pre">--auth-user-pass-verify</span></tt></p>
@@ -5224,10 +5208,16 @@ by one or more spaces.</p>
 or not the address is being added to, modified, or deleted from
 OpenVPN's internal routing table.</dd>
 <dt><code>$2</code> - [address]</dt>
-<dd>The address being learned or unlearned. This can be an IPv4 address
-such as <code>&quot;198.162.10.14&quot;</code>, an IPv4 subnet such as
-<code>&quot;198.162.10.0/24&quot;</code>, or an ethernet MAC address (when
-<tt class="docutils literal"><span class="pre">--dev</span> tap</tt> is being used) such as <code>&quot;00:FF:01:02:03:04&quot;</code>.</dd>
+<dd><p class="first">The address being learned or unlearned. This can be:</p>
+<ul class="last simple">
+<li>an IPv4 address such as <code>&quot;198.162.10.14&quot;</code>,</li>
+<li>an IPv4 subnet such as <code>&quot;198.162.10.0/24&quot;</code>,</li>
+<li>an IPv6 address such as <code>&quot;2001:db8:1:2:3:4:5:6&quot;</code>,</li>
+<li>an IPv6 subnet such as <code>&quot;2001:db8:1:2:3:4:5::/112&quot;</code>, or</li>
+<li>an ethernet MAC address (when <tt class="docutils literal"><span class="pre">--dev</span> tap</tt> is being used)
+such as <code>&quot;00:FF:01:02:03:04&quot;</code>.</li>
+</ul>
+</dd>
 <dt><code>$3</code> - [common name]</dt>
 <dd>The common name on the certificate associated with the client linked
 to this address. Only present for <code>&quot;add&quot;</code> or <code>&quot;update&quot;</code>
@@ -5236,13 +5226,16 @@ operations, not <code>&quot;delete&quot;</code>.</dd>
 <p>On <code>&quot;add&quot;</code> or <code>&quot;update&quot;</code> methods, if the script returns
 a failure code (non-zero), OpenVPN will reject the address and will not
 modify its internal routing table.</p>
-<p class="last">Normally, the <tt class="docutils literal">cmd</tt> script will use the information provided above to
+<p>Normally, the <tt class="docutils literal">cmd</tt> script will use the information provided above to
 set appropriate firewall entries on the VPN TUN/TAP interface. Since
 OpenVPN provides the association between virtual IP or MAC address and
 the client's authenticated common name, it allows a user-defined script
 to configure firewall access policies with regard to the client's
 high-level common name, rather than the low level client virtual
 addresses.</p>
+<p class="last">A dual-stack client connecting to a dual-stack server will cause two calls
+to the <tt class="docutils literal">cmd</tt> script in quick succession, as the server learns each of the
+IPv4 and IPv6 client addresses.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--route-up <var>cmd</var></span></kbd></td>
@@ -6381,7 +6374,9 @@ Without this option, OpenVPN will opportunistically use DCO mode if
 the config options and the running kernel supports using DCO.</p>
 <p>Data channel offload currently requires data-ciphers to only contain
 AEAD ciphers (AES-GCM and Chacha20-Poly1305) and Linux with the
-ovpn-dco module.</p>
+ovpn module. The ovpn module has been integrated into the Linux kernel
+since 6.16 or is available as backport from
+<a class="reference external" href="https://github.com/OpenVPN/ovpn-backports">https://github.com/OpenVPN/ovpn-backports</a>.</p>
 <p>Note that some options have no effect or cannot be used when DCO mode
 is enabled.</p>
 <p class="last">On platforms that do not support DCO <tt class="docutils literal"><span class="pre">disable-dco</span></tt> has no effect.</p>

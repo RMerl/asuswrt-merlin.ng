@@ -2125,10 +2125,12 @@ key_method_2_write(struct buffer *buf, struct tls_multi *multi, struct tls_sessi
 
         if (!write_string(buf, up->username, -1))
         {
+            msg(M_WARN, "WARNING: Failed to write auth username to TLS buffer");
             goto error;
         }
         else if (!write_string(buf, up->password, -1))
         {
+            msg(M_WARN, "WARNING: Failed to write auth password to TLS buffer");
             goto error;
         }
         /* save username for auth-token which may get pushed later */
@@ -3285,6 +3287,7 @@ tls_multi_process(struct tls_multi *multi, struct buffer *to_link,
                 if (i == TM_ACTIVE && ks_lame->state >= S_GENERATED_KEYS
                     && !multi->opt.single_session)
                 {
+                    check_session_buf_not_used(to_link, session);
                     move_session(multi, TM_LAME_DUCK, TM_ACTIVE, true);
                 }
                 else
@@ -3358,6 +3361,7 @@ tls_multi_process(struct tls_multi *multi, struct buffer *to_link,
      */
     if (TLS_AUTHENTICATED(multi, &multi->session[TM_INITIAL].key[KS_PRIMARY]))
     {
+        check_session_buf_not_used(to_link, &multi->session[TM_ACTIVE]);
         move_session(multi, TM_ACTIVE, TM_INITIAL, true);
         tas = tls_authentication_status(multi);
         msg(D_TLS_DEBUG_LOW,

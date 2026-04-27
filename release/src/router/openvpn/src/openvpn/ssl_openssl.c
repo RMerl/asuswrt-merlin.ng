@@ -141,6 +141,8 @@ tls_ctx_free(struct tls_root_ctx *ctx)
     ASSERT(NULL != ctx);
     SSL_CTX_free(ctx->ctx);
     ctx->ctx = NULL;
+    sk_X509_CRL_pop_free(ctx->crls, X509_CRL_free);
+    ctx->crls = NULL;
     unload_xkey_provider(); /* in case it is loaded */
 }
 
@@ -304,6 +306,22 @@ tls_ctx_set_tls_versions(struct tls_root_ctx *ctx, unsigned int ssl_flags)
     return true;
 }
 
+static int
+cert_verify_callback(X509_STORE_CTX *ctx, void *arg)
+{
+    struct tls_session *session;
+    SSL *ssl;
+
+    ssl = X509_STORE_CTX_get_ex_data(ctx, SSL_get_ex_data_X509_STORE_CTX_idx());
+    ASSERT(ssl);
+    session = SSL_get_ex_data(ssl, mydata_index);
+    ASSERT(session);
+
+    /* Configure CRLs. */
+    X509_STORE_CTX_set0_crls(ctx, session->opt->ssl_ctx->crls);
+    return X509_verify_cert(ctx);
+}
+
 bool
 tls_ctx_set_options(struct tls_root_ctx *ctx, unsigned int ssl_flags)
 {
@@ -346,6 +364,7 @@ tls_ctx_set_options(struct tls_root_ctx *ctx, unsigned int ssl_flags)
         verify_flags = SSL_VERIFY_PEER;
     }
     SSL_CTX_set_verify(ctx->ctx, verify_flags, verify_callback);
+    SSL_CTX_set_cert_verify_callback(ctx->ctx, cert_verify_callback, NULL);
 
     SSL_CTX_set_info_callback(ctx->ctx, info_callback);
 
@@ -615,6 +634,7 @@ tls_ctx_set_tls_groups(struct tls_root_ctx *ctx, const char *groups)
 #endif /* if OPENSSL_VERSION_NUMBER < 0x30000000L */
 }
 
+#if OPENSSL_VERSION_NUMBER < 0x40000000L
 void
 tls_ctx_check_cert_time(const struct tls_root_ctx *ctx)
 {
@@ -650,6 +670,60 @@ tls_ctx_check_cert_time(const struct tls_root_ctx *ctx)
         msg(M_WARN, "WARNING: Your certificate has expired!");
     }
 }
+#else
+void
+tls_ctx_check_cert_time(const struct tls_root_ctx *ctx)
+{
+    const X509 *cert;
+    ASSERT(ctx);
+
+    cert = SSL_CTX_get0_certificate(ctx->ctx);
+
+    if (cert == NULL)
+    {
+        return; /* Nothing to check if there is no certificate */
+    }
+
+    X509_VERIFY_PARAM *vpm = X509_VERIFY_PARAM_new();
+
+    if (vpm == NULL)
+    {
+        msg(D_TLS_DEBUG_MED, "Failed to initialise certificate verification parameters.");
+        return;
+    }
+
+    X509_VERIFY_PARAM_set_flags(vpm, X509_V_FLAG_USE_CHECK_TIME);
+    X509_VERIFY_PARAM_set_time(vpm, now);
+
+    int error = 0;
+    int ret = X509_check_certificate_times(vpm, cert, &error);
+    X509_VERIFY_PARAM_free(vpm);
+
+    if (ret == 1)
+    {
+        return;
+    }
+
+    switch (error)
+    {
+        case X509_V_ERR_ERROR_IN_CERT_NOT_BEFORE_FIELD:
+            msg(D_TLS_DEBUG_MED, "Failed to read certificate notBefore field.");
+            break;
+
+        case X509_V_ERR_CERT_NOT_YET_VALID:
+            msg(M_WARN, "WARNING: Your certificate is not yet valid!");
+            break;
+
+        case X509_V_ERR_ERROR_IN_CERT_NOT_AFTER_FIELD:
+            msg(D_TLS_DEBUG_MED, "Failed to read certificate notAfter field.");
+            break;
+
+        case X509_V_ERR_CERT_HAS_EXPIRED:
+            msg(M_WARN, "WARNING: Your certificate has expired!");
+            break;
+    }
+}
+#endif
 
 void
 tls_ctx_load_dh_params(struct tls_root_ctx *ctx, const char *dh_file, bool dh_file_inline)
@@ -1321,6 +1395,7 @@ void
 backend_tls_ctx_reload_crl(struct tls_root_ctx *ssl_ctx, const char *crl_file, bool crl_inline)
 {
     BIO *in = NULL;
+    STACK_OF(X509_CRL) *crls = NULL;
 
     X509_STORE *store = SSL_CTX_get_cert_store(ssl_ctx->ctx);
     if (!store)
@@ -1328,20 +1403,8 @@ backend_tls_ctx_reload_crl(struct tls_root_ctx *ssl_ctx, const char *crl_file, b
         crypto_msg(M_FATAL, "Cannot get certificate store");
     }
 
-    /* Always start with a cleared CRL list, for that we
-     * we need to manually find the CRL object from the stack
-     * and remove it */
-    STACK_OF(X509_OBJECT) *objs = X509_STORE_get0_objects(store);
-    for (int i = 0; i < sk_X509_OBJECT_num(objs); i++)
-    {
-        X509_OBJECT *obj = sk_X509_OBJECT_value(objs, i);
-        ASSERT(obj);
-        if (X509_OBJECT_get_type(obj) == X509_LU_CRL)
-        {
-            sk_X509_OBJECT_delete(objs, i);
-            X509_OBJECT_free(obj);
-        }
-    }
+    sk_X509_CRL_pop_free(ssl_ctx->crls, X509_CRL_free);
+    ssl_ctx->crls = NULL;
 
     X509_STORE_set_flags(store, X509_V_FLAG_CRL_CHECK | X509_V_FLAG_CRL_CHECK_ALL);
 
@@ -1357,7 +1420,13 @@ backend_tls_ctx_reload_crl(struct tls_root_ctx *ssl_ctx, const char *crl_file, b
     if (in == NULL)
     {
         msg(M_WARN, "CRL: cannot read: %s", print_key_filename(crl_file, crl_inline));
-        goto end;
+        return;
+    }
+
+    crls = sk_X509_CRL_new_null();
+    if (crls == NULL)
+    {
+        crypto_msg(M_FATAL, "CRL: cannot create CRL list");
     }
 
     int num_crls_loaded = 0;
@@ -1383,18 +1452,14 @@ backend_tls_ctx_reload_crl(struct tls_root_ctx *ssl_ctx, const char *crl_file, b
             break;
         }
 
-        if (!X509_STORE_add_crl(store, crl))
+        if (!sk_X509_CRL_push(crls, crl))
         {
-            X509_CRL_free(crl);
-            crypto_msg(M_WARN, "CRL: cannot add %s to store",
-                       print_key_filename(crl_file, crl_inline));
-            break;
+            crypto_msg(M_FATAL, "CRL: cannot add CRL to list");
         }
-        X509_CRL_free(crl);
         num_crls_loaded++;
     }
     msg(M_INFO, "CRL: loaded %d CRLs from file %s", num_crls_loaded, crl_file);
-end:
+    ssl_ctx->crls = crls;
     BIO_free(in);
 }
 
@@ -1790,7 +1855,6 @@ tls_ctx_load_ca(struct tls_root_ctx *ctx, const char *ca_file, bool ca_file_inli
     STACK_OF(X509_NAME) *cert_names = NULL;
     X509_LOOKUP *lookup = NULL;
     X509_STORE *store = NULL;
-    X509_NAME *xn = NULL;
     BIO *in = NULL;
     int i, added = 0, prev = 0;
 
@@ -1854,21 +1918,26 @@ tls_ctx_load_ca(struct tls_root_ctx *ctx, const char *ca_file, bool ca_file_inli
                         }
                     }
 
-                    xn = X509_get_subject_name(info->x509);
+                    /* OpenSSL 4.0 has made X509_get_subject_name return const
+                     * but not adjusted the other functions to take const
+                     * arguments, and other libraries do not have const
+                     * arguments, so just ignore const here */
+                    X509_NAME *xn = (X509_NAME *)X509_get_subject_name(info->x509);
                     if (!xn)
                     {
                         continue;
                     }
 
+
                     /* Don't add duplicate CA names */
-                    if (sk_X509_NAME_find(cert_names, xn) == -1)
+                    if (sk_X509_NAME_find(cert_names, (X509_NAME *)xn) == -1)
                     {
-                        xn = X509_NAME_dup(xn);
-                        if (!xn)
+                        X509_NAME *xn_dup = X509_NAME_dup(xn);
+                        if (!xn_dup)
                         {
                             continue;
                         }
-                        sk_X509_NAME_push(cert_names, xn);
+                        sk_X509_NAME_push(cert_names, xn_dup);
                     }
                 }
 

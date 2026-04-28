@@ -1,3 +1,43 @@
+Overview of changes in 2.7.4
+============================
+Bugfixes
+--------
+- using ``--dns server ...`` style configs on Windows with win-dco would
+  lead to erroneously enabling "DnsSecValidationRequired : True", possibly
+  breaking VPN DNS resolution.  Pushing ``--dns server ... dnssec no``
+  can be used as a workaround until clients can be updated.
+  (Github: OpenVPN/openvpn#1024)
+
+- correct comments in the ``--dns-up-down`` platform scripts relating to
+  ``dns_server_..._dnssec`` values.
+
+- Fix release-only build of pkcs11-helper vcpkg port, do not try to
+  install files from debug build.
+
+Building improvements
+---------------------
+- update Github Action rules, bring back vcpkg caching
+
+- ``--enable-strict`` and ``--enable-strict-options`` configure flags have
+  been removed (because they did not actually do anything anymore)
+
+User-visible Changes
+--------------------
+- mbedtls-builds will now provide a proper error message if a
+  ``tls-group`` statement with no valid groups is encountered
+  (used to run into SSL handshake failure later on).
+
+
+Overview of changes in 2.7.3
+============================
+Bugfixes
+--------
+- in combination with ``--management-query-passwords``, setups using
+  ``--auth-user-pass file`` or inline ``auth-user-pass`` would no longer
+  use the configured passwords and prompt on the management interface
+  instead (OpenVPN GUI would then provide an empty user/password prompt)
+  (Github: OpenVPN/openpvn#1021).
+
 Overview of changes in 2.7.2
 ============================
 Security fixes

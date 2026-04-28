@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<!-- This is an automatically generated file.  Do not edit.
+   Copyright (c) 2013-2021 Tuxera Inc.  All rights reserved.  Confidential and
+   proprietary.  Distribution and reproduction are prohibited without Tuxera\[u2019]s
+   written permission.
+  
+   Author: Sougata Santra <sougata@tuxera.com>
+   -->
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    table.head, table.foot { width: 100%; }
+    td.head-rtitle, td.foot-os { text-align: right; }
+    td.head-vol { text-align: center; }
+    .Nd, .Bf, .Op { display: inline; }
+    .Pa, .Ad { font-style: italic; }
+    .Ms { font-weight: bold; }
+    .Bl-diag > dt { font-weight: bold; }
+    code.Nm, .Fl, .Cm, .Ic, code.In, .Fd, .Fn, .Cd { font-weight: bold;
+      font-family: inherit; }
+  </style>
+  <title>FSCK_HFS(8)</title>
+</head>
+<body>
+<table class="head">
+  <tr>
+    <td class="head-ltitle">FSCK_HFS(8)</td>
+    <td class="head-vol">System Manager's Manual</td>
+    <td class="head-rtitle">FSCK_HFS(8)</td>
+  </tr>
+</table>
+<div class="manual-text">
+<section class="Sh">
+<h1 class="Sh" id="NAME"><a class="permalink" href="#NAME">NAME</a></h1>
+<p class="Pp">fsck_hfs - check and repair an HFS+ volume</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="SYNOPSIS"><a class="permalink" href="#SYNOPSIS">SYNOPSIS</a></h1>
+<p class="Pp"><b>fsck_hfs</b> [<i>options</i>] <i>device</i></p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="DESCRIPTION"><a class="permalink" href="#DESCRIPTION">DESCRIPTION</a></h1>
+<p class="Pp"><b>fsck_hfs</b> will check an HFS+ volume for errors, and
+    optionally correct them. Run fsck_hfs without arguments for a full list of
+    options.</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="OPTIONS"><a class="permalink" href="#OPTIONS">OPTIONS</a></h1>
+<p class="Pp">Below is a summary of all the options that <b>fsck_hfs</b>
+    accepts.</p>
+<dl class="Bl-tag">
+  <dt id="q"><a class="permalink" href="#q"><b>-q</b></a></dt>
+  <dd>Do only a quick test to check if the file-system will mount properly. This
+      is useful when you want to do a fast check to find out if the volume was
+      unmounted cleanly. It returns a non non-zero exit value if the volume was
+      not unmounted cleanly, otherwise an exit value of 0 is returned.</dd>
+  <dt id="d"><a class="permalink" href="#d"><b>-d</b></a></dt>
+  <dd>Verbose output. This is useful for debugging when <b>fsck_hfs</b> cannot
+      repair a corrupted HFS+ volume.</dd>
+  <dt id="f"><a class="permalink" href="#f"><b>-f</b></a></dt>
+  <dd>Force <b>fsck_hfs</b> to check and repair journaled HFS+ file-system. When
+      used with <b>-p</b> option, forces <b>fsck_hfs</b> to check 'clean' file
+      systems.</dd>
+  <dt id="l"><a class="permalink" href="#l"><b>-l</b></a></dt>
+  <dd>Lock the file-system and perform a read-only check. This is useful when
+      you want to check a mounted volume, without trying to repair it.</dd>
+  <dt id="m"><a class="permalink" href="#m"><b>-m</b> MODE</a></dt>
+  <dd>Set permissions for the lost+found directory when created. It accepts an
+      octal value that will be used to set the permission. <b>fsck_hfs</b>
+      places orphaned files and directories in lost+found directory (located in
+      the root directory). Default mode is 01777.</dd>
+  <dt id="p"><a class="permalink" href="#p"><b>-p</b></a></dt>
+  <dd>Preen the specified file-system.</dd>
+  <dt id="c"><a class="permalink" href="#c"><b>-c</b> SIZE</a></dt>
+  <dd>Specify the internal cache size used by <b>fsck_hfs</b>. Bigger size can
+      ensure better performance but can deadlock when used with <b>-l</b>
+      option. It accepts size value as an argument, which can be a decimal,
+      octal, or a hexadecimal number. Numbers ending with a 'k', 'm' or 'g' are
+      multiplied by 1024 (1K), 1048576 (1M) or 1073741824 (1G),
+    respectively.</dd>
+  <dt id="r"><a class="permalink" href="#r"><b>-r</b></a></dt>
+  <dd>Rebuild the catalog file on the specified file-system.</dd>
+  <dt id="y"><a class="permalink" href="#y"><b>-y</b></a></dt>
+  <dd>Always try to repair every corruption that is found.</dd>
+  <dt id="n"><a class="permalink" href="#n"><b>-n</b></a></dt>
+  <dd>Never try to repair any corruption that is found.
+    <p class="Pp"></p>
+  </dd>
+</dl>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="EXIT_STATUS"><a class="permalink" href="#EXIT_STATUS">EXIT
+  STATUS</a></h1>
+<p class="Pp"><b>0</b>: Success quick test, file-system was cleanly
+  unmounted.</p>
+<dl class="Bl-tag">
+  <dt><b>3</b>: File-system Dirty, no checks.</dt>
+  <dd></dd>
+  <dt><b>4</b>: Writeable Root File-system was fixed.</dt>
+  <dd></dd>
+  <dt><b>8</b>: Standard error exit.</dt>
+  <dd></dd>
+</dl>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="BUGS"><a class="permalink" href="#BUGS">BUGS</a></h1>
+<p class="Pp">If you find a bug please send an email describing the problem to
+    hfs-support@tuxera.com.</p>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="AVAILABILITY"><a class="permalink" href="#AVAILABILITY">AVAILABILITY</a></h1>
+<p class="Pp"><b>fsck_hfs</b> is part of the <b>Tuxera HFS+</b> package.</p>
+</section>
+</div>
+<table class="foot">
+  <tr>
+    <td class="foot-date">December 2013</td>
+    <td class="foot-os">Tuxera HFS+ 3025.6.15</td>
+  </tr>
+</table>
+</body>
+</html>

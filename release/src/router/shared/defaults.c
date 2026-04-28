@@ -2041,6 +2041,10 @@ struct nvram_tuple router_defaults[] = {
 	{ "wl_eht_features", "-1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 }, /* 11be + OFDMA + MU-MIMO */
 #endif // RT-BE96U
 
+#if defined(WIFI7_SDK_20250506)
+	{ "wl_eht_punct_features", "0", CKN_STR8, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 }, /* disable puncture features by default */
+#endif
+
 #if defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_BCM9) || defined(HND_ROUTER)
 	{ "wl_obss_dyn_bw", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Dynamic BWSW disable defaults */
 #endif
@@ -2725,7 +2729,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "wans_extwan", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 }, /* configure bcm84880 as LAN/WAN port */
 #endif
 
-#if defined(GTAXE16000) || defined(RTBE96U) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(RTBE88U) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(RTBE86U) || defined(XT12) || defined(ET12) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(BD4D5) || defined(BD4_OD) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
+#if defined(GTAXE16000) || defined(RTBE96U) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(RTBE88U) || defined(BT10) || defined(BQ16) || defined(BQ16_PRO) || defined(RTBE86U) || defined(XT12) || defined(ET12) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTCONFIG_MXL_826XX) || defined(GTBE19000AI) || defined(BD4D5) || defined(BD4_OD)
 	{ "wan_ifname_x", "eth0", CKN_STR8, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 }, /* manually select specific port as WAN port */
 #elif defined(RTBE58_GO)
 	{ "wan_ifname_x", "eth1", CKN_STR8, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 }, /* manually select specific port as WAN port */
@@ -7927,26 +7931,24 @@ struct nvram_tuple router_defaults_override_type1[] = {
 
 /* Translates from, for example, wl0_ (or wl0.1_) to wl_. */
 /* Only single digits are currently supported */
-
 static void
-fix_name(const char *name, char *fixed_name)
+fix_name(const char *name, char *fixed_name, size_t fixed_name_size)
 {
 	char *pSuffix = NULL;
 
-	/* Translate prefix wlx_ and wlx.y_ to wl_ */
-	/* Expected inputs are: wld_root, wld.d_root, wld.dd_root
-	 * We accept: wld + '_' anywhere
-	 */
-	pSuffix = strchr(name, '_');
-
-	if ((strncmp(name, "wl", 2) == 0) && isdigit(name[2]) && (pSuffix != NULL)) {
-		strcpy(fixed_name, "wl");
-		strcpy(&fixed_name[2], pSuffix);
+	if (name == NULL || fixed_name == NULL || fixed_name_size == 0) {
 		return;
 	}
 
-	/* No match with above rules: default to input name */
-	strcpy(fixed_name, name);
+	pSuffix = strchr(name, '_');
+
+	if ((strncmp(name, "wl", 2) == 0) && isdigit(name[2]) && (pSuffix != NULL)) {
+		snprintf(fixed_name, fixed_name_size, "wl%s", pSuffix);
+		return;
+	}
+
+	/* No match: copy input name safely */
+	snprintf(fixed_name, fixed_name_size, "%s", name);
 }
 
 extern char *tcode_default_get(const char *name);
@@ -7993,7 +7995,7 @@ nvram_default_get(const char *name)
 		return value;
 #endif
 
-	fix_name(name, fixed_name);
+	fix_name(name, fixed_name, sizeof(fixed_name));
 	if (strcmp(fixed_name, "wl_bss_enabled") == 0) {
 		if (name[3] == '.' || name[4] == '.') { /* Virtual interface */
 			return "0";

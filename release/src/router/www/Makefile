@@ -707,6 +707,7 @@ ifneq ($(RTCONFIG_HNS),y)
 endif
 endif
 	rm -rf $(INSTALLDIR)/www/AiProtection_ContentFilter.asp
+else
 	rm -rf $(INSTALLDIR)/www/images/New_ui/Web_Apps_Restriction.png
 endif
 
@@ -988,7 +989,7 @@ ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AX11000 GT-AC2900 GT-AXY16000 GT
 endif
 
 ifneq ($(RTCONFIG_UUPLUGIN), y)
-	rm -rf $(INSTALLDIR)/www/images/uu_accelerator.png
+	rm -rf $(INSTALLDIR)/www/images/UU_Logo_RGB.svg
 	rm -rf $(INSTALLDIR)/www/images/New_ui/icon_UU.png
 endif
 

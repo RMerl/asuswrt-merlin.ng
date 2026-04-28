@@ -1977,7 +1977,7 @@ static int nvfgn_GetQoSChannelPort(char *str)
 		if ((p = strsep(&g, "<")) == NULL) break;
 		if ((vstrsep(p, ">", &type, &proto, &port)) != 3) continue;
 		if (!strcmp(str, type)) {
-			ret = atoi(port);
+			ret = safe_atoi(port);
 			break;
 		}
 	}

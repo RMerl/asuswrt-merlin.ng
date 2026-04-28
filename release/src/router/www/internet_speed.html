@@ -20,7 +20,13 @@ var getUrlParameter = function getUrlParameter(param){
 	}
 	return "";
 };
-var theme = getUrlParameter("current_theme").toLocaleLowerCase();
+function getSafeTheme(paramName, allowedValues = ['WHITE', 'ROG', 'TUF', '']) {
+	let rawValue = getUrlParameter(paramName);
+	if (!rawValue) return "";
+	let safePrefix = rawValue.toUpperCase().match(/^[A-Z0-9_]*/)[0];
+	return allowedValues.includes(safePrefix) ? safePrefix : "";
+}
+var theme = getSafeTheme("current_theme").toLowerCase();
 $(function(){
 	
 	if(theme == "white"){
@@ -462,11 +468,13 @@ function get_speedTest_result(){
 				if(!eth_monitor_support || eth_monitor_result.length == 0 || !change_to_eth_monitor_result){
 					let download_result = convert_Bps_to_Mbps(ookla_download_bandwidth);
 					$("#download_test_result").text(download_result);
+					adjustSpeedFontClass("download_test_result");
 				}
 			}
 			else if(speedTest_result[i].type == "upload"){
 				var upload_result = convert_Bps_to_Mbps(speedTest_result[i].upload.bandwidth);
 				$("#upload_test_result").text(upload_result);
+				adjustSpeedFontClass("upload_test_result");
 			}
 			else if(speedTest_result[i].type == "result"){
 				get_next = false;
@@ -479,6 +487,7 @@ function get_speedTest_result(){
 					get_eth_monitor_result = false;
 					if(change_to_eth_monitor_result){
 						$("#download_test_result2").text(convert_Bps_to_Mbps(eth_monitor_download));
+						adjustSpeedFontClass("download_test_result2");
 						//$("#upload_test_result2").text(convert_Bps_to_Mbps(eth_monitor_upload));
 						speedTest_result[i].download.bandwidth = eth_monitor_download;
 						//speedTest_result[i].upload.bandwidth = eth_monitor_upload;
@@ -487,7 +496,9 @@ function get_speedTest_result(){
 				}
 				else{
 					$("#download_test_result2").text(convert_Bps_to_Mbps(speedTest_result[i].download.bandwidth));
+					adjustSpeedFontClass("download_test_result2");
 					$("#upload_test_result2").text(convert_Bps_to_Mbps(speedTest_result[i].upload.bandwidth));
+					adjustSpeedFontClass("upload_test_result2");
 				}
 				if(!internetSpeed_lite_support){
 					if(typeof speedTest_result[i].packetLoss != "undefined")
@@ -541,6 +552,7 @@ function show_eth_monitor_result(){
 			if(eth_monitor_result[i].type == "down"){
 				eth_monitor_download = eth_monitor_result[i].down.bandwidth;
 				$("#download_test_result").text(convert_Bps_to_Mbps(eth_monitor_download));
+				adjustSpeedFontClass("download_test_result");
 			}
 			/*
 			else if(eth_monitor_result[i].type == "up"){
@@ -1041,6 +1053,10 @@ function show_latest_record(){
 	$("#download_test_result2").text(download_result);
 	$("#upload_test_result").text(upload_result);
 	$("#upload_test_result2").text(upload_result);
+	adjustSpeedFontClass("download_test_result");
+	adjustSpeedFontClass("download_test_result2");
+	adjustSpeedFontClass("upload_test_result");
+	adjustSpeedFontClass("upload_test_result2");
 	$("#ping_result_latency").text(latest_record.ping.latency.toFixed(2));
 	$("#ping_result_jitter").text(latest_record.ping.jitter.toFixed(2));
 	if(!internetSpeed_lite_support){
@@ -1276,6 +1292,18 @@ function build_interface_list(){
 		document.getElementById("iface_div").style.display = "";
 }
 
+function adjustSpeedFontClass(id) {
+	const el = document.getElementById(id);
+	if (!el) return;
+	el.classList.remove("test_result_long", "detail_downup_text_long");
+	if (el.textContent.length > 6) {
+		if (id.endsWith("2")) {
+			el.classList.add("detail_downup_text_long");
+		} else {
+			el.classList.add("test_result_long");
+		}
+	}
+}
 </script>
 <div id="hiddenMask" class="speed_level_mask"></div>
 

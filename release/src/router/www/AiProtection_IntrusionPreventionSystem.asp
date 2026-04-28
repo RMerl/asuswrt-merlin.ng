@@ -458,35 +458,30 @@ function generateDetailTable(data_array){
 }
 
 function showDetailEvent(obj, event){
-	if($('#' + event).length){	// hide table	
-		$('#' + event).slideUp(function(){$(this).remove();});
-		$('#' + event + '_arrow')
-		.removeClass('arrow-down')
-		.addClass('arrow-right');
-	}
-	else{		// show detail table
-		var target = obj.parentNode.parentNode;
-		var temp  = document.createElement('div');
-		temp.id = event;
-		temp.className = 'detail-table';
-		var code = '';
-		var data = dataObject[event];
-		code += '<div style="border-bottom: 1px solid #C0C0C0;">Count: <span style="color:#FC0;">'+ data.source.length +'</span></div>';
-		for(i=0; i<data.time.length; i++){
-			code += '<div style="display:flex;padding:2px 0;">';
-			code += '<div style="width: 150px;">'+ data.time[i] +'</div>';
-			code += '<div style="width: 150px;">'+ data.source[i] +'</div>';
-			code += '<div>'+ data.destination[i] +'</div>';
-			code += '</div>';
-		}
-
+ 	if(document.getElementById(event)){
+        document.getElementById(event).remove();
+        document.getElementById(event + '_arrow').className = 'arrow-field arrow-right';
+    }
+    else{           // show detail table
+        var target = obj.parentNode.parentNode;
+        var temp  = document.createElement('div');
+        temp.id = event;
+        temp.className = 'detail-table';
+        var code = '';
+        var data = dataObject[event];
+        code += '<div style="border-bottom: 1px solid #C0C0C0;">Count: <span style="color:#FC0;">'+ data.source.length +'</span></div>';
+        for (var i = 0; i < data.time.length; i++) {
+            code += '<div style="display:flex;padding:2px 0;">';
+            code += '<div style="width: 150px;">'+ data.time[i] +'</div>';
+            code += '<div style="width: 150px;">'+ data.source[i] +'</div>';
+            code += '<div>'+ data.destination[i] +'</div>';
+            code += '</div>';
+        }
+		
 		temp.innerHTML = code;
-		target.appendChild(temp);
-		$("#" + event).slideDown();
-		$('#' + event + '_arrow')
-		.removeClass('arrow-right')
-		.addClass('arrow-down');
-	}
+        target.appendChild(temp);
+        document.getElementById(event + '_arrow').className = 'arrow-field arrow-down';
+    }	
 }
 
 function threatQuery(id, keyword){

@@ -3148,14 +3148,14 @@ int asus_sd(const char *device_name, const char *action)
 			snprintf(prefix, sizeof(prefix), "usb_path%s", port_path);
 
 #ifdef RTCONFIG_XHCIMODE
-			if(atoi(port_path) == 1 && nvram_get_int("usb_usb3") != 1 && !isdigit(*ptr)){
+			if(safe_atoi(port_path) == 1 && nvram_get_int("usb_usb3") != 1 && !isdigit(*ptr)){
 				// Get the xhci mode.
 				if(f_read_string("/sys/module/xhci_hcd/parameters/usb2mode", buf1, 32) <= 0){
 					usb_dbg("(%s): Fail to get xhci mode.\n", device_name);
 					file_unlock(isLock);
 					return 0;
 				}
-				usb2mode = atoi(buf1);
+				usb2mode = safe_atoi(buf1);
 
 				snprintf(nvram_value, sizeof(nvram_value), "%s", nvram_safe_get(strcat_r(prefix, "_speed", tmp)));
 				if(usb2mode != 0 && strlen(nvram_value) > 0 && strcmp(nvram_value, "5000"))
@@ -3241,7 +3241,7 @@ int asus_sd(const char *device_name, const char *action)
 		file_unlock(isLock);
 		return 0;
 	}
-	usb2mode = atoi(buf1);
+	usb2mode = safe_atoi(buf1);
 
 	if(nvram_get_int("stop_xhcimode") == 1)
 		usb_dbg("(%s): stop the xhci mode.\n", device_name);
@@ -3624,7 +3624,7 @@ int asus_sg(const char *device_name, const char *action)
 #endif
 		}
 	}
-	else if(atoi(port_path) == 3)
+	else if(safe_atoi(port_path) == 3)
 		; // usb_path3 is worked for the built-in card reader.
 	else{
 		if(strcmp(nvram_safe_get("stop_sg_remove"), "1"))
@@ -4420,7 +4420,7 @@ static int find_supported_usb_device(int port_num)
 		snprintf(class_path, sizeof(class_path), "%s/%s/bInterfaceClass", USB_DEVICE_PATH, d->d_name);
 		if (f_read_string(class_path, class, sizeof(class)) <=  0)
 		       continue;
-		switch (atoi(class)) {
+		switch (safe_atoi(class)) {
 		case 2:		/* Communications and CDC Control */
 		case 0xA:	/* CDC-Data */
 		case 7:		/* Printer */
@@ -4563,8 +4563,8 @@ int asus_usb_interface(const char *device_name, const char *action)
 				modprobe_r("usbserial");
 
 #ifdef RTCONFIG_USB_BECEEM
-				vid = atoi(nvram_safe_get(strcat_r(prefix2, "act_vid", tmp2)));
-				pid = atoi(nvram_safe_get(strcat_r(prefix2, "act_pid", tmp2)));
+				vid = safe_atoi(nvram_safe_get(strcat_r(prefix2, "act_vid", tmp2)));
+				pid = safe_atoi(nvram_safe_get(strcat_r(prefix2, "act_pid", tmp2)));
 
 				if(is_samsung_dongle(1, vid, pid) || is_gct_dongle(1, vid, pid)){
 					modprobe_r("drxvi314");
@@ -4606,7 +4606,7 @@ int asus_usb_interface(const char *device_name, const char *action)
 	/* Don't turn on USB LED for USB HUB. */
 	snprintf(class_path, sizeof(class_path), "%s/%s/%s", USB_DEVICE_PATH,
 		device_name, strchr(device_name, ':')? "bInterfaceClass" : "bDeviceClass");
-	if (f_read_string(class_path, class, sizeof(class)) > 0 && atoi(class) == 9)
+	if (f_read_string(class_path, class, sizeof(class)) > 0 && safe_atoi(class) == 9)
 		turn_on_led = 0;
 
 	snprintf(nvram_usb_path, sizeof(nvram_usb_path), "usb_led%d", port_num);

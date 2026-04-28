@@ -504,7 +504,7 @@ _dprintf("%s(%d): ifunit=%d, if=%s.\n", __func__, getpid(), ifunit, wan_ifname);
 	//if ((value = getenv("hostname")))
 	//	sethostname(value, strlen(value) + 1);
 	if ((value = getenv("lease"))) {
-		unsigned int lease = atoi(value);
+		unsigned int lease = safe_atoi(value);
 		nvram_set_int(strcat_r(prefix, "lease", tmp), lease);
 		expires(wan_ifname, lease);
 	}
@@ -774,7 +774,7 @@ renew(void)
 	//if ((value = getenv("hostname")))
 	//	sethostname(value, strlen(value) + 1);
 	if ((value = getenv("lease"))) {
-		unsigned int lease = atoi(value);
+		unsigned int lease = safe_atoi(value);
 		nvram_set_int(strcat_r(prefix, "lease", tmp), lease);
 		expires(wan_ifname, lease);
 	}
@@ -909,7 +909,7 @@ start_udhcpc(char *wan_ifname, int unit, pid_t *ppid)
 	/* DHCP query frequency */
 	value = nvram_get(strcat_r(prefix, "dhcp_qry", tmp)); // new nvram with wan index
 	if (value && strlen(value))
-		dhcp_qry = atoi(value);
+		dhcp_qry = safe_atoi(value);
 	else
 		dhcp_qry = nvram_get_int("dhcpc_mode");	// default = Aggressive mode
 	if (dhcp_qry == 0) {	// Normal mode
@@ -1281,7 +1281,7 @@ bound_lan(void)
 			lanchange = 1;
 		}
 		nvram_set("lan_lease", trim_r(value));
-		expires_lan(lan_ifname, atoi(value));
+		expires_lan(lan_ifname, safe_atoi(value));
 	}
 	if (nvram_get_int("lan_dnsenable_x") && (value = getenv("dns"))) {
 		if (!nvram_match("lan_dns", trim_r(value))) {
@@ -1910,11 +1910,11 @@ bound6(char *wan_ifname, int bound)
 #endif
 
 	value = safe_getenv("RA_HOPLIMIT");
-	if (*value && (intval = atoi(value)))
+	if (*value && (intval = safe_atoi(value)))
 		ipv6_sysconf(wan_ifname, "hop_limit", intval);
 
 	value = safe_getenv("RA_MTU");
-	if (*value && (intval = atoi(value)) && intval < ifconfig_mtu(wan_ifname, 0)) {
+	if (*value && (intval = safe_atoi(value)) && intval < ifconfig_mtu(wan_ifname, 0)) {
 		ipv6_sysconf(wan_ifname, "mtu", intval);
 		ipv6_sysconf(lan_ifname, "mtu", intval);
 #ifdef RTCONFIG_MULTILAN_CFG
@@ -2202,11 +2202,11 @@ ra_updated6(char *wan_ifname)
 	envsave(tmp);
 
 	value = safe_getenv("RA_HOPLIMIT");
-	if (*value && (intval = atoi(value)))
+	if (*value && (intval = safe_atoi(value)))
 		ipv6_sysconf(wan_ifname, "hop_limit", intval);
 
 	value = safe_getenv("RA_MTU");
-	if (*value && (intval = atoi(value)) && intval < ifconfig_mtu(wan_ifname, 0)) {
+	if (*value && (intval = safe_atoi(value)) && intval < ifconfig_mtu(wan_ifname, 0)) {
 		ipv6_sysconf(wan_ifname, "mtu", intval);
 		ipv6_sysconf(lan_ifname, "mtu", intval);
 #ifdef RTCONFIG_MULTILAN_CFG

@@ -1041,7 +1041,7 @@ void config_stb_bridge()
 	struct ifreq ifr;
 	char br_ifname[16] = {STB_BR_IF};
 	char lan_ifname[16] = {0};
-	int stbport = atoi(nvram_safe_get("switch_stb_x"));
+	int stbport = safe_atoi(nvram_safe_get("switch_stb_x"));
 
 	snprintf(lan_ifname, sizeof(lan_ifname), "%s", nvram_safe_get("lan_ifname"));
 

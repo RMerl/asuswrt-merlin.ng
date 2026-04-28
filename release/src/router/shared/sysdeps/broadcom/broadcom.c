@@ -1640,7 +1640,7 @@ get_uplinkports_linkrate(char *ifname)
 {
 	return rtk_get_uplinkports_linkrate(ifname);
 }
-#elif !defined(RTCONFIG_MOCA) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(GTBE19000) && !defined(RTBE92U) && !defined(RTBE95U)  && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M) && !defined(RTBE58U_PRO) && !defined(GTBE19000AI) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7) && !defined(GS7_PRO_MAX) && !defined(GTBE96_AI)\
+#elif !defined(RTCONFIG_MOCA) && !defined(GTBE98) && !defined(GTBE98_PRO) && !defined(GTBE96) && !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(GTBE19000) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE58U_PRO) && !defined(RTCONFIG_MXL_826XX) && !defined(GTBE19000AI) && !defined(GTBE96_AI)\
 && (defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM4912) || defined(BCM6756) || defined(RTCONFIG_HND_ROUTER_BE_4916) || defined(BCM4906_504) || defined(RTCONFIG_MULTIWAN_IF))
 unsigned int
 get_uplinkports_linkrate(char *ifname)
@@ -1738,7 +1738,7 @@ get_uplinkports_linkrate(char *ifname)
                 sprintf(wan_ifname, "%s", nvram_safe_get("wan_ifname"));
 
         foreach(word, wan_ifname, next){
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7) || defined(GS7_PRO_MAX)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7) || defined(GS7_PRO_MAX)
 		if (!strcmp(word, "vlan4094")) {
 			for (i = 0; i < port_mapping.count; i++) {
 				if (!strcmp(word, port_mapping.port[i].ifname) && port_mapping.port[i].ext_port_id != -1) {
@@ -1758,7 +1758,7 @@ get_uplinkports_linkrate(char *ifname)
 			sprintf(out_buf, "W0=X;");
 			lrate[0] = 0;
 		} else {
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7) || defined(GS7_PRO_MAX)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7) || defined(GS7_PRO_MAX)
 			if (!strcmp(word, "vlan4094")) {
 				for (i = 0; i < port_mapping.count; i++) {
 					if (!strcmp(word, port_mapping.port[i].ifname) && port_mapping.port[i].ext_port_id != -1) {
@@ -1790,7 +1790,7 @@ get_uplinkports_linkrate(char *ifname)
 	// original WAN port
         if(re_mode()) {
 		if (!strncmp(nvram_safe_get("amas_ifname"), "eth", 3)
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7) || defined(GS7_PRO_MAX)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7) || defined(GS7_PRO_MAX)
 			|| !strncmp(nvram_safe_get("amas_ifname"), "vlan4094", 8)
 #endif
 		)
@@ -1818,7 +1818,7 @@ get_uplinkports_linkrate(char *ifname)
 
 	// LAN ports
 	len = strlen(out_buf);
-#if defined(GTAXE11000) || defined(GTAX6000) || defined(RTAX88U_PRO) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(ET12) || defined(XT12) || defined(RTAX86U) || defined(RTAX68U) || defined(RTAX86U_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(RTBE88U) || defined(RTBE86U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(BQ16) || defined(BQ16_PRO) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI)
+#if defined(GTAXE11000) || defined(GTAX6000) || defined(RTAX88U_PRO) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(ET12) || defined(XT12) || defined(RTAX86U) || defined(RTAX68U) || defined(RTAX86U_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(RTBE88U) || defined(RTBE86U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(BQ16) || defined(BQ16_PRO) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTCONFIG_MXL_826XX) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	foreach(word, lanports_seq, next)
 #else
 	foreach(word, nvram_safe_get("wired_ifnames"), next)
@@ -1832,14 +1832,14 @@ get_uplinkports_linkrate(char *ifname)
 			break;
 		}
 		sprintf(pif[i], "%s", word);	// here the report follows lan_ifnames
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7) || defined(GS7_PRO_MAX)
 #if defined(GTBE19000AI) || defined(GTBE96_AI)
 		if (is_rtl8372_boardid())
 #endif
 		if (!strcmp(word, "eth1") || !strcmp(word, "vlan4094")) {
 			for (j = 0; j < port_mapping.count; j++) {
 				if (!strcmp(word, port_mapping.port[j].ifname) && port_mapping.port[j].ext_port_id != -1) {
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
+#ifdef RTCONFIG_MXL_826XX
 					ret = mxl_get_phy_status(port_mapping.port[j].ext_port_id);
 #else
 					ret = rtk_get_phy_status(port_mapping.port[j].ext_port_id);
@@ -1855,14 +1855,14 @@ get_uplinkports_linkrate(char *ifname)
 			len += sprintf(out_buf + len, "L%d=X;", i);
 			lrate[i] = 0;
 		} else{
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7) || defined(GS7_PRO_MAX)
 #if defined(GTBE19000AI) || defined(GTBE96_AI)
                 if (is_rtl8372_boardid())
 #endif
 			if (!strcmp(word, "eth1") || !strcmp(word, "vlan4094")) {
 				for (j = 0; j < port_mapping.count; j++) {
 					if (!strcmp(word, port_mapping.port[j].ifname) && port_mapping.port[j].ext_port_id != -1) {
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
+#ifdef RTCONFIG_MXL_826XX
 						ret = mxl_get_phy_speed(port_mapping.port[j].ext_port_id);
 #else
 						ret = rtk_get_phy_speed(port_mapping.port[j].ext_port_id);
@@ -1875,9 +1875,9 @@ get_uplinkports_linkrate(char *ifname)
 #endif
 			ret = hnd_get_phy_speed(word);
 			len += sprintf(out_buf + len, "L%d=%s;", i,
-					(ret == 10000) ? "T" : ((ret == 5000) ? "H" : ((ret == 2500)? "Q" :((ret == 1000) ? "G" : "M"))));
+					(ret == 0) ? "X" : ((ret == 10000) ? "T" : ((ret == 5000) ? "H" : ((ret == 2500)? "Q" :((ret == 1000) ? "G" : "M")))));
 			lret |= 1 << i;
-			lrate[i] = (ret == 10000) ? 10000 : ((ret == 5000) ? 5000 : ((ret == 2500) ? 2500 : ((ret == 1000) ? 1000 : 100)));
+			lrate[i] = (ret == 0) ? 0 : (ret == 10000) ? 10000 : ((ret == 5000) ? 5000 : ((ret == 2500) ? 2500 : ((ret == 1000) ? 1000 : 100)));
 		}
 
 		++i;

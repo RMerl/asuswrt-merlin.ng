@@ -13,7 +13,13 @@
 <script type="text/javascript" src="/multifuncbtn/mfb.js"></script>
 </head>
 <script>
-let theme = getUrlParameter("current_theme").toUpperCase();
+function getSafeTheme(paramName, allowedValues = ['WHITE', 'ROG', 'TUF', '']) {
+	let rawValue = getUrlParameter(paramName);
+	if (!rawValue) return "";
+	let safePrefix = rawValue.toUpperCase().match(/^[A-Z0-9_]*/)[0];
+	return allowedValues.includes(safePrefix) ? safePrefix : "";
+}
+var theme = getSafeTheme("current_theme", ['WHITE', 'ROG', 'GT', 'TUF', '']).toUpperCase();
 if(theme == "GT") theme = "ROG";
 $('link[group="extend_css"]').remove();
 if(theme == "WHITE" || theme == "ROG"){

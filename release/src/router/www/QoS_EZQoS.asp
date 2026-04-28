@@ -437,12 +437,19 @@
             if (codel_support || cake_support) {
                 build_overhead_presets()
             }
-            const _nvram = httpApi.nvramGet(['qos_enable', 'ark_qoe_enable', 'qos_type']);
+            const _nvram = httpApi.nvramGet(['qos_enable', 'ark_qoe_enable', 'qos_type'], true);
             const qos_enable = _nvram.qos_enable == "1";
             const ark_qoe_enable = _nvram.ark_qoe_enable == "1";
             const qos_type = (_nvram.qos_type == "1" && ark_qoe_support) ? 4 : _nvram.qos_type;
 
-            if (document.form.qos_enable_orig.value == "1" || document.form.ark_qoe_enable.value == "1") {
+            let iphoneSwitchStatus = qos_enable;
+            if (ark_qoe_support) {
+                if ((qos_enable && qos_type == "0") || (qos_enable && qos_type == "2") || (ark_qoe_enable && qos_type == "4")) {
+                    iphoneSwitchStatus = true;
+                }
+            }
+
+            if (iphoneSwitchStatus) {
                 change_qos_type(qos_type);
 
                 document.getElementById('qos_type_tr').style.display = "";
@@ -571,7 +578,7 @@
             } else {
                 $('#cake_desc').hide();
             }
-            $('#radio_qos_enable').iphoneSwitch(qos_enable || ark_qoe_enable,
+            $('#radio_qos_enable').iphoneSwitch(iphoneSwitchStatus,
                 function () {
                     document.form.qos_enable.value = "1";
                     if (document.form.qos_enable_orig.value != "1") {
@@ -1078,6 +1085,7 @@
                 value = 0;
             }
             if (value == 0) {		//Traditional QoS
+                document.form.qos_enable.value = "1";
                 document.getElementById('int_type').checked = false;
                 document.getElementById('trad_type').checked = true;
                 document.getElementById('bw_limit_type').checked = false;
@@ -1108,6 +1116,7 @@
                 show_settings("NonAdaptive");
                 document.getElementById('qos_apply_btn').style.display = "block";
             } else if (value == 1) {		//Adaptive QoS
+                document.form.qos_enable.value = "1";
                 document.getElementById('int_type').checked = true;
                 document.getElementById('trad_type').checked = false;
                 document.getElementById('cake_type').checked = false;
@@ -1141,6 +1150,7 @@
                 show_settings("Adaptive_quick");
                 document.getElementById('qos_apply_btn').style.display = "block";
             } else if (value == 2) {		// Bandwidth Limiter
+                document.form.qos_enable.value = "1";
                 document.getElementById('int_type').checked = false;
                 document.getElementById('trad_type').checked = false;
                 document.getElementById('bw_limit_type').checked = true;
@@ -1199,6 +1209,7 @@
                 show_settings("NonAdaptive");
                 document.getElementById('qos_apply_btn').style.display = "block";
             } else if (value == 4 && ark_qoe_support) {		// Ark QoE
+                document.form.qos_enable.value = "0";
                 document.getElementById('qoe_type').checked = true;
                 document.getElementById('trad_type').checked = false;
                 document.getElementById('bw_limit_type').checked = false;
@@ -1967,9 +1978,9 @@
                         <input type="hidden" name="action_mode" value="apply">
                         <input type="hidden" name="action_script" value="saveNvram">
                         <input type="hidden" name="action_wait" value="1">
-                        <input type="hidden" name="preferred_lang" value="<% nvram_get(" preferred_lang"); %>">
-                        <input type="hidden" name="firmver" value="<% nvram_get(" firmver"); %>">
-                        <input type="hidden" name="bwdpi_app_rulelist_edit" value="<% nvram_get(" bwdpi_app_rulelist");
+                        <input type="hidden" name="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
+                        <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
+                        <input type="hidden" name="bwdpi_app_rulelist_edit" value="<% nvram_get("bwdpi_app_rulelist");
                         %>">
                         <tr>
                             <div class="description_down"><#Adaptive_QoS#></div>
@@ -2023,8 +2034,8 @@
             </div>
 
             <form method="post" name="form" action="/start_apply.htm" target="hidden_frame">
-                <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get(" preferred_lang"); %>">
-                <input type="hidden" name="firmver" value="<% nvram_get(" firmver"); %>">
+                <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
+                <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
                 <input type="hidden" name="current_page" value="QoS_EZQoS.asp">
                 <input type="hidden" name="next_page" value="QoS_EZQoS.asp">
                 <input type="hidden" name="group_id" value="">
@@ -2032,20 +2043,20 @@
                 <input type="hidden" name="action_script" value="">
                 <input type="hidden" name="action_wait" value="15">
                 <input type="hidden" name="flag" value="">
-                <input type="hidden" name="TM_EULA" value="<% nvram_get(" TM_EULA"); %>">
-                <input type="hidden" name="qos_enable" value="<% nvram_get(" qos_enable"); %>">
-                <input type="hidden" name="qos_enable_orig" value="<% nvram_get(" qos_enable"); %>">
-                <input type="hidden" name="qos_type_orig" value="<% nvram_get(" qos_type"); %>">
-                <input type="hidden" name="qos_type" value="<% nvram_get(" qos_type"); %>">
-                <input type="hidden" name="rb_enable" value="<% nvram_get(" rb_enable"); %>">
-                <input type="hidden" name="rb_enable_orig" value="<% nvram_get(" rb_enable"); %>">
-                <input type="hidden" name="re_rb_enable" value="<% nvram_get(" re_rb_enable"); %>">
-                <input type="hidden" name="qos_obw" value="<% nvram_get(" qos_obw"); %>" disabled>
-                <input type="hidden" name="qos_ibw" value="<% nvram_get(" qos_ibw"); %>" disabled>
-                <input type="hidden" name="qos_obw1" value="<% nvram_get(" qos_obw1"); %>" disabled>
-                <input type="hidden" name="qos_ibw1" value="<% nvram_get(" qos_ibw1"); %>" disabled>
-                <input type="hidden" name="ark_qoe_enable" value="<% nvram_get(" ark_qoe_enable"); %>">
-                <input type="hidden" name="bwdpi_app_rulelist" value="<% nvram_get(" bwdpi_app_rulelist"); %>" disabled>
+                <input type="hidden" name="TM_EULA" value="<% nvram_get("TM_EULA"); %>">
+                <input type="hidden" name="qos_enable" value="<% nvram_get("qos_enable"); %>">
+                <input type="hidden" name="qos_enable_orig" value="<% nvram_get("qos_enable"); %>">
+                <input type="hidden" name="qos_type_orig" value="<% nvram_get("qos_type"); %>">
+                <input type="hidden" name="qos_type" value="<% nvram_get("qos_type"); %>">
+                <input type="hidden" name="rb_enable" value="<% nvram_get("rb_enable"); %>">
+                <input type="hidden" name="rb_enable_orig" value="<% nvram_get("rb_enable"); %>">
+                <input type="hidden" name="re_rb_enable" value="<% nvram_get("re_rb_enable"); %>">
+                <input type="hidden" name="qos_obw" value="<% nvram_get("qos_obw"); %>" disabled>
+                <input type="hidden" name="qos_ibw" value="<% nvram_get("qos_ibw"); %>" disabled>
+                <input type="hidden" name="qos_obw1" value="<% nvram_get("qos_obw1"); %>" disabled>
+                <input type="hidden" name="qos_ibw1" value="<% nvram_get("qos_ibw1"); %>" disabled>
+                <input type="hidden" name="ark_qoe_enable" value="<% nvram_get("ark_qoe_enable"); %>">
+                <input type="hidden" name="bwdpi_app_rulelist" value="<% nvram_get("bwdpi_app_rulelist"); %>" disabled>
                 <input type="hidden" name="qos_bw_rulelist" value="" disabled>
 
                 <table width="95%" border="0" align="left" cellpadding="0" cellspacing="0" class="FormTitle"

@@ -240,6 +240,9 @@ extern char wan6face[];
 #define RC_SERVICE_STOP 0x01
 #define RC_SERVICE_START 0x02
 
+#define HAVE_DHCP4 0x1
+#define HAVE_DHCP6 0x2
+
 extern int g_reboot;
 extern int wan_phyid;
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2)
@@ -2110,7 +2113,7 @@ extern int antled_main(int argc, char *argv[]);
 #if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 extern int rtkmonitor_main(int argc, char *argv[]);
 #endif
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
+#ifdef RTCONFIG_MXL_826XX
 extern int mxlmonitor_main(int argc, char *argv[]);
 #endif
 #if defined(GT7) || defined(GS7_PRO_MAX)
@@ -2401,7 +2404,7 @@ extern int stop_ledg(void);
 extern int start_rtkmonitor(void);
 extern int stop_rtkmonitor(void);
 #endif
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
+#ifdef RTCONFIG_MXL_826XX
 extern int start_mxlmonitor(void);
 extern int stop_mxlmonitor(void);
 #endif
@@ -2709,6 +2712,7 @@ extern int ce_dad_check(int unit);
 extern int s46_ntt_hgw(int unit);
 extern int wan_hgw_detect(const int wan_unit, const char *wan_ifname, const char *prc);
 extern int is_v6addr(const char *input);
+extern int switch_v6_mode(int unit, int mode);
 extern int get_s46_prefer(int unit);
 extern char *get_AFTR_addr(const char *host, char *ip, size_t iplen);
 extern char *get_s46_ra(int unit);

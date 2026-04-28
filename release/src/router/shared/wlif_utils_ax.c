@@ -4891,6 +4891,20 @@ wl_ehtiovar_setint(char *ifname, char *iovar, char *subcmd, int val)
                 v32.val = (uint32)val;
 
                 subcmd_len = sizeof(v32.id) + sizeof(v32.len) + v32.len;
+#if defined(WIFI7_SDK_20250506)
+	} else if (strcmp(subcmd, "epcs_enab") == 0) {
+		v32.id = WL_EHT_CMD_EPCS_ENABLE;
+		v32.len = 4;
+		v32.val = (uint32)val;
+
+		subcmd_len = sizeof(v32.id) + sizeof(v32.len) + v32.len;
+	} else if (strcmp(subcmd, "punct_features") == 0) {
+		v32.id = WL_EHT_CMD_PUNCT_FEATURES;
+		v32.len = 4;
+		v32.val = (uint32)val;
+
+		subcmd_len = sizeof(v32.id) + sizeof(v32.len) + v32.len;
+#endif
 	} else {
 		/* Other eht subcommands not yet supported */
 		return BCME_UNSUPPORTED;

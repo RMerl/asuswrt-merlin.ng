@@ -278,7 +278,7 @@ add_routes(char *prefix, char *var, char *ifname)
 		 * probably need to allow empty gateway to set on-link route */
 		if (inet_addr_(gateway) == INADDR_ANY)
 			gateway = nvram_safe_get_r(strcat_r(prefix, "xgateway", tmp), tmp, sizeof(tmp));
-		route_add(ifname, atoi(metric) + 1, ipaddr, gateway, netmask);
+		route_add(ifname, safe_atoi(metric) + 1, ipaddr, gateway, netmask);
 	}
 	free(buf);
 
@@ -312,7 +312,7 @@ add_dhcp_routes(char *prefix, char *ifname, int metric)
 	routes = strdup(nvram_safe_get(strcat_r(prefix, "routes_ms", nvname)));
 	for (tmp = routes; tmp && *tmp; ) {
 		ipaddr  = strsep(&tmp, "/");
-		netsize = atoi(strsep(&tmp, " "));
+		netsize = safe_atoi(strsep(&tmp, " "));
 		gateway = strsep(&tmp, " ");
 		if (gateway && netsize > 0 && netsize <= 32 && inet_addr(ipaddr) != INADDR_ANY) {
 			mask.s_addr = htonl(0xffffffff << (32 - netsize));
@@ -326,7 +326,7 @@ add_dhcp_routes(char *prefix, char *ifname, int metric)
 	routes = strdup(nvram_safe_get(strcat_r(prefix, "routes_rfc", nvname)));
 	for (tmp = routes; tmp && *tmp; ) {
 		ipaddr  = strsep(&tmp, "/");
-		netsize = atoi(strsep(&tmp, " "));
+		netsize = safe_atoi(strsep(&tmp, " "));
 		gateway = strsep(&tmp, " ");
 		if (gateway && netsize > 0 && netsize <= 32 && inet_addr(ipaddr) != INADDR_ANY) {
 			mask.s_addr = htonl(0xffffffff << (32 - netsize));
@@ -368,7 +368,7 @@ del_routes(char *prefix, char *var, char *ifname)
 		if (inet_addr_(gateway) == INADDR_ANY)
 			gateway = nvram_safe_get_r(strcat_r(prefix, "xgateway", tmp), tmp, sizeof(tmp));
 
-		route_del(ifname, atoi(metric) + 1, ipaddr, gateway, netmask);
+		route_del(ifname, safe_atoi(metric) + 1, ipaddr, gateway, netmask);
 	}
 	free(buf);
 
@@ -717,7 +717,7 @@ void update_wan_state(char *prefix, int state, int reason)
 	_dprintf("%s(%s, %d, %d)\n", __FUNCTION__, prefix, state, reason);
 
 	if (strncmp(prefix, "wan", 3) == 0)
-		unit = atoi(prefix + 3);
+		unit = safe_atoi(prefix + 3);
 
 	nvram_set_int(strcat_r(prefix, "state_t", tmp), state);
 	if(state == WAN_STATE_CONNECTED)
@@ -957,8 +957,8 @@ static int start_ipoa()
 	}
 	NeighborIpPrefix[i] = 0;
 
-	LastIpNum = atoi(&ip_addr[i+1]);
-	NetMaskLastIpNum = atoi(&ip_mask[12]);
+	LastIpNum = safe_atoi(&ip_addr[i+1]);
+	NetMaskLastIpNum = safe_atoi(&ip_mask[12]);
 	NeighborIpNum = ((~NetMaskLastIpNum) + 1)&0xff;
 	NeiBaseIpNum = LastIpNum & NetMaskLastIpNum;
 
@@ -1045,8 +1045,8 @@ static int stop_ipoa()
 	}
 	NeighborIpPrefix[i] = 0;
 
-	LastIpNum = atoi(&ip_addr[i+1]);
-	NetMaskLastIpNum = atoi(&ip_mask[12]);
+	LastIpNum = safe_atoi(&ip_addr[i+1]);
+	NetMaskLastIpNum = safe_atoi(&ip_mask[12]);
 	NeighborIpNum = ((~NetMaskLastIpNum) + 1)&0xff;
 	NeiBaseIpNum = LastIpNum & NetMaskLastIpNum;
 
@@ -1394,6 +1394,28 @@ start_wan_if(int unit)
 			system("rtkswitch 10");
 		else if ((get_wans_dualwan() & WANSCAP_LAN) && !strcmp(wan_ifname, "vlan2") && (nvram_get_int("wans_lanport") >= 2) && (nvram_get_int("wans_lanport") <= 4))
 			doSystem("rtkswitch 12 %d", nvram_get_int("wans_lanport") - 1);
+
+#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
+		nvram_set("freeze_duck", "60");
+		if(!strcmp(wan_ifname, "vlan4094")){
+			int sec = 1, connected = 0;
+			for(sec = 1; sec <= 60; ++sec){
+				if(rtk_get_phy_status(1) == 1)
+					++connected;
+				else
+					connected = 0;
+
+				if(connected >= 3){
+					logmessage("start_wan_if", "the LAN1 port is up");
+					break;
+				}
+
+				logmessage("start_wan_if", "Wait the LAN1 port be up at %d seconds", sec);
+				sleep(1);
+			}
+		}
+		nvram_set("freeze_duck", "1");
+#endif
 	}
 #endif
 
@@ -1538,7 +1560,7 @@ _dprintf("start_wan_if: USB modem is scanning...\n");
 
 				snprintf(tmp, sizeof(tmp), "%s", nvram_safe_get(strcat_r(prefix2, "act_sim", tmp2)));
 				if(strlen(tmp) > 0){
-					int sim_state = atoi(tmp);
+					int sim_state = safe_atoi(tmp);
 					if(sim_state == 2 || sim_state == 3){
 						TRACE_PT("3g end: Need to input PIN or PUK.\n");
 						update_wan_state(prefix, WAN_STATE_STOPPED, WAN_STOPPED_REASON_PINCODE_ERR);
@@ -4289,7 +4311,7 @@ NOIP:
 		unsetenv("unit");
 
 		char start_sec[32], *str = file2str("/proc/uptime");
-		unsigned int up = atoi(str);
+		unsigned int up = safe_atoi(str);
 
 		free(str);
 		snprintf(start_sec, sizeof(start_sec), "%u", up);
@@ -6060,7 +6082,7 @@ void detwan_apply_wan(const char *wan_ifname, unsigned int wan_mask, unsigned in
 		int retry = RETRY_COUNT;
 		char buf[32];
 		snprintf(buf, sizeof(buf), "restart_wan_if %d", 0);
-		while(retry-- > 0 && notify_rc_and_wait(buf) != 0);
+		while(retry-- > 0 && notify_rc_and_wait_2min(buf) != 0);
 		logmessage(__func__, "3: 'restart_wan_if 0' finish\n");
 	}
 }

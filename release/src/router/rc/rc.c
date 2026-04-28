@@ -17,7 +17,7 @@
 #include <limits.h>
 #include <sys/un.h>
 
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+#ifdef RTCONFIG_MXL_826XX
 #include <gsw_device.h>
 #include <host_adapt_user.h>
 #include <host_adapt.h>
@@ -470,7 +470,7 @@ int pt_main(int loops)
 }
 #endif  /* HND_ROUTER */
 
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+#ifdef RTCONFIG_MXL_826XX
 int __setup_vlan(int vid, int prio, unsigned int mask);
 int mxls_init();
 
@@ -540,9 +540,9 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "sync_apgx_to_wlunit")==0) {
 		sync_apgx_to_wlunit(NULL);	
 	}
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+#ifdef RTCONFIG_MXL_826XX
 	else if (strcmp(argv[1], "apg_test_vlan")==0) {
-		int vid = atoi(nvram_safe_get("apg_test_vid"));
+		int vid = safe_atoi(nvram_safe_get("apg_test_vid"));
 		unsigned int default_portmask, trunk_portmask, access_portmask, rm_portmask;
 
 		default_portmask = nvram_get_hex("apg_test_default_mask");
@@ -563,11 +563,11 @@ static int rctest_main(int argc, char *argv[])
 
 	}
 	else if (strcmp(argv[1], "apg_test_rmvlan")==0) {
-		int vid = atoi(nvram_safe_get("apg_test_vid"));
+		int vid = safe_atoi(nvram_safe_get("apg_test_vid"));
 		__remove_vlan(vid, 0xff);
 	}
 	else if (strcmp(argv[1], "apg_test_iso")==0) {
-		int vid = atoi(nvram_safe_get("apg_test_vid"));
+		int vid = safe_atoi(nvram_safe_get("apg_test_vid"));
 		int enable = nvram_get_int("apg_test_enable");
 		unsigned int iso_portmask;
 
@@ -584,7 +584,7 @@ static int rctest_main(int argc, char *argv[])
 #ifdef RTCONFIG_MLO
 	else if (strcmp(argv[1], "checkMLOConnSupport")==0) {
 		const struct MLO_Combination *mlo_list = &supportedCombinations[0];
-		if(atoi(argv[2]) < 0)
+		if(safe_atoi(argv[2]) < 0)
 		{
 			for (mlo_list = &supportedCombinations[0]; mlo_list->AP_MLO != -1; mlo_list++) {
 				if(isMLOConnectionSupported(mlo_list->AP_MLO, mlo_list->STA_MLO))
@@ -596,7 +596,7 @@ static int rctest_main(int argc, char *argv[])
 		else
 		{
 			for (mlo_list = &supportedCombinations[0]; mlo_list->AP_MLO != -1; mlo_list++) {
-				if(mlo_list->AP_MLO == atoi(argv[2]) && mlo_list->STA_MLO == atoi(argv[3]))
+				if(mlo_list->AP_MLO == safe_atoi(argv[2]) && mlo_list->STA_MLO == safe_atoi(argv[3]))
 				{
 					if(isMLOConnectionSupported(mlo_list->AP_MLO, mlo_list->STA_MLO))
 						_dprintf("AP GROUP(%9s)(%2d) with STA GROUP(%9s)(%2d) MLO connection supported(O)\n", mlo_list->AP_GROUP, mlo_list->AP_MLO, mlo_list->STA_GROUP, mlo_list->STA_MLO);
@@ -636,7 +636,7 @@ static int rctest_main(int argc, char *argv[])
 #if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 #ifdef RTCONFIG_MULTILAN_CFG
 	else if (strcmp(argv[1], "sdn_ignore")==0) {
-		sdn_interface_ignore_by_host_dev_mac(argv[2], atoi(argv[3]));
+		sdn_interface_ignore_by_host_dev_mac(argv[2], safe_atoi(argv[3]));
 	}
 	else if (strcmp(argv[1], "sdn_status")==0) {
 		bcmnet_ext_flags_get(argv[2]);
@@ -662,7 +662,7 @@ static int rctest_main(int argc, char *argv[])
 		printf("Get Phy status:%d\n", GetPhyStatus(0, NULL));
 	}
 	else if (strcmp(argv[1], "GetExtPhyStatus")==0) {
-		printf("Get Ext Phy status:%d\n", GetPhyStatus(atoi(argv[2]), NULL));
+		printf("Get Ext Phy status:%d\n", GetPhyStatus(safe_atoi(argv[2]), NULL));
 	}
 	else if(strcmp(argv[1], "frdwa")==0){
 		printf("frdwa\n");
@@ -758,12 +758,12 @@ static int rctest_main(int argc, char *argv[])
 #endif
 	else if (strcmp(argv[1], "get_phy_status")==0) {
 		int mask;
-		mask = atoi(argv[2]);
+		mask = safe_atoi(argv[2]);
 		TRACE_PT("debug for phy_status %x\n", get_phy_status(mask));
 	}
 	else if (strcmp(argv[1], "get_phy_speed")==0) {
 		int mask;
-		mask = atoi(argv[2]);
+		mask = safe_atoi(argv[2]);
 		TRACE_PT("debug for phy_speed %x\n", get_phy_speed(mask));
 	}
 	else if (strcmp(argv[1], "dumpx")==0) {
@@ -795,8 +795,8 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "cled")==0) {
 		unsigned int led, mode;
 
-		led = atoi(argv[2]);
-		mode = atoi(argv[3]);
+		led = safe_atoi(argv[2]);
+		mode = safe_atoi(argv[3]);
 		_dprintf("Set Cled %d as %d\n", led, mode);
 #if defined(RPAX56) || defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
 		rc_bcm_cled_ctrl(led, mode);
@@ -808,8 +808,8 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "cled_white")==0) {
 		unsigned int led, mode;
 
-		led = atoi(argv[2]);
-		mode = atoi(argv[3]);
+		led = safe_atoi(argv[2]);
+		mode = safe_atoi(argv[3]);
 		_dprintf("set Cled_WHITE %d as %d\n", led, mode);
 		bcm_cled_ctrl_single_white(led, mode);
 	}
@@ -818,9 +818,9 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "cled_single")==0) {
 		unsigned int led, mode, bright;
 
-		led = atoi(argv[2]);
-		mode = atoi(argv[3]);
-		bright = atoi(argv[4]);
+		led = safe_atoi(argv[2]);
+		mode = safe_atoi(argv[3]);
+		bright = safe_atoi(argv[4]);
 		_dprintf("set Cled_SINGLE %d as %d with bright %d\n", led, mode, bright);
 		bcm_cled_ctrl_single_led(led, mode, bright);
 	}
@@ -865,7 +865,7 @@ static int rctest_main(int argc, char *argv[])
 	}
 #ifdef EBG19
 	else if (strcmp(argv[1], "chk_duplex")==0) {
-		int port = atoi(argv[2]);
+		int port = safe_atoi(argv[2]);
 		int rtkval = 0;
 
 		_dprintf("chk port[%d] duplex\n", port);
@@ -873,7 +873,7 @@ static int rctest_main(int argc, char *argv[])
 		_dprintf("rtkval is %d\n", rtkval);
 	}
 	else if (strcmp(argv[1], "chk_mib")==0) {
-		int port = atoi(argv[2]);
+		int port = safe_atoi(argv[2]);
 		char *type = argv[3];
 		unsigned long long rtkval = 0;
 
@@ -925,7 +925,7 @@ static int rctest_main(int argc, char *argv[])
 #endif
 	else if (strcmp(argv[1], "lanports_ctrl")==0) {
 		int val;
-		val = atoi(argv[2]);
+		val = safe_atoi(argv[2]);
 		_dprintf("lan ctrl %d\n", lanport_ctrl(val));
 	}
 	else if (strcmp(argv[1], "handle_notifications")==0) {
@@ -949,10 +949,10 @@ static int rctest_main(int argc, char *argv[])
 #if defined(RPAX56) || defined(RPAX58) || defined(RPBE58) || defined(RTBE58_GO)
 	else if (strcmp(argv[1], "gen_wl") == 0) {
 		char *ifname = argv[2];
-		int unit = atoi(argv[3]);
+		int unit = safe_atoi(argv[3]);
 		int subunit = -1;
 		if (argv[4])
-			subunit = atoi(argv[4]);
+			subunit = safe_atoi(argv[4]);
 
 		if (ifname) {
 			printf("generate_wl_para, ifname=%s, unit=%d, subunit=%d\n", ifname, unit, subunit);
@@ -985,7 +985,7 @@ static int rctest_main(int argc, char *argv[])
 	}
 #endif
         else if (strcmp(argv[1], "getbw") == 0) {
-                int unit = atoi(argv[2]);
+                int unit = safe_atoi(argv[2]);
                 int bw = wl_get_bw(unit);
                 printf("get wl_bw of unit_%d=%d\n", unit, bw);
         }
@@ -994,7 +994,7 @@ static int rctest_main(int argc, char *argv[])
 		printf("no_need_obd return %d\n", no_need_obd());
 	}
 	else if (strcmp(argv[1], "ptest")==0) {
-		pt_main(atoi(argv[2]));
+		pt_main(safe_atoi(argv[2]));
 		return 0;
 	}
 	else if (strcmp(argv[1], "forkd")==0) {
@@ -1002,9 +1002,9 @@ static int rctest_main(int argc, char *argv[])
 		int i, err=0;
 		char *nvp = NULL;
 		clock_t begin, end;
-		int loops = atoi(argv[2])?:2000;
-		int utime = atoi(argv[3])?:0;
-		int no_fork = atoi(argv[4]);
+		int loops = safe_atoi(argv[2])?:2000;
+		int utime = safe_atoi(argv[3])?:0;
+		int no_fork = safe_atoi(argv[4]);
 
 		pid = getpid();
 		if(no_fork) {
@@ -1075,7 +1075,7 @@ static int rctest_main(int argc, char *argv[])
 		int i, j, err=0;
 		clock_t begin, end;
 		int lockfd;
-		int loops = atoi(argv[2])?:10;
+		int loops = safe_atoi(argv[2])?:10;
 		char *file = "/tmp/ftest.log";
 
 		fp = fopen(file, "a+");
@@ -1488,7 +1488,7 @@ static int rctest_main(int argc, char *argv[])
 			char target_bssid[18];
 			snprintf(target_bssid, sizeof(target_bssid), "%s",argv[3]);
 
-			int target_channel = atoi(argv[4]);
+			int target_channel = safe_atoi(argv[4]);
 
 			char event_data[1024];
 			snprintf(event_data, sizeof(event_data), "{\"CFG\":{\"EID\": %d, \"mac\": \"%s\", \"bssid\": \"%s\", \"channel\": %d}}", EID_RM_11V_REQ, sta_mac, target_bssid, target_channel);
@@ -1659,8 +1659,8 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "l2gre") == 0) {
 		int unit;
 		if (argv[2]) {
-			unit = atoi(argv[2]);
-			if (argv[3] && atoi(argv[3]))
+			unit = safe_atoi(argv[2]);
+			if (argv[3] && safe_atoi(argv[3]))
 				start_l2gre(unit);
 			else
 				stop_l2gre(unit);
@@ -1669,8 +1669,8 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "l3gre") == 0) {
 		int unit;
 		if (argv[2]) {
-			unit = atoi(argv[2]);
-			if (argv[3] && atoi(argv[3]))
+			unit = safe_atoi(argv[2]);
+			if (argv[3] && safe_atoi(argv[3]))
 				start_l3gre(unit);
 			else
 				stop_l3gre(unit);
@@ -1680,9 +1680,9 @@ static int rctest_main(int argc, char *argv[])
 #ifdef RTCONFIG_MULTILAN_CFG
 	else if (strcmp(argv[1], "sdn") == 0) {
 		if (argv[2] && argv[3] && argv[4]) {
-			int sdn_idx = atoi(argv[2]);
+			int sdn_idx = safe_atoi(argv[2]);
 			unsigned long features = strtoul(argv[3], NULL, 0);
-			int action = atoi(argv[4]);
+			int action = safe_atoi(argv[4]);
 			handle_sdn_feature(sdn_idx, features, action);
 		}
 	}
@@ -1691,7 +1691,7 @@ static int rctest_main(int argc, char *argv[])
 	}
 #if defined(RTCONFIG_VIF_ONBOARDING) && defined(RTCONFIG_AMAS_5G_ONBOARDING)
 	else if (strcmp(argv[1], "get_avl_obvif_subunit") == 0) {
-		int unit = atoi(argv[2]);
+		int unit = safe_atoi(argv[2]);
 		_dprintf("subunit: %d\n", get_avl_obvif_subunit_by_unit(unit));
 	}
 #endif
@@ -1699,7 +1699,7 @@ static int rctest_main(int argc, char *argv[])
 #ifdef RTCONFIG_MULTIWAN_IF
 	else if (strcmp(argv[1], "mtwan_status")==0) {
 		if (argv[2])
-			_dprintf("mtwan status: %d\n", mtwanduck_get_mtwan_status(atoi(argv[2])));
+			_dprintf("mtwan status: %d\n", mtwanduck_get_mtwan_status(safe_atoi(argv[2])));
 		else {
 			int i;
 			_dprintf("mtwan status: ");
@@ -1710,7 +1710,7 @@ static int rctest_main(int argc, char *argv[])
 	}
 	else if (strcmp(argv[1], "mtwan_phy")==0) {
 		if (argv[2])
-			_dprintf("mtwan phy status: %d\n", mtwanduck_get_phy_status(atoi(argv[2])));
+			_dprintf("mtwan phy status: %d\n", mtwanduck_get_phy_status(safe_atoi(argv[2])));
 		else {
 			int i;
 			_dprintf("mtwan phy status: ");
@@ -1727,7 +1727,7 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "mtwan_conn")==0) {
 		mtwan_init_profile();
 		if (argv[2] && argv[3])
-			mtwan_handle_wan_conn(atoi(argv[2]), atoi(argv[3]));
+			mtwan_handle_wan_conn(safe_atoi(argv[2]), safe_atoi(argv[3]));
 		else
 			_dprintf("<wan_unit> <connection status>\n");
 	}
@@ -1777,7 +1777,7 @@ static int rctest_main(int argc, char *argv[])
 			else if (!strcmp(argv[2], "app"))
 				printf("%d\n", atee_check_admin_app_pw_exist());
 			else if (!strcmp(argv[2], "data") && argv[3])
-				printf("%d\n", atee_check_common_data_exist(atoi(argv[3])));
+				printf("%d\n", atee_check_common_data_exist(safe_atoi(argv[3])));
 			else if (!strcmp(argv[2], "match") && argv[3])
 				printf("%d\n", atee_check_admin_pw_match(argv[3]));
 			else if (!strcmp(argv[2], "match_def") && argv[3])
@@ -1793,7 +1793,7 @@ static int rctest_main(int argc, char *argv[])
 			else if (!strcmp(argv[2], "set_app") && argv[3])
 				atee_set_admin_app_pw(argv[3]);
 			else if (!strcmp(argv[2], "set_data") && argv[3] && argv[4])
-				atee_set_common_data(atoi(argv[3]), argv[4], strlen(argv[4]));
+				atee_set_common_data(safe_atoi(argv[3]), argv[4], strlen(argv[4]));
 			else if (!strcmp(argv[2], "crypt")) {
 				char buf[64] = {0};
 				atee_get_admin_crypt(argv[3], buf, sizeof(buf));
@@ -1826,7 +1826,7 @@ static int rctest_main(int argc, char *argv[])
 			}
 			else if (!strcmp(argv[2], "get_data") && argv[3]) {
 				char buf[64] = {0};
-				atee_get_common_data(atoi(argv[3]), (uint8_t*)buf, sizeof(buf));
+				atee_get_common_data(safe_atoi(argv[3]), (uint8_t*)buf, sizeof(buf));
 				if (buf[0])
 					printf("%s\n", buf);
 			}
@@ -1854,7 +1854,7 @@ static int rctest_main(int argc, char *argv[])
 #endif
 	else {
 		if(argv[2])
-			on = atoi(argv[2]);
+			on = safe_atoi(argv[2]);
 		else
 			on = 0;
 		_dprintf("%s %d\n", argv[1], on);
@@ -1884,8 +1884,8 @@ static int rctest_main(int argc, char *argv[])
 			else stop_wan_port();
 		}
 		else if (strcmp(argv[1], "firewall") == 0) {
-			int wan_unit = (argv[3]) ? atoi(argv[3]) : wan_primary_ifunit();
-			int lan_unit = (argv[4]) ? atoi(argv[4]) : 0;
+			int wan_unit = (argv[3]) ? safe_atoi(argv[3]) : wan_primary_ifunit();
+			int lan_unit = (argv[4]) ? safe_atoi(argv[4]) : 0;
 			start_firewall(wan_unit, lan_unit);
 			//if (on) start_firewall();
 			//else stop_firewall();
@@ -1964,7 +1964,7 @@ static int rctest_main(int argc, char *argv[])
 				}
 #endif
 #ifdef RTCONFIG_MULTIWAN_IF
-				int unit = (argv[3]) ? atoi(argv[3]) : 0;
+				int unit = (argv[3]) ? safe_atoi(argv[3]) : 0;
 				add_iQosRules(get_wan_ifname(unit));
 				start_mtwan_iQos(unit);
 #else
@@ -2007,7 +2007,7 @@ static int rctest_main(int argc, char *argv[])
 				}
 #endif
 #ifdef RTCONFIG_MULTIWAN_IF
-				int unit = (argv[3]) ? atoi(argv[3]) : 0;
+				int unit = (argv[3]) ? safe_atoi(argv[3]) : 0;
 				stop_mtwan_iQos(unit);
 				del_mtwan_iQosRules(unit);
 #else
@@ -2037,22 +2037,22 @@ static int rctest_main(int argc, char *argv[])
 #ifdef CONFIG_BCMWL5
 		else if (strcmp(argv[1], "gpiow") == 0) {
 #ifdef HND_ROUTER
-			if (argc>=4) set_gpio_rc(atoi(argv[2]), atoi(argv[3]));
+			if (argc>=4) set_gpio_rc(safe_atoi(argv[2]), safe_atoi(argv[3]));
 #else
-			if (argc>=4) set_gpio(atoi(argv[2]), atoi(argv[3]));
+			if (argc>=4) set_gpio(safe_atoi(argv[2]), safe_atoi(argv[3]));
 #endif
 		}
 		else if (strcmp(argv[1], "gpior") == 0) {
 #ifdef HND_ROUTER
-			printf("%d\n", get_gpio_rc(atoi(argv[2])));
+			printf("%d\n", get_gpio_rc(safe_atoi(argv[2])));
 #else
-			printf("%d\n", get_gpio(atoi(argv[2])));
+			printf("%d\n", get_gpio(safe_atoi(argv[2])));
 #endif
 		}
 #ifdef HND_ROUTER
 #if defined(RTCONFIG_BONDING) && defined(RTCONFIG_HND_ROUTER_AX)
 		else if (strcmp(argv[1], "get_bonding_port_status") == 0) {
-			int port = atoi(argv[2]);
+			int port = safe_atoi(argv[2]);
 			int ret = 0;
 
 			ret = get_bonding_port_status(port);
@@ -2089,12 +2089,12 @@ static int rctest_main(int argc, char *argv[])
 		} 
 #endif
 		else if (strcmp(argv[1], "gled") == 0) {
-			int gpio = atoi(argv[2]);
+			int gpio = safe_atoi(argv[2]);
 			int act_low = _gpio_active_low(gpio & 0xff);
 			int on = !strcmp(argv[3], "on")?1:0;
 
 			if (argc>=4) {
-				printf("turn %s gpio led %d\n", on?"on":"off", atoi(argv[2]));
+				printf("turn %s gpio led %d\n", on?"on":"off", safe_atoi(argv[2]));
 				set_gpio_rc(gpio, on?(act_low?0:1):(act_low?1:0));	
 			}
 		}
@@ -2109,16 +2109,16 @@ static int rctest_main(int argc, char *argv[])
 		}
 #if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 		else if (strcmp(argv[1], "set_chwt") == 0) {
-			acs_set_chwt(atoi(argv[2]));
+			acs_set_chwt(safe_atoi(argv[2]));
 		}
 #endif
 #if 0
 #if defined(EBG19)
 		else if (strcmp(argv[1], "readv") == 0) {
-			read_ext_53134_vlan(atoi(argv[2]));
+			read_ext_53134_vlan(safe_atoi(argv[2]));
 		}
 		else if (strcmp(argv[1], "setv") == 0) {	/* rc setv 500 "ethsw_0 ethsw_1" "ethsw_0 ethsw_1" */
-			int vlanid = atoi(argv[2]);
+			int vlanid = safe_atoi(argv[2]);
 			char *untag_ifnames = argv[3];
 			char *fwd_ifnames = argv[4];
 
@@ -2130,19 +2130,19 @@ static int rctest_main(int argc, char *argv[])
 #endif
 #if defined(TUFAX3000_V2) || defined(RTAXE7800)
 		else if (strcmp(argv[1], "led_53134") == 0) {
-			bcm53134_led_control(atoi(argv[2]));
+			bcm53134_led_control(safe_atoi(argv[2]));
 		}
 #endif
 #endif
 #endif
 #if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(TUFAX5400) || defined(RTAX82U) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(GSAX3000) || defined(GSAX5400) || defined(BCM6756) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(BCM6855) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO) || defined(XD6_V2) || defined(RTAX5400)
 		else if (strcmp(argv[1], "gpio2r") == 0) {
-			printf("%d\n", get_gpio2(atoi(argv[2])));
+			printf("%d\n", get_gpio2(safe_atoi(argv[2])));
 		}
 #endif
 #ifndef HND_ROUTER
 		else if (strcmp(argv[1], "gpiod") == 0) {
-			if (argc>=4) gpio_dir(atoi(argv[2]), atoi(argv[3]));
+			if (argc>=4) gpio_dir(safe_atoi(argv[2]), safe_atoi(argv[3]));
 		}
 #endif
 #if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
@@ -2160,12 +2160,12 @@ static int rctest_main(int argc, char *argv[])
 			set_action(on);
 		}
 		else if (strcmp(argv[1], "pwr_usb") == 0) {
-			set_pwr_usb(atoi(argv[2]));
+			set_pwr_usb(safe_atoi(argv[2]));
 			_dprintf("done.\n");
 		}
 #ifdef RT4GAC68U
 		else if (strcmp(argv[1], "pwr_modem") == 0) {
-			set_pwr_modem(atoi(argv[2]));
+			set_pwr_modem(safe_atoi(argv[2]));
 			_dprintf("done.\n");
 		}
 #endif
@@ -2199,12 +2199,12 @@ static int rctest_main(int argc, char *argv[])
 #endif
 #ifdef RTCONFIG_ASUSCTRL
 		else if (strcmp(argv[1], "asusctrl") == 0) {
-			printf("ignore=%d, en=%d, flag=(0x%x)\n", asus_ctrl_ignore(), asus_ctrl_en(atoi(argv[2])), nvram_get_hex("asusctrl_flags"));
+			printf("ignore=%d, en=%d, flag=(0x%x)\n", asus_ctrl_ignore(), asus_ctrl_en(safe_atoi(argv[2])), nvram_get_hex("asusctrl_flags"));
 		}
 #endif
 #ifdef RTCONFIG_BROOP
 		else if (strcmp(argv[1], "broop") == 0) {
-			int i, dtime = atoi(argv[2])?:10;
+			int i, dtime = safe_atoi(argv[2])?:10;
 
 			for(i=0; i<dtime; ++i) {
 				sleep(1);
@@ -2215,7 +2215,7 @@ static int rctest_main(int argc, char *argv[])
 #ifdef RTCONFIG_COMFW
 		else if (strcmp(argv[1], "dump_models") == 0) {
 			int i, cfd = 0;
-			cfd = argv[2]?atoi(argv[2]):0;
+			cfd = argv[2]?safe_atoi(argv[2]):0;
 
 			for(i=1; i<MODEL_MAX; ++i) {
 				_dprintf("%s: %d : %d\n", asus_models_str[i], i, cfd ? get_cf_id(i, NULL) : 0);
@@ -2234,7 +2234,7 @@ static int rctest_main(int argc, char *argv[])
 		else if (strcmp(argv[1], "cfid") == 0) {
 			_dprintf("modelid:%d, model's cfid=%d\n", get_model(), get_cf_id(get_model(), NULL));
 
-			int target = argv[2]? atoi(argv[2]):0;
+			int target = argv[2]? safe_atoi(argv[2]):0;
 
 			if(target)
 				_dprintf("chk target(%d)'s cfid=%d\n", target, get_cf_id(target, NULL));
@@ -2250,7 +2250,7 @@ static int rctest_main(int argc, char *argv[])
 			_dprintf("Chk txpwr_target_max w/ %s is %f .\n", wlif, max_txpwr);
 		}
 		else if (strcmp(argv[1], "txpwr_max_band") == 0) {
-			int unit = atoi(argv[2]);
+			int unit = safe_atoi(argv[2]);
 			double max_txpwr;
 
 			max_txpwr = (double)get_wifi_maxpower(unit);
@@ -2276,15 +2276,15 @@ static int rctest_main(int argc, char *argv[])
 		}
 #ifdef RTBE88U
 		else if (strcmp(argv[1], "gpior_input") == 0) {
-			printf("%d\n", get_gpio(atoi(argv[2])));
+			printf("%d\n", get_gpio(safe_atoi(argv[2])));
 		}
 #endif
 		else if (strcmp(argv[1], "get_psta_status") == 0) {
-			printf("ret = %d\n", get_psta_status(atoi(argv[2])));
+			printf("ret = %d\n", get_psta_status(safe_atoi(argv[2])));
 		}
 		else if (strcmp(argv[1], "get_pap_bssid") == 0) {
 			char pap_bssid[] = "XX:XX:XX:XX:XX:XX\0";
-			printf("ret = %s\n", get_pap_bssid(atoi(argv[2]), pap_bssid));
+			printf("ret = %s\n", get_pap_bssid(safe_atoi(argv[2]), pap_bssid));
 		}
 #ifdef RTBE58_GO
 		else if (strcmp(argv[1], "off_pd") == 0) {
@@ -2332,7 +2332,7 @@ static int rctest_main(int argc, char *argv[])
 			if(argc != 4)
 				printf("chk_knv_san [re_mode] [reset 1/0]");
 			else
-				printf("ret = %d\n", chk_nv_sanity(atoi(argv[2]), atoi(argv[3])));
+				printf("ret = %d\n", chk_nv_sanity(safe_atoi(argv[2]), safe_atoi(argv[3])));
 		}
 		else if (strcmp(argv[1], "chk_nv_err") == 0) {
 			printf("ret = %d\n", check_knv_errors(argv[2]));
@@ -2365,7 +2365,7 @@ static int rctest_main(int argc, char *argv[])
 			rc_sendEventToRast(json_data);
 		}
 #endif
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+#ifdef RTCONFIG_MXL_826XX
 		else if (strcmp(argv[1], "mxl_init") == 0) {
                         printf("do mxl init..\n");
                         //api_gsw_get_links("");        // move to the api
@@ -2431,7 +2431,7 @@ static int rctest_main(int argc, char *argv[])
 			GSW_portLinkCfg_t Param;
 			int port;
 
-			if (port = atoi(argv[2]) < 0) {
+			if (port = safe_atoi(argv[2]) < 0) {
 				return -1;
 			}
 
@@ -2446,7 +2446,7 @@ static int rctest_main(int argc, char *argv[])
 			GSW_portLinkCfg_t Param;
 			int port;
 
-			if (port = atoi(argv[2]) < 0) {
+			if (port = safe_atoi(argv[2]) < 0) {
 				return -1;
 			}
 
@@ -2458,7 +2458,7 @@ static int rctest_main(int argc, char *argv[])
 		else if (strcmp(argv[1], "setup_vlan") == 0) {
 			_dprintf("%s: arg2=%s, arg3=%s\n", __func__, argv[2], argv[3]);
 
-			int vid = atoi(argv[2]);
+			int vid = safe_atoi(argv[2]);
 			unsigned long mask = strtol(argv[3], (char**)NULL, 16);
 
 			if (nvram_match("do_mxl_init", "1"))
@@ -2468,7 +2468,7 @@ static int rctest_main(int argc, char *argv[])
 			printf("ret = %d\n", __setup_vlan(vid, 0, mask));
 		}
 #endif
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
+#ifdef RTCONFIG_MXL_826XX
 		else if (strcmp(argv[1], "mxl_fw_check") == 0) {
 			stop_mxlmonitor();
 			mxl_fw_check();
@@ -3335,7 +3335,7 @@ static const applets_t applets[] = {
 #if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	{ "rtkmonitor",			rtkmonitor_main			},
 #endif
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
+#ifdef RTCONFIG_MXL_826XX
 	{ "mxlmonitor",			mxlmonitor_main			},
 #endif
 #if defined(GT7) || defined(GS7_PRO_MAX)
@@ -4448,7 +4448,7 @@ int main(int argc, char **argv)
 			char *prefix;
 			if (argv[1][0]=='\0' || argv[2][0]=='\0' || argv[3][0]=='\0')
 				return 0;
-			band = (unsigned char)atoi(argv[1]);
+			band = (unsigned char)safe_atoi(argv[1]);
 			if (band >= MAX_NR_WL_IF)
 				return 0;
 			if (!strncmp(argv[3], "NULL", 4))
@@ -4492,7 +4492,7 @@ int main(int argc, char **argv)
 		return 0;
 	}
 #endif
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTCONFIG_MXL_826XX) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	else if (!strcmp(base, "config_switch")) {
 		config_switch();
 		return 0;
@@ -4525,7 +4525,7 @@ int main(int argc, char **argv)
 	else if (!strcmp(base, "restart_usb")) {
 		int f_stop = 0;
 		if (argc == 2)
-			f_stop = atoi(argv[1]);
+			f_stop = safe_atoi(argv[1]);
 		printf("%s usb...\n", f_stop ? "stop" : "restart");
 		restart_usb(f_stop);
 		return 0;
@@ -4659,7 +4659,7 @@ int main(int argc, char **argv)
 		char chk_value[4];
 
 		if (f_read_string(PID_FILE, chk_value, 4) > 0
-				&& atoi(chk_value) != getpid()) {
+				&& safe_atoi(chk_value) != getpid()) {
 			_dprintf("Already running!\n");
 			return 0;
 		}
@@ -4674,7 +4674,7 @@ int main(int argc, char **argv)
 
 		strlcpy(chk_value, nvram_safe_get("apps_state_switch"), sizeof(chk_value));
 		if (strcmp(chk_value, "")) {
-			if (atoi(chk_value) != APPS_SWITCH_FINISHED && !pids("app_switch.sh")) {
+			if (safe_atoi(chk_value) != APPS_SWITCH_FINISHED && !pids("app_switch.sh")) {
 				_dprintf("Don't have the switch script.\n");
 				nvram_set("apps_state_switch", "");
 			}
@@ -4685,7 +4685,7 @@ int main(int argc, char **argv)
 
 		strlcpy(chk_value, nvram_safe_get("apps_state_install"), sizeof(chk_value));
 		if (strcmp(chk_value, "")) {
-			if (atoi(chk_value) != APPS_INSTALL_FINISHED && !pids("app_install.sh")) {
+			if (safe_atoi(chk_value) != APPS_INSTALL_FINISHED && !pids("app_install.sh")) {
 				_dprintf("Don't have the install script.\n");
 				nvram_set("apps_state_install", "");
 			}
@@ -4696,7 +4696,7 @@ int main(int argc, char **argv)
 
 		strlcpy(chk_value, nvram_safe_get("apps_state_upgrade"), sizeof(chk_value));
 		if (strcmp(chk_value, "")) {
-			if (atoi(chk_value) != APPS_UPGRADE_FINISHED && !pids("app_upgrade.sh")) {
+			if (safe_atoi(chk_value) != APPS_UPGRADE_FINISHED && !pids("app_upgrade.sh")) {
 				_dprintf("Don't have the upgrade script.\n");
 				nvram_set("apps_state_upgrade", "");
 			}
@@ -4707,7 +4707,7 @@ int main(int argc, char **argv)
 
 		strlcpy(chk_value, nvram_safe_get("apps_state_enable"), sizeof(chk_value));
 		if (strcmp(chk_value, "")) {
-			if (atoi(chk_value) != APPS_ENABLE_FINISHED && !pids("app_set_enabled.sh")) {
+			if (safe_atoi(chk_value) != APPS_ENABLE_FINISHED && !pids("app_set_enabled.sh")) {
 				_dprintf("Don't have the enable script.\n");
 				nvram_set("apps_state_enable", "");
 			}
@@ -4824,64 +4824,64 @@ int main(int argc, char **argv)
 #if defined(RTCONFIG_AMAS)
 	else if (!strcmp(base, "gstat")) {
 		if (argc == 2)
-			return getstat(atoi(argv[1]));
+			return getstat(safe_atoi(argv[1]));
 	}
 	else if (!strcmp(base, "groam")) {
 		if (argc == 2)
-			return getgroam(atoi(argv[1]));
+			return getgroam(safe_atoi(argv[1]));
 	}
 	else if (!strcmp(base, "gApCliStatus")) {
 		if (argc == 2)
-			return get_apcli_connect_status(atoi(argv[1]));
+			return get_apcli_connect_status(safe_atoi(argv[1]));
 	}
 	else if (!strcmp(base, "gcliq")) {
 		if (argc == 2)
-			return getcliq(atoi(argv[1]));
+			return getcliq(safe_atoi(argv[1]));
 	}
 	else if (!strcmp(base, "gclrssi")) {
 		if (argc == 2)
-			return getclrssi(atoi(argv[1]));
+			return getclrssi(safe_atoi(argv[1]));
 	}
 	else if (!strcmp(base, "gMonitorRssi")) {
 		if (argc == 2)
-			return get_monitor_rssi(atoi(argv[1]));
+			return get_monitor_rssi(safe_atoi(argv[1]));
 	}
 	else if (!strcmp(base, "gMacList")) {
 		if (argc == 2)
-			return get_maclist(atoi(argv[1]));
+			return get_maclist(safe_atoi(argv[1]));
 	}
 	else if (!strcmp(base, "gdfsChannel")) {
 		if (argc == 2)
-			return get_dfschannel(atoi(argv[1]));
+			return get_dfschannel(safe_atoi(argv[1]));
 	}
 	else if (!strcmp(base, "gdfsStatus")) {
 		if (argc == 2)
-			return get_dfs_status(atoi(argv[1]));
+			return get_dfs_status(safe_atoi(argv[1]));
 	}
 	else if (!strcmp(base, "gChannelInfo")) {
 		if (argc == 2)
-			return get_channelinfo(atoi(argv[1]));
+			return get_channelinfo(safe_atoi(argv[1]));
 	}
 	else if (!strcmp(base, "apclien")) {
 		if (argc == 2)
-			return get_apclien(atoi(argv[1]));
+			return get_apclien(safe_atoi(argv[1]));
 	}
 	else if (!strcmp(base, "send_bcnreq")) {
 		if (argc == 2)
-			return send_beacon_request(atoi(argv[1]),0);
+			return send_beacon_request(safe_atoi(argv[1]),0);
 	}
 	else if (!strcmp(base, "get_rrm_bcnrep")) {
 		if (argc == 2)
-			return get_rrm_bcn_resp(atoi(argv[1]));
+			return get_rrm_bcn_resp(safe_atoi(argv[1]));
 	}
 	else if (!strcmp(base, "get_rclass")) {
 		if (argc == 2)
-			return get_rclass(atoi(argv[1]));
+			return get_rclass(safe_atoi(argv[1]));
 	}
 #ifdef RTCONFIG_BTM_11V
 	else if (!strcmp(base, "send_11v")) {
 		if (argc == 5)
-			return amas_11v(atoi(argv[1]), atoi(argv[2]), argv[3], argv[4]);
+			return amas_11v(safe_atoi(argv[1]), safe_atoi(argv[2]), argv[3], argv[4]);
 	}
 #endif /* RTCONFIG_BTM_11V */
 #endif /* RTCONFIG_AMAS */
@@ -4891,7 +4891,7 @@ int main(int argc, char **argv)
 			printf("Usage: gen_ralink_config [band] [is_iNIC]\n");
 			return 0;
 		}
-		return gen_ralink_config(atoi(argv[1]), atoi(argv[2]));
+		return gen_ralink_config(safe_atoi(argv[1]), safe_atoi(argv[2]));
 	}
 #endif
 #endif
@@ -4966,7 +4966,7 @@ int main(int argc, char **argv)
 	}
 #if defined(RTCONFIG_WLCSCAN_RSSI)
 	else if (!strcmp(base, "wlcscan_ssid_rssi")) {
-		return wlcscan_ssid_rssi(atoi(argv[1]), argv[2]);
+		return wlcscan_ssid_rssi(safe_atoi(argv[1]), argv[2]);
 	}
 #endif
 #ifdef RTCONFIG_QTN
@@ -5032,12 +5032,12 @@ int main(int argc, char **argv)
 		if (argc != 2)
 			return 0;
 
-		return setup_dnsmq(atoi(argv[1]));
+		return setup_dnsmq(safe_atoi(argv[1]));
 	}
 #endif
 	else if (!strcmp(base, "add_multi_routes")) {
 		if(argc == 2)
-			return add_multi_routes(atoi(argv[1]), -1);
+			return add_multi_routes(safe_atoi(argv[1]), -1);
 		else
 			return add_multi_routes(0, -1);
 #if defined(RTCONFIG_WIREGUARD) || defined(RTCONFIG_OPENVPN)
@@ -5050,7 +5050,7 @@ int main(int argc, char **argv)
 		if(strcmp(argv[1], "?") == 0)
 			return dump_led_enum();
 
-		return do_led_ctrl(atoi(argv[1]), atoi(argv[2]));
+		return do_led_ctrl(safe_atoi(argv[1]), safe_atoi(argv[2]));
 	}
 #ifdef RTCONFIG_INTERNAL_GOBI
 #if defined(RT4GAC86U) || defined(RT4GAX56)
@@ -5060,13 +5060,13 @@ int main(int argc, char **argv)
 _dprintf("LED_NOMOBILE=%d, LED_2G_YELLOW=%d, LED_3G_BLUE=%d, LED_4G_WHITE=%d.\n", LED_NOMOBILE, LED_2G_YELLOW, LED_3G_BLUE, LED_4G_WHITE);
 
 		if(!strcmp(argv[1], "no"))
-			return do_led_ctrl(LED_NOMOBILE, atoi(argv[2]));
+			return do_led_ctrl(LED_NOMOBILE, safe_atoi(argv[2]));
 		else if(!strcmp(argv[1], "2g"))
-			return do_led_ctrl(LED_2G_YELLOW, atoi(argv[2]));
+			return do_led_ctrl(LED_2G_YELLOW, safe_atoi(argv[2]));
 		else if(!strcmp(argv[1], "3g"))
-			return do_led_ctrl(LED_3G_BLUE, atoi(argv[2]));
+			return do_led_ctrl(LED_3G_BLUE, safe_atoi(argv[2]));
 		else
-			return do_led_ctrl(LED_4G_WHITE, atoi(argv[2]));
+			return do_led_ctrl(LED_4G_WHITE, safe_atoi(argv[2]));
 	}
 #endif
 #endif
@@ -5080,10 +5080,10 @@ _dprintf("LED_NOMOBILE=%d, LED_2G_YELLOW=%d, LED_3G_BLUE=%d, LED_4G_WHITE=%d.\n"
 		}
 
 		int led_id = get_led_id(argv[1]);
-		int onoff = atoi(argv[2]);
+		int onoff = safe_atoi(argv[2]);
 
 		printf("Switch %s(%d) %s...\n", argv[1], led_id, (onoff)?"on":"off");
-		return do_led_ctrl(led_id, atoi(argv[2]));
+		return do_led_ctrl(led_id, safe_atoi(argv[2]));
 	}
 #ifdef HND_ROUTER
 #if defined(RTCONFIG_KNV_BACKUP) || defined(RTCONFIG_NV_BACKUP2)
@@ -5283,7 +5283,7 @@ _dprintf("LED_NOMOBILE=%d, LED_2G_YELLOW=%d, LED_3G_BLUE=%d, LED_4G_WHITE=%d.\n"
 		}
 
 		if (argc == 2)
-			modem_unit = atoi(argv[1]);
+			modem_unit = safe_atoi(argv[1]);
 		else
 			modem_unit = 0;
 
@@ -5474,8 +5474,8 @@ _dprintf("LED_NOMOBILE=%d, LED_2G_YELLOW=%d, LED_3G_BLUE=%d, LED_4G_WHITE=%d.\n"
 			printf("Usage: %s <wan unit>.\n", argv[0]);
 			return 0;
 		}
-		s46reset(atoi(argv[1]));
-		printf("WAN Unit:[%d] MAP nvarm is reset.\n", atoi(argv[1]));
+		s46reset(safe_atoi(argv[1]));
+		printf("WAN Unit:[%d] MAP nvarm is reset.\n", safe_atoi(argv[1]));
 		return 0;
 	}
 	else if (!strcmp(base, "mapcalc")) {
@@ -5609,7 +5609,7 @@ _dprintf("LED_NOMOBILE=%d, LED_2G_YELLOW=%d, LED_3G_BLUE=%d, LED_4G_WHITE=%d.\n"
 			size_t  mtl_sz = 0;
 			MTLAN_T *pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
 
-			if (!get_mtlan_by_vid(atoi(argv[1]), pmtl, &mtl_sz)) {
+			if (!get_mtlan_by_vid(safe_atoi(argv[1]), pmtl, &mtl_sz)) {
 				printf("Invalid!!!\n");
 				FREE_MTLAN((void *)pmtl);
 				return 0;
@@ -5625,7 +5625,7 @@ _dprintf("LED_NOMOBILE=%d, LED_2G_YELLOW=%d, LED_3G_BLUE=%d, LED_4G_WHITE=%d.\n"
 			size_t  mtl_sz = 0;
 			MTLAN_T *pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
 
-			if (!get_rm_mtlan_by_vid(atoi(argv[1]), pmtl, &mtl_sz)) {
+			if (!get_rm_mtlan_by_vid(safe_atoi(argv[1]), pmtl, &mtl_sz)) {
 				printf("Invalid!!!\n");
 				FREE_MTLAN((void *)pmtl);
 				return 0;
@@ -5640,7 +5640,7 @@ _dprintf("LED_NOMOBILE=%d, LED_2G_YELLOW=%d, LED_3G_BLUE=%d, LED_4G_WHITE=%d.\n"
 			print_mtlan_by_idx_usage(argv[0]);
 			return 0;
 		}
-		__rc_get_mtlan_by_idx(argv[1], atoi(argv[2]), 0);
+		__rc_get_mtlan_by_idx(argv[1], safe_atoi(argv[2]), 0);
 		return 0;
 	}
 	else if (!strcmp(base, "get_rm_mtlan_by_idx")) {
@@ -5648,7 +5648,7 @@ _dprintf("LED_NOMOBILE=%d, LED_2G_YELLOW=%d, LED_3G_BLUE=%d, LED_4G_WHITE=%d.\n"
 			print_mtlan_by_idx_usage(argv[0]);
 			return 0;
 		}
-		__rc_get_mtlan_by_idx(argv[1], atoi(argv[2]), 1);
+		__rc_get_mtlan_by_idx(argv[1], safe_atoi(argv[2]), 1);
 		return 0;
 	}
 	else if (!strcmp(base, "apg_get_status")) {
@@ -5657,7 +5657,7 @@ _dprintf("LED_NOMOBILE=%d, LED_2G_YELLOW=%d, LED_3G_BLUE=%d, LED_4G_WHITE=%d.\n"
 			return 0;
 		}
 
-		if (apg_get_status(atoi(argv[1]), NULL, 0) == 0)
+		if (apg_get_status(safe_atoi(argv[1]), NULL, 0) == 0)
 			printf("OK\n");
 		else
 			printf("NG\n");
@@ -5811,7 +5811,7 @@ void exe_eu_wa_rr(void){
 	return ;
 #endif
 	//find dfs ifname
-	strncpy(ifnames_tmp,nvram_safe_get("wl_ifnames"),sizeof(ifnames_tmp));
+	strlcpy(ifnames_tmp,nvram_safe_get("wl_ifnames"),sizeof(ifnames_tmp));
 
 	foreach(ifname, ifnames_tmp, next){
 		if_num++;
@@ -5854,30 +5854,30 @@ void exe_eu_wa_rr(void){
 	snprintf(cmd_cc_tmp,sizeof(cmd_cc_tmp),"wl -i %s country %s",ifname,tmp_country_cdoe);
 	snprintf(cmd_cc_ori,sizeof(cmd_cc_ori),"wl -i %s country %s",ifname,nvram_safe_get(ccode));
 
-	system(cmd_down);
+	safe_do_system(cmd_down);
 	//_dprintf("%s\n",cmd_down);
 	sleep(1);
-	system(cmd_cc_tmp);
+	safe_do_system(cmd_cc_tmp);
 	//_dprintf("%s\n",cmd_cc_tmp);
 	sleep(1);
-	system(cmd_up);
+	safe_do_system(cmd_up);
 	//_dprintf("%s\n",cmd_up);
 	sleep(1);
 
 	//_dprintf("%s\n",cmd_down);
-	system(cmd_down);
+	safe_do_system(cmd_down);
 	sleep(1);
 	//_dprintf("%s\n",cmd2);
-	system(cmd2);
+	safe_do_system(cmd2);
 	sleep(1);
 	//_dprintf("%s\n",cmd3);
-	system(cmd3);
+	safe_do_system(cmd3);
 	sleep(1);
 	//_dprintf("%s\n",cmd_cc_ori);
-	system(cmd_cc_ori);
+	safe_do_system(cmd_cc_ori);
 	sleep(1);	
 	//_dprintf("%s\n",cmd_up);
-	system(cmd_up);
+	safe_do_system(cmd_up);
 	sleep(1);
 	//_dprintf("%s\n",);
 	notify_rc("restart_acsd");

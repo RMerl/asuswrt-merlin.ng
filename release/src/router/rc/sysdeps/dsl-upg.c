@@ -362,11 +362,11 @@ int check_tc_firmware_crc(void)
 
 	// get ver number from trx
 	buf[3] = 0;
-	new_modem_trx_ver = atoi(buf);
+	new_modem_trx_ver = safe_atoi(buf);
 #ifdef DSL_N55U_ANNEX_B	
-	curr_modem_trx_ver = atoi(TC_DSL_FW_VER_ANNEX_B);	
+	curr_modem_trx_ver = safe_atoi(TC_DSL_FW_VER_ANNEX_B);	
 #else
-	curr_modem_trx_ver = atoi(TC_DSL_FW_VER);
+	curr_modem_trx_ver = safe_atoi(TC_DSL_FW_VER);
 #endif
 	if(curr_modem_trx_ver > new_modem_trx_ver)
 	{

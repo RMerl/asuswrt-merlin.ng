@@ -1686,6 +1686,10 @@ config RTCONFIG_N18UTXBF
 	bool "enable TXBF for RT-N18U"
 	default n
 
+config RTCONFIG_GTBOOSTER
+	bool "GT-Booster ark engine"
+	default n
+
 config RTCONFIG_HNS
 	bool "TrendMicro Home Network Security (HNS)"
 	default n
@@ -1739,6 +1743,10 @@ config RTCONFIG_ROG_UI
 	bool "ROG theme support"
 	default n
 
+config RTCONFIG_YEAR20
+	bool "ROG 20th anniversary theme support"
+	default n
+
 config RTCONFIG_GS_UI
         bool "GS themme support"
         default n
@@ -1746,6 +1754,10 @@ config RTCONFIG_GS_UI
 config RTCONFIG_TUF_UI
         bool "TUF theme support"
         default n
+
+config RTCONFIG_PROART_UI
+		bool "PROART theme support"
+		default n
 
 config RTCONFIG_GEOIP
 	bool "determine country by IP address"
@@ -1791,6 +1803,9 @@ config RTCONFIG_RTL8221VB
 
 config RTCONFIG_EXTPHY_BCM84880
 	bool "BCM84880 external 2.5Gbps PHY"
+
+config RTCONFIG_BCM_EXT_SWITCH_RTK
+	bool "RTCONFIG_BCM_EXT_SWITCH_RTK"
 
 config RTCONFIG_BCM_HND_CRASHLOG
 	bool "BRCM HND crashlog"
@@ -2179,10 +2194,6 @@ config RTCONFIG_MERLINUPDATE
 config RTCONFIG_VPN_FUSION_MERLIN
 	bool "Implements Merlin-specific code with Fusion enabled"
 	depends on RTCONFIG_VPN_FUSION
-	default n
-
-config RTCONFIG_OPENSSL11
-	bool "OpenSSL 1.1.x"
 	default n
 
 config RTCONFIG_DNSFILTER
@@ -3279,6 +3290,10 @@ config RTCONFIG_PRESSURE_SENSOR
 	bool "Pressure sensor"
 	default n
 
+config RTCONFIG_PRESSURE_SENSOR_CMP201
+	bool "Pressure sensor CMP201"
+	default n
+
 config RTCONFIG_BCM_AFC
 	bool "BCM AFC features : afcd / afcmd / locpold"
 	default n
@@ -3313,6 +3328,11 @@ config RTCONFIG_MLO_CONFIG_556
 	bool "MLO default config 556 in 2556 model"
 	depends on RTCONFIG_MLO
 	default n
+
+config RTCONFIG_RE_MLO_VSIE_ACTIVE
+        bool "Enable add RE MLO in VSIE"
+        default n
+        depends on RTCONFIG_MLO
 
 config RTCONFIG_MLO_DEFAULT_ACTIVE
         bool "Enable MLO in default"
@@ -3366,3 +3386,31 @@ config RTCONFIG_SINGLE_LED_NIGHT_MODE
 	bool "SINGLE LED NIGHT MODE FUNCTION"
 	default n
 
+ config RTCONFIG_AURA_SCHED
+ 	bool "AURA scheduler"
+ 	default n
+ 
+ config RTCONFIG_AURA_NIGHT_SCHED
+ 	bool "AURA night mode scheduler"
+ 	default n
+ 
+ config RTCONFIG_LED_SCHED
+ 	bool "LED scheduler"
+ 	default n
+ 
+ config RTCONFIG_LED_NIGHT_SCHED
+ 	bool "LED night mode scheduler"
+ 	default n
+ 
+ config RTCONFIG_MXL_826XX
+ 	bool "MaxLinear MxL862XX"
+ 	default n
+ 
+ config RTCONFIG_AMAS_5G_ONBOARDING
+ 	bool "onboarding via 5G"
+ 	default n
+ 
+ config RTCONFIG_VLANCTL
+ 	bool "BRCM Wifi7 vlanctl support"
+ 	depends on RTCONFIG_HND_ROUTER_BE_4916
+ 	default n

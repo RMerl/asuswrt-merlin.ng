@@ -221,7 +221,13 @@ var getUrlParameter = function getUrlParameter(param){
 	}
 	return "";
 };
-var theme = getUrlParameter("current_theme").toUpperCase();
+function getSafeTheme(paramName, allowedValues = ['WHITE', 'ROG', 'TUF', '']) {
+	let rawValue = getUrlParameter(paramName);
+	if (!rawValue) return "";
+	let safePrefix = rawValue.toUpperCase().match(/^[A-Z0-9_]*/)[0];
+	return allowedValues.includes(safePrefix) ? safePrefix : "";
+}
+var theme = getSafeTheme("current_theme").toUpperCase();
 
 var wans_dualwan = '<% nvram_get("wans_dualwan"); %>';
 var wans_lanport = '<% nvram_get("wans_lanport"); %>';

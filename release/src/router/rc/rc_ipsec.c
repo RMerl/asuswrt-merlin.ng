@@ -131,10 +131,10 @@ int ipsec_profile_int_parse(int ike_esp_type, char *p_end, int *nsize_shifft)
             if(('a' == *p_head) && ('u' == *(p_head + 1))){
                i_value = IKE_TYPE_AUTO; 
             } else {
-               i_value = atoi(strndup(p_head, (size_t)i));
+               i_value = safe_atoi(strndup(p_head, (size_t)i));
             }
         } else if(FLAG_NONE == ike_esp_type){
-            i_value = atoi(strndup(p_head, (size_t)i));
+            i_value = safe_atoi(strndup(p_head, (size_t)i));
         }
     }
     return i_value;
@@ -412,7 +412,7 @@ void ipsec_prof_fill(int prof_idx, char *p_data, ipsec_prof_type_t prof_type)
 
     if(!strstr(p_end, ">"))
     {
-        prof[prof_type][prof_idx].ipsec_conn_en = atoi(p_end);
+        prof[prof_type][prof_idx].ipsec_conn_en = safe_atoi(p_end);
     }
     else
     {
@@ -478,7 +478,7 @@ void ipsec_prof_fill_ext(int prof_idx, char *p_data, ipsec_prof_type_t prof_type
 	p_end += i; /*to shifft next '>'*/
 
 	/*pfs_group*/
-    prof[prof_type][prof_idx].pfs_group= atoi(p_end); /*the last one doesn't need to parse ">".*/
+    prof[prof_type][prof_idx].pfs_group= safe_atoi(p_end); /*the last one doesn't need to parse ">".*/
 
 	/*the end of profile*/
 	return;
@@ -794,7 +794,7 @@ int rc_ipsec_ca_fileidx_check()
     }
     memset(str_buf, 0, SZ_MIN);
     while(EOF != fscanf(fp, "%s", str_buf)){
-        i_tmp = atoi(str_buf);
+        i_tmp = safe_atoi(str_buf);
         file_idx_32bits |= (uint32_t)(1 << i_tmp);
         memset(str_buf, 0, SZ_MIN);
     }
@@ -1932,12 +1932,12 @@ get_virtual_ip_format(char *virtual_subnet)
 	mask = strtok(NULL, "/");
 	//DBG(("ip=%s,mask=%s\n", ip, mask));
 	
-	ip_1 = atoi(strtok(ip, "."));
-	ip_2 = atoi(strtok(NULL, "."));
-	ip_3 = atoi(strtok(NULL, "."));
-	ip_4 = atoi(strtok(NULL, "."));
+	ip_1 = safe_atoi(strtok(ip, "."));
+	ip_2 = safe_atoi(strtok(NULL, "."));
+	ip_3 = safe_atoi(strtok(NULL, "."));
+	ip_4 = safe_atoi(strtok(NULL, "."));
 	
-	mask_tmp = atoi(mask);
+	mask_tmp = safe_atoi(mask);
 	int bitpatten = 0xff00;
 	
 	if( mask_tmp >= 8){
@@ -3079,8 +3079,8 @@ static int _get_vpnc_idx_by_prof_idx(int prof_idx)
 				continue;
 			if (!nv_proto || !nv_unit || !vpnc_idx)
 				continue;
-			if (!strcmp(PROTO_IPSec, nv_proto) && atoi(nv_unit) == prof_idx) {
-				ret = atoi(vpnc_idx);
+			if (!strcmp(PROTO_IPSec, nv_proto) && safe_atoi(nv_unit) == prof_idx) {
+				ret = safe_atoi(vpnc_idx);
 				break;
 			}
 		}
@@ -3340,14 +3340,14 @@ int ipsec_updown_main(int argc, char *argv[])
 	int vpn_type = 0;
 
 	if (argv[1])
-		unit = atoi(argv[1]);
+		unit = safe_atoi(argv[1]);
 	else {
 		cprintf("Unknown vpn profile unit\n");
 		return -1;
 	}
 
 	if (argv[2])
-		vpn_type = atoi(argv[2]);
+		vpn_type = safe_atoi(argv[2]);
 	else {
 		cprintf("Unknown vpn type\n");
 		return -1;

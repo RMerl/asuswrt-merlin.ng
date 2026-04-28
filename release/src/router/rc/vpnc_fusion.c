@@ -264,7 +264,7 @@ int vpnc_ppp_linkunit(const char *linkname)
 	else if (!isdigit(linkname[3]))
 		return -1;
 	else
-		return atoi(linkname + 3);
+		return safe_atoi(linkname + 3);
 }
 
 int vpnc_ppp_linkunit_by_ifname(const char *ifname)
@@ -276,7 +276,7 @@ int vpnc_ppp_linkunit_by_ifname(const char *ifname)
 	else if (!isdigit(ifname[3]))
 		return -1;
 	else
-		return atoi(ifname + 3);
+		return safe_atoi(ifname + 3);
 }
 
 void update_vpnc_state(const int vpnc_idx, const int state, const int reason)
@@ -813,7 +813,7 @@ int vpnc_ovpn_up_main(int argc, char **argv)
 		return 0;
 	}
 
-	unit = atoi(argv[1]);
+	unit = safe_atoi(argv[1]);
 
 	ovpn_up_handler();
 
@@ -860,7 +860,7 @@ int vpnc_ovpn_down_main(int argc, char **argv)
 		return 0;
 	}
 
-	unit = atoi(argv[1]);
+	unit = safe_atoi(argv[1]);
 
 	_dprintf("[%s]unit=%d\n", __FUNCTION__, unit);
 
@@ -961,7 +961,7 @@ int vpnc_ovpn_route_up_main(int argc, char **argv)
 		return 0;
 	}
 
-	unit = atoi(argv[1]);
+	unit = safe_atoi(argv[1]);
 
 	_dprintf("[%s]openvpn unit = %d, ifname = %s\n", __FUNCTION__, unit, ifname);
 
@@ -994,7 +994,7 @@ int vpnc_ovpn_route_pre_down_main(int argc, char **argv)
 		return 0;
 	}
 
-	unit = atoi(argv[1]);
+	unit = safe_atoi(argv[1]);
 
 	_dprintf("[%s]openvpn unit = %d, ifname = %s\n", __FUNCTION__, unit, ifname);
 
@@ -1189,12 +1189,12 @@ vpnc_get_dev_policy_list(VPNC_DEV_POLICY *list, const int list_size, const int t
 		if(src_ip)
 			snprintf(policy->src_ip, sizeof(policy->src_ip), "%s", src_ip);
 
-		policy->active = atoi(active);
+		policy->active = safe_atoi(active);
 
 		if (dst_ip)
 			snprintf(policy->dst_ip, sizeof(policy->dst_ip), "%s", dst_ip);
 
-		policy->vpnc_idx = atoi(vpnc_idx);
+		policy->vpnc_idx = safe_atoi(vpnc_idx);
 		++cnt;
 		++policy;
 	}
@@ -1227,13 +1227,13 @@ _vpnc_find_index_by_ifname(const char *vpnc_ifname)
 	}
 	else if (!strncmp(vpnc_ifname, "tun", 3)) // openvpn
 	{
-		unit = atoi(vpnc_ifname + 3) - OVPN_CLIENT_BASE;
+		unit = safe_atoi(vpnc_ifname + 3) - OVPN_CLIENT_BASE;
 		return _find_vpnc_idx_by_ovpn_unit(unit);
 	}
 #ifdef RTCONFIG_WIREGUARD
 	else if (!strncmp(vpnc_ifname, WG_CLIENT_IF_PREFIX, 3)) // wireguard
 	{
-		unit = atoi(vpnc_ifname + 3);
+		unit = safe_atoi(vpnc_ifname + 3);
 		return find_vpnc_idx_by_wgc_unit(unit);
 	}
 #endif
@@ -2856,7 +2856,7 @@ int set_vpnc_active_by_unit(int unit,char *onoff)
 
 	 //init
 	 vpnc_init();
-	 if(atoi(onoff))
+	 if(safe_atoi(onoff))
 	 {
 		// _dprintf("[%s]restart vpnc %d\n", __FUNCTION__, unit);
 	   	 stop_vpnc_by_unit(unit);

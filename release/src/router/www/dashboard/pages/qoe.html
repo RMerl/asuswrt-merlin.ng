@@ -2561,8 +2561,8 @@
             let client = null;
             const device = deviceSelector.getValue();
             if (!device) {
-                if (isIPv4(deviceSelector.getInputValue()) || isIPv4CIDR(deviceSelector.getInputValue())) {
-                    target = deviceSelector.getInputValue();
+                if (isIPv4(deviceSelector.getInputValue().value) || isIPv4CIDR(deviceSelector.getInputValue().value)) {
+                    target = deviceSelector.getInputValue().value;
                 } else {
                     alert('Select a device or enter a valid IP address.');
                     return;

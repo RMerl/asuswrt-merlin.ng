@@ -476,4 +476,5 @@ extern int get_avl_obvif_subunit_by_unit(int unit);
 
 extern int safe_snprintf_append(char **pptr, char *end, const char *fmt, ...);
 extern void str_to_upper(const char *src, char *dest, size_t size);
+extern unsigned int get_sdn_cnt_by_vid(int vid /* vid < 0: match all */);
 #endif  /* !__APG_SHAREDH__ */

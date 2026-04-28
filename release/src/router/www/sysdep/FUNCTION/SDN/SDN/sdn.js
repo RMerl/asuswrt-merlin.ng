@@ -2406,6 +2406,7 @@ function show_popup_Wizard_Setting(_type){
 						sdn_profile.sdn_access_rl = [];
 						sdn_profile.apg_rl.ap_isolate = "0";
 						if($(_obj).find("#use_main_subnet").hasClass("on")){
+							sdn_profile.apg_rl.ap_isolate = get_mainfh_ap_isolate(sdn_profile.apg_rl.ap_isolate);
 							sdn_profile.subnet_rl = {};
 							vlan_rl_json = vlan_rl_json.filter(function(item, index, array){
 								return (item.vlan_idx != sdn_profile.vlan_rl.vlan_idx);
@@ -2851,6 +2852,7 @@ function show_popup_Wizard_Setting(_type){
 						sdn_profile.sdn_access_rl = [];
 						sdn_profile.apg_rl.ap_isolate = "0";
 						if($(_obj).find("#use_main_subnet").hasClass("on")){
+							sdn_profile.apg_rl.ap_isolate = get_mainfh_ap_isolate(sdn_profile.apg_rl.ap_isolate);
 							sdn_profile.subnet_rl = {};
 							vlan_rl_json = vlan_rl_json.filter(function(item, index, array){
 								return (item.vlan_idx != sdn_profile.vlan_rl.vlan_idx);
@@ -3310,6 +3312,7 @@ function show_popup_Wizard_Setting(_type){
 						sdn_profile.sdn_access_rl = [];
 						sdn_profile.apg_rl.ap_isolate = "0";
 						if($(_obj).find("#use_main_subnet").hasClass("on")){
+							sdn_profile.apg_rl.ap_isolate = get_mainfh_ap_isolate(sdn_profile.apg_rl.ap_isolate);
 							sdn_profile.subnet_rl = {};
 							vlan_rl_json = vlan_rl_json.filter(function(item, index, array){
 								return (item.vlan_idx != sdn_profile.vlan_rl.vlan_idx);
@@ -3684,6 +3687,7 @@ function show_popup_Wizard_Setting(_type){
 						sdn_profile.apg_rl.ap_isolate = "0";
 
 						if($(_obj).find("#use_main_subnet").hasClass("on")){
+							sdn_profile.apg_rl.ap_isolate = get_mainfh_ap_isolate(sdn_profile.apg_rl.ap_isolate);
 							sdn_profile.subnet_rl = {};
 							vlan_rl_json = vlan_rl_json.filter(function(item, index, array){
 								return (item.vlan_idx != sdn_profile.vlan_rl.vlan_idx);
@@ -4062,6 +4066,7 @@ function show_popup_Wizard_Setting(_type){
 						sdn_profile.sdn_access_rl = [];
 						sdn_profile.apg_rl.ap_isolate = (isSwMode("RT") || isSwMode("WISP")) ? "1" : "0";
 						if($(_obj).find("#use_main_subnet").hasClass("on")){
+							sdn_profile.apg_rl.ap_isolate = get_mainfh_ap_isolate(sdn_profile.apg_rl.ap_isolate);
 							sdn_profile.subnet_rl = {};
 							vlan_rl_json = vlan_rl_json.filter(function(item, index, array){
 								return (item.vlan_idx != sdn_profile.vlan_rl.vlan_idx);
@@ -4433,6 +4438,7 @@ function show_popup_Wizard_Setting(_type){
 						}
 
 						if($(_obj).find("#use_main_subnet").hasClass("on")){
+							sdn_profile.apg_rl.ap_isolate = get_mainfh_ap_isolate(sdn_profile.apg_rl.ap_isolate);
 							sdn_profile.subnet_rl = {};
 							vlan_rl_json = vlan_rl_json.filter(function(item, index, array){
 								return (item.vlan_idx != sdn_profile.vlan_rl.vlan_idx);
@@ -5633,6 +5639,7 @@ function Get_Wizard_MLO(view_mode){
 					sdn_profile.sdn_access_rl = [];
 					sdn_profile.apg_rl.ap_isolate = "0";
 					if($(_obj).find("#use_main_subnet").hasClass("on")){
+						sdn_profile.apg_rl.ap_isolate = get_mainfh_ap_isolate(sdn_profile.apg_rl.ap_isolate);
 						sdn_profile.subnet_rl = {};
 						vlan_rl_json = vlan_rl_json.filter(function(item, index, array){
 							return (item.vlan_idx != sdn_profile.vlan_rl.vlan_idx);
@@ -6125,7 +6132,9 @@ function Get_Component_Full_Setting(view_mode){
 			var sdn_clientlist_data = [];
 			var get_clientlist = httpApi.hookGet("get_clientlist");
 			$.each(get_clientlist, function(index, client){
-				if(client.sdn_idx != undefined && client.sdn_idx == sdn_idx){
+				if(client.sdn_idx != undefined && client.sdn_idx == sdn_idx
+					&& !(client?.amesh_isRe == true || client?.amesh_isRe == "1")
+				){
 					if(client.isOnline == "1"){
 						switch(option_id){
 							case "all":
@@ -8688,7 +8697,9 @@ function Update_Setting_Profile(_obj, _profile_data){
 	var get_clientlist = httpApi.hookGet("get_clientlist");
 	$.each(get_clientlist, function(index, client){
 		if(client.sdn_idx != undefined && client.sdn_idx == _profile_data.sdn_rl.idx){
-			if(client.isOnline == "1"){
+			if(client.isOnline == "1"
+				&& !(client?.amesh_isRe == true || client?.amesh_isRe == "1")
+			){
 				sdn_clientlist_data.push(client);
 			}
 		}
@@ -9155,6 +9166,7 @@ function set_apply_btn_status(_obj){
 					}
 					var ori_dut_list_json = convertRulelistToJson(["mac","wifiband","lanport"], sdn_profile.apg_rl.dut_list);
 					var dut_list = "";
+					let synced_ap_isolate_profiles = [];
 					if((wifi_band > 0 || wifi_band_bitwise > 0) || is_mlo_fh || is_sdn_mainfh){
 						var sec_option_id = "pwd";
 						if(support_sec_guest)
@@ -9253,10 +9265,19 @@ function set_apply_btn_status(_obj){
 							}
 							sdn_profile.apg_rl.bw_limit = "<0>>";
 						}
-						if($(_obj).find("#ap_isolate").hasClass("on"))
-							sdn_profile.apg_rl.ap_isolate = "1";
-						else
-							sdn_profile.apg_rl.ap_isolate = "0";
+						sdn_profile.apg_rl.ap_isolate = $(_obj).find("#ap_isolate").hasClass("on") ? "1" : "0";
+						if(sdn_profile.sdn_rl.subnet_idx == "0"
+							&& sdn_profile.sdn_rl.sdn_name != "MAINBH"){
+							synced_ap_isolate_profiles = sdn_all_rl_json.filter(function(item){
+								return item.sdn_rl.idx != sdn_profile.sdn_rl.idx
+									&& item.sdn_rl.subnet_idx == "0"
+									&& item.sdn_rl.sdn_name != "MAINBH"
+									&& !$.isEmptyObject(item.apg_rl);
+							});
+							$.each(synced_ap_isolate_profiles, function(index, item){
+								item.apg_rl.ap_isolate = sdn_profile.apg_rl.ap_isolate;
+							});
+						}
 
 						if(support_gaming){
 							if(sdn_profile.sdn_rl.sdn_name == "Customized"){
@@ -9552,6 +9573,16 @@ function set_apply_btn_status(_obj){
 					const ap_prefix = (sdn_profile.sdn_rl.sdn_name == "MAINFH" || sdn_profile.sdn_rl.sdn_name == "MAINBH") ? "apm" : "apg";
 					var apgX_rl = parse_apg_rl_to_apgX_rl(sdn_profile.apg_rl, ap_prefix);
 					$.extend(nvramSet_obj, apgX_rl);
+
+					$.each(synced_ap_isolate_profiles, function(index, item){
+						const sync_ap_prefix = (item.sdn_rl.sdn_name == "MAINFH" || item.sdn_rl.sdn_name == "MAINBH") ? "apm" : "apg";
+						nvramSet_obj[sync_ap_prefix + item.apg_rl.apg_idx + "_ap_isolate"] = item.apg_rl.ap_isolate;
+						const sync_restart_service = `restart_sdn ${item.sdn_rl.idx};`;
+						if(nvramSet_obj.rc_service.indexOf("restart_sdn;") == -1 && nvramSet_obj.rc_service.indexOf(sync_restart_service) == -1){
+							nvramSet_obj.rc_service += sync_restart_service;
+						}
+					});
+
 					if(sdn_profile.sdn_rl.cp_idx == "2" || sdn_profile.sdn_rl.cp_idx == "4"){
 						var cpX_rl = parse_cp_rl_to_cpX_rl(sdn_profile.cp_rl);
 						$.extend(nvramSet_obj, cpX_rl);
@@ -10548,6 +10579,10 @@ function show_sdn_profilelist(){
 			});
 		},1000);
 	}
+
+	const hasNoTitleContainer = $("#profile_list_content").find(".title_container").length === 0;
+	$("#profile_list_content").toggleClass("no_title_container", hasNoTitleContainer);
+	$("#profile_setting_container").toggleClass("no_title_container", hasNoTitleContainer);
 }
 var vpnc_profile_list = [];
 /*
@@ -11314,7 +11349,9 @@ function init_sdn_all_list(){
 		var get_clientlist = httpApi.hookGet("get_clientlist", true);
 		$.each(get_clientlist, function(index, value){
 			if(value.sdn_idx != undefined){
-				if(value.isOnline == "1"){
+				if(value.isOnline == "1"
+					&& !(value?.amesh_isRe == true || value?.amesh_isRe == "1")
+				){
 					var specific_data = sdn_all_rl_json.filter(function(item, index, array){
 						return (item.sdn_rl.idx == value.sdn_idx);
 					})[0];
@@ -11332,6 +11369,16 @@ function init_sdn_all_list(){
 
 		return result;
 	}
+}
+function get_mainfh_ap_isolate(_default_value){
+	let result = (_default_value == undefined) ? "0" : _default_value;
+	const mainfh_profile = sdn_all_rl_json.find(function(item){
+		return item.sdn_rl.sdn_name == "MAINFH" && !$.isEmptyObject(item.apg_rl);
+	});
+	if(mainfh_profile != undefined && mainfh_profile.apg_rl.ap_isolate != undefined && mainfh_profile.apg_rl.ap_isolate != ""){
+		result = mainfh_profile.apg_rl.ap_isolate;
+	}
+	return result;
 }
 var vlan_vid_add = "";
 function get_new_sdn_profile(_parm){

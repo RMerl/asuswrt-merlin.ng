@@ -393,7 +393,7 @@ function submitForm(){
 
 	document.form.submit();
 	showLoading();
-	setTimeout('location.reload();', 5000);
+	setTimeout('location.replace(location.href)', 5000);
 }
 
 function check_update(){
@@ -419,8 +419,8 @@ function force_update() {
 	submitForm();
 }
 
-function show_ipv6update_setting(){
-	if(ipv6_service != "disabled")
+function show_ipv6update_setting(v){
+	if(ipv6_service != "disabled" && v != "PUBYUN.COM")
 		showhide("ddns_ipv6update_tr", 1);
 	else
 		showhide("ddns_ipv6update_tr", 0);
@@ -476,7 +476,7 @@ function ddns_load_body(){
                 document.getElementById("ddns_hostname_x").value = "<#asusddns_inputhint#>";
         }
 	inputCtrl(document.form.ddns_refresh_x, 1);
-		show_ipv6update_setting();
+		show_ipv6update_setting(document.form.ddns_server_x.value);
         change_ddns_setting(document.form.ddns_server_x.value);
 
 	    if(document.form.ddns_server_x.value == "WWW.ORAY.COM"){
@@ -901,7 +901,7 @@ function change_ddns_setting(v){
 				inputCtrl(document.form.ddns_username_x, 1);
 			inputCtrl(document.form.ddns_passwd_x, 1);
 			var disable_wild = 0;
-			if(v == "WWW.TUNNELBROKER.NET" || v == "DNS.HE.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM" || v == "DYNU.COM" || v == "CLOUDFLARE.COM")
+			if(v == "WWW.TUNNELBROKER.NET" || v == "DNS.HE.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM" || v == "DYNU.COM" || v == "CLOUDFLARE.COM" || v == "PUBYUN.COM")
 				var disable_wild = 1;
 			else
 				var disable_wild = 0;
@@ -1335,12 +1335,14 @@ function clear_cert_key(){
 						<option value="DNS.HE.NET" <% nvram_match("ddns_server_x", "DNS.HE.NET","selected"); %>>HE.NET</option>
 						<option value="DYNU.COM" <% nvram_match("ddns_server_x", "DYNU.COM","selected"); %>>DYNU.COM</option>
 						<option value="CLOUDFLARE.COM" <% nvram_match("ddns_server_x", "CLOUDFLARE.COM","selected"); %>>CLOUDFLARE.COM</option>
+						<option value="PUBYUN.COM" <% nvram_match("ddns_server_x", "PUBYUN.COM","selected"); %>>PUBYUN.COM</option>
 						<option value="WWW.TUNNELBROKER.NET" <% nvram_match("ddns_server_x", "WWW.TUNNELBROKER.NET","selected"); %>>WWW.TUNNELBROKER.NET</option>
 						<option value="WWW.NO-IP.COM" <% nvram_match("ddns_server_x", "WWW.NO-IP.COM","selected"); %>>WWW.NO-IP.COM</option>
 						<option value="WWW.ORAY.COM" <% nvram_match("ddns_server_x", "WWW.ORAY.COM","selected"); %>>WWW.ORAY.COM(花生壳)</option>
 						<option value="WWW.NAMECHEAP.COM" <% nvram_match("ddns_server_x", "WWW.NAMECHEAP.COM","selected"); %>>WWW.NAMECHEAP.COM</option>
 						<option value="FREEDNS.AFRAID.ORG" <% nvram_match("ddns_server_x", "FREEDNS.AFRAID.ORG","selected"); %>>FREEDNS.AFRAID.ORG</option>
 						<option value="FREEMYIP.COM" <% nvram_match("ddns_server_x", "FREEMYIP.COM","selected"); %>>FREEMYIP.COM</option>
+						<option value="DEDYN.IO" <% nvram_match("ddns_server_x", "DEDYN.IO","selected"); %>>DEDYN.IO</option>
 						<option value="CUSTOM" <% nvram_match("ddns_server_x", "CUSTOM","selected");  %>>Custom</option>
 					</select>
 					<input id="deregister_btn" class="button_gen" style="display: none; margin-left: 5px;" type="button" value="<#CTL_Deregister#>"/>

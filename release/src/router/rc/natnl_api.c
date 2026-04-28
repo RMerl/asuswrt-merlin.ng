@@ -230,7 +230,7 @@ int start_aaeuac_by_vpn_prof(char *type, int unit)
 
 	while(check_count>0){
 		if(f_read_string(port_path, aaeuac_port, sizeof(aaeuac_port)) > 0){
-			if(!isValid_digit_string(aaeuac_port) && atoi(aaeuac_port)<0 && atoi(aaeuac_port)>65535){
+			if(!isValid_digit_string(aaeuac_port) && safe_atoi(aaeuac_port)<0 && safe_atoi(aaeuac_port)>65535){
 				return -3;
 			}
 			break;

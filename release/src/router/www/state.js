@@ -2825,7 +2825,7 @@ function refreshpage(seconds){
 	if(typeof(seconds) == "number")
 		setTimeout("refreshpage()", seconds*1000);
 	else
-		location.reload();
+		location.replace(location.href);
 }
 
 function hideLinkTag(){
@@ -5334,7 +5334,7 @@ function showArkMigrationNotification(arkMigrationPromise) {
             var notification = new NotificationModalComponent({
                 id: 'ark_migration_notification',
                 title: '<#Notice#>',
-                message: `<p><#ArkMigrationNote_1#></p><p>[<#ArkMigrationNote#>] <#ArkMigrationNote_2#></p>`.replace('%@', functionList.join(' / ')),
+                message: `<div class="d-flex flex-column gap-1"><div><#ArkMigrationNote_1#></div><div>[<#ArkMigrationNote#>] <#ArkMigrationNote_2#></div></div>`.replace('%@', functionList.join(' / ')),
                 closeCallback: function() {
                     fetch('/set_ark_migration_done.cgi').catch(function() {});
                 },

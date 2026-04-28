@@ -24,22 +24,45 @@
 		<script type="text/javascript" src="./md5.js"></script>
 		<script type="text/javascript" src="./js/asus_policy.js?v=5&lang=<#selected_language#>"></script>
 		<script>
-			if (isSupport("rog")) {
-				document.documentElement.setAttribute('data-asuswrt-theme', 'rog');
-			} else if (isSupport("tuf")) {
-				document.documentElement.setAttribute('data-asuswrt-theme', 'tuf');
-			} else if (isSupport("business")) {
-				document.documentElement.setAttribute('data-asuswrt-theme', 'business');
-			} else if (isSupport("TS_UI")) {
-				document.documentElement.setAttribute('data-asuswrt-theme', 'ts');
-			} else {
-				document.documentElement.setAttribute('data-asuswrt-theme', 'asus');
-			}
+			let theme = (function () {
+				if (isSupport("rog"))
+					return "rog";
+				else if (isSupport("tuf"))
+					return "tuf";
+				else if (isSupport("BUSINESS"))
+					return "business";
+				else if (isSupport("proart"))
+					return "proart";
+				else
+					return "asus";
+			})();
 
-			if (isSupport("UI4") || isSupport("business")) {
-				document.documentElement.setAttribute('data-asuswrt-color', 'light');
+			let asuswrt_style = (function () {
+				if (isSupport("YEAR20"))
+					return "20th";
+				else
+					return "";
+			})();
+
+			if (isSupport("UI4")) {
+				const _nvram_basic = httpApi.nvramGet(["productid", "odmpid"]);
+				let productId = _nvram_basic.productid || "";
+				let odmpid = _nvram_basic.odmpid || "";
+				document.querySelector("html").setAttribute("data-asuswrt-theme", theme);
+				if (productId === "GT-BE19000AI" || productId === "GT-BE96_AI" || theme === "business" || odmpid.startsWith("ZenWiFi")) {
+					document.querySelector("html").setAttribute("data-asuswrt-color", "light");
+				} else {
+					document.querySelector("html").setAttribute("data-asuswrt-color", "dark");
+				}
+				if (asuswrt_style) {
+					document.querySelector("html").setAttribute("data-asuswrt-style", asuswrt_style);
+				}
 			} else {
-				document.documentElement.setAttribute('data-asuswrt-color', 'dark');
+				document.querySelector("html").setAttribute("data-asuswrt-theme", theme);
+				document.querySelector("html").setAttribute("data-asuswrt-color", "dark");
+				if (asuswrt_style) {
+					document.querySelector("html").setAttribute("data-asuswrt-style", asuswrt_style);
+				}
 			}
 
 			let urlParameter = new URLSearchParams(window.location.search);
@@ -98,9 +121,9 @@
 						"sw_mode",
 						"wlc_psta", 
 						"wl_ifnames",
-						"wlnband_list", 
+						"wlnband_list",
 						"wl_version", 
-						"productid", 
+						"productid",
 						"rc_support", 
 						"x_Setting", 
 						"preferred_lang", 

@@ -353,7 +353,7 @@ function change_common_radio(o, s, v, r){
 
 			change_ddns_setting(document.form.ddns_server_x.value);
 			inputCtrl(document.form.ddns_refresh_x, 1);
-			show_ipv6update_setting();
+			show_ipv6update_setting(document.form.ddns_server_x.value);
 		}else{
 			if(document.form.ddns_server_x.value == "WWW.ASUS.COM"){
 				document.form.DDNSName.parentNode.parentNode.parentNode.style.display = "none";
@@ -478,10 +478,14 @@ function openLink(s){
 			tourl = "https://www.dynu.com/ControlPanel/CreateAccount";
                 else if (document.form.ddns_server_x.value == 'CLOUDFLARE.COM')
                         tourl = "https://dash.cloudflare.com/sign-up";
+                else if (document.form.ddns_server_x.value == 'PUBYUN.COM')
+                        tourl = "https://www.pubyun.com";
 		else if (document.form.ddns_server_x.value == 'WWW.TUNNELBROKER.NET')
 			tourl = "https://www.tunnelbroker.net/register.php";
 		else if (document.form.ddns_server_x.value == 'WWW.ASUS.COM')
 			tourl = "";
+		else if (document.form.ddns_server_x.value == 'DEDYN.IO')
+			tourl = "https://desec.io";
 		else if (document.form.ddns_server_x.value == 'WWW.NO-IP.COM')
 			tourl = "https://www.no-ip.com/newUser.php";
 		else if (document.form.ddns_server_x.value == 'WWW.NAMECHEAP.COM')

@@ -599,7 +599,7 @@ misc_ioctrl(void)
 #endif
 			lan_phy_led_pinmux(0);
 #endif
-#if !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE82M)  && !defined(RTBE58U_PRO) && !defined(RTBE58_GO) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7) && !defined(GS7_PRO_MAX)
+#if !defined(RTBE58U) && !defined(TUFBE3600) && !defined(RTBE58U_V2) && !defined(TUFBE3600_V2) && !defined(RTBE55) && !defined(RTBE92U) && !defined(RTBE95U) && !defined(RTBE82U) && !defined(TUFBE82) && !defined(RTBE58U_PRO) && !defined(RTCONFIG_MXL_826XX) && !defined(RTBE58_GO)
 			setLANLedOn();
 #endif
 #ifdef RTBE86U
@@ -653,7 +653,7 @@ misc_ioctrl(void)
 				led_control(LED_WAN, nvram_match("AllLED", "1") ? LED_ON : LED_OFF);
 #ifdef HND_ROUTER
 #ifndef GTAC2900
-#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(RTAX3000N) || defined(BR63) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO) || defined(RTAX5400) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO)
+#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(RTAX3000N) || defined(BR63) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO) || defined(RTAX5400) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTCONFIG_MXL_826XX)
 				set_specific_wan_white_led(0, LED_OFF);
 #else
 				led_control(LED_WAN_NORMAL, LED_OFF);
@@ -2021,7 +2021,7 @@ misc_defaults(int restore_defaults)
 	// only be unset at boot. }
 
 #ifndef RTCONFIG_INTERNAL_GOBI
-	int sim_num = atoi(nvram_safe_get("modem_sim_num"));
+	int sim_num = safe_atoi(nvram_safe_get("modem_sim_num"));
 	for(i = 1; i <= sim_num; ++i){
 		snprintf(prefix, 32, "modem_sim_imsi%d", i);
 		nvram_unset(prefix);
@@ -2553,10 +2553,13 @@ misc_defaults(int restore_defaults)
 	if(!wan_mtu || !*wan_mtu)
 		nvram_set("wan_mtu", nvram_default_get("wan_mtu"));
 	init_wanX_mtu(nvram_get_int("wan_mtu"));
-#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
+#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTCONFIG_MXL_826XX)
 	nvram_unset("ed_thresh_reload");
 #endif
 	nvram_set_int("wlready", 0);
+#ifdef HND_ROUTER
+	nvram_unset("stop_bcm_boot_launcher");
+#endif
 }
 
 #ifdef RTCONFIG_ISP_CUSTOMIZE
@@ -3241,8 +3244,11 @@ static void shutdn(int rb)
 	if (f_exists("/jffs/remove_hidden_flag"))
 		mtd_erase_misc2();
 #endif
-	printf("\nStopping bcm_boot_launcher ...\n");
-	system("bcm_boot_launcher stop");
+	if (!nvram_get_int("stop_bcm_boot_launcher")) {
+		nvram_set_int("stop_bcm_boot_launcher", 1);
+		printf("\nStopping bcm_boot_launcher ...\n");
+		system("bcm_boot_launcher stop");
+	}
 #endif
 	reboot(rb ? RB_AUTOBOOT : RB_HALT_SYSTEM);
 
@@ -4244,7 +4250,7 @@ int init_nvram(void)
 #ifdef RTCONFIG_USB
 
 #ifdef RTCONFIG_USB_XHCI
-	usb_usb3 = atoi(nvram_get("usb_usb3")? : nvram_default_get("usb_usb3")? : "0");
+	usb_usb3 = safe_atoi(nvram_get("usb_usb3")? : nvram_default_get("usb_usb3")? : "0");
 #endif
 #endif
 
@@ -20918,6 +20924,9 @@ int init_nvram(void)
 		nvram_set_int("led_group3_green_gpio", 3);
 		nvram_set_int("led_group3_blue_gpio", 2);
 
+		// disable txShaper for 5g high band
+		nvram_set("2:txs_shaper_en_5g", "0");
+
 		if (usb_usb3 == 1) {
 			nvram_set("xhci_ports", "2-1");
 			nvram_set("ehci_ports", "1-1");
@@ -24824,7 +24833,7 @@ build_ifnames(char *type, char *names, int *size)
 			if (!strncmp(name, "wl", 2)) {
 				if (wl_probe(ifr.ifr_name) ||
 				    wl_ioctl(ifr.ifr_name, WLC_GET_INSTANCE, &unit, sizeof(unit)) ||
-				    unit != atoi(&name[2]))
+				    unit != safe_atoi(&name[2]))
 					continue;
 			}
 			/* et/il: use mac addr to identify et/il */
@@ -24962,7 +24971,7 @@ fa_mode_init()
 {
 	fa_mode_adjust();
 
-	fa_mode = atoi(nvram_safe_get("ctf_fa_mode"));
+	fa_mode = safe_atoi(nvram_safe_get("ctf_fa_mode"));
 	switch (fa_mode) {
 		case CTF_FA_BYPASS:
 		case CTF_FA_NORMAL:
@@ -25120,9 +25129,9 @@ doSystem("dd if=/dev/mtdblock2 of=/tmp/wifi1.caldata bs=32 count=377 skip=640");
 static void start_hw_wdt(void)
 {
 #if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
-	int wdt = nvram_get("watchdog_new") ? atoi(nvram_safe_get("watchdog_new")) : atoi(nvram_default_get("watchdog_new"));
+	int wdt = nvram_get("watchdog_new") ? safe_atoi(nvram_safe_get("watchdog_new")) : safe_atoi(nvram_default_get("watchdog_new"));
 #else
-	int wdt = nvram_get("watchdog") ? atoi(nvram_safe_get("watchdog")) : atoi(nvram_default_get("watchdog"));
+	int wdt = nvram_get("watchdog") ? safe_atoi(nvram_safe_get("watchdog")) : safe_atoi(nvram_default_get("watchdog"));
 #endif
 
 	/* arm the hw watchdog timer */
@@ -25394,6 +25403,10 @@ static void sysinit(void)
 
 	system("bcm_boot_launcher start");
 	start_hw_wdt();
+#endif
+
+#ifdef RTCONFIG_MXL_826XX
+	init_switch_mxl();
 #endif
 
 #if defined(RPAX58)
@@ -26199,7 +26212,7 @@ def_boot_reinit:
 {
 	extern void usb3_enable(int en);
 	if (nvram_get("usb_usb3")) {
-		usb3_enable(atoi(nvram_get("usb_usb3")));
+		usb3_enable(safe_atoi(nvram_get("usb_usb3")));
 	}
 }
 #endif
@@ -26261,7 +26274,7 @@ def_boot_reinit:
 	if (is_ax5400_i1())
 		reset_corefilesize(0x800000);
 #endif
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
+#ifdef RTCONFIG_MXL_826XX
 	init_others_post();
 #endif
 #if defined(RTCONFIG_KNV_BACKUP) || defined(RTCONFIG_NV_BACKUP2)
@@ -26831,7 +26844,7 @@ int init_main(int argc, char *argv[])
 			void reset_plc(int);
 			reset_plc(1);
 #endif
-#if !(defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI))
+#if !(defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTCONFIG_MXL_826XX)|| defined(GTBE19000AI) || defined(GTBE96_AI))
 			stop_lan();
 #endif
 #if defined(RTCONFIG_SOC_QCA9557) || defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X) || defined(RTCONFIG_QCN550X)
@@ -26979,7 +26992,7 @@ logmessage("ATE", "boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),
 #else
 #if !defined(HND_ROUTER) && !defined(BLUECAVE)
 			start_vlan();
-#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI) //handle dualwan on rtkswitch/mxlswitch
+#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTCONFIG_MXL_826XX) || defined(GTBE19000AI) || defined(GTBE96_AI) //handle dualwan on rtkswitch/mxlswitch
 #if defined(GT7) || defined(GS7_PRO_MAX)
 			config_extwan();
 #endif
@@ -27665,6 +27678,13 @@ int reboothalt_main(int argc, char *argv[])
 #endif
 		f_write("/proc/sysrq-trigger", "s", 1, 0 , 0); /* sync disks */
 		sleep(1);
+#ifdef HND_ROUTER
+		if (!nvram_get_int("stop_bcm_boot_launcher")) {
+			nvram_set_int("stop_bcm_boot_launcher", 1);
+			printf("\nStopping bcm_boot_launcher...\n");
+			system("bcm_boot_launcher stop");
+		}
+#endif
 		f_write("/proc/sysrq-trigger", "b", 1, 0 , 0); /* machine reset */
 	}
 
@@ -27890,7 +27910,7 @@ void init_obvif_subunit()
 	int obvif_subunit = 0, obvif_subunit_tmp = 0, obvif_subunit_avl = 0;
 	char tmp[128], wl_prefix[] = "wlXXXX_";
 
-	if (!nvram_get_int("x_Setting") || (nvram_get_int("re_mode") == 1 && nvram_get_int("cfg_first_sync") == 1)) {
+	if (!nvram_get_int("x_Setting")) {
 		_dprintf("%s(%d): don't need init obvif subunit\n", __FUNCTION__, __LINE__);
 		return;
 	}

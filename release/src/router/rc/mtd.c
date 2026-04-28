@@ -468,10 +468,10 @@ int mtd_write_main(int argc, char *argv[])
 			dev = optarg;
 			break;
 		case 's':
-			skip_bytes = atoi(optarg);
+			skip_bytes = safe_atoi(optarg);
 			break;
 		case 'c':
-			count_bytes = atoi(optarg);
+			count_bytes = safe_atoi(optarg);
 			break;
 		}
 	}
@@ -955,7 +955,7 @@ wget(int method, const char *server, char *buf, size_t count, off_t offset)
 	}
 	if ((s = strchr(host, ':'))) {
 		*s++ = '\0';
-		port = atoi(s);
+		port = safe_atoi(s);
 	}
 
 	/* Open socket */
@@ -995,7 +995,7 @@ wget(int method, const char *server, char *buf, size_t count, off_t offset)
 		_dprintf("%s", line);
 		for (s = line; *s && !isspace((int)*s); s++);
 		for (; isspace((int)*s); s++);
-		switch (atoi(s)) {
+		switch (safe_atoi(s)) {
 		case 200: if (offset) goto done; else break;
 		case 206: if (offset) break; else goto done;
 		default: goto done;
@@ -1010,7 +1010,7 @@ wget(int method, const char *server, char *buf, size_t count, off_t offset)
 		if (!strncasecmp(s, "Content-Length:", 15)) {
 			for (s += 15; isblank(*s); s++);
 			chomp(s);
-			len = atoi(s);
+			len = safe_atoi(s);
 		}
 		else if (!strncasecmp(s, "Transfer-Encoding:", 18)) {
 			for (s += 18; isblank(*s); s++);

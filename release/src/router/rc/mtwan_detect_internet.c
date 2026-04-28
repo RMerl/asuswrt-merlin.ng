@@ -173,7 +173,7 @@ static int _dns_check(const int wan_unit)
 		return -1;
 	}
 
-	timeout = atoi(nvram_safe_get(strlcat_r(wan_prefix, "dns_probe_timeout", tmp, sizeof(tmp))));
+	timeout = safe_atoi(nvram_safe_get(strlcat_r(wan_prefix, "dns_probe_timeout", tmp, sizeof(tmp))));
 	if(!timeout)
 		timeout = DEFAULT_INTERVAL;
 

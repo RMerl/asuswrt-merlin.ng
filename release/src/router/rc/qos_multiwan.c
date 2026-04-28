@@ -759,7 +759,7 @@ static int add_qos_rules(char *pcWANIF)
 
 			if ((p = strsep(&g, "<")) == NULL) break;
 			if((vstrsep(p, ">", &desc, &addr, &port, &proto, &transferred, &prio)) != 6) continue;
-			class_num = atoi(prio);
+			class_num = safe_atoi(prio);
 			if ((class_num < 0) || (class_num > 4)) continue;
 
 			i = 1 << class_num;
@@ -1068,7 +1068,7 @@ static int add_qos_rules(char *pcWANIF)
 		for (i = 0; i < 10; ++i) {
 			if ((!g) || ((p = strsep(&g, ",")) == NULL)) continue;
 			if ((inuse & (1 << i)) == 0) continue;
-			if (atoi(p) > 0) {
+			if (safe_atoi(p) > 0) {
 				fprintf(fn, "-A PREROUTING -i %s -j CONNMARK --restore-mark --mask 0x%x\n", wan, QOS_MASK);
 #ifdef CLS_ACT
 				fprintf(fn, "-A PREROUTING -i %s -j IMQ --todev %d\n", wan, unit);
@@ -1398,7 +1398,7 @@ static int start_tqos(void)
 			for (i = 0; i < 5; ++i) { // 0~4 , 0:highest, 4:lowest
 				if ((!g) || ((p = strsep(&g, ",")) == NULL)) break;
 				if ((inuse & (1 << i)) == 0) continue;
-				if ((rate = atoi(p)) < 1) continue;	// 0 = off
+				if ((rate = safe_atoi(p)) < 1) continue;	// 0 = off
 
 				if (first) {
 					first = 0;
@@ -1552,7 +1552,7 @@ static int add_bandwidth_limiter_rules(char *pcWANIF)
 
 		memset(addr_new, 0, sizeof(addr_new));
 		address_format_checker(&addr_type, addr, addr_new, sizeof(addr_new));
-		class = atoi(prio) + INITIAL_MARKNUM;
+		class = safe_atoi(prio) + INITIAL_MARKNUM;
 		QOSDBG("[BWLIT] addr_type=%d, addr=%s, add_new=%s, lan_addr=%s\n", addr_type, addr, addr_new, lan_addr);
 
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
@@ -1773,7 +1773,7 @@ static int start_bandwidth_limiter(void)
 		if (!strcmp(enable, "0")) continue;
 
 		address_format_checker(&addr_type, addr, addr_new, sizeof(addr_new));
-		class = atoi(prio) + INITIAL_MARKNUM;
+		class = safe_atoi(prio) + INITIAL_MARKNUM;
 
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
 		if (*addr == '@') {

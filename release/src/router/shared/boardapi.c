@@ -837,7 +837,7 @@ int set_pwr_usb(int boolOn) {
 		system("sw 0xff800554 0");
 		system("sw 0xff800558 0x4050");
 		system("sw 0xff80055c 0x21");
-#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
+#elif defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTCONFIG_MXL_826XX)
 		/* set pinmux of GPIO 67 as 4 to enable GPIO mode */
 		system("sw 0xff800554 0");
 		system("sw 0xff800558 0x4043");
@@ -1080,7 +1080,7 @@ int do_led_control(int which, int mode)
 	}
 #endif
 
-#if (defined(RTAX9000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(RTBE58_GO) || defined(RTBE92U) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)) && !defined(RTCONFIG_BCM_MFG)
+#if (defined(RTAX9000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTCONFIG_MXL_826XX) || defined(RTBE58_GO) || defined(RTBE92U)) && !defined(RTCONFIG_BCM_MFG)
 	if ((which == LED_WAN_NORMAL) && (mode == LED_ON)) {
 #if defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTBE58_GO) || defined(RTBE55) || defined(GT7) || defined(GS7_PRO_MAX)
 		if (hnd_get_phy_status("eth0") == 0)
@@ -1101,7 +1101,7 @@ int do_led_control(int which, int mode)
 	use_gpio = led_gpio_table[which];
 	gpio_nr = use_gpio & 0xFF;
 
-#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
+#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTCONFIG_MXL_826XX)
 	if (nvram_match("AllLED", "0") && nvram_match("asus_mfg", "0") && (mode == LED_ON)
 		&& (which != PWR_USB)
 #if defined(GTBE19000AI) || defined(GSBE18000) || defined(GS7_PRO) || defined(GTBE96_AI)
@@ -1376,7 +1376,7 @@ int lanport_status(void)
 	return rtkswitch_lanPorts_phyStatus();
 #elif defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTCONFIG_BCM_502L07P2) || defined(BCM4912) || defined(BCM6756) || defined(RTCONFIG_HND_ROUTER_BE_4916) || defined(BCM4906_504) || defined(RTCONFIG_MULTIWAN_IF)
 	int status = 0;
-#if !defined(RTBE82M) && !defined(GSBE18000) && !defined(GSBE12000) && !defined(GS7_PRO) && !defined(GT7) && !defined(GS7_PRO_MAX)
+#ifndef RTCONFIG_MXL_826XX
 	char word[16] = {0};
 	char *next = NULL;
 	foreach(word, nvram_safe_get("lan_ifnames"), next) {
@@ -1393,8 +1393,8 @@ int lanport_status(void)
 		status |= hnd_get_phy_status(word);
 	}
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI)
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTCONFIG_MXL_826XX) || defined(GTBE19000AI) || defined(GTBE96_AI)
+#ifdef RTCONFIG_MXL_826XX
 	status |= mxl_lan_phy_status();
 #else
 #if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
@@ -1512,15 +1512,15 @@ int lanport_ctrl(int ctrl)
 		system("/usr/bin/switch_cli GSW_MDIO_DATA_WRITE nAddressDev=5 nAddressReg=0 nData=0x1c00");
 	}
 	return 1;
-#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(EBG19) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
+#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(EBG19) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTCONFIG_MXL_826XX)
 	if (ctrl)
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
+#ifdef RTCONFIG_MXL_826XX
 		mxlswitch_LanPort_linkUp();
 #else
 		rtkswitch_LanPort_linkUp();
 #endif
 	else
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
+#ifdef RTCONFIG_MXL_826XX
 		mxlswitch_LanPort_linkDown();
 #else
 		rtkswitch_LanPort_linkDown();

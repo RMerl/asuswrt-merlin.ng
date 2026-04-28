@@ -1184,6 +1184,7 @@ struct REPLACE_PRODUCTID_S replace_productid_t[] =
 	{"RP-BE58", "小飞侠组网超人 WiFi7", "CN"},
 	{"TUF_3600_V2", "TUF GAMING 小旋风 V2 WiFi7", "CN"},
 	{"GS-BE7200X", "ROG 魔盒 X", "CN"},
+	{"GS7_Pro_Max", "ROG 魔盒 Pro Max", "CN"},
 	{NULL, NULL, NULL}
 };
 

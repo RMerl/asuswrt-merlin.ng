@@ -841,7 +841,7 @@ void start_usb(int mode)
 			MODPROBE__UAS;
 
 #if defined(RTCONFIG_TFAT) || defined(RTCONFIG_TUXERA_NTFS) || defined(RTCONFIG_TUXERA_HFS)
-#if defined(WIFI7_SDK_20250506)
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 			/* before installing tntfs, thfsplus, tfat */
 			if(nvram_get_int("usb_fs_ntfs") == 1 ||
 				nvram_get_int("usb_fs_fat") == 1 ||
@@ -1088,7 +1088,7 @@ void remove_usb_storage_module(void)
 	modprobe_r(SCSI_MOD);
 #endif
 #if defined(RTCONFIG_TFAT) || defined(RTCONFIG_TUXERA_NTFS) || defined(RTCONFIG_TUXERA_HFS)
-#if defined(WIFI7_SDK_20250506)
+#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
 	/* after removing tntfs, thfsplus, tfat */
 	if(nvram_get_int("usb_fs_ntfs") == 1 ||
 		nvram_get_int("usb_fs_fat") == 1 ||
@@ -1940,7 +1940,7 @@ int umount_mountpoint(struct mntent *mnt, uint flags)
 			foreach_62(word, b, next_word){
 				switch(count){
 					case 0: // type
-						type = atoi(word);
+						type = safe_atoi(word);
 						break;
 				}
 				++count;
@@ -1959,7 +1959,7 @@ int umount_mountpoint(struct mntent *mnt, uint flags)
 							strncpy(sync_dir, next_word, PATH_MAX);
 							break;
 						case 6: // enable
-							enable = atoi(next_word);
+							enable = safe_atoi(next_word);
 							break;
 					}
 				}
@@ -2433,7 +2433,7 @@ _dprintf("usb_path: 4. don't set %s.\n", tmp);
 				foreach_62(word, b, next_word){
 					switch(count){
 						case 0: // type
-							type = atoi(word);
+							type = safe_atoi(word);
 							break;
 					}
 					++count;
@@ -2452,7 +2452,7 @@ _dprintf("usb_path: 4. don't set %s.\n", tmp);
 					for(count = 0, next_word = strsep(&b_bak, ">"); next_word != NULL; ++count, next_word = strsep(&b_bak, ">")){
 						switch(count){
 							case 0: // type
-								type = atoi(next_word);
+								type = safe_atoi(next_word);
 								break;
 							case 1: // username
 								memset(username, 0, 64);
@@ -2467,14 +2467,14 @@ _dprintf("usb_path: 4. don't set %s.\n", tmp);
 								strncpy(url, next_word, PATH_MAX);
 								break;
 							case 4: // rule
-								rule = atoi(next_word);
+								rule = safe_atoi(next_word);
 								break;
 							case 5: // dir
 								memset(sync_dir, 0, PATH_MAX);
 								strncpy(sync_dir, next_word, PATH_MAX);
 								break;
 							case 6: // enable
-								enable = atoi(next_word);
+								enable = safe_atoi(next_word);
 								break;
 						}
 					}
@@ -2988,7 +2988,7 @@ void write_ftpd_conf()
 	}
 	fprintf(fp, "tcp_wrappers=NO\n");
 	snprintf(maxuser, sizeof(maxuser), "%s", nvram_safe_get("st_max_user"));
-	if ((atoi(maxuser)) > 0)
+	if ((safe_atoi(maxuser)) > 0)
 		fprintf(fp, "max_clients=%s\n", maxuser);
 	else
 		fprintf(fp, "max_clients=%s\n", "10");
@@ -4008,7 +4008,7 @@ void start_dms(void)
 
 			nv = nvram_safe_get("dms_sort");
 			if (!*nv || isdigit(*nv))
-				nv = (!*nv || atoi(nv)) ? "+upnp:class,+upnp:originalTrackNumber,+dc:title" : NULL;
+				nv = (!*nv || safe_atoi(nv)) ? "+upnp:class,+upnp:originalTrackNumber,+dc:title" : NULL;
 			if (nv)
 				fprintf(f, "force_sort_criteria=%s\n", nv);
 
@@ -4528,7 +4528,7 @@ void start_cloudsync(int fromUI)
             continue;
         }
         
-        type = atoi(type_token);
+        type = safe_atoi(type_token);
         
         if (type < 0 || type > 6) {
             logmessage("Cloudsync client", "Invalid type value: %d", type);
@@ -4629,7 +4629,7 @@ void start_cloudsync(int fromUI)
             while (token != NULL && count < 7) {
                 switch(count) {
                     case 0: // type
-                        type = atoi(token);
+                        type = safe_atoi(token);
                         break;
                         
                     case 1: // username
@@ -4652,7 +4652,7 @@ void start_cloudsync(int fromUI)
                         break;
                         
                     case 6: // enable flag
-                        enable = atoi(token);
+                        enable = safe_atoi(token);
                         break;
                 }
                 
@@ -5184,7 +5184,7 @@ int __ejusb_main(const char *port_path, int unplug)
 		return -1;
 	}
 
-	all_disk = (atoi(port_path) == -1)? 1 : 0;
+	all_disk = (safe_atoi(port_path) == -1)? 1 : 0;
 	for(disk_info = disk_list; disk_info != NULL; disk_info = disk_info->next){
 		/* If hub port number is not specified in port_path,
 		 * don't compare it with hub port number in disk_info->port.
@@ -5237,13 +5237,13 @@ int ejusb_main(int argc, char *argv[])
 	}
 
 	ports_str = argv[1];
-	ports = atoi(argv[1]);
+	ports = safe_atoi(argv[1]);
 	if(ports != -1 && (ports < 1 || ports > 3)) {
 		ejusb_usage();
 		return -1;
 	}
 	if (argc == 3 && isdigit(*argv[2])) {
-		restart_nasapps = atoi(argv[2]);
+		restart_nasapps = safe_atoi(argv[2]);
 		argc -= 2;
 		argv += 2;
 	} else {
@@ -5254,7 +5254,7 @@ int ejusb_main(int argc, char *argv[])
 	while ((opt = getopt(argc, argv, "u:")) != -1) {
 		switch (opt) {
 		case 'u':
-			unplug = !!atoi(optarg);
+			unplug = !!safe_atoi(optarg);
 			break;
 		}
 	}
@@ -5328,7 +5328,7 @@ static void start_diskformat(char *port_path)
 	strlcpy(disk_label, nvram_safe_get("diskformat_label"), sizeof(disk_label));
 	strlcpy(usbport, nvram_safe_get("diskmon_usbport"), sizeof(usbport));
 
-	if(atoi(port_path) == -1)
+	if(safe_atoi(port_path) == -1)
 		ptr_path = usbport;
 	else
 		ptr_path = port_path;
@@ -5502,7 +5502,7 @@ static void start_diskscan(char *port_path)
 	snprintf(monpart, sizeof(monpart), "%s", nvram_safe_get("diskmon_part"));
 	snprintf(usbport, sizeof(usbport), "%s", nvram_safe_get("diskmon_usbport"));
 
-	if(atoi(port_path) == -1)
+	if(safe_atoi(port_path) == -1)
 		ptr_path = usbport;
 	else
 		ptr_path = port_path;
@@ -5712,11 +5712,11 @@ int diskmon_main(int argc, char *argv[])
 			continue;
 		}
 
-		val_hour[port_num] = atoi(set_hour);
+		val_hour[port_num] = safe_atoi(set_hour);
 		if(diskmon_freq == DISKMON_FREQ_MONTH)
-			val_day[port_num] = atoi(set_day);
+			val_day[port_num] = safe_atoi(set_day);
 		else if(diskmon_freq == DISKMON_FREQ_WEEK)
-			val_day[port_num] = atoi(set_week);
+			val_day[port_num] = safe_atoi(set_week);
 		else if(diskmon_freq == DISKMON_FREQ_DAY)
 			val_day[port_num] = -1;
 cprintf("disk_monitor: Port %d: val_day=%d, val_hour=%d.\n", port_num, val_day[port_num], val_hour[port_num]);
@@ -5972,7 +5972,7 @@ void usb_notify(){
 
 		f_read_string(target, buf, 16);
 
-		killall(entry->d_name, atoi(buf));
+		killall(entry->d_name, safe_atoi(buf));
 	}
 	closedir(dp);
 }
@@ -5996,7 +5996,7 @@ int find_webdav_right(char *account)
 			if((vstrsep(b, ">", &acc, &right) != 2)) continue;
 
 			if(strcmp(acc, account)==0) {
-				ret = atoi(right);
+				ret = safe_atoi(right);
 				break;
 			}
 		}

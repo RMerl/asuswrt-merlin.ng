@@ -199,7 +199,7 @@ static void GN_WBL_applyRule(FILE *fp, char *chain, char *ifname)
 				continue;
 			}
 
-			if (atoi(port) > 65535 || atoi(port) < 0) {
+			if (safe_atoi(port) > 65535 || safe_atoi(port) < 0) {
 				GNWBL_DBG(" port is out of range (0~65535)\n");
 				continue;
 			}

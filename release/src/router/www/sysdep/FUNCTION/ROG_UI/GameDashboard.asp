@@ -1461,11 +1461,11 @@ if (isSupport("AURA_SCHED")) {
 										</div>
 									</div>
 										<div id="uu_field" style="width:345px;height:425px;margin:-428px 0 0 390px;position: relative;display:none;">
-										<div style="font-size: 26px;color:#BFBFBF;margin-left:12px;">网易UU加速器</div>
+										<div style="font-size: 26px;color:#BFBFBF;margin-left:12px;"><#UU_Accelerator#></div>
 										<div style="margin: 24px 0 36px 18px;">
-											<img src="/images/uu_accelerator.png" alt="">
+											<img src="/images/UU_Logo_RGB.svg" alt="">
 										</div>
-										<div style="font-size:16px;margin: 0 6px;">UU路由器插件为三大主机PS4、Switch、Xbox One提供加速。可实现多台主机同时加速，NAT类型All Open。畅享全球联机超快感！</div>
+										<div style="font-size:16px;margin: 0 6px;"><#UU_Accelerator_desc#></div>
 										<div style="margin:6px;">
 											<a href="https://uu.163.com/router/" target="_blank" style="color:#4A90E2;text-decoration: underline">FAQ</a>
 										</div>

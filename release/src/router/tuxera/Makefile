@@ -81,6 +81,8 @@ else ifeq ($(RTCONFIG_HND_ROUTER_BE_4916),y)
 ifeq ($(ASUSWRT_BRCM_SDK_VERSION),$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126 WIFI7_SDK_20250122 WIFI7_SDK_20250506 WIFI8_SDK_20251126)))
 ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-BE58U TUF-BE3600 RT-BE92U RT-BE95U))
 SRCFILE = broadcom_arm_be_6764l
+else ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7 GS7_PRO_MAX))
+SRCFILE = broadcom_arm_be_6766_alt
 else
 SRCFILE = broadcom_arm_be_$(BCM_CHIP)
 endif
@@ -149,7 +151,10 @@ install:
 	@echo "[tuxera] Installing...from $(SRCFILE)"
 	@install -d $(DSTDIR)
 	@install -d $(INSTALLDIR)/usr/sbin
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506))
+ifneq (,$(or \
+	$(filter WIFI7_SDK_20250506,$(ASUSWRT_BRCM_SDK_VERSION)), \
+	$(filter RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7 GS7_PRO_MAX,$(BUILD_NAME)) \
+))
 	@cp -f $(SRCFILE)/tfs-linux/kernel-module/tfs_linux.ko $(DSTDIR)
 endif
 ifeq ($(RTCONFIG_TUXERA_SMBD),y)

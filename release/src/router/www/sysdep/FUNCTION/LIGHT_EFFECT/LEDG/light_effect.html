@@ -47,7 +47,14 @@ $(function(){
 		return "";
 	};
 
-	theme = getUrlParameter("current_theme").toLowerCase();
+	function getSafeTheme(paramName, allowedValues = ['WHITE', 'ROG', 'TUF', '']) {
+		let rawValue = getUrlParameter(paramName);
+		if (!rawValue) return "";
+		let safePrefix = rawValue.toUpperCase().match(/^[A-Z0-9_]*/)[0];
+		return allowedValues.includes(safePrefix) ? safePrefix : "";
+	}
+
+	theme = getSafeTheme("current_theme").toLowerCase();
 	if(theme == "white" || theme == "rog"){
 		$('link[href*="/light_effect/light_effect_' + theme + '.css"]').remove();
 		$('link').last().after('<link rel="stylesheet" type="text/css" href="/light_effect/light_effect_' + theme + '.css">');

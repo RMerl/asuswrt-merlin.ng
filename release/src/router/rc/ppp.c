@@ -50,7 +50,7 @@ ppp_ifunit(char *ifname)
 	}
 #ifdef RTCONFIG_MULTI_PPP
 	if (ifname && !strncmp(ifname, "ppp", 3)) {
-		unit = (isdigit(ifname[3])) ? atoi(ifname + 3) : -1;
+		unit = (isdigit(ifname[3])) ? safe_atoi(ifname + 3) : -1;
 		if (is_mtppp_unit(unit))
 			return unit;
 	}
@@ -87,7 +87,7 @@ ppp_linkunit(char *linkname)
 		return -1;
 	if (!isdigit(linkname[3]))
 		return -1;
-	return atoi(&linkname[3]);
+	return safe_atoi(&linkname[3]);
 }
 
 /*

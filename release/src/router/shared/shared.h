@@ -3536,7 +3536,13 @@ extern uint32_t hnd_get_phy_speed(int port, int offs, unsigned int regv, unsigne
 extern uint32_t hnd_get_phy_duplex(int port, int offs, unsigned int regv, unsigned int pmdv);
 extern uint64_t hnd_get_phy_mib(int port, int offs, char *type);
 #endif
-#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
+#ifdef RTCONFIG_MXL_826XX
+extern int mxl_mdio_read(uint8_t phy, uint8_t mmd, uint16_t reg, uint16_t *data);
+extern int mxl_mdio_write(uint8_t phy, uint8_t mmd, uint16_t reg, uint16_t data);
+extern int mxl_mdio_mod(uint8_t phy, uint8_t mmd, uint16_t reg, uint16_t mask, uint16_t data);
+extern int mxl_gphy_read(uint8_t phy, uint8_t mmd, uint16_t reg, uint16_t *data);
+extern int mxl_gphy_write(uint8_t phy, uint8_t mmd, uint16_t reg, uint16_t data);
+extern int mxl_gphy_mod(uint8_t phy, uint8_t mmd, uint16_t reg, uint16_t mask, uint16_t data);
 extern uint32_t mxl_get_phy_status(int port);
 extern uint32_t mxl_get_phy_speed(int port);
 extern uint32_t mxl_get_phy_duplex(int port);
@@ -5127,11 +5133,12 @@ extern int is_n66u_v2();
 extern int is_ac68u_v3_series();
 extern int hw_usb_cap();
 extern int is_ssid_rev3_series();
-#ifdef RTCONFIG_TCODE
-extern unsigned int hardware_flag();
-#endif
 extern int is_dpsta_repeater();
 extern void ac68u_cofs();
+#endif
+
+#if defined(RTCONFIG_TCODE) && (defined(RTAC68U) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55))
+extern unsigned int hardware_flag();
 #endif
 
 #ifdef DSL_AX82U

@@ -94,7 +94,7 @@ void create_mbssid_vlan(int unit, int subunit)
 			cmd = e_qcsapi_vlan_access | 
 				e_qcsapi_vlan_untag | e_qcsapi_vlan_pvid;
 			qcsapi_wifi_vlan_config(mbsswifi_name,
-				cmd, atoi(vlan_id) /* vid */);
+				cmd, safe_atoi(vlan_id) /* vid */);
 		}else{
 			eval("brctl", "delif", "br0", vlan_name);
 			eval("et", "robowr", "0x05", "0x81", vlan_index);
@@ -106,7 +106,7 @@ void create_mbssid_vlan(int unit, int subunit)
 			cmd = e_qcsapi_vlan_access | e_qcsapi_vlan_del |
 				e_qcsapi_vlan_untag | e_qcsapi_vlan_pvid;
 			qcsapi_wifi_vlan_config(mbsswifi_name,
-				cmd, atoi(vlan_id) /* vid */);
+				cmd, safe_atoi(vlan_id) /* vid */);
 		}
 	}
 }
@@ -141,7 +141,7 @@ void rpc_parse_nvram_from_httpd(int unit, int subunit)
 		rpc_update_wdslist();
 		rpc_update_wdslist();
 		rpc_update_wds_psk(nvram_safe_get("wl1_wds_psk"));
-		rpc_update_ap_isolate(WIFINAME, atoi(nvram_safe_get("wl1_ap_isolate")));
+		rpc_update_ap_isolate(WIFINAME, safe_atoi(nvram_safe_get("wl1_ap_isolate")));
 
 		qcsapi_wifi_rfenable((qcsapi_unsigned_int) 0);
 		if(nvram_get_int("wps_enable") == 1){

@@ -65,14 +65,14 @@ static int ubifs_unlock(int dev, int part)
 	snprintf(path, sizeof(path), "%s/ubi%d_%d/upd_marker", UBI_SYSFS_DIR, dev, part);
 	if (!(s = file2str(path)))
 		return -6;
-	if (atoi(s) == 1)
+	if (safe_atoi(s) == 1)
 		upd_marker = 1;
 	free(s);
 
 	snprintf(path, sizeof(path), "%s/ubi%d_%d/reserved_ebs", UBI_SYSFS_DIR, dev, part);
 	if (!(s = file2str(path)))
 		return -2;
-	nr_ebs = atoi(s);
+	nr_ebs = safe_atoi(s);
 	free(s);
 	if (nr_ebs <= 0)
 		return -3;

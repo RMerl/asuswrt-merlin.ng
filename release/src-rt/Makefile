@@ -7006,6 +7006,13 @@ fi;
 			echo "# CONFIG_BCM6766_2G is not set" >>$(1); \
 		fi; \
 	fi;
+	if [ "$(BUILD_NAME)" = "RT-BE82M" ] || [ "$(BUILD_NAME)" = "GS-BE18000" ] || [ "$(BUILD_NAME)" = "GS-BE12000" ] || [ "$(BUILD_NAME)" = "GS7_PRO" ] || [ "$(BUILD_NAME)" = "GT7" ] || [ "$(BUILD_NAME)" = "GS7_PRO_MAX" ]; then \
+		sed -i "/CONFIG_BCM_EXT_SWITCH_RTK\>/d" $(1); \
+		echo "# CONFIG_BCM_EXT_SWITCH_RTK is not set" >>$(1); \
+	else \
+		sed -i "/CONFIG_BCM_EXT_SWITCH_MXL\>/d" $(1); \
+		echo "# CONFIG_BCM_EXT_SWITCH_MXL is not set" >>$(1); \
+	fi;
 	$(call platformKernelConfig, $(1))
 	$(call extraKernelConfig, $(1))
 endef

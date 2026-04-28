@@ -2171,3 +2171,9 @@
 		border: 2px solid transparent;
 	}
 }
+#profile_list_content.no_title_container{
+	margin-top: 0.9rem;
+}
+#profile_setting_container.no_title_container{
+	margin-top: 0.3rem;
+}

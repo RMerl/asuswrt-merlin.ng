@@ -525,7 +525,7 @@ int mtwanduck_main(int argc, char *argv[])
 						{
 							_dprintf("\nmtwanduck: Try to restart_wan_if %d.\n", unit);
 							snprintf(tmp, sizeof(tmp), "restart_wan_if %d", unit);
-							notify_rc(tmp);
+							notify_rc_and_wait_2min(tmp);
 						}
 						else
 						{

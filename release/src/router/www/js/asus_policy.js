@@ -12,7 +12,7 @@ const ASUS_POLICY = {
         Notice2: `<#ASUS_POLICY_Notice_2#>`,
         ReadAgain: `<#ASUS_POLICY_Read_Again#>`,
         KnowRisk: `<#ASUS_POLICY_Know_Risk#>`,
-        QisDesc: `<#ASUS_POLICY_QIS_Desc#>`,
+        QisDesc: `<#ASUS_POLICY_QIS_Desc_v5#>`,
         Ok: `<#CTL_ok#>`,
         SelectLanguage: `<#selected_language#>`,
         ModalName: `<#Web_Title2#>`,
@@ -477,8 +477,14 @@ const ASUS_POLICY = {
         TM: {
             Title: `<#lyra_TrendMicro_agreement#>`,
             HTML: `<div class="d-flex flex-column gap-1">
-                        <div>${`<#TM_eula_new_desc1#>`.replace('%@', `<#AiProtection_two-way_IPS#>`)}</div>
-						<div>${`<#TM_eula_new_desc2#>`.replace('%@', `<#AiProtection_two-way_IPS#>`)}</div>
+                        <div>${
+                            isSupport("gtbooster")
+                                ? `<#TM_eula_new_desc1#>`.replace('%@', `<#AiProtection_two-way_IPS#>`) : `<#TM_eula_desc1#>`
+                        }</div>
+                        <div>${
+                            isSupport("gtbooster")
+                                ? `<#TM_eula_new_desc2#>`.replace('%@', `<#AiProtection_two-way_IPS#>`) : `<#TM_eula_desc2#>`
+                        }</div>
                         <div><#TM_privacy_policy#></div>
                         <div><#TM_data_collection#></div>
                         <div><#TM_eula_desc3#></div>
@@ -502,7 +508,7 @@ const ASUS_POLICY = {
                     url: `https://www.wtfast.com/en/privacy-policy/`,
                     company: `AAA Internet Publishing Inc.`
                 },
-                '网易UU加速器': {
+                'UU 加速器': {
                     url_text: `网易游戏隐私政策`,
                     url: `https://unisdk.update.netease.com/html/latest_v90.html`,
                     company: `网易游戏隐私政策`
@@ -876,6 +882,18 @@ const ASUS_POLICY = {
         }
         .gap-1 {
             gap: 1em;
+        }
+        .lh-1 {
+            line-height: 1 !important;
+        }
+        .lh-sm {
+            line-height: 1.25 !important;
+        }
+        .lh-base {
+            line-height: 1.5 !important;
+        }
+        .lh-lg {
+            line-height: 2 !important;
         }
         .notice_title {
             display: flex !important;
@@ -2783,7 +2801,11 @@ class QisPolicyPageComponent {
                     font-size: 2em;
                     text-align: left;
                     font-weight: bold;
-                    color: var(--primary-60);
+                    color: var(--primary-50);
+                    background-image: var(--logo-color);
+                    background-clip: text;
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
                     word-break: break-word;
                     display: flex;
                     flex-direction: row;
@@ -3225,6 +3247,25 @@ class QisPolicyPageComponent {
                 }
                 ` : ``}
                 
+                ${theme === "rog" && isSupport("YEAR20") ? `
+                .bg .header{
+                    border: none;
+                    background-color: transparent;
+                    border-image: var(--gradient-50) 30;
+                    border-bottom-width: 2px;
+                    border-bottom-style: solid;
+                }
+                .bg .icon-logo{
+                    background-color: var(--primary-50);
+                    background-image: var(--logo-color);
+                    --logo-svg: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTMyIiBoZWlnaHQ9IjQwIiB2aWV3Qm94PSIwIDAgMTMyIDQwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNNzEuNTYxNSAwTDYwLjAyODMgMTIuNjIxMVY1Ljc1MTk1TDU3LjA0MyAxLjQ5NjA5SDM2LjcwN0wzMy42ODY1IDUuNzUxOTVWMjUuNTc4MUwzNi43MSAyOS45MTZINDQuMjI4NUwzNS4wMTU2IDQwSDMzLjUyNTRMNDAuMjg5MSAzMi41OTQ3SDM2Ljg3NEwzMy4xOTczIDI3LjMxOTNWMjcuMjY4NkwzMi4zMTM1IDI2LjAwNDlWNS4zMTkzNEwzNS45OTQxIDAuMTMxODM2SDU3Ljc1ODhMNjIuMjg1MiA2LjYzNjcyVjguNTIxNDhMNzAuMDcxMyAwSDcxLjU2MTVaTTIyLjg1NzQgMzUuNDA1M0MyMi45OTk1IDM1LjQwNTMgMjMuMTIzMSAzNS40Mjk1IDIzLjIzNjMgMzUuNDc2NkMyMy4zNDY5IDM1LjUyMzYgMjMuNDQxMiAzNS41OTI3IDIzLjUyMzQgMzUuNjc3N0MyMy42MDI2IDM1Ljc2NTMgMjMuNjY4NiAzNS44NjU5IDIzLjcxNTggMzUuOTg1NEMyMy43NjY2IDM2LjEwNDMgMjMuNzk3NyAzNi4yMzI5IDIzLjgxMzUgMzYuMzcxMUwyMy4xNjAyIDM2LjQ0MzRMMjMuMTU0MyAzNi40NDYzQzIzLjE0NzcgMzYuMzYxNyAyMy4xMzE4IDM2LjI5MjIgMjMuMTA2NCAzNi4yMzI0QzIzLjA4MTcgMzYuMTc2NiAyMy4wNTMzIDM2LjEyOTkgMjMuMDE4NiAzNi4wOTg2QzIyLjk4NCAzNi4wNjcyIDIyLjk0NTkgMzYuMDQxMSAyMi45MDUzIDM2LjAyNTRDMjIuODY0MiAzNi4wMDk3IDIyLjgyNTcgMzYuMDAzOSAyMi43ODgxIDM2LjAwMzlDMjIuNjc3NSAzNi4wMDM5IDIyLjU5MjEgMzYuMDM4NiAyMi41MzIyIDM2LjEwNzRDMjIuNDcyNSAzNi4xNzY3IDIyLjQ0NDQgMzYuMjczOCAyMi40NDQzIDM2LjM5NTVDMjIuNDQ0MyAzNi41MDg0IDIyLjQ3ODMgMzYuNjE1OCAyMi41NDc5IDM2LjcxQzIyLjYxNzQgMzYuODA0MSAyMi43MDI2IDM2LjkwMTUgMjIuODA2NiAzNi45OTUxQzIyLjkxMDYgMzcuMDg5MiAyMy4wMjQ4IDM3LjE4NjEgMjMuMTQ0NSAzNy4yODMyQzIzLjI2NzkgMzcuMzgwNCAyMy4zNzgzIDM3LjQ4NzUgMjMuNDgyNCAzNy42MDY0QzIzLjU4NjUgMzcuNzI1OSAyMy42NzE3IDM3Ljg1NDggMjMuNzQxMiAzNy45OTYxQzIzLjgxMDcgMzguMTM2NyAyMy44NDE3IDM4LjI5NjUgMjMuODQxOCAzOC40Nzg1QzIzLjg0MTggMzguNjQ0NiAyMy44MTY2IDM4Ljc4OTQgMjMuNzU5OCAzOC45MThDMjMuNzA2NSAzOS4wNDM1IDIzLjYzNCAzOS4xNTAyIDIzLjUzOTEgMzkuMjM4M0MyMy40NDQ3IDM5LjMyNTggMjMuMzMwOCAzOS4zODg2IDIzLjE5NTMgMzkuNDMyNkMyMy4wNTkzIDM5LjQ3NjEgMjIuOTEwNyAzOS40OTggMjIuNzUyOSAzOS40OThDMjIuNTk1MiAzOS40OTggMjIuNDQ5OSAzOS40Njk5IDIyLjMyNzEgMzkuNDEwMkMyMi4yMDA4IDM5LjM1MDkgMjIuMDk0MSAzOS4yNzIxIDIyLjAwODggMzkuMTcxOUMyMS45MjA1IDM5LjA3MTEgMjEuODUzOSAzOC45NTIgMjEuODA2NiAzOC44MjAzQzIxLjc1OTUgMzguNjg4OCAyMS43MzA3IDM4LjU0NzIgMjEuNzI0NiAzOC4zOTY1TDIyLjM4MDkgMzguMzAzN0MyMi4zOTY2IDM4LjUwNyAyMi40NDExIDM4LjY1NzcgMjIuNTEzNyAzOC43NTQ5QzIyLjU4NjIgMzguODU1IDIyLjY4MDUgMzguOTAyMyAyMi43OTEgMzguOTAyM0MyMi45MTA4IDM4LjkwMjMgMjMuMDA2NSAzOC44NzA0IDIzLjA3OTEgMzguODA3NkMyMy4xNTE0IDM4Ljc0NDggMjMuMTg4NSAzOC42NTM4IDIzLjE4ODUgMzguNTM4MUMyMy4xODg1IDM4LjQwNjUgMjMuMTU0NSAzOC4yODc0IDIzLjA4NSAzOC4xODM2QzIzLjAxNTQgMzguMDgwMyAyMi45MzAyIDM3Ljk4MjkgMjIuODI2MiAzNy44ODU3QzIyLjcyMjEgMzcuNzkxNiAyMi42MDgxIDM3LjY5NDcgMjIuNDg4MyAzNy42MDA2QzIyLjM2ODUgMzcuNTA2NCAyMi4yNTQ1IDM3LjQgMjIuMTUwNCAzNy4yODcxQzIyLjA0NjQgMzcuMTc0MiAyMS45NjExIDM3LjA0NTYgMjEuODkxNiAzNi45MDE0QzIxLjgyMiAzNi43NTcxIDIxLjc5MSAzNi41OTAzIDIxLjc5MSAzNi4zOTk0QzIxLjc5MSAzNi4wNzk0IDIxLjg4MiAzNS44MzQyIDIyLjA2ODQgMzUuNjYyMUMyMi4yNTQ3IDM1LjQ5MjUgMjIuNTE2OCAzNS40MDUzIDIyLjg1NzQgMzUuNDA1M1pNMy43ODcxMSAzOS40NDgySDMuMTIxMDlMMi45OTgwNSAzOC41NjM1SDIuMjQ0MTRMMi4xMjEwOSAzOS40NDgySDEuNDU1MDhMMi4xOTMzNiAzNS40NjQ4SDMuMDQ4ODNMMy43ODcxMSAzOS40NDgyWk02LjA3OTEgMzcuNzQyMkg2LjA5MThWMzUuNDY0OEg2LjcxMjg5VjM5LjQ0ODJINi4xMTMyOEw1LjIzNjMzIDM2Ljk2MDlINS4yMjM2M1YzOS40NDgySDQuNjAxNTZWMzUuNDY0OEg1LjIzOTI2TDYuMDc5MSAzNy43NDIyWk05LjI3MjQ2IDM3Ljc0MjJIOS4yODIyM1YzNS40NjQ4SDkuOTA0M1YzOS40NDgySDkuMzA0NjlMOC40MjY3NiAzNi45NjA5SDguNDE3OTdWMzkuNDQ4Mkg3Ljc5NTlWMzUuNDY0OEg4LjQzMzU5TDkuMjcyNDYgMzcuNzQyMlpNMTEuNzY5NSAzOS40NDgySDExLjA4MTFWMzUuNDY0OEgxMS43Njk1VjM5LjQ0ODJaTTEzLjgzOTggMzguMjI3NUgxMy44NTI1TDE0LjM1MTYgMzUuNDY0OEgxNS4wMjY0TDE0LjE5MDQgMzkuNDQ4MkgxMy41MDJMMTIuNjYzMSAzNS40NjQ4SDEzLjM0MThMMTMuODM5OCAzOC4yMjc1Wk0xNy42NzE5IDM2LjA2MDVIMTYuNTE2NlYzNy4wODY5SDE3LjQwMzNWMzcuNjgyNkgxNi41MTY2VjM4Ljg1MjVIMTcuNzQ3MVYzOS40NDgySDE1LjgyODFWMzUuNDY0OEgxNy42NzE5VjM2LjA2MDVaTTE5LjY3NTggMzUuNDY0OEMyMC4wNjEgMzUuNDY0OSAyMC4zNTE0IDM1LjU1NTcgMjAuNTQ2OSAzNS43MzQ0QzIwLjc0MjggMzUuOTE2MSAyMC44Mzk4IDM2LjIxNzUgMjAuODM5OCAzNi42NDA2QzIwLjgzOTggMzYuODAzNCAyMC44MjgxIDM2Ljk0MTkgMjAuNzk5OCAzNy4wNTQ3QzIwLjc3MTQgMzcuMTY3NSAyMC43MzY2IDM3LjI2NTMgMjAuNjg5NSAzNy4zNDM4QzIwLjY0MjMgMzcuNDIxNiAyMC41OTA5IDM3LjQ4NDEgMjAuNTM0MiAzNy41MzQyQzIwLjQ3NzMgMzcuNTgxMyAyMC40MTcyIDM3LjYxOTcgMjAuMzYwNCAzNy42NDQ1TDIwLjk0NTMgMzkuNDQ4MkgyMC4yNDQxTDE5Ljc1NDkgMzcuNzk4OEMxOS43MTA3IDM3LjgwNDkgMTkuNjU2OCAzNy44MTE1IDE5LjU5MDggMzcuODExNUgxOS4zOTc1VjM5LjQ0ODJIMTguNzFWMzUuNDY0OEgxOS42NzU4Wk0yNi44NDY3IDM5LjQ0ODJIMjYuMTgxNkwyNi4wNTc2IDM4LjU2MzVIMjUuMzAzN0wyNS4xODA3IDM5LjQ0ODJIMjQuNTE0NkwyNS4yNTI5IDM1LjQ2NDhIMjYuMTA4NEwyNi44NDY3IDM5LjQ0ODJaTTI4LjYzMDkgMzUuNDY0OEMyOS4wMTUzIDM1LjQ2NDkgMjkuMzA1NiAzNS41NTU4IDI5LjUwMSAzNS43MzQ0QzI5LjY5NjkgMzUuOTE2MSAyOS43OTQ5IDM2LjIxNzUgMjkuNzk0OSAzNi42NDA2QzI5Ljc5NDkgMzYuODAzNCAyOS43ODIzIDM2Ljk0MTkgMjkuNzUzOSAzNy4wNTQ3QzI5LjcyNTUgMzcuMTY3NSAyOS42OTA3IDM3LjI2NTMgMjkuNjQzNiAzNy4zNDM4QzI5LjU5NjUgMzcuNDIxNSAyOS41NDU0IDM3LjQ4NDEgMjkuNDg5MyAzNy41MzQyQzI5LjQzMjQgMzcuNTgxMiAyOS4zNzIzIDM3LjYxOTcgMjkuMzE1NCAzNy42NDQ1TDI5Ljg5OTQgMzkuNDQ4MkgyOS4xOTgyTDI4LjcwOSAzNy43OTg4QzI4LjY2NDggMzcuODA0OSAyOC42MTA4IDM3LjgxMTUgMjguNTQ0OSAzNy44MTE1SDI4LjM1MjVWMzkuNDQ4MkgyNy42NjQxVjM1LjQ2NDhIMjguNjMwOVpNMzEuNjYwMiAzNi45ODI0SDMxLjY2OTlMMzIuMTMwOSAzNS40NjQ4SDMyLjgzMkwzMS45OTggMzcuNzkyVjM5LjQ0ODJIMzEuMzA5NlYzNy43OTJMMzAuNDc2NiAzNS40NjQ4SDMxLjE3NzdMMzEuNjYwMiAzNi45ODI0Wk0xMjguNjk4IDAuMDkwODIwM0MxMjUuMjU1IDEuNDE0MzcgMTIwLjY3OCAyLjUzNzQzIDExMi42MTEgNi43NDAyM0MxMDQuMDM5IDExLjIwOTcgOTUuNDQxMiAxNy4zMDA4IDg1LjcwMTIgMjQuNzgxMkM3OS44MDU2IDI5LjMxMDIgNzguNTY4IDMwLjg5MTUgNzkuNTUyNyAzMi43MDEyQzgwLjYyNjcgMzQuNjc5IDg0Ljc5NjIgMzkuMTgzNCA4NC44MTQ1IDM5LjIwMzFDODQuODE0NSAzOS4yMDMxIDc5LjE2MTggMzYuOTA0NCA3NS44NjMzIDMyLjQ1N0M3My43MzA5IDI5LjU4MyA2Ny42MzU5IDIwLjA4NyA2Ny42MTMzIDIwLjA1MThDNjcuNjUxIDIwLjA3MjggNzMuMjI3MiAyMy4xODYyIDc2Ljc5NzkgMjQuMzQyOEM3OS4wNjM1IDI1LjEyNjggNzkuNDU1NSAyNC43ODQ0IDgxLjAzMDMgMjMuMjY5NUM4Mi4wNTk5IDIyLjI3NzkgOTcuNzcwMyA2LjM2Nzg4IDEwMy4xMiA0LjA1MjczQzEwOS41NjUgMS4yNjQ0MSAxMTguMjIzIDAuMDkwODQ0OSAxMjQuMDQ2IDAuMDkwODIwM0gxMjguNjk4Wk0xMzIgNi43NTI5M0MxMzIgNy43NzIyNyAxMzAuOTI3IDkuOTgzNjQgMTI5LjY1MSAxMC41NTc2QzEyOC4zMjggMTEuMTUxMSAxMDQuNSAyMC42ODU2IDg5LjAwMjkgMzEuMTkyNEM4OS4wNTA0IDMxLjIxMTQgOTcuOTg3NCAzNC43OSAxMDUuNjY1IDM0Ljc5QzExMi4zMDkgMzQuNzg5NCAxMTguMDQ0IDIxLjgxNTEgMTE4LjA2NSAyMS43Njc2TDk5Ljc3NDQgMjcuMzI4MUM5OS43NzQ0IDI3LjMyODEgMTExLjI4NiAyMS4yMTU2IDEyOC43MDEgMTQuMTI0QzEyOC42NTcgMTQuMjM4MiAxMTkuMDg0IDM5LjIwMzEgMTA5LjAyMiAzOS4yMDMxQzk5Ljk2NzQgMzkuMjA2MiA4Ny4wMzAzIDM0LjYwODEgODEuOTE0MSAzMS4zODA5QzgxLjk4ODEgMzEuMzI4OSA5OC42Nzg4IDE5LjYyMDkgMTExLjk0NSAxMi44MjgxTDExMy4yMjQgMTIuMTkxNEMxMjIuMTc3IDcuNzUwNCAxMzEuMzE3IDYuNzUzMDIgMTMyIDYuNzUyOTNaTTIuMzQxOCAzNy45NzA3SDIuODk3NDZMMi42MjU5OCAzNi4yNjE3SDIuNjEzMjhMMi4zNDE4IDM3Ljk3MDdaTTI1LjQwNDMgMzcuOTcwN0gyNS45NkwyNS42ODg1IDM2LjI2MTdIMjUuNjc1OEwyNS40MDQzIDM3Ljk3MDdaTTE5LjM5NzUgMzcuMjUyOUgxOS42NDE2QzE5LjczMjggMzcuMjUyOSAxOS44MTIgMzcuMjQzMyAxOS44Nzc5IDM3LjIyNDZDMTkuOTQxMiAzNy4yMDU5IDE5Ljk5NDEgMzcuMTc0IDIwLjAzNTIgMzcuMTI0QzIwLjA3NjMgMzcuMDc2OSAyMC4xMDUyIDM3LjAxNDEgMjAuMTI0IDM2LjkzMjZDMjAuMTQyOCAzNi44NTQxIDIwLjE1MjMgMzYuNzUzNiAyMC4xNTIzIDM2LjYzNzdDMjAuMTUyMyAzNi40MDI0IDIwLjExNDMgMzYuMjQyOCAyMC4wMzUyIDM2LjE1NTNDMTkuOTU2NSAzNi4wNjczIDE5LjgyNzcgMzYuMDI2NCAxOS42NDE2IDM2LjAyNjRIMTkuMzk3NVYzNy4yNTI5Wk0yOC4zNTI1IDM3LjI1MjlIMjguNTk1N0MyOC42ODY5IDM3LjI1MjkgMjguNzY2MSAzNy4yNDMzIDI4LjgzMiAzNy4yMjQ2QzI4Ljg5NTUgMzcuMjA1OSAyOC45NDkxIDM3LjE3NDEgMjguOTkwMiAzNy4xMjRDMjkuMDMxMyAzNy4wNzcgMjkuMDU5NCAzNy4wMTQgMjkuMDc4MSAzNi45MzI2QzI5LjA5NzQgMzYuODU0MSAyOS4xMDY0IDM2Ljc1MzYgMjkuMTA2NCAzNi42Mzc3QzI5LjEwNjQgMzYuNDAyNyAyOS4wNjkyIDM2LjI0MjkgMjguOTkwMiAzNi4xNTUzQzI4LjkxMTYgMzYuMDY3MiAyOC43ODE5IDM2LjAyNjQgMjguNTk1NyAzNi4wMjY0SDI4LjM1MjVWMzcuMjUyOVpNMjkuMzM2OSA2LjYzNjcyVjE5Ljg3M0gxMS4yMTY4VjI1LjUzNDJIMzAuODM5OEwyNS44Nzc5IDMyLjU5NDdMMS40NzM2MyAzMi41NzUyTDEuNDgzNCAxMi44MDk2SDE5LjcxMDlWNy42OTcyN0wxOS4zNDE4IDcuMTk1MzFINC45NDkyMkwwLjg4MDg1OSAxLjQ0OTIySDAuOTMwNjY0TDAgMC4xMzE4MzZIMjQuNzczNEwyOS4zMzY5IDYuNjM2NzJaTTcyLjU3MTMgMzEuMzgwOUM3Mi41NzEzIDMxLjM4MDkgNjQuMzUyNSAyOS4xNzg2IDYyLjA0MiAyNi44ODU3QzU5LjczNjYgMjQuNTk3NyA1Ny4yMzA3IDE3LjcyNjMgNTcuMjE5NyAxNy42OTYzSDU3LjIyMjdMNzIuNTcxMyAzMS4zODA5Wk00Ljc4MTI1IDQuNTEzNjdIMTkuMTY1TDIxLjA4NjkgNy4xNDQ1M1YxNC4xNzY4SDIuODU2NDVWMjkuOTE2SDI1LjE5NjNMMjcuMzc5OSAyNi44OTg0SDguOTU3MDNWMTcuMTk0M0gyNy4wODRWNS43NTE5NUwyNC4wNjM1IDEuNDk2MDlIMi42NDQ1M0w0Ljc4MTI1IDQuNTEzNjdaTTU0LjE3MzggNy4zNjEzM1YxOS4wMzIyTDQ2Ljk4NzMgMjYuODk4NEg0MS42NzE5TDM5LjU0NDkgMjMuODc3OVY3LjM1ODRMNDEuNjc3NyA0LjQyODcxSDUyLjA3ODFMNTQuMTczOCA3LjM2MTMzWk00MS43OTQ5IDkuMTE4MTZWMjQuNzAwMkw0Mi4zODE4IDI1LjUzNDJINDYuNzQxMkw1Mi44MDA4IDE4LjkwNDNWNy44Nzg5MUg1Mi43OTc5TDUyLjI0OCA3LjExMDM1SDQzLjI1NjhMNDEuNzk0OSA5LjExODE2WiIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyXzIzOTFfNTM0MzgpIi8+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXJfMjM5MV81MzQzOCIgeDE9IjMyLjMxMzYiIHkxPSIyMCIgeDI9IjcxLjU2MTIiIHkyPSIyMCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjRTBCRTYyIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0Y1RjVEQyIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=");
+                    height: 30px;
+                    width: 84px;
+                    min-width: 30px;
+                }
+                
+                ` : ``}
+                
                 .bg .btn.disabled:hover{
                     box-shadow: none;
                 }
@@ -3250,7 +3291,7 @@ class QisPolicyPageComponent {
                         width: 25%;
                         position: absolute;
                         z-index: 3;
-                        --borderColor: #FF3535;
+                        --borderColor: var(--primary-60);
                         ${theme !== "asus" && theme !== "rt" ? `
                         background: linear-gradient(to left, var(--borderColor), var(--borderColor)) left top no-repeat, linear-gradient(to bottom, var(--borderColor), var(--borderColor)) left top no-repeat, linear-gradient(to left, var(--borderColor), var(--borderColor)) right top no-repeat, linear-gradient(to bottom, var(--borderColor), var(--borderColor)) right top no-repeat, linear-gradient(to left, var(--borderColor), var(--borderColor)) left bottom no-repeat, linear-gradient(to bottom, var(--borderColor), var(--borderColor)) left bottom no-repeat, linear-gradient(to left, var(--borderColor), var(--borderColor)) right bottom no-repeat, linear-gradient(to left, var(--borderColor), var(--borderColor)) right bottom no-repeat;
                         background-size: 1px 4px, 4px 1px, 1px 4px, 4px 1px;
@@ -3396,7 +3437,7 @@ class QisPolicyPageComponent {
                         <div class="page-title" role="heading" aria-level="1" aria-label="${title_orig}">${title}</div>
                         <div>
                             <div class="page-content">
-                                <div class="page-desc">${ASUS_POLICY.Dict.QisDesc}</div>
+                                <div class="page-desc">${ASUS_POLICY.Dict.QisDesc.replaceAll("%@", ASUS_POLICY.Dict.I_Understand)}</div>
                                 <div class="policy-content"></div>
                                 ${policy == 'EULA' ? `<div class="scroll-info">${ASUS_POLICY.Dict.ScrollDown}</div>` : ``}
                                 <div class="policy-age"></div>
@@ -3746,7 +3787,7 @@ class NotificationModalComponent {
                             <div class="modal-title"></div>
                         </div>
                         <div class="modal-body">
-                            <div class="policy-scroll-div"></div>
+                            <div class="policy-scroll-div lh-lg"></div>
                         </div>
                         <div class="modal-footer">
                         </div>

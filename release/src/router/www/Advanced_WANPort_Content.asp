@@ -529,6 +529,11 @@ function get_default_wan(){
 	return default_wan;
 }
 
+const AUTOWAN_SUPPORTED_PROTOS = ["dhcp", "pppoe", "v6plus", "ocnvc", "dslite", "v6opt"];
+function is_autowan_supported_proto(proto){
+	return AUTOWAN_SUPPORTED_PROTOS.includes(proto);
+}
+
 function form_show(v, change_primary_wan){
 	if(change_primary_wan != undefined)
 		var wan_value = change_primary_wan;
@@ -576,7 +581,7 @@ function form_show(v, change_primary_wan){
 			}
 		}
 
-		if(isSupport("autowan") && orig_switch_wantag == "none" && switch_stb_x == "0" && (!wan_bonding_support || orig_bond_wan == "0") && (!lacp_support || lacp_enabled == "0") && (wan_proto == "dhcp" || wan_proto == "pppoe") && orig_wan0_dot1q == "0" && !(isSupport("multi_service_wan") && wan_service_num > 1)){
+		if(isSupport("autowan") && orig_switch_wantag == "none" && switch_stb_x == "0" && (!wan_bonding_support || orig_bond_wan == "0") && (!lacp_support || lacp_enabled == "0") && is_autowan_supported_proto(wan_proto) && orig_wan0_dot1q != "1" && !(isSupport("multi_service_wan") && wan_service_num > 1)){
 			if($("#wans_primary option[value='auto']").length == 0){
 				($('<option>', {
 					"value": "auto",

@@ -3042,7 +3042,7 @@ function Get_Component_reboot_schedule_ui(config){
 				</tr>
 				<script>
 					var http_enable_default = httpApi.nvramDefaultGet(["http_enable"]).http_enable;
-					if(in_territory_code("AA") || in_territory_code("SG") && http_enable_default == "2"){
+					if((in_territory_code("AA") || in_territory_code("SG") || in_territory_code("HK")) && http_enable_default == "2"){
 						document.getElementById("http_enable").options[2].text = "<#Setting_factorydefault_value#>";
 					}
 				</script>

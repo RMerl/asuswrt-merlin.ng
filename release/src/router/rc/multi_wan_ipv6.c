@@ -28,7 +28,7 @@ void start_mtwan_ipv6_tunnel(int unit)
 	snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", unit);
 	strlcpy(wanip, nvram_pf_safe_get(wan_prefix, "ipaddr"), sizeof(wanip));
 	strlcpy(mtu, nvram_safe_get(ipv6_nvname_by_unit("ipv6_tun_mtu", unit)), sizeof(mtu));
-	if (atoi(mtu) <= 0)
+	if (safe_atoi(mtu) <= 0)
 		strlcpy(mtu, "1480", sizeof(mtu));
 
 	modprobe("sit");

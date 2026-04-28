@@ -16,13 +16,18 @@ else
 PLATFORM_EXT_CMD := "echo \"skip\""
 endif
 
+IPERF3_EXTRA_CFLAGS :=
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20260402))
+IPERF3_EXTRA_CFLAGS += -fPIC
+endif
+
 iperf3: iperf3/Makefile
 	@$(SEP)
 	$(MAKE) -j8 -C $@
 
 iperf3/Makefile: iperf3/configure
 	# libstdc++.so.6 is required if you want to remove CFLAGS=-static below.
-	( $(PLATFORM_EXT_CMD) ; cd iperf3 ; unset CPP; CFLAGS="-D_GNU_SOURCE $(if $(QCA),,-static)" $(CONFIGURE) \
+	( $(PLATFORM_EXT_CMD) ; cd iperf3 ; unset CPP; CFLAGS="-D_GNU_SOURCE $(IPERF3_EXTRA_CFLAGS) $(if $(QCA),,-static)" $(CONFIGURE) \
 		ac_cv_func_malloc_0_nonnull=yes $(if $(QCA),ac_cv_func_gettimeofday=yes ac_cv_func_inet_ntop=yes) \
 		--prefix=/usr --bindir=/usr/bin --libdir=/usr/lib \
 	)

@@ -441,7 +441,7 @@ var notification = {
 		var header_info = [<% get_header_info(); %>];
 		location.href = header_info[0].current_page;
 	},
-	redirectHint:function(){location.reload();},
+	redirectHint:function(){location.replace(location.href);},
 	clickCallBack: [],
 	pppoe_tw: 0,
 	ie_legacy: 0,

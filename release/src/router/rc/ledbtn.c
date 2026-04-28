@@ -130,7 +130,7 @@ static void ledbtn(int sig)
 	} else {
 		if (btn_led_pressed == 2)
 		{
-			nvram_set_int("ledg_scheme_old", (nvram_get_int("ledg_scheme") > 1) ? (nvram_get_int("ledg_scheme") - 1) : atoi(nvram_default_get("ledg_scheme")));
+			nvram_set_int("ledg_scheme_old", (nvram_get_int("ledg_scheme") > 1) ? (nvram_get_int("ledg_scheme") - 1) : safe_atoi(nvram_default_get("ledg_scheme")));
 			nvram_set_int("ledg_scheme", LEDG_SCHEME_OFF);
 #ifdef GTAX6000
 			nvram_set_int("antled_scheme",ANTLED_SCHEME_OFF);

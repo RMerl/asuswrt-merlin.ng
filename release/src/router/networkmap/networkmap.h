@@ -92,7 +92,6 @@ enum
 #define WIREDCLIENTLIST_FILE_LOCK    "wiredclientlist"
 #define WIRED_CLIENT_LIST_JSON_PATH  "/tmp/wiredclientlist.json"
 #define BRCTL_TABLE_PATH             "/tmp/nmp_brctl_table"
-#define ASUS_DEVICE_JSON_FILE        "/tmp/asus_device.json"
 
 #ifdef RTCONFIG_IPV6
 #define IP6_TABLE_PATH               "/tmp/nmp_ip6_table"
@@ -242,6 +241,7 @@ typedef struct {
 	double			tx_rate;
 	double			rx_rate;
 	int				rssi;
+	unsigned char	mlo;
 	uint64_t		conn_time;
 } mlo_link_info_t;
 #endif
@@ -301,6 +301,7 @@ typedef struct {
 	time_t		tstamp[MAX_NR_CLIENT_LIST];
 #endif
 	char		pap_mac[MAX_NR_CLIENT_LIST][18];
+	char		is_re[MAX_NR_CLIENT_LIST][2];
 	char		guest_network[MAX_NR_CLIENT_LIST][4];
 	char		ssid[MAX_NR_CLIENT_LIST][32];
 	char 		txrate[MAX_NR_CLIENT_LIST][7];
@@ -346,6 +347,17 @@ typedef struct
 	unsigned char	dest_ipaddr[4];
 } ARP_HEADER;
 
+//amas_bhctrl connection status
+#define ETH 		0x01  	//ethernet
+#define WL_2G 		0x02  	//2G
+#define WL_5G 		0x04	//5G
+#define WL_5G_1 	0x08	//5G-1
+#define ETH_2		0x10	//ethernet_2
+#define ETH_3		0x20	//ethernet_3
+#define ETH_4		0x40	//ethernet_4
+#define WL_6G		0x80	//6G
+#define WL_6G_1 	0x100	//6G-1
+#define WL_MLO		0x200	//MLO
 
 void type_filter(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int x, unsigned char type, unsigned char base, int isDev, const char *type_src);
 int isBaseType(int type);
@@ -383,8 +395,6 @@ void check_clients_from_ip_cmd(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_ta
 void check_dhcp_ip_online(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const char *mac, const char *ip_addr);
 
 int get_client_list();
-
-int check_asus_device(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const int i);
 
 void network_ip_scan();
 

@@ -134,7 +134,7 @@ export class TopClientWidget {
                                 <div><#AiProtection_event_Source#></div>
                                 <div><#NetworkTools_Count#></div>
                             </div>
-                            <div class="d-flex flex-column gap-2" style="max-height: 290px; overflow: hidden auto;">
+                            <div class="d-flex flex-column gap-2 card-data-text" style="max-height: 290px; overflow: hidden auto;">
                                 ${count === 0 ? renderEmpty() : clientHTML}
                             </div>
                         </div>

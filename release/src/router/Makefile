@@ -1105,6 +1105,11 @@ obj-$(RTCONFIG_PERMISSION_MANAGEMENT) += PMS_DBapis
 obj-$(RTCONFIG_SPEEDTEST) += curl
 
 obj-$(RTCONFIG_HNS) += hns
+obj-$(RTCONFIG_GTBOOSTER) += ark
+obj-$(RTCONFIG_GTBOOSTER) += pcre-8.31
+obj-$(RTCONFIG_GTBOOSTER) += expat-2.0.1
+obj-$(RTCONFIG_GTBOOSTER) += dbus-1.8.8
+obj-$(RTCONFIG_GTBOOSTER) += libgdbm
 
 obj-$(RTCONFIG_BWDPI) += sqlite
 obj-$(RTCONFIG_BWDPI) += bwdpi_source

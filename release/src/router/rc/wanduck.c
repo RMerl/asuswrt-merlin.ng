@@ -1202,7 +1202,7 @@ int switch_backup_line(int wan_unit, int restart_other)
 
 			_dprintf("wanduck: restart_wan_if %d.\n", unit);
 			snprintf(buf, sizeof(buf), "restart_wan_if %d", unit);
-			notify_rc(buf);
+			notify_rc_and_wait_2min(buf);
 		}
 	}
 
@@ -1330,7 +1330,7 @@ int passivesock(char *service, int protocol_num, int qlen){
 	sin.sin_addr.s_addr = INADDR_ANY;
 
 	// map service name to port number
-	if((sin.sin_port = htons((u_short)atoi(service))) == 0){
+	if((sin.sin_port = htons((u_short)safe_atoi(service))) == 0){
 		perror("cannot get service entry");
 
 		return -1;
@@ -1386,7 +1386,7 @@ int check_ppp_exist(){
 	}
 
 	while((dent = readdir(dir)) != NULL){
-		if((pid = atoi(dent->d_name)) > 1){
+		if((pid = safe_atoi(dent->d_name)) > 1){
 			snprintf(task_file, sizeof(task_file), "/proc/%d/cmdline", pid);
 			if((fd = open(task_file, O_RDONLY | O_NONBLOCK)) > 0){
 				memset(cmdline, 0, 64);
@@ -1862,7 +1862,7 @@ if(test_log)
 _dprintf("# wanduck: if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_state=%d.\n", !isFirstUse, link_wan[other_wan_unit], sim_state);
 
 		link_wan_nvname(other_wan_unit, wired_link_nvram, sizeof(wired_link_nvram));
-		if((ptr = nvram_get(wired_link_nvram)) == NULL || strlen(ptr) <= 0 || link_wan[other_wan_unit] != atoi(ptr)){
+		if((ptr = nvram_get(wired_link_nvram)) == NULL || strlen(ptr) <= 0 || link_wan[other_wan_unit] != safe_atoi(ptr)){
 			nvram_set_int(wired_link_nvram, link_wan[other_wan_unit]);
 			if(link_wan[other_wan_unit] != 0)
 				record_wan_state_nvram(other_wan_unit, -1, -1, WAN_AUXSTATE_NONE);
@@ -2048,7 +2048,7 @@ if(test_log)
 _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_state=%d.\n", wan_unit, !isFirstUse, link_wan[wan_unit], sim_state);
 
 		link_wan_nvname(wan_unit, wired_link_nvram, sizeof(wired_link_nvram));
-		if((ptr = nvram_get(wired_link_nvram)) == NULL || strlen(ptr) <= 0 || link_wan[wan_unit] != atoi(ptr)){
+		if((ptr = nvram_get(wired_link_nvram)) == NULL || strlen(ptr) <= 0 || link_wan[wan_unit] != safe_atoi(ptr)){
 			nvram_set_int(wired_link_nvram, link_wan[wan_unit]);
 			if(link_wan[wan_unit] != 0)
 				record_wan_state_nvram(wan_unit, -1, -1, WAN_AUXSTATE_NONE);
@@ -2133,7 +2133,7 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 #endif
 			link_wan_nvname(wan_unit, wired_link_nvram, sizeof(wired_link_nvram));
 
-		if((ptr = nvram_get(wired_link_nvram)) == NULL || strlen(ptr) <= 0 || link_wan[wan_unit] != atoi(ptr)){
+		if((ptr = nvram_get(wired_link_nvram)) == NULL || strlen(ptr) <= 0 || link_wan[wan_unit] != safe_atoi(ptr)){
 			if(link_wan[wan_unit]){
 //_dprintf("# wanduck(%d): set %s=%d.\n", wan_unit, wired_link_nvram, CONNED);
 				nvram_set_int(wired_link_nvram, CONNED);
@@ -2516,13 +2516,13 @@ _dprintf("nat_rule: start_nat_rules 3.\n");
 
 		_dprintf("\n# wanduck(%d): Try to restart_wan_if.\n", wan_unit);
 		snprintf(cmd, sizeof(cmd), "restart_wan_if %d", wan_unit);
-		notify_rc_and_wait(cmd);
+		notify_rc_and_wait_2min(cmd);
 #ifdef RTCONFIG_MULTICAST_IPTV
 		if (nvram_get_int("switch_stb_x") > 6) {
 			int unit;
 			for (unit = WAN_UNIT_IPTV; unit < WAN_UNIT_MULTICAST_IPTV_MAX; unit++) {
 				snprintf(cmd, sizeof(cmd), "restart_wan_if %d", unit);
-				notify_rc_and_wait(cmd);
+				notify_rc_and_wait_2min(cmd);
 			}
 		}
 #endif
@@ -3363,7 +3363,7 @@ int switch_wan_line(const int wan_unit, const int restart_other){
 				_dprintf("wanduck1: restart_wan_if %d.\n", unit);
 				snprintf(cmd, sizeof(cmd), "restart_wan_if %d", unit);
 			}
-			notify_rc_and_wait(cmd);
+			notify_rc_and_wait_2min(cmd);
 			sleep(1);
 		}
 	}
@@ -3398,14 +3398,14 @@ int switch_wan_line(const int wan_unit, const int restart_other){
 	if(current_state[wan_unit] != WAN_STATE_CONNECTING && current_state[wan_unit] != WAN_STATE_CONNECTED && current_state[wan_unit] != WAN_STATE_DISABLED){
 		snprintf(cmd, sizeof(cmd), "restart_wan_if %d", wan_unit);
 		_dprintf("wanduck2: %s.\n", cmd);
-		notify_rc_and_wait(cmd);
+		notify_rc_and_wait_2min(cmd);
 	}
 #if 0
 	else if(if_wan_ppp(wan_unit, 0)){
 		// the connection which built in advance was invalid
 		snprintf(cmd, sizeof(cmd), "restart_wan_if %d", wan_unit);
 		_dprintf("wanduck2(ppp): %s.\n", cmd);
-		notify_rc(cmd);
+		notify_rc_and_wait_2min(cmd);
 	}
 #endif
 	else if(strcmp(get_wan_ifname(wan_unit), "")){
@@ -3481,12 +3481,12 @@ int wanduck_main(int argc, char *argv[]){
 		dns_servport = DFL_DNS_SERV_PORT;
 	}
 	else{
-		if(atoi(argv[1]) <= 0)
+		if(safe_atoi(argv[1]) <= 0)
 			http_servport = DFL_HTTP_SERV_PORT;
 		else
 			http_servport = (char *)argv[1];
 
-		if(atoi(argv[2]) <= 0)
+		if(safe_atoi(argv[2]) <= 0)
 			dns_servport = DFL_DNS_SERV_PORT;
 		else
 			dns_servport = (char *)argv[2];
@@ -4095,7 +4095,7 @@ _dprintf("wanduck(%d): decide start_wan_if or stop_wan_if...\n", wan_unit);
 							// connection be activated by wanduck.
 							_dprintf("\n# wanduck(%d): run restart_wan_if.\n", wan_unit);
 							snprintf(cmd, sizeof(cmd), "restart_wan_if %d", wan_unit);
-							notify_rc(cmd);
+							notify_rc_and_wait_2min(cmd);
 						}
 
 						if(is_wan_connect(get_next_unit(wan_unit))){
@@ -5024,7 +5024,7 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 					if(link_wan[other_wan_unit] == 1 && !is_wan_connect(other_wan_unit)){
 						_dprintf("\n# wanduck(C2D): Try to prepare the backup line.\n");
 						snprintf(cmd, sizeof(cmd), "restart_wan_if %d", other_wan_unit);
-						notify_rc(cmd);
+						notify_rc_and_wait_2min(cmd);
 					}
 #endif
 				}
@@ -5180,7 +5180,7 @@ if(test_log) _dprintf("nat_rule: stop_nat_rules 7.\n");
 			else if(conn_state[other_wan_unit] == PHY_RECONN){
 				_dprintf("\n# wanduck(fail-back): Try to prepare the backup line.\n");
 				snprintf(cmd, sizeof(cmd), "restart_wan_if %d", other_wan_unit);
-				notify_rc(cmd);
+				notify_rc_and_wait_2min(cmd);
 			}
 		}
 		// hot-standby: Try to prepare the backup line.
@@ -5188,7 +5188,7 @@ if(test_log) _dprintf("nat_rule: stop_nat_rules 7.\n");
 			if(nvram_get_int("wans_standby") == 1 && link_wan[other_wan_unit] == 1 && get_wan_state(other_wan_unit) == WAN_STATE_INITIALIZING){
 				_dprintf("\n# wanduck(hot-standby): Try to prepare the backup line.\n");
 				snprintf(cmd, sizeof(cmd), "restart_wan_if %d", other_wan_unit);
-				notify_rc(cmd);
+				notify_rc_and_wait_2min(cmd);
 			}
 		}
 

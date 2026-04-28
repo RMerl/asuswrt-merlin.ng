@@ -404,27 +404,42 @@ var menuList = [
 let urlParameter = new URLSearchParams(window.location.search);
 /* DECIDE THEME */
 let theme = (function () {
-	if (isSupport("rog"))
-		return "rog";
-	else if (isSupport("tuf"))
-		return "tuf";
-	else if (isSupport("BUSINESS"))
-		return "business";
-	else
-		return "asus";
+    let array = ["dark", "white", "rog", "tuf"];
+    let default_theme = (function () {
+        if(isSupport("rog"))
+            return "rog";
+        else if(isSupport("tuf"))
+            return "tuf";
+        else if(isSupport("UI4"))
+            return "white";
+        else
+            return "dark";
+    })();
+
+let asuswrtStyle = (function () {
+    let asuswrtStyleStorage = '';
+    if(isSupport("ROG_UI")) {
+        asuswrtStyleStorage = window.localStorage.getItem("asuswrt-style") || "tech";
+    }
+    if (isSupport("YEAR20"))
+        return asuswrtStyleStorage ? `${asuswrtStyleStorage} 20th` : "20th";
+    else
+        return "";
 })();
 
 if (isSupport("UI4")) {
+    const _nvram_basic = httpApi.nvramGet(["productid", "odmpid"]);
+    let productId = _nvram_basic.productid || "";
+    let odmpid = _nvram_basic.odmpid || "";
 	document.querySelector("html").setAttribute("data-asuswrt-theme", theme);
-	document.querySelector("html").setAttribute("data-asuswrt-color", "light");
-}
-if(isSupport("ROG_UI")) {
-    let asuswrtStyle = window.localStorage.getItem("asuswrt-style");
-    if(asuswrtStyle) {
-        document.querySelector("html").setAttribute("data-asuswrt-style", asuswrtStyle);
-    }else {
-        document.querySelector("html").setAttribute("data-asuswrt-style", "tech");
+    if (productId === "GT-BE19000AI" || productId === "GT-BE96_AI" || theme === "business" || odmpid.startsWith("ZenWiFi")) {
+        document.querySelector("html").setAttribute("data-asuswrt-color", "light");
+    } else {
+        document.querySelector("html").setAttribute("data-asuswrt-color", "dark");
     }
+}
+if (asuswrtStyle) {
+    document.querySelector("html").setAttribute("data-asuswrt-style", asuswrtStyle);
 }
 
 if(!isSupport("UI4")){

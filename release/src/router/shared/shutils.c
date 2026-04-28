@@ -3381,3 +3381,260 @@ strlcat_s(char *dest, const char *src, size_t size)
 }
 #endif /* WIFI7_SDK_20250506 || WIFI8_SDK_20251126 */
 
+#define INITIAL_ARGV_CAP 8
+#define INITIAL_BUF_CAP 64
+
+/* Reject shell control characters */
+static bool is_dangerous_char(char c) {
+	switch (c) {
+		case '|': case '&': case ';':
+		case '>': case '<':
+		case '$': case '`':
+			return TRUE;
+		default:
+			return FALSE;
+	}
+}
+
+/* Append a character to dynamic buffer */
+static int buf_append(char **buf, size_t *len, size_t *cap, char c) {
+	char *tmp;
+	size_t new_cap;
+
+	if (*len + 1 >= *cap) {
+		new_cap = (*cap) * 2;
+		tmp = realloc(*buf, new_cap);
+		if (!tmp) return -1;
+		*buf = tmp;
+		*cap = new_cap;
+	}
+
+	(*buf)[(*len)++] = c;
+
+	return 0;
+}
+
+/* Push token into argv array */
+static int argv_push(char ***argv, size_t *argc, size_t *cap, char *token) {
+	char **tmp;
+	size_t new_cap;
+
+	if (*argc + 1 >= *cap) {
+		new_cap = (*cap) * 2;
+		tmp = realloc(*argv, new_cap * sizeof(char *));
+		if (!tmp) return -1;
+		*argv = tmp;
+		*cap = new_cap;
+	}
+
+	(*argv)[(*argc)++] = token;
+
+	return 0;
+}
+
+/* Free argv */
+static void free_argv(char **argv) {
+	int i;
+
+	if (!argv) return;
+
+	for (i = 0; argv[i]; i++)
+		free(argv[i]);
+
+	free(argv);
+}
+
+/* Convert command string to argv[] */
+static char **parse_cmd_safe(const char *cmd) {
+	const char *p = cmd;
+	size_t argv_cap = INITIAL_ARGV_CAP;
+	size_t argc = 0;
+	char **argv = calloc(argv_cap, sizeof(char *));
+	size_t buf_cap;
+	size_t len;
+	char *buf;
+	char quote, c;
+	char *token;
+
+	if (!argv) return NULL;
+
+	while (*p) {
+		// Skip leading whitespace
+		while (isspace((unsigned char)*p)) p++;
+		if (*p == '\0') break;
+
+		buf_cap = INITIAL_BUF_CAP;
+		buf = malloc(buf_cap);
+		if (!buf) goto fail;
+
+		quote = 0;
+		len = 0;
+
+		while (*p) {
+			c = *p;
+
+			// Stop at whitespace if not inside quotes
+			if (!quote && isspace((unsigned char)c))
+				break;
+
+			// Enter quote mode
+			if (!quote && (c == '"' || c == '\'')) {
+				quote = c;
+				p++;
+
+				continue;
+			}
+
+			// Exit quote mode
+			if (quote && c == quote) {
+				quote = 0;
+				p++;
+
+				continue;
+			}
+
+			// Handle escape sequence
+			if (c == '\\') {
+				p++;
+				if (*p) {
+					if (buf_append(&buf, &len, &buf_cap, *p) < 0) {
+						free(buf);
+						goto fail;
+					}
+					p++;
+				}
+
+				continue;
+			}
+
+			// Security check (only outside quotes)
+			if (!quote && is_dangerous_char(c)) {
+				fprintf(stderr, "Rejected dangerous char: %c\n", c);
+				free(buf);
+				goto fail;
+			}
+
+			if (buf_append(&buf, &len, &buf_cap, c) < 0) {
+				free(buf);
+				goto fail;
+			}
+			p++;
+		}
+
+		// Detect unclosed quotes
+		if (quote) {
+			fprintf(stderr, "Unclosed quote\n");
+			free(buf);
+			goto fail;
+		}
+
+		buf[len] = '\0';
+
+		token = strdup(buf);
+		free(buf);
+		if (!token) goto fail;
+
+		if (argv_push(&argv, &argc, &argv_cap, token) < 0) {
+			free(token);
+			goto fail;
+		}
+		argv[argc] = NULL;
+	}
+
+	argv[argc] = NULL;
+	return argv;
+
+fail:
+	free_argv(argv);
+	return NULL;
+}
+
+/* Safe popen: execute argv[] safely */
+static int safe_popen_argv(const char *path, char *const argv[], pid_t *child_pid) {
+	int pipefd[2];
+	pid_t pid;
+
+	if (pipe(pipefd) == -1)
+		return -1;
+
+	pid = fork();
+	if (pid < 0) {
+		close(pipefd[0]);
+		close(pipefd[1]);
+		return -1;
+	}
+
+	if (pid == 0) {
+		// Child process
+		close(pipefd[0]); // close read end
+
+		// Redirect stdout to pipe
+		dup2(pipefd[1], STDOUT_FILENO);
+		close(pipefd[1]);
+
+		// Execute program safely (no shell)
+		execvp(path, argv);
+
+		// If exec fails
+		_exit(errno);
+	}
+
+	// Parent process
+	close(pipefd[1]); // close write end
+
+	if (child_pid)
+		*child_pid = pid;
+
+	return pipefd[0]; // return read end of pipe
+}
+
+/* Safe popen: convert command string to argv[] and execute safely */
+int safe_popen(const char *cmd, pid_t *pid) {
+	char **argv;
+	int fd;
+
+	if (pid == NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	argv = parse_cmd_safe(cmd);
+	if (!argv || !argv[0]) {
+		free_argv(argv);
+		if (errno == 0)
+			errno = EINVAL;
+		return -1;
+	}
+
+	fd = safe_popen_argv(argv[0], argv, pid);
+	free_argv(argv);
+
+	return fd;
+}
+
+/* Blocking wait like pclose */
+int safe_pclose(pid_t pid, int *wait_status) {
+	int status;
+	pid_t r;
+
+	/* Validate pid to avoid waitpid() waiting for any child/process group */
+	if (pid <= 0) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	while (1) {
+		r = waitpid(pid, &status, 0);
+		if (r == -1) {
+			if (errno == EINTR) continue; // retry if interrupted
+			return -1;
+		}
+
+		break;
+	}
+
+	if (wait_status)
+		*wait_status = status;
+
+	return 0;
+}

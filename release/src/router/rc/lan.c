@@ -676,7 +676,7 @@ int ipv6_getconf(const char *ifname, const char *name)
 	if (f_read_string(path, sval, sizeof(sval)) <= 0)
 		return 0;
 
-	return atoi(sval);
+	return safe_atoi(sval);
 }
 
 void set_default_accept_ra(int flag)
@@ -919,7 +919,7 @@ static int check_bonding_mode(const char *mode)
 		return 0;
 
 	if (isdigit(*mode) && strlen(mode) == 1) {
-		v = atoi(mode);
+		v = safe_atoi(mode);
 		if (v < 0 || v > 6)
 			return 0;
 		ret = 1;
@@ -1947,7 +1947,7 @@ void start_lan(void)
 							if(strcmp(ifname, nic_if) == 0)
 							{
 								int vlan_id;
-								if((vlan_id = atoi(ifname + 4)) > 0)
+								if((vlan_id = safe_atoi(ifname + 4)) > 0)
 								{
 									char id[8];
 									sprintf(id, "%d", vlan_id);
@@ -1987,7 +1987,7 @@ void start_lan(void)
 					unsigned char mac[ETHER_ADDR_LEN];
 					char mac_str[32];
 					
-					eth_num = atoi(ifname + 3);
+					eth_num = safe_atoi(ifname + 3);
 					
 					// Validate eth_num and get base MAC address
 					if (eth_num > 0 && ether_atoe(get_lan_hwaddr(), mac)) {
@@ -2593,8 +2593,8 @@ gmac3_no_swbr:
 		 * forwarding policy.
 		 */
 		info.enable = 1;
-		info.policy = atoi(nvram_safe_get("dpsta_policy"));
-		info.lan_uif = atoi(nvram_safe_get("dpsta_lan_uif"));
+		info.policy = safe_atoi(nvram_safe_get("dpsta_policy"));
+		info.lan_uif = safe_atoi(nvram_safe_get("dpsta_lan_uif"));
 		foreach(name, nvram_safe_get("dpsta_ifnames"), next) {
 			strcpy((char *)info.upstream_if[di], name);
 			di++;
@@ -3198,12 +3198,12 @@ void do_static_routes(int add)
 
 		if (add) {
 			for (r = 3; r >= 0; --r) {
-				if (route_add(ifname, atoi(metric) + 1, dest, gateway, mask) == 0) break;
+				if (route_add(ifname, safe_atoi(metric) + 1, dest, gateway, mask) == 0) break;
 				sleep(1);
 			}
 		}
 		else {
-			route_del(ifname, atoi(metric) + 1, dest, gateway, mask);
+			route_del(ifname, safe_atoi(metric) + 1, dest, gateway, mask);
 		}
 	}
 	free(buf);
@@ -3832,7 +3832,7 @@ NEITHER_WDS_OR_PSTA:
 						nvram_set("wans_dualwan", dualwan);
 						nvram_set_int("wans_usb_bk_act", 0);
 						nvram_set_int("link_wan1", 0);
-						notify_rc("restart_wan_if 1");
+						notify_rc_and_wait_2min("restart_wan_if 1");
 					}
 				}
 #endif	//RTCONFIG_MULTIWAN_PROFILE
@@ -4145,7 +4145,7 @@ NEITHER_WDS_OR_PSTA:
 						nvram_set("wans_dualwan", dualwan);
 						nvram_set_int("wans_usb_bk_act", 0);
 						nvram_set_int("link_wan1", 0);
-						notify_rc("restart_wan_if 1");
+						notify_rc_and_wait_2min("restart_wan_if 1");
 					}
 				}
 #endif	//RTCONFIG_MULTIWAN_PROFILE
@@ -4238,7 +4238,7 @@ static int radio_join(int idx, int unit, int subunit, void *param)
 
 	sprintf(f, "/var/run/radio.%d.%d.pid", unit, subunit < 0 ? 0 : subunit);
 	if (f_read_string(f, s, sizeof(s)) > 0) {
-		if ((i = atoi(s)) > 1) {
+		if ((i = safe_atoi(s)) > 1) {
 			kill(i, SIGTERM);
 			sleep(1);
 		}
@@ -4428,7 +4428,7 @@ int delay_main(int argc, char *argv[])
 	int i;
 
 	if(argc > 1){
-		uptime_wait(atoi(argv[1]));
+		uptime_wait(safe_atoi(argv[1]));
 		memset(buff, 0, sizeof(buff));
 		i = 2;
 		while(i < argc){
@@ -4454,11 +4454,11 @@ int radio_main(int argc, char *argv[])
 HELP:
 		usage_exit(argv[0], "on|off|toggle|switch|join [N]\n");
 	}
-	unit = (argc >= 3) ? atoi(argv[2]) : -1;
+	unit = (argc >= 3) ? safe_atoi(argv[2]) : -1;
 #ifdef RTCONFIG_QCA
-	subunit = (argc >= 4) ? atoi(argv[3]) : -1;
+	subunit = (argc >= 4) ? safe_atoi(argv[3]) : -1;
 #else
-	subunit = (argc >= 4) ? atoi(argv[3]) : 0;
+	subunit = (argc >= 4) ? safe_atoi(argv[3]) : 0;
 #endif
 
 	if (strcmp(argv[1], "toggle") == 0)
@@ -4514,7 +4514,7 @@ int wdist_main(int argc, char *argv[])
 		}
 		usage_exit(argv[0], "<meters>");
 	}
-	if ((n = atoi(argv[1])) <= 0) setup_wldistance();
+	if ((n = safe_atoi(argv[1])) <= 0) setup_wldistance();
 		else set_wldistance(n);
 	return 0;
 }
@@ -5059,6 +5059,11 @@ void stop_lan_wl(void)
 		eval("ebtables", "-F");
 		eval("ebtables", "-t", "broute", "-F");
 		eval("ebtables", "-t", "nat", "-F");
+
+#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
+		if(is_auto_wanport_enabled() == 1)
+			autowan_set_dhcp_block(1);
+#endif
 	}
 
 #ifdef HND_ROUTER
@@ -5600,7 +5605,7 @@ void start_lan_wl(void)
 							if(strcmp(ifname, nic_if) == 0)
 							{
 								int vlan_id;
-								if((vlan_id = atoi(ifname + 4)) > 0)
+								if((vlan_id = safe_atoi(ifname + 4)) > 0)
 								{
 									char id[8];
 									sprintf(id, "%d", vlan_id);
@@ -5974,8 +5979,8 @@ gmac3_no_swbr:
 		 * forwarding policy.
 		 */
 		info.enable = 1;
-		info.policy = atoi(nvram_safe_get("dpsta_policy"));
-		info.lan_uif = atoi(nvram_safe_get("dpsta_lan_uif"));
+		info.policy = safe_atoi(nvram_safe_get("dpsta_policy"));
+		info.lan_uif = safe_atoi(nvram_safe_get("dpsta_lan_uif"));
 		foreach(name, nvram_safe_get("dpsta_ifnames"), next) {
 			strcpy((char *)info.upstream_if[di], name);
 			di++;
@@ -6366,7 +6371,7 @@ void lanaccess_wl(void)
 #elif defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	if (is_rtl8372_boardid())
 		start_rtkmonitor();
-#elif defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
+#elif defined(RTCONFIG_MXL_826XX)
 	start_mxlmonitor();
 #endif
 
@@ -6713,6 +6718,7 @@ void restart_wireless(void)
 	trigger_wave_monitor(__func__, __LINE__, WAVE_ACTION_WEB);
 	_dprintf("[%s][%d] call wave_monitor()-05\n", __func__, __LINE__);
 #endif
+	stop_wlcscan();
 #ifdef RTCONFIG_BCMWL6
 #ifdef RTCONFIG_AMAS
 	stop_obd();
@@ -6775,7 +6781,7 @@ void restart_wireless(void)
 		wl_defaults_wps();
 	}
 
-#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE82M) || defined(RTBE58U_PRO) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(RTBE58_GO) || defined(RPBE58)
+#if defined(RTBE86U) || defined(RTBE92U) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(RTCONFIG_MXL_826XX) || defined(RTBE58_GO) || defined(RPBE58)
 	reload_wl_check();
 #endif
 

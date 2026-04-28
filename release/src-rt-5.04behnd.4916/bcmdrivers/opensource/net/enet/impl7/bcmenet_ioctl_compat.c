@@ -3333,7 +3333,14 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                 if (ethswctl->val >= PAUSE_FLOW_CTRL_OVER)
                     return -EFAULT;
 
-                if (ethswctl->val < PAUSE_FLOW_REGULAR_OVER)
+                if (ethswctl->val == 0)
+                {
+                    if (port_pause_set(port, 0, 0))
+                        return -EFAULT;
+                    if (port_pfc_capable(port) && port_pfc_set(port, 0, 0))
+                        return -EFAULT;
+                }
+                else if (ethswctl->val < PAUSE_FLOW_REGULAR_OVER)
                 {
                     if (port_pause_set(port, rx_enable, tx_enable))
                         return -EFAULT;

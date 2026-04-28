@@ -220,8 +220,8 @@ static int do_ping(void *rInfo)
 						end = strrchr(buf, '%');
 						*end  = '\0';
 						MyDBG("Packet Loss:%s\n", pk_loss+strlen("received,"));
-						fprintf(fp_w, "{\"loss\":\"%d\", ", atoi(pk_loss+strlen("received,")));
-						if( atoi(pk_loss+strlen("received,")) == 100) {
+						fprintf(fp_w, "{\"loss\":\"%d\", ", safe_atoi(pk_loss+strlen("received,")));
+						if( safe_atoi(pk_loss+strlen("received,")) == 100) {
 							fprintf(fp_w, "\"ping\":\"\", \"jitter\":\"\"}");
 						}
 					}

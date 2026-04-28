@@ -3576,7 +3576,7 @@ void logmessage_normal(char *logheader, char *fmt, ...){
   strlcpy(logheader2, logheader, sizeof (logheader2));
   replace_char(logheader2, ' ', '_');
   openlog(logheader2, 0, 0);
-  syslog(level, buf);
+  syslog(level, "%s", buf);
   closelog();
   va_end(args);
 }

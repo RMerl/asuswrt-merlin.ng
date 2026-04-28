@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # Simple OpenVPN up/down script for modifying /etc/resolv.conf
-# (C) Copyright 2024 OpenVPN Inc <sales@openvpn.net>
+# Copyright (C) 2024-2026 OpenVPN Inc <sales@openvpn.net>
 #
 # SPDX-License-Identifier: BSD-2-Clause
 #
@@ -21,7 +21,7 @@
 #   dns_server_1_port_2 53
 #   dns_server_1_resolve_domain_1 mycorp.in
 #   dns_server_1_resolve_domain_2 eu.mycorp.com
-#   dns_server_1_dnssec true
+#   dns_server_1_dnssec yes
 #   dns_server_1_transport DoH
 #   dns_server_1_sni dns.mycorp.in
 #

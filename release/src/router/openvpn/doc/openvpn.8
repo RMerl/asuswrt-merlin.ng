@@ -1,5 +1,4 @@
-.\" Man page generated from reStructuredText
-.\" by the Docutils 0.22.3 manpage writer.
+.\" Man page generated from reStructuredText.
 .
 .
 .nr rst2man-indent-level 0
@@ -28,8 +27,8 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "openvpn" "8" "" "" "System Manager's Manual"
-.SH Name
+.TH "OPENVPN" 8 "" "" "System Manager's Manual"
+.SH NAME
 openvpn \- Secure IP tunnel daemon
 .SH SYNOPSIS
 .nf
@@ -47,7 +46,7 @@ will see how to construct simple VPNs on the command line without even
 needing a configuration file.
 .sp
 Also note that there\(aqs more documentation and examples on the OpenVPN
-web site: \%<https://\:openvpn\:.net/>
+web site: \fI\%https://openvpn.net/\fP
 .sp
 And if you would like to see a shorter version of this manual, see the
 openvpn usage message which can be obtained by running \fBopenvpn\fP
@@ -207,7 +206,7 @@ secret \(dqc:\e\eOpenVPN\e\esecret.key\(dq
 .UNINDENT
 .sp
 For examples of configuration files, see
-\%<https://\:openvpn\:.net/\:community-resources/\:how-to/>
+\fI\%https://openvpn.net/community\-resources/how\-to/\fP
 .sp
 Here is an example configuration file:
 .INDENT 7.0
@@ -761,7 +760,7 @@ usually adds 16 or 20 bytes per packet. Set \fBalg=none\fP to disable
 authentication.
 .sp
 For more information on HMAC see
-\%<https://\:tools\:.ietf\:.org/\:html/\:rfc2104>
+\fI\%https://tools.ietf.org/html/rfc2104\fP
 .TP
 .BI \-\-cipher \ alg
 This option should not be used any longer in TLS mode and still
@@ -877,7 +876,7 @@ For servers, the first cipher from \fBcipher\-list\fP that is also
 supported by the client will be pushed to clients that support cipher
 negotiation.
 .sp
-For more details see the chapter on Data channel cipher negotiation\&.
+For more details see the chapter on \fI\%Data channel cipher negotiation\fP\&.
 \fIEspecially\fP if you need to support clients with OpenVPN versions older
 than 2.4!
 .sp
@@ -1442,7 +1441,7 @@ This may be set by the client UI/GUI using \fB\-\-setenv\fP\&.
 .UNINDENT
 .sp
 The following flags depend on which compression formats are compiled in
-and whether compression is allowed by options. See Protocol options
+and whether compression is allowed by options. See \fI\%Protocol options\fP
 for more details.
 .INDENT 7.0
 .INDENT 3.5
@@ -1640,7 +1639,7 @@ address \fBserver\fP and \fBport\fP argument.  If HTTP Proxy\-Authenticate
 is required, a file name to an \fBauthfile\fP file containing a username
 and password on 2 lines can be given, or \fBstdin\fP to prompt from
 console. Its content can also be specified in the config file with the
-\fB\-\-http\-proxy\-user\-pass\fP option (See INLINE FILE SUPPORT).
+\fB\-\-http\-proxy\-user\-pass\fP option (See \fI\%INLINE FILE SUPPORT\fP).
 .sp
 The last optional argument is an \fBauth\-method\fP which should be one
 of \fBnone\fP, \fBbasic\fP, or \fBntlm2\fP\&.
@@ -1694,7 +1693,7 @@ attempt to use NTLMv2 authentication.
 .TP
 .BI \-\-http\-proxy\-user\-pass \ userpass
 Overwrite the username/password information for \fB\-\-http\-proxy\fP\&. If specified
-as an inline option (see INLINE FILE SUPPORT), it will be interpreted as
+as an inline option (see \fI\%INLINE FILE SUPPORT\fP), it will be interpreted as
 username/password separated by a newline. When specified on the command line
 it is interpreted as a filename same as the third argument to \fB\-\-http\-proxy\fP\&.
 .sp
@@ -2936,7 +2935,7 @@ succeed, both OpenVPN peers will exchange temporary session keys, and
 the tunnel will begin passing data.
 .sp
 The OpenVPN project provides a set of scripts for managing RSA
-certificates and keys: \%<https://\:github\:.com/\:OpenVPN/\:easy-rsa>
+certificates and keys: \fI\%https://github.com/OpenVPN/easy\-rsa\fP
 .INDENT 0.0
 .TP
 .BI \-\-askpass \ file
@@ -3012,7 +3011,7 @@ signed by a certificate authority whose certificate is in \fB\-\-ca file\fP
 in the peer configuration. URI is supported only when built with
 OpenSSL 3.0 or later and any required providers are loaded. Types
 of URIs supported and their syntax depends on providers. OpenSSL has
-internal support for \(dq\%<file:/\:absolute/\:path>\(dq URI in which case the scheme
+internal support for \(dq\fI\%file:/absolute/path\fP\(dq URI in which case the scheme
 \(dqfile:\(dq is optional, and any file format recognized by OpenSSL (e.g., PEM,
 PKCS12) is supported. PKCS#11 URI (RFC 7512) is supported by pkcs11\-provider.
 .sp
@@ -4001,7 +4000,7 @@ always have the \fBAES\-256\-GCM\fP and \fBAES\-128\-GCM\fP ciphers to the \fB\-
 options to avoid this behaviour.
 .SS OpenVPN 3 clients
 .sp
-Clients based on the OpenVPN 3.x library (\%<https://\:github\:.com/\:openvpn/\:openvpn3/>)
+Clients based on the OpenVPN 3.x library (\fI\%https://github.com/openvpn/openvpn3/\fP)
 do not have a configurable \fB\-\-ncp\-ciphers\fP or \fB\-\-data\-ciphers\fP option. Newer
 versions by default disable legacy AES\-CBC, BF\-CBC, and DES\-CBC ciphers.
 These clients will always announce support for all their supported AEAD ciphers
@@ -4374,7 +4373,7 @@ remote.
 .sp
 This option is useful in cases where the remote peer has a dynamic IP
 address and a low\-TTL DNS name is used to track the IP address using a
-service such as \%<https://\:www\:.nsupdate\:.info/> + a dynamic DNS client such as
+service such as \fI\%https://www.nsupdate.info/\fP + a dynamic DNS client such as
 \fBddclient\fP\&.
 .sp
 If the peer cannot be reached, a restart will be triggered, causing the
@@ -4434,7 +4433,7 @@ UDP, TCP will usually be somewhat less efficient and less robust when
 used over unreliable or congested networks.
 .sp
 This article outlines some of problems with tunneling IP over TCP:
-\%<https://\:web\:.archive\:.org/\:web/\:20141025181658/\:http://\:sites\:.inka\:.de/\:sites/\:bigred/\:devel/\:tcp-tcp\:.html>
+\fI\%https://web.archive.org/web/20141025181658/http://sites.inka.de/sites/bigred/devel/tcp\-tcp.html\fP
 .sp
 There are certain cases, however, where using TCP may be advantageous
 from a security and robustness perspective, such as tunneling non\-IP or
@@ -4629,7 +4628,7 @@ routing.
 .TP
 .BI \-\-bind\-dev \ device
 (Linux only) Set \fBdevice\fP to bind the server socket to a
-Virtual Routing and Forwarding device
+\fI\%Virtual Routing and Forwarding\fP device
 .TP
 .B  \-\-block\-ipv6
 On the client, instead of sending IPv6 packets over the VPN tunnel, all
@@ -4766,7 +4765,7 @@ environment variables.  The temporary unix domain socket  will be be passed
 in the environment variable \fBTUNTAP_SOCKET_FD\fP\&.
 .sp
 This \fBunix:\fP mode is designed mainly to use with the lwipovpn network
-emulator (\%<https://\:github\:.com/\:OpenVPN/\:lwipovpn>).
+emulator (\fI\%https://github.com/OpenVPN/lwipovpn\fP).
 .TP
 .BI \-\-dev\-type \ device\-type
 Which device type are we using? \fBdevice\-type\fP should be \fBtun\fP
@@ -4860,7 +4859,7 @@ hosts must match, or the two hosts will not be able to communicate.
 The NetBIOS Scope ID also allows computers to use the same computer
 name, as they have different scope IDs. The Scope ID becomes a part
 of the NetBIOS name, making the name unique. (This description of
-NetBIOS scopes courtesy of \%<NeonSurge@\:abyss\:.com>)
+NetBIOS scopes courtesy of \fI\%NeonSurge@abyss.com\fP)
 .TP
 .B \fBDISABLE\-NBT\fP
 Disable Netbios\-over\-TCP/IP.
@@ -5039,7 +5038,7 @@ LAN (except for the LAN gateway address) into the tunnel.
 On Windows WFP filters are added in addition to the routes which
 block access to resources not routed through the VPN adapter.
 Push this flag to protect against TunnelCrack type of attacks
-(see: \%<https://\:tunnelcrack\:.mathyvanhoef\:.com/>).
+(see: \fI\%https://tunnelcrack.mathyvanhoef.com/\fP).
 .TP
 .B \fBipv6\fP
 Redirect IPv6 routing into the tunnel. This works similar to
@@ -5416,7 +5415,7 @@ bind\-dev vrf_external
 .UNINDENT
 .SS Further reading
 .sp
-Wikipedia has nice page one VRFs: \%<https://\:en\:.wikipedia\:.org/\:wiki/\:Virtual_routing_and_forwarding>
+Wikipedia has nice page one VRFs: \fI\%https://en.wikipedia.org/wiki/Virtual_routing_and_forwarding\fP
 .sp
 This talk from the Network Track of FrOSCon 2018 provides an overview about
 advanced layer 2 and layer 3 features of Linux
@@ -5424,9 +5423,9 @@ advanced layer 2 and layer 3 features of Linux
 .INDENT 3.5
 .INDENT 0.0
 .IP \(bu 2
-Slides: \%<https://\:www\:.slideshare\:.net/\:BarbarossaTM/\:l2l3-fr-fortgeschrittene-helle-und-dunkle-magie-im-linuxnetzwerkstack>
+Slides: \fI\%https://www.slideshare.net/BarbarossaTM/l2l3\-fr\-fortgeschrittene\-helle\-und\-dunkle\-magie\-im\-linuxnetzwerkstack\fP
 .IP \(bu 2
-Video (german): \%<https://\:media\:.ccc\:.de/\:v/\:froscon2018-2247-l2_l3_fur_fortgeschrittene_-_helle_und_dunkle_magie_im_linux-netzwerkstack>
+Video (german): \fI\%https://media.ccc.de/v/froscon2018\-2247\-l2_l3_fur_fortgeschrittene_\-_helle_und_dunkle_magie_im_linux\-netzwerkstack\fP
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -5670,7 +5669,7 @@ If a \fB\-\-client\-connect\fP wants to defer the generating of the
 configuration then the script needs to use the
 \fBclient_connect_deferred_file\fP and
 \fBclient_connect_config_file\fP environment variables, and write
-status accordingly into these files.  See the Environmental Variables
+status accordingly into these files.  See the \fI\%Environmental Variables\fP
 section for more details.
 .TP
 .BI \-\-client\-disconnect \ cmd
@@ -5753,7 +5752,7 @@ cmd ip address port number
 Don\(aqt use \fB\-\-ipchange\fP in \fB\-\-mode server\fP mode. Use a
 \fB\-\-client\-connect\fP script instead.
 .sp
-See the Environmental Variables section below for additional
+See the \fI\%Environmental Variables\fP section below for additional
 parameters passed as environmental variables.
 .sp
 If you are running in a dynamic IP address environment where the IP
@@ -5830,7 +5829,7 @@ followed by arguments. The path and arguments may be single\- or
 double\-quoted and/or escaped using a backslash, and should be separated
 by one or more spaces.
 .sp
-See the Environmental Variables section below for additional
+See the \fI\%Environmental Variables\fP section below for additional
 parameters passed as environmental variables.
 .TP
 .BI \-\-route\-pre\-down \ cmd
@@ -5841,7 +5840,7 @@ followed by arguments. The path and arguments may be single\- or
 double\-quoted and/or escaped using a backslash, and should be separated
 by one or more spaces.
 .sp
-See the Environmental Variables section below for additional
+See the \fI\%Environmental Variables\fP section below for additional
 parameters passed as environmental variables.
 .TP
 .BI \-\-setenv \ args
@@ -5935,7 +5934,7 @@ certificate and decide whether or not it should be accepted. For a
 simple perl script which will test the common name field on the
 certificate, see the file \fBverify\-cn\fP in the OpenVPN distribution.
 .sp
-See the Environmental Variables section below for additional
+See the \fI\%Environmental Variables\fP section below for additional
 parameters passed as environmental variables.
 .TP
 .BI \-\-tls\-export\-cert \ dir
@@ -5979,7 +5978,7 @@ cmd tap_dev tap_mtu 0 ifconfig_local_ip ifconfig_netmask [init | restart]
 .UNINDENT
 .UNINDENT
 .sp
-See the Environmental Variables section below for additional
+See the \fI\%Environmental Variables\fP section below for additional
 parameters passed as environmental variables.  The \fB0\fP argument
 used to be \fBlink_mtu\fP which is no longer passed to scripts \- to
 keep the argument order, it was replaced with \fB0\fP\&.
@@ -7147,7 +7146,7 @@ Data channel offload currently requires data\-ciphers to only contain
 AEAD ciphers (AES\-GCM and Chacha20\-Poly1305) and Linux with the
 ovpn module. The ovpn module has been integrated into the Linux kernel
 since 6.16 or is available as backport from
-\%<https://\:github\:.com/\:OpenVPN/\:ovpn-backports>\&.
+\fI\%https://github.com/OpenVPN/ovpn\-backports\fP\&.
 .sp
 Note that some options have no effect or cannot be used when DCO mode
 is enabled.
@@ -7359,7 +7358,7 @@ Causes OpenVPN to exit gracefully.
 .UNINDENT
 .SH FAQ
 .sp
-\%<https://\:community\:.openvpn\:.net/\:openvpn/\:wiki/\:FAQ>
+\fI\%https://community.openvpn.net/openvpn/wiki/FAQ\fP
 .SH HOWTO
 .sp
 The manual \fBopenvpn\-examples\fP(5) gives some examples, especially for
@@ -7367,21 +7366,21 @@ small setups.
 .sp
 For a more comprehensive guide to setting up OpenVPN in a production
 setting, see the OpenVPN HOWTO at
-\%<https://\:openvpn\:.net/\:community-resources/\:how-to/>
+\fI\%https://openvpn.net/community\-resources/how\-to/\fP
 .SH PROTOCOL
 .sp
 An ongoing effort to document the OpenVPN protocol can be found under
-\%<https://\:github\:.com/\:openvpn/\:openvpn-rfc>
+\fI\%https://github.com/openvpn/openvpn\-rfc\fP
 .SH WEB
 .sp
-OpenVPN\(aqs web site is at \%<https://\:community\:.openvpn\:.net/>
+OpenVPN\(aqs web site is at \fI\%https://community.openvpn.net/\fP
 .sp
 Go here to download the latest version of OpenVPN, subscribe to the
 mailing lists, read the mailing list archives, or browse the Git
 repository.
 .SH BUGS
 .sp
-Report all bugs to the OpenVPN team \%<info@\:openvpn\:.net>
+Report all bugs to the OpenVPN team \fI\%info@openvpn.net\fP
 .SH SEE ALSO
 .sp
 \fBopenvpn\-examples\fP(5),
@@ -7394,13 +7393,13 @@ Report all bugs to the OpenVPN team \%<info@\:openvpn\:.net>
 .SH NOTES
 .sp
 This product includes software developed by the OpenSSL Project
-(\%<https://\:www\:.openssl\:.org/>)
+(\fI\%https://www.openssl.org/\fP)
 .sp
 For more information on the TLS protocol see:
-\%<https://\:tools\:.ietf\:.org/\:html/\:rfc2246>
+\fI\%https://tools.ietf.org/html/rfc2246\fP
 .sp
 For more information on the LZO real\-time compression library see:
-\%<https://\:www\:.oberhumer\:.com/\:opensource/\:lzo/>
+\fI\%https://www.oberhumer.com/opensource/lzo/\fP
 .SH COPYRIGHT
 .sp
 Copyright (C) 2002\-2025 OpenVPN Inc This program is free software; you
@@ -7408,5 +7407,6 @@ can redistribute it and/or modify it under the terms of the GNU General
 Public License version 2 as published by the Free Software Foundation.
 .SH AUTHORS
 .sp
-James Yonan \%<james@\:openvpn\:.net>
-.\" End of generated man page.
+James Yonan \fI\%james@openvpn.net\fP
+.\" Generated by docutils manpage writer.
+.

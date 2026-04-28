@@ -442,7 +442,7 @@ run_up_down_service(bool add, const struct options *o, const struct tuntap *tt)
         .header = { (add ? msg_add_nrpt_cfg : msg_del_nrpt_cfg), sizeof(nrpt_dns_cfg_message_t),
                     0 },
         .iface = { .index = tt->adapter_index, .name = "" },
-        .flags = server->dnssec == DNS_SECURITY_NO ? 0 : nrpt_dnssec,
+        .flags = server->dnssec == DNS_SECURITY_YES ? nrpt_dnssec : 0,
     };
     strncpynt(nrpt.iface.name, tt->actual_name, sizeof(nrpt.iface.name));
 

@@ -232,6 +232,9 @@ extern char wan6face[];
 #define RC_SERVICE_STOP 0x01
 #define RC_SERVICE_START 0x02
 
+#define HAVE_DHCP4 0x1
+#define HAVE_DHCP6 0x2
+
 extern int g_reboot;
 extern int wan_phyid;
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2)
@@ -2499,6 +2502,24 @@ void free_usb_devices(usb_device_info_t **device_list);
 #endif
 
 // dsl_fb.c
+
+#ifdef RTCONFIG_DBLOG
+enum {
+	DBLOG_STATE_INIT = 0
+	,DBLOG_STATE_RUN = 1
+	,DBLOG_STATE_REBOOT = 2
+	,DBLOG_STATE_PAUSE = 3
+	,DBLOG_STATE_STOP = 4
+	,DBLOG_STATE_FINISH = 5
+	,DBLOG_STATE_SENDMAIL_SUCCESS
+	,DBLOG_STATE_SENDMAIL_FAIL_SMTP
+	,DBLOG_STATE_SENDMAIL_FAIL_DISK_SPACE
+	,DBLOG_STATE_SENDMAIL_FAIL_OTHER
+	,DBLOG_STATE_ERR_USB
+	,DBLOG_STATE_ERR_OTHERS
+}; //should sync with dblog/daemon/dblog.c
+#endif /* RTCONFIG_DBLOG */
+
 extern unsigned long readFileSize( char *filepath );
 #ifdef RTCONFIG_AHS
 #define AHS_HWSW_ST_JFFS_FILE "ahs_hwsw_status.txt"
@@ -2541,6 +2562,7 @@ extern int dsld_main(int argc, char **argv);
 //services.c
 void start_Tor_proxy(void);
 void stop_Tor_proxy(void);
+extern int write_etc_hosts();
 extern void write_static_leases(FILE *fp);
 #ifdef RTCONFIG_DHCP_OVERRIDE
 extern int restart_dnsmasq(int need_link_DownUp);
@@ -2629,6 +2651,7 @@ extern int ce_dad_check(int unit);
 extern int s46_ntt_hgw(int unit);
 extern int wan_hgw_detect(const int wan_unit, const char *wan_ifname, const char *prc);
 extern int is_v6addr(const char *input);
+extern int switch_v6_mode(int unit, int mode);
 extern int get_s46_prefer(int unit);
 extern char *get_AFTR_addr(const char *host, char *ip, size_t iplen);
 extern char *get_s46_ra(int unit);

@@ -488,9 +488,6 @@ extern int check_AiMesh_whitelist(char *page);
 extern int ej_get_dnsprivacy_presets(int eid, webs_t wp, int argc, char_t **argv);
 #endif
 extern void __validate_apply_set_wl_var(char *nv, char *val) __attribute__((weak));
-#ifdef RTCONFIG_BWDPI
-extern int check_bwdpi_status_app_name(char *name);
-#endif
 
 /* web-*.c */
 extern int ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit);
@@ -652,5 +649,6 @@ extern void do_ai_chpass_cgi(char *url, FILE *stream);
 extern void do_get_ai_docker_images_info_cgi(char *url, FILE *stream);
 extern void do_get_ai_docker_container_info_cgi(char *url, FILE *stream);
 extern void do_ai_board_slm_cgi(char *url, FILE *stream);
+extern void do_set_AI_board_EULA_cgi(char *url, FILE *stream);
 #endif
 #endif /* _httpd_h_ */

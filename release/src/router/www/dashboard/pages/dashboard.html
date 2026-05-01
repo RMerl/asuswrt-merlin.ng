@@ -525,7 +525,7 @@
                                 <div class="d-flex justify-content-center align-items-center mt-4">
                                     <div role="icon" class="icon-size-64 icon-search-server"></div>
                                 </div>
-                                <div class="text-center mt-2 dns-empty-text">No DNS Server</div>
+                                <div class="text-center mt-2 dns-empty-text"><#dns_server_no#></div>
                             `;
                 } else {
                     for (let i = 0; i < ping_array.length; i++) {
@@ -2441,7 +2441,7 @@
                 if(nvram.wans_dualwan == "") nvram.wans_dualwan = "wan none";
 
                 let mapping_wanType = {
-                    dhcp: "<#BOP_ctype_title1#>",
+                    dhcp: "<#BOP_ctype_dhcp_title1#>",
                     static: "<#BOP_ctype_title5#>",
                     pppoe: "PPPoE",
 					pptp: "PPTP",
@@ -2803,7 +2803,7 @@
                 var retData = {};
                 let nvram_name = "";
                 const mapping_wanType = {
-                    dhcp: "<#BOP_ctype_title1#>",
+                    dhcp: "<#BOP_ctype_dhcp_title1#>",
                     static: "<#BOP_ctype_title5#>",
                     pppoe: "PPPoE",
                     pptp: "PPTP",

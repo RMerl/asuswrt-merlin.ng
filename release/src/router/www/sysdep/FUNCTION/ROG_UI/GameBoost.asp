@@ -19,7 +19,7 @@
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js?v=4"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js?v=5"></script>
 <style>
 body{
     margin: 0;
@@ -161,7 +161,7 @@ function uuRegister(mac){
 document.addEventListener("DOMContentLoaded", () => {
     const thirdpartyPolicy = 'WTFast'
     document.getElementById("thirdparty_pp").innerHTML=`<#Thirdparty_PP_Desc1#>`.replace("%1$@", thirdpartyPolicy).replace("[aa]%2$@[/aa]", `<a onclick="showThirdPartyPolicy('${thirdpartyPolicy}')" style="text-decoration: underline;cursor: pointer;">AAA Internet Publishing Inc. PRIVACY POLICY</a>`);
-    const thirdpartyUUPolicy = '网易UU加速器'
+    const thirdpartyUUPolicy = 'UU 加速器'
     document.getElementById("thirdparty_uu_pp").innerHTML=`<#Thirdparty_PP_Desc1#>`.replace("%1$@", thirdpartyUUPolicy).replace("[aa]%2$@[/aa]", `<a onclick="showThirdPartyPolicy('${thirdpartyUUPolicy}')" style="text-decoration: underline;cursor: pointer;">网易游戏隐私政策</a>`);
 })
 
@@ -408,13 +408,13 @@ function showThirdPartyPolicy(party){
 							<div class="content-divide-line"></div>
 							<div class="flex-as-start content-desc-container">
 								<div class="flexbox flex-a-center">
-									<div class="content-desc-title">网易UU加速器</div>
+									<div class="content-desc-title"><#UU_Accelerator#></div>
 									<div class="content-divide-line-sm"></div>
 									<div class="content-detail">
 										<a href="https://uu.163.com/router/" target="_blank">FAQ</a>
 									</div>
 								</div>
-								<div class="content-desc">UU路由器插件为三大主机PS4、Switch、Xbox One提供加速。可实现多台主机同时加速，NAT类型All Open。畅享全球联机超快感！</div>
+								<div class="content-desc"><#UU_Accelerator_desc#></div>
 								<div id="thirdparty_uu_pp" class="content-desc"></div>
 							</div>
 							<div class="content-divide-line"></div>

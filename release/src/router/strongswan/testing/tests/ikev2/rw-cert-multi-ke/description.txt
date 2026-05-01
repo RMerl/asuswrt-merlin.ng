@@ -1,0 +1,12 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each
+to gateway <b>moon</b>. The authentication is based on <b>X.509 certificates</b>.
+To test multiple key exchanges (RFC 9370) and IKE_INTERMEDIATE exchanges (RFC 9242),
+<b>carol</b> proposes MODP_2048 for the key exchange and CURVE_25519 for the
+additional key exchange whereas <b>dave</b> proposes MODP_3072 and ECP_384,
+respectively. The IKE and ESP SAs are then rekeyed using the same proposals.
+One set of SAs is rekeyed from <b>carol</b> and another from <b>moon</b>.
+<p/>
+Upon the successful establishment of the IPsec tunnels, the updown script
+automatically inserts iptables-based firewall rules that let pass the tunneled traffic.
+In order to test both tunnel and firewall, both <b>carol</b> and <b>dave</b> ping
+the client <b>alice</b> behind the gateway <b>moon</b>.

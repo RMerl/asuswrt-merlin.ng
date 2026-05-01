@@ -14,6 +14,9 @@ ifeq ($(BRCM_CHIP),$(filter $(BRCM_CHIP),4908 4912))
 CFLAGS += -DBCM49XX
 endif
 endif
+ifeq ($(BRCM_CHIP),4912)
+CFLAGS += -DBRCM_CHIP_4912_SERIES
+endif
 CFLAGS += -Wall $(if $(RTCONFIG_DEBUG),-g,-Os) $(EXTRACFLAGS)
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(TOP)/networkmap
 ifneq ($(HND_ROUTER),y)
@@ -130,7 +133,10 @@ LDFLAGS += -L$(WPA_SUPPLICANT_DIR)/wpa_supplicant -L$(INSTALLDIR)/wpa_supplicant
 WPS_PBCD := wps_pbcd
 ifeq ($(or $(RTCONFIG_WIFI6E),$(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916),$(RTCONFIG_BCM_502L07P2)),y)
 ifeq ($(RC_HOSTAPD_BE),y)
-ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250122)
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506)
+OBJS_WPS_PBCD := $(if $(wildcard sysdeps/broadcom/wps_pbcd_be_6.2.0_25.438.64.0.c),wps_pbcd_be_6.2.0_25.438.64.0.o,prebuild/wps_pbcd_be_6.2.0_25.438.64.0.o)
+OBJS_WPS_PBCD += $(if $(wildcard sysdeps/broadcom/hostapd_config_be_6.2.0_25.438.64.0.c),hostapd_config_be_6.2.0_25.438.64.0.o,prebuild/hostapd_config_be_6.2.0_25.438.64.0.o)
+else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250122)
 OBJS_WPS_PBCD := $(if $(wildcard sysdeps/broadcom/wps_pbcd_be_369_39041.c),wps_pbcd_be_369_39041.o,prebuild/wps_pbcd_be_369_39041.o)
 OBJS_WPS_PBCD += $(if $(wildcard sysdeps/broadcom/hostapd_config_be_369_39041.c),hostapd_config_be_369_39041.o,prebuild/hostapd_config_be_369_39041.o)
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
@@ -387,6 +393,10 @@ CFLAGS += -DWIFI7_SDK_20241007
 endif
 ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250122)
 CFLAGS += -DWIFI7_SDK_20250122
+endif
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506)
+# don't need -DWIFI7_SDK_20250506, move to src-rt/Makefile
+CFLAGS += -I$(HND_SRC)/router-sysdep/bcm_flashutil/
 endif
 endif
 
@@ -1054,7 +1064,9 @@ endif
 ifeq ($(RTCONFIG_BRCM_HOSTAPD),y)
 ifeq ($(or $(RTCONFIG_WIFI6E),$(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916),$(RTCONFIG_BCM_502L07P2)),y)
 ifeq ($(RC_HOSTAPD_BE),y)
-ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250122)
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506)
+OBJS += $(if $(wildcard sysdeps/broadcom/hostapd_config_be_6.2.0_25.438.64.0.c),hostapd_config_be_6.2.0_25.438.64.0.o,prebuild/hostapd_config_be_6.2.0_25.438.64.0.o)
+else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250122)
 OBJS += $(if $(wildcard sysdeps/broadcom/hostapd_config_be_369_39041.c),hostapd_config_be_369_39041.o,prebuild/hostapd_config_be_369_39041.o)
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
 OBJS += $(if $(wildcard sysdeps/broadcom/hostapd_config_be_369_1808.c),hostapd_config_be_369_1808.o,prebuild/hostapd_config_be_369_1808.o)

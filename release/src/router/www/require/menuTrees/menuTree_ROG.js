@@ -614,7 +614,7 @@ define(function(){
 					retArray.push("adGuard_DNS.asp");
 				}
 
-				if(!frs_feedback_support) {		
+				if(!frs_feedback_support) {
 					retArray.push("Advanced_Feedback.asp");
 					retArray.push("Feedback_Info.asp");
 				}
@@ -622,13 +622,15 @@ define(function(){
 				if(noftp_support){
 					retArray.push("Advanced_AiDisk_ftp.asp");
 				}
-				
+
 				if(!dualWAN_support){
 					retArray.push("Advanced_WANPort_Content.asp");
 				}
 				else{
 					if(!dualwan_enabled && usb_index == 0){
 						retArray.push("Advanced_WAN_Content.asp");
+						if(dsl_support)
+							retArray.push("Advanced_DSL_Content.asp");
 						if(!gobi_support)
 							retArray.push("Advanced_MobileBroadband_Content.asp");
 						else

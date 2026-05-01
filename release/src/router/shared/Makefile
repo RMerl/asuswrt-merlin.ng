@@ -196,6 +196,12 @@ CFLAGS += -DWIFI7_SDK_20250122
 endif
 endif
 
+ifeq ($(HND_ROUTER_BE_4916), y)
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506)
+CFLAGS += -DCONFIG_PASN
+endif
+endif
+
 OBJS = shutils.o defaults.o model.o rtstate.o boardapi.o
 OBJS += network_utility.o
 OBJS += misc.o version.o files.o strings.o process.o
@@ -439,6 +445,10 @@ endif
 
 ifeq ($(RTCONFIG_LP5523),y)
 OBJS += lp5523led.o
+endif
+
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506)
+OBJS += qosmap_utils.o
 endif
 
 ifeq ($(RTCONFIG_AMAS),y)

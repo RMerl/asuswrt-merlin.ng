@@ -110,7 +110,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *kernel_libipsec_plugin_create()
+PLUGIN_DEFINE(kernel_libipsec)
 {
 	private_kernel_libipsec_plugin_t *this;
 

@@ -5253,6 +5253,7 @@ end_of_wl_sched:
 #if defined(RTCONFIG_MULTILAN_CFG)
 wifi_band_cap_st band_cap[MAX_BAND_CAP_LIST_SIZE];
 int band_cap_total = 0;
+static int vif_svcStatus[12][32];
 int is_reserved_if(int unit, int subunit, int filter_main)
 {
 	int i, j;
@@ -5301,6 +5302,43 @@ int check_wlX_sched(int unit) {
 }
 #endif
 
+/*
+   10 minutes with 30 seconds check interval (no recording mode), to avoid wrong wifi status due to some unexpected long time operation like restart_net_and_phy, 
+   which may cause some wifi check to be skipped and then cause wrong wifi status.
+*/
+#define NO_RECORDING_MAX_COUNT (600/30)
+#define RESET_SVC_STATUS_MAX_COUNT (600/30)
+static int g_no_recording_mode = 0;
+static int g_reset_svc_status_period = 0;
+
+static void reset_svc_status_cache_v2(void)
+{
+	int unit = 0, item = 0, subunit;
+	char word[256], *next;
+#if defined(RTCONFIG_MULTILAN_CFG)
+	char word2[256], *next2;
+	char nv[81];
+#endif
+
+	foreach (word, nvram_safe_get("wl_ifnames"), next) {
+		SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
+		svcStatus[item] = -1;
+
+#if defined(RTCONFIG_MULTILAN_CFG)
+		subunit = 1;
+		memset(nv, 0, sizeof(nv));
+		snprintf(nv, sizeof(nv), "wl%d_vifnames", unit);
+		foreach (word2, nvram_safe_get(nv), next2) {
+			vif_svcStatus[item][subunit] = -1;
+			subunit++;
+		}
+#endif
+
+		item++;
+		unit++;
+	}
+}
+
 void timecheck_v2(void)
 {
 	int activeNow;
@@ -5313,7 +5351,6 @@ void timecheck_v2(void)
 #endif
 
 #ifdef RTCONFIG_MULTILAN_CFG
-	int vif_svcStatus[12][32];
 	int activeNow2;
 	int expireNow;
 	int timesched;
@@ -5339,30 +5376,23 @@ void timecheck_v2(void)
 	item = 0;
 	unit = 0;
 
+	if (++g_reset_svc_status_period >= RESET_SVC_STATUS_MAX_COUNT) {
+		reset_svc_status_cache_v2();
+		g_reset_svc_status_period = 0;
+		WL_SCHED_DBG("[wifi-scheduler] Reset svc status cache every %d checks to recover stale cache without reload_svc_radio.\n", RESET_SVC_STATUS_MAX_COUNT);
+	}
+
 	if (nvram_match("reload_svc_radio", "1"))
 	{
 		nvram_set("reload_svc_radio", "0");
 
-		foreach (word, nvram_safe_get("wl_ifnames"), next) {
-			SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
-			svcStatus[item] = -1;
-
-#if defined(RTCONFIG_MULTILAN_CFG)
-			subunit = 1;
-			memset(nv, 0, sizeof(nv));
-			snprintf(nv, sizeof(nv), "wl%d_vifnames", unit);
-			foreach (word2, nvram_safe_get(nv), next2) {
-				vif_svcStatus[item][subunit] = -1;
-				subunit++;
-			}
-#endif	
-
-			item++;
-			unit++;
-		}
+		reset_svc_status_cache_v2();
 
 		item = 0;
 		unit = 0;
+
+		g_no_recording_mode = NO_RECORDING_MAX_COUNT;
+		WL_SCHED_DBG("[wifi-scheduler] Enter no recording svc mode, for next %d checks to avoid wrong wifi status.", NO_RECORDING_MAX_COUNT);
 	}
 
 	if (nvram_get_int("ntp_ready") != 1)
@@ -5466,12 +5496,14 @@ void timecheck_v2(void)
 #else
 				if (match_radio_status(unit, activeNow2)) {
 #endif
-					vif_svcStatus[item][subunit] = activeNow2;
+					if (g_no_recording_mode == 0)
+						vif_svcStatus[item][subunit] = activeNow2;
 					subunit++;
 					continue;
 				}
 #else
-				vif_svcStatus[item][subunit] = activeNow2;
+				if (g_no_recording_mode == 0)
+					vif_svcStatus[item][subunit] = activeNow2;
 #endif
 
 				if (activeNow2 == 0) {
@@ -5558,13 +5590,15 @@ void timecheck_v2(void)
 #else
 			if (match_radio_status(unit, activeNow)) {
 #endif
-				svcStatus[item] = activeNow;
+				if (g_no_recording_mode == 0)
+					svcStatus[item] = activeNow;
 				item++;
 				unit++;
 				continue;
 			}
 #else
-			svcStatus[item] = activeNow;
+			if (g_no_recording_mode == 0)
+				svcStatus[item] = activeNow;
 #endif
 
 			if (activeNow == 0) {
@@ -5599,6 +5633,9 @@ void timecheck_v2(void)
 		unit++;
 
 	}
+
+	if (g_no_recording_mode > 0)
+		g_no_recording_mode--;
 }
 #endif
 
@@ -11740,6 +11777,10 @@ watchdog_main(int argc, char *argv[])
 	led_control_normal();
 #ifdef RTL_WTDOG
 	start_rtl_watchdog();
+#endif
+
+#if !defined(RTCONFIG_SCHED_DAEMON) && defined(RTCONFIG_WL_SCHED_V2)
+	reset_svc_status_cache_v2();
 #endif
 
 	/* Most of time it goes to sleep */

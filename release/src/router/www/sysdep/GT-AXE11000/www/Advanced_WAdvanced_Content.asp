@@ -439,11 +439,8 @@ function initial(){
 			$('#turbo_qam_hint').click(function(){openHint(3,33);});
 		}
 
-		if((!Qcawifi_support && !Rawifi_support) || based_modelid == "RT-AC87U"
-		    || based_modelid == "MAP-AC1300" || based_modelid == "MAP-AC2200" || based_modelid == "VZW-AC1300" || based_modelid == "RT-AC95U"
-		    || based_modelid == "RT-AC82U" || based_modelid == "RT-AC58U" || based_modelid == "4G-AC53U" || based_modelid == "4G-AC56" || (based_modelid == "RP-AC87" && is_unit_5g(wl_unit_value)) ){		// hide on Broadcom platform
-			document.getElementById("wl_plcphdr_field").style.display = "none";
-		}
+		// hide 802.11b for non-2.4 GHz unit
+		document.getElementById("wl_plcphdr_field").style.display = "none";
 	}
 	else if(is_unit_60g(wl_unit_value)){ // 60GHz up
 		inputCtrl(document.form.wl_user_rssi_option, 0);
@@ -1095,6 +1092,7 @@ function applyRule(){
 		}
 
 		if(ofdma_support){
+			document.form.wl_mumimo.value = '0';
 			if(document.form.wl_ofdma.value == '3' || document.form.wl_ofdma.value == '4'){
 				document.form.wl_mumimo.value = '1';
 			} else {

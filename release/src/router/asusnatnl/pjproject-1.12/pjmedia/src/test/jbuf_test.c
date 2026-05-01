@@ -160,6 +160,7 @@ static pj_bool_t process_test_data(char data, pjmedia_jbuf *jb,
     }
 #endif
 
+	(void) print_state;
     return PJ_TRUE;
 }
 

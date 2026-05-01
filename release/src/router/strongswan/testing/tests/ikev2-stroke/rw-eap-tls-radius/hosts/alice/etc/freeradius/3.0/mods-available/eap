@@ -6,8 +6,8 @@ eap {
     certificate_file = ${certdir}/aaaCert.pem
     ca_file = ${cadir}/strongswanCert.pem
     cipher_list = "DEFAULT"
-    dh_file = ${certdir}/dh
     random_file = ${certdir}/random
+    check_cert_cn = %{User-Name}
   }
 
   tls {

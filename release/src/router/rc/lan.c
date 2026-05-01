@@ -3361,6 +3361,59 @@ NEITHER_WDS_OR_PSTA:
 			logmessage("hotplug", "add net %s.", interface);
 			_dprintf("hotplug net: add net %s.\n", interface);
 
+#if defined(RTCONFIG_USB_WAN_BACKUP ) && defined (RTCONFIG_DUALWAN)
+			if(nvram_match("wans_usb_bk", "1"))
+			{
+#ifdef RTCONFIG_MULTIWAN_PROFILE
+				char wans_mt_ioport[32] = {0};
+				nvram_safe_get_r("wans_mt_ioport", wans_mt_ioport, sizeof(wans_mt_ioport));
+				if (!nvram_get_int("mtwan1_enable")	//Default Multi-WAN profile disabled and single wan
+				 && !strchr(wans_mt_ioport, ' ')
+				 && !strstr(wans_mt_ioport, "usb")	//not usb wan
+				) {
+					strlcat(wans_mt_ioport, " usb", sizeof(wans_mt_ioport));
+					nvram_set("wans_mt_ioport", wans_mt_ioport);
+					nvram_set("mtwan1_mt_group", "1 2");
+					nvram_set("mtwan1_mt_weight", "1 1");
+					nvram_set_int("mtwan1_enable", 1);
+					nvram_set_int("mtwan1_mode", MTWAN_MODE_ALL);
+					nvram_set_int("mtwan1_fb", 0);
+					nvram_set_int("mtwan1_group", 1);
+					nvram_set("mtwan1_order", "1 2");
+					mtwan_init_nvram();
+					mtwanduck_update_profile();
+					nvram_set_int("wans_usb_bk_act", 1);
+#if defined(RTCONFIG_NOTIFICATION_CENTER)
+					_nc_send_usb_tethering_event();
+#endif
+				}
+#else
+				int wans = get_wans_dualwan();
+				_dprintf("[%s, %d]wans=%x\n", __FUNCTION__, __LINE__, wans);
+				char dualwan[32],  *p;
+				if(get_dualwan_by_unit(WAN_UNIT_SECOND) ==  WANS_DUALWAN_IF_NONE	// must be single wan
+					&&  !(wans & WANSCAP_USB)	//not usb wan
+#ifdef RTCONFIG_MULTIWAN_IF
+					&& !(mtwan_get_wans_type() & WANSCAP_USB)
+#endif
+				) {
+					_dprintf("[%s, %d]\n", __FUNCTION__, __LINE__);
+					get_wans_dualwan_str(dualwan, sizeof(dualwan));
+					p = strstr(dualwan, "none");
+					if(!p)
+						strlcat(dualwan, " usb", sizeof(dualwan));
+					else
+						strlcpy(p, "usb", sizeof(dualwan) - (p - dualwan));
+					nvram_set("wans_dualwan", dualwan);
+					nvram_set_int("wans_usb_bk_act", 1);
+#if defined(RTCONFIG_NOTIFICATION_CENTER)
+					_nc_send_usb_tethering_event();
+#endif
+				}
+#endif	//RTCONFIG_MULTIWAN_PROFILE
+			}
+#endif
+
 			snprintf(device_path, sizeof(device_path), "%s/%s/device", SYS_NET, interface);
 
 			memset(usb_path, 0, PATH_MAX);
@@ -3410,20 +3463,15 @@ NEITHER_WDS_OR_PSTA:
 				nvram_set(strcat_r(prefix2, "act_path", tmp2), usb_node); // needed by find_modem_type.sh.
 
 #ifdef RTCONFIG_MODEM_BRIDGE
-			if(sw_mode() == SW_MODE_AP && nvram_get_int("modem_bridge"))
-				return;
-#endif
-
-#if defined(RTCONFIG_USB_WAN_BACKUP ) && defined (RTCONFIG_DUALWAN)
-                        if(nvram_get_int("wans_usb_bk") != 1)
+			if(!(sw_mode() == SW_MODE_AP && nvram_get_int("modem_bridge")))
 #endif
 			{
-			if((unit = get_wanunit_by_type(get_wantype_by_modemunit(modem_unit))) == WAN_UNIT_NONE){
-				_dprintf("(%s): in the current dual wan mode, didn't support the USB modem.\n", interface);
-				return;
+				if((unit = get_wanunit_by_type(get_wantype_by_modemunit(modem_unit))) == WAN_UNIT_NONE){
+					_dprintf("(%s): in the current dual wan mode, didn't support the USB modem.\n", interface);
+					return;
+				}
+				snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 			}
-			}
-			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 
 			snprintf(buf, sizeof(buf), "unit=%d", modem_unit);
 			putenv(buf);
@@ -3519,59 +3567,6 @@ NEITHER_WDS_OR_PSTA:
 				unsetenv("unit");
 
 				return;
-			}
-#endif
-
-#if defined(RTCONFIG_USB_WAN_BACKUP ) && defined (RTCONFIG_DUALWAN)
-			if(nvram_match("wans_usb_bk", "1"))
-			{
-#ifdef RTCONFIG_MULTIWAN_PROFILE
-				char wans_mt_ioport[32] = {0};
-				nvram_safe_get_r("wans_mt_ioport", wans_mt_ioport, sizeof(wans_mt_ioport));
-				if (!nvram_get_int("mtwan1_enable")	//Default Multi-WAN profile disabled and single wan
-				 && !strchr(wans_mt_ioport, ' ')
-				 && !strstr(wans_mt_ioport, "usb")	//not usb wan
-				) {
-					strlcat(wans_mt_ioport, " usb", sizeof(wans_mt_ioport));
-					nvram_set("wans_mt_ioport", wans_mt_ioport);
-					nvram_set("mtwan1_mt_group", "1 2");
-					nvram_set("mtwan1_mt_weight", "1 1");
-					nvram_set_int("mtwan1_enable", 1);
-					nvram_set_int("mtwan1_mode", MTWAN_MODE_ALL);
-					nvram_set_int("mtwan1_fb", 0);
-					nvram_set_int("mtwan1_group", 1);
-					nvram_set("mtwan1_order", "1 2");
-					mtwan_init_nvram();
-					mtwanduck_update_profile();
-					nvram_set_int("wans_usb_bk_act", 1);
-#if defined(RTCONFIG_NOTIFICATION_CENTER)
-					_nc_send_usb_tethering_event();
-#endif
-				}
-#else
-				int wans = get_wans_dualwan();
-				_dprintf("[%s, %d]wans=%x\n", __FUNCTION__, __LINE__, wans);
-				char dualwan[32],  *p;
-				if(get_dualwan_by_unit(WAN_UNIT_SECOND) ==  WANS_DUALWAN_IF_NONE	// must be single wan
-					&&  !(wans & WANSCAP_USB)	//not usb wan
-#ifdef RTCONFIG_MULTIWAN_IF
-					&& !(mtwan_get_wans_type() & WANSCAP_USB)
-#endif
-				) {
-					_dprintf("[%s, %d]\n", __FUNCTION__, __LINE__);
-					get_wans_dualwan_str(dualwan, sizeof(dualwan));
-					p = strstr(dualwan, "none");
-					if(!p)
-						strlcat(dualwan, " usb", sizeof(dualwan));
-					else
-						strlcpy(p, "usb", sizeof(dualwan) - (p - dualwan));
-					nvram_set("wans_dualwan", dualwan);
-					nvram_set_int("wans_usb_bk_act", 1);
-#if defined(RTCONFIG_NOTIFICATION_CENTER)
-					_nc_send_usb_tethering_event();
-#endif
-				}
-#endif	//RTCONFIG_MULTIWAN_PROFILE
 			}
 #endif
 
@@ -3773,94 +3768,6 @@ NEITHER_WDS_OR_PSTA:
 			logmessage("hotplug", "add net %s.", interface);
 			_dprintf("hotplug net: add net %s.\n", interface);
 
-			snprintf(device_path, sizeof(device_path), "%s/%s/device", SYS_NET, interface);
-
-			i = 0;
-			while(i++ < 3 && !check_if_dir_exist(device_path)){
-				_dprintf("hotplug net INTERFACE=%s ACTION=%s: wait 1 seconds...\n", interface, action);
-				sleep(1);
-			}
-
-			// Beceem dongle.
-			if(!check_if_dir_exist(device_path))
-				return;
-
-			memset(usb_path, 0, PATH_MAX);
-			if(realpath(device_path, usb_path) == NULL){
-				_dprintf("hotplug net(%s): skip 1. device_path %s.\n", interface, device_path);
-				return;
-			}
-
-			if(get_usb_node_by_string(usb_path, usb_node, 32) == NULL){
-				_dprintf("hotplug net(%s): skip 2. usb_path %s.\n", interface, usb_path);
-				return;
-			}
-
-			if(get_path_by_node(usb_node, port_path, 8) == NULL){
-				_dprintf("hotplug net(%s): skip 3. usb_node %s.\n", interface, usb_node);
-				return;
-			}
-
-			for(modem_unit = MODEM_UNIT_FIRST; modem_unit < MODEM_UNIT_MAX; ++modem_unit){
-				usb_modem_prefix(modem_unit, prefix2, sizeof(prefix2));
-
-				snprintf(buf, sizeof(buf), "%s", nvram_safe_get(strcat_r(prefix2, "act_path", tmp2)));
-				if(strlen(buf) > 0 && strcmp(buf, usb_node)){
-					_dprintf("hotplug net(%s): skip 4. port_path %s.\n", interface, port_path);
-					continue;
-				}
-				else
-					break;
-			}
-
-			if(modem_unit == MODEM_UNIT_MAX){
-				_dprintf("hotplug net(%s): Already had %d modem device!\n", interface, MODEM_UNIT_MAX);
-				return;
-			}
-			else if(strlen(buf) <= 0)
-				nvram_set(strcat_r(prefix2, "act_path", tmp2), usb_node); // needed by find_modem_type.sh.
-
-#if defined(RTCONFIG_USB_WAN_BACKUP ) && defined (RTCONFIG_DUALWAN)
-                        if(nvram_get_int("wans_usb_bk") != 1)
-#endif
-			{
-			if((unit = get_wanunit_by_type(get_wantype_by_modemunit(modem_unit))) == WAN_UNIT_NONE){
-				_dprintf("(%s): in the current dual wan mode, didn't support the USB modem.\n", interface);
-				return;
-			}
-			}
-			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
-
-			snprintf(buf, sizeof(buf), "unit=%d", modem_unit);
-			putenv(buf);
-			eval("/usr/sbin/find_modem_type.sh");
-
-			while(!strcmp(nvram_safe_get(strcat_r(prefix2, "act_type", tmp2)), "") && i++ < 3){
-				_dprintf("hotplug net(%s): wait for the modem driver at %d second...\n", interface, i);
-				eval("/usr/sbin/find_modem_type.sh");
-				sleep(1);
-			}
-			unsetenv("unit");
-
-			snprintf(modem_type, sizeof(modem_type), "%s", nvram_safe_get(strcat_r(prefix2, "act_type", tmp2)));
-			_dprintf("hotplug net: %s=%s.\n", tmp2, modem_type);
-
-			if(!nvram_get_int("modem_android")){
-				snprintf(nvram_name, sizeof(nvram_name), "usb_path%s_act", port_path);
-				snprintf(word, sizeof(word), "%s", nvram_safe_get(nvram_name));
-				_dprintf("hotplug net(%s): %s %s.\n", interface, nvram_name, word);
-
-				logmessage("hotplug", "set net %s.", interface);
-				_dprintf("hotplug net: set net %s.\n", interface);
-				nvram_set(nvram_name, interface);
-				nvram_set(strcat_r(prefix2, "act_dev", tmp2), interface);
-				nvram_set(strcat_r(prefix, "ifname", tmp), interface);
-			}
-			else{
-				logmessage("hotplug", "android skip to set net %s.", interface);
-				_dprintf("hotplug net: android skip set net %s.\n", interface);
-			}
-
 #if defined(RTCONFIG_USB_WAN_BACKUP ) && defined (RTCONFIG_DUALWAN)
 			if(nvram_match("wans_usb_bk", "1"))
 			{
@@ -3910,6 +3817,89 @@ NEITHER_WDS_OR_PSTA:
 #endif	//RTCONFIG_MULTIWAN_PROFILE
 			}
 #endif
+
+			snprintf(device_path, sizeof(device_path), "%s/%s/device", SYS_NET, interface);
+
+			i = 0;
+			while(i++ < 3 && !check_if_dir_exist(device_path)){
+				_dprintf("hotplug net INTERFACE=%s ACTION=%s: wait 1 seconds...\n", interface, action);
+				sleep(1);
+			}
+
+			// Beceem dongle.
+			if(!check_if_dir_exist(device_path))
+				return;
+
+			memset(usb_path, 0, PATH_MAX);
+			if(realpath(device_path, usb_path) == NULL){
+				_dprintf("hotplug net(%s): skip 1. device_path %s.\n", interface, device_path);
+				return;
+			}
+
+			if(get_usb_node_by_string(usb_path, usb_node, 32) == NULL){
+				_dprintf("hotplug net(%s): skip 2. usb_path %s.\n", interface, usb_path);
+				return;
+			}
+
+			if(get_path_by_node(usb_node, port_path, 8) == NULL){
+				_dprintf("hotplug net(%s): skip 3. usb_node %s.\n", interface, usb_node);
+				return;
+			}
+
+			for(modem_unit = MODEM_UNIT_FIRST; modem_unit < MODEM_UNIT_MAX; ++modem_unit){
+				usb_modem_prefix(modem_unit, prefix2, sizeof(prefix2));
+
+				snprintf(buf, sizeof(buf), "%s", nvram_safe_get(strcat_r(prefix2, "act_path", tmp2)));
+				if(strlen(buf) > 0 && strcmp(buf, usb_node)){
+					_dprintf("hotplug net(%s): skip 4. port_path %s.\n", interface, port_path);
+					continue;
+				}
+				else
+					break;
+			}
+
+			if(modem_unit == MODEM_UNIT_MAX){
+				_dprintf("hotplug net(%s): Already had %d modem device!\n", interface, MODEM_UNIT_MAX);
+				return;
+			}
+			else if(strlen(buf) <= 0)
+				nvram_set(strcat_r(prefix2, "act_path", tmp2), usb_node); // needed by find_modem_type.sh.
+
+			if((unit = get_wanunit_by_type(get_wantype_by_modemunit(modem_unit))) == WAN_UNIT_NONE){
+				_dprintf("(%s): in the current dual wan mode, didn't support the USB modem.\n", interface);
+				return;
+			}
+			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
+
+			snprintf(buf, sizeof(buf), "unit=%d", modem_unit);
+			putenv(buf);
+			eval("/usr/sbin/find_modem_type.sh");
+
+			while(!strcmp(nvram_safe_get(strcat_r(prefix2, "act_type", tmp2)), "") && i++ < 3){
+				_dprintf("hotplug net(%s): wait for the modem driver at %d second...\n", interface, i);
+				eval("/usr/sbin/find_modem_type.sh");
+				sleep(1);
+			}
+			unsetenv("unit");
+
+			snprintf(modem_type, sizeof(modem_type), "%s", nvram_safe_get(strcat_r(prefix2, "act_type", tmp2)));
+			_dprintf("hotplug net: %s=%s.\n", tmp2, modem_type);
+
+			if(!nvram_get_int("modem_android")){
+				snprintf(nvram_name, sizeof(nvram_name), "usb_path%s_act", port_path);
+				snprintf(word, sizeof(word), "%s", nvram_safe_get(nvram_name));
+				_dprintf("hotplug net(%s): %s %s.\n", interface, nvram_name, word);
+
+				logmessage("hotplug", "set net %s.", interface);
+				_dprintf("hotplug net: set net %s.\n", interface);
+				nvram_set(nvram_name, interface);
+				nvram_set(strcat_r(prefix2, "act_dev", tmp2), interface);
+				nvram_set(strcat_r(prefix, "ifname", tmp), interface);
+			}
+			else{
+				logmessage("hotplug", "android skip to set net %s.", interface);
+				_dprintf("hotplug net: android skip set net %s.\n", interface);
+			}
 
 #if defined(RTCONFIG_DUALWAN) && !defined(RTCONFIG_ALPINE) && !defined(RTCONFIG_LANTIQ)
 			// avoid the busy time of every start_wan when booting.
@@ -6674,7 +6664,6 @@ void restart_wireless(void)
 #ifdef BCM_EVENTD
 	start_eventd();
 #endif
-	start_acsd();
 #if defined(RTCONFIG_DHDAP) || defined(RTCONFIG_HND_ROUTER_AX)
 	start_dhd_monitor();
 #endif

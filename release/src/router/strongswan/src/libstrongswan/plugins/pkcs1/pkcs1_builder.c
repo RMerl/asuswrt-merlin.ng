@@ -74,13 +74,6 @@ static public_key_t *parse_public_key(chunk_t blob)
 								KEY_ECDSA, BUILD_BLOB_ASN1_DER, blob, BUILD_END);
 					goto end;
 				}
-				else if (oid == OID_BLISS_PUBLICKEY)
-				{
-					/* Need the whole subjectPublicKeyInfo for BLISS public keys */
-					key = lib->creds->create(lib->creds, CRED_PUBLIC_KEY,
-								KEY_BLISS, BUILD_BLOB_ASN1_DER, blob, BUILD_END);
-					goto end;
-				}
 				else if (oid == OID_ED25519)
 				{
 					/* Need the whole subjectPublicKeyInfo for Ed25519 public keys */
@@ -295,30 +288,12 @@ static bool is_ec_private_key(chunk_t blob)
 }
 
 /**
- * Check if the ASN.1 structure looks like a BLISS private key.
- */
-static bool is_bliss_private_key(chunk_t blob)
-{
-	chunk_t data;
-	return asn1_unwrap(&blob, &blob) == ASN1_SEQUENCE &&
-		   asn1_unwrap(&blob, &data) == ASN1_OID &&
-		   asn1_unwrap(&blob, &data) == ASN1_BIT_STRING &&
-		   asn1_unwrap(&blob, &data) == ASN1_BIT_STRING &&
-		   asn1_unwrap(&blob, &data) == ASN1_BIT_STRING;
-}
-
-/**
  * Load a private key from an ASN.1 encoded blob trying to detect the type
  * automatically.
  */
 static private_key_t *parse_private_key(chunk_t blob)
 {
 	if (is_ec_private_key(blob))
-	{
-		return lib->creds->create(lib->creds, CRED_PRIVATE_KEY, KEY_ECDSA,
-								  BUILD_BLOB_ASN1_DER, blob, BUILD_END);
-	}
-	else if (is_bliss_private_key(blob))
 	{
 		return lib->creds->create(lib->creds, CRED_PRIVATE_KEY, KEY_ECDSA,
 								  BUILD_BLOB_ASN1_DER, blob, BUILD_END);

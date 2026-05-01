@@ -50,6 +50,11 @@ struct private_psk_authenticator_t {
 	chunk_t ike_sa_init;
 
 	/**
+	 * IntAuth data to include in AUTH calculation
+	 */
+	chunk_t int_auth;
+
+	/**
 	 * Reserved bytes of ID payload
 	 */
 	char reserved[3];
@@ -86,8 +91,8 @@ METHOD(authenticator_t, build, status_t,
 		return NOT_FOUND;
 	}
 	if (!keymat->get_psk_sig(keymat, FALSE, this->ike_sa_init, this->nonce,
-							 key->get_key(key), this->ppk, my_id,
-							 this->reserved, &auth_data))
+							 this->int_auth, key->get_key(key), this->ppk,
+							 my_id, this->reserved, &auth_data))
 	{
 		key->destroy(key);
 		return FAILED;
@@ -103,8 +108,8 @@ METHOD(authenticator_t, build, status_t,
 	if (this->no_ppk_auth)
 	{
 		if (!keymat->get_psk_sig(keymat, FALSE, this->ike_sa_init, this->nonce,
-							 key->get_key(key), chunk_empty, my_id,
-							 this->reserved, &auth_data))
+							 this->int_auth, key->get_key(key), chunk_empty,
+							 my_id, this->reserved, &auth_data))
 		{
 			DBG1(DBG_IKE, "failed adding NO_PPK_AUTH notify");
 			key->destroy(key);
@@ -160,8 +165,8 @@ METHOD(authenticator_t, process, status_t,
 		keys_found++;
 
 		if (!keymat->get_psk_sig(keymat, TRUE, this->ike_sa_init, this->nonce,
-								 key->get_key(key), this->ppk, other_id,
-								 this->reserved, &auth_data))
+								 this->int_auth, key->get_key(key), this->ppk,
+								 other_id, this->reserved, &auth_data))
 		{
 			continue;
 		}
@@ -199,6 +204,12 @@ METHOD(authenticator_t, use_ppk, void,
 	this->no_ppk_auth = no_ppk_auth;
 }
 
+METHOD(authenticator_t, set_int_auth, void,
+	private_psk_authenticator_t *this, chunk_t int_auth)
+{
+	this->int_auth = int_auth;
+}
+
 METHOD(authenticator_t, destroy, void,
 	private_psk_authenticator_t *this)
 {
@@ -220,6 +231,7 @@ psk_authenticator_t *psk_authenticator_create_builder(ike_sa_t *ike_sa,
 				.build = _build,
 				.process = (void*)return_failed,
 				.use_ppk = _use_ppk,
+				.set_int_auth = _set_int_auth,
 				.is_mutual = (void*)return_false,
 				.destroy = _destroy,
 			},
@@ -248,6 +260,7 @@ psk_authenticator_t *psk_authenticator_create_verifier(ike_sa_t *ike_sa,
 				.build = (void*)return_failed,
 				.process = _process,
 				.use_ppk = _use_ppk,
+				.set_int_auth = _set_int_auth,
 				.is_mutual = (void*)return_false,
 				.destroy = _destroy,
 			},

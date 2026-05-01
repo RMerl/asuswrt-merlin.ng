@@ -451,11 +451,8 @@ function initial(){
 			$("#turbo_qam_title").html("1024-QAM");
 		}
 
-		if((!Qcawifi_support && !Rawifi_support) || based_modelid == "RT-AC87U"
-		    || based_modelid == "MAP-AC1300" || based_modelid == "MAP-AC2200" || based_modelid == "VZW-AC1300" || based_modelid == "RT-AC95U"
-		    || based_modelid == "RT-AC82U" || based_modelid == "RT-AC58U" || based_modelid == "4G-AC53U" || based_modelid == "4G-AC56" || (based_modelid == "RP-AC87" && wl_unit_value == "1") ){		// hide on Broadcom platform
-			document.getElementById("wl_plcphdr_field").style.display = "none";
-		}
+		// hide 802.11b for non-2.4 GHz unit
+		document.getElementById("wl_plcphdr_field").style.display = "none";
 
 		if (MUMIMO5G_support) {
 			document.getElementById("wl_MU_MIMO_field").style.display = "";
@@ -1102,6 +1099,7 @@ function applyRule(){
 		}
 
 		if(ofdma_support){
+			document.form.wl_mumimo.value = '0';
 			if(document.form.wl_ofdma.value == '3' || document.form.wl_ofdma.value == '4'){
 				document.form.wl_mumimo.value = '1';
 			} else {

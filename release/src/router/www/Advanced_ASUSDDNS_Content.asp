@@ -19,7 +19,7 @@
 <script type="text/javascript" language="JavaScript" src="/validator.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js?v=4"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_policy.js?v=5"></script>
 <script type="text/javascript" src="/form.js"></script>
 <style type="text/css">
     * {
@@ -277,23 +277,23 @@ function init(){
 	setTimeout(show_warning_message, 1000);
 
 	if (ddns_enable_x == "1" && ddns_server_x.indexOf("WWW.ASUS.COM") != -1) {
-		const policyStatus = PolicyStatus()
-				.then(data => {
-					if (data.PP == 0 || data.PP_time == "") {
-						const policyModal = new PolicyModalComponent({
-							policy: "PP",
-							policyStatus: data,
-							agreeCallback: () => {
-								location.reload();
-							},
-							knowRiskCallback: () => {
-								alert(`<#ASUS_POLICY_Function_Confirm#>`);
-								location.reload();
-							}
-						});
-						policyModal.show();
-					}
-				});
+        PolicyStatus()
+            .then(data => {
+                if (data.PP < 1) {
+                    const policyModal = new PolicyModalComponent({
+                        policy: "PP",
+                        policyStatus: data,
+                        agreeCallback: () => {
+                            location.reload();
+                        },
+                        knowRiskCallback: () => {
+                            alert(`<#ASUS_POLICY_Function_Confirm#>`);
+                            location.reload();
+                        }
+                    });
+                    policyModal.show();
+                }
+            });
 	}
 
 	if(oauth_auth_status == "2"){
@@ -419,8 +419,8 @@ function force_update() {
 	submitForm();
 }
 
-function show_ipv6update_setting(){
-	if(ipv6_service != "disabled")
+function show_ipv6update_setting(v){
+	if(ipv6_service != "disabled" && v != "PUBYUN.COM")
 		showhide("ddns_ipv6update_tr", 1);
 	else
 		showhide("ddns_ipv6update_tr", 0);
@@ -476,7 +476,7 @@ function ddns_load_body(){
                 document.getElementById("ddns_hostname_x").value = "<#asusddns_inputhint#>";
         }
 	inputCtrl(document.form.ddns_refresh_x, 1);
-		show_ipv6update_setting();
+		show_ipv6update_setting(document.form.ddns_server_x.value);
         change_ddns_setting(document.form.ddns_server_x.value);
 
 	    if(document.form.ddns_server_x.value == "WWW.ORAY.COM"){
@@ -542,36 +542,36 @@ function get_cert_info(){
 }
 
 function apply_eula_check(){
-	const policyStatus = PolicyStatus()
-			.then(data => {
-				if (document.form.ddns_enable_x.value == "1" && document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1) {
-					if (data.PP == 0 || data.PP_time == "") {
-						const policyModal = new PolicyModalComponent({
-							policy: "PP",
-							policyStatus: data,
-							agreeCallback: () => {
-								$("#policy_popup_modal").remove();
-								applyRule();
-								PolicyStatus();
-							},
-							knowRiskCallback: () => {
-								alert(`<#ASUS_POLICY_Function_Confirm#>`);
-								$("#radio_ddns_enable").removeClass("on");
-								$('input[name="ddns_enable_x"][value="0"]').prop('checked', true);
-								change_common_radio(this, 'LANHostConfig', 'ddns_enable_x', '0')
-								$("#policy_popup_modal").remove();
-								PolicyStatus();
-							}
-						});
-						policyModal.show();
-						return false;
-					} else {
-						applyRule();
-					}
-				} else {
-					applyRule();
-				}
-			});
+    PolicyStatus()
+        .then(data => {
+            if (document.form.ddns_enable_x.value == "1" && document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1) {
+                if (data.PP < 1) {
+                    const policyModal = new PolicyModalComponent({
+                        policy: "PP",
+                        policyStatus: data,
+                        agreeCallback: () => {
+                            $("#policy_popup_modal").remove();
+                            applyRule();
+                            PolicyStatus();
+                        },
+                        knowRiskCallback: () => {
+                            alert(`<#ASUS_POLICY_Function_Confirm#>`);
+                            $("#radio_ddns_enable").removeClass("on");
+                            $('input[name="ddns_enable_x"][value="0"]').prop('checked', true);
+                            change_common_radio(this, 'LANHostConfig', 'ddns_enable_x', '0')
+                            $("#policy_popup_modal").remove();
+                            PolicyStatus();
+                        }
+                    });
+                    policyModal.show();
+                    return false;
+                } else {
+                    applyRule();
+                }
+            } else {
+                applyRule();
+            }
+        });
 }
 
 function applyRule(){
@@ -663,7 +663,7 @@ function validForm(){
 					return false;
 				}
 
-				if(document.form.ddns_passwd_x.value == ""){
+				if(document.form.ddns_server_x.value != "DYNV6.COM" && document.form.ddns_passwd_x.value == ""){
 					alert("<#File_Pop_content_alert_desc6#>");
 					document.form.ddns_passwd_x.focus();
 					document.form.ddns_passwd_x.select();
@@ -899,9 +899,18 @@ function change_ddns_setting(v){
 				inputCtrl(document.form.ddns_username_x, 0);
 			else
 				inputCtrl(document.form.ddns_username_x, 1);
+            if(v == "DYNV6.COM"){
+                document.getElementById("ddns_username_title").innerHTML = `User Token`;  /*Untranslated*/
+                inputCtrl(document.form.ddns_passwd_x, 0);
+            }
+            else{
+                document.getElementById("ddns_username_title").innerHTML = `<#LANHostConfig_x_DDNSUserName_itemname#>`;
+                inputCtrl(document.form.ddns_passwd_x, 1);
+            }
+			if(v == "WWW.TUNNELBROKER.NET" || v == "DNS.HE.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM" || v == "DYNU.COM" || v == "CLOUDFLARE.COM")
 			inputCtrl(document.form.ddns_passwd_x, 1);
 			var disable_wild = 0;
-			if(v == "WWW.TUNNELBROKER.NET" || v == "DNS.HE.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM" || v == "DYNU.COM")
+			if(v == "WWW.TUNNELBROKER.NET" || v == "DNS.HE.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM" || v == "DYNU.COM" || v == "CLOUDFLARE.COM" || v == "PUBYUN.COM")
 				var disable_wild = 1;
 			else
 				var disable_wild = 0;
@@ -928,22 +937,27 @@ function change_ddns_setting(v){
 
 	var default_hostname_label = "<a class=\"hintstyle\" href=\"javascript:void(0);\" onClick=\"openHint(5,13);\"><#LANHostConfig_x_DDNSHostNames_itemname#></a>";
 	if(v == "WWW.NAMECHEAP.COM") {
-		document.getElementById("ddns_username_th").innerHTML = "Domain Name";
+		document.getElementById("ddns_username_title").innerHTML = "Domain Name";
 		document.getElementById("ddns_password_th").innerHTML = "<#LANHostConfig_x_DDNSPassword_itemname#>";
 		document.getElementById("ddns_hostname_th").innerHTML = default_hostname_label;
 	}
 	else if(v == "FREEDNS.AFRAID.ORG") {
-		document.getElementById("ddns_username_th").innerHTML = "Username";
+		document.getElementById("ddns_username_title").innerHTML = "Username";
 		document.getElementById("ddns_password_th").innerHTML = "<#PPPConnection_Password_itemname#>";
 		document.getElementById("ddns_hostname_th").innerHTML = default_hostname_label;
 	}
 	else if (v == "WWW.TUNNELBROKER.NET") {
-		document.getElementById("ddns_username_th").innerHTML = "Account Name";
+		document.getElementById("ddns_username_title").innerHTML = "Account Name";
 		document.getElementById("ddns_password_th").innerHTML = "Update Key";
 		document.getElementById("ddns_hostname_th").innerHTML = "Tunnel ID";
 	}
+	else if (v == "DYNV6.COM") {
+		document.getElementById("ddns_username_title").innerHTML = `User Token`;  /*Untranslated*/
+		document.getElementById("ddns_password_th").innerHTML = "<#LANHostConfig_x_DDNSPassword_itemname#>";
+		document.getElementById("ddns_hostname_th").innerHTML = default_hostname_label;
+	}
 	else {
-		document.getElementById("ddns_username_th").innerHTML = "<#LANHostConfig_x_DDNSUserName_itemname#>";
+		document.getElementById("ddns_username_title").innerHTML = "<#LANHostConfig_x_DDNSUserName_itemname#>";
 		document.getElementById("ddns_password_th").innerHTML = "<#LANHostConfig_x_DDNSPassword_itemname#>";
 		document.getElementById("ddns_hostname_th").innerHTML = default_hostname_label;
 	}
@@ -1334,12 +1348,16 @@ function clear_cert_key(){
 						<option value="WWW.DNSOMATIC.COM" <% nvram_match("ddns_server_x", "WWW.DNSOMATIC.COM","selected"); %>>WWW.DNSOMATIC.COM</option>
 						<option value="DNS.HE.NET" <% nvram_match("ddns_server_x", "DNS.HE.NET","selected"); %>>HE.NET</option>
 						<option value="DYNU.COM" <% nvram_match("ddns_server_x", "DYNU.COM","selected"); %>>DYNU.COM</option>
+						<option value="CLOUDFLARE.COM" <% nvram_match("ddns_server_x", "CLOUDFLARE.COM","selected"); %>>CLOUDFLARE.COM</option>
+						<option value="DYNV6.COM" <% nvram_match("ddns_server_x", "DYNV6.COM","selected"); %>>DYNV6.COM</option>
+						<option value="PUBYUN.COM" <% nvram_match("ddns_server_x", "PUBYUN.COM","selected"); %>>PUBYUN.COM</option>
 						<option value="WWW.TUNNELBROKER.NET" <% nvram_match("ddns_server_x", "WWW.TUNNELBROKER.NET","selected"); %>>WWW.TUNNELBROKER.NET</option>
 						<option value="WWW.NO-IP.COM" <% nvram_match("ddns_server_x", "WWW.NO-IP.COM","selected"); %>>WWW.NO-IP.COM</option>
 						<option value="WWW.ORAY.COM" <% nvram_match("ddns_server_x", "WWW.ORAY.COM","selected"); %>>WWW.ORAY.COM(花生壳)</option>
 						<option value="WWW.NAMECHEAP.COM" <% nvram_match("ddns_server_x", "WWW.NAMECHEAP.COM","selected"); %>>WWW.NAMECHEAP.COM</option>
 						<option value="FREEDNS.AFRAID.ORG" <% nvram_match("ddns_server_x", "FREEDNS.AFRAID.ORG","selected"); %>>FREEDNS.AFRAID.ORG</option>
 						<option value="FREEMYIP.COM" <% nvram_match("ddns_server_x", "FREEMYIP.COM","selected"); %>>FREEMYIP.COM</option>
+						<option value="DEDYN.IO" <% nvram_match("ddns_server_x", "DEDYN.IO","selected"); %>>DEDYN.IO</option>
 						<option value="CUSTOM" <% nvram_match("ddns_server_x", "CUSTOM","selected");  %>>Custom</option>
 					</select>
 					<input id="deregister_btn" class="button_gen" style="display: none; margin-left: 5px;" type="button" value="<#CTL_Deregister#>"/>
@@ -1371,7 +1389,7 @@ function clear_cert_key(){
 				<td id="ddns_hostname_x_value"><% nvram_get("ddns_hostname_x"); %></td>
 			</tr>
 			<tr>
-				<th id="ddns_username_th"><#LANHostConfig_x_DDNSUserName_itemname#></th>
+				<th id="ddns_username_title"><#LANHostConfig_x_DDNSUserName_itemname#></th>
 				<td><input type="text" maxlength="32" class="input_25_table" name="ddns_username_x" value="<% nvram_get("ddns_username_x"); %>" onKeyPress="return validator.isString(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off"></td>
 			</tr>
 			<tr>

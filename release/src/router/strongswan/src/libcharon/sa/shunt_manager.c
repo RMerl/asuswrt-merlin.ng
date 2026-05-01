@@ -119,10 +119,8 @@ static bool install_shunt_policy(child_cfg_t *child)
 	host_any6 = host_create_any(AF_INET6);
 
 	hosts = linked_list_create_with_items(host_any, host_any6, NULL);
-	my_ts_list =    child->get_traffic_selectors(child, TRUE,  NULL, hosts,
-												 FALSE);
-	other_ts_list = child->get_traffic_selectors(child, FALSE, NULL, hosts,
-												 FALSE);
+	my_ts_list =    child->get_traffic_selectors(child, TRUE, hosts);
+	other_ts_list = child->get_traffic_selectors(child, FALSE, hosts);
 	hosts->destroy(hosts);
 
 	manual_prio = child->get_manual_prio(child);
@@ -293,10 +291,8 @@ static void uninstall_shunt_policy(child_cfg_t *child)
 	host_any6 = host_create_any(AF_INET6);
 
 	hosts = linked_list_create_with_items(host_any, host_any6, NULL);
-	my_ts_list =    child->get_traffic_selectors(child, TRUE,  NULL, hosts,
-												 FALSE);
-	other_ts_list = child->get_traffic_selectors(child, FALSE, NULL, hosts,
-												 FALSE);
+	my_ts_list =    child->get_traffic_selectors(child, TRUE, hosts);
+	other_ts_list = child->get_traffic_selectors(child, FALSE, hosts);
 	hosts->destroy(hosts);
 
 	manual_prio = child->get_manual_prio(child);

@@ -401,6 +401,7 @@ RTCONFIG_HAS_5G=y
 # RTCONFIG_ROG_UI is not set
 # RTCONFIG_TUF_UI is not set
 # RTCONFIG_TS_UI is not set
+# RTCONFIG_PROART_UI is not set
 RTCONFIG_ADGUARDDNS=y
 # RTCONFIG_GEOIP is not set
 # RTCONFIG_GEOIP_EG is not set

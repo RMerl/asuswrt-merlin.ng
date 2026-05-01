@@ -127,7 +127,10 @@ function adjust_panel_block_top(_objID, _offsetHeight) {
 		}
 	};
 	const scrollTop = getScrollTop();
-	document.getElementById(_objID).style.top = (scrollTop + _offsetHeight) + "px";
+	const el = document.getElementById(_objID);
+	if (el) {
+		el.style.setProperty('top', (scrollTop + _offsetHeight) + 'px', 'important');
+	}
 }
 
 var FAQ_List = "";

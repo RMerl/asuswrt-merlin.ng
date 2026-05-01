@@ -66,6 +66,20 @@
 #define ARRAYSIZE(a) (sizeof(a) / sizeof(a[0]))
 #endif /* ARRAYSIZE */
 
+#if defined(WIFI7_SDK_20250506)
+#define WLIF_MIN_BUF		128
+#define	WLIF_BUF_512		512
+#define WLIF_DUMP_BUF_LEN	8 * 1024
+#define WLIF_MAP_BHSTA_NVVAL	0x4
+#define WLIF_SCAN_TRY_COUNT	4
+#define HAPD_WPA2_PSK_HEXLEN		64	/* 32 bytes hex-digit PSK */
+#define HAPD_PASSPH_MIN_LEN		8	/* passphrase min length */
+#define HAPD_PASSPH_MAX_LEN		63	/* passphrase max length */
+/* sleep duration in seconds before fetching scanresults */
+#define WLIF_SCAN_WAIT		5
+#define WLIF_SCAN_WAIT_6G	10
+
+#else
 #define WLIF_MIN_BUF		128
 #define WLIF_DUMP_BUF_LEN	8 * 1024
 #define WLIF_MAP_BHSTA_NVVAL	0x4
@@ -73,6 +87,25 @@
 /* sleep duration in seconds before fetching scanresults */
 #define WLIF_SCAN_WAIT		5
 #define WLIF_SCAN_WAIT_6G	10
+#endif /*  WIFI7_SDK_20250506 */
+
+#if defined(WIFI7_SDK_20250506)
+#define WLIFU_MLO_INVALID	-1	/* Invalid Link ID */
+#define WLIFU_MLO_MAP_LINKID	0	/* Link ID of Main AP */
+
+#define WPA_PSK_FLAG_IS_WPASUPP			(0)
+#define WPA_PSK_FLAG_IS_HAPD			(1 << 0)
+#define WPA_PSK_FLAG_IS_SAE_ONLY		(1 << 1)
+
+// Security type
+#define	WPA_SUPP_SEC_OPEN_OR_WEP	"NONE"	// Open Security or WEP
+#define	WPA_SUPP_SEC_WPA		"WPA"	// IEEE 802.11i/D3.0
+#define WPA_SUPP_SEC_WPA2		"WPA2"  // Full  IEEE 802.11i/RSN
+
+#define WPA_SUPP_PROTO_WPA		"WPA"   // WPA/IEEE 802.11i/D3.0
+#define WPA_SUPP_PROTO_RSN		"RSN"   // WPA2/IEEE 802.11i
+
+#endif /*  WIFI7_SDK_20250506 */
 
 /* IOCTL swapping mode for Big Endian host with Little Endian dongle.  Default to off */
 /* The below macros handle endian mis-matches between wl utility and wl driver. */
@@ -1027,7 +1060,7 @@ wl_wlif_update_dpp_ui(DPP_UI_SCSTATE idx, char *ifname)
 
 /* Gets the status code from the wps_proc_status nvram value */
 int
-wl_wlif_get_wps_status_code()
+wl_wlif_get_wps_status_code(void)
 {
 	wlif_wps_ui_status_code_id_t idx = WLIF_WPS_UI_INIT;
 	char *nvval = nvram_safe_get("wps_proc_status");
@@ -1794,6 +1827,32 @@ exit:
 	return ret;
 }
 
+#if defined(WIFI7_SDK_20250506)
+/* Get the mlo_unit. If check_mld_unit is TRUE, then get the mlo_unit only if the mld_unit is
+ * not 255 (pseudo MLO). This is because there may be case where the primary STA can be pseudo MLO
+ * and virtual BSS can be MLO (part of MLD).
+ */
+static int
+wl_wlif_get_mlo_linkid(char *ifname, bool check_mld_unit)
+{
+	int link_id = WLIFU_MLO_INVALID, mld_unit;
+
+	if (check_mld_unit) {
+		if (wl_iovar_get(ifname, "mld_unit", &mld_unit, sizeof(mld_unit)) ||
+			(mld_unit == 0xff)) {
+			return link_id;
+		}
+	}
+
+	if (wl_iovar_get(ifname, "mlo_unit", (void *)&link_id, sizeof(link_id))) {
+		link_id = WLIFU_MLO_INVALID;
+	}
+
+	return link_id;
+}
+
+#endif /* WIFI7_SDK_20250506 */
+
 /* Invokes the hostapd/wpa_supplicant pbc cli to the provided interface.
  * In case caller does specify any interface, first wireless interface will be taken
  * from the lan_ifnames nvram for wps operation.
@@ -1921,7 +1980,7 @@ wl_wlif_wpa_supplicant_update_ap_scan(char *ifname, char *nvifname, int val)
 }
 
 #if defined(RTCONFIG_HND_ROUTER_BE_4916)
-#if defined(WIFI7_SDK_20250122)
+#if defined(WIFI7_SDK_20250122) || defined(WIFI7_SDK_20250506)
 // Helper function to get the band type for wireless interface
 int
 wl_wlif_get_band_type(char *ifname)
@@ -1953,10 +2012,624 @@ wl_wlif_get_band_type(char *ifname)
 
 	return band_type;
 }
-#endif /* WIFI7_SDK_20250122 */
+#endif /* WIFI7_SDK_20250122, WIFI7_SDK_20250506 */
 #endif	/* RTCONFIG_HND_ROUTER_BE_4916 */
 
-#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+#if defined(WIFI7_SDK_20250506)
+/* Apply the credentials on the supplicant */
+void
+wl_wlif_apply_creds_to_supplicant(char *ifname, unsigned long int network_id,
+	wpa_connection_type_t connection_type)
+{
+	char nv_name[WLIF_MIN_BUF], *nv_val;
+	char cmd[2*WLIF_BUF_512] = {0}, out_buf[WLIF_MIN_BUF] = {0};
+	char nvifname[IFNAMSIZ] = {0};
+	bool is_sae = FALSE;
+	int link_id = WLIFU_MLO_INVALID;
+
+	if (osifname_to_nvifname(ifname, nvifname, sizeof(nvifname))) {
+		cprintf("Err: %s osifname_to_nvifname failed for %s\n",
+			__func__, ifname);
+		return;
+	}
+
+	if (connection_type == WPA_CONNECTION_TYPE_WPS) {
+		snprintf(cmd, sizeof(cmd), "wpa_cli -i %s dpp_stop_chirp", ifname);
+		dprintf("Info: rc: %d: %s\n", __LINE__, cmd);
+		system(cmd);
+	}
+
+	snprintf(nv_name, sizeof(nv_name), "%s_ssid", nvifname);
+	snprintf(cmd, sizeof(cmd), "wpa_cli -i %s set_network %lu ssid \'\"%s\"\'",
+			ifname, network_id, nvram_safe_get(nv_name));
+	dprintf("Info: rc: %d: %s\n", __LINE__, cmd);
+	system(cmd);
+
+	wpa_supp_key_mgmt_conv_fn(nvifname, "akm", NULL, out_buf, sizeof(out_buf));
+	if (find_in_list(out_buf, HAPD_KEY_MGMT_SAE)) {
+		is_sae = TRUE;
+	}
+	snprintf(cmd, sizeof(cmd), "wpa_cli -i %s set_network %lu key_mgmt %s",
+		ifname, network_id, out_buf);
+	dprintf("Info: rc: %d: %s\n", __LINE__, cmd);
+	system(cmd);
+
+	snprintf(nv_name, sizeof(nv_name), "%s_wpa_psk", nvifname);
+	snprintf(cmd, sizeof(cmd), "wpa_cli -i %s set_network %lu psk \'\"%s\"\'",
+		ifname, network_id, nvram_safe_get(nv_name));
+	dprintf("Info: rc: %d: %s\n", __LINE__, cmd);
+	system(cmd);
+
+	/* If the AKM has SAE, update the sae_password field also */
+	if (is_sae) {
+		snprintf(nv_name, sizeof(nv_name), "%s_wpa_psk", nvifname);
+		snprintf(cmd, sizeof(cmd),
+			"wpa_cli -i %s set_network %lu sae_password \'\"%s\"\'",
+			ifname, network_id, nvram_safe_get(nv_name));
+		dprintf("Info: rc: %d: %s\n", __LINE__, cmd);
+		system(cmd);
+	}
+
+	wpa_supp_key_mgmt_conv_fn(nvifname, "crypto", NULL, out_buf, sizeof(out_buf));
+	snprintf(cmd, sizeof(cmd), "wpa_cli -i %s set_network %lu pairwise %s",
+		ifname, network_id, out_buf);
+	dprintf("Info: rc: %d: %s\n", __LINE__, cmd);
+	system(cmd);
+
+	wpa_supp_key_mgmt_conv_fn(nvifname, "proto", NULL, out_buf, sizeof(out_buf));
+	snprintf(cmd, sizeof(cmd), "wpa_cli -i %s set_network %lu proto %s",
+		ifname, network_id, out_buf);
+	dprintf("Info: rc: %d: %s\n", __LINE__, cmd);
+	system(cmd);
+
+	hapd_mfp_conv_fn(nvifname, "mfp", NULL, out_buf, sizeof(out_buf));
+	snprintf(cmd, sizeof(cmd), "wpa_cli -i %s set_network %lu ieee80211w %s",
+		ifname, network_id, out_buf);
+	dprintf("Info: rc: %d: %s\n", __LINE__, cmd);
+	system(cmd);
+
+	/* DPP related settings */
+	if (connection_type == WPA_CONNECTION_TYPE_DPP) {
+		snprintf(nv_name, sizeof(nv_name), "%s_dpp_connector", nvifname);
+		nv_val = nvram_safe_get(nv_name);
+		if (nv_val[0] != '\0') {
+			snprintf(cmd, sizeof(cmd),
+				"wpa_cli -i %s set_network %lu dpp_connector \'\"%s\"\'",
+				ifname, network_id, nv_val);
+			dprintf("Info: rc: %d: %s\n", __LINE__, cmd);
+			system(cmd);
+		}
+
+		snprintf(nv_name, sizeof(nv_name), "%s_dpp_csign", nvifname);
+		nv_val = nvram_safe_get(nv_name);
+		if (nv_val[0] != '\0') {
+			snprintf(cmd, sizeof(cmd),
+				"wpa_cli -i %s set_network %lu dpp_csign %s",
+				ifname, network_id, nv_val);
+			dprintf("Info: rc: %d: %s\n", __LINE__, cmd);
+			system(cmd);
+		}
+
+		snprintf(nv_name, sizeof(nv_name), "%s_dpp_netaccess_key", nvifname);
+		nv_val = nvram_safe_get(nv_name);
+		if (nv_val[0] != '\0') {
+			snprintf(cmd, sizeof(cmd),
+				"wpa_cli -i %s set_network %lu dpp_netaccesskey %s",
+				ifname, network_id, nv_val);
+			dprintf("Info: rc: %d: %s\n", __LINE__, cmd);
+			system(cmd);
+		}
+
+		snprintf(nv_name, sizeof(nv_name), "%s_dpp_pp_key", nvifname);
+		nv_val = nvram_safe_get(nv_name);
+		if (nv_val[0] != '\0') {
+			snprintf(cmd, sizeof(cmd),
+				"wpa_cli -i %s set_network %lu dpp_pp_key %s",
+				ifname, network_id, nv_val);
+			dprintf("Info: rc: %d: %s\n", __LINE__, cmd);
+			system(cmd);
+		}
+	}
+
+	/* save the config */
+	snprintf(cmd, sizeof(cmd), "wpa_cli -i %s save_config", ifname);
+	dprintf("Info: rc: %d: %s\n", __LINE__, cmd);
+	system(cmd);
+
+	/* enable network */
+	snprintf(cmd, sizeof(cmd), "wpa_cli -i %s enable_network %lu",
+		ifname, network_id);
+	dprintf("Info: rc: %d: %s\n", __LINE__, cmd);
+	system(cmd);
+
+	/* For WPS case, we should set ap_scan to 1 and issue reconnect because during scan we
+	 * called disconnect. Without calling reconnect it will not try to connect.
+	 * For MLO case issue ap_scan and reconnect commands in main link only.
+	 */
+	link_id = wl_wlif_get_mlo_linkid(ifname, TRUE);
+
+	if (connection_type == WPA_CONNECTION_TYPE_WPS &&
+			(link_id == WLIFU_MLO_INVALID || link_id == WLIFU_MLO_MAP_LINKID)) {
+		/* set ap_scan to 1 */
+		snprintf(cmd, sizeof(cmd), "wpa_cli -i %s ap_scan 1", ifname);
+		dprintf("Info: rc: %d: %s\n", __LINE__, cmd);
+		system(cmd);
+
+		/* reconnect */
+		snprintf(cmd, sizeof(cmd), "wpa_cli -i %s reconnect", ifname);
+		dprintf("Info: rc: %d: %s\n", __LINE__, cmd);
+		system(cmd);
+	}
+
+	/* Once network block created, trigger scan command for connection */
+	if ((link_id == WLIFU_MLO_INVALID) || (link_id == WLIFU_MLO_MAP_LINKID)) {
+		snprintf(cmd, sizeof(cmd), "wpa_cli -i %s scan", ifname);
+		dprintf("Info: rc: %d: %s\n", __LINE__, cmd);
+		system(cmd);
+	}
+}
+
+#endif /* WIFI7_SDK_20250506 */
+
+#ifdef CONFIG_HOSTAPD
+#if defined(WIFI7_SDK_20250506)
+
+/* Helper fn to check for ftsae support based on corerev */
+bool
+hapd_wpasupp_is_ftsae_supported(char *nv_ifname)
+{
+	wlc_rev_info_t rev;
+	char *ifname, tmp[WLIF_MAX_BUF] = {0};
+
+	ifname = nvram_safe_get(strcat_r_s(nv_ifname, "_ifname", tmp, sizeof(tmp)));
+	memset(&rev, 0, sizeof(rev));
+	wl_ioctl(ifname, WLC_GET_REVINFO, &rev, sizeof(rev));
+
+	return (rev.corerev < 128) ? FALSE : TRUE;
+}
+
+#endif /* WIFI7_SDK_20250506 */
+#endif /* CONFIG_HOSTAPD */
+
+#if defined(WIFI7_SDK_20250506)
+
+/* Wrapper fn to get security info */
+void
+hapd_wpasupp_get_security_details(char *nv_ifname, int *out_akm)
+{
+	hapd_wpasupp_get_security_details_mrsno(nv_ifname, out_akm, 0, 0, 0);
+}
+
+/* Helper fn to get security info */
+void
+hapd_wpasupp_get_security_details_mrsno(char *nv_ifname, int *out_akm,
+		int mrsno, bool rsno, bool rsnop)
+{
+	char nv_name[WLIF_MAX_BUF] = {0}, tmp[WLIF_MAX_BUF] = {0}, *akm_val, *next;
+	int akm = HAPD_AKM_OPEN;
+	bool is_band_6g = FALSE;
+
+	// Check for wep security
+	snprintf(nv_name, sizeof(nv_name), "%s_wep", nv_ifname);
+	if (!strcmp(nvram_safe_get(nv_name), "enabled")) {
+		akm = HAPD_AKM_WEP;
+	} else {
+		snprintf(nv_name, sizeof(nv_name), "%s_akm", nv_ifname);
+		akm_val = nvram_safe_get(nv_name);
+
+		is_band_6g = (wl_wlif_get_band_type(nv_ifname) == 0);
+
+		foreach(tmp, akm_val, next) {
+			if (!mrsno || (!is_band_6g && !rsno && !rsnop))
+			{
+#ifndef RDKB
+				if (akm < HAPD_AKM_WPA && !strcmp(tmp, "psk")) { /* WPA-PSK */
+					akm |= HAPD_AKM_PSK;
+				}
+#endif /* RDKB */
+				if (akm < HAPD_AKM_WPA && !strcmp(tmp, "psk2")) { /* WPA2-PSK */
+					akm |= HAPD_AKM_PSK2;
+				}
+				/* WPA-EAP/1x */
+				if (!strcmp(tmp, "wpa") && (!akm || akm == HAPD_AKM_WPA2)) {
+					akm |= HAPD_AKM_WPA;
+				}
+				/* WPA2-EAP/1x */
+				if (!strcmp(tmp, "wpa2") && (!akm || akm == HAPD_AKM_WPA)) {
+					akm |= HAPD_AKM_WPA2;
+				}
+				if (!strcmp(tmp, "psk2ft")) {
+					akm |= HAPD_AKM_PSK2_FT;
+				}
+				if (!strcmp(tmp, "psk2sha256")) {
+					akm |= HAPD_AKM_PSK2_SHA256;
+				}
+				if (!strcmp(tmp, "osen")) {
+					akm = HAPD_AKM_WPA2_OSEN;
+				}
+			}
+			if (!mrsno || (rsno && !rsnop) ||
+					(is_band_6g && !rsno && !rsnop)) {
+				if (!strcmp(tmp, "wpa3")) {
+					akm |= HAPD_AKM_WPA3;
+				}
+				if (!strcmp(tmp, "sae")) {
+					akm |= HAPD_AKM_WPA3_SAE;
+				}
+				if (!strncmp(tmp, "saeft", sizeof("saeft")) &&
+					hapd_wpasupp_is_ftsae_supported(nv_ifname)) {
+					akm |= HAPD_AKM_WPA3_SAE_FT;
+				}
+				if (!strcmp(tmp, "dpp")) {
+					akm |= HAPD_AKM_WPA3_DPP;
+				}
+				if (!strcmp(tmp, "owe")) {
+					akm = HAPD_AKM_OWE;
+				}
+				if (!strcmp(tmp, "suite-b")) {
+					akm |= HAPD_AKM_WPA3_SUITE_B;
+				}
+				if (!strcmp(tmp, "suite-b ")) {
+					akm |= HAPD_AKM_WPA3_SUITE_B;
+				}
+			}
+			if (!mrsno || (!rsno && rsnop)) {
+				if (!strcmp(tmp, "sae-ext")) {
+					akm |= HAPD_AKM_WPA3_SAE_EXT;
+				}
+				if (!strcmp(tmp, "saeft-ext") &&
+						hapd_wpasupp_is_ftsae_supported(nv_ifname)) {
+					akm |= HAPD_AKM_WPA3_SAE_FT_EXT;
+				}
+			}
+#ifdef CONFIG_PASN
+			if (!strcmp(tmp, "pasn")) {
+				akm |= HAPD_AKM_PASN;
+			}
+#endif /* CONFIG_PASN */
+		}
+	}
+
+#ifdef CONFIG_PASN
+	if ((akm & HAPD_AKM_PASN) && !(akm & HAPD_AKM_WPA3_SAE)) {
+		/* Disable PASN if SAE is not enabled */
+		akm = HAPD_AKM_WPA3_SAE;
+	}
+#endif /* CONFIG_PASN */
+
+	/* WFA cert req: WPA, PSK should not supported when SAE enabled.
+	 * So clear  WPA, PSK bits to disable TKIP
+	 */
+	if ((akm & HAPD_AKM_WPA3_SAE) ||
+		(akm & HAPD_AKM_WPA3_SUITE_B)) {
+		dprintf("Info: rc: %d: WPA3-Ent/SAE set: Unset WPA/PSK to disable TKIP\n",
+			__LINE__);
+		if (akm & HAPD_AKM_WPA)
+			akm &= ~HAPD_AKM_WPA;
+		if (akm & HAPD_AKM_PSK)
+			akm &= ~HAPD_AKM_PSK;
+	}
+
+	*out_akm = akm;
+}
+
+#endif /* WIFI7_SDK_20250506 */
+
+/* Helper fn To check if fbt is enabled in AP */
+int hapd_fbt_enabled(char *nv_ifname)
+{
+	char nv_name[WLIF_MAX_BUF] = {0};
+	int fbt = 0, fbt_ap = 0, wbd_fbt = 0;
+	int fbt_enabled = 0;
+	int map_mode = 0;
+	char *ptr = NULL;
+
+	map_mode = (int)strtol(nvram_safe_get("multiap_mode"), NULL, 0);
+
+	if (map_mode > 0) {
+		/* WBD enabled. FBT by WBD */
+		snprintf(nv_name, sizeof(nv_name), "%s_wbd_fbt", nv_ifname);
+		ptr  = nvram_safe_get(nv_name);
+		if (ptr != NULL) {
+			wbd_fbt = atoi(ptr);
+		}
+	}
+
+	snprintf(nv_name, sizeof(nv_name), "%s_fbt", nv_ifname);
+	ptr  = nvram_safe_get(nv_name);
+	if (ptr != NULL) {
+		fbt = atoi(ptr);
+	}
+
+	snprintf(nv_name, sizeof(nv_name), "%s_fbt_ap", nv_ifname);
+	ptr = nvram_safe_get(nv_name);
+	if (ptr != NULL) {
+		fbt_ap = atoi(ptr);
+	}
+
+	if ((wbd_fbt || fbt) && fbt_ap) {
+		fbt_enabled = 1;
+	}
+
+	return fbt_enabled;
+}
+
+#if defined(WIFI7_SDK_20250506)
+void
+hapd_wpasupp_fill_pairwise(char *nv_ifname, char *cfg_arr_nvname, char *out_val, int out_sz)
+{
+	char nv_name[WLIF_MAX_BUF] = {0};
+	char tmp_nv_name[WLIF_MAX_BUF] = {0};
+	char *str;
+	int mrsno = 0;
+	int is_gcmp_supported;
+	char ifname[IFNAMSIZ] = {0};
+	bool ap_mode = 0;
+
+	if (!nv_ifname || !cfg_arr_nvname || !out_val || (out_sz <= 0)) {
+		dprintf("Err: %s wrong input\n", __FUNCTION__);
+		return;
+	}
+
+	if (nvifname_to_osifname(nv_ifname, ifname, sizeof(ifname))) {
+		cprintf("Err: %s failed to convert nvifname(%s) to osifname\n",
+			__FUNCTION__, nv_ifname);
+		return;
+	}
+
+	is_gcmp_supported = wl_wlif_get_chip_cap(ifname, "gcmp");
+
+	/* build interface/bss specific nvram - wlX_nvram or wlX.Y_nvram */
+	snprintf(nv_name, sizeof(nv_name), "%s_%s", nv_ifname, cfg_arr_nvname);
+
+	if (nvram_match(nv_name, "tkip")) {
+		snprintf(out_val, out_sz, "%s", HAPD_CIPHER_SUITE_TKIP);
+	}
+#ifdef RDKB
+	else if (strstr(nvram_safe_get(nv_name), "aes")) {
+		snprintf(out_val, out_sz, "%s", HAPD_CIPHER_SUITE_CCMP);
+	}
+#else /* RDKB */
+	else if (nvram_match(nv_name, "aes")) {
+		snprintf(out_val, out_sz, "%s", HAPD_CIPHER_SUITE_CCMP);
+	} else if (nvram_match(nv_name, "tkip+aes") || nvram_match(nv_name, "aes+tkip")) {
+		snprintf(out_val, out_sz, "%s %s", HAPD_CIPHER_SUITE_TKIP, HAPD_CIPHER_SUITE_CCMP);
+	}
+#endif /* RDKB */
+	else if (nvram_match(nv_name, "gcmp256")) {
+		if (is_gcmp_supported) {
+			snprintf(out_val, out_sz, "%s", HAPD_CIPHER_SUITE_GCMP_256);
+		} else {
+			cprintf("Err: %s %s gcmp256 is not supported but crypto nvram is "
+				"configured with gcmp256. So setting CCMP as pairwise to "
+				"config file\n", __FUNCTION__, nv_ifname);
+			snprintf(out_val, out_sz, "%s", HAPD_CIPHER_SUITE_CCMP);
+		}
+	}
+	else if ((nvram_match(nv_name, "aes+gcmp256")) ||
+			(nvram_match(nv_name, "gcmp256+aes"))) {
+		snprintf(tmp_nv_name, sizeof(tmp_nv_name), "%s_mrsno", nv_ifname);
+		str = nvram_safe_get(tmp_nv_name);
+
+		if (str[0] != '\0') {
+			mrsno = atoi(str);
+		}
+
+		snprintf(tmp_nv_name, sizeof(tmp_nv_name),  "%s_mode", nv_ifname);
+		ap_mode = nvram_match(tmp_nv_name, "ap");
+
+		if (!mrsno || !ap_mode) {
+			if (is_gcmp_supported) {
+				snprintf(out_val, out_sz, "%s %s",
+					HAPD_CIPHER_SUITE_CCMP, HAPD_CIPHER_SUITE_GCMP_256);
+			} else {
+				snprintf(out_val, out_sz, "%s", HAPD_CIPHER_SUITE_CCMP);
+			}
+		} else {
+			snprintf(out_val, out_sz, "%s", HAPD_CIPHER_SUITE_CCMP);
+		}
+	}
+	else if (nvram_match(nv_name, "suite-b")) {
+		snprintf(out_val, out_sz, "%s", HAPD_CIPHER_SUITE_SUITE_B);
+	}
+	else if (nvram_match(nv_name, "suite-b ")) {
+		snprintf(out_val, out_sz, "%s", HAPD_CIPHER_SUITE_SUITE_B);
+	}
+	else {
+		cprintf("Err: %s %s = '%s'\n", __FUNCTION__, nv_name, nvram_safe_get(nv_name));
+	}
+
+}
+#endif /* WIFI7_SDK_20250506 */
+
+#if defined(WIFI7_SDK_20250506)
+int
+wl_wlif_prepare_r0kh_string(char *nv_ifname, char *out_val, int out_sz)
+{
+	char nv_name[WLIF_MAX_BUF] = {0};
+	char fbt_name[WLIF_MIN_BUF], tar_name[WLIF_MIN_BUF];
+	char *fbt_aps, *next;
+	char r0kh[WLIF_MAX_BUF * 8];
+	int r0kh_len = 0;
+	int rem_len = sizeof(r0kh) - 1;
+	int repeat = 0;
+	char *fbt_r0_key, fbt_r0_hex_key[33];
+	char *addr, *r0kh_id;
+
+	/*
+	 * Preparing the r0kh string
+	 */
+	snprintf(nv_name, sizeof(nv_name), "%s_fbt_aps", nv_ifname);
+	fbt_aps = nvram_safe_get(nv_name);
+
+	memset(fbt_name, 0, sizeof(fbt_name));
+	memset(r0kh, 0, sizeof(r0kh));
+
+	foreach(fbt_name, fbt_aps, next)
+	{
+		memset(tar_name, 0, sizeof(tar_name));
+		memcpy(tar_name, fbt_name, sizeof(tar_name));
+		memset(nv_name, 0, sizeof(nv_name));
+		memset(fbt_r0_hex_key, 0, sizeof(fbt_r0_hex_key));
+		/*
+		 * r0kh
+		 */
+		snprintf(nv_name, sizeof(nv_name), "%s_addr", tar_name);
+		if (nvram_safe_get(nv_name) == NULL) {
+			continue;
+		}
+
+		snprintf(nv_name, sizeof(nv_name), "%s_addr", tar_name);
+		addr = nvram_safe_get(nv_name);
+
+		snprintf(nv_name, sizeof(nv_name), "%s_r0kh_id", tar_name);
+		r0kh_id = nvram_safe_get(nv_name);
+
+		snprintf(nv_name, sizeof(nv_name), "%s_r0kh_key", tar_name);
+		fbt_r0_key = nvram_safe_get(nv_name);
+
+		if (addr == NULL || r0kh_id == NULL || fbt_r0_key == NULL) {
+			continue;
+		}
+
+		r0kh_len += strlen(addr);
+		r0kh_len += strlen(r0kh_id);
+		/* Considering the spaces used between the fields */
+		r0kh_len += strlen("  ");
+		if (repeat) {
+			r0kh_len += strlen("\nr0kh=");
+		}
+
+		/* Considering the length of fbt_r0_hex_key */
+		if (r0kh_len >= (rem_len - sizeof(fbt_r0_hex_key))) {
+			cprintf("Err: rc: %d, r0kh limit is reached, cannot use all\n", __LINE__);
+			break;
+		}
+
+		if (repeat) {
+			strncat(r0kh, "\nr0kh=", rem_len);
+			rem_len -= strlen("\nr0kh=");
+		}
+
+		strncat(r0kh, addr, rem_len);
+		rem_len -= strlen(addr);
+
+		strncat(r0kh, " ", rem_len);
+		rem_len--;
+
+		strncat(r0kh, r0kh_id, rem_len);
+		rem_len -= strlen(r0kh_id);
+
+		strncat(r0kh, " ", rem_len);
+		rem_len--;
+
+		if ((fbt_r0_key != NULL) && (strlen(fbt_r0_key) == 16)) {
+			bytes_to_hex((uchar *) fbt_r0_key, strlen(fbt_r0_key),
+					(uchar *) fbt_r0_hex_key, sizeof(fbt_r0_hex_key));
+			strncat(r0kh, fbt_r0_hex_key, rem_len);
+			r0kh_len += strlen(fbt_r0_hex_key);
+			rem_len -= strlen(fbt_r0_hex_key);
+		}
+		repeat++;
+	}
+
+	snprintf(out_val, out_sz, "%s", r0kh);
+	return 0;
+}
+#endif /* WIFI7_SDK_20250506 */
+
+#if defined(WIFI7_SDK_20250506)
+int
+wl_wlif_prepare_r1kh_string(char *nv_ifname, char *out_val, int out_sz)
+{
+	char nv_name[WLIF_MAX_BUF] = {0};
+	char fbt_name[WLIF_MIN_BUF], tar_name[WLIF_MIN_BUF];
+	char *fbt_aps, *next;
+	char r1kh[WLIF_MAX_BUF * 8];
+	int r1kh_len = 0;
+	int rem_len = sizeof(r1kh) - 1;
+	int repeat = 0;
+	char *fbt_r1_key, fbt_r1_hex_key[33];
+	char *addr, *r1kh_id;
+
+	/*
+	 * Preparing the r1kh string
+	 */
+	snprintf(nv_name, sizeof(nv_name), "%s_fbt_aps", nv_ifname);
+	fbt_aps = nvram_safe_get(nv_name);
+
+	memset(fbt_name, 0, sizeof(fbt_name));
+	memset(r1kh, 0, sizeof(r1kh));
+
+	foreach(fbt_name, fbt_aps, next)
+	{
+		memset(tar_name, 0, sizeof(tar_name));
+		memcpy(tar_name, fbt_name, sizeof(tar_name));
+		memset(nv_name, 0, sizeof(nv_name));
+		memset(fbt_r1_hex_key, 0, sizeof(fbt_r1_hex_key));
+		/*
+		 * r1kh
+		 */
+		snprintf(nv_name, sizeof(nv_name), "%s_addr", tar_name);
+		addr = nvram_safe_get(nv_name);
+
+		snprintf(nv_name, sizeof(nv_name), "%s_r1kh_id", tar_name);
+		r1kh_id = nvram_safe_get(nv_name);
+
+		snprintf(nv_name, sizeof(nv_name), "%s_r1kh_key", tar_name);
+		fbt_r1_key = nvram_safe_get(nv_name);
+
+		if (addr == NULL || r1kh_id == NULL || fbt_r1_key == NULL) {
+			continue;
+		}
+
+		r1kh_len += strlen(addr);
+		r1kh_len += strlen(r1kh_id);
+		/* Considering the spaces used between the fields */
+		r1kh_len += strlen("  ");
+		if (repeat) {
+			r1kh_len += strlen("\nr1kh=");
+		}
+
+		/* Considering the length of fbt_r1_hex_key */
+		if (r1kh_len >= (rem_len - sizeof(fbt_r1_hex_key))) {
+			cprintf("Err: rc: %d, r1kh limit is reached, cannot use all\n", __LINE__);
+			break;
+		}
+
+		if (repeat) {
+			strncat(r1kh, "\nr1kh=", rem_len);
+			rem_len -= strlen("\nr1kh=");
+		}
+
+		strncat(r1kh, addr, rem_len);
+		rem_len -= strlen(addr);
+
+		strncat(r1kh, " ", rem_len);
+		rem_len--;
+
+		strncat(r1kh, r1kh_id, rem_len);
+		rem_len -= strlen(r1kh_id);
+
+		strncat(r1kh, " ", rem_len);
+		rem_len--;
+
+		if ((fbt_r1_key != NULL) && (strlen(fbt_r1_key) == 16)) {
+			bytes_to_hex((uchar *) fbt_r1_key, strlen(fbt_r1_key),
+					(uchar *) fbt_r1_hex_key, sizeof(fbt_r1_hex_key));
+			strncat(r1kh, fbt_r1_hex_key, rem_len);
+			r1kh_len += strlen(fbt_r1_hex_key);
+			rem_len -= strlen(fbt_r1_hex_key);
+		}
+		repeat++;
+	}
+
+	snprintf(out_val, out_sz, "%s", r1kh);
+
+	return 0;
+}
+#endif /* WIFI7_SDK_20250506 */
+
 #if defined(WIFI7_SDK_20250122)
 int
 wl_wlif_find_out_mfp_cap_mrsno(int akm, int nv_mfp, int mrsno, bool rsno, bool rsnop,
@@ -2010,7 +2683,915 @@ wl_wlif_find_out_mfp_cap_mrsno(int akm, int nv_mfp, int mrsno, bool rsno, bool r
 	return nv_mfp;
 }
 #endif /* WIFI7_SDK_20250122 */
-#endif	/* RTCONFIG_HND_ROUTER_BE_4916 */
+
+#if defined(WIFI7_SDK_20250506)
+/* Helper function to check possiblity of wps on the interface */
+bool
+wl_wlif_is_wps_possible(char *nv_ifname)
+{
+	char wps_mode[WLIF_MIN_BUF] = {0}, tmp[WLIF_MIN_BUF] = {0};
+	int akm = 0, closed_nw = 0;
+
+	closed_nw = atoi(nvram_safe_get(strcat_r_s(nv_ifname, "_closed", tmp, sizeof(tmp))));
+	snprintf(wps_mode, sizeof(wps_mode), "%s_wps_mode", nv_ifname);
+
+	/* Wps is not allowed if network type is closed or wps mode is not enabled */
+	/* SG_mode matching for AMAS RE OB support */
+	if (closed_nw || (!(nvram_match("SG_mode", "1") && nvram_match("x_Setting", "0")) && !nvram_match(wps_mode, "enabled"))) {
+		return FALSE;
+	}
+
+	hapd_wpasupp_get_security_details(nv_ifname, &akm);
+
+	/* Wps is supported when security is set to either open or contains psk/psk2 */
+	if ((akm == HAPD_AKM_OPEN) || (akm & (HAPD_AKM_PSK |
+		HAPD_AKM_PSK2 | HAPD_AKM_PSK2_SHA256))) {
+		return TRUE;
+	}
+
+	return FALSE;
+}
+#endif /* WIFI7_SDK_20250506 */
+
+#if defined(WIFI7_SDK_20250506)
+/* Helper fn to get the wps state */
+int
+wl_wlif_get_wps_state(char *nv_ifname, char *out_val, int out_sz)
+{
+	char tmp[WLIF_MAX_BUF] = {0};
+	char *lan_ifnames[WLIFU_MAX_NO_BRIDGE];
+	uint8 wps_state = 0;
+	char *wl_name;
+	int i;
+
+	wl_name = nvram_safe_get(strcat_r_s(nv_ifname, "_ifname", tmp, sizeof(tmp)));
+
+	for (i = 0; i < WLIFU_MAX_NO_BRIDGE; ++i) {
+		if (i == 0) {
+			snprintf(tmp, sizeof(tmp), "lan_ifnames");
+		} else {
+			snprintf(tmp, sizeof(tmp), "lan%d_ifnames", i);
+		}
+
+		lan_ifnames[i] = nvram_safe_get(tmp);
+
+		if (find_in_list(lan_ifnames[i], wl_name)) {
+			if (i == 0) {
+				snprintf(tmp, sizeof(tmp), "lan_wps_oob");
+			} else {
+				snprintf(tmp, sizeof(tmp), "lan%d_wps_oob", i);
+			}
+
+			if (nvram_match(tmp, "disabled")) {
+				wps_state = HAPD_WPS_CONFIGURED;
+			} else {
+				wps_state = HAPD_WPS_UNCONFIGURED;
+			}
+			break;
+		}
+	}
+
+	snprintf(out_val, out_sz, "%d", wps_state);
+
+	return 0;
+}
+#endif /* WIFI7_SDK_20250506 */
+
+#if defined(WIFI7_SDK_20250506)
+/* Helper function to get wps config method */
+int
+wl_wlif_get_wpsconfig_method(char *nvname, char *out_val, int out_sz)
+{
+	uint16 config_methods = 0;
+	char *ptr;
+	int rem_len, method_len;
+
+	ptr = nvram_safe_get(nvname);
+
+	if (ptr[0] == '\0') {
+		if (nvram_match("wps_version2", "enabled")) {
+			snprintf(out_val, out_sz, "display virtual_push_button "
+				"physical_push_button push_button virtual_display");
+		} else {
+			snprintf(out_val, out_sz, "%s", "display push_button");
+		}
+
+		return 0;
+	}
+
+	config_methods = (uint16)strtoul(ptr, NULL, 16);
+	rem_len = out_sz - 1;
+
+	method_len = strlen(HAPD_WPS_CONFIG_LABEL_STR);
+	if (rem_len >= method_len &&
+		(HAPD_WPS_CONFIG_LABEL == (config_methods & HAPD_WPS_CONFIG_LABEL))) {
+		strncat(out_val, HAPD_WPS_CONFIG_LABEL_STR, rem_len);
+		rem_len -= method_len;
+	}
+
+	method_len = strlen(HAPD_WPS_CONFIG_DISPLAY_STR);
+	if (rem_len >= method_len &&
+		(HAPD_WPS_CONFIG_DISPLAY == (config_methods & HAPD_WPS_CONFIG_DISPLAY))) {
+		strncat(out_val, HAPD_WPS_CONFIG_DISPLAY_STR, rem_len);
+		rem_len -= method_len;
+	}
+
+	method_len = strlen(HAPD_WPS_CONFIG_PBC_STR);
+	if (rem_len >= method_len &&
+		(HAPD_WPS_CONFIG_PBC == (config_methods & HAPD_WPS_CONFIG_PBC))) {
+		strncat(out_val, HAPD_WPS_CONFIG_PBC_STR, rem_len);
+		rem_len -= method_len;
+	}
+
+	method_len = strlen(HAPD_WPS_CONFIG_KEYPAD_STR);
+	if (rem_len >= method_len &&
+		(HAPD_WPS_CONFIG_KEYPAD == (config_methods & HAPD_WPS_CONFIG_KEYPAD))) {
+		strncat(out_val, HAPD_WPS_CONFIG_KEYPAD_STR, rem_len);
+		rem_len -= method_len;
+	}
+
+	method_len = strlen(HAPD_WPS_CONFIG_VPBC_STR);
+	if (rem_len >= method_len &&
+		(HAPD_WPS_CONFIG_VPBC == (config_methods & HAPD_WPS_CONFIG_VPBC))) {
+		strncat(out_val, HAPD_WPS_CONFIG_VPBC_STR, rem_len);
+		rem_len -= method_len;
+
+	}
+
+	method_len = strlen(HAPD_WPS_CONFIG_PHYPBC_STR);
+	if (rem_len >= method_len &&
+		(HAPD_WPS_CONFIG_PHYPBC == (config_methods & HAPD_WPS_CONFIG_PHYPBC))) {
+		strncat(out_val, HAPD_WPS_CONFIG_PHYPBC_STR, rem_len);
+		rem_len -= method_len;
+	}
+
+	method_len = strlen(HAPD_WPS_CONFIG_VPIN_STR);
+	if (rem_len >= method_len &&
+		(HAPD_WPS_CONFIG_VPIN == (config_methods & HAPD_WPS_CONFIG_VPIN))) {
+		strncat(out_val, HAPD_WPS_CONFIG_VPIN_STR, rem_len);
+		rem_len -= method_len;
+	}
+
+	method_len = strlen(HAPD_WPS_CONFIG_PHYPIN_STR);
+	if (rem_len >= method_len &&
+		(HAPD_WPS_CONFIG_PHYPIN == (config_methods & HAPD_WPS_CONFIG_PHYPIN))) {
+		strncat(out_val, HAPD_WPS_CONFIG_PHYPIN_STR, rem_len);
+		rem_len -= method_len;
+	}
+
+	if (!(config_methods &
+		(HAPD_WPS_CONFIG_LABEL | HAPD_WPS_CONFIG_DISPLAY | HAPD_WPS_CONFIG_KEYPAD)))
+		return 1; //skip wps_device_pin if no PIN method is enabled
+	else
+		return 0;
+}
+#endif /* WIFI7_SDK_20250506 */
+
+#if defined(WIFI7_SDK_20250506)
+/* Function to generate the wps device pin */
+int
+wl_wlif_wps_generate_device_pin(unsigned char *rand_bytes,
+	char *device_pin, int device_pin_len)
+{
+	unsigned long PIN;
+	unsigned long int accum = 0;
+	int digit;
+	char temp_pin[HAPD_WPS_DEVICE_PIN_LEN + 1];
+
+	snprintf(temp_pin, sizeof(temp_pin), "%08u", *(uint32 *)rand_bytes);
+	temp_pin[HAPD_WPS_DEVICE_PIN_LEN - 1] = '\0';
+	PIN = strtoul(temp_pin, NULL, 10);
+
+	PIN *= 10;
+	accum += 3 * ((PIN / 10000000) % 10);
+	accum += 1 * ((PIN / 1000000) % 10);
+	accum += 3 * ((PIN / 100000) % 10);
+	accum += 1 * ((PIN / 10000) % 10);
+	accum += 3 * ((PIN / 1000) % 10);
+	accum += 1 * ((PIN / 100) % 10);
+	accum += 3 * ((PIN / 10) % 10);
+
+	digit = (accum % 10);
+	accum = (10 - digit) % 10;
+
+	PIN += accum;
+	snprintf(temp_pin, sizeof(temp_pin), "%08u", (unsigned int)PIN);
+	temp_pin[HAPD_WPS_DEVICE_PIN_LEN] = '\0';
+
+	/* Output result */
+	WLIF_STRNCPY(device_pin, temp_pin, device_pin_len);
+
+	return 0;
+}
+
+#endif /* WIFI7_SDK_20250506 */
+
+#if defined(WIFI7_SDK_20250506)
+/* Helper function to get wps device PIN */
+int
+wl_wlif_get_wps_device_pin(char *nvname, unsigned char *rand_bytes,
+	char *out_val, int out_sz)
+{
+	char *ptr;
+	char wps_device_pin[HAPD_WPS_DEVICE_PIN_LEN +  2] = {0};
+
+	// ptr = nvram_safe_get(nvname);
+	snprintf(wps_device_pin, sizeof(wps_device_pin), "%s", nvram_safe_get(nvname));
+
+	// If wps_device_pin nvram is not present or it contains default value
+	// Than generate the pin and update the same in nvram.
+	if (wps_device_pin[0] == '\0' || !strncmp(wps_device_pin, HAPD_WPS_DEVICE_PIN_DEFAULT_VAL,
+		sizeof(HAPD_WPS_DEVICE_PIN_DEFAULT_VAL))) {
+		wl_wlif_wps_generate_device_pin(rand_bytes,
+			wps_device_pin, sizeof(wps_device_pin));
+		snprintf(out_val, out_sz, "%s", wps_device_pin);
+		nvram_set(nvname, wps_device_pin);
+		nvram_commit();
+		return 0;
+	}
+
+	snprintf(out_val, out_sz, "%s", wps_device_pin);
+
+	return 0;
+}
+
+#endif /* WIFI7_SDK_20250506 */
+
+#if defined(WIFI7_SDK_20250506)
+static int
+wpa_supp_fbt_enabled(char *nv_ifname)
+{
+	char nv_name[WLIF_BUF_512] = {0};
+	int fbt = 0;
+	char *ptr = NULL;
+
+	snprintf(nv_name, sizeof(nv_name), "%s_fbt", nv_ifname);
+	ptr  = nvram_safe_get(nv_name);
+	if (ptr != NULL) {
+		fbt = atoi(ptr);
+	}
+
+	return fbt;
+}
+
+#endif /* WIFI7_SDK_20250506 */
+
+#if defined(WIFI7_SDK_20250506)
+/* Common fn to validate and fill WPA pre-shared key for WPA-PSK for both hostapd and
+ * wpa_supplicant in resepctive conf files. The key can be ASCII passhrase of 8..63 characters
+ * (inclusive) or a 64 hex-digit PSK (of 32 bytes). In hostapd conf file,the placeholder is
+ * "wpa_passphrase" for passphrase and "wpa_psk" for hex-digit PSK. In wpa_supplicant conf file,
+ * the placeholder is same - "psk" for both passphrase and PSK but passphrase is quoted and
+ * hex PSK is unquoted.
+ * @param hapd: TRUE if called from hostapd context, FALSE for wpa_supplicant.
+ */
+
+void
+hapd_wpasupp_psk_key_hndlr(char *nv_ifname, char *nv_name, char **placeholder,
+	char *out_val, int out_sz, int flags, int akm)
+{
+	char *key = NULL;
+	size_t length = 0;      // key length
+	char tmp[256];
+	bool hapd = flags & WPA_PSK_FLAG_IS_HAPD;
+	bool saepk;
+
+	key = nvram_safe_get(nv_name);
+	saepk = is_saepk_enabled(nv_ifname);
+
+	if (key[0] != '\0') {
+		length = strlen(key);
+		*placeholder = "psk";
+		if (flags & WPA_PSK_FLAG_IS_SAE_ONLY) {
+			/* If saepk is ON, ignore nvram var wpa_psk */
+			if (!saepk) {
+				*placeholder = "sae_password";
+				snprintf(out_val, out_sz, (hapd ? "%s": "\"%s\""), key);
+			}
+		} else if ((length >= HAPD_PASSPH_MIN_LEN) && (length <= HAPD_PASSPH_MAX_LEN)) {
+			/* ASCII passphrase */
+			if(hapd && strcmp(*placeholder, "wpa_passphrase")) {
+				*placeholder = "wpa_passphrase";
+			}
+				snprintf(out_val, out_sz, (hapd ? "%s": "\"%s\""), key);
+		} else if (length == HAPD_WPA2_PSK_HEXLEN && hapd_wpasupp_hex_validate(key)) {
+				/* 64 hex-digit PSK(of 32 bytes) */
+				if (hapd) {
+					switch (akm) {
+						case HAPD_AKM_WPA3_SAE:
+						case (HAPD_AKM_WPA3_SAE |  HAPD_AKM_WPA3_SAE_EXT):
+							*placeholder = "sae_password";
+							break;
+						case (HAPD_AKM_WPA3_SAE | HAPD_AKM_PSK2):
+						case (HAPD_AKM_WPA3_SAE | HAPD_AKM_PSK2 | HAPD_AKM_WPA3_SAE_EXT):
+							*placeholder = "wpa_psk";
+							snprintf(tmp, sizeof(tmp), "%s\n%s=%s", key, "sae_password", key);
+							key = tmp;
+							break;
+						default:
+							*placeholder = "wpa_psk";
+					}
+				}
+				snprintf(out_val, out_sz, "%s", key);
+		} else {
+				cprintf("Err: rc: %d, Invalid key %s, length %zu\n",
+					__LINE__, key, length);
+		}
+	} else {
+		cprintf("Err: rc: %d, Empty key\n", __LINE__);
+	}
+}
+
+#endif /* WIFI7_SDK_20250506 */
+
+#if defined(WIFI7_SDK_20250506)
+/* Fn to check if the string (without 0x prefix) represents a
+ * hexadecimal number. Returns TRUE for valid hex number.
+ */
+bool
+hapd_wpasupp_hex_validate(const char *s)
+{
+	int i;
+
+	for  (i = 0; i < strlen(s); i++) {
+		if (!isxdigit(s[i]))
+			break;
+	}
+
+	return (i < strlen(s) ? FALSE : TRUE);
+}
+#endif /* WIFI7_SDK_20250506 */
+
+#if defined(WIFI7_SDK_20250506)
+/* This fn is invoked by new_cfg_arr, wds_cfg_arr, map_new_cfg_arr etc.
+ * So be catious while modifying this fn as non-zero positive return value
+ * indicates the array tuples to be skipped. Chances of exceeding array bounds
+ * if return values is > no of array entries.
+ */
+int
+wpa_supp_key_mgmt_conv_fn(char *nv_ifname, char *cfg_arr_nvname,
+		char **ph, char *out_val, int out_sz)
+{
+	char nv_name[WLIF_BUF_512] = {0}, key_mgmt[WLIF_BUF_512] = {0};
+	int akm = 0, ret = 0;
+	bool psk_required;
+	int fbt_enabled = 0;
+	int flags = WPA_PSK_FLAG_IS_WPASUPP;
+
+	hapd_wpasupp_get_security_details_mrsno(nv_ifname, &akm, 0, 0, 0);
+
+	psk_required = ((akm & HAPD_AKM_PSK2) || (akm & HAPD_AKM_PSK) || (akm & HAPD_AKM_PSK2_FT) ||
+			(akm & HAPD_AKM_WPA3_SAE) || (akm & HAPD_AKM_WPA3_SAE_FT) ||
+			(akm & HAPD_AKM_WPA3_SAE_EXT) ||
+			(akm & HAPD_AKM_WPA3_SAE_FT_EXT)) ? TRUE : FALSE;
+
+	fbt_enabled = wpa_supp_fbt_enabled(nv_ifname);
+
+	hapd_wpasupp_get_key_mgmt(nv_ifname, fbt_enabled, akm, key_mgmt);
+
+	switch (akm) {
+		/* open | wep security in both the cases wpa should be 0 */
+		case HAPD_AKM_OPEN:
+		case HAPD_AKM_WEP:
+			if (!strncmp(cfg_arr_nvname, "akm", sizeof("akm"))) {
+				snprintf(out_val, out_sz, "%s",
+					WPA_SUPP_SEC_OPEN_OR_WEP);
+			}
+			// skip akm, crypto, wpa_psk and mfp
+			ret = 3;
+			break;
+
+		/* HAPD_SEC_WPA */
+		case HAPD_AKM_PSK:
+			if (!strncmp(cfg_arr_nvname, "akm", sizeof("akm"))) {
+				snprintf(out_val, out_sz, "%s", key_mgmt);
+			} else if (!strncmp(cfg_arr_nvname, "proto", sizeof("proto"))) {
+				snprintf(out_val, out_sz, "%s",
+					WPA_SUPP_SEC_WPA);
+			} else if (!strncmp(cfg_arr_nvname, "crypto", sizeof("crypto"))) {
+				// pairwise based on crypto
+				hapd_wpasupp_fill_pairwise(nv_ifname,
+					cfg_arr_nvname, out_val, out_sz);
+			} else if (psk_required &&
+					!strncmp(cfg_arr_nvname, "wpa_psk", sizeof("wpa_psk"))) {
+				/* build iface/bss specific nvram -
+				 * wlX_nvram or wlX.Y_nvram.
+				 */
+				snprintf(nv_name, sizeof(nv_name),
+					"%s_%s", nv_ifname, cfg_arr_nvname);
+				if (ph) {
+					hapd_wpasupp_psk_key_hndlr(nv_ifname, nv_name, ph,
+						out_val, out_sz, flags, akm);
+				}
+			}
+			break;
+
+			/* WPA2-PSK */
+		case HAPD_AKM_PSK2:
+		case HAPD_AKM_PSK2_FT:
+		case (HAPD_AKM_PSK2 | HAPD_AKM_PSK2_SHA256):
+			if (!strncmp(cfg_arr_nvname, "akm", sizeof("akm"))) {
+				snprintf(out_val, out_sz, "%s", key_mgmt);
+			} else if (!strncmp(cfg_arr_nvname, "proto", sizeof("proto"))) {
+				snprintf(out_val, out_sz, "%s",
+						WPA_SUPP_PROTO_RSN);
+			} else if (!strncmp(cfg_arr_nvname, "crypto", sizeof("crypto"))) {
+				// Set pairwise based on crypto
+				hapd_wpasupp_fill_pairwise(nv_ifname,
+					cfg_arr_nvname, out_val, out_sz);
+			} else if (psk_required &&
+					!strncmp(cfg_arr_nvname, "wpa_psk", sizeof("wpa_psk"))) {
+				/* build iface/bss specific nvram -
+				 * wlX_nvram or wlX.Y_nvram.
+				 */
+				snprintf(nv_name, sizeof(nv_name),
+					"%s_%s", nv_ifname, cfg_arr_nvname);
+				if (ph) {
+					hapd_wpasupp_psk_key_hndlr(nv_ifname, nv_name, ph,
+						out_val, out_sz, flags, akm);
+				}
+			}
+			break;
+
+			/* Mixed Mode: (WPA-PSK + WPA2-PSK) */
+		case (HAPD_AKM_PSK | HAPD_AKM_PSK2):
+			if (!strncmp(cfg_arr_nvname, "akm", sizeof("akm"))) {
+				snprintf(out_val, out_sz, "%s", key_mgmt);
+			} else if (!strncmp(cfg_arr_nvname, "proto", sizeof("proto"))) {
+				snprintf(nv_name, sizeof(nv_name),
+						"%s_crypto", nv_ifname);
+				if (nvram_match(nv_name, "aes")) {
+					snprintf(out_val, out_sz, "%s",
+							WPA_SUPP_PROTO_RSN);
+				} else {  /* default */
+					snprintf(out_val, out_sz, "%s",
+						WPA_SUPP_PROTO_WPA" "
+						WPA_SUPP_PROTO_RSN);
+				}
+			} else if (!strncmp(cfg_arr_nvname, "crypto", sizeof("crypto"))) {
+				// Set pairwise based on crypto
+				hapd_wpasupp_fill_pairwise(nv_ifname,
+					cfg_arr_nvname, out_val, out_sz);
+			} else if (psk_required &&
+					!strncmp(cfg_arr_nvname, "wpa_psk", sizeof("wpa_psk"))) {
+				/* build iface/bss specific nvram -
+				 * wlX_nvram or wlX.Y_nvram.
+				 */
+				snprintf(nv_name, sizeof(nv_name), "%s_%s",
+					nv_ifname, cfg_arr_nvname);
+				if (ph) {
+					hapd_wpasupp_psk_key_hndlr(nv_ifname, nv_name, ph,
+						out_val, out_sz, flags, akm);
+				}
+			}
+			break;
+
+		case HAPD_AKM_WPA3_DPP:
+			if (!strncmp(cfg_arr_nvname, "akm", sizeof("akm"))) {
+				snprintf(out_val, out_sz, "%s", key_mgmt);
+			} else if (!strncmp(cfg_arr_nvname, "proto", sizeof("proto"))) {
+				snprintf(out_val, out_sz, "%s",
+						WPA_SUPP_PROTO_RSN);
+			} else if (!strncmp(cfg_arr_nvname, "crypto", sizeof("crypto"))) {
+				// Set pairwise based on crypto
+				/* build iface/bss specific nvram -
+				 * wlX_nvram or wlX.Y_nvram.
+				 */
+				snprintf(nv_name, sizeof(nv_name),
+					"%s_%s", nv_ifname, cfg_arr_nvname);
+				if (!strncmp(nvram_safe_get(nv_name), "aes", sizeof("aes"))) {
+					snprintf(out_val, out_sz, "%s", HAPD_CIPHER_SUITE_CCMP);
+				} else {
+					cprintf("Err: %d: unsupported crypto for DPP\n", __LINE__);
+				}
+			}
+			break;
+
+		case HAPD_AKM_OWE:
+			if (!strncmp(cfg_arr_nvname, "wpa", sizeof("wpa"))) {
+			    snprintf(out_val, out_sz, "%d", HAPD_SEC_WPA2);
+			} else if (!strncmp(cfg_arr_nvname, "crypto", sizeof("crypto"))) {
+			    hapd_wpasupp_fill_pairwise(nv_ifname, cfg_arr_nvname, out_val, out_sz);
+			} else if (!strncmp(cfg_arr_nvname, "akm", sizeof("akm"))) {
+			    snprintf(out_val, out_sz, "%s", key_mgmt);
+			}
+			break;
+
+		case HAPD_AKM_WPA3:
+			if (!strncmp(cfg_arr_nvname, "crypto", sizeof("crypto"))) {
+				hapd_wpasupp_fill_pairwise(nv_ifname,
+					cfg_arr_nvname, out_val, out_sz);
+			} else if (!strncmp(cfg_arr_nvname, "akm", sizeof("akm")))
+				snprintf(out_val, out_sz, "%s", key_mgmt);
+			break;
+
+		case HAPD_AKM_WPA3_SUITE_B:
+			if (!strncmp(cfg_arr_nvname, "crypto", sizeof("crypto"))) {
+				hapd_wpasupp_fill_pairwise(nv_ifname,
+					cfg_arr_nvname, out_val, out_sz);
+			} else if (!strncmp(cfg_arr_nvname, "akm", sizeof("akm")))
+				snprintf(out_val, out_sz, "%s", key_mgmt);
+			break;
+
+		default:
+			if (!HAPD_AKM_HAS_SAE(akm)) {
+				return -1;
+			}
+			break;
+	};
+
+	if (HAPD_AKM_HAS_SAE(akm)) {
+		if (!strncmp(cfg_arr_nvname, "akm", sizeof("akm"))) {
+			if (akm & HAPD_AKM_PASN) {
+				snprintf(out_val, out_sz, "%s", HAPD_KEY_MGMT_SAE);
+			} else {
+				snprintf(out_val, out_sz, "%s", key_mgmt);
+			}
+		} else if (!strncmp(cfg_arr_nvname, "proto", sizeof("proto"))) {
+			snprintf(out_val, out_sz, "%s", WPA_SUPP_PROTO_RSN);
+		} else if (!strncmp(cfg_arr_nvname, "crypto", sizeof("crypto"))) {
+			// Set pairwise based on crypto
+			hapd_wpasupp_fill_pairwise(nv_ifname,
+					cfg_arr_nvname, out_val, out_sz);
+		} else if (psk_required && !strncmp(cfg_arr_nvname, "wpa_psk", sizeof("wpa_psk"))) {
+			/* build iface/bss specific nvram - wlX_nvram or wlX.Y_nvram. */
+			snprintf(nv_name, sizeof(nv_name), "%s_%s", nv_ifname, cfg_arr_nvname);
+			if (ph) {
+				if ((akm == HAPD_AKM_WPA3_SAE) ||
+					(akm == HAPD_AKM_WPA3_SAE_EXT) ||
+					(akm == (HAPD_AKM_WPA3_SAE | HAPD_AKM_WPA3_SAE_EXT)) ||
+					(akm == (HAPD_AKM_WPA3_SAE | HAPD_AKM_PASN))) {
+					flags |= WPA_PSK_FLAG_IS_SAE_ONLY;
+				}
+				hapd_wpasupp_psk_key_hndlr(nv_ifname, nv_name, ph,
+						out_val, out_sz, flags, akm);
+			}
+		}
+	}
+
+	if (out_val[0] == '\0') {
+		return -1;
+	}
+
+	return ret;
+}
+#endif /* WIFI7_SDK_20250506 */
+
+#if defined(WIFI7_SDK_20250506)
+/* Helper fn to get key mgmt info */
+void
+hapd_wpasupp_get_key_mgmt(char *nv_ifname, int fbt_enabled, int akm, char *key_mgmt)
+{
+	char nv_name[WLIF_MAX_BUF] = {0};
+	size_t key_mgmt_sz = WLIF_MAX_BUF;
+
+	snprintf(nv_name, sizeof(nv_name), "%s_mfp", nv_ifname);
+	bool mfp_required = nvram_match(nv_name, "2");
+	bool mfp_capable = nvram_match(nv_name, "1");
+
+	snprintf(nv_name, sizeof(nv_name),  "%s_mode", nv_ifname);
+	bool ap_mode = nvram_match(nv_name, "ap");
+
+	if (mfp_required) { /* MFP is REQUIRED */
+		if (akm == HAPD_AKM_WPA || akm == HAPD_AKM_WPA2 ||
+				(akm == (HAPD_AKM_WPA | HAPD_AKM_WPA2))) {
+			/* wpa, wpa2 and mixed mode enterprise security */
+			snprintf(key_mgmt, WLIF_MAX_BUF, "%s",
+				(fbt_enabled ? HAPD_KEY_MGMT_EAP_FT : HAPD_KEY_MGMT_EAP_SHA256));
+		} else if (akm == HAPD_AKM_PSK || akm == HAPD_AKM_PSK2 ||
+				(akm == (HAPD_AKM_PSK | HAPD_AKM_PSK2)) ||
+				(akm == (HAPD_AKM_PSK2_SHA256 | HAPD_AKM_PSK2)) ||
+				(akm == (HAPD_AKM_PSK2 | HAPD_AKM_PSK2_FT)) ||
+				(akm == (HAPD_AKM_PSK2 | HAPD_AKM_PSK2_FT |
+				HAPD_AKM_PSK2_SHA256)) ||
+				(akm == (HAPD_AKM_PSK2_FT | HAPD_AKM_PSK2_SHA256)) ||
+				(akm == HAPD_AKM_PSK2_FT)) {
+			/* wpa, wpa2 and mixed mode psk security */
+			if (ap_mode) { /* AP mode */
+				snprintf(key_mgmt, WLIF_MAX_BUF, "%s",
+					(fbt_enabled ? HAPD_KEY_MGMT_WPA_PSK_FT :
+					HAPD_KEY_MGMT_WPA_SHA256));
+			} else { /* non AP mode */
+				snprintf(key_mgmt, WLIF_MAX_BUF, "%s",
+					(fbt_enabled ? HAPD_KEY_MGMT_WPA_PSK_FT :
+					HAPD_KEY_MGMT_WPA_SHA256_PSK));
+			}
+		}
+	} else {
+		if (akm == HAPD_AKM_WPA || akm == HAPD_AKM_WPA2 ||
+				(akm == (HAPD_AKM_WPA | HAPD_AKM_WPA2))) {
+			/* wpa, wpa2 and mixed mode enterprise security */
+			snprintf(key_mgmt, WLIF_MAX_BUF, "%s",
+				(fbt_enabled ? HAPD_KEY_MGMT_EAP_FT : HAPD_KEY_MGMT_EAP));
+		} else if (akm == HAPD_AKM_PSK || akm == HAPD_AKM_PSK2 ||
+				(akm == (HAPD_AKM_PSK | HAPD_AKM_PSK2)) ||
+				(akm == (HAPD_AKM_PSK2 | HAPD_AKM_PSK2_SHA256)) ||
+				(akm == (HAPD_AKM_PSK2 | HAPD_AKM_PSK2_FT)) ||
+				(akm == (HAPD_AKM_PSK2_SHA256 | HAPD_AKM_PSK2_FT)) ||
+				(akm == (HAPD_AKM_PSK2 | HAPD_AKM_PSK2_FT |
+				HAPD_AKM_PSK2_SHA256)) ||
+				(akm == HAPD_AKM_PSK2_FT)) {
+			/* wpa, wpa2 and mixed mode psk security */
+			if (ap_mode) { /* AP mode */
+				snprintf(key_mgmt, WLIF_MAX_BUF, "%s",
+					(fbt_enabled ? HAPD_KEY_MGMT_WPA_PSK_FT :
+					HAPD_KEY_MGMT_WPA));
+			} else {
+				snprintf(key_mgmt, WLIF_MAX_BUF, "%s",
+					(fbt_enabled ? HAPD_KEY_MGMT_WPA_PSK_FT : (mfp_capable ?
+					HAPD_KEY_MGMT_WPA_SHA256_PSK : HAPD_KEY_MGMT_WPA)));
+			}
+		} else if (akm == HAPD_AKM_WPA2_OSEN) {
+			snprintf(key_mgmt, WLIF_MAX_BUF, "%s", HAPD_KEY_MGMT_OSEN);
+		}
+	}
+	if (akm & HAPD_AKM_WPA3_SAE) {
+		if (akm & HAPD_AKM_PSK2) {
+			if (mfp_required) {
+				add_to_list(HAPD_KEY_MGMT_WPA_SHA256, key_mgmt, key_mgmt_sz);
+			} else {
+				add_to_list(HAPD_KEY_MGMT_WPA, key_mgmt, key_mgmt_sz);
+			}
+			if ((akm & HAPD_AKM_PSK2_FT) && fbt_enabled) {
+				add_to_list(HAPD_KEY_MGMT_FT_PSK, key_mgmt, key_mgmt_sz);
+			}
+		}
+
+		add_to_list(HAPD_KEY_MGMT_SAE, key_mgmt, key_mgmt_sz);
+		if ((akm & HAPD_AKM_WPA3_SAE_FT) && fbt_enabled) {
+			add_to_list(HAPD_KEY_MGMT_FT_SAE, key_mgmt, key_mgmt_sz);
+		}
+
+		if (akm & HAPD_AKM_WPA3_DPP) {
+			add_to_list(HAPD_KEY_MGMT_DPP, key_mgmt, key_mgmt_sz);
+		}
+	}
+	if (akm == HAPD_AKM_WPA3_SAE_FT) {
+		/* WPA3FTSAE */
+		snprintf(key_mgmt, WLIF_MAX_BUF, "%s", HAPD_KEY_MGMT_FT_SAE);
+	}
+	if (akm & HAPD_AKM_WPA3_SAE_EXT) {
+		if (akm & HAPD_AKM_WPA3_SAE) {
+			add_to_list(HAPD_KEY_MGMT_SAE, key_mgmt, key_mgmt_sz);
+		}
+		if (akm & HAPD_AKM_PSK2) {
+			if (mfp_required) {
+				add_to_list(HAPD_KEY_MGMT_WPA_SHA256, key_mgmt, key_mgmt_sz);
+			} else {
+				add_to_list(HAPD_KEY_MGMT_WPA, key_mgmt, key_mgmt_sz);
+			}
+		}
+		if ((akm & HAPD_AKM_WPA3_SAE_FT_EXT) && fbt_enabled) {
+			add_to_list(HAPD_KEY_MGMT_FT_SAE_EXT, key_mgmt, key_mgmt_sz);
+		}
+		add_to_list(HAPD_KEY_MGMT_SAE_EXT, key_mgmt, key_mgmt_sz);
+	}
+	if (akm == HAPD_AKM_WPA3_SAE_FT_EXT) {
+		/* WPA3FTSAE */
+		snprintf(key_mgmt, WLIF_MAX_BUF, "%s", HAPD_KEY_MGMT_FT_SAE_EXT);
+	}
+	if (akm & HAPD_AKM_WPA3_SUITE_B) {
+		/* WPA3 SUITE-B overrides other combinations */
+		snprintf(key_mgmt, WLIF_MAX_BUF, "%s", HAPD_KEY_MGMT_SUITE_B);
+	}
+
+	if (akm == HAPD_AKM_WPA3_DPP) {
+		/* WPA3DPP */
+		snprintf(key_mgmt, WLIF_MAX_BUF, "%s", HAPD_KEY_MGMT_DPP);
+	}
+	if (akm == HAPD_AKM_OWE) {
+		/* OWE */
+		snprintf(key_mgmt, WLIF_MAX_BUF, "%s", HAPD_KEY_MGMT_OWE);
+	}
+	if (akm == HAPD_AKM_WPA3) {
+		snprintf(key_mgmt, WLIF_MAX_BUF, "%s",
+		(fbt_enabled ? HAPD_KEY_MGMT_EAP_SHA256_FT : HAPD_KEY_MGMT_EAP_SHA256));
+	}
+	if (akm == (HAPD_AKM_WPA2 | HAPD_AKM_WPA3)) {
+		snprintf(key_mgmt, WLIF_MAX_BUF, "%s",
+		(fbt_enabled ? HAPD_KEY_MGMT_EAP_FT_EAP_SHA256 : HAPD_KEY_MGMT_EAP_EAP_SHA256));
+	}
+
+	if (akm & HAPD_AKM_PSK2_SHA256) {
+		if (!(strstr(key_mgmt, HAPD_KEY_MGMT_WPA_SHA256))) {
+			strncat(key_mgmt, " "HAPD_KEY_MGMT_WPA_SHA256,
+					strlen(HAPD_KEY_MGMT_WPA_SHA256) + 2);
+		}
+	}
+#ifdef CONFIG_PASN
+	if (akm == (HAPD_AKM_WPA3_SAE | HAPD_AKM_PASN))
+		snprintf(key_mgmt, WLIF_MAX_BUF, "%s", HAPD_KEY_MGMT_SAE_PASN);
+	if (akm == (HAPD_AKM_WPA3_SAE | HAPD_AKM_WPA3_SAE_EXT | HAPD_AKM_PASN))
+		snprintf(key_mgmt, WLIF_MAX_BUF, "%s", HAPD_KEY_MGMT_SAE_EXT_PASN);
+#endif /* CONFIG_PASN */
+}
+
+#endif /* WIFI7_SDK_20250506 */
+
+#if defined(WIFI7_SDK_20250506)
+int
+wl_wlif_find_out_mfp_cap_mrsno(int akm, int nv_mfp, int mrsno, bool rsno, bool rsnop,
+		bool is_band_6g, bool mbo)
+{
+	if (mrsno) {
+		if (is_band_6g) {
+			return HAPD_MFP_REQ;
+		} else {
+			/* RSNO IEs */
+			if (rsno || rsnop) {
+				return HAPD_MFP_REQ;
+			/* RSNE IE */
+			} else {
+				/* MFP should be set to capable, when MBO is enabled */
+				if (mbo) {
+					return HAPD_MFP_CAP;
+				} else {
+					return HAPD_MFP_OFF;
+				}
+			}
+		}
+	}
+
+	if (akm & (HAPD_AKM_WPA3_SAE | HAPD_AKM_WPA3_SAE_FT | HAPD_AKM_WPA3_DPP |
+			HAPD_AKM_OWE | HAPD_AKM_WPA3 | HAPD_AKM_WPA3_SUITE_B |
+			HAPD_AKM_WPA3_SAE_EXT)) {
+		if (akm & (HAPD_AKM_WEP | HAPD_AKM_PSK)) {
+			/* Do not allow SAE combination with these modes */
+			dprintf("Err: rc: %d: wrong akm setting\n", __LINE__);
+			return -1;
+		}
+		if ((akm & (HAPD_AKM_PSK2 | HAPD_AKM_WPA2)) && nv_mfp != HAPD_MFP_REQ) {
+			/* In mixed SAE case, set MFP to be capable,
+			 * if MFP is not set to required.
+			 */
+			return HAPD_MFP_CAP;
+		}
+		/* In other cases, MFP should be required */
+		return HAPD_MFP_REQ;
+	}
+	/* In case of pure WPA-PSK/WPA-Enterprise, MFP should be disabled */
+	if ((akm == HAPD_AKM_PSK) || (akm == HAPD_AKM_WPA)) {
+		return HAPD_MFP_OFF;
+	}
+
+	if (akm == HAPD_AKM_OPEN || akm == HAPD_AKM_WEP) {
+		/* wps_cred_add_sae: do not add ieee80211w for open/wep */
+		return -1;
+	}
+	return nv_mfp;
+}
+
+#endif /* WIFI7_SDK_20250506 */
+
+#if defined(WIFI7_SDK_20250506)
+int
+is_saepk_enabled(char *nv_ifname)
+{
+	char nv_name[WLIF_BUF_512] = {0};
+
+	snprintf(nv_name, sizeof(nv_name), "%s_saepk_enable", nv_ifname);
+	return nvram_match(nv_name, "1");
+}
+
+#endif /* WIFI7_SDK_20250506 */
+
+#if defined(WIFI7_SDK_20250506)
+
+/* Callback fn to fill mfp parameters */
+int
+hapd_mfp_conv_fn(char *nv_ifname, char *cfg_arr_nvname, char **ph, char *out_val, int out_sz)
+{
+	char nv_name[WLIF_BUF_512] = {0}, os_ifname[IFNAMSIZ] = {0}, *str, *mbo_str;
+	int akm = 0;
+	int nv_mfp, mfp;
+	bool rsno = FALSE, rsnop = FALSE;
+	int mrsno = 0;
+	wlc_rev_info_t rev;
+	bool is_band_6g = FALSE;
+	bool mbo = TRUE; /* by default enable */
+	int mbo_enable = -1;
+
+	/* build interface/bss specific nvram - wlX_nvram or wlX.Y_nvram */
+	snprintf(nv_name, sizeof(nv_name), "%s_%s", nv_ifname, cfg_arr_nvname);
+	if (nvram_match(nv_name, "0")) {
+		nv_mfp = HAPD_MFP_OFF;
+	} else if (nvram_match(nv_name, "2")) {
+		nv_mfp = HAPD_MFP_REQ;
+	} else { /* PMF Capable by default */
+		nv_mfp = HAPD_MFP_CAP;
+	}
+
+	is_band_6g = (wl_wlif_get_band_type(nv_ifname) == 0);
+	if (!strncmp(cfg_arr_nvname, "rsn_override_mfp", sizeof("rsn_override_mfp"))) {
+		if (is_band_6g) {
+			return BCME_UNSUPPORTED;
+		}
+		rsno = TRUE;
+	}
+
+	if (!strncmp(cfg_arr_nvname, "rsn_override_mfp_2", sizeof("rsn_override_mfp_2"))) {
+		rsnop = TRUE;
+	}
+
+	snprintf(nv_name, sizeof(nv_name), "%s_mrsno", nv_ifname);
+	str = nvram_safe_get(nv_name);
+
+	if (str[0] != '\0') {
+		mrsno = atoi(str);
+	}
+
+	wl_ioctl(nv_ifname, WLC_GET_REVINFO, &rev, sizeof(rev));
+
+	if (rev.corerev < 133) {
+		dprintf("Info: rc: %d: MRSNO not supported by corerev %d "
+			"in corerev < 133 \n", __LINE__, rev.corerev);
+		mrsno = 0;
+	}
+
+	if (!mrsno && (rsno || rsnop)) {
+		return BCME_UNSUPPORTED;
+	}
+
+	if (!nvifname_to_osifname(nv_ifname, os_ifname, sizeof(os_ifname))) {
+		mbo_enable = wl_iovar_xtlv_getint(os_ifname, "mbo", WL_MBO_IOV_VERSION,
+			WL_MBO_CMD_AP_ENAB, WL_MBO_XTLV_AP_ENAB, BCM_XTLV_OPTION_ALIGN32);
+
+		if (mbo_enable != -1) {
+			mbo = (mbo_enable != 0);
+		}
+	}
+
+	if (mbo_enable == -1) {
+		snprintf(nv_name, sizeof(nv_name), "%s_mbo_enable", nv_ifname);
+		mbo_str = nvram_safe_get(nv_name);
+		if (mbo_str[0] != '\0') {
+			mbo = atoi(mbo_str);
+		}
+	}
+
+	hapd_wpasupp_get_security_details_mrsno(nv_ifname, &akm, mrsno, rsno, rsnop);
+
+	mfp = wl_wlif_find_out_mfp_cap_mrsno(akm, nv_mfp, mrsno, rsno, rsnop, is_band_6g, mbo);
+
+	if (mfp < 0) {
+		dprintf("Err: rc: %d: wrong akm setting for %s\n", __LINE__, nv_ifname);
+		return -1;
+	}
+
+	snprintf(out_val, out_sz, "%d", mfp);
+
+	return 0;
+}
+
+#endif /* WIFI7_SDK_20250506 */
+
+#if defined(WIFI7_SDK_20250506)
+#define TAF_IOVAR_BUFNEEDED(subcmd, val)	\
+	(strlen("taf") + 1 +			\
+	sizeof(wl_taf_define_t) +		\
+	strlen(subcmd) + 1 +			\
+	strlen(val) + 1 + 1)
+
+int
+wl_tafiovar_setint(char *ifname, char *subcmd, char *val)
+{
+	char iobuf[sizeof(wl_taf_define_t)
+		+ WLC_IOCTL_SMLEN];
+
+	wl_taf_define_t *taf_def;
+	char *ptr;
+	size_t rem_buf_size = sizeof(iobuf) - 2; /* 2x NUL terminators at end */
+	size_t copy_ret;
+
+	/* check for buffer space up front */
+	/* buffer: "taf" + '\0' + wl_taf_define_t + subcommand + '\0' + value + '\0' + '\0' */
+	if (TAF_IOVAR_BUFNEEDED(subcmd, val) > sizeof(iobuf)) {
+		return (BCME_BUFTOOSHORT);
+	}
+
+	/* Length check above should guarantee that everything fits */
+	/* "taf" first */
+	memset(iobuf, 0, sizeof(iobuf));
+	copy_ret = strlcpy(iobuf, "taf", rem_buf_size);
+
+	taf_def = (wl_taf_define_t *)&iobuf[copy_ret + 1];
+	memset(&taf_def->ea, 0xff, sizeof(taf_def->ea));
+	taf_def->version = 1;
+
+	/* After wl_taf_define_t, add subcmd and val */
+	ptr = (char *)taf_def->text;
+	rem_buf_size = sizeof(iobuf) - (ptr - iobuf);
+
+	copy_ret = strlcpy(ptr, subcmd, rem_buf_size);	/* Add the sub command name */
+	ptr += copy_ret + 1;
+	rem_buf_size = sizeof(iobuf) - (ptr - iobuf);
+
+	copy_ret = strlcpy(ptr, val, rem_buf_size);	/* Add the value */
+	ptr += copy_ret + 1 + 1; /* 2x NUL - already memset */
+
+	return wl_ioctl(ifname, WLC_SET_VAR, iobuf, ptr-iobuf);
+}
+#endif /* WIFI7_SDK_20250506 */
 
 #ifdef MULTIAP
 /* Retrieves the backhaul credentials from the nvram */

@@ -5,6 +5,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
 		<meta name="viewport" content="width=device-width, target-densitydpi=device-dpi, initial-scale=1, user-scalable=no">
 		<title><#Web_Title#> - <#QIS_title#></title>
+		<link rel="stylesheet" href="./css/color-table.css">
 		<link rel="stylesheet" href="./mobile/css/jquery.mobile.css"></link>
 		<link rel="stylesheet" href="./mobile/css/qis.css"></link>
 		<link rel="stylesheet" href="./mobile/css/icon.css"></link>
@@ -19,8 +20,26 @@
 		<script type="text/javascript" src="./mobile/js/qisData.js"></script>
 		<script type="text/javascript" src="./mobile/js/handler.js"></script>
 		<script type="text/javascript" src="./js/https_redirect/https_redirect.js"></script>
-		<script type="text/javascript" src="./js/asus_policy.js?v=4"></script>
+		<script type="text/javascript" src="./js/asus_policy.js?v=5"></script>
 		<script>
+			if (isSupport("rog")) {
+				document.documentElement.setAttribute('data-asuswrt-theme', 'rog');
+			} else if (isSupport("tuf")) {
+				document.documentElement.setAttribute('data-asuswrt-theme', 'tuf');
+			} else if (isSupport("business")) {
+				document.documentElement.setAttribute('data-asuswrt-theme', 'business');
+			} else if (isSupport("TS_UI")) {
+				document.documentElement.setAttribute('data-asuswrt-theme', 'ts');
+			} else {
+				document.documentElement.setAttribute('data-asuswrt-theme', 'asus');
+			}
+
+			if (isSupport("UI4") || isSupport("business")) {
+				document.documentElement.setAttribute('data-asuswrt-color', 'light');
+			} else {
+				document.documentElement.setAttribute('data-asuswrt-color', 'dark');
+			}
+
 			let urlParameter = new URLSearchParams(window.location.search);
 
 			if(isSupport("TS_UI") || isSupport("GS7_MIKU"))
@@ -75,7 +94,7 @@
 						"ASUS_NEW_EULA",
 						"sw_mode",
 						"wlc_psta", 
-						"wl_ifnames", 
+						"wl_ifnames",
 						"wl_version", 
 						"productid", 
 						"rc_support", 
@@ -85,7 +104,7 @@
 						"ipv6_service",
 						"reboot_time", 
 						"lan_ipaddr", 
-						"wlc_dpsta", 
+						"wlc_dpsta",
 						"CoBrand",
 						"wans_dualwan",
 						"wans_mode",
@@ -253,11 +272,11 @@
 						set_cfg_pause();
 					}
 
-                    const policyStatus = PolicyStatus()
+                    PolicyStatus()
                         .then(data => {
-                            if (data.EULA == "0" || data.EULA_time == "") {
+                            if (data.EULA_read === 0 && data.EULA_force_sign === 1) {
                                 goTo.EULA();
-                            } else if (data.EULA == 1 && ((data.PP == 1 && data.PP_time != "") || (data.PP == 0 && data.PP_time == ""))) {
+                            } else if (data.EULA_read === 1 && data.PP_read === 0 && (data.PP === "" || (data.PP >= 0 && data.PP_force_sign === 1))) {
                                 goTo.PP();
                             } else {
                                 switch (urlParameter.get("flag") || "") {
@@ -318,7 +337,7 @@
 
 					if(initNvram.isError) setTimeout(arguments.callee, 1000);
 				}, 500);
-				
+
 				$("#uiLanguage").load("/mobile/pages/uiLanguage.html", function(){
 					$('#selected_lang').html("<#selected_language#>");
 				});
@@ -425,8 +444,8 @@
 				<div class="tos tosSupport">
 					<input id="tosCheckbox" type="checkbox" />
 					<span id="tosTitle"><#TM_eula_confirm#>&nbsp;</span>
-					<a href="#" onclick="goTo.AsusPP()">ASUS Privacy Policy</a>, 
-					<a href="#" onclick="goTo.AsusToS()">ASUS Terms of Use</a> & 
+					<a href="#" onclick="goTo.AsusPP()">ASUS Privacy Policy</a>,
+					<a href="#" onclick="goTo.AsusToS()">ASUS Terms of Use</a> &
 					<a href="#" onclick="goTo.TMToS()">Trend Micro End User License Agreement</a>.
 				</div>
 			</div>
@@ -1134,7 +1153,7 @@
 							<div class="selectorContainer autoIP">
 								<div class="selectorContainerDiv">
 									<div class="selectBar" onclick="goTo.DHCP()">
-										<#BOP_ctype_title1#>
+										<#BOP_ctype_dhcp_title1#>
 									</div>
 									<div class="narrowContainer">
 										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
@@ -1365,7 +1384,7 @@
 							<div class="selectorContainer">
 								<div class="selectorContainerDiv">
 									<div class="selectBar" onclick="goTo.vpnDHCP()">
-										<#BOP_ctype_title1#>
+										<#BOP_ctype_dhcp_title1#>
 									</div>
 									<div class="narrowContainer">
 										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
@@ -2116,7 +2135,7 @@
 							<div class="selectorContainer">
 								<div class="selectorContainerDiv">
 									<div class="selectBar" onclick="goTo.lanDHCP()">
-										<#BOP_ctype_title1#>
+										<#BOP_ctype_dhcp_title1#>
 									</div>
 									<div class="narrowContainer">
 										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>

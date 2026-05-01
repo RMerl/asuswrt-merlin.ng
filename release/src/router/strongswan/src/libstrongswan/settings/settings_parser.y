@@ -193,6 +193,8 @@ value:
 		}
 		free($1);
 		free($2);
+		/* suppress compiler warning */
+		(void)yynerrs;
 	}
 	;
 

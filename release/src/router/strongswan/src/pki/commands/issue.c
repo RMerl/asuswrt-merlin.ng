@@ -161,11 +161,6 @@ static int issue()
 					type = CRED_PRIVATE_KEY;
 					subtype = KEY_ED448;
 				}
-				else if (streq(arg, "bliss"))
-				{
-					type = CRED_PRIVATE_KEY;
-					subtype = KEY_BLISS;
-				}
 				else if (streq(arg, "priv"))
 				{
 					type = CRED_PRIVATE_KEY;
@@ -648,7 +643,7 @@ static void __attribute__ ((constructor))reg()
 	command_register((command_t) {
 		issue, 'i', "issue",
 		"issue a certificate using a CA certificate and key",
-		{"[--in file] [--type pub|pkcs10|priv|rsa|ecdsa|ed25519|ed448|bliss]",
+		{"[--in file] [--type pub|pkcs10|priv|rsa|ecdsa|ed25519|ed448]",
 		 "--cakey file|--cakeyid hex --cacert file [--dn subject-dn]",
 		 "[--san subjectAltName]+ [--lifetime days] [--serial hex]",
 		 "[--ca] [--pathlen len]",

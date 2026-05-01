@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019 Tobias Brunner
+ * Copyright (C) 2008-2025 Tobias Brunner
  * Copyright (C) 2005-2008 Martin Willi
  * Copyright (C) 2005 Jan Hutter
  *
@@ -16,12 +16,15 @@
  * for more details.
  */
 
+#include <unistd.h>
+
 #include "child_create.h"
 
 #include <daemon.h>
 #include <sa/ikev2/keymat_v2.h>
 #include <crypto/key_exchange.h>
 #include <credentials/certificates/x509.h>
+#include <collections/hashtable.h>
 #include <encoding/payloads/sa_payload.h>
 #include <encoding/payloads/ke_payload.h>
 #include <encoding/payloads/ts_payload.h>
@@ -32,7 +35,23 @@
 #include <processing/jobs/inactivity_job.h>
 #include <processing/jobs/initiate_tasks_job.h>
 
+/** Maximum number of key exchanges (including the initial one, if any) */
+#define MAX_KEY_EXCHANGES (MAX_ADDITIONAL_KEY_EXCHANGES + 1)
+
 typedef struct private_child_create_t private_child_create_t;
+
+/** Assumed minimum CPU ID, used when searching for a CPU without SA */
+#define CPU_ID_MIN 0
+
+/**
+ * Flags for IP-TFS
+ */
+typedef enum {
+	/** Indicates that fragmentation across packets is not supported */
+	IPTFS_DONT_FRAGMENT = (1 << 0),
+	/** Requests periodic congestion control information from the peer */
+	IPTFS_CONGESTION_CONTROL = (1 << 1),
+} iptfs_flags_t;
 
 /**
  * Private members of a child_create_t task.
@@ -115,19 +134,63 @@ struct private_child_create_t {
 	traffic_selector_t *packet_tsr;
 
 	/**
-	 * optional diffie hellman exchange
+	 * Local traffic selectors as configured or previously negotiated
 	 */
-	key_exchange_t *dh;
+	traffic_selector_list_t *my_ts;
 
 	/**
-	 * Applying DH public value failed?
+	 * Remote traffic selectors as configured or previously negotiated
 	 */
-	bool dh_failed;
+	traffic_selector_list_t *other_ts;
 
 	/**
-	 * group used for DH exchange
+	 * Resource info sent by the peer
 	 */
-	key_exchange_method_t dh_group;
+	chunk_t resource_info;
+
+	/**
+	 * Whether we received resource info (might be empty)
+	 */
+	bool resource_info_seen;
+
+	/**
+	 * Key exchanges to perform
+	 */
+	struct {
+		transform_type_t type;
+		key_exchange_method_t method;
+		bool done;
+	} key_exchanges[MAX_KEY_EXCHANGES];
+
+	/**
+	 * Current key exchange
+	 */
+	int ke_index;
+
+	/**
+	 * Kex exchange method from the parsed or sent KE payload
+	 */
+	key_exchange_method_t ke_method;
+
+	/**
+	 * Current key exchange object (if any)
+	 */
+	key_exchange_t *ke;
+
+	/**
+	 * All key exchanges performed (key_exchange_t)
+	 */
+	array_t *kes;
+
+	/**
+	 * Applying KE public key failed?
+	 */
+	bool ke_failed;
+
+	/**
+	 * Link value for current key exchange
+	 */
+	chunk_t link;
 
 	/**
 	 * IKE_SAs keymat
@@ -153,6 +216,11 @@ struct private_child_create_t {
 	 * IPComp transform proposed or accepted by the other peer
 	 */
 	ipcomp_transform_t ipcomp_received;
+
+	/**
+	 * IP-TFS flags received from the peer
+	 */
+	uint8_t iptfs_flags;
 
 	/**
 	 * IPsec protocol
@@ -200,9 +268,14 @@ struct private_child_create_t {
 	bool rekey;
 
 	/**
-	 * whether we are retrying with another DH group
+	 * whether we are retrying with another KE method
 	 */
 	bool retry;
+
+	/**
+	 * Whether the task was aborted
+	 */
+	bool aborted;
 };
 
 /**
@@ -217,11 +290,22 @@ static void schedule_delayed_retry(private_child_create_t *this)
 
 	task = child_create_create(this->ike_sa,
 							   this->config->get_ref(this->config), FALSE,
-							   this->packet_tsi, this->packet_tsr);
+							   this->packet_tsi, this->packet_tsr,
+							   this->child.seq);
 	task->use_reqid(task, this->child.reqid);
 	task->use_marks(task, this->child.mark_in, this->child.mark_out);
 	task->use_if_ids(task, this->child.if_id_in, this->child.if_id_out);
 	task->use_label(task, this->child.label);
+	task->use_per_cpu(task, this->child.per_cpu, this->child.cpu);
+
+	/* clone these directly as we don't have a public method */
+	if (this->my_ts && this->other_ts)
+	{
+		private_child_create_t *priv = (private_child_create_t*)task;
+
+		priv->my_ts = this->my_ts->clone(this->my_ts);
+		priv->other_ts = this->other_ts->clone(this->other_ts);
+	}
 
 	DBG1(DBG_IKE, "creating CHILD_SA failed, trying again in %d seconds",
 		 retry);
@@ -304,35 +388,39 @@ static bool allocate_spi(private_child_create_t *this)
 		this->proto = this->proposal->get_protocol(this->proposal);
 	}
 	this->my_spi = this->child_sa->alloc_spi(this->child_sa, this->proto);
+	if (!this->my_spi)
+	{
+		DBG1(DBG_IKE, "unable to allocate SPI from kernel");
+	}
 	return this->my_spi != 0;
 }
 
 /**
- * Update the proposals with the allocated SPIs as initiator and check the DH
- * group and promote it if necessary
+ * Update the proposals with the allocated SPIs as initiator and check the KE
+ * method and promote it if necessary
  */
 static bool update_and_check_proposals(private_child_create_t *this)
 {
 	enumerator_t *enumerator;
 	proposal_t *proposal;
-	linked_list_t *other_dh_groups;
+	linked_list_t *other_ke_methods;
 	bool found = FALSE;
 
-	other_dh_groups = linked_list_create();
+	other_ke_methods = linked_list_create();
 	enumerator = this->proposals->create_enumerator(this->proposals);
 	while (enumerator->enumerate(enumerator, &proposal))
 	{
 		proposal->set_spi(proposal, this->my_spi);
 
-		/* move the selected DH group to the front, if any */
-		if (this->dh_group != KE_NONE)
+		/* move the selected KE method to the front, if any */
+		if (this->ke_method != KE_NONE)
 		{	/* proposals that don't contain the selected group are
 			 * moved to the back */
 			if (!proposal->promote_transform(proposal, KEY_EXCHANGE_METHOD,
-											 this->dh_group))
+											 this->ke_method))
 			{
 				this->proposals->remove_at(this->proposals, enumerator);
-				other_dh_groups->insert_last(other_dh_groups, proposal);
+				other_ke_methods->insert_last(other_ke_methods, proposal);
 			}
 			else
 			{
@@ -341,15 +429,15 @@ static bool update_and_check_proposals(private_child_create_t *this)
 		}
 	}
 	enumerator->destroy(enumerator);
-	enumerator = other_dh_groups->create_enumerator(other_dh_groups);
+	enumerator = other_ke_methods->create_enumerator(other_ke_methods);
 	while (enumerator->enumerate(enumerator, (void**)&proposal))
 	{	/* no need to remove from the list as we destroy it anyway*/
 		this->proposals->insert_last(this->proposals, proposal);
 	}
 	enumerator->destroy(enumerator);
-	other_dh_groups->destroy(other_dh_groups);
+	other_ke_methods->destroy(other_ke_methods);
 
-	return this->dh_group == KE_NONE || found;
+	return this->ke_method == KE_NONE || found;
 }
 
 /**
@@ -416,14 +504,36 @@ static linked_list_t* get_transport_nat_ts(private_child_create_t *this,
 }
 
 /**
+ * Ensure we have traffic selector lists when not recreating an SA.
+ */
+static void ensure_ts_lists(private_child_create_t *this)
+{
+	linked_list_t *ts;
+
+	if (!this->my_ts)
+	{
+		ts = this->config->get_traffic_selectors(this->config, TRUE, NULL);
+		this->my_ts = traffic_selector_list_create_from_list(ts);
+	}
+	if (!this->other_ts)
+	{
+		ts = this->config->get_traffic_selectors(this->config, FALSE, NULL);
+		this->other_ts = traffic_selector_list_create_from_list(ts);
+	}
+}
+
+/**
  * Narrow received traffic selectors with configuration
  */
 static linked_list_t* narrow_ts(private_child_create_t *this, bool local,
 								linked_list_t *in)
 {
-	linked_list_t *hosts, *nat, *ts;
+	traffic_selector_list_t *ts;
+	linked_list_t *hosts, *nat, *result;
 	ike_condition_t cond;
 
+	ensure_ts_lists(this);
+	ts = local ? this->my_ts : this->other_ts;
 	cond = local ? COND_NAT_HERE : COND_NAT_THERE;
 	hosts = ike_sa_get_dynamic_hosts(this->ike_sa, local);
 
@@ -431,19 +541,16 @@ static linked_list_t* narrow_ts(private_child_create_t *this, bool local,
 		this->ike_sa->has_condition(this->ike_sa, cond))
 	{
 		nat = get_transport_nat_ts(this, local, in);
-		ts = this->config->get_traffic_selectors(this->config, local, nat,
-												 hosts, TRUE);
+		result = child_cfg_select_ts(this->config, local, ts, nat, hosts);
 		nat->destroy_offset(nat, offsetof(traffic_selector_t, destroy));
 	}
 	else
 	{
-		ts = this->config->get_traffic_selectors(this->config, local, in,
-												 hosts, TRUE);
+		result = child_cfg_select_ts(this->config, local, ts, in, hosts);
 	}
 
 	hosts->destroy(hosts);
-
-	return ts;
+	return result;
 }
 
 /**
@@ -479,6 +586,22 @@ static bool check_mode(private_child_create_t *this, host_t *i, host_t *r)
 				return FALSE;
 			}
 			break;
+		case MODE_IPTFS:
+			if (this->config->get_mode(this->config) != MODE_IPTFS)
+			{
+				return FALSE;
+			}
+			if ((this->iptfs_flags & IPTFS_CONGESTION_CONTROL) ||
+				(this->iptfs_flags & 0xfc))
+			{
+				/* congestion control is not supported, neither are any of
+				 * the 6 reserved flags, so we disable IP-TFS if they are set */
+				DBG1(DBG_IKE, "not using IP-TFS mode, peer sent unsupported "
+					 "flags (0x%.2x) in %N notify", this->iptfs_flags,
+					 notify_type_names, USE_AGGFRAG);
+				return FALSE;
+			}
+			break;
 		default:
 			break;
 	}
@@ -486,106 +609,27 @@ static bool check_mode(private_child_create_t *this, host_t *i, host_t *r)
 }
 
 /**
- * Install a CHILD_SA for usage, return value:
- * - FAILED: no acceptable proposal
- * - INVALID_ARG: diffie hellman group unacceptable
+ * Do traffic selector narrowing and check mode:
+ * - FAILED: mode mismatch
  * - NOT_FOUND: TS unacceptable
  */
-static status_t select_and_install(private_child_create_t *this,
-								   bool no_dh, bool ike_auth)
+static status_t narrow_and_check_ts(private_child_create_t *this, bool ike_auth)
 {
-	status_t status, status_i, status_o;
-	chunk_t nonce_i, nonce_r;
-	chunk_t encr_i = chunk_empty, encr_r = chunk_empty;
-	chunk_t integ_i = chunk_empty, integ_r = chunk_empty;
 	linked_list_t *my_ts, *other_ts;
 	host_t *me, *other;
-	proposal_selection_flag_t flags = 0;
-
-	if (this->proposals == NULL)
-	{
-		DBG1(DBG_IKE, "SA payload missing in message");
-		return FAILED;
-	}
-	if (this->tsi == NULL || this->tsr == NULL)
-	{
-		DBG1(DBG_IKE, "TS payloads missing in message");
-		return NOT_FOUND;
-	}
 
 	me = this->ike_sa->get_my_host(this->ike_sa);
 	other = this->ike_sa->get_other_host(this->ike_sa);
 
-	if (no_dh)
-	{
-		flags |= PROPOSAL_SKIP_KE;
-	}
-	if (!this->ike_sa->supports_extension(this->ike_sa, EXT_STRONGSWAN) &&
-		!lib->settings->get_bool(lib->settings, "%s.accept_private_algs",
-								 FALSE, lib->ns))
-	{
-		flags |= PROPOSAL_SKIP_PRIVATE;
-	}
-	if (!lib->settings->get_bool(lib->settings,
-							"%s.prefer_configured_proposals", TRUE, lib->ns))
-	{
-		flags |= PROPOSAL_PREFER_SUPPLIED;
-	}
-	this->proposal = this->config->select_proposal(this->config,
-												   this->proposals, flags);
-	if (this->proposal == NULL)
-	{
-		DBG1(DBG_IKE, "no acceptable proposal found");
-		charon->bus->alert(charon->bus, ALERT_PROPOSAL_MISMATCH_CHILD,
-						   this->proposals);
-		return FAILED;
-	}
-	this->other_spi = this->proposal->get_spi(this->proposal);
-
-	if (!this->initiator)
-	{
-		if (!allocate_spi(this))
-		{
-			/* responder has no SPI allocated yet */
-			DBG1(DBG_IKE, "allocating SPI failed");
-			return FAILED;
-		}
-		this->proposal->set_spi(this->proposal, this->my_spi);
-	}
 	this->child_sa->set_proposal(this->child_sa, this->proposal);
-
-	if (!this->proposal->has_transform(this->proposal, KEY_EXCHANGE_METHOD,
-									   this->dh_group))
-	{
-		uint16_t group;
-
-		if (this->proposal->get_algorithm(this->proposal, KEY_EXCHANGE_METHOD,
-										  &group, NULL))
-		{
-			DBG1(DBG_IKE, "DH group %N unacceptable, requesting %N",
-				 key_exchange_method_names, this->dh_group,
-				 key_exchange_method_names, group);
-			this->dh_group = group;
-			return INVALID_ARG;
-		}
-		/* the selected proposal does not use a DH group */
-		DBG1(DBG_IKE, "ignoring KE exchange, agreed on a non-PFS proposal");
-		DESTROY_IF(this->dh);
-		this->dh = NULL;
-		this->dh_group = KE_NONE;
-	}
 
 	if (this->initiator)
 	{
-		nonce_i = this->my_nonce;
-		nonce_r = this->other_nonce;
 		my_ts = narrow_ts(this, TRUE, this->tsi);
 		other_ts = narrow_ts(this, FALSE, this->tsr);
 	}
 	else
 	{
-		nonce_r = this->my_nonce;
-		nonce_i = this->other_nonce;
 		my_ts = narrow_ts(this, TRUE, this->tsr);
 		other_ts = narrow_ts(this, FALSE, this->tsi);
 	}
@@ -620,6 +664,7 @@ static status_t select_and_install(private_child_create_t *this,
 
 	this->tsr->destroy_offset(this->tsr, offsetof(traffic_selector_t, destroy));
 	this->tsi->destroy_offset(this->tsi, offsetof(traffic_selector_t, destroy));
+
 	if (this->initiator)
 	{
 		this->tsi = my_ts;
@@ -642,9 +687,35 @@ static status_t select_and_install(private_child_create_t *this,
 			this->mode = MODE_TUNNEL;
 		}
 	}
+	return SUCCESS;
+}
 
-	if (!this->initiator)
+/**
+ * Install a CHILD_SA:
+ * - FAILED: failure to install SAs
+ * - NOT_FOUND: TS unacceptable (only responder), or failure to install policies
+ */
+static status_t install_child_sa(private_child_create_t *this)
+{
+	status_t status, status_i, status_o;
+	chunk_t nonce_i, nonce_r;
+	chunk_t encr_i = chunk_empty, encr_r = chunk_empty;
+	chunk_t integ_i = chunk_empty, integ_r = chunk_empty;
+	linked_list_t *my_ts, *other_ts;
+
+	if (this->initiator)
 	{
+		nonce_i = this->my_nonce;
+		nonce_r = this->other_nonce;
+
+		my_ts = this->tsi;
+		other_ts = this->tsr;
+	}
+	else
+	{
+		nonce_i = this->other_nonce;
+		nonce_r = this->my_nonce;
+
 		/* use a copy of the traffic selectors, as the POST hook should not
 		 * change payloads */
 		my_ts = this->tsr->clone_offset(this->tsr,
@@ -666,13 +737,18 @@ static status_t select_and_install(private_child_create_t *this,
 
 	this->child_sa->set_ipcomp(this->child_sa, this->ipcomp);
 	this->child_sa->set_mode(this->child_sa, this->mode);
+	if (this->mode == MODE_IPTFS && this->iptfs_flags & IPTFS_DONT_FRAGMENT)
+	{
+		this->child_sa->set_iptfs_dont_fragment(this->child_sa);
+	}
 	this->child_sa->set_protocol(this->child_sa,
 								 this->proposal->get_protocol(this->proposal));
-	this->child_sa->set_state(this->child_sa, CHILD_INSTALLING);
 
 	/* addresses might have changed since we originally sent the request, update
 	 * them before we configure any policies and install the SAs */
-	this->child_sa->update(this->child_sa, me, other, NULL,
+	this->child_sa->update(this->child_sa,
+						   this->ike_sa->get_my_host(this->ike_sa),
+						   this->ike_sa->get_other_host(this->ike_sa), NULL,
 						   this->ike_sa->has_condition(this->ike_sa, COND_NAT_ANY));
 
 	this->child_sa->set_policies(this->child_sa, my_ts, other_ts);
@@ -683,6 +759,7 @@ static status_t select_and_install(private_child_create_t *this,
 		other_ts->destroy_offset(other_ts,
 							  offsetof(traffic_selector_t, destroy));
 	}
+	this->child_sa->set_state(this->child_sa, CHILD_INSTALLING);
 
 	if (this->my_cpi == 0 || this->other_cpi == 0 || this->ipcomp == IPCOMP_NONE)
 	{
@@ -691,7 +768,7 @@ static status_t select_and_install(private_child_create_t *this,
 	}
 	status_i = status_o = FAILED;
 	if (this->keymat->derive_child_keys(this->keymat, this->proposal,
-			this->dh, nonce_i, nonce_r, &encr_i, &integ_i, &encr_r, &integ_r))
+			this->kes, nonce_i, nonce_r, &encr_i, &integ_i, &encr_r, &integ_r))
 	{
 		if (this->initiator)
 		{
@@ -706,9 +783,10 @@ static status_t select_and_install(private_child_create_t *this,
 							TRUE, this->tfcv3);
 		}
 		if (this->rekey)
-		{	/* during rekeyings we install the outbound SA and/or policies
-			 * separately: as responder when we receive the delete for the old
-			 * SA, as initiator pretty much immediately in the ike-rekey task,
+		{
+			/* during rekeyings we install the outbound SA and/or policies
+			 * separately: as responder, when we receive the delete for the old
+			 * SA, as initiator, pretty much immediately in the ike-rekey task,
 			 * unless there was a rekey collision that we lost */
 			if (this->initiator)
 			{
@@ -763,6 +841,8 @@ static status_t select_and_install(private_child_create_t *this,
 			charon->bus->child_derived_keys(charon->bus, this->child_sa,
 											this->initiator, encr_i, encr_r,
 											integ_i, integ_r);
+			charon->bus->child_keys(charon->bus, this->child_sa,
+								this->initiator, this->kes, nonce_i, nonce_r);
 		}
 	}
 	chunk_clear(&integ_i);
@@ -774,9 +854,6 @@ static status_t select_and_install(private_child_create_t *this,
 	{
 		return status;
 	}
-
-	charon->bus->child_keys(charon->bus, this->child_sa, this->initiator,
-							this->dh, nonce_i, nonce_r);
 
 #if DEBUG_LEVEL >= 0
 	child_sa_outbound_state_t out_state;
@@ -809,17 +886,183 @@ static status_t select_and_install(private_child_create_t *this,
 }
 
 /**
+ * Select a proposal
+ */
+static bool select_proposal(private_child_create_t *this, bool no_ke)
+{
+	proposal_selection_flag_t flags = 0;
+
+	if (!this->proposals)
+	{
+		DBG1(DBG_IKE, "SA payload missing in message");
+		return FALSE;
+	}
+
+	if (no_ke)
+	{
+		flags |= PROPOSAL_SKIP_KE;
+	}
+	if (!this->ike_sa->supports_extension(this->ike_sa, EXT_STRONGSWAN) &&
+		!lib->settings->get_bool(lib->settings, "%s.accept_private_algs",
+								 FALSE, lib->ns))
+	{
+		flags |= PROPOSAL_SKIP_PRIVATE;
+	}
+	if (!lib->settings->get_bool(lib->settings,
+							"%s.prefer_configured_proposals", TRUE, lib->ns))
+	{
+		flags |= PROPOSAL_PREFER_SUPPLIED;
+	}
+	this->proposal = this->config->select_proposal(this->config,
+												   this->proposals, flags);
+	if (!this->proposal)
+	{
+		DBG1(DBG_IKE, "no acceptable proposal found");
+		charon->bus->alert(charon->bus, ALERT_PROPOSAL_MISMATCH_CHILD,
+						   this->proposals);
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * Returns the number of CPUs that are configured on the system or only those
+ * that are currently online (if we can distinguish this).
+ */
+static uint32_t get_system_cpus(bool online)
+{
+	long cpus;
+
+#ifdef WIN32
+	SYSTEM_INFO sysinfo;
+	GetSystemInfo(&sysinfo);
+	cpus = sysinfo.dwNumberOfProcessors;
+#else /* WIN32 */
+	cpus = sysconf(online ? _SC_NPROCESSORS_ONLN : _SC_NPROCESSORS_CONF);
+
+	if (cpus < 0)
+	{
+		DBG1(DBG_IKE, "failed to determine number of CPUs for this system");
+		/* assume we have at least one CPU */
+		cpus = 1;
+	}
+#endif /* WIN32 */
+	return cpus;
+}
+
+/**
+ * Finds an unused CPU ID to be assigned to a responder's CHILD_SA, or return
+ * CPU_ID_MAX if we don't have a fallback yet.
+ */
+static uint32_t get_cpu(private_child_create_t *this)
+{
+	enumerator_t *enumerator;
+	hashtable_t *used;
+	child_sa_t *child_sa;
+	bool found_fallback = FALSE;
+	uint32_t cpu;
+
+	used = hashtable_create(hashtable_hash_ptr, hashtable_equals_ptr, 32);
+
+	enumerator = this->ike_sa->create_child_sa_enumerator(this->ike_sa);
+	while (enumerator->enumerate(enumerator, (void**)&child_sa))
+	{
+		if (child_sa->get_state(child_sa) == CHILD_INSTALLED &&
+			this->config->equals(this->config, child_sa->get_config(child_sa)))
+		{
+			cpu = child_sa->get_cpu(child_sa);
+			if (cpu != CPU_ID_MAX)
+			{
+				used->put(used, (void*)(uintptr_t)cpu, child_sa);
+			}
+			else
+			{
+				found_fallback = TRUE;
+			}
+		}
+	}
+	enumerator->destroy(enumerator);
+
+	if (!found_fallback)
+	{
+		cpu = CPU_ID_MAX;
+	}
+	else
+	{
+		cpu = get_system_cpus(TRUE) + CPU_ID_MIN - 1;
+		for (; cpu > CPU_ID_MIN; cpu--)
+		{
+			if (!used->get(used, (void*)(uintptr_t)cpu))
+			{
+				break;
+			}
+		}
+	}
+	used->destroy(used);
+	return cpu;
+}
+
+/**
+ * Add a KE payload if a key exchange is used.  As responder we might already
+ * have stored the object in the list of completed exchanges.
+ */
+static bool add_ke_payload(private_child_create_t *this,
+						   message_t *message)
+{
+	key_exchange_t *ke;
+	ke_payload_t *pld;
+
+	if (this->ke)
+	{
+		ke = this->ke;
+	}
+	else if (!array_get(this->kes, ARRAY_TAIL, &ke))
+	{
+		return TRUE;
+	}
+
+	pld = ke_payload_create_from_key_exchange(PLV2_KEY_EXCHANGE, ke);
+	if (!pld)
+	{
+		DBG1(DBG_IKE, "creating KE payload failed");
+		return FALSE;
+	}
+	message->add_payload(message, (payload_t*)pld);
+	return TRUE;
+}
+
+/**
+ * Build payloads in additional exchanges when using multiple key exchanges
+ */
+static bool build_payloads_multi_ke(private_child_create_t *this,
+									message_t *message)
+{
+	if (!add_ke_payload(this, message))
+	{
+		return FALSE;
+	}
+	if (this->link.ptr)
+	{
+		message->add_notify(message, FALSE, ADDITIONAL_KEY_EXCHANGE, this->link);
+	}
+	return TRUE;
+}
+
+/**
  * build the payloads for the message
  */
 static bool build_payloads(private_child_create_t *this, message_t *message)
 {
 	sa_payload_t *sa_payload;
 	nonce_payload_t *nonce_payload;
-	ke_payload_t *ke_payload;
 	ts_payload_t *ts_payload;
 	kernel_feature_t features;
 
-	/* add SA payload */
+	if (message->get_exchange_type(message) == IKE_FOLLOWUP_KE)
+	{
+		return build_payloads_multi_ke(this, message);
+	}
+
 	if (this->initiator)
 	{
 		sa_payload = sa_payload_create_from_proposals_v2(this->proposals);
@@ -838,17 +1081,14 @@ static bool build_payloads(private_child_create_t *this, message_t *message)
 		message->add_payload(message, (payload_t*)nonce_payload);
 	}
 
-	/* diffie hellman exchange, if PFS enabled */
-	if (this->dh)
+	if (this->link.ptr)
 	{
-		ke_payload = ke_payload_create_from_key_exchange(PLV2_KEY_EXCHANGE,
-														 this->dh);
-		if (!ke_payload)
-		{
-			DBG1(DBG_IKE, "creating KE payload failed");
-			return FALSE;
-		}
-		message->add_payload(message, (payload_t*)ke_payload);
+		message->add_notify(message, FALSE, ADDITIONAL_KEY_EXCHANGE, this->link);
+	}
+
+	if (!add_ke_payload(this, message))
+	{
+		return FALSE;
 	}
 
 	/* add TSi/TSr payloads */
@@ -868,6 +1108,19 @@ static bool build_payloads(private_child_create_t *this, message_t *message)
 		case MODE_BEET:
 			message->add_notify(message, FALSE, USE_BEET_MODE, chunk_empty);
 			break;
+		case MODE_IPTFS:
+		{
+			uint8_t iptfs_flags = 0;
+
+			if (!lib->settings->get_bool(lib->settings,
+									"%s.iptfs.accept_fragments", TRUE, lib->ns))
+			{
+				iptfs_flags |= IPTFS_DONT_FRAGMENT;
+			}
+			message->add_notify(message, FALSE, USE_AGGFRAG,
+								chunk_from_thing(iptfs_flags));
+			break;
+		}
 		default:
 			break;
 	}
@@ -877,6 +1130,21 @@ static bool build_payloads(private_child_create_t *this, message_t *message)
 	{
 		message->add_notify(message, FALSE, ESP_TFC_PADDING_NOT_SUPPORTED,
 							chunk_empty);
+	}
+
+	if (!this->rekey && this->child.per_cpu)
+	{
+		chunk_t cpu_id = chunk_empty;
+		uint32_t cpu;
+
+		/* always send the notify, but possibly without CPU ID */
+		if (this->child.cpu != CPU_ID_MAX)
+		{
+			cpu = htonl(this->child.cpu);
+			cpu_id = chunk_from_thing(cpu);
+		}
+		message->add_notify(message, FALSE, SA_RESOURCE_INFO,
+							cpu_id);
 	}
 	return TRUE;
 }
@@ -906,6 +1174,8 @@ static void add_ipcomp_notify(private_child_create_t *this,
  */
 static void handle_notify(private_child_create_t *this, notify_payload_t *notify)
 {
+	chunk_t data;
+
 	switch (notify->get_notify_type(notify))
 	{
 		case USE_TRANSPORT_MODE:
@@ -922,11 +1192,15 @@ static void handle_notify(private_child_create_t *this, notify_payload_t *notify
 					 "mode, but peer implementation unknown, skipped");
 			}
 			break;
+		case USE_AGGFRAG:
+			this->mode = MODE_IPTFS;
+			data = notify->get_notification_data(notify);
+			this->iptfs_flags = *data.ptr;
+			break;
 		case IPCOMP_SUPPORTED:
 		{
 			ipcomp_transform_t ipcomp;
 			uint16_t cpi;
-			chunk_t data;
 
 			data = notify->get_notification_data(notify);
 			cpi = *(uint16_t*)data.ptr;
@@ -952,9 +1226,188 @@ static void handle_notify(private_child_create_t *this, notify_payload_t *notify
 				 notify_type_names, notify->get_notify_type(notify));
 			this->tfcv3 = FALSE;
 			break;
+		case SA_RESOURCE_INFO:
+			chunk_free(&this->resource_info);
+			this->resource_info = chunk_clone(notify->get_notification_data(notify));
+			this->resource_info_seen = TRUE;
+			break;
 		default:
 			break;
 	}
+}
+
+/**
+ * Collect all key exchanges from the proposal
+ */
+static void determine_key_exchanges(private_child_create_t *this)
+{
+	transform_type_t t = KEY_EXCHANGE_METHOD;
+	uint16_t alg;
+	int i = 1;
+
+	if (!this->proposal->get_algorithm(this->proposal, t, &alg, NULL))
+	{	/* no PFS */
+		return;
+	}
+
+	this->key_exchanges[0].type = t;
+	this->key_exchanges[0].method = alg;
+
+	for (t = ADDITIONAL_KEY_EXCHANGE_1; t <= ADDITIONAL_KEY_EXCHANGE_7; t++)
+	{
+		if (this->proposal->get_algorithm(this->proposal, t, &alg, NULL))
+		{
+			this->key_exchanges[i].type = t;
+			this->key_exchanges[i].method = alg;
+			i++;
+		}
+	}
+}
+
+/**
+ * Check if additional key exchanges are required
+ */
+static bool additional_key_exchange_required(private_child_create_t *this)
+{
+	int i;
+
+	for (i = this->ke_index; i < MAX_KEY_EXCHANGES; i++)
+	{
+		if (this->key_exchanges[i].type && !this->key_exchanges[i].done)
+		{
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+/**
+ * Clear data on key exchanges
+ */
+static void clear_key_exchanges(private_child_create_t *this)
+{
+	int i;
+
+	for (i = 0; i < MAX_KEY_EXCHANGES; i++)
+	{
+		this->key_exchanges[i].type = 0;
+		this->key_exchanges[i].method = 0;
+		this->key_exchanges[i].done = FALSE;
+	}
+	this->ke_index = 0;
+
+	array_destroy_offset(this->kes, offsetof(key_exchange_t, destroy));
+	this->kes = NULL;
+}
+
+/**
+ * Process a KE payload
+ */
+static void process_ke_payload(private_child_create_t *this, ke_payload_t *ke)
+{
+	key_exchange_method_t method = this->key_exchanges[this->ke_index].method;
+	key_exchange_method_t received = ke->get_key_exchange_method(ke);
+
+	/* the proposal is selected after processing the KE payload, so this is
+	 * only relevant for additional key exchanges */
+	if (method && method != received)
+	{
+		DBG1(DBG_IKE, "key exchange method in received payload %N doesn't "
+			 "match negotiated %N", key_exchange_method_names, received,
+			 key_exchange_method_names, method);
+		this->ke_failed = TRUE;
+		return;
+	}
+
+	this->ke_method = received;
+
+	if (!this->initiator)
+	{
+		DESTROY_IF(this->ke);
+		this->ke = this->keymat->keymat.create_ke(&this->keymat->keymat,
+												  received);
+		if (!this->ke)
+		{
+			DBG1(DBG_IKE, "key exchange method %N not supported",
+				 key_exchange_method_names, received);
+		}
+	}
+	else if (this->ke)
+	{
+		if (this->ke->get_method(this->ke) != received)
+		{
+			DBG1(DBG_IKE, "key exchange method %N in received payload doesn't "
+				 "match %N", key_exchange_method_names, received,
+				 key_exchange_method_names, this->ke->get_method(this->ke));
+			this->ke_failed = TRUE;
+		}
+	}
+
+	if (this->ke && !this->ke_failed)
+	{
+		if (!this->ke->set_public_key(this->ke, ke->get_key_exchange_data(ke)))
+		{
+			DBG1(DBG_IKE, "applying key exchange public key failed");
+			this->ke_failed = TRUE;
+		}
+	}
+}
+
+/**
+ * Check if the proposed KE method in CREATE_CHILD_SA (received via KE payload)
+ * is valid according to the selected proposal.
+ */
+static bool check_ke_method(private_child_create_t *this, uint16_t *req)
+{
+	uint16_t alg;
+
+	if (!this->proposal->has_transform(this->proposal, KEY_EXCHANGE_METHOD,
+									   this->ke_method))
+	{
+		if (this->proposal->get_algorithm(this->proposal, KEY_EXCHANGE_METHOD,
+										  &alg, NULL))
+		{
+			if (req)
+			{
+				*req = alg;
+			}
+			return FALSE;
+		}
+		/* the selected proposal does not use a key exchange method */
+		DBG1(DBG_IKE, "ignoring KE payload, agreed on a non-PFS proposal");
+		DESTROY_IF(this->ke);
+		this->ke = NULL;
+		this->ke_method = KE_NONE;
+		/* ignore errors that occurred while handling the KE payload */
+		this->ke_failed = FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * Check if the proposed key exchange method is valid as responder or whether
+ * we should request another KE payload.
+ */
+static bool check_ke_method_r(private_child_create_t *this, message_t *message)
+{
+	uint16_t alg;
+
+	if (!check_ke_method(this, &alg))
+	{
+		DBG1(DBG_IKE, "key exchange method %N unacceptable, requesting %N",
+			 key_exchange_method_names, this->ke_method,
+			 key_exchange_method_names, alg);
+		alg = htons(alg);
+		message->add_notify(message, FALSE, INVALID_KE_PAYLOAD,
+							chunk_from_thing(alg));
+		return FALSE;
+	}
+	else if (this->ke_method != KE_NONE && !this->ke)
+	{
+		message->add_notify(message, TRUE, NO_PROPOSAL_CHOSEN, chunk_empty);
+		return FALSE;
+	}
+	return TRUE;
 }
 
 /**
@@ -965,7 +1418,6 @@ static void process_payloads(private_child_create_t *this, message_t *message)
 	enumerator_t *enumerator;
 	payload_t *payload;
 	sa_payload_t *sa_payload;
-	ke_payload_t *ke_payload;
 	ts_payload_t *ts_payload;
 
 	/* defaults to TUNNEL mode */
@@ -981,24 +1433,7 @@ static void process_payloads(private_child_create_t *this, message_t *message)
 				this->proposals = sa_payload->get_proposals(sa_payload);
 				break;
 			case PLV2_KEY_EXCHANGE:
-				ke_payload = (ke_payload_t*)payload;
-				if (!this->initiator)
-				{
-					this->dh_group = ke_payload->get_key_exchange_method(
-																	ke_payload);
-					this->dh = this->keymat->keymat.create_ke(
-										&this->keymat->keymat, this->dh_group);
-				}
-				else if (this->dh)
-				{
-					this->dh_failed = this->dh->get_method(this->dh) !=
-								ke_payload->get_key_exchange_method(ke_payload);
-				}
-				if (this->dh && !this->dh_failed)
-				{
-					this->dh_failed = !this->dh->set_public_key(this->dh,
-								ke_payload->get_key_exchange_data(ke_payload));
-				}
+				process_ke_payload(this, (ke_payload_t*)payload);
 				break;
 			case PLV2_TS_INITIATOR:
 				ts_payload = (ts_payload_t*)payload;
@@ -1063,21 +1498,63 @@ static status_t defer_child_sa(private_child_create_t *this)
 }
 
 /**
- * Compare two CHILD_SA objects for equality
+ * Compare the reqids and possibly traffic selectors of two CHILD_SAs for
+ * equality.
+ *
+ * The second CHILD_SA is assumed to be the one newly created.
  */
-static bool child_sa_equals(child_sa_t *a, child_sa_t *b)
+static bool reqid_and_ts_equals(private_child_create_t *this, child_sa_t *a,
+								child_sa_t *b)
+{
+	/* reqids are allocated based on the traffic selectors. if all the other
+	 * selectors are the same, they can only differ if narrowing occurred.
+	 *
+	 * if the new SA has no reqid assigned, it was initiated manually or due to
+	 * a start action and we assume the peer will do the same narrowing it
+	 * possibly did before, so we treat the SAs as equal.
+	 *
+	 * if the new SA has a reqid, it was either triggered by an acquire or
+	 * during a reestablishment.  if they are equal, we are done */
+	if (!b->get_reqid(b) || a->get_reqid(a) == b->get_reqid(b))
+	{
+		return TRUE;
+	}
+	/* if the reqids differ, the one of the established SA was changed due to
+	 * narrowing.  in this case, we check if we have either triggering TS or
+	 * previous TS.  if so, we check whether the available TS match the TS of
+	 * the existing SA.  if they do, there is no point to negotiate another SA.
+	 * if not, the peer will potentially narrow the TS to a different set for
+	 * the new SA. */
+	if (this->packet_tsi && this->packet_tsr)
+	{
+		return child_sa_ts_match(a, this->packet_tsi, this->packet_tsr);
+	}
+	if (this->my_ts && this->other_ts)
+	{
+		return child_sa_ts_lists_match(a, this->my_ts, this->other_ts);
+	}
+	/* if we don't have any TS to compare, we assume the peer will do the same
+	 * narrowing and treat the SAs equal.*/
+	return TRUE;
+}
+
+/**
+ * Compare two CHILD_SA objects for equality.
+ *
+ * The second CHILD_SA is assumed to be the one newly created.
+ */
+static bool child_sa_equals(private_child_create_t *this, child_sa_t *a,
+							child_sa_t *b)
 {
 	child_cfg_t *cfg = a->get_config(a);
 	return cfg->equals(cfg, b->get_config(b)) &&
-		/* reqids are allocated based on the final TS, so we can only compare
-		 * them if they are static (i.e. both have them) */
-		(!a->get_reqid(a) || !b->get_reqid(b) ||
-		  a->get_reqid(a) == b->get_reqid(b)) &&
 		a->get_mark(a, TRUE).value == b->get_mark(b, TRUE).value &&
 		a->get_mark(a, FALSE).value == b->get_mark(b, FALSE).value &&
 		a->get_if_id(a, TRUE) == b->get_if_id(b, TRUE) &&
 		a->get_if_id(a, FALSE) == b->get_if_id(b, FALSE) &&
-		sec_labels_equal(a->get_label(a), b->get_label(b));
+		a->get_cpu(a) == b->get_cpu(b) &&
+		sec_labels_equal(a->get_label(a), b->get_label(b)) &&
+		reqid_and_ts_equals(this, a, b);
 }
 
 /**
@@ -1093,7 +1570,7 @@ static bool check_for_duplicate(private_child_create_t *this)
 	while (enumerator->enumerate(enumerator, (void**)&child_sa))
 	{
 		if (child_sa->get_state(child_sa) == CHILD_INSTALLED &&
-			child_sa_equals(child_sa, this->child_sa))
+			child_sa_equals(this, child_sa, this->child_sa))
 		{
 			found = child_sa;
 			break;
@@ -1144,13 +1621,97 @@ static bool check_for_generic_label(private_child_create_t *this)
 	return FALSE;
 }
 
+METHOD(task_t, build_i_multi_ke, status_t,
+	private_child_create_t *this, message_t *message)
+{
+	key_exchange_method_t method;
+
+	message->set_exchange_type(message, IKE_FOLLOWUP_KE);
+	DESTROY_IF(this->ke);
+	method = this->key_exchanges[this->ke_index].method;
+	this->ke = this->keymat->keymat.create_ke(&this->keymat->keymat,
+											  method);
+	if (!this->ke)
+	{
+		DBG1(DBG_IKE, "negotiated key exchange method %N not supported",
+			 key_exchange_method_names, method);
+		return FAILED;
+	}
+	if (!this->link.ptr)
+	{
+		DBG1(DBG_IKE, "%N notify missing", notify_type_names,
+			 ADDITIONAL_KEY_EXCHANGE);
+		return FAILED;
+	}
+
+	if (!build_payloads_multi_ke(this, message))
+	{
+		return FAILED;
+	}
+	return NEED_MORE;
+}
+
+/**
+ * Prepare proposed traffic selectors as initiator.
+ */
+static void prepare_proposed_ts(private_child_create_t *this)
+{
+	enumerator_t *enumerator;
+	peer_cfg_t *peer_cfg;
+	linked_list_t *list;
+	host_t *vip;
+
+	ensure_ts_lists(this);
+
+	list = linked_list_create();
+	if (!this->rekey)
+	{
+		/* check if we want a virtual IP */
+		peer_cfg = this->ike_sa->get_peer_cfg(this->ike_sa);
+		enumerator = peer_cfg->create_virtual_ip_enumerator(peer_cfg);
+		while (enumerator->enumerate(enumerator, &vip))
+		{
+			/* propose a 0.0.0.0/0 or ::/0 subnet when we use a virtual IP */
+			vip = host_create_any(vip->get_family(vip));
+			list->insert_last(list, vip);
+		}
+		enumerator->destroy(enumerator);
+	}
+	if (list->get_count(list))
+	{
+		this->tsi = child_cfg_select_ts(this->config, TRUE, this->my_ts, NULL,
+										list);
+		list->destroy_offset(list, offsetof(host_t, destroy));
+	}
+	else
+	{
+		list->destroy(list);
+		list = ike_sa_get_dynamic_hosts(this->ike_sa, TRUE);
+		this->tsi = child_cfg_select_ts(this->config, TRUE, this->my_ts, NULL,
+										list);
+		list->destroy(list);
+	}
+	list = ike_sa_get_dynamic_hosts(this->ike_sa, FALSE);
+	this->tsr = child_cfg_select_ts(this->config, FALSE, this->other_ts, NULL,
+									list);
+	list->destroy(list);
+
+	if (this->packet_tsi)
+	{
+		this->tsi->insert_first(this->tsi,
+								this->packet_tsi->clone(this->packet_tsi));
+	}
+	if (this->packet_tsr)
+	{
+		this->tsr->insert_first(this->tsr,
+								this->packet_tsr->clone(this->packet_tsr));
+	}
+}
+
 METHOD(task_t, build_i, status_t,
 	private_child_create_t *this, message_t *message)
 {
-	enumerator_t *enumerator;
-	host_t *vip;
-	peer_cfg_t *peer_cfg;
-	linked_list_t *list;
+	bool no_ke = TRUE;
 
 	switch (message->get_exchange_type(message))
 	{
@@ -1162,11 +1723,7 @@ METHOD(task_t, build_i, status_t,
 				message->set_exchange_type(message, EXCHANGE_TYPE_UNDEFINED);
 				return SUCCESS;
 			}
-			if (!this->retry && this->dh_group == KE_NONE)
-			{	/* during a rekeying the group might already be set */
-				this->dh_group = this->config->get_algorithm(this->config,
-														KEY_EXCHANGE_METHOD);
-			}
+			no_ke = FALSE;
 			break;
 		case IKE_AUTH:
 			switch (defer_child_sa(this))
@@ -1189,49 +1746,7 @@ METHOD(task_t, build_i, status_t,
 			return NEED_MORE;
 	}
 
-	/* check if we want a virtual IP, but don't have one */
-	list = linked_list_create();
-	peer_cfg = this->ike_sa->get_peer_cfg(this->ike_sa);
-	if (!this->rekey)
-	{
-		enumerator = peer_cfg->create_virtual_ip_enumerator(peer_cfg);
-		while (enumerator->enumerate(enumerator, &vip))
-		{
-			/* propose a 0.0.0.0/0 or ::/0 subnet when we use virtual ip */
-			vip = host_create_any(vip->get_family(vip));
-			list->insert_last(list, vip);
-		}
-		enumerator->destroy(enumerator);
-	}
-	if (list->get_count(list))
-	{
-		this->tsi = this->config->get_traffic_selectors(this->config,
-														TRUE, NULL, list, TRUE);
-		list->destroy_offset(list, offsetof(host_t, destroy));
-	}
-	else
-	{	/* no virtual IPs configured */
-		list->destroy(list);
-		list = ike_sa_get_dynamic_hosts(this->ike_sa, TRUE);
-		this->tsi = this->config->get_traffic_selectors(this->config,
-														TRUE, NULL, list, TRUE);
-		list->destroy(list);
-	}
-	list = ike_sa_get_dynamic_hosts(this->ike_sa, FALSE);
-	this->tsr = this->config->get_traffic_selectors(this->config,
-													FALSE, NULL, list, TRUE);
-	list->destroy(list);
-
-	if (this->packet_tsi)
-	{
-		this->tsi->insert_first(this->tsi,
-								this->packet_tsi->clone(this->packet_tsi));
-	}
-	if (this->packet_tsr)
-	{
-		this->tsr->insert_first(this->tsr,
-								this->packet_tsr->clone(this->packet_tsr));
-	}
+	prepare_proposed_ts(this);
 
 	if (!generic_label_only(this) && !this->child.label)
 	{	/* in the simple label mode we propose the configured label as we
@@ -1247,9 +1762,13 @@ METHOD(task_t, build_i, status_t,
 		DBG2(DBG_CFG, "proposing security label '%s'",
 			 this->child.label->get_string(this->child.label));
 	}
+	if (!this->rekey)
+	{
+		this->child.per_cpu = this->config->has_option(this->config,
+													   OPT_PER_CPU_SAS);
+	}
 
-	this->proposals = this->config->get_proposals(this->config,
-												  this->dh_group == KE_NONE);
+	this->proposals = this->config->get_proposals(this->config, no_ke);
 	this->mode = this->config->get_mode(this->config);
 
 	this->child.if_id_in_def = this->ike_sa->get_if_id(this->ike_sa, TRUE);
@@ -1284,22 +1803,39 @@ METHOD(task_t, build_i, status_t,
 
 	if (!allocate_spi(this))
 	{
-		DBG1(DBG_IKE, "unable to allocate SPIs from kernel");
 		return FAILED;
+	}
+
+	if (no_ke)
+	{	/* we might have one set if we are recreating this SA */
+		this->ke_method = KE_NONE;
+	}
+	else if (!this->retry)
+	{	/* during a rekeying the method might already be set */
+		if (this->ke_method == KE_NONE)
+		{
+			this->ke_method = this->config->get_algorithm(this->config,
+														  KEY_EXCHANGE_METHOD);
+		}
 	}
 
 	if (!update_and_check_proposals(this))
 	{
-		DBG1(DBG_IKE, "requested DH group %N not contained in any of our "
-			 "proposals",
-			 key_exchange_method_names, this->dh_group);
+		DBG1(DBG_IKE, "requested key exchange method %N not contained in any "
+			 "of our proposals", key_exchange_method_names, this->ke_method);
 		return FAILED;
 	}
 
-	if (this->dh_group != KE_NONE)
+	if (this->ke_method != KE_NONE)
 	{
-		this->dh = this->keymat->keymat.create_ke(&this->keymat->keymat,
-												  this->dh_group);
+		this->ke = this->keymat->keymat.create_ke(&this->keymat->keymat,
+												  this->ke_method);
+		if (!this->ke)
+		{
+			DBG1(DBG_IKE, "selected key exchange method %N not supported",
+				 key_exchange_method_names, this->ke_method);
+			return FAILED;
+		}
 	}
 
 	if (this->config->has_option(this->config, OPT_IPCOMP))
@@ -1334,6 +1870,67 @@ METHOD(task_t, build_i, status_t,
 	return NEED_MORE;
 }
 
+/**
+ * Process payloads in a IKE_FOLLOWUP_KE message or a CREATE_CHILD_SA response
+ */
+static void process_link(private_child_create_t *this, message_t *message)
+{
+	notify_payload_t *notify;
+	chunk_t link;
+
+	notify = message->get_notify(message, ADDITIONAL_KEY_EXCHANGE);
+	if (notify)
+	{
+		link = notify->get_notification_data(notify);
+		if (this->initiator)
+		{
+			chunk_free(&this->link);
+			this->link = chunk_clone(link);
+		}
+		else if (!chunk_equals_const(this->link, link))
+		{
+			DBG1(DBG_IKE, "data in %N notify doesn't match", notify_type_names,
+				 ADDITIONAL_KEY_EXCHANGE);
+			chunk_free(&this->link);
+		}
+	}
+	else
+	{
+		chunk_free(&this->link);
+	}
+}
+
+/**
+ * Process payloads in additional exchanges when using multiple key exchanges
+ */
+static void process_payloads_multi_ke(private_child_create_t *this,
+									  message_t *message)
+{
+	ke_payload_t *ke;
+
+	ke = (ke_payload_t*)message->get_payload(message, PLV2_KEY_EXCHANGE);
+	if (ke)
+	{
+		process_ke_payload(this, ke);
+	}
+	else
+	{
+		DBG1(DBG_IKE, "KE payload missing in message");
+		this->ke_failed = TRUE;
+	}
+	process_link(this, message);
+}
+
+METHOD(task_t, process_r_multi_ke, status_t,
+	private_child_create_t *this, message_t *message)
+{
+	if (message->get_exchange_type(message) == IKE_FOLLOWUP_KE)
+	{
+		process_payloads_multi_ke(this, message);
+	}
+	return NEED_MORE;
+}
+
 METHOD(task_t, process_r, status_t,
 	private_child_create_t *this, message_t *message)
 {
@@ -1364,6 +1961,11 @@ static void handle_child_sa_failure(private_child_create_t *this,
 									message_t *message)
 {
 	bool is_first;
+
+	if (this->aborted)
+	{
+		return;
+	}
 
 	is_first = message->get_exchange_type(message) == IKE_AUTH;
 	if (is_first &&
@@ -1416,7 +2018,7 @@ static linked_list_t* get_ts_if_nat_transport(private_child_create_t *this,
 static child_cfg_t* select_child_cfg(private_child_create_t *this)
 {
 	peer_cfg_t *peer_cfg;
-	child_cfg_t *child_cfg = NULL;;
+	child_cfg_t *child_cfg = NULL;
 
 	peer_cfg = this->ike_sa->get_peer_cfg(this->ike_sa);
 	if (peer_cfg && this->tsi && this->tsr)
@@ -1528,12 +2130,157 @@ static bool select_label(private_child_create_t *this)
 	return TRUE;
 }
 
+/**
+ * Handle per-resource information.
+ */
+static void handle_per_resource(private_child_create_t *this)
+{
+	if (!this->resource_info_seen)
+	{
+		DBG1(DBG_IKE, "peer didn't send %N notify, creating regular SA",
+			 notify_type_names, SA_RESOURCE_INFO);
+		this->child.per_cpu = FALSE;
+		this->child.cpu = CPU_ID_MAX;
+		return;
+	}
+
+	/* as responder, assign a CPU ID (or CPU_ID_MAX if we don't have a
+	 * fallback SA yet) */
+	if (!this->initiator)
+	{
+		this->child.per_cpu = TRUE;
+		this->child.cpu = get_cpu(this);
+	}
+	if (this->child.cpu != CPU_ID_MAX && this->resource_info.len)
+	{
+		DBG1(DBG_IKE, "creating per-resource SA as one of several (our ID %u, "
+			 "peer's ID %+B)", this->child.cpu, &this->resource_info);
+	}
+	else if (this->child.cpu != CPU_ID_MAX)
+	{
+		DBG1(DBG_IKE, "creating per-resource SA as one of several (our ID %u)",
+			 this->child.cpu);
+	}
+	else if (this->resource_info.len)
+	{
+		DBG1(DBG_IKE, "creating SA as one of several per-resource SAs (peer's "
+			 "ID %+B)", &this->resource_info);
+	}
+	else
+	{
+		DBG1(DBG_IKE, "creating SA as one of several per-resource SAs");
+	}
+}
+
+/**
+ * Called when a key exchange is done, returns TRUE once all are done.
+ */
+static bool key_exchange_done(private_child_create_t *this)
+{
+	bool additional_ke;
+
+	if (!this->ke)
+	{
+		return TRUE;
+	}
+
+	this->key_exchanges[this->ke_index++].done = TRUE;
+	additional_ke = additional_key_exchange_required(this);
+
+	array_insert_create(&this->kes, ARRAY_TAIL, this->ke);
+	this->ke = NULL;
+
+	return additional_ke ? FALSE : TRUE;
+}
+
+/**
+ * Complete the current key exchange and install the CHILD_SA if all are done
+ * as responder.
+ */
+static bool key_exchange_done_and_install_r(private_child_create_t *this,
+											message_t *message, bool ike_auth)
+{
+	bool all_done = FALSE;
+
+	if (key_exchange_done(this))
+	{
+		chunk_clear(&this->link);
+		all_done = TRUE;
+	}
+	else if (!this->link.ptr)
+	{
+		this->link = chunk_clone(chunk_from_chars(0x42));
+	}
+
+	if (!build_payloads(this, message))
+	{
+		message->add_notify(message, FALSE, NO_PROPOSAL_CHOSEN, chunk_empty);
+		handle_child_sa_failure(this, message);
+		return TRUE;
+	}
+
+	if (all_done)
+	{
+		switch (install_child_sa(this))
+		{
+			case SUCCESS:
+				break;
+			case NOT_FOUND:
+				message->add_notify(message, TRUE, TS_UNACCEPTABLE,
+									chunk_empty);
+				handle_child_sa_failure(this, message);
+				return TRUE;
+			case FAILED:
+			default:
+				message->add_notify(message, TRUE, NO_PROPOSAL_CHOSEN,
+									chunk_empty);
+				handle_child_sa_failure(this, message);
+				return TRUE;
+		}
+		if (!this->rekey)
+		{	/* invoke the child_up() hook if we are not rekeying */
+			charon->bus->child_updown(charon->bus, this->child_sa, TRUE);
+		}
+	}
+	return all_done;
+}
+
+METHOD(task_t, build_r_multi_ke, status_t,
+	private_child_create_t *this, message_t *message)
+{
+	if (!this->ke)
+	{
+		message->add_notify(message, FALSE, INVALID_SYNTAX, chunk_empty);
+		handle_child_sa_failure(this, message);
+		return SUCCESS;
+	}
+	if (this->ke_failed)
+	{
+		message->add_notify(message, FALSE, NO_PROPOSAL_CHOSEN, chunk_empty);
+		handle_child_sa_failure(this, message);
+		return SUCCESS;
+	}
+	if (!this->link.ptr)
+	{
+		DBG1(DBG_IKE, "%N notify missing", notify_type_names,
+			 ADDITIONAL_KEY_EXCHANGE);
+		message->add_notify(message, FALSE, STATE_NOT_FOUND, chunk_empty);
+		handle_child_sa_failure(this, message);
+		return SUCCESS;
+	}
+	if (!key_exchange_done_and_install_r(this, message, FALSE))
+	{
+		return NEED_MORE;
+	}
+	return SUCCESS;
+}
+
 METHOD(task_t, build_r, status_t,
 	private_child_create_t *this, message_t *message)
 {
 	payload_t *payload;
 	enumerator_t *enumerator;
-	bool no_dh = TRUE, ike_auth = FALSE;
+	bool no_ke = TRUE, ike_auth = FALSE;
 
 	switch (message->get_exchange_type(message))
 	{
@@ -1546,18 +2293,11 @@ METHOD(task_t, build_r, status_t,
 									chunk_empty);
 				return SUCCESS;
 			}
-			if (this->dh_failed)
-			{
-				DBG1(DBG_IKE, "applying DH public value failed");
-				message->add_notify(message, FALSE, NO_PROPOSAL_CHOSEN,
-									chunk_empty);
-				return SUCCESS;
-			}
-			no_dh = FALSE;
+			no_ke = FALSE;
 			break;
 		case IKE_AUTH:
 			if (!this->ike_sa->has_condition(this->ike_sa, COND_AUTHENTICATED))
-			{	/* wait until all authentication round completed */
+			{	/* wait until all authentication rounds completed */
 				return NEED_MORE;
 			}
 			if (this->ike_sa->has_condition(this->ike_sa, COND_REDIRECTED))
@@ -1596,21 +2336,29 @@ METHOD(task_t, build_r, status_t,
 		return SUCCESS;
 	}
 
-	if (this->config == NULL)
+	if (!this->config)
 	{
 		this->config = select_child_cfg(this);
 	}
-	if (this->config == NULL)
+	if (!this->config || !this->tsi || !this->tsr)
 	{
-		DBG1(DBG_IKE, "traffic selectors %#R === %#R unacceptable",
-			 this->tsr, this->tsi);
-		charon->bus->alert(charon->bus, ALERT_TS_MISMATCH, this->tsi, this->tsr);
+		if (!this->tsi || !this->tsr)
+		{
+			DBG1(DBG_IKE, "TS payloads missing in message");
+		}
+		else
+		{
+			DBG1(DBG_IKE, "traffic selectors %#R === %#R unacceptable",
+				 this->tsr, this->tsi);
+			charon->bus->alert(charon->bus, ALERT_TS_MISMATCH, this->tsi,
+							   this->tsr);
+		}
 		message->add_notify(message, FALSE, TS_UNACCEPTABLE, chunk_empty);
 		handle_child_sa_failure(this, message);
 		return SUCCESS;
 	}
 
-	/* check if ike_config_t included non-critical error notifies */
+	/* check if ike_config_t task included non-critical error notifies */
 	enumerator = message->create_payload_enumerator(message);
 	while (enumerator->enumerate(enumerator, &payload))
 	{
@@ -1636,6 +2384,29 @@ METHOD(task_t, build_r, status_t,
 	}
 	enumerator->destroy(enumerator);
 
+	if (!select_proposal(this, no_ke))
+	{
+		message->add_notify(message, FALSE, NO_PROPOSAL_CHOSEN, chunk_empty);
+		handle_child_sa_failure(this, message);
+		return SUCCESS;
+	}
+
+	if (!check_ke_method_r(this, message))
+	{	/* the peer will retry, we don't handle this as failure */
+		return SUCCESS;
+	}
+
+	/* this flag might get reset if the check above notices a proposal without
+	 * KE was selected */
+	if (this->ke_failed)
+	{
+		message->add_notify(message, FALSE, NO_PROPOSAL_CHOSEN, chunk_empty);
+		handle_child_sa_failure(this, message);
+		return SUCCESS;
+	}
+
+	determine_key_exchanges(this);
+
 	if (!select_label(this))
 	{
 		message->add_notify(message, FALSE, TS_UNACCEPTABLE, chunk_empty);
@@ -1646,9 +2417,27 @@ METHOD(task_t, build_r, status_t,
 	this->child.if_id_in_def = this->ike_sa->get_if_id(this->ike_sa, TRUE);
 	this->child.if_id_out_def = this->ike_sa->get_if_id(this->ike_sa, FALSE);
 	this->child.encap = this->ike_sa->has_condition(this->ike_sa, COND_NAT_ANY);
+
+	if (!this->rekey && this->config->has_option(this->config, OPT_PER_CPU_SAS))
+	{
+		handle_per_resource(this);
+		/* if it's a per-resource SA, we could check if we already have
+		 * "too many" and reject this one with TS_MAX_QUEUE, but for now we just
+		 * keep it */
+	}
+
 	this->child_sa = child_sa_create(this->ike_sa->get_my_host(this->ike_sa),
 									 this->ike_sa->get_other_host(this->ike_sa),
 									 this->config, &this->child);
+
+	this->other_spi = this->proposal->get_spi(this->proposal);
+	if (!allocate_spi(this))
+	{
+		message->add_notify(message, FALSE, NO_PROPOSAL_CHOSEN, chunk_empty);
+		handle_child_sa_failure(this, message);
+		return SUCCESS;
+	}
+	this->proposal->set_spi(this->proposal, this->my_spi);
 
 	if (this->ipcomp_received != IPCOMP_NONE)
 	{
@@ -1663,7 +2452,7 @@ METHOD(task_t, build_r, status_t,
 		}
 	}
 
-	switch (select_and_install(this, no_dh, ike_auth))
+	switch (narrow_and_check_ts(this, ike_auth))
 	{
 		case SUCCESS:
 			break;
@@ -1671,13 +2460,6 @@ METHOD(task_t, build_r, status_t,
 			message->add_notify(message, FALSE, TS_UNACCEPTABLE, chunk_empty);
 			handle_child_sa_failure(this, message);
 			return SUCCESS;
-		case INVALID_ARG:
-		{
-			uint16_t group = htons(this->dh_group);
-			message->add_notify(message, FALSE, INVALID_KE_PAYLOAD,
-								chunk_from_thing(group));
-			return SUCCESS;
-		}
 		case FAILED:
 		default:
 			message->add_notify(message, FALSE, NO_PROPOSAL_CHOSEN, chunk_empty);
@@ -1685,16 +2467,11 @@ METHOD(task_t, build_r, status_t,
 			return SUCCESS;
 	}
 
-	if (!build_payloads(this, message))
+	if (!key_exchange_done_and_install_r(this, message, ike_auth))
 	{
-		message->add_notify(message, FALSE, NO_PROPOSAL_CHOSEN, chunk_empty);
-		handle_child_sa_failure(this, message);
-		return SUCCESS;
-	}
-
-	if (!this->rekey)
-	{	/* invoke the child_up() hook if we are not rekeying */
-		charon->bus->child_updown(charon->bus, this->child_sa, TRUE);
+		this->public.task.build = _build_r_multi_ke;
+		this->public.task.process = _process_r_multi_ke;
+		return NEED_MORE;
 	}
 	return SUCCESS;
 }
@@ -1712,6 +2489,10 @@ static void raise_alerts(private_child_create_t *this, notify_type_t type)
 			list = this->config->get_proposals(this->config, FALSE);
 			charon->bus->alert(charon->bus, ALERT_PROPOSAL_MISMATCH_CHILD, list);
 			list->destroy_offset(list, offsetof(proposal_t, destroy));
+			break;
+		case TS_UNACCEPTABLE:
+			charon->bus->alert(charon->bus, ALERT_TS_MISMATCH,
+							   this->tsi, this->tsr);
 			break;
 		default:
 			break;
@@ -1733,7 +2514,7 @@ METHOD(task_t, build_i_delete, status_t,
 		DBG1(DBG_IKE, "sending DELETE for %N CHILD_SA with SPI %.8x",
 			 protocol_id_names, this->proto, ntohl(this->my_spi));
 	}
-	return NEED_MORE;
+	return SUCCESS;
 }
 
 /**
@@ -1744,10 +2525,62 @@ static status_t delete_failed_sa(private_child_create_t *this)
 	if (this->my_spi && this->proto)
 	{
 		this->public.task.build = _build_i_delete;
-		this->public.task.process = (void*)return_success;
+		/* destroying it here allows the rekey task to differentiate between
+		 * this and the multi-KE case */
+		this->child_sa->destroy(this->child_sa);
+		this->child_sa = NULL;
 		return NEED_MORE;
 	}
 	return SUCCESS;
+}
+
+/**
+ * Complete the current key exchange and install the CHILD_SA if all are done
+ * as initiator.
+ */
+static status_t key_exchange_done_and_install_i(private_child_create_t *this,
+												message_t *message, bool ike_auth)
+{
+	if (key_exchange_done(this))
+	{
+		if (install_child_sa(this) == SUCCESS)
+		{
+			if (!this->rekey)
+			{	/* invoke the child_up() hook if we are not rekeying */
+				charon->bus->child_updown(charon->bus, this->child_sa,
+										  TRUE);
+			}
+			return SUCCESS;
+		}
+		handle_child_sa_failure(this, message);
+		return delete_failed_sa(this);
+	}
+	return NEED_MORE;
+}
+
+METHOD(task_t, process_i_multi_ke, status_t,
+	private_child_create_t *this, message_t *message)
+{
+	if (message->get_notify(message, TEMPORARY_FAILURE))
+	{
+		DBG1(DBG_IKE, "received %N notify", notify_type_names,
+			 TEMPORARY_FAILURE);
+		if (!this->rekey && !this->aborted)
+		{	/* the rekey task will retry itself if necessary */
+			schedule_delayed_retry(this);
+		}
+		return SUCCESS;
+	}
+
+	process_payloads_multi_ke(this, message);
+
+	if (this->ke_failed || this->aborted)
+	{
+		handle_child_sa_failure(this, message);
+		return delete_failed_sa(this);
+	}
+
+	return key_exchange_done_and_install_i(this, message, FALSE);
 }
 
 METHOD(task_t, process_i, status_t,
@@ -1755,7 +2588,7 @@ METHOD(task_t, process_i, status_t,
 {
 	enumerator_t *enumerator;
 	payload_t *payload;
-	bool no_dh = TRUE, ike_auth = FALSE;
+	bool no_ke = TRUE, ike_auth = FALSE;
 
 	switch (message->get_exchange_type(message))
 	{
@@ -1763,11 +2596,11 @@ METHOD(task_t, process_i, status_t,
 			return get_nonce(message, &this->other_nonce);
 		case CREATE_CHILD_SA:
 			get_nonce(message, &this->other_nonce);
-			no_dh = FALSE;
+			no_ke = FALSE;
 			break;
 		case IKE_AUTH:
 			if (!this->ike_sa->has_condition(this->ike_sa, COND_AUTHENTICATED))
-			{	/* wait until all authentication round completed */
+			{	/* wait until all authentication rounds completed */
 				return NEED_MORE;
 			}
 			if (defer_child_sa(this) == NEED_MORE)
@@ -1811,10 +2644,9 @@ METHOD(task_t, process_i, status_t,
 				}
 				case TEMPORARY_FAILURE:
 				{
-					DBG1(DBG_IKE, "received %N notify, will retry later",
-						 notify_type_names, type);
+					DBG1(DBG_IKE, "received %N notify", notify_type_names, type);
 					enumerator->destroy(enumerator);
-					if (!this->rekey)
+					if (!this->rekey && !this->aborted)
 					{	/* the rekey task will retry itself if necessary */
 						schedule_delayed_retry(this);
 					}
@@ -1823,28 +2655,35 @@ METHOD(task_t, process_i, status_t,
 				case INVALID_KE_PAYLOAD:
 				{
 					chunk_t data;
-					uint16_t group = KE_NONE;
+					uint16_t alg = KE_NONE;
 
+					if (this->aborted)
+					{	/* nothing to do if the task was aborted */
+						DBG1(DBG_IKE, "received %N notify in aborted %N task",
+							 notify_type_names, type, task_type_names,
+							 TASK_CHILD_CREATE);
+						enumerator->destroy(enumerator);
+						return SUCCESS;
+					}
 					data = notify->get_notification_data(notify);
-					if (data.len == sizeof(group))
+					if (data.len == sizeof(alg))
 					{
-						memcpy(&group, data.ptr, data.len);
-						group = ntohs(group);
+						alg = untoh16(data.ptr);
 					}
 					if (this->retry)
 					{
-						DBG1(DBG_IKE, "already retried with DH group %N, "
-							 "ignore requested %N", key_exchange_method_names,
-							 this->dh_group, key_exchange_method_names, group);
+						DBG1(DBG_IKE, "already retried with key exchange method "
+							 "%N, ignore requested %N", key_exchange_method_names,
+							 this->ke_method, key_exchange_method_names, alg);
 						handle_child_sa_failure(this, message);
 						/* an error in CHILD_SA creation is not critical */
 						return SUCCESS;
 					}
-					DBG1(DBG_IKE, "peer didn't accept DH group %N, "
+					DBG1(DBG_IKE, "peer didn't accept key exchange method %N, "
 						 "it requested %N", key_exchange_method_names,
-						 this->dh_group, key_exchange_method_names, group);
+						 this->ke_method, key_exchange_method_names, alg);
 					this->retry = TRUE;
-					this->dh_group = group;
+					this->ke_method = alg;
 					this->child_sa->set_state(this->child_sa, CHILD_RETRYING);
 					this->public.task.migrate(&this->public.task, this->ike_sa);
 					enumerator->destroy(enumerator);
@@ -1873,6 +2712,26 @@ METHOD(task_t, process_i, status_t,
 
 	process_payloads(this, message);
 
+	if (!select_proposal(this, no_ke))
+	{
+		handle_child_sa_failure(this, message);
+		return delete_failed_sa(this);
+	}
+
+	this->other_spi = this->proposal->get_spi(this->proposal);
+	this->proposal->set_spi(this->proposal, this->my_spi);
+
+	if (this->aborted)
+	{
+		DBG1(DBG_IKE, "deleting CHILD_SA %s{%d} with SPIs %.8x_i %.8x_o of "
+			 "aborted %N task",
+			 this->child_sa->get_name(this->child_sa),
+			 this->child_sa->get_unique_id(this->child_sa),
+			 ntohl(this->my_spi), ntohl(this->other_spi),
+			 task_type_names, TASK_CHILD_CREATE);
+		return delete_failed_sa(this);
+	}
+
 	if (this->ipcomp == IPCOMP_NONE && this->ipcomp_received != IPCOMP_NONE)
 	{
 		DBG1(DBG_IKE, "received an IPCOMP_SUPPORTED notify without requesting"
@@ -1894,12 +2753,19 @@ METHOD(task_t, process_i, status_t,
 		return delete_failed_sa(this);
 	}
 
-	if (this->dh_failed)
+	if (!check_ke_method(this, NULL))
 	{
-		DBG1(DBG_IKE, "applying DH public value failed");
 		handle_child_sa_failure(this, message);
 		return delete_failed_sa(this);
 	}
+
+	if (this->ke_failed)
+	{
+		handle_child_sa_failure(this, message);
+		return delete_failed_sa(this);
+	}
+
+	determine_key_exchanges(this);
 
 	if (!select_label(this))
 	{
@@ -1907,17 +2773,31 @@ METHOD(task_t, process_i, status_t,
 		return delete_failed_sa(this);
 	}
 
-	if (select_and_install(this, no_dh, ike_auth) == SUCCESS)
-	{
-		if (!this->rekey)
-		{	/* invoke the child_up() hook if we are not rekeying */
-			charon->bus->child_updown(charon->bus, this->child_sa, TRUE);
-		}
-	}
-	else
+	if (narrow_and_check_ts(this, ike_auth) != SUCCESS)
 	{
 		handle_child_sa_failure(this, message);
 		return delete_failed_sa(this);
+	}
+
+	if (!this->rekey && this->config->has_option(this->config, OPT_PER_CPU_SAS))
+	{
+		handle_per_resource(this);
+		/* the peer might not have returned the notify, update the flag */
+		this->child_sa->set_per_cpu(this->child_sa, this->child.per_cpu);
+	}
+
+	if (key_exchange_done_and_install_i(this, message, ike_auth) == NEED_MORE)
+	{
+		/* if the installation failed, we delete the failed SA, i.e. build() was
+		 * changed, otherwise, we switch to multi-KE mode */
+		if (this->public.task.build == _build_i)
+		{
+			/* if we don't have the notify, we handle it in build() */
+			process_link(this, message);
+			this->public.task.build = _build_i_multi_ke;
+			this->public.task.process = _process_i_multi_ke;
+		}
+		return NEED_MORE;
 	}
 	return SUCCESS;
 }
@@ -1958,10 +2838,88 @@ METHOD(child_create_t, use_label, void,
 	this->child.label = label ? label->clone(label) : NULL;
 }
 
-METHOD(child_create_t, use_dh_group, void,
-	private_child_create_t *this, key_exchange_method_t dh_group)
+METHOD(child_create_t, use_per_cpu, void,
+	private_child_create_t *this, bool per_cpu, uint32_t cpu)
 {
-	this->dh_group = dh_group;
+	this->child.per_cpu = per_cpu ? per_cpu : cpu != CPU_ID_MAX;
+	this->child.cpu = cpu;
+}
+
+/**
+ * Prepare traffic selectors for reuse when recreating a CHILD_SA.
+ */
+static void reuse_ts(private_child_create_t *this, bool local, child_sa_t *old,
+					 traffic_selector_list_t **target)
+{
+	enumerator_t *old_ts, *hosts_enum;
+	linked_list_t *hosts, *list;
+	traffic_selector_t *ts, *new_ts;
+	host_t *host;
+
+	old_ts = old->create_ts_enumerator(old, local);
+	if (this->rekey)
+	{
+		/* when rekeying, we just reuse the previous TS. this is also the only
+		 * way a responder reuses TS */
+		*target = traffic_selector_list_create_from_enumerator(old_ts);
+		return;
+	}
+
+	/* when recreating/reauthenticating, we check whether the dynamic IPs of
+	 * the IKE_SA (as copied from the old SA) match the TS and replace
+	 * them with dynamic TS (reusing protocol/ports in case of narrowing) so
+	 * they get updated to possibly new IPs when the TS are prepared later */
+	list = linked_list_create();
+	hosts = ike_sa_get_dynamic_hosts(this->ike_sa, local);
+	hosts_enum = hosts->create_enumerator(hosts);
+	while (old_ts->enumerate(old_ts, &ts))
+	{
+		new_ts = NULL;
+		while (hosts_enum->enumerate(hosts_enum, &host))
+		{
+			if (ts->is_host(ts, host))
+			{
+				new_ts = traffic_selector_create_dynamic(ts->get_protocol(ts),
+														 ts->get_from_port(ts),
+														 ts->get_to_port(ts));
+				break;
+			}
+		}
+		hosts->reset_enumerator(hosts, hosts_enum);
+
+		if (!new_ts)
+		{
+			new_ts = ts->clone(ts);
+		}
+		list->insert_last(list, new_ts);
+	}
+	hosts_enum->destroy(hosts_enum);
+	hosts->destroy(hosts);
+	old_ts->destroy(old_ts);
+
+	*target = traffic_selector_list_create_from_list(list);
+}
+
+METHOD(child_create_t, recreate_sa, void,
+	private_child_create_t *this, child_sa_t *old)
+{
+	if (this->initiator)
+	{
+		proposal_t *proposal;
+		uint16_t ke_method;
+
+		proposal = old->get_proposal(old);
+		if (proposal->get_algorithm(proposal, KEY_EXCHANGE_METHOD,
+									&ke_method, NULL))
+		{
+			/* reuse the KE method negotiated previously */
+			this->ke_method = ke_method;
+		}
+	}
+
+	/* use previously negotiated traffic selectors */
+	reuse_ts(this, TRUE, old, &this->my_ts);
+	reuse_ts(this, FALSE, old, &this->other_ts);
 }
 
 METHOD(child_create_t, get_child, child_sa_t*,
@@ -1970,11 +2928,23 @@ METHOD(child_create_t, get_child, child_sa_t*,
 	return this->child_sa;
 }
 
+METHOD(child_create_t, get_other_spi, uint32_t,
+	private_child_create_t *this)
+{
+	return this->other_spi;
+}
+
 METHOD(child_create_t, set_config, void,
 	private_child_create_t *this, child_cfg_t *cfg)
 {
 	DESTROY_IF(this->config);
 	this->config = cfg;
+}
+
+METHOD(child_create_t, get_config, child_cfg_t*,
+	private_child_create_t *this)
+{
+	return this->initiator ? this->config : NULL;
 }
 
 METHOD(child_create_t, get_lower_nonce, chunk_t,
@@ -1991,6 +2961,12 @@ METHOD(child_create_t, get_lower_nonce, chunk_t,
 	}
 }
 
+METHOD(child_create_t, abort_, void,
+	private_child_create_t *this)
+{
+	this->aborted = TRUE;
+}
+
 METHOD(task_t, get_type, task_type_t,
 	private_child_create_t *this)
 {
@@ -2002,34 +2978,22 @@ METHOD(task_t, migrate, void,
 {
 	chunk_free(&this->my_nonce);
 	chunk_free(&this->other_nonce);
-	if (this->tsr)
-	{
-		this->tsr->destroy_offset(this->tsr, offsetof(traffic_selector_t, destroy));
-	}
-	if (this->tsi)
-	{
-		this->tsi->destroy_offset(this->tsi, offsetof(traffic_selector_t, destroy));
-	}
-	if (this->labels_i)
-	{
-		this->labels_i->destroy_offset(this->labels_i, offsetof(sec_label_t, destroy));
-	}
-	if (this->labels_r)
-	{
-		this->labels_r->destroy_offset(this->labels_r, offsetof(sec_label_t, destroy));
-	}
+	chunk_free(&this->link);
+	chunk_free(&this->resource_info);
+	DESTROY_OFFSET_IF(this->tsr, offsetof(traffic_selector_t, destroy));
+	DESTROY_OFFSET_IF(this->tsi, offsetof(traffic_selector_t, destroy));
+	DESTROY_OFFSET_IF(this->labels_i, offsetof(sec_label_t, destroy));
+	DESTROY_OFFSET_IF(this->labels_r, offsetof(sec_label_t, destroy));
 	DESTROY_IF(this->child_sa);
 	DESTROY_IF(this->proposal);
 	DESTROY_IF(this->nonceg);
-	DESTROY_IF(this->dh);
-	this->dh_failed = FALSE;
-	if (this->proposals)
-	{
-		this->proposals->destroy_offset(this->proposals, offsetof(proposal_t, destroy));
-	}
+	DESTROY_IF(this->ke);
+	this->ke_failed = FALSE;
+	clear_key_exchanges(this);
+	DESTROY_OFFSET_IF(this->proposals, offsetof(proposal_t, destroy));
 	if (!this->rekey && !this->retry)
 	{
-		this->dh_group = KE_NONE;
+		this->ke_method = KE_NONE;
 	}
 	this->ike_sa = ike_sa;
 	this->keymat = (keymat_v2_t*)ike_sa->get_keymat(ike_sa);
@@ -2037,7 +3001,9 @@ METHOD(task_t, migrate, void,
 	this->proposals = NULL;
 	this->tsi = NULL;
 	this->tsr = NULL;
-	this->dh = NULL;
+	this->labels_i = NULL;
+	this->labels_r = NULL;
+	this->ke = NULL;
 	this->nonceg = NULL;
 	this->child_sa = NULL;
 	this->mode = MODE_TUNNEL;
@@ -2045,7 +3011,9 @@ METHOD(task_t, migrate, void,
 	this->ipcomp_received = IPCOMP_NONE;
 	this->other_cpi = 0;
 	this->established = FALSE;
+	this->resource_info_seen = FALSE;
 	this->public.task.build = _build_i;
+	this->public.task.process = _process_i;
 }
 
 METHOD(task_t, destroy, void,
@@ -2053,22 +3021,12 @@ METHOD(task_t, destroy, void,
 {
 	chunk_free(&this->my_nonce);
 	chunk_free(&this->other_nonce);
-	if (this->tsr)
-	{
-		this->tsr->destroy_offset(this->tsr, offsetof(traffic_selector_t, destroy));
-	}
-	if (this->tsi)
-	{
-		this->tsi->destroy_offset(this->tsi, offsetof(traffic_selector_t, destroy));
-	}
-	if (this->labels_i)
-	{
-		this->labels_i->destroy_offset(this->labels_i, offsetof(sec_label_t, destroy));
-	}
-	if (this->labels_r)
-	{
-		this->labels_r->destroy_offset(this->labels_r, offsetof(sec_label_t, destroy));
-	}
+	chunk_free(&this->link);
+	chunk_free(&this->resource_info);
+	DESTROY_OFFSET_IF(this->tsr, offsetof(traffic_selector_t, destroy));
+	DESTROY_OFFSET_IF(this->tsi, offsetof(traffic_selector_t, destroy));
+	DESTROY_OFFSET_IF(this->labels_i, offsetof(sec_label_t, destroy));
+	DESTROY_OFFSET_IF(this->labels_r, offsetof(sec_label_t, destroy));
 	if (!this->established)
 	{
 		DESTROY_IF(this->child_sa);
@@ -2079,12 +3037,12 @@ METHOD(task_t, destroy, void,
 	}
 	DESTROY_IF(this->packet_tsi);
 	DESTROY_IF(this->packet_tsr);
+	DESTROY_IF(this->my_ts);
+	DESTROY_IF(this->other_ts);
 	DESTROY_IF(this->proposal);
-	DESTROY_IF(this->dh);
-	if (this->proposals)
-	{
-		this->proposals->destroy_offset(this->proposals, offsetof(proposal_t, destroy));
-	}
+	DESTROY_IF(this->ke);
+	clear_key_exchanges(this);
+	DESTROY_OFFSET_IF(this->proposals, offsetof(proposal_t, destroy));
 	DESTROY_IF(this->config);
 	DESTROY_IF(this->nonceg);
 	DESTROY_IF(this->child.label);
@@ -2095,32 +3053,41 @@ METHOD(task_t, destroy, void,
  * Described in header.
  */
 child_create_t *child_create_create(ike_sa_t *ike_sa,
-							child_cfg_t *config, bool rekey,
-							traffic_selector_t *tsi, traffic_selector_t *tsr)
+									child_cfg_t *config, bool rekey,
+									traffic_selector_t *tsi,
+									traffic_selector_t *tsr, uint32_t seq)
 {
 	private_child_create_t *this;
 
 	INIT(this,
 		.public = {
 			.get_child = _get_child,
+			.get_other_spi = _get_other_spi,
 			.set_config = _set_config,
+			.get_config = _get_config,
 			.get_lower_nonce = _get_lower_nonce,
 			.use_reqid = _use_reqid,
 			.use_marks = _use_marks,
 			.use_if_ids = _use_if_ids,
 			.use_label = _use_label,
-			.use_dh_group = _use_dh_group,
+			.use_per_cpu = _use_per_cpu,
+			.recreate_sa = _recreate_sa,
+			.abort = _abort_,
 			.task = {
 				.get_type = _get_type,
 				.migrate = _migrate,
 				.destroy = _destroy,
 			},
 		},
+		.child = {
+			.cpu = CPU_ID_MAX,
+			.seq = seq,
+		},
 		.ike_sa = ike_sa,
 		.config = config,
 		.packet_tsi = tsi ? tsi->clone(tsi) : NULL,
 		.packet_tsr = tsr ? tsr->clone(tsr) : NULL,
-		.dh_group = KE_NONE,
+		.ke_method = KE_NONE,
 		.keymat = (keymat_v2_t*)ike_sa->get_keymat(ike_sa),
 		.mode = MODE_TUNNEL,
 		.tfcv3 = TRUE,

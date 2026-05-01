@@ -31,12 +31,12 @@
 /**
  * Call offset destructor of an object, if object != NULL
  */
-#define DESTROY_OFFSET_IF(obj, offset) if (obj) obj->destroy_offset(obj, offset);
+#define DESTROY_OFFSET_IF(obj, offset) if (obj) obj->destroy_offset(obj, offset)
 
 /**
  * Call function destructor of an object, if object != NULL
  */
-#define DESTROY_FUNCTION_IF(obj, fn) if (obj) obj->destroy_function(obj, fn);
+#define DESTROY_FUNCTION_IF(obj, fn) if (obj) obj->destroy_function(obj, fn)
 
 /**
  * Object allocation/initialization macro, using designated initializer.

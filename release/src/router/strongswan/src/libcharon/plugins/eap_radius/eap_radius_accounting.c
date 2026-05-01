@@ -706,7 +706,7 @@ static void schedule_interim(private_eap_radius_accounting_t *this,
 			(job_t*)callback_job_create_with_prio(
 				(callback_job_cb_t)send_interim,
 				data, (void*)destroy_interim_data,
-				(callback_job_cancel_t)return_false, JOB_PRIO_CRITICAL), tv);
+				callback_job_cancel_thread, JOB_PRIO_CRITICAL), tv);
 	}
 }
 

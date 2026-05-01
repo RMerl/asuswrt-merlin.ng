@@ -231,7 +231,8 @@
                 let { smartConnectReferenceIndex } = smartConnect;
                 let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
                 let { ssidValue } = wlBandSeq[prefixNvram];
-                ssidValue = ssidValue.replace('"', "&quot;").replace("'", "&apos;");
+                ssidValue = htmlEnDeCode.htmlEncode(ssidValue);
+
                 return `
                     <div class="info-block">
                         <div class="info-title"><#QIS_finish_wireless_item1#></div>

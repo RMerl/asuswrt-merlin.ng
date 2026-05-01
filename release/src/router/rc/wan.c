@@ -1394,6 +1394,28 @@ start_wan_if(int unit)
 			system("rtkswitch 10");
 		else if ((get_wans_dualwan() & WANSCAP_LAN) && !strcmp(wan_ifname, "vlan2") && (nvram_get_int("wans_lanport") >= 2) && (nvram_get_int("wans_lanport") <= 4))
 			doSystem("rtkswitch 12 %d", nvram_get_int("wans_lanport") - 1);
+
+#if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
+		nvram_set("freeze_duck", "60");
+		if(!strcmp(wan_ifname, "vlan4094")){
+			int sec = 1, connected = 0;
+			for(sec = 1; sec <= 60; ++sec){
+				if(rtk_get_phy_status(1) == 1)
+					++connected;
+				else
+					connected = 0;
+
+				if(connected >= 3){
+					logmessage("start_wan_if", "the LAN1 port is up");
+					break;
+				}
+
+				logmessage("start_wan_if", "Wait the LAN1 port be up at %d seconds", sec);
+				sleep(1);
+			}
+		}
+		nvram_set("freeze_duck", "1");
+#endif
 	}
 #endif
 

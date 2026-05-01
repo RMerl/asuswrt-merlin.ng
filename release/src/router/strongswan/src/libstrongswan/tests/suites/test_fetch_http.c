@@ -27,8 +27,6 @@
 typedef struct {
 	/* HTTP Method */
 	char *meth;
-	/* HTTP 1.x minor version */
-	int minor;
 	/* host to connect to */
 	char *host;
 	/* HTTP service port */
@@ -117,8 +115,8 @@ static bool servicing(void *data, stream_t *stream)
 			switch (nr++)
 			{
 				case 0:
-					snprintf(hdr, sizeof(hdr), "%s %s HTTP/1.%u",
-							 test->meth, test->path, test->minor);
+					snprintf(hdr, sizeof(hdr), "%s %s HTTP/1.1",
+							 test->meth, test->path);
 					ck_assert_str_eq(hdr, start);
 					break;
 				default:
@@ -158,7 +156,7 @@ static bool servicing(void *data, stream_t *stream)
 	}
 
 	/* response headers */
-	snprintf(buf, sizeof(buf), "HTTP/1.%u %u OK\r\n", test->minor, test->code);
+	snprintf(buf, sizeof(buf), "HTTP/1.1 %u OK\r\n", test->code);
 	ck_assert(stream->write_all(stream, buf, strlen(buf)));
 
 	/* if the response code indicates an error the following write operations
@@ -188,13 +186,13 @@ static bool servicing(void *data, stream_t *stream)
 }
 
 static test_service_t gtests[] = {
-	{ "GET", 1, "127.0.0.1", 6543, "/a/test/?b=c", NULL,
+	{ "GET", "127.0.0.1", 6543, "/a/test/?b=c", NULL,
 	  NULL, 0, "\x12\x34", 2, 0 },
-	{ "GET", 0, "localhost", 6543, "/", NULL,
+	{ "GET", "localhost", 6543, "/", NULL,
 	  NULL, 0, NULL, 0, 0 },
-	{ "GET", 0, "127.0.0.1", 6543, "/largefile", NULL,
+	{ "GET", "127.0.0.1", 6543, "/largefile", NULL,
 	  NULL, 0, large, sizeof(large), 0 },
-	{ "GET", 1, "[::1]", 6543, "/ipv6-url", NULL,
+	{ "GET", "[::1]", 6543, "/ipv6-url", NULL,
 	  NULL, 0, "\x00\r\n\r\x00testdatablabla", 20, 0 },
 };
 
@@ -214,9 +212,7 @@ START_TEST(test_get)
 
 	snprintf(uri, sizeof(uri), "http://%s:%u%s",
 			 gtests[_i].host, gtests[_i].port, gtests[_i].path);
-	status = lib->fetcher->fetch(lib->fetcher, uri, &data,
-			!gtests[_i].minor ? FETCH_HTTP_VERSION_1_0 : FETCH_END,
-			FETCH_END);
+	status = lib->fetcher->fetch(lib->fetcher, uri, &data, FETCH_END);
 	ck_assert_int_eq(status, SUCCESS);
 	expected = chunk_create(gtests[_i].res, gtests[_i].res_len);
 	ck_assert_msg(chunk_compare(expected, data) == 0,
@@ -229,11 +225,11 @@ END_TEST
 
 
 static test_service_t ptests[] = {
-	{ "POST", 1, "127.0.0.1", 6543, "/a/test/?b=c", "application/binary",
+	{ "POST", "127.0.0.1", 6543, "/a/test/?b=c", "application/binary",
 	  "\x23\x45", 2, "\x12\x34", 2, 0 },
-	{ "POST", 0, "localhost", 6543, "/largefile", "application/x-large",
+	{ "POST", "localhost", 6543, "/largefile", "application/x-large",
 	  large, sizeof(large), large, sizeof(large), 0 },
-	{ "POST", 1, "[::1]", 6543, "/ipv6-url", "text/plain",
+	{ "POST", "[::1]", 6543, "/ipv6-url", "text/plain",
 	  "\x00\r\n\r\x00testdatablabla", 20, "\x00\r\n\r\x00testdatablabla", 20, 0 },
 };
 
@@ -257,7 +253,6 @@ START_TEST(test_post)
 					FETCH_REQUEST_TYPE, ptests[_i].type,
 					FETCH_REQUEST_DATA,
 						chunk_create(ptests[_i].req, ptests[_i].req_len),
-					!ptests[_i].minor ? FETCH_HTTP_VERSION_1_0 : FETCH_END,
 					FETCH_END);
 	ck_assert_int_eq(status, SUCCESS);
 	expected = chunk_create(ptests[_i].res, ptests[_i].res_len);
@@ -271,11 +266,11 @@ END_TEST
 
 
 static test_service_t rtests[] = {
-	{ "GET", 1, "localhost", 6544, "/", NULL, NULL, 0, NULL, 0, 200 },
-	{ "GET", 1, "localhost", 6544, "/", NULL, NULL, 0, NULL, 0, 204 },
-	{ "GET", 1, "localhost", 6544, "/", NULL, NULL, 0, NULL, 0, 400 },
-	{ "GET", 1, "localhost", 6544, "/", NULL, NULL, 0, NULL, 0, 404 },
-	{ "GET", 1, "localhost", 6544, "/", NULL, NULL, 0, NULL, 0, 500 },
+	{ "GET", "localhost", 6544, "/", NULL, NULL, 0, NULL, 0, 200 },
+	{ "GET", "localhost", 6544, "/", NULL, NULL, 0, NULL, 0, 204 },
+	{ "GET", "localhost", 6544, "/", NULL, NULL, 0, NULL, 0, 400 },
+	{ "GET", "localhost", 6544, "/", NULL, NULL, 0, NULL, 0, 404 },
+	{ "GET", "localhost", 6544, "/", NULL, NULL, 0, NULL, 0, 500 },
 };
 
 START_TEST(test_response_code)
@@ -309,16 +304,22 @@ Suite *fetch_http_suite_create()
 {
 	Suite *s;
 	TCase *tc;
+	int no_ipv6 = 0;
 
 	s = suite_create("http fetcher");
 
+	if (getenv("TESTS_NO_IPV6"))
+	{
+		no_ipv6 = 1;
+	}
+
 	tc = tcase_create("GET");
-	tcase_add_loop_test(tc, test_get, 0, countof(gtests));
+	tcase_add_loop_test(tc, test_get, 0, countof(gtests) - no_ipv6);
 	test_case_set_timeout(tc, 10);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("POST");
-	tcase_add_loop_test(tc, test_post, 0, countof(ptests));
+	tcase_add_loop_test(tc, test_post, 0, countof(ptests) - no_ipv6);
 	test_case_set_timeout(tc, 10);
 	suite_add_tcase(s, tc);
 

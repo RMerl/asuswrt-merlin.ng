@@ -393,6 +393,26 @@ METHOD(listener_t, child_state_change_terminate, bool,
 	return TRUE;
 }
 
+METHOD(listener_t, ike_reestablish_pre, bool,
+	interface_listener_t *this, ike_sa_t *old, ike_sa_t *new)
+{
+	if (old->has_condition(old, COND_REDIRECTED))
+	{
+		/* if we get redirected during IKE_AUTH, we just migrate to the new SA.
+		 * we'd have to disable listening for child state changes otherwise (due
+		 * to task migration).  and if the initiation failed, the initial SA
+		 * couldn't be used anyway, so we can also just track the destruction of
+		 * of the new one in that case */
+		this->lock->lock(this->lock);
+		if (this->ike_sa == old)
+		{
+			this->ike_sa = new;
+		}
+		this->lock->unlock(this->lock);
+	}
+	return TRUE;
+}
+
 METHOD(job_t, destroy_job, void,
 	interface_job_t *this)
 {
@@ -400,6 +420,8 @@ METHOD(job_t, destroy_job, void,
 	{
 		this->listener.lock->destroy(this->listener.lock);
 		DESTROY_IF(this->listener.done);
+		DESTROY_IF(this->listener.child_cfg);
+		DESTROY_IF(this->listener.peer_cfg);
 		free(this);
 	}
 }
@@ -416,14 +438,11 @@ METHOD(job_t, initiate_execute, job_requeue_t,
 {
 	ike_sa_t *ike_sa;
 	interface_listener_t *listener = &job->listener;
-	peer_cfg_t *peer_cfg = listener->peer_cfg;
 
 	ike_sa = charon->ike_sa_manager->checkout_by_config(charon->ike_sa_manager,
-														peer_cfg);
-	peer_cfg->destroy(peer_cfg);
+														listener->peer_cfg);
 	if (!ike_sa)
 	{
-		DESTROY_IF(listener->child_cfg);
 		listener->status = FAILED;
 		listener_done(listener);
 		return JOB_REQUEUE_NONE;
@@ -449,7 +468,6 @@ METHOD(job_t, initiate_execute, job_requeue_t,
 				 "%d exceeds limit of %d", half_open, limit_half_open);
 			charon->ike_sa_manager->checkin_and_destroy(charon->ike_sa_manager,
 														ike_sa);
-			DESTROY_IF(listener->child_cfg);
 			listener->status = INVALID_STATE;
 			listener_done(listener);
 			return JOB_REQUEUE_NONE;
@@ -468,7 +486,6 @@ METHOD(job_t, initiate_execute, job_requeue_t,
 					 "limit of %d", jobs, limit_job_load);
 				charon->ike_sa_manager->checkin_and_destroy(
 												charon->ike_sa_manager, ike_sa);
-				DESTROY_IF(listener->child_cfg);
 				listener->status = INVALID_STATE;
 				listener_done(listener);
 				return JOB_REQUEUE_NONE;
@@ -476,6 +493,10 @@ METHOD(job_t, initiate_execute, job_requeue_t,
 		}
 	}
 
+	if (listener->child_cfg)
+	{
+		listener->child_cfg->get_ref(listener->child_cfg);
+	}
 	if (ike_sa->initiate(ike_sa, listener->child_cfg, NULL) == SUCCESS)
 	{
 		if (!listener->logger.callback ||
@@ -509,6 +530,7 @@ METHOD(controller_t, initiate, status_t,
 		.listener = {
 			.public = {
 				.ike_state_change = _ike_state_change,
+				.ike_reestablish_pre = _ike_reestablish_pre,
 				.child_state_change = _child_state_change,
 			},
 			.logger = {

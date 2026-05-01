@@ -455,7 +455,7 @@ function CheckFBState(){
 
 <div id="fb_success_dsl_1" style="display:none;">
 	<br>
-	<div class="feedback_info_1">We are working hard to improve the firmware of <#Web_Title2#> and your feedback is very important to us. We will use your feedbacks and comments to strive to improve your ASUS experience.</div>
+	<div class="feedback_info_1">We are working hard to improve the firmware of <#Web_Title2#> and your feedback is very important to us. We will use your feedback and comments to strive to improve your ASUS experience.</div>
 	<br>	
 </div>
 
@@ -504,26 +504,6 @@ function CheckFBState(){
 	var support_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=asus_support&lang="+ui_lang+"&kw=&num=";
 	$(".site_link").attr({"href": support_href});   //#feedback_fail1_new#
 	$("#site_link").attr({"href": support_href});   //#feedback_note6#
-
-	function rebootnow(){
-		var win_time = window.setTimeout(function() {}, 0);
-        while (win_time--)
-			window.clearTimeout(win_time);
-		var win_inter = window.setInterval(function() {}, 0);
-		while (win_inter--)
-			window.clearInterval(win_inter);
-		var iframe_len = frames.length;
-		for(var i = 0; i < iframe_len; i += 1) {
-			var ifr_time = frames[i].window.setTimeout(function() {}, 0);
-			while (ifr_time--)
-			frames[i].window.clearTimeout(ifr_time);
-			var ifr_inter = frames[i].window.setInterval(function() {}, 0);
-			while (ifr_inter--)
-			frames[i].window.clearInterval(ifr_inter);
-		}
-
-		document.rebootForm.submit();
-	}
 </script>
 </tr>
 </table>

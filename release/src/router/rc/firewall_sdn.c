@@ -329,6 +329,9 @@ int update_SDN_iptables(const MTLAN_T *pmtl, const char *logdrop, const char *lo
 	if (!pmtl || !logdrop || !logaccept)
 		return -1;
 
+	if(!is_router_mode())
+		return 0;
+
 #if !defined(RTCONFIG_MULTIWAN_IF) && defined(RTCONFIG_DUALWAN) && defined(RTCONFIG_MULTICAST_IPTV)
 	if (nvram_get_int("switch_stb_x") > 6)
 		wan_max_unit = WAN_UNIT_MULTICAST_IPTV_MAX;

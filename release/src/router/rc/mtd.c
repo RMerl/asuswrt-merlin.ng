@@ -1188,7 +1188,11 @@ fail:
 #endif
 
 #ifdef HND_ROUTER
+#if defined(WIFI7_SDK_20250506)
+#include <bcm_flashutil.h>
+#else
 #include <bcm_hwdefs.h>
+#endif /* defined(WIFI7_SDK_20250506) */
 
 #define TEMP_KERNEL_NVRM_FILE "/var/.temp.kernel.nvram"
 #define PRE_COMMIT_KERNEL_NVRM_FILE "/var/.kernel_nvram.setting.prec"

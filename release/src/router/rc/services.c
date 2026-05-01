@@ -151,7 +151,9 @@ void start_amas_lldpd(void);
 
 #if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 #include <bcm_flashutil.h>
+#if !defined(WIFI7_SDK_20250506)
 #include <bcm_hwdefs.h>
+#endif /* !defined(WIFI7_SDK_20250506) */
 #endif
 
 #ifdef RTCONFIG_MULTIWAN_IF
@@ -1364,6 +1366,162 @@ int restart_dnsmasq(int need_link_DownUp)
 }
 #endif
 
+int write_etc_hosts()
+{
+	FILE *fp;
+	char lan_hostname[64] = {0};
+	char lan_domain[256] = {0};
+	char lan_ipaddr[16] = {0};
+	char *mac, *ip, *dns, *hostname;
+	char *nv, *nvp, *b;
+	unsigned char ea[ETHER_ADDR_LEN];
+#ifdef RTCONFIG_USB
+	char computer_name[64] = {0};
+#endif
+#ifdef RTCONFIG_IPV6
+	char *value;
+#endif
+	int i;
+	const char *default_names[] = {
+		DUT_DOMAIN_NAME,
+		"asusrouter.com",
+		"www.asusrepeater.com",
+		"asusrepeater.com",
+		"www.asusap.com",
+		"asusap.com",
+		"www.asusswitch.com",
+		"asusswitch.com",
+		"router.asus.com",
+		"repeater.asus.com",
+		"ap.asus.com",
+		"www.asusnetwork.net",
+		"asusswitch.net",
+		"asusrepeater.net",
+		"asusap.net",
+		"zenwifi.net",
+#if defined(RTCONFIG_BUSINESS)
+		"www.expertwifi.net",
+		OLD_DUT_DOMAIN_NAME,
+#else
+		"expertwifi.net",
+#endif
+		NULL
+	};
+
+	fp = fopen("/etc/hosts.tmp", "w");
+	if (!fp) {
+		perror("/etc/hosts.tmp");
+		return -1;
+	}
+
+	strlcpy(lan_hostname, get_lan_hostname(), sizeof(lan_hostname));
+	strlcpy(lan_domain, nvram_safe_get("lan_domain"), sizeof(lan_domain));
+	if (!is_valid_domainname(lan_domain) || strstr(lan_domain, "asus.com"))
+		lan_domain[0] = '\0';
+
+	if ((repeater_mode()
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+		|| psr_mode() || mediabridge_mode()
+#elif defined(RTCONFIG_REALTEK) || defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
+		|| mediabridge_mode()
+#endif
+#if defined(RTCONFIG_DPSTA) || defined(RTCONFIG_DPSR)
+		|| ((dpsta_mode() || dpsr_mode()) && nvram_get_int("re_mode") == 0)
+#endif
+		|| (rp_mode() && nvram_get_int("re_mode") == 0)
+		) && nvram_get_int("wlc_state") != WLC_STATE_CONNECTED && !nvram_match("lan_proto", "static")
+	){
+		strlcpy(lan_ipaddr, nvram_default_get("lan_ipaddr"), sizeof(lan_ipaddr));
+	}
+	else {
+		strlcpy(lan_ipaddr, nvram_safe_get("lan_ipaddr"), sizeof(lan_ipaddr));
+	}
+
+	/* loclhost ipv4 */
+	fprintf(fp, "127.0.0.1 localhost.localdomain localhost\n");
+
+	/* lan hostname.domain hostname */
+	fprintf(fp, "%s %s.%s %s\n", lan_ipaddr, lan_hostname, lan_domain, lan_hostname);
+
+	/* mdns fallback */
+	fprintf(fp, "%s %s.local\n", lan_ipaddr, lan_hostname);
+
+	/* default names */
+	i = 0;
+	while (default_names[i]) {
+		fprintf(fp, "%s %s\n", lan_ipaddr, default_names[i]);
+		i++;
+	}
+
+	nv = nvp = strdup(nvram_safe_get("dhcp_staticlist"));
+	if (nv)
+	{
+		/* Parsing dhcp_staticlist nvram variable. */
+		while ((b = strsep(&nvp, "<")) != NULL) {
+			mac = ip = dns = hostname = NULL;
+			if ((vstrsep(b, ">", &mac, &ip, &dns, &hostname) < 2))
+				continue;
+
+			if (!ether_atoe(mac, ea))
+				continue;
+
+			if (ip && *ip != '\0' && hostname && *hostname != '\0' && is_valid_hostname(hostname))
+			{
+				fprintf(fp, "%s %s.%s %s\n", ip, hostname, lan_domain, hostname);
+			}
+		}
+		free(nv);
+	}
+
+#ifdef RTCONFIG_USB
+	/* samba name */
+	strlcpy(computer_name, nvram_safe_get("computer_name"), sizeof(computer_name));
+	if (is_valid_hostname(computer_name)
+	 && strcasecmp(lan_hostname, computer_name)) {
+		fprintf(fp, "%s %s.%s %s\n", lan_ipaddr, computer_name, lan_domain, computer_name);
+	}
+#endif
+#ifdef RTCONFIG_DSL
+	fprintf(fp, "192.168.121.70 ntp01.mvp.tivibu.com.tr\n");
+	fprintf(fp, "192.168.121.71 ntp02.mvp.tivibu.com.tr\n");
+#endif
+
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled()) {
+		/* localhost ipv6 */
+		fprintf(fp, "::1 ip6-localhost ip6-loopback\n");
+		/* multicast ipv6 */
+		fprintf(fp, "fe00::0 ip6-localnet\n"
+					"ff00::0 ip6-mcastprefix\n"
+					"ff02::1 ip6-allnodes\n"
+					"ff02::2 ip6-allrouters\n");
+
+		/* lan6 hostname.domain hostname */
+		value = (char*) ipv6_router_address(NULL);
+		if (*value) {
+			fprintf(fp, "%s %s.%s %s\n", value, lan_hostname, lan_domain, lan_hostname);
+
+			/* mdns fallback */
+			fprintf(fp, "%s %s.local\n", value, lan_hostname);
+		}
+	}
+#endif
+
+	if (ferror(fp)) {
+		perror("fprintf");
+		fclose(fp);
+		unlink("/etc/hosts.tmp");
+		return -1;
+	}
+
+	append_custom_config("hosts", fp);
+	fclose(fp);
+	unlink("/etc/hosts");
+	rename("/etc/hosts.tmp", "/etc/hosts");
+	use_custom_config("hosts", "/etc/hosts");
+	run_postconf("hosts","/etc/hosts");
+	return 0;
+}
 
 #ifdef RTCONFIG_WIFI_SON
 void gen_apmode_dnsmasq(void)
@@ -1421,12 +1579,9 @@ void start_dnsmasq(void)
 #endif
 {
 	FILE *fp;
-	char *lan_ifname, *lan_ipaddr, *lan_hostname;
+	char *lan_ifname, *lan_ipaddr;
 	char *value, *value2;
 	int /*i,*/ have_dhcp = 0;
-	char *mac, *ip, *dns, *hostname, *lan_domain;
-	char *nv, *nvp, *b;
-	unsigned char ea[ETHER_ADDR_LEN];
 #ifdef RTCONFIG_IPSEC
 	int unit;
 	char tmpStr[20];
@@ -1489,109 +1644,7 @@ void start_dnsmasq(void)
 	else
 		lan_ipaddr = nvram_safe_get("lan_ipaddr");
 
-	/* write /etc/hosts */
-	if ((fp = fopen("/etc/hosts", "w")) != NULL) {
-		/* loclhost ipv4 */
-		fprintf(fp, "127.0.0.1 localhost.localdomain localhost\n");
-
-		/* lan hostname.domain hostname */
-		lan_hostname = get_lan_hostname();
-		fprintf(fp, "%s %s.%s %s\n", lan_ipaddr,
-			    lan_hostname, nvram_safe_get("lan_domain"),
-			    lan_hostname);
-
-		/* mdns fallback */
-		fprintf(fp, "%s %s.local\n", lan_ipaddr, lan_hostname);
-
-		/* default names */
-		fprintf(fp, "%s %s\n", lan_ipaddr, DUT_DOMAIN_NAME);
-		fprintf(fp, "%s %s\n", lan_ipaddr, "asusrouter.com");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "www.asusrepeater.com");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "asusrepeater.com");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "www.asusap.com");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "asusap.com");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "www.asusswitch.com");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "asusswitch.com");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "router.asus.com");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "repeater.asus.com");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "ap.asus.com");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "www.asusnetwork.net");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "asusswitch.net");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "asusrepeater.net");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "asusap.net");
-		fprintf(fp, "%s %s\n", lan_ipaddr, "zenwifi.net");
-#if defined(RTCONFIG_BUSINESS)
-		fprintf(fp, "%s %s\n", lan_ipaddr, "www.expertwifi.net");
-		fprintf(fp, "%s %s\n", lan_ipaddr, OLD_DUT_DOMAIN_NAME);
-#else
-		fprintf(fp, "%s %s\n", lan_ipaddr, "expertwifi.net");
-#endif
-
-	nv = nvp = strdup(nvram_safe_get("dhcp_staticlist"));
-	if (nv)
-	{
-		lan_domain = nvram_safe_get("lan_domain");		
-		/* Parsing dhcp_staticlist nvram variable. */
-		while ((b = strsep(&nvp, "<")) != NULL) {
-			dns = NULL;
-			hostname = NULL;
-			if ((vstrsep(b, ">", &mac, &ip, &dns, &hostname) < 2))
-				continue;
-
-			if (!ether_atoe(mac, ea))
-				continue;
-
-			if(ip && *ip != '\0' && hostname && *hostname != '\0' && is_valid_hostname(hostname))
-			{
-				fprintf(fp, "%s %s.%s %s\n", ip, hostname, lan_domain, hostname);
-			}	
-		}
-		free(nv);	
-	}
-		
-#ifdef RTCONFIG_USB
-		/* samba name */
-		if (is_valid_hostname(value = nvram_safe_get("computer_name")) &&
-		    strcasecmp(lan_hostname, value) != 0) {
-			fprintf(fp, "%s %s.%s %s\n", lan_ipaddr,
-				    value, nvram_safe_get("lan_domain"),
-				    value);
-		}
-#endif
-#ifdef RTCONFIG_DSL
-		fprintf(fp, "192.168.121.70 ntp01.mvp.tivibu.com.tr\n");
-		fprintf(fp, "192.168.121.71 ntp02.mvp.tivibu.com.tr\n");
-#endif
-
-#ifdef RTCONFIG_IPV6
-		if (ipv6_enabled()) {
-			/* localhost ipv6 */
-			fprintf(fp, "::1 ip6-localhost ip6-loopback\n");
-			/* multicast ipv6 */
-			fprintf(fp, "fe00::0 ip6-localnet\n"
-				    "ff00::0 ip6-mcastprefix\n"
-				    "ff02::1 ip6-allnodes\n"
-				    "ff02::2 ip6-allrouters\n");
-
-			/* lan6 hostname.domain hostname */
-			value = (char*) ipv6_router_address(NULL);
-			if (*value) {
-				fprintf(fp, "%s %s.%s %s\n", value,
-					    lan_hostname, nvram_safe_get("lan_domain"),
-					    lan_hostname);
-
-				/* mdns fallback */
-				fprintf(fp, "%s %s.local\n", value, lan_hostname);
-			}
-		}
-#endif
-		append_custom_config("hosts", fp);
-		fclose(fp);
-		use_custom_config("hosts", "/etc/hosts");
-		run_postconf("hosts","/etc/hosts");
-		chmod("/etc/hosts", 0644);
-	} else
-		perror("/etc/hosts");
+	write_etc_hosts();
 
 #ifdef RTCONFIG_REDIRECT_DNAME
 	if (nvram_invmatch("redirect_dname", "0") && access_point_mode()) {
@@ -1974,6 +2027,7 @@ void start_dnsmasq(void)
 
 		/* LAN prefix or range */
 #ifdef RTCONFIG_MULTILAN_CFG
+		int v6_prefix_div = nvram_get_int("ipv6_prefix_div") ? : 0;
 		pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
 		if (pmtl) {
 			get_mtlan_by_idx(SDNFT_TYPE_WAN6, 0, pmtl, &mtl_sz);
@@ -1986,7 +2040,7 @@ void start_dnsmasq(void)
 		strlcpy(v6_prefix, nvram_safe_get(ipv6_nvname("ipv6_prefix")), sizeof(v6_prefix));
 		v6_prefix_length = nvram_get_int(ipv6_nvname("ipv6_prefix_length")) ?: 64;
 		if (strlen(v6_prefix) && v6_prefix_length <= 104) {
-			if (v6_sdn_num) {
+			if (v6_sdn_num && (v6_prefix_length <= 56 || v6_prefix_div)) {
 				sdn_prefix_length = mtlan_extend_prefix_by_subnet_idx(
 					v6_prefix, v6_prefix_length, 0, 8, sdn_prefix, sizeof(sdn_prefix));
 				if (sdn_prefix_length < 64)
@@ -2584,8 +2638,9 @@ int set_ip6_sdnaddr(void)
 	char *p;
 	char nv[32] = {0};
 	int ipv6_service;
-	int wan6_unit = wan_primary_ifunit_ipv6();
+	int wan6_unit = 0;
 	int share_subnet = 1;
+	int v6_prefix_div = nvram_get_int("ipv6_prefix_div") ? : 0;
 #ifdef RTCONFIG_MULTIWAN_IF
 	int j, wan6_cnt = 0;
 #endif
@@ -2598,21 +2653,8 @@ int set_ip6_sdnaddr(void)
 		// SDN without IoT
 		for (i = 1; i < mtl_sz; i++) {
 			if (pmtl[i].enable && pmtl[i].nw_t.v6_enable && pmtl[i].nw_t.idx != 0) {
-#ifdef RTCONFIG_MULTIWAN_IF
-				if (pmtl[i].sdn_t.wan6_idx) {
-					wan6_unit = mtwan_get_mapped_unit(pmtl[i].sdn_t.wan6_idx);
-					for (j = 0; j < mtl_sz; j++) {
-						if (i != j && pmtl[j].enable && pmtl[j].nw_t.v6_enable
-						 && mtwan_get_mapped_unit(pmtl[j].sdn_t.wan6_idx) == wan6_unit
-						) {
-							wan6_cnt++;
-							break;
-						}
-					}
-					if (wan6_cnt == 0)
-						share_subnet = 0;
-				}
-#endif
+				wan6_unit = get_sdn_wan6_unit(&pmtl[i], &share_subnet);
+				_dprintf("subnet: %d, wan6_unit: %d, share_subnet: %d\n", pmtl[i].nw_t.idx, wan6_unit, share_subnet);
 				ipv6_service = get_ipv6_service_by_unit(wan6_unit);
 				if (ipv6_service == IPV6_PASSTHROUGH || ipv6_service == IPV6_DISABLED)
 					continue;
@@ -2621,10 +2663,10 @@ int set_ip6_sdnaddr(void)
 				strlcpy(v6_rtr_addr, nvram_safe_get(ipv6_nvname_by_unit("ipv6_rtr_addr", wan6_unit)), sizeof(v6_rtr_addr));
 				v6_prefix_length = nvram_get_int(ipv6_nvname_by_unit("ipv6_prefix_length", wan6_unit)) ?:64;
 
-				if (share_subnet) {
+				if (share_subnet && (v6_prefix_length <= 56 || v6_prefix_div)) {
 					if (v6_prefix[0]) {
-						sdn_prefix_length = mtlan_extend_prefix_by_subnet_idx(v6_prefix, v6_prefix_length, i, 8, sdn_prefix, sizeof(sdn_prefix));
-						if (sdn_prefix_length) {
+						sdn_prefix_length = mtlan_extend_prefix_by_subnet_idx(v6_prefix, v6_prefix_length, pmtl[i].nw_t.idx, 8, sdn_prefix, sizeof(sdn_prefix));
+ 						if (sdn_prefix_length) {
 							if (pmtl[i].nw_t.addr6[0])
 								snprintf(ip, sizeof(ip), "%s%s/%d", sdn_prefix, pmtl[i].nw_t.addr6, sdn_prefix_length);
 							else
@@ -2633,7 +2675,7 @@ int set_ip6_sdnaddr(void)
 					}
 					else if (v6_rtr_addr[0]) {
 						strlcpy(v6_prefix, ipv6_prefix_by_unit(NULL, wan6_unit), sizeof(v6_prefix));
-						sdn_prefix_length = mtlan_extend_prefix_by_subnet_idx(v6_prefix, v6_prefix_length, i, 8, sdn_prefix, sizeof(sdn_prefix));
+						sdn_prefix_length = mtlan_extend_prefix_by_subnet_idx(v6_prefix, v6_prefix_length, pmtl[i].nw_t.idx, 8, sdn_prefix, sizeof(sdn_prefix));
 						if (sdn_prefix_length) {
 							if (pmtl[i].nw_t.addr6[0])
 								snprintf(ip, sizeof(ip), "%s%s/%d", sdn_prefix, pmtl[i].nw_t.addr6, sdn_prefix_length);
@@ -2644,7 +2686,7 @@ int set_ip6_sdnaddr(void)
 							nvram_set(ipv6_nvname_by_unit("ipv6_prefix", wan6_unit), v6_prefix);
 					}
 					else {
-						sdn_prefix_length = mtlan_extend_prefix_by_subnet_idx(v6_ula_random, 48, 0, 16, sdn_prefix, sizeof(sdn_prefix));
+						sdn_prefix_length = mtlan_extend_prefix_by_subnet_idx(v6_ula_random, 48, pmtl[i].nw_t.idx, 16, sdn_prefix, sizeof(sdn_prefix));
 						if (pmtl[i].nw_t.addr6[0])
 							snprintf(ip, sizeof(ip), "%s%s/%d", sdn_prefix, pmtl[i].nw_t.addr6, sdn_prefix_length);
 						else
@@ -2655,7 +2697,8 @@ int set_ip6_sdnaddr(void)
 						cnt++;
 					}
 				}
-				else {
+#ifdef RTCONFIG_MULTIWAN_IF
+				else if (share_subnet == 0 && wan6_unit != wan_primary_ifunit_ipv6()) {
 					if (v6_rtr_addr[0]) {
 						snprintf(ip, sizeof(ip), "%s/%d", v6_rtr_addr, v6_prefix_length);
 					}
@@ -2666,12 +2709,20 @@ int set_ip6_sdnaddr(void)
 							snprintf(ip, sizeof(ip), "%s1/%d", v6_prefix, v6_prefix_length);
 					}
 					else {
-						sdn_prefix_length = mtlan_extend_prefix_by_subnet_idx(v6_ula_random, 48, 0, 16, sdn_prefix, sizeof(sdn_prefix));
+						sdn_prefix_length = mtlan_extend_prefix_by_subnet_idx(v6_ula_random, 48, pmtl[i].nw_t.idx, 16, sdn_prefix, sizeof(sdn_prefix));
 						if (pmtl[i].nw_t.addr6[0])
 							snprintf(ip, sizeof(ip), "%s%s/%d", sdn_prefix, pmtl[i].nw_t.addr6, sdn_prefix_length);
 						else
 							snprintf(ip, sizeof(ip), "%s1/%d", sdn_prefix, sdn_prefix_length);
 					}
+				}
+#endif
+				else {
+					sdn_prefix_length = mtlan_extend_prefix_by_subnet_idx(v6_ula_random, 48, pmtl[i].nw_t.idx, 16, sdn_prefix, sizeof(sdn_prefix));
+					if (pmtl[i].nw_t.addr6[0])
+						snprintf(ip, sizeof(ip), "%s%s/%d", sdn_prefix, pmtl[i].nw_t.addr6, sdn_prefix_length);
+					else
+						snprintf(ip, sizeof(ip), "%s1/%d", sdn_prefix, sdn_prefix_length);
 				}
 				eval("ip", "-6", "addr", "flush", "dev", pmtl[i].nw_t.ifname, "scope", "global");
 				eval("ip", "-6", "addr", "add", ip, "dev", pmtl[i].nw_t.ifname);
@@ -5190,6 +5241,8 @@ start_ddns(char *caller, int isAidisk)
 		service = "default@freedns.afraid.org";
 	else if (strcmp(server, "FREEMYIP.COM") == 0)
 		service = "default@freemyip.com";
+	else if (strcmp(server, "DEDYN.IO") == 0)
+		service = "default@dedyn.io";
 	else if (strcmp(server, "WWW.TUNNELBROKER.NET") == 0) {
 		service = "default@tunnelbroker.net";
 		eval("iptables", "-t", "filter", "-D", "INPUT", "-p", "icmp", "-s", "66.220.2.74", "-j", "ACCEPT");
@@ -5231,6 +5284,12 @@ start_ddns(char *caller, int isAidisk)
 		service = "default@domains.google.com";
 	else if (strcmp(server, "DYNU.COM") == 0)
 		service = "default@dynu.com";
+	else if (strcmp(server, "CLOUDFLARE.COM") == 0)
+		service = "cloudflare.com";
+	else if (strcmp(server, "DYNV6.COM") == 0)
+		service = "dynv6.com";
+	else if (strcmp(server, "PUBYUN.COM") == 0)
+		service = "dyndns@3322.org";
 #endif
 	else if (strcmp(server, "WWW.ORAY.COM") == 0) {
 		service = "peanuthull", asus_ddns = 2;
@@ -5779,16 +5838,6 @@ start_syslogd(void)
 			syslogd_argv[argc++] = "1024";
 		else
 #endif
-#ifdef RTCONFIG_HND_ROUTER
-#ifdef RTCONFIG_DBLOG
-		if(nvram_match("dblog_adj_syslog", "1"))
-		{
-			syslogd_argv[argc++] = "1024";
-			nvram_set("dblog_adj_syslog", "0");
-		}
-		else
-#endif /* RTCONFIG_DBLOG */
-#endif /* RTCONFIG_HND_ROUTER */
 		syslogd_argv[argc++] = nvram_safe_get("log_size");
 	}
 	if (nvram_invmatch("log_level", "")) {
@@ -10654,6 +10703,10 @@ void stop_chilli(void)
 	char *iface = NULL;
 	char ifname[32], *next = NULL;
 
+	if(nvram_match("chilli_enable", "0")){
+		return;
+	}
+
 	stop_uam_srv();
 
 #ifdef	RTCONFIG_MULTILAN_CFG
@@ -10706,6 +10759,9 @@ void stop_CP(void)
 	char *iface = NULL;
 	char ifname[32], *next = NULL;
 
+	if(nvram_match("cp_enable", "0")){
+		return;
+	}
 	stop_uam_srv();
 
 #ifdef	RTCONFIG_MULTILAN_CFG
@@ -21210,6 +21266,13 @@ _dprintf("test 2. turn off the USB power during %d seconds.\n", reset_seconds[re
 		}
 	}
 #endif
+#if defined(RTCONFIG_LIB_CODB) && defined(RTCONFIG_CONNDIAG) && defined(RTCONFIG_DNS_PING)
+	else if (strcmp(script, "dns_ping") == 0)
+	{
+		if (action & RC_SERVICE_STOP) stop_dns_ping();
+		if (action & RC_SERVICE_START) start_dns_ping();
+	}
+#endif
 	else
 	{
 		fprintf(stderr,
@@ -24904,6 +24967,34 @@ stop_wps_pbcd()
 	return 0;
 }
 #endif  /* CONFIG_HOSTAPD */
+
+#if defined(RTCONFIG_LIB_CODB) && defined(RTCONFIG_CONNDIAG) && defined(RTCONFIG_DNS_PING)
+void
+stop_dns_ping(void)
+{
+	if(pids("dns_ping"))
+		killall_tk("dns_ping");
+}
+
+void
+start_dns_ping(void)
+{
+	char dns_ping_list_tmp[1024] = {0};
+
+	stop_dns_ping();
+
+	snprintf(dns_ping_list_tmp, sizeof(dns_ping_list_tmp), "%s", nvram_safe_get("dns_ping_list_tmp"));
+
+	if(dns_ping_list_tmp[0] != '\0'){
+		safe_do_system("dns_ping \"%s\"", dns_ping_list_tmp);
+		nvram_unset("dns_ping_list_tmp");
+	}
+	else{
+		safe_do_system("dns_ping");
+	}
+}
+
+#endif
 
 #if defined(RTCONFIG_QCA_LBD)
 void start_qca_lbd(void)

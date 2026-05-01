@@ -229,3 +229,36 @@ endif
 #	else
 SIZECHECK = @$(SIZE) $@
 #	endif
+#
+
+ifeq ($(HND_ROUTER_BE_4916),y)
+-include $(HND_SRC)/sdk_profile.mak
+endif
+
+TOOLCHAIN_ARCH_TYPE := arm-buildroot-linux-gnueabi
+
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506)
+ifeq ($(PROFILE_KARCH),armhfp)
+TOOLCHAIN_ARCH_TYPE := arm-buildroot-linux-gnueabihf
+endif
+endif
+
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506)
+ifeq ($(PROFILE_KARCH),aarch64)
+TOOLCHAIN_ARCH_TYPE := arm-buildroot-linux-gnueabihf
+endif
+endif
+
+LD-LINUX_SO_TYPE :=
+
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506)
+ifeq ($(PROFILE_KARCH),armhfp)
+LD-LINUX_SO_TYPE := -armhf
+endif
+endif
+
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506)
+ifeq ($(PROFILE_KARCH),aarch64)
+LD-LINUX_SO_TYPE := -armhf
+endif
+endif

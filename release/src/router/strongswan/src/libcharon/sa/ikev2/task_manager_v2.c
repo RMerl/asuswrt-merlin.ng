@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2007-2019 Tobias Brunner
  * Copyright (C) 2007-2010 Martin Willi
- *
+ * Copyright (C) 2023 Andreas Steffen, strongSec GmbH
+
  * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -242,6 +243,49 @@ METHOD(task_manager_t, flush, void,
 	flush_queue(this, TASK_QUEUE_QUEUED);
 	flush_queue(this, TASK_QUEUE_PASSIVE);
 	flush_queue(this, TASK_QUEUE_ACTIVE);
+}
+
+/**
+ * Check if a given task has been queued already
+ */
+static bool has_queued(private_task_manager_t *this, task_queue_t queue,
+					   task_type_t type)
+{
+	enumerator_t *enumerator;
+	array_t *array;
+	task_t *task;
+	bool found = FALSE;
+
+	switch (queue)
+	{
+		case TASK_QUEUE_ACTIVE:
+			array = this->active_tasks;
+			break;
+		case TASK_QUEUE_PASSIVE:
+			array = this->passive_tasks;
+			break;
+		case TASK_QUEUE_QUEUED:
+			array = this->queued_tasks;
+			break;
+		default:
+			return FALSE;
+	}
+
+	enumerator = array_create_enumerator(array);
+	while (enumerator->enumerate(enumerator, &task))
+	{
+		if (queue == TASK_QUEUE_QUEUED)
+		{
+			task = ((queued_task_t*)task)->task;
+		}
+		if (task->get_type(task) == type)
+		{
+			found = TRUE;
+			break;
+		}
+	}
+	enumerator->destroy(enumerator);
+	return found;
 }
 
 /**
@@ -892,9 +936,10 @@ static bool handle_collisions(private_task_manager_t *this, task_t *task)
 
 	type = task->get_type(task);
 
-	/* do we have to check  */
-	if (type == TASK_IKE_REKEY || type == TASK_CHILD_REKEY ||
-		type == TASK_CHILD_DELETE || type == TASK_IKE_DELETE)
+	/* collisions between a child-rekey and child-delete task are handled
+	 * directly by the latter */
+	if (type == TASK_IKE_REKEY || type == TASK_IKE_DELETE ||
+		type == TASK_CHILD_REKEY)
 	{
 		/* find an exchange collision, and notify these tasks */
 		enumerator = array_create_enumerator(this->active_tasks);
@@ -911,7 +956,7 @@ static bool handle_collisions(private_task_manager_t *this, task_t *task)
 					}
 					continue;
 				case TASK_CHILD_REKEY:
-					if (type == TASK_CHILD_REKEY || type == TASK_CHILD_DELETE)
+					if (type == TASK_CHILD_REKEY)
 					{
 						child_rekey_t *rekey = (child_rekey_t*)active;
 						adopted = rekey->collide(rekey, task);
@@ -1123,7 +1168,7 @@ static status_t process_request(private_task_manager_t *this,
 				task = (task_t*)ike_auth_lifetime_create(this->ike_sa, FALSE);
 				array_insert(this->passive_tasks, ARRAY_TAIL, task);
 				task = (task_t*)child_create_create(this->ike_sa, NULL, FALSE,
-													NULL, NULL);
+													NULL, NULL, 0);
 				array_insert(this->passive_tasks, ARRAY_TAIL, task);
 				break;
 			}
@@ -1177,7 +1222,7 @@ static status_t process_request(private_task_manager_t *this,
 					else
 					{
 						task = (task_t*)child_create_create(this->ike_sa, NULL,
-															FALSE, NULL, NULL);
+															FALSE, NULL, NULL, 0);
 					}
 				}
 				else
@@ -1224,10 +1269,12 @@ static status_t process_request(private_task_manager_t *this,
 									task = (task_t*)ike_auth_lifetime_create(
 															this->ike_sa, FALSE);
 									break;
+								case INVALID_SYNTAX:
 								case AUTHENTICATION_FAILED:
-									/* initiator failed to authenticate us.
-									 * We use ike_delete to handle this, which
-									 * invokes all the required hooks. */
+									/* initiator failed to authenticate us or
+									 * parse our response. we use ike_delete to
+									 * handle this, which invokes all the
+									 * required hooks */
 									task = (task_t*)ike_delete_create(
 														this->ike_sa, FALSE);
 									break;
@@ -1676,6 +1723,11 @@ static inline bool reject_request(private_task_manager_t *this,
 		case IKE_SA_INIT:
 			reject = state != IKE_CREATED;
 			break;
+		case IKE_INTERMEDIATE:
+			/* only accept this if we have not yet completed the KEs */
+			reject = state != IKE_CONNECTING ||
+					 !has_queued(this, TASK_QUEUE_PASSIVE, TASK_IKE_INIT);
+			break;
 		case IKE_AUTH:
 			reject = state != IKE_CONNECTING;
 			break;
@@ -2029,79 +2081,57 @@ METHOD(task_manager_t, queue_task, void,
 	queue_task_delayed(this, task, 0);
 }
 
-/**
- * Check if a given task has been queued already
- */
-static bool has_queued(private_task_manager_t *this, task_type_t type)
-{
-	enumerator_t *enumerator;
-	bool found = FALSE;
-	queued_task_t *queued;
-
-	enumerator = array_create_enumerator(this->queued_tasks);
-	while (enumerator->enumerate(enumerator, &queued))
-	{
-		if (queued->task->get_type(queued->task) == type)
-		{
-			found = TRUE;
-			break;
-		}
-	}
-	enumerator->destroy(enumerator);
-	return found;
-}
-
 METHOD(task_manager_t, queue_ike, void,
 	private_task_manager_t *this)
 {
-	if (!has_queued(this, TASK_IKE_VENDOR))
+	if (!has_queued(this, TASK_QUEUE_QUEUED, TASK_IKE_VENDOR))
 	{
 		queue_task(this, (task_t*)ike_vendor_create(this->ike_sa, TRUE));
 	}
-	if (!has_queued(this, TASK_IKE_INIT))
+	if (!has_queued(this, TASK_QUEUE_QUEUED, TASK_IKE_INIT))
 	{
 		queue_task(this, (task_t*)ike_init_create(this->ike_sa, TRUE, NULL));
 	}
-	if (!has_queued(this, TASK_IKE_NATD))
+	if (!has_queued(this, TASK_QUEUE_QUEUED, TASK_IKE_NATD))
 	{
 		queue_task(this, (task_t*)ike_natd_create(this->ike_sa, TRUE));
 	}
-	if (!has_queued(this, TASK_IKE_CERT_PRE))
+	if (!has_queued(this, TASK_QUEUE_QUEUED, TASK_IKE_CERT_PRE))
 	{
 		queue_task(this, (task_t*)ike_cert_pre_create(this->ike_sa, TRUE));
 	}
-	if (!has_queued(this, TASK_IKE_AUTH))
+	if (!has_queued(this, TASK_QUEUE_QUEUED, TASK_IKE_AUTH))
 	{
 		queue_task(this, (task_t*)ike_auth_create(this->ike_sa, TRUE));
 	}
-	if (!has_queued(this, TASK_IKE_CERT_POST))
+	if (!has_queued(this, TASK_QUEUE_QUEUED, TASK_IKE_CERT_POST))
 	{
 		queue_task(this, (task_t*)ike_cert_post_create(this->ike_sa, TRUE));
 	}
-	if (!has_queued(this, TASK_IKE_CONFIG))
+	if (!has_queued(this, TASK_QUEUE_QUEUED, TASK_IKE_CONFIG))
 	{
 		queue_task(this, (task_t*)ike_config_create(this->ike_sa, TRUE));
 	}
-	if (!has_queued(this, TASK_IKE_AUTH_LIFETIME))
+	if (!has_queued(this, TASK_QUEUE_QUEUED, TASK_IKE_AUTH_LIFETIME))
 	{
 		queue_task(this, (task_t*)ike_auth_lifetime_create(this->ike_sa, TRUE));
 	}
-	if (!has_queued(this, TASK_IKE_MOBIKE))
+	if (!has_queued(this, TASK_QUEUE_QUEUED, TASK_IKE_MOBIKE))
 	{
 		peer_cfg_t *peer_cfg;
 
 		peer_cfg = this->ike_sa->get_peer_cfg(this->ike_sa);
-		if (peer_cfg->use_mobike(peer_cfg))
+		if (!peer_cfg->has_option(peer_cfg, OPT_NO_MOBIKE))
 		{
 			queue_task(this, (task_t*)ike_mobike_create(this->ike_sa, TRUE));
 		}
 	}
-	if (!has_queued(this, TASK_IKE_ESTABLISH))
+	if (!has_queued(this, TASK_QUEUE_QUEUED, TASK_IKE_ESTABLISH))
 	{
 		queue_task(this, (task_t*)ike_establish_create(this->ike_sa, TRUE));
 	}
 #ifdef ME
-	if (!has_queued(this, TASK_IKE_ME))
+	if (!has_queued(this, TASK_QUEUE_QUEUED, TASK_IKE_ME))
 	{
 		queue_task(this, (task_t*)ike_me_create(this->ike_sa, TRUE));
 	}
@@ -2142,6 +2172,7 @@ static void trigger_mbb_reauth(private_task_manager_t *this)
 	new->set_other_host(new, host->clone(host));
 	host = this->ike_sa->get_my_host(this->ike_sa);
 	new->set_my_host(new, host->clone(host));
+	charon->bus->ike_reestablish_pre(charon->bus, this->ike_sa, new);
 	enumerator = this->ike_sa->create_virtual_ip_enumerator(this->ike_sa, TRUE);
 	while (enumerator->enumerate(enumerator, &host))
 	{
@@ -2165,7 +2196,8 @@ static void trigger_mbb_reauth(private_task_manager_t *this)
 		}
 		cfg = child_sa->get_config(child_sa);
 		child_create = child_create_create(new, cfg->get_ref(cfg),
-										   FALSE, NULL, NULL);
+										   FALSE, NULL, NULL, 0);
+		child_create->recreate_sa(child_create, child_sa);
 		reqid = child_sa->get_reqid_ref(child_sa);
 		if (reqid)
 		{
@@ -2176,6 +2208,8 @@ static void trigger_mbb_reauth(private_task_manager_t *this)
 								child_sa->get_mark(child_sa, TRUE).value,
 								child_sa->get_mark(child_sa, FALSE).value);
 		child_create->use_label(child_create, child_sa->get_label(child_sa));
+		child_create->use_per_cpu(child_create, child_sa->use_per_cpu(child_sa),
+								  child_sa->get_cpu(child_sa));
 		/* interface IDs are not migrated as the new CHILD_SAs on old and new
 		 * IKE_SA go though regular updown events */
 		new->queue_task(new, &child_create->task);
@@ -2204,6 +2238,8 @@ static void trigger_mbb_reauth(private_task_manager_t *this)
 #endif /* ME */
 		)
 	{
+		charon->bus->ike_reestablish_post(charon->bus, this->ike_sa, new,
+										  FALSE);
 		charon->ike_sa_manager->checkin_and_destroy(charon->ike_sa_manager, new);
 		DBG1(DBG_IKE, "unable to reauthenticate IKE_SA, no CHILD_SA "
 			 "to recreate");
@@ -2218,10 +2254,14 @@ static void trigger_mbb_reauth(private_task_manager_t *this)
 		new->queue_task(new, (task_t*)ike_verify_peer_cert_create(new));
 		new->queue_task(new, (task_t*)ike_reauth_complete_create(new,
 										this->ike_sa->get_id(this->ike_sa)));
+		charon->bus->ike_reestablish_post(charon->bus, this->ike_sa, new,
+										  TRUE);
 		charon->ike_sa_manager->checkin(charon->ike_sa_manager, new);
 	}
 	else
 	{
+		charon->bus->ike_reestablish_post(charon->bus, this->ike_sa, new,
+										  FALSE);
 		charon->ike_sa_manager->checkin_and_destroy(charon->ike_sa_manager, new);
 		DBG1(DBG_IKE, "reauthenticating IKE_SA failed");
 	}
@@ -2332,19 +2372,37 @@ METHOD(task_manager_t, queue_dpd, void,
 }
 
 METHOD(task_manager_t, queue_child, void,
-	private_task_manager_t *this, child_cfg_t *cfg, child_init_args_t *args)
+	private_task_manager_t *this, child_cfg_t *cfg, child_init_args_t *args,
+	child_sa_t *child_sa)
 {
 	child_create_t *task;
+	uint32_t reqid;
 
-	if (args)
+	if (child_sa)
 	{
-		task = child_create_create(this->ike_sa, cfg, FALSE, args->src, args->dst);
+		task = child_create_create(this->ike_sa, cfg, FALSE, NULL, NULL, 0);
+		task->recreate_sa(task, child_sa);
+		reqid = child_sa->get_reqid_ref(child_sa);
+		if (reqid)
+		{
+			task->use_reqid(task, reqid);
+			charon->kernel->release_reqid(charon->kernel, reqid);
+		}
+		task->use_label(task, child_sa->get_label(child_sa));
+		task->use_per_cpu(task, child_sa->use_per_cpu(child_sa),
+						  child_sa->get_cpu(child_sa));
+	}
+	else if (args)
+	{
+		task = child_create_create(this->ike_sa, cfg, FALSE, args->src,
+								   args->dst, args->seq);
 		task->use_reqid(task, args->reqid);
 		task->use_label(task, args->label);
+		task->use_per_cpu(task, FALSE, args->cpu);
 	}
 	else
 	{
-		task = child_create_create(this->ike_sa, cfg, FALSE, NULL, NULL);
+		task = child_create_create(this->ike_sa, cfg, FALSE, NULL, NULL, 0);
 	}
 	queue_task(this, &task->task);
 }
@@ -2591,7 +2649,7 @@ task_manager_v2_t *task_manager_v2_create(ike_sa_t *ike_sa)
 		.active_tasks = array_create(0, 0),
 		.passive_tasks = array_create(0, 0),
 		.make_before_break = lib->settings->get_bool(lib->settings,
-					"%s.make_before_break", FALSE, lib->ns),
+					"%s.make_before_break", TRUE, lib->ns),
 	);
 
 	retransmission_parse_default(&this->retransmit);

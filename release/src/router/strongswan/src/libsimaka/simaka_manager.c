@@ -83,7 +83,7 @@ METHOD(simaka_manager_t, card_get_triplet, bool,
 {
 	enumerator_t *enumerator;
 	simaka_card_t *card;
-	int tried = 0;
+	int tried DBG_UNUSED = 0;
 
 	this->lock->read_lock(this->lock);
 	enumerator = this->cards->create_enumerator(this->cards);
@@ -112,7 +112,7 @@ METHOD(simaka_manager_t, card_get_quintuplet, status_t,
 	enumerator_t *enumerator;
 	simaka_card_t *card;
 	status_t status = NOT_FOUND;
-	int tried = 0;
+	int tried DBG_UNUSED = 0;
 
 	this->lock->read_lock(this->lock);
 	enumerator = this->cards->create_enumerator(this->cards);
@@ -273,7 +273,7 @@ METHOD(simaka_manager_t, provider_get_triplet, bool,
 {
 	enumerator_t *enumerator;
 	simaka_provider_t *provider;
-	int tried = 0;
+	int tried DBG_UNUSED = 0;
 
 	this->lock->read_lock(this->lock);
 	enumerator = this->providers->create_enumerator(this->providers);
@@ -301,7 +301,7 @@ METHOD(simaka_manager_t, provider_get_quintuplet, bool,
 {
 	enumerator_t *enumerator;
 	simaka_provider_t *provider;
-	int tried = 0;
+	int tried DBG_UNUSED = 0;
 
 	this->lock->read_lock(this->lock);
 	enumerator = this->providers->create_enumerator(this->providers);

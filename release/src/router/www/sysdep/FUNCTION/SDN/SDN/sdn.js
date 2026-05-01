@@ -5109,7 +5109,7 @@ function show_popup_Wizard_Setting(_type){
 								$(this).closest(".profile_setting_item")
 									.after(
 										$("<div>")
-											.html(`The added rule will be default disabled. <#WiFi_mlo_active_maxnum#>`.replace(/#MAXNUM/g, mlo_fh_enable_maximum))/* untranslated */
+											.html(`<#GB_rulelist_add_default#> <#WiFi_mlo_active_maxnum#>`.replace(/#MAXNUM/g, mlo_fh_enable_maximum))
 											.addClass("item_hint")
 									);
 							}
@@ -5118,8 +5118,8 @@ function show_popup_Wizard_Setting(_type){
 							$(this).closest(".profile_setting_item")
 								.after(
 									$("<div>")
-										.html(`The added rule will be default disabled. <#WiFi_mlo_enable_Hint#>`)
-										.addClass("item_hint")/* untranslated */
+										.html(`<#GB_rulelist_add_default#> <#WiFi_mlo_enable_Hint#>`)
+										.addClass("item_hint")
 								);
 						}
 					}
@@ -9252,6 +9252,10 @@ function show_sdn_profilelist(){
 			});
 		},1000);
 	}
+
+	const hasNoTitleContainer = $("#profile_list_content").find(".title_container").length === 0;
+	$("#profile_list_content").toggleClass("no_title_container", hasNoTitleContainer);
+	$("#profile_setting_container").toggleClass("no_title_container", hasNoTitleContainer);
 }
 var vpnc_profile_list = [];
 /*

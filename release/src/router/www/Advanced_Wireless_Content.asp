@@ -204,11 +204,11 @@
                         afc_enable,
                         function () {
                             const policyStatus = PolicyStatus().then((data) => {
-                                if (data.PP <= 2 || data.PP_time == "") {
+                                if (data.PP <= 2 || data.PP_read === 0) {
                                     const policyModal = new PolicyModalComponent({
                                         policy: "PP",
                                         policyStatus: data,
-                                        singPPVersion: 4,
+                                        signPPVersion: 4,
                                         agreeCallback: () => {
                                             applyRule();
                                         },
@@ -1965,10 +1965,7 @@
                     channelSnippet += `<option value="${chValue}" ${selected}>${element}</option>`;
                 }
 
-                let currentChannelSnippet = `<span id="${prefix}_current_channel" style="margin-left: 10px;display:${
-                    channelValue === "0" ? "" : "none"
-                }"><#wireless_control_channel#>: ${curCtrlChannel}</span>`;
-
+                let currentChannelSnippet = `<span id="${prefix}_current_channel" style="margin-left: 10px"><#wireless_control_channel#>: ${curCtrlChannel}</span>`;
                 let acsCh13Snippet = "";
                 if (prefix === "2g1" && acsCH13Support) {
                     acsCh13Snippet = `

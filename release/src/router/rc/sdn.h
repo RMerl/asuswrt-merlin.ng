@@ -18,6 +18,7 @@
 #define SDN_FEATURE_WAN	0x00000200
 #define SDN_FEATURE_ROUTING	0x00000400
 #define SDN_FEATURE_DNSPRIV	0x00000800
+#define SDN_FEATURE_6RELAYD	0x00001000
 
 #define SDN_FEATURE_ALL_FIREWALL (SDN_FEATURE_URL_FILTER | SDN_FEATURE_NWS_FILTER | SDN_FEATURE_FIREWALL | SDN_FEATURE_VPNC | SDN_FEATURE_VPNS | SDN_FEATURE_GRE | SDN_FEATURE_SDN_IPTABLES | SDN_FEATURE_SDN_INTERNAL_ACCESS)
 #define SDN_FEATURE_ALL 0xFFFFFFFF
@@ -46,6 +47,10 @@ int write_sdnlan_resolv_dnsmasq(FILE* fp);
 #ifdef RTCONFIG_MULTIWAN_PROFILE
 void update_sdn_mtwan_iptables(const MTLAN_T *pmtl);
 #endif
+#endif
+#ifdef RTCONFIG_IPV6
+int get_sdn_wan6_unit(const MTLAN_T *pmtl, int* share_subnet);
+int write_dnsmasq_conf_sdn_ra_dhcp6_range(FILE* fp, const MTLAN_T *pmtl);
 #endif
 
 #endif

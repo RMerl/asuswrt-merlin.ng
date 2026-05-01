@@ -71,7 +71,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * See header
  */
-plugin_t *eap_sim_pcsc_plugin_create()
+PLUGIN_DEFINE(eap_sim_pcsc)
 {
 	private_eap_sim_pcsc_plugin_t *this;
 

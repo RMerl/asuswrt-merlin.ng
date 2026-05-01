@@ -421,6 +421,7 @@ CALLBACK(pool_li, bool,
 		{"netmask",			INTERNAL_IP4_NETMASK,	INTERNAL_IP6_NETMASK	},
 		{"server",			INTERNAL_IP4_SERVER,	INTERNAL_IP6_SERVER		},
 		{"subnet",			INTERNAL_IP4_SUBNET,	INTERNAL_IP6_SUBNET		},
+		{"p_cscf",			P_CSCF_IP4_ADDRESS,		P_CSCF_IP6_ADDRESS,		},
 		{"split_include",	UNITY_SPLIT_INCLUDE,	UNITY_SPLIT_INCLUDE		},
 		{"split_exclude",	UNITY_LOCAL_LAN,		UNITY_LOCAL_LAN			},
 	};

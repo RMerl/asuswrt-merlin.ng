@@ -758,7 +758,7 @@ static pjmedia_port* codec_encode_decode( pj_pool_t *pool,
     cp->base.on_destroy = &codec_on_destroy;
     cp->codec_deinit = codec_deinit;
 
-    status = pjmedia_endpt_create(0, mem, NULL, 0, 0, &cp->endpt);
+    status = pjmedia_endpt_create(mem, NULL, 0, 0, 1, &cp->endpt);
     if (status != PJ_SUCCESS)
 	return NULL;
 
@@ -1702,7 +1702,7 @@ static pjmedia_port* create_stream( pj_pool_t *pool,
     te->custom_deinit = &stream_port_custom_deinit;
     sp->codec_deinit = codec_deinit;
 
-    status = pjmedia_endpt_create(0, mem, NULL, 0, 0, &sp->endpt);
+    status = pjmedia_endpt_create(mem, NULL, 0, 0, 1, &sp->endpt);
     if (status != PJ_SUCCESS)
 	return NULL;
 

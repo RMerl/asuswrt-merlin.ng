@@ -66,15 +66,20 @@ connections.<conn>.remote_port = 500
 connections.<conn>.proposals = default
 	Comma separated proposals to accept for IKE.
 
-	A proposal is a set of algorithms. For non-AEAD algorithms, this includes
-	for IKE an encryption algorithm, an integrity algorithm, a pseudo random
-	function and a Diffie-Hellman group. For AEAD algorithms, instead of
-	encryption and integrity algorithms, a combined algorithm is used.
+	A proposal is a set of algorithms. For non-AEAD IKE proposals, this includes
+	an encryption algorithm, an integrity algorithm, a pseudo-random function
+	and a key exchange method. For AEAD proposals, instead of encryption and
+	integrity algorithms, a combined mode algorithm is used.
 
-	In IKEv2, multiple algorithms of the same kind can be specified in a single
-	proposal, from which one gets selected. In IKEv1, only one algorithm per
+	With peers that support multiple IKEv2 key exchanges (RFC 9370), up to seven
+	additional key exchanges may be negotiated. They can be configured by
+	prefixing the algorithm keyword with **keX_** (where X is a number between
+	1 and 7).
+
+	For IKEv2, multiple algorithms of the same kind can be specified in a single
+	proposal, from which one gets selected. For IKEv1, only one algorithm per
 	kind is allowed per proposal, more algorithms get implicitly stripped. Use
-	multiple proposals to offer different algorithms combinations in IKEv1.
+	multiple proposals to offer different algorithm combinations with IKEv1.
 
 	Algorithm keywords get separated using dashes. Multiple proposals may be
 	separated by commas. The special value _default_ forms a default proposal
@@ -157,8 +162,8 @@ connections.<conn>.fragmentation = yes
 	Use IKE UDP datagram fragmentation (_yes_, _accept_, _no_ or _force_).
 
 	Use IKE fragmentation (proprietary IKEv1 extension or RFC 7383 IKEv2
-	fragmentation).  Acceptable  values  are _yes_ (the	default), _accept_,
-	_force_ and _no_. If set to _yes_, and the peer	supports it, oversized IKE
+	fragmentation).  Acceptable values are _yes_ (the default), _accept_,
+	_force_ and _no_. If set to _yes_, and the peer supports it, oversized IKE
 	messages will be sent in fragments. If set to _accept_, support for
 	fragmentation is announced to the peer but the daemon does not send its own
 	messages in fragments.  If set to _force_ (only supported for IKEv1) the
@@ -173,7 +178,7 @@ connections.<conn>.childless = allow
 
 	Use childless IKE_SA initiation (RFC 6023) for IKEv2, with the first
 	CHILD_SA created with a separate CREATE_CHILD_SA exchange (e.g. to use an
-	independent DH exchange for all CHILD_SAs).  Acceptable values are _allow_
+	independent key exchange for all CHILD_SAs).  Acceptable values are _allow_
 	(the default), _prefer_, _force_ and _never_. If set to _allow_, responders
 	will accept childless IKE_SAs (as indicated via notify in the IKE_SA_INIT
 	response) while initiators continue to create regular IKE_SAs with the first
@@ -204,6 +209,19 @@ connections.<conn>.send_cert = ifasked
 	certificate requests have been received. _never_ disables sending of
 	certificate payloads altogether, _always_ causes certificate payloads to be
 	sent unconditionally whenever certificate authentication is used.
+
+connections.<conn>.ocsp = reply
+	Request and send OCSP status in certificate request or certificate payloads
+	(_never_, _reply, _request_ or _both_).
+
+	Send OCSP status requests in certificate request payloads and/or send OCSP
+	status response in certificate payloads when using certificate
+	authentication. With the default of _reply_ the daemon sends OCSP status
+	responses in certificate payloads if an OCSP status request has been
+	received in a certificate request, _never_ disables sending of OCSP status
+	requests and responses altogether, _request_ causes OCSP status requests in
+	certificate request payloads to be sent whenever certificate authentication
+	is used, _both_ combines _reply_ and _request_.
 
 connections.<conn>.ppk_id =
 	String identifying the Postquantum Preshared Key (PPK) to be used.
@@ -250,9 +268,10 @@ connections.<conn>.reauth_time = 0s
 	to actively reauthenticate as responder. The IKEv2 reauthentication lifetime
 	negotiation can instruct the client to perform reauthentication.
 
-	Reauthentication is disabled by default. Enabling it usually may lead
-	to small connection interruptions, as strongSwan uses a break-before-make
-	policy with IKEv2 to avoid any conflicts with associated tunnel resources.
+	Reauthentication is disabled by default. Enabling it can usually result in
+	short connection interruptions, even when using make-before-break
+	reauthentication, which is now the default. However, they are significantly
+	shorter than when using the legacy break-before-make approach.
 
 connections.<conn>.rekey_time = 4h
 	Time to schedule IKE rekeying.
@@ -331,7 +350,7 @@ connections.<conn>.mediated_by =
 
 	The name of the connection to mediate this connection through. If given, the
 	connection will be mediated through the named mediation connection.
-	The	mediation connection must have **mediation** enabled.
+	The mediation connection must have **mediation** enabled.
 
 connections.<conn>.mediation_peer =
 	Identity under which the peer is registered at the mediation server.
@@ -407,7 +426,7 @@ connections.<conn>.local<suffix>.pubkeys =
 	directory or an absolute path.
 
 	Even though multiple local public keys could be defined in principle, only
-	the	first public key in the list is used for authentication.
+	the first public key in the list is used for authentication.
 
 connections.<conn>.local<suffix>.auth = pubkey
 	Authentication to perform locally (_pubkey_, _psk_, _xauth[-backend]_ or
@@ -515,11 +534,28 @@ connections.<conn>.remote<suffix>.id = %any
 	with wildcards, the _charon.rdn_matching_ option in **strongswan.conf**(5)
 	specifies how RDNs are matched.
 
-connections.<conn>.remote<suffix>.eap_id = id
-	Identity to use as peer identity during EAP authentication.
+	Extended POSIX regular expressions are also supported for remote identity
+	matching. They must start with an explicit type prefix, followed by a caret
+	character ('^'), and end with a dollar sign ('$') to indicate an anchored
+	pattern. Make sure to escape backslash characters when configuring
+	identities in double quotes. Supported types are _rfc822_, _email_,
+	_userfqdn_, _fqdn_, _dns_, and _asn1dn_.
+	While regular expressions are always matched against the string
+	representation of other identities, the type must match as well. The
+	matching is performed case insensitive. Examples:
+	_email:^(moon|sun)@strongswan\.org$_, _fqdn:^vpn[0-9]+\.strongswan\.org$_,
+	_"asn1dn:^.*CN=.+\\.strongswan\\.org$"_.
 
-	Identity to use as peer identity during EAP authentication. If set to _%any_
-	the EAP-Identity method will be used to ask the client for an identity.
+connections.<conn>.remote<suffix>.eap_id = id
+	Use EAP-Identity method to request an identity from the client to match
+	against and use during EAP authentication.
+
+	Use EAP-Identity method to request an identity from the client to match
+	against and use during EAP authentication. There is currently no "best"
+	match, configs are matched in the order they are loaded.
+
+	Wildcards and regular expressions are supported, refer to the **id** keyword
+	for details.
 
 connections.<conn>.remote<suffix>.groups =
 	Authorization group memberships to require.
@@ -676,15 +712,20 @@ connections.<conn>.children.<child>.ah_proposals =
 	AH proposals to offer for the CHILD_SA.
 
 	AH proposals to offer for the CHILD_SA. A proposal is a set of algorithms.
-	For AH, this includes an integrity algorithm and an optional Diffie-Hellman
-	group. If a DH group is specified, CHILD_SA/Quick Mode rekeying and initial
-	negotiation uses a separate Diffie-Hellman exchange using the specified
-	group (refer to _esp_proposals_ for details).
+	For AH, this includes an integrity algorithm and an optional key exchange
+	method. If a KE method is specified, CHILD_SA/Quick Mode rekeying and
+	initial negotiation uses a separate key exchange using the negotiated method
+	(refer to _esp_proposals_ for details).
 
-	In IKEv2, multiple algorithms of the same kind can be specified in a single
-	proposal, from which one gets selected. In IKEv1, only one algorithm per
+	With peers that support multiple IKEv2 key exchanges (RFC 9370), up to seven
+	additional key exchanges may be negotiated. They can be configured by
+	prefixing the algorithm keyword with **keX_** (where X is a number between
+	1 and 7).
+
+	For IKEv2, multiple algorithms of the same kind can be specified in a single
+	proposal, from which one gets selected. For IKEv1, only one algorithm per
 	kind is allowed per proposal, more algorithms get implicitly stripped. Use
-	multiple proposals to offer different algorithms combinations in IKEv1.
+	multiple proposals to offer different algorithm combinations with IKEv1.
 
 	Algorithm keywords get separated using dashes. Multiple proposals may be
 	separated by commas. The special value _default_ forms a default proposal
@@ -696,29 +737,37 @@ connections.<conn>.children.<child>.esp_proposals = default
 	ESP proposals to offer for the CHILD_SA.
 
 	ESP proposals to offer for the CHILD_SA. A proposal is a set of algorithms.
-	For ESP non-AEAD proposals, this includes an integrity algorithm, an
-	encryption algorithm, an optional Diffie-Hellman group and an optional
+	For non-AEAD ESP proposals, this includes an integrity algorithm, an
+	encryption algorithm, an optional key exchange method and an optional
 	Extended Sequence Number Mode indicator. For AEAD proposals, a combined
 	mode algorithm is used instead of the separate encryption/integrity
 	algorithms.
 
-	If a DH group is specified, CHILD_SA/Quick Mode rekeying and initial
-	negotiation use a separate Diffie-Hellman exchange using the specified
-	group. However, for IKEv2, the keys of the CHILD_SA created implicitly with
-	the IKE_SA will always be derived from the IKE_SA's key material. So any DH
-	group specified here will only apply when the CHILD_SA is later rekeyed or
-	is created with a separate CREATE_CHILD_SA exchange. A proposal mismatch
-	might, therefore, not immediately be noticed when the SA is established, but
-	may later cause rekeying to fail.
+	If a key exchange method is negotiated, CHILD_SA/Quick Mode rekeying and
+	initial negotiation use a separate key exchange using the specified method.
+	However, for IKEv2, the keys of the CHILD_SA created implicitly with the
+	IKE_SA will always be derived from the IKE_SA's key material. So any key
+	exchange method specified here will only apply when the CHILD_SA is later
+	rekeyed or is created with a separate CREATE_CHILD_SA exchange. A proposal
+	mismatch might, therefore, not immediately be noticed when the SA is
+	established, but may later cause rekeying to fail. If one or more key
+	exchange methods are configured in a proposal, the key exchange can be made
+	optional by also adding **none**.
+
+	With peers that support multiple IKEv2 key exchanges (RFC 9370), up to seven
+	additional key exchanges may be negotiated. They can be configured by
+	prefixing the algorithm keyword with **keX_** (where X is a number between
+	1 and 7). Additional key exchanges can be made optional by adding
+	**keX_none** to a proposal.
 
 	Extended Sequence Number support may be indicated with the _esn_ and _noesn_
 	values, both may be included to indicate support for both modes. If omitted,
 	_noesn_ is assumed.
 
-	In IKEv2, multiple algorithms of the same kind can be specified in a single
-	proposal, from which one gets selected. In IKEv1, only one algorithm per
+	For IKEv2, multiple algorithms of the same kind can be specified in a single
+	proposal, from which one gets selected. For IKEv1, only one algorithm per
 	kind is allowed per proposal, more algorithms get implicitly stripped. Use
-	multiple proposals to offer different algorithms combinations in IKEv1.
+	multiple proposals to offer different algorithm combinations with IKEv1.
 
 	Algorithm keywords get separated using dashes. Multiple proposals may be
 	separated by commas. The special value _default_ forms a default proposal
@@ -751,6 +800,10 @@ connections.<conn>.children.<child>.local_ts = dynamic
 	restriction may be numeric, a **getservent**(3) service name, or the special
 	value _opaque_ for RFC 4301 OPAQUE selectors. Port ranges may be specified
 	as well, none of the kernel backends currently support port ranges, though.
+	If the protocol is _icmp_ or _ipv6-icmp_, the port is interpreted as ICMP
+	message type if it is less than 256 or as type and code if it is greater or
+	equal to 256, with the type in the most significant 8 bits and the code in
+	the least significant 8 bits.
 
 	When IKEv1 is used only the first selector is interpreted, except if
 	the Cisco Unity extension plugin is used. This is due to a limitation of the
@@ -769,7 +822,7 @@ connections.<conn>.children.<child>.remote_ts = dynamic
 	Comma separated list of remote selectors to include in CHILD_SA. See
 	**local_ts** for a description of the selector syntax.
 
-connections.<conn>.children.<child>.rekey_time = 1h
+connections.<conn>.children.<child>.rekey_time = 1h or life_time - 10%
 	Time to schedule CHILD_SA rekeying.
 
 	Time to schedule CHILD_SA rekeying. CHILD_SA rekeying refreshes key
@@ -780,7 +833,9 @@ connections.<conn>.children.<child>.rekey_time = 1h
 	in the range of **rand_time** gets subtracted to form the effective soft
 	lifetime.
 
-	By default CHILD_SA rekeying is scheduled every hour, minus **rand_time**.
+	If **life_time** is explicitly configured, **rekey_time** defaults to 10%
+	less than that, otherwise, CHILD_SA rekeying is scheduled every hour, minus
+	**rand_time**.
 
 connections.<conn>.children.<child>.life_time = rekey_time + 10%
 	Maximum lifetime before CHILD_SA gets closed, as time.
@@ -798,7 +853,7 @@ connections.<conn>.children.<child>.rand_time = life_time - rekey_time
 	**rekey_time**. The default is the difference between **life_time** and
 	**rekey_time**.
 
-connections.<conn>.children.<child>.rekey_bytes = 0
+connections.<conn>.children.<child>.rekey_bytes = 0 or life_bytes - 10%
 	Number of bytes processed before initiating CHILD_SA rekeying.
 
 	Number of bytes processed before initiating CHILD_SA rekeying. CHILD_SA
@@ -809,7 +864,8 @@ connections.<conn>.children.<child>.rekey_bytes = 0
 	in the range of **rand_bytes** gets subtracted to form the effective soft
 	volume limit.
 
-	Volume based CHILD_SA rekeying is disabled by default.
+	Volume based CHILD_SA rekeying is disabled by default. If **life_bytes**
+	is explicitly configured, **rekey_bytes** defaults to 10% less than that.
 
 connections.<conn>.children.<child>.life_bytes = rekey_bytes + 10%
 	Maximum bytes processed before CHILD_SA gets closed.
@@ -827,7 +883,7 @@ connections.<conn>.children.<child>.rand_bytes = life_bytes - rekey_bytes
 	**rekey_bytes**. The default is the difference between **life_bytes** and
 	**rekey_bytes**.
 
-connections.<conn>.children.<child>.rekey_packets = 0
+connections.<conn>.children.<child>.rekey_packets = 0 or life_packets - 10%
 	Number of packets processed before initiating CHILD_SA rekeying.
 
 	Number of packets processed before initiating CHILD_SA rekeying. CHILD_SA
@@ -838,7 +894,9 @@ connections.<conn>.children.<child>.rekey_packets = 0
 	in the range of **rand_packets** gets subtracted to form the effective soft
 	packet count limit.
 
-	Packet count based CHILD_SA rekeying is disabled by default.
+	Packet count based CHILD_SA rekeying is disabled by default. If
+	**life_packets** is explicitly configured, **rekey_packets** defaults to
+	10% less than that.
 
 connections.<conn>.children.<child>.life_packets = rekey_packets + 10%
 	Maximum number of packets processed before CHILD_SA gets closed.
@@ -863,17 +921,18 @@ connections.<conn>.children.<child>.hostaccess = no
 	Hostaccess variable to pass to **updown** script.
 
 connections.<conn>.children.<child>.mode = tunnel
-	IPsec Mode to establish (_tunnel_, _transport_, _transport_proxy_, _beet_,
-	_pass_ or _drop_).
+	IPsec Mode to establish (_tunnel_, _transport_, _transport_proxy_, _iptfs_,
+	_beet_, _pass_ or _drop_).
 
 	IPsec Mode to establish CHILD_SA with. _tunnel_ negotiates the CHILD_SA
 	in IPsec Tunnel Mode, whereas _transport_ uses IPsec Transport Mode.
 	_transport_proxy_ signifying the special Mobile IPv6 Transport Proxy Mode.
+	_iptfs_ is IP-TFS tunnel mode with aggregation and fragmentation.
 	_beet_ is the Bound End to End Tunnel mixture mode, working with fixed inner
 	addresses without the need to include them in each packet.
 
-	Both _transport_ and _beet_ modes are subject to mode negotiation; _tunnel_
-	mode is negotiated if the preferred mode is not available.
+	The _transport_, _iptfs_ and _beet_ modes are subject to mode negotiation;
+	_tunnel_ mode is negotiated if the preferred mode is not available.
 
 	_pass_ and _drop_ are used to install shunt policies which explicitly
 	bypass the defined traffic from IPsec processing or drop it, respectively.
@@ -956,7 +1015,7 @@ connections.<conn>.children.<child>.mark_in_sa = no
 	only set on the inbound policy. The tuple destination address, protocol and
 	SPI is unique and the mark is not required to find the correct SA, allowing
 	to mark traffic after decryption instead (where more specific selectors may
-	be used) to match different policies. Marking packets before decryption	is
+	be used) to match different policies. Marking packets before decryption is
 	still possible, even if no mark is set on the SA.
 
 connections.<conn>.children.<child>.mark_out = 0/0x00000000
@@ -1067,6 +1126,20 @@ connections.<conn>.children.<child>.replay_window = 32
 	IPsec replay window to configure for this CHILD_SA. Larger values than the
 	default of 32 are supported using the Netlink backend only, a value of 0
 	disables IPsec replay protection.
+
+connections.<conn>.children.<child>.per_cpu_sas = no
+	Enable per-CPU CHILD_SAs. Requires _trap_ in **start_action**.
+
+	Enable per-CPU CHILD_SAs. Requires _trap_ in **start_action**.
+
+	The value _encap_ enables a special type of UDP encapsulation (requires
+	enabling **encap** for the connection if there is no NAT), where a random
+	source port is used for each outbound per-CPU SA (the destination port for
+	all of them remains 4500). This allows using the port for RSS if the SPI
+	can't be used. Note that this type of behavior is not standardized and not
+	negotiated. So regardless of whether the option is enabled, inbound per-CPU
+	SAs with UDP-encapsulation always have the source port set to 0 as the
+	peer's random port is unknown if it has this option enabled.
 
 connections.<conn>.children.<child>.hw_offload = no
 	Enable hardware offload for this CHILD_SA, if supported by the IPsec
@@ -1226,12 +1299,12 @@ secrets.ppk<suffix> { # }
 	Postquantum Preshared Key (PPK) section for a specific secret.
 
 	Postquantum Preshared Key (PPK) section for a specific secret. Each PPK is
-	defined	in a unique section having the _ppk_ prefix.
+	defined in a unique section having the _ppk_ prefix.
 
 secrets.ppk<suffix>.secret =
 	Value of the PPK.
 
-	Value of the PPK. It may either be an ASCII string,	a hex encoded string if
+	Value of the PPK. It may either be an ASCII string, a hex encoded string if
 	it has a _0x_ prefix or a Base64 encoded string if it has a _0s_ prefix in
 	its value. Should have at least 256 bits of entropy for 128-bit security.
 
@@ -1318,17 +1391,20 @@ pools.<name>.addrs =
 
 	Subnet or range defining addresses allocated in pool. Accepts a single CIDR
 	subnet defining the pool to allocate addresses from or an address range
-	(<from>-<to>).  Pools must be unique and non-overlapping.
+	(<from>-<to>). If the address in CIDR notation is not the network ID of the
+	subnet (e.g. 10.1.0.5/24 instead of 10.1.0.0/24), addresses below it won't
+	be allocated to clients (they could e.g. be assigned manually to internal
+	hosts like the VPN server itself). Pools must be unique and non-overlapping.
 
 pools.<name>.<attr> =
 	Comma separated list of additional attributes from type <attr>.
 
 	Comma separated list of additional attributes of type **<attr>**. The
 	attribute type may be one of _dns_, _nbns_, _dhcp_, _netmask_, _server_,
-	_subnet_, _split_include_ and _split_exclude_ to define addresses or CIDR
-	subnets for the corresponding attribute types. Alternatively, **<attr>** can
-	be a numerical identifier, for which string attribute values are accepted
-	as well.
+	_subnet_, _p_cscf_, _split_include_ and _split_exclude_ to define addresses
+	or CIDR subnets for the corresponding attribute types. Alternatively,
+	**<attr>** can be a numerical identifier, for which string attribute values
+	are accepted as well.
 
 authorities { # }
 	Section defining attributes of certification authorities.

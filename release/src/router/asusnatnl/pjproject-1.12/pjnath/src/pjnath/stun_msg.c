@@ -2562,9 +2562,11 @@ PJ_DEF(pj_status_t) pj_stun_msg_decode(pj_pool_t *pool,
 
     *p_msg = msg;
 
-    if (p_parsed_len)
-	*p_parsed_len = (pdu - start_pdu);
+    if (p_parsed_len) {
+		*p_parsed_len = (pdu - start_pdu);
+	}
 
+	(void)uattr_cnt;
     return PJ_SUCCESS;
 }
 

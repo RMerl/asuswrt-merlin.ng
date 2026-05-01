@@ -1,3 +1,194 @@
+strongswan-6.0.4
+----------------
+
+- Fixed a vulnerability in the NetworkManager plugin charon-nm that potentially
+  allows using credentials of other local users.
+  This vulnerability has been registered as CVE-2025-9615.
+
+- Concurrent requests to fetch the same CRL URI by multiple threads are now
+  combined.
+
+- Increased the max. supported length for section names in swanctl.conf to 256.
+
+
+strongswan-6.0.3
+----------------
+
+- Fixed a vulnerability in the eap-mschapv2 plugin related to processing Failure
+  Request packets on the client that can lead to a heap-based buffer overflow
+  and potentially remote code execution.
+  This vulnerability has been registered as CVE-2025-62291.
+
+- The new `alert` event for vici is raised for certain error conditions.
+
+- Only plugins with matching version number are loaded by programs.
+
+- IKE SAs redirected during IKE_AUTH are now properly tracked by controller and
+  trap-manager.
+
+- Fallback to the IKE identity for clients that don't provide an EAP-Identity to
+  fix a regression in 6.0.2.
+
+- Detecting unwrapped CKA_EC_POINTs has been improved in the pkcs11 plugin.
+
+- The whitelist plugin uses non-blocking I/O to avoid issues with clients that
+  stay connected for a long time.  The buffer size for IDs was increased to 256.
+
+- The certexpire plugins also uses 256 bytes for its identity buffer.
+
+- Convenient decorators for event handling are provided by the Python bindings
+  for vici.
+
+- The openssl plugin also supports Ed25519 via AWS-LC.  It also loads EdDSA keys
+  from PKCS#12 containers.
+
+- The testing environment is now based on Debian 13 (trixie), by default.
+
+- Support for MD2 has been removed.
+
+
+strongswan-6.0.2
+----------------
+
+- Support for per-CPU SAs (RFC 9611) has been added (Linux 6.13+).
+
+- Basic support for AGGFRAG mode (RFC 9347) has been added (Linux 6.14+).
+
+- POSIX regular expressions can be used to match remote identities.
+
+- Switching configs based on EAP-Identities is supported. Setting
+  `remote.eap_id` now always initiates an EAP-Identity exchange.
+
+- On Linux, sequence numbers from acquires are used when installing SAs. This
+  allows handling narrowing properly.
+
+- During rekeying, the narrowed traffic selectors are now proposed instead of
+  the configured ones.
+
+- The default AH/ESP proposals contain all supported key exchange methods plus
+  `none` to make PFS optional and accept proposals of older peers.
+
+- GRO for ESP in enabled for NAT-T UDP sockets, which can improve performance
+  if the esp4|6_offload modules are loaded.
+
+- charon-nm sets the VPN connection as persistent, preventing NetworkManager
+  from tearing down the connection if the network connectivity changes.
+
+- ML-KEM is supported via OpenSSL 3.5+.
+
+- The wolfssl plugin is now compatible to wolfSSL's FIPS module.
+
+- The libsoup plugin has been migrated to libsoup 3, libsoup 2 is not supported
+  anymore.
+
+- The long defunct uci plugin has been removed.
+
+- Log messages by watcher_t are now logged in a separate log group (`wch`).
+
+
+strongswan-6.0.1
+----------------
+
+- The ha plugin supports IKE and Child SAs with multiple key exchanges.
+  Incomplete IKE_SAs are now destroyed during a failover.
+
+- The new `interface_receive` option for the dhcp plugin allows binding the
+  receive socket to a different interface than the send socket. Also fixed a
+  regression if the DHCP server is running on the same host.
+
+- The new `source` option for the eap-radius plugin allows sending RADIUS
+  messages from a specific IP address.
+
+- Self-signed root CAs without policies are now excluded from policy validation.
+
+- Inbound traffic on IPsec SAs is now ignored when sending DPDs unless
+  UDP-encapsulation is used.
+
+- Send IKE_SA_INIT from NAT-T socket if not connecting to port 500.
+
+- Local traffic selectors can be configured for charon-nm. Its default
+  retransmission settings have been set to those of the Android app.
+
+- The vici Python wheel is now built via `build` frontend instead of calling
+  setup.py directly if --enable-python-wheels is used (the option to build eggs
+  has been removed). There is no option to automatically install the wheel (use
+  pip instead) and the --enable-python-eggs-install option has been removed.
+
+
+strongswan-6.0.0
+----------------
+
+- Support of multiple post-quantum (and classic) key exchanges using the
+  IKE_INTERMEDIATE exchange (RFC 9242) and the Additional Key Exchange
+  transform types 1..7 (RFC 9370).
+
+- ML-KEM is provided by the botan, wolfssl, openssl (only via AWS-LC) and the
+  new ml plugins.
+
+- Handling of CHILD_SA rekey collisions has been improved, which makes CHILD_SAs
+  properly trackable via chiled_rekey() hook.
+
+- The behavior when reloading or unloading connections that include `start` in
+  their `start_action` has been improved.
+
+- The default identity is now the subject DN instead of the IP address if a
+  certificate is available.
+
+- The file logger supports logging as JSON objects and can add timestamps
+  in microseconds.
+
+- The cert-enroll script now supports three generations of CA certificates.
+
+- charon-nm uses a different routing table than the regular IKE daemon to avoid
+  conflicts if both are running.
+
+- AF_VSOCK sockets are supported on Linux to communicate with a daemon that runs
+  in a VM.
+
+- TUN devices can properly handle IPv6 addresses.
+
+- For compatibility with older SCEP implementations, challenge passwords in
+  PKCS#10 containers are again encoded as PrintableString if possible.
+
+- The legacy stroke plugin is no longer enabled by default.
+
+- The openssl plugin is now enabled by default, while the following crypto
+  plugins are no longer enabled by default: aes, curve25519, des, fips-prf, gmp,
+  hmac, md5, pkcs12, rc2, sha1, sha2.
+
+- The following deprecated plugins have been removed: bliss, newhope, ntru.
+
+- charon.make_before_break is now enabled by default.
+
+
+strongswan-5.9.14
+-----------------
+
+- Support for the IKEv2 OCSP extensions (RFC 4806) has been added, which allows
+  peers to request and send OCSP responses directly in IKEv2.
+
+- Validation of X.509 name constraints in the constraints plugin has been
+  refactored to align with RFC 5280.
+
+- The dhcp plugin has been ported to FreeBSD/macOS.
+
+- The openssl plugin is now compatible with AWS-LC.
+
+- Overflows of unique identifiers (e.g. Netlink sequence numbers or reqids) are
+  now handled gracefully.
+
+- Updated the pkcs11.h header based on the latest OpenSC version in order to
+  include new algorithm and struct definitions for the pkcs11 plugin.
+  Added support for PSS padding in smartcard-based RSA signatures using either
+  on-chip or external data hashing.
+
+- Added keyid and certid handles in the pki --ocsp command so that keys and/or
+  certificates can be stored on a smartcard or in a TPM 2.0 device.
+
+- Fail SA installation on Linux if replay protection is disabled while ESN is
+  enabled, which the kernel currently doesn't support.
+
+
 strongswan-5.9.13
 -----------------
 
@@ -334,7 +525,7 @@ strongswan-5.9.4
   salt lengths.
   This vulnerability has been registered as CVE-2021-41990.
 
-- Fixed a denial-of-service vulnerabililty in the in-memory certificate cache
+- Fixed a denial-of-service vulnerability in the in-memory certificate cache
   if certificates are replaced and a very large random value caused an integer
   overflow.
   This vulnerability has been registered as CVE-2021-41991.
@@ -1746,7 +1937,7 @@ strongswan-5.0.3
   PT-TLS (RFC 6876), a Posture Transport Protocol over TLS.
 
 - The charon systime-fix plugin can disable certificate lifetime checks on
-  embedded systems if the system time is obviously out of sync after bootup.
+  embedded systems if the system time is obviously out of sync after boot-up.
   Certificates lifetimes get checked once the system time gets sane, closing
   or reauthenticating connections using expired certificates.
 

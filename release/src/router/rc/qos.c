@@ -1088,6 +1088,11 @@ static int start_tqos(void)
 	qsched = "sfq perturb 10";
 #endif
 
+	/* BCM4912 hits local access issues with br0 mark 9 when fq_codel is used. */
+#if defined(BRCM_CHIP_4912_SERIES)
+	qsched = "sfq perturb 10";
+#endif
+
 	const char *wan_ifname = get_wan_ifname(wan_primary_ifunit());
 	const char *lan_ifname = nvram_safe_get("lan_ifname");
 
@@ -1572,6 +1577,11 @@ static int start_bandwidth_limiter(void)
 #ifdef RTCONFIG_BCMARM
 	qsched = "fq_codel quantum 300 limit 1000 noecn";
 #else
+	qsched = "sfq perturb 10";
+#endif
+
+	/* BCM4912 hits local access issues with br0 mark 9 when fq_codel is used. */
+#if defined(BRCM_CHIP_4912_SERIES)
 	qsched = "sfq perturb 10";
 #endif
 
@@ -2591,6 +2601,11 @@ static int start_rog_qos()
 	qsched = "sfq perturb 10";
 #endif
 
+	/* BCM4912 hits local access issues with br0 mark 9 when fq_codel is used. */
+#if defined(BRCM_CHIP_4912_SERIES)
+	qsched = "sfq perturb 10";
+#endif
+
 	if (overhead > 0)
 		snprintf(overheadstr, sizeof(overheadstr),"overhead %d %s",
 		         overhead, nvram_get_int("qos_atm") ? "linklayer atm" : "linklayer ethernet");
@@ -2881,7 +2896,6 @@ int start_cake(void)
 
 	append_custom_config("cake-qos.conf",f);
 	fclose(f);
-
 
 	if((f = fopen(qosfn, "w")) == NULL) return -2;
 

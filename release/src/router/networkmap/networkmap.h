@@ -1,16 +1,6 @@
 #ifndef __NETWORKMAP_H__
 #define __NETWORKMAP_H__
-/*
-#include <sys/socket.h>
-#include <stdio.h>
-#include <linux/in.h>
-#include <linux/if_ether.h>
-#include <net/if.h>
- */
-#include <syslog.h>
-#include <version.h>
-#include <shared.h>
-#include <sm.h>
+
 #include <json.h>
 
 #ifndef FALSE
@@ -67,6 +57,12 @@
 #define AMAS_WGN_BR_4	"br5"
 #endif
 
+#define CLIENT_CHECK_SUCCESS 1
+#define CLIENT_CHECK_FAIL 0
+#define MAC_ADDR_BYTE_LEN 6   // Raw MAC address length in bytes
+#define MAC_ADDR_STR_LEN 18   // String buffer size including '\0'
+#define SUBNET_IFNAME_LEN 7
+
 //for Notification Center trigger flag
 #ifdef RTCONFIG_NOTIFICATION_CENTER
 enum
@@ -83,6 +79,7 @@ enum
 #define USERAGENT           "Asuswrt/networkmap"
 #define NMP_VC_FILE_LOCK    "nmpvc"
 
+#define APGINFO_PATH                 "/tmp/apg_info/"
 #define CFG_FILE_LOCK                "cfg_mnt"
 #define ALLWEVENT_FILE_LOCK          "allwevent"
 #define ALLWCLIENT_LIST_JSON_PATH    "/tmp/allwclientlist.json"
@@ -91,7 +88,6 @@ enum
 #define WIREDCLIENTLIST_FILE_LOCK    "wiredclientlist"
 #define WIRED_CLIENT_LIST_JSON_PATH  "/tmp/wiredclientlist.json"
 #define BRCTL_TABLE_PATH             "/tmp/nmp_brctl_table"
-#define ASUS_DEVICE_JSON_FILE        "/tmp/asus_device.json"
 
 #ifdef RTCONFIG_IPV6
 #define IP6_TABLE_PATH               "/tmp/nmp_ip6_table"
@@ -337,19 +333,19 @@ void get_subnet_ifname(const int subnet_idx, char * subnet_ifname, int ifname_le
 void get_ip_from_arp_table(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, const int i, const char *subnet);
 int get_sdn_type(const int sdn_idx, char *sdn_type, int sdn_type_len, unsigned char *vlan_id, int *apg_idx);
 int get_vlan_id(const int vlan_idx);
-int get_sdn_idx_form_apg(const char *papMac, const char *ifname, const int ifname_type);
+int get_sdn_idx_form_apg_new(const char *papMac, const char *ifname, const char *prefix);
 #endif
 
 int get_brctl_macs(char * mac);
 
-int check_allwclientlist_json(const char *client_mac, const int opMode);
+int is_mac_in_allwclientlist(const char *client_mac, int opMode);
 
 int check_wrieless_info(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, const int i, const int is_file, struct json_object *clients);
 
 #ifdef RTCONFIG_MLO
 int check_mlo_info(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const int i, const int wireless_type, char *guest_network, char *client_mac, char *papMac, struct json_object *macObj, char *mlo_mac, int *is_mlo);
 #endif
-int check_wire_info(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, const int i);
+int check_wired_info(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, const int i);
 
 int check_wireless_clientlist(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
 
@@ -358,8 +354,6 @@ void check_clients_from_ip_cmd(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_ta
 void check_dhcp_ip_online(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const char *mac, const char *ip_addr);
 
 int get_client_list();
-
-int check_asus_device(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const int i);
 
 void network_ip_scan();
 

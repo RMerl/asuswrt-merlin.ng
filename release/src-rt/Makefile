@@ -79,7 +79,7 @@ endif
 
 -include .config
 
-ifeq ($(HND_ROUTER_BE_4916),y)
+ifeq ($(or $(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916)),y)
 -include sdk_profile.mak
 endif
 
@@ -302,7 +302,11 @@ else
 include ./make.hndrt
 endif
 ifeq ($(or $(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916)),y)
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506))
+export LINUXDIR := $(HND_SRC)/kernel/linux-5.15
+else
 export LINUXDIR := $(HND_SRC)/kernel/linux-4.19
+endif
 else
 export LINUXDIR := $(HND_SRC)/kernel/linux-4.1
 endif
@@ -356,6 +360,10 @@ ifneq ($(BRCM_CHIP),4908)
 export CFLAGS += -D$(MODEL)
 endif
 export $(MODEL):=y
+endif
+
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506)
+CFLAGS += -D$(ASUSWRT_BRCM_SDK_VERSION)
 endif
 
 ifneq ($(filter-out n,$(and $(HND_ROUTER_AX_6756),$(BCM_MFG)) $(and $(HND_ROUTER_BE_4916),$(BCM_MFG)) $(WL_TEST)),)
@@ -2986,6 +2994,10 @@ define RouterOptions
 	if [ "$(TUF_UI)" = "y" ]; then \
 		sed -i "/RTCONFIG_TUF_UI/d" $(1); \
 		echo "RTCONFIG_TUF_UI=y" >>$(1); \
+	fi;
+	if [ "$(PROART_UI)" = "y" ]; then \
+		sed -i "/RTCONFIG_PROART_UI/d" $(1); \
+		echo "RTCONFIG_PROART_UI=y" >>$(1); \
 	fi;
 	if [ "$(DASHBOARD)" = "y" ]; then \
 		sed -i "/RTCONFIG_DASHBOARD/d" $(1); \
@@ -6345,6 +6357,11 @@ fi;
 	if [ "$(DEBUGFS)" = "y" ]; then \
 		sed -i "/CONFIG_DEBUG_FS/d" $(1); \
 		echo "CONFIG_DEBUG_FS=y" >>$(1); \
+		if [ "$(ASUSWRT_BRCM_SDK_VERSION)" = "WIFI7_SDK_20250506" ]; then \
+		echo "CONFIG_DEBUG_FS_ALLOW_ALL=y" >>$(1); \
+		echo "# CONFIG_DEBUG_FS_DISALLOW_MOUNT is not set" >>$(1); \
+		echo "# CONFIG_DEBUG_FS_ALLOW_NONE is not set" >>$(1); \
+		fi; \
 		sed -i "/CONFIG_USB_MON/d" $(1); \
 		echo "CONFIG_USB_MON=m" >>$(1); \
 		if [ "$(ARM)" = "y" ]; then \
@@ -6360,6 +6377,9 @@ fi;
 			echo "# CONFIG_LKDTM is not set" >>$(1); \
 			sed -i "/CONFIG_DYNAMIC_DEBUG/d" $(1); \
 			echo "# CONFIG_DYNAMIC_DEBUG is not set" >>$(1); \
+			if [ "$(ASUSWRT_BRCM_SDK_VERSION)" = "WIFI7_SDK_20250506" ]; then \
+			echo "# CONFIG_DYNAMIC_DEBUG_CORE is not set" >>$(1); \
+			fi; \
 		fi; \
 	fi; \
 	if [ "$(BONDING)" = "y" ]; then \
@@ -6734,6 +6754,12 @@ fi;
 		echo "# CONFIG_BCM_PHY_LANAI_A0 is not set" >>$(1); \
 		sed -i "/CONFIG_BCM_PHY_XPHY/d" $(1); \
 		echo "# CONFIG_BCM_PHY_XPHY is not set" >>$(1); \
+		if [ "$(ASUSWRT_BRCM_SDK_VERSION)" = "WIFI7_SDK_20250506" ]; then \
+		echo "# CONFIG_BCM_PHY_XPHY_16 is not set" >>$(1); \
+		echo "# CONFIG_BCM_PHY_XPHY_8 is not set" >>$(1); \
+		else \
+		echo "# CONFIG_BCM_PHY_XPHY is not set" >>$(1); \
+		fi; \
 		if [ "$(BUILD_NAME)" = "GT7" ]; then \
 			sed -i "/CONFIG_BCM_PHY_NIIHAU_A0/d" $(1); \
 			echo "CONFIG_BCM_PHY_NIIHAU_A0=y" >>$(1); \

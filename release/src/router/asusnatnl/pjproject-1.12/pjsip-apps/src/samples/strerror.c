@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
     pjlib_util_init();
     pjnath_init();
     //pjmedia_endpt_create(&cp.factory, NULL, 0, &med_ept);
-    pjmedia_endpt_create(0, &cp.factory, NULL, 0, 0, &med_ept);
+    pjmedia_endpt_create(&cp.factory, NULL, 0, 0, 1, &med_ept);
     pjsip_endpt_create(&cp.factory, "localhost", &sip_ept);
     pjsip_evsub_init_module(sip_ept);
 

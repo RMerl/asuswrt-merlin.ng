@@ -41,6 +41,7 @@
  * The following functions are for pre- and post-fork1(2) handling.
  */
 
+#if 0
 static void
 umem_lockup_cache(umem_cache_t *cp)
 {
@@ -198,6 +199,7 @@ umem_release_child(void)
 
 	umem_release();
 }
+#endif
 #endif
 
 void

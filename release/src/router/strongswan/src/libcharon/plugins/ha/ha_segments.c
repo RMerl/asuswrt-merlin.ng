@@ -135,9 +135,11 @@ static void enable_disable(private_ha_segments_t *this, u_int segment,
 {
 	ike_sa_t *ike_sa;
 	enumerator_t *enumerator;
-	ike_sa_state_t old, new;
+	ike_sa_state_t old, new, cur;
 	ha_message_t *message = NULL;
 	ha_message_type_t type;
+	array_t *to_destroy;
+	uint32_t unique_id;
 	bool changes = FALSE;
 
 	if (segment > this->count)
@@ -172,11 +174,13 @@ static void enable_disable(private_ha_segments_t *this, u_int segment,
 
 	if (changes)
 	{
+		to_destroy = array_create(sizeof(u_int), 0);
 		enumerator = charon->ike_sa_manager->create_enumerator(
 												charon->ike_sa_manager, TRUE);
 		while (enumerator->enumerate(enumerator, &ike_sa))
 		{
-			if (ike_sa->get_state(ike_sa) != old)
+			cur = ike_sa->get_state(ike_sa);
+			if (cur != old && cur != IKE_CONNECTING)
 			{
 				continue;
 			}
@@ -187,11 +191,34 @@ static void enable_disable(private_ha_segments_t *this, u_int segment,
 			if (this->kernel->get_segment(this->kernel,
 									ike_sa->get_other_host(ike_sa)) == segment)
 			{
-				ike_sa->set_state(ike_sa, new);
+				if (cur == IKE_CONNECTING)
+				{
+					unique_id = ike_sa->get_unique_id(ike_sa);
+					array_insert(to_destroy, ARRAY_TAIL, &unique_id);
+				}
+				else
+				{
+					ike_sa->set_state(ike_sa, new);
+				}
 			}
 		}
 		enumerator->destroy(enumerator);
 		log_segments(this, enable, segment);
+
+		while (array_remove(to_destroy, ARRAY_HEAD, &unique_id))
+		{
+			ike_sa = charon->ike_sa_manager->checkout_by_id(charon->ike_sa_manager,
+															unique_id);
+			if (ike_sa)
+			{
+				DBG1(DBG_IKE, "destroying incomplete IKE_SA %s[%d] after "
+					 "%sactivating HA segment %d", ike_sa->get_name(ike_sa),
+					 unique_id, enable ? "" : "de", segment);
+				charon->ike_sa_manager->checkin_and_destroy(charon->ike_sa_manager,
+															ike_sa);
+			}
+		}
+		array_destroy(to_destroy);
 	}
 
 	if (notify)
@@ -289,7 +316,7 @@ static void start_watchdog(private_ha_segments_t *this)
 	this->heartbeat_active = TRUE;
 	lib->processor->queue_job(lib->processor,
 		(job_t*)callback_job_create_with_prio((callback_job_cb_t)watchdog, this,
-				NULL, (callback_job_cancel_t)return_false, JOB_PRIO_CRITICAL));
+				NULL, callback_job_cancel_thread, JOB_PRIO_CRITICAL));
 }
 
 METHOD(ha_segments_t, handle_status, void,
@@ -377,7 +404,7 @@ static void start_heartbeat(private_ha_segments_t *this)
 {
 	lib->processor->queue_job(lib->processor,
 		(job_t*)callback_job_create_with_prio((callback_job_cb_t)send_status,
-			this, NULL, (callback_job_cancel_t)return_false, JOB_PRIO_CRITICAL));
+			this, NULL, callback_job_cancel_thread, JOB_PRIO_CRITICAL));
 }
 
 /**
@@ -424,7 +451,7 @@ static void start_autobalance(private_ha_segments_t *this)
 	DBG1(DBG_CFG, "scheduling HA autobalance every %ds", this->autobalance);
 	lib->scheduler->schedule_job(lib->scheduler,
 		(job_t*)callback_job_create_with_prio((callback_job_cb_t)autobalance,
-			this, NULL, (callback_job_cancel_t)return_false, JOB_PRIO_CRITICAL),
+			this, NULL, callback_job_cancel_thread, JOB_PRIO_CRITICAL),
 		this->autobalance);
 }
 

@@ -84,6 +84,10 @@ ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PR
 LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506)
+LDFLAGS += -L$(STAGEDIR)/usr/lib/
+endif
+
 OBJS	=	main.o utility.o prelogin.o ftpcmdio.o postlogin.o privsock.o \
 		tunables.o ftpdataio.o secbuf.o ls.o \
 		postprivparent.o logging.o str.o netstr.o sysstr.o strlist.o \
@@ -93,11 +97,10 @@ OBJS	=	main.o utility.o prelogin.o ftpcmdio.o postlogin.o privsock.o \
     ssl.o sslslave.o ptracesandbox.o ftppolicy.o sysutil.o sysdeputil.o \
     seccompsandbox.o
 
-
 .c.o:
 	$(CC) -c $*.c $(CFLAGS) $(IFLAGS)
 
-vsftpd: $(OBJS) 
+vsftpd: $(OBJS)
 	$(CC) -o vsftpd $(OBJS) $(LINK) $(LDFLAGS) $(LIBS)
 
 install:

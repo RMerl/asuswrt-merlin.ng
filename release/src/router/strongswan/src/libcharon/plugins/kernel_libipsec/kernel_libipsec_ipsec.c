@@ -238,7 +238,9 @@ static void expire(uint8_t protocol, uint32_t spi, host_t *dst, bool hard)
  */
 static void acquire(uint32_t reqid)
 {
-	kernel_acquire_data_t data = {};
+	kernel_acquire_data_t data = {
+		.cpu = CPU_ID_MAX,
+	};
 
 	charon->kernel->acquire(charon->kernel, reqid, &data);
 }

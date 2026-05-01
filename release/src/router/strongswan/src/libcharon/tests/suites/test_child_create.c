@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Tobias Brunner
+ * Copyright (C) 2016-2020 Tobias Brunner
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -135,6 +135,73 @@ START_TEST(test_collision_ike_rekey)
 }
 END_TEST
 
+/**
+ * One of the peers creates a new CHILD_SA using multiple key exchanges.
+ */
+START_TEST(test_multi_ke)
+{
+	peer_cfg_t *peer_cfg;
+	child_cfg_t *child_cfg;
+	child_cfg_create_t child = {
+		.mode = MODE_TUNNEL,
+	};
+	ike_sa_t *a, *b;
+
+	exchange_test_helper->establish_sa(exchange_test_helper,
+									   &a, &b, NULL);
+
+	assert_hook_not_called(child_updown);
+	child_cfg = child_cfg_create("child", &child);
+	child_cfg->add_proposal(child_cfg,
+			proposal_create_from_string(PROTO_ESP,
+										"aes256-sha256-modp3072-ke1_ecp256"));
+	/* as configs are selected based on TS only, use a different protocol */
+	child_cfg->add_traffic_selector(child_cfg, TRUE,
+						traffic_selector_create_dynamic(6, 0, 65535));
+	child_cfg->add_traffic_selector(child_cfg, FALSE,
+						traffic_selector_create_dynamic(6, 0, 65535));
+	call_ikesa(a, initiate, child_cfg, NULL);
+	assert_child_sa_count(a, 1);
+	peer_cfg = b->get_peer_cfg(b);
+	peer_cfg->add_child_cfg(peer_cfg, child_cfg->get_ref(child_cfg));
+	assert_hook();
+
+	/* CREATE_CHILD_SA { SA, Ni, KEi, TSi, TSr } --> */
+	assert_hook_not_called(child_updown);
+	exchange_test_helper->process_message(exchange_test_helper, b, NULL);
+	assert_child_sa_count(b, 1);
+
+	/* <-- CREATE_CHILD_SA { SA, Nr, KEr, TSi, TSr, N(ADD_KE) } */
+	assert_notify(IN, ADDITIONAL_KEY_EXCHANGE);
+	exchange_test_helper->process_message(exchange_test_helper, a, NULL);
+	assert_child_sa_count(a, 1);
+	assert_hook();
+
+	/* IKE_FOLLOWUP_KE { KEi N(ADD_KE) } --> */
+	assert_hook_updown(child_updown, TRUE);
+	assert_notify(IN, ADDITIONAL_KEY_EXCHANGE);
+	exchange_test_helper->process_message(exchange_test_helper, b, NULL);
+	assert_child_sa_count(b, 2);
+	assert_hook();
+
+	/* <-- IKE_FOLLOWUP_KE { KEr } */
+	assert_hook_updown(child_updown, TRUE);
+	assert_no_notify(IN, ADDITIONAL_KEY_EXCHANGE);
+	exchange_test_helper->process_message(exchange_test_helper, a, NULL);
+	assert_child_sa_count(a, 2);
+	assert_hook();
+
+	/* make sure no message was sent after creating the CHILD_SA */
+	ck_assert(!exchange_test_helper->sender->dequeue(exchange_test_helper->sender));
+
+	assert_sa_idle(a);
+	assert_sa_idle(b);
+
+	call_ikesa(a, destroy);
+	call_ikesa(b, destroy);
+}
+END_TEST
+
 Suite *child_create_suite_create()
 {
 	Suite *s;
@@ -148,6 +215,10 @@ Suite *child_create_suite_create()
 
 	tc = tcase_create("collisions ike rekey");
 	tcase_add_test(tc, test_collision_ike_rekey);
+	suite_add_tcase(s, tc);
+
+	tc = tcase_create("multiple key exchanges");
+	tcase_add_test(tc, test_multi_ke);
 	suite_add_tcase(s, tc);
 
 	return s;

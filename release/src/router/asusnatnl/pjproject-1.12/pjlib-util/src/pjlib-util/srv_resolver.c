@@ -383,12 +383,13 @@ static void build_server_entries(pj_dns_srv_async_query *query_job,
 	      (query_job->srv_cnt ? ':' : ' ')));
 
     for (i=0; i<query_job->srv_cnt; ++i) {
-	const char *addr;
+        char addr[PJ_INET6_ADDRSTRLEN];
 
-	if (query_job->srv[i].addr_cnt != 0)
-	    addr = pj_inet_ntoa(query_job->srv[i].addr[0]);
-	else
-	    addr = "-";
+        if (query_job->srv[i].addr_cnt != 0) {
+            pj_sockaddr_print(&query_job->srv[i].addr[0],
+                         addr, sizeof(addr), 2);
+        } else
+            pj_ansi_strxcpy(addr, "-", sizeof(addr));
 
 	PJ_LOG(5,(query_job->objname, 
 		  " %d: SRV %d %d %d %.*s (%s)",

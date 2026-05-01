@@ -524,8 +524,7 @@ static auth_cfg_t *build_auth_cfg(private_stroke_config_t *this,
 	if (strpfx(auth, "ike:") ||
 		strpfx(auth, "pubkey") ||
 		strpfx(auth, "rsa") ||
-		strpfx(auth, "ecdsa") ||
-		strpfx(auth, "bliss"))
+		strpfx(auth, "ecdsa"))
 	{
 		cfg->add(cfg, AUTH_RULE_AUTH_CLASS, AUTH_CLASS_PUBKEY);
 		build_crl_policy(cfg, local, msg->add_conn.crl_policy);
@@ -636,9 +635,9 @@ static peer_cfg_t *build_peer_cfg(private_stroke_config_t *this,
 	peer_cfg_create_t peer = {
 		.cert_policy = msg->add_conn.me.sendcert,
 		.keyingtries = msg->add_conn.rekey.tries,
-		.no_mobike = !msg->add_conn.mobike,
-		.aggressive = msg->add_conn.aggressive,
-		.push_mode = msg->add_conn.pushmode,
+		.options = (msg->add_conn.mobike ? 0 : OPT_NO_MOBIKE) |
+				   (msg->add_conn.aggressive ? OPT_IKEV1_AGGRESSIVE : 0) |
+				   (msg->add_conn.pushmode ? OPT_IKEV1_PUSH_MODE : 0),
 		.dpd = msg->add_conn.dpd.delay,
 		.dpd_timeout = msg->add_conn.dpd.timeout,
 	};

@@ -103,9 +103,6 @@ METHOD(fetcher_manager_t, fetch, status_t,
 					good = fetcher->set_option(fetcher, opt,
 											va_arg(args, char*));
 					continue;
-				case FETCH_HTTP_VERSION_1_0:
-					good = fetcher->set_option(fetcher, opt);
-					continue;
 				case FETCH_TIMEOUT:
 					good = fetcher->set_option(fetcher, opt,
 											va_arg(args, u_int));

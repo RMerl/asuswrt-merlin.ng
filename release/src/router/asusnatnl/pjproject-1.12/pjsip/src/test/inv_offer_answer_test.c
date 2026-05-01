@@ -182,7 +182,7 @@ static pjmedia_sdp_session *create_sdp(pj_pool_t *pool, const char *body)
     pj_status_t status;
     
     pj_strdup2_with_null(pool, &dup, body);
-    status = pjmedia_sdp_parse(0, pool, &dup.ptr, &dup.slen, &sdp);
+    status = pjmedia_sdp_parse(0, pool, &dup.ptr, (pj_size_t *)&dup.slen, &sdp);
     pj_assert(status == PJ_SUCCESS);
 
     return sdp;

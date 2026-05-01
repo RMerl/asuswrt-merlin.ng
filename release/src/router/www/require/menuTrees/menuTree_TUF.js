@@ -94,10 +94,10 @@ define(function(){
 				] 
 			},
 			{
-				menuName: "网易UU加速器",
+				menuName: "<#UU_Accelerator#>",
 				index: "menu_UU",
 				tab: [
-						{url: "UUAccelerator.asp", tabName: "网易UU加速器"},
+						{url: "UUAccelerator.asp", tabName: "<#UU_Accelerator#>"},
 						{url: "NULL", tabName: "__INHERIT__"}
 				]
 			},
@@ -229,8 +229,8 @@ define(function(){
 				tab: [
 					{url: "Advanced_WAN_Content.asp", tabName: "<#menu5_3_1#>"},
 					{url: "Advanced_DSL_Content.asp", tabName: "<#menu5_3_1#>"},
-					{url: "Advanced_Modem_Content.asp", tabName: "<#menu5_3_1#>"},
-					{url: "Advanced_MobileBroadband_Content.asp", tabName: "<#menu5_3_1#>"},
+					{url: "Advanced_Modem_Content.asp", tabName: "__INHERIT__"},
+					{url: "Advanced_MobileBroadband_Content.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_WANPort_Content.asp", tabName: "<#dualwan#>"},
 					{url: "Advanced_PortTrigger_Content.asp", tabName: "<#menu5_3_3#>"},
 					{url: "Advanced_VirtualServer_Content.asp", tabName: "<#menu5_3_4#>"},
@@ -240,8 +240,6 @@ define(function(){
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
 			},
-			
-			
 			{
 				menuName: "Alexa & IFTTT",
 				index: "menu_Alexa_IFTTT",
@@ -594,28 +592,38 @@ define(function(){
 				if(noftp_support){
 					retArray.push("Advanced_AiDisk_ftp.asp");
 				}
-				
+
 				if(!dualWAN_support){
 					retArray.push("Advanced_WANPort_Content.asp");
-					retArray.push("Advanced_Modem_Content.asp");
-					retArray.push("Advanced_MobileBroadband_Content.asp");
 				}
 				else{
 					if(!dualwan_enabled && usb_index == 0){
 						retArray.push("Advanced_WAN_Content.asp");
+						if(dsl_support)
+							retArray.push("Advanced_DSL_Content.asp");
+
+						if(!gobi_support){
+							replaceTabNameByUrl("menu_WAN", "Advanced_Modem_Content.asp", "<#menu5_3_1#>");
+						}
+						else{
+							replaceTabNameByUrl("menu_WAN", "Advanced_MobileBroadband_Content.asp", "<#menu5_3_1#>");
+						}
+					}
+
+					if(usb_index < 0){
+						retArray.push("Advanced_MobileBroadband_Content.asp");
+						retArray.push("Advanced_Modem_Content.asp");
+					}
+					else{
 						if(!gobi_support)
 							retArray.push("Advanced_MobileBroadband_Content.asp");
 						else
 							retArray.push("Advanced_Modem_Content.asp");
 					}
-					else{
-						retArray.push("Advanced_MobileBroadband_Content.asp");
-						retArray.push("Advanced_Modem_Content.asp");
-					}
 				}
 
 				if(!SwitchCtrl_support){
-					retArray.push("Advanced_SwitchCtrl_Content.asp");		
+					retArray.push("Advanced_SwitchCtrl_Content.asp");
 				}
 
 				if(!tr069_support){
@@ -659,7 +667,7 @@ define(function(){
 				}
 
 				if(hwmodeSwitch_support){
-					retArray.push("Advanced_OperationMode_Content.asp");		
+					retArray.push("Advanced_OperationMode_Content.asp");
 				}
 
 				if(noiptv_support){
@@ -859,9 +867,45 @@ define(function(){
 					retArray.push("AdaptiveQoS_InternetSpeed.asp");
 				}
 
+
 				return retArray;
 			}
 		}
+	}
+
+	function removeTabByUrl(idx, url){
+		for(var i in menuTree.list){
+			if(menuTree.list[i].index == idx){
+				for(var j in menuTree.list[i].tab){
+					if(menuTree.list[i].tab[j].url == url){
+						menuTree.list[i].tab.splice(j, 1);
+					}
+				}
+			}
+		}
+	}
+
+	function replaceTabNameByUrl(idx, url, tabName){
+		for(var i in menuTree.list){
+			if(menuTree.list[i].index == idx){
+				for(var j in menuTree.list[i].tab){
+					if(menuTree.list[i].tab[j].url == url){
+						menuTree.list[i].tab[j].tabName = tabName;
+					}
+				}
+			}
+		}
+	}
+
+	if(usb_index !== -1){
+		menuTree.list.filter(function(item, index, array){
+			if(item.index == "menu_APP"){
+				item.tab.filter(function(item2, index2, array2){
+					if(item2.url == "Advanced_Modem_Content.asp")
+						item.tab.splice(index2, 1);
+				});
+			}
+		});
 	}
 
 	return menuTree;

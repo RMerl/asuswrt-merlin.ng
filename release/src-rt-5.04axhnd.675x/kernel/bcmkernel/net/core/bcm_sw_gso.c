@@ -626,6 +626,17 @@ static inline int bcm_sw_gso(struct sk_buff *skb, struct net_device *txdev, Hard
 				goto done;
 		}
 	} else if((skb->ip_summed == CHECKSUM_PARTIAL)){
+
+		/* skb may shared with someone.
+		   unshare for update csum on private copy skb->data only.
+		*/
+		skb = skb_unshare(skb, GFP_ATOMIC);
+		if (!skb)
+		{
+			ret = -1;
+			return ret;
+		}
+
 		/*only csum is needed */
 		memset(&hdrs,0, sizeof(struct gso_hdrs));
 		if( bcm_parse_gso_hdrs(skb, &hdrs) < 0){

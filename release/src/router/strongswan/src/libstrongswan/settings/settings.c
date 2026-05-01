@@ -44,6 +44,17 @@ bool settings_parser_parse_file(section_t *root, char *name);
 bool settings_parser_parse_string(section_t *root, char *settings);
 
 /**
+ * Buffer size for complete key name/pattern when looking up settings.
+ */
+#define KEY_FULL_BUF_LEN 2048
+
+/**
+ * Buffer size for a single part of a key name (matches the maximum length
+ * for names in VICI).
+ */
+#define KEY_PART_BUF_LEN 257
+
+/**
  * Private data of settings
  */
 struct private_settings_t {
@@ -287,7 +298,7 @@ static void find_sections_buffered(private_settings_t *this, section_t *section,
 static section_t *ensure_section(private_settings_t *this, section_t *section,
 								 const char *key, va_list args)
 {
-	char buf[128], keybuf[512];
+	char buf[KEY_PART_BUF_LEN], keybuf[KEY_FULL_BUF_LEN];
 
 	if (snprintf(keybuf, sizeof(keybuf), "%s", key) >= sizeof(keybuf))
 	{
@@ -304,7 +315,7 @@ static section_t *ensure_section(private_settings_t *this, section_t *section,
 static array_t *find_sections(private_settings_t *this, section_t *section,
 							  char *key, va_list args, array_t **sections)
 {
-	char buf[128], keybuf[512];
+	char buf[KEY_PART_BUF_LEN], keybuf[KEY_FULL_BUF_LEN];
 
 	if (snprintf(keybuf, sizeof(keybuf), "%s", key) >= sizeof(keybuf))
 	{
@@ -476,7 +487,7 @@ static void remove_value_buffered(private_settings_t *this, section_t *section,
 void settings_remove_value(settings_t *settings, char *key, ...)
 {
 	private_settings_t *this = (private_settings_t*)settings;
-	char buf[128], keybuf[512];
+	char buf[KEY_PART_BUF_LEN], keybuf[KEY_FULL_BUF_LEN];
 	va_list args;
 
 	if (snprintf(keybuf, sizeof(keybuf), "%s", key) >= sizeof(keybuf))
@@ -499,7 +510,7 @@ void settings_remove_value(settings_t *settings, char *key, ...)
 static char *find_value(private_settings_t *this, section_t *section,
 						char *key, va_list args)
 {
-	char buf[128], keybuf[512], *value = NULL;
+	char buf[KEY_PART_BUF_LEN], keybuf[KEY_FULL_BUF_LEN], *value = NULL;
 	array_t *sections = NULL;
 	kv_t *kv;
 
@@ -525,7 +536,7 @@ static char *find_value(private_settings_t *this, section_t *section,
 static void set_value(private_settings_t *this, section_t *section,
 					  char *key, va_list args, char *value)
 {
-	char buf[128], keybuf[512];
+	char buf[KEY_PART_BUF_LEN], keybuf[KEY_FULL_BUF_LEN];
 	kv_t *kv;
 
 	if (snprintf(keybuf, sizeof(keybuf), "%s", key) >= sizeof(keybuf))
@@ -939,7 +950,7 @@ METHOD(settings_t, add_fallback, void,
 {
 	section_t *section;
 	va_list args;
-	char buf[512];
+	char buf[KEY_FULL_BUF_LEN];
 
 	this->lock->write_lock(this->lock);
 	va_start(args, fallback);

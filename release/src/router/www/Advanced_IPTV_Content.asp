@@ -1670,14 +1670,19 @@ function get_default_wan_name(){
 }
 
 function use_single_default_wan_sfp(){
-	let _use_single_default_wan = true;
-	let _use_single_sfp = true;
+	let _use_single_default_wan = false;
+	let _use_single_sfp = false;
 
 	if(wans_dualwan_orig.indexOf("none") == -1)
 		_use_single_default_wan = false;
 	else if(!isEmpty(eth_wan_list)){
 		$.each(eth_wan_list, function(key) {
 			if(key == "wan" || key == "sfp"){
+				if(key == "wan")
+					_use_single_default_wan = true;
+				if(key == "sfp")
+					_use_single_sfp = true;
+
 				let wan_obj = eth_wan_list[key];
 				if(wan_obj.hasOwnProperty("extra_settings")){
 					let extra_settings = wan_obj.extra_settings;

@@ -90,7 +90,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *attr_plugin_create()
+PLUGIN_DEFINE(attr)
 {
 	private_attr_plugin_t *this;
 

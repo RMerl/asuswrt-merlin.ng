@@ -597,10 +597,10 @@ function Get_Component_Setting_Profile(type){//internet, user_defined
 	$content_container.append(Get_Component_Input(profile_name_parm));
 */
 	if(type == "user_defined")
-		var connection_type_options = [{"text":"<#BOP_ctype_title1#>","value":"dhcp", "title":"DHCP"}, {"text":"<#BOP_ctype_title5#>","value":"static"},
+		var connection_type_options = [{"text":"<#BOP_ctype_dhcp_title1#>","value":"dhcp", "title":"DHCP"}, {"text":"<#BOP_ctype_title5#>","value":"static"},
 		{"text":"PPPoE","value":"pppoe"}, {"text":"Bridge","value":"bridge"}];
 	else{
-		var connection_type_options = [{"text":"<#BOP_ctype_title1#>","value":"dhcp"}, {"text":"<#BOP_ctype_title5#>","value":"static"},
+		var connection_type_options = [{"text":"<#BOP_ctype_dhcp_title1#>","value":"dhcp"}, {"text":"<#BOP_ctype_title5#>","value":"static"},
 		{"text":"PPPoE","value":"pppoe"}, {"text":"PPTP","value":"pptp"}, {"text":"L2TP","value":"l2tp"}];
 		if(Softwire46_support){
 			connection_type_options.push({"text":"<#IPv6_plus#>","value":"v6plus"});
@@ -1350,7 +1350,7 @@ function remove_item_from_select_bridge() {
 
 function renew_wan_proto_options(){
 	free_options(document.form.wan_proto);			//remove beidge while edit Internet PVC if not mswan_support
-	var var_item0 = new Option("<#BOP_ctype_title1#>", "dhcp");
+	var var_item0 = new Option("<#BOP_ctype_dhcp_title1#>", "dhcp");
 	var var_item1 = new Option("<#BOP_ctype_title5#>", "static");
 	var var_item2 = new Option("PPPoE", "pppoe");
 	var var_item3 = new Option("Bridge", "bridge");
@@ -1362,7 +1362,7 @@ function renew_wan_proto_options(){
 
 function remove_bridge(){
 	free_options(document.form.wan_proto);			//remove beidge while edit Internet PVC if not mswan_support
-	var var_item0 = new Option("<#BOP_ctype_title1#>", "dhcp");
+	var var_item0 = new Option("<#BOP_ctype_dhcp_title1#>", "dhcp");
 	var var_item1 = new Option("<#BOP_ctype_title5#>", "static");
 	var var_item2 = new Option("PPPoE", "pppoe");
 	var var_item3 = new Option("PPTP", "pptp");
@@ -1535,7 +1535,7 @@ function showMSWANList(){
 				if(!parent.webWrapper) cell[2].style.color = "white";
 				cell[3] = addRow.insertCell(3);
 				if (MSWANList[i][1]=="pppoe") cell[3].innerHTML = "<center>PPPoE</center>";
-				else if (MSWANList[i][1]=="dhcp") cell[3].innerHTML = "<center><#BOP_ctype_title1#></center>";
+				else if (MSWANList[i][1]=="dhcp") cell[3].innerHTML = "<center><#BOP_ctype_dhcp_title1#></center>";
 				else if (MSWANList[i][1]=="bridge") cell[3].innerHTML = "<center>Bridge</center>";
 				else if (MSWANList[i][1]=="static") cell[3].innerHTML = "<center><#BOP_ctype_title5#></center>";
 				else if (MSWANList[i][1]=="pptp") cell[3].innerHTML = "<center>PPTP</center>";
@@ -3515,7 +3515,7 @@ function Update_DNS_status(){
 	$("#DNS_status").empty();
 
 	if(document.form.wan_dnsenable_x.value == 1){
-		DSN_status_info="<b><#IPConnection_x_DefaultStatus#> :</b> <#IPConnection_x_DNSServer_auto#>";
+		DSN_status_info="<b><#IPConnection_x_DefaultStatus#>:</b> <#IPConnection_x_DNSServer_auto#>";
 	}
 	else{
 		DNS_list_index=DNSList_match(document.form.wan_dns1_x.value, document.form.wan_dns2_x.value);
@@ -3779,7 +3779,7 @@ function change_wizard(o, id){
 											<td align="left">
 												<div style="display: flex; align-items: center;">
 													<select class="input_option" name="wan_proto" onchange="change_wan_proto_type(this.value);fixed_change_wan_proto_type(this.value);">
-														<option value="dhcp" <% nvram_match("wan_proto", "dhcp", "selected"); %>><#BOP_ctype_title1#></option>
+														<option value="dhcp" <% nvram_match("wan_proto", "dhcp", "selected"); %>><#BOP_ctype_dhcp_title1#></option>
 														<option value="static" <% nvram_match("wan_proto", "static", "selected"); %>><#BOP_ctype_title5#></option>
 														<option value="pppoe" <% nvram_match("wan_proto", "pppoe", "selected"); %>>PPPoE</option>
 														<option value="bridge" <% nvram_match("wan_proto", "bridge", "selected"); %>>Bridge</option>

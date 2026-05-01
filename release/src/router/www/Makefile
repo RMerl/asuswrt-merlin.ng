@@ -904,7 +904,7 @@ ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AX11000 GT-AC2900 GT-AXY16000 GT
 endif
 
 ifneq ($(RTCONFIG_UUPLUGIN), y)
-	rm -rf $(INSTALLDIR)/www/images/uu_accelerator.png
+	rm -rf $(INSTALLDIR)/www/images/UU_Logo_RGB.svg
 	rm -rf $(INSTALLDIR)/www/images/New_ui/icon_UU.png
 endif
 
@@ -1092,7 +1092,7 @@ ifeq ($(RTCONFIG_NO_AIDISK), y)
 	rm -rf $(INSTALLDIR)/www/aidisk/Aidisk-3.asp
 	rm -rf $(INSTALLDIR)/www/aidisk/Aidisk-4.asp
 	rm -rf $(INSTALLDIR)/www/aidisk/Aidisk-1_help.asp
-	rm -rf $(INSTALLDIR)/www/images/New_ui/aidisk
+	rm -rf $(INSTALLDIR)/www/images/New_ui/aidisk/step[123].png
 	rm -rf $(INSTALLDIR)/www/aidisk.asp
 endif
 

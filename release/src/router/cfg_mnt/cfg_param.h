@@ -75,6 +75,9 @@
 #define FT_MLD_ENABLE BIT_ULL(45)
 #endif
 
+#if defined(RTCONFIG_MULTILAN_CFG)
+#define FT_VLAN_TRUNK_ISO_RL BIT_ULL(48)
+#endif
 /* service */
 #define RESTART_WIRELESS		"restart_wireless"
 #define CHPASS		"chpass"
@@ -167,6 +170,7 @@ static struct feature_mapping_s feature_mapping_list[] __attribute__ ((unused)) 
 	{ "ap_wifi_rl", FT_AP_WIFI_RL, RESTART_WIRELESS },
 	{ "ap_lanif_rl", FT_AP_LANIF_RL, RESTART_NET_AND_PHY },
 	{ "vlan_rl", FT_VLAN_RL, RESTART_APG },
+	{ "vlan_trunk_iso_rl", FT_VLAN_TRUNK_ISO_RL, RESTART_APG},
 	{ "sdn_rl", FT_SDN_RL, RESTART_APG },
 	{ "subnet_rl", FT_SUBNET_RL, NULL },
 	{ "vlan_trunk_rl", FT_VLAN_TRUNK_RL, RESTART_NET_AND_PHY },
@@ -581,6 +585,7 @@ enum {
 	SUBFT_VLAN_TRUNK_RL,
 	SUBFT_SDN_RL,
 	SUBFT_VLAN_RL,
+	SUBFT_VLAN_TRUNK_ISO_RL,
 	SUBFT_RADIUS_LIST,
 	SUBFT_SUBNET_RL,
 	SUBFT_APGROUP_PARAM_0, 
@@ -889,6 +894,7 @@ static struct subfeature_mapping_s subfeature_mapping_list[] __attribute__ ((unu
 	{ "ap_wifi_rl", SUBFT_AP_WIFI_RL, FT_AP_WIFI_RL },
 	{ "ap_lanif_rl", SUBFT_AP_LANIF_RL, FT_AP_LANIF_RL },
 	{ "vlan_rl", SUBFT_VLAN_RL, FT_VLAN_RL },
+	{ "vlan_trunk_iso_rl", SUBFT_VLAN_TRUNK_ISO_RL, FT_VLAN_TRUNK_ISO_RL},
 	{ "sdn_rl", SUBFT_SDN_RL, FT_SDN_RL },
 	{ "subnet_rl", SUBFT_SUBNET_RL, FT_SUBNET_RL },
 	{ "vlan_trunk_rl",  SUBFT_VLAN_TRUNK_RL, FT_VLAN_TRUNK_RL },
@@ -2099,6 +2105,7 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 	{ "ap_wifi_rl", FT_AP_WIFI_RL, SUBFT_AP_WIFI_RL, "",	0,	0},
 	{ "ap_lanif_rl", FT_AP_LANIF_RL, SUBFT_AP_LANIF_RL, "",	0,	0},
 	{ "vlan_rl", FT_VLAN_RL, SUBFT_VLAN_RL, "",	0,	0},
+	{ "vlan_trunk_iso_rl", FT_VLAN_TRUNK_ISO_RL, SUBFT_VLAN_TRUNK_ISO_RL, "", 0, 0},
 	{ "sdn_rl", FT_SDN_RL, SUBFT_SDN_RL, "",	0,	0},
 	{ "subnet_rl", FT_SUBNET_RL, SUBFT_SUBNET_RL, "",	0,	0},
 	{ "vlan_trunk_rl", FT_VLAN_TRUNK_RL, SUBFT_VLAN_TRUNK_RL, "",	0,	0},

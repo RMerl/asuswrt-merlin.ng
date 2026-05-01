@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2015-2025 Tobias Brunner
  * Copyright (C) 2010 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -84,6 +85,11 @@ struct private_radius_socket_t {
 	char *address;
 
 	/**
+	 * Source address
+	 */
+	char *source;
+
+	/**
 	 * current RADIUS identifier
 	 */
 	uint8_t identifier;
@@ -130,10 +136,10 @@ struct private_radius_socket_t {
 static bool check_connection(private_radius_socket_t *this,
 							 int *fd, uint16_t port)
 {
+	host_t *server, *src = NULL;
+
 	if (*fd == -1)
 	{
-		host_t *server;
-
 		server = host_create_from_dns(this->address, AF_UNSPEC, port);
 		if (!server)
 		{
@@ -149,19 +155,42 @@ static bool check_connection(private_radius_socket_t *this,
 			server->destroy(server);
 			return FALSE;
 		}
+		if (this->source)
+		{
+			src = host_create_from_string_and_family(this->source,
+													 server->get_family(server), 0);
+			if (!src)
+			{
+				DBG1(DBG_CFG, "invalid source address '%s' to reach RADIUS "
+					 "server %#H", this->source, server);
+				goto error;
+			}
+			if (bind(*fd, src->get_sockaddr(src),
+					 *src->get_sockaddr_len(src)) == -1)
+			{
+				DBG1(DBG_CFG, "binding RADIUS socket to %H failed: %s", src,
+					 strerror(errno));
+				goto error;
+			}
+		}
 		if (connect(*fd, server->get_sockaddr(server),
 					*server->get_sockaddr_len(server)) < 0)
 		{
 			DBG1(DBG_CFG, "connecting RADIUS socket to %#H failed: %s",
 				 server, strerror(errno));
-			server->destroy(server);
-			close(*fd);
-			*fd = -1;
-			return FALSE;
+			goto error;
 		}
 		server->destroy(server);
+		DESTROY_IF(src);
 	}
 	return TRUE;
+
+error:
+	server->destroy(server);
+	DESTROY_IF(src);
+	close(*fd);
+	*fd = -1;
+	return FALSE;
 }
 
 /**
@@ -372,7 +401,7 @@ METHOD(radius_socket_t, destroy, void,
 	if (this->auth_fd != -1)
 	{
 		close(this->auth_fd);
-	};
+	}
 	if (this->acct_fd != -1)
 	{
 		close(this->acct_fd);
@@ -383,7 +412,8 @@ METHOD(radius_socket_t, destroy, void,
 /**
  * See header
  */
-radius_socket_t *radius_socket_create(char *address, uint16_t auth_port,
+radius_socket_t *radius_socket_create(char *address, char *source,
+									  uint16_t auth_port,
 									  uint16_t acct_port, chunk_t secret,
 									  u_int tries, double timeout, double base)
 {
@@ -396,6 +426,7 @@ radius_socket_t *radius_socket_create(char *address, uint16_t auth_port,
 			.destroy = _destroy,
 		},
 		.address = address,
+		.source = source,
 		.auth_port = auth_port,
 		.auth_fd = -1,
 		.acct_port = acct_port,

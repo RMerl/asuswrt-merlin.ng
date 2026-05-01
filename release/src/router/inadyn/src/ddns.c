@@ -690,8 +690,13 @@ static int send_update(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias, int 
 
 	if (info->system->setup)
 		DO(info->system->setup(ctx, info, alias));
+	
+	/* pubyun only support http for updating and IPv4 ipaddr for A record */
+	if(!strcmp(info->system->name, "dyndns@3322.org"))
+		client->ssl_enabled = 0;
+	else
+		client->ssl_enabled = info->ssl_enabled;
 
-	client->ssl_enabled = info->ssl_enabled;
 	rc = http_init(client, "Sending IP# update to DDNS server");
 	if (rc) {
 		/* Update failed, force update again in ctx->cmd_check_period seconds */

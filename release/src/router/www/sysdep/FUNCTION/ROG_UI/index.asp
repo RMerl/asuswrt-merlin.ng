@@ -452,6 +452,19 @@ function initial(){
 
 	showMapWANStatus(sw_mode);
 
+	const bgURL = {
+		"bg1": usb_support
+			? "images/New_ui/networkmap/networkmap_bg.png"
+			: "images/New_ui/networkmap/networkmap_bg_noUsb.png",
+		"bg2": usb_support
+			? "images/New_ui/networkmap/networkmap_bg2.png"
+			: "images/New_ui/networkmap/networkmap_bg2_noUsb.png"
+	};
+	$("#background_div").css("background-image", "url('" + bgURL.bg1 + "')");
+	if (!usb_support) {
+		$("#clients_td").css("padding-top", "24px");
+	}
+
 	if(sw_mode != "1"){
 		document.getElementById("wanIP_div").style.display = "none";
 		document.getElementById("ddnsHostName_div").style.display = "none";
@@ -481,7 +494,7 @@ function initial(){
 			document.getElementById('single_wan_line').style.display = "none";
 			document.getElementById('primary_wan_line').style.display = "";
 			document.getElementById('secondary_wan_line').style.display = "";
-			$("#background_div").css("background-image", "url('images/New_ui/networkmap/networkmap_bg2.png')")
+			$("#background_div").css("background-image", "url('" + bgURL.bg2 + "')");
 		}
 	}
 

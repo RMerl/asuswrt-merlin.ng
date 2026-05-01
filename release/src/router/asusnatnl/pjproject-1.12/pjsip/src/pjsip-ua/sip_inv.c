@@ -465,8 +465,9 @@ static pj_bool_t mod_inv_on_rx_request(pjsip_rx_data *rdata)
 
     /* Only wants to receive request from a dialog. */
     dlg = pjsip_rdata_get_dlg(rdata);
-    if (dlg == NULL)
+    if (dlg == NULL) {
 	return PJ_FALSE;
+	}
 
 	inv = (pjsip_inv_session*) dlg->mod_data[mod_inv[inst_id].mod.id];
 
@@ -870,7 +871,7 @@ PJ_DEF(pjsip_rdata_sdp_info*) pjsip_rdata_get_sdp_info(pjsip_rx_data *rdata)
 	pj_status_t status;
 	status = pjmedia_sdp_parse(inst_id, rdata->tp_info.pool,
 				   &sdp_info->body.ptr,
-				   &sdp_info->body.slen,
+				   (pj_size_t *)&sdp_info->body.slen,
 				   &sdp_info->sdp);
 	if (status == PJ_SUCCESS)
 	    status = pjmedia_sdp_validate(sdp_info->sdp);
@@ -1783,23 +1784,27 @@ static pj_status_t inv_check_sdp_in_incoming_msg( pjsip_inv_session *inv,
      */
     if (tsx_inv_data->sdp_done) {
 	pj_str_t res_tag;
+	int st_code;
 
 	res_tag = rdata->msg_info.to->tag;
+	st_code = rdata->msg_info.msg->line.status.code;
 
-	/* Allow final response after SDP has been negotiated in early
-	 * media, IF this response is a final response with different
+	/* Allow final/early response after SDP has been negotiated in early
+	 * media, IF this response is a final/early response with different
 	 * tag.
 	 */
 	if (tsx->role == PJSIP_ROLE_UAC &&
-	    rdata->msg_info.msg->line.status.code/100 == 2 &&
+	    (st_code/100 == 2 ||
+	     (st_code==183 && pjsip_cfg()->endpt.follow_early_media_fork)) &&
 	    tsx_inv_data->done_early &&
 	    pj_stricmp(&tsx_inv_data->done_tag, &res_tag))
 	{
 	    const pjmedia_sdp_session *reoffer_sdp = NULL;
 
-	    PJ_LOG(4,(inv->obj_name, "Received forked final response "
+	    PJ_LOG(4,(inv->obj_name, "Received forked %s response "
 		      "after SDP negotiation has been done in early "
-		      "media. Renegotiating SDP.."));
+		      "media. Renegotiating SDP..",
+		      (st_code==183? "early" : "final" )));
 
 	    /* Retrieve original SDP offer from INVITE request */
 	    reoffer_sdp = (const pjmedia_sdp_session*) 
@@ -1811,7 +1816,7 @@ static pj_status_t inv_check_sdp_in_incoming_msg( pjsip_inv_session *inv,
 						        reoffer_sdp);
 	    if (status != PJ_SUCCESS) {
 		PJ_LOG(1,(inv->obj_name, "Error updating local offer for "
-			  "forked 2xx response (err=%d)", status));
+			  "forked 2xx/183 response (err=%d)", status));
 		return status;
 	    }
 
@@ -2826,7 +2831,7 @@ static void inv_respond_incoming_cancel(pjsip_inv_session *inv,
 
     pjsip_tsx_create_key(rdata->tp_info.pool, &key, PJSIP_ROLE_UAS,
 			 pjsip_get_invite_method(), rdata);
-    invite_tsx = pjsip_tsx_layer_find_tsx(inst_id, &key, PJ_TRUE);
+    invite_tsx = pjsip_tsx_layer_find_tsx2(inst_id, &key, PJ_TRUE);
 
     if (invite_tsx == NULL) {
 
@@ -2875,7 +2880,7 @@ static void inv_respond_incoming_cancel(pjsip_inv_session *inv,
     }
 
     if (invite_tsx)
-	pj_mutex_unlock(invite_tsx->mutex);
+	pj_grp_lock_dec_ref(invite_tsx->grp_lock);
 }
 
 

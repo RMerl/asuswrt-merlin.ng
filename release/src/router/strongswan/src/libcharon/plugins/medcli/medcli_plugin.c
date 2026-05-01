@@ -129,7 +129,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *medcli_plugin_create()
+PLUGIN_DEFINE(medcli)
 {
 	private_medcli_plugin_t *this;
 

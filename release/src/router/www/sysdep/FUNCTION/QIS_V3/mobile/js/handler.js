@@ -5334,9 +5334,9 @@ goTo.EULA = function(){
 		apply.Policy();
 		return
 	}
-	const policyStatus = PolicyStatus()
+	PolicyStatus()
 		.then(data => {
-			if (data.EULA == "1") {
+			if (data.EULA_read == 1) {
 				goTo.PP();
 			} else {
 				const policy_page = document.querySelector('#policy_page');
@@ -5357,7 +5357,7 @@ goTo.PP = function () {
 		return
 	}
 
-	const policyStatus = PolicyStatus()
+	PolicyStatus()
 		.then(data => {
 			const policy_page = document.querySelector('#policy_page');
 			const qisPolicyPageComponent = new QisPolicyPageComponent({

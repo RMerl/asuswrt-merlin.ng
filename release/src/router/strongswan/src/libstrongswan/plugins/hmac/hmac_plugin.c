@@ -90,7 +90,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *hmac_plugin_create()
+PLUGIN_DEFINE(hmac)
 {
 	private_hmac_plugin_t *this;
 

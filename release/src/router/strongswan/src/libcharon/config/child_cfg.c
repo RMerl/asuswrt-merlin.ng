@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2019 Tobias Brunner
+ * Copyright (C) 2008-2025 Tobias Brunner
  * Copyright (C) 2016 Andreas Steffen
  * Copyright (C) 2005-2007 Martin Willi
  * Copyright (C) 2005 Jan Hutter
@@ -67,12 +67,12 @@ struct private_child_cfg_t {
 	/**
 	 * list for traffic selectors for my site
 	 */
-	linked_list_t *my_ts;
+	traffic_selector_list_t *my_ts;
 
 	/**
 	 * list for traffic selectors for others site
 	 */
-	linked_list_t *other_ts;
+	traffic_selector_list_t *other_ts;
 
 	/**
 	 * updown script
@@ -258,163 +258,64 @@ METHOD(child_cfg_t, add_traffic_selector, void,
 {
 	if (local)
 	{
-		this->my_ts->insert_last(this->my_ts, ts);
+		this->my_ts->add(this->my_ts, ts);
 	}
 	else
 	{
-		this->other_ts->insert_last(this->other_ts, ts);
+		this->other_ts->add(this->other_ts, ts);
 	}
 }
 
-METHOD(child_cfg_t, get_traffic_selectors, linked_list_t*,
-	private_child_cfg_t *this, bool local, linked_list_t *supplied,
-	linked_list_t *hosts, bool log)
+/**
+ * Check whether the config is for regular transport mode.
+ */
+static bool is_transport_mode(private_child_cfg_t *this)
 {
-	enumerator_t *e1, *e2;
-	traffic_selector_t *ts1, *ts2, *selected;
-	linked_list_t *result, *derived;
-	host_t *host;
+	return this->mode == MODE_TRANSPORT && !has_option(this, OPT_PROXY_MODE);
+}
 
-	result = linked_list_create();
-	derived = linked_list_create();
-	if (local)
-	{
-		e1 = this->my_ts->create_enumerator(this->my_ts);
-	}
-	else
-	{
-		e1 = this->other_ts->create_enumerator(this->other_ts);
-	}
-	/* in a first step, replace "dynamic" TS with the host list */
-	while (e1->enumerate(e1, &ts1))
-	{
-		if (hosts && hosts->get_count(hosts))
-		{	/* set hosts if TS is dynamic or as initiator in transport mode */
-			bool dynamic = ts1->is_dynamic(ts1),
-				 proxy_mode = has_option(this, OPT_PROXY_MODE);
-			if (dynamic || (this->mode == MODE_TRANSPORT && !proxy_mode &&
-							!supplied))
-			{
-				e2 = hosts->create_enumerator(hosts);
-				while (e2->enumerate(e2, &host))
-				{
-					if (!dynamic && !host->is_anyaddr(host) &&
-						!ts1->includes(ts1, host))
-					{	/* for transport mode, we skip TS that don't match
-						 * specific IPs */
-						continue;
-					}
-					ts2 = ts1->clone(ts1);
-					if (dynamic || !host->is_anyaddr(host))
-					{	/* don't make regular TS larger than they were */
-						ts2->set_address(ts2, host);
-					}
-					derived->insert_last(derived, ts2);
-				}
-				e2->destroy(e2);
-				continue;
-			}
-		}
-		derived->insert_last(derived, ts1->clone(ts1));
-	}
-	e1->destroy(e1);
+METHOD(child_cfg_t, get_traffic_selectors, linked_list_t*,
+	private_child_cfg_t *this, bool local, linked_list_t *hosts)
+{
+	traffic_selector_list_t *ts = local ? this->my_ts : this->other_ts;
 
-	if (log)
-	{
-		DBG2(DBG_CFG, "%s traffic selectors for %s:",
-			 supplied ? "selecting" : "proposing", local ? "us" : "other");
-	}
-	if (!supplied)
-	{
-		while (derived->remove_first(derived, (void**)&ts1) == SUCCESS)
-		{
-			if (log)
-			{
-				DBG2(DBG_CFG, " %R", ts1);
-			}
-			result->insert_last(result, ts1);
-		}
-		derived->destroy(derived);
-	}
-	else
-	{
-		e1 = derived->create_enumerator(derived);
-		e2 = supplied->create_enumerator(supplied);
-		/* enumerate all configured/derived selectors */
-		while (e1->enumerate(e1, &ts1))
-		{
-			/* enumerate all supplied traffic selectors */
-			while (e2->enumerate(e2, &ts2))
-			{
-				selected = ts1->get_subset(ts1, ts2);
-				if (selected)
-				{
-					if (log)
-					{
-						DBG2(DBG_CFG, " config: %R, received: %R => match: %R",
-							 ts1, ts2, selected);
-					}
-					result->insert_last(result, selected);
-				}
-				else if (log)
-				{
-					DBG2(DBG_CFG, " config: %R, received: %R => no match",
-						 ts1, ts2);
-				}
-			}
-			supplied->reset_enumerator(supplied, e2);
-		}
-		e1->destroy(e1);
-		e2->destroy(e2);
+	/* force replacing non-dynamic TS to the IPs in transport mode */
+	return ts->get(ts, hosts, is_transport_mode(this));
+}
 
-		/* check if we/peer did any narrowing, raise alert */
-		e1 = derived->create_enumerator(derived);
-		e2 = result->create_enumerator(result);
-		while (e1->enumerate(e1, &ts1))
-		{
-			if (!e2->enumerate(e2, &ts2) || !ts1->equals(ts1, ts2))
-			{
-				charon->bus->alert(charon->bus, ALERT_TS_NARROWED,
-								   local, result, this);
-				break;
-			}
-		}
-		e1->destroy(e1);
-		e2->destroy(e2);
+/*
+ * Described in header
+ */
+linked_list_t *child_cfg_select_ts(child_cfg_t *cfg, bool local,
+								   traffic_selector_list_t *list,
+								   linked_list_t *supplied, linked_list_t *hosts)
+{
+	private_child_cfg_t *this = (private_child_cfg_t*)cfg;
+	traffic_selector_list_t *ts = list ?: (local ? this->my_ts : this->other_ts);
+	linked_list_t *result;
+	bool force, narrowed = FALSE;
 
-		derived->destroy_offset(derived, offsetof(traffic_selector_t, destroy));
-	}
+	DBG2(DBG_CFG, "%s traffic selectors for %s:",
+		 supplied ? "selecting" : "proposing", local ? "us" : "other");
 
-	/* remove any redundant traffic selectors in the list */
-	e1 = result->create_enumerator(result);
-	e2 = result->create_enumerator(result);
-	while (e1->enumerate(e1, &ts1))
+	/* force replacing non-dynamic TS to the IPs in transport mode, but only
+	 * when proposing as initiator */
+	force = !supplied && is_transport_mode(this);
+
+	result = ts->select(ts, supplied, hosts, force, &narrowed);
+	if (narrowed)
 	{
-		while (e2->enumerate(e2, &ts2))
-		{
-			if (ts1 != ts2)
-			{
-				if (ts2->is_contained_in(ts2, ts1))
-				{
-					result->remove_at(result, e2);
-					ts2->destroy(ts2);
-					result->reset_enumerator(result, e1);
-					break;
-				}
-				if (ts1->is_contained_in(ts1, ts2))
-				{
-					result->remove_at(result, e1);
-					ts1->destroy(ts1);
-					break;
-				}
-			}
-		}
-		result->reset_enumerator(result, e2);
+		charon->bus->alert(charon->bus, ALERT_TS_NARROWED,
+						   local, result, this);
 	}
-	e1->destroy(e1);
-	e2->destroy(e2);
-
 	return result;
+}
+
+METHOD(child_cfg_t, select_traffic_selectors, linked_list_t*,
+	private_child_cfg_t *this, bool local, linked_list_t *supplied,
+	linked_list_t *hosts)
+{
+	return child_cfg_select_ts(&this->public, local, NULL, supplied, hosts);
 }
 
 METHOD(child_cfg_t, get_updown, char*,
@@ -681,13 +582,8 @@ METHOD(child_cfg_t, equals, bool,
 	{
 		return FALSE;
 	}
-	if (!this->my_ts->equals_offset(this->my_ts, other->my_ts,
-									offsetof(traffic_selector_t, equals)))
-	{
-		return FALSE;
-	}
-	if (!this->other_ts->equals_offset(this->other_ts, other->other_ts,
-									   offsetof(traffic_selector_t, equals)))
+	if (!this->my_ts->equals(this->my_ts, other->my_ts) ||
+		!this->other_ts->equals(this->other_ts, other->other_ts))
 	{
 		return FALSE;
 	}
@@ -733,8 +629,8 @@ METHOD(child_cfg_t, destroy, void,
 	if (ref_put(&this->refcount))
 	{
 		this->proposals->destroy_offset(this->proposals, offsetof(proposal_t, destroy));
-		this->my_ts->destroy_offset(this->my_ts, offsetof(traffic_selector_t, destroy));
-		this->other_ts->destroy_offset(this->other_ts, offsetof(traffic_selector_t, destroy));
+		this->my_ts->destroy(this->my_ts);
+		this->other_ts->destroy(this->other_ts);
 		DESTROY_IF(this->label);
 		free(this->updown);
 		free(this->interface);
@@ -755,6 +651,7 @@ child_cfg_t *child_cfg_create(char *name, child_cfg_create_t *data)
 			.get_name = _get_name,
 			.add_traffic_selector = _add_traffic_selector,
 			.get_traffic_selectors = _get_traffic_selectors,
+			.select_traffic_selectors = _select_traffic_selectors,
 			.add_proposal = _add_proposal,
 			.get_proposals = _get_proposals,
 			.select_proposal = _select_proposal,
@@ -809,8 +706,8 @@ child_cfg_t *child_cfg_create(char *name, child_cfg_create_t *data)
 		.interface = strdupnull(data->interface),
 		.refcount = 1,
 		.proposals = linked_list_create(),
-		.my_ts = linked_list_create(),
-		.other_ts = linked_list_create(),
+		.my_ts = traffic_selector_list_create(),
+		.other_ts = traffic_selector_list_create(),
 		.replay_window = lib->settings->get_int(lib->settings,
 							"%s.replay_window", DEFAULT_REPLAY_WINDOW, lib->ns),
 		.hw_offload = data->hw_offload,

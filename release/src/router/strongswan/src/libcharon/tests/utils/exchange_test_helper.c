@@ -98,21 +98,27 @@ static ike_cfg_t *create_ike_cfg(bool initiator, exchange_test_sa_conf_t *conf)
 		.remote = "127.0.0.1",
 		.remote_port = IKEV2_UDP_PORT,
 	};
+	enumerator_t *enumerator;
 	ike_cfg_t *ike_cfg;
-	char *proposal = NULL;
+	char *proposals = NULL, *proposal;
 
 	if (conf)
 	{
 		ike.childless = initiator ? conf->initiator.childless
 								  : conf->responder.childless;
-		proposal = initiator ? conf->initiator.ike : conf->responder.ike;
+		proposals = initiator ? conf->initiator.ike : conf->responder.ike;
 	}
 
 	ike_cfg = ike_cfg_create(&ike);
-	if (proposal)
+	if (proposals)
 	{
-		ike_cfg->add_proposal(ike_cfg,
+		enumerator = enumerator_create_token(proposals, ",", "");
+		while (enumerator->enumerate(enumerator, &proposal))
+		{
+			ike_cfg->add_proposal(ike_cfg,
 							proposal_create_from_string(PROTO_IKE, proposal));
+		}
+		enumerator->destroy(enumerator);
 	}
 	else
 	{
@@ -124,21 +130,27 @@ static ike_cfg_t *create_ike_cfg(bool initiator, exchange_test_sa_conf_t *conf)
 static child_cfg_t *create_child_cfg(bool initiator,
 									 exchange_test_sa_conf_t *conf)
 {
+	enumerator_t *enumerator;
 	child_cfg_t *child_cfg;
 	child_cfg_create_t child = {
 		.mode = MODE_TUNNEL,
 	};
-	char *proposal = NULL;
+	char *proposals = NULL, *proposal;
 
 	child_cfg = child_cfg_create(initiator ? "init" : "resp", &child);
 	if (conf)
 	{
-		proposal = initiator ? conf->initiator.esp : conf->responder.esp;
+		proposals = initiator ? conf->initiator.esp : conf->responder.esp;
 	}
-	if (proposal)
+	if (proposals)
 	{
-		child_cfg->add_proposal(child_cfg,
+		enumerator = enumerator_create_token(proposals, ",", "");
+		while (enumerator->enumerate(enumerator, &proposal))
+		{
+			child_cfg->add_proposal(child_cfg,
 							proposal_create_from_string(PROTO_ESP, proposal));
+		}
+		enumerator->destroy(enumerator);
 	}
 	else
 	{
@@ -265,6 +277,7 @@ METHOD(exchange_test_helper_t, establish_sa, void,
 	ike_sa_id_t *id_i, *id_r;
 	ike_sa_t *sa_i, *sa_r;
 	child_cfg_t *child_i;
+	proposal_t *proposal;
 
 	child_i = create_sa(this, init, resp, conf);
 
@@ -282,6 +295,17 @@ METHOD(exchange_test_helper_t, establish_sa, void,
 	/* <-- IKE_SA_INIT */
 	id_i->set_responder_spi(id_i, id_r->get_responder_spi(id_r));
 	process_message(this, sa_i, NULL);
+
+	proposal = sa_i->get_proposal(sa_i);
+	if (proposal->get_algorithm(proposal, ADDITIONAL_KEY_EXCHANGE_1, NULL,
+								NULL))
+	{
+		/* IKE_INTERMEDIATE --> */
+		process_message(this, sa_r, NULL);
+		/* <-- IKE_INTERMEDIATE */
+		process_message(this, sa_i, NULL);
+	}
+
 	/* IKE_AUTH --> */
 	process_message(this, sa_r, NULL);
 	/* <-- IKE_AUTH */

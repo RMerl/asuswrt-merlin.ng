@@ -286,11 +286,20 @@ static void load_addrs(private_load_tester_config_t *this)
 				from = host_create_from_subnet(token, &bits);
 				if (from)
 				{
-					DBG1(DBG_CFG, "loaded load-tester address pool %H/%d on %s",
-						 from, bits, iface);
 					pool = mem_pool_create(iface, from, bits);
+					if (pool)
+					{
+						DBG1(DBG_CFG, "loaded load-tester address pool %H/%d "
+							 "on %s", from, bits, iface);
+						this->pools->insert_last(this->pools, pool);
+					}
+					else
+					{
+
+						DBG1(DBG_CFG, "invalid load-tester address pool %H/%d "
+							 "on %s, skipped", from, bits, iface);
+					}
 					from->destroy(from);
-					this->pools->insert_last(this->pools, pool);
 				}
 				else
 				{
@@ -700,7 +709,7 @@ static peer_cfg_t* generate_config(private_load_tester_config_t *this, u_int num
 		.keyingtries = 1,
 		.rekey_time = this->ike_rekey,
 		.over_time = this->ike_rekey,
-		.no_mobike = TRUE,
+		.options = OPT_NO_MOBIKE,
 		.dpd = this->dpd_delay,
 		.dpd_timeout = this->dpd_timeout,
 	};

@@ -259,6 +259,21 @@ struct message_t {
 	status_t (*generate) (message_t *this, keymat_t *keymat, packet_t **packet);
 
 	/**
+	 * Generate the plaintext encoding of this message as needed to authenticate
+	 * IKE_INTERMEDIATE exchanges.
+	 *
+	 * The data returned is the concatenation of the IKE header and plaintext
+	 * payloads (if any) up until the end of the header of the Encrypted
+	 * Payload followed by the plaintext data of the Encrypted Payload (if any).
+	 * Length fields are adjusted to only contain that of returned data (e.g.
+	 * IV or padding is ignored).
+	 *
+	 * @param[out] plain	plaintext encoding (allocated)
+	 * @return				TRUE if generated successfully
+	 */
+	bool (*get_plain)(message_t *this, chunk_t *plain);
+
+	/**
 	 * Check if the message has already been encoded using generate().
 	 *
 	 * @return			TRUE if message has been encoded

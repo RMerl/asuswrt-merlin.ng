@@ -159,4 +159,9 @@ extern int check_cmd_injection_blacklist(char *para);
 extern int check_xss_blacklist(char* para, int check_www);
 extern int validate_apply_input_value(char *name, char *value);
 extern int detect_vul_scan(void);
+#ifdef RTCONFIG_AI_SERVICE
+extern int set_AI_board_EULA(char *AI_board_EULA, char *from_service);
+#endif
+extern int get_asus_pp_version(void);
+extern int update_PP_EULA_ts(const char *old_str, const char *key, const char *ts, char *out_buf, size_t out_sz);
 #endif /* !__WEBAPI_H__ */

@@ -83,7 +83,7 @@
 #error You must define mutex operations appropriate for your platform!
 #endif
 
-static MUTEX_TYPE *mutex_buf = NULL;
+//static MUTEX_TYPE *mutex_buf = NULL;
 #ifdef USE_GLOBAL_CTX
 static SSL_CTX *g_ctx = NULL;
 #endif
@@ -246,9 +246,9 @@ static void sctp_rtp_cb( void *user_data, void *pkt, pj_ssize_t size);
  */
 static void sctp_rtcp_cb( void *user_data, void *pkt, pj_ssize_t size);
 
-static pj_status_t set_cipher_list(transport_sctp *sctp);
+//static pj_status_t set_cipher_list(transport_sctp *sctp);
 
-static void dump_bin(const char *buf, unsigned len, pj_bool_t send);
+//static void dump_bin(const char *buf, unsigned len, pj_bool_t send);
 
 #ifdef ENABLE_DELAYED_SEND
 static write_data_t* alloc_send_data(transport_sctp *sctp, pj_size_t len);
@@ -256,10 +256,10 @@ static void free_send_data(transport_sctp *sctp, write_data_t *wdata);
 static pj_status_t flush_delayed_send(transport_sctp *sctp);
 #endif
 
-static const pj_str_t ID_TNL_PLAIN  = { "RTP/AVP", 7 };
-static const pj_str_t ID_TNL_DTLS = { "RTP/SAVP", 8 };
-static const pj_str_t ID_TNL_DTLS_SCTP = { "DTLS/SCTP", 9 };
-static const pj_str_t ID_TNL_PLAIN_SCTP = { "RTP/SCTP", 8 }; // dean : RTP/SCTP is for UDT replacement
+//static const pj_str_t ID_TNL_PLAIN  = { "RTP/AVP", 7 };
+//static const pj_str_t ID_TNL_DTLS = { "RTP/SAVP", 8 };
+//static const pj_str_t ID_TNL_DTLS_SCTP = { "DTLS/SCTP", 9 };
+//static const pj_str_t ID_TNL_PLAIN_SCTP = { "RTP/SCTP", 8 }; // dean : RTP/SCTP is for UDT replacement
 
 #ifdef USE_GLOBAL_LOCK
 static MUTEX_TYPE global_mutex;
@@ -424,8 +424,7 @@ static pj_str_t ssl_strerror(pj_status_t status,
 /* usrsctp library initialization counter */
 static int usrsctp_init_count;
 
-static int is_sctp_init_packet(void *data, size_t datalen);
-
+#if !defined(PJMEDIA_DISABLE_SCTP) || (PJMEDIA_DISABLE_SCTP==0)
 static int sctp_data_input(struct socket* sock, union sctp_sockstore addr,
 							void *data, size_t datalen,
 							struct sctp_rcvinfo rcv, int flags, void *ulp_info);
@@ -618,7 +617,6 @@ static void sctp_debug_printf(const char *format, ...)
 	va_end(arg);
 }
 
-#if !defined(PJMEDIA_DISABLE_SCTP) || (PJMEDIA_DISABLE_SCTP==0)
 void handle_assoc_change_event(transport_sctp *sctp, const struct sctp_assoc_change *sac)
 {
 	uint32_t i, n;
@@ -967,7 +965,7 @@ static int sctp_data_input(struct socket* sock, union sctp_sockstore addr,
 /* Initialize usrsctp library*/
 PJ_DEF(pj_status_t) init_usrsctp(pj_pool_t *pool)
 {
-	pj_status_t status;
+	//pj_status_t status;
 
 	PJ_UNUSED_ARG(pool);
 
@@ -1017,7 +1015,7 @@ PJ_DEF(void) shutdown_usrsctp(void)
 /* Create and initialize usrsctp and instance */
 static pj_status_t create_sctp(transport_sctp *sctp)
 {
-	pj_status_t status;
+	//pj_status_t status;
 #if !defined(PJMEDIA_DISABLE_SCTP) || (PJMEDIA_DISABLE_SCTP==0)
     int mode, rc;
 	char *openssl_ver;
@@ -1207,6 +1205,7 @@ static void destroy_sctp(transport_sctp *sctp)
  *******************************************************************
  */
 
+#if 0
 static void dump_bin(const char *buf, unsigned len, pj_bool_t send)
 {
 	unsigned i;
@@ -1239,10 +1238,12 @@ static void dump_bin(const char *buf, unsigned len, pj_bool_t send)
 	}
 	PJ_LOG(3,(THIS_FILE, "end dump"));
 }
+#endif
 
 static pj_bool_t libsctp_initialized;
 static void pjmedia_sctp_deinit_lib(pjmedia_endpt *endpt);
 
+#if 0
 static int sctp_accept_thread(void *arg)
 {
 #if !defined(PJMEDIA_DISABLE_SCTP) || (PJMEDIA_DISABLE_SCTP==0)
@@ -1353,12 +1354,13 @@ on_return:
 	return 0;
 #endif
 }
+#endif
 
 PJ_DEF(void) pjmedia_sctp_session_create(pjmedia_transport *tp,
 										 pj_sockaddr *turn_mapped_addr)
 {
-	transport_sctp *sctp = (transport_sctp *)tp;
 #if !defined(PJMEDIA_DISABLE_SCTP) || (PJMEDIA_DISABLE_SCTP==0)
+	transport_sctp *sctp = (transport_sctp *)tp;
 	struct sockaddr_conn addr;
 	int r;
 
@@ -1443,7 +1445,7 @@ PJ_DEF(void) pjmedia_sctp_session_create(pjmedia_transport *tp,
 PJ_DEF(pj_status_t) pjmedia_sctp_init_lib(pjmedia_endpt *endpt)
 {
     if (libsctp_initialized == PJ_FALSE) {
-	pj_status_t status;
+	//pj_status_t status;
 
 	/*status = init_usrsctp(pjmedia_get_pool(endpt));
 	if (status != PJ_SUCCESS) { 
@@ -1979,11 +1981,11 @@ static void sctp_rtp_cb( void *user_data, void *pkt, pj_ssize_t size)
     transport_sctp *sctp = (transport_sctp *) user_data;
     //int len = size;
     //pj_status_t err = PJ_SUCCESS;
-    void (*cb)(void*, void*, pj_ssize_t) = NULL;
-	void *cb_data = NULL;
-	pj_size_t nwritten;
-	pj_status_t status;
-	void *data = pkt;
+    //void (*cb)(void*, void*, pj_ssize_t) = NULL;
+	//void *cb_data = NULL;
+	//pj_size_t nwritten;
+	//pj_status_t status;
+	//void *data = pkt;
 	pj_bool_t disable_flow_ctl = PJ_FALSE;
 
 	// Check if the speed limit is reached, if true drop the packet.
@@ -2028,21 +2030,6 @@ static void sctp_rtp_cb( void *user_data, void *pkt, pj_ssize_t size)
 #endif
 
 	return;
-
-on_error:
-	if (sctp->state == SCTP_STATE_CONNECTING)
-	{
-		return;
-	}
-	sctp->state = SCTP_STATE_CLOSED;
-
-	MUTEX_UNLOCK(sctp->mutex);
-
-#ifdef USE_GLOBAL_LOCK
-	MUTEX_UNLOCK(global_mutex);
-#endif
-
-	return;
 }
 
 /*
@@ -2052,7 +2039,7 @@ static void sctp_rtcp_cb( void *user_data, void *pkt, pj_ssize_t size)
 {
     transport_sctp *sctp = (transport_sctp *) user_data;
     int len = size;
-    pj_status_t err = PJ_SUCCESS;
+    //pj_status_t err = PJ_SUCCESS;
     void (*cb)(void*, void*, pj_ssize_t) = NULL;
     void *cb_data = NULL;
 
@@ -2135,6 +2122,7 @@ static pj_status_t transport_media_create(pjmedia_transport *tp,
 		}
 
 	}
+	(void) m_rem;
 
     }
     goto PROPAGATE_MEDIA_CREATE;
@@ -2161,13 +2149,13 @@ static pj_status_t transport_encode_sdp(pjmedia_transport *tp,
     struct transport_sctp *sctp = (struct transport_sctp*) tp;
     pjmedia_sdp_media *m_rem, *m_loc;
     enum { MAXLEN = 512 };
-    char buffer[MAXLEN];
-    int buffer_len;
-    pj_status_t status;
-    pjmedia_sdp_attr *attr;
-    pj_str_t attr_value;
-    unsigned i, j;
-	pjmedia_sdp_attr *finprt_attr, *sctpmap_attr;
+    //char buffer[MAXLEN];
+    //int buffer_len;
+    //pj_status_t status;
+    //pjmedia_sdp_attr *attr;
+    //pj_str_t attr_value;
+    //unsigned i, j;
+	//pjmedia_sdp_attr *finprt_attr, *sctpmap_attr;
 
     PJ_ASSERT_RETURN(tp && sdp_pool && sdp_local, PJ_EINVAL);
     
@@ -2175,10 +2163,13 @@ static pj_status_t transport_encode_sdp(pjmedia_transport *tp,
 
     m_rem = sdp_remote ? sdp_remote->media[media_index] : NULL;
     m_loc = sdp_local->media[media_index];
+
+	(void) m_rem;
+	(void) m_loc;
     goto PROPAGATE_MEDIA_CREATE;
 
-BYPASS_SCTP:
-    sctp->bypass_sctp = PJ_TRUE;
+//BYPASS_SCTP:
+//    sctp->bypass_sctp = PJ_TRUE;
 
 PROPAGATE_MEDIA_CREATE:
     return pjmedia_transport_encode_sdp(sctp->member_tp, sdp_pool, 
@@ -2211,6 +2202,8 @@ static pj_status_t transport_media_start(pjmedia_transport *tp,
 	if (status != PJ_SUCCESS)
 		return status;
 
+	(void) m_rem;
+	(void) m_loc;
     return pjmedia_transport_media_start(sctp->member_tp, pool, 
 					 sdp_local, sdp_remote,
 				         media_index);

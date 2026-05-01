@@ -1,5 +1,5 @@
-moon:: swanctl --list-pools --raw --name pool1 2> /dev/null::pool1.*base=10.3.0.0 size=14 online=1 offline=0::YES
-moon:: swanctl --list-pools --raw --name pool2 2> /dev/null::pool2.*base=10.4.0.0 size=14 online=1 offline=0::YES
+moon:: swanctl --list-pools --raw --name pool1 2> /dev/null::pool1.*base=10.3.0.1 size=14 online=1 offline=0::YES
+moon:: swanctl --list-pools --raw --name pool2 2> /dev/null::pool2.*base=10.4.0.1 size=14 online=1 offline=0::YES
 moon:: swanctl --list-pools --raw --name pool1 --leases 2> /dev/null::address=10.3.0.1 identity=carol@strongswan.org status=online::YES
 moon:: swanctl --list-pools --raw --name pool2 --leases 2> /dev/null::address=10.4.0.1 identity=alice@strongswan.org status=online::YES
 moon:: cat /var/log/daemon.log::assigning virtual IP 10.3.0.1 to peer.*carol@strongswan.org::YES

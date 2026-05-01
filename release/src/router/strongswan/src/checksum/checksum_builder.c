@@ -67,6 +67,8 @@ static void build_checksum(char *path, char *name, char *sname)
 			name, fsize, fsum, ssize, ssum);
 }
 
+#if defined(S_PLUGINS) || defined(P_PLUGINS) || \
+	defined(T_PLUGINS) || defined(C_PLUGINS)
 /**
  * Build checksums for a set of plugins
  */
@@ -88,6 +90,7 @@ static void build_plugin_checksums(char *plugins)
 	}
 	enumerator->destroy(enumerator);
 }
+#endif
 
 /**
  * Build checksums for a binary/library found at path

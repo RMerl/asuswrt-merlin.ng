@@ -49,6 +49,14 @@ if [ -s $CERTDIR/old/$SUBCA ]
 then
   cat $CERTDIR/old/$SUBCA  >> $SSL_DIR/trusted.pem
 fi
+if [ -s $CERTDIR/older/$ROOTCA ]
+then
+  cat $CERTDIR/older/$ROOTCA >> $SSL_DIR/trusted.pem
+fi
+if [ -s $CERTDIR/older/$SUBCA ]
+then
+  cat $CERTDIR/older/$SUBCA  >> $SSL_DIR/trusted.pem
+fi
 
 ##############################################################################
 # Restart the systemd service if it is active

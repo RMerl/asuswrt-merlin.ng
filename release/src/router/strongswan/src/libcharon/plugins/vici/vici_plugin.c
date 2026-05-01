@@ -189,7 +189,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *vici_plugin_create()
+PLUGIN_DEFINE(vici)
 {
 	private_vici_plugin_t *this;
 

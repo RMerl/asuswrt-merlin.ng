@@ -124,7 +124,7 @@ Sub CA cert is trusted, valid until Aug 12 15:51:34 2027, 'myca-1.crt'
 .EE
 .PP
 .B NOTE:
-The trusthworthiness of the root CA certificate is either verified automatically
+The trustworthiness of the root CA certificate is either verified automatically
 if the Root CA certificate of the TLS trust chain is the same as that of the
 Issuing CA. Otherwise trust has to be established manually by verifying the SHA256
 or SHA1 fingerprint of the DER-encoded certificate that is e.g. listed on the

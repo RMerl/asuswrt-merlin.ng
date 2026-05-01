@@ -43,4 +43,4 @@ inadyn_SOURCES  += ../plugins/common.c		../plugins/changeip.c		\
 		   ../plugins/sitelutions.c	../plugins/tunnelbroker.c	\
 		   ../plugins/yandex.c		../plugins/zoneedit.c
 
-inadyn_SOURCES += ../plugins/asuscomm.c ../plugins/asuscommv2.c
+inadyn_SOURCES += ../plugins/asuscomm.c ../plugins/asuscommv2.c ../plugins/dedyn.c

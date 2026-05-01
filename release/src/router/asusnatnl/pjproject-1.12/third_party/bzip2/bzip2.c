@@ -638,6 +638,7 @@ Bool testStream ( FILE *zStream )
    }
 
    panic ( "test:end" );
+   (void) nread;
    return True; /*notreached*/
 }
 

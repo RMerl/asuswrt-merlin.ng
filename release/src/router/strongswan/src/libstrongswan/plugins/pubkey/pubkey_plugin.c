@@ -62,7 +62,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *pubkey_plugin_create()
+PLUGIN_DEFINE(pubkey)
 {
 	private_pubkey_plugin_t *this;
 

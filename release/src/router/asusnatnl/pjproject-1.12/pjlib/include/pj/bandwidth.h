@@ -46,10 +46,10 @@ PJ_BEGIN_DECL
 #define MY_MAX(a,b) (((a)>(b)) ? (a) : (b))
 
 /** Get the minimal value */
-#define my_min(x,y) MIN(x, y)
+//#define my_min(x,y) MIN(x, y)
 
 /** Get the maximal value */
-#define my_max(x,y) MAX(x, y)
+//#define my_max(x,y) MAX(x, y)
 
 /**
  * @addtogroup networked_io Networked IO

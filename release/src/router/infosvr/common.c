@@ -154,50 +154,6 @@ char *get_lan_netmask()
 	return inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
 }
 
-/* 0:safe 1:hit */
-int check_cmd_injection_blacklist(char *para)
-{
-	if (para == NULL || *para == '\0') {
-		//_dprintf("check_xss_blacklist: para is NULL\n");
-		return 0;
-	}
-
-	if (strpbrk(para, "&|;`") != NULL) {
-		//_dprintf("check_xss_blacklist: para is Invalid\n");
-		return 1;
-	}
-
-	return 0;
-}
-
-#define ASUS_DEVICE_JSON_FILE	"/tmp/asus_device.json"
-
-int add_asus_devlist(char *name, char *mac){
-
-	if(check_cmd_injection_blacklist(name))
-		return 0;
-
-	if(!isValidMacAddress(mac))
-		return 0;
-
-	struct json_object *asus_device_obj = NULL;
-
-	if((asus_device_obj = json_object_from_file(ASUS_DEVICE_JSON_FILE)) == NULL)
-		asus_device_obj = json_object_new_object();
-	else if(json_object_get_type(asus_device_obj) != json_type_object){
-		json_object_put(asus_device_obj);
-		asus_device_obj = json_object_new_object();
-	}
-
-	json_object_object_add(asus_device_obj, mac, json_object_new_string(name));
-	json_object_to_file(ASUS_DEVICE_JSON_FILE, asus_device_obj);
-
-	if(asus_device_obj)
-		json_object_put(asus_device_obj);
-
-	return 1;
-}
-
 char *processPacket(int sockfd, char *pdubuf, unsigned short cli_port, char *client_ip)
 {
     unsigned int realOPCode;
@@ -338,25 +294,14 @@ char *processPacket(int sockfd, char *pdubuf, unsigned short cli_port, char *cli
 	//printf("get storage status(1)\n");	// tmp test
 		     getStorageStatus(st);
 //#endif /* #ifdef WL700G */
- 		     /* Disable  WSC functions for MFG test*/
-		     nvram_set("asus_mfg", "1");
-/*
-		     nvram_set("wsc_config_state", "1");
-		     system("killall wsccmd");
-		     system("killall wsc");
-		     system("killall upnp");
-		     system("killall ntp");
-	 	     system("killall ntpclient");
-		     system("killall lld2d");
-*/
 		     sendInfo(sockfd, pdubuf_res, send_port);
 		     return pdubuf_res;
 
 		case NET_CMD_ID_GETINFO:
 		{
 			 //_dprintf("NET CMD GETINFO\n");
-			 char jname_buf[32] = {0}, jmac_buf[20] = {0}, json_buf[500] = {0};
-			 struct json_object *jobj = NULL, *jaction = NULL, *jname = NULL, *jmac = NULL;
+			 char json_buf[500] = {0};
+			 struct json_object *jobj = NULL;
 
 			 phdr_ex_json = (IBOX_COMM_PKT_HDR_EX_JSON *)pdubuf;
 
@@ -366,14 +311,7 @@ char *processPacket(int sockfd, char *pdubuf, unsigned short cli_port, char *cli
 
 			 if(!is_error(jobj) && json_object_get_type(jobj) == json_type_object)
 			{
-				if(json_object_object_get_ex(jobj, "action", &jaction) && !strcmp(json_object_get_string(jaction), "asus_devlist")){
-					if(json_object_object_get_ex(jobj, "name", &jname) && json_object_object_get_ex(jobj, "mac", &jmac)){
-						strlcpy(jname_buf, json_object_get_string(jname), sizeof(jname_buf));
-						strlcpy(jmac_buf, json_object_get_string(jmac), sizeof(jmac_buf));
-						if(!check_cmd_injection_blacklist(jname_buf) && isValidMacAddress(jmac_buf))
-							add_asus_devlist(jname_buf, jmac_buf);
-					}
-				}
+				//reserved
 				json_object_put(jobj);
 			}
 

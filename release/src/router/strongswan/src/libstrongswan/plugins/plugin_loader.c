@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 Tobias Brunner
+ * Copyright (C) 2010-2025 Tobias Brunner
  * Copyright (C) 2007 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -46,6 +46,8 @@ typedef struct plugin_entry_t plugin_entry_t;
  * Statically registered constructors
  */
 static hashtable_t *plugin_constructors = NULL;
+#elif !defined(HAVE_DLADDR)
+#error Neither dynamic linking nor static plugin constructors are supported!
 #endif
 
 /**
@@ -191,10 +193,12 @@ struct plugin_entry_t {
 	 */
 	bool critical;
 
+#ifdef HAVE_DLADDR
 	/**
 	 * dlopen handle, if in separate lib
 	 */
 	void *handle;
+#endif
 
 	/**
 	 * List of features, as provided_feature_t
@@ -208,10 +212,12 @@ struct plugin_entry_t {
 static void plugin_entry_destroy(plugin_entry_t *entry)
 {
 	DESTROY_IF(entry->plugin);
+#ifdef HAVE_DLADDR
 	if (entry->handle)
 	{
 		dlclose(entry->handle);
 	}
+#endif
 	entry->features->destroy(entry->features);
 	free(entry);
 }
@@ -369,11 +375,13 @@ static status_t create_plugin(private_plugin_loader_t *this, void *handle,
 	{
 		constructor = plugin_constructors->get(plugin_constructors, name);
 	}
-	if (!constructor)
 #endif
+#ifdef HAVE_DLADDR
+	if (!constructor)
 	{
 		constructor = dlsym(handle, create);
 	}
+#endif
 	if (!constructor)
 	{
 		return NOT_FOUND;
@@ -404,6 +412,39 @@ static status_t create_plugin(private_plugin_loader_t *this, void *handle,
 	return SUCCESS;
 }
 
+#ifdef HAVE_DLADDR
+/**
+ * Verify that the plugin version matches that of the daemon
+ */
+static bool verify_plugin_version(void *handle, char *name)
+{
+	char field[128];
+	char **version;
+
+	if (snprintf(field, sizeof(field), "%s_plugin_version",
+				 name) >= sizeof(field))
+	{
+		return FALSE;
+	}
+	translate(field, "-", "_");
+
+	version = dlsym(handle, field);
+	if (!version)
+	{
+		DBG1(DBG_LIB, "plugin '%s': failed to load - version field %s missing",
+			 name, field);
+		return FALSE;
+	}
+	if (strcmp(*version, VERSION))
+	{
+		DBG1(DBG_LIB, "plugin '%s': failed to load - plugin version %s doesn't "
+			 "match version %s", name, *version, VERSION);
+		return FALSE;
+	}
+	return TRUE;
+}
+#endif /* HAVE_DLADDR */
+
 /**
  * load a single plugin
  */
@@ -412,8 +453,12 @@ static plugin_entry_t *load_plugin(private_plugin_loader_t *this, char *name,
 {
 	char create[128];
 	plugin_entry_t *entry;
-	void *handle;
+	void *handle = NULL;
+
+#ifdef HAVE_DLADDR
 	int flag = RTLD_LAZY;
+	handle = RTLD_DEFAULT;
+#endif
 
 	if (snprintf(create, sizeof(create), "%s_plugin_create",
 				 name) >= sizeof(create))
@@ -421,7 +466,7 @@ static plugin_entry_t *load_plugin(private_plugin_loader_t *this, char *name,
 		return NULL;
 	}
 	translate(create, "-", "_");
-	switch (create_plugin(this, RTLD_DEFAULT, name, create, FALSE, critical,
+	switch (create_plugin(this, handle, name, create, FALSE, critical,
 						  &entry))
 	{
 		case SUCCESS:
@@ -447,6 +492,7 @@ static plugin_entry_t *load_plugin(private_plugin_loader_t *this, char *name,
 			return NULL;
 		}
 	}
+#ifdef HAVE_DLADDR
 	if (lib->settings->get_bool(lib->settings, "%s.dlopen_use_rtld_now",
 								FALSE, lib->ns))
 	{
@@ -465,6 +511,11 @@ static plugin_entry_t *load_plugin(private_plugin_loader_t *this, char *name,
 		DBG1(DBG_LIB, "plugin '%s' failed to load: %s", name, dlerror());
 		return NULL;
 	}
+	if (!verify_plugin_version(handle, name))
+	{
+		dlclose(handle);
+		return NULL;
+	}
 	switch (create_plugin(this, handle, name, create, TRUE, critical, &entry))
 	{
 		case SUCCESS:
@@ -480,6 +531,9 @@ static plugin_entry_t *load_plugin(private_plugin_loader_t *this, char *name,
 	entry->handle = handle;
 	this->plugins->insert_last(this->plugins, entry);
 	return entry;
+#else
+	return NULL;
+#endif
 }
 
 CALLBACK(feature_filter, bool,
@@ -1347,10 +1401,12 @@ METHOD(plugin_loader_t, unload, void,
 	unload_features(this);
 	while (this->plugins->remove_last(this->plugins, (void**)&entry) == SUCCESS)
 	{
+#ifdef HAVE_DLADDR
 		if (lib->leak_detective)
 		{	/* keep handle to report leaks properly */
 			entry->handle = NULL;
 		}
+#endif
 		unregister_features(this, entry);
 		plugin_entry_destroy(entry);
 	}
@@ -1474,8 +1530,11 @@ plugin_loader_t *plugin_loader_create()
 		.features = hashlist_create(
 							(hashtable_hash_t)registered_feature_hash,
 							(hashtable_equals_t)registered_feature_equals, 64),
-		.get_features = dlsym(RTLD_DEFAULT, "plugin_loader_feature_filter"),
 	);
+
+#ifdef HAVE_DLADDR
+	this->get_features = dlsym(RTLD_DEFAULT, "plugin_loader_feature_filter");
+#endif
 
 	if (!this->get_features)
 	{

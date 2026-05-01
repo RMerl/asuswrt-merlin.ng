@@ -112,7 +112,9 @@
 
 #if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 #include <bcm_flashutil.h>
+#if !defined(WIFI7_SDK_20250506)
 #include <bcm_hwdefs.h>
+#endif /* !defined(WIFI7_SDK_20250506) */
 #endif
 
 #ifdef RTCONFIG_OPENVPN
@@ -22758,6 +22760,10 @@ NO_USB_CAP:
 	add_rc_support("tuf");
 #endif
 
+#ifdef RTCONFIG_PROART_UI
+	add_rc_support("proart");
+#endif
+
 #ifdef RTCONFIG_VISUALIZATION
 	add_rc_support("wifiradar");
 #endif
@@ -23379,6 +23385,12 @@ int init_nvram2(void)
 	amas_set_misc_info(MISC_INFO_RCSUPPORT, get_rcSupport_count(amas_rc_count, sizeof(amas_rc_count)));
 #endif /* AMAS */
 #endif /* CFGSYNC */
+#ifdef RTCONFIG_AMAS
+	nvram_unset("cp_restart");
+#ifdef RTCONFIG_AMAS_CHANNEL_PLAN
+	nvram_unset("cp_trigger");
+#endif
+#endif
 #if defined(RTCONFIG_WIFI_DRV_DISABLE) /* for IPQ40XX */
 	if (nvram_match("disableWifiDrv_fac", "1"))
 		nvram_set("lyra_disable_wifi_drv", "1");
@@ -23552,6 +23564,7 @@ int init_nvram2(void)
 	}
 
 	detect_vul_scan();
+	init_asus_pp_eula();
 
 	return 0;
 }  // end of init_nvram2
@@ -24756,7 +24769,7 @@ def_boot_reinit:
 	else if(model==MODEL_RPBE58) {
 		if(*nvram_safe_get("test_free"))
 			f_write_string("/proc/sys/vm/min_free_kbytes", nvram_safe_get("test_free"), 0, 0);
-		else 
+		else
 			f_write_string("/proc/sys/vm/min_free_kbytes", "10240", 0, 0);
 	} else if (model==MODEL_RTAX95Q || model==MODEL_XT8PRO || model==MODEL_BT12 || model==MODEL_BT10 || model==MODEL_BQ16 || model==MODEL_BQ16_PRO || model==MODEL_BM68 || model==MODEL_XT8_V2 || model==MODEL_RTAXE95Q || model==MODEL_ET8PRO || model==MODEL_ET8_V2 || model==MODEL_RTAX56U)
 		f_write_string("/proc/sys/vm/min_free_kbytes", "61440", 0, 0);

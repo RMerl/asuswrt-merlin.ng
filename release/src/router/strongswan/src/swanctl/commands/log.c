@@ -93,7 +93,7 @@ static int logcmd(vici_conn_t *conn)
 static void __attribute__ ((constructor))reg()
 {
 	command_register((command_t) {
-		logcmd, 'T', "log", "trace logging output",
+		logcmd, 'T', "log", "trace logging output (levels 0 and 1 only)",
 		{"[--raw|--pretty]"},
 		{
 			{"help",		'h', 0, "show usage information"},

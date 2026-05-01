@@ -142,7 +142,7 @@ PJ_DEF(pj_status_t) pjmedia_transport_loop_create(pjmedia_endpt *endpt,
 
     tp = PJ_POOL_ZALLOC_T(pool, struct transport_loop);
     tp->pool = pool;
-    pj_ansi_strncpy(tp->base.name, tp->pool->obj_name, PJ_MAX_OBJ_NAME-1);
+    pj_ansi_snprintf(tp->base.name, sizeof(tp->base.name), "%s", tp->pool->obj_name);
     tp->base.op = &transport_udp_op;
     tp->base.type = PJMEDIA_TRANSPORT_TYPE_UDP;
 

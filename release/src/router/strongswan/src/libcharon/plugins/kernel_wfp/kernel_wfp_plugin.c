@@ -60,7 +60,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *kernel_wfp_plugin_create()
+PLUGIN_DEFINE(kernel_wfp)
 {
 	private_kernel_wfp_plugin_t *this;
 

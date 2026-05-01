@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2022 Tobias Brunner
  * Copyright (C) 2007 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -25,8 +26,8 @@
 typedef struct child_delete_t child_delete_t;
 
 #include <library.h>
-#include <sa/ike_sa.h>
 #include <sa/task.h>
+#include <sa/ike_sa.h>
 #include <sa/child_sa.h>
 
 /**
@@ -38,13 +39,6 @@ struct child_delete_t {
 	 * Implements the task_t interface
 	 */
 	task_t task;
-
-	/**
-	 * Get the CHILD_SA to delete by this task.
-	 *
-	 * @return			child_sa
-	 */
-	child_sa_t* (*get_child) (child_delete_t *this);
 };
 
 /**
@@ -58,5 +52,36 @@ struct child_delete_t {
  */
 child_delete_t *child_delete_create(ike_sa_t *ike_sa, protocol_id_t protocol,
 									uint32_t spi, bool expired);
+
+/**
+ * Destroy the given CHILD_SA and trigger events and configured actions.
+ *
+ * @param ike_sa		IKE_SA the child_sa belongs to
+ * @param child_sa		CHILD_SA to destroy and potentially reestablish
+ * @return				status of reestablishment
+ */
+status_t child_delete_destroy_and_reestablish(ike_sa_t *ike_sa,
+											  child_sa_t *child_sa);
+
+/**
+ * Destroy the given CHILD_SA and trigger events and force a recreation.
+ *
+ * @param ike_sa		IKE_SA the child_sa belongs to
+ * @param child_sa		CHILD_SA to destroy and reestablish
+ * @return				status of reestablishment
+ */
+status_t child_delete_destroy_and_force_reestablish(ike_sa_t *ike_sa,
+													child_sa_t *child_sa);
+
+/**
+ * Destroy the given CHILD_SA with a configured delay, so delayed inbound
+ * packets can still be processed.
+ *
+ * @note The outbound SA should already be uninstalled when calling this.
+ *
+ * @param ike_sa		IKE_SA the child_sa belongs to
+ * @param child_sa		CHILD_SA to destroy and potentially reestablish
+ */
+void child_delete_destroy_rekeyed(ike_sa_t *ike_sa, child_sa_t *child_sa);
 
 #endif /** CHILD_DELETE_H_ @}*/

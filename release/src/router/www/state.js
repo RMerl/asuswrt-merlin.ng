@@ -5114,29 +5114,32 @@ function showWlHintContainer(_parm){
 }
 
 function checkPolicy() {
-    const policyStatus = PolicyStatus()
+    PolicyStatus()
         .then(data => {
-            if (data.EULA == "0") {
-                const policyModal = new PolicyUpdateModalComponent({
-                    policyStatus: data,
-                    securityUpdate: 1,
-                    websUpdate: 1,
-                });
-                policyModal.show();
-            } else if (data.EULA == 1 && ((data.PP == 1 && data.PP_time != "") || (data.PP == 0 && data.PP_time == ""))) {
-                const policyModal = new PolicyModalComponent({
-                    policyStatus: data,
-                    policy: 'PP',
-                    securityUpdate: 1,
-                    websUpdate: 1,
-                });
-                policyModal.show();
-            } else if (data.TM == 1 && data.TM_time == '') {
-                const policyModal = new PolicyModalComponent({
-                    policyStatus: data,
-                    policy: "TM"
-                });
-                policyModal.show();
+            if (data.isFetchDone) {
+                if (data.EULA_read === 0 && data.EULA_force_sign === 1) {
+                    const policyModal = new PolicyUpdateModalComponent({
+                        policyStatus: data,
+                        securityUpdate: 1,
+                        websUpdate: 1,
+                    });
+                    policyModal.show();
+                } else if (data.EULA_read === 1 && data.PP_read === 0 && (data.PP === "" || (data.PP >= 0 && data.PP_force_sign === 1))) {
+                    const policyModal = new PolicyModalComponent({
+                        policyStatus: data,
+                        policy: 'PP',
+                        securityUpdate: 1,
+                        websUpdate: 1,
+						signPPVersion: (data.ASUS_PP_support >= 5) ? data.ASUS_PP_support : 0,
+                    });
+                    policyModal.show();
+                } else if (data.TM == 1 && data.TM_time == '') {
+                    const policyModal = new PolicyModalComponent({
+                        policyStatus: data,
+                        policy: "TM"
+                    });
+                    policyModal.show();
+                }
             }
         });
 }

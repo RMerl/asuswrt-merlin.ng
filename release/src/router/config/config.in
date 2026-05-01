@@ -1730,6 +1730,10 @@ config RTCONFIG_TUF_UI
         bool "TUF theme support"
         default n
 
+config RTCONFIG_PROART_UI
+        bool "PROART theme support"
+        default n
+
 config RTCONFIG_GEOIP
 	bool "determine country by IP address"
 	default n

@@ -1646,7 +1646,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	if (wan_unit > WAN_UNIT_MULTISRV_BASE) return;
 #endif
 #ifdef RTCONFIG_IPV6
-#if defined(RTCONFIG_OPENVPN) || defined(RTCONFIG_WIREGUARD)
+#if defined(RTCONFIG_OPENVPN) || defined(RTCONFIG_WIREGUARD) || defined(RTCONFIG_MULTILAN_CFG)
 	if (ipv6_enabled()) {
 		eval("ip6tables", "-t", "nat", "-F");
 	}
@@ -2200,6 +2200,15 @@ _dprintf("nat_rule: start_nat_rules 1.\n");
 	}
 	else
 _dprintf("%s: nat_rule: skip nat_rules because of no PHY.\n", __func__);
+
+#ifdef RTCONFIG_IPV6
+#if defined(RTCONFIG_MULTILAN_CFG)
+	if (ipv6_enabled()) {
+		eval("ip6tables", "-t", "nat", "-A", "POSTROUTING", "-s", "fc00::/7", "-o", wan_if, "-j", "MASQUERADE");
+	}
+#endif
+#endif
+
 }
 
 #if defined(RTCONFIG_DUALWAN) || defined(RTCONFIG_MULTICAST_IPTV) // RTCONFIG_DUALWAN || RTCONFIG_MULTICAST_IPTV

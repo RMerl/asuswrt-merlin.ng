@@ -475,6 +475,7 @@ PJ_DEF(void) pjmedia_rtcp_rx_rtp2(pjmedia_rtcp_session *sess,
 
     /* Update timestamp of last RX RTP packet */
     sess->rtp_last_ts = rtp_ts;
+	(void) last_seq;
 }
 
 PJ_DEF(void) pjmedia_rtcp_tx_rtp(pjmedia_rtcp_session *sess, 
@@ -952,7 +953,8 @@ PJ_DEF(void) pjmedia_rtcp_build_rtcp(pjmedia_rtcp_session *sess,
     /* Update counter */
     pj_gettimeofday(&sess->stat.rx.update);
     sess->stat.rx.update_cnt++;
-}
+	(void) common;
+ }
 
 
 PJ_DEF(pj_status_t) pjmedia_rtcp_build_rtcp_sdes(

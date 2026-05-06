@@ -1,4 +1,4 @@
-#Release date:2025/12/15 17:04:51
+#Release date:2026/04/15 22:04:48
 #25,23,MEETING/VOIP/RTP
 1:STUN（Session Traversal Utilities for NAT)
 4:RTP (Real-Time Transport Protocol)
@@ -2839,7 +2839,7 @@
 26:XDMCP
 333:Teamviewer
 2616:AnyDesk
-#21,26,IM
+#21,25,IM
 21:mmTLS
 34:IRC (Internet Relay Chat)
 275:DingTalk
@@ -2857,7 +2857,6 @@
 1073:Telegram
 3168:Imo
 3176:Discord
-3186:Messenger
 3430:Gadu-Gadu
 3462:Zalo
 3590:Brosix
@@ -2915,11 +2914,13 @@
 3642:Microsoft (微軟)
 3656:Apple (蘋果)
 3682:Tencent (騰訊)
+#28,1,SECURITY
+62:ECH (Encrypted Client Hello)
 #111,3,SPEEDTEST
 300:iperf 3
 301:IxChariot
 3546:Speedtest
-#103,246,SHOPPING
+#103,249,SHOPPING
 303:Alibaba (阿里巴巴)
 305:E-life Mall (全國電子)
 306:RT-MART (大潤發)
@@ -2961,6 +2962,8 @@
 2248:Games Wave
 2320:Gamecash
 2625:Airbnb
+2629:Biogo
+2630:NEXT
 2643:Creema
 2644:Marais (瑪黑家居)
 2649:citySuper
@@ -3056,6 +3059,7 @@
 3323:Freck's Auto Art
 3325:GU
 3326:FunnyDesigns.com
+3327:Bange
 3329:Mendelssohn Pilot Supplies
 3330:The Great Cosmic Happy-Ass Card Co.
 3331:NET
@@ -3187,7 +3191,7 @@
 3439:Sina (新浪)
 3440:Weibo (微博)
 3441:X (Twitter) (推特)
-3442:Facebook (FB) (臉書)
+3442:Facebook/Messenger (臉書)
 3443:Vkontakte
 3444:Instagram (IG) / Threads
 3445:meilishuo (美丽说)

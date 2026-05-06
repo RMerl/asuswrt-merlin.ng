@@ -18,7 +18,7 @@ ifneq ($(CMWIFI),)
 CFLAGS += -I$(WL_CMWIFI_DIR)/libs/wlcsm/include
 endif
 LDFLAGS += $(EXTRA_LDFLAGS)
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
+ifeq ($(RTCONFIG_MXL_826XX),y)
 LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 

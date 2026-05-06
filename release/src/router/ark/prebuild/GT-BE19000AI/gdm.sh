@@ -13,11 +13,10 @@ usage_prompt() {
     echo "       $0 stop"
     echo "       $0 status"
     echo "       $0 get [output file]"
-    echo "       $0 set <host id> <username>"
-    echo "       $0 query <host id>"
+    echo "       $0 setname <host id> <username>"
+    echo "       $0 delname <host id>"
     echo "       $0 setwan <WANs>"
     echo "       $0 getitfs"
-    echo "       $0 datasync"
 }
 
 if [ $# -lt 1 ]; then
@@ -60,7 +59,7 @@ do_stop() {
     $GDM_CMD --stop
 
     i=1
-    while [ $i -le 3 ]; do
+    while [ $i -le 30 ]; do
         if [ "$(do_status)" = "0" ]; then
             echo "Module unloaded successfully."
             return 0
@@ -80,13 +79,22 @@ do_get() {
     $GDM_CMD -A get $OPTIONS
 }
 
-do_set() {
+do_setname() {
     if [ -z "$1" ] || [ -z "$2" ]; then
         echo "Host ID and username are required for set action."
         return 1
     fi
 
     $GDM_CMD -A set -H "$1" -U "$2"
+}
+
+do_delname() {
+    if [ -z "$1" ]; then
+        echo "Host ID is required for del action."
+        return 1
+    fi
+
+    $GDM_CMD -A set -H "$1" -U ''
 }
 
 do_query() {
@@ -114,13 +122,6 @@ do_cmd() {
     $GDM_CMD -A srvctl -C $ctlcmd -P ''$*''
 }
 
-setenv() {
-    export PATH=$PATH:$bindir
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$libdir
-}
-
-setenv
-
 case $action in
     status)
         result=$(do_status)
@@ -139,8 +140,12 @@ case $action in
         do_get $2
         exit $?
         ;;
-    set)
-        do_set $2 $3
+    setname)
+        do_setname $2 "$3"
+        exit $?
+        ;;
+    delname)
+        do_delname $2
         exit $?
         ;;
     query)

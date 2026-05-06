@@ -5,6 +5,34 @@ action=$1
 TMP_ROOT=/tmp
 
 
+list() {
+    # ARK begin
+    echo "ark: $(arkctl ark get)"
+    # ARK end
+
+
+    # GDM begin
+    echo "gdm: $(gdm.sh status)"
+    # GDM end
+
+
+
+
+    # GMQ begin
+    echo "gmq: $(gmq.sh status)"
+    # GMQ end
+
+    # GST begin
+    echo "gst: $(gst.sh status)"
+    # GST end
+
+
+
+    # GLOGER begin
+    echo "gloger: $(gloger.sh status)"
+    # GLOGER end
+}
+
 ark_stop() {
     echo "stopping ark..."
     # ARK begin
@@ -28,7 +56,7 @@ boot() {
 
 
     # GMQ begin
-    gmq start > /dev/null 2>&1
+    gmq.sh start > /dev/null 2>&1
     # GMQ end
 
     # GBUS begin
@@ -51,6 +79,7 @@ boot() {
 
 
 
+
 }
 
 start() {
@@ -61,10 +90,11 @@ stop() {
 
 
 
+
     # GST begin
     gst.sh stop
     # GST end
-    
+
     # GDM begin
     gdm.sh stop
     # GDM end
@@ -81,7 +111,7 @@ stop() {
     # GBUS end
 
     # GMQ begin
-    gmq stop
+    gmq.sh stop
     # GMQ end
 
 
@@ -103,9 +133,8 @@ if [ $# -ne 1 ]; then
 fi
 
 case $action in
-    status)
-        result=$(status)
-        echo $result
+    list)
+        list
         exit 0
         ;;
     start)

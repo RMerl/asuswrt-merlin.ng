@@ -10,33 +10,33 @@ queue2w()
 
     # default
     if [ ${qid} -eq 0 ]; then
-        printf "1"
+        printf "63"
 
     # pass
     elif [ ${qid} -eq 1 ]; then
-        printf "63"
+        printf "60"
 
     # extreme
     elif [ ${qid} -eq 2 ]; then
-        printf "63"
+        printf "50"
 
     # high
     elif [ ${qid} -eq 3 ]; then
-        printf "32"
+        printf "40"
 
     # medium
     elif [ ${qid} -eq 4 ]; then
-        printf "16"
+        printf "20"
 
     # low
     elif [ ${qid} -eq 5 ]; then
-        printf "1"
+        printf "10"
 
     # l2l
     elif [ ${qid} -eq 6 ]; then
-        printf "1"
+        printf "5"
     elif [ ${qid} -eq 7 ]; then
-        printf "1"
+        printf "5"
     fi
 }
 
@@ -100,13 +100,13 @@ get_traffic()
     local type=$2
     local ifname=$3
     local file=$4
-	
+
     if [ ! -d "/sys/class/net/${ifname}" ]; then
         exit
     fi
 
     for qid in ${QUEUES}; do
-        tmctl getqstats --devtype ${type} --if ${ifname} --qid ${qid} | grep txBytes | awk "{print \"set-txbytes ${d} ${qid} \" \$2}"  > ${file}
+        tmctl getqstats --devtype ${type} --if ${ifname} --qid ${qid} | awk "/txPackets/ {p=\$2} /txBytes/ {b=\$2} END {print \"set-txbytes ${d} ${qid}\", b, p }" > ${file}
     done
 
 }
@@ -118,7 +118,7 @@ set_limit()
     [ -z "$2" ] && exit
     [ -z "$3" ] && exit
     [ -z "$4" ] && exit
-    
+
     local type=$1
     local ifname=$2
     local qid=$3
